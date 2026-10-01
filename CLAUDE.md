@@ -19,14 +19,14 @@ This is a **vertical-slice MVP**, not a full clone. The goals are:
 Decided:
 
 - TypeScript everywhere; React for the web client.
-- **PartyKit / partyserver** (Cloudflare Durable Objects) is the leading choice for the realtime server.
+- **PartyKit / partyserver** (Cloudflare Durable Objects) for the realtime server, with custom authoritative rooms.
 - **Basic DOM-rendered prototype first. No three.js yet.**
+- Monorepo with `web`, `server`, and `shared` packages (the folders exist but are empty placeholders until scaffolding). Vite for the client; Vitest for tests.
 
-Not decided / reconsidering:
+Rejected (see `docs/ai-workflow.md`):
 
-- **Yjs is out for game state.** It is a CRDT that syncs shared documents to every client, so anything in it is visible to everyone. Never put hidden information (roles, secret actions) in a Yjs document.
-- Custom authoritative rooms on PartyKit vs. **boardgame.io** (turn-based framework with secret-state hiding, lobby/matchmaking, phases, and a bot framework; Node server rather than Cloudflare). If we use it, test directly that no secret state leaks (for example via the initial state message).
-- Repo layout: monorepo with `web`, `server`, and `shared` packages (the folders exist but are empty placeholders until scaffolding). **(proposed):** Vite for the client; Vitest for tests.
+- **Yjs for game state.** It is a CRDT that syncs shared documents to every client, so anything in it is visible to everyone. Never put hidden information (roles, secret actions) in a Yjs document.
+- **boardgame.io.** Requires a Node server rather than Cloudflare, and handling hidden information securely there adds complexity.
 
 Dev environment: WSL2 (Ubuntu) on Windows, VS Code. Run installs, builds, and tests inside WSL.
 
@@ -82,7 +82,6 @@ TBD. Fill in after scaffolding (install, dev, test, typecheck, lint, build, depl
 ## Open decisions
 
 - Game name, number of players, roles, win conditions, and turn/cycle length (real-time vs. async).
-- Custom PartyKit rooms vs. boardgame.io.
 - Which hosted model API to use for bots.
 - Code license.
 - Hosting and deployment details.
