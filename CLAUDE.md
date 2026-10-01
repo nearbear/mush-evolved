@@ -77,7 +77,30 @@ These are non-negotiable unless I say otherwise.
 
 ## Commands
 
-TBD. Fill in after scaffolding (install, dev, test, typecheck, lint, build, deploy).
+Node is installed via nvm. In non-interactive shells, run `source ~/.nvm/nvm.sh` first or `node`/`npm` won't be found.
+
+- `npm install`: install all workspaces (npm workspaces: `shared`, `server`, `web`).
+- `npm run dev`: wrangler on :8787 plus Vite on :5173, via concurrently.
+- `npm test`: Vitest in `shared`. Single file or test: `npm test -w shared -- rules.test.ts -t "advances the cycle"`.
+- `npm run typecheck`: `tsc --noEmit` in every package (TypeScript 7).
+- `npm run build`: production build of `web`.
+- `npm run types -w server`: regenerate `server/worker-configuration.d.ts` after changing `wrangler.jsonc` or the exported Durable Object classes.
+- `npm run deploy -w server`: wrangler deploy (not yet configured or tested).
+- No linter yet.
+
+npm 11 blocks dependency install scripts by default. `esbuild` and `workerd` are approved in the root `package.json` `allowScripts`; new packages with install scripts need `npm install-scripts approve <pkg>`.
+
+## Code map
+
+- `shared/src/rules.ts`: `createGame`, `applyAction`, `legalActions`, `viewFor`. State is plain JSON (it is persisted and cloned via JSON). `viewFor` is the single place hidden info is stripped; extend its tests whenever `PlayerView` grows.
+- `shared/src/config.ts`: placeholder seat count, Mush count, AP, and map. All values are unconfirmed.
+- `shared/src/protocol.ts`: wire message types plus `parse*` validators for untrusted client input.
+- `shared/src/bots.ts`: the `Bot` interface and `WanderBot` (scripted placeholder).
+- `server/src/Matchmaker.ts`: single instance (`matchmaker/global`). Queues players, sets an alarm to fill with bots after 15 s, creates a `GameRoom` via `getServerByName` and calls its `setup()` over RPC, then hands each human a secret seat token.
+- `server/src/GameRoom.ts`: one per game (`game-room/<uuid>`). The connection URL carries `?token=`, which maps to a seat. Persists state to DO storage on every change, sends each connection its own `viewFor`, and runs bots with a deliberate delay.
+- `web/src/`: `App` (lobby, seat ticket in sessionStorage), `GameScreen` (renders the view, sends intents). The client never computes legality; it uses `view.legalActions`.
+
+Implemented rules are only movement, AP, and "ready" to advance the cycle. Infection, voting, and win conditions are intentionally absent until the rules are decided.
 
 ## Open decisions
 

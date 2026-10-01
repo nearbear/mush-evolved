@@ -1,0 +1,19 @@
+{
+  "name": "@mush2/server",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev",
+    "types": "wrangler types",
+    "deploy": "wrangler deploy",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@mush2/shared": "*",
+    "partyserver": "^0.5.10"
+  },
+  "devDependencies": {
+    "wrangler": "^4.145.0"
+  }
+}
