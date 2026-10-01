@@ -48,7 +48,7 @@ These are non-negotiable unless I say otherwise.
 
 ## Assets and licensing
 
-- The eMush game assets are licensed **CC BY-NC-SA 4.0** (per the `LICENSE.md` in the source repository): attribution required, non-commercial only, adaptations must be shared under the same license.
+- Assets come from Motion Twin's [WebGamesArchives](https://github.com/motion-twin/WebGamesArchives) (the `Mush/` folder), licensed **CC BY-NC-SA 4.0** per that repo's root `LICENSE.txt`: attribution required, non-commercial only, adaptations must be shared under the same license. See `docs/mush-assets.md` for the inventory and licensing details.
 - Keep assets in their own folder with the license text and an attribution file next to them. Do not mix them into the code tree.
 - Before using any asset, check that its folder isn't covered by different third-party terms (fonts, sounds, music especially).
 - Code license is separate and undecided (MIT is the likely choice).
