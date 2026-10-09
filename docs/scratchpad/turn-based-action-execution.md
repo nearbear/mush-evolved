@@ -13,12 +13,12 @@ A higher time slot **density** results in faster passage of in-game time, which 
 A lower time slot **density** slows it down, which can be useful for emphasizing important events such as combat, giving players more time to react.
 
 ### **Adrenaline** levels
-Each character has a level of **Adrenaline** that indicates their current perceived threat level and influences gameplay. A character's **Adrenaline** cannot change until the start of a new cycle. A character with low **Adrenaline** is more vulnerable to surprise attacks.
+Each character has a level of **Adrenaline** that indicates their current perceived threat level and influences gameplay. Characters that enter or perceive combat are automatically elevated to the **High** level.
 
 Levels:
-- **Low**: Minimal perceived threat, time cycle density = 24. Used by default.
-- **Medium**: Elevated perceived threat, time cycle density = 12. Occurs during high risk situations such as damaged oxygen reservoirs and fires.
-- **High**: Maximal perceived threat, time cycle density = 6. Occurs during combat and other high-stakes situations such as when a character is lost on a planet.
+- **Low**: Minimal perceived threat, time cycle density = 36. Used by default.
+- **Medium**: Elevated perceived threat, time cycle density = 18. Occurs during high risk situations such as damaged oxygen reservoirs and fires.
+- **High**: Maximal perceived threat, time cycle density = 6. Occurs during combat, piloting, and other high-stakes situations such as when a character is lost on a planet.
 
 ### Turn based action execution
 Actions are declared by the player, scheduled for execution based on game rules, and then executed on the start of the time slot that they were declared against.
