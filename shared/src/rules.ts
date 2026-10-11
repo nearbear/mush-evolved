@@ -93,7 +93,7 @@ export function viewFor(state: GameState, playerId: PlayerId): PlayerView {
     // TODO(rules): should Mush see each other's roles? Hidden for now.
     players: state.players
       .filter((p) => p.id !== playerId)
-      .map(({ id, name, isBot, room, alive, ready }) => ({ id, name, isBot, room, alive, ready })),
+      .map(({ id, name, isBot, character, room, alive, ready }) => ({ id, name, isBot, character, room, alive, ready })),
     cycle: state.cycle,
     phase: state.phase,
     rooms: state.config.rooms,

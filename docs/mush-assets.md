@@ -52,10 +52,15 @@ Reference for AI assistants and contributors. Describes what is in `Mush/` (repo
 - Source files are GraphicsGale `.gal` (header `Gale106`). Use the PNG exports instead. Known gaps: `Jinsu_back.gal` / `Jinsu_face.gal` have PNGs named `jinsu_back.png` / `jinsu_faec.png` (case mismatch and typo), and `mush_face_alt.gal` has no PNG.
 - `propulsor.ase` is an Aseprite file (4 frames, 23 x 22) with PNG exports alongside.
 
-## Sprite atlases (`tiles.xml`)
+## Ship map and sprite atlases (`ShipMap.png`, `tiles.xml`)
 
-- Each `<slice>` has `params="top,left,width,height,framesX,framesY"`, an `ofs` draw offset, optional `flipX/flipY`, and `<frame color=...>` entries. The colors look like editor/debug color keys for map painting (inferred, not confirmed).
-- Atlases are referenced by Flash class names (`BmpGfx2`, `BmpBigFill`, ...) defined in `clients/iso/src/Data.hx`. Mapping class name to PNG file needs a check there before writing a slicer.
+Converted to `Mush/derived/ship-layout.json` by `npm run ship-layout` (`tools/src/shipLayout/convert.ts`, which cites the Haxe functions it reproduces). Facts established while writing it:
+
+- `ShipMap.png` has one 32-px row per room, in `RoomId` order (the `rooms` sheet of `Data.ods`). All patrol ships share one row. Starting at x=64, each row holds four 32x32 layers: base (floor/walls/doors), props, non-pathable entities, and extra entities (chairs, cameras). One pixel = one isometric grid cell; white = empty.
+- Pixel colors are lookup keys into `<frame color>` entries in `tiles.xml`, not meanings. Three colors in the map are undefined and were ignored by the original client.
+- `<slice params>` is `x,y,width,height,framesX,framesY` (the XML comment saying `top,left` is wrong).
+- Door targets live in `tiles.xml` `<extras><room><makeDoor tgt>`, assigned to door pixels in scan order. Door counts match in every room and the resulting graph is symmetric, but which physical door gets which target is not yet visually verified.
+- Flash sheet classes map to images: `BmpGfx2` = `gfx_01.png` (not `gfx_02.png`), `BmpGfxFx` = `fx.png`, `BmpGfxChar` = `char.png`, `BmpSmallFill`/`BmpMidFill`/`BmpMidFill2`/`BmpBigFill`/`BmpBigFill2`/`BmpMasks` = the same-named PNGs, `BmpGfxDev` = `dev.png`. Inferred from sizes and by eye; the original binding file is missing.
 
 ## Game data spreadsheets
 

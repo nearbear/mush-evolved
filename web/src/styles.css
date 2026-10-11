@@ -1,18 +1,302 @@
+:root {
+  --bg: #0d1424;
+  --panel: #16213a;
+  --edge: #2c3e66;
+  --text: #dfe6f5;
+  --muted: #8796b8;
+  --accent: #4fc3f7;
+  --mush: #c86bd8;
+  --sprite-scale: 2;
+  color-scheme: dark;
+}
+
 body {
   font-family: system-ui, sans-serif;
-  max-width: 48rem;
-  margin: 2rem auto;
+  background: var(--bg);
+  color: var(--text);
+  margin: 0;
+}
+
+main {
+  max-width: 72rem;
+  margin: 1rem auto;
   padding: 0 1rem;
 }
 
 button {
   margin: 0.25rem;
+  background: var(--panel);
+  color: var(--text);
+  border: 1px solid var(--edge);
+  border-radius: 4px;
+  padding: 0.35rem 0.75rem;
+  cursor: pointer;
+}
+button:disabled {
+  cursor: default;
+  opacity: 0.6;
 }
 
-.here {
-  font-weight: bold;
+input {
+  background: var(--panel);
+  color: var(--text);
+  border: 1px solid var(--edge);
+  border-radius: 4px;
+  padding: 0.35rem 0.5rem;
+}
+
+a {
+  color: var(--accent);
+}
+
+h2 {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  margin: 0 0 0.5rem;
+}
+
+.sub {
+  color: var(--muted);
+  font-size: 0.8rem;
 }
 
 .error {
-  color: #b00020;
+  color: #ff6b81;
+}
+
+/* Top bar */
+
+.top-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: var(--panel);
+  border: 1px solid var(--edge);
+  border-radius: 6px;
+  padding: 0.5rem 0.75rem;
+}
+.top-bar .spacer {
+  flex: 1;
+}
+.avatar {
+  width: 40px;
+  height: 40px;
+  image-rendering: pixelated;
+}
+.role {
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  font-weight: bold;
+  padding: 0.15rem 0.5rem;
+  border-radius: 3px;
+  background: #24508a;
+}
+.role.mush {
+  background: var(--mush);
+}
+.ap {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+.ap i {
+  width: 10px;
+  height: 14px;
+  background: #f5c542;
+  border-radius: 2px;
+}
+.ap .sub {
+  margin-left: 0.35rem;
+}
+
+/* Room scene + log */
+
+.stage {
+  display: grid;
+  grid-template-columns: minmax(0, 3fr) minmax(14rem, 1fr);
+  gap: 1rem;
+  margin: 1rem 0;
+}
+
+.iso-room {
+  position: relative;
+  min-height: 200px;
+  background: #0a0f1c;
+  border: 1px solid var(--edge);
+  border-radius: 6px;
+  padding: 2.25rem 1rem 1rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: auto;
+}
+.room-title {
+  position: absolute;
+  top: 0.6rem;
+  left: 0.75rem;
+  margin: 0;
+  color: #fff;
+  font-size: 1rem;
+}
+.iso-viewport {
+  position: relative;
+  flex: none;
+}
+.iso-layer {
+  position: absolute;
+  left: 0;
+  top: 0;
+  transform-origin: 0 0;
+  --sprite-scale: 1;
+}
+.iso-sprite,
+.iso-actor {
+  position: absolute;
+  background-repeat: no-repeat;
+  image-rendering: pixelated;
+  /* Sprite boxes overlap a lot; only doors take clicks. */
+  pointer-events: none;
+}
+.iso-sprite.door {
+  pointer-events: auto;
+}
+.iso-sprite.door.reachable {
+  cursor: pointer;
+}
+.iso-sprite.door.reachable:hover {
+  filter: brightness(1.35) drop-shadow(0 0 3px var(--accent));
+}
+.iso-tag {
+  position: absolute;
+  transform: translate(-50%, -100%);
+  font-size: 0.7rem;
+  white-space: nowrap;
+  max-width: 110px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  background: rgb(0 0 0 / 0.65);
+  padding: 1px 5px;
+  border-radius: 3px;
+  pointer-events: none;
+}
+.iso-tag.you {
+  outline: 1px solid var(--accent);
+}
+.tag {
+  margin-left: 4px;
+  font-size: 0.65rem;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+
+/* One frame of a 6 x (32x48) strip, scaled up without smoothing. */
+.crew-sprite {
+  width: calc(32px * var(--sprite-scale));
+  height: calc(48px * var(--sprite-scale));
+  background-size: calc(192px * var(--sprite-scale)) 100%;
+  background-repeat: repeat-x;
+  image-rendering: pixelated;
+  filter: drop-shadow(0 3px 2px rgb(0 0 0 / 0.6));
+  animation: walk-frames 0.5s steps(6) 2;
+}
+.crew-sprite.flip {
+  transform: scaleX(-1);
+}
+@keyframes walk-frames {
+  from {
+    background-position-x: 0;
+  }
+  to {
+    background-position-x: calc(-192px * var(--sprite-scale));
+  }
+}
+
+.log {
+  background: var(--panel);
+  border: 1px solid var(--edge);
+  border-radius: 6px;
+  padding: 0.75rem;
+  max-height: 560px;
+  overflow-y: auto;
+}
+.log ol {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  font-size: 0.85rem;
+}
+.log li {
+  padding: 0.2rem 0;
+  border-bottom: 1px solid rgb(255 255 255 / 0.05);
+}
+
+/* Ship map */
+
+.ship-map {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 0.5rem;
+}
+.map-room {
+  position: relative;
+  margin: 0;
+  padding: 0;
+  height: 94px;
+  background-size: cover;
+  background-position: center;
+  border: 2px solid var(--edge);
+  border-radius: 6px;
+  overflow: hidden;
+  text-align: left;
+  filter: grayscale(0.7) brightness(0.6);
+}
+.map-room:disabled {
+  opacity: 1;
+}
+.map-room.reachable {
+  filter: none;
+  border-color: var(--accent);
+}
+.map-room.reachable:hover {
+  box-shadow: 0 0 10px var(--accent);
+}
+.map-room.here {
+  filter: none;
+  border-color: #f5c542;
+}
+.map-label {
+  position: absolute;
+  top: 4px;
+  left: 6px;
+  font-size: 0.8rem;
+  font-weight: bold;
+  text-shadow: 0 1px 3px #000;
+}
+.map-people {
+  position: absolute;
+  bottom: 4px;
+  left: 4px;
+  right: 4px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px;
+}
+.map-people img {
+  width: 24px;
+  height: 24px;
+  image-rendering: pixelated;
+  background: rgb(0 0 0 / 0.5);
+  border-radius: 3px;
+}
+
+.credits {
+  margin: 1.5rem 0 1rem;
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+.connecting {
+  color: var(--muted);
 }

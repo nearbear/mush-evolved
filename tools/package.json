@@ -1,0 +1,17 @@
+{
+  "name": "@mush2/tools",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "ship-layout": "node src/shipLayout/convert.ts",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@mush2/shared": "*"
+  },
+  "devDependencies": {
+    "@types/node": "^24.19.2"
+  }
+}

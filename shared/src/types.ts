@@ -1,3 +1,4 @@
+import type { CharacterId } from "./characters.ts";
 import type { RngState } from "./rng.ts";
 
 export type PlayerId = string;
@@ -8,6 +9,8 @@ export interface Seat {
   id: PlayerId;
   name: string;
   isBot: boolean;
+  /** Cosmetic only: which crew member's art this seat is drawn with. */
+  character: CharacterId;
 }
 
 export interface GameConfig {
@@ -53,6 +56,7 @@ export interface OtherPlayerView {
   id: PlayerId;
   name: string;
   isBot: boolean;
+  character: CharacterId;
   room: RoomId;
   alive: boolean;
   ready: boolean;

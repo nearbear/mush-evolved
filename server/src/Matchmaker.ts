@@ -3,7 +3,7 @@
 // talk to each other or to the matchmaker after setup.
 
 import { getServerByName, Server, type Connection, type WSMessage } from "partyserver";
-import { parseMatchmakerMessage, SEAT_COUNT, type MatchmakerServerMessage, type PlayerId, type Seat } from "@mush2/shared";
+import { CHARACTERS, parseMatchmakerMessage, SEAT_COUNT, type MatchmakerServerMessage, type PlayerId, type Seat } from "@mush2/shared";
 import { RateLimiter } from "./rateLimit.ts";
 
 /** How long the first player waits before empty seats are filled with bots. */
@@ -61,17 +61,18 @@ export class Matchmaker extends Server<Env> {
     const seats: Seat[] = [];
     const tokens: Record<string, PlayerId> = {};
     const tokenByConnection = new Map<string, string>();
+    const characters = shuffled(CHARACTERS.map((c) => c.id));
 
     humans.forEach((conn, i) => {
       const id = `p${i}`;
       const token = crypto.randomUUID();
-      seats.push({ id, name: conn.state!.name!, isBot: false });
+      seats.push({ id, name: conn.state!.name!, isBot: false, character: characters[i]! });
       tokens[token] = id;
       tokenByConnection.set(conn.id, token);
     });
     for (let i = humans.length; i < SEAT_COUNT; i++) {
       // Bots are always labeled as AI to players.
-      seats.push({ id: `p${i}`, name: `Bot ${i - humans.length + 1} (AI)`, isBot: true });
+      seats.push({ id: `p${i}`, name: `Bot ${i - humans.length + 1} (AI)`, isBot: true, character: characters[i]! });
     }
 
     const room = await getServerByName(this.env.GameRoom, roomId);
@@ -91,4 +92,14 @@ export class Matchmaker extends Server<Env> {
   private send(connection: Connection, msg: MatchmakerServerMessage): void {
     connection.send(JSON.stringify(msg));
   }
+}
+
+/** Fisher-Yates. Characters are cosmetic, so Math.random is fine here. */
+function shuffled<T>(items: T[]): T[] {
+  const out = [...items];
+  for (let i = out.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [out[i], out[j]] = [out[j]!, out[i]!];
+  }
+  return out;
 }

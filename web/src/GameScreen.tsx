@@ -3,13 +3,18 @@
 
 import { useEffect, useRef, useState } from "react";
 import type PartySocket from "partysocket";
-import type { Action, GameServerMessage, PlayerView } from "@mush2/shared";
+import { CHARACTERS, type Action, type GameServerMessage, type PlayerView } from "@mush2/shared";
+import { portrait } from "./art/assets.ts";
 import { gameSocket, type SeatTicket } from "./net.ts";
+import { IsoRoom } from "./iso/IsoRoom.tsx";
+import { useShipLayout } from "./iso/shipLayout.ts";
+import { ShipMap } from "./scene/ShipMap.tsx";
 
 export function GameScreen({ ticket, onLeave }: { ticket: SeatTicket; onLeave: () => void }) {
   const [view, setView] = useState<PlayerView | null>(null);
   const [error, setError] = useState("");
   const socketRef = useRef<PartySocket | null>(null);
+  const layout = useShipLayout();
 
   useEffect(() => {
     const socket = gameSocket(ticket.roomId, ticket.token);
@@ -30,53 +35,82 @@ export function GameScreen({ ticket, onLeave }: { ticket: SeatTicket; onLeave: (
 
   const send = (action: Action) => socketRef.current?.send(JSON.stringify({ type: "action", action }));
 
-  if (!view) return <main>Connecting…</main>;
+  if (!view) return <main className="connecting">Connecting…</main>;
   const { you } = view;
-  const moves = view.legalActions.filter((a) => a.type === "move");
+  const reachable = new Set(view.legalActions.flatMap((a) => (a.type === "move" ? [a.to] : [])));
   const canReady = view.legalActions.some((a) => a.type === "ready");
-  const everyone = [you, ...view.players];
+  const character = CHARACTERS.find((c) => c.id === you.character);
 
   return (
-    <main>
-      <header>
-        <strong>{you.name}</strong> · role: {you.role} · AP: {you.ap} · cycle {view.cycle}
+    <main className="game">
+      <header className="top-bar">
+        <img className="avatar" src={portrait(you.character)} alt="" />
+        <div>
+          <strong>{you.name}</strong>
+          {character && <div className="sub">{character.name}</div>}
+        </div>
+        <span className={`role ${you.role}`}>{you.role}</span>
+        <span className="ap" title={`${you.ap} action points`}>
+          {Array.from({ length: Math.max(you.ap, 0) }, (_, i) => (
+            <i key={i} />
+          ))}
+          <span className="sub">{you.ap} AP</span>
+        </span>
+        <span className="cycle">Cycle {view.cycle}</span>
+        <span className="spacer" />
+        <button disabled={!canReady} onClick={() => send({ type: "ready" })}>
+          {you.ready ? "Waiting for others…" : "End cycle"}
+        </button>
         <button onClick={onLeave}>Leave</button>
       </header>
       {error && <p className="error">{error}</p>}
 
-      <section>
-        <h2>Rooms</h2>
-        <ul>
-          {Object.keys(view.rooms).map((room) => (
-            <li key={room} className={room === you.room ? "here" : ""}>
-              {room}: {everyone.filter((p) => p.room === room).map((p) => p.name).join(", ") || "—"}
-            </li>
-          ))}
-        </ul>
-      </section>
+      <div className="stage">
+        {layout ? (
+          <IsoRoom
+            layout={layout}
+            room={you.room}
+            occupants={[you, ...view.players.filter((p) => p.room === you.room)]
+              .sort((a, b) => a.id.localeCompare(b.id))
+              .map((p) => ({ id: p.id, name: p.name, isBot: p.isBot, character: p.character, you: p.id === you.id }))}
+            reachable={reachable}
+            onMove={(to) => send({ type: "move", to })}
+          />
+        ) : (
+          <section className="iso-room">Loading ship…</section>
+        )}
+        <aside className="log">
+          <h2>Log</h2>
+          <ol reversed>
+            {[...view.log].reverse().map((entry, i) => (
+              <li key={view.log.length - i}>
+                <span className="sub">[{entry.cycle}]</span> {entry.text}
+              </li>
+            ))}
+          </ol>
+        </aside>
+      </div>
 
-      <section>
-        <h2>Actions</h2>
-        {moves.map((a) => (
-          <button key={a.to} onClick={() => send(a)}>
-            Move to {a.to}
-          </button>
-        ))}
-        <button disabled={!canReady} onClick={() => send({ type: "ready" })}>
-          {you.ready ? "Waiting for others…" : "End cycle"}
-        </button>
-      </section>
+      <ShipMap
+        rooms={Object.keys(view.rooms)}
+        you={you}
+        people={[you, ...view.players]}
+        reachable={reachable}
+        onMove={(to) => send({ type: "move", to })}
+      />
 
-      <section>
-        <h2>Log</h2>
-        <ol reversed>
-          {[...view.log].reverse().map((entry, i) => (
-            <li key={view.log.length - i}>
-              [{entry.cycle}] {entry.text}
-            </li>
-          ))}
-        </ol>
-      </section>
+      <Credits />
     </main>
+  );
+}
+
+function Credits() {
+  return (
+    <footer className="credits">
+      Art from <em>Mush</em> by Motion Twin (
+      <a href="https://github.com/motion-twin/WebGamesArchives">WebGamesArchives</a>), licensed{" "}
+      <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a>. Sprite backgrounds made
+      transparent. Not affiliated with Motion Twin.
+    </footer>
   );
 }

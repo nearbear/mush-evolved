@@ -83,9 +83,10 @@ Node is installed via nvm. In non-interactive shells, run `source ~/.nvm/nvm.sh`
 
 - `npm install`: install all workspaces (npm workspaces: `shared`, `server`, `web`).
 - `npm run dev`: wrangler on :8787 plus Vite on :5173, via concurrently.
-- `npm test`: Vitest in `shared`. Single file or test: `npm test -w shared -- rules.test.ts -t "advances the cycle"`.
+- `npm test`: Vitest in `shared`, `tools`, and `web`. Single file or test: `npm test -w shared -- rules.test.ts -t "advances the cycle"`.
 - `npm run typecheck`: `tsc --noEmit` in every package (TypeScript 7).
 - `npm run build`: production build of `web`.
+- `npm run ship-layout`: regenerate `Mush/derived/ship-layout.json` (renderer data) and `ship-rooms.json` (room graph for the rules) from `ShipMap.png` + `tiles.xml`. A test fails if the committed file is stale.
 - `npm run types -w server`: regenerate `server/worker-configuration.d.ts` after changing `wrangler.jsonc` or the exported Durable Object classes.
 - `npm run deploy -w server`: wrangler deploy (not yet configured or tested).
 - No linter yet.
@@ -95,14 +96,17 @@ npm 11 blocks dependency install scripts by default. `esbuild` and `workerd` are
 ## Code map
 
 - `shared/src/rules.ts`: `createGame`, `applyAction`, `legalActions`, `viewFor`. State is plain JSON (it is persisted and cloned via JSON). `viewFor` is the single place hidden info is stripped; extend its tests whenever `PlayerView` grows.
-- `shared/src/config.ts`: placeholder seat count, Mush count, AP, and map. All values are unconfirmed.
+- `shared/src/config.ts`: seat count, Mush count, and AP are unconfirmed placeholders. The map is the original Daedalus (27 rooms with doors, from `Mush/derived/ship-rooms.json`); everyone starts in `LABORATORY` (confirmed).
 - `shared/src/protocol.ts`: wire message types plus `parse*` validators for untrusted client input.
 - `shared/src/bots.ts`: the `Bot` interface and `WanderBot` (scripted placeholder).
 - `server/src/Matchmaker.ts`: single instance (`matchmaker/global`). Queues players, sets an alarm to fill with bots after 15 s, creates a `GameRoom` via `getServerByName` and calls its `setup()` over RPC, then hands each human a secret seat token.
 - `server/src/GameRoom.ts`: one per game (`game-room/<uuid>`). The connection URL carries `?token=`, which maps to a seat. Persists state to DO storage on every change, sends each connection its own `viewFor`, and runs bots with a deliberate delay.
+- `shared/src/shipLayout.ts`: types for `Mush/derived/ship-layout.json` (per-room isometric tiles, doors with targets, sprite slices, atlas sheets).
+- `tools/src/shipLayout/`: the build-time converter, with a hand-written PNG decoder and XML reader (no dependencies).
 - `shared/src/characters.ts`: cosmetic crew identities (`Seat.character`), assigned by the matchmaker. No rules effect.
 - `web/src/`: `App` (lobby, seat ticket in sessionStorage), `GameScreen` (renders the view, sends intents). The client never computes legality; it uses `view.legalActions`.
-- `web/src/scene/`: DOM renderer (`RoomScene`, `ShipMap`, `CrewSprite`). `web/src/art/assets.ts` maps room/character ids to files in `Mush/`; `keyedSprite.ts` makes sprite backgrounds transparent at load time.
+- `web/src/iso/`: isometric room view in the DOM. `placement.ts` is pure (no DOM): grid projection, paint order, walkable cells, standing spots, reproducing the original Flash client. `IsoRoom.tsx` renders it, one absolutely positioned div per sprite; double-clicking a reachable door sends a move. `shipLayout.ts` fetches the layout JSON and maps atlas sheets to image URLs.
+- `web/src/scene/`: `ShipMap` (room cards, also clickable to move) and `CrewSprite`. `web/src/art/assets.ts` maps characters and room types to files in `Mush/`; `keyedSprite.ts` makes sprite backgrounds transparent at load time.
 
 Implemented rules are only movement, AP, and "ready" to advance the cycle. Infection, voting, and win conditions are intentionally absent until the rules are decided.
 
@@ -112,4 +116,4 @@ Implemented rules are only movement, AP, and "ready" to advance the cycle. Infec
 - Which hosted model API to use for bots.
 - Code license.
 - Hosting and deployment details.
-- Which rendering approach once the DOM prototype works.
+- Rendering beyond the DOM isometric view (decided: DOM for now, 2026-10-11).
