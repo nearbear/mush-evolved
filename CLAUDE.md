@@ -19,7 +19,7 @@ This is a **vertical-slice MVP**, not a full clone. The goals are:
 Decided:
 
 - TypeScript everywhere; React for the web client.
-- **PartyKit / partyserver** (Cloudflare Durable Objects) for the realtime server, with custom authoritative rooms.
+- **PartyServer** (Cloudflare Durable Objects) for the realtime server, with custom authoritative rooms.
 - **Basic DOM-rendered prototype first. No three.js yet.**
 - Monorepo with `web`, `server`, and `shared` packages (the folders exist but are empty placeholders until scaffolding). Vite for the client; Vitest for tests.
 
@@ -64,6 +64,8 @@ These are non-negotiable unless I say otherwise.
 - Prefer the simplest thing that works for the vertical slice, and flag scope creep.
 - Keep a short log in `docs/ai-workflow.md` of significant decisions made with AI assistance, including what worked and what needed correction. I plan to write this up.
 - Explain tradeoffs when there is a real choice; I want to understand the code, not just receive it.
+- Ignore the files in the `docs/scratchpad` folder unless otherwise directed; they are for notes and planning, not part of the main codebase.
+- Do not generate any non-text assets or files without explicit approval.
 
 ## Build order
 
@@ -98,7 +100,9 @@ npm 11 blocks dependency install scripts by default. `esbuild` and `workerd` are
 - `shared/src/bots.ts`: the `Bot` interface and `WanderBot` (scripted placeholder).
 - `server/src/Matchmaker.ts`: single instance (`matchmaker/global`). Queues players, sets an alarm to fill with bots after 15 s, creates a `GameRoom` via `getServerByName` and calls its `setup()` over RPC, then hands each human a secret seat token.
 - `server/src/GameRoom.ts`: one per game (`game-room/<uuid>`). The connection URL carries `?token=`, which maps to a seat. Persists state to DO storage on every change, sends each connection its own `viewFor`, and runs bots with a deliberate delay.
+- `shared/src/characters.ts`: cosmetic crew identities (`Seat.character`), assigned by the matchmaker. No rules effect.
 - `web/src/`: `App` (lobby, seat ticket in sessionStorage), `GameScreen` (renders the view, sends intents). The client never computes legality; it uses `view.legalActions`.
+- `web/src/scene/`: DOM renderer (`RoomScene`, `ShipMap`, `CrewSprite`). `web/src/art/assets.ts` maps room/character ids to files in `Mush/`; `keyedSprite.ts` makes sprite backgrounds transparent at load time.
 
 Implemented rules are only movement, AP, and "ready" to advance the cycle. Infection, voting, and win conditions are intentionally absent until the rules are decided.
 
