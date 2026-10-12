@@ -41,7 +41,8 @@ cd /home/near/mush2 && source ~/.nvm/nvm.sh && npm run screenshot
 | `01-game.png` | In the starting room after joining |
 | `02-inspect.png` | Inspect panel open on another crew member |
 | `03-chat.png` | Global chat tab with a sent message |
-| `04-moved.png` | After double-clicking a reachable door |
+| `04-take.png` | After taking an item from the room into the inventory |
+| `05-moved.png` | After double-clicking a reachable door |
 
 A failed step saves `<name>-FAILED.png` showing the page at the moment it failed. The script exits non-zero on any failed step **or any browser console error**, and prints the errors.
 

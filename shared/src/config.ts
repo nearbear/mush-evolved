@@ -27,5 +27,15 @@ export const DEFAULT_CONFIG: GameConfig = {
   maxMorale: 14,
   startMorale: 7,
   startRoom: "LABORATORY",
+  // Confirmed 2026-10-11: three private slots per player; rooms hold any number of items.
+  inventorySlots: 3,
+  // PLACEHOLDER items with no effects, so there is something to pick up.
+  startItems: [
+    { type: "wrench", room: "LABORATORY" },
+    { type: "blaster", room: "LABORATORY" },
+    { type: "medikit", room: "SICK_BAY" },
+  ],
   rooms: Object.fromEntries(SHIP_ROOMS.map((r) => [r.id, r.doors])) as Record<RoomId, RoomId[]>,
+  // Confirmed 2026-10-11: the equipment drawn in each room of the original map.
+  equipment: Object.fromEntries(SHIP_ROOMS.map((r) => [r.id, r.equipment])),
 };

@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import type PartySocket from "partysocket";
 import type { Action, GameClientMessage, GameServerMessage, PlayerView } from "@mush2/shared";
 import { InspectPanel } from "./hud/InspectPanel.tsx";
+import { InventoryPanel } from "./hud/InventoryPanel.tsx";
 import { ITrackie } from "./hud/ITrackie.tsx";
 import { TopBar } from "./hud/TopBar.tsx";
 import { gameSocket, type SeatTicket } from "./net.ts";
@@ -56,7 +57,10 @@ export function GameScreen({ ticket, onLeave }: { ticket: SeatTicket; onLeave: (
       {error && <p className="error">{error}</p>}
 
       <div className="three-panel">
-        <InspectPanel view={view} selectedId={selectedId} onClose={() => setSelectedId(null)} />
+        <div className="left-column">
+          <InspectPanel view={view} selectedId={selectedId} onClose={() => setSelectedId(null)} />
+          <InventoryPanel view={view} onAction={send} />
+        </div>
 
         <div className="world">
           {layout ? (

@@ -109,6 +109,8 @@ export interface ShipRoom {
   label: string;
   /** Rooms reachable through this room's doors, sorted. */
   doors: string[];
+  /** Equipment drawn in this room (see `placedEquipment`). */
+  equipment: { id: string; type: string }[];
 }
 
 export interface ShipLayout {
@@ -119,4 +121,34 @@ export interface ShipLayout {
   rooms: RoomLayout[];
   /** Equipment bound to a sprite wherever it appears (tiles.xml `<autoBind>`). */
   autoBind: { id: string; tile: string }[];
+}
+
+/** A piece of equipment that is drawn in a room, tied to the tile that draws it. */
+export interface PlacedEquipment {
+  /** Unique across the ship, e.g. "REFECTORY:KITCHEN" or "BEDROOM_A:bed_a_b". */
+  id: string;
+  /** Equipment type, e.g. "BED" (see equipment.ts). */
+  type: string;
+  /** Index into the room's `tiles`. */
+  tile: number;
+}
+
+/**
+ * Equipment that is actually drawn in a room. Each binding claims the next
+ * unclaimed tile with its sprite, in source order (three beds share one
+ * sprite). Bindings with no tile on the map (things built later in the
+ * original, like the Mycoscan) are left out. Used by the build tool for the
+ * rules and by the renderer for clicks, so both agree.
+ */
+export function placedEquipment(room: RoomLayout): PlacedEquipment[] {
+  const claimed = new Set<number>();
+  const result: PlacedEquipment[] = [];
+  for (const b of room.equipment) {
+    const tile = room.tiles.findIndex((t, i) => !claimed.has(i) && t.slice === b.tile);
+    const id = `${room.id}:${b.key ?? b.id}`;
+    if (tile < 0 || result.some((e) => e.id === id)) continue;
+    claimed.add(tile);
+    result.push({ id, type: b.id, tile });
+  }
+  return result;
 }

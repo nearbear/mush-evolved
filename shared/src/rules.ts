@@ -7,19 +7,27 @@
 // decisions — do not add them without confirming the rules first.
 
 import { SHIP_ROOMS } from "./config.ts";
-import { apGain, moveCost, movementRules } from "./modifiers.ts";
+import { equipmentName } from "./equipment.ts";
+import { canTransfer, itemName, itemsIn } from "./items.ts";
+import { apGain, inventorySlots, moveCost, movementRules } from "./modifiers.ts";
 import { shuffle } from "./rng.ts";
 import type {
   Action,
   ChatChannel,
+  Container,
+  Equipment,
+  EquipmentView,
   GameConfig,
   GameState,
+  ItemState,
+  ItemView,
   LogEntry,
   PlayerId,
   PlayerState,
   PlayerView,
   RoomId,
   Seat,
+  Target,
 } from "./types.ts";
 
 /** Longest chat message the rules accept. Moderation trims before this. */
@@ -51,12 +59,20 @@ export function createGame(seats: readonly Seat[], config: GameConfig, seed: num
     ready: false,
   }));
 
+  const items: ItemState[] = config.startItems.map((it, i) => ({
+    id: `item-${i + 1}`,
+    type: it.type,
+    at: { kind: "room", id: it.room },
+  }));
+
   return {
     config,
     rng,
     cycle: 1,
     phase: "playing",
     players,
+    items,
+    nextItemId: items.length + 1,
     log: [{ cycle: 1, text: "The crew wakes up aboard the ship.", visibleTo: "all" }],
     chat: [],
     nextChatId: 1,
@@ -70,7 +86,42 @@ export function legalActions(state: GameState, playerId: PlayerId): Action[] {
   if (moveCost(movementRules(state, p), p)) {
     for (const to of state.config.rooms[p.room] ?? []) actions.push({ type: "move", to });
   }
+  // Taking and dropping are free (confirmed 2026-10-11).
+  const self: Container = { kind: "player", id: p.id };
+  const here: Container = { kind: "room", id: p.room };
+  for (const item of state.items) {
+    if (canTransfer(state, p, item, self)) actions.push({ type: "take", item: item.id });
+    else if (canTransfer(state, p, item, here)) actions.push({ type: "drop", item: item.id });
+  }
+  // Examining is free and private (confirmed 2026-10-11).
+  for (const target of visibleTargets(state, p)) actions.push({ type: "examine", target });
   return actions;
+}
+
+/** Everything a player can see and so interact with: people and equipment in their room, their items and the room's. */
+export function visibleTargets(state: Readonly<GameState>, player: Readonly<PlayerState>): Target[] {
+  return [
+    ...state.players.filter((o) => o.room === player.room).map((o): Target => ({ kind: "player", id: o.id })),
+    ...(state.config.equipment[player.room] ?? []).map((e): Target => ({ kind: "equipment", id: e.id })),
+    ...itemsIn(state, { kind: "player", id: player.id }).map((i): Target => ({ kind: "item", id: i.id })),
+    ...itemsIn(state, { kind: "room", id: player.room }).map((i): Target => ({ kind: "item", id: i.id })),
+  ];
+}
+
+/** How a target is named in log text. Only called for targets the player can see. */
+function targetName(state: Readonly<GameState>, viewer: Readonly<PlayerState>, target: Target): string {
+  switch (target.kind) {
+    case "player":
+      return target.id === viewer.id ? "yourself" : (findPlayer(state, target.id)?.name ?? target.id);
+    case "equipment": {
+      const e = state.config.equipment[viewer.room]?.find((eq) => eq.id === target.id);
+      return `the ${equipmentName(e?.type ?? target.id)}`;
+    }
+    case "item": {
+      const i = state.items.find((it) => it.id === target.id);
+      return `the ${itemName(i?.type ?? target.id)}`;
+    }
+  }
 }
 
 export function applyAction(state: GameState, playerId: PlayerId, action: Action): ActionResult {
@@ -89,6 +140,20 @@ export function applyAction(state: GameState, playerId: PlayerId, action: Action
       p.room = action.to;
       logPublic(next, from, `${p.name} left for ${roomName(action.to)}.`);
       logPublic(next, action.to, `${p.name} entered from ${roomName(from)}.`);
+      break;
+    }
+    case "take":
+    case "drop": {
+      const index = next.items.findIndex((i) => i.id === action.item); // legal, so it exists
+      const [item] = next.items.splice(index, 1) as [ItemState];
+      item.at = action.type === "take" ? { kind: "player", id: p.id } : { kind: "room", id: p.room };
+      next.items.push(item); // newest arrivals list last in every container
+      const verb = action.type === "take" ? "picked up" : "dropped";
+      logPublic(next, p.room, `${p.name} ${verb} the ${itemName(item.type)}.`);
+      break;
+    }
+    case "examine": {
+      logPrivate(next, p.id, `You examine ${targetName(next, p, action.target)}.`);
       break;
     }
     case "ready": {
@@ -127,6 +192,10 @@ export function viewFor(state: GameState, playerId: PlayerId): PlayerView {
     cycle: state.cycle,
     phase: state.phase,
     rooms: state.config.rooms,
+    inventory: itemsIn(state, { kind: "player", id: you.id }).map(itemView),
+    inventorySlots: inventorySlots(state, you),
+    roomItems: itemsIn(state, { kind: "room", id: you.room }).map(itemView),
+    roomEquipment: (state.config.equipment[you.room] ?? []).map(equipmentView),
     log: state.log.filter((e) =>
       e.visibleTo === "all" ? e.room === undefined || e.room === you.room : e.visibleTo.includes(playerId),
     ),
@@ -138,6 +207,14 @@ export function viewFor(state: GameState, playerId: PlayerId): PlayerView {
     maxMorale: state.config.maxMorale,
     legalActions: legalActions(state, playerId),
   };
+}
+
+function itemView({ id, type }: ItemState): ItemView {
+  return { id, type, name: itemName(type) };
+}
+
+function equipmentView({ id, type }: Equipment): EquipmentView {
+  return { id, type, name: equipmentName(type) };
 }
 
 // ---- Room log -------------------------------------------------------------
@@ -205,6 +282,15 @@ function findPlayer(state: GameState, id: PlayerId): PlayerState | undefined {
 }
 
 function sameAction(a: Action, b: Action): boolean {
-  if (a.type !== b.type) return false;
-  return a.type !== "move" || a.to === (b as typeof a).to;
+  switch (a.type) {
+    case "move":
+      return b.type === "move" && a.to === b.to;
+    case "take":
+    case "drop":
+      return b.type === a.type && a.item === b.item;
+    case "examine":
+      return b.type === "examine" && a.target.kind === b.target.kind && a.target.id === b.target.id;
+    case "ready":
+      return b.type === "ready";
+  }
 }

@@ -66,3 +66,11 @@ AP changed from "refill to 4 each cycle" to start 8, +1 per cycle, cap 12, unspe
 
 Added four project skills, at the user's request after the assistant suggested them: `asset`, `bot`, `leak-check`, and `wrap-up`. Each one encodes a CLAUDE.md rule that's easy to skip under momentum: licensing and "skip if unsure" for art, the bot architecture rules (own-seat view, spend cap, chat as prompt injection), the hidden-information rule, and verify-then-log.
 - Turned the improvised contact-sheet script from the site-chrome session into `npm run contact-sheet` (`tools`, Playwright, no new dependencies), which the `asset` skill uses.
+
+### 2026-10-11 (inventory)
+
+Added an inventory: three private slots per player, unlimited storage per room, free `take`/`drop` actions logged as public room history (all decided by the user when asked; the request itself only gave slots and room storage).
+- Kept abstract as asked: every item lives in one `Container` (a player or a room) in `GameState.items`. `capacity()` (config `inventorySlots` folded through a new `inventorySlots` modifier hook) and `canReach()` in `shared/src/items.ts` are the single places to change slot counts or add access controls later. No access controls added.
+- Items are effect-less placeholders (Wrench, Blaster, Medikit) in `ITEM_TYPES`, placed via `config.startItems`, so the panel has something to show.
+- `viewFor` sends only your own inventory and the current room's items; tests check that other inventories, other rooms' items, and item locations never appear. Bumped `STATE_VERSION` to 5.
+- Correction during implementation: room items first listed in creation order, so a dropped item could appear above older ones. Transfers now move the item to the end of the list.

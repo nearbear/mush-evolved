@@ -41,8 +41,20 @@ export interface GameConfig {
   maxMorale: number;
   startMorale: number;
   startRoom: RoomId;
+  /** Private inventory slots per player, before modifiers. */
+  inventorySlots: number;
+  /** Items placed in rooms at the start of the game. Types come from ITEM_TYPES in items.ts. */
+  startItems: { type: string; room: RoomId }[];
   /** Adjacency list. Movement is only allowed along these edges. */
   rooms: Record<RoomId, RoomId[]>;
+  /** Fixed equipment in each room. Types come from EQUIPMENT_TYPES in equipment.ts. */
+  equipment: Record<RoomId, Equipment[]>;
+}
+
+export interface Equipment {
+  /** Unique across the ship, e.g. "REFECTORY:KITCHEN". */
+  id: string;
+  type: string;
 }
 
 export interface PlayerState extends Seat {
@@ -77,6 +89,24 @@ export interface LogEntry {
   visibleTo: "all" | PlayerId[];
 }
 
+export type ItemId = string;
+
+/** Where an item is: a player's inventory or a room's (unlimited) storage. */
+export type Container = { kind: "player"; id: PlayerId } | { kind: "room"; id: RoomId };
+
+export interface ItemState {
+  id: ItemId;
+  /** Key into ITEM_TYPES (items.ts). */
+  type: string;
+  at: Container;
+}
+
+/**
+ * Something a player can inspect and act on: a person, a piece of room
+ * equipment, or an item.
+ */
+export type Target = { kind: "player"; id: PlayerId } | { kind: "equipment"; id: string } | { kind: "item"; id: ItemId };
+
 export type ChatChannel = "global";
 
 export interface ChatMessage {
@@ -98,6 +128,9 @@ export interface GameState {
   cycle: number;
   phase: "playing" | "ended";
   players: PlayerState[];
+  /** Every item in the game, wherever it is. */
+  items: ItemState[];
+  nextItemId: number;
   log: LogEntry[];
   chat: ChatMessage[];
   nextChatId: number;
@@ -105,7 +138,24 @@ export interface GameState {
 
 export type Action =
   | { type: "move"; to: RoomId }
+  | { type: "take"; item: ItemId }
+  | { type: "drop"; item: ItemId }
+  | { type: "examine"; target: Target }
   | { type: "ready" };
+
+/** Room equipment as a client sees it. */
+export interface EquipmentView {
+  id: string;
+  type: string;
+  name: string;
+}
+
+/** An item as a client sees it. */
+export interface ItemView {
+  id: ItemId;
+  type: string;
+  name: string;
+}
 
 export interface OtherPlayerView {
   id: PlayerId;
@@ -124,6 +174,14 @@ export interface PlayerView {
   cycle: number;
   phase: GameState["phase"];
   rooms: Record<RoomId, RoomId[]>;
+  /** What you carry. Other players' inventories are never sent. */
+  inventory: ItemView[];
+  /** Your inventory size, after modifiers. */
+  inventorySlots: number;
+  /** Items stored in the room you are in. Other rooms' items are never sent. */
+  roomItems: ItemView[];
+  /** Equipment in the room you are in. */
+  roomEquipment: EquipmentView[];
   /**
    * History of the room you are in (public entries) plus every entry private
    * to you. Other rooms' public history is never sent.

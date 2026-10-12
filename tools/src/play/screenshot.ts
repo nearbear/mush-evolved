@@ -77,7 +77,13 @@ async function main(): Promise<number> {
       await page.locator(".feed li", { hasText: text }).waitFor();
     });
 
-    await step("04-moved", async () => {
+    await step("04-take", async () => {
+      const inventory = page.locator(".inventory");
+      await inventory.getByRole("button", { name: "Take" }).first().click();
+      await inventory.getByRole("button", { name: "Drop" }).first().waitFor();
+    });
+
+    await step("05-moved", async () => {
       const before = await page.locator(".room-title").innerText();
       await page.locator(".iso-sprite.door.reachable").first().dblclick({ force: true });
       await page.locator(".room-title", { hasNotText: before }).waitFor();
