@@ -231,3 +231,21 @@ export function bounds(sprites: readonly PlacedSprite[]) {
   }
   return sprites.length ? { minX, minY, width: maxX - minX, height: maxY - minY } : { minX: 0, minY: 0, width: 0, height: 0 };
 }
+
+/**
+ * Scale that fits a room box into the available space. Whole numbers (up to
+ * 3) when it fits at 1x or more, so pixels stay crisp; fractional below that,
+ * but never under `minScale` (mobile uses 1 and scrolls wide rooms sideways).
+ * Null when there's no space to measure (a hidden panel): keep the last scale.
+ */
+export function fitScale(
+  box: { width: number; height: number },
+  maxW: number,
+  maxH: number,
+  { minScale = 0 }: { minScale?: number } = {},
+): number | null {
+  if (maxW <= 0 || maxH <= 0 || box.width <= 0 || box.height <= 0) return null;
+  const fit = Math.min(maxW / box.width, maxH / box.height);
+  const scale = fit >= 1 ? Math.min(3, Math.floor(fit)) : fit;
+  return Math.max(minScale, scale);
+}

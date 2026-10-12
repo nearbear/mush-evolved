@@ -55,13 +55,27 @@ export function ITrackie({ view, onChat }: { view: PlayerView; onChat: (text: st
   );
 }
 
-/** Scroll area that sticks to the bottom when new items arrive. */
+/**
+ * Scroll area that sticks to the bottom when new items arrive, and again when
+ * it becomes visible (a hidden panel on the phone layout can't scroll).
+ */
 function Scroller({ items, children }: { items: number; children: ReactNode }) {
   const viewport = useRef<HTMLDivElement>(null);
   useEffect(() => {
     const el = viewport.current;
     if (el) el.scrollTop = el.scrollHeight;
   }, [items]);
+  useEffect(() => {
+    const el = viewport.current;
+    if (!el) return;
+    let wasHidden = el.clientHeight === 0;
+    const observer = new ResizeObserver(() => {
+      if (wasHidden && el.clientHeight > 0) el.scrollTop = el.scrollHeight;
+      wasHidden = el.clientHeight === 0;
+    });
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
   return (
     <ScrollArea.Root className="scroll-root">
       <ScrollArea.Viewport ref={viewport} className="scroll-viewport">

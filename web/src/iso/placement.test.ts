@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { RoomLayout, ShipLayout, SliceInfo } from "@mush2/shared";
 import shipLayoutJson from "../../../Mush/derived/ship-layout.json?raw";
-import { gridToPx, placeRoom, spreadActors, walkableCells } from "./placement.ts";
+import { fitScale, gridToPx, placeRoom, spreadActors, walkableCells } from "./placement.ts";
 
 const slice = (over: Partial<SliceInfo>): SliceInfo => ({
   sheet: "S",
@@ -128,5 +128,28 @@ describe("the real ship", () => {
     for (const r of ship.rooms.filter((r) => r.tiles.some((t) => t.door))) {
       expect(walkableCells(ship, r).length, r.id).toBeGreaterThan(0);
     }
+  });
+});
+
+describe("fitScale", () => {
+  const room = { width: 350, height: 220 };
+
+  it("uses whole-number scales up to 3 when the room fits", () => {
+    expect(fitScale(room, 880, 520)).toBe(2);
+    expect(fitScale(room, 5000, 5000)).toBe(3);
+    expect(fitScale(room, 400, 300)).toBe(1);
+  });
+
+  it("shrinks fractionally when the room doesn't fit", () => {
+    expect(fitScale(room, 175, 520)).toBe(0.5);
+  });
+
+  it("never goes below the minimum (mobile scrolls instead)", () => {
+    expect(fitScale({ width: 735, height: 465 }, 343, 400, { minScale: 1 })).toBe(1);
+  });
+
+  it("returns null when there is nothing to measure (hidden panel)", () => {
+    expect(fitScale(room, 0, 0)).toBeNull();
+    expect(fitScale(room, 343, 0, { minScale: 1 })).toBeNull();
   });
 });

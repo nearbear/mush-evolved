@@ -50,11 +50,16 @@ button {
   text-shadow: 0 1px 1px rgb(0 0 30 / 0.6);
   image-rendering: pixelated;
   cursor: pointer;
+  /* Taps fire at once instead of waiting to see if it's a double-tap zoom. */
+  touch-action: manipulation;
 }
-button:hover:not(:disabled) {
-  --btn-left: url("../../Mush/www/img/design/butleftover.png");
-  --btn-mid: url("../../Mush/www/img/design/butbgover.png");
-  --btn-right: url("../../Mush/www/img/design/butrightover.png");
+/* Only real hover: on touch screens :hover sticks after a tap. */
+@media (hover: hover) {
+  button:hover:not(:disabled) {
+    --btn-left: url("../../Mush/www/img/design/butleftover.png");
+    --btn-mid: url("../../Mush/www/img/design/butbgover.png");
+    --btn-right: url("../../Mush/www/img/design/butrightover.png");
+  }
 }
 button:active:not(:disabled) {
   --btn-left: url("../../Mush/www/img/design/butleft_on.gif");
@@ -141,6 +146,13 @@ h2 {
 }
 .top-bar .spacer {
   flex: 1;
+}
+.top-bar .stats {
+  display: flex;
+  gap: 0.75rem;
+}
+.cycle-under-name {
+  display: none;
 }
 .avatar {
   width: 40px;
@@ -450,8 +462,15 @@ h2 {
   border-radius: 6px;
   padding: 2.25rem 1rem 1rem;
   display: flex;
-  justify-content: center;
-  align-items: center;
+  flex-direction: column;
+  touch-action: manipulation;
+}
+/* Scrolls when the room is bigger than the panel (phones never shrink below 1x). */
+.iso-scroll {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  display: flex;
   overflow: auto;
 }
 .room-title {
@@ -462,9 +481,11 @@ h2 {
   color: #fff;
   font-size: 1rem;
 }
+/* margin: auto centres it but, unlike justify-content, still lets an overflowing room scroll to its left edge. */
 .iso-viewport {
   position: relative;
   flex: none;
+  margin: auto;
 }
 .iso-layer {
   position: absolute;
@@ -485,23 +506,28 @@ h2 {
 .iso-sprite.equipment,
 .iso-actor {
   pointer-events: auto;
+  /* Selection has its own glow; the browser's tap rectangle covers the whole sprite box. */
+  -webkit-tap-highlight-color: transparent;
 }
 .iso-sprite.equipment,
 .iso-actor {
   cursor: pointer;
 }
-.iso-sprite.equipment:hover {
-  filter: brightness(1.2);
-}
-.iso-sprite.equipment.selected,
-.iso-actor.selected {
-  filter: drop-shadow(0 0 2px #f5c542);
-}
-.iso-sprite.door.reachable {
+.iso-sprite.door {
   cursor: pointer;
 }
-.iso-sprite.door.reachable:hover {
-  filter: brightness(1.35) drop-shadow(0 0 3px var(--accent));
+@media (hover: hover) {
+  .iso-sprite.equipment:hover {
+    filter: brightness(1.2);
+  }
+  .iso-sprite.door.reachable:hover {
+    filter: brightness(1.35) drop-shadow(0 0 3px var(--accent));
+  }
+}
+.iso-sprite.equipment.selected,
+.iso-sprite.door.selected,
+.iso-actor.selected {
+  filter: drop-shadow(0 0 2px #f5c542);
 }
 .iso-tag {
   position: absolute;
@@ -625,5 +651,207 @@ h2 {
   margin-top: 4rem;
 }
 .iso-room.loading {
-  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Phone layout bits that exist in the DOM on desktop too. */
+.bottom-nav,
+.peek-bar {
+  display: none;
+}
+
+/*
+ * Phone layout. Keep the breakpoint in sync with MOBILE_QUERY in useMobile.ts.
+ * The top bar always shows; one panel at a time below it (data-panel on
+ * .three-panel picks which), then the peek bar and the bottom nav.
+ */
+@media (max-width: 1023px) {
+  main.game {
+    display: flex;
+    flex-direction: column;
+    height: 100dvh;
+    max-width: none;
+    margin: 0;
+    padding: 0;
+  }
+  main.game > .error {
+    margin: 0.25rem 0.5rem;
+  }
+
+  .top-bar {
+    flex: none;
+    flex-wrap: wrap;
+    gap: 0.35rem 0.5rem;
+    padding: 0.35rem 0.5rem;
+    border-width: 0 0 1px;
+    border-radius: 0;
+  }
+  .top-bar .avatar {
+    width: 32px;
+    height: 32px;
+  }
+  /* Name, role, and both buttons share the first row; a long name gets cut off. */
+  .top-bar .who {
+    flex: 1 1 0;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .top-bar .spacer,
+  .top-bar .character-name,
+  .top-bar .cycle,
+  .wide-only {
+    display: none;
+  }
+  .cycle-under-name {
+    display: block;
+  }
+  .top-bar button {
+    margin: 0;
+  }
+  /* Stats get their own row; HP/morale wrap below AP/MP on the narrowest phones. */
+  .top-bar .stats {
+    order: 1;
+    flex-basis: 100%;
+    flex-wrap: wrap;
+    gap: 0.25rem 0.75rem;
+  }
+  .pip-bar {
+    gap: 1px;
+  }
+
+  .three-panel {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    /* Desktop's align-items: start would let a wide room push the panel off screen. */
+    align-items: stretch;
+    margin: 0;
+    padding: 0.5rem;
+    overflow: auto;
+  }
+  .three-panel > * {
+    display: none;
+  }
+  .three-panel[data-panel="inspect"] > .left-column,
+  .three-panel[data-panel="room"] > .world,
+  .three-panel[data-panel="itrackie"] > .itrackie {
+    display: flex;
+  }
+  /* The room and the iTrackie fill the panel and scroll inside themselves. */
+  .three-panel[data-panel="room"],
+  .three-panel[data-panel="itrackie"] {
+    overflow: hidden;
+  }
+  .world {
+    flex: 1;
+    min-height: 0;
+  }
+  .iso-room {
+    flex: 1 1 0;
+    min-height: 0;
+    padding: 2rem 0.5rem 0.5rem;
+  }
+  .itrackie {
+    flex: 1;
+    min-height: 0;
+    height: auto;
+  }
+  .left-column .credits {
+    margin: 0.5rem 0 0;
+  }
+
+  .peek-bar {
+    flex: none;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.4rem 0.5rem;
+    background: var(--panel);
+    border-top: 1px solid var(--edge);
+  }
+  .peek-name {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .peek-actions {
+    display: flex;
+    gap: 0.4rem;
+  }
+  .peek-bar button {
+    margin: 0;
+  }
+
+  .bottom-nav {
+    flex: none;
+    display: flex;
+    padding-bottom: env(safe-area-inset-bottom);
+    background: var(--panel);
+    border-top: 1px solid var(--edge);
+  }
+  /* The iTrackie tab art (taboff/tabon), like the tabs inside it. */
+  .bottom-nav-button {
+    flex: 1;
+    margin: 0;
+    height: 44px;
+    border-radius: 0;
+    background: url("../../Mush/www/img/design/taboff.gif") 0 0 / 100% 100% no-repeat;
+    color: var(--muted);
+    font-size: 0.85rem;
+    text-shadow: none;
+  }
+  .bottom-nav-button[aria-current] {
+    background-image: url("../../Mush/www/img/design/tabon.gif");
+    color: #0d1424;
+    font-weight: bold;
+  }
+
+  /* Typing: give the feed and the input everything above the keyboard. */
+  main.game:has(.chat-input input:focus) :is(.bottom-nav, .peek-bar) {
+    display: none;
+  }
+}
+
+/* Phone on its side: about 390px tall, so the top bar gets one compact row. */
+@media (max-width: 1023px) and (orientation: landscape) and (max-height: 500px) {
+  .top-bar {
+    flex-wrap: nowrap;
+    padding: 0.2rem 0.5rem;
+  }
+  .top-bar .avatar {
+    width: 24px;
+    height: 24px;
+  }
+  .top-bar .stats {
+    order: 0;
+    flex-basis: auto;
+    flex-wrap: nowrap;
+  }
+  .top-bar .cycle-under-name {
+    display: none;
+  }
+  .top-bar .cycle {
+    display: inline;
+    white-space: nowrap;
+  }
+  .bottom-nav-button {
+    height: 32px;
+  }
+}
+
+/*
+ * Fingers: taller 3-slice buttons (the art stretches to the full height).
+ * Element-only specificity, so buttons with their own art and size (tabs, chat
+ * send, the big button) keep theirs.
+ */
+@media (pointer: coarse) {
+  button {
+    height: 32px;
+  }
 }

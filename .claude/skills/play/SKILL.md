@@ -1,6 +1,6 @@
 ---
 name: play
-description: Launch the game and look at it in a real (headless) browser. Use after any UI, renderer, layout, or asset change, or when asked to run, screenshot, or check the game visually. Starts the dev servers if needed, joins a match, inspects a crew member, examines equipment, sends a chat message, walks through a door, and saves screenshots to read.
+description: Launch the game and look at it in a real (headless) browser, on desktop and on a phone. Use after any UI, renderer, layout, or asset change, or when asked to run, screenshot, or check the game visually (including on mobile). Starts the dev servers if needed, joins a match as a desktop and a phone player, inspects, examines, chats, takes items, walks through doors, and saves screenshots to read.
 ---
 
 # Play the game and look at it
@@ -34,7 +34,9 @@ If a background `npm run dev` exits immediately, the ports are probably already 
 cd /home/near/mush2 && source ~/.nvm/nvm.sh && npm run screenshot
 ```
 
-`tools/src/play/screenshot.ts` joins as "Playwright" (bots fill the other seats after about 15 s), then saves to `.screenshots/` (gitignored):
+`tools/src/play/screenshot.ts` joins as "Playwright" on a 1600x1000 desktop and as "Playwright (phone)" on an emulated iPhone 13 (touch, 390x844), at the same time so both land in one match (bots fill the other seats after about 15 s). The desktop pass runs first, then the phone pass. Saves to `.screenshots/` (gitignored). `-- --only desktop` or `-- --only mobile` runs one pass.
+
+Desktop:
 
 | File | State |
 |---|---|
@@ -44,6 +46,19 @@ cd /home/near/mush2 && source ~/.nvm/nvm.sh && npm run screenshot
 | `04-chat.png` | Global chat tab with a sent message |
 | `05-take.png` | After taking an item from the room into the inventory |
 | `06-moved.png` | After double-clicking a reachable door |
+
+Phone (every phone step also fails if the page scrolls sideways):
+
+| File | State |
+|---|---|
+| `m01-room.png` | Room panel after joining; bottom nav shown, ship map absent |
+| `m02-peek-person.png` | Peek bar on another crew member (skipped if nobody else is in the room) |
+| `m03-peek-examine.png` | Equipment examined from the peek bar, then the iTrackie room log |
+| `m04-chat-focused.png` | Global chat sent with the input still focused; the nav must be hidden |
+| `m05-inspect-inventory.png` | Inspect panel with the inventory after a take (or drop) |
+| `m06-door-go.png` | After tapping a door and pressing Go in the peek bar |
+| `m07-wide-room.png` | A room wider than the phone: scrolls sideways at 1x with you in view (walks up to 6 doors to find one; skipped if none) |
+| `m08-landscape.png` | Rotated to 844x390; the top bar must be one row |
 
 A failed step saves `<name>-FAILED.png` showing the page at the moment it failed. The script exits non-zero on any failed step **or any browser console error**, and prints the errors.
 
@@ -57,11 +72,21 @@ Read the PNGs with the Read tool. **Actually look** before reporting. Check what
 - Top bar: AP (pink `pa1`) and MP (cyan `pa2`) pips match the numbers next to them.
 - Panels: inspect on the left, iTrackie tabs on the right, nothing overflowing or clipped.
 
+Phone screenshots (mobile is first-class, see CLAUDE.md rule 7):
+
+- Top bar visible in every shot: two rows in portrait (name, role, buttons; then stats), one row in landscape. Long names cut off with an ellipsis, not wrapping.
+- Bottom nav visible (except while typing), with the active panel highlighted; nothing hidden under it or the notch.
+- Iso room never below 1x: pixels crisp, doors big enough to tap. Wide rooms scroll sideways, not squeezed.
+- Peek bar shows the right name and only legal actions; Go appears only for reachable doors.
+- Touch targets look about 32px tall or more; no hover-only information.
+
+**What headless can't check:** the on-screen keyboard. iOS Safari doesn't shrink the page for it, so after a layout change near the chat input, ask the user to check it on a real phone (`npm run dev -w web -- --host`, then open the LAN address) and say it's unverified until they do.
+
 Report what you saw, including anything that looks off even if it's unrelated to the change.
 
 ## Extending the script
 
-To check a new interaction, add a `step("05-name", async () => { ... })` in `tools/src/play/screenshot.ts`. Prefer role/label locators (`getByRole`, `getByLabel`) over CSS classes where the UI exposes them. Code passed to `page.waitForFunction` runs in the browser: pass it as a string, because the `tools` package has no DOM types.
+To check a new interaction, add a `step(...)` in `desktopSteps` and, if it's something a phone player does, in `mobileSteps` (use `.tap()` and the bottom nav there; throw `Skip` when the game state can't support the step). Prefer role/label locators (`getByRole`, `getByLabel`) over CSS classes where the UI exposes them. Code passed to `page.waitForFunction` runs in the browser: pass it as a string, because the `tools` package has no DOM types.
 
 ## Setup (already done on this machine)
 

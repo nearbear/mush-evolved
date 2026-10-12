@@ -4,9 +4,7 @@
 import { CHARACTERS, type Action, type PlayerView, type Target } from "@mush2/shared";
 import { characterImage, portrait } from "../art/assets.ts";
 import { roomLabel } from "../scene/names.ts";
-import { actionsOn, resolveTarget, type Resolved } from "./targets.ts";
-
-const ACTION_LABELS: Partial<Record<Action["type"], string>> = { examine: "Examine" };
+import { actionLabel, actionsOn, resolveTarget, type Resolved } from "./targets.ts";
 
 export function InspectPanel({
   view,
@@ -39,7 +37,7 @@ export function InspectPanel({
         <div className="inspect-actions">
           {actions.map((a) => (
             <button key={a.type} onClick={() => onAction(a)}>
-              {ACTION_LABELS[a.type] ?? a.type}
+              {actionLabel(a)}
             </button>
           ))}
         </div>

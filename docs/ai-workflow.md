@@ -83,3 +83,20 @@ Made people, room equipment, and items selectable in the inspector, with "examin
 - The converter imports `shared/src/shipLayout.ts` directly instead of the package index, because the index loads `config.ts`, which reads the JSON the converter writes.
 - Character inspection now uses the full art in `Mush/www/img/art/char/*.jpg` (user's choice).
 - Bumped `STATE_VERSION` to 6 (config shape changed).
+
+### 2026-10-11 (mobile layout)
+
+Made phones a first-class target (user: "very important"). Below 1024px the game is tabbed: the top bar always shows, a bottom nav switches Inspect | Room | iTrackie (layout specified by the user), and the rest of the screen is one panel.
+- Decided by the user when asked: tapping something in the room shows a peek bar (name, legal actions, More) instead of jumping to Inspect, and the ship map is hidden on phones. With no map, the assistant made door taps open the peek bar with a Go button, since double-tap is unreliable on touch browsers.
+- The user asked the assistant to look for flaws in its own plan before building it. That review found four problems, which the user had added to the plan:
+  - Measured from the layout data, wide rooms would have shrunk to 0.47x (Motor Room) and 0.5–0.7x (corridors, bays) on a phone, breaking the pixel art and making doors too small to tap. Phones now never go below 1x and scroll wide rooms sideways, centred on you.
+  - The top bar would have taken too much of a landscape phone's height. It's now a single compact row there.
+  - iOS doesn't shrink the page for the on-screen keyboard. Added `interactive-widget=resizes-content` (Android) and hid the nav while typing. **Still unverified on a real iPhone.**
+  - A hidden panel measures 0×0, so the room must ignore that instead of scaling to nothing.
+- Panels are hidden with CSS rather than unmounted, so chat drafts and the iTrackie tab survive switching. A hidden chat feed can't scroll, so it jumps to the latest message when it becomes visible again.
+- The screenshot script now runs a phone pass (emulated iPhone 13, touch) in the same match as the desktop pass, and fails on any sideways page scroll.
+- Needed correction, caught by the phone screenshots:
+  - The nav's iTrackie button had the class `itrackie`, so it picked up the whole iTrackie panel's styles.
+  - The desktop grid's `align-items: start` let a wide room push the panel off screen instead of scrolling.
+  - The top bar wrapped to three rows until the name was allowed to shrink with an ellipsis.
+- Plan deviation: the plan said the landscape top bar would drop the role label, claiming it was visible in Inspect on yourself. It isn't, so the role stays, and it fits.

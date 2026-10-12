@@ -16,7 +16,7 @@ npm test
 npm run build          # if web/ changed
 ```
 
-- UI, CSS, asset, or renderer change: run the `play` skill and look at the screenshots.
+- UI, CSS, asset, or renderer change: run the `play` skill and look at **both** the desktop and the phone screenshots. Mobile is first-class (CLAUDE.md rule 7). If the change touches the chat input or full-height layout, say the on-screen keyboard still needs a real-phone check.
 - Rules, views, protocol, server, or bot change: run the `leak-check` skill.
 - `ship-layout` inputs changed: `npm run ship-layout` (a test fails if the derived file is stale).
 - `wrangler.jsonc` or Durable Object exports changed: `npm run types -w server`.

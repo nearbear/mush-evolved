@@ -36,3 +36,8 @@ export function resolveTarget(view: PlayerView, target: Target): Resolved | null
 export function actionsOn(view: PlayerView, target: Target): Action[] {
   return view.legalActions.filter((a) => a.type === "examine" && sameTarget(a.target, target));
 }
+
+const ACTION_LABELS: Partial<Record<Action["type"], string>> = { examine: "Examine" };
+
+/** Button text for an action aimed at a target (Inspect panel and peek bar). */
+export const actionLabel = (action: Action) => ACTION_LABELS[action.type] ?? action.type;
