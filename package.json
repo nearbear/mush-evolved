@@ -13,7 +13,8 @@
     "test": "npm run test -w shared -w tools -w web",
     "typecheck": "npm run typecheck --workspaces",
     "build": "npm run build -w web",
-    "ship-layout": "npm run ship-layout -w tools"
+    "ship-layout": "npm run ship-layout -w tools",
+    "screenshot": "npm run screenshot -w tools --"
   },
   "devDependencies": {
     "concurrently": "^10.0.5",

@@ -35,3 +35,9 @@ Three-panel layout (inspect | isometric world | iTrackie) with Base UI, AP/MP pi
 - Chat is a rules function, not an `Action`, because free text can't be listed in `legalActions`. Moderation and rate limiting are the server's job before the rules see the text; the moderation code is in `shared` so it's unit-tested.
 - Added a stored-state version so games saved in the old shape are discarded instead of crashing on missing fields.
 - Needed correction: the background dev server failed silently after a session restart had cleared `/tmp`; the smoke test then timed out. Recreated the directory and reran.
+
+### 2026-10-11 (tooling)
+
+Added Playwright (`tools`, user-approved) with `npm run screenshot`, plus two project skills: `play` (launch and visually check the game) and `rule` (ask before inventing rules, implement purely, test hidden info, record the decision).
+- What worked: the first real-browser run confirmed the three-panel UI, pip bars, inspect, chat, and door movement, which until then had only been checked with offline PNG renders and WebSocket scripts.
+- Needed the user: Chromium on WSL needed system libraries via `sudo npx playwright install-deps chromium`, which the assistant can't run (no password).

@@ -65,7 +65,7 @@ These are non-negotiable unless I say otherwise.
 - Keep a short log in `docs/ai-workflow.md` of significant decisions made with AI assistance, including what worked and what needed correction. I plan to write this up.
 - Explain tradeoffs when there is a real choice; I want to understand the code, not just receive it.
 - Ignore the files in the `docs/scratchpad` folder unless otherwise directed; they are for notes and planning, not part of the main codebase.
-- Do not generate any non-text assets or files without explicit approval.
+- Do not use AI capabilities to generate any non-text assets or files without explicit approval.
 
 ## Build order
 
@@ -87,9 +87,12 @@ Node is installed via nvm. In non-interactive shells, run `source ~/.nvm/nvm.sh`
 - `npm run typecheck`: `tsc --noEmit` in every package (TypeScript 7).
 - `npm run build`: production build of `web`.
 - `npm run ship-layout`: regenerate `Mush/derived/ship-layout.json` (renderer data) and `ship-rooms.json` (room graph for the rules) from `ShipMap.png` + `tiles.xml`. A test fails if the committed file is stale.
+- `npm run screenshot`: drive the running game in headless Chromium (Playwright) and save screenshots to `.screenshots/` (gitignored). Needs `npm run dev` running. See the `play` skill.
 - `npm run types -w server`: regenerate `server/worker-configuration.d.ts` after changing `wrangler.jsonc` or the exported Durable Object classes.
 - `npm run deploy -w server`: wrangler deploy (not yet configured or tested).
 - No linter yet.
+
+Project skills in `.claude/skills/`: `play` (launch, drive, and look at the game) and `rule` (the workflow for adding or changing a game rule).
 
 npm 11 blocks dependency install scripts by default. `esbuild` and `workerd` are approved in the root `package.json` `allowScripts`; new packages with install scripts need `npm install-scripts approve <pkg>`.
 
@@ -105,6 +108,7 @@ npm 11 blocks dependency install scripts by default. `esbuild` and `workerd` are
 - `server/src/GameRoom.ts`: one per game (`game-room/<uuid>`). The connection URL carries `?token=`, which maps to a seat. Persists state to DO storage on every change (with a `STATE_VERSION`; mismatched saves are discarded), sends each connection its own `viewFor`, runs bots with a deliberate delay, and handles chat (per-seat rate limit, then moderation, then `sendChat`).
 - `shared/src/shipLayout.ts`: types for `Mush/derived/ship-layout.json` (per-room isometric tiles, doors with targets, sprite slices, atlas sheets).
 - `tools/src/shipLayout/`: the build-time converter, with a hand-written PNG decoder and XML reader (no dependencies).
+- `tools/src/play/screenshot.ts`: Playwright script behind `npm run screenshot` (join, inspect, chat, walk through a door).
 - `shared/src/characters.ts`: cosmetic crew identities (`Seat.character`), assigned by the matchmaker. No rules effect.
 - `web/src/`: `App` (lobby, seat ticket in sessionStorage), `GameScreen` (three-panel layout, sends intents). The client never computes legality; it uses `view.legalActions`.
 - `web/src/hud/`: `TopBar` (AP/MP pip bars from `pa1.png`/`pa2.png`), `InspectPanel` (left; opens when you click a person), `ITrackie` (right; Base UI tabs for the room log and global chat).
