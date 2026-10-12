@@ -4,5 +4,7 @@ export * from "./config.ts";
 export * from "./characters.ts";
 export type * from "./shipLayout.ts";
 export * from "./rules.ts";
+export * from "./modifiers.ts";
 export * from "./protocol.ts";
+export * from "./moderation.ts";
 export * from "./bots.ts";

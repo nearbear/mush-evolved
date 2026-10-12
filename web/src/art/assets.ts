@@ -73,3 +73,11 @@ export function spriteStrip(character: CharacterId | undefined, facing: "face" |
 export function portrait(character: CharacterId | undefined): string {
   return (character && portraits[PORTRAIT_FILE[character]]) || portraits["shadow"]!;
 }
+
+const design = urls(
+  import.meta.glob<string>("../../../Mush/www/img/design/{pa1,pa2}.png", { eager: true, query: "?url", import: "default" }),
+);
+
+/** 5x5 pips from the original site: pink for action points, cyan for movement points. */
+export const AP_PIP = design["pa1"]!;
+export const MP_PIP = design["pa2"]!;

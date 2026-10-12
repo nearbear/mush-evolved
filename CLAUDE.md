@@ -18,7 +18,7 @@ This is a **vertical-slice MVP**, not a full clone. The goals are:
 
 Decided:
 
-- TypeScript everywhere; React for the web client.
+- TypeScript everywhere; React for the web client, with Base UI (`@base-ui/react`, unstyled) for widgets like tabs and scroll areas.
 - **PartyServer** (Cloudflare Durable Objects) for the realtime server, with custom authoritative rooms.
 - **Basic DOM-rendered prototype first. No three.js yet.**
 - Monorepo with `web`, `server`, and `shared` packages (the folders exist but are empty placeholders until scaffolding). Vite for the client; Vitest for tests.
@@ -97,18 +97,21 @@ npm 11 blocks dependency install scripts by default. `esbuild` and `workerd` are
 
 - `shared/src/rules.ts`: `createGame`, `applyAction`, `legalActions`, `viewFor`. State is plain JSON (it is persisted and cloned via JSON). `viewFor` is the single place hidden info is stripped; extend its tests whenever `PlayerView` grows.
 - `shared/src/config.ts`: seat count, Mush count, and AP are unconfirmed placeholders. The map is the original Daedalus (27 rooms with doors, from `Mush/derived/ship-rooms.json`); everyone starts in `LABORATORY` (confirmed).
+- `shared/src/modifiers.ts`: rule modifier registry. Players hold modifier ids; items/skills register pure hooks (today: `movement`, which adjusts MP cost and the AP-to-MP conversion). `moveCost` is the single place a move's price is computed.
+- `shared/src/moderation.ts`: `moderateChat` (normalize, strip invisible characters, remove links, mask a starter word list). Called by the server, not the rules.
 - `shared/src/protocol.ts`: wire message types plus `parse*` validators for untrusted client input.
 - `shared/src/bots.ts`: the `Bot` interface and `WanderBot` (scripted placeholder).
 - `server/src/Matchmaker.ts`: single instance (`matchmaker/global`). Queues players, sets an alarm to fill with bots after 15 s, creates a `GameRoom` via `getServerByName` and calls its `setup()` over RPC, then hands each human a secret seat token.
-- `server/src/GameRoom.ts`: one per game (`game-room/<uuid>`). The connection URL carries `?token=`, which maps to a seat. Persists state to DO storage on every change, sends each connection its own `viewFor`, and runs bots with a deliberate delay.
+- `server/src/GameRoom.ts`: one per game (`game-room/<uuid>`). The connection URL carries `?token=`, which maps to a seat. Persists state to DO storage on every change (with a `STATE_VERSION`; mismatched saves are discarded), sends each connection its own `viewFor`, runs bots with a deliberate delay, and handles chat (per-seat rate limit, then moderation, then `sendChat`).
 - `shared/src/shipLayout.ts`: types for `Mush/derived/ship-layout.json` (per-room isometric tiles, doors with targets, sprite slices, atlas sheets).
 - `tools/src/shipLayout/`: the build-time converter, with a hand-written PNG decoder and XML reader (no dependencies).
 - `shared/src/characters.ts`: cosmetic crew identities (`Seat.character`), assigned by the matchmaker. No rules effect.
-- `web/src/`: `App` (lobby, seat ticket in sessionStorage), `GameScreen` (renders the view, sends intents). The client never computes legality; it uses `view.legalActions`.
+- `web/src/`: `App` (lobby, seat ticket in sessionStorage), `GameScreen` (three-panel layout, sends intents). The client never computes legality; it uses `view.legalActions`.
+- `web/src/hud/`: `TopBar` (AP/MP pip bars from `pa1.png`/`pa2.png`), `InspectPanel` (left; opens when you click a person), `ITrackie` (right; Base UI tabs for the room log and global chat).
 - `web/src/iso/`: isometric room view in the DOM. `placement.ts` is pure (no DOM): grid projection, paint order, walkable cells, standing spots, reproducing the original Flash client. `IsoRoom.tsx` renders it, one absolutely positioned div per sprite; double-clicking a reachable door sends a move. `shipLayout.ts` fetches the layout JSON and maps atlas sheets to image URLs.
 - `web/src/scene/`: `ShipMap` (room cards, also clickable to move) and `CrewSprite`. `web/src/art/assets.ts` maps characters and room types to files in `Mush/`; `keyedSprite.ts` makes sprite backgrounds transparent at load time.
 
-Implemented rules are only movement, AP, and "ready" to advance the cycle. Infection, voting, and win conditions are intentionally absent until the rules are decided.
+Implemented rules: movement (1 MP per move; with no MP, 1 AP converts to 3 MP; MP starts at 0, cap 12, kept across cycles), AP refill on "ready", the room log, and global chat. Room log visibility: public entries are the room's history, shown to anyone in that room; private entries only ever reach the actor; secret entries become room history only if another player witnessed them (this will change). Global chat is open to everyone alive until the iTrackie exists. Infection, voting, and win conditions are intentionally absent until the rules are decided.
 
 ## Open decisions
 

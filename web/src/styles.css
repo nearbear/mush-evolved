@@ -18,7 +18,7 @@ body {
 }
 
 main {
-  max-width: 72rem;
+  max-width: 96rem;
   margin: 1rem auto;
   padding: 0 1rem;
 }
@@ -96,28 +96,191 @@ h2 {
 .role.mush {
   background: var(--mush);
 }
-.ap {
+/* AP / MP bars: the original 5x5 pips, drawn at 2x without smoothing. */
+.pip-bar {
   display: flex;
   align-items: center;
-  gap: 3px;
+  gap: 2px;
 }
-.ap i {
+.pip-label {
+  font-size: 0.7rem;
+  font-weight: bold;
+  color: var(--muted);
+  margin-right: 4px;
+}
+.pip {
   width: 10px;
-  height: 14px;
-  background: #f5c542;
-  border-radius: 2px;
+  height: 10px;
+  background: rgb(255 255 255 / 0.12);
 }
-.ap .sub {
+.pip.full {
+  background-size: 100% 100%;
+  image-rendering: pixelated;
+}
+.pip-bar .sub {
   margin-left: 0.35rem;
 }
 
-/* Room scene + log */
+/* Three panels: inspect | world | iTrackie */
 
-.stage {
+.three-panel {
   display: grid;
-  grid-template-columns: minmax(0, 3fr) minmax(14rem, 1fr);
+  grid-template-columns: 15rem minmax(0, 1fr) 20rem;
   gap: 1rem;
   margin: 1rem 0;
+  align-items: start;
+}
+.world {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  min-width: 0;
+}
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--edge);
+  border-radius: 6px;
+  padding: 0.75rem;
+}
+.panel-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.panel-head h2 {
+  margin: 0;
+}
+.close {
+  margin: 0;
+  padding: 0 0.45rem;
+  line-height: 1.4;
+}
+
+.inspect-card {
+  display: flex;
+  gap: 0.6rem;
+  align-items: center;
+  margin: 0.75rem 0;
+}
+.inspect-portrait {
+  width: 48px;
+  height: 48px;
+  image-rendering: pixelated;
+  background: rgb(0 0 0 / 0.3);
+  border-radius: 4px;
+}
+.inspect-facts {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.25rem 0.75rem;
+  margin: 0;
+  font-size: 0.85rem;
+}
+.inspect-facts dt {
+  color: var(--muted);
+}
+.inspect-facts dd {
+  margin: 0;
+}
+
+/* iTrackie (Base UI Tabs + ScrollArea; they ship unstyled) */
+
+.itrackie {
+  display: flex;
+  flex-direction: column;
+  height: 560px;
+  padding: 0;
+  overflow: hidden;
+}
+.itrackie-tabs {
+  position: relative;
+  display: flex;
+  border-bottom: 1px solid var(--edge);
+}
+.itrackie-tab {
+  flex: 1;
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  padding: 0.6rem;
+  color: var(--muted);
+}
+.itrackie-tab[data-active] {
+  color: var(--text);
+}
+.itrackie-indicator {
+  position: absolute;
+  bottom: -1px;
+  left: var(--active-tab-left);
+  width: var(--active-tab-width);
+  height: 2px;
+  background: var(--accent);
+  transition: left 0.2s, width 0.2s;
+}
+.itrackie-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  padding: 0.5rem 0.75rem 0.75rem;
+}
+.itrackie-caption {
+  margin-bottom: 0.25rem;
+}
+.scroll-root {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+}
+.scroll-viewport {
+  height: 100%;
+  overscroll-behavior: contain;
+}
+.scroll-bar {
+  width: 6px;
+  display: flex;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+.scroll-bar[data-hovering],
+.scroll-bar[data-scrolling] {
+  opacity: 1;
+}
+.scroll-thumb {
+  width: 100%;
+  border-radius: 3px;
+  background: rgb(255 255 255 / 0.25);
+}
+.feed {
+  list-style: none;
+  padding: 0 0.5rem 0 0;
+  margin: 0;
+  font-size: 0.85rem;
+}
+.feed li {
+  padding: 0.25rem 0;
+  border-bottom: 1px solid rgb(255 255 255 / 0.05);
+  overflow-wrap: anywhere;
+}
+.feed li.private {
+  font-style: italic;
+  color: var(--muted);
+}
+.feed .me {
+  color: var(--accent);
+}
+.chat-input {
+  display: flex;
+  gap: 0.4rem;
+  margin-top: 0.5rem;
+}
+.chat-input input {
+  flex: 1;
+  min-width: 0;
+}
+.chat-input button {
+  margin: 0;
 }
 
 .iso-room {
@@ -156,11 +319,18 @@ h2 {
   position: absolute;
   background-repeat: no-repeat;
   image-rendering: pixelated;
-  /* Sprite boxes overlap a lot; only doors take clicks. */
+  /* Sprite boxes overlap a lot; only doors and people take clicks. */
   pointer-events: none;
 }
-.iso-sprite.door {
+.iso-sprite.door,
+.iso-actor {
   pointer-events: auto;
+}
+.iso-actor {
+  cursor: pointer;
+}
+.iso-actor.selected {
+  filter: drop-shadow(0 0 2px #f5c542);
 }
 .iso-sprite.door.reachable {
   cursor: pointer;
@@ -179,10 +349,13 @@ h2 {
   background: rgb(0 0 0 / 0.65);
   padding: 1px 5px;
   border-radius: 3px;
-  pointer-events: none;
+  cursor: pointer;
 }
 .iso-tag.you {
   outline: 1px solid var(--accent);
+}
+.iso-tag.selected {
+  outline: 1px solid #f5c542;
 }
 .tag {
   margin-left: 4px;
@@ -211,25 +384,6 @@ h2 {
   to {
     background-position-x: calc(-192px * var(--sprite-scale));
   }
-}
-
-.log {
-  background: var(--panel);
-  border: 1px solid var(--edge);
-  border-radius: 6px;
-  padding: 0.75rem;
-  max-height: 560px;
-  overflow-y: auto;
-}
-.log ol {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  font-size: 0.85rem;
-}
-.log li {
-  padding: 0.2rem 0;
-  border-bottom: 1px solid rgb(255 255 255 / 0.05);
 }
 
 /* Ship map */

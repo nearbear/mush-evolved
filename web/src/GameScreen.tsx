@@ -3,8 +3,10 @@
 
 import { useEffect, useRef, useState } from "react";
 import type PartySocket from "partysocket";
-import { CHARACTERS, type Action, type GameServerMessage, type PlayerView } from "@mush2/shared";
-import { portrait } from "./art/assets.ts";
+import type { Action, GameClientMessage, GameServerMessage, PlayerView } from "@mush2/shared";
+import { InspectPanel } from "./hud/InspectPanel.tsx";
+import { ITrackie } from "./hud/ITrackie.tsx";
+import { TopBar } from "./hud/TopBar.tsx";
 import { gameSocket, type SeatTicket } from "./net.ts";
 import { IsoRoom } from "./iso/IsoRoom.tsx";
 import { useShipLayout } from "./iso/shipLayout.ts";
@@ -15,6 +17,8 @@ export function GameScreen({ ticket, onLeave }: { ticket: SeatTicket; onLeave: (
   const [error, setError] = useState("");
   const socketRef = useRef<PartySocket | null>(null);
   const layout = useShipLayout();
+  /** UI-only state: who the inspect panel shows. */
+  const [selectedId, setSelectedId] = useState<string | null>(null);
 
   useEffect(() => {
     const socket = gameSocket(ticket.roomId, ticket.token);
@@ -33,71 +37,48 @@ export function GameScreen({ ticket, onLeave }: { ticket: SeatTicket; onLeave: (
     return () => socket.close();
   }, [ticket, onLeave]);
 
-  const send = (action: Action) => socketRef.current?.send(JSON.stringify({ type: "action", action }));
+  const post = (msg: GameClientMessage) => socketRef.current?.send(JSON.stringify(msg));
+  const send = (action: Action) => post({ type: "action", action });
 
   if (!view) return <main className="connecting">Connecting…</main>;
   const { you } = view;
   const reachable = new Set(view.legalActions.flatMap((a) => (a.type === "move" ? [a.to] : [])));
-  const canReady = view.legalActions.some((a) => a.type === "ready");
-  const character = CHARACTERS.find((c) => c.id === you.character);
+  const move = (to: string) => send({ type: "move", to });
 
   return (
     <main className="game">
-      <header className="top-bar">
-        <img className="avatar" src={portrait(you.character)} alt="" />
-        <div>
-          <strong>{you.name}</strong>
-          {character && <div className="sub">{character.name}</div>}
-        </div>
-        <span className={`role ${you.role}`}>{you.role}</span>
-        <span className="ap" title={`${you.ap} action points`}>
-          {Array.from({ length: Math.max(you.ap, 0) }, (_, i) => (
-            <i key={i} />
-          ))}
-          <span className="sub">{you.ap} AP</span>
-        </span>
-        <span className="cycle">Cycle {view.cycle}</span>
-        <span className="spacer" />
-        <button disabled={!canReady} onClick={() => send({ type: "ready" })}>
-          {you.ready ? "Waiting for others…" : "End cycle"}
-        </button>
-        <button onClick={onLeave}>Leave</button>
-      </header>
+      <TopBar
+        view={view}
+        canReady={view.legalActions.some((a) => a.type === "ready")}
+        onReady={() => send({ type: "ready" })}
+        onLeave={onLeave}
+      />
       {error && <p className="error">{error}</p>}
 
-      <div className="stage">
-        {layout ? (
-          <IsoRoom
-            layout={layout}
-            room={you.room}
-            occupants={[you, ...view.players.filter((p) => p.room === you.room)]
-              .sort((a, b) => a.id.localeCompare(b.id))
-              .map((p) => ({ id: p.id, name: p.name, isBot: p.isBot, character: p.character, you: p.id === you.id }))}
-            reachable={reachable}
-            onMove={(to) => send({ type: "move", to })}
-          />
-        ) : (
-          <section className="iso-room">Loading ship…</section>
-        )}
-        <aside className="log">
-          <h2>Log</h2>
-          <ol reversed>
-            {[...view.log].reverse().map((entry, i) => (
-              <li key={view.log.length - i}>
-                <span className="sub">[{entry.cycle}]</span> {entry.text}
-              </li>
-            ))}
-          </ol>
-        </aside>
-      </div>
+      <div className="three-panel">
+        <InspectPanel view={view} selectedId={selectedId} onClose={() => setSelectedId(null)} />
 
-      <ShipMap
-        rooms={Object.keys(view.rooms)}
-        you={you}
-        people={[you, ...view.players]}
-        reachable={reachable}
-        onMove={(to) => send({ type: "move", to })}
-      />
+        <div className="world">
+          {layout ? (
+            <IsoRoom
+              layout={layout}
+              room={you.room}
+              occupants={[you, ...view.players.filter((p) => p.room === you.room)]
+                .sort((a, b) => a.id.localeCompare(b.id))
+                .map((p) => ({ id: p.id, name: p.name, isBot: p.isBot, character: p.character, you: p.id === you.id }))}
+              reachable={reachable}
+              selectedId={selectedId}
+              onMove={move}
+              onSelect={setSelectedId}
+            />
+          ) : (
+            <section className="iso-room">Loading ship…</section>
+          )}
+          <ShipMap rooms={Object.keys(view.rooms)} you={you} people={[you, ...view.players]} reachable={reachable} onMove={move} />
+        </div>
+
+        <ITrackie view={view} onChat={(text) => post({ type: "chat", channel: "global", text })} />
+      </div>
 
       <Credits />
     </main>

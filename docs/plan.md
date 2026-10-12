@@ -29,7 +29,7 @@ Phases that depend on these are marked below.
 7. **Combat details.** Max HP? Must the target be in the same room? Does a hit always land? What happens on death (body left, items dropped, a log line)? *(Phase 1)*
 8. **Returning to Sol.** What action or condition triggers it, who can do it, and where (bridge/command center)? Without this, humans can never win. *(Phase 1)*
 9. **iTrackie.** Does everyone start with one? Can it be dropped, stolen, or found? This decides how much of an inventory system the slice needs. *(Phase 2)*
-10. **Room log visibility.** Room speech is visible to players in the room. Are other actions (moves, hits, extract_spore) also room-only, or public ship-wide? *(Phase 2)*
+10. ~~**Room log visibility.**~~ Answered 2026-10-11: the room log is that room's history. Private actions never show to other players; secret actions are logged to the room only if another player is there to witness them (this will change). Implemented in `shared/src/rules.ts` (`logPublic`/`logPrivate`/`logSecret`).
 
 ## Phases
 

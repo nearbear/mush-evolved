@@ -1,6 +1,7 @@
 // DOM renderer for one room of the original isometric ship. Every sprite is
 // an absolutely positioned div cropped from its atlas; DOM order is paint
-// order. Presentational only: doors emit intents, legality comes from props.
+// order. Presentational only: doors emit move intents and people emit a
+// selection; legality comes from props.
 
 import { useMemo } from "react";
 import type { CharacterId, RoomId, ShipLayout } from "@mush2/shared";
@@ -26,13 +27,17 @@ export function IsoRoom({
   room,
   occupants,
   reachable,
+  selectedId,
   onMove,
+  onSelect,
 }: {
   layout: ShipLayout;
   room: RoomId;
   occupants: Occupant[];
   reachable: Set<RoomId>;
+  selectedId: string | null;
   onMove: (to: RoomId) => void;
+  onSelect: (playerId: string) => void;
 }) {
   const roomLayout = layout.rooms.find((r) => r.id === room);
   const occupantKey = occupants.map((o) => o.id).join(",");
@@ -66,7 +71,14 @@ export function IsoRoom({
             if (s.kind === "actor") {
               const o = byId.get(s.key.slice(2))!;
               return (
-                <div key={s.key} className={`iso-actor${o.you ? " you" : ""}`} style={style}>
+                <div
+                  key={s.key}
+                  className={`iso-actor${o.you ? " you" : ""}${o.id === selectedId ? " selected" : ""}`}
+                  style={style}
+                  role="button"
+                  aria-label={`Inspect ${o.name}`}
+                  onClick={() => onSelect(o.id)}
+                >
                   <CrewSprite character={o.character} />
                 </div>
               );
@@ -97,7 +109,8 @@ export function IsoRoom({
             return (
               <div
                 key={`tag:${s.key}`}
-                className={`iso-tag${o.you ? " you" : ""}`}
+                className={`iso-tag${o.you ? " you" : ""}${o.id === selectedId ? " selected" : ""}`}
+                onClick={() => onSelect(o.id)}
                 style={{ left: (s.left - box.minX + s.width / 2) * scale, top: (s.top - box.minY) * scale }}
                 title={o.name}
               >

@@ -6,7 +6,9 @@ import {
   applyAction,
   createGame,
   DEFAULT_CONFIG,
+  moderateChat,
   parseGameMessage,
+  sendChat,
   viewFor,
   WanderBot,
   type Action,
@@ -21,7 +23,14 @@ import { RateLimiter } from "./rateLimit.ts";
 /** Deliberate pacing so bots don't act instantly. */
 const BOT_DELAY_MS = 1500;
 
+/**
+ * Bump when GameState's shape changes. Games stored under another version are
+ * discarded on load (there is no migration; games are short-lived).
+ */
+const STATE_VERSION = 2;
+
 interface Stored {
+  version?: number;
   game: GameState;
   /** Seat token -> seat id. Tokens are secrets handed out by the matchmaker. */
   tokens: Record<string, PlayerId>;
@@ -37,10 +46,16 @@ export class GameRoom extends Server<Env> {
   private bots = new Map<PlayerId, Bot>();
   private pendingBots = new Set<PlayerId>();
   private limiter = new RateLimiter(10, 1000);
+  /** Per seat, not per connection, so reconnecting doesn't reset it. */
+  private chatLimiter = new RateLimiter(5, 10_000);
 
   async onStart(): Promise<void> {
     const stored = await this.ctx.storage.get<Stored>("game");
     if (!stored) return;
+    if (stored.version !== STATE_VERSION) {
+      await this.ctx.storage.deleteAll();
+      return;
+    }
     this.game = stored.game;
     this.tokens = stored.tokens;
     this.initBots();
@@ -83,8 +98,22 @@ export class GameRoom extends Server<Env> {
       this.send(connection, { type: "error", message: "Malformed message" });
       return;
     }
-    const error = await this.act(playerId, msg.action);
+    const error = msg.type === "chat" ? await this.chat(playerId, msg.text) : await this.act(playerId, msg.action);
     if (error) this.send(connection, { type: "error", message: error });
+  }
+
+  /** Untrusted text: rate limit, then moderate, then let the rules decide. */
+  private async chat(playerId: PlayerId, raw: string): Promise<string | null> {
+    if (!this.game) return "No game";
+    if (!this.chatLimiter.allow(playerId)) return "You're sending messages too quickly";
+    const moderated = moderateChat(raw);
+    if (!moderated.ok) return moderated.reason;
+    const result = sendChat(this.game, playerId, "global", moderated.text);
+    if (!result.ok) return result.error;
+    this.game = result.state;
+    await this.persist();
+    this.broadcastViews();
+    return null;
   }
 
   onClose(connection: Connection): void {
@@ -136,7 +165,7 @@ export class GameRoom extends Server<Env> {
   }
 
   private async persist(): Promise<void> {
-    if (this.game) await this.ctx.storage.put<Stored>("game", { game: this.game, tokens: this.tokens });
+    if (this.game) await this.ctx.storage.put<Stored>("game", { version: STATE_VERSION, game: this.game, tokens: this.tokens });
   }
 
   private send(connection: Connection, msg: GameServerMessage): void {

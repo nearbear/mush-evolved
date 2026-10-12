@@ -26,3 +26,12 @@ Replaced the text-only game screen with a basic 2D DOM UI using the Mush art (Cl
 - Verification that worked: cross-checked the 40 door connections against the room geometry of eMush's minimap (supplied by the user). Every door joins two rooms that touch there. Used only as a check; nothing from eMush (likely AGPL) was copied into the project.
 - Built the isometric room view in the DOM (user chose DOM over canvas). The placement math lives in a pure module ported from the Haxe client's projection and sort rules. Since the assistant has no browser, it rendered rooms to PNG offline with that same module and inspected them; this confirmed sprite centering (inferred, since the `mt.pix` library isn't in the archive), paint order, and door positions (which also matched the eMush minimap layout).
 - Needed correction: standing spots near the room's centroid put people inside the motor room's machinery, and a first fix stacked several people on one cell. Final version ranks floor by open space around it and places people greedily at least a cell apart. Walkability now follows the original `Grid.isWalkable` (door and non-decal footprints block).
+
+### 2026-10-11 (later)
+
+Three-panel layout (inspect | isometric world | iTrackie) with Base UI, AP/MP pip bars, MP movement, room log, and global chat.
+- MP rules from the user: a move costs 1 MP; with none, 1 AP becomes 3 MP; start 0, cap 12. Made extensible as asked: a modifier registry of pure hooks keyed by id, with player state holding only ids (state must stay JSON). `moveCost` is the one place a move is priced.
+- Room log rules from the user: current room's history; private actions never shown to others; secret actions become room history only with a witness. The server filters, so other rooms' history never leaves it.
+- Chat is a rules function, not an `Action`, because free text can't be listed in `legalActions`. Moderation and rate limiting are the server's job before the rules see the text; the moderation code is in `shared` so it's unit-tested.
+- Added a stored-state version so games saved in the old shape are discarded instead of crashing on missing fields.
+- Needed correction: the background dev server failed silently after a session restart had cleared `/tmp`; the smoke test then timed out. Recreated the directory and reran.

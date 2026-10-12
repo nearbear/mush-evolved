@@ -1,7 +1,8 @@
 // Wire messages between clients and the server. Everything arriving from a
 // client is untrusted: always go through the parse* functions.
 
-import type { Action, PlayerView } from "./types.ts";
+import { MAX_CHAT_LENGTH } from "./rules.ts";
+import type { Action, ChatChannel, PlayerView } from "./types.ts";
 
 export const MAX_NAME_LENGTH = 24;
 
@@ -13,7 +14,9 @@ export type MatchmakerServerMessage =
   | { type: "error"; message: string };
 
 // Game room ("game-room" party). The seat token goes in the connection URL (?token=).
-export type GameClientMessage = { type: "action"; action: Action };
+export type GameClientMessage =
+  | { type: "action"; action: Action }
+  | { type: "chat"; channel: ChatChannel; text: string };
 export type GameServerMessage =
   | { type: "view"; view: PlayerView }
   | { type: "error"; message: string };
@@ -27,6 +30,11 @@ export function parseMatchmakerMessage(raw: string): MatchmakerClientMessage | n
 
 export function parseGameMessage(raw: string): GameClientMessage | null {
   const msg = parseJson(raw);
+  if (msg?.type === "chat") {
+    // Generous bound here; moderation and the rules enforce the real limit.
+    if (msg.channel !== "global" || typeof msg.text !== "string" || msg.text.length > MAX_CHAT_LENGTH * 4) return null;
+    return { type: "chat", channel: msg.channel, text: msg.text };
+  }
   if (msg?.type !== "action" || !isRecord(msg.action)) return null;
   const a = msg.action;
   if (a.type === "ready") return { type: "action", action: { type: "ready" } };

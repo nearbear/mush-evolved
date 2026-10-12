@@ -2,8 +2,8 @@ import shipRooms from "../../Mush/derived/ship-rooms.json";
 import type { ShipRoom } from "./shipLayout.ts";
 import type { GameConfig, RoomId } from "./types.ts";
 
-// PLACEHOLDER values so the skeleton runs. Player count, Mush count, AP, and
-// costs are open decisions (see CLAUDE.md); confirm before changing rules.
+// PLACEHOLDER values so the skeleton runs. Player count, Mush count, and AP
+// are open decisions (see CLAUDE.md); confirm before changing rules.
 export const SEAT_COUNT = 8;
 
 /**
@@ -15,7 +15,8 @@ export const SHIP_ROOMS: readonly ShipRoom[] = shipRooms;
 export const DEFAULT_CONFIG: GameConfig = {
   mushCount: 2,
   apPerCycle: 4,
-  moveCost: 1,
+  // Confirmed 2026-10-11: a move costs 1 MP; with no MP, 1 AP becomes 3 MP. MP starts at 0, cap 12.
+  movement: { mpPerMove: 1, apPerConversion: 1, mpPerConversion: 3, mpCap: 12 },
   startRoom: "LABORATORY",
   rooms: Object.fromEntries(SHIP_ROOMS.map((r) => [r.id, r.doors])) as Record<RoomId, RoomId[]>,
 };
