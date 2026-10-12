@@ -87,6 +87,22 @@ export function characterImage(character: CharacterId | undefined): string | und
   return character && characterArt[PORTRAIT_FILE[character]];
 }
 
+// All 152 item icons (50x50 JPGs on the original blue tile). Not archive/: older duplicates of some names.
+const itemIcons = urls(
+  import.meta.glob<string>("../../../Mush/www/img/icons/items/*.jpg", { eager: true, query: "?url", import: "default" }),
+);
+
+/** Every item icon, keyed by file name without extension (e.g. "wrench", "fruit_banana"). */
+export const ITEM_ICONS: Readonly<Record<string, string>> = itemIcons;
+
+/** Icon for an item type. Item type ids are named after their icon files; undefined if there's none. */
+export function itemIcon(type: string): string | undefined {
+  return itemIcons[type];
+}
+
+/** The plain blue tile the original showed for an empty inventory slot. */
+export const EMPTY_SLOT_ICON = itemIcons["empty"]!;
+
 const design = urls(
   import.meta.glob<string>("../../../Mush/www/img/design/{pa1,pa2,lifebar,lifebar2}.png", { eager: true, query: "?url", import: "default" }),
 );

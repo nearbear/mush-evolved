@@ -2,6 +2,7 @@
 // appear only for actions the server listed as legal; clicking a name inspects it.
 
 import type { Action, ItemView, PlayerView, Target } from "@mush2/shared";
+import { EMPTY_SLOT_ICON, itemIcon } from "../art/assets.ts";
 import { sameTarget } from "./targets.ts";
 
 export function InventoryPanel({
@@ -21,6 +22,7 @@ export function InventoryPanel({
     const target: Target = { kind: "item", id: item.id };
     return (
       <button className={`item-name${sameTarget(selected, target) ? " selected" : ""}`} onClick={() => onSelect(target)}>
+        <img className="item-icon" src={itemIcon(item.type) ?? EMPTY_SLOT_ICON} alt="" />
         {item.name}
       </button>
     );
@@ -39,7 +41,10 @@ export function InventoryPanel({
         ))}
         {Array.from({ length: empty }, (_, i) => (
           <li key={`empty-${i}`} className="sub">
-            Empty slot
+            <span className="item-name">
+              <img className="item-icon" src={EMPTY_SLOT_ICON} alt="" />
+              Empty slot
+            </span>
           </li>
         ))}
       </ul>

@@ -284,11 +284,25 @@ h2 {
 }
 .item-list .item-name {
   all: unset;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.item-list button.item-name {
   cursor: pointer;
 }
-.item-list .item-name:hover,
-.item-list .item-name.selected {
+.item-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 3px;
+  flex: none;
+}
+.item-list button.item-name:hover,
+.item-list button.item-name.selected {
   color: #f5c542;
+}
+.item-list .item-name.selected .item-icon {
+  outline: 2px solid #f5c542;
 }
 .inspect-facts {
   display: grid;
@@ -323,7 +337,7 @@ h2 {
   justify-content: space-between;
   align-items: center;
   gap: 0.5rem;
-  min-height: 1.8rem;
+  min-height: 2.4rem;
 }
 .item-list button {
   margin: 0;
@@ -499,30 +513,22 @@ h2 {
   position: absolute;
   background-repeat: no-repeat;
   image-rendering: pixelated;
-  /* Sprite boxes overlap a lot; only doors and people take clicks. */
+  /* The viewport hit-tests drawn pixels (IsoRoom.tsx); sprite boxes overlap too much to take clicks. */
   pointer-events: none;
 }
-.iso-sprite.door,
-.iso-sprite.equipment,
-.iso-actor {
-  pointer-events: auto;
-  /* Selection has its own glow; the browser's tap rectangle covers the whole sprite box. */
+.iso-viewport {
+  /* Selection has its own glow; the browser's tap rectangle would cover the whole room. */
   -webkit-tap-highlight-color: transparent;
 }
-.iso-sprite.equipment,
-.iso-actor {
+.iso-viewport.pointing {
   cursor: pointer;
 }
-.iso-sprite.door {
-  cursor: pointer;
+/* .hover is set by hit-testing, for mouse and pen only. */
+.iso-sprite.equipment.hover {
+  filter: brightness(1.2);
 }
-@media (hover: hover) {
-  .iso-sprite.equipment:hover {
-    filter: brightness(1.2);
-  }
-  .iso-sprite.door.reachable:hover {
-    filter: brightness(1.35) drop-shadow(0 0 3px var(--accent));
-  }
+.iso-sprite.door.reachable.hover {
+  filter: brightness(1.35) drop-shadow(0 0 3px var(--accent));
 }
 .iso-sprite.equipment.selected,
 .iso-sprite.door.selected,

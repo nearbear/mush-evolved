@@ -11,7 +11,7 @@
 import { mkdirSync } from "node:fs";
 import { resolve } from "node:path";
 import { parseArgs } from "node:util";
-import { chromium, devices, type Page } from "playwright";
+import { chromium, devices, type Locator, type Page } from "playwright";
 
 const { values: args } = parseArgs({
   options: {
@@ -107,15 +107,16 @@ async function join(page: Page, name: string): Promise<void> {
 
 async function desktopSteps(page: Page, step: Step): Promise<void> {
   await step("02-inspect", async () => {
-    await page.locator(".iso-actor:not(.you)").first().click();
+    const at = await pointOn(page, page.locator(".iso-actor:not(.you)").first());
+    await page.mouse.click(at.x, at.y);
     await page.locator(".inspect .close").waitFor(); // only shown when inspecting someone else
   });
 
   await step("03-examine", async () => {
-    const equipment = page.locator(".iso-sprite.equipment").first();
-    const name = await equipment.getAttribute("title");
-    await equipment.click();
-    await page.locator(".inspect-name", { hasText: name ?? "" }).waitFor();
+    const at = await pointOn(page, page.locator(".iso-sprite.equipment").first());
+    const name = at.title;
+    await page.mouse.click(at.x, at.y);
+    await page.locator(".inspect-name", { hasText: name }).waitFor();
     await page.locator(".inspect").getByRole("button", { name: "Examine" }).click();
     await page.getByRole("tab", { name: "Room log" }).click();
     await page.getByText(`You examine the ${name}.`).waitFor();
@@ -138,7 +139,8 @@ async function desktopSteps(page: Page, step: Step): Promise<void> {
 
   await step("06-moved", async () => {
     const before = await page.locator(".room-title").innerText();
-    await page.locator(".iso-sprite.door.reachable").first().dblclick({ force: true });
+    const at = await pointOn(page, page.locator(".iso-sprite.door.reachable").first());
+    await page.mouse.dblclick(at.x, at.y);
     await page.locator(".room-title", { hasNotText: before }).waitFor();
     await waitForArt(page);
     console.log(`      ${before} -> ${await page.locator(".room-title").innerText()}`);
@@ -159,15 +161,16 @@ async function mobileSteps(page: Page, step: Step): Promise<void> {
   await step("m02-peek-person", async () => {
     const other = page.locator(".iso-actor:not(.you)");
     if (!(await other.count())) throw new Skip("nobody else in the room");
-    await other.first().tap();
+    const at = await pointOn(page, other.first());
+    await page.touchscreen.tap(at.x, at.y);
     await peek.getByRole("button", { name: "More" }).waitFor();
   });
 
   await step("m03-peek-examine", async () => {
-    const equipment = page.locator(".iso-sprite.equipment").first();
-    const name = await equipment.getAttribute("title");
-    await equipment.tap({ force: true });
-    await peek.getByText(name ?? "").waitFor();
+    const at = await pointOn(page, page.locator(".iso-sprite.equipment").first());
+    const name = at.title;
+    await page.touchscreen.tap(at.x, at.y);
+    await peek.getByText(name).waitFor();
     await peek.getByRole("button", { name: "Examine" }).tap();
     await nav("iTrackie");
     await page.getByRole("tab", { name: "Room log" }).tap();
@@ -226,11 +229,42 @@ async function mobileSteps(page: Page, step: Step): Promise<void> {
 /** Tap the first reachable door, then Go in the peek bar; waits for the new room. */
 async function walkThroughDoor(page: Page): Promise<void> {
   const before = await page.locator(".room-title").innerText();
-  await page.locator(".iso-sprite.door.reachable").first().tap({ force: true });
+  const at = await pointOn(page, page.locator(".iso-sprite.door.reachable").first());
+  await page.touchscreen.tap(at.x, at.y);
   await page.locator(".peek-bar").getByRole("button", { name: "Go" }).tap();
   await page.locator(".room-title", { hasNotText: before }).waitFor();
   await waitForArt(page);
   console.log(`      ${before} -> ${await page.locator(".room-title").innerText()}`);
+}
+
+/**
+ * A point where the room's hit-testing lands on this sprite: sprites don't
+ * take pointer events themselves, and their box centers can be transparent or
+ * covered. Moves the mouse over a grid (center first) until the sprite gets
+ * the `.hover` class, and returns the point plus the hover title (its name).
+ */
+async function pointOn(page: Page, sprite: Locator): Promise<{ x: number; y: number; title: string }> {
+  await sprite.scrollIntoViewIfNeeded();
+  const box = (await sprite.boundingBox()) ?? fail("sprite has no box");
+  const steps = 8;
+  const points: { x: number; y: number }[] = [];
+  for (let i = 0; i <= steps; i++) {
+    for (let j = 0; j <= steps; j++) points.push({ x: box.x + (box.width * i) / steps, y: box.y + (box.height * j) / steps });
+  }
+  const center = { x: box.x + box.width / 2, y: box.y + box.height / 2 };
+  points.sort((a, b) => Math.hypot(a.x - center.x, a.y - center.y) - Math.hypot(b.x - center.x, b.y - center.y));
+  for (const p of points) {
+    await page.mouse.move(p.x, p.y);
+    if (await sprite.evaluate((el) => el.classList.contains("hover"))) {
+      const title = (await page.locator(".iso-viewport").getAttribute("title")) ?? "";
+      return { ...p, title };
+    }
+  }
+  return fail("no visible pixel of the sprite is hit-testable");
+}
+
+function fail(message: string): never {
+  throw new Error(message);
 }
 
 /** Phones must never scroll the whole page sideways. */

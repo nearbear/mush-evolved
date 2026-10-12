@@ -101,3 +101,16 @@ Made phones a first-class target (user: "very important"). Below 1024px the game
   - The top bar wrapped to three rows until the name was allowed to shrink with an ellipsis.
 - Plan deviation: the plan said the landscape top bar would drop the role label, claiming it was visible in Inspect on yourself. It isn't, so the role stays, and it fits.
 - Follow-up (user): 360px is the minimum width to support. The phone pass now defaults to a 360x740 device (Galaxy S8), and landscape rotates whichever device is used. At 360px, the HP/morale stack wrapped below AP/MP and the top bar was 122px tall. Measured the elements in the browser instead of guessing, then trimmed spacing (gaps, label columns, value margins, side padding) without resizing the pixel-art pips. The stats now fit on one row (bar 85px), and the "Morale" label column was widened to its measured 43px so the HP and morale pips line up. In landscape, the cycle now sits under the name, as in portrait, which gives the name about 70px more.
+
+### 2026-10-11 (pixel hit detection)
+
+Replaced bounding-box clicks in the isometric room with hit detection on drawn pixels (user's request, after the assistant flagged that a big sprite like the cryo module blocked clicks on people behind it).
+- Sprites no longer take pointer events. The viewport converts the pointer to room pixels and calls `hitTest`, a pure function that walks sprites in reverse paint order and returns the first one opaque at that point. Any opaque sprite blocks, interactive or not, so you click what you see. Hover (mouse/pen only) uses the same path and sets a `.hover` class and the tooltip.
+- Alpha comes from `hitMask.ts`: each frame is drawn into a frame-sized canvas once and cached as a mask (the largest atlas is about 5600x4500, too big to read whole). Crew strips are color-keyed like `keyedSprite.ts`. Pixels under alpha 64 don't count, so soft shadows click through. Until an image loads, its sprite falls back to its box.
+- The screenshot script can't click element centers any more, since centers may be transparent or covered. Its `pointOn` helper moves the mouse over the sprite until hit-testing marks it hovered, then clicks or taps there, so the script exercises the real hit path. A one-off probe found about half of the cryo module's box now falls through.
+
+### 2026-10-11 (item icons)
+
+Made all 152 icons in `Mush/www/img/icons/items/` available (`ITEM_ICONS`, `itemIcon(type)` in `web/src/art/assets.ts`) and showed them in the inventory panel, as the user asked.
+- Item type ids already match icon file names (`wrench`, `blaster`, `medikit`), so the lookup is by type with no mapping table. `empty.jpg` is the bare blue slot tile, used for empty slots. Skipped `archive/`: older versions whose names collide with the main set.
+- Needed a correction: Vite inlines files under 4 KB as base64, and the icons are about 2 KB each, so the JS bundle doubled (449 KB to 925 KB). `web/vite.config.ts` now never inlines files from `Mush/`, and the bundle dropped to 326 KB because other small Mush art had been inlined too.

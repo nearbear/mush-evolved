@@ -249,3 +249,25 @@ export function fitScale(
   const scale = fit >= 1 ? Math.min(3, Math.floor(fit)) : fit;
   return Math.max(minScale, scale);
 }
+
+/**
+ * The topmost sprite with an opaque pixel at (x, y), in the same room-pixel
+ * space as `left`/`top`. `sprites` must be in paint order (as `placeRoom`
+ * returns them), so anything drawn in front, interactive or not, wins.
+ * `opaque` gets the pixel in the sprite's source frame, with flips undone.
+ */
+export function hitTest<S extends Pick<PlacedSprite, "left" | "top" | "width" | "height" | "flipX" | "flipY">>(
+  sprites: readonly S[],
+  x: number,
+  y: number,
+  opaque: (sprite: S, px: number, py: number) => boolean,
+): S | undefined {
+  for (let i = sprites.length - 1; i >= 0; i--) {
+    const s = sprites[i]!;
+    const lx = Math.floor(x - s.left);
+    const ly = Math.floor(y - s.top);
+    if (lx < 0 || ly < 0 || lx >= s.width || ly >= s.height) continue;
+    if (opaque(s, s.flipX ? s.width - 1 - lx : lx, s.flipY ? s.height - 1 - ly : ly)) return s;
+  }
+  return undefined;
+}

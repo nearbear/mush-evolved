@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { RoomLayout, ShipLayout, SliceInfo } from "@mush2/shared";
 import shipLayoutJson from "../../../Mush/derived/ship-layout.json?raw";
-import { fitScale, gridToPx, placeRoom, spreadActors, walkableCells } from "./placement.ts";
+import { fitScale, gridToPx, hitTest, placeRoom, spreadActors, walkableCells } from "./placement.ts";
 
 const slice = (over: Partial<SliceInfo>): SliceInfo => ({
   sheet: "S",
@@ -151,5 +151,29 @@ describe("fitScale", () => {
   it("returns null when there is nothing to measure (hidden panel)", () => {
     expect(fitScale(room, 0, 0)).toBeNull();
     expect(fitScale(room, 343, 0, { minScale: 1 })).toBeNull();
+  });
+});
+
+describe("hitTest", () => {
+  // Two 10x10 sprites in paint order; the front one is only opaque in its left half.
+  const back = { key: "back", left: 0, top: 0, width: 10, height: 10, flipX: false, flipY: false };
+  const front = { key: "front", left: 5, top: 0, width: 10, height: 10, flipX: false, flipY: false };
+  const leftHalf = (s: { key: string }, px: number) => s.key === "back" || px < 5;
+
+  it("picks the frontmost sprite that is opaque under the point", () => {
+    expect(hitTest([back, front], 7, 5, leftHalf)?.key).toBe("front");
+  });
+
+  it("falls through transparent pixels to what is behind", () => {
+    expect(hitTest([back, front], 3, 5, leftHalf)?.key).toBe("back");
+    // In front's box, but its right half is transparent and back doesn't reach that far.
+    expect(hitTest([back, front], 12, 5, leftHalf)).toBeUndefined();
+  });
+
+  it("reads flipped sprites mirrored", () => {
+    const flipped = { ...front, flipX: true };
+    // Drawn mirrored, so the opaque half is now on screen right.
+    expect(hitTest([flipped], 12, 5, leftHalf)?.key).toBe("front");
+    expect(hitTest([flipped], 7, 5, leftHalf)).toBeUndefined();
   });
 });

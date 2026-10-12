@@ -2,14 +2,20 @@
 // an absolutely positioned div cropped from its atlas; DOM order is paint
 // order. Presentational only: doors emit move intents, and people and
 // equipment emit a selection; legality comes from props.
+//
+// Sprites don't take pointer events themselves: their boxes overlap a lot.
+// The viewport hit-tests against the pixels actually drawn (hitTest + hitMask),
+// so a click lands on whatever is visibly under the pointer.
 
-import { useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState, type MouseEvent, type PointerEvent } from "react";
 import { placedEquipment, type CharacterId, type EquipmentView, type RoomId, type ShipLayout, type Target } from "@mush2/shared";
 import { sameTarget } from "../hud/targets.ts";
+import { spriteStrip } from "../art/assets.ts";
 import { CrewSprite } from "../scene/CrewSprite.tsx";
 import { roomLabel } from "../scene/names.ts";
 import { atlasUrl } from "./shipLayout.ts";
-import { bounds, fitScale, placeRoom, spreadActors, walkableCells } from "./placement.ts";
+import { opaqueAt, preloadImage } from "./hitMask.ts";
+import { bounds, fitScale, hitTest, placeRoom, spreadActors, walkableCells, type PlacedSprite } from "./placement.ts";
 
 export interface Occupant {
   id: string;
@@ -111,16 +117,84 @@ export function IsoRoom({
     );
   }, [roomLayout, equipment]);
 
-  if (!roomLayout) return <section className="iso-room missing">No map for {roomLabel(room)}</section>;
   const byId = new Map(occupants.map((o) => [o.id, o]));
+  /** The image a sprite's pixels come from, and whether its background is color-keyed. */
+  const source = (s: PlacedSprite): { url: string | undefined; keyed: boolean } =>
+    s.kind === "actor"
+      ? { url: spriteStrip(byId.get(s.key.slice(2))?.character, "face"), keyed: true }
+      : { url: atlasUrl(layout, s.sheet), keyed: false };
+
+  // Load every image this room hit-tests against, so masks are ready by the first click.
+  useEffect(() => {
+    for (const s of sprites) {
+      const url = source(s).url;
+      if (url) preloadImage(url);
+    }
+  }, [sprites]);
+
+  const [hoverKey, setHoverKey] = useState<string | null>(null);
+
+  if (!roomLayout) return <section className="iso-room missing">No map for {roomLabel(room)}</section>;
   const isSelected = (kind: Target["kind"], id: string) => sameTarget(selected, { kind, id } as Target);
+
+  /** What a sprite does when clicked, or null for scenery. */
+  const interaction = (s: PlacedSprite) => {
+    if (s.kind === "actor") {
+      const o = byId.get(s.key.slice(2));
+      return o ? { kind: "person" as const, person: o, title: o.name } : null;
+    }
+    if (s.door) return { kind: "door" as const, to: s.door.target, title: roomLabel(s.door.target) };
+    const eq = equipmentByKey.get(s.key);
+    return eq ? { kind: "equipment" as const, equipment: eq, title: eq.name } : null;
+  };
+
+  /** The interactive sprite visibly under the pointer, if any. Scenery in front blocks what's behind it. */
+  const pick = (e: MouseEvent<HTMLElement>) => {
+    if ((e.target as Element).closest(".iso-tag")) return null; // name tags handle their own clicks
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = (e.clientX - rect.left) / scale + box.minX;
+    const y = (e.clientY - rect.top) / scale + box.minY;
+    const hit = hitTest(sprites, x, y, (s, px, py) => {
+      const { url, keyed } = source(s);
+      return !url || opaqueAt(url, s.kind === "actor" ? { sx: 0, sy: 0, width: 32, height: 48 } : s, px, py, keyed);
+    });
+    const action = hit && interaction(hit);
+    return hit && action ? { sprite: hit, ...action } : null;
+  };
+
+  const onClick = (e: MouseEvent<HTMLDivElement>) => {
+    const hit = pick(e);
+    if (hit?.kind === "person") onSelect({ kind: "player", id: hit.person.id });
+    else if (hit?.kind === "equipment") onSelect({ kind: "equipment", id: hit.equipment.id });
+    else if (hit?.kind === "door") onDoorTap(hit.to);
+  };
+  const onDoubleClick = (e: MouseEvent<HTMLDivElement>) => {
+    const hit = pick(e);
+    if (hit?.kind === "door" && reachable.has(hit.to)) onMove(hit.to);
+  };
+  // Hover feedback only for real pointers; touch has no hover.
+  const onPointerMove = (e: PointerEvent<HTMLDivElement>) => {
+    if (e.pointerType === "touch") return;
+    const key = pick(e)?.sprite.key ?? null;
+    if (key !== hoverKey) setHoverKey(key);
+  };
+  const hovered = sprites.find((s) => s.key === hoverKey);
+  const hoverTitle = hovered && interaction(hovered)?.title;
 
   return (
     <section className="iso-room">
       <h2 className="room-title">{roomLabel(room)}</h2>
       {/* The scroller is separate so the title stays put when a wide room scrolls. */}
       <div className="iso-scroll" ref={scrollRef}>
-        <div className="iso-viewport" style={{ width: box.width * scale, height: box.height * scale }}>
+        <div
+          className={`iso-viewport${hovered ? " pointing" : ""}`}
+          style={{ width: box.width * scale, height: box.height * scale }}
+          title={hoverTitle}
+          onClick={onClick}
+          onDoubleClick={onDoubleClick}
+          onPointerMove={onPointerMove}
+          onPointerLeave={() => setHoverKey(null)}
+        >
           <div className="iso-layer" style={{ transform: `scale(${scale})` }}>
             {sprites.map((s) => {
               const style = {
@@ -134,11 +208,8 @@ export function IsoRoom({
                 return (
                   <div
                     key={s.key}
-                    className={`iso-actor${o.you ? " you" : ""}${isSelected("player", o.id) ? " selected" : ""}`}
+                    className={`iso-actor${o.you ? " you" : ""}${isSelected("player", o.id) ? " selected" : ""}${s.key === hoverKey ? " hover" : ""}`}
                     style={style}
-                    role="button"
-                    aria-label={`Inspect ${o.name}`}
-                    onClick={() => onSelect({ kind: "player", id: o.id })}
                   >
                     <CrewSprite character={o.character} />
                   </div>
@@ -149,21 +220,17 @@ export function IsoRoom({
               const eq = equipmentByKey.get(s.key);
               const eqClass = eq ? ` equipment${isSelected("equipment", eq.id) ? " selected" : ""}` : "";
               const doorClass = door ? ` door${door.target === selectedDoor ? " selected" : ""}` : "";
+              const hoverClass = s.key === hoverKey ? " hover" : "";
               return (
                 <div
                   key={s.key}
-                  className={`iso-sprite${doorClass}${canGo ? " reachable" : ""}${eqClass}`}
+                  className={`iso-sprite${doorClass}${canGo ? " reachable" : ""}${eqClass}${hoverClass}`}
                   style={{
                     ...style,
                     backgroundImage: `url(${atlasUrl(layout, s.sheet)})`,
                     backgroundPosition: `${-s.sx}px ${-s.sy}px`,
                     transform: s.flipX || s.flipY ? `scale(${s.flipX ? -1 : 1}, ${s.flipY ? -1 : 1})` : undefined,
                   }}
-                  title={door ? `${roomLabel(door.target)}${canGo ? " (double-click to go)" : ""}` : eq?.name}
-                  {...(eq && { role: "button", "aria-label": `Inspect ${eq.name}` })}
-                  {...(door && { role: "button", "aria-label": `Door to ${roomLabel(door.target)}` })}
-                  onClick={door ? () => onDoorTap(door.target) : eq ? () => onSelect({ kind: "equipment", id: eq.id }) : undefined}
-                  onDoubleClick={door && canGo ? () => onMove(door.target) : undefined}
                 />
               );
             })}
