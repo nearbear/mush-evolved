@@ -35,10 +35,10 @@ function Lobby({ onMatched }: { onMatched: (ticket: SeatTicket) => void }) {
   }, [queued, name, onMatched]);
 
   return (
-    <main>
+    <main className="lobby">
       <h1>mush2</h1>
       {queued ? (
-        <p>{status || "Connecting…"}</p>
+        <p className="loading">{status || "Connecting…"}</p>
       ) : (
         <form
           onSubmit={(e) => {
@@ -47,7 +47,9 @@ function Lobby({ onMatched }: { onMatched: (ticket: SeatTicket) => void }) {
           }}
         >
           <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Your name" maxLength={24} />
-          <button type="submit">Find game</button>
+          <button className="big" type="submit">
+            Find game
+          </button>
         </form>
       )}
     </main>

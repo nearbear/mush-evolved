@@ -22,7 +22,6 @@ export function ITrackie({ view, onChat }: { view: PlayerView; onChat: (text: st
         <Tabs.Tab className="itrackie-tab" value="global">
           Global chat
         </Tabs.Tab>
-        <Tabs.Indicator className="itrackie-indicator" />
       </Tabs.List>
 
       <Tabs.Panel className="itrackie-panel" value="room">
@@ -95,9 +94,7 @@ function ChatInput({ enabled, onSend }: { enabled: boolean; onSend: (text: strin
         disabled={!enabled}
         aria-label="Global chat message"
       />
-      <button type="submit" disabled={!enabled || !text.trim()}>
-        Send
-      </button>
+      <button className="chat-send" type="submit" disabled={!enabled || !text.trim()} aria-label="Send" title="Send" />
     </form>
   );
 }

@@ -22,11 +22,11 @@ Phases that depend on these are marked below.
 
 1. **Mush selection timing.** What triggers it: a fixed day/cycle, a config value, or something else? Before selection, is everyone human with no spore actions? *(Phase 1)*
 2. **Late joiners and bots.** If selection happens on a later day, can players join a game already running? Do bots still fill empty seats, and do bots count toward the "8 or fewer" rule? Can bots be Mush? *(Phases 1, 3)*
-3. **Cycle numbers.** How many hours per cycle, how much AP per refill, the AP cap, and cycles per day? eMush uses 3-hour cycles, 8 per day, +1 AP per cycle, 12 AP cap. Is that the intent? *(Phase 1)*
+3. **Cycle numbers.** How many hours per cycle, how much AP per refill, the AP cap, and cycles per day? eMush uses 3-hour cycles, 8 per day, +1 AP per cycle, 12 AP cap. Is that the intent? *(Phase 1. AP answered 2026-10-11: start 8, +1 per cycle (+2 lying in a bed), cap 12, carries over. Cycle length and cycles per day still open.)*
 4. **What spores do.** How does a Mush use a spore to infect a human: action name, AP cost, same room? How many spores convert a human, and does the target notice? *(Phase 1, the biggest gap)*
 5. **Who can extract, and the daily limit.** Is `extract_spore` Mush-only? What is the daily number, and is it ship-wide or per Mush? *(Phase 1)*
 6. **Dirty status.** Does it do anything yet (for example, visible to others in the room), or is it just a flag for now? How is it removed? *(Phase 1)*
-7. **Combat details.** Max HP? Must the target be in the same room? Does a hit always land? What happens on death (body left, items dropped, a log line)? *(Phase 1)*
+7. **Combat details.** Max HP? *(Answered 2026-10-11: max 14 HP, start 14; morale max 14, start 7; both private to their owner. Nothing changes them yet.)* Must the target be in the same room? Does a hit always land? What happens on death (body left, items dropped, a log line)? *(Phase 1)*
 8. **Returning to Sol.** What action or condition triggers it, who can do it, and where (bridge/command center)? Without this, humans can never win. *(Phase 1)*
 9. **iTrackie.** Does everyone start with one? Can it be dropped, stolen, or found? This decides how much of an inventory system the slice needs. *(Phase 2)*
 10. ~~**Room log visibility.**~~ Answered 2026-10-11: the room log is that room's history. Private actions never show to other players; secret actions are logged to the room only if another player is there to witness them (this will change). Implemented in `shared/src/rules.ts` (`logPublic`/`logPrivate`/`logSecret`).

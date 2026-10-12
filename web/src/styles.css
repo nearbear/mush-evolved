@@ -10,11 +10,16 @@
   color-scheme: dark;
 }
 
+/* Page backgrounds from the original site: bg_start behind the lobby, bg in game. */
 body {
   font-family: system-ui, sans-serif;
-  background: var(--bg);
+  background: var(--bg) url("../../Mush/www/img/design/bg.jpg") center top / cover no-repeat fixed;
   color: var(--text);
   margin: 0;
+  min-height: 100vh;
+}
+body:has(.lobby) {
+  background-image: url("../../Mush/www/img/design/bg_start.jpg");
 }
 
 main {
@@ -23,18 +28,62 @@ main {
   padding: 0 1rem;
 }
 
+/*
+ * The original site's 3-slice button (5px caps + a 1px middle stretched to fit),
+ * with its hover (*over) and pressed (*_on) variants. Components that aren't
+ * plain buttons (tabs, map rooms) replace the whole background.
+ */
 button {
+  --btn-left: url("../../Mush/www/img/design/butleft.png");
+  --btn-mid: url("../../Mush/www/img/design/butbg.png");
+  --btn-right: url("../../Mush/www/img/design/butright.png");
   margin: 0.25rem;
-  background: var(--panel);
-  color: var(--text);
-  border: 1px solid var(--edge);
-  border-radius: 4px;
-  padding: 0.35rem 0.75rem;
+  height: 21px;
+  background:
+    var(--btn-left) left / 5px 100% no-repeat,
+    var(--btn-right) right / 5px 100% no-repeat,
+    var(--btn-mid) center / calc(100% - 10px) 100% no-repeat;
+  color: #fff;
+  border: 0;
+  padding: 0 0.75rem;
+  font-size: 0.8rem;
+  text-shadow: 0 1px 1px rgb(0 0 30 / 0.6);
+  image-rendering: pixelated;
   cursor: pointer;
+}
+button:hover:not(:disabled) {
+  --btn-left: url("../../Mush/www/img/design/butleftover.png");
+  --btn-mid: url("../../Mush/www/img/design/butbgover.png");
+  --btn-right: url("../../Mush/www/img/design/butrightover.png");
+}
+button:active:not(:disabled) {
+  --btn-left: url("../../Mush/www/img/design/butleft_on.gif");
+  --btn-mid: url("../../Mush/www/img/design/butbg_on.gif");
+  --btn-right: url("../../Mush/www/img/design/butright_on.gif");
 }
 button:disabled {
   cursor: default;
   opacity: 0.6;
+}
+/* The larger 40px variant (35px bevelled caps), for the lobby's main call to action. */
+button.big {
+  --btn-left: url("../../Mush/www/img/design/but2left.png");
+  --btn-mid: url("../../Mush/www/img/design/but2bg.png");
+  --btn-right: url("../../Mush/www/img/design/but2right.png");
+  height: 40px;
+  padding: 0 2.5rem;
+  font-size: 1rem;
+  font-weight: bold;
+  background:
+    var(--btn-left) left / 35px 100% no-repeat,
+    var(--btn-right) right / 35px 100% no-repeat,
+    var(--btn-mid) center / calc(100% - 70px) 100% no-repeat;
+}
+button.big:hover:not(:disabled),
+button.big:active:not(:disabled) {
+  --btn-left: url("../../Mush/www/img/design/but2leftover.png");
+  --btn-mid: url("../../Mush/www/img/design/but2bgover.png");
+  --btn-right: url("../../Mush/www/img/design/but2rightover.png");
 }
 
 input {
@@ -60,6 +109,19 @@ h2 {
 .sub {
   color: var(--muted);
   font-size: 0.8rem;
+}
+
+/* The original loading spinner, above any "Connecting…"-style message. */
+.loading::before {
+  content: "";
+  display: block;
+  width: 64px;
+  height: 64px;
+  margin: 0 0 0.5rem;
+  background: url("../../Mush/www/img/design/loading51.gif") center / contain no-repeat;
+}
+.connecting.loading::before {
+  margin-inline: auto;
 }
 
 .error {
@@ -119,6 +181,20 @@ h2 {
 }
 .pip-bar .sub {
   margin-left: 0.35rem;
+}
+.pip-bar.thin .pip {
+  width: 6px;
+}
+/* Two pip bars on top of each other, labels in one column so the pips line up. */
+.stat-stack {
+  display: grid;
+  gap: 3px;
+}
+.stat-stack .pip-label {
+  min-width: 1.4rem;
+}
+.stat-stack .thin .pip-label {
+  min-width: 2.9rem;
 }
 
 /* Three panels: inspect | world | iTrackie */
@@ -197,26 +273,27 @@ h2 {
   display: flex;
   border-bottom: 1px solid var(--edge);
 }
+/* The original iTrackie's tab art (taboff/tabon, 31x24), stretched to fit a label. */
 .itrackie-tab {
   flex: 1;
   margin: 0;
+  height: 24px;
   border: 0;
   border-radius: 0;
-  background: none;
-  padding: 0.6rem;
+  background: url("../../Mush/www/img/design/taboff.gif") 0 0 / 100% 100% no-repeat;
+  padding: 0 0.6rem;
   color: var(--muted);
+  text-shadow: none;
 }
-.itrackie-tab[data-active] {
+.itrackie-tab:hover:not(:disabled),
+.itrackie-tab:active:not(:disabled) {
   color: var(--text);
 }
-.itrackie-indicator {
-  position: absolute;
-  bottom: -1px;
-  left: var(--active-tab-left);
-  width: var(--active-tab-width);
-  height: 2px;
-  background: var(--accent);
-  transition: left 0.2s, width 0.2s;
+.itrackie-tab[data-active],
+.itrackie-tab[data-active]:hover {
+  background-image: url("../../Mush/www/img/design/tabon.gif");
+  color: #0d1424;
+  font-weight: bold;
 }
 .itrackie-panel {
   flex: 1;
@@ -275,12 +352,34 @@ h2 {
   gap: 0.4rem;
   margin-top: 0.5rem;
 }
+.chat-input {
+  align-items: center;
+}
+/* chatbox.png is the original chat field (194x24), stretched to the panel. */
 .chat-input input {
   flex: 1;
   min-width: 0;
+  height: 24px;
+  box-sizing: border-box;
+  border: 0;
+  border-radius: 0;
+  background: url("../../Mush/www/img/design/chatbox.png") 0 0 / 100% 100% no-repeat;
+  color: #0d1424;
 }
-.chat-input button {
+.chat-input input:disabled {
+  opacity: 0.6;
+}
+/* The original send button: an enter-key icon, 29x24. */
+.chat-input .chat-send {
+  flex: none;
   margin: 0;
+  width: 29px;
+  height: 24px;
+  padding: 0;
+  background: url("../../Mush/www/img/design/buttonchat.png") 0 0 / 100% 100% no-repeat;
+}
+.chat-input .chat-send:hover:not(:disabled) {
+  background-image: url("../../Mush/www/img/design/buttonchatover.png");
 }
 
 .iso-room {
@@ -398,6 +497,9 @@ h2 {
   margin: 0;
   padding: 0;
   height: 94px;
+  /* Rooms without art; the inline room image replaces this. */
+  background-image: none;
+  background-color: var(--panel);
   background-size: cover;
   background-position: center;
   border: 2px solid var(--edge);
@@ -453,4 +555,9 @@ h2 {
 
 .connecting {
   color: var(--muted);
+  text-align: center;
+  margin-top: 4rem;
+}
+.iso-room.loading {
+  flex-direction: column;
 }

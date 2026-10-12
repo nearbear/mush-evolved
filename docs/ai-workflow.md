@@ -41,3 +41,28 @@ Three-panel layout (inspect | isometric world | iTrackie) with Base UI, AP/MP pi
 Added Playwright (`tools`, user-approved) with `npm run screenshot`, plus two project skills: `play` (launch and visually check the game) and `rule` (ask before inventing rules, implement purely, test hidden info, record the decision).
 - What worked: the first real-browser run confirmed the three-panel UI, pip bars, inspect, chat, and door movement, which until then had only been checked with offline PNG renders and WebSocket scripts.
 - Needed the user: Chromium on WSL needed system libraries via `sudo npx playwright install-deps chromium`, which the assistant can't run (no password).
+
+### 2026-10-11 (site chrome)
+
+Skinned the existing UI with images from `Mush/www/img/design/` (asked: use as many as possible, infer placement, skip anything unsure).
+- No CSS or templates survived in the archive, so placement was inferred from file names, sizes, and the images themselves (rendered as contact sheets in headless Chromium, since the machine has no image tools).
+- Used only where a matching UI element already exists: page backgrounds (`bg`, `bg_start` for the lobby), the 3-slice button with hover/pressed states, the larger `but2` button for "Find game", iTrackie tabs (`tabon`/`taboff`), the chat field (`chatbox`) and enter-key send button (`buttonchat`), and the loading spinner. Styled in CSS via `url()` into `Mush/`, no new dependencies.
+- Deliberately skipped: images for features the slice doesn't have (shop/gold, packs, rankings, XP/levels, skills, NERON terminals, health/morale, alarms, popups, tooltips), Mush logos (trademark), and pieces whose original place couldn't be identified with confidence.
+
+### 2026-10-11 (HP and morale)
+
+Added HP and morale to player state and the top bar (AP/MP stacked, HP/morale stacked, 3x5 `lifebar`/`lifebar2` pips).
+- Decided by the user when asked: caps of 14 (the original's `Const.hx` `MAX_HP`/`MAX_MORAL`), starting at 14 HP and 7 morale, visible only to their owner. Nothing changes them yet.
+- Values live in `GameConfig`; `viewFor` passes them only in `you` (other players' views list fields explicitly), with tests checking `"hp"`/`"morale"` appear once in each serialized view. Bumped `STATE_VERSION` to 3.
+
+### 2026-10-11 (AP cap)
+
+AP changed from "refill to 4 each cycle" to start 8, +1 per cycle, cap 12, unspent AP carries over (user's decisions).
+- The user added "+2 while in a bed". No bed action exists, so per the user's choice this became an `apPerCycle` modifier hook plus a registered `lying_down` modifier (+1); a lie-down action that adds and removes it is a separate rule change. The original game has the same idea (`LAID` status; beds in the bedrooms, a medical bed in the sick bay).
+- What worked: asking before coding. "AP max 12" alone was ambiguous between refill-to-12 and accumulate-to-12, and the bed rule only surfaced in the answers.
+- Bumped `STATE_VERSION` to 4 (config shape changed).
+
+### 2026-10-11 (skills)
+
+Added four project skills, at the user's request after the assistant suggested them: `asset`, `bot`, `leak-check`, and `wrap-up`. Each one encodes a CLAUDE.md rule that's easy to skip under momentum: licensing and "skip if unsure" for art, the bot architecture rules (own-seat view, spend cap, chat as prompt injection), the hidden-information rule, and verify-then-log.
+- Turned the improvised contact-sheet script from the site-chrome session into `npm run contact-sheet` (`tools`, Playwright, no new dependencies), which the `asset` skill uses.

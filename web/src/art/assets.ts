@@ -75,9 +75,12 @@ export function portrait(character: CharacterId | undefined): string {
 }
 
 const design = urls(
-  import.meta.glob<string>("../../../Mush/www/img/design/{pa1,pa2}.png", { eager: true, query: "?url", import: "default" }),
+  import.meta.glob<string>("../../../Mush/www/img/design/{pa1,pa2,lifebar,lifebar2}.png", { eager: true, query: "?url", import: "default" }),
 );
 
 /** 5x5 pips from the original site: pink for action points, cyan for movement points. */
 export const AP_PIP = design["pa1"]!;
 export const MP_PIP = design["pa2"]!;
+/** 3x5 pips from the original site: green for health, yellow-brown for morale. */
+export const HP_PIP = design["lifebar"]!;
+export const MORALE_PIP = design["lifebar2"]!;

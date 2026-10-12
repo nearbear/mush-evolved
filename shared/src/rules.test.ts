@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { CHARACTERS } from "./characters.ts";
 import { DEFAULT_CONFIG, SHIP_ROOMS } from "./config.ts";
-import { moveCost, movementRules, MODIFIERS } from "./modifiers.ts";
+import { apGain, moveCost, movementRules, MODIFIERS } from "./modifiers.ts";
 import { applyAction, CHAT_HISTORY, createGame, logPrivate, logSecret, MAX_CHAT_LENGTH, sendChat, viewFor } from "./rules.ts";
 import type { Action, GameState, MovementRules, PlayerId, Seat } from "./types.ts";
 
@@ -25,6 +25,10 @@ function mustApply(state: GameState, playerId: PlayerId, action: Action): GameSt
 describe("createGame", () => {
   it("is deterministic for a given seed", () => {
     expect(newGame(7)).toEqual(newGame(7));
+  });
+
+  it("starts everyone at full HP and half morale", () => {
+    for (const p of newGame().players) expect(p).toMatchObject({ hp: 14, morale: 7 });
   });
 
   it("starts everyone in the laboratory", () => {
@@ -58,16 +62,16 @@ describe("applyAction", () => {
     const next = mustApply(newGame(), "p0", move("CORRIDOR_A"));
     const p0 = player(next, "p0");
     expect(p0.room).toBe("CORRIDOR_A");
-    expect(p0.ap).toBe(DEFAULT_CONFIG.apPerCycle - 1);
+    expect(p0.ap).toBe(DEFAULT_CONFIG.startAp - 1);
     expect(p0.mp).toBe(2);
   });
 
   it("spends MP before AP: three moves cost one AP, the fourth converts again", () => {
     let state = newGame();
     for (const to of ["CORRIDOR_A", "LABORATORY", "CORRIDOR_A"]) state = mustApply(state, "p0", move(to));
-    expect(player(state, "p0")).toMatchObject({ ap: DEFAULT_CONFIG.apPerCycle - 1, mp: 0 });
+    expect(player(state, "p0")).toMatchObject({ ap: DEFAULT_CONFIG.startAp - 1, mp: 0 });
     state = mustApply(state, "p0", move("LABORATORY"));
-    expect(player(state, "p0")).toMatchObject({ ap: DEFAULT_CONFIG.apPerCycle - 2, mp: 2 });
+    expect(player(state, "p0")).toMatchObject({ ap: DEFAULT_CONFIG.startAp - 2, mp: 2 });
   });
 
   it("offers no moves with neither MP nor AP left", () => {
@@ -95,11 +99,29 @@ describe("applyAction", () => {
     expect(state).toEqual(before);
   });
 
-  it("advances the cycle and refills AP once everyone is ready", () => {
+  it("advances the cycle once everyone is ready, adding 1 AP to what is left", () => {
     let state = mustApply(newGame(), "p0", { type: "move", to: "CORRIDOR_A" });
     for (const s of seats) state = mustApply(state, s.id, { type: "ready" });
     expect(state.cycle).toBe(2);
-    expect(state.players.every((p) => p.ap === DEFAULT_CONFIG.apPerCycle && !p.ready)).toBe(true);
+    expect(player(state, "p0").ap).toBe(8); // started 8, spent 1, gained 1
+    expect(state.players.filter((p) => p.id !== "p0").every((p) => p.ap === 9 && !p.ready)).toBe(true);
+  });
+
+  it("never gains AP past the cap of 12", () => {
+    let state = newGame();
+    for (let cycle = 0; cycle < 6; cycle++) for (const s of seats) state = mustApply(state, s.id, { type: "ready" });
+    expect(state.cycle).toBe(7);
+    expect(state.players.every((p) => p.ap === 12)).toBe(true);
+    expect(viewFor(state, "p0").maxAp).toBe(12);
+  });
+
+  it("gains 2 AP per cycle while lying down", () => {
+    let state = newGame();
+    player(state, "p0").modifiers.push("lying_down");
+    for (const s of seats) state = mustApply(state, s.id, { type: "ready" });
+    expect(player(state, "p0").ap).toBe(10);
+    expect(player(state, "p1").ap).toBe(9);
+    expect(apGain(state, player(state, "p0"))).toBe(2);
   });
 });
 
@@ -232,6 +254,22 @@ describe("viewFor (hidden information)", () => {
       expect(json).not.toContain('"rng"');
       // Only the viewer's own role appears anywhere in the serialized view.
       expect(json.match(/"role"/g)).toHaveLength(1);
+    }
+  });
+
+  it("shows HP and morale only to their owner", () => {
+    const state = newGame();
+    for (const s of seats) {
+      const view = viewFor(state, s.id);
+      expect(view.you).toMatchObject({ hp: 14, morale: 7 });
+      expect(view).toMatchObject({ maxHp: 14, maxMorale: 14 });
+      for (const other of view.players) {
+        expect(other).not.toHaveProperty("hp");
+        expect(other).not.toHaveProperty("morale");
+      }
+      const json = JSON.stringify(view);
+      expect(json.match(/"hp"/g)).toHaveLength(1);
+      expect(json.match(/"morale"/g)).toHaveLength(1);
     }
   });
 

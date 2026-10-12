@@ -7,7 +7,8 @@
     "ship-layout": "node src/shipLayout/convert.ts",
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
-    "screenshot": "node src/play/screenshot.ts"
+    "screenshot": "node src/play/screenshot.ts",
+    "contact-sheet": "node src/contactSheet/contactSheet.ts"
   },
   "dependencies": {
     "@mush2/shared": "*"

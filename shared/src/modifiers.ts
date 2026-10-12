@@ -11,12 +11,18 @@ import type { GameState, MovementRules, PlayerState } from "./types.ts";
 export interface Modifier {
   /** Adjusts how a player's moves are paid for. Must be pure. */
   movement?: (rules: MovementRules, player: Readonly<PlayerState>) => MovementRules;
+  /** Adjusts the AP a player gains at the start of a cycle. Must be pure. */
+  apPerCycle?: (gain: number, player: Readonly<PlayerState>) => number;
 }
 
 export type ModifierRegistry = Readonly<Record<string, Modifier>>;
 
-/** No real items or skills exist yet; they will register here. */
-export const MODIFIERS: Record<string, Modifier> = {};
+/** Items and skills will register here too. */
+export const MODIFIERS: Record<string, Modifier> = {
+  // Confirmed 2026-10-11: +1 AP per cycle while in a bed. Nothing applies it
+  // yet; a lie-down action will add and remove it.
+  lying_down: { apPerCycle: (gain) => gain + 1 },
+};
 
 /** Base movement rules folded through the player's modifiers, in list order. */
 export function movementRules(
@@ -30,6 +36,20 @@ export function movementRules(
     if (hook) rules = hook(rules, player);
   }
   return rules;
+}
+
+/** AP gained at the start of a cycle: the base gain folded through the player's modifiers. */
+export function apGain(
+  state: Readonly<GameState>,
+  player: Readonly<PlayerState>,
+  registry: ModifierRegistry = MODIFIERS,
+): number {
+  let gain = state.config.apPerCycle;
+  for (const id of player.modifiers) {
+    const hook = registry[id]?.apPerCycle;
+    if (hook) gain = hook(gain, player);
+  }
+  return gain;
 }
 
 /**

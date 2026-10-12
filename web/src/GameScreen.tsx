@@ -40,7 +40,7 @@ export function GameScreen({ ticket, onLeave }: { ticket: SeatTicket; onLeave: (
   const post = (msg: GameClientMessage) => socketRef.current?.send(JSON.stringify(msg));
   const send = (action: Action) => post({ type: "action", action });
 
-  if (!view) return <main className="connecting">Connecting…</main>;
+  if (!view) return <main className="connecting loading">Connecting…</main>;
   const { you } = view;
   const reachable = new Set(view.legalActions.flatMap((a) => (a.type === "move" ? [a.to] : [])));
   const move = (to: string) => send({ type: "move", to });
@@ -72,7 +72,7 @@ export function GameScreen({ ticket, onLeave }: { ticket: SeatTicket; onLeave: (
               onSelect={setSelectedId}
             />
           ) : (
-            <section className="iso-room">Loading ship…</section>
+            <section className="iso-room loading">Loading ship…</section>
           )}
           <ShipMap rooms={Object.keys(view.rooms)} you={you} people={[you, ...view.players]} reachable={reachable} onMove={move} />
         </div>

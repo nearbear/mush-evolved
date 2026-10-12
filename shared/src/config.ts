@@ -14,9 +14,18 @@ export const SHIP_ROOMS: readonly ShipRoom[] = shipRooms;
 
 export const DEFAULT_CONFIG: GameConfig = {
   mushCount: 2,
-  apPerCycle: 4,
+  // Confirmed 2026-10-11: start with 8 AP, gain 1 per cycle (2 while lying in a bed, via the
+  // "lying_down" modifier), never above 12.
+  startAp: 8,
+  apPerCycle: 1,
+  maxAp: 12,
   // Confirmed 2026-10-11: a move costs 1 MP; with no MP, 1 AP becomes 3 MP. MP starts at 0, cap 12.
   movement: { mpPerMove: 1, apPerConversion: 1, mpPerConversion: 3, mpCap: 12 },
+  // Confirmed 2026-10-11: caps of 14 as in the original (Const.hx MAX_HP / MAX_MORAL); start at 14 HP, 7 morale.
+  maxHp: 14,
+  startHp: 14,
+  maxMorale: 14,
+  startMorale: 7,
   startRoom: "LABORATORY",
   rooms: Object.fromEntries(SHIP_ROOMS.map((r) => [r.id, r.doors])) as Record<RoomId, RoomId[]>,
 };

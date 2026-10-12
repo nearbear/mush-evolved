@@ -1,5 +1,5 @@
 import { CHARACTERS, type PlayerView } from "@mush2/shared";
-import { AP_PIP, MP_PIP, portrait } from "../art/assets.ts";
+import { AP_PIP, HP_PIP, MORALE_PIP, MP_PIP, portrait } from "../art/assets.ts";
 import { PipBar } from "./PipBar.tsx";
 
 export function TopBar({
@@ -23,8 +23,14 @@ export function TopBar({
         {character && <div className="sub">{character.name}</div>}
       </div>
       <span className={`role ${you.role}`}>{you.role}</span>
-      <PipBar label="AP" value={you.ap} max={view.maxAp} pip={AP_PIP} />
-      <PipBar label="MP" value={you.mp} max={view.movement.mpCap} pip={MP_PIP} />
+      <div className="stat-stack">
+        <PipBar label="AP" value={you.ap} max={view.maxAp} pip={AP_PIP} />
+        <PipBar label="MP" value={you.mp} max={view.movement.mpCap} pip={MP_PIP} />
+      </div>
+      <div className="stat-stack">
+        <PipBar label="HP" value={you.hp} max={view.maxHp} pip={HP_PIP} thin />
+        <PipBar label="Morale" value={you.morale} max={view.maxMorale} pip={MORALE_PIP} thin />
+      </div>
       <span className="cycle">Cycle {view.cycle}</span>
       <span className="spacer" />
       <button disabled={!canReady} onClick={onReady}>

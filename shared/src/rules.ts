@@ -1,13 +1,13 @@
 // Pure game rules: no I/O, no clocks, no Math.random. All randomness goes
 // through the seeded RNG stored in the state.
 //
-// SKELETON: movement (AP/MP), cycle advancement, the room log, and global chat
-// exist.
+// SKELETON: movement (AP/MP), cycle advancement, the room log, global chat,
+// and HP/morale values (shown, but nothing changes them yet) exist.
 // Infection, voting, win conditions, and the real turn structure are open
 // decisions — do not add them without confirming the rules first.
 
 import { SHIP_ROOMS } from "./config.ts";
-import { moveCost, movementRules } from "./modifiers.ts";
+import { apGain, moveCost, movementRules } from "./modifiers.ts";
 import { shuffle } from "./rng.ts";
 import type {
   Action,
@@ -42,8 +42,10 @@ export function createGame(seats: readonly Seat[], config: GameConfig, seed: num
     ...s,
     role: mushIds.has(s.id) ? "mush" : "human",
     room: config.startRoom,
-    ap: config.apPerCycle,
+    ap: config.startAp,
     mp: 0,
+    hp: config.startHp,
+    morale: config.startMorale,
     modifiers: [],
     alive: true,
     ready: false,
@@ -103,7 +105,7 @@ export function applyAction(state: GameState, playerId: PlayerId, action: Action
 function advanceCycle(state: GameState): void {
   state.cycle += 1;
   for (const p of state.players) {
-    p.ap = state.config.apPerCycle;
+    p.ap = Math.min(state.config.maxAp, p.ap + apGain(state, p));
     p.ready = false;
   }
   state.log.push({ cycle: state.cycle, text: `Cycle ${state.cycle} begins.`, visibleTo: "all" });
@@ -131,7 +133,9 @@ export function viewFor(state: GameState, playerId: PlayerId): PlayerView {
     chat: state.chat.filter((m) => chatChannels(state, you).includes(m.channel)),
     chatChannels: chatChannels(state, you),
     movement: movementRules(state, you),
-    maxAp: state.config.apPerCycle,
+    maxAp: state.config.maxAp,
+    maxHp: state.config.maxHp,
+    maxMorale: state.config.maxMorale,
     legalActions: legalActions(state, playerId),
   };
 }

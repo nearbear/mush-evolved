@@ -30,8 +30,16 @@ export interface MovementRules {
 
 export interface GameConfig {
   mushCount: number;
+  startAp: number;
+  /** AP gained at the start of each cycle, before modifiers. Unspent AP carries over. */
   apPerCycle: number;
+  /** AP never exceeds this. */
+  maxAp: number;
   movement: MovementRules;
+  maxHp: number;
+  startHp: number;
+  maxMorale: number;
+  startMorale: number;
   startRoom: RoomId;
   /** Adjacency list. Movement is only allowed along these edges. */
   rooms: Record<RoomId, RoomId[]>;
@@ -43,6 +51,10 @@ export interface PlayerState extends Seat {
   ap: number;
   /** Movement points. Start at 0; topped up by converting AP when moving. */
   mp: number;
+  /** Health points. Private: only in your own view. Nothing changes them yet. */
+  hp: number;
+  /** Morale points. Private: only in your own view. Nothing changes them yet. */
+  morale: number;
   /**
    * Ids of active rule modifiers (from items, skills, statuses). Resolved
    * against the registry in modifiers.ts; state holds ids only so it stays JSON.
@@ -122,7 +134,10 @@ export interface PlayerView {
   chatChannels: ChatChannel[];
   /** Your effective movement rules, after modifiers. */
   movement: MovementRules;
-  /** AP refills to this each cycle (for drawing the AP bar). */
+  /** AP cap (for drawing the AP bar). */
   maxAp: number;
+  /** Caps for drawing your HP and morale bars. */
+  maxHp: number;
+  maxMorale: number;
   legalActions: Action[];
 }
