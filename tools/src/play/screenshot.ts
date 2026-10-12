@@ -20,6 +20,7 @@ const { values: args } = parseArgs({
     out: { type: "string", default: resolve(import.meta.dirname, "../../../.screenshots") },
     name: { type: "string", default: "Playwright" },
     only: { type: "string" }, // "desktop" or "mobile"
+    phone: { type: "string", default: "Galaxy S8" }, // a Playwright device; 360px wide is the narrowest we support
   },
 });
 
@@ -73,7 +74,7 @@ async function main(): Promise<number> {
 
   try {
     const desktop = args.only === "mobile" ? null : await open({ viewport: { width: 1600, height: 1000 } });
-    const mobile = args.only === "desktop" ? null : await open({ ...devices["iPhone 13"] });
+    const mobile = args.only === "desktop" ? null : await open({ ...devices[args.phone!] });
 
     // Both queue at once so they land in the same match and share the bot-fill wait.
     await Promise.all([
@@ -214,7 +215,8 @@ async function mobileSteps(page: Page, step: Step): Promise<void> {
   });
 
   await step("m08-landscape", async () => {
-    await page.setViewportSize({ width: 844, height: 390 });
+    const portrait = page.viewportSize()!;
+    await page.setViewportSize({ width: portrait.height, height: portrait.width });
     await page.waitForTimeout(200); // let the room re-measure
     const bar = await page.locator(".top-bar").boundingBox();
     if (bar!.height > 60) throw new Error(`top bar is ${bar!.height}px tall in landscape; expected one row`);

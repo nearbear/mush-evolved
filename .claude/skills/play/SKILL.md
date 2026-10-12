@@ -34,7 +34,7 @@ If a background `npm run dev` exits immediately, the ports are probably already 
 cd /home/near/mush2 && source ~/.nvm/nvm.sh && npm run screenshot
 ```
 
-`tools/src/play/screenshot.ts` joins as "Playwright" on a 1600x1000 desktop and as "Playwright (phone)" on an emulated iPhone 13 (touch, 390x844), at the same time so both land in one match (bots fill the other seats after about 15 s). The desktop pass runs first, then the phone pass. Saves to `.screenshots/` (gitignored). `-- --only desktop` or `-- --only mobile` runs one pass.
+`tools/src/play/screenshot.ts` joins as "Playwright" on a 1600x1000 desktop and as "Playwright (phone)" on an emulated Galaxy S8 (touch, 360x740: **360px is the narrowest width we support**, so the phone pass tests it), at the same time so both land in one match (bots fill the other seats after about 15 s). The desktop pass runs first, then the phone pass. Saves to `.screenshots/` (gitignored). `-- --only desktop` or `-- --only mobile` runs one pass; `-- --phone "iPhone 13"` uses another Playwright device.
 
 Desktop:
 
@@ -58,7 +58,7 @@ Phone (every phone step also fails if the page scrolls sideways):
 | `m05-inspect-inventory.png` | Inspect panel with the inventory after a take (or drop) |
 | `m06-door-go.png` | After tapping a door and pressing Go in the peek bar |
 | `m07-wide-room.png` | A room wider than the phone: scrolls sideways at 1x with you in view (walks up to 6 doors to find one; skipped if none) |
-| `m08-landscape.png` | Rotated to 844x390; the top bar must be one row |
+| `m08-landscape.png` | The phone rotated (740x360 by default); the top bar must be one row |
 
 A failed step saves `<name>-FAILED.png` showing the page at the moment it failed. The script exits non-zero on any failed step **or any browser console error**, and prints the errors.
 
@@ -74,7 +74,7 @@ Read the PNGs with the Read tool. **Actually look** before reporting. Check what
 
 Phone screenshots (mobile is first-class, see CLAUDE.md rule 7):
 
-- Top bar visible in every shot: two rows in portrait (name, role, buttons; then stats), one row in landscape. Long names cut off with an ellipsis, not wrapping.
+- Top bar visible in every shot: two rows in portrait (name, role, buttons; then AP/MP and HP/morale side by side), one row in landscape. Long names cut off with an ellipsis, not wrapping. The stats row is tuned to fit 360px (about 10px to spare): adding anything to it needs a 360px check.
 - Bottom nav visible (except while typing), with the active panel highlighted; nothing hidden under it or the notch.
 - Iso room never below 1x: pixels crisp, doors big enough to tap. Wide rooms scroll sideways, not squeezed.
 - Peek bar shows the right name and only legal actions; Go appears only for reachable doors.

@@ -48,7 +48,7 @@ These are non-negotiable unless I say otherwise.
 7. **Mobile is first-class.** Below 1024px wide (`MOBILE_QUERY` in `web/src/useMobile.ts`, mirrored by one `@media` block in `styles.css`) the game is a tabbed phone layout: the top bar always shows; one panel at a time below it; a bottom nav of Inspect (left) | Room (middle, default) | iTrackie (right). Tapping a person, equipment, or a door in the room opens a peek bar above the nav (name, legal actions, Go for doors, More to open Inspect). The ship map is hidden; doors are how you move. Every UI change must work in both layouts:
    - Nothing important may be hover-only or double-click-only (touch has neither reliably).
    - The iso room never scales below 1x on phones; wide rooms scroll sideways, centred on you.
-   - No sideways page scroll at 360px; nothing under the notch or the nav.
+   - 360px wide is the minimum supported width, and must look good, not just work. No sideways page scroll; nothing under the notch or the nav.
    - Panels are hidden with CSS, not unmounted, so chat drafts and tabs survive switching.
    - Check both screenshot passes (`play` skill). The on-screen keyboard can only be checked on a real phone.
 
@@ -93,7 +93,7 @@ Node is installed via nvm. In non-interactive shells, run `source ~/.nvm/nvm.sh`
 - `npm run typecheck`: `tsc --noEmit` in every package (TypeScript 7).
 - `npm run build`: production build of `web`.
 - `npm run ship-layout`: regenerate `Mush/derived/ship-layout.json` (renderer data) and `ship-rooms.json` (room graph and per-room equipment, for the rules) from `ShipMap.png` + `tiles.xml`. A test fails if the committed file is stale.
-- `npm run screenshot`: drive the running game in headless Chromium (Playwright), as a desktop player and an iPhone-sized player in the same match, and save screenshots to `.screenshots/` (gitignored). `-- --only desktop|mobile` runs one pass. Needs `npm run dev` running. See the `play` skill.
+- `npm run screenshot`: drive the running game in headless Chromium (Playwright), as a desktop player and a 360px-wide phone player (the narrowest supported) in the same match, and save screenshots to `.screenshots/` (gitignored). `-- --only desktop|mobile` runs one pass. Needs `npm run dev` running. See the `play` skill.
 - `npm run contact-sheet -- <folder> [--match regex] [--zoom n]`: render labeled contact sheets of an image folder to `.screenshots/contact/` (Playwright; WSL has no image tools). See the `asset` skill.
 - `npm run types -w server`: regenerate `server/worker-configuration.d.ts` after changing `wrangler.jsonc` or the exported Durable Object classes.
 - `npm run deploy -w server`: wrangler deploy (not yet configured or tested).
