@@ -31,7 +31,7 @@ Reference for AI assistants and contributors. Describes what is in `Mush/` (repo
 | `clients/iso/gfx/` | Large isometric sprite atlases (`BigFill*.png`, `MidFill*.png`, `SmallFill.png`, `gfx_01/02.png`, `char*.png`, `fx.png`, `ShipMap.png`) | High for an isometric ship view; needs slicing data |
 | `clients/iso/xml/tiles.xml` | Slice definitions for the atlases | Needed to cut atlases into tiles |
 | `www/img/art/site/rooms/` | 18 room illustrations (bridge, sick bay, refectory, engineering, hydroponics, corridor, storage, etc.) | **High** for a DOM prototype: one image per room |
-| `www/img/art/char/`, `art/large/` | Character portraits/art (JPG), one per crew member, plus Mush art | High: lobby, profile, role reveal |
+| `www/img/art/char/`, `art/large/` | Character portraits/art (JPG, about 210x300), one per crew member, plus Mush art. | High: lobby, profile, role reveal. **Used:** `char/*.jpg` in the inspector |
 | `www/img/icons/portraits/` (+ `mini/`) | Small character portrait icons (PNG) | High: player list, chat, voting UI |
 | `www/img/icons/items/` | 152 item icons | Medium–high |
 | `www/img/icons/skills/` | 104 skill icons | Medium (slice may not use skills) |

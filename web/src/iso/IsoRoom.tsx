@@ -1,10 +1,11 @@
 // DOM renderer for one room of the original isometric ship. Every sprite is
 // an absolutely positioned div cropped from its atlas; DOM order is paint
-// order. Presentational only: doors emit move intents and people emit a
-// selection; legality comes from props.
+// order. Presentational only: doors emit move intents, and people and
+// equipment emit a selection; legality comes from props.
 
 import { useMemo } from "react";
-import type { CharacterId, RoomId, ShipLayout } from "@mush2/shared";
+import { placedEquipment, type CharacterId, type EquipmentView, type RoomId, type ShipLayout, type Target } from "@mush2/shared";
+import { sameTarget } from "../hud/targets.ts";
 import { CrewSprite } from "../scene/CrewSprite.tsx";
 import { roomLabel } from "../scene/names.ts";
 import { atlasUrl } from "./shipLayout.ts";
@@ -26,18 +27,21 @@ export function IsoRoom({
   layout,
   room,
   occupants,
+  equipment,
   reachable,
-  selectedId,
+  selected,
   onMove,
   onSelect,
 }: {
   layout: ShipLayout;
   room: RoomId;
   occupants: Occupant[];
+  /** Equipment in this room, from the view. Only these sprites are clickable. */
+  equipment: EquipmentView[];
   reachable: Set<RoomId>;
-  selectedId: string | null;
+  selected: Target | null;
   onMove: (to: RoomId) => void;
-  onSelect: (playerId: string) => void;
+  onSelect: (target: Target) => void;
 }) {
   const roomLayout = layout.rooms.find((r) => r.id === room);
   const occupantKey = occupants.map((o) => o.id).join(",");
@@ -53,8 +57,20 @@ export function IsoRoom({
     // occupantKey stands in for occupants: positions only change when who is here changes.
   }, [layout, roomLayout, occupantKey]);
 
+  // Sprite key ("t<tile index>") -> the equipment it draws.
+  const equipmentByKey = useMemo(() => {
+    const names = new Map(equipment.map((e) => [e.id, e]));
+    return new Map(
+      (roomLayout ? placedEquipment(roomLayout) : []).flatMap((p) => {
+        const e = names.get(p.id);
+        return e ? [[`t${p.tile}` as string, e] as const] : [];
+      }),
+    );
+  }, [roomLayout, equipment]);
+
   if (!roomLayout) return <section className="iso-room missing">No map for {roomLabel(room)}</section>;
   const byId = new Map(occupants.map((o) => [o.id, o]));
+  const isSelected = (kind: Target["kind"], id: string) => sameTarget(selected, { kind, id } as Target);
 
   return (
     <section className="iso-room">
@@ -73,11 +89,11 @@ export function IsoRoom({
               return (
                 <div
                   key={s.key}
-                  className={`iso-actor${o.you ? " you" : ""}${o.id === selectedId ? " selected" : ""}`}
+                  className={`iso-actor${o.you ? " you" : ""}${isSelected("player", o.id) ? " selected" : ""}`}
                   style={style}
                   role="button"
                   aria-label={`Inspect ${o.name}`}
-                  onClick={() => onSelect(o.id)}
+                  onClick={() => onSelect({ kind: "player", id: o.id })}
                 >
                   <CrewSprite character={o.character} />
                 </div>
@@ -85,17 +101,21 @@ export function IsoRoom({
             }
             const door = s.door;
             const canGo = door ? reachable.has(door.target) : false;
+            const eq = equipmentByKey.get(s.key);
+            const eqClass = eq ? ` equipment${isSelected("equipment", eq.id) ? " selected" : ""}` : "";
             return (
               <div
                 key={s.key}
-                className={`iso-sprite${door ? " door" : ""}${canGo ? " reachable" : ""}`}
+                className={`iso-sprite${door ? " door" : ""}${canGo ? " reachable" : ""}${eqClass}`}
                 style={{
                   ...style,
                   backgroundImage: `url(${atlasUrl(layout, s.sheet)})`,
                   backgroundPosition: `${-s.sx}px ${-s.sy}px`,
                   transform: s.flipX || s.flipY ? `scale(${s.flipX ? -1 : 1}, ${s.flipY ? -1 : 1})` : undefined,
                 }}
-                title={door ? `${roomLabel(door.target)}${canGo ? " (double-click to go)" : ""}` : undefined}
+                title={door ? `${roomLabel(door.target)}${canGo ? " (double-click to go)" : ""}` : eq?.name}
+                {...(eq && { role: "button", "aria-label": `Inspect ${eq.name}` })}
+                onClick={eq ? () => onSelect({ kind: "equipment", id: eq.id }) : undefined}
                 onDoubleClick={door && canGo ? () => onMove(door.target) : undefined}
               />
             );
@@ -109,8 +129,8 @@ export function IsoRoom({
             return (
               <div
                 key={`tag:${s.key}`}
-                className={`iso-tag${o.you ? " you" : ""}${o.id === selectedId ? " selected" : ""}`}
-                onClick={() => onSelect(o.id)}
+                className={`iso-tag${o.you ? " you" : ""}${isSelected("player", o.id) ? " selected" : ""}`}
+                onClick={() => onSelect({ kind: "player", id: o.id })}
                 style={{ left: (s.left - box.minX + s.width / 2) * scale, top: (s.top - box.minY) * scale }}
                 title={o.name}
               >

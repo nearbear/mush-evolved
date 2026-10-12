@@ -20,6 +20,8 @@ import type {
   TileKind,
   TilePlacement,
 } from "@mush2/shared";
+// The leaf module, not the package index: the index loads config.ts, which reads the file this tool writes.
+import { placedEquipment } from "../../../shared/src/shipLayout.ts";
 import { decodePng, pngSize, type Image } from "./png.ts";
 import { child, childrenNamed, parseXml, type XmlElement } from "./xml.ts";
 
@@ -317,7 +319,8 @@ function fail(message: string): never {
 export function roomGraph(layout: ShipLayout): ShipRoom[] {
   return layout.rooms.flatMap((r) => {
     const doors = [...new Set(r.tiles.flatMap((t) => (t.door ? [t.door.target] : [])))].sort();
-    return doors.length > 0 ? [{ id: r.id, label: r.label, doors }] : [];
+    const equipment = placedEquipment(r).map(({ id, type }) => ({ id, type }));
+    return doors.length > 0 ? [{ id: r.id, label: r.label, doors, equipment }] : [];
   });
 }
 

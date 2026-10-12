@@ -1,7 +1,7 @@
 // Drives the real game in headless Chromium and saves screenshots, so UI
 // changes can be checked visually. Expects `npm run dev` to be running.
 //
-//   npm run screenshot                  # join, inspect, chat, walk through a door
+//   npm run screenshot                  # join, inspect, examine, chat, take, walk through a door
 //   npm run screenshot -- --name Alice --out /tmp/shots
 //
 // Prints each screenshot path and any browser console errors; exits non-zero
@@ -66,10 +66,21 @@ async function main(): Promise<number> {
 
     await step("02-inspect", async () => {
       await page.locator(".iso-actor:not(.you)").first().click();
-      await page.locator(".inspect-card").waitFor();
+      await page.locator(".inspect .close").waitFor(); // only shown when inspecting someone else
     });
 
-    await step("03-chat", async () => {
+    await step("03-examine", async () => {
+      const equipment = page.locator(".iso-sprite.equipment").first();
+      const name = await equipment.getAttribute("title");
+      await equipment.click();
+      await page.locator(".inspect-name", { hasText: name ?? "" }).waitFor();
+      await page.locator(".inspect").getByRole("button", { name: "Examine" }).click();
+      await page.getByRole("tab", { name: "Room log" }).click();
+      await page.getByText(`You examine the ${name}.`).waitFor();
+      console.log(`      examined ${name}`);
+    });
+
+    await step("04-chat", async () => {
       const text = `screenshot check ${Date.now() % 10000}`;
       await page.getByRole("tab", { name: "Global chat" }).click();
       await page.getByLabel("Global chat message").fill(text);
@@ -77,13 +88,13 @@ async function main(): Promise<number> {
       await page.locator(".feed li", { hasText: text }).waitFor();
     });
 
-    await step("04-take", async () => {
+    await step("05-take", async () => {
       const inventory = page.locator(".inventory");
       await inventory.getByRole("button", { name: "Take" }).first().click();
       await inventory.getByRole("button", { name: "Drop" }).first().waitFor();
     });
 
-    await step("05-moved", async () => {
+    await step("06-moved", async () => {
       const before = await page.locator(".room-title").innerText();
       await page.locator(".iso-sprite.door.reachable").first().dblclick({ force: true });
       await page.locator(".room-title", { hasNotText: before }).waitFor();

@@ -3,10 +3,11 @@
 
 import { useEffect, useRef, useState } from "react";
 import type PartySocket from "partysocket";
-import type { Action, GameClientMessage, GameServerMessage, PlayerView } from "@mush2/shared";
+import type { Action, GameClientMessage, GameServerMessage, PlayerView, Target } from "@mush2/shared";
 import { InspectPanel } from "./hud/InspectPanel.tsx";
 import { InventoryPanel } from "./hud/InventoryPanel.tsx";
 import { ITrackie } from "./hud/ITrackie.tsx";
+import { resolveTarget } from "./hud/targets.ts";
 import { TopBar } from "./hud/TopBar.tsx";
 import { gameSocket, type SeatTicket } from "./net.ts";
 import { IsoRoom } from "./iso/IsoRoom.tsx";
@@ -18,8 +19,8 @@ export function GameScreen({ ticket, onLeave }: { ticket: SeatTicket; onLeave: (
   const [error, setError] = useState("");
   const socketRef = useRef<PartySocket | null>(null);
   const layout = useShipLayout();
-  /** UI-only state: who the inspect panel shows. */
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  /** UI-only state: what the inspect panel shows. Null means yourself. */
+  const [selected, setSelected] = useState<Target | null>(null);
 
   useEffect(() => {
     const socket = gameSocket(ticket.roomId, ticket.token);
@@ -45,6 +46,8 @@ export function GameScreen({ ticket, onLeave }: { ticket: SeatTicket; onLeave: (
   const { you } = view;
   const reachable = new Set(view.legalActions.flatMap((a) => (a.type === "move" ? [a.to] : [])));
   const move = (to: string) => send({ type: "move", to });
+  // Fall back to yourself when nothing is selected or the selection is gone (left the room, item moved away).
+  const target: Target = selected && resolveTarget(view, selected) ? selected : { kind: "player", id: you.id };
 
   return (
     <main className="game">
@@ -58,8 +61,8 @@ export function GameScreen({ ticket, onLeave }: { ticket: SeatTicket; onLeave: (
 
       <div className="three-panel">
         <div className="left-column">
-          <InspectPanel view={view} selectedId={selectedId} onClose={() => setSelectedId(null)} />
-          <InventoryPanel view={view} onAction={send} />
+          <InspectPanel view={view} target={target} onAction={send} onClose={() => setSelected(null)} />
+          <InventoryPanel view={view} selected={target} onAction={send} onSelect={setSelected} />
         </div>
 
         <div className="world">
@@ -70,10 +73,11 @@ export function GameScreen({ ticket, onLeave }: { ticket: SeatTicket; onLeave: (
               occupants={[you, ...view.players.filter((p) => p.room === you.room)]
                 .sort((a, b) => a.id.localeCompare(b.id))
                 .map((p) => ({ id: p.id, name: p.name, isBot: p.isBot, character: p.character, you: p.id === you.id }))}
+              equipment={view.roomEquipment}
               reachable={reachable}
-              selectedId={selectedId}
+              selected={target}
               onMove={move}
-              onSelect={setSelectedId}
+              onSelect={setSelected}
             />
           ) : (
             <section className="iso-room loading">Loading ship…</section>

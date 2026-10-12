@@ -1,6 +1,6 @@
 ---
 name: play
-description: Launch the game and look at it in a real (headless) browser. Use after any UI, renderer, layout, or asset change, or when asked to run, screenshot, or check the game visually. Starts the dev servers if needed, joins a match, inspects a crew member, sends a chat message, walks through a door, and saves screenshots to read.
+description: Launch the game and look at it in a real (headless) browser. Use after any UI, renderer, layout, or asset change, or when asked to run, screenshot, or check the game visually. Starts the dev servers if needed, joins a match, inspects a crew member, examines equipment, sends a chat message, walks through a door, and saves screenshots to read.
 ---
 
 # Play the game and look at it
@@ -40,9 +40,10 @@ cd /home/near/mush2 && source ~/.nvm/nvm.sh && npm run screenshot
 |---|---|
 | `01-game.png` | In the starting room after joining |
 | `02-inspect.png` | Inspect panel open on another crew member |
-| `03-chat.png` | Global chat tab with a sent message |
-| `04-take.png` | After taking an item from the room into the inventory |
-| `05-moved.png` | After double-clicking a reachable door |
+| `03-examine.png` | Room equipment selected and examined (private line in the room log) |
+| `04-chat.png` | Global chat tab with a sent message |
+| `05-take.png` | After taking an item from the room into the inventory |
+| `06-moved.png` | After double-clicking a reachable door |
 
 A failed step saves `<name>-FAILED.png` showing the page at the moment it failed. The script exits non-zero on any failed step **or any browser console error**, and prints the errors.
 

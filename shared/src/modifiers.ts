@@ -13,6 +13,8 @@ export interface Modifier {
   movement?: (rules: MovementRules, player: Readonly<PlayerState>) => MovementRules;
   /** Adjusts the AP a player gains at the start of a cycle. Must be pure. */
   apPerCycle?: (gain: number, player: Readonly<PlayerState>) => number;
+  /** Adjusts how many inventory slots a player has. Must be pure. */
+  inventorySlots?: (slots: number, player: Readonly<PlayerState>) => number;
 }
 
 export type ModifierRegistry = Readonly<Record<string, Modifier>>;
@@ -50,6 +52,20 @@ export function apGain(
     if (hook) gain = hook(gain, player);
   }
   return gain;
+}
+
+/** Inventory slots: the configured count folded through the player's modifiers. */
+export function inventorySlots(
+  state: Readonly<GameState>,
+  player: Readonly<PlayerState>,
+  registry: ModifierRegistry = MODIFIERS,
+): number {
+  let slots = state.config.inventorySlots;
+  for (const id of player.modifiers) {
+    const hook = registry[id]?.inventorySlots;
+    if (hook) slots = hook(slots, player);
+  }
+  return slots;
 }
 
 /**

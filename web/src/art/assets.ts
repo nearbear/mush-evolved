@@ -21,6 +21,14 @@ const portraits = urls(
   import.meta.glob<string>("../../../Mush/www/img/icons/portraits/*.png", { eager: true, query: "?url", import: "default" }),
 );
 
+// Full-length character art for the inspector (the files not listed here are site art, not crew).
+const characterArt = urls(
+  import.meta.glob<string>(
+    "../../../Mush/www/img/art/char/{wang_chao,zhong_chun,eleesha_williams,finola_keegan,frieda_bergmann,gioele_rinaldo,jiang_hua,ian_soulton,janice_kent,kim_jin_su,lai_kuan_ti,paola_rinaldo,raluca_tomescu,roland_zuccali,stephen_seagull,terrence_archer}.jpg",
+    { eager: true, query: "?url", import: "default" },
+  ),
+);
+
 // Portrait files use full names; jinsu's face strip has a typo in the archive.
 const PORTRAIT_FILE: Record<CharacterId, string> = {
   chao: "wang_chao",
@@ -72,6 +80,11 @@ export function spriteStrip(character: CharacterId | undefined, facing: "face" |
 
 export function portrait(character: CharacterId | undefined): string {
   return (character && portraits[PORTRAIT_FILE[character]]) || portraits["shadow"]!;
+}
+
+/** Full-length character illustration (about 210x300), or undefined for an unknown character. */
+export function characterImage(character: CharacterId | undefined): string | undefined {
+  return character && characterArt[PORTRAIT_FILE[character]];
 }
 
 const design = urls(

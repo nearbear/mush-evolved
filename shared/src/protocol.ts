@@ -39,6 +39,15 @@ export function parseGameMessage(raw: string): GameClientMessage | null {
   const a = msg.action;
   if (a.type === "ready") return { type: "action", action: { type: "ready" } };
   if (a.type === "move" && typeof a.to === "string") return { type: "action", action: { type: "move", to: a.to } };
+  if ((a.type === "take" || a.type === "drop") && typeof a.item === "string") {
+    return { type: "action", action: { type: a.type, item: a.item } };
+  }
+  if (a.type === "examine" && isRecord(a.target) && typeof a.target.id === "string") {
+    const { kind, id } = a.target;
+    if (kind === "player" || kind === "equipment" || kind === "item") {
+      return { type: "action", action: { type: "examine", target: { kind, id } } };
+    }
+  }
   return null;
 }
 

@@ -74,3 +74,12 @@ Added an inventory: three private slots per player, unlimited storage per room, 
 - Items are effect-less placeholders (Wrench, Blaster, Medikit) in `ITEM_TYPES`, placed via `config.startItems`, so the panel has something to show.
 - `viewFor` sends only your own inventory and the current room's items; tests check that other inventories, other rooms' items, and item locations never appear. Bumped `STATE_VERSION` to 5.
 - Correction during implementation: room items first listed in creation order, so a dropped item could appear above older ones. Transfers now move the item to the end of the list.
+
+### 2026-10-11 (inspect and examine)
+
+Made people, room equipment, and items selectable in the inspector, with "examine" as the only action for now. Nothing selected means you're inspecting yourself.
+- Decided by the user when asked: examine is a real server action (so later actions plug into `legalActions` the same way), free, with a private log line; it works on everything you can see, yourself included. Equipment is the original per-room list, leaving out cameras and the help drone. The names are English, translated by hand from the French in `DataExt.ods`.
+- Equipment comes from `tiles.xml` bindings. Four bindings (supercomputer, drug distiller, mycoscan, antenna upgrade) have no sprite in their room (things built later in the original), so `placedEquipment` only keeps bindings with a placed tile. Several bindings share one sprite (three beds, three patrol ships), and each claims the next unclaimed tile in order; which patrol ship is which on screen is a guess. The same function feeds `ship-rooms.json` for the rules and the renderer's click targets, so they can't disagree.
+- The converter imports `shared/src/shipLayout.ts` directly instead of the package index, because the index loads `config.ts`, which reads the JSON the converter writes.
+- Character inspection now uses the full art in `Mush/www/img/art/char/*.jpg` (user's choice).
+- Bumped `STATE_VERSION` to 6 (config shape changed).

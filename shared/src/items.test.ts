@@ -1,0 +1,129 @@
+import { describe, expect, it } from "vitest";
+import { CHARACTERS } from "./characters.ts";
+import { DEFAULT_CONFIG } from "./config.ts";
+import { capacity } from "./items.ts";
+import { MODIFIERS } from "./modifiers.ts";
+import { parseGameMessage } from "./protocol.ts";
+import { applyAction, createGame, viewFor } from "./rules.ts";
+import type { Action, GameConfig, GameState, PlayerId, Seat } from "./types.ts";
+
+const seats: Seat[] = Array.from({ length: 4 }, (_, i) => ({
+  id: `p${i}`,
+  name: `Player ${i}`,
+  isBot: i > 0,
+  character: CHARACTERS[i]!.id,
+}));
+
+/** Five wrenches in the lab (more than fit in an inventory), one medikit next door. */
+const config: GameConfig = {
+  ...DEFAULT_CONFIG,
+  startItems: [
+    ...Array.from({ length: 5 }, () => ({ type: "wrench", room: "LABORATORY" })),
+    { type: "medikit", room: "CORRIDOR_A" },
+  ],
+};
+const newGame = () => createGame(seats, config, 42);
+
+const take = (item: string): Action => ({ type: "take", item });
+const drop = (item: string): Action => ({ type: "drop", item });
+
+function mustApply(state: GameState, playerId: PlayerId, ...actions: Action[]): GameState {
+  for (const action of actions) {
+    const result = applyAction(state, playerId, action);
+    if (!result.ok) throw new Error(result.error);
+    state = result.state;
+  }
+  return state;
+}
+
+describe("inventory", () => {
+  it("places start items in rooms and starts everyone empty-handed", () => {
+    const state = newGame();
+    expect(state.items.map((i) => i.at)).toEqual([
+      ...Array(5).fill({ kind: "room", id: "LABORATORY" }),
+      { kind: "room", id: "CORRIDOR_A" },
+    ]);
+    const view = viewFor(state, "p0");
+    expect(view.inventory).toEqual([]);
+    expect(view.inventorySlots).toBe(3);
+    expect(view.roomItems).toHaveLength(5);
+    expect(view.roomItems[0]).toEqual({ id: "item-1", type: "wrench", name: "Wrench" });
+  });
+
+  it("takes and drops for free, logging both to the room's history", () => {
+    let state = mustApply(newGame(), "p0", take("item-1"));
+    expect(viewFor(state, "p0").inventory.map((i) => i.id)).toEqual(["item-1"]);
+    expect(viewFor(state, "p0").roomItems.map((i) => i.id)).not.toContain("item-1");
+    expect(viewFor(state, "p1").roomItems.map((i) => i.id)).not.toContain("item-1");
+
+    state = mustApply(state, "p0", { type: "move", to: "CORRIDOR_A" }, drop("item-1"));
+    expect(viewFor(state, "p0").roomItems.map((i) => i.id)).toEqual(["item-6", "item-1"]);
+    const p0 = state.players.find((p) => p.id === "p0")!;
+    expect(p0.ap).toBe(DEFAULT_CONFIG.startAp - 1); // only the move cost anything
+
+    const labLog = viewFor(state, "p1").log.map((e) => e.text);
+    expect(labLog).toContain("Player 0 picked up the Wrench.");
+    const corridorLog = viewFor(state, "p0").log.map((e) => e.text);
+    expect(corridorLog).toContain("Player 0 dropped the Wrench.");
+  });
+
+  it("holds at most three items", () => {
+    const state = mustApply(newGame(), "p0", take("item-1"), take("item-2"), take("item-3"));
+    expect(viewFor(state, "p0").legalActions.some((a) => a.type === "take")).toBe(false);
+    expect(applyAction(state, "p0", take("item-4")).ok).toBe(false);
+    // The room still takes anything back.
+    expect(mustApply(state, "p0", drop("item-1")).items.find((i) => i.id === "item-1")!.at).toEqual({ kind: "room", id: "LABORATORY" });
+  });
+
+  it("lets modifiers change the slot count", () => {
+    MODIFIERS["test:backpack"] = { inventorySlots: (n) => n + 1 };
+    try {
+      const state = newGame();
+      state.players[0]!.modifiers = ["test:backpack"];
+      expect(capacity(state, { kind: "player", id: "p0" })).toBe(4);
+      expect(viewFor(state, "p0").inventorySlots).toBe(4);
+      expect(capacity(state, { kind: "player", id: "p1" })).toBe(3);
+    } finally {
+      delete MODIFIERS["test:backpack"];
+    }
+  });
+
+  it("can't take items from another room or another player, or drop what you don't hold", () => {
+    const state = mustApply(newGame(), "p1", take("item-1"));
+    for (const action of [take("item-6"), take("item-1"), drop("item-1"), drop("item-2"), take("nope")]) {
+      expect(applyAction(state, "p0", action).ok, JSON.stringify(action)).toBe(false);
+    }
+  });
+
+  it("leaves the input state unchanged", () => {
+    const state = newGame();
+    const before = JSON.parse(JSON.stringify(state));
+    mustApply(state, "p0", take("item-1"));
+    expect(state).toEqual(before);
+  });
+});
+
+describe("inventory (hidden information)", () => {
+  it("never shows other players' inventories or other rooms' items", () => {
+    const state = mustApply(newGame(), "p1", take("item-1"));
+    const view = viewFor(state, "p0");
+    const json = JSON.stringify(view);
+    expect(json).not.toContain("item-6"); // the medikit in the corridor
+    expect(json).not.toContain('"item-1"'); // in p1's inventory
+    for (const other of view.players) expect(other).not.toHaveProperty("inventory");
+    expect(json).not.toContain('"at"');
+  });
+});
+
+describe("protocol", () => {
+  it("parses take and drop, and rejects malformed ones", () => {
+    const msg = (action: unknown) => JSON.stringify({ type: "action", action });
+    expect(parseGameMessage(msg({ type: "take", item: "item-1", extra: 1 }))).toEqual({
+      type: "action",
+      action: { type: "take", item: "item-1" },
+    });
+    expect(parseGameMessage(msg({ type: "drop", item: "item-1" }))?.type).toBe("action");
+    expect(parseGameMessage(msg({ type: "take", item: 5 }))).toBeNull();
+    expect(parseGameMessage(msg({ type: "drop" }))).toBeNull();
+  });
+});
