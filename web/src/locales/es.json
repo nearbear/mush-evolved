@@ -1,0 +1,20 @@
+{
+  "language": {
+    "label": "Idioma"
+  },
+  "common": {
+    "connecting": "Conectando…"
+  },
+  "lobby": {
+    "tagline": "Sueño criogénico. Elige una nave en la que despertar.",
+    "waiting": "Esperando: {{waiting}}/{{seats}}. Los asientos vacíos se llenarán pronto con bots.",
+    "awaitingCrew": "Esperando tripulación",
+    "nearlyFull": "Casi completa"
+  },
+  "nav": {
+    "panels": "Paneles",
+    "inspect": "Inspeccionar",
+    "room": "Sala",
+    "itrackie": "iTrackie"
+  }
+}

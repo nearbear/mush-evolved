@@ -118,3 +118,19 @@ Each phase ends with typecheck and tests passing and a small commit.
 2. Phase 0.
 3. Phase 1, then Phase 2. These are the core of the game, fully testable without a browser.
 4. Phases 3–5.
+
+## Internationalization follow-ups (added 2026-10-13)
+
+The seam is in (`web/src/i18n/`, catalogs in `web/src/locales/`, tests in `tools/src/i18n/`, the `i18n` skill). What remains is the comprehensive pass. `tools/src/i18n/baseline.json` lists every file that still has hardcoded English; the ratchet test keeps it from growing. Roughly in order, because the first four change data shapes:
+
+1. **Structured log events.** `LogEntry.text` is a finished English sentence built in `rules.ts` (`logPublic`/`logPrivate`). Store `{ key, params }` and render in the client. Params are data a player sees, so run `leak-check`, and bump `STATE_VERSION` in `server/src/GameRoom.ts` because the `GameState` shape changes.
+2. **Error codes, not sentences:** `ActionResult.error`, protocol `{ type: "error", message }`, `moderateChat` `reason`, and the rate-limit/"No game"/"Malformed message" strings in `GameRoom.ts` and `Matchmaker.ts`. Keep error answers independent of hidden state (see `docs/testing.md` section 1).
+3. **Names resolved in the client:** drop `name` from `ItemView`/`EquipmentView`, make `ITEM_TYPES`/`EQUIPMENT_TYPES` id-only, and move room labels out of the generated `Mush/derived/*.json` into the catalogs. Coordinate with the ship-layout/minimap work. The original French names are in `Mush/data/DataExt.ods`.
+4. **Bot and guest names:** `"Bot 2 (AI)"` and `"Guest N"` are stored as English in `Seat.name`. Store a number or id and format in the client (the AI badge already comes from `isBot`).
+5. **Translate the remaining client strings** (about 74; `ITrackie.tsx` alone has about 27). Done when the `ui` section of `baseline.json` is empty.
+6. **Moderation per language:** the blocked-word list is English-only, and `\b` ignores accented letters. Fix it with Unicode-aware boundaries, then change the `it.fails` test in `shared/src/moderation.test.ts` to `it`.
+7. **Native review** of every French and Spanish string (all current ones are AI drafts), and settle a glossary of game terms (one translation per term; French from `DataExt.ods`, Spanish needs your call). Known doubts: "Presque complet"/"Casi completa" (gender), "Salle"/"Sala" for Room.
+8. **In-game language switcher.** Only the lobby has one. The top bar is tight at 360px; a settings area in the iTrackie panel may suit it.
+9. **Visual check in French and Spanish** at desktop and 360px (longer text), then add a language option to `npm run screenshot` and a pseudo-locale for catching missed strings. Nobody has looked at the lobby picker yet.
+10. **Ship language vs UI language.** The lobby's English/Français/Español ships are placeholders. Decide what a ship's language means (chat community, bot chat language) now that the UI language is a separate per-player choice. Bot chat and prompts should follow the ship, not the UI.
+11. **Housekeeping:** add the i18n modules to `docs/code-map.md` (skipped to avoid conflicts with the minimap session), and re-run `UPDATE_I18N_BASELINE=1 npm test -w tools -- i18n` once the minimap lands, since the baseline recorded its in-progress counts.

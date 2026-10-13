@@ -99,7 +99,7 @@ Node is installed via nvm. In non-interactive shells, run `source ~/.nvm/nvm.sh`
 
 `docs/testing.md` lists what's important to test and why, with what's covered and what's missing.
 
-Project skills in `.claude/skills/`: `play` (launch, drive, and look at the game), `rule` (adding or changing a game rule), `asset` (using art from `Mush/`), `bot` (scripted and model-backed bots), `leak-check` (review changes for hidden-information leaks), and `wrap-up` (verify, update docs, propose a commit).
+Project skills in `.claude/skills/`: `play` (launch, drive, and look at the game), `rule` (adding or changing a game rule), `asset` (using art from `Mush/`), `bot` (scripted and model-backed bots), `leak-check` (review changes for hidden-information leaks), `i18n` (player-visible text and translations: en/fr/es), and `wrap-up` (verify, update docs, propose a commit).
 
 npm 11 blocks dependency install scripts by default. `esbuild` and `workerd` are approved in the root `package.json` `allowScripts`; new packages with install scripts need `npm install-scripts approve <pkg>`.
 
@@ -114,3 +114,4 @@ See `docs/code-map.md` for where each module lives and which rules are implement
 - Code license.
 - Hosting and deployment details.
 - Rendering beyond the DOM isometric view (decided: DOM for now, 2026-10-11).
+- Internationalization (en/fr/es): the seam is in, the comprehensive pass is not. Checklist in the "Internationalization follow-ups" section of `docs/plan.md`; remind me of it when we finish a feature or start a new session.

@@ -137,3 +137,27 @@ Asked the assistant whether the project structure was sound. It flagged three is
 - Decided by the user: feature list, iTrackie gating of global chat and threads, iTrackie as a normal item, private channels deferred to a stub, UI-only trackers, the `super_talky` icon, and the commit split (lobby, asset-index, iTrackie and features as three commits).
 - Needed correction: the assistant guessed the wrong icon (`talky_walky`) from memory; the earlier log entry above used a `##` heading where this file uses `###`.
 - Process note: `/wrap-up` can't be invoked by the assistant, so the user had to run it.
+
+## 2026-10-13: i18n readiness review and checking tests
+
+Asked the AI whether anything blocked adding English/French/Spanish later. It found the real constraints by reading the code: the game log is stored as finished English sentences, item/equipment/room names are resolved on the server, and errors are English strings on the wire. It also separated UI language (per player) from ship language (chat community), which I'd conflated.
+Then had it write the checking tests (`tools/src/i18n/`) before any translation work, using a baseline ratchet so existing hardcoded text is recorded and can only shrink.
+What needed correction: its first test fixtures were sloppy (an `undefined` cast, a wrong expected order), and the scanner flagged `aria-label={t("close")}` and a `className` string until it was told to skip translation keys and class names. A review of every finding by hand caught a trimmed-whitespace bug that hid `return \`the ${x}\`` in rules.ts. It also surfaced a real bug, `\b` ignoring accented letters in chat moderation, recorded as an `it.fails` test.
+
+## 2026-10-13: Minimap with fog of war (replaces the room list)
+
+- Asked for a plan first: fogged view of other rooms, plus a hover-to-expand minimap with room names and door markers. The AI found that the iso rooms have no shared coordinates, so drawing faded neighbours around the current room would mean inventing a layout; it recommended putting the fog in the minimap instead, and I agreed. Decisions: clicking a room in the minimap selects it (Go when reachable) rather than moving immediately; fog is grayscale; other players' locations stay public.
+- Data: the obvious source, `starship_map.png`, turned out to be a 99x51 stylised picture. The original's color-coded plan image isn't in the archive, but `Map.hx` keeps its decoded result as a Haxe-serialized string. The AI wrote a small unserializer and converter (`ship-plan.json`) and checked it before writing the converter: same 27 rooms, and its 40 doors give exactly the rules' door graph. That check is now a test, and it would catch a wrong enum-to-room mapping.
+- Mobile: the minimap shows on phones too, since nothing is hover-only (tap expands, tap selects, Go is a button).
+- Needed correction: a hand-written Haxe IntMap test string was malformed, and the screenshot helper first used DOM types the tools package doesn't have. The new i18n ratchet (in progress in the same tree) flagged the minimap's 6 strings; there is no `t()` yet, so they went into the baseline for now.
+
+## 2026-10-13: i18n seam (react-i18next)
+
+Installed `i18next` and `react-i18next` (approved) and added the seam: `web/src/i18n/` (language choice, init, switcher), catalogs in `web/src/locales/`, typed keys via `CustomTypeOptions`. Converted only `BottomNav` and the lobby, as a proof the whole chain works; everything else stays on the hardcoded-text baseline for a later comprehensive pass.
+Worked around a parallel AI session editing the minimap: touched only new files plus `main.tsx`, `BottomNav.tsx`, `Lobby.tsx`; kept the switcher's CSS in its own file instead of `styles.css`; left `GameScreen.tsx`, `styles.css`, `scene/*` and the ship-layout files alone. The model can't read `node_modules`, so library option names (`initAsync: false`) were checked by the compiler and a test rather than from the types.
+Needed correction: the key-usage test read comments (a `t("...")` in a doc comment counted as a real key), so comments are now stripped first.
+French and Spanish strings are first drafts and need a native speaker's review.
+
+## 2026-10-13: i18n skill
+
+The user asked whether an `i18n` skill was worth having and said they didn't know how to judge it. The assistant proposed three tests (the task recurs, it has conventions tests can't enforce, mistakes are costly to fix later), concluded yes, and wrote a short one (`.claude/skills/i18n/SKILL.md`) that leaves mechanical rules to `tools/src/i18n` and keeps only judgment calls. Not yet exercised; delete it if it never triggers or only repeats what the tests say.

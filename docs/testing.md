@@ -57,3 +57,14 @@ The client renders a view and sends intents, so there's little logic to unit tes
 - **Pure layout math** (`placement.ts`: projection, paint order, standing spots, `fitScale`, `hitTest`). *Covered.*
 - **`targets.ts`** (finding the selection in a view, `actionLabel`): pure and cheap to test. *Missing.*
 - **Layouts, mobile, and touch** are checked with the `play` skill's desktop and 360px phone screenshot passes, not unit tests. The script already fails on sideways page scroll. The on-screen keyboard can only be checked on a real phone.
+
+## 7. Internationalization (English, French, Spanish)
+
+Checks live in `tools/src/i18n/` and run with `npm test`. Catalogs are `web/src/locales/{en,fr,es}.json` (i18next JSON v4; English is the reference).
+
+- **Catalog parity:** every language has the same keys, no empty values, the same `{{placeholders}}` and Trans tags, and every plural form its language needs (French and Spanish need `_many` as well as `_one`/`_other`; English doesn't). *Covered* by fixtures and the real catalogs (so far only `BottomNav` and the lobby are translated; the rest is the baseline below).
+- **Runtime language switching** (`web/src/i18n/i18n.test.ts`): saved choice beats browser language, startup is synchronous, switching changes `t()` output, persists, and updates `<html lang>`. *Covered.* The picker itself (`LanguageSwitcher`) is only in the lobby so far and has not been checked visually.
+- **Keys in use exist:** every static `t("key")` / `i18nKey` in `web/src` is in the English catalog. *Covered.*
+- **No new hardcoded text (ratchet):** `baseline.json` records how many hardcoded English strings each file has (client JSX text and attributes, and the sentences, errors, and names in `shared` and `server`). A file may not gain any, and when it loses some the test fails until the baseline is lowered (`UPDATE_I18N_BASELINE=1 npm test -w tools -- i18n`). The scanners are regex heuristics: a line that should stay English carries an `i18n-ignore` comment. *Covered.*
+- **Moderation with accents:** `\b` ignores é/ñ, so blocked words with accented edges aren't masked (`it.fails` in `moderation.test.ts`). *Known gap.* Also: the word list is English-only.
+- **Not covered yet:** derived room labels in `Mush/derived/*.json` (English text generated from the map); pseudo-locale and fr/es screenshot passes (need the `t()` seam and a language switch); layout overflow with longer French and Spanish text.

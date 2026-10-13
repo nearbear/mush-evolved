@@ -1,0 +1,20 @@
+{
+  "language": {
+    "label": "Langue"
+  },
+  "common": {
+    "connecting": "Connexion…"
+  },
+  "lobby": {
+    "tagline": "Sommeil cryogénique. Choisissez un vaisseau où vous réveiller.",
+    "waiting": "En attente : {{waiting}}/{{seats}}. Les places vides seront bientôt remplies par des bots.",
+    "awaitingCrew": "En attente d'équipage",
+    "nearlyFull": "Presque complet"
+  },
+  "nav": {
+    "panels": "Panneaux",
+    "inspect": "Inspecter",
+    "room": "Salle",
+    "itrackie": "iTrackie"
+  }
+}

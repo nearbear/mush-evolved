@@ -1,0 +1,20 @@
+{
+  "language": {
+    "label": "Language"
+  },
+  "common": {
+    "connecting": "Connecting…"
+  },
+  "lobby": {
+    "tagline": "Cryo sleep. Pick a ship to wake aboard.",
+    "waiting": "Waiting: {{waiting}}/{{seats}}. Empty seats fill with bots shortly.",
+    "awaitingCrew": "Awaiting crew",
+    "nearlyFull": "Nearly full"
+  },
+  "nav": {
+    "panels": "Panels",
+    "inspect": "Inspect",
+    "room": "Room",
+    "itrackie": "iTrackie"
+  }
+}

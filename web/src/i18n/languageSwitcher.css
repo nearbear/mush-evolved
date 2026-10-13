@@ -1,0 +1,21 @@
+/* Kept out of styles.css on purpose. Pinned to the top-right corner of the lobby. */
+.language-switcher {
+  position: fixed;
+  top: max(0.5rem, env(safe-area-inset-top));
+  right: max(0.5rem, env(safe-area-inset-right));
+  z-index: 10;
+  min-height: 2.25rem; /* comfortable touch target */
+  max-width: 40vw;
+  padding: 0 0.5rem;
+  font: inherit;
+  font-size: 0.85rem;
+  color: inherit;
+  background: rgb(0 0 0 / 0.55);
+  border: 1px solid rgb(255 255 255 / 0.3);
+  border-radius: 4px;
+}
+
+.language-switcher option {
+  color: #000;
+  background: #fff;
+}

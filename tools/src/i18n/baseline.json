@@ -1,0 +1,23 @@
+{
+  "ui": {
+    "web/src/GameScreen.tsx": 7,
+    "web/src/Lobby.tsx": 2,
+    "web/src/hud/ITrackie.tsx": 27,
+    "web/src/hud/InspectPanel.tsx": 11,
+    "web/src/hud/InventoryPanel.tsx": 6,
+    "web/src/hud/PeekBar.tsx": 7,
+    "web/src/hud/PipBar.tsx": 1,
+    "web/src/hud/TopBar.tsx": 5,
+    "web/src/hud/targets.ts": 1,
+    "web/src/iso/IsoRoom.tsx": 1,
+    "web/src/scene/Minimap.tsx": 6
+  },
+  "wire": {
+    "shared/src/equipment.ts": 31,
+    "shared/src/items.ts": 4,
+    "shared/src/moderation.ts": 2,
+    "shared/src/rules.ts": 13,
+    "server/src/GameRoom.ts": 5,
+    "server/src/Matchmaker.ts": 2
+  }
+}
