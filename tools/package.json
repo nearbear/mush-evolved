@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "ship-layout": "node src/shipLayout/convert.ts",
+    "asset-index": "node src/assetIndex/assetIndex.ts",
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
     "screenshot": "node src/play/screenshot.ts",

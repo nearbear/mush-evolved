@@ -15,6 +15,7 @@
     "typecheck": "npm run typecheck --workspaces --if-present",
     "build": "npm run build -w web",
     "ship-layout": "npm run ship-layout -w tools",
+    "asset-index": "npm run asset-index -w tools",
     "screenshot": "npm run screenshot -w tools --",
     "contact-sheet": "npm run contact-sheet -w tools --"
   },
