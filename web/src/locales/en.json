@@ -16,5 +16,28 @@
     "inspect": "Inspect",
     "room": "Room",
     "itrackie": "iTrackie"
+  },
+  "channels": {
+    "empty": "No private channels yet.",
+    "count": "{{used}} of {{limit}} channels",
+    "nameLabel": "New channel name",
+    "namePlaceholder": "Channel name…",
+    "create": "Create",
+    "list": "Your private channels",
+    "members": "Members: {{names}}",
+    "messagePlaceholder": "Message {{name}}…",
+    "inviteLabel": "Player to invite",
+    "invitePick": "Invite someone…",
+    "invite": "Invite",
+    "leave": "Leave",
+    "noOne": "No one to invite.",
+    "tab": "Private"
+  },
+  "itrackie": {
+    "tabs": {
+      "room": "Room log",
+      "global": "Global chat",
+      "features": "Features"
+    }
   }
 }

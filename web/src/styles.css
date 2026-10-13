@@ -405,8 +405,9 @@ h2 {
   text-shadow: none;
 }
 .itrackie-tab {
-  height: 24px;
+  height: 28px;
   padding: 0 0.6rem;
+  font-size: 1rem;
 }
 .itrackie-tab:hover:not(:disabled),
 .itrackie-tab:active:not(:disabled) {
@@ -492,18 +493,55 @@ h2 {
   margin: 0;
 }
 
-/* Private channels: a collapsible under the tabs (stub until channels exist). */
-.private-channels {
-  flex: none;
-  border-top: 1px solid var(--edge);
-  padding: 0.4rem 0.75rem;
+/* Private tab: laid out like Features (drop-down, then the thread), with channel controls around it. */
+.channel-bar {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
 }
-.private-channels-toggle {
-  width: 100%;
+.channel-bar .feature-select {
+  flex: 1;
+  min-width: 0;
+}
+.channel-bar button {
+  flex: none;
   margin: 0;
 }
-.private-channels-panel p {
-  margin: 0.4rem 0 0;
+/* Square-ish emoji button; the label lives in the tooltip. */
+.icon-button {
+  flex: none;
+  min-width: 32px;
+  padding: 0 0.4rem;
+  font-size: 0.95rem;
+  line-height: 21px;
+}
+.tooltip {
+  z-index: 50;
+  max-width: 16rem;
+  padding: 0.25rem 0.5rem;
+  border: 1px solid var(--edge);
+  border-radius: 4px;
+  background: var(--surface-bottom, #0b1020);
+  color: #fff;
+  font-size: 0.8rem;
+  pointer-events: none;
+}
+.channel-members {
+  margin: 0 0 0.5rem;
+  overflow-wrap: anywhere;
+}
+.channel-empty {
+  flex: 1;
+  margin: 0;
+}
+.channel-invite,
+.channel-create {
+  flex: none;
+  margin-top: 0.5rem;
+}
+.channel-create ~ p {
+  flex: none;
+  margin: 0.25rem 0 0;
 }
 .itrackie-caption {
   margin-bottom: 0.25rem;

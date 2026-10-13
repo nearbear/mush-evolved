@@ -4,10 +4,11 @@
 // renderer (CLAUDE.md).
 
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import { Collapsible } from "@base-ui/react/collapsible";
+import { useTranslation } from "react-i18next";
 import { ScrollArea } from "@base-ui/react/scroll-area";
 import { Tabs } from "@base-ui/react/tabs";
-import { FEATURE_CHANNELS, ITRACKIE_ITEM, MAX_CHAT_LENGTH, type ChatChannel, type FeatureChannel, type PlayerView } from "@mush2/shared";
+import { FEATURE_CHANNELS, ITRACKIE_ITEM, MAX_CHAT_LENGTH, type ChannelId, type FeatureChannel, type PlayerView, type PrivateChannelId } from "@mush2/shared";
+import { IconButton, IconTab } from "./IconButton.tsx";
 import { roomLabel } from "../scene/names.ts";
 
 const FEATURE_LABELS: Record<FeatureChannel, string> = {
@@ -23,7 +24,22 @@ const FEATURE_LABELS: Record<FeatureChannel, string> = {
 type Notes = Record<FeatureChannel, string[]>;
 const NO_NOTES = Object.fromEntries(FEATURE_CHANNELS.map((f) => [f, []])) as unknown as Notes;
 
-export function ITrackie({ view, onChat }: { view: PlayerView; onChat: (channel: ChatChannel, text: string) => void }) {
+export interface ChannelHandlers {
+  onCreate: (name: string) => void;
+  onInvite: (channel: PrivateChannelId, player: string) => void;
+  onLeave: (channel: PrivateChannelId) => void;
+}
+
+export function ITrackie({
+  view,
+  onChat,
+  channels,
+}: {
+  view: PlayerView;
+  onChat: (channel: ChannelId, text: string) => void;
+  channels: ChannelHandlers;
+}) {
+  const { t } = useTranslation();
   const here = view.you.room;
   // The server sends this room's public history plus our private entries from
   // anywhere; the Room tab shows what belongs to the room we're standing in.
@@ -38,15 +54,10 @@ export function ITrackie({ view, onChat }: { view: PlayerView; onChat: (channel:
     <div className="panel itrackie">
       <Tabs.Root className="itrackie-tabs-root" defaultValue="room">
         <Tabs.List className="itrackie-tabs">
-          <Tabs.Tab className="itrackie-tab" value="room">
-            Room log
-          </Tabs.Tab>
-          <Tabs.Tab className="itrackie-tab" value="global">
-            Global chat
-          </Tabs.Tab>
-          <Tabs.Tab className="itrackie-tab" value="features">
-            Features
-          </Tabs.Tab>
+          <IconTab value="room" icon="📜" label={t("itrackie.tabs.room")} />
+          <IconTab value="global" icon="💬" label={t("itrackie.tabs.global")} />
+          <IconTab value="features" icon="🛠️" label={t("itrackie.tabs.features")} />
+          <IconTab value="private" icon="🔒" label={t("channels.tab")} />
         </Tabs.List>
 
         {/* keepMounted: hidden with CSS, so chat drafts survive switching tabs. */}
@@ -97,14 +108,11 @@ export function ITrackie({ view, onChat }: { view: PlayerView; onChat: (channel:
             </div>
           ))}
         </Tabs.Panel>
-      </Tabs.Root>
 
-      <Collapsible.Root className="private-channels">
-        <Collapsible.Trigger className="private-channels-toggle">Private channels</Collapsible.Trigger>
-        <Collapsible.Panel className="private-channels-panel">
-          <p className="sub">Coming soon: private chats you can create, invite to, and leave.</p>
-        </Collapsible.Panel>
-      </Collapsible.Root>
+        <Tabs.Panel className="itrackie-panel" value="private" keepMounted>
+          <PrivateChannels view={view} onChat={onChat} {...channels} />
+        </Tabs.Panel>
+      </Tabs.Root>
     </div>
   );
 }
@@ -117,7 +125,7 @@ function Thread({
   onSend,
 }: {
   view: PlayerView;
-  channel: ChatChannel;
+  channel: ChannelId;
   placeholder: string;
   onSend: (text: string) => void;
 }) {
@@ -237,5 +245,109 @@ function ChatInput({ enabled, placeholder, onSend }: { enabled: boolean; placeho
       />
       <button className="chat-send" type="submit" disabled={!enabled || !text.trim()} aria-label="Send" title="Send" />
     </form>
+  );
+}
+
+/**
+ * The Private tab, laid out like Features: a drop-down picks one of your
+ * channels, its thread fills the panel, and members, invite, and leave sit
+ * above it. Creating a channel is at the bottom.
+ */
+function PrivateChannels({
+  view,
+  onChat,
+  onCreate,
+  onInvite,
+  onLeave,
+}: { view: PlayerView; onChat: (channel: ChannelId, text: string) => void } & ChannelHandlers) {
+  const { t, i18n } = useTranslation();
+  const [picked, setPicked] = useState<PrivateChannelId | "">("");
+  const [name, setName] = useState("");
+  const [invitee, setInvitee] = useState("");
+  // Falls back to the first channel when none is picked or the picked one is gone (left, or deleted).
+  const current = view.privateChannels.find((c) => c.id === picked) ?? view.privateChannels[0];
+  const nameOf = (id: string) => (id === view.you.id ? view.you.name : (view.players.find((p) => p.id === id)?.name ?? id));
+  const atLimit = view.privateChannels.length >= view.channelLimit;
+  const invitable = current ? view.players.filter((p) => p.alive && !current.members.includes(p.id)) : [];
+
+  return (
+    <>
+      {current ? (
+        <>
+          <div className="channel-bar">
+            <select
+              className="feature-select"
+              value={current.id}
+              onChange={(e) => setPicked(e.target.value as PrivateChannelId)}
+              aria-label={t("channels.list")}
+            >
+              {view.privateChannels.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.name}
+                </option>
+              ))}
+            </select>
+            <IconButton icon="🚪" label={t("channels.leave")} onClick={() => onLeave(current.id)} />
+          </div>
+          <p className="sub channel-members">
+            {t("channels.members", { names: new Intl.ListFormat(i18n.language, { type: "conjunction" }).format(current.members.map(nameOf)) })}
+          </p>
+          {/* One block per channel, hidden with CSS, so each keeps its own draft. */}
+          {view.privateChannels.map((c) => (
+            <div key={c.id} className="feature" hidden={c.id !== current.id}>
+              <Thread
+                view={view}
+                channel={c.id}
+                placeholder={t("channels.messagePlaceholder", { name: c.name })}
+                onSend={(text) => onChat(c.id, text)}
+              />
+            </div>
+          ))}
+          {invitable.length > 0 && (
+            <form
+              className="chat-input channel-invite"
+              onSubmit={(e) => {
+                e.preventDefault();
+                if (!invitee) return;
+                onInvite(current.id, invitee);
+                setInvitee("");
+              }}
+            >
+              <select value={invitee} onChange={(e) => setInvitee(e.target.value)} aria-label={t("channels.inviteLabel")}>
+                <option value="">{t("channels.invitePick")}</option>
+                {invitable.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.name}
+                  </option>
+                ))}
+              </select>
+              <IconButton type="submit" icon="📨" label={t("channels.invite")} disabled={!invitee} />
+            </form>
+          )}
+        </>
+      ) : (
+        <p className="sub channel-empty">{t("channels.empty")}</p>
+      )}
+      <form
+        className="chat-input channel-create"
+        onSubmit={(e) => {
+          e.preventDefault();
+          if (!name.trim() || atLimit) return;
+          onCreate(name);
+          setName("");
+        }}
+      >
+        <input
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          maxLength={24}
+          placeholder={t("channels.namePlaceholder")}
+          aria-label={t("channels.nameLabel")}
+          disabled={atLimit}
+        />
+        <IconButton type="submit" icon="➕" label={t("channels.create")} disabled={atLimit || !name.trim()} />
+      </form>
+      <p className="sub">{t("channels.count", { used: view.privateChannels.length, limit: view.channelLimit })}</p>
+    </>
   );
 }

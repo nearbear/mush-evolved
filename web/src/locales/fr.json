@@ -16,5 +16,28 @@
     "inspect": "Inspecter",
     "room": "Salle",
     "itrackie": "iTrackie"
+  },
+  "channels": {
+    "empty": "Aucun canal privé pour l'instant.",
+    "count": "{{used}} canaux sur {{limit}}",
+    "nameLabel": "Nom du nouveau canal",
+    "namePlaceholder": "Nom du canal…",
+    "create": "Créer",
+    "list": "Vos canaux privés",
+    "members": "Membres : {{names}}",
+    "messagePlaceholder": "Écrire à {{name}}…",
+    "inviteLabel": "Joueur à inviter",
+    "invitePick": "Inviter quelqu'un…",
+    "invite": "Inviter",
+    "leave": "Quitter",
+    "noOne": "Personne à inviter.",
+    "tab": "Privé"
+  },
+  "itrackie": {
+    "tabs": {
+      "room": "Journal de la salle",
+      "global": "Chat général",
+      "features": "Fonctions"
+    }
   }
 }
