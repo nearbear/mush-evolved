@@ -24,6 +24,14 @@ const FEATURE_LABELS: Record<FeatureChannel, string> = {
 type Notes = Record<FeatureChannel, string[]>;
 const NO_NOTES = Object.fromEntries(FEATURE_CHANNELS.map((f) => [f, []])) as unknown as Notes;
 
+type TabId = "room" | "global" | "features" | "private";
+const TAB_TITLES = {
+  room: "itrackie.tabs.room",
+  global: "itrackie.tabs.global",
+  features: "itrackie.tabs.features",
+  private: "channels.tab",
+} as const;
+
 export interface ChannelHandlers {
   onCreate: (name: string) => void;
   onInvite: (channel: PrivateChannelId, player: string) => void;
@@ -40,6 +48,7 @@ export function ITrackie({
   channels: ChannelHandlers;
 }) {
   const { t } = useTranslation();
+  const [tab, setTab] = useState<TabId>("room");
   const here = view.you.room;
   // The server sends this room's public history plus our private entries from
   // anywhere; the Room tab shows what belongs to the room we're standing in.
@@ -52,13 +61,14 @@ export function ITrackie({
 
   return (
     <div className="panel itrackie">
-      <Tabs.Root className="itrackie-tabs-root" defaultValue="room">
+      <Tabs.Root className="itrackie-tabs-root" value={tab} onValueChange={(v) => setTab(v as TabId)}>
         <Tabs.List className="itrackie-tabs">
           <IconTab value="room" icon="📜" label={t("itrackie.tabs.room")} />
           <IconTab value="global" icon="💬" label={t("itrackie.tabs.global")} />
           <IconTab value="features" icon="🛠️" label={t("itrackie.tabs.features")} />
           <IconTab value="private" icon="🔒" label={t("channels.tab")} />
         </Tabs.List>
+        <h2 className="itrackie-title">{t(TAB_TITLES[tab])}</h2>
 
         {/* keepMounted: hidden with CSS, so chat drafts survive switching tabs. */}
         <Tabs.Panel className="itrackie-panel" value="room" keepMounted>

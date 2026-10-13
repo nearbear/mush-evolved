@@ -425,6 +425,13 @@ h2 {
   color: var(--text);
   font-weight: bold;
 }
+/* The active tab's name, since the tabs themselves are icons. */
+.itrackie-title {
+  flex: none;
+  margin: 0;
+  padding: 0.4rem 0.75rem 0;
+  font-size: 0.9rem;
+}
 .itrackie-tabs-root {
   flex: 1;
   display: flex;
