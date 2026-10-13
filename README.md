@@ -16,7 +16,7 @@ This starts both halves:
 - **Game server** (wrangler, local Durable Objects): http://localhost:8787
 - **Web client** (Vite): http://localhost:5173. Open this in a browser.
 
-Enter a name and click **Find game**. After 15 seconds, empty seats fill with bots (labeled "(AI)"). To test with several humans, open more tabs within that window: each tab is a separate player.
+Enter a name and click **Find game**. After 5 seconds, empty seats fill with bots (labeled "(AI)"). To test with several humans, open more tabs within that window: each tab is a separate player.
 
 Run the halves separately with `npm run dev -w server` and `npm run dev -w web`. To point the client at another server, copy `web/.env.example` to `web/.env` and set `VITE_PARTY_HOST`.
 

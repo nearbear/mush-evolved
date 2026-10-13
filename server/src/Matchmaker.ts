@@ -7,7 +7,7 @@ import { CHARACTERS, parseMatchmakerMessage, SEAT_COUNT, type MatchmakerServerMe
 import { RateLimiter } from "./rateLimit.ts";
 
 /** How long the first player waits before empty seats are filled with bots. */
-const FILL_DELAY_MS = 15_000;
+const FILL_DELAY_MS = 5_000;
 
 interface QueueState {
   name: string | null;

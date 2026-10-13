@@ -24,7 +24,7 @@ const { values: args } = parseArgs({
   },
 });
 
-/** Bots fill the queue after 15 s (Matchmaker FILL_DELAY_MS); allow for startup. */
+/** Bots fill the queue after 5 s (Matchmaker FILL_DELAY_MS); allow for startup. */
 const MATCH_TIMEOUT_MS = 45_000;
 
 /** Thrown by a step that can't run in the current game state (e.g. nobody else in the room). */
