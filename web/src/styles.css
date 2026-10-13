@@ -6,6 +6,18 @@
   --muted: #8796b8;
   --accent: #4fc3f7;
   --mush: #c86bd8;
+  --danger: #ff6b81;
+  /* Gold: selection outlines, glows, highlighted map cells. */
+  --highlight: #f5c542;
+  --badge: #24508a;
+  --room-bg: #0a0f1c;
+  /* Dark text/strokes on light art (chat field, minimap dots). */
+  --ink: #0d1424;
+  /* Glowing-panel surface: fill gradient (top, bottom), glow, bright rim. */
+  --surface-top: #161e42;
+  --surface-bottom: #16213a;
+  --glow: #3c6eff;
+  --glow-rim: #78aaff;
   --sprite-scale: 2;
   color-scheme: dark;
 }
@@ -130,7 +142,7 @@ h2 {
 }
 
 .error {
-  color: #ff6b81;
+  color: var(--danger);
 }
 
 /* Top bar */
@@ -139,9 +151,6 @@ h2 {
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  background: var(--panel);
-  border: 1px solid var(--edge);
-  border-radius: 6px;
   padding: 0.5rem 0.75rem;
 }
 .top-bar .spacer {
@@ -165,7 +174,7 @@ h2 {
   font-weight: bold;
   padding: 0.15rem 0.5rem;
   border-radius: 3px;
-  background: #24508a;
+  background: var(--badge);
 }
 .role.mush {
   background: var(--mush);
@@ -231,10 +240,21 @@ h2 {
   min-width: 0;
 }
 .panel {
-  background: var(--panel);
+  padding: 0.75rem;
+}
+/* The shared glowing-panel look. Everything is a token, so a theme only sets variables. */
+.panel,
+.top-bar {
+  background: linear-gradient(
+    color-mix(in srgb, var(--surface-top) 92%, transparent),
+    color-mix(in srgb, var(--surface-bottom) 92%, transparent)
+  );
   border: 1px solid var(--edge);
   border-radius: 6px;
-  padding: 0.75rem;
+  box-shadow:
+    inset 0 0 12px 1px color-mix(in srgb, var(--glow) 45%, transparent),
+    inset 0 0 2px 1px color-mix(in srgb, var(--glow-rim) 70%, transparent),
+    0 0 10px color-mix(in srgb, var(--glow) 30%, transparent);
 }
 .panel-head {
   display: flex;
@@ -299,10 +319,10 @@ h2 {
 }
 .item-list button.item-name:hover,
 .item-list button.item-name.selected {
-  color: #f5c542;
+  color: var(--highlight);
 }
 .item-list .item-name.selected .item-icon {
-  outline: 2px solid #f5c542;
+  outline: 2px solid var(--highlight);
 }
 .inspect-facts {
   display: grid;
@@ -359,26 +379,35 @@ h2 {
   display: flex;
   border-bottom: 1px solid var(--edge);
 }
-/* The original iTrackie's tab art (taboff/tabon, 31x24), stretched to fit a label. */
-.itrackie-tab {
+/* Tabs share the panel look: flat when idle, glowing when active. */
+.itrackie-tab,
+.bottom-nav-button {
   flex: 1;
   margin: 0;
-  height: 24px;
   border: 0;
   border-radius: 0;
-  background: url("../../Mush/www/img/design/taboff.gif") 0 0 / 100% 100% no-repeat;
-  padding: 0 0.6rem;
+  background: color-mix(in srgb, var(--surface-top) 60%, transparent);
   color: var(--muted);
   text-shadow: none;
+}
+.itrackie-tab {
+  height: 24px;
+  padding: 0 0.6rem;
 }
 .itrackie-tab:hover:not(:disabled),
 .itrackie-tab:active:not(:disabled) {
   color: var(--text);
 }
 .itrackie-tab[data-active],
-.itrackie-tab[data-active]:hover {
-  background-image: url("../../Mush/www/img/design/tabon.gif");
-  color: #0d1424;
+.bottom-nav-button[aria-current] {
+  background: linear-gradient(
+    color-mix(in srgb, var(--surface-top) 92%, transparent),
+    color-mix(in srgb, var(--surface-bottom) 92%, transparent)
+  );
+  box-shadow:
+    inset 0 0 10px 1px color-mix(in srgb, var(--glow) 45%, transparent),
+    inset 0 -2px 0 var(--glow-rim);
+  color: var(--text);
   font-weight: bold;
 }
 .itrackie-tabs-root {
@@ -524,7 +553,7 @@ h2 {
   border: 0;
   border-radius: 0;
   background: url("../../Mush/www/img/design/chatbox.png") 0 0 / 100% 100% no-repeat;
-  color: #0d1424;
+  color: var(--ink);
 }
 .chat-input input:disabled {
   opacity: 0.6;
@@ -545,7 +574,7 @@ h2 {
 .iso-room {
   position: relative;
   min-height: 200px;
-  background: #0a0f1c;
+  background: var(--room-bg);
   border: 1px solid var(--edge);
   border-radius: 6px;
   padding: 2.25rem 1rem 1rem;
@@ -607,7 +636,7 @@ h2 {
 .iso-sprite.equipment.selected,
 .iso-sprite.door.selected,
 .iso-actor.selected {
-  filter: drop-shadow(0 0 2px #f5c542);
+  filter: drop-shadow(0 0 2px var(--highlight));
 }
 .iso-tag {
   position: absolute;
@@ -626,7 +655,7 @@ h2 {
   outline: 1px solid var(--accent);
 }
 .iso-tag.selected {
-  outline: 1px solid #f5c542;
+  outline: 1px solid var(--highlight);
 }
 .tag {
   margin-left: 4px;
@@ -689,7 +718,7 @@ h2 {
   cursor: pointer;
 }
 .minimap-walls {
-  fill: #2c3e66;
+  fill: var(--edge);
   pointer-events: none;
 }
 .minimap-room {
@@ -709,7 +738,7 @@ h2 {
   opacity: 0.8;
 }
 .minimap-room.here {
-  fill: #f5c542;
+  fill: var(--highlight);
   opacity: 1;
 }
 .minimap-door {
@@ -726,12 +755,12 @@ h2 {
   pointer-events: none;
 }
 .minimap-person.near {
-  fill: #0d1424;
+  fill: var(--ink);
   opacity: 1;
 }
 .minimap-person.you {
   fill: #fff;
-  stroke: #0d1424;
+  stroke: var(--ink);
   stroke-width: 0.35;
   opacity: 1;
 }
@@ -934,21 +963,10 @@ h2 {
     background: var(--panel);
     border-top: 1px solid var(--edge);
   }
-  /* The iTrackie tab art (taboff/tabon), like the tabs inside it. */
+  /* Tab look is shared with the iTrackie tabs above. */
   .bottom-nav-button {
-    flex: 1;
-    margin: 0;
     height: 44px;
-    border-radius: 0;
-    background: url("../../Mush/www/img/design/taboff.gif") 0 0 / 100% 100% no-repeat;
-    color: var(--muted);
     font-size: 0.85rem;
-    text-shadow: none;
-  }
-  .bottom-nav-button[aria-current] {
-    background-image: url("../../Mush/www/img/design/tabon.gif");
-    color: #0d1424;
-    font-weight: bold;
   }
 
   /* Typing: give the feed and the input everything above the keyboard. */

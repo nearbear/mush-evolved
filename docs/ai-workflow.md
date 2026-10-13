@@ -178,3 +178,10 @@ Replaced the per-action branches in `legalActions`/`applyAction` with one `Actio
 
 - Needed correction: the AI's first test checked that `applyAction` accepts exactly what `legalActions` offers. Deliberately breaking a `check` showed it could never fail, because both now call the same `check`, so they agree by construction. It was replaced with a test that pins the full legal set at game start plus the broke and full-inventory cases. Both deliberate breakages now fail it. Lesson: after a refactor that unifies two code paths, a test that they agree is a tautology. Sabotage a test before trusting it.
 - TypeScript: `ActionDef<T>` keyed by the type tag (through `Extract<Action, {type: T}>`) is invariant, so the definitions couldn't be treated uniformly. Keying it by the action type itself (`ActionDef<A extends Action>`) fixed it without casts.
+
+## 2026-10-13: glowing panel style and theme tokens
+
+- Asked how to reproduce the original `tipbottom.png` edge effect in CSS. The `Mush/www` read deny blocked me from viewing it, so I first answered from the file names and sizes (a 3-slice tooltip) and asked the user to run `npm run contact-sheet` instead. Their permission in chat didn't override the deny rule, and I didn't route around it. The contact sheet showed a navy fill with a blue edge glow, so I replaced the sprites with pure CSS (inset `box-shadow` plus a translucent gradient) rather than shipping more art.
+- Panels, the top bar and both tab sets (iTrackie and the phone bottom nav) now share one surface rule built from tokens (`--surface-top/bottom`, `--glow`, `--glow-rim`) with `color-mix` for the alphas, so a theme only sets variables. Removed the `taboff`/`tabon` gif use.
+- Replaced the hard-coded colours (gold highlight, danger, badge, room background, ink) with tokens. Remaining theming blockers are the 3-slice button sprites and the `bg.jpg` backgrounds.
+- Caveat: the glow values were estimated from a contact sheet whose labels covered half of each tile, and no screenshot check was run yet.
