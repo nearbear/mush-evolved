@@ -6,7 +6,7 @@ This is a **vertical-slice MVP**, not a full clone: matchmaking, bot fill, a roo
 
 ## Quick start
 
-Requires **Node 24+**. On Windows, work inside WSL2. If you installed Node with nvm, run `source ~/.nvm/nvm.sh` first in non-interactive shells.
+Requires **Node 24+**. On Windows, work inside WSL 1 or 2. If you installed Node with nvm, run `source ~/.nvm/nvm.sh` first in non-interactive shells.
 
 ```bash
 npm install
