@@ -381,12 +381,86 @@ h2 {
   color: #0d1424;
   font-weight: bold;
 }
+.itrackie-tabs-root {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
 .itrackie-panel {
   flex: 1;
   display: flex;
   flex-direction: column;
   min-height: 0;
   padding: 0.5rem 0.75rem 0.75rem;
+}
+.itrackie-panel[hidden] {
+  display: none;
+}
+
+/* Features tab: a drop-down, then the chosen feature's tracker over its thread. */
+.feature-select {
+  margin-bottom: 0.5rem;
+  min-height: 32px;
+  font: inherit;
+}
+.feature {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+.feature[hidden] {
+  display: none;
+}
+.tracker {
+  flex: none;
+  margin-bottom: 0.5rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--edge);
+}
+.tracker-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-height: 8rem;
+  overflow-y: auto;
+  font-size: 0.85rem;
+}
+.tracker-list li {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.15rem 0;
+}
+.tracker-list li > span {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.tracker-list .tracker-remove {
+  flex: none;
+  margin: 0;
+  min-width: 32px;
+  padding: 0 0.4rem;
+}
+.tracker .chat-input button {
+  flex: none;
+  margin: 0;
+}
+
+/* Private channels: a collapsible under the tabs (stub until channels exist). */
+.private-channels {
+  flex: none;
+  border-top: 1px solid var(--edge);
+  padding: 0.4rem 0.75rem;
+}
+.private-channels-toggle {
+  width: 100%;
+  margin: 0;
+}
+.private-channels-panel p {
+  margin: 0.4rem 0 0;
 }
 .itrackie-caption {
   margin-bottom: 0.25rem;

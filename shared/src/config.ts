@@ -1,4 +1,5 @@
 import shipRooms from "@mush2/assets/derived/ship-rooms.json";
+import { ITRACKIE_ITEM } from "./items.ts";
 import type { ShipRoom } from "./shipLayout.ts";
 import type { GameConfig, RoomId } from "./types.ts";
 
@@ -35,6 +36,8 @@ export const DEFAULT_CONFIG: GameConfig = {
     { type: "blaster", room: "LABORATORY" },
     { type: "medikit", room: "SICK_BAY" },
   ],
+  // Confirmed 2026-10-13: every player starts with an iTrackie.
+  startInventory: [ITRACKIE_ITEM],
   rooms: Object.fromEntries(SHIP_ROOMS.map((r) => [r.id, r.doors])) as Record<RoomId, RoomId[]>,
   // Confirmed 2026-10-11: the equipment drawn in each room of the original map.
   equipment: Object.fromEntries(SHIP_ROOMS.map((r) => [r.id, r.equipment])),

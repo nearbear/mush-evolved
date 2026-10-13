@@ -14,9 +14,10 @@ const seats: Seat[] = Array.from({ length: 4 }, (_, i) => ({
   character: CHARACTERS[i]!.id,
 }));
 
-/** Five wrenches in the lab (more than fit in an inventory), one medikit next door. */
+/** Five wrenches in the lab (more than fit in an inventory), one medikit next door, empty hands. */
 const config: GameConfig = {
   ...DEFAULT_CONFIG,
+  startInventory: [],
   startItems: [
     ...Array.from({ length: 5 }, () => ({ type: "wrench", room: "LABORATORY" })),
     { type: "medikit", room: "CORRIDOR_A" },

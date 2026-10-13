@@ -12,7 +12,8 @@ const seats: Seat[] = Array.from({ length: 3 }, (_, i) => ({
   isBot: i > 0,
   character: CHARACTERS[i]!.id,
 }));
-const newGame = () => createGame(seats, DEFAULT_CONFIG, 42); // everyone in the lab; wrench + blaster there
+// Everyone in the lab, empty-handed; wrench + blaster there.
+const newGame = () => createGame(seats, { ...DEFAULT_CONFIG, startInventory: [] }, 42);
 
 const examine = (kind: Target["kind"], id: string): Action => ({ type: "examine", target: { kind, id } as Target });
 

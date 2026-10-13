@@ -3,7 +3,9 @@ import { CHARACTERS } from "./characters.ts";
 import { DEFAULT_CONFIG, SHIP_ROOMS } from "./config.ts";
 import { apGain, moveCost, movementRules, MODIFIERS } from "./modifiers.ts";
 import { applyAction, CHAT_HISTORY, createGame, logPrivate, logSecret, MAX_CHAT_LENGTH, sendChat, viewFor } from "./rules.ts";
-import type { Action, GameState, MovementRules, PlayerId, Seat } from "./types.ts";
+import { ITRACKIE_ITEM } from "./items.ts";
+import { parseGameMessage } from "./protocol.ts";
+import { CHAT_CHANNELS, type Action, type ChatChannel, type GameState, type MovementRules, type PlayerId, type Seat } from "./types.ts";
 
 const seats: Seat[] = Array.from({ length: 8 }, (_, i) => ({
   id: `p${i}`,
@@ -230,17 +232,79 @@ describe("chat", () => {
     expect(state.chat).toEqual([]);
   });
 
-  it("keeps only the most recent history", () => {
-    let state = newGame();
+  it("keeps only the most recent history, per channel", () => {
+    const r = sendChat(newGame(), "p0", "botany", "water the plants");
+    if (!r.ok) throw new Error(r.error);
+    let state = r.state;
     for (let i = 0; i < CHAT_HISTORY + 5; i++) state = mustChat(state, "p0", `m${i}`);
-    expect(state.chat).toHaveLength(CHAT_HISTORY);
-    expect(state.chat[0]!.text).toBe("m5");
+    const global = state.chat.filter((m) => m.channel === "global");
+    expect(global).toHaveLength(CHAT_HISTORY);
+    expect(global[0]!.text).toBe("m5");
+    expect(state.chat.some((m) => m.channel === "botany")).toBe(true);
   });
 
   it("is closed to dead players", () => {
     const state = newGame();
     player(state, "p0").alive = false;
     expect(sendChat(state, "p0", "global", "boo").ok).toBe(false);
+    expect(viewFor(state, "p0").chatChannels).toEqual([]);
+  });
+});
+
+describe("iTrackie and feature threads", () => {
+  const myITrackie = (state: GameState, id: PlayerId) =>
+    viewFor(state, id).inventory.find((i) => i.type === ITRACKIE_ITEM)!.id;
+  const mustChat = (state: GameState, id: PlayerId, channel: ChatChannel, text: string) => {
+    const r = sendChat(state, id, channel, text);
+    if (!r.ok) throw new Error(r.error);
+    return r.state;
+  };
+
+  it("starts everyone carrying an iTrackie in one of their slots", () => {
+    const state = newGame();
+    for (const s of seats) {
+      const view = viewFor(state, s.id);
+      expect(view.inventory.map((i) => i.type)).toEqual([ITRACKIE_ITEM]);
+      expect(view.chatChannels).toEqual([...CHAT_CHANNELS]);
+    }
+  });
+
+  it("posts to a feature thread that every iTrackie holder reads, tagged with its channel", () => {
+    const state = mustChat(newGame(), "p1", "pilgred", "need a wrench");
+    for (const s of seats) {
+      expect(viewFor(state, s.id).chat).toEqual([
+        { id: 1, cycle: 1, channel: "pilgred", from: "p1", name: "Player 1", isBot: true, text: "need a wrench" },
+      ]);
+    }
+  });
+
+  it("closes global chat and every thread, reading and posting, once you drop your iTrackie", () => {
+    let state = mustChat(newGame(), "p1", "global", "hello");
+    state = mustChat(state, "p1", "botany", "plants");
+    state = mustApply(state, "p0", { type: "drop", item: myITrackie(state, "p0") });
+
+    const view = viewFor(state, "p0");
+    expect(view.chatChannels).toEqual([]);
+    expect(view.chat).toEqual([]);
+    for (const channel of CHAT_CHANNELS) expect(sendChat(state, "p0", channel, "hi").ok).toBe(false);
+    expect(JSON.stringify(view)).not.toContain("plants");
+    expect(JSON.stringify(view)).not.toContain("hello");
+  });
+
+  it("opens the full history to whoever picks an iTrackie up", () => {
+    let state = mustChat(newGame(), "p1", "research", "old news");
+    const dropped = myITrackie(state, "p0");
+    state = mustApply(state, "p0", { type: "drop", item: dropped });
+    state = mustApply(state, "p2", { type: "drop", item: myITrackie(state, "p2") });
+    expect(viewFor(state, "p2").chat).toEqual([]);
+    state = mustApply(state, "p2", { type: "take", item: dropped });
+    expect(viewFor(state, "p2").chat.map((m) => m.text)).toEqual(["old news"]);
+  });
+
+  it("parses every channel and rejects unknown ones", () => {
+    const chat = (channel: unknown) => parseGameMessage(JSON.stringify({ type: "chat", channel, text: "hi" }));
+    for (const channel of CHAT_CHANNELS) expect(chat(channel)).toEqual({ type: "chat", channel, text: "hi" });
+    for (const bad of ["mush", "private", "", 1, null, "__proto__"]) expect(chat(bad)).toBeNull();
   });
 });
 

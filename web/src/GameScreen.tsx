@@ -108,7 +108,7 @@ export function GameScreen({ ticket, onLeave }: { ticket: SeatTicket; onLeave: (
           )}
         </div>
 
-        <ITrackie view={view} onChat={(text) => post({ type: "chat", channel: "global", text })} />
+        <ITrackie view={view} onChat={(channel, text) => post({ type: "chat", channel, text })} />
       </div>
 
       {mobile && panel === "room" && (

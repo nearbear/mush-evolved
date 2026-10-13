@@ -2,7 +2,7 @@
 // client is untrusted: always go through the parse* functions.
 
 import { MAX_CHAT_LENGTH } from "./rules.ts";
-import type { Action, ChatChannel, PlayerView } from "./types.ts";
+import { CHAT_CHANNELS, type Action, type ChatChannel, type PlayerView } from "./types.ts";
 
 export const MAX_NAME_LENGTH = 24;
 
@@ -32,8 +32,9 @@ export function parseGameMessage(raw: string): GameClientMessage | null {
   const msg = parseJson(raw);
   if (msg?.type === "chat") {
     // Generous bound here; moderation and the rules enforce the real limit.
-    if (msg.channel !== "global" || typeof msg.text !== "string" || msg.text.length > MAX_CHAT_LENGTH * 4) return null;
-    return { type: "chat", channel: msg.channel, text: msg.text };
+    const channel = CHAT_CHANNELS.find((c) => c === msg.channel);
+    if (!channel || typeof msg.text !== "string" || msg.text.length > MAX_CHAT_LENGTH * 4) return null;
+    return { type: "chat", channel, text: msg.text };
   }
   if (msg?.type !== "action" || !isRecord(msg.action)) return null;
   const a = msg.action;

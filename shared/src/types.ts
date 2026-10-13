@@ -45,6 +45,8 @@ export interface GameConfig {
   inventorySlots: number;
   /** Items placed in rooms at the start of the game. Types come from ITEM_TYPES in items.ts. */
   startItems: { type: string; room: RoomId }[];
+  /** Item types every player starts carrying (one of each). */
+  startInventory: string[];
   /** Adjacency list. Movement is only allowed along these edges. */
   rooms: Record<RoomId, RoomId[]>;
   /** Fixed equipment in each room. Types come from EQUIPMENT_TYPES in equipment.ts. */
@@ -107,7 +109,14 @@ export interface ItemState {
  */
 export type Target = { kind: "player"; id: PlayerId } | { kind: "equipment"; id: string } | { kind: "item"; id: ItemId };
 
-export type ChatChannel = "global";
+/**
+ * Crew-wide threads, one per ship feature, with the same permissions as global
+ * chat (decided 2026-10-13). Order is the order the client lists them in.
+ */
+export const FEATURE_CHANNELS = ["botany", "research", "inventory", "space_battle", "comms", "pilgred", "neron"] as const;
+export type FeatureChannel = (typeof FEATURE_CHANNELS)[number];
+export type ChatChannel = "global" | FeatureChannel;
+export const CHAT_CHANNELS: readonly ChatChannel[] = ["global", ...FEATURE_CHANNELS];
 
 export interface ChatMessage {
   /** Increasing per game; stable React key and ordering. */
@@ -187,8 +196,9 @@ export interface PlayerView {
    * to you. Other rooms' public history is never sent.
    */
   log: LogEntry[];
+  /** Messages in the channels you may read (all of them while you carry an iTrackie, none otherwise). */
   chat: ChatMessage[];
-  /** Channels you may post to right now. */
+  /** Channels you may read and post to right now. */
   chatChannels: ChatChannel[];
   /** Your effective movement rules, after modifiers. */
   movement: MovementRules;

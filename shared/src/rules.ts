@@ -1,16 +1,17 @@
 // Pure game rules: no I/O, no clocks, no Math.random. All randomness goes
 // through the seeded RNG stored in the state.
 //
-// SKELETON: movement (AP/MP), cycle advancement, the room log, global chat,
+// SKELETON: movement (AP/MP), cycle advancement, the room log, chat channels,
 // and HP/morale values (shown, but nothing changes them yet) exist.
 // Infection, voting, win conditions, and the real turn structure are open
 // decisions — do not add them without confirming the rules first.
 
 import { SHIP_ROOMS } from "./config.ts";
 import { equipmentName } from "./equipment.ts";
-import { canTransfer, itemName, itemsIn } from "./items.ts";
+import { canTransfer, ITRACKIE_ITEM, itemName, itemsIn } from "./items.ts";
 import { apGain, inventorySlots, moveCost, movementRules } from "./modifiers.ts";
 import { shuffle } from "./rng.ts";
+import { CHAT_CHANNELS } from "./types.ts";
 import type {
   Action,
   ChatChannel,
@@ -32,7 +33,7 @@ import type {
 
 /** Longest chat message the rules accept. Moderation trims before this. */
 export const MAX_CHAT_LENGTH = 300;
-/** Older chat is dropped so stored state stays bounded. */
+/** Per channel, older chat is dropped so stored state stays bounded. */
 export const CHAT_HISTORY = 200;
 
 const ROOM_LABELS = new Map(SHIP_ROOMS.map((r) => [r.id, r.label]));
@@ -59,11 +60,11 @@ export function createGame(seats: readonly Seat[], config: GameConfig, seed: num
     ready: false,
   }));
 
-  const items: ItemState[] = config.startItems.map((it, i) => ({
-    id: `item-${i + 1}`,
-    type: it.type,
-    at: { kind: "room", id: it.room },
-  }));
+  const starts: Omit<ItemState, "id">[] = [
+    ...config.startItems.map((it): Omit<ItemState, "id"> => ({ type: it.type, at: { kind: "room", id: it.room } })),
+    ...players.flatMap((p) => config.startInventory.map((type): Omit<ItemState, "id"> => ({ type, at: { kind: "player", id: p.id } }))),
+  ];
+  const items: ItemState[] = starts.map((it, i) => ({ id: `item-${i + 1}`, ...it }));
 
   return {
     config,
@@ -248,9 +249,15 @@ export function logSecret(state: GameState, actor: PlayerId, text: string): void
 // Not an Action: free text can't be enumerated in legalActions. Moderation
 // (filtering, rate limits) is the server's job before calling this.
 
-/** Channels a player may post to. Global chat will require an iTrackie; for now everyone alive has it. */
+/**
+ * Channels a player may read and post to. Global chat and every feature thread
+ * need an iTrackie in your inventory (confirmed 2026-10-13); drop it and you
+ * lose them, pick one up and you see the whole history.
+ */
 export function chatChannels(state: GameState, player: Readonly<PlayerState>): ChatChannel[] {
-  return state.phase === "playing" && player.alive ? ["global"] : [];
+  if (state.phase !== "playing" || !player.alive) return [];
+  const hasITrackie = itemsIn(state, { kind: "player", id: player.id }).some((i) => i.type === ITRACKIE_ITEM);
+  return hasITrackie ? [...CHAT_CHANNELS] : [];
 }
 
 export function sendChat(state: GameState, playerId: PlayerId, channel: ChatChannel, text: string): ActionResult {
@@ -263,7 +270,10 @@ export function sendChat(state: GameState, playerId: PlayerId, channel: ChatChan
 
   const next = clone(state);
   next.chat.push({ id: next.nextChatId++, cycle: next.cycle, channel, from: p.id, name: p.name, isBot: p.isBot, text: body });
-  if (next.chat.length > CHAT_HISTORY) next.chat.splice(0, next.chat.length - CHAT_HISTORY);
+  // Trim per channel, so a busy global chat can't push the feature threads out.
+  if (next.chat.filter((m) => m.channel === channel).length > CHAT_HISTORY) {
+    next.chat.splice(next.chat.findIndex((m) => m.channel === channel), 1);
+  }
   return { ok: true, state: next };
 }
 

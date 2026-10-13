@@ -15,7 +15,16 @@ export interface ItemType {
  * Every kind of item. PLACEHOLDERS (2026-10-11): these have no effects yet;
  * they exist so the inventory can be played with. Replace once items are decided.
  */
+/**
+ * The iTrackie's item type. Confirmed 2026-10-13: everyone starts with one; it
+ * takes a slot and can be dropped or taken like any item. Carrying one is what
+ * opens global chat and the feature threads (see chatChannels in rules.ts).
+ * Named after its icon, super_talky.jpg (user's pick).
+ */
+export const ITRACKIE_ITEM = "super_talky";
+
 export const ITEM_TYPES: Record<string, ItemType> = {
+  [ITRACKIE_ITEM]: { name: "iTrackie" },
   wrench: { name: "Wrench" },
   blaster: { name: "Blaster" },
   medikit: { name: "Medikit" },

@@ -11,6 +11,7 @@ import {
   sendChat,
   viewFor,
   type Action,
+  type ChatChannel,
   type GameServerMessage,
   type GameState,
   type PlayerId,
@@ -26,7 +27,7 @@ const BOT_DELAY_MS = 1500;
  * Bump when GameState's shape changes. Games stored under another version are
  * discarded on load (there is no migration; games are short-lived).
  */
-const STATE_VERSION = 6;
+const STATE_VERSION = 8;
 
 interface Stored {
   version?: number;
@@ -97,17 +98,17 @@ export class GameRoom extends Server<Env> {
       this.send(connection, { type: "error", message: "Malformed message" });
       return;
     }
-    const error = msg.type === "chat" ? await this.chat(playerId, msg.text) : await this.act(playerId, msg.action);
+    const error = msg.type === "chat" ? await this.chat(playerId, msg.channel, msg.text) : await this.act(playerId, msg.action);
     if (error) this.send(connection, { type: "error", message: error });
   }
 
   /** Untrusted text: rate limit, then moderate, then let the rules decide. */
-  private async chat(playerId: PlayerId, raw: string): Promise<string | null> {
+  private async chat(playerId: PlayerId, channel: ChatChannel, raw: string): Promise<string | null> {
     if (!this.game) return "No game";
     if (!this.chatLimiter.allow(playerId)) return "You're sending messages too quickly";
     const moderated = moderateChat(raw);
     if (!moderated.ok) return moderated.reason;
-    const result = sendChat(this.game, playerId, "global", moderated.text);
+    const result = sendChat(this.game, playerId, channel, moderated.text);
     if (!result.ok) return result.error;
     this.game = result.state;
     await this.persist();
