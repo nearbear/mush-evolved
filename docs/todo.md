@@ -20,8 +20,8 @@ Recorded 2026-10-13. Not started.
 - [ ] **Walk around within a room (cosmetic only).** Players can move around inside a room, and other players see it on their end. It has no effect on the rules.
 - [ ] **Sittable equipment.** Equipment gets a "can sit here" concept so players can sit at terminals and tables. Also cosmetic. Open question: how cosmetic position is sent to other clients without becoming rule state (and without leaking anything hidden).
 - [ ] **Game logo.** Add the game logo to the site chrome.
-- [ ] **Account button.** A button for the player's account (sign-in/profile). Open question: what accounts mean here (guest vs. registered, what is stored).
-- [ ] **Site notification button.** A button for site-wide notifications. Open question: what counts as a notification, and whether it is distinct from in-game logs.
+- [ ] **Account button.** A button for the player's account. A placeholder for now: it does nothing yet.
+- [ ] **Site notification button.** A button for site notifications, which are separate from in-game logs. They concern the player's standing on the site, e.g. a violation received for their behavior in a game. Still to decide: how notifications are stored and delivered, and how moderation feeds them.
 - [ ] **Wiki link button.** A button that links to the wiki.
 - [ ] **The wiki.** A large project in its own right: scope, hosting, and content need planning before starting. Likely draws on `docs/mush-assets.md` for art, so the asset licensing (CC BY-NC-SA 4.0) and attribution rules apply.
 - [ ] **Vertically stacked actions that show their cost.** Redo the action UI so actions stack vertically and each one indicates its cost (e.g. AP). The client must keep using `view.legalActions` and not compute costs or legality itself, so the cost needs to come from the view. Must work in the phone layout.
