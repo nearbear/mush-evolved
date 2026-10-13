@@ -81,7 +81,8 @@ Per `CLAUDE.md`, do not invent rules. These sheets are a legitimate source for r
 ## Do not use
 
 - **Pruned 2026-09-30:** third-party logos that the CC license can't cover were deleted from the local copy: 20 press and gaming-site logos in `www/img/social/` (Rock Paper Shotgun, Jeuxvideo.com, etc.) and the `design/facebook.png` / `design/twitter.png` icons. They remain in the upstream repo if ever needed for reference.
-- `www/img/social/`: what remains is Motion Twin's own promo art and room screenshots (`mush_*.png`, `mush-box.png`, `facebook-post.png`), all covered by the CC license and usable.
+- **Pruned 2026-10-13:** the European Indie Game Days award logos (`www/img/loc/{en,es,fr}/eigd.png`, `www/img/art/eigd_award_en.png`), a third-party mark.
+- `www/img/social/`: the whole folder is gone from the local copy (none of it is present).
 - `www/img/jquery/`: jQuery UI theme images. MIT-licensed, so legally usable, but irrelevant to a React client.
 - `www/img/teasing/`, `www/img/news/`, `www/img/loc/`: marketing/teaser material and localized text images.
 - Anything with Twinoid or Motion Twin branding or logos.

@@ -235,3 +235,8 @@ User supplied icon names for 14 tabs. Only Global and Private exist as iTrackie 
 2026-10-13 (follow-up 2): icons for comms (comm.png), inventory (stock.png), books (learned.png; feature TBA, not built).
 2026-10-13 (follow-up 3): phone nav Room = awake.png; expeditions (survival.png) recorded as wanted tab.
 2026-10-13 (follow-up 4): Features drop-down replaced with a Base UI Select (native <select> can't show images); no new dependency. Not visually checked yet.
+
+## 2026-10-13: pre-share asset license pass and code license
+
+- User chose MIT for the code (considered AGPL, which eMush uses; MIT preferred for portfolio reuse, and the NC assets already block commercial use). Added root `LICENSE` with a note that `Mush/` is CC BY-NC-SA 4.0.
+- Audited `Mush/` for third-party material: no fonts, audio or video; the `.swf` bundles have no font or sound tags; only third-party code is the Haxe Foundation MIT headers in `src/as/Hash.hx` and `IntHash.hx`. Found third-party marks left over: European Indie Game Days award logos (`www/img/loc/*/eigd.png`, `www/img/art/eigd_award_en.png`). `docs/mush-assets.md` was stale: it says `www/img/social/` still holds Motion Twin promo art, but the folder is gone.

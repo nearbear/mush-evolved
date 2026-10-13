@@ -6,7 +6,7 @@ The contents of this folder are from **Mush** by **Motion Twin**, taken from the
 Licensed under [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/)
 (see `LICENSE.txt`, copied from the upstream repository root).
 
-Changes: some third-party logos were removed (see `docs/mush-assets.md`). The web
+Changes: some third-party logos and award badges were removed (see `docs/mush-assets.md`). The web
 client keys out the solid background color of the character sprites at runtime;
 the files themselves are unmodified.
 

@@ -53,7 +53,7 @@ These are non-negotiable unless I say otherwise.
 - Keep assets in their own folder with the license text and an attribution file next to them. Do not mix them into the code tree.
 - `Mush/package.json` makes the folder a private workspace package, `@mush2/assets`, whose `exports` allow only `derived/*`. Code packages import derived data by that name, never by a relative path out of their own package. (`web` still reaches art through relative `import.meta.glob` paths, which Vite needs.)
 - Before using any asset, check that its folder isn't covered by different third-party terms (fonts, sounds, music especially).
-- Code license is separate and undecided (MIT is the likely choice).
+- Code license is separate from the asset license: MIT (root `LICENSE`, chosen 2026-10-13; can be changed later while the user is the sole author). It does not cover `Mush/`.
 - Do not monetize anything built on these assets.
 - Check how the character art is delivered (sprite sheets, layered images, a skeletal rig). That determines how hard talking animations will be and whether a 2D renderer or three.js makes more sense later.
 
@@ -112,7 +112,6 @@ See `docs/code-map.md` for where each module lives and which rules are implement
 
 - Game name, number of players, roles, win conditions, and turn/cycle length (real-time vs. async).
 - Which hosted model API to use for bots.
-- Code license.
 - Hosting and deployment details.
 - Rendering beyond the DOM isometric view (decided: DOM for now, 2026-10-11).
 - Internationalization (en/fr/es): the seam is in, the comprehensive pass is not.
