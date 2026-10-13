@@ -1,5 +1,7 @@
-import { nextInt, type RngState } from "./rng.ts";
-import type { Action, PlayerView } from "./types.ts";
+// Bots live server-side: model-backed ones need network calls, secrets, and a
+// spend cap, none of which belong in the pure rules package.
+
+import { nextInt, type Action, type PlayerView, type RngState } from "@mush2/shared";
 
 /**
  * Every bot (scripted or model-backed) implements this. A bot only ever

@@ -10,10 +10,13 @@ Changes: some third-party logos were removed (see `docs/mush-assets.md`). The we
 client keys out the solid background color of the character sprites at runtime;
 the files themselves are unmodified.
 
-`derived/` holds files generated from this material (currently
-`ship-layout.json`, built from `clients/iso/gfx/ShipMap.png` and
+`derived/` holds files generated from this material (`ship-layout.json` and
+`ship-rooms.json`, built from `clients/iso/gfx/ShipMap.png` and
 `clients/iso/xml/tiles.xml` by `npm run ship-layout`). They are adaptations
 and are also licensed CC BY-NC-SA 4.0.
+
+`package.json` is project metadata, not part of the upstream material; it lets
+the game's code import `derived/` by package name.
 
 This project is not affiliated with or endorsed by Motion Twin. "Mush" is used
 only to credit the source.

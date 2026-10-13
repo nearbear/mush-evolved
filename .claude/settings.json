@@ -1,0 +1,7 @@
+{
+    "permissions": {
+        "deny": [
+            "Read(./Mush/derived/ship-layout.json)"
+        ]
+    }
+}

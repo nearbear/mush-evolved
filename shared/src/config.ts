@@ -1,4 +1,4 @@
-import shipRooms from "../../Mush/derived/ship-rooms.json";
+import shipRooms from "@mush2/assets/derived/ship-rooms.json";
 import type { ShipRoom } from "./shipLayout.ts";
 import type { GameConfig, RoomId } from "./types.ts";
 

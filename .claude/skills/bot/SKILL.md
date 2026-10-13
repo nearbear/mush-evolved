@@ -1,6 +1,6 @@
 ---
 name: bot
-description: Add or change an AI-controlled player - scripted bots or model-backed ones calling a hosted LLM API. Use for anything touching shared/src/bots.ts, bot scheduling in server/src/GameRoom.ts, bot prompts, model calls, or bot spend. Enforces the bot architecture rules - own-seat view only, labeled as AI, server-side model calls with config-based keys, rate limits and a hard spend cap, and player chat treated as prompt injection.
+description: Add or change an AI-controlled player - scripted bots or model-backed ones calling a hosted LLM API. Use for anything touching server/src/bots.ts, bot scheduling in server/src/GameRoom.ts, bot prompts, model calls, or bot spend. Enforces the bot architecture rules - own-seat view only, labeled as AI, server-side model calls with config-based keys, rate limits and a hard spend cap, and player chat treated as prompt injection.
 ---
 
 # Add or change a bot
@@ -9,7 +9,7 @@ Bots are players. Every rule that keeps hidden information off clients applies t
 
 ## The rules
 
-1. **One interface.** Every bot implements `Bot.decideAction(view: PlayerView): Promise<Action>` in `shared/src/bots.ts`. Don't widen the input: no `GameState`, no other seats' views, no server internals.
+1. **One interface.** Every bot implements `Bot.decideAction(view: PlayerView): Promise<Action>` in `server/src/bots.ts`. Don't widen the input: no `GameState`, no other seats' views, no server internals.
 2. **Own-seat view only.** The server calls `viewFor(game, botSeatId)` and passes that. A bot never sees more than a human in its seat would.
 3. **Only legal actions.** Pick from `view.legalActions`. A model's output is untrusted: parse it, then check it's in `legalActions`, and fall back to a safe action (`ready`) if it isn't. Never let model text become an action unchecked.
 4. **Labeled as AI.** `Seat.isBot` stays true, and the UI shows the AI tag wherever a name appears (iso tags, inspect, chat). If a bot can chat, its messages carry `isBot`.
@@ -26,8 +26,8 @@ Bots are players. Every rule that keeps hidden information off clients applies t
 ## Steps
 
 1. Ask the user anything open: provider, spend cap, rate limits, what the bot should try to do (that's game strategy, and it may touch rules; use the `rule` skill if so).
-2. Implement. Scripted bots live in `shared/src/bots.ts`. Model-backed bots: the prompt builder (pure: view in, string out) can live in `shared`; the network call and secrets live in `server`.
-3. Test (`shared/src/*.test.ts`, plus server-side tests if added):
+2. Implement. All bots live in `server/src/bots.ts` (or a `server/src/bots/` folder once there are several). Keep the prompt builder pure (view in, string out) so it can be tested without the network; the model call and secrets stay alongside it in `server`.
+3. Test (server-side; `server` has no test runner yet, so ask before adding Vitest there):
    - The bot only returns actions from `legalActions`, including when the model returns garbage.
    - **The prompt contains nothing outside the bot's view:** build a game, render the prompt for one seat, and assert other players' roles, other rooms' log entries, and other players' private stats don't appear.
    - Spend cap: once reached, no further model calls are made.

@@ -114,3 +114,11 @@ Replaced bounding-box clicks in the isometric room with hit detection on drawn p
 Made all 152 icons in `Mush/www/img/icons/items/` available (`ITEM_ICONS`, `itemIcon(type)` in `web/src/art/assets.ts`) and showed them in the inventory panel, as the user asked.
 - Item type ids already match icon file names (`wrench`, `blaster`, `medikit`), so the lookup is by type with no mapping table. `empty.jpg` is the bare blue slot tile, used for empty slots. Skipped `archive/`: older versions whose names collide with the main set.
 - Needed a correction: Vite inlines files under 4 KB as base64, and the icons are about 2 KB each, so the JS bundle doubled (449 KB to 925 KB). `web/vite.config.ts` now never inlines files from `Mush/`, and the bundle dropped to 326 KB because other small Mush art had been inlined too.
+
+### 2026-10-12 (package boundaries)
+
+Asked the assistant whether the project structure was sound. It flagged three issues; the user chose fixes for each.
+- `shared` imported `../../Mush/derived/ship-rooms.json`, a relative path out of its own package. The user chose to keep derived data in the CC-licensed tree (next to its license) and import it by name instead: `Mush/package.json` makes the folder a private workspace, `@mush2/assets`, whose `exports` allow only `derived/*`. The alternative, generating the file into `shared/`, was rejected so adaptations stay with their license.
+- Needed correction: `npm run typecheck --workspaces` failed on the new package, which has no scripts. The root script now passes `--if-present`, rather than adding tooling scripts to the asset folder.
+- Moved `Bot` and `WanderBot` from `shared` to `server/src/bots.ts`. Model-backed bots need network calls, secrets, and a spend cap, which break the "rules are pure" rule, and only the server runs bots anyway.
+- Wrote `docs/testing.md`, a prioritized list of what to test and why. Writing it surfaced two real gaps: player names aren't moderated (though everyone sees them and they'll reach bot prompts), and a bot whose `decideAction` rejects goes unhandled in `scheduleBots`.

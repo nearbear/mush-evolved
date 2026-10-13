@@ -10,14 +10,13 @@ import {
   parseGameMessage,
   sendChat,
   viewFor,
-  WanderBot,
   type Action,
-  type Bot,
   type GameServerMessage,
   type GameState,
   type PlayerId,
   type Seat,
 } from "@mush2/shared";
+import { WanderBot, type Bot } from "./bots.ts";
 import { RateLimiter } from "./rateLimit.ts";
 
 /** Deliberate pacing so bots don't act instantly. */

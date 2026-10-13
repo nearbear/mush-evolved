@@ -11,7 +11,7 @@ Architecture rule 1: the server holds the real state and each client gets only i
 
 ```bash
 git diff HEAD --stat
-git diff HEAD -- shared/src/types.ts shared/src/rules.ts shared/src/protocol.ts shared/src/bots.ts server/src
+git diff HEAD -- shared/src/types.ts shared/src/rules.ts shared/src/protocol.ts server/src
 ```
 
 Include staged and untracked files (`git status --short`). If nothing in the list below changed, say so and stop.
