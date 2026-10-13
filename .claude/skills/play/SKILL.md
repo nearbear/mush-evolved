@@ -18,7 +18,7 @@ curl -sf http://localhost:5173 >/dev/null && curl -s http://localhost:8787 >/dev
 If down, start them **as a background task** (Bash `run_in_background: true`), logging to the session's scratchpad directory (named in the system prompt; there is no environment variable for it):
 
 ```bash
-cd /home/near/mush2 && source ~/.nvm/nvm.sh && npm run dev > <scratchpad>/dev.log 2>&1
+source ~/.nvm/nvm.sh && npm run dev > <scratchpad>/dev.log 2>&1
 ```
 
 Then poll until both ports answer (don't `sleep` a fixed time):
@@ -32,7 +32,7 @@ If a background `npm run dev` exits immediately, the ports are probably already 
 ## 2. Drive it
 
 ```bash
-cd /home/near/mush2 && source ~/.nvm/nvm.sh && npm run screenshot
+source ~/.nvm/nvm.sh && npm run screenshot
 ```
 
 `tools/src/play/screenshot.ts` joins as "Playwright" on a 1600x1000 desktop and as "Playwright (phone)" on an emulated Galaxy S8 (touch, 360x740: **360px is the narrowest width we support**, so the phone pass tests it), at the same time so both land in one match (bots fill the other seats after about 5 s). The desktop pass runs first, then the phone pass. Saves to `.screenshots/` (gitignored). `-- --only desktop` or `-- --only mobile` runs one pass; `-- --phone "iPhone 13"` uses another Playwright device.
