@@ -12,7 +12,7 @@ This is a **vertical-slice MVP**, not a full clone. The goals are:
 2. Demonstrate solid full-stack engineering and an AI-assisted development workflow (keep notes on what worked and what didn't; see "Working agreements").
 3. Leave room to grow it into a real game later, including animated characters.
 
-**Proposed slice scope:** about 8 players, a handful of rooms, the action-point loop, infection, and voting. Do not try to implement the full Mush ruleset.
+**Proposed slice scope:** about 8 players, a handful of rooms, the action-point loop and infection. Do not try to implement the full Mush ruleset.
 
 ## Stack
 
@@ -106,7 +106,7 @@ npm 11 blocks dependency install scripts by default. `esbuild` and `workerd` are
 
 ## Code map
 
-See `docs/code-map.md` for where each module lives and which rules are implemented. Key invariants: `shared/src/rules.ts` is pure and `viewFor` is the only place hidden info is stripped; the client never computes legality (it uses `view.legalActions`); infection, voting, and win conditions are intentionally absent until the rules are decided.
+See `docs/code-map.md` for where each module lives and which rules are implemented. Key invariants: `shared/src/rules.ts` is pure and `viewFor` is the only place hidden info is stripped; the client never computes legality (it uses `view.legalActions`); infection and win conditions are intentionally absent until the rules are decided.
 
 ## Open decisions
 
