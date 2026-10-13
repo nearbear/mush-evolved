@@ -11,3 +11,4 @@ Loaded when working in `web/`. These are the single source of truth for the UI r
    - Panels are hidden with CSS, not unmounted, so chat drafts and tabs survive switching.
    - When the user asks for a visual check (`play` skill, never run unprompted), check both screenshot passes. The on-screen keyboard can only be checked on a real phone.
 
+- **Buttons use the Mush style.** Every button uses the global `button` rule in `styles.css`: the original site's 3-slice sprites with hover and pressed variants, or `button.big` for the 40px variant. New buttons set only layout (size, padding, grid), never their own background, border, or colors. Base UI has no theme object; its parts render native elements, so a Base UI part that renders a `<button>` picks up the same rule, and its states are styled through the `data-*` attributes it sets. The only deliberate exceptions are widgets that aren't plain buttons (tabs, map rooms), which replace the background.

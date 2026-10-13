@@ -1,0 +1,81 @@
+/*
+ * Wake-up overlay (WakeUp.tsx). Starts the same near-black as the pod's fade-out,
+ * then: the haze turns cold and bright while the eye blinks open, and the blur
+ * on the game behind clears. The container's own animation is the one whose end
+ * removes the overlay, so it is the longest.
+ */
+.wake {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  pointer-events: none;
+  overflow: hidden;
+  animation: wake-haze 2.2s ease-out forwards;
+}
+@keyframes wake-haze {
+  0% {
+    background: #02060c;
+    backdrop-filter: blur(16px);
+  }
+  35% {
+    background: rgb(185 220 240 / 0.5);
+    backdrop-filter: blur(10px);
+  }
+  100% {
+    background: transparent;
+    backdrop-filter: blur(0);
+  }
+}
+
+/*
+ * The eye: a wide ellipse in the middle of the screen whose huge, soft-edged
+ * box-shadow is the dark of the closed lids. Growing its height opens the eye
+ * from the middle outward, the way a real one does.
+ */
+.wake-eye {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 140vw;
+  height: 0;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  box-shadow: 0 0 4rem 200vmax #02060c;
+  animation: wake-blink 1.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+/*
+ * Half open, a heavy blink, then open for good. Height is animated rather than
+ * scaleY, because scaling would also squash the box-shadow and uncover the screen.
+ */
+@keyframes wake-blink {
+  0% {
+    height: 0;
+  }
+  30% {
+    height: 40vh;
+  }
+  45% {
+    height: 6vh;
+  }
+  100% {
+    height: 180vh;
+  }
+}
+
+/* Reduced motion: no blink or blur, just a short fade in from dark. */
+@media (prefers-reduced-motion: reduce) {
+  .wake {
+    animation: wake-fade 0.5s ease-out forwards;
+  }
+  .wake-eye {
+    display: none;
+  }
+}
+@keyframes wake-fade {
+  from {
+    background: #02060c;
+  }
+  to {
+    background: transparent;
+  }
+}
