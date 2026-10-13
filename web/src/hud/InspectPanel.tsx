@@ -2,7 +2,7 @@
 // with the actions the server allows on it. Falls back to your own character.
 
 import { CHARACTERS, type Action, type PlayerView, type Target } from "@mush2/shared";
-import { characterImage, portrait } from "../art/assets.ts";
+import { EMPTY_SLOT_ICON, characterImage, itemIcon, portrait } from "../art/assets.ts";
 import { roomLabel } from "../scene/names.ts";
 import { actionLabel, actionsOn, resolveTarget, type Resolved } from "./targets.ts";
 
@@ -83,10 +83,17 @@ function Details({ view, resolved }: { view: PlayerView; resolved: Resolved }) {
       );
     case "item":
       return (
-        <div className="inspect-name">
-          <strong>{resolved.item.name}</strong>
-          <div className="sub">{resolved.carried ? "In your inventory" : `In ${roomLabel(view.you.room)}`}</div>
-        </div>
+        <>
+          <img
+            className="inspect-portrait inspect-item-icon"
+            src={itemIcon(resolved.item.type) ?? EMPTY_SLOT_ICON}
+            alt=""
+          />
+          <div className="inspect-name">
+            <strong>{resolved.item.name}</strong>
+            <div className="sub">{resolved.carried ? "In your inventory" : `In ${roomLabel(view.you.room)}`}</div>
+          </div>
+        </>
       );
   }
 }
