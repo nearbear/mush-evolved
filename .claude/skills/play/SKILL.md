@@ -1,6 +1,7 @@
 ---
 name: play
-description: Launch the game and look at it in a real (headless) browser, on desktop and on a phone. Use after any UI, renderer, layout, or asset change, or when asked to run, screenshot, or check the game visually (including on mobile). Starts the dev servers if needed, joins a match as a desktop and a phone player, inspects, examines, chats, takes items, walks through doors, and saves screenshots to read.
+disable-model-invocation: true
+description: Manual only, run when the user asks (/play). Launch the game and look at it in a real (headless) browser, on desktop and on a phone. Use after any UI, renderer, layout, or asset change, or when asked to run, screenshot, or check the game visually (including on mobile). Starts the dev servers if needed, joins a match as a desktop and a phone player, inspects, examines, chats, takes items, walks through doors, and saves screenshots to read.
 ---
 
 # Play the game and look at it

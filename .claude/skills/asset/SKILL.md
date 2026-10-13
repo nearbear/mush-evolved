@@ -40,10 +40,10 @@ Sheets land in `.screenshots/contact/`. **Read them** with the Read tool. Get si
 ## 4. Check it
 
 - `npm run typecheck && npm run build` (the build fails on a bad import path).
-- Run the `play` skill and look at the screenshots, including hover/pressed states if you skinned controls. The lobby isn't in the screenshot script; check it separately if you touched it.
+- If the user asks for a visual check, run the `play` skill and look at the screenshots, including hover/pressed states if you skinned controls. The lobby isn't in the screenshot script; check it separately if you touched it.
 
 ## 5. Record it
 
 - Attribution: the in-game credits footer (`Credits` in `web/src/GameScreen.tsx`) and `Mush/ATTRIBUTION.md` must still cover what's used; add a line if you changed the art (e.g. "sprite backgrounds made transparent").
 - `docs/mush-assets.md`: update if you learned something about a folder (format quirks, what a file actually is).
-- `docs/ai-workflow.md`: a dated entry listing what was placed, what was skipped and why.
+- `docs/ai-workflow.md`: a dated entry listing what was placed, what was skipped and why. Only ever append with cat >> as a cost optimization; do not rewrite existing entries.

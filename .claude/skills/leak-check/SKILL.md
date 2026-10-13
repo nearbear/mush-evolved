@@ -42,7 +42,7 @@ const json = JSON.stringify(viewFor(state, s.id));
 expect(json.match(/"hp"/g)).toHaveLength(1); // only the viewer's own
 ```
 
-Add a test for each new hidden field or log kind if one is missing, then run `source ~/.nvm/nvm.sh && npm test`.
+Add a test for each new hidden field or log kind if one is missing, then run `source ~/.nvm/nvm.sh && npm test` (a single file or test while iterating: `npm test -w shared -- <file> -t "<name>"`).
 
 ## 4. Report
 

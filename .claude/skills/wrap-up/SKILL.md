@@ -1,6 +1,7 @@
 ---
 name: wrap-up
 description: Finish a change in this project - verify it (typecheck, tests, build, screenshots), update the docs that track decisions (CLAUDE.md, docs/plan.md, docs/ai-workflow.md), and propose a small focused commit. Use when a task is done, before saying something is finished, or when asked to wrap up, finish, or commit.
+disable-model-invocation: true
 ---
 
 # Wrap up a change
@@ -16,7 +17,7 @@ npm test
 npm run build          # if web/ changed
 ```
 
-- UI, CSS, asset, or renderer change: run the `play` skill and look at **both** the desktop and the phone screenshots. Mobile is first-class (CLAUDE.md rule 7). If the change touches the chat input or full-height layout, say the on-screen keyboard still needs a real-phone check.
+- UI, CSS, asset, or renderer change: do not run the `play` skill unless the user asked; just say a visual check was skipped. If they did ask, look at **both** the desktop and the phone screenshots. Mobile is first-class (CLAUDE.md rule 7). If the change touches the chat input or full-height layout, say the on-screen keyboard still needs a real-phone check.
 - Rules, views, protocol, server, or bot change: run the `leak-check` skill.
 - `ship-layout` inputs changed: `npm run ship-layout` (a test fails if the derived file is stale).
 - `wrangler.jsonc` or Durable Object exports changed: `npm run types -w server`.
@@ -30,7 +31,7 @@ Only where something actually changed:
 
 - **`CLAUDE.md`**: the "Implemented rules" paragraph, the code map (new files or modules), commands (new npm scripts), and "Open decisions" (remove anything settled). Keep it a summary.
 - **`docs/plan.md`**: mark answered questions as answered, with the date and the answer.
-- **`docs/ai-workflow.md`**: a dated `###` entry. What was decided and **who decided it** (the user, or the assistant with approval), what worked, and anything that needed correction. Be honest about mistakes; the user is writing this up.
+- **`docs/ai-workflow.md`**: a dated `###` entry. What was decided and **who decided it** (the user, or the assistant with approval), what worked, and anything that needed correction. Be honest about mistakes; the user is writing this up. Only ever append with cat >> as a cost optimization; do not rewrite existing entries.
 - **`docs/mush-assets.md`**: if new facts about the archive came up.
 
 ## 3. Propose the commit

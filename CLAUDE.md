@@ -36,7 +36,7 @@ These are non-negotiable unless I say otherwise.
 
 1. **Server-authoritative.** The server holds the real state. Clients never receive hidden information. The server sends each player a filtered `PlayerView` computed for that player only.
 2. **Rules are pure code.** Game rules live in the shared package as deterministic, side-effect-free TypeScript (seeded RNG, no I/O, no network), with unit tests. The rules must run headless.
-3. **Thin view layer.** Components render a `PlayerView` and emit player intents. No game logic in components. The renderer must be swappable: DOM now, possibly react-three-fiber or something more experimental later. Keep chat and text input in the DOM regardless of renderer. I want to experiment with custom animated UI later, so do not couple rendering to game logic.
+3. **Thin view layer.** Components render a `PlayerView` and emit player intents; no game logic in components, and the renderer must stay swappable. Details in `web/CLAUDE.md`.
 4. **Matchmaker is a separate global coordinator.** Game rooms don't know about each other. A matchmaker room holds waiting players, runs the fill-with-bots timer, and creates game rooms.
 5. **Bots sit behind one interface**, roughly `decideAction(view): Promise<Action>`:
    - A bot only ever receives the view its own seat would legitimately have.
@@ -45,12 +45,7 @@ These are non-negotiable unless I say otherwise.
    - Add rate limits and a hard spend cap.
    - Treat player chat as untrusted input to the model (prompt injection is expected).
 6. **Public-internet basics:** basic abuse limits and chat moderation from the start.
-7. **Mobile is first-class.** Below 1024px wide (`MOBILE_QUERY` in `web/src/useMobile.ts`, mirrored by one `@media` block in `styles.css`) the game is a tabbed phone layout: the top bar always shows; one panel at a time below it; a bottom nav of Inspect (left) | Room (middle, default) | iTrackie (right). Tapping a person, equipment, or a door in the room opens a peek bar above the nav (name, legal actions, Go for doors, More to open Inspect). The ship map is hidden; doors are how you move. Every UI change must work in both layouts:
-   - Nothing important may be hover-only or double-click-only (touch has neither reliably).
-   - The iso room never scales below 1x on phones; wide rooms scroll sideways, centred on you.
-   - 360px wide is the minimum supported width, and must look good, not just work. No sideways page scroll; nothing under the notch or the nav.
-   - Panels are hidden with CSS, not unmounted, so chat drafts and tabs survive switching.
-   - Check both screenshot passes (`play` skill). The on-screen keyboard can only be checked on a real phone.
+7. **Mobile is first-class.** Every UI change must work in the tabbed phone layout (below 1024px) and on desktop. Details in `web/CLAUDE.md`.
 
 ## Assets and licensing
 
@@ -69,7 +64,8 @@ These are non-negotiable unless I say otherwise.
 - Do not invent game rules. If a rule is ambiguous, ask me.
 - Ask before adding dependencies.
 - Prefer the simplest thing that works for the vertical slice, and flag scope creep.
-- Keep a short log in `docs/ai-workflow.md` of significant decisions made with AI assistance, including what worked and what needed correction. I plan to write this up.
+- Keep a short log in `docs/ai-workflow.md` of significant decisions made with AI assistance, including what worked and what needed correction. I plan to write this up. Only ever append to it with `cat >>`; never read or rewrite the whole file (it is large).
+- Run only the tests you need while iterating (`npm test -w shared -- rules.test.ts -t "name"`); run the full `npm test` and `npm run typecheck` once at the end.
 - Explain tradeoffs when there is a real choice; I want to understand the code, not just receive it.
 - Ignore the files in the `docs/scratchpad` folder unless otherwise directed; they are for notes and planning, not part of the main codebase.
 - Do not use AI capabilities to generate any non-text assets or files without explicit approval.

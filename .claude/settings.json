@@ -1,7 +1,11 @@
 {
+    "model": "sonnet",
     "permissions": {
         "deny": [
-            "Read(./Mush/derived/ship-layout.json)"
+            "Read(./Mush/derived/ship-layout.json)",
+            "Read(./Mush/www/**)",
+            "Read(./Mush/clients/**)",
+            "Read(./node_modules/**)"
         ]
     }
 }
