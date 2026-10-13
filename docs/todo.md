@@ -113,6 +113,17 @@ Decisions only you can make; nothing here should be implemented until it is sett
 - [ ] **Action costs in the view.** Decide how `view.legalActions` carries each action's cost, so the client displays costs without computing them. Blocks stacked actions with costs.
 - [ ] **Accounts architecture.** The account button is a placeholder. Decide what accounts will eventually mean (guest vs. registered, identity across games, storage) so the notification and moderation work does not paint us into a corner.
 
+## Original game data
+
+- [ ] **Extract the original rules from the Haxe files, then delete the Haxe files.** Read the rule information in the original Haxe sources under `Mush/` (for example `Mush/src/common/Gameplay.hx` and the data files) and write what they say into `Mush/derived/` as plain data (JSON or Markdown), inferred by AI. Then delete the Haxe files from the repo. Things to settle or watch for:
+  - **Inferred means unverified.** Mark every derived file as AI-inferred, keep a pointer to the source file and line it came from, and treat values as proposals: per `CLAUDE.md`, a rule is not decided until you confirm it. Spot-check the extraction against the original sources before they are deleted.
+  - **Deletion is hard to undo in practice.** The files stay in git history, and the upstream repo is `motion-twin/WebGamesArchives`, but record the upstream commit the extraction was made from, so it can be redone.
+  - **Things still read the Haxe files.** `tools/src/shipLayout/shipPlan.ts` decodes the `s1Cache` string in `Mush/src/common/data/Map.hx` to build `ship-plan.json` (the minimap), and a test checks it. Either keep that file, or extract its data first and change the converter and test. Grep `Mush/src` and `tools/` for other dependencies before deleting anything.
+  - **Licensing.** Derived rules are an adaptation of CC BY-NC-SA 4.0 material: keep the attribution file and license text next to the derived data, and keep it under the same license. Check that no Haxe file is under different third-party terms.
+  - **Scope.** Decide which files count as "rule information" (gameplay constants, action costs and effects, item and equipment definitions, skills, statuses, the `.ods` data tables), and which Haxe files are not rules (rendering, server plumbing) and can be deleted without extraction.
+  - **Housekeeping.** Run `npm run asset-index` afterwards, and update `docs/mush-assets.md` and the `asset` skill, which point at the Haxe files.
+  - Feeds the rule decisions for skills, status effects, ship resources, and combat, which can then start from the original values instead of from nothing.
+
 ## Site and accounts
 
 - [ ] **Game logo.** Add the game logo to the site chrome.
