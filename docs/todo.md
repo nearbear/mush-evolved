@@ -2,6 +2,55 @@
 
 Recorded 2026-10-13. Not started. Items that change game rules need the `rule` skill and decisions from the user first.
 
+## Open rule decisions
+
+Decisions only you can make; nothing here should be implemented until it is settled (the `rule` skill resolves ambiguity with you first). Ordered so earlier answers unblock later ones. Each links to the to-do it blocks.
+
+**Game shape**
+- [ ] **Turn and cycle length: real-time or async?** How long a cycle lasts and whether players act on a clock or at their own pace. Blocks Days, bots' pacing, AFK handling, and the DevOps hosting choice.
+- [ ] **Days.** What a day is, how it relates to the cycle, and what changes at day boundaries.
+- [ ] **Number of players** (the proposal is about 8, the original is 16) and how many seats bots may fill.
+- [ ] **Roles.** Which roles exist beyond human and Mush, if any, and how they are assigned. Linked to the skills decisions.
+- [ ] **Game name.** Not a rule, but still open in `CLAUDE.md`.
+
+**Infection**
+- [ ] **How many Mush, and how they are chosen** (fixed number, scaled with players, random or weighted).
+- [ ] **How infection spreads, or whether it does,** and whether it can be cured.
+- [ ] **What Mush can do that humans cannot,** and how the Mush learn who else is Mush.
+- [ ] **What a player sees when infected,** and what the Mush vs. human indicator shows to whom.
+
+**Win conditions and death**
+- [ ] **What each side must achieve to win,** and what happens when one side is eliminated.
+- [ ] **Game length limit,** if any (depends on days and cycles).
+- [ ] **What happens at 0 HP:** death, incapacitation, or something else, and what a dead player sees, can do, and can say in chat.
+- [ ] **End-of-game reveal:** whether roles are shown, and what happens to bots and disconnected players.
+
+**Combat and covert actions**
+- [ ] **Punch targeting:** who can be targeted (same room only?), whether it can miss, and any limits per cycle. Cost (1 AP) and damage (2) are already decided.
+- [ ] **What aggressive actions trigger:** log visibility, consequences, and whether other players are alerted.
+- [ ] **Secret and covert actions:** what makes an action secret or covert, who can see or detect it, how it appears in logs, and how cameras factor in.
+- [ ] **Who sees an attack in the log:** attacker, victim, and bystanders in the room, and whether cameras change that.
+
+**Cameras**
+- [ ] **Camera install, uninstall, and dismantle:** costs, required tools or items, and who can see that it happened.
+- [ ] **What a camera records or reveals,** and to whom, and whether footage persists.
+
+**Ship, status, and beds**
+- [ ] **Ship resources** (fuel, oxygen, shields, plasma shield, alerts): the values, costs, and what drains or restores each, and what happens when one runs out.
+- [ ] **Status effects, starting with dirty:** what causes and clears it, its effects, and whether it is visible to others.
+- [ ] **Lie down on beds:** cost and effects, such as rest or recovery.
+
+**Skills**
+- [ ] **The list of skills** and what each does.
+- [ ] **How skills are gained** (start, level, event, book) and whether they can be lost or swapped.
+- [ ] **Books:** what they are, where they come from, and who can use them. The slot rules (three by default, plus a separate book slot) and room-only visibility are already decided.
+
+**Communication**
+- [ ] **Private channels:** how many slots a player has, who can start one and join, what others see, and whether Mush have their own.
+
+**Players leaving**
+- [ ] **AFK and disconnected players:** whether a bot takes the seat, whether the seat is skipped, or whether the game ends, and what the others are told.
+
 ## UI
 
 - [ ] **User settings button.** A button that opens a user settings (game options) panel.
