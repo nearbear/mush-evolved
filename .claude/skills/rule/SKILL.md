@@ -16,13 +16,15 @@ CLAUDE.md: **do not invent game rules.** Before coding, list every question the 
 - **Who sees it:** public room history, private to the actor, or secret (witnessed). See the log helpers below.
 - **Edge cases:** not enough AP/MP, the target leaves, the game is over.
 
-Check `docs/plan.md` first, since it lists open rule questions and may already have the answer. The original game's values are in `Mush/data/*.ods` and `Mush/src/common/Gameplay.hx`. Use them as suggestions to offer, never as decisions.
+Check `docs/plan.md` first, since it lists open rule questions and may already have the answer. Don't read it whole: `grep -n -i "<keyword>" docs/plan.md`, then read only the matching lines. The original game's values are in `Mush/data/*.ods` and `Mush/src/common/Gameplay.hx`; grep for the specific constant instead of opening them. Use them as suggestions to offer, never as decisions.
 
 Skip a question only if the user's message, CLAUDE.md, or `docs/plan.md` already answers it.
 
 ## 2. Implement in `shared`, purely
 
+- Don't read `rules.ts` whole. Find where things live in `docs/code-map.md` (or grep for `legalActions`, `applyAction`, `logPublic`, etc.) and read only those ranges. Open `modifiers.ts` and `protocol.ts` only when a step below needs them.
 - `shared/src/rules.ts` and the modules next to it. No I/O, no clocks, no `Math.random`; randomness goes through the seeded RNG in state.
+- New player-visible text (log lines, action labels, errors) goes through the `i18n` skill: don't hard-code English strings.
 - State must stay plain JSON (it's persisted and cloned with JSON).
 - **Numbers that items or skills might change** go through the modifier registry in `shared/src/modifiers.ts`: add a hook type to `Modifier`, fold it like `movementRules`, and compute the result in one function (like `moveCost`). Don't hard-code a value that the user says can vary.
 - **Log entries:** use `logPublic(state, room, text)` (the room's history), `logPrivate(state, actor, text)` (only the actor ever sees it), or `logSecret(state, actor, text)` (room history only if another living player is in the room). Never push to `state.log` directly.
@@ -35,7 +37,7 @@ In `shared/src/*.test.ts`:
 
 - The happy path, each limit or edge case from step 1, and "illegal action leaves state unchanged".
 - **Hidden information:** whenever `PlayerView` or the log changes, extend the `viewFor` tests to show that other players' roles, other rooms' history, and private entries do not appear in anyone else's view. This is the project's most important architecture rule.
-- Run: `source ~/.nvm/nvm.sh && npm test && npm run typecheck`.
+- While iterating, run only what you need: `source ~/.nvm/nvm.sh && npm test -w shared -- rules.test.ts -t "name"`. Run the full `npm test && npm run typecheck` once, at the end.
 
 ## 4. Check it end to end
 
@@ -46,6 +48,6 @@ In `shared/src/*.test.ts`:
 
 ## 5. Record it
 
-- `CLAUDE.md`: update the "Implemented rules" paragraph (and "Open decisions" if one was settled).
-- `docs/plan.md`: mark answered questions as answered, with the date.
-- `docs/ai-workflow.md`: a dated entry with the decision, who decided it, what worked, and anything that needed correction. Only ever append with cat >> as a cost optimization; do not rewrite existing entries.
+- `docs/code-map.md`: update the "Implemented rules" paragraph. In `CLAUDE.md`, update "Open decisions" only if one was settled.
+- `docs/plan.md`: mark answered questions as answered, with the date. Grep for the line and use `Edit`; don't re-read the file.
+- `docs/ai-workflow.md`: a dated entry with the decision, who decided it, what worked, and anything that needed correction. Only ever append with `cat >>`, and never read the file first (it is large); do not rewrite existing entries.

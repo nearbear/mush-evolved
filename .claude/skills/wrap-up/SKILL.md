@@ -29,9 +29,10 @@ Report failures with their output. Don't say done if anything failed or was skip
 
 Only where something actually changed:
 
-- **`CLAUDE.md`**: the "Implemented rules" paragraph, the code map (new files or modules), commands (new npm scripts), and "Open decisions" (remove anything settled). Keep it a summary.
+- **`docs/code-map.md`**: the "Implemented rules" paragraph and the code map (new files or modules).
+- **`CLAUDE.md`**: commands (new npm scripts), the skills list, and "Open decisions" (remove anything settled). Keep it a summary.
 - **`docs/plan.md`**: mark answered questions as answered, with the date and the answer.
-- **`docs/ai-workflow.md`**: a dated `###` entry. What was decided and **who decided it** (the user, or the assistant with approval), what worked, and anything that needed correction. Be honest about mistakes; the user is writing this up. Only ever append with cat >> as a cost optimization; do not rewrite existing entries.
+- **`docs/ai-workflow.md`**: a dated `###` entry. What was decided and **who decided it** (the user, or the assistant with approval), what worked, and anything that needed correction. Be honest about mistakes; the user is writing this up. Only ever append with `cat >>`, and never read the file first (it is large); do not rewrite existing entries.
 - **`docs/mush-assets.md`**: if new facts about the archive came up.
 
 ## 3. Propose the commit
@@ -40,7 +41,7 @@ Don't commit unless the user asks. When they do:
 
 - `git status --short` and `git diff --stat`. Note anything the user staged themselves and don't unstage it.
 - One logical change per commit. If the working tree mixes changes (e.g. a UI skin and a rule change), propose splitting them and list which files go in each.
-- If on `main`, ask whether to branch first.
+- Commit directly to `main`; the user never wants a branch (CLAUDE.md).
 - Message: a short imperative subject in the style of `git log --oneline`, a body explaining why if it isn't obvious, and the attribution lines from the system prompt.
 
 ## 4. Summarize for the user

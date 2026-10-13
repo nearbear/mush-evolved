@@ -60,6 +60,7 @@ These are non-negotiable unless I say otherwise.
 ## Working agreements
 
 - Plan before large changes and keep commits small and focused.
+- Commit directly to `main`. Never create or suggest a branch.
 - Write tests for rules logic. Run typecheck and tests before saying something is done.
 - Do not invent game rules. If a rule is ambiguous, ask me.
 - Ask before adding dependencies.
