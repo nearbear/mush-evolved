@@ -34,6 +34,14 @@ Recorded 2026-10-13. Not started. Items that change game rules need the `rule` s
 - [ ] **Secret and covert actions.** Design the concept first: what makes an action secret or covert, who can see or detect it, and how it appears in logs. Cameras factor in (e.g. whether a camera records or reveals it). Related to the "aggressive" action flag. This is a rule change and a hidden-information risk, so the `rule` and `leak-check` skills apply.
 - [ ] **Skills (rules and UI).** Players have skills, visible to every player in the same room as them (not to players elsewhere, which `viewFor` must enforce). By default there are at most three skill slots, plus a separate book slot that holds a fourth skill gained from a book. Still to decide: the list of skills and their effects, how skills are gained, what books are and where they come from, and whether skills can be lost or swapped. The UI shows a player's slots and skills, including the book slot, and must work in the phone layout. A rule change, so the `rule` skill applies.
 
+## Architecture
+
+- [ ] **Cosmetic position sync.** Decide how in-room position and sitting reach other clients without becoming rule state, and without leaking anything hidden (e.g. a separate lightweight channel, filtered per viewer by room). Blocks walking around and sittable equipment.
+- [ ] **Site notification storage and delivery.** Decide where site notifications live (they outlast a game, so not in a game room), how they are delivered to the player, and how moderation feeds them. Likely needs a global coordinator like the matchmaker, or persistent storage. Blocks the notification button.
+- [ ] **Log level in the rules.** Decide where a log entry's level (info, warn, danger) is set: by the rules when the entry is created, carried through `viewFor`, with no client guessing. Blocks log levels.
+- [ ] **Action costs in the view.** Decide how `view.legalActions` carries each action's cost, so the client displays costs without computing them. Blocks stacked actions with costs.
+- [ ] **Accounts architecture.** The account button is a placeholder. Decide what accounts will eventually mean (guest vs. registered, identity across games, storage) so the notification and moderation work does not paint us into a corner.
+
 ## Site and accounts
 
 - [ ] **Game logo.** Add the game logo to the site chrome.
