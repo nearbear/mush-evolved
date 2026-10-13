@@ -9,7 +9,7 @@ Status: **covered** = tests exist, **partial** = some exist, **missing** = none 
 A leak can't be fixed after the fact: once a client has seen a role, the game is spoiled. Leaks also don't show up as bugs, since everything still looks fine on screen.
 
 - **`viewFor` strips everything a seat shouldn't see:** other players' roles, HP, morale, and inventories; other rooms' items, equipment, and log history; private log entries; the RNG state. *Partial* (`rules.test.ts`, `items.test.ts`, `examine.test.ts`). Every new field on `GameState` or `PlayerView` needs a matching test. Worth adding one blunt test as well: build a game, serialize each seat's view, and assert that no other seat's hidden values appear anywhere in the string. That catches leaks through fields nobody thought to check.
-- **Error messages don't depend on hidden state.** `applyAction` answers "Illegal action" whatever the reason. A message like "can't vote for a Mush" would leak a role through the error channel. Lock this in with a test before infection and voting arrive. *Missing.*
+- **Error messages don't depend on hidden state.** `applyAction` answers "Illegal action" whatever the reason. A message like "can't target a Mush" would leak a role through the error channel. Lock this in with a test before infection arrives. *Missing.*
 - **Each connection gets its own seat's view** (`GameRoom.broadcastViews`). A mix-up here (one view sent to everyone, or the wrong `playerId` in a connection's state) would leak everything, and no rules test would catch it. *Missing.*
 - **Seat tokens.** A missing or unknown token is rejected (close code 4001). A valid token maps to exactly one seat. The matchmaker sends each human only their own token, never a broadcast. A token is effectively the seat itself, so whoever holds it can play that seat and see its view. *Missing.*
 - **Bots see only their own seat's view.** This is structural today (`viewFor(game, botId)` in `scheduleBots`). Once model bots exist, also test that the prompt built for a seat contains nothing outside that seat's view (see the `bot` skill). *Missing.*
@@ -27,7 +27,7 @@ Everything from a client is hostile until parsed. Player text will also become m
 
 ## 3. Rules correctness
 
-The rules will grow the most (infection, voting, win conditions), and every addition can break an older rule.
+The rules will grow the most (infection, win conditions), and every addition can break an older rule.
 
 - **Each rule's numbers** (AP/MP costs and caps, cycle gains, slot counts) against the confirmed values in `config.ts`. *Covered* for what exists.
 - **Determinism:** the same seed and actions give the same state. Persistence and replays depend on it. *Partial* (`createGame` only). Add one test that replays a sequence of actions twice and compares the results.

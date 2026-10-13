@@ -13,7 +13,7 @@ This is a **vertical-slice MVP**, not a full clone. The goals are:
 2. Demonstrate solid full-stack engineering and an AI-assisted development workflow (keep notes on what worked and what didn't; see "Working agreements").
 3. Leave room to grow it into a real game later, including animated characters.
 
-**Proposed slice scope:** about 8 players, a handful of rooms, the action-point loop and infection. Do not try to implement the full Mush ruleset.
+**Proposed slice scope:** 16 seats with 2 Mush (1 when 8 or fewer players are in the room; decided in `docs/plan.md`, not yet in the code), the 27-room Daedalus, the action-point loop and infection. Do not try to implement the full Mush ruleset.
 
 ## Stack
 
@@ -22,7 +22,7 @@ Decided:
 - TypeScript everywhere; React for the web client, with Base UI (`@base-ui/react`, unstyled) for widgets like tabs and scroll areas.
 - **PartyServer** (Cloudflare Durable Objects) for the realtime server, with custom authoritative rooms.
 - **Basic DOM-rendered prototype first. No three.js yet.**
-- Monorepo with `web`, `server`, and `shared` packages (the folders exist but are empty placeholders until scaffolding). Vite for the client; Vitest for tests.
+- Monorepo with `web`, `server`, and `shared` packages. Vite for the client; Vitest for tests.
 
 Rejected (see `docs/ai-workflow.md`):
 
@@ -111,9 +111,13 @@ See `docs/code-map.md` for where each module lives and which rules are implement
 
 ## Open decisions
 
-- Game name, number of players, roles, win conditions, and turn/cycle length (real-time vs. async).
+The full, current list is **`docs/todo.md`**, starting with its "Open rule decisions" section. Answered rule decisions are recorded in `docs/plan.md` and `docs/action-plans.md`. The draft staging into MVP, private beta, public beta, and release is `docs/mvp-plan.md` (not final). Do not treat anything in the to-do as decided unless it is also recorded there as answered.
+
+Not rules, but still open:
+
+- Game name.
 - Whether bots appear in live games at all, or are testing-only (not necessarily planned for live play, 2026-10-13).
-- Which hosted model API to use for bots (only matters if bots run in live games or for testing).
+- Which hosted model API to use for bots (only matters if bots run in live games, or for testing).
 - Hosting and deployment details.
 - Rendering beyond the DOM isometric view (decided: DOM for now, 2026-10-11).
 - Internationalization (en/fr/es): the seam is in, the comprehensive pass is not.

@@ -2,7 +2,7 @@
 
 > **Bots (2026-10-13):** the author does not necessarily plan to run AI-controlled bots in live public games. They may be for testing only. Wherever these docs describe bots filling seats, treat live use as undecided.
 
-Based on the rule decisions given on 2026-10-05. Nothing here is implemented yet. **Open questions** are things I need answered before building that part; I won't guess them.
+Based on the rule decisions given on 2026-10-05. Status (updated 2026-10-13): Phase 0 is done (MIT license added), and parts of Phases 1 and 2 are done: AP, MP, HP and morale values, the action registry, inventory, iTrackie, global chat, and private channels. Infection, spores, `hit`, win conditions, the cycle timer, and everything in Phases 3 to 5 are not. The master to-do list is `docs/todo.md`. **Open questions** are things I need answered before building that part; I won't guess them.
 
 ## Decisions received
 

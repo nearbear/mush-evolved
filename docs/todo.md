@@ -4,35 +4,39 @@
 
 > Draft staging of these items: `docs/mvp-plan.md` (not final).
 
-Recorded 2026-10-13. Not started. Items that change game rules need the `rule` skill and decisions from the user first.
+Recorded 2026-10-13; staleness check against `docs/plan.md` and `docs/action-plans.md` done the same day. Nothing below is started unless it says so. Items that change game rules need the `rule` skill and decisions from the user first.
 
 ## Open rule decisions
 
-Some of these were already answered in `docs/plan.md` (for example 16 seats, 2 Mush or 1 with 8 or fewer players, the Mush and human win conditions, and Mush chat); check it and tick off or reword what is stale. Decisions only you can make; nothing here should be implemented until it is settled (the `rule` skill resolves ambiguity with you first). Ordered so earlier answers unblock later ones. Each links to the to-do it blocks.
+Decisions only you can make; nothing here should be implemented until it is settled (the `rule` skill resolves ambiguity with you first). Ordered so earlier answers unblock later ones. Checked items are already answered, with the source; the rest are open. Answered decisions live in `docs/plan.md` and `docs/action-plans.md`.
 
 **Game shape**
-- [ ] **Turn and cycle length: real-time or async?** How long a cycle lasts and whether players act on a clock or at their own pace. Blocks Days, bots' pacing, AFK handling, and the DevOps hosting choice.
-- [ ] **Days.** What a day is, how it relates to the cycle, and what changes at day boundaries.
-- [ ] **Number of players** (the proposal is about 8, the original is 16) and how many seats bots may fill.
+- [x] **Turn and cycle length.** Answered: real-time on a timer, 3-hour cycles, 8 per day, no "ready" action (`docs/plan.md`, `docs/action-plans.md`). Not yet implemented in the code.
+- [ ] **Days.** A day is 8 cycles. Still open: what else changes at a day boundary beyond the daily spore cap reset.
+- [x] **Number of players.** Answered: 16 seats (`docs/plan.md`). The code still has the placeholder of 8. Still open: how many seats bots may fill, and whether late joiners can enter a running game.
 - [ ] **Roles.** Which roles exist beyond human and Mush, if any, and how they are assigned. Linked to the skills decisions.
 - [ ] **Game name.** Not a rule, but still open in `CLAUDE.md`.
 
 **Infection**
-- [ ] **How many Mush, and how they are chosen** (fixed number, scaled with players, random or weighted).
-- [ ] **How infection spreads, or whether it does,** and whether it can be cured.
-- [ ] **What Mush can do that humans cannot,** and how the Mush learn who else is Mush.
+- [x] **How many Mush.** Answered: 2, or 1 when 8 or fewer players are in the room when they are chosen (`docs/plan.md`).
+- [ ] **When Mush are chosen.** What triggers selection (a fixed day or cycle, a config value), and whether everyone is human with no spore actions before it. Whether bots count toward the "8 or fewer" rule and can be Mush.
+- [ ] **How infection works.** What a spore does to a human: the action name, AP cost, whether it needs the same room, how many spores convert, whether the target notices, and whether infection can be cured. (`docs/plan.md` Q4, the biggest gap.)
+- [ ] **Spore extraction.** Answered in part: `extract_spore` costs 1 AP, gives 1 spore, always applies dirty, and there is a fixed daily number. Still open: Mush-only or not, the daily number, and ship-wide or per Mush.
+- [x] **Mush know each other and have a private chat channel** (`docs/plan.md`).
 - [ ] **What a player sees when infected,** and what the Mush vs. human indicator shows to whom.
 
 **Win conditions and death**
-- [ ] **What each side must achieve to win,** and what happens when one side is eliminated.
-- [ ] **Game length limit,** if any (depends on days and cycles).
-- [ ] **What happens at 0 HP:** death, incapacitation, or something else, and what a dead player sees, can do, and can say in chat.
+- [x] **What each side must achieve.** Answered: Mush win if all humans are dead, or if the ship returns to Sol while any Mush is alive. Humans win if the ship returns to Sol with no Mush alive (`docs/plan.md`).
+- [ ] **Returning to Sol.** What action or condition triggers it, who can do it, and where. Without this humans can never win. (`docs/plan.md` Q8.)
+- [ ] **Game length limit,** if any (days are decided, so this depends on the Sol trip).
+- [ ] **What happens at 0 HP:** death, incapacitation, or something else, whether a body is left and items drop, and what a dead player sees, can do, and can say in chat. (See also the spectator view to-do under Rules.)
 - [ ] **End-of-game reveal:** whether roles are shown, and what happens to bots and disconnected players.
 
 **Combat and covert actions**
-- [ ] **Punch targeting:** who can be targeted (same room only?), whether it can miss, and any limits per cycle. Cost (1 AP) and damage (2) are already decided.
+- [ ] **Hit vs. punch damage.** `docs/plan.md` says `hit` costs 1 AP and deals 1 damage; the punch to-do says 1 AP and 2 damage. Which is right?
+- [ ] **Punch targeting:** who can be targeted (same room only?), whether it can miss, and any limits per cycle.
 - [ ] **What aggressive actions trigger:** log visibility, consequences, and whether other players are alerted.
-- [ ] **Secret and covert actions:** what makes an action secret or covert, who can see or detect it, how it appears in logs, and how cameras factor in.
+- [ ] **Secret and covert actions:** what makes an action secret or covert, who can see or detect it, how it appears in logs, and how cameras factor in. Partly decided for plans: a secret substitution is witnessed exactly as if done live (`docs/action-plans.md`). Room log visibility for secret actions "will change".
 - [ ] **Who sees an attack in the log:** attacker, victim, and bystanders in the room, and whether cameras change that.
 
 **Cameras**
@@ -41,8 +45,13 @@ Some of these were already answered in `docs/plan.md` (for example 16 seats, 2 M
 
 **Ship, status, and beds**
 - [ ] **Ship resources** (fuel, oxygen, shields, plasma shield, alerts): the values, costs, and what drains or restores each, and what happens when one runs out.
-- [ ] **Status effects, starting with dirty:** what causes and clears it, its effects, and whether it is visible to others.
-- [ ] **Lie down on beds:** cost and effects, such as rest or recovery.
+- [ ] **Status effects, starting with dirty:** what causes and clears it, its effects, and whether it is visible to others. (`docs/plan.md` Q6; spores already apply it.)
+- [ ] **Lie down on beds:** cost and effects. Partly decided: +2 AP per cycle while lying in a bed (the `lying_down` modifier exists, but no action applies it yet).
+
+**Items**
+- [x] **Inventory and iTrackie.** Answered: 3 private slots, unlimited room storage, free take/drop logged publicly; everyone starts with an iTrackie, a normal item that is needed to read and post in global chat and the feature threads (`docs/plan.md`).
+- [ ] **Stealing and finding iTrackies,** and other item rules beyond the placeholders.
+- [ ] **Satiety.** Hunger does not exist yet. When it does, food gets a satiety value; coffee gives 2 AP and no satiety on purpose.
 
 **Skills**
 - [ ] **The list of skills** and what each does.
@@ -50,7 +59,8 @@ Some of these were already answered in `docs/plan.md` (for example 16 seats, 2 M
 - [ ] **Books:** what they are, where they come from, and who can use them. The slot rules (three by default, plus a separate book slot) and room-only visibility are already decided.
 
 **Communication**
-- [ ] **Private channels:** how many slots a player has, who can start one and join, what others see, and whether Mush have their own.
+- [x] **Private channels.** Answered: 3 per player by default (counting ones you were invited to; skills and research may raise it), any member can invite any living player, new members see the whole history, and the last member leaving deletes the channel (`docs/action-plans.md`).
+- [ ] **Whether Mush have their own private channels** beyond the shared Mush channel.
 
 **Players leaving**
 - [ ] **AFK and disconnected players:** whether a bot takes the seat, whether the seat is skipped, or whether the game ends, and what the others are told.
@@ -77,7 +87,7 @@ Some of these were already answered in `docs/plan.md` (for example 16 seats, 2 M
 
 ## Rules
 
-- [ ] **Days.** Introduce the concept of days to the game. A rule change, so the `rule` skill applies: what a day is, how it relates to the existing cycle, and what changes at day boundaries need to be decided first.
+- [ ] **Days.** Introduce the concept of days to the game. A rule change, so the `rule` skill applies: a day is 8 three-hour cycles (decided); what changes at day boundaries beyond the daily spore cap still needs deciding. The cycle timer itself (replacing the ready action) is not built.
 - [ ] **Ship resources and their UI.** Fuel, oxygen, shields, plasma shield, and alerts. This changes game rules, so the `rule` skill applies: the values, costs, and what drains or restores each resource need to be decided first.
 - [ ] **Status effects, starting with the dirty status.** A rule change: what causes and clears dirty, and its effects, need to be decided first.
 - [ ] **Lie down action for beds.** A rule change: cost and effects (e.g. any rest or recovery) need to be decided first.
@@ -87,8 +97,12 @@ Some of these were already answered in `docs/plan.md` (for example 16 seats, 2 M
 - [ ] **Secret and covert actions.** Design the concept first: what makes an action secret or covert, who can see or detect it, and how it appears in logs. Cameras factor in (e.g. whether a camera records or reveals it). Related to the "aggressive" action flag. This is a rule change and a hidden-information risk, so the `rule` and `leak-check` skills apply.
 - [ ] **Skills (rules and UI).** Players have skills, visible to every player in the same room as them (not to players elsewhere, which `viewFor` must enforce). By default there are at most three skill slots, plus a separate book slot that holds a fourth skill gained from a book. Still to decide: the list of skills and their effects, how skills are gained, what books are and where they come from, and whether skills can be lost or swapped. The UI shows a player's slots and skills, including the book slot, and must work in the phone layout. A rule change, so the `rule` skill applies.
 
-- [ ] **Infection.** Design and implement how players become Mush. A rule change and the biggest hidden-information risk in the game (roles must never reach the wrong seat), so the `rule` and `leak-check` skills apply. Still to decide: how many Mush start and how they are chosen, how infection spreads (or whether it does), what Mush can do that humans cannot, how Mush learn who else is Mush, what a player sees when they are infected, and whether infection can be cured.
-- [ ] **Win conditions.** Design and implement how a game ends. A rule change. Still to decide: what each side must achieve to win, what happens when the Mush or the humans are eliminated, whether a game has a day or cycle limit (depends on Days), what players see at the end (e.g. whether roles are revealed), and what happens to bots and disconnected players at the end.
+- [ ] **Infection.** Design and implement how players become Mush. A rule change and the biggest hidden-information risk in the game (roles must never reach the wrong seat), so the `rule` and `leak-check` skills apply. Decided in `docs/plan.md`: 2 Mush (1 with 8 or fewer players), spores via `extract_spore`, Mush know each other and share a private channel. Still to decide: when Mush are chosen, what a spore does to a human, what a player sees when infected, and whether infection can be cured (see Open rule decisions).
+- [ ] **Win conditions.** Design and implement how a game ends. A rule change. Decided in `docs/plan.md`: Mush win if all humans die or the ship returns to Sol with a Mush alive; humans win if it returns with none. Still to decide: how the return to Sol is triggered, a game length limit, what players see at the end, and what happens to bots and disconnected players.
+
+- [ ] **Scheduled action plans.** Players post a plan in a private channel: an ordered list of jobs that other members claim, run automatically at a set time. Designed in full in `docs/action-plans.md` (the action registry and private channels are built; the rest is not). Large; the design has its own phases and open questions. Rule changes, so the `rule` skill applies.
+- [ ] **Spectator view for dead players.** A dead player gets everything public but nothing that depends on standing in a room. Decide what counts as public, whether their old private channels stay readable, and whether any of it can leak back to the living (from `docs/plan.md`).
+- [ ] **Fix `npm run screenshot` hanging.** The script hung past 120 s and 300 s in two runs while checking the drag-and-drop inventory; cause unknown. Until fixed, the inventory tiles have had no visual check (from `docs/plan.md`).
 
 ## Architecture
 
@@ -149,6 +163,9 @@ The seam is in (`web/src/i18n/`, English, French, Spanish) but most of the game 
 - [ ] **Moderation word lists per language.** Listed under Moderation too: fr and es lists, and accent-aware word boundaries.
 - [ ] **Translate site pages.** Notifications, the account placeholder, error pages, terms and privacy text, and the wiki. Decide whether the wiki is translated in full or only partly.
 - [ ] **Fallback and detection behavior.** Decide what happens when the browser language is unsupported, a key is missing in production, or a saved language is removed.
+- [ ] **Bot and guest names.** `"Bot 2 (AI)"` and `"Guest N"` are stored as English in `Seat.name`. Store a number or id and format in the client (the AI badge already comes from `isBot`).
+- [ ] **Re-run the i18n baseline.** The hardcoded-text baseline recorded the minimap's in-progress counts; re-run `UPDATE_I18N_BASELINE=1 npm test -w tools -- i18n` now that it has landed, then check the numbers went down.
+- [ ] **Known translation doubts.** "Presque complet"/"Casi completa" (gender) and "Salle"/"Sala" for Room, to settle in the glossary.
 - [ ] **Decide on more languages.** Out of scope for now, but record the process (the `i18n` skill covers adding one) and whether a right-to-left language is ever planned, since it changes the layout work.
 
 ## Testing

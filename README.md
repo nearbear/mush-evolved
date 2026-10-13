@@ -4,7 +4,7 @@
 
 A turn-based, browser-based social deduction game inspired by [Mush](https://github.com/motion-twin/WebGamesArchives) (Motion Twin) and [eMush](https://emush.eternaltwin.org/) (Eternaltwin). Players wake up on a spaceship, a few of them are secretly infected, and the rest have to survive and unmask them.
 
-This is a **vertical-slice MVP**, not a full clone: matchmaking, bot fill, a room-by-room ship, action points, inventory, and chat work today. Infection and win conditions are deliberately **not implemented yet**; the rules haven't been decided. There is no hosted game: deployment has never been run, and the bot model API isn't chosen. You run it locally.
+This is a **vertical-slice MVP**, not a full clone: matchmaking, bot fill, a room-by-room ship, action points, inventory, and chat work today. Infection and win conditions are deliberately **not implemented yet**; some of the rules are decided in `docs/plan.md`, and the rest are open in `docs/todo.md`. There is no hosted game: deployment has never been run, and the bot model API isn't chosen. You run it locally.
 
 ## Quick start
 
@@ -70,18 +70,10 @@ Please read these before changing code; pull requests that break them will need 
 - Before opening a pull request, run `npm run typecheck`, `npm run lint`, and `npm test`.
 - For UI changes, run `npm run screenshot` and check both the desktop and phone passes.
 - Please don't add AI-generated non-text assets (art, sound) without discussing it first.
-- Open items are tracked in [`docs/todo.md`](docs/todo.md), [`docs/next-steps.md`](docs/next-steps.md), and [`docs/plan.md`](docs/plan.md).
+- Open items are tracked in [`docs/todo.md`](docs/todo.md) (master list), with rule decisions recorded in [`docs/plan.md`](docs/plan.md) and [`docs/action-plans.md`](docs/action-plans.md). `docs/next-steps.md` is superseded.
 
 [`CLAUDE.md`](CLAUDE.md) holds the same project conventions for AI coding assistants; the project is developed with Claude Code, and [`docs/ai-workflow.md`](docs/ai-workflow.md) logs what worked and what didn't.
 
 ## Open decisions
 
-Game name, player and Mush counts, roles, win conditions, cycle length, which hosted model API powers the bots, and hosting.
-
-## License and credits
-
-**Code:** MIT, see [`LICENSE`](LICENSE). It does not cover `Mush/`.
-
-**Art and other assets in `Mush/`** are © Motion Twin, from [WebGamesArchives](https://github.com/motion-twin/WebGamesArchives), under **CC BY-NC-SA 4.0**: attribution required, non-commercial use only, and adaptations must be shared under the same license. See `Mush/LICENSE.txt`, `Mush/ATTRIBUTION.md`, and [`docs/mush-assets.md`](docs/mush-assets.md). Nothing built on them may be monetized.
-
-Inspired by Mush (Motion Twin) and its open-source remake eMush (Eternaltwin). This project is not affiliated with either.
+See the "Open rule decisions" section of [`docs/todo.md`](docs/todo.md). Not rules: the game name, whether bots run in live games at all (they may be testing-only), which hosted model API powers them, and hosting.
