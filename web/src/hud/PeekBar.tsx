@@ -3,9 +3,10 @@
 // leaving the room view. Legality comes from the view, like the Inspect panel.
 
 import type { ReactNode } from "react";
+import { useTranslation } from "react-i18next";
 import type { Action, PlayerView, RoomId, Target } from "@mush2/shared";
 import { roomLabel } from "../scene/names.ts";
-import { actionLabel, actionsOn, resolveTarget } from "./targets.ts";
+import { actionLabelKey, actionsOn, resolveTarget } from "./targets.ts";
 
 export function PeekBar({
   view,
@@ -27,6 +28,11 @@ export function PeekBar({
   onMore: () => void;
   onClose: () => void;
 }) {
+  const { t } = useTranslation();
+  const labelFor = (a: Action) => {
+    const key = actionLabelKey(a);
+    return key ? t(key) : a.type;
+  };
   if (door) {
     const canGo = reachable.has(door);
     return (
@@ -45,7 +51,7 @@ export function PeekBar({
     <Bar title={name} isBot={isBot} onClose={onClose}>
       {actionsOn(view, target).map((a) => (
         <button key={a.type} onClick={() => onAction(a)}>
-          {actionLabel(a)}
+          {labelFor(a)}
         </button>
       ))}
       <button onClick={onMore}>More</button>

@@ -17,6 +17,11 @@
     "room": "Room",
     "itrackie": "iTrackie"
   },
+  "actions": {
+    "examine": "Examine",
+    "dispense": "Pull coffee",
+    "consume": "Drink"
+  },
   "channels": {
     "empty": "No private channels yet.",
     "count": "{{used}} of {{limit}} channels",

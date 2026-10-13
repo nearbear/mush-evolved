@@ -4,6 +4,8 @@
 
 export interface EquipmentType {
   name: string;
+  /** Item type pulled from it, once per cycle per machine (confirmed 2026-10-13). */
+  dispenses?: string;
 }
 
 /**
@@ -14,7 +16,7 @@ export const EQUIPMENT_TYPES: Record<string, EquipmentType> = {
   ASTRO_MODULE: { name: "Astro terminal" },
   BEAT_BOX: { name: "Jukebox" },
   BED: { name: "Bed" },
-  COFFEE_DISPENSER: { name: "Coffee machine" },
+  COFFEE_DISPENSER: { name: "Coffee machine", dispenses: "coffee" },
   COMBUSTION_CHAMBER_ACCESS: { name: "Combustion chamber" },
   COM_CENTER: { name: "Communications center" },
   CRYO_MODULE: { name: "Cryo module" },

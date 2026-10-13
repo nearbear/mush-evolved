@@ -1,10 +1,11 @@
 // Left panel: whatever is selected (a person, room equipment, or an item),
 // with the actions the server allows on it. Falls back to your own character.
 
+import { useTranslation } from "react-i18next";
 import { CHARACTERS, type Action, type PlayerView, type Target } from "@mush2/shared";
 import { EMPTY_SLOT_ICON, characterImage, itemIcon, portrait } from "../art/assets.ts";
 import { roomLabel } from "../scene/names.ts";
-import { actionLabel, actionsOn, resolveTarget, type Resolved } from "./targets.ts";
+import { actionLabelKey, actionsOn, resolveTarget, type Resolved } from "./targets.ts";
 
 export function InspectPanel({
   view,
@@ -18,6 +19,11 @@ export function InspectPanel({
   onAction: (action: Action) => void;
   onClose: () => void;
 }) {
+  const { t } = useTranslation();
+  const labelFor = (a: Action) => {
+    const key = actionLabelKey(a);
+    return key ? t(key) : a.type;
+  };
   const resolved = resolveTarget(view, target);
   const isSelf = target.kind === "player" && target.id === view.you.id;
   const actions = actionsOn(view, target);
@@ -37,7 +43,7 @@ export function InspectPanel({
         <div className="inspect-actions">
           {actions.map((a) => (
             <button key={a.type} onClick={() => onAction(a)}>
-              {actionLabel(a)}
+              {labelFor(a)}
             </button>
           ))}
         </div>

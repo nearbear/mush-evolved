@@ -17,6 +17,11 @@
     "room": "Salle",
     "itrackie": "iTrackie"
   },
+  "actions": {
+    "examine": "Examiner",
+    "dispense": "Tirer un café",
+    "consume": "Boire"
+  },
   "channels": {
     "empty": "Aucun canal privé pour l'instant.",
     "count": "{{used}} canaux sur {{limit}}",

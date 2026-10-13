@@ -34,10 +34,27 @@ export function resolveTarget(view: PlayerView, target: Target): Resolved | null
 
 /** Legal actions aimed at this target. */
 export function actionsOn(view: PlayerView, target: Target): Action[] {
-  return view.legalActions.filter((a) => a.type === "examine" && sameTarget(a.target, target));
+  return view.legalActions.filter((a) => {
+    switch (a.type) {
+      case "examine":
+        return sameTarget(a.target, target);
+      case "dispense":
+        return target.kind === "equipment" && a.equipment === target.id;
+      case "consume":
+        return target.kind === "item" && a.item === target.id;
+      default:
+        return false;
+    }
+  });
 }
 
-const ACTION_LABELS: Partial<Record<Action["type"], string>> = { examine: "Examine" };
+const ACTION_LABEL_KEYS = {
+  examine: "actions.examine",
+  dispense: "actions.dispense",
+  consume: "actions.consume",
+} as const;
 
-/** Button text for an action aimed at a target (Inspect panel and peek bar). */
-export const actionLabel = (action: Action) => ACTION_LABELS[action.type] ?? action.type;
+/** i18n key for the button text of an action aimed at a target (Inspect panel and peek bar). */
+export const actionLabelKey = (action: Action) => (ACTION_LABEL_KEYS as Partial<Record<Action["type"], string>>)[action.type] as
+  | (typeof ACTION_LABEL_KEYS)[keyof typeof ACTION_LABEL_KEYS]
+  | undefined;

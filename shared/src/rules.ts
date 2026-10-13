@@ -70,6 +70,7 @@ export function createGame(seats: readonly Seat[], config: GameConfig, seed: num
     players,
     items,
     nextItemId: items.length + 1,
+    dispensedOn: {},
     log: [{ cycle: 1, text: "The crew wakes up aboard the ship.", visibleTo: "all" }],
     chat: [],
     nextChatId: 1,

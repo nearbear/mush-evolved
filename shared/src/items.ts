@@ -9,6 +9,8 @@ import type { Container, GameState, ItemState, PlayerState } from "./types.ts";
 
 export interface ItemType {
   name: string;
+  /** Drinking or eating it removes it and does this. */
+  consume?: { ap: number };
 }
 
 /**
@@ -28,6 +30,9 @@ export const ITEM_TYPES: Record<string, ItemType> = {
   wrench: { name: "Wrench" },
   blaster: { name: "Blaster" },
   medikit: { name: "Medikit" },
+  // Confirmed 2026-10-13: +2 AP, and (as in the base game) no satiety.
+  // TODO(rules): add satiety when hunger exists; coffee deliberately gives none.
+  coffee: { name: "Coffee", consume: { ap: 2 } },
 };
 
 export function itemName(type: string): string {
@@ -71,4 +76,18 @@ export function canTransfer(
 
 export function sameContainer(a: Container, b: Container): boolean {
   return a.kind === b.kind && a.id === b.id;
+}
+
+/**
+ * Creates an item for a player. It goes to their inventory if there is room;
+ * otherwise they "knock it over" and it lands in the room (confirmed
+ * 2026-10-13). Every action that produces an item should go through here.
+ * Mutates a state the caller already cloned.
+ */
+export function produceItem(next: GameState, player: Readonly<PlayerState>, type: string): { item: ItemState; inInventory: boolean } {
+  const mine: Container = { kind: "player", id: player.id };
+  const inInventory = hasSpace(next, mine);
+  const item: ItemState = { id: `item-${next.nextItemId++}`, type, at: inInventory ? mine : { kind: "room", id: player.room } };
+  next.items.push(item);
+  return { item, inInventory };
 }

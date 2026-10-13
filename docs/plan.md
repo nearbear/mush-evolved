@@ -142,3 +142,7 @@ A dead player should get a spectator view: everything public, but nothing that d
 ## To-do: `npm run screenshot` hangs (added 2026-10-13, not started)
 
 While checking the drag-and-drop inventory (`/play`), the screenshot script hung past the 120 s and 300 s timeouts with no output, in two runs. Cause unknown; dev servers were up. Until it is fixed, the inventory tiles (desktop drag between zones, 360px phone grid wrap, tap-to-select Take/Drop button) have had no visual check. Debug the script, then run both passes and look at `05-take.png` and `m05-inspect-inventory.png`.
+
+## To-do (added 2026-10-13)
+
+- **Satiety.** Hunger/satiety doesn't exist yet. When it does, food items get a satiety value via `ItemType.consume` (`shared/src/items.ts`). Coffee gives 2 AP and **no** satiety, as in the base game (kept on purpose).

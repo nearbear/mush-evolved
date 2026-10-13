@@ -220,3 +220,15 @@ Built Phase 2 of `docs/action-plans.md`: `PrivateChannel` in state, `createChann
 - Follow-up, confirmed by the user: failed "before" secrets are skipped silently; secrets before the same step run in the order set; placeholder shadow items (plan item handles) answer "which coffee". The user expects an empty replacement of a required job to fail the plan; the assistant pointed out that by the "done means it ran" rule an empty macro would show done, and proposed treating empty as failed (awaiting confirmation). The user asked about natural pacing between steps; recorded as future work with tradeoffs (thinking time in recordings, secrets lengthening the timeline as a tell, mid-plan interleaving).
 - Follow-up: the `/play` visual check was attempted twice and `npm run screenshot` hung both times, so the user chose to commit unverified visually and tracked the screenshot hang as a to-do in `docs/plan.md`.
 - Build plan written (user asked for instant execution first, pacing later): ten steps in `docs/action-plans.md`, rules first (registry additions, posting, claiming and locks, executor, secrets), then server, a plain plan card, planning mode, bots, and the cycle timer. While writing it the assistant caught a contradiction it had left in the doc: preflight hints were described as simulating on a clone of the real state, which would be lookahead; changed to a "knowledge sandbox" built only from what the player already knows.
+
+## 2026-10-13: tab icons
+User supplied icon names for 14 tabs. Only Global and Private exist as iTrackie tabs, so only those got art; the other 12 are recorded in `docs/tab-icons.md` as wanted. Two names didn't match files exactly (`favorite.png` -> `fav.png`, `neron.png` -> `icons/ui/neron.png`); flagged to the user. Typecheck, lint, build pass; no visual check yet.
+
+## 2026-10-13: coffee machine (dispense and consume actions)
+
+- **Decided by the user:** pulling a coffee is free and works once per cycle per machine; a full inventory means the coffee is knocked over into the room, and that holds for every item-producing action; drinking is free, gives +2 AP capped at `maxAp`, works on a coffee in the inventory or on the room floor; all three log lines are public. Satiety is a to-do (coffee gives none, as in the base game).
+- **Built:** `dispense` and `consume` actions, `produceItem` helper, `EquipmentType.dispenses`, `ItemType.consume`, `GameState.dispensedOn` (STATE_VERSION 10), client labels via i18n keys.
+- **Worked:** asking the rule questions in one batch up front; the registry made each action a small definition.
+- **Needed correction/decision:** the i18n ratchet failed on new English log lines in `shared`, since no structured log events exist. The user chose to raise the baseline by 2 rather than build them; I hand-edited the baseline (and lowered the `targets.ts` UI entry after moving its labels to `t()`).
+
+2026-10-13 (follow-up): user added icons for room log, features, bottom nav (inspect, iTrackie), new-channel button, and wanted tabs (global log, astrophysics, space combat); NERON projects switched to `conceptor.png`. "glodplus" read as `goldplus.png`.

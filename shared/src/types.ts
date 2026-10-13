@@ -155,6 +155,8 @@ export interface GameState {
   /** Every item in the game, wherever it is. */
   items: ItemState[];
   nextItemId: number;
+  /** Cycle in which each dispenser (equipment id) last gave something out. One use per cycle per machine. */
+  dispensedOn: Record<string, number>;
   log: LogEntry[];
   chat: ChatMessage[];
   nextChatId: number;
@@ -166,6 +168,8 @@ export type Action =
   | { type: "move"; to: RoomId }
   | { type: "take"; item: ItemId }
   | { type: "drop"; item: ItemId }
+  | { type: "dispense"; equipment: string }
+  | { type: "consume"; item: ItemId }
   | { type: "examine"; target: Target }
   | { type: "ready" };
 

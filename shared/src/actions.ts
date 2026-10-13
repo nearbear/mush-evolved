@@ -3,8 +3,8 @@
 // docs/action-plans.md), so an action behaves the same however it is
 // triggered. Pure, like the rest of the rules.
 
-import { equipmentName } from "./equipment.ts";
-import { canTransfer, itemName, itemsIn } from "./items.ts";
+import { EQUIPMENT_TYPES, equipmentName } from "./equipment.ts";
+import { ITEM_TYPES, canReach, canTransfer, itemName, itemsIn, produceItem } from "./items.ts";
 import { logPrivate, logPublic, roomName } from "./log.ts";
 import { moveCost, movementRules } from "./modifiers.ts";
 import type { Action, Container, GameState, ItemState, PlayerState, Target } from "./types.ts";
@@ -76,6 +76,47 @@ function transfer<A extends ActionOf<"take" | "drop">>(type: A["type"]): ActionD
   };
 }
 
+/** Pulling from a machine is free but works once per cycle per machine (confirmed 2026-10-13). */
+const dispense: ActionDef<ActionOf<"dispense">> = {
+  candidates: (state, p) =>
+    (state.config.equipment[p.room] ?? []).filter((e) => EQUIPMENT_TYPES[e.type]?.dispenses).map((e) => ({ type: "dispense", equipment: e.id })),
+  check(state, p, a) {
+    const e = state.config.equipment[p.room]?.find((eq) => eq.id === a.equipment);
+    if (!e || !EQUIPMENT_TYPES[e.type]?.dispenses) return "cant_dispense";
+    return state.dispensedOn[e.id] === state.cycle ? "empty" : null;
+  },
+  cost: free,
+  apply(next, p, a) {
+    const e = next.config.equipment[p.room]!.find((eq) => eq.id === a.equipment)!; // checked, so it exists
+    const type = EQUIPMENT_TYPES[e.type]!.dispenses!;
+    next.dispensedOn[e.id] = next.cycle;
+    const { item, inInventory } = produceItem(next, p, type);
+    const name = itemName(item.type);
+    logPublic(
+      next,
+      p.room,
+      inInventory ? `${p.name} took a ${name} from the ${equipmentName(e.type)}.` : `${p.name} took a ${name} from the ${equipmentName(e.type)} and knocked it over.`,
+    );
+  },
+};
+
+/** Eating or drinking an item you carry or one lying in your room: free, removes it, public (confirmed 2026-10-13). */
+const consume: ActionDef<ActionOf<"consume">> = {
+  candidates: (state, p) => state.items.filter((i) => ITEM_TYPES[i.type]?.consume && canReach(state, p, i.at)).map((i) => ({ type: "consume", item: i.id })),
+  check(state, p, a) {
+    const item = state.items.find((i) => i.id === a.item);
+    if (!item) return "no_such_item";
+    return ITEM_TYPES[item.type]?.consume && canReach(state, p, item.at) ? null : "cant_consume";
+  },
+  cost: free,
+  apply(next, p, a) {
+    const index = next.items.findIndex((i) => i.id === a.item); // checked, so it exists
+    const [item] = next.items.splice(index, 1) as [ItemState];
+    p.ap = Math.min(next.config.maxAp, p.ap + ITEM_TYPES[item.type]!.consume!.ap);
+    logPublic(next, p.room, `${p.name} consumed the ${itemName(item.type)}.`);
+  },
+};
+
 /** Examining is free and private (confirmed 2026-10-11). */
 const examine: ActionDef<ActionOf<"examine">> = {
   candidates: (state, p) => visibleTargets(state, p).map((target) => ({ type: "examine", target })),
@@ -102,6 +143,8 @@ export const ACTIONS: { [T in ActionType]: ActionDef<ActionOf<T>> } = {
   move,
   take: transfer("take"),
   drop: transfer("drop"),
+  dispense,
+  consume,
   examine,
 };
 
