@@ -43,6 +43,17 @@
       "room": "Registro de la sala",
       "global": "Chat global",
       "features": "Funciones"
-    }
+    },
+    "features": {
+      "botany": "Botánica",
+      "research": "Investigación",
+      "inventory": "Inventario",
+      "space_battle": "Combate espacial",
+      "comms": "Centro de comunicaciones",
+      "pilgred": "Reparación del PILGRED",
+      "neron": "Proyectos de NERON",
+      "astrophysics": "Astrofísica"
+    },
+    "featureLabel": "Función"
   }
 }

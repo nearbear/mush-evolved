@@ -3,14 +3,15 @@
 // are visible at once and Tabs.Panel would hide them.
 
 import { useTranslation } from "react-i18next";
+import { TAB_ICONS } from "../art/assets.ts";
 
 export type MobilePanel = "inspect" | "room" | "itrackie";
 
 const BUTTONS = [
-  { panel: "inspect", label: "nav.inspect" },
-  { panel: "room", label: "nav.room" },
-  { panel: "itrackie", label: "nav.itrackie" },
-] as const satisfies readonly { panel: MobilePanel; label: string }[];
+  { panel: "inspect", label: "nav.inspect", icon: TAB_ICONS.inspect },
+  { panel: "room", label: "nav.room", icon: TAB_ICONS.room },
+  { panel: "itrackie", label: "nav.itrackie", icon: TAB_ICONS.itrackie },
+] as const satisfies readonly { panel: MobilePanel; label: string; icon?: string }[];
 
 export function BottomNav({ panel, onChange }: { panel: MobilePanel; onChange: (panel: MobilePanel) => void }) {
   const { t } = useTranslation();
@@ -23,7 +24,7 @@ export function BottomNav({ panel, onChange }: { panel: MobilePanel; onChange: (
           aria-current={b.panel === panel ? "page" : undefined}
           onClick={() => onChange(b.panel)}
         >
-          {t(b.label)}
+          <img className="tab-icon" src={b.icon} alt="" /> {t(b.label)}
         </button>
       ))}
     </nav>

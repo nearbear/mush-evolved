@@ -232,3 +232,6 @@ User supplied icon names for 14 tabs. Only Global and Private exist as iTrackie 
 - **Needed correction/decision:** the i18n ratchet failed on new English log lines in `shared`, since no structured log events exist. The user chose to raise the baseline by 2 rather than build them; I hand-edited the baseline (and lowered the `targets.ts` UI entry after moving its labels to `t()`).
 
 2026-10-13 (follow-up): user added icons for room log, features, bottom nav (inspect, iTrackie), new-channel button, and wanted tabs (global log, astrophysics, space combat); NERON projects switched to `conceptor.png`. "glodplus" read as `goldplus.png`.
+2026-10-13 (follow-up 2): icons for comms (comm.png), inventory (stock.png), books (learned.png; feature TBA, not built).
+2026-10-13 (follow-up 3): phone nav Room = awake.png; expeditions (survival.png) recorded as wanted tab.
+2026-10-13 (follow-up 4): Features drop-down replaced with a Base UI Select (native <select> can't show images); no new dependency. Not visually checked yet.

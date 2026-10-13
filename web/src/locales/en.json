@@ -43,6 +43,17 @@
       "room": "Room log",
       "global": "Global chat",
       "features": "Features"
-    }
+    },
+    "features": {
+      "botany": "Botany",
+      "research": "Research",
+      "inventory": "Inventory",
+      "space_battle": "Space combat",
+      "comms": "Comms center",
+      "pilgred": "PILGRED repair",
+      "neron": "NERON projects",
+      "astrophysics": "Astrophysics"
+    },
+    "featureLabel": "Feature"
   }
 }

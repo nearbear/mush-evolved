@@ -87,3 +87,41 @@ export const MP_PIP = design["pa2"]!;
 /** 3x5 pips from the original site: green for health, yellow-brown for morale. */
 export const HP_PIP = design["lifebar"]!;
 export const MORALE_PIP = design["lifebar2"]!;
+
+// Tab icons (16x16-ish pixel art). Keys are the names the user chose; see docs/tab-icons.md.
+const uiIcons = urls(
+  import.meta.glob<string>(
+    "../../../Mush/www/img/icons/ui/{survival,awake,comm,learned,stock,microsc,neron,infoalert,local,planet,conceptor,talkie,shield,basicplus,goldplus,notebook,pa_cook,pa_garden,pa_pilgred,pa_heal,private,search,spore,wall,fav,triumph}.{png,gif}",
+    { eager: true, query: "?url", import: "default" },
+  ),
+);
+
+export const TAB_ICONS = {
+  research: uiIcons["microsc"]!,
+  neronBios: uiIcons["neron"]!,
+  notebook: uiIcons["notebook"]!,
+  food: uiIcons["pa_cook"]!,
+  botany: uiIcons["pa_garden"]!,
+  pilgred: uiIcons["pa_pilgred"]!,
+  health: uiIcons["pa_heal"]!,
+  private: uiIcons["private"]!,
+  items: uiIcons["search"]!,
+  mushChat: uiIcons["spore"]!,
+  global: uiIcons["wall"]!,
+  favorites: uiIcons["fav"]!,
+  goals: uiIcons["triumph"]!,
+  neronProjects: uiIcons["conceptor"]!,
+  globalLog: uiIcons["infoalert"]!,
+  roomLog: uiIcons["local"]!,
+  astrophysics: uiIcons["planet"]!,
+  spaceCombat: uiIcons["shield"]!,
+  features: uiIcons["basicplus"]!,
+  comms: uiIcons["comm"]!,
+  inventory: uiIcons["stock"]!,
+  books: uiIcons["learned"]!,
+  newChannel: uiIcons["goldplus"]!,
+  itrackie: uiIcons["talkie"]!,
+  inspect: uiIcons["search"]!,
+  room: uiIcons["awake"]!,
+  expeditions: uiIcons["survival"]!,
+} as const;

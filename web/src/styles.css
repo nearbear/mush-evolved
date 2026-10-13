@@ -452,6 +452,16 @@ h2 {
   padding: 0 0.6rem;
   font-size: 1rem;
 }
+.tab-icon {
+  height: 18px;
+  image-rendering: pixelated;
+  vertical-align: middle;
+  opacity: 0.7;
+}
+.itrackie-tab:hover .tab-icon,
+.itrackie-tab[data-active] .tab-icon {
+  opacity: 1;
+}
 .itrackie-tab:hover:not(:disabled),
 .itrackie-tab:active:not(:disabled) {
   color: var(--text);
@@ -497,6 +507,53 @@ h2 {
   margin-bottom: 0.5rem;
   min-height: 32px;
   font: inherit;
+}
+.feature-select-trigger {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  width: 100%;
+  text-align: left;
+}
+.feature-select-trigger .tab-icon {
+  opacity: 1;
+}
+.feature-select-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.feature-select-positioner {
+  z-index: 50;
+  min-width: var(--anchor-width);
+}
+.feature-select-popup {
+  border: 1px solid var(--edge);
+  border-radius: 4px;
+  background: var(--surface-bottom, #0b1020);
+  color: var(--text);
+  padding: 0.2rem;
+}
+.feature-select-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 40px;
+  padding: 0 0.6rem;
+  border-radius: 3px;
+  cursor: pointer;
+  user-select: none;
+}
+.feature-select-item .tab-icon {
+  opacity: 1;
+}
+.feature-select-item[data-highlighted] {
+  background: color-mix(in srgb, var(--glow) 35%, transparent);
+}
+.feature-select-item[data-selected] {
+  font-weight: bold;
 }
 .feature {
   flex: 1;

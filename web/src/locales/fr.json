@@ -43,6 +43,17 @@
       "room": "Journal de la salle",
       "global": "Chat général",
       "features": "Fonctions"
-    }
+    },
+    "features": {
+      "botany": "Botanique",
+      "research": "Recherche",
+      "inventory": "Inventaire",
+      "space_battle": "Combat spatial",
+      "comms": "Centre de communications",
+      "pilgred": "Réparation du PILGRED",
+      "neron": "Projets NERON",
+      "astrophysics": "Astrophysique"
+    },
+    "featureLabel": "Fonctionnalité"
   }
 }

@@ -8,18 +8,11 @@ import { useTranslation } from "react-i18next";
 import { ScrollArea } from "@base-ui/react/scroll-area";
 import { Tabs } from "@base-ui/react/tabs";
 import { FEATURE_CHANNELS, ITRACKIE_ITEM, MAX_CHAT_LENGTH, type ChannelId, type FeatureChannel, type PlayerView, type PrivateChannelId } from "@mush2/shared";
+import { FeatureSelect } from "./FeatureSelect.tsx";
 import { IconButton, IconTab } from "./IconButton.tsx";
+import { TAB_ICONS } from "../art/assets.ts";
 import { roomLabel } from "../scene/names.ts";
 
-const FEATURE_LABELS: Record<FeatureChannel, string> = {
-  botany: "Botany",
-  research: "Research",
-  inventory: "Inventory",
-  space_battle: "Space battle",
-  comms: "Comms center",
-  pilgred: "Pilgred repair",
-  neron: "NERON projects",
-};
 
 type Notes = Record<FeatureChannel, string[]>;
 const NO_NOTES = Object.fromEntries(FEATURE_CHANNELS.map((f) => [f, []])) as unknown as Notes;
@@ -63,10 +56,10 @@ export function ITrackie({
     <div className="panel itrackie">
       <Tabs.Root className="itrackie-tabs-root" value={tab} onValueChange={(v) => setTab(v as TabId)}>
         <Tabs.List className="itrackie-tabs">
-          <IconTab value="room" icon="📜" label={t("itrackie.tabs.room")} />
-          <IconTab value="global" icon="💬" label={t("itrackie.tabs.global")} />
-          <IconTab value="features" icon="🛠️" label={t("itrackie.tabs.features")} />
-          <IconTab value="private" icon="🔒" label={t("channels.tab")} />
+          <IconTab value="room" src={TAB_ICONS.roomLog} label={t("itrackie.tabs.room")} />
+          <IconTab value="global" src={TAB_ICONS.global} label={t("itrackie.tabs.global")} />
+          <IconTab value="features" src={TAB_ICONS.features} label={t("itrackie.tabs.features")} />
+          <IconTab value="private" src={TAB_ICONS.private} label={t("channels.tab")} />
         </Tabs.List>
         <h2 className="itrackie-title">{t(TAB_TITLES[tab])}</h2>
 
@@ -89,20 +82,11 @@ export function ITrackie({
         </Tabs.Panel>
 
         <Tabs.Panel className="itrackie-panel" value="features" keepMounted>
-          <select
-            className="feature-select"
-            value={feature}
-            onChange={(e) => setFeature(e.target.value as FeatureChannel)}
-            aria-label="Feature"
-          >
-            {FEATURE_CHANNELS.map((f) => (
-              <option key={f} value={f}>
-                {FEATURE_LABELS[f]}
-              </option>
-            ))}
-          </select>
+          <FeatureSelect value={feature} onChange={setFeature} />
           {/* One block per feature, hidden with CSS, so each keeps its own draft. */}
-          {FEATURE_CHANNELS.map((f) => (
+          {FEATURE_CHANNELS.map((f) => {
+            const name = t(`itrackie.features.${f}`);
+            return (
             <div key={f} className="feature" hidden={f !== feature}>
               {carrying ? (
                 <Tracker notes={notes[f]} onChange={(next) => setNotes((all) => ({ ...all, [f]: next }))} />
@@ -112,11 +96,12 @@ export function ITrackie({
               <Thread
                 view={view}
                 channel={f}
-                placeholder={`Message the ${FEATURE_LABELS[f]} thread…`}
+                placeholder={`Message the ${name} thread…`}
                 onSend={(text) => onChat(f, text)}
               />
             </div>
-          ))}
+            );
+          })}
         </Tabs.Panel>
 
         <Tabs.Panel className="itrackie-panel" value="private" keepMounted>
@@ -355,7 +340,7 @@ function PrivateChannels({
           aria-label={t("channels.nameLabel")}
           disabled={atLimit}
         />
-        <IconButton type="submit" icon="➕" label={t("channels.create")} disabled={atLimit || !name.trim()} />
+        <IconButton type="submit" src={TAB_ICONS.newChannel} label={t("channels.create")} disabled={atLimit || !name.trim()} />
       </form>
       <p className="sub">{t("channels.count", { used: view.privateChannels.length, limit: view.channelLimit })}</p>
     </>

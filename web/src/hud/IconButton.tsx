@@ -7,12 +7,14 @@ import { Tooltip } from "@base-ui/react/tooltip";
 
 export function IconButton({
   icon,
+  src,
   label,
   onClick,
   disabled,
   type = "button",
 }: {
-  icon: string;
+  icon?: string;
+  src?: string;
   label: string;
   onClick?: () => void;
   disabled?: boolean;
@@ -29,7 +31,7 @@ export function IconButton({
           disabled={disabled}
           render={<button type={type} />}
         >
-          <span aria-hidden="true">{icon}</span>
+          {src ? <img className="tab-icon" src={src} alt="" /> : <span aria-hidden="true">{icon}</span>}
         </Tooltip.Trigger>
         <Tooltip.Portal>
           <Tooltip.Positioner sideOffset={6}>
@@ -41,13 +43,13 @@ export function IconButton({
   );
 }
 
-/** An emoji tab for a Base UI `Tabs.List`, with the same tooltip and accessible name. */
-export function IconTab({ value, icon, label }: { value: string; icon: string; label: string }) {
+/** A tab for a Base UI `Tabs.List` with the same tooltip and accessible name: pixel-art `src`, or an emoji `icon` placeholder. */
+export function IconTab({ value, icon, src, label }: { value: string; icon?: string; src?: string; label: string }) {
   return (
     <Tooltip.Provider delay={300}>
       <Tooltip.Root>
         <Tooltip.Trigger className="itrackie-tab" aria-label={label} render={<Tabs.Tab value={value} />}>
-          <span aria-hidden="true">{icon}</span>
+          {src ? <img className="tab-icon" src={src} alt="" /> : <span aria-hidden="true">{icon}</span>}
         </Tooltip.Trigger>
         <Tooltip.Portal>
           <Tooltip.Positioner sideOffset={6}>

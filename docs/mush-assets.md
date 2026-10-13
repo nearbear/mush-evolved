@@ -89,3 +89,5 @@ Per `CLAUDE.md`, do not invent rules. These sheets are a legitimate source for r
 - Haxe code: Flash-era and not reusable in the TypeScript stack. Read it for reference only.
 
 No fonts, sounds, or music were found in this folder.
+
+**Tab icons (2026-10-13):** 14 files from `www/img/icons/ui/` are exported as `TAB_ICONS` (`web/src/art/assets.ts`); mapping and status in `docs/tab-icons.md`. `neron.png` here is the small icon (not `design/neron.png`); the user's "favorite.png" is `fav.png`.

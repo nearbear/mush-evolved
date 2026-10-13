@@ -115,7 +115,7 @@ export type Target = { kind: "player"; id: PlayerId } | { kind: "equipment"; id:
  * Crew-wide threads, one per ship feature, with the same permissions as global
  * chat (decided 2026-10-13). Order is the order the client lists them in.
  */
-export const FEATURE_CHANNELS = ["botany", "research", "inventory", "space_battle", "comms", "pilgred", "neron"] as const;
+export const FEATURE_CHANNELS = ["botany", "research", "inventory", "space_battle", "comms", "pilgred", "neron", "astrophysics"] as const;
 export type FeatureChannel = (typeof FEATURE_CHANNELS)[number];
 export type ChatChannel = "global" | FeatureChannel;
 export const CHAT_CHANNELS: readonly ChatChannel[] = ["global", ...FEATURE_CHANNELS];
