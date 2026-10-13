@@ -171,3 +171,10 @@ Planned an addition to the original action system: players post plans (ordered j
 
 - What worked: holding to "a planned action is a live action run later" (one shared legality path) answered most edge cases. A Q&A loop with the user closed the gaps: locked AP with a cross-hatch, 3-hour cycles, expiry, and tie order.
 - Needed correction: the AI asked whether claimers should add their own movement jobs. The user pointed out that travel is implied by the action's room, so travel became part of every job. Writing the decisions down also exposed hidden-information leaks the first draft had: preflight hints showing others' AP, failure reasons revealing inventory, and auto-following a target revealing its location. Hints are now limited to the player's own jobs, failures show only who, and target rooms are fixed by an author who can see them.
+
+## 2026-10-13: Action registry refactor (Phase 1 of action plans)
+
+Replaced the per-action branches in `legalActions`/`applyAction` with one `ActionDef` per action in `shared/src/actions.ts`, with no behavior change. Log helpers moved to `log.ts` to avoid a circular import.
+
+- Needed correction: the AI's first test checked that `applyAction` accepts exactly what `legalActions` offers. Deliberately breaking a `check` showed it could never fail, because both now call the same `check`, so they agree by construction. It was replaced with a test that pins the full legal set at game start plus the broke and full-inventory cases. Both deliberate breakages now fail it. Lesson: after a refactor that unifies two code paths, a test that they agree is a tautology. Sabotage a test before trusting it.
+- TypeScript: `ActionDef<T>` keyed by the type tag (through `Extract<Action, {type: T}>`) is invariant, so the definitions couldn't be treated uniformly. Keying it by the action type itself (`ActionDef<A extends Action>`) fixed it without casts.

@@ -6,37 +6,31 @@
 // Infection, voting, win conditions, and the real turn structure are open
 // decisions — do not add them without confirming the rules first.
 
-import { SHIP_ROOMS } from "./config.ts";
+import { ACTIONS, type ActionDef } from "./actions.ts";
 import { equipmentName } from "./equipment.ts";
-import { canTransfer, ITRACKIE_ITEM, itemName, itemsIn } from "./items.ts";
-import { apGain, inventorySlots, moveCost, movementRules } from "./modifiers.ts";
+import { ITRACKIE_ITEM, itemName, itemsIn } from "./items.ts";
+import { apGain, inventorySlots, movementRules } from "./modifiers.ts";
 import { shuffle } from "./rng.ts";
 import { CHAT_CHANNELS } from "./types.ts";
 import type {
   Action,
   ChatChannel,
-  Container,
   Equipment,
   EquipmentView,
   GameConfig,
   GameState,
   ItemState,
   ItemView,
-  LogEntry,
   PlayerId,
   PlayerState,
   PlayerView,
-  RoomId,
   Seat,
-  Target,
 } from "./types.ts";
 
 /** Longest chat message the rules accept. Moderation trims before this. */
 export const MAX_CHAT_LENGTH = 300;
 /** Per channel, older chat is dropped so stored state stays bounded. */
 export const CHAT_HISTORY = 200;
-
-const ROOM_LABELS = new Map(SHIP_ROOMS.map((r) => [r.id, r.label]));
 
 export type ActionResult = { ok: true; state: GameState } | { ok: false; error: string };
 
@@ -82,87 +76,23 @@ export function createGame(seats: readonly Seat[], config: GameConfig, seed: num
 
 export function legalActions(state: GameState, playerId: PlayerId): Action[] {
   const p = findPlayer(state, playerId);
-  if (!p || !p.alive || p.ready || state.phase !== "playing") return [];
-  const actions: Action[] = [{ type: "ready" }];
-  if (moveCost(movementRules(state, p), p)) {
-    for (const to of state.config.rooms[p.room] ?? []) actions.push({ type: "move", to });
-  }
-  // Taking and dropping are free (confirmed 2026-10-11).
-  const self: Container = { kind: "player", id: p.id };
-  const here: Container = { kind: "room", id: p.room };
-  for (const item of state.items) {
-    if (canTransfer(state, p, item, self)) actions.push({ type: "take", item: item.id });
-    else if (canTransfer(state, p, item, here)) actions.push({ type: "drop", item: item.id });
-  }
-  // Examining is free and private (confirmed 2026-10-11).
-  for (const target of visibleTargets(state, p)) actions.push({ type: "examine", target });
-  return actions;
-}
-
-/** Everything a player can see and so interact with: people and equipment in their room, their items and the room's. */
-export function visibleTargets(state: Readonly<GameState>, player: Readonly<PlayerState>): Target[] {
-  return [
-    ...state.players.filter((o) => o.room === player.room).map((o): Target => ({ kind: "player", id: o.id })),
-    ...(state.config.equipment[player.room] ?? []).map((e): Target => ({ kind: "equipment", id: e.id })),
-    ...itemsIn(state, { kind: "player", id: player.id }).map((i): Target => ({ kind: "item", id: i.id })),
-    ...itemsIn(state, { kind: "room", id: player.room }).map((i): Target => ({ kind: "item", id: i.id })),
-  ];
-}
-
-/** How a target is named in log text. Only called for targets the player can see. */
-function targetName(state: Readonly<GameState>, viewer: Readonly<PlayerState>, target: Target): string {
-  switch (target.kind) {
-    case "player":
-      return target.id === viewer.id ? "yourself" : (findPlayer(state, target.id)?.name ?? target.id);
-    case "equipment": {
-      const e = state.config.equipment[viewer.room]?.find((eq) => eq.id === target.id);
-      return `the ${equipmentName(e?.type ?? target.id)}`;
-    }
-    case "item": {
-      const i = state.items.find((it) => it.id === target.id);
-      return `the ${itemName(i?.type ?? target.id)}`;
-    }
-  }
+  if (!p || !canAct(state, p)) return [];
+  return Object.values(ACTIONS).flatMap((def: ActionDef<Action>) =>
+    def.candidates(state, p).filter((a) => def.check(state, p, a) === null),
+  );
 }
 
 export function applyAction(state: GameState, playerId: PlayerId, action: Action): ActionResult {
-  const legal = legalActions(state, playerId);
-  if (!legal.some((a) => sameAction(a, action))) return { ok: false, error: "Illegal action" };
+  const p = findPlayer(state, playerId);
+  const def: ActionDef<Action> | undefined = ACTIONS[action.type];
+  if (!p || !canAct(state, p) || !def || def.check(state, p, action) !== null) return { ok: false, error: "Illegal action" };
 
+  const cost = def.cost(state, p, action);
   const next = clone(state);
-  const p = findPlayer(next, playerId)!;
-
-  switch (action.type) {
-    case "move": {
-      const cost = moveCost(movementRules(next, p), p)!; // legal, so affordable
-      const from = p.room;
-      p.ap -= cost.ap;
-      p.mp = cost.mpAfter;
-      p.room = action.to;
-      logPublic(next, from, `${p.name} left for ${roomName(action.to)}.`);
-      logPublic(next, action.to, `${p.name} entered from ${roomName(from)}.`);
-      break;
-    }
-    case "take":
-    case "drop": {
-      const index = next.items.findIndex((i) => i.id === action.item); // legal, so it exists
-      const [item] = next.items.splice(index, 1) as [ItemState];
-      item.at = action.type === "take" ? { kind: "player", id: p.id } : { kind: "room", id: p.room };
-      next.items.push(item); // newest arrivals list last in every container
-      const verb = action.type === "take" ? "picked up" : "dropped";
-      logPublic(next, p.room, `${p.name} ${verb} the ${itemName(item.type)}.`);
-      break;
-    }
-    case "examine": {
-      logPrivate(next, p.id, `You examine ${targetName(next, p, action.target)}.`);
-      break;
-    }
-    case "ready": {
-      p.ready = true;
-      break;
-    }
-  }
-
+  const actor = findPlayer(next, playerId)!;
+  actor.ap -= cost.ap;
+  actor.mp -= cost.mp;
+  def.apply(next, actor, action);
   if (next.players.every((pl) => !pl.alive || pl.ready)) advanceCycle(next);
   return { ok: true, state: next };
 }
@@ -218,33 +148,6 @@ function equipmentView({ id, type }: Equipment): EquipmentView {
   return { id, type, name: equipmentName(type) };
 }
 
-// ---- Room log -------------------------------------------------------------
-// Three kinds of entry (rules from 2026-10-11; secret handling will change):
-//   public:  part of the room's history; anyone in the room sees it, then or later.
-//   private: only the actor ever sees it.
-//   secret:  becomes room history only if someone else was there to witness it;
-//            otherwise only the actor sees it.
-
-/** Mutates a state that the caller already cloned. */
-export function logPublic(state: GameState, room: RoomId | undefined, text: string): void {
-  state.log.push({ cycle: state.cycle, text, ...(room !== undefined && { room }), visibleTo: "all" });
-}
-
-/** Mutates a state that the caller already cloned. */
-export function logPrivate(state: GameState, actor: PlayerId, text: string): void {
-  const p = findPlayer(state, actor);
-  state.log.push({ cycle: state.cycle, text, ...(p && { room: p.room }), visibleTo: [actor] });
-}
-
-/** Mutates a state that the caller already cloned. */
-export function logSecret(state: GameState, actor: PlayerId, text: string): void {
-  const p = findPlayer(state, actor);
-  if (!p) return;
-  const witnessed = state.players.some((o) => o.id !== actor && o.alive && o.room === p.room);
-  const entry: LogEntry = { cycle: state.cycle, text, room: p.room, visibleTo: witnessed ? "all" : [actor] };
-  state.log.push(entry);
-}
-
 // ---- Chat -----------------------------------------------------------------
 // Not an Action: free text can't be enumerated in legalActions. Moderation
 // (filtering, rate limits) is the server's job before calling this.
@@ -282,25 +185,12 @@ function clone<T>(value: T): T {
   return JSON.parse(JSON.stringify(value)) as T;
 }
 
-/** Display name for a room in log text; falls back to the id. */
-function roomName(room: RoomId): string {
-  return ROOM_LABELS.get(room) ?? room;
+/** Alive, not done for the cycle, and the game is running. */
+function canAct(state: Readonly<GameState>, p: Readonly<PlayerState>): boolean {
+  return p.alive && !p.ready && state.phase === "playing";
 }
 
 function findPlayer(state: GameState, id: PlayerId): PlayerState | undefined {
   return state.players.find((p) => p.id === id);
 }
 
-function sameAction(a: Action, b: Action): boolean {
-  switch (a.type) {
-    case "move":
-      return b.type === "move" && a.to === b.to;
-    case "take":
-    case "drop":
-      return b.type === a.type && a.item === b.item;
-    case "examine":
-      return b.type === "examine" && a.target.kind === b.target.kind && a.target.id === b.target.id;
-    case "ready":
-      return b.type === "ready";
-  }
-}

@@ -3,7 +3,9 @@
 Moved out of CLAUDE.md to keep per-request context small. Read it when you need to find where something lives.
 
 
-- `shared/src/rules.ts`: `createGame`, `applyAction`, `legalActions`, `viewFor`. State is plain JSON (it is persisted and cloned via JSON). `viewFor` is the single place hidden info is stripped; extend its tests whenever `PlayerView` grows.
+- `shared/src/rules.ts`: `createGame`, `applyAction`, `legalActions` (both via the registry in `actions.ts`), `viewFor`. State is plain JSON (it is persisted and cloned via JSON). `viewFor` is the single place hidden info is stripped; extend its tests whenever `PlayerView` grows.
+- `shared/src/actions.ts`: the action registry (`ACTIONS`), one `ActionDef` per action type: `candidates` (what to offer), `check` (why not, as a reason code, or null), `cost`, `apply`. `legalActions` and `applyAction` both go through it; scheduled plans will too (`docs/action-plans.md`). Adding an action means adding a definition here. Also `visibleTargets`.
+- `shared/src/log.ts`: room log helpers (`logPublic`, `logPrivate`, `logSecret`) and `roomName`.
 - `shared/src/config.ts`: seat count and Mush count are unconfirmed placeholders; AP, MP, HP, and morale values are confirmed. The map is the original Daedalus (27 rooms with doors, from `Mush/derived/ship-rooms.json`, imported as `@mush2/assets/derived/ship-rooms.json`); everyone starts in `LABORATORY` (confirmed). `equipment` lists the fixed equipment per room, also from that file.
 - `shared/src/modifiers.ts`: rule modifier registry. Players hold modifier ids; items/skills register pure hooks (today: `movement`, which adjusts MP cost and the AP-to-MP conversion, and `apPerCycle`, which adjusts AP gained per cycle; `lying_down` gives +1 but nothing applies it until a lie-down action exists). `moveCost` is the single place a move's price is computed.
 - `shared/src/equipment.ts`: English names for room equipment types (`EQUIPMENT_TYPES`, hand-translated from the French data).
