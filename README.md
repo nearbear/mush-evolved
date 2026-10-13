@@ -1,5 +1,7 @@
 # mush2
 
+> **Bots (2026-10-13):** the author does not necessarily plan to run AI-controlled bots in live public games. They may be for testing only. Wherever these docs describe bots filling seats, treat live use as undecided.
+
 A turn-based, browser-based social deduction game inspired by [Mush](https://github.com/motion-twin/WebGamesArchives) (Motion Twin) and [eMush](https://emush.eternaltwin.org/) (Eternaltwin). Players wake up on a spaceship, a few of them are secretly infected, and the rest have to survive and unmask them.
 
 This is a **vertical-slice MVP**, not a full clone: matchmaking, bot fill, a room-by-room ship, action points, inventory, and chat work today. Infection and win conditions are deliberately **not implemented yet**; the rules haven't been decided. There is no hosted game: deployment has never been run, and the bot model API isn't chosen. You run it locally.

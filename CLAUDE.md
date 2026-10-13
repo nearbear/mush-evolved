@@ -9,6 +9,7 @@ A turn-based, browser-based social deduction game inspired by **eMush**, the ope
 This is a **vertical-slice MVP**, not a full clone. The goals are:
 
 1. A playable end-to-end slice, public on the internet, with lobbies, a matchmaking queue, and AI-controlled bots that fill seats when the queue doesn't fill fast enough.
+   - **Caveat (2026-10-13):** the author does not necessarily plan to run AI bots in live public games; they may be for testing only. Live bot fill is undecided.
 2. Demonstrate solid full-stack engineering and an AI-assisted development workflow (keep notes on what worked and what didn't; see "Working agreements").
 3. Leave room to grow it into a real game later, including animated characters.
 
@@ -111,7 +112,8 @@ See `docs/code-map.md` for where each module lives and which rules are implement
 ## Open decisions
 
 - Game name, number of players, roles, win conditions, and turn/cycle length (real-time vs. async).
-- Which hosted model API to use for bots.
+- Whether bots appear in live games at all, or are testing-only (not necessarily planned for live play, 2026-10-13).
+- Which hosted model API to use for bots (only matters if bots run in live games or for testing).
 - Hosting and deployment details.
 - Rendering beyond the DOM isometric view (decided: DOM for now, 2026-10-11).
 - Internationalization (en/fr/es): the seam is in, the comprehensive pass is not.

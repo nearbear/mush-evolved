@@ -1,10 +1,14 @@
 # To-do
 
+> **Bots (2026-10-13):** the author does not necessarily plan to run AI-controlled bots in live public games. They may be for testing only. Wherever these docs describe bots filling seats, treat live use as undecided.
+
+> Draft staging of these items: `docs/mvp-plan.md` (not final).
+
 Recorded 2026-10-13. Not started. Items that change game rules need the `rule` skill and decisions from the user first.
 
 ## Open rule decisions
 
-Decisions only you can make; nothing here should be implemented until it is settled (the `rule` skill resolves ambiguity with you first). Ordered so earlier answers unblock later ones. Each links to the to-do it blocks.
+Some of these were already answered in `docs/plan.md` (for example 16 seats, 2 Mush or 1 with 8 or fewer players, the Mush and human win conditions, and Mush chat); check it and tick off or reword what is stale. Decisions only you can make; nothing here should be implemented until it is settled (the `rule` skill resolves ambiguity with you first). Ordered so earlier answers unblock later ones. Each links to the to-do it blocks.
 
 **Game shape**
 - [ ] **Turn and cycle length: real-time or async?** How long a cycle lasts and whether players act on a clock or at their own pace. Blocks Days, bots' pacing, AFK handling, and the DevOps hosting choice.
@@ -196,11 +200,16 @@ Deploy is not yet configured or tested (`npm run deploy -w server`). Work is com
 - [ ] **Backups and data retention.** Decide what persistent data exists (games, violations, notifications) and how long it is kept.
 - [ ] **README, demo GIF, and write-up.** The README with a demo GIF, and the write-up of the AI-assisted workflow, built from `docs/ai-workflow.md`.
 
+## Project management
+
+- [ ] **Set up GitHub Projects.** Use GitHub Projects for planning: epics as issues with sub-issues (one epic per section of this file), stories as child issues, and milestones for the four stages (MVP, private beta, public beta, release). Add labels for type (`rule-decision`, `ui`, `moderation`, and so on). Draft staging is in `docs/mvp-plan.md`. Show the plan before creating anything, since issues on the public repo are visible. Decide whether `docs/todo.md` stays as the source or is retired once issues exist.
+- [ ] **Finalize the MVP plan.** Review `docs/mvp-plan.md` (a draft, not final) and settle what is in each stage.
+
 ## Sections still to add
 
 Ideas for new sections of this to-do. Each one needs its items written out before it becomes a real section.
 
-- [ ] **Bots.** Scripted bots, the hosted model API, the spend cap and rate limits, prompt-injection handling, labeling bots as AI, and choosing the API. Some of this is currently scattered across Moderation and Testing.
+- [ ] **Bots.** Bots may be testing-only, not live play; decide first. Scripted bots, the hosted model API, the spend cap and rate limits, prompt-injection handling, labeling bots as AI, and choosing the API. Some of this is currently scattered across Moderation and Testing.
 - [ ] **Onboarding and tutorial.** A first-time experience: tutorial, in-game rules reference, tooltips, and a practice game against bots. Links to the wiki.
 - [ ] **Accessibility.** Keyboard navigation, screen-reader labels, color contrast (log levels and bars), reduced motion, text scaling, and colorblind-safe indicators.
 - [ ] **Lobby and matchmaking.** The queue, the fill-with-bots timer, rejoining after a disconnect, spectating or the end-of-game screen, and rematch.

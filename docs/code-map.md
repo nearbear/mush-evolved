@@ -1,5 +1,7 @@
 # Code map
 
+> **Bots (2026-10-13):** the author does not necessarily plan to run AI-controlled bots in live public games. They may be for testing only. Wherever these docs describe bots filling seats, treat live use as undecided.
+
 Moved out of CLAUDE.md to keep per-request context small. Read it when you need to find where something lives.
 
 

@@ -1,5 +1,7 @@
 # Plan: first real ruleset (written 2026-10-05)
 
+> **Bots (2026-10-13):** the author does not necessarily plan to run AI-controlled bots in live public games. They may be for testing only. Wherever these docs describe bots filling seats, treat live use as undecided.
+
 Based on the rule decisions given on 2026-10-05. Nothing here is implemented yet. **Open questions** are things I need answered before building that part; I won't guess them.
 
 ## Decisions received
