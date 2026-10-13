@@ -96,7 +96,7 @@ Node is installed via nvm. In non-interactive shells, run `source ~/.nvm/nvm.sh`
 - `npm run contact-sheet -- <folder> [--match regex] [--zoom n]`: render labeled contact sheets of an image folder to `.screenshots/contact/` (Playwright; WSL has no image tools). See the `asset` skill.
 - `npm run types -w server`: regenerate `server/worker-configuration.d.ts` after changing `wrangler.jsonc` or the exported Durable Object classes.
 - `npm run deploy -w server`: wrangler deploy (not yet configured or tested).
-- No linter yet.
+- `npm run lint`: Biome, lint only (formatter off). Rules: React hook deps/placement, floating promises (nursery), and import limits (`shared` has no I/O, UI, or sibling-package imports; `web` never imports `server`). typescript-eslint was rejected because it does not support TypeScript 7. Intentional exceptions use `biome-ignore` with a reason.
 
 `docs/testing.md` lists what's important to test and why, with what's covered and what's missing.
 

@@ -29,6 +29,7 @@ export function GameScreen({ ticket, onLeave }: { ticket: SeatTicket; onLeave: (
   const [panel, setPanel] = useState<MobilePanel>("room");
   const [peekDoor, setPeekDoor] = useState<RoomId | null>(null);
   const here = view?.you.room;
+  // biome-ignore lint/correctness/useExhaustiveDependencies: `here` is a trigger: arriving somewhere new clears the door peek.
   useEffect(() => setPeekDoor(null), [here]);
 
   useEffect(() => {

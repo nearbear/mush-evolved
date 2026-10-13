@@ -27,7 +27,7 @@ export function useShipLayout(): ShipLayout | undefined {
       if (!r.ok) throw new Error(`ship layout: HTTP ${r.status}`);
       return r.json() as Promise<ShipLayout>;
     });
-    loading.then((l) => live && setLayout(l));
+    loading.then((l) => live && setLayout(l)).catch(console.error);
     return () => {
       live = false;
     };

@@ -67,6 +67,7 @@ export function IsoRoom({
   const [space, setSpace] = useState({ width: MAX_W, height: MAX_H });
 
   // Measure the space the room can use. A hidden panel measures 0; keep the last size then.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: re-measure when a different room's layout mounts the scroller.
   useLayoutEffect(() => {
     const el = scrollRef.current;
     if (!el) return;
@@ -78,6 +79,7 @@ export function IsoRoom({
     return () => observer.disconnect();
   }, [roomLayout]);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: occupantKey stands in for occupants (see comment below).
   const { sprites, box } = useMemo(() => {
     if (!roomLayout) return { sprites: [], box: bounds([]) };
     const spots = spreadActors(walkableCells(layout, roomLayout), occupants.length);
@@ -95,6 +97,7 @@ export function IsoRoom({
 
   // A room wider than the panel scrolls; start centred on yourself.
   const youSprite = sprites.find((s) => s.kind === "actor" && occupants.some((o) => o.you && o.id === s.key.slice(2)));
+  // biome-ignore lint/correctness/useExhaustiveDependencies: recentre only when the room or scale changes (see comment below).
   useLayoutEffect(() => {
     const el = scrollRef.current;
     if (!el || !youSprite) return;
@@ -125,6 +128,7 @@ export function IsoRoom({
       : { url: atlasUrl(layout, s.sheet), keyed: false };
 
   // Load every image this room hit-tests against, so masks are ready by the first click.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: re-preload only when the sprite set changes; `source` is rebuilt every render.
   useEffect(() => {
     for (const s of sprites) {
       const url = source(s).url;

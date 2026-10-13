@@ -187,6 +187,7 @@ function Tracker({ notes, onChange }: { notes: string[]; onChange: (notes: strin
  */
 function Scroller({ items, children }: { items: number; children: ReactNode }) {
   const viewport = useRef<HTMLDivElement>(null);
+  // biome-ignore lint/correctness/useExhaustiveDependencies: `items` is a count that only triggers the scroll.
   useEffect(() => {
     const el = viewport.current;
     if (el) el.scrollTop = el.scrollHeight;

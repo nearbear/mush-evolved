@@ -13,6 +13,7 @@
     "dev": "concurrently -k -n server,web -c blue,green \"npm run dev -w server\" \"npm run dev -w web\"",
     "test": "npm run test -w shared -w tools -w web",
     "typecheck": "npm run typecheck --workspaces --if-present",
+    "lint": "biome lint .",
     "build": "npm run build -w web",
     "ship-layout": "npm run ship-layout -w tools",
     "asset-index": "npm run asset-index -w tools",
@@ -20,6 +21,7 @@
     "contact-sheet": "npm run contact-sheet -w tools --"
   },
   "devDependencies": {
+    "@biomejs/biome": "2.5.15",
     "concurrently": "^10.0.5",
     "typescript": "^7.0.2",
     "vitest": "^5.0.3"

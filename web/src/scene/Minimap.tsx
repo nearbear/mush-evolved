@@ -42,6 +42,7 @@ export function Minimap({
   const expanded = hovering || opened || selected !== null;
 
   // Arriving somewhere new closes the map, and the old selection.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: `here` is a trigger: arriving somewhere new closes the map.
   useEffect(() => {
     setOpened(false);
     setSelected(null);

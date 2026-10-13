@@ -161,3 +161,6 @@ French and Spanish strings are first drafts and need a native speaker's review.
 ## 2026-10-13: i18n skill
 
 The user asked whether an `i18n` skill was worth having and said they didn't know how to judge it. The assistant proposed three tests (the task recurs, it has conventions tests can't enforce, mistakes are costly to fix later), concluded yes, and wrote a short one (`.claude/skills/i18n/SKILL.md`) that leaves mechanical rules to `tools/src/i18n` and keeps only judgment calls. Not yet exercised; delete it if it never triggers or only repeats what the tests say.
+
+### 2026-10-13: Linter choice
+Asked whether a linter was needed; proposed ESLint + typescript-eslint (hooks deps, no-floating-promises, import restrictions). Checking peer deps before installing showed typescript-eslint caps at TypeScript <6.1 while the repo is on TS 7, so we switched to Biome (lint only). Trade-off: Biome's noFloatingPromises is nursery and not fully type-aware. First run flagged 17 existing items: 16 hook-dependency warnings that were intentional trigger deps (annotated with biome-ignore + reason) and 1 real unhandled promise rejection in useShipLayout (added .catch).
