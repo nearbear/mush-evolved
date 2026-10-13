@@ -114,4 +114,4 @@ See `docs/code-map.md` for where each module lives and which rules are implement
 - Code license.
 - Hosting and deployment details.
 - Rendering beyond the DOM isometric view (decided: DOM for now, 2026-10-11).
-- Internationalization (en/fr/es): the seam is in, the comprehensive pass is not. Checklist in the "Internationalization follow-ups" section of `docs/plan.md`; remind me of it when we finish a feature or start a new session.
+- Internationalization (en/fr/es): the seam is in, the comprehensive pass is not.
