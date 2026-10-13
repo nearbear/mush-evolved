@@ -43,6 +43,8 @@ export interface GameConfig {
   startRoom: RoomId;
   /** Private inventory slots per player, before modifiers. */
   inventorySlots: number;
+  /** Private channels a player may belong to, before modifiers. */
+  channelLimit: number;
   /** Items placed in rooms at the start of the game. Types come from ITEM_TYPES in items.ts. */
   startItems: { type: string; room: RoomId }[];
   /** Item types every player starts carrying (one of each). */
@@ -118,11 +120,24 @@ export type FeatureChannel = (typeof FEATURE_CHANNELS)[number];
 export type ChatChannel = "global" | FeatureChannel;
 export const CHAT_CHANNELS: readonly ChatChannel[] = ["global", ...FEATURE_CHANNELS];
 
+/** Id of a player-made private channel (`pc-1`, `pc-2`, ...). Never collides with a ChatChannel name. */
+export type PrivateChannelId = `pc-${number}`;
+/** Anything a chat message can be posted to. */
+export type ChannelId = ChatChannel | PrivateChannelId;
+
+/** Chat among the members only. Anyone in it may invite others; it ends when the last member leaves. */
+export interface PrivateChannel {
+  id: PrivateChannelId;
+  name: string;
+  members: PlayerId[];
+  createdBy: PlayerId;
+}
+
 export interface ChatMessage {
   /** Increasing per game; stable React key and ordering. */
   id: number;
   cycle: number;
-  channel: ChatChannel;
+  channel: ChannelId;
   from: PlayerId;
   /** Copied at send time so the client doesn't need a lookup. */
   name: string;
@@ -143,6 +158,8 @@ export interface GameState {
   log: LogEntry[];
   chat: ChatMessage[];
   nextChatId: number;
+  channels: PrivateChannel[];
+  nextChannelId: number;
 }
 
 export type Action =
@@ -199,7 +216,11 @@ export interface PlayerView {
   /** Messages in the channels you may read (all of them while you carry an iTrackie, none otherwise). */
   chat: ChatMessage[];
   /** Channels you may read and post to right now. */
-  chatChannels: ChatChannel[];
+  chatChannels: ChannelId[];
+  /** Private channels you belong to. Channels you aren't in are never sent. */
+  privateChannels: PrivateChannel[];
+  /** How many private channels you may belong to, after modifiers. */
+  channelLimit: number;
   /** Your effective movement rules, after modifiers. */
   movement: MovementRules;
   /** AP cap (for drawing the AP bar). */

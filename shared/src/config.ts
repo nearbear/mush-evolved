@@ -30,6 +30,8 @@ export const DEFAULT_CONFIG: GameConfig = {
   startRoom: "LABORATORY",
   // Confirmed 2026-10-11: three private slots per player; rooms hold any number of items.
   inventorySlots: 3,
+  // Confirmed 2026-10-13: three private channels per player by default (skills and research will raise it).
+  channelLimit: 3,
   // PLACEHOLDER items with no effects, so there is something to pick up.
   startItems: [
     { type: "wrench", room: "LABORATORY" },

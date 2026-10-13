@@ -4,14 +4,18 @@
 import { Server, type Connection, type ConnectionContext, type WSMessage } from "partyserver";
 import {
   applyAction,
+  createChannel,
   createGame,
   DEFAULT_CONFIG,
+  inviteToChannel,
+  leaveChannel,
   moderateChat,
   parseGameMessage,
   sendChat,
   viewFor,
   type Action,
-  type ChatChannel,
+  type ActionResult,
+  type GameClientMessage,
   type GameServerMessage,
   type GameState,
   type PlayerId,
@@ -27,7 +31,7 @@ const BOT_DELAY_MS = 1500;
  * Bump when GameState's shape changes. Games stored under another version are
  * discarded on load (there is no migration; games are short-lived).
  */
-const STATE_VERSION = 8;
+const STATE_VERSION = 9;
 
 interface Stored {
   version?: number;
@@ -98,17 +102,27 @@ export class GameRoom extends Server<Env> {
       this.send(connection, { type: "error", message: "Malformed message" });
       return;
     }
-    const error = msg.type === "chat" ? await this.chat(playerId, msg.channel, msg.text) : await this.act(playerId, msg.action);
+    const error = msg.type === "action" ? await this.act(playerId, msg.action) : await this.social(playerId, msg);
     if (error) this.send(connection, { type: "error", message: error });
   }
 
-  /** Untrusted text: rate limit, then moderate, then let the rules decide. */
-  private async chat(playerId: PlayerId, channel: ChatChannel, raw: string): Promise<string | null> {
+  /** Chat and channel management. Untrusted text: rate limit, then moderate, then let the rules decide. */
+  private async social(playerId: PlayerId, msg: Exclude<GameClientMessage, { type: "action" }>): Promise<string | null> {
     if (!this.game) return "No game";
     if (!this.chatLimiter.allow(playerId)) return "You're sending messages too quickly";
-    const moderated = moderateChat(raw);
-    if (!moderated.ok) return moderated.reason;
-    const result = sendChat(this.game, playerId, channel, moderated.text);
+    let result: ActionResult;
+    if (msg.type === "chat" || msg.type === "createChannel") {
+      const moderated = moderateChat(msg.type === "chat" ? msg.text : msg.name);
+      if (!moderated.ok) return moderated.reason;
+      result =
+        msg.type === "chat"
+          ? sendChat(this.game, playerId, msg.channel, moderated.text)
+          : createChannel(this.game, playerId, moderated.text);
+    } else if (msg.type === "invite") {
+      result = inviteToChannel(this.game, playerId, msg.channel, msg.player);
+    } else {
+      result = leaveChannel(this.game, playerId, msg.channel);
+    }
     if (!result.ok) return result.error;
     this.game = result.state;
     await this.persist();

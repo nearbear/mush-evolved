@@ -15,6 +15,8 @@ export interface Modifier {
   apPerCycle?: (gain: number, player: Readonly<PlayerState>) => number;
   /** Adjusts how many inventory slots a player has. Must be pure. */
   inventorySlots?: (slots: number, player: Readonly<PlayerState>) => number;
+  /** Adjusts how many private channels a player may belong to. Must be pure. */
+  channelLimit?: (limit: number, player: Readonly<PlayerState>) => number;
 }
 
 export type ModifierRegistry = Readonly<Record<string, Modifier>>;
@@ -66,6 +68,20 @@ export function inventorySlots(
     if (hook) slots = hook(slots, player);
   }
   return slots;
+}
+
+/** Private channels a player may belong to: the configured count folded through the player's modifiers. */
+export function channelLimit(
+  state: Readonly<GameState>,
+  player: Readonly<PlayerState>,
+  registry: ModifierRegistry = MODIFIERS,
+): number {
+  let limit = state.config.channelLimit;
+  for (const id of player.modifiers) {
+    const hook = registry[id]?.channelLimit;
+    if (hook) limit = hook(limit, player);
+  }
+  return limit;
 }
 
 /**

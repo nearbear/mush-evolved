@@ -2,7 +2,7 @@
 // client is untrusted: always go through the parse* functions.
 
 import { MAX_CHAT_LENGTH } from "./rules.ts";
-import { CHAT_CHANNELS, type Action, type ChatChannel, type PlayerView } from "./types.ts";
+import { CHAT_CHANNELS, type Action, type ChannelId, type PlayerId, type PlayerView, type PrivateChannelId } from "./types.ts";
 
 export const MAX_NAME_LENGTH = 24;
 
@@ -16,7 +16,10 @@ export type MatchmakerServerMessage =
 // Game room ("game-room" party). The seat token goes in the connection URL (?token=).
 export type GameClientMessage =
   | { type: "action"; action: Action }
-  | { type: "chat"; channel: ChatChannel; text: string };
+  | { type: "chat"; channel: ChannelId; text: string }
+  | { type: "createChannel"; name: string }
+  | { type: "invite"; channel: PrivateChannelId; player: PlayerId }
+  | { type: "leaveChannel"; channel: PrivateChannelId };
 export type GameServerMessage =
   | { type: "view"; view: PlayerView }
   | { type: "error"; message: string };
@@ -32,9 +35,20 @@ export function parseGameMessage(raw: string): GameClientMessage | null {
   const msg = parseJson(raw);
   if (msg?.type === "chat") {
     // Generous bound here; moderation and the rules enforce the real limit.
-    const channel = CHAT_CHANNELS.find((c) => c === msg.channel);
+    const channel = CHAT_CHANNELS.find((c) => c === msg.channel) ?? privateChannelId(msg.channel);
     if (!channel || typeof msg.text !== "string" || msg.text.length > MAX_CHAT_LENGTH * 4) return null;
     return { type: "chat", channel, text: msg.text };
+  }
+  if (msg?.type === "createChannel") {
+    return typeof msg.name === "string" && msg.name.length <= MAX_NAME_LENGTH * 4 ? { type: "createChannel", name: msg.name } : null;
+  }
+  if (msg?.type === "invite") {
+    const channel = privateChannelId(msg.channel);
+    return channel && typeof msg.player === "string" ? { type: "invite", channel, player: msg.player } : null;
+  }
+  if (msg?.type === "leaveChannel") {
+    const channel = privateChannelId(msg.channel);
+    return channel ? { type: "leaveChannel", channel } : null;
   }
   if (msg?.type !== "action" || !isRecord(msg.action)) return null;
   const a = msg.action;
@@ -50,6 +64,10 @@ export function parseGameMessage(raw: string): GameClientMessage | null {
     }
   }
   return null;
+}
+
+function privateChannelId(value: unknown): PrivateChannelId | null {
+  return typeof value === "string" && /^pc-\d{1,9}$/.test(value) ? (value as PrivateChannelId) : null;
 }
 
 function parseJson(raw: string): Record<string, unknown> | null {

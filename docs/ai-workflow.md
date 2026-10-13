@@ -186,8 +186,22 @@ Replaced the per-action branches in `legalActions`/`applyAction` with one `Actio
 - Replaced the hard-coded colours (gold highlight, danger, badge, room background, ink) with tokens. Remaining theming blockers are the 3-slice button sprites and the `bg.jpg` backgrounds.
 - Caveat: the glow values were estimated from a contact sheet whose labels covered half of each tile, and no screenshot check was run yet.
 
+## 2026-10-13: private channels
+
+Built Phase 2 of `docs/action-plans.md`: `PrivateChannel` in state, `createChannel`/`inviteToChannel`/`leaveChannel` in `rules.ts`, membership-only visibility in `viewFor`, protocol messages and server routing, and a real list in `ITrackie`. Planning questions to the user came first (who can invite, history for new members, dead players, limits); they answered all but dead players, which became a to-do rather than a guess.
+
+- Decision I made without asking: invitees need only be alive (not carry an iTrackie), because refusing "no iTrackie" would let an inviter probe who carries one. All invitee-side failures return one error code for the same reason (limit, dead, unknown).
+- Needed correction: the i18n ratchet rejected new English error strings in `shared`; switched to codes through a `fail()` helper. The client does not translate those codes yet.
+- Not checked in a browser: the UI typechecks and lints, but no screenshot run at 360px or desktop.
+
 ## 2026-10-13: self panel under the room
 
 - The request said "player information in the upper left"; I first read it as the Inspect panel, and my clarifying questions were built on that. The user corrected me: Inspect stays on the left, so they meant the top bar's player info. Lesson: when a description of a screen location is ambiguous, name the candidate components in the question instead of assuming one.
 - Moved the portrait, name, role and stat pips (`PlayerSummary`), the room's items and the inventory into one `SelfPanel` under the iso room, room items on the left. On phones the summary stays in the top bar (so stats stay visible) and the item lists go in the Inspect tab. Added a `.room-view` wrapper so the minimap's absolute positioning stays tied to the room, not the whole column.
 - Not yet checked visually (no screenshot pass run).
+
+### 2026-10-13: private channels moved to a tab, then emoji icon buttons and tabs
+
+- The user rejected my first UI (a collapsible below the iTrackie tabs) and asked for a tab like Features. I rebuilt it with the same drop-down-then-thread layout.
+- Needed correction: the user asked for "icon buttons for these" and I took "these" to mean the three channel buttons. They meant the tabs, to fix the 360px width problem, on desktop too. I should have asked or named the tabs as the likelier reading. Redone as `IconTab`; the channel buttons stay icons as well. The user chose the approach (emoji placeholders, text in a tooltip); I added the Base UI Tooltip and wrote the code without being able to read `node_modules` (denied), relying on typecheck.
+- Known gap I flagged: tooltips need hover or keyboard focus, so on touch the tabs are emoji only (`web/CLAUDE.md` says nothing important may be hover-only). Not checked in a browser at 360px or on desktop.

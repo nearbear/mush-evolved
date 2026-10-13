@@ -60,7 +60,9 @@ type ActionDef<A extends Action> = {
 
 The legality check must take locked AP into account: a live action is legal only if `ap - lockedAp` covers it. Running a plan job spends that job's own lock, not free AP.
 
-### Phase 2: Private channels
+### Phase 2: Private channels (implemented 2026-10-13)
+
+Decisions: any member can invite any living player, from any room; new members see the whole history; joining is immediate (no accept step); the limit is 3 channels per player (counting ones you were invited to), read through the `channelLimit` modifier so skills and research can change it later (neither exists yet); the last member to leave deletes the channel and its messages. Dead members stay listed but can't read or post (see the spectator to-do in `docs/plan.md`). The text below is the original sketch.
 
 - `PrivateChannel { id, members: PlayerId[], createdBy }`. Reading and posting need an iTrackie, like the other threads.
 - Only members can see that a channel exists, who is in it, and what it says. That filtering goes in `viewFor`, with leak tests.

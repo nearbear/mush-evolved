@@ -9,12 +9,14 @@
 import { ACTIONS, type ActionDef } from "./actions.ts";
 import { equipmentName } from "./equipment.ts";
 import { ITRACKIE_ITEM, itemName, itemsIn } from "./items.ts";
-import { apGain, inventorySlots, movementRules } from "./modifiers.ts";
+import { apGain, channelLimit, inventorySlots, movementRules } from "./modifiers.ts";
 import { shuffle } from "./rng.ts";
 import { CHAT_CHANNELS } from "./types.ts";
 import type {
   Action,
-  ChatChannel,
+  ChannelId,
+  PrivateChannel,
+  PrivateChannelId,
   Equipment,
   EquipmentView,
   GameConfig,
@@ -71,6 +73,8 @@ export function createGame(seats: readonly Seat[], config: GameConfig, seed: num
     log: [{ cycle: 1, text: "The crew wakes up aboard the ship.", visibleTo: "all" }],
     chat: [],
     nextChatId: 1,
+    channels: [],
+    nextChannelId: 1,
   };
 }
 
@@ -132,6 +136,8 @@ export function viewFor(state: GameState, playerId: PlayerId): PlayerView {
     ),
     chat: state.chat.filter((m) => chatChannels(state, you).includes(m.channel)),
     chatChannels: chatChannels(state, you),
+    privateChannels: state.channels.filter((c) => c.members.includes(playerId)).map((c) => ({ ...c, members: [...c.members] })),
+    channelLimit: channelLimit(state, you),
     movement: movementRules(state, you),
     maxAp: state.config.maxAp,
     maxHp: state.config.maxHp,
@@ -157,13 +163,14 @@ function equipmentView({ id, type }: Equipment): EquipmentView {
  * need an iTrackie in your inventory (confirmed 2026-10-13); drop it and you
  * lose them, pick one up and you see the whole history.
  */
-export function chatChannels(state: GameState, player: Readonly<PlayerState>): ChatChannel[] {
+export function chatChannels(state: GameState, player: Readonly<PlayerState>): ChannelId[] {
   if (state.phase !== "playing" || !player.alive) return [];
   const hasITrackie = itemsIn(state, { kind: "player", id: player.id }).some((i) => i.type === ITRACKIE_ITEM);
-  return hasITrackie ? [...CHAT_CHANNELS] : [];
+  if (!hasITrackie) return [];
+  return [...CHAT_CHANNELS, ...state.channels.filter((c) => c.members.includes(player.id)).map((c) => c.id)];
 }
 
-export function sendChat(state: GameState, playerId: PlayerId, channel: ChatChannel, text: string): ActionResult {
+export function sendChat(state: GameState, playerId: PlayerId, channel: ChannelId, text: string): ActionResult {
   const p = findPlayer(state, playerId);
   if (!p) return { ok: false, error: "Unknown player" };
   if (!chatChannels(state, p).includes(channel)) return { ok: false, error: "You can't post there" };
@@ -176,6 +183,67 @@ export function sendChat(state: GameState, playerId: PlayerId, channel: ChatChan
   // Trim per channel, so a busy global chat can't push the feature threads out.
   if (next.chat.filter((m) => m.channel === channel).length > CHAT_HISTORY) {
     next.chat.splice(next.chat.findIndex((m) => m.channel === channel), 1);
+  }
+  return { ok: true, state: next };
+}
+
+// ---- Private channels ------------------------------------------------------
+// Membership is the only access control (confirmed 2026-10-13): anyone in a
+// channel may invite anyone, from any room, and new members see the history.
+// Reading and posting still need an iTrackie (chatChannels). Joining is
+// immediate, with no accept step. Dead members stay listed but can't read or
+// post; spectating is a to-do (docs/plan.md). Errors are codes, not sentences (i18n rule 4).
+
+export const MAX_CHANNEL_NAME_LENGTH = 24;
+
+/** An error code for the client to turn into text. */
+const fail = (code: string): ActionResult => ({ ok: false, error: code });
+
+function channelCount(state: GameState, playerId: PlayerId): number {
+  return state.channels.filter((c) => c.members.includes(playerId)).length;
+}
+
+export function createChannel(state: GameState, playerId: PlayerId, rawName: string): ActionResult {
+  const p = findPlayer(state, playerId);
+  if (!p || !p.alive || state.phase !== "playing") return fail("channel_forbidden");
+  const name = rawName.trim();
+  if (!name || name.length > MAX_CHANNEL_NAME_LENGTH) return fail("channel_name_invalid");
+  if (channelCount(state, playerId) >= channelLimit(state, p)) return fail("channel_limit_reached");
+
+  const next = clone(state);
+  const id: PrivateChannelId = `pc-${next.nextChannelId++}`;
+  next.channels.push({ id, name, members: [playerId], createdBy: playerId });
+  return { ok: true, state: next };
+}
+
+/**
+ * Any member can invite any living player. Every failure on the invitee's side
+ * gets the same error, so a refusal can't tell the inviter how many channels
+ * someone is in.
+ */
+export function inviteToChannel(state: GameState, playerId: PlayerId, channelId: PrivateChannelId, inviteeId: PlayerId): ActionResult {
+  const p = findPlayer(state, playerId);
+  const channel = state.channels.find((c) => c.id === channelId);
+  if (!p || !p.alive || state.phase !== "playing" || !channel?.members.includes(playerId)) return fail("channel_forbidden");
+  const invitee = findPlayer(state, inviteeId);
+  if (!invitee || !invitee.alive || channel.members.includes(inviteeId) || channelCount(state, inviteeId) >= channelLimit(state, invitee)) {
+    return fail("channel_invite_refused");
+  }
+  const next = clone(state);
+  next.channels.find((c) => c.id === channelId)!.members.push(inviteeId);
+  return { ok: true, state: next };
+}
+
+/** The last member to leave deletes the channel and its messages. */
+export function leaveChannel(state: GameState, playerId: PlayerId, channelId: PrivateChannelId): ActionResult {
+  const channel = state.channels.find((c) => c.id === channelId);
+  if (!findPlayer(state, playerId) || !channel?.members.includes(playerId)) return fail("channel_forbidden");
+  const next = clone(state);
+  const mine = next.channels.find((c) => c.id === channelId)!;
+  mine.members = mine.members.filter((m) => m !== playerId);
+  if (mine.members.length === 0) {
+    next.channels = next.channels.filter((c) => c.id !== channelId);
+    next.chat = next.chat.filter((m) => m.channel !== channelId);
   }
   return { ok: true, state: next };
 }

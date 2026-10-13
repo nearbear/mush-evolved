@@ -134,3 +134,7 @@ The seam is in (`web/src/i18n/`, catalogs in `web/src/locales/`, tests in `tools
 9. **Visual check in French and Spanish** at desktop and 360px (longer text), then add a language option to `npm run screenshot` and a pseudo-locale for catching missed strings. Nobody has looked at the lobby picker yet.
 10. **Ship language vs UI language.** The lobby's English/Français/Español ships are placeholders. Decide what a ship's language means (chat community, bot chat language) now that the UI language is a separate per-player choice. Bot chat and prompts should follow the ship, not the UI.
 11. **Housekeeping:** add the i18n modules to `docs/code-map.md` (skipped to avoid conflicts with the minimap session), and re-run `UPDATE_I18N_BASELINE=1 npm test -w tools -- i18n` once the minimap lands, since the baseline recorded its in-progress counts.
+
+## To-do: spectator view for dead players (added 2026-10-13, not started)
+
+A dead player should get a spectator view: everything public, but nothing that depends on standing in a specific room. Rules to decide first: what counts as public (global chat? every room's public log? player positions?), whether private channels they belonged to stay readable, and whether any of it can leak back to the living. Today a dead player's `chatChannels` is empty and `viewFor` still sends their own room's log; private-channel membership is kept so this can be decided later.
