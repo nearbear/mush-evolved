@@ -130,3 +130,10 @@ Asked the assistant whether the project structure was sound. It flagged three is
 - **What worked:** asking the open rule questions in one batch (global-chat gating, item behaviour, private-channel scope, tracker scope) before coding. Tests serialize the view to prove that dropping the iTrackie hides all chat text.
 - **Needed correction:** the first restatement treated the feature tabs as tabs in a row; the user clarified a drop-down on mobile, with the room log and global chat always present. Pressure on the global chat history would have evicted feature threads, so the cap is now per channel.
 - **Follow-up (same day):** added `npm run asset-index`, which writes every file name and size under `Mush/` to `Mush/derived/asset-index.txt`. The project's read-deny rules on `Mush/www` and `Mush/clients` also blocked `ls`, so assets couldn't be found by name. With the index, a grep found three candidates; a contact sheet showed them, and the user picked `super_talky.jpg` (Claude had guessed `talky_walky.jpg` from memory; corrected by the user). The item type is now `super_talky`, exported as `ITRACKIE_ITEM`.
+
+### 2026-10-13 (wrap-up)
+
+- Typecheck, all tests (shared 56, tools 12, web 17), and the web build pass. Leak check passed for the chat changes. No visual check was run.
+- Decided by the user: feature list, iTrackie gating of global chat and threads, iTrackie as a normal item, private channels deferred to a stub, UI-only trackers, the `super_talky` icon, and the commit split (lobby, asset-index, iTrackie and features as three commits).
+- Needed correction: the assistant guessed the wrong icon (`talky_walky`) from memory; the earlier log entry above used a `##` heading where this file uses `###`.
+- Process note: `/wrap-up` can't be invoked by the assistant, so the user had to run it.

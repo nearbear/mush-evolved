@@ -90,6 +90,7 @@ Node is installed via nvm. In non-interactive shells, run `source ~/.nvm/nvm.sh`
 - `npm run typecheck`: `tsc --noEmit` in every package (TypeScript 7).
 - `npm run build`: production build of `web`.
 - `npm run ship-layout`: regenerate `Mush/derived/ship-layout.json` (renderer data) and `ship-rooms.json` (room graph and per-room equipment, for the rules) from `ShipMap.png` + `tiles.xml`. A test fails if the committed file is stale.
+- `npm run asset-index`: regenerate `Mush/derived/asset-index.txt` (every file under `Mush/` with its size) after adding or removing files there. Search it to find assets by name; reading `Mush/www` and `Mush/clients` is denied.
 - `npm run screenshot`: drive the running game in headless Chromium (Playwright), as a desktop player and a 360px-wide phone player (the narrowest supported) in the same match, and save screenshots to `.screenshots/` (gitignored). `-- --only desktop|mobile` runs one pass. Needs `npm run dev` running. See the `play` skill.
 - `npm run contact-sheet -- <folder> [--match regex] [--zoom n]`: render labeled contact sheets of an image folder to `.screenshots/contact/` (Playwright; WSL has no image tools). See the `asset` skill.
 - `npm run types -w server`: regenerate `server/worker-configuration.d.ts` after changing `wrangler.jsonc` or the exported Durable Object classes.
