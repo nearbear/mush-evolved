@@ -145,12 +145,26 @@ async function desktopSteps(page: Page, step: Step): Promise<void> {
     await waitForArt(page);
     console.log(`      ${before} -> ${await page.locator(".room-title").innerText()}`);
   });
+
+  await step("07-minimap", async () => {
+    const map = page.locator(".minimap");
+    await map.hover();
+    await page.locator(".minimap.expanded").waitFor();
+    const at = await pointOnShape(page, map.locator(".minimap-room.reachable").first());
+    await page.mouse.move(at.x, at.y);
+    await map.locator(".minimap-caption", { hasText: at.title }).waitFor(); // hover names the room
+    await page.mouse.click(at.x, at.y);
+    await map.getByRole("button", { name: "Go" }).click();
+    await page.locator(".room-title", { hasText: at.title }).waitFor();
+    await waitForArt(page);
+    console.log(`      moved to ${at.title} from the minimap`);
+  });
 }
 
 async function joinMobile(page: Page, name: string): Promise<void> {
   await join(page, name);
   await page.locator(".bottom-nav").waitFor();
-  if (await page.locator(".ship-map").count()) throw new Error("the ship map should be hidden on phones");
+  if (await page.locator(".minimap.expanded").count()) throw new Error("the minimap should start collapsed");
 }
 
 /** The phone pass: taps, the peek bar, panel switching, a wide room, and landscape. */
@@ -217,13 +231,45 @@ async function mobileSteps(page: Page, step: Step): Promise<void> {
     if (cx < box!.x || cx > box!.x + box!.width) throw new Error("your character is scrolled out of view");
   });
 
-  await step("m08-landscape", async () => {
+  await step("m08-minimap", async () => {
+    const map = page.locator(".minimap");
+    const box = (await map.locator("svg").boundingBox())!;
+    await page.touchscreen.tap(box.x + box.width / 2, box.y + box.height / 2);
+    await page.locator(".minimap.expanded").waitFor();
+    await noSideScroll(page);
+    const at = await pointOnShape(page, map.locator(".minimap-room.reachable").first());
+    await page.touchscreen.tap(at.x, at.y);
+    await map.locator(".minimap-caption", { hasText: at.title }).getByRole("button", { name: "Go" }).waitFor();
+  });
+
+  await step("m09-landscape", async () => {
     const portrait = page.viewportSize()!;
     await page.setViewportSize({ width: portrait.height, height: portrait.width });
     await page.waitForTimeout(200); // let the room re-measure
     const bar = await page.locator(".top-bar").boundingBox();
     if (bar!.height > 60) throw new Error(`top bar is ${bar!.height}px tall in landscape; expected one row`);
   });
+}
+
+/**
+ * A point that is visibly on an SVG shape (rooms can be L-shaped), plus its
+ * accessible name. Trial clicks check that the shape itself is hit there.
+ */
+async function pointOnShape(page: Page, shape: Locator): Promise<{ x: number; y: number; title: string }> {
+  const box = (await shape.boundingBox()) ?? fail("shape is not visible");
+  const steps = [0.5, 0.3, 0.7, 0.2, 0.8, 0.1, 0.9];
+  for (const fy of steps) {
+    for (const fx of steps) {
+      const position = { x: fx * box.width, y: fy * box.height };
+      try {
+        await shape.click({ trial: true, position, timeout: 150 });
+        return { x: box.x + position.x, y: box.y + position.y, title: (await shape.getAttribute("aria-label")) ?? "" };
+      } catch {
+        // Not on the shape here (or something covers it); try the next point.
+      }
+    }
+  }
+  return fail("no visible point on the shape");
 }
 
 /** Tap the first reachable door, then Go in the peek bar; waits for the new room. */

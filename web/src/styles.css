@@ -31,7 +31,7 @@ main {
 /*
  * The original site's 3-slice button (5px caps + a 1px middle stretched to fit),
  * with its hover (*over) and pressed (*_on) variants. Components that aren't
- * plain buttons (tabs, map rooms) replace the whole background.
+ * plain buttons (tabs) replace the whole background.
  */
 button {
   --btn-left: url("../../Mush/www/img/design/butleft.png");
@@ -657,66 +657,105 @@ h2 {
   }
 }
 
-/* Ship map */
+/*
+ * Minimap: the deck plan in the room view's bottom-left corner. Your room is in
+ * color; the rest is fog (grey silhouettes, faded people). Doors are amber.
+ */
 
-.ship-map {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-  gap: 0.5rem;
-}
-.map-room {
+.world {
   position: relative;
-  margin: 0;
-  padding: 0;
-  height: 94px;
-  /* Rooms without art; the inline room image replaces this. */
-  background-image: none;
-  background-color: var(--panel);
-  background-size: cover;
-  background-position: center;
-  border: 2px solid var(--edge);
-  border-radius: 6px;
-  overflow: hidden;
-  text-align: left;
-  filter: grayscale(0.7) brightness(0.6);
 }
-.map-room:disabled {
+.minimap {
+  --cell: 2px;
+  position: absolute;
+  left: 0.5rem;
+  bottom: 0.5rem;
+  z-index: 2;
+  width: calc(var(--cols) * var(--cell));
+  max-width: calc(100% - 1rem);
+  padding: 4px;
+  background: rgb(10 15 28 / 0.85);
+  border: 1px solid var(--edge);
+  border-radius: 6px;
+  transition: width 0.15s ease-out;
+}
+.minimap.expanded {
+  --cell: 5px;
+  box-shadow: 0 4px 16px rgb(0 0 0 / 0.6);
+}
+.minimap svg {
+  display: block;
+  width: 100%;
+  cursor: pointer;
+}
+.minimap-walls {
+  fill: #2c3e66;
+  pointer-events: none;
+}
+.minimap-room {
+  fill: #6b7079;
+  opacity: 0.45;
+  outline: none;
+}
+.minimap.expanded .minimap-room.reachable {
+  opacity: 0.7;
+}
+.minimap-room.pointed,
+.minimap-room:focus-visible {
+  opacity: 0.85;
+}
+.minimap-room.selected {
+  fill: var(--accent);
+  opacity: 0.8;
+}
+.minimap-room.here {
+  fill: #f5c542;
   opacity: 1;
 }
-.map-room.reachable {
-  filter: none;
-  border-color: var(--accent);
+.minimap-door {
+  fill: #ffbf00;
+  opacity: 0.45;
+  pointer-events: none;
 }
-.map-room.reachable:hover {
-  box-shadow: 0 0 10px var(--accent);
+.minimap-door.here {
+  opacity: 1;
 }
-.map-room.here {
-  filter: none;
-  border-color: #f5c542;
+.minimap-person {
+  fill: #d8dce4;
+  opacity: 0.5;
+  pointer-events: none;
 }
-.map-label {
-  position: absolute;
-  top: 4px;
-  left: 6px;
-  font-size: 0.8rem;
-  font-weight: bold;
-  text-shadow: 0 1px 3px #000;
+.minimap-person.near {
+  fill: #0d1424;
+  opacity: 1;
 }
-.map-people {
-  position: absolute;
-  bottom: 4px;
-  left: 4px;
-  right: 4px;
+.minimap-person.you {
+  fill: #fff;
+  stroke: #0d1424;
+  stroke-width: 0.35;
+  opacity: 1;
+}
+.minimap-caption {
   display: flex;
-  flex-wrap: wrap;
-  gap: 2px;
+  align-items: center;
+  gap: 0.4rem;
+  min-height: 1.9rem;
+  margin-top: 4px;
+  font-size: 0.85rem;
 }
-.map-people img {
-  width: 24px;
-  height: 24px;
-  image-rendering: pixelated;
-  background: rgb(0 0 0 / 0.5);
-  border-radius: 3px;
+.minimap-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.minimap-name .sub {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.minimap-caption button {
+  margin: 0;
 }
 
 .credits {
@@ -854,6 +893,14 @@ h2 {
   }
   .left-column .credits {
     margin: 0.5rem 0 0;
+  }
+
+  /* At 360px the expanded plan is capped by max-width. */
+  .minimap {
+    --cell: 1.5px;
+  }
+  .minimap.expanded {
+    --cell: 4px;
   }
 
   .peek-bar {

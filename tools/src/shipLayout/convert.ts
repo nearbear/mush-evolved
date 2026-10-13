@@ -1,5 +1,6 @@
 // Build-time converter: Motion Twin's ShipMap.png + tiles.xml -> ship-layout.json
 // (everything the renderer needs) and ship-rooms.json (just the room graph, for the rules).
+// Also writes ship-plan.json, the minimap's deck plan (see shipPlan.ts).
 //
 // Run with `npm run ship-layout`. Reproduces how the original Flash client
 // read these files (clients/iso/src/Data.hx `makeMap`/`addToStore`, Ship.hx
@@ -23,12 +24,14 @@ import type {
 // The leaf module, not the package index: the index loads config.ts, which reads the file this tool writes.
 import { placedEquipment } from "../../../shared/src/shipLayout.ts";
 import { decodePng, pngSize, type Image } from "./png.ts";
+import { cachedPlan, convertShipPlan, formatShipPlan } from "./shipPlan.ts";
 import { child, childrenNamed, parseXml, type XmlElement } from "./xml.ts";
 
 const MUSH = resolve(import.meta.dirname, "../../../Mush");
 const ISO = "clients/iso";
 const OUTPUT = resolve(MUSH, "derived/ship-layout.json");
 const ROOMS_OUTPUT = resolve(MUSH, "derived/ship-rooms.json");
+const PLAN_OUTPUT = resolve(MUSH, "derived/ship-plan.json");
 
 /**
  * Flash class name -> image. The build file that bound these is not in the
@@ -94,6 +97,9 @@ const ROOMS: [id: string, label: string][] = [
   ["STORAGE_B_1", "Storage back"],
   ["OUTER_SPACE", "Outer space"],
 ];
+
+/** RoomId enum order, which Map.hx's serialized plan indexes rooms by. */
+export const ROOM_IDS = ROOMS.map(([id]) => id);
 
 /** Data.makeClones: every patrol ship except PATROL_SHIP_AA_1 reuses the next room's row. */
 const isClone = (id: string) => id.startsWith("PATROL_SHIP_") && id !== "PATROL_SHIP_AA_1";
@@ -357,6 +363,8 @@ if (import.meta.main) {
   mkdirSync(dirname(OUTPUT), { recursive: true });
   writeFileSync(OUTPUT, formatLayout(layout));
   writeFileSync(ROOMS_OUTPUT, formatRooms(roomGraph(layout)));
+  const plan = convertShipPlan(cachedPlan(readFileSync(resolve(MUSH, "src/common/data/Map.hx"), "utf8")), ROOM_IDS);
+  writeFileSync(PLAN_OUTPUT, formatShipPlan(plan));
   const tiles = layout.rooms.reduce((n, r) => n + r.tiles.length, 0);
   console.log(`Wrote ${OUTPUT}: ${layout.rooms.length} rooms, ${tiles} tiles, ${Object.keys(layout.slices).length} slices.`);
 }

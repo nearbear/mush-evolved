@@ -152,3 +152,21 @@ export function placedEquipment(room: RoomLayout): PlacedEquipment[] {
   }
   return result;
 }
+
+/** A horizontal strip of cells: x, y, length. */
+export type CellRun = [x: number, y: number, length: number];
+
+/**
+ * Shape of Mush/derived/ship-plan.json: the flat, top-down deck plan of the
+ * ship the original game used for its minimap (Map.hx `GfxData`). One cell is
+ * one pixel of the original plan; (0, 0) is the top-left wall.
+ */
+export interface ShipPlan {
+  width: number;
+  height: number;
+  /** Every room with doors, as runs of floor cells. */
+  rooms: { id: string; runs: CellRun[] }[];
+  /** Each door joins exactly two rooms and sits in the wall between them. */
+  doors: { rooms: [string, string]; cells: [x: number, y: number][] }[];
+  walls: CellRun[];
+}

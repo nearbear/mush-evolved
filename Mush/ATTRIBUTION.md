@@ -12,8 +12,9 @@ the files themselves are unmodified.
 
 `derived/` holds files generated from this material (`ship-layout.json` and
 `ship-rooms.json`, built from `clients/iso/gfx/ShipMap.png` and
-`clients/iso/xml/tiles.xml` by `npm run ship-layout`). They are adaptations
-and are also licensed CC BY-NC-SA 4.0.
+`clients/iso/xml/tiles.xml`, and `ship-plan.json`, decoded from the ship plan
+serialized in `src/common/data/Map.hx`, all by `npm run ship-layout`). They are
+adaptations and are also licensed CC BY-NC-SA 4.0.
 
 `package.json` is project metadata, not part of the upstream material; it lets
 the game's code import `derived/` by package name.

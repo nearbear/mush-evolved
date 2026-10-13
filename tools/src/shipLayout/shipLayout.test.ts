@@ -2,8 +2,11 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { deflateSync } from "node:zlib";
 import { describe, expect, it } from "vitest";
-import { convert, formatLayout, formatRooms, roomGraph } from "./convert.ts";
+import type { ShipPlan, ShipRoom } from "@mush2/shared";
+import { convert, formatLayout, formatRooms, ROOM_IDS, roomGraph } from "./convert.ts";
+import { unserialize } from "./haxe.ts";
 import { decodePng, pngSize, type Image } from "./png.ts";
+import { cachedPlan, convertShipPlan, formatShipPlan, runs } from "./shipPlan.ts";
 import { parseXml } from "./xml.ts";
 
 const MUSH = resolve(import.meta.dirname, "../../../Mush");
@@ -152,5 +155,68 @@ describe("generated ship-layout.json", () => {
       const [from, to] = e.split(">");
       expect(edges.has(`${to}>${from}`), `door ${from} -> ${to} has no way back`).toBe(true);
     }
+  });
+});
+
+describe("unserialize (Haxe)", () => {
+  it("reads objects, class instances, arrays, int maps, enums, and references", () => {
+    expect(unserialize("oy1:ai-3y1:bai1zu2nhg")).toEqual({ a: -3, b: [1, 0, null, null, null] });
+    expect(unserialize("cy3:V2Iy1:xi1y1:yi2g")).toEqual({ __class: "V2I", x: 1, y: 2 });
+    expect(unserialize("q:5t:7fh")).toEqual({ 5: true, 7: false });
+    expect(unserialize("jy4:Dirs:2:0")).toEqual({ __enum: "Dirs", index: 2, args: [] });
+    // R0 repeats the first string; r1 repeats the second object (the inner array).
+    expect(unserialize("ay2:hiaai1hhr1R0h")).toEqual(["hi", [[1]], [[1]], "hi"]);
+    expect(unserialize("Cy4:Hashy1:kg")).toEqual({ __custom: "Hash", parts: ["k"] });
+  });
+
+  it("decodes URL-encoded strings", () => {
+    expect(unserialize("y5:a%20b")).toBe("a b");
+  });
+
+  it("fails on unsupported tags and trailing data", () => {
+    expect(() => unserialize("x")).toThrow(/unsupported tag/);
+    expect(() => unserialize("i1i2")).toThrow(/trailing data/);
+  });
+});
+
+describe("generated ship-plan.json", () => {
+  const plan = JSON.parse(readFileSync(resolve(MUSH, "derived/ship-plan.json"), "utf8")) as ShipPlan;
+  const rules = JSON.parse(readFileSync(resolve(MUSH, "derived/ship-rooms.json"), "utf8")) as ShipRoom[];
+
+  it("is up to date with Map.hx (run `npm run ship-layout`)", () => {
+    const fresh = convertShipPlan(cachedPlan(readFileSync(resolve(MUSH, "src/common/data/Map.hx"), "utf8")), ROOM_IDS);
+    expect(formatShipPlan(fresh)).toBe(readFileSync(resolve(MUSH, "derived/ship-plan.json"), "utf8"));
+  });
+
+  it("has exactly the rooms the rules use", () => {
+    expect(plan.rooms.map((r) => r.id).sort()).toEqual(rules.map((r) => r.id).sort());
+  });
+
+  // Catches a wrong enum order: rooms would land on the wrong shapes.
+  it("has the same doors as the rules' room graph", () => {
+    const planEdges = new Set(plan.doors.flatMap(({ rooms: [a, b] }) => [`${a}>${b}`, `${b}>${a}`]));
+    const ruleEdges = new Set(rules.flatMap((r) => r.doors.map((to) => `${r.id}>${to}`)));
+    expect([...planEdges].sort()).toEqual([...ruleEdges].sort());
+  });
+
+  it("keeps rooms, doors, and walls on separate cells inside the plan", () => {
+    const seen = new Set<string>();
+    const cells = [
+      ...plan.rooms.flatMap((r) => r.runs),
+      ...plan.walls,
+      ...plan.doors.flatMap((d) => d.cells.map(([x, y]) => [x, y, 1] as const)),
+    ].flatMap(([x, y, n]) => Array.from({ length: n }, (_, i) => [x + i, y] as const));
+    for (const [x, y] of cells) {
+      expect(seen.has(`${x},${y}`), `cell ${x},${y} used twice`).toBe(false);
+      seen.add(`${x},${y}`);
+      expect(x >= 0 && x < plan.width && y >= 0 && y < plan.height).toBe(true);
+    }
+  });
+});
+
+describe("runs", () => {
+  it("packs cells into horizontal runs and drops duplicates", () => {
+    const cells = [[2, 0], [0, 0], [1, 0], [1, 0], [3, 1], [5, 1]].map(([x, y]) => ({ x: x!, y: y! }));
+    expect(runs(cells)).toEqual([[0, 0, 3], [3, 1, 1], [5, 1, 1]]);
   });
 });

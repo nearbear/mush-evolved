@@ -14,7 +14,7 @@ import { TopBar } from "./hud/TopBar.tsx";
 import { gameSocket, type SeatTicket } from "./net.ts";
 import { IsoRoom } from "./iso/IsoRoom.tsx";
 import { useShipLayout } from "./iso/shipLayout.ts";
-import { ShipMap } from "./scene/ShipMap.tsx";
+import { Minimap } from "./scene/Minimap.tsx";
 import { useMobile } from "./useMobile.ts";
 
 export function GameScreen({ ticket, onLeave }: { ticket: SeatTicket; onLeave: () => void }) {
@@ -103,9 +103,7 @@ export function GameScreen({ ticket, onLeave }: { ticket: SeatTicket; onLeave: (
           ) : (
             <section className="iso-room loading">Loading ship…</section>
           )}
-          {!mobile && (
-            <ShipMap rooms={Object.keys(view.rooms)} you={you} people={[you, ...view.players]} reachable={reachable} onMove={move} />
-          )}
+          <Minimap here={you.room} youId={you.id} people={[you, ...view.players]} reachable={reachable} onMove={move} />
         </div>
 
         <ITrackie view={view} onChat={(channel, text) => post({ type: "chat", channel, text })} />
