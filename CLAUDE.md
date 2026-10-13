@@ -13,7 +13,7 @@ This is a **vertical-slice MVP**, not a full clone. The goals are:
 2. Demonstrate solid full-stack engineering and an AI-assisted development workflow (keep notes on what worked and what didn't; see "Working agreements").
 3. Leave room to grow it into a real game later, including animated characters.
 
-**Proposed slice scope:** 16 seats with 2 Mush (1 when 8 or fewer players are in the room; decided in `docs/plan.md`, not yet in the code), the 27-room Daedalus, the action-point loop and infection. Do not try to implement the full Mush ruleset.
+**Proposed slice scope:** 16 seats with 2 Mush (1 when 8 or fewer players are in the room; decided in `docs/rules-design.md`, not yet in the code), the 27-room Daedalus, the action-point loop and infection. Do not try to implement the full Mush ruleset.
 
 ## Stack
 
@@ -111,7 +111,7 @@ See `docs/code-map.md` for where each module lives and which rules are implement
 
 ## Open decisions
 
-The full, current list is **`docs/todo.md`**, starting with its "Open rule decisions" section. Answered rule decisions are recorded in `docs/plan.md` and `docs/action-plans.md`. The draft staging into MVP, private beta, public beta, and release is `docs/mvp-plan.md` (not final). Do not treat anything in the to-do as decided unless it is also recorded there as answered.
+The full, current list is **`docs/todo.md`**, starting with its "Open rule decisions" section. Answered rule decisions are recorded in `docs/rules-design.md` and `docs/action-plans.md`. The draft staging into MVP, private beta, public beta, and release is `docs/mvp-plan.md` (not final). Do not treat anything in the to-do as decided unless it is also recorded there as answered.
 
 Not rules, but still open:
 

@@ -15,7 +15,7 @@ Drafted 2026-10-13 from `docs/todo.md`. **Nothing here is decided.** This is a p
 
 The aim is one complete loop: join, play cycles, infect, die, and win or lose.
 
-**Rules** (all need decisions from you first; see "Open rule decisions" in `docs/todo.md` and `docs/plan.md`)
+**Rules** (all need decisions from you first; see "Open rule decisions" in `docs/todo.md` and `docs/rules-design.md`)
 - Cycles and days (the minimum needed for the daily spore cap).
 - Infection and Mush selection.
 - Win conditions and death at 0 HP, so a game can actually end.

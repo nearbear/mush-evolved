@@ -16,9 +16,9 @@ CLAUDE.md: **do not invent game rules.** Before coding, list every question the 
 - **Who sees it:** public room history, private to the actor, or secret (witnessed). See the log helpers below.
 - **Edge cases:** not enough AP/MP, the target leaves, the game is over.
 
-Check `docs/plan.md` first, since it lists open rule questions and may already have the answer. Don't read it whole: `grep -n -i "<keyword>" docs/plan.md`, then read only the matching lines. The original game's values are in `Mush/data/*.ods` and `Mush/src/common/Gameplay.hx`; grep for the specific constant instead of opening them. Use them as suggestions to offer, never as decisions.
+Check `docs/todo.md` ("Open rule decisions") and `docs/rules-design.md` ("Decisions received") first, since they may already have the answer. Don't read them whole: `grep -n -i "<keyword>" docs/todo.md docs/rules-design.md`, then read only the matching lines. The original game's values are in `Mush/data/*.ods` and `Mush/src/common/Gameplay.hx`; grep for the specific constant instead of opening them. Use them as suggestions to offer, never as decisions.
 
-Skip a question only if the user's message, CLAUDE.md, or `docs/plan.md` already answers it.
+Skip a question only if the user's message, CLAUDE.md, `docs/todo.md`, or `docs/rules-design.md` already answers it.
 
 ## 2. Implement in `shared`, purely
 
@@ -49,5 +49,5 @@ In `shared/src/*.test.ts`:
 ## 5. Record it
 
 - `docs/code-map.md`: update the "Implemented rules" paragraph. In `CLAUDE.md`, update "Open decisions" only if one was settled.
-- `docs/plan.md`: mark answered questions as answered, with the date. Grep for the line and use `Edit`; don't re-read the file.
+- `docs/todo.md`: tick the answered item under "Open rule decisions" and note the answer and date; add the decision to "Decisions received" in `docs/rules-design.md`. Grep for the line and use `Edit`; don't re-read the files.
 - `docs/ai-workflow.md`: a dated entry with the decision, who decided it, what worked, and anything that needed correction. Only ever append with `cat >>`, and never read the file first (it is large); do not rewrite existing entries.

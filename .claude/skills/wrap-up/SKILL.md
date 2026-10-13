@@ -1,6 +1,6 @@
 ---
 name: wrap-up
-description: Finish a change in this project - verify it (typecheck, tests, build, screenshots), update the docs that track decisions (CLAUDE.md, docs/plan.md, docs/ai-workflow.md), and propose a small focused commit. Use when a task is done, before saying something is finished, or when asked to wrap up, finish, or commit.
+description: Finish a change in this project - verify it (typecheck, tests, build, screenshots), update the docs that track decisions (CLAUDE.md, docs/rules-design.md, docs/ai-workflow.md), and propose a small focused commit. Use when a task is done, before saying something is finished, or when asked to wrap up, finish, or commit.
 disable-model-invocation: true
 ---
 
@@ -31,7 +31,7 @@ Only where something actually changed:
 
 - **`docs/code-map.md`**: the "Implemented rules" paragraph and the code map (new files or modules).
 - **`CLAUDE.md`**: commands (new npm scripts), the skills list, and "Open decisions" (remove anything settled). Keep it a summary.
-- **`docs/plan.md`**: mark answered questions as answered, with the date and the answer.
+- **`docs/todo.md` and `docs/rules-design.md`**: tick answered items under "Open rule decisions" with the date and the answer, and record the decision in "Decisions received".
 - **`docs/ai-workflow.md`**: a dated `###` entry. What was decided and **who decided it** (the user, or the assistant with approval), what worked, and anything that needed correction. Be honest about mistakes; the user is writing this up. Only ever append with `cat >>`, and never read the file first (it is large); do not rewrite existing entries.
 - **`docs/mush-assets.md`**: if new facts about the archive came up.
 

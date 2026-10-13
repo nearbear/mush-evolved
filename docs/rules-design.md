@@ -1,0 +1,98 @@
+# Rules design: decisions and phased plan (written 2026-10-05, pruned 2026-10-13)
+
+> **Bots (2026-10-13):** the author does not necessarily plan to run AI-controlled bots in live public games. They may be for testing only. Wherever these docs describe bots filling seats, treat live use as undecided.
+
+The record of answered rule decisions and the design for the rules that are not built yet. Open questions live in `docs/todo.md` ("Open rule decisions"), not here. Scheduled plans have their own document, `docs/action-plans.md`.
+
+**Status (2026-10-13):** built are AP, MP, HP and morale values, the action registry, inventory, the iTrackie, global chat, and private channels. Not built: infection, spores, the attack, win conditions, the cycle timer, and the phases below.
+
+## Decisions received
+
+- **Players:** 16 seats, 2 Mush. If 8 or fewer players are in the room when Mush are selected, only 1 Mush. Selection may happen later than game start (for example on a later day). The code still has the placeholder of 8 seats.
+- **Cycles:** AP refills on a timer, 3 hours per cycle and 8 per day (timer decided 2026-10-05, length 2026-10-13). There is no way to end a cycle early, so the "ready" action goes away. AP: start 8, +1 per cycle (+2 lying in a bed), cap 12, unspent AP carries over (2026-10-11).
+- **Spores:** Mush have a spore resource. `extract_spore` costs 1 AP, gives 1 spore, and always applies the **dirty** status. Only a fixed number of spores can be extracted per day.
+- **Combat:** no voting. The basic attack (the punch, `hit` in this document) costs 1 AP and deals 2 damage (changed from 1 on 2026-10-13; a placeholder until combat is designed). Max HP 14, start 14; morale max 14, start 7; both private to their owner (2026-10-11).
+- **Win conditions:**
+  - Mush win if all humans are dead, or if the ship returns to Sol while any Mush is alive.
+  - Humans win if the ship returns to Sol with no Mush alive.
+- **Visibility:** Mush know each other and have a private chat channel.
+- **Chat:** room speech is always available and is written into the room log like a public action. Global chat requires an **iTrackie** in your inventory.
+- **Inventory** (2026-10-11): 3 private slots, unlimited room storage, free take/drop logged publicly.
+- **iTrackie** (2026-10-13): everyone starts with one; it is a normal item (uses a slot, can be dropped or taken); carrying one is required to read and post in global chat and the feature threads.
+- **Room log visibility** (2026-10-11): the room log is that room's history. Private actions never show to other players; secret actions are logged to the room only if another player is there to witness them (this will change). Implemented in `shared/src/log.ts` (`logPublic`/`logPrivate`/`logSecret`).
+- **Code license:** MIT.
+- **Bots:** run locally for now, on the RTX 3070 (8 GB VRAM; WSL has 15 GB RAM).
+
+## Phases
+
+Each phase ends with typecheck and tests passing and a small commit. Phase headings note which open questions in `docs/todo.md` they wait on.
+
+### Phase 1: rules core in `shared` (needs the infection, Sol, and death decisions)
+
+- **Time as an input, not a clock read.** Add a `tick` that the server calls when a cycle boundary passes, for example `advanceCycles(state, n)`. The rules stay pure and tests can jump days instantly.
+  - Tradeoff: the server owns real time and the rules only count cycles. That keeps rules deterministic, at the cost of the server having to compute how many cycles were missed after downtime.
+- **Delete `ready`.** Cycles advance only on `tick`.
+- **Player state additions:** HP, status effects (starting with `dirty`), spore count, and an inventory (minimal, only what the iTrackie needs).
+- **Ship state:** spores extracted today (reset at each day boundary), the ship's position or Sol-return progress once the Sol trip is decided, and whether Mush have been selected yet.
+- **Mush selection:** a separate step (`selectMush`) run when the selection trigger is decided. It picks 1 or 2 Mush from the eligible players using the seeded RNG.
+- **Actions:**
+  - `extract_spore`: enforces the daily cap.
+  - The infect action, once decided.
+  - `hit`: decrements HP; at 0 HP the player dies.
+  - The return-to-Sol action, once decided.
+- **Win/end checks** after every action and tick. When the game ends, `phase: "ended"` records the winner.
+- **Tests:**
+  - Mush count is 1 vs 2 around the 8-player boundary.
+  - The daily spore cap holds and resets on the day boundary.
+  - Extracting a spore always applies `dirty`.
+  - AP refills only on a tick, never by action.
+  - Each win condition triggers correctly.
+  - Determinism for a given seed.
+
+### Phase 2: visibility and chat rules in `shared` (mostly built: global and private channels)
+
+- **`viewFor`:**
+  - A Mush sees the roles of the other Mush; everyone else still sees no roles.
+  - Log entries get a scope: public, room, Mush-only, or private.
+  - Tests check, for every seat, that a human's view has no roles except their own.
+- **`say` action:** writes a room-scoped log entry and costs no AP (I'll assume no cost unless you say otherwise).
+- **Global chat:** a separate message type allowed only for players holding an iTrackie.
+- **Mush chat:** a channel filtered in `viewFor`, the same as the log scopes.
+
+### Phase 3: server (needs the late-joiner and bot-seat decisions)
+
+- **`GameRoom` timing:** use a Durable Object alarm for cycle ticks instead of `setTimeout`, so ticks survive restarts. On wake, apply any missed cycles.
+- **Dev time scale:** an env var (for example `CYCLE_SECONDS=30` locally) so a "day" passes in minutes during testing.
+- **Matchmaker:** 16 seats, plus the late-join behavior once decided.
+- **Chat safety:**
+  - A per-player chat rate limit.
+  - A max message length.
+  - A basic word-filter moderation hook, plain code with no new dependency to start.
+  - A report/mute path deferred and noted.
+- **Fix the known gap:** idle humans can no longer stall the game, because ticks ignore readiness.
+
+
+### Phase 4: client
+
+- Show HP, status effects, spores (Mush only), and the cycle countdown.
+- A Mush chat tab, shown only to Mush.
+- Still plain DOM, still driven only by `PlayerView`.
+
+### Phase 5: local model bots
+
+- **Recommendation:** run a local OpenAI-compatible server, either **Ollama** (easiest) or **llama.cpp's `llama-server`** (lighter, more control), with a ~4B instruct model at Q4 quantization.
+  - On 8 GB VRAM that leaves room for long prompts.
+  - An ~8B Q4 model also fits but is tight.
+  - Check current model rankings when picking a specific model.
+- **Bot interface:**
+  - The model-backed bot speaks the OpenAI chat-completions format, with base URL, model name, and key in `.dev.vars`.
+  - Switching later to a cheap hosted API, or to Triton (which also offers an OpenAI-compatible frontend), is then a config change, not a code change.
+  - When you want a cheap hosted fallback, compare current per-token prices; I have no live pricing.
+- **Fits the cycle structure:** cycles last hours, so bots can queue requests one at a time and the single GPU is never a bottleneck.
+- **Safeguards:**
+  - The bot must pick from `view.legalActions`. Any invalid output falls back to the scripted bot.
+  - Player chat goes into the prompt marked as untrusted quoted text.
+  - A per-game request cap.
+  - The "hard spend cap" becomes a token/request budget, kept so it still works if you switch to a hosted API.
+- **Dependency note:** Ollama or llama.cpp is a system install, not an npm package. I'll ask before installing either.
+- **Public access later:** running everything on your machine is fine for development. When the game goes public, either deploy the game server to Cloudflare and keep only the model local, or expose your machine through a tunnel. Decide this at deploy time.

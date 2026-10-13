@@ -193,7 +193,7 @@ export function sendChat(state: GameState, playerId: PlayerId, channel: ChannelI
 // channel may invite anyone, from any room, and new members see the history.
 // Reading and posting still need an iTrackie (chatChannels). Joining is
 // immediate, with no accept step. Dead members stay listed but can't read or
-// post; spectating is a to-do (docs/plan.md). Errors are codes, not sentences (i18n rule 4).
+// post; spectating is a to-do (docs/rules-design.md). Errors are codes, not sentences (i18n rule 4).
 
 export const MAX_CHANNEL_NAME_LENGTH = 24;
 

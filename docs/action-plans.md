@@ -41,7 +41,7 @@ The problem this solves: today, relaying on research and projects needs both pla
 - **No disclosure:** a planned action's log lines and witness view are identical to a live one. Only channel members see that it came from a plan, on the plan card.
 - **Failure detail:** other members see only whose job failed. The exact reason goes to that job's actor alone (it can reveal private AP or inventory). `viewFor` strips it.
 - **Live actions may break your own plan** (walking away, dropping a needed item). The plan fails at run time, the same as sabotage.
-- **Cycles run on a timer:** 3 hours, 8 per day, as in eMush (timer decided 2026-10-05 in `docs/plan.md`, length 2026-10-13). The "ready" action goes away. Cycle length is a config value so tests and dev can shorten it.
+- **Cycles run on a timer:** 3 hours, 8 per day, as in eMush (timer decided 2026-10-05 in `docs/rules-design.md`, length 2026-10-13). The "ready" action goes away. Cycle length is a config value so tests and dev can shorten it.
 - **Tie order:** when a plan's time equals a cycle boundary, the cycle ticks first, so the plan can use the new AP.
 - **Notifications:** in-game only. The plan card shows the outcome and each participant gets a private log line. No push or email in the slice.
 - **Lead time:** timed plans can be 1 minute to 48 hours ahead (placeholder config values).
@@ -74,7 +74,7 @@ The legality check must take locked AP into account: a live action is legal only
 
 ### Phase 2: Private channels (implemented 2026-10-13)
 
-Decisions: any member can invite any living player, from any room; new members see the whole history; joining is immediate (no accept step); the limit is 3 channels per player (counting ones you were invited to), read through the `channelLimit` modifier so skills and research can change it later (neither exists yet); the last member to leave deletes the channel and its messages. Dead members stay listed but can't read or post (see the spectator to-do in `docs/plan.md`). The text below is the original sketch.
+Decisions: any member can invite any living player, from any room; new members see the whole history; joining is immediate (no accept step); the limit is 3 channels per player (counting ones you were invited to), read through the `channelLimit` modifier so skills and research can change it later (neither exists yet); the last member to leave deletes the channel and its messages. Dead members stay listed but can't read or post (see the spectator to-do in `docs/rules-design.md`). The text below is the original sketch.
 
 - `PrivateChannel { id, members: PlayerId[], createdBy }`. Reading and posting need an iTrackie, like the other threads.
 - Only members can see that a channel exists, who is in it, and what it says. That filtering goes in `viewFor`, with leak tests.

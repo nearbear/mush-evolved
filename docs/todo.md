@@ -4,36 +4,36 @@
 
 > Draft staging of these items: `docs/mvp-plan.md` (not final).
 
-Recorded 2026-10-13; staleness check against `docs/plan.md` and `docs/action-plans.md` done the same day. Nothing below is started unless it says so. Items that change game rules need the `rule` skill and decisions from the user first.
+Recorded 2026-10-13; staleness check against `docs/rules-design.md` and `docs/action-plans.md` done the same day. Nothing below is started unless it says so. Items that change game rules need the `rule` skill and decisions from the user first.
 
 ## Open rule decisions
 
-Decisions only you can make; nothing here should be implemented until it is settled (the `rule` skill resolves ambiguity with you first). Ordered so earlier answers unblock later ones. Checked items are already answered, with the source; the rest are open. Answered decisions live in `docs/plan.md` and `docs/action-plans.md`.
+Decisions only you can make; nothing here should be implemented until it is settled (the `rule` skill resolves ambiguity with you first). Ordered so earlier answers unblock later ones. Checked items are already answered, with the source; the rest are open. Answered decisions live in `docs/rules-design.md` and `docs/action-plans.md`.
 
 **Game shape**
-- [x] **Turn and cycle length.** Answered: real-time on a timer, 3-hour cycles, 8 per day, no "ready" action (`docs/plan.md`, `docs/action-plans.md`). Not yet implemented in the code.
+- [x] **Turn and cycle length.** Answered: real-time on a timer, 3-hour cycles, 8 per day, no "ready" action (`docs/rules-design.md`, `docs/action-plans.md`). Not yet implemented in the code.
 - [ ] **Days.** A day is 8 cycles. Still open: what else changes at a day boundary beyond the daily spore cap reset.
-- [x] **Number of players.** Answered: 16 seats (`docs/plan.md`). The code still has the placeholder of 8. Still open: how many seats bots may fill, and whether late joiners can enter a running game.
+- [x] **Number of players.** Answered: 16 seats (`docs/rules-design.md`). The code still has the placeholder of 8. Still open: how many seats bots may fill, and whether late joiners can enter a running game.
 - [ ] **Roles.** Which roles exist beyond human and Mush, if any, and how they are assigned. Linked to the skills decisions.
 - [ ] **Game name.** Not a rule, but still open in `CLAUDE.md`.
 
 **Infection**
-- [x] **How many Mush.** Answered: 2, or 1 when 8 or fewer players are in the room when they are chosen (`docs/plan.md`).
+- [x] **How many Mush.** Answered: 2, or 1 when 8 or fewer players are in the room when they are chosen (`docs/rules-design.md`).
 - [ ] **When Mush are chosen.** What triggers selection (a fixed day or cycle, a config value), and whether everyone is human with no spore actions before it. Whether bots count toward the "8 or fewer" rule and can be Mush.
-- [ ] **How infection works.** What a spore does to a human: the action name, AP cost, whether it needs the same room, how many spores convert, whether the target notices, and whether infection can be cured. (`docs/plan.md` Q4, the biggest gap.)
+- [ ] **How infection works.** What a spore does to a human: the action name, AP cost, whether it needs the same room, how many spores convert, whether the target notices, and whether infection can be cured.
 - [ ] **Spore extraction.** Answered in part: `extract_spore` costs 1 AP, gives 1 spore, always applies dirty, and there is a fixed daily number. Still open: Mush-only or not, the daily number, and ship-wide or per Mush.
-- [x] **Mush know each other and have a private chat channel** (`docs/plan.md`).
+- [x] **Mush know each other and have a private chat channel** (`docs/rules-design.md`).
 - [ ] **What a player sees when infected,** and what the Mush vs. human indicator shows to whom.
 
 **Win conditions and death**
-- [x] **What each side must achieve.** Answered: Mush win if all humans are dead, or if the ship returns to Sol while any Mush is alive. Humans win if the ship returns to Sol with no Mush alive (`docs/plan.md`).
-- [ ] **Returning to Sol.** What action or condition triggers it, who can do it, and where. Without this humans can never win. (`docs/plan.md` Q8.)
+- [x] **What each side must achieve.** Answered: Mush win if all humans are dead, or if the ship returns to Sol while any Mush is alive. Humans win if the ship returns to Sol with no Mush alive (`docs/rules-design.md`).
+- [ ] **Returning to Sol.** What action or condition triggers it, who can do it, and where. Without this humans can never win.
 - [ ] **Game length limit,** if any (days are decided, so this depends on the Sol trip).
 - [ ] **What happens at 0 HP:** death, incapacitation, or something else, whether a body is left and items drop, and what a dead player sees, can do, and can say in chat. (See also the spectator view to-do under Rules.)
 - [ ] **End-of-game reveal:** whether roles are shown, and what happens to bots and disconnected players.
 
 **Combat and covert actions**
-- [x] **Punch damage.** 1 AP and 2 damage, a placeholder until combat is designed (decided 2026-10-13; `docs/plan.md` now agrees).
+- [x] **Punch damage.** 1 AP and 2 damage, a placeholder until combat is designed (decided 2026-10-13; `docs/rules-design.md` now agrees).
 - [ ] **Design combat.** A real design pass: damage, targeting, misses, weapons, healing, death, and the aggressive flag. The punch's 2 damage is a placeholder until then.
 - [ ] **Punch targeting:** who can be targeted (same room only?), whether it can miss, and any limits per cycle.
 - [ ] **What aggressive actions trigger:** log visibility, consequences, and whether other players are alerted.
@@ -46,11 +46,11 @@ Decisions only you can make; nothing here should be implemented until it is sett
 
 **Ship, status, and beds**
 - [ ] **Ship resources** (fuel, oxygen, shields, plasma shield, alerts): the values, costs, and what drains or restores each, and what happens when one runs out.
-- [ ] **Status effects, starting with dirty:** what causes and clears it, its effects, and whether it is visible to others. (`docs/plan.md` Q6; spores already apply it.)
+- [ ] **Status effects, starting with dirty:** what causes and clears it, its effects, and whether it is visible to others. (spores already apply it.)
 - [ ] **Lie down on beds:** cost and effects. Partly decided: +2 AP per cycle while lying in a bed (the `lying_down` modifier exists, but no action applies it yet).
 
 **Items**
-- [x] **Inventory and iTrackie.** Answered: 3 private slots, unlimited room storage, free take/drop logged publicly; everyone starts with an iTrackie, a normal item that is needed to read and post in global chat and the feature threads (`docs/plan.md`).
+- [x] **Inventory and iTrackie.** Answered: 3 private slots, unlimited room storage, free take/drop logged publicly; everyone starts with an iTrackie, a normal item that is needed to read and post in global chat and the feature threads (`docs/rules-design.md`).
 - [ ] **Stealing and finding iTrackies,** and other item rules beyond the placeholders.
 - [ ] **Satiety.** Hunger does not exist yet. When it does, food gets a satiety value; coffee gives 2 AP and no satiety on purpose.
 
@@ -98,12 +98,12 @@ Decisions only you can make; nothing here should be implemented until it is sett
 - [ ] **Secret and covert actions.** Design the concept first: what makes an action secret or covert, who can see or detect it, and how it appears in logs. Cameras factor in (e.g. whether a camera records or reveals it). Related to the "aggressive" action flag. This is a rule change and a hidden-information risk, so the `rule` and `leak-check` skills apply.
 - [ ] **Skills (rules and UI).** Players have skills, visible to every player in the same room as them (not to players elsewhere, which `viewFor` must enforce). By default there are at most three skill slots, plus a separate book slot that holds a fourth skill gained from a book. Still to decide: the list of skills and their effects, how skills are gained, what books are and where they come from, and whether skills can be lost or swapped. The UI shows a player's slots and skills, including the book slot, and must work in the phone layout. A rule change, so the `rule` skill applies.
 
-- [ ] **Infection.** Design and implement how players become Mush. A rule change and the biggest hidden-information risk in the game (roles must never reach the wrong seat), so the `rule` and `leak-check` skills apply. Decided in `docs/plan.md`: 2 Mush (1 with 8 or fewer players), spores via `extract_spore`, Mush know each other and share a private channel. Still to decide: when Mush are chosen, what a spore does to a human, what a player sees when infected, and whether infection can be cured (see Open rule decisions).
-- [ ] **Win conditions.** Design and implement how a game ends. A rule change. Decided in `docs/plan.md`: Mush win if all humans die or the ship returns to Sol with a Mush alive; humans win if it returns with none. Still to decide: how the return to Sol is triggered, a game length limit, what players see at the end, and what happens to bots and disconnected players.
+- [ ] **Infection.** Design and implement how players become Mush. A rule change and the biggest hidden-information risk in the game (roles must never reach the wrong seat), so the `rule` and `leak-check` skills apply. Decided in `docs/rules-design.md`: 2 Mush (1 with 8 or fewer players), spores via `extract_spore`, Mush know each other and share a private channel. Still to decide: when Mush are chosen, what a spore does to a human, what a player sees when infected, and whether infection can be cured (see Open rule decisions).
+- [ ] **Win conditions.** Design and implement how a game ends. A rule change. Decided in `docs/rules-design.md`: Mush win if all humans die or the ship returns to Sol with a Mush alive; humans win if it returns with none. Still to decide: how the return to Sol is triggered, a game length limit, what players see at the end, and what happens to bots and disconnected players.
 
 - [ ] **Scheduled action plans.** Players post a plan in a private channel: an ordered list of jobs that other members claim, run automatically at a set time. Designed in full in `docs/action-plans.md` (the action registry and private channels are built; the rest is not). Large; the design has its own phases and open questions. Rule changes, so the `rule` skill applies.
-- [ ] **Spectator view for dead players.** A dead player gets everything public but nothing that depends on standing in a room. Decide what counts as public, whether their old private channels stay readable, and whether any of it can leak back to the living (from `docs/plan.md`).
-- [ ] **Fix `npm run screenshot` hanging.** The script hung past 120 s and 300 s in two runs while checking the drag-and-drop inventory; cause unknown. Until fixed, the inventory tiles have had no visual check (from `docs/plan.md`).
+- [ ] **Spectator view for dead players.** A dead player gets everything public but nothing that depends on standing in a room. Decide what counts as public, whether their old private channels stay readable, and whether any of it can leak back to the living. Today a dead player's `chatChannels` is empty and `viewFor` still sends their own room's log; private-channel membership is kept so this can be decided later.
+- [ ] **Fix `npm run screenshot` hanging.** The script hung past 120 s and 300 s in two runs while checking the drag-and-drop inventory; cause unknown. Until fixed, the inventory tiles (desktop drag between zones, 360px phone grid wrap, tap-to-select Take/Drop button) have had no visual check. Debug the script, then run both passes and look at `05-take.png` and `m05-inspect-inventory.png`.
 
 ## Architecture
 
@@ -150,17 +150,17 @@ An important feature, and the public-internet basics need to be robust, not mini
 
 The seam is in (`web/src/i18n/`, English, French, Spanish) but most of the game is still untranslated. `tools/src/i18n/baseline.json` lists what remains. See the `i18n` skill.
 
-- [ ] **Translate the rest of the client UI.** Move every hardcoded string in `web/src` into the catalogs, starting with the files with the highest baseline counts. Only the bottom navigation and the lobby are done.
-- [ ] **Structured log events.** The rules emit English sentences into the log. Change them to ids with params that the client turns into text, so logs translate and can carry levels and timestamps. Params are data a player sees, so run `leak-check`. Linked to log levels and timestamps.
-- [ ] **Structured errors.** `shared` and `server` return English error messages. Replace them with error codes the client translates (while keeping them independent of hidden state).
-- [ ] **Item, equipment, and room names.** Translate names, including the room labels generated into `Mush/derived/*.json` from the map. Decide whether the derived data keeps English as the source and the client maps ids to translated names.
+- [ ] **Translate the rest of the client UI.** About 74 strings remain (`ITrackie.tsx` alone has about 27); done when the `ui` section of `baseline.json` is empty. Move every hardcoded string in `web/src` into the catalogs, starting with the files with the highest baseline counts. Only the bottom navigation and the lobby are done.
+- [ ] **Structured log events.** The rules emit English sentences into the log. Change them to ids with params that the client turns into text, so logs translate and can carry levels and timestamps. `LogEntry.text` is a finished English sentence built in `rules.ts`; store `{ key, params }` and render in the client. Params are data a player sees, so run `leak-check`, and bump `STATE_VERSION` in `server/src/GameRoom.ts` because the `GameState` shape changes. Linked to log levels and timestamps.
+- [ ] **Structured errors.** `shared` and `server` return English error messages. Replace them with error codes the client translates (while keeping them independent of hidden state). The places: `ActionResult.error`, the protocol `{ type: "error", message }`, `moderateChat`'s `reason`, and the rate-limit, "No game", and "Malformed message" strings in `GameRoom.ts` and `Matchmaker.ts`.
+- [ ] **Item, equipment, and room names.** Translate names, including the room labels generated into `Mush/derived/*.json` from the map. Decide whether the derived data keeps English as the source and the client maps ids to translated names. The plan: drop `name` from `ItemView`/`EquipmentView`, make `ITEM_TYPES`/`EQUIPMENT_TYPES` id-only, and move room labels out of the generated `Mush/derived/*.json` into the catalogs.
 - [ ] **Game-term glossary.** One translation per game term across the catalog. French can follow the original game's wording (`Mush/data/DataExt.ods`); Spanish has no source, so each new term needs your decision.
 - [ ] **Native review of fr and es.** The French and Spanish strings are drafts. Have native speakers review them before launch.
-- [ ] **Language switcher everywhere.** The switcher is only in the lobby and has not been checked visually. Put it where players can reach it in game (likely in user settings), and check it in the phone layout.
+- [ ] **Language switcher everywhere.** The switcher is only in the lobby and has not been checked visually. Put it where players can reach it in game (likely in user settings; the top bar is tight at 360px), and check it in the phone layout.
 - [ ] **Layout with longer text.** French and Spanish run 20 to 30 percent longer. Remove fixed widths and `nowrap` on translated text, and check at 360px.
 - [ ] **Pseudo-locale and fr/es screenshot passes.** Add a pseudo-locale (long, accented text) and extend `npm run screenshot` to run in each language, so overflow and untranslated text show up.
 - [ ] **Number, date, and time formatting.** Go through `Intl` with the current language, including log timestamps and days. Linked to the timestamps and days to-dos.
-- [ ] **Bot chat and prompts follow the ship's language.** Not the UI language. Decide how the ship's language is chosen, and how players who read a different UI language experience it.
+- [ ] **Bot chat and prompts follow the ship's language.** Not the UI language. Decide how the ship's language is chosen (the lobby's English/Français/Español ships are placeholders), and how players who read a different UI language experience it.
 - [ ] **Moderation word lists per language.** Listed under Moderation too: fr and es lists, and accent-aware word boundaries.
 - [ ] **Translate site pages.** Notifications, the account placeholder, error pages, terms and privacy text, and the wiki. Decide whether the wiki is translated in full or only partly.
 - [ ] **Fallback and detection behavior.** Decide what happens when the browser language is unsupported, a key is missing in production, or a saved language is removed.

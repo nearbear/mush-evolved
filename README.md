@@ -4,7 +4,7 @@
 
 A turn-based, browser-based social deduction game inspired by [Mush](https://github.com/motion-twin/WebGamesArchives) (Motion Twin) and [eMush](https://emush.eternaltwin.org/) (Eternaltwin). Players wake up on a spaceship, a few of them are secretly infected, and the rest have to survive and unmask them.
 
-This is a **vertical-slice MVP**, not a full clone: matchmaking, bot fill, a room-by-room ship, action points, inventory, and chat work today. Infection and win conditions are deliberately **not implemented yet**; some of the rules are decided in `docs/plan.md`, and the rest are open in `docs/todo.md`. There is no hosted game: deployment has never been run, and the bot model API isn't chosen. You run it locally.
+This is a **vertical-slice MVP**, not a full clone: matchmaking, bot fill, a room-by-room ship, action points, inventory, and chat work today. Infection and win conditions are deliberately **not implemented yet**; some of the rules are decided in `docs/rules-design.md`, and the rest are open in `docs/todo.md`. There is no hosted game: deployment has never been run, and the bot model API isn't chosen. You run it locally.
 
 ## Quick start
 
@@ -70,7 +70,7 @@ Please read these before changing code; pull requests that break them will need 
 - Before opening a pull request, run `npm run typecheck`, `npm run lint`, and `npm test`.
 - For UI changes, run `npm run screenshot` and check both the desktop and phone passes.
 - Please don't add AI-generated non-text assets (art, sound) without discussing it first.
-- Open items are tracked in [`docs/todo.md`](docs/todo.md) (master list), with rule decisions recorded in [`docs/plan.md`](docs/plan.md) and [`docs/action-plans.md`](docs/action-plans.md).
+- Open items are tracked in [`docs/todo.md`](docs/todo.md) (master list), with rule decisions recorded in [`docs/rules-design.md`](docs/rules-design.md) and [`docs/action-plans.md`](docs/action-plans.md).
 
 [`CLAUDE.md`](CLAUDE.md) holds the same project conventions for AI coding assistants; the project is developed with Claude Code, and [`docs/ai-workflow.md`](docs/ai-workflow.md) logs what worked and what didn't.
 
