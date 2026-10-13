@@ -164,3 +164,10 @@ The user asked whether an `i18n` skill was worth having and said they didn't kno
 
 ### 2026-10-13: Linter choice
 Asked whether a linter was needed; proposed ESLint + typescript-eslint (hooks deps, no-floating-promises, import restrictions). Checking peer deps before installing showed typescript-eslint caps at TypeScript <6.1 while the repo is on TS 7, so we switched to Biome (lint only). Trade-off: Biome's noFloatingPromises is nursery and not fully type-aware. First run flagged 17 existing items: 16 hook-dependency warnings that were intentional trigger deps (annotated with biome-ignore + reason) and 1 real unhandled promise rejection in useShipLayout (added .catch).
+
+## 2026-10-13: Scheduled plans for coordinated actions
+
+Planned an addition to the original action system: players post plans (ordered jobs, each one normal action) in private channels, and the server runs them at a set time or once every job is filled, all-or-nothing. It is meant to fix the relay problem in research and projects, where players otherwise have to be online at the same time. Plan in `docs/action-plans.md`.
+
+- What worked: holding to "a planned action is a live action run later" (one shared legality path) answered most edge cases. A Q&A loop with the user closed the gaps: locked AP with a cross-hatch, 3-hour cycles, expiry, and tie order.
+- Needed correction: the AI asked whether claimers should add their own movement jobs. The user pointed out that travel is implied by the action's room, so travel became part of every job. Writing the decisions down also exposed hidden-information leaks the first draft had: preflight hints showing others' AP, failure reasons revealing inventory, and auto-following a target revealing its location. Hints are now limited to the player's own jobs, failures show only who, and target rooms are fixed by an author who can see them.

@@ -22,7 +22,7 @@ Phases that depend on these are marked below.
 
 1. **Mush selection timing.** What triggers it: a fixed day/cycle, a config value, or something else? Before selection, is everyone human with no spore actions? *(Phase 1)*
 2. **Late joiners and bots.** If selection happens on a later day, can players join a game already running? Do bots still fill empty seats, and do bots count toward the "8 or fewer" rule? Can bots be Mush? *(Phases 1, 3)*
-3. **Cycle numbers.** How many hours per cycle, how much AP per refill, the AP cap, and cycles per day? eMush uses 3-hour cycles, 8 per day, +1 AP per cycle, 12 AP cap. Is that the intent? *(Phase 1. AP answered 2026-10-11: start 8, +1 per cycle (+2 lying in a bed), cap 12, carries over. Cycle length and cycles per day still open.)*
+3. **Cycle numbers.** How many hours per cycle, how much AP per refill, the AP cap, and cycles per day? eMush uses 3-hour cycles, 8 per day, +1 AP per cycle, 12 AP cap. Is that the intent? *(Phase 1. AP answered 2026-10-11: start 8, +1 per cycle (+2 lying in a bed), cap 12, carries over. Cycle length answered 2026-10-13: 3 hours, 8 per day; see `docs/action-plans.md`.)*
 4. **What spores do.** How does a Mush use a spore to infect a human: action name, AP cost, same room? How many spores convert a human, and does the target notice? *(Phase 1, the biggest gap)*
 5. **Who can extract, and the daily limit.** Is `extract_spore` Mush-only? What is the daily number, and is it ship-wide or per Mush? *(Phase 1)*
 6. **Dirty status.** Does it do anything yet (for example, visible to others in the room), or is it just a flag for now? How is it removed? *(Phase 1)*
