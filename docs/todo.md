@@ -195,3 +195,17 @@ Deploy is not yet configured or tested (`npm run deploy -w server`). Work is com
 - [ ] **Attribution and licensing on the live site.** Show the CC BY-NC-SA 4.0 attribution for the Motion Twin assets, and keep the non-commercial rule visible (no ads or payments).
 - [ ] **Backups and data retention.** Decide what persistent data exists (games, violations, notifications) and how long it is kept.
 - [ ] **README, demo GIF, and write-up.** The README with a demo GIF, and the write-up of the AI-assisted workflow, built from `docs/ai-workflow.md`.
+
+## Sections still to add
+
+Ideas for new sections of this to-do. Each one needs its items written out before it becomes a real section.
+
+- [ ] **Bots.** Scripted bots, the hosted model API, the spend cap and rate limits, prompt-injection handling, labeling bots as AI, and choosing the API. Some of this is currently scattered across Moderation and Testing.
+- [ ] **Onboarding and tutorial.** A first-time experience: tutorial, in-game rules reference, tooltips, and a practice game against bots. Links to the wiki.
+- [ ] **Accessibility.** Keyboard navigation, screen-reader labels, color contrast (log levels and bars), reduced motion, text scaling, and colorblind-safe indicators.
+- [ ] **Lobby and matchmaking.** The queue, the fill-with-bots timer, rejoining after a disconnect, spectating or the end-of-game screen, and rematch.
+- [ ] **Audio.** Sound effects, music, and a mute control. Needs a license check first, since sounds and music may fall under different terms (see the `asset` skill).
+- [ ] **Game feel and animation.** Animated characters and whether to move beyond DOM rendering (three.js or a 2D renderer).
+- [ ] **Analytics and balance.** Win rates per side, game length, and drop-off points. Conflicts with privacy, so follow the terms and privacy decision.
+- [ ] **Documentation.** Keeping `docs/code-map.md` and `docs/testing.md` current, and a contributor guide.
+- [ ] **Project and legal.** The asset license (CC BY-NC-SA) rules out monetization, the MIT license covers only the code, and decide a plan if Motion Twin or Eternaltwin objects and how to credit them.
