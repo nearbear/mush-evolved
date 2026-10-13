@@ -33,7 +33,8 @@ Decisions only you can make; nothing here should be implemented until it is sett
 - [ ] **End-of-game reveal:** whether roles are shown, and what happens to bots and disconnected players.
 
 **Combat and covert actions**
-- [ ] **Hit vs. punch damage.** `docs/plan.md` says `hit` costs 1 AP and deals 1 damage; the punch to-do says 1 AP and 2 damage. Which is right?
+- [x] **Punch damage.** 1 AP and 2 damage, a placeholder until combat is designed (decided 2026-10-13; `docs/plan.md` now agrees).
+- [ ] **Design combat.** A real design pass: damage, targeting, misses, weapons, healing, death, and the aggressive flag. The punch's 2 damage is a placeholder until then.
 - [ ] **Punch targeting:** who can be targeted (same room only?), whether it can miss, and any limits per cycle.
 - [ ] **What aggressive actions trigger:** log visibility, consequences, and whether other players are alerted.
 - [ ] **Secret and covert actions:** what makes an action secret or covert, who can see or detect it, how it appears in logs, and how cameras factor in. Partly decided for plans: a secret substitution is witnessed exactly as if done live (`docs/action-plans.md`). Room log visibility for secret actions "will change".
@@ -92,7 +93,7 @@ Decisions only you can make; nothing here should be implemented until it is sett
 - [ ] **Status effects, starting with the dirty status.** A rule change: what causes and clears dirty, and its effects, need to be decided first.
 - [ ] **Lie down action for beds.** A rule change: cost and effects (e.g. any rest or recovery) need to be decided first.
 - [ ] **Camera installation, uninstallation, and dismantling.** Rule change: costs, requirements (tools, items), and visibility need to be decided first.
-- [ ] **Basic attack (punch) action.** Costs 1 AP and deals 2 damage. Punching someone is an aggressive action. Other rules (targeting, who sees it in the log, what happens at 0 HP) still need to be decided.
+- [ ] **Basic attack (punch) action.** Costs 1 AP and deals 2 damage (a placeholder until combat is designed). Punching someone is an aggressive action. Other rules (targeting, who sees it in the log, what happens at 0 HP) still need to be decided.
 - [ ] **"Aggressive" as an action-level concept.** Actions carry an aggressive flag, and the punch is the first one that sets it. What aggressive actions trigger (log visibility, consequences) needs to be decided.
 - [ ] **Secret and covert actions.** Design the concept first: what makes an action secret or covert, who can see or detect it, and how it appears in logs. Cameras factor in (e.g. whether a camera records or reveals it). Related to the "aggressive" action flag. This is a rule change and a hidden-information risk, so the `rule` and `leak-check` skills apply.
 - [ ] **Skills (rules and UI).** Players have skills, visible to every player in the same room as them (not to players elsewhere, which `viewFor` must enforce). By default there are at most three skill slots, plus a separate book slot that holds a fourth skill gained from a book. Still to decide: the list of skills and their effects, how skills are gained, what books are and where they come from, and whether skills can be lost or swapped. The UI shows a player's slots and skills, including the book slot, and must work in the phone layout. A rule change, so the `rule` skill applies.

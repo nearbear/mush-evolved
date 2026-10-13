@@ -9,7 +9,7 @@ Based on the rule decisions given on 2026-10-05. Status (updated 2026-10-13): Ph
 - **Players:** 16 seats, 2 Mush. If 8 or fewer players are in the room when Mush are selected, only 1 Mush. Selection may happen later than game start (for example on a later day).
 - **Cycles:** AP refills every few hours on a timer. There is no way to end a cycle early, so the "ready" action goes away.
 - **Spores:** Mush have a spore resource. `extract_spore` costs 1 AP, gives 1 spore, and always applies the **dirty** status. Only a fixed number of spores can be extracted per day.
-- **Combat:** no voting. `hit` costs 1 AP and deals 1 damage.
+- **Combat:** no voting. The basic attack (the punch, `hit` in this plan) costs 1 AP and deals 2 damage (changed from 1 on 2026-10-13; a placeholder until combat is designed).
 - **Win conditions:**
   - Mush win if all humans are dead, or if the ship returns to Sol while any Mush is alive.
   - Humans win if the ship returns to Sol with no Mush alive.
@@ -41,7 +41,6 @@ Each phase ends with typecheck and tests passing and a small commit.
 
 - Add an MIT `LICENSE` for the code. Note in the README that the `Mush/` assets stay CC BY-NC-SA.
 - Update `CLAUDE.md`: move the answered items out of "Open decisions" and record the rules above.
-- Commit `docs/next-steps.md` and this plan.
 
 ### Phase 1: rules core in `shared` (needs answers to Q1, Q3–Q8)
 

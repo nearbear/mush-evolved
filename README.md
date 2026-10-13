@@ -70,7 +70,7 @@ Please read these before changing code; pull requests that break them will need 
 - Before opening a pull request, run `npm run typecheck`, `npm run lint`, and `npm test`.
 - For UI changes, run `npm run screenshot` and check both the desktop and phone passes.
 - Please don't add AI-generated non-text assets (art, sound) without discussing it first.
-- Open items are tracked in [`docs/todo.md`](docs/todo.md) (master list), with rule decisions recorded in [`docs/plan.md`](docs/plan.md) and [`docs/action-plans.md`](docs/action-plans.md). `docs/next-steps.md` is superseded.
+- Open items are tracked in [`docs/todo.md`](docs/todo.md) (master list), with rule decisions recorded in [`docs/plan.md`](docs/plan.md) and [`docs/action-plans.md`](docs/action-plans.md).
 
 [`CLAUDE.md`](CLAUDE.md) holds the same project conventions for AI coding assistants; the project is developed with Claude Code, and [`docs/ai-workflow.md`](docs/ai-workflow.md) logs what worked and what didn't.
 
