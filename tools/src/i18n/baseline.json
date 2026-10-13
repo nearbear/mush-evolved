@@ -7,7 +7,8 @@
     "web/src/hud/InventoryPanel.tsx": 6,
     "web/src/hud/PeekBar.tsx": 7,
     "web/src/hud/PipBar.tsx": 1,
-    "web/src/hud/TopBar.tsx": 5,
+    "web/src/hud/PlayerSummary.tsx": 1,
+    "web/src/hud/TopBar.tsx": 4,
     "web/src/hud/targets.ts": 1,
     "web/src/iso/IsoRoom.tsx": 1,
     "web/src/scene/Minimap.tsx": 6

@@ -185,3 +185,9 @@ Replaced the per-action branches in `legalActions`/`applyAction` with one `Actio
 - Panels, the top bar and both tab sets (iTrackie and the phone bottom nav) now share one surface rule built from tokens (`--surface-top/bottom`, `--glow`, `--glow-rim`) with `color-mix` for the alphas, so a theme only sets variables. Removed the `taboff`/`tabon` gif use.
 - Replaced the hard-coded colours (gold highlight, danger, badge, room background, ink) with tokens. Remaining theming blockers are the 3-slice button sprites and the `bg.jpg` backgrounds.
 - Caveat: the glow values were estimated from a contact sheet whose labels covered half of each tile, and no screenshot check was run yet.
+
+## 2026-10-13: self panel under the room
+
+- The request said "player information in the upper left"; I first read it as the Inspect panel, and my clarifying questions were built on that. The user corrected me: Inspect stays on the left, so they meant the top bar's player info. Lesson: when a description of a screen location is ambiguous, name the candidate components in the question instead of assuming one.
+- Moved the portrait, name, role and stat pips (`PlayerSummary`), the room's items and the inventory into one `SelfPanel` under the iso room, room items on the left. On phones the summary stays in the top bar (so stats stay visible) and the item lists go in the Inspect tab. Added a `.room-view` wrapper so the minimap's absolute positioning stays tied to the room, not the whole column.
+- Not yet checked visually (no screenshot pass run).

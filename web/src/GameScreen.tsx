@@ -6,9 +6,9 @@ import type PartySocket from "partysocket";
 import type { Action, GameClientMessage, GameServerMessage, PlayerView, RoomId, Target } from "@mush2/shared";
 import { BottomNav, type MobilePanel } from "./hud/BottomNav.tsx";
 import { InspectPanel } from "./hud/InspectPanel.tsx";
-import { InventoryPanel } from "./hud/InventoryPanel.tsx";
 import { ITrackie } from "./hud/ITrackie.tsx";
 import { PeekBar } from "./hud/PeekBar.tsx";
+import { SelfPanel } from "./hud/SelfPanel.tsx";
 import { resolveTarget } from "./hud/targets.ts";
 import { TopBar } from "./hud/TopBar.tsx";
 import { gameSocket, type SeatTicket } from "./net.ts";
@@ -71,6 +71,7 @@ export function GameScreen({ ticket, onLeave }: { ticket: SeatTicket; onLeave: (
     <main className="game">
       <TopBar
         view={view}
+        showSummary={mobile}
         canReady={view.legalActions.some((a) => a.type === "ready")}
         onReady={() => send({ type: "ready" })}
         onLeave={onLeave}
@@ -80,31 +81,38 @@ export function GameScreen({ ticket, onLeave }: { ticket: SeatTicket; onLeave: (
       <div className="three-panel" data-panel={panel}>
         <div className="left-column">
           <InspectPanel view={view} target={target} onAction={send} onClose={() => select(null)} />
-          <InventoryPanel view={view} selected={target} onAction={send} onSelect={select} />
+          {mobile && (
+            <SelfPanel view={view} selected={target} showSummary={false} onAction={send} onSelect={select} />
+          )}
           {mobile && <Credits />}
         </div>
 
         <div className="world">
-          {layout ? (
-            <IsoRoom
-              layout={layout}
-              room={you.room}
-              occupants={[you, ...view.players.filter((p) => p.room === you.room)]
-                .sort((a, b) => a.id.localeCompare(b.id))
-                .map((p) => ({ id: p.id, name: p.name, isBot: p.isBot, character: p.character, you: p.id === you.id }))}
-              equipment={view.roomEquipment}
-              reachable={reachable}
-              selected={target}
-              selectedDoor={peekDoor}
-              fillPanel={mobile}
-              onMove={move}
-              onSelect={select}
-              onDoorTap={tapDoor}
-            />
-          ) : (
-            <section className="iso-room loading">Loading ship…</section>
+          <div className="room-view">
+            {layout ? (
+              <IsoRoom
+                layout={layout}
+                room={you.room}
+                occupants={[you, ...view.players.filter((p) => p.room === you.room)]
+                  .sort((a, b) => a.id.localeCompare(b.id))
+                  .map((p) => ({ id: p.id, name: p.name, isBot: p.isBot, character: p.character, you: p.id === you.id }))}
+                equipment={view.roomEquipment}
+                reachable={reachable}
+                selected={target}
+                selectedDoor={peekDoor}
+                fillPanel={mobile}
+                onMove={move}
+                onSelect={select}
+                onDoorTap={tapDoor}
+              />
+            ) : (
+              <section className="iso-room loading">Loading ship…</section>
+            )}
+            <Minimap here={you.room} youId={you.id} people={[you, ...view.players]} reachable={reachable} onMove={move} />
+          </div>
+          {!mobile && (
+            <SelfPanel view={view} selected={target} showSummary onAction={send} onSelect={select} />
           )}
-          <Minimap here={you.room} youId={you.id} people={[you, ...view.players]} reachable={reachable} onMove={move} />
         </div>
 
         <ITrackie view={view} onChat={(channel, text) => post({ type: "chat", channel, text })} />
