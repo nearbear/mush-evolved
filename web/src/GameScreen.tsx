@@ -100,7 +100,8 @@ export function GameScreen({ ticket, onLeave }: { ticket: SeatTicket; onLeave: (
                 reachable={reachable}
                 selected={target}
                 selectedDoor={peekDoor}
-                fillPanel={mobile}
+                fillPanel
+                minScale={mobile ? 1 : 0}
                 onMove={move}
                 onSelect={select}
                 onDoorTap={tapDoor}
@@ -111,7 +112,10 @@ export function GameScreen({ ticket, onLeave }: { ticket: SeatTicket; onLeave: (
             <Minimap here={you.room} youId={you.id} people={[you, ...view.players]} reachable={reachable} onMove={move} />
           </div>
           {!mobile && (
-            <SelfPanel view={view} selected={target} showSummary onAction={send} onSelect={select} />
+            <>
+              <SelfPanel view={view} selected={target} showSummary onAction={send} onSelect={select} />
+              <Credits />
+            </>
           )}
         </div>
 
@@ -138,7 +142,7 @@ export function GameScreen({ ticket, onLeave }: { ticket: SeatTicket; onLeave: (
           onClose={() => select(null)}
         />
       )}
-      {mobile ? <BottomNav panel={panel} onChange={setPanel} /> : <Credits />}
+      {mobile && <BottomNav panel={panel} onChange={setPanel} />}
     </main>
   );
 }

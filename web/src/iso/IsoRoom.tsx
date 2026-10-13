@@ -38,6 +38,7 @@ export function IsoRoom({
   selected,
   selectedDoor,
   fillPanel,
+  minScale,
   onMove,
   onSelect,
   onDoorTap,
@@ -56,6 +57,8 @@ export function IsoRoom({
    * 1x (pixel art breaks and doors get too small to tap); wide rooms scroll.
    */
   fillPanel: boolean;
+  /** Smallest scale; phones never go below 1x and scroll instead, desktop may shrink to fit. */
+  minScale: number;
   onMove: (to: RoomId) => void;
   onSelect: (target: Target) => void;
   /** A single click or tap on any door, reachable or not. */
@@ -89,10 +92,10 @@ export function IsoRoom({
     // occupantKey stands in for occupants: positions only change when who is here changes.
   }, [layout, roomLayout, occupantKey]);
 
-  // On desktop the section is sized by its content, so only its width is a real limit.
+  // Without fillPanel the section is sized by its content, so only its width is a real limit.
   const scale =
     (fillPanel
-      ? fitScale(box, space.width, space.height, { minScale: 1 })
+      ? fitScale(box, space.width, space.height, { minScale })
       : fitScale(box, Math.min(MAX_W, space.width), MAX_H)) ?? 1;
 
   // A room wider than the panel scrolls; start centred on yourself.
