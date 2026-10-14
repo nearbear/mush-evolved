@@ -860,7 +860,8 @@ h2 {
   flex: 1;
   min-height: 0;
   display: flex;
-  overflow: auto;
+  /* The camera follows you (IsoRoom); no manual panning. */
+  overflow: hidden;
 }
 .room-title {
   position: absolute;

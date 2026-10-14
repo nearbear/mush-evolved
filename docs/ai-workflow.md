@@ -315,3 +315,10 @@ The user (not the assistant) decided to drop auto-fit scaling in the iso view: s
 - The taller button height (30px) was the assistant's addition so the larger font fits. Acting is signalled to ITrackie with a counter prop rather than lifting tab state.
 - Needed correction: a stray `biome-ignore` that had no effect (removed), and the i18n hardcoded-text ratchet failed because text was deleted, so the baseline was lowered with `UPDATE_I18N_BASELINE=1`.
 - Visual check skipped (not requested).
+
+### 2026-10-13: Iso room camera follows the player; click-to-walk (client-only)
+
+- Clicking floor moves your sprite to that tile; clicking equipment selects it and steps you up to it (`standSpot`: middle of the wider footprint edge, camera-facing side first, with fallbacks). Purely cosmetic local state in `IsoRoom`; nothing is sent to the server.
+- Manual panning removed (`overflow: hidden`); the camera scrolls to follow you, clamped at room edges. `web/CLAUDE.md` updated.
+- Worked: checking the real ship data before trusting the "widest edge, centre" rule surfaced the ambiguous cases (free-standing consoles, square and 1x1 footprints, turret consoles with no adjacent floor). The `dir` field on equipment bindings looked like a facing hint but didn't map consistently to one edge, so it isn't used.
+- Who decided: the user asked for click-to-walk, camera follow with no panning, and the "widest edge, centre" rule for equipment. The assistant chose the tie-breaks and fallbacks (camera-facing side first, left-middle on even edges, nearest floor when nothing touches the object) and reported them as open for the user to confirm. Refs #17 (sync to other players still to do).

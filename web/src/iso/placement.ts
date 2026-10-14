@@ -217,6 +217,58 @@ export function spreadActors(cells: readonly { x: number; y: number }[], count: 
   return picked;
 }
 
+/**
+ * The walkable cell whose floor diamond contains the room-pixel point (x, y),
+ * or undefined if the point is off the floor. Floor diamonds are centred a
+ * little below the cell anchor (the ground slices' y offset).
+ */
+export function cellAtPoint(
+  cells: readonly { x: number; y: number }[],
+  x: number,
+  y: number,
+): { x: number; y: number } | undefined {
+  return cells.find((c) => {
+    const a = gridToPx(c.x, c.y);
+    return Math.abs(x - a.x) / R + Math.abs(y - (a.y + FLOOR_CENTER_Y)) / (R / 2) <= 1;
+  });
+}
+
+const FLOOR_CENTER_Y = 6;
+
+/**
+ * Where to stand to use the thing drawn by `room.tiles[tile]`: the middle of
+ * its wider edge (the x-run if at least as wide as deep, else the y-run),
+ * camera-facing side first. Falls back outward along that edge, then the far
+ * side of the same edge, then the narrow edges, then the nearest walkable cell. Footprints extend from the anchor toward
+ * -x/-y (see walkableCells). Display only; where people stand isn't game state.
+ */
+export function standSpot(
+  layout: ShipLayout,
+  room: RoomLayout,
+  tile: number,
+  cells: readonly { x: number; y: number }[],
+): { x: number; y: number } | undefined {
+  const t = room.tiles[tile];
+  if (!t || cells.length === 0) return undefined;
+  const [w, h] = layout.slices[t.slice]!.footprint ?? [1, 1];
+  const x0 = t.x - w + 1, y0 = t.y - h + 1;
+  /** Cells of one edge, middle first (for an even edge, the lower-index middle cell first). */
+  const edge = (len: number, at: (i: number) => { x: number; y: number }) =>
+    Array.from({ length: len }, (_, i) => i)
+      .sort((a, b) => Math.abs(a - (len - 1) / 2) - Math.abs(b - (len - 1) / 2) || a - b)
+      .map(at);
+  const frontY = edge(w, (i) => ({ x: x0 + i, y: t.y + 1 }));
+  const frontX = edge(h, (j) => ({ x: t.x + 1, y: y0 + j }));
+  const backY = edge(w, (i) => ({ x: x0 + i, y: y0 - 1 }));
+  const backX = edge(h, (j) => ({ x: x0 - 1, y: y0 + j }));
+  const order = w >= h ? [...frontY, ...backY, ...frontX, ...backX] : [...frontX, ...backX, ...frontY, ...backY];
+  const walkable = new Set(cells.map((c) => `${c.x},${c.y}`));
+  const found = order.find((c) => walkable.has(`${c.x},${c.y}`));
+  if (found) return found;
+  const cx = (x0 + t.x) / 2, cy = (y0 + t.y) / 2;
+  return [...cells].sort((a, b) => Math.hypot(a.x - cx, a.y - cy) - Math.hypot(b.x - cx, b.y - cy))[0];
+}
+
 /** Clearance beyond this many cells doesn't make a spot any better. */
 const MAX_CLEARANCE = 3;
 

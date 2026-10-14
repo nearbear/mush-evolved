@@ -15,7 +15,7 @@ import { CrewSprite } from "../scene/CrewSprite.tsx";
 import { roomLabel } from "../scene/names.ts";
 import { atlasUrl } from "./shipLayout.ts";
 import { opaqueAt, preloadImage } from "./hitMask.ts";
-import { bounds, hitTest, placeRoom, spreadActors, walkableCells, type PlacedSprite } from "./placement.ts";
+import { bounds, cellAtPoint, hitTest, placeRoom, spreadActors, standSpot, walkableCells, type PlacedSprite } from "./placement.ts";
 
 export interface Occupant {
   id: string;
@@ -54,31 +54,52 @@ export function IsoRoom({
   const roomLayout = layout.rooms.find((r) => r.id === room);
   const occupantKey = occupants.map((o) => o.id).join(",");
   const scrollRef = useRef<HTMLDivElement>(null);
+  // Where you've clicked to walk. Client-only and cosmetic: the server never hears of it,
+  // and it resets when you change rooms.
+  const [walk, setWalk] = useState<{ room: RoomId; cell: { x: number; y: number } } | null>(null);
+  const myCell = walk?.room === room ? walk.cell : null;
+  const cells = useMemo(() => (roomLayout ? walkableCells(layout, roomLayout) : []), [layout, roomLayout]);
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: occupantKey stands in for occupants (see comment below).
   const { sprites, box } = useMemo(() => {
     if (!roomLayout) return { sprites: [], box: bounds([]) };
-    const spots = spreadActors(walkableCells(layout, roomLayout), occupants.length);
-    const actors = occupants.map((o, i) => ({ id: o.id, cell: spots[i] ?? { x: 0, y: 0 }, width: 32, height: 48 }));
+    const spots = spreadActors(cells, occupants.length);
+    const actors = occupants.map((o, i) => ({
+      id: o.id,
+      cell: (o.you && myCell) || spots[i] || { x: 0, y: 0 },
+      width: 32,
+      height: 48,
+    }));
     const sprites = placeRoom(layout, roomLayout, actors);
     return { sprites, box: bounds(sprites) };
     // occupantKey stands in for occupants: positions only change when who is here changes.
-  }, [layout, roomLayout, occupantKey]);
+  }, [layout, roomLayout, cells, myCell, occupantKey]);
 
   // Sprites draw at exactly one screen pixel per source pixel, so art stays crisp.
-  // A room bigger than the panel pans (touch drag or wheel, no scrollbar); start centred on yourself.
+  // The camera always follows you: there is no manual panning (the scroller is overflow: hidden),
+  // and the browser's scroll clamping stops it at the room's edges.
   const youSprite = sprites.find((s) => s.kind === "actor" && occupants.some((o) => o.you && o.id === s.key.slice(2)));
-  // biome-ignore lint/correctness/useExhaustiveDependencies: recentre only when the room changes (see comment below).
+  const youX = youSprite ? youSprite.left - box.minX + youSprite.width / 2 : null;
+  const youY = youSprite ? youSprite.top - box.minY + youSprite.height / 2 : null;
+  const lastRoom = useRef<RoomId | null>(null);
   useLayoutEffect(() => {
     const el = scrollRef.current;
-    if (!el || !youSprite) return;
-    const viewport = el.querySelector<HTMLElement>(".iso-viewport");
-    const x = (viewport?.offsetLeft ?? 0) + (youSprite.left - box.minX + youSprite.width / 2);
-    const y = (viewport?.offsetTop ?? 0) + (youSprite.top - box.minY + youSprite.height / 2);
-    el.scrollLeft = x - el.clientWidth / 2;
-    el.scrollTop = y - el.clientHeight / 2;
-    // Only when the room changes, not when someone walks in.
-  }, [room]);
+    if (!el || youX === null || youY === null) return;
+    const follow = (behavior: ScrollBehavior) => {
+      const viewport = el.querySelector<HTMLElement>(".iso-viewport");
+      el.scrollTo({
+        left: (viewport?.offsetLeft ?? 0) + youX - el.clientWidth / 2,
+        top: (viewport?.offsetTop ?? 0) + youY - el.clientHeight / 2,
+        behavior,
+      });
+    };
+    // Jump when entering a room; glide when walking inside it.
+    follow(lastRoom.current === room ? "smooth" : "instant");
+    lastRoom.current = room;
+    const resize = new ResizeObserver(() => follow("instant"));
+    resize.observe(el);
+    return () => resize.disconnect();
+  }, [room, youX, youY]);
 
   // Sprite key ("t<tile index>") -> the equipment it draws.
   const equipmentByKey = useMemo(() => {
@@ -140,8 +161,19 @@ export function IsoRoom({
   const onClick = (e: MouseEvent<HTMLDivElement>) => {
     const hit = pick(e);
     if (hit?.kind === "person") onSelect({ kind: "player", id: hit.person.id });
-    else if (hit?.kind === "equipment") onSelect({ kind: "equipment", id: hit.equipment.id });
+    else if (hit?.kind === "equipment") {
+      onSelect({ kind: "equipment", id: hit.equipment.id });
+      // Step up to it too (cosmetic, like walking on bare floor).
+      const cell = standSpot(layout, roomLayout, Number(hit.sprite.key.slice(1)), cells);
+      if (cell) setWalk({ room, cell });
+    }
     else if (hit?.kind === "door") onDoorTap(hit.to);
+    else {
+      // Bare floor (or scenery): walk there; the camera follows, revealing doors off-panel.
+      const rect = e.currentTarget.getBoundingClientRect();
+      const cell = cellAtPoint(cells, e.clientX - rect.left + box.minX, e.clientY - rect.top + box.minY);
+      if (cell) setWalk({ room, cell });
+    }
   };
   const onDoubleClick = (e: MouseEvent<HTMLDivElement>) => {
     const hit = pick(e);

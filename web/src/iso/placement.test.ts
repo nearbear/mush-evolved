@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { RoomLayout, ShipLayout, SliceInfo } from "@mush2/shared";
 import shipLayoutJson from "../../../Mush/derived/ship-layout.json?raw";
-import { gridToPx, hitTest, placeRoom, spreadActors, walkableCells } from "./placement.ts";
+import { cellAtPoint, gridToPx, hitTest, placeRoom, spreadActors, standSpot, walkableCells } from "./placement.ts";
 
 const slice = (over: Partial<SliceInfo>): SliceInfo => ({
   sheet: "S",
@@ -152,5 +152,37 @@ describe("hitTest", () => {
     // Drawn mirrored, so the opaque half is now on screen right.
     expect(hitTest([flipped], 12, 5, leftHalf)?.key).toBe("front");
     expect(hitTest([flipped], 7, 5, leftHalf)).toBeUndefined();
+  });
+});
+
+describe("cellAtPoint", () => {
+  const cells = [{ x: 2, y: 3 }, { x: 3, y: 3 }];
+  it("finds the walkable cell under a point and ignores points off the floor", () => {
+    const a = gridToPx(3, 3);
+    expect(cellAtPoint(cells, a.x, a.y + 6)).toEqual({ x: 3, y: 3 });
+    expect(cellAtPoint(cells, a.x + 200, a.y)).toBeUndefined();
+  });
+});
+
+describe("standSpot", () => {
+  // A 3-wide console anchored at (4, 2): footprint x 2..4, y 2.
+  const consoleLayout: ShipLayout = { ...layout, slices: { ...layout.slices, console: slice({ footprint: [3, 1] }) } };
+  const consoleRoom: RoomLayout = { id: "C", label: "C", equipment: [], tiles: [{ x: 4, y: 2, kind: "entity", layer: 0, slice: "console", frame: 0 }] };
+  const floor = (pred: (x: number, y: number) => boolean) => {
+    const cells: { x: number; y: number }[] = [];
+    for (let y = 0; y < 6; y++) for (let x = 0; x < 7; x++) if (pred(x, y)) cells.push({ x, y });
+    return cells;
+  };
+  const notConsole = (x: number, y: number) => !(y === 2 && x >= 2 && x <= 4);
+
+  it("stands at the middle of the wide, camera-facing edge", () => {
+    expect(standSpot(consoleLayout, consoleRoom, 0, floor(notConsole))).toEqual({ x: 3, y: 3 });
+  });
+  it("slides along the edge, then to the far side, when the middle is blocked", () => {
+    expect(standSpot(consoleLayout, consoleRoom, 0, floor((x, y) => notConsole(x, y) && !(x === 3 && y === 3)))).toEqual({ x: 2, y: 3 });
+    expect(standSpot(consoleLayout, consoleRoom, 0, floor((x, y) => notConsole(x, y) && y !== 3))).toEqual({ x: 3, y: 1 });
+  });
+  it("falls back to the nearest floor when nothing touches it", () => {
+    expect(standSpot(consoleLayout, consoleRoom, 0, [{ x: 0, y: 5 }, { x: 6, y: 5 }])).toBeDefined();
   });
 });
