@@ -281,3 +281,14 @@ User supplied icon names for 14 tabs. Only Global and Private exist as iTrackie 
 - **Decided by the assistant, no approval asked:** the panel shadow value (`0 0 6px` at 0.55 alpha, tuned by eye to the sampled falloff), a bright-blue rim as the active-tab marker, and rounding the bottom nav on all corners (the iTrackie tabs are rounded on top only).
 - **Worked:** the contact sheets, then zoomed re-renders of the tiny files, gave enough to describe all 325 design files. Sampling pixels with the existing `decodePng` in `tools/` gave exact values (fill `#1a1b4a`, rim `#26378c`, 1px rim plus about 5px of shadow).
 - **Needed correction:** "move these into a folder" was ambiguous. I read it as the two catalogs, not the assets, and said so. Nothing checked visually; the screenshot pass was skipped, and the active-versus-idle tab contrast at 360px is unverified.
+
+### 2026-10-13: slotted frames behind the AP/MP/HP/morale bars
+- First attempt cropped and rotated `pabar.png` (11x79, vertical, 12 slots) with CSS background tricks. It looked blurry and fragile (half-pixel offsets, slot count fixed by the sprite), so the user had it rolled back.
+- Second attempt: vector redraws in `Mush/derived/pip-bar/*.svg` (start cap, slot, thin slot, end cap; `currentColor`, `crispEdges`), assembled by `PipBar.tsx` into one inline SVG for any slot count. The sprite's size came from `file`, which the sandbox only let the user run.
+- Not yet visually checked in a browser.
+
+## 2026-10-13: GitHub Projects, full migration
+
+- Migrated the rest of `docs/todo.md` after the pilot was approved: 6 more epics with 71 sub-issues (Site and accounts, Moderation, i18n, Testing, DevOps, Project management), and 12 standalone epics labelled `needs-breakdown` for single large items (original game data, the wiki) and the "Sections still to add". 135 issues in total; every unchecked to-do line now ends in `(#N)`.
+- Merged cross-section duplicates (e.g. CI with "Run tests in CI", the per-language word lists listed under both Moderation and i18n) and flagged items whose wording predates the no-bots-in-multiplayer decision as "outdated in part" instead of silently rewriting them.
+- What worked: a dry-run check that every annotation key matched exactly one unmigrated line before any issue was created, and reusing the resumable script (one transient GraphQL error on project item-add retried cleanly).
