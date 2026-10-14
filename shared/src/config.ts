@@ -41,11 +41,17 @@ export const DEFAULT_CONFIG: GameConfig = {
   shareMorale: 2,
   // Confirmed 2026-10-14: a human converts on reaching 3 contamination (items and skills will raise it).
   contaminationCapacity: 3,
+  // Confirmed 2026-10-13: dismantle cost.
+  dismantleAp: 3,
+  dismantleOdds: 0.12,
   // PLACEHOLDER items with no effects, so there is something to pick up.
   startItems: [
     { type: "wrench", room: "LABORATORY" },
     { type: "blaster", room: "LABORATORY" },
     { type: "medikit", room: "SICK_BAY" },
+    { type: "camera", room: "CORRIDOR_A" },
+    { type: "metal_scraps", room: "CORRIDOR_A" },
+    { type: "plastic_scraps", room: "CORRIDOR_A" },
   ],
   // Confirmed 2026-10-13: every player starts with an iTrackie.
   startInventory: [ITRACKIE_ITEM],

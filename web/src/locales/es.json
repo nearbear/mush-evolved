@@ -41,9 +41,20 @@
     "examine": "Examinar",
     "dispense": "Sacar un café",
     "consume": "Beber",
+    "dismantle": "Desmontar",
     "bond": "Crear vínculo",
     "dtt": "DTT",
     "stt": "STT"
+  },
+  "log": {
+    "cameraInstalled": "{{CharacterName}} instaló una cámara.",
+    "moveToRoom": "{{CharacterName}} se dirigió a {{RoomName}}.",
+    "moveFromRoom": "{{CharacterName}} entró desde {{RoomName}}.",
+    "transferItem": "{{CharacterName}} {{Verb}} el {{ItemName}}.",
+    "dispenseItem": "{{CharacterName}} tomó un {{ItemName}} del {{EquipmentName}}.",
+    "knockOverItem": "{{CharacterName}} tomó un {{ItemName}} del {{EquipmentName}} y lo volcó.",
+    "consumeItem": "{{CharacterName}} consumió el {{ItemName}}.",
+    "examineItem": "Has examinado {{Target}}."
   },
   "channels": {
     "empty": "Aún no hay canales privados.",
