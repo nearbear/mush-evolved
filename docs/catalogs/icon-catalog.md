@@ -190,7 +190,7 @@ Descriptions of `Mush/www/img/icons/ui/*` (top-level files; `status/` is at the 
 | `cat.png` | Brown cat |
 | `use_andrek.png` / `use_andrek_greyed.png` | Two figures (a pair) / greyed |
 
-## Character icons
+## Character bust icons
 Small head or bust sprites of the playable cast. File names are first names: `andie`, `chao`, `chun`, `chun_battle`, `derek`, `eleesha`, `finola`, `frieda`, `gioele`, `hua`, `ian`, `janice`, `jinsu`, `kivanc`, `kuanti`, `mankarog`, `mastered` (brown dog), `nils`, `noob`, `paola`, `pam` (gears icon), `raluca`, `roland`, `stephen`, `terrence`.
 
 ## Mush faction, achievements, and triumphs
