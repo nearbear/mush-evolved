@@ -71,12 +71,6 @@ function Details({ view, resolved }: { view: PlayerView; resolved: Resolved }) {
             {person.id === view.you.id && <span className="tag">you</span>}
             {character && <div className="sub">{character.name}</div>}
           </div>
-          <dl className="inspect-facts">
-            <dt>Location</dt>
-            <dd>{person.room ? roomLabel(person.room) : "—"}</dd>
-            <dt>Status</dt>
-            <dd>{!person.alive ? "Dead" : person.ready ? "Done for this cycle" : "Active"}</dd>
-          </dl>
         </>
       );
     }

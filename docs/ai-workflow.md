@@ -308,3 +308,10 @@ User supplied icon names for 14 tabs. Only Global and Private exist as iTrackie 
 
 ### 2026-10-14: Isometric view fixed at 1x, no scrollbar
 The user (not the assistant) decided to drop auto-fit scaling in the iso view: sprites draw one screen pixel per source pixel, and the panel never shows a scrollbar (rooms bigger than the panel still pan by touch or wheel). The assistant removed `fitScale` and the `fillPanel`/`minScale` props, hid the scrollbar in CSS, and added the no-scrollbar rule to `web/CLAUDE.md`. Worked: the change was mostly deletion. Not verified: no visual check was run; half-pixel centring from `margin: auto` is a possible leftover blur.
+
+### 2026-10-14: Inspect panel buttons, no location/status, acting opens the room log
+
+- The user asked for wider, larger action buttons (font +4px), removal of Location and Status from the inspect panel, and for any action to jump to the Room log. The assistant implemented all three; the user decided the behavior, including "always" (so moves and ready also jump, and on a phone the screen switches to iTrackie).
+- The taller button height (30px) was the assistant's addition so the larger font fits. Acting is signalled to ITrackie with a counter prop rather than lifting tab state.
+- Needed correction: a stray `biome-ignore` that had no effect (removed), and the i18n hardcoded-text ratchet failed because text was deleted, so the baseline was lowered with `UPDATE_I18N_BASELINE=1`.
+- Visual check skipped (not requested).

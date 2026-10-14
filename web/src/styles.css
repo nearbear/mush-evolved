@@ -397,25 +397,15 @@ h2 {
 }
 .inspect-actions {
   display: flex;
-  flex-wrap: wrap;
+  flex-direction: column;
   gap: 0.4rem;
   margin-top: 0.75rem;
 }
 .inspect-actions button {
   margin: 0;
-}
-.inspect-facts {
-  display: grid;
-  grid-template-columns: auto 1fr;
-  gap: 0.25rem 0.75rem;
-  margin: 0;
-  font-size: 0.85rem;
-}
-.inspect-facts dt {
-  color: var(--muted);
-}
-.inspect-facts dd {
-  margin: 0;
+  width: 100%;
+  height: 30px;
+  font-size: calc(0.8rem + 4px);
 }
 
 /* Self panel: summary, then room items (left) and inventory (right). */
