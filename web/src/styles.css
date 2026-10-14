@@ -1060,9 +1060,13 @@ h2 {
   margin: 0;
 }
 
-.credits {
-  margin: 1.5rem 0 1rem;
+.self-panel > .credits {
+  flex: 1 1 100%;
+  margin: 0;
+  padding-top: 0.75rem;
+  border-top: 1px solid color-mix(in srgb, var(--muted) 25%, transparent);
   font-size: 0.75rem;
+  line-height: 1.3;
   color: var(--muted);
 }
 
@@ -1119,11 +1123,6 @@ h2 {
   .itrackie {
     height: auto;
     min-height: 0;
-  }
-  .world > .credits {
-    flex: none;
-    margin: -0.5rem 0 0;
-    line-height: 1.3;
   }
 }
 
@@ -1260,9 +1259,6 @@ h2 {
     flex: 1;
     min-height: 0;
     height: auto;
-  }
-  .left-column .credits {
-    margin: 0.5rem 0 0;
   }
 
   /* At 360px the expanded plan is capped by max-width. */

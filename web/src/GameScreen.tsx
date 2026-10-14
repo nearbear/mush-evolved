@@ -90,7 +90,6 @@ export function GameScreen({ ticket, onLeave }: { ticket: SeatTicket; onLeave: (
           {mobile && (
             <SelfPanel view={view} selected={target} showSummary={false} onAction={send} onSelect={select} />
           )}
-          {mobile && <Credits />}
         </div>
 
         <div className="world">
@@ -116,10 +115,7 @@ export function GameScreen({ ticket, onLeave }: { ticket: SeatTicket; onLeave: (
             <Minimap here={you.room} youId={you.id} people={[you, ...view.players]} unidentified={view.unidentified} reachable={reachable} onMove={move} />
           </div>
           {!mobile && (
-            <>
-              <SelfPanel view={view} selected={target} showSummary onAction={send} onSelect={select} />
-              <Credits />
-            </>
+            <SelfPanel view={view} selected={target} showSummary onAction={send} onSelect={select} />
           )}
         </div>
 
@@ -149,16 +145,5 @@ export function GameScreen({ ticket, onLeave }: { ticket: SeatTicket; onLeave: (
       )}
       {mobile && <BottomNav panel={panel} onChange={setPanel} />}
     </main>
-  );
-}
-
-function Credits() {
-  return (
-    <footer className="credits">
-      Art from <em>Mush</em> by Motion Twin (
-      <a href="https://github.com/motion-twin/WebGamesArchives">WebGamesArchives</a>), licensed{" "}
-      <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a>. Sprite backgrounds made
-      transparent. Not affiliated with Motion Twin.
-    </footer>
   );
 }

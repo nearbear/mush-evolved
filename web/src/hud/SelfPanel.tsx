@@ -22,6 +22,17 @@ export function SelfPanel({
     <section className="panel self-panel">
       {showSummary && <PlayerSummary view={view} />}
       <InventoryPanel view={view} selected={selected} onAction={onAction} onSelect={onSelect} />
+      <Credits />
     </section>
+  );
+}
+
+function Credits() {
+  return (
+    <footer className="credits">
+      Art from <em>Mush</em> by Motion Twin (
+      <a href="https://github.com/motion-twin/WebGamesArchives">WebGamesArchives</a>), licensed{" "}
+      <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a>. Adapted. Not affiliated with Motion Twin.
+    </footer>
   );
 }
