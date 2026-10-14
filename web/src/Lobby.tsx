@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { type CSSProperties, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { MatchmakerServerMessage } from "@mush2/shared";
 import { LanguageSwitcher } from "./i18n/LanguageSwitcher.tsx";
@@ -17,6 +17,37 @@ const SHIPS = [
 
 /** How long the pod takes to fade to dark before the game takes over; matches `pod-sleep` in lobby.css. */
 const SLEEP_MS = 600;
+
+/**
+ * The window is drawn this many times, as vertical strips each tilted a little further
+ * than the last, so together they bend it into a half-cylinder (lobby.css, .pod-strip).
+ * More strips make a smoother curve but cost more drawing.
+ */
+const POD_STRIPS = 24;
+
+/**
+ * The metal wall around the window is the same cylinder, so it is drawn the same way,
+ * with this many extra strips on each side carrying on past the window's edges.
+ */
+const WALL_STRIPS = 16;
+
+/** Wall strip indices: the window's 0..POD_STRIPS-1, plus WALL_STRIPS more each side. */
+const WALL_INDICES = Array.from({ length: POD_STRIPS + 2 * WALL_STRIPS }, (_, k) => k - WALL_STRIPS);
+
+/** The manufacturer's sticker on the pod wall. Placeholder copy until the gag is written. */
+function PodSticker() {
+  return (
+    <div className="pod-sticker">
+      {/* i18n-ignore: placeholder sticker copy */}
+      <span className="pod-sticker-brand">MANUFACTURER</span>
+      {/* i18n-ignore: placeholder sticker copy */}
+      <span className="pod-sticker-slogan">Placeholder slogan goes here</span>
+      <span className="pod-sticker-barcode" />
+      {/* i18n-ignore: placeholder sticker copy */}
+      <span className="pod-sticker-serial">MODEL CP-00 · S/N 000-0000</span>
+    </div>
+  );
+}
 
 const GUEST_KEY = "mush2.guest";
 
@@ -68,12 +99,34 @@ export function Lobby({ onMatched }: { onMatched: (ticket: SeatTicket) => void }
   return (
     <main className={sleeping ? "pod pod-sleeping" : "pod"}>
       <LanguageSwitcher />
-      <div className="pod-frame">
-      <div className="pod-glass">
-        <div className="pod-ceiling" aria-hidden="true">
-          <div className="pod-vent">
-            <div className="pod-fan" />
+      <div className="pod-window">
+        <div
+          className="pod-curve"
+          style={{ "--strips": POD_STRIPS, "--wall-strips": WALL_STRIPS } as CSSProperties}
+          aria-hidden="true"
+        >
+          <div className="pod-wall">
+            {WALL_INDICES.map((i) => (
+              <div key={i} className="pod-strip pod-wall-strip" style={{ "--i": i } as CSSProperties}>
+                <div className="pod-wall-face">
+                  <PodSticker />
+                </div>
+              </div>
+            ))}
           </div>
+          {Array.from({ length: POD_STRIPS }, (_, i) => (
+            <div key={i} className="pod-strip" style={{ "--i": i } as CSSProperties}>
+              <div className="pod-frame">
+                <div className="pod-glass">
+                  <div className="pod-ceiling">
+                    <div className="pod-vent">
+                      <div className="pod-fan" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
         <section className="panel pod-panel">
         <h1 className="pod-title">mush2</h1>
@@ -110,7 +163,6 @@ export function Lobby({ onMatched }: { onMatched: (ticket: SeatTicket) => void }
           </div>
         </div>
         </section>
-      </div>
       </div>
     </main>
   );
