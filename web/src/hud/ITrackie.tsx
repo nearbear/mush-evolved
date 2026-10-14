@@ -35,13 +35,19 @@ export function ITrackie({
   view,
   onChat,
   channels,
+  roomLogRequest,
 }: {
   view: PlayerView;
+  /** Bumped each time the player acts; switches to the Room tab to show the result. */
+  roomLogRequest: number;
   onChat: (channel: ChannelId, text: string) => void;
   channels: ChannelHandlers;
 }) {
   const { t } = useTranslation();
   const [tab, setTab] = useState<TabId>("room");
+  useEffect(() => {
+    if (roomLogRequest > 0) setTab("room");
+  }, [roomLogRequest]);
   const here = view.you.room;
   // The server sends this room's public history plus our private entries from
   // anywhere; the Room tab shows what belongs to the room we're standing in.

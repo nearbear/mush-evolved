@@ -27,6 +27,7 @@ export function GameScreen({ ticket, onLeave }: { ticket: SeatTicket; onLeave: (
   // Phone layout only: which panel is on screen, and a door tapped in the room.
   const mobile = useMobile();
   const [panel, setPanel] = useState<MobilePanel>("room");
+  const [roomLogRequest, setRoomLogRequest] = useState(0);
   const [peekDoor, setPeekDoor] = useState<RoomId | null>(null);
   const here = view?.you.room;
   // biome-ignore lint/correctness/useExhaustiveDependencies: `here` is a trigger: arriving somewhere new clears the door peek.
@@ -50,7 +51,12 @@ export function GameScreen({ ticket, onLeave }: { ticket: SeatTicket; onLeave: (
   }, [ticket, onLeave]);
 
   const post = (msg: GameClientMessage) => socketRef.current?.send(JSON.stringify(msg));
-  const send = (action: Action) => post({ type: "action", action });
+  // Acting shows its result: the Room log tab, and on a phone the iTrackie panel.
+  const send = (action: Action) => {
+    post({ type: "action", action });
+    setRoomLogRequest((n) => n + 1);
+    if (mobile) setPanel("itrackie");
+  };
 
   if (!view) return <main className="connecting loading">Connecting…</main>;
   const { you } = view;
@@ -119,6 +125,7 @@ export function GameScreen({ ticket, onLeave }: { ticket: SeatTicket; onLeave: (
 
         <ITrackie
           view={view}
+          roomLogRequest={roomLogRequest}
           onChat={(channel, text) => post({ type: "chat", channel, text })}
           channels={{
             onCreate: (name) => post({ type: "createChannel", name }),
