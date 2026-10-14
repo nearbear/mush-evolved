@@ -5,7 +5,7 @@
 
 import { useState } from "react";
 import type { Action, ItemView, PlayerView, Target } from "@mush2/shared";
-import { EMPTY_SLOT_ICON, itemIcon } from "../art/assets.ts";
+import { EMPTY_SLOT_ICON, EMPTY_SLOT_TILE, itemIcon } from "../art/assets.ts";
 import { sameTarget } from "./targets.ts";
 
 type Zone = "room" | "inventory";
@@ -105,7 +105,7 @@ export function InventoryPanel({
           {Array.from({ length: empty }, (_, i) => (
             <li key={`empty-${i}`} className="item-slot">
               <span className="item-tile empty">
-                <img className="item-icon" src={EMPTY_SLOT_ICON} alt="" />
+                <img className="item-icon" src={EMPTY_SLOT_TILE} alt="" />
                 <span className="item-label">Empty slot</span>
               </span>
             </li>

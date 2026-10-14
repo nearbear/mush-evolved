@@ -455,6 +455,10 @@ h2 {
   cursor: default;
   opacity: 0.5;
 }
+.item-tile.empty .item-icon {
+  object-fit: fill;
+  image-rendering: pixelated;
+}
 .item-tile.dragging {
   opacity: 0.4;
 }
