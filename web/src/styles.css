@@ -15,11 +15,17 @@
   --room-bg: #0a0f1c;
   /* Dark text/strokes on light art (chat field, minimap dots). */
   --ink: #0d1424;
-  /* Glowing-panel surface: fill gradient (top, bottom), glow, bright rim. */
-  --surface-top: #161e42;
-  --surface-bottom: #16213a;
+  /* Panel surface: the flat quote-box fill, plus glow colors for highlights. */
+  --surface-top: var(--panel-fill);
+  --surface-bottom: var(--panel-fill);
   --glow: #3c6eff;
   --glow-rim: #78aaff;
+  /* Panel surface, sampled from the original quote box (design/quote.png):
+     flat fill, 1px rim, soft black shadow. */
+  --panel-fill: #1a1b4a;
+  --panel-rim: #26378c;
+  --panel-shadow: rgb(0 0 0 / 0.55);
+  --panel-radius: 4px;
   --sprite-scale: 2;
   color-scheme: dark;
 }
@@ -310,19 +316,13 @@ h2 {
 .panel {
   padding: 0.75rem;
 }
-/* The shared glowing-panel look. Everything is a token, so a theme only sets variables. */
+/* The shared panel look. Everything is a token, so a theme only sets variables. */
 .panel,
 .top-bar {
-  background: linear-gradient(
-    color-mix(in srgb, var(--surface-top) 92%, transparent),
-    color-mix(in srgb, var(--surface-bottom) 92%, transparent)
-  );
-  border: 1px solid var(--edge);
-  border-radius: 6px;
-  box-shadow:
-    inset 0 0 12px 1px color-mix(in srgb, var(--glow) 45%, transparent),
-    inset 0 0 2px 1px color-mix(in srgb, var(--glow-rim) 70%, transparent),
-    0 0 10px color-mix(in srgb, var(--glow) 30%, transparent);
+  background: var(--panel-fill);
+  border: 1px solid var(--panel-rim);
+  border-radius: var(--panel-radius);
+  box-shadow: 0 0 6px var(--panel-shadow);
 }
 .panel-head {
   display: flex;
@@ -502,7 +502,9 @@ h2 {
 .itrackie-tabs {
   position: relative;
   display: flex;
-  border-bottom: 1px solid var(--edge);
+  gap: 4px;
+  padding: 4px 4px 0;
+  border-bottom: 1px solid var(--panel-rim);
 }
 /* Tabs share the panel look: flat when idle, glowing when active. */
 .itrackie-tab,
@@ -519,6 +521,11 @@ h2 {
   height: 28px;
   padding: 0 0.6rem;
   font-size: 1rem;
+  /* Same rim and corner radius as the panel; rounded on top only, so the active tab joins the panel below. */
+  border: 1px solid var(--panel-rim);
+  border-bottom: 0;
+  border-radius: var(--panel-radius) var(--panel-radius) 0 0;
+  background: color-mix(in srgb, var(--panel-fill) 55%, black);
 }
 .tab-icon {
   height: 18px;
@@ -536,15 +543,19 @@ h2 {
 }
 .itrackie-tab[data-active],
 .bottom-nav-button[aria-current] {
-  background: linear-gradient(
-    color-mix(in srgb, var(--surface-top) 92%, transparent),
-    color-mix(in srgb, var(--surface-bottom) 92%, transparent)
-  );
-  box-shadow:
-    inset 0 0 10px 1px color-mix(in srgb, var(--glow) 45%, transparent),
-    inset 0 -2px 0 var(--glow-rim);
+  background: var(--panel-fill);
   color: var(--text);
   font-weight: bold;
+}
+.bottom-nav-button[aria-current] {
+  border-color: var(--glow-rim);
+}
+.itrackie-tab[data-active] {
+  border-color: var(--glow-rim);
+  /* Cover the bar's divider so the tab opens into the panel. */
+  margin-bottom: -1px;
+  height: 29px;
+  box-shadow: none;
 }
 /* The active tab's name, since the tabs themselves are icons. */
 .itrackie-title {
@@ -1252,14 +1263,18 @@ h2 {
   .bottom-nav {
     flex: none;
     display: flex;
-    padding-bottom: env(safe-area-inset-bottom);
-    background: var(--panel);
-    border-top: 1px solid var(--edge);
+    gap: 4px;
+    padding: 4px 4px calc(4px + env(safe-area-inset-bottom));
+    background: var(--panel-fill);
+    border-top: 1px solid var(--panel-rim);
   }
-  /* Tab look is shared with the iTrackie tabs above. */
+  /* Same rim and radius as the iTrackie tabs above, rounded on all corners since nothing abuts it. */
   .bottom-nav-button {
     height: 44px;
     font-size: 0.85rem;
+    border: 1px solid var(--panel-rim);
+    border-radius: var(--panel-radius);
+    background: color-mix(in srgb, var(--panel-fill) 55%, black);
   }
 
   /* Typing: give the feed and the input everything above the keyboard. */
