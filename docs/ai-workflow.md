@@ -247,3 +247,11 @@ User supplied icon names for 14 tabs. Only Global and Private exist as iTrackie 
 - The user kept multiplayer in the MVP with a simpler model than the existing matchmaker: one queue per language that drops players into an open ship in a pre-selection phase (no Mush yet), forced to start on day 3 cycle 8. The current fill-with-bots timer will be replaced. Not implemented yet.
 - Follow-up the same day (user decisions): a full ship starts early; no minimum player count (1 Mush at 8 or fewer, else 2); no spore actions and no combat during pre-selection; multiplayer has no bots, which are single player only. This settled the long-open "bots in live games" question, so CLAUDE.md, `docs/todo.md`, `docs/mvp-plan.md`, and `docs/rules-design.md` were updated. The assistant's first pass had left these as open questions instead of guessing, which worked: the user answered them directly.
 - Single player (user decision): the human is always the only Mush, against 8 bots who are all human. The assistant noticed that 9 players would get 2 Mush under the multiplayer rule and asked; the user chose an explicit single-player exception. Side effect: bots never need to lie, only investigate, which simplifies the bot design.
+
+### 2026-10-13: ACTOPI and minimap head icons
+
+- **Request:** show small head icons on the minimap, toggled by "ACTOPI"; without it, only `mush.png`, so other players' locations stay secret.
+- **Correction needed:** I first read this as "hide locations", and planned to stop sending other players' rooms. The user clarified that locations stay public and only identities are hidden (a dot on the bridge could be one of two people). That changed the design to room-only entries in `PlayerView.unidentified`, with `room` omitted from `OtherPlayerView` for strangers.
+- **Decided by the user:** ACTOPI is a ship-wide in-game system state, default on, and for now a flag only. Its trigger is undecided.
+- **What worked:** asking before coding found that the old view sent every player's room next to their id, so a client-side toggle alone would have hidden nothing.
+- **Left open:** move log lines in your own room still name the destination ("left for X"), which links a person to a room they walk into.

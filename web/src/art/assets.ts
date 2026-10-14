@@ -18,6 +18,10 @@ const portraits = urls(
   import.meta.glob<string>("../../../Mush/www/img/icons/portraits/*.png", { eager: true, query: "?url", import: "default" }),
 );
 
+const miniPortraits = urls(
+  import.meta.glob<string>("../../../Mush/www/img/icons/portraits/mini/*.png", { eager: true, query: "?url", import: "default" }),
+);
+
 // Full-length character art for the inspector (the files not listed here are site art, not crew).
 const characterArt = urls(
   import.meta.glob<string>(
@@ -56,6 +60,11 @@ export function portrait(character: CharacterId | undefined): string {
   return (character && portraits[PORTRAIT_FILE[character]]) || portraits["shadow"]!;
 }
 
+/** Small head icon, for the minimap. */
+export function portraitMini(character: CharacterId | undefined): string {
+  return (character && miniPortraits[PORTRAIT_FILE[character]]) || miniPortraits["admin"]!;
+}
+
 /** Full-length character illustration (about 210x300), or undefined for an unknown character. */
 export function characterImage(character: CharacterId | undefined): string | undefined {
   return character && characterArt[PORTRAIT_FILE[character]];
@@ -91,10 +100,13 @@ export const MORALE_PIP = design["lifebar2"]!;
 // Tab icons (16x16-ish pixel art). Keys are the names the user chose; see docs/tab-icons.md.
 const uiIcons = urls(
   import.meta.glob<string>(
-    "../../../Mush/www/img/icons/ui/{survival,awake,comm,learned,stock,microsc,neron,infoalert,local,planet,conceptor,talkie,shield,basicplus,goldplus,notebook,pa_cook,pa_garden,pa_pilgred,pa_heal,private,search,spore,wall,fav,triumph}.{png,gif}",
+    "../../../Mush/www/img/icons/ui/{mush,survival,awake,comm,learned,stock,microsc,neron,infoalert,local,planet,conceptor,talkie,shield,basicplus,goldplus,notebook,pa_cook,pa_garden,pa_pilgred,pa_heal,private,search,spore,wall,fav,triumph}.{png,gif}",
     { eager: true, query: "?url", import: "default" },
   ),
 );
+
+/** A person you can see is somewhere but can't identify (ACTOPI off). */
+export const MUSH_ICON = uiIcons["mush"]!;
 
 export const TAB_ICONS = {
   research: uiIcons["microsc"]!,

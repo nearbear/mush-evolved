@@ -322,6 +322,66 @@ describe("viewFor (hidden information)", () => {
     }
   });
 
+  describe("ACTOPI", () => {
+    // p1 and p2 share a room with p0; p3 and p4 are elsewhere, in different rooms; the rest stay put.
+    const spread = (actopi: boolean): GameState => {
+      const state = newGame();
+      state.actopi = actopi;
+      const rooms = Object.keys(DEFAULT_CONFIG.rooms);
+      const here = player(state, "p0").room;
+      const [a, b] = rooms.filter((r) => r !== here);
+      for (const p of state.players) p.room = here;
+      player(state, "p3").room = a!;
+      player(state, "p4").room = b!;
+      return state;
+    };
+
+    it("starts on and tells everyone where everyone is", () => {
+      expect(newGame().actopi).toBe(true);
+      const state = spread(true);
+      const view = viewFor(state, "p0");
+      expect(view.unidentified).toEqual([]);
+      for (const other of view.players) expect(other.room).toBe(player(state, other.id).room);
+    });
+
+    it("off: shows room-only dots for people elsewhere, and who is in your own room", () => {
+      const state = spread(false);
+      const view = viewFor(state, "p0");
+      const [a, b] = [player(state, "p3").room, player(state, "p4").room];
+      expect(view.unidentified).toEqual([a, b].sort());
+      for (const other of view.players) {
+        if (other.id === "p3" || other.id === "p4") expect(other).not.toHaveProperty("room");
+        else expect(other.room).toBe(player(state, "p0").room);
+      }
+    });
+
+    it("off: nothing in the view links a far-away person to a room", () => {
+      const state = spread(false);
+      const json = JSON.stringify(viewFor(state, "p0"));
+      const { room: a } = player(state, "p3");
+      // Their room is only ever sent as a bare entry of `unidentified`, never next to their id, name or character.
+      const entry = JSON.stringify(viewFor(state, "p0").players.find((p) => p.id === "p3"));
+      expect(entry).not.toContain(a);
+      expect(json).toContain(a);
+    });
+
+    it("off: the order of the dots doesn't follow seat order", () => {
+      const state = spread(false);
+      const [a, b] = [player(state, "p3").room, player(state, "p4").room];
+      player(state, "p3").room = b;
+      player(state, "p4").room = a;
+      expect(viewFor(state, "p0").unidentified).toEqual([a, b].sort());
+    });
+
+    it("off: your own room's people stay identified, and you never appear as a dot", () => {
+      const state = spread(false);
+      const view = viewFor(state, "p3");
+      // The six people in the original room, plus p4, all strangers to p3.
+      expect(view.unidentified).toEqual([...Array(6).fill(player(state, "p0").room), player(state, "p4").room].sort());
+      expect(view.players.filter((p) => p.room !== undefined)).toHaveLength(0);
+    });
+  });
+
   it("shows HP and morale only to their owner", () => {
     const state = newGame();
     for (const s of seats) {

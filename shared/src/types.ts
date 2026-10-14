@@ -162,6 +162,12 @@ export interface GameState {
   nextChatId: number;
   channels: PrivateChannel[];
   nextChannelId: number;
+  /**
+   * ACTOPI, a ship system. While on, everyone sees who is in which room. While
+   * off, you still see how many people are in each room, but only know who they
+   * are for the room you are in. Nothing switches it yet (2026-10-13); starts on.
+   */
+  actopi: boolean;
 }
 
 export type Action =
@@ -192,7 +198,8 @@ export interface OtherPlayerView {
   name: string;
   isBot: boolean;
   character: CharacterId;
-  room: RoomId;
+  /** Absent when you can't tell where this person is (ACTOPI off, and they aren't in your room). */
+  room?: RoomId;
   alive: boolean;
   ready: boolean;
 }
@@ -201,6 +208,12 @@ export interface OtherPlayerView {
 export interface PlayerView {
   you: PlayerState;
   players: OtherPlayerView[];
+  /**
+   * One entry per person outside your room whose identity you can't tell
+   * (ACTOPI off): the room they are in, sorted by room so the order says
+   * nothing about who they are. Empty while ACTOPI is on.
+   */
+  unidentified: RoomId[];
   cycle: number;
   phase: GameState["phase"];
   rooms: Record<RoomId, RoomId[]>;

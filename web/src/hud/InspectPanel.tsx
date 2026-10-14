@@ -73,7 +73,7 @@ function Details({ view, resolved }: { view: PlayerView; resolved: Resolved }) {
           </div>
           <dl className="inspect-facts">
             <dt>Location</dt>
-            <dd>{roomLabel(person.room)}</dd>
+            <dd>{person.room ? roomLabel(person.room) : "—"}</dd>
             <dt>Status</dt>
             <dd>{!person.alive ? "Dead" : person.ready ? "Done for this cycle" : "Active"}</dd>
           </dl>

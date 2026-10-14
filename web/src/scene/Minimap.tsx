@@ -1,16 +1,19 @@
 // The whole ship as a small deck plan in the corner of the room view. Your
 // room is drawn in color; every other room is fogged to a grey silhouette,
 // with the people in it as faded dots (everyone's location is public). Doors
-// are marked in the walls.
+// are marked in the walls. Each person is a small head icon. Without ACTOPI you
+// only know who is in your own room; everyone else is a mush.png icon.
 //
 // Collapsed by default. A mouse expands it on hover; touch expands it with a
 // tap. Hovering a room names it; clicking or tapping selects it, and the
 // caption then offers Go when the server says you can move there. Double-click
 // is a shortcut for Go, like doors in the room view. Presentational only.
 
+import { useTranslation } from "react-i18next";
 import { useEffect, useMemo, useState, type CSSProperties, type KeyboardEvent, type PointerEvent } from "react";
 import planJson from "@mush2/assets/derived/ship-plan.json";
 import type { OtherPlayerView, RoomId, ShipPlan } from "@mush2/shared";
+import { MUSH_ICON, portraitMini } from "../art/assets.ts";
 import { roomLabel } from "./names.ts";
 import { cellsPath, runsPath, spots } from "./plan.ts";
 
@@ -18,23 +21,27 @@ const plan = planJson as ShipPlan;
 const shapes = plan.rooms.map((r) => ({ id: r.id, runs: r.runs, d: runsPath(r.runs) }));
 const wallsPath = runsPath(plan.walls);
 
-type Person = Pick<OtherPlayerView, "id" | "name" | "isBot" | "room">;
+type Person = Pick<OtherPlayerView, "id" | "name" | "isBot" | "character" | "room">;
 
 export function Minimap({
   here,
   youId,
   people,
+  unidentified,
   reachable,
   onMove,
 }: {
   /** The room you are in. */
   here: RoomId;
   youId: string;
-  /** Everyone, including you. */
+  /** Everyone you can place, including you. */
   people: Person[];
+  /** Rooms of people you can't identify (ACTOPI off), one entry each. */
+  unidentified: RoomId[];
   reachable: Set<RoomId>;
   onMove: (room: RoomId) => void;
 }) {
+  const { t } = useTranslation();
   const [hovering, setHovering] = useState(false);
   const [opened, setOpened] = useState(false);
   const [selected, setSelected] = useState<RoomId | null>(null);
@@ -56,10 +63,13 @@ export function Minimap({
   const dots = useMemo(
     () =>
       shapes.flatMap((room) => {
-        const inside = people.filter((p) => p.room === room.id).sort((a, b) => a.id.localeCompare(b.id));
-        return spots(room.runs, inside.length).map((at, i) => ({ ...at, person: inside[i]! }));
+        const inside: (Person | undefined)[] = people
+          .filter((p) => p.room === room.id)
+          .sort((a, b) => a.id.localeCompare(b.id));
+        for (const r of unidentified) if (r === room.id) inside.push(undefined);
+        return spots(room.runs, inside.length).map((at, i) => ({ ...at, key: `${room.id}:${i}`, person: inside[i] }));
       }),
-    [people],
+    [people, unidentified],
   );
 
   // Only real pointers hover; a tap shouldn't both expand and select.
@@ -78,6 +88,7 @@ export function Minimap({
 
   const shown = selected ?? pointed;
   const occupants = selected ? people.filter((p) => p.room === selected) : [];
+  const strangers = selected ? unidentified.filter((r) => r === selected).length : 0;
 
   return (
     <section
@@ -133,16 +144,19 @@ export function Minimap({
             d={cellsPath(d.cells)}
           />
         ))}
-        {dots.map(({ x, y, person }) => (
-          <circle
-            key={person.id}
-            className={`minimap-person${person.id === youId ? " you" : ""}${person.room === here ? " near" : ""}`}
-            cx={x}
-            cy={y}
-            r={0.8}
+        {dots.map(({ x, y, key, person }) => (
+          <image
+            key={key}
+            className={`minimap-person${person?.id === youId ? " you" : ""}${person && person.room === here ? " near" : ""}`}
+            href={person ? portraitMini(person.character) : MUSH_ICON}
+            x={x - 1}
+            y={y - 1}
+            width={2}
+            height={2}
+            preserveAspectRatio="xMidYMid meet"
           >
-            <title>{person.isBot ? `${person.name} (AI)` : person.name}</title>
-          </circle>
+            <title>{person ? (person.isBot ? `${person.name} (AI)` : person.name) : t("minimap.unidentified")}</title>
+          </image>
         ))}
       </svg>
       {expanded && (
@@ -154,8 +168,11 @@ export function Minimap({
                 <div className="sub">
                   {selected === here
                     ? "You are here"
-                    : occupants.length
-                      ? occupants.map((p) => (p.isBot ? `${p.name} (AI)` : p.name)).join(", ")
+                    : occupants.length || strangers
+                      ? [
+                          ...occupants.map((p) => (p.isBot ? `${p.name} (AI)` : p.name)),
+                          ...(strangers ? [t("minimap.unidentifiedCount", { count: strangers })] : []),
+                        ].join(", ")
                       : "Nobody here"}
                 </div>
               )}

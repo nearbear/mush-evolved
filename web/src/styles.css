@@ -909,19 +909,16 @@ h2 {
   opacity: 1;
 }
 .minimap-person {
-  fill: #d8dce4;
-  opacity: 0.5;
+  opacity: 0.55;
+  image-rendering: pixelated;
   pointer-events: none;
 }
 .minimap-person.near {
-  fill: var(--ink);
   opacity: 1;
 }
 .minimap-person.you {
-  fill: #fff;
-  stroke: var(--ink);
-  stroke-width: 0.35;
   opacity: 1;
+  filter: drop-shadow(0 0 0.25px #fff) drop-shadow(0 0 0.25px #fff);
 }
 .minimap-caption {
   display: flex;

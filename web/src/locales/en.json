@@ -11,6 +11,10 @@
     "awaitingCrew": "Awaiting crew",
     "nearlyFull": "Nearly full"
   },
+  "minimap": {
+    "unidentified": "Unidentified",
+    "unidentifiedCount": "{{count}} unidentified"
+  },
   "nav": {
     "panels": "Panels",
     "inspect": "Inspect",

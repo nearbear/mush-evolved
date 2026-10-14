@@ -11,6 +11,10 @@
     "awaitingCrew": "Esperando tripulación",
     "nearlyFull": "Casi completa"
   },
+  "minimap": {
+    "unidentified": "Sin identificar",
+    "unidentifiedCount": "{{count}} sin identificar"
+  },
   "nav": {
     "panels": "Paneles",
     "inspect": "Inspeccionar",

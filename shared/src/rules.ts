@@ -26,6 +26,7 @@ import type {
   PlayerId,
   PlayerState,
   PlayerView,
+  RoomId,
   Seat,
 } from "./types.ts";
 
@@ -76,6 +77,7 @@ export function createGame(seats: readonly Seat[], config: GameConfig, seed: num
     nextChatId: 1,
     channels: [],
     nextChannelId: 1,
+    actopi: true,
   };
 }
 
@@ -119,12 +121,25 @@ function advanceCycle(state: GameState): void {
 export function viewFor(state: GameState, playerId: PlayerId): PlayerView {
   const you = findPlayer(state, playerId);
   if (!you) throw new Error(`Unknown player ${playerId}`);
+  const others = state.players.filter((p) => p.id !== playerId);
+  // Without ACTOPI, anyone outside your room is a room-only dot: no identity, so no room on their entry.
+  const located = (room: RoomId) => state.actopi || room === you.room;
   return {
     you: { ...you },
     // TODO(rules): should Mush see each other's roles? Hidden for now.
-    players: state.players
-      .filter((p) => p.id !== playerId)
-      .map(({ id, name, isBot, character, room, alive, ready }) => ({ id, name, isBot, character, room, alive, ready })),
+    players: others.map(({ id, name, isBot, character, room, alive, ready }) => ({
+      id,
+      name,
+      isBot,
+      character,
+      ...(located(room) ? { room } : {}),
+      alive,
+      ready,
+    })),
+    unidentified: others
+      .filter((p) => !located(p.room))
+      .map((p) => p.room)
+      .sort(),
     cycle: state.cycle,
     phase: state.phase,
     rooms: state.config.rooms,

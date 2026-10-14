@@ -109,7 +109,7 @@ export function GameScreen({ ticket, onLeave }: { ticket: SeatTicket; onLeave: (
             ) : (
               <section className="iso-room loading">Loading ship…</section>
             )}
-            <Minimap here={you.room} youId={you.id} people={[you, ...view.players]} reachable={reachable} onMove={move} />
+            <Minimap here={you.room} youId={you.id} people={[you, ...view.players]} unidentified={view.unidentified} reachable={reachable} onMove={move} />
           </div>
           {!mobile && (
             <>
