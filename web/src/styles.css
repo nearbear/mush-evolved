@@ -168,16 +168,37 @@ h2 {
   height: 40px;
   image-rendering: pixelated;
 }
-.role {
-  text-transform: uppercase;
-  font-size: 0.75rem;
-  font-weight: bold;
-  padding: 0.15rem 0.5rem;
-  border-radius: 3px;
-  background: var(--badge);
+/* The player's card: faction icon (hover, focus, or tap for its goal) left of the name. */
+.nameplate {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.2rem 0.6rem 0.2rem 0.3rem;
+  border: 1px solid var(--edge);
+  border-left: 3px solid var(--badge);
+  border-radius: 4px;
+  background: var(--panel);
 }
-.role.mush {
-  background: var(--mush);
+.nameplate:has(.faction-card.mush) {
+  border-left-color: var(--mush);
+}
+.faction-card {
+  display: inline-flex;
+  flex: none;
+  cursor: help;
+  border-radius: 3px;
+}
+.faction-icon {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+  image-rendering: pixelated;
+}
+.faction-goals {
+  max-width: 16rem;
+}
+.faction-goals p {
+  margin: 0.25rem 0 0;
 }
 /* AP / MP bars: the original 5x5 pips, drawn at 2x without smoothing. */
 .pip-bar {
@@ -1050,9 +1071,12 @@ h2 {
     width: 32px;
     height: 32px;
   }
-  /* Name, role, and both buttons share the first row; a long name gets cut off. */
-  .top-bar .who {
+  /* Nameplate and both buttons share the first row; a long name gets cut off. */
+  .top-bar .nameplate {
     flex: 1 1 0;
+    min-width: 0;
+  }
+  .top-bar .who {
     min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;

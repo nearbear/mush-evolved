@@ -21,6 +21,22 @@
     "room": "Salle",
     "itrackie": "iTrackie"
   },
+  "faction": {
+    "about": "{{name}} : ce que veut votre camp",
+    "human": {
+      "name": "Humain",
+      "goal": "Éliminer les Mush."
+    },
+    "mush": {
+      "goal": "Empêcher la recherche du remède et éviter d'être éliminé."
+    },
+    "alphaMush": {
+      "name": "Mush alpha"
+    },
+    "betaMush": {
+      "name": "Mush bêta"
+    }
+  },
   "actions": {
     "examine": "Examiner",
     "dispense": "Tirer un café",

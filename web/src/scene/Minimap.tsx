@@ -1,7 +1,7 @@
 // The whole ship as a small deck plan in the corner of the room view. Your
 // room is drawn in color; every other room is fogged to a grey silhouette,
 // with the people in it as faded dots (everyone's location is public). Doors
-// are marked in the walls. Each person is a small head icon. Without ACTOPI you
+// are marked in the walls. Each person is a small character bust. Without ACTOPI you
 // only know who is in your own room; everyone else is a mush.png icon.
 //
 // Collapsed by default. A mouse expands it on hover; touch expands it with a
@@ -13,7 +13,7 @@ import { useTranslation } from "react-i18next";
 import { useEffect, useMemo, useState, type CSSProperties, type KeyboardEvent, type PointerEvent } from "react";
 import planJson from "@mush2/assets/derived/ship-plan.json";
 import type { OtherPlayerView, RoomId, ShipPlan } from "@mush2/shared";
-import { MUSH_ICON, portraitMini } from "../art/assets.ts";
+import { MUSH_ICON, bustIcon } from "../art/assets.ts";
 import { roomLabel } from "./names.ts";
 import { cellsPath, runsPath, spots } from "./plan.ts";
 
@@ -148,7 +148,7 @@ export function Minimap({
           <image
             key={key}
             className={`minimap-person${person?.id === youId ? " you" : ""}${person && person.room === here ? " near" : ""}`}
-            href={person ? portraitMini(person.character) : MUSH_ICON}
+            href={person ? bustIcon(person.character) : MUSH_ICON}
             x={x - 1}
             y={y - 1}
             width={2}
