@@ -146,7 +146,6 @@ export function IsoRoom({
 
   /** The interactive sprite visibly under the pointer, if any. Scenery in front blocks what's behind it. */
   const pick = (e: MouseEvent<HTMLElement>) => {
-    if ((e.target as Element).closest(".iso-tag")) return null; // name tags handle their own clicks
     const rect = e.currentTarget.getBoundingClientRect();
     const x = (e.clientX - rect.left) + box.minX;
     const y = (e.clientY - rect.top) + box.minY;
@@ -242,24 +241,6 @@ export function IsoRoom({
               );
             })}
           </div>
-          {/* Name tags sit outside the pixel layer so text stays sharp. */}
-          {sprites
-            .filter((s) => s.kind === "actor")
-            .map((s) => {
-              const o = byId.get(s.key.slice(2))!;
-              return (
-                <div
-                  key={`tag:${s.key}`}
-                  className={`iso-tag${o.you ? " you" : ""}${isSelected("player", o.id) ? " selected" : ""}`}
-                  onClick={() => onSelect({ kind: "player", id: o.id })}
-                  style={{ left: (s.left - box.minX + s.width / 2), top: (s.top - box.minY) }}
-                  title={o.name}
-                >
-                  {o.name}
-                  {o.isBot && <span className="tag">AI</span>}
-                </div>
-              );
-            })}
         </div>
       </div>
     </section>

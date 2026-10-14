@@ -69,7 +69,7 @@ Options: `npm run screenshot -- --name Alice --out <dir> --url <web> --server <p
 
 Read the PNGs with the Read tool. **Actually look** before reporting. Check what the change was supposed to affect, and also glance for regressions:
 
-- Isometric room: walls, floor, and furniture in the right order; people standing on the floor, not inside machinery; name tags readable.
+- Isometric room: walls, floor, and furniture in the right order; people standing on the floor, not inside machinery.
 - Top bar: AP (pink `pa1`) and MP (cyan `pa2`) pips match the numbers next to them.
 - Panels: inspect on the left, iTrackie tabs on the right, nothing overflowing or clipped.
 
