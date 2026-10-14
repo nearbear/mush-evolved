@@ -63,6 +63,8 @@ export interface Equipment {
 
 export interface PlayerState extends Seat {
   role: Role;
+  /** Mush chosen at the start ("alpha"; later infections are "beta"). Player terminology only; no mechanics use it. */
+  alpha: boolean;
   room: RoomId;
   ap: number;
   /** Movement points. Start at 0; topped up by converting AP when moving. */

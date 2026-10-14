@@ -255,3 +255,15 @@ User supplied icon names for 14 tabs. Only Global and Private exist as iTrackie 
 - **Decided by the user:** ACTOPI is a ship-wide in-game system state, default on, and for now a flag only. Its trigger is undecided.
 - **What worked:** asking before coding found that the old view sent every player's room next to their id, so a client-side toggle alone would have hidden nothing.
 - **Left open:** move log lines in your own room still name the destination ("left for X"), which links a person to a room they walk into.
+
+### 2026-10-13: Player nameplate with faction icon
+
+- **Decided by the user:** replace the text role badge with a card: faction icon (human, `starter.png` for alpha Mush, `mush_progressive.png` for beta Mush) with a hover goal popover; avatar inside the nameplate, faction on the right; flat blue background like an empty item slot, also behind the AP/MP and HP/morale stacks; fuchsia and light blue as faction colors (`--mush`, `--human` tokens, currently unused).
+- **Decided by the assistant, with approval implied:** green `p_alive` astronaut as the human icon; a new `alpha` flag on `PlayerState` (own view only) since the state didn't record initial Mush; a Base UI popover instead of the tooltip because touch has no hover; `STATE_VERSION` bumped to 12.
+- **Needed correction:** I wrote invented human goals into the tooltip and had to cut it to what the user said. I over-read "no styling" and removed the background the user wanted. The stat stacks first had padding but not the nameplate's height; fixed with flex stretch. A browser `EMPTY_SLOT_ICON is not defined` error was a stale hot reload, not a code bug. A visual check was never run.
+
+### 2026-10-13: Nameplate restyle and stat stack layout (follow-up)
+
+- **Decided by the user:** the nameplate is an MUI-style outlined card (1px outline in the faction color, same color at 25% opacity over the slot blue); the Mush color is sampled from the pink of `design/logo.png` (`#ff4c84`, the assistant did the sampling in headless Chromium since WSL has no image tools); the character name is a small white label with the item-label shadow; stat labels and values are white with a text shadow; on phones the two stat stacks sit side by side at equal widths.
+- **Decided by the assistant:** stacked backgrounds (a one-color gradient over the slot image) as the overlay instead of a pseudo-element; scoping the stat text color to `.stat-stack`; keeping the stacks content-sized in landscape phones so equal flex doesn't collapse them.
+- **Needed correction:** several rounds on text contrast (dark ink on bright plate, then muted gray on the tinted fill) before the user's own label-shadow idea fixed it; I over-saturated the first fuchsia. The 360px fit of the AP stack (12 pips) is a known risk and was never checked visually.

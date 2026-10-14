@@ -2,9 +2,10 @@
 // self panel under the room on desktop and in the top bar on phones.
 
 import { CHARACTERS, type PlayerView } from "@mush2/shared";
+import type { CSSProperties } from "react";
 import { Popover } from "@base-ui/react/popover";
 import { useTranslation } from "react-i18next";
-import { AP_PIP, FACTION_ICONS, HP_PIP, MORALE_PIP, MP_PIP, portrait } from "../art/assets.ts";
+import { AP_PIP, EMPTY_SLOT_ICON, FACTION_ICONS, HP_PIP, MORALE_PIP, MP_PIP, portrait } from "../art/assets.ts";
 import { PipBar } from "./PipBar.tsx";
 
 /** Which faction you belong to, with its goal in a popover (hover, focus, or tap: touch has no hover). */
@@ -41,16 +42,16 @@ export function PlayerSummary({ view }: { view: PlayerView }) {
   const { you } = view;
   const character = CHARACTERS.find((c) => c.id === you.character);
   return (
-    <div className="player-summary">
-      <img className="avatar" src={portrait(you.character)} alt="" />
-      <div className="nameplate">
-        <FactionCard view={view} />
+    <div className="player-summary" style={{ "--plate-bg": `url(${EMPTY_SLOT_ICON})` } as CSSProperties}>
+      <div className={`nameplate ${you.role}`}>
+        <img className="avatar" src={portrait(you.character)} alt="" />
         <div className="who">
           <strong>{you.name}</strong>
           {character && <div className="sub character-name">{character.name}</div>}
           {/* The phone layout shows the cycle here instead of on its own. */}
           <div className="sub cycle-under-name">Cycle {view.cycle}</div>
         </div>
+        <FactionCard view={view} />
       </div>
       <div className="stats">
         <div className="stat-stack">

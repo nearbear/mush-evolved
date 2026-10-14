@@ -5,7 +5,9 @@
   --text: #dfe6f5;
   --muted: #8796b8;
   --accent: #4fc3f7;
-  --mush: #c86bd8;
+  /* Faction colors: use these for every faction indicator in the UI. */
+  --mush: #ff4c84; /* sampled from the pink of the original MUSH logo (design/logo.png) */
+  --human: #7cc8ff;
   --danger: #ff6b81;
   /* Gold: selection outlines, glows, highlighted map cells. */
   --highlight: #f5c542;
@@ -159,6 +161,8 @@ h2 {
 .stats {
   display: flex;
   gap: 0.75rem;
+  /* Match the nameplate's height; the stacks inside stretch to fill it. */
+  align-self: stretch;
 }
 .cycle-under-name {
   display: none;
@@ -168,25 +172,59 @@ h2 {
   height: 40px;
   image-rendering: pixelated;
 }
-/* The player's card: faction icon (hover, focus, or tap for its goal) left of the name. */
+/* The nameplate and both stat stacks sit on the same flat blue as an empty item slot (--plate-bg is set by PlayerSummary). */
+.nameplate,
+.stat-stack {
+  border-radius: 4px;
+  background-image: var(--plate-bg);
+  background-size: cover;
+}
+/* Avatar, name, and faction icon (hover, focus, or tap for its goal). */
 .nameplate {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  padding: 0.2rem 0.6rem 0.2rem 0.3rem;
-  border: 1px solid var(--edge);
-  border-left: 3px solid var(--badge);
-  border-radius: 4px;
-  background: var(--panel);
+  padding: 0.25rem 0.6rem 0.25rem 0.3rem;
 }
-.nameplate:has(.faction-card.mush) {
-  border-left-color: var(--mush);
+/*
+ * Outlined card, like MUI's: a 1px outline in the faction color, filled with the same
+ * color at low opacity laid over the slot blue (a one-color gradient is the overlay).
+ */
+.nameplate {
+  --faction: var(--human);
+  --overlay: color-mix(in srgb, var(--faction) 25%, transparent);
+  border: 1px solid var(--faction);
+  background-image: linear-gradient(var(--overlay), var(--overlay)), var(--plate-bg);
+}
+.nameplate.mush {
+  --faction: var(--mush);
+}
+/* The usual muted gray-blue is too faint on the tinted fill. */
+.nameplate .sub {
+  color: var(--text);
+}
+/* The character's name is a small label along the bottom edge, like an item tile's label. */
+.nameplate {
+  position: relative;
+  overflow: hidden;
+}
+.nameplate .character-name {
+  position: absolute;
+  inset: auto 0 0 0;
+  padding: 8px 4px 1px;
+  background: linear-gradient(transparent, rgba(0, 0, 0, 0.85));
+  color: #fff;
+  font-size: 0.65rem;
+  line-height: 1.1;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .faction-card {
   display: inline-flex;
   flex: none;
   cursor: help;
-  border-radius: 3px;
 }
 .faction-icon {
   width: 32px;
@@ -229,8 +267,17 @@ h2 {
 }
 /* Two pip bars on top of each other, labels in one column so the pips line up. */
 .stat-stack {
-  display: grid;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
   gap: 3px;
+  padding: 0.25rem 0.5rem;
+}
+/* Labels and values: white with a dark shadow, since the muted gray is too faint on the slot blue. */
+.stat-stack .pip-label,
+.stat-stack .pip-bar .sub {
+  color: #fff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.85);
 }
 .stat-stack .pip-label {
   min-width: 1.4rem;
@@ -1101,8 +1148,13 @@ h2 {
   .top-bar .stats {
     order: 1;
     flex-basis: 100%;
-    flex-wrap: wrap;
-    gap: 0.25rem 0.55rem;
+    gap: 0.4rem;
+  }
+  /* Side by side, one row, equal widths. */
+  .top-bar .stat-stack {
+    flex: 1 1 0;
+    min-width: 0;
+    padding: 0.25rem 0.3rem;
   }
   .pip-bar {
     gap: 1px;
@@ -1230,6 +1282,10 @@ h2 {
     order: 0;
     flex-basis: auto;
     flex-wrap: nowrap;
+  }
+  /* The stats share the row with the name, so the stacks size to their content. */
+  .top-bar .stat-stack {
+    flex: none;
   }
   .bottom-nav-button {
     height: 32px;

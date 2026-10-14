@@ -47,6 +47,7 @@ export function createGame(seats: readonly Seat[], config: GameConfig, seed: num
   const players: PlayerState[] = seats.map((s) => ({
     ...s,
     role: mushIds.has(s.id) ? "mush" : "human",
+    alpha: mushIds.has(s.id),
     room: config.startRoom,
     ap: config.startAp,
     mp: 0,
