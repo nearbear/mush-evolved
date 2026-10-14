@@ -98,8 +98,8 @@ type Step = (name: string, run: () => Promise<void>) => Promise<void>;
 
 async function join(page: Page, name: string): Promise<void> {
   await page.goto(args.url!);
-  await page.getByPlaceholder("Your name").fill(name);
-  await page.getByRole("button", { name: "Find game" }).click();
+  // The lobby lists one ship per language and names you "Guest N", so `name` only labels the log here.
+  await page.getByRole("button", { name: /English/ }).click();
   await page.locator(".three-panel").waitFor({ timeout: MATCH_TIMEOUT_MS });
   await waitForArt(page);
   console.log(`      room: ${await page.locator(".room-title").innerText()}`);
