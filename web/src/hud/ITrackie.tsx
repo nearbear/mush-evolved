@@ -61,52 +61,54 @@ export function ITrackie({
           <IconTab value="features" src={TAB_ICONS.features} label={t("itrackie.tabs.features")} />
           <IconTab value="private" src={TAB_ICONS.private} label={t("channels.tab")} />
         </Tabs.List>
-        <h2 className="itrackie-title">{t(TAB_TITLES[tab])}</h2>
+        <div className="itrackie-card">
+          <h2 className="itrackie-title">{t(TAB_TITLES[tab])}</h2>
 
-        {/* keepMounted: hidden with CSS, so chat drafts survive switching tabs. */}
-        <Tabs.Panel className="itrackie-panel" value="room" keepMounted>
-          <div className="sub itrackie-caption">{roomLabel(here)}</div>
-          <Scroller items={roomLog.length}>
-            <ol className="feed">
-              {roomLog.map((e, i) => (
-                <li key={i} className={e.visibleTo === "all" ? undefined : "private"}>
-                  <span className="sub">[{e.cycle}]</span> {e.text}
-                </li>
-              ))}
-            </ol>
-          </Scroller>
-        </Tabs.Panel>
+          {/* keepMounted: hidden with CSS, so chat drafts survive switching tabs. */}
+          <Tabs.Panel className="itrackie-panel" value="room" keepMounted>
+            <div className="sub itrackie-caption">{roomLabel(here)}</div>
+            <Scroller items={roomLog.length}>
+              <ol className="feed">
+                {roomLog.map((e, i) => (
+                  <li key={i} className={e.visibleTo === "all" ? undefined : "private"}>
+                    <span className="sub">[{e.cycle}]</span> {e.text}
+                  </li>
+                ))}
+              </ol>
+            </Scroller>
+          </Tabs.Panel>
 
-        <Tabs.Panel className="itrackie-panel" value="global" keepMounted>
-          <Thread view={view} channel="global" placeholder="Message everyone…" onSend={(text) => onChat("global", text)} />
-        </Tabs.Panel>
+          <Tabs.Panel className="itrackie-panel" value="global" keepMounted>
+            <Thread view={view} channel="global" placeholder="Message everyone…" onSend={(text) => onChat("global", text)} />
+          </Tabs.Panel>
 
-        <Tabs.Panel className="itrackie-panel" value="features" keepMounted>
-          <FeatureSelect value={feature} onChange={setFeature} />
-          {/* One block per feature, hidden with CSS, so each keeps its own draft. */}
-          {FEATURE_CHANNELS.map((f) => {
-            const name = t(`itrackie.features.${f}`);
-            return (
-            <div key={f} className="feature" hidden={f !== feature}>
-              {carrying ? (
-                <Tracker notes={notes[f]} onChange={(next) => setNotes((all) => ({ ...all, [f]: next }))} />
-              ) : (
-                <p className="sub">You need an iTrackie in your inventory to track anything.</p>
-              )}
-              <Thread
-                view={view}
-                channel={f}
-                placeholder={`Message the ${name} thread…`}
-                onSend={(text) => onChat(f, text)}
-              />
-            </div>
-            );
-          })}
-        </Tabs.Panel>
+          <Tabs.Panel className="itrackie-panel" value="features" keepMounted>
+            <FeatureSelect value={feature} onChange={setFeature} />
+            {/* One block per feature, hidden with CSS, so each keeps its own draft. */}
+            {FEATURE_CHANNELS.map((f) => {
+              const name = t(`itrackie.features.${f}`);
+              return (
+              <div key={f} className="feature" hidden={f !== feature}>
+                {carrying ? (
+                  <Tracker notes={notes[f]} onChange={(next) => setNotes((all) => ({ ...all, [f]: next }))} />
+                ) : (
+                  <p className="sub">You need an iTrackie in your inventory to track anything.</p>
+                )}
+                <Thread
+                  view={view}
+                  channel={f}
+                  placeholder={`Message the ${name} thread…`}
+                  onSend={(text) => onChat(f, text)}
+                />
+              </div>
+              );
+            })}
+          </Tabs.Panel>
 
-        <Tabs.Panel className="itrackie-panel" value="private" keepMounted>
-          <PrivateChannels view={view} onChat={onChat} {...channels} />
-        </Tabs.Panel>
+          <Tabs.Panel className="itrackie-panel" value="private" keepMounted>
+            <PrivateChannels view={view} onChat={onChat} {...channels} />
+          </Tabs.Panel>
+        </div>
       </Tabs.Root>
     </div>
   );

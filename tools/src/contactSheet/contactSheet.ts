@@ -5,7 +5,8 @@
 //   npm run contact-sheet -- Mush/www/img/design --match "^but" --zoom 4 --bg "#0d1424"
 //
 // Each sheet is a PNG in --out (default .screenshots/contact/), one cell per
-// image over a checkerboard so transparency shows. Prints each sheet's path.
+// image over a checkerboard so transparency shows. Prints each sheet's path,
+// then each image's natural size (WxH), which reading the file can't give us.
 
 import { mkdirSync, readdirSync, writeFileSync } from "node:fs";
 import { basename, resolve } from "node:path";
@@ -69,6 +70,10 @@ try {
     const png = resolve(out, `${basename(dir)}-${String(i / per).padStart(2, "0")}.png`);
     await page.screenshot({ path: png, fullPage: true });
     console.log(png);
+    const sizes = await page.$$eval("figure", (figs) =>
+      figs.map((f) => `${f.querySelector("figcaption")!.textContent}\t${f.querySelector("img")!.naturalWidth}x${f.querySelector("img")!.naturalHeight}`),
+    );
+    for (const line of sizes) console.log(`  ${line}`);
   }
 } finally {
   await browser.close();

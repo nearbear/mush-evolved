@@ -178,12 +178,13 @@ h2 {
   height: 40px;
   image-rendering: pixelated;
 }
-/* The nameplate and both stat stacks sit on the same flat blue as an empty item slot (--plate-bg is set by PlayerSummary). */
+/* Outlined cards: the nameplate and both stat stacks. The flat quote-box look (fill, 1px rim, soft shadow). */
 .nameplate,
 .stat-stack {
-  border-radius: 4px;
-  background-image: var(--plate-bg);
-  background-size: cover;
+  background: var(--panel-fill);
+  border: 1px solid var(--panel-rim);
+  border-radius: var(--panel-radius);
+  box-shadow: 0 0 6px var(--panel-shadow);
 }
 /* Avatar, name, and faction icon (hover, focus, or tap for its goal). */
 .nameplate {
@@ -194,13 +195,13 @@ h2 {
 }
 /*
  * Outlined card, like MUI's: a 1px outline in the faction color, filled with the same
- * color at low opacity laid over the slot blue (a one-color gradient is the overlay).
+ * color at low opacity laid over the card fill (a one-color gradient is the overlay).
  */
 .nameplate {
   --faction: var(--human);
   --overlay: color-mix(in srgb, var(--faction) 25%, transparent);
   border: 1px solid var(--faction);
-  background-image: linear-gradient(var(--overlay), var(--overlay)), var(--plate-bg);
+  background: linear-gradient(var(--overlay), var(--overlay)), var(--panel-fill);
 }
 .nameplate.mush {
   --faction: var(--mush);
@@ -313,13 +314,42 @@ h2 {
 .panel {
   padding: 0.75rem;
 }
-/* The shared panel look. Everything is a token, so a theme only sets variables. */
+/*
+ * The shared panel look: the original tooltip frame (design/tiptop, tipbg, tipbottom, 247px wide): a
+ * glowing 16px cap on top and bottom, with 1px body rows stretched between. Each piece is three-sliced
+ * sideways with border-image (10px ends kept, middle stretched; it's uniform side to side). The body is
+ * the panel's own border-image; the caps are ::before and ::after, behind the content.
+ */
 .panel,
 .top-bar {
-  background: var(--panel-fill);
-  border: 1px solid var(--panel-rim);
-  border-radius: var(--panel-radius);
+  position: relative;
+  isolation: isolate;
+  border: 0 solid;
+  border-image: url("../../Mush/www/img/design/tipbg.png") 0 10 fill / 0 10px stretch;
   box-shadow: 0 0 6px var(--panel-shadow);
+}
+.panel::before,
+.panel::after,
+.top-bar::before,
+.top-bar::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  left: 0;
+  right: 0;
+  height: 16px;
+  border: 0 solid;
+  pointer-events: none;
+}
+.panel::before,
+.top-bar::before {
+  top: 0;
+  border-image: url("../../Mush/www/img/design/tiptop.png") 0 10 fill / 0 10px stretch;
+}
+.panel::after,
+.top-bar::after {
+  bottom: 0;
+  border-image: url("../../Mush/www/img/design/tipbottom.png") 0 10 fill / 0 10px stretch;
 }
 .panel-head {
   display: flex;
@@ -497,15 +527,27 @@ h2 {
   display: flex;
   flex-direction: column;
   height: 560px;
-  padding: 0;
+  padding: 0.5rem;
   overflow: hidden;
 }
+/* Above the card, so the active tab can cover the card's top rim. */
 .itrackie-tabs {
   position: relative;
+  z-index: 1;
   display: flex;
   gap: 4px;
-  padding: 4px 4px 0;
-  border-bottom: 1px solid var(--panel-rim);
+  padding: 0 4px;
+}
+/* The tab contents: an outlined card (like the nameplate and stat stacks) filling the glowing panel under the tabs. */
+.itrackie-card {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  background: var(--panel-fill);
+  border: 1px solid var(--panel-rim);
+  border-radius: var(--panel-radius);
+  box-shadow: 0 0 6px var(--panel-shadow);
 }
 /* Tabs share the panel look: flat when idle, glowing when active. */
 .itrackie-tab,
@@ -553,7 +595,7 @@ h2 {
 }
 .itrackie-tab[data-active] {
   border-color: var(--glow-rim);
-  /* Cover the bar's divider so the tab opens into the panel. */
+  /* Cover the card's top rim so the tab opens into the card. */
   margin-bottom: -1px;
   height: 29px;
   box-shadow: none;
@@ -1119,8 +1161,6 @@ h2 {
     flex-wrap: wrap;
     gap: 0.35rem 0.5rem;
     padding: 0.35rem 0.3rem;
-    border-width: 0 0 1px;
-    border-radius: 0;
   }
   /* The summary's pieces become top-bar flex items. */
   .top-bar .player-summary {

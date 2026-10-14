@@ -298,3 +298,10 @@ User supplied icon names for 14 tabs. Only Global and Private exist as iTrackie 
 - The user approved the GitHub Projects setup, so `docs/todo.md` was deleted (it stays in git history) and every pointer to it was moved to the issues: CLAUDE.md "Open decisions" (with the `gh` commands to search and read issues), the README, `docs/mvp-plan.md`, `docs/rules-design.md`, `docs/code-map.md`, and the `rule` skill (which now reads the rule's issue and its comments, where the owner may answer). Historical log entries were left alone.
 - The `wrap-up` skill gained an issues step, at the user's request: `Fixes #N` in the commit for finished work (the issue closes when the push reaches `main`, not before), `Refs #N` plus ticked checklist items for partial work, a comment and label removal for answered rule decisions, and follow-up issues only proposed, created after a yes.
 - The migration footer on all 135 issue bodies said `todo.md` was still the source; it was updated to say the file is retired.
+
+### 2026-10-13: Panel frame from the tooltip sprites; outline cards inside
+
+- Panels and the top bar now use the original tooltip frame (`design/tiptop`, `tipbg`, `tipbottom`), each piece three-sliced sideways with `border-image`. A first try with stacked `background` layers showed stray vertical lines 247px in from each edge (a layer can't crop the far side's border column); `border-image` slices properly.
+- The old flat quote-box look moved to "outline cards": the nameplate, the stat stacks, and a card filling the iTrackie under its tabs (the active tab overlaps the card's top rim by 1px so it opens into it with no line).
+- Corrections: I read "use the blue from before" as the card fill and reverted the cards, when the user meant the pip-bar frame tint (back to #3d5fc4, which only clashed with the old slot-blue card). I then made the whole iTrackie a card, when the user wanted the glowing panel kept with a card inside. Both were quick to undo; asking which element was meant would have been cheaper.
+- `npm run contact-sheet` now prints each image's natural size, since reading `Mush/www` is denied and WSL has no image tools.

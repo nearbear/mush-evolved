@@ -2,7 +2,7 @@
 
 Descriptions of `Mush/www/img/design/*` (325 files, the old website chrome), written 2026-10-13 from contact sheets (`npm run contact-sheet -- Mush/www/img/design --zoom 2`, plus zoomed sheets of the tiny files). Names are Motion Twin's. Descriptions say what the picture shows. Meaning in the original site is a guess where marked **(?)**. `_over` is a hover variant and `_on` a pressed/active one, so only the base file is listed unless the variants differ. `.gif` files are animated. Icons live in `Mush/www/img/icons/ui`, see `icon-catalog.md`.
 
-**Already used by the game:** `bg.jpg`, `bg_start.jpg`, `but*` (3-slice buttons), `buttonchat`, `chatbox`, `loading51.gif`, `pa1`, `pa2`, `lifebar`, `lifebar2`.
+**Already used by the game:** `bg.jpg`, `bg_start.jpg`, `but*` (3-slice buttons), `buttonchat`, `chatbox`, `loading51.gif`, `pa1`, `pa2`, `lifebar`, `lifebar2`, `tiptop`, `tipbg`, `tipbottom` (panel frame).
 
 **Do not use (trademark or marketing):** the `logo*` files, `twinoid.png`, `mush_stamp.png`, `beta.png`, `tag*.png` ribbons. Shop and promo art (`pack*`, `gold_*`, `goldbanner*`, `goldframe*`, `goldplus`, `rank_*`) is not a fit for the game. See `docs/mush-assets.md`.
 
