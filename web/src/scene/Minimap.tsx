@@ -21,6 +21,9 @@ const plan = planJson as ShipPlan;
 const shapes = plan.rooms.map((r) => ({ id: r.id, runs: r.runs, d: runsPath(r.runs) }));
 const wallsPath = runsPath(plan.walls);
 
+/** Size of a person's icon, in map cells. */
+const ICON = 3.2;
+
 type Person = Pick<OtherPlayerView, "id" | "name" | "isBot" | "character" | "room">;
 
 export function Minimap({
@@ -149,10 +152,10 @@ export function Minimap({
             key={key}
             className={`minimap-person${person?.id === youId ? " you" : ""}${person && person.room === here ? " near" : ""}`}
             href={person ? bustIcon(person.character) : MUSH_ICON}
-            x={x - 1}
-            y={y - 1}
-            width={2}
-            height={2}
+            x={x - ICON / 2}
+            y={y - ICON / 2}
+            width={ICON}
+            height={ICON}
             preserveAspectRatio="xMidYMid meet"
           >
             <title>{person ? (person.isBot ? `${person.name} (AI)` : person.name) : t("minimap.unidentified")}</title>
