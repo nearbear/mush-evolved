@@ -863,8 +863,9 @@ h2 {
   flex-direction: column;
   touch-action: manipulation;
 }
-/* Scrolls when the room is bigger than the panel (phones never shrink below 1x). */
+/* Pans (touch or wheel) when the room is bigger than the panel; never shows a scrollbar. */
 .iso-scroll {
+  scrollbar-width: none;
   position: relative;
   flex: 1;
   min-height: 0;
@@ -884,6 +885,9 @@ h2 {
   position: relative;
   flex: none;
   margin: auto;
+}
+.iso-scroll::-webkit-scrollbar {
+  display: none;
 }
 .iso-layer {
   position: absolute;

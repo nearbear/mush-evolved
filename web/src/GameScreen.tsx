@@ -100,8 +100,6 @@ export function GameScreen({ ticket, onLeave }: { ticket: SeatTicket; onLeave: (
                 reachable={reachable}
                 selected={target}
                 selectedDoor={peekDoor}
-                fillPanel
-                minScale={mobile ? 1 : 0}
                 onMove={move}
                 onSelect={select}
                 onDoorTap={tapDoor}

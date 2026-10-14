@@ -15,7 +15,7 @@ import { CrewSprite } from "../scene/CrewSprite.tsx";
 import { roomLabel } from "../scene/names.ts";
 import { atlasUrl } from "./shipLayout.ts";
 import { opaqueAt, preloadImage } from "./hitMask.ts";
-import { bounds, fitScale, hitTest, placeRoom, spreadActors, walkableCells, type PlacedSprite } from "./placement.ts";
+import { bounds, hitTest, placeRoom, spreadActors, walkableCells, type PlacedSprite } from "./placement.ts";
 
 export interface Occupant {
   id: string;
@@ -25,10 +25,6 @@ export interface Occupant {
   you: boolean;
 }
 
-/** Largest box the room is scaled to fit on desktop. Whole-number scales keep pixels crisp. */
-const MAX_W = 880;
-const MAX_H = 520;
-
 export function IsoRoom({
   layout,
   room,
@@ -37,8 +33,6 @@ export function IsoRoom({
   reachable,
   selected,
   selectedDoor,
-  fillPanel,
-  minScale,
   onMove,
   onSelect,
   onDoorTap,
@@ -52,13 +46,6 @@ export function IsoRoom({
   selected: Target | null;
   /** The door whose target is shown in the peek bar, if any. */
   selectedDoor: RoomId | null;
-  /**
-   * Phone layout: fit the panel's measured height too, and never shrink below
-   * 1x (pixel art breaks and doors get too small to tap); wide rooms scroll.
-   */
-  fillPanel: boolean;
-  /** Smallest scale; phones never go below 1x and scroll instead, desktop may shrink to fit. */
-  minScale: number;
   onMove: (to: RoomId) => void;
   onSelect: (target: Target) => void;
   /** A single click or tap on any door, reachable or not. */
@@ -67,20 +54,6 @@ export function IsoRoom({
   const roomLayout = layout.rooms.find((r) => r.id === room);
   const occupantKey = occupants.map((o) => o.id).join(",");
   const scrollRef = useRef<HTMLDivElement>(null);
-  const [space, setSpace] = useState({ width: MAX_W, height: MAX_H });
-
-  // Measure the space the room can use. A hidden panel measures 0; keep the last size then.
-  // biome-ignore lint/correctness/useExhaustiveDependencies: re-measure when a different room's layout mounts the scroller.
-  useLayoutEffect(() => {
-    const el = scrollRef.current;
-    if (!el) return;
-    const observer = new ResizeObserver(([entry]) => {
-      const { width, height } = entry!.contentRect;
-      if (width > 0 && height > 0) setSpace({ width, height });
-    });
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, [roomLayout]);
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: occupantKey stands in for occupants (see comment below).
   const { sprites, box } = useMemo(() => {
@@ -92,25 +65,20 @@ export function IsoRoom({
     // occupantKey stands in for occupants: positions only change when who is here changes.
   }, [layout, roomLayout, occupantKey]);
 
-  // Without fillPanel the section is sized by its content, so only its width is a real limit.
-  const scale =
-    (fillPanel
-      ? fitScale(box, space.width, space.height, { minScale })
-      : fitScale(box, Math.min(MAX_W, space.width), MAX_H)) ?? 1;
-
-  // A room wider than the panel scrolls; start centred on yourself.
+  // Sprites draw at exactly one screen pixel per source pixel, so art stays crisp.
+  // A room bigger than the panel pans (touch drag or wheel, no scrollbar); start centred on yourself.
   const youSprite = sprites.find((s) => s.kind === "actor" && occupants.some((o) => o.you && o.id === s.key.slice(2)));
-  // biome-ignore lint/correctness/useExhaustiveDependencies: recentre only when the room or scale changes (see comment below).
+  // biome-ignore lint/correctness/useExhaustiveDependencies: recentre only when the room changes (see comment below).
   useLayoutEffect(() => {
     const el = scrollRef.current;
     if (!el || !youSprite) return;
     const viewport = el.querySelector<HTMLElement>(".iso-viewport");
-    const x = (viewport?.offsetLeft ?? 0) + (youSprite.left - box.minX + youSprite.width / 2) * scale;
-    const y = (viewport?.offsetTop ?? 0) + (youSprite.top - box.minY + youSprite.height / 2) * scale;
+    const x = (viewport?.offsetLeft ?? 0) + (youSprite.left - box.minX + youSprite.width / 2);
+    const y = (viewport?.offsetTop ?? 0) + (youSprite.top - box.minY + youSprite.height / 2);
     el.scrollLeft = x - el.clientWidth / 2;
     el.scrollTop = y - el.clientHeight / 2;
-    // Only when the room or scale changes, not when someone walks in.
-  }, [room, scale]);
+    // Only when the room changes, not when someone walks in.
+  }, [room]);
 
   // Sprite key ("t<tile index>") -> the equipment it draws.
   const equipmentByKey = useMemo(() => {
@@ -159,8 +127,8 @@ export function IsoRoom({
   const pick = (e: MouseEvent<HTMLElement>) => {
     if ((e.target as Element).closest(".iso-tag")) return null; // name tags handle their own clicks
     const rect = e.currentTarget.getBoundingClientRect();
-    const x = (e.clientX - rect.left) / scale + box.minX;
-    const y = (e.clientY - rect.top) / scale + box.minY;
+    const x = (e.clientX - rect.left) + box.minX;
+    const y = (e.clientY - rect.top) + box.minY;
     const hit = hitTest(sprites, x, y, (s, px, py) => {
       const { url, keyed } = source(s);
       return !url || opaqueAt(url, s.kind === "actor" ? { sx: 0, sy: 0, width: 32, height: 48 } : s, px, py, keyed);
@@ -195,14 +163,14 @@ export function IsoRoom({
       <div className="iso-scroll" ref={scrollRef}>
         <div
           className={`iso-viewport${hovered ? " pointing" : ""}`}
-          style={{ width: box.width * scale, height: box.height * scale }}
+          style={{ width: box.width, height: box.height }}
           title={hoverTitle}
           onClick={onClick}
           onDoubleClick={onDoubleClick}
           onPointerMove={onPointerMove}
           onPointerLeave={() => setHoverKey(null)}
         >
-          <div className="iso-layer" style={{ transform: `scale(${scale})` }}>
+          <div className="iso-layer">
             {sprites.map((s) => {
               const style = {
                 left: s.left - box.minX,
@@ -242,7 +210,7 @@ export function IsoRoom({
               );
             })}
           </div>
-          {/* Name tags sit outside the scaled layer so text stays sharp. */}
+          {/* Name tags sit outside the pixel layer so text stays sharp. */}
           {sprites
             .filter((s) => s.kind === "actor")
             .map((s) => {
@@ -252,7 +220,7 @@ export function IsoRoom({
                   key={`tag:${s.key}`}
                   className={`iso-tag${o.you ? " you" : ""}${isSelected("player", o.id) ? " selected" : ""}`}
                   onClick={() => onSelect({ kind: "player", id: o.id })}
-                  style={{ left: (s.left - box.minX + s.width / 2) * scale, top: (s.top - box.minY) * scale }}
+                  style={{ left: (s.left - box.minX + s.width / 2), top: (s.top - box.minY) }}
                   title={o.name}
                 >
                   {o.name}
