@@ -23,6 +23,8 @@ The record of answered rule decisions and the design for the rules that are not 
 - **Inventory** (2026-10-11): 3 private slots, unlimited room storage, free take/drop logged publicly.
 - **iTrackie** (2026-10-13): everyone starts with one; it is a normal item (uses a slot, can be dropped or taken); carrying one is required to read and post in global chat and the feature threads.
 - **Room log visibility** (2026-10-11): the room log is that room's history. Private actions never show to other players; secret actions are logged to the room only if another player is there to witness them (this will change). Implemented in `shared/src/log.ts` (`logPublic`/`logPrivate`/`logSecret`).
+- **Titles and succession** (2026-10-14, #144): each title has its own line of succession, an ordered list of the crew (the order for each title is **undecided**). Titles are issued at the same time as Mush selection, each to the first person in its line. When a holder dies or goes inactive, the title passes to the next person in the line who is alive and active. A former holder who becomes active again does not get the title back; they can only regain it through the normal succession, if the current holder loses it and they are the next eligible person. Which titles exist is **undecided**; the communications officer is one.
+- **Trading crew to merchant ships** (2026-10-14, #143): the communications officer can trade crew members away to a merchant ship, but only **inactive** players (#145). Trading away an inactive Mush is allowed and removes them from the ship. Inactive and super inactive are two levels of status (Private beta); their thresholds are **undecided**.
 - **Code license:** MIT.
 - **Bots:** run locally for now, on the RTX 3070 (8 GB VRAM; WSL has 15 GB RAM).
 
