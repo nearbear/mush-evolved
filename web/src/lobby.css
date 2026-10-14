@@ -83,49 +83,48 @@ body:has(.pod) {
 }
 
 /*
- * Readouts displayed on the inside of the pod glass: the title and the loading status.
- * A near-opaque dark teal fill keeps the text contrast high over the pale ceiling;
- * the "display" look comes from the thin glowing edge, faint scanlines, and
- * monospace cyan-white text, none of which sit under the text at more than a few
- * percent opacity.
+ * The title, ship list, and loading status share one in-game panel (the glowing tooltip
+ * frame from styles.css), floating on the inside of the glass. Its fill is near-opaque,
+ * so text keeps its contrast over the pale ceiling. It sits above the frost and droplets
+ * (.pod-glass::before/::after, z-index 2), so the frame and its contents stay clean.
  */
-.pod-header,
-.pod-status {
-  --hud-glow: 80 210 245;
+.pod-panel {
+  z-index: 3;
   align-self: center;
   box-sizing: border-box;
-  min-width: min(16rem, 100%);
-  text-align: center;
-  padding: 0.75rem 1.5rem;
-  border-radius: 3px;
-  font-family: ui-monospace, "Cascadia Mono", Consolas, "DejaVu Sans Mono", monospace;
-  color: #dff8ff;
-  background:
-    repeating-linear-gradient(0deg, rgb(var(--hud-glow) / 0.05) 0 1px, transparent 1px 3px),
-    rgb(3 20 26 / 0.86);
-  border: 1px solid rgb(var(--hud-glow) / 0.6);
-  box-shadow:
-    0 0 0.75rem rgb(var(--hud-glow) / 0.35),
-    inset 0 0 1rem rgb(var(--hud-glow) / 0.12);
+  width: min(34rem, 100%);
+  padding: 1.25rem 1.25rem 1.5rem;
 }
-.pod-header {
-  margin-bottom: 1rem;
-}
-.pod-header h1 {
+.pod-title {
   margin: 0;
-  font-weight: 400;
-  letter-spacing: 0.4em;
-  text-indent: 0.4em;
-  text-shadow: 0 0 0.5rem rgb(var(--hud-glow) / 0.6);
+  text-align: center;
+  letter-spacing: 0.3em;
+  text-indent: 0.3em;
+  text-transform: uppercase;
 }
-.pod-header p,
-.pod-status {
-  font-size: 0.8rem;
-  letter-spacing: 0.04em;
+/*
+ * The panel never changes size between picking a ship and waiting in the queue: both
+ * states share one grid cell, so the cell is as big as the larger, and the inactive
+ * one is only made invisible (it is also inert, so it can't be focused or clicked).
+ * Covered by tools/src/lobby/lobby.test.ts.
+ */
+.pod-states {
+  display: grid;
 }
-.pod-header p {
-  margin: 0.4rem 0 0;
-  color: #b4ecfa;
+.pod-state {
+  grid-area: 1 / 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.pod-state[inert] {
+  visibility: hidden;
+}
+.pod-subtitle {
+  margin: 0.4rem 0 1rem;
+  text-align: center;
+  font-size: 0.85rem;
+  color: var(--muted);
 }
 .pod-ships {
   list-style: none;
@@ -136,18 +135,15 @@ body:has(.pod) {
   gap: 0.6rem;
 }
 
-/*
- * Lobby rows use the game's standard 3-slice button (as Leave and End cycle do),
- * stretched to a comfortable touch height; only layout is set here.
- */
+/* Lobby rows use the game's 40px 3-slice button (button.big); only layout is set here. */
 .pod-ship {
   box-sizing: border-box;
-  width: min(34rem, 100%);
-  margin: 0 auto;
-  height: 2.75rem;
-  padding: 0 1rem;
+  width: 100%;
+  margin: 0;
+  padding: 0 1.5rem;
   display: grid;
-  grid-template-columns: 1fr auto auto;
+  /* The note takes the slack and wraps to two lines when a translation is long. */
+  grid-template-columns: auto 1fr auto;
   align-items: center;
   gap: 1rem;
   text-align: left;
@@ -160,6 +156,25 @@ body:has(.pod) {
 .pod-ship-note {
   color: rgb(255 255 255 / 0.8);
   font-size: 0.75rem;
+  line-height: 1.1;
+  text-align: right;
+}
+/* Phone: narrower glass margins and row gaps, so a row fits one line at 360px. */
+@media (max-width: 1023px) {
+  .pod-glass {
+    padding-inline: 0.75rem;
+  }
+  .pod-panel {
+    padding-inline: 0.75rem;
+  }
+  .pod-ship {
+    padding: 0 1.75rem 0 1.25rem;
+    gap: 0.5rem;
+    font-size: 0.85rem;
+  }
+  .pod-ship-name {
+    letter-spacing: 0.05em;
+  }
 }
 .pod-ship-crew {
   font-variant-numeric: tabular-nums;
@@ -168,11 +183,11 @@ body:has(.pod) {
 
 .pod-status {
   margin: 0;
-  color: #b4ecfa;
+  text-align: center;
+  font-size: 0.85rem;
 }
 .pod-status.loading::before {
   margin: 0 auto 0.5rem;
-  filter: drop-shadow(0 0 4px rgb(var(--hud-glow) / 0.7));
 }
 
 /*
@@ -254,8 +269,8 @@ body:has(.pod) {
  * Frost on the inside of the glass, thickest at the rim and thinning toward the
  * centre. Patchy ice comes from fractal noise (an inline SVG feTurbulence, thresholded
  * into pale blotches) at two scales, over a smooth haze and a bright inner edge; a mask
- * keeps the centre clear so text keeps its contrast. Above the content, but never
- * catches clicks.
+ * keeps the centre clear so text keeps its contrast. Above the ceiling but below the
+ * panel (.pod-panel), and never catches clicks.
  */
 .pod-glass::before {
   content: "";

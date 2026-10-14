@@ -56,6 +56,7 @@ The client renders a view and sends intents, so there's little logic to unit tes
 
 - **Pure layout math** (`placement.ts`: projection, paint order, standing spots, `fitScale`, `hitTest`). *Covered.*
 - **`targets.ts`** (finding the selection in a view, `actionLabel`): pure and cheap to test. *Missing.*
+- **Lobby panel keeps its size** (`tools/src/lobby/lobby.test.ts`): joining a ship must not resize the panel, on desktop and a 360px phone, in en/fr/es. A real-browser test in `npm test`: it starts Vite in-process, opens the lobby in headless Chromium (Playwright), and fakes the matchmaker websocket, so it needs no dev servers. *Covered.*
 - **Layouts, mobile, and touch** are checked with the `play` skill's desktop and 360px phone screenshot passes, not unit tests. The script already fails on sideways page scroll. The on-screen keyboard can only be checked on a real phone.
 
 ## 7. Internationalization (English, French, Spanish)

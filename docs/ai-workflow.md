@@ -330,3 +330,10 @@ The user (not the assistant) decided to drop auto-fit scaling in the iso view: s
 - **What worked:** the user asked for the screenshot only after saying they couldn't see the frost; looking at it ourselves immediately showed why (pale frost on a pale ceiling), and a second look caught a new oval smudge before it was reported.
 - **What needed correction:** (1) The first frost used radial conic streaks, which read as jets of light at the top and bottom; the user flagged it and it was replaced with noise. (2) The first noise frost was grey and read as dirt. (3) Raising the haze made a visible oval edge in the middle; fixed by easing the mask and gradient stops. (4) The vent's 2px outer shadow shifted the tile gutters beside it; fixed by insetting the vent 2px and dropping the shadow.
 - **Not verified:** a real phone, and the reduced-motion paths were not looked at. Pre-existing unrelated failure: the i18n hardcoded-text baseline for `IsoRoom.tsx` is stale.
+
+## 2026-10-14: Lobby panel matches the game; fixed-size panel with a browser test
+
+- Replaced the lobby's terminal-style readouts (monospace, scanlines, cyan glow) with one in-game `.panel` (the glowing tooltip frame) holding the title, ship list, and queue status. Ship rows became `button.big`, since `web/CLAUDE.md` forbids custom button looks; the first instinct was restyling the rows as outline cards, which that rule caught before any code was written.
+- The panel sits above the glass frost so its frame stays clean. Both lobby states (pick a ship, waiting) are stacked in one grid cell with the inactive one `visibility: hidden` + `inert`, so the panel is sized to the larger and never resizes on join.
+- First real-browser test in `npm test` (`tools/src/lobby/lobby.test.ts`): Vite in-process, Playwright Chromium, `routeWebSocket` faking the matchmaker. Verified it fails when the hidden state uses `display: none`.
+- Needed correction: the first phone pass overflowed at 360px in Spanish/French; only a per-language check caught it. `npm install -D vite -w tools` also silently bumped Vite and two sub-deps in the lockfile; reverted to declare only the existing 8.3.1.

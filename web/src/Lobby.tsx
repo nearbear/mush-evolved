@@ -75,33 +75,41 @@ export function Lobby({ onMatched }: { onMatched: (ticket: SeatTicket) => void }
             <div className="pod-fan" />
           </div>
         </div>
-        <header className="pod-header">
-          <h1>mush2</h1>
-          <p>{joining ? `${name} · ${ship}` : t("lobby.tagline")}</p>
-        </header>
-        {joining ? (
-          <p className="loading pod-status">{error || (queue ? t("lobby.waiting", queue) : t("common.connecting"))}</p>
-        ) : (
-          <ul className="pod-ships">
-            {SHIPS.map((s) => (
-              <li key={s.name}>
-                <button
-                  className="pod-ship"
-                  onClick={() => {
-                    setShip(s.name);
-                    setName(nextGuestName());
-                  }}
-                >
-                  <span className="pod-ship-name">{s.name}</span>
-                  <span className="pod-ship-note">{t(s.note)}</span>
-                  <span className="pod-ship-crew">
-                    {s.crew}/{s.seats}
-                  </span>
-                </button>
-              </li>
-            ))}
-          </ul>
-        )}
+        <section className="panel pod-panel">
+        <h1 className="pod-title">mush2</h1>
+        {/*
+          Both states stay rendered in one grid cell and only the current one is visible,
+          so the panel is always sized to the larger and never resizes on join.
+        */}
+        <div className="pod-states">
+          <div className="pod-state" inert={!joining}>
+            <p className="pod-subtitle">{`${name ?? ""} · ${ship}`}</p>
+            <p className="loading pod-status">{error || (queue ? t("lobby.waiting", queue) : t("common.connecting"))}</p>
+          </div>
+          <div className="pod-state" inert={joining}>
+            <p className="pod-subtitle">{t("lobby.tagline")}</p>
+            <ul className="pod-ships">
+              {SHIPS.map((s) => (
+                <li key={s.name}>
+                  <button
+                    className="big pod-ship"
+                    onClick={() => {
+                      setShip(s.name);
+                      setName(nextGuestName());
+                    }}
+                  >
+                    <span className="pod-ship-name">{s.name}</span>
+                    <span className="pod-ship-note">{t(s.note)}</span>
+                    <span className="pod-ship-crew">
+                      {s.crew}/{s.seats}
+                    </span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+        </section>
       </div>
       </div>
     </main>
