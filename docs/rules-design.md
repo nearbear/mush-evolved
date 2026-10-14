@@ -2,7 +2,7 @@
 
 > **Bots (2026-10-13):** the author does not necessarily plan to run AI-controlled bots in live public games. They may be for testing only. Wherever these docs describe bots filling seats, treat live use as undecided.
 
-The record of answered rule decisions and the design for the rules that are not built yet. Open questions live in `docs/todo.md` ("Open rule decisions"), not here. Scheduled plans have their own document, `docs/action-plans.md`.
+The record of answered rule decisions and the design for the rules that are not built yet. Open questions live in GitHub issues labeled `rule-decision`, not here. Scheduled plans have their own document, `docs/action-plans.md`.
 
 **Status (2026-10-13):** built are AP, MP, HP and morale values, the action registry, inventory, the iTrackie, global chat, and private channels. Not built: infection, spores, the attack, win conditions, the cycle timer, and the phases below.
 
@@ -28,7 +28,7 @@ The record of answered rule decisions and the design for the rules that are not 
 
 ## Phases
 
-Each phase ends with typecheck and tests passing and a small commit. Phase headings note which open questions in `docs/todo.md` they wait on.
+Each phase ends with typecheck and tests passing and a small commit. Phase headings note which open questions (now `rule-decision` issues) they wait on.
 
 ### Phase 1: rules core in `shared` (needs the infection, Sol, and death decisions)
 

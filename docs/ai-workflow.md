@@ -292,3 +292,9 @@ User supplied icon names for 14 tabs. Only Global and Private exist as iTrackie 
 - Migrated the rest of `docs/todo.md` after the pilot was approved: 6 more epics with 71 sub-issues (Site and accounts, Moderation, i18n, Testing, DevOps, Project management), and 12 standalone epics labelled `needs-breakdown` for single large items (original game data, the wiki) and the "Sections still to add". 135 issues in total; every unchecked to-do line now ends in `(#N)`.
 - Merged cross-section duplicates (e.g. CI with "Run tests in CI", the per-language word lists listed under both Moderation and i18n) and flagged items whose wording predates the no-bots-in-multiplayer decision as "outdated in part" instead of silently rewriting them.
 - What worked: a dry-run check that every annotation key matched exactly one unmigrated line before any issue was created, and reusing the resumable script (one transient GraphQL error on project item-add retried cleanly).
+
+## 2026-10-13: Retired docs/todo.md
+
+- The user approved the GitHub Projects setup, so `docs/todo.md` was deleted (it stays in git history) and every pointer to it was moved to the issues: CLAUDE.md "Open decisions" (with the `gh` commands to search and read issues), the README, `docs/mvp-plan.md`, `docs/rules-design.md`, `docs/code-map.md`, and the `rule` skill (which now reads the rule's issue and its comments, where the owner may answer). Historical log entries were left alone.
+- The `wrap-up` skill gained an issues step, at the user's request: `Fixes #N` in the commit for finished work (the issue closes when the push reaches `main`, not before), `Refs #N` plus ticked checklist items for partial work, a comment and label removal for answered rule decisions, and follow-up issues only proposed, created after a yes.
+- The migration footer on all 135 issue bodies said `todo.md` was still the source; it was updated to say the file is retired.

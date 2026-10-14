@@ -1,6 +1,6 @@
 # MVP plan (DRAFT, not final)
 
-Drafted 2026-10-13 from `docs/todo.md`. **Nothing here is decided.** This is a proposal to react to: move items between stages, cut them, or reject the whole shape. Items marked *(?)* are ones where I was unsure which stage they belong in.
+Drafted 2026-10-13 from the old `docs/todo.md`, whose items are now GitHub issues with these stages as milestones. **Nothing here is decided.** This is a proposal to react to: move items between stages, cut them, or reject the whole shape. Items marked *(?)* are ones where I was unsure which stage they belong in.
 
 > **Bots (decided 2026-10-13):** multiplayer has no bots. Bots exist only in single player and as test tooling.
 
@@ -15,7 +15,7 @@ Drafted 2026-10-13 from `docs/todo.md`. **Nothing here is decided.** This is a p
 
 The aim is one complete loop: join, play cycles, infect, die, and win or lose.
 
-**Rules** (all need decisions from you first; see "Open rule decisions" in `docs/todo.md` and `docs/rules-design.md`)
+**Rules** (all need decisions from you first; see the `rule-decision` issues and `docs/rules-design.md`)
 - Cycles and days (the minimum needed for the daily spore cap).
 - Infection and Mush selection.
 - Win conditions and death at 0 HP, so a game can actually end.
