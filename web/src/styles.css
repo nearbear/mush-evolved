@@ -244,11 +244,20 @@ h2 {
 .faction-goals p {
   margin: 0.25rem 0 0;
 }
-/* AP / MP bars: the original 5x5 pips, drawn at 2x without smoothing. */
+/* AP / MP / HP / morale bars: a sideways slotted frame drawn in SVG (see PipBar.tsx), tinted by `color`. */
 .pip-bar {
+  --s: 2px; /* screen px per sprite px */
   display: flex;
   align-items: center;
   gap: 2px;
+  color: #3d5fc4;
+}
+.pip-frame {
+  flex: none;
+  height: calc(11 * var(--s));
+}
+.pip-frame image {
+  image-rendering: pixelated;
 }
 .pip-label {
   font-size: 0.7rem;
@@ -256,20 +265,8 @@ h2 {
   color: var(--muted);
   margin-right: 4px;
 }
-.pip {
-  width: 10px;
-  height: 10px;
-  background: rgb(255 255 255 / 0.12);
-}
-.pip.full {
-  background-size: 100% 100%;
-  image-rendering: pixelated;
-}
 .pip-bar .sub {
   margin-left: 0.35rem;
-}
-.pip-bar.thin .pip {
-  width: 6px;
 }
 /* Two pip bars on top of each other, labels in one column so the pips line up. */
 .stat-stack {
@@ -1158,7 +1155,7 @@ h2 {
   }
   /*
    * Stats get their own row. Spacing is trimmed so both stacks fit side by side
-   * at 360px, the narrowest phone we support (the pips themselves stay 2x).
+   * at 360px, the narrowest phone we support (the bars drop to 1x sprite pixels).
    */
   .top-bar .stats {
     order: 1;
@@ -1172,6 +1169,7 @@ h2 {
     padding: 0.25rem 0.3rem;
   }
   .pip-bar {
+    --s: 1px; /* 12 slots at 2x would not fit half the phone width */
     gap: 1px;
   }
   .pip-bar .sub {
