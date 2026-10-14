@@ -15,13 +15,13 @@ import planJson from "@mush2/assets/derived/ship-plan.json";
 import type { OtherPlayerView, RoomId, ShipPlan } from "@mush2/shared";
 import { MUSH_ICON, bustIcon } from "../art/assets.ts";
 import { roomLabel } from "./names.ts";
-import { cellsPath, runsPath, spots } from "./plan.ts";
+import { cellsPath, iconSpots, runsPath } from "./plan.ts";
 
 const plan = planJson as ShipPlan;
 const shapes = plan.rooms.map((r) => ({ id: r.id, runs: r.runs, d: runsPath(r.runs) }));
 const wallsPath = runsPath(plan.walls);
 
-/** Size of a person's icon, in map cells. */
+/** Biggest a person's icon gets, in map cells. It shrinks in rooms too narrow for it, so it never crosses a wall. */
 const ICON = 3.2;
 
 type Person = Pick<OtherPlayerView, "id" | "name" | "isBot" | "character" | "room">;
@@ -70,7 +70,8 @@ export function Minimap({
           .filter((p) => p.room === room.id)
           .sort((a, b) => a.id.localeCompare(b.id));
         for (const r of unidentified) if (r === room.id) inside.push(undefined);
-        return spots(room.runs, inside.length).map((at, i) => ({ ...at, key: `${room.id}:${i}`, person: inside[i] }));
+        const { size, spots } = iconSpots(room.runs, inside.length, ICON);
+        return spots.map((at, i) => ({ ...at, size, key: `${room.id}:${i}`, person: inside[i] }));
       }),
     [people, unidentified],
   );
@@ -147,15 +148,15 @@ export function Minimap({
             d={cellsPath(d.cells)}
           />
         ))}
-        {dots.map(({ x, y, key, person }) => (
+        {dots.map(({ x, y, size, key, person }) => (
           <image
             key={key}
             className={`minimap-person${person?.id === youId ? " you" : ""}${person && person.room === here ? " near" : ""}`}
             href={person ? bustIcon(person.character) : MUSH_ICON}
-            x={x - ICON / 2}
-            y={y - ICON / 2}
-            width={ICON}
-            height={ICON}
+            x={x - size / 2}
+            y={y - size / 2}
+            width={size}
+            height={size}
             preserveAspectRatio="xMidYMid meet"
           >
             <title>{person ? (person.isBot ? `${person.name} (AI)` : person.name) : t("minimap.unidentified")}</title>
