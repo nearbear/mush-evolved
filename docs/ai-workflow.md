@@ -338,6 +338,10 @@ The user (not the assistant) decided to drop auto-fit scaling in the iso view: s
 - First real-browser test in `npm test` (`tools/src/lobby/lobby.test.ts`): Vite in-process, Playwright Chromium, `routeWebSocket` faking the matchmaker. Verified it fails when the hidden state uses `display: none`.
 - Needed correction: the first phone pass overflowed at 360px in Spanish/French; only a per-language check caught it. `npm install -D vite -w tools` also silently bumped Vite and two sub-deps in the lockfile; reverted to declare only the existing 8.3.1.
 
+## 2026-10-14: Days and daily morale loss
+- Decision (user): 8 cycles per day; living players lose 1 morale at day end, clamped at 0, from day 1; UI shows "Day N · Cycle M". Asked four questions up front; the cycles-per-day number was already in rules-design.md.
+- Kept `state.cycle` as a global counter and derived day/cycle-of-day (`dayOf`), so no state shape change or STATE_VERSION bump, and per-cycle dispenser logic is untouched.
+
 ## 2026-10-14: Curved cryopod lid on the lobby (CSS strips)
 
 - Asked for a pod window that looks like a sheet of paper with its middle pushed away (a half-cylinder seen from inside). The old CSS had drawn the opposite: glass bulging toward the viewer (top highlight, oval outline widest in the middle).

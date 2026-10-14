@@ -33,6 +33,10 @@ export interface GameConfig {
   startAp: number;
   /** AP gained at the start of each cycle, before modifiers. Unspent AP carries over. */
   apPerCycle: number;
+  /** Cycles in one day. The day ends with the last cycle; every living player then loses `moralePerDay` morale. */
+  cyclesPerDay: number;
+  /** Morale lost by each living player at the end of a day. */
+  moralePerDay: number;
   /** AP never exceeds this. */
   maxAp: number;
   movement: MovementRules;
@@ -71,7 +75,7 @@ export interface PlayerState extends Seat {
   mp: number;
   /** Health points. Private: only in your own view. Nothing changes them yet. */
   hp: number;
-  /** Morale points. Private: only in your own view. Nothing changes them yet. */
+  /** Morale points. Private: only in your own view. Lose `moralePerDay` at the end of each day. */
   morale: number;
   /**
    * Ids of active rule modifiers (from items, skills, statuses). Resolved
@@ -216,7 +220,11 @@ export interface PlayerView {
    * nothing about who they are. Empty while ACTOPI is on.
    */
   unidentified: RoomId[];
+  /** Global cycle counter (never resets). */
   cycle: number;
+  /** 1-based day, and 1-based cycle within that day, derived from `cycle`. */
+  day: number;
+  cycleOfDay: number;
   phase: GameState["phase"];
   rooms: Record<RoomId, RoomId[]>;
   /** What you carry. Other players' inventories are never sent. */

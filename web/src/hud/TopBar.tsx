@@ -19,7 +19,7 @@ export function TopBar({
   return (
     <header className="top-bar">
       {showSummary && <PlayerSummary view={view} />}
-      <span className="cycle">Cycle {view.cycle}</span>
+      <span className="cycle">Day {view.day} · Cycle {view.cycleOfDay}</span>
       <span className="spacer" />
       <button disabled={!canReady} onClick={onReady}>
         {you.ready ? (

@@ -48,7 +48,7 @@ export function PlayerSummary({ view }: { view: PlayerView }) {
           <strong>{you.name}</strong>
           {character && <div className="sub character-name">{character.name}</div>}
           {/* The phone layout shows the cycle here instead of on its own. */}
-          <div className="sub cycle-under-name">Cycle {view.cycle}</div>
+          <div className="sub cycle-under-name">Day {view.day} · Cycle {view.cycleOfDay}</div>
         </div>
         <FactionCard view={view} />
       </div>

@@ -19,6 +19,9 @@ export const DEFAULT_CONFIG: GameConfig = {
   // "lying_down" modifier), never above 12.
   startAp: 8,
   apPerCycle: 1,
+  // Confirmed 2026-10-13: 8 cycles per day. Confirmed 2026-10-14: each living player loses 1 morale at day end.
+  cyclesPerDay: 8,
+  moralePerDay: 1,
   maxAp: 12,
   // Confirmed 2026-10-11: a move costs 1 MP; with no MP, 1 AP becomes 3 MP. MP starts at 0, cap 12.
   movement: { mpPerMove: 1, apPerConversion: 1, mpPerConversion: 3, mpCap: 12 },

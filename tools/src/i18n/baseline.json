@@ -10,7 +10,6 @@
     "web/src/hud/PlayerSummary.tsx": 1,
     "web/src/hud/SelfPanel.tsx": 5,
     "web/src/hud/TopBar.tsx": 4,
-    "web/src/iso/IsoRoom.tsx": 1,
     "web/src/scene/Minimap.tsx": 6
   },
   "wire": {
@@ -18,7 +17,7 @@
     "shared/src/equipment.ts": 31,
     "shared/src/items.ts": 5,
     "shared/src/moderation.ts": 2,
-    "shared/src/rules.ts": 7,
+    "shared/src/rules.ts": 6,
     "server/src/GameRoom.ts": 5,
     "server/src/Matchmaker.ts": 2
   }

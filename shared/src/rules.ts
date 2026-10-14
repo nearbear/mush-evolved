@@ -112,7 +112,23 @@ function advanceCycle(state: GameState): void {
     p.ap = Math.min(state.config.maxAp, p.ap + apGain(state, p));
     p.ready = false;
   }
-  state.log.push({ cycle: state.cycle, text: `Cycle ${state.cycle} begins.`, visibleTo: "all" });
+  const { cyclesPerDay, moralePerDay } = state.config;
+  const newDay = (state.cycle - 1) % cyclesPerDay === 0;
+  if (newDay) {
+    for (const p of state.players) if (p.alive) p.morale = Math.max(0, p.morale - moralePerDay);
+  }
+  const { day } = dayOf(state);
+  state.log.push({
+    cycle: state.cycle,
+    text: newDay ? `Day ${day} begins.` : `Cycle ${state.cycle} begins.`,
+    visibleTo: "all",
+  });
+}
+
+/** Day and cycle-within-day (both 1-based) for the state's global cycle counter. */
+export function dayOf(state: Pick<GameState, "cycle" | "config">): { day: number; cycleOfDay: number } {
+  const n = state.config.cyclesPerDay;
+  return { day: Math.floor((state.cycle - 1) / n) + 1, cycleOfDay: ((state.cycle - 1) % n) + 1 };
 }
 
 /**
@@ -142,6 +158,7 @@ export function viewFor(state: GameState, playerId: PlayerId): PlayerView {
       .map((p) => p.room)
       .sort(),
     cycle: state.cycle,
+    ...dayOf(state),
     phase: state.phase,
     rooms: state.config.rooms,
     inventory: itemsIn(state, { kind: "player", id: you.id }).map(itemView),

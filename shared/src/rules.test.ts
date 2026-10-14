@@ -83,6 +83,40 @@ describe("applyAction", () => {
     expect(viewFor(state, "p0").legalActions.some((a) => a.type === "move")).toBe(false);
   });
 
+  describe("days", () => {
+    const endCycle = (st: GameState) =>
+      st.players.filter((p) => p.alive).reduce((s2, p) => mustApply(s2, p.id, { type: "ready" }), st);
+    const morale = (st: GameState, id: PlayerId) => player(st, id).morale;
+
+    it("starts on day 1, cycle 1 and derives the day from the cycle", () => {
+      const v = viewFor(newGame(), "p0");
+      expect([v.day, v.cycleOfDay]).toEqual([1, 1]);
+    });
+
+    it("costs every living player 1 morale only when a day ends", () => {
+      let state = newGame();
+      const start = morale(state, "p0");
+      for (let i = 0; i < DEFAULT_CONFIG.cyclesPerDay - 1; i++) state = endCycle(state);
+      expect(viewFor(state, "p0").cycleOfDay).toBe(DEFAULT_CONFIG.cyclesPerDay);
+      expect(morale(state, "p0")).toBe(start);
+      state = endCycle(state);
+      const v = viewFor(state, "p0");
+      expect([v.day, v.cycleOfDay]).toEqual([2, 1]);
+      expect(state.players.every((p) => p.morale === start - 1)).toBe(true);
+      expect(state.log.some((e) => e.text === "Day 2 begins." && e.visibleTo === "all")).toBe(true);
+    });
+
+    it("never takes morale below 0 and skips the dead", () => {
+      let state = newGame();
+      player(state, "p0").morale = 0;
+      player(state, "p1").alive = false;
+      const dead = morale(state, "p1");
+      for (let i = 0; i < DEFAULT_CONFIG.cyclesPerDay; i++) state = endCycle(state);
+      expect(morale(state, "p0")).toBe(0);
+      expect(morale(state, "p1")).toBe(dead);
+    });
+  });
+
   it("keeps MP across cycles", () => {
     let state = mustApply(newGame(), "p0", move("CORRIDOR_A"));
     for (const s of seats) state = mustApply(state, s.id, { type: "ready" });
