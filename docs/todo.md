@@ -4,6 +4,8 @@
 
 > Draft staging of these items: `docs/mvp-plan.md` (not final).
 
+> **GitHub Projects pilot (2026-10-13):** items ending in `(#N)` are also tracked as GitHub issues in the [mush2 project](https://github.com/users/nearbear/projects/1) (epics with sub-issues, milestones from the draft MVP plan). Until the project setup is approved, this file is still the source; update both.
+
 Recorded 2026-10-13; staleness check against `docs/rules-design.md` and `docs/action-plans.md` done the same day. Nothing below is started unless it says so. Items that change game rules need the `rule` skill and decisions from the user first.
 
 ## Open rule decisions
@@ -12,106 +14,106 @@ Decisions only you can make; nothing here should be implemented until it is sett
 
 **Game shape**
 - [x] **Turn and cycle length.** Answered: real-time on a timer, 3-hour cycles, 8 per day, no "ready" action (`docs/rules-design.md`, `docs/action-plans.md`). Not yet implemented in the code.
-- [ ] **Days.** A day is 8 cycles. Still open: what else changes at a day boundary beyond the daily spore cap reset.
+- [ ] **Days.** A day is 8 cycles. Still open: what else changes at a day boundary beyond the daily spore cap reset. (#24)
 - [x] **Number of players.** Answered: 16 seats (`docs/rules-design.md`). The code still has the placeholder of 8. Joining happens during the pre-selection phase, and multiplayer has no bots (2026-10-13; see "Lobby and matchmaking" below). Still open: whether late joiners can enter a running game.
-- [ ] **Roles.** Which roles exist beyond human and Mush, if any, and how they are assigned. Linked to the skills decisions.
-- [ ] **Game name.** Not a rule, but still open in `CLAUDE.md`.
+- [ ] **Roles.** Which roles exist beyond human and Mush, if any, and how they are assigned. Linked to the skills decisions. (#38)
+- [ ] **Game name.** Not a rule, but still open in `CLAUDE.md`. (#43)
 
 **Infection**
 - [x] **How many Mush.** Answered: 2, or 1 when 8 or fewer players are in the room when they are chosen (`docs/rules-design.md`).
 - [x] **When Mush are chosen.** Answered (2026-10-13): a ship opens in a pre-selection phase where no one is Mush; the game starts when the ship fills or on day 3 cycle 8, whichever is first, with no minimum player count. No spore actions and no combat during pre-selection. Multiplayer has no bots (`docs/rules-design.md`). Single player: the human is always the only Mush, against 8 human bots.
-- [ ] **How infection works.** What a spore does to a human: the action name, AP cost, whether it needs the same room, how many spores convert, whether the target notices, and whether infection can be cured.
-- [ ] **Spore extraction.** Answered in part: `extract_spore` costs 1 AP, gives 1 spore, always applies dirty, and there is a fixed daily number. Still open: Mush-only or not, the daily number, and ship-wide or per Mush.
+- [ ] **How infection works.** What a spore does to a human: the action name, AP cost, whether it needs the same room, how many spores convert, whether the target notices, and whether infection can be cured. (#25)
+- [ ] **Spore extraction.** Answered in part: `extract_spore` costs 1 AP, gives 1 spore, always applies dirty, and there is a fixed daily number. Still open: Mush-only or not, the daily number, and ship-wide or per Mush. (#26)
 - [x] **Mush know each other and have a private chat channel** (`docs/rules-design.md`).
-- [ ] **What a player sees when infected,** and what the Mush vs. human indicator shows to whom.
+- [ ] **What a player sees when infected,** and what the Mush vs. human indicator shows to whom. (#25)
 
 **Win conditions and death**
 - [x] **What each side must achieve.** Answered: Mush win if all humans are dead, or if the ship returns to Sol while any Mush is alive. Humans win if the ship returns to Sol with no Mush alive (`docs/rules-design.md`).
-- [ ] **Returning to Sol.** What action or condition triggers it, who can do it, and where. Without this humans can never win.
-- [ ] **Game length limit,** if any (days are decided, so this depends on the Sol trip).
-- [ ] **What happens at 0 HP:** death, incapacitation, or something else, whether a body is left and items drop, and what a dead player sees, can do, and can say in chat. (See also the spectator view to-do under Rules.)
-- [ ] **End-of-game reveal:** whether roles are shown, and what happens to bots and disconnected players.
+- [ ] **Returning to Sol.** What action or condition triggers it, who can do it, and where. Without this humans can never win. (#27)
+- [ ] **Game length limit,** if any (days are decided, so this depends on the Sol trip). (#27)
+- [ ] **What happens at 0 HP:** death, incapacitation, or something else, whether a body is left and items drop, and what a dead player sees, can do, and can say in chat. (See also the spectator view to-do under Rules.) (#28)
+- [ ] **End-of-game reveal:** whether roles are shown, and what happens to bots and disconnected players. (#27)
 
 **Combat and covert actions**
 - [x] **Punch damage.** 1 AP and 2 damage, a placeholder until combat is designed (decided 2026-10-13; `docs/rules-design.md` now agrees).
-- [ ] **Design combat.** A real design pass: damage, targeting, misses, weapons, healing, death, and the aggressive flag. The punch's 2 damage is a placeholder until then.
-- [ ] **Punch targeting:** who can be targeted (same room only?), whether it can miss, and any limits per cycle.
-- [ ] **What aggressive actions trigger:** log visibility, consequences, and whether other players are alerted.
-- [ ] **Secret and covert actions:** what makes an action secret or covert, who can see or detect it, how it appears in logs, and how cameras factor in. Partly decided for plans: a secret substitution is witnessed exactly as if done live (`docs/action-plans.md`). Room log visibility for secret actions "will change".
-- [ ] **Who sees an attack in the log:** attacker, victim, and bystanders in the room, and whether cameras change that.
+- [ ] **Design combat.** A real design pass: damage, targeting, misses, weapons, healing, death, and the aggressive flag. The punch's 2 damage is a placeholder until then. (#31)
+- [ ] **Punch targeting:** who can be targeted (same room only?), whether it can miss, and any limits per cycle. (#29)
+- [ ] **What aggressive actions trigger:** log visibility, consequences, and whether other players are alerted. (#30)
+- [ ] **Secret and covert actions:** what makes an action secret or covert, who can see or detect it, how it appears in logs, and how cameras factor in. Partly decided for plans: a secret substitution is witnessed exactly as if done live (`docs/action-plans.md`). Room log visibility for secret actions "will change". (#36)
+- [ ] **Who sees an attack in the log:** attacker, victim, and bystanders in the room, and whether cameras change that. (#29)
 
 **Cameras**
-- [ ] **Camera install, uninstall, and dismantle:** costs, required tools or items, and who can see that it happened.
-- [ ] **What a camera records or reveals,** and to whom, and whether footage persists.
+- [ ] **Camera install, uninstall, and dismantle:** costs, required tools or items, and who can see that it happened. (#35)
+- [ ] **What a camera records or reveals,** and to whom, and whether footage persists. (#35)
 
 **Ship, status, and beds**
-- [ ] **Ship resources** (fuel, oxygen, shields, plasma shield, alerts): the values, costs, and what drains or restores each, and what happens when one runs out.
-- [ ] **Status effects, starting with dirty:** what causes and clears it, its effects, and whether it is visible to others. (spores already apply it.)
-- [ ] **Lie down on beds:** cost and effects. Partly decided: +2 AP per cycle while lying in a bed (the `lying_down` modifier exists, but no action applies it yet).
+- [ ] **Ship resources** (fuel, oxygen, shields, plasma shield, alerts): the values, costs, and what drains or restores each, and what happens when one runs out. (#32)
+- [ ] **Status effects, starting with dirty:** what causes and clears it, its effects, and whether it is visible to others. (spores already apply it.) (#33)
+- [ ] **Lie down on beds:** cost and effects. Partly decided: +2 AP per cycle while lying in a bed (the `lying_down` modifier exists, but no action applies it yet). (#34)
 
 **Items**
 - [x] **Inventory and iTrackie.** Answered: 3 private slots, unlimited room storage, free take/drop logged publicly; everyone starts with an iTrackie, a normal item that is needed to read and post in global chat and the feature threads (`docs/rules-design.md`).
-- [ ] **Stealing and finding iTrackies,** and other item rules beyond the placeholders.
-- [ ] **Satiety.** Hunger does not exist yet. When it does, food gets a satiety value; coffee gives 2 AP and no satiety on purpose.
+- [ ] **Stealing and finding iTrackies,** and other item rules beyond the placeholders. (#40)
+- [ ] **Satiety.** Hunger does not exist yet. When it does, food gets a satiety value; coffee gives 2 AP and no satiety on purpose. (#41)
 
 **Skills**
-- [ ] **The list of skills** and what each does.
-- [ ] **How skills are gained** (start, level, event, book) and whether they can be lost or swapped.
-- [ ] **Books:** what they are, where they come from, and who can use them. The slot rules (three by default, plus a separate book slot) and room-only visibility are already decided.
+- [ ] **The list of skills** and what each does. (#37)
+- [ ] **How skills are gained** (start, level, event, book) and whether they can be lost or swapped. (#37)
+- [ ] **Books:** what they are, where they come from, and who can use them. The slot rules (three by default, plus a separate book slot) and room-only visibility are already decided. (#37)
 
 **Communication**
 - [x] **Private channels.** Answered: 3 per player by default (counting ones you were invited to; skills and research may raise it), any member can invite any living player, new members see the whole history, and the last member leaving deletes the channel (`docs/action-plans.md`).
-- [ ] **Whether Mush have their own private channels** beyond the shared Mush channel.
+- [ ] **Whether Mush have their own private channels** beyond the shared Mush channel. (#39)
 
 **Players leaving**
-- [ ] **AFK and disconnected players:** whether a bot takes the seat, whether the seat is skipped, or whether the game ends, and what the others are told.
+- [ ] **AFK and disconnected players:** whether a bot takes the seat, whether the seat is skipped, or whether the game ends, and what the others are told. (#42)
 
 ## UI
 
-- [ ] **User settings button.** A button that opens a user settings (game options) panel.
-- [ ] **Private channel slots in the iTracky tab.** Show private channels as slots at the top of the tab, plus the total number of private slots. Each slot shows a plus button until its channel is created; clicking the plus starts (creates) the channel.
-- [ ] **Inventory looks like a container.** Redo the inventory UI so it reads as a physical container, not a plain list.
-- [ ] **Backgrounds for the AP, MP, HP, and morale bars.**
-- [ ] **Restyle the Mush vs. human indicator.**
-- [ ] **Remove location and status from the inspect panel.**
-- [ ] **Vertically stacked actions that show their cost.** Redo the action UI so actions stack vertically and each one indicates its cost (e.g. AP). The client must keep using `view.legalActions` and not compute costs or legality itself, so the cost needs to come from the view. Must work in the phone layout.
-- [ ] **Timestamps on logs.**
-- [ ] **Log levels.** Each log entry gets a level (info, warn, danger) with distinct styling. The level should be set by the rules when the entry is created, not guessed by the client, and must not leak anything hidden.
-- [ ] **Multi-line chat input with basic markdown.** Chat input becomes multi-line and renders basic markdown only (e.g. bold, italic, code, lists). Chat is untrusted input: render safely (no raw HTML), keep moderation and length limits working on the raw text, and keep it usable on phones.
+- [ ] **User settings button.** A button that opens a user settings (game options) panel. (#5)
+- [ ] **Private channel slots in the iTracky tab.** Show private channels as slots at the top of the tab, plus the total number of private slots. Each slot shows a plus button until its channel is created; clicking the plus starts (creates) the channel. (#6)
+- [ ] **Inventory looks like a container.** Redo the inventory UI so it reads as a physical container, not a plain list. (#7)
+- [ ] **Backgrounds for the AP, MP, HP, and morale bars.** (#8)
+- [ ] **Restyle the Mush vs. human indicator.** (#9)
+- [ ] **Remove location and status from the inspect panel.** (#10)
+- [ ] **Vertically stacked actions that show their cost.** Redo the action UI so actions stack vertically and each one indicates its cost (e.g. AP). The client must keep using `view.legalActions` and not compute costs or legality itself, so the cost needs to come from the view. Must work in the phone layout. (#11)
+- [ ] **Timestamps on logs.** (#12)
+- [ ] **Log levels.** Each log entry gets a level (info, warn, danger) with distinct styling. The level should be set by the rules when the entry is created, not guessed by the client, and must not leak anything hidden. (#13)
+- [ ] **Multi-line chat input with basic markdown.** Chat input becomes multi-line and renders basic markdown only (e.g. bold, italic, code, lists). Chat is untrusted input: render safely (no raw HTML), keep moderation and length limits working on the raw text, and keep it usable on phones. (#14)
 
 ## Rendering and cosmetics
 
-- [ ] **Fix equipment z values.** Some equipment has incorrect z (draw order/height) values.
-- [ ] **Fix isometric view pixelation at varying zooms.** Different zoom levels currently produce odd pixelated renders.
-- [ ] **Walk around within a room (cosmetic only).** Players can move around inside a room, and other players see it on their end. It has no effect on the rules.
-- [ ] **Sittable equipment.** Equipment gets a "can sit here" concept so players can sit at terminals and tables. Also cosmetic. Open question: how cosmetic position is sent to other clients without becoming rule state (and without leaking anything hidden).
+- [ ] **Fix equipment z values.** Some equipment has incorrect z (draw order/height) values. (#15)
+- [ ] **Fix isometric view pixelation at varying zooms.** Different zoom levels currently produce odd pixelated renders. (#16)
+- [ ] **Walk around within a room (cosmetic only).** Players can move around inside a room, and other players see it on their end. It has no effect on the rules. (#17)
+- [ ] **Sittable equipment.** Equipment gets a "can sit here" concept so players can sit at terminals and tables. Also cosmetic. Open question: how cosmetic position is sent to other clients without becoming rule state (and without leaking anything hidden). (#18)
 
 ## Rules
 
-- [ ] **Days.** Introduce the concept of days to the game. A rule change, so the `rule` skill applies: a day is 8 three-hour cycles (decided); what changes at day boundaries beyond the daily spore cap still needs deciding. The cycle timer itself (replacing the ready action) is not built.
-- [ ] **Ship resources and their UI.** Fuel, oxygen, shields, plasma shield, and alerts. This changes game rules, so the `rule` skill applies: the values, costs, and what drains or restores each resource need to be decided first.
-- [ ] **Status effects, starting with the dirty status.** A rule change: what causes and clears dirty, and its effects, need to be decided first.
-- [ ] **Lie down action for beds.** A rule change: cost and effects (e.g. any rest or recovery) need to be decided first.
-- [ ] **Camera installation, uninstallation, and dismantling.** Rule change: costs, requirements (tools, items), and visibility need to be decided first.
-- [ ] **Basic attack (punch) action.** Costs 1 AP and deals 2 damage (a placeholder until combat is designed). Punching someone is an aggressive action. Other rules (targeting, who sees it in the log, what happens at 0 HP) still need to be decided.
-- [ ] **"Aggressive" as an action-level concept.** Actions carry an aggressive flag, and the punch is the first one that sets it. What aggressive actions trigger (log visibility, consequences) needs to be decided.
-- [ ] **Secret and covert actions.** Design the concept first: what makes an action secret or covert, who can see or detect it, and how it appears in logs. Cameras factor in (e.g. whether a camera records or reveals it). Related to the "aggressive" action flag. This is a rule change and a hidden-information risk, so the `rule` and `leak-check` skills apply.
-- [ ] **Skills (rules and UI).** Players have skills, visible to every player in the same room as them (not to players elsewhere, which `viewFor` must enforce). By default there are at most three skill slots, plus a separate book slot that holds a fourth skill gained from a book. Still to decide: the list of skills and their effects, how skills are gained, what books are and where they come from, and whether skills can be lost or swapped. The UI shows a player's slots and skills, including the book slot, and must work in the phone layout. A rule change, so the `rule` skill applies.
+- [ ] **Days.** Introduce the concept of days to the game. A rule change, so the `rule` skill applies: a day is 8 three-hour cycles (decided); what changes at day boundaries beyond the daily spore cap still needs deciding. The cycle timer itself (replacing the ready action) is not built. (#24)
+- [ ] **Ship resources and their UI.** Fuel, oxygen, shields, plasma shield, and alerts. This changes game rules, so the `rule` skill applies: the values, costs, and what drains or restores each resource need to be decided first. (#32)
+- [ ] **Status effects, starting with the dirty status.** A rule change: what causes and clears dirty, and its effects, need to be decided first. (#33)
+- [ ] **Lie down action for beds.** A rule change: cost and effects (e.g. any rest or recovery) need to be decided first. (#34)
+- [ ] **Camera installation, uninstallation, and dismantling.** Rule change: costs, requirements (tools, items), and visibility need to be decided first. (#35)
+- [ ] **Basic attack (punch) action.** Costs 1 AP and deals 2 damage (a placeholder until combat is designed). Punching someone is an aggressive action. Other rules (targeting, who sees it in the log, what happens at 0 HP) still need to be decided. (#29)
+- [ ] **"Aggressive" as an action-level concept.** Actions carry an aggressive flag, and the punch is the first one that sets it. What aggressive actions trigger (log visibility, consequences) needs to be decided. (#30)
+- [ ] **Secret and covert actions.** Design the concept first: what makes an action secret or covert, who can see or detect it, and how it appears in logs. Cameras factor in (e.g. whether a camera records or reveals it). Related to the "aggressive" action flag. This is a rule change and a hidden-information risk, so the `rule` and `leak-check` skills apply. (#36)
+- [ ] **Skills (rules and UI).** Players have skills, visible to every player in the same room as them (not to players elsewhere, which `viewFor` must enforce). By default there are at most three skill slots, plus a separate book slot that holds a fourth skill gained from a book. Still to decide: the list of skills and their effects, how skills are gained, what books are and where they come from, and whether skills can be lost or swapped. The UI shows a player's slots and skills, including the book slot, and must work in the phone layout. A rule change, so the `rule` skill applies. (#37)
 
-- [ ] **Infection.** Design and implement how players become Mush. A rule change and the biggest hidden-information risk in the game (roles must never reach the wrong seat), so the `rule` and `leak-check` skills apply. Decided in `docs/rules-design.md`: 2 Mush (1 with 8 or fewer players), spores via `extract_spore`, Mush know each other and share a private channel. Still to decide: when Mush are chosen, what a spore does to a human, what a player sees when infected, and whether infection can be cured (see Open rule decisions).
-- [ ] **Win conditions.** Design and implement how a game ends. A rule change. Decided in `docs/rules-design.md`: Mush win if all humans die or the ship returns to Sol with a Mush alive; humans win if it returns with none. Still to decide: how the return to Sol is triggered, a game length limit, what players see at the end, and what happens to bots and disconnected players.
+- [ ] **Infection.** Design and implement how players become Mush. A rule change and the biggest hidden-information risk in the game (roles must never reach the wrong seat), so the `rule` and `leak-check` skills apply. Decided in `docs/rules-design.md`: 2 Mush (1 with 8 or fewer players), spores via `extract_spore`, Mush know each other and share a private channel. Still to decide: when Mush are chosen, what a spore does to a human, what a player sees when infected, and whether infection can be cured (see Open rule decisions). (#25)
+- [ ] **Win conditions.** Design and implement how a game ends. A rule change. Decided in `docs/rules-design.md`: Mush win if all humans die or the ship returns to Sol with a Mush alive; humans win if it returns with none. Still to decide: how the return to Sol is triggered, a game length limit, what players see at the end, and what happens to bots and disconnected players. (#27)
 
-- [ ] **Scheduled action plans.** Players post a plan in a private channel: an ordered list of jobs that other members claim, run automatically at a set time. Designed in full in `docs/action-plans.md` (the action registry and private channels are built; the rest is not). Large; the design has its own phases and open questions. Rule changes, so the `rule` skill applies.
-- [ ] **Spectator view for dead players.** A dead player gets everything public but nothing that depends on standing in a room. Decide what counts as public, whether their old private channels stay readable, and whether any of it can leak back to the living. Today a dead player's `chatChannels` is empty and `viewFor` still sends their own room's log; private-channel membership is kept so this can be decided later.
-- [ ] **Fix `npm run screenshot` hanging.** The script hung past 120 s and 300 s in two runs while checking the drag-and-drop inventory; cause unknown. Until fixed, the inventory tiles (desktop drag between zones, 360px phone grid wrap, tap-to-select Take/Drop button) have had no visual check. Debug the script, then run both passes and look at `05-take.png` and `m05-inspect-inventory.png`.
+- [ ] **Scheduled action plans.** Players post a plan in a private channel: an ordered list of jobs that other members claim, run automatically at a set time. Designed in full in `docs/action-plans.md` (the action registry and private channels are built; the rest is not). Large; the design has its own phases and open questions. Rule changes, so the `rule` skill applies. (#44)
+- [ ] **Spectator view for dead players.** A dead player gets everything public but nothing that depends on standing in a room. Decide what counts as public, whether their old private channels stay readable, and whether any of it can leak back to the living. Today a dead player's `chatChannels` is empty and `viewFor` still sends their own room's log; private-channel membership is kept so this can be decided later. (#45)
+- [ ] **Fix `npm run screenshot` hanging.** The script hung past 120 s and 300 s in two runs while checking the drag-and-drop inventory; cause unknown. Until fixed, the inventory tiles (desktop drag between zones, 360px phone grid wrap, tap-to-select Take/Drop button) have had no visual check. Debug the script, then run both passes and look at `05-take.png` and `m05-inspect-inventory.png`. (#46)
 
 ## Architecture
 
-- [ ] **Cosmetic position sync.** Decide how in-room position and sitting reach other clients without becoming rule state, and without leaking anything hidden (e.g. a separate lightweight channel, filtered per viewer by room). Blocks walking around and sittable equipment.
-- [ ] **Site notification storage and delivery.** Decide where site notifications live (they outlast a game, so not in a game room), how they are delivered to the player, and how moderation feeds them. Likely needs a global coordinator like the matchmaker, or persistent storage. Blocks the notification button.
-- [ ] **Log level in the rules.** Decide where a log entry's level (info, warn, danger) is set: by the rules when the entry is created, carried through `viewFor`, with no client guessing. Blocks log levels.
-- [ ] **Action costs in the view.** Decide how `view.legalActions` carries each action's cost, so the client displays costs without computing them. Blocks stacked actions with costs.
-- [ ] **Accounts architecture.** The account button is a placeholder. Decide what accounts will eventually mean (guest vs. registered, identity across games, storage) so the notification and moderation work does not paint us into a corner.
+- [ ] **Cosmetic position sync.** Decide how in-room position and sitting reach other clients without becoming rule state, and without leaking anything hidden (e.g. a separate lightweight channel, filtered per viewer by room). Blocks walking around and sittable equipment. (#21)
+- [ ] **Site notification storage and delivery.** Decide where site notifications live (they outlast a game, so not in a game room), how they are delivered to the player, and how moderation feeds them. Likely needs a global coordinator like the matchmaker, or persistent storage. Blocks the notification button. (#22)
+- [ ] **Log level in the rules.** Decide where a log entry's level (info, warn, danger) is set: by the rules when the entry is created, carried through `viewFor`, with no client guessing. Blocks log levels. (#20)
+- [ ] **Action costs in the view.** Decide how `view.legalActions` carries each action's cost, so the client displays costs without computing them. Blocks stacked actions with costs. (#19)
+- [ ] **Accounts architecture.** The account button is a placeholder. Decide what accounts will eventually mean (guest vs. registered, identity across games, storage) so the notification and moderation work does not paint us into a corner. (#23)
 
 ## Original game data
 

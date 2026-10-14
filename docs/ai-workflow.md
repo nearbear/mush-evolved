@@ -267,3 +267,17 @@ User supplied icon names for 14 tabs. Only Global and Private exist as iTrackie 
 - **Decided by the user:** the nameplate is an MUI-style outlined card (1px outline in the faction color, same color at 25% opacity over the slot blue); the Mush color is sampled from the pink of `design/logo.png` (`#ff4c84`, the assistant did the sampling in headless Chromium since WSL has no image tools); the character name is a small white label with the item-label shadow; stat labels and values are white with a text shadow; on phones the two stat stacks sit side by side at equal widths.
 - **Decided by the assistant:** stacked backgrounds (a one-color gradient over the slot image) as the overlay instead of a pseudo-element; scoping the stat text color to `.stat-stack`; keeping the stacks content-sized in landscape phones so equal flex doesn't collapse them.
 - **Needed correction:** several rounds on text contrast (dark ink on bright plate, then muted gray on the tinted fill) before the user's own label-shadow idea fixed it; I over-saturated the first fuchsia. The 360px fit of the AP stack (12 pips) is a known risk and was never checked visually.
+
+## 2026-10-13: GitHub Projects pilot
+
+- Moved the UI, Rendering, Rules (including Open rule decisions), and Architecture to-dos into GitHub issues: 4 epics with 42 sub-issues, milestones MVP / Private beta / Public beta / Release taken from the draft `docs/mvp-plan.md`, and a user-level project (nearbear/projects/1). Items the draft plan marks (?) or leaves out got a `needs-staging` label instead of a milestone.
+- Duplicate items (an open decision plus its matching Rules item) were merged into one issue, with the open questions as a checklist in the body.
+- `docs/todo.md` stays the source for now; migrated lines end in `(#N)`.
+- What worked: the issue list was written as a data file and created by a script that saves its progress, so when `gh project item-add` failed with a transient GraphQL error just after the project was created, a re-run with retries resumed without duplicating anything. Sub-issues needed the REST `sub_issues` endpoint, since `gh` 2.46 has no command for them.
+- What needed correction: the first draft of the script forgot the project step, and one `(#N)` annotation key did not match the bold text in `todo.md`. Both were caught on review before the run.
+
+### 2026-10-13: design catalog and panel restyle from `quote.png`
+- **Decided by the user:** make a catalog of `Mush/www/img/design` like the icon catalog, group both catalogs in `docs/catalogs/`, sample `quote.png` for a panel style, make it the default for every panel, and give the iTrackie tabs and the mobile bottom nav the same look (same rim and corner radius).
+- **Decided by the assistant, no approval asked:** the panel shadow value (`0 0 6px` at 0.55 alpha, tuned by eye to the sampled falloff), a bright-blue rim as the active-tab marker, and rounding the bottom nav on all corners (the iTrackie tabs are rounded on top only).
+- **Worked:** the contact sheets, then zoomed re-renders of the tiny files, gave enough to describe all 325 design files. Sampling pixels with the existing `decodePng` in `tools/` gave exact values (fill `#1a1b4a`, rim `#26378c`, 1px rim plus about 5px of shadow).
+- **Needed correction:** "move these into a folder" was ambiguous. I read it as the two catalogs, not the assets, and said so. Nothing checked visually; the screenshot pass was skipped, and the active-versus-idle tab contrast at 360px is unverified.
