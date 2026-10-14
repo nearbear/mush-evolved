@@ -8,8 +8,8 @@ A turn-based, browser-based social deduction game inspired by **eMush**, the ope
 
 This is a **vertical-slice MVP**, not a full clone. The goals are:
 
-1. A playable end-to-end slice, public on the internet, with lobbies, a matchmaking queue, and AI-controlled bots that fill seats when the queue doesn't fill fast enough.
-   - **Caveat (2026-10-13):** the author does not necessarily plan to run AI bots in live public games; they may be for testing only. Live bot fill is undecided.
+1. A playable end-to-end slice, public on the internet, with a plain per-language queue into a ship in its pre-selection phase (decided 2026-10-13, see `docs/rules-design.md`).
+   - **Bots (2026-10-13):** multiplayer has no bots. AI-controlled bots exist only in a single-player mode (stage not decided) and as test tooling.
 2. Demonstrate solid full-stack engineering and an AI-assisted development workflow (keep notes on what worked and what didn't; see "Working agreements").
 3. Leave room to grow it into a real game later, including animated characters.
 
@@ -38,7 +38,7 @@ These are non-negotiable unless I say otherwise.
 1. **Server-authoritative.** The server holds the real state. Clients never receive hidden information. The server sends each player a filtered `PlayerView` computed for that player only.
 2. **Rules are pure code.** Game rules live in the shared package as deterministic, side-effect-free TypeScript (seeded RNG, no I/O, no network), with unit tests. The rules must run headless.
 3. **Thin view layer.** Components render a `PlayerView` and emit player intents; no game logic in components, and the renderer must stay swappable. Details in `web/CLAUDE.md`.
-4. **Matchmaker is a separate global coordinator.** Game rooms don't know about each other. A matchmaker room holds waiting players, runs the fill-with-bots timer, and creates game rooms.
+4. **Matchmaker is a separate global coordinator.** Game rooms don't know about each other. A matchmaker room holds waiting players, runs the fill-with-bots timer, and creates game rooms. (The code still works this way; the decided MVP model, a per-language matchmaker that points players at the open pre-selection ship, with no bots, is not built yet.)
 5. **Bots sit behind one interface**, roughly `decideAction(view): Promise<Action>`:
    - A bot only ever receives the view its own seat would legitimately have.
    - Bots are clearly labeled as AI to players. Deliberate response delay is fine and is a pacing choice.
@@ -116,8 +116,8 @@ The full, current list is **`docs/todo.md`**, starting with its "Open rule decis
 Not rules, but still open:
 
 - Game name.
-- Whether bots appear in live games at all, or are testing-only (not necessarily planned for live play, 2026-10-13).
-- Which hosted model API to use for bots (only matters if bots run in live games, or for testing).
+- Which stage single player (the only mode with bots) belongs in.
+- Which hosted model API to use for single-player bots.
 - Hosting and deployment details.
 - Rendering beyond the DOM isometric view (decided: DOM for now, 2026-10-11).
 - Internationalization (en/fr/es): the seam is in, the comprehensive pass is not.

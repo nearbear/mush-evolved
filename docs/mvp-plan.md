@@ -2,7 +2,7 @@
 
 Drafted 2026-10-13 from `docs/todo.md`. **Nothing here is decided.** This is a proposal to react to: move items between stages, cut them, or reject the whole shape. Items marked *(?)* are ones where I was unsure which stage they belong in.
 
-> **Bots:** the author does not necessarily plan to run AI-controlled bots in live public games. They may be for testing only. This draft therefore treats bots as test tooling, and the MVP does not depend on bot-filled live games.
+> **Bots (decided 2026-10-13):** multiplayer has no bots. Bots exist only in single player and as test tooling.
 
 ## Stages
 
@@ -36,7 +36,8 @@ The aim is one complete loop: join, play cycles, infect, die, and win or lose.
 - Fix equipment z values and the isometric pixelation, since both are visible bugs.
 
 **Lobby**
-- Matchmaking queue and rejoining after a disconnect. Bot fill exists for testing.
+- One plain queue per language that drops players into an open ship in its pre-selection phase; the game starts when the ship fills or on day 3 cycle 8, whichever is first. No bots in multiplayer. Rejoining after a disconnect.
+- Single-player: the human is always the only Mush, against 8 human bots, with an "End cycle" button and server-side save slots *(?)*: discussed 2026-10-13 as the easiest demo, stage not decided. Depends on model-backed bots and their spend controls.
 
 **Moderation (minimum)**
 - Chat filtering as it stands, plus name moderation.
@@ -89,6 +90,6 @@ The aim is one complete loop: join, play cycles, infect, die, and win or lose.
 ## Questions for you
 
 1. Is the MVP meant to be public on the internet (as `CLAUDE.md` says) or just playable by you and testers? That changes how much moderation and deployment it needs.
-2. If bots are testing-only, should the matchmaker's bot-fill be disabled in production, or removed from live games entirely?
+2. ~~If bots are testing-only, should the matchmaker's bot-fill be disabled in production?~~ Answered 2026-10-13: removed from multiplayer; bots are single player only.
 3. Do skills and covert actions belong in the MVP? I left them out because they are big designs.
 4. Is "private beta" before or after the write-up? I put the write-up at release.

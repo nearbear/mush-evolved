@@ -1,0 +1,2 @@
+- Portal gun that creates a portal between two points
+- Ability to shuffle all door links for only a single person to mess with them

@@ -1,6 +1,6 @@
 # To-do
 
-> **Bots (2026-10-13):** the author does not necessarily plan to run AI-controlled bots in live public games. They may be for testing only. Wherever these docs describe bots filling seats, treat live use as undecided.
+> **Bots (2026-10-13):** multiplayer will have no bots; bots exist only in single player (and as test tooling). Wherever these docs describe bots filling multiplayer seats, that is outdated.
 
 > Draft staging of these items: `docs/mvp-plan.md` (not final).
 
@@ -13,13 +13,13 @@ Decisions only you can make; nothing here should be implemented until it is sett
 **Game shape**
 - [x] **Turn and cycle length.** Answered: real-time on a timer, 3-hour cycles, 8 per day, no "ready" action (`docs/rules-design.md`, `docs/action-plans.md`). Not yet implemented in the code.
 - [ ] **Days.** A day is 8 cycles. Still open: what else changes at a day boundary beyond the daily spore cap reset.
-- [x] **Number of players.** Answered: 16 seats (`docs/rules-design.md`). The code still has the placeholder of 8. Still open: how many seats bots may fill, and whether late joiners can enter a running game.
+- [x] **Number of players.** Answered: 16 seats (`docs/rules-design.md`). The code still has the placeholder of 8. Joining happens during the pre-selection phase, and multiplayer has no bots (2026-10-13; see "Lobby and matchmaking" below). Still open: whether late joiners can enter a running game.
 - [ ] **Roles.** Which roles exist beyond human and Mush, if any, and how they are assigned. Linked to the skills decisions.
 - [ ] **Game name.** Not a rule, but still open in `CLAUDE.md`.
 
 **Infection**
 - [x] **How many Mush.** Answered: 2, or 1 when 8 or fewer players are in the room when they are chosen (`docs/rules-design.md`).
-- [ ] **When Mush are chosen.** What triggers selection (a fixed day or cycle, a config value), and whether everyone is human with no spore actions before it. Whether bots count toward the "8 or fewer" rule and can be Mush.
+- [x] **When Mush are chosen.** Answered (2026-10-13): a ship opens in a pre-selection phase where no one is Mush; the game starts when the ship fills or on day 3 cycle 8, whichever is first, with no minimum player count. No spore actions and no combat during pre-selection. Multiplayer has no bots (`docs/rules-design.md`). Single player: the human is always the only Mush, against 8 human bots.
 - [ ] **How infection works.** What a spore does to a human: the action name, AP cost, whether it needs the same room, how many spores convert, whether the target notices, and whether infection can be cured.
 - [ ] **Spore extraction.** Answered in part: `extract_spore` costs 1 AP, gives 1 spore, always applies dirty, and there is a fixed daily number. Still open: Mush-only or not, the daily number, and ship-wide or per Mush.
 - [x] **Mush know each other and have a private chat channel** (`docs/rules-design.md`).
@@ -241,7 +241,8 @@ Ideas for new sections of this to-do. Each one needs its items written out befor
 - [ ] **Bots.** Bots may be testing-only, not live play; decide first. Scripted bots, the hosted model API, the spend cap and rate limits, prompt-injection handling, labeling bots as AI, and choosing the API. Some of this is currently scattered across Moderation and Testing.
 - [ ] **Onboarding and tutorial.** A first-time experience: tutorial, in-game rules reference, tooltips, and a practice game against bots. Links to the wiki.
 - [ ] **Accessibility.** Keyboard navigation, screen-reader labels, color contrast (log levels and bars), reduced motion, text scaling, and colorblind-safe indicators.
-- [ ] **Lobby and matchmaking.** The queue, the fill-with-bots timer, rejoining after a disconnect, spectating or the end-of-game screen, and rematch.
+- [ ] **Lobby and matchmaking.** MVP, not started (2026-10-13). One plain queue per language (en/fr/es), no advanced matchmaking. "Queueing" puts a player straight into the open ship for that language, which is in its pre-selection phase (no one is Mush yet). The game starts when the ship fills or on day 3 cycle 8, whichever is first, and the next player opens a new ship. No bots in multiplayer. This replaces the matchmaker's current fill-with-bots timer and "create a room when the queue fills" model. Also: rejoining after a disconnect, spectating or the end-of-game screen, and rematch.
+- [ ] **Single-player mode.** Discussed 2026-10-13 as the easiest demo for visitors; stage not decided. The human is always the only Mush, against 8 bots who are all human (9 seats; decided 2026-10-13, `docs/rules-design.md`). So bots never need to lie; they investigate and accuse. Cycles advance when the player clicks "End cycle" (an exception to the timer, single player only), save slots stored server-side (one game room per slot). Needs model-backed bots to be fun, so it needs the spend controls: a token budget per game (bots fall back to scripted when it runs out), a budget per user per day, the global hard cap, and possibly a minimum time per cycle. Open: visitor identity for per-user budgets (anonymous token, Turnstile, or sign-in), and which model API.
 - [ ] **Audio.** Sound effects, music, and a mute control. Needs a license check first, since sounds and music may fall under different terms (see the `asset` skill).
 - [ ] **Game feel and animation.** Animated characters and whether to move beyond DOM rendering (three.js or a 2D renderer).
 - [ ] **Analytics and balance.** Win rates per side, game length, and drop-off points. Conflicts with privacy, so follow the terms and privacy decision.
