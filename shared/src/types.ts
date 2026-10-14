@@ -49,6 +49,14 @@ export interface GameConfig {
   inventorySlots: number;
   /** Private channels a player may belong to, before modifiers. */
   channelLimit: number;
+  /** AP spent to bond with someone (confirmed 2026-10-14). */
+  bondAp: number;
+  /** AP spent by the one who starts a DTT or STT (confirmed 2026-10-14). */
+  shareAp: number;
+  /** Morale each of the two gains from a DTT or STT (confirmed 2026-10-14). */
+  shareMorale: number;
+  /** Contamination a human reaches before converting to Mush, before modifiers (confirmed 2026-10-14). */
+  contaminationCapacity: number;
   /** Items placed in rooms at the start of the game. Types come from ITEM_TYPES in items.ts. */
   startItems: { type: string; room: RoomId }[];
   /** Item types every player starts carrying (one of each). */
@@ -174,6 +182,20 @@ export interface GameState {
    * are for the room you are in. Nothing switches it yet (2026-10-13); starts on.
    */
   actopi: boolean;
+  /**
+   * Bonds, by who made them: `bonds[a]` lists everyone `a` has bonded to. They
+   * last forever. DTT and STT need both directions. Visible only to the two
+   * partners (see `PlayerView.bonds`).
+   */
+  bonds: Record<PlayerId, PlayerId[]>;
+  /** The last day (1-based) each player took part in a DTT or STT. Both partners are blocked for the rest of that day. */
+  sharedOnDay: Record<PlayerId, number>;
+  /**
+   * Contamination per human, from DTT with a Mush. Hidden from everyone,
+   * including its owner: seeing it would tell a human who is Mush. Reaching the
+   * capacity will convert them once infection exists; nothing does yet.
+   */
+  contamination: Record<PlayerId, number>;
 }
 
 export type Action =
@@ -183,6 +205,9 @@ export type Action =
   | { type: "dispense"; equipment: string }
   | { type: "consume"; item: ItemId }
   | { type: "examine"; target: Target }
+  | { type: "bond"; target: PlayerId }
+  | { type: "dtt"; target: PlayerId }
+  | { type: "stt"; target: PlayerId }
   | { type: "ready" };
 
 /** Room equipment as a client sees it. */
@@ -255,5 +280,12 @@ export interface PlayerView {
   /** Caps for drawing your HP and morale bars. */
   maxHp: number;
   maxMorale: number;
+  /** Bonds you are part of, with people in any room. Others' bonds are never sent. */
+  bonds: {
+    /** People you have bonded to. */
+    to: PlayerId[];
+    /** People who have bonded to you. */
+    from: PlayerId[];
+  };
   legalActions: Action[];
 }

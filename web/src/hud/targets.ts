@@ -42,6 +42,10 @@ export function actionsOn(view: PlayerView, target: Target): Action[] {
         return target.kind === "equipment" && a.equipment === target.id;
       case "consume":
         return target.kind === "item" && a.item === target.id;
+      case "bond":
+      case "dtt":
+      case "stt":
+        return target.kind === "player" && a.target === target.id;
       default:
         return false;
     }
@@ -52,6 +56,9 @@ const ACTION_LABEL_KEYS = {
   examine: "actions.examine",
   dispense: "actions.dispense",
   consume: "actions.consume",
+  bond: "actions.bond",
+  dtt: "actions.dtt",
+  stt: "actions.stt",
 } as const;
 
 /** i18n key for the button text of an action aimed at a target (Inspect panel and peek bar). */

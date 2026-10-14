@@ -17,6 +17,8 @@ export interface Modifier {
   inventorySlots?: (slots: number, player: Readonly<PlayerState>) => number;
   /** Adjusts how many private channels a player may belong to. Must be pure. */
   channelLimit?: (limit: number, player: Readonly<PlayerState>) => number;
+  /** Adjusts how much contamination a player can take before converting. Must be pure. */
+  contaminationCapacity?: (capacity: number, player: Readonly<PlayerState>) => number;
 }
 
 export type ModifierRegistry = Readonly<Record<string, Modifier>>;
@@ -82,6 +84,20 @@ export function channelLimit(
     if (hook) limit = hook(limit, player);
   }
   return limit;
+}
+
+/** Contamination a player can take before converting: the configured capacity folded through their modifiers. */
+export function contaminationCapacity(
+  state: Readonly<GameState>,
+  player: Readonly<PlayerState>,
+  registry: ModifierRegistry = MODIFIERS,
+): number {
+  let capacity = state.config.contaminationCapacity;
+  for (const id of player.modifiers) {
+    const hook = registry[id]?.contaminationCapacity;
+    if (hook) capacity = hook(capacity, player);
+  }
+  return capacity;
 }
 
 /**

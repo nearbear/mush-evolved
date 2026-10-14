@@ -35,6 +35,12 @@ export const DEFAULT_CONFIG: GameConfig = {
   inventorySlots: 3,
   // Confirmed 2026-10-13: three private channels per player by default (skills and research will raise it).
   channelLimit: 3,
+  // Confirmed 2026-10-14: bonding, DTT, and STT cost 1 AP each; DTT and STT give each of the two 2 morale.
+  bondAp: 1,
+  shareAp: 1,
+  shareMorale: 2,
+  // Confirmed 2026-10-14: a human converts on reaching 3 contamination (items and skills will raise it).
+  contaminationCapacity: 3,
   // PLACEHOLDER items with no effects, so there is something to pick up.
   startItems: [
     { type: "wrench", room: "LABORATORY" },

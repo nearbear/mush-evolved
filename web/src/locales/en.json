@@ -40,7 +40,10 @@
   "actions": {
     "examine": "Examine",
     "dispense": "Pull coffee",
-    "consume": "Drink"
+    "consume": "Drink",
+    "bond": "Bond",
+    "dtt": "DTT",
+    "stt": "STT"
   },
   "channels": {
     "empty": "No private channels yet.",
@@ -75,5 +78,10 @@
       "astrophysics": "Astrophysics"
     },
     "featureLabel": "Feature"
+  },
+  "bond": {
+    "both": "Bonded",
+    "toThem": "You bonded",
+    "fromThem": "Bonded to you"
   }
 }

@@ -6,8 +6,9 @@
 import { EQUIPMENT_TYPES, equipmentName } from "./equipment.ts";
 import { ITEM_TYPES, canReach, canTransfer, itemName, itemsIn, produceItem } from "./items.ts";
 import { logPrivate, logPublic, roomName } from "./log.ts";
-import { moveCost, movementRules } from "./modifiers.ts";
-import type { Action, Container, GameState, ItemState, PlayerState, Target } from "./types.ts";
+import { contaminationCapacity, moveCost, movementRules } from "./modifiers.ts";
+import { dayOf } from "./rules.ts";
+import type { Action, Container, GameState, ItemState, PlayerId, PlayerState, Target } from "./types.ts";
 
 export type ActionType = Action["type"];
 export type ActionOf<T extends ActionType> = Extract<Action, { type: T }>;
@@ -128,6 +129,63 @@ const examine: ActionDef<ActionOf<"examine">> = {
   },
 };
 
+/** Others you could bond with or share with: living, in your room. */
+const peopleHere = (state: Readonly<GameState>, p: Readonly<PlayerState>): PlayerState[] =>
+  state.players.filter((o) => o.id !== p.id && o.alive && o.room === p.room);
+
+const hasBondedTo = (state: Readonly<GameState>, from: PlayerId, to: PlayerId): boolean => !!state.bonds[from]?.includes(to);
+
+/** Bonding costs 1 AP, lasts forever, and is one-way: the other person bonds back with their own action (confirmed 2026-10-14). */
+const bond: ActionDef<ActionOf<"bond">> = {
+  candidates: (state, p) => peopleHere(state, p).map((o) => ({ type: "bond", target: o.id })),
+  check(state, p, a) {
+    if (!peopleHere(state, p).some((o) => o.id === a.target)) return "cant_see";
+    if (hasBondedTo(state, p.id, a.target)) return "already_bonded";
+    return p.ap >= state.config.bondAp ? null : "cant_afford";
+  },
+  cost: (state) => ({ ap: state.config.bondAp, mp: 0 }),
+  apply(next, p, a) {
+    (next.bonds[p.id] ??= []).push(a.target);
+    // Private: bonds are visible to the two partners only, so the room doesn't hear about it.
+    logPrivate(next, p.id, `You bonded with ${next.players.find((o) => o.id === a.target)!.name}.`);
+  },
+};
+
+/**
+ * DTT and STT (confirmed 2026-10-14): need a bond both ways and the same room.
+ * One of the two pays 1 AP; both gain 2 morale. Each of the two can do one of
+ * them per day, never both and never twice, and that blocks both partners.
+ */
+function share<A extends ActionOf<"dtt" | "stt">>(type: A["type"]): ActionDef<A> {
+  return {
+    candidates: (state, p) => peopleHere(state, p).map((o) => ({ type, target: o.id }) as A),
+    check(state, p, a) {
+      if (!peopleHere(state, p).some((o) => o.id === a.target)) return "cant_see";
+      if (!hasBondedTo(state, p.id, a.target) || !hasBondedTo(state, a.target, p.id)) return "not_bonded";
+      const { day } = dayOf(state);
+      if (state.sharedOnDay[p.id] === day || state.sharedOnDay[a.target] === day) return "cooldown";
+      return p.ap >= state.config.shareAp ? null : "cant_afford";
+    },
+    cost: (state) => ({ ap: state.config.shareAp, mp: 0 }),
+    apply(next, p, a) {
+      const other = next.players.find((o) => o.id === a.target)!; // checked, so it exists
+      const { day } = dayOf(next);
+      for (const who of [p, other]) {
+        who.morale = Math.min(next.config.maxMorale, who.morale + next.config.shareMorale);
+        next.sharedOnDay[who.id] = day;
+      }
+      // Contamination only flows from a DTT with exactly one Mush, into the human. Hidden from everyone.
+      const human = p.role === "human" ? p : other;
+      if (type === "dtt" && p.role !== other.role) {
+        next.contamination[human.id] = Math.min(contaminationCapacity(next, human), (next.contamination[human.id] ?? 0) + 1);
+      }
+      const label = type.toUpperCase(); // i18n-ignore: the acronym stays as written in every language
+      logPrivate(next, p.id, `You did ${label} with ${other.name}.`);
+      logPrivate(next, other.id, `${p.name} did ${label} with you.`);
+    },
+  };
+}
+
 const ready: ActionDef<ActionOf<"ready">> = {
   candidates: () => [{ type: "ready" }],
   check: () => null,
@@ -146,6 +204,9 @@ export const ACTIONS: { [T in ActionType]: ActionDef<ActionOf<T>> } = {
   dispense,
   consume,
   examine,
+  bond,
+  dtt: share("dtt"),
+  stt: share("stt"),
 };
 
 /** Everything a player can see and so interact with: people and equipment in their room, their items and the room's. */

@@ -40,7 +40,10 @@
   "actions": {
     "examine": "Examinar",
     "dispense": "Sacar un café",
-    "consume": "Beber"
+    "consume": "Beber",
+    "bond": "Crear vínculo",
+    "dtt": "DTT",
+    "stt": "STT"
   },
   "channels": {
     "empty": "Aún no hay canales privados.",
@@ -75,5 +78,10 @@
       "astrophysics": "Astrofísica"
     },
     "featureLabel": "Función"
+  },
+  "bond": {
+    "both": "Vinculados",
+    "toThem": "Creaste un vínculo",
+    "fromThem": "Vinculado a ti"
   }
 }

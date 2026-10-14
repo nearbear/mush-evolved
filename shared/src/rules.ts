@@ -79,6 +79,9 @@ export function createGame(seats: readonly Seat[], config: GameConfig, seed: num
     channels: [],
     nextChannelId: 1,
     actopi: true,
+    bonds: {},
+    sharedOnDay: {},
+    contamination: {},
   };
 }
 
@@ -173,6 +176,10 @@ export function viewFor(state: GameState, playerId: PlayerId): PlayerView {
     privateChannels: state.channels.filter((c) => c.members.includes(playerId)).map((c) => ({ ...c, members: [...c.members] })),
     channelLimit: channelLimit(state, you),
     movement: movementRules(state, you),
+    bonds: {
+      to: [...(state.bonds[playerId] ?? [])],
+      from: state.players.filter((o) => state.bonds[o.id]?.includes(playerId)).map((o) => o.id),
+    },
     maxAp: state.config.maxAp,
     maxHp: state.config.maxHp,
     maxMorale: state.config.maxMorale,

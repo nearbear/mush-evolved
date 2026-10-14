@@ -52,6 +52,15 @@ export function InspectPanel({
   );
 }
 
+/** Shows the bond between you and this person, if any. Both directions come from the view; nothing is computed here. */
+function BondTag({ view, id }: { view: PlayerView; id: string }) {
+  const { t } = useTranslation();
+  const to = view.bonds.to.includes(id);
+  const from = view.bonds.from.includes(id);
+  if (!to && !from) return null;
+  return <span className="tag">{t(to && from ? "bond.both" : to ? "bond.toThem" : "bond.fromThem")}</span>;
+}
+
 function Details({ view, resolved }: { view: PlayerView; resolved: Resolved }) {
   switch (resolved.kind) {
     case "player": {
@@ -69,6 +78,7 @@ function Details({ view, resolved }: { view: PlayerView; resolved: Resolved }) {
             <strong>{person.name}</strong>
             {person.isBot && <span className="tag">AI</span>}
             {person.id === view.you.id && <span className="tag">you</span>}
+            <BondTag view={view} id={person.id} />
             {character && <div className="sub">{character.name}</div>}
           </div>
         </>

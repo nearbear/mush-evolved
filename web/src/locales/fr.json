@@ -40,7 +40,10 @@
   "actions": {
     "examine": "Examiner",
     "dispense": "Tirer un café",
-    "consume": "Boire"
+    "consume": "Boire",
+    "bond": "Créer un lien",
+    "dtt": "DTT",
+    "stt": "STT"
   },
   "channels": {
     "empty": "Aucun canal privé pour l'instant.",
@@ -75,5 +78,10 @@
       "astrophysics": "Astrophysique"
     },
     "featureLabel": "Fonctionnalité"
+  },
+  "bond": {
+    "both": "Lié",
+    "toThem": "Vous avez créé un lien",
+    "fromThem": "Lié à vous"
   }
 }
