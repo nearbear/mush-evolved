@@ -61,6 +61,12 @@ export interface GameConfig {
   contaminationCapacity: number;
   /** AP spent to extract a spore (confirmed 2026-10-13). */
   extractSporeAp: number;
+  /** AP spent to shower, before the soap discount (confirmed 2026-10-14). */
+  showerAp: number;
+  /** AP off a shower when soap is in your inventory (confirmed 2026-10-14). */
+  showerSoapDiscount: number;
+  /** HP a Mush loses by showering (confirmed 2026-10-14). */
+  showerMushDamage: number;
   /** Satiety a human loses each cycle, before modifiers (confirmed 2026-10-14). */
   satietyPerCycle: number;
   /** Satiety at which a human has the full belly status and can't eat (confirmed 2026-10-14). */
@@ -248,6 +254,7 @@ export type Action =
   | { type: "dtt"; target: PlayerId }
   | { type: "stt"; target: PlayerId }
   | { type: "extract_spore" }
+  | { type: "shower"; equipment: string }
   | { type: "ready" };
 
 /** Room equipment as a client sees it. */

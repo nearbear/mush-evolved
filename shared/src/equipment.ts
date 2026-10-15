@@ -6,6 +6,8 @@ export interface EquipmentType {
   name: string;
   /** Item type pulled from it, once per cycle per machine (confirmed 2026-10-13). */
   dispenses?: string;
+  /** Players can wash here. */
+  shower?: boolean;
 }
 
 /**
@@ -38,7 +40,7 @@ export const EQUIPMENT_TYPES: Record<string, EquipmentType> = {
   PLANT_CONTROLLER: { name: "Plant controller" },
   RESEARCH_LAB: { name: "Research lab" },
   ROTATIONAL_REACTOR: { name: "Lateral reactor" },
-  SHOWER: { name: "Shower" },
+  SHOWER: { name: "Shower", shower: true },
   SOFA: { name: "Swedish sofa" },
   STELLAR_ANTENNA: { name: "Antenna" },
   SUPER_CALC: { name: "Supercomputer" },

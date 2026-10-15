@@ -77,7 +77,8 @@
     "bond": "Bond",
     "dtt": "DTT",
     "stt": "STT",
-    "extractSpore": "Extract spore"
+    "extractSpore": "Extract spore",
+    "shower": "Shower"
   },
   "logs": {
     "cameraInstalled": "{{CharacterName}} installed a camera.",

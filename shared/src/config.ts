@@ -44,6 +44,10 @@ export const DEFAULT_CONFIG: GameConfig = {
   // Confirmed 2026-10-13/14: extracting costs 1 AP and gives 1 spore; each Mush waits 4 cycles between extractions
   // and the faction shares 4 per day (skills and research will raise it).
   extractSporeAp: 1,
+  // Confirmed 2026-10-14: showering costs 2 AP, 1 less with soap in your inventory; a Mush takes 4 damage.
+  showerAp: 2,
+  showerSoapDiscount: 1,
+  showerMushDamage: 4,
   sporesPerExtraction: 1,
   sporeCooldownCycles: 4,
   sporesPerDay: 4,
@@ -64,6 +68,8 @@ export const DEFAULT_CONFIG: GameConfig = {
     { type: "camera", room: "CORRIDOR_A" },
     { type: "metal_scraps", room: "CORRIDOR_A" },
     { type: "plastic_scraps", room: "CORRIDOR_A" },
+    // Confirmed 2026-10-14: the soap always spawns in the Alpha dorm (for now).
+    { type: "soap", room: "BEDROOM_A" },
     // PLACEHOLDER food so satiety can be tested.
     { type: "cooked_ration", room: "REFECTORY" },
     { type: "cooked_ration", room: "REFECTORY" },

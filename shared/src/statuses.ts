@@ -46,6 +46,11 @@ export function publicStatusesOf(state: Readonly<Pick<GameState, "config" | "cyc
 }
 
 /** Mutates a state that the caller already cloned. */
+export function removeStatus(p: PlayerState, id: StatusId): void {
+  p.statuses = p.statuses.filter((s) => s !== id);
+}
+
+/** Mutates a state that the caller already cloned. */
 export function addStatus(p: PlayerState, id: StatusId): void {
   if (!p.statuses.includes(id)) p.statuses.push(id);
 }

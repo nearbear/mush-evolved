@@ -443,3 +443,7 @@ Asked how to use git worktrees; the earlier attempt failed because a worktree's 
 - Decided by the owner: dirty (public, cheese icon), full belly (private, apple icon), hungry (private), satiety for humans only. Four questions went through AskUserQuestion first: dirty has no removal for now, coffee +1 and a placeholder ration +4, hunger count starts at cycle 1 and HP stops at 0, Mush have no satiety.
 - Design choice: only `dirty` is stored; full belly and hungry are derived from satiety plus a `satietyZeroSince` cycle, so they cannot drift out of step. Statuses of others are sent only for people in the same room.
 - Needed noticing: the i18n wire baseline and the lobby test were already failing before this change (not fixed here). Icons were checked on a contact sheet because the file names (`belly_full`, `stinky`) didn't say which was cheese or apple.
+
+## 2026-10-14: shower and soap
+
+Owner asked for a `shower` action (2 AP, 1 less with soap carried, removes dirty, 4 damage to a Mush) and a soap item that spawns in the Alpha dorm. I asked about edge cases (shower when clean, soap consumed or reusable, log visibility); the owner confirmed only-when-dirty, reusable soap, every shower works, and a private log (soap pickup/drop in public history is the only tell). One of my options was worded confusingly and the owner had me clarify before answering. Implemented via the action registry, new config values, and a `soap` item whose id matches its existing icon file, so no new art was needed.

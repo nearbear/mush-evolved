@@ -6,7 +6,7 @@
 import { EQUIPMENT_TYPES, equipmentName } from "./equipment.ts";
 import { ITEM_TYPES, canReach, canTransfer, itemName, itemsIn, produceItem } from "./items.ts";
 import { logPrivate, logPublic, roomName } from "./log.ts";
-import { addStatus, isFullBelly } from "./statuses.ts";
+import { addStatus, isFullBelly, removeStatus } from "./statuses.ts";
 import { contaminationCapacity, moveCost, movementRules, sporesPerDay } from "./modifiers.ts";
 import { nextFloat } from "./rng.ts";
 import { dayOf } from "./rules.ts";
@@ -257,6 +257,34 @@ const extractSpore: ActionDef<ActionOf<"extract_spore">> = {
   },
 };
 
+/**
+ * Washing off dirty at a shower (confirmed 2026-10-14). Only offered while dirty.
+ * Costs `showerAp`, less with soap in your inventory (the soap is not used up).
+ * A Mush also takes `showerMushDamage` HP (floor 0). Private log: nobody learns
+ * you showered, though a soap pickup and drop in public history hints at it.
+ */
+const shower: ActionDef<ActionOf<"shower">> = {
+  candidates: (state, p) =>
+    (state.config.equipment[p.room] ?? []).filter((e) => EQUIPMENT_TYPES[e.type]?.shower).map((e) => ({ type: "shower", equipment: e.id })),
+  check(state, p, a) {
+    const e = state.config.equipment[p.room]?.find((eq) => eq.id === a.equipment);
+    if (!e || !EQUIPMENT_TYPES[e.type]?.shower) return "cant_shower";
+    if (!p.statuses.includes("dirty")) return "not_dirty";
+    return p.ap >= showerCost(state, p) ? null : "cant_afford";
+  },
+  cost: (state, p) => ({ ap: showerCost(state, p), mp: 0 }),
+  apply(next, p) {
+    removeStatus(p, "dirty");
+    if (p.role === "mush") p.hp = Math.max(0, p.hp - next.config.showerMushDamage);
+    logPrivate(next, p.id, p.role === "mush" ? "You showered. The water burns." : "You showered.");
+  },
+};
+
+function showerCost(state: Readonly<GameState>, p: Readonly<PlayerState>): number {
+  const soap = itemsIn(state, { kind: "player", id: p.id }).some((i) => i.type === "soap");
+  return Math.max(0, state.config.showerAp - (soap ? state.config.showerSoapDiscount : 0));
+}
+
 const ready: ActionDef<ActionOf<"ready">> = {
   candidates: () => [{ type: "ready" }],
   check: () => null,
@@ -280,6 +308,7 @@ export const ACTIONS: { [T in ActionType]: ActionDef<ActionOf<T>> } = {
   dtt: share("dtt"),
   stt: share("stt"),
   extract_spore: extractSpore,
+  shower,
 };
 
 /** Everything a player can see and so interact with: people and equipment in their room, their items and the room's. */

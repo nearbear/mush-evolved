@@ -77,7 +77,8 @@
     "bond": "Créer un lien",
     "dtt": "DTT",
     "stt": "STT",
-    "extractSpore": "Extraire une spore"
+    "extractSpore": "Extraire une spore",
+    "shower": "Se doucher"
   },
   "logs": {
     "cameraInstalled": "{{CharacterName}} a installé une caméra.",

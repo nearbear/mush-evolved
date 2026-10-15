@@ -37,6 +37,8 @@ export const ITEM_TYPES: Record<string, ItemType> = {
   // PLACEHOLDER food (2026-10-14): +4 satiety, no AP.
   cooked_ration: { name: "Cooked ration", consume: { ap: 0, satiety: 4 } },
   camera: { name: "Camera", canDrop: false, dismantle: { metal: 1, plastic: 0 }  },
+  // Showering with soap in your inventory costs 1 less AP (confirmed 2026-10-14). Reusable.
+  soap: { name: "Soap" },
   metal_scraps: { name: "Metal Scraps"},
   plastic_scraps: { name: "Plastic Scraps"},
 };
