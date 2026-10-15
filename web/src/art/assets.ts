@@ -119,6 +119,9 @@ const uiIcons = urls(
 /** A person you can see is somewhere but can't identify (ACTOPI off). */
 export const MUSH_ICON = uiIcons["mush"]!;
 
+/** The spore resource. */
+export const SPORE_ICON = uiIcons["spore"]!;
+
 /** Two gears, on the settings button. */
 export const SETTINGS_ICON = uiIcons["pam"]!;
 

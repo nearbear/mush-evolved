@@ -39,6 +39,10 @@
     "room": "Salle",
     "itrackie": "iTrackie"
   },
+  "resources": {
+    "other": "Autres ressources",
+    "spores": "Spores"
+  },
   "faction": {
     "about": "{{name}} : ce que veut votre camp",
     "human": {

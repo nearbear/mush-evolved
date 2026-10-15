@@ -39,6 +39,10 @@
     "room": "Sala",
     "itrackie": "iTrackie"
   },
+  "resources": {
+    "other": "Otros recursos",
+    "spores": "Esporas"
+  },
   "faction": {
     "about": "{{name}}: lo que quiere tu bando",
     "human": {

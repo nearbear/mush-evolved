@@ -178,9 +178,10 @@ h2 {
   height: 40px;
   image-rendering: pixelated;
 }
-/* Outlined cards: the nameplate and both stat stacks. The flat quote-box look (fill, 1px rim, soft shadow). */
+/* Outlined cards: the nameplate, both stat stacks, and the extras card. The flat quote-box look (fill, 1px rim, soft shadow). */
 .nameplate,
-.stat-stack {
+.stat-stack,
+.self-extras {
   background: var(--panel-fill);
   border: 1px solid var(--panel-rim);
   border-radius: var(--panel-radius);
@@ -408,17 +409,83 @@ h2 {
   font-size: calc(0.8rem + 4px);
 }
 
-/* Self panel: summary, then room items (left) and inventory (right). */
+/* Self panel: [summary over (room items filling | inventory, one row)] | extras card, then the credits across the bottom. */
 .self-panel {
+  --outline: color-mix(in srgb, var(--muted) 60%, transparent);
   display: flex;
   flex-wrap: wrap;
-  gap: 0.75rem 1.5rem;
+  gap: 0.75rem;
 }
-.self-panel > * {
-  flex: 1 1 12rem;
+.self-main {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+.self-cards {
+  display: flex;
+  gap: 0.75rem;
+  flex: 1;
   min-width: 0;
 }
-.self-panel .player-summary {
+.self-cards > .item-zone {
+  min-width: 0;
+  box-sizing: border-box;
+  padding: 0.5rem;
+  border: 1px solid var(--outline);
+  border-radius: var(--panel-radius);
+}
+/* Inventory is one row, sized to its slots; the room zone takes whatever is left. */
+.self-cards > .item-zone[data-zone="inventory"] {
+  flex: none;
+}
+.self-cards > .item-zone[data-zone="room"] {
+  flex: 1 1 0;
+}
+.self-cards .item-zone[data-zone="inventory"] .item-grid {
+  grid-auto-flow: column;
+  grid-template-columns: none;
+  grid-auto-columns: 76px;
+}
+/* Other resources (spores, free IT points, ...): icon and number rows, stacked, in the same card as the stat stacks. */
+.self-extras {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: 3px;
+  padding: 0.25rem 0.5rem;
+  min-height: 3rem;
+}
+.resource {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.8rem;
+  font-weight: bold;
+  color: #fff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.85);
+}
+.resource img {
+  image-rendering: pixelated;
+}
+/* On desktop the nameplate and the stat cards are always one row. */
+@media (min-width: 1024px) {
+  .self-panel .player-summary {
+    flex-wrap: nowrap;
+  }
+  /* The two stat cards share the space left of the nameplate equally. */
+  .self-panel .stats {
+    flex: 1;
+    min-width: 0;
+  }
+  .self-panel .stat-stack {
+    flex: 1 1 0;
+    min-width: 0;
+  }
+}
+.self-panel > .credits {
   flex: 1 1 100%;
 }
 .self-panel h2 {

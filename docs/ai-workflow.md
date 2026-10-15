@@ -392,3 +392,10 @@ The user asked for shift-clicking an inventory tile to move it between room and 
 ## 2026-10-14: development cheats (issue #148)
 
 Checked the issue first and asked three things it left open: the dev gate (env var, any match), visibility when off (section hidden), and what "infinite" means (hold the stat at max after anything that spends or loses it, so costs and the legal checks see a full bar). Cheats are a `cheat` input, so they are recorded and replay; the flags live on `PlayerState.cheats`, which only reaches your own view. The server's `ALLOW_CHEATS` flag travels beside the view (`cheatsAllowed`) rather than inside it, to keep `viewFor` pure. Worked: the i18n ratchet caught an English error sentence and a duplicate "Unknown player" before commit, so both became error codes. Local flag lives in the gitignored `server/.dev.vars`.
+### 2026-10-14: player panel "extras" card and one-row layout
+
+The user asked for an outlined card at the far right of the player panel, a home for resources that belong nowhere else (spores, free IT points), with the room and player inventories in a flex row. Decided by the user; implemented by the assistant.
+
+- Needed correction three times. First I outlined the card in the panel-rim color, which is nearly the background, so the user could not see it; they also meant the same card style as the resource bars, not a bare outline. A broad `sed` for the border color also changed four unrelated borders, which I caught and reverted. I also gave the card a fixed 10rem width when it only needs to fit an icon and a number.
+- The first spec was ambiguous (evenly wide cards, but room inventory twice the player inventory); the user clarified that inventory is one auto-sized row and the room zone fills the rest.
+- Placeholder spore row (icon + 99) is marked `TODO(extras)` until real resources exist. No visual check was run.

@@ -96,8 +96,8 @@ export function InventoryPanel({
   const empty = Math.max(0, view.inventorySlots - view.inventory.length);
 
   return (
-    <>
-      <section {...zoneProps("room")}>
+    <div className="self-cards">
+      <section {...zoneProps("room")} data-zone="room">
         <h2>In this room</h2>
         {view.roomItems.length === 0 ? (
           <p className="sub">Nothing here.</p>
@@ -106,7 +106,7 @@ export function InventoryPanel({
         )}
       </section>
 
-      <section {...zoneProps("inventory")}>
+      <section {...zoneProps("inventory")} data-zone="inventory">
         <h2>Inventory</h2>
         <ul className="item-grid">
           {view.inventory.map((item) => tile(item, "inventory"))}
@@ -120,6 +120,6 @@ export function InventoryPanel({
           ))}
         </ul>
       </section>
-    </>
+    </div>
   );
 }

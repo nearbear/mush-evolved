@@ -39,6 +39,10 @@
     "room": "Room",
     "itrackie": "iTrackie"
   },
+  "resources": {
+    "other": "Other resources",
+    "spores": "Spores"
+  },
   "faction": {
     "about": "{{name}}: what your faction wants",
     "human": {
