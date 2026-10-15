@@ -33,6 +33,18 @@ export function GameScreen({ ticket, onLeave }: { ticket: SeatTicket; onLeave: (
   // biome-ignore lint/correctness/useExhaustiveDependencies: `here` is a trigger: arriving somewhere new clears the door peek.
   useEffect(() => setPeekDoor(null), [here]);
 
+  // Desktop: pressing anywhere outside the inspect panel resets it to yourself. This runs on pointerdown,
+  // before the click that selects something new, so clicking a person or item still selects it.
+  // Not on a phone: there the peek bar's "More" sits outside the panel and needs the selection kept.
+  useEffect(() => {
+    if (mobile) return;
+    const reset = (e: PointerEvent) => {
+      if (e.target instanceof Element && !e.target.closest(".inspect")) setSelected(null);
+    };
+    document.addEventListener("pointerdown", reset);
+    return () => document.removeEventListener("pointerdown", reset);
+  }, [mobile]);
+
   useEffect(() => {
     const socket = gameSocket(ticket.roomId, ticket.token);
     socketRef.current = socket;
@@ -51,11 +63,10 @@ export function GameScreen({ ticket, onLeave }: { ticket: SeatTicket; onLeave: (
   }, [ticket, onLeave]);
 
   const post = (msg: GameClientMessage) => socketRef.current?.send(JSON.stringify(msg));
-  // Acting shows its result: the Room log tab, and on a phone the iTrackie panel.
+  // Acting shows its result in the iTrackie's Room log tab; the phone's bottom nav stays where it is.
   const send = (action: Action) => {
     post({ type: "action", action });
     setRoomLogRequest((n) => n + 1);
-    if (mobile) setPanel("itrackie");
   };
 
   if (!view) return <main className="connecting loading">Connecting…</main>;
@@ -86,7 +97,7 @@ export function GameScreen({ ticket, onLeave }: { ticket: SeatTicket; onLeave: (
 
       <div className="three-panel" data-panel={panel}>
         <div className="left-column">
-          <InspectPanel view={view} target={target} onAction={send} onClose={() => select(null)} />
+          <InspectPanel view={view} target={target} onAction={send} />
           {mobile && (
             <SelfPanel view={view} selected={target} showSummary={false} onAction={send} onSelect={select} />
           )}
@@ -107,6 +118,7 @@ export function GameScreen({ ticket, onLeave }: { ticket: SeatTicket; onLeave: (
                 selectedDoor={peekDoor}
                 onMove={move}
                 onSelect={select}
+                onClear={() => select(null)}
                 onDoorTap={tapDoor}
               />
             ) : (
@@ -134,13 +146,12 @@ export function GameScreen({ ticket, onLeave }: { ticket: SeatTicket; onLeave: (
       {mobile && panel === "room" && (
         <PeekBar
           view={view}
-          target={selected && resolveTarget(view, selected) ? selected : null}
+          target={target}
           door={peekDoor}
           reachable={reachable}
           onAction={send}
           onMove={move}
           onMore={() => setPanel("inspect")}
-          onClose={() => select(null)}
         />
       )}
       {mobile && <BottomNav panel={panel} onChange={setPanel} />}

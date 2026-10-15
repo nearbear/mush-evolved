@@ -35,6 +35,7 @@ export function IsoRoom({
   selectedDoor,
   onMove,
   onSelect,
+  onClear,
   onDoorTap,
 }: {
   layout: ShipLayout;
@@ -48,6 +49,8 @@ export function IsoRoom({
   selectedDoor: RoomId | null;
   onMove: (to: RoomId) => void;
   onSelect: (target: Target) => void;
+  /** Bare floor was tapped: drop the selection (and any peeked door). */
+  onClear: () => void;
   /** A single click or tap on any door, reachable or not. */
   onDoorTap: (to: RoomId) => void;
 }) {
@@ -168,7 +171,8 @@ export function IsoRoom({
     }
     else if (hit?.kind === "door") onDoorTap(hit.to);
     else {
-      // Bare floor (or scenery): walk there; the camera follows, revealing doors off-panel.
+      // Bare floor (or scenery): clear the selection and walk there; the camera follows, revealing doors off-panel.
+      onClear();
       const rect = e.currentTarget.getBoundingClientRect();
       const cell = cellAtPoint(cells, e.clientX - rect.left + box.minX, e.clientY - rect.top + box.minY);
       if (cell) setWalk({ room, cell });

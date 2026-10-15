@@ -1,5 +1,5 @@
-// Phone layout only: a slim bar above the bottom nav for whatever was tapped
-// in the room (a person, equipment, or a door), so you can act without
+// Phone layout only: a slim bar above the bottom nav, always shown, for whatever
+// was tapped in the room (a person, equipment, or a door), or yourself by default, so you can act without
 // leaving the room view. Legality comes from the view, like the Inspect panel.
 
 import type { ReactNode } from "react";
@@ -17,17 +17,15 @@ export function PeekBar({
   onAction,
   onMove,
   onMore,
-  onClose,
 }: {
   view: PlayerView;
-  /** Null, or yourself, shows nothing unless a door is peeked. */
-  target: Target | null;
+  /** Already resolved by the caller; yourself when nothing else is selected, so the bar never goes away. */
+  target: Target;
   door: RoomId | null;
   reachable: Set<RoomId>;
   onAction: (action: Action) => void;
   onMove: (to: RoomId) => void;
   onMore: () => void;
-  onClose: () => void;
 }) {
   const { t } = useTranslation();
   const labelFor = (a: Action): ReactNode => {
@@ -37,19 +35,18 @@ export function PeekBar({
   if (door) {
     const canGo = reachable.has(door);
     return (
-      <Bar title={`Door to ${roomLabel(door)}`} sub={canGo ? undefined : "No access"} onClose={onClose}>
+      <Bar title={`Door to ${roomLabel(door)}`} sub={canGo ? undefined : "No access"}>
         {canGo && <button onClick={() => onMove(door)}>Go</button>}
       </Bar>
     );
   }
-  if (!target || (target.kind === "player" && target.id === view.you.id)) return null;
   const resolved = resolveTarget(view, target);
   if (!resolved) return null;
   const name =
     resolved.kind === "player" ? resolved.person.name : resolved.kind === "equipment" ? resolved.equipment.name : resolved.item.name;
   const isBot = resolved.kind === "player" && resolved.person.isBot;
   return (
-    <Bar title={name} isBot={isBot} onClose={onClose}>
+    <Bar title={name} isBot={isBot}>
       {actionsOn(view, target).map((a) => (
         <button key={a.type} onClick={() => onAction(a)}>
           {labelFor(a)}
@@ -64,13 +61,11 @@ function Bar({
   title,
   sub,
   isBot = false,
-  onClose,
   children,
 }: {
   title: string;
   sub?: string | undefined;
   isBot?: boolean;
-  onClose: () => void;
   children: ReactNode;
 }) {
   return (
@@ -81,9 +76,6 @@ function Bar({
         {sub && <div className="sub">{sub}</div>}
       </div>
       <div className="peek-actions">{children}</div>
-      <button className="close" onClick={onClose} aria-label="Close">
-        ×
-      </button>
     </div>
   );
 }

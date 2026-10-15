@@ -13,13 +13,11 @@ export function InspectPanel({
   view,
   target,
   onAction,
-  onClose,
 }: {
   view: PlayerView;
   /** Already resolved against the view by the caller. */
   target: Target;
   onAction: (action: Action) => void;
-  onClose: () => void;
 }) {
   const { t } = useTranslation();
   const labelFor = (a: Action): ReactNode => {
@@ -27,18 +25,12 @@ export function InspectPanel({
     return <ActionLabel text={key ? t(key) : a.type} cost={costOf(view, a)} />;
   };
   const resolved = resolveTarget(view, target);
-  const isSelf = target.kind === "player" && target.id === view.you.id;
   const actions = actionsOn(view, target);
 
   return (
     <aside className="panel inspect">
       <div className="panel-head">
         <h2>Inspect</h2>
-        {!isSelf && (
-          <button className="close" onClick={onClose} aria-label="Close">
-            ×
-          </button>
-        )}
       </div>
       {resolved && <Details view={view} resolved={resolved} />}
       {actions.length > 0 && (
