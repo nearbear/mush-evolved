@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import type { MatchmakerServerMessage, Role } from "@mush2/shared";
 import { LanguageSwitcher } from "./i18n/LanguageSwitcher.tsx";
 import { matchmakerSocket, type SeatTicket } from "./net.ts";
+import logoUrl from "../../Mush/www/img/design/logo_welcome.png?url";
 import "./lobby.css";
 
 /**
@@ -145,7 +146,9 @@ export function Lobby({ onMatched }: { onMatched: (ticket: SeatTicket) => void }
           ))}
         </div>
         <section className="panel pod-panel">
-        <h1 className="pod-title">mush2</h1>
+        <h1 className="pod-title">
+          <img className="pod-logo" src={logoUrl} alt="mush2" />
+        </h1>
         {/*
           Both states stay rendered in one grid cell and only the current one is visible,
           so the panel is always sized to the larger and never resizes on join.

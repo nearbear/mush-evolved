@@ -285,6 +285,13 @@ body:has(.pod) {
   width: min(34rem, 100%);
   padding: 1.25rem 1.25rem 1.5rem;
 }
+.pod-logo {
+  display: block;
+  margin: 0 auto;
+  max-width: min(100%, 16rem);
+  height: auto;
+}
+
 .pod-title {
   margin: 0;
   text-align: center;
