@@ -5,7 +5,7 @@
 
 import type { GameClientMessage } from "./protocol.ts";
 import { applyAction, createChannel, createGame, inviteToChannel, leaveChannel, sendChat, setActopiCheat, setCheat, type ActionResult } from "./rules.ts";
-import type { GameConfig, GameState, PlayerId, Seat } from "./types.ts";
+import type { GameConfig, GameState, PlayerId, Role, Seat } from "./types.ts";
 
 /** What createGame needed, plus which rules produced the game. */
 export interface GameSetup {
@@ -18,6 +18,8 @@ export interface GameSetup {
    * commit rebuilds the game exactly.
    */
   rulesVersion: string;
+  /** Testing only: seats whose role was forced from the lobby (needs ALLOW_CHEATS). */
+  forcedRoles?: Record<PlayerId, Role>;
 }
 
 /**
@@ -28,7 +30,7 @@ export interface GameSetup {
 export type Input = GameClientMessage & { by: PlayerId };
 
 export function startGame(setup: GameSetup): GameState {
-  return createGame(setup.seats, setup.config, setup.seed);
+  return createGame(setup.seats, setup.config, setup.seed, setup.forcedRoles);
 }
 
 /** The single entry point for changing a game. */

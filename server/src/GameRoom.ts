@@ -16,6 +16,7 @@ import {
   type GameState,
   type Input,
   type PlayerId,
+  type Role,
   type Seat,
 } from "@mush2/shared";
 import { WanderBot, type Bot } from "./bots.ts";
@@ -106,13 +107,14 @@ export class GameRoom extends Server<Env> {
   }
 
   /** Called once by the matchmaker over RPC. */
-  async setup(seats: Seat[], tokens: Record<string, PlayerId>): Promise<void> {
+  async setup(seats: Seat[], tokens: Record<string, PlayerId>, forcedRoles?: Record<PlayerId, Role>): Promise<void> {
     if (this.game) throw new Error("Game already set up");
     const setup: GameSetup = {
       seats,
       config: DEFAULT_CONFIG,
       seed: crypto.getRandomValues(new Uint32Array(1))[0]!,
       rulesVersion: this.env.RULES_VERSION,
+      ...(forcedRoles && Object.keys(forcedRoles).length > 0 ? { forcedRoles } : {}),
     };
     this.game = startGame(setup);
     this.tokens = tokens;

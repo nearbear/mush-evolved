@@ -30,6 +30,10 @@
     "connecting": "Connecting…"
   },
   "lobby": {
+    "spawnAs": "Spawn as (testing)",
+    "roleRandom": "Random",
+    "roleHuman": "Human",
+    "roleMush": "Mush",
     "tagline": "Cryo sleep. Pick a ship to wake aboard.",
     "waiting": "Waiting: {{waiting}}/{{seats}}. Empty seats fill with bots shortly.",
     "awaitingCrew": "Awaiting crew",

@@ -30,6 +30,10 @@
     "connecting": "Connexion…"
   },
   "lobby": {
+    "spawnAs": "Apparaître en tant que (test)",
+    "roleRandom": "Aléatoire",
+    "roleHuman": "Humain",
+    "roleMush": "Mush",
     "tagline": "Sommeil cryogénique. Choisissez un vaisseau où vous réveiller.",
     "waiting": "En attente : {{waiting}}/{{seats}}. Les places vides seront bientôt remplies par des bots.",
     "awaitingCrew": "En attente d'équipage",

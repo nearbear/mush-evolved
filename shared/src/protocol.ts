@@ -3,12 +3,13 @@
 
 import { isActopiCheat, isCheat, type ActopiCheat, type Cheat } from "./cheats.ts";
 import { MAX_CHAT_LENGTH } from "./rules.ts";
-import { CHAT_CHANNELS, type Action, type ChannelId, type PlayerId, type PlayerView, type PrivateChannelId } from "./types.ts";
+import { CHAT_CHANNELS, type Action, type ChannelId, type PlayerId, type PlayerView, type PrivateChannelId, type Role } from "./types.ts";
 
 export const MAX_NAME_LENGTH = 24;
 
 // Matchmaker ("matchmaker" party, room "global")
-export type MatchmakerClientMessage = { type: "queue"; name: string };
+// `role` is a testing aid; the matchmaker ignores it unless cheats are allowed. Omitted means random.
+export type MatchmakerClientMessage = { type: "queue"; name: string; role?: Role };
 export type MatchmakerServerMessage =
   | { type: "queued"; waiting: number; seats: number }
   | { type: "matched"; roomId: string; token: string }
@@ -33,7 +34,8 @@ export function parseMatchmakerMessage(raw: string): MatchmakerClientMessage | n
   const msg = parseJson(raw);
   if (msg?.type !== "queue" || typeof msg.name !== "string") return null;
   const name = msg.name.trim().slice(0, MAX_NAME_LENGTH);
-  return name ? { type: "queue", name } : null;
+  if (!name) return null;
+  return msg.role === "human" || msg.role === "mush" ? { type: "queue", name, role: msg.role } : { type: "queue", name };
 }
 
 export function parseGameMessage(raw: string): GameClientMessage | null {

@@ -3,7 +3,7 @@
 // talk to each other or to the matchmaker after setup.
 
 import { getServerByName, Server, type Connection, type WSMessage } from "partyserver";
-import { CHARACTERS, parseMatchmakerMessage, SEAT_COUNT, type MatchmakerServerMessage, type PlayerId, type Seat } from "@mush2/shared";
+import { CHARACTERS, parseMatchmakerMessage, SEAT_COUNT, type MatchmakerServerMessage, type PlayerId, type Role, type Seat } from "@mush2/shared";
 import { RateLimiter } from "./rateLimit.ts";
 
 /** How long the first player waits before empty seats are filled with bots. */
@@ -12,6 +12,8 @@ const FILL_DELAY_MS = 5_000;
 interface QueueState {
   name: string | null;
   joinedAt: number;
+  /** Testing only: the role this player asked to spawn as. */
+  role?: Role;
 }
 
 export class Matchmaker extends Server<Env> {
@@ -26,7 +28,7 @@ export class Matchmaker extends Server<Env> {
     }
     if (connection.state?.name) return; // already queued
 
-    connection.setState({ name: msg.name, joinedAt: Date.now() });
+    connection.setState({ name: msg.name, joinedAt: Date.now(), role: msg.role });
     const waiting = this.waiting();
     if (waiting.length >= SEAT_COUNT) {
       await this.startMatch(waiting.slice(0, SEAT_COUNT));
@@ -61,6 +63,7 @@ export class Matchmaker extends Server<Env> {
     const seats: Seat[] = [];
     const tokens: Record<string, PlayerId> = {};
     const tokenByConnection = new Map<string, string>();
+    const forcedRoles: Record<PlayerId, Role> = {};
     const characters = shuffled(CHARACTERS.map((c) => c.id));
 
     humans.forEach((conn, i) => {
@@ -68,6 +71,8 @@ export class Matchmaker extends Server<Env> {
       const token = crypto.randomUUID();
       seats.push({ id, name: conn.state!.name!, isBot: false, character: characters[i]! });
       tokens[token] = id;
+      // Same dev flag as the in-game cheats; on a deployment the request is ignored.
+      if (conn.state!.role && this.env.ALLOW_CHEATS === "true") forcedRoles[id] = conn.state!.role;
       tokenByConnection.set(conn.id, token);
     });
     for (let i = humans.length; i < SEAT_COUNT; i++) {
@@ -76,10 +81,10 @@ export class Matchmaker extends Server<Env> {
     }
 
     const room = await getServerByName(this.env.GameRoom, roomId);
-    await room.setup(seats, tokens);
+    await room.setup(seats, tokens, forcedRoles);
 
     for (const conn of humans) {
-      conn.setState({ name: null, joinedAt: 0 });
+      conn.setState({ name: null, joinedAt: 0, role: undefined });
       this.send(conn, { type: "matched", roomId, token: tokenByConnection.get(conn.id)! });
     }
   }

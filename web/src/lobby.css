@@ -594,3 +594,13 @@ body:has(.pod) {
     filter: blur(6px);
   }
 }
+
+/* Testing role picker and language switcher, side by side in the top-right corner. */
+.pod-toolbar {
+  position: fixed;
+  top: max(0.5rem, env(safe-area-inset-top));
+  right: max(0.5rem, env(safe-area-inset-right));
+  z-index: 10;
+  display: flex;
+  gap: 0.5rem;
+}

@@ -28,6 +28,7 @@ import type {
   PlayerState,
   PlayerView,
   RoomId,
+  Role,
   Seat,
 } from "./types.ts";
 
@@ -38,12 +39,17 @@ export const CHAT_HISTORY = 200;
 
 export type ActionResult = { ok: true; state: GameState } | { ok: false; error: string };
 
-export function createGame(seats: readonly Seat[], config: GameConfig, seed: number): GameState {
+/**
+ * `forcedRoles` is a testing aid: a forced Mush is picked before anyone else and a forced human
+ * last, so the usual random draw still fills any remaining Mush places.
+ */
+export function createGame(seats: readonly Seat[], config: GameConfig, seed: number, forcedRoles: Readonly<Record<PlayerId, Role>> = {}): GameState {
   if (config.mushCount >= seats.length) throw new Error("mushCount must be less than seat count");
   if (new Set(seats.map((s) => s.id)).size !== seats.length) throw new Error("duplicate seat ids");
 
   const [shuffled, rng] = shuffle(seats, seed);
-  const mushIds = new Set(shuffled.slice(0, config.mushCount).map((s) => s.id));
+  const rank = (s: Seat) => (forcedRoles[s.id] === "mush" ? 0 : forcedRoles[s.id] === "human" ? 2 : 1);
+  const mushIds = new Set([...shuffled].sort((a, b) => rank(a) - rank(b)).slice(0, config.mushCount).map((s) => s.id));
 
   const players: PlayerState[] = seats.map((s) => ({
     ...s,
