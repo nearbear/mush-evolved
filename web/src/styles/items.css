@@ -1,0 +1,82 @@
+/* Item tiles and drag zones. */
+
+/* Item tiles: big square icon with the name inside at the bottom. Drag between the two zones. */
+.item-zone {
+  border-radius: 4px;
+  transition: outline-color 0.1s;
+  outline: 2px dashed transparent;
+  outline-offset: 4px;
+}
+.item-zone.accepting {
+  outline-color: color-mix(in srgb, var(--highlight) 50%, transparent);
+}
+.item-zone.over {
+  outline-color: var(--highlight);
+  outline-style: solid;
+}
+.item-grid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, 76px);
+  gap: 6px;
+}
+.item-slot {
+  position: relative;
+  width: 76px;
+  height: 76px;
+}
+.item-tile {
+  all: unset;
+  box-sizing: border-box;
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  border-radius: 4px;
+  cursor: grab;
+}
+.item-tile.empty {
+  cursor: default;
+  opacity: 0.5;
+}
+.item-tile.empty .item-icon {
+  object-fit: fill;
+  image-rendering: pixelated;
+}
+.item-tile.dragging {
+  opacity: 0.4;
+}
+.item-tile:focus-visible,
+.item-tile.selected {
+  outline: 2px solid var(--highlight);
+}
+.item-icon {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+}
+.item-label {
+  position: absolute;
+  inset: auto 0 0 0;
+  padding: 8px 2px 1px;
+  background: linear-gradient(transparent, rgba(0, 0, 0, 0.85));
+  color: #fff;
+  font-size: 0.65rem;
+  line-height: 1.1;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.item-action {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  margin: 0;
+  padding: 0 0.4rem;
+  font-size: 0.7rem;
+}

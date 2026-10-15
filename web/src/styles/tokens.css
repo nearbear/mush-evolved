@@ -1,0 +1,33 @@
+/* Design tokens. */
+
+:root {
+  --bg: #0d1424;
+  --panel: #16213a;
+  --edge: #2c3e66;
+  --text: #dfe6f5;
+  --muted: #8796b8;
+  --accent: #4fc3f7;
+  /* Faction colors: use these for every faction indicator in the UI. */
+  --mush: #ff4c84; /* sampled from the pink of the original MUSH logo (design/logo.png) */
+  --human: #7cc8ff;
+  --danger: #ff6b81;
+  /* Gold: selection outlines, glows, highlighted map cells. */
+  --highlight: #f5c542;
+  --badge: #24508a;
+  --room-bg: #0a0f1c;
+  /* Dark text/strokes on light art (chat field, minimap dots). */
+  --ink: #0d1424;
+  /* Panel surface: the flat quote-box fill, plus glow colors for highlights. */
+  --surface-top: var(--panel-fill);
+  --surface-bottom: var(--panel-fill);
+  --glow: #3c6eff;
+  --glow-rim: #78aaff;
+  /* Panel surface, sampled from the original quote box (design/quote.png):
+     flat fill, 1px rim, soft black shadow. */
+  --panel-fill: #1a1b4a;
+  --panel-rim: #26378c;
+  --panel-shadow: rgb(0 0 0 / 0.55);
+  --panel-radius: 4px;
+  --sprite-scale: 2;
+  color-scheme: dark;
+}

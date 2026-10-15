@@ -1,0 +1,75 @@
+/* The Mush-style button, plus action button content. */
+
+/*
+ * The original site's 3-slice button (5px caps + a 1px middle stretched to fit),
+ * with its hover (*over) and pressed (*_on) variants. Components that aren't
+ * plain buttons (tabs) replace the whole background.
+ */
+button {
+  --btn-left: url("../../../Mush/www/img/design/butleft.png");
+  --btn-mid: url("../../../Mush/www/img/design/butbg.png");
+  --btn-right: url("../../../Mush/www/img/design/butright.png");
+  margin: 0.25rem;
+  height: 21px;
+  background:
+    var(--btn-left) left / 5px 100% no-repeat,
+    var(--btn-right) right / 5px 100% no-repeat,
+    var(--btn-mid) center / calc(100% - 10px) 100% no-repeat;
+  color: #fff;
+  border: 0;
+  padding: 0 0.75rem;
+  font-size: 0.8rem;
+  text-shadow: 0 1px 1px rgb(0 0 30 / 0.6);
+  image-rendering: pixelated;
+  cursor: pointer;
+  /* Taps fire at once instead of waiting to see if it's a double-tap zoom. */
+  touch-action: manipulation;
+}
+/* Only real hover: on touch screens :hover sticks after a tap. */
+@media (hover: hover) {
+  button:hover:not(:disabled) {
+    --btn-left: url("../../../Mush/www/img/design/butleftover.png");
+    --btn-mid: url("../../../Mush/www/img/design/butbgover.png");
+    --btn-right: url("../../../Mush/www/img/design/butrightover.png");
+  }
+}
+button:active:not(:disabled) {
+  --btn-left: url("../../../Mush/www/img/design/butleft_on.gif");
+  --btn-mid: url("../../../Mush/www/img/design/butbg_on.gif");
+  --btn-right: url("../../../Mush/www/img/design/butright_on.gif");
+}
+button:disabled {
+  cursor: default;
+  opacity: 0.6;
+}
+/* The larger 40px variant (35px bevelled caps), for the lobby's main call to action. */
+button.big {
+  --btn-left: url("../../../Mush/www/img/design/but2left.png");
+  --btn-mid: url("../../../Mush/www/img/design/but2bg.png");
+  --btn-right: url("../../../Mush/www/img/design/but2right.png");
+  height: 40px;
+  padding: 0 2.5rem;
+  font-size: 1rem;
+  font-weight: bold;
+  background:
+    var(--btn-left) left / 35px 100% no-repeat,
+    var(--btn-right) right / 35px 100% no-repeat,
+    var(--btn-mid) center / calc(100% - 70px) 100% no-repeat;
+}
+button.big:hover:not(:disabled),
+button.big:active:not(:disabled) {
+  --btn-left: url("../../../Mush/www/img/design/but2leftover.png");
+  --btn-mid: url("../../../Mush/www/img/design/but2bgover.png");
+  --btn-right: url("../../../Mush/www/img/design/but2rightover.png");
+}
+
+/* Action button content: bold cost, action icon, label. Icon drawn at 1x. */
+.action-label {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3rem;
+}
+.action-label img {
+  image-rendering: pixelated;
+}

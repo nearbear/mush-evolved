@@ -1,0 +1,272 @@
+/* Desktop fill-the-viewport layout, phone layout (keep in sync with MOBILE_QUERY), landscape phone, and coarse pointers. Last, so it overrides the rest. */
+
+/*
+ * Desktop: the game fills the viewport (no page scrollbar). All three columns
+ * stretch to the same height; the self panel keeps its natural height and the
+ * room takes whatever is left under it.
+ */
+@media (min-width: 1024px) {
+  main.game {
+    display: flex;
+    flex-direction: column;
+    height: 100dvh;
+    margin-top: 0;
+    margin-bottom: 0;
+    padding-top: 0.5rem;
+    padding-bottom: 0.25rem;
+    box-sizing: border-box;
+  }
+  .three-panel {
+    flex: 1;
+    min-height: 0;
+    align-items: stretch;
+    margin: 0.5rem 0;
+  }
+  .left-column > .inspect {
+    flex: 1;
+    min-height: 0;
+    overflow: auto;
+  }
+  .world > .room-view {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+  }
+  .world > .self-panel {
+    flex: none;
+  }
+  .room-view > .iso-room {
+    flex: 1 1 0;
+    min-height: 0;
+  }
+  .itrackie {
+    height: auto;
+    min-height: 0;
+  }
+}
+
+/* Phone layout bits that exist in the DOM on desktop too. */
+.bottom-nav,
+.peek-bar {
+  display: none;
+}
+
+/*
+ * Phone layout. Keep the breakpoint in sync with MOBILE_QUERY in useMobile.ts.
+ * The top bar always shows; one panel at a time below it (data-panel on
+ * .three-panel picks which), then the peek bar and the bottom nav.
+ */
+@media (max-width: 1023px) {
+  main.game {
+    display: flex;
+    flex-direction: column;
+    height: 100dvh;
+    max-width: none;
+    margin: 0;
+    padding: 0;
+  }
+  main.game > .error {
+    margin: 0.25rem 0.5rem;
+  }
+
+  .top-bar {
+    flex: none;
+    flex-wrap: wrap;
+    gap: 0.35rem 0.5rem;
+    padding: 0.35rem 0.3rem;
+  }
+  /* The summary's pieces become top-bar flex items. */
+  .top-bar .player-summary {
+    display: contents;
+  }
+  .top-bar .avatar {
+    width: 32px;
+    height: 32px;
+  }
+  /* Nameplate and both buttons share the first row; a long name gets cut off. */
+  .top-bar .nameplate {
+    flex: 1 1 0;
+    min-width: 0;
+  }
+  .top-bar .who {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .top-bar .spacer,
+  .top-bar .character-name,
+  .top-bar .cycle,
+  .wide-only {
+    display: none;
+  }
+  .cycle-under-name {
+    display: block;
+  }
+  .top-bar button {
+    margin: 0;
+  }
+  /*
+   * Stats get their own row. Spacing is trimmed so both stacks fit side by side
+   * at 360px, the narrowest phone we support (the bars drop to 1x sprite pixels).
+   */
+  .top-bar .stats {
+    order: 1;
+    flex-basis: 100%;
+    gap: 0.4rem;
+  }
+  /* Side by side, one row, equal widths. */
+  .top-bar .stat-stack {
+    flex: 1 1 0;
+    min-width: 0;
+    padding: 0.25rem 0.3rem;
+  }
+  .pip-bar {
+    --s: 1px; /* 12 slots at 2x would not fit half the phone width */
+    gap: 1px;
+  }
+  .pip-bar .sub {
+    margin-left: 0.2rem;
+  }
+  .stat-stack .pip-label {
+    min-width: 1.25rem;
+  }
+  .stat-stack .thin .pip-label {
+    min-width: 2.7rem; /* just fits "Morale", so HP and morale pips line up */
+  }
+
+  .three-panel {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    /* Desktop's align-items: start would let a wide room push the panel off screen. */
+    align-items: stretch;
+    margin: 0;
+    padding: 0.5rem;
+    overflow: auto;
+  }
+  .three-panel > * {
+    display: none;
+  }
+  .three-panel[data-panel="inspect"] > .left-column,
+  .three-panel[data-panel="room"] > .world,
+  .three-panel[data-panel="itrackie"] > .itrackie {
+    display: flex;
+  }
+  /* The room and the iTrackie fill the panel and scroll inside themselves. */
+  .three-panel[data-panel="room"],
+  .three-panel[data-panel="itrackie"] {
+    overflow: hidden;
+  }
+  .world {
+    flex: 1;
+    min-height: 0;
+  }
+  .room-view {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+  }
+  .iso-room {
+    flex: 1 1 0;
+    min-height: 0;
+    padding: 2rem 0.5rem 0.5rem;
+  }
+  .itrackie {
+    flex: 1;
+    min-height: 0;
+    height: auto;
+  }
+
+  /* At 360px the expanded plan is capped by max-width. */
+  .minimap {
+    --cell: 1.5px;
+  }
+  .minimap.expanded {
+    --cell: 4px;
+  }
+
+  .peek-bar {
+    flex: none;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.4rem 0.5rem;
+    background: var(--panel);
+    border-top: 1px solid var(--edge);
+  }
+  .peek-name {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .peek-actions {
+    display: flex;
+    gap: 0.4rem;
+  }
+  .peek-bar button {
+    margin: 0;
+  }
+
+  .bottom-nav {
+    flex: none;
+    display: flex;
+    gap: 4px;
+    padding: 4px 4px calc(4px + env(safe-area-inset-bottom));
+    background: var(--panel-fill);
+    border-top: 1px solid var(--panel-rim);
+  }
+  /* Same rim and radius as the iTrackie tabs above, rounded on all corners since nothing abuts it. */
+  .bottom-nav-button {
+    height: 44px;
+    font-size: 0.85rem;
+    border: 1px solid var(--panel-rim);
+    border-radius: var(--panel-radius);
+    background: color-mix(in srgb, var(--panel-fill) 55%, black);
+  }
+
+  /* Typing: give the feed and the input everything above the keyboard. */
+  main.game:has(.chat-input input:focus) :is(.bottom-nav, .peek-bar) {
+    display: none;
+  }
+}
+
+/* Phone on its side: about 390px tall, so the top bar gets one compact row. */
+@media (max-width: 1023px) and (orientation: landscape) and (max-height: 500px) {
+  .top-bar {
+    flex-wrap: nowrap;
+    padding: 0.2rem 0.5rem;
+  }
+  .top-bar .avatar {
+    width: 24px;
+    height: 24px;
+  }
+  .top-bar .stats {
+    order: 0;
+    flex-basis: auto;
+    flex-wrap: nowrap;
+  }
+  /* The stats share the row with the name, so the stacks size to their content. */
+  .top-bar .stat-stack {
+    flex: none;
+  }
+  .bottom-nav-button {
+    height: 32px;
+  }
+}
+
+/*
+ * Fingers: taller 3-slice buttons (the art stretches to the full height).
+ * Element-only specificity, so buttons with their own art and size (tabs, chat
+ * send, the big button) keep theirs.
+ */
+@media (pointer: coarse) {
+  button {
+    height: 32px;
+  }
+}

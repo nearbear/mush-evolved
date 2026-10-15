@@ -1,0 +1,44 @@
+/* Inspect panel. */
+
+.inspect-card {
+  display: flex;
+  gap: 0.6rem;
+  align-items: center;
+  margin: 0.75rem 0;
+}
+.inspect-portrait {
+  width: 48px;
+  height: 48px;
+  image-rendering: pixelated;
+  background: rgb(0 0 0 / 0.3);
+  border-radius: 4px;
+}
+.inspect-item-icon {
+  display: block;
+  width: 96px;
+  height: 96px;
+  object-fit: contain;
+  margin: 0.75rem auto 0.5rem;
+}
+.inspect-art {
+  display: block;
+  width: 100%;
+  max-width: 210px;
+  margin: 0.75rem auto 0.5rem;
+  border-radius: 4px;
+}
+.inspect-name {
+  margin: 0.75rem 0 0.5rem;
+}
+.inspect-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin-top: 0.75rem;
+}
+.inspect-actions button {
+  margin: 0;
+  width: 100%;
+  height: 30px;
+  font-size: calc(0.8rem + 4px);
+}

@@ -1,0 +1,256 @@
+/* iTrackie: tabs, Features, Private channels, tooltips. */
+
+/* iTrackie (Base UI Tabs + ScrollArea; they ship unstyled) */
+
+.itrackie {
+  display: flex;
+  flex-direction: column;
+  height: 560px;
+  padding: 0.5rem;
+  overflow: hidden;
+}
+/* Above the card, so the active tab can cover the card's top rim. */
+.itrackie-tabs {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  gap: 4px;
+  padding: 0 4px;
+}
+/* The tab contents: an outlined card (like the nameplate and stat stacks) filling the glowing panel under the tabs. */
+.itrackie-card {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  background: var(--panel-fill);
+  border: 1px solid var(--panel-rim);
+  border-radius: var(--panel-radius);
+  box-shadow: 0 0 6px var(--panel-shadow);
+}
+/* Tabs share the panel look: flat when idle, glowing when active. */
+.itrackie-tab,
+.bottom-nav-button {
+  flex: 1;
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+  background: color-mix(in srgb, var(--surface-top) 60%, transparent);
+  color: var(--muted);
+  text-shadow: none;
+}
+.itrackie-tab {
+  height: 28px;
+  padding: 0 0.6rem;
+  font-size: 1rem;
+  /* Same rim and corner radius as the panel; rounded on top only, so the active tab joins the panel below. */
+  border: 1px solid var(--panel-rim);
+  border-bottom: 0;
+  border-radius: var(--panel-radius) var(--panel-radius) 0 0;
+  background: color-mix(in srgb, var(--panel-fill) 55%, black);
+}
+.tab-icon {
+  height: 18px;
+  image-rendering: pixelated;
+  vertical-align: middle;
+  opacity: 0.7;
+}
+.itrackie-tab:hover .tab-icon,
+.itrackie-tab[data-active] .tab-icon {
+  opacity: 1;
+}
+.itrackie-tab:hover:not(:disabled),
+.itrackie-tab:active:not(:disabled) {
+  color: var(--text);
+}
+.itrackie-tab[data-active],
+.bottom-nav-button[aria-current] {
+  background: var(--panel-fill);
+  color: var(--text);
+  font-weight: bold;
+}
+.bottom-nav-button[aria-current] {
+  border-color: var(--glow-rim);
+}
+.itrackie-tab[data-active] {
+  border-color: var(--glow-rim);
+  /* Cover the card's top rim so the tab opens into the card. */
+  margin-bottom: -1px;
+  height: 29px;
+  box-shadow: none;
+}
+/* The active tab's name, since the tabs themselves are icons. */
+.itrackie-title {
+  flex: none;
+  margin: 0;
+  padding: 0.4rem 0.75rem 0;
+  font-size: 0.9rem;
+}
+.itrackie-tabs-root {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+.itrackie-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  padding: 0.5rem 0.75rem 0.75rem;
+}
+.itrackie-panel[hidden] {
+  display: none;
+}
+
+/* Features tab: a drop-down, then the chosen feature's tracker over its thread. */
+.feature-select {
+  margin-bottom: 0.5rem;
+  min-height: 32px;
+  font: inherit;
+}
+.feature-select-trigger {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  width: 100%;
+  text-align: left;
+}
+.feature-select-trigger .tab-icon {
+  opacity: 1;
+}
+.feature-select-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.feature-select-positioner {
+  z-index: 50;
+  min-width: var(--anchor-width);
+}
+.feature-select-popup {
+  border: 1px solid var(--edge);
+  border-radius: 4px;
+  background: var(--surface-bottom, #0b1020);
+  color: var(--text);
+  padding: 0.2rem;
+}
+.feature-select-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 40px;
+  padding: 0 0.6rem;
+  border-radius: 3px;
+  cursor: pointer;
+  user-select: none;
+}
+.feature-select-item .tab-icon {
+  opacity: 1;
+}
+.feature-select-item[data-highlighted] {
+  background: color-mix(in srgb, var(--glow) 35%, transparent);
+}
+.feature-select-item[data-selected] {
+  font-weight: bold;
+}
+.feature {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+.feature[hidden] {
+  display: none;
+}
+.tracker {
+  flex: none;
+  margin-bottom: 0.5rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--edge);
+}
+.tracker-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-height: 8rem;
+  overflow-y: auto;
+  font-size: 0.85rem;
+}
+.tracker-list li {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.15rem 0;
+}
+.tracker-list li > span {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.tracker-list .tracker-remove {
+  flex: none;
+  margin: 0;
+  min-width: 32px;
+  padding: 0 0.4rem;
+}
+.tracker .chat-input button {
+  flex: none;
+  margin: 0;
+}
+
+/* Private tab: laid out like Features (drop-down, then the thread), with channel controls around it. */
+.channel-bar {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+.channel-bar .feature-select {
+  flex: 1;
+  min-width: 0;
+}
+.channel-bar button {
+  flex: none;
+  margin: 0;
+}
+/* Square-ish emoji button; the label lives in the tooltip. */
+.icon-button {
+  flex: none;
+  min-width: 32px;
+  padding: 0 0.4rem;
+  font-size: 0.95rem;
+  line-height: 21px;
+}
+.tooltip {
+  z-index: 50;
+  max-width: 16rem;
+  padding: 0.25rem 0.5rem;
+  border: 1px solid var(--edge);
+  border-radius: 4px;
+  background: var(--surface-bottom, #0b1020);
+  color: #fff;
+  font-size: 0.8rem;
+  pointer-events: none;
+}
+.channel-members {
+  margin: 0 0 0.5rem;
+  overflow-wrap: anywhere;
+}
+.channel-empty {
+  flex: 1;
+  margin: 0;
+}
+.channel-invite,
+.channel-create {
+  flex: none;
+  margin-top: 0.5rem;
+}
+.channel-create ~ p {
+  flex: none;
+  margin: 0.25rem 0 0;
+}
+.itrackie-caption {
+  margin-bottom: 0.25rem;
+}

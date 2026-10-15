@@ -1,6 +1,6 @@
 import { useSyncExternalStore } from "react";
 
-/** Keep in sync with the `@media (max-width: 1023px)` block in styles.css. */
+/** Keep in sync with the `@media (max-width: 1023px)` block in styles/responsive.css. */
 const MOBILE_QUERY = "(max-width: 1023px)";
 
 const query = window.matchMedia(MOBILE_QUERY);

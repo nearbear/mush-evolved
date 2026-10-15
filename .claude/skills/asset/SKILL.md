@@ -31,7 +31,7 @@ Sheets land in `.screenshots/contact/`. **Read them** with the Read tool. Get si
 ## 3. Wire it in
 
 - **From TypeScript:** add it to the `import.meta.glob` in `web/src/art/assets.ts` (eager, `?url`), and export a named constant or lookup. Vite bundles only matched files, so globs must stay narrow.
-- **From CSS:** `url("../../Mush/...")` relative to `web/src/styles.css` works (Vite allows the workspace root). Good for chrome: buttons, tabs, backgrounds. Use multiple background layers for 3-slice art and `image-rendering: pixelated` when scaling pixel art.
+- **From CSS:** `url("../../../Mush/...")` relative to a file in `web/src/styles/`works (Vite allows the workspace root). Good for chrome: buttons, tabs, backgrounds. Use multiple background layers for 3-slice art and `image-rendering: pixelated` when scaling pixel art.
 - **Never copy files out of `Mush/`** into `web/` or `public/`. The art stays in its licensed folder (CLAUDE.md).
 - **Sprites with no alpha:** character strips use a solid background colour. `web/src/art/keyedSprite.ts` keys out the top-left pixel at load time; reuse it rather than shipping edited copies.
 - **Data from the art** (slices, layouts) is generated at build time by `tools/` into `Mush/derived/` (see `npm run ship-layout`), so derived data stays in the CC tree too.

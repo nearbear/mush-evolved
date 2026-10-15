@@ -1,0 +1,101 @@
+/* Isometric room view and crew sprites. */
+
+.iso-room {
+  position: relative;
+  min-height: 200px;
+  background: var(--room-bg);
+  border: 1px solid var(--edge);
+  border-radius: 6px;
+  padding: 2.25rem 1rem 1rem;
+  display: flex;
+  flex-direction: column;
+  touch-action: manipulation;
+}
+/* Pans (touch or wheel) when the room is bigger than the panel; never shows a scrollbar. */
+.iso-scroll {
+  scrollbar-width: none;
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  /* The camera follows you (IsoRoom); no manual panning. */
+  overflow: hidden;
+}
+.room-title {
+  position: absolute;
+  top: 0.6rem;
+  left: 0.75rem;
+  margin: 0;
+  color: #fff;
+  font-size: 1rem;
+}
+/* margin: auto centres it but, unlike justify-content, still lets an overflowing room scroll to its left edge. */
+.iso-viewport {
+  position: relative;
+  flex: none;
+  margin: auto;
+}
+.iso-scroll::-webkit-scrollbar {
+  display: none;
+}
+.iso-layer {
+  position: absolute;
+  left: 0;
+  top: 0;
+  transform-origin: 0 0;
+  --sprite-scale: 1;
+}
+.iso-sprite,
+.iso-actor {
+  position: absolute;
+  background-repeat: no-repeat;
+  image-rendering: pixelated;
+  /* The viewport hit-tests drawn pixels (IsoRoom.tsx); sprite boxes overlap too much to take clicks. */
+  pointer-events: none;
+}
+.iso-viewport {
+  /* Selection has its own glow; the browser's tap rectangle would cover the whole room. */
+  -webkit-tap-highlight-color: transparent;
+}
+.iso-viewport.pointing {
+  cursor: pointer;
+}
+/* .hover is set by hit-testing, for mouse and pen only. */
+.iso-sprite.equipment.hover {
+  filter: brightness(1.2);
+}
+.iso-sprite.door.reachable.hover {
+  filter: brightness(1.35) drop-shadow(0 0 3px var(--accent));
+}
+.iso-sprite.equipment.selected,
+.iso-sprite.door.selected,
+.iso-actor.selected {
+  filter: drop-shadow(0 0 2px var(--highlight));
+}
+
+/* One frame of a 6 x (32x48) strip, scaled up without smoothing. */
+.crew-sprite {
+  width: calc(32px * var(--sprite-scale));
+  height: calc(48px * var(--sprite-scale));
+  background-size: calc(192px * var(--sprite-scale)) 100%;
+  background-repeat: repeat-x;
+  image-rendering: pixelated;
+  filter: drop-shadow(0 3px 2px rgb(0 0 0 / 0.6));
+  animation: walk-frames 0.5s steps(6) 2;
+}
+.crew-sprite.flip {
+  transform: scaleX(-1);
+}
+@keyframes walk-frames {
+  from {
+    background-position-x: 0;
+  }
+  to {
+    background-position-x: calc(-192px * var(--sprite-scale));
+  }
+}
+
+.iso-room.loading {
+  justify-content: center;
+  align-items: center;
+}

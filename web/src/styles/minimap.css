@@ -1,0 +1,99 @@
+/* Minimap (currently stubbed out in GameScreen, see TODO(minimap)). */
+
+/*
+ * Minimap: the deck plan in the room view's bottom-left corner. Your room is in
+ * color; the rest is fog (grey silhouettes, faded people). Doors are amber.
+ */
+
+.room-view {
+  position: relative;
+}
+.minimap {
+  --cell: 2px;
+  position: absolute;
+  left: 0.5rem;
+  bottom: 0.5rem;
+  z-index: 2;
+  width: calc(var(--cols) * var(--cell));
+  max-width: calc(100% - 1rem);
+  padding: 4px;
+  background: rgb(10 15 28 / 0.85);
+  border: 1px solid var(--edge);
+  border-radius: 6px;
+  transition: width 0.15s ease-out;
+}
+.minimap.expanded {
+  --cell: 5px;
+  box-shadow: 0 4px 16px rgb(0 0 0 / 0.6);
+}
+.minimap svg {
+  display: block;
+  width: 100%;
+  cursor: pointer;
+}
+.minimap-walls {
+  fill: var(--edge);
+  pointer-events: none;
+}
+.minimap-room {
+  fill: #6b7079;
+  opacity: 0.45;
+  outline: none;
+}
+.minimap.expanded .minimap-room.reachable {
+  opacity: 0.7;
+}
+.minimap-room.pointed,
+.minimap-room:focus-visible {
+  opacity: 0.85;
+}
+.minimap-room.selected {
+  fill: var(--accent);
+  opacity: 0.8;
+}
+.minimap-room.here {
+  fill: var(--highlight);
+  opacity: 1;
+}
+.minimap-door {
+  fill: #ffbf00;
+  opacity: 0.45;
+  pointer-events: none;
+}
+.minimap-door.here {
+  opacity: 1;
+}
+.minimap-person {
+  opacity: 0.55;
+  image-rendering: pixelated;
+  pointer-events: none;
+}
+.minimap-person.near {
+  opacity: 1;
+}
+.minimap-person.you {
+  opacity: 1;
+  filter: drop-shadow(0 0 0.25px #fff) drop-shadow(0 0 0.25px #fff);
+}
+.minimap-caption {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-height: 1.9rem;
+  margin-top: 4px;
+  font-size: 0.85rem;
+}
+.minimap-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.minimap-name .sub {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.minimap-caption button {
+  margin: 0;
+}

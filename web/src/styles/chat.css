@@ -1,0 +1,78 @@
+/* Scroll areas, message feed, and chat input. */
+
+.scroll-root {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+}
+.scroll-viewport {
+  height: 100%;
+  overscroll-behavior: contain;
+}
+.scroll-bar {
+  width: 6px;
+  display: flex;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+.scroll-bar[data-hovering],
+.scroll-bar[data-scrolling] {
+  opacity: 1;
+}
+.scroll-thumb {
+  width: 100%;
+  border-radius: 3px;
+  background: rgb(255 255 255 / 0.25);
+}
+.feed {
+  list-style: none;
+  padding: 0 0.5rem 0 0;
+  margin: 0;
+  font-size: 0.85rem;
+}
+.feed li {
+  padding: 0.25rem 0;
+  border-bottom: 1px solid rgb(255 255 255 / 0.05);
+  overflow-wrap: anywhere;
+}
+.feed li.private {
+  font-style: italic;
+  color: var(--muted);
+}
+.feed .me {
+  color: var(--accent);
+}
+.chat-input {
+  display: flex;
+  gap: 0.4rem;
+  margin-top: 0.5rem;
+}
+.chat-input {
+  align-items: center;
+}
+/* chatbox.png is the original chat field (194x24), stretched to the panel. */
+.chat-input input {
+  flex: 1;
+  min-width: 0;
+  height: 24px;
+  box-sizing: border-box;
+  border: 0;
+  border-radius: 0;
+  background: url("../../../Mush/www/img/design/chatbox.png") 0 0 / 100% 100% no-repeat;
+  color: var(--ink);
+}
+.chat-input input:disabled {
+  opacity: 0.6;
+}
+/* The original send button: an enter-key icon, 29x24. */
+.chat-input .chat-send {
+  flex: none;
+  margin: 0;
+  width: 29px;
+  height: 24px;
+  padding: 0;
+  background: url("../../../Mush/www/img/design/buttonchat.png") 0 0 / 100% 100% no-repeat;
+}
+.chat-input .chat-send:hover:not(:disabled) {
+  background-image: url("../../../Mush/www/img/design/buttonchatover.png");
+}
