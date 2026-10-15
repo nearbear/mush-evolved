@@ -52,6 +52,7 @@ export function IsoRoom({
   room,
   occupants,
   nearby,
+  fogDepth,
   equipment,
   reachable,
   selected,
@@ -66,6 +67,8 @@ export function IsoRoom({
   occupants: Occupant[];
   /** People the view places in other rooms, by room. Only the rooms behind this room's doors are drawn. */
   nearby: Partial<Record<RoomId, Occupant[]>>;
+  /** How many rooms out from this one are drawn (fogged): 1 is just those behind its doors, "all" is the whole ship. */
+  fogDepth: 1 | 2 | "all";
   /** Equipment in this room, from the view. Only these sprites are clickable. */
   equipment: EquipmentView[];
   reachable: Set<RoomId>;
@@ -102,18 +105,18 @@ export function IsoRoom({
       width: 32,
       height: 48,
     }));
-    const neighbors = neighborRooms(layout, roomLayout).map(({ room: n, dx, dy }) => {
+    const neighbors = neighborRooms(layout, roomLayout, fogDepth).map(({ room: n, dx, dy, ring }) => {
       const people = nearby[n.id as RoomId] ?? [];
       const spots = spreadActors(walkableCells(layout, n), people.length);
       const actors = people.map((o, i) => ({ id: o.id, cell: spots[i] ?? { x: 0, y: 0 }, width: 32, height: 48 }));
-      return { room: n, dx, dy, actors, id: n.id as RoomId, people };
+      return { room: n, dx, dy, actors, id: n.id as RoomId, people, ring };
     });
     const scene = placeScene(layout, [{ room: roomLayout, dx: 0, dy: 0, actors }, ...neighbors]);
     // Both in paint order, for hit-testing this room before its neighbours.
     const sprites = scene.filter((s) => s.room === room);
     const neighborSprites = scene.filter((s) => s.room !== room);
     return { scene, sprites, neighborSprites, neighbors, box: bounds(sprites) };
-  }, [layout, roomLayout, cells, myCell, occupantKey, nearbyKey]);
+  }, [layout, roomLayout, fogDepth, cells, myCell, occupantKey, nearbyKey]);
 
   // Sprites draw at exactly one screen pixel per source pixel, so art stays crisp.
   // The camera always follows you: there is no manual panning, and it stops at this room's edges
@@ -151,6 +154,7 @@ export function IsoRoom({
     );
   }, [roomLayout, equipment]);
 
+  const ringOf = new Map(neighbors.map((n) => [n.id as string, n.ring]));
   const byId = new Map([...occupants, ...neighbors.flatMap((n) => n.people)].map((o) => [o.id, o]));
   /** The image a sprite's pixels come from, and whether its background is color-keyed. */
   const source = (s: PlacedSprite): { url: string | undefined; keyed: boolean } =>
@@ -203,7 +207,8 @@ export function IsoRoom({
       return action ? { sprite: hit, key: hit.key, ...action } : null;
     }
     const behind = hitTest(neighborSprites, x, y, opaque);
-    if (!behind) return null;
+    // Only the rooms behind this room's own doors count as doors; the second ring is scenery.
+    if (!behind || ringOf.get(behind.room) !== 1) return null;
     const to = behind.room as RoomId;
     return { sprite: behind, key: `n:${to}`, kind: "door" as const, to, title: roomLabel(to) };
   };
@@ -276,7 +281,9 @@ export function IsoRoom({
               {scene.map((s) => {
                 if (s.room !== room) {
                   const n = s.room as RoomId;
-                  const state = `neighbor${reachable.has(n) ? " reachable" : ""}${n === selectedDoor ? " selected" : ""}${
+                  // A door into the room you're in stays lit, so the way back reads clearly.
+                  const lit = s.kind !== "actor" && s.door?.target === room;
+                  const state = `${lit ? "" : "neighbor"}${reachable.has(n) ? " reachable" : ""}${n === selectedDoor ? " selected" : ""}${
                     `n:${n}` === hoverKey ? " hover" : ""
                   }`;
                   return s.kind === "actor" ? (

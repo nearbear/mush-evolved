@@ -5,6 +5,7 @@ import { ACTOPI_CHEATS, CHEATS, isActopiCheat, type ActopiCheat, type Cheat } fr
 import { Dialog } from "@base-ui/react/dialog";
 import { useTranslation } from "react-i18next";
 import { SETTINGS_ICON } from "../art/assets.ts";
+import { parseFogDepth, setFogDepth, useFogDepth } from "../fogDepth.ts";
 import { LanguageSwitcher } from "../i18n/LanguageSwitcher.tsx";
 import "./settings.css";
 
@@ -23,6 +24,7 @@ export function SettingsDialog({
   onActopiCheat: (mode: ActopiCheat) => void;
 }) {
   const { t } = useTranslation();
+  const fogDepth = useFogDepth();
   return (
     <Dialog.Root>
       <Dialog.Trigger className="settings-button" aria-label={t("settings.open")} title={t("settings.open")}>
@@ -36,6 +38,14 @@ export function SettingsDialog({
             <span>{t("language.label")}</span>
             <LanguageSwitcher inline />
           </div>
+          <label className="settings-row">
+            <span>{t("settings.fogDepth.label")}</span>
+            <select value={fogDepth} onChange={(e) => setFogDepth(parseFogDepth(e.target.value))}>
+              <option value="1">{t("settings.fogDepth.one")}</option>
+              <option value="2">{t("settings.fogDepth.two")}</option>
+              <option value="all">{t("settings.fogDepth.all")}</option>
+            </select>
+          </label>
           {cheatsAllowed && (
             <fieldset className="settings-cheats">
               <legend>{t("settings.cheats.title")}</legend>

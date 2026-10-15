@@ -560,15 +560,40 @@ export function standSpot(
  * way to place them side by side; it's local (neighbours of different doors
  * can overlap a little). Rooms without a matching door, or without art, are
  * left out.
+ *
+ * With a larger `depth` the rooms behind those rooms' doors follow (`ring` 2, 3, ...),
+ * placed the same way from their neighbour; "all" keeps going until the whole ship is
+ * reached. Rooms are only placed locally, so beyond the first ring they can overlap each
+ * other (paint order sorts it out); one whose floor would land on `room`'s own is left out.
  */
-export function neighborRooms(layout: ShipLayout, room: RoomLayout): { room: RoomLayout; dx: number; dy: number }[] {
-  const result: { room: RoomLayout; dx: number; dy: number }[] = [];
-  for (const t of room.tiles) {
-    const target = t.door?.target;
-    if (!target || result.some((n) => n.room.id === target)) continue;
-    const other = layout.rooms.find((r) => r.id === target);
-    const back = other?.tiles.find((b) => b.door?.target === room.id);
-    if (other && back) result.push({ room: other, dx: t.x - back.x, dy: t.y - back.y });
+export function neighborRooms(
+  layout: ShipLayout,
+  room: RoomLayout,
+  depth: 1 | 2 | "all" = 1,
+): { room: RoomLayout; dx: number; dy: number; ring: number }[] {
+  const result: { room: RoomLayout; dx: number; dy: number; ring: number }[] = [];
+  const doorsOf = (from: RoomLayout, fx: number, fy: number, ring: number) => {
+    for (const t of from.tiles) {
+      const target = t.door?.target;
+      if (!target || target === room.id || result.some((n) => n.room.id === target)) continue;
+      const other = layout.rooms.find((r) => r.id === target);
+      const back = other?.tiles.find((b) => b.door?.target === from.id);
+      if (!other || !back) continue;
+      const dx = fx + t.x - back.x, dy = fy + t.y - back.y;
+      if (ring > 1) {
+        const f = floorBounds(other, dx, dy);
+        const hits = (g: Box) => f.x0 <= g.x1 && g.x0 <= f.x1 && f.y0 <= g.y1 && g.y0 <= f.y1;
+        if (hits(floorBounds(room, 0, 0))) continue;
+      }
+      result.push({ room: other, dx, dy, ring });
+    }
+  };
+  doorsOf(room, 0, 0, 1);
+  const last = depth === "all" ? Infinity : depth;
+  for (let ring = 2, frontier = result.slice(); ring <= last && frontier.length; ring++) {
+    const before = result.length;
+    for (const n of frontier) doorsOf(n.room, n.dx, n.dy, ring);
+    frontier = result.slice(before);
   }
   return result;
 }

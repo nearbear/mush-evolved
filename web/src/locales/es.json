@@ -15,6 +15,12 @@
         "on": "Forzar activado",
         "off": "Forzar desactivado"
       }
+    },
+    "fogDepth": {
+      "label": "Salas con niebla",
+      "one": "1 sala alrededor",
+      "two": "2 salas alrededor",
+      "all": "Toda la nave"
     }
   },
   "language": {

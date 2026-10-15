@@ -15,6 +15,12 @@
         "on": "Forcer l'activation",
         "off": "Forcer la désactivation"
       }
+    },
+    "fogDepth": {
+      "label": "Salles dans le brouillard",
+      "one": "1 salle autour",
+      "two": "2 salles autour",
+      "all": "Tout le vaisseau"
     }
   },
   "language": {

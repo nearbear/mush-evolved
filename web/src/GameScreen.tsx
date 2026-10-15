@@ -14,6 +14,7 @@ import { TopBar } from "./hud/TopBar.tsx";
 import { gameSocket, type SeatTicket } from "./net.ts";
 import { IsoRoom, type Occupant } from "./iso/IsoRoom.tsx";
 import { useShipLayout } from "./iso/shipLayout.ts";
+import { useFogDepth } from "./fogDepth.ts";
 import { useMobile } from "./useMobile.ts";
 
 export function GameScreen({ ticket, onLeave }: { ticket: SeatTicket; onLeave: () => void }) {
@@ -26,6 +27,7 @@ export function GameScreen({ ticket, onLeave }: { ticket: SeatTicket; onLeave: (
   const [selected, setSelected] = useState<Target | null>(null);
   // Phone layout only: which panel is on screen, and a door tapped in the room.
   const mobile = useMobile();
+  const fogDepth = useFogDepth();
   const [panel, setPanel] = useState<MobilePanel>("room");
   const [roomLogRequest, setRoomLogRequest] = useState(0);
   const [peekDoor, setPeekDoor] = useState<RoomId | null>(null);
@@ -128,6 +130,7 @@ export function GameScreen({ ticket, onLeave }: { ticket: SeatTicket; onLeave: (
                   .sort((a, b) => a.id.localeCompare(b.id))
                   .map(occupant)}
                 nearby={nearby}
+                fogDepth={fogDepth}
                 equipment={view.roomEquipment}
                 reachable={reachable}
                 selected={target}

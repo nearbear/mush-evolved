@@ -15,6 +15,12 @@
         "on": "Force on",
         "off": "Force off"
       }
+    },
+    "fogDepth": {
+      "label": "Fogged rooms shown",
+      "one": "1 room out",
+      "two": "2 rooms out",
+      "all": "Whole ship"
     }
   },
   "language": {
@@ -68,7 +74,7 @@
     "dtt": "DTT",
     "stt": "STT"
   },
-  "logs":{
+  "logs": {
     "cameraInstalled": "{{CharacterName}} installed a camera.",
     "moveToRoom": "{{CharacterName}} left for {{RoomName}}.",
     "moveFromRoom": "{{CharacterName}} entered from {{RoomName}}.",
