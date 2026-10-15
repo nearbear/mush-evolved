@@ -22,6 +22,8 @@ const PRIO = { tile: 10, decal: 5, entity: 0 } as const;
 
 export interface PlacedSprite {
   key: string;
+  /** Id of the room this sprite belongs to. */
+  room: string;
   kind: TileKind | "actor";
   cell: { x: number; y: number };
   /** Top-left corner on screen, in unscaled pixels, relative to the room origin. */
@@ -59,6 +61,26 @@ interface Sortable {
   /** Sub-order within one tile: floor, then wall/door, then prop (creation order in Tile). */
   stage: number;
   screenX: number;
+  /** Index of the sprite's room in the scene; 0 is the room you're in. */
+  scene: number;
+  /** Cells covered, inclusive (the footprint, extending toward -x/-y from the anchor). */
+  box: { x0: number; x1: number; y0: number; y1: number };
+  /** Lies flat on the floor or a wall (`decal`, but not chairs, which only sort like decals). */
+  flat: boolean;
+}
+
+/**
+ * Art the original drew that we leave out. The doormats on either side of a
+ * door were clutter once the rooms behind the doors were drawn too.
+ */
+const HIDDEN_SLICES = new Set(["DOOR_L_FLOOR", "DOOR_R_FLOOR"]);
+
+/** One room drawn into a scene, shifted by (dx, dy) cells. */
+export interface SceneRoom {
+  room: RoomLayout;
+  dx: number;
+  dy: number;
+  actors: readonly Actor[];
 }
 
 export function frameRect(slice: SliceInfo, frame: number) {
@@ -75,17 +97,38 @@ export function frameRect(slice: SliceInfo, frame: number) {
  * centering is inferred from how floor tiles line up with their cells.)
  */
 export function placeRoom(layout: ShipLayout, room: RoomLayout, actors: readonly Actor[] = []): PlacedSprite[] {
+  return placeScene(layout, [{ room, dx: 0, dy: 0, actors }]);
+}
+
+/**
+ * Several rooms drawn together, in one paint order, on one grid: each room is
+ * shifted by its (dx, dy) cells. The first room is the one you're in; its
+ * sprite keys are as in `placeRoom`, the others' are prefixed "<room id>/"
+ * (actor keys, "a:<id>", are unique already).
+ */
+export function placeScene(layout: ShipLayout, rooms: readonly SceneRoom[]): PlacedSprite[] {
   const placed: (PlacedSprite & Sortable)[] = [];
+  rooms.forEach((r, scene) => placed.push(...sortables(layout, r, scene)));
+  return paintOrder(placed).map(({ pass, depth, prio, stage, screenX, scene, box, flat, ...s }, order) => ({ ...s, order }));
+}
+
+function sortables(layout: ShipLayout, { room, dx, dy, actors }: SceneRoom, scene: number): (PlacedSprite & Sortable)[] {
+  const placed: (PlacedSprite & Sortable)[] = [];
+  const prefix = scene === 0 ? "" : `${room.id}/`;
 
   room.tiles.forEach((t, i) => {
+    if (HIDDEN_SLICES.has(t.slice)) return;
     const slice = layout.slices[t.slice]!;
-    const anchor = gridToPx(t.x, t.y);
+    const x = t.x + dx, y = t.y + dy;
+    const anchor = gridToPx(x, y);
     const isEntity = t.kind === "entity";
     const decal = slice.flags.includes("decal") || slice.flags.includes("chair");
+    const [w, h] = slice.footprint ?? [1, 1];
     placed.push({
-      key: `t${i}`,
+      key: `${prefix}t${i}`,
+      room: room.id,
       kind: t.kind,
-      cell: { x: t.x, y: t.y },
+      cell: { x, y },
       left: anchor.x + slice.offset[0] - slice.width / 2,
       top: anchor.y + slice.offset[1] - slice.height / 2,
       width: slice.width,
@@ -98,20 +141,25 @@ export function placeRoom(layout: ShipLayout, room: RoomLayout, actors: readonly
       ...(t.door && { door: t.door }),
       order: 0,
       pass: isEntity ? entityPass(slice.engine) : PASS.tile,
-      depth: t.x + t.y,
+      depth: x + y,
       prio: isEntity ? (decal ? PRIO.decal : PRIO.entity) : PRIO.tile,
       stage: t.kind === "ground" ? 0 : t.kind === "prop" ? 2 : 1,
       screenX: anchor.x,
+      scene,
+      box: { x0: x - w + 1, x1: x, y0: y - h + 1, y1: y },
+      flat: isEntity && slice.flags.includes("decal") && !slice.flags.includes("chair"),
     });
   });
 
   for (const a of actors) {
-    const anchor = gridToPx(a.cell.x, a.cell.y);
+    const x = a.cell.x + dx, y = a.cell.y + dy;
+    const anchor = gridToPx(x, y);
     const lift = groundOffsetAt(layout, room, a.cell.x, a.cell.y);
     placed.push({
       key: `a:${a.id}`,
+      room: room.id,
       kind: "actor",
-      cell: a.cell,
+      cell: { x, y },
       left: anchor.x + ACTOR_OFFSET.x - a.width / 2,
       top: anchor.y + ACTOR_OFFSET.y - a.height / 2 - lift,
       width: a.width,
@@ -124,22 +172,136 @@ export function placeRoom(layout: ShipLayout, room: RoomLayout, actors: readonly
       flipY: false,
       order: 0,
       pass: PASS.entity,
-      depth: a.cell.x + a.cell.y,
+      depth: x + y,
       prio: PRIO.entity,
       stage: 0,
       screenX: anchor.x,
+      scene,
+      box: { x0: x, x1: x, y0: y, y1: y },
+      flat: false,
     });
   }
+  return placed;
+}
 
-  placed.sort(
-    (a, b) =>
-      a.pass - b.pass ||
-      a.depth - b.depth ||
-      b.prio - a.prio ||
-      a.screenX - b.screenX ||
-      a.stage - b.stage,
-  );
-  return placed.map(({ pass, depth, prio, stage, screenX, ...s }, order) => ({ ...s, order }));
+/**
+ * The original's order (Grid.sortFunc): by pass, then anchor depth (x + y).
+ * At a tie, the room you're in draws over the others.
+ */
+const baseOrder = (a: Sortable, b: Sortable) =>
+  a.pass - b.pass || a.depth - b.depth || b.prio - a.prio || a.screenX - b.screenX || a.stage - b.stage || b.scene - a.scene;
+
+/**
+ * Which footprint is further from the camera: the one wholly at lower x, or
+ * wholly at lower y. 0 when neither is (they overlap, or sit diagonally
+ * apart, where neither can hide the other).
+ */
+function behind(a: Sortable, b: Sortable): number {
+  const aFirst = a.box.x1 < b.box.x0 || a.box.y1 < b.box.y0;
+  const bFirst = b.box.x1 < a.box.x0 || b.box.y1 < a.box.y0;
+  return aFirst === bFirst ? 0 : aFirst ? -1 : 1;
+}
+
+const boxesOverlap = (a: Sortable, b: Sortable) =>
+  a.box.x0 <= b.box.x1 && b.box.x0 <= a.box.x1 && a.box.y0 <= b.box.y1 && b.box.y0 <= a.box.y1;
+
+/**
+ * Which of two sprites whose pictures overlap draws first (negative: a).
+ *
+ * The original sorted by anchor depth alone, which works for one-cell things
+ * but not for wide furniture (a chair or a person at the front of a 4-cell
+ * console has the same x + y as its anchor), and not across rooms: it drew
+ * each room on its own, with every wall before every entity. So:
+ * - People in the room you're in are never hidden by the rooms around it.
+ * - Floors, and tiles among themselves, keep the original order.
+ * - Within one room, walls never cover furniture or people (as in the
+ *   original); across rooms, a wall in front of something covers it.
+ * - Between entities, the footprint further back draws first. Flat decals go
+ *   under people, and under any furniture whose footprint they share.
+ */
+function compare(a: PlacedSprite & Sortable, b: PlacedSprite & Sortable): number {
+  if (a.kind === "actor" && a.scene === 0 && b.scene !== 0) return 1;
+  if (b.kind === "actor" && b.scene === 0 && a.scene !== 0) return -1;
+  const entityA = a.pass === PASS.entity, entityB = b.pass === PASS.entity;
+  if (!entityA && !entityB) return baseOrder(a, b);
+  if (entityA !== entityB) {
+    const tile = entityA ? b : a;
+    if (a.scene === b.scene || tile.pass !== PASS.tile || tile.kind === "ground") return baseOrder(a, b);
+    return behind(a, b) || baseOrder(a, b);
+  }
+  if (a.flat !== b.flat && (a.kind === "actor" || b.kind === "actor" || boxesOverlap(a, b))) return a.flat ? -1 : 1;
+  return behind(a, b) || baseOrder(a, b);
+}
+
+/**
+ * Paint order: a topological sort of "draws before" between every pair of
+ * sprites whose boxes overlap on screen (`compare`), taking the earliest in
+ * the original order whenever there's a choice. A cycle, which the rules
+ * above can make in odd corners, is broken at its earliest sprite.
+ */
+function paintOrder<S extends PlacedSprite & Sortable>(sprites: S[]): S[] {
+  const base = [...sprites].sort(baseOrder);
+  const n = base.length;
+  const after: number[][] = base.map(() => []);
+  const waiting = new Array<number>(n).fill(0);
+  // Sweep along x so only sprites that can overlap are compared.
+  const byLeft = base.map((_, i) => i).sort((i, j) => base[i]!.left - base[j]!.left);
+  for (let p = 0; p < n; p++) {
+    const i = byLeft[p]!, a = base[i]!;
+    for (let q = p + 1; q < n; q++) {
+      const j = byLeft[q]!, b = base[j]!;
+      if (b.left >= a.left + a.width) break;
+      if (b.top >= a.top + a.height || a.top >= b.top + b.height) continue;
+      const [first, second] = compare(a, b) < 0 ? [i, j] : [j, i];
+      after[first]!.push(second);
+      waiting[second]!++;
+    }
+  }
+
+  // Ready sprites in a min-heap of their index in the original order.
+  const heap: number[] = [];
+  const push = (v: number) => {
+    let k = heap.push(v) - 1;
+    while (k > 0 && heap[(k - 1) >> 1]! > v) {
+      heap[k] = heap[(k - 1) >> 1]!;
+      k = (k - 1) >> 1;
+    }
+    heap[k] = v;
+  };
+  const pop = () => {
+    const top = heap[0]!, last = heap.pop()!;
+    if (heap.length) {
+      let k = 0;
+      for (;;) {
+        let c = 2 * k + 1;
+        if (c >= heap.length) break;
+        if (c + 1 < heap.length && heap[c + 1]! < heap[c]!) c++;
+        if (heap[c]! >= last) break;
+        heap[k] = heap[c]!;
+        k = c;
+      }
+      heap[k] = last;
+    }
+    return top;
+  };
+
+  for (let i = 0; i < n; i++) if (waiting[i] === 0) push(i);
+  const done = new Array<boolean>(n).fill(false);
+  const out: S[] = [];
+  let next = 0; // Lowest index that might not be drawn yet, for breaking cycles.
+  while (out.length < n) {
+    if (heap.length === 0) {
+      while (done[next]) next++;
+      waiting[next] = 0;
+      push(next);
+    }
+    const i = pop();
+    if (done[i]) continue;
+    done[i] = true;
+    out.push(base[i]!);
+    for (const j of after[i]!) if (--waiting[j]! === 0 && !done[j]) push(j);
+  }
+  return out;
 }
 
 function entityPass(engine: string | undefined): number {
@@ -267,6 +429,35 @@ export function standSpot(
   if (found) return found;
   const cx = (x0 + t.x) / 2, cy = (y0 + t.y) / 2;
   return [...cells].sort((a, b) => Math.hypot(a.x - cx, a.y - cy) - Math.hypot(b.x - cx, b.y - cy))[0];
+}
+
+/**
+ * Rooms behind `room`'s doors, each with the grid shift that puts its door
+ * back to `room` on the same cell as `room`'s door to it, so the two share
+ * that wall. Rooms are drawn separately in the original, so this is the only
+ * way to place them side by side; it's local (neighbours of different doors
+ * can overlap a little). Rooms without a matching door, or without art, are
+ * left out.
+ */
+export function neighborRooms(layout: ShipLayout, room: RoomLayout): { room: RoomLayout; dx: number; dy: number }[] {
+  const result: { room: RoomLayout; dx: number; dy: number }[] = [];
+  for (const t of room.tiles) {
+    const target = t.door?.target;
+    if (!target || result.some((n) => n.room.id === target)) continue;
+    const other = layout.rooms.find((r) => r.id === target);
+    const back = other?.tiles.find((b) => b.door?.target === room.id);
+    if (other && back) result.push({ room: other, dx: t.x - back.x, dy: t.y - back.y });
+  }
+  return result;
+}
+
+/**
+ * Camera offset along one axis: centre content smaller than the panel,
+ * otherwise keep `focus` centred but never show past the content's edges.
+ */
+export function cameraOffset(panel: number, content: number, focus: number): number {
+  if (content <= panel) return (panel - content) / 2;
+  return Math.min(0, Math.max(panel - content, panel / 2 - focus));
 }
 
 /** Clearance beyond this many cells doesn't make a spot any better. */

@@ -4,7 +4,8 @@
 //
 // Run with `npm run ship-layout`. Reproduces how the original Flash client
 // read these files (clients/iso/src/Data.hx `makeMap`/`addToStore`, Ship.hx
-// `buildRoomBmp`/`decorateDeps`), so comments cite those functions.
+// `buildRoomBmp`/`decorateDeps`), so comments cite those functions. Then it
+// applies our own changes to the room shapes (stretch.ts).
 //
 // The output is derived from CC BY-NC-SA material, so it is written into the
 // Mush/ tree, not into our code.
@@ -25,6 +26,7 @@ import type {
 import { placedEquipment } from "../../../shared/src/shipLayout.ts";
 import { decodePng, pngSize, type Image } from "./png.ts";
 import { cachedPlan, convertShipPlan, formatShipPlan } from "./shipPlan.ts";
+import { stretchRooms } from "./stretch.ts";
 import { child, childrenNamed, parseXml, type XmlElement } from "./xml.ts";
 
 const MUSH = resolve(import.meta.dirname, "../../../Mush");
@@ -188,7 +190,8 @@ export function convert(mapImage: Image, tilesXml: string, sheetSize: (file: str
     }
   }
 
-  return { roomSize: size, sheets, slices, rooms, autoBind };
+  // Our changes to the room shapes (stretch.ts); tile indices are kept.
+  return { roomSize: size, sheets, slices, rooms: stretchRooms(rooms, slices), autoBind };
 }
 
 /** Ship.buildRoomBmp: four side-by-side size x size layers per room row. */

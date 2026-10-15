@@ -1,7 +1,18 @@
 import { describe, expect, it } from "vitest";
 import type { RoomLayout, ShipLayout, SliceInfo } from "@mush2/shared";
 import shipLayoutJson from "../../../Mush/derived/ship-layout.json?raw";
-import { cellAtPoint, gridToPx, hitTest, placeRoom, spreadActors, standSpot, walkableCells } from "./placement.ts";
+import {
+  cameraOffset,
+  cellAtPoint,
+  gridToPx,
+  hitTest,
+  neighborRooms,
+  placeRoom,
+  placeScene,
+  spreadActors,
+  standSpot,
+  walkableCells,
+} from "./placement.ts";
 
 const slice = (over: Partial<SliceInfo>): SliceInfo => ({
   sheet: "S",
@@ -124,6 +135,45 @@ describe("the real ship", () => {
     }
   });
 
+  it("draws a chair, and someone standing, in front of the wide console they face", () => {
+    // The astro terminal is 4 cells wide (x 9..12, y 21); its anchor's x + y equals the chair's.
+    const command = ship.rooms.find((r) => r.id === "COMMAND_CENTER")!;
+    const placed = placeRoom(ship, command, [{ id: "p", cell: { x: 10, y: 22 }, width: 32, height: 48 }]);
+    const order = (slice: string) => placed.find((s) => s.slice === slice)!.order;
+    expect(order("chair_2")).toBeGreaterThan(order("pilot_astro_right"));
+    expect(placed.find((s) => s.kind === "actor")!.order).toBeGreaterThan(order("pilot_astro_right"));
+  });
+
+  it("draws a neighbour's wall over the part of this room behind it, and this room's wall over the part of the neighbour behind it", () => {
+    // The front corridor wraps around hydroponics: its left arm is behind the garden, its lower arm in front.
+    const corridor = ship.rooms.find((r) => r.id === "CORRIDOR_A")!;
+    const garden = neighborRooms(ship, corridor).find((n) => n.room.id === "HYDROPONIC_CENTER")!;
+    const scene = placeScene(ship, [{ room: corridor, dx: 0, dy: 0, actors: [] }, { ...garden, actors: [] }]);
+    const at = (room: string, kind: string, x: number, y: number) =>
+      scene.find((s) => s.room === room && s.kind === kind && s.cell.x === x && s.cell.y === y)!.order;
+    expect(at("HYDROPONIC_CENTER", "wall", 7, 8)).toBeGreaterThan(at("CORRIDOR_A", "ground", 6, 8));
+    expect(at("CORRIDOR_A", "wall", 10, 14)).toBeGreaterThan(at("HYDROPONIC_CENTER", "ground", 10, 13));
+  });
+
+  it("never hides people in this room behind a neighbour", () => {
+    const corridor = ship.rooms.find((r) => r.id === "CORRIDOR_A")!;
+    const garden = neighborRooms(ship, corridor).find((n) => n.room.id === "HYDROPONIC_CENTER")!;
+    const scene = placeScene(ship, [
+      { room: corridor, dx: 0, dy: 0, actors: [{ id: "p", cell: { x: 6, y: 8 }, width: 32, height: 48 }] },
+      { ...garden, actors: [] },
+    ]);
+    const actor = scene.find((s) => s.kind === "actor")!;
+    const covering = scene.filter(
+      (s) => s.room !== "CORRIDOR_A" && s.left < actor.left + actor.width && actor.left < s.left + s.width && s.top < actor.top + actor.height && actor.top < s.top + s.height,
+    );
+    expect(covering.length).toBeGreaterThan(0);
+    for (const s of covering) expect(s.order).toBeLessThan(actor.order);
+  });
+
+  it("leaves out the doormats", () => {
+    for (const r of ship.rooms) expect(placeRoom(ship, r).filter((s) => s.slice.startsWith("DOOR_") && s.slice.endsWith("_FLOOR"))).toEqual([]);
+  });
+
   it("has somewhere to stand in every room people can reach", () => {
     for (const r of ship.rooms.filter((r) => r.tiles.some((t) => t.door))) {
       expect(walkableCells(ship, r).length, r.id).toBeGreaterThan(0);
@@ -184,5 +234,72 @@ describe("standSpot", () => {
   });
   it("falls back to the nearest floor when nothing touches it", () => {
     expect(standSpot(consoleLayout, consoleRoom, 0, [{ x: 0, y: 5 }, { x: 6, y: 5 }])).toBeDefined();
+  });
+});
+
+describe("neighborRooms", () => {
+  const ship = JSON.parse(shipLayoutJson) as ShipLayout;
+  const room = (id: string) => ship.rooms.find((r) => r.id === id)!;
+
+  it("puts each neighbour's door back on the same cell as this room's door to it", () => {
+    for (const r of ship.rooms) {
+      for (const n of neighborRooms(ship, r)) {
+        const here = r.tiles.find((t) => t.door?.target === n.room.id)!;
+        const back = n.room.tiles.find((t) => t.door?.target === r.id)!;
+        expect({ x: back.x + n.dx, y: back.y + n.dy }).toEqual({ x: here.x, y: here.y });
+      }
+    }
+  });
+
+  it("never puts a neighbour's floor on this room's floor", () => {
+    for (const r of ship.rooms) {
+      const floor = new Set(walkableCells(ship, r).map((c) => `${c.x},${c.y}`));
+      for (const n of neighborRooms(ship, r)) {
+        const overlap = walkableCells(ship, n.room).filter((c) => floor.has(`${c.x + n.dx},${c.y + n.dy}`));
+        expect(overlap, `${r.id} / ${n.room.id}`).toEqual([]);
+      }
+    }
+  });
+
+  it("never puts two neighbours' floors on each other (the back corridor is stretched for this)", () => {
+    for (const r of ship.rooms) {
+      const ns = neighborRooms(ship, r);
+      for (const [i, a] of ns.entries()) {
+        const floor = new Set(walkableCells(ship, a.room).map((c) => `${c.x + a.dx},${c.y + a.dy}`));
+        for (const b of ns.slice(i + 1)) {
+          const overlap = walkableCells(ship, b.room).filter((c) => floor.has(`${c.x + b.dx},${c.y + b.dy}`));
+          expect(overlap, `${r.id}: ${a.room.id} / ${b.room.id}`).toEqual([]);
+        }
+      }
+    }
+  });
+
+  it("has corridors four cells wide", () => {
+    // Across each corridor arm: walkable cells in one row (west arms, B, C) or column (the front corridor's north arm).
+    const across = (id: string, axis: "x" | "y", at: number) =>
+      walkableCells(ship, room(id)).filter((c) => (axis === "y" ? c.y : c.x) === at).length;
+    expect(across("CORRIDOR_B", "y", 10)).toBe(4);
+    expect(across("CORRIDOR_C", "y", 10)).toBe(4);
+    expect(across("CORRIDOR_A", "y", 8)).toBe(4);
+    expect(across("CORRIDOR_A", "x", 12)).toBe(4);
+  });
+
+  it("lists every room behind a door once", () => {
+    expect(neighborRooms(ship, room("CORRIDOR_B")).map((n) => n.room.id).sort()).toEqual(
+      ["CORRIDOR_A", "REFECTORY", "SPACESHIP_BAY_A", "SPACESHIP_BAY_B"],
+    );
+  });
+});
+
+describe("cameraOffset", () => {
+  it("centres a room smaller than the panel", () => {
+    expect(cameraOffset(400, 200, 0)).toBe(100);
+  });
+  it("follows the focus in a room bigger than the panel", () => {
+    expect(cameraOffset(200, 1000, 500)).toBe(-400);
+  });
+  it("stops at the room's edges", () => {
+    expect(cameraOffset(200, 1000, 10)).toBe(0);
+    expect(cameraOffset(200, 1000, 990)).toBe(-800);
   });
 });

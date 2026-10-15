@@ -213,7 +213,8 @@ async function mobileSteps(page: Page, step: Step): Promise<void> {
 
   await step("m07-wide-room", async () => {
     const scroller = page.locator(".iso-scroll");
-    const wide = () => scroller.evaluate((el) => el.scrollWidth > el.clientWidth + 1);
+    const world = page.locator(".iso-world");
+    const wide = async () => (await world.evaluate((el) => el.offsetWidth)) > (await scroller.evaluate((el) => el.clientWidth)) + 1;
     for (let i = 0; i < 6 && !(await wide()); i++) await walkThroughDoor(page);
     if (!(await wide())) throw new Skip("didn't reach a room wider than the screen");
     const box = await scroller.boundingBox();

@@ -389,9 +389,29 @@ The user asked for shift-clicking an inventory tile to move it between room and 
 - Needed correction: first used an emoji gear; the user asked for `icons/ui/pam.png`. The existing `.tab-icon` class scales art to 18px, so the icon got its own 1x class.
 - Not visually checked at 360px or in fr/es; fr/es strings are drafts for a native speaker.
 
+### 2026-10-14: Faded neighbouring rooms in the iso view
+
+- **Request:** show the rooms behind the doors in the isometric view, faded, with player characters in them only while ACTOPI is on.
+- **Decided by the user:** the camera still stops at the current room's edges (neighbours fill the space around a room smaller than the panel, mostly on desktop); tapping a faded room acts like tapping its door.
+- **Approach:** renderer-only. The view already gives everyone's room while ACTOPI is on and drops it while off, so drawing "people the view places in that room" gets the ACTOPI rule for free, and no hidden information is added. Rooms are separate drawings in the original data, so each neighbour is placed by putting its door back on the same cell as the current room's door (a test checks no neighbour floor lands on the current room's floor; only Corridor C's neighbours overlap each other a little).
+- **Needed correction:** native scrolling no longer works once neighbours draw outside the room, because they widen the scroll range and break the stop-at-the-edges camera. The camera now moves an inner layer with a transform (`cameraOffset`), with the same jump-on-enter, glide-on-walk behaviour.
+
 ## 2026-10-14: development cheats (issue #148)
 
 Checked the issue first and asked three things it left open: the dev gate (env var, any match), visibility when off (section hidden), and what "infinite" means (hold the stat at max after anything that spends or loses it, so costs and the legal checks see a full bar). Cheats are a `cheat` input, so they are recorded and replay; the flags live on `PlayerState.cheats`, which only reaches your own view. The server's `ALLOW_CHEATS` flag travels beside the view (`cheatsAllowed`) rather than inside it, to keep `viewFor` pure. Worked: the i18n ratchet caught an English error sentence and a duplicate "Unknown player" before commit, so both became error codes. Local flag lives in the gitignored `server/.dev.vars`.
+
+### 2026-10-14: Iso depth sorting across wide furniture and neighbouring rooms
+
+- Two layering bugs had one root cause: paint order came from the anchor cell's `x + y` alone, as in the original Flash client. A chair or a person at the front edge of the 4-cell-wide astro terminal tied with its anchor, so they drew behind it. Neighbouring rooms were separate layers behind the whole current room, which can't work when the front corridor wraps around hydroponics (in front of the garden on one side, behind it on the other).
+- Fix (`placeScene` in `placement.ts`): every room in the view goes into one scene on a shared grid, ordered by a topological sort over sprites whose pictures overlap. Footprints decide between entities, and walls can cover entities across rooms but not within one (same as the original within a room). Flat decals stay under people, and people in your room are never covered by a neighbour. Worst case 3.2 ms per recompute (motor room, 7 rooms).
+- Tradeoff: neighbours are now dimmed with `brightness()` per sprite instead of layer `opacity`, because per-sprite opacity would show what each sprite covers. Not yet checked visually in the browser at the time of writing.
+
+### 2026-10-14: Stretched corridors, no doormats
+
+- Removed the doormats beside each door (`HIDDEN_SLICES` in `placement.ts`). They were clutter once the neighbouring rooms were drawn.
+- The user reported that Bay Beta sat "too close to the center" and pushed Bedroom Beta onto the Nexus. Checking every room's view showed this was the ship's only floor-on-floor overlap. The cause was Corridor C's doors being too close together for the rooms behind them, not the bay itself. The fix lengthens the corridor (2 rows, then 1), which moves Bedroom Beta out 2 rows and Bay Beta out 3. The bay-bedroom door, which had been off by one, now lines up exactly. The user agreed that Storage back and Icarus bay move too.
+- Corridors widened from 2 to 4 floor cells, using the same mechanism: `tools/src/shipLayout/stretch.ts` copies a plain floor/wall line at build time (the user chose build time over doing it in the client), so `ship-layout.json` holds the stretched rooms and the staleness test covers it. It refuses to split anything standing on the floor. Doors straddling the line (the 2-wide top doors) are allowed because they sit on wall cells. Rooms behind the doors follow automatically, since they're placed door to door. The room graph (`ship-rooms.json`) doesn't change.
+
 ### 2026-10-14: player panel "extras" card and one-row layout
 
 The user asked for an outlined card at the far right of the player panel, a home for resources that belong nowhere else (spores, free IT points), with the room and player inventories in a flex row. Decided by the user; implemented by the assistant.

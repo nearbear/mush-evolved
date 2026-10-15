@@ -3,7 +3,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import type PartySocket from "partysocket";
-import type { Action, ActopiCheat, Cheat, GameClientMessage, GameServerMessage, PlayerView, RoomId, Target } from "@mush2/shared";
+import type { Action, ActopiCheat, CharacterId, Cheat, GameClientMessage, GameServerMessage, PlayerView, RoomId, Target } from "@mush2/shared";
 import { BottomNav, type MobilePanel } from "./hud/BottomNav.tsx";
 import { InspectPanel } from "./hud/InspectPanel.tsx";
 import { ITrackie } from "./hud/ITrackie.tsx";
@@ -12,7 +12,7 @@ import { SelfPanel } from "./hud/SelfPanel.tsx";
 import { resolveTarget } from "./hud/targets.ts";
 import { TopBar } from "./hud/TopBar.tsx";
 import { gameSocket, type SeatTicket } from "./net.ts";
-import { IsoRoom } from "./iso/IsoRoom.tsx";
+import { IsoRoom, type Occupant } from "./iso/IsoRoom.tsx";
 import { useShipLayout } from "./iso/shipLayout.ts";
 import { useMobile } from "./useMobile.ts";
 
@@ -74,6 +74,16 @@ export function GameScreen({ ticket, onLeave }: { ticket: SeatTicket; onLeave: (
   if (!view) return <main className="connecting loading">Connecting…</main>;
   const { you } = view;
   const reachable = new Set(view.legalActions.flatMap((a) => (a.type === "move" ? [a.to] : [])));
+  const occupant = (p: { id: string; name: string; isBot: boolean; character: CharacterId }): Occupant => ({
+    id: p.id,
+    name: p.name,
+    isBot: p.isBot,
+    character: p.character,
+    you: p.id === you.id,
+  });
+  // Where the view places other people outside your room (everyone with ACTOPI on, nobody with it off).
+  const nearby: Partial<Record<RoomId, Occupant[]>> = {};
+  for (const p of view.players) if (p.room !== undefined && p.room !== you.room) (nearby[p.room] ??= []).push(occupant(p));
   const move = (to: string) => send({ type: "move", to });
   const select = (t: Target | null) => {
     setSelected(t);
@@ -116,7 +126,8 @@ export function GameScreen({ ticket, onLeave }: { ticket: SeatTicket; onLeave: (
                 room={you.room}
                 occupants={[you, ...view.players.filter((p) => p.room === you.room)]
                   .sort((a, b) => a.id.localeCompare(b.id))
-                  .map((p) => ({ id: p.id, name: p.name, isBot: p.isBot, character: p.character, you: p.id === you.id }))}
+                  .map(occupant)}
+                nearby={nearby}
                 equipment={view.roomEquipment}
                 reachable={reachable}
                 selected={target}

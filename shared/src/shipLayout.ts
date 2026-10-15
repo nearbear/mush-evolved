@@ -114,7 +114,7 @@ export interface ShipRoom {
 }
 
 export interface ShipLayout {
-  /** Rooms are roomSize x roomSize cells. */
+  /** Rooms are roomSize x roomSize cells in ShipMap.png; the corridors we stretch (tools/src/shipLayout/stretch.ts) can be larger. */
   roomSize: number;
   sheets: Record<string, SheetInfo>;
   slices: Record<string, SliceInfo>;

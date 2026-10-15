@@ -11,14 +11,11 @@
   flex-direction: column;
   touch-action: manipulation;
 }
-/* Pans (touch or wheel) when the room is bigger than the panel; never shows a scrollbar. */
+/* Clips the room to the panel. The camera follows you (IsoRoom); no manual panning, no scrollbar. */
 .iso-scroll {
-  scrollbar-width: none;
   position: relative;
   flex: 1;
   min-height: 0;
-  display: flex;
-  /* The camera follows you (IsoRoom); no manual panning. */
   overflow: hidden;
 }
 .room-title {
@@ -29,14 +26,30 @@
   color: #fff;
   font-size: 1rem;
 }
-/* margin: auto centres it but, unlike justify-content, still lets an overflowing room scroll to its left edge. */
+/* Fills the panel and takes the clicks; .iso-world inside it is moved by the camera (IsoRoom). */
 .iso-viewport {
-  position: relative;
-  flex: none;
-  margin: auto;
+  position: absolute;
+  inset: 0;
 }
-.iso-scroll::-webkit-scrollbar {
-  display: none;
+.iso-world {
+  position: absolute;
+  left: 0;
+  top: 0;
+}
+.iso-world.glide {
+  transition: transform 0.3s ease;
+}
+/* The rooms behind the doors, dimmed. Per sprite, and dimmed rather than see-through, because
+   their sprites interleave with this room's (IsoRoom): see-through ones would show what they cover. */
+.iso-sprite.neighbor,
+.iso-actor.neighbor {
+  filter: brightness(0.3);
+}
+.iso-sprite.neighbor.selected,
+.iso-actor.neighbor.selected,
+.iso-sprite.neighbor.reachable.hover,
+.iso-actor.neighbor.reachable.hover {
+  filter: brightness(0.5);
 }
 .iso-layer {
   position: absolute;
