@@ -7,6 +7,7 @@ import { EQUIPMENT_TYPES, equipmentName } from "./equipment.ts";
 import { ITEM_TYPES, canReach, canTransfer, itemName, itemsIn, produceItem } from "./items.ts";
 import { logPrivate, logPublic, roomName } from "./log.ts";
 import { contaminationCapacity, moveCost, movementRules } from "./modifiers.ts";
+import { nextFloat } from "./rng.ts";
 import { dayOf } from "./rules.ts";
 import type { Action, Container, GameState, ItemState, PlayerId, PlayerState, Target } from "./types.ts";
 
@@ -32,6 +33,8 @@ export interface ActionDef<A extends Action> {
   cost(state: Readonly<GameState>, player: Readonly<PlayerState>, action: A): ActionCost;
   /** The effect, after the cost is paid. Mutates a state the caller already cloned. */
   apply(next: GameState, player: PlayerState, action: A): void;
+  /** Optional: Chance of success. Deafult is 100% */
+  chance?(state: Readonly<GameState>, player: Readonly<PlayerState>, action: A): number;
 }
 
 const free = (): ActionCost => ({ ap: 0, mp: 0 });
@@ -63,6 +66,7 @@ function transfer<A extends ActionOf<"take" | "drop">>(type: A["type"]): ActionD
     check(state, p, a) {
       const item = state.items.find((i) => i.id === a.item);
       if (!item) return "no_such_item";
+      if (type === "drop" && ITEM_TYPES[item.type]?.canDrop === false) return "cant_transfer";
       return canTransfer(state, p, item, destination(p)) ? null : "cant_transfer";
     },
     cost: free,
@@ -76,6 +80,40 @@ function transfer<A extends ActionOf<"take" | "drop">>(type: A["type"]): ActionD
     },
   };
 }
+
+/** Breaking an item apart in your inventory turns it into scrap in the room. */
+const dismantle: ActionDef<ActionOf<"dismantle">> = {
+  candidates: (state, p) => state.items.filter((i) => ITEM_TYPES[i.type]?.dismantle && canReach(state, p, i.at)).map((i) => ({ type: "dismantle", item: i.id })),
+  check(state, p, a) {
+    const item = state.items.find((i) => i.id === a.item);
+    if (!item) return "no_such_item";
+    if (p.ap < state.config.dismantleAp) return "cant_afford";
+    return ITEM_TYPES[item.type]?.dismantle && canReach(state, p, item.at) ? null : "cant_dismantle";
+  },
+  cost: (state) => ({ ap: state.config.dismantleAp, mp: 0 }),
+  chance: ((state) => (state.config.dismantleOdds)),
+  apply(next, p, a) {
+    const index = next.items.findIndex((i) => i.id === a.item); // checked, so it exists
+    const [item] = next.items.splice(index, 1) as [ItemState];
+    const [roll, rng] = nextFloat(next.rng);
+    next.rng = rng;
+    if (roll >= next.config.dismantleOdds) {
+      next.items.splice(index, 0, item);
+      logPrivate(next, p.id, `You failed to dismantle the ${itemName(item.type)}.`);
+      return;
+    }
+    const scraps = ITEM_TYPES[item.type]!.dismantle!;
+    for (const [scrapType, amount] of [
+      ["metal_scraps", scraps.metal],
+      ["plastic_scraps", scraps.plastic],
+    ] as const) {
+      for (let i = 0; i < amount; i++) {
+        next.items.push({ id: `item-${next.nextItemId++}`, type: scrapType, at: { kind: "room", id: p.room } });
+      }
+    }
+    logPublic(next, p.room, `${p.name} dismantled the ${itemName(item.type)} and recovered scrap.`);
+  },
+};
 
 /** Pulling from a machine is free but works once per cycle per machine (confirmed 2026-10-13). */
 const dispense: ActionDef<ActionOf<"dispense">> = {
@@ -201,6 +239,7 @@ export const ACTIONS: { [T in ActionType]: ActionDef<ActionOf<T>> } = {
   move,
   take: transfer("take"),
   drop: transfer("drop"),
+  dismantle,
   dispense,
   consume,
   examine,

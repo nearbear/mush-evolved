@@ -76,6 +76,36 @@ describe("inventory", () => {
     expect(mustApply(state, "p0", drop("item-1")).items.find((i) => i.id === "item-1")!.at).toEqual({ kind: "room", id: "LABORATORY" });
   });
 
+  it("can't drop items marked as non-droppable", () => {
+    const state = newGame();
+    state.items.push({ id: "item-camera", type: "camera", at: { kind: "player", id: "p0" } });
+    expect(viewFor(state, "p0").legalActions.some((a) => a.type === "drop" && a.item === "item-camera")).toBe(false);
+    expect(applyAction(state, "p0", drop("item-camera")).ok).toBe(false);
+  });
+
+  it("dismantles inventory items into scrap in the room", () => {
+    const state = mustApply(newGame(), "p0", take("item-1"));
+    state.items.push({ id: "item-camera", type: "camera", at: { kind: "player", id: "p0" } });
+    state.config.dismantleOdds = 1;
+    const result = applyAction(state, "p0", { type: "dismantle", item: "item-camera" });
+    if (!result.ok) throw new Error(result.error);
+    const next = result.state;
+    expect(next.items.find((i: { id: string }) => i.id === "item-camera")).toBeUndefined();
+    expect(next.items.filter((i: { at: { kind: string; id: string }; type: string }) => i.at.kind === "room" && i.at.id === "LABORATORY" && i.type === "metal_scraps")).toHaveLength(1);
+    expect(next.items.filter((i: { at: { kind: string; id: string }; type: string }) => i.at.kind === "room" && i.at.id === "LABORATORY" && i.type === "plastic_scraps")).toHaveLength(0);
+  });
+
+  it("fails a dismantle when the roll misses", () => {
+    const state = mustApply(newGame(), "p0", take("item-1"));
+    state.items.push({ id: "item-camera", type: "camera", at: { kind: "player", id: "p0" } });
+    state.config.dismantleOdds = 0;
+    const result = applyAction(state, "p0", { type: "dismantle", item: "item-camera" });
+    if (!result.ok) throw new Error(result.error);
+    const next = result.state;
+    expect(next.items.find((i: { id: string }) => i.id === "item-camera")).toBeDefined();
+    expect(next.items.filter((i: { at: { kind: string; id: string }; type: string }) => i.at.kind === "room" && i.at.id === "LABORATORY" && i.type === "metal_scraps")).toHaveLength(0);
+  });
+
   it("lets modifiers change the slot count", () => {
     MODIFIERS["test:backpack"] = { inventorySlots: (n) => n + 1 };
     try {

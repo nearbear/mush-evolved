@@ -58,6 +58,10 @@ export interface GameConfig {
   shareMorale: number;
   /** Contamination a human reaches before converting to Mush, before modifiers (confirmed 2026-10-14). */
   contaminationCapacity: number;
+  /** AP spent to dismantle an item (confirmed 2026-10-13). */
+  dismantleAp: number;
+  /** Chance of successfully dismantling an item (confirmed 2026-10-13). */
+  dismantleOdds: number;
   /** Items placed in rooms at the start of the game. Types come from ITEM_TYPES in items.ts. */
   startItems: { type: string; room: RoomId }[];
   /** Item types every player starts carrying (one of each). */
@@ -203,6 +207,7 @@ export type Action =
   | { type: "move"; to: RoomId }
   | { type: "take"; item: ItemId }
   | { type: "drop"; item: ItemId }
+  | { type: "dismantle"; item: ItemId }
   | { type: "dispense"; equipment: string }
   | { type: "consume"; item: ItemId }
   | { type: "examine"; target: Target }

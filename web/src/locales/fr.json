@@ -46,9 +46,20 @@
     "examine": "Examiner",
     "dispense": "Tirer un café",
     "consume": "Boire",
+    "dismantle": "Démonter",
     "bond": "Créer un lien",
     "dtt": "DTT",
     "stt": "STT"
+  },
+  "log": {
+    "cameraInstalled": "{{CharacterName}} a installé une caméra.",
+    "moveToRoom": "{{CharacterName}} est parti pour {{RoomName}}.",
+    "moveFromRoom": "{{CharacterName}} est entré depuis {{RoomName}}.",
+    "transferItem": "{{CharacterName}} {{Verb}} {{ItemName}}.",
+    "dispenseItem": "{{CharacterName}} a pris {{ItemName}} dans {{EquipmentName}}.",
+    "knockOverItem": "{{CharacterName}} a pris {{ItemName}} dans {{EquipmentName}} et l'a renversé.",
+    "consumeItem": "{{CharacterName}} a consommé {{ItemName}}.",
+    "examineItem": "Vous avez examiné {{Target}}."
   },
   "channels": {
     "empty": "Aucun canal privé pour l'instant.",

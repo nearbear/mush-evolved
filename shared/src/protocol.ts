@@ -60,6 +60,7 @@ export function parseGameMessage(raw: string): GameClientMessage | null {
   if (a.type === "dispense" && typeof a.equipment === "string") {
     return { type: "action", action: { type: "dispense", equipment: a.equipment } };
   }
+  if (a.type === "dismantle" && typeof a.item === "string") return { type: "action", action: { type: "dismantle", item: a.item } };
   if (a.type === "consume" && typeof a.item === "string") return { type: "action", action: { type: "consume", item: a.item } };
   if ((a.type === "bond" || a.type === "dtt" || a.type === "stt") && typeof a.target === "string") {
     return { type: "action", action: { type: a.type, target: a.target } };
