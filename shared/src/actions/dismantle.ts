@@ -10,6 +10,7 @@ export class DismantleAction extends Action<DismantleActionData> {
   constructor() {
     super("dismantle");
     this.baseAPCost = 3;
+    this.baseSuccessChance = 0.12;
   }
 
   override getCandidates(state: Readonly<GameState>, player: Readonly<PlayerState>): DismantleActionData[] {
@@ -28,7 +29,7 @@ export class DismantleAction extends Action<DismantleActionData> {
     const [item] = state.items.splice(index, 1) as [ItemState];
     const [roll, rng] = nextFloat(state.rng);
     state.rng = rng;
-    if (roll >= state.config.dismantleOdds) {
+    if (roll > this.getSuccessChance(state, player, target) {
       state.items.splice(index, 0, item);
       logPrivate(state, player.id, "dismantleFailed", { item: item.type });
       return;
