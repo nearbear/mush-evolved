@@ -14,7 +14,6 @@ import { TopBar } from "./hud/TopBar.tsx";
 import { gameSocket, type SeatTicket } from "./net.ts";
 import { IsoRoom } from "./iso/IsoRoom.tsx";
 import { useShipLayout } from "./iso/shipLayout.ts";
-import { Minimap } from "./scene/Minimap.tsx";
 import { useMobile } from "./useMobile.ts";
 
 export function GameScreen({ ticket, onLeave }: { ticket: SeatTicket; onLeave: () => void }) {
@@ -125,7 +124,9 @@ export function GameScreen({ ticket, onLeave }: { ticket: SeatTicket; onLeave: (
             ) : (
               <section className="iso-room loading">Loading ship…</section>
             )}
-            <Minimap here={you.room} youId={you.id} people={[you, ...view.players]} unidentified={view.unidentified} reachable={reachable} onMove={move} />
+            {/* TODO(minimap): stubbed out for now, to be revisited. scene/Minimap.tsx still exists; render it here
+                with here={you.room} youId={you.id} people={[you, ...view.players]} unidentified={view.unidentified}
+                reachable={reachable} onMove={move}. */}
           </div>
           {!mobile && (
             <SelfPanel view={view} selected={target} showSummary onAction={send} onSelect={select} />

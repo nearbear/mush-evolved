@@ -150,21 +150,12 @@ async function desktopSteps(page: Page, step: Step): Promise<void> {
     console.log(`      ${before} -> ${await page.locator(".room-title").innerText()}`);
   });
 
-  await step("07-minimap", async () => {
-    const map = page.locator(".minimap");
-    await map.hover();
-    await page.locator(".minimap.expanded").waitFor();
-    const at = await pointOnShape(page, map.locator(".minimap-room.reachable").first());
-    await page.mouse.move(at.x, at.y);
-    await map.locator(".minimap-caption", { hasText: at.title }).waitFor(); // hover names the room
-    console.log(`      minimap names ${at.title} on hover`);
-  });
+  // TODO(minimap): the 07-minimap step is removed while the minimap is stubbed out.
 }
 
 async function joinMobile(page: Page, name: string): Promise<void> {
   await join(page, name);
   await page.locator(".bottom-nav").waitFor();
-  if (await page.locator(".minimap.expanded").count()) throw new Error("the minimap should start collapsed");
 }
 
 /** The phone pass: taps, the peek bar, panel switching, a wide room, and landscape. */
@@ -231,17 +222,7 @@ async function mobileSteps(page: Page, step: Step): Promise<void> {
     if (cx < box!.x || cx > box!.x + box!.width) throw new Error("your character is scrolled out of view");
   });
 
-  await step("m08-minimap", async () => {
-    const map = page.locator(".minimap");
-    const box = (await map.locator("svg").boundingBox())!;
-    await page.touchscreen.tap(box.x + box.width / 2, box.y + box.height / 2);
-    await page.locator(".minimap.expanded").waitFor();
-    await noSideScroll(page);
-    const at = await pointOnShape(page, map.locator(".minimap-room.reachable").first());
-    // Tap through Playwright's hit test (it retries while the map settles) rather than at fixed coordinates.
-    await map.getByRole("button", { name: at.title, exact: true }).tap();
-    await map.locator(".minimap-caption", { hasText: at.title }).getByRole("button", { name: "Go" }).waitFor();
-  });
+  // TODO(minimap): the m08-minimap step is removed while the minimap is stubbed out.
 
   await step("m09-landscape", async () => {
     const portrait = page.viewportSize()!;
