@@ -9,12 +9,16 @@
 //
 // The rooms behind the doors are drawn dimmed around this one, in one paint
 // order with it (placeScene), so a neighbour in front covers this room and
-// one behind is covered by it; only people in this room are never covered.
-// They show only what the view already gives you: their fixed scenery, and
-// the people the view places there (everyone while ACTOPI is on, nobody
-// while it's off). Clicking one counts as clicking its door.
+// one behind is covered by it. They show only what the view already gives
+// you: their fixed scenery, and the people the view places there (everyone
+// while ACTOPI is on, nobody while it's off). Clicking one counts as clicking
+// its door.
+//
+// Walls cover people standing behind them, but nobody can hide there: anyone
+// a wall is drawn over (PlacedSprite.occluded) also gets a glowing outline in
+// a layer above everything. People in this room still take clicks through it.
 
-import { useEffect, useLayoutEffect, useMemo, useRef, useState, type MouseEvent, type PointerEvent } from "react";
+import { useEffect, useId, useLayoutEffect, useMemo, useRef, useState, type MouseEvent, type PointerEvent } from "react";
 import { placedEquipment, type CharacterId, type EquipmentView, type RoomId, type ShipLayout, type Target } from "@mush2/shared";
 import { sameTarget } from "../hud/targets.ts";
 import { spriteStrip } from "../art/assets.ts";
@@ -164,6 +168,7 @@ export function IsoRoom({
   }, [scene]);
 
   const [hoverKey, setHoverKey] = useState<string | null>(null);
+  const espFilter = `iso-esp-${useId().replace(/[^\w-]/g, "")}`;
 
   if (!roomLayout) return <section className="iso-room missing">No map for {roomLabel(room)}</section>;
   const isSelected = (kind: Target["kind"], id: string) => sameTarget(selected, { kind, id } as Target);
@@ -303,9 +308,53 @@ export function IsoRoom({
                 return <div key={s.key} className={`iso-sprite${doorClass}${canGo ? " reachable" : ""}${eqClass}${hoverClass}`} style={spriteStyle(s)} />;
               })}
             </div>
+            {/* Every person, in paint order; only those a wall covers show (CSS). Always mounted, so the copy
+                plays its walk-in in step with the person. */}
+            <div className="iso-layer iso-esp">
+              {scene.map((s) =>
+                s.kind === "actor" ? (
+                  <div
+                    key={s.key}
+                    className={`iso-actor${s.occluded ? " occluded" : ""}${s.room !== room ? " neighbor" : ""}`}
+                    style={{ ...place(s), filter: `url(#${espFilter})` }}
+                  >
+                    <CrewSprite character={byId.get(s.key.slice(2))?.character} />
+                  </div>
+                ) : null,
+              )}
+            </div>
           </div>
         </div>
       </div>
+      <EspFilter id={espFilter} />
     </section>
+  );
+}
+
+/**
+ * The see-through outline: a 1px rim around the person's silhouette with a soft glow, over a faint fill.
+ * An SVG filter, because CSS alone can't outline a sprite without also drawing it.
+ */
+function EspFilter({ id }: { id: string }) {
+  const ALPHA = "SourceAlpha"; // i18n-ignore: SVG filter input name
+  return (
+    <svg className="iso-esp-defs" aria-hidden="true" width="0" height="0">
+      <filter id={id} x="-25%" y="-25%" width="150%" height="150%" colorInterpolationFilters="sRGB">
+        <feMorphology in={ALPHA} operator="dilate" radius="1" result="grown" />
+        <feComposite in="grown" in2={ALPHA} operator="out" result="rim" />
+        <feFlood className="iso-esp-color" result="color" />
+        <feComposite in="color" in2="rim" operator="in" result="outline" />
+        <feGaussianBlur in="outline" stdDeviation="1.5" result="glow" />
+        <feComposite in="color" in2={ALPHA} operator="in" result="body" />
+        <feComponentTransfer in="body" result="fill">
+          <feFuncA type="linear" slope="0.3" />
+        </feComponentTransfer>
+        <feMerge>
+          <feMergeNode in="glow" />
+          <feMergeNode in="fill" />
+          <feMergeNode in="outline" />
+        </feMerge>
+      </filter>
+    </svg>
   );
 }

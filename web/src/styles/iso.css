@@ -112,3 +112,46 @@
   justify-content: center;
   align-items: center;
 }
+
+/* See-through outlines of people a wall covers (IsoRoom). The layer is drawn over the whole scene; each
+   person in it is recolored by an SVG filter and shows only while covered. */
+.iso-esp {
+  pointer-events: none;
+}
+.iso-esp .iso-actor {
+  visibility: hidden;
+}
+.iso-esp .iso-actor.occluded {
+  visibility: visible;
+  animation: esp-pulse 1.6s ease-in-out infinite alternate;
+}
+.iso-esp .iso-actor.neighbor.occluded {
+  opacity: 0.45;
+  animation: none;
+}
+/* The filter colors the silhouette; the sprite's own shadow would widen it. */
+.iso-esp .crew-sprite {
+  filter: none;
+}
+@keyframes esp-pulse {
+  from {
+    opacity: 0.65;
+  }
+  to {
+    opacity: 1;
+  }
+}
+.iso-esp-defs {
+  position: absolute;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+}
+.iso-esp-color {
+  flood-color: var(--glow-rim);
+}
+@media (prefers-reduced-motion: reduce) {
+  .iso-esp .iso-actor.occluded {
+    animation: none;
+  }
+}

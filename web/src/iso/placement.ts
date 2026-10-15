@@ -13,7 +13,8 @@ export const gridToPx = (x: number, y: number) => ({ x: (x - y) * R, y: (x + y) 
 /**
  * Render passes, back to front (Grid.sort). Tiles (floor, walls, doors, and
  * the props attached to them) are one pass sorted by depth; entities come
- * after all tiles, so walls never cover furniture or people.
+ * after all tiles, so walls never covered furniture or people. That is still
+ * the starting order, but `compare` lets a wall cover what stands behind it.
  */
 const PASS = { prewall: 0, tile: 1, postwall: 2, entity: 3, post: 4 } as const;
 
@@ -41,7 +42,7 @@ export interface PlacedSprite {
   flipX: boolean;
   flipY: boolean;
   door?: { target: string };
-  /** People only: something standing (a wall, furniture) is drawn over them, so they get a see-through outline. */
+  /** People only: a wall, or something in another room, is drawn over them, so they get a see-through outline. */
   occluded?: boolean;
 }
 
@@ -65,15 +66,18 @@ interface Sortable {
   screenX: number;
   /** Index of the sprite's room in the scene; 0 is the room you're in. */
   scene: number;
-  /** Cells covered, inclusive (the footprint, extending toward -x/-y from the anchor). */
+  /**
+   * Cells covered, inclusive: the footprint, extending toward -x/-y from the
+   * anchor, cut to the room's floor (some reach into the wall rows; anything
+   * mounted on a wall sits on the floor's edge).
+   */
   box: { x0: number; x1: number; y0: number; y1: number };
   /**
    * How it stands: `flat` on the floor or a wall (floor tiles, `decal`s but
-   * not chairs, which only sort like decals, and front-edge doors); a `wall`
-   * or door along one grid axis, a thin plane on its cell (`wallX` runs along
-   * y at constant x, `wallY` along x); or `solid` (furniture, people, corners).
+   * not chairs, which only sort like decals, and front-edge doors), a `wall`
+   * or door, or `solid` (furniture, props, people).
    */
-  shape: "flat" | "wallX" | "wallY" | "solid";
+  shape: "flat" | "wall" | "solid";
 }
 
 /**
@@ -137,6 +141,7 @@ function sortables(
 ): (PlacedSprite & Sortable)[] {
   const placed: (PlacedSprite & Sortable)[] = [];
   const prefix = scene === 0 ? "" : `${room.id}/`;
+  const floor = floorBounds(room, dx, dy);
 
   room.tiles.forEach((t, i) => {
     if (HIDDEN_SLICES.has(t.slice)) return;
@@ -171,8 +176,8 @@ function sortables(
       stage: t.kind === "ground" ? 0 : t.kind === "prop" ? 2 : 1,
       screenX: anchor.x,
       scene,
-      box: { x0: x - w + 1, x1: x, y0: y - h + 1, y1: y },
-      shape: flat ? "flat" : t.kind === "wall" || t.kind === "door" ? wallShape(t.slice, w, h) : "solid",
+      box: t.kind === "ground" || t.kind === "wall" || t.kind === "door" ? { x0: x - w + 1, x1: x, y0: y - h + 1, y1: y } : clip(x - w + 1, x, y - h + 1, y, floor),
+      shape: flat ? "flat" : t.kind === "wall" || t.kind === "door" ? "wall" : "solid",
     });
   });
 
@@ -209,15 +214,31 @@ function sortables(
   return placed;
 }
 
-/**
- * Which way a wall or door runs. Doors say so by their footprint (1x2 runs
- * along y); walls by name (BIG_WALL_L, WALL_L_DECK run along y, the _R ones
- * along x). Columns and corners are solid.
- */
-function wallShape(slice: string, w: number, h: number): Sortable["shape"] {
-  if (h > w || /(^|_)L(_|$)/.test(slice)) return "wallX";
-  if (w > h || /(^|_)R(_|$)/.test(slice)) return "wallY";
-  return "solid";
+type Box = Sortable["box"];
+
+/** The cells a room's floor spans, shifted by (dx, dy). */
+function floorBounds(room: RoomLayout, dx: number, dy: number): Box {
+  const box = { x0: Infinity, x1: -Infinity, y0: Infinity, y1: -Infinity };
+  for (const t of room.tiles) {
+    if (t.kind !== "ground") continue;
+    box.x0 = Math.min(box.x0, t.x + dx);
+    box.x1 = Math.max(box.x1, t.x + dx);
+    box.y0 = Math.min(box.y0, t.y + dy);
+    box.y1 = Math.max(box.y1, t.y + dy);
+  }
+  return box;
+}
+
+const clamp = (v: number, lo: number, hi: number) => (lo > hi ? v : Math.min(hi, Math.max(lo, v)));
+
+/** A footprint cut to the floor; one wholly off it shrinks onto the floor's nearest edge. */
+function clip(x0: number, x1: number, y0: number, y1: number, floor: Box): Box {
+  return {
+    x0: clamp(x0, floor.x0, floor.x1),
+    x1: clamp(x1, floor.x0, floor.x1),
+    y0: clamp(y0, floor.y0, floor.y1),
+    y1: clamp(y1, floor.y0, floor.y1),
+  };
 }
 
 /**
@@ -238,25 +259,16 @@ function behind(a: Sortable, b: Sortable): number {
   return aFirst === bFirst ? 0 : aFirst ? -1 : 1;
 }
 
+/** One footprint wholly at lower x and the other wholly at lower y: side by side on screen. */
+const diagonal = (a: Sortable, b: Sortable) =>
+  (a.box.x1 < b.box.x0 && b.box.y1 < a.box.y0) || (b.box.x1 < a.box.x0 && a.box.y1 < b.box.y0);
+
 const boxesOverlap = (a: Sortable, b: Sortable) =>
   a.box.x0 <= b.box.x1 && b.box.x0 <= a.box.x1 && a.box.y0 <= b.box.y1 && b.box.y0 <= a.box.y1;
 
 /**
- * Whether a wall or door plane hides `thing` (negative: the thing is behind
- * it, so draws first). A wall along y at x = 10 hides whatever lies wholly
- * at x < 10 and stands in front of whatever lies wholly at x > 10; anything
- * on its line (mounted on it, or a footprint reaching into it) is 0.
- */
-function wallSide(wall: Sortable, thing: Sortable): number {
-  const [lo, hi, at] =
-    wall.shape === "wallX" ? [thing.box.x0, thing.box.x1, wall.box.x0] : [thing.box.y0, thing.box.y1, wall.box.y0];
-  return hi < at ? -1 : lo > at ? 1 : 0;
-}
-
-const isWall = (s: Sortable) => s.shape === "wallX" || s.shape === "wallY";
-
-/**
- * Which of two sprites whose pictures overlap draws first (negative: a).
+ * Which of two sprites whose pictures overlap draws first (negative: a; 0:
+ * either, no constraint).
  *
  * The original sorted by anchor depth alone, which works for one-cell things
  * but not for wide furniture (a chair or a person at the front of a 4-cell
@@ -265,43 +277,46 @@ const isWall = (s: Sortable) => s.shape === "wallX" || s.shape === "wallY";
  * a room's front edges. So:
  * - Within one room, floors and walls keep the original order among
  *   themselves, and floors go under everything standing on them.
- * - A wall or door covers anything standing wholly behind it, in any room,
- *   people included (they get an outline instead, see `occluded`).
- * - Across rooms, the footprint further back draws first, floors included
- *   (a floor covers the foot of a wall behind it). Where neither is further
- *   back (side by side, or one reaching into the other's cells), a floor or
- *   flat decal draws before what stands.
- * - Between standing things, the footprint further back draws first. Flat
- *   decals go under people, and under any furniture whose footprint they share.
+ * - Otherwise, the footprint further back (wholly at lower x, or lower y)
+ *   draws first: a wall or door covers whatever stands behind it, in any
+ *   room, people included (they get an outline instead, see `occluded`), and
+ *   across rooms a floor covers the foot of a wall behind it.
+ * - Footprints diagonally apart can't hide each other, so they get no
+ *   constraint (forcing one is what tangles the order into loops).
+ * - Where footprints overlap: things mounted on a wall go over it, floors and
+ *   flat decals go under what stands on them.
  */
 function compare(a: PlacedSprite & Sortable, b: PlacedSprite & Sortable): number {
   if (a.pass !== PASS.tile && a.pass !== PASS.entity) return baseOrder(a, b);
   if (b.pass !== PASS.tile && b.pass !== PASS.entity) return baseOrder(a, b);
-  const wallA = isWall(a), wallB = isWall(b);
-  if (wallA && b.shape === "solid") return -wallSide(a, b) || baseOrder(a, b);
-  if (wallB && a.shape === "solid") return wallSide(b, a) || baseOrder(a, b);
-
-  if (a.scene === b.scene) {
+  const standing = (a.shape === "wall" && b.shape === "solid") || (b.shape === "wall" && a.shape === "solid");
+  if (a.scene === b.scene && !standing) {
     if (a.pass !== PASS.entity || b.pass !== PASS.entity) return baseOrder(a, b);
     const flatA = a.shape === "flat", flatB = b.shape === "flat";
     if (flatA !== flatB && (a.kind === "actor" || b.kind === "actor" || boxesOverlap(a, b))) return flatA ? -1 : 1;
     return behind(a, b) || baseOrder(a, b);
   }
-
-  if (a.shape === "flat" !== (b.shape === "flat")) return behind(a, b) || (a.shape === "flat" ? -1 : 1);
-  return behind(a, b) || baseOrder(a, b);
+  if (diagonal(a, b)) return 0;
+  const g = behind(a, b);
+  if (g) return g;
+  if (standing) return a.shape === "wall" ? -1 : 1;
+  if ((a.shape === "flat") !== (b.shape === "flat")) return a.shape === "flat" ? -1 : 1;
+  return baseOrder(a, b);
 }
 
 /**
  * Paint order: a topological sort of "draws before" between every pair of
  * sprites whose boxes overlap on screen (`compare`), taking the earliest in
  * the original order whenever there's a choice. A cycle, which the rules
- * above can make in odd corners, is broken at its earliest sprite.
+ * above can make in odd corners, is broken at its earliest sprite (found by
+ * walking back from a stuck sprite, so sprites merely waiting on a cycle keep
+ * their own constraints).
  */
 function paintOrder<S extends PlacedSprite & Sortable>(sprites: S[]): S[] {
   const base = [...sprites].sort(baseOrder);
   const n = base.length;
   const after: number[][] = base.map(() => []);
+  const before: number[][] = base.map(() => []);
   const waiting = new Array<number>(n).fill(0);
   // Sweep along x so only sprites that can overlap are compared.
   const byLeft = base.map((_, i) => i).sort((i, j) => base[i]!.left - base[j]!.left);
@@ -311,8 +326,11 @@ function paintOrder<S extends PlacedSprite & Sortable>(sprites: S[]): S[] {
       const j = byLeft[q]!, b = base[j]!;
       if (b.left >= a.left + a.width) break;
       if (b.top >= a.top + a.height || a.top >= b.top + b.height) continue;
-      const [first, second] = compare(a, b) < 0 ? [i, j] : [j, i];
+      const c = compare(a, b);
+      if (c === 0) continue;
+      const [first, second] = c < 0 ? [i, j] : [j, i];
       after[first]!.push(second);
+      before[second]!.push(first);
       waiting[second]!++;
     }
   }
@@ -351,8 +369,9 @@ function paintOrder<S extends PlacedSprite & Sortable>(sprites: S[]): S[] {
   while (out.length < n) {
     if (heap.length === 0) {
       while (done[next]) next++;
-      waiting[next] = 0;
-      push(next);
+      const cut = cycleStart(next, before, done);
+      waiting[cut] = 0;
+      push(cut);
     }
     const i = pop();
     if (done[i]) continue;
@@ -364,8 +383,10 @@ function paintOrder<S extends PlacedSprite & Sortable>(sprites: S[]): S[] {
 }
 
 /**
- * Flags people with something standing drawn over them. Rectangles only, so
- * it errs towards outlining: the inset keeps a wall's transparent corner just
+ * Flags people with a wall or door drawn over them, or anything standing in
+ * another room (which is behind a wall). Furniture in their own room doesn't
+ * count: standing behind a table isn't hiding. Rectangles only, so it errs
+ * towards outlining; the inset keeps a wall's transparent corner just
  * brushing the empty edge of a person's frame from counting.
  */
 function markOccluded(ordered: (PlacedSprite & Sortable)[]) {
@@ -374,13 +395,36 @@ function markOccluded(ordered: (PlacedSprite & Sortable)[]) {
     const l = a.left + OCCLUSION_INSET.x, r = a.left + a.width - OCCLUSION_INSET.x;
     const t = a.top + OCCLUSION_INSET.top, b = a.top + a.height - OCCLUSION_INSET.bottom;
     a.occluded = ordered.slice(i + 1).some(
-      (s) => s.shape !== "flat" && s.kind !== "actor" && s.pass !== PASS.post && s.left < r && l < s.left + s.width && s.top < b && t < s.top + s.height,
+      (s) =>
+        (s.shape === "wall" || (s.shape === "solid" && s.kind !== "actor" && s.room !== a.room)) &&
+        s.pass !== PASS.post &&
+        s.left < r &&
+        l < s.left + s.width &&
+        s.top < b &&
+        t < s.top + s.height,
     );
   });
 }
 
 /** Empty margin around a person in their 32x48 frame. */
 const OCCLUSION_INSET = { x: 8, top: 8, bottom: 4 } as const;
+
+/**
+ * The earliest sprite on a cycle upstream of `from`, every sprite not yet
+ * `done` being stuck behind another that isn't: walk back through undrawn
+ * predecessors until one repeats.
+ */
+function cycleStart(from: number, before: readonly number[][], done: readonly boolean[]): number {
+  const seen = new Map<number, number>();
+  const path: number[] = [];
+  let v = from;
+  while (!seen.has(v)) {
+    seen.set(v, path.length);
+    path.push(v);
+    v = before[v]!.find((u) => !done[u])!;
+  }
+  return Math.min(...path.slice(seen.get(v)));
+}
 
 function entityPass(engine: string | undefined): number {
   switch (engine) {

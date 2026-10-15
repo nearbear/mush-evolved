@@ -56,7 +56,7 @@ const room: RoomLayout = {
     { x: 1, y: 0, kind: "ground", layer: 0, slice: "floor", frame: 0 },
     { x: 2, y: 0, kind: "ground", layer: 0, slice: "floor", frame: 0 },
     { x: 0, y: 1, kind: "ground", layer: 0, slice: "raised", frame: 0 },
-    { x: 3, y: 3, kind: "wall", layer: 0, slice: "wall", frame: 0 },
+    { x: -1, y: 0, kind: "wall", layer: 0, slice: "wall", frame: 0 },
     { x: 0, y: 2, kind: "door", layer: 0, slice: "door", frame: 0, door: { target: "ELSEWHERE" } },
     { x: 2, y: 0, kind: "entity", layer: 2, slice: "table", frame: 0 },
     { x: 3, y: 3, kind: "entity", layer: 3, slice: "camera", frame: 0 },
@@ -155,19 +155,38 @@ describe("the real ship", () => {
     expect(at("CORRIDOR_A", "wall", 10, 14)).toBeGreaterThan(at("HYDROPONIC_CENTER", "ground", 10, 13));
   });
 
-  it("never hides people in this room behind a neighbour", () => {
+  it("hides people behind a neighbour's wall, and marks them for the see-through outline", () => {
     const corridor = ship.rooms.find((r) => r.id === "CORRIDOR_A")!;
     const garden = neighborRooms(ship, corridor).find((n) => n.room.id === "HYDROPONIC_CENTER")!;
     const scene = placeScene(ship, [
-      { room: corridor, dx: 0, dy: 0, actors: [{ id: "p", cell: { x: 6, y: 8 }, width: 32, height: 48 }] },
-      { ...garden, actors: [] },
+      { room: corridor, dx: 0, dy: 0, actors: [{ id: "hidden", cell: { x: 6, y: 8 }, width: 32, height: 48 }] },
+      { ...garden, actors: [{ id: "open", cell: { x: 17, y: 18 }, width: 32, height: 48 }] },
     ]);
-    const actor = scene.find((s) => s.kind === "actor")!;
-    const covering = scene.filter(
-      (s) => s.room !== "CORRIDOR_A" && s.left < actor.left + actor.width && actor.left < s.left + s.width && s.top < actor.top + actor.height && actor.top < s.top + s.height,
-    );
-    expect(covering.length).toBeGreaterThan(0);
-    for (const s of covering) expect(s.order).toBeLessThan(actor.order);
+    const actor = (id: string) => scene.find((s) => s.key === `a:${id}`)!;
+    const wall = scene.find((s) => s.room === "HYDROPONIC_CENTER" && s.kind === "wall" && s.cell.x === 7 && s.cell.y === 8)!;
+    expect(wall.order).toBeGreaterThan(actor("hidden").order);
+    expect(actor("hidden").occluded).toBe(true);
+    expect(actor("open").occluded).toBe(false);
+  });
+
+  it("hides lockers behind the wall of the room in front", () => {
+    // The command centre's locker stands on its front edge; the corridor's back wall is the next cell over.
+    const command = ship.rooms.find((r) => r.id === "COMMAND_CENTER")!;
+    const scene = placeScene(ship, [
+      { room: command, dx: 0, dy: 0, actors: [] },
+      ...neighborRooms(ship, command).map((n) => ({ ...n, actors: [] })),
+    ]);
+    const locker = scene.find((s) => s.room === "COMMAND_CENTER" && s.slice === "cupboard4")!;
+    const wall = scene.find((s) => s.room === "CORRIDOR_A" && s.kind === "wall" && s.cell.x === locker.cell.x + 1 && s.cell.y === locker.cell.y)!;
+    expect(wall.order).toBeGreaterThan(locker.order);
+  });
+
+  it("leaves out front-edge doors once the room behind them is drawn", () => {
+    for (const r of ship.rooms) {
+      const scene = placeScene(ship, [{ room: r, dx: 0, dy: 0, actors: [] }, ...neighborRooms(ship, r).map((n) => ({ ...n, actors: [] }))]);
+      const drawn = new Set(scene.map((s) => s.room));
+      expect(scene.filter((s) => (s.slice === "DOOR_BL" || s.slice === "DOOR_BR") && drawn.has(s.door!.target)), r.id).toEqual([]);
+    }
   });
 
   it("leaves out the doormats", () => {
