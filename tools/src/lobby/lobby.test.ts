@@ -42,7 +42,7 @@ async function openLobby(options: object, locale: string): Promise<Page> {
     ws.onMessage(() => ws.send(JSON.stringify({ type: "queued", waiting: 1, seats: 8 })));
   });
   await page.goto(url);
-  await page.locator(".language-switcher").selectOption(locale);
+  await page.getByTestId("language-switcher").selectOption(locale);
   await page.locator(`html[lang="${locale}"] .pod-ship`).first().waitFor();
   return page;
 }

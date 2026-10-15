@@ -11,6 +11,7 @@ export function LanguageSwitcher({ inline = false }: { inline?: boolean }) {
   return (
     <select
       className={inline ? "language-switcher inline" : "language-switcher"}
+      data-testid="language-switcher"
       aria-label={t("language.label")}
       title={t("language.label")}
       value={matchLocale(i18n.language) ?? "en"}
