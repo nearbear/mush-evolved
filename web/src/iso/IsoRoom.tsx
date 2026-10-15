@@ -23,6 +23,7 @@ import { placedEquipment, type CharacterId, type EquipmentView, type RoomId, typ
 import { sameTarget } from "../hud/targets.ts";
 import { spriteStrip } from "../art/assets.ts";
 import { CrewSprite } from "../scene/CrewSprite.tsx";
+import { StatusBadges } from "../scene/StatusBadges.tsx";
 import { roomLabel } from "../scene/names.ts";
 import { atlasUrl } from "./shipLayout.ts";
 import { opaqueAt, preloadImage } from "./hitMask.ts";
@@ -45,6 +46,8 @@ export interface Occupant {
   isBot: boolean;
   character: CharacterId | undefined;
   you: boolean;
+  /** Public statuses, shown over the head (the view decides which; see statuses.ts). */
+  statuses: readonly string[];
 }
 
 export function IsoRoom({
@@ -329,6 +332,17 @@ export function IsoRoom({
                   </div>
                 ) : null,
               )}
+            </div>
+            {/* Status badges last, so no sprite or wall can ever cover them. */}
+            <div className="iso-layer iso-badges">
+              {scene.map((s) => {
+                const o = s.kind === "actor" && s.room === room ? byId.get(s.key.slice(2)) : undefined;
+                return o ? (
+                  <div key={s.key} className="iso-badge-anchor" style={place(s)}>
+                    <StatusBadges statuses={o.statuses} />
+                  </div>
+                ) : null;
+              })}
             </div>
           </div>
         </div>

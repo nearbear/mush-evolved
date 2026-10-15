@@ -76,12 +76,13 @@ export function GameScreen({ ticket, onLeave }: { ticket: SeatTicket; onLeave: (
   if (!view) return <main className="connecting loading">Connecting…</main>;
   const { you } = view;
   const reachable = new Set(view.legalActions.flatMap((a) => (a.type === "move" ? [a.to] : [])));
-  const occupant = (p: { id: string; name: string; isBot: boolean; character: CharacterId }): Occupant => ({
+  const occupant = (p: { id: string; name: string; isBot: boolean; character: CharacterId; statuses: string[] }): Occupant => ({
     id: p.id,
     name: p.name,
     isBot: p.isBot,
     character: p.character,
     you: p.id === you.id,
+    statuses: p.id === you.id ? view.statuses : p.statuses,
   });
   // Where the view places other people outside your room (everyone with ACTOPI on, nobody with it off).
   const nearby: Partial<Record<RoomId, Occupant[]>> = {};

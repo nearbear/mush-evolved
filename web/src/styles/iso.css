@@ -155,3 +155,43 @@
     animation: none;
   }
 }
+
+/* Own layer, drawn after every sprite and the see-through copies, so nothing covers the badges. */
+.iso-badge-anchor {
+  position: absolute;
+  pointer-events: none;
+}
+/* Status icons over a head (StatusBadges). Native 16px art, never scaled; they bob gently so a
+   new one catches the eye. */
+.status-badges {
+  position: absolute;
+  left: 50%;
+  bottom: 100%;
+  display: flex;
+  gap: 2px;
+  padding: 2px;
+  margin-bottom: 2px;
+  background: rgb(10 14 30 / 0.6);
+  border: 1px solid rgb(255 255 255 / 0.35);
+  border-radius: 4px;
+  transform: translateX(-50%);
+  pointer-events: none;
+  animation: status-bob 1.2s ease-in-out infinite alternate;
+}
+.status-badges img {
+  display: block;
+  width: 16px;
+  height: 16px;
+  image-rendering: pixelated;
+  opacity: 0.9;
+}
+@keyframes status-bob {
+  to {
+    transform: translateX(-50%) translateY(-2px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .status-badges {
+    animation: none;
+  }
+}
