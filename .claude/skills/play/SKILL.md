@@ -10,8 +10,11 @@ Typecheck and unit tests don't show whether the UI looks right. This does.
 
 ## 1. Make sure the dev servers are up
 
+Ports depend on the checkout: the main checkout uses :5173 (web) and :8787 (server); each git worktree gets its own pair so both can run at once. `npm run dev` and `npm run screenshot` pick the right pair themselves. Run `npm run ports` to see them, and use those numbers for the `curl`s below instead of 5173/8787 when in a worktree. Never point a worktree at the main checkout's servers: you would be testing the wrong code.
+
 ```bash
 source ~/.nvm/nvm.sh
+npm run ports
 curl -sf http://localhost:5173 >/dev/null && curl -s http://localhost:8787 >/dev/null && echo up || echo down
 ```
 
@@ -27,7 +30,7 @@ Then poll until both ports answer (don't `sleep` a fixed time):
 timeout 60 bash -c 'until curl -sf http://localhost:5173 >/dev/null && curl -s http://localhost:8787 >/dev/null; do sleep 1; done'
 ```
 
-If a background `npm run dev` exits immediately, the ports are probably already taken by servers that are still running. Check with the `curl` above before assuming failure.
+If a background `npm run dev` exits immediately, the ports are probably already taken by servers that are still running (Vite runs with `--strictPort`, so it fails rather than moving). Check with the `curl` above before assuming failure. When you finish in a worktree, tell the user the worktree's web URL (from `npm run ports`) so they can try it in their own browser.
 
 ## 2. Drive it
 

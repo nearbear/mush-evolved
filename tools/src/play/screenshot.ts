@@ -11,12 +11,15 @@
 import { mkdirSync } from "node:fs";
 import { resolve } from "node:path";
 import { parseArgs } from "node:util";
+import { devPorts } from "../dev/ports.ts";
 import { chromium, devices, type Locator, type Page } from "playwright";
+
+const ports = devPorts();
 
 const { values: args } = parseArgs({
   options: {
-    url: { type: "string", default: "http://localhost:5173" },
-    server: { type: "string", default: "http://localhost:8787" },
+    url: { type: "string", default: `http://localhost:${ports.web}` },
+    server: { type: "string", default: `http://localhost:${ports.server}` },
     out: { type: "string", default: resolve(import.meta.dirname, "../../../.screenshots") },
     name: { type: "string", default: "Playwright" },
     only: { type: "string" }, // "desktop" or "mobile"

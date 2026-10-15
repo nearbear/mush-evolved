@@ -61,7 +61,7 @@ These are non-negotiable unless I say otherwise.
 ## Working agreements
 
 - Plan before large changes and keep commits small and focused.
-- Commit directly to `main`. Never create or suggest a branch.
+- Work lands directly on `main`; do not create or suggest feature branches or PRs. The one exception is git worktrees (for isolated work the user will check in a browser): a worktree needs a branch, so use a short-lived one made by Claude (`EnterWorktree`, or `git worktree add -b <name>`). When the user approves ("land it"), fast-forward or merge it into `main` from the main checkout, then remove the worktree and delete the branch. Never leave branches behind or push them. Worktrees start from committed `main`, so uncommitted changes in the main checkout are not in them. Run `npm install` once in a new worktree. `npm run dev` and `npm run screenshot` use per-worktree ports automatically (`npm run ports` shows them).
 - Write tests for rules logic. Run typecheck and tests before saying something is done.
 - Do not invent game rules. If a rule is ambiguous, ask me.
 - Ask before adding dependencies.
@@ -87,7 +87,7 @@ These are non-negotiable unless I say otherwise.
 Node is installed via nvm. In non-interactive shells, run `source ~/.nvm/nvm.sh` first or `node`/`npm` won't be found.
 
 - `npm install`: install all workspaces (npm workspaces: `shared`, `server`, `web`, `tools`, plus `Mush` as `@mush2/assets`).
-- `npm run dev`: wrangler on :8787 plus Vite on :5173, via concurrently.
+- `npm run dev`: wrangler on :8787 plus Vite on :5173, via concurrently. In a git worktree the ports are offset per worktree (`npm run ports` prints them) so it can run beside the main checkout's servers.
 - `npm test`: Vitest in `shared`, `tools`, and `web`. Single file or test: `npm test -w shared -- rules.test.ts -t "advances the cycle"`.
 - `npm run typecheck`: `tsc --noEmit` in every package (TypeScript 7).
 - `npm run build`: production build of `web`.

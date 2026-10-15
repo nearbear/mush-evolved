@@ -8,6 +8,7 @@
     "asset-index": "node src/assetIndex/assetIndex.ts",
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
+    "dev": "node src/dev/dev.ts",
     "screenshot": "node src/play/screenshot.ts",
     "contact-sheet": "node src/contactSheet/contactSheet.ts"
   },
