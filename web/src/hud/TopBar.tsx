@@ -1,5 +1,6 @@
 import type { PlayerView } from "@mush2/shared";
 import { PlayerSummary } from "./PlayerSummary.tsx";
+import { SettingsDialog } from "./SettingsDialog.tsx";
 
 export function TopBar({
   view,
@@ -31,6 +32,7 @@ export function TopBar({
         )}
       </button>
       <button onClick={onLeave}>Leave</button>
+      <SettingsDialog />
     </header>
   );
 }

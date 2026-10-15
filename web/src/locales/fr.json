@@ -1,4 +1,9 @@
 {
+  "settings": {
+    "open": "Paramètres",
+    "title": "Paramètres",
+    "close": "Fermer"
+  },
   "language": {
     "label": "Langue"
   },

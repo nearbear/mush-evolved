@@ -111,13 +111,16 @@ export const MORALE_PIP = design["lifebar2"]!;
 // Tab icons (16x16-ish pixel art). Keys are the names the user chose; see docs/tab-icons.md.
 const uiIcons = urls(
   import.meta.glob<string>(
-    "../../../Mush/www/img/icons/ui/{mush,mush_progressive,starter,p_alive,survival,awake,comm,learned,stock,microsc,neron,infoalert,local,planet,conceptor,talkie,shield,basicplus,goldplus,notebook,pa_cook,pa_garden,pa_pilgred,pa_heal,private,search,spore,wall,fav,triumph}.{png,gif}",
+    "../../../Mush/www/img/icons/ui/{mush,mush_progressive,starter,p_alive,survival,awake,comm,learned,stock,microsc,neron,infoalert,local,planet,conceptor,talkie,shield,basicplus,goldplus,notebook,pa_cook,pa_garden,pa_pilgred,pam,pa_heal,private,search,spore,wall,fav,triumph}.{png,gif}",
     { eager: true, query: "?url", import: "default" },
   ),
 );
 
 /** A person you can see is somewhere but can't identify (ACTOPI off). */
 export const MUSH_ICON = uiIcons["mush"]!;
+
+/** Two gears, on the settings button. */
+export const SETTINGS_ICON = uiIcons["pam"]!;
 
 /** Faction badges on the player summary. */
 export const FACTION_ICONS = {

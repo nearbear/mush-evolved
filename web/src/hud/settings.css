@@ -1,0 +1,57 @@
+/* Kept out of styles.css on purpose. Buttons use the global Mush style; only layout here. */
+.settings-button {
+  margin: 0;
+}
+
+.settings-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  background: rgb(0 0 0 / 0.6);
+}
+
+.settings-popup {
+  position: fixed;
+  z-index: 21;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  box-sizing: border-box;
+  width: min(28rem, calc(100vw - 2rem));
+  max-height: calc(100dvh - 2rem);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1rem;
+  color: #fff;
+  background: #1b2a4a;
+  border: 1px solid rgb(255 255 255 / 0.3);
+  border-radius: 6px;
+}
+
+.settings-title {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.settings-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.settings-close {
+  align-self: flex-end;
+  margin: 0;
+}
+
+/* The 16x16 art is drawn at exactly 1x, never scaled. */
+.settings-icon {
+  display: block;
+  width: 16px;
+  height: 16px;
+  image-rendering: pixelated;
+}

@@ -381,3 +381,10 @@ The user asked for server tests after a quality review flagged the server as unt
 
 ### 2026-10-14: Shift-click to take/drop items
 The user asked for shift-clicking an inventory tile to move it between room and inventory. The assistant implemented it in `InventoryPanel.tsx` (decided by the assistant, a small UI shortcut, no rule change): it reuses the server's legal-action check, falls back to plain select otherwise, and suppresses text selection on shift-mousedown. Touch is unchanged. No corrections needed; visual check skipped.
+
+## 2026-10-14: settings dialog (#5)
+
+- Asked whether a dialog was the right container; recommended a Base UI `Dialog` over a popover because settings will grow and it works the same on the phone layout. The user chose it and wanted the gear in-game only.
+- Reused the existing `LanguageSwitcher` (native select) with an `inline` prop instead of building a new control.
+- Needed correction: first used an emoji gear; the user asked for `icons/ui/pam.png`. The existing `.tab-icon` class scales art to 18px, so the icon got its own 1x class.
+- Not visually checked at 360px or in fr/es; fr/es strings are drafts for a native speaker.

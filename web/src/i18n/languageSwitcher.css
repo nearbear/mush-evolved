@@ -19,3 +19,8 @@
   color: #000;
   background: #fff;
 }
+
+.language-switcher.inline {
+  position: static;
+  max-width: 100%;
+}
