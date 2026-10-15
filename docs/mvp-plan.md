@@ -8,6 +8,7 @@ Drafted 2026-10-13 from the old `docs/todo.md`, whose items are now GitHub issue
 
 - **MVP:** the vertical slice from `CLAUDE.md`: a complete game you can play start to finish with other people (or test bots), small and ugly is fine.
 - **Private beta:** invited players. Needs enough safety and polish that strangers can be trusted with it, but not public-internet hardening.
+- **Public beta readiness (added 2026-10-15):** everything absolutely required before the public beta that does not need to happen early in the private beta (the Discord server and its moderation staffing, for example).
 - **Public beta:** open to anyone. Robust moderation, deployment, and documentation.
 - **Release:** the full game, including the large optional projects.
 

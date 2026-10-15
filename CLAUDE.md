@@ -111,7 +111,7 @@ See `docs/code-map.md` for where each module lives and which rules are implement
 
 ## Open decisions
 
-Open work lives in **GitHub issues** in the [mush2 project](https://github.com/users/nearbear/projects/1): epics (label `epic`) with sub-issues, milestones for MVP, Private beta, Public beta, and Release, and `needs-staging` on issues without a stage yet. Open rule decisions carry the `rule-decision` label: `gh issue list --label rule-decision`. Search with `gh issue list --search "<keyword>"` and read one with `gh issue view <n>`. Answered rule decisions are recorded in `docs/rules-design.md` and `docs/action-plans.md`. The draft staging is `docs/mvp-plan.md` (not final). Do not treat anything in an issue as decided unless it is also recorded there as answered.
+Open work lives in **GitHub issues** in the [mush2 project](https://github.com/users/nearbear/projects/1): epics (label `epic`) with sub-issues, milestones for MVP, Private beta, Public beta readiness, Public beta, and Release, and `needs-staging` on issues without a stage yet. Open rule decisions carry the `rule-decision` label: `gh issue list --label rule-decision`. Search with `gh issue list --search "<keyword>"` and read one with `gh issue view <n>`. Answered rule decisions are recorded in `docs/rules-design.md` and `docs/action-plans.md`. The draft staging is `docs/mvp-plan.md` (not final). Do not treat anything in an issue as decided unless it is also recorded there as answered.
 
 Not rules, but still open:
 

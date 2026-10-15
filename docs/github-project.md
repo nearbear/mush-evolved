@@ -8,7 +8,7 @@ The mush2 project is a single GitHub Project ("mush2", project 1) that tracks ev
 
 - **Epics** carry the `epic` label and are named "Epic: ..." (22 of them, such as Rules, UI, Rendering, Bots, Testing). Each epic's sub-issues are its stories.
 - **Stories** are written as "As a ..., I want ..., so that ...", followed by what the original Mush did (reference only), acceptance criteria, and open decisions.
-- **Milestones** say when a story is due: MVP, Private beta, Public beta, Release. Stories without one carry `needs-staging`.
+- **Milestones** say when a story is due: MVP, Private beta, Public beta readiness, Public beta, Release. Stories without one carry `needs-staging`.
 - **Rule decisions** are stories that cannot be built until the owner answers questions about the game rules. They carry `rule-decision`. Answers are recorded in `docs/rules-design.md` and `docs/action-plans.md`; nothing in an issue counts as decided until it is written there.
 
 ## Views
@@ -19,7 +19,7 @@ The project has four views, shown as tabs along the top of the project page.
 | --- | --- | --- | --- | --- |
 | Epics | Table | none | none | See every issue with its status and sub-issue progress; read the progress column on each epic to see how far along it is |
 | Main | Board | `has:parent-issue milestone:MVP` | Columns by Status; rows by Assignee | Run the day-to-day work: every MVP story, moving across Todo, Blocked, In Progress and Done |
-| Milestones | Table | none | By Milestone | See what is in MVP, Private beta, Public beta and Release, and how each is progressing |
+| Milestones | Table | none | By Milestone | See what is in MVP, Private beta, Public beta readiness, Public beta and Release, and how each is progressing |
 | Decisions Needed | Board | `label:rule-decision is:open` | Columns by Status | See the open rule questions waiting on the owner |
 
 All four show the same columns: Title, Assignees, Status, Linked pull requests and Sub-issues progress. Only the filter, layout and grouping differ.
