@@ -386,7 +386,7 @@ function paintOrder<S extends PlacedSprite & Sortable>(sprites: S[]): S[] {
  * Flags people with a wall or door drawn over them, or anything standing in
  * another room (which is behind a wall). Furniture in their own room doesn't
  * count: standing behind a table isn't hiding. Rectangles only, so it errs
- * towards outlining; the inset keeps a wall's transparent corner just
+ * towards outlining, except that a sliver under OCCLUSION_MIN_COVER doesn't count; the inset keeps a wall's transparent corner just
  * brushing the empty edge of a person's frame from counting.
  */
 function markOccluded(ordered: (PlacedSprite & Sortable)[]) {
@@ -394,17 +394,37 @@ function markOccluded(ordered: (PlacedSprite & Sortable)[]) {
     if (a.kind !== "actor") return;
     const l = a.left + OCCLUSION_INSET.x, r = a.left + a.width - OCCLUSION_INSET.x;
     const t = a.top + OCCLUSION_INSET.top, b = a.top + a.height - OCCLUSION_INSET.bottom;
-    a.occluded = ordered.slice(i + 1).some(
-      (s) =>
-        (s.shape === "wall" || (s.shape === "solid" && s.kind !== "actor" && s.room !== a.room)) &&
-        s.pass !== PASS.post &&
-        s.left < r &&
-        l < s.left + s.width &&
-        s.top < b &&
-        t < s.top + s.height,
-    );
+    const rects: [number, number, number, number][] = [];
+    for (const s of ordered.slice(i + 1)) {
+      if (!(s.shape === "wall" || (s.shape === "solid" && s.kind !== "actor" && s.room !== a.room)) || s.pass === PASS.post) continue;
+      const x0 = Math.max(l, s.left), x1 = Math.min(r, s.left + s.width);
+      const y0 = Math.max(t, s.top), y1 = Math.min(b, s.top + s.height);
+      if (x1 > x0 && y1 > y0) rects.push([x0, y0, x1, y1]);
+    }
+    const covered = unionArea(rects);
+    a.occluded = covered >= (r - l) * (b - t) * OCCLUSION_MIN_COVER;
   });
 }
+
+/** Area of the union of axis-aligned rectangles (x0, y0, x1, y1), so overlapping walls aren't counted twice. */
+function unionArea(rects: [number, number, number, number][]): number {
+  if (rects.length === 0) return 0;
+  const xs = [...new Set(rects.flatMap((q) => [q[0], q[2]]))].sort((p, q) => p - q);
+  let area = 0;
+  for (let k = 0; k + 1 < xs.length; k++) {
+    const xa = xs[k]!, xb = xs[k + 1]!;
+    const spans = rects.filter((q) => q[0] <= xa && q[2] >= xb).map((q) => [q[1], q[3]] as const).sort((p, q) => p[0] - q[0]);
+    let y = -Infinity, len = 0;
+    for (const [y0, y1] of spans) {
+      if (y1 > y) { len += y1 - Math.max(y0, y); y = y1; }
+    }
+    area += len * (xb - xa);
+  }
+  return area;
+}
+
+/** Share of a person's (inset) box that must be covered by walls (their union), before they get the outline. */
+const OCCLUSION_MIN_COVER = 0.75;
 
 /** Empty margin around a person in their 32x48 frame. */
 const OCCLUSION_INSET = { x: 8, top: 8, bottom: 4 } as const;
