@@ -1,3 +1,4 @@
+import type { ActionCost } from "./actions.ts";
 import type { CharacterId } from "./characters.ts";
 import type { RngState } from "./rng.ts";
 
@@ -288,4 +289,6 @@ export interface PlayerView {
     from: PlayerId[];
   };
   legalActions: Action[];
+  /** AP and MP each legal action costs you, index-aligned with `legalActions`. */
+  legalCosts: ActionCost[];
 }

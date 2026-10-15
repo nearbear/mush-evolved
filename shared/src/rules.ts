@@ -6,7 +6,7 @@
 // Infection, voting, win conditions, and the real turn structure are open
 // decisions — do not add them without confirming the rules first.
 
-import { ACTIONS, type ActionDef } from "./actions.ts";
+import { ACTIONS, type ActionCost, type ActionDef } from "./actions.ts";
 import { equipmentName } from "./equipment.ts";
 import { ITRACKIE_ITEM, itemName, itemsIn } from "./items.ts";
 import { apGain, channelLimit, inventorySlots, movementRules } from "./modifiers.ts";
@@ -142,6 +142,7 @@ export function viewFor(state: GameState, playerId: PlayerId): PlayerView {
   const you = findPlayer(state, playerId);
   if (!you) throw new Error(`Unknown player ${playerId}`);
   const others = state.players.filter((p) => p.id !== playerId);
+  const legal = legalActions(state, playerId);
   // Without ACTOPI, anyone outside your room is a room-only dot: no identity, so no room on their entry.
   const located = (room: RoomId) => state.actopi || room === you.room;
   return {
@@ -183,8 +184,16 @@ export function viewFor(state: GameState, playerId: PlayerId): PlayerView {
     maxAp: state.config.maxAp,
     maxHp: state.config.maxHp,
     maxMorale: state.config.maxMorale,
-    legalActions: legalActions(state, playerId),
+    legalActions: legal,
+    legalCosts: legalCosts(state, playerId, legal),
   };
+}
+
+/** What each of `legal` costs you, index-aligned with it. The client displays these and never computes them. */
+function legalCosts(state: GameState, playerId: PlayerId, legal: Action[]): ActionCost[] {
+  const p = findPlayer(state, playerId);
+  if (!p) return [];
+  return legal.map((a) => (ACTIONS[a.type] as ActionDef<Action>).cost(state, p, a));
 }
 
 function itemView({ id, type }: ItemState): ItemView {

@@ -190,3 +190,14 @@ describe("protocol", () => {
     }
   });
 });
+
+describe("legalCosts", () => {
+  it("is index-aligned with legalActions and carries each action's cost", () => {
+    const v = viewFor(ship(), "p0");
+    expect(v.legalCosts).toHaveLength(v.legalActions.length);
+    const i = v.legalActions.findIndex((a) => a.type === "bond");
+    expect(v.legalCosts[i]).toEqual({ ap: 1, mp: 0 });
+    const m = v.legalActions.findIndex((a) => a.type === "move");
+    expect(v.legalCosts[m]).toEqual({ ap: 1, mp: -2 }); // 0 MP: 1 AP converts to 3 MP, then 1 is spent
+  });
+});

@@ -6,7 +6,8 @@ import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import type { Action, PlayerView, RoomId, Target } from "@mush2/shared";
 import { roomLabel } from "../scene/names.ts";
-import { actionLabelKey, actionsOn, resolveTarget } from "./targets.ts";
+import { ActionLabel } from "./ActionLabel.tsx";
+import { actionLabelKey, actionsOn, costOf, resolveTarget } from "./targets.ts";
 
 export function PeekBar({
   view,
@@ -29,9 +30,9 @@ export function PeekBar({
   onClose: () => void;
 }) {
   const { t } = useTranslation();
-  const labelFor = (a: Action) => {
+  const labelFor = (a: Action): ReactNode => {
     const key = actionLabelKey(a);
-    return key ? t(key) : a.type;
+    return <ActionLabel text={key ? t(key) : a.type} cost={costOf(view, a)} />;
   };
   if (door) {
     const canGo = reachable.has(door);

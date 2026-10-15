@@ -94,6 +94,11 @@ const design = urls(
   import.meta.glob<string>("../../../Mush/www/img/design/{pa1,pa2,lifebar,lifebar2,bigslot}.png", { eager: true, query: "?url", import: "default" }),
 );
 
+/** Blue gem with a pink core, drawn beside an action's label. */
+export const ACTION_ICON = urls(
+  import.meta.glob<string>("../../../Mush/www/img/icons/ui/pa_slot1.png", { eager: true, query: "?url", import: "default" }),
+)["pa_slot1"]!;
+
 /** The 56x56 empty inventory slot (a bordered blue square with transparent corners). */
 export const EMPTY_SLOT_TILE = design["bigslot"]!;
 /** 5x5 pips from the original site: pink for action points, cyan for movement points. */

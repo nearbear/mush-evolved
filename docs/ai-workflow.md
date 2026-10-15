@@ -356,3 +356,11 @@ The user (not the assistant) decided to drop auto-fit scaling in the iso view: s
 - **Decision (user):** bond is permanent and one-way (each side pays 1 AP); DTT and STT need a mutual bond and the same room, one participant pays 1 AP, both gain 2 morale, the pair shares a once-per-day cooldown; a DTT with one Mush adds 1 contamination to the human (capacity 3, hidden from everyone). The user asked that the acronyms never be expanded in code or docs.
 - **What worked:** the user's first message was too vague for the `rule` skill, so I wrote a user story with seven open questions; two rounds of answers pinned the rule down. Keeping contamination off `PlayerState` mattered, because `viewFor` copies `you` whole and the owner would have seen it.
 - **Needed correction:** my first reading of "write a story" was fiction. The user meant a user story for the game rules.
+
+## 2026-10-14: action costs in the view (issue #19)
+
+Decided by the assistant under "just do it": `PlayerView.legalCosts: ActionCost[]`, index-aligned with `legalActions`, built in `viewFor` from `ActionDef.cost`. Chose a parallel array over wrapping each action so existing `legalActions` consumers, bots and tests stayed untouched; the tradeoff is that alignment is by convention (tested). No UI shows costs yet (that is the stacked-actions issue).
+
+### 2026-10-14: showing action costs on buttons
+
+Follow-up to the entry above. The assistant first stopped at the view (`legalCosts`) and the user, clicking Bond, found no cost shown; the UI was the intended outcome of "do number 19", so I should have rendered it in the same pass. The user then specified the look over three rounds: cost in bold, `pa_slot1.png` icon, then label; drop the "AP" text; hide cost and icon when AP is zero; drop MP display ("there will never be MP cost actions"). An `alt="AP"` on the icon tripped the hardcoded-text i18n ratchet, so the icon is decorative (`alt=""`). The first test for the move cost also assumed a positive total; the real cost at 0 MP is `{ap: 1, mp: -2}`.

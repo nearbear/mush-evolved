@@ -1331,3 +1331,14 @@ h2 {
     height: 32px;
   }
 }
+
+/* Action button content: bold cost, action icon, label. Icon drawn at 1x. */
+.action-label {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3rem;
+}
+.action-label img {
+  image-rendering: pixelated;
+}

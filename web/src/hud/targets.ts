@@ -2,7 +2,7 @@
 // No rules here: a target is shown only if the view contains it, and actions
 // come from view.legalActions.
 
-import type { Action, EquipmentView, ItemView, OtherPlayerView, PlayerState, PlayerView, Target } from "@mush2/shared";
+import type { Action, ActionCost, EquipmentView, ItemView, OtherPlayerView, PlayerState, PlayerView, Target } from "@mush2/shared";
 
 export type Resolved =
   | { kind: "player"; person: PlayerState | OtherPlayerView }
@@ -65,3 +65,8 @@ const ACTION_LABEL_KEYS = {
 export const actionLabelKey = (action: Action) => (ACTION_LABEL_KEYS as Partial<Record<Action["type"], string>>)[action.type] as
   | (typeof ACTION_LABEL_KEYS)[keyof typeof ACTION_LABEL_KEYS]
   | undefined;
+
+/** What an action costs you, from the view's `legalCosts`; free if it isn't listed. */
+export function costOf(view: PlayerView, action: Action): ActionCost {
+  return view.legalCosts[view.legalActions.indexOf(action)] ?? { ap: 0, mp: 0 };
+}

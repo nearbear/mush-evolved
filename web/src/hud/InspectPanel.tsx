@@ -2,10 +2,12 @@
 // with the actions the server allows on it. Falls back to your own character.
 
 import { useTranslation } from "react-i18next";
+import type { ReactNode } from "react";
 import { CHARACTERS, type Action, type PlayerView, type Target } from "@mush2/shared";
 import { EMPTY_SLOT_ICON, characterImage, itemIcon, portrait } from "../art/assets.ts";
 import { roomLabel } from "../scene/names.ts";
-import { actionLabelKey, actionsOn, resolveTarget, type Resolved } from "./targets.ts";
+import { ActionLabel } from "./ActionLabel.tsx";
+import { actionLabelKey, actionsOn, costOf, resolveTarget, type Resolved } from "./targets.ts";
 
 export function InspectPanel({
   view,
@@ -20,9 +22,9 @@ export function InspectPanel({
   onClose: () => void;
 }) {
   const { t } = useTranslation();
-  const labelFor = (a: Action) => {
+  const labelFor = (a: Action): ReactNode => {
     const key = actionLabelKey(a);
-    return key ? t(key) : a.type;
+    return <ActionLabel text={key ? t(key) : a.type} cost={costOf(view, a)} />;
   };
   const resolved = resolveTarget(view, target);
   const isSelf = target.kind === "player" && target.id === view.you.id;
