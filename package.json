@@ -11,7 +11,7 @@
   ],
   "scripts": {
     "dev": "concurrently -k -n server,web -c blue,green \"npm run dev -w server\" \"npm run dev -w web\"",
-    "test": "npm run test -w shared -w tools -w web",
+    "test": "npm run test -w shared -w tools -w web -w server",
     "typecheck": "npm run typecheck --workspaces --if-present",
     "lint": "biome lint .",
     "build": "npm run build -w web",

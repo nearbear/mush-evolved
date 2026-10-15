@@ -7,6 +7,7 @@
     "dev": "wrangler dev",
     "types": "wrangler types",
     "deploy": "wrangler deploy --var RULES_VERSION:$(git describe --always --dirty --abbrev=40)",
+    "test": "vitest run",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
@@ -14,6 +15,7 @@
     "partyserver": "^0.5.10"
   },
   "devDependencies": {
-    "wrangler": "^4.145.0"
+    "wrangler": "^4.145.0",
+    "vitest": "^5.0.3"
   }
 }

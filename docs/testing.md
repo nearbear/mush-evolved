@@ -2,7 +2,7 @@
 
 The project's main risks, roughly in priority order: hidden information leaking to the wrong seat, untrusted input (clients, chat, and later model output) getting further than it should, rules that quietly break as features are added, and the game stalling. Tests should go where those risks are. This is a checklist, not a coverage target.
 
-Status: **covered** = tests exist, **partial** = some exist, **missing** = none yet. Tests that need the Durable Object runtime would require `@cloudflare/vitest-pool-workers` (not installed; ask first). Most server risks can instead be tested by pulling the decision out into a pure function, as `server/src/rateLimit.ts` already does.
+Status: **covered** = tests exist, **partial** = some exist, **missing** = none yet. Server tests (`server/src/*.test.ts`) run `GameRoom` and `Matchmaker` under plain Vitest: `partyserver` is replaced by `FakeServer` via `vi.mock`, with fake storage and sockets in `server/src/testing/fakes.ts`. This doesn't exercise the real Durable Object runtime (`@cloudflare/vitest-pool-workers`, not installed; ask first). Most server risks can instead be tested by pulling the decision out into a pure function, as `server/src/rateLimit.ts` already does.
 
 ## 1. Hidden information (highest priority)
 
@@ -10,9 +10,9 @@ A leak can't be fixed after the fact: once a client has seen a role, the game is
 
 - **`viewFor` strips everything a seat shouldn't see:** other players' roles, HP, morale, and inventories; other rooms' items, equipment, and log history; private log entries; the RNG state. *Partial* (`rules.test.ts`, `items.test.ts`, `examine.test.ts`). Every new field on `GameState` or `PlayerView` needs a matching test. Worth adding one blunt test as well: build a game, serialize each seat's view, and assert that no other seat's hidden values appear anywhere in the string. That catches leaks through fields nobody thought to check.
 - **Error messages don't depend on hidden state.** `applyAction` answers "Illegal action" whatever the reason. A message like "can't target a Mush" would leak a role through the error channel. Lock this in with a test before infection arrives. *Missing.*
-- **Each connection gets its own seat's view** (`GameRoom.broadcastViews`). A mix-up here (one view sent to everyone, or the wrong `playerId` in a connection's state) would leak everything, and no rules test would catch it. *Missing.*
-- **Seat tokens.** A missing or unknown token is rejected (close code 4001). A valid token maps to exactly one seat. The matchmaker sends each human only their own token, never a broadcast. A token is effectively the seat itself, so whoever holds it can play that seat and see its view. *Missing.*
-- **Bots see only their own seat's view.** This is structural today (`viewFor(game, botId)` in `scheduleBots`). Once model bots exist, also test that the prompt built for a seat contains nothing outside that seat's view (see the `bot` skill). *Missing.*
+- **Each connection gets its own seat's view** (`GameRoom.broadcastViews`). A mix-up here (one view sent to everyone, or the wrong `playerId` in a connection's state) would leak everything, and no rules test would catch it. *Covered* (`GameRoom.test.ts`).
+- **Seat tokens.** A missing or unknown token is rejected (close code 4001). A valid token maps to exactly one seat. The matchmaker sends each human only their own token, never a broadcast. A token is effectively the seat itself, so whoever holds it can play that seat and see its view. *Covered* (`GameRoom.test.ts`, `Matchmaker.test.ts`).
+- **Bots see only their own seat's view.** This is structural today (`viewFor(game, botId)` in `scheduleBots`; `WanderBot` is tested to pick only from its own view's legal actions). Once model bots exist, also test that the prompt built for a seat contains nothing outside that seat's view (see the `bot` skill). *Missing.*
 
 ## 2. Untrusted input
 
@@ -22,7 +22,7 @@ Everything from a client is hostile until parsed. Player text will also become m
 - **Legality is the server's call.** `applyAction` rejects any action not in `legalActions(state, player)`, including well-formed actions for another player's item, a non-adjacent room, or a dead player. *Partial.*
 - **Chat moderation** (`moderateChat`): invisible characters, links, masked words, length limits. *Covered* for the basics. Grow the cases as abuse turns up.
 - **Player names** are trimmed and capped at 24 characters but not moderated, even though everyone sees them and they'll end up in bot prompts. Decide whether names go through `moderateChat`, then test that. *Missing.*
-- **Rate limits:** the per-connection message limit, and a per-seat chat limit that survives reconnecting. `RateLimiter` is pure and takes `now` as a parameter, so it's easy to test. *Missing.*
+- **Rate limits:** the per-connection message limit, and a per-seat chat limit that survives reconnecting. *Covered* (`rateLimit.test.ts`, `GameRoom.test.ts`).
 - **Model output (later):** garbage, an action that isn't legal, or a prompt-injection attempt has to end up as a legal fallback action, never an unchecked one. *Not started.*
 
 ## 3. Rules correctness
