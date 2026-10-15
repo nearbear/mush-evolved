@@ -47,6 +47,12 @@ export const DEFAULT_CONFIG: GameConfig = {
   sporesPerExtraction: 1,
   sporeCooldownCycles: 4,
   sporesPerDay: 4,
+  // Confirmed 2026-10-14: humans lose 1 satiety per cycle (some things will make it more); at 3 they are full and can't
+  // eat; hungry starts 24 cycles after satiety reaches 0 and costs 1 HP per cycle.
+  satietyPerCycle: 1,
+  fullBellyAt: 3,
+  hungryAfterCycles: 24,
+  hungerHpPerCycle: 1,
   // Confirmed 2026-10-13: dismantle cost.
   dismantleAp: 3,
   dismantleOdds: 0.12,
@@ -58,6 +64,10 @@ export const DEFAULT_CONFIG: GameConfig = {
     { type: "camera", room: "CORRIDOR_A" },
     { type: "metal_scraps", room: "CORRIDOR_A" },
     { type: "plastic_scraps", room: "CORRIDOR_A" },
+    // PLACEHOLDER food so satiety can be tested.
+    { type: "cooked_ration", room: "REFECTORY" },
+    { type: "cooked_ration", room: "REFECTORY" },
+    { type: "cooked_ration", room: "REFECTORY" },
   ],
   // Confirmed 2026-10-13: every player starts with an iTrackie.
   startInventory: [ITRACKIE_ITEM],

@@ -10,7 +10,7 @@ import type { Container, GameState, ItemState, PlayerState } from "./types.ts";
 export interface ItemType {
   name: string;
   /** Drinking or eating it removes it and does this. */
-  consume?: { ap: number };
+  consume?: { ap: number; /** Satiety a human gains (confirmed 2026-10-14). */ satiety: number };
   canDrop?: boolean;
   dismantle?: { metal: number; plastic: number };
 }
@@ -32,9 +32,10 @@ export const ITEM_TYPES: Record<string, ItemType> = {
   wrench: { name: "Wrench" },
   blaster: { name: "Blaster", dismantle: { metal: 1, plastic: 0 } },
   medikit: { name: "Medikit" },
-  // Confirmed 2026-10-13: +2 AP, and (as in the base game) no satiety.
-  // TODO(rules): add satiety when hunger exists; coffee deliberately gives none.
-  coffee: { name: "Coffee", consume: { ap: 2 } },
+  // Confirmed 2026-10-13: +2 AP. Satiety +1 is a placeholder (2026-10-14).
+  coffee: { name: "Coffee", consume: { ap: 2, satiety: 1 } },
+  // PLACEHOLDER food (2026-10-14): +4 satiety, no AP.
+  cooked_ration: { name: "Cooked ration", consume: { ap: 0, satiety: 4 } },
   camera: { name: "Camera", canDrop: false, dismantle: { metal: 1, plastic: 0 }  },
   metal_scraps: { name: "Metal Scraps"},
   plastic_scraps: { name: "Plastic Scraps"},

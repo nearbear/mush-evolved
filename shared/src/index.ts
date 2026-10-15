@@ -13,3 +13,4 @@ export * from "./protocol.ts";
 export * from "./moderation.ts";
 export * from "./replay.ts";
 export * from "./cheats.ts";
+export * from "./statuses.ts";

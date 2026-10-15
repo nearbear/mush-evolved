@@ -437,3 +437,9 @@ The user asked for an outlined card at the far right of the player panel, a home
 ## 2026-10-14: worktrees
 
 Asked how to use git worktrees; the earlier attempt failed because a worktree's dev server collided with the main checkout's fixed ports (:8787/:5173), so the client talked to the wrong server. Fix: `tools/src/dev/ports.ts` derives per-worktree ports from the path (main checkout unchanged), used by `npm run dev` and `npm run screenshot`. Relaxed the "never branch" rule for short-lived worktree branches that Claude creates and merges into `main`. The user rejected the detached-HEAD + cherry-pick option as too much effort, so Claude owns the git steps.
+
+## 2026-10-14: first status effects and satiety
+
+- Decided by the owner: dirty (public, cheese icon), full belly (private, apple icon), hungry (private), satiety for humans only. Four questions went through AskUserQuestion first: dirty has no removal for now, coffee +1 and a placeholder ration +4, hunger count starts at cycle 1 and HP stops at 0, Mush have no satiety.
+- Design choice: only `dirty` is stored; full belly and hungry are derived from satiety plus a `satietyZeroSince` cycle, so they cannot drift out of step. Statuses of others are sent only for people in the same room.
+- Needed noticing: the i18n wire baseline and the lobby test were already failing before this change (not fixed here). Icons were checked on a contact sheet because the file names (`belly_full`, `stinky`) didn't say which was cheese or apple.

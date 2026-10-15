@@ -42,3 +42,18 @@
   height: 30px;
   font-size: calc(0.8rem + 4px);
 }
+
+.status-icons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  list-style: none;
+  margin: 0.4rem 0 0;
+  padding: 0;
+}
+.status-icons img {
+  display: block;
+  width: 32px;
+  height: 32px;
+  image-rendering: pixelated;
+}

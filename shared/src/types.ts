@@ -61,6 +61,14 @@ export interface GameConfig {
   contaminationCapacity: number;
   /** AP spent to extract a spore (confirmed 2026-10-13). */
   extractSporeAp: number;
+  /** Satiety a human loses each cycle, before modifiers (confirmed 2026-10-14). */
+  satietyPerCycle: number;
+  /** Satiety at which a human has the full belly status and can't eat (confirmed 2026-10-14). */
+  fullBellyAt: number;
+  /** Cycles after satiety reaches 0 before the hungry status starts (confirmed 2026-10-14). */
+  hungryAfterCycles: number;
+  /** HP a hungry human loses each cycle (confirmed 2026-10-14). */
+  hungerHpPerCycle: number;
   /** Spores one extraction gives (confirmed 2026-10-13). */
   sporesPerExtraction: number;
   /** Cycles a Mush waits between their own extractions; a cooldown on the global cycle counter, not tied to days (confirmed 2026-10-14). */
@@ -99,6 +107,12 @@ export interface PlayerState extends Seat {
   hp: number;
   /** Morale points. Private: only in your own view. Lose `moralePerDay` at the end of each day. */
   morale: number;
+  /** Satiety (humans only; Mush stay at 0 and never get hungry). Never below 0. Private: only in your own view. */
+  satiety: number;
+  /** The cycle satiety last reached 0 (or the game began at 0); null while satiety is above 0 or for Mush. Counts toward hunger. */
+  satietyZeroSince: number | null;
+  /** Stored status effects (statuses.ts); full belly and hungry are derived from satiety, so only `dirty` is stored for now. */
+  statuses: string[];
   /** Spores this player carries. Only Mush ever gain any; visible in your own view only (teammates' counts will be shown to Mush later). */
   spores: number;
   /**
@@ -259,11 +273,15 @@ export interface OtherPlayerView {
   room?: RoomId;
   alive: boolean;
   ready: boolean;
+  /** Ids of the statuses everyone can see on this person (public ones only; see statuses.ts). */
+  statuses: string[];
 }
 
 /** What one seat is allowed to know. This is the only game data a client or bot receives. */
 export interface PlayerView {
   you: PlayerState;
+  /** Every status you have, public and private, stored and derived (statuses.ts). */
+  statuses: string[];
   players: OtherPlayerView[];
   /**
    * One entry per person outside your room whose identity you can't tell

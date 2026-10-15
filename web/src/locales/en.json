@@ -72,7 +72,7 @@
   "actions": {
     "examine": "Examine",
     "dispense": "Pull coffee",
-    "consume": "Drink",
+    "consume": "Consume",
     "dismantle": "Dismantle",
     "bond": "Bond",
     "dtt": "DTT",
@@ -127,5 +127,11 @@
     "both": "Bonded",
     "toThem": "You bonded",
     "fromThem": "Bonded to you"
+  },
+  "status": {
+    "label": "Status effects",
+    "dirty": "Dirty",
+    "full_belly": "Full belly",
+    "hungry": "Hungry"
   }
 }

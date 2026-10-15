@@ -1,0 +1,51 @@
+// Status effects. `dirty` is stored in `PlayerState.statuses`; `full_belly` and
+// `hungry` are derived from satiety each time they are asked for, so they can't
+// drift out of step with it. Public statuses show on the Inspect panel for
+// everyone in the room; private ones appear only in your own view.
+// Names and icons live in the client (i18n keys `status.<id>`).
+
+import type { GameState, PlayerState } from "./types.ts";
+
+export const STATUS_IDS = ["dirty", "full_belly", "hungry"] as const;
+export type StatusId = (typeof STATUS_IDS)[number];
+
+/** Confirmed 2026-10-14: dirty is public; full belly and hungry are private. */
+export const STATUS_PUBLIC: Readonly<Record<StatusId, boolean>> = {
+  dirty: true,
+  full_belly: false,
+  hungry: false,
+};
+
+/** Humans at or above `fullBellyAt` satiety can't eat. */
+export function isFullBelly(state: Readonly<Pick<GameState, "config">>, p: Readonly<PlayerState>): boolean {
+  return p.role === "human" && p.satiety >= state.config.fullBellyAt;
+}
+
+/** Hungry once satiety has stayed at 0 for `hungryAfterCycles` cycles; the count restarts whenever satiety reaches 0 again. */
+export function isHungry(state: Readonly<Pick<GameState, "config" | "cycle">>, p: Readonly<PlayerState>): boolean {
+  return (
+    p.role === "human" &&
+    p.satiety === 0 &&
+    p.satietyZeroSince !== null &&
+    state.cycle - p.satietyZeroSince >= state.config.hungryAfterCycles
+  );
+}
+
+/** Every status the player has, stored and derived. */
+export function statusesOf(state: Readonly<Pick<GameState, "config" | "cycle">>, p: Readonly<PlayerState>): string[] {
+  return [
+    ...p.statuses,
+    ...(isFullBelly(state, p) ? ["full_belly"] : []),
+    ...(isHungry(state, p) ? ["hungry"] : []),
+  ];
+}
+
+/** The statuses anyone may see on this player. */
+export function publicStatusesOf(state: Readonly<Pick<GameState, "config" | "cycle">>, p: Readonly<PlayerState>): string[] {
+  return statusesOf(state, p).filter((id) => STATUS_PUBLIC[id as StatusId]);
+}
+
+/** Mutates a state that the caller already cloned. */
+export function addStatus(p: PlayerState, id: StatusId): void {
+  if (!p.statuses.includes(id)) p.statuses.push(id);
+}

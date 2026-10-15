@@ -10,7 +10,8 @@ import { applyCheats, type ActopiCheat, type Cheat } from "./cheats.ts";
 import { ACTIONS, type ActionCost, type ActionDef } from "./actions.ts";
 import { equipmentName } from "./equipment.ts";
 import { ITRACKIE_ITEM, itemName, itemsIn } from "./items.ts";
-import { apGain, channelLimit, inventorySlots, movementRules } from "./modifiers.ts";
+import { apGain, channelLimit, inventorySlots, movementRules, satietyLoss } from "./modifiers.ts";
+import { isHungry, publicStatusesOf, statusesOf } from "./statuses.ts";
 import { shuffle } from "./rng.ts";
 import { CHAT_CHANNELS } from "./types.ts";
 import type {
@@ -60,6 +61,10 @@ export function createGame(seats: readonly Seat[], config: GameConfig, seed: num
     mp: 0,
     hp: config.startHp,
     morale: config.startMorale,
+    satiety: 0,
+    // Humans start at 0 satiety on cycle 1, so the hunger count starts there too.
+    satietyZeroSince: mushIds.has(s.id) ? null : 1,
+    statuses: [],
     spores: 0,
     modifiers: [],
     alive: true,
@@ -156,6 +161,14 @@ function advanceCycle(state: GameState): void {
     state.sporesToday = 0;
     for (const p of state.players) if (p.alive) p.morale = Math.max(0, p.morale - moralePerDay);
   }
+  for (const p of state.players) {
+    if (!p.alive || p.role !== "human") continue;
+    if (p.satiety > 0) {
+      p.satiety = Math.max(0, p.satiety - satietyLoss(state, p));
+      if (p.satiety === 0) p.satietyZeroSince = state.cycle;
+    }
+    if (isHungry(state, p)) p.hp = Math.max(0, p.hp - state.config.hungerHpPerCycle);
+  }
   for (const p of state.players) applyCheats(p, state.config);
   const { day } = dayOf(state);
   state.log.push({
@@ -184,17 +197,23 @@ export function viewFor(state: GameState, playerId: PlayerId): PlayerView {
   const actopi = you.actopiCheat === "default" ? state.actopi : you.actopiCheat === "on";
   const located = (room: RoomId) => actopi || room === you.room;
   return {
-    you: { ...you },
+    you: { ...you, statuses: [...you.statuses] },
+    statuses: statusesOf(state, you),
     // TODO(rules): should Mush see each other's roles? Hidden for now.
-    players: others.map(({ id, name, isBot, character, room, alive, ready }) => ({
-      id,
-      name,
-      isBot,
-      character,
-      ...(located(room) ? { room } : {}),
-      alive,
-      ready,
-    })),
+    players: others.map((o) => {
+      const { id, name, isBot, character, room, alive, ready } = o;
+      return {
+        id,
+        name,
+        isBot,
+        character,
+        ...(located(room) ? { room } : {}),
+        alive,
+        ready,
+        // Public statuses are what you can see on someone standing in your room; nobody else's.
+        statuses: room === you.room ? publicStatusesOf(state, o) : [],
+      };
+    }),
     unidentified: others
       .filter((p) => !located(p.room))
       .map((p) => p.room)

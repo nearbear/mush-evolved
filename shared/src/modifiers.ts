@@ -21,6 +21,8 @@ export interface Modifier {
   contaminationCapacity?: (capacity: number, player: Readonly<PlayerState>) => number;
   /** Adjusts how many spores the Mush faction may extract per day, folded over the extracting player's modifiers. Must be pure. */
   sporesPerDay?: (cap: number, player: Readonly<PlayerState>) => number;
+  /** Adjusts the satiety a human loses each cycle. Must be pure. */
+  satietyPerCycle?: (loss: number, player: Readonly<PlayerState>) => number;
 }
 
 export type ModifierRegistry = Readonly<Record<string, Modifier>>;
@@ -130,4 +132,18 @@ export function sporesPerDay(
     if (hook) cap = hook(cap, player);
   }
   return cap;
+}
+
+/** Satiety a human loses each cycle: the configured loss folded through the player's modifiers. */
+export function satietyLoss(
+  state: Readonly<GameState>,
+  player: Readonly<PlayerState>,
+  registry: ModifierRegistry = MODIFIERS,
+): number {
+  let loss = state.config.satietyPerCycle;
+  for (const id of player.modifiers) {
+    const hook = registry[id]?.satietyPerCycle;
+    if (hook) loss = hook(loss, player);
+  }
+  return loss;
 }

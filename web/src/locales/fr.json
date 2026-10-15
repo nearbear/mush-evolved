@@ -72,7 +72,7 @@
   "actions": {
     "examine": "Examiner",
     "dispense": "Tirer un café",
-    "consume": "Boire",
+    "consume": "Consommer",
     "dismantle": "Démonter",
     "bond": "Créer un lien",
     "dtt": "DTT",
@@ -127,5 +127,11 @@
     "both": "Lié",
     "toThem": "Vous avez créé un lien",
     "fromThem": "Lié à vous"
+  },
+  "status": {
+    "label": "Effets de statut",
+    "dirty": "Sale",
+    "full_belly": "Ventre plein",
+    "hungry": "Affamé"
   }
 }

@@ -72,7 +72,7 @@
   "actions": {
     "examine": "Examinar",
     "dispense": "Sacar un café",
-    "consume": "Beber",
+    "consume": "Consumir",
     "dismantle": "Desmontar",
     "bond": "Crear vínculo",
     "dtt": "DTT",
@@ -127,5 +127,11 @@
     "both": "Vinculados",
     "toThem": "Creaste un vínculo",
     "fromThem": "Vinculado a ti"
+  },
+  "status": {
+    "label": "Efectos de estado",
+    "dirty": "Sucio",
+    "full_belly": "Barriga llena",
+    "hungry": "Hambriento"
   }
 }

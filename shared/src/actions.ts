@@ -6,6 +6,7 @@
 import { EQUIPMENT_TYPES, equipmentName } from "./equipment.ts";
 import { ITEM_TYPES, canReach, canTransfer, itemName, itemsIn, produceItem } from "./items.ts";
 import { logPrivate, logPublic, roomName } from "./log.ts";
+import { addStatus, isFullBelly } from "./statuses.ts";
 import { contaminationCapacity, moveCost, movementRules, sporesPerDay } from "./modifiers.ts";
 import { nextFloat } from "./rng.ts";
 import { dayOf } from "./rules.ts";
@@ -145,13 +146,20 @@ const consume: ActionDef<ActionOf<"consume">> = {
   check(state, p, a) {
     const item = state.items.find((i) => i.id === a.item);
     if (!item) return "no_such_item";
-    return ITEM_TYPES[item.type]?.consume && canReach(state, p, item.at) ? null : "cant_consume";
+    if (!ITEM_TYPES[item.type]?.consume || !canReach(state, p, item.at)) return "cant_consume";
+    return isFullBelly(state, p) ? "full_belly" : null;
   },
   cost: free,
   apply(next, p, a) {
     const index = next.items.findIndex((i) => i.id === a.item); // checked, so it exists
     const [item] = next.items.splice(index, 1) as [ItemState];
-    p.ap = Math.min(next.config.maxAp, p.ap + ITEM_TYPES[item.type]!.consume!.ap);
+    const { ap, satiety } = ITEM_TYPES[item.type]!.consume!;
+    p.ap = Math.min(next.config.maxAp, p.ap + ap);
+    if (p.role === "human") {
+      // Any consumable resets the hunger count (which ends hunger); it restarts if satiety is still 0.
+      p.satiety += satiety;
+      p.satietyZeroSince = p.satiety === 0 ? next.cycle : null;
+    }
     logPublic(next, p.room, `${p.name} consumed the ${itemName(item.type)}.`);
   },
 };
@@ -228,7 +236,7 @@ function share<A extends ActionOf<"dtt" | "stt">>(type: A["type"]): ActionDef<A>
  * Mush only (confirmed 2026-10-14). Each Mush waits `sporeCooldownCycles`
  * between their own extractions (a cooldown on the global cycle counter, not
  * tied to days), and the whole faction shares a daily cap. Private log: the
- * room must not learn who is Mush. TODO: apply `dirty` once statuses exist.
+ * room must not learn who is Mush. Always makes the Mush dirty (a public status).
  */
 const extractSpore: ActionDef<ActionOf<"extract_spore">> = {
   candidates: () => [{ type: "extract_spore" }],
@@ -244,6 +252,7 @@ const extractSpore: ActionDef<ActionOf<"extract_spore">> = {
     p.spores += next.config.sporesPerExtraction;
     next.sporesToday += next.config.sporesPerExtraction;
     next.sporeExtractedOn[p.id] = next.cycle;
+    addStatus(p, "dirty");
     logPrivate(next, p.id, "You extracted a spore.");
   },
 };
