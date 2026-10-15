@@ -108,9 +108,9 @@ describe("spore extraction visibility", () => {
     const other = JSON.stringify(viewFor(s, "p2"));
     expect(other).not.toContain(`"spores":1`);
     expect(other).not.toContain("sporesToday");
-    expect(other).not.toContain("extracted a spore");
+    expect(other).not.toContain("sporeExtracted");
     for (const o of viewFor(s, "p1").players) expect(o).not.toHaveProperty("spores");
-    expect(viewFor(s, "p1").log.some((e) => e.text.includes("extracted a spore"))).toBe(false);
-    expect(viewFor(s, "p0").log.some((e) => e.text.includes("extracted a spore"))).toBe(true);
+    expect(viewFor(s, "p1").log.some((e) => e.key === "sporeExtracted")).toBe(false);
+    expect(viewFor(s, "p0").log.some((e) => e.key === "sporeExtracted")).toBe(true);
   });
 });

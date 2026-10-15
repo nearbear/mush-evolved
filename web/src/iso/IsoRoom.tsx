@@ -24,7 +24,7 @@ import { sameTarget } from "../hud/targets.ts";
 import { spriteStrip } from "../art/assets.ts";
 import { CrewSprite } from "../scene/CrewSprite.tsx";
 import { StatusBadges } from "../scene/StatusBadges.tsx";
-import { roomLabel } from "../scene/names.ts";
+import { useNames } from "../i18n/names.ts";
 import { atlasUrl } from "./shipLayout.ts";
 import { opaqueAt, preloadImage } from "./hitMask.ts";
 import {
@@ -85,6 +85,7 @@ export function IsoRoom({
   /** A single click or tap on any door, reachable or not. */
   onDoorTap: (to: RoomId) => void;
 }) {
+  const names = useNames();
   const roomLayout = layout.rooms.find((r) => r.id === room);
   const occupantKey = occupants.map((o) => o.id).join(",");
   const viewportRef = useRef<HTMLDivElement>(null);
@@ -177,7 +178,7 @@ export function IsoRoom({
   const [hoverKey, setHoverKey] = useState<string | null>(null);
   const espFilter = `iso-esp-${useId().replace(/[^\w-]/g, "")}`;
 
-  if (!roomLayout) return <section className="iso-room missing">No map for {roomLabel(room)}</section>;
+  if (!roomLayout) return <section className="iso-room missing">No map for {names.room(room)}</section>;
   const isSelected = (kind: Target["kind"], id: string) => sameTarget(selected, { kind, id } as Target);
 
   /** What a sprite does when clicked, or null for scenery. */
@@ -186,9 +187,9 @@ export function IsoRoom({
       const o = byId.get(s.key.slice(2));
       return o ? { kind: "person" as const, person: o, title: o.name } : null;
     }
-    if (s.door) return { kind: "door" as const, to: s.door.target, title: roomLabel(s.door.target) };
+    if (s.door) return { kind: "door" as const, to: s.door.target, title: names.room(s.door.target) };
     const eq = equipmentByKey.get(s.key);
-    return eq ? { kind: "equipment" as const, equipment: eq, title: eq.name } : null;
+    return eq ? { kind: "equipment" as const, equipment: eq, title: names.equipment(eq.type) } : null;
   };
 
   /**
@@ -213,7 +214,7 @@ export function IsoRoom({
     // Only the rooms behind this room's own doors count as doors; the second ring is scenery.
     if (!behind || ringOf.get(behind.room) !== 1) return null;
     const to = behind.room as RoomId;
-    return { sprite: behind, key: `n:${to}`, kind: "door" as const, to, title: roomLabel(to) };
+    return { sprite: behind, key: `n:${to}`, kind: "door" as const, to, title: names.room(to) };
   };
 
   /** Room-pixel point under the pointer, for walking. */
@@ -252,7 +253,7 @@ export function IsoRoom({
   };
   const hovered = sprites.find((s) => s.key === hoverKey);
   const hoveredNeighbor = neighbors.find((n) => `n:${n.id}` === hoverKey);
-  const hoverTitle = hoveredNeighbor ? roomLabel(hoveredNeighbor.id) : hovered && interaction(hovered)?.title;
+  const hoverTitle = hoveredNeighbor ? names.room(hoveredNeighbor.id) : hovered && interaction(hovered)?.title;
   const spriteStyle = (s: PlacedSprite) => ({
     ...place(s),
     backgroundImage: `url(${atlasUrl(layout, s.sheet)})`,
@@ -263,7 +264,7 @@ export function IsoRoom({
 
   return (
     <section className="iso-room">
-      <h2 className="room-title">{roomLabel(room)}</h2>
+      <h2 className="room-title">{names.room(room)}</h2>
       {/* The scroller is separate so the title stays put when a wide room scrolls. */}
       <div className="iso-scroll">
         <div

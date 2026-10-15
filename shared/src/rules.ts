@@ -8,8 +8,7 @@
 
 import { applyCheats, type ActopiCheat, type Cheat } from "./cheats.ts";
 import { ACTIONS, type ActionCost, type ActionDef } from "./actions.ts";
-import { equipmentName } from "./equipment.ts";
-import { ITRACKIE_ITEM, itemName, itemsIn } from "./items.ts";
+import { ITRACKIE_ITEM, itemsIn } from "./items.ts";
 import { apGain, channelLimit, inventorySlots, movementRules, satietyLoss } from "./modifiers.ts";
 import { isHungry, publicStatusesOf, statusesOf } from "./statuses.ts";
 import { shuffle } from "./rng.ts";
@@ -88,7 +87,7 @@ export function createGame(seats: readonly Seat[], config: GameConfig, seed: num
     items,
     nextItemId: items.length + 1,
     dispensedOn: {},
-    log: [{ cycle: 1, text: "The crew wakes up aboard the ship.", visibleTo: "all" }],
+    log: [{ cycle: 1, key: "crewWakes", visibleTo: "all" }],
     chat: [],
     nextChatId: 1,
     channels: [],
@@ -173,7 +172,8 @@ function advanceCycle(state: GameState): void {
   const { day } = dayOf(state);
   state.log.push({
     cycle: state.cycle,
-    text: newDay ? `Day ${day} begins.` : `Cycle ${state.cycle} begins.`,
+    key: newDay ? "dayBegins" : "cycleBegins",
+    params: newDay ? { day } : { cycle: state.cycle },
     visibleTo: "all",
   });
 }
@@ -254,11 +254,11 @@ function legalCosts(state: GameState, playerId: PlayerId, legal: Action[]): Acti
 }
 
 function itemView({ id, type }: ItemState): ItemView {
-  return { id, type, name: itemName(type) };
+  return { id, type };
 }
 
 function equipmentView({ id, type }: Equipment): EquipmentView {
-  return { id, type, name: equipmentName(type) };
+  return { id, type };
 }
 
 // ---- Chat -----------------------------------------------------------------

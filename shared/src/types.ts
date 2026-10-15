@@ -142,10 +142,16 @@ export interface PlayerState extends Seat {
  */
 export interface LogEntry {
   cycle: number;
-  text: string;
+  /** Message id; the client turns it into text (`logEvent.<key>` in the locale catalogs). */
+  key: string;
+  /** Data for the message. `room`, `item` and `equipment` params are ids the client names; `name` is a player name. */
+  params?: LogParams;
   room?: RoomId;
   visibleTo: "all" | PlayerId[];
 }
+
+/** Values a log message can interpolate. */
+export type LogParams = Record<string, string | number>;
 
 export type ItemId = string;
 
@@ -261,14 +267,12 @@ export type Action =
 export interface EquipmentView {
   id: string;
   type: string;
-  name: string;
 }
 
 /** An item as a client sees it. */
 export interface ItemView {
   id: ItemId;
   type: string;
-  name: string;
 }
 
 export interface OtherPlayerView {

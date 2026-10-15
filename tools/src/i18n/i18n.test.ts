@@ -150,6 +150,7 @@ describe("findHardcodedWire", () => {
     expect(wire(`return "global"; const t = { type: "error", code: "rate_limited" };`)).toEqual([]);
     expect(wire(`// error: "Not real"\nconst message = msg.text;`)).toEqual([]);
     expect(wire(`logPublic(next, from, t.key);`)).toEqual([]);
+    expect(wire(`logPublic(next, from, "left", { name: p.name });`)).toEqual([]);
   });
 });
 

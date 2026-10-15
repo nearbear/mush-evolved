@@ -5,6 +5,7 @@
 // tile takes or drops it directly.
 
 import { useEffect, useRef, useState } from "react";
+import { useNames } from "../i18n/names.ts";
 import type { Action, ItemView, PlayerView, Target } from "@mush2/shared";
 import { EMPTY_SLOT_ICON, EMPTY_SLOT_TILE, itemIcon } from "../art/assets.ts";
 import { sameTarget } from "./targets.ts";
@@ -42,6 +43,7 @@ export function InventoryPanel({
   onAction: (action: Action) => void;
   onSelect: (target: Target) => void;
 }) {
+  const names = useNames();
   const [dragging, setDragging] = useState<{ id: string; from: Zone } | null>(null);
   const [over, setOver] = useState<Zone | null>(null);
 
@@ -85,7 +87,7 @@ export function InventoryPanel({
         <button
           className={`item-tile${isSelected ? " selected" : ""}${dragging?.id === item.id ? " dragging" : ""}`}
           draggable
-          title={item.name}
+          title={names.item(item.type)}
           onMouseDown={(e) => {
             if (e.shiftKey) e.preventDefault(); // no text selection from shift-click
           }}
@@ -96,7 +98,7 @@ export function InventoryPanel({
           }}
           onDragStart={(e) => {
             e.dataTransfer.effectAllowed = "move";
-            e.dataTransfer.setData("text/plain", item.name);
+            e.dataTransfer.setData("text/plain", names.item(item.type));
             setDragging({ id: item.id, from: zone });
           }}
           onDragEnd={() => {
@@ -105,7 +107,7 @@ export function InventoryPanel({
           }}
         >
           <img className="item-icon" src={itemIcon(item.type) ?? EMPTY_SLOT_ICON} alt="" draggable={false} />
-          <span className="item-label">{item.name}</span>
+          <span className="item-label">{names.item(item.type)}</span>
         </button>
         {isSelected && legal(type, item) && (
           <button className="item-action" onClick={() => onAction({ type, item: item.id })}>

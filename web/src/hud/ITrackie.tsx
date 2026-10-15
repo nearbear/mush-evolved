@@ -5,13 +5,13 @@
 
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
+import { useNames } from "../i18n/names.ts";
 import { ScrollArea } from "@base-ui/react/scroll-area";
 import { Tabs } from "@base-ui/react/tabs";
 import { FEATURE_CHANNELS, ITRACKIE_ITEM, MAX_CHAT_LENGTH, type ChannelId, type FeatureChannel, type PlayerView, type PrivateChannelId } from "@mush2/shared";
 import { FeatureSelect } from "./FeatureSelect.tsx";
 import { IconButton, IconTab } from "./IconButton.tsx";
 import { TAB_ICONS } from "../art/assets.ts";
-import { roomLabel } from "../scene/names.ts";
 
 
 type Notes = Record<FeatureChannel, string[]>;
@@ -44,6 +44,7 @@ export function ITrackie({
   channels: ChannelHandlers;
 }) {
   const { t } = useTranslation();
+  const names = useNames();
   const [tab, setTab] = useState<TabId>("room");
   useEffect(() => {
     if (roomLogRequest > 0) setTab("room");
@@ -72,12 +73,12 @@ export function ITrackie({
 
           {/* keepMounted: hidden with CSS, so chat drafts survive switching tabs. */}
           <Tabs.Panel className="itrackie-panel" value="room" keepMounted>
-            <div className="sub itrackie-caption">{roomLabel(here)}</div>
+            <div className="sub itrackie-caption">{names.room(here)}</div>
             <Scroller items={roomLog.length}>
               <ol className="feed">
                 {roomLog.map((e, i) => (
                   <li key={i} className={e.visibleTo === "all" ? undefined : "private"}>
-                    <span className="sub">[{e.cycle}]</span> {e.text}
+                    <span className="sub">[{e.cycle}]</span> {names.logLine(e)}
                   </li>
                 ))}
               </ol>

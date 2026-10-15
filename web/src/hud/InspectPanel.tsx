@@ -2,10 +2,10 @@
 // with the actions the server allows on it. Falls back to your own character.
 
 import { useTranslation } from "react-i18next";
+import { useNames } from "../i18n/names.ts";
 import type { ReactNode } from "react";
 import { CHARACTERS, type Action, type OtherPlayerView, type PlayerView, type Target } from "@mush2/shared";
 import { EMPTY_SLOT_ICON, characterImage, itemIcon, portrait } from "../art/assets.ts";
-import { roomLabel } from "../scene/names.ts";
 import { ActionLabel } from "./ActionLabel.tsx";
 import { StatusIcons } from "./StatusIcons.tsx";
 import { actionLabelKey, actionsOn, costOf, resolveTarget, type Resolved } from "./targets.ts";
@@ -57,6 +57,7 @@ function BondTag({ view, id }: { view: PlayerView; id: string }) {
 }
 
 function Details({ view, resolved }: { view: PlayerView; resolved: Resolved }) {
+  const names = useNames();
   switch (resolved.kind) {
     case "player": {
       const { person } = resolved;
@@ -83,8 +84,8 @@ function Details({ view, resolved }: { view: PlayerView; resolved: Resolved }) {
     case "equipment":
       return (
         <div className="inspect-name">
-          <strong>{resolved.equipment.name}</strong>
-          <div className="sub">Equipment in {roomLabel(view.you.room)}</div>
+          <strong>{names.equipment(resolved.equipment.type)}</strong>
+          <div className="sub">Equipment in {names.room(view.you.room)}</div>
         </div>
       );
     case "item":
@@ -96,8 +97,8 @@ function Details({ view, resolved }: { view: PlayerView; resolved: Resolved }) {
             alt=""
           />
           <div className="inspect-name">
-            <strong>{resolved.item.name}</strong>
-            <div className="sub">{resolved.carried ? "In your inventory" : `In ${roomLabel(view.you.room)}`}</div>
+            <strong>{names.item(resolved.item.type)}</strong>
+            <div className="sub">{resolved.carried ? "In your inventory" : `In ${names.room(view.you.room)}`}</div>
           </div>
         </>
       );

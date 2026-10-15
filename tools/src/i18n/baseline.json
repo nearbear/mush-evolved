@@ -13,11 +13,8 @@
     "web/src/scene/Minimap.tsx": 6
   },
   "wire": {
-    "shared/src/actions.ts": 10,
-    "shared/src/equipment.ts": 31,
-    "shared/src/items.ts": 5,
     "shared/src/moderation.ts": 2,
-    "shared/src/rules.ts": 6,
+    "shared/src/rules.ts": 5,
     "server/src/GameRoom.ts": 5,
     "server/src/Matchmaker.ts": 2
   }

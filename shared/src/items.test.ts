@@ -48,7 +48,7 @@ describe("inventory", () => {
     expect(view.inventory).toEqual([]);
     expect(view.inventorySlots).toBe(3);
     expect(view.roomItems).toHaveLength(5);
-    expect(view.roomItems[0]).toEqual({ id: "item-1", type: "wrench", name: "Wrench" });
+    expect(view.roomItems[0]).toEqual({ id: "item-1", type: "wrench" });
   });
 
   it("takes and drops for free, logging both to the room's history", () => {
@@ -62,10 +62,10 @@ describe("inventory", () => {
     const p0 = state.players.find((p) => p.id === "p0")!;
     expect(p0.ap).toBe(DEFAULT_CONFIG.startAp - 1); // only the move cost anything
 
-    const labLog = viewFor(state, "p1").log.map((e) => e.text);
-    expect(labLog).toContain("Player 0 picked up the Wrench.");
-    const corridorLog = viewFor(state, "p0").log.map((e) => e.text);
-    expect(corridorLog).toContain("Player 0 dropped the Wrench.");
+    const labLog = viewFor(state, "p1").log;
+    expect(labLog).toContainEqual(expect.objectContaining({ key: "pickedUp", params: { name: "Player 0", item: "wrench" } }));
+    const corridorLog = viewFor(state, "p0").log;
+    expect(corridorLog).toContainEqual(expect.objectContaining({ key: "dropped", params: { name: "Player 0", item: "wrench" } }));
   });
 
   it("holds at most three items", () => {

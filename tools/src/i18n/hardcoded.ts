@@ -123,7 +123,8 @@ export function findHardcodedWire(src: string): Finding[] {
       const body = withoutInterpolation(literal.slice(1, -1));
       if (!LETTERS.test(body)) continue;
       // `return "global"` is an id; `return "Slow down"` and `return `the ${x}`` are sentences.
-      if (pattern === RETURNED && !(/\s/.test(body) || /^[A-Z]/.test(body))) continue;
+      // Likewise logPublic(state, room, "left", ...) passes a message id, not text.
+      if (pattern !== KEYED && !(/\s/.test(body) || /^[A-Z]/.test(body))) continue;
       hits.set(m.index!, literal);
     }
   }

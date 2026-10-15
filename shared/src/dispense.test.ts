@@ -32,7 +32,7 @@ describe("coffee machine", () => {
     const s = mustApply(refectory(), "p0", pull);
     expect(mine(s, "p0")).toEqual(["coffee"]);
     expect(s.players[0]!.ap).toBe(DEFAULT_CONFIG.startAp);
-    expect(viewFor(s, "p1").log.at(-1)!.text).toBe("Player 0 took a Coffee from the Coffee machine.");
+    expect(viewFor(s, "p1").log.at(-1)).toMatchObject({ key: "tookFrom", params: { name: "Player 0", item: "coffee", equipment: "COFFEE_DISPENSER" } });
   });
 
   it("works once per cycle per machine, then again next cycle", () => {
@@ -60,7 +60,7 @@ describe("coffee machine", () => {
     expect(mine(s, "p0")).toHaveLength(DEFAULT_CONFIG.inventorySlots);
     expect(mine(s, "p0")).not.toContain("coffee");
     expect(viewFor(s, "p1").roomItems.map((i) => i.type)).toEqual(["coffee"]);
-    expect(viewFor(s, "p1").log.at(-1)!.text).toContain("knocked it over");
+    expect(viewFor(s, "p1").log.at(-1)!.key).toBe("tookFromKnocked");
   });
 
   it("gives each coffee a unique id", () => {
@@ -81,7 +81,7 @@ describe("consume", () => {
     s = mustApply(s, "p0", { type: "consume", item: coffeeId(s) });
     expect(s.players[0]!.ap).toBe(7);
     expect(s.items).toHaveLength(0);
-    expect(viewFor(s, "p1").log.at(-1)!.text).toBe("Player 0 consumed the Coffee.");
+    expect(viewFor(s, "p1").log.at(-1)).toMatchObject({ key: "consumed", params: { name: "Player 0", item: "coffee" } });
   });
 
   it("caps AP at the maximum", () => {

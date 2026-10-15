@@ -103,7 +103,7 @@ describe("applyAction", () => {
       const v = viewFor(state, "p0");
       expect([v.day, v.cycleOfDay]).toEqual([2, 1]);
       expect(state.players.every((p) => p.morale === start - 1)).toBe(true);
-      expect(state.log.some((e) => e.text === "Day 2 begins." && e.visibleTo === "all")).toBe(true);
+      expect(state.log.some((e) => e.key === "dayBegins" && e.params?.day === 2 && e.visibleTo === "all")).toBe(true);
     });
 
     it("never takes morale below 0 and skips the dead", () => {
@@ -208,20 +208,20 @@ describe("modifiers", () => {
 });
 
 describe("room log", () => {
-  const texts = (state: GameState, id: PlayerId) => viewFor(state, id).log.map((e) => e.text);
+  const texts = (state: GameState, id: PlayerId) => viewFor(state, id).log.map((e) => e.key + (e.params ? ` ${JSON.stringify(e.params)}` : ""));
 
   it("shows a room's public history only to players in that room, including what happened before they came", () => {
     let state = mustApply(newGame(), "p1", move("CORRIDOR_A")); // p1: lab -> corridor
-    expect(texts(state, "p0")).toContain("Player 1 left for Corridor front.");
-    expect(texts(state, "p0")).not.toContain("Player 1 entered from Laboratory.");
+    expect(texts(state, "p0")).toContain('left {"name":"Player 1","room":"CORRIDOR_A"}');
+    expect(texts(state, "p0")).not.toContain('entered {"name":"Player 1","room":"LABORATORY"}');
     state = mustApply(state, "p0", move("CORRIDOR_A"));
-    expect(texts(state, "p0")).toContain("Player 1 entered from Laboratory.");
+    expect(texts(state, "p0")).toContain('entered {"name":"Player 1","room":"LABORATORY"}');
     expect(texts(state, "p0")).not.toContain("Player 1 left for Corridor front.");
   });
 
   it("always shows ship-wide entries", () => {
     const state = mustApply(newGame(), "p0", move("CORRIDOR_A"));
-    expect(texts(state, "p0")).toContain("The crew wakes up aboard the ship.");
+    expect(texts(state, "p0")).toContain("crewWakes");
   });
 
   it("never shows private entries to anyone else", () => {
@@ -441,8 +441,8 @@ describe("viewFor (hidden information)", () => {
 
   it("filters private log entries", () => {
     const state = newGame();
-    state.log.push({ cycle: 1, text: "secret", visibleTo: ["p1"] });
-    expect(viewFor(state, "p1").log.some((e) => e.text === "secret")).toBe(true);
-    expect(viewFor(state, "p2").log.some((e) => e.text === "secret")).toBe(false);
+    state.log.push({ cycle: 1, key: "secret", visibleTo: ["p1"] });
+    expect(viewFor(state, "p1").log.some((e) => e.key === "secret")).toBe(true);
+    expect(viewFor(state, "p2").log.some((e) => e.key === "secret")).toBe(false);
   });
 });

@@ -88,8 +88,8 @@ describe("shower", () => {
     expect(viewFor(s, "p1").legalActions).toContainEqual(shower);
     const r = applyAction(s, "p1", shower);
     if (!r.ok) throw new Error(r.error);
-    expect(viewFor(r.state, "p1").log.some((e) => e.text.includes("showered"))).toBe(true);
-    expect(viewFor(r.state, "p2").log.some((e) => e.text.includes("showered"))).toBe(false);
+    expect(viewFor(r.state, "p1").log.some((e) => e.key === "showered")).toBe(true);
+    expect(viewFor(r.state, "p2").log.some((e) => e.key === "showered")).toBe(false);
   });
 
   it("spawns soap in Bedroom Alpha and parses from the client", () => {

@@ -447,3 +447,9 @@ Asked how to use git worktrees; the earlier attempt failed because a worktree's 
 ## 2026-10-14: shower and soap
 
 Owner asked for a `shower` action (2 AP, 1 less with soap carried, removes dirty, 4 damage to a Mush) and a soap item that spawns in the Alpha dorm. I asked about edge cases (shower when clean, soap consumed or reusable, log visibility); the owner confirmed only-when-dirty, reusable soap, every shower works, and a private log (soap pickup/drop in public history is the only tell). One of my options was worded confusingly and the owner had me clarify before answering. Implemented via the action registry, new config values, and a `soap` item whose id matches its existing icon file, so no new art was needed.
+
+### 2026-10-14: log entries became message ids (i18n)
+- `LogEntry` now carries `key` + `params` instead of `text`; item, equipment and room names go over the wire as ids and the client names them (`web/src/i18n/names.ts`, catalogs `rooms`/`equipment`/`items`/`logEvent`). `name` was removed from `ItemView`/`EquipmentView`. This cleared the i18n ratchet failure for actions/items/equipment.
+- French room and equipment names come from `Mush/data` (`Data.ods` rooms, `DataExt.ods` objects); the rest of fr and all of es are drafts. Phrasing uses "verb: Name" because the catalogs carry no grammatical gender.
+- Worked: the ratchet test caught the regression immediately. Needed correction: the wire detector flagged the new message ids as English, so `logPublic`/`logPrivate` arguments only count as text when they contain a space or start with a capital.
+- eMush (cmnemoi/eMush) translations are AGPL-3.0 (code) with assets CC BY-NC-SA 4.0; not copied.

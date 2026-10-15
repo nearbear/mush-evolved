@@ -8,7 +8,6 @@ import { inventorySlots } from "./modifiers.ts";
 import type { Container, GameState, ItemState, PlayerState } from "./types.ts";
 
 export interface ItemType {
-  name: string;
   /** Drinking or eating it removes it and does this. */
   consume?: { ap: number; /** Satiety a human gains (confirmed 2026-10-14). */ satiety: number };
   canDrop?: boolean;
@@ -28,24 +27,21 @@ export interface ItemType {
 export const ITRACKIE_ITEM = "super_talky";
 
 export const ITEM_TYPES: Record<string, ItemType> = {
-  [ITRACKIE_ITEM]: { name: "iTrackie" },
-  wrench: { name: "Wrench" },
-  blaster: { name: "Blaster", dismantle: { metal: 1, plastic: 0 } },
-  medikit: { name: "Medikit" },
+  [ITRACKIE_ITEM]: {},
+  wrench: {},
+  blaster: { dismantle: { metal: 1, plastic: 0 } },
+  medikit: {},
   // Confirmed 2026-10-13: +2 AP. Satiety +1 is a placeholder (2026-10-14).
-  coffee: { name: "Coffee", consume: { ap: 2, satiety: 1 } },
+  coffee: { consume: { ap: 2, satiety: 1 } },
   // PLACEHOLDER food (2026-10-14): +4 satiety, no AP.
-  cooked_ration: { name: "Cooked ration", consume: { ap: 0, satiety: 4 } },
-  camera: { name: "Camera", canDrop: false, dismantle: { metal: 1, plastic: 0 }  },
+  cooked_ration: { consume: { ap: 0, satiety: 4 } },
+  camera: { canDrop: false, dismantle: { metal: 1, plastic: 0 }  },
   // Showering with soap in your inventory costs 1 less AP (confirmed 2026-10-14). Reusable.
-  soap: { name: "Soap" },
-  metal_scraps: { name: "Metal Scraps"},
-  plastic_scraps: { name: "Plastic Scraps"},
+  soap: {},
+  metal_scraps: {},
+  plastic_scraps: {},
 };
 
-export function itemName(type: string): string {
-  return ITEM_TYPES[type]?.name ?? type;
-}
 
 /** How many items a container holds at most. Rooms are unlimited. */
 export function capacity(state: Readonly<GameState>, container: Container): number {

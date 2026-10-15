@@ -4,8 +4,8 @@
 
 import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
+import { useNames } from "../i18n/names.ts";
 import type { Action, PlayerView, RoomId, Target } from "@mush2/shared";
-import { roomLabel } from "../scene/names.ts";
 import { ActionLabel } from "./ActionLabel.tsx";
 import { actionLabelKey, actionsOn, costOf, resolveTarget } from "./targets.ts";
 
@@ -28,6 +28,7 @@ export function PeekBar({
   onMore: () => void;
 }) {
   const { t } = useTranslation();
+  const names = useNames();
   const labelFor = (a: Action): ReactNode => {
     const key = actionLabelKey(a);
     return <ActionLabel text={key ? t(key) : a.type} cost={costOf(view, a)} />;
@@ -35,7 +36,7 @@ export function PeekBar({
   if (door) {
     const canGo = reachable.has(door);
     return (
-      <Bar title={`Door to ${roomLabel(door)}`} sub={canGo ? undefined : "No access"}>
+      <Bar title={`Door to ${names.room(door)}`} sub={canGo ? undefined : "No access"}>
         {canGo && <button onClick={() => onMove(door)}>Go</button>}
       </Bar>
     );
@@ -43,7 +44,7 @@ export function PeekBar({
   const resolved = resolveTarget(view, target);
   if (!resolved) return null;
   const name =
-    resolved.kind === "player" ? resolved.person.name : resolved.kind === "equipment" ? resolved.equipment.name : resolved.item.name;
+    resolved.kind === "player" ? resolved.person.name : resolved.kind === "equipment" ? names.equipment(resolved.equipment.type) : names.item(resolved.item.type);
   const isBot = resolved.kind === "player" && resolved.person.isBot;
   return (
     <Bar title={name} isBot={isBot}>

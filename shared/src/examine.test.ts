@@ -26,7 +26,10 @@ function mustApply(state: GameState, playerId: PlayerId, ...actions: Action[]): 
   return state;
 }
 
-const lastLine = (state: GameState, id: PlayerId) => viewFor(state, id).log.at(-1)!.text;
+const lastLine = (state: GameState, id: PlayerId) => {
+  const { key, params } = viewFor(state, id).log.at(-1)!;
+  return { key, params };
+};
 
 describe("room equipment", () => {
   it("comes from the original map and every type has a name", () => {
@@ -42,7 +45,7 @@ describe("room equipment", () => {
 
   it("is in the view for your room only", () => {
     const view = viewFor(newGame(), "p0");
-    expect(view.roomEquipment.map((e) => e.name)).toEqual(["Research lab", "Cryo module", "Gravity simulator"]);
+    expect(view.roomEquipment.map((e) => e.type)).toEqual(["RESEARCH_LAB", "CRYO_MODULE", "GRAVITY_SIMULATOR"]);
   });
 });
 
@@ -64,13 +67,17 @@ describe("examine", () => {
 
   it("is free and writes a line only you see", () => {
     let state = mustApply(newGame(), "p0", examine("equipment", "LABORATORY:CRYO_MODULE"));
-    expect(lastLine(state, "p0")).toBe("You examine the Cryo module.");
-    expect(viewFor(state, "p1").log.map((e) => e.text)).not.toContain("You examine the Cryo module.");
+    expect(lastLine(state, "p0")).toEqual({ key: "examineEquipment", params: { equipment: "CRYO_MODULE" } });
+    expect(viewFor(state, "p1").log.map((e) => e.key)).not.toContain("examineEquipment");
     expect(state.players[0]!.ap).toBe(DEFAULT_CONFIG.startAp);
 
     state = mustApply(state, "p0", examine("player", "p1"), examine("player", "p0"), examine("item", "item-2"));
-    const lines = viewFor(state, "p0").log.slice(-3).map((e) => e.text);
-    expect(lines).toEqual(["You examine Player 1.", "You examine yourself.", "You examine the Blaster."]);
+    const lines = viewFor(state, "p0").log.slice(-3).map(({ key, params }) => ({ key, params }));
+    expect(lines).toEqual([
+      { key: "examinePlayer", params: { name: "Player 1" } },
+      { key: "examineSelf", params: {} },
+      { key: "examineItem", params: { item: "blaster" } },
+    ]);
   });
 
   it("rejects things out of sight without changing state", () => {

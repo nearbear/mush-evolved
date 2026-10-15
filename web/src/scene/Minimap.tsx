@@ -10,11 +10,11 @@
 // is a shortcut for Go, like doors in the room view. Presentational only.
 
 import { useTranslation } from "react-i18next";
+import { useNames } from "../i18n/names.ts";
 import { useEffect, useMemo, useState, type CSSProperties, type KeyboardEvent, type PointerEvent } from "react";
 import planJson from "@mush2/assets/derived/ship-plan.json";
 import type { OtherPlayerView, RoomId, ShipPlan } from "@mush2/shared";
 import { MUSH_ICON, bustIcon } from "../art/assets.ts";
-import { roomLabel } from "./names.ts";
 import { cellsPath, iconSpots, runsPath } from "./plan.ts";
 
 const plan = planJson as ShipPlan;
@@ -45,6 +45,7 @@ export function Minimap({
   onMove: (room: RoomId) => void;
 }) {
   const { t } = useTranslation();
+  const names = useNames();
   const [hovering, setHovering] = useState(false);
   const [opened, setOpened] = useState(false);
   const [selected, setSelected] = useState<RoomId | null>(null);
@@ -127,7 +128,7 @@ export function Minimap({
               .join(" ")}
             d={r.d}
             role="button"
-            aria-label={roomLabel(r.id)}
+            aria-label={names.room(r.id)}
             aria-pressed={r.id === selected}
             tabIndex={expanded ? 0 : -1}
             onPointerEnter={(e) => mouse(e) && setPointed(r.id)}
@@ -138,7 +139,7 @@ export function Minimap({
             onDoubleClick={() => reachable.has(r.id) && onMove(r.id)}
             onKeyDown={(e) => onKey(e, r.id)}
           >
-            <title>{roomLabel(r.id)}</title>
+            <title>{names.room(r.id)}</title>
           </path>
         ))}
         {plan.doors.map((d) => (
@@ -167,7 +168,7 @@ export function Minimap({
         <div className="minimap-caption">
           {shown ? (
             <div className="minimap-name">
-              <strong>{roomLabel(shown)}</strong>
+              <strong>{names.room(shown)}</strong>
               {selected && (
                 <div className="sub">
                   {selected === here
