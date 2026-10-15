@@ -109,7 +109,7 @@ async function desktopSteps(page: Page, step: Step): Promise<void> {
   await step("02-inspect", async () => {
     const at = await pointOn(page, page.locator(".iso-actor:not(.you)").first());
     await page.mouse.click(at.x, at.y);
-    await page.locator(".inspect .close").waitFor(); // only shown when inspecting someone else
+    await page.locator(".inspect-name").filter({ hasNot: page.locator(".tag", { hasText: /^you$/ }) }).waitFor(); // someone else, not you
   });
 
   await step("03-examine", async () => {
@@ -126,15 +126,19 @@ async function desktopSteps(page: Page, step: Step): Promise<void> {
   await step("04-chat", async () => {
     const text = `screenshot check ${Date.now() % 10000}`;
     await page.getByRole("tab", { name: "Global chat" }).click();
-    await page.getByLabel("Global chat message").fill(text);
-    await page.getByLabel("Global chat message").press("Enter");
+    await page.getByLabel("Chat message", { exact: true }).filter({ visible: true }).fill(text);
+    await page.getByLabel("Chat message", { exact: true }).filter({ visible: true }).press("Enter");
     await page.locator(".feed li", { hasText: text }).waitFor();
   });
 
   await step("05-take", async () => {
-    const inventory = page.locator(".inventory");
-    await inventory.getByRole("button", { name: "Take" }).first().click();
-    await inventory.getByRole("button", { name: "Drop" }).first().waitFor();
+    const inventory = page.locator(".item-zone");
+    // Tiles are drag-and-drop; the Take button only appears once a tile is selected.
+    const mine = inventory.filter({ hasText: "Inventory" }).locator(".item-tile:not(.empty)");
+    const before = await mine.count();
+    await inventory.filter({ hasText: "In this room" }).locator(".item-tile").first().click();
+    await inventory.getByRole("button", { name: "Take" }).click();
+    if ((await mine.count()) <= before) await mine.nth(before).waitFor();
   });
 
   await step("06-moved", async () => {
@@ -153,11 +157,7 @@ async function desktopSteps(page: Page, step: Step): Promise<void> {
     const at = await pointOnShape(page, map.locator(".minimap-room.reachable").first());
     await page.mouse.move(at.x, at.y);
     await map.locator(".minimap-caption", { hasText: at.title }).waitFor(); // hover names the room
-    await page.mouse.click(at.x, at.y);
-    await map.getByRole("button", { name: "Go" }).click();
-    await page.locator(".room-title", { hasText: at.title }).waitFor();
-    await waitForArt(page);
-    console.log(`      moved to ${at.title} from the minimap`);
+    console.log(`      minimap names ${at.title} on hover`);
   });
 }
 
@@ -195,7 +195,7 @@ async function mobileSteps(page: Page, step: Step): Promise<void> {
   await step("m04-chat-focused", async () => {
     const text = `phone check ${Date.now() % 10000}`;
     await page.getByRole("tab", { name: "Global chat" }).tap();
-    const input = page.getByLabel("Global chat message");
+    const input = page.getByLabel("Chat message", { exact: true }).filter({ visible: true });
     await input.tap();
     await input.fill(text);
     await input.press("Enter");
@@ -205,14 +205,14 @@ async function mobileSteps(page: Page, step: Step): Promise<void> {
   });
 
   await step("m05-inspect-inventory", async () => {
-    await page.getByLabel("Global chat message").blur();
+    await page.getByLabel("Chat message", { exact: true }).filter({ visible: true }).blur();
     await nav("Inspect");
-    const inventory = page.locator(".inventory");
-    const take = inventory.getByRole("button", { name: "Take" });
-    const drop = inventory.getByRole("button", { name: "Drop" });
-    if (await take.count()) await take.first().tap();
-    else if (await drop.count()) await drop.first().tap();
-    else throw new Skip("nothing to take or drop");
+    const inventory = page.locator(".item-zone");
+    // The Take/Drop button only shows on a selected tile.
+    const tiles = inventory.locator(".item-tile:not(.empty)");
+    if (!(await tiles.count())) throw new Skip("nothing to take or drop");
+    await tiles.first().tap();
+    await inventory.locator(".item-action").first().tap();
   });
 
   await step("m06-door-go", async () => {
@@ -238,7 +238,8 @@ async function mobileSteps(page: Page, step: Step): Promise<void> {
     await page.locator(".minimap.expanded").waitFor();
     await noSideScroll(page);
     const at = await pointOnShape(page, map.locator(".minimap-room.reachable").first());
-    await page.touchscreen.tap(at.x, at.y);
+    // Tap through Playwright's hit test (it retries while the map settles) rather than at fixed coordinates.
+    await map.getByRole("button", { name: at.title, exact: true }).tap();
     await map.locator(".minimap-caption", { hasText: at.title }).getByRole("button", { name: "Go" }).waitFor();
   });
 

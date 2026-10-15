@@ -159,7 +159,7 @@ export function Minimap({
             height={size}
             preserveAspectRatio="xMidYMid meet"
           >
-            <title>{person ? (person.isBot ? `${person.name} (AI)` : person.name) : t("minimap.unidentified")}</title>
+            <title>{person ? person.name : t("minimap.unidentified")}</title>
           </image>
         ))}
       </svg>
@@ -174,7 +174,7 @@ export function Minimap({
                     ? "You are here"
                     : occupants.length || strangers
                       ? [
-                          ...occupants.map((p) => (p.isBot ? `${p.name} (AI)` : p.name)),
+                          ...occupants.map((p) => p.name),
                           ...(strangers ? [t("minimap.unidentifiedCount", { count: strangers })] : []),
                         ].join(", ")
                       : "Nobody here"}
