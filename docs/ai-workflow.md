@@ -378,3 +378,6 @@ The user asked for server tests after a quality review flagged the server as unt
 - First attempt (assistant): a desktop-only `pointerdown` listener, since on phones the peek bar's "More" sits outside the panel and the reset would have cleared the selection as Inspect opened. The user hadn't considered phones; they then chose a permanent peek bar (shows yourself by default) over a tap-outside rule.
 - The assistant kept an X on the peek bar for non-self targets and doors, reasoning there was no tap-outside on phones. The user replaced it with "tap empty floor resets the selection" (also yourself-tap), so the X is gone everywhere.
 - Not visually checked (no screenshot run). The i18n hardcoded-text ratchet dropped as the two "Close" labels were removed; baseline lowered.
+
+### 2026-10-14: Shift-click to take/drop items
+The user asked for shift-clicking an inventory tile to move it between room and inventory. The assistant implemented it in `InventoryPanel.tsx` (decided by the assistant, a small UI shortcut, no rule change): it reuses the server's legal-action check, falls back to plain select otherwise, and suppresses text selection on shift-mousedown. Touch is unchanged. No corrections needed; visual check skipped.

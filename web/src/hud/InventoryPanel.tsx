@@ -1,7 +1,8 @@
 // The items stored in your room (left) and your inventory slots (right), as square tiles with the
 // name inside at the bottom. Drag a tile between the two zones to take or drop it; the zones light
 // up only when the server listed that action as legal. Tapping a tile inspects it and, for touch
-// (which has no reliable drag), shows a Take/Drop button on the selected tile.
+// (which has no reliable drag), shows a Take/Drop button on the selected tile. Shift-click on a
+// tile takes or drops it directly.
 
 import { useState } from "react";
 import type { Action, ItemView, PlayerView, Target } from "@mush2/shared";
@@ -63,7 +64,14 @@ export function InventoryPanel({
           className={`item-tile${isSelected ? " selected" : ""}${dragging?.id === item.id ? " dragging" : ""}`}
           draggable
           title={item.name}
-          onClick={() => onSelect(target)}
+          onMouseDown={(e) => {
+            if (e.shiftKey) e.preventDefault(); // no text selection from shift-click
+          }}
+          onClick={(e) => {
+            // Shift-click is a desktop shortcut for Take/Drop; the server's legal list still decides.
+            if (e.shiftKey && legal(type, item)) onAction({ type, item: item.id });
+            else onSelect(target);
+          }}
           onDragStart={(e) => {
             e.dataTransfer.effectAllowed = "move";
             e.dataTransfer.setData("text/plain", item.name);
