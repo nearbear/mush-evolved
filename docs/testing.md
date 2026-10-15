@@ -30,7 +30,7 @@ Everything from a client is hostile until parsed. Player text will also become m
 The rules will grow the most (infection, win conditions), and every addition can break an older rule.
 
 - **Each rule's numbers** (AP/MP costs and caps, cycle gains, slot counts) against the confirmed values in `config.ts`. *Covered* for what exists.
-- **Determinism:** the same seed and actions give the same state. Persistence and replays depend on it. *Partial* (`createGame` only). Add one test that replays a sequence of actions twice and compares the results.
+- **Determinism:** the same seed and inputs give the same state. Persistence and replays depend on it. *Covered* (`replay.test.ts`: random games across a day boundary, with chat and private channels, replayed from JSON-stored inputs must equal the live state; a rejected input makes the replay throw).
 - **Purity:** `applyAction` never mutates its input, and failed actions leave the state unchanged. *Covered.*
 - **State survives a JSON round trip** (`JSON.parse(JSON.stringify(state))` deep-equals the original). State is persisted and cloned via JSON, so an accidental `Map`, `Set`, `Date`, or `undefined` would silently corrupt games. *Missing.*
 - **Every legal action succeeds.** Anything in `legalActions` must be accepted by `applyAction`; the client and bots trust that list. *Partial.*

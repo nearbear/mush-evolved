@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "wrangler dev",
     "types": "wrangler types",
-    "deploy": "wrangler deploy",
+    "deploy": "wrangler deploy --var RULES_VERSION:$(git describe --always --dirty --abbrev=40)",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

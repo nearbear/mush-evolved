@@ -1,62 +1,71 @@
 {
-  "$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
-  "files": {
-    "includes": ["shared/src/**", "server/src/**", "web/src/**", "tools/src/**"]
-  },
-  "formatter": { "enabled": false },
-  "assist": { "enabled": false },
-  "linter": {
-    "enabled": true,
-    "rules": {
-      "recommended": false,
-      "correctness": {
-        "useExhaustiveDependencies": "error",
-        "useHookAtTopLevel": "error"
-      },
-      "nursery": {
-        "noFloatingPromises": "error"
-      }
-    }
-  },
-  "overrides": [
-    {
-      "includes": ["shared/src/**"],
-      "linter": {
-        "rules": {
-          "style": {
-            "noRestrictedImports": {
-              "level": "error",
-              "options": {
-                "paths": {
-                  "react": "shared is pure rules code; no UI imports.",
-                  "react-dom": "shared is pure rules code; no UI imports."
-                },
-                "patterns": [
-                  { "group": ["node:*", "fs", "path", "http", "https", "net"], "message": "shared must stay free of I/O." },
-                  { "group": ["@mush2/web", "@mush2/server", "@mush2/tools"], "message": "shared must not depend on other packages." }
-                ]
-              }
-            }
-          }
-        }
-      }
-    },
-    {
-      "includes": ["web/src/**"],
-      "linter": {
-        "rules": {
-          "style": {
-            "noRestrictedImports": {
-              "level": "error",
-              "options": {
-                "patterns": [
-                  { "group": ["@mush2/server", "@mush2/server/*"], "message": "web talks to the server over the protocol only." }
-                ]
-              }
-            }
-          }
-        }
-      }
-    }
-  ]
+	"$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
+	"files": {
+		"includes": ["shared/src/**", "server/src/**", "web/src/**", "tools/src/**"]
+	},
+	"formatter": { "enabled": false },
+	"assist": { "enabled": false },
+	"linter": {
+		"enabled": true,
+		"rules": {
+			"preset": "none",
+			"correctness": {
+				"useExhaustiveDependencies": "error",
+				"useHookAtTopLevel": "error"
+			},
+			"nursery": {
+				"noFloatingPromises": "error"
+			}
+		}
+	},
+	"overrides": [
+		{
+			"includes": ["shared/src/**"],
+			"linter": {
+				"rules": {
+					"style": {
+						"noRestrictedImports": {
+							"level": "error",
+							"options": {
+								"paths": {
+									"react": "shared is pure rules code; no UI imports.",
+									"react-dom": "shared is pure rules code; no UI imports."
+								},
+								"patterns": [
+									{
+										"group": ["node:*", "fs", "path", "http", "https", "net"],
+										"message": "shared must stay free of I/O."
+									},
+									{
+										"group": ["@mush2/web", "@mush2/server", "@mush2/tools"],
+										"message": "shared must not depend on other packages."
+									}
+								]
+							}
+						}
+					}
+				}
+			}
+		},
+		{
+			"includes": ["web/src/**"],
+			"linter": {
+				"rules": {
+					"style": {
+						"noRestrictedImports": {
+							"level": "error",
+							"options": {
+								"patterns": [
+									{
+										"group": ["@mush2/server", "@mush2/server/*"],
+										"message": "web talks to the server over the protocol only."
+									}
+								]
+							}
+						}
+					}
+				}
+			}
+		}
+	]
 }

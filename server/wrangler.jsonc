@@ -9,5 +9,8 @@
       { "name": "Matchmaker", "class_name": "Matchmaker" }
     ]
   },
+  // Which rules build ran a game, stored in its replay record. "dev" locally;
+  // `npm run deploy` overrides it with the commit hash.
+  "vars": { "RULES_VERSION": "dev" },
   "migrations": [{ "tag": "v1", "new_sqlite_classes": ["GameRoom", "Matchmaker"] }]
 }
