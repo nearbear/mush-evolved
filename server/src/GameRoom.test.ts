@@ -10,10 +10,11 @@ type Room = InstanceType<typeof GameRoom>;
 
 // The room is a Durable Object; these tests drive it through the same
 // methods the runtime calls (setup, onConnect, onMessage) with fake sockets.
-const asRoom = (storage: FakeStorage): Room => new GameRoom({ storage } as never, { RULES_VERSION: "test" } as never);
+const asRoom = (storage: FakeStorage, env: Record<string, string> = {}): Room =>
+  new GameRoom({ storage } as never, { RULES_VERSION: "test", ...env } as never);
 
-async function newRoom(humans = 3, storage = new FakeStorage()) {
-  const room = asRoom(storage);
+async function newRoom(humans = 3, storage = new FakeStorage(), env: Record<string, string> = {}) {
+  const room = asRoom(storage, env);
   await room.setup(seats(humans), tokensFor(humans));
   return { room, storage };
 }
@@ -146,6 +147,48 @@ describe("GameRoom input handling", () => {
     room.onClose(c as never);
     await send(room, c, "x");
     expect(lastMsg(c)).toEqual({ type: "error", message: "Malformed message" });
+  });
+});
+
+describe("GameRoom cheats", () => {
+  const cheatMsg = { type: "cheat", cheat: "infiniteHp", on: true };
+
+  it("refuses cheat inputs unless ALLOW_CHEATS is set, and records nothing", async () => {
+    const { room, storage } = await newRoom(3);
+    const c = connect(room, "tok0");
+    await send(room, c, cheatMsg);
+    expect(lastMsg(c)).toEqual({ type: "error", message: "cheats_disabled" });
+    expect(lastView(c).you.cheats).toEqual([]);
+    expect([...storage.data.keys()].some((k) => k.startsWith("input:"))).toBe(false);
+  });
+
+  it("gates the ACTOPI cheat the same way", async () => {
+    const msg = { type: "actopiCheat", mode: "off" };
+    const closed = (await newRoom(3)).room;
+    const off = connect(closed, "tok0");
+    await send(closed, off, msg);
+    expect(lastMsg(off)).toEqual({ type: "error", message: "cheats_disabled" });
+    expect(lastView(off).you.actopiCheat).toBe("default");
+    const { room } = await newRoom(3, new FakeStorage(), { ALLOW_CHEATS: "true" });
+    const on = connect(room, "tok0");
+    await send(room, on, msg);
+    expect(lastView(on).you.actopiCheat).toBe("off");
+  });
+
+  it("tells the client whether cheats are allowed", async () => {
+    const off = connect((await newRoom(3)).room, "tok0");
+    const on = connect((await newRoom(3, new FakeStorage(), { ALLOW_CHEATS: "true" })).room, "tok0");
+    expect((off.messages<{ cheatsAllowed: boolean }>()[0])!.cheatsAllowed).toBe(false);
+    expect((on.messages<{ cheatsAllowed: boolean }>()[0])!.cheatsAllowed).toBe(true);
+  });
+
+  it("applies them for the sender only when allowed, and keeps them out of other views", async () => {
+    const { room } = await newRoom(3, new FakeStorage(), { ALLOW_CHEATS: "true" });
+    const [a, b] = [connect(room, "tok0"), connect(room, "tok1")];
+    await send(room, a, cheatMsg);
+    expect(lastView(a).you.cheats).toEqual(["infiniteHp"]);
+    expect(lastView(b).you.cheats).toEqual([]);
+    expect(JSON.stringify(lastView(b))).not.toContain("infiniteHp");
   });
 });
 

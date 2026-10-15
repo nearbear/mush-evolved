@@ -1,4 +1,4 @@
-import type { PlayerView } from "@mush2/shared";
+import type { ActopiCheat, Cheat, PlayerView } from "@mush2/shared";
 import { PlayerSummary } from "./PlayerSummary.tsx";
 import { SettingsDialog } from "./SettingsDialog.tsx";
 
@@ -8,6 +8,9 @@ export function TopBar({
   canReady,
   onReady,
   onLeave,
+  cheatsAllowed,
+  onCheat,
+  onActopiCheat,
 }: {
   view: PlayerView;
   /** Phones only: on desktop the summary is in the self panel. */
@@ -15,6 +18,9 @@ export function TopBar({
   canReady: boolean;
   onReady: () => void;
   onLeave: () => void;
+  cheatsAllowed: boolean;
+  onCheat: (cheat: Cheat, on: boolean) => void;
+  onActopiCheat: (mode: ActopiCheat) => void;
 }) {
   const { you } = view;
   return (
@@ -32,7 +38,7 @@ export function TopBar({
         )}
       </button>
       <button onClick={onLeave}>Leave</button>
-      <SettingsDialog />
+      <SettingsDialog cheatsAllowed={cheatsAllowed} activeCheats={you.cheats} actopiCheat={you.actopiCheat} onCheat={onCheat} onActopiCheat={onActopiCheat} />
     </header>
   );
 }

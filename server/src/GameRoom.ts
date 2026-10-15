@@ -21,6 +21,9 @@ import {
 import { WanderBot, type Bot } from "./bots.ts";
 import { RateLimiter } from "./rateLimit.ts";
 
+/** Error code (not text) for a cheat input on a server that doesn't allow them. */
+const CHEATS_DISABLED = "cheats_disabled";
+
 /** Deliberate pacing so bots don't act instantly. */
 const BOT_DELAY_MS = 1500;
 
@@ -28,7 +31,7 @@ const BOT_DELAY_MS = 1500;
  * Bump when GameState's shape changes. Games stored under another version are
  * discarded on load (there is no migration; games are short-lived).
  */
-const STATE_VERSION = 14;
+const STATE_VERSION = 15;
 
 interface Stored {
   version?: number;
@@ -81,6 +84,11 @@ export class GameRoom extends Server<Env> {
   /** Per seat, not per connection, so reconnecting doesn't reset it. */
   private chatLimiter = new RateLimiter(5, 10_000);
 
+  /** Development flag (`ALLOW_CHEATS` in server/.dev.vars). Never set on a deployment. */
+  private get cheatsAllowed(): boolean {
+    return this.env.ALLOW_CHEATS === "true";
+  }
+
   async onStart(): Promise<void> {
     const stored = await this.ctx.storage.get<Stored>("game");
     if (!stored) return;
@@ -124,7 +132,7 @@ export class GameRoom extends Server<Env> {
       return;
     }
     connection.setState({ playerId });
-    this.send(connection, { type: "view", view: viewFor(this.game, playerId) });
+    this.send(connection, { type: "view", view: viewFor(this.game, playerId), cheatsAllowed: this.cheatsAllowed });
   }
 
   async onMessage(connection: Connection<SeatState>, raw: WSMessage): Promise<void> {
@@ -140,12 +148,16 @@ export class GameRoom extends Server<Env> {
       this.send(connection, { type: "error", message: "Malformed message" });
       return;
     }
-    const error = msg.type === "action" ? await this.act({ ...msg, by: playerId }) : await this.social(playerId, msg);
+    if ((msg.type === "cheat" || msg.type === "actopiCheat") && !this.cheatsAllowed) {
+      this.send(connection, { type: "error", message: CHEATS_DISABLED });
+      return;
+    }
+    const error = msg.type === "action" || msg.type === "cheat" || msg.type === "actopiCheat" ? await this.act({ ...msg, by: playerId }) : await this.social(playerId, msg);
     if (error) this.send(connection, { type: "error", message: error });
   }
 
   /** Chat and channel management. Untrusted text: rate limit, then moderate, then let the rules decide. */
-  private async social(playerId: PlayerId, msg: Exclude<GameClientMessage, { type: "action" }>): Promise<string | null> {
+  private async social(playerId: PlayerId, msg: Exclude<GameClientMessage, { type: "action" | "cheat" | "actopiCheat" }>): Promise<string | null> {
     if (!this.game) return "No game";
     if (!this.chatLimiter.allow(playerId)) {
       this.countRateLimited(playerId);
@@ -193,7 +205,7 @@ export class GameRoom extends Server<Env> {
     if (!this.game) return;
     for (const conn of this.getConnections<SeatState>()) {
       const playerId = conn.state?.playerId;
-      if (playerId) this.send(conn, { type: "view", view: viewFor(this.game, playerId) });
+      if (playerId) this.send(conn, { type: "view", view: viewFor(this.game, playerId), cheatsAllowed: this.cheatsAllowed });
     }
   }
 

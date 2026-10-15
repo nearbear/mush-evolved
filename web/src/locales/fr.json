@@ -2,7 +2,20 @@
   "settings": {
     "open": "Paramètres",
     "title": "Paramètres",
-    "close": "Fermer"
+    "close": "Fermer",
+    "cheats": {
+      "title": "Triche (développement)",
+      "infiniteAp": "Points d'action infinis",
+      "infiniteMp": "Points de mouvement infinis",
+      "infiniteMorale": "Moral infini",
+      "infiniteHp": "Points de vie infinis",
+      "actopi": {
+        "label": "ACTOPI",
+        "default": "Par défaut du jeu",
+        "on": "Forcer l'activation",
+        "off": "Forcer la désactivation"
+      }
+    }
   },
   "language": {
     "label": "Langue"

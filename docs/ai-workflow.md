@@ -388,3 +388,7 @@ The user asked for shift-clicking an inventory tile to move it between room and 
 - Reused the existing `LanguageSwitcher` (native select) with an `inline` prop instead of building a new control.
 - Needed correction: first used an emoji gear; the user asked for `icons/ui/pam.png`. The existing `.tab-icon` class scales art to 18px, so the icon got its own 1x class.
 - Not visually checked at 360px or in fr/es; fr/es strings are drafts for a native speaker.
+
+## 2026-10-14: development cheats (issue #148)
+
+Checked the issue first and asked three things it left open: the dev gate (env var, any match), visibility when off (section hidden), and what "infinite" means (hold the stat at max after anything that spends or loses it, so costs and the legal checks see a full bar). Cheats are a `cheat` input, so they are recorded and replay; the flags live on `PlayerState.cheats`, which only reaches your own view. The server's `ALLOW_CHEATS` flag travels beside the view (`cheatsAllowed`) rather than inside it, to keep `viewFor` pure. Worked: the i18n ratchet caught an English error sentence and a duplicate "Unknown player" before commit, so both became error codes. Local flag lives in the gitignored `server/.dev.vars`.

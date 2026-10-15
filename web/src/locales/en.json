@@ -2,7 +2,20 @@
   "settings": {
     "open": "Settings",
     "title": "Settings",
-    "close": "Close"
+    "close": "Close",
+    "cheats": {
+      "title": "Cheats (development)",
+      "infiniteAp": "Infinite action points",
+      "infiniteMp": "Infinite movement points",
+      "infiniteMorale": "Infinite morale",
+      "infiniteHp": "Infinite health",
+      "actopi": {
+        "label": "ACTOPI",
+        "default": "Game default",
+        "on": "Force on",
+        "off": "Force off"
+      }
+    }
   },
   "language": {
     "label": "Language"

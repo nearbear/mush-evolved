@@ -6,6 +6,7 @@
 // Infection, voting, win conditions, and the real turn structure are open
 // decisions — do not add them without confirming the rules first.
 
+import { applyCheats, type ActopiCheat, type Cheat } from "./cheats.ts";
 import { ACTIONS, type ActionCost, type ActionDef } from "./actions.ts";
 import { equipmentName } from "./equipment.ts";
 import { ITRACKIE_ITEM, itemName, itemsIn } from "./items.ts";
@@ -56,6 +57,8 @@ export function createGame(seats: readonly Seat[], config: GameConfig, seed: num
     modifiers: [],
     alive: true,
     ready: false,
+    cheats: [],
+    actopiCheat: "default",
   }));
 
   const starts: Omit<ItemState, "id">[] = [
@@ -104,7 +107,30 @@ export function applyAction(state: GameState, playerId: PlayerId, action: Action
   actor.ap -= cost.ap;
   actor.mp -= cost.mp;
   def.apply(next, actor, action);
+  applyCheats(actor, next.config);
   if (next.players.every((pl) => !pl.alive || pl.ready)) advanceCycle(next);
+  return { ok: true, state: next };
+}
+
+/**
+ * Switches a development cheat on or off for a player and tops up the stat at once. The server decides whether
+ * cheats are allowed at all; the rules only apply them.
+ */
+export function setCheat(state: GameState, playerId: PlayerId, cheat: Cheat, on: boolean): ActionResult {
+  if (!findPlayer(state, playerId)) return fail("unknown_player");
+  const next = clone(state);
+  const p = findPlayer(next, playerId)!;
+  p.cheats = p.cheats.filter((c) => c !== cheat);
+  if (on) p.cheats.push(cheat);
+  applyCheats(p, next.config);
+  return { ok: true, state: next };
+}
+
+/** Sets how ACTOPI looks to one player (development cheat). Like setCheat, the server gates it. */
+export function setActopiCheat(state: GameState, playerId: PlayerId, mode: ActopiCheat): ActionResult {
+  if (!findPlayer(state, playerId)) return fail("unknown_player");
+  const next = clone(state);
+  findPlayer(next, playerId)!.actopiCheat = mode;
   return { ok: true, state: next };
 }
 
@@ -120,6 +146,7 @@ function advanceCycle(state: GameState): void {
   if (newDay) {
     for (const p of state.players) if (p.alive) p.morale = Math.max(0, p.morale - moralePerDay);
   }
+  for (const p of state.players) applyCheats(p, state.config);
   const { day } = dayOf(state);
   state.log.push({
     cycle: state.cycle,
@@ -144,7 +171,8 @@ export function viewFor(state: GameState, playerId: PlayerId): PlayerView {
   const others = state.players.filter((p) => p.id !== playerId);
   const legal = legalActions(state, playerId);
   // Without ACTOPI, anyone outside your room is a room-only dot: no identity, so no room on their entry.
-  const located = (room: RoomId) => state.actopi || room === you.room;
+  const actopi = you.actopiCheat === "default" ? state.actopi : you.actopiCheat === "on";
+  const located = (room: RoomId) => actopi || room === you.room;
   return {
     you: { ...you },
     // TODO(rules): should Mush see each other's roles? Hidden for now.

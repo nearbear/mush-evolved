@@ -4,7 +4,7 @@
 // Every state change must go through applyInput, or it won't be in the record.
 
 import type { GameClientMessage } from "./protocol.ts";
-import { applyAction, createChannel, createGame, inviteToChannel, leaveChannel, sendChat, type ActionResult } from "./rules.ts";
+import { applyAction, createChannel, createGame, inviteToChannel, leaveChannel, sendChat, setActopiCheat, setCheat, type ActionResult } from "./rules.ts";
 import type { GameConfig, GameState, PlayerId, Seat } from "./types.ts";
 
 /** What createGame needed, plus which rules produced the game. */
@@ -44,6 +44,10 @@ export function applyInput(state: GameState, input: Input): ActionResult {
       return inviteToChannel(state, input.by, input.channel, input.player);
     case "leaveChannel":
       return leaveChannel(state, input.by, input.channel);
+    case "cheat":
+      return setCheat(state, input.by, input.cheat, input.on);
+    case "actopiCheat":
+      return setActopiCheat(state, input.by, input.mode);
   }
 }
 

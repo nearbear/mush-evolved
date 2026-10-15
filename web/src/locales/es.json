@@ -2,7 +2,20 @@
   "settings": {
     "open": "Ajustes",
     "title": "Ajustes",
-    "close": "Cerrar"
+    "close": "Cerrar",
+    "cheats": {
+      "title": "Trucos (desarrollo)",
+      "infiniteAp": "Puntos de acción infinitos",
+      "infiniteMp": "Puntos de movimiento infinitos",
+      "infiniteMorale": "Moral infinita",
+      "infiniteHp": "Salud infinita",
+      "actopi": {
+        "label": "ACTOPI",
+        "default": "Predeterminado del juego",
+        "on": "Forzar activado",
+        "off": "Forzar desactivado"
+      }
+    }
   },
   "language": {
     "label": "Idioma"

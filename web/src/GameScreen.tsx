@@ -3,7 +3,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import type PartySocket from "partysocket";
-import type { Action, GameClientMessage, GameServerMessage, PlayerView, RoomId, Target } from "@mush2/shared";
+import type { Action, ActopiCheat, Cheat, GameClientMessage, GameServerMessage, PlayerView, RoomId, Target } from "@mush2/shared";
 import { BottomNav, type MobilePanel } from "./hud/BottomNav.tsx";
 import { InspectPanel } from "./hud/InspectPanel.tsx";
 import { ITrackie } from "./hud/ITrackie.tsx";
@@ -18,6 +18,7 @@ import { useMobile } from "./useMobile.ts";
 
 export function GameScreen({ ticket, onLeave }: { ticket: SeatTicket; onLeave: () => void }) {
   const [view, setView] = useState<PlayerView | null>(null);
+  const [cheatsAllowed, setCheatsAllowed] = useState(false);
   const [error, setError] = useState("");
   const socketRef = useRef<PartySocket | null>(null);
   const layout = useShipLayout();
@@ -52,6 +53,7 @@ export function GameScreen({ ticket, onLeave }: { ticket: SeatTicket; onLeave: (
       const msg = JSON.parse(e.data) as GameServerMessage;
       if (msg.type === "view") {
         setView(msg.view);
+        setCheatsAllowed(msg.cheatsAllowed);
         setError("");
       } else setError(msg.message);
     });
@@ -92,6 +94,9 @@ export function GameScreen({ ticket, onLeave }: { ticket: SeatTicket; onLeave: (
         canReady={view.legalActions.some((a) => a.type === "ready")}
         onReady={() => send({ type: "ready" })}
         onLeave={onLeave}
+        cheatsAllowed={cheatsAllowed}
+        onCheat={(cheat: Cheat, on: boolean) => post({ type: "cheat", cheat, on })}
+        onActopiCheat={(mode: ActopiCheat) => post({ type: "actopiCheat", mode })}
       />
       {error && <p className="error">{error}</p>}
 

@@ -1,4 +1,5 @@
 import type { ActionCost } from "./actions.ts";
+import type { ActopiCheat, Cheat } from "./cheats.ts";
 import type { CharacterId } from "./characters.ts";
 import type { RngState } from "./rng.ts";
 
@@ -94,6 +95,10 @@ export interface PlayerState extends Seat {
   alive: boolean;
   /** Finished acting for this cycle. */
   ready: boolean;
+  /** Development cheats switched on (cheats.ts). Always empty unless the server allows cheats. Only in your own view. */
+  cheats: Cheat[];
+  /** Development cheat: overrides ACTOPI for what this player sees only. The game's ACTOPI is unchanged. */
+  actopiCheat: ActopiCheat;
 }
 
 /**
