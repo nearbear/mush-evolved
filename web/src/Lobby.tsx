@@ -39,7 +39,7 @@ function PodSticker() {
   return (
     <div className="pod-sticker">
       {/* i18n-ignore: placeholder sticker copy */}
-      <span className="pod-sticker-brand">MANUFACTURER</span>
+      <span className="pod-sticker-brand">ChangMei-Tech</span>
       {/* i18n-ignore: placeholder sticker copy */}
       <span className="pod-sticker-slogan">Placeholder slogan goes here</span>
       <span className="pod-sticker-barcode" />
