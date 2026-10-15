@@ -35,11 +35,12 @@ export function GameScreen({ ticket, onLeave }: { ticket: SeatTicket; onLeave: (
 
   // Desktop: pressing anywhere outside the inspect panel resets it to yourself. This runs on pointerdown,
   // before the click that selects something new, so clicking a person or item still selects it.
+  // The Take/Drop button of the selected item is exempt: it unmounts if the selection is cleared first.
   // Not on a phone: there the peek bar's "More" sits outside the panel and needs the selection kept.
   useEffect(() => {
     if (mobile) return;
     const reset = (e: PointerEvent) => {
-      if (e.target instanceof Element && !e.target.closest(".inspect")) setSelected(null);
+      if (e.target instanceof Element && !e.target.closest(".inspect, .item-action")) setSelected(null);
     };
     document.addEventListener("pointerdown", reset);
     return () => document.removeEventListener("pointerdown", reset);
