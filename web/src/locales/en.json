@@ -63,9 +63,20 @@
     "examine": "Examine",
     "dispense": "Pull coffee",
     "consume": "Drink",
+    "dismantle": "Dismantle",
     "bond": "Bond",
     "dtt": "DTT",
     "stt": "STT"
+  },
+  "logs":{
+    "cameraInstalled": "{{CharacterName}} installed a camera.",
+    "moveToRoom": "{{CharacterName}} left for {{RoomName}}.",
+    "moveFromRoom": "{{CharacterName}} entered from {{RoomName}}.",
+    "transferItem": "{{CharacterName}} {{Verb}} the {{ItemName}}.",
+    "dispenseItem": "{{CharacterName}} took a {{ItemName}} from the {{EquipmentName}}.",
+    "knockOverItem": "{{CharacterName}} took a {{ItemName}} from the {{EquipmentName}} and knocked it over.",
+    "consumeItem": "{{CharacterName}} consumed the {{ItemName}}.",
+    "examineItem": "You examined {{Target}}."
   },
   "channels": {
     "empty": "No private channels yet.",
