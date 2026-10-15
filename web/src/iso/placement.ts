@@ -41,6 +41,8 @@ export interface PlacedSprite {
   flipX: boolean;
   flipY: boolean;
   door?: { target: string };
+  /** People only: something standing (a wall, furniture) is drawn over them, so they get a see-through outline. */
+  occluded?: boolean;
 }
 
 export interface Actor {
@@ -65,8 +67,13 @@ interface Sortable {
   scene: number;
   /** Cells covered, inclusive (the footprint, extending toward -x/-y from the anchor). */
   box: { x0: number; x1: number; y0: number; y1: number };
-  /** Lies flat on the floor or a wall (`decal`, but not chairs, which only sort like decals). */
-  flat: boolean;
+  /**
+   * How it stands: `flat` on the floor or a wall (floor tiles, `decal`s but
+   * not chairs, which only sort like decals, and front-edge doors); a `wall`
+   * or door along one grid axis, a thin plane on its cell (`wallX` runs along
+   * y at constant x, `wallY` along x); or `solid` (furniture, people, corners).
+   */
+  shape: "flat" | "wallX" | "wallY" | "solid";
 }
 
 /**
@@ -74,6 +81,13 @@ interface Sortable {
  * door were clutter once the rooms behind the doors were drawn too.
  */
 const HIDDEN_SLICES = new Set(["DOOR_L_FLOOR", "DOOR_R_FLOOR"]);
+
+/**
+ * Doors on a room's two front edges. The original drew no front walls, so
+ * these are floor-level thresholds; once the room behind the door is drawn,
+ * its own door on the same cell takes over and these are left out too.
+ */
+const FRONT_DOORS = new Set(["DOOR_BL", "DOOR_BR"]);
 
 /** One room drawn into a scene, shifted by (dx, dy) cells. */
 export interface SceneRoom {
@@ -108,22 +122,33 @@ export function placeRoom(layout: ShipLayout, room: RoomLayout, actors: readonly
  */
 export function placeScene(layout: ShipLayout, rooms: readonly SceneRoom[]): PlacedSprite[] {
   const placed: (PlacedSprite & Sortable)[] = [];
-  rooms.forEach((r, scene) => placed.push(...sortables(layout, r, scene)));
-  return paintOrder(placed).map(({ pass, depth, prio, stage, screenX, scene, box, flat, ...s }, order) => ({ ...s, order }));
+  const drawn = new Set(rooms.map((r) => r.room.id));
+  rooms.forEach((r, scene) => placed.push(...sortables(layout, r, scene, drawn)));
+  const ordered = paintOrder(placed);
+  markOccluded(ordered);
+  return ordered.map(({ pass, depth, prio, stage, screenX, scene, box, shape, ...s }, order) => ({ ...s, order }));
 }
 
-function sortables(layout: ShipLayout, { room, dx, dy, actors }: SceneRoom, scene: number): (PlacedSprite & Sortable)[] {
+function sortables(
+  layout: ShipLayout,
+  { room, dx, dy, actors }: SceneRoom,
+  scene: number,
+  drawn: ReadonlySet<string>,
+): (PlacedSprite & Sortable)[] {
   const placed: (PlacedSprite & Sortable)[] = [];
   const prefix = scene === 0 ? "" : `${room.id}/`;
 
   room.tiles.forEach((t, i) => {
     if (HIDDEN_SLICES.has(t.slice)) return;
+    const frontDoor = FRONT_DOORS.has(t.slice);
+    if (frontDoor && t.door && drawn.has(t.door.target)) return;
     const slice = layout.slices[t.slice]!;
     const x = t.x + dx, y = t.y + dy;
     const anchor = gridToPx(x, y);
     const isEntity = t.kind === "entity";
     const decal = slice.flags.includes("decal") || slice.flags.includes("chair");
     const [w, h] = slice.footprint ?? [1, 1];
+    const flat = t.kind === "ground" || frontDoor || (slice.flags.includes("decal") && !slice.flags.includes("chair"));
     placed.push({
       key: `${prefix}t${i}`,
       room: room.id,
@@ -147,7 +172,7 @@ function sortables(layout: ShipLayout, { room, dx, dy, actors }: SceneRoom, scen
       screenX: anchor.x,
       scene,
       box: { x0: x - w + 1, x1: x, y0: y - h + 1, y1: y },
-      flat: isEntity && slice.flags.includes("decal") && !slice.flags.includes("chair"),
+      shape: flat ? "flat" : t.kind === "wall" || t.kind === "door" ? wallShape(t.slice, w, h) : "solid",
     });
   });
 
@@ -178,10 +203,21 @@ function sortables(layout: ShipLayout, { room, dx, dy, actors }: SceneRoom, scen
       screenX: anchor.x,
       scene,
       box: { x0: x, x1: x, y0: y, y1: y },
-      flat: false,
+      shape: "solid",
     });
   }
   return placed;
+}
+
+/**
+ * Which way a wall or door runs. Doors say so by their footprint (1x2 runs
+ * along y); walls by name (BIG_WALL_L, WALL_L_DECK run along y, the _R ones
+ * along x). Columns and corners are solid.
+ */
+function wallShape(slice: string, w: number, h: number): Sortable["shape"] {
+  if (h > w || /(^|_)L(_|$)/.test(slice)) return "wallX";
+  if (w > h || /(^|_)R(_|$)/.test(slice)) return "wallY";
+  return "solid";
 }
 
 /**
@@ -206,30 +242,53 @@ const boxesOverlap = (a: Sortable, b: Sortable) =>
   a.box.x0 <= b.box.x1 && b.box.x0 <= a.box.x1 && a.box.y0 <= b.box.y1 && b.box.y0 <= a.box.y1;
 
 /**
+ * Whether a wall or door plane hides `thing` (negative: the thing is behind
+ * it, so draws first). A wall along y at x = 10 hides whatever lies wholly
+ * at x < 10 and stands in front of whatever lies wholly at x > 10; anything
+ * on its line (mounted on it, or a footprint reaching into it) is 0.
+ */
+function wallSide(wall: Sortable, thing: Sortable): number {
+  const [lo, hi, at] =
+    wall.shape === "wallX" ? [thing.box.x0, thing.box.x1, wall.box.x0] : [thing.box.y0, thing.box.y1, wall.box.y0];
+  return hi < at ? -1 : lo > at ? 1 : 0;
+}
+
+const isWall = (s: Sortable) => s.shape === "wallX" || s.shape === "wallY";
+
+/**
  * Which of two sprites whose pictures overlap draws first (negative: a).
  *
  * The original sorted by anchor depth alone, which works for one-cell things
  * but not for wide furniture (a chair or a person at the front of a 4-cell
  * console has the same x + y as its anchor), and not across rooms: it drew
- * each room on its own, with every wall before every entity. So:
- * - People in the room you're in are never hidden by the rooms around it.
- * - Floors, and tiles among themselves, keep the original order.
- * - Within one room, walls never cover furniture or people (as in the
- *   original); across rooms, a wall in front of something covers it.
- * - Between entities, the footprint further back draws first. Flat decals go
- *   under people, and under any furniture whose footprint they share.
+ * each room on its own, with every wall before every entity, and no walls on
+ * a room's front edges. So:
+ * - Within one room, floors and walls keep the original order among
+ *   themselves, and floors go under everything standing on them.
+ * - A wall or door covers anything standing wholly behind it, in any room,
+ *   people included (they get an outline instead, see `occluded`).
+ * - Across rooms, the footprint further back draws first, floors included
+ *   (a floor covers the foot of a wall behind it). Where neither is further
+ *   back (side by side, or one reaching into the other's cells), a floor or
+ *   flat decal draws before what stands.
+ * - Between standing things, the footprint further back draws first. Flat
+ *   decals go under people, and under any furniture whose footprint they share.
  */
 function compare(a: PlacedSprite & Sortable, b: PlacedSprite & Sortable): number {
-  if (a.kind === "actor" && a.scene === 0 && b.scene !== 0) return 1;
-  if (b.kind === "actor" && b.scene === 0 && a.scene !== 0) return -1;
-  const entityA = a.pass === PASS.entity, entityB = b.pass === PASS.entity;
-  if (!entityA && !entityB) return baseOrder(a, b);
-  if (entityA !== entityB) {
-    const tile = entityA ? b : a;
-    if (a.scene === b.scene || tile.pass !== PASS.tile || tile.kind === "ground") return baseOrder(a, b);
+  if (a.pass !== PASS.tile && a.pass !== PASS.entity) return baseOrder(a, b);
+  if (b.pass !== PASS.tile && b.pass !== PASS.entity) return baseOrder(a, b);
+  const wallA = isWall(a), wallB = isWall(b);
+  if (wallA && b.shape === "solid") return -wallSide(a, b) || baseOrder(a, b);
+  if (wallB && a.shape === "solid") return wallSide(b, a) || baseOrder(a, b);
+
+  if (a.scene === b.scene) {
+    if (a.pass !== PASS.entity || b.pass !== PASS.entity) return baseOrder(a, b);
+    const flatA = a.shape === "flat", flatB = b.shape === "flat";
+    if (flatA !== flatB && (a.kind === "actor" || b.kind === "actor" || boxesOverlap(a, b))) return flatA ? -1 : 1;
     return behind(a, b) || baseOrder(a, b);
   }
-  if (a.flat !== b.flat && (a.kind === "actor" || b.kind === "actor" || boxesOverlap(a, b))) return a.flat ? -1 : 1;
+
+  if (a.shape === "flat" !== (b.shape === "flat")) return behind(a, b) || (a.shape === "flat" ? -1 : 1);
   return behind(a, b) || baseOrder(a, b);
 }
 
@@ -303,6 +362,25 @@ function paintOrder<S extends PlacedSprite & Sortable>(sprites: S[]): S[] {
   }
   return out;
 }
+
+/**
+ * Flags people with something standing drawn over them. Rectangles only, so
+ * it errs towards outlining: the inset keeps a wall's transparent corner just
+ * brushing the empty edge of a person's frame from counting.
+ */
+function markOccluded(ordered: (PlacedSprite & Sortable)[]) {
+  ordered.forEach((a, i) => {
+    if (a.kind !== "actor") return;
+    const l = a.left + OCCLUSION_INSET.x, r = a.left + a.width - OCCLUSION_INSET.x;
+    const t = a.top + OCCLUSION_INSET.top, b = a.top + a.height - OCCLUSION_INSET.bottom;
+    a.occluded = ordered.slice(i + 1).some(
+      (s) => s.shape !== "flat" && s.kind !== "actor" && s.pass !== PASS.post && s.left < r && l < s.left + s.width && s.top < b && t < s.top + s.height,
+    );
+  });
+}
+
+/** Empty margin around a person in their 32x48 frame. */
+const OCCLUSION_INSET = { x: 8, top: 8, bottom: 4 } as const;
 
 function entityPass(engine: string | undefined): number {
   switch (engine) {

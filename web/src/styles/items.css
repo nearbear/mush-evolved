@@ -3,29 +3,29 @@
 /* Item tiles: big square icon with the name inside at the bottom. Drag between the two zones. */
 .item-zone {
   border-radius: 4px;
-  transition: outline-color 0.1s;
-  outline: 2px dashed transparent;
-  outline-offset: 4px;
+  transition: border-color 0.15s, box-shadow 0.15s;
 }
-.item-zone.accepting {
-  outline-color: color-mix(in srgb, var(--highlight) 50%, transparent);
+/* A zone that can take the dragged item glows along its own border; brighter while hovered. */
+.self-cards > .item-zone.accepting {
+  border-color: color-mix(in srgb, var(--highlight) 60%, transparent);
+  box-shadow: 0 0 6px color-mix(in srgb, var(--highlight) 35%, transparent);
 }
-.item-zone.over {
-  outline-color: var(--highlight);
-  outline-style: solid;
+.self-cards > .item-zone.accepting.over {
+  border-color: var(--highlight);
+  box-shadow: 0 0 10px 2px var(--highlight), inset 0 0 8px color-mix(in srgb, var(--highlight) 40%, transparent);
 }
 .item-grid {
   list-style: none;
   margin: 0;
   padding: 0;
   display: grid;
-  grid-template-columns: repeat(auto-fill, 76px);
+  grid-template-columns: repeat(auto-fill, var(--tile, 76px));
   gap: 6px;
 }
 .item-slot {
   position: relative;
-  width: 76px;
-  height: 76px;
+  width: var(--tile, 76px);
+  height: var(--tile, 76px);
 }
 .item-tile {
   all: unset;
@@ -79,4 +79,13 @@
   margin: 0;
   padding: 0 0.4rem;
   font-size: 0.7rem;
+}
+/* Desktop room zone: more items than fit one row drop to two rows of smaller tiles; beyond two rows it scrolls. */
+.item-grid[data-compact] {
+  --tile: 52px;
+  max-height: calc(var(--tile) * 2 + 6px);
+  overflow-y: auto;
+}
+.item-grid[data-compact] .item-label {
+  font-size: 0.55rem;
 }

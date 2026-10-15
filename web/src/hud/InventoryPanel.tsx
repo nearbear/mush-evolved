@@ -4,12 +4,32 @@
 // (which has no reliable drag), shows a Take/Drop button on the selected tile. Shift-click on a
 // tile takes or drops it directly.
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { Action, ItemView, PlayerView, Target } from "@mush2/shared";
 import { EMPTY_SLOT_ICON, EMPTY_SLOT_TILE, itemIcon } from "../art/assets.ts";
 import { sameTarget } from "./targets.ts";
 
 type Zone = "room" | "inventory";
+
+// Keep in sync with --tile's default and the grid gap in styles/items.css.
+const TILE = 76;
+const GAP = 6;
+
+/** True when the items wouldn't fit one row of full-size tiles in the grid's width (the grid then shrinks its tiles). */
+function useOverflowsRow(count: number) {
+  const hasGrid = count > 0; // the grid unmounts when empty, so re-attach the observer when it returns
+  const ref = useRef<HTMLUListElement>(null);
+  const [width, setWidth] = useState(Infinity);
+  useEffect(() => {
+    const el = ref.current;
+    if (!hasGrid || !el) return;
+    const ro = new ResizeObserver(() => setWidth(el.clientWidth));
+    ro.observe(el);
+    setWidth(el.clientWidth);
+    return () => ro.disconnect();
+  }, [hasGrid]);
+  return { ref, compact: count > Math.max(1, Math.floor((width + GAP) / (TILE + GAP))) };
+}
 
 export function InventoryPanel({
   view,
@@ -24,6 +44,8 @@ export function InventoryPanel({
 }) {
   const [dragging, setDragging] = useState<{ id: string; from: Zone } | null>(null);
   const [over, setOver] = useState<Zone | null>(null);
+
+  const roomGrid = useOverflowsRow(view.roomItems.length);
 
   const legal = (type: "take" | "drop", item: ItemView) =>
     view.legalActions.some((a) => a.type === type && a.item === item.id);
@@ -102,7 +124,9 @@ export function InventoryPanel({
         {view.roomItems.length === 0 ? (
           <p className="sub">Nothing here.</p>
         ) : (
-          <ul className="item-grid">{view.roomItems.map((item) => tile(item, "room"))}</ul>
+          <ul className="item-grid" ref={roomGrid.ref} data-compact={roomGrid.compact || undefined}>
+            {view.roomItems.map((item) => tile(item, "room"))}
+          </ul>
         )}
       </section>
 
