@@ -428,6 +428,12 @@ The user asked for an outlined card at the far right of the player panel, a home
 - **Outline:** an SVG filter (dilate, subtract, flood) on a copy of each person in a layer above the scene, shown only when a wall or something in another room is drawn over them. Furniture in their own room doesn't count, or half of every room would glow.
 - **Tradeoff to revisit:** with neighbours drawn, the next room's back wall stands on every room's front edge, so in rooms with neighbours in front, most standing cells are partly behind a wall (30 of 34 in hydroponics). The original avoided this by drawing no front walls.
 
+## 2026-10-14: spore extraction (#26)
+- Owner decided: Mush only; per-Mush 4-cycle cooldown on the global cycle counter (ready at selection); per-Mush spore counts; faction-wide daily cap of 4 (modifier-adjustable later, not day-linked cooldown); at the cap the action is not offered; no per-Mush carry limit; `dirty` deferred until statuses exist.
+- Worked: asking the four leftover questions (first cooldown, dirty, cap behavior, carry limit) in one call after reading the issue and rules-design.
+- Needed correction: first test used a parsed object where `parseGameMessage` takes a raw JSON string. Pre-existing i18n test failures (stale baseline, `log`/`logs` key mismatch in fr/es) are unrelated; the new private log line adds one more English sentence to the baseline count.
+- i18n follow-up (same day): renamed `log` to `logs` in fr.json/es.json to match en.json (the catalog tests had been failing since en was renamed). The hardcoded-English baseline for `shared` was already stale before this change (actions.ts 10 -> 12, items.ts 5 -> 8) and the new spore log line adds one; clearing it needs structured log events (a key plus params in `LogEntry`), which I did not invent on my own because the `logs.*` keys in en.json look like another contributor's design. Baseline left untouched on purpose.
+
 ## 2026-10-14: worktrees
 
 Asked how to use git worktrees; the earlier attempt failed because a worktree's dev server collided with the main checkout's fixed ports (:8787/:5173), so the client talked to the wrong server. Fix: `tools/src/dev/ports.ts` derives per-worktree ports from the path (main checkout unchanged), used by `npm run dev` and `npm run screenshot`. Relaxed the "never branch" rule for short-lived worktree branches that Claude creates and merges into `main`. The user rejected the detached-HEAD + cherry-pick option as too much effort, so Claude owns the git steps.

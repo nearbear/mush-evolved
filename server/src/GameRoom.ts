@@ -32,7 +32,7 @@ const BOT_DELAY_MS = 1500;
  * Bump when GameState's shape changes. Games stored under another version are
  * discarded on load (there is no migration; games are short-lived).
  */
-const STATE_VERSION = 15;
+const STATE_VERSION = 16;
 
 interface Stored {
   version?: number;

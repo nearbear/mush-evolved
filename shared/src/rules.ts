@@ -60,6 +60,7 @@ export function createGame(seats: readonly Seat[], config: GameConfig, seed: num
     mp: 0,
     hp: config.startHp,
     morale: config.startMorale,
+    spores: 0,
     modifiers: [],
     alive: true,
     ready: false,
@@ -91,6 +92,8 @@ export function createGame(seats: readonly Seat[], config: GameConfig, seed: num
     bonds: {},
     sharedOnDay: {},
     contamination: {},
+    sporesToday: 0,
+    sporeExtractedOn: {},
   };
 }
 
@@ -150,6 +153,7 @@ function advanceCycle(state: GameState): void {
   const { cyclesPerDay, moralePerDay } = state.config;
   const newDay = (state.cycle - 1) % cyclesPerDay === 0;
   if (newDay) {
+    state.sporesToday = 0;
     for (const p of state.players) if (p.alive) p.morale = Math.max(0, p.morale - moralePerDay);
   }
   for (const p of state.players) applyCheats(p, state.config);

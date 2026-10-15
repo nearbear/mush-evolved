@@ -6,7 +6,7 @@
 import { EQUIPMENT_TYPES, equipmentName } from "./equipment.ts";
 import { ITEM_TYPES, canReach, canTransfer, itemName, itemsIn, produceItem } from "./items.ts";
 import { logPrivate, logPublic, roomName } from "./log.ts";
-import { contaminationCapacity, moveCost, movementRules } from "./modifiers.ts";
+import { contaminationCapacity, moveCost, movementRules, sporesPerDay } from "./modifiers.ts";
 import { nextFloat } from "./rng.ts";
 import { dayOf } from "./rules.ts";
 import type { Action, Container, GameState, ItemState, PlayerId, PlayerState, Target } from "./types.ts";
@@ -224,6 +224,30 @@ function share<A extends ActionOf<"dtt" | "stt">>(type: A["type"]): ActionDef<A>
   };
 }
 
+/**
+ * Mush only (confirmed 2026-10-14). Each Mush waits `sporeCooldownCycles`
+ * between their own extractions (a cooldown on the global cycle counter, not
+ * tied to days), and the whole faction shares a daily cap. Private log: the
+ * room must not learn who is Mush. TODO: apply `dirty` once statuses exist.
+ */
+const extractSpore: ActionDef<ActionOf<"extract_spore">> = {
+  candidates: () => [{ type: "extract_spore" }],
+  check(state, p) {
+    if (p.role !== "mush") return "not_mush";
+    const last = state.sporeExtractedOn[p.id];
+    if (last !== undefined && state.cycle - last < state.config.sporeCooldownCycles) return "cooldown";
+    if (state.sporesToday >= sporesPerDay(state, p)) return "daily_cap";
+    return p.ap >= state.config.extractSporeAp ? null : "cant_afford";
+  },
+  cost: (state) => ({ ap: state.config.extractSporeAp, mp: 0 }),
+  apply(next, p) {
+    p.spores += next.config.sporesPerExtraction;
+    next.sporesToday += next.config.sporesPerExtraction;
+    next.sporeExtractedOn[p.id] = next.cycle;
+    logPrivate(next, p.id, "You extracted a spore.");
+  },
+};
+
 const ready: ActionDef<ActionOf<"ready">> = {
   candidates: () => [{ type: "ready" }],
   check: () => null,
@@ -246,6 +270,7 @@ export const ACTIONS: { [T in ActionType]: ActionDef<ActionOf<T>> } = {
   bond,
   dtt: share("dtt"),
   stt: share("stt"),
+  extract_spore: extractSpore,
 };
 
 /** Everything a player can see and so interact with: people and equipment in their room, their items and the room's. */

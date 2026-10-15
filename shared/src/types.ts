@@ -59,6 +59,14 @@ export interface GameConfig {
   shareMorale: number;
   /** Contamination a human reaches before converting to Mush, before modifiers (confirmed 2026-10-14). */
   contaminationCapacity: number;
+  /** AP spent to extract a spore (confirmed 2026-10-13). */
+  extractSporeAp: number;
+  /** Spores one extraction gives (confirmed 2026-10-13). */
+  sporesPerExtraction: number;
+  /** Cycles a Mush waits between their own extractions; a cooldown on the global cycle counter, not tied to days (confirmed 2026-10-14). */
+  sporeCooldownCycles: number;
+  /** Spores the whole Mush faction may extract per day, before modifiers (confirmed 2026-10-14). */
+  sporesPerDay: number;
   /** AP spent to dismantle an item (confirmed 2026-10-13). */
   dismantleAp: number;
   /** Chance of successfully dismantling an item (confirmed 2026-10-13). */
@@ -91,6 +99,8 @@ export interface PlayerState extends Seat {
   hp: number;
   /** Morale points. Private: only in your own view. Lose `moralePerDay` at the end of each day. */
   morale: number;
+  /** Spores this player carries. Only Mush ever gain any; visible in your own view only (teammates' counts will be shown to Mush later). */
+  spores: number;
   /**
    * Ids of active rule modifiers (from items, skills, statuses). Resolved
    * against the registry in modifiers.ts; state holds ids only so it stays JSON.
@@ -206,6 +216,10 @@ export interface GameState {
    * capacity will convert them once infection exists; nothing does yet.
    */
   contamination: Record<PlayerId, number>;
+  /** Spores the Mush faction has extracted today; reset at each day boundary. Hidden from everyone. */
+  sporesToday: number;
+  /** The cycle each Mush last extracted a spore, for the per-Mush cooldown. Hidden from everyone. */
+  sporeExtractedOn: Record<PlayerId, number>;
 }
 
 export type Action =
@@ -219,6 +233,7 @@ export type Action =
   | { type: "bond"; target: PlayerId }
   | { type: "dtt"; target: PlayerId }
   | { type: "stt"; target: PlayerId }
+  | { type: "extract_spore" }
   | { type: "ready" };
 
 /** Room equipment as a client sees it. */

@@ -63,6 +63,7 @@ export function parseGameMessage(raw: string): GameClientMessage | null {
   if (msg?.type === "actopiCheat") return isActopiCheat(msg.mode) ? { type: "actopiCheat", mode: msg.mode } : null;
   if (msg?.type !== "action" || !isRecord(msg.action)) return null;
   const a = msg.action;
+  if (a.type === "extract_spore") return { type: "action", action: { type: "extract_spore" } };
   if (a.type === "ready") return { type: "action", action: { type: "ready" } };
   if (a.type === "move" && typeof a.to === "string") return { type: "action", action: { type: "move", to: a.to } };
   if ((a.type === "take" || a.type === "drop") && typeof a.item === "string") {

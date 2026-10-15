@@ -76,9 +76,10 @@
     "dismantle": "Desmontar",
     "bond": "Crear vínculo",
     "dtt": "DTT",
-    "stt": "STT"
+    "stt": "STT",
+    "extractSpore": "Extraer una espora"
   },
-  "log": {
+  "logs": {
     "cameraInstalled": "{{CharacterName}} instaló una cámara.",
     "moveToRoom": "{{CharacterName}} se dirigió a {{RoomName}}.",
     "moveFromRoom": "{{CharacterName}} entró desde {{RoomName}}.",

@@ -76,7 +76,8 @@
     "dismantle": "Dismantle",
     "bond": "Bond",
     "dtt": "DTT",
-    "stt": "STT"
+    "stt": "STT",
+    "extractSpore": "Extract spore"
   },
   "logs": {
     "cameraInstalled": "{{CharacterName}} installed a camera.",

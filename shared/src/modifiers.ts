@@ -19,6 +19,8 @@ export interface Modifier {
   channelLimit?: (limit: number, player: Readonly<PlayerState>) => number;
   /** Adjusts how much contamination a player can take before converting. Must be pure. */
   contaminationCapacity?: (capacity: number, player: Readonly<PlayerState>) => number;
+  /** Adjusts how many spores the Mush faction may extract per day, folded over the extracting player's modifiers. Must be pure. */
+  sporesPerDay?: (cap: number, player: Readonly<PlayerState>) => number;
 }
 
 export type ModifierRegistry = Readonly<Record<string, Modifier>>;
@@ -114,4 +116,18 @@ export function moveCost(
   const converted = Math.min(rules.mpCap, player.mp + rules.mpPerConversion);
   if (converted < rules.mpPerMove) return null;
   return { ap: rules.apPerConversion, mpAfter: converted - rules.mpPerMove };
+}
+
+/** Spores the Mush faction may extract per day: the configured count folded through the extracting player's modifiers. */
+export function sporesPerDay(
+  state: Readonly<GameState>,
+  player: Readonly<PlayerState>,
+  registry: ModifierRegistry = MODIFIERS,
+): number {
+  let cap = state.config.sporesPerDay;
+  for (const id of player.modifiers) {
+    const hook = registry[id]?.sporesPerDay;
+    if (hook) cap = hook(cap, player);
+  }
+  return cap;
 }

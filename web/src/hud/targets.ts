@@ -47,6 +47,8 @@ export function actionsOn(view: PlayerView, target: Target): Action[] {
       case "dtt":
       case "stt":
         return target.kind === "player" && a.target === target.id;
+      case "extract_spore":
+        return target.kind === "player" && target.id === view.you.id;
       default:
         return false;
     }
@@ -61,6 +63,7 @@ const ACTION_LABEL_KEYS = {
   bond: "actions.bond",
   dtt: "actions.dtt",
   stt: "actions.stt",
+  extract_spore: "actions.extractSpore",
 } as const;
 
 /** i18n key for the button text of an action aimed at a target (Inspect panel and peek bar). */

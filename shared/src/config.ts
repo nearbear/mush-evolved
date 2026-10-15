@@ -41,6 +41,12 @@ export const DEFAULT_CONFIG: GameConfig = {
   shareMorale: 2,
   // Confirmed 2026-10-14: a human converts on reaching 3 contamination (items and skills will raise it).
   contaminationCapacity: 3,
+  // Confirmed 2026-10-13/14: extracting costs 1 AP and gives 1 spore; each Mush waits 4 cycles between extractions
+  // and the faction shares 4 per day (skills and research will raise it).
+  extractSporeAp: 1,
+  sporesPerExtraction: 1,
+  sporeCooldownCycles: 4,
+  sporesPerDay: 4,
   // Confirmed 2026-10-13: dismantle cost.
   dismantleAp: 3,
   dismantleOdds: 0.12,
