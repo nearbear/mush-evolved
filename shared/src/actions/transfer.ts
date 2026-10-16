@@ -1,0 +1,32 @@
+import { Action } from "./action.ts";
+import { ITEM_TYPES, canTransfer } from "../items.ts";
+import { logPublic } from "../log.ts";
+import type { Container, GameState, ItemState, PlayerState } from "../types.ts";
+
+export type TransferActionData = { type: "take"; item: string } | { type: "drop"; item: string };
+
+export class TransferAction<T extends "take" | "drop" = "take" | "drop"> extends Action<{ type: T; item: string }> {
+  constructor(type: T) {
+    super(type);
+  }
+
+  override getCandidates(state: Readonly<GameState>, player: Readonly<PlayerState>): { type: T; item: string }[] {
+    return state.items.map((item) => ({ type: this.type as T, item: item.id }));
+  }
+
+  override check(state: Readonly<GameState>, player: Readonly<PlayerState>, target: { type: T; item: string }): string | null {
+    const item = state.items.find((i) => i.id === target.item);
+    if (!item) return "no_such_item";
+    if (this.type === "drop" && ITEM_TYPES[item.type]?.canDrop === false) return "cant_transfer";
+    const destination: Container = this.type === "take" ? { kind: "player", id: player.id } : { kind: "room", id: player.room };
+    return canTransfer(state, player, item, destination) ? null : "cant_transfer";
+  }
+
+  override apply(state: GameState, player: PlayerState, target: { type: T; item: string }): void {
+    const index = state.items.findIndex((i) => i.id === target.item);
+    const [item] = state.items.splice(index, 1) as [ItemState];
+    item.at = this.type === "take" ? { kind: "player", id: player.id } : { kind: "room", id: player.room };
+    state.items.push(item);
+    logPublic(state, player.room, this.type === "take" ? "pickedUp" : "dropped", { name: player.name, item: item.type });
+  }
+}

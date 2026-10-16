@@ -124,7 +124,7 @@ export function applyAction(state: GameState, playerId: PlayerId, action: Action
   const actor = findPlayer(next, playerId)!;
   actor.ap -= cost.ap;
   actor.mp -= cost.mp;
-  if (def.chance) {
+  if (def.chance && def.chance(state, p, action) < 1) {
     const [roll, rng] = nextFloat(next.rng);
     next.rng = rng;
     if (roll < def.chance(state, p, action)) def.apply(next, actor, action);
