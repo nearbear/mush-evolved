@@ -537,3 +537,10 @@ Asked three rule questions before coding (iTrackie needed? message content? conv
 ### 2026-10-16: Mush channel tab (client)
 
 The user asked for an "eye-tracky" tab on the far right that appears conditionally. I read that as eye-catching (not confirmed): a faction-pink tab shown only when the server lists the `mush` channel, pulsing while the newest Mush message is unread, steady glow under reduced motion. Not checked visually or on a phone. Log keys live under `logEvent`, not `log`; I first guessed wrong and the typecheck did not catch it (the lookup falls back to the key), so I fixed it by reading `useNames().logLine`.
+
+### 2026-10-16: Iso view walls and doors, follow-up
+
+- Correction to the entry above: the front corridor ended up four wide, not five. Doors are two cells wide, so only even widths are symmetric; the user spotted that the doors looked like "one and a half tiles", and asked to go back to four once that was clear. Who decided: the user, at each step.
+- Doors: Claude first lowered them 11 px and drew a wall behind them (measured against the wall art), which the user rejected: the door's own ridge is the ceiling. What held: no wall on a door's second cell, no doormats, floor under both door cells, one tile for both (a path pattern wins over plain floor), owned by the room whose back wall holds the door. Claude got that ownership backwards first; the user caught it.
+- What worked: pixel measurements with the generator's PNG decoder, `ship-view --scale` for magnified crops, and before/after shots. What didn't: guessing from the user's screen-space descriptions without mapping them to cells. Lessons are in `web/src/iso/CLAUDE.md`.
+- Still open: lit walls don't join at corners.

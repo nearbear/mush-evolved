@@ -105,8 +105,8 @@ export function IsoRoom({
   // whichever is in front covers the other. Display only: where people stand isn't game state.
   const nearbyKey = JSON.stringify(Object.entries(nearby).map(([r, os]) => [r, os?.map((o) => o.id)]));
   // biome-ignore lint/correctness/useExhaustiveDependencies: occupantKey and nearbyKey stand in for occupants and nearby: positions only change when who is where changes.
-  const { scene, sprites, neighborSprites, neighbors, box } = useMemo(() => {
-    if (!roomLayout) return { scene: [], sprites: [], neighborSprites: [], neighbors: [], box: bounds([]) };
+  const { scene, sprites, neighborSprites, neighbors, box, ownCells } = useMemo(() => {
+    if (!roomLayout) return { scene: [], sprites: [], neighborSprites: [], neighbors: [], box: bounds([]), ownCells: new Set<string>() };
     const spots = spreadActors(cells, occupants.length);
     const actors = occupants.map((o, i) => ({
       id: o.id,
@@ -124,7 +124,14 @@ export function IsoRoom({
     // Both in paint order, for hit-testing this room before its neighbours.
     const sprites = scene.filter((s) => s.room === room);
     const neighborSprites = scene.filter((s) => s.room !== room);
-    return { scene, sprites, neighborSprites, neighbors, box: bounds(sprites) };
+    // Cells next to this room's floor: a neighbour's wall drawn there (beside a door, say) is this room's wall.
+    const floorCells = new Set(roomLayout.tiles.filter((t) => t.kind === "ground").map((t) => `${t.x},${t.y}`));
+    const ownCells = new Set<string>();
+    for (const c of floorCells) {
+      const [x, y] = c.split(",").map(Number) as [number, number];
+      for (const [ax, ay] of [[x + 1, y], [x - 1, y], [x, y + 1], [x, y - 1]] as const) ownCells.add(`${ax},${ay}`);
+    }
+    return { scene, sprites, neighborSprites, neighbors, box: bounds(sprites), ownCells };
   }, [layout, roomLayout, fogDepth, cells, myCell, occupantKey, nearbyKey]);
 
   // Sprites draw at exactly one screen pixel per source pixel, so art stays crisp.
@@ -291,7 +298,8 @@ export function IsoRoom({
                 if (s.room !== room) {
                   const n = s.room as RoomId;
                   // A door into the room you're in stays lit, so the way back reads clearly.
-                  const lit = s.kind !== "actor" && s.door?.target === room;
+                  // So do a neighbour's walls standing next to this room's floor.
+                  const lit = s.kind !== "actor" && (s.door?.target === room || (s.kind === "wall" && ownCells.has(`${s.cell.x},${s.cell.y}`)));
                   const state = `${lit ? "" : "neighbor"}${reachable.has(n) ? " reachable" : ""}${n === selectedDoor ? " selected" : ""}${
                     `n:${n}` === hoverKey ? " hover" : ""
                   }`;

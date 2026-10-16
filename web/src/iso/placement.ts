@@ -2,7 +2,7 @@
 // can be unit tested and run headless. Reproduces the original Flash client
 // (clients/iso/src: V2DIso.grid2px, Data.setup, Grid.sort/sortFunc).
 
-import type { RoomLayout, ShipLayout, SliceInfo, TileKind } from "@mush2/shared";
+import type { RoomLayout, ShipLayout, SliceInfo, TileKind, TilePlacement } from "@mush2/shared";
 
 /** Half the width of one cell's diamond, in pixels (V2DIso.R). */
 const R = 16;
@@ -81,8 +81,8 @@ interface Sortable {
 }
 
 /**
- * Art the original drew that we leave out. The doormats on either side of a
- * door were clutter once the rooms behind the doors were drawn too.
+ * Art the original drew that we leave out: the doormats on either side of a door
+ * break up the floor once the rooms behind the doors are drawn too.
  */
 const HIDDEN_SLICES = new Set(["DOOR_L_FLOOR", "DOOR_R_FLOOR"]);
 
@@ -127,10 +127,125 @@ export function placeRoom(layout: ShipLayout, room: RoomLayout, actors: readonly
 export function placeScene(layout: ShipLayout, rooms: readonly SceneRoom[]): PlacedSprite[] {
   const placed: (PlacedSprite & Sortable)[] = [];
   const drawn = new Set(rooms.map((r) => r.room.id));
-  rooms.forEach((r, scene) => placed.push(...sortables(layout, r, scene, drawn)));
+  const filled = fillGaps(layout, rooms);
+  rooms.forEach((r, scene) => placed.push(...sortables(layout, filled[scene]!, scene, drawn)));
   const ordered = paintOrder(placed);
   markOccluded(ordered);
   return ordered.map(({ pass, depth, prio, stage, screenX, scene, box, shape, ...s }, order) => ({ ...s, order }));
+}
+
+/**
+ * The original drew one room at a time, with walls only on its back edges and no floor under its
+ * doors, so a scene of several rooms has holes where they meet. This fills them, in order:
+ *
+ * 1. A floor tile under each door that has none (a copy of the room's floor next to it).
+ * 2. A floor tile on an empty cell between a room's floor and another room's wall or door: rooms
+ *    are placed locally (`neighborRooms`), and sometimes land one cell short of the wall that
+ *    should close them.
+ * 3. A wall on an empty cell with floor on both sides of it, running along the other axis.
+ *
+ * Each tile goes to the room whose floor it copies or touches (the first room winning a tie).
+ * Open front edges elsewhere stay open: a wall there would cover the room behind it.
+ */
+function fillGaps(layout: ShipLayout, rooms: readonly SceneRoom[]): SceneRoom[] {
+  const key = (x: number, y: number) => `${x},${y}`;
+  const floor = new Map<string, { room: number; tile: TilePlacement }>();
+  const walls = new Map<string, number>();
+  rooms.forEach(({ room, dx, dy }, i) => {
+    for (const t of room.tiles) {
+      const k = key(t.x + dx, t.y + dy);
+      if (t.kind === "ground" && !floor.has(k)) floor.set(k, { room: i, tile: t });
+      else if ((t.kind === "wall" || t.kind === "door") && !walls.has(k)) walls.set(k, i);
+      // A door's second cell is part of the door.
+      if (t.kind === "door" && !FRONT_DOORS.has(t.slice)) {
+        const [w] = layout.slices[t.slice]?.footprint ?? [1, 1];
+        const second = w > 1 ? key(t.x + dx - 1, t.y + dy) : key(t.x + dx, t.y + dy - 1);
+        if (!walls.has(second)) walls.set(second, i);
+      }
+    }
+  });
+  const extra: TilePlacement[][] = rooms.map(() => []);
+  const add = (owner: number, cx: number, cy: number, tile: Omit<TilePlacement, "x" | "y">) => {
+    const { dx, dy } = rooms[owner]!;
+    const t = { ...tile, x: cx - dx, y: cy - dy };
+    extra[owner]!.push(t);
+    return t;
+  };
+  const sides = (x: number, y: number) =>
+    [
+      [x - 1, y, x + 1, y],
+      [x + 1, y, x - 1, y],
+      [x, y - 1, x, y + 1],
+      [x, y + 1, x, y - 1],
+    ] as const;
+
+  // 1. Floor under doors (both cells of a wall door), which the doorway shows. Both cells get the same
+  // tile: a room's own pattern (a path leading to the door, say) over its plain floor, from either side.
+  // They belong to the room on the door's +x/+y side, the one whose back wall holds the door: that's
+  // where the doorway's floor reads as part of the room, so only there is it lit.
+  const plain = rooms.map(({ room }) => {
+    const count = new Map<string, number>();
+    for (const t of room.tiles) if (t.kind === "ground") count.set(`${t.slice}#${t.frame}`, (count.get(`${t.slice}#${t.frame}`) ?? 0) + 1);
+    return [...count].sort((p, q) => q[1] - p[1])[0]?.[0];
+  });
+  const isPlain = (f: { room: number; tile: TilePlacement }) => plain[f.room] === `${f.tile.slice}#${f.tile.frame}`;
+  rooms.forEach(({ room, dx, dy }, i) => {
+    for (const t of room.tiles) {
+      if (t.kind !== "door") continue;
+      const [w] = layout.slices[t.slice]?.footprint ?? [1, 1];
+      // Across the wall: a door two cells along x is in a wall that runs along x, so its sides are -y and +y.
+      const [ax, ay] = w > 1 ? [0, 1] : [1, 0];
+      const x = t.x + dx, y = t.y + dy;
+      const cells: [number, number][] = FRONT_DOORS.has(t.slice) ? [[x, y]] : [[x, y], [x - ay, y - ax]];
+      const across = cells.flatMap(([cx, cy]) => [floor.get(key(cx - ax, cy - ay)), floor.get(key(cx + ax, cy + ay))]);
+      const candidates = across.filter((f) => f !== undefined);
+      const tile = candidates.find((f) => !isPlain(f)) ?? candidates[0];
+      if (!tile) continue;
+      const owner = (across[1] ?? across[3] ?? { room: i }).room;
+      for (const [cx, cy] of cells) {
+        if (floor.has(key(cx, cy))) continue;
+        floor.set(key(cx, cy), { room: owner, tile: add(owner, cx, cy, { ...tile.tile, layer: 0 }) });
+      }
+    }
+  });
+
+  // Cells next to floor that hold nothing yet, in a fixed order.
+  const empty = () => {
+    const cells: [number, number][] = [];
+    const seen = new Set<string>();
+    for (const k of floor.keys()) {
+      const [fx, fy] = k.split(",").map(Number) as [number, number];
+      for (const [cx, cy] of sides(fx, fy).map(([ax, ay]) => [ax, ay] as const)) {
+        const c = key(cx, cy);
+        if (!floor.has(c) && !walls.has(c) && !seen.has(c)) seen.add(c), cells.push([cx, cy]);
+      }
+    }
+    return cells;
+  };
+
+  // 2. Floor across a one-cell strip up to another room's wall.
+  for (const [cx, cy] of empty()) {
+    for (const [ax, ay, bx, by] of sides(cx, cy)) {
+      const f = floor.get(key(ax, ay));
+      const wall = walls.get(key(bx, by));
+      if (!f || wall === undefined || wall === f.room) continue;
+      floor.set(key(cx, cy), { room: f.room, tile: add(f.room, cx, cy, f.tile) });
+      break;
+    }
+  }
+
+  // 3. Walls between two floors.
+  for (const [cx, cy] of empty()) {
+    const at = (x: number, y: number) => floor.get(key(x, y))?.room;
+    const w = at(cx - 1, cy), e = at(cx + 1, cy), n = at(cx, cy - 1), s = at(cx, cy + 1);
+    const alongY = w !== undefined && e !== undefined;
+    const alongX = n !== undefined && s !== undefined;
+    if (alongY === alongX) continue;
+    const owner = Math.min(...(alongY ? [w!, e!] : [n!, s!]));
+    walls.set(key(cx, cy), owner);
+    add(owner, cx, cy, { kind: "wall", layer: 0, slice: alongY ? "BIG_WALL_L" : "BIG_WALL_R", frame: 1 });
+  }
+  return rooms.map((r, i) => (extra[i]!.length ? { ...r, room: { ...r.room, tiles: [...r.room.tiles, ...extra[i]!] } } : r));
 }
 
 function sortables(
@@ -143,10 +258,18 @@ function sortables(
   const prefix = scene === 0 ? "" : `${room.id}/`;
   const floor = floorBounds(room, dx, dy);
 
-  room.tiles.forEach((t, i) => {
-    if (HIDDEN_SLICES.has(t.slice)) return;
+  // A door's art is two cells of wall, its top ridge included (its footprint runs toward -x/-y);
+  // the wall the original also put on its second cell would show around it. Both its cells get
+  // floor (fillGaps), which the doorway shows.
+  const underDoor = new Set<string>();
+  for (const t of room.tiles) {
+    if (t.kind !== "door" || FRONT_DOORS.has(t.slice)) continue;
+    const [w, h] = layout.slices[t.slice]?.footprint ?? [1, 1];
+    for (let j = 0; j < h; j++) for (let k = 0; k < w; k++) if (j || k) underDoor.add(`${t.x - k},${t.y - j}`);
+  }
+
+  const place = (t: TilePlacement, key: string) => {
     const frontDoor = FRONT_DOORS.has(t.slice);
-    if (frontDoor && t.door && drawn.has(t.door.target)) return;
     const slice = layout.slices[t.slice]!;
     const x = t.x + dx, y = t.y + dy;
     const anchor = gridToPx(x, y);
@@ -155,7 +278,7 @@ function sortables(
     const [w, h] = slice.footprint ?? [1, 1];
     const flat = t.kind === "ground" || frontDoor || (slice.flags.includes("decal") && !slice.flags.includes("chair"));
     placed.push({
-      key: `${prefix}t${i}`,
+      key,
       room: room.id,
       kind: t.kind,
       cell: { x, y },
@@ -179,6 +302,13 @@ function sortables(
       box: t.kind === "ground" || t.kind === "wall" || t.kind === "door" ? { x0: x - w + 1, x1: x, y0: y - h + 1, y1: y } : clip(x - w + 1, x, y - h + 1, y, floor),
       shape: flat ? "flat" : t.kind === "wall" || t.kind === "door" ? "wall" : "solid",
     });
+  };
+
+  room.tiles.forEach((t, i) => {
+    if (HIDDEN_SLICES.has(t.slice)) return;
+    if (FRONT_DOORS.has(t.slice) && t.door && drawn.has(t.door.target)) return;
+    if (t.kind === "wall" && underDoor.has(`${t.x},${t.y}`)) return;
+    place(t, `${prefix}t${i}`);
   });
 
   for (const a of actors) {

@@ -49,10 +49,18 @@ describe("stretchRoom", () => {
     expect(out.tiles.slice(0, room.tiles.length).map((t) => t.slice)).toEqual(room.tiles.map((t) => t.slice));
   });
 
-  it("refuses to split something on the floor, or to copy a door", () => {
+  it("refuses to split something on the floor", () => {
     const crate = { ...room, tiles: [...room.tiles, tile(2, 2, "entity", "crate", 2)] };
     expect(() => stretchRoom(crate, slices, { room: "R", axis: "x", after: 1, count: 1 })).toThrow(/straddles/);
-    expect(() => stretchRoom(room, slices, { room: "R", axis: "x", after: 2, count: 1 })).toThrow(/door/);
+  });
+
+  it("copies a door on the line as the wall beside it", () => {
+    const door = stretchRoom(room, slices, { room: "R", axis: "x", after: 2, count: 2 });
+    const at = (x: number) => door.tiles.filter((t) => t.x === x && t.y === 0).map((t) => t.kind);
+    expect([at(2), at(3), at(4)]).toEqual([["door"], ["wall"], ["wall"]]);
+    // A door with no wall beside it (a front-edge door) gets no copies.
+    const open = { ...room, tiles: room.tiles.filter((t) => !(t.kind === "wall" && t.x === 1)) };
+    expect(stretchRoom(open, slices, { room: "R", axis: "x", after: 2, count: 2 }).tiles.filter((t) => t.y === 0 && t.x > 2)).toEqual([]);
   });
 });
 

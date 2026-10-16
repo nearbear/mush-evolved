@@ -181,6 +181,20 @@ describe("the real ship", () => {
     expect(wall.order).toBeGreaterThan(locker.order);
   });
 
+  it("fills in the wall between two drawn rooms where neither has one", () => {
+    // The turret room's south edge and the bridge's north edge are the same line, and neither draws it.
+    const command = ship.rooms.find((r) => r.id === "COMMAND_CENTER")!;
+    const scene = placeScene(ship, [
+      { room: command, dx: 0, dy: 0, actors: [] },
+      ...neighborRooms(ship, command).map((n) => ({ ...n, actors: [] })),
+    ]);
+    // x=17 is the second cell of the bridge's door to the turret (18,12).
+    for (const x of [15, 16]) {
+      const wall = scene.find((s) => s.kind === "wall" && s.cell.x === x && s.cell.y === 12);
+      expect(wall?.room, `x=${x}`).toBe("COMMAND_CENTER");
+    }
+  });
+
   it("leaves out front-edge doors once the room behind them is drawn", () => {
     for (const r of ship.rooms) {
       const scene = placeScene(ship, [{ room: r, dx: 0, dy: 0, actors: [] }, ...neighborRooms(ship, r).map((n) => ({ ...n, actors: [] }))]);
@@ -189,8 +203,36 @@ describe("the real ship", () => {
     }
   });
 
+  it("floors both cells under a door alike, as part of the room whose back wall holds it", () => {
+    // The sick bay's door to the front corridor (20,19 here) is in the sick bay's back wall, and a light path leads to it.
+    const corridor = ship.rooms.find((r) => r.id === "CORRIDOR_A")!;
+    const scene = placeScene(ship, [
+      { room: corridor, dx: 0, dy: 0, actors: [] },
+      ...neighborRooms(ship, corridor).map((n) => ({ ...n, actors: [] })),
+    ]);
+    const floor = (x: number) => scene.filter((s) => s.kind === "ground" && s.cell.x === x && s.cell.y === 19);
+    const [a, b] = [floor(19), floor(20)];
+    expect([a.length, b.length]).toEqual([1, 1]);
+    expect(a[0]!.room).toBe("SICK_BAY");
+    expect(b[0]!.room).toBe("SICK_BAY");
+    expect([a[0]!.sx, a[0]!.sy]).toEqual([b[0]!.sx, b[0]!.sy]);
+    const plain = scene.find((s) => s.kind === "ground" && s.cell.x === 19 && s.cell.y === 18)!;
+    expect([a[0]!.sx, a[0]!.sy]).not.toEqual([plain.sx, plain.sy]);
+  });
+
   it("leaves out the doormats", () => {
     for (const r of ship.rooms) expect(placeRoom(ship, r).filter((s) => s.slice.startsWith("DOOR_") && s.slice.endsWith("_FLOOR"))).toEqual([]);
+  });
+
+  it("draws no wall on a door's second cell", () => {
+    for (const r of ship.rooms) {
+      const placed = placeRoom(ship, r);
+      for (const d of placed.filter((s) => s.kind === "door" && !s.slice.startsWith("DOOR_B"))) {
+        const [w] = ship.slices[d.slice]!.footprint ?? [1, 1];
+        const second = w > 1 ? { x: d.cell.x - 1, y: d.cell.y } : { x: d.cell.x, y: d.cell.y - 1 };
+        expect(placed.filter((s) => s.kind === "wall" && s.cell.x === second.x && s.cell.y === second.y), `${r.id} ${d.slice}`).toEqual([]);
+      }
+    }
   });
 
   it("has somewhere to stand in every room people can reach", () => {
