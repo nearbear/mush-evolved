@@ -4,12 +4,15 @@
 import { useTranslation } from "react-i18next";
 import { useNames } from "../i18n/names.ts";
 import type { ReactNode } from "react";
-import { CHARACTERS, type Action, type OtherPlayerView, type PlayerView, type Target } from "@mush2/shared";
+import { CHARACTERS, type Action, type BotKind, type OtherPlayerView, type PlayerView, type Target } from "@mush2/shared";
 import { EMPTY_SLOT_ICON, characterImage, itemIcon, portrait } from "../art/assets.ts";
 import { ActionLabel } from "./ActionLabel.tsx";
 import { SkillSlots } from "./SkillSlots.tsx";
 import { StatusIcons } from "./StatusIcons.tsx";
 import { actionLabelKey, actionsOn, costOf, resolveTarget, type Resolved } from "./targets.ts";
+
+/** Developer-facing, so deliberately not translated (like the "AI" tag it extends). */
+const BOT_KIND_LABELS: Record<BotKind, string> = { wander: "wander", logParrot: "log parrot" };
 
 export function InspectPanel({
   view,
@@ -78,6 +81,7 @@ function Details({ view, resolved, onAction }: { view: PlayerView; resolved: Res
           <div className="inspect-name">
             <strong>{person.name}</strong>
             {person.isBot && <span className="tag">AI</span>}
+            {person.botKind && <span className="tag">{BOT_KIND_LABELS[person.botKind]}</span>}
             {person.id === view.you.id && <span className="tag">you</span>}
             <BondTag view={view} id={person.id} />
             <StatusIcons statuses={person.id === view.you.id ? view.statuses : (person as OtherPlayerView).statuses} />

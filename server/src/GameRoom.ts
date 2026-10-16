@@ -19,7 +19,7 @@ import {
   type Role,
   type Seat,
 } from "@mush2/shared";
-import { WanderBot, type Bot } from "./bots.ts";
+import { LogParrotBot, WanderBot, type Bot } from "./bots.ts";
 import { RateLimiter } from "./rateLimit.ts";
 
 /** Error code (not text) for a cheat input on a server that doesn't allow them. */
@@ -213,9 +213,20 @@ export class GameRoom extends Server<Env> {
 
   private initBots(): void {
     for (const p of this.game?.players ?? []) {
-      if (p.isBot && !this.bots.has(p.id)) {
-        this.bots.set(p.id, new WanderBot(crypto.getRandomValues(new Uint32Array(1))[0]!));
-      }
+      if (!p.isBot || this.bots.has(p.id)) continue;
+      this.bots.set(
+        p.id,
+        p.botKind === "logParrot" ? new LogParrotBot() : new WanderBot(crypto.getRandomValues(new Uint32Array(1))[0]!),
+      );
+    }
+  }
+
+  /** Post the lines a bot wants to say in global chat, as that bot. */
+  private async botChat(playerId: PlayerId, bot: Bot): Promise<void> {
+    if (!this.game || !bot.chatLines) return;
+    for (const text of bot.chatLines(viewFor(this.game, playerId))) {
+      const error = await this.act({ type: "chat", channel: "global", text, by: playerId });
+      if (error) console.warn(`Bot ${playerId} couldn't chat: ${error}`);
     }
   }
 
@@ -223,11 +234,15 @@ export class GameRoom extends Server<Env> {
   private scheduleBots(): void {
     for (const [playerId, bot] of this.bots) {
       if (this.pendingBots.has(playerId)) continue;
-      if (!this.game || viewFor(this.game, playerId).legalActions.length === 0) continue;
+      if (!this.game) continue;
+      const canAct = viewFor(this.game, playerId).legalActions.length > 0;
+      if (!canAct && !bot.chatLines) continue;
       this.pendingBots.add(playerId);
       setTimeout(async () => {
         this.pendingBots.delete(playerId);
         if (!this.game) return;
+        await this.botChat(playerId, bot);
+        if (!this.game || viewFor(this.game, playerId).legalActions.length === 0) return;
         const action = await bot.decideAction(viewFor(this.game, playerId));
         const error = await this.act({ type: "action", action, by: playerId });
         if (error) console.warn(`Bot ${playerId} chose an illegal action: ${error}`);

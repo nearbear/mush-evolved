@@ -7,10 +7,14 @@ export type PlayerId = string;
 export type RoomId = string;
 export type Role = "human" | "mush";
 
+/** Which scripted brain drives a bot seat. Absent means "wander". */
+export type BotKind = "wander" | "logParrot";
+
 export interface Seat {
   id: PlayerId;
   name: string;
   isBot: boolean;
+  botKind?: BotKind;
   /** Cosmetic only: which crew member's art this seat is drawn with. */
   character: CharacterId;
 }
@@ -316,6 +320,7 @@ export interface OtherPlayerView {
   id: PlayerId;
   name: string;
   isBot: boolean;
+  botKind?: BotKind;
   character: CharacterId;
   /** Absent when you can't tell where this person is (ACTOPI off, and they aren't in your room). */
   room?: RoomId;

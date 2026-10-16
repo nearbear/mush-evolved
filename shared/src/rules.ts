@@ -222,12 +222,13 @@ export function viewFor(state: GameState, playerId: PlayerId): PlayerView {
     statuses: statusesOf(state, you),
     // TODO(rules): should Mush see each other's roles? Hidden for now.
     players: others.map((o) => {
-      const { id, name, isBot, character, room, alive, ready } = o;
+      const { id, name, isBot, botKind, character, room, alive, ready } = o;
       return {
         id,
         name,
         isBot,
         character,
+        ...(botKind && { botKind }),
         ...(located(room) ? { room } : {}),
         alive,
         ready,
