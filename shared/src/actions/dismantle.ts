@@ -8,6 +8,7 @@ export type DismantleActionData = { type: "dismantle"; item: string };
 export class DismantleAction extends Action<DismantleActionData> {
   constructor() {
     super("dismantle");
+    this.baseAPCost = 3;
   }
 
   override getCandidates(state: Readonly<GameState>, player: Readonly<PlayerState>): DismantleActionData[] {
@@ -19,10 +20,6 @@ export class DismantleAction extends Action<DismantleActionData> {
     if (!item) return "no_such_item";
     if (!ITEM_TYPES[item.type]?.dismantle || !canReach(state, player, item.at)) return "cant_dismantle";
     return this.canAfford(state, player, target);
-  }
-
-  override getCost(state: Readonly<GameState>): { ap: number; mp: number } {
-    return { ap: state.config.dismantleAp, mp: 0 };
   }
 
   override getSuccessChance(state: Readonly<GameState>): number {
