@@ -1,4 +1,5 @@
 import { Action } from "./action.ts";
+import { skillPicked } from "../modifiers.ts";
 import { SKILLS, SKILL_SLOTS, isSkill } from "../skills.ts";
 import type { GameState, PlayerState } from "../types.ts";
 
@@ -23,7 +24,8 @@ export class PickSkillAction extends Action<PickSkillActionData> {
     return player.skills.length < SKILL_SLOTS ? null : "no_free_slot";
   }
 
-  override apply(_state: GameState, player: PlayerState, target: PickSkillActionData): void {
+  override apply(state: GameState, player: PlayerState, target: PickSkillActionData): void {
     player.skills.push(target.skill as (typeof SKILLS)[number]);
+    skillPicked(state, player, target.skill);
   }
 }

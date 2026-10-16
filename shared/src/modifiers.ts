@@ -25,7 +25,7 @@ export interface Modifier {
   /** Adjusts how many spores the Mush faction may extract per day, folded over the extracting player's modifiers. Must be pure. */
   sporesPerDay?: (cap: number, player: Readonly<PlayerState>) => number;
   /** Adjusts the HP a heal restores, folded over the healer's modifiers (skills, research). Must be pure. */
-  healAmount?: (amount: number, player: Readonly<PlayerState>) => number;
+  healAmount?: (amount: number, player: Readonly<PlayerState>, state: Readonly<GameState>) => number;
   /** Adjusts the care points (free heals, `resources.heal`) a player gains at the start of each day. Must be pure. */
   carePointsPerDay?: (gain: number, player: Readonly<PlayerState>, state: Readonly<GameState>) => number;
   /** Adjusts the satiety a human loses each cycle. Must be pure. */
@@ -35,6 +35,23 @@ export interface Modifier {
    * it mutates a state the caller already cloned; randomness goes through `next.rng`.
    */
   onActionFailed?: (next: GameState, player: PlayerState, apSpent: number) => void;
+  /** Runs once when the player picks this skill (not for other modifiers). Mutates a state the caller already cloned. */
+  onPick?: (next: GameState, player: PlayerState) => void;
+}
+
+/**
+ * A skill that grants care points: `config[key]` at the start of every day (the `carePointsPerDay` fold) and the
+ * same amount once when it is picked. Skills that work like this are built from a factory, not a base class, so
+ * a skill can combine several (hooks fold over the modifier registry).
+ */
+function careSkill(key: "nurseCarePointsPerDay"): Modifier {
+  const gain = (state: Readonly<GameState>) => state.config[key];
+  return {
+    carePointsPerDay: (sum, _player, state) => sum + gain(state),
+    onPick: (next, player) => {
+      player.resources.heal += gain(next);
+    },
+  };
 }
 
 export type ModifierRegistry = Readonly<Record<string, Modifier>>;
@@ -44,8 +61,10 @@ export const MODIFIERS: Record<string, Modifier> = {
   // Confirmed 2026-10-11: +1 AP per cycle while in a bed. Nothing applies it
   // yet; a lie-down action will add and remove it.
   lying_down: { apPerCycle: (gain) => gain + 1 },
-  // Skill, confirmed 2026-10-15: 2 care points at the start of every day (they stack, no cap).
-  medic: { carePointsPerDay: (gain, _player, state) => gain + state.config.medicCarePointsPerDay },
+  // Skill "medic" (Doctor), corrected 2026-10-15: heal actions restore 2 more HP. Its other perks are not built yet.
+  medic: { healAmount: (amount, _player, state) => amount + state.config.medicHealBonus },
+  // Skill "first_aid" (Nurse), per the owner 2026-10-15: 2 care points each day and 2 when picked.
+  first_aid: careSkill("nurseCarePointsPerDay"),
   // Skill, confirmed 2026-10-15: a failed action that cost AP has a 50% chance
   // to give 1 AP back. It can't pass the AP cap, since the AP was just spent.
   creative: {
@@ -179,7 +198,7 @@ export function healAmount(
   let amount = state.config.healAmount;
   for (const id of modifierIds(player)) {
     const hook = registry[id]?.healAmount;
-    if (hook) amount = hook(amount, player);
+    if (hook) amount = hook(amount, player, state);
   }
   return amount;
 }
@@ -210,4 +229,9 @@ export function carePointsGain(
     if (hook) gain = hook(gain, player, state);
   }
   return gain;
+}
+
+/** Runs the picked skill's onPick hook. Mutates a state the caller already cloned. */
+export function skillPicked(next: GameState, player: PlayerState, skill: string, registry: ModifierRegistry = MODIFIERS): void {
+  registry[skill]?.onPick?.(next, player);
 }

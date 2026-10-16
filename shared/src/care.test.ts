@@ -22,10 +22,9 @@ function nextDay(s: GameState): GameState {
   return s;
 }
 
-/** Everyone is hurt in one room that is not the sick bay; p0 is a medic holding a medikit. */
+/** Everyone is hurt in one room that is not the sick bay; p0 holds a medikit. */
 function ward(): GameState {
   const s = createGame(seats, { ...config, startSkills: [] }, 3);
-  player(s, "p0").skills = ["medic"];
   s.players.forEach((p) => {
     p.room = "LABORATORY";
     p.hp = 5;
@@ -35,13 +34,23 @@ function ward(): GameState {
 }
 
 describe("medic skill", () => {
-  it("grants 2 care points at game start and 2 more each day, stacking", () => {
-    const s = createGame(seats, { ...config, startSkills: ["medic"] }, 3);
-    expect(player(s, "p0").resources.heal).toBe(2);
-    const d2 = nextDay(s);
-    expect(player(d2, "p0").resources.heal).toBe(4);
+  it("makes heals restore 2 more HP, for the medic only", () => {
+    const s = ward();
+    player(s, "p0").skills = ["medic"];
+    s.items.push({ id: "kit2", type: "medikit", at: { kind: "player", id: "p1" } });
+    const byMedic = mustApply(s, "p0", heal("p1"));
+    expect(player(byMedic, "p1").hp).toBe(5 + config.healAmount + config.medicHealBonus);
+    const byOther = mustApply(s, "p1", heal("p2"));
+    expect(player(byOther, "p2").hp).toBe(5 + config.healAmount);
   });
 
+  it("does not grant care points", () => {
+    const s = nextDay(createGame(seats, { ...config, startSkills: ["medic"] }, 3));
+    expect(player(s, "p0").resources.heal).toBe(0);
+  });
+});
+
+describe("care points", () => {
   it("gives nothing to players without the skill", () => {
     const s = nextDay(createGame(seats, config, 3));
     expect(player(s, "p1").resources.heal).toBe(0);
@@ -120,5 +129,26 @@ describe("healing in the sick bay", () => {
     expect(other.you.resources.heal).toBe(0);
     expect(JSON.stringify(other.players)).not.toContain("resources");
     expect(JSON.stringify(other.players)).not.toContain("heal");
+  });
+});
+
+describe("nurse skill (first_aid)", () => {
+  const pick = (s: GameState, id: PlayerId, skill: string) => mustApply(s, id, { type: "pick_skill", skill });
+
+  it("grants 2 care points when picked, then 2 each day", () => {
+    let s = createGame(seats, config, 3);
+    s = pick(s, "p0", "first_aid");
+    expect(player(s, "p0").resources.heal).toBe(2);
+    expect(player(nextDay(s), "p0").resources.heal).toBe(4);
+  });
+
+  it("grants 2 at game start when the player starts with it", () => {
+    const s = createGame(seats, { ...config, startSkills: ["first_aid"] }, 3);
+    expect(player(s, "p0").resources.heal).toBe(2);
+  });
+
+  it("gives nothing for picking an unrelated skill", () => {
+    const s = pick(createGame(seats, config, 3), "p0", "creative");
+    expect(player(s, "p0").resources.heal).toBe(0);
   });
 });

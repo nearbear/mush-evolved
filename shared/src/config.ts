@@ -53,7 +53,8 @@ export const DEFAULT_CONFIG: GameConfig = {
   healAmount: 3,
   // Confirmed 2026-10-15: anyone can heal in the sick bay without a medikit; the medic skill adds 2 care points a day.
   healRooms: ["SICK_BAY"],
-  medicCarePointsPerDay: 2,
+  medicHealBonus: 2,
+  nurseCarePointsPerDay: 2,
   // Confirmed 2026-10-15: punch costs 1 AP, 2 damage, misses 40% of the time.
   punchAp: 1,
   punchDamage: 2,

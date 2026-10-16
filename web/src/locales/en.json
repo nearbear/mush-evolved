@@ -404,7 +404,7 @@
       "biologist": "Can read the properties of medicines.\n+4% bonus on each Laboratory Research.\nBonus for developing certain NERON Projects.",
       "conceptor": "+2 NERON Projects action points per day.\nBonus for developing certain NERON Projects.",
       "medic": "Heal actions restore 2 more HP.\nCan perform Operations.\nCan read the properties of medicines.\n+4% bonus on each Laboratory Research.",
-      "first_aid": "+1 free Heal action point each day.\nCan read the properties of medicines.",
+      "first_aid": "+2 free Heal action points each day.\nCan read the properties of medicines.",
       "leadership": "Grants the Fiery Speech action, which raises crewmates' morale.",
       "sturdy": "Your melee attacks deal 1 extra point of damage.\nNo penalties for heavy objects.\nCan Throw Out a crewmate.",
       "sprint": "You gain 2 more MP on each AP-to-MP conversion (does not stack with the Scooter).\n+1 step in exploration.",

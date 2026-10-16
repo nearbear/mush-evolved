@@ -69,8 +69,10 @@ export interface GameConfig {
   healAmount: number;
   /** Rooms where anyone can heal without a medikit (confirmed 2026-10-15: the sick bay). */
   healRooms: string[];
-  /** Care points the medic skill grants at the start of each day, added to `resources.heal` (confirmed 2026-10-15). */
-  medicCarePointsPerDay: number;
+  /** Extra HP a heal restores for a player with the medic skill (owner, 2026-10-15). */
+  medicHealBonus: number;
+  /** Care points the nurse skill (`first_aid`) grants at the start of each day and when picked (owner, 2026-10-15). */
+  nurseCarePointsPerDay: number;
   /** AP a spike costs (confirmed 2026-10-15). */
   spikeAp: number;
   /** AP a punch costs (issue 29). */
