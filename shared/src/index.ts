@@ -5,6 +5,7 @@ export * from "./characters.ts";
 export * from "./shipLayout.ts";
 export * from "./equipment.ts";
 export * from "./rules.ts";
+export * from "./chat.ts";
 export * from "./actions.ts";
 export * from "./log.ts";
 export * from "./modifiers.ts";

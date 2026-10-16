@@ -2,7 +2,7 @@
 // Deliberately simple for the slice: normalize, cap length, remove links, and
 // mask a word list. Not a substitute for real moderation tooling.
 
-import { MAX_CHAT_LENGTH, MAX_CHAT_LINES } from "./rules.ts";
+import { MAX_CHAT_LENGTH, MAX_CHAT_LINES } from "./chat.ts";
 
 /**
  * Masked case-insensitively as whole words. A starter list only; replace with

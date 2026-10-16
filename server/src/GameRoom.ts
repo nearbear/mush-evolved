@@ -9,6 +9,7 @@ import {
   moderateChat,
   parseGameMessage,
   startGame,
+  legalActions,
   viewFor,
   type GameClientMessage,
   type GameServerMessage,
@@ -235,14 +236,14 @@ export class GameRoom extends Server<Env> {
     for (const [playerId, bot] of this.bots) {
       if (this.pendingBots.has(playerId)) continue;
       if (!this.game) continue;
-      const canAct = viewFor(this.game, playerId).legalActions.length > 0;
+      const canAct = legalActions(this.game, playerId).length > 0;
       if (!canAct && !bot.chatLines) continue;
       this.pendingBots.add(playerId);
       setTimeout(async () => {
         this.pendingBots.delete(playerId);
         if (!this.game) return;
         await this.botChat(playerId, bot);
-        if (!this.game || viewFor(this.game, playerId).legalActions.length === 0) return;
+        if (!this.game || legalActions(this.game, playerId).length === 0) return;
         const action = await bot.decideAction(viewFor(this.game, playerId));
         const error = await this.act({ type: "action", action, by: playerId });
         if (error) console.warn(`Bot ${playerId} chose an illegal action: ${error}`);

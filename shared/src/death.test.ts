@@ -3,7 +3,8 @@ import { CHARACTERS } from "./characters.ts";
 import { DEFAULT_CONFIG } from "./config.ts";
 import { damage, killPlayer } from "./death.ts";
 import { CORPSE_ITEM, ITEM_TYPES, ITRACKIE_ITEM, itemsIn } from "./items.ts";
-import { applyAction, createChannel, createGame, inviteToChannel, viewFor, type ActionResult } from "./rules.ts";
+import { applyAction, createGame, viewFor, type ActionResult } from "./rules.ts";
+import { createChannel, inviteToChannel } from "./chat.ts";
 import type { Action, GameState, PlayerId, Seat } from "./types.ts";
 
 const seats: Seat[] = Array.from({ length: 4 }, (_, i) => ({ id: `p${i}`, name: `Player ${i}`, isBot: false, character: CHARACTERS[i]!.id }));

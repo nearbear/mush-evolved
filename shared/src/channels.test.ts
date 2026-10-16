@@ -4,18 +4,8 @@ import { DEFAULT_CONFIG } from "./config.ts";
 import { ITRACKIE_ITEM } from "./items.ts";
 import { channelLimit, MODIFIERS } from "./modifiers.ts";
 import { parseGameMessage } from "./protocol.ts";
-import {
-  applyAction,
-  CHAT_HISTORY,
-  createChannel,
-  createGame,
-  inviteToChannel,
-  leaveChannel,
-  sendChat,
-  toggleCheckbox,
-  viewFor,
-  type ActionResult,
-} from "./rules.ts";
+import { applyAction, createGame, viewFor, type ActionResult } from "./rules.ts";
+import { CHAT_HISTORY, createChannel, inviteToChannel, leaveChannel, sendChat, toggleCheckbox } from "./chat.ts";
 import type { GameState, PrivateChannelId, Seat } from "./types.ts";
 
 const seats: Seat[] = Array.from({ length: 8 }, (_, i) => ({

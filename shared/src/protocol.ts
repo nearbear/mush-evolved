@@ -2,7 +2,7 @@
 // client is untrusted: always go through the parse* functions.
 
 import { isActopiCheat, isCheat, type ActopiCheat, type Cheat } from "./cheats.ts";
-import { MAX_CHAT_LENGTH } from "./rules.ts";
+import { MAX_CHAT_LENGTH } from "./chat.ts";
 import { isSkill } from "./skills.ts";
 import { CHAT_CHANNELS, MUSH_CHANNEL, type Action, type ChannelId, type PlayerId, type PlayerView, type PrivateChannelId, type Role } from "./types.ts";
 

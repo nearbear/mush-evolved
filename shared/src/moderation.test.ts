@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { moderateChat } from "./moderation.ts";
-import { MAX_CHAT_LENGTH, MAX_CHAT_LINES } from "./rules.ts";
+import { MAX_CHAT_LENGTH, MAX_CHAT_LINES } from "./chat.ts";
 
 describe("moderateChat", () => {
   it("collapses spaces and strips invisible characters", () => {
