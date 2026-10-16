@@ -238,6 +238,7 @@
     "TURRET_COMMAND": "Poste de tir"
   },
   "itemAttr": {
+    "label": "Attributs de l'objet",
     "heavy": "Lourd"
   },
   "items": {

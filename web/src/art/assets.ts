@@ -111,7 +111,7 @@ export const MORALE_PIP = design["lifebar2"]!;
 // Tab icons (16x16-ish pixel art). Keys are the names the user chose; see docs/tab-icons.md.
 const uiIcons = urls(
   import.meta.glob<string>(
-    "../../../Mush/www/img/icons/ui/{mush,mush_progressive,starter,p_alive,survival,awake,comm,learned,stock,microsc,neron,infoalert,local,planet,conceptor,talkie,shield,basicplus,goldplus,notebook,pa_cook,pa_garden,pa_pilgred,pam,pa_heal,pa_eng,pa_exp,pa_comp,pa_core,pa_shoot,private,search,spore,wall,fav,triumph}.{png,gif}",
+    "../../../Mush/www/img/icons/ui/{mush,mush_progressive,starter,p_alive,survival,awake,comm,learned,stock,microsc,neron,infoalert,local,planet,conceptor,talkie,shield,basicplus,goldplus,notebook,pa_cook,pa_garden,pa_pilgred,pam,pa_heal,pa_eng,pa_exp,pa_comp,pa_core,pa_shoot,private,search,spore,wall,fav,triumph,heavy}.{png,gif}",
     { eager: true, query: "?url", import: "default" },
   ),
 );
@@ -128,6 +128,8 @@ export const STATUS_ICONS: Readonly<Record<"dirty" | "full_belly" | "hungry", st
   full_belly: statusIconFiles["belly_full"]!,
   hungry: statusIconFiles["hungry"]!,
 };
+/** Item attribute icons, keyed by attribute (the `itemAttr.*` locale keys). */
+export const ITEM_ATTR_ICONS: Readonly<Record<"heavy", string>> = { heavy: uiIcons["heavy"]! };
 /** Contamination, as only Mush see it on humans (the original spore icon). */
 export const CONTAMINATED_ICON = uiIcons["spore"]!;
 

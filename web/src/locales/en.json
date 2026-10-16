@@ -238,6 +238,7 @@
     "TURRET_COMMAND": "Turret controls"
   },
   "itemAttr": {
+    "label": "Item attributes",
     "heavy": "Heavy"
   },
   "items": {

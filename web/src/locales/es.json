@@ -238,6 +238,7 @@
     "TURRET_COMMAND": "Controles de torreta"
   },
   "itemAttr": {
+    "label": "Atributos del objeto",
     "heavy": "Pesado"
   },
   "items": {

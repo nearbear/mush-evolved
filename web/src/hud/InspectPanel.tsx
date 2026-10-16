@@ -8,6 +8,7 @@ import { CHARACTERS, ITEM_TYPES, type Action, type BotKind, type OtherPlayerView
 import { EMPTY_SLOT_ICON, characterImage, itemIcon, portrait } from "../art/assets.ts";
 import { ActionLabel } from "./ActionLabel.tsx";
 import { SkillSlots } from "./SkillSlots.tsx";
+import { ItemAttrIcons } from "./ItemAttrIcons.tsx";
 import { StatusIcons } from "./StatusIcons.tsx";
 import { actionLabelKey, actionsOn, costOf, resolveTarget, type Resolved } from "./targets.ts";
 
@@ -112,7 +113,7 @@ function Details({ view, resolved, onAction }: { view: PlayerView; resolved: Res
           />
           <div className="inspect-name">
             <strong>{names.item(resolved.item.type)}</strong>
-            {ITEM_TYPES[resolved.item.type]?.heavy && <span className="tag">{t("itemAttr.heavy")}</span>}
+            <ItemAttrIcons heavy={ITEM_TYPES[resolved.item.type]?.heavy === true} />
             <div className="sub">{resolved.carried ? "In your inventory" : `In ${names.room(view.you.room)}`}</div>
           </div>
         </>
