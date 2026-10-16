@@ -281,28 +281,34 @@ function showerCost(state: Readonly<GameState>, p: Readonly<PlayerState>): numbe
 }
 
 /**
- * Healing (confirmed 2026-10-15): hold a medikit (reusable) and heal yourself
- * or a living person in your room. Costs `healApOther` on someone else,
- * `healApSelf` on yourself; restores `healAmount` HP (modifiable), capped at max
- * HP. Offered even at full HP. Public room history.
+ * Healing (confirmed 2026-10-15): hold a medikit (reusable), or stand in a heal
+ * room (the sick bay; no medikit needed), and heal yourself or a living person
+ * in your room. Costs `healApOther` on someone else, `healApSelf` on yourself,
+ * or nothing while you have a care point (`resources.heal`, spent automatically);
+ * restores `healAmount` HP (modifiable), capped at max HP. Offered even at full
+ * HP. Public room history.
  */
 const heal: ActionDef<ActionOf<"heal">> = {
-  candidates: (state, p) => [p, ...peopleHere(state, p)].map((o) => ({ type: "heal", target: o.id })),
+  candidates: (state, p) => (canHeal(state, p) ? [p, ...peopleHere(state, p)].map((o) => ({ type: "heal", target: o.id })) : []),
   check(state, p, a) {
-    if (!itemsIn(state, { kind: "player", id: p.id }).some((i) => i.type === "medikit")) return "no_medikit";
+    if (!canHeal(state, p)) return "no_medikit";
     if (a.target !== p.id && !peopleHere(state, p).some((o) => o.id === a.target)) return "cant_see";
     return p.ap >= healCost(state, p, a.target) ? null : "cant_afford";
   },
   cost: (state, p, a) => ({ ap: healCost(state, p, a.target), mp: 0 }),
   apply(next, p, a) {
     const target = next.players.find((o) => o.id === a.target)!; // checked, so it exists
+    if (p.resources.heal > 0) p.resources.heal -= 1;
     target.hp = Math.min(next.config.maxHp, target.hp + healAmount(next, p));
     logPublic(next, p.room, target.id === p.id ? "healedSelf" : "healed", { name: p.name, target: target.name });
   },
 };
 
+const canHeal = (state: Readonly<GameState>, p: Readonly<PlayerState>): boolean =>
+  state.config.healRooms.includes(p.room) || itemsIn(state, { kind: "player", id: p.id }).some((i) => i.type === "medikit");
+
 const healCost = (state: Readonly<GameState>, p: Readonly<PlayerState>, target: PlayerId): number =>
-  target === p.id ? state.config.healApSelf : state.config.healApOther;
+  p.resources.heal > 0 ? 0 : target === p.id ? state.config.healApSelf : state.config.healApOther;
 
 const ready: ActionDef<ActionOf<"ready">> = {
   candidates: () => [{ type: "ready" }],

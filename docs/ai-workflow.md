@@ -471,3 +471,8 @@ Correction to the entry above (2026-10-15): the owner said the existing SICK_BAY
 - Added the nine extra point types from `PAColors.json` (`eng`, `exp`, `comp`, `garden`, `core`, `shoot`, `cook`, `heal`, `pilgred`) as `PlayerState.resources` (own view only, all zero), shown beside the real spore count in `SelfPanel`. Names and descriptions in en/fr/es.
 - Needed correction: my first version used native `title` tooltips, which are hover-only and unreadable on phones. The user flagged it. Base UI's `Tooltip` is hover/focus only too; `Popover.Trigger openOnHover` (already used by `FactionCard`) covers mouse and touch, so no new library. Now `ResourceChip`.
 - Data oddities: the source calls `ENG` "Points de Mécanique" but its description says Ingénierie (used Ingénierie); `EXP` has no description, so I wrote one (a guess).
+
+### 2026-10-15: medic skill, care points, sick bay healing
+- Owner decided via questions: care points add 2 per day and stack, any heal auto-spends one and becomes free, anyone can heal in the sick bay without a medikit (normal AP cost), and nobody gets the medic skill by default.
+- Worked: the unused `resources.heal` counter was already in state and the owner's view, so care points needed no state change. Skill = modifier with a new `carePointsPerDay` hook.
+- Needed correction: the old heal tests used SICK_BAY as the generic room, which now allows medikit-free healing; moved them to LABORATORY. First AskUserQuestion had 5 questions (limit 4), so one was folded into a stated assumption.

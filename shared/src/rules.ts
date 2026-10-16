@@ -9,7 +9,7 @@
 import { applyCheats, type ActopiCheat, type Cheat } from "./cheats.ts";
 import { ACTIONS, type ActionCost, type ActionDef } from "./actions.ts";
 import { ITRACKIE_ITEM, itemsIn } from "./items.ts";
-import { actionFailed, apGain, channelLimit, inventorySlots, movementRules, satietyLoss } from "./modifiers.ts";
+import { actionFailed, apGain, carePointsGain, channelLimit, inventorySlots, movementRules, satietyLoss } from "./modifiers.ts";
 import { isHungry, publicStatusesOf, statusesOf } from "./statuses.ts";
 import { emptyResources } from "./resources.ts";
 import { nextFloat, shuffle } from "./rng.ts";
@@ -81,7 +81,7 @@ export function createGame(seats: readonly Seat[], config: GameConfig, seed: num
   ];
   const items: ItemState[] = starts.map((it, i) => ({ id: `item-${i + 1}`, ...it }));
 
-  return {
+  const state: GameState = {
     config,
     rng,
     cycle: 1,
@@ -102,6 +102,8 @@ export function createGame(seats: readonly Seat[], config: GameConfig, seed: num
     sporesToday: 0,
     sporeExtractedOn: {},
   };
+  grantCarePoints(state); // day 1 begins now
+  return state;
 }
 
 export function legalActions(state: GameState, playerId: PlayerId): Action[] {
@@ -172,6 +174,7 @@ function advanceCycle(state: GameState): void {
   if (newDay) {
     state.sporesToday = 0;
     for (const p of state.players) if (p.alive) p.morale = Math.max(0, p.morale - moralePerDay);
+    grantCarePoints(state);
   }
   for (const p of state.players) {
     if (!p.alive || p.role !== "human") continue;
@@ -189,6 +192,11 @@ function advanceCycle(state: GameState): void {
     params: newDay ? { day } : { cycle: state.cycle },
     visibleTo: "all",
   });
+}
+
+/** Day-start care points: every living player gains what their skills grant. Mutates a state the caller already cloned. */
+function grantCarePoints(state: GameState): void {
+  for (const p of state.players) if (p.alive) p.resources.heal += carePointsGain(state, p);
 }
 
 /** Day and cycle-within-day (both 1-based) for the state's global cycle counter. */

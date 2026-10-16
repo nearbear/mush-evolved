@@ -49,6 +49,9 @@ export const DEFAULT_CONFIG: GameConfig = {
   healApOther: 2,
   healApSelf: 3,
   healAmount: 3,
+  // Confirmed 2026-10-15: anyone can heal in the sick bay without a medikit; the medic skill adds 2 care points a day.
+  healRooms: ["SICK_BAY"],
+  medicCarePointsPerDay: 2,
   showerAp: 2,
   showerSoapDiscount: 1,
   showerMushDamage: 4,

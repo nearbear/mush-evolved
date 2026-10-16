@@ -15,7 +15,7 @@ const heal = (target: PlayerId): Action => ({ type: "heal", target });
 function ship(): GameState {
   const s = createGame(seats, config, 3);
   s.players.forEach((p) => {
-    p.room = "SICK_BAY";
+    p.room = "LABORATORY";
     p.hp = 5;
   });
   s.items.push({ id: "kit", type: "medikit", at: { kind: "player", id: "p0" } });
@@ -52,13 +52,13 @@ describe("healing", () => {
     const s = ship();
     expect(viewFor(s, "p1").legalActions.some((a) => a.type === "heal")).toBe(false);
     expect(applyAction(s, "p1", heal("p0")).ok).toBe(false);
-    s.items[0]!.at = { kind: "room", id: "SICK_BAY" };
+    s.items[0]!.at = { kind: "room", id: "LABORATORY" };
     expect(applyAction(s, "p0", heal("p1")).ok).toBe(false);
   });
 
   it("needs the target alive and in your room, and the AP; failures leave state unchanged", () => {
     const s = ship();
-    player(s, "p1").room = "LABORATORY";
+    player(s, "p1").room = "CORRIDOR_A";
     player(s, "p2").alive = false;
     const before = JSON.stringify(s);
     expect(applyAction(s, "p0", heal("p1")).ok).toBe(false);
@@ -87,7 +87,7 @@ describe("healing", () => {
 
   it("is public to the room and invisible elsewhere", () => {
     const s = ship();
-    player(s, "p2").room = "LABORATORY";
+    player(s, "p2").room = "CORRIDOR_A";
     const r = applyAction(s, "p0", heal("p1"));
     if (!r.ok) throw new Error(r.error);
     expect(viewFor(r.state, "p1").log.some((e) => e.key === "healed")).toBe(true);

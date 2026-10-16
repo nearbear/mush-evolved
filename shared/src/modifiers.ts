@@ -26,6 +26,8 @@ export interface Modifier {
   sporesPerDay?: (cap: number, player: Readonly<PlayerState>) => number;
   /** Adjusts the HP a heal restores, folded over the healer's modifiers (skills, research). Must be pure. */
   healAmount?: (amount: number, player: Readonly<PlayerState>) => number;
+  /** Adjusts the care points (free heals, `resources.heal`) a player gains at the start of each day. Must be pure. */
+  carePointsPerDay?: (gain: number, player: Readonly<PlayerState>, state: Readonly<GameState>) => number;
   /** Adjusts the satiety a human loses each cycle. Must be pure. */
   satietyPerCycle?: (loss: number, player: Readonly<PlayerState>) => number;
   /**
@@ -42,6 +44,8 @@ export const MODIFIERS: Record<string, Modifier> = {
   // Confirmed 2026-10-11: +1 AP per cycle while in a bed. Nothing applies it
   // yet; a lie-down action will add and remove it.
   lying_down: { apPerCycle: (gain) => gain + 1 },
+  // Skill, confirmed 2026-10-15: 2 care points at the start of every day (they stack, no cap).
+  medic: { carePointsPerDay: (gain, _player, state) => gain + state.config.medicCarePointsPerDay },
   // Skill, confirmed 2026-10-15: a failed action that cost AP has a 50% chance
   // to give 1 AP back. It can't pass the AP cap, since the AP was just spent.
   creative: {
@@ -192,4 +196,18 @@ export function satietyLoss(
     if (hook) loss = hook(loss, player);
   }
   return loss;
+}
+
+/** Care points a player gains at the start of a day: nothing by default, plus whatever their skills grant. */
+export function carePointsGain(
+  state: Readonly<GameState>,
+  player: Readonly<PlayerState>,
+  registry: ModifierRegistry = MODIFIERS,
+): number {
+  let gain = 0;
+  for (const id of modifierIds(player)) {
+    const hook = registry[id]?.carePointsPerDay;
+    if (hook) gain = hook(gain, player, state);
+  }
+  return gain;
 }

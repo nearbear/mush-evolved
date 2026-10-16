@@ -67,6 +67,10 @@ export interface GameConfig {
   healApSelf: number;
   /** HP a heal restores before modifiers (confirmed 2026-10-15). */
   healAmount: number;
+  /** Rooms where anyone can heal without a medikit (confirmed 2026-10-15: the sick bay). */
+  healRooms: string[];
+  /** Care points the medic skill grants at the start of each day, added to `resources.heal` (confirmed 2026-10-15). */
+  medicCarePointsPerDay: number;
   /** AP spent to shower, before the soap discount (confirmed 2026-10-14). */
   showerAp: number;
   /** AP off a shower when soap is in your inventory (confirmed 2026-10-14). */
@@ -111,14 +115,14 @@ export interface Equipment {
   type: string;
 }
 
+export type ResourceId = "eng" | "exp" | "comp" | "garden" | "core" | "shoot" | "cook" | "heal" | "pilgred";
+
 export interface PlayerState extends Seat {
   role: Role;
   /** Mush chosen at the start ("alpha"; later infections are "beta"). Player terminology only; no mechanics use it. */
   alpha: boolean;
   room: RoomId;
   ap: number;
-export type ResourceId = "eng" | "exp" | "comp" | "garden" | "core" | "shoot" | "cook" | "heal" | "pilgred";
-
   /** Movement points. Start at 0; topped up by converting AP when moving. */
   mp: number;
   /** Health points. Private: only in your own view. Nothing changes them yet. */
@@ -133,14 +137,14 @@ export type ResourceId = "eng" | "exp" | "comp" | "garden" | "core" | "shoot" | 
   statuses: string[];
   /** Spores this player carries. Only Mush ever gain any; visible in your own view only (teammates' counts will be shown to Mush later). */
   spores: number;
+  /** Extra point counters (resources.ts). Private: only in your own view. Nothing earns or spends them yet. */
+  resources: Record<ResourceId, number>;
   /**
    * Ids of active rule modifiers (from items, skills, statuses). Resolved
    * against the registry in modifiers.ts; state holds ids only so it stays JSON.
    */
   modifiers: string[];
   /**
-  /** Extra point counters (resources.ts). Private: only in your own view. Nothing earns or spends them yet. */
-  resources: Record<ResourceId, number>;
    * Skill ids in the player's human skill slots (3 for now, all free to fill; a book slot comes later). Each is
    * a modifier id in modifiers.ts. In no view yet (roommates will see them once there is a skills UI).
    */
