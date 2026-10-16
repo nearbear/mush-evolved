@@ -14,3 +14,4 @@ export * from "./moderation.ts";
 export * from "./replay.ts";
 export * from "./cheats.ts";
 export * from "./statuses.ts";
+export * from "./resources.ts";

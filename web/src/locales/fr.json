@@ -51,7 +51,43 @@
   },
   "resources": {
     "other": "Autres ressources",
-    "spores": "Spores"
+    "spores": "Spores",
+    "eng": {
+      "name": "Points d'Ingénierie",
+      "desc": "Les points d'Ingénierie vous donnent des actions gratuites dans les réparations techniques"
+    },
+    "exp": {
+      "name": "Points d'Exploration",
+      "desc": "Les points d'Exploration vous donnent des actions gratuites pour les expéditions."
+    },
+    "comp": {
+      "name": "Points d'Informatique",
+      "desc": "Les points d'Informatique vous donnent des actions gratuites dans les Recherches et les Projets"
+    },
+    "garden": {
+      "name": "Points de Jardinage",
+      "desc": "Les points de Jardinage vous donnent des actions gratuites dans le Jardin Hydroponique."
+    },
+    "core": {
+      "name": "Points de Nexus",
+      "desc": "Les points de Nexus vous donnent des actions gratuites dans le Nexus"
+    },
+    "shoot": {
+      "name": "Points de Tir",
+      "desc": "Les Points de Tir vous donnent des actions gratuites pour toutes les actions de tir en vol où à bord."
+    },
+    "cook": {
+      "name": "Points de Cuisine",
+      "desc": "Les Points de Cuisine vous donnent des actions gratuites pour toutes les actions de la cuisine."
+    },
+    "heal": {
+      "name": "Points de Soins",
+      "desc": "Les Points de Soins vous donnent des actions gratuites pour toutes les actions de soins."
+    },
+    "pilgred": {
+      "name": "Points de PILGRED",
+      "desc": "Les Points de PILGRED vous donnent des actions gratuites pour réparer PILGRED."
+    }
   },
   "faction": {
     "about": "{{name}} : ce que veut votre camp",

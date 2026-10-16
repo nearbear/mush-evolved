@@ -117,6 +117,8 @@ export interface PlayerState extends Seat {
   alpha: boolean;
   room: RoomId;
   ap: number;
+export type ResourceId = "eng" | "exp" | "comp" | "garden" | "core" | "shoot" | "cook" | "heal" | "pilgred";
+
   /** Movement points. Start at 0; topped up by converting AP when moving. */
   mp: number;
   /** Health points. Private: only in your own view. Nothing changes them yet. */
@@ -137,6 +139,8 @@ export interface PlayerState extends Seat {
    */
   modifiers: string[];
   /**
+  /** Extra point counters (resources.ts). Private: only in your own view. Nothing earns or spends them yet. */
+  resources: Record<ResourceId, number>;
    * Skill ids in the player's human skill slots (3 for now, all free to fill; a book slot comes later). Each is
    * a modifier id in modifiers.ts. In no view yet (roommates will see them once there is a skills UI).
    */

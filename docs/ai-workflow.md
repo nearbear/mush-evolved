@@ -465,3 +465,9 @@ Correction to the entry above (2026-10-15): the owner said the existing SICK_BAY
 - **Decision (owner):** 3 human skill slots per player (a book slot later), skills pickable at any time via a future UI; for now everyone spawns with Creative and two empty slots. Creative: 50% chance to refund 1 AP when an AP-costing action fails, private log line. Skills stay out of other players' views until the skills UI.
 - **What worked:** reading `Mush/derived/data/Data/skills.json` first surfaced two Creative rows (retained 50% vs an older 25%) and showed the effect only exists in the footnote, so the questions to the owner were concrete. Spotting that `ActionDef.chance` was declared but never called led to moving the success roll into `applyAction` first, so every future action with odds gets failure skills for free.
 - **Needed correction:** the worktree tool branched from `origin/main`, one commit behind local `main`, so it had to be fast-forwarded. A first "skills are in no view" test failed because `you` is your whole `PlayerState`; your own skills reaching your own view is fine, and the test now checks that nobody else sees them.
+
+### 2026-10-15: Extra resource counters in the extras card
+
+- Added the nine extra point types from `PAColors.json` (`eng`, `exp`, `comp`, `garden`, `core`, `shoot`, `cook`, `heal`, `pilgred`) as `PlayerState.resources` (own view only, all zero), shown beside the real spore count in `SelfPanel`. Names and descriptions in en/fr/es.
+- Needed correction: my first version used native `title` tooltips, which are hover-only and unreadable on phones. The user flagged it. Base UI's `Tooltip` is hover/focus only too; `Popover.Trigger openOnHover` (already used by `FactionCard`) covers mouse and touch, so no new library. Now `ResourceChip`.
+- Data oddities: the source calls `ENG` "Points de Mécanique" but its description says Ingénierie (used Ingénierie); `EXP` has no description, so I wrote one (a guess).

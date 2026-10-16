@@ -51,7 +51,43 @@
   },
   "resources": {
     "other": "Other resources",
-    "spores": "Spores"
+    "spores": "Spores",
+    "eng": {
+      "name": "Engineering points",
+      "desc": "Engineering points give you free actions on technical repairs."
+    },
+    "exp": {
+      "name": "Exploration points",
+      "desc": "Exploration points give you free actions on expeditions."
+    },
+    "comp": {
+      "name": "Computing points",
+      "desc": "Computing points give you free actions on research and projects."
+    },
+    "garden": {
+      "name": "Gardening points",
+      "desc": "Gardening points give you free actions in the hydroponic garden."
+    },
+    "core": {
+      "name": "Nexus points",
+      "desc": "Nexus points give you free actions at the Nexus."
+    },
+    "shoot": {
+      "name": "Shooting points",
+      "desc": "Shooting points give you free actions on every shooting action, in flight or on board."
+    },
+    "cook": {
+      "name": "Cooking points",
+      "desc": "Cooking points give you free actions on every cooking action."
+    },
+    "heal": {
+      "name": "Healing points",
+      "desc": "Healing points give you free actions on every healing action."
+    },
+    "pilgred": {
+      "name": "PILGRED points",
+      "desc": "PILGRED points give you free actions on repairing PILGRED."
+    }
   },
   "faction": {
     "about": "{{name}}: what your faction wants",

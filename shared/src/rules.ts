@@ -11,6 +11,7 @@ import { ACTIONS, type ActionCost, type ActionDef } from "./actions.ts";
 import { ITRACKIE_ITEM, itemsIn } from "./items.ts";
 import { actionFailed, apGain, channelLimit, inventorySlots, movementRules, satietyLoss } from "./modifiers.ts";
 import { isHungry, publicStatusesOf, statusesOf } from "./statuses.ts";
+import { emptyResources } from "./resources.ts";
 import { nextFloat, shuffle } from "./rng.ts";
 import { CHAT_CHANNELS } from "./types.ts";
 import type {
@@ -65,6 +66,7 @@ export function createGame(seats: readonly Seat[], config: GameConfig, seed: num
     satietyZeroSince: mushIds.has(s.id) ? null : 1,
     statuses: [],
     spores: 0,
+    resources: emptyResources(),
     modifiers: [],
     skills: [...config.startSkills],
     alive: true,

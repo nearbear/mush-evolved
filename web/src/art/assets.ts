@@ -1,7 +1,7 @@
 // Maps game ids to Motion Twin art in Mush/ (CC BY-NC-SA 4.0, see
 // Mush/ATTRIBUTION.md). Vite bundles only the files matched here.
 
-import type { CharacterId } from "@mush2/shared";
+import type { CharacterId, ResourceId } from "@mush2/shared";
 
 type UrlMap = Record<string, string>;
 const urls = (map: UrlMap) =>
@@ -111,7 +111,7 @@ export const MORALE_PIP = design["lifebar2"]!;
 // Tab icons (16x16-ish pixel art). Keys are the names the user chose; see docs/tab-icons.md.
 const uiIcons = urls(
   import.meta.glob<string>(
-    "../../../Mush/www/img/icons/ui/{mush,mush_progressive,starter,p_alive,survival,awake,comm,learned,stock,microsc,neron,infoalert,local,planet,conceptor,talkie,shield,basicplus,goldplus,notebook,pa_cook,pa_garden,pa_pilgred,pam,pa_heal,private,search,spore,wall,fav,triumph}.{png,gif}",
+    "../../../Mush/www/img/icons/ui/{mush,mush_progressive,starter,p_alive,survival,awake,comm,learned,stock,microsc,neron,infoalert,local,planet,conceptor,talkie,shield,basicplus,goldplus,notebook,pa_cook,pa_garden,pa_pilgred,pam,pa_heal,pa_eng,pa_exp,pa_comp,pa_core,pa_shoot,private,search,spore,wall,fav,triumph}.{png,gif}",
     { eager: true, query: "?url", import: "default" },
   ),
 );
@@ -131,6 +131,19 @@ export const STATUS_ICONS: Readonly<Record<"dirty" | "full_belly" | "hungry", st
 
 /** The spore resource. */
 export const SPORE_ICON = uiIcons["spore"]!;
+
+/** Icons for the extra point counters (shared/src/resources.ts). */
+export const RESOURCE_ICONS: Readonly<Record<ResourceId, string>> = {
+  eng: uiIcons["pa_eng"]!,
+  exp: uiIcons["pa_exp"]!,
+  comp: uiIcons["pa_comp"]!,
+  garden: uiIcons["pa_garden"]!,
+  core: uiIcons["pa_core"]!,
+  shoot: uiIcons["pa_shoot"]!,
+  cook: uiIcons["pa_cook"]!,
+  heal: uiIcons["pa_heal"]!,
+  pilgred: uiIcons["pa_pilgred"]!,
+};
 
 /** Two gears, on the settings button. */
 export const SETTINGS_ICON = uiIcons["pam"]!;

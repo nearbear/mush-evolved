@@ -51,7 +51,43 @@
   },
   "resources": {
     "other": "Otros recursos",
-    "spores": "Esporas"
+    "spores": "Esporas",
+    "eng": {
+      "name": "Puntos de Ingeniería",
+      "desc": "Los puntos de Ingeniería te dan acciones gratuitas en las reparaciones técnicas."
+    },
+    "exp": {
+      "name": "Puntos de Exploración",
+      "desc": "Los puntos de Exploración te dan acciones gratuitas en las expediciones."
+    },
+    "comp": {
+      "name": "Puntos de Informática",
+      "desc": "Los puntos de Informática te dan acciones gratuitas en las investigaciones y los proyectos."
+    },
+    "garden": {
+      "name": "Puntos de Jardinería",
+      "desc": "Los puntos de Jardinería te dan acciones gratuitas en el jardín hidropónico."
+    },
+    "core": {
+      "name": "Puntos de Nexus",
+      "desc": "Los puntos de Nexus te dan acciones gratuitas en el Nexus."
+    },
+    "shoot": {
+      "name": "Puntos de Tiro",
+      "desc": "Los puntos de Tiro te dan acciones gratuitas en todas las acciones de tiro, en vuelo o a bordo."
+    },
+    "cook": {
+      "name": "Puntos de Cocina",
+      "desc": "Los puntos de Cocina te dan acciones gratuitas en todas las acciones de cocina."
+    },
+    "heal": {
+      "name": "Puntos de Curas",
+      "desc": "Los puntos de Curas te dan acciones gratuitas en todas las acciones de curas."
+    },
+    "pilgred": {
+      "name": "Puntos de PILGRED",
+      "desc": "Los puntos de PILGRED te dan acciones gratuitas para reparar PILGRED."
+    }
   },
   "faction": {
     "about": "{{name}}: lo que quiere tu bando",
