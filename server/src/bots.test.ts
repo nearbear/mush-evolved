@@ -15,6 +15,15 @@ describe("WanderBot", () => {
     }
   });
 
+  it("makes at most three moves per cycle, then readies up", async () => {
+    const base = viewFor(game, "p0");
+    const view = { ...base, legalActions: [base.legalActions.find((a) => a.type === "move")!] };
+    const bot = new WanderBot(7);
+    for (let i = 0; i < 3; i++) expect((await bot.decideAction(view)).type).toBe("move");
+    expect(await bot.decideAction(view)).toEqual({ type: "ready" });
+    expect((await bot.decideAction({ ...view, cycle: view.cycle + 1 })).type).toBe("move");
+  });
+
   it("readies up when it has no move to make", async () => {
     const view = { ...viewFor(game, "p0"), legalActions: [] };
     expect(await new WanderBot(7).decideAction(view)).toEqual({ type: "ready" });
