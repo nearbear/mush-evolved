@@ -136,6 +136,11 @@
     "tab": "Privado"
   },
   "itrackie": {
+    "composer": {
+      "expand": "Ampliar el cuadro de mensaje",
+      "shrink": "Reducir el cuadro de mensaje",
+      "grip": "Arrastra hacia arriba para ampliar el cuadro de mensaje"
+    },
     "tabs": {
       "room": "Registro de la sala",
       "global": "Chat global",
@@ -257,6 +262,7 @@
     "punched": "{{name}} golpeó a {{target}}.",
     "punchMissed": "{{name}} intentó golpear a {{target}} pero falló.",
     "spiked": "{{name}} contagió a {{target}}.",
+    "converted": "Las esporas se han apoderado de ti. Ahora eres Mush.",
     "examineSelf": "Te examinas.",
     "examinePlayer": "Examinas a {{name}}.",
     "examineEquipment": "Examinas: {{equipment}}.",

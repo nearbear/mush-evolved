@@ -61,7 +61,8 @@
   background: url("../../../Mush/www/img/design/chatbox.png") 0 0 / 100% 100% no-repeat;
   color: var(--ink);
 }
-.chat-input input:disabled {
+.chat-input input:disabled,
+.chat-input textarea:disabled {
   opacity: 0.6;
 }
 /* The original send button: an enter-key icon, 29x24. */
@@ -75,4 +76,85 @@
 }
 .chat-input .chat-send:hover:not(:disabled) {
   background-image: url("../../../Mush/www/img/design/buttonchatover.png");
+}
+
+/* The message box: a textarea (three lines by default) with a grip above it that drags it taller. */
+.chat-compose {
+  position: relative;
+  align-items: flex-end;
+}
+.chat-compose textarea {
+  flex: 1;
+  min-width: 0;
+  box-sizing: border-box;
+  resize: none;
+  padding: 3px 6px;
+  border: 1px solid #7d82ab;
+  border-radius: 3px;
+  box-shadow: inset 0 1px 2px rgb(0 0 30 / 0.35);
+  font: inherit;
+  font-size: 0.85rem;
+  line-height: 18px;
+  background: #fff;
+  color: var(--ink);
+}
+.chat-actions {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.chat-actions button {
+  margin: 0;
+}
+/* Maximize: a small square button drawn with a corner-arrows glyph. */
+.chat-max {
+  width: 29px;
+  height: 21px;
+  padding: 0;
+  line-height: 21px;
+}
+.chat-max::before {
+  content: "\2922";
+}
+.chat-max[aria-pressed="true"]::before {
+  content: "\2921";
+}
+/* Maximized: cover the whole iTrackie panel (it is the positioned ancestor). */
+.chat-compose.chat-maximized {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  margin: 0;
+  padding: 0.5rem;
+  background: var(--panel-fill);
+  border: 1px solid var(--panel-rim);
+  border-radius: var(--panel-radius);
+}
+.chat-maximized textarea {
+  align-self: stretch;
+}
+.chat-maximized .chat-grip {
+  display: none;
+}
+.chat-maximized .chat-actions {
+  align-self: flex-end;
+}
+.chat-grip {
+  position: absolute;
+  top: -8px;
+  left: 0;
+  right: 33px;
+  height: 8px;
+  cursor: ns-resize;
+  touch-action: none;
+}
+.chat-grip::after {
+  content: "";
+  display: block;
+  width: 28px;
+  height: 3px;
+  margin: 2px auto 0;
+  border-radius: 2px;
+  background: var(--panel-rim);
 }

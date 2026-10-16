@@ -136,6 +136,11 @@
     "tab": "Private"
   },
   "itrackie": {
+    "composer": {
+      "expand": "Expand message box",
+      "shrink": "Shrink message box",
+      "grip": "Drag up to enlarge the message box"
+    },
     "tabs": {
       "room": "Room log",
       "global": "Global chat",
@@ -257,6 +262,7 @@
     "punched": "{{name}} punched {{target}}.",
     "punchMissed": "{{name}} swung at {{target}} and missed.",
     "spiked": "{{name}} spiked {{target}}.",
+    "converted": "The spores have taken hold. You are now Mush.",
     "examineSelf": "You examine yourself.",
     "examinePlayer": "You examine {{name}}.",
     "examineEquipment": "You examine the {{equipment}}.",

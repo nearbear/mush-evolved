@@ -134,6 +134,15 @@ async function desktopSteps(page: Page, step: Step): Promise<void> {
     await page.locator(".feed li", { hasText: text }).waitFor();
   });
 
+  await step("04b-chat-maximized", async () => {
+    const max = page.getByRole("button", { name: "Expand message box" }).filter({ visible: true });
+    await max.click();
+  });
+
+  await step("04c-chat-restored", async () => {
+    await page.getByRole("button", { name: "Shrink message box" }).filter({ visible: true }).click();
+  });
+
   await step("05-take", async () => {
     const inventory = page.locator(".item-zone");
     // Tiles are drag-and-drop; the Take button only appears once a tile is selected.

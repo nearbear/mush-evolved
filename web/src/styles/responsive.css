@@ -231,7 +231,7 @@
   }
 
   /* Typing: give the feed and the input everything above the keyboard. */
-  main.game:has(.chat-input input:focus) :is(.bottom-nav, .peek-bar) {
+  main.game:has(.chat-input :is(input, textarea):focus) :is(.bottom-nav, .peek-bar) {
     display: none;
   }
 }

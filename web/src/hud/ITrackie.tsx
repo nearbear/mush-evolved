@@ -227,27 +227,80 @@ function Scroller({ items, children }: { items: number; children: ReactNode }) {
   );
 }
 
+const CHAT_MIN_LINES = 3;
+const CHAT_LINE_PX = 18;
+const CHAT_MIN_HEIGHT = CHAT_MIN_LINES * CHAT_LINE_PX + 12;
+
+/** A three-line text area that grows upward: drag the grip above it to make it taller. */
 function ChatInput({ enabled, placeholder, onSend }: { enabled: boolean; placeholder: string; onSend: (text: string) => void }) {
+  const { t } = useTranslation();
   const [text, setText] = useState("");
+  const [height, setHeight] = useState(CHAT_MIN_HEIGHT);
+  // Maximized: the form covers the whole iTrackie panel (see .chat-maximized).
+  const [maximized, setMaximized] = useState(false);
+  const drag = useRef<{ startY: number; startHeight: number } | null>(null);
+  const maxLabel = maximized ? t("itrackie.composer.shrink") : t("itrackie.composer.expand");
+  const submit = () => {
+    if (!text.trim()) return;
+    onSend(text);
+    setText("");
+  };
   return (
     <form
-      className="chat-input"
+      className={maximized ? "chat-input chat-compose chat-maximized" : "chat-input chat-compose"}
       onSubmit={(e) => {
         e.preventDefault();
-        if (!text.trim()) return;
-        onSend(text);
-        setText("");
+        submit();
       }}
     >
-      <input
+      <div
+        className="chat-grip"
+        role="separator"
+        aria-orientation="horizontal"
+        aria-label={t("itrackie.composer.grip")}
+        onPointerDown={(e) => {
+          e.currentTarget.setPointerCapture(e.pointerId);
+          drag.current = { startY: e.clientY, startHeight: height };
+        }}
+        onPointerMove={(e) => {
+          if (!drag.current) return;
+          const max = Math.max(CHAT_MIN_HEIGHT, window.innerHeight * 0.6);
+          setHeight(Math.min(max, Math.max(CHAT_MIN_HEIGHT, drag.current.startHeight + drag.current.startY - e.clientY)));
+        }}
+        onPointerUp={() => {
+          drag.current = null;
+        }}
+        onPointerCancel={() => {
+          drag.current = null;
+        }}
+      />
+      <textarea
         value={text}
         onChange={(e) => setText(e.target.value)}
+        onKeyDown={(e) => {
+          // Enter sends; Shift+Enter adds a line. Ignore Enter while an IME is composing.
+          if (e.key === "Enter" && !e.shiftKey && !e.nativeEvent.isComposing) {
+            e.preventDefault();
+            submit();
+          }
+        }}
+        style={maximized ? undefined : { height }}
         maxLength={MAX_CHAT_LENGTH}
         placeholder={enabled ? placeholder : "Needs an iTrackie"}
         disabled={!enabled}
         aria-label="Chat message"
       />
-      <button className="chat-send" type="submit" disabled={!enabled || !text.trim()} aria-label="Send" title="Send" />
+      <div className="chat-actions">
+        <button
+          className="chat-max"
+          type="button"
+          onClick={() => setMaximized(!maximized)}
+          aria-pressed={maximized}
+          aria-label={maxLabel}
+          title={maxLabel}
+        />
+        <button className="chat-send" type="submit" disabled={!enabled || !text.trim()} aria-label="Send" title="Send" />
+      </div>
     </form>
   );
 }

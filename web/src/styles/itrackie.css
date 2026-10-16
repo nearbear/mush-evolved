@@ -3,6 +3,7 @@
 /* iTrackie (Base UI Tabs + ScrollArea; they ship unstyled) */
 
 .itrackie {
+  position: relative;
   display: flex;
   flex-direction: column;
   height: 560px;
