@@ -55,20 +55,12 @@ export interface GameConfig {
   inventorySlots: number;
   /** Private channels a player may belong to, before modifiers. */
   channelLimit: number;
-  /** AP spent to bond with someone (confirmed 2026-10-14). */
-  bondAp: number;
-  /** AP spent by the one who starts a DTT or STT (confirmed 2026-10-14). */
-  shareAp: number;
   /** Morale each of the two gains from a DTT or STT (confirmed 2026-10-14). */
   shareMorale: number;
   /** Contamination a human reaches before converting to Mush, before modifiers (confirmed 2026-10-14). */
   contaminationCapacity: number;
   /** AP spent to extract a spore (confirmed 2026-10-13). */
   extractSporeAp: number;
-  /** AP a heal costs on someone else (confirmed 2026-10-15). */
-  healApOther: number;
-  /** AP a heal costs on yourself (confirmed 2026-10-15). */
-  healApSelf: number;
   /** HP a heal restores before modifiers (confirmed 2026-10-15). */
   healAmount: number;
   /** Rooms where anyone can heal without a medikit (confirmed 2026-10-15: the sick bay). */
@@ -77,20 +69,10 @@ export interface GameConfig {
   medicHealBonus: number;
   /** Care points the nurse skill (`first_aid`) grants at the start of each day and when picked (owner, 2026-10-15). */
   nurseCarePointsPerDay: number;
-  /** AP a spike costs (confirmed 2026-10-15). */
-  spikeAp: number;
-  /** AP a punch costs (issue 29). */
-  punchAp: number;
   /** HP a landing punch removes (placeholder until combat is designed). */
   punchDamage: number;
-  /** Chance a punch misses, 0 to 1 (confirmed 2026-10-15). */
-  punchMissOdds: number;
-  /** AP spent to cook an uncooked ration (confirmed 2026-10-16). */
-  cookAp: number;
   /** Rooms where food can be cooked (confirmed 2026-10-16). */
   cookRooms: RoomId[];
-  /** AP spent to shower, before the soap discount (confirmed 2026-10-14). */
-  showerAp: number;
   /** AP off a shower when soap is in your inventory (confirmed 2026-10-14). */
   showerSoapDiscount: number;
   /** HP a Mush loses by showering (confirmed 2026-10-14). */
@@ -109,10 +91,6 @@ export interface GameConfig {
   sporeCooldownCycles: number;
   /** Spores the whole Mush faction may extract per day, before modifiers (confirmed 2026-10-14). */
   sporesPerDay: number;
-  /** AP spent to dismantle an item (confirmed 2026-10-13). */
-  dismantleAp: number;
-  /** Chance of successfully dismantling an item (confirmed 2026-10-13). */
-  dismantleOdds: number;
   /** Chance that the Creative skill refunds 1 AP after a failed action that cost AP (confirmed 2026-10-15). */
   creativeRefundOdds: number;
   /** Skills every player starts with (none since 2026-10-15; players pick their own). */

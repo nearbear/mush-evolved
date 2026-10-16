@@ -36,33 +36,23 @@ export const DEFAULT_CONFIG: GameConfig = {
   // Confirmed 2026-10-13: three private channels per player by default (skills and research will raise it).
   channelLimit: 3,
   // Confirmed 2026-10-14: bonding, DTT, and STT cost 1 AP each; DTT and STT give each of the two 2 morale.
-  bondAp: 1,
-  shareAp: 1,
   shareMorale: 2,
   // Confirmed 2026-10-14: a human converts on reaching 3 contamination (items and skills will raise it).
   contaminationCapacity: 3,
   // Confirmed 2026-10-13/14: extracting costs 1 AP and gives 1 spore; each Mush waits 4 cycles between extractions
   // and the faction shares 4 per day (skills and research will raise it).
   extractSporeAp: 1,
-  // Confirmed 2026-10-15: spiking costs 1 AP and 1 spore, and raises a human's contamination by 1.
-  spikeAp: 1,
   // Confirmed 2026-10-14: showering costs 2 AP, 1 less with soap in your inventory; a Mush takes 4 damage.
   // Confirmed 2026-10-15: healing needs a medikit in your inventory; 2 AP on someone else, 3 on yourself, restores 3 HP.
-  healApOther: 2,
-  healApSelf: 3,
   healAmount: 3,
   // Confirmed 2026-10-15: anyone can heal in the sick bay without a medikit; the medic skill adds 2 care points a day.
   healRooms: ["SICK_BAY"],
   medicHealBonus: 2,
   nurseCarePointsPerDay: 2,
   // Confirmed 2026-10-15: punch costs 1 AP, 2 damage, misses 40% of the time.
-  punchAp: 1,
   punchDamage: 2,
-  punchMissOdds: 0.4,
   // Confirmed 2026-10-16: cooking an uncooked ration costs 1 AP, only in the refectory.
-  cookAp: 1,
   cookRooms: ["REFECTORY"],
-  showerAp: 2,
   showerSoapDiscount: 1,
   showerMushDamage: 4,
   sporesPerExtraction: 1,
@@ -74,9 +64,6 @@ export const DEFAULT_CONFIG: GameConfig = {
   fullBellyAt: 3,
   hungryAfterCycles: 24,
   hungerHpPerCycle: 1,
-  // Confirmed 2026-10-13: dismantle cost.
-  dismantleAp: 3,
-  dismantleOdds: 0.12,
   // Confirmed 2026-10-15: nobody starts with a skill; players pick up to three
   // (SKILL_SLOTS) with the free, permanent pick_skill action.
   startSkills: [],
