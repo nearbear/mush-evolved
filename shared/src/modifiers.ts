@@ -2,39 +2,41 @@
 // change how the rules work. A player's state lists modifier ids; the code for
 // each id lives in this registry, so state stays plain JSON and rules stay pure.
 //
-// To add one (e.g. a skill that makes conversions yield 4 MP), register it:
-//   MODIFIERS["sprinter"] = { movement: (r) => ({ ...r, mpPerConversion: 4 }) };
-// and put "sprinter" in the player's `modifiers`. A skill is a modifier too:
-// its id goes in the player's `skills` instead.
+// To add one (e.g. a skill that makes conversions yield 4 MP), put a file in
+// modifiers/ exporting a Modifier, register it below, and put its id in the
+// player's `modifiers`. A skill is a modifier too: its id goes in the player's
+// `skills` instead. A new numeric hook is one line in `FoldHooks` plus a one-line
+// accessor below; `fold` does the looping.
 
 import { carriesHeavy } from "./items.ts";
-import { logPrivate } from "./log.ts";
-import { nextFloat } from "./rng.ts";
+import { creative } from "./modifiers/creative.ts";
+import { first_aid } from "./modifiers/first_aid.ts";
+import { lying_down } from "./modifiers/lying_down.ts";
+import { medic } from "./modifiers/medic.ts";
+import { sturdy } from "./modifiers/sturdy.ts";
 import type { GameState, MovementRules, PlayerState } from "./types.ts";
 
-export interface Modifier {
+/** A numeric hook: takes the running value and returns the adjusted one. Must be pure. */
+type FoldHook = (value: number, player: Readonly<PlayerState>, state: Readonly<GameState>) => number;
+
+/** The numeric hooks `fold` can run, each documented by the accessor that folds it. */
+type FoldHooks = Record<
+  | "apPerCycle"
+  | "inventorySlots"
+  | "channelLimit"
+  | "contaminationCapacity"
+  | "sporesPerDay"
+  | "healAmount"
+  | "satietyPerCycle"
+  | "punchDamage"
+  | "carePointsPerDay"
+  | "heavyMpPenalty",
+  FoldHook
+>;
+
+export interface Modifier extends Partial<FoldHooks> {
   /** Adjusts how a player's moves are paid for. Must be pure. */
   movement?: (rules: MovementRules, player: Readonly<PlayerState>) => MovementRules;
-  /** Adjusts the AP a player gains at the start of a cycle. Must be pure. */
-  apPerCycle?: (gain: number, player: Readonly<PlayerState>) => number;
-  /** Adjusts how many inventory slots a player has. Must be pure. */
-  inventorySlots?: (slots: number, player: Readonly<PlayerState>) => number;
-  /** Adjusts how many private channels a player may belong to. Must be pure. */
-  channelLimit?: (limit: number, player: Readonly<PlayerState>) => number;
-  /** Adjusts how much contamination a player can take before converting. Must be pure. */
-  contaminationCapacity?: (capacity: number, player: Readonly<PlayerState>) => number;
-  /** Adjusts how many spores the Mush faction may extract per day, folded over the extracting player's modifiers. Must be pure. */
-  sporesPerDay?: (cap: number, player: Readonly<PlayerState>) => number;
-  /** Adjusts the HP a heal restores, folded over the healer's modifiers (skills, research). Must be pure. */
-  healAmount?: (amount: number, player: Readonly<PlayerState>, state: Readonly<GameState>) => number;
-  /** Adjusts the care points (free heals, `resources.heal`) a player gains at the start of each day. Must be pure. */
-  /** True if the modifier cancels the heavy-item move penalty. */
-  ignoresHeavy?: boolean;
-  /** Adjusts the damage of a punch, folded over the puncher's modifiers. Must be pure. */
-  punchDamage?: (damage: number, player: Readonly<PlayerState>, state: Readonly<GameState>) => number;
-  carePointsPerDay?: (gain: number, player: Readonly<PlayerState>, state: Readonly<GameState>) => number;
-  /** Adjusts the satiety a human loses each cycle. Must be pure. */
-  satietyPerCycle?: (loss: number, player: Readonly<PlayerState>) => number;
   /**
    * Runs after one of the player's actions fails its success roll, with the AP it cost. Unlike the folds above,
    * it mutates a state the caller already cloned; randomness goes through `next.rng`.
@@ -44,51 +46,30 @@ export interface Modifier {
   onPick?: (next: GameState, player: PlayerState) => void;
 }
 
-/**
- * A skill that grants care points: `config[key]` at the start of every day (the `carePointsPerDay` fold) and the
- * same amount once when it is picked. Skills that work like this are built from a factory, not a base class, so
- * a skill can combine several (hooks fold over the modifier registry).
- */
-function careSkill(key: "nurseCarePointsPerDay"): Modifier {
-  const gain = (state: Readonly<GameState>) => state.config[key];
-  return {
-    carePointsPerDay: (sum, _player, state) => sum + gain(state),
-    onPick: (next, player) => {
-      player.resources.heal += gain(next);
-    },
-  };
-}
-
 export type ModifierRegistry = Readonly<Record<string, Modifier>>;
 
 /** Items and skills will register here too. When a skill gains rules, update its entry in SKILL_STATUS (skills.ts). */
-export const MODIFIERS: Record<string, Modifier> = {
-  // Confirmed 2026-10-11: +1 AP per cycle while in a bed. Nothing applies it
-  // yet; a lie-down action will add and remove it.
-  lying_down: { apPerCycle: (gain) => gain + 1 },
-  // Skill "medic" (Doctor), corrected 2026-10-15: heal actions restore 2 more HP. Its other perks are not built yet.
-  medic: { healAmount: (amount, _player, state) => amount + state.config.medicHealBonus },
-  // Skill "first_aid" (Nurse), per the owner 2026-10-15: 2 care points each day and 2 when picked.
-  first_aid: careSkill("nurseCarePointsPerDay"),
-  // Skill, confirmed 2026-10-15: a failed action that cost AP has a 50% chance
-  // to give 1 AP back. It can't pass the AP cap, since the AP was just spent.
-  // Skill "sturdy" (Solid), confirmed 2026-10-16: no heavy-item penalty, +1 punch damage. Throw Out a crewmate is not built.
-  sturdy: { ignoresHeavy: true, punchDamage: (damage, _player, state) => damage + state.config.sturdyPunchBonus },
-  creative: {
-    onActionFailed(next, player, apSpent) {
-      if (apSpent <= 0) return;
-      const [roll, rng] = nextFloat(next.rng);
-      next.rng = rng;
-      if (roll >= next.config.creativeRefundOdds) return;
-      player.ap += 1;
-      logPrivate(next, player.id, "creativeRefund");
-    },
-  },
-};
+export const MODIFIERS: Record<string, Modifier> = { lying_down, medic, first_aid, sturdy, creative };
 
 /** The ids every hook folds over: the player's skills, then their other modifiers. */
 export function modifierIds(player: Readonly<PlayerState>): string[] {
   return [...player.skills, ...player.modifiers];
+}
+
+/** Folds `base` through the named hook of each of the player's modifiers, in list order. */
+function fold(
+  hook: keyof FoldHooks,
+  base: number,
+  state: Readonly<GameState>,
+  player: Readonly<PlayerState>,
+  registry: ModifierRegistry,
+): number {
+  let value = base;
+  for (const id of modifierIds(player)) {
+    const fn = registry[id]?.[hook];
+    if (fn) value = fn(value, player, state);
+  }
+  return value;
 }
 
 /** Runs every onActionFailed hook the player has. Mutates a state the caller already cloned. */
@@ -96,7 +77,7 @@ export function actionFailed(next: GameState, player: PlayerState, apSpent: numb
   for (const id of modifierIds(player)) registry[id]?.onActionFailed?.(next, player, apSpent);
 }
 
-/** Base movement rules folded through the player's modifiers, in list order. */
+/** Base movement rules folded through the player's modifiers, in list order, plus the heavy-item penalty. */
 export function movementRules(
   state: Readonly<GameState>,
   player: Readonly<PlayerState>,
@@ -107,66 +88,28 @@ export function movementRules(
     const hook = registry[id]?.movement;
     if (hook) rules = hook(rules, player);
   }
-  const ignoresHeavy = modifierIds(player).some((id) => registry[id]?.ignoresHeavy);
-  if (!ignoresHeavy && carriesHeavy(state, player)) rules.mpPerMove += state.config.heavyMpPenalty;
+  if (carriesHeavy(state, player)) rules.mpPerMove += fold("heavyMpPenalty", state.config.heavyMpPenalty, state, player, registry);
   return rules;
 }
 
 /** AP gained at the start of a cycle: the base gain folded through the player's modifiers. */
-export function apGain(
-  state: Readonly<GameState>,
-  player: Readonly<PlayerState>,
-  registry: ModifierRegistry = MODIFIERS,
-): number {
-  let gain = state.config.apPerCycle;
-  for (const id of modifierIds(player)) {
-    const hook = registry[id]?.apPerCycle;
-    if (hook) gain = hook(gain, player);
-  }
-  return gain;
-}
+export const apGain = (state: Readonly<GameState>, player: Readonly<PlayerState>, registry: ModifierRegistry = MODIFIERS) =>
+  fold("apPerCycle", state.config.apPerCycle, state, player, registry);
 
 /** Inventory slots: the configured count folded through the player's modifiers. */
-export function inventorySlots(
-  state: Readonly<GameState>,
-  player: Readonly<PlayerState>,
-  registry: ModifierRegistry = MODIFIERS,
-): number {
-  let slots = state.config.inventorySlots;
-  for (const id of modifierIds(player)) {
-    const hook = registry[id]?.inventorySlots;
-    if (hook) slots = hook(slots, player);
-  }
-  return slots;
-}
+export const inventorySlots = (state: Readonly<GameState>, player: Readonly<PlayerState>, registry: ModifierRegistry = MODIFIERS) =>
+  fold("inventorySlots", state.config.inventorySlots, state, player, registry);
 
 /** Private channels a player may belong to: the configured count folded through the player's modifiers. */
-export function channelLimit(
-  state: Readonly<GameState>,
-  player: Readonly<PlayerState>,
-  registry: ModifierRegistry = MODIFIERS,
-): number {
-  let limit = state.config.channelLimit;
-  for (const id of modifierIds(player)) {
-    const hook = registry[id]?.channelLimit;
-    if (hook) limit = hook(limit, player);
-  }
-  return limit;
-}
+export const channelLimit = (state: Readonly<GameState>, player: Readonly<PlayerState>, registry: ModifierRegistry = MODIFIERS) =>
+  fold("channelLimit", state.config.channelLimit, state, player, registry);
 
 /** Contamination a player can take before converting: the configured capacity folded through their modifiers. */
-export function contaminationCapacity(
+export const contaminationCapacity = (
   state: Readonly<GameState>,
   player: Readonly<PlayerState>,
   registry: ModifierRegistry = MODIFIERS,
-): number {
-  let capacity = state.config.contaminationCapacity;
-  for (const id of modifierIds(player)) {
-    const hook = registry[id]?.contaminationCapacity;
-    if (hook) capacity = hook(capacity, player);
-  }
-  return capacity;
-}
+) => fold("contaminationCapacity", state.config.contaminationCapacity, state, player, registry);
 
 /**
  * What a move would cost: AP spent and MP afterwards, or null if the player
@@ -185,76 +128,26 @@ export function moveCost(
 }
 
 /** Spores the Mush faction may extract per day: the configured count folded through the extracting player's modifiers. */
-export function sporesPerDay(
-  state: Readonly<GameState>,
-  player: Readonly<PlayerState>,
-  registry: ModifierRegistry = MODIFIERS,
-): number {
-  let cap = state.config.sporesPerDay;
-  for (const id of modifierIds(player)) {
-    const hook = registry[id]?.sporesPerDay;
-    if (hook) cap = hook(cap, player);
-  }
-  return cap;
-}
+export const sporesPerDay = (state: Readonly<GameState>, player: Readonly<PlayerState>, registry: ModifierRegistry = MODIFIERS) =>
+  fold("sporesPerDay", state.config.sporesPerDay, state, player, registry);
 
 /** HP a heal restores: the configured amount folded through the healer's modifiers. */
-export function healAmount(
-  state: Readonly<GameState>,
-  player: Readonly<PlayerState>,
-  registry: ModifierRegistry = MODIFIERS,
-): number {
-  let amount = state.config.healAmount;
-  for (const id of modifierIds(player)) {
-    const hook = registry[id]?.healAmount;
-    if (hook) amount = hook(amount, player, state);
-  }
-  return amount;
-}
+export const healAmount = (state: Readonly<GameState>, player: Readonly<PlayerState>, registry: ModifierRegistry = MODIFIERS) =>
+  fold("healAmount", state.config.healAmount, state, player, registry);
 
 /** Satiety a human loses each cycle: the configured loss folded through the player's modifiers. */
-export function satietyLoss(
-  state: Readonly<GameState>,
-  player: Readonly<PlayerState>,
-  registry: ModifierRegistry = MODIFIERS,
-): number {
-  let loss = state.config.satietyPerCycle;
-  for (const id of modifierIds(player)) {
-    const hook = registry[id]?.satietyPerCycle;
-    if (hook) loss = hook(loss, player);
-  }
-  return loss;
-}
+export const satietyLoss = (state: Readonly<GameState>, player: Readonly<PlayerState>, registry: ModifierRegistry = MODIFIERS) =>
+  fold("satietyPerCycle", state.config.satietyPerCycle, state, player, registry);
 
 /** Care points a player gains at the start of a day: nothing by default, plus whatever their skills grant. */
-export function carePointsGain(
-  state: Readonly<GameState>,
-  player: Readonly<PlayerState>,
-  registry: ModifierRegistry = MODIFIERS,
-): number {
-  let gain = 0;
-  for (const id of modifierIds(player)) {
-    const hook = registry[id]?.carePointsPerDay;
-    if (hook) gain = hook(gain, player, state);
-  }
-  return gain;
-}
+export const carePointsGain = (state: Readonly<GameState>, player: Readonly<PlayerState>, registry: ModifierRegistry = MODIFIERS) =>
+  fold("carePointsPerDay", 0, state, player, registry);
+
+/** HP a punch removes: the configured damage folded through the puncher's modifiers. */
+export const punchDamage = (state: Readonly<GameState>, player: Readonly<PlayerState>, registry: ModifierRegistry = MODIFIERS) =>
+  fold("punchDamage", state.config.punchDamage, state, player, registry);
 
 /** Runs the picked skill's onPick hook. Mutates a state the caller already cloned. */
 export function skillPicked(next: GameState, player: PlayerState, skill: string, registry: ModifierRegistry = MODIFIERS): void {
   registry[skill]?.onPick?.(next, player);
-}
-
-/** HP a punch removes: the configured damage folded through the puncher's modifiers. */
-export function punchDamage(
-  state: Readonly<GameState>,
-  player: Readonly<PlayerState>,
-  registry: ModifierRegistry = MODIFIERS,
-): number {
-  let damage = state.config.punchDamage;
-  for (const id of modifierIds(player)) {
-    const hook = registry[id]?.punchDamage;
-    if (hook) damage = hook(damage, player, state);
-  }
-  return damage;
 }

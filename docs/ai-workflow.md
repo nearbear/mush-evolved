@@ -556,3 +556,6 @@ The user asked for an "eye-tracky" tab on the far right that appears conditional
 - Claude first planned to check for death at every place HP could reach 0 (punch, hunger, shower). The user pushed back: a common damage function is better. It became `damage()` in `shared/src/death.ts`, the only way HP goes down, with a source-scanning test in `tools` (shared tests can't read files) so a new damage source can't skip the death check.
 - The user added that corpses are heavy (an existing item attribute) while phase 1 was starting.
 - Found while implementing: the dev `infiniteHp` cheat used to refill HP after it hit 0, so `damage` now honours it directly and `applyCheats` skips the dead.
+
+## 2026-10-16: modifiers.ts fold refactor
+- Review feedback: nine near-identical fold functions, `ignoresHeavy` special-cased inline, one flat registry. Replaced the loops with one generic `fold(hook, base, state, player, registry)`; every numeric hook now takes `(value, player, state)` and the public accessors (`apGain`, `healAmount`, ...) are one-liners. The heavy penalty became a `heavyMpPenalty` fold (sturdy returns 0) so no modifier logic lives outside the registry. Each modifier moved to its own file under `shared/src/modifiers/`. No behavior change; the existing tests passed untouched.
