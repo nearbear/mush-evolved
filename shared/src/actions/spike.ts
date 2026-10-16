@@ -1,14 +1,14 @@
 import { Action, peopleHere } from "./action.ts";
 import { logSecret } from "../log.ts";
-import { contaminationCapacity } from "../modifiers.ts";
+import { contaminate } from "../infection.ts";
 import type { GameState, PlayerState } from "../types.ts";
 
 export type SpikeActionData = { type: "spike"; target: string };
 
 /**
  * Spiking (confirmed 2026-10-15): a Mush spends 1 AP and 1 spore to raise a
- * living human in their room by 1 contamination (capped at capacity; converting
- * is not built yet). Always succeeds. Secret log: bystanders learn of it, the
+ * living human in their room by 1 contamination (reaching capacity converts
+ * them, see `infection.ts`). Always succeeds. Secret log: bystanders learn of it, the
  * victim is not told. Contamination stays hidden from everyone.
  */
 export class SpikeAction extends Action<SpikeActionData> {
@@ -36,7 +36,7 @@ export class SpikeAction extends Action<SpikeActionData> {
   override apply(state: GameState, player: PlayerState, target: SpikeActionData): void {
     const victim = state.players.find((o) => o.id === target.target)!; // checked, so it exists
     player.spores -= 1;
-    state.contamination[victim.id] = Math.min(contaminationCapacity(state, victim), (state.contamination[victim.id] ?? 0) + 1);
     logSecret(state, player.id, "spiked", { name: player.name, target: victim.name }, victim.id);
+    contaminate(state, victim);
   }
 }

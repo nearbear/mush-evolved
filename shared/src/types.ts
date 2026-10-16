@@ -274,9 +274,9 @@ export interface GameState {
   /** The last day (1-based) each player took part in a DTT or STT. Both partners are blocked for the rest of that day. */
   sharedOnDay: Record<PlayerId, number>;
   /**
-   * Contamination per human, from DTT with a Mush. Hidden from everyone,
+   * Contamination per human, from spikes and DTT with a Mush. Hidden from everyone,
    * including its owner: seeing it would tell a human who is Mush. Reaching the
-   * capacity will convert them once infection exists; nothing does yet.
+   * capacity converts them to Mush at once and removes their entry (`infection.ts`).
    */
   contamination: Record<PlayerId, number>;
   /** Spores the Mush faction has extracted today; reset at each day boundary. Hidden from everyone. */
@@ -330,6 +330,8 @@ export interface OtherPlayerView {
   statuses: string[];
   /** Skills they have chosen. Public to anyone in your room (empty for people elsewhere). */
   skills: string[];
+  /** Their contamination, shown as a status. Only when you are Mush, they are a contaminated human, and they are in your room. */
+  contamination?: number;
 }
 
 /** What one seat is allowed to know. This is the only game data a client or bot receives. */

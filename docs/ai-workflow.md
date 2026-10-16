@@ -500,3 +500,15 @@ Owner decided: same-room targets only, 40% miss chance, public action. Cost 1 AP
 Owner asked for the nurse to gain 2 care points each day and when taking the skill, and left "inheritance or not" to me. Chose a `careSkill(configKey)` factory plus a generic `onPick` modifier hook over a base class: hooks already fold over a registry, so skills compose without a hierarchy, and future skills (shooter's free shots) reuse `onPick`. Side effect: `medic` also gets its points on pick. Nurse maps to the `first_aid` id (English label "Nurse"); the skill text says +1 AP, but the owner's 2 points was followed.
 
 Correction, same day: the owner said medic was a mistake on their part; medic's perk is +2 HP per heal, not care points. Removed `medicCarePointsPerDay`, added `medicHealBonus` via the existing `healAmount` hook (which now also receives state). Nurse keeps the care points.
+
+## 2026-10-15: Infection (conversion at capacity)
+
+- Decided by the owner: a human converts to Mush at once when contamination reaches capacity; a private log line tells only them, without naming who caused it; skills stay (Mush can still pick human skills); spore extraction is ready immediately; no HP or morale effect; no cure for the MVP.
+- Claude wrote a plan first, listing the open questions (timing, what the convert is told, what carries over, cure) and flagging the tradeoff: immediate conversion lets a spike victim guess the Mush in the room. The owner chose immediate.
+- What worked: one `contaminate` helper in `shared/src/infection.ts` replaced two copies of the cap logic (spike, DTT), and a test checks a bystander's whole view is identical before and after a conversion apart from the spike line.
+- Needed care: the full test run hit an unrelated i18n failure from uncommitted iTrackie work in the same tree; Claude briefly stashed the tree to compare against main, which it should not have done with someone else's in-progress edits there (they were restored).
+
+## 2026-10-16: Contamination status for Mush (debug aid)
+
+- Owner reported conversion "didn't seem to work" in the running game and asked for a status that shows Mush a human's contamination level, invisible to the human themself. Rules tests already showed conversion working, so the status is the tool to find what differs in play (likely: a human held at 3 under the old capped code needs one more spike, and the 4-cycle extraction cooldown makes three spikes slow).
+- Built as `OtherPlayerView.contamination` (Mush viewer, living contaminated human, same room only; the room limit was Claude's default to match other statuses) and drawn by `StatusIcons` with the original spore icon and a count. Two older tests asserted contamination was in no view at all; they were narrowed to human viewers.

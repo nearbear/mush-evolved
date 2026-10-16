@@ -57,6 +57,24 @@
   height: 32px;
   image-rendering: pixelated;
 }
+/* A status with a number (contamination, Mush-only): the count sits on the icon's corner. */
+.status-icons .status-count {
+  position: relative;
+}
+.status-icons .status-count span {
+  position: absolute;
+  right: -2px;
+  bottom: -2px;
+  min-width: 14px;
+  padding: 0 2px;
+  border-radius: 7px;
+  background: #000c;
+  color: #fff;
+  font-size: 11px;
+  font-weight: bold;
+  line-height: 14px;
+  text-align: center;
+}
 
 /* Skill slots, overlaid on the portrait's top-right corner. */
 .inspect-figure {

@@ -84,7 +84,11 @@ function Details({ view, resolved, onAction }: { view: PlayerView; resolved: Res
             {person.botKind && <span className="tag">{BOT_KIND_LABELS[person.botKind]}</span>}
             {person.id === view.you.id && <span className="tag">you</span>}
             <BondTag view={view} id={person.id} />
-            <StatusIcons statuses={person.id === view.you.id ? view.statuses : (person as OtherPlayerView).statuses} />
+            {person.id === view.you.id ? (
+              <StatusIcons statuses={view.statuses} />
+            ) : (
+              <StatusIcons statuses={(person as OtherPlayerView).statuses} contamination={(person as OtherPlayerView).contamination} />
+            )}
             {character && <div className="sub">{character.name}</div>}
           </div>
         </>

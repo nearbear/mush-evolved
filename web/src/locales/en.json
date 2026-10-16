@@ -167,7 +167,8 @@
     "label": "Status effects",
     "dirty": "Dirty",
     "full_belly": "Full belly",
-    "hungry": "Hungry"
+    "hungry": "Hungry",
+    "contaminated": "Contamination: {{level}}"
   },
   "rooms": {
     "COMMAND_CENTER": "Bridge",

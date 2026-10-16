@@ -33,15 +33,17 @@ describe("spiking", () => {
     expect(r.state.contamination.p1).toBe(1);
   });
 
-  it("stops at the capacity of 3", () => {
+  it("converts the human on the third spike, after which they can't be spiked", () => {
     let s = ship();
     s.players.find((p) => p.id === "p0")!.spores = 5;
-    for (let i = 0; i < 5; i++) {
+    for (let i = 0; i < 3; i++) {
       const r = applyAction(s, "p0", spike("p1"));
       if (!r.ok) throw new Error(r.error);
       s = r.state;
     }
-    expect(s.contamination.p1).toBe(3);
+    expect(player(s, "p1").role).toBe("mush");
+    expect(s.contamination).toEqual({});
+    expect(applyAction(s, "p0", spike("p1")).ok).toBe(false);
   });
 
   it("is offered only to Mush with a spore, for humans in their room", () => {
@@ -81,12 +83,14 @@ describe("spiking", () => {
     expect(applyAction(broke, "p0", spike("p1")).ok).toBe(false);
   });
 
-  it("hides contamination from every view, and the victim is not told", () => {
+  it("hides contamination from humans and Mush elsewhere, and the victim is not told", () => {
     const r = applyAction(ship(), "p0", spike("p1"));
     if (!r.ok) throw new Error(r.error);
-    for (const id of ["p0", "p1", "p2", "p3", "p4"]) {
+    for (const id of ["p1", "p2", "p3", "p4"]) {
       expect(JSON.stringify(viewFor(r.state, id))).not.toContain("contamination");
     }
+    // The Mush beside the victim sees it, as the victim's level.
+    expect(viewFor(r.state, "p0").players.find((p) => p.id === "p1")!.contamination).toBe(1);
     expect(viewFor(r.state, "p1").log.some((e) => e.key === "spiked")).toBe(false); // no bystander: private to the actor
     expect(viewFor(r.state, "p0").log.some((e) => e.key === "spiked")).toBe(true);
   });

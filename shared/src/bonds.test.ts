@@ -144,10 +144,12 @@ describe("contamination", () => {
     expect(s.contamination).toEqual({ p0: 2 });
   });
 
-  it("stops at the capacity", () => {
+  it("converts the human at the capacity", () => {
     let s = bondBoth(ship(), "p0", "p2");
-    for (let i = 0; i < config.contaminationCapacity + 2; i++) s = mustApply(i === 0 ? s : nextDay(s), "p0", dtt("p2"));
-    expect(s.contamination["p0"]).toBe(config.contaminationCapacity);
+    for (let i = 0; i < config.contaminationCapacity; i++) s = mustApply(i === 0 ? s : nextDay(s), "p0", dtt("p2"));
+    expect(player(s, "p0").role).toBe("mush");
+    expect(viewFor(s, "p0").log.at(-1)).toMatchObject({ key: "converted" });
+    expect(s.contamination).toEqual({});
   });
 
   it("uses the capacity after modifiers", () => {
@@ -172,10 +174,11 @@ describe("contamination", () => {
     expect(s.contamination).toEqual({});
   });
 
-  it("is in no player's view", () => {
+  it("is in no human's view, and Mush see it only as the human's level", () => {
     const s = mustApply(bondBoth(ship(), "p0", "p2"), "p2", dtt("p0"));
     expect(s.contamination).toEqual({ p0: 1 });
-    for (const p of seats) expect(JSON.stringify(viewFor(s, p.id))).not.toMatch(/contamin/i);
+    for (const id of ["p0", "p1", "p3"]) expect(JSON.stringify(viewFor(s, id))).not.toMatch(/contamin/i);
+    expect(viewFor(s, "p2").players.find((p) => p.id === "p0")!.contamination).toBe(1);
   });
 });
 

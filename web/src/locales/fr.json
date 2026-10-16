@@ -167,7 +167,8 @@
     "label": "Effets de statut",
     "dirty": "Sale",
     "full_belly": "Ventre plein",
-    "hungry": "Affamé"
+    "hungry": "Affamé",
+    "contaminated": "Contamination : {{level}}"
   },
   "rooms": {
     "COMMAND_CENTER": "Pont",

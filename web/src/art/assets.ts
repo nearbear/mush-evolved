@@ -128,6 +128,8 @@ export const STATUS_ICONS: Readonly<Record<"dirty" | "full_belly" | "hungry", st
   full_belly: statusIconFiles["belly_full"]!,
   hungry: statusIconFiles["hungry"]!,
 };
+/** Contamination, as only Mush see it on humans (the original spore icon). */
+export const CONTAMINATED_ICON = uiIcons["spore"]!;
 
 // Skill icons (one per skill id, see shared/src/skills.ts).
 const skillIcons = urls(import.meta.glob<string>("../../../Mush/www/img/icons/skills/*.png", { eager: true, query: "?url", import: "default" }));

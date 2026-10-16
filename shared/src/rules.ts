@@ -10,6 +10,7 @@ import { applyCheats, type ActopiCheat, type Cheat } from "./cheats.ts";
 import { ACTIONS, type ActionCost, type ActionDef } from "./actions.ts";
 import { ITRACKIE_ITEM, itemsIn } from "./items.ts";
 import { actionFailed, apGain, carePointsGain, channelLimit, inventorySlots, movementRules, satietyLoss } from "./modifiers.ts";
+import { contaminationSeenBy } from "./infection.ts";
 import { isHungry, publicStatusesOf, statusesOf } from "./statuses.ts";
 import { emptyResources } from "./resources.ts";
 import { nextFloat, shuffle } from "./rng.ts";
@@ -223,12 +224,13 @@ export function viewFor(state: GameState, playerId: PlayerId): PlayerView {
     // TODO(rules): should Mush see each other's roles? Hidden for now.
     players: others.map((o) => {
       const { id, name, isBot, botKind, character, room, alive, ready } = o;
+      const contamination = room === you.room ? contaminationSeenBy(state, you, o) : undefined;
       return {
         id,
         name,
         isBot,
-        character,
         ...(botKind && { botKind }),
+        character,
         ...(located(room) ? { room } : {}),
         alive,
         ready,
@@ -236,6 +238,8 @@ export function viewFor(state: GameState, playerId: PlayerId): PlayerView {
         statuses: room === you.room ? publicStatusesOf(state, o) : [],
         // Skills are public, but like statuses only to people who can see the player.
         skills: room === you.room ? [...o.skills] : [],
+        // Mush see a contaminated human's level, like a status, on people in their room.
+        ...(contamination !== undefined ? { contamination } : {}),
       };
     }),
     unidentified: others
