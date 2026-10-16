@@ -4,8 +4,11 @@
 //
 // To add one (e.g. a skill that makes conversions yield 4 MP), register it:
 //   MODIFIERS["sprinter"] = { movement: (r) => ({ ...r, mpPerConversion: 4 }) };
-// and put "sprinter" in the player's `modifiers`.
+// and put "sprinter" in the player's `modifiers`. A skill is a modifier too:
+// its id goes in the player's `skills` instead.
 
+import { logPrivate } from "./log.ts";
+import { nextFloat } from "./rng.ts";
 import type { GameState, MovementRules, PlayerState } from "./types.ts";
 
 export interface Modifier {
@@ -25,6 +28,11 @@ export interface Modifier {
   healAmount?: (amount: number, player: Readonly<PlayerState>) => number;
   /** Adjusts the satiety a human loses each cycle. Must be pure. */
   satietyPerCycle?: (loss: number, player: Readonly<PlayerState>) => number;
+  /**
+   * Runs after one of the player's actions fails its success roll, with the AP it cost. Unlike the folds above,
+   * it mutates a state the caller already cloned; randomness goes through `next.rng`.
+   */
+  onActionFailed?: (next: GameState, player: PlayerState, apSpent: number) => void;
 }
 
 export type ModifierRegistry = Readonly<Record<string, Modifier>>;
@@ -34,7 +42,29 @@ export const MODIFIERS: Record<string, Modifier> = {
   // Confirmed 2026-10-11: +1 AP per cycle while in a bed. Nothing applies it
   // yet; a lie-down action will add and remove it.
   lying_down: { apPerCycle: (gain) => gain + 1 },
+  // Skill, confirmed 2026-10-15: a failed action that cost AP has a 50% chance
+  // to give 1 AP back. It can't pass the AP cap, since the AP was just spent.
+  creative: {
+    onActionFailed(next, player, apSpent) {
+      if (apSpent <= 0) return;
+      const [roll, rng] = nextFloat(next.rng);
+      next.rng = rng;
+      if (roll >= next.config.creativeRefundOdds) return;
+      player.ap += 1;
+      logPrivate(next, player.id, "creativeRefund");
+    },
+  },
 };
+
+/** The ids every hook folds over: the player's skills, then their other modifiers. */
+export function modifierIds(player: Readonly<PlayerState>): string[] {
+  return [...player.skills, ...player.modifiers];
+}
+
+/** Runs every onActionFailed hook the player has. Mutates a state the caller already cloned. */
+export function actionFailed(next: GameState, player: PlayerState, apSpent: number, registry: ModifierRegistry = MODIFIERS): void {
+  for (const id of modifierIds(player)) registry[id]?.onActionFailed?.(next, player, apSpent);
+}
 
 /** Base movement rules folded through the player's modifiers, in list order. */
 export function movementRules(
@@ -43,7 +73,7 @@ export function movementRules(
   registry: ModifierRegistry = MODIFIERS,
 ): MovementRules {
   let rules = { ...state.config.movement };
-  for (const id of player.modifiers) {
+  for (const id of modifierIds(player)) {
     const hook = registry[id]?.movement;
     if (hook) rules = hook(rules, player);
   }
@@ -57,7 +87,7 @@ export function apGain(
   registry: ModifierRegistry = MODIFIERS,
 ): number {
   let gain = state.config.apPerCycle;
-  for (const id of player.modifiers) {
+  for (const id of modifierIds(player)) {
     const hook = registry[id]?.apPerCycle;
     if (hook) gain = hook(gain, player);
   }
@@ -71,7 +101,7 @@ export function inventorySlots(
   registry: ModifierRegistry = MODIFIERS,
 ): number {
   let slots = state.config.inventorySlots;
-  for (const id of player.modifiers) {
+  for (const id of modifierIds(player)) {
     const hook = registry[id]?.inventorySlots;
     if (hook) slots = hook(slots, player);
   }
@@ -85,7 +115,7 @@ export function channelLimit(
   registry: ModifierRegistry = MODIFIERS,
 ): number {
   let limit = state.config.channelLimit;
-  for (const id of player.modifiers) {
+  for (const id of modifierIds(player)) {
     const hook = registry[id]?.channelLimit;
     if (hook) limit = hook(limit, player);
   }
@@ -99,7 +129,7 @@ export function contaminationCapacity(
   registry: ModifierRegistry = MODIFIERS,
 ): number {
   let capacity = state.config.contaminationCapacity;
-  for (const id of player.modifiers) {
+  for (const id of modifierIds(player)) {
     const hook = registry[id]?.contaminationCapacity;
     if (hook) capacity = hook(capacity, player);
   }
@@ -129,7 +159,7 @@ export function sporesPerDay(
   registry: ModifierRegistry = MODIFIERS,
 ): number {
   let cap = state.config.sporesPerDay;
-  for (const id of player.modifiers) {
+  for (const id of modifierIds(player)) {
     const hook = registry[id]?.sporesPerDay;
     if (hook) cap = hook(cap, player);
   }
@@ -143,7 +173,7 @@ export function healAmount(
   registry: ModifierRegistry = MODIFIERS,
 ): number {
   let amount = state.config.healAmount;
-  for (const id of player.modifiers) {
+  for (const id of modifierIds(player)) {
     const hook = registry[id]?.healAmount;
     if (hook) amount = hook(amount, player);
   }
@@ -157,7 +187,7 @@ export function satietyLoss(
   registry: ModifierRegistry = MODIFIERS,
 ): number {
   let loss = state.config.satietyPerCycle;
-  for (const id of player.modifiers) {
+  for (const id of modifierIds(player)) {
     const hook = registry[id]?.satietyPerCycle;
     if (hook) loss = hook(loss, player);
   }

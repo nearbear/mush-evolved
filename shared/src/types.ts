@@ -91,6 +91,10 @@ export interface GameConfig {
   dismantleAp: number;
   /** Chance of successfully dismantling an item (confirmed 2026-10-13). */
   dismantleOdds: number;
+  /** Chance that the Creative skill refunds 1 AP after a failed action that cost AP (confirmed 2026-10-15). */
+  creativeRefundOdds: number;
+  /** Skills every player starts with (confirmed 2026-10-15; a skill picker will replace this). */
+  startSkills: string[];
   /** Items placed in rooms at the start of the game. Types come from ITEM_TYPES in items.ts. */
   startItems: { type: string; room: RoomId }[];
   /** Item types every player starts carrying (one of each). */
@@ -132,6 +136,11 @@ export interface PlayerState extends Seat {
    * against the registry in modifiers.ts; state holds ids only so it stays JSON.
    */
   modifiers: string[];
+  /**
+   * Skill ids in the player's human skill slots (3 for now, all free to fill; a book slot comes later). Each is
+   * a modifier id in modifiers.ts. In no view yet (roommates will see them once there is a skills UI).
+   */
+  skills: string[];
   alive: boolean;
   /** Finished acting for this cycle. */
   ready: boolean;

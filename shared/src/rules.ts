@@ -9,7 +9,7 @@
 import { applyCheats, type ActopiCheat, type Cheat } from "./cheats.ts";
 import { ACTIONS, type ActionCost, type ActionDef } from "./actions.ts";
 import { ITRACKIE_ITEM, itemsIn } from "./items.ts";
-import { apGain, channelLimit, inventorySlots, movementRules, satietyLoss } from "./modifiers.ts";
+import { actionFailed, apGain, channelLimit, inventorySlots, movementRules, satietyLoss } from "./modifiers.ts";
 import { isHungry, publicStatusesOf, statusesOf } from "./statuses.ts";
 import { nextFloat, shuffle } from "./rng.ts";
 import { CHAT_CHANNELS } from "./types.ts";
@@ -66,6 +66,7 @@ export function createGame(seats: readonly Seat[], config: GameConfig, seed: num
     statuses: [],
     spores: 0,
     modifiers: [],
+    skills: [...config.startSkills],
     alive: true,
     ready: false,
     cheats: [],
@@ -123,7 +124,10 @@ export function applyAction(state: GameState, playerId: PlayerId, action: Action
     const [roll, rng] = nextFloat(next.rng);
     next.rng = rng;
     if (roll < def.chance(state, p, action)) def.apply(next, actor, action);
-    else def.fail?.(next, actor, action);
+    else {
+      def.fail?.(next, actor, action);
+      actionFailed(next, actor, cost.ap);
+    }
   } else {
     def.apply(next, actor, action);
   }

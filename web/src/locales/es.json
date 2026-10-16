@@ -209,6 +209,7 @@
     "pickedUp": "{{name}} recogió: {{item}}.",
     "dropped": "{{name}} soltó: {{item}}.",
     "dismantleFailed": "No lograste desmontar: {{item}}.",
+    "creativeRefund": "Tu creatividad da frutos: recuperas 1 PA.",
     "dismantled": "{{name}} desmontó: {{item}} y recuperó chatarra.",
     "tookFrom": "{{name}} tomó: {{item}} ({{equipment}}).",
     "tookFromKnocked": "{{name}} tomó: {{item}} ({{equipment}}) y lo tiró al suelo.",
