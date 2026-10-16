@@ -8,7 +8,7 @@ import { createChannel, inviteToChannel } from "./chat.ts";
 import type { Action, GameState, PlayerId, Seat } from "./types.ts";
 
 const seats: Seat[] = Array.from({ length: 4 }, (_, i) => ({ id: `p${i}`, name: `Player ${i}`, isBot: false, character: CHARACTERS[i]!.id }));
-const config = { ...DEFAULT_CONFIG, mushCount: 1, startItems: [], startSkills: [], punch: { ...DEFAULT_CONFIG.punch, missOdds: 0 } };
+const config = { ...DEFAULT_CONFIG, mushCount: 1, startItems: [], startSkills: [] };
 const player = (s: GameState, id: PlayerId) => s.players.find((p) => p.id === id)!;
 const must = (r: ActionResult): GameState => {
   if (!r.ok) throw new Error(r.error);

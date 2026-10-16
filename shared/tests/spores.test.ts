@@ -65,7 +65,7 @@ describe("spore extraction", () => {
 
   it("shares a daily cap across the faction, and the cap resets at the day boundary", () => {
     const s = ship();
-    s.config = { ...s.config, spores: { ...s.config.spores, perDay: 2 } };
+    s.config = { ...s.config, sporesPerDay: 2 };
     let t = mustApply(mustApply(s, "p0", extract), "p1", extract);
     t = nextCycle(nextCycle(nextCycle(nextCycle(t)))); // cooldowns over, same day
     expect(viewFor(t, "p0").legalActions).not.toContainEqual(extract);
@@ -78,7 +78,7 @@ describe("spore extraction", () => {
     MODIFIERS["test_spore_cap"] = { sporesPerDay: (c) => c + 1 };
     try {
       const s = ship();
-      s.config = { ...s.config, spores: { ...s.config.spores, perDay: 1 } };
+      s.config = { ...s.config, sporesPerDay: 1 };
       s.sporesToday = 1;
       expect(applyAction(s, "p0", extract).ok).toBe(false);
       player(s, "p0").modifiers.push("test_spore_cap");

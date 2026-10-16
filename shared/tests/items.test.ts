@@ -86,7 +86,7 @@ describe("inventory", () => {
   it("dismantles inventory items into scrap in the room", () => {
     const state = mustApply(newGame(), "p0", take("item-1"));
     state.items.push({ id: "item-camera", type: "camera", at: { kind: "player", id: "p0" } });
-    state.config.dismantle.odds = 1;
+    state.config.dismantleOdds = 1;
     const result = applyAction(state, "p0", { type: "dismantle", item: "item-camera" });
     if (!result.ok) throw new Error(result.error);
     const next = result.state;
@@ -98,7 +98,7 @@ describe("inventory", () => {
   it("fails a dismantle when the roll misses", () => {
     const state = mustApply(newGame(), "p0", take("item-1"));
     state.items.push({ id: "item-camera", type: "camera", at: { kind: "player", id: "p0" } });
-    state.config.dismantle.odds = 0;
+    state.config.dismantleOdds = 0;
     const result = applyAction(state, "p0", { type: "dismantle", item: "item-camera" });
     if (!result.ok) throw new Error(result.error);
     const next = result.state;

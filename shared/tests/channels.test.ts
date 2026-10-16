@@ -5,17 +5,14 @@ import { ITRACKIE_ITEM } from "../src/items.ts";
 import { channelLimit, MODIFIERS } from "../src/modifiers.ts";
 import { parseGameMessage } from "../src/protocol.ts";
 import {
-  applyAction,
   CHAT_HISTORY,
   createChannel,
-  createGame,
   inviteToChannel,
   leaveChannel,
   sendChat,
   toggleCheckbox,
-  viewFor,
-  type ActionResult,
-} from "../src/rules.ts";
+} from "../src/chat.ts";
+import { applyAction, createGame, viewFor, type ActionResult } from "../src/rules.ts";
 import type { GameState, PrivateChannelId, Seat } from "../src/types.ts";
 
 const seats: Seat[] = Array.from({ length: 8 }, (_, i) => ({

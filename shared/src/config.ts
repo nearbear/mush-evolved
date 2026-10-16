@@ -43,13 +43,7 @@ export const DEFAULT_CONFIG: GameConfig = {
   // Confirmed 2026-10-14: bonding, DTT, and STT cost 1 AP each; DTT and STT give each of the two 2 morale.
   shareMorale: 2,
   // Confirmed 2026-10-14: a human converts on reaching 3 contamination (items and skills will raise it).
-  infection: {
-    capacity: 3,
-  },
-  // Confirmed 2026-10-15: spiking costs 1 AP and 1 spore, and raises a human's contamination by 1.
-  spike: {
-    ap: 1,
-  },
+  contaminationCapacity: 3,
   // Confirmed 2026-10-13/14: extracting costs 1 AP and gives 1 spore; each Mush waits 4 cycles between extractions
   // and the faction shares 4 per day (skills and research will raise it).
   extractSporeAp: 1,
@@ -78,13 +72,11 @@ export const DEFAULT_CONFIG: GameConfig = {
   // Confirmed 2026-10-15: nobody starts with a skill; players pick up to three
   // (SKILL_SLOTS) with the free, permanent pick_skill action.
   startSkills: [],
-  creative: {
-    refundOdds: 0.5,
-  },
+  creativeRefundOdds: 0.5,
+  // Confirmed 2026-10-16: the sturdy (Solid) skill adds 1 to punch damage.
+  sturdyPunchBonus: 1,
   // Confirmed 2026-10-16: carrying a heavy item adds this much to every move's MP cost, once.
-  heavy: {
-    mpPenalty: 2,
-  },
+  heavyMpPenalty: 2,
   // PLACEHOLDER items with no effects, so there is something to pick up.
   startItems: [
     { type: "wrench", room: "LABORATORY" },

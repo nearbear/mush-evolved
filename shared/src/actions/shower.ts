@@ -32,7 +32,7 @@ export class ShowerAction extends Action<ShowerActionData> {
   override apply(state: GameState, player: PlayerState, target: ShowerActionData): void {
     removeStatus(player, "dirty");
     logPrivate(state, player.id, player.role === "mush" ? "showeredMush" : "showered");
-    if (player.role === "mush") damage(state, player, state.config.shower.mushDamage);
+    if (player.role === "mush") damage(state, player, state.config.showerMushDamage);
   }
 
   showerCost(state: Readonly<GameState>, player: Readonly<PlayerState>): number {

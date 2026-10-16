@@ -71,6 +71,10 @@ export interface GameConfig {
   nurseCarePointsPerDay: number;
   /** HP a landing punch removes (placeholder until combat is designed). */
   punchDamage: number;
+  /** HP the sturdy skill adds to a landing punch (confirmed 2026-10-16). */
+  sturdyPunchBonus: number;
+  /** MP a move costs extra while carrying a heavy item, once however many are carried (confirmed 2026-10-16). */
+  heavyMpPenalty: number;
   /** Rooms where food can be cooked (confirmed 2026-10-16). */
   cookRooms: RoomId[];
   /** AP off a shower when soap is in your inventory (confirmed 2026-10-14). */

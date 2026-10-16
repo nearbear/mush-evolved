@@ -29,7 +29,7 @@ export class ShareAction<T extends "dtt" | "stt" = "dtt" | "stt"> extends Action
     const other = state.players.find((o) => o.id === target.target)!;
     const { day } = dayOf(state);
     for (const who of [player, other]) {
-      who.morale = Math.min(state.config.maxMorale, who.morale + state.config.share.morale);
+      who.morale = Math.min(state.config.maxMorale, who.morale + state.config.shareMorale);
       state.sharedOnDay[who.id] = day;
     }
     const human = player.role === "human" ? player : other;

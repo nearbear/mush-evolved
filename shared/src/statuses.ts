@@ -18,7 +18,7 @@ export const STATUS_PUBLIC: Readonly<Record<StatusId, boolean>> = {
 
 /** Humans at or above `fullBellyAt` satiety can't eat. */
 export function isFullBelly(state: Readonly<Pick<GameState, "config">>, p: Readonly<PlayerState>): boolean {
-  return p.role === "human" && p.satiety >= state.config.hunger.fullBellyAt;
+  return p.role === "human" && p.satiety >= state.config.fullBellyAt;
 }
 
 /** Hungry once satiety has stayed at 0 for `hungryAfterCycles` cycles; the count restarts whenever satiety reaches 0 again. */
@@ -27,7 +27,7 @@ export function isHungry(state: Readonly<Pick<GameState, "config" | "cycle">>, p
     p.role === "human" &&
     p.satiety === 0 &&
     p.satietyZeroSince !== null &&
-    state.cycle - p.satietyZeroSince >= state.config.hunger.hungryAfterCycles
+    state.cycle - p.satietyZeroSince >= state.config.hungryAfterCycles
   );
 }
 

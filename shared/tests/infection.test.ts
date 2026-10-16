@@ -2,7 +2,8 @@ import { describe, expect, it } from "vitest";
 import { CHARACTERS } from "../src/characters.ts";
 import { DEFAULT_CONFIG } from "../src/config.ts";
 import { MODIFIERS } from "../src/modifiers.ts";
-import { applyAction, createGame, sendChat, viewFor } from "../src/rules.ts";
+import { sendChat } from "../src/chat.ts";
+import { applyAction, createGame, viewFor } from "../src/rules.ts";
 import type { Action, GameState, PlayerId, PlayerView, Seat } from "../src/types.ts";
 
 const seats: Seat[] = Array.from({ length: 4 }, (_, i) => ({ id: `p${i}`, name: `Player ${i}`, isBot: false, character: CHARACTERS[i]!.id }));

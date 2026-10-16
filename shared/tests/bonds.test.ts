@@ -146,7 +146,7 @@ describe("contamination", () => {
 
   it("converts the human at the capacity", () => {
     let s = bondBoth(ship(), "p0", "p2");
-    for (let i = 0; i < config.infection.capacity; i++) s = mustApply(i === 0 ? s : nextDay(s), "p0", dtt("p2"));
+    for (let i = 0; i < config.contaminationCapacity; i++) s = mustApply(i === 0 ? s : nextDay(s), "p0", dtt("p2"));
     expect(player(s, "p0").role).toBe("mush");
     expect(viewFor(s, "p0").log.at(-1)).toMatchObject({ key: "converted" });
     expect(s.contamination).toEqual({});
@@ -157,8 +157,8 @@ describe("contamination", () => {
     try {
       const s = ship();
       player(s, "p0").modifiers.push("test_resistant");
-      expect(contaminationCapacity(s, player(s, "p0"))).toBe(config.infection.capacity + 2);
-      expect(contaminationCapacity(s, player(s, "p1"))).toBe(config.infection.capacity);
+      expect(contaminationCapacity(s, player(s, "p0"))).toBe(config.contaminationCapacity + 2);
+      expect(contaminationCapacity(s, player(s, "p1"))).toBe(config.contaminationCapacity);
     } finally {
       delete MODIFIERS["test_resistant"];
     }
