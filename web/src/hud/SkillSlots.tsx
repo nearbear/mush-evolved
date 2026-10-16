@@ -25,6 +25,7 @@ export function SkillSlots({
   const { t } = useTranslation();
   const names = useNames();
   const [open, setOpen] = useState(false);
+  const [pending, setPending] = useState<string | null>(null);
   const offered = view.legalActions.flatMap((a) => (a.type === "pick_skill" ? [a.skill] : []));
 
   return (
@@ -55,28 +56,47 @@ export function SkillSlots({
           );
         })}
       </ul>
-      <Dialog.Root open={open} onOpenChange={setOpen}>
+      <Dialog.Root
+        open={open}
+        onOpenChange={(o) => {
+          setOpen(o);
+          if (!o) setPending(null);
+        }}
+      >
         <Dialog.Portal>
           <Dialog.Backdrop className="settings-backdrop" />
           <Dialog.Popup className="settings-popup skill-picker">
             <Dialog.Title className="settings-title">{t("skills.title")}</Dialog.Title>
             <p className="skill-warning">{t("skills.warning")}</p>
-            <ul className="skill-list">
-              {offered.map((skill) => (
-                <li key={skill}>
+            {pending ? (
+              <div className="skill-confirm">
+                <SkillCard skill={pending} />
+                <p>{t("skills.confirm", { skill: names.skill(pending) })}</p>
+                <div className="skill-confirm-buttons">
+                  <button type="button" onClick={() => setPending(null)}>
+                    {t("skills.back")}
+                  </button>
                   <button
                     type="button"
                     onClick={() => {
-                      onAction({ type: "pick_skill", skill });
+                      onAction({ type: "pick_skill", skill: pending });
                       setOpen(false);
+                      setPending(null);
                     }}
                   >
-                    <img src={skillIcon(skill)} alt="" />
-                    {names.skill(skill)}
+                    {t("skills.confirmYes")}
                   </button>
-                </li>
-              ))}
-            </ul>
+                </div>
+              </div>
+            ) : (
+              <ul className="skill-list">
+                {offered.map((skill) => (
+                  <li key={skill}>
+                    <SkillCard skill={skill} onSelect={() => setPending(skill)} />
+                  </li>
+                ))}
+              </ul>
+            )}
             <Dialog.Close className="settings-close">{t("skills.close")}</Dialog.Close>
           </Dialog.Popup>
         </Dialog.Portal>
@@ -113,5 +133,41 @@ function SkillSlot({ skill }: { skill: string }) {
         </Popover.Positioner>
       </Popover.Portal>
     </Popover.Root>
+  );
+}
+
+/** An outlined card: title, icon, description. With onSelect the whole card is the click target (a div, not a
+ * button, so it keeps the card look instead of the Mush button sprites). */
+function SkillCard({ skill, onSelect }: { skill: string; onSelect?: () => void }) {
+  const { t } = useTranslation();
+  const names = useNames();
+  const effects = String(t(`skills.effects.${skill}` as never, { defaultValue: "" })).split("\n").filter(Boolean);
+  const interactive = onSelect
+    ? {
+        role: "button",
+        tabIndex: 0,
+        onClick: onSelect,
+        onKeyDown: (e: React.KeyboardEvent) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            onSelect();
+          }
+        },
+      }
+    : {};
+  return (
+    <div className="skill-pick-card" {...interactive}>
+      <header>
+        <img src={skillIcon(skill)} alt="" />
+        <strong>{names.skill(skill)}</strong>
+      </header>
+      {effects.length > 0 && (
+        <ul>
+          {effects.map((line) => (
+            <li key={line}>{line}</li>
+          ))}
+        </ul>
+      )}
+    </div>
   );
 }

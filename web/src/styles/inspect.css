@@ -109,21 +109,65 @@
 }
 .skill-list {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr));
-  gap: 0.4rem;
+  grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
+  gap: 0.6rem;
   list-style: none;
   margin: 0;
   padding: 0;
 }
-.skill-list button {
+.skill-pick-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  box-sizing: border-box;
+  height: 100%;
+  padding: 0 0 0.6rem;
+  overflow: hidden;
+  background: var(--panel-fill);
+  border: 1px solid var(--panel-rim);
+  border-radius: var(--panel-radius);
+  box-shadow: 0 0 6px var(--panel-shadow);
+}
+.skill-pick-card[role="button"] {
+  cursor: pointer;
+}
+.skill-pick-card[role="button"]:hover,
+.skill-pick-card[role="button"]:focus-visible {
+  border-color: #fff;
+}
+.skill-pick-card header {
   display: flex;
   align-items: center;
-  gap: 0.4rem;
-  width: 100%;
-  margin: 0;
-  text-align: left;
+  gap: 0.5rem;
+  align-self: stretch;
+  padding: 0.5rem 0.6rem;
+  /* Same as the idle iTrackie tabs. */
+  background: color-mix(in srgb, var(--panel-fill) 55%, black);
+  border-bottom: 1px solid var(--panel-rim);
 }
-.skill-picker {
+.skill-pick-card img {
+  image-rendering: pixelated;
+}
+.skill-pick-card ul {
+  margin: 0;
+  padding: 0 0.6rem 0 1.7rem;
+  font-size: 0.8rem;
+}
+.skill-confirm {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+}
+.skill-confirm p {
+  margin: 0;
+}
+.skill-confirm-buttons {
+  display: flex;
+  gap: 0.5rem;
+}
+.settings-popup.skill-picker {
+  width: min(56rem, calc(100vw - 2rem));
   overflow-y: auto;
 }
 .skill-card {

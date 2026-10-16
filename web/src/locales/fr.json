@@ -277,6 +277,9 @@
   "skills": {
     "title": "Choisir une compétence",
     "slot": "Emplacement de compétence {{n}} (vide)",
+    "confirm": "Choisir {{skill}} ?",
+    "confirmYes": "Choisir",
+    "back": "Retour",
     "pick": "Choisir une compétence pour cet emplacement",
     "close": "Annuler",
     "warning": "Une compétence ne peut plus être changée une fois choisie.",
