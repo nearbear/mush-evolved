@@ -34,7 +34,7 @@ The record of answered rule decisions and the design for the rules that are not 
 - **Win conditions:**
   - Mush win if all humans are dead, or if the ship returns to Sol while any Mush is alive.
   - Humans win if the ship returns to Sol with no Mush alive.
-- **Visibility:** Mush know each other and have a private chat channel.
+- **Visibility:** Mush have a private chat channel. Nobody ever sees another player's faction, Mush included (owner, 2026-10-16): a faction indicator shows only on a player's own summary, and Mush learn who the other Mush are only through the Mush channel. Spiking items (e.g. coffee) are descoped from #25.
 - **Chat:** room speech is always available and is written into the room log like a public action. Global chat requires an **iTrackie** in your inventory.
 - **Inventory** (2026-10-11): 3 private slots, unlimited room storage, free take/drop logged publicly.
 - **iTrackie** (2026-10-13): everyone starts with one; it is a normal item (uses a slot, can be dropped or taken); carrying one is required to read and post in global chat and the feature threads.
