@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { CHARACTERS } from "./characters.ts";
-import { DEFAULT_CONFIG } from "./config.ts";
-import { ITRACKIE_ITEM } from "./items.ts";
-import { channelLimit, MODIFIERS } from "./modifiers.ts";
-import { parseGameMessage } from "./protocol.ts";
+import { CHARACTERS } from "../src/characters.ts";
+import { DEFAULT_CONFIG } from "../src/config.ts";
+import { ITRACKIE_ITEM } from "../src/items.ts";
+import { channelLimit, MODIFIERS } from "../src/modifiers.ts";
+import { parseGameMessage } from "../src/protocol.ts";
 import {
   applyAction,
   CHAT_HISTORY,
@@ -15,8 +15,8 @@ import {
   toggleCheckbox,
   viewFor,
   type ActionResult,
-} from "./rules.ts";
-import type { GameState, PrivateChannelId, Seat } from "./types.ts";
+} from "../src/rules.ts";
+import type { GameState, PrivateChannelId, Seat } from "../src/types.ts";
 
 const seats: Seat[] = Array.from({ length: 8 }, (_, i) => ({
   id: `p${i}`,

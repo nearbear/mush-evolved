@@ -1,11 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { CHEATS, type Cheat } from "./cheats.ts";
-import { CHARACTERS } from "./characters.ts";
-import { DEFAULT_CONFIG } from "./config.ts";
-import { parseGameMessage } from "./protocol.ts";
-import { applyInput, replayGame, type Input } from "./replay.ts";
-import { applyAction, createGame, setActopiCheat, setCheat, viewFor } from "./rules.ts";
-import type { GameState, PlayerId, Seat } from "./types.ts";
+import { CHEATS, type Cheat } from "../src/cheats.ts";
+import { CHARACTERS } from "../src/characters.ts";
+import { DEFAULT_CONFIG } from "../src/config.ts";
+import { parseGameMessage } from "../src/protocol.ts";
+import { applyInput, replayGame, type Input } from "../src/replay.ts";
+import { applyAction, createGame, setActopiCheat, setCheat, viewFor } from "../src/rules.ts";
+import type { GameState, PlayerId, Seat } from "../src/types.ts";
 
 const seats: Seat[] = Array.from({ length: 3 }, (_, i) => ({ id: `p${i}`, name: `Player ${i}`, isBot: false, character: CHARACTERS[i]!.id }));
 const fresh = () => createGame(seats, DEFAULT_CONFIG, 7);

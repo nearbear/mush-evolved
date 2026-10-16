@@ -1,9 +1,9 @@
 import { CHAT_CHANNELS, type GameServerMessage, type PlayerView } from "@mush2/shared";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { FakeConnection, FakeServer, FakeStorage, seats, tokensFor } from "./testing/fakes.ts";
+import { FakeConnection, FakeServer, FakeStorage, seats, tokensFor } from "../src/testing/fakes.ts";
 
 vi.mock("partyserver", () => ({ Server: FakeServer }));
-const { GameRoom } = await import("./GameRoom.ts");
+const { GameRoom } = await import("../src/GameRoom.ts");
 
 type Conn = FakeConnection<{ playerId: string }>;
 type Room = InstanceType<typeof GameRoom>;

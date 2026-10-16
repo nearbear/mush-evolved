@@ -1,6 +1,6 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
-import { Markdown } from "./Markdown.tsx";
+import { Markdown } from "../../src/hud/Markdown.tsx";
 
 const html = (text: string, onToggle?: (line: number) => void) => renderToStaticMarkup(<Markdown text={text} onToggle={onToggle} />);
 

@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { CHARACTERS } from "./characters.ts";
-import { DEFAULT_CONFIG } from "./config.ts";
-import { applyInput, replayGame, startGame, type GameSetup, type Input } from "./replay.ts";
-import { legalActions } from "./rules.ts";
-import { nextInt, type RngState } from "./rng.ts";
-import { CHAT_CHANNELS, type GameState } from "./types.ts";
+import { CHARACTERS } from "../src/characters.ts";
+import { DEFAULT_CONFIG } from "../src/config.ts";
+import { applyInput, replayGame, startGame, type GameSetup, type Input } from "../src/replay.ts";
+import { legalActions } from "../src/rules.ts";
+import { nextInt, type RngState } from "../src/rng.ts";
+import { CHAT_CHANNELS, type GameState } from "../src/types.ts";
 
 const setup: GameSetup = {
   seats: Array.from({ length: 8 }, (_, i) => ({ id: `p${i}`, name: `Player ${i}`, isBot: false, character: CHARACTERS[i]!.id })),

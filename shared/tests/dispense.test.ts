@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { CHARACTERS } from "./characters.ts";
-import { DEFAULT_CONFIG } from "./config.ts";
-import { parseGameMessage } from "./protocol.ts";
-import { applyAction, createGame, viewFor } from "./rules.ts";
-import type { Action, GameState, PlayerId, Seat } from "./types.ts";
+import { CHARACTERS } from "../src/characters.ts";
+import { DEFAULT_CONFIG } from "../src/config.ts";
+import { parseGameMessage } from "../src/protocol.ts";
+import { applyAction, createGame, viewFor } from "../src/rules.ts";
+import type { Action, GameState, PlayerId, Seat } from "../src/types.ts";
 
 const seats: Seat[] = Array.from({ length: 3 }, (_, i) => ({ id: `p${i}`, name: `Player ${i}`, isBot: i > 0, character: CHARACTERS[i]!.id }));
 const MACHINE = "REFECTORY:COFFEE_DISPENSER";

@@ -9,6 +9,7 @@ export class DismantleAction extends Action<DismantleActionData> {
   constructor() {
     super("dismantle");
     this.baseAPCost = 3;
+    this.baseSuccessChance = 0.12;
   }
 
   override getCandidates(state: Readonly<GameState>, player: Readonly<PlayerState>): DismantleActionData[] {
@@ -20,10 +21,6 @@ export class DismantleAction extends Action<DismantleActionData> {
     if (!item) return "no_such_item";
     if (!ITEM_TYPES[item.type]?.dismantle || !canReach(state, player, item.at)) return "cant_dismantle";
     return this.canAfford(state, player, target);
-  }
-
-  override getSuccessChance(state: Readonly<GameState>): number {
-    return state.config.dismantleOdds;
   }
 
   override fail(state: GameState, player: PlayerState, target: DismantleActionData): void {

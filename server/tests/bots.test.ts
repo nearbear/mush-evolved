@@ -1,7 +1,7 @@
 import { DEFAULT_CONFIG, startGame, viewFor, type LogEntry } from "@mush2/shared";
 import { describe, expect, it } from "vitest";
-import { LogParrotBot, WanderBot } from "./bots.ts";
-import { seats } from "./testing/fakes.ts";
+import { LogParrotBot, WanderBot } from "../src/bots.ts";
+import { seats } from "../src/testing/fakes.ts";
 
 describe("WanderBot", () => {
   const game = startGame({ seats: seats(0), config: DEFAULT_CONFIG, seed: 1, rulesVersion: "test" });

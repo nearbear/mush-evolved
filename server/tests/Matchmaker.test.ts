@@ -1,6 +1,6 @@
 import { SEAT_COUNT, type MatchmakerServerMessage, type Seat } from "@mush2/shared";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { FakeConnection, FakeServer, FakeStorage } from "./testing/fakes.ts";
+import { FakeConnection, FakeServer, FakeStorage } from "../src/testing/fakes.ts";
 
 const setups: { roomId: string; seats: Seat[]; tokens: Record<string, string> }[] = [];
 
@@ -10,7 +10,7 @@ vi.mock("partyserver", () => ({
     setup: async (seats: Seat[], tokens: Record<string, string>) => void setups.push({ roomId, seats, tokens }),
   }),
 }));
-const { Matchmaker } = await import("./Matchmaker.ts");
+const { Matchmaker } = await import("../src/Matchmaker.ts");
 
 type Conn = FakeConnection<{ name: string | null; joinedAt: number }>;
 

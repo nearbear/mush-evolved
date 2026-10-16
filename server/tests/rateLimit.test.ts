@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { RateLimiter } from "./rateLimit.ts";
+import { RateLimiter } from "../src/rateLimit.ts";
 
 describe("RateLimiter", () => {
   it("allows up to the limit within a window, then refuses", () => {

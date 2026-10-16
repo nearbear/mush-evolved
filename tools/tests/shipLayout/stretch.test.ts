@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { RoomLayout, SliceInfo, TilePlacement } from "@mush2/shared";
-import { stretchRoom, stretchRooms } from "./stretch.ts";
+import { stretchRoom, stretchRooms } from "../../src/shipLayout/stretch.ts";
 
 const slices = { door: { footprint: [2, 1] }, crate: { footprint: [2, 1] } } as unknown as Record<string, SliceInfo>;
 const tile = (x: number, y: number, kind: TilePlacement["kind"], slice: string = kind, layer: TilePlacement["layer"] = 0): TilePlacement => ({

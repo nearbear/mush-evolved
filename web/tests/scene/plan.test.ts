@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import planJson from "@mush2/assets/derived/ship-plan.json";
 import type { CellRun, ShipPlan } from "@mush2/shared";
-import { cellsPath, iconSpots, runsPath } from "./plan.ts";
+import { cellsPath, iconSpots, runsPath } from "../../src/scene/plan.ts";
 
 const plan = planJson as ShipPlan;
 

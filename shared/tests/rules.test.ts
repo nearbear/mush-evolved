@@ -1,12 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { CHARACTERS } from "./characters.ts";
-import { DEFAULT_CONFIG, SHIP_ROOMS } from "./config.ts";
-import { apGain, moveCost, movementRules, MODIFIERS } from "./modifiers.ts";
-import { logPrivate, logSecret } from "./log.ts";
-import { applyAction, CHAT_HISTORY, createGame, MAX_CHAT_LENGTH, sendChat, viewFor } from "./rules.ts";
-import { ITRACKIE_ITEM } from "./items.ts";
-import { parseGameMessage } from "./protocol.ts";
-import { CHAT_CHANNELS, type Action, type ChatChannel, type GameState, type MovementRules, type PlayerId, type Seat } from "./types.ts";
+import { CHARACTERS } from "../src/characters.ts";
+import { DEFAULT_CONFIG, SHIP_ROOMS } from "../src/config.ts";
+import { apGain, moveCost, movementRules, MODIFIERS } from "../src/modifiers.ts";
+import { logPrivate, logSecret } from "../src/log.ts";
+import { applyAction, CHAT_HISTORY, createGame, MAX_CHAT_LENGTH, sendChat, viewFor } from "../src/rules.ts";
+import { ITRACKIE_ITEM } from "../src/items.ts";
+import { parseGameMessage } from "../src/protocol.ts";
+import { CHAT_CHANNELS, type Action, type ChatChannel, type GameState, type MovementRules, type PlayerId, type Seat } from "../src/types.ts";
 
 const seats: Seat[] = Array.from({ length: 8 }, (_, i) => ({
   id: `p${i}`,

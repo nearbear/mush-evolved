@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { CHARACTERS } from "./characters.ts";
-import { DEFAULT_CONFIG } from "./config.ts";
-import { applyAction, createGame, legalActions } from "./rules.ts";
-import { SKILLS } from "./skills.ts";
-import type { Action, Seat } from "./types.ts";
+import { CHARACTERS } from "../src/characters.ts";
+import { DEFAULT_CONFIG } from "../src/config.ts";
+import { applyAction, createGame, legalActions } from "../src/rules.ts";
+import { SKILLS } from "../src/skills.ts";
+import type { Action, Seat } from "../src/types.ts";
 
 const seats: Seat[] = Array.from({ length: 4 }, (_, i) => ({
   id: `p${i}`,

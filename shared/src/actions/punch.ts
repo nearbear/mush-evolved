@@ -13,6 +13,7 @@ export class PunchAction extends Action<PunchActionData> {
   constructor() {
     super("punch");
     this.baseAPCost = 1;
+    this.baseSuccessChance = 0.6; 
   }
 
   override getCandidates(state: Readonly<GameState>, player: Readonly<PlayerState>): PunchActionData[] {
@@ -22,10 +23,6 @@ export class PunchAction extends Action<PunchActionData> {
   override check(state: Readonly<GameState>, player: Readonly<PlayerState>, target: PunchActionData): string | null {
     if (!peopleHere(state, player).some((o) => o.id === target.target)) return "cant_see";
     return this.canAfford(state, player, target);
-  }
-
-  override getSuccessChance(state: Readonly<GameState>): number {
-    return 1 - state.config.punchMissOdds;
   }
 
   override apply(state: GameState, player: PlayerState, target: PunchActionData): void {

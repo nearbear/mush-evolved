@@ -12,7 +12,7 @@ import {
   spreadActors,
   standSpot,
   walkableCells,
-} from "./placement.ts";
+} from "../../src/iso/placement.ts";
 
 const slice = (over: Partial<SliceInfo>): SliceInfo => ({
   sheet: "S",

@@ -1,11 +1,11 @@
 import { readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { describe, expect, it } from "vitest";
-import { checkCatalog, flatten, pluralCategories, usedKeys, type Catalog } from "./catalog.ts";
-import { findHardcodedUi, findHardcodedWire, stripComments } from "./hardcoded.ts";
+import { checkCatalog, flatten, pluralCategories, usedKeys, type Catalog } from "../../src/i18n/catalog.ts";
+import { findHardcodedUi, findHardcodedWire, stripComments } from "../../src/i18n/hardcoded.ts";
 
 const ROOT = resolve(import.meta.dirname, "../../..");
-const BASELINE_FILE = resolve(import.meta.dirname, "baseline.json");
+const BASELINE_FILE = resolve(import.meta.dirname, "../../src/i18n/baseline.json");
 const LOCALES = ["en", "fr", "es"] as const;
 
 // ---------------------------------------------------------------------------
@@ -111,7 +111,7 @@ describe("findHardcodedUi", () => {
     expect(ui(`<button aria-label={t("close")} title={name} alt={p.name} />`)).toEqual([]);
     expect(ui(`<div className="Panel big" id="room-1" />`)).toEqual([]);
     expect(ui(`if (e.key === "Enter" || e.key !== "Escape") {}`)).toEqual([]);
-    expect(ui(`import { App } from "./App.tsx"; const x = lower("keys.only");`)).toEqual([]);
+    expect(ui(`import { App } from "../../src/i18n/App.tsx"; const x = lower("keys.only");`)).toEqual([]);
     expect(ui(`console.warn("Bot chose an illegal action"); throw new Error("Unknown player");`)).toEqual([]);
   });
 

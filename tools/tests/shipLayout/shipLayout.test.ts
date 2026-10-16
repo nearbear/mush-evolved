@@ -3,11 +3,11 @@ import { resolve } from "node:path";
 import { deflateSync } from "node:zlib";
 import { describe, expect, it } from "vitest";
 import type { ShipPlan, ShipRoom } from "@mush2/shared";
-import { convert, formatLayout, formatRooms, ROOM_IDS, roomGraph } from "./convert.ts";
-import { unserialize } from "./haxe.ts";
-import { decodePng, pngSize, type Image } from "./png.ts";
-import { cachedPlan, convertShipPlan, formatShipPlan, runs } from "./shipPlan.ts";
-import { parseXml } from "./xml.ts";
+import { convert, formatLayout, formatRooms, ROOM_IDS, roomGraph } from "../../src/shipLayout/convert.ts";
+import { unserialize } from "../../src/shipLayout/haxe.ts";
+import { decodePng, pngSize, type Image } from "../../src/shipLayout/png.ts";
+import { cachedPlan, convertShipPlan, formatShipPlan, runs } from "../../src/shipLayout/shipPlan.ts";
+import { parseXml } from "../../src/shipLayout/xml.ts";
 
 const MUSH = resolve(import.meta.dirname, "../../../Mush");
 

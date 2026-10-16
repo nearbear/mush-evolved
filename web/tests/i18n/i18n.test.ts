@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
-import { LOCALE_KEY, matchLocale, pickLocale } from "./locale.ts";
+import { LOCALE_KEY, matchLocale, pickLocale } from "../../src/i18n/locale.ts";
 
 describe("matchLocale", () => {
   it("accepts region and case variants, and rejects languages we don't ship", () => {
@@ -43,7 +43,7 @@ describe("i18n runtime", () => {
       setItem: (k: string, v: string) => void store.set(k, v),
     });
     vi.stubGlobal("document", { documentElement: html });
-    i18n = (await import("./index.ts")).default;
+    i18n = (await import("../../src/i18n/index.ts")).default;
   });
   afterAll(() => vi.unstubAllGlobals());
 
