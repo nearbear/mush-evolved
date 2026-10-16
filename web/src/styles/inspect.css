@@ -57,3 +57,79 @@
   height: 32px;
   image-rendering: pixelated;
 }
+
+/* Skill slots, overlaid on the portrait's top-right corner. */
+.inspect-figure {
+  position: relative;
+  width: fit-content;
+  max-width: 100%;
+  margin: 0 auto;
+}
+.skill-slots {
+  position: absolute;
+  top: 0.9rem;
+  right: 0.3rem;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+}
+.skill-slots ul {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.skill-slot {
+  display: grid;
+  place-items: center;
+  box-sizing: border-box;
+  width: 36px;
+  height: 36px;
+  margin: 0;
+  padding: 0;
+  background: rgb(10 20 45 / 0.8);
+  border: 1px solid rgb(255 255 255 / 0.35);
+  border-radius: 6px;
+}
+.skill-slot img {
+  display: block;
+  max-width: 28px;
+  max-height: 28px;
+}
+.skill-slot-empty {
+  opacity: 0.35;
+}
+.skill-warning {
+  margin: 0;
+  font-size: 0.85rem;
+  opacity: 0.8;
+}
+.skill-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr));
+  gap: 0.4rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.skill-list button {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  width: 100%;
+  margin: 0;
+  text-align: left;
+}
+.skill-picker {
+  overflow-y: auto;
+}
+.skill-card {
+  max-width: min(18rem, calc(100vw - 2rem));
+}
+.skill-card ul {
+  margin: 0.4rem 0 0;
+  padding-left: 1.1rem;
+}

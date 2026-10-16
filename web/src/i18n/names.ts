@@ -13,6 +13,7 @@ export function useNames() {
   const room = (id: RoomId) => lookup("rooms", id);
   const equipment = (type: string) => lookup("equipment", type);
   const item = (type: string) => lookup("items", type);
+  const skill = (id: string) => t(`skills.names.${id}` as never, { defaultValue: id });
 
   /** The text of a log entry. `room`, `item` and `equipment` params are ids and get translated. */
   const logLine = ({ key, params = {} }: Pick<LogEntry, "key" | "params">): string => {
@@ -23,5 +24,5 @@ export function useNames() {
     return t(`logEvent.${key}` as never, { ...resolved, defaultValue: key });
   };
 
-  return { room, equipment, item, logLine };
+  return { room, equipment, item, skill, logLine };
 }

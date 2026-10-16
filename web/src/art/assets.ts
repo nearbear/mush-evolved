@@ -129,6 +129,13 @@ export const STATUS_ICONS: Readonly<Record<"dirty" | "full_belly" | "hungry", st
   hungry: statusIconFiles["hungry"]!,
 };
 
+// Skill icons (one per skill id, see shared/src/skills.ts).
+const skillIcons = urls(import.meta.glob<string>("../../../Mush/www/img/icons/skills/*.png", { eager: true, query: "?url", import: "default" }));
+export const skillIcon = (id: string): string => skillIcons[id] ?? EMPTY_SLOT_ICON;
+
+/** The gold plus on an empty skill slot. */
+export const GOLD_PLUS_ICON = uiIcons["goldplus"]!;
+
 /** The spore resource. */
 export const SPORE_ICON = uiIcons["spore"]!;
 

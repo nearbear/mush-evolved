@@ -73,9 +73,9 @@ export const DEFAULT_CONFIG: GameConfig = {
   // Confirmed 2026-10-13: dismantle cost.
   dismantleAp: 3,
   dismantleOdds: 0.12,
-  // Confirmed 2026-10-15: everyone starts with Creative in one of their three
-  // skill slots; the other two stay empty until players can pick skills.
-  startSkills: ["creative"],
+  // Confirmed 2026-10-15: nobody starts with a skill; players pick up to three
+  // (SKILL_SLOTS) with the free, permanent pick_skill action.
+  startSkills: [],
   creativeRefundOdds: 0.5,
   // PLACEHOLDER items with no effects, so there is something to pick up.
   startItems: [

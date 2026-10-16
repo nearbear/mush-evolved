@@ -7,6 +7,7 @@ import type { ReactNode } from "react";
 import { CHARACTERS, type Action, type OtherPlayerView, type PlayerView, type Target } from "@mush2/shared";
 import { EMPTY_SLOT_ICON, characterImage, itemIcon, portrait } from "../art/assets.ts";
 import { ActionLabel } from "./ActionLabel.tsx";
+import { SkillSlots } from "./SkillSlots.tsx";
 import { StatusIcons } from "./StatusIcons.tsx";
 import { actionLabelKey, actionsOn, costOf, resolveTarget, type Resolved } from "./targets.ts";
 
@@ -33,7 +34,7 @@ export function InspectPanel({
       <div className="panel-head">
         <h2>Inspect</h2>
       </div>
-      {resolved && <Details view={view} resolved={resolved} />}
+      {resolved && <Details view={view} resolved={resolved} onAction={onAction} />}
       {actions.length > 0 && (
         <div className="inspect-actions">
           {actions.map((a) => (
@@ -56,20 +57,24 @@ function BondTag({ view, id }: { view: PlayerView; id: string }) {
   return <span className="tag">{t(to && from ? "bond.both" : to ? "bond.toThem" : "bond.fromThem")}</span>;
 }
 
-function Details({ view, resolved }: { view: PlayerView; resolved: Resolved }) {
+function Details({ view, resolved, onAction }: { view: PlayerView; resolved: Resolved; onAction: (action: Action) => void }) {
   const names = useNames();
   switch (resolved.kind) {
     case "player": {
       const { person } = resolved;
       const character = CHARACTERS.find((c) => c.id === person.character);
       const art = characterImage(person.character);
+      const isYou = person.id === view.you.id;
       return (
         <>
-          {art ? (
-            <img className="inspect-art" src={art} alt={character?.name ?? ""} />
-          ) : (
-            <img className="inspect-portrait" src={portrait(person.character)} alt="" />
-          )}
+          <div className="inspect-figure">
+            {art ? (
+              <img className="inspect-art" src={art} alt={character?.name ?? ""} />
+            ) : (
+              <img className="inspect-portrait" src={portrait(person.character)} alt="" />
+            )}
+            <SkillSlots view={view} skills={person.skills} isYou={isYou} onAction={onAction} />
+          </div>
           <div className="inspect-name">
             <strong>{person.name}</strong>
             {person.isBot && <span className="tag">AI</span>}

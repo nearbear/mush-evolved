@@ -233,6 +233,8 @@ export function viewFor(state: GameState, playerId: PlayerId): PlayerView {
         ready,
         // Public statuses are what you can see on someone standing in your room; nobody else's.
         statuses: room === you.room ? publicStatusesOf(state, o) : [],
+        // Skills are public, but like statuses only to people who can see the player.
+        skills: room === you.room ? [...o.skills] : [],
       };
     }),
     unidentified: others

@@ -3,6 +3,7 @@
 
 import { isActopiCheat, isCheat, type ActopiCheat, type Cheat } from "./cheats.ts";
 import { MAX_CHAT_LENGTH } from "./rules.ts";
+import { isSkill } from "./skills.ts";
 import { CHAT_CHANNELS, type Action, type ChannelId, type PlayerId, type PlayerView, type PrivateChannelId, type Role } from "./types.ts";
 
 export const MAX_NAME_LENGTH = 24;
@@ -80,6 +81,7 @@ export function parseGameMessage(raw: string): GameClientMessage | null {
   if ((a.type === "bond" || a.type === "dtt" || a.type === "stt" || a.type === "heal" || a.type === "punch" || a.type === "spike") && typeof a.target === "string") {
     return { type: "action", action: { type: a.type, target: a.target } };
   }
+  if (a.type === "pick_skill" && isSkill(a.skill)) return { type: "action", action: { type: "pick_skill", skill: a.skill } };
   if (a.type === "examine" && isRecord(a.target) && typeof a.target.id === "string") {
     const { kind, id } = a.target;
     if (kind === "player" || kind === "equipment" || kind === "item") {

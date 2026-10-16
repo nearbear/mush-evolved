@@ -119,6 +119,6 @@ describe("healing in the sick bay", () => {
     const other = viewFor(s, "p1");
     expect(other.you.resources.heal).toBe(0);
     expect(JSON.stringify(other.players)).not.toContain("resources");
-    expect(JSON.stringify(other.players)).not.toContain("medic");
+    expect(JSON.stringify(other.players)).not.toContain("heal");
   });
 });

@@ -105,7 +105,7 @@ export interface GameConfig {
   dismantleOdds: number;
   /** Chance that the Creative skill refunds 1 AP after a failed action that cost AP (confirmed 2026-10-15). */
   creativeRefundOdds: number;
-  /** Skills every player starts with (confirmed 2026-10-15; a skill picker will replace this). */
+  /** Skills every player starts with (none since 2026-10-15; players pick their own). */
   startSkills: string[];
   /** Items placed in rooms at the start of the game. Types come from ITEM_TYPES in items.ts. */
   startItems: { type: string; room: RoomId }[];
@@ -153,8 +153,8 @@ export interface PlayerState extends Seat {
    */
   modifiers: string[];
   /**
-   * Skill ids in the player's human skill slots (3 for now, all free to fill; a book slot comes later). Each is
-   * a modifier id in modifiers.ts. In no view yet (roommates will see them once there is a skills UI).
+   * Skill ids in the player's human skill slots (SKILL_SLOTS; a book slot comes later). Each is a modifier id in
+   * modifiers.ts. Picked for good with the `pick_skill` action. Roommates see them in `OtherPlayerView.skills`.
    */
   skills: string[];
   alive: boolean;
@@ -321,6 +321,8 @@ export interface OtherPlayerView {
   ready: boolean;
   /** Ids of the statuses everyone can see on this person (public ones only; see statuses.ts). */
   statuses: string[];
+  /** Skills they have chosen. Public to anyone in your room (empty for people elsewhere). */
+  skills: string[];
 }
 
 /** What one seat is allowed to know. This is the only game data a client or bot receives. */

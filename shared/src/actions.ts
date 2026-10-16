@@ -9,6 +9,7 @@ import { logPrivate, logPublic, logSecret } from "./log.ts";
 import { addStatus, isFullBelly, removeStatus } from "./statuses.ts";
 import { contaminationCapacity, healAmount, moveCost, movementRules, sporesPerDay } from "./modifiers.ts";
 import { dayOf } from "./rules.ts";
+import { SKILLS, SKILL_SLOTS, isSkill } from "./skills.ts";
 import type { Action, Container, GameState, ItemState, LogParams, PlayerId, PlayerState, Target } from "./types.ts";
 
 export type ActionType = Action["type"];
@@ -253,7 +254,6 @@ const extractSpore: ActionDef<ActionOf<"extract_spore">> = {
 };
 
 /**
-/**
  * Spiking (confirmed 2026-10-15): a Mush spends 1 AP and 1 spore to raise a
  * living human in their room by 1 contamination (capped at capacity; converting
  * is not built yet). Always succeeds. Secret log: bystanders learn of it, the
@@ -279,6 +279,7 @@ const spike: ActionDef<ActionOf<"spike">> = {
   },
 };
 
+/**
  * Washing off dirty at a shower (confirmed 2026-10-14). Only offered while dirty.
  * Costs `showerAp`, less with soap in your inventory (the soap is not used up).
  * A Mush also takes `showerMushDamage` HP (floor 0). Private log: nobody learns
@@ -360,6 +361,23 @@ const punch: ActionDef<ActionOf<"punch">> = {
   },
 };
 
+/**
+ * Pick a skill (confirmed 2026-10-15): free, permanent, any time there is an empty slot (SKILL_SLOTS), one
+ * of each skill. No log line.
+ */
+const pickSkill: ActionDef<ActionOf<"pick_skill">> = {
+  candidates: (_state, p) => SKILLS.filter((s) => !p.skills.includes(s)).map((skill) => ({ type: "pick_skill", skill })),
+  check(_state, p, a) {
+    if (!isSkill(a.skill)) return "no_such_skill";
+    if (p.skills.includes(a.skill)) return "have_skill";
+    return p.skills.length < SKILL_SLOTS ? null : "no_free_slot";
+  },
+  cost: free,
+  apply(_next, p, a) {
+    p.skills.push(a.skill);
+  },
+};
+
 const ready: ActionDef<ActionOf<"ready">> = {
   candidates: () => [{ type: "ready" }],
   check: () => null,
@@ -383,9 +401,11 @@ export const ACTIONS: { [T in ActionType]: ActionDef<ActionOf<T>> } = {
   dtt: share("dtt"),
   stt: share("stt"),
   extract_spore: extractSpore,
+  spike,
   shower,
   heal,
   punch,
+  pick_skill: pickSkill,
 };
 
 /** Everything a player can see and so interact with: people and equipment in their room, their items and the room's. */
@@ -401,7 +421,6 @@ export function visibleTargets(state: Readonly<GameState>, player: Readonly<Play
 /** The log message for examining a target. Only called for targets the player can see. */
 function examineEvent(state: Readonly<GameState>, viewer: Readonly<PlayerState>, target: Target): [string, LogParams] {
   switch (target.kind) {
-  spike,
     case "player":
       return target.id === viewer.id
         ? ["examineSelf", {}]

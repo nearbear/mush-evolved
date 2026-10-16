@@ -15,3 +15,4 @@ export * from "./replay.ts";
 export * from "./cheats.ts";
 export * from "./statuses.ts";
 export * from "./resources.ts";
+export * from "./skills.ts";

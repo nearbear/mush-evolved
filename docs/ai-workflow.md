@@ -480,3 +480,18 @@ Owner decided: same-room targets only, 40% miss chance, public action. Cost 1 AP
 - Owner decided via questions: care points add 2 per day and stack, any heal auto-spends one and becomes free, anyone can heal in the sick bay without a medikit (normal AP cost), and nobody gets the medic skill by default.
 - Worked: the unused `resources.heal` counter was already in state and the owner's view, so care points needed no state change. Skill = modifier with a new `carePointsPerDay` hook.
 - Needed correction: the old heal tests used SICK_BAY as the generic room, which now allows medikit-free healing; moved them to LABORATORY. First AskUserQuestion had 5 questions (limit 4), so one was folded into a stated assumption.
+
+### 2026-10-15: skills UI and the pick_skill action
+- **Decided by the user:** all skills pickable for now (per-character sets later), picks free and permanent, Creative no longer a default, skills public to the room and shown only on the Inspect portrait (not the self panel), gold plus from the icon catalog for empty slots on your own portrait only, mobile layout the same as desktop.
+- **What I did:** asked seven questions with defaults first; the user's answers settled all of them. `pick_skill` is an ordinary action, so the client lists choices from `legalActions`. I picked the 58 human, retained, non-beta skills from `skills.json` (all have icons). The en and es skill names are my drafts; fr comes from the original table.
+- **Needed correction:** two existing tests assumed the old rules (Creative at start, skills hidden from roommates); I updated them instead of leaving them failing. Not verified in a browser yet.
+
+## 2026-10-15: spiking action
+- Decision (owner): `spike` is Mush-only, 1 AP + 1 spore, targets a living human in the room, always succeeds, contamination +1 (cap 3), no conversion yet. Bystanders see the log line, the victim does not.
+- Worked: the `rule` skill's question step surfaced target, cost, failure, and conversion scope in one round.
+- Needed correction: I first described the log as `logSecret` with "victim not told", but `logSecret` counts the victim as a witness, so my own test failed. Asked the owner, then added a `hideFrom` parameter to `logSecret`.
+
+### 2026-10-15: skill tooltips
+- **Decided by the user:** use the same hover card as the extras-card resources (Base UI Popover with `openOnHover`), with the original descriptions from the derived data, translated to English where none existed.
+- **What I did:** each filled skill slot opens a card with the name, the flavor text (`desc`) and the effect lines (`footnotes`) from `Mush/derived/data/Data/skills.json`. That data is French only, so fr is the original text with its `:pa:`-style icon codes and `*` markup turned into plain text (PA, PM, PMo, PV). The en and es translations are mine (best effort). The tapped-name caption from the first version is gone, since the popover also opens on tap.
+- **Caveat:** these are the original game's descriptions, not our rules. `medic` here still says "+2 HP on Heal", while our implementation gives care points, and most skills have no effect yet.

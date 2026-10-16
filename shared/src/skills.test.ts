@@ -2,7 +2,10 @@ import { describe, expect, it } from "vitest";
 import { CHARACTERS } from "./characters.ts";
 import { DEFAULT_CONFIG } from "./config.ts";
 import { actionFailed } from "./modifiers.ts";
+import { legalActions } from "./rules.ts";
 import { applyAction, createGame, viewFor } from "./rules.ts";
+import { parseGameMessage } from "./protocol.ts";
+import { SKILLS, SKILL_SLOTS } from "./skills.ts";
 import type { GameConfig, GameState, Seat } from "./types.ts";
 
 const seats: Seat[] = Array.from({ length: 4 }, (_, i) => ({
@@ -12,7 +15,7 @@ const seats: Seat[] = Array.from({ length: 4 }, (_, i) => ({
   character: CHARACTERS[i]!.id,
 }));
 
-const config: GameConfig = { ...DEFAULT_CONFIG, startInventory: [], startItems: [] };
+const config: GameConfig = { ...DEFAULT_CONFIG, startInventory: [], startItems: [], startSkills: ["creative"] };
 
 /** Everyone starts in the same room; p0 carries a camera to dismantle (3 AP). */
 function withCamera(dismantleOdds: number, creativeRefundOdds: number): GameState {
@@ -30,11 +33,6 @@ function dismantle(state: GameState): GameState {
 const refunds = (state: GameState) => state.log.filter((e) => e.key === "creativeRefund");
 
 describe("Creative", () => {
-  it("is one of every player's starting skills", () => {
-    const state = createGame(seats, DEFAULT_CONFIG, 42);
-    for (const p of state.players) expect(p.skills).toEqual(["creative"]);
-  });
-
   it("refunds 1 AP after a failed action that cost AP, with a private log line", () => {
     const before = withCamera(0, 1);
     const next = dismantle(before);
@@ -87,13 +85,69 @@ describe("Creative", () => {
     };
     for (const seed of [1, 2, 3, 4, 5]) expect(outcomes(seed)).toBe(outcomes(seed));
   });
+});
 
-  it("shows your own skills only to you, not to anyone else (even in your room)", () => {
-    const state = createGame(seats, DEFAULT_CONFIG, 42);
-    for (const p of state.players) {
-      const view = viewFor(state, p.id);
-      expect(view.you.skills).toEqual(["creative"]);
-      expect(JSON.stringify({ ...view, you: undefined })).not.toMatch(/"skills"|"creative"/);
+function pick(state: GameState, id: string, skill: string) {
+  return applyAction(state, id, { type: "pick_skill", skill });
+}
+
+describe("picking skills", () => {
+  const fresh = () => createGame(seats, { ...DEFAULT_CONFIG, startInventory: [], startItems: [] }, 42);
+
+  it("starts everyone with no skills", () => {
+    for (const p of fresh().players) expect(p.skills).toEqual([]);
+  });
+
+  it("adds the skill for free and keeps it", () => {
+    const before = fresh();
+    const result = pick(before, "p0", "medic");
+    if (!result.ok) throw new Error(result.error);
+    const p = result.state.players[0]!;
+    expect(p.skills).toEqual(["medic"]);
+    expect([p.ap, p.mp]).toEqual([before.players[0]!.ap, before.players[0]!.mp]);
+    expect(before.players[0]!.skills).toEqual([]); // the input state is untouched
+  });
+
+  it("offers every skill you lack while a slot is free, and none once full", () => {
+    let state = fresh();
+    const offered = () => legalActions(state, "p0").filter((a) => a.type === "pick_skill");
+    expect(offered()).toHaveLength(SKILLS.length);
+    for (const skill of SKILLS.slice(0, SKILL_SLOTS)) {
+      const r = pick(state, "p0", skill);
+      if (!r.ok) throw new Error(r.error);
+      state = r.state;
     }
+    expect(offered()).toHaveLength(0);
+    expect(pick(state, "p0", SKILLS[SKILL_SLOTS]!).ok).toBe(false);
+    expect(state.players[0]!.skills).toHaveLength(SKILL_SLOTS);
+  });
+
+  it("refuses a skill you already have or one that doesn't exist, leaving state unchanged", () => {
+    const state = fresh();
+    state.players[0]!.skills = ["medic"];
+    const before = JSON.stringify(state);
+    expect(pick(state, "p0", "medic").ok).toBe(false);
+    expect(pick(state, "p0", "no_such_skill").ok).toBe(false);
+    expect(JSON.stringify(state)).toBe(before);
+  });
+
+  it("validates the skill id in untrusted messages", () => {
+    const msg = (skill: unknown) => parseGameMessage(JSON.stringify({ type: "action", action: { type: "pick_skill", skill } }));
+    expect(msg("medic")).toEqual({ type: "action", action: { type: "pick_skill", skill: "medic" } });
+    expect(msg("nope")).toBeNull();
+    expect(msg(5)).toBeNull();
+  });
+
+  it("shows skills to people in the same room, and to nobody elsewhere", () => {
+    const state = fresh();
+    state.players[0]!.skills = ["creative", "medic"];
+    expect(viewFor(state, "p0").you.skills).toEqual(["creative", "medic"]);
+    const roommate = viewFor(state, "p1").players.find((o) => o.id === "p0")!;
+    expect(roommate.skills).toEqual(["creative", "medic"]);
+
+    const far = Object.keys(state.config.rooms).find((r) => r !== state.players[0]!.room)!;
+    state.players[1]!.room = far;
+    const stranger = viewFor(state, "p1").players.find((o) => o.id === "p0");
+    expect(JSON.stringify(stranger)).not.toMatch(/creative|medic/);
   });
 });

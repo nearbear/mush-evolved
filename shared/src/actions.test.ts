@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { CHARACTERS } from "./characters.ts";
 import { DEFAULT_CONFIG } from "./config.ts";
 import { applyAction, createGame, legalActions } from "./rules.ts";
+import { SKILLS } from "./skills.ts";
 import type { Action, Seat } from "./types.ts";
 
 const seats: Seat[] = Array.from({ length: 4 }, (_, i) => ({
@@ -31,6 +32,7 @@ describe("action registry", () => {
       // Everyone starts in the Laboratory, so p0 can bond with the other three (DTT and STT need a bond first).
       ...seats.filter((s) => s.id !== "p0").map((s): Action => ({ type: "bond", target: s.id })),
       ...seats.filter((s) => s.id !== "p0").map((s): Action => ({ type: "punch", target: s.id })),
+      ...SKILLS.map((skill): Action => ({ type: "pick_skill", skill })),
       ...DEFAULT_CONFIG.equipment.LABORATORY!.map((e): Action => ({ type: "examine", target: { kind: "equipment", id: e.id } })),
       ...[...mine, ...floor].map((i): Action => ({ type: "examine", target: { kind: "item", id: i.id } })),
     ];
