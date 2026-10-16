@@ -22,11 +22,13 @@ export function SkillSlots({
   isYou: boolean;
   onAction: (action: Action) => void;
 }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const names = useNames();
   const [open, setOpen] = useState(false);
   const [pending, setPending] = useState<string | null>(null);
-  const offered = view.legalActions.flatMap((a) => (a.type === "pick_skill" ? [a.skill] : []));
+  const offered = view.legalActions
+    .flatMap((a) => (a.type === "pick_skill" ? [a.skill] : []))
+    .sort((a, b) => String(names.skill(a)).localeCompare(String(names.skill(b)), i18n.language));
 
   return (
     <div className="skill-slots">
