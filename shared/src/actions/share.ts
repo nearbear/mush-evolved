@@ -8,10 +8,7 @@ export type ShareActionData = { type: "dtt" | "stt"; target: string };
 export class ShareAction<T extends "dtt" | "stt" = "dtt" | "stt"> extends Action<{ type: T; target: string }> {
   constructor(type: T) {
     super(type);
-  }
-
-  override getCost(state: Readonly<GameState>): { ap: number; mp: number } {
-    return { ap: state.config.shareAp, mp: 0 };
+    this.baseAPCost = 1;
   }
 
   override getCandidates(state: Readonly<GameState>, player: Readonly<PlayerState>): { type: T; target: string }[] {
