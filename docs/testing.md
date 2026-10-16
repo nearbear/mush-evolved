@@ -2,26 +2,26 @@
 
 The project's main risks, roughly in priority order: hidden information leaking to the wrong seat, untrusted input (clients, chat, and later model output) getting further than it should, rules that quietly break as features are added, and the game stalling. Tests should go where those risks are. This is a checklist, not a coverage target.
 
-Status: **covered** = tests exist, **partial** = some exist, **missing** = none yet. Server tests (`server/src/*.test.ts`) run `GameRoom` and `Matchmaker` under plain Vitest: `partyserver` is replaced by `FakeServer` via `vi.mock`, with fake storage and sockets in `server/src/testing/fakes.ts`. This doesn't exercise the real Durable Object runtime (`@cloudflare/vitest-pool-workers`, not installed; ask first). Most server risks can instead be tested by pulling the decision out into a pure function, as `server/src/rateLimit.ts` already does.
+Status: **covered** = tests exist, **partial** = some exist, **missing** = none yet. Tests live in a `tests/` folder next to `src/` in each package (`shared/tests`, `server/tests`, `tools/tests`, `web/tests`; the one exception is `tools/src/death/hpWrites.test.ts`). Server tests (`server/tests/`) run `GameRoom` and `Matchmaker` under plain Vitest: `partyserver` is replaced by `FakeServer` via `vi.mock`, with fake storage and sockets in `server/src/testing/fakes.ts`. This doesn't exercise the real Durable Object runtime (`@cloudflare/vitest-pool-workers`, not installed; ask first). Most server risks can instead be tested by pulling the decision out into a pure function, as `server/src/rateLimit.ts` already does.
 
 ## 1. Hidden information (highest priority)
 
 A leak can't be fixed after the fact: once a client has seen a role, the game is spoiled. Leaks also don't show up as bugs, since everything still looks fine on screen.
 
-- **`viewFor` strips everything a seat shouldn't see:** other players' roles, HP, morale, and inventories; other rooms' items, equipment, and log history; private log entries; the RNG state. *Partial* (`rules.test.ts`, `items.test.ts`, `examine.test.ts`). Every new field on `GameState` or `PlayerView` needs a matching test. Worth adding one blunt test as well: build a game, serialize each seat's view, and assert that no other seat's hidden values appear anywhere in the string. That catches leaks through fields nobody thought to check.
-- **Error messages don't depend on hidden state.** `applyAction` answers "Illegal action" whatever the reason. A message like "can't target a Mush" would leak a role through the error channel. Lock this in with a test before infection arrives. *Missing.*
+- **`viewFor` strips everything a seat shouldn't see:** other players' roles, HP, morale, and inventories; other rooms' items, equipment, and log history; private log entries; the RNG state. *Partial* (`rules.test.ts`, `items.test.ts`, `examine.test.ts`, plus targeted checks that contamination, spore state, and private log lines are in no other seat's view in `infection.test.ts`, `skills.test.ts`, and `heal.test.ts`). Every new field on `GameState` or `PlayerView` needs a matching test. Worth adding one blunt test as well: build a game, serialize each seat's view, and assert that no other seat's hidden values appear anywhere in the string. That catches leaks through fields nobody thought to check.
+- **Error messages don't depend on hidden state.** `applyAction` answers "Illegal action" whatever the reason (`rules.ts`), and the room passes on a generic error (`GameRoom.test.ts`). A message like "can't target a Mush" would leak a role through the error channel, and infection now exists. What's missing is a test at the rules level that two different reasons (say, a target who is Mush and a target who isn't in the room) give the identical error. *Partial.*
 - **Each connection gets its own seat's view** (`GameRoom.broadcastViews`). A mix-up here (one view sent to everyone, or the wrong `playerId` in a connection's state) would leak everything, and no rules test would catch it. *Covered* (`GameRoom.test.ts`).
 - **Seat tokens.** A missing or unknown token is rejected (close code 4001). A valid token maps to exactly one seat. The matchmaker sends each human only their own token, never a broadcast. A token is effectively the seat itself, so whoever holds it can play that seat and see its view. *Covered* (`GameRoom.test.ts`, `Matchmaker.test.ts`).
-- **Bots see only their own seat's view.** This is structural today (`viewFor(game, botId)` in `scheduleBots`; `WanderBot` is tested to pick only from its own view's legal actions). Once model bots exist, also test that the prompt built for a seat contains nothing outside that seat's view (see the `bot` skill). *Missing.*
+- **Bots see only their own seat's view.** This is structural today (`viewFor(game, botId)` in `scheduleBots`; `WanderBot` is tested to pick only from its own view's legal actions in `bots.test.ts`). Once model bots exist, also test that the prompt built for a seat contains nothing outside that seat's view (see the `bot` skill). *Missing.*
 
 ## 2. Untrusted input
 
 Everything from a client is hostile until parsed. Player text will also become model input.
 
-- **Wire parsers** (`parseGameMessage`, `parseMatchmakerMessage`): reject malformed JSON, wrong types, extra or unknown action kinds, and oversized strings, and never pass through fields that weren't validated. *Partial* (take/drop and examine are tested; move, ready, chat, and the matchmaker parser aren't). This would suit a small table of bad inputs.
-- **Legality is the server's call.** `applyAction` rejects any action not in `legalActions(state, player)`, including well-formed actions for another player's item, a non-adjacent room, or a dead player. *Partial.*
+- **Wire parsers** (`parseGameMessage`, `parseMatchmakerMessage`): reject malformed JSON, wrong types, extra or unknown action kinds, and oversized strings, and never pass through fields that weren't validated. *Partial*: the cases are scattered through the feature tests (`cook`, `heal`, `bonds`, and `channels` tests parse their messages, including `toggleCheckbox` and channel names), `GameRoom.test.ts` checks that garbage gets "Malformed message", and `Matchmaker.test.ts` that a malformed queue request is rejected. There is no table of bad inputs per message type, and the 24-character name cap (`MAX_NAME_LENGTH`) has no test. This would suit a small table.
+- **Legality is the server's call.** `applyAction` rejects any action not in `legalActions(state, player)`, including well-formed actions for another player's item, a non-adjacent room, or a dead player. *Partial* (`actions.test.ts` checks unaffordable and non-candidate actions; `punch`, `spike`, `death` and other feature tests check illegal uses leave state unchanged).
 - **Chat moderation** (`moderateChat`): invisible characters, links, masked words, length limits. *Covered* for the basics. Grow the cases as abuse turns up.
-- **Player names** are trimmed and capped at 24 characters but not moderated, even though everyone sees them and they'll end up in bot prompts. Decide whether names go through `moderateChat`, then test that. *Missing.*
+- **Player names** are trimmed and capped at 24 characters (`parseMatchmakerMessage`) but not moderated (only chat goes through `moderateChat`), even though everyone sees them and they'll end up in bot prompts. Decide whether names go through `moderateChat`, then test that. *Missing.*
 - **Rate limits:** the per-connection message limit, and a per-seat chat limit that survives reconnecting. *Covered* (`rateLimit.test.ts`, `GameRoom.test.ts`).
 - **Model output (later):** garbage, an action that isn't legal, or a prompt-injection attempt has to end up as a legal fallback action, never an unchecked one. *Not started.*
 
@@ -29,44 +29,45 @@ Everything from a client is hostile until parsed. Player text will also become m
 
 The rules will grow the most (infection, win conditions), and every addition can break an older rule.
 
-- **Each rule's numbers** (AP/MP costs and caps, cycle gains, slot counts) against the confirmed values in `config.ts`. *Covered* for what exists.
-- **Determinism:** the same seed and inputs give the same state. Persistence and replays depend on it. *Covered* (`replay.test.ts`: random games across a day boundary, with chat and private channels, replayed from JSON-stored inputs must equal the live state; a rejected input makes the replay throw).
-- **Purity:** `applyAction` never mutates its input, and failed actions leave the state unchanged. *Covered.*
-- **State survives a JSON round trip** (`JSON.parse(JSON.stringify(state))` deep-equals the original). State is persisted and cloned via JSON, so an accidental `Map`, `Set`, `Date`, or `undefined` would silently corrupt games. *Missing.*
-- **Every legal action succeeds.** Anything in `legalActions` must be accepted by `applyAction`; the client and bots trust that list. *Partial.*
-- **0 HP always kills** (`death.test.ts`, plus `tools/src/death/hpWrites.test.ts`, which fails if anything but `damage` in `death.ts` lowers HP). *Covered* for punch, hunger, and showering.
+- **Each rule's numbers** (AP/MP costs and caps, cycle gains, slot counts, and the per-feature `cost`, `effect` and `successChance` values) against the confirmed values in `config.ts`. *Covered* for what exists; the feature tests read them from the nested `state.config`.
+- **Determinism:** the same seed and inputs give the same state. Persistence and replays depend on it. *Covered* (`rules.test.ts` for the same seed, and `replay.test.ts`: random games across a day boundary, with chat and private channels, replayed from JSON-stored inputs must equal the live state; a rejected input makes the replay throw).
+- **Purity:** `applyAction` never mutates its input, and failed actions leave the state unchanged. *Covered* (`rules.test.ts`, `items.test.ts`, and the per-feature tests).
+- **State survives a JSON round trip** (`JSON.parse(JSON.stringify(state))` deep-equals the original). State is persisted and cloned via JSON, so an accidental `Map`, `Set`, `Date`, or `undefined` would silently corrupt games. *Missing.* Some tests copy state through JSON to check that an action doesn't mutate it, but none asserts that a round trip returns an equal state, and the persistence test uses fake storage that keeps the objects as they are.
+- **Every legal action succeeds.** Anything in `legalActions` must be accepted by `applyAction`; the client and bots trust that list. *Partial* (feature tests apply the actions they expect to be offered; nothing walks the whole list).
+- **0 HP always kills** (`death.test.ts`, plus `tools/src/death/hpWrites.test.ts`, which scans the rules source and fails if any file other than `death.ts`, `cheats.ts`, and `actions/heal.ts` writes `.hp`). *Covered* for punch (`punch.test.ts`), hunger (`statuses.test.ts`), and showering (`shower.test.ts`).
 - **Invariants under random play:** run many seeded games with `WanderBot`-style random legal actions and check after every step that each item is in exactly one container, AP and MP stay within their caps, nobody is in a room that doesn't exist, and the game always offers someone a legal action. This catches combinations nobody wrote a test for. *Missing.*
 
 ## 4. The server keeps the game going
 
 A stalled or wiped game is the most visible failure for players.
 
-- **Persistence:** a restarted room restores the game, tokens, and bots. A save with a different `STATE_VERSION` is discarded, not loaded half-broken. *Missing.*
-- **Bots never stall the game.** A bot isn't scheduled twice. A bot whose chosen action is illegal is logged and doesn't crash the room. A `decideAction` that throws or hangs needs a fallback. Today a rejected promise inside the `setTimeout` in `scheduleBots` is unhandled, and that bot only gets another turn when someone else acts. This matters most for model bots, which will time out. *Missing.*
-- **Matchmaker:** a full queue starts immediately; the fill alarm starts a partial game with bots; extra players beyond one game roll into the next; queueing twice does nothing; leaving clears the alarm when the queue empties. *Missing.*
+- **Persistence:** a restarted room restores the game, tokens, and input count, and continues the input record; a save with a different `STATE_VERSION` is discarded, not loaded half-broken. *Covered* (`GameRoom.test.ts`). Restoring the bots after a restart is not tested.
+- **Bots never stall the game.** A bot isn't scheduled twice. A bot whose chosen action is illegal is logged (`console.warn`) and doesn't crash the room. A `decideAction` that throws or hangs needs a fallback. Today a rejected promise inside the `setTimeout` in `scheduleBots` (from `botChat` or `decideAction`) is unhandled. The bot's pending flag is cleared first, so it can be scheduled again, but nothing retries it until the next `scheduleBots` call. This matters most for model bots, which will time out. The only room-level bot test is that bots act after a delay and only legally; the rest is *missing*.
+- **Matchmaker:** a full queue starts immediately; the fill alarm starts a partial game with bots; extra players beyond one game wait for the next; queueing twice does nothing; leaving clears the alarm when the queue empties. *Covered* (`Matchmaker.test.ts`), except that the waiting players actually starting their own game is not tested. This is the current bot-filling design; the decided model (no bots in multiplayer) isn't built, so these tests will change with it.
 
 ## 5. Data and tooling
 
-- **Generated files are current:** `ship-layout.json` and `ship-rooms.json` match their sources. *Covered* (`tools`).
-- **The ship map is sound:** every door goes both ways, and every room can be reached from the start room. *Covered.*
-- **Converter edge cases:** unknown colors, mismatched doors, slices past their sheet. *Covered.*
+- **Generated files are current:** `ship-layout.json`, `ship-rooms.json`, and `ship-plan.json` match their sources. *Covered* (`tools/tests/shipLayout/`).
+- **The ship map is sound:** every door goes both ways, and every room can be reached from the start room. *Covered* (`tools/tests/shipLayout/shipLayout.test.ts`, `rules.test.ts`). The minimap plan has the same doors as the rules' room graph.
+- **Converter edge cases:** unknown colors, mismatched doors, slices past their sheet, and the `stretch.ts` room changes. *Covered* (`shipLayout.test.ts`, `stretch.test.ts`).
 
 ## 6. Client
 
 The client renders a view and sends intents, so there's little logic to unit test, and that's by design.
 
-- **Pure layout math** (`placement.ts`: projection, paint order, standing spots, `fitScale`, `hitTest`). *Covered.*
+- **Pure layout math** (`web/tests/iso/placement.test.ts`: projection, paint order, standing spots, wall occlusion, `hitTest`; `web/tests/scene/plan.test.ts`: the minimap's paths and dot placement). *Covered.*
+- **Markdown rendering** (`web/tests/hud/Markdown.test.tsx`): bold, headers, lists, links and HTML dropped, read-only checkboxes. *Covered.*
 - **`targets.ts`** (finding the selection in a view, `actionLabel`): pure and cheap to test. *Missing.*
-- **Lobby panel keeps its size** (`tools/src/lobby/lobby.test.ts`): joining a ship must not resize the panel, on desktop and a 360px phone, in en/fr/es. A real-browser test in `npm test`: it starts Vite in-process, opens the lobby in headless Chromium (Playwright), and fakes the matchmaker websocket, so it needs no dev servers. *Covered.*
+- **Lobby panel keeps its size** (`tools/tests/lobby/lobby.test.ts`): joining a ship must not resize the panel, on desktop and a 360px phone, in en/fr/es. A real-browser test in `npm test`: it starts Vite in-process, opens the lobby in headless Chromium (Playwright), and fakes the matchmaker websocket, so it needs no dev servers. *Covered.*
 - **Layouts, mobile, and touch** are checked with the `play` skill's desktop and 360px phone screenshot passes, not unit tests. The script already fails on sideways page scroll. The on-screen keyboard can only be checked on a real phone.
 
 ## 7. Internationalization (English, French, Spanish)
 
-Checks live in `tools/src/i18n/` and run with `npm test`. Catalogs are `web/src/locales/{en,fr,es}.json` (i18next JSON v4; English is the reference).
+Checks live in `tools/tests/i18n/` (scanners in `tools/src/i18n/`) and run with `npm test`. Catalogs are `web/src/locales/{en,fr,es}.json` (i18next JSON v4; English is the reference).
 
-- **Catalog parity:** every language has the same keys, no empty values, the same `{{placeholders}}` and Trans tags, and every plural form its language needs (French and Spanish need `_many` as well as `_one`/`_other`; English doesn't). *Covered* by fixtures and the real catalogs (so far only `BottomNav` and the lobby are translated; the rest is the baseline below).
-- **Runtime language switching** (`web/src/i18n/i18n.test.ts`): saved choice beats browser language, startup is synchronous, switching changes `t()` output, persists, and updates `<html lang>`. *Covered.* The picker itself (`LanguageSwitcher`) is only in the lobby so far and has not been checked visually.
+- **Catalog parity:** every language has the same keys, no empty values, the same `{{placeholders}}` and Trans tags, and every plural form its language needs (French and Spanish need `_many` as well as `_one`/`_other`; English doesn't). *Covered* by fixtures and the real catalogs (most of the client and the game text are translated; what isn't is in the baseline below).
+- **Runtime language switching** (`web/tests/i18n/i18n.test.ts`): saved choice beats browser language, startup is synchronous, switching changes `t()` output, persists, and updates `<html lang>`. *Covered.* The picker itself (`LanguageSwitcher`, in the lobby and the settings dialog) has not been checked visually.
 - **Keys in use exist:** every static `t("key")` / `i18nKey` in `web/src` is in the English catalog. *Covered.*
 - **No new hardcoded text (ratchet):** `baseline.json` records how many hardcoded English strings each file has (client JSX text and attributes, and the sentences, errors, and names in `shared` and `server`). A file may not gain any, and when it loses some the test fails until the baseline is lowered (`UPDATE_I18N_BASELINE=1 npm test -w tools -- i18n`). The scanners are regex heuristics: a line that should stay English carries an `i18n-ignore` comment. *Covered.*
 - **Moderation with accents:** `\b` ignores é/ñ, so blocked words with accented edges aren't masked (`it.fails` in `moderation.test.ts`). *Known gap.* Also: the word list is English-only.
-- **Not covered yet:** derived room labels in `Mush/derived/*.json` (English text generated from the map); pseudo-locale and fr/es screenshot passes (need the `t()` seam and a language switch); layout overflow with longer French and Spanish text.
+- **Not covered yet:** a test that every room and equipment type in `Mush/derived/ship-rooms.json` has a catalog entry (today all 27 rooms and 28 equipment types do, but nothing enforces it, and the derived JSON still carries English `label`s); pseudo-locale and fr/es screenshot passes (need the `t()` seam and a language switch); layout overflow with longer French and Spanish text.

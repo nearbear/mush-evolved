@@ -1,11 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { CHARACTERS } from "./characters.ts";
-import { DEFAULT_CONFIG } from "./config.ts";
-import { damage, killPlayer } from "./death.ts";
-import { CORPSE_ITEM, ITEM_TYPES, ITRACKIE_ITEM, itemsIn } from "./items.ts";
-import { applyAction, createGame, viewFor, type ActionResult } from "./rules.ts";
-import { createChannel, inviteToChannel } from "./chat.ts";
-import type { Action, GameState, PlayerId, Seat } from "./types.ts";
+import { CHARACTERS } from "../src/characters.ts";
+import { DEFAULT_CONFIG } from "../src/config.ts";
+import { damage, killPlayer } from "../src/death.ts";
+import { CORPSE_ITEM, ITEM_TYPES, ITRACKIE_ITEM, itemsIn } from "../src/items.ts";
+import { applyAction, createGame, viewFor, type ActionResult } from "../src/rules.ts";
+import { createChannel, inviteToChannel } from "../src/chat.ts";
+import type { Action, GameState, PlayerId, Seat } from "../src/types.ts";
 
 const seats: Seat[] = Array.from({ length: 4 }, (_, i) => ({ id: `p${i}`, name: `Player ${i}`, isBot: false, character: CHARACTERS[i]!.id }));
 const config = { ...DEFAULT_CONFIG, mushCount: 1, startItems: [], startSkills: [] };

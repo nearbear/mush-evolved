@@ -2,7 +2,7 @@
 
 > **Bots (2026-10-13):** the author does not necessarily plan to run AI-controlled bots in live public games. They may be for testing only. Wherever these docs describe bots filling seats, treat live use as undecided.
 
-Moved out of CLAUDE.md to keep per-request context small. Read it when you need to find where something lives. Tests live in a `tests/` folder next to `src/` in each package (`shared/tests`, `server/tests`, `tools/tests`, `web/tests`); `shared/src/death.test.ts` and `shared/src/heavy.test.ts` are the exceptions and have not been moved yet. `docs/testing.md` says what is covered.
+Moved out of CLAUDE.md to keep per-request context small. Read it when you need to find where something lives. Tests live in a `tests/` folder next to `src/` in each package (`shared/tests`, `server/tests`, `tools/tests`, `web/tests`); the one exception is `tools/src/death/hpWrites.test.ts`, which sits with the tool that scans the source. `docs/testing.md` says what is covered.
 
 ## shared: types and plumbing
 
