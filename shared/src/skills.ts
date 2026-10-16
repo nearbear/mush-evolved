@@ -86,6 +86,8 @@ export type SkillStatus = "full" | "partial" | "none";
 export const SKILL_STATUS: Readonly<Partial<Record<SkillId, SkillStatus>>> = {
   // Heal bonus only; no operations, medicine properties, or research bonus.
   medic: "partial",
+  // Heavy-item penalty and punch damage only; no Throw Out.
+  sturdy: "partial",
   // Free heal points only; no medicine properties.
   first_aid: "partial",
   creative: "full",

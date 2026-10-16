@@ -81,6 +81,10 @@ export const DEFAULT_CONFIG: GameConfig = {
   // (SKILL_SLOTS) with the free, permanent pick_skill action.
   startSkills: [],
   creativeRefundOdds: 0.5,
+  // Confirmed 2026-10-16: carrying a heavy item adds this much to every move's MP cost, once.
+  heavyMpPenalty: 2,
+  // Confirmed 2026-10-16: the sturdy (Solid) skill adds this to punch damage.
+  sturdyPunchBonus: 1,
   // PLACEHOLDER items with no effects, so there is something to pick up.
   startItems: [
     { type: "wrench", room: "LABORATORY" },
@@ -91,6 +95,7 @@ export const DEFAULT_CONFIG: GameConfig = {
     { type: "plastic_scraps", room: "CORRIDOR_A" },
     // Confirmed 2026-10-14: the soap always spawns in the Alpha dorm (for now).
     { type: "soap", room: "BEDROOM_A" },
+    { type: "freezer", room: "REFECTORY" },
     // PLACEHOLDER food so satiety can be tested.
     { type: "uncooked_ration", room: "REFECTORY" },
     { type: "uncooked_ration", room: "REFECTORY" },

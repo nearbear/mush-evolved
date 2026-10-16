@@ -115,6 +115,10 @@ export interface GameConfig {
   dismantleOdds: number;
   /** Chance that the Creative skill refunds 1 AP after a failed action that cost AP (confirmed 2026-10-15). */
   creativeRefundOdds: number;
+  /** MP added to each move while carrying a heavy item, however many (confirmed 2026-10-16). */
+  heavyMpPenalty: number;
+  /** Extra punch damage from the sturdy skill (confirmed 2026-10-16). */
+  sturdyPunchBonus: number;
   /** Skills every player starts with (none since 2026-10-15; players pick their own). */
   startSkills: string[];
   /** Items placed in rooms at the start of the game. Types come from ITEM_TYPES in items.ts. */

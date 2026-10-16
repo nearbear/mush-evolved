@@ -237,6 +237,9 @@
     "SURGERY_POD": "Estación de cirugía",
     "TURRET_COMMAND": "Controles de torreta"
   },
+  "itemAttr": {
+    "heavy": "Pesado"
+  },
   "items": {
     "super_talky": "iTrackie",
     "wrench": "Llave inglesa",
@@ -248,7 +251,8 @@
     "camera": "Cámara",
     "soap": "Jabón",
     "metal_scraps": "Restos de metal",
-    "plastic_scraps": "Restos de plástico"
+    "plastic_scraps": "Restos de plástico",
+    "freezer": "Congelador"
   },
   "logEvent": {
     "crewWakes": "La tripulación despierta a bordo de la nave.",

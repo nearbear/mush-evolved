@@ -12,6 +12,8 @@ export interface ItemType {
   consume?: { ap: number; /** Satiety a human gains (confirmed 2026-10-14). */ satiety: number };
   /** Cooking it (in a cook room) turns it into this item type. */
   cook?: { into: string };
+  /** Carrying one makes every room-to-room move cost `heavyMpPenalty` more MP, once however many you carry (confirmed 2026-10-16). Skills may cancel it. */
+  heavy?: boolean;
   canDrop?: boolean;
   dismantle?: { metal: number; plastic: number };
 }
@@ -45,7 +47,14 @@ export const ITEM_TYPES: Record<string, ItemType> = {
   soap: {},
   metal_scraps: {},
   plastic_scraps: {},
+  // Confirmed 2026-10-16: spawns in the refectory at the start; heavy.
+  freezer: { heavy: true },
 };
+
+/** Whether the player carries at least one heavy item. */
+export function carriesHeavy(state: Readonly<GameState>, player: Readonly<PlayerState>): boolean {
+  return itemsIn(state, { kind: "player", id: player.id }).some((i) => ITEM_TYPES[i.type]?.heavy);
+}
 
 
 /** How many items a container holds at most. Rooms are unlimited. */

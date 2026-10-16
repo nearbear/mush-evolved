@@ -7,6 +7,7 @@
 // and put "sprinter" in the player's `modifiers`. A skill is a modifier too:
 // its id goes in the player's `skills` instead.
 
+import { carriesHeavy } from "./items.ts";
 import { logPrivate } from "./log.ts";
 import { nextFloat } from "./rng.ts";
 import type { GameState, MovementRules, PlayerState } from "./types.ts";
@@ -27,6 +28,10 @@ export interface Modifier {
   /** Adjusts the HP a heal restores, folded over the healer's modifiers (skills, research). Must be pure. */
   healAmount?: (amount: number, player: Readonly<PlayerState>, state: Readonly<GameState>) => number;
   /** Adjusts the care points (free heals, `resources.heal`) a player gains at the start of each day. Must be pure. */
+  /** True if the modifier cancels the heavy-item move penalty. */
+  ignoresHeavy?: boolean;
+  /** Adjusts the damage of a punch, folded over the puncher's modifiers. Must be pure. */
+  punchDamage?: (damage: number, player: Readonly<PlayerState>, state: Readonly<GameState>) => number;
   carePointsPerDay?: (gain: number, player: Readonly<PlayerState>, state: Readonly<GameState>) => number;
   /** Adjusts the satiety a human loses each cycle. Must be pure. */
   satietyPerCycle?: (loss: number, player: Readonly<PlayerState>) => number;
@@ -67,6 +72,8 @@ export const MODIFIERS: Record<string, Modifier> = {
   first_aid: careSkill("nurseCarePointsPerDay"),
   // Skill, confirmed 2026-10-15: a failed action that cost AP has a 50% chance
   // to give 1 AP back. It can't pass the AP cap, since the AP was just spent.
+  // Skill "sturdy" (Solid), confirmed 2026-10-16: no heavy-item penalty, +1 punch damage. Throw Out a crewmate is not built.
+  sturdy: { ignoresHeavy: true, punchDamage: (damage, _player, state) => damage + state.config.sturdyPunchBonus },
   creative: {
     onActionFailed(next, player, apSpent) {
       if (apSpent <= 0) return;
@@ -100,6 +107,8 @@ export function movementRules(
     const hook = registry[id]?.movement;
     if (hook) rules = hook(rules, player);
   }
+  const ignoresHeavy = modifierIds(player).some((id) => registry[id]?.ignoresHeavy);
+  if (!ignoresHeavy && carriesHeavy(state, player)) rules.mpPerMove += state.config.heavyMpPenalty;
   return rules;
 }
 
@@ -234,4 +243,18 @@ export function carePointsGain(
 /** Runs the picked skill's onPick hook. Mutates a state the caller already cloned. */
 export function skillPicked(next: GameState, player: PlayerState, skill: string, registry: ModifierRegistry = MODIFIERS): void {
   registry[skill]?.onPick?.(next, player);
+}
+
+/** HP a punch removes: the configured damage folded through the puncher's modifiers. */
+export function punchDamage(
+  state: Readonly<GameState>,
+  player: Readonly<PlayerState>,
+  registry: ModifierRegistry = MODIFIERS,
+): number {
+  let damage = state.config.punchDamage;
+  for (const id of modifierIds(player)) {
+    const hook = registry[id]?.punchDamage;
+    if (hook) damage = hook(damage, player, state);
+  }
+  return damage;
 }

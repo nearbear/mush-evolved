@@ -237,6 +237,9 @@
     "SURGERY_POD": "Surgery station",
     "TURRET_COMMAND": "Turret controls"
   },
+  "itemAttr": {
+    "heavy": "Heavy"
+  },
   "items": {
     "super_talky": "iTrackie",
     "wrench": "Wrench",
@@ -248,7 +251,8 @@
     "camera": "Camera",
     "soap": "Soap",
     "metal_scraps": "Metal Scraps",
-    "plastic_scraps": "Plastic Scraps"
+    "plastic_scraps": "Plastic Scraps",
+    "freezer": "Freezer"
   },
   "logEvent": {
     "crewWakes": "The crew wakes up aboard the ship.",

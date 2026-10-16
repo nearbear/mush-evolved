@@ -544,3 +544,9 @@ The user asked for an "eye-tracky" tab on the far right that appears conditional
 - Doors: Claude first lowered them 11 px and drew a wall behind them (measured against the wall art), which the user rejected: the door's own ridge is the ceiling. What held: no wall on a door's second cell, no doormats, floor under both door cells, one tile for both (a path pattern wins over plain floor), owned by the room whose back wall holds the door. Claude got that ownership backwards first; the user caught it.
 - What worked: pixel measurements with the generator's PNG decoder, `ship-view --scale` for magnified crops, and before/after shots. What didn't: guessing from the user's screen-space descriptions without mapping them to cells. Lessons are in `web/src/iso/CLAUDE.md`.
 - Still open: lit walls don't join at corners.
+
+## 2026-10-16: Item attributes and Heavy
+
+- Asked for a user story; the owner then said to just implement it and answered the open questions (penalty does not stack, freezer is the heavy test item and spawns in the refectory, Solid also gives +1 punch damage, room-to-room moves only, Solid is the `sturdy` skill).
+- Worked: the existing `movementRules` fold was the single place to add the penalty, so `moveCost` and `legalCosts` needed no changes. A new `ignoresHeavy` modifier flag and a `punchDamage` hook followed the existing hook pattern.
+- Needed correction: I assumed the skill id was `solid`; it is `sturdy` (found via the "Robuste" row in `skills.json`). Adding the freezer broke the cook test that listed every refectory spawn.

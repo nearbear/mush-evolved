@@ -237,6 +237,9 @@
     "SURGERY_POD": "Plot Chirurgical",
     "TURRET_COMMAND": "Poste de tir"
   },
+  "itemAttr": {
+    "heavy": "Lourd"
+  },
   "items": {
     "super_talky": "iTrackie",
     "wrench": "Clé à molette",
@@ -248,7 +251,8 @@
     "camera": "Caméra",
     "soap": "Savon",
     "metal_scraps": "Débris métalliques",
-    "plastic_scraps": "Débris plastiques"
+    "plastic_scraps": "Débris plastiques",
+    "freezer": "Congélateur"
   },
   "logEvent": {
     "crewWakes": "L'équipage se réveille à bord du vaisseau.",

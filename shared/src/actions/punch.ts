@@ -1,5 +1,6 @@
 import { Action, peopleHere } from "./action.ts";
 import { logPublic } from "../log.ts";
+import { punchDamage } from "../modifiers.ts";
 import type { GameState, PlayerState } from "../types.ts";
 
 export type PunchActionData = { type: "punch"; target: string };
@@ -33,7 +34,7 @@ export class PunchAction extends Action<PunchActionData> {
 
   override apply(state: GameState, player: PlayerState, target: PunchActionData): void {
     const victim = state.players.find((o) => o.id === target.target)!; // checked, so it exists
-    victim.hp = Math.max(0, victim.hp - state.config.punchDamage);
+    victim.hp = Math.max(0, victim.hp - punchDamage(state, player));
     logPublic(state, player.room, "punched", { name: player.name, target: victim.name });
   }
 
