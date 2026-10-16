@@ -19,7 +19,7 @@ const config: GameConfig = { ...DEFAULT_CONFIG, startInventory: [], startItems: 
 
 /** Everyone starts in the same room; p0 carries a camera to dismantle (3 AP). */
 function withCamera(dismantleOdds: number, creativeRefundOdds: number): GameState {
-  const state = createGame(seats, { ...config, dismantleOdds, creativeRefundOdds }, 42);
+  const state = createGame(seats, { ...config, dismantle: { ...config.dismantle, successChance: dismantleOdds }, creative: { refundOdds: creativeRefundOdds } }, 42);
   state.items.push({ id: "item-camera", type: "camera", at: { kind: "player", id: "p0" } });
   return state;
 }
@@ -37,7 +37,7 @@ describe("Creative", () => {
     const before = withCamera(0, 1);
     const next = dismantle(before);
     expect(next.items.some((i) => i.id === "item-camera")).toBe(true); // it failed
-    expect(next.players[0]!.ap).toBe(before.players[0]!.ap - config.dismantleAp + 1);
+    expect(next.players[0]!.ap).toBe(before.players[0]!.ap - config.dismantle.cost.ap + 1);
     expect(refunds(next)).toHaveLength(1);
     expect(refunds(next)[0]!.visibleTo).toEqual(["p0"]);
     expect(JSON.stringify(viewFor(next, "p0").log)).toContain("creativeRefund");
@@ -49,14 +49,14 @@ describe("Creative", () => {
   it("gives nothing back when its own roll misses", () => {
     const before = withCamera(0, 0);
     const next = dismantle(before);
-    expect(next.players[0]!.ap).toBe(before.players[0]!.ap - config.dismantleAp);
+    expect(next.players[0]!.ap).toBe(before.players[0]!.ap - config.dismantle.cost.ap);
     expect(refunds(next)).toHaveLength(0);
   });
 
   it("does nothing when the action succeeds", () => {
     const before = withCamera(1, 1);
     const next = dismantle(before);
-    expect(next.players[0]!.ap).toBe(before.players[0]!.ap - config.dismantleAp);
+    expect(next.players[0]!.ap).toBe(before.players[0]!.ap - config.dismantle.cost.ap);
     expect(refunds(next)).toHaveLength(0);
   });
 
@@ -64,7 +64,7 @@ describe("Creative", () => {
     const before = withCamera(0, 1);
     before.players[0]!.skills = [];
     const next = dismantle(before);
-    expect(next.players[0]!.ap).toBe(before.players[0]!.ap - config.dismantleAp);
+    expect(next.players[0]!.ap).toBe(before.players[0]!.ap - config.dismantle.cost.ap);
     expect(refunds(next)).toHaveLength(0);
   });
 
@@ -79,7 +79,7 @@ describe("Creative", () => {
 
   it("rolls with the seeded RNG, so the same seed gives the same outcome", () => {
     const outcomes = (seed: number) => {
-      const state = createGame(seats, { ...config, dismantleOdds: 0 }, seed);
+      const state = createGame(seats, { ...config, dismantle: { ...config.dismantle, successChance: 0 } }, seed);
       state.items.push({ id: "item-camera", type: "camera", at: { kind: "player", id: "p0" } });
       return dismantle(state).players[0]!.ap;
     };

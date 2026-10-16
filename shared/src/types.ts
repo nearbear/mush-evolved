@@ -55,48 +55,100 @@ export interface GameConfig {
   inventorySlots: number;
   /** Private channels a player may belong to, before modifiers. */
   channelLimit: number;
-  /** Morale each of the two gains from a DTT or STT (confirmed 2026-10-14). */
-  shareMorale: number;
-  /** Contamination a human reaches before converting to Mush, before modifiers (confirmed 2026-10-14). */
-  contaminationCapacity: number;
-  /** AP spent to extract a spore (confirmed 2026-10-13). */
-  extractSporeAp: number;
-  /** HP a heal restores before modifiers (confirmed 2026-10-15). */
-  healAmount: number;
-  /** Rooms where anyone can heal without a medikit (confirmed 2026-10-15: the sick bay). */
-  healRooms: string[];
-  /** Extra HP a heal restores for a player with the medic skill (owner, 2026-10-15). */
-  medicHealBonus: number;
-  /** Care points the nurse skill (`first_aid`) grants at the start of each day and when picked (owner, 2026-10-15). */
-  nurseCarePointsPerDay: number;
-  /** HP a landing punch removes (placeholder until combat is designed). */
-  punchDamage: number;
-  /** HP the sturdy skill adds to a landing punch (confirmed 2026-10-16). */
-  sturdyPunchBonus: number;
-  /** MP a move costs extra while carrying a heavy item, once however many are carried (confirmed 2026-10-16). */
-  heavyMpPenalty: number;
-  /** Rooms where food can be cooked (confirmed 2026-10-16). */
-  cookRooms: RoomId[];
-  /** AP off a shower when soap is in your inventory (confirmed 2026-10-14). */
-  showerSoapDiscount: number;
-  /** HP a Mush loses by showering (confirmed 2026-10-14). */
-  showerMushDamage: number;
-  /** Satiety a human loses each cycle, before modifiers (confirmed 2026-10-14). */
-  satietyPerCycle: number;
-  /** Satiety at which a human has the full belly status and can't eat (confirmed 2026-10-14). */
-  fullBellyAt: number;
-  /** Cycles after satiety reaches 0 before the hungry status starts (confirmed 2026-10-14). */
-  hungryAfterCycles: number;
-  /** HP a hungry human loses each cycle (confirmed 2026-10-14). */
-  hungerHpPerCycle: number;
-  /** Spores one extraction gives (confirmed 2026-10-13). */
-  sporesPerExtraction: number;
-  /** Cycles a Mush waits between their own extractions; a cooldown on the global cycle counter, not tied to days (confirmed 2026-10-14). */
-  sporeCooldownCycles: number;
-  /** Spores the whole Mush faction may extract per day, before modifiers (confirmed 2026-10-14). */
-  sporesPerDay: number;
-  /** Chance that the Creative skill refunds 1 AP after a failed action that cost AP (confirmed 2026-10-15). */
-  creativeRefundOdds: number;
+  /**
+   * Per-feature tuning. Actions group their numbers into `cost` (what the player pays) and `effect` (what happens),
+   * so a cost in morale or MP can sit next to an effect without being confused with it. Conditions (rooms, odds,
+   * cooldowns) stay beside them.
+   */
+  bond: {
+    cost: { /** Confirmed 2026-10-14. */ ap: number };
+  };
+  share: {
+    cost: { /** Paid by the one who starts a DTT or STT (confirmed 2026-10-14). */ ap: number };
+    /** What each of the two gets from a DTT or STT (confirmed 2026-10-14). */
+    effect: { morale: number };
+  };
+  infection: {
+    /** Contamination a human reaches before converting to Mush, before modifiers (confirmed 2026-10-14). */
+    capacity: number;
+  };
+  spike: {
+    cost: { /** Confirmed 2026-10-15. */ ap: number };
+  };
+  spores: {
+    cost: { /** AP spent to extract a spore (confirmed 2026-10-13). */ ap: number };
+    effect: { /** Spores one extraction gives (confirmed 2026-10-13). */ spores: number };
+    /** Cycles a Mush waits between their own extractions; a cooldown on the global cycle counter, not tied to days (confirmed 2026-10-14). */
+    cooldownCycles: number;
+    /** Spores the whole Mush faction may extract per day, before modifiers (confirmed 2026-10-14). */
+    perDay: number;
+  };
+  heal: {
+    cost: {
+      /** AP a heal costs on someone else (confirmed 2026-10-15). */
+      apOther: number;
+      /** AP a heal costs on yourself (confirmed 2026-10-15). */
+      apSelf: number;
+    };
+    effect: {
+      /** HP a heal restores before modifiers (confirmed 2026-10-15). */
+      hp: number;
+      /** Extra HP a heal restores for a player with the medic skill (owner, 2026-10-15). */
+      medicBonusHp: number;
+      /** Care points the nurse skill (`first_aid`) grants at the start of each day and when picked (owner, 2026-10-15). */
+      nursePointsPerDay: number;
+    };
+    /** Rooms where anyone can heal without a medikit (confirmed 2026-10-15: the sick bay). */
+    rooms: string[];
+  };
+  punch: {
+    cost: { /** Issue 29. */ ap: number };
+    effect: {
+      /** HP a landing punch removes (placeholder until combat is designed). */
+      damage: number;
+      /** Extra punch damage from the sturdy skill (confirmed 2026-10-16). */
+      sturdyBonusDamage: number;
+    };
+    /** Chance a punch lands, 0 to 1 (confirmed 2026-10-15: it misses 40% of the time). */
+    successChance: number;
+  };
+  cook: {
+    cost: { /** AP spent to cook an uncooked ration (confirmed 2026-10-16). */ ap: number };
+    /** Rooms where food can be cooked (confirmed 2026-10-16). */
+    rooms: RoomId[];
+  };
+  shower: {
+    cost: {
+      /** AP spent to shower, before the soap discount (confirmed 2026-10-14). */
+      ap: number;
+      /** AP off a shower when soap is in your inventory (confirmed 2026-10-14). */
+      soapDiscountAp: number;
+    };
+    effect: { /** HP a Mush loses by showering (confirmed 2026-10-14). */ mushDamage: number };
+  };
+  hunger: {
+    /** Satiety a human loses each cycle, before modifiers (confirmed 2026-10-14). */
+    satietyPerCycle: number;
+    /** Satiety at which a human has the full belly status and can't eat (confirmed 2026-10-14). */
+    fullBellyAt: number;
+    /** Cycles after satiety reaches 0 before the hungry status starts (confirmed 2026-10-14). */
+    hungryAfterCycles: number;
+    /** HP a hungry human loses each cycle (confirmed 2026-10-14). */
+    hpPerCycle: number;
+  };
+  dismantle: {
+    cost: { /** AP spent to dismantle an item (confirmed 2026-10-13). */ ap: number };
+    /** Chance of successfully dismantling an item (confirmed 2026-10-13). */
+    successChance: number;
+  };
+  creative: {
+    /** Chance that the Creative skill refunds 1 AP after a failed action that cost AP (confirmed 2026-10-15). */
+    refundOdds: number;
+  };
+  heavy: {
+    /** MP added to each move while carrying a heavy item, however many (confirmed 2026-10-16). */
+    mpPenalty: number;
+  };
   /** Skills every player starts with (none since 2026-10-15; players pick their own). */
   startSkills: string[];
   /** Items placed in rooms at the start of the game. Types come from ITEM_TYPES in items.ts. */

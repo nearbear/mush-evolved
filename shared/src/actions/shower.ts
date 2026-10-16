@@ -11,7 +11,6 @@ export type ShowerActionData = { type: "shower"; equipment: string };
 export class ShowerAction extends Action<ShowerActionData> {
   constructor() {
     super("shower");
-    this.baseAPCost = 2;
   }
 
   override getCandidates(state: Readonly<GameState>, player: Readonly<PlayerState>): ShowerActionData[] {
@@ -32,11 +31,11 @@ export class ShowerAction extends Action<ShowerActionData> {
   override apply(state: GameState, player: PlayerState, target: ShowerActionData): void {
     removeStatus(player, "dirty");
     logPrivate(state, player.id, player.role === "mush" ? "showeredMush" : "showered");
-    if (player.role === "mush") damage(state, player, state.config.showerMushDamage);
+    if (player.role === "mush") damage(state, player, state.config.shower.effect.mushDamage);
   }
 
   showerCost(state: Readonly<GameState>, player: Readonly<PlayerState>): number {
   const soap = itemsIn(state, { kind: "player", id: player.id }).some((item) => item.type === "soap");
-  return Math.max(0, this.baseAPCost - (soap ? state.config.showerSoapDiscount : 0));
+  return Math.max(0, state.config.shower.cost.ap - (soap ? state.config.shower.cost.soapDiscountAp : 0));
 }
 }

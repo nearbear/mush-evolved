@@ -14,8 +14,14 @@ export type PunchActionData = { type: "punch"; target: string };
 export class PunchAction extends Action<PunchActionData> {
   constructor() {
     super("punch");
-    this.baseAPCost = 1;
-    this.baseSuccessChance = 0.6; 
+  }
+
+  override getCost(state: Readonly<GameState>): { ap: number; mp: number } {
+    return { ap: state.config.punch.cost.ap, mp: 0 };
+  }
+
+  override getSuccessChance(state: Readonly<GameState>): number {
+    return state.config.punch.successChance;
   }
 
   override getCandidates(state: Readonly<GameState>, player: Readonly<PlayerState>): PunchActionData[] {

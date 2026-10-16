@@ -39,9 +39,9 @@ describe("medic skill", () => {
     player(s, "p0").skills = ["medic"];
     s.items.push({ id: "kit2", type: "medikit", at: { kind: "player", id: "p1" } });
     const byMedic = mustApply(s, "p0", heal("p1"));
-    expect(player(byMedic, "p1").hp).toBe(5 + config.healAmount + config.medicHealBonus);
+    expect(player(byMedic, "p1").hp).toBe(5 + config.heal.effect.hp + config.heal.effect.medicBonusHp);
     const byOther = mustApply(s, "p1", heal("p2"));
-    expect(player(byOther, "p2").hp).toBe(5 + config.healAmount);
+    expect(player(byOther, "p2").hp).toBe(5 + config.heal.effect.hp);
   });
 
   it("does not grant care points", () => {

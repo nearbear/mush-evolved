@@ -88,7 +88,7 @@ export function movementRules(
     const hook = registry[id]?.movement;
     if (hook) rules = hook(rules, player);
   }
-  if (carriesHeavy(state, player)) rules.mpPerMove += fold("heavyMpPenalty", state.config.heavyMpPenalty, state, player, registry);
+  if (carriesHeavy(state, player)) rules.mpPerMove += fold("heavyMpPenalty", state.config.heavy.mpPenalty, state, player, registry);
   return rules;
 }
 
@@ -109,7 +109,7 @@ export const contaminationCapacity = (
   state: Readonly<GameState>,
   player: Readonly<PlayerState>,
   registry: ModifierRegistry = MODIFIERS,
-) => fold("contaminationCapacity", state.config.contaminationCapacity, state, player, registry);
+) => fold("contaminationCapacity", state.config.infection.capacity, state, player, registry);
 
 /**
  * What a move would cost: AP spent and MP afterwards, or null if the player
@@ -129,15 +129,15 @@ export function moveCost(
 
 /** Spores the Mush faction may extract per day: the configured count folded through the extracting player's modifiers. */
 export const sporesPerDay = (state: Readonly<GameState>, player: Readonly<PlayerState>, registry: ModifierRegistry = MODIFIERS) =>
-  fold("sporesPerDay", state.config.sporesPerDay, state, player, registry);
+  fold("sporesPerDay", state.config.spores.perDay, state, player, registry);
 
 /** HP a heal restores: the configured amount folded through the healer's modifiers. */
 export const healAmount = (state: Readonly<GameState>, player: Readonly<PlayerState>, registry: ModifierRegistry = MODIFIERS) =>
-  fold("healAmount", state.config.healAmount, state, player, registry);
+  fold("healAmount", state.config.heal.effect.hp, state, player, registry);
 
 /** Satiety a human loses each cycle: the configured loss folded through the player's modifiers. */
 export const satietyLoss = (state: Readonly<GameState>, player: Readonly<PlayerState>, registry: ModifierRegistry = MODIFIERS) =>
-  fold("satietyPerCycle", state.config.satietyPerCycle, state, player, registry);
+  fold("satietyPerCycle", state.config.hunger.satietyPerCycle, state, player, registry);
 
 /** Care points a player gains at the start of a day: nothing by default, plus whatever their skills grant. */
 export const carePointsGain = (state: Readonly<GameState>, player: Readonly<PlayerState>, registry: ModifierRegistry = MODIFIERS) =>
@@ -145,7 +145,7 @@ export const carePointsGain = (state: Readonly<GameState>, player: Readonly<Play
 
 /** HP a punch removes: the configured damage folded through the puncher's modifiers. */
 export const punchDamage = (state: Readonly<GameState>, player: Readonly<PlayerState>, registry: ModifierRegistry = MODIFIERS) =>
-  fold("punchDamage", state.config.punchDamage, state, player, registry);
+  fold("punchDamage", state.config.punch.effect.damage, state, player, registry);
 
 /** Runs the picked skill's onPick hook. Mutates a state the caller already cloned. */
 export function skillPicked(next: GameState, player: PlayerState, skill: string, registry: ModifierRegistry = MODIFIERS): void {

@@ -7,7 +7,10 @@ export type BondActionData = { type: "bond"; target: string };
 export class BondAction extends Action<BondActionData> {
   constructor() {
     super("bond");
-    this.baseAPCost = 1;
+  }
+
+  override getCost(state: Readonly<GameState>): { ap: number; mp: number } {
+    return { ap: state.config.bond.cost.ap, mp: 0 };
   }
 
   override getCandidates(state: Readonly<GameState>, player: Readonly<PlayerState>): BondActionData[] {

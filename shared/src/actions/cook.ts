@@ -12,16 +12,19 @@ export type CookActionData = { type: "cook"; item: string };
 export class CookAction extends Action<CookActionData> {
   constructor() {
     super("cook");
-    this.baseAPCost = 1;
+  }
+
+  override getCost(state: Readonly<GameState>): { ap: number; mp: number } {
+    return { ap: state.config.cook.cost.ap, mp: 0 };
   }
 
   override getCandidates(state: Readonly<GameState>, player: Readonly<PlayerState>): CookActionData[] {
-    if (!state.config.cookRooms.includes(player.room)) return [];
+    if (!state.config.cook.rooms.includes(player.room)) return [];
     return state.items.filter((item) => ITEM_TYPES[item.type]?.cook && canReach(state, player, item.at)).map((item) => ({ type: "cook", item: item.id }));
   }
 
   override check(state: Readonly<GameState>, player: Readonly<PlayerState>, target: CookActionData): string | null {
-    if (!state.config.cookRooms.includes(player.room)) return "cant_cook";
+    if (!state.config.cook.rooms.includes(player.room)) return "cant_cook";
     const item = state.items.find((i) => i.id === target.item);
     if (!item) return "no_such_item";
     if (!ITEM_TYPES[item.type]?.cook || !canReach(state, player, item.at)) return "cant_cook";

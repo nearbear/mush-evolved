@@ -12,7 +12,7 @@ export class ExtractSporeAction extends Action<ExtractSporeActionData> {
   }
 
   override getCost(state: Readonly<GameState>): { ap: number; mp: number } {
-    return { ap: state.config.extractSporeAp, mp: 0 };
+    return { ap: state.config.spores.cost.ap, mp: 0 };
   }
 
   override getCandidates(): ExtractSporeActionData[] {
@@ -22,14 +22,14 @@ export class ExtractSporeAction extends Action<ExtractSporeActionData> {
   override check(state: Readonly<GameState>, player: Readonly<PlayerState>, target: ExtractSporeActionData): string | null {
     if (player.role !== "mush") return "not_mush";
     const last = state.sporeExtractedOn[player.id];
-    if (last !== undefined && state.cycle - last < state.config.sporeCooldownCycles) return "cooldown";
+    if (last !== undefined && state.cycle - last < state.config.spores.cooldownCycles) return "cooldown";
     if (state.sporesToday >= sporesPerDay(state, player)) return "daily_cap";
     return this.canAfford(state, player, target);
   }
 
   override apply(state: GameState, player: PlayerState, target: ExtractSporeActionData): void {
-    player.spores += state.config.sporesPerExtraction;
-    state.sporesToday += state.config.sporesPerExtraction;
+    player.spores += state.config.spores.effect.spores;
+    state.sporesToday += state.config.spores.effect.spores;
     state.sporeExtractedOn[player.id] = state.cycle;
     addStatus(player, "dirty");
     logPrivate(state, player.id, "sporeExtracted");

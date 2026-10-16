@@ -14,7 +14,10 @@ export type SpikeActionData = { type: "spike"; target: string };
 export class SpikeAction extends Action<SpikeActionData> {
   constructor() {
     super("spike");
-    this.baseAPCost = 1;
+  }
+
+  override getCost(state: Readonly<GameState>): { ap: number; mp: number } {
+    return { ap: state.config.spike.cost.ap, mp: 0 };
   }
 
   override getCandidates(state: Readonly<GameState>, player: Readonly<PlayerState>): SpikeActionData[] {
