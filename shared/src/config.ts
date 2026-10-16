@@ -44,6 +44,8 @@ export const DEFAULT_CONFIG: GameConfig = {
   // Confirmed 2026-10-13/14: extracting costs 1 AP and gives 1 spore; each Mush waits 4 cycles between extractions
   // and the faction shares 4 per day (skills and research will raise it).
   extractSporeAp: 1,
+  // Confirmed 2026-10-15: spiking costs 1 AP and 1 spore, and raises a human's contamination by 1.
+  spikeAp: 1,
   // Confirmed 2026-10-14: showering costs 2 AP, 1 less with soap in your inventory; a Mush takes 4 damage.
   // Confirmed 2026-10-15: healing needs a medikit in your inventory; 2 AP on someone else, 3 on yourself, restores 3 HP.
   healApOther: 2,

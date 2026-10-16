@@ -5,7 +5,7 @@
 
 import { EQUIPMENT_TYPES } from "./equipment.ts";
 import { ITEM_TYPES, canReach, canTransfer, itemsIn, produceItem } from "./items.ts";
-import { logPrivate, logPublic } from "./log.ts";
+import { logPrivate, logPublic, logSecret } from "./log.ts";
 import { addStatus, isFullBelly, removeStatus } from "./statuses.ts";
 import { contaminationCapacity, healAmount, moveCost, movementRules, sporesPerDay } from "./modifiers.ts";
 import { dayOf } from "./rules.ts";
@@ -253,6 +253,32 @@ const extractSpore: ActionDef<ActionOf<"extract_spore">> = {
 };
 
 /**
+/**
+ * Spiking (confirmed 2026-10-15): a Mush spends 1 AP and 1 spore to raise a
+ * living human in their room by 1 contamination (capped at capacity; converting
+ * is not built yet). Always succeeds. Secret log: bystanders learn of it, the
+ * victim is not told. Contamination stays hidden from everyone.
+ */
+const spike: ActionDef<ActionOf<"spike">> = {
+  candidates: (state, p) =>
+    p.role === "mush" ? peopleHere(state, p).filter((o) => o.role === "human").map((o) => ({ type: "spike", target: o.id })) : [],
+  check(state, p, a) {
+    if (p.role !== "mush") return "not_mush";
+    const target = peopleHere(state, p).find((o) => o.id === a.target);
+    if (!target) return "cant_see";
+    if (target.role !== "human") return "not_human";
+    if (p.spores < 1) return "no_spores";
+    return p.ap >= state.config.spikeAp ? null : "cant_afford";
+  },
+  cost: (state) => ({ ap: state.config.spikeAp, mp: 0 }),
+  apply(next, p, a) {
+    const target = next.players.find((o) => o.id === a.target)!; // checked, so it exists
+    p.spores -= 1;
+    next.contamination[target.id] = Math.min(contaminationCapacity(next, target), (next.contamination[target.id] ?? 0) + 1);
+    logSecret(next, p.id, "spiked", { name: p.name, target: target.name }, target.id);
+  },
+};
+
  * Washing off dirty at a shower (confirmed 2026-10-14). Only offered while dirty.
  * Costs `showerAp`, less with soap in your inventory (the soap is not used up).
  * A Mush also takes `showerMushDamage` HP (floor 0). Private log: nobody learns
@@ -375,6 +401,7 @@ export function visibleTargets(state: Readonly<GameState>, player: Readonly<Play
 /** The log message for examining a target. Only called for targets the player can see. */
 function examineEvent(state: Readonly<GameState>, viewer: Readonly<PlayerState>, target: Target): [string, LogParams] {
   switch (target.kind) {
+  spike,
     case "player":
       return target.id === viewer.id
         ? ["examineSelf", {}]

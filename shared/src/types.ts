@@ -71,6 +71,8 @@ export interface GameConfig {
   healRooms: string[];
   /** Care points the medic skill grants at the start of each day, added to `resources.heal` (confirmed 2026-10-15). */
   medicCarePointsPerDay: number;
+  /** AP a spike costs (confirmed 2026-10-15). */
+  spikeAp: number;
   /** AP a punch costs (issue 29). */
   punchAp: number;
   /** HP a landing punch removes (placeholder until combat is designed). */
@@ -292,6 +294,8 @@ export type Action =
   | { type: "shower"; equipment: string }
   | { type: "heal"; target: PlayerId }
   | { type: "punch"; target: PlayerId }
+  | { type: "spike"; target: PlayerId }
+  | { type: "pick_skill"; skill: string }
   | { type: "ready" };
 
 /** Room equipment as a client sees it. */

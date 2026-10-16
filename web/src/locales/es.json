@@ -116,7 +116,8 @@
     "extractSpore": "Extraer una espora",
     "shower": "Ducharse",
     "heal": "Curar",
-    "punch": "Golpear"
+    "punch": "Golpear",
+    "spike": "Contagiar"
   },
   "channels": {
     "empty": "Aún no hay canales privados.",
@@ -255,6 +256,7 @@
     "healedSelf": "{{name}} se curó a sí mismo/a.",
     "punched": "{{name}} golpeó a {{target}}.",
     "punchMissed": "{{name}} intentó golpear a {{target}} pero falló.",
+    "spiked": "{{name}} contagió a {{target}}.",
     "examineSelf": "Te examinas.",
     "examinePlayer": "Examinas a {{name}}.",
     "examineEquipment": "Examinas: {{equipment}}.",

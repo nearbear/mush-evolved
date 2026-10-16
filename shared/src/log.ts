@@ -18,11 +18,17 @@ export function logPrivate(state: GameState, actor: PlayerId, key: string, param
   state.log.push({ cycle: state.cycle, key, ...(params && { params }), ...(p && { room: p.room }), visibleTo: [actor] });
 }
 
-/** Mutates a state that the caller already cloned. */
-export function logSecret(state: GameState, actor: PlayerId, key: string, params?: LogParams): void {
+/**
+ * Mutates a state that the caller already cloned. `hideFrom` is someone who must
+ * not see the entry even if present (a spike's victim): when it is set and there
+ * are witnesses, the entry goes to the actor and those witnesses only.
+ */
+export function logSecret(state: GameState, actor: PlayerId, key: string, params?: LogParams, hideFrom?: PlayerId): void {
   const p = state.players.find((pl) => pl.id === actor);
   if (!p) return;
-  const witnessed = state.players.some((o) => o.id !== actor && o.alive && o.room === p.room);
-  const entry: LogEntry = { cycle: state.cycle, key, ...(params && { params }), room: p.room, visibleTo: witnessed ? "all" : [actor] };
+  const witnesses = state.players.filter((o) => o.id !== actor && o.alive && o.room === p.room && o.id !== hideFrom);
+  const witnessed = hideFrom === undefined ? state.players.some((o) => o.id !== actor && o.alive && o.room === p.room) : witnesses.length > 0;
+  const visibleTo = !witnessed ? [actor] : hideFrom === undefined ? "all" : [actor, ...witnesses.map((o) => o.id)];
+  const entry: LogEntry = { cycle: state.cycle, key, ...(params && { params }), room: p.room, visibleTo };
   state.log.push(entry);
 }

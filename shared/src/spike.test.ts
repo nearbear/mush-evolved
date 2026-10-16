@@ -1,0 +1,108 @@
+import { describe, expect, it } from "vitest";
+import { CHARACTERS } from "./characters.ts";
+import { DEFAULT_CONFIG } from "./config.ts";
+import { parseGameMessage } from "./protocol.ts";
+import { applyAction, createGame, viewFor } from "./rules.ts";
+import type { Action, GameState, PlayerId, Seat } from "./types.ts";
+
+const seats: Seat[] = Array.from({ length: 5 }, (_, i) => ({ id: `p${i}`, name: `Player ${i}`, isBot: false, character: CHARACTERS[i]!.id }));
+const config = { ...DEFAULT_CONFIG, mushCount: 1, startInventory: [], startItems: [], maxAp: 99, startAp: 50 };
+const spike = (target: PlayerId): Action => ({ type: "spike", target });
+
+/** p0 Mush with 2 spores; p1 human with p0 in SICK_BAY; p2 Mush and p3 human in the refectory; p4 human alone in the lab. */
+function ship(witness = false): GameState {
+  const s = createGame(seats, config, 3);
+  const get = (id: PlayerId) => s.players.find((p) => p.id === id)!;
+  s.players.forEach((p) => {
+    p.role = p.id === "p0" || p.id === "p2" ? "mush" : "human";
+  });
+  get("p0").room = get("p1").room = "SICK_BAY";
+  get("p0").spores = 2;
+  get("p2").room = get("p3").room = "REFECTORY";
+  get("p4").room = witness ? "SICK_BAY" : "LABORATORY";
+  return s;
+}
+const player = (s: GameState, id: PlayerId) => s.players.find((p) => p.id === id)!;
+
+describe("spiking", () => {
+  it("costs 1 AP and 1 spore and raises the human's contamination by 1", () => {
+    const r = applyAction(ship(), "p0", spike("p1"));
+    if (!r.ok) throw new Error(r.error);
+    expect(player(r.state, "p0").spores).toBe(1);
+    expect(player(r.state, "p0").ap).toBe(config.startAp - 1);
+    expect(r.state.contamination.p1).toBe(1);
+  });
+
+  it("stops at the capacity of 3", () => {
+    let s = ship();
+    s.players.find((p) => p.id === "p0")!.spores = 5;
+    for (let i = 0; i < 5; i++) {
+      const r = applyAction(s, "p0", spike("p1"));
+      if (!r.ok) throw new Error(r.error);
+      s = r.state;
+    }
+    expect(s.contamination.p1).toBe(3);
+  });
+
+  it("is offered only to Mush with a spore, for humans in their room", () => {
+    const s = ship();
+    expect(viewFor(s, "p0").legalActions).toContainEqual(spike("p1"));
+    expect(viewFor(s, "p0").legalActions).not.toContainEqual(spike("p3"));
+    expect(viewFor(s, "p1").legalActions.some((a) => a.type === "spike")).toBe(false);
+    player(s, "p0").spores = 0;
+    expect(viewFor(s, "p0").legalActions.some((a) => a.type === "spike")).toBe(false);
+  });
+
+  it("leaves state unchanged when illegal", () => {
+    const s = ship();
+    player(s, "p0").room = "LABORATORY"; // p1 not here
+    const cases: Array<[PlayerId, Action]> = [
+      ["p1", spike("p0")], // human actor
+      ["p0", spike("p1")], // not in the room
+      ["p2", spike("p0")], // target is Mush (and not in room)
+      ["p0", spike("nobody")],
+    ];
+    for (const [id, a] of cases) expect(applyAction(s, id, a).ok).toBe(false);
+    const s2 = ship();
+    s2.players.find((p) => p.id === "p2")!.room = "SICK_BAY";
+    s2.players.find((p) => p.id === "p2")!.spores = 1;
+    expect(applyAction(s2, "p2", spike("p0")).ok).toBe(false); // Mush target
+    player(s2, "p0").spores = 0;
+    expect(applyAction(s2, "p0", spike("p1")).ok).toBe(false); // no spores
+    expect(s2.contamination).toEqual({});
+  });
+
+  it("is refused for a dead target or without AP", () => {
+    const dead = ship();
+    player(dead, "p1").alive = false;
+    expect(applyAction(dead, "p0", spike("p1")).ok).toBe(false);
+    const broke = ship();
+    player(broke, "p0").ap = 0;
+    expect(applyAction(broke, "p0", spike("p1")).ok).toBe(false);
+  });
+
+  it("hides contamination from every view, and the victim is not told", () => {
+    const r = applyAction(ship(), "p0", spike("p1"));
+    if (!r.ok) throw new Error(r.error);
+    for (const id of ["p0", "p1", "p2", "p3", "p4"]) {
+      expect(JSON.stringify(viewFor(r.state, id))).not.toContain("contamination");
+    }
+    expect(viewFor(r.state, "p1").log.some((e) => e.key === "spiked")).toBe(false); // no bystander: private to the actor
+    expect(viewFor(r.state, "p0").log.some((e) => e.key === "spiked")).toBe(true);
+  });
+
+  it("is shown to bystanders but never the victim, and never reaches other rooms", () => {
+    const r = applyAction(ship(true), "p0", spike("p1"));
+    if (!r.ok) throw new Error(r.error);
+    expect(viewFor(r.state, "p4").log.some((e) => e.key === "spiked")).toBe(true);
+    expect(viewFor(r.state, "p1").log.some((e) => e.key === "spiked")).toBe(false);
+    expect(viewFor(r.state, "p3").log.some((e) => e.key === "spiked")).toBe(false);
+  });
+
+  it("parses from the client", () => {
+    expect(parseGameMessage(JSON.stringify({ type: "action", action: { type: "spike", target: "p1" } }))).toEqual({
+      type: "action",
+      action: spike("p1"),
+    });
+  });
+});
