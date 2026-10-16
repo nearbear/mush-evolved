@@ -26,7 +26,7 @@ import { RateLimiter } from "./rateLimit.ts";
 const CHEATS_DISABLED = "cheats_disabled";
 
 /** Deliberate pacing so bots don't act instantly. */
-const BOT_DELAY_MS = 1500;
+const BOT_DELAY_MS = 50;
 
 /**
  * Bump when GameState's shape changes. Games stored under another version are
