@@ -12,6 +12,7 @@ export type CookActionData = { type: "cook"; item: string };
 export class CookAction extends Action<CookActionData> {
   constructor() {
     super("cook");
+    this.baseAPCost = 1;
   }
 
   override getCandidates(state: Readonly<GameState>, player: Readonly<PlayerState>): CookActionData[] {
@@ -25,10 +26,6 @@ export class CookAction extends Action<CookActionData> {
     if (!item) return "no_such_item";
     if (!ITEM_TYPES[item.type]?.cook || !canReach(state, player, item.at)) return "cant_cook";
     return this.canAfford(state, player, target);
-  }
-
-  override getCost(state: Readonly<GameState>): { ap: number; mp: number } {
-    return { ap: state.config.cookAp, mp: 0 };
   }
 
   override apply(state: GameState, player: PlayerState, target: CookActionData): void {
