@@ -186,7 +186,7 @@ function advanceCycle(state: GameState): void {
       p.satiety = Math.max(0, p.satiety - satietyLoss(state, p));
       if (p.satiety === 0) p.satietyZeroSince = state.cycle;
     }
-    if (isHungry(state, p)) damage(state, p, state.config.hungerHpPerCycle);
+    if (isHungry(state, p)) damage(state, p, state.config.hunger.hpPerCycle);
   }
   for (const p of state.players) applyCheats(p, state.config);
   const { day } = dayOf(state);

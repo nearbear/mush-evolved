@@ -10,7 +10,7 @@ export class BondAction extends Action<BondActionData> {
   }
 
   override getCost(state: Readonly<GameState>): { ap: number; mp: number } {
-    return { ap: state.config.bondAp, mp: 0 };
+    return { ap: state.config.bond.ap, mp: 0 };
   }
 
   override getCandidates(state: Readonly<GameState>, player: Readonly<PlayerState>): BondActionData[] {

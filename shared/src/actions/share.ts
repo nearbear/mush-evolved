@@ -11,7 +11,7 @@ export class ShareAction<T extends "dtt" | "stt" = "dtt" | "stt"> extends Action
   }
 
   override getCost(state: Readonly<GameState>): { ap: number; mp: number } {
-    return { ap: state.config.shareAp, mp: 0 };
+    return { ap: state.config.share.ap, mp: 0 };
   }
 
   override getCandidates(state: Readonly<GameState>, player: Readonly<PlayerState>): { type: T; target: string }[] {
@@ -32,7 +32,7 @@ export class ShareAction<T extends "dtt" | "stt" = "dtt" | "stt"> extends Action
     const other = state.players.find((o) => o.id === target.target)!;
     const { day } = dayOf(state);
     for (const who of [player, other]) {
-      who.morale = Math.min(state.config.maxMorale, who.morale + state.config.shareMorale);
+      who.morale = Math.min(state.config.maxMorale, who.morale + state.config.share.morale);
       state.sharedOnDay[who.id] = day;
     }
     const human = player.role === "human" ? player : other;

@@ -22,11 +22,11 @@ export class DismantleAction extends Action<DismantleActionData> {
   }
 
   override getCost(state: Readonly<GameState>): { ap: number; mp: number } {
-    return { ap: state.config.dismantleAp, mp: 0 };
+    return { ap: state.config.dismantle.ap, mp: 0 };
   }
 
   override getSuccessChance(state: Readonly<GameState>): number {
-    return state.config.dismantleOdds;
+    return state.config.dismantle.odds;
   }
 
   override fail(state: GameState, player: PlayerState, target: DismantleActionData): void {

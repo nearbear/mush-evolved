@@ -32,11 +32,11 @@ export class ShowerAction extends Action<ShowerActionData> {
   override apply(state: GameState, player: PlayerState, target: ShowerActionData): void {
     removeStatus(player, "dirty");
     logPrivate(state, player.id, player.role === "mush" ? "showeredMush" : "showered");
-    if (player.role === "mush") damage(state, player, state.config.showerMushDamage);
+    if (player.role === "mush") damage(state, player, state.config.shower.mushDamage);
   }
 }
 
 function showerCost(state: Readonly<GameState>, player: Readonly<PlayerState>): number {
   const soap = itemsIn(state, { kind: "player", id: player.id }).some((item) => item.type === "soap");
-  return Math.max(0, state.config.showerAp - (soap ? state.config.showerSoapDiscount : 0));
+  return Math.max(0, state.config.shower.ap - (soap ? state.config.shower.soapDiscount : 0));
 }

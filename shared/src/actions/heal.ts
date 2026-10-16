@@ -42,7 +42,7 @@ export class HealAction extends Action<HealActionData> {
 }
 
 const canHeal = (state: Readonly<GameState>, p: Readonly<PlayerState>): boolean =>
-  state.config.healRooms.includes(p.room) || itemsIn(state, { kind: "player", id: p.id }).some((i) => i.type === "medikit");
+  state.config.heal.rooms.includes(p.room) || itemsIn(state, { kind: "player", id: p.id }).some((i) => i.type === "medikit");
 
 const healCost = (state: Readonly<GameState>, p: Readonly<PlayerState>, target: PlayerId): number =>
-  p.resources.heal > 0 ? 0 : target === p.id ? state.config.healApSelf : state.config.healApOther;
+  p.resources.heal > 0 ? 0 : target === p.id ? state.config.heal.apSelf : state.config.heal.apOther;

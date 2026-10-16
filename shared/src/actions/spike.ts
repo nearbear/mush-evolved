@@ -30,7 +30,7 @@ export class SpikeAction extends Action<SpikeActionData> {
   }
 
   override getCost(state: Readonly<GameState>): { ap: number; mp: number } {
-    return { ap: state.config.spikeAp, mp: 0 };
+    return { ap: state.config.spike.ap, mp: 0 };
   }
 
   override apply(state: GameState, player: PlayerState, target: SpikeActionData): void {

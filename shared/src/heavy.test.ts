@@ -5,7 +5,7 @@ import { applyAction, createGame, viewFor } from "./rules.ts";
 import type { GameState, PlayerId, Seat } from "./types.ts";
 
 const seats: Seat[] = Array.from({ length: 3 }, (_, i) => ({ id: `p${i}`, name: `Player ${i}`, isBot: false, character: CHARACTERS[i]!.id }));
-const base = { ...DEFAULT_CONFIG, mushCount: 1, startInventory: [], startItems: [], startSkills: [], punchMissOdds: 0 };
+const base = { ...DEFAULT_CONFIG, mushCount: 1, startInventory: [], startItems: [], startSkills: [], punch: { ...DEFAULT_CONFIG.punch, missOdds: 0 } };
 const player = (s: GameState, id: PlayerId) => s.players.find((p) => p.id === id)!;
 
 /** p0 in the refectory with 10 MP; `carry` heavy freezers in their inventory. */

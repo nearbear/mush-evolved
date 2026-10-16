@@ -26,11 +26,11 @@ export class PunchAction extends Action<PunchActionData> {
   }
 
   override getCost(state: Readonly<GameState>): { ap: number; mp: number } {
-    return { ap: state.config.punchAp, mp: 0 };
+    return { ap: state.config.punch.ap, mp: 0 };
   }
 
   override getSuccessChance(state: Readonly<GameState>): number {
-    return 1 - state.config.punchMissOdds;
+    return 1 - state.config.punch.missOdds;
   }
 
   override apply(state: GameState, player: PlayerState, target: PunchActionData): void {

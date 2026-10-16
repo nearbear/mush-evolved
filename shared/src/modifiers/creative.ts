@@ -9,7 +9,7 @@ export const creative: Modifier = {
     if (apSpent <= 0) return;
     const [roll, rng] = nextFloat(next.rng);
     next.rng = rng;
-    if (roll >= next.config.creativeRefundOdds) return;
+    if (roll >= next.config.creative.refundOdds) return;
     player.ap += 1;
     logPrivate(next, player.id, "creativeRefund");
   },

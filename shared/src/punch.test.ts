@@ -20,11 +20,11 @@ function ship(config: GameConfig = base, seed = 3): GameState {
 
 describe("punch", () => {
   it("defaults to 1 AP, 2 damage and a 40% miss chance", () => {
-    expect([base.punchAp, base.punchDamage, base.punchMissOdds]).toEqual([1, 2, 0.4]);
+    expect([base.punch.ap, base.punch.damage, base.punch.missOdds]).toEqual([1, 2, 0.4]);
   });
 
   it("a hit costs 1 AP, deals 2 damage and is public", () => {
-    const s = ship({ ...base, punchMissOdds: 0 });
+    const s = ship({ ...base, punch: { ...base.punch, missOdds: 0 } });
     const r = applyAction(s, "p0", punch("p1"));
     if (!r.ok) throw new Error(r.error);
     expect(player(r.state, "p1").hp).toBe(base.startHp - 2);
@@ -33,7 +33,7 @@ describe("punch", () => {
   });
 
   it("a miss still costs the AP, deals no damage and is public", () => {
-    const s = ship({ ...base, punchMissOdds: 1 });
+    const s = ship({ ...base, punch: { ...base.punch, missOdds: 1 } });
     const r = applyAction(s, "p0", punch("p1"));
     if (!r.ok) throw new Error(r.error);
     expect(player(r.state, "p1").hp).toBe(base.startHp);
@@ -52,7 +52,7 @@ describe("punch", () => {
   });
 
   it("a hit to 0 HP kills", () => {
-    const s = ship({ ...base, punchMissOdds: 0 });
+    const s = ship({ ...base, punch: { ...base.punch, missOdds: 0 } });
     player(s, "p1").hp = 1;
     const r = applyAction(s, "p0", punch("p1"));
     if (!r.ok) throw new Error(r.error);
@@ -74,7 +74,7 @@ describe("punch", () => {
   });
 
   it("is not leaked to other rooms", () => {
-    const s = ship({ ...base, punchMissOdds: 0 });
+    const s = ship({ ...base, punch: { ...base.punch, missOdds: 0 } });
     const r = applyAction(s, "p0", punch("p1"));
     if (!r.ok) throw new Error(r.error);
     expect(JSON.stringify(viewFor(r.state, "p2"))).not.toContain("punch");
