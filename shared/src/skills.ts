@@ -75,3 +75,22 @@ export function isSkill(value: unknown): value is SkillId {
 
 /** Human skill slots per player (a fourth, for books, comes later). */
 export const SKILL_SLOTS = 3;
+
+/** How much of a skill's listed effects the rules implement. A skill missing from SKILL_STATUS is "none". */
+export type SkillStatus = "full" | "partial" | "none";
+
+/**
+ * Implementation status shown in the skill picker. Update it when a skill gains rules. Bonuses for developing
+ * NERON projects are left out of this count (owner, 2026-10-16).
+ */
+export const SKILL_STATUS: Readonly<Partial<Record<SkillId, SkillStatus>>> = {
+  // Heal bonus only; no operations, medicine properties, or research bonus.
+  medic: "partial",
+  // Free heal points only; no medicine properties.
+  first_aid: "partial",
+  creative: "full",
+};
+
+export function skillStatus(skill: string): SkillStatus {
+  return isSkill(skill) ? (SKILL_STATUS[skill] ?? "none") : "none";
+}

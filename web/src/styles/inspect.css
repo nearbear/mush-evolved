@@ -163,6 +163,23 @@
   background: color-mix(in srgb, var(--panel-fill) 55%, black);
   border-bottom: 1px solid var(--panel-rim);
 }
+.skill-status {
+  align-self: flex-start;
+  margin: 0 0.6rem;
+  padding: 0.1rem 0.45rem;
+  border: 1px solid currentColor;
+  border-radius: 999px;
+  font-size: 0.75rem;
+}
+.skill-status-full {
+  color: #7fd67f;
+}
+.skill-status-partial {
+  color: #e8c056;
+}
+.skill-status-none {
+  color: #b0b0b0;
+}
 .skill-pick-card img {
   image-rendering: pixelated;
 }

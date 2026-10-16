@@ -6,7 +6,7 @@ import { Dialog } from "@base-ui/react/dialog";
 import { Popover } from "@base-ui/react/popover";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { SKILL_SLOTS, type Action, type PlayerView } from "@mush2/shared";
+import { SKILL_SLOTS, skillStatus, type Action, type PlayerView } from "@mush2/shared";
 import { GOLD_PLUS_ICON, skillIcon } from "../art/assets.ts";
 import { useNames } from "../i18n/names.ts";
 import "./settings.css";
@@ -142,6 +142,7 @@ function SkillCard({ skill, onSelect }: { skill: string; onSelect?: () => void }
   const { t } = useTranslation();
   const names = useNames();
   const effects = String(t(`skills.effects.${skill}` as never, { defaultValue: "" })).split("\n").filter(Boolean);
+  const status = skillStatus(skill);
   const interactive = onSelect
     ? {
         role: "button",
@@ -161,6 +162,7 @@ function SkillCard({ skill, onSelect }: { skill: string; onSelect?: () => void }
         <img src={skillIcon(skill)} alt="" />
         <strong>{names.skill(skill)}</strong>
       </header>
+      <span className={`skill-status skill-status-${status}`}>{t(`skills.status.${status}`)}</span>
       {effects.length > 0 && (
         <ul>
           {effects.map((line) => (

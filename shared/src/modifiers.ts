@@ -56,7 +56,7 @@ function careSkill(key: "nurseCarePointsPerDay"): Modifier {
 
 export type ModifierRegistry = Readonly<Record<string, Modifier>>;
 
-/** Items and skills will register here too. */
+/** Items and skills will register here too. When a skill gains rules, update its entry in SKILL_STATUS (skills.ts). */
 export const MODIFIERS: Record<string, Modifier> = {
   // Confirmed 2026-10-11: +1 AP per cycle while in a bed. Nothing applies it
   // yet; a lie-down action will add and remove it.
