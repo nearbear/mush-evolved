@@ -277,10 +277,10 @@
   },
   "skills": {
     "title": "Elegir una habilidad",
-    "slot": "Ranura de habilidad {{n}} (vacía)",
     "confirm": "¿Elegir {{skill}}?",
     "confirmYes": "Elegir",
     "back": "Volver",
+    "slot": "Ranura de habilidad {{n}} (vacía)",
     "pick": "Elegir una habilidad para esta ranura",
     "close": "Cancelar",
     "warning": "Una habilidad no se puede cambiar una vez elegida.",

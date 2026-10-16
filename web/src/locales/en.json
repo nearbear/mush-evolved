@@ -277,10 +277,10 @@
   },
   "skills": {
     "title": "Choose a skill",
-    "slot": "Skill slot {{n}} (empty)",
     "confirm": "Pick {{skill}}?",
     "confirmYes": "Pick skill",
     "back": "Back",
+    "slot": "Skill slot {{n}} (empty)",
     "pick": "Pick a skill for this slot",
     "close": "Cancel",
     "warning": "A skill can never be changed once picked.",
