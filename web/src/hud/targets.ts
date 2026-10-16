@@ -48,6 +48,7 @@ export function actionsOn(view: PlayerView, target: Target): Action[] {
       case "dtt":
       case "stt":
       case "heal":
+      case "punch":
         return target.kind === "player" && a.target === target.id;
       case "extract_spore":
         return target.kind === "player" && target.id === view.you.id;
@@ -67,6 +68,7 @@ const ACTION_LABEL_KEYS = {
   dtt: "actions.dtt",
   stt: "actions.stt",
   heal: "actions.heal",
+  punch: "actions.punch",
   extract_spore: "actions.extractSpore",
 } as const;
 

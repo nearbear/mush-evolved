@@ -30,6 +30,7 @@ describe("action registry", () => {
       ...seats.map((s): Action => ({ type: "examine", target: { kind: "player", id: s.id } })),
       // Everyone starts in the Laboratory, so p0 can bond with the other three (DTT and STT need a bond first).
       ...seats.filter((s) => s.id !== "p0").map((s): Action => ({ type: "bond", target: s.id })),
+      ...seats.filter((s) => s.id !== "p0").map((s): Action => ({ type: "punch", target: s.id })),
       ...DEFAULT_CONFIG.equipment.LABORATORY!.map((e): Action => ({ type: "examine", target: { kind: "equipment", id: e.id } })),
       ...[...mine, ...floor].map((i): Action => ({ type: "examine", target: { kind: "item", id: i.id } })),
     ];

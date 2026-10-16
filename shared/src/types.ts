@@ -71,6 +71,12 @@ export interface GameConfig {
   healRooms: string[];
   /** Care points the medic skill grants at the start of each day, added to `resources.heal` (confirmed 2026-10-15). */
   medicCarePointsPerDay: number;
+  /** AP a punch costs (issue 29). */
+  punchAp: number;
+  /** HP a landing punch removes (placeholder until combat is designed). */
+  punchDamage: number;
+  /** Chance a punch misses, 0 to 1 (confirmed 2026-10-15). */
+  punchMissOdds: number;
   /** AP spent to shower, before the soap discount (confirmed 2026-10-14). */
   showerAp: number;
   /** AP off a shower when soap is in your inventory (confirmed 2026-10-14). */
@@ -285,6 +291,7 @@ export type Action =
   | { type: "extract_spore" }
   | { type: "shower"; equipment: string }
   | { type: "heal"; target: PlayerId }
+  | { type: "punch"; target: PlayerId }
   | { type: "ready" };
 
 /** Room equipment as a client sees it. */

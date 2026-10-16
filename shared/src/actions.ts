@@ -310,6 +310,30 @@ const canHeal = (state: Readonly<GameState>, p: Readonly<PlayerState>): boolean 
 const healCost = (state: Readonly<GameState>, p: Readonly<PlayerState>, target: PlayerId): number =>
   p.resources.heal > 0 ? 0 : target === p.id ? state.config.healApSelf : state.config.healApOther;
 
+/**
+ * Punch (issue 29, confirmed 2026-10-15): 1 AP, a living person in your room (never yourself), misses
+ * `punchMissOdds` of the time. A hit removes `punchDamage` HP (floor 0; death is undecided). Both outcomes
+ * are public room history.
+ */
+const punch: ActionDef<ActionOf<"punch">> = {
+  candidates: (state, p) => peopleHere(state, p).map((o) => ({ type: "punch", target: o.id })),
+  check(state, p, a) {
+    if (!peopleHere(state, p).some((o) => o.id === a.target)) return "cant_see";
+    return p.ap >= state.config.punchAp ? null : "cant_afford";
+  },
+  cost: (state) => ({ ap: state.config.punchAp, mp: 0 }),
+  chance: (state) => 1 - state.config.punchMissOdds,
+  apply(next, p, a) {
+    const target = next.players.find((o) => o.id === a.target)!; // checked, so it exists
+    target.hp = Math.max(0, target.hp - next.config.punchDamage);
+    logPublic(next, p.room, "punched", { name: p.name, target: target.name });
+  },
+  fail(next, p, a) {
+    const target = next.players.find((o) => o.id === a.target)!;
+    logPublic(next, p.room, "punchMissed", { name: p.name, target: target.name });
+  },
+};
+
 const ready: ActionDef<ActionOf<"ready">> = {
   candidates: () => [{ type: "ready" }],
   check: () => null,
@@ -335,6 +359,7 @@ export const ACTIONS: { [T in ActionType]: ActionDef<ActionOf<T>> } = {
   extract_spore: extractSpore,
   shower,
   heal,
+  punch,
 };
 
 /** Everything a player can see and so interact with: people and equipment in their room, their items and the room's. */

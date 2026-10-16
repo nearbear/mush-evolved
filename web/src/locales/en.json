@@ -115,7 +115,8 @@
     "stt": "STT",
     "extractSpore": "Extract spore",
     "shower": "Shower",
-    "heal": "Heal"
+    "heal": "Heal",
+    "punch": "Punch"
   },
   "channels": {
     "empty": "No private channels yet.",
@@ -252,6 +253,8 @@
     "consumed": "{{name}} consumed the {{item}}.",
     "healed": "{{name}} healed {{target}}.",
     "healedSelf": "{{name}} healed themself.",
+    "punched": "{{name}} punched {{target}}.",
+    "punchMissed": "{{name}} swung at {{target}} and missed.",
     "examineSelf": "You examine yourself.",
     "examinePlayer": "You examine {{name}}.",
     "examineEquipment": "You examine the {{equipment}}.",

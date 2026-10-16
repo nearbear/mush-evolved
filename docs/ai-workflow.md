@@ -472,6 +472,10 @@ Correction to the entry above (2026-10-15): the owner said the existing SICK_BAY
 - Needed correction: my first version used native `title` tooltips, which are hover-only and unreadable on phones. The user flagged it. Base UI's `Tooltip` is hover/focus only too; `Popover.Trigger openOnHover` (already used by `FactionCard`) covers mouse and touch, so no new library. Now `ResourceChip`.
 - Data oddities: the source calls `ENG` "Points de Mécanique" but its description says Ingénierie (used Ingénierie); `EXP` has no description, so I wrote one (a guess).
 
+## 2026-10-15: punch action (issue 29)
+
+Owner decided: same-room targets only, 40% miss chance, public action. Cost 1 AP and 2 damage came from the issue and rules-design. I did not ask about death at 0 HP, per-cycle limits or cameras; I followed the existing "HP stops at 0" convention and left no limit, and flagged both. Worked: the `chance`/`fail` hooks from the dismantle work made the miss roll a few lines. Needed correction: my first miss test failed because the Creative start skill refunds AP on failed actions; the test now sets `startSkills: []`.
+
 ### 2026-10-15: medic skill, care points, sick bay healing
 - Owner decided via questions: care points add 2 per day and stack, any heal auto-spends one and becomes free, anyone can heal in the sick bay without a medikit (normal AP cost), and nobody gets the medic skill by default.
 - Worked: the unused `resources.heal` counter was already in state and the owner's view, so care points needed no state change. Skill = modifier with a new `carePointsPerDay` hook.

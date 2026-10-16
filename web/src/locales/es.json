@@ -115,7 +115,8 @@
     "stt": "STT",
     "extractSpore": "Extraer una espora",
     "shower": "Ducharse",
-    "heal": "Curar"
+    "heal": "Curar",
+    "punch": "Golpear"
   },
   "channels": {
     "empty": "Aún no hay canales privados.",
@@ -252,6 +253,8 @@
     "consumed": "{{name}} consumió: {{item}}.",
     "healed": "{{name}} curó a {{target}}.",
     "healedSelf": "{{name}} se curó a sí mismo/a.",
+    "punched": "{{name}} golpeó a {{target}}.",
+    "punchMissed": "{{name}} intentó golpear a {{target}} pero falló.",
     "examineSelf": "Te examinas.",
     "examinePlayer": "Examinas a {{name}}.",
     "examineEquipment": "Examinas: {{equipment}}.",
