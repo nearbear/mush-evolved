@@ -14,7 +14,8 @@ import { contaminationSeenBy } from "./infection.ts";
 import { isHungry, publicStatusesOf, statusesOf } from "./statuses.ts";
 import { emptyResources } from "./resources.ts";
 import { nextFloat, shuffle } from "./rng.ts";
-import { pushChat } from "./chat.ts";
+import { pushChat, removeFromChannel } from "./chat.ts";
+import { damage } from "./death.ts";
 import { CHAT_CHANNELS, MUSH_CHANNEL } from "./types.ts";
 import type {
   Action,
@@ -185,7 +186,7 @@ function advanceCycle(state: GameState): void {
       p.satiety = Math.max(0, p.satiety - satietyLoss(state, p));
       if (p.satiety === 0) p.satietyZeroSince = state.cycle;
     }
-    if (isHungry(state, p)) p.hp = Math.max(0, p.hp - state.config.hungerHpPerCycle);
+    if (isHungry(state, p)) damage(state, p, state.config.hungerHpPerCycle);
   }
   for (const p of state.players) applyCheats(p, state.config);
   const { day } = dayOf(state);
@@ -362,8 +363,7 @@ export function toggleCheckbox(state: GameState, playerId: PlayerId, messageId: 
 // Membership is the only access control (confirmed 2026-10-13): anyone in a
 // channel may invite anyone, from any room, and new members see the history.
 // Reading and posting still need an iTrackie (chatChannels). Joining is
-// immediate, with no accept step. Dead members stay listed but can't read or
-// post; spectating is a to-do (docs/rules-design.md). Errors are codes, not sentences (i18n rule 4).
+// immediate, with no accept step. Dying takes you out of every channel (death.ts). Errors are codes, not sentences (i18n rule 4).
 
 export const MAX_CHANNEL_NAME_LENGTH = 24;
 
@@ -410,12 +410,7 @@ export function leaveChannel(state: GameState, playerId: PlayerId, channelId: Pr
   const channel = state.channels.find((c) => c.id === channelId);
   if (!findPlayer(state, playerId) || !channel?.members.includes(playerId)) return fail("channel_forbidden");
   const next = clone(state);
-  const mine = next.channels.find((c) => c.id === channelId)!;
-  mine.members = mine.members.filter((m) => m !== playerId);
-  if (mine.members.length === 0) {
-    next.channels = next.channels.filter((c) => c.id !== channelId);
-    next.chat = next.chat.filter((m) => m.channel !== channelId);
-  }
+  removeFromChannel(next, channelId, playerId);
   return { ok: true, state: next };
 }
 

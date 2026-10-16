@@ -253,7 +253,8 @@
     "soap": "Savon",
     "metal_scraps": "Débris métalliques",
     "plastic_scraps": "Débris plastiques",
-    "freezer": "Congélateur"
+    "freezer": "Congélateur",
+    "corpse": "Corps"
   },
   "logEvent": {
     "crewWakes": "L'équipage se réveille à bord du vaisseau.",
@@ -287,7 +288,11 @@
     "shareDidToYou": "{{name}} a fait {{label}} avec vous.",
     "sporeExtracted": "Vous avez extrait une spore.",
     "showered": "Vous avez pris une douche.",
-    "showeredMush": "Vous avez pris une douche. L'eau vous brûle."
+    "showeredMush": "Vous avez pris une douche. L'eau vous brûle.",
+    "died": "{{name}} a perdu la vie.",
+    "diedHuman": "{{name}} a perdu la vie. C'était un humain.",
+    "diedMush": "{{name}} a perdu la vie. C'était un Mush.",
+    "leftThisWorld": "{{name}} a quitté ce monde, et cette discussion."
   },
   "skills": {
     "title": "Choisir une compétence",

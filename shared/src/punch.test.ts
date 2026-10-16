@@ -51,12 +51,13 @@ describe("punch", () => {
     expect(misses / 300).toBeLessThan(0.5);
   });
 
-  it("HP stops at 0", () => {
+  it("a hit to 0 HP kills", () => {
     const s = ship({ ...base, punchMissOdds: 0 });
     player(s, "p1").hp = 1;
     const r = applyAction(s, "p0", punch("p1"));
     if (!r.ok) throw new Error(r.error);
     expect(player(r.state, "p1").hp).toBe(0);
+    expect(player(r.state, "p1").alive).toBe(false);
   });
 
   it("only targets living others in your room; illegal punches leave state unchanged", () => {

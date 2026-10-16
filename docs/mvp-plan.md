@@ -58,6 +58,7 @@ The aim is one complete loop: join, play cycles, infect, die, and win or lose.
 ## Private beta
 
 - Ship resources, status effects (dirty), lie down, and camera install/dismantle *(?)*.
+- Schrödinger the cat: a carriable item that a Mush can infect, and whose death hurts Raluca's morale (`docs/rules-design.md`).
 - Private channel slots, the inventory container look, and the user settings button.
 - Game logo, account placeholder, and wiki link button.
 - Onboarding and tutorial, so invited players understand the game.

@@ -208,6 +208,8 @@ export interface ItemState {
   /** Key into ITEM_TYPES (items.ts). */
   type: string;
   at: Container;
+  /** For a corpse: whose body it is. */
+  of?: PlayerId;
 }
 
 /**

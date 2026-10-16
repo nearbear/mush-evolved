@@ -1,4 +1,5 @@
 import { Action } from "./action.ts";
+import { damage } from "../death.ts";
 import { EQUIPMENT_TYPES } from "../equipment.ts";
 import { itemsIn } from "../items.ts";
 import { logPrivate } from "../log.ts";
@@ -30,8 +31,8 @@ export class ShowerAction extends Action<ShowerActionData> {
 
   override apply(state: GameState, player: PlayerState, target: ShowerActionData): void {
     removeStatus(player, "dirty");
-    if (player.role === "mush") player.hp = Math.max(0, player.hp - state.config.showerMushDamage);
     logPrivate(state, player.id, player.role === "mush" ? "showeredMush" : "showered");
+    if (player.role === "mush") damage(state, player, state.config.showerMushDamage);
   }
 }
 

@@ -34,6 +34,7 @@ The rules will grow the most (infection, win conditions), and every addition can
 - **Purity:** `applyAction` never mutates its input, and failed actions leave the state unchanged. *Covered.*
 - **State survives a JSON round trip** (`JSON.parse(JSON.stringify(state))` deep-equals the original). State is persisted and cloned via JSON, so an accidental `Map`, `Set`, `Date`, or `undefined` would silently corrupt games. *Missing.*
 - **Every legal action succeeds.** Anything in `legalActions` must be accepted by `applyAction`; the client and bots trust that list. *Partial.*
+- **0 HP always kills** (`death.test.ts`, plus `tools/src/death/hpWrites.test.ts`, which fails if anything but `damage` in `death.ts` lowers HP). *Covered* for punch, hunger, and showering.
 - **Invariants under random play:** run many seeded games with `WanderBot`-style random legal actions and check after every step that each item is in exactly one container, AP and MP stay within their caps, nobody is in a room that doesn't exist, and the game always offers someone a legal action. This catches combinations nobody wrote a test for. *Missing.*
 
 ## 4. The server keeps the game going

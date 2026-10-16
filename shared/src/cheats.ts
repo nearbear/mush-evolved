@@ -31,5 +31,6 @@ const REFILL: Record<Cheat, (p: PlayerState, config: GameConfig) => void> = {
  * already cloned. Called after anything that could spend or lose a stat.
  */
 export function applyCheats(p: PlayerState, config: GameConfig): void {
+  if (!p.alive) return; // nothing brings the dead back
   for (const cheat of p.cheats) REFILL[cheat](p, config);
 }

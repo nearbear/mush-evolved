@@ -550,3 +550,9 @@ The user asked for an "eye-tracky" tab on the far right that appears conditional
 - Asked for a user story; the owner then said to just implement it and answered the open questions (penalty does not stack, freezer is the heavy test item and spawns in the refectory, Solid also gives +1 punch damage, room-to-room moves only, Solid is the `sturdy` skill).
 - Worked: the existing `movementRules` fold was the single place to add the penalty, so `moveCost` and `legalCosts` needed no changes. A new `ignoresHeavy` modifier flag and a `punchDamage` hook followed the existing hook pattern.
 - Needed correction: I assumed the skill id was `solid`; it is `sturdy` (found via the "Robuste" row in `skills.json`). Adding the freezer broke the cook test that listed every refectory spawn.
+
+## 2026-10-16: Death, phase 1 (#28)
+
+- Claude first planned to check for death at every place HP could reach 0 (punch, hunger, shower). The user pushed back: a common damage function is better. It became `damage()` in `shared/src/death.ts`, the only way HP goes down, with a source-scanning test in `tools` (shared tests can't read files) so a new damage source can't skip the death check.
+- The user added that corpses are heavy (an existing item attribute) while phase 1 was starting.
+- Found while implementing: the dev `infiniteHp` cheat used to refill HP after it hit 0, so `damage` now honours it directly and `applyCheats` skips the dead.

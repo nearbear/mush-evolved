@@ -30,6 +30,9 @@ export interface ItemType {
  */
 export const ITRACKIE_ITEM = "super_talky";
 
+/** A dead player's body (death.ts); `ItemState.of` says whose. */
+export const CORPSE_ITEM = "corpse";
+
 export const ITEM_TYPES: Record<string, ItemType> = {
   [ITRACKIE_ITEM]: {},
   wrench: {},
@@ -49,6 +52,8 @@ export const ITEM_TYPES: Record<string, ItemType> = {
   plastic_scraps: {},
   // Confirmed 2026-10-16: spawns in the refectory at the start; heavy.
   freezer: { heavy: true },
+  // Decided 2026-10-16: a dead player's body (death.ts). Takes one slot like any item; heavy.
+  [CORPSE_ITEM]: { heavy: true },
 };
 
 /** Whether the player carries at least one heavy item. */

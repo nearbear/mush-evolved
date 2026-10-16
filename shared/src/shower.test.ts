@@ -52,7 +52,7 @@ describe("shower", () => {
     expect(player(r.state, "p1").ap).toBe(8);
   });
 
-  it("burns a Mush for 4 HP, never below 0", () => {
+  it("burns a Mush for 4 HP, which can kill", () => {
     const s = ship();
     addStatus(player(s, "p0"), "dirty");
     const r = applyAction(s, "p0", shower);
@@ -64,6 +64,7 @@ describe("shower", () => {
     const r2 = applyAction(low, "p0", shower);
     if (!r2.ok) throw new Error(r2.error);
     expect(player(r2.state, "p0").hp).toBe(0);
+    expect(player(r2.state, "p0").alive).toBe(false);
   });
 
   it("is refused, leaving state unchanged, when clean, short on AP, or not at a shower", () => {

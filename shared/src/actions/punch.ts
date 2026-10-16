@@ -1,4 +1,5 @@
 import { Action, peopleHere } from "./action.ts";
+import { damage } from "../death.ts";
 import { logPublic } from "../log.ts";
 import { punchDamage } from "../modifiers.ts";
 import type { GameState, PlayerState } from "../types.ts";
@@ -7,7 +8,7 @@ export type PunchActionData = { type: "punch"; target: string };
 
 /**
  * Punch (issue 29, confirmed 2026-10-15): 1 AP, a living person in your room (never yourself), misses
- * `punchMissOdds` of the time. A hit removes `punchDamage` HP (floor 0; death is undecided). Both outcomes
+ * `punchMissOdds` of the time. A hit removes `punchDamage` HP (0 HP kills; see death.ts). Both outcomes
  * are public room history.
  */
 export class PunchAction extends Action<PunchActionData> {
@@ -34,8 +35,8 @@ export class PunchAction extends Action<PunchActionData> {
 
   override apply(state: GameState, player: PlayerState, target: PunchActionData): void {
     const victim = state.players.find((o) => o.id === target.target)!; // checked, so it exists
-    victim.hp = Math.max(0, victim.hp - punchDamage(state, player));
     logPublic(state, player.room, "punched", { name: player.name, target: victim.name });
+    damage(state, victim, punchDamage(state, player));
   }
 
   override fail(state: GameState, player: PlayerState, target: PunchActionData): void {

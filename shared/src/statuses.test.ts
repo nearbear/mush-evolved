@@ -24,7 +24,7 @@ function mustApply(state: GameState, id: PlayerId, action: Action): GameState {
   return r.state;
 }
 function nextCycle(s: GameState): GameState {
-  for (const p of s.players) s = mustApply(s, p.id, { type: "ready" });
+  for (const { id } of s.players) if (s.players.find((p) => p.id === id)!.alive) s = mustApply(s, id, { type: "ready" });
   return s;
 }
 function give(s: GameState, id: PlayerId, type: string): string {
@@ -135,11 +135,12 @@ describe("hungry", () => {
     expect(viewFor(s, "p1").statuses).toContain("hungry");
   });
 
-  it("never takes HP below 0", () => {
+  it("kills at 0 HP", () => {
     let s = ship();
     player(s, "p1").hp = 1;
     for (let i = 0; i < 28; i++) s = nextCycle(s);
     expect(player(s, "p1").hp).toBe(0);
+    expect(player(s, "p1").alive).toBe(false);
   });
 });
 
