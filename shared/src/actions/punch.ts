@@ -12,6 +12,7 @@ export type PunchActionData = { type: "punch"; target: string };
 export class PunchAction extends Action<PunchActionData> {
   constructor() {
     super("punch");
+    this.baseAPCost = 1;
   }
 
   override getCandidates(state: Readonly<GameState>, player: Readonly<PlayerState>): PunchActionData[] {
@@ -21,10 +22,6 @@ export class PunchAction extends Action<PunchActionData> {
   override check(state: Readonly<GameState>, player: Readonly<PlayerState>, target: PunchActionData): string | null {
     if (!peopleHere(state, player).some((o) => o.id === target.target)) return "cant_see";
     return this.canAfford(state, player, target);
-  }
-
-  override getCost(state: Readonly<GameState>): { ap: number; mp: number } {
-    return { ap: state.config.punchAp, mp: 0 };
   }
 
   override getSuccessChance(state: Readonly<GameState>): number {
