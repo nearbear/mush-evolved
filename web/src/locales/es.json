@@ -78,7 +78,8 @@
     "dtt": "DTT",
     "stt": "STT",
     "extractSpore": "Extraer una espora",
-    "shower": "Ducharse"
+    "shower": "Ducharse",
+    "heal": "Curar"
   },
   "channels": {
     "empty": "Aún no hay canales privados.",
@@ -212,6 +213,8 @@
     "tookFrom": "{{name}} tomó: {{item}} ({{equipment}}).",
     "tookFromKnocked": "{{name}} tomó: {{item}} ({{equipment}}) y lo tiró al suelo.",
     "consumed": "{{name}} consumió: {{item}}.",
+    "healed": "{{name}} curó a {{target}}.",
+    "healedSelf": "{{name}} se curó a sí mismo/a.",
     "examineSelf": "Te examinas.",
     "examinePlayer": "Examinas a {{name}}.",
     "examineEquipment": "Examinas: {{equipment}}.",

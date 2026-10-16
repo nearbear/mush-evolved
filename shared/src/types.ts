@@ -61,6 +61,12 @@ export interface GameConfig {
   contaminationCapacity: number;
   /** AP spent to extract a spore (confirmed 2026-10-13). */
   extractSporeAp: number;
+  /** AP a heal costs on someone else (confirmed 2026-10-15). */
+  healApOther: number;
+  /** AP a heal costs on yourself (confirmed 2026-10-15). */
+  healApSelf: number;
+  /** HP a heal restores before modifiers (confirmed 2026-10-15). */
+  healAmount: number;
   /** AP spent to shower, before the soap discount (confirmed 2026-10-14). */
   showerAp: number;
   /** AP off a shower when soap is in your inventory (confirmed 2026-10-14). */
@@ -261,6 +267,7 @@ export type Action =
   | { type: "stt"; target: PlayerId }
   | { type: "extract_spore" }
   | { type: "shower"; equipment: string }
+  | { type: "heal"; target: PlayerId }
   | { type: "ready" };
 
 /** Room equipment as a client sees it. */

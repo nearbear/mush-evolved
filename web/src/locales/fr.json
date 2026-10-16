@@ -78,7 +78,8 @@
     "dtt": "DTT",
     "stt": "STT",
     "extractSpore": "Extraire une spore",
-    "shower": "Se doucher"
+    "shower": "Se doucher",
+    "heal": "Soigner"
   },
   "channels": {
     "empty": "Aucun canal privé pour l'instant.",
@@ -212,6 +213,8 @@
     "tookFrom": "{{name}} a pris : {{item}} ({{equipment}}).",
     "tookFromKnocked": "{{name}} a pris : {{item}} ({{equipment}}) et l'a fait tomber.",
     "consumed": "{{name}} a consommé : {{item}}.",
+    "healed": "{{name}} a soigné {{target}}.",
+    "healedSelf": "{{name}} s'est soigné(e).",
     "examineSelf": "Vous vous examinez.",
     "examinePlayer": "Vous examinez {{name}}.",
     "examineEquipment": "Vous examinez : {{equipment}}.",

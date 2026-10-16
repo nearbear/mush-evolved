@@ -30,6 +30,7 @@ export const ITEM_TYPES: Record<string, ItemType> = {
   [ITRACKIE_ITEM]: {},
   wrench: {},
   blaster: { dismantle: { metal: 1, plastic: 0 } },
+  // Healing (confirmed 2026-10-15): hold one to heal. Reusable.
   medikit: {},
   // Confirmed 2026-10-13: +2 AP. Satiety +1 is a placeholder (2026-10-14).
   coffee: { consume: { ap: 2, satiety: 1 } },

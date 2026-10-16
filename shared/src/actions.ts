@@ -7,7 +7,7 @@ import { EQUIPMENT_TYPES } from "./equipment.ts";
 import { ITEM_TYPES, canReach, canTransfer, itemsIn, produceItem } from "./items.ts";
 import { logPrivate, logPublic } from "./log.ts";
 import { addStatus, isFullBelly, removeStatus } from "./statuses.ts";
-import { contaminationCapacity, moveCost, movementRules, sporesPerDay } from "./modifiers.ts";
+import { contaminationCapacity, healAmount, moveCost, movementRules, sporesPerDay } from "./modifiers.ts";
 import { nextFloat } from "./rng.ts";
 import { dayOf } from "./rules.ts";
 import type { Action, Container, GameState, ItemState, LogParams, PlayerId, PlayerState, Target } from "./types.ts";
@@ -279,6 +279,30 @@ function showerCost(state: Readonly<GameState>, p: Readonly<PlayerState>): numbe
   return Math.max(0, state.config.showerAp - (soap ? state.config.showerSoapDiscount : 0));
 }
 
+/**
+ * Healing (confirmed 2026-10-15): hold a medikit (reusable) and heal yourself
+ * or a living person in your room. Costs `healApOther` on someone else,
+ * `healApSelf` on yourself; restores `healAmount` HP (modifiable), capped at max
+ * HP. Offered even at full HP. Public room history.
+ */
+const heal: ActionDef<ActionOf<"heal">> = {
+  candidates: (state, p) => [p, ...peopleHere(state, p)].map((o) => ({ type: "heal", target: o.id })),
+  check(state, p, a) {
+    if (!itemsIn(state, { kind: "player", id: p.id }).some((i) => i.type === "medikit")) return "no_medikit";
+    if (a.target !== p.id && !peopleHere(state, p).some((o) => o.id === a.target)) return "cant_see";
+    return p.ap >= healCost(state, p, a.target) ? null : "cant_afford";
+  },
+  cost: (state, p, a) => ({ ap: healCost(state, p, a.target), mp: 0 }),
+  apply(next, p, a) {
+    const target = next.players.find((o) => o.id === a.target)!; // checked, so it exists
+    target.hp = Math.min(next.config.maxHp, target.hp + healAmount(next, p));
+    logPublic(next, p.room, target.id === p.id ? "healedSelf" : "healed", { name: p.name, target: target.name });
+  },
+};
+
+const healCost = (state: Readonly<GameState>, p: Readonly<PlayerState>, target: PlayerId): number =>
+  target === p.id ? state.config.healApSelf : state.config.healApOther;
+
 const ready: ActionDef<ActionOf<"ready">> = {
   candidates: () => [{ type: "ready" }],
   check: () => null,
@@ -303,6 +327,7 @@ export const ACTIONS: { [T in ActionType]: ActionDef<ActionOf<T>> } = {
   stt: share("stt"),
   extract_spore: extractSpore,
   shower,
+  heal,
 };
 
 /** Everything a player can see and so interact with: people and equipment in their room, their items and the room's. */

@@ -45,6 +45,10 @@ export const DEFAULT_CONFIG: GameConfig = {
   // and the faction shares 4 per day (skills and research will raise it).
   extractSporeAp: 1,
   // Confirmed 2026-10-14: showering costs 2 AP, 1 less with soap in your inventory; a Mush takes 4 damage.
+  // Confirmed 2026-10-15: healing needs a medikit in your inventory; 2 AP on someone else, 3 on yourself, restores 3 HP.
+  healApOther: 2,
+  healApSelf: 3,
+  healAmount: 3,
   showerAp: 2,
   showerSoapDiscount: 1,
   showerMushDamage: 4,
