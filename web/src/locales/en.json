@@ -137,9 +137,11 @@
     "tab": "Private"
   },
   "itrackie": {
+    "checkbox": "Checkbox",
     "composer": {
-      "expand": "Expand message box",
-      "shrink": "Shrink message box",
+      "preview": "Preview markdown",
+      "edit": "Hide preview",
+      "previewEmpty": "Nothing to preview yet.",
       "grip": "Drag up to enlarge the message box"
     },
     "tabs": {
@@ -267,6 +269,8 @@
     "punchMissed": "{{name}} swung at {{target}} and missed.",
     "spiked": "{{name}} spiked {{target}}.",
     "converted": "The spores have taken hold. You are now Mush.",
+    "mushContaminated": "{{name}} has been contaminated: level {{level}} of {{capacity}}.",
+    "mushConverted": "{{name}} has become Mush.",
     "examineSelf": "You examine yourself.",
     "examinePlayer": "You examine {{name}}.",
     "examineEquipment": "You examine the {{equipment}}.",

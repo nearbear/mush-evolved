@@ -30,7 +30,7 @@
   margin: 0;
   font-size: 0.85rem;
 }
-.feed li {
+.feed > li {
   padding: 0.25rem 0;
   border-bottom: 1px solid rgb(255 255 255 / 0.05);
   overflow-wrap: anywhere;
@@ -107,7 +107,7 @@
 .chat-actions button {
   margin: 0;
 }
-/* Maximize: a small square button drawn with a corner-arrows glyph. */
+/* Preview toggle: a small button drawn with an eye glyph. */
 .chat-max {
   width: 29px;
   height: 21px;
@@ -115,30 +115,49 @@
   line-height: 21px;
 }
 .chat-max::before {
-  content: "\2922";
+  content: "\1F441";
 }
-.chat-max[aria-pressed="true"]::before {
-  content: "\2921";
+.chat-max[aria-pressed="true"] {
+  background: rgb(255 255 255 / 0.2);
 }
-/* Maximized: cover the whole iTrackie panel (it is the positioned ancestor). */
-.chat-compose.chat-maximized {
+/* The Thread wrapper: the message list, then the composer. */
+.thread {
+  position: relative;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+/* Previewing: cover the thread (below the tab title and any feature drop-down), preview on the top half, text box on the bottom. */
+.chat-compose.chat-previewing {
   position: absolute;
   inset: 0;
   z-index: 10;
   margin: 0;
-  padding: 0.5rem;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-rows: 1fr 1fr;
+  gap: 0.4rem;
+  align-items: stretch;
   background: var(--panel-fill);
-  border: 1px solid var(--panel-rim);
-  border-radius: var(--panel-radius);
 }
-.chat-maximized textarea {
-  align-self: stretch;
+.chat-preview {
+  grid-column: 1 / -1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 0.25rem 0.5rem;
+  font-size: 0.85rem;
+  border-bottom: 1px solid rgb(255 255 255 / 0.15);
 }
-.chat-maximized .chat-grip {
+.chat-previewing textarea {
+  height: auto;
+  min-height: 0;
+}
+.chat-previewing .chat-grip {
   display: none;
 }
-.chat-maximized .chat-actions {
-  align-self: flex-end;
+.chat-previewing .chat-actions {
+  align-self: end;
 }
 .chat-grip {
   position: absolute;
@@ -157,4 +176,91 @@
   margin: 2px auto 0;
   border-radius: 2px;
   background: var(--panel-rim);
+}
+
+/* Markdown message bodies. Single newlines are kept in paragraphs, headers stay near body size. */
+.md {
+  overflow-wrap: anywhere;
+}
+/* Only inline-content blocks keep newlines: react-markdown puts "\n" text between blocks, which must not show. */
+.md p,
+.md h1,
+.md h2,
+.md h3,
+.md h4,
+.md h5,
+.md h6 {
+  white-space: pre-wrap;
+}
+.md > :first-child {
+  margin-top: 0;
+}
+.md > :last-child {
+  margin-bottom: 0;
+}
+.md p,
+.md ul,
+.md ol,
+.md blockquote,
+.md pre {
+  margin: 0.2rem 0;
+}
+.md h1,
+.md h2,
+.md h3,
+.md h4,
+.md h5,
+.md h6 {
+  margin: 0.3rem 0 0.1rem;
+  font-size: 1em;
+  line-height: 1.3;
+}
+.md h1 {
+  font-size: 1.2em;
+}
+.md h2 {
+  font-size: 1.1em;
+}
+.md ul,
+.md ol {
+  padding-left: 1.3rem;
+}
+.md ul.contains-task-list {
+  list-style: none;
+  padding-left: 0.2rem;
+}
+.md blockquote {
+  padding-left: 0.5rem;
+  border-left: 2px solid rgb(255 255 255 / 0.25);
+  color: var(--muted);
+}
+.md code {
+  padding: 0 0.2em;
+  border-radius: 3px;
+  background: rgb(255 255 255 / 0.1);
+  font-size: 0.9em;
+}
+.md pre {
+  overflow-x: auto;
+  padding: 0.3rem 0.4rem;
+  background: rgb(0 0 0 / 0.3);
+  border-radius: 3px;
+}
+.md pre code {
+  padding: 0;
+  background: none;
+}
+.md hr {
+  border: 0;
+  border-top: 1px solid rgb(255 255 255 / 0.2);
+}
+.md input[type="checkbox"] {
+  margin: 0 0.35em 0 0;
+  /* A comfortable tap target on phones without changing the line height. */
+  width: 1.1em;
+  height: 1.1em;
+  vertical-align: -0.15em;
+}
+.md input[type="checkbox"]:not(:disabled) {
+  cursor: pointer;
 }

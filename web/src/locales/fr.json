@@ -137,9 +137,11 @@
     "tab": "Privé"
   },
   "itrackie": {
+    "checkbox": "Case à cocher",
     "composer": {
-      "expand": "Agrandir la zone de message",
-      "shrink": "Réduire la zone de message",
+      "preview": "Aperçu du markdown",
+      "edit": "Masquer l'aperçu",
+      "previewEmpty": "Rien à prévisualiser.",
       "grip": "Faites glisser vers le haut pour agrandir la zone de message"
     },
     "tabs": {
@@ -267,6 +269,8 @@
     "punchMissed": "{{name}} a tenté de frapper {{target}} mais a raté.",
     "spiked": "{{name}} a contaminé {{target}}.",
     "converted": "Les spores ont pris le dessus. Vous êtes désormais Mush.",
+    "mushContaminated": "{{name}} a été contaminé : niveau {{level}} sur {{capacity}}.",
+    "mushConverted": "{{name}} est devenu Mush.",
     "examineSelf": "Vous vous examinez.",
     "examinePlayer": "Vous examinez {{name}}.",
     "examineEquipment": "Vous examinez : {{equipment}}.",

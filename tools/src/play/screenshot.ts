@@ -134,13 +134,13 @@ async function desktopSteps(page: Page, step: Step): Promise<void> {
     await page.locator(".feed li", { hasText: text }).waitFor();
   });
 
-  await step("04b-chat-maximized", async () => {
-    const max = page.getByRole("button", { name: "Expand message box" }).filter({ visible: true });
+  await step("04b-chat-preview", async () => {
+    const max = page.getByRole("button", { name: "Preview markdown" }).filter({ visible: true });
     await max.click();
   });
 
-  await step("04c-chat-restored", async () => {
-    await page.getByRole("button", { name: "Shrink message box" }).filter({ visible: true }).click();
+  await step("04c-chat-edit", async () => {
+    await page.getByRole("button", { name: "Hide preview" }).filter({ visible: true }).click();
   });
 
   await step("05-take", async () => {

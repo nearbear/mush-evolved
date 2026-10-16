@@ -11,6 +11,7 @@ import { Tabs } from "@base-ui/react/tabs";
 import { FEATURE_CHANNELS, ITRACKIE_ITEM, MAX_CHAT_LENGTH, type ChannelId, type FeatureChannel, type PlayerView, type PrivateChannelId } from "@mush2/shared";
 import { FeatureSelect } from "./FeatureSelect.tsx";
 import { IconButton, IconTab } from "./IconButton.tsx";
+import { Markdown } from "./Markdown.tsx";
 import { TAB_ICONS } from "../art/assets.ts";
 
 
@@ -34,6 +35,7 @@ export interface ChannelHandlers {
 export function ITrackie({
   view,
   onChat,
+  onToggle,
   channels,
   roomLogRequest,
 }: {
@@ -41,6 +43,8 @@ export function ITrackie({
   /** Bumped each time the player acts; switches to the Room tab to show the result. */
   roomLogRequest: number;
   onChat: (channel: ChannelId, text: string) => void;
+  /** Tick or untick a checkbox in one of your own messages (`line` is 0-based). */
+  onToggle: (message: number, line: number) => void;
   channels: ChannelHandlers;
 }) {
   const { t } = useTranslation();
@@ -86,7 +90,7 @@ export function ITrackie({
           </Tabs.Panel>
 
           <Tabs.Panel className="itrackie-panel" value="global" keepMounted>
-            <Thread view={view} channel="global" placeholder="Message everyone…" onSend={(text) => onChat("global", text)} />
+            <Thread view={view} channel="global" placeholder="Message everyone…" onSend={(text) => onChat("global", text)} onToggle={onToggle} />
           </Tabs.Panel>
 
           <Tabs.Panel className="itrackie-panel" value="features" keepMounted>
@@ -106,6 +110,7 @@ export function ITrackie({
                   channel={f}
                   placeholder={`Message the ${name} thread…`}
                   onSend={(text) => onChat(f, text)}
+                  onToggle={onToggle}
                 />
               </div>
               );
@@ -113,7 +118,7 @@ export function ITrackie({
           </Tabs.Panel>
 
           <Tabs.Panel className="itrackie-panel" value="private" keepMounted>
-            <PrivateChannels view={view} onChat={onChat} {...channels} />
+            <PrivateChannels view={view} onChat={onChat} onToggle={onToggle} {...channels} />
           </Tabs.Panel>
         </div>
       </Tabs.Root>
@@ -127,30 +132,40 @@ function Thread({
   channel,
   placeholder,
   onSend,
+  onToggle,
 }: {
   view: PlayerView;
   channel: ChannelId;
   placeholder: string;
   onSend: (text: string) => void;
+  onToggle: (message: number, line: number) => void;
 }) {
+  const { t } = useTranslation();
   const enabled = view.chatChannels.includes(channel);
   const messages = view.chat.filter((m) => m.channel === channel);
   return (
-    <>
+    <div className="thread">
       <Scroller items={messages.length}>
         <ol className="feed">
           {!enabled && <li className="sub">You need an iTrackie in your inventory to read this.</li>}
           {enabled && messages.length === 0 && <li className="sub">No messages yet.</li>}
-          {messages.map((m) => (
+          {messages.map((m) =>
+            m.system ? (
+              <li key={m.id} className="sub">
+                {t(`log.${m.system.key}`, m.system.params)}
+              </li>
+            ) : (
             <li key={m.id}>
               <strong className={m.from === view.you.id ? "me" : undefined}>{m.name}</strong>
-              {m.isBot && <span className="tag">AI</span>}: {m.text}
+              {m.isBot && <span className="tag">AI</span>}:
+              <Markdown text={m.text} onToggle={m.from === view.you.id && enabled ? (line) => onToggle(m.id, line) : undefined} />
             </li>
-          ))}
+            ),
+          )}
         </ol>
       </Scroller>
       <ChatInput enabled={enabled} placeholder={placeholder} onSend={onSend} />
-    </>
+    </div>
   );
 }
 
@@ -236,10 +251,10 @@ function ChatInput({ enabled, placeholder, onSend }: { enabled: boolean; placeho
   const { t } = useTranslation();
   const [text, setText] = useState("");
   const [height, setHeight] = useState(CHAT_MIN_HEIGHT);
-  // Maximized: the form covers the whole iTrackie panel (see .chat-maximized).
-  const [maximized, setMaximized] = useState(false);
+  // Previewing: the thread area splits, rendered markdown above and the text box below (see .chat-previewing).
+  const [previewing, setPreviewing] = useState(false);
   const drag = useRef<{ startY: number; startHeight: number } | null>(null);
-  const maxLabel = maximized ? t("itrackie.composer.shrink") : t("itrackie.composer.expand");
+  const previewLabel = previewing ? t("itrackie.composer.edit") : t("itrackie.composer.preview");
   const submit = () => {
     if (!text.trim()) return;
     onSend(text);
@@ -247,7 +262,7 @@ function ChatInput({ enabled, placeholder, onSend }: { enabled: boolean; placeho
   };
   return (
     <form
-      className={maximized ? "chat-input chat-compose chat-maximized" : "chat-input chat-compose"}
+      className={previewing ? "chat-input chat-compose chat-previewing" : "chat-input chat-compose"}
       onSubmit={(e) => {
         e.preventDefault();
         submit();
@@ -274,6 +289,11 @@ function ChatInput({ enabled, placeholder, onSend }: { enabled: boolean; placeho
           drag.current = null;
         }}
       />
+      {previewing && (
+        <div className="chat-preview" aria-live="polite">
+          {text.trim() ? <Markdown text={text} /> : <p className="sub">{t("itrackie.composer.previewEmpty")}</p>}
+        </div>
+      )}
       <textarea
         value={text}
         onChange={(e) => setText(e.target.value)}
@@ -284,7 +304,7 @@ function ChatInput({ enabled, placeholder, onSend }: { enabled: boolean; placeho
             submit();
           }
         }}
-        style={maximized ? undefined : { height }}
+        style={previewing ? undefined : { height }}
         maxLength={MAX_CHAT_LENGTH}
         placeholder={enabled ? placeholder : "Needs an iTrackie"}
         disabled={!enabled}
@@ -294,10 +314,10 @@ function ChatInput({ enabled, placeholder, onSend }: { enabled: boolean; placeho
         <button
           className="chat-max"
           type="button"
-          onClick={() => setMaximized(!maximized)}
-          aria-pressed={maximized}
-          aria-label={maxLabel}
-          title={maxLabel}
+          onClick={() => setPreviewing(!previewing)}
+          aria-pressed={previewing}
+          aria-label={previewLabel}
+          title={previewLabel}
         />
         <button className="chat-send" type="submit" disabled={!enabled || !text.trim()} aria-label="Send" title="Send" />
       </div>
@@ -313,10 +333,11 @@ function ChatInput({ enabled, placeholder, onSend }: { enabled: boolean; placeho
 function PrivateChannels({
   view,
   onChat,
+  onToggle,
   onCreate,
   onInvite,
   onLeave,
-}: { view: PlayerView; onChat: (channel: ChannelId, text: string) => void } & ChannelHandlers) {
+}: { view: PlayerView; onChat: (channel: ChannelId, text: string) => void; onToggle: (message: number, line: number) => void } & ChannelHandlers) {
   const { t, i18n } = useTranslation();
   const [picked, setPicked] = useState<PrivateChannelId | "">("");
   const [name, setName] = useState("");
@@ -357,6 +378,7 @@ function PrivateChannels({
                 channel={c.id}
                 placeholder={t("channels.messagePlaceholder", { name: c.name })}
                 onSend={(text) => onChat(c.id, text)}
+                onToggle={onToggle}
               />
             </div>
           ))}

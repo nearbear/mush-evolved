@@ -14,7 +14,8 @@ import { contaminationSeenBy } from "./infection.ts";
 import { isHungry, publicStatusesOf, statusesOf } from "./statuses.ts";
 import { emptyResources } from "./resources.ts";
 import { nextFloat, shuffle } from "./rng.ts";
-import { CHAT_CHANNELS } from "./types.ts";
+import { pushChat } from "./chat.ts";
+import { CHAT_CHANNELS, MUSH_CHANNEL } from "./types.ts";
 import type {
   Action,
   ChannelId,
@@ -36,8 +37,9 @@ import type {
 
 /** Longest chat message the rules accept. Moderation trims before this. */
 export const MAX_CHAT_LENGTH = 300;
-/** Per channel, older chat is dropped so stored state stays bounded. */
-export const CHAT_HISTORY = 200;
+/** Longest chat message in lines (moderation enforces it; messages are markdown and may span lines). */
+export const MAX_CHAT_LINES = 12;
+export { CHAT_HISTORY } from "./chat.ts";
 
 export type ActionResult = { ok: true; state: GameState } | { ok: false; error: string };
 
@@ -300,9 +302,11 @@ function equipmentView({ id, type }: Equipment): EquipmentView {
  */
 export function chatChannels(state: GameState, player: Readonly<PlayerState>): ChannelId[] {
   if (state.phase !== "playing" || !player.alive) return [];
+  // The Mush channel is a link between the Mush, not a device: no iTrackie needed (decided 2026-10-16).
+  const mush: ChannelId[] = player.role === "mush" ? [MUSH_CHANNEL] : [];
   const hasITrackie = itemsIn(state, { kind: "player", id: player.id }).some((i) => i.type === ITRACKIE_ITEM);
-  if (!hasITrackie) return [];
-  return [...CHAT_CHANNELS, ...state.channels.filter((c) => c.members.includes(player.id)).map((c) => c.id)];
+  if (!hasITrackie) return mush;
+  return [...CHAT_CHANNELS, ...mush, ...state.channels.filter((c) => c.members.includes(player.id)).map((c) => c.id)];
 }
 
 export function sendChat(state: GameState, playerId: PlayerId, channel: ChannelId, text: string): ActionResult {
@@ -314,11 +318,43 @@ export function sendChat(state: GameState, playerId: PlayerId, channel: ChannelI
   if (body.length > MAX_CHAT_LENGTH) return { ok: false, error: "Message too long" };
 
   const next = clone(state);
-  next.chat.push({ id: next.nextChatId++, cycle: next.cycle, channel, from: p.id, name: p.name, isBot: p.isBot, text: body });
-  // Trim per channel, so a busy global chat can't push the feature threads out.
-  if (next.chat.filter((m) => m.channel === channel).length > CHAT_HISTORY) {
-    next.chat.splice(next.chat.findIndex((m) => m.channel === channel), 1);
+  pushChat(next, channel, { from: p.id, name: p.name, isBot: p.isBot, text: body });
+  return { ok: true, state: next };
+}
+
+/** A markdown task-list line: optional quote marks and indent, a list marker, then `[ ]` or `[x]`. */
+const TASK_LINE = /^(\s*(?:>\s*)*(?:[-*+]|\d{1,9}[.)])\s+\[)([ xX])(\])/;
+
+/** Whether line `line` (0-based) of `text` is a task-list item outside a fenced code block. */
+export function isTaskLine(text: string, line: number): boolean {
+  let fence: string | null = null;
+  const lines = text.split("\n");
+  for (let i = 0; i <= line && i < lines.length; i++) {
+    const marker = /^\s*(`{3,}|~{3,})/.exec(lines[i]!)?.[1];
+    if (marker) fence = fence === null ? marker[0]! : lines[i]!.trimStart().startsWith(fence) ? null : fence;
+    else if (i === line) return fence === null && TASK_LINE.test(lines[i]!);
   }
+  return false;
+}
+
+/**
+ * Tick or untick a markdown checkbox in a message. Only the author may, and
+ * only while they can still read the channel. The text itself changes (so
+ * replays and late joiners agree), and `line` is the 0-based line of the item.
+ */
+export function toggleCheckbox(state: GameState, playerId: PlayerId, messageId: number, line: number): ActionResult {
+  const p = findPlayer(state, playerId);
+  if (!p) return fail("unknown_player");
+  const message = state.chat.find((m) => m.id === messageId);
+  if (!message || !chatChannels(state, p).includes(message.channel)) return fail("message_not_found");
+  if (message.from !== p.id) return fail("message_not_yours");
+  if (!Number.isInteger(line) || !isTaskLine(message.text, line)) return fail("checkbox_not_found");
+
+  const next = clone(state);
+  const target = next.chat.find((m) => m.id === messageId)!;
+  const lines = target.text.split("\n");
+  lines[line] = lines[line]!.replace(TASK_LINE, (_, head: string, mark: string, tail: string) => `${head}${mark === " " ? "x" : " "}${tail}`);
+  target.text = lines.join("\n");
   return { ok: true, state: next };
 }
 

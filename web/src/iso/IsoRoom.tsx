@@ -28,6 +28,7 @@ import { BUBBLE_MS, type Bubble } from "../scene/useSpeechBubbles.ts";
 import { useNames } from "../i18n/names.ts";
 import { atlasUrl } from "./shipLayout.ts";
 import { opaqueAt, preloadImage } from "./hitMask.ts";
+import { Markdown } from "../hud/Markdown.tsx";
 import {
   bounds,
   cameraOffset,
@@ -349,7 +350,7 @@ export function IsoRoom({
                       <div className={`speech-bubbles${o.statuses.length ? " raised" : ""}`}>
                         {bubbles.get(o.id)!.map((b) => (
                           <div key={b.id} className="speech-bubble" style={{ "--bubble-ms": `${BUBBLE_MS}ms` } as CSSProperties}>
-                            {b.text}
+                            <Markdown text={b.text} />
                           </div>
                         ))}
                       </div>

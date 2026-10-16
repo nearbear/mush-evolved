@@ -12,6 +12,7 @@ import {
   inviteToChannel,
   leaveChannel,
   sendChat,
+  toggleCheckbox,
   viewFor,
   type ActionResult,
 } from "./rules.ts";
@@ -185,3 +186,39 @@ describe("private channels", () => {
   });
 });
 
+
+describe("checkbox messages", () => {
+  const base = createGame(seats, DEFAULT_CONFIG, 1);
+  const text = "todo\n- [ ] a\n- [x] b\n```\n- [ ] code\n```\n> 1. [ ] quoted";
+  const posted = must(sendChat(base, "p1", "global", text));
+  const id = posted.chat[0]!.id;
+  const textOf = (s: GameState) => s.chat.find((m) => m.id === id)!.text;
+
+  it("lets the author tick and untick, by line", () => {
+    const ticked = must(toggleCheckbox(posted, "p1", id, 1));
+    expect(textOf(ticked)).toBe(text.replace("- [ ] a", "- [x] a"));
+    expect(textOf(must(toggleCheckbox(ticked, "p1", id, 2)))).toBe(ticked.chat[0]!.text.replace("- [x] b", "- [ ] b"));
+    expect(textOf(must(toggleCheckbox(posted, "p1", id, 6)))).toContain("> 1. [x] quoted");
+  });
+
+  it("refuses everyone but the author", () => {
+    expect(toggleCheckbox(posted, "p2", id, 1).ok).toBe(false);
+    expect(textOf(posted)).toBe(text);
+  });
+
+  it("refuses lines that aren't checkboxes, including inside code fences", () => {
+    for (const line of [0, 3, 4, 5, 99, -1, 1.5]) expect(toggleCheckbox(posted, "p1", id, line).ok).toBe(false);
+  });
+
+  it("refuses unknown messages and an author who lost the channel", () => {
+    expect(toggleCheckbox(posted, "p1", 999, 1).ok).toBe(false);
+    expect(toggleCheckbox(deadCopy(posted, "p1"), "p1", id, 1).ok).toBe(false);
+  });
+
+  it("validates the wire message", () => {
+    expect(parseGameMessage(JSON.stringify({ type: "toggleCheckbox", message: 3, line: 0 }))).toEqual({ type: "toggleCheckbox", message: 3, line: 0 });
+    for (const bad of [{ message: "3", line: 0 }, { message: 3, line: -1 }, { message: 3 }, { message: 1.5, line: 0 }]) {
+      expect(parseGameMessage(JSON.stringify({ type: "toggleCheckbox", ...bad }))).toBeNull();
+    }
+  });
+});

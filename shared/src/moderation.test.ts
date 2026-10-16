@@ -1,10 +1,22 @@
 import { describe, expect, it } from "vitest";
 import { moderateChat } from "./moderation.ts";
-import { MAX_CHAT_LENGTH } from "./rules.ts";
+import { MAX_CHAT_LENGTH, MAX_CHAT_LINES } from "./rules.ts";
 
 describe("moderateChat", () => {
-  it("collapses whitespace and strips invisible characters", () => {
-    expect(moderateChat("  hi​\n\tthere‮ ")).toEqual({ ok: true, text: "hi there" });
+  it("collapses spaces and strips invisible characters", () => {
+    expect(moderateChat("  hi​ \t there‮ ")).toEqual({ ok: true, text: "hi there" });
+  });
+
+  it("keeps line breaks, folds CRLF, trims line edges, and allows one blank line", () => {
+    expect(moderateChat("# Plan \r\n\r\n\r\n\r\n- [ ]  one\n  - [x] two ")).toEqual({
+      ok: true,
+      text: "# Plan\n\n- [ ] one\n- [x] two",
+    });
+  });
+
+  it("rejects too many lines", () => {
+    expect(moderateChat(Array(MAX_CHAT_LINES + 1).fill("a").join("\n")).ok).toBe(false);
+    expect(moderateChat(Array(MAX_CHAT_LINES).fill("a").join("\n")).ok).toBe(true);
   });
 
   it("rejects empty and over-long messages", () => {

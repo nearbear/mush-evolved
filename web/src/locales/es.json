@@ -137,9 +137,11 @@
     "tab": "Privado"
   },
   "itrackie": {
+    "checkbox": "Casilla de verificación",
     "composer": {
-      "expand": "Ampliar el cuadro de mensaje",
-      "shrink": "Reducir el cuadro de mensaje",
+      "preview": "Vista previa del markdown",
+      "edit": "Ocultar vista previa",
+      "previewEmpty": "Nada que previsualizar.",
       "grip": "Arrastra hacia arriba para ampliar el cuadro de mensaje"
     },
     "tabs": {
@@ -267,6 +269,8 @@
     "punchMissed": "{{name}} intentó golpear a {{target}} pero falló.",
     "spiked": "{{name}} contagió a {{target}}.",
     "converted": "Las esporas se han apoderado de ti. Ahora eres Mush.",
+    "mushContaminated": "{{name}} ha sido contaminado: nivel {{level}} de {{capacity}}.",
+    "mushConverted": "{{name}} se ha convertido en Mush.",
     "examineSelf": "Te examinas.",
     "examinePlayer": "Examinas a {{name}}.",
     "examineEquipment": "Examinas: {{equipment}}.",

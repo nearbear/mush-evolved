@@ -4,7 +4,7 @@
 import { isActopiCheat, isCheat, type ActopiCheat, type Cheat } from "./cheats.ts";
 import { MAX_CHAT_LENGTH } from "./rules.ts";
 import { isSkill } from "./skills.ts";
-import { CHAT_CHANNELS, type Action, type ChannelId, type PlayerId, type PlayerView, type PrivateChannelId, type Role } from "./types.ts";
+import { CHAT_CHANNELS, MUSH_CHANNEL, type Action, type ChannelId, type PlayerId, type PlayerView, type PrivateChannelId, type Role } from "./types.ts";
 
 export const MAX_NAME_LENGTH = 24;
 
@@ -20,6 +20,7 @@ export type MatchmakerServerMessage =
 export type GameClientMessage =
   | { type: "action"; action: Action }
   | { type: "chat"; channel: ChannelId; text: string }
+  | { type: "toggleCheckbox"; message: number; line: number }
   | { type: "createChannel"; name: string }
   | { type: "invite"; channel: PrivateChannelId; player: PlayerId }
   | { type: "leaveChannel"; channel: PrivateChannelId }
@@ -43,9 +44,15 @@ export function parseGameMessage(raw: string): GameClientMessage | null {
   const msg = parseJson(raw);
   if (msg?.type === "chat") {
     // Generous bound here; moderation and the rules enforce the real limit.
-    const channel = CHAT_CHANNELS.find((c) => c === msg.channel) ?? privateChannelId(msg.channel);
+    const channel = (msg.channel === MUSH_CHANNEL ? MUSH_CHANNEL : undefined) ?? CHAT_CHANNELS.find((c) => c === msg.channel) ?? privateChannelId(msg.channel);
     if (!channel || typeof msg.text !== "string" || msg.text.length > MAX_CHAT_LENGTH * 4) return null;
     return { type: "chat", channel, text: msg.text };
+  }
+  if (msg?.type === "toggleCheckbox") {
+    const { message, line } = msg;
+    return Number.isSafeInteger(message) && Number.isSafeInteger(line) && (line as number) >= 0
+      ? { type: "toggleCheckbox", message: message as number, line: line as number }
+      : null;
   }
   if (msg?.type === "createChannel") {
     return typeof msg.name === "string" && msg.name.length <= MAX_NAME_LENGTH * 4 ? { type: "createChannel", name: msg.name } : null;
