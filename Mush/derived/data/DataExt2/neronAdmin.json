@@ -1,0 +1,145 @@
+[
+ {
+  "id": "ALLOW_PERISHMENT",
+  "name": "Destruction denrées",
+  "value0": "Oui",
+  "value1": "Non",
+  "value2": "",
+  "value3": "",
+  "dflt": "0",
+  "disp_cond": "",
+  "desc": "Active la destruction programmée des denrées périmées dans la nuit."
+ },
+ {
+  "id": "CPU_PRIORITIES",
+  "name": "Priorité CPU",
+  "value0": "Projet",
+  "value1": "Astronavigation",
+  "value2": "Recherche",
+  "value3": "Aucun",
+  "dflt": "3",
+  "disp_cond": "",
+  "desc": "Contrôle la répartition des tranches CPU. Soit il rend les projets/recherches plus faciles à réaliser, soit il accroît le nombre de GeoDonnées fourni par les analyses de planète soit les CPU sont en mode paresseux et ne favorisent rien du tout. Cette propriété ne peut être changé qu'*une fois par jour* pour ne pas entraîner une surcharge cognitive de NERON."
+ },
+ {
+  "id": "ENABLE_PLASMA_SHIELD",
+  "name": "Bouclier Plasma",
+  "value0": "Actif",
+  "value1": "Inactif",
+  "value2": "",
+  "value3": "",
+  "dflt": "1",
+  "disp_cond": "ProjectUnlocked( PLASMA_SHIELD)",
+  "desc": "Active le bouclier plasma."
+ },
+ {
+  "id": "ACL_LOCK",
+  "name": "Verrou équipage",
+  "value0": "Projet",
+  "value1": "Recherche",
+  "value2": "Pilotage",
+  "value3": "",
+  "dflt": "2",
+  "disp_cond": "",
+  "desc": "<ul>\n<li>Verrouillage Pilotage : Les non-pilotes ne sont pas autorisés à piloter un Patrouilleur/Icarus.</li>\n<li>Verrouillage Projet : les non-concepteurs ne sont pas autorisés à participer au développement des Projets.</li>\n<li>Verrouillage Recherche : les non-Biologistes et non-Infirmiers ne sont pas autorisés à participer à la Recherche scientifique </li>\n</ul>"
+ },
+ {
+  "id": "ACL_BROADCAST",
+  "name": "Annonces vocodées",
+  "value0": "Autorisées",
+  "value1": "Pas autorisées",
+  "value2": "",
+  "value3": "",
+  "dflt": "1",
+  "disp_cond": "",
+  "desc": "Active la possibilité pour NERON de porter les message de l'Admin. NERON."
+ },
+ {
+  "id": "ADVERTISE_DEATHS",
+  "name": "Signaler les décès",
+  "value0": "Oui",
+  "value1": "Non",
+  "value2": "",
+  "value3": "",
+  "dflt": "0",
+  "disp_cond": "",
+  "desc": "Active la possibilité pour NERON de signaler les décès avec une annonce."
+ },
+ {
+  "id": "INHIBIT",
+  "name": "Entrave DMZ-CorePeace",
+  "value0": "Oui",
+  "value1": "Non",
+  "value2": "",
+  "value3": "",
+  "dflt": "0",
+  "disp_cond": "",
+  "desc": "Active l'inhibiteur de comportement de NERON. L'inhibiteur permets de changer un certain nombre de comportement de NERON concernant l'agressivité. Cette propriété ne peut être changé qu'une fois tout les 8 cycles."
+ },
+ {
+  "id": "MAGNET",
+  "name": "Filet Magnétique",
+  "value0": "Actif",
+  "value1": "Inactif",
+  "value2": "",
+  "value3": "",
+  "dflt": "0",
+  "disp_cond": "ProjectUnlocked(MAGNETIC_NET)",
+  "desc": "Active le filet magnétique qui permet d'abandonner les Patrouilleurs à leur triste sort. Ou pas..."
+ },
+ {
+  "id": "$EOF",
+  "name": "",
+  "value0": "",
+  "value1": "",
+  "value2": "",
+  "value3": "",
+  "dflt": "",
+  "disp_cond": "",
+  "desc": ""
+ },
+ {
+  "id": "Acces equipage",
+  "name": "Patrouilleur",
+  "value0": "Projets",
+  "value1": "",
+  "value2": "",
+  "value3": "",
+  "dflt": "",
+  "disp_cond": "",
+  "desc": ""
+ },
+ {
+  "id": "ACL_PROJECTS",
+  "name": "Accès aux Projets",
+  "value0": "Accès général",
+  "value1": "Accès restreint",
+  "value2": "",
+  "value3": "",
+  "dflt": "1",
+  "disp_cond": "",
+  "desc": "L'accès général permet l'accès au cœur de NERON à tout le monde. L'accès restreint permet l'accès aux co-concepteurs du Daedalus exclusivement."
+ },
+ {
+  "id": "ACL_PILOTS",
+  "name": "Accès aux Patrouilleurs",
+  "value0": "Accès général",
+  "value1": "Accès restreint",
+  "value2": "",
+  "value3": "",
+  "dflt": "1",
+  "disp_cond": "",
+  "desc": "Si l'accès général est activé, tout le monde peut utiliser les Patrouilleurs et pas seulement les Pilotes."
+ },
+ {
+  "id": "ENABLE_NERON_SELF_DEFENSE",
+  "name": "Auto-Tourelles",
+  "value0": "Oui",
+  "value1": "Non",
+  "value2": "",
+  "value3": "",
+  "dflt": "1",
+  "disp_cond": "",
+  "desc": "Active le tir automatique des tourelles. Il sera effectué à chaque cycle."
+ }
+]

@@ -1,0 +1,82 @@
+[
+ {
+  "id": "DESERT",
+  "name": "planète desertique",
+  "weight": "1",
+  "tileset": "1",
+  "lifeForms": "GIORCHA, BRUGIAN",
+  "trees": "BANANA"
+ },
+ {
+  "id": "FOREST",
+  "name": "planète foret",
+  "weight": "1",
+  "tileset": "0",
+  "lifeForms": "GIORCHA, SMILPOOKS, GRIFULME",
+  "trees": "APPLE, STRAWBERRY"
+ },
+ {
+  "id": "$EOF",
+  "name": "",
+  "weight": "",
+  "tileset": "",
+  "lifeForms": "",
+  "trees": ""
+ },
+ {
+  "id": "",
+  "name": "",
+  "weight": "",
+  "tileset": "",
+  "lifeForms": "",
+  "trees": ""
+ },
+ {
+  "id": "",
+  "name": "",
+  "weight": "",
+  "tileset": "",
+  "lifeForms": "",
+  "trees": ""
+ },
+ {
+  "id": "",
+  "name": "",
+  "weight": "",
+  "tileset": "",
+  "lifeForms": "",
+  "trees": ""
+ },
+ {
+  "id": "",
+  "name": "",
+  "weight": "",
+  "tileset": "",
+  "lifeForms": "",
+  "trees": ""
+ },
+ {
+  "id": "",
+  "name": "",
+  "weight": "",
+  "tileset": "",
+  "lifeForms": "",
+  "trees": ""
+ },
+ {
+  "id": "",
+  "name": "",
+  "weight": "",
+  "tileset": "",
+  "lifeForms": "GIORCHA, BRUGIAN, MUTIMOLE, STONIK",
+  "trees": ""
+ },
+ {
+  "id": "",
+  "name": "",
+  "weight": "",
+  "tileset": "",
+  "lifeForms": "GIORCHA, GRIFULME, SMILPOOKS, CARNIFLEX",
+  "trees": ""
+ }
+]

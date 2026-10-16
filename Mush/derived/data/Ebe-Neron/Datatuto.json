@@ -1,0 +1,722 @@
+[
+ {
+  "st": "FIRST_FRAME",
+  "cmd": "ENABLE_ACTION(false)",
+  "txt": "",
+  "index": ""
+ },
+ {
+  "st": "FIRST_FRAME",
+  "cmd": "SET_HUNGRY",
+  "txt": "",
+  "index": ""
+ },
+ {
+  "st": "FIRST_FRAME",
+  "cmd": "PUB_STEP( PRINCIPLES )",
+  "txt": "",
+  "index": ""
+ },
+ {
+  "st": "FIRST_FRAME",
+  "cmd": "ns( WELCOME )",
+  "txt": "",
+  "index": ""
+ },
+ {
+  "st": "WELCOME",
+  "cmd": "confirm(id_con_intro,1)",
+  "txt": "<h4>Apprentissage</h4><p>$n <em class=\"nem\" >Paix sur vous ! </em> Je suis NERON, intelligence artificielle hypercentrique en charge des opérations du Daedalus. La sortie d'hypercryogénie peut désorienter vos modestes capacités. Je me permets donc de prendre en charge votre modeste personne pendant les premières minutes de votre réveil.</p>\n<p>Sans plus attendre, je vais vous expliquer les <em>principes de survie du jeu Mush</em>. </p>",
+  "index": ""
+ },
+ {
+  "st": "WELCOME",
+  "cmd": "CUSTOM_CONFIRM(cdIntroPate,id_dial_intro, 0)",
+  "txt": "",
+  "index": ""
+ },
+ {
+  "st": "WELCOME",
+  "cmd": "PUB_STEP( UI )",
+  "txt": "",
+  "index": ""
+ },
+ {
+  "st": "WELCOME",
+  "cmd": "ns( UI_INTRODUCTION )",
+  "txt": "",
+  "index": ""
+ },
+ {
+  "st": "UI_INTRODUCTION",
+  "cmd": "confirm(id_con_intro,1)",
+  "txt": "<h4>Chapitre 2 : L'interface</h4><p>$n Voici pour l'introduction du jeu.</p><p> Passons à la présentation de l'*interface*</em>.</p>\n",
+  "index": ""
+ },
+ {
+  "st": "UI_INTRODUCTION",
+  "cmd": "OUTLINE(.avatar)",
+  "txt": "",
+  "index": ""
+ },
+ {
+  "st": "UI_INTRODUCTION",
+  "cmd": "DO_CONFIRM(id_con_char,0)",
+  "txt": "<p>Cette personne, c'est vous.</p>",
+  "index": ""
+ },
+ {
+  "st": "UI_INTRODUCTION",
+  "cmd": "OUTLINE(#myInventory .item)",
+  "txt": "",
+  "index": ""
+ },
+ {
+  "st": "UI_INTRODUCTION",
+  "cmd": "DO_CONFIRM(id_con_object,0)",
+  "txt": "<p>Ces trois emplacements sont votre <em>inventaire</em>.</p><p>Les objets que vous portez se trouvent ici.</p>",
+  "index": ""
+ },
+ {
+  "st": "UI_INTRODUCTION",
+  "cmd": "OUTLINE(.pvsm)",
+  "txt": "",
+  "index": ""
+ },
+ {
+  "st": "UI_INTRODUCTION",
+  "cmd": "DO_CONFIRM(id_con_life,0)",
+  "txt": "<p> Vos <em>Points De Vie</em> ( <img src=\"/img/icons/ui/lp.png\"/> ) sont ici. Arrivé à 0, vous êtes *mort*.</p>",
+  "index": ""
+ },
+ {
+  "st": "UI_INTRODUCTION",
+  "cmd": "OUTLINE(#cdPaBloc)",
+  "txt": "",
+  "index": ""
+ },
+ {
+  "st": "UI_INTRODUCTION",
+  "cmd": "DO_CONFIRM(id_con_act,0)",
+  "txt": "<p>Ici se trouvent vos <em>Points d'Actions ( <img src=\"/img/icons/ui/pa_slot1.png\"/> )</em> et vos <em>Points de Mouvement ( <img src=\"/img/icons/ui/pa_slot2.png\"/> )</em>, nécessaires pour exécuter les actions et se déplacer.</p>",
+  "index": ""
+ },
+ {
+  "st": "UI_INTRODUCTION",
+  "cmd": "OUTLINE(.cycletime)",
+  "txt": "",
+  "index": ""
+ },
+ {
+  "st": "UI_INTRODUCTION",
+  "cmd": "DO_CONFIRM(id_con_days,0)",
+  "txt": "<p>Les jours dans le jeu correspondent avec les jours de la vie terrienne. </p>\n<p>À chaque nouveau <em>cycle</em> ( 3 heures ) vous gagnerez automatiquement des <em>Points d'Action</em> et de <em>Mouvement</em> (<img src=\"/img/icons/ui/pslots.png\"/>).</p>",
+  "index": ""
+ },
+ {
+  "st": "UI_INTRODUCTION",
+  "cmd": "OUTLINE(.cdShipCasio)",
+  "txt": "",
+  "index": ""
+ },
+ {
+  "st": "UI_INTRODUCTION",
+  "cmd": "DO_CONFIRM(id_con_casio,0)",
+  "txt": "<p>Ce compteur vous montre le temps qu'il reste avant le *cycle suivant*.</p>",
+  "index": ""
+ },
+ {
+  "st": "UI_INTRODUCTION",
+  "cmd": "OUTLINE(#cdPaBloc)",
+  "txt": "",
+  "index": ""
+ },
+ {
+  "st": "UI_INTRODUCTION",
+  "cmd": "DO_CONFIRM(id_con_act2,0)",
+  "txt": "<p>Quand vos <em>points d'Action</em> et de <em>Mouvement</em> sont épuisés ( <img src=\"/img/icons/ui/pslots.png\"/> ),\nil vous suffit d'<strong>attendre la fin du cycle actuel (3 heures)</strong> pour récupérer quelques uns.</p><p><strong>Vous pouvez aussi revenir bien plus tard</strong> pour voir vos barres totalement remplies.</p>",
+  "index": ""
+ },
+ {
+  "st": "UI_INTRODUCTION",
+  "cmd": "DO_CONFIRM(id_con_room,0)",
+  "txt": "<p>Dans cette partie centrale, vous voyez la salle où vous vous trouvez en ce moment. Actuellement, vous vous situez dans le <em>Laboratoire</em>.</p>",
+  "index": ""
+ },
+ {
+  "st": "UI_INTRODUCTION",
+  "cmd": "DO_CONFIRM(id_con_log,0)",
+  "txt": "<p>L'activité de certaines salles peut être intense, n'oubliez pas de surveiller le <em>historique d'événements</em>.</p>",
+  "index": ""
+ },
+ {
+  "st": "UI_INTRODUCTION",
+  "cmd": "PUB_STEP( FIRST_STEP )",
+  "txt": "",
+  "index": ""
+ },
+ {
+  "st": "UI_INTRODUCTION",
+  "cmd": "confirm(id_con_intro,1)",
+  "txt": "<h4>Chapitre 3 : Premiers pas</h4><p>$n Nous avons fini avec la présentation de l'interface. Mes senseurs m'indiquent votre impatience. Ne soyez donc point si pressé... Il n'y a pas le feu...<small>soupir numérique</small>. Passons donc à la pratique.</p>\n<p>Vous pourrez à tout moment quitter l'apprentissage en cliquant sur le bouton <em>à droite de l'interface</em>.</p>",
+  "index": ""
+ },
+ {
+  "st": "UI_INTRODUCTION",
+  "cmd": "ns( FIRST_STEP )",
+  "txt": "",
+  "index": ""
+ },
+ {
+  "st": "FIRST_STEP",
+  "cmd": "OUTLINE(.statuses li img)",
+  "txt": "",
+  "index": ""
+ },
+ {
+  "st": "FIRST_STEP",
+  "cmd": "DO_CONFIRM(id_con_hungry,0)",
+  "txt": "<p>Cette icône de statut ( <img src=\"/img/icons/ui/status/hungry.png\"/> ) indique que vous avez faim.</p><p> Pour y remédier, dirigeons-nous vers le *Refectoire* où sont stockés les *Rations*.",
+  "index": ""
+ },
+ {
+  "st": "FIRST_STEP",
+  "cmd": "ENABLE_ACTION(true)",
+  "txt": "",
+  "index": ""
+ },
+ {
+  "st": "FIRST_STEP",
+  "cmd": "DEBLACKLIST_ACTION(MOVE)",
+  "txt": "",
+  "index": ""
+ },
+ {
+  "st": "FIRST_STEP",
+  "cmd": "EXPECT_LOCATION(CORRIDOR_A,go_corr_a)",
+  "txt": "<p>Cliquez sur cette porte pour aller au <em>Réfectoire</em> !</p>\n",
+  "index": ""
+ },
+ {
+  "st": "FIRST_STEP",
+  "cmd": "ENABLE_LOCATION( CORRIDOR_A,false )",
+  "txt": "",
+  "index": ""
+ },
+ {
+  "st": "FIRST_STEP",
+  "cmd": "EXPECT_LOCATION( CORRIDOR_B,go_corr_b)",
+  "txt": "<p>Par ici, direction <em>Couloir central</em>.</p>",
+  "index": ""
+ },
+ {
+  "st": "FIRST_STEP",
+  "cmd": "ENABLE_LOCATION( CORRIDOR_B,false )",
+  "txt": "",
+  "index": ""
+ },
+ {
+  "st": "FIRST_STEP",
+  "cmd": "EXPECT_LOCATION( REFECTORY,go_refec)",
+  "txt": "<p>Parfait. Voici la porte du <em>Réfectoire</em>.</p>",
+  "index": ""
+ },
+ {
+  "st": "FIRST_STEP",
+  "cmd": "uif(EXPECT_CLOSET_OPENED,true)",
+  "txt": "",
+  "index": ""
+ },
+ {
+  "st": "FIRST_STEP",
+  "cmd": "DO_CONFIRM(id_con_room,0)",
+  "txt": "<p>Bien. Vous êtes dans le <em>Réfectoire</em> !</p>",
+  "index": ""
+ },
+ {
+  "st": "FIRST_STEP",
+  "cmd": "SPAWN_ITEM( r(SPACE_RATION),REFECTORY,false,true)",
+  "txt": "",
+  "index": ""
+ },
+ {
+  "st": "FIRST_STEP",
+  "cmd": "EXPECT_CLOSET_OPENED(open_closet)",
+  "txt": "<p>Vous devriez chercher à manger.</p><p>*Tous les objets* qui peuvent être *pris* sont dans l'<em>Etagère de chaque pièce</em>.</p>\n<p> Sélectionnez l'<em>Etagère</em> pour voir son contenu. </p>",
+  "index": ""
+ },
+ {
+  "st": "FIRST_STEP",
+  "cmd": "uif( FORCE_CLOSET_OPENED,true )",
+  "txt": "",
+  "index": ""
+ },
+ {
+  "st": "FIRST_STEP",
+  "cmd": "DEBLACKLIST_ACTION(EAT)",
+  "txt": "",
+  "index": ""
+ },
+ {
+  "st": "FIRST_STEP",
+  "cmd": "DO_CONFIRM(room_inv,0)",
+  "txt": "<p> Voici la *liste d'objets qui se trouvent dans le Réfectoire*.</p><p> Certains peuvent être *cassés* ou même *cachés*.</p>\n",
+  "index": ""
+ },
+ {
+  "st": "FIRST_STEP",
+  "cmd": "EXPECT_ACTION( EAT,eat_that)",
+  "txt": "\n<p>Cliquez sur une *Ration* pour la <em>sélectionner</em>, puis cliquez sur l'action *Consommer*.</p>",
+  "index": ""
+ },
+ {
+  "st": "FIRST_STEP",
+  "cmd": "uif( EXPECT_CLOSET_OPENED,false)",
+  "txt": "",
+  "index": ""
+ },
+ {
+  "st": "FIRST_STEP",
+  "cmd": "uif( FORCE_CLOSET_OPENED,false )",
+  "txt": "",
+  "index": ""
+ },
+ {
+  "st": "FIRST_STEP",
+  "cmd": "DO_CONFIRM(id_con_log,0)",
+  "txt": "<p>Après 16 ans de cryogénisation... L’icône de faim a disparue.\nVoici l'<em>historique des événements</em> qui contient le résultat de l'*action que vous venez de réaliser*.<p>\n<p>Un problème est apparu... Partons à la <em>Tourelle Alpha Avant</em>.</p>",
+  "index": ""
+ },
+ {
+  "st": "FIRST_STEP",
+  "cmd": "ENABLE_LOCATION( REFECTORY,false )",
+  "txt": "",
+  "index": ""
+ },
+ {
+  "st": "FIRST_STEP",
+  "cmd": "EXPECT_LOCATION( CORRIDOR_B,your_own)",
+  "txt": "<p><img src=\"/img/design/arrow_anim.gif\" /> Dirigez-vous au <em>Stockage avant</em>. Pour y aller, c'est trivial : il n'y a qu'une porte ici.</p>",
+  "index": ""
+ },
+ {
+  "st": "FIRST_STEP",
+  "cmd": "ENABLE_LOCATION( CORRIDOR_B,false )",
+  "txt": "",
+  "index": ""
+ },
+ {
+  "st": "FIRST_STEP",
+  "cmd": "EXPECT_LOCATION( CORRIDOR_A, your_own)",
+  "txt": "<p><img src=\"/img/design/arrow_anim.gif\" /> Vous êtes de retour au Couloir Avant.</p><p>Prenez la *porte* en face du <em>Réfectoire<em>.</p>",
+  "index": ""
+ },
+ {
+  "st": "FIRST_STEP",
+  "cmd": "uif( BREAK_THE_DOOR ,true)",
+  "txt": "",
+  "index": ""
+ },
+ {
+  "st": "FIRST_STEP",
+  "cmd": "uif( EXPECT_CLOSET_OPENED, true )",
+  "txt": "",
+  "index": ""
+ },
+ {
+  "st": "FIRST_STEP",
+  "cmd": "SPAWN_ITEM( i(WRENCH),CORRIDOR_A,false,true)",
+  "txt": "",
+  "index": ""
+ },
+ {
+  "st": "FIRST_STEP",
+  "cmd": "EXPECT_CLOSET_OPENED(open_closet2)",
+  "txt": "<p>Dans ce couloir il y a une <em>Porte cassée</em> !</p><p> Tout d'abord, cherchez l'*Étagère* et cliquez sur elle. Elle peut contenir le nécessaire pour réparer la porte.</p",
+  "index": ""
+ },
+ {
+  "st": "FIRST_STEP",
+  "cmd": "uif( FORCE_CLOSET_OPENED,true )",
+  "txt": "",
+  "index": ""
+ },
+ {
+  "st": "FIRST_STEP",
+  "cmd": "DEBLACKLIST_ACTION(PICK_OBJECT)",
+  "txt": "",
+  "index": ""
+ },
+ {
+  "st": "FIRST_STEP",
+  "cmd": "EXPECT_IN_INVENTORY( WRENCH, select_wrench )",
+  "txt": "<p>Dans l'*Étagère*, il y a une *Clé à Molette* ! Elle augmentera vos <em>chances de réussite</em> pour *réparer la Porte*.</p>\n<p> Sélectionnez d'abord la *Clé à Molette* et effectuer l'action *Prendre*.</p>",
+  "index": ""
+ },
+ {
+  "st": "FIRST_STEP",
+  "cmd": "DO_CONFIRM(id_con_wrench_taken,0)",
+  "txt": "<p>La *Clé à molette* est désormais dans votre *inventaire*.</p>",
+  "index": ""
+ },
+ {
+  "st": "FIRST_STEP",
+  "cmd": "bla(PICK_OBJECT)",
+  "txt": "",
+  "index": ""
+ },
+ {
+  "st": "FIRST_STEP",
+  "cmd": "bla(DROP_OBJECT)",
+  "txt": "",
+  "index": ""
+ },
+ {
+  "st": "FIRST_STEP",
+  "cmd": "uif( FORCE_CLOSET_OPENED, false )",
+  "txt": "",
+  "index": ""
+ },
+ {
+  "st": "FIRST_STEP",
+  "cmd": "uif( EXPECT_CLOSET_OPENED, false )",
+  "txt": "",
+  "index": ""
+ },
+ {
+  "st": "FIRST_STEP",
+  "cmd": "EXPECT_ACTION( REPAIR_TUTO_0,repair_that)",
+  "txt": "<p>Maintenant, cliquez sur la <em>Porte Cassée</em> pour la sélectionner et exécutez l'action *Réparer*.</p><p> Grâce à la *Clé À Molette*, vous avez plus de chances de réparer la porte.</p>",
+  "index": ""
+ },
+ {
+  "st": "FIRST_STEP",
+  "cmd": "BLACKLIST_ALL_ACTION",
+  "txt": "",
+  "index": ""
+ },
+ {
+  "st": "FIRST_STEP",
+  "cmd": "DO_CONFIRM(fail,0)",
+  "txt": "<p>Echec...</p><p>Ici, dans <em>l'historique</em> (et tchat), vous pouvez lire le résultats de vos actions et celles des autres équipiers.</p>\n<p>L'action vous a coûté 1 <img src=\"/img/icons/ui/pa_slot1.png\"/>, mais il vous en reste encore.</p>",
+  "index": ""
+ },
+ {
+  "st": "FIRST_STEP",
+  "cmd": "EXPECT_ACTION( REPAIR_TUTO_1,your_own)",
+  "txt": "<p><img src=\"/img/design/arrow_anim.gif\" /> Avec la <em>Porte cassée</em> sélectionnée, effectuez à nouveau l'action *Réparer*.</p>",
+  "index": ""
+ },
+ {
+  "st": "FIRST_STEP",
+  "cmd": "BLACKLIST_ALL_ACTION",
+  "txt": "",
+  "index": ""
+ },
+ {
+  "st": "FIRST_STEP",
+  "cmd": "dbl(MOVE)",
+  "txt": "",
+  "index": ""
+ },
+ {
+  "st": "FIRST_STEP",
+  "cmd": "ENABLE_LOCATION( CORRIDOR_A,false )",
+  "txt": "",
+  "index": ""
+ },
+ {
+  "st": "FIRST_STEP",
+  "cmd": "RESERVE_HUNTER",
+  "txt": "",
+  "index": ""
+ },
+ {
+  "st": "FIRST_STEP",
+  "cmd": "DO_CONFIRM(id_con_log,0)",
+  "txt": "<p>Min...<small>Grésillement...</small>Parfait. Vous avez réparé la porte !</p>",
+  "index": ""
+ },
+ {
+  "st": "FIRST_STEP",
+  "cmd": "EXPECT_LOCATION( LASER_TURRET_A_0,your_own)",
+  "txt": "<p>Maintenant, allez à la <em>Tourelle Alpha Avant</em> vérifier l'état de nos défenses.</p>",
+  "index": ""
+ },
+ {
+  "st": "FIRST_STEP",
+  "cmd": "confirm(your_own2,0)",
+  "txt": "<p>Mes radars signalent un problème ici, des *Hunters nous attaquent* !</p>",
+  "index": ""
+ },
+ {
+  "st": "FIRST_STEP",
+  "cmd": "DO_CONFIRM(id_turret_left,0)",
+  "txt": "<p>À <em>gauche</em>, la liste des *Tourelles* du Daedalus et leurs occupants.</p>",
+  "index": ""
+ },
+ {
+  "st": "FIRST_STEP",
+  "cmd": "DO_CONFIRM(id_turret_right,0)",
+  "txt": "<p>À <em>droite</em>, la liste des *Hunters* attaquants.</p>",
+  "index": ""
+ },
+ {
+  "st": "FIRST_STEP",
+  "cmd": "EXPECT_ACTION( SHOOT_TUTO_0,shoot_that )",
+  "txt": "<p>Cliquez sur la <em>Tourelle</em> pour en prendre le contrôle. Ensuite, effectuez l'action *Tirer*.</p>",
+  "index": ""
+ },
+ {
+  "st": "FIRST_STEP",
+  "cmd": "bla( SHOOT_TUTO_0 )",
+  "txt": "",
+  "index": ""
+ },
+ {
+  "st": "FIRST_STEP",
+  "cmd": "EXPECT_ACTION( SHOOT_TUTO_1,shoot_that )",
+  "txt": "<p>Inc...Malencontreusement, *Vous avez raté votre tir* ! (Regardez l'historique à droite). Vous pouvez encore <em>réessayer</em>, profitez-en !</p>",
+  "index": ""
+ },
+ {
+  "st": "FIRST_STEP",
+  "cmd": "bla( SHOOT_TUTO_1 )",
+  "txt": "",
+  "index": ""
+ },
+ {
+  "st": "FIRST_STEP",
+  "cmd": "uif( FAKE_HUNTER,false )",
+  "txt": "",
+  "index": ""
+ },
+ {
+  "st": "FIRST_STEP",
+  "cmd": "REFILL_PA",
+  "txt": "",
+  "index": ""
+ },
+ {
+  "st": "FIRST_STEP",
+  "cmd": "DO_CONFIRM(id_con_log,0)",
+  "txt": "<p>Félicitation. Un Hunter assaillant a été détruit.</p>",
+  "index": ""
+ },
+ {
+  "st": "FIRST_STEP",
+  "cmd": "DO_CONFIRM(your_own2,0)",
+  "txt": "<p> Le Daedalus est un labyrinthe, allez chercher votre carte numérique, le *Traqueur*.</p><p> Elle est stockée sur le <em>Pont</em>.</p>",
+  "index": ""
+ },
+ {
+  "st": "FIRST_STEP",
+  "cmd": "ENABLE_LOCATION( LASER_TURRET_A_0,false )",
+  "txt": "",
+  "index": ""
+ },
+ {
+  "st": "FIRST_STEP",
+  "cmd": "EXPECT_LOCATION( COMMAND_CENTER,your_own)",
+  "txt": "<p><img src=\"/img/design/arrow_anim.gif\" /> Prenez la *Porte* vers le <em>Pont</em>.</p>",
+  "index": ""
+ },
+ {
+  "st": "FIRST_STEP",
+  "cmd": "ENABLE_LOCATION( COMMAND_CENTER,false)",
+  "txt": "",
+  "index": ""
+ },
+ {
+  "st": "FIRST_STEP",
+  "cmd": "RESERVE_ITEM( TRACKER,false )",
+  "txt": "",
+  "index": ""
+ },
+ {
+  "st": "FIRST_STEP",
+  "cmd": "EXPECT_IN_INVENTORY( TRACKER, your_own )",
+  "txt": "<p>Sélectionnez l'*Étagère* et *prenez* le <em>Traqueur</em>.</p<p> C'est une carte numérique connectée à mon réseau, elle vous fournira des informations pertinentes sur le vaisseau.</p>",
+  "index": ""
+ },
+ {
+  "st": "FIRST_STEP",
+  "cmd": "HIDE_CLOSET",
+  "txt": "",
+  "index": ""
+ },
+ {
+  "st": "FIRST_STEP",
+  "cmd": "confirm(track,0)",
+  "txt": "<p>Maintenant que vous avez le *Traqueur*, vous avez accès à une <em>carte du vaisseau</em>. Votre position est representé par le point *blanc*.</p>",
+  "index": ""
+ },
+ {
+  "st": "FIRST_STEP",
+  "cmd": "dbl( SEEK_HIDDEN )",
+  "txt": "",
+  "index": ""
+ },
+ {
+  "st": "FIRST_STEP",
+  "cmd": "RESERVE_ITEM( TALKY_WALKY,true )",
+  "txt": "",
+  "index": ""
+ },
+ {
+  "st": "FIRST_STEP",
+  "cmd": "EXPECT_ACTION( SEEK_HIDDEN,seek)",
+  "txt": "<p>Les *Etagères* sont parfois trompeuses. Il peut y avoir des objets cachées dans la pièce que vous pouvez rater si vous n'y prenez pas garde...</p>\n<p>Cliquez sur <em>Fouiller</em> pour *chercher dans la pièce*.</p><p> Voyons, si il n'y aurait pas un équipier malhonnête qui aurait caché quelque chose...</p>",
+  "index": ""
+ },
+ {
+  "st": "FIRST_STEP",
+  "cmd": "confirm(talkie_found ,0)",
+  "txt": "<p>Parfait. Vous avez trouvé un <em>Talkie-Walkie</em> dans les coins les plus sombres de l'*Étagère* !</p>\n",
+  "index": ""
+ },
+ {
+  "st": "FIRST_STEP",
+  "cmd": "EXPECT_IN_INVENTORY( TALKY_WALKY,your_own )",
+  "txt": "<p><img src=\"/img/design/arrow_anim.gif\" /> Maintenant, sélectionnez l'*Étagère pour afficher l'inventaire* de la pièce et *prenez* le <em>Talkie-Walkie</em> !</p>",
+  "index": ""
+ },
+ {
+  "st": "FIRST_STEP",
+  "cmd": "bla(DROP_OBJECT)",
+  "txt": "",
+  "index": ""
+ },
+ {
+  "st": "FIRST_STEP",
+  "cmd": "bla(PICK_OBJECT)",
+  "txt": "",
+  "index": ""
+ },
+ {
+  "st": "FIRST_STEP",
+  "cmd": "confirm(id_new_chanel,0)",
+  "txt": "<p>Un nouvel onglet est apparu ici. Il s'agit du <em>Carnet du Bord (<img src=\"/img/icons/ui/wall.png\"/>)</em>.\nIl vous permettra de communiquer avec *les autres possesseurs de Talkie-Walkies*.</p>",
+  "index": ""
+ },
+ {
+  "st": "FIRST_STEP",
+  "cmd": "dbl( BROADCAST_MESSAGE)",
+  "txt": "",
+  "index": ""
+ },
+ {
+  "st": "FIRST_STEP",
+  "cmd": "EXPECT_CHAT(your_own)",
+  "txt": "<p><img src=\"/img/design/arrow_anim.gif\" /> Cliquez sur l'onglet du <em>Carnet du Bord (<img src=\"/img/icons/ui/wall.png\"/>)</em> et *dites « Bonjour »* à vos camarades !</p>",
+  "index": ""
+ },
+ {
+  "st": "FIRST_STEP",
+  "cmd": "confirm(id_con_intro,1)",
+  "txt": "<h4>Chapitre 4 : On passe en Mode Normal ?</h4> <p>$n Parfait. Je vois que vous êtes enfin opérationnel. Pour finir, un conseil magnanime pour les débutants :</p> <p>Dans *Mush*, vous avez énormément de liberté et de possibilités. Mais vous saurez toujours quoi faire grâce à l'onglet <img src=\"/img/icons/ui/tip.png\"/> *Objectifs et Conseils*. Il vous donnera toujours des pistes claires sur les besoins du moment du Daedalus.</p><p> Ne l'oubliez pas !</p>",
+  "index": ""
+ },
+ {
+  "st": "FIRST_STEP",
+  "cmd": "PUB_STEP( GO_NORMAL )",
+  "txt": "",
+  "index": ""
+ },
+ {
+  "st": "FIRST_STEP",
+  "cmd": "ns( END_LEARN_MODE )",
+  "txt": "",
+  "index": ""
+ },
+ {
+  "st": "END_LEARN_MODE",
+  "cmd": "CLEAN_TUTO_MESS",
+  "txt": "CLEANUP ALL TUTO BLAKLISTERS",
+  "index": ""
+ },
+ {
+  "st": "END_LEARN_MODE",
+  "cmd": "EXPECT_NORMAL_MODE_LINK",
+  "txt": "ASYNC PREPARE NORMAL GOTO",
+  "index": ""
+ },
+ {
+  "st": "END_LEARN_MODE",
+  "cmd": "NORMAL_CHOICE_BOX( Je passe en Mode Normal, Je reste encore un peu en Mode Simplifié, '/goNormal','/continueSimple' )",
+  "txt": "<h4>Jeu en Mode Simplifié</h4>\n<p>$n Vous jouez actuellement en *Mode Simplifié*. Si vous vous sentez prêt à découvrir l'interface complète du jeu, passez au *Mode Normal*. </p>\n",
+  "index": ""
+ },
+ {
+  "st": "END_LEARN_MODE",
+  "cmd": "confirm(tips ,0)",
+  "txt": "<p>Si vous ne savez pas encore comment vous occuper, Jetez un œil à l'onglet ( .</p> <img src=\"/img/icons/ui/tip.png\" /> *Objectifs et Conseils*",
+  "index": ""
+ },
+ {
+  "st": "END_LEARN_MODE",
+  "cmd": "IDLE",
+  "txt": "",
+  "index": ""
+ },
+ {
+  "st": "NORMAL_MODE",
+  "cmd": "confirm(id_con_intro,1)",
+  "txt": "<p>$n Bienvenue en *Mode Normal*. Je vais vous présenter rapidement les nouveaux éléments de l'interface.</p>",
+  "index": ""
+ },
+ {
+  "st": "NORMAL_MODE",
+  "cmd": "OUTLINE(.pvsmbar.barmoral)",
+  "txt": "",
+  "index": ""
+ },
+ {
+  "st": "NORMAL_MODE",
+  "cmd": "confirm(moral,0)",
+  "txt": "<p>Ici se trouvent vos <em>Points de Moral</em> (<img src=\"/img/icons/ui/moral.png\"/>). Quand ils se feront rare, vous tomberez en état de dépression et deviendrez plus vulnérables aux maladies. </p> <p>*Si il tombe à 0, vous vous suiciderez*. Il y a cependant des moyens de l'éviter, mangez sain, et parlez de vos soucis avec vos équipiers.</p>",
+  "index": ""
+ },
+ {
+  "st": "NORMAL_MODE",
+  "cmd": "confirm(alerts,0)",
+  "txt": "<p>Ici se trouvent les <em>Alertes en cours</em>.</p><p> Mon omnipotence ayant des limites, il va falloir vous organiser efficacement pour résoudre tous les problèmes du Daedalus auquel je ne puis remédier.</p>",
+  "index": ""
+ },
+ {
+  "st": "NORMAL_MODE",
+  "cmd": "confirm(infostuto,0)",
+  "txt": "<p>Là se trouvent les <em>informations</em> concernant le vaisseau : l'Oxygène, le Fuel, l'Armure du vaisseau et les membres de l'équipage </p>\n<p>Survolez ces éléments pour avoir plus d'informations. </p>\n",
+  "index": ""
+ },
+ {
+  "st": "NORMAL_MODE",
+  "cmd": "ns( THE_END )",
+  "txt": "",
+  "index": ""
+ },
+ {
+  "st": "THE_END",
+  "cmd": "confirm(id_con_intro,0)",
+  "txt": "<p>C'est fini pour votre Introduction Assisté par Ordinateur.</p> <p> Si vous vous sentez perdu, <em>n'oubliez pas de consulter l'onglet <img src=\"/img/icons/ui/tip.png\"/> *Objectifs et Conseils*</em> ou vos équipiers. Bon voyage ves l'Infini !</p>",
+  "index": ""
+ },
+ {
+  "st": "THE_END",
+  "cmd": "END_OF_STORY",
+  "txt": "",
+  "index": ""
+ },
+ {
+  "st": "$EOF",
+  "cmd": "",
+  "txt": "",
+  "index": ""
+ },
+ {
+  "st": "WELCOME",
+  "cmd": "CUSTOM_CONFIRM(cdIntroPate,id_dial_intro, 0)",
+  "txt": "",
+  "index": ""
+ }
+]

@@ -1,0 +1,209 @@
+[
+ {
+  "id": "DIPLO_COM",
+  "log": "$hero tente de rentrer en contact avec la créature",
+  "a": "grâce a son module de traduction $gender entame une sympathique discussion",
+  "b": "la creature semble prendre confiance grâce aux gestes savants de $hero",
+  "c": "$gender gesticule dans tous les sens, mais la créature grogne et $alien_annoyed",
+  "d": "la créature regarde attentivement les geste de $hero puis apres un bref instant de reflexion, elle lui mort un bras.",
+  "e": ""
+ },
+ {
+  "id": "PLANET_LANDING",
+  "log": "$hero s'apprête a faire atterir $ship au milieu d'$large_loc",
+  "a": "$ship se pose au sol comme une fleur. Vous pouvez détachez vos ceintures !",
+  "b": "La manoeuvre semble tres complexe pour $hero qui a du mal a tenir le vaisseau en position horizontal. Ca commence a secouer...",
+  "c": "Apres un ou deux soubresauts, $ship se pose finalement au sol.",
+  "d": "Apres un ou deux essais infructueux, $hero perd patience et précipite $ship au sol.",
+  "e": "Malheureusement une défaillance du réacteur central précipite $ship au sol !"
+ },
+ {
+  "id": "PLANET_CRASH",
+  "log": "Malgré la violence du choc $exped n'a subit que des blessures superficielles",
+  "a": "$hero est projet par le hublot, est roule sur 6mètres avant de s'arrêter",
+  "b": "Durant l'accident, $hero_list sont tres gravement blessés",
+  "c": "$ship est pulvérisé dans une grande explosion orangées. Nos héros n'auront jamais foulé le sol de $planet",
+  "d": "",
+  "e": ""
+ },
+ {
+  "id": "EXPED_SIGNAL",
+  "log": "Pour retrouver les membres disparus, $exped envoie un signal de détresse grâce à $item de $hero.",
+  "a": "Au bout d'une vingtaine de minute, $lost retrouve la trace de $exped. Mission réussie !",
+  "b": "$lost_list parviennent a localiser la position de $exped grace a la lumière.",
+  "c": "Malgré plusieurs heures d'attente, aucune trace $from_lost_exped. $exped repart le coeur lourd.",
+  "d": "",
+  "e": ""
+ },
+ {
+  "id": "LOST_SIGNAL",
+  "log": "Pour retrouver $exped, $lost envoie un signal de détresse grâce à $item",
+  "a": "$exped a bien vu son signal et $lost_gender_b rejoint quelques minutes plus tard.",
+  "b": "Apres une heure d'attente, il n'y a aucune nouvelle, $hero doit se résigner a continuer seul.",
+  "c": "Alors qu'ils s'apprêtent a reprendre la marche. $lost2, attiré par la lumière vient $lost_gender_c aussi a leur rencontre !",
+  "d": "",
+  "e": ""
+ },
+ {
+  "id": "HUNTING",
+  "log": "$hero sort $item est met $encounter en joue.",
+  "a": "Personne n'est armé, il n'est pas question de ramener ce truc là vivant dans $ship",
+  "b": "Un coup de feu retenti et la bestiole tombe à terre. Ce soir on va manger du steak !",
+  "c": "Le coup touche la cible, mais $encounter n'est pas a terre, la créature est furieuse et charge $exped",
+  "d": "Le coup touche la cible, mais $encounter survie est s'enfuit au loin. $hero ne parvient pas a rattraper la créature...",
+  "e": ""
+ },
+ {
+  "id": "RUNAWAY",
+  "log": "Au bout d'une course ininterrompue de 15 minutes, $exped s'arrête a bout de souffle. $encounter semble avoir perdu leur piste, $hero pousse un soupir de soulagement.",
+  "a": "$hero $stumble_loc et $fall. $encounter est déjà sur eux, $exped doit se battre !",
+  "b": "$hero est dans l'impossibilité de courir ! $gender est rapidement rattrapé par la bête ! $exped doit se battre !",
+  "c": "",
+  "d": "",
+  "e": ""
+ },
+ {
+  "id": "VILLAGE",
+  "log": "todo",
+  "a": "",
+  "b": "",
+  "c": "",
+  "d": "",
+  "e": ""
+ },
+ {
+  "id": "SKRUTCH",
+  "log": "$hero se gratte de plus en plus nerveusement le front",
+  "a": "",
+  "b": "",
+  "c": "",
+  "d": "",
+  "e": ""
+ },
+ {
+  "id": "PREDATOR_NOISE",
+  "log": "apparament le bruit a attiré $encounter_first, la situation devient complexe",
+  "a": "En revenant doucement sur ses pas, $exped parvient a éviter le pire.",
+  "b": "Malgré leurs efforts pour ne pas éveiller son attention, $encounter a tôt fait de débusquer $exped. Le combat est inévitable",
+  "c": "",
+  "d": "",
+  "e": ""
+ },
+ {
+  "id": "LOST_CONCLUSION",
+  "log": "Malheureusement $exped rest sans nouvelles de $lost_list.",
+  "a": "$exped est au complet ! L'aventure continue !",
+  "b": "",
+  "c": "",
+  "d": "",
+  "e": ""
+ },
+ {
+  "id": "$EOF",
+  "log": "",
+  "a": "",
+  "b": "",
+  "c": "",
+  "d": "",
+  "e": ""
+ },
+ {
+  "id": "",
+  "log": "",
+  "a": "",
+  "b": "",
+  "c": "",
+  "d": "",
+  "e": ""
+ },
+ {
+  "id": "",
+  "log": "",
+  "a": "",
+  "b": "",
+  "c": "",
+  "d": "",
+  "e": ""
+ },
+ {
+  "id": "FEAR",
+  "log": "$hero ne peut en supporter plus et quitte l'expedition pour s'enfermer dans l'Icarus",
+  "a": "",
+  "b": "",
+  "c": "",
+  "d": "",
+  "e": ""
+ },
+ {
+  "id": "AGONY",
+  "log": "$hero succombe finalement a ses blessures.",
+  "a": "dans les bras de $hero2",
+  "b": "$hero n'a rien pu faire pour le sauver",
+  "c": "",
+  "d": "",
+  "e": ""
+ },
+ {
+  "id": "BATTLE_WIN",
+  "log": "La lutte est terrible mais $exped arrive finalement a terraser $target",
+  "a": "",
+  "b": "",
+  "c": "",
+  "d": "",
+  "e": ""
+ },
+ {
+  "id": "",
+  "log": "",
+  "a": "",
+  "b": "",
+  "c": "",
+  "d": "",
+  "e": ""
+ },
+ {
+  "id": "LOST",
+  "log": "Pendant ce temps $hero parvient difficilement a s'orienter et marche un peu au hasard.",
+  "a": "Ses talents de pisteur lui permette finalement de retrouver $exped.",
+  "b": "Mais il retrouve finalement $exped grace à $item",
+  "c": "",
+  "d": "",
+  "e": ""
+ },
+ {
+  "id": "",
+  "log": "",
+  "a": "",
+  "b": "",
+  "c": "",
+  "d": "",
+  "e": ""
+ },
+ {
+  "id": "",
+  "log": "",
+  "a": "",
+  "b": "",
+  "c": "",
+  "d": "",
+  "e": ""
+ },
+ {
+  "id": "",
+  "log": "",
+  "a": "",
+  "b": "",
+  "c": "",
+  "d": "",
+  "e": ""
+ },
+ {
+  "id": "appareil photo",
+  "log": "les membres qui ne sont pas partis en expeditions recoivent egalement un bonus de moral",
+  "a": "",
+  "b": "",
+  "c": "",
+  "d": "",
+  "e": ""
+ }
+]

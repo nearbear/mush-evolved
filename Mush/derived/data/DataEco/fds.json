@@ -1,0 +1,116 @@
+[
+ {
+  "id": "WHITED",
+  "name": "Blanchi",
+  "desc": "Vous avez été blanchi.",
+  "points": "0"
+ },
+ {
+  "id": "LANG",
+  "name": "Langage : CGU",
+  "desc": "Votre langage et/ou vos manières ne respectent pas les CGU. Veuillez vous modérer.",
+  "points": "2"
+ },
+ {
+  "id": "LANG_FLOOD",
+  "name": "Langage : Flood",
+  "desc": "Vous polluez l'expérience des autres utilisateurs par un usage abusif de moyens de communication. Modérez votre usages.",
+  "points": "2"
+ },
+ {
+  "id": "SCREW_NOOB",
+  "name": "Pourrissage Passif",
+  "desc": "Vous avez accumulé trop d'actions négatives contre votre camp et ils ont dénoncé vos agissements. Cela s'appelle du « pourrissage ». Cessez ces pratiques.",
+  "points": "3"
+ },
+ {
+  "id": "SCREW",
+  "name": "Pourrissage Actif",
+  "desc": "Votre attitude négative à bord empêche votre équipe de jouer dans de bonnes conditions. Cela s'appelle du « pourrissage ». Cessez ces pratiques.",
+  "points": "5"
+ },
+ {
+  "id": "MUSH_CSC_MUL",
+  "name": "Dénonciation des Mush",
+  "desc": "Vous êtes Mush et vous avez dénoncé vos camarades ! En faisant ceci, vous avez compromis l'expérience des autres utilisateurs.",
+  "points": "5"
+ },
+ {
+  "id": "SUICIDE_POOR",
+  "name": "Suicide pathétique",
+  "desc": "Vous vous êtes suicidé ce qui a pénalisé vos coéquipiers. Les parties doivent être menées à leur terme.",
+  "points": "3"
+ },
+ {
+  "id": "MODERATION",
+  "name": "Modération",
+  "desc": "Votre comportement ne respecte pas les CGU.",
+  "points": "0"
+ },
+ {
+  "id": "DUPLICATED",
+  "name": "Duplicata",
+  "desc": "Une plainte similaire concernant ce personnage à déjà été remplie",
+  "points": "0"
+ },
+ {
+  "id": "SIGNAL_ABUSED",
+  "name": "Signalement abusif grave",
+  "desc": "Vous abusez du système de signalement ou vous en servez comme moyen de pression. Cessez immédiatement.",
+  "points": "2"
+ },
+ {
+  "id": "MUSH_CSC",
+  "name": "Anti-Mush",
+  "desc": "Vous n'avez pas assumé votre rôle de Mush.",
+  "points": "1"
+ },
+ {
+  "id": "LANG_NET",
+  "name": "Langage : Courtoisie",
+  "desc": "Votre langage et/ou vos manières ne respecte pas la Nétiquette. Veuillez vous modérer.",
+  "points": "2"
+ },
+ {
+  "id": "SCREW_LITE",
+  "name": "Pourrissage",
+  "desc": "Vous avez commis une ou plusieurs actions négatives contre votre camp et vos équipiers ont dénoncé vos agissements. Cela s'appelle du « pourrissage ». Cessez ces pratiques.",
+  "points": "1"
+ },
+ {
+  "id": "LANG_ZERO",
+  "name": "Langage",
+  "desc": "Votre langage et/ou vos manières ne respecte pas la Nétiquette. Veuillez vous modérer.",
+  "points": "0"
+ },
+ {
+  "id": "INCIT_SCREW_LIGHT",
+  "name": "Incitation au pourrissage",
+  "desc": "Vous avez incité un équipier au pourrissage de la partie. Cela s'appelle du « pourrissage ». Cessez ces pratiques.",
+  "points": "1"
+ },
+ {
+  "id": "INCIT_SCREW",
+  "name": "Incitation au pourrissage aggravé",
+  "desc": "Vous avez incité un équipier au pourrissage majeur de la partie . Cela s'appelle du « pourrissage ». Cessez ces pratiques.",
+  "points": "3"
+ },
+ {
+  "id": "SIGNAL_ABUSED_LITE",
+  "name": "Signalement abusif",
+  "desc": "Vous avez abusé du système de signalement. Le bouton plainte n'est pas un jouet.",
+  "points": "0"
+ },
+ {
+  "id": "DEPRECATED",
+  "name": "Périmée",
+  "desc": "Cette plainte a été jugée périmée/injugeable",
+  "points": "0"
+ },
+ {
+  "id": "$EOF",
+  "name": "",
+  "desc": "",
+  "points": ""
+ }
+]

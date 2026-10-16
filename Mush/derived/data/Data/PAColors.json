@@ -1,0 +1,74 @@
+[
+ {
+  "id": "GEN",
+  "label": ":pa:",
+  "name": "",
+  "desc": ""
+ },
+ {
+  "id": "MOV",
+  "label": ":pm:",
+  "name": "",
+  "desc": ""
+ },
+ {
+  "id": "ENG",
+  "label": ":eng:",
+  "name": "Points de Mécanique",
+  "desc": "Les points d'Ingénierie vous donnent des <strong>actions gratuites</strong> dans les <em>réparations techniques</em>"
+ },
+ {
+  "id": "EXP",
+  "label": ":exp:",
+  "name": "Points d'Exploration",
+  "desc": ""
+ },
+ {
+  "id": "COMP",
+  "label": ":pa_comp:",
+  "name": "Points d'Informatique",
+  "desc": "Les points d'Informatique vous donnent des <strong>actions gratuites</strong> dans les <em>Recherches et les Projets</em>"
+ },
+ {
+  "id": "GARDEN",
+  "label": ":pa_garden:",
+  "name": "Points de Jardinage",
+  "desc": "Les points de Jardinage vous donnent des <strong>actions gratuites</strong> dans le <em>Jardin Hydroponique</em>."
+ },
+ {
+  "id": "CORE",
+  "label": ":pa_core:",
+  "name": "Points de Nexus",
+  "desc": "Les points de Nexus vous donnent des <strong>actions gratuites</strong> dans le <em>Nexus</em>"
+ },
+ {
+  "id": "SHOOT",
+  "label": ":pa_shoot:",
+  "name": "Points de Tir",
+  "desc": "Les Points de Tir vous donnent des <strong>actions gratuites</strong> pour toutes les actions de tir en vol où à bord."
+ },
+ {
+  "id": "COOK",
+  "label": ":pa_cook:",
+  "name": "Points de Cuisine",
+  "desc": "Les Points de Cuisine vous donnent des <strong>actions gratuites</strong> pour toutes les actions de la cuisine."
+ },
+ {
+  "id": "HEAL",
+  "label": ":pa_heal:",
+  "name": "Points de Soins",
+  "desc": "Les Points de Soins vous donnent des <strong>actions gratuites</strong> pour toutes les actions de soins."
+ },
+ {
+  "id": "PILGRED",
+  "label": ":pa_pilgred:",
+  "name": "Points de PILGRED",
+  "desc": "Les Points de PILGRED vous donnent des <strong>actions gratuites</strong> pour réparer PILGRED."
+ },
+ {
+  "id": "$EOF",
+  "label": "",
+  "name": "",
+  "desc": ""
+ }
+]

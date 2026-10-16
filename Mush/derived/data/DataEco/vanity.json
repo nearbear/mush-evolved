@@ -1,0 +1,68 @@
+[
+ {
+  "id": "TrailingHearts",
+  "name": "Coeurs fondants",
+  "desc": "Répandez l'amour et la paix en laissant des petits coeurs trop mooooooooognons sur votre passage.",
+  "gen": "0"
+ },
+ {
+  "id": "HoveringCloud",
+  "name": "Mauvaise humeur",
+  "desc": "Répandez la mauvaise humeur et le cynisme, un petit nuage vous suivra partout.",
+  "gen": "0"
+ },
+ {
+  "id": "Ring",
+  "name": "Innocence Incarnée",
+  "desc": "La béatitude se lit sur votre visage... enfin au dessus de votre tête pour être exact !",
+  "gen": "1"
+ },
+ {
+  "id": "Drone",
+  "name": "Bo-bot",
+  "desc": "Un assistant fort inutile mais qui donne un air sérieux !",
+  "gen": "1"
+ },
+ {
+  "id": "Gears",
+  "name": "Surcharge Cognitive",
+  "desc": "Ca cogite dur là-haut. Attention au claquage de neurone.",
+  "gen": "1"
+ },
+ {
+  "id": "Music",
+  "name": "Let's Groove",
+  "desc": "Bon allez on la fait cette teuf ?",
+  "gen": "1"
+ },
+ {
+  "id": "RayOfLight",
+  "name": "Et La lumière fut...",
+  "desc": "Vous voyez le vide qui lie, vous savez l'impensable, vous connaissez la vérité. Vous êtes illuminé.",
+  "gen": "1"
+ },
+ {
+  "id": "Thinking",
+  "name": "Vide Intérieur",
+  "desc": "...",
+  "gen": "1"
+ },
+ {
+  "id": "SuperCitrouille",
+  "name": "Citrouillitoïd",
+  "desc": "Votre cucurbitaciophillie est ostentatatoire.",
+  "gen": "1"
+ },
+ {
+  "id": "XmasBall",
+  "name": "Casque Bouboule",
+  "desc": "Pour briller en soirée même dans le vide inter-sidéral !",
+  "gen": "1"
+ },
+ {
+  "id": "$EOF",
+  "name": "",
+  "desc": "",
+  "gen": ""
+ }
+]

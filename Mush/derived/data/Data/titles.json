@@ -1,0 +1,37 @@
+[
+ {
+  "id": "COMMANDER",
+  "name": "Commandant",
+  "desc": "Décide de l'orientation du Daedalus. Il est aussi le seul à pouvoir enclencher la séquence de voyage.",
+  "priority": "KIM_JIN_SU, WANG_CHAO, GIOELE_RINALDO, STEPHEN_SEAGULL, FRIEDA_BERGMANN, LAI_KUAN_TI, JIANG_HUA, DEREK_HOGAN,ROLAND_ZUCCALI, RALUCA_TOMESCU, FINOLA_KEEGAN, PAOLA_RINALDO, TERRENCE_ARCHER, ELEESHA_WILLIAMS, ANDIE_GRAHAM,IAN_SOULTON, JANICE_KENT, ZHONG_CHUN",
+  "effects": "GrantAction(DELETE_SHIP)"
+ },
+ {
+  "id": "NERON_MANAGER",
+  "name": "Admin. NERON",
+  "desc": "L'Administrateur NERON peut accéder au BIOS de NERON. Il a également des accès privilégiés aux programmes de gestion du quotidien.",
+  "priority": "JANICE_KENT, TERRENCE_ARCHER, ELEESHA_WILLIAMS, RALUCA_TOMESCU, FINOLA_KEEGAN,ANDIE_GRAHAM, FRIEDA_BERGMANN, IAN_SOULTON, STEPHEN_SEAGULL, PAOLA_RINALDO, KIM_JIN_SU, JIANG_HUA, LAI_KUAN_TI, GIOELE_RINALDO, ZHONG_CHUN, ROLAND_ZUCCALI, WANG_CHAO,DEREK_HOGAN",
+  "effects": ""
+ },
+ {
+  "id": "COM_MANAGER",
+  "name": "Resp. Communications",
+  "desc": "Le Responsable de Communications peut engager des opérations de prise de contact une fois que le contact avec Sol est rétabli.",
+  "priority": "PAOLA_RINALDO, ELEESHA_WILLIAMS, ANDIE_GRAHAM,STEPHEN_SEAGULL, JANICE_KENT, ROLAND_ZUCCALI, JIANG_HUA, DEREK_HOGAN,KIM_JIN_SU, LAI_KUAN_TI, GIOELE_RINALDO, ZHONG_CHUN, IAN_SOULTON, FINOLA_KEEGAN, TERRENCE_ARCHER, FRIEDA_BERGMANN, WANG_CHAO, RALUCA_TOMESCU",
+  "effects": "GrantAction(BROADCAST_MESSAGE)"
+ },
+ {
+  "id": "$EOF",
+  "name": "",
+  "desc": "",
+  "priority": "",
+  "effects": ""
+ },
+ {
+  "id": "TECH_MANAGER",
+  "name": "Resp. Tech.",
+  "desc": "Le Responsable Technique peut lancer un projet de renovation à l'intérieur du centre de rénovation.",
+  "priority": "GIOELE_RINALDO,LAI_KUAN_TI,FRIEDA_BERGMANN",
+  "effects": ""
+ }
+]

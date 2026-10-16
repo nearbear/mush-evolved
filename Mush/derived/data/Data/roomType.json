@@ -1,0 +1,154 @@
+[
+ {
+  "id": "COMMAND_CENTER",
+  "desc": "Pour diriger le Daedalus vers de glorieux horizons cosmiques, et vérifier son état de délabrement, c'est ici que ça se passe.",
+  "starting_status": "",
+  "capacity": "16",
+  "name": "Pont",
+  "has_closet": "true"
+ },
+ {
+  "id": "SPACESHIP_BAY",
+  "desc": "Prenez les commandes d'un Patrouilleur et défendez le Daedalus contre les assauts de la Fédération.",
+  "starting_status": "",
+  "capacity": "16",
+  "name": "Baie de lancement",
+  "has_closet": "true"
+ },
+ {
+  "id": "NEXUS_ROOM",
+  "desc": "Centre de calcul de Neron, son coeur y est disponible pour faire avancer les <strong>Projets</strong>, c'est une salle stratégique pour faire évoluer Neron.",
+  "starting_status": "",
+  "capacity": "16",
+  "name": "Nexus",
+  "has_closet": "true"
+ },
+ {
+  "id": "SICK_BAY",
+  "desc": "Ici sont prodigué les soins aux membres de l'équipage.\nC'est également là que sont disposés les 16 modules de cryogénisations. Bon voyage sur Daedalus.",
+  "starting_status": "",
+  "capacity": "16",
+  "name": "Infirmerie",
+  "has_closet": "true"
+ },
+ {
+  "id": "LABORATORY",
+  "desc": "Centre d'étude du Mush et des différents autres spécimens trouvés sur les planètes. Ici vous pourrez faire avancer la <strong>Recherche</strong>.",
+  "starting_status": "",
+  "capacity": "16",
+  "name": "Laboratoire",
+  "has_closet": "true"
+ },
+ {
+  "id": "REFECTORY",
+  "desc": "Un endroit simple pour prendre un repas chaud et se réunir.",
+  "starting_status": "",
+  "capacity": "16",
+  "name": "Réfectoire",
+  "has_closet": "true"
+ },
+ {
+  "id": "HYDROPONIC_CENTER",
+  "desc": "Le jardin hydroponique offre toute les techniques les plus performantes et productives que le monde moderne ait à offrir en terme d'agronomie. C'est la principale source d'approvisionnement en <strong>O²</strong>. Garantie 100% non-bio.",
+  "starting_status": "",
+  "capacity": "16",
+  "name": "Jardin Hydoponique",
+  "has_closet": "true"
+ },
+ {
+  "id": "MOTOR_ROOM",
+  "desc": "La salle des moteurs est équipée avec le dernier cri de la technologie diesel...Le noyau à fusion n'ayant pas survécu.",
+  "starting_status": "",
+  "capacity": "16",
+  "name": "Salle des moteurs",
+  "has_closet": "true"
+ },
+ {
+  "id": "LASER_TURRET",
+  "desc": "Une tourelle laser dernier cri. Tout confort, y compris l'odeur du cigare froid et des suées d'adrénaline de l'occupant précédent...",
+  "starting_status": "",
+  "capacity": "16",
+  "name": "Tourrelle",
+  "has_closet": "true"
+ },
+ {
+  "id": "PATROL_SHIP",
+  "desc": "Initialement prévu pour analyser les surface de planètes, le Patrouilleur sert désormais à dégommer les vaisseaux de la Fédération qui attaquent le Daedalus.",
+  "starting_status": "INDESTRUCTIBLE",
+  "capacity": "1",
+  "name": "Patrouilleur",
+  "has_closet": "false"
+ },
+ {
+  "id": "CORRIDOR",
+  "desc": "Section de couloir basique, triste, morne, moche, insalubre...",
+  "starting_status": "",
+  "capacity": "16",
+  "name": "Couloir",
+  "has_closet": "true"
+ },
+ {
+  "id": "PLANET",
+  "desc": "Une planète plus ou moins proche de Daedalus.",
+  "starting_status": "DETACHED,INDESTRUCTIBLE",
+  "capacity": "16",
+  "name": "Planète",
+  "has_closet": "false"
+ },
+ {
+  "id": "ICARUS",
+  "desc": "Vaisseau ancrable de recherche spatiale. Permet aux membres d'équipage de se rendre sur une planète proche pour les <strong>Explorations</strong>.",
+  "starting_status": "",
+  "capacity": "4",
+  "name": "Icarus",
+  "has_closet": "true"
+ },
+ {
+  "id": "BEDROOM",
+  "desc": "Dormir maintenant pour oublier demain.",
+  "starting_status": "",
+  "capacity": "16",
+  "name": "Dortoir",
+  "has_closet": "true"
+ },
+ {
+  "id": "STORAGE",
+  "desc": "Pièce destinée à stocker l'équipement, le fuel, l'oxygène et les divers babioles que vous avez emporté avant de quitter Xyloph-17.",
+  "starting_status": "",
+  "capacity": "16",
+  "name": "Stockage",
+  "has_closet": "true"
+ },
+ {
+  "id": "OUTER_SPACE",
+  "desc": "Un des secteurs de l'espace qui entourent le Daedalus.",
+  "starting_status": "DETACHED,INDESTRUCTIBLE",
+  "capacity": "16",
+  "name": "Espace Infini",
+  "has_closet": "false"
+ },
+ {
+  "id": "LIMBO",
+  "desc": "Les limbes ou reposent les morts. Vous ne devriez pas lire ce texte. VRAIMENT PAS.",
+  "starting_status": "DETACHED,INDESTRUCTIBLE",
+  "capacity": "16",
+  "name": "Limbes",
+  "has_closet": "false"
+ },
+ {
+  "id": "$EOF",
+  "desc": "",
+  "starting_status": "",
+  "capacity": "",
+  "name": "",
+  "has_closet": ""
+ },
+ {
+  "id": "LIBRARY",
+  "desc": "Salle de connaissances infinis.",
+  "starting_status": "",
+  "capacity": "16",
+  "name": "Médiathèque",
+  "has_closet": ""
+ }
+]

@@ -1,0 +1,145 @@
+[
+ {
+  "id": "FIST",
+  "power": "0",
+  "hitMin": "1",
+  "hitMax": "2",
+  "hitRate": "60",
+  "charge": "0",
+  "weight": "10",
+  "special": "",
+  "cat": "BARE_HAND"
+ },
+ {
+  "id": "BLASTER",
+  "power": "1",
+  "hitMin": "2",
+  "hitMax": "3",
+  "hitRate": "50",
+  "charge": "3",
+  "weight": "10",
+  "special": "",
+  "cat": "BLASTER"
+ },
+ {
+  "id": "KNIFE",
+  "power": "1",
+  "hitMin": "1",
+  "hitMax": "3",
+  "hitRate": "60",
+  "charge": "0",
+  "weight": "10",
+  "special": "",
+  "cat": "BLADES"
+ },
+ {
+  "id": "NATAMY_RIFFLE",
+  "power": "1",
+  "hitMin": "2",
+  "hitMax": "4",
+  "hitRate": "50",
+  "charge": "3",
+  "weight": "4",
+  "special": "double dégat sur les mushs",
+  "cat": "RIFLE"
+ },
+ {
+  "id": "MACHINE_GUN",
+  "power": "2",
+  "hitMin": "2",
+  "hitMax": "3",
+  "hitRate": "50",
+  "charge": "12",
+  "weight": "4",
+  "special": "",
+  "cat": "RIFLE"
+ },
+ {
+  "id": "MISSILE_LAUNCHER",
+  "power": "3",
+  "hitMin": "6",
+  "hitMax": "12",
+  "hitRate": "50",
+  "charge": "1",
+  "weight": "3",
+  "special": "",
+  "cat": "ROCKET"
+ },
+ {
+  "id": "SNIPER_RIFFLE",
+  "power": "1",
+  "hitMin": "3",
+  "hitMax": "3",
+  "hitRate": "100",
+  "charge": "1",
+  "weight": "6",
+  "special": "",
+  "cat": "RIFLE"
+ },
+ {
+  "id": "FLAMER",
+  "power": "2",
+  "hitMin": "4",
+  "hitMax": "6",
+  "hitRate": "80",
+  "charge": "6",
+  "weight": "2",
+  "special": "critique auto sur les mushs",
+  "cat": "FLAMES"
+ },
+ {
+  "id": "$EOF",
+  "power": "",
+  "hitMin": "",
+  "hitMax": "",
+  "hitRate": "",
+  "charge": "",
+  "weight": "",
+  "special": "",
+  "cat": ""
+ },
+ {
+  "id": "",
+  "power": "",
+  "hitMin": "",
+  "hitMax": "",
+  "hitRate": "",
+  "charge": "",
+  "weight": "",
+  "special": "",
+  "cat": ""
+ },
+ {
+  "id": "KEEP FOR SHIP LIFE",
+  "power": "",
+  "hitMin": "",
+  "hitMax": "",
+  "hitRate": "",
+  "charge": "",
+  "weight": "",
+  "special": "",
+  "cat": ""
+ },
+ {
+  "id": "",
+  "power": "",
+  "hitMin": "",
+  "hitMax": "",
+  "hitRate": "",
+  "charge": "",
+  "weight": "",
+  "special": "",
+  "cat": ""
+ },
+ {
+  "id": "",
+  "power": "",
+  "hitMin": "1",
+  "hitMax": "2",
+  "hitRate": "50",
+  "charge": "",
+  "weight": "",
+  "special": "",
+  "cat": ""
+ }
+]

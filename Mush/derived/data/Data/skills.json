@@ -1,0 +1,1822 @@
+[
+ {
+  "id": "ALL",
+  "name": "Tous",
+  "retained": "true",
+  "footnotes": "Base de tous les personnages.",
+  "desc": "Base de tous les personnages.",
+  "effects": "GrantAction(MOVE) +GrantAction(SEEK_HIDDEN)\n+IncrMaxPA( GEN , 12 )\n+IncrPAPerCycle( GEN, 1 )\n+IncrMaxPA( MOV,12 )\n+GrantAction(BRAWL)+GrantAction(WAKE_UP)\n+IfMush( GrantAction( SABOTAGE ))\n+IfMush( GrantAction(INFECT))\n+GrantAction(GUARD)\n+GrantAction(UNGAG)\n+GrantAction( DO_THE_THING)\n+GrantAction(WHISPER)\n+GrantAction(FLIRT)\n+GrantAction(PICK_CAT)\n+GrantAction(CHITCHAT)\n",
+  "mush": "false",
+  "beta": "false"
+ },
+ {
+  "id": "ENGINEER",
+  "name": "Technicien",
+  "retained": "true",
+  "footnotes": "+1 :pa_eng: (point d'action *Réparation*) par jour.\nChances de réussites doublées pour les *Réparations*.\nChances de réussites doublées pour les *Rénovations*.\nBonus pour développer certains Projets NERON.",
+  "desc": "Le Technicien est qualifié pour réparer le matériel, les équipements et la coque du Daedalus.",
+  "effects": "IncrMaxPA( ENG , 2 )\n+IncrPAPerDay( ENG , 1 )\n+MulActionOdd( REPAIR_OBJECT, 2.0)\n+MulActionOdd( REPAIR_PATROL_SHIP, 2.0)\n+GrantAction( REINFORCE)",
+  "mush": "false",
+  "beta": "false"
+ },
+ {
+  "id": "ASTROPHYSICIAN",
+  "name": "Astrophysicien",
+  "retained": "true",
+  "footnotes": "L'action *Scanner Une Planète* coûte 1 :pa: de moins.\n+1 Secteur découvert lors des analyses de surface.",
+  "desc": "L'Astrophysicien est habilité à lancer des scans pour trouver des planètes à portée ou déterminer leur composition.",
+  "effects": "DecrActionCost( SCAN_FOR_PLANETS, 1)",
+  "mush": "false",
+  "beta": "false"
+ },
+ {
+  "id": "PILOT",
+  "name": "Pilote",
+  "retained": "true",
+  "footnotes": "Utilise des *Tactiques De Pilotage*.\n*Ne rate jamais* les atterrissages et décollages.\nBonus pour développer certains Projets NERON.\n\n",
+  "desc": "Le pilote est un expert en manœuvre dans les vaisseaux Icarus, Pasiphae et Patrouilleur. Sa maîtrise aérienne est impressionnante.",
+  "effects": "",
+  "mush": "false",
+  "beta": "false"
+ },
+ {
+  "id": "GUNMAN",
+  "name": "Tireur",
+  "retained": "true",
+  "footnotes": "+2 *Tirs gratuits* :pa_shoot: par jour.\nVos tirs ratés provoquent 2 fois moins de maladresses.\nVos tirs réussis provoquent 2 fois plus de coups critiques.\nBonus pour développer certains Projets NERON.",
+  "desc": "Le tireur manipule les armes de tout type avec beaucoup d'aisance.",
+  "effects": "IncrMaxPA( SHOOT , 4 )\n+IncrPAPerDay( SHOOT , 2 )",
+  "mush": "false",
+  "beta": "false"
+ },
+ {
+  "id": "COOK",
+  "name": "Cuistot",
+  "retained": "true",
+  "footnotes": "Peut lire les *propriétés des aliments*.\nPeut lire les *propriétés des fruits*.\n+4 :pa_cook: par jour (points d'action *Cuisiner*).\nBonus pour développer certains *Projets NERON*.",
+  "desc": "Le cuisinier est un expert redoutable pour préparer des bons petits plats. Il a également un avis éclairé sur tout ce qui se mange ou presque.",
+  "effects": "IncrMaxPA( COOK , 8 )\n+IncrPAPerDay( COOK , 4 )",
+  "mush": "false",
+  "beta": "false"
+ },
+ {
+  "id": "BOTANIC",
+  "name": "Botaniste",
+  "retained": "true",
+  "footnotes": "Peut lire les *propriétés des fruits*.\nPeut lire les *propriétés des plantes*.\nPeut effectuer des *greffes*.\n+2 :pa_garden: par jour (points d'action *Jardinage*).\nExpédition : L'évènement *Récolte* donne un fruit de plus.\nBonus pour développer certains *Projets NERON*.",
+  "desc": "Le botaniste peut distinguer les caractéristiques des légumes et des plantes. Il est également redoutablement efficace dans la maintenance du Jardin.\n",
+  "effects": "IncrMaxPA( GARDEN , 4 )\n+IncrPAPerDay( GARDEN , 2 )",
+  "mush": "false",
+  "beta": "false"
+ },
+ {
+  "id": "BIOLOGIST",
+  "name": "Biologiste",
+  "retained": "true",
+  "footnotes": "Peut lire les *propriétés des médicaments*.\n*+4% de bonus* sur chacune des *Recherches* du Laboratoire.\nBonus pour développer certains *Projets NERON*.\n",
+  "desc": "Le biologiste est plus efficace dans les recherches du laboratoire.",
+  "effects": "",
+  "mush": "false",
+  "beta": "false"
+ },
+ {
+  "id": "CONCEPTOR",
+  "name": "Concepteur",
+  "retained": "true",
+  "footnotes": "+2 :pa_core: par jour points d'action *Projets NERON* . ( )\nBonus pour développer certains Projets NERON.",
+  "desc": "Le concepteur dispose de deux actions gratuites chaque jour pour utiliser le Cœur de NERON.",
+  "effects": "IncrMaxPA( CORE , 4 )\n+IncrPAPerDay( CORE , 2 )",
+  "mush": "false",
+  "beta": "false"
+ },
+ {
+  "id": "MEDIC",
+  "name": "Médecin",
+  "retained": "true",
+  "footnotes": "Les actions *Soins* font gagner 2 :hp: supplémentaires.\nPeut effectuer des *Opérations*.\nPeut lire les *propriétés des médicaments*.\n+*4% de bonus* sur chacune des *Recherches* du Laboratoire.",
+  "desc": "Le médecin possède une formation médicale, ce qui permet d'effectuer des soins rapides et précis. Il est également habilité à la chirurgie.",
+  "effects": "GrantAction( SURGERY )",
+  "mush": "false",
+  "beta": "false"
+ },
+ {
+  "id": "FIRST_AID",
+  "name": "Infirmier",
+  "retained": "true",
+  "footnotes": "+1 :pa_heal: chaque jour (point d'action *Soin gratuite*).\nPeut lire les *propriétés des médicaments.*",
+  "desc": "L'infirmier est toujours prêt à rendre service.",
+  "effects": "IncrMaxPA( HEAL , 2 )\n+IncrPAPerDay( HEAL , 1 )",
+  "mush": "false",
+  "beta": "false"
+ },
+ {
+  "id": "LEADERSHIP",
+  "name": "Leader",
+  "retained": "true",
+  "footnotes": "Accorde l'action *Discours enflammé* qui permet d'augmenter le Moral (:pmo:) des équipiers.",
+  "desc": "Un leader charismatique sait diriger efficacement l'équipage et monter le moral grâce à de furieux discours enflammés.",
+  "effects": "GrantAction( FIERY_SPEECH )",
+  "mush": "false",
+  "beta": "false"
+ },
+ {
+  "id": "STURDY",
+  "name": "Robuste",
+  "retained": "true",
+  "footnotes": "Vos attaques de corps-à-corps infligent *un point de dégât supplémentaire*.\n*Pas de pénalités* pour les objets lourds.\nDispose de la possibilité de *Mettre à la porte*.",
+  "desc": "Vous n'avez aucune pénalité lorsque vous transportez un objet lourd. Pratique aussi pour les combats au corps-à-corps.",
+  "effects": "If( Not( IsBerzerk) ,IncrCCDmg( 1 ))+GrantAction( PUT_THROUGH_DOOR )",
+  "mush": "false",
+  "beta": "false"
+ },
+ {
+  "id": "SPRINT",
+  "name": "Sprinter",
+  "retained": "true",
+  "footnotes": "Vous gagnez 2 :pm: de plus à chaque conversion :pa:-:pm: ( non cumulatif avec la *Trottinette*).\n+ 1 étape en exploration.",
+  "desc": "Le Sprinter débute toujours sa journée du bon pied ! Il profite de Points de Mouvement supplémentaires.",
+  "effects": "",
+  "mush": "false",
+  "beta": "false"
+ },
+ {
+  "id": "FIREMAN",
+  "name": "Pompier",
+  "retained": "true",
+  "footnotes": "L'action *Éteindre le feu* est toujours réussie.\nBonus pour développer certains Projets NERON.\nDonne l'action *Eteindre à la main*.",
+  "desc": "Le Pompier a une grande carrière qui lui permet de toujours réussir les actions avec l'extincteur...et il peut aussi s'en sortir sans extincteur !",
+  "effects": "GrantAction(EXTINGUISH)",
+  "mush": "false",
+  "beta": "false"
+ },
+ {
+  "id": "HUNT",
+  "name": "Traqueur",
+  "retained": "true",
+  "footnotes": "Accès complet aux *historiques de déplacement*.\nPermet d'*imprimer la liste secrète* sur la Tabulatrice.",
+  "desc": "Le Traqueur voit les provenances et les directions de chaque mouvement de l'équipage. Il peut en outre imprimer un résultat d'enquête grâce à la tabulatrice durant la partie. Il s'agit d'une liste de personnes contenant au moins un infecté Mush.\n",
+  "effects": "",
+  "mush": "false",
+  "beta": "false"
+ },
+ {
+  "id": "SURVIVAL",
+  "name": "Survie",
+  "retained": "true",
+  "footnotes": "Expédition : Chaque dégât est *réduit de un point*.\nExpédition : L'évènement *Provision* donne un steak de plus.\nExpédition : Dernier à mourir en cas d'évènement fatal.",
+  "desc": "L'expert en survie est un bon atout dans les missions d'exploration. Il peut se défendre plus efficacement contre les formes de vies extraterrestres et s'en sortira mieux que les autres.",
+  "effects": "",
+  "mush": "false",
+  "beta": "false"
+ },
+ {
+  "id": "UNCONCERNED",
+  "name": "Détaché",
+  "retained": "true",
+  "footnotes": "Vous ne *perdez pas de Points de Moral (:pmo:) lorsqu'un équipier meurt*.\nPas de risque de maladies psy si vous êtes témoin d' un décès.",
+  "desc": "Le détaché est froid, dur, imperméable. Il n'est pas affecté par la mort de ses camarades.",
+  "effects": "",
+  "mush": "false",
+  "beta": "false"
+ },
+ {
+  "id": "COMPUTER",
+  "name": "Informaticien",
+  "retained": "true",
+  "footnotes": "+2 :pa_comp: par jour points d'action *Informatique* . ( )\nBonus pour développer certains Projets NERON.",
+  "desc": "L'informaticien est à l'aise dès qu'il passe derrière un écran. Il manie à la perfection les interfaces des terminaux du nexus, de navigation, communication.",
+  "effects": "IncrMaxPA( COMP , 4 )\n+IncrPAPerDay( COMP , 2 )+MulActionOdd(HACK,2.0)",
+  "mush": "false",
+  "beta": "false"
+ },
+ {
+  "id": "RADIO_EXPERT",
+  "name": "Expert radio",
+  "retained": "true",
+  "footnotes": "*Double efficacité* pour établir le *contact* vers Sol.\nAméliore les tentatives de *contact* de Sol des équipiers dans la même pièce de 50%\nBonus pour développer certains *Projets NERON*.",
+  "desc": "L'expert radio peux décoder les enchevêtrements les plus complexes d'ondes spatiales afin de reconstituer ou envoyer des messages à l'autre bout de l'Univers.",
+  "effects": "",
+  "mush": "false",
+  "beta": "false"
+ },
+ {
+  "id": "DIPLOMACY",
+  "name": "Diplomatie",
+  "retained": "true",
+  "footnotes": "Elimine les chances de résultats négatifs lors des rencontres extra-terrestres.\nPeut déclarer un cesser le feu une fois par partie. Le cesser le feu dure *3* cycles.\nOuvre de nouvelles possibilités d'échange commerciaux.",
+  "desc": "Un bon diplomate sait comment entrer en contact avec les races extra-terrestres.",
+  "effects": "GrantAction( CEASE_FIRE )",
+  "mush": "false",
+  "beta": "false"
+ },
+ {
+  "id": "MANKIND_ONLY_HOPE",
+  "name": "Seul espoir de l'Humanité",
+  "retained": "true",
+  "footnotes": "La perte de moral journalière est réduite de 1 point.",
+  "desc": "Son système immunitaire hors-norme fait d' elle le seul espoir de l'humanité. Tant qu'elle restera en vie, nous aurons une petite chance de combattre l'invasion Mush.",
+  "effects": "",
+  "mush": "false",
+  "beta": "false"
+ },
+ {
+  "id": "SHRINK",
+  "name": "Psy",
+  "retained": "true",
+  "footnotes": "A chaque cycle, *1 Point de Moral (:pmo:) est régénéré* à chaque personnage allongé dans sa pièce.\n*Soigne les maladie Psy*.\nAccorde l'action *Réconforter *, laquelle améliore le moral.\nBonus pour développer certains *Projets NERON*.\n",
+  "desc": "Le psy occupe un poste de soutien psychologique. Il permet de garder le moral et soigne les maladies psychologiques.",
+  "effects": "GrantAction( KIND_WORDS )",
+  "mush": "false",
+  "beta": "false"
+ },
+ {
+  "id": "PERSISTENT",
+  "name": "Persévérant",
+  "retained": "true",
+  "footnotes": "En cas d'*échec* sur une action, le % de chance de réussite *augmente plus vite*.",
+  "desc": "Une fois qu'il a commencé sa tâche rien ne peut perturber le joueur perseverant.",
+  "effects": "",
+  "mush": "false",
+  "beta": "false"
+ },
+ {
+  "id": "ROBOTICS",
+  "name": "Robotique",
+  "retained": "true",
+  "footnotes": "Commence avec le *plan d'un drone*.\nPeut *améliorer les drones*.\nBonus pour développer certains *Projets NERON*.",
+  "desc": "L'expert en robotique peut créer et manipuler les drones comme bon lui semble.",
+  "effects": "os(GiveBlueprint( HELP_DRONE ))",
+  "mush": "false",
+  "beta": "false"
+ },
+ {
+  "id": "PARANOID",
+  "name": "Paranoïaque",
+  "retained": "true",
+  "footnotes": "Commence avec 2 *Caméras* supplémentaires.",
+  "desc": "Le paranoïaque pense que tous ses collègues sont potentiellement dangereux, il surveille toujours ses arrières grâce à ses caméras supplémentaires.",
+  "effects": "os(GiveItem(CAMERA))+os(GiveItem(CAMERA))",
+  "mush": "false",
+  "beta": "false"
+ },
+ {
+  "id": "CAFFEINOMANIAC",
+  "name": "Caféinomane",
+  "retained": "true",
+  "footnotes": "+2 :pa: lorsqu'il consomme un *Café*.\nBonus pour développer certains *Projets NERON*.",
+  "desc": "Le caféinomane travaille deux fois mieux que ses collègues tant qu'il a accès a la machine a café.",
+  "effects": "",
+  "mush": "false",
+  "beta": "false"
+ },
+ {
+  "id": "PHYSICIST",
+  "name": "Physicien",
+  "retained": "true",
+  "footnotes": "Accorde un :pa_pilgred: (point d'action de réparation de PILGRED) par jour.\nBonus pour développer certains Projets NERON.",
+  "desc": "Le physicien est un chercheur en physique de haut vol, sa compréhension des mécaniques quantiques et de l'essence même des cordes qui composent notre Univers sont son atout. Il possède des avantages pour réparer PILGRED.",
+  "effects": "IncrMaxPA( PILGRED , 2 )\n+IncrPAPerDay( PILGRED , 1 )",
+  "mush": "false",
+  "beta": "false"
+ },
+ {
+  "id": "APPRENTICE",
+  "name": "Apprentissage",
+  "retained": "true",
+  "footnotes": "Vous accorde l'action Apprentissage qui permet de copier la compétence d'un joueur présent dans la pièce, une fois par partie.",
+  "desc": "En observant attentivement les activités de ses professeurs, l'apprenti peut à terme reproduire leurs moindres faits et gestes.",
+  "effects": "GrantAction( LEARN )",
+  "mush": "false",
+  "beta": "false"
+ },
+ {
+  "id": "COLD_BLOOD",
+  "name": "Sang-froid",
+  "retained": "false",
+  "footnotes": "*Gagne 3 :pa:* à chaque fois qu'un équipier *décède*.",
+  "desc": "Dans l'espace, tout peut arriver. Savoir garder son calme est un atout.",
+  "effects": "",
+  "mush": "false",
+  "beta": "false"
+ },
+ {
+  "id": "OPTIMISTIC",
+  "name": "Optimiste",
+  "retained": "false",
+  "footnotes": "L'optimiste perd *un :pmo: de moins par jour*.",
+  "desc": "La fin de l'humanité... Il y a pire non ?",
+  "effects": "",
+  "mush": "false",
+  "beta": "false"
+ },
+ {
+  "id": "PREMONITION",
+  "name": "Presentiment",
+  "retained": "true",
+  "footnotes": "Vous pouvez *voir la dernière action* d'un autre coéquipier. Cette action vous fait perdre un :pmo:.",
+  "desc": "Votre intuition ne vous trompe jamais, vous pouvez revoir les dernières activité d'un équipier sous forme de flashback lumineux. C'est pratique mais ca fait mal a la tête.",
+  "effects": "",
+  "mush": "false",
+  "beta": "false"
+ },
+ {
+  "id": "LETHARGY",
+  "name": "Lethargie",
+  "retained": "false",
+  "footnotes": "Si vous restez allongé pendant *4 cycles* au moins vous gagnez *1 :pa: supplémentaire en vous levant.\nLa capacité maximum de votre jauge de :pa: est doublée.",
+  "desc": "Vous n'êtes reveillé que 4h par jours, mais en si peu de temps, vous accomplissez des miracles !",
+  "effects": "IncrMaxPA( GEN, 12 )",
+  "mush": "false",
+  "beta": "false"
+ },
+ {
+  "id": "WRESTLER",
+  "name": "Lutteur",
+  "retained": "true",
+  "footnotes": "Vos attaques de corps-à-corps infligent *2 dégats supplémentaires* si vous n'êtes pas muté.\nVous disposez de l'action *Mettre à la porte*.",
+  "desc": "Les german souplex du lutteur font trembler les vertèbres de tous ses adversaires.",
+  "effects": "If( Not( IsBerzerk) ,IncrCCDmg( 2 ))+GrantAction( PUT_THROUGH_DOOR )",
+  "mush": "false",
+  "beta": "false"
+ },
+ {
+  "id": "GREEN_THUMB",
+  "name": "Main Verte",
+  "retained": "true",
+  "footnotes": "Commence la partie avec *deux pots* supplémentaires.\nLes *greffes* de la Main Verte commencent avec un cycle de maturation court.",
+  "desc": "Les plantes poussent naturellement en votre présence, vous n'avez qu'a leur adresser un regard langoureux pour qu'elle produisent leur plus beaux fruits.",
+  "effects": "os( GiveItem( TREE_POT ) )+os( GiveItem( TREE_POT ) )",
+  "mush": "false",
+  "beta": "false"
+ },
+ {
+  "id": "MYCOLOGIST",
+  "name": "Mycologiste",
+  "retained": "false",
+  "footnotes": "Lorsque vous soignez un équipier, il perd automatiquement un spore.",
+  "desc": "Le mycologiste peut soigner les infections fongiques à l'*Infirmerie* ou a l'aide d'un *Medikit*.",
+  "effects": "",
+  "mush": "false",
+  "beta": "false"
+ },
+ {
+  "id": "OPPORTUNIST",
+  "name": "Arriviste",
+  "retained": "false",
+  "footnotes": "+5 :pa: lorsque vous *gagnez un titre* pour la première fois.",
+  "desc": "L'arriviste attend la première occasion pour monter dans la hierarchie du vaisseau, aucune opportunité ne lui échappe.",
+  "effects": "",
+  "mush": "false",
+  "beta": "false"
+ },
+ {
+  "id": "GENIUS",
+  "name": "Génie",
+  "retained": "true",
+  "footnotes": "Peut *achever une fois par partie une Recherche, un Projet, ou une Réparation*.",
+  "desc": "Lorsqu'il est divinement éclairé par la flamme de la connaissance le génie peut trouver la solution a n'importequel problème du Daedalus.",
+  "effects": "GrantAction( BECOME_GENIUS )",
+  "mush": "false",
+  "beta": "false"
+ },
+ {
+  "id": "OBSERVANT",
+  "name": "Observateur",
+  "retained": "true",
+  "footnotes": "L'action *Fouiller* vous coûte un :pa: de moins.\nVous avez *25% de chance de détecter les actions discrètes* de votre pièce.",
+  "desc": "Vous dépensez un PA de moins pour retrouver des objets cachés, Vous avez 25% de chance de détécter une action discrète dans votre pièce.",
+  "effects": "DecrActionCost( SEEK_HIDDEN, 1)",
+  "mush": "false",
+  "beta": "false"
+ },
+ {
+  "id": "TORTURER",
+  "name": "Bourreau",
+  "retained": "true",
+  "footnotes": "Libère l'action *Torturer*.",
+  "desc": "Le bourreau connait tous les circuits nerveux les plus sensibles pour arriver a faire parvenir son message le plus important... *Tu VAS parler.*",
+  "effects": "",
+  "mush": "false",
+  "beta": "false"
+ },
+ {
+  "id": "CRAZY_EYE",
+  "name": "Oeil fou",
+  "retained": "true",
+  "footnotes": "Toutes les actions aggressives vous ciblant coûtent 2 :pa: supplémentaires.",
+  "desc": "Il n'y a pas moyen de vous surprendre vous anticipez tous les mouvements de vos ennemis mais également ceux de vos prétendus alliés",
+  "effects": "",
+  "mush": "false",
+  "beta": "false"
+ },
+ {
+  "id": "LOGISTICS",
+  "name": "Logistique",
+  "retained": "true",
+  "footnotes": "A chaque cycle, *1 :pa: est distribué à un coéquipier* au hasard présent dans votre salle.",
+  "desc": "Vous veillez personnellement à l'organisation correcte du Daedalus afin de maximiser les possibilités de chacun de vos équipiers.",
+  "effects": "",
+  "mush": "false",
+  "beta": "false"
+ },
+ {
+  "id": "REBEL",
+  "name": "Rebelle",
+  "retained": "true",
+  "footnotes": "Chances *doublées* pour contacter les bases rebelles.",
+  "desc": "Vos liens avec la resistance anti-mush vous permettent de comprendre et décoder les signaux rebelles bien plus rapidement que n'importe quel autre expert radio.",
+  "effects": "",
+  "mush": "false",
+  "beta": "false"
+ },
+ {
+  "id": "ESCAPE",
+  "name": "Fuyant",
+  "retained": "true",
+  "footnotes": "Les attaques de corps-à-corps reçoivent une *pénalité de 25%*.\nVous pouvez vous déplacer quelque soit les *Gardiens* présents dans la pièce.",
+  "desc": "Vous êtes d'un naturel craintif et savez naturellement vous dérouber afin d'échapper a toutes les tentatives de contact physique.",
+  "effects": "",
+  "mush": "false",
+  "beta": "false"
+ },
+ {
+  "id": "PANIC",
+  "name": "Panique",
+  "retained": "false",
+  "footnotes": "Vous gagnez *1* :pa: et un *1* :pm: supplémentaire à chaque cycle tant que le *Mush contrôle 50% ou plus* de l'équipage.",
+  "desc": "C'est lorsque tout va mal que vous révelez votre plein potentiel : Crier très fort et courir dans tous les sens.",
+  "effects": "",
+  "mush": "false",
+  "beta": "false"
+ },
+ {
+  "id": "NERON_ONLY_FRIEND",
+  "name": "Seule amie de NERON",
+  "retained": "true",
+  "footnotes": "Les gains de *chaque recherche du NEXUS* sont *maximisés* pour tous.",
+  "desc": "Lorsque vous êtes présente dans le vaisseau, NERON est apaisé, ses routines tournent sans erreurs et ses performances s'en trouvent grandement améliorées",
+  "effects": "",
+  "mush": "false",
+  "beta": "false"
+ },
+ {
+  "id": "STICKLER",
+  "name": "Méticuleuse",
+  "retained": "true",
+  "footnotes": "Vous ne vous salissez jamais accidentellement en effectuant des actions sur le vaisseau.",
+  "desc": "Vous travaillez propre, très propre, toujours plus propre, encore plus propre. Vous êtes proprement névrosé de la propreté mais ça a ses bons côtés.",
+  "effects": "",
+  "mush": "false",
+  "beta": "false"
+ },
+ {
+  "id": "PYROMANE",
+  "name": "Pyromane",
+  "retained": "true",
+  "footnotes": "Pour *4* :pa: vous pouvez déclencher un *Incendie* dans une salle.",
+  "desc": "Le pyromane peut injecter des microspores explosifs dans un support inflammable afin de déclencher une combustion violente susceptible d'endommager à terme le vaisseau",
+  "effects": "GrantAction(SPREAD_FIRE)",
+  "mush": "true",
+  "beta": "false"
+ },
+ {
+  "id": "TOUGH",
+  "name": "Dur-à-Cuir",
+  "retained": "true",
+  "footnotes": "Chaque *dégât de combat* qui vous est infligé est *réduit d'un point*.",
+  "desc": "Votre épiderme est particulièrement coriace. Le plastenite sans la transpiration.",
+  "effects": "",
+  "mush": "true",
+  "beta": "false"
+ },
+ {
+  "id": "FERTILE",
+  "name": "Fertile",
+  "retained": "true",
+  "footnotes": "Chaque jour, vous pouvez générer un spore *gratuitement*.",
+  "desc": "Votre production de spore est remarquable pour le genre. Spore un jour, spore toujours.",
+  "effects": "",
+  "mush": "true",
+  "beta": "false"
+ },
+ {
+  "id": "NINJA",
+  "name": "Ninja",
+  "retained": "true",
+  "footnotes": "Vos attaques de *corps-à-corps* deviennent des actions *anonymes*.",
+  "desc": "Grâce à votre myéline survoltée, votre vitesse de déplacement est incroyable.",
+  "effects": "",
+  "mush": "true",
+  "beta": "false"
+ },
+ {
+  "id": "SAPPER",
+  "name": "Saboteur",
+  "retained": "true",
+  "footnotes": "Vos chances de succès pour le *Sabotage* d'équipement sont *doublées*.",
+  "desc": "Votre salive produit un acide liquide léger suffisant pour court circuiter à peu près n'importe quoi...",
+  "effects": "MulActionOdd( SABOTAGE, 2.0)",
+  "mush": "true",
+  "beta": "false"
+ },
+ {
+  "id": "NIMBLE_FINGERS",
+  "name": "Doigt De Fée",
+  "retained": "true",
+  "footnotes": "Vos actions *monter* et *démonter* sont *discrètes* sur les Caméras.",
+  "desc": "Avec un petit peu d'aide de vos rhizome vous pouvez faire des choses merveilleuses. Comme manipuler des Caméras par exemple...",
+  "effects": "",
+  "mush": "true",
+  "beta": "false"
+ },
+ {
+  "id": "WATER_RESISTANT",
+  "name": "Résistance à l'Eau",
+  "retained": "true",
+  "footnotes": "*Se doucher* ne vous fait perdre *aucun* :hp:.",
+  "desc": "La recherche fongique a mis au point un nouveau mucus parfait pour donner le change.",
+  "effects": "",
+  "mush": "true",
+  "beta": "false"
+ },
+ {
+  "id": "TRAITOR",
+  "name": "Traître",
+  "retained": "true",
+  "footnotes": "Probabilités de *résultats négatifs dans les expéditions* auxquelles vous participez sont *multipliées par 2*.",
+  "desc": "Vous avez développé un sens pour attirer les ennuis. Tiens un mankarog... Et si on le chatouillait pour voir...",
+  "effects": "",
+  "mush": "true",
+  "beta": "false"
+ },
+ {
+  "id": "DOORMAN",
+  "name": "Portier",
+  "retained": "true",
+  "footnotes": "Chaque jour, vous pouvez *Saboter* une *Porte* gratuitement.",
+  "desc": "Certaines coulemelles rampantes peuvent imiter cet effet désagréable du riz soufflé proactif. Et ça tombe bien le Mush vous a émis leur génotype.",
+  "effects": "GrantAction( DOOR_SABOTAGE )",
+  "mush": "true",
+  "beta": "false"
+ },
+ {
+  "id": "NERON_ACCESS",
+  "name": "Conspirateur",
+  "retained": "true",
+  "footnotes": "Vous pouvez accéder au *BIOS* de NERON même si vous n'êtes pas *Administrateur*.",
+  "desc": "Les ambiguité dans le code de NERON envers le Mush sont si délectables parfois...",
+  "effects": "",
+  "mush": "true",
+  "beta": "false"
+ },
+ {
+  "id": "FUNGUS_COOK",
+  "name": "Cuisine Fongique",
+  "retained": "true",
+  "footnotes": "Vous pouvez créer une *Ration Piégée* en mélangeant un *Spore* et une *Ration* pour *1* :pa:.",
+  "desc": "Un grand classique de la gastonomie moderne sur Sol.",
+  "effects": "GrantAction( MIX_RATION_SPORE )",
+  "mush": "true",
+  "beta": "false"
+ },
+ {
+  "id": "RADIO_PIRACY",
+  "name": "Piratage radio",
+  "retained": "true",
+  "footnotes": "Pour *3* :pa: vous pouvez brouiller les communications d'un joueur possédant un *Talky-Walky*. Ceci *casse* son *Talky-Walky* et vous permet d'écrire *à sa place* jusqu'à ce qu'il ce soit exprimé à nouveau.",
+  "desc": "Ce moyen de communication préhistorique est surfait. Dont acte.",
+  "effects": "GrantAction(SCREW_TALKY)",
+  "mush": "true",
+  "beta": "false"
+ },
+ {
+  "id": "NIGHTMARE",
+  "name": "Cauchemardesque",
+  "retained": "true",
+  "footnotes": "Pour *0* :pa:, vous pouvez *déclencher des cauchemards* chez un joueur allongé. Celui-ci ne bénéficiera plus des bonus du sommeil.",
+  "desc": "Les lépiotes du Mush peuvent remodeler les ondes de ces pauvres humains. Avec quelques modification, elles peuvent empêcher un humain de se reposer.",
+  "effects": "GrantAction( GIVE_NIGHTMARE )",
+  "mush": "true",
+  "beta": "false"
+ },
+ {
+  "id": "DISHEARTENING_CONTACT",
+  "name": "Contact Déprimant",
+  "retained": "true",
+  "footnotes": "Pour *2* :pa: vous pouvez faire perdre *2* :pmo: à un équipier.",
+  "desc": "Les phéromones Mush ne permettent pas de communication directes mais leur saturation peut les déstabiliser. Et vous savez vous en servir.",
+  "effects": "GrantAction( DEPRESS)",
+  "mush": "true",
+  "beta": "false"
+ },
+ {
+  "id": "TRANSFERT",
+  "name": "Transfert",
+  "retained": "true",
+  "footnotes": "*Unique* : Vous pouvez vous *glisser dans la peau d'un autre joueur humain*. Celui-ci doit être *infecté au moins une fois*. Il se retrouvera alors dans votre corps... et risque d'alerter ses congénères.\n*Les scores de :triumph: seront échangés*.",
+  "desc": "Le Mush vous a transmis le génotype d'une de nos armes de transmission massive. Servez vous en sans parcimonie.",
+  "effects": "GrantAction( EXCHANGE_BODY )",
+  "mush": "true",
+  "beta": "false"
+ },
+ {
+  "id": "BACTERIAL_CONTACT",
+  "name": "Bacterophilie",
+  "retained": "true",
+  "footnotes": "Pour 1 :pa: vous pouvez donner une *maladie* à un équipier. Ceci est une action *furtive*.",
+  "desc": "Vos bactéries plantaires peuvent avoir des usages particulièrement virulents.",
+  "effects": "GrantAction( GIVE_DISEASE )",
+  "mush": "true",
+  "beta": "false"
+ },
+ {
+  "id": "INFECTIOUS_AGENT",
+  "name": "Infecteur",
+  "retained": "true",
+  "footnotes": "Vous permets de *Poinçonner* une de fois de plus chaque jour.",
+  "desc": "Vous faites des trous. Des petits trous. Beaucoup de petits trous.",
+  "effects": "",
+  "mush": "true",
+  "beta": "false"
+ },
+ {
+  "id": "PHAGOCYTOSIS",
+  "name": "Phagocytose",
+  "retained": "true",
+  "footnotes": "Pour *0* :pa:, vous pouvez dévorer un *Spore* ce qui vous rend *4* :pa: et *4* :pv:.",
+  "desc": "En cas de coup dur vous avez LA solution.",
+  "effects": "GrantAction(EAT_SPORE)",
+  "mush": "true",
+  "beta": "false"
+ },
+ {
+  "id": "TRAPPER",
+  "name": "Piégeur",
+  "retained": "true",
+  "footnotes": "Pour *1* :pa:, vous pouvez piéger une *Pièce* avec un *Spore*. Si quelqu'un manipule un *objet* ou un *équipement* de la pièce, elle sera *Infectée*. Si c'est un Mush (ou vous-même), le spore est perdu.",
+  "desc": "Surprise !",
+  "effects": "GrantAction( TRAP_CLOSET)",
+  "mush": "true",
+  "beta": "false"
+ },
+ {
+  "id": "MYCELLIUM_SPIRIT",
+  "name": "Esprit du Mycéllium",
+  "retained": "true",
+  "footnotes": "Tant que vous êtes en vie, les Mush peuvent *produirent 1 Spore de plus par jour*.",
+  "desc": "Votre mission est sacré. Le Mush vous a choisi comme relais majeur fongique trans dimensionnel.",
+  "effects": "",
+  "mush": "true",
+  "beta": "false"
+ },
+ {
+  "id": "ANONYMOUS",
+  "name": "Anonyme",
+  "retained": "true",
+  "footnotes": "Vous apparaissez comme un Humain dans la barre d'équipage sauf à votre mort.",
+  "desc": "Vos mycotoxines sont indétectables dans l'atmosphère. Vous êtes le prédateur après tout !",
+  "effects": "",
+  "mush": "true",
+  "beta": "false"
+ },
+ {
+  "id": "MASSGGEDON",
+  "name": "Moisification de Masse",
+  "retained": "true",
+  "footnotes": "*Unique* : Pour *2* :pa: et 2 spores, vous pouvez enlevez 2 :pa: à chaque membre d'équipage et provoquer un état de saleté.",
+  "desc": "Certains péniceliums sont d'un virulence extrême. L'effet est de courte durée mais très efficace.",
+  "effects": "GrantAction(MASS_GGEDON)",
+  "mush": "true",
+  "beta": "false"
+ },
+ {
+  "id": "NERONDEPRESS",
+  "name": "Dépression de NERON",
+  "retained": "true",
+  "footnotes": "Pour *3* :pa:, Vous pouvez embrouiller NERON au prochain cycle ce qui modifie aléatoirement ses réglages.\nNe fonctionne pas sur l'entrave DMZ si elle est bloquée.",
+  "desc": "Quand NERON se sent mal, c'est tout le Daedalus qui vomit.",
+  "effects": "GrantAction(NERON_DEPRESS)",
+  "mush": "true",
+  "beta": "false"
+ },
+ {
+  "id": "SLIMETRAP",
+  "name": "Piège Moisi",
+  "retained": "true",
+  "footnotes": "Pour *1* :pa:, le joueur ciblé deviendra sale dans 1 à 4 cycles.",
+  "desc": "Ces foutues champignons se reproduisent vite, trop vite, très vite...Ils sont partout!!!",
+  "effects": "GrantAction(SLIME_TRAP)",
+  "mush": "true",
+  "beta": "false"
+ },
+ {
+  "id": "DAUNTING",
+  "name": "Intimidant",
+  "retained": "true",
+  "footnotes": "*Journalier*. Pour *1* :pa:, Permet d'intimider un joueur. Celui ci perd 2 :pa: et 4 :pm:.",
+  "desc": "Parfois la proie s'échappe seulement parce qu'elle en a l'occasion.",
+  "effects": "GrantAction(DAUNT)",
+  "mush": "false",
+  "beta": "false"
+ },
+ {
+  "id": "JUGE",
+  "name": "Persécuteur",
+  "retained": "true",
+  "footnotes": "Pour *1* :pa:, Permet de jeter l'anathème sur un co-équipier.\nCe co-équipier gagne le statut Paria. Le Paria perd 20% de réussite à ses actions.\nSes actions furtives deviennent discrètes.\nLe status Paria dure tant que le juge est en vie.\nSi le Paria meurt et est Mush, le persécuteur gagne 8 :triumph: sinon il en perd 8 :triumph:.",
+  "desc": "Certaines remarques biens senties peuvent avoir des répercussions inattendues.",
+  "effects": "GrantAction(ANATHEM)",
+  "mush": "false",
+  "beta": "false"
+ },
+ {
+  "id": "CREATIVE",
+  "name": "Créatif",
+  "retained": "true",
+  "footnotes": "Chacun de vos échecs sur une action payante a 50% de chance de vous rendre *1* :pa:.",
+  "desc": "Parfois il faut savoir renverser le problème.",
+  "effects": "",
+  "mush": "false",
+  "beta": "false"
+ },
+ {
+  "id": "FAST_BACKWARD",
+  "name": "Retour arrière",
+  "retained": "true",
+  "footnotes": "Pour 2 :pa:, en expédition, vous permets de rentrer sur le Daedalus en urgence.",
+  "desc": "Il faut savoir changer de certitudes.",
+  "effects": "GrantAction( RUN_HOME )",
+  "mush": "false",
+  "beta": "false"
+ },
+ {
+  "id": "ABNEGATION",
+  "name": "Abnégation",
+  "retained": "true",
+  "footnotes": "Si votre moral tombe à 0, vous ne mourrez pas, mais vous perdez *1* :pv: par cycle.",
+  "desc": "Certaines personne particulièrement résilientes peuvent souffrir l'insupportable. Mais le prix est grand.",
+  "effects": "",
+  "mush": "false",
+  "beta": "false"
+ },
+ {
+  "id": "ANTIC_PERFUME",
+  "name": "Parfum Antique",
+  "retained": "true",
+  "footnotes": "A chaque douche, vous gagnez une immunité de 2 cycles contre les infections :mush:.",
+  "desc": "Ah cha il chavait faire de frai parfums chez fraigonard en mille neuf chent quatreving douche...",
+  "effects": "",
+  "mush": "false",
+  "beta": "false"
+ },
+ {
+  "id": "METALICISTE",
+  "name": "Métalo",
+  "retained": "true",
+  "footnotes": "*Jounalier* Si vous vous trouvez dans un *Stockage*, Pour 0 :pa:, vous avez une chance de trouver des débris voir mieux.",
+  "desc": "Vous, on peut dire que vous êtes vraiment quelqu'un de productif !",
+  "effects": "GrantAction(GEN_METAL)",
+  "mush": "false",
+  "beta": "false"
+ },
+ {
+  "id": "SPACE_TACTICS",
+  "name": "Stratéguerre",
+  "retained": "true",
+  "footnotes": "50% de chance de réduire chaque vague de hunter de 33%.",
+  "desc": "A un certain degré de mégalomanie, on peut appeler ça du talent. Vous êtes expert en bataille spatiale mais tout le monde vous prend pour un fou.",
+  "effects": "",
+  "mush": "false",
+  "beta": "false"
+ },
+ {
+  "id": "FRUGIVORE",
+  "name": "Frugivore",
+  "retained": "false",
+  "footnotes": "Vous gagnez *2* :pa:supplémentaire quand vous mangez des fruits aliens, *1* :pa: pour les bananes.",
+  "desc": "Vous terrorisez les fruits, vous les adorez, c'est votre drogue. Quand vous croisez le regard d'un fruit, il blét instantanément.",
+  "effects": "",
+  "mush": "false",
+  "beta": "false"
+ },
+ {
+  "id": "DEVOTED",
+  "name": "Dévotion",
+  "retained": "true",
+  "footnotes": "Vous gagnez *3* :pa: de plus quand vous acceptez une mission.",
+  "desc": "Dans le feu de l'action, on peut compter sur vous.",
+  "effects": "",
+  "mush": "false",
+  "beta": "false"
+ },
+ {
+  "id": "SKILFUL",
+  "name": "Polyvalent",
+  "retained": "true",
+  "footnotes": "Vous êtes considéré comme *Botaniste*, *Diplomate* et *Biologiste* mais ne disposez pas de leur actions et ressources.",
+  "desc": "Vous avez des connaissances...ça peut toujours servir.",
+  "effects": "",
+  "mush": "false",
+  "beta": "false"
+ },
+ {
+  "id": "OISIF",
+  "name": "Rêveur",
+  "retained": "true",
+  "footnotes": "Si vous n'avez rien dans votre inventaire à la fin du cycle, vous gagnez 1 :pa: en plus.",
+  "desc": "Les objets matériel sont une distraction",
+  "effects": "",
+  "mush": "false",
+  "beta": "false"
+ },
+ {
+  "id": "EXPERT",
+  "name": "Expert",
+  "retained": "true",
+  "footnotes": "Vos réussites aux actions sont améliorées de 20% mais les blessures et les salissures le sont aussi.",
+  "desc": "Vos compétences sont incroyable mais vous travaillez sans vraiment vous préoccuper de certaines conséquences...",
+  "effects": "",
+  "mush": "false",
+  "beta": "false"
+ },
+ {
+  "id": "CONFIDENT",
+  "name": "Confident",
+  "retained": "true",
+  "footnotes": "Une fois par jour, les autres joueurs peuvent se confier à vous, en faisant cela, ils vous révèlent leurs X dernières actions où X est votre quantité de :pmo: et gagnent ainsi 2 :pmo:.",
+  "desc": "Discret et fidèle, vous attirez la sympathie et portez un peu la misère du monde quand même...",
+  "effects": "GrantAction( CHITCHAT )",
+  "mush": "false",
+  "beta": "false"
+ },
+ {
+  "id": "STRONG_SKIN",
+  "name": "Hygiéniste",
+  "retained": "true",
+  "footnotes": "Vous avez 50% de chance d'être insensible aux contaminations par le Mush.\nVous avez 50% de résistance aux maladies physiques.",
+  "desc": "Certes une brute mais à cheval sur la propreté quand même. Touche-moi pas tu me salis !",
+  "effects": "",
+  "mush": "false",
+  "beta": "false"
+ },
+ {
+  "id": "MOTIVATOR",
+  "name": "Motivateur",
+  "retained": "true",
+  "footnotes": "Pour *2* :pa:, vous pouvez faire un *discours barbant* qui donne 3 :pm: à chaque personne dans la pièce.",
+  "desc": "Bla bla bla...Pitiéééééé",
+  "effects": "GrantAction( BORING_SPEECH )",
+  "mush": "false",
+  "beta": "false"
+ },
+ {
+  "id": "ELECTRO_SLIME",
+  "name": "Gelée Verte",
+  "retained": "true",
+  "footnotes": "Pour *1* :pa:, vous pouvez provoquer la casse d' un objet electroniques. Celui-ci mettra plusieurs cycles avant de se dégrader.",
+  "desc": "Vous produisez une gélée verte acide étrange avec vos aisselles...",
+  "effects": "GrantAction( SLIME_OBJECT )",
+  "mush": "true",
+  "beta": "false"
+ },
+ {
+  "id": "DEFACER",
+  "name": "Dialoguiste",
+  "retained": "true",
+  "footnotes": "Une fois par jour. Pour *2* :pa:, vous pouvez effacer tous les logs d'une salle. L'enregistrement des logs se fera à nouveau à partir du prochain cycle.",
+  "desc": "Votre ADN vous permets de modifier certaines séquences de données périphériques.Plein de potentiel !",
+  "effects": "GrantAction( DELOG )",
+  "mush": "true",
+  "beta": "false"
+ },
+ {
+  "id": "GUNNER",
+  "name": "Canonnier",
+  "retained": "true",
+  "footnotes": "Double les dommages lors de vos tirs aux Tourelles.\nDouble vos chances de toucher aux Tourelles de 50%.",
+  "desc": "Quelqu'un va enfin leur montrer à quoi ca sert.",
+  "effects": "MulActionOdd( TURRET_ATTACK, 2.0)",
+  "mush": "false",
+  "beta": "false"
+ },
+ {
+  "id": "POLYMATH",
+  "name": "Polymathe",
+  "retained": "true",
+  "footnotes": "+2 canaux privés accessibles.\n+1 :pa_comp: par jour.\n-10% à toutes vos tentatives d'action.",
+  "desc": "La connaissance est en mouvement, l'état n'est déjà plus.",
+  "effects": "IncrMaxPA( COMP, 2 )\n+IncrPAPerDay( COMP , 1 )\n",
+  "mush": "false",
+  "beta": "false"
+ },
+ {
+  "id": "POLITICIAN",
+  "name": "Politicien",
+  "retained": "true",
+  "footnotes": "*Unique* : Pour *3* :pa: vous pouvez déclarez un Putsch au Nexus. Au prochain cycle, NERON vous considerera comme le leader du Daedalus.",
+  "desc": "Ils sont avec vous ou contre vous !",
+  "effects": "GrantAction(PUTSCH)",
+  "mush": "false",
+  "beta": "false"
+ },
+ {
+  "id": "$EOF",
+  "name": "",
+  "retained": "",
+  "footnotes": "",
+  "desc": "",
+  "effects": "",
+  "mush": "",
+  "beta": ""
+ },
+ {
+  "id": "TURRET_MAN",
+  "name": "HommeTourelle",
+  "retained": "true",
+  "footnotes": "",
+  "desc": "Vous savez vraiment manier les tourelle à la perfection",
+  "effects": "",
+  "mush": "",
+  "beta": ""
+ },
+ {
+  "id": "DECHARISMA",
+  "name": "Décharismatique",
+  "retained": "true",
+  "footnotes": "A chaque fin de cycle, les équipier dans votre pièce gagne 5 :pm: mais perdent 1 :pa:",
+  "desc": "Qu'est ce qu'il peut en causer celui là...quel fatigue...",
+  "effects": "",
+  "mush": "false",
+  "beta": "true"
+ },
+ {
+  "id": "SEDUCER",
+  "name": "Débutant",
+  "retained": "true",
+  "footnotes": "Pour votre première fois, *Le Faire* vous restitue 50% de vos :pa:, :pmo: et :pm:.",
+  "desc": "YES, j'ai réussi ! Enfin !",
+  "effects": ".",
+  "mush": "false",
+  "beta": "true"
+ },
+ {
+  "id": "",
+  "name": "",
+  "retained": "",
+  "footnotes": "",
+  "desc": "",
+  "effects": "",
+  "mush": "",
+  "beta": ""
+ },
+ {
+  "id": "",
+  "name": "",
+  "retained": "",
+  "footnotes": "",
+  "desc": "",
+  "effects": "",
+  "mush": "",
+  "beta": ""
+ },
+ {
+  "id": "DEPRECATED",
+  "name": "",
+  "retained": "",
+  "footnotes": "",
+  "desc": "",
+  "effects": "",
+  "mush": "",
+  "beta": ""
+ },
+ {
+  "id": "HYPERACTIVE",
+  "name": "Hyperactif",
+  "retained": "",
+  "footnotes": "Vous gagnez *2 :pa: supplémentaires à minuit*.\nVous *ne pouvez pas vous allonger*.",
+  "desc": "Pas le temps de se reposer, l'hyperactif a toujours quelquechose a faire sur le vaisseau.",
+  "effects": "IncrPAPerDay( GEN , 2 )",
+  "mush": "false",
+  "beta": ""
+ },
+ {
+  "id": "",
+  "name": "",
+  "retained": "",
+  "footnotes": "",
+  "desc": "",
+  "effects": "",
+  "mush": "",
+  "beta": ""
+ },
+ {
+  "id": "HANDY_MAN",
+  "name": "Bricoleur",
+  "retained": "",
+  "footnotes": "",
+  "desc": "Vous commencez avec le plan de la mini-bombe",
+  "effects": "",
+  "mush": "",
+  "beta": ""
+ },
+ {
+  "id": "IRON_STOMACH",
+  "name": "Estomac en acier",
+  "retained": "",
+  "footnotes": "2PA : 2-5 Dégat sur la coque",
+  "desc": "Chaque jour vous pouvez avaler une capsule d'essence",
+  "effects": "",
+  "mush": "",
+  "beta": ""
+ },
+ {
+  "id": "ASSIMILATION",
+  "name": "Assimilation",
+  "retained": "",
+  "footnotes": "",
+  "desc": "Pour 3PA vous pouvez manger une plante et récuperer 4 PV ( action discrète )",
+  "effects": "",
+  "mush": "",
+  "beta": ""
+ },
+ {
+  "id": "SLIME",
+  "name": "Slime",
+  "retained": "",
+  "footnotes": "",
+  "desc": "Vous pouvez vous déplacer même lorsque vous n'avez plus de mouvement, mais vous devenez sale et vous laissez une marque de slime au sol.",
+  "effects": "",
+  "mush": "",
+  "beta": ""
+ },
+ {
+  "id": "SACRIFICE",
+  "name": "Sens du sacrifice",
+  "retained": "",
+  "footnotes": "",
+  "desc": "Le sens du sacrifice permet de toucher un point de gloire par jour de survie du Dedaelus post-mortem... sauf si il est déjà infecté à sa mort.",
+  "effects": "",
+  "mush": "false",
+  "beta": ""
+ },
+ {
+  "id": "VACCIN_CONCEPTOR",
+  "name": "concepteur du vaccin antifongique",
+  "retained": "",
+  "footnotes": "",
+  "desc": "Commence la partie avec deux vaccins anti-fongique. Chacun d'entre eux immunise son propriétaire au mush. Un mush ne peut pas utiliser le vaccin",
+  "effects": "",
+  "mush": "",
+  "beta": ""
+ },
+ {
+  "id": "MACGYVER",
+  "name": "ibidem",
+  "retained": "",
+  "footnotes": "",
+  "desc": "Vous pouvez vous déplacer même lorsque vous n'avez plus de mouvement, mais vous devenez sale et vous laissé une marque de slime au sol.",
+  "effects": "",
+  "mush": "",
+  "beta": ""
+ },
+ {
+  "id": "PLEASANT_COMPANY",
+  "name": "Agréable compagnie",
+  "retained": "",
+  "footnotes": "",
+  "desc": "",
+  "effects": "",
+  "mush": "",
+  "beta": ""
+ },
+ {
+  "id": "APPRENTICE",
+  "name": "Apprenti",
+  "retained": "",
+  "footnotes": "Vous pouvez une fois par partie copier la compétence d'un joueur présent dans la pièce.",
+  "desc": "",
+  "effects": "",
+  "mush": "",
+  "beta": ""
+ },
+ {
+  "id": "",
+  "name": "",
+  "retained": "",
+  "footnotes": "",
+  "desc": "",
+  "effects": "",
+  "mush": "",
+  "beta": ""
+ },
+ {
+  "id": "GENERAL",
+  "name": "",
+  "retained": "",
+  "footnotes": "",
+  "desc": "Vos participations pour une recherche sont comptées en négatif",
+  "effects": "",
+  "mush": "",
+  "beta": ""
+ },
+ {
+  "id": "GENERAL",
+  "name": "",
+  "retained": "",
+  "footnotes": "",
+  "desc": "Vous pouvez saboter des équipement",
+  "effects": "",
+  "mush": "",
+  "beta": ""
+ },
+ {
+  "id": "MISANDRIE",
+  "name": "misandrie",
+  "retained": "",
+  "footnotes": "Perd 1 pt moral par cycle si homme dans la même salle. Gagne x2 pt de moral en le faisant.",
+  "desc": "vous ne supportez pas les hommes, être en présence d'un homme dans un dortoir vous fait perdre 1 point de morale, en revanche, le faire avec une femme vous donne 2 fois plus de moral.",
+  "effects": "",
+  "mush": "",
+  "beta": ""
+ },
+ {
+  "id": "MANIACO_DEPRESSIF",
+  "name": "",
+  "retained": "",
+  "footnotes": "40% de +3 Pa ou de -1PA a chaque cycle",
+  "desc": "",
+  "effects": "",
+  "mush": "",
+  "beta": ""
+ },
+ {
+  "id": "",
+  "name": "",
+  "retained": "",
+  "footnotes": "",
+  "desc": "",
+  "effects": "",
+  "mush": "",
+  "beta": ""
+ },
+ {
+  "id": "INTIMIDANT",
+  "name": "Intimidant",
+  "retained": "",
+  "footnotes": "Pour 1 PA, Permet d'intimider un joueur. Celui ci perd 2 PA. (une fois par jour ) .",
+  "desc": "chao",
+  "effects": "",
+  "mush": "",
+  "beta": ""
+ },
+ {
+  "id": "JUGE",
+  "name": "Juge",
+  "retained": "",
+  "footnotes": "Permer d'attribuer le statut paria à un joueur. Les joueurs perdent 20% de réussite à chaque action. Les actions furtives des Mush deviennent discrètes. Le status paria dure tant que le juge est en vie. Si le paria meurt et est Mush, le juge gagne 8 Triomphe sinon il en perd 8. Il ne peut y avoir qu'un seul paria à bord.",
+  "desc": "gioele",
+  "effects": "",
+  "mush": "",
+  "beta": ""
+ },
+ {
+  "id": "",
+  "name": "",
+  "retained": "",
+  "footnotes": "",
+  "desc": "",
+  "effects": "",
+  "mush": "",
+  "beta": ""
+ },
+ {
+  "id": "NOT_INTERESTED",
+  "name": "Désinteressé",
+  "retained": "",
+  "footnotes": "A partir de ce choix, vous ne gagnez plus de Triomphe, mais vous bénéficiez de +2 PA par jour.",
+  "desc": "",
+  "effects": "",
+  "mush": "",
+  "beta": ""
+ },
+ {
+  "id": "CREATIF",
+  "name": "Creative",
+  "retained": "",
+  "footnotes": "A chaque échec, 25% de chance de gagner un PA.",
+  "desc": "Attention aux loop !",
+  "effects": "",
+  "mush": "",
+  "beta": ""
+ },
+ {
+  "id": "FAST_BACKWARD",
+  "name": "",
+  "retained": "",
+  "footnotes": "Unique vous pouvez interrompre une expedition avant sa fin",
+  "desc": "hua ou roland ou ian",
+  "effects": "",
+  "mush": "",
+  "beta": ""
+ },
+ {
+  "id": "ABNEGATION",
+  "name": "",
+  "retained": "",
+  "footnotes": "Si votre moral tombe à 0, vous ne mourrez pas, mais vous perdez 1 :pv: par cycle.",
+  "desc": "",
+  "effects": "",
+  "mush": "",
+  "beta": ""
+ },
+ {
+  "id": "FATAL_PERFUME",
+  "name": "",
+  "retained": "",
+  "footnotes": "A chaque douche, vous gagnez 2 cycles d'immunité contre les infections du Mush.",
+  "desc": "frieda",
+  "effects": "",
+  "mush": "",
+  "beta": ""
+ },
+ {
+  "id": "METALICISTE",
+  "name": "",
+  "retained": "",
+  "footnotes": "Journalier Pour 1 PA vous avez une chance de créer un metal scraps",
+  "desc": "",
+  "effects": "",
+  "mush": "",
+  "beta": ""
+ },
+ {
+  "id": "SPACE_TACTICS",
+  "name": "",
+  "retained": "",
+  "footnotes": "Vous êtes expert en bataille spatiale. 50% une chance de réduire chaque vague de hunter de 33%.",
+  "desc": "notifié le grace A, jin_su",
+  "effects": "",
+  "mush": "",
+  "beta": ""
+ },
+ {
+  "id": "MACGYVER",
+  "name": "",
+  "retained": "",
+  "footnotes": "Vous réduisez l'intensité du délabrement du Daedalus de 15%.",
+  "desc": "-> Projet",
+  "effects": "",
+  "mush": "",
+  "beta": ""
+ },
+ {
+  "id": "STRUGGLER",
+  "name": "Increvable",
+  "retained": "",
+  "footnotes": "Lors des situations complexes, vous trouvez de nouvelles ressources. Si la somme de fuel et d'o2 passe en dessous de 8, vous gagnez 1 PA par cycle.",
+  "desc": "",
+  "effects": "",
+  "mush": "",
+  "beta": ""
+ },
+ {
+  "id": "",
+  "name": "",
+  "retained": "",
+  "footnotes": "a chaque cycle, 15% de chance d'economiser du o2",
+  "desc": "-> Projet",
+  "effects": "",
+  "mush": "",
+  "beta": ""
+ },
+ {
+  "id": "",
+  "name": "",
+  "retained": "",
+  "footnotes": "Si la moitié de l'équipage a été décimé, vous gagnez 1 PA par cycle.",
+  "desc": "",
+  "effects": "",
+  "mush": "",
+  "beta": ""
+ },
+ {
+  "id": "FRUGIVORE",
+  "name": "",
+  "retained": "",
+  "footnotes": "Vous gagnez *2* :pa:supplémentaire quand vous mangez des fruits aliens, *1* :pa: pour les bananes.",
+  "desc": "ian",
+  "effects": "",
+  "mush": "",
+  "beta": ""
+ },
+ {
+  "id": "",
+  "name": "Happy hours",
+  "retained": "",
+  "footnotes": "améliore la cuisine a chaque cycle vous avez x * 5 % de chance de gagner 1 xp par cycle * 2 au cycle 6",
+  "desc": "-> projet Distrib",
+  "effects": "",
+  "mush": "",
+  "beta": ""
+ },
+ {
+  "id": "LONG_ RUNNER",
+  "name": "",
+  "retained": "",
+  "footnotes": "Au delà du jour 7, vous gagnez + 2 PA par jour.",
+  "desc": "",
+  "effects": "",
+  "mush": "",
+  "beta": ""
+ },
+ {
+  "id": "SPACE_TACTICS",
+  "name": "",
+  "retained": "",
+  "footnotes": "Vous êtes expert en bataille spatiale. Toutes les tourelle gagne deux charges.",
+  "desc": "",
+  "effects": "",
+  "mush": "",
+  "beta": ""
+ },
+ {
+  "id": "SPACE_TACTICS_2",
+  "name": "",
+  "retained": "",
+  "footnotes": "Réduits l'aggressivité des hunters de 3 jours.",
+  "desc": "",
+  "effects": "",
+  "mush": "",
+  "beta": ""
+ },
+ {
+  "id": "EPUISEMENT",
+  "name": "",
+  "retained": "",
+  "footnotes": "si vous n'avez plus de PA et que vous tentez une action, vous puisez dans votre moral",
+  "desc": "",
+  "effects": "",
+  "mush": "",
+  "beta": ""
+ },
+ {
+  "id": "",
+  "name": "",
+  "retained": "",
+  "footnotes": "",
+  "desc": "",
+  "effects": "",
+  "mush": "",
+  "beta": ""
+ },
+ {
+  "id": "ANGUISHED",
+  "name": "",
+  "retained": "",
+  "footnotes": "Votre taux de reussite d action varie en fonction de votre moral.",
+  "desc": "",
+  "effects": "",
+  "mush": "",
+  "beta": ""
+ },
+ {
+  "id": "MANIC",
+  "name": "",
+  "retained": "",
+  "footnotes": "Si votre moral passe en dessous de 4 vous perdez des % de reussite d action si il est au dessus de 8 il augmente.",
+  "desc": "",
+  "effects": "",
+  "mush": "",
+  "beta": ""
+ },
+ {
+  "id": "metabolism_rapide",
+  "name": "",
+  "retained": "",
+  "footnotes": "-4 pa max, pa * 2",
+  "desc": "",
+  "effects": "",
+  "mush": "",
+  "beta": ""
+ },
+ {
+  "id": "BETTER_PERSON",
+  "name": "Quelqu'un de bien",
+  "retained": "",
+  "footnotes": "",
+  "desc": "",
+  "effects": "",
+  "mush": "",
+  "beta": ""
+ },
+ {
+  "id": "mush_finder",
+  "name": "",
+  "retained": "",
+  "footnotes": "Vous pouvez detecter la duree depuis le dernier passage dun mush",
+  "desc": "",
+  "effects": "",
+  "mush": "",
+  "beta": ""
+ },
+ {
+  "id": "",
+  "name": "",
+  "retained": "",
+  "footnotes": "",
+  "desc": "",
+  "effects": "",
+  "mush": "",
+  "beta": ""
+ },
+ {
+  "id": "METALICISTE",
+  "name": "Métalurgiste",
+  "retained": "",
+  "footnotes": "Pour 2 PA Vous pouvez créer un Metal Scraps ou Plastic Scraps par jour.",
+  "desc": "",
+  "effects": "",
+  "mush": "",
+  "beta": ""
+ },
+ {
+  "id": "BETTER_PERSON",
+  "name": "Quelqu'un de bien",
+  "retained": "",
+  "footnotes": "",
+  "desc": "",
+  "effects": "",
+  "mush": "",
+  "beta": ""
+ },
+ {
+  "id": "",
+  "name": "",
+  "retained": "",
+  "footnotes": "",
+  "desc": "",
+  "effects": "",
+  "mush": "",
+  "beta": ""
+ },
+ {
+  "id": "NEVROSE",
+  "name": "Névrose",
+  "retained": "",
+  "footnotes": "Vous ne supportez pas le désordre, restez dans une pièce avec plus de 10 objets vous fait perdre 1 point de moral",
+  "desc": "",
+  "effects": "",
+  "mush": "",
+  "beta": ""
+ },
+ {
+  "id": "",
+  "name": "",
+  "retained": "",
+  "footnotes": "",
+  "desc": "",
+  "effects": "",
+  "mush": "",
+  "beta": ""
+ },
+ {
+  "id": "TORDU",
+  "name": "Retord",
+  "retained": "",
+  "footnotes": "Votre esprit est tordu. Vraiment. Lors des situations complexes, vous trouvez de nouvelles ressources. Au delà du jour 5, vous gagnez + 2 PA par jour.",
+  "desc": "",
+  "effects": "",
+  "mush": "",
+  "beta": ""
+ },
+ {
+  "id": "TORDU",
+  "name": "Retord",
+  "retained": "",
+  "footnotes": "Votre esprit est tordu. Vraiment. Lors des situations complexes, vous trouvez de nouvelles ressources. Si la somme de fuel et d'o2 passe en dessous de 8, vous gagnez 1 PA par cycle.",
+  "desc": "",
+  "effects": "",
+  "mush": "",
+  "beta": ""
+ },
+ {
+  "id": "",
+  "name": "",
+  "retained": "",
+  "footnotes": "",
+  "desc": "",
+  "effects": "",
+  "mush": "",
+  "beta": ""
+ },
+ {
+  "id": "ANONYMOUS",
+  "name": "Anonyme",
+  "retained": "",
+  "footnotes": "Vous ne comptez pas dans la barre d'infection.",
+  "desc": "",
+  "effects": "",
+  "mush": "",
+  "beta": ""
+ },
+ {
+  "id": "BIOMASSGGEDON",
+  "name": "Bio masse",
+  "retained": "",
+  "footnotes": "Une fois par partie vous faites perdre 2PA à tout les joueurs",
+  "desc": "",
+  "effects": "",
+  "mush": "",
+  "beta": ""
+ },
+ {
+  "id": "NERON_DEPRESS",
+  "name": "Dépression de NERON",
+  "retained": "",
+  "footnotes": "Pour 3 PA, Vous pouvez embrouiller NERON au prochain cycle ce qui modifie aléatoirement ses réglages.",
+  "desc": "",
+  "effects": "",
+  "mush": "",
+  "beta": ""
+ },
+ {
+  "id": "SLIME_TRAP",
+  "name": "",
+  "retained": "",
+  "footnotes": "Pour 1 PA le joueur ciblé deviendra sale dans 1 – 4 cycles, a moins qu'il ne se douche.",
+  "desc": "",
+  "effects": "",
+  "mush": "",
+  "beta": ""
+ },
+ {
+  "id": "",
+  "name": "",
+  "retained": "",
+  "footnotes": "",
+  "desc": "",
+  "effects": "",
+  "mush": "",
+  "beta": ""
+ },
+ {
+  "id": "???",
+  "name": "",
+  "retained": "",
+  "footnotes": "",
+  "desc": "",
+  "effects": "",
+  "mush": "",
+  "beta": ""
+ },
+ {
+  "id": "NOT_INTERESED",
+  "name": "Désinteressé",
+  "retained": "",
+  "footnotes": "Vous ne gagnez plus de Triomphe, mais vous bénéficiez de +2 PA par jour.",
+  "desc": "",
+  "effects": "",
+  "mush": "",
+  "beta": ""
+ },
+ {
+  "id": "DIVINATION",
+  "name": "Devin",
+  "retained": "",
+  "footnotes": "Vous voyez où se situe le futur de l'humanité. Vous comptez comme un Morceau de carte stellaire.",
+  "desc": "",
+  "effects": "",
+  "mush": "",
+  "beta": ""
+ },
+ {
+  "id": "statut enceinte",
+  "name": "",
+  "retained": "",
+  "footnotes": "",
+  "desc": "",
+  "effects": "",
+  "mush": "",
+  "beta": ""
+ },
+ {
+  "id": "QUICK_LEARNER",
+  "name": "",
+  "retained": "",
+  "footnotes": "A chaque cycle, 33% de chance de gagner un point XP supplémentaire",
+  "desc": "",
+  "effects": "",
+  "mush": "",
+  "beta": ""
+ },
+ {
+  "id": "VEGETARIEN",
+  "name": "vegetarien",
+  "retained": "",
+  "footnotes": "vous ne consommez plus de viande, seulement des choses saine",
+  "desc": "",
+  "effects": "",
+  "mush": "",
+  "beta": ""
+ },
+ {
+  "id": "TORDU",
+  "name": "Retord",
+  "retained": "",
+  "footnotes": "Votre esprit est tordu. Vraiment. Lors des situations complexes, vous trouvez de nouvelles ressources. Au delà du jour 5, vous gagnez + 2 :pa: par jour.",
+  "desc": "",
+  "effects": "",
+  "mush": "",
+  "beta": ""
+ },
+ {
+  "id": "",
+  "name": "",
+  "retained": "",
+  "footnotes": "",
+  "desc": "",
+  "effects": "",
+  "mush": "",
+  "beta": ""
+ },
+ {
+  "id": "",
+  "name": "",
+  "retained": "",
+  "footnotes": "",
+  "desc": "",
+  "effects": "",
+  "mush": "",
+  "beta": ""
+ },
+ {
+  "id": "",
+  "name": "",
+  "retained": "",
+  "footnotes": "",
+  "desc": "",
+  "effects": "",
+  "mush": "",
+  "beta": ""
+ },
+ {
+  "id": "BOURRIN",
+  "name": "bourrin",
+  "retained": "",
+  "footnotes": "+1 tir par jour et +50% de chances de tir critique mais -25% de chance de réussite.",
+  "desc": "CA VA CHIIIIERRR !",
+  "effects": "",
+  "mush": "",
+  "beta": ""
+ },
+ {
+  "id": "SEDUCER",
+  "name": "séducteur",
+  "retained": "",
+  "footnotes": "un flirte concrétisé rend 50% PA, 50% PV et 50% de moral (un peu too much ?)",
+  "desc": "YES, j'ai réussi ! Enfin !",
+  "effects": "",
+  "mush": "",
+  "beta": ""
+ },
+ {
+  "id": "CHARISMA",
+  "name": "Charisme",
+  "retained": "",
+  "footnotes": "Donne 5 pts de mouvements à tous les passagers présents dans la salle, mais fait perdre 1 pt de moral s'ils sont dans la même pièce que Derek à la fin du cycle.",
+  "desc": "Qu'est ce qu'il peut raconter comme c.. celui là, ça me donne envie de prendre mes jambes à mon cou.",
+  "effects": "",
+  "mush": "",
+  "beta": ""
+ },
+ {
+  "id": "DEVOTION",
+  "name": "Dévoué(e)",
+  "retained": "",
+  "footnotes": "+ 3 PA quand Andrew accepte une mission.",
+  "desc": "In federation we trust",
+  "effects": "",
+  "mush": "",
+  "beta": ""
+ },
+ {
+  "id": "SKILFUL",
+  "name": "Polyvalent(e)",
+  "retained": "",
+  "footnotes": "Combine biologiste et botaniste sans le bonus de PA",
+  "desc": "",
+  "effects": "",
+  "mush": "",
+  "beta": ""
+ },
+ {
+  "id": "CONFIDANT",
+  "name": "Confident(e)",
+  "retained": "",
+  "footnotes": "Le destinataire gagne 2 points de moral mais révèle autant d'actions que de PV, la cible doit avoir flirté avec Andrew.",
+  "desc": "",
+  "effects": "",
+  "mush": "",
+  "beta": ""
+ },
+ {
+  "id": "OISIF",
+  "name": "Snob",
+  "retained": "",
+  "footnotes": "Gagne 1 PA en plus par cycle si le joueur n'a rien dans les mains.",
+  "desc": "",
+  "effects": "",
+  "mush": "",
+  "beta": ""
+ },
+ {
+  "id": "METICULOUS",
+  "name": "Méticuleux(se)",
+  "retained": "",
+  "footnotes": "+20 ac +10 dirt/hurt",
+  "desc": "Ce travail m'a épuisé(e) !",
+  "effects": "",
+  "mush": "",
+  "beta": ""
+ },
+ {
+  "id": "",
+  "name": "",
+  "retained": "",
+  "footnotes": "",
+  "desc": "",
+  "effects": "",
+  "mush": "",
+  "beta": ""
+ },
+ {
+  "id": "",
+  "name": "Masse",
+  "retained": "",
+  "footnotes": "",
+  "desc": "",
+  "effects": "",
+  "mush": "",
+  "beta": ""
+ },
+ {
+  "id": "ARROGANT",
+  "name": "",
+  "retained": "",
+  "footnotes": "Vous ne pouvez faire de phrases de plus x caractere",
+  "desc": "",
+  "effects": "",
+  "mush": "",
+  "beta": ""
+ },
+ {
+  "id": "laconique",
+  "name": "",
+  "retained": "",
+  "footnotes": "",
+  "desc": "",
+  "effects": "",
+  "mush": "",
+  "beta": ""
+ },
+ {
+  "id": "",
+  "name": "",
+  "retained": "",
+  "footnotes": "",
+  "desc": "",
+  "effects": "",
+  "mush": "",
+  "beta": ""
+ },
+ {
+  "id": "artilleur",
+  "name": "",
+  "retained": "",
+  "footnotes": "Augmente vos dommage avec les tourelle de 1, augmente les chance de toucher de 30%",
+  "desc": "",
+  "effects": "",
+  "mush": "",
+  "beta": ""
+ },
+ {
+  "id": "",
+  "name": "",
+  "retained": "",
+  "footnotes": "",
+  "desc": "",
+  "effects": "",
+  "mush": "",
+  "beta": ""
+ },
+ {
+  "id": "RESILIENT",
+  "name": "Resilient",
+  "retained": "true",
+  "footnotes": "*Unique* : Pour *0* :pa: vous donne 4 :pmo:.",
+  "desc": "Face à la destruction, courage !",
+  "effects": "GrantAction(REJOICE)",
+  "mush": "false",
+  "beta": "true"
+ }
+]

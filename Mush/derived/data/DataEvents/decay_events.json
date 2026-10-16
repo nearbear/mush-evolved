@@ -1,0 +1,107 @@
+[
+ {
+  "id": "A_FIRE",
+  "weight": "6",
+  "decayPoint": "4",
+  "desc": "Un incendie vient de se déclarer dans ::room :: veuillez intervenir dans les délais les plus brefs afin de preserver l'intégrité de mes équipements.",
+  "dev": "Une salle non incendié est tirée au hasard elle devient incendiée."
+ },
+ {
+  "id": "DOOR_BLOCKED",
+  "weight": "10",
+  "decayPoint": "3",
+  "desc": "Cher équipage, une porte de ::room:: ne répond plus à mes signaux. Merci de jeter un oeil sur place pour voir de quoi il en retourne. Merci de votre audience.",
+  "dev": "endommage une porte, le nom de room est choisi entre les deux possibilité en prenant les salles prioritairement aux couloirs.\nSi un personnage est présent il perd 2-3 pv en ce coinçant un pied dans la porte"
+ },
+ {
+  "id": "MAIN_EQUIPMENT_FAILURE",
+  "weight": "3",
+  "decayPoint": "3",
+  "desc": "::equipment :: semble déconnecté du reseau central. Veuillez rejoindre ::room:: pour régler ce problème avant que la situation n'empire.",
+  "dev": "endommage un equipement non-endommagé non-porte non-stock"
+ },
+ {
+  "id": "O2_LEAK",
+  "weight": "3",
+  "decayPoint": "3",
+  "desc": "Nous avons détecté une fuite anormale d'oxygène, il faut trouver d'où ça vient !",
+  "dev": "endommage un reservoir d'o2"
+ },
+ {
+  "id": "FUEL_LEAK",
+  "weight": "3",
+  "decayPoint": "3",
+  "desc": "Nous avons détecté une fuite anormale de carburant, il faut trouver d'où ça vient !",
+  "dev": "endommage un reservoir de fuel"
+ },
+ {
+  "id": "JOLT",
+  "weight": "10",
+  "decayPoint": "2",
+  "desc": "Une forte secousse vient d'envoyer ::players:: au sol. Des débris sont également tombé du plafond, ce vaisseau part en sucette...",
+  "dev": "une salle au hasard uniquement, les joueurs recoivent 1-3 blessures, ce message n'est affiché que dans la salle concerné"
+ },
+ {
+  "id": "ACCIDENT",
+  "weight": "3",
+  "decayPoint": "2",
+  "desc": "Un tremblement soudain projette une grosse plaque de métal sur ::player ::. Il est grievement blessé !",
+  "dev": "le joueur subit entre 4-6 blessures"
+ },
+ {
+  "id": "ELECTROCUTION",
+  "weight": "3",
+  "decayPoint": "8",
+  "desc": "Un surcharge électrique brutale fait crépiter les engins de la pièce, une gigantesque décharge traverse les joueurs.",
+  "dev": "Les équipement de la pièrces tombent tous en panne ( pas les portes ) Les joueurs perdent tous 3 PV"
+ },
+ {
+  "id": "BOARD_DISEASE",
+  "weight": "3",
+  "decayPoint": "3",
+  "desc": "Un des joueurs tombe malade...",
+  "dev": ""
+ },
+ {
+  "id": "ANXIETY_ATTACK",
+  "weight": "5",
+  "decayPoint": "2",
+  "desc": "Un des joueurs a une grosse baisse de moral",
+  "dev": "Moral -3 sur un des joueurs"
+ },
+ {
+  "id": "$EOF",
+  "weight": "",
+  "decayPoint": "",
+  "desc": "",
+  "dev": ""
+ },
+ {
+  "id": "",
+  "weight": "49",
+  "decayPoint": "",
+  "desc": "",
+  "dev": ""
+ },
+ {
+  "id": "",
+  "weight": "",
+  "decayPoint": "",
+  "desc": "no one/romm can be multiply targeted",
+  "dev": ""
+ },
+ {
+  "id": "",
+  "weight": "",
+  "decayPoint": "",
+  "desc": "",
+  "dev": ""
+ },
+ {
+  "id": "NOTHING",
+  "weight": "10",
+  "decayPoint": "0",
+  "desc": "Rien...",
+  "dev": ""
+ }
+]

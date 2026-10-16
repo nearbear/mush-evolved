@@ -1,0 +1,122 @@
+[
+ {
+  "id": "NOTHING",
+  "weight": "4",
+  "name": "Donnée corrompue",
+  "desc": "Rien à en tirer...La donnée a été corrompue par un virus rhizhomal.",
+  "notes": "Ne fait rien.",
+  "effects": ""
+ },
+ {
+  "id": "SNOW_CRASH",
+  "weight": "4",
+  "name": "De la neige...",
+  "desc": "Votre écran est couvert de neige grésillante, ça fait mal au crâne, vous arrêtez vos tentatives...",
+  "notes": "Provoque une perte de liaison.",
+  "effects": "LoseComLink"
+ },
+ {
+  "id": "WIREFLESS_INFIDELITY",
+  "weight": "4",
+  "name": "Infidélité du sans-fil...",
+  "desc": "La liaison est de mauvaise qualité...très mauvaise, sans doute le nuage de magnetite que vous traversez en ce moment.",
+  "notes": "Provoque une perte de liaison et une baisse de signal significative.",
+  "effects": "LoseComLink+LoseComLinkQual( 20 )"
+ },
+ {
+  "id": "MUSH_GENOME_DATA",
+  "weight": "8",
+  "name": "Gênome",
+  "desc": "Ce disque regroupe des informations cruciales sur le gênome Mush rassemblée par Ian Soulton juste avant le départ du Daedalus.",
+  "notes": "Fournit la disquette contenant l'analyse du génôme Mush",
+  "effects": "SpawnItem( MUSH_FLOPPY_DISK, COMMAND_CENTER)"
+ },
+ {
+  "id": "LOST_ANALYSIS",
+  "weight": "1",
+  "name": "L'analyse perdue de Finola.",
+  "desc": "L'analyse anti-Mush de Finola s'est achevée apres le départ du Daedalus Les résultats ont été envoyé à la tabulatrice, en les lisant, vous saurez quel état l'etat d'infection du Daedalus au départ !",
+  "notes": "Provoque l'impression de la liste du niveau d'infection de l'équipage.",
+  "effects": ""
+ },
+ {
+  "id": "NILS_CARLSSON_CONTACT",
+  "weight": "2",
+  "name": "Contact avec Nils Carlsson !",
+  "desc": "Vous avez rétabli le contact avec Nils Carlsson, son aide pour les recherches du laboratoire sera précieuse.",
+  "notes": "La communication avec Nils remplace une *Souche de Test* dans le module de recherche",
+  "effects": "EnableRule( NILS_CARLSSON_CONTACT )"
+ },
+ {
+  "id": "NERON_BOOST",
+  "weight": "12",
+  "name": "Accès a la base de donnée perdue de Neron",
+  "desc": "Une partie des travaux de recherche de Janice sur Xyloph-17 sont intégrés à la mémoire de Neron.",
+  "notes": "Fait avancer Le niveau de mise à jour de NERON de 25%",
+  "effects": ""
+ },
+ {
+  "id": "KIVANC_TERZI_CONTACT",
+  "weight": "4",
+  "name": "Contact avec Kivanç Terzi rétabli !",
+  "desc": "Vous êtes en contact avec Kivanç Terzi qui fédère une grande partie de la rebellion sur le système Sol, son aide vous sera précieuse pour décoder les messages de bases rebelles.",
+  "notes": "Vous accorde 100%de bonus sur les décodages de bases rebelles. Paola gagne 8 :triumph:",
+  "effects": ""
+ },
+ {
+  "id": "COOK_BIBLE",
+  "weight": "4",
+  "name": "Le Labrousse de Cuisine édition 2830",
+  "desc": "Vous tombez sur un fichier contenant des recettes. Beaucoup de recettes. Beaucoup Beaucoup de recettes.",
+  "notes": "Provoque l'impression d'un Apprentron pour devenir Cuistot.",
+  "effects": "GenItem( mb( COOK ), COMMAND_CENTER)"
+ },
+ {
+  "id": "ZONG_CHUN_SAMPLE",
+  "weight": "8",
+  "name": "Codex du genome de Zong Chun",
+  "desc": "Zong Chun est le seul être humain résistant a l'infection Mush, l'analyse de son génome est la clé pour l'élaboration d'un vaccin anti-Mush ainsi que de nombreuses autres recherches.",
+  "notes": "Ajoute dans l'interface du laboratoire un \"ghost\" de Zong Chun équivalent a sa présence",
+  "effects": ""
+ },
+ {
+  "id": "SCHOOL_MANUALS",
+  "weight": "4",
+  "name": "Manuel scolaires",
+  "desc": "Vous avis mis la main sur l'archive du centre de formation de Xyloph ! Ce trésor d'intelligence vous aidera a former les abrutis de votre équipage...",
+  "notes": "Provoque l'impression de 2x *Apprentron*",
+  "effects": "NTimes(2, PrintItem( rdMb ) )"
+ },
+ {
+  "id": "WORKSHOP_MANUALS",
+  "weight": "4",
+  "name": "Manuel de l'atelier",
+  "desc": "Voici plusieurs plans d'outils de bases du Daedalus en démontant un ou deux trucs on devrait disposer des matériaux nécessaire pour les construire.",
+  "notes": "Provoque l'impression de 3x*Plan*",
+  "effects": "NTimes(3, PrintItem( rdBp ) )"
+ },
+ {
+  "id": "$EOF",
+  "weight": "",
+  "name": "",
+  "desc": "",
+  "notes": "",
+  "effects": ""
+ },
+ {
+  "id": "DRONE_BLUEPRINTS_ARCHIVE",
+  "weight": "32",
+  "name": "plans détaillés des automates.",
+  "desc": "Ceux sont les plans des automates de Terrence d'origine, grace a eux les temps de construction des automates sont divisés par deux",
+  "notes": "Le temps de construction des automates est divisé par 2",
+  "effects": ""
+ },
+ {
+  "id": "PASIPHAE",
+  "weight": "12",
+  "name": "Le Pasiphae",
+  "desc": "Vous récupérer les plan du tout nouveau modèle de Patrouilleur avec tuyères orientables et rayon tracteur intégré ! <strong> Le plan du Poste de commande du Pasiphae est maintenant disponible à l'atelier</strong>",
+  "notes": "",
+  "effects": ""
+ }
+]

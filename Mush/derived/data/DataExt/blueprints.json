@@ -1,0 +1,197 @@
+[
+ {
+  "object_id": "HELP_DRONE",
+  "need_items": "METAL_SCRAPS, METAL_SCRAPS, METAL_SCRAPS, METAL_SCRAPS, PLASTIC_SCRAPS",
+  "weight": "1"
+ },
+ {
+  "object_id": "MISSILE_LAUNCHER",
+  "need_items": "THICK_TUBE, METAL_SCRAPS, PLASTIC_SCRAPS",
+  "weight": "2"
+ },
+ {
+  "object_id": "SNIPER_RIFFLE",
+  "need_items": "METAL_SCRAPS, METAL_SCRAPS, PLASTIC_SCRAPS",
+  "weight": "4"
+ },
+ {
+  "object_id": "MACHINE_GUN",
+  "need_items": "METAL_SCRAPS, METAL_SCRAPS, METAL_SCRAPS, METAL_SCRAPS",
+  "weight": "2"
+ },
+ {
+  "object_id": "TRAD_MODULE",
+  "need_items": "METAL_SCRAPS, PLASTIC_SCRAPS",
+  "weight": "4"
+ },
+ {
+  "object_id": "HEAT_SEEKER",
+  "need_items": "METAL_SCRAPS, PLASTIC_SCRAPS",
+  "weight": "2"
+ },
+ {
+  "object_id": "ECHO_SOUNDER",
+  "need_items": "METAL_SCRAPS, PLASTIC_SCRAPS",
+  "weight": "8"
+ },
+ {
+  "object_id": "WAVOSCOPE",
+  "need_items": "METAL_SCRAPS, PLASTIC_SCRAPS",
+  "weight": "4"
+ },
+ {
+  "object_id": "AIMING_HELMET",
+  "need_items": "METAL_SCRAPS, PLASTIC_SCRAPS",
+  "weight": "2"
+ },
+ {
+  "object_id": "WHITE_FLAG",
+  "need_items": "OLD_SHIRT, SOAP",
+  "weight": "4"
+ },
+ {
+  "object_id": "SOFA",
+  "need_items": "METAL_SCRAPS,THICK_TUBE",
+  "weight": "4"
+ },
+ {
+  "object_id": "EXTINGUISHER",
+  "need_items": "METAL_SCRAPS,OXY_CAPSULE",
+  "weight": "4"
+ },
+ {
+  "object_id": "GRENADE",
+  "need_items": "OXY_CAPSULE,FUEL_CAPSULE",
+  "weight": "2"
+ },
+ {
+  "object_id": "$EOF",
+  "need_items": "",
+  "weight": ""
+ },
+ {
+  "object_id": "",
+  "need_items": "",
+  "weight": ""
+ },
+ {
+  "object_id": "",
+  "need_items": "",
+  "weight": ""
+ },
+ {
+  "object_id": "DEPRECATED",
+  "need_items": "",
+  "weight": ""
+ },
+ {
+  "object_id": "CAMERA",
+  "need_items": "METAL_SCRAPS",
+  "weight": ""
+ },
+ {
+  "object_id": "TALKY_WALKY",
+  "need_items": "METAL_SCRAPS",
+  "weight": ""
+ },
+ {
+  "object_id": "BLASTER",
+  "need_items": "METAL_SCRAPS,METAL_SCRAPS",
+  "weight": ""
+ },
+ {
+  "object_id": "TALKY_WALKY",
+  "need_items": "METAL_SCRAPS",
+  "weight": ""
+ },
+ {
+  "object_id": "ANTI_MUSH_VACCINE",
+  "need_items": "MUSH_SAMPLE, PLASTIC_SCRAPS",
+  "weight": ""
+ },
+ {
+  "object_id": "MYCO_ALARM",
+  "need_items": "METAL_SCRAPS",
+  "weight": ""
+ },
+ {
+  "object_id": "NATAMY_RIFFLE",
+  "need_items": "BLASTER,METAL_SCRAPS",
+  "weight": ""
+ },
+ {
+  "object_id": "NCC_LENS",
+  "need_items": "PLASTIC_SCRAPS",
+  "weight": ""
+ },
+ {
+  "object_id": "THINK_LINK",
+  "need_items": "METAL_SCRAPS",
+  "weight": ""
+ },
+ {
+  "object_id": "BLASTER_PL80",
+  "need_items": "METAL_SCRAPS, METAL_SCRAPS",
+  "weight": ""
+ },
+ {
+  "object_id": "MISSILE_SP2SP_230",
+  "need_items": "METAL_SCRAPS, METAL_SCRAPS",
+  "weight": ""
+ },
+ {
+  "object_id": "AIMING_HELMET",
+  "need_items": "PLASTIC_SCRAPS,METAL_SCRAPS",
+  "weight": ""
+ },
+ {
+  "object_id": "SNIPER_RIFFLE",
+  "need_items": "THICK_TUBE, METAL_SCRAPS",
+  "weight": ""
+ },
+ {
+  "object_id": "MISSILE_LAUNCHER",
+  "need_items": "THICK_TUBE, PLASTIC_SCRAPS",
+  "weight": ""
+ },
+ {
+  "object_id": "WORKSHOP_KIT",
+  "need_items": "METAL_SCRAPS,METAL_SCRAPS, WOOD_SCRAPS,METAL_SCRAPS,PLASTIC_SCRAPS",
+  "weight": ""
+ },
+ {
+  "object_id": "MACHINE_GUN",
+  "need_items": "BLASTER,BLASTER,BLASTER",
+  "weight": ""
+ },
+ {
+  "object_id": "FUEL_TANK_KIT",
+  "need_items": "PLASTIC_SCRAPS,PLASTIC_SCRAPS",
+  "weight": ""
+ },
+ {
+  "object_id": "PLASTENITE_ARMOR",
+  "need_items": "PLASTIC_SCRAPS",
+  "weight": ""
+ },
+ {
+  "object_id": "DRILLER",
+  "need_items": "METAL_SCRAPS,METAL_SCRAPS",
+  "weight": ""
+ },
+ {
+  "object_id": "FLAK_CANNON",
+  "need_items": "METAL_SCRAPS, METAL_SCRAPS,METAL_SCRAPS",
+  "weight": ""
+ },
+ {
+  "object_id": "HEAT_SEEKER",
+  "need_items": "PLASTIC_SCRAPS",
+  "weight": ""
+ },
+ {
+  "object_id": "BRAIN_SEEKER",
+  "need_items": "PLASTIC_SCRAPS",
+  "weight": ""
+ }
+]

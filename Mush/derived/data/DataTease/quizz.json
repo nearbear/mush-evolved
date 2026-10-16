@@ -1,0 +1,1130 @@
+[
+ {
+  "id": "C2",
+  "label/_line": "Vous êtes piégé dans le noir ...votre premier réflexe ?",
+  "we/_favor": "1",
+  "n/_n": "1"
+ },
+ {
+  "id": "_",
+  "label/_line": "Pourquoi faire ?..",
+  "we/_favor": "SCH",
+  "n/_n": "true"
+ },
+ {
+  "id": "_",
+  "label/_line": "Je dégaine !!",
+  "we/_favor": "JK,SS",
+  "n/_n": "true"
+ },
+ {
+  "id": "_",
+  "label/_line": "Je rallume la lumière.",
+  "we/_favor": "RT",
+  "n/_n": "true"
+ },
+ {
+  "id": "_",
+  "label/_line": "J'en profite !",
+  "we/_favor": "WC",
+  "n/_n": "true"
+ },
+ {
+  "id": "_",
+  "label/_line": "Je place un micro..",
+  "we/_favor": "EW",
+  "n/_n": "true"
+ },
+ {
+  "id": "_",
+  "label/_line": "Mais bon sang de nom d'une tête de boulon j'ai du boulot MOI !! Qui c'est qu'a éteint la lumière ?!!",
+  "we/_favor": "TA",
+  "n/_n": "true"
+ },
+ {
+  "id": "",
+  "label/_line": "",
+  "we/_favor": "",
+  "n/_n": ""
+ },
+ {
+  "id": "D3",
+  "label/_line": "Quelque chose ne va pas dans la salle des moteurs. L'un de vos coéquipiers vous invite à y aller...",
+  "we/_favor": "1",
+  "n/_n": "1"
+ },
+ {
+  "id": "_",
+  "label/_line": "Allons-y ensemble !",
+  "we/_favor": "JK,PR,ZC",
+  "n/_n": "true"
+ },
+ {
+  "id": "_",
+  "label/_line": "Séparons-nous !",
+  "we/_favor": "GR,KJS,LKT",
+  "n/_n": "true"
+ },
+ {
+  "id": "_",
+  "label/_line": "Débrouille-toi !",
+  "we/_favor": "RT,SCH,TA,FK",
+  "n/_n": "true"
+ },
+ {
+  "id": "_",
+  "label/_line": "Passe devant !",
+  "we/_favor": "WC,SS,SCH",
+  "n/_n": "true"
+ },
+ {
+  "id": "_",
+  "label/_line": "Vas-y j'ai du boulot moi...",
+  "we/_favor": "TA",
+  "n/_n": "true"
+ },
+ {
+  "id": "",
+  "label/_line": "",
+  "we/_favor": "",
+  "n/_n": ""
+ },
+ {
+  "id": "E4",
+  "label/_line": "Quel est votre animal totem ?",
+  "we/_favor": "1",
+  "n/_n": "1"
+ },
+ {
+  "id": "_",
+  "label/_line": "La Souris",
+  "we/_favor": "SCH",
+  "n/_n": "true"
+ },
+ {
+  "id": "_",
+  "label/_line": "L' Aigle",
+  "we/_favor": "KJS,LKT",
+  "n/_n": "true"
+ },
+ {
+  "id": "_",
+  "label/_line": "Le Chat",
+  "we/_favor": "RT",
+  "n/_n": "true"
+ },
+ {
+  "id": "_",
+  "label/_line": "Le Pigeon Voyageur",
+  "we/_favor": "JH",
+  "n/_n": "true"
+ },
+ {
+  "id": "_",
+  "label/_line": "La Limace Enceladienne",
+  "we/_favor": "FK",
+  "n/_n": "true"
+ },
+ {
+  "id": "_",
+  "label/_line": "J'ai une tête à choisir des animaux ?",
+  "we/_favor": "SS,WC",
+  "n/_n": "true"
+ },
+ {
+  "id": "_",
+  "label/_line": "T'a pas du boulot ? J'ai l'air d'être zoologiste ?",
+  "we/_favor": "TA",
+  "n/_n": "true"
+ },
+ {
+  "id": "",
+  "label/_line": "",
+  "we/_favor": "",
+  "n/_n": ""
+ },
+ {
+  "id": "F5",
+  "label/_line": "Vous avez du temps devant vous ! Que choisiriez-vous parmi ces loisirs ?",
+  "we/_favor": "1",
+  "n/_n": "1"
+ },
+ {
+  "id": "_",
+  "label/_line": "Trainer dans les Megalopédies",
+  "we/_favor": "FB,TA",
+  "n/_n": "true"
+ },
+ {
+  "id": "_",
+  "label/_line": "Vous asseoir à la terrasse d'un hyperCafé en regardant les passants",
+  "we/_favor": "RZ,GR",
+  "n/_n": "true"
+ },
+ {
+  "id": "_",
+  "label/_line": "Préparer votre prochain raid sur Pluton",
+  "we/_favor": "WC,SS,JH",
+  "n/_n": "true"
+ },
+ {
+  "id": "_",
+  "label/_line": "Rester au chaud et cocooner",
+  "we/_favor": "SCH,JK,PR",
+  "n/_n": "true"
+ },
+ {
+  "id": "_",
+  "label/_line": "Disséquer des xenocs !",
+  "we/_favor": "FK",
+  "n/_n": "true"
+ },
+ {
+  "id": "",
+  "label/_line": "",
+  "we/_favor": "",
+  "n/_n": ""
+ },
+ {
+  "id": "G7",
+  "label/_line": "Dans l'idéal, votre partenaire :",
+  "we/_favor": "1",
+  "n/_n": "1"
+ },
+ {
+  "id": "_",
+  "label/_line": "…vous connaît par cœur.",
+  "we/_favor": "LKT,JK,PR,ZC",
+  "n/_n": "true"
+ },
+ {
+  "id": "_",
+  "label/_line": "…ne vous lâchera pas en cas de coup dur !",
+  "we/_favor": "FB, RZ,JH",
+  "n/_n": "true"
+ },
+ {
+  "id": "_",
+  "label/_line": "…n'a pas de place auprès de vous.",
+  "we/_favor": "RT, KJS",
+  "n/_n": "true"
+ },
+ {
+  "id": "_",
+  "label/_line": "…ne durera pas longtemps et saignera beaucoup...",
+  "we/_favor": "WC",
+  "n/_n": "true"
+ },
+ {
+  "id": "_",
+  "label/_line": "…Mais j'ai PAS le temps pour tes questions idiotes !!",
+  "we/_favor": "TA",
+  "n/_n": "true"
+ },
+ {
+  "id": "_",
+  "label/_line": "…partagera mon amour de l'inconnu !",
+  "we/_favor": "LKT,JH",
+  "n/_n": "true"
+ },
+ {
+  "id": "",
+  "label/_line": "",
+  "we/_favor": "",
+  "n/_n": ""
+ },
+ {
+  "id": "H8",
+  "label/_line": "Votre arme préférée ?",
+  "we/_favor": "1",
+  "n/_n": "1"
+ },
+ {
+  "id": "_",
+  "label/_line": "Le Teslatron : pas d'effort, il est déjà mort !",
+  "we/_favor": "LKT,KJS,JH",
+  "n/_n": "true"
+ },
+ {
+  "id": "_",
+  "label/_line": "La Lame : élégance, raffinement et bain de sang.",
+  "we/_favor": "WC",
+  "n/_n": "true"
+ },
+ {
+  "id": "_",
+  "label/_line": "Le Lance Missile, j'en rêve la nuit...",
+  "we/_favor": "SS",
+  "n/_n": "true"
+ },
+ {
+  "id": "_",
+  "label/_line": "Les armes... c'est pas trop mon truc...",
+  "we/_favor": "JK,EW,FK,ZC,FB,JH,RT,FB",
+  "n/_n": "true"
+ },
+ {
+  "id": "_",
+  "label/_line": "Cesse d'agiter ces machins sous mon nez. Dis, t'a pas du boulot ?",
+  "we/_favor": "TA",
+  "n/_n": "true"
+ },
+ {
+  "id": "",
+  "label/_line": "",
+  "we/_favor": "",
+  "n/_n": ""
+ },
+ {
+  "id": "I9",
+  "label/_line": "Choisissez une célébrité des années 2000 :",
+  "we/_favor": "1",
+  "n/_n": "1"
+ },
+ {
+  "id": "_",
+  "label/_line": "Hubert Reeves, che l'ai bien connu ! Z'était mon professeur à la faculté des Ziensses !",
+  "we/_favor": "FB",
+  "n/_n": "true"
+ },
+ {
+  "id": "_",
+  "label/_line": "Bruce Willis, ça c 'est un mec un vrai !",
+  "we/_favor": "SS",
+  "n/_n": "true"
+ },
+ {
+  "id": "_",
+  "label/_line": "Barack Obama, un visionnaire sans pareil !",
+  "we/_favor": "LKT,KJS",
+  "n/_n": "true"
+ },
+ {
+  "id": "_",
+  "label/_line": "Charlie Chaplin, C'est pas le bon siècle mais c'est pas grave.",
+  "we/_favor": "RZ",
+  "n/_n": "true"
+ },
+ {
+  "id": "_",
+  "label/_line": "Ed Catmull, il a changé ma vision des polynômes !",
+  "we/_favor": "RT",
+  "n/_n": "true"
+ },
+ {
+  "id": "_",
+  "label/_line": "Tonegawa Susumu, un vrai précurseur des thérapie contre le Mush !",
+  "we/_favor": "ZC, IS, FK",
+  "n/_n": "true"
+ },
+ {
+  "id": "_",
+  "label/_line": "Christopher Reeve, ça c'est un mec qui savait faire le boulot !",
+  "we/_favor": "TA",
+  "n/_n": "true"
+ },
+ {
+  "id": "",
+  "label/_line": "",
+  "we/_favor": "",
+  "n/_n": ""
+ },
+ {
+  "id": "J10",
+  "label/_line": "Vous êtes ?",
+  "we/_favor": "1",
+  "n/_n": "1"
+ },
+ {
+  "id": "_",
+  "label/_line": "Un Homme",
+  "we/_favor": "LKT,KJS,SS,WC,TA,RZ,IS,TA,GR",
+  "n/_n": "true"
+ },
+ {
+  "id": "_",
+  "label/_line": "Une Femme",
+  "we/_favor": "JK,EW,FK,ZC,FB,JH,RT,FB",
+  "n/_n": "true"
+ },
+ {
+  "id": "_",
+  "label/_line": "Autre chose",
+  "we/_favor": "SCH",
+  "n/_n": "true"
+ },
+ {
+  "id": "_",
+  "label/_line": "T'a pas du boulot ?",
+  "we/_favor": "TA",
+  "n/_n": "true"
+ },
+ {
+  "id": "",
+  "label/_line": "",
+  "we/_favor": "",
+  "n/_n": ""
+ },
+ {
+  "id": "K11",
+  "label/_line": "Si vous deviez choisir un qualificatif pour vous décrire physiquement ?",
+  "we/_favor": "1",
+  "n/_n": "1"
+ },
+ {
+  "id": "_",
+  "label/_line": "Attrayant(e)",
+  "we/_favor": "SCH,RZ",
+  "n/_n": "true"
+ },
+ {
+  "id": "_",
+  "label/_line": "Quelconque",
+  "we/_favor": "OTHERS",
+  "n/_n": "true"
+ },
+ {
+  "id": "_",
+  "label/_line": "Usé(e)",
+  "we/_favor": "FB,GR",
+  "n/_n": "true"
+ },
+ {
+  "id": "_",
+  "label/_line": "Acceptable",
+  "we/_favor": "PR, JK",
+  "n/_n": "true"
+ },
+ {
+  "id": "_",
+  "label/_line": "Palot(te)",
+  "we/_favor": "ZC,RT",
+  "n/_n": "true"
+ },
+ {
+  "id": "_",
+  "label/_line": "Disco",
+  "we/_favor": "EW",
+  "n/_n": "true"
+ },
+ {
+  "id": "_",
+  "label/_line": "Tu m'as bien regardé ? .. Bon, t'a pas du boulot ?!",
+  "we/_favor": "TA",
+  "n/_n": "true"
+ },
+ {
+  "id": "",
+  "label/_line": "",
+  "we/_favor": "",
+  "n/_n": ""
+ },
+ {
+  "id": "L12",
+  "label/_line": "Laquelle de ces qualité est la plus importante pour vous ?",
+  "we/_favor": "1",
+  "n/_n": "1"
+ },
+ {
+  "id": "_",
+  "label/_line": "L'audace",
+  "we/_favor": "LKT",
+  "n/_n": "true"
+ },
+ {
+  "id": "_",
+  "label/_line": "La tempérance",
+  "we/_favor": "KJS",
+  "n/_n": "true"
+ },
+ {
+  "id": "_",
+  "label/_line": "L'intelligence",
+  "we/_favor": "FK",
+  "n/_n": "true"
+ },
+ {
+  "id": "_",
+  "label/_line": "Le charisme",
+  "we/_favor": "GR",
+  "n/_n": "true"
+ },
+ {
+  "id": "_",
+  "label/_line": "L'humour",
+  "we/_favor": "RZ",
+  "n/_n": "true"
+ },
+ {
+  "id": "_",
+  "label/_line": "La curiosité",
+  "we/_favor": "EW,JH",
+  "n/_n": "true"
+ },
+ {
+  "id": "_",
+  "label/_line": "La compassion",
+  "we/_favor": "ZC,JK",
+  "n/_n": "true"
+ },
+ {
+  "id": "_",
+  "label/_line": "...T'a pas du boulot ?",
+  "we/_favor": "TA",
+  "n/_n": "true"
+ },
+ {
+  "id": "_",
+  "label/_line": "La courtoisie",
+  "we/_favor": "IS",
+  "n/_n": "true"
+ },
+ {
+  "id": "",
+  "label/_line": "",
+  "we/_favor": "",
+  "n/_n": ""
+ },
+ {
+  "id": "M13",
+  "label/_line": "Il fait beau, les oiseaux chantent que préféreriez vous faire ?",
+  "we/_favor": "1",
+  "n/_n": "1"
+ },
+ {
+  "id": "_",
+  "label/_line": "Aller voir le docteur.",
+  "we/_favor": "WC",
+  "n/_n": "true"
+ },
+ {
+  "id": "_",
+  "label/_line": "Aller seul crapahuter dans la forêt !",
+  "we/_favor": "SCH,JH,IS",
+  "n/_n": "true"
+ },
+ {
+  "id": "_",
+  "label/_line": "Finir ma dissection.",
+  "we/_favor": "FK",
+  "n/_n": "true"
+ },
+ {
+  "id": "_",
+  "label/_line": "Aller voir des amis et s'amuser !",
+  "we/_favor": "JK,PR",
+  "n/_n": "true"
+ },
+ {
+  "id": "_",
+  "label/_line": "Vous enfermer dans la cave et résoudre P != NP",
+  "we/_favor": "RT",
+  "n/_n": "true"
+ },
+ {
+  "id": "_",
+  "label/_line": "Tracer la carte de la Silva Incognita est une œuvre qui requiert toute votre attention.",
+  "we/_favor": "LKT",
+  "n/_n": "true"
+ },
+ {
+  "id": "_",
+  "label/_line": "Il paraît qu'il y a un dinosaure qui rode dans la forêt, ça va faire un scoop d'enfer !",
+  "we/_favor": "EW",
+  "n/_n": "true"
+ },
+ {
+  "id": "_",
+  "label/_line": "Je-suis-occupé-laisse-moi-tranquille-et-d'ailleurs-t'a-pas-du-boulot-toi ?!",
+  "we/_favor": "TA",
+  "n/_n": "true"
+ },
+ {
+  "id": "",
+  "label/_line": "",
+  "we/_favor": "",
+  "n/_n": ""
+ },
+ {
+  "id": "N14",
+  "label/_line": "Choisissez une trait de caractère parmi ceux-ci :",
+  "we/_favor": "1",
+  "n/_n": "1"
+ },
+ {
+  "id": "_",
+  "label/_line": "Passionné",
+  "we/_favor": "PR,FK,LKT",
+  "n/_n": "true"
+ },
+ {
+  "id": "_",
+  "label/_line": "Curieux",
+  "we/_favor": "IS,JH,EW",
+  "n/_n": "true"
+ },
+ {
+  "id": "_",
+  "label/_line": "Gourmand",
+  "we/_favor": "SS",
+  "n/_n": "true"
+ },
+ {
+  "id": "_",
+  "label/_line": "Drôle",
+  "we/_favor": "RZ",
+  "n/_n": "true"
+ },
+ {
+  "id": "_",
+  "label/_line": "Empathique",
+  "we/_favor": "JK",
+  "n/_n": "true"
+ },
+ {
+  "id": "_",
+  "label/_line": "Câlin",
+  "we/_favor": "WC",
+  "n/_n": "true"
+ },
+ {
+  "id": "_",
+  "label/_line": "Fougueux",
+  "we/_favor": "LKT",
+  "n/_n": "true"
+ },
+ {
+  "id": "_",
+  "label/_line": "Mesuré",
+  "we/_favor": "KJS",
+  "n/_n": "true"
+ },
+ {
+  "id": "_",
+  "label/_line": "Rien. T'a pas du boulot ?",
+  "we/_favor": "TA",
+  "n/_n": "true"
+ },
+ {
+  "id": "_",
+  "label/_line": "C'est à ça que je te paie ?",
+  "we/_favor": "GR",
+  "n/_n": "true"
+ },
+ {
+  "id": "",
+  "label/_line": "",
+  "we/_favor": "",
+  "n/_n": ""
+ },
+ {
+  "id": "O15",
+  "label/_line": "Dans la rue, vous croisez une connaissance que vous n'avez pas vu(e) depuis longtemps...",
+  "we/_favor": "1",
+  "n/_n": "1"
+ },
+ {
+  "id": "_",
+  "label/_line": "Vous avez envie de l'assassiner. C'est sûrement quelqu'un que vous n'aimiez pas !",
+  "we/_favor": "WC",
+  "n/_n": "true"
+ },
+ {
+  "id": "_",
+  "label/_line": "Pas le temps pour ça, la vieille à qui vous avez piqué son sac risque de vous rattraper !",
+  "we/_favor": "SS",
+  "n/_n": "true"
+ },
+ {
+  "id": "_",
+  "label/_line": "Vous entamez la conversation, quel plaisir d'évoquer les petites madeleines citron bergamote du mercredi après-midi avec un ami.",
+  "we/_favor": "JK",
+  "n/_n": "true"
+ },
+ {
+  "id": "_",
+  "label/_line": "Vous passez votre chemin tranquillement, le passé est un bon souvenir, nul besoin de le raviver.",
+  "we/_favor": "PR, FB",
+  "n/_n": "true"
+ },
+ {
+  "id": "_",
+  "label/_line": "Vous vous éloignez rapidement, on pourrait vous reconnaître !",
+  "we/_favor": "ZC,SS",
+  "n/_n": "true"
+ },
+ {
+  "id": "_",
+  "label/_line": "Il a pas du boulot c't'andouille ? J'ai autre chose à faire que de me rappeler des souvenirs bateau d'une époque moisie.",
+  "we/_favor": "TA",
+  "n/_n": "true"
+ },
+ {
+  "id": "",
+  "label/_line": "",
+  "we/_favor": "",
+  "n/_n": ""
+ },
+ {
+  "id": "P16",
+  "label/_line": "Omagad ! Votre moitié l'a fait avec monsieur Alfred !...",
+  "we/_favor": "1",
+  "n/_n": "1"
+ },
+ {
+  "id": "_",
+  "label/_line": "Ils ont intérêt a en profiter vu ce qu'il va en rester bientôt...",
+  "we/_favor": "WC,SS",
+  "n/_n": "true"
+ },
+ {
+  "id": "_",
+  "label/_line": "Ça tombe bien, Hilda la femme du voisin vous a toujours branché.",
+  "we/_favor": "RZ,GR",
+  "n/_n": "true"
+ },
+ {
+  "id": "_",
+  "label/_line": "Mais Alfred et Hilda zont mort depuis 1230 ans !",
+  "we/_favor": "FB",
+  "n/_n": "true"
+ },
+ {
+  "id": "_",
+  "label/_line": "Qu'est ce que c'est que cette question...",
+  "we/_favor": "OTHERS",
+  "n/_n": "true"
+ },
+ {
+  "id": "_",
+  "label/_line": "Grand bien lui fasse... J'ai du boulot, moi !",
+  "we/_favor": "TA",
+  "n/_n": "true"
+ },
+ {
+  "id": "",
+  "label/_line": "",
+  "we/_favor": "",
+  "n/_n": ""
+ },
+ {
+  "id": "Q17",
+  "label/_line": "Lors d'une balade en Land Speeder, vous percutez un poney ivre !",
+  "we/_favor": "1",
+  "n/_n": "1"
+ },
+ {
+  "id": "_",
+  "label/_line": "Vous cherchez le responsable de la bête, c'est quand même un monde ça, un land speeder tout neuf !",
+  "we/_favor": "GR",
+  "n/_n": "true"
+ },
+ {
+  "id": "_",
+  "label/_line": "Vous compatissez avec la bête, et l'achevez finalement ...avec honneur et dignité.",
+  "we/_favor": "OTHERS",
+  "n/_n": "true"
+ },
+ {
+  "id": "_",
+  "label/_line": "Ben voilà, un steak pour ce soir !",
+  "we/_favor": "SCH,WC",
+  "n/_n": "true"
+ },
+ {
+  "id": "_",
+  "label/_line": "Vous essayez de le sauver quand même... C'est une vie qui est en jeu !",
+  "we/_favor": "ZC,IS,JH,FK",
+  "n/_n": "true"
+ },
+ {
+  "id": "_",
+  "label/_line": "Et galère...",
+  "we/_favor": "RZ,RT",
+  "n/_n": "true"
+ },
+ {
+  "id": "_",
+  "label/_line": "Ma parole, mais c'est toi qui est ivre ! Va donc cuver ailleurs et laisse moi travailler !",
+  "we/_favor": "TA",
+  "n/_n": "true"
+ },
+ {
+  "id": "_",
+  "label/_line": "Vous allez mener votre enquête : celui-qui a laissé ce poney se saouler doit payer !",
+  "we/_favor": "EW",
+  "n/_n": "true"
+ },
+ {
+  "id": "",
+  "label/_line": "",
+  "we/_favor": "",
+  "n/_n": ""
+ },
+ {
+  "id": "R18",
+  "label/_line": "Votre avenir immédiat, vous le voyez comment?",
+  "we/_favor": "1",
+  "n/_n": "1"
+ },
+ {
+  "id": "_",
+  "label/_line": "On est en pleine bataille spatiale, et vu des toilettes c'est mal barré...",
+  "we/_favor": "RZ",
+  "n/_n": "true"
+ },
+ {
+  "id": "_",
+  "label/_line": "Plein de découvertes et d'audace !",
+  "we/_favor": "KJS,LKT",
+  "n/_n": "true"
+ },
+ {
+  "id": "_",
+  "label/_line": "Je suis jeune et plein(e) d'avenir !",
+  "we/_favor": "PR,JK",
+  "n/_n": "true"
+ },
+ {
+  "id": "_",
+  "label/_line": "J'ai des blessés à soigner, j'ai pas le temps là.",
+  "we/_favor": "ZC,FK",
+  "n/_n": "true"
+ },
+ {
+  "id": "_",
+  "label/_line": "Ils sont dans les murs, bon sang mais lâche ce magazine !",
+  "we/_favor": "SS,WC",
+  "n/_n": "true"
+ },
+ {
+  "id": "_",
+  "label/_line": "Je suis en planque et c'est le scoop de ma vie, dégage de là !!",
+  "we/_favor": "EW",
+  "n/_n": "true"
+ },
+ {
+  "id": "_",
+  "label/_line": "Apporte-moi un café !",
+  "we/_favor": "GR",
+  "n/_n": "true"
+ },
+ {
+  "id": "",
+  "label/_line": "",
+  "we/_favor": "",
+  "n/_n": ""
+ },
+ {
+  "id": "S19",
+  "label/_line": "Alors à votre avis, les capes de super-heros...",
+  "we/_favor": "1",
+  "n/_n": "1"
+ },
+ {
+  "id": "_",
+  "label/_line": "C'est has been...",
+  "we/_favor": "OTHERS",
+  "n/_n": "true"
+ },
+ {
+  "id": "_",
+  "label/_line": "C'est seyant !",
+  "we/_favor": "KJS",
+  "n/_n": "true"
+ },
+ {
+  "id": "_",
+  "label/_line": "C'est dangereux.",
+  "we/_favor": "SCH",
+  "n/_n": "true"
+ },
+ {
+  "id": "_",
+  "label/_line": "Ça se mange ?",
+  "we/_favor": "SS",
+  "n/_n": "true"
+ },
+ {
+  "id": "_",
+  "label/_line": "Z'est moterne !",
+  "we/_favor": "FB",
+  "n/_n": "true"
+ },
+ {
+  "id": "_",
+  "label/_line": "Ta cape je lui roule dessus, j'ai du boulot moi !",
+  "we/_favor": "TA",
+  "n/_n": "true"
+ },
+ {
+  "id": "_",
+  "label/_line": "C'est cher et moche, je préfère les combinaisons.",
+  "we/_favor": "GR",
+  "n/_n": "true"
+ },
+ {
+  "id": "",
+  "label/_line": "",
+  "we/_favor": "",
+  "n/_n": ""
+ },
+ {
+  "id": "T20",
+  "label/_line": "Que vous inspire les couchers de soleil ?",
+  "we/_favor": "1",
+  "n/_n": "1"
+ },
+ {
+  "id": "_",
+  "label/_line": "Le bien-être...",
+  "we/_favor": "IS",
+  "n/_n": "true"
+ },
+ {
+  "id": "_",
+  "label/_line": "De la Nostalchie...",
+  "we/_favor": "FB",
+  "n/_n": "true"
+ },
+ {
+  "id": "_",
+  "label/_line": "La perspective d'une nuit avec beaucoup de boulot...",
+  "we/_favor": "TA",
+  "n/_n": "true"
+ },
+ {
+  "id": "_",
+  "label/_line": "Ma dernière croisière entre les géantes gazeuses, les couchers de soleil valent le coup là-bas !",
+  "we/_favor": "GR",
+  "n/_n": "true"
+ },
+ {
+  "id": "",
+  "label/_line": "",
+  "we/_favor": "",
+  "n/_n": ""
+ },
+ {
+  "id": "B1",
+  "label/_line": "Que vous évoque le nom de Magellan ?",
+  "we/_favor": "1",
+  "n/_n": "1"
+ },
+ {
+  "id": "_",
+  "label/_line": "C'est une galaxie proche de la notre !",
+  "we/_favor": "LKT,KJS",
+  "n/_n": "true"
+ },
+ {
+  "id": "_",
+  "label/_line": "C'est un célèbre explorateur !",
+  "we/_favor": "LKT,KJS,JH",
+  "n/_n": "true"
+ },
+ {
+  "id": "_",
+  "label/_line": "C'est un célèbre bar Zurichois !",
+  "we/_favor": "FB,GR",
+  "n/_n": "true"
+ },
+ {
+  "id": "_",
+  "label/_line": "Connais pas !",
+  "we/_favor": "JK,PR",
+  "n/_n": "true"
+ },
+ {
+  "id": "",
+  "label/_line": "",
+  "we/_favor": "",
+  "n/_n": ""
+ },
+ {
+  "id": "$EOF",
+  "label/_line": "",
+  "we/_favor": "",
+  "n/_n": ""
+ },
+ {
+  "id": "",
+  "label/_line": "",
+  "we/_favor": "",
+  "n/_n": ""
+ },
+ {
+  "id": "",
+  "label/_line": "FAIRE CES GOALS en base de donne twinoid comme une extension !",
+  "we/_favor": "",
+  "n/_n": ""
+ },
+ {
+  "id": "",
+  "label/_line": "KJS",
+  "we/_favor": "",
+  "n/_n": ""
+ },
+ {
+  "id": "",
+  "label/_line": "FB",
+  "we/_favor": "",
+  "n/_n": ""
+ },
+ {
+  "id": "",
+  "label/_line": "LKT",
+  "we/_favor": "",
+  "n/_n": ""
+ },
+ {
+  "id": "",
+  "label/_line": "JH",
+  "we/_favor": "",
+  "n/_n": ""
+ },
+ {
+  "id": "",
+  "label/_line": "RZ",
+  "we/_favor": "",
+  "n/_n": ""
+ },
+ {
+  "id": "",
+  "label/_line": "JH",
+  "we/_favor": "",
+  "n/_n": ""
+ },
+ {
+  "id": "",
+  "label/_line": "PR",
+  "we/_favor": "",
+  "n/_n": ""
+ },
+ {
+  "id": "",
+  "label/_line": "WC",
+  "we/_favor": "",
+  "n/_n": ""
+ },
+ {
+  "id": "",
+  "label/_line": "FK",
+  "we/_favor": "",
+  "n/_n": ""
+ },
+ {
+  "id": "",
+  "label/_line": "SS",
+  "we/_favor": "",
+  "n/_n": ""
+ },
+ {
+  "id": "",
+  "label/_line": "IS",
+  "we/_favor": "",
+  "n/_n": ""
+ },
+ {
+  "id": "",
+  "label/_line": "ZC",
+  "we/_favor": "",
+  "n/_n": ""
+ },
+ {
+  "id": "",
+  "label/_line": "RT",
+  "we/_favor": "",
+  "n/_n": ""
+ },
+ {
+  "id": "",
+  "label/_line": "GR",
+  "we/_favor": "",
+  "n/_n": ""
+ },
+ {
+  "id": "",
+  "label/_line": "EW",
+  "we/_favor": "",
+  "n/_n": ""
+ },
+ {
+  "id": "",
+  "label/_line": "TA",
+  "we/_favor": "",
+  "n/_n": ""
+ },
+ {
+  "id": "",
+  "label/_line": "SCH",
+  "we/_favor": "",
+  "n/_n": ""
+ },
+ {
+  "id": "",
+  "label/_line": "",
+  "we/_favor": "",
+  "n/_n": ""
+ },
+ {
+  "id": "",
+  "label/_line": "ideee maj, avoir un personnage alien qui peut rejoindre l'aventure en cours de route",
+  "we/_favor": "",
+  "n/_n": ""
+ },
+ {
+  "id": "",
+  "label/_line": "",
+  "we/_favor": "",
+  "n/_n": ""
+ },
+ {
+  "id": "",
+  "label/_line": "",
+  "we/_favor": "",
+  "n/_n": ""
+ },
+ {
+  "id": "",
+  "label/_line": "",
+  "we/_favor": "",
+  "n/_n": ""
+ },
+ {
+  "id": "A0",
+  "label/_line": "Que vous évoque le mot PILGRED ?",
+  "we/_favor": "",
+  "n/_n": ""
+ },
+ {
+  "id": "_",
+  "label/_line": "Un Réacteur à Convolution de Corde",
+  "we/_favor": "RT,LKT",
+  "n/_n": ""
+ },
+ {
+  "id": "_",
+  "label/_line": "Un plat Roumain d'origine douteuse",
+  "we/_favor": "SS",
+  "n/_n": ""
+ },
+ {
+  "id": "_",
+  "label/_line": "Une rixe dans un bouge",
+  "we/_favor": "WC,SS",
+  "n/_n": ""
+ },
+ {
+  "id": "_",
+  "label/_line": "PILquoi !?",
+  "we/_favor": "OTHERS",
+  "n/_n": ""
+ },
+ {
+  "id": "_",
+  "label/_line": "Miaou ?",
+  "we/_favor": "SCH",
+  "n/_n": ""
+ }
+]

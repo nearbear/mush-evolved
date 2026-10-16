@@ -1,0 +1,633 @@
+[
+ [
+  "id",
+  "name",
+  "desc",
+  "notes",
+  "nb",
+  "",
+  "type"
+ ],
+ [
+  "SIGNAL_EQUIP",
+  "",
+  "Signaler $X equipements défectueux",
+  "",
+  "x",
+  "",
+  "Perso"
+ ],
+ [
+  "SIGNAL_FIRE",
+  "",
+  "Signaler $X incendies",
+  "",
+  "1",
+  "",
+  "Perso"
+ ],
+ [
+  "extinguish_fire",
+  "",
+  "Eteindre $X incendies",
+  "",
+  "1",
+  "",
+  "Perso"
+ ],
+ [
+  "explorer",
+  "",
+  "explorer $X planetes",
+  "",
+  "1 50 200 1000",
+  "explorateur",
+  "Perso/Rampe"
+ ],
+ [
+  "planet_scanned",
+  "",
+  "scanner $X planetes",
+  "",
+  "1",
+  "",
+  "Perso/Compteur"
+ ],
+ [
+  "explo_feed",
+  "",
+  "recuperer $X rations en exploration",
+  "",
+  "1 50 200 1000",
+  "",
+  "Perso/Rampe"
+ ],
+ [
+  "new_plants",
+  "",
+  "faire $X boutures",
+  "",
+  "1",
+  "",
+  "Perso/Compteur",
+  "a voir pr plus que 1 ?"
+ ],
+ [
+  "give_mission",
+  "",
+  "donner $X missions",
+  "",
+  "10",
+  "",
+  "Perso/Rampe"
+ ],
+ [
+  "daily_order",
+  "",
+  "changer les ordres du jour",
+  "",
+  "",
+  "",
+  "Perso/Rampe"
+ ],
+ [
+  "hunter_down",
+  "",
+  "abattre $X hunters",
+  "",
+  "100",
+  "",
+  "Perso/Rampe"
+ ],
+ [
+  "day_5_reached",
+  "",
+  "atteindre jour $X",
+  "",
+  "5",
+  "",
+  "Perso/Compteur"
+ ],
+ [
+  "day_10_reached",
+  "",
+  "atteindre jour $X",
+  "",
+  "10",
+  "",
+  "Perso/Compteur"
+ ],
+ [
+  "day_15_reached",
+  "",
+  "atteindre jour $X",
+  "",
+  "15",
+  "",
+  "Perso/Compteur"
+ ],
+ [
+  "day_max",
+  "",
+  "jour maximal atteint",
+  "",
+  "",
+  "",
+  "Perso/Rampe"
+ ],
+ [
+  "plasma_shield",
+  "",
+  "activer le bouclier plasma",
+  "",
+  "1",
+  "",
+  "Perso/Compteur"
+ ],
+ [
+  "physicist",
+  "",
+  "Soigner $X maladies Physique",
+  "",
+  "20",
+  "",
+  "Perso/Rampe"
+ ],
+ [
+  "surgeon",
+  "",
+  "reussir $x chirurgies",
+  "",
+  "1",
+  "",
+  "Perso/Compteur"
+ ],
+ [
+  "butcher",
+  "",
+  "rater $x chirurgies",
+  "",
+  "",
+  "",
+  "Perso/Compteur"
+ ],
+ [
+  "politician",
+  "",
+  "Faire $X discours avec plus de 8 heros dans la piece",
+  "",
+  "10",
+  "",
+  "Perso/Rampe"
+ ],
+ [
+  "game_without_sleep",
+  "",
+  "Faire une partie complète sans s'endormir D > 5",
+  "",
+  "1",
+  "",
+  "Perso",
+  "ou beaucoup plus"
+ ],
+ [
+  "artefact_coll",
+  "",
+  "Trouver X artefact différents",
+  "",
+  "8",
+  "",
+  "Perso/Rampe"
+ ],
+ [
+  "artefact_specialist",
+  "",
+  "Nombre maximal d'artefact different trouvé au cours d une partie",
+  "",
+  "",
+  "",
+  "Vaisseau/Rampe"
+ ],
+ [
+  "tags_complete",
+  "",
+  "trouver tout les tags d une planete",
+  "",
+  "1",
+  "",
+  "Perso/Compteur"
+ ],
+ [
+  "project_team",
+  "",
+  "realiser $x projets",
+  "",
+  "10",
+  "",
+  "Vaisseau"
+ ],
+ [
+  "project_research",
+  "",
+  "realiser $x recherche",
+  "",
+  "10",
+  "",
+  "Vaisseau"
+ ],
+ [
+  "project_team",
+  "",
+  "Nombre maximal de Projet jamais développé par un de vos équipages",
+  "",
+  "",
+  "",
+  "Vaisseau/Rampe"
+ ],
+ [
+  "team_all_rebels",
+  "",
+  "faire tout les base rebelles en une partie",
+  "",
+  "1",
+  "",
+  "Vaisseau"
+ ],
+ [
+  "team_rebels",
+  "",
+  "max de nb de base rebelle par equipe en une partie"
+ ],
+ [
+  "rebels",
+  "",
+  "etablir le contact avec une base rebelle",
+  "",
+  "1",
+  "",
+  "Perso"
+ ],
+ [
+  "kivanc_contacted",
+  "",
+  "le vaisseau a repris contact avec kirvan",
+  "",
+  "1",
+  "",
+  "Perso/Compteur"
+ ],
+ [
+  "nils_contacted",
+  "",
+  "le vaisseau a repris contact avec nils",
+  "",
+  "",
+  "",
+  "Perso/Compteur"
+ ],
+ [
+  "door_repaired",
+  "",
+  "portes reparees",
+  "",
+  "1",
+  "",
+  "Perso/Compteur"
+ ],
+ [
+  "triumph",
+  "",
+  "triomphe",
+  "",
+  "1 50 200 1000 2000",
+  "",
+  "Perso/Rampe"
+ ],
+ [
+  "mage_books_learned",
+  "",
+  "apprentron appris",
+  "",
+  "1",
+  "",
+  "Perso/Compteur"
+ ],
+ [
+  "tutorial",
+  "",
+  "tutorial fait",
+  "",
+  "1",
+  "",
+  "Perso/Compteur"
+ ],
+ [
+  "back_to_root",
+  "",
+  "vaisseau rentré sur terre",
+  "",
+  "",
+  "",
+  "Perso/Compteur"
+ ],
+ [
+  "pilgred_back_online",
+  "",
+  "reparation du pilgred",
+  "",
+  "",
+  "",
+  "Vaisseau/Compteur"
+ ],
+ [
+  "drugs_taken",
+  "",
+  "cachets avalés",
+  "",
+  "",
+  "",
+  "Perso/Compteur"
+ ],
+ [
+  "coffee_taken",
+  "",
+  "café avalés",
+  "",
+  "",
+  "",
+  "Perso/Compteur"
+ ],
+ [
+  "cooked_taken",
+  "",
+  "ration cuisinées avalées",
+  "",
+  "",
+  "",
+  "Perso/Compteur"
+ ],
+ [
+  "ration_taken",
+  "",
+  "ration avalées",
+  "",
+  "",
+  "",
+  "Perso/Compteur"
+ ],
+ [
+  "frozen_taken",
+  "",
+  "aliment hyper gelé avalés",
+  "",
+  "",
+  "",
+  "Perso/Compteur"
+ ],
+ [
+  "grenade_fired",
+  "",
+  "grenades utilisées",
+  "",
+  "",
+  "",
+  "Perso/Compteur"
+ ],
+ [
+  "natamist",
+  "",
+  "mush exterminés au natamy",
+  "",
+  "",
+  "",
+  "Perso/Compteur"
+ ],
+ [
+  "team_mush_killed",
+  "",
+  "mush tués par votre équipage",
+  "",
+  "",
+  "",
+  "Vaisseau"
+ ],
+ [
+  "mush_killed",
+  "",
+  "mush tués par vous",
+  "",
+  "",
+  "",
+  "Perso/Compteur"
+ ],
+ [
+  "camera_installed",
+  "",
+  "camera installées",
+  "",
+  "",
+  "",
+  "Perso/Compteur"
+ ],
+ [
+  "cat_cuddled",
+  "",
+  "Schrodinger pris dans les bras",
+  "",
+  "",
+  "",
+  "Perso/Compteur"
+ ],
+ [
+  "disease_contracted",
+  "",
+  "Maladies contractées",
+  "",
+  "",
+  "",
+  "Perso/Rampe"
+ ],
+ [
+  "venerian_disease",
+  "",
+  "Maladie Vénériennes contractées",
+  "",
+  "",
+  "",
+  "Perso/Compteur"
+ ],
+ [
+  "mankarogs_down",
+  "",
+  "mankarog abattus",
+  "",
+  "",
+  "",
+  "Perso/Compteur"
+ ],
+ [
+  "succeeded_inspection",
+  "",
+  "Fouille réussies",
+  "",
+  "",
+  "",
+  "Perso/Compteur"
+ ],
+ [
+  "coffee_man",
+  "",
+  "caffé récupéré",
+  "",
+  "",
+  "",
+  "Perso/Compteur"
+ ],
+ [
+  "commander_should_go_last",
+  "",
+  "dernier Commandant",
+  "",
+  "",
+  "",
+  "Perso/Rampe"
+ ],
+ [
+  "last_member",
+  "",
+  "dernier membre de l'équipage",
+  "",
+  "",
+  "",
+  "Perso/Rampe"
+ ],
+ [
+  "communicator",
+  "",
+  "Completion de toute les comm",
+  "",
+  "",
+  "",
+  "Vaisseau"
+ ],
+ [
+  "kind_person",
+  "",
+  "kind words a personne qui en avait besoin",
+  "",
+  "",
+  "",
+  "Vaisseau"
+ ],
+ [
+  "research_digged",
+  "",
+  "Nombre de Recherche achevées",
+  "",
+  "",
+  "",
+  "perso/Compteur"
+ ],
+ [
+  "project_digged",
+  "",
+  "Nombre de Projets achevées",
+  "",
+  "",
+  "",
+  "perso/Compteur"
+ ],
+ [
+  "ration_cooked",
+  "",
+  "ration cuisinées",
+  "",
+  "1",
+  "",
+  "Perso/Compteur"
+ ],
+ [
+  "SKILLS_REWARD"
+ ],
+ [
+  "shrinker",
+  "",
+  "Soigner $X maladies Psy",
+  "",
+  "",
+  "",
+  "Perso/Rampe"
+ ],
+ [
+  "",
+  "Specialiste : Astro Physicien",
+  "trouver plus de 30 tags en une partie en tant qu'astrophysicien",
+  "",
+  "1",
+  "super Astro of the uberness",
+  "Perso",
+  "ou pas"
+ ],
+ [
+  "",
+  "Specialiste : Informatique",
+  "realiser $x projets si computer",
+  "",
+  "10",
+  "",
+  "Perso/Rampe"
+ ],
+ [],
+ [
+  "$EOF"
+ ],
+ [],
+ [
+  "",
+  "",
+  "gl"
+ ],
+ [
+  "",
+  "",
+  "pour des trophée persos qui concerne peu le daedalus, les donner facilement"
+ ],
+ [
+  "",
+  "",
+  "pour des trophee interet general en demander bcp"
+ ],
+ [],
+ [
+  "",
+  "",
+  "idee badge de groupe ceux ci sont plus durs"
+ ],
+ [],
+ [
+  "",
+  "",
+  "titres par hero progressifs"
+ ],
+ [
+  "",
+  "",
+  "a traiter x objectif par partie ?"
+ ],
+ [
+  "",
+  "",
+  "si no peut provoquer pas donner"
+ ],
+ [
+  "",
+  "",
+  "mettre des trophies de mme lvl pr chaque metier"
+ ],
+ [],
+ [
+  "",
+  "",
+  "MUsh exterminés au natamy"
+ ]
+]

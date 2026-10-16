@@ -1,0 +1,723 @@
+[
+ {
+  "cat": "RIFLE",
+  "weight": "15",
+  "line": "$h viens de tirer sur $s!",
+  "effects": "Rand( 0.4, Wound( LIGHT_HEMORAGY))+RandWound + Rand( 0.1,Wound( HEAVY_HEMORAGY))",
+  "type": "NORMAL"
+ },
+ {
+  "cat": "RIFLE",
+  "weight": "15",
+  "line": "$h ouvre le feu sur $s",
+  "effects": "Rand( 0.4, Wound( LIGHT_HEMORAGY))+RandWound + Rand( 0.1,Wound( HEAVY_HEMORAGY))",
+  "type": "NORMAL"
+ },
+ {
+  "cat": "RIFLE",
+  "weight": "15",
+  "line": "$h déverse un torrent de balle sur $s",
+  "effects": "Rand( 0.4, Wound( LIGHT_HEMORAGY))+RandWound + Rand( 0.1,Wound( HEAVY_HEMORAGY))",
+  "type": "NORMAL"
+ },
+ {
+  "cat": "RIFLE",
+  "weight": "15",
+  "line": "$h viens de mettre une balle dans $s...",
+  "effects": "Rand( 0.4, Wound( LIGHT_HEMORAGY))+RandWound + Rand( 0.1,Wound( HEAVY_HEMORAGY))",
+  "type": "NORMAL"
+ },
+ {
+  "cat": "RIFLE",
+  "weight": "15",
+  "line": "$h tire une rafale sur $s.",
+  "effects": "Rand( 0.4, Wound( LIGHT_HEMORAGY))+RandWound + Rand( 0.1,Wound( HEAVY_HEMORAGY))",
+  "type": "NORMAL"
+ },
+ {
+  "cat": "RIFLE",
+  "weight": "5",
+  "line": "$h prend sont temps pour ajuster $s..aïe...",
+  "effects": "AddMaxDmg(2)+BackFire(DecrPa(GEN))+Rand( 0.4, Wound( HEAVY_HEMORAGY))+RandWound",
+  "type": "CRITIC"
+ },
+ {
+  "cat": "RIFLE",
+  "weight": "1",
+  "line": "$h tente de tirer sur $s mais une crampe l'en empêche...",
+  "effects": "",
+  "type": "MISS"
+ },
+ {
+  "cat": "RIFLE",
+  "weight": "1",
+  "line": "Un sifflement retenti aux oreilles de $s...",
+  "effects": "",
+  "type": "MISS"
+ },
+ {
+  "cat": "RIFLE",
+  "weight": "1",
+  "line": "$s esquive miraculeusement une rafale de $h",
+  "effects": "DecrPa(GEN)",
+  "type": "FUMBLE"
+ },
+ {
+  "cat": "RIFLE",
+  "weight": "1",
+  "line": "$h a réussi sa tentative de tir en pleine tête sur $s.",
+  "effects": "InstaGib( HEADSHOT )",
+  "type": "CRITIC"
+ },
+ {
+  "cat": "RIFLE",
+  "weight": "1",
+  "line": "$h vide son chargeur dans $s",
+  "effects": "InstaGib(WOUNDED)+BackFire(DecrPa(GEN))",
+  "type": "CRITIC"
+ },
+ {
+  "cat": "RIFLE",
+  "weight": "5",
+  "line": "La crosse de son fusil gêne $h.Le pied de $s est maintenant en purée.",
+  "effects": "Wound(MASHED_FOOT)",
+  "type": "CRITIC"
+ },
+ {
+  "cat": "RIFLE",
+  "weight": "2",
+  "line": "La balle dans l'épaule de $s va lui laisser un souvenir douloureux.",
+  "effects": "Wound( BROKEN_SHOULDER ) +Rand( 0.4, Wound( HEAVY_HEMORAGY)) +Rand( 0.4, Wound( LIGHT_HEMORAGY))",
+  "type": "CRITIC"
+ },
+ {
+  "cat": "RIFLE",
+  "weight": "1",
+  "line": "La salve de $h a traversé l'épaule de $s, gâre au rebonds...",
+  "effects": "Wound(BROKEN_SHOULDER) +Rand( 0.4, Wound( HEAVY_HEMORAGY))+Rand( 0.4, Wound( LIGHT_HEMORAGY))",
+  "type": "CRITIC"
+ },
+ {
+  "cat": "RIFLE",
+  "weight": "1",
+  "line": "clic clic clic...L'arme de $h est enrayé. $s devrait lui en être reconnaissant.",
+  "effects": "BreakWeapon",
+  "type": "FUMBLE"
+ },
+ {
+  "cat": "RIFLE",
+  "weight": "1",
+  "line": "En tirant sur $s, $h s'est brûlé avec son arme. Grandiose.",
+  "effects": "SubDmg(2)+BackFire(Wound(BURNED_HAND))",
+  "type": "FUMBLE"
+ },
+ {
+  "cat": "RIFLE",
+  "weight": "1",
+  "line": "$h aurait du mieux anticiper le recul, ratant $s en se démontant l'épaule. Bravo.",
+  "effects": "BackFire(Wound( BROKEN_SHOULDER ))",
+  "type": "FUMBLE"
+ },
+ {
+  "cat": "RIFLE",
+  "weight": "1",
+  "line": "Les balles à blanc de $h rebondissent avec force sur $s. Oups...",
+  "effects": "",
+  "type": "MISS"
+ },
+ {
+  "cat": "RIFLE",
+  "weight": "1",
+  "line": "Une arme lourde fait de gros dégâts sur les pieds de $h...",
+  "effects": "BackFire(Wound(BROKEN_FOOT))",
+  "type": "FUMBLE"
+ },
+ {
+  "cat": "RIFLE",
+  "weight": "1",
+  "line": "Null mot de saurait décrire l'incroyable acrobatie de l'arme de $h qui finie par atterir par terre...",
+  "effects": "BackFire(DropWeapon)",
+  "type": "FUMBLE"
+ },
+ {
+  "cat": "RIFLE",
+  "weight": "5",
+  "line": "L'oeil vif, la rage au corps, $h réussit magnifiquement son tir en plein dans la poitrine de $s...",
+  "effects": "AddDmg(2)",
+  "type": "CRITIC"
+ },
+ {
+  "cat": "BLASTER",
+  "weight": "15",
+  "line": "Prémédité ou pas, $h sort son arme et tire abondamment sur $s.",
+  "effects": "",
+  "type": "NORMAL"
+ },
+ {
+  "cat": "BLASTER",
+  "weight": "15",
+  "line": "$h se retourne subitement et tire sur $s.",
+  "effects": "",
+  "type": "NORMAL"
+ },
+ {
+  "cat": "BLASTER",
+  "weight": "15",
+  "line": "$h enchaîne rapidement quelques passes de poignet et fait feu sur $s... qui est désarçonné pour quelques minutes.",
+  "effects": "",
+  "type": "NORMAL"
+ },
+ {
+  "cat": "BLASTER",
+  "weight": "15",
+  "line": "$h dégaine sans hésitation et fait feu sur $s.",
+  "effects": "",
+  "type": "NORMAL"
+ },
+ {
+  "cat": "BLASTER",
+  "weight": "15",
+  "line": "$s se prend un tir bien ajusté de $h.",
+  "effects": "",
+  "type": "NORMAL"
+ },
+ {
+  "cat": "BLASTER",
+  "weight": "1",
+  "line": "Quelques fois tout devient ralenti, certains vous diront que le temps était juste différent, que la durée ne comptait plus, que chaque acte devenait unité et que chaque perception devenait éternelle. Dans un tel état de grâce, $h tire avec une aisance surréaliste dans la tête de $s qui s'effondre.",
+  "effects": "InstaGib( HEADSHOT)",
+  "type": "CRITIC"
+ },
+ {
+  "cat": "BLASTER",
+  "weight": "2",
+  "line": "$h se saisi de son Blaster et enchaîne les tirs avec précision sur $s...",
+  "effects": "RandWound",
+  "type": "CRITIC"
+ },
+ {
+  "cat": "BLASTER",
+  "weight": "2",
+  "line": "Il n'y a qu'un battement de cil entre le coup de feu de $h et l'impact sur $s.",
+  "effects": "AddMaxDmg(2)+Rand(0.2,RandWound)",
+  "type": "CRITIC"
+ },
+ {
+  "cat": "BLASTER",
+  "weight": "2",
+  "line": "Que résonne le hurlement des Blasters, seuls les survivants en disserteront. $h est bien placé pour tenter de le savoir.$s y perd le sens de l'audition.",
+  "effects": "AddDmg(1) + Wound( MASHED_EAR )",
+  "type": "CRITIC"
+ },
+ {
+  "cat": "BLASTER",
+  "weight": "1",
+  "line": "$h se penche et dégaine et tire rapidement sur $s...Qui est touché à la tête!",
+  "effects": "Rand( 0.3, Wound(CUT_TONGUE)) + Rand( 0.3, Wound(EXPLODED_NOSE)) + Rand( 0.3, Wound(VISIBLE_BRAIN)) + Rand( 0.3, Wound(HEAD_TRAUMA))+AddDmg(2)",
+  "type": "CRITIC"
+ },
+ {
+  "cat": "BLASTER",
+  "weight": "1",
+  "line": "Un coup feu rapide de $h vers $s fait perdre l'équilibre à ce dernier.",
+  "effects": "AddDmg(1)+DecrPa(GEN)+DecrPa(GEN)",
+  "type": "CRITIC"
+ },
+ {
+  "cat": "BLASTER",
+  "weight": "2",
+  "line": "clic...clic...$h a raté une occasion...",
+  "effects": "BreakWeapon",
+  "type": "FUMBLE"
+ },
+ {
+  "cat": "BLASTER",
+  "weight": "2",
+  "line": "La violence est le refuge de l'incompétence. $h aurait mieux fait de s'abstenir. Son arme est maintenant par terre et $s l'en sait gré.",
+  "effects": "DropWeapon",
+  "type": "FUMBLE"
+ },
+ {
+  "cat": "BLASTER",
+  "weight": "2",
+  "line": "Le tour de magie de $hest décidément raté, il retourne son arme contre lui par mégarde.",
+  "effects": "BackFire(DecrPa(GEN))+DropWeapon+BackFire(RandWound)",
+  "type": "FUMBLE"
+ },
+ {
+  "cat": "BLASTER",
+  "weight": "1",
+  "line": "$h bute sur un poney imaginaire et tombe en arrière !",
+  "effects": "BackFire(DecrPa(GEN))+BreakWeapon",
+  "type": "FUMBLE"
+ },
+ {
+  "cat": "BLASTER",
+  "weight": "1",
+  "line": "clic...clic... l'arme de $h est enrayé.",
+  "effects": "BackFire(DecrPa(GEN))",
+  "type": "FUMBLE"
+ },
+ {
+  "cat": "BLASTER",
+  "weight": "1",
+  "line": "$h fait feu mais ne touche le que le mur...quel talent!",
+  "effects": "",
+  "type": "MISS"
+ },
+ {
+  "cat": "BLADES",
+  "weight": "15",
+  "line": "La lame de $h, habilement maniée, fait une énorme estafilade a $s.",
+  "effects": "Rand( 0.1,Wound(LIGHT_HEMORAGY))",
+  "type": "NORMAL"
+ },
+ {
+  "cat": "BLADES",
+  "weight": "15",
+  "line": "Le visage de $s se tord quand $h retire la lame qu'::prhero:: vient de lui enfoncer.",
+  "effects": "Rand( 0.1,Wound(LIGHT_HEMORAGY))",
+  "type": "NORMAL"
+ },
+ {
+  "cat": "BLADES",
+  "weight": "15",
+  "line": "Malgré une jolie esquive, $s verse un peu de son sang.",
+  "effects": "Rand( 0.1,Wound(LIGHT_HEMORAGY))",
+  "type": "NORMAL"
+ },
+ {
+  "cat": "BLADES",
+  "weight": "15",
+  "line": "Les duels à la lame finissent rarement bien, $h opère une coupe drastique dans le capital santé de $s.",
+  "effects": "Rand( 0.1,Wound(LIGHT_HEMORAGY))",
+  "type": "NORMAL"
+ },
+ {
+  "cat": "BLADES",
+  "weight": "5",
+  "line": "Une reminescence de cours d'escrime ou un coup de chance, $h perfore la défense de $s sans problème.",
+  "effects": "AddDmg(2)+RandWound",
+  "type": "CRITIC"
+ },
+ {
+  "cat": "BLADES",
+  "weight": "5",
+  "line": "$h estoque $s avec maestria.",
+  "effects": "AddDmg(2)+Rand( 0.5,Wound(HEAVY_HEMORAGY))",
+  "type": "CRITIC"
+ },
+ {
+  "cat": "BLADES",
+  "weight": "3",
+  "line": "$h taillade un gros morceau de $s, c'est dégoutant...",
+  "effects": "AddDmg(2)+Rand( 0.5,Wound(HEAVY_HEMORAGY))+RandWound",
+  "type": "CRITIC"
+ },
+ {
+  "cat": "BLADES",
+  "weight": "3",
+  "line": "$h enfonce sa lame dans une des articulations de $s qui pendouille maintenant tristement...",
+  "effects": "AddDmg(2)+Rand( 0.6,Wound(HEAVY_HEMORAGY)) + Wound( MASHED_ARM_JOINT)",
+  "type": "CRITIC"
+ },
+ {
+  "cat": "BLADES",
+  "weight": "1",
+  "line": "Les derniers mots de $s auraient pu être \"Toi aussi $h\"... qui meurt poignardé::ehero:: en plein coeur.",
+  "effects": "InstaGib(BLED_OUT)",
+  "type": "CRITIC"
+ },
+ {
+  "cat": "BLADES",
+  "weight": "1",
+  "line": "L'oeil mauvais, $h se glisse subrepticement derrière $s et lui tranche la carotide.",
+  "effects": "InstaGib(BLED_OUT)",
+  "type": "CRITIC"
+ },
+ {
+  "cat": "BLADES",
+  "weight": "1",
+  "line": "Peut-être l'esquive malencontreuse, peut-être le mauvais mouvement, peut-être une mauvaise imitation de combat vue dans un holodisque... $s s'empale sur la lame de$h avec lourdeur.",
+  "effects": "Wound( PERFORATED_LUNG)+AddDmg(2)",
+  "type": "CRITIC"
+ },
+ {
+  "cat": "BLADES",
+  "weight": "3",
+  "line": "Zip, l'arme de $h esquive fort élégamment $s pour se heurter à un mur insolent. La lame se casse.",
+  "effects": "BreakWeapon",
+  "type": "FUMBLE"
+ },
+ {
+  "cat": "BLADES",
+  "weight": "3",
+  "line": "$h rate sa cible assez largement et le choc contre le mur qui se trouve à proximité lui fait se mordre la langue...",
+  "effects": "BreakWeapon+BackFire(Wound( CUT_TONGUE))",
+  "type": "FUMBLE"
+ },
+ {
+  "cat": "BLADES",
+  "weight": "2",
+  "line": "Dans son grand mouvement impressionnant, $h se claque un muscle dorsal. Dommage.",
+  "effects": "BackFire( Wound( BRUISED_SHOULDER))",
+  "type": "FUMBLE"
+ },
+ {
+  "cat": "BLADES",
+  "weight": "2",
+  "line": "Qui eu crut, que $s aie de si bons réflêxes...$h perds son couteau dans l'échange.",
+  "effects": "DropWeapon",
+  "type": "FUMBLE"
+ },
+ {
+  "cat": "BLADES",
+  "weight": "1",
+  "line": "Au moment d'aggresser $s, $h se prend les pieds dans un tapis imaginaire et fait tomber sa lame.",
+  "effects": "DropWeapon",
+  "type": "FUMBLE"
+ },
+ {
+  "cat": "BLADES",
+  "weight": "1",
+  "line": "$s se retourne vers $h qui le menace de sa lame. Trop vif, trop rapide, trop précis, bref, trop...$h fait un effort surhumain mais se trouve pris d'un malaise...",
+  "effects": "BackFire( DecrPa(GEN))+BackFire( DecrPa(GEN))",
+  "type": "FUMBLE"
+ },
+ {
+  "cat": "BLADES",
+  "weight": "5",
+  "line": "Malgré les apparences parfois trompeuses, $s est trop vif, il esquive la lame de $h.",
+  "effects": "",
+  "type": "MISS"
+ },
+ {
+  "cat": "BLADES",
+  "weight": "5",
+  "line": "$h a grâcieusement fait glisser sa lame sur la combinaison de $s, raté.",
+  "effects": "",
+  "type": "MISS"
+ },
+ {
+  "cat": "BLADES",
+  "weight": "5",
+  "line": "$h enlève une mèche de cheveux de $s mais rien de plus...",
+  "effects": "",
+  "type": "MISS"
+ },
+ {
+  "cat": "ROCKET",
+  "weight": "20",
+  "line": "Une roquette fuse et explose près de $s. Pour ce qu'il doit en rester...",
+  "effects": "Iter(2,RandWound)+Iter(4,DmgObj)+Iter(6,Splash(1))",
+  "type": "NORMAL"
+ },
+ {
+  "cat": "ROCKET",
+  "weight": "20",
+  "line": "$s se retourne pour voir une roquette lui arriver en plein dans le buffet.",
+  "effects": "Iter(2,RandWound)+Iter(4,DmgObj)+Iter(6,Splash(1))",
+  "type": "NORMAL"
+ },
+ {
+  "cat": "ROCKET",
+  "weight": "3",
+  "line": "$s se retourne et se retrouve nez à nez avec $h qui le vise au lance-roquette. Une roquette fuse et explose aux pieds de $s, celui-ci prend un envol non désiré...mais désarticulé retombe lourdement...",
+  "effects": "InstaGib( ROCKETTED )",
+  "type": "CRITIC"
+ },
+ {
+  "cat": "ROCKET",
+  "weight": "2",
+  "line": "Depuis des temps immémoriaux, l'humanité explore les possiblité des outils. On dirait même sûrement que ce sont ces outils qui font la grandeur de l'humanité. Il est clair que $s ne peut pas être de cet avis. En effet, un outil connu sous le nom de lance-roquette vient de le propulser dans les limbes.",
+  "effects": "InstaGib( ROCKETTED )",
+  "type": "CRITIC"
+ },
+ {
+  "cat": "ROCKET",
+  "weight": "2",
+  "line": "Un jour un grand cuisinier un peu empereur, appelé \"le fléau des dieux\", ou était-ce un de ses laquais...? Peu importe. Il décida que pour passer moins de temps à préparer à manger pour ses armées. Ses cavalier mettrait la viande à s'attendrir sur leur monture pendant les voyages. De là viendrait le steak Tartare. L'aspect désormais similaire de $s ne devrait cependant pas vous inspirer grand appétit.",
+  "effects": "InstaGib( ROCKETTED )",
+  "type": "CRITIC"
+ },
+ {
+  "cat": "ROCKET",
+  "weight": "2",
+  "line": "$h ajuste $s mais glisse et tire sa roquette par mégarde. Ratant de peu sa cible, une explosion puissante souffle $h et $s.",
+  "effects": "SubDmg( 8 )+RandWound+RandWound+BackFire( RandWound) + BackFire( RandWound)+DmgObj+DmgObj",
+  "type": "CRITIC"
+ },
+ {
+  "cat": "ROCKET",
+  "weight": "2",
+  "line": "$h fait feu. Vue l'ampleur de la déflagration qui vient de survrenir près de $s, on peut s'attendre à ne pas l'avoir sur pied tout de suite...",
+  "effects": "RandWound+RandWound+RandWound+DmgObj+DmgObj",
+  "type": "CRITIC"
+ },
+ {
+  "cat": "ROCKET",
+  "weight": "2",
+  "line": "$h fait feu. Une étoile s'éteint, une roquette se meurt, $s s'éclipse dans un nuage de fumée et la mort s'approche.",
+  "effects": "RandWound+RandWound+RandWound+DmgObj+DmgObj",
+  "type": "CRITIC"
+ },
+ {
+  "cat": "ROCKET",
+  "weight": "3",
+  "line": "Une migraine surprise prend $h au dépourvu, il rate sa roquette sans aucune élégance, $s peut lui en être reconnaissant.",
+  "effects": "Iter( 6, DmgObj)",
+  "type": "FUMBLE"
+ },
+ {
+  "cat": "ROCKET",
+  "weight": "3",
+  "line": "Comble de malchance, le manuel d'utilisation du lance-roquette compte 2234 pages. Malheureusement pour $h qui n'en a lu que 2233. Sur la dernière était bien précisé de ne pas appuyer sur le bouton rouge.",
+  "effects": "BackFire(InstaGib(ROCKETTED))+Iter( 6, DmgObj)",
+  "type": "FUMBLE"
+ },
+ {
+  "cat": "ROCKET",
+  "weight": "3",
+  "line": "Un vent solaire vient déranger la conversation qui allait s'engager entre le lance-roquette de $h et $s. La roquette part en vrille et les débris pleuvent aux alentours.",
+  "effects": "Rand(0.5,Splash(1))+Rand(0.5,Splash(1))+Rand(0.5,Splash(1))+Rand(0.5,Splash(1))+Rand(0.5,Splash(1))+Rand(0.5,Splash(1))+Rand(0.5,Splash(1))+Rand(0.5,Splash(1))+DmgObj+DmgObj+DmgObj+DmgObj",
+  "type": "FUMBLE"
+ },
+ {
+  "cat": "ROCKET",
+  "weight": "3",
+  "line": "Par on ne sait pas quel miracle, ou était-ce un heureux hasard... $s esquive la roquette de $hqui vient s'écraser dans le décor...",
+  "effects": "Iter( 10, DmgObj)",
+  "type": "MISS"
+ },
+ {
+  "cat": "GRENADE",
+  "weight": "10",
+  "line": "Ploc...poc...poc...pschhhhh...$h se jette à couvert pendant que les autres regardent à leur pieds. Tiens, une gre...",
+  "effects": "SplashAll( 2, 8 )+ Iter( 4, DmgObj) + SplashWound + SplashWound",
+  "type": "NORMAL"
+ },
+ {
+  "cat": "GRENADE",
+  "weight": "10",
+  "line": "Ploc...ploc...ploc...pschhhhh...$h se jette à couvert pendant que les autres regardent à leur pieds. L'explosion souffle tout le monde !",
+  "effects": "SplashAll( 2, 8 )",
+  "type": "NORMAL"
+ },
+ {
+  "cat": "GRENADE",
+  "weight": "10",
+  "line": "Ploc...ploc...ploc...pschhhhh...$h se jette à couvert pendant que les autres regardent à leur pieds. L'explosion souffle tout le monde !",
+  "effects": "SplashAll( 2, 8 )",
+  "type": "MISS"
+ },
+ {
+  "cat": "GRENADE",
+  "weight": "10",
+  "line": "Ploc...ploc...ploc...pschhhhh...$h se jette à couvert pendant que les autres regardent à leur pieds. L'explosion souffle tout le monde !",
+  "effects": "SplashAll( 2, 8 )",
+  "type": "FUMBLE"
+ },
+ {
+  "cat": "GRENADE",
+  "weight": "10",
+  "line": "Ploc...ploc...ploc...pschhhhh...$h se jette à couvert pendant que les autres regardent à leur pieds. L'explosion souffle tout le monde !",
+  "effects": "SplashAll( 2, 8 )",
+  "type": "CRITIC"
+ },
+ {
+  "cat": "BARE_HAND",
+  "weight": "5",
+  "line": "$h met une droite à $s",
+  "effects": "",
+  "type": "NORMAL"
+ },
+ {
+  "cat": "BARE_HAND",
+  "weight": "5",
+  "line": "$h met un magistral uppercut du droit à $s...",
+  "effects": "",
+  "type": "NORMAL"
+ },
+ {
+  "cat": "BARE_HAND",
+  "weight": "5",
+  "line": "$h met une terrible baigne à $s...",
+  "effects": "",
+  "type": "NORMAL"
+ },
+ {
+  "cat": "BARE_HAND",
+  "weight": "5",
+  "line": "$h met un formidable crochet du droit à $s... Qui repeint le mur avec son nez...",
+  "effects": "Rand( 0.1, Wound( EXPLODED_NOSE ))",
+  "type": "CRITIC"
+ },
+ {
+  "cat": "BARE_HAND",
+  "weight": "5",
+  "line": "$h mets un magistral uppercut à $s...",
+  "effects": "AddDmg(1)",
+  "type": "CRITIC"
+ },
+ {
+  "cat": "BARE_HAND",
+  "weight": "10",
+  "line": "$h tente de frapper $s, hélas son coup faible trouve seulement le mur... Aïe...",
+  "effects": "",
+  "type": "FUMBLE"
+ },
+ {
+  "cat": "BARE_HAND",
+  "weight": "10",
+  "line": "$h tente de frapper $s qui esquive habilement.",
+  "effects": "",
+  "type": "MISS"
+ },
+ {
+  "cat": "BARE_HAND",
+  "weight": "10",
+  "line": "$h tente de frapper $s mais rate lamentablement.",
+  "effects": "",
+  "type": "MISS"
+ },
+ {
+  "cat": "BARE_HAND",
+  "weight": "10",
+  "line": "$h tente de frapper $s mais en semble bien incapable....",
+  "effects": "",
+  "type": "MISS"
+ },
+ {
+  "cat": "FLAMES",
+  "weight": "10",
+  "line": "$h fait la joie de NERON et parcème la pièce d'un feu divin ! $s essaie de s'enfuir en vain...",
+  "effects": "Rand( 0.1, Wound( BURNT ))+Rand( 0.1, Wound( SEVERE_BURN ))+Rand(0.5,Fire)+Iter(3,Splash(1))",
+  "type": "NORMAL"
+ },
+ {
+  "cat": "FLAMES",
+  "weight": "10",
+  "line": "$h n'a pas l'air jouasse du tout. Son rictus maléfique est terrifiant. $s n'a pas l'air rassuré... Ca brûleeeeeeee",
+  "effects": "Rand( 0.1, Wound( BURNT ))+Rand( 0.1, Wound( SEVERE_BURN ))+Rand(0.5,Fire)+Iter(3,Splash(1))",
+  "type": "NORMAL"
+ },
+ {
+  "cat": "FLAMES",
+  "weight": "10",
+  "line": "$h est pas content$h_e. Vraiment pas content$h_e. Et ::prhero:: a décidé de le faire savoir par les flammes.",
+  "effects": "Rand( 0.1, Wound( BURNT ))+Rand( 0.1, Wound( SEVERE_BURN ))+Rand(0.5,Fire)+Iter(3,Splash(1))",
+  "type": "NORMAL"
+ },
+ {
+  "cat": "FLAMES",
+  "weight": "10",
+  "line": "$s sait bien qu'il ne faut pas jouer avec le feu. Et $h a l'air bien décidé à lui faire comprendre",
+  "effects": "Rand( 0.1, Wound( BURNT ))+Rand( 0.1, Wound( SEVERE_BURN))+Rand(0.5,Fire)+Iter(3,Splash(1))",
+  "type": "NORMAL"
+ },
+ {
+  "cat": "FLAMES",
+  "weight": "3",
+  "line": "$h arrose la zone de ses flammes terribles... et rate complètement... Au feu !!",
+  "effects": "Fire+Iter(6,Splash(1))",
+  "type": "FUMBLE"
+ },
+ {
+  "cat": "FLAMES",
+  "weight": "3",
+  "line": "$h arrosait copieusement la pièce avec son Lance-Flamme. Tranquille. Quand soudain un bout de mastic imaginaire bouche la sortie du jet. Après une malheureuse tentative de réparation, l'appareil lui explose à la figure...",
+  "effects": "BackFire(InstaGib(IMMOLATED))+Iter( 6, DmgObj)+Rand(0.5,Fire)",
+  "type": "FUMBLE"
+ },
+ {
+  "cat": "FLAMES",
+  "weight": "5",
+  "line": "$h a décidé de purifier la pièce par le feu. Et ::prhero:: le fait avec maëstria !",
+  "effects": "Rand( 0.5, Wound( BURNT ))+Rand( 0.5, Wound( SEVERE_BURN ))+Rand(0.25,Fire)+AddDmg(2)+Iter(6,Splash(1))",
+  "type": "CRITIC"
+ },
+ {
+  "cat": "FLAMES",
+  "weight": "5",
+  "line": "$s vaque à ses occupations douteuses quand $h débarque et repeint la pièce au Lance-Flamme...",
+  "effects": "Iter(4,DmgObj)+Iter(6,Splash(1))+Fire+AddDmg(2)+Iter(6,Splash(1))",
+  "type": "CRITIC"
+ },
+ {
+  "cat": "FLAMES",
+  "weight": "5",
+  "line": "$h dégaine soudainement son Lance-Flamme et...pffttt... Hé $s... T'a pas du feu ?",
+  "effects": "",
+  "type": "MISS"
+ },
+ {
+  "cat": "FLAMES",
+  "weight": "5",
+  "line": "$h sort son briquet...ah zut.. attendez... pouce...",
+  "effects": "",
+  "type": "MISS"
+ },
+ {
+  "cat": "FLAMES",
+  "weight": "5",
+  "line": "$h sort discrètement d'un coin sombre et menace tout le monde avec... oh purée un LANCE FLAMME. Au moment, où déterminé$h_e,::prhero:: appuie sur la gachette...pfffttt...va falloir courrir...",
+  "effects": "",
+  "type": "MISS"
+ },
+ {
+  "cat": "$EOF",
+  "weight": "",
+  "line": "",
+  "effects": "",
+  "type": ""
+ },
+ {
+  "cat": "GRENADE",
+  "weight": "10",
+  "line": "",
+  "effects": "",
+  "type": "FUMBLE"
+ },
+ {
+  "cat": "GRENADE",
+  "weight": "10",
+  "line": "",
+  "effects": "",
+  "type": "MISS"
+ },
+ {
+  "cat": "",
+  "weight": "",
+  "line": "",
+  "effects": "",
+  "type": ""
+ },
+ {
+  "cat": "GRENADE",
+  "weight": "10",
+  "line": "Ploc...ploc...ploc...pschhhhh...$h se jette à terre dans un grand fracas...quelle boucherie !",
+  "effects": "SplashAll( 3, 9 )+ Iter( 8, DmgObj) + SplashWound + Rand(0.3,SplashWound) + Rand(0.3,SplashWound)",
+  "type": "CRITIC"
+ },
+ {
+  "cat": "GRENADE",
+  "weight": "10",
+  "line": "$h ne semble pas avoir lu le manuel de sa grenade à fragmentation. Ni le petit papier d'avertissement. Et de toute façon, il ne fallait pas appuyer sur le petit bouton rouge.",
+  "effects": "BackFire( RandWound ) + BackFire( RandWound ) + BackFire( RandWound )\n+ Iter(10, Rand(0.5,Splash(1)))",
+  "type": "FUMBLE"
+ },
+ {
+  "cat": "GRENADE",
+  "weight": "10",
+  "line": "$h lance piteusement une grenade dans le tas...de matériel... Il aurait certainement dû s'entraîner avant...",
+  "effects": "Iter( 10, DmgObj) + Iter(4, Rand(0.5,Splash(1)))",
+  "type": "MISS"
+ },
+ {
+  "cat": "GRENADE",
+  "weight": "10",
+  "line": "Ploc...ploc...ploc...pschhhhh...$h se jette à couvert pendant que les autres regardent à leur pieds. L'explosion souffle tout le monde et déclenche un incendie !",
+  "effects": "SplashAll( 4, 6 )+ Fire+ Iter( 4, DmgObj)",
+  "type": "NORMAL"
+ }
+]

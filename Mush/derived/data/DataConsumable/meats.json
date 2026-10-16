@@ -1,0 +1,44 @@
+[
+ {
+  "id": "0",
+  "name": "Steak de turbo boeuf",
+  "desc": "Cet afflux hyper protéiné pourrait objectivement vous coûter vos reins.",
+  "effect": ""
+ },
+ {
+  "id": "1",
+  "name": "Tentacule tremblante",
+  "desc": "Peu appétissant mais hyper nutritif, pétille quand on l'avale.",
+  "effect": ""
+ },
+ {
+  "id": "2",
+  "name": "filet mignon de tyranoeil",
+  "desc": "Fameux plat gastronomique saturnien, ne peut se déguster honorablement qu' après avoir mariné pendant 7 heures dans une solution saline.",
+  "effect": ""
+ },
+ {
+  "id": "3",
+  "name": "Longe de Mulgor",
+  "desc": "Le plus redoutable prédateur des mondes connus a une viande tellement musqué que vous sentirez mauvais toute la journée après l'avoir mangé.",
+  "effect": ""
+ },
+ {
+  "id": "4",
+  "name": "onglet de brontolite",
+  "desc": "A peu près aussi tendre et savoureux qu'une éponge millénaires. Un véritable concentré d'ârome de poussière.",
+  "effect": ""
+ },
+ {
+  "id": "5",
+  "name": "tendon de xenomoche",
+  "desc": "Les xenomoches ont toujours été une source d'acide primordiale dans les usines carcérales de Fincher. Apparément on peut aussi en manger.",
+  "effect": ""
+ },
+ {
+  "id": "$EOF",
+  "name": "",
+  "desc": "",
+  "effect": ""
+ }
+]

@@ -1,0 +1,30 @@
+[
+ {
+  "id": "goto",
+  "t": "Aller à :"
+ },
+ {
+  "id": "unreachable",
+  "t": "<em class=\"blinking very_fast\">INACCESSIBLE<em>"
+ },
+ {
+  "id": "hs",
+  "t": "( H.S. )"
+ },
+ {
+  "id": "impossible",
+  "t": "Impossible"
+ },
+ {
+  "id": "closet",
+  "t": "Etagère"
+ },
+ {
+  "id": "cat_name",
+  "t": "Schrödinger"
+ },
+ {
+  "id": "$EOF",
+  "t": ""
+ }
+]

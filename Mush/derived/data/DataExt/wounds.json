@@ -1,0 +1,302 @@
+[
+ {
+  "id": "BROKEN_FOOT",
+  "name": "Pied cassé.",
+  "desc": "Votre pied est cassé.",
+  "hp_sub": "1",
+  "weight": "5",
+  "on_wound": "",
+  "effects": "IncAcCol( MOV, 1)",
+  "over_ride": "MASHED_FOOT"
+ },
+ {
+  "id": "MASHED_FOOT",
+  "name": "Pied en bouillie.",
+  "desc": "Vous n'avez plus de pied digne de ce nom.",
+  "hp_sub": "1",
+  "weight": "5",
+  "on_wound": "",
+  "effects": "IncAcCol( MOV , 1)+DecrMaxPA(MOV,3)",
+  "over_ride": "MASHED_LEGS"
+ },
+ {
+  "id": "BROKEN_LEG",
+  "name": "Jambe cassée.",
+  "desc": "Votre jambe forte a subi de multiples fractures qui l'handicapent...",
+  "hp_sub": "1",
+  "weight": "5",
+  "on_wound": "",
+  "effects": "IncAcCol( MOV , 1)+DecrMaxPA(MOV,5)",
+  "over_ride": "MASHED_LEGS"
+ },
+ {
+  "id": "MASHED_LEGS",
+  "name": "Jambes inutilisables",
+  "desc": "Vous n\"avez plus l'usage des vos jambes, dommage, ça peut servir.",
+  "hp_sub": "4",
+  "weight": "5",
+  "on_wound": "AddWound( HEAVY_HEMORAGY )",
+  "effects": "NoAcCol( MOV )+DecrMaxPA(MOV,12)",
+  "over_ride": ""
+ },
+ {
+  "id": "BURNT",
+  "name": "Brulûre au 3ème degré sur 50%",
+  "desc": "La partie avant de votre corps est brûlée. pas trop non plus mais tout de même.",
+  "hp_sub": "0",
+  "weight": "5",
+  "on_wound": "",
+  "effects": "IncrDisease+IncAcCol( GEN , 1)",
+  "over_ride": "SEVERE_BURN"
+ },
+ {
+  "id": "SEVERE_BURN",
+  "name": "Brulure au 3ème degré sur 90%",
+  "desc": "Votre corps est très gravement brulé et risque une septicémie.",
+  "hp_sub": "4",
+  "weight": "1",
+  "on_wound": "",
+  "effects": "IncrDisease+DeathOnStatus( DIRTY)",
+  "over_ride": ""
+ },
+ {
+  "id": "HEAD_TRAUMA",
+  "name": "Trauma crânien",
+  "desc": "Vous avez subi un traumatisme crânien récent, à moins d'arriver à trouver un médeçin amateur de puzzle rapidement, vous risquez gros.",
+  "hp_sub": "3",
+  "weight": "2",
+  "on_wound": "",
+  "effects": "DecrMaxMoral(3)+DeathOnStatus( DIRTY)",
+  "over_ride": "VISIBLE_BRAIN"
+ },
+ {
+  "id": "VISIBLE_BRAIN",
+  "name": "Cerveau à l'air libre",
+  "desc": "Il manque un morceau de votre crâne. Dans beaucoup de circonstance, il ne serait pas faux de dire que cela peut poser problème.",
+  "hp_sub": "5",
+  "weight": "1",
+  "on_wound": "",
+  "effects": "DecrMaxMoral(2)+DeathOnStatus( DIRTY)",
+  "over_ride": ""
+ },
+ {
+  "id": "BROKEN_FINGER",
+  "name": "Doigt cassé",
+  "desc": "Un des doigt de votre bonne main est cassé.",
+  "hp_sub": "0",
+  "weight": "5",
+  "on_wound": "",
+  "effects": "IncAcCol(GEN,1)",
+  "over_ride": "CUT_FINGER"
+ },
+ {
+  "id": "CUT_FINGER",
+  "name": "Doigt manquant",
+  "desc": "Vous ne pouvez plus compter que jusqu'à 4 sur votre bonne main.",
+  "hp_sub": "1",
+  "weight": "5",
+  "on_wound": "AddWoundR( 0.2, LIGHT_HEMORAGY)",
+  "effects": "IncAcCol(GEN,1)",
+  "over_ride": "MASHED_HAND"
+ },
+ {
+  "id": "BURNED_HAND",
+  "name": "Main brûlée",
+  "desc": "Votre main est brûlée.",
+  "hp_sub": "1",
+  "weight": "5",
+  "on_wound": "",
+  "effects": "IncAcCol(GEN,1)",
+  "over_ride": "MASHED_HAND"
+ },
+ {
+  "id": "MASHED_HAND",
+  "name": "Main en charpie",
+  "desc": "Votre main ne vous sera plus d'aucun secours.",
+  "hp_sub": "2",
+  "weight": "5",
+  "on_wound": "",
+  "effects": "IncAcCol(GEN,2)+ToHit( -40 )",
+  "over_ride": "MASHED_ARMS"
+ },
+ {
+  "id": "MASHED_ARMS",
+  "name": "Absence de bras",
+  "desc": "Vos bras sont complètement inutiles.",
+  "hp_sub": "3",
+  "weight": "5",
+  "on_wound": "",
+  "effects": "IncAcCol(GEN,3)+ToHit( -40 )",
+  "over_ride": "MASHED_SHOULDER"
+ },
+ {
+  "id": "MASHED_ARM_JOINT",
+  "name": "Articulation du bras fort morte",
+  "desc": "Le bras pendouillant peut faire rire mais reste tout de même très handicapant.",
+  "hp_sub": "4",
+  "weight": "5",
+  "on_wound": "",
+  "effects": "IncAcCol(GEN,2)+ToHit( -40 )",
+  "over_ride": "MASHED_ARMS"
+ },
+ {
+  "id": "BURNT_ARMS",
+  "name": "Bras brulés",
+  "desc": "Vos bras sont fortement brûlés. Saisir le moindre objet est une torture.",
+  "hp_sub": "1",
+  "weight": "5",
+  "on_wound": "",
+  "effects": "IncAcCol(GEN,2)+IncrDisease+ToHit(-20)",
+  "over_ride": "MASHED_ARMS"
+ },
+ {
+  "id": "LIGHT_HEMORAGY",
+  "name": "Hémorragie",
+  "desc": "Vous avez une hémorragie il vous faut une chirurgie.",
+  "hp_sub": "1",
+  "weight": "5",
+  "on_wound": "",
+  "effects": "oc( DealDmg( 1 ) )",
+  "over_ride": ""
+ },
+ {
+  "id": "HEAVY_HEMORAGY",
+  "name": "Hemorragie critique",
+  "desc": "Vous avez une hémorragie sur une artère majeure qui nécessite une chirurgie lourde. Bonne chance.",
+  "hp_sub": "2",
+  "weight": "5",
+  "on_wound": "",
+  "effects": "oc( DealDmg( 2 ) )",
+  "over_ride": ""
+ },
+ {
+  "id": "BRUISED_SHOULDER",
+  "name": "Epaule froissée",
+  "desc": "Votre épaule a subi des contusions majeures réversibles.",
+  "hp_sub": "1",
+  "weight": "5",
+  "on_wound": "",
+  "effects": "ToHit( -10 )",
+  "over_ride": "BROKEN_SHOULDER"
+ },
+ {
+  "id": "BROKEN_SHOULDER",
+  "name": "Epaule brisée",
+  "desc": "Votre épaule a été brisée et démise. Impossible de porter des objets lourds...",
+  "hp_sub": "2",
+  "weight": "5",
+  "on_wound": "",
+  "effects": "ToHit( -20 )+NoMoreHeavy",
+  "over_ride": "MASHED_SHOULDER"
+ },
+ {
+  "id": "MASHED_SHOULDER",
+  "name": "Epaule pulvérisée",
+  "desc": "L'épaule a subi des contusions majeures irréversibles, le bras est considéré comme mort.",
+  "hp_sub": "3",
+  "weight": "5",
+  "on_wound": "",
+  "effects": "ToHit( -40 )+NoMoreHeavy+IncAcCol(GEN,2)",
+  "over_ride": ""
+ },
+ {
+  "id": "CHEST_BULLET",
+  "name": "Balle en ballade",
+  "desc": "Un éclat de balle se ballade désormais dans votre corps, ce n'est pas douloureux mais on sait pas ce que sera sa prochaine destination.",
+  "hp_sub": "2",
+  "weight": "5",
+  "on_wound": "",
+  "effects": "IncAcCol(GEN,1)+Symptom( FOAM)",
+  "over_ride": ""
+ },
+ {
+  "id": "MASHED_LIVER",
+  "name": "Foie hors d'état",
+  "desc": "Vous pouvez encore vivre avec votre foie détruit mais combien de temps et dans quelles conditions?",
+  "hp_sub": "2",
+  "weight": "5",
+  "on_wound": "",
+  "effects": "\noa( EAT, LosePA( GEN, 2))\n+IncAcCol(GEN,1)+Symptom(VOMIT)+Symptom(DROOL)",
+  "over_ride": ""
+ },
+ {
+  "id": "PERFORATED_LUNG",
+  "name": "Poumon à trou",
+  "desc": "Souffle court, du sang dans les poumons,sans soins, Vous n'en avez plus pour longtemps a vivre.",
+  "hp_sub": "2",
+  "weight": "5",
+  "on_wound": "",
+  "effects": "IncAcCol(GEN,2)+NoVoice+oc( DealDmg( 2 ) )",
+  "over_ride": ""
+ },
+ {
+  "id": "BROKEN_RIBS",
+  "name": "côtes pétée",
+  "desc": "Vos côtes sont cassées, occasionnant une douleur dans la posture debout.",
+  "hp_sub": "1",
+  "weight": "5",
+  "on_wound": "",
+  "effects": "ToHit( -20 )+IncAcCol(GEN,1)+IncAcCol(MOV,1)",
+  "over_ride": ""
+ },
+ {
+  "id": "CUT_TONGUE",
+  "name": "Langue cisailée",
+  "desc": "Votre langue est réduite à un amas flasque sans vie.",
+  "hp_sub": "1",
+  "weight": "5",
+  "on_wound": "",
+  "effects": "NoVoice",
+  "over_ride": ""
+ },
+ {
+  "id": "EXPLODED_NOSE",
+  "name": "Nez explosé",
+  "desc": "Votre nez n'est plus, plus du tout, vous faites un peu peur aussi...",
+  "hp_sub": "2",
+  "weight": "5",
+  "on_wound": "",
+  "effects": "DecrMaxMoral(2)",
+  "over_ride": ""
+ },
+ {
+  "id": "INTERNAL_EAR_DAZZLED",
+  "name": "Oreille interne déréglé.",
+  "desc": "L'oreille interne ne semble plus fonctionner correctement. Vous pouvez être pris de vertige, de surdité partielle ou de vomissement intempestif quand vous voyagez",
+  "hp_sub": "0",
+  "weight": "5",
+  "on_wound": "",
+  "effects": "IncAcCol( GEN,1)+IncAcCol( MOV,1)+ToHit(-15)+Symptom(VERTIGO)",
+  "over_ride": ""
+ },
+ {
+  "id": "MASHED_EAR",
+  "name": "Oreille incapacités",
+  "desc": "Vos oreilles ne vous sons plus d'aucune utilité et de toute façon vous ne pouvez plus les utiliser.",
+  "hp_sub": "2",
+  "weight": "5",
+  "on_wound": "",
+  "effects": "NoHear",
+  "over_ride": ""
+ },
+ {
+  "id": "EXPLOSED_HEAR",
+  "name": "Oreille pulvérisée",
+  "desc": "Vos oreilles ont disparues. Peut-être qu'en cherchant bien...",
+  "hp_sub": "3",
+  "weight": "3",
+  "on_wound": "",
+  "effects": "NoHear+DecrMaxMoral(1)",
+  "over_ride": ""
+ },
+ {
+  "id": "$EOF",
+  "name": "",
+  "desc": "",
+  "hp_sub": "",
+  "weight": "",
+  "on_wound": "",
+  "effects": "",
+  "over_ride": ""
+ }
+]

@@ -1,0 +1,54 @@
+[
+ {
+  "name": "scanner",
+  "desc": "Action qui consiste à demander a Daedalus de bien vouloir chercher une planète viable dans les systèmes proches. Une fois fait, des coordonnées sont fournies qui peuvent permettre d'atteindre cette planète."
+ },
+ {
+  "name": "Daedalus",
+  "desc": "Le vaisseau sur lequel vous vous trouvez. Il contient un bel échantillon de ce que l'Humanité a fait de... mieux?"
+ },
+ {
+  "name": "Mush",
+  "desc": "Champignon interstellaire en quête de pacification des races aliens belliqueuses sous-developpées. Tout le Mush est interconnecté."
+ },
+ {
+  "name": "Neron",
+  "desc": "NERON ( Nerfs Electonique de Remplacement des Opérations Natives ). Le nom de l'unité d'intelligence artificielle du Daedalus."
+ },
+ {
+  "name": "PA",
+  "desc": "Les Point d'Actions sont une monnaie pour les actions. Disponible chaque jours, ils sont divisé en trois familles, Génériques (rose), Mouvement (vert) et Spécialisé (icônes). Pour en obtenir, vous pouvez manger des Rations Cuisinées ou attendre que votre personnage soit reposé."
+ },
+ {
+  "name": "PM",
+  "desc": "Les Point de Mouvement vous accorde des mouvement gratuits à chaque cycle."
+ },
+ {
+  "name": "Magellan",
+  "desc": "Projet d'arche monde initial de Lai Kuan-ti. Les travaux de préproduction ont du êtres abandonnés et ont été intégrés à la va-vite sur le Daedalus. Certains équipements intéressants sont toujours dormant dans la carcasse du Daedalus."
+ },
+ {
+  "name": "Xyloph",
+  "desc": "La station orbitale Xyloph-17, proche de Jupiter. Elle sert de port d'attache pour Magellan et son équipe. Là seront créés NERON et Daedalus. Derniers vestiges de la grandeur morte-née de Magellan."
+ },
+ {
+  "name": "Nouvel Eden",
+  "desc": "Un jour, le <em>Daedalus</em> se sortira peut-être de la tourmente pour atteindre un endroit sain, paisible, vierge de toute forme de Mush. Un lieu de salut pour refonder l'Humanité."
+ },
+ {
+  "name": "blessure",
+  "desc": "Les blessures sont une atteinte majeure à votre intégrité physique. Certaines sont plus gênantes que nuisibles mais vous devez tout de même trouver une <em>Infirmerie</em> ou un <em>Plot chirurgical</em> et un <em>Infirmier</em> pour guérir."
+ },
+ {
+  "name": "maladie",
+  "desc": "Les maladies peuvent vous tomber dessus pour une infinité de raisons, il y en a deux sortes les psychologiques et les physiques. Pour en guérir, consulter des <em>Infirmiers</em> ou des<em>Psy</em> selon cas."
+ },
+ {
+  "name": "projets",
+  "desc": "Les projets NERON permettent d'exhumer des capacités de Magellan et de les rendre fonctionnelles sur Daedalus."
+ },
+ {
+  "name": "$EOF",
+  "desc": ""
+ }
+]

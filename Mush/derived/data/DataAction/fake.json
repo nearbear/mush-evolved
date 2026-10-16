@@ -1,0 +1,192 @@
+[
+ {
+  "ac": "ICARUS_TAKEOFF",
+  "cond": "RoomStatusIs( LANDED)",
+  "text": "L'Icarus est déjà parti."
+ },
+ {
+  "ac": "ICARUS_TAKEOFF",
+  "cond": "Not(ShipHasPlanet)",
+  "text": "Nous ne sommes pas en orbite. Veuillez en référer aux *Astrophysiciens*."
+ },
+ {
+  "ac": "ICARUS_TAKEOFF",
+  "cond": "ShipHasExpe",
+  "text": "Une expédition est déjà sur le terrain."
+ },
+ {
+  "ac": "PATROL_SHIP_PLANET_LAND",
+  "cond": "ShipHasExpe",
+  "text": "Une expédition est déjà sur le terrain."
+ },
+ {
+  "ac": "COMMANDER_ORDER",
+  "cond": "WasDoneToday( Action( COMMANDER_ORDER ) )",
+  "text": "Vous avez déjà ordonné une mission, vous pourrez le refaire demain ou si votre subalterne la refuse."
+ },
+ {
+  "ac": "PRINT_ZE_LIST",
+  "cond": "Not(GameStarted)",
+  "text": "La Tabulatrice n'a pas encore chargé ses ampoules..."
+ },
+ {
+  "ac": "PRINT_ZE_LIST",
+  "cond": "ShipWasDoneOnce( Action(PRINT_ZE_LIST))",
+  "text": "Vous avez déjà perforé ces informations."
+ },
+ {
+  "ac": "REPAIR_PILGRED",
+  "cond": "IsPilgredOk",
+  "text": "Pilgred est déjà opérationnel."
+ },
+ {
+  "ac": "SET_PILGRED_TO_SOL",
+  "cond": "Or(Not(IsPilgredOk),Not(ShipEquipmentHas(PILGRED)))",
+  "text": "Pilgred n'est pas opérationnel."
+ },
+ {
+  "ac": "UPGRADE_DRONE",
+  "cond": "Not( NeedItems( METAL_SCRAPS , 2) )",
+  "text": "Les mises à jour du Drone nécessitent 2 x Débris Métalliques."
+ },
+ {
+  "ac": "INSTALL_EQ",
+  "cond": "RoomEquipmentHas(CAMERA)",
+  "text": "Cette salle dispose déjà d'une *Caméra*."
+ },
+ {
+  "ac": "PREMONITION",
+  "cond": "HeroMoralLe( 1 )",
+  "text": "Votre moral est déjà tout pourri, vous n'avez pas besoin de ça maintenant..."
+ },
+ {
+  "ac": "INFECT",
+  "cond": "Not(HasSpore)",
+  "text": "Vous devez extirper des spores avant de pouvoir Poinçonner quelqu'un."
+ },
+ {
+  "ac": "THROW",
+  "cond": "BeAlone",
+  "text": "Faire cela seul serait inutile... Drôle mais inutile."
+ },
+ {
+  "ac": "BRAWL",
+  "cond": "Not(GameStarted)",
+  "text": "La violence est inutile pour le moment."
+ },
+ {
+  "ac": "SHOOT",
+  "cond": "Not(GameStarted)",
+  "text": "La violence est inutile pour le moment."
+ },
+ {
+  "ac": "THROW",
+  "cond": "Not(GameStarted)",
+  "text": "La violence est inutile pour le moment."
+ },
+ {
+  "ac": "WATER_PLANTS",
+  "cond": "And(Not(ItemStatusIs(PLANT_DRY)),Not(ItemStatusIs(PLANT_THIRSTY)))",
+  "text": "Cette plante n'a pas l'air de manquer d'eau."
+ },
+ {
+  "ac": "TREAT_PLANTS",
+  "cond": "Not(ItemStatusIs(PLANT_DISEASED))",
+  "text": "Cette plante n'a pas l'air d'avoir besoin d'être traitée."
+ },
+ {
+  "ac": "CARESS",
+  "cond": "HasStatus(GERMAPHOBIC)",
+  "text": "Vous êtes germaphobe et ce chat est dans un état ignoble..."
+ },
+ {
+  "ac": "DO_THE_THING",
+  "cond": "RoomEquipmentHas(CAMERA)",
+  "text": "Pas besoin d'enregistrer cela non plus..."
+ },
+ {
+  "ac": "DO_THE_THING",
+  "cond": "Not(HeroRoomPopEq(2))",
+  "text": "Pas besoin qu'on vous observe dans ces moments là..."
+ },
+ {
+  "ac": "SELF_SURGERY",
+  "cond": "Not(HasStatus(LAID))",
+  "text": "Cette action nécessite que vous soyez allongé."
+ },
+ {
+  "ac": "SELF_SURGERY",
+  "cond": "Not(HeroWounded)",
+  "text": "Vous n'êtes pas blessé mais ça peut s'arranger..."
+ },
+ {
+  "ac": "ATTACK",
+  "cond": "Not(GameStarted)",
+  "text": "La violence est inutile pour le moment."
+ },
+ {
+  "ac": "USE_BANDAGE",
+  "cond": "HeroFullLife",
+  "text": "Vous n'êtes pas blessé mais ça peut s'arranger..."
+ },
+ {
+  "ac": "COMPUTE_EDEN",
+  "cond": "IsEdenComputed",
+  "text": "Les coordonnées d'Eden ont déjà été calculées."
+ },
+ {
+  "ac": "SET_PILGRED_TO_EDEN",
+  "cond": "Or(Not(IsPilgredOk),Not(ShipEquipmentHas(PILGRED)))",
+  "text": "Pilgred n'est pas opérationnel."
+ },
+ {
+  "ac": "REINFORCE",
+  "cond": "Not(NeedItem( METAL_SCRAPS))",
+  "text": "Cette action nécessite un *Débris Métallique*."
+ },
+ {
+  "ac": "REINFORCE",
+  "cond": "ItemStatusIs(REINFORCED)",
+  "text": "Cet équipement a déjà été *renforcé*."
+ },
+ {
+  "ac": "DISASSEMBLE",
+  "cond": "ItemStatusIs(REINFORCED)",
+  "text": "Cet équipement est blindé, impossible de le démonter..."
+ },
+ {
+  "ac": "$EOF",
+  "cond": "",
+  "text": ""
+ },
+ {
+  "ac": "",
+  "cond": "",
+  "text": ""
+ },
+ {
+  "ac": "COOK_RATION",
+  "cond": "HasStatus(DIRTY)",
+  "text": "NERON vous interdit de faire cela pour raisons d'*Hygiène*."
+ },
+ {
+  "ac": "QUICK_COOK_RATION",
+  "cond": "HasStatus(DIRTY)",
+  "text": "NERON vous interdit de faire cela pour raisons d'*Hygiène*."
+ },
+ {
+  "ac": "LAY_DOWN",
+  "cond": "HasSkill( HYPERACTIVE )",
+  "text": "Le repos, c'est has been."
+ },
+ {
+  "ac": "",
+  "cond": "",
+  "text": ""
+ },
+ {
+  "ac": "EAT",
+  "cond": "IsMush",
+  "text": "Vous n'avez pas faim, l'harmonie vous satisfait amplement."
+ }
+]

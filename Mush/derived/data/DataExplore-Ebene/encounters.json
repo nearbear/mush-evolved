@@ -1,0 +1,58 @@
+[
+ {
+  "id": "EXCHANGE",
+  "name": "L'echange",
+  "note": "propose d'echanger un objet de l'inventaire contre un autre objet.",
+  "dif": "0",
+  "weight": "1"
+ },
+ {
+  "id": "SACRIFICE",
+  "name": "Le sacrifice",
+  "note": "propose de sacrifier un membre de l'équipage pour obtenir un drop precieux",
+  "dif": "0",
+  "weight": "1"
+ },
+ {
+  "id": "SELF_SACRIFICE",
+  "name": "Le sacrifice personnel",
+  "note": "propose au joueur de se sacrifier pour qu'il epargne le reste de l'équipage",
+  "dif": "0",
+  "weight": "1"
+ },
+ {
+  "id": "HUNTER",
+  "name": "Le chasseur",
+  "note": "révèle la position de 1-4 monstres dans le niveau.",
+  "dif": "0",
+  "weight": "1"
+ },
+ {
+  "id": "OFFERING",
+  "name": "offrande",
+  "note": "donne un objet",
+  "dif": "1",
+  "weight": "1"
+ },
+ {
+  "id": "ALLIANCE",
+  "name": "alliance",
+  "note": "tous les monstres de cette races aideront pour explorer cette planète",
+  "dif": "1",
+  "weight": "1"
+ },
+ {
+  "id": "SUPER_ALLIANCE",
+  "name": "alliance interplanétaire",
+  "note": "tous les monstres de cette races aideront pour explorer toutes les futurs planètes",
+  "dif": "2",
+  "weight": "1"
+ },
+ {
+  "id": "$EOF",
+  "name": "",
+  "note": "",
+  "dif": "",
+  "weight": ""
+ }
+]

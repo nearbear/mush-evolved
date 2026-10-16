@@ -1,0 +1,106 @@
+[
+ {
+  "id": "0",
+  "name": "Ration standard",
+  "desc": "Une portion de mélasse protéinée agglomérée dans une barquette spatiale longue-conservation. Ces rations sont étudiées pour être facile à digérer par voie traditionnelle mais peuvent également être injectées en intraveineuse.",
+  "effect": "PACKAGED+\nINC_ACTION(4)+\nINC_NUTRITION(4)+\nINC_MORAL(-1)+\nCOOKABLE",
+  "gender": "f",
+  "cons_id": "SPACE_RATION"
+ },
+ {
+  "id": "1",
+  "name": "Ration cuisinée",
+  "desc": "Mélasse protéinée chaude sculptée en forme de plat traditionnel terrien. Le goût est sensiblement le même mais avec un peu d'imagination, on peut faire des merveilles.",
+  "effect": "INC_ACTION(4)+\nINC_NUTRITION(4)",
+  "gender": "f",
+  "cons_id": "COOKED_RATION"
+ },
+ {
+  "id": "2",
+  "name": "Riz soufflé proactif",
+  "desc": "La plaie des mécaniciens. Ces grains de riz doivent être stockés dans un lieu hermetique, sinon ils s'échappent et partent se cacher dans les mécanismes des portes automatiques.",
+  "effect": "INC_ACTION(10)+\nPACKAGED+\nINC_NUTRITION(5)+\nUNSTABLE(BLOCK_DOOR,55)",
+  "gender": "m",
+  "cons_id": "PROACTIVE_RICE"
+ },
+ {
+  "id": "3",
+  "name": "Patate spatiale",
+  "desc": "Haaa les frites de patates spatiales ! C'est bizarre les mecs adorent tous ce truc, mais les femmes de l'équipage leur ont interdit d'en manger dans le refectoire. Il parait que ça sent les chaussettes et que c'est vraiment bourratif...",
+  "effect": "INC_ACTION(8)+\nPACKAGED+\nINC_NUTRITION(8)",
+  "gender": "f",
+  "cons_id": "SPACE_POTATOES"
+ },
+ {
+  "id": "4",
+  "name": "Barre de Lombrics",
+  "desc": "Un curieux mélange de chenilles et autres vers aglomérés dans une barre sous plastique. Glups...",
+  "effect": "INC_ACTION(6)+\nINC_NUTRITION(8)+\nINC_MORAL(2)+\nPACKAGED",
+  "gender": "f",
+  "cons_id": "LOMBRICS"
+ },
+ {
+  "id": "5",
+  "name": "Steak alien",
+  "desc": "Depuis notre arrivée dans le nuage de Magellan, on a jamais réussi à communiquer avec les formes de vies aliens autrement qu'en les consommant.",
+  "effect": "INC_ACTION(4)+\nINC_MORAL(-1)+\nUNSTABLE(SET_DISEASE(TAPROOT,4,4),25)+\nUNSTABLE(SET_DISEASE(GASTRO_REFLUX,4,4),50)+\nINC_NUTRITION(4)",
+  "gender": "m",
+  "cons_id": "ALIEN_STEAK"
+ },
+ {
+  "id": "6",
+  "name": "Anabolisant",
+  "desc": "Ces petits cubes de testosterones frétillants doivent être consommés avec modération.",
+  "effect": "INC_MOVE(8)+PACKAGED",
+  "gender": "m",
+  "cons_id": "ANABOLISANT"
+ },
+ {
+  "id": "7",
+  "name": "Café",
+  "desc": "C'est le carburant élémentaire pour tous les membres d'équipage",
+  "effect": "INC_ACTION(2)",
+  "gender": "m",
+  "cons_id": "COFFEE"
+ },
+ {
+  "id": "8",
+  "name": "Barre Supravitaminée",
+  "desc": "Le produit spatial SNC le plus en vogue, dans certaines tributs d'Amérique du Sud, il remplace avantageusement l'ayahuasca. Contient uniquement des choses mauvaises pour votre santé !",
+  "effect": "INC_ACTION(8)+INC_MOVE(4)+INC_NUTRITION(6)+SET_DISEASE_R(55,NAUSEA)+PACKAGED",
+  "gender": "f",
+  "cons_id": "SUPER_BAR"
+ },
+ {
+  "id": "9",
+  "name": "Déchets Organiques",
+  "desc": "C'est dégoûtant, ça pue le xylophide crevé depuis 2 mois enterré dans une cuve de cheddar par une après-midi de décembre.",
+  "effect": "INC_ACTION(6)+\nINC_NUTRITION(16)+\nINC_MORAL(-4)+\nCOOKABLE",
+  "gender": "m",
+  "cons_id": "ORGANIC_SCRAP"
+ },
+ {
+  "id": "$EOF",
+  "name": "",
+  "desc": "",
+  "effect": "",
+  "gender": "",
+  "cons_id": ""
+ },
+ {
+  "id": "",
+  "name": "",
+  "desc": "",
+  "effect": "",
+  "gender": "",
+  "cons_id": ""
+ },
+ {
+  "id": "",
+  "name": "",
+  "desc": "Si seulement ce torrefacteur a",
+  "effect": "",
+  "gender": "",
+  "cons_id": ""
+ }
+]

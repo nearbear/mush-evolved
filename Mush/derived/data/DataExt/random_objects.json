@@ -1,0 +1,248 @@
+[
+ {
+  "id": "i(ANTIGRAV_SCOOTER)",
+  "nb": "1",
+  "cat": "Base",
+  "checkSame": "false"
+ },
+ {
+  "id": "i(SPACE_SUIT)",
+  "nb": "6",
+  "cat": "Base",
+  "checkSame": "true"
+ },
+ {
+  "id": "i(MEDIKIT)",
+  "nb": "1",
+  "cat": "Base",
+  "checkSame": "false"
+ },
+ {
+  "id": "i(OLD_SHIRT)",
+  "nb": "1",
+  "cat": "Base",
+  "checkSame": "false"
+ },
+ {
+  "id": "rdBp",
+  "nb": "4",
+  "cat": "Base",
+  "checkSame": "true"
+ },
+ {
+  "id": "i(HELP_DRONE)",
+  "nb": "1",
+  "cat": "Base",
+  "checkSame": "false"
+ },
+ {
+  "id": "i(TREE_POT)",
+  "nb": "2",
+  "cat": "Store",
+  "checkSame": "true"
+ },
+ {
+  "id": "i(DRILLER)",
+  "nb": "1",
+  "cat": "Store",
+  "checkSame": "false"
+ },
+ {
+  "id": "i(ROPE)",
+  "nb": "2",
+  "cat": "Store",
+  "checkSame": "true"
+ },
+ {
+  "id": "i(QUAD_COMPASS)",
+  "nb": "1",
+  "cat": "Store",
+  "checkSame": "false"
+ },
+ {
+  "id": "i(PLASTENITE_ARMOR)",
+  "nb": "1",
+  "cat": "Store",
+  "checkSame": "false"
+ },
+ {
+  "id": "i(GRENADE)",
+  "nb": "1",
+  "cat": "Store",
+  "checkSame": "false"
+ },
+ {
+  "id": "i(KNIFE)",
+  "nb": "1",
+  "cat": "Store",
+  "checkSame": "false"
+ },
+ {
+  "id": "i(BLASTER)",
+  "nb": "2",
+  "cat": "Store",
+  "checkSame": "true"
+ },
+ {
+  "id": "i(WRENCH)",
+  "nb": "1",
+  "cat": "Store",
+  "checkSame": "false"
+ },
+ {
+  "id": "i(DUCK_TAPE)",
+  "nb": "1",
+  "cat": "Store",
+  "checkSame": "false"
+ },
+ {
+  "id": "i(EXTINGUISHER)",
+  "nb": "2",
+  "cat": "Store",
+  "checkSame": "false"
+ },
+ {
+  "id": "i(CAMERA)",
+  "nb": "3",
+  "cat": "Store",
+  "checkSame": "true"
+ },
+ {
+  "id": "i(POSTIT_BLOC)",
+  "nb": "1",
+  "cat": "Store",
+  "checkSame": "false"
+ },
+ {
+  "id": "i(SOAP)",
+  "nb": "1",
+  "cat": "Store",
+  "checkSame": "false"
+ },
+ {
+  "id": "i(HACKER_KIT)",
+  "nb": "1",
+  "cat": "Store",
+  "checkSame": "false"
+ },
+ {
+  "id": "i(PROTECTION_GLOVES)",
+  "nb": "1",
+  "cat": "Store",
+  "checkSame": "false"
+ },
+ {
+  "id": "i(APRON)",
+  "nb": "1",
+  "cat": "Store",
+  "checkSame": "false"
+ },
+ {
+  "id": "rdDr",
+  "nb": "12",
+  "cat": "SickBay",
+  "checkSame": "false"
+ },
+ {
+  "id": "r(SPACE_RATION)",
+  "nb": "32",
+  "cat": "Refectory",
+  "checkSame": "false"
+ },
+ {
+  "id": "bp( SOFA )",
+  "nb": "1",
+  "cat": "Store",
+  "checkSame": "false"
+ },
+ {
+  "id": "i(BANDAGE)",
+  "nb": "2",
+  "cat": "SickBay",
+  "checkSame": "false"
+ },
+ {
+  "id": "bp( GRENADE )",
+  "nb": "1",
+  "cat": "Store",
+  "checkSame": "false"
+ },
+ {
+  "id": "$EOF",
+  "nb": "",
+  "cat": "",
+  "checkSame": ""
+ },
+ {
+  "id": "",
+  "nb": "",
+  "cat": "",
+  "checkSame": ""
+ },
+ {
+  "id": "GOTO WORKSHOP",
+  "nb": "",
+  "cat": "",
+  "checkSame": ""
+ },
+ {
+  "id": "TRAD_MODULE",
+  "nb": "1",
+  "cat": "Store",
+  "checkSame": ""
+ },
+ {
+  "id": "SNIPER_RIFFLE",
+  "nb": "1",
+  "cat": "Store",
+  "checkSame": ""
+ },
+ {
+  "id": "MACHINE_GUN",
+  "nb": "1",
+  "cat": "Store",
+  "checkSame": ""
+ },
+ {
+  "id": "HEAT_SEEKER",
+  "nb": "1",
+  "cat": "Store",
+  "checkSame": ""
+ },
+ {
+  "id": "ECHO_SOUNDER",
+  "nb": "",
+  "cat": "",
+  "checkSame": ""
+ },
+ {
+  "id": "",
+  "nb": "",
+  "cat": "",
+  "checkSame": ""
+ },
+ {
+  "id": "DEPRECATED",
+  "nb": "",
+  "cat": "",
+  "checkSame": ""
+ },
+ {
+  "id": "FLAK_CANNON",
+  "nb": "1",
+  "cat": "Store",
+  "checkSame": ""
+ },
+ {
+  "id": "TALKY_WALKY",
+  "nb": "4",
+  "cat": "Base",
+  "checkSame": ""
+ },
+ {
+  "id": "SPACE_CAPSULE",
+  "nb": "8",
+  "cat": "Base",
+  "checkSame": ""
+ }
+]

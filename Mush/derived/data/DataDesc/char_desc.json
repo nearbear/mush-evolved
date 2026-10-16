@@ -1,0 +1,162 @@
+[
+ {
+  "id": "KIM_JIN_SU",
+  "full": "<p><strong>Kim Jin Su</strong> connaît très jeune les missions d'analyse sur Barnard Star. </p>\n<p>Il est rapidement promu au rang de Commandant et se voit confier des expéditions importantes sur Ross 154 et Epsilon Indi. Sur Tau-Ceti, la découverte de plusieurs gisements de Boxylium font de Jin-Su une célébrité interplanétaire.</p>\n<p>En 3146 il est nommé par la Fédération pour commander l'exécution du projet <strong>Magellan</strong>. Suite à l'invasion du Mush sur Sol, il supervise la finalisation du <strong>Daedalus</strong> avec <strong>Lai Kuan-Ti</strong>, et rassemble un équipage d'élite pour assurer la survie de l'espèce humaine dans une autre galaxie.</p>",
+  "intro": "Jin Su est le commandant suprême du Daedalus. Il mène l'équipage vers de glorieux horizons au péril de sa vie.",
+  "mini": "Commandant suprême du Daedalus.",
+  "pres": "Vous êtes <strong>Kim Jin Su</strong>, commandant suprême du Daedalus. Vous êtes pilote et capable de remotiver les troupes avec des discours charismatiques.",
+  "community": "http://mush.vg/tid/forum#!view/67561?p=3|thread/19614210?p=1"
+ },
+ {
+  "id": "FRIEDA_BERGMANN",
+  "full": "<p><strong>Frieda Bergmann</strong> est née au 21ème siècle, elle a plus de 45 années d'expérience en matière d'astro-physique.</p>\n<p> Au cours de ses études, elle met en évidence l'effet de fronde de Shapiro. Puis au 31ème siècle, son travail de repérage des corps célestes sert de grands explorateurs tels que <strong>GL Maubrick</strong> ou <strong>Kim Jin-Su</strong>.</p>\n<p> Récemment tirée de sa retraite en Bavière, elle est appelée sur Xyloph-17 pour devenir la navigatrice de <strong>Daedalus</strong>.</p>",
+  "intro": "Avec son millier d'années bien tassé, Frieda est la personne la plus expérimentée de l'Humanité en matière d'astrophysique. Elle a aussi acquis des savoirs annexes particulièrement utiles en milieux hostiles.",
+  "mini": "Scientifique millénaire.",
+  "pres": "Vous êtes <strong>Frieda Bergmann</strong>, experte en matière d'astrophysique. Vous êtes une excellente pilote et une technicienne acharnée !",
+  "community": "http://mush.vg/tid/forum#!view/67561|thread/19689575?p=1"
+ },
+ {
+  "id": "LAI_KUAN_TI",
+  "full": "<p><strong>Lai Kuan-Ti</strong> est l'un des deux concepteurs du Daedalus. Il ne prête guère attention à l'arrivée du <strong>Mush</strong> sur Tau-Ceti jusqu’à ce que <strong>Eleesha Williams</strong> lui apprenne le stade avancé de propagation du mycélium à l’intérieur du système Sol. </p>\n<p>Kuan-Ti, Raluca et Jin-Su décident alors d'avancer de 8 ans le lancement de leur programme d'exploration avant que la Fédération n'y mette un terme.</p>",
+  "intro": "Lai est le concepteur du vaisseau. Il en connaît tous les coins et recoins et a une relation privilégié avec NERON.",
+  "mini": "Grand architecte du Daedalus.",
+  "pres": "Vous êtes <strong>Lai Kuan Ti</strong>, co-concepteur du Daedalus et astrophysicien. Vous savez remotiver vos camarades avec des excellents discours.",
+  "community": "http://mush.vg/tid/forum#!view/67561?p=5|thread/20719766?p=1"
+ },
+ {
+  "id": "JANICE_KENT",
+  "full": "<p><strong>Janice Kent</strong> a un rôle de soutien psycho-informatique. Elle est la conceptrice du célèbre protocole <strong>A-TRUE</strong> et l'analyste de <strong>NERON</strong>.</p>\n<p> Experte en cryptage et communication, affûtée en psychologie, elle sauve l'équipage de la débâcle quand le <strong>Mush</strong> livre son assaut sur Xyloph-17.</p>\n<p> Sa plastique n'a d'égal que sa finesse d'esprit.<p>",
+  "intro": "En charge de la communication au sens large. Elle a un lien privilégiée avec NERON. Ses solides acquis en informatique et psychanalyse sont cruciaux pour le voyage.",
+  "mini": "Psychologue Digitale aux atouts certains.",
+  "pres": "Vous êtes <strong>Janice Kent</strong>. Vous avez un rôle de soutien psychologique et informatique. Vos capacités en communication et diplomatie sont aussi un atout !",
+  "community": "http://mush.vg/tid/forum#!view/67561?p=3|thread/19645493?p=1"
+ },
+ {
+  "id": "ROLAND_ZUCCALI",
+  "full": "<p>Après une brillante ascension au sein de l'académie de pilotes d'élites <strong>Roland Zuccali</strong> est remercié pour une potacherie de trop.</p>\n<p> Accumulant les petits boulots, son arrivée sur le <strong>Daedalus</strong> fait suite à une série de mauvais choix d'effets comiques. </p>\n<p>Pensant qu'il avait dégoté le poste parfait de chasseur alors que la paix régnait, il ne se doutait pas que la guerre murmurait déjà.</p>",
+  "intro": "Roland est un brillant pilote pas toujours aussi drôle qu'il ne veut bien le croire. C'est surtout un génie du combat rapproché.",
+  "mini": "Humoriste pilote de chasse à ses heures.",
+  "pres": "Vous êtes <strong>Roland Zuccali</strong>, pilote d'élite et redoutable tireur !",
+  "community": "http://mush.vg/tid/forum#!view/67561|thread/20340650?p=1"
+ },
+ {
+  "id": "JIANG_HUA",
+  "full": "<p>Spécialisé dans les missions d'approches de planètes inconnues, <strong>Jiang Hua</strong> est capable d’atterrir dans n'importe quelle condition sur à peu près n'importe quelle surface.</p>\n<p> Elle était présente dans L'Epygron, premier vaisseau d'exploration à rencontrer une forme de vie extra-terrestre. Sa passion pour les corps célestes, leur botanique, et la diversité du vivant est impressionnante. Personnage généreux et haut en couleur, elle est le leader des pilotes du <strong>Daedalus</strong>.</p>",
+  "intro": "Pilote en chef du Daedalus. Elle est spécialisé dans les missions d'exploration. On dit qu'elle atterri où elle veut, quand elle veut, et à n'importe quelle heure.",
+  "mini": "Exploratrice de l'extrême.",
+  "pres": "Vous êtes <strong>Jiang Hua</strong>, excellente pilote et maître botaniste. Votre compétence en tant que technicienne vous rendre indispensable à bord !",
+  "community": "http://mush.vg/tid/forum#!view/67561|thread/20261535?p=1"
+ },
+ {
+  "id": "PAOLA_RINALDO",
+  "full": "<p><strong>Paola Rinaldo</strong>... Fille de l'armateur <strong>Gioele Rinaldo</strong>, elle vit dans le désir constant d'une aventure qui bouleversera son existence.</p>\n<p> Pour dénoncer le système néo-colonialiste de la FDS, elle monte avec son petit ami <strong>Kivanç Terzi</strong> une radio pirate dans son campus. </p>\n<p>A cette occasion, elle intercepte accidentellement de troublantes communications Mush révélant une invasion prochaine. L'influence de son père lui permet d'embarquer sur <strong>Daedalus</strong> mais elle laisse sur Sol l'homme de sa vie.</p>",
+  "intro": "Brillante étude de biologie, professionnelle de la rebellion, elle se retrouve sur le Daedalus grâce à son père...",
+  "mini": "Officier principal des Communications du Daedalus.",
+  "pres": "Vous êtes <strong>Paola Rinaldo</strong>, aventurière experte en tir et en communication. La biologie est aussi un vos points forts !",
+  "community": "http://mush.vg/tid/forum#!view/67561?p=3|thread/20451046?p=1"
+ },
+ {
+  "id": "WANG_CHAO",
+  "full": "<p><strong>Wang Chao</strong> est assigné à la protection armée de l'équipage. Son caractère chaotique fait de Chao une menace pour ses ennemis comme pour ses amis.</p>\n<p> Malgré ses erreurs de jeunesse, Chao a gagné une relative confiance de la part de l'équipe en organisant le convoi de départ surprise de <strong>Daedalus</strong> et en les protégeant efficacement contre ses ex-collègues de la <strong>FDS</strong>.</p>",
+  "intro": "Chef de l'équipe de sécurité. Il a la gâchette facile mais est un atout puissant et caractériel.",
+  "mini": "Chef de la sécurité du Daedalus.",
+  "pres": "Vous êtes <strong>Wang Chao</strong>, tireur à caractère chaotique, robuste et bien doué pour la survie.",
+  "community": "http://mush.vg/tid/forum#!view/67561?p=6|thread/21006818?p=1"
+ },
+ {
+  "id": "FINOLA_KEEGAN",
+  "full": "<p><strong>Finola Keegan</strong> est à l'origine d'une grande partie des découvertes sur le Mush.</p>\n<p> Lorsqu'elle est contactée par <strong>Lai Kuan-Ti</strong> qui lui présente le projet <strong>Daedalus</strong>, elle refuse de quitter la Terre où elle mène son projet de vaccin.</p>\n<p> À l'aide de l'escadron du <strong>Daedalus</strong>, Lai fait enlever Finola et la cryogénise sans son consentement pour l'expédition.</p>",
+  "intro": "Biologiste de premier plan, ses découvertes sur le Mush et ses connaissances des organismes extra-terrestre sont uniques.",
+  "mini": "Biologiste de renommée internationale, pionnière dans l'étude du Mush.",
+  "pres": "Vous êtes <strong>Finola Keegan</strong>, diplomate et biologiste dévouée à la recherche du Mush. Vous êtes une passionnée de la médecine et des premiers soins.",
+  "community": "http://mush.vg/tid/forum#!view/67561?p=3|thread/20507704?p=1"
+ },
+ {
+  "id": "STEPHEN_SEAGULL",
+  "full": "<p><strong>Stephen Seagull</strong> fut successivement Groom sur un train interplanétaire, esclave dans une mine de cobalt au Mexique, sénateur de la coalition Chili Con Latte, mercenaire spatial, percepteur privé de taxe fédérale, convoyeur de fonds, kidnappeur de jeune fille, mineur de Boxylium, militaire cuistot de la FDS et même condamné à mort. </p>\n<p>Son périple le mène sur <strong>Xyloph-17</strong> où il est cryogénisé par erreur et embarqué sur le <strong>Daedalus</strong>.</p>",
+  "intro": "Le cuisinier le plus dangereux de la Galaxie est parmi vous. Qu'on se le dise.",
+  "mini": "Cuisinier le plus dangereux de la galaxie.",
+  "pres": "Vous êtes <strong>Stephen Seagull</strong>, le cuistot du vaisseau. Grand, robuste, et excellent tireur, sans doute un atout pour l'équipage !",
+  "community": "http://mush.vg/tid/forum#!view/67561?p=6|thread/19654941?p=1"
+ },
+ {
+  "id": "IAN_SOULTON",
+  "full": "<p>Présent lors de la révolte des mineurs d'Atémis, <strong>Ian Soulton</strong> a activement participé aux recherches initiales sur le <strong>Mush</strong>.</p>\n<p> Autorité en biologie matière, mais aussi en botanique, il a participé au recensement de nombreuses espèces extra-terrestre et élaboré de nombreux hybrides de plantes terrestres. Personnage fascinant, sa curiosité pour les espèces de fruits est infinie.</p>",
+  "intro": "Chercheur passionné et dévoué, ses avancés sur le Mush peuvent tout changer à bord.",
+  "mini": "Chercheur frugivore flexible.",
+  "pres": "Vous êtes <strong>Ian Soulton</strong>, grand chercheur du Mush. Vous faites autorité dans le domaine de la biologie et de la botanique.",
+  "community": "http://mush.vg/tid/forum#!view/67561|thread/19634273?p=1"
+ },
+ {
+  "id": "ZHONG_CHUN",
+  "full": "<p><strong>Zhong Chun</strong> est la seule survivante de l'équipe médicale de Tau Ceti III. Cryogénisée par la Fédération puis harcelée par la presse, <strong>Nils Carlsson</strong> l'aide à rentrer dans l'anonymat. </p>\n<p><strong>Zhong Chun</strong> est conduite sur <strong>Xyloph-17</strong> pour aider l'équipe à progresser sur le <strong>Mush</strong>. Elle est le dernier espoir de l'Humanité.</p>",
+  "intro": "Notre dernier espoir. Elle doit survivre. Elle possède quelques compétences médicales qui pourront aider.",
+  "mini": "Dernier espoir de l'Humanité",
+  "pres": "Vous êtes <strong>Zhon Chun</strong>, la seule immunisée au Mush ! Toujours prête à apprendre, vous appliquez avec enthousiasme vos connaissances en infirmerie.",
+  "community": "http://mush.vg/tid/forum#!view/67561|thread/20552058/0?p=1"
+ },
+ {
+  "id": "RALUCA_TOMESCU",
+  "full": "<p>Génie de la physique dès l'âge de 11 ans, <strong>Raluca Tomescu</strong> est l'inventeuse du réacteur à combustion réversible <strong>PILGRED</strong> équipé sur le Daedalus. </p>\n<p>Elle a également conçu avec <strong>Lai Kuan-Ti</strong> la quasi-totalité des modules du vaisseau et peut encore les améliorer. </p>\n<p>Souffrant de troubles autistiques, Raluca ne supporte que la présence de son chat <strong>Schrödinger</strong> qu'elle a réussi à faire monter à bord contre l'avis des médecins. Ses disputes avec <strong>NERON</strong> sont légendaires.</p>",
+  "intro": "Génie de la physique quantique. Ses compétences vastes la rendent indispensable à bord.",
+  "mini": "Génie de la physique quantique félinophile.",
+  "pres": "Vous êtes <strong>Raluca Tomescu</strong>, une vraie génie technicienne et conceptrice. Vous avez des troubles autistiques mais vous avez un moral imperturbable.",
+  "community": "http://mush.vg/tid/forum#!view/67561?p=2|thread/20458805?p=1"
+ },
+ {
+  "id": "GIOELE_RINALDO",
+  "full": "<p><strong>Gioele Rinaldo</strong> est l'armateur du vaisseau, C'est un milliardaire terrien passionné d'exploration spatiale qui a financé le projet initial du <strong>Daedaelus</strong>.</p>\n\n<p> Face à la menace <strong>Mush</strong>, Gioele panique et obtient in extremis de la part des concepteurs un poste de navigateur sur le vaisseau. Il parvient également à évincer un biologiste de l'équipe pour placer sa fille Paola.</p>",
+  "intro": "Parvenu sur le vaisseau grâce à sa roublardise, il est plein de ressources et saura vous surprendre.",
+  "mini": "Armateur philantrope caféinomane.",
+  "pres": "Vous êtes <strong>Gioele Rinaldo</strong>, armateur du vaisseau, fort comme une bête sauvage et doué pour dénicher des planètes !",
+  "community": "http://mush.vg/tid/forum#!view/67561?p=3|thread/20629766?p=1"
+ },
+ {
+  "id": "ELEESHA_WILLIAMS",
+  "full": "<p><strong>Eleesha Williams</strong> est journaliste d'investigation chez SNC (Sol News Channel).</p>\n<p> Elle obtient les fiches médicales de plusieurs leaders politiques et financiers de la Fédération, prouvant leur infection au Mush. </p>\n<p>Après la déprogrammation de son ultime grand reportage, elle fonde <strong>Tardigrade</strong>. Craignant pour sa vie, elle prend la fuite pour Jupiter et sa station orbitale <strong>Xyloph-17</strong>. Là-bas, elle révèle l'affaire à l'équipe du <strong>Daedalus</strong> et obtient une couverture de mécano.</p>",
+  "intro": "Elle est journaliste de formation et n' a pas oublié d'être brillante dans ce domaine. Son passé de Grand Reporter et de journaliste d’investigation en atteste.",
+  "mini": "Investigatrice déchue de premier plan.",
+  "pres": "Vous êtes <strong>Eleesha Williams</strong>, journaliste d'investigation. Vous êtes indispensable à bord grâce à vos compétences en tir, diplomatie et informatique.",
+  "community": "http://mush.vg/tid/forum#!view/67561?p=4|thread/20507142?p=1"
+ },
+ {
+  "id": "TERRENCE_ARCHER",
+  "full": "<p>Gravement blessé pendant un raid trop ambitieux contre les rebelles sur Sol,<strong>Terrence Archer</strong> est resté dans le coma pendant 6 mois. Retourné aigri à la vie civile, cloué dans un fauteuil, Terrence se consacre à l'ingénierie de haut niveau et à la création d'automates.</p>\n<p> Le rêve de sa vie est de mettre au point des chasseurs sans pilote et des corps contrôlables à distance. Il rejoint le <strong>Daedalus</strong> pour déployer ses drones. Mais le <strong>Mush</strong> arrive...</p>",
+  "intro": "Certe handicapé, Terrence a aussi des compétences uniques dans les sciences de l'ingénieur.",
+  "mini": "Technophile désabusé motorisé.",
+  "pres": "Vous êtes <strong>Terrence Archer</strong>. Certes handicapé, mais irremplaçable en tir, informatique, ingénierie et pilotage. Vous êtes le seul expert en robotique.",
+  "community": "http://mush.vg/tid/forum#!view/67561?p=4|thread/20598308?p=1"
+ },
+ {
+  "id": "ADMIN",
+  "full": "un Admin",
+  "intro": "un Admin",
+  "mini": "You wanna dance ?",
+  "pres": "Vous êtes un admin. Geek, avec des lunettes, vous préférez passer la journée devant l'ordinateur que sortir, vous exposer au soleil, et vous entourer des êtres humains.",
+  "community": ""
+ },
+ {
+  "id": "DEREK_HOGAN",
+  "full": "<p>Derek Hogan est un ex-sergent instructeur de la FDS, en échouant la capture de la scientifique Finola Keegan, il cause la mort de son binôme Wang Chao et prend sa place à bord du Daedalus. </p><p> Toujours là quand on a pas besoin de lui, il est prêt à en découdre avec les mushs...</p><p>Et s'il y a bien quelque chose que derek n'aime pas, c'est bien les champignons...</p>",
+  "intro": "Véritable force de la nature, Derek est capable de faire régner l'ordre à bord du Daedalus.",
+  "mini": "Héros malgré lui.",
+  "pres": "Vous êtes <strong>Derek Hogan</strong>. Des muscles, de la testostérone et un petit côté fleur bleu. Trouverez vous l'amour à bord du Daedalus ? Tentez déjà de remplir votre mission correctement !",
+  "community": ""
+ },
+ {
+  "id": "ANDIE_GRAHAM",
+  "full": "<p>Andie Graham est un(e) pilote exemplaire, formé(e) par l'élite de la FDS</p> <p>Il/Elle assure dans pratiquement tous les domaines.</p><p> Ayant été l'étudiant(e) de l'instructeur Hogan, Andie lui voue une adoration sans limite. Rejoindre le Daedalus et naviguer à bord du même vaisseau que lui est un rêve enfin assouvi. </p><p>Pauvre Andie, si il/elle savait....</p>",
+  "intro": "Sur-doué(e) capable de mener à bien différentes tâches, Andie est prêt à tout pour le bien de la fédération... ou pas ?",
+  "mini": "Fayot de la fédération.",
+  "pres": "Vous êtes <strong>Andie Graham</strong>. Homme ou femme, à vous de choisir. En tous cas, une chose est sûre, Andie assure. Biologie, Botanique, Diplomatie, et en plus pilotage, aucune corde ne manque à son arc ! D'un naturel naïf, Andie est très populaire et attire les autres auprès de lui.",
+  "community": ""
+ },
+ {
+  "id": "$EOF",
+  "full": "",
+  "intro": "",
+  "mini": "",
+  "pres": "",
+  "community": ""
+ }
+]

@@ -1,0 +1,137 @@
+[
+ {
+  "id": "BITE",
+  "damage": "2",
+  "extra": "2",
+  "we": "8",
+  "desc": "$encounter mord $member de $hero, $encounter enfonce ses dents dans $member de $hero",
+  "ambient": "",
+  "tags": "BLEED"
+ },
+ {
+  "id": "BODY_CRUSH",
+  "damage": "4",
+  "extra": "0",
+  "we": "4",
+  "desc": "$encounter tombe lourdement sur $hero, $hero est écrasé sous le poid $encounter_b",
+  "ambient": "$gender pousse un cri étouffé",
+  "tags": "BLEED"
+ },
+ {
+  "id": "HOLD_MEMBER",
+  "damage": "2",
+  "extra": "0",
+  "we": "8",
+  "desc": "$encounter agrippe fermement $member de $hero",
+  "ambient": "il n'a pas l'air prêt a lâcher prise !",
+  "tags": "SLOW"
+ },
+ {
+  "id": "CLAW_SMALL",
+  "damage": "1",
+  "extra": "1",
+  "we": "8",
+  "desc": "$encounter griffe méchamment $hero",
+  "ambient": "la sâle bête !",
+  "tags": "BLEED"
+ },
+ {
+  "id": "CLAW",
+  "damage": "3",
+  "extra": "1",
+  "we": "8",
+  "desc": "un grand coup de griffe $encounter_b déchire $member de $hero",
+  "ambient": "$gender hurle de douleur",
+  "tags": "BLEED"
+ },
+ {
+  "id": "STOMACH_STRONG_CLAW",
+  "damage": "4",
+  "extra": "4",
+  "we": "4",
+  "desc": "$encounter entaille le ventre de $hero - un bout d'intestin semble prêt a sortir",
+  "ambient": "",
+  "tags": "BLEED"
+ },
+ {
+  "id": "PAW_DISMEMBER",
+  "damage": "2",
+  "extra": "2",
+  "we": "4",
+  "desc": "$encounter arrache $small_member de $hero d'un coups de patte !",
+  "ambient": "$gender se jette a terre et tente de le chercher $ground_loc afin de le ramener intact au labo",
+  "tags": "BLEED"
+ },
+ {
+  "id": "CHARGE",
+  "damage": "3",
+  "extra": "3",
+  "we": "4",
+  "desc": "$encounter charge $hero et $gender_b propulse trois mètres en arrière $ground_loc",
+  "ambient": "$gender est sonné par l'impact",
+  "tags": ""
+ },
+ {
+  "id": "ACID_JET",
+  "damage": "1",
+  "extra": "4",
+  "we": "5",
+  "desc": "$encounter crache un liquide acide a la tête de $hero",
+  "ambient": "$his_face_part est tout liquide ! Pourvu que ca soit pas trop grâve !",
+  "tags": ""
+ },
+ {
+  "id": "OVERWHELM",
+  "damage": "2",
+  "extra": "0",
+  "we": "8",
+  "desc": "$encounter englouti $hero jusqu'a l'abdomen",
+  "ambient": "il ne peut plus du tout bouger !",
+  "tags": "SLOW"
+ },
+ {
+  "id": "SUCK_HEAD",
+  "damage": "6",
+  "extra": "2",
+  "we": "2",
+  "desc": "$encounter avale la quasitotalité de la tête de $hero, puis aspire de toute ses forces !",
+  "ambient": "les yeux de $hero vont bientot sortir de leurs orbites !",
+  "tags": ""
+ },
+ {
+  "id": "WHIRL",
+  "damage": "1",
+  "extra": "3",
+  "we": "4",
+  "desc": "$encounter tourne rapidement sur place et frappe tous azimuts",
+  "ambient": "",
+  "tags": "ALL"
+ },
+ {
+  "id": "AVOID",
+  "damage": "0",
+  "extra": "0",
+  "we": "8",
+  "desc": "$encounter évite tant bien que mal les assauts de $exped",
+  "ambient": "",
+  "tags": "DODGE"
+ },
+ {
+  "id": "BIG_BEAK",
+  "damage": "3",
+  "extra": "2",
+  "we": "8",
+  "desc": "$encounter secoue violemment sa tête sur $hero et luis assene de puissants coups de bec",
+  "ambient": "",
+  "tags": ""
+ },
+ {
+  "id": "$EOF",
+  "damage": "",
+  "extra": "",
+  "we": "",
+  "desc": "",
+  "ambient": "",
+  "tags": ""
+ }
+]

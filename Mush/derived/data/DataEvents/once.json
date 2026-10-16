@@ -1,0 +1,114 @@
+[
+ {
+  "id": "OUT_OF_PA",
+  "desc": "<h4>Plus De Points d'Action (:pa:)</h4>\n<p>Vous n'avez plus de Point d'Action (:pa:).</p>\n<p> Que faire ?</p>\n<ul class=\"ul\">\n<li>Organisez-vous avec l'équipage, un bon vaisseau est un vaisseau vivant, et votre participation sera sans doute décisive !</li>\n<li>Attendez le *prochain cycle*. Un cycle dure 3 heures (<img src=\"/img/icons/ui/casio.png\"/>).</li>\n<li>Manger, ça peut vous donner un petit avantage.</li>\n<li>Reposez-vous en vous *allongeant* (dans les Dortoirs, par exemple). Ceci vous en fera gagner plus rapidement au changement de cycle.</li>\n</ul>\n",
+  "centered": "true",
+  "div_id": "",
+  "script": "",
+  "need_confirm": "true"
+ },
+ {
+  "id": "NO_MORE_PM",
+  "desc": "<h4>Plus De Points de Mouvement (:pm:)</h4>\n<p>Vous n'avez plus de Point de Mouvement (:pm:).</p>\n<p>Que faire ?</p>\n<ul class=\"ul\">\n<li>Organisez-vous avec l'équipage, un bon vaisseau est un vaisseau vivant, et vos participation seront sans doute décisives !</li>\n<li>Attendez le *prochain cycle*. Un cycle dure 3 heures (<img src=\"/img/icons/ui/casio.png\" />).</li>\n<li>Transformez vos :pa:. Lorsque vous changez de pièce, un de vos :pa: sera transformé en quelques :pm:.</li>\n</ul>\n\n<p>Une bonne répartition entre action et mouvement est la clé de la survie dans Mush.</p>",
+  "centered": "true",
+  "div_id": "",
+  "script": "",
+  "need_confirm": "true"
+ },
+ {
+  "id": "NOOB_OUT_OF_ALL",
+  "desc": "\n<p>Vous venez d'épuiser vos Points d'Action (:pa:) et de Mouvement (:pm:).</p>\n<p>Pas d'inquiétude, *pour votre première partie on vient de vous donner quelques :pa: :pm: supplémentaires :)*.</p>\n<p>N'oubliez pas que ces points sont *précieux* dans Mush, utilisez-les avec parcimonie !</p>\n",
+  "centered": "false",
+  "div_id": "noob_out_of_all",
+  "script": "Main.outlineBlock('#cdPaBloc') ;",
+  "need_confirm": "true"
+ },
+ {
+  "id": "NOOB_THANKS",
+  "desc": "<h4>Premier changement de Cycle</h4>\n<p>C'est la première fois que vous jouez un changement de cycle. Puisque c'est votre première partie, on vous a donné des :pa_pm: supplémentaires. </p>\n<p>N'oubliez pas, les :pa_pm: sont précieux dans Mush : *utilisez-les avec parcimonie* !</p>\n",
+  "centered": "true",
+  "div_id": "noob_thanks",
+  "script": "",
+  "need_confirm": "true"
+ },
+ {
+  "id": "NOOB_VENDING",
+  "desc": "<h4>Points d'Action (:pa:) et de Mouvement (:pm:) épuisés</h4>\n<table class=\"firstvending\">\n<tr><td class=\"one\">\n<p>J'attends le prochain cycle :</p>\n<p class='cdTimerHere'></p>\n<a href=\"#\" class=\"butmini\" onclick='return Main.dialVendWait($(this));'> J'attends <span class='cdTimerHere'></span> </a>\n</td><td>\n<p>J'achète une *Barre Supravitaminée* au *Distributeur* :</p>\n<div class=\"item\"><img src=\"/img/icons/items/ration_8.jpg\"/></div>\n<a href=\"/vending\" class=\"butmini\" onclick='return Main.dialVendDistro($(this));'>Aller au Distributeur</a>\n<p class=\"explanation\">Votre stock est individuel mais limité.</p>\n</td></tr></table>\n",
+  "centered": "true",
+  "div_id": "noob_vending",
+  "script": "Main.populateTimers();\n$('.cdDialOk').closest('.but').hide();",
+  "need_confirm": "true"
+ },
+ {
+  "id": "NOOB_LEVEL_UP",
+  "desc": "<h4>Vous avez passé un niveau !</h4>\n<p>Cela vous permet de choisir une nouvelle compétence. Pour en profiter *maintenant*, passez en <strong class=\"stronggold\">Mode Or</strong> !</p>\n<ul class=\"choicegold\">\n<li><a href=\"#\" class=\"butmini\" onclick='return Main.dialConfirm($(this));' >Une autre fois...</a></li>\n<li><a href=\"#\" class=\"butmini\" onclick='return Main.dialGold($(this));' >Plus d'infos sur le <strong class=\"stronggold\">Mode Or</strong></a></li></ul>\n",
+  "centered": "false",
+  "div_id": "noob_level_present",
+  "script": "$('.cdDialOk').closest('.but').hide();",
+  "need_confirm": "true"
+ },
+ {
+  "id": "$EOF",
+  "desc": "",
+  "centered": "",
+  "div_id": "",
+  "script": "",
+  "need_confirm": ""
+ },
+ {
+  "id": "",
+  "desc": "",
+  "centered": "",
+  "div_id": "",
+  "script": "",
+  "need_confirm": ""
+ },
+ {
+  "id": "",
+  "desc": "pour outliner une div :",
+  "centered": "",
+  "div_id": "",
+  "script": "",
+  "need_confirm": ""
+ },
+ {
+  "id": "",
+  "desc": "Main.outlineBlock('#noob_thanks') ;",
+  "centered": "",
+  "div_id": "",
+  "script": "",
+  "need_confirm": ""
+ },
+ {
+  "id": "",
+  "desc": "",
+  "centered": "",
+  "div_id": "",
+  "script": "",
+  "need_confirm": ""
+ },
+ {
+  "id": "",
+  "desc": "if need confirm is false, the popup will not be ma,ndatory",
+  "centered": "",
+  "div_id": "",
+  "script": "",
+  "need_confirm": ""
+ },
+ {
+  "id": "",
+  "desc": "",
+  "centered": "",
+  "div_id": "",
+  "script": "",
+  "need_confirm": ""
+ },
+ {
+  "id": "",
+  "desc": "\n<p>Vous n'avez plus de Points d'Action (:pa:) ni de Mouvement (:pm:) !</p>\n<p>Vous ne pouvez plus rien faire... Pas d'inquiétude, *pour votre première partie on vous donne quelques :pa: :pm: supplémentaires :)*.</p>\n<p>N'oubliez pas, ces points *précieux* dans Mush, utilisez-les avec parcimonie !</p>\n",
+  "centered": "",
+  "div_id": "",
+  "script": "",
+  "need_confirm": ""
+ }
+]

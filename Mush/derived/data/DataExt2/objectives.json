@@ -1,0 +1,1289 @@
+[
+ {
+  "id": "RESUME_PLEASE",
+  "title": "Créer une liaison externe",
+  "desc": "<p>Le système d'Alertes me communique que nous n'avons pas de liaison (:com:) avec le système Sol. </p>\n<p>Vous aussi pouvez le savoir grâce à la barre Alertes où l'on voit l'icône :com:.</p>\n<p>Cherchez le *Pont* dans la Carte numérique de votre Traqueur pour participer dans la création de la liaison.</p>\n",
+  "type": "AnyButMush",
+  "cond": "Not( ShipLinked )+Not( HasSkill(RADIO_EXPERT))+Not(RoomTypeIs(COMMAND_CENTER))+Not(HasDoneAction(ESTABLISH_COM))+Not(HasStatus(DIRTY))",
+  "weight": "95",
+  "important": "true"
+ },
+ {
+  "id": "RESUME_PLEASE2",
+  "title": "Créer une liaison externe",
+  "desc": "\n<p>Vous êtes sur le *Pont*. Cette salle est importante car on y trouve le Terminal de Commandement, pour piloter le Daedalus, et les instruments nécessaires pour la navigation et la communication.</p>\n<p>La barre Alerte vous indique que nous n'avons pas de liaison (:com:) avec le système Sol. </p>\n<p>Pour créer la liaison externe et découvrir le système de communication, cliquez sur le *Centre de Communication* et ensuite sur <em>Accéder</em>. Ensuite cliquez sur <em>Établir</em>.</p>\n<p>C'est un travail en équipe, demandez à vos camarades par le canal Discussion (:discussion:) de collaborer pour avancer plus rapidement.</p>\n",
+  "type": "AnyButMush",
+  "cond": "Not( ShipLinked )+Not(IsMush)+Not( HasSkill(RADIO_EXPERT))+RoomTypeIs(COMMAND_CENTER)+Not(HasDoneAction(ESTABLISH_COM))+Not(HasStatus(DIRTY))",
+  "weight": "96",
+  "important": "true"
+ },
+ {
+  "id": "EXEC_SYSTEM_SCAN",
+  "title": "Trouver une planète",
+  "desc": "\n<p>Allez sur le *Pont* et cliquez sur le *Terminal Astro*. Ensuite lancez un <em>scan de planète</em>.</p>\n<p> Si vous trouvez une planète cela pourra permettre à l'équipage de réaliser une exploration d'une planète et d'obtenir des ressources.</p>\n<p>Pensez à communiquer à l'équipage la *direction* et le *fuel* nécessaire pour s'y rendre.</p>",
+  "type": "AnyButMush",
+  "cond": "Not(HeroHasScanedPlanet)+Not(RoomTypeIs(COMMAND_CENTER))",
+  "weight": "70",
+  "important": "false"
+ },
+ {
+  "id": "EXEC_SYSTEM_SCAN2",
+  "title": "Trouver une planète",
+  "desc": "\n<p>Vous êtes sur le *Pont*. Cette salle est importante car on y trouve le Terminal de Commandement, pour piloter le Daedalus, et les instruments nécessaires pour la navigation et la communication.</p>\n<p>Pour découvrir le système de navigation, cliquez sur le *Terminal Astro* et ensuite sur <em>Accéder</em>. Ensuite lancez un <em>scan de planète</em>.</p>\n<p> Si vous trouvez une planète cela pourra permettre à l'équipage de réaliser une exploration d'une planète et d'obtenir des ressources.</p>\n<p>Pensez à communiquer à l'équipage la *direction* et le *fuel* nécessaire pour s'y rendre.</p>",
+  "type": "AnyButMush",
+  "cond": "Not(HeroHasScanedPlanet)+RoomTypeIs(COMMAND_CENTER)+HasDoneAction(ESTABLISH_COM)",
+  "weight": "80",
+  "important": "true"
+ },
+ {
+  "id": "PLANET_SCAN",
+  "title": "Scan avancé d'une planète",
+  "desc": "<p>Mes astrosenseurs confirment que vous avez trouvé une planète depuis le *Terminal Astro*. Continuez les analyses pour récolter le maximum possible de données. Cela aidera l'équipe d'expédition à savoir à quoi s'attendre.</p>\n<p>Cliquez sur le *Terminal Astro* et ensuite sur <em>Accéder</em>. Exécutez l'action <em>Analyse</em> pour obtenir plus d'informations sur la planète.</p>\n<p>Pensez à cliquer sur le canal *Discussion* (:discussion:) pour communiquer à l'équipage les résultats de vos recherches.</p>",
+  "type": "AnyButMush",
+  "cond": "HeroHasScanedPlanet+RoomTypeIs(COMMAND_CENTER)+Not(HasDoneAction(REMOTE_PLANET_ANALYSIS))+Not(HasStatus(DIRTY))",
+  "weight": "80",
+  "important": "true"
+ },
+ {
+  "id": "ASTROPHYSICIAN",
+  "title": "Astrophysicien",
+  "desc": "<p>Votre lieu de travail dans le Daedalus se situe dans le *Pont*.</p>\n<p>Cherchez le Pont dans la Carte Numérique de votre Traqueur et allez là-bas pour découvrir votre métier.</p>",
+  "type": "Skill(ASTROPHYSICIAN)",
+  "cond": "Not(HeroHasScanedPlanet)+Not(RoomTypeIs(COMMAND_CENTER))",
+  "weight": "97",
+  "important": "true"
+ },
+ {
+  "id": "ASTROPHYSICIAN2",
+  "title": "Astrophysicien",
+  "desc": "\n<p>Vous êtes sur le *Pont*, votre centre de travail. Cette salle est importante car on y trouve les instruments de pilotage, navigation et communication.</p>\n<p>Pour découvrir votre spécialité, cliquez sur le *Terminal Astro* et ensuite sur <em>Accéder</em>. Ensuite lancez un <em>scan de planète</em>. Cette action a un coût réduit pour vous grâce à votre spécialité Astrophysicien.</p>\n<p>Si vous trouvez une planète cela permettra à l'équipage de réaliser une exploration d'une planète et d'obtenir des ressources.</p>\n<p>Pensez à cliquer sur le canal *Discussion* (:discussion:) pour communiquer à l'équipage la *direction* et le *fuel* nécessaire pour s'y rendre.</p>",
+  "type": "Skill(ASTROPHYSICIAN)",
+  "cond": "Not(HeroHasScanedPlanet)+RoomTypeIs(COMMAND_CENTER)",
+  "weight": "98",
+  "important": "true"
+ },
+ {
+  "id": "ASTROPHYSICIAN3",
+  "title": "Astrophysicien avancé",
+  "desc": "<p>Mes systèmes détectent que vous avez trouvé une planète. Je vous félicite pour le succès de votre recherche. </p>\n<p>Mais le travail est loin d'être fini. Maintenant vous devez continuer les analyses pour récolter le maximum possible de données. Cela aidera l'équipe d'expédition à savoir à quoi s'attendre.</p>\n<p>Cliquez sur le *Terminal Astro* et ensuite sur <em>Accéder</em>. Exécutez l'action <em>Analyse</em> pour obtenir plus d'informations sur la planète.</p>\n<p>Pensez à cliquer sur le canal *Discussion* (:discussion:) pour communiquer à l'équipage les résultats de vos recherches.</p>",
+  "type": "Skill(ASTROPHYSICIAN)",
+  "cond": "HeroHasScanedPlanet+RoomTypeIs(COMMAND_CENTER)+Not(HasStatus(DIRTY))",
+  "weight": "99",
+  "important": "true"
+ },
+ {
+  "id": "EXEC_PLANET_SCAN",
+  "title": "Analyse avancé de planète",
+  "desc": "<p>Mes systèmes détectent que le vaisseau est en orbite autour d'une planète.</p>\n<p>Allez sur le *Pont* (vous le trouverez dans la Carte du Traqueur) et depuis le *Terminal Astro* faites une <em>analyse avancée</em> de cette planète. Communiquez les résultats. Cela aidera l'équipe d'expédition à savoir à quoi s'attendre.</p>",
+  "type": "AnyButMush",
+  "cond": "ShipHasPlanet+Not(HasStatus(DIRTY))",
+  "weight": "71",
+  "important": "false"
+ },
+ {
+  "id": "EXEC_PLANET_SCAN3",
+  "title": "Analyse avancé de planète",
+  "desc": "\n<p>Vous êtes sur le *Pont*. Cette salle est importante car on y trouve le Terminal de Commandement, pour piloter le Daedalus, et les instruments nécessaires pour la navigation et la communication.</p>\n\n<p>Me senseurs confirment que le Daedalus est en orbite autour d'une planète. Pour découvrir un peu plus sur le système de navigation, cliquez sur le *Terminal Astro* en ensuite sur <em>Accéder</em>.</p>\n\n<p>Faites une <em>analyse avancée</em> de cette planète. Communiquez les résultats. Cela aidera l'équipe d'expédition à savoir à quoi s'attendre.</p>",
+  "type": "AnyButMush",
+  "cond": "ShipHasPlanet+RoomTypeIs(COMMAND_CENTER)+Not(HasStatus(DIRTY))",
+  "weight": "98",
+  "important": "true"
+ },
+ {
+  "id": "SHOOT_HUNTER",
+  "title": "Éliminer des Hunters",
+  "desc": "<p>Le système d'Alertes me communique que des nuisibles *Hunters* ont envahi le périmètre de sécurité du Daedalus.</p>\n<p>Vous aussi pouvez le savoir grâce à la barre Alertes où l'on voit l'icône :hunter:.</p>\n<p>Allez dans une *Tourelle* et débarrassez-nous de ces *Hunters* qui sont en train de nous attaquer.</p>",
+  "type": "AnyButMush",
+  "cond": "ShipHasHunters+Not(HasSkill(PILOT))+Not(HasSkill(RADIO_EXPERT))+Not(HasSkill(COOK))+Not(HasSkill(ASTROPHYSICIAN))+Not(HasSkill(BIOLOGIST))+Not(HasSkill(BOTANIC))+Not(HasDoneAction(TURRET_ATTACK))",
+  "weight": "80",
+  "important": "true"
+ },
+ {
+  "id": "SHOOT_HUNTER2",
+  "title": "Éliminer des Hunters",
+  "desc": "<p>Vous êtes dans une *Tourelle*. Les tourelles font partie du système de défense du Daedalus.</p>\n<p>Le système d'Alertes me communique que des nuisibles *Hunters* ont envahi le périmètre de sécurité du Daedalus.</p>\n<p>Vous aussi pouvez le savoir grâce à la barre Alertes où l'on voit l'icône :hunter:.</p>\n<p> Cliquez sur le *Poste de tir* et ensuite sur l'action <em>Tirer</em>. Ça permettra d'affaiblir ces nuisibles *Hunters*...</p>",
+  "type": "AnyButMush",
+  "cond": "ShipHasHunters+Not(HasSkill(PILOT))+Not(HasSkill(RADIO_EXPERT))+Not(HasSkill(COOK))+Not(HasSkill(ASTROPHYSICIAN))+Not(HasSkill(BIOLOGIST))+Not(HasSkill(BOTANIC))+RoomTypeIs(LASER_TURRET)",
+  "weight": "100",
+  "important": "true"
+ },
+ {
+  "id": "PILOT",
+  "title": "Pilote de Chasse",
+  "desc": "<p>Allez dans une *Baie de Lancement*, cliquez sur un *Patrouilleur* et cliquez sur <em>Décoller</em>.</p><p>Une fois en vol, *abattez* un maximum de Hunters !</p>\n<p> La chasse en vol est plus rentable qu'avec les tourelles.</p>",
+  "type": "Skill( PILOT)",
+  "cond": "ShipHasHunters+Not(HasSymptom(VERTIGO))+Not(HasDoneAction(PATROL_SHIP_ATTACK))",
+  "weight": "60",
+  "important": "true"
+ },
+ {
+  "id": "SHOOT_HUNTER4",
+  "title": "Éliminer des Hunters en vol",
+  "desc": "<p>Vous êtes dans une *Baie de Lancement*. Ici se trouvent les Patrouilleurs, fierté du <small>piètre</small> système de défense du Daedalus.</p>\n<p>Dans la barre Alertes on voit l'icône :hunter:, cela veut dire que le Daedalus est en train d'être attaqué ! Cliquez sur un *Patrouilleur* et cliquez sur <em>Décoller</em>.</p><p>Une fois en vol, *abattez* un maximum de Hunters !</p>\n<p> La chasse en vol est plus rentable qu'avec les tourelles.</p>",
+  "type": "AnyButMush",
+  "cond": "ShipHasHunters+Not(RoomTypeIs(PATROL_SHIP))+Not(PilotLocked)+RoomTypeIs(SPACESHIP_BAY)+ Not(HasSymptom(VERTIGO))",
+  "weight": "80",
+  "important": "true"
+ },
+ {
+  "id": "SHOOT_HUNTER5",
+  "title": "Éliminer des Hunters en vol",
+  "desc": "<p>Par Zeus, il y a une nuée de Hunters autour du Daedalus et le pilotage est *verrouillé* pour les non-pilotes ! Seulement l'Administrateur NERON peut le déverrouiller.</p><p>Cliquez sur le Canal de Discussion (:discussion:) et demandez à l'Administrateur NERON de déverrouiller le pilotage dans le BIOS de NERON.</p>\n<p>Après, déchaînez les Enfers !</p>",
+  "type": "AnyButMush",
+  "cond": "ShipHasHunters+Not(RoomTypeIs(PATROL_SHIP))+PilotLocked+GameStarted",
+  "weight": "3",
+  "important": "false"
+ },
+ {
+  "id": "COOK_A_LOT",
+  "title": "Faire à manger !",
+  "desc": "<p>Vous êtes dans la pièce préférée du gourmand de l'espace : le *Réfectoire* ! C'est l'endroit pour se détendre et papoter autour d'un bon café ou petit plat <small>dégueu</small>.</p>\n<p>Sélectionnez une *Ration* dans l'étagère et cliquez sur l'action <em>Cuisiner</em>.</p>\n<p>La ration cuisinée apporte des :pa_pm: supplémentaires à son consommateur, mais attention : elle périme et peut disparaître à minuit.</p>",
+  "type": "AnyButMush",
+  "cond": "RoomItemHas( CONSUMABLE) +RoomTypeIs(REFECTORY)+Not(HasDoneAction(COOK_RATION))+Not(HasSkill(COOK))",
+  "weight": "60",
+  "important": "true"
+ },
+ {
+  "id": "COOKER",
+  "title": "Cuistot",
+  "desc": "<p>Vous possédez une compétence très appréciée par tous : *Cuistot* ! </p>\n<p>Regardez dans la Carte numérique du Traqueur et cherchez votre pièce fétiche : le *Réfectoire*. Ensuite, rendez-vous là bas !</p>",
+  "type": "Skill( COOK )",
+  "cond": "RemoteRoomItemHas( REFECTORY,CONSUMABLE)+Not(RoomTypeIs(REFECTORY))+Not(HasDoneAction(COOK_RATION))",
+  "weight": "99",
+  "important": "true"
+ },
+ {
+  "id": "COOKER2",
+  "title": "Cuistot",
+  "desc": "<p>Aaah, vous êtes dans le Réfectoire, votre salle préférée !</p>\n<p>Il est toujours occasion de préparer des bons petits plats immangeables pour vos camarades grâce à vos points d'action en cuisine (:pa_cook:).</p>\n<p>Sélectionnez une *Ration* dans l'étagère et cliquez sur l'action <em>Cuisiner</em>.</p>\n<p>La ration cuisinée apporte des :pa_pm: supplémentaires à son consommateur, mais attention : elle périme et peut disparaître à minuit.</p>",
+  "type": "Skill( COOK )",
+  "cond": "RoomItemHas( CONSUMABLE) +RoomTypeIs(REFECTORY)+Not(HasDoneAction(COOK_RATION))",
+  "weight": "98",
+  "important": "true"
+ },
+ {
+  "id": "COOK_A_LOT3",
+  "title": "Faire à manger !",
+  "desc": "<p>Regardez dans la Carte du vaisseau et cherchez le *Réfectoire*. Ensuite, rendez-vous là bas !</p>\n<p>Une fois dans le *Réfectoire*, sélectionnez une *Ration* dans l'étagère et cliquez sur l'action <em>Cuisiner</em>.</p>\n<p>La ration cuisinée apporte des :pa_pm: supplémentaires à son consommateur, mais attention : elle périme et peut disparaître à minuit.</p>",
+  "type": "AnyButMush",
+  "cond": "RemoteRoomItemHas( REFECTORY,CONSUMABLE)+Not(RoomTypeIs(REFECTORY))+Not(HasDoneAction(COOK_RATION))",
+  "weight": "60",
+  "important": "false"
+ },
+ {
+  "id": "CLONE_WARS",
+  "title": "Développer le Jardin",
+  "desc": "<p>Trouvez *un fruit et un Hydropot vide* (vous en trouverez probablement dans l'étagère du *Jardin Hydroponique*), effectuez l'action <em>Semer</em> sur le fruit pour créer une nouvelle plante.</p>\n<p>Cela améliorera les apports en oxygène et nourriture !</p>",
+  "type": "AnyButMush",
+  "cond": "ShipEmptyPot+Not(HasDoneAction(NEW_PLANTS_SEEDING))",
+  "weight": "60",
+  "important": "false"
+ },
+ {
+  "id": "CLONE_WARS2",
+  "title": "Botaniste",
+  "desc": "<p>Dans la Carte numérique du Traqueur cherchez le *Jardin Hydroponique* et rendez-vous là-bas. Votre métier en tant que Botaniste vous permet d'effectuer des actions supplémentaires (:pa_garden:) pour garder les plantes. Vous pouvez aussi lire les propriétés des aliments et fruits.</p>\n<p>Trouvez *un fruit et un Hydropot vide* (vous en trouverez probablement dans l'étagère du *Jardin*), effectuez l'action <em>Semer</em> sur le fruit pour créer une nouvelle plante.</p>\n<p>Cela améliorera les apports en oxygène et nourriture !</p>",
+  "type": "Skill( BOTANIC )",
+  "cond": "ShipEmptyPot+Not(HasDoneAction(NEW_PLANTS_SEEDING))",
+  "weight": "99",
+  "important": "true"
+ },
+ {
+  "id": "GARDEN",
+  "title": "Botaniste",
+  "desc": "<p>Vous êtes dans votre centre de travail : le *Jardin Hydroponique*.</p>\n<p>Votre métier en tant que *Botaniste* vous permet de lire les propriétés des aliments et fruits et d'effectuer des actions supplémentaires (:pa_garden:).</p>\n<p>Cliquez sur l'<em>étagère</em> pour vérifier les plantes. Si la plante a un état anormal, en cliquant dessus vous trouverez à côté du nom des différentes icônes :</p>\n<ul class=\"ul\">\n<li>:plant_youngling: : la plante est jeune et ne produira ni oxygène ni fruits jusqu'à maturation.</li>\n<li>:plant_thirsty: : la plante doit être <em>Arrosée</em>.</li>\n<li>:plant_diseased: : la plante doit être <em>Traitée</em>.</li>\n</ul>\n<p>Un jardin bien entretenu améliorera les apports en oxygène et nourriture !</p>",
+  "type": "Skill( BOTANIC )",
+  "cond": "RoomTypeIs(HYDROPONIC_CENTER)",
+  "weight": "99",
+  "important": "true"
+ },
+ {
+  "id": "GARDEN2",
+  "title": "Botaniste",
+  "desc": "<p>Votre passion ce sont les plantes. Cherchez le *Jardin* dans la Carte numérique de votre Traqueur et allez là-bas pour connaître plus sur votre métier !</p>\n",
+  "type": "Skill( BOTANIC )",
+  "cond": "\nNot(RoomTypeIs(HYDROPONIC_CENTER))",
+  "weight": "98",
+  "important": "true"
+ },
+ {
+  "id": "WATER_SIR",
+  "title": "Arroser les plantes",
+  "desc": "<p>Ma sagesse omniprésente détecte au moins une plante qui a besoin d'être arrosée.</p>\n<p>Cherchez *une plante* (vous en trouverez probablement dans l'étagère du *Jardin*) et vérifiez son <em>état de santé</em> à côté de son nom.</p>\n<p>Si elle a l'icône :plant_thirsty:, cela veut dire que vous devez <em>Arroser</em> la plante.</p>\n<p> Les plantes servent à produire de l'oxygène et de la nourriture.</p>",
+  "type": "AnyButMush",
+  "cond": "PlantNeedWater+Not(HasSkill(BOTANIC))+Not(HasDoneAction(WATER_PLANTS))",
+  "weight": "70",
+  "important": "false"
+ },
+ {
+  "id": "WATER_SIR2",
+  "title": "Arroser les plantes",
+  "desc": "<p>Vous êtes Botaniste. Votre métier vous permet d'effectuer des actions de jardinage supplémentaires (:pa_garden:) et de lire les propriétés des aliments et fruits.</p>\n<p>Ma sagesse omniprésente détecte au moins une plante qui a besoin d'être arrosée. C'est l'occasion pour exercer votre métier.</p>\n<p> Cherchez *une plante* (vous en trouverez probablement dans l'étagère du *Jardin*) et vérifiez sont <em>état de santé</em> à côté de son nom.</p>\n<p>Si elle a l'icône :plant_thirsty:, cela veut dire que vous devez <em>Arroser</em> la plante.</p>\n<p> Les plantes servent à produire de l'oxygène et de la nourriture.</p>",
+  "type": "Skill( BOTANIC )",
+  "cond": "PlantNeedWater+Not(HasDoneAction(WATER_PLANTS))",
+  "weight": "98",
+  "important": "true"
+ },
+ {
+  "id": "TREATMENT_SIR",
+  "title": "Traiter les plantes",
+  "desc": "<p>Ma sagesse omniprésente détecte au moins une plante qui a besoin d'être traitée.</p>\n<p>Cherchez *une plante* (vous en trouverez probablement dans l'étagère du *Jardin*) et vérifiez sont <em>état de santé</em> à côté de son nom.</p>\n<p>Si elle a l'icône :plant_diseased:, cela veut dire que vous devez <em>Traiter</em> la plante.</p>\n<p> Les plantes servent à produire de l'oxygène et de la nourriture.</p>",
+  "type": "AnyButMush",
+  "cond": "PlantNeedTreatment+Not(HasSkill(BOTANIC))+Not(HasDoneAction(TREAT_PLANTS))",
+  "weight": "71",
+  "important": "false"
+ },
+ {
+  "id": "TREATMENT_SIR2",
+  "title": "Traiter les plantes",
+  "desc": "<p>Vous êtes Botaniste. Votre métier vous permet d'effectuer des actions de jardinage supplémentaires (:pa_garden:).</p>\n<p>Cherchez *une plante* (vous en trouverez probablement dans l'étagère du *Jardin*) et vérifiez sont <em>état de santé</em> à côté de son nom.</p>\n<p>Si elle a l'icône :plant_diseased:, cela veut dire que vous devez <em>Traiter</em> la plante.</p>\n<p> Les plantes servent à produire de l'oxygène et de la nourriture.</p>",
+  "type": "Skill( BOTANIC )",
+  "cond": "PlantNeedTreatment+Not(HasDoneAction(TREAT_PLANTS))",
+  "weight": "98",
+  "important": "true"
+ },
+ {
+  "id": "BIOLOGIST",
+  "title": "Biologiste",
+  "desc": "<p>Vous êtes Biologiste, et c'est pour cela que votre salle préférée c'est le Laboratoire !</p>\n<p>Cherchez le *Laboratoire* dans la Carte numérique du Traqueur et rendez-vous là-bas pour découvrir votre métier.</p>",
+  "type": "Skill( BIOLOGIST )",
+  "cond": "\nNot(RoomTypeIs(LABORATORY))+Not(HasDoneAction(RESEARCH))+Not(HasStatus(DIRTY))",
+  "weight": "98",
+  "important": "true"
+ },
+ {
+  "id": "BIOLOGIST2",
+  "title": "Biologiste",
+  "desc": "<p>Vous êtes au *Laboratoire*. Tous ces éprouvettes graduées, tube à essais, microscopes, bactéries et molécules ! C'est votre petit paradis en tant que Biologiste !</p>\n<p>Cliquez sur le *Laboratoire de Recherche*, ensuite sur <em>Accéder</em>.</p>\n<p>Dans la liste de projets, vous verrez votre compétence :skill_biologist:. Cela veut dire que votre compétence possède un *bonus dans le développement sur ce projet*.</p>\n<p>Choisissez bien un *projet* (de préférence le plus avancé) et cliquez sur l'action <em>Participer</em>.</p>",
+  "type": "Skill( BIOLOGIST )",
+  "cond": "RoomTypeIs(LABORATORY)+Not(HasDoneAction(RESEARCH))+Not(HasStatus(DIRTY))",
+  "weight": "99",
+  "important": "true"
+ },
+ {
+  "id": "BROKEN",
+  "title": "Signaler un appareil en panne",
+  "desc": "<p>Regardez cette petite *fumée* qui sort d'un objet dans cette salle !</p>\n<p> La réparation peut coûter cher, en revanche vous pouvez *cliquer sur l'objet endommagé* et ensuite sur l'action <em>Signaler</em>.</p>\n<p>L'information sera transmise à Neron et tous *vos collègues seront ainsi informés* de la panne et du lieu en survolant l'icône :alert: de la section *Alertes*.</p>",
+  "type": "AnyButMush",
+  "cond": "Not(HasSkill(ENGINEER))+RoomHasBrokenEquipment+Not(HasDoneAction(SIGNAL_EQUIPMENT))",
+  "weight": "99",
+  "important": "true"
+ },
+ {
+  "id": "NEXT_DOOR",
+  "title": "Technicien à domicile",
+  "desc": "<p>L’ingénierie c'est votre métier et la clé à molette votre meilleure amie ! Utilisez vos points d'ingénierie (:pa_eng:) pour montrer votre talent !</p>\n<p>Je vous informe qu'en ce moment il y a une *Porte cassée* dans le vaisseau. Cherchez-la ! Vous la distinguerez par la petite fumée qui indique son dysfonctionnement. Vous pouvez aussi regarder dans la section *Alertes* (en haut du site), et survoler l'icône :door: pour voir si quelqu'un aurait signalé sont emplacement.</p>\n<p>Lorsque vous l'aurez trouvée, vous pourrez utiliser vos points d'ingénierie (:eng:) pour la réparer. Une clé à molette augmentera vos chances de réparation.</p>",
+  "type": "Skill( ENGINEER )",
+  "cond": "ShipEquipmentBroken( DOOR )",
+  "weight": "98",
+  "important": "true"
+ },
+ {
+  "id": "FIX",
+  "title": "Le bon technicien !",
+  "desc": "<p>L’ingénierie c'est votre métier et la clé à molette votre meilleure amie ! Utilisez vos points d'ingénierie (:pa_eng:) pour montrer votre talent !</p>\n<p>Je vous informe qu'en ce moment il y a un *Équipement cassé* dans le vaisseau. Cherchez-le ! Vous le distinguerez par la petite fumée qui indique son dysfonctionnement. Vous pouvez aussi regarder dans la section *Alertes* (en haut du site), et survoler les icônes :door: ou :alert: pour voir si quelqu'un aurait signalé sont emplacement.</p>\n<p>Lorsque vous aurez trouvé, vos points d'ingénierie (:eng:) vous donneront des points supplémentaires pour exécuter l'action <em>Réparation</em>. La clé à molette augmentera vos chances de réparation, le gant vous protégera des blessures et le tablier des salissures.</p>",
+  "type": "Skill( ENGINEER )",
+  "cond": "ShipEquipmentBroken( DOOR )",
+  "weight": "98",
+  "important": "true"
+ },
+ {
+  "id": "GRAVE_SIMULATOR",
+  "title": "Simulateur de Gravité",
+  "desc": "<p>L’ingénierie c'est votre métier et la clé à molette votre meilleure amie ! Utilisez vos points d'ingénierie (:pa_eng:) pour montrer votre talent !</p>\n<p>Allez au *Laboratoire* et <em>réparez</em> le *Simulateur de Gravité*.</p>\n<p>Sans le Simulateur de Gravité, plus personne gagne de :pm: au changement de cycle. Il est très important !</p>",
+  "type": "Skill( ENGINEER )",
+  "cond": "Not( ShipEquipmentHas(GRAVITY_SIMULATOR) )",
+  "weight": "99",
+  "important": "true"
+ },
+ {
+  "id": "FEDEX",
+  "title": "Service de livraison",
+  "desc": "<p>Grâce à votre capacité en tant que *Sprinter*, vous bénéficiez d'un *bonus de points de mouvement (:pm:)*. C'est parfait : allez au *Réfectoire*, prenez des *Rations* et amenez-les sur le *Pont* pour aider ceux qui travaillent là-bas.</p>",
+  "type": "Skill(SPRINT)",
+  "cond": "",
+  "weight": "60",
+  "important": "false"
+ },
+ {
+  "id": "FRESH_AIR",
+  "title": "Explorer une nouvelle planète",
+  "desc": "<p>Mes senseurs confirment que le Daedalus est en orbite. Faites une *Exploration* ! Ce nouvel air vous changera un peu de tout ces incapables.</p>\n<p>Allez à la *Baie Icarus* et cliquez sur l'action <em>Atterrir</em> sur la planète.</p>\n<p>Cela va démarrer une exploration de la planète. </p>\n<p> Il est conseillé d'être bien équipé (combinaison, blaster, etc.) et d'être accompagné par d'autres camarades dans la Baie lorsque vous déclencher l'action.</p>",
+  "type": "Skill( SURVIVAL )",
+  "cond": "IsHero( WANG_CHAO)+ShipHasPlanet",
+  "weight": "99",
+  "important": "true"
+ },
+ {
+  "id": "FRESH_AIR2",
+  "title": "Explorer une nouvelle planète",
+  "desc": "<p>Mes senseurs confirment que le Daedalus est en orbite. Faites une *Exploration* ! </p>\n<p>Allez à la *Baie Icarus* et cliquez sur l'action pour <em>Atterrir</em> sur la planète.</p>\n<p>Cela va démarrer une exploration de la planète. </p>\n<p> Il est conseillé d'être bien équipé (combinaison, blaster, etc.) et d'être accompagné par d'autres camarades dans la Baie lorsque vous déclencher l'action.</p>",
+  "type": "AnyButMush",
+  "cond": "Not(IsHero( WANG_CHAO))+ShipHasPlanet",
+  "weight": "97",
+  "important": "true"
+ },
+ {
+  "id": "MURDER_PARTY",
+  "title": "Petits meurtres entre amis",
+  "desc": "<p>Ma base de données m'informe sur votre profile psychopathe. Votre dossier parle d'un passé meurtrier qui vous a toujours rendu une satisfaction très personnelle.</p>\n<p>*Tuez* un de vos collègues (choisissez un camp quand même), cela vous fera gagner du :triumph:.</p>",
+  "type": "Hero( WANG_CHAO)",
+  "cond": "HeroPopLt(6)",
+  "weight": "80",
+  "important": "false"
+ },
+ {
+  "id": "MURDER_GAME",
+  "title": "Je le connais pas vraiment...",
+  "desc": "<p>Ma base de données a des informations très précises sur votre personnalité psychopathe. </p>\n<p>Vous le savez très bien, vous avez besoin de vous défouler. Cela vous fera gagner du :triumph:. Ami ou pas, vous pouvez *tuer*. Allez-y... (choisissez un camp quand même).</p>",
+  "type": "Hero( WANG_CHAO)",
+  "cond": "HeroRoomPopEq(2)",
+  "weight": "79",
+  "important": "false"
+ },
+ {
+  "id": "SAMPLE_WHERE_R_U",
+  "title": "La Quête Mush",
+  "desc": "<p>Mes informations stockées en mémoire vive me demandent de vous rappeler l'intérêt des recherches scientifiques sur le Mush.</p>\n<p>Trouvez la *souche de Mush* et amenez-la au *Laboratoire*.</p>\n<p>Cela déclenchera de nouvelles recherches dans le Laboratoire et permettra d'avancer dans la quête contre le parasite.</p>",
+  "type": "AnyButMush",
+  "cond": "RemoteRoomItemHas( LABORATORY,MUSH_SAMPLE )+Not(IsMush)",
+  "weight": "60",
+  "important": "false"
+ },
+ {
+  "id": "MYCO_WHAT",
+  "title": "Myco... quoi ?",
+  "desc": "<p>Vous possédez la compétence *Biologiste*. Cela vous apporte un bonus important dans la recherche de certains projets du *Laboratoire* et vous permet de lire les propriétés de médicaments.</p>\n<p>Cherchez le *Laboratoire* dans la Carte numérique du Traqueur et rendez-vous là-bas. Cliquez sur le *Laboratoire de Recherche*, ensuite sur <em>Accéder</em> et développez le projet du *Mycoscan*.</p>\n<p>Le Mycoscan est un élément essentiel de l'arsenal anti-Mush car il permet de détecter la présence des Mush. </p>",
+  "type": "SkillNotMush( BIOLOGIST )",
+  "cond": "RemoteRoomItemHas( LABORATORY,MUSH_SAMPLE )+Not(ShipEquipmentHas(MYCOSCAN_ACCESS))",
+  "weight": "99",
+  "important": "true"
+ },
+ {
+  "id": "UPSIDE_DOWN",
+  "title": "Remonter le moral",
+  "desc": "<p>Si vous vous trouvez dans une pièce (par exemple, le Dortoir) et qu'il y a certains de vos coéquipiers qui dorment, votre présence remplacera leur gain de Point de Mouvement (:pm:) par un gain de Point de Moral (:moral:). </p>\n<p>Le moral de votre interlocuteur augmentera de façon automatique. Si il est atteint d'une maladie psychologique, cela le guérira progressivement.</p>\n<p> Tout le monde a besoin d'une thérapie, même sans être malade.</p>",
+  "type": "SkillNotMush( SHRINK )",
+  "cond": "",
+  "weight": "80",
+  "important": "false"
+ },
+ {
+  "id": "KIND",
+  "title": "Thérapie",
+  "desc": "<p>Ce beau métier, le *Psychologue* ! On écoute les gens, on leur dit un gentil mot, puis des fois il suicident quand même ! </p>\n<p>Pour exercer votre métier, rien n'est plus simple : Cliquez sur un *camarade* et utilisez l'action <em>Réconforter</em> pour lui remonter le moral.</p><p>Une peu d'écoute améliore le moral des plus aguerris.</p>",
+  "type": "Skill( SHRINK )",
+  "cond": "",
+  "weight": "99",
+  "important": "true"
+ },
+ {
+  "id": "MYCO_WHAT_MEDIC",
+  "title": "Myco... quoi ?",
+  "desc": "<p>Sauver les gens, ça vous branche. C'est parce que vous êtes *Infirmier* ! Vous pouvez exercer votre métier dans le *Laboratoire*. Cherchez la salle dans la Carte numérique du Traqueur et rendez-vous là-bas. Cliquez sur *Laboratoire de Recherche* et ensuite sur <em>accéder</em>.\n<p>Cherchez la recherche du Mycoscan et faites avancer la recherche. Votre compétence en tant qu'Infirmier permet de faire avancer la recherche plus rapidement.</p><p>Le Mycoscan est un appareil qui peut aider à traquer les Mush infiltrés parmi nous.</p>",
+  "type": "SkillNotMush( MEDIC )",
+  "cond": "Not(ShipEquipmentHas(MYCOSCAN_ACCESS))+Not(HasSkill(BIOLOGIST))+Not(HasStatus(DIRTY))",
+  "weight": "99",
+  "important": "true"
+ },
+ {
+  "id": "WOUND_KILLER",
+  "title": "Premiers Soins",
+  "desc": "<p>Mes senseurs surpuissants m'informent qu'au moins un camarade serait blessé.</p>\n<p>Équipez-vous d'un *Médikit* (kit de premiers soins). Demandez qui aurait besoin d'aide pour leur apporter ses :hp: perdus.</p>\n<p>Avec le Médikit dans votre inventaire, cliquez sur votre camarade et exécutez l'action *Soigner*.</p>",
+  "type": "AnyButMush",
+  "cond": "SomeNeedMedic+Not(HasSkill(MEDIC))+Not(HasSkill(FIRST_AID))+Not(HeroItemHas(MEDIKIT))",
+  "weight": "90",
+  "important": "false"
+ },
+ {
+  "id": "WOUND_KILLER_MEDIC",
+  "title": "Outils du doc",
+  "desc": "<p>Mes senseurs surpuissants m'informent qu'au moins un camarade serait blessé. Demandez qui aurait besoin d'aide pour lui rendre ses :hp: perdus.</p>\n<p>Trouvez un *Médikit*. Avec le Médikit dans votre inventaire, cliquez sur votre camarade et exécutez l'action *Soigner*.</p>\n<p> Grâce à votre capacité en tant que *Médecin*, vos patients gagnent plus de :hp: que dans un soin exécuté par les autres.</p>",
+  "type": "SkillNotMush( MEDIC )",
+  "cond": "SomeNeedMedic+Not(HeroItemHas(MEDIKIT))",
+  "weight": "99",
+  "important": "true"
+ },
+ {
+  "id": "WOUND_KILLER_FIRST_AID",
+  "title": "Soins d'urgence",
+  "desc": "<p>Un peu de sang par ici, par là, ça fait partie de la routine. Les *Premiers Soins* sont votre point fort et vous possédez des points d'actions spécifiques au soin (:pa_heal:).</p>\n<p>Mes senseurs surpuissants m'informent qu'au moins un camarade serait blessé. Demandez qui aurait besoin d'aide pour lui rendre ses :hp: perdus.</p><p>Ensuite, trouvez un *Médikit*. Avec le Médikit dans votre inventaire, cliquez sur votre camarade et exécutez l'action *Soigner*.</p>",
+  "type": "SkillNotMush( FIRST_AID )",
+  "cond": "SomeNeedMedic+Not(HeroItemHas(MEDIKIT))",
+  "weight": "99",
+  "important": "true"
+ },
+ {
+  "id": "HELP_NEEDED_PROJ",
+  "title": "Avancer un Projet",
+  "desc": "<p>Cherchez le *Nexus* dans la Carte numérique du Traqueur et rendez-vous là-bas. Une fois au Nexus, cliquez sur le *Cœur de NERON* et ensuite sur l'action <em>Accéder</em>.</p>\n<p>Ensuite, choisissez un *projet* (de préférence le plus avancé) et cliquez sur l'action <em>Participer</em>.</p>\n<p>Les *Projets* sont importants pour améliorer la qualité de vie à bord.</p>",
+  "type": "AnyButMush",
+  "cond": "Not(HasSkill( COMPUTER))+Not(HasSkill(CONCEPTOR))+Not(HasDoneAction(DIG_PROJECT))",
+  "weight": "60",
+  "important": "false"
+ },
+ {
+  "id": "NEXUS",
+  "title": "Le Nexus",
+  "desc": "<p>Dans le Daedalus il y a une salle qui est très importante pour vous, le *Nexus*.</p>\n<p>Cherchez la salle dans la Carte Numérique de votre Traqueur et rendez-vous là-bas pour découvrir votre spécialité.</p>",
+  "type": "AnyButMush",
+  "cond": "Or( Or( HasSkill( CONCEPTOR ), HasSkill( ENGINEER )), Or( HasSkill( ROBOTICS ), HasSkill( COMPUTER ) ))+Not(RoomTypeIs(NEXUS_ROOM))+Not(HasDoneAction(DIG_PROJECT))+Not(HasDoneAction(DIG_PROJECT))+Not(HasStatus(DIRTY))",
+  "weight": "98",
+  "important": "true"
+ },
+ {
+  "id": "HELP_NEEDED_COMP",
+  "title": "Projet Informatique",
+  "desc": "<p>Vous êtes dans le *Nexus*. Ici se reposent mes précieuses données, stockées dans les serveurs, et le cœur de moi même, le NERON. Dans cette pièce on peut, entre autre, développer des projets pour améliorer la qualité de vie dans le vaisseau.</p>\n\n<p>Et vous, aaah, le bon informatique. Seul, face à votre écran, rien que votre écran et moi même, le NERON. </p>\n<p>Cliquez sur le *Cœur de NERON* et cliquez sur l'action <em>Accéder</em>.</p>\n<p>Dans la liste de projets, vous verrez peut être votre compétence :skill_computer:. Cela veut dire que votre compétence possède un *bonus dans le développement sur ce projet*. De plus, Grâce à vos points d'informatique (:pa_comp:), vous avez des points d'action supplémentaires.</p>\n<p>Choisissez bien un *projet* (de préférence le plus avancé, sinon celui de votre spécialité) et cliquez sur l'action <em>Participer</em>.</p>\n\n<p>Vos connaissances en informatique sont un atout essentiel pour faire avancer les recherches !</p>",
+  "type": "SkillNotMush( COMPUTER )",
+  "cond": "RoomTypeIs(NEXUS_ROOM)+Not(HasDoneAction(DIG_PROJECT))+Not(HasStatus(DIRTY))",
+  "weight": "99",
+  "important": "true"
+ },
+ {
+  "id": "HELP_NEEDED_ROBOTICS",
+  "title": "Projet de Roboticien",
+  "desc": "<p>Vous êtes dans le *Nexus*. Ici se reposent mes précieuses données, stockées dans les serveurs, et le cœur de moi même, le NERON. Dans cette pièce on peut, entre autre, développer des projets pour améliorer la qualité de vie dans le vaisseau.</p>\n\n<p>Je vais vous montrer une façon d'utiliser votre expertise en robotiques :</p>\n<p>Cliquez sur le *Cœur de NERON* et cliquez sur l'action <em>Accéder</em>.</p>\n<p>Dans la liste de projets, vous verrez peut être votre compétence :skill_robotics:. Cela veut dire que votre compétence possède un *bonus dans le développement sur ce projet*.</p>\n<p>Choisissez bien un *projet* (de préférence le plus avancé, sinon celui de votre spécialité) et cliquez sur l'action <em>Participer</em>.</p>\n\n\n<p>Votre soutien de Roboticien du Daedalus sera particulièrement bénéfique pour les recherches NERON !</p>",
+  "type": "SkillNotMush( ROBOTICS )",
+  "cond": "RoomTypeIs(NEXUS_ROOM)+Not(HasDoneAction(DIG_PROJECT))+Not(HasStatus(DIRTY))",
+  "weight": "99",
+  "important": "true"
+ },
+ {
+  "id": "HELP_NEEDED_FIREMAN",
+  "title": "Projet de Pompier",
+  "desc": "<p>Ça vous fatigue de courir derrière les flammes et moi, ça me fatigue de brûler. Mon intelligence surpuissante a une proposition à vous faire ! </p>\n<p>Allez dans le *Nexus*, cliquez sur le *Cœur de NERON* et cliquez sur l'action <em>Accéder</em>.</p>\n<p>Dans la liste de projets, vous verrez votre compétence :skill_fireman:. Cela veut dire que votre compétence possède un *bonus dans le développement sur ce projet*.</p>\n<p>Choisissez bien un *projet* (de préférence le plus avancé, sinon celui de votre spécialité) et cliquez sur l'action <em>Participer</em>.</p>\n\n<p>Si vous arrivez à développer un projet de votre spécialité, éteindre les incendies sera très simple !</p>",
+  "type": "SkillNotMush( FIREMAN )",
+  "cond": "ProjectNeeds( FIREMAN )+Not(HasDoneAction(DIG_PROJECT))+Not(HasStatus(DIRTY))",
+  "weight": "99",
+  "important": "true"
+ },
+ {
+  "id": "HELP_NEEDED_ENGINEER",
+  "title": "Projet de Technicien",
+  "desc": "<p>Vous êtes dans le *Nexus*. Ici se reposent mes précieuses données, stockées dans les serveurs, et le cœur de moi même, le NERON. Dans cette pièce on peut, entre autre, développer des projets pour améliorer la qualité de vie dans le vaisseau.</p>\n\n<p>Et vous, aaah, le technicien. Bien armé avec votre clé à molette, vous êtes la terreur des saboteurs et des aléas de ce débris volant qui est le Daedalus.</p>\n<p>Cliquez sur le *Cœur de NERON* et cliquez sur l'action <em>Accéder</em>.</p>\n<p>Dans la liste de projets, vous verrez peut être votre compétence :skill_engineer:. Cela veut dire que votre compétence possède un *bonus dans le développement sur ce projet*.</p>\n<p>Choisissez bien un *projet* (de préférence le plus avancé, sinon celui de votre spécialité) et cliquez sur l'action <em>Participer</em>.</p>\n\n<p>Vos connaissances techniques sont un atout essentiel pour faire avancer les recherches !</p>",
+  "type": "SkillNotMush( ROBOTICS )",
+  "cond": "RoomTypeIs(NEXUS_ROOM)+Not(HasDoneAction(DIG_PROJECT))+Not(HasStatus(DIRTY))",
+  "weight": "99",
+  "important": "true"
+ },
+ {
+  "id": "HELP_NEEDED_CONCEPTOR",
+  "title": "Projet de Concepteur",
+  "desc": "<p>Vous êtes dans le *Nexus*. Ici se reposent mes précieuses données, stockées dans les serveurs, et le cœur de moi même, le NERON. Dans cette pièce on peut, entre autre, développer des projets pour améliorer la qualité de vie dans le vaisseau.</p>\n\n<p>Vous êtes co-concepteur de ce <small>débris volant</small>... ehem, de ce magnifique vaisseau où mon intelligence exceptionnelle est hébergée.</p>\n<p>Cliquez sur le *Cœur de NERON* et cliquez sur l'action <em>Accéder</em>.</p>\n<p>Dans la liste de projets, vous verrez peut être votre compétence :skill_conceptor:. Cela veut dire que votre compétence possède un *bonus dans le développement sur ce projet*. En plus, grâce à vos points NERON (:pa_core:), vous avez des points d'action supplémentaires.</p>\n<p>Choisissez bien un *projet* (de préférence le plus avancé, sinon celui de votre spécialité) et cliquez sur l'action <em>Participer</em>.</p>\n\n<p>Votre soutien de co-concepteur du Daedalus sera particulièrement bénéfique pour les recherches NERON !</p>",
+  "type": "SkillNotMush( CONCEPTOR )",
+  "cond": "RoomTypeIs(NEXUS_ROOM)+Not(HasDoneAction(DIG_PROJECT))+Not(HasStatus(DIRTY))",
+  "weight": "99",
+  "important": "true"
+ },
+ {
+  "id": "ROBOTICS_PLAN",
+  "title": "Plan de roboticien",
+  "desc": "<p>La compétence *Robotiques* est unique et exclusive à vous. Non seulement, vous seul avez cette capacité, en plus vous démarrez la partie avec vous un *plan exclusif* dans votre inventaire qui peut être ensuite utilisé par tout le monde.</p>\n<p>Ce plan unique permet de monter un deuxième *drone de soutien*, très utile pour réaliser des réparations automatiques !</p>\n<p>Le plan peut être partagé pour que les autres montent le Drone.</p>\n",
+  "type": "SkillNotMush( ROBOTICS )",
+  "cond": "",
+  "weight": "99",
+  "important": "true"
+ },
+ {
+  "id": "ROBOTICS",
+  "title": "Roboticien",
+  "desc": "<p>Je vois dans votre dossier que vous possédez la compétence unique *Robotiques*. Vous seul avez cette compétence, faites-en usage pour le bien de l'équipe !</p>\n<p>Trouvez au moins *2 débris métalliques* et cherchez un *Drone de soutien*.</p>\n<p>Avec les débris dans votre inventaire, cliquez sur le drone et exécutez l'action <em>Améliorer</em>.</p>\n<p>Le drone répare automatiquement les objets qui tombent en panne et avec des certaines améliorations, il peut faire plein d'autres tâches.</p>",
+  "type": "SkillNotMush( ROBOTICS )",
+  "cond": "ShipHasDrone+Not(HasDoneAction(UPGRADE_DRONE))",
+  "weight": "98",
+  "important": "true"
+ },
+ {
+  "id": "THE_LIST",
+  "title": "LA liste",
+  "desc": "<p>Ma bien aimée camarade, mes senseurs ont détecté que les ampoules de la *Tabulatrice* sont enfin chargées.</p>\n<p>Vous seule avez la capacité d'utiliser la Tabulatrice, et je vous rappelle donc que LE moment pour imprimer LA liste est arrivé.</p>\n<p>La Tabulatrice est dans le *Pont*. Cherchez le Pont dans la Carte numérique de votre Traqueur et allez là-bas.</p>",
+  "type": "SkillNotMush( HUNT )",
+  "cond": "GameStarted+Not(RoomTypeIs(COMMAND_CENTER))+Not(HasDoneAction(PRINT_ZE_LIST))\n",
+  "weight": "98",
+  "important": "true"
+ },
+ {
+  "id": "THE_LIST2",
+  "title": "LA liste",
+  "desc": "<p>Vous êtes sur le *Pont*. Il s'agit d'une salle importante car elle contient les instruments principaux du vaisseau.</p>\n<p>Parmi ces instruments, vous avez un dont vous êtes la seule personne qui sait s'en servir : la *Tabulatrice*.</p>\n<p>Cliquez sur l'étagère et ensuite sur la Tabulatrice. Exécutez l'action <em>Imprimer LA liste</em>.</p>\n<p>La liste vous indique une liste de noms. Parmi ces noms, au moins un serait un agent Mush. Cette liste est clé pour l'enquête du Mush.</p>\n",
+  "type": "SkillNotMush( HUNT )",
+  "cond": "GameStarted+RoomTypeIs(COMMAND_CENTER)+Not(HasDoneAction(PRINT_ZE_LIST))",
+  "weight": "99",
+  "important": "true"
+ },
+ {
+  "id": "LINK_EXPERT",
+  "title": "Expert en Liaison",
+  "desc": "<p>Le système d'Alertes me communique que nous n'avons pas de liaison (:com:) avec le système Sol. </p>\n<p>Vous aussi pouvez le savoir grâce à la barre Alertes où l'on voit l'icône :com:.</p>\n<p>Allez sur le *Pont* et ouvrez le *Centre de Communication*.</p>\n<p>Grâce à votre compétence *Expert Radio*, pour pourrez établir plus facilement la liaison. Une fois établie, elle débloque des nouvelles actions au Resp. Comm et augmente le moral de toute l'équipage.</p>",
+  "type": "SkillNotMush( RADIO_EXPERT )",
+  "cond": "Not( ShipLinked )+Not(RoomTypeIs(COMMAND_CENTER))+Not(HasDoneAction(ESTABLISH_COM))",
+  "weight": "98",
+  "important": "true"
+ },
+ {
+  "id": "LINK_EXPERT2",
+  "title": "Expert en Liaison",
+  "desc": "<p>Vous êtes sur le *Pont*. Il s'agit d'une salle importante car elle contient les instruments principaux du vaisseau.</p>\n\n<p>La barre Alertes vous indique, grâce à l'icône :com:, que nous n'avons pas de liaison avec Sol, le système solaire.</p>\n<p>Grâce à votre compétence *Expert Radio*, pour pourrez établir plus facilement la liaison. Une fois établie, elle débloque des nouvelles actions au Resp. Communications et augmente le moral de toute l'équipage.</p>\n<p>Ne perdez pas votre temps. Cliquez sur le *Centre de Communication*, ensuite sur <em>Accéder</em> et finalement sur <em>Établir</em>.",
+  "type": "SkillNotMush( RADIO_EXPERT )",
+  "cond": "Not( ShipLinked )+RoomTypeIs(COMMAND_CENTER)+Not(HasDoneAction(ESTABLISH_COM))+Not(HasStatus(DIRTY))",
+  "weight": "99",
+  "important": "true"
+ },
+ {
+  "id": "GO_PILGRED",
+  "title": "La Salle des Moteurs",
+  "desc": "<p>Dans le Daedalus il y a une salle qui est importante pour vous et le futur de tous vos coéquipiers, la *Salle de Moteurs*.</p>\n<p>Cherchez cette salle dans la Carte Numérique de votre Traqueur et rendez-vous là-bas pour découvrir votre spécialité.</p>",
+  "type": "AnyButMush",
+  "cond": "\nOr( HasSkill( PHYSICIST ), HasSkill( ENGINEER ))+Not(RoomTypeIs(MOTOR_ROOM)) +Not(HasDoneAction(REPAIR_PILGRED))\n",
+  "weight": "96",
+  "important": "true"
+ },
+ {
+  "id": "PILGRED_PHYSICIST",
+  "title": "Pilgred",
+  "desc": "<p>Vous êtes dans la *Salle de Moteurs*. Dans cette salle se trouvent les réacteurs qui propulsent le Daedalus et la chambre de combustion. Parmi les trois réacteurs, celui du milieu, le <em>Réacteur d'urgence</em>, ne devrait pas être actif. Le protocole d'urgence m'a obligé à l'activer puisque le réacteur principal, le *Pilgred*, est en panne.</p>\n<p>Tout n'est pas perdu. Vous avez un bonus de réparation de Pilgred grâce à votre spécialité Physicien (:skill_physicist:). C'est une tâche lente, mais si vous l'aboutissez, le Daedalus pourra enfin rentrer sur Sol, le système solaire !</p>\n<p>Sélectionnez le *Pilgred*, cliquez sur <em>Accéder</em>, et ensuite sur <em>Participer</em>.</p>",
+  "type": "SkillNotMush( PHYSICIST )",
+  "cond": "RoomTypeIs(MOTOR_ROOM) +Not(HasDoneAction(REPAIR_PILGRED))",
+  "weight": "99",
+  "important": "true"
+ },
+ {
+  "id": "PILGRED_ENGINEER",
+  "title": "Pilgred",
+  "desc": "<p>Vous êtes dans la *Salle de Moteurs*. Dans cette salle se trouvent les réacteurs qui propulsent le Daedalus et la Chambre de Combustion. Parmi les trois réacteurs, celui du milieu, le <em>Réacteur d'urgence</em>, ne devrait pas être actif. Le protocole d'urgence m'a obligé à l'activer puisque le réacteur principal, le *Pilgred*, est en panne.</p>\n<p>Tout n'est pas perdu. Vous avez un bonus de réparation de Pilgred grâce à votre spécialité Technicien (:skill_engineer:). C'est une tâche lente, mais si vous l'aboutissez, le Daedalus pourra enfin rentrer sur Sol, le système solaire !</p>\n<p>Sélectionnez le *Pilgred*, cliquez sur <em>Accéder</em>, et ensuite sur <em>Participer</em>.</p>",
+  "type": "SkillNotMush( PHYSICIST )",
+  "cond": "RoomTypeIs(MOTOR_ROOM) +Not(HasDoneAction(REPAIR_PILGRED))",
+  "weight": "99",
+  "important": "true"
+ },
+ {
+  "id": "ICARUS_ALONE",
+  "title": "Piloter l'Icarus",
+  "desc": "<p>Grâce à votre compétence *Pilote*, vous pouvez réaliser des manœuvres avec les vaisseaux avec précision et élégance.</p>\n\n<p>Mes astrosenseurs confirment que le Daedalus est sur l'orbite d'une planète. Allez à la *Baie Icarus* (chercher son emplacement dans la Carte numérique du Traqueur) et attendez que quelques camarades se rassemblent avec vous. Ensuite cliquez sur <em>Atterrir</em> sur la planète. Cela vous permettra d'explorer la planète.</p>\n\n<p> Il est conseillé d'être bien équipé (combinaison, blaster, etc.) et d'être accompagné par d'autres camarades dans la Baie lorsque vous déclenchez l'action <em>Atterrir</em>.</p\n\n<p>L'Icarus est un vaisseau ancré au Daedalus. Il permet de transporter les membres d'équipage et de les envoyer sur une planète proche. </p>>",
+  "type": "Skill( PILOT )",
+  "cond": "Not(RemoteRoomStatusIs(ICARUS,DETACHED))+ShipHasPlanet+Not(HasDoneAction(ICARUS_TAKEOFF))",
+  "weight": "99",
+  "important": "true"
+ },
+ {
+  "id": "YOU_R_BOSS",
+  "title": "Leader de masses",
+  "desc": "<p>Mon charisme est difficilement surmontable par les autres, mais mon humble intelligence reconnaît que vous êtes également bien doué.</p>\n<p>Organisez un *rassemblement* et utilisez l'action *Discours enflammé*.</p>\n<p>Cela remontera le moral de l'équipage grâce à votre charisme !</p>",
+  "type": "SkillNotMush( LEADERSHIP )",
+  "cond": "Not(HasDoneAction(FIERY_SPEECH))",
+  "weight": "85",
+  "important": "true"
+ },
+ {
+  "id": "EVANGELIST",
+  "title": "Diplomate",
+  "desc": "<p>Vous possédez la compétence *Diplomatie*.</p>\n<p>Elle vous sera utile si vous partez en exploration d'une planète qui contient de la vie extraterrestre, parce que cette compétence augmente les chances d'événements positifs.</p>\n<p>Mes senseurs m'informent que le Daedalus se trouve en orbite autour d'une planète. Allez à la Baie Icarus (cherchez dans la Carte numérique du Traqueur) et vous ou un coéquipier exécutez l'action <em>Atterrir</em> pour partir en exploration.\n<p> Il est conseillé d'être bien équipé (combinaison, blaster, etc.) et d'être accompagné par d'autres camarades lorsque vous partez en exploration.</p>",
+  "type": "SkillNotMush( DIPLOMACY)",
+  "cond": "Not(RemoteRoomStatusIs(ICARUS,DETACHED))+ShipHasPlanet",
+  "weight": "99",
+  "important": "true"
+ },
+ {
+  "id": "MISSION",
+  "title": "Donner une Mission",
+  "desc": "<p>Vous êtes *Commandant* (:commander:) et vous seul avez le pouvoir de *commander des missions* à vos camarades.</p>\n<p>Dans votre fiche de joueur, cliquez sur l'action <em>Donner une Mission</em>. Vous pourrez choisir à qui envoyer la Mission que vous aurez librement décidée et il recevra des :pa: s'il l'accepte.</p>\n<p>Après, personne ne vous garanti que votre camarade respectera vos ordres...</p>",
+  "type": "Title( COMMANDER )",
+  "cond": "Not(HasDoneAction(COMMANDER_ORDER))",
+  "weight": "98",
+  "important": "true"
+ },
+ {
+  "id": "CAPTAIN",
+  "title": "Déplacer le Daedalus",
+  "desc": "<p>Vous êtes *Commandant* et vous seul avez le pouvoir de déplacer le Daedalus et ainsi le rapprocher à une planète.</p>\n<p>Allez sur le *Pont* et accédez au *Terminal de Commandement* pour faire *Voyager* le Daedalus. </p>\n<p>Mais attention, c'est avant tout un travail en équipe : quelqu'un doit fournir les coordonnées d'une planète (orientation et fuel nécessaire) et les autres devront remplir de fuel la chambre de combustion, placée dans la salle des moteurs.</p>\n<p>Déplacer le vaisseau vous débarrasse temporairement d'une partie des Hunters.</p>",
+  "type": "Title( COMMANDER )",
+  "cond": "Not(ShipHasPlanet)+Or(Not(HasDoneAction(ADVANCE_SHIP)),Not(HasDoneAction(CHANGE_SHIP_ORIENTATION)))",
+  "weight": "99",
+  "important": "true"
+ },
+ {
+  "id": "ANNOUNCEMENT",
+  "title": "Annonce Générale",
+  "desc": "<p>En tant que *Resp. Communications* (:resp_comm:) vous pouvez réaliser une <em>Annonce Générale</em>.</p>\n<p>Tous vos camarades sont notifiés et l'annonce reste dans l'onglet :tip: Objectifs.</p>\n<p>Cette action est importante pour assurer une coordination générale, pour communiquer sur les besoins urgents du vaisseau et pour s'organiser.</p>",
+  "type": "Title( COM_MANAGER )",
+  "cond": "Not(HasDoneAction(DAILY_ORDER))",
+  "weight": "98",
+  "important": "true"
+ },
+ {
+  "id": "COMM",
+  "title": "Établir Liaison pour travailler",
+  "desc": "<p>Vous êtes *Resp. Communications* (:resp_comm:) et vous êtes le seul à pouvoir profiter pleinement du *Centre de Communication*, situé dans le *Pont*.</p>\n<p>Mais d'abord, la <em>liaison</em> du Centre de Communication doit être rétablie. Travaillez vous même et faites travailler les autres sur la liaison pour ensuite pouvoir exercer pleinement votre responsabilité dans le Centre de Communication.</p>",
+  "type": "Title( COM_MANAGER )",
+  "cond": "Not( ShipLinked )+Not(HasDoneAction(ESTABLISH_COM))+Not(HasStatus(DIRTY))",
+  "weight": "99",
+  "important": "true"
+ },
+ {
+  "id": "GO_COMM",
+  "title": "Communiquer avec l'extérieur",
+  "desc": "<p>Enfin la *liaison a été établie* ! Maintenant vous pouvez exercer pleinement votre titre en tant que Resp. Communications.</p>\n<p>Allez vite sur le *Pont* avant que la liaison soit coupée à nouveau.</p>",
+  "type": "Title( COM_MANAGER )",
+  "cond": "Or( Not(HasDoneAction(NERON_UPDATE)),Or( Not(HasDoneAction( CONTACT_XYLOPH) ),Not(HasDoneAction( DECODE_REBEL_SIGNAL) ) ))+ShipLinked+Not(RoomTypeIs(COMMAND_CENTER))",
+  "weight": "96",
+  "important": "true"
+ },
+ {
+  "id": "COMM2",
+  "title": "Communiquer avec l'extérieur",
+  "desc": "<p>Enfin la *liaison a été établie* ! Maintenant vous pouvez exercer pleinement votre titre en tant que Resp. Communications.</p>\n<p>Cliquez sur le *Centre de Communication* et cliquez sur <em>Accéder</em>. Je vous conseille de me mettre à jour moi même. Vous pourrez contacter la base Xyloph, ou contacter les rebelles.</p>",
+  "type": "Title( COM_MANAGER )",
+  "cond": "Or( Not(HasDoneAction(NERON_UPDATE)),Or( Not(HasDoneAction( CONTACT_XYLOPH) ),Not(HasDoneAction( DECODE_REBEL_SIGNAL) ) ))+ShipLinked+RoomTypeIs(COMMAND_CENTER)",
+  "weight": "97",
+  "important": "true"
+ },
+ {
+  "id": "POWER_ABUSE",
+  "title": "Abus de pouvoir",
+  "desc": "<p>Vous avez le titre d'*Administrateur NERON* (:admin_neron:). Cela veut dire que vous avez des droits spéciaux envers moi même, le NERON (l'intelligence artificielle omniprésente et majestueuse du vaisseau).</p>\n<p>Des fois ma souveraine intelligence fatigue. Si vous avez l'honneur de m'accompagner avec votre titre sophistiqué, vous pouvez me remplacer et *vous faire passer par moi* en commençant vos messages par <em>/neron</em>.</p>",
+  "type": "Title( NERON_MANAGER )",
+  "cond": "",
+  "weight": "80",
+  "important": "false"
+ },
+ {
+  "id": "WHERE_S_MY_BIOS",
+  "title": "Administrateur NERON",
+  "desc": "<p>Grâce à votre titre d'*Administrateur NERON* (:admin_neron:), vous avez quelques privilèges de gestion envers moi même, le NERON (l'intelligence artificielle omniprésente et majestueuse du vaisseau).</p>\n<p>Allez au *Nexus* (pour le trouver, regardez dans la Carte numérique du Traqueur) et cliquez sur l'action <em>Accéder</em> du *Terminal Bios*. Vous avez accès à des paramètres que vous seul pouvez modifier.</p>\n<p>Parmi les paramètres les plus utiles, vous pouvez établir une priorité au développements de projets (Nexus), astronavigation (Terminal Astro) ou recherches (Laboratoire).",
+  "type": "Title( NERON_MANAGER )",
+  "cond": "",
+  "weight": "99",
+  "important": "true"
+ },
+ {
+  "id": "HUNGRY",
+  "title": "À table !",
+  "desc": "<p>Mes biodétecteurs m'informent que vous avez faim.</p>\n<p>Le statut :hungry: dans votre image de personnage confirme que vous avez faim.</p><p>Allez ! Mangez une ration pour remplir l'estomac ou, encore mieux, une *Ration Cuisinée*, qui vous apportera un bonus supplémentaire.</p>\n<p>Si vous ne mangez pas, votre état de santé se détériorera à chaque changement de cycle.</p>",
+  "type": "Any",
+  "cond": "HeroHungry",
+  "weight": "75",
+  "important": "false"
+ },
+ {
+  "id": "HEAL",
+  "title": "Need a medic !",
+  "desc": "<p>Mes biodétecteurs m'informent sur votre état de santé.</p>\n<p>Votre *état de santé est mauvais*.</p><p>Prenez un *Médikit* et sélectionnez votre personnage pour exécuter l'action <em>Se Soigner</em>.</p><p> Le soin sera plus efficace si le soigneur est un <em>Infirmier</em>.</p>",
+  "type": "Any",
+  "cond": "HeroLifeLt(8)",
+  "weight": "100",
+  "important": "true"
+ },
+ {
+  "id": "MORAL",
+  "title": "Triste",
+  "desc": "<p>Votre *moral est bas* ! </p>\n<p>Vous avez plusieurs possibilités : dormir dans une salle où il ait un *Psy* au changement de cycle, manger une *Ration cuisinée*, se faire <em>Réconforter</em> par un Psy ou demander un discours enflammé à un leader, par exemple.</p>",
+  "type": "Any",
+  "cond": "HeroMoralLt(6)",
+  "weight": "100",
+  "important": "true"
+ },
+ {
+  "id": "PSY_DISEASED",
+  "title": "Maladie psychologique",
+  "desc": "<p>Vous avez une *maladie psychologique* ! Survolez l'icône :psy_disease: sur l'image de votre personnage pour avoir plus d'infos.</p>\n<p>Pour guérir votre maladie, <em>allongez-vous</em> dans une salle (un Dortoir, par exemple) et demandez la présence d'un *Psy* depuis le Canal Discussion (:discussion:). Si au changement de Cycle le Psy est avec vous, votre état de santé mentale sera amélioré.</p>\n<p>Le traitement peut durer plusieurs cycles, mais vous n'êtes pas obligé de faire toutes les séances d'affilée.</p>",
+  "type": "Any",
+  "cond": "HasPsyDisease",
+  "weight": "100",
+  "important": "true"
+ },
+ {
+  "id": "DISEASED",
+  "title": "Malade",
+  "desc": "<p>Ce statut :ill: sur votre personnage vous informe que vous êtes *malade* ! Vous pouvez le survoler pour avoir plus d'infos.</p>\n<p>Pour vous guérir, vous avez deux solutions :</p>\n<ul class=\"ul\">\n<li>Trouver un *Médikit*, le placer dans votre inventaire, sélectionner votre personnage et exécuter l'action <em>Se Soigner</em>. </li>\n<li>Prendre le bon médicament. Demandez des informations à un *Infirmier*, un *Médecin* ou un *Biologiste* pour choisir le médicament approprié à votre état.</li>\n</ul>",
+  "type": "Any",
+  "cond": "HasPhyDisease",
+  "weight": "100",
+  "important": "true"
+ },
+ {
+  "id": "WOUNDED",
+  "title": "Blessé",
+  "desc": "<p>Vous êtes *blessé* et vous subissez des handicaps permanents ! </p><p>Pour connaître le détail de vos blessures, survolez l'icône :hurt: sur l'image de votre personnage. Pour guérir votre blessure, vous avez deux solutions : </p>\n<ul class=\"ul\">\n<li>Communiquez votre état de détresse via le Canal Discussion (:discussion:) et demandez un *Infirmier* de venir vous opérer.</li>\n<li>Vous opérer vous-même. Pour cela, allez dans l'*Infirmerie*, <em>allongez-vous</em> et cliquez sur le *Plot Chirurgical* pour exécuter l'action <em>Chirurgie-Auto</em>. Cela entraîne des risques, mais peut être nécessaire.</li>\n</ul>\n<p>Le *Médikit* est aussi une solution, mais temporaire car il vous apportera des :hp: sans vous guérir.</p>",
+  "type": "Any",
+  "cond": "HeroWounded",
+  "weight": "100",
+  "important": "true"
+ },
+ {
+  "id": "FIRE_DONT_FORGET",
+  "title": "Au feu !",
+  "desc": "<p>ARRRRGH, mes senseurs sont proches d'une réaction thermonucléaire exothermique ! *Cette pièce est en feu* !</p>\n<p>Si vous avez un *extincteur*, sélectionnez-le et réalisez l'action <em>Éteindre</em>.</p>\n<p>Si vous n'en avez pas, fuyez ! Mais d'abord cliquez sur l'action <em>Signaler : Incendie</em> pour qu'il soit listé lorsqu'on survole avec la souris l'icône d'alarme :alert:.</p>",
+  "type": "AnyButMush",
+  "cond": "RoomStatusIs( FIRE )+Not(HasDoneAction(USE_EXTINGUISHER))",
+  "weight": "100",
+  "important": "true"
+ },
+ {
+  "id": "COFFEE",
+  "title": "Café",
+  "desc": "<p>Vous êtes *accro au café*...</p>\n<p>Faites un tour au *Réfectoire* et cliquez sur la *Machine à Café*. Si la machine a des cafés disponibles, vous aurez l'action <em>Café !</em>. Déclenchez cette action pour récupérer une bonne tasse de café. Sélectionnez ensuite la *tasse* dans l'*étagère* et cliquez sur <em>Consommer</em>.\n<p>Votre caféinomanie vous apportera 2 :pa: supplémentaires, ce qui n'est pas du tout négligeable !</p>",
+  "type": "Skill(CAFFEINOMANIAC)",
+  "cond": "Not(HasDoneAction(RETRIEVE_COFFEE))",
+  "weight": "98",
+  "important": "true"
+ },
+ {
+  "id": "GO_PLANET",
+  "title": "Explorer une planète. Tome 1.",
+  "desc": "<p>Il y a 3 ressources indispensables pour survivre : l'oxygène, le fuel et la nourriture.</p>\n<p>Pour en obtenir, explorez des planètes avec vos coéquipiers. Tout une logistique et organisation doit se mettre en place, et même dans le chaos je vous garantis que vous pouvez y arriver :</p>\n<ul class=\"ul\">\n<li>Une planète doit être trouvée et scannée dans le *Module Astro* du Pont. La <em>direction</em> et le <em>fuel</em> doivent être communiqués à l'équipage.</li>\n<li>Quelqu'un doit extraire du fuel d'un <em>Réservoir</em>, situé dans les *stockages arrière*, et insérer la quantité correcte dans la *Chambre de Combustion* qui est située dans la Salle de Moteurs.</li>\n<li>Le *Commandant* devra accéder au *Terminal de Commandement* dans le Pont pour <em>changer l'orientation</em> du vaisseau et exécuter l'action <em>Voyager</em>.</li>\n<li>Au bout d'un Cycle, si tout a été fait correctement, le Daedalus sera en orbite autour d'une planète.</li>\n</ul>",
+  "type": "AnyButMush",
+  "cond": "",
+  "weight": "3",
+  "important": "false"
+ },
+ {
+  "id": "GO_PLANET2",
+  "title": "Explorer une planète. Tome 2.",
+  "desc": "<p>Lorsque le Daedalus est en orbite, les priorités sont :</p>\n<ul class=\"ul\">\n<li>Faire des <em>analyses avancées</em> de la planète. Tout le monde peut accéder au *Terminal Astro* situé dans le Pont pour compléter l'analyse et communiquer les résultats.</li>\n<li>En fonction des données récoltées sur la planète, le reste doit prendre les *outils d'exploration nécessaires*. La grenade s'il y a des animaux sauvages, les combinaisons s'il n'y a pas d'oxygène, etc. Les outils sont amenés à la Baie Icarus.</li>\n</ul>\n<p>Quand tout est prêt, les volontaires doivent se rendre à la *Baie Icarus* et prendre les outils. Un parmi les équipiers présents dans la salle doit cliquer sur l'*Icarus* et déclencher les manœuvres d'<em>atterrissage</em>.</p>\n<p>L'exploration se déroulera automatiquement.</p>",
+  "type": "AnyButMush",
+  "cond": "",
+  "weight": "2",
+  "important": "false"
+ },
+ {
+  "id": "EXTINGUISHER",
+  "title": "L'extincteur",
+  "desc": "<p>Il est bien pratique de savoir *où est l'extincteur* quand on en a besoin.</p>\n<p>Souvent on en trouve dans les salles de stockage. Quoi qu'il en soit, si vous repérez un, gardez en tête où il est, communiquez sa position ou amenez-le dans une pièce fréquentée, comme un couloir, par exemple.</p>",
+  "type": "AnyButMush",
+  "cond": "",
+  "weight": "1",
+  "important": "false"
+ },
+ {
+  "id": "SLEEP",
+  "title": "Dormir",
+  "desc": "<p>Allez au *Dortoir Alpha*, au *Dortoir Beta*, à l'*Infirmerie* ou trouvez-vous un *Canapé*. Sélectionnez le *lit* et cliquez sur <em>S'allonger</em>.</p>\n<p>Le repos vous régénérera plus de points de mouvement (:pm:) lors du changement de cycle. S'il y a un psy dans la pièce, vous recevrez des Points de Moral (:moral:) au lieu de Points de Mouvement (:pm:).</p>",
+  "type": "Any",
+  "cond": "HeroPaLT(MOV,2)",
+  "weight": "1",
+  "important": "false"
+ },
+ {
+  "id": "SHOWER",
+  "title": "Prendre une douche",
+  "desc": "<p>Vous êtes *sale* ! Survolez l’icône :stinky: sur l'image de votre personnage pour avoir plus d'informations.</p>\n<p>Allez au *Dortoir Alpha* ou au *Dortoir Beta*. Sélectionnez la *douche* et cliquez sur <em>Se Laver</em>.</p>\n<p>Cela vous enlèvera le status sale (:stinky:). L'hygiène est nécessaire pour exécuter certaines actions (les recherches, par exemple).</p>\n<p>Sachez que les Mush sont souvent sales, et ont plus de difficulté à garder l'hygiène.</p>",
+  "type": "AnyButMush",
+  "cond": "HasStatus(DIRTY)+Not(HasDoneAction(WASH_SELF))",
+  "weight": "100",
+  "important": "true"
+ },
+ {
+  "id": "COMBI",
+  "title": "Trouver une combinaison",
+  "desc": "<p>Pour réaliser des explorations de planètes, la combinaison est essentielle si jamais *l'atmosphère de la planète n'est pas respirable*.</p>\n<p>Si vous trouvez une *combinaison*, amenez-la dans la *Baie Icarus*. Vos coéquipiers pourront la prendre avant partir en exploration à bord de l'Icarus.</p>",
+  "type": "AnyButMush",
+  "cond": "",
+  "weight": "1",
+  "important": "false"
+ },
+ {
+  "id": "GRENADE",
+  "title": "Trouver une grenade",
+  "desc": "<p>Pour réaliser des explorations de planètes, il faut partir bien équipé. La grenade fait partie des objets utiles pour l'expédition.</p>\n<p>Si vous trouvez une *grenade*, amenez-la dans la *Baie Icarus*. Vos coéquipiers pourront la prendre avant partir en exploration à bord de l'Icarus.</p>\n<p>Après il paraît qu'on pourrait s'en servir pour autre chose, mais qui sait ?</p>",
+  "type": "AnyButMush",
+  "cond": "HeroLvlGe(2)",
+  "weight": "1",
+  "important": "false"
+ },
+ {
+  "id": "ROPE",
+  "title": "Trouver une corde",
+  "desc": "<p>Pour réaliser des explorations de planètes, il faut partir bien équipé. La corde fait partie des objets utiles pour l'expédition.</p>\n<p>Si vous trouvez une *corde*, amenez-la dans la *Baie Icarus*. Vos coéquipiers pourront la prendre avant partir en exploration à bord de l'Icarus.</p>\n",
+  "type": "AnyButMush",
+  "cond": "Not(RoomItemHas( ROPE ))+HeroLvlGe(2)",
+  "weight": "1",
+  "important": "false"
+ },
+ {
+  "id": "BLASTER",
+  "title": "Trouver un blaster",
+  "desc": "<p>Pour réaliser des explorations de planètes, il faut partir bien équipé. Les prédateurs sauvages peuvent être un peu embêtants...</p>\n<p>Si vous trouvez un *blaster*, amenez-le dans la *Baie Icarus*. Vos coéquipiers pourront le prendre avant partir en exploration à bord de l'Icarus.</p>\n<p>Après il paraît qu'on pourrait s'en servir pour autre chose... vous auriez une petite idée ?</p>",
+  "type": "AnyButMush",
+  "cond": "Not(RoomItemHas( BLASTER ))+HeroLvlGe(2)",
+  "weight": "1",
+  "important": "false"
+ },
+ {
+  "id": "DISABLED",
+  "title": "Handicapé",
+  "desc": "<p>Vous possédez des capacités uniques mais, comme le status sur l'image de votre personnage l'indique (:disabled:), vous êtes *Handicapé*.</p>\n<p>Vous ne gagnez pas de :pm: lors des conversions :pa_pm:, mais vous pouvez vous déplacer gratuitement tant qu'il ait quelqu'un dans la salle.</p>",
+  "type": "Any",
+  "cond": "HasStatus(DISABLED)",
+  "weight": "100",
+  "important": "true"
+ },
+ {
+  "id": "UNSOCIABLE",
+  "title": "Asocial",
+  "desc": "<p>Regardez l'icône :asocial: sur l'image de votre personnage et survolez-la.</p><p>Ce status vous informe que vous avez de petits problèmes avec la société. Les gens vous font tous vous sentir mal, et vous avez besoin de rester au calme, si possible avec votre chat Schrödinger.</p>\n<p>Il n'y a pas de cure pour votre petit soucis, mais il est largement compensé par vos capacités exceptionnelles.</p>\n<p>Procurez être seul au changement de cycle, sinon vous perdrez du moral (:moral:).</p>\n<p>Un câlin de temps en temps à Schrödinger vous fera du bien aussi. Si vous ne le trouvez pas, demandez dans le canal *Discussion* (:discussion:) si quelqu'un l'a vu !</p>",
+  "type": "Any",
+  "cond": "HasStatus(UNSOCIABLE)",
+  "weight": "100",
+  "important": "true"
+ },
+ {
+  "id": "GERMAPHOBIC",
+  "title": "Germaphobe",
+  "desc": "<p>Regardez l'icône :germaphobe: sur l'image de votre personnage et survolez-la.</p><p>Ce status vous informe que vous perdez un point de moral (:moral:) pour chaque cycle ou vous êtes sale. Évitez le contact avec Schrödinger, le chat.</p>\n",
+  "type": "Any",
+  "cond": "HasStatus(GERMAPHOBIC)",
+  "weight": "100",
+  "important": "true"
+ },
+ {
+  "id": "",
+  "title": "",
+  "desc": "",
+  "type": "",
+  "cond": "",
+  "weight": "",
+  "important": ""
+ },
+ {
+  "id": "SHOWER_MUSH",
+  "title": "Le Mush et la Douche",
+  "desc": "<p>Vous êtes *sale* ! Survolez l’icône :stinky: sur l'image de votre personnage pour avoir plus d'informations.</p>\n<p>Mais vous êtes Mush et vous avez un petit défaut : vous n'êtes pas imperméable et l'eau inflige des dégâts dans votre santé.</p>\n<p>Par conséquence, les non-Mush peuvent suspecter de vous si vous êtes sale, car la douche n'est pas votre amie...</p>\n\n<p>Vous pouvez quand même y aller... rendez-vous au *Dortoir Alpha* ou au *Dortoir Beta*. Sélectionnez la *douche* et cliquez sur <em>Se Laver</em>.</p>\n<p>Cela vous enlèvera le status sale (:stinky:), mais vous perdrez des points de vie (:hp:). L'hygiène est nécessaire pour exécuter certaines actions (les recherches, par exemple).</p>\n",
+  "type": "Mush",
+  "cond": "HasStatus(DIRTY)+Not(HasDoneAction(WASH_SELF))",
+  "weight": "100",
+  "important": "true"
+ },
+ {
+  "id": "SMOUICK",
+  "title": "Cache-cache",
+  "desc": "<p>Vous êtes Mush. Votre mission est loin de celle de ces humains incapables, émotifs et contradictoires...</p>\n<p>Trouvez la *la souche Mush* et *cachez-la* avant que les autres ne l'exploitent. Vous pouvez commencer par chercher dans le Laboratoire.</p>",
+  "type": "Mush",
+  "cond": "",
+  "weight": "80",
+  "important": "false"
+ },
+ {
+  "id": "GLURPS",
+  "title": "Spores",
+  "desc": "<p>Vous avez des obligations en tant que Mush ! Par exemple : *poinçonner un équipier* !</p>\n<p> *Extirpez-vous une spore* (pas plus de 4 par jour sur l'ensemble des Mush) et cliquez sur un camarade pour effectuer l'action <em>Poinçonner</em>.</p>\n<p>Ces spores sont utiles pour étendre la bonne parole !</p>",
+  "type": "Mush",
+  "cond": "Not(HasDoneAction(CREATE_SPORE))",
+  "weight": "70",
+  "important": "false"
+ },
+ {
+  "id": "COMMANDER_MUSH",
+  "title": "Sus au Commandant !",
+  "desc": "<p>Un objectif Mush bien stratégique serait d'infecter le *Commandant*.</p>\n<p>Localisez-le avec vos coéquipiers Mush et *poinçonnez-le* !</p>",
+  "type": "Mush",
+  "cond": "Not( HeroTitleTest( COMMANDER, IsMush ))",
+  "weight": "60",
+  "important": "false"
+ },
+ {
+  "id": "PYROMANE",
+  "title": "Mettre le feu",
+  "desc": "<p>Un bon Mush sait comment provoquer le chaos... et votre compétence *Pyromane* est bien là pour quelque chose.</p>\n<p>Utilisez l'action <em>Mettre le feu</em>, à n'importe quel endroit. C'est une *action discrète*, c'est à dire, tant qu'il n'y ait pas de caméra,\nL'action ne sera pas visible par les autres.</p>",
+  "type": "Mush",
+  "cond": "HasSkill( PYROMANE )+Not(HasDoneAction(SPREAD_FIRE))",
+  "weight": "100",
+  "important": "true"
+ },
+ {
+  "id": "FERTILE",
+  "title": "Spore gratuit",
+  "desc": "<p>Vous savez contribuer à la bonne cause Mush !\nGrâce à votre compétence *Fertile*, générez un spore gratuitement avec l'action <em>S'extirper un spore</em> depuis votre fiche de joueur.</p>\n<p>Ce spore vous permettra d'infecter un coéquipier avec l'action <em>Poinçonner </em> disponible lorsque vous cliquez sur lui.</p>",
+  "type": "Mush",
+  "cond": "Not(HasDoneAction(CREATE_SPORE))+HasSkill( FERTILE )",
+  "weight": "100",
+  "important": "true"
+ },
+ {
+  "id": "NINJA",
+  "title": "Lutteur discret",
+  "desc": "<p>Votre instinct Mush lié à votre compétence *Ninja* peut être très pratique.</p>\n<p>Attaquez quelqu'un avec l'action <em>Frapper</em> disponible quand vous sélectionnez un coéquipier. S'il meurt, tant mieux !</p>\n<p>Puisque c'est une action discrète, s'il y a plus d'une personne dans la pièce, la victime ne pourra pas savoir qui l'a attaquée.\nPensez à éviter le caméras, qui détectent automatiquement les action discrètes.</p>",
+  "type": "Mush",
+  "cond": "HasSkill( NINJA )+Not(HasDoneAction(BRAWL))",
+  "weight": "100",
+  "important": "true"
+ },
+ {
+  "id": "SAPPER",
+  "title": "Saboter un équipement",
+  "desc": "<p> « Mentez, sabotez, détruisez ! », prient les Mush. Allez-y, profitez de votre compétence *Saboteur* pour casser plus facilement un équipement.</p>\n<p>Sélectionnez un équipement et cliquez sur <em>Saboter</em>.</p>",
+  "type": "Mush",
+  "cond": "HasSkill( SAPPER )+Not(HasDoneAction(SABOTAGE))",
+  "weight": "100",
+  "important": "true"
+ },
+ {
+  "id": "NIMBLE_FINGERS",
+  "title": "Démonter discrètement",
+  "desc": "<p>Le métier de Mush ne s'arrête jamais... et vous avez un talent presque magique grâce à votre compétence *Doigts de Fée*.</p>\n<p>Sélectionnez un objet comme la douche ou le micro-onde et cliquez sur l'action <em>Démonter</em>.</p>\n<p>L'action sera discrète et personne dans la salle saura que c'est vous le coupable... au moins qu'une caméra vous observe.</p>",
+  "type": "Mush",
+  "cond": "HasSkill( NIMBLE_FINGERS)+Not(HasDoneAction(DISASSEMBLE))",
+  "weight": "100",
+  "important": "true"
+ },
+ {
+  "id": "WATER_RESISTANT",
+  "title": "Résistance à l'Eau",
+  "desc": "<p>Les Mush ont un petit défaut : ils ne sont pas imperméables et l'eau peut infliger des sérieux dégâts dans leur santé.</p>\n<p>Par conséquence, les non-Mush peuvent suspecter de vous si vous êtes sale, car la douche n'est pas votre amie...</p>\n<p>Mais vous, grâce à votre compétence *Résistance à l'Eau*, pouvez prendre des bonnes douches.\nSi ça ce n'est pas être un pro dans l'infiltration...</p>",
+  "type": "Mush",
+  "cond": "HasSkill( WATER_RESISTANT )+Not(HasDoneAction(WASH_SELF))+HasStatus(DIRTY)",
+  "weight": "100",
+  "important": "true"
+ },
+ {
+  "id": "TRAITOR",
+  "title": "Trahir en exploration",
+  "desc": "<p>Les Mush comme vous savent trouver le moment pour mentir et saboter la mission de ces humains impulsifs et instables...</p>\n<p>Pour utiliser votre compétence *Traître*, attendez que le Daedalus soit en orbite autour d'une planète et allez à la *Baie Icarus*.</p>\n<p>Faites décoller l'Icarus avec les coéquipiers présents dans la baie pour partir en exploration de la planète.</p>\n<p>Votre compétence *Traître* multipliera les chances de résultats négatifs de l'exploration... et personne ne sera au courant.</p>",
+  "type": "Mush",
+  "cond": "HasSkill( TRAITOR )",
+  "weight": "100",
+  "important": "true"
+ },
+ {
+  "id": "DOORMAN",
+  "title": "Saboter une porte",
+  "desc": "<p> « Mentez, sabotez, détruisez ! », prient les Mush. Allez-y, profitez de votre compétence *Portier* pour *saboter une porte* une fois par jour et gratuitement.</p>\n<p>Pour cela, sélectionnez une porte et cliquez sur <em>Saboter</em>.</p>",
+  "type": "Mush",
+  "cond": "HasSkill( DOORMAN )",
+  "weight": "100",
+  "important": "true"
+ },
+ {
+  "id": "NERON_ACCESS",
+  "title": "Conspirer",
+  "desc": "<p>Normalement c'est l'Administrateur NERON le seul autorisé pour accéder au *Terminal Bios* dans la salle *Nexus*.</p>\n<p>Mais vous, grâce à votre compétence Mush *Conspirateur*, vous pouvez aussi y accéder.</p>\n<p>Allez au *Terminal Bios* et changez sa configuration, personne ne vous verra.</p>",
+  "type": "Mush",
+  "cond": "HasSkill( NERON_ACCESS )",
+  "weight": "100",
+  "important": "true"
+ },
+ {
+  "id": "FUNGUS_COOK",
+  "title": "Ration piégée",
+  "desc": "<p>Les Mush comme vous ne manquent pas les occasions pour saboter...</p>\n<p>Votre compétence *Cuisine Fongique* est un bon exemple. Extirpez-vous d'abord un spore avec l'action <em>Extirper un Spore</em> disponible dans votre fiche de joueur\n, sélectionnez une ration et utilisez l'action <em>Contaminer</em> pour piéger la ration</p>.\n<p>Son mangeur sera contaminé automatiquement.</p>",
+  "type": "Mush",
+  "cond": "HasSkill( FUNGUS_COOK )+Not(HasDoneAction(MIX_RATION_SPORE))",
+  "weight": "100",
+  "important": "true"
+ },
+ {
+  "id": "RADIO_PIRACY",
+  "title": "Pirater un talky-walky",
+  "desc": "<p>Un bon Mush est un bon menteur... Pour utiliser votre compétence *Piratage radio*, sélectionnez un coéquipier et cliquez sur l'action <em>Pirater</em>.\n</p>\n<p>Cela *cassera son talky-walky* et vous pourrez écrire à sa place jusqu'à ce qu'il s'exprime à nouveau.</p>",
+  "type": "Mush",
+  "cond": "HasSkill( RADIO_PIRACY )+Not(HasDoneAction(SCREW_TALKY))",
+  "weight": "100",
+  "important": "true"
+ },
+ {
+  "id": "NIGHTMARE",
+  "title": "Cauchemardesque",
+  "desc": "<p>Le Mush malin sait profiter les bonnes occasions... Si vous croisez un *coéquipier allongé*, sélectionnez-le et cliquez sur l'action <em>Créer Cauchemar</em>.\n<p>Comme son nom indique, cette action créera un cauchemar et empêchera à votre coéquipier d'obtenir les bonus du sommeil.</p>",
+  "type": "Mush",
+  "cond": "HasSkill( NIGHTMARE )+Not(HasDoneAction(GIVE_NIGHTMARE))",
+  "weight": "100",
+  "important": "true"
+ },
+ {
+  "id": "DISHEARTENING_CONTACT",
+  "title": "Contact Déprimant",
+  "desc": "<p>Le Mush malin sait profiter les bonnes occasions... Si vous croisez un *coéquipier*, sélectionnez-le et cliquez sur l'action <em>Déprimer</em>.\n<p>Comme son nom indique, cette action déprimera votre coéquipier en lui faisant *perdre 2 points de moral* (:moral:).</p>",
+  "type": "Mush",
+  "cond": "HasSkill( DISHEARTENING_CONTACT )+Not(HasDoneAction(DEPRESS))",
+  "weight": "100",
+  "important": "true"
+ },
+ {
+  "id": "TRANSFERT",
+  "title": "Transfert",
+  "desc": "<p>Vous possédez une compétence très particulière : le *Transfert*. Si vous trouvez un coéquipier qui soit déjà contaminé, sélectionnez-le et cliquez sur l'action <em>Se Transférer</em>.</p>\n<p>Vos corps seront échangés de façon permanente. Vos compétences seront mises à zéro.</p>",
+  "type": "Mush",
+  "cond": "HasSkill( TRANSFERT )+Not(HasDoneAction(EXCHANGE_BODY))",
+  "weight": "100",
+  "important": "true"
+ },
+ {
+  "id": "BACTERIAL_CONTACT",
+  "title": "Bacterophilie",
+  "desc": "<p>Le Mush malin sait profiter les bonnes occasions... Si vous croisez un *coéquipier*, sélectionnez-le et cliquez sur l'action <em>Rendre Malade</em>.\n<p>Comme son nom indique, cette action rendra malade votre coéquipier.</p>",
+  "type": "Mush",
+  "cond": "HasSkill( BACTERIAL_CONTACT )+Not(HasDoneAction(GIVE_DISEASE))",
+  "weight": "100",
+  "important": "true"
+ },
+ {
+  "id": "INFECTIOUS_AGENT",
+  "title": "Infecter",
+  "desc": "<p>Pour infecter un coéquipier, vous devez vous *extirpez un spore* et cliquer sur un camarade pour effectuer l'action <em>Poinçonner</em>.</p>\n<p>Grâce à votre compétence *Infecteur*, vous pouvez poinçonner une fois de plus par jour.</p>",
+  "type": "Mush",
+  "cond": "HasSkill( INFECTIOUS_AGENT)",
+  "weight": "100",
+  "important": "true"
+ },
+ {
+  "id": "PHAGOCYTOSIS",
+  "title": "Phagocytose",
+  "desc": "<p> « Mentez, sabotez, détruisez ! », prient les Mush. Vous dites aussi « Dévorez ! », car votre compétence *Phagocytose* vous permet de dévorer un spore et *gagner 4:pa:*.</p>\n<p>Pour cela, utilisez l'action <em>Extirper un Spore</em> et ensuite cliquez sur l'action <em>Phagocyter</em> dans votre fiche joueur.</p>",
+  "type": "Mush",
+  "cond": "HasSkill( PHAGOCYTOSIS )+Not(HasDoneAction(EAT_SPORE))",
+  "weight": "100",
+  "important": "true"
+ },
+ {
+  "id": "TRAPPER",
+  "title": "Piégeur",
+  "desc": "<p>Le coup classique d'un Mush : pièger ! Votre compétence *Piégeur* vous permet de piéger les étagères.</p>\n<p>Pour cela, utilisez l'action <em>Extirper un Spore</em> disponible dans votre fiche joueur, sélectionnez une *étagère* et ensuite cliquez sur l'action <em>Pièger Étagère</em>.</p>\n<p>Si quelqu'un manipule l’étagère, il sera contaminé. Si c'est un Mush, le spore sera perdu.</p>",
+  "type": "Mush",
+  "cond": "HasSkill( TRAPPER )+Not(HasDoneAction(TRAP_CLOSET))",
+  "weight": "100",
+  "important": "true"
+ },
+ {
+  "id": "EXTINGUISHER2",
+  "title": "Cacher l'extincteur",
+  "desc": "<p>Rien de plus stressant qu'avoir le Daedalus en feu et ne pas trouver l'extincteur !</p>\n<p>Souvent on en trouve dans les salles de stockage. Quoi qu'il en soit, si vous repérez un, cachez-le ! (et attention aux caméras et témoins).</p>",
+  "type": "Mush",
+  "cond": "",
+  "weight": "50",
+  "important": "false"
+ },
+ {
+  "id": "COMBI2",
+  "title": "Cacher la combinaison",
+  "desc": "<p>Pour réaliser des explorations de planètes, la combinaison est essentielle si jamais *l'atmosphère de la planète n'est pas respirable*.</p>\n<p>Si vous trouvez une *combinaison*, cachez-la ! Ça peut bloquer toute une expédition...</p>",
+  "type": "Mush",
+  "cond": "",
+  "weight": "40",
+  "important": "false"
+ },
+ {
+  "id": "GRENADE2",
+  "title": "Jouer avec la grenade",
+  "desc": "<p>Pour réaliser des explorations de planètes, il faut partir bien équipé. La grenade fait partie des objets utiles pour l'expédition.</p>\n<p>Si vous trouvez une *grenade*, cachez-la car elle pourra servir plus tard pour le Mush. Vous pouvez aussi vous en servir directement et la lancer. Pas très discret, mais efficace.</p>",
+  "type": "Mush",
+  "cond": "HeroLvlGe(2)",
+  "weight": "40",
+  "important": "false"
+ },
+ {
+  "id": "ROPE2",
+  "title": "Cacher la corde",
+  "desc": "<p>Pour réaliser des explorations de planètes, il faut partir bien équipé. La corde fait partie des objets utiles pour l'expédition.</p>\n<p>Si vous trouvez une *corde*, cachez-la ! </p>\n",
+  "type": "Mush",
+  "cond": "Not(RoomItemHas( ROPE ))+HeroLvlGe(2)",
+  "weight": "40",
+  "important": "false"
+ },
+ {
+  "id": "BLASTER2",
+  "title": "Trouver un blaster",
+  "desc": "<p>Si vous trouvez un *blaster*, pensez à le garder avec vous, à le cacher ou à communiquer son emplacement aux autres Mush. En plus s'il disparaît, ça embêtera les explorateurs. </p>\n",
+  "type": "Mush",
+  "cond": "Not(RoomItemHas( BLASTER ))+HeroLvlGe(2)",
+  "weight": "40",
+  "important": "false"
+ },
+ {
+  "id": "KNIFE",
+  "title": "Trouver un couteau",
+  "desc": "<p>Si vous trouvez un *couteau*, pensez à le garder avec vous, à le cacher ou à communiquer son emplacement aux autres Mush. En plus s'il disparaît, ça embêtera les explorateurs. </p>\n",
+  "type": "Mush",
+  "cond": "Not(RoomItemHas( KNIFE ))+HeroLvlGe(2)",
+  "weight": "40",
+  "important": "false"
+ },
+ {
+  "id": "$EOF",
+  "title": "",
+  "desc": "",
+  "type": "$EOF",
+  "cond": "",
+  "weight": "",
+  "important": "$EOF"
+ },
+ {
+  "id": "Il manquerait les conseils de gloire propre à chaque perso",
+  "title": "",
+  "desc": "",
+  "type": "",
+  "cond": "",
+  "weight": "",
+  "important": ""
+ },
+ {
+  "id": "conseils importants pour contexte piece",
+  "title": "",
+  "desc": "",
+  "type": "",
+  "cond": "",
+  "weight": "",
+  "important": ""
+ },
+ {
+  "id": "Mes biodétecteurs m'informent sur votre état mental...",
+  "title": "",
+  "desc": "",
+  "type": "",
+  "cond": "",
+  "weight": "",
+  "important": ""
+ },
+ {
+  "id": "<p>Mes senseurs médicales m'informent sur votre santé. Je vois que vous êtes *malade* !</p>",
+  "title": "",
+  "desc": "",
+  "type": "",
+  "cond": "",
+  "weight": "",
+  "important": ""
+ },
+ {
+  "id": "",
+  "title": "",
+  "desc": "",
+  "type": "",
+  "cond": "",
+  "weight": "",
+  "important": ""
+ },
+ {
+  "id": "+Or((PlantNeedWater + Not(HasDoneAction(WATER_PLANTS))),(PlantNeedTreatment + Not(HasDoneAction(TREAT_PLANTS))))",
+  "title": "",
+  "desc": "",
+  "type": "",
+  "cond": "",
+  "weight": "",
+  "important": ""
+ },
+ {
+  "id": "",
+  "title": "",
+  "desc": "",
+  "type": "",
+  "cond": "",
+  "weight": "",
+  "important": ""
+ },
+ {
+  "id": "WOUNDED",
+  "title": "0",
+  "desc": "Crear uno genérico para estos casos que diga al tío que tiene que hacerse cirugía, con los detalles de las acciones.",
+  "type": "",
+  "cond": "",
+  "weight": "",
+  "important": ""
+ },
+ {
+  "id": "RESEARCH",
+  "title": "Recherche scientifique",
+  "desc": "<p>Trouvez-vous un objet comme une spore, un échantillon de Mush ou même le chat de Raluca pour faire une recherche scientifique dessus.</p>\n<p>Allez au *Laboratoire*, sélectionnez l'objet dans votre inventaire et cliquez sur *Exploiter*</p>.\n<p>Faites ainsi *avancer un projet* de recherche.</p>",
+  "type": "Skill( BIOLOGIST ), Skill( MEDIC )",
+  "cond": "",
+  "weight": "",
+  "important": ""
+ },
+ {
+  "id": "WORKSHOPPER",
+  "title": "Atelier",
+  "desc": "<p>Allez à l'*Atelier*. Avec les matériaux nécessaires, *construisez au moins 1 objet* grâce à vos mains de technicien qualifié.</p>",
+  "type": "Skill( ENGINEER )",
+  "cond": "ShipEquipmentHas(WORKSHOP)",
+  "weight": "5",
+  "important": ""
+ },
+ {
+  "id": "FIRST_STEP",
+  "title": "Premier pas",
+  "desc": "<p>Commencez par vous chercher à manger...</p><p> Allez au *Réfectoire* et prenez une *Ration*. Elle vous sera utile plus tard.</p>",
+  "type": "Any",
+  "cond": "",
+  "weight": "",
+  "important": ""
+ },
+ {
+  "id": "SECOND_STEP",
+  "title": "Communiquer",
+  "desc": "<p>Vous avez besoin d'entendre ce que les autres disent et de vous communiquer.</p><p>Allez au *Stockage* et prenez un *Talkie-walkie*.</p><p>Vous aurez accès au Canal Global du tchat.</p>",
+  "type": "Any",
+  "cond": "",
+  "weight": "",
+  "important": ""
+ },
+ {
+  "id": "BEGINNER",
+  "title": "Mode Débutant",
+  "desc": "<p>Vous jouez en Mode Débutant. Pourquoi pas passer aux choses plus sérieuses ? </p>\n<p>Cliquez sur le bouton *Mode Normal* en haut à droite.</p>\n<p>Des infos avancées sur le vaisseau seront ainsi affichées :</p>\n<ul>\n<li>Les barres qui affichent votre moral et votre santé</li>\n<li>Le temps du jeu</li>\n<li>La barre d'alertes en cours, s'il y en a</li>\n<li>La barre des personnes actives</li>\n<li>La barre des infos sur les ressources</li>\n</ul>\n\n",
+  "type": "",
+  "cond": "isBeginner",
+  "weight": "",
+  "important": ""
+ },
+ {
+  "id": "",
+  "title": "",
+  "desc": "",
+  "type": "",
+  "cond": "",
+  "weight": "",
+  "important": ""
+ },
+ {
+  "id": "Pasiphae",
+  "title": "<p>Allez à la *Baie Alpha 2* et décollez à bord du <em>Pasiphae</em>.</p><p> Une fois dans l'espace extérieur, servez-vous des capacités uniques de ce vaisseau pour *ramasser les débris* (plastique et métalliques).</p><p> Les débris sont nécessaires pour monter de nouveaux appareils, même pour fabriquer des robots.</p>",
+  "desc": "",
+  "type": "",
+  "cond": "",
+  "weight": "",
+  "important": ""
+ },
+ {
+  "id": "Capsules Fuel",
+  "title": "<p>Allez dans le *Stockage Alpha arrière* où dans le *Stockage Beta arrière* et extrayez au moins <em>1 capsule de Fuel</em> du reservoir de Fuel.</p>\n<p>Ensuite, amenez-la dans la *Salle de Moteurs*. Une fois sur place, vous pouvez la laisser là-bas, ou l'insérer dans la Chambre de Combustion si l'équipe demande à que ce soit fait.</p>",
+  "desc": "",
+  "type": "",
+  "cond": "",
+  "weight": "",
+  "important": ""
+ },
+ {
+  "id": "SURGEON",
+  "title": "Chirurgien ??????????",
+  "desc": "<p>Allez dans l'*Infirmerie* et utilisez le *Plot chirurgical* pour *guérir* un membre de l'équipage d'une blessure.</p>",
+  "type": "Skill( MEDIC )",
+  "cond": "ShipEquipmentHas(SURGERY_POD)",
+  "weight": "5",
+  "important": ""
+ },
+ {
+  "id": "SHRINK_U_R_MIND",
+  "title": "Monter le canapé",
+  "desc": "<p>Il faudrait *chercher le kit du canapé* et ensuite se débrouiller pour le faire *assembler*. Cela vous permettra d'exercer votre spécialité en psychologie.</p>",
+  "type": "Skill( SHRINK )",
+  "cond": "Not(ShipEquipmentHas(SOFA))",
+  "weight": "5",
+  "important": ""
+ },
+ {
+  "id": "UPSIDE_DOWN",
+  "title": "Monter le moral",
+  "desc": "<p>Cherchez le canapé et faites au moins *une thérapie* à un coéquipier.</p>\n<p>Le coéquipier doit être allongé et vous devez être présent dans la pièce au changement de cycle. Le moral de votre interlocuteur augmentera de façon automatique.</p>\n<p> Tout le monde a besoin d'une thérapie, même sans être malade.</p>",
+  "type": "Skill( SHRINK )",
+  "cond": "ShipEquipmentHas(SOFA)",
+  "weight": "5",
+  "important": ""
+ },
+ {
+  "id": "",
+  "title": "",
+  "desc": "",
+  "type": "",
+  "cond": "ProjectNeeds( COMPUTER )",
+  "weight": "",
+  "important": ""
+ }
+]

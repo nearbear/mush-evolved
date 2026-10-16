@@ -1,0 +1,182 @@
+[
+ {
+  "id": "HIDDEN",
+  "name": "Caché",
+  "desc": "Cet objet est caché. Il n'est visible que par vous.\nAttention ! Un objet caché peut être révélé par un autre joueur si il fouille la pièce.",
+  "public": "true"
+ },
+ {
+  "id": "BROKEN",
+  "name": "Cassé",
+  "desc": "Cet objet ne fonctionne plus. Il doit être réparé pour pouvoir être utilisé a nouveau",
+  "public": "true"
+ },
+ {
+  "id": "EQUIPMENT",
+  "name": "Equipement",
+  "desc": "Cet objet ne peut pas être déplacé. I l accorde ses actions aux personnes dans la pièce.",
+  "public": "false"
+ },
+ {
+  "id": "MODULE_ACCESS",
+  "name": "Accès au Module",
+  "desc": "Cet objet charge un module.",
+  "public": "false"
+ },
+ {
+  "id": "WORLD",
+  "name": "Mondial",
+  "desc": "Cet équipement pourvoit son effet au vaisseau entier.",
+  "public": "false"
+ },
+ {
+  "id": "HEAVY",
+  "name": "Lourd",
+  "desc": "Cet objet est particulièrement lourd.",
+  "public": "true"
+ },
+ {
+  "id": "DESTRUCTIBLE",
+  "name": "Destructible",
+  "desc": "Si cet objet est touché, il est immédiatement détruit",
+  "public": "true"
+ },
+ {
+  "id": "FIRE_WEAPON",
+  "name": "Arme a feu",
+  "desc": "Cet objet est une arme.",
+  "public": "false"
+ },
+ {
+  "id": "ARTEFACT",
+  "name": "Artefact alien",
+  "desc": "Cet objet est... étrange...",
+  "public": "true"
+ },
+ {
+  "id": "FOOD_UNSTABLE",
+  "name": "Instable",
+  "desc": "Cette nourriture est franchement douteuse.",
+  "public": "true"
+ },
+ {
+  "id": "FOOD_HAZARDOUS",
+  "name": "Avariée",
+  "desc": "Cette nourriture ne devrait être donné à aucune personne fragile, toute ingestion peut être dangereuse.",
+  "public": "true"
+ },
+ {
+  "id": "FOOD_DECAYING",
+  "name": "Décompostion",
+  "desc": "Cette nourriture devrait être exterminée sans sommation, toute ingestion peut être dangereuse voir fatale.",
+  "public": "true"
+ },
+ {
+  "id": "FOOD_FROZEN",
+  "name": "Congelé",
+  "desc": "Cette nourriture est hyper-gelée Sa consommation tel quel peut s'avérer difficile.",
+  "public": "true"
+ },
+ {
+  "id": "BROKEN_SIGNALED",
+  "name": "Signalé",
+  "desc": "Cette équipement cassé a été signalé.",
+  "public": "false"
+ },
+ {
+  "id": "PLANT_THIRSTY",
+  "name": "Soif",
+  "desc": "Cette plante a *Soif*, elle ne produira plus que de l'oxygène. Si elle n'est pas arrosée, demain elle deviendra *Désséchée*.",
+  "public": "true"
+ },
+ {
+  "id": "PLANT_DRY",
+  "name": "Désséché",
+  "desc": "Cette plante est *Désséchée*, elle ne produira ni fruits ni oxygène. Si elle n'est pas arrosée, demain elle sera morte.",
+  "public": "true"
+ },
+ {
+  "id": "PLANT_DISEASED",
+  "name": "Malade",
+  "desc": "Cette plante est *Malade*, elle ne produira ni fruits ni oxygène.",
+  "public": "true"
+ },
+ {
+  "id": "PLANT_YOUNGLING",
+  "name": "Jeune Plant",
+  "desc": "Cette plante est jeune. Elle ne produira ni oxygène ni fruits jusqu'à maturation.",
+  "public": "true"
+ },
+ {
+  "id": "AUTO_KEY",
+  "name": "AUTO_KEY",
+  "desc": "Génère sa propre clé pour la comm avec l'iso",
+  "public": "false"
+ },
+ {
+  "id": "SHOP_SOLO",
+  "name": "SHOP_SOLO",
+  "desc": "Objet disponible dans le slot d'objet perso",
+  "public": "false"
+ },
+ {
+  "id": "SHOP_SOCIAL",
+  "name": "SHOP_SOCIAL",
+  "desc": "Objet disponible dans le slot d'objet social",
+  "public": "false"
+ },
+ {
+  "id": "NO_CHARGE",
+  "name": "NO_CHARGE",
+  "desc": "Cet objet ne se recharge pas.",
+  "public": "false"
+ },
+ {
+  "id": "REVEALED",
+  "name": "REVEALED",
+  "desc": "Les effets de cet objet sont révélé.",
+  "public": "false"
+ },
+ {
+  "id": "REINFORCED",
+  "name": "Renforcé",
+  "desc": "Cet objet démontable a été renforcé et ne peux plus être démonté. La difficulté pour le casser est augmentée.",
+  "public": "true"
+ },
+ {
+  "id": "EQ_DISABLED",
+  "name": "Désactivé",
+  "desc": "Cet objet est *désactivé*. Il doit être *installé* pour être activé.",
+  "public": "true"
+ },
+ {
+  "id": "CUSTOM_KEY",
+  "name": "CUSTOM_KEY",
+  "desc": "A une clé pour les liaison avec l'iso.",
+  "public": "false"
+ },
+ {
+  "id": "$EOF",
+  "name": "",
+  "desc": "",
+  "public": ""
+ },
+ {
+  "id": "",
+  "name": "",
+  "desc": "",
+  "public": ""
+ },
+ {
+  "id": "",
+  "name": "notes",
+  "desc": "",
+  "public": ""
+ },
+ {
+  "id": "",
+  "name": "le champs public est indicatif",
+  "desc": "",
+  "public": ""
+ }
+]

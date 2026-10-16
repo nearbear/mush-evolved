@@ -1,0 +1,213 @@
+[
+ [
+  "",
+  "id",
+  "name",
+  "desc",
+  "notes",
+  "icone",
+  "align"
+ ],
+ [
+  "",
+  "HARVEST(n:Int)",
+  "Récolte",
+  "Vous gagnez $nb Fruit$s Alien$s.",
+  "( +1 si Botanist )",
+  "fruits",
+  "g"
+ ],
+ [
+  "",
+  "PROVISION(n:Int)",
+  "Provision",
+  "Vous gagnez $nb Steack$s Alien$s.",
+  "( +1 par Survival )",
+  "custom",
+  "g"
+ ],
+ [
+  "",
+  "FUEL(n:Int)",
+  "Hydrocarbure",
+  "Vous gagnez $nb unité$s de Fuel.",
+  "",
+  "custom",
+  "g"
+ ],
+ [
+  "",
+  "OXY(n:Int)",
+  "Pompage",
+  "Vous gagnez $nb unité$s de O2.",
+  "",
+  "custom",
+  "g"
+ ],
+ [
+  "",
+  "ARTEFACT",
+  "Artefact",
+  "Vous trouvez un artefact.",
+  "",
+  "custom",
+  "g"
+ ],
+ [
+  "",
+  "FIND_LOST",
+  "Retrouvaille",
+  "Un équipier perdu est retrouvé !",
+  "Le joueur rejoint l'équipe d'expedition / lost n'arrive que si un perso a été lost",
+  "target",
+  "g"
+ ],
+ [
+  "",
+  "RAS",
+  "Rien à signaler",
+  "La zone est explorée, rien à signaler.",
+  "",
+  "custom",
+  "n"
+ ],
+ [
+  "",
+  "AGAIN",
+  "Errance",
+  "Echec de l'exploration de la zone. Il reste quand même des choses à découvrir...",
+  "",
+  "custom",
+  "n"
+ ],
+ [
+  "",
+  "BACK",
+  "Retour",
+  "Vous abandonnez l'expédition en cours.",
+  "",
+  "",
+  "n"
+ ],
+ [
+  "",
+  "FIGHT",
+  "Combat",
+  "Vous affrontez une créature.",
+  "",
+  "alien",
+  "b"
+ ],
+ [
+  "",
+  "ACCIDENT",
+  "Accident",
+  "Un équipier subit de 3 à 5 Points de Dégâts.",
+  "- 1 si survival",
+  "target",
+  "b"
+ ],
+ [
+  "",
+  "TIRED",
+  "Fatigue",
+  "Tous les équipiers subissent 2 Points de Dégâts.",
+  "-1 si survival",
+  "custom",
+  "b"
+ ],
+ [
+  "",
+  "LOOSE_ITEM",
+  "Objet perdu",
+  "Un objet possédé par un des équipiers est perdu.",
+  "",
+  "target",
+  "b"
+ ],
+ [
+  "",
+  "DISEASE",
+  "Maladie",
+  "Un équipier tombe malade.",
+  "",
+  "target",
+  "b"
+ ],
+ [
+  "",
+  "LOST",
+  "Perdu",
+  "Un équipier se perd.",
+  "Il apparait sous forme d'un nouveau tag sur la planète",
+  "target",
+  "b"
+ ],
+ [
+  "",
+  "KILL_RANDOM",
+  "Mort",
+  "Un équipier meurt.",
+  "Survival séléctionnés en dernier",
+  "target",
+  "b"
+ ],
+ [
+  "",
+  "KILL_LOST",
+  "Mort",
+  "L'équipier perdu meurt.",
+  "",
+  "target",
+  "b"
+ ],
+ [
+  "",
+  "KILL_ALL",
+  "Mort du groupe",
+  "Tous les équipiers meurent.",
+  "",
+  "",
+  "b"
+ ],
+ [
+  "",
+  "DISASTER",
+  "Catastrophe",
+  "Tous les équipiers subissent de 3 à 5 Points de Dégâts.",
+  "-1 si survival",
+  "",
+  "b"
+ ],
+ [
+  "",
+  "STARMAP",
+  "Eclat de Carte",
+  "Vous trouvez $nb éclat$s de carte stellaire en cristalite.",
+  "+ 1 si archéologie",
+  "",
+  "g"
+ ],
+ [
+  "",
+  "MUSH_TRAP",
+  "Piège Mush",
+  "Tous les équipiers risquent une infection Mush.",
+  "",
+  "",
+  "b"
+ ],
+ [
+  "$EOF",
+  "",
+  "",
+  "*"
+ ],
+ [],
+ [
+  "",
+  "",
+  "",
+  "todo update la desc d event avec l ajout de l expl du tag + bonus de skills/conditions diverses"
+ ]
+]

@@ -1,0 +1,490 @@
+[
+ {
+  "id": "FUEL_CAPSULE",
+  "bg": "Permet de charger du carburant pour le déplacer dans le module de combustion."
+ },
+ {
+  "id": "CAMERA",
+  "bg": "Lorsqu'une salle possède une caméra, tous les logs sont sauvegardés dans l'historique et apparaissent publiquement. La caméra repère également les actions discrètes et furtives effectuées. Elle ne fonctionne pas si elle est placée dans votre inventaire personnel."
+ },
+ {
+  "id": "SPACE_SUIT",
+  "bg": "Le joueur peut sortir dans l'espace depuis une baie de lancement pour une mission de réparation externe. Le personnage peut également participer a un expédition sur une planète a l’atmosphère non-respirable."
+ },
+ {
+  "id": "EXTINGUISHER",
+  "bg": "L'extincteur est un dispositif de sécurité de taille standard désigné pour pouvoir étouffer une éventuelle combustion."
+ },
+ {
+  "id": "MAD_KUBE",
+  "bg": "Le MAD Kube, prisé par tous. Bien peu arrivent à le résoudre en moins de 26 mouvements."
+ },
+ {
+  "id": "MICROWAVE",
+  "bg": "Outil moderne pour cuisiner rapidement les rations."
+ },
+ {
+  "id": "FREEZER",
+  "bg": "Outil moderne qui permet de conditionner de la nourriture."
+ },
+ {
+  "id": "ANTIGRAV_SCOOTER",
+  "bg": "Le dernier modèle de chez GnilWor. Avec les trottinettes GnilWor, glissez sans effort !"
+ },
+ {
+  "id": "ASTRO_MODULE",
+  "bg": "Le terminal Astro permet de scanner l'espace proche à la recherche d'une planète à explorer. Les informations qui sont contenues dedans sont strictement réservées aux navigateurs dans le but de préserver le moral de l'équipage."
+ },
+ {
+  "id": "PILOT_MODULE",
+  "bg": "Permet au Commandant d'effectuer ses devoirs. Le module de pilotage possède plein d'outils facilitant la gestion quotidien du Daedalus."
+ },
+ {
+  "id": "GRAVITY_SIMULATOR",
+  "bg": "<em>Et la lourdeur fut !</em>"
+ },
+ {
+  "id": "DOOR",
+  "bg": "Qu'elle que soit son matériaux, sa densité son état, une porte mène quelque part."
+ },
+ {
+  "id": "TREE_POT",
+  "bg": "Permet d'accueillir une plante du jardin hydroponique."
+ },
+ {
+  "id": "COMBUSTION_CHAMBER_ACCESS",
+  "bg": "Réserve de carburant destiné au moteur diesel. Une technologie sublime et un usage assez particulier. Les canaux de transfert de carburant ne fonctionnant plus, il faut transporter le mélange des buses des réservoirs jusqu'à la pré chambre de combustion. Les concepteurs auraient pu propulser la bête au charbon tant qu'ils y étaient..."
+ },
+ {
+  "id": "TURRET_COMMAND",
+  "bg": "Poste de tir de la tourelle Bidulotron 3000. En pointe de la technologie, ses boucliers de verres et son teslatron en font une arme redoutable contre les Hunters."
+ },
+ {
+  "id": "KITCHEN",
+  "bg": "Poste de cuisine d'élite inter-galactique certaines compétences en arts martiaux peuvent être nécessaires."
+ },
+ {
+  "id": "PATROL_COMMAND",
+  "bg": "Poste de pilotage de patrouilleur."
+ },
+ {
+  "id": "OXYGEN_TANK",
+  "bg": "Réserve d'oxygène du Daedalus, manipuler avec précaution. NE PAS VIDER à mauvais escient."
+ },
+ {
+  "id": "FUEL_TANK",
+  "bg": "Réserve de fuel du Daedalus, manipuler avec précaution. NE PAS FUMER."
+ },
+ {
+  "id": "WRENCH",
+  "bg": "Une clé à molette, peut servir pour faciliter la réparation des valves, tourelles, etc. Bref, tout ce qui se répare."
+ },
+ {
+  "id": "MYCOSCAN_ACCESS",
+  "bg": "Prototype de détecteur de traces de Mush, originalement élaboré par Eleesha puis perfectionné dans le cadre du projet Magellan."
+ },
+ {
+  "id": "SURGERY_POD",
+  "bg": "En cas de coups durs vous devriez toujours savoir où il se trouve."
+ },
+ {
+  "id": "DUCK_TAPE",
+  "bg": "Le rouleau de ruban adhésif a de nombreux usages pas toujours avouables."
+ },
+ {
+  "id": "CRYO_MODULE",
+  "bg": "Le module de cryogénisation vous contenait pendant votre long sommeil. Charge à vous de ne pas y retourner."
+ },
+ {
+  "id": "NERON_CORE",
+  "bg": "Le cœur de NERON permet de modifier ses programmes pour l'améliorer."
+ },
+ {
+  "id": "AIMING_HELMET",
+  "bg": "Le casque de visée est une aide précieuse par temps de brouillard, dans le noir, ou si vous ne savez pas vous servir d'une arme."
+ },
+ {
+  "id": "NATAMY_RIFFLE",
+  "bg": "Le fusil bien particulier mis au point par l'équipage. Ses munitions au bicarbonate de sodium et à la retro-patuline ont des propriété anti-fongiques."
+ },
+ {
+  "id": "MYCO_ALARM",
+  "bg": "La myco-alarme détecte les fortes concentrations de mycotoxine. Si le Mush décide d'attaquer elle se mettra donc à sonner."
+ },
+ {
+  "id": "TALKY_WALKY",
+  "bg": "Permet de communiquer sur le canal Général."
+ },
+ {
+  "id": "MEDIKIT",
+  "bg": "Après les terribles guerres du Mush, il a été décidé par les états majors, de diminuer au possible l'exposition aux spores de Mush pour préserver les troupes. Les unités de combat sont donc systématiquement équipés en trousse de secours ultra complète, permettant à n'importe quel agent de la Fédération de soigner ses blessures superficielles."
+ },
+ {
+  "id": "METAL_SCRAPS",
+  "bg": "Il est parfois surprenant de voir ce que certains savent faire avec quelques morceaux d'aluminium."
+ },
+ {
+  "id": "PLASTIC_SCRAPS",
+  "bg": "Avec quelques outils et de la patience, c'est fou ce à quoi l'on peut arriver."
+ },
+ {
+  "id": "MUSH_SAMPLE",
+  "bg": "Une dendrite de Mush adulte, c'est en faite une des terminaisons pseudo-nerveuse produite par le Mush au stade adulte. Elle conduit formidablement bien l'électricité et a un petit goût de noisette."
+ },
+ {
+  "id": "MUSH_FLOPPY_DISK",
+  "bg": "Ce disque contient le génome du Mush décrypté. En soit il ne peut pas vous servir à grand chose, même pas comme arme."
+ },
+ {
+  "id": "BLASTER",
+  "bg": "Arme à faisceau d'énergie dirigée. Dernière née de la gamme BrizHotFire. Permet de se défendre sans effort et en toute élégance de tout danger."
+ },
+ {
+  "id": "BODY_CAT",
+  "bg": "\"Un beau chat, fort doux et charmant.\nQuand il miaule, on l'entend à peine,\nTant son timbre est tendre et discret.\"\nC'est le chat de Raluca."
+ },
+ {
+  "id": "NCC_LENS",
+  "bg": "Ces lentilles ultra sophistiqué élaboré à partir d'un technologie féline feront de vous un bien meilleur prédateur."
+ },
+ {
+  "id": "ANTI_MUSH_SERUM",
+  "bg": "Le sérum retro-fongique est conçu pour anéantir le mécanisme de parthénogenèse de la variété B du Mush, ainsi il donne une chance au corps de l'hôte d'enkyster les spores existants et ainsi éventuellement d'échapper à une contamination programmée."
+ },
+ {
+  "id": "RESEARCH_LAB",
+  "bg": "Un laboratoire super ultra moderne avec de vrais ordinateurs à lampe fluo compacte et des cartes perforées haute densité."
+ },
+ {
+  "id": "SHOWER",
+  "bg": "Dans l'espace tout peut arriver, parfois pour se laver de toutes les péripéties, une bonne douche et c'est reparti."
+ },
+ {
+  "id": "COM_CENTER",
+  "bg": "Le centre de communication ultra-moderne permet de rassembler les résultats d'analyse des senseurs et autres radars. Il permet également d'établir des communications longues distances."
+ },
+ {
+  "id": "SPACE_CAPSULE",
+  "bg": "Une capsule contient quelque chose. Vous ne pourrez savoir ce que c'est qu'en l'ouvrant. Etes-vous prêt pour la surprise?"
+ },
+ {
+  "id": "OXY_CAPSULE",
+  "bg": "La capsule OxyTron de la société AirGaz Permet de déplacer de l'oxygène sous forme liquide. Par bonheur, la pellicule de protection est quasi inviolable."
+ },
+ {
+  "id": "LIFE_CAPSULE",
+  "bg": "La capsule de survie est le dernier recours des pilotes de Patrouilleurs abattus..."
+ },
+ {
+  "id": "HELP_DRONE",
+  "bg": "Le drone de Soutien permet d'achever l'objectif de maintenance automatique de Magellan, grâce à son protocole Beta|-Slave ils peuvent quasiment remplacer un vrai être humain. Sauf pour le faire."
+ },
+ {
+  "id": "SNIPER_RIFFLE",
+  "bg": "Depuis la nuit des temps, le tireur isolé et son arme sont une pierre angulaire des dispositif armée. Le Fusil Lizaro Jungle a été crée pendant la sale Guerre par des faction rebelles, il est peu onéreux et marche dans toutes les situations qu'il vente ou qu'il neige. Son chargeur semi-automatique rend sa cadence mortelle. À manier avec précaution."
+ },
+ {
+  "id": "KNIFE",
+  "bg": "20 cm de bonheur pour psychopathe"
+ },
+ {
+  "id": "MACHINE_GUN",
+  "bg": "Le fusil d'assaut automatique dit \"cracheuse de plomb\" F.R.A.K.U. Son débit et sa porté et ses balles enrichie et son poids... bref c'est une arme impressionnante, lourde, dangereuse...bref ça déchire."
+ },
+ {
+  "id": "QUAD_COMPASS",
+  "bg": "La boussole quadrimetrique permet de se repérer en expédition, c'est un outil indispensable pour le personnel qui s'aventure en milieu hostile."
+ },
+ {
+  "id": "PLASTENITE_ARMOR",
+  "bg": "L'armure de plastenite est faite en latex bio-sensibilisé et en matière ultra souple, ce qui la rend légère et agréable à portée, presque invisible. Certains la trouvent un peu efféminée en la comparant à des collants moulants. Gageons que le moulage du poitrail n'aide pas. En réalité, mieux vaut être ridicule que mort."
+ },
+ {
+  "id": "HEAT_SEEKER",
+  "bg": "Les expéditions inter planétaires peuvent paradoxalement se montrer très dangereuses pour vos signaux vitaux. Le détecteur de chaleur vous permettra de savoir avec un peu d'avance la quantité et la qualité calorimétrique de votre environnement Malheureusement, l’agressivité de certains xenomorphes n'est pas proportionnel à leur chaleur corporelle. En cas de contact avec des xenomorphe, un armement léger peut s'avérer nécessaire."
+ },
+ {
+  "id": "DRILLER",
+  "bg": "La foreuse permet aux corps expéditionnaires de traverser certaines embûches un peu \"dures\" à contourner."
+ },
+ {
+  "id": "ECHO_SOUNDER",
+  "bg": "L' EchoLocateur est un outils puissant pour les corps expéditionnaire en milieu hostile. Malheureusement, tout ce qui bouge n'est pas dangereux Et vice-versa."
+ },
+ {
+  "id": "TRAD_MODULE",
+  "bg": "Le module Babel a été mis au point il y a de nombreuses années par un pisciculteur. Celui-ci en avait assez de voir ses poissons rouge mourir trop rapidement et a donc décidé de financer un projet de recherche visant à pouvoir communiquer avec eux. Le module décrypte les émotions de ondes pre- et para-consciente Alpha et Beta et les transforme en mots intelligibles... ou presque. Bien mal lui en a pris, car ses poissons étaient en fait juste trop idiots et n'avaient aucun espèce d’intellect. Par contre, lui permettant de communiquer avec toute sorte d'autre entité vivantes, il a réussi à gagner des millions en refourguant son invention aux propriétaires de chiens... Les chats ne daignant pas répondre aux humains. Avec les premiers contacts xenomorphe, il devint très riche <delete> et eu beaucoup d'enfants</delete>."
+ },
+ {
+  "id": "WHITE_FLAG",
+  "bg": "Le drapeau blanc a été institué symbole international des peuples en demande de pourparlers en 2030 par l'ONU, de fait sa signification est très répandu et c'est donc un bon moyen de dire \"nous venons en paix\". Suite à quelque soucis anecdotiques, rapports à des vrais faux drapeaux blancs qui auraient provoqué des meurtres de dignitaires, sa portée reste toutefois limité et la seule bonne foi d'un corps expéditionnaire ne suffira pas forcément à leur acquérir des facilités diplomatiques."
+ },
+ {
+  "id": "MISSILE_LAUNCHER",
+  "bg": "Le Lance-Roquette fait parti de l'arsenal classique des corps expéditionnaires en milieux hostile. Sa technologie n'a pas changé depuis des centaines d'années. Il fait l’objet d'un culte un peu particulier, presque fétichiste de la part de celui qui le porte..."
+ },
+ {
+  "id": "ROTATIONAL_REACTOR",
+  "bg": "Permettent de faire tourner cette bonne vieille carne."
+ },
+ {
+  "id": "EMERGENCY_REACTOR",
+  "bg": "La fulgurante technologie Diesel a encore de beaux restes. Désormais c'est la seule façon pour Daedalus d'avancer. Chaque réacteur permet de brûler deux unités de fuel par voyage."
+ },
+ {
+  "id": "PASIPHAE_COMMAND",
+  "bg": "Le pasiphae est une amélioration notable du patrouilleur. Il permet notamment la récupération d'objets stellaires au détriment de son armement, qui reste néanmoins suffisant contre les Hunters."
+ },
+ {
+  "id": "DOCUMENT",
+  "bg": "La curiosité est certes un vilain défaut mais bon... C'est un document, secret, inutile ou indispensable. Qui sait ce qu'il contient..."
+ },
+ {
+  "id": "PRINTER",
+  "bg": "Tout droit sortie des plus grandes imaginations de la science fiction, une machine qui imprime des symboles sur du papier toute seule avec seulement des cartes perforées en entrée. Certains signaux cryptés ne peuvent être décodés qu'au moyen de cet engin préhistorique."
+ },
+ {
+  "id": "ICARUS_COMMAND",
+  "bg": "L'Icarus était un vaisseau d'exploration d'élite...il y a quelques centaines d'années."
+ },
+ {
+  "id": "POSTIT",
+  "bg": "Ces insupportables petits feuillets traînent partout.. Et puis qui peut-en avoir réellement besoin?"
+ },
+ {
+  "id": "POSTIT_BLOC",
+  "bg": "Il manque pas mal de feuille mais il pourra encore vous servir quelque temps."
+ },
+ {
+  "id": "THICK_TUBE",
+  "bg": "Un tube épais...qu'est-ce que vous pourriez en faire..."
+ },
+ {
+  "id": "OLD_SHIRT",
+  "bg": "Répugnant...Vous devriez le brûler."
+ },
+ {
+  "id": "SOAP",
+  "bg": "Y en a certains qui devraient vraiment s'en servir."
+ },
+ {
+  "id": "WAVOSCOPE",
+  "bg": "Vous n'avez jamais vraiment compris l'utilité du vaguoscope mais de toute façon tout le monde s'en fiche...sauf les pilotes de Patrouilleurs."
+ },
+ {
+  "id": "SOFA",
+  "bg": "Qui eu crû que quelque coussins et une structure de contre-plaqué puissent autant détendre..."
+ },
+ {
+  "id": "BOOK",
+  "bg": "Un gros tas de cellulose avec lequel on peut à la rigueur assommer Raluca, et encore..."
+ },
+ {
+  "id": "TRACKER",
+  "bg": "Perdu dans l'espace, dans la jungle, dans ce bon vieux Daedalus ? Nous avons exactement ce qu'il vous faut. Maintenant vous pourrez vous perdre dans la mini carte."
+ },
+ {
+  "id": "NERON_BIOS_TERM",
+  "bg": "Lors de la psychothérapie de NERON, l'interface de celui-ci à été ouverte pour qu'il soit plus malléable. L' interface basique d'entrée-sortie restent donc accessible pour une poignée d'élus."
+ },
+ {
+  "id": "CONSUMABLE",
+  "bg": "NEVER"
+ },
+ {
+  "id": "MAGELLAN_LIQUID_MAP",
+  "bg": "Vous avez l'impression que cette chose essaie de vous parler. Vous devez sûrement rêver."
+ },
+ {
+  "id": "ROLLING_BOULDER",
+  "bg": "Les câlins de la bête sont littérallement insupportable, le pire ce sont les léchouilles..."
+ },
+ {
+  "id": "ALIEN_OIL",
+  "bg": "Ni vraiment fluide, ni vraiment solide, sa viscosité n'a d'égale que la puissance de son odeur."
+ },
+ {
+  "id": "WATER_STICK",
+  "bg": "Quelle idée de rapporter cette chose à bord...Ca vous rappel des souvenirs douteux de Venus.."
+ },
+ {
+  "id": "COMPUTER_JELLY",
+  "bg": "On aurait pu s'en servir en cuisine mais le chef n'en voulait pas..."
+ },
+ {
+  "id": "ALIEN_HOLOGRAPHIC_TV",
+  "bg": "L'effet hypnotique de cet appareil vous fera oublier tous vos soucis. Et vos ennuis. Et..Vous vous appelez comment déjà ?"
+ },
+ {
+  "id": "INSECTOID_SHELL",
+  "bg": "Il n'a pas l'air tout à fait mort..."
+ },
+ {
+  "id": "ALIEN_CAN_OPENER",
+  "bg": "Grâce à son fabuleux revètement en céramique liquide, cet objet incroyable vous sauvera la vie. Il vous permettra sans effort d'ouvrir des canettes, des ventres, des tuyaux, des pistons, des murs, des cloisons, des yeux, des armures, des vitre blindées, des lattes de sommiers, des humains peu coopératifs, des blindages lourds...pour la modique somme de ... rien du tout."
+ },
+ {
+  "id": "RATION",
+  "bg": "NEVER"
+ },
+ {
+  "id": "KITCHEN",
+  "bg": "Poste de cuisine d'élite inter-galactique. Certaines compétences en arts martiaux peuvent être nécessaires pour officier."
+ },
+ {
+  "id": "BANANA_TREE",
+  "bg": "NEVER"
+ },
+ {
+  "id": "DRUG_DISP",
+  "bg": "Distributeur de bonheur agrée par le professeur Albus Haxley."
+ },
+ {
+  "id": "ANABOLYSANT",
+  "bg": "NEVER"
+ },
+ {
+  "id": "SPORE_EXTRACTOR",
+  "bg": "Malgré son aspect, il ne fait presque aucun mal."
+ },
+ {
+  "id": "SPORE_EXTRACTOR",
+  "bg": "Son bruti caractéristique fait réellement peur."
+ },
+ {
+  "id": "STELLAR_ANTENNA",
+  "bg": "Le manuel stipule que l'antenne stellaire est le must have en terme de communication, avec sa bande passante de 24 Bauds, il vous permettra de communiquer à l'autre bout de l'univers sans effort."
+ },
+ {
+  "id": "PLANET_SCANNER",
+  "bg": "Il émet de la musique quand vous le démarrez. Ces ingénieurs sont décidément excentriques...Qui eût cru que Verdi aurait pu inspirer un tel calculateur..."
+ },
+ {
+  "id": "GRENADE",
+  "bg": "Dessus est écrit: \"Explosez votre potentiel\"."
+ },
+ {
+  "id": "PATROL_INTERFACE",
+  "bg": "Il n'est plus tout jeune mais il fera l'affaire."
+ },
+ {
+  "id": "PILGRED",
+  "bg": "Déchirez votre espace-temps en toute sécurité."
+ },
+ {
+  "id": "COFFEE_DISPENSER",
+  "bg": "La machine a café est la meilleur ami de l'Homme. Après le chat."
+ },
+ {
+  "id": "BLUEPRINT",
+  "bg": "Les plans de construction bleus sont une bénédiction pour les équipiers en mal de jeux de construction."
+ },
+ {
+  "id": "COFFEE",
+  "bg": "Le café, boisson millénaire jamais égalée."
+ },
+ {
+  "id": "BED",
+  "bg": "Faites de beaux rêves !"
+ },
+ {
+  "id": "HACKER_KIT",
+  "bg": "Le bidouilleur est objet étrange son utilité reste à prouver et à vrai dire peu savent vraiment à quoi il sert..."
+ },
+ {
+  "id": "APRON",
+  "bg": "Un vieux tablier fatigué avec écrit dessus : \"Meilleur ingénieur de mon coeur\". Nul ne sait qui a ramené ça mais il peut servir..."
+ },
+ {
+  "id": "PROTECTION_GLOVES",
+  "bg": "Perdre une main. C'est désagréable."
+ },
+ {
+  "id": "SUPER_SOAP",
+  "bg": "L'avenir de l'Humanité sera propre ou ne sera pas."
+ },
+ {
+  "id": "ROPE",
+  "bg": "Parmi les analyses probabilistes de ce qui serait sur le Daedalus, la Corde avait une chance nulle. Et pourtant."
+ },
+ {
+  "id": "SUPER_TALKY",
+  "bg": "Bref, c'est la révolution. *Attention*, le service après-vente de ce joujou vous coûtera plusieurs reins et une cornée."
+ },
+ {
+  "id": "FIST",
+  "bg": "NEVER"
+ },
+ {
+  "id": "COFFEE_THERMOS",
+  "bg": "Le nec plus ultra de la solidarité dans les périodes de disettes. Livré sans soupe chaude ni brasero."
+ },
+ {
+  "id": "LUNCHBOX",
+  "bg": "L'équivalent galactique de la soupe chaude quand le zéro absolu vous guette."
+ },
+ {
+  "id": "PILL_BOX",
+  "bg": "L'archétype de ces objets stellaires qui est toujours rangé exactement là où il ne faut pas. Ou dans vos poches."
+ },
+ {
+  "id": "BANDAGE",
+  "bg": "Dans l'espace, la première sangsue spatiale venue peut faire de gros dégâts. Un petit bandage pour la route !"
+ },
+ {
+  "id": "ORGANIC_SCRAPS",
+  "bg": "C'est dégoûtant, ça pue le xylophide crevé depuis 2 mois enterré dans une cuve de cheddar par une après midi de décembre d'enterrement. Vraiment besoin d'un dessin ?"
+ },
+ {
+  "id": "DYNARCADE",
+  "bg": "Trop mortel ! La réplique authentique de la borde DYN-X666 qui n'a fait que 63 morts à Shanghai2000 en 2117. Fait tourner Rage Storm Of Fury et Call Of Dirty à 240 FPS !!!! A utiliser avec précaution."
+ },
+ {
+  "id": "BEAT_BOX",
+  "bg": "Le jukebox des année folles par excellence. Et en plus chargé avec les tubes préféré de l'équipage !"
+ },
+ {
+  "id": "FLAMER",
+  "bg": "La torche a subit bien des modifications et des évolutions. Mais ça reste toujours un des plus précieux allié de la survie humaine. De quoi vous faire chaud au coeur."
+ },
+ {
+  "id": "SUPER_MAP",
+  "bg": "Les extra-terrestres qui ont laissé ça là devait s'en servir pour quelque chose... Peut-être qu'en les analysant vous pourrez en apprendre plus sur eux..."
+ },
+ {
+  "id": "$EOF",
+  "bg": ""
+ },
+ {
+  "id": "",
+  "bg": "Ces drones permettent aux non-technicien d'effectuer des actions techniciens. Les techniciens eux bénéficient réparent et inspectent pour un point d'action de moins"
+ },
+ {
+  "id": "",
+  "bg": "Un échantillon de Gloméron qui peut servir à faire avancer la Recherche."
+ },
+ {
+  "id": "",
+  "bg": "Un laboratoire super ultra moderne avec de vrais ordinateurs à Lampe et des cartes perforées."
+ },
+ {
+  "id": "",
+  "bg": "Un bon vieux PistoLaser modèle 4266 conçu par Al-Addin Tech."
+ },
+ {
+  "id": "THINK_LINK",
+  "bg": "Le think link a été mis au point par des rebelles d'un système lointain. Il permet à ceux qui en ont un implanté de reste en communication permanente"
+ },
+ {
+  "id": "BLASTER_PL80",
+  "bg": "Le Blaster PL80 est une évolution de ce bon vieux BrizHotFire. La micro turbine électrique a été remplacé par des lasers cycloïdes qui permettent de porter au stade de plasma le projectile...Bref, ça fait de gros dégâts et ça pourra servir."
+ },
+ {
+  "id": "FLAK_CANNON",
+  "bg": "Le canon à dispersion FLAK-1999 est une invention de la société Liandri. Ce gros machin se reconnaît grâce à son bruit caractéristique \"flak\" ou moment ou il décharge ses éclat de shrapnel à l'uranium 238. Son immense tube à plasma porte les éclats à des températures qui donne à l'uranium des propriétés destructrices incroyables. Le canon à dispersion est officiellement interdit par la Fédération, la convention de Genève, le tribunal de la Haye, et 234 autres organisation non-gouvernemental pour tout autre usage que les tournois mortels télévisés entre prisonnier. En effet, quel malade voudrait vraiment infliger la pluie mortelle de ce gros engin à quelqu'un?"
+ },
+ {
+  "id": "BRAIN_SEEKER",
+  "bg": "Les expéditions inter planétaires, peuvent paradoxalement se montrer très dangereuses pour vos signaux vitaux. Le BetaAlphaSenseur détecte les ondes cérébrales communes à tout les xenormorphes dits intelligents. Comme l’agressivité ne nécessite pas ou peu d'intelligence, il peut tout de même être nécessaire de se déplacer avec un lance-roquette en mission expéditionnaire..."
+ }
+]

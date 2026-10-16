@@ -1,0 +1,26 @@
+[
+ {
+  "id": "FIRST_FRAME"
+ },
+ {
+  "id": "WELCOME"
+ },
+ {
+  "id": "UI_INTRODUCTION"
+ },
+ {
+  "id": "FIRST_STEP"
+ },
+ {
+  "id": "END_LEARN_MODE"
+ },
+ {
+  "id": "NORMAL_MODE"
+ },
+ {
+  "id": "THE_END"
+ },
+ {
+  "id": "$EOF"
+ }
+]

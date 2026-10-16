@@ -1,0 +1,83 @@
+[
+ {
+  "id": "CHAB_CHAB",
+  "str": "8",
+  "name": "Chab Chab",
+  "desc": "Boule de poil mignonne mais redoutable.",
+  "kind": "RUMINANT",
+  "gender": "m",
+  "notes": ""
+ },
+ {
+  "id": "SKINNER",
+  "str": "12",
+  "name": "Ecorcheur",
+  "desc": "Comme ça se prononce.",
+  "kind": "PREDATOR",
+  "gender": "m",
+  "notes": ""
+ },
+ {
+  "id": "CORTIC",
+  "str": "12",
+  "name": "Cortic",
+  "desc": "Un gros cerveau et trop de tencatule",
+  "kind": "INTELLIGENT",
+  "gender": "m",
+  "notes": ""
+ },
+ {
+  "id": "MANKAROG",
+  "str": "32",
+  "name": "Mankarog",
+  "desc": "Légende stellaire léthale",
+  "kind": "MANKAROG",
+  "gender": "m",
+  "notes": ""
+ },
+ {
+  "id": "ZOMBI",
+  "str": "15",
+  "name": "Zombis Aliens",
+  "desc": "Ils sont nombreux, laids et pas tout à fait morts.",
+  "kind": "RUINS",
+  "gender": "m",
+  "notes": "juste ce qu'il faut pour buter un mec seul sans arme"
+ },
+ {
+  "id": "BEETLETHUG",
+  "str": "10",
+  "name": "Carapanse",
+  "desc": "Grosse carapace et grande mandibules gluantes.",
+  "kind": "INSECT",
+  "gender": "m",
+  "notes": ""
+ },
+ {
+  "id": "MINDBENDER",
+  "str": "18",
+  "name": "Torceur",
+  "desc": "Cerveau tentaculaire issue du néant.",
+  "kind": "CRISTAL_FIELD",
+  "gender": "m",
+  "notes": ""
+ },
+ {
+  "id": "$EOF",
+  "str": "",
+  "name": "",
+  "desc": "",
+  "kind": "",
+  "gender": "",
+  "notes": ""
+ },
+ {
+  "id": "8 12 30",
+  "str": "",
+  "name": "",
+  "desc": "",
+  "kind": "",
+  "gender": "",
+  "notes": ""
+ }
+]

@@ -1,0 +1,102 @@
+[
+ {
+  "id": "WOLF",
+  "short_name": "Wolf",
+  "name": "Enfants Perdus de Wolf",
+  "desc": "Les enfants perdus de Wolf ont installés plusieurs antennes sur Terre ainsi qu'un centre d’émission a Mumbaï. Nous allons pouvoir émettre sur les ondes radios terriennes les nouvelles de votre odyssée. Vous êtes des héros.",
+  "footnotes": "",
+  "notes": "",
+  "effects": "gct(REBEL_WOLF)",
+  "diff": "0"
+ },
+ {
+  "id": "SIRIUS",
+  "short_name": "Sirius",
+  "name": "Mages noirs de Sirius",
+  "desc": "Nous vous remercions pour tous les renseignements sur le Mush que vous nous avez apporté. En échange, nous vous avons transféré les plans de la molécule de Shkunz . En l'appliquant à dose homéopathiques dans vos rations, vous devriez améliorer le rendement de votre équipage.",
+  "footnotes": "Les Rations rapportent 1 :pa: supplémentaire.",
+  "notes": "la rations apportent 1 PA supplémentaire",
+  "effects": "EnableRule( SIRIUS )",
+  "diff": "1"
+ },
+ {
+  "id": "CENTAURI",
+  "short_name": "Centauri",
+  "name": "Amants de Centauri",
+  "desc": "Nous sommes heureux de pouvoir rencontrer les héros de la guerre anti-Mush. Dans notre secteur, la guerre pour le contrôle des colonies fait rage. Pour faciliter vos opération d'exploration de surface nous venons de vous transférer les plans du PL80-Blaster, un puissant canon à plasma qui doit être manipulé avec précaution. Battez vous jusqu'au bout !",
+  "footnotes": "Chaque Blaster apporte un point de puissance supplémentaire lors d'une expedition",
+  "notes": "",
+  "effects": "",
+  "diff": "2"
+ },
+ {
+  "id": "KALADAAN",
+  "short_name": "Kaladaan",
+  "name": "Fondateurs de Kaladaan",
+  "desc": "Ici Kaladaan ! Nous remercions tout l'équipage du Daedalus pour avoir donné au peuple de Sol l'espoir d'un avenir meilleur. Depuis votre départ la résistance s'organise et nous avons déjà infiltré plusieurs administrations Mush. La Fédération sera bientôt renversé et nous reprendrons le contrôle de Sol !",
+  "footnotes": "+ 6 :pmo: à tout l'équipage",
+  "notes": "+ 6 moral",
+  "effects": "CrewEarnMoral(6)",
+  "diff": "3"
+ },
+ {
+  "id": "LUYTEN_CETI",
+  "short_name": "Luyten-Ceti",
+  "name": "Ombres de Luyten-Ceti",
+  "desc": "Notre système est encore sous le contrôle du Mush. Nous devons travailler dans la plus grande discrétion et pour cela nous avons développé de minuscules sondes com placées directement à l'interieur de nos cerveaux. Leur modèles viennent de vous d'être transférés. Les ombres de Luyten-Ceti veillent sur vous.",
+  "footnotes": "Les équipiers n'ont plus besoin de Talky-Walky pour les communications distantes.",
+  "notes": "",
+  "effects": "",
+  "diff": "0"
+ },
+ {
+  "id": "CYGNI",
+  "short_name": "Cygni",
+  "name": "Aurores de Cygni",
+  "desc": "Nous saluons l'équipage du Daedalus. 61 Cygni a été exploré durant votre voyage. La fédération ne sait pas que l'intégralité de notre formation est humaine. Nous simulons des envois d'information réguliers a l'aide d'un Pheromodem évolué. En trompant la vigilance du Mush nous préparons la contre-attaque armée de la rébellion depuis ce système. Les plans de notre missile SP2SP-230 ont été transférés vers NERON.",
+  "footnotes": "Les dégats des Patrouilleurs sont augmentés d'un point.\n+ 3 :pmo: à tout l'équipage.",
+  "notes": "",
+  "effects": "CrewEarnMoral(3)",
+  "diff": "0"
+ },
+ {
+  "id": "$EOF",
+  "short_name": "",
+  "name": "",
+  "desc": "",
+  "footnotes": "",
+  "notes": "",
+  "effects": "",
+  "diff": ""
+ },
+ {
+  "id": "",
+  "short_name": "",
+  "name": "",
+  "desc": "",
+  "footnotes": "",
+  "notes": "ajoute une recherche permettant de sonder les planètes",
+  "effects": "",
+  "diff": ""
+ },
+ {
+  "id": "",
+  "short_name": "",
+  "name": "",
+  "desc": "",
+  "footnotes": "",
+  "notes": "ajoute un projet pour le jardin",
+  "effects": "",
+  "diff": ""
+ },
+ {
+  "id": "",
+  "short_name": "",
+  "name": "",
+  "desc": "",
+  "footnotes": "",
+  "notes": "ajoute un blueprint d upgrade pour les patrouilleurs ( donne une action qui permet de repandre de la neige magnétique qui coute une unité d oxygene du daedalus mais diminue de un les hunter en pools",
+  "effects": "",
+  "diff": ""
+ }
+]

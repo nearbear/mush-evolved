@@ -1,0 +1,68 @@
+[
+ {
+  "id": "FAST_CYCLE",
+  "name": "Cycle Rapide",
+  "desc": "Les cycles de ce vaisseau sont portés à 2h.",
+  "foot": "C'est parrt...hein ? déjà fini ?"
+ },
+ {
+  "id": "SLOW_CYCLE",
+  "name": "Cycle Lent",
+  "desc": "Les cycles de ce vaisseau sont portés à 4h.",
+  "foot": "Cool, no stress y a paaaas le feuuu.. ahhhh siiiiii."
+ },
+ {
+  "id": "THREE_MUSH",
+  "name": "Triple Mush",
+  "desc": "Le vaisseau démarrera avec trois Mush.",
+  "foot": "Jamais deux sans trois !"
+ },
+ {
+  "id": "NO_MUSH",
+  "name": "Sans Mush",
+  "desc": "Le vaisseau démarrera sans Mush.",
+  "foot": "Et une tôle froissée pour la deux, une !"
+ },
+ {
+  "id": "NO_MUSH_BAR",
+  "name": "Mush cachés",
+  "desc": "La barre d'équipage n'indique plus la quantité de Mush à bord.",
+  "foot": "L'insécurité est une notion subject....shlomp shlomp."
+ },
+ {
+  "id": "MUSH_PROGRESSIVE",
+  "name": "Mush en sommeils",
+  "desc": "Les Mush sont déclarés progressivement le long de la partie.\n<strong>Attention :  le nombre de Mush déclaré peut être supérieur à une partie normale.</strong>",
+  "foot": "Meuh non il est pas Mush. Ah des tentacules... ? Ah ouais quand même..."
+ },
+ {
+  "id": "BETA_PHASES",
+  "name": "Beta",
+  "desc": "Le vaisseau commence en mode Beta.",
+  "foot": "A l'aventure compagnon !"
+ },
+ {
+  "id": "BLITZ_CYCLE",
+  "name": "Cycle Blitz",
+  "desc": "Les cycles de ce vaisseau sont portés à 1h .",
+  "foot": "Plus vite ! Plus vite ! Plus Vite !"
+ },
+ {
+  "id": "USE_ANDREK",
+  "name": "Andie&Derek",
+  "desc": "Ce vaisseau démarre avec Andie et Derek au lieu de Finola et Chao.",
+  "foot": "Le changement c'est has been !"
+ },
+ {
+  "id": "$EOF",
+  "name": "",
+  "desc": "",
+  "foot": ""
+ },
+ {
+  "id": "FUNGAL_BATTLE",
+  "name": "Bataille Fongique",
+  "desc": "Au démarrage des apprentrons tireur ou robuste sont générés et des armes sont cachées à bord.\nVous êtes tous Mush.\nLes Mush perdent tous 1 PV par cycle.\nBon courage à Chun...",
+  "foot": "A l'attaquueeee"
+ }
+]

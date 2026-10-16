@@ -1,0 +1,272 @@
+[
+ {
+  "id": "STARTER",
+  "name": "Débutant",
+  "desc": "Offert l'option : Mush cachés.",
+  "foot": "Vous êtes un groupe qui s'est réuni pour démarrer la vie d'artiste. Pour l'instant vous en êtes à faire la manche avec une guitare dans le métro à Pyong Yang.",
+  "xp_add": "0",
+  "size_add": "48",
+  "opt": "NO_MUSH_BAR"
+ },
+ {
+  "id": "TOO_SLOW",
+  "name": "Café-théâtre",
+  "desc": "Débloque l'option Jeu Lent qui porte les cycles à 4 h.",
+  "foot": "On ne s'endort plus pendant vos films... normal personne ne vous regarde.",
+  "xp_add": "25",
+  "size_add": "16",
+  "opt": "SLOW_CYCLE"
+ },
+ {
+  "id": "TROOPERS",
+  "name": "Soldat de fortune",
+  "desc": "Débloque les Scripts et la Table de Triomphe. Passe le nombre minimal de joueur pour lancer un vaisseau à 24.",
+  "foot": "Vous avez déjà convaincu des gens ? C'est plus dur que des moutons...quoique...",
+  "xp_add": "100",
+  "size_add": "16",
+  "opt": ""
+ },
+ {
+  "id": "MUSHRUVERY",
+  "name": "Troupe de province",
+  "desc": "Débloque Andie et Derek !",
+  "foot": "Vous savez haranguer les foules sur les plages de Neptune",
+  "xp_add": "125",
+  "size_add": "8",
+  "opt": "USE_ANDREK"
+ },
+ {
+  "id": "TRIPLE_PLAY",
+  "name": "Bar lounge",
+  "desc": "Débloque l'option Triple Mush.",
+  "foot": "Vous êtes capable de faire un film sans script.",
+  "xp_add": "150",
+  "size_add": "16",
+  "opt": "THREE_MUSH"
+ },
+ {
+  "id": "PAGE",
+  "name": "Colleur d'affiche",
+  "desc": "Débloque l'option Jeu Beta.",
+  "foot": "Vous avez compris que la comm sert à quelque chose.",
+  "xp_add": "200",
+  "size_add": "8",
+  "opt": "BETA_PHASES"
+ },
+ {
+  "id": "SWIFT_FUNGUS",
+  "name": "Opéra-Bouffe",
+  "desc": "Débloque l'option Jeu Rapide qui porte les cycles à 2h.",
+  "foot": "Vous savez enchaîner deux scènes sans que le décor s'effondre.",
+  "xp_add": "250",
+  "size_add": "16",
+  "opt": "FAST_CYCLE"
+ },
+ {
+  "id": "DREAM_THEATER",
+  "name": "Nains de jardin",
+  "desc": "Débloque le départ manuel des vaisseaux pour ce casting.",
+  "foot": "Vous animez les barbecues Martien efficacement.",
+  "xp_add": "250",
+  "size_add": "16",
+  "opt": ""
+ },
+ {
+  "id": "BETA_PHASES",
+  "name": "Orchestre",
+  "desc": "",
+  "foot": "On peut vous faire confiance pour animer une soirée dans un hospice lunaire.",
+  "xp_add": "300",
+  "size_add": "16",
+  "opt": ""
+ },
+ {
+  "id": "SLEEPING_BEAUTY",
+  "name": "Ballet National",
+  "desc": "Débloque l'option Mush en sommeil.",
+  "foot": "On a failli vous embaucher pour un grand film une fois.",
+  "xp_add": "300",
+  "size_add": "16",
+  "opt": "MUSH_PROGRESSIVE"
+ },
+ {
+  "id": "WHOS_UGLY",
+  "name": "Opéra",
+  "desc": "Débloque l'option Jeu Sans Mush.Passe le nombre minimal de joueur pour lancer un vaisseau à 16.",
+  "foot": "La classe internationale sur une lune de province.",
+  "xp_add": "350",
+  "size_add": "16",
+  "opt": "NO_MUSH"
+ },
+ {
+  "id": "FIGHT",
+  "name": "Maison de Production",
+  "desc": "",
+  "foot": "LE grand spectacle son et lumière en avant-première d'un rocker excentrique millénaire.",
+  "xp_add": "350",
+  "size_add": "16",
+  "opt": ""
+ },
+ {
+  "id": "BLITZ",
+  "name": "Société évenementielle",
+  "desc": "Débloque l'option Jeu Blitz qui porte les cycles à 1h.",
+  "foot": "Le spectacle vivant, c'est ça qui vous fait vibrer !",
+  "xp_add": "400",
+  "size_add": "16",
+  "opt": "BLITZ_CYCLE"
+ },
+ {
+  "id": "LEGEND",
+  "name": "Légende",
+  "desc": "",
+  "foot": "Votre spectacle est exceptionnel.",
+  "xp_add": "400",
+  "size_add": "32",
+  "opt": ""
+ },
+ {
+  "id": "$EOF",
+  "name": "",
+  "desc": "",
+  "foot": "",
+  "xp_add": "",
+  "size_add": "256",
+  "opt": ""
+ },
+ {
+  "id": "",
+  "name": "",
+  "desc": "5 xp par vaisseau ou 1 par tickets",
+  "foot": "",
+  "xp_add": "",
+  "size_add": "",
+  "opt": ""
+ },
+ {
+  "id": "",
+  "name": "Empire",
+  "desc": "",
+  "foot": "",
+  "xp_add": "0",
+  "size_add": "32",
+  "opt": ""
+ },
+ {
+  "id": "",
+  "name": "",
+  "desc": "Débloque le jeu de règle : Bataille Fongique.",
+  "foot": "",
+  "xp_add": "",
+  "size_add": "48",
+  "opt": "FUNGAL_BATTLE"
+ },
+ {
+  "id": "",
+  "name": "",
+  "desc": "",
+  "foot": "",
+  "xp_add": "",
+  "size_add": "64",
+  "opt": ""
+ },
+ {
+  "id": "",
+  "name": "",
+  "desc": "Débloque l'option Missions",
+  "foot": "",
+  "xp_add": "",
+  "size_add": "64",
+  "opt": ""
+ },
+ {
+  "id": "",
+  "name": "",
+  "desc": "",
+  "foot": "",
+  "xp_add": "",
+  "size_add": "64",
+  "opt": ""
+ },
+ {
+  "id": "",
+  "name": "",
+  "desc": "",
+  "foot": "",
+  "xp_add": "",
+  "size_add": "80",
+  "opt": ""
+ },
+ {
+  "id": "",
+  "name": "",
+  "desc": "",
+  "foot": "",
+  "xp_add": "",
+  "size_add": "96",
+  "opt": ""
+ },
+ {
+  "id": "",
+  "name": "",
+  "desc": "",
+  "foot": "",
+  "xp_add": "",
+  "size_add": "128",
+  "opt": ""
+ },
+ {
+  "id": "",
+  "name": "",
+  "desc": "",
+  "foot": "",
+  "xp_add": "",
+  "size_add": "128",
+  "opt": ""
+ },
+ {
+  "id": "",
+  "name": "",
+  "desc": "",
+  "foot": "",
+  "xp_add": "",
+  "size_add": "128",
+  "opt": ""
+ },
+ {
+  "id": "",
+  "name": "",
+  "desc": "",
+  "foot": "",
+  "xp_add": "",
+  "size_add": "128",
+  "opt": ""
+ },
+ {
+  "id": "",
+  "name": "",
+  "desc": "",
+  "foot": "",
+  "xp_add": "",
+  "size_add": "128",
+  "opt": ""
+ },
+ {
+  "id": "",
+  "name": "",
+  "desc": "",
+  "foot": "",
+  "xp_add": "",
+  "size_add": "192",
+  "opt": ""
+ },
+ {
+  "id": "",
+  "name": "",
+  "desc": "",
+  "foot": "",
+  "xp_add": "",
+  "size_add": "256",
+  "opt": ""
+ }
+]

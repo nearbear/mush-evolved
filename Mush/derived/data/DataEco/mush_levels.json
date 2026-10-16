@@ -1,0 +1,242 @@
+[
+ {
+  "id": "1",
+  "per_lvl": "0",
+  "xp": "0",
+  "skills": "PHAGOCYTOSIS,FUNGUS_COOK"
+ },
+ {
+  "id": "2",
+  "per_lvl": "4",
+  "xp": "4",
+  "skills": "TRAITOR,ANONYMOUS"
+ },
+ {
+  "id": "3",
+  "per_lvl": "25",
+  "xp": "29",
+  "skills": "TOUGH,SAPPER"
+ },
+ {
+  "id": "4",
+  "per_lvl": "50",
+  "xp": "79",
+  "skills": "DISHEARTENING_CONTACT"
+ },
+ {
+  "id": "5",
+  "per_lvl": "75",
+  "xp": "154",
+  "skills": "TRAPPER,ELECTRO_SLIME"
+ },
+ {
+  "id": "6",
+  "per_lvl": "100",
+  "xp": "254",
+  "skills": "TRANSFERT,WATER_RESISTANT"
+ },
+ {
+  "id": "7",
+  "per_lvl": "120",
+  "xp": "374",
+  "skills": "DOORMAN,SLIMETRAP"
+ },
+ {
+  "id": "8",
+  "per_lvl": "140",
+  "xp": "514",
+  "skills": "NIGHTMARE"
+ },
+ {
+  "id": "9",
+  "per_lvl": "160",
+  "xp": "674",
+  "skills": "NINJA,DEFACER"
+ },
+ {
+  "id": "10",
+  "per_lvl": "180",
+  "xp": "854",
+  "skills": "BACTERIAL_CONTACT"
+ },
+ {
+  "id": "11",
+  "per_lvl": "200",
+  "xp": "1054",
+  "skills": "FERTILE,MYCELLIUM_SPIRIT"
+ },
+ {
+  "id": "12",
+  "per_lvl": "220",
+  "xp": "1274",
+  "skills": "NIMBLE_FINGERS"
+ },
+ {
+  "id": "13",
+  "per_lvl": "240",
+  "xp": "1514",
+  "skills": "RADIO_PIRACY"
+ },
+ {
+  "id": "14",
+  "per_lvl": "260",
+  "xp": "1774",
+  "skills": "INFECTIOUS_AGENT"
+ },
+ {
+  "id": "15",
+  "per_lvl": "280",
+  "xp": "2054",
+  "skills": "NERON_ACCESS"
+ },
+ {
+  "id": "16",
+  "per_lvl": "300",
+  "xp": "2354",
+  "skills": "PYROMANE"
+ },
+ {
+  "id": "17",
+  "per_lvl": "350",
+  "xp": "2704",
+  "skills": "NERONDEPRESS"
+ },
+ {
+  "id": "18",
+  "per_lvl": "400",
+  "xp": "3104",
+  "skills": "MASSGGEDON"
+ },
+ {
+  "id": "$EOF",
+  "per_lvl": "",
+  "xp": "",
+  "skills": ""
+ },
+ {
+  "id": "",
+  "per_lvl": "",
+  "xp": "",
+  "skills": ""
+ },
+ {
+  "id": "1",
+  "per_lvl": "PYROMANE",
+  "xp": "",
+  "skills": ""
+ },
+ {
+  "id": "2",
+  "per_lvl": "TOUGH",
+  "xp": "",
+  "skills": ""
+ },
+ {
+  "id": "3",
+  "per_lvl": "FERTILE",
+  "xp": "",
+  "skills": ""
+ },
+ {
+  "id": "4",
+  "per_lvl": "NINJA",
+  "xp": "",
+  "skills": ""
+ },
+ {
+  "id": "5",
+  "per_lvl": "SAPPER",
+  "xp": "",
+  "skills": ""
+ },
+ {
+  "id": "6",
+  "per_lvl": "NIMBLE_FINGERS",
+  "xp": "",
+  "skills": ""
+ },
+ {
+  "id": "7",
+  "per_lvl": "WATER_RESISTANT",
+  "xp": "",
+  "skills": ""
+ },
+ {
+  "id": "8",
+  "per_lvl": "TRAITOR",
+  "xp": "",
+  "skills": ""
+ },
+ {
+  "id": "9",
+  "per_lvl": "DOORMAN",
+  "xp": "",
+  "skills": ""
+ },
+ {
+  "id": "10",
+  "per_lvl": "NERON_ACCESS",
+  "xp": "",
+  "skills": ""
+ },
+ {
+  "id": "11",
+  "per_lvl": "FUNGUS_COOK",
+  "xp": "",
+  "skills": ""
+ },
+ {
+  "id": "12",
+  "per_lvl": "RADIO_PIRACY",
+  "xp": "",
+  "skills": ""
+ },
+ {
+  "id": "13",
+  "per_lvl": "NIGHTMARE",
+  "xp": "",
+  "skills": ""
+ },
+ {
+  "id": "14",
+  "per_lvl": "DISHEARTENING_CONTACT",
+  "xp": "",
+  "skills": ""
+ },
+ {
+  "id": "15",
+  "per_lvl": "TRANSFERT",
+  "xp": "",
+  "skills": ""
+ },
+ {
+  "id": "16",
+  "per_lvl": "BACTERIAL_CONTACT",
+  "xp": "",
+  "skills": ""
+ },
+ {
+  "id": "17",
+  "per_lvl": "INFECTIOUS_AGENT",
+  "xp": "",
+  "skills": ""
+ },
+ {
+  "id": "18",
+  "per_lvl": "PHAGOCYTOSIS",
+  "xp": "",
+  "skills": ""
+ },
+ {
+  "id": "19",
+  "per_lvl": "TRAPPER",
+  "xp": "",
+  "skills": ""
+ },
+ {
+  "id": "20",
+  "per_lvl": "MYCELLIUM_SPIRIT",
+  "xp": "",
+  "skills": ""
+ }
+]

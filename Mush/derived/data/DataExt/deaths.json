@@ -1,0 +1,278 @@
+[
+ {
+  "id": "SICKBAY",
+  "name": "Aucune infirmerie disponible",
+  "desc": "Les robots médics ont bien tentés de vous rapatrier mais ça s'est mal passé et le recollage des morceaux n'était pas possible.",
+  "short_desc": "Mort perdu dans l'espace infini !"
+ },
+ {
+  "id": "OXYGEN",
+  "name": "Plus d'oxygène",
+  "desc": "Il n'y a plus d'oxygène. Vous étouffez par manque d'oxygène. C'est long et douleureux et puis c'est frustrant aussi.",
+  "short_desc": "Mort sur le Daedalus par manque d'oxygène !"
+ },
+ {
+  "id": "SUICIDE",
+  "name": "Dépression fatale",
+  "desc": "Vous n'aviez plus la force morale de continuer et avez embrassé avec fougue votre mort pour votre propre salut.",
+  "short_desc": "Vous avez mis fin à vos jours..."
+ },
+ {
+  "id": "STARVING",
+  "name": "Famine",
+  "desc": "Il n'y a vraiment plus rien à manger... ou peut-être avez-vous oublié ce besoin élémentaire.",
+  "short_desc": "Mort de faim !"
+ },
+ {
+  "id": "WOUNDED",
+  "name": "Blessures...",
+  "desc": "Vous succombez à vos blessures. Une vraie délivrance...",
+  "short_desc": "Blessé à mort !"
+ },
+ {
+  "id": "ABANDONNED",
+  "name": "Abandonné",
+  "desc": "Le Daedalus est parti sans vous, mais que leur avez vous donc fait?",
+  "short_desc": "Abandonné à votre pauvre sort par le Daedalus !"
+ },
+ {
+  "id": "SELF_SHIP_DESTRUCTION",
+  "name": "Auto-détruit",
+  "desc": "Le Daedalus a été auto-détruit et vous avec.",
+  "short_desc": "Auto-Destruction du Daedalus !"
+ },
+ {
+  "id": "LOST_IN_SPACE",
+  "name": "Perdu dans l'espace",
+  "desc": "Vous êtes perdu dans l'espace sans réserve de quoique ce soit. Votre décès est survenu rapidement. Personne ne vous a entendu crier.",
+  "short_desc": "Mort perdu dans l'espace !"
+ },
+ {
+  "id": "IMMOLATED",
+  "name": "Immolé",
+  "desc": "Vous avez été détruit par le feu, faisant ainsi la fierté de NERON. Bien joué.",
+  "short_desc": "Immolé par le feu !"
+ },
+ {
+  "id": "HUNTED",
+  "name": "Pulvérisé",
+  "desc": "Dans votre grande inconsicence vous êtiez dans l'espace en même temps que des Hunters. Et manifestement, ils vous ont vaporisé.",
+  "short_desc": "Pulvérisé par des Hunters !"
+ },
+ {
+  "id": "SCHRODINGER_BOX",
+  "name": "Paradoxe EPR dit \"chat de schrödinger\"",
+  "desc": "Contrairement à certains, la musique des sphères ne vous sera d'aucune utilité, techniquement vous n'êtes ni mort ni vivant puisque vous êtes dans une capsule de survie perdu dans l'espace. M'enfin bon faut pas se faire d'idée, vous êtes perdu pour toujours. On pourrait disserter longtemps mais pour les membres d'équipage vous êtes mort.",
+  "short_desc": "Victime d'un paradoxe !"
+ },
+ {
+  "id": "HEADSHOT",
+  "name": "Décapité",
+  "desc": "Contrairement au cavalier sans tête, vous ne reviendrez pas d'entre les morts. Votre assassin ne vous a pas raté.",
+  "short_desc": "Décapité par un facheux !"
+ },
+ {
+  "id": "MUSHED",
+  "name": "Bouillie",
+  "desc": "Vous avez été pulvérisé par une arme lourde. Vos restes servent maintenant de décorations, d'alimentation ou quelque chose d'autre salement horrible...",
+  "short_desc": "Réduit en bouillie !"
+ },
+ {
+  "id": "BLED_OUT",
+  "name": "Saigné",
+  "desc": "Vous avez perdu tout votre sang. Exténué de fatigue, vous vous éteignez...",
+  "short_desc": "Vidé de votre sang !"
+ },
+ {
+  "id": "ROCKETTED",
+  "name": "Roquetté",
+  "desc": "Non vous n'êtes pas mort étouffé par de la salade. Vous avez été heurté par un projectile à haut rapport énergie/ vélocité. Rempli d'explosif qui plus est. Et plein de technologie. En clair, vos restes sont éparpillés un peu partout.",
+  "short_desc": "Eparpillé par un missile inquisiteur !"
+ },
+ {
+  "id": "BLACK_BITE",
+  "name": "Morsure Noire",
+  "desc": "Vous succombez foudroyé par la Morsure Noire.",
+  "short_desc": "Succombé à une maladie extra-terrestre !"
+ },
+ {
+  "id": "SEPSIS",
+  "name": "Septicémie",
+  "desc": "Votre état a beaucoup empiré... voire trop. C'est ainsi que vous mourrez d'un choc septique grave.",
+  "short_desc": "Succombé à une infection massive !"
+ },
+ {
+  "id": "SELF_CRYOGENIZED",
+  "name": "Auto-Cryogénisé",
+  "desc": "Vous vous êtes auto-cryogénisé de votre plein gré. Quelle honte.",
+  "short_desc": "Cryogénisé trop froid !"
+ },
+ {
+  "id": "CRYOGENIZED",
+  "name": "Cryogénisé",
+  "desc": "Vous avez été cryogénisé par votre équipage. Vous n'êtes pas mort mais c'est tout comme...",
+  "short_desc": "Cryogénisé trop froid !"
+ },
+ {
+  "id": "UNKNOWN",
+  "name": "Inconnue",
+  "desc": "Les dieux de la mort sont parfois cruels. Mais certaines fois ils ne savent pas pourquoi ils vous ont choisi. Vous êtes mort et personne ne sait pourquoi.",
+  "short_desc": "Mort d'on ne sait quoi !"
+ },
+ {
+  "id": "OXYGEN_PATROL",
+  "name": "Plus d'oxygène : Patrouilleur",
+  "desc": "L'autonomie de votre combinaison ou de votre Patrouilleur est arrivée à son terme. Vous étouffez par manque d'oxygène.",
+  "short_desc": "Mort abandonné dans votre appareil."
+ },
+ {
+  "id": "OXYGEN_SUIT",
+  "name": "Plus d'oxygène : Combinaison",
+  "desc": "L'autonomie de votre combinaison ou de votre Combinaison est arrivée à son terme. Vous étouffez par manque d'oxygène.",
+  "short_desc": "Mort abandonné dans votre combinaison"
+ },
+ {
+  "id": "IN_SPACE_WITHOUT_OXY",
+  "name": "Dans l'espace sans pouvoir respirer",
+  "desc": "Par on ne sait quel hasard, vous vous êtes retrouvé dans l'espace sans moyen de respirer. La prochaine fois, sortez couvert. C'est ballot.",
+  "short_desc": "Mort abandonné dans l'espace inter sidéral !"
+ },
+ {
+  "id": "ARMAGEDDON",
+  "name": "Super Nova",
+  "desc": "Par mégarde ou en état d'ébriété, Le Grand Administrateur s'est trompé de bouton et malencontreusement une super nova a explosé pas loin du Daedalus. Toutes nos condoléances, mais vous avez quand même gagné 5 point de Triomphe.",
+  "short_desc": "Mort à cause d'un Administrateur Taquin !"
+ },
+ {
+  "id": "SPACE_COMBAT",
+  "name": "Combat spatial",
+  "desc": "Vous êtes tombé au champs d'honneur, il s'en est fallu de peu mais ce dernier Hunter était vraiment trop habile.",
+  "short_desc": "Mort présent dans un appareil annihilé."
+ },
+ {
+  "id": "SHIP_DESTRUCTION",
+  "name": "Daedalus détruit",
+  "desc": "Le Daedalus a été détruit et vous avec.",
+  "short_desc": "Votre cadavre flotte parmi les débris du Daedalus pulvérisé !"
+ },
+ {
+  "id": "EXP_NOT_SAFE",
+  "name": "Aventurier malchanceux",
+  "desc": "Parfois l'histoire est sordide, parfois elle est cruelle, parfois elle est triste. Et parfois glorieuse. Le récit de vos aventures fera peut être date ou pas... Quoiqu'il en soit vous avez trépassé, c'est officiel !",
+  "short_desc": "Tué par un accident dans un monde alien !"
+ },
+ {
+  "id": "EXP_LOST",
+  "name": "Aventurier perdu",
+  "desc": "On ne va pas se mentir. Vous êtes perdu. Et malheureusement, vos coéquipiers ne disposent d'aucun moyen pour vous retrouver. Donc en fait vous êtes mort, oublié de tous.",
+  "short_desc": "Vos co-équipiers avaient la flemme de venir vous chercher !"
+ },
+ {
+  "id": "EXTRACTOR_SUICIDE",
+  "name": "Auto-Extrait",
+  "desc": "Vous avez un tantinet abusé de l'auto-extracteur et vous en êtes mort...",
+  "short_desc": "Vos tripes avaient besoin de prendre l'air !"
+ },
+ {
+  "id": "PATROL_EXPLOSION_LAND",
+  "name": "Patrouilleur pulvérisé",
+  "desc": "Votre monoplace s'est pulvérisé sur le Daedalus. Pas de chance.",
+  "short_desc": "Atterrissage raté !"
+ },
+ {
+  "id": "DAEDALUS_BACK_TO_SOL",
+  "name": "Daedalus rentré sur Sol",
+  "desc": "Vous avez décidez d'essayer de rentrer sur Sol. La folle course du Daedalus s'arrête ici. Mais votre destin est-il maintenant une légende ?",
+  "short_desc": "Le Daedalus est rentré sur Sol !"
+ },
+ {
+  "id": "BURNT",
+  "name": "Brûlé",
+  "desc": "Vous êtes mort calciné, brûlé. Les incendies sont monnaies courante sur le Daedalus même si NERON fait de son mieux pour les contenir.",
+  "short_desc": "Calciné par un incendie inopportun !"
+ },
+ {
+  "id": "DIE_IT_YOURSELF",
+  "name": "Circonstances funestes",
+  "desc": "Quoi que vous ayez fait, vous l'avez mal fait. Très mal. Tellement mal que vous vous êtes fait mal. Et pas qu'un peu. Dommage.",
+  "short_desc": "Tellement mal en point qu'un rien vous a achevé"
+ },
+ {
+  "id": "ELECTROCUTED",
+  "name": "Electrocuté",
+  "desc": "Une des salles du Daedalus a été ravagé par une gigantesque décharge et vous en êtes mort.",
+  "short_desc": "Electrocuté par ce vieux tas de féraille !"
+ },
+ {
+  "id": "DAEDALUS_ACCIDENT",
+  "name": "Plaque de métal",
+  "desc": "Le Daedalus est une poubelle volante... Vous saviez que vous n'auriez pas dû trainer sous cette plaque branlante...",
+  "short_desc": "Victime de cette vieille bicoque !"
+ },
+ {
+  "id": "NERON_DESTROYED_DAEDALUS",
+  "name": "Assassinés par NERON",
+  "desc": "L'équipage a été totalement converti par le Mush. Le protocol A-TRUE étant ainsi caduque, NERON a décidé de se débarrasser de vous. Bon voyage vers l'infini !",
+  "short_desc": "En route vers le vide infini !"
+ },
+ {
+  "id": "ALLERGY",
+  "name": "Allergie",
+  "desc": "Vous succombez foudroyé par une allergie.",
+  "short_desc": "Calin avec un allergène !"
+ },
+ {
+  "id": "EXP_MANKAROG",
+  "name": "Aventurier Trop curieux",
+  "desc": "Le derrière de Mankarog est l'arme de destruction massive la plus nauséabonde de la création et vous êtes bien placé(e) pour le savoir.",
+  "short_desc": "Tué par Mankarog Chafouin !"
+ },
+ {
+  "id": "EXP_WOUNDED",
+  "name": "Aventurier pas assez combatif",
+  "desc": "Il était vraiment trop gros pour vous celui-là !",
+  "short_desc": "Pulvérisé par un alien mal réveillé !"
+ },
+ {
+  "id": "ASSASSINATED",
+  "name": "Assassiné",
+  "desc": "Apparemment vous aviez des ennemis à bord et pas des tendres...",
+  "short_desc": "Assassiné par un équipier !"
+ },
+ {
+  "id": "MODERATED",
+  "name": "Mis en quarantaine par NERON",
+  "desc": "Vous avez commis un délit majeur dans le jeu et NERON a dû vous mettre en quarantaine, ne recommencez pas.",
+  "short_desc": "Mis en quarantaine par NERON"
+ },
+ {
+  "id": "DAEDALUS_GONE_TO_EDEN",
+  "name": "Daedalus s'est installé sur Eden",
+  "desc": "L'espoir renaît des scories de l'Humanité. Sur une nouvelle planète, un nouveau départ et la suite des aventures de nos héros. Mais c'est une autre histoire.",
+  "short_desc": "Vous êtes rentré sur Sol."
+ },
+ {
+  "id": "ABDUCTED_BY_ALIENS",
+  "name": "Enlevé par des races supérieures",
+  "desc": "Vous allez contribuer aux progrès de la science d'une autre civililisation. Bravo !",
+  "short_desc": "Vous avez été enlevé."
+ },
+ {
+  "id": "$EOF",
+  "name": "",
+  "desc": "",
+  "short_desc": ""
+ },
+ {
+  "id": "",
+  "name": "",
+  "desc": "",
+  "short_desc": ""
+ },
+ {
+  "id": "fsd",
+  "name": "",
+  "desc": "",
+  "short_desc": ""
+ }
+]

@@ -1,0 +1,146 @@
+[
+ {
+  "hid": "JANICE_KENT",
+  "sk": "1",
+  "y": "1185",
+  "brief": "Un déshabillé charmant pour les soirées en bonne compagnie.\nCollection Printemps/Eté/Cuir. Utilisable à l'infini."
+ },
+ {
+  "hid": "IAN_SOULTON",
+  "sk": "1",
+  "y": "1233",
+  "brief": "Une blouse de scientifique pour avoir l'air encore plus sérieux. Utilisable à l'infini."
+ },
+ {
+  "hid": "WANG_CHAO",
+  "sk": "1",
+  "y": "1282",
+  "brief": "Faîtes un bon dans le temps avec cette tenue ambiance année 80 avec du cuir, et du cuir. Ça va saigner... Utilisable à l'infini."
+ },
+ {
+  "hid": "ELEESHA_WILLIAMS",
+  "sk": "1",
+  "y": "1335",
+  "brief": "Une tenue élégante et pratique pour arpenter le Daedalus en toute légéreté. Utilisable à l'infini."
+ },
+ {
+  "hid": "TERRENCE_ARCHER",
+  "sk": "1",
+  "y": "1444",
+  "brief": "Vous avez l'impression d'aller plus vite, ou pas."
+ },
+ {
+  "hid": "KIM_JIN_SU",
+  "sk": "1",
+  "y": "1499",
+  "brief": "Adoptez le formal-commandant-style !"
+ },
+ {
+  "hid": "RALUCA_TOMESCU",
+  "sk": "1",
+  "y": "1391",
+  "brief": "Une robe de soirée en soie pour les soirées gothiques familiales."
+ },
+ {
+  "hid": "JIANG_HUA",
+  "sk": "1",
+  "y": "1554",
+  "brief": "Une tenue 100%Bio tout à fait adaptée aux danses Automnales."
+ },
+ {
+  "hid": "KIM_JIN_SU",
+  "sk": "2",
+  "y": "1604",
+  "brief": "Un costume qui fera peur aux hémophiles !"
+ },
+ {
+  "hid": "STEPHEN_SEAGULL",
+  "sk": "1",
+  "y": "1681",
+  "brief": "Ho ! Ho ! Ho !"
+ },
+ {
+  "hid": "PAOLA_RINALDO",
+  "sk": "1",
+  "y": "1728",
+  "brief": "Maman Noël avoir beaucoup cadeaux pour vous !"
+ },
+ {
+  "hid": "ROLAND_ZUCCALI",
+  "sk": "1",
+  "y": "1056",
+  "brief": "Lutin de l'espace au rapport pour vous enguirlander !"
+ },
+ {
+  "hid": "LAI_KUAN_TI",
+  "sk": "1",
+  "y": "1875",
+  "brief": "Capitaine au cœur d'or, tu veilles sur la galaxie et sur la liberté aussi !"
+ },
+ {
+  "hid": "FINOLA_KEEGAN",
+  "sk": "1",
+  "y": "1921",
+  "brief": "Que la force soit avec moi !"
+ },
+ {
+  "hid": "GIOELE_RINALDO",
+  "sk": "1",
+  "y": "1970",
+  "brief": "Idéal à la sortie d'une bonne douche, rafraichissement du matériel garanti."
+ },
+ {
+  "hid": "ZHONG_CHUN",
+  "sk": "1",
+  "y": "2017",
+  "brief": "Zhong Chun moulti-pass ! Mouuuulti-paaasss !"
+ },
+ {
+  "hid": "FRIEDA_BERGMANN",
+  "sk": "1",
+  "y": "2063",
+  "brief": "Panoplie d'Albus Mc Gonadalf."
+ },
+ {
+  "hid": "$EOF",
+  "sk": "",
+  "y": "",
+  "brief": ""
+ },
+ {
+  "hid": "",
+  "sk": "",
+  "y": "",
+  "brief": ""
+ },
+ {
+  "hid": "GIOELE_RINALDO",
+  "sk": "",
+  "y": "",
+  "brief": "bibemdaum chamallow"
+ },
+ {
+  "hid": "FRIEDA_BERGMANN",
+  "sk": "",
+  "y": "",
+  "brief": "monsieur fredericksson ( up )"
+ },
+ {
+  "hid": "",
+  "sk": "",
+  "y": "",
+  "brief": ""
+ },
+ {
+  "hid": "kuan ti",
+  "sk": "",
+  "y": "",
+  "brief": "moliere"
+ },
+ {
+  "hid": "ELEESHA_WILLIAMS",
+  "sk": "",
+  "y": "",
+  "brief": "Sherlock holmes"
+ }
+]

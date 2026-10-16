@@ -1,0 +1,182 @@
+[
+ {
+  "id": "bestCook",
+  "name": "Mitonne soir et matin",
+  "desc": "« Quand j'ai rien d'autre à faire, eh ben... J'cuisine ! Quoi, y'en a trop ?! Qui finit pas son assiette ?!! »"
+ },
+ {
+  "id": "bestPlanetScanner",
+  "name": "Astrophysicien de génie",
+  "desc": "Celui là aime découvrir des planètes et les scanner, les scanner, jusqu'à ce qu'il n'y ait plus rien à scanner !"
+ },
+ {
+  "id": "earliestDeath",
+  "name": "Ébauche inachevée",
+  "desc": "C'est peut être quelqu'un qui aurait pu marquer l'Histoire, sauf qu'il est mort avant d'avoir commencé."
+ },
+ {
+  "id": "bestTechnician",
+  "name": "Technicien omnipotent",
+  "desc": "Ce gars là a compris que les objets cassés, eh ben ils marchent pas, donc faut les réparer !"
+ },
+ {
+  "id": "unluckierTechnician",
+  "name": "Deux-mains-gauches",
+  "desc": "Lui, il ne faut pas lui laisser la clef à molette. Il ne sait visiblement rien faire avec..."
+ },
+ {
+  "id": "solCollabs",
+  "name": "Assistant radio de service",
+  "desc": "Voilà quelqu'un qui a compris l'utilité d'établir la liaison radio du terminal de communication."
+ },
+ {
+  "id": "bestCaresser",
+  "name": "Accro au poils de chat",
+  "desc": "C'était sympa de câliner le chat, mais c'est normalement pas l'objet principal du voyage..."
+ },
+ {
+  "id": "bestHunterKiller",
+  "name": "Pilote classe Battlestar",
+  "desc": "Digne incarnation de Starbuck l'héroïne, Fléau destructeur de vaisselle spatiale ennemie !"
+ },
+ {
+  "id": "bestLost",
+  "name": "« J'aurais pas dû venir ».",
+  "desc": "Il est venu, il s'est perdu, il a attendu ...loooooongtemps..., et il aurait pu y rester."
+ },
+ {
+  "id": "bestKiller",
+  "name": "Assassin compulsif",
+  "desc": "S'il avait pu manger ses coéquipiers, il l'aurait peut-être fait. A la croque-au-sel."
+ },
+ {
+  "id": "mostTalkative",
+  "name": "Compagnon loquace",
+  "desc": "La petite voix qu'on entend de jour comme de nuit dans le talkie-walkie walkie. Adieu solitude !"
+ },
+ {
+  "id": "lessTalkative",
+  "name": "En mode silence-radio",
+  "desc": "Celui-là n'a visiblement jamais trouvé le bouton du talkie-walkie walkie..."
+ },
+ {
+  "id": "lessActive",
+  "name": "Glandeur invertébré",
+  "desc": "Ne s'est pas trop foulé, même si c'est la fin du monde. Non, pour lui, c'est les autres qui triment."
+ },
+ {
+  "id": "mostActive",
+  "name": "Increvable hyperactif",
+  "desc": "Il ne s’arrête jamais et sincèrement, on se demande ce qu'il prend pour tenir le coup..."
+ },
+ {
+  "id": "bestEater",
+  "name": "Quand l'appétit va...",
+  "desc": "Passe son temps à grailler tout ce qui lui passe sous le nez, et racle aussi le fond des étagères."
+ },
+ {
+  "id": "bestActionWaster",
+  "name": "Dilapidateur d'énergie",
+  "desc": "« Mon crédo ? Gâcher beaucoup de points d'action, et profiter du soleil ! »"
+ },
+ {
+  "id": "worstActionWaster",
+  "name": "SuperOptimisator",
+  "desc": "Il n'a presque jamais gaspillé de point d'action. Parce que lui, il a compris le but du jeu."
+ },
+ {
+  "id": "bestSleeper",
+  "name": "Dormeur indolent",
+  "desc": "C'est lui qui a passé le plus de temps au lit. Mais seulement pour dormir. Ahlala..."
+ },
+ {
+  "id": "deadDuringSleep",
+  "name": "Rest In Peace",
+  "desc": "Incendie, asphyxie, famine, traîtrise, violence aveugle... ? Non, lui, il est mort dans son sommeil."
+ },
+ {
+  "id": "bestHacker",
+  "name": "Bidouilleur Anonymous",
+  "desc": "A défaut d'avoir des titres pompeux, il a de la ressource ! Et l'accès aux terminaux qui vont bien."
+ },
+ {
+  "id": "bestComTechnician",
+  "name": "Resp. Comm. dévoué",
+  "desc": "A passé beaucoup de temps et d'efforts à bidouiller la radio. Vous l'avez remercié, au moins ?"
+ },
+ {
+  "id": "bestSandman",
+  "name": "Cauchemar ambulant",
+  "desc": "A trop joué à Croquemonster et s'est fait une joie de pourrir le sommeil de ses petits camarades."
+ },
+ {
+  "id": "bestTerrorist",
+  "name": "Mutant Force Brute",
+  "desc": "Terrifiant mutant terroriste brutal et increvable capable de vous mettre une zouille sans nom !"
+ },
+ {
+  "id": "bestWounded",
+  "name": "Malchanceux démuni",
+  "desc": "Blessé de service à qui il n'arrive que des malheurs trop injustes … fallait peut-être pas y aller à poil ?"
+ },
+ {
+  "id": "bestDiseased",
+  "name": "Faiblard souffreteux",
+  "desc": "Malade incurable qui choppe toutes les saletés qui passent. Alors il faut pas trop lui en demander."
+ },
+ {
+  "id": "drugAddict",
+  "name": "« c'est ..juste..récréatif.. »",
+  "desc": "Grand utilisateur de produit pas nets qui font voir des bambis hilares et des poulpes sacrés."
+ },
+ {
+  "id": "knifeEvader",
+  "name": "Mi ninja mi anguille",
+  "desc": "Il esquive les lames comme personne, et personne ne peut le fumer. C'est l'homme ninja-anguille."
+ },
+ {
+  "id": "bestAgro",
+  "name": "Dingue dangereux",
+  "desc": "Un type super agressif qui attaque tout ce qui bouge. La terreur de poules de basse-cour."
+ },
+ {
+  "id": "worstAgro",
+  "name": "La violence c'est le mal",
+  "desc": "Pacifiste inconditionnel qui ne fait presque de mal à personne. Ce sont les autres qui s'en occupent."
+ },
+ {
+  "id": "lesserDrugged",
+  "name": "Pureté stupéfiante",
+  "desc": "La drogue c'est mal, n'y touchez pas les enfants. N'y touchez pas vous non plus, ou je vous fume."
+ },
+ {
+  "id": "kubeAddict",
+  "name": "Joueur useless",
+  "desc": "Addict du mad'Kube, le truc qui sert à rien. Vous n'iriez pas plutôt faire un tour sur Galaxy 55 ?..."
+ },
+ {
+  "id": "bestAlienTraitor",
+  "name": "Traître en expédition",
+  "desc": "LE coéquipier que personne n'aurait jamais dû emmener sur cette maudite planète..."
+ },
+ {
+  "id": "stealthiest",
+  "name": "Fourbasse masquée",
+  "desc": "C'est le champignon furtif masqué ayant commis le plus d'actions fourbes en douce !"
+ },
+ {
+  "id": "unstealthiest",
+  "name": "Champignon découvert",
+  "desc": "Un champignon pas discret qui s'est fait gauler en pleine action. Et bah alors ?"
+ },
+ {
+  "id": "unstealthiest_and_killed",
+  "name": "Champignon décapité",
+  "desc": "« La discrétion, mais pourquoi faire ? » …Eh bien, pour ne pas finir en omelette des bois..."
+ },
+ {
+  "id": "$EOF",
+  "name": "",
+  "desc": ""
+ }
+]

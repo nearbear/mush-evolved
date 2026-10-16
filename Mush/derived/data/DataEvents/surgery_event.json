@@ -1,0 +1,37 @@
+[
+ {
+  "desc": "l'opération s'est déroulé avec succès. ::subject:: va bien et sera bientôt sur pied.",
+  "weight": "15",
+  "success": "true",
+  "notes": "",
+  "effects": ""
+ },
+ {
+  "desc": "::subject:: s'en sort admirablement.",
+  "weight": "15",
+  "success": "true",
+  "notes": "",
+  "effects": ""
+ },
+ {
+  "desc": ".::subject:: fait un choc septique...",
+  "weight": "2",
+  "success": "false",
+  "notes": "",
+  "effects": "AddDisease(SEPSIS)"
+ },
+ {
+  "desc": "une telle opération menée avec un tel brio peut faire avancer la science!",
+  "weight": "5",
+  "success": "true",
+  "notes": "",
+  "effects": "GrantTriumph(NICE_SURGERY)"
+ },
+ {
+  "desc": "$EOF",
+  "weight": "",
+  "success": "",
+  "notes": "",
+  "effects": ""
+ }
+]

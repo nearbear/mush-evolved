@@ -1,0 +1,52 @@
+[
+ {
+  "id": "1",
+  "xp": "0",
+  "nb_skill": "1"
+ },
+ {
+  "id": "2",
+  "xp": "5",
+  "nb_skill": "2"
+ },
+ {
+  "id": "3",
+  "xp": "55",
+  "nb_skill": "3"
+ },
+ {
+  "id": "4",
+  "xp": "255",
+  "nb_skill": "4"
+ },
+ {
+  "id": "5",
+  "xp": "505",
+  "nb_skill": "5"
+ },
+ {
+  "id": "6",
+  "xp": "1005",
+  "nb_skill": "6"
+ },
+ {
+  "id": "$EOF",
+  "xp": "",
+  "nb_skill": ""
+ },
+ {
+  "id": "6",
+  "xp": "1005",
+  "nb_skill": "6"
+ },
+ {
+  "id": "",
+  "xp": "on ajoute un pour le skill all",
+  "nb_skill": ""
+ },
+ {
+  "id": "",
+  "xp": "si on a payé au moins une fois on a droit a un slot de plus",
+  "nb_skill": ""
+ }
+]

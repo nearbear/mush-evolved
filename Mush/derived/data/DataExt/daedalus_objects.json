@@ -1,0 +1,10 @@
+[
+ {
+  "id": "PRINTER",
+  "where": "COMMAND_CENTER"
+ },
+ {
+  "id": "$EOF",
+  "where": ""
+ }
+]

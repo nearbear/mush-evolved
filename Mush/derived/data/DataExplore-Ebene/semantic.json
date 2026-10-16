@@ -1,0 +1,32 @@
+[
+ {
+  "id": "SMALL_MEMBERS",
+  "link": "$small_member",
+  "list": "l'oreille, le nez, l'orteil, un doigt, le genoux"
+ },
+ {
+  "id": "BIG_MEMBERS",
+  "link": "$member",
+  "list": "le bras, la jambe, le bras, la jambe, la main, le pied, la tête, l'épaule, l'entrejambe"
+ },
+ {
+  "id": "HIS_FACE_PART",
+  "link": "$his_face_part",
+  "list": "sa paupière, son nez, sa joue, sa lèvre inferieur, son menton, son lob d'oreille droite, son sourcil, son arcade sourcilière"
+ },
+ {
+  "id": "ALIEN_ANNOYED",
+  "link": "$alien_annoyed",
+  "list": "emet de petits nuages malodorants, halète bruyamment en bavant sur ses chaussures, fronce la partie superieur de son crane, emet de minuscules jets orangés a partir de ses aiselles"
+ },
+ {
+  "id": "FALL",
+  "link": "$fall",
+  "list": "s'étale de tout son long, se vautre par terre, s'étale comme un sac de patate, fait une jolie pirouette"
+ },
+ {
+  "id": "$EOF",
+  "link": "",
+  "list": ""
+ }
+]

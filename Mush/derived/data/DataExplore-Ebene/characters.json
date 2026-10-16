@@ -1,0 +1,155 @@
+[
+ {
+  "id": "KIM_JIN_SU",
+  "grumpy": "0",
+  "talker": "1",
+  "clumsy": "0",
+  "detection": "1",
+  "empathy": "1",
+  "weight": "3"
+ },
+ {
+  "id": "FRIEDA_BERGMANN",
+  "grumpy": "2",
+  "talker": "0",
+  "clumsy": "0",
+  "detection": "-1",
+  "empathy": "-3",
+  "weight": "1"
+ },
+ {
+  "id": "LAI_KUAN_TI",
+  "grumpy": "-1",
+  "talker": "2",
+  "clumsy": "0",
+  "detection": "0",
+  "empathy": "0",
+  "weight": "2"
+ },
+ {
+  "id": "JANICE_KENT",
+  "grumpy": "0",
+  "talker": "2",
+  "clumsy": "0",
+  "detection": "1",
+  "empathy": "1",
+  "weight": "1"
+ },
+ {
+  "id": "ROLAND_ZUCCALI",
+  "grumpy": "-2",
+  "talker": "4",
+  "clumsy": "1",
+  "detection": "0",
+  "empathy": "1",
+  "weight": "2"
+ },
+ {
+  "id": "JIANG_HUA",
+  "grumpy": "0",
+  "talker": "1",
+  "clumsy": "0",
+  "detection": "4",
+  "empathy": "-1",
+  "weight": "2"
+ },
+ {
+  "id": "PAOLA_RINALDO",
+  "grumpy": "0",
+  "talker": "3",
+  "clumsy": "0",
+  "detection": "2",
+  "empathy": "0",
+  "weight": "1"
+ },
+ {
+  "id": "WANG_CHAO",
+  "grumpy": "0",
+  "talker": "0",
+  "clumsy": "1",
+  "detection": "1",
+  "empathy": "-2",
+  "weight": "2"
+ },
+ {
+  "id": "FINOLA_KEEGAN",
+  "grumpy": "-1",
+  "talker": "1",
+  "clumsy": "0",
+  "detection": "1",
+  "empathy": "4",
+  "weight": "1"
+ },
+ {
+  "id": "STEPHEN_SEAGULL",
+  "grumpy": "2",
+  "talker": "-1",
+  "clumsy": "0",
+  "detection": "0",
+  "empathy": "0",
+  "weight": "2"
+ },
+ {
+  "id": "IAN_SOULTON",
+  "grumpy": "0",
+  "talker": "0",
+  "clumsy": "2",
+  "detection": "-1",
+  "empathy": "1",
+  "weight": "1"
+ },
+ {
+  "id": "ZHONG_CHUN",
+  "grumpy": "0",
+  "talker": "0",
+  "clumsy": "1",
+  "detection": "2",
+  "empathy": "3",
+  "weight": "1"
+ },
+ {
+  "id": "RALUCA_TOMESCU",
+  "grumpy": "0",
+  "talker": "-3",
+  "clumsy": "0",
+  "detection": "-3",
+  "empathy": "-2",
+  "weight": "1"
+ },
+ {
+  "id": "GIOELE_RINALDO",
+  "grumpy": "2",
+  "talker": "0",
+  "clumsy": "0",
+  "detection": "0",
+  "empathy": "-1",
+  "weight": "3"
+ },
+ {
+  "id": "ELEESHA_WILLIAMS",
+  "grumpy": "0",
+  "talker": "3",
+  "clumsy": "0",
+  "detection": "3",
+  "empathy": "1",
+  "weight": "1"
+ },
+ {
+  "id": "TERRENCE_ARCHER",
+  "grumpy": "3",
+  "talker": "1",
+  "clumsy": "0",
+  "detection": "2",
+  "empathy": "0",
+  "weight": "2"
+ },
+ {
+  "id": "$EOF",
+  "grumpy": "",
+  "talker": "",
+  "clumsy": "",
+  "detection": "",
+  "empathy": "",
+  "weight": ""
+ }
+]

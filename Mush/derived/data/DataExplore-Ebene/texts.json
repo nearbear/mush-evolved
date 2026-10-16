@@ -1,0 +1,22 @@
+[
+ {
+  "id": "icarusName",
+  "text": "Icarus"
+ },
+ {
+  "id": "patrolShipName",
+  "text": "Patrouilleur"
+ },
+ {
+  "id": "leftPlaces",
+  "text": "Occupants"
+ },
+ {
+  "id": "clictoEnter",
+  "text": "Cliquez pour entrer"
+ },
+ {
+  "id": "fullShip",
+  "text": "Vaisseau plein !"
+ }
+]

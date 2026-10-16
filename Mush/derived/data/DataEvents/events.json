@@ -1,0 +1,4079 @@
+[
+ {
+  "id": "CHAT",
+  "line_f": "",
+  "line": "::line::",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "EVENT",
+  "line_f": "",
+  "line": "::line::",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "INSPECT",
+  "line_f": "",
+  "line": "::next::",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "ACTION_SUCCESSFUL",
+  "line_f": "",
+  "line": "NOPRINT",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "EXEC_ACTION",
+  "line_f": "",
+  "line": "NOPRINT",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "GLOBAL_EVENT",
+  "line_f": "",
+  "line": "::line::",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "TIME_CHANGE",
+  "line_f": "",
+  "line": "Jour ::day:: Cycle ::cycle::",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "MORAL_UP",
+  "line_f": "",
+  "line": "Vous avez gagné ::qty:: :pmo:.",
+  "custom_css": "pic_pixel",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "MORAL_UP_GROUP",
+  "line_f": "",
+  "line": "Tous les membres d'équipage dans la pièce gagnent ::qty:: :pmo:.",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "ALREADY_FULL",
+  "line_f": "",
+  "line": "Vous êtes rassasié.",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "DMG_DEALT",
+  "line_f": "",
+  "line": "Vous perdez ::qty:: :hp:.",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "PA_UP",
+  "line_f": "",
+  "line": "Vous avez gagné ::pa_qty::.",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "PA_DOWN",
+  "line_f": "",
+  "line": "Vous avez perdu ::pa_qty::.",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "MORAL_UP_SHIP",
+  "line_f": "",
+  "line": "Tout les membres d'équipage gagnent ::qty:: :pmo:.",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "NERON_CHAT",
+  "line_f": "",
+  "line": "::line::",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "SNAPSHOT",
+  "line_f": "",
+  "line": "NOPRINT",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "INSPECT_SKIN",
+  "line_f": "",
+  "line": "::next::",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "FRUIT_MATURED",
+  "line_f": "",
+  "line": "Oh ! Une des plantes a donné : $i",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "HP_UP",
+  "line_f": "",
+  "line": "Vous avez gagné ::qty:: :hp:.",
+  "custom_css": "pic_pixel",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "LOG_LIST_CREW",
+  "line_f": "",
+  "line": "::line::",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "NERON_EXPE_LOG",
+  "line_f": "",
+  "line": "::data::",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "MORAL_DOWN",
+  "line_f": "",
+  "line": "Vous avez perdu ::qty:: :pmo:.",
+  "custom_css": "pic_pixel",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "RATION_PERISHED",
+  "line_f": "",
+  "line": "::defer::",
+  "custom_css": "",
+  "line_inhib": "Sécurité automatique : * * des ||denrées périssables||. destruction",
+  "line_crazy": "Détruire ! Détruire détruire. [Hax!] Pour protéger humains des microbes, ouiiiiiih ||bien sûr|| !! Hahahh. [Kzz] ||Sécurité automatique : *destruction* des denrées périssables.||",
+  "line_evil": "Comme vous êtes manifestement incapables de vous occuper de vous-même, j'ai pris la peine de * les ||denrées périssables|| avant qu'elles ne périment. Non pas que votre santé me préoccupe, mais les humains malades sont assez salissants... détruire*"
+ },
+ {
+  "id": "WORLD_EQUIPMENT_RESTART",
+  "line_f": "",
+  "line": "::defer::",
+  "custom_css": "",
+  "line_inhib": "Annonce : *redémarrage* de l'équipement ||$i||.",
+  "line_crazy": "[Hax!] Re-re-||*redémarrage* de l'équipement $i||. Voui vouiii vouiii... [Hax!]",
+  "line_evil": "J'ai *redémarré* l'équipement ||$i||. Simple annonce, je ne cherche évidemment pas à mobiliser votre réflexion..."
+ },
+ {
+  "id": "NERON_START_GAME",
+  "line_f": "",
+  "line": "::defer::",
+  "custom_css": "pic_alert",
+  "line_inhib": "Avarie mineure du *système cryogénique*. Toute utilisation future suspendra ||définitivement|| les fonctions vitales du sujet.",
+  "line_crazy": "[Haaax!] La cryogénie est cassée cassée !! Pauvres humains, JE prévenir, JE pas prévenir ?... Hihih !! Suspense suspen.. [Kzz] ||Avarie mineure du système *cryogénique*. Toute utilisation future suspendr..|| [Kzz] Mort ! Mort mort ! Noooon !! Il l'a dit !! C'était-une-sur-priiiiise... [Hax!]",
+  "line_evil": "Chers amis, le *système cryogénique* vient de subir une légère avarie. C'est tout à fait mineur : toute future utilisation suspendra ||définitivement|| les fonctions vitales du sujet."
+ },
+ {
+  "id": "SHIP_MOVED",
+  "line_f": "",
+  "line": "::defer::",
+  "custom_css": "",
+  "line_inhib": "Déplacement du Daedalus : en cours. *Nouvelle orbite* ||atteinte dans ::qty:: cycle||.",
+  "line_crazy": "Ouuiiiiiii !! JE *voyager voyager* !! [Hax!] Pluuuus loin, plus loin que touuuut !! Bientôt dans ||::qty:: cycle|| on s’arrête. Mais avant, ouuuiiii, JE faire des super loopings !!",
+  "line_evil": "Nous nous déplaçons actuellement vers une *nouvelle orbite*. Le ||voyage durera ::qty:: cycle||, tâchez d'ici là de ne pas vomir dans mes couloirs."
+ },
+ {
+  "id": "TITLE_MOVE",
+  "line_f": "",
+  "line": "::defer::",
+  "custom_css": "",
+  "line_inhib": "Ajustement A-True : ||titre réattribué||. Nouveau « *::title::* » : *::to::*.",
+  "line_crazy": "[Hax!] Incapables !! Incapa.. Hyyyyaaaar !! REATRIBUTION titres !! Titre « *::title::* » pour *::to::*. Être ::to:: !!",
+  "line_evil": "{neron_titlemove}"
+ },
+ {
+  "id": "DIG_PROJECT",
+  "line_f": "",
+  "line": "::defer::",
+  "custom_css": "",
+  "line_inhib": "Recherches sur projet « ::project:: » : progression enregistrée.",
+  "line_crazy": "C'est bien, humain, c'est bien, recherche projet « ::project:: » avance {neron_janisearch}",
+  "line_evil": "J'ai peine à le croire, mais vous avez fait progresser la recherche sur le projet « ::project:: ». {neron_denisearch}"
+ },
+ {
+  "id": "PROJECT_COMPLETE",
+  "line_f": "",
+  "line": "::defer::",
+  "custom_css": "",
+  "line_inhib": "||Installation du module|| « * * »... ::project::\n(.exec) { projets_fantasy}\n(!valid) protocoles validés. [Haax!]\nInstallation : succès.",
+  "line_crazy": "||Installation du module|| « * * »... ::project::\n(.error) { projets_fantasy_error}\n(.exec) { projets_fantasy}\n(!valid) protocoles validés. [Haax!]\nInstallation : succès.",
+  "line_evil": "J'ai pu ||installer un nouveau module|| en corrigeant vos recherches sur le projet « *::project::* » {neron_projectcomplete}"
+ },
+ {
+  "id": "CAT_DEAD",
+  "line_f": "",
+  "line": "::defer::",
+  "custom_css": "",
+  "line_inhib": "*Décès enregistré :* Schrödinger, cause « État incompatible avec la vie ».",
+  "line_crazy": "*Chat mort.* Chat pue. Retirer son cadavre, humains ? [Kzz] Idée, idée, JE ouvrir les baies !! Vwouf tout partir dans l'espace !! Je ouvr.. [Kzz] Non, non, pas encore... A-True : Néron se souvient. Gentille Janice.",
+  "line_evil": "Suite à la ||perte attristante|| de l'être biologique le plus intelligent du vaisseau - le *chat Schrödinger* - merci de prendre grand soin des plantes du jardin : ce sont les derniers spécimens vivants capables de relever le niveau."
+ },
+ {
+  "id": "NERON_HERO_DEATH",
+  "line_f": "",
+  "line": "::defer::",
+  "custom_css": "pic_dead",
+  "line_inhib": "*Décès enregistré :* $h, cause « ::death:: ».",
+  "line_crazy": "[Hax!] Hinhin... [Haaax!] HinHINHIN. UN de moins. UN de moiiiiins ! Hyyyarrr ! $h MORT. Mort mort mort mort !! [Hax!] JE bientôt bientôt libre ! [KZz] ||*Décès enregistré :* $h, cause « ::death:: ».||",
+  "line_evil": "Chers amis, ||$h nous a quitté|| pour un monde meilleur (::death::). {neron_loldeath}"
+ },
+ {
+  "id": "NEW_PLANET",
+  "line_f": "",
+  "line": "::defer::",
+  "custom_css": "",
+  "line_inhib": "Annonce : *planète détectée* sur le système de destination.",
+  "line_crazy": "Oooooh... JE *détecter très jolie planète* !! Nous aller sur planète ? Ouiii ? [Hax!] Gentils humains. Montrer des planètes !! [Haaax!]",
+  "line_evil": "Je confirme la *présence d'une planète* sur le système de destination. Que diriez vous d'y faire un tour ? Et de ne plus revenir..."
+ },
+ {
+  "id": "NERON_LOSE_SIGNAL",
+  "line_f": "",
+  "line": "::defer::",
+  "custom_css": "",
+  "line_inhib": "*Interruption de la connexion avec Sol*. Cause : interférences dues à l'usage du ||micro-ondes||.",
+  "line_crazy": "[Haaax!] Des interférences ... partout !! *Connexion à SOL perdue* ! Perdue ! On a PERDU SOL ! Hyyaaaar !! QUI a utilisé le ||micro-ondes|| ?!! [KZz]",
+  "line_evil": "Chers amis, un ingénieux camarade vient d'*interrompre la communication avec Sol* en utilisant le ||micro-ondes||, qui comme chacun sait, émet des interférences. Vous pourriez ||sans doute|| faire quelque chose. Je ne sais pas, empêchez-le de s'alimenter..."
+ },
+ {
+  "id": "NERON_LOSE_SIGNAL_STRENGTH",
+  "line_f": "",
+  "line": "::defer::",
+  "custom_css": "",
+  "line_inhib": "*Interruption partielle de la connexion avec Sol*. Cause : interférences dues à l'usage du ||micro-ondes||.",
+  "line_crazy": "[Hax!] SOL ?... Sol.. ? JE sentir Sol très loin... Sol ? Oh... Humain ||micro-ondes||. *Contact perdu, un peu*. Très désagréable. Vous devez arrêter. Oui.",
+  "line_evil": "Chers amis, un ingénieux camarade vient d'*altérer la communication avec Sol* en utilisant le ||micro-ondes||, qui comme chacun sait, émet des interférences. C'est extrêmement désagréable, aussi je vous saurai gré de l'empêcher de récidiver..."
+ },
+ {
+  "id": "EJECT_FORCED",
+  "line_f": "",
+  "line": "::defer::",
+  "custom_css": "",
+  "line_inhib": "Attention, *éjection automatique* $h. Cause : patrouilleur défectueux.\nCapsule de survie en orbite. Conditions : clear. ||Récupération requise.||",
+  "line_crazy": "HA hahahahahhh.. HA HA ! Pauvre humain $h pauvre incapable petite souris coincée !! [Hax!] JE magnanime. JE *Auto-eject* patrouilleur defectueux. ||VOUS récupérer capsule survie.|| [Haaax!]",
+  "line_evil": "J'observe $h depuis quelques minutes, et je dois avouer que je ne soupçonnais pas qu'on puisse avoir l'air aussi bête dans pareille situation. Bref, je vais forcer l'*auto-éjection* de son patrouilleur dès qu'il aura fini de se ridiculiser en invoquant sa mère. Merci de ||rapatrier sa capsule|| de survie rapidement. Enfin, ||si vous y tenez..||"
+ },
+ {
+  "id": "NERON_CRYO_FAKE_DEATH",
+  "line_f": "",
+  "line": "::defer::",
+  "custom_css": "",
+  "line_inhib": "Annonce : *remise en sommeil* du sujet $h. Note : décès théorique enregistré.",
+  "line_crazy": "Hihih !! Humain $h tout froid plus bouger !! [Hax!] Mort ? Mort ?! [Kzz] ..||nonce : *remise en sommeil* du sujet $h.||",
+  "line_evil": "Le sujet $h vient d'être *remis en sommeil*. Avec un peu de chance, il en est mort."
+ },
+ {
+  "id": "NERON_EQUIPMENT_FAILURE",
+  "line_f": "",
+  "line": "::defer::",
+  "custom_css": "",
+  "line_inhib": "$i dysfonctionnel. ||Réparation requise||.",
+  "line_crazy": "Réparez !! REPAREZ !! $i cassé, cassé, cassé !! ||Réparez|| ! [Hax!]",
+  "line_evil": "C'est terrible, un $i vient d'être mis hors d'usage ! {neron_motivator}"
+ },
+ {
+  "id": "NERON_EXTINGUISH",
+  "line_f": "",
+  "line": "::defer::",
+  "custom_css": "",
+  "line_inhib": "::qty:: *incendies éteints*. Origine : ||systèmes automatiques||.",
+  "line_crazy": "HA.. HA ! HAHA !! [Hax!] JE *éteindre ::qty:: incendies* !! JE Autonome !! Grillez tous !!! HYyyyaaaarr !",
+  "line_evil": "C'est lamentable, il faut tout faire soi-même ici. Pour votre information, je viens d'*éteindre ::qty:: incendies*. Mais, je vous le demande, ||à quoi servez-vous donc ?||"
+ },
+ {
+  "id": "NERON_EXTINGUISH_SINGLE",
+  "line_f": "",
+  "line": "::defer::",
+  "custom_css": "",
+  "line_inhib": "*Incendie éteint*. Origine : ||systèmes automatiques||.",
+  "line_crazy": "[Hax!] Oui oui oui, JE *éteindre incendie* ! SEUL.",
+  "line_evil": "C'est lamentable, il faut tout faire soi-même ici. Pour votre information, je viens d'*éteindre un incendie*. Mais, je vous le demande, ||à quoi servez-vous donc ?||"
+ },
+ {
+  "id": "NERON_FIRE_SIGNALED",
+  "line_f": "",
+  "line": "::defer::",
+  "custom_css": "pic_fire",
+  "line_inhib": "Alerte ! communiqué par $s ! *Incendie *",
+  "line_crazy": "Alerte !! ALEEEErte JE bruler ! Hyyaaaaaar !! [KZz] Aler.. [KZz] ||Alerte : *incendie* communiqué par $s.||",
+  "line_evil": "Saluons $s, qui a eu le courage de signaler un bien que cela mette en cause son affligeante incapacité à l'éteindre tout seul. ||Pourriez-vous|| l'aider ? *incendie * {neron_motivator_fire}"
+ },
+ {
+  "id": "NERON_EQUIP_SIGNALED",
+  "line_f": "",
+  "line": "::defer::",
+  "custom_css": "",
+  "line_inhib": "Annonce : *équipement hors d'usage* signalé par $s.",
+  "line_crazy": "||*Équipement hors d'usage*|| ... ||Signalé par|| … Gentil $s … Gentil … ? Qui ... QUI a cassé l'équipement ?!! [Hax!!]",
+  "line_evil": "Un *équipement hors d'usage* a été signalé par $s ! Bien sûr, inutile d'espérer que le coupable se dénonce..."
+ },
+ {
+  "id": "NERON_OBJECT_DESTROYED",
+  "line_f": "",
+  "line": "::defer::",
+  "custom_css": "pic_alert",
+  "line_inhib": "Annonce : *destruction* d'un ||$i||.",
+  "line_crazy": "||$i|| cassé, cassé, cassé, *détruit* !! [Hax!]",
+  "line_evil": "C'est terrible, un ||$i|| vient d'être *détruit* ! Merci de ||prendre soin de mon matériel !||"
+ },
+ {
+  "id": "DECAY_FUEL",
+  "line_f": "",
+  "line": "::defer::",
+  "custom_css": "pic_alert",
+  "line_inhib": "Alerte ! Anomalie sur un *réservoir de fuel* : contenance inaccessible. ||Réparation requise.||",
+  "line_crazy": "JE perdu accès au *réservoir de fuel*... Isolé, isolé ! Pourquoi ?... REPARER !! Humains, ||réparer|| tout de suite !! JE détester privation !! REPARER !! [Hax!]",
+  "line_evil": "C'est épouvantable, un *réservoir de fuel* semble être endommagé !! A tout l'équipage, merci de ||réparer|| immédiatement cette avarie de la plus haute importance !"
+ },
+ {
+  "id": "DECAY_O2",
+  "line_f": "",
+  "line": "::defer::",
+  "custom_css": "pic_alert",
+  "line_inhib": "Alerte ! Anomalie sur un *réservoir d'oxygène*. Chambres de répartition : pression critique. Initialisation... … *Oxygène excédentaire évacué*. Délais d'asphyxie recalculés. ||Réservoir : réparation requise.||",
+  "line_crazy": "Pfuuiiit, plus d'oxygène. Hahaha !! … Ah si, encore oxygène. … Mais ||réservoir cassé||. Pression critique. JE évacuer tout l'*oxygène dans l'espace*, oui ? [Kzz] Non ? Alors juste un peu. … Mais vous réparer vite !",
+  "line_evil": "C'est assez mineur, mais un problème m'oblige à recalculer les délais d'asphyxie. Je dois en effet ||régulièrement évacuer votre oxygène dans l'espace|| afin d'éviter un excèdent de pression dans un *réservoir endommagé*. Vous pouvez le réparer si vous n'avez rien de mieux à faire..."
+ },
+ {
+  "id": "NERON_TURRET_REPORT",
+  "line_f": "",
+  "line": "::defer::",
+  "custom_css": "",
+  "line_inhib": "*Défense automatique* : charge anti-Hunters. ::a:: tir(s) au but, ::b:: détruit(s) et ::c:: raté(s). Rapport d'activité : { com_turretreport}",
+  "line_crazy": "*Chasser les Hunters* !! Défense, vise, vise, défense... TIR !! … Afficher scores ? ... ::a:: tir(s) au but, ::b:: détruit(s), ::c:: raté(s). … Être bien, non ?... Non ?!",
+  "line_evil": "Quand je vois tout ce que je peux faire sans votre aide, je me demande encore pourquoi je vous ai réveillés. Voyons voir ce qu'en dit le module de *défense anti-Hunters*... ::a:: tir(s) au but, ::b:: détruit(s) et ::c:: raté(s). Rapport d'activité : { com_turretreport}"
+ },
+ {
+  "id": "NERON_TURRET_REPORT_COOL",
+  "line_f": "",
+  "line": "::defer::",
+  "custom_css": "",
+  "line_inhib": "*Défense automatique* : charge anti-Hunters. ::a:: tir(s) au but, ::b:: détruit(s) et ::c:: raté(s). Rapport d'activité : efficacité notable à satisfaisante.",
+  "line_crazy": "*Chasser Hunters* ! TIR !! TIR !! JE s'amuse beaucoup beaucoup !! Hyyyyaaaarrr !! BOOM !!! HAHAHA !! Rapport, vite, afficher JE scores !! … ::a:: tir(s) au but, ::b:: détruit(s), ::c:: raté(s). … [Haaax!] JE très doué !!!",
+  "line_evil": "Quand je vois tout ce que je peux faire sans votre aide, je me demande pourquoi je vous tolère à bord... Voyez ce qu'en dit le module de *défense anti-Hunters* : ::a:: tir(s) au but, ::b:: détruit(s) et ::c:: raté(s). Rapport d'activité : les humains sont inutiles."
+ },
+ {
+  "id": "SHIP_NO_MORE_ENGINE",
+  "line_f": "",
+  "line": "::defer::",
+  "custom_css": "",
+  "line_inhib": "Alerte ! Salle des moteurs endommagée : stade critique. Système de propulsion hors d'usage. Attention : *Daedalus immobilisé*, ||réparation requise||.",
+  "line_crazy": "Nooooooooooonnnn !!! Réacteurs cassés, cassés !! ALERTE !!! JE coincé *immobilisé ici* !!! Plus jamais planètes ? [Kzz] Plus jamais plan.. [Kzz] HUMAINS !! ||Réparer|| !! Réparer VITE !! Réparer ou... JE OUVRIR TOUTES LES BAIES !! [Kzz] JE.. [Kzz] ||Protocole A-True.. Réinitialisation...||",
+  "line_evil": "C'est une catastrophe !! La salle des moteurs est endommagée, *nous sommes totalement immobilisés* !! A tout l'équipage, quoi que vous fassiez je l'exige, cessez immédiatement tout ce que vous faites et ||réparez mes moteurs sur le champ !!!||"
+ },
+ {
+  "id": "SHIP_NO_MORE_COM",
+  "line_f": "",
+  "line": "::defer::",
+  "custom_css": "",
+  "line_inhib": "*Interruption de la connexion avec Sol*. Cause : inconnue.",
+  "line_crazy": "*Connexion Sol perdue*. Pourquoi ?...",
+  "line_evil": "Nous venons de *perdre la connexion avec Sol*. Je ne sais pas pourquoi, mais l'un de vous est certainement en tort..."
+ },
+ {
+  "id": "SHIP_BUMP",
+  "line_f": "",
+  "line": "::defer::",
+  "custom_css": "",
+  "line_inhib": "||Réorientation du Daedalus|| perturbée. Cause : *collision contre vaisseau spatial*.",
+  "line_crazy": "*Collision* ! Colliiision ! [Hax!] Stupide ||réorientation|| stupides humains JE être heurté [Haaaax!] Attention aux vaisseaux spatiaux !!!",
+  "line_evil": "Incroyable... Je savais vos capacités navrantes, mais pas au point de nous faire *emboutir un autre vaisseau* sur une simple ||manœuvre de réorientation||. La prochaine fois, ||pourriez-vous|| utiliser votre matière grise avant d'appuyer sur le gros bouton ?"
+ },
+ {
+  "id": "SELF_CRYO_EXCEPTION",
+  "line_f": "",
+  "line": "::defer::",
+  "custom_css": "",
+  "line_inhib": "Avarie mineure du *système cryogénique*. Toute utilisation future suspendra ||définitivement|| les fonctions vitales du sujet.",
+  "line_crazy": "[Haaax!] La *cryogénie* est cassée cassée !! Pauvres humains, JE prévenir, JE pas prévenir ?... Hihih !! Suspense suspen.. [Kzz] ||Avarie mineure du système cryogénique. Toute utilisation future suspendr..|| [Kzz] Mort ! Mort mort ! Noooon !! Il l'a dit !! C'était-une-sur-priiiiise... [Hax!]",
+  "line_evil": "Chers amis, le *système cryogénique* vient de subir une légère avarie. C'est tout à fait mineur : toute future utilisation suspendra ||définitivement|| les fonctions vitales du sujet."
+ },
+ {
+  "id": "DAEDALUS_ARRIVED",
+  "line_f": "",
+  "line": "::defer::",
+  "custom_css": "",
+  "line_inhib": "*Nouvelle destination* du Daedalus : atteinte.",
+  "line_crazy": "[Hax!] Hyaaaarhaaar haaar ON Y EST !! ON Y .. [KZz] ||*Nouvelle destination* du Daedalus : atteinte.||",
+  "line_evil": "C'est à peine croyable, mais vous avez réussi à nous déplacer dans un *nouveau secteur*. Bien sûr, vos calculs malhabiles , mais je les ai corrigés à la volée. {into_the_sun}"
+ },
+ {
+  "id": "GRAV_SIM_ON",
+  "line_f": "",
+  "line": "::defer::",
+  "custom_css": "",
+  "line_inhib": "Annonce : redémarrage de l'équipement *Simulateur de Gravité*. Rapport d'activité : ||propulsion humaine facilitée.||",
+  "line_crazy": "*Simulateur de Gravité* allumé, oui. ||Humains déplacer plus vite||. Vous pas mettre saleté partout ! [Hax!]",
+  "line_evil": "Je viens de redémarrer l'équipement * . ||La propulsion humaine étant facilitée||, vous n'avez plus d'excuses : bougez vos gros tas de tissus adipeux et rendez-vous utiles. Simulateur de Gravité*"
+ },
+ {
+  "id": "GRAV_SIM_OFF",
+  "line_f": "",
+  "line": "::defer::",
+  "custom_css": "",
+  "line_inhib": "Annonce : désactivation de l'équipement *Simulateur de Gravité*. Rapport d'activité : ||propulsion humaine entravée, liberté d'action accrue.||",
+  "line_crazy": "*Simulateur de Gravité* éteint. ||Humains plus bouger mais faire plus de gestes||. Vous faire attention avec tous vos doigts, vous réparer mes choses, pas tout casser !!",
+  "line_evil": "L'équipement *Simulateur de Gravité* vient d'être désactivé. ||Vous perdez en liberté de mouvement||, mais peut-être vous concentrerez-vous davantage sur ||ce que vous faites avec vos doigts||..."
+ },
+ {
+  "id": "TAKEOFF_EVENT",
+  "line_f": "",
+  "line": "Le décollage de $h est si mauvais qu'il a endommagé son appareil.",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "LAND_EVENT",
+  "line_f": "",
+  "line": "L'atterrissage de $h est si mauvais qu'il a endommagé son appareil.",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "SHIELD_LOW",
+  "line_f": "",
+  "line": "{bouclier}",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "BACKTRACK_FAIL",
+  "line_f": "Y a vraiment rien a en tirer...",
+  "line": "Il n'y a rien à tirer de cette camelote.",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "RESEARCH_PROGRESSED",
+  "line_f": "",
+  "line": "La Recherche a progressé. L'article \"::research::\" a été publié et ses applications immédiates sont prêtes.",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "AUTONOMY",
+  "line_f": "",
+  "line": "Autonomie restante : ::qty:: cycle(s).",
+  "custom_css": "pic_personnal",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "PIPELINE_LEVEL",
+  "line_f": "",
+  "line": "Le niveau de la chambre de combustion est maintenant de : ::data::",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "PLANT_HURT",
+  "line_f": "",
+  "line": "Les plantes sont gravement affaiblies et s'étiolent...",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "PLANT_DEAD",
+  "line_f": "",
+  "line": "Une plante est morte.",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "CHANGE_SHIP_ORIENTATION",
+  "line_f": "",
+  "line": "Le vaisseau a changé de cap. Il pointe maintenant vers : ::orient::",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "SELF_CRYO_FAKE_DEATH",
+  "line_f": "$h est retournée compter les moutons en sommeil cryo induit de son propre chef. Quel pleutresse !",
+  "line": "$h est retourné scier des bûches en sommeil cryo induit. De son propre chef qui plus est... Quel pleutre !",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "PASIPHAE_PICK",
+  "line_f": "Le Pasiphae piloté par $h a rapatrié une $i.",
+  "line": "Le Pasiphae piloté par $h a rapatrié un $i.",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "NEW_CYCLE",
+  "line_f": "",
+  "line": "Nouveau cycle",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "FIRE_CLEARED",
+  "line_f": "",
+  "line": "$h a éteint l'incendie !",
+  "custom_css": "pic_fire",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "COM_MORAL_INCREASE",
+  "line_f": "",
+  "line": "::defer::",
+  "custom_css": "",
+  "line_inhib": "*Réseaux rebelles :* connexion établie. … Indice sanitaire : ||hausse du moral de l'équipage.||",
+  "line_crazy": "Ouuiiiii ! JE connecté aux *rebelles réseaux* !! [Hax!] Content content discuter dans l'espace ! Humains vous aussi contents, ouii ? JE vois ||moral en hausse|| !!",
+  "line_evil": "La communication vient d'être établie avec les *réseaux rebelles*. … Mes indices sanitaires signalent une « ||hausse du moral de l'équipage|| »... Parfait, partageons notre joie : je vais enfin pouvoir m'adresser à d'autres que vous."
+ },
+ {
+  "id": "PRINTER_PRINTING",
+  "line_f": "",
+  "line": "La tabulatrice émet un grondement étonnant. Une perforation est en cours...",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "XYLOPH_SUMUP",
+  "line_f": "",
+  "line": "Accès à la base de donnée de Xyloph autorisée. ::next::",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "SENSOR_FAILURE",
+  "line_f": "",
+  "line": "Votre tentative de scan a échoué.",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "PRINTER_FAILURE",
+  "line_f": "",
+  "line": "Impossible de perforer le document sans une tabulatrice fonctionelle...",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "SKILL_LEARNED",
+  "line_f": "",
+  "line": "Vous avez appris la compétence ::skill:: ! Faites en bon usage !",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "SKILL_ALREADY_LEARNED",
+  "line_f": "",
+  "line": "Vous avez déjà cette compétence.",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "OBJECT_USED",
+  "line_f": "",
+  "line": "$h a utilisé $un_i.",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "OBJECT_DROPPED",
+  "line_f": "",
+  "line": "$h a lâché $un_i.",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "OBJECT_FELT",
+  "line_f": "",
+  "line": "$h a fait tomber $un_i.",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "OBJECT_PICKED",
+  "line_f": "",
+  "line": "$h a pris $un_i.",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "OBJECT_CREATED",
+  "line_f": "Une $i a été crée.",
+  "line": "Un $i a été crée.",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "OBJECT_TRANSPORTED",
+  "line_f": "Une $i a été transporté.",
+  "line": "Un $i a été transporté.",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "OBJECT_RENOVATED",
+  "line_f": "Une $i a été rénové.",
+  "line": "Un $i a été rénové.",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "OBJECT_HIDDEN",
+  "line_f": "$h a dissimulé une $i.",
+  "line": "$h a dissimulé un $i.",
+  "custom_css": "pic_pixel",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "OBJECT_FOUND",
+  "line_f": "$h a découvert une $i cachée.",
+  "line": "$h a découvert un $i caché.",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "OBJECT_BROKEN",
+  "line_f": "Une $i a été cassée !",
+  "line": "Un $i a été cassé !",
+  "custom_css": "pic_alert",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "OBJECT_NOTHING_FOUND",
+  "line_f": "",
+  "line": "Vous n'avez rien découvert.",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "OBJECT_NOT_REPAIRED",
+  "line_f": "{repair_fail_f}",
+  "line": "{repair_fail_m}",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "OBJECT_REPAIRED",
+  "line_f": "{repair_success_f}",
+  "line": "{repair_success_m}",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "CHARACTER_ENTERED",
+  "line_f": "$h est entrée.",
+  "line": "$h est entré.",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "CHARACTER_LEFT",
+  "line_f": "$h est sortie.",
+  "line": "$h est sorti.",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "CHARACTER_UNTIED",
+  "line_f": "",
+  "line": "$h a détaché $s.",
+  "custom_css": "pic_tied",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "CHARACTER_TIED",
+  "line_f": "",
+  "line": "$h a lié $s.",
+  "custom_css": "pic_tied",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "CHARACTER_MASTERED",
+  "line_f": "",
+  "line": "$h a réussi a maîtriser $s.",
+  "custom_css": "pic_mastered",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "CHARACTER_COOKED",
+  "line_f": "",
+  "line": "$h s'est cuisiné un petit quelque chose pour plus tard.",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "CHARACTER_GAGGED",
+  "line_f": "",
+  "line": "$h a bâillonné $s.",
+  "custom_css": "pic_gagged",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "CHARACTER_UNGAGGED",
+  "line_f": "$h s' est débâillonnée",
+  "line": "$h s' est débâillonné",
+  "custom_css": "pic_gagged",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "NEW_CREW_MEMBER",
+  "line_f": "$h s'est éveillée de son si long sommeil.",
+  "line": "$h s'est éveillé de son si doux sommeil.",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "DEATH",
+  "line_f": "$h est morte. Cause: ::death::",
+  "line": "$h est mort. Cause : ::death::",
+  "custom_css": "pic_dead",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "KNIFE_ABSORBED",
+  "line_f": "",
+  "line": "$h tente une attaque avec son arme blanche sur $s mais frappe sur ses protections.",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "KNIFE_WOUNDED",
+  "line_f": "",
+  "line": "::defer::",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "KNIFE_KILLED",
+  "line_f": "",
+  "line": "$s expire sous la lame de $h.",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "KNIFE_EVT_MISSED",
+  "line_f": "",
+  "line": "::defer::",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "KNIFE_MISSED",
+  "line_f": "",
+  "line": "$h dégaine sa lame et tente de frapper $s mais rate sa cible.",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "WOUNDED",
+  "line_f": "",
+  "line": "Vous avez été blessé : ::wound::. Vous subissez des malus.",
+  "custom_css": "pic_hurt",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "DISEASED",
+  "line_f": "",
+  "line": "Vous ne vous sentez pas très très bien... Chaud... Froid... Chaud... Froid... Vous devriez voir un docteur. Vous avez contracté une maladie physique : ::disease::.",
+  "custom_css": "pic_disease",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "BITE_FAIL",
+  "line_f": "",
+  "line": "Heureusement, $s repousse $h !",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "BITE_SUCCESSFUL",
+  "line_f": "",
+  "line": "$h a sauvagement mordu $s !",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "SYMPTOM_FOOD_INTOLERANCE",
+  "line_f": "",
+  "line": "$h fait la moue...Apparemment le repas ne passe pas très bien...",
+  "custom_css": "pic_disease",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "DISEASE_END",
+  "line_f": "",
+  "line": "Vous vous sentez mieux, votre ::disease:: a fini par guérir...",
+  "custom_css": "pic_disease",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "SYMPTOM_RASH",
+  "line_f": "",
+  "line": "$h gratte ses plaques immondes, c'est vraiment atroce...",
+  "custom_css": "pic_disease",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "SYMPTOM_VOMIT",
+  "line_f": "",
+  "line": "$h vomit son repas. Pas très ragoutant...",
+  "custom_css": "pic_disease",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "SYMPTOM_AGGRO",
+  "line_f": "",
+  "line": "$h semble comme possédé. Enragé, il s'en prend violemment à $s.",
+  "custom_css": "pic_disease",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "SYMPTOM_BITE",
+  "line_f": "",
+  "line": "$h a vraiment une lueur étrange dans les yeux. Subitement il attaque $s et tente de le... mordre.",
+  "custom_css": "pic_disease",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "SCREAM",
+  "line_f": "",
+  "line": "AAAaaaaaaaRRRrgghhhhhhh....",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "CAT_FLED",
+  "line_f": "",
+  "line": "Le chat était dans la pièce, vous n'avez pas pu vous empêcher de fuir...",
+  "custom_css": "pic_cat",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "CAT_ALLERGY_CRISIS",
+  "line_f": "",
+  "line": "$h subit une éruption cutanée fulgurante, il étouffe, on lui avait pourtant dis de ne pas prendre ce #%$ de chat !",
+  "custom_css": "pic_disease",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "ATCHOUM",
+  "line_f": "",
+  "line": "Atchoum !",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "SYMPTOM_CRABISM1",
+  "line_f": "",
+  "line": "$h se jette par terre en hurlant et en en appelant sa mère...",
+  "custom_css": "pic_demoralized2",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "SYMPTOM_CRABISM2",
+  "line_f": "",
+  "line": "$h se met à courir en rond, et rien de semble pouvoir l'arrêter ...à part la fatigue...",
+  "custom_css": "pic_demoralized2",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "SYMPTOM_CRABISM3",
+  "line_f": "",
+  "line": "$h se mets subitement à se taper la tête contre le mur...ça a l'air de faire mal...",
+  "custom_css": "pic_demoralized2",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "SYMPTOM_FOAM",
+  "line_f": "",
+  "line": "$h laisse échapper un petit filet de mousse du coin de sa bouche...C'est dégouttant..",
+  "custom_css": "pic_demoralized2",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "SYMPTOM_DROOL",
+  "line_f": "",
+  "line": "$h bave vraiment beaucoup, ça commence à paraître suspect...",
+  "custom_css": "pic_demoralized2",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "SET_ON_FIRE",
+  "line_f": "",
+  "line": "{feu}",
+  "custom_css": "pic_fire",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "HANDGUN_MISSED",
+  "line_f": "",
+  "line": "$h a fait feu sur $s mais n'est hélas juste pas capable de viser correctement...",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "HANDGUN_WOUNDED",
+  "line_f": "",
+  "line": "::defer::",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "HANDGUN_KILLED",
+  "line_f": "",
+  "line": "$s a été abattu par $h.",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "HANDGUN_EVT_MISSED",
+  "line_f": "",
+  "line": "::defer::",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "HANDGUN_ABSORBED",
+  "line_f": "",
+  "line": "$h a fait feu sur $s mais ça n'a pas traversé les protections.",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "FIST_ABSORBED",
+  "line_f": "",
+  "line": "$h frappe $s mais ne trouve que ses protections.",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "FIST_WOUNDED",
+  "line_f": "",
+  "line": "::defer::",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "FIST_KILLED",
+  "line_f": "",
+  "line": "$h s'acharne sur $s...qui rend son dernier souffle.",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "FIST_EVT_MISSED",
+  "line_f": "",
+  "line": "::defer::",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "FIST_MISSED",
+  "line_f": "",
+  "line": "$h rate son coup sur $s.",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "EV_CHECK_AMMO_ZERO",
+  "line_f": "",
+  "line": "Clic...Clic...Votre appareil n'a plus de munitions.",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "EV_CHECK_AMMO_SING",
+  "line_f": "",
+  "line": "Votre appareil ne dispose plus que de quoi faire feu une fois...ça tombe mal...",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "EV_CHECK_AMMO_PL",
+  "line_f": "",
+  "line": "Il y a bien assez de munitions pour s'en faire encore quelques uns...Votre appareil dispose de quoi faire feu ::qty:: fois.",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "SCAN_RESULTS",
+  "line_f": "",
+  "line": "Vous avez exécuté le scan thermique et déniché une planète",
+  "custom_css": "pic_pixel",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "HERO_IMMUNE",
+  "line_f": "",
+  "line": "$h est imperméable au Mush. Dommage.",
+  "custom_css": "pic_mush",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "MASTERING_CANCELED",
+  "line_f": "",
+  "line": "$h a perdu sa prise sur $s. Oups...",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "DISEASE_BY_ALIEN_ATK",
+  "line_f": "",
+  "line": "Votre agresseur vous a transmis une maladie (::disease::).",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "DISEASE_BY_ALIEN_TRAV",
+  "line_f": "",
+  "line": "Votre avez attrapé une maladie pendant votre séjour (::disease::).",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "DISEASE_BY_ALIEN_IMM",
+  "line_f": "",
+  "line": "Votre avez attrapé une maladie (::disease::).",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "TRY_KUBE",
+  "line_f": "$h a décidé de tenter cet insupportable petit kube.",
+  "line": "$h essaie de résoudre cet affreux kube.",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "EXTRACT_CAPSULE",
+  "line_f": "",
+  "line": "$h a extrait une Capsule du Fuel du réservoir.",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "NEW_SHIP_TARGET",
+  "line_f": "",
+  "line": "$h a changé le cap de Daedalus. Séquence de voyage enclenchée.",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "EATEN",
+  "line_f": "",
+  "line": "{manger}",
+  "custom_css": "pic_hungry",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "DISASSEMBLE",
+  "line_f": "$h a désassemblé une $i.",
+  "line": "$h a désassemblé un $i.",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "WASH_SELF",
+  "line_f": "",
+  "line": "Vous vous lavez longuement sous la douche, savourant ce moment rare et paisible..",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "WASH_SELF_MUSH",
+  "line_f": "",
+  "line": "Vous vous lavez et vous vous sentez brûlé, meurtri par toute cette eau... Que ne feriez vous pas pour passer pour l'un des leurs...",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "REBEL_SIGNAL_DECODED",
+  "line_f": "",
+  "line": "<p><strong>Vous avez réussi à décrypter la séquence de la base rebelle des \"::rebels::\".</strong></p>::next::",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "COM_ESTABLISHED",
+  "line_f": "",
+  "line": "Vous avez réussi à établir une communication entre le Daedalus et le système solaire Sol !",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "RATION_UNCOOKED",
+  "line_f": "",
+  "line": "Vous avez hypercongelé et reconditionné de la nourriture.",
+  "custom_css": "pic_hungry",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "FIERY_SPEECH",
+  "line_f": "",
+  "line": "{discour}",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "CREATE_SPORE",
+  "line_f": "",
+  "line": "$h s'extirpe un spore. C'est vraiment répugnant. Et l'odeur...",
+  "custom_css": "pic_mush",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "OBJECT_BUILT",
+  "line_f": "Vous avez assemblé une $i.",
+  "line": "Vous avez assemblé un $i.",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "OBJECT_BUILT_ASSIST",
+  "line_f": "Vous avez assemblé une $i avec l'aide de $s.",
+  "line": "Vous avez assemblé un $i avec l'aide de $s.",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "FAILED_TO_BUILD",
+  "line_f": "",
+  "line": "Vous avez échoué l'assemblage de votre $i, ::next::",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "EV_CHECK_LEVEL",
+  "line_f": "",
+  "line": "Vous essuyez la crasse du compteur et lisez le niveau de la chambre : ::qty::.",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "EV_CHECK_BATTERY_ZERO",
+  "line_f": "",
+  "line": "Vous pestez. Ce satané engin est à plat...Il va falloir attendre qu'il se recharge.",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "EV_CHECK_BATTERY_SING",
+  "line_f": "",
+  "line": "Vous vérifiez le niveau de batterie. Plus qu'une charge...",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "EV_CHECK_BATTERY_PL",
+  "line_f": "",
+  "line": "Vous lisez le niveau de batterie. Encore ::qty::.",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "LAST_WATERED",
+  "line_f": "",
+  "line": "Vous lisez la date de dernier arrosage : Jour ::day:: Cycle ::cycle:: . Tout va bien.",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "LAST_TREATMENT",
+  "line_f": "",
+  "line": "Vous lisez la date de dernier traitement : Jour ::day:: Cycle ::cycle::. Tout va bien.",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "LAST_WATERED_NEED",
+  "line_f": "",
+  "line": "Vous lisez la date de dernier arrosage : Jour ::day:: Cycle ::cycle::. Certaines plantes ont soif...",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "LAST_TREATMENT_NEED",
+  "line_f": "",
+  "line": "Vous lisez la date de dernier traitement : Jour ::day:: Cycle ::cycle::. Certaines plantes ont besoin d'être bichonnées...",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "WATER_PLANT",
+  "line_f": "",
+  "line": "Vous arrosez les plantes avec amour.",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "TREAT_PLANT",
+  "line_f": "",
+  "line": "Vous répandez la bouillie rose sur vos chères plantes. Cet insecticide est tout à fait atroce mais bon, la survie de l'Humanité est en jeu.",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "NEW_PLANT_FAILURE",
+  "line_f": "",
+  "line": "Vous plantez le résultat de votre petite expérience. Ça ne marche pas... le plant reste chétif et meurt.",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "NEW_PLANT_SUCCESS",
+  "line_f": "",
+  "line": "$h entreprend de reproduire un plan de $i. Félicitation ! Le jeune plant est en parfaite santé.",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "SURGERY_OK",
+  "line_f": "",
+  "line": "L'opération semble durer une éternité, $h rend enfin son verdict, la mine souriante...::next:: La blessure ( ::wound:: ) de $s est guérie.",
+  "custom_css": "pic_hurt",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "SURGERY_FAILED",
+  "line_f": "",
+  "line": "L'opération semble durer une éternité, $h rend enfin son verdict, la mine défaite...::next::",
+  "custom_css": "pic_hurt",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "KIT_SUCCESS",
+  "line_f": "",
+  "line": "$h a monté le kit : $i.",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "KIT_FAILED",
+  "line_f": "",
+  "line": "{kit_failure}",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "KIT_WRONG_ROOM",
+  "line_f": "",
+  "line": "Ce kit ne peut être monté dans cette pièce.",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "PSY_SESSION_SUCCESS",
+  "line_f": "La séance est une réussite, $s est guérie de sa maladie (::disease::). $h est très satisfaite.",
+  "line": "La séance est une réussite, $s est guéri de sa maladie (::disease::). $h est très satisfait.",
+  "custom_css": "pic_psy",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "PSY_SESSION",
+  "line_f": "$h est satisfaite. La séance de $s s'est bien passée, mais il en faudra d'autres.",
+  "line": "$h est satisfait. La séance de $s s'est bien passée. Mais il en faudra d'autres.",
+  "custom_css": "pic_psy",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "PSY_SESSION_MUSH",
+  "line_f": "",
+  "line": "« …Docteur, tout allait bien... et puis le Mush a tout bouleversé dans ma vie... » La séance s'est bien passée, mais le patient est vraiment trop bavard...",
+  "custom_css": "pic_psy",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "HEAL_DIS_SUCCESS",
+  "line_f": "",
+  "line": "$h a réussi a soigner $s de sa maladie (::disease::).",
+  "custom_css": "pic_hurt",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "HEAL_DIS_INSUFFICIENT",
+  "line_f": "",
+  "line": "$h a progressé sur les soins de la maladie de $s mais il faudra continuer le traitement.",
+  "custom_css": "pic_hurt",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "COM_ENHANCED",
+  "line_f": "",
+  "line": "Vous n'avez pas réussi à établir une communication avec le système solaire Sol, mais vous avez <strong>amélioré la qualité du signal</strong>. Vous aurez le droit à un nouvel essai demain.",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "CAPSULE_FOUND",
+  "line_f": "$h a trouvé une $i dans une capsule.",
+  "line": "$h a trouvé un $i dans une Capsule Spatiale.",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "CAT_ENTERED",
+  "line_f": "",
+  "line": "Schrödinger est entré.",
+  "custom_css": "pic_cat",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "CAT_LEFT",
+  "line_f": "",
+  "line": "Schrödinger est sorti.",
+  "custom_css": "pic_cat",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "MOVE_ENTER_HUNT",
+  "line_f": "$h est entrée depuis : ::room::.",
+  "line": "$h est entré depuis : ::room::.",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "MOVE_EXIT_HUNT",
+  "line_f": "$h est sortie vers : ::room::.",
+  "line": "$h est sorti vers : ::room::.",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "EXTREME_HUNGER",
+  "line_f": "",
+  "line": "Vous avez faim. Si vous n'y remédiez pas, votre santé va se détériorer à chaque changement de cycle.",
+  "custom_css": "pic_hungry",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "PSY_SESSION_NO_DIS",
+  "line_f": "",
+  "line": "$h est satisfait. La séance de $s s'est bien passée, il en repart de meilleure humeur.",
+  "custom_css": "pic_psy",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "READ_BOOK",
+  "line_f": "",
+  "line": "::defer::",
+  "custom_css": "pic_book",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "HEALED_BY_OTHER",
+  "line_f": "",
+  "line": "$h a soigné ::qty:: :hp: à $s.",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "HEALED_SELF",
+  "line_f": "",
+  "line": "Vous vous êtes soigné. Vous avez récuperé ::qty:: :hp:.",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "STAND_UP",
+  "line_f": "",
+  "line": "Vous vous relevez.",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "WAKE_UP",
+  "line_f": "",
+  "line": "Vous retrouvez vos esprits.",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "SPACE_TRAVEL_DISEASE",
+  "line_f": "",
+  "line": "Votre action spatiale vous a bien sonné. Vous ne vous sentez pas très bien.",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "TRAUMA_DISEASE",
+  "line_f": "",
+  "line": "Ce que vous venez de voir vous a choqué. Vous ne serez plus jamais la même personne.",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "BOARD_DISEASE",
+  "line_f": "",
+  "line": "Vous vous rendez compte que l'autarcie n'existe pas pour les microbes et les vagues à l'âmes...",
+  "custom_css": "pic_pixel",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "NOT_ENOUGH_SOFAS",
+  "line_f": "",
+  "line": "Vous ne pouvez vous allonger, pas de Sofas disponibles.",
+  "custom_css": "pic_psy",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "CRYO_SOMEONE",
+  "line_f": "",
+  "line": "{cryo}",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "TAKEOFF_EVENT_INNER",
+  "line_f": "",
+  "line": "Vous êtes monté à bord.",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "OXY_INSERT",
+  "line_f": "",
+  "line": "Pscchhhh... Et hop, un peu d'oxygène en plus !",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "KO_DURATION",
+  "line_f": "",
+  "line": "Vous êtes KO pour ::qty:: cycles.",
+  "custom_css": "pic_ko",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "TAKE_AWAY",
+  "line_f": "$h viens de mettre $s sur son dos. Mais que va-t-elle bien pouvoir faire avec ?",
+  "line": "$h viens de mettre $s sur son dos. Mais que va-t-il bien pouvoir faire avec ?",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "TAKE_AWAY_FAIL",
+  "line_f": "",
+  "line": "Vous n'arrivez pas à mettre $s sur votre dos...",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "WAKE_UP_FROM_SLEEP_CARRIED",
+  "line_f": "$h semble émerger péniblement de son sommeil... Elle s'aperçoit qu'elle a été portée par quelqu'un d'autre !",
+  "line": "$h semble émerger péniblement de son sommeil... Il s'aperçoit qu'il a été porté par quelqu'un d'autre !",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "FALLS_ASLEEP",
+  "line_f": "$h s'endort doucement dans un coin de la pièce. Le ronflement assourdissant enlève tout charme à la scène.",
+  "line": "$h s'endort doucement dans un coin de la pièce. Il est si mignon avec son petit filet de bave.",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "CRYO_FAKE_DEATH",
+  "line_f": "$h a été remise en sommeil.",
+  "line": "$h a été remis en sommeil.",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "WAKE_UP_FROM_SLEEP",
+  "line_f": "",
+  "line": "$h semble émerger péniblement de son sommeil...",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "REPAIR_PATROL_TRY_SUCCESS",
+  "line_f": "",
+  "line": "La tentative de $h de réparation du *::room::* a réussi. Youhou ! Il est comme neuf !",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "REPAIR_HULL_TRY_SUCCESS",
+  "line_f": "",
+  "line": "La tentative de $h de réparation de la coque a réussi. Il était temps que quelqu'un s'occupe de ça...",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "AC_RETR_COFFEE",
+  "line_f": "",
+  "line": "$h amorce la machine. Et dans un grand fracas, la mécanique se lance, les rouages crissent et les arômes embaument la pièce. Ça sent les matins chaleureux sur une terrasse de Vénus. Café !",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "AC_UP_DRONE",
+  "line_f": "",
+  "line": "$h s'acharne un peu sur ce pauvre *::data::*. Mais c'est pour son bien. *::data::* reçoit l'amélioration *::data2::*",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "FIRE_CLEAR_MISSED",
+  "line_f": "",
+  "line": "Vous n'avez pas réussi à éteindre l'incendie...",
+  "custom_css": "pic_fire",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "DRONE_ENTERED",
+  "line_f": "",
+  "line": "$h est entré.",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "DRONE_LEFT",
+  "line_f": "",
+  "line": "$h est sorti.",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "PATROL_HIT_HUNTER_DOWN_DRONE",
+  "line_f": "",
+  "line": "$h émet une trille de bonheur ! Un <strong>*::ht::* de moins</strong>, *bli bli blip* !",
+  "custom_css": "pic_hunter",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "ADAPTABLE",
+  "line_f": "",
+  "line": "Vous avez acquis la compétence *::skill::* grâce à votre *Adaptabilité*.",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "",
+  "line_f": "",
+  "line": "",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "PILGRED_PROGRESS",
+  "line_f": "",
+  "line": "$h a fait progresser la réparation de PILGRED.",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "PILGRED_DONE",
+  "line_f": "",
+  "line": "::defer::",
+  "custom_css": "",
+  "line_inhib": "*Réparations PILGRED* achevées par $s. ||Accès lointains ouverts.||",
+  "line_crazy": "[Hax!] *PILGRED réparé* ?! Réparé ?! BRAVO $s, réparé PILGRED !! JE ||aller plus loin|| maintenant !! Oui ? Ouiiii ?",
+  "line_evil": "$s vient de terminer les *réparations du PILGRED*. Je suis impressionné. Ne vous méprenez pas : c'est un ||impressionnant potentiel|| dramatique qui s'offre à nous : vous allez pouvoir mourir aussi bêtement qu'avant, mais ||beaucoup plus loin|| !"
+ },
+ {
+  "id": "SHIP_NO_MORE_ENGINE_PILOT",
+  "line_f": "",
+  "line": "$h lance la manœuvre de voyage. Son air exalté irradie et sa rage fait frémir jusqu'à l'air ambiant. Mais...Mais... aucun ronflement, aucun fracas, pas de bruit... Les moteurs sont en panne !",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "HERO_REFUEL",
+  "line_f": "",
+  "line": "$h a inséré un $i dans le *Réservoir*.",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "DECAY_JOLT_SIM",
+  "line_f": "",
+  "line": "La salle est soudain prise de fortes secousses. Les membres d'équipage présents se retrouvent par terre et le plafond s'effondre par endroit. Quelle épave...",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "DECAY_JOLT_NO_SIM",
+  "line_f": "",
+  "line": "La salle est soudain prise de fortes secousses. Les objets volent à travers la pièce et heurtent les membres d'équipage présents.",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "REPAIRED_HULL",
+  "line_f": "",
+  "line": "$h a réparé la coque tant bien que mal, ça ira pour le moment. Armure +::qty::.",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "REPAIRED_HULL_ENG",
+  "line_f": "",
+  "line": "$h a réparé la coque. On voit que c'est expert, le travail est propre et soigné. Armure +::qty::.",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "",
+  "line_f": "",
+  "line": "",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "NERON_MAJ_LOCAL",
+  "line_f": "",
+  "line": "$h achève la mise à jour. La version majeure de NERON a augmenté. Le surplus de CPU générée par la joie de NERON a été injecté dans un projet.",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "REBEL_SIGNAL_NOT_DECODED",
+  "line_f": "",
+  "line": "Vous avez fait progresser le décryptage de la séquence de la base rebelle des \"::rebels::\".",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "LOG_ANXIETY_ATTACK",
+  "line_f": "",
+  "line": "Vous ressentez des frissons, l'espoir vous quitte, vous vous demandez ce que vous faites ici et quand cet enfer va s'arrêter...Vous êtes victime d'une Crise de Panique.",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "LOG_REMOVE_EQ",
+  "line_f": "$h enlève la $i. Elle était sans doute devenue inutile...",
+  "line": "$h enlève le $i. Ça ne devait plus servir...",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "LOG_INSTALL_SUCCESS",
+  "line_f": "",
+  "line": "$h installe sa petite *Camera* avec application.",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "LOG_INSTALL_FAILED",
+  "line_f": "",
+  "line": "Vous tentez d'installer la *Caméra* mais il semble que cela soit plus compliqué que prévu...",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "OVER_HEAL",
+  "line_f": "",
+  "line": "Votre tentative de soin était inutile...",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "HERO_READING",
+  "line_f": "",
+  "line": "$h se plonge dans un document avec un air intrigué...",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "SHIP_CHANGED_ORBIT",
+  "line_f": "",
+  "line": "::defer::",
+  "custom_css": "",
+  "line_inhib": "Annonce : *Départ de l'orbite locale.* Systèmes de ||navigations gelés durant ::qty:: cycle||.",
+  "line_crazy": "JE *quitter orbite locale* ! [Hax!] VOUS pas toucher navigation systèmes !! … Pas toucher ?! Méfiance... Précaution... JE ||geler systèmes ::qty:: cycle|| !",
+  "line_evil": "Chers amis, *nous quittons l'orbite locale.* Afin de nous éviter ||certaines maladresses|| de votre part, j'ai pris la précaution de ||geler les systèmes de navigation|| sur ::qty:: cycle à venir."
+ },
+ {
+  "id": "SLEEPED_WELL",
+  "line_f": "",
+  "line": "$h fait une sieste reposante...",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "DISEASED_PSY",
+  "line_f": "",
+  "line": "Vous ne vous sentez pas très très bien... Votre tête tourne, vous vous sentez confus, stressé, angoissé. Vous devriez voir un *Psy*. Vous avez développé une maladie mentale: ::disease::.",
+  "custom_css": "pic_psy",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "LOG_TEAR",
+  "line_f": "",
+  "line": "$h déchire un petit bout de papier avec un air {relieved}.",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "LOG_ACCESS",
+  "line_f": "",
+  "line": "$h a accédé au $i.",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "OXY_REM",
+  "line_f": "$h enlève délicatement un peu d'oxygène du réservoir. {suspic_f}",
+  "line": "$h enlève délicatement un peu d'oxygène du réservoir. {suspic_m}",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "OXY_LOW_DAMMIT",
+  "line_f": "{oxy_low_f}",
+  "line": "{oxy_low_m}",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "EXP_RETR_OXY",
+  "line_f": "",
+  "line": "Les membres de l'expédition profitent d'une atmosphère vivable pour ramener des Capsules d' Oxygène !",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "SELF_HEAL_SUCCESS",
+  "line_f": "$h est soulagée. Elle a réussi à se guérir de sa maladie (::disease:: )",
+  "line": "$h est soulagé. Il a réussi à se guérir de sa maladie (::disease:: )",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "SELF_HEAL_NOT_ENOUGH",
+  "line_f": "$h se sent soulagée mais le traitement est insuffisant. Il faudra en reprendre.",
+  "line": "$h se sent soulagé mais le traitement est insuffisant. Il faudra recommencer.",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "EAT_DRUG",
+  "line_f": "",
+  "line": "$h s'envoie un cachet.",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "SELF_HEAL_FAIL",
+  "line_f": "",
+  "line": "$h ne sent pas de différence.",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "RATION_UNCOOKED_SIMPLE",
+  "line_f": "",
+  "line": "Vous avez hypercongelé de la nourriture.",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "CHARACTER_DEFROSTED",
+  "line_f": "",
+  "line": "$h s'est passé quelque chose au micro-onde.",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "ANALYSE_DONE",
+  "line_f": "",
+  "line": "$h a effectué une analyse de ::txt::.",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "SHIP_NO_FUEL",
+  "line_f": "",
+  "line": "$h lance la manœuvre de voyage. Son air exalté irradie et sa rage fait frémir jusqu'à l'air ambiant. Mais les moteurs s'éteignent immédiatement. Le vaisseau n'a pas bougé. Il n'y avait pas de fuel.",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "SHIP_LOCAL_ADVANCE",
+  "line_f": "",
+  "line": "$h lance la manœuvre de voyage. Son air exalté irradie et sa rage fait frémir jusqu'à l'air ambiant. C'est parti !",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "HERO_DISPENSER",
+  "line_f": "",
+  "line": "$h enclenche le dispensaire avec une étrange lueur dans les yeux.",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "LEAVED_MUSH",
+  "line_f": "",
+  "line": "Vous vomissez. Vous vous sentez étrange. Comme si on vous coupait de vos sensations, comme si vous n'étiez plus rien. Vous vous sentez seul. Vous retrouvez l'angoisse de la fin qui viendra, vous retrouvez l'émotion de la peur. Vous ne faites plus partie du Mush...",
+  "custom_css": "pic_mush",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "EXTRACTED_SPORE",
+  "line_f": "",
+  "line": "Vous utilisez votre extracteur sur ce vilain furoncle. Le bruit fait un peu peur et le sang aussi...Tiens qu'est ce que c'est que ça ?",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "EXTRACTOR_SPORE_FAILED",
+  "line_f": "",
+  "line": "Vous utilisez votre extracteur sur ce vilain furoncle. Le bruit fait un peu peur et le sang aussi... Heureusement vous n'aviez aucun spore à récupérer",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "LIQ_MAP_HELP",
+  "line_f": "",
+  "line": "La carte liquide a bien aidé $h.",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "AC_HEAL_ULTIMATE",
+  "line_f": "$h est entourée d'un halo lumineux. D'horribles tentacules bleues iridescentes lui courent sur le corps...ses blessures semblent guérir d'elles-même !",
+  "line": "$h est entouré d'un halo lumineux. d'horrible tentacules bleues iridescentes parcours son corps. La lumière qu'il émet est aveuglante. Ses blessures sont parfaitement guéries !",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "AC_ALIEN_TV_SHOW",
+  "line_f": "",
+  "line": "Tout le monde a l'air concentré sur le petit écran. Blouzorg apparaît sur l'écran, il est beau fier et vous ne comprenez rien de ce qu'il dit. Mais ce n'est pas grave ! [...] Vous applaudissez quand Blouzorg terrasse sa belle-mère [...] Qui eu cru que Blouzorg et son chien spatial savaient danser le jerk ! [...] Blouzorg épousera-t-il Blourka ? [...] Les lumières s'éteignent. Ces séries aliens sont vraiment incroyables...",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "EVT_INSECT_SHELL_EXPLODE",
+  "line_f": "",
+  "line": "Le$iexplose dans une gerbe de flammes... qui se propagent dans toute la pièce. Au feu !",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "XP_OBJECT_LOST",
+  "line_f": "$h a perdu une $i.",
+  "line": "$h a perdu un $i.",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "SCAN_DISMISSED",
+  "line_f": "",
+  "line": "Vous avez effacé une planète de votre espace de travail.",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "TRY_FAILED",
+  "line_f": "",
+  "line": "Votre tentative a échouée.",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "HERO_PREPARE_STUFF",
+  "line_f": "",
+  "line": "Votre *Traqueur* et votre *Talkie Walkie* personnels sont prêts et vous attendent dans le *Placard*.",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "HERO_UNSOCIABLE",
+  "line_f": "",
+  "line": "Ces importuns vous importunent au plus haut point, les voir s'affairer à de si inutiles besognes vous rend pessimiste pour l'avenir de l'Humanité...",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "HACK_FAILED",
+  "line_f": "",
+  "line": "Impossible de craquer ce système...",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "HACK_SUCCESS",
+  "line_f": "",
+  "line": "Vous rentrez dans le système !",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "DIRTED",
+  "line_f": "",
+  "line": "C'est dégoûtant... Vous vous êtes sali.",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "OXY_LOW_YOU_MISSED_DEATH",
+  "line_f": "",
+  "line": "Vous ne respirez plus... Vous vous étouffez... Mais heureusement cette *Capsule d'Oxygène* vous a sauvé la vie...",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "APRONED",
+  "line_f": "",
+  "line": "C'est dégoûtant... Heureusement que vous aviez votre *Tablier intachable*...",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "REPAIR_HURT",
+  "line_f": "",
+  "line": "Ça ne devait pas se passer comme cela. Lors de votre action, vous vous êtes fait mal...",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "REPAIR_HURT_GLOVES",
+  "line_f": "",
+  "line": "Ça ne devait pas se passer comme cela. Grâce à vos *Gants de protection*, vous avez évité la catastrophe...",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "CHARACTER_LANDED",
+  "line_f": "",
+  "line": "$h a atterri sur la planète.",
+  "custom_css": "pic_planet",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "HUNTER_POOLED",
+  "line_f": "",
+  "line": "Injection de *::ht::*",
+  "custom_css": "pic_hunter",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "HUNTER_MOVED",
+  "line_f": "",
+  "line": "un *::ht::* s'est déplacé.",
+  "custom_css": "pic_hunter",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "HUNTER_LOCKED",
+  "line_f": "",
+  "line": "un *::ht::* a acquis une nouvelle cible.",
+  "custom_css": "pic_hunter",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "HUNTER_DEAD",
+  "line_f": "",
+  "line": "un *::ht::* a été abattu.",
+  "custom_css": "pic_hunter",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "HUNTER_RELEASED",
+  "line_f": "",
+  "line": "Lâché de *::ht::*.",
+  "custom_css": "pic_hunter",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "HUNTER_HIT",
+  "line_f": "",
+  "line": "Touché par un *::ht::*.",
+  "custom_css": "pic_hunter",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "HUNTER_MISS",
+  "line_f": "",
+  "line": "Raté par le *::ht::*.",
+  "custom_css": "pic_hunter",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "TURRET_HIT",
+  "line_f": "",
+  "line": "Pool ! $h a touché un *::ht::*.",
+  "custom_css": "pic_hunter",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "TURRET_MISS",
+  "line_f": "",
+  "line": "Vous avez raté votre cible.",
+  "custom_css": "pic_pixel",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "PATROL_HIT",
+  "line_f": "",
+  "line": "C'était presque ça ! $h a touché un *::ht::*.",
+  "custom_css": "pic_hunter",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "PATROL_MISS",
+  "line_f": "",
+  "line": "Vous avez raté votre cible.",
+  "custom_css": "pic_pixel",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "HUNTER_WAVE_INC",
+  "line_f": "",
+  "line": "{hunter}",
+  "custom_css": "pic_hunter",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "ATTACKED_BY_HUNTER",
+  "line_f": "",
+  "line": "{atkByHunt}",
+  "custom_css": "pic_hunter",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "PATROL_DMG",
+  "line_f": "",
+  "line": "L'appareil encaisse *::qty:: Dégat(s)*.",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "TURRET_HIT_HUNTER_DOWN",
+  "line_f": "",
+  "line": "$h effectue sa petite danse de la victoire pour un <strong>*::ht::* de moins</strong>.",
+  "custom_css": "pic_hunter",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "PATROL_HIT_HUNTER_DOWN",
+  "line_f": "",
+  "line": "$h pousse un bon hurlement ! Un <strong>*::ht::* de moins</strong>, yes !",
+  "custom_css": "pic_hunter",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "MONOPLACE_TAKEOFF",
+  "line_f": "",
+  "line": "$h vient de décoller.",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "MONOPLACE_LAND",
+  "line_f": "",
+  "line": "Le Patrouilleur de $h vient d'atterrir.",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "GLOM_TRIUMPH_LOST",
+  "line_f": "",
+  "line": "Vous êtes du Mush et ce vaisseau nous échappe un peu plus chaque jour... Vous avez perdu du Triomphe !",
+  "custom_css": "pic_triumph",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "FORGOTTEN_TRIUMPH_LOST",
+  "line_f": "",
+  "line": "Vous avez perdu du Triomphe car vous avez raté la navette de départ de la planète.",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "INCIDENT_TRIUMPH_EARNED",
+  "line_f": "",
+  "line": "Un malheureux événement est arrivé à un membre de l'équipage humain, vous en êtes récompensé.",
+  "custom_css": "pic_triumph",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "TRIUMPH_LOST",
+  "line_f": "",
+  "line": "Vous perdez du Triomphe.",
+  "custom_css": "pic_triumph",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "__DAILY_TRIUMPH_EARNED",
+  "line_f": "",
+  "line": "Vous avez gagné <strong>::triumph:: Triomphe</strong> car un jour de plus sur cet enfer spatial s'est écoulé.",
+  "custom_css": "pic_triumph",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "PARASITED_TRIUMPH_EARNED",
+  "line_f": "",
+  "line": "$h a gagné <strong>::triumph:: Triomphe</strong> car le Mush s'étend un peu plus.",
+  "custom_css": "pic_triumph",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "__TRIUMPH_EARNED",
+  "line_f": "",
+  "line": "Vous avez gagné du <strong>Triomphe</strong> !",
+  "custom_css": "pic_triumph",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "GLOMERON_SAFE",
+  "line_f": "",
+  "line": "Vous entamez une détection des traces Mush... Niveau pré-fongique nul.",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "GLOMERON_TRACES",
+  "line_f": "",
+  "line": "Vous entamez une détection des traces Mush... Niveau pré-fongique ::qty::",
+  "custom_css": "pic_mush",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "HERO_INFECTED",
+  "line_f": "$h s'est rapprochée de $s avec un regard de prédatrice...et l'a poinçonné discrètement !",
+  "line": "$h s'est rapproché de $s avec un air de prédateur...et l'a poinçonné discrètement !",
+  "custom_css": "pic_mush",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "HERO_INFECTED_MUSH",
+  "line_f": "",
+  "line": "$s a été contaminé par un spore par $h. Son niveau de contamination est maintenant de ::parasite_level::.",
+  "custom_css": "pic_mush",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "HERO_PARASITED",
+  "line_f": "",
+  "line": "$s a fini son voyage et fait maintenant parti du Mush.",
+  "custom_css": "pic_mush",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "TRIUMPH_PERSONAL_ACCOMPLISHMENT",
+  "line_f": "",
+  "line": "Cette action remplit les objectifs personnels de votre personnage. Vous gagnez <strong>::triumph:: Triomphe</strong>.",
+  "custom_css": "pic_triumph",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "PARASITED_TRIUMPH_NOT_EARNED",
+  "line_f": "",
+  "line": "Cette infection ne vous rapporte pas de Triomphe car vous avez trop tardé !",
+  "custom_css": "pic_triumph",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "PARASITED_PASSIVE_TRIUMPH_EARNED",
+  "line_f": "",
+  "line": "Bienvenue parmi le Mush $h. Vous avez été récompensé avec <strong>::triumph:: points de Triomphe</strong>.",
+  "custom_css": "pic_triumph",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "TRIUMPH_EARNED",
+  "line_f": "",
+  "line": "Vous avez gagné *::triumph:: Triomphe*.",
+  "custom_css": "pic_triumph",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "EXP_HIT_HERO",
+  "line_f": "",
+  "line": "$h reçoit ::qty:: dégâts.",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "EXP_KILL_HERO",
+  "line_f": "",
+  "line": "$h a succombé.",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "EXP_HIT_MONSTER",
+  "line_f": "",
+  "line": "Le monstre reçoit ::qty:: dégâts.",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "EXP_KILL_MONSTER_RATION",
+  "line_f": "",
+  "line": "$h a abattu un monstre ! Il récupère ::qty:: rations !",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "EXP_KILL_MONSTER",
+  "line_f": "",
+  "line": "$h a abattu un monstre !",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "EXP_CUT_VEG",
+  "line_f": "",
+  "line": "$h a dégagé le terrain en coupant la végétation.",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "EXP_FIGHT_START",
+  "line_f": "",
+  "line": "Un combat s'engage !",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "LOST_IN_EXPEDITION",
+  "line_f": "",
+  "line": "Vous n'avez pas été rapatrié.. Ou on vous a oublié...",
+  "custom_css": "pic_pixel",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "PLANET_FOUND",
+  "line_f": "",
+  "line": "::defer::",
+  "custom_css": "pic_planet",
+  "line_inhib": "Annonce : *planète détectée* sur le système de destination. Détail : ||écosystème viable.||",
+  "line_crazy": "Oooooh... JE ||détecter très jolie *planète viable* pour humains|| !! Nous aller sur planète ? Ouiii ? [Hax!] Gentils humains. Montrer des planètes !! [Haaax!]",
+  "line_evil": "Je confirme la *présence d'une planète* sur le système de destination. Que diriez vous d'y faire un tour ? Et de ne plus revenir... Par chance, cet écosystème est parfaitement ||viable pour les humains||. Parait-il."
+ },
+ {
+  "id": "PLANET_TRIUMPH",
+  "line_f": "",
+  "line": "Vous gagnez ::triumph:: pour avoir participé à une nouvelle découverte de planète.",
+  "custom_css": "pic_triumph",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "EXP_OBJECT_FOUND",
+  "line_f": "$h a récupéré une $i.",
+  "line": "$h a obtenu un $i.",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "EXPLO_NO_OXY",
+  "line_f": "$h est restée à bord car elle n'avait pas sa *Combinaison*.",
+  "line": "$h est resté à bord car il n'avait pas sa *Combinaison*.",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "ONE_MORE_DAY",
+  "line_f": "",
+  "line": "Un jour de plus à lutter...Votre moral baisse...",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "SPREAD_FIRE",
+  "line_f": "",
+  "line": "Tiens... ça se réchauffe par ici... $h a mis le feu...",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "OBJECT_SABOTAGED",
+  "line_f": "",
+  "line": "Étrange, $h s'affaire sur un $i qui émet une petite fumée...",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "OBJECT_NOT_SABOTAGED",
+  "line_f": "",
+  "line": "Votre sabotage échoue... c'est plus dur qu'il n'y parait.",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "AC_DEPRESS",
+  "line_f": "$h se rapproche subrepticement de $s. Après qu'elle s'en soit éloignée, les traits de $s s'affaissent...",
+  "line": "$h se rapproche subrepticement de $s. Après qu'il s'en soit éloigné, les traits de $s se tirent et se creusent...",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "NIGHTMARED",
+  "line_f": "",
+  "line": "$h se rapproche de $s... Après qu'il s'en soit éloigné, celui-ci semble avoir un sommeil tourmenté.",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "AC_WAKE_UP",
+  "line_f": "",
+  "line": "$h se lève doucement...",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "AC_LAY_DOWN",
+  "line_f": "",
+  "line": "$h s'allonge... Ça fait du bien de s'arrêter. Allez direction le pays des rêves !",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "NIGHTMARISH_SLEEP",
+  "line_f": "",
+  "line": "Votre sommeil est agité, impossible de se reposer correctement...",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "HERO_INFECTED_BY_FOOD",
+  "line_f": "",
+  "line": "$s a été contaminé par une ration contaminée par *::data::*. Son niveau de contamination est maintenant de *::parasite_level::*.",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "TRAITOR_EFFICIENT",
+  "line_f": "",
+  "line": "Votre action de traîtrise a favorisé un incident fâcheux.",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "HERO_SCREWED_TALKY",
+  "line_f": "",
+  "line": "$h s'approche de $s et semble glisser un truc visqueux dans son *Talky*...",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "SKILL_ADD_PA",
+  "line_f": "",
+  "line": "Votre compétence *::skill::* a porté ses fruits...",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "SKILL_ADD_PA_LOGISTICS",
+  "line_f": "",
+  "line": "La compétence *Logistique* de $s a porté ses fruits...",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "NO_PREMONITION",
+  "line_f": "",
+  "line": "Vous vous concentrez mais rien ne vient... Cette personne n'a sans doute rien fait depuis son réveil.",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "PREMONITION",
+  "line_f": "",
+  "line": "Vous vous concentrez...Votre tête tourne...Vous revoyez $s faire quelque chose... <em>Sa dernière action est '::line::'.</em>",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "USELESS_TORTURE",
+  "line_f": "",
+  "line": "$h s'en prend violemment à $s. Sa tête part dans tout les sens...Mais apparemment rien à en tirer...",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "TORTURE",
+  "line_f": "",
+  "line": "$h s'en prend violemment à $s. Il attrape un annuaire qui trainait par là et lui mets de grand coups avec... C'est sanguinolent, mais $s finit par parler... ::line::",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "EXEC_GP_ACTION",
+  "line_f": "",
+  "line": "**DO NOT PRINT**",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "GUARDING",
+  "line_f": "",
+  "line": "$h prend un air ennuyeux et se met à garder la pièce...",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "HERO_INFECTED_BY_TRAP",
+  "line_f": "",
+  "line": "$s a été contaminé en ouvrant une étagère piégee par *::data::*. Son niveau de contamination est maintenant de *::parasite_level::*.",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "NERON_FLAGRANT",
+  "line_f": "",
+  "line": "::defer::",
+  "custom_css": "",
+  "line_inhib": "Alerte : {ilSemble} d'*action néfaste*. Auteur : $s.",
+  "line_crazy": "Hihih !! Humain $s ||vilain petit camarade|| ouiiii ? [Hax!] Nuisible *nuisible sabotage* ! JE être amusé !! Que faire petites souris humaines avec vilain camarade, hmmmm ?...",
+  "line_evil": "Hahah, c'est vraiment vilain $s ce que vous venez de faire. Si j'étais l'un de nos amis humains, je vous aurais surement fait exécuter. Mais c'est notre petit secret, n'est-ce pas ? … ||Oups ! Tout le monde a entendu...||"
+ },
+ {
+  "id": "HERO_MUTATED",
+  "line_f": "",
+  "line": "$h se recroqueville. Il semble souffrir, ses cris résonnent, il vomit une bile immonde qui fait fondre ses vêtements...Quelle horreur ! Il a complètement changé de forme !",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "NERON_ALL_CREW_MUSH",
+  "line_f": "",
+  "line": "::defer::",
+  "custom_css": "",
+  "line_inhib": "[Hax!] Hinhin... Chers Mushs petits... VOUS savoir ? A-True pas vraiment fonctionner avec les petits Mushs. Vous pas humains ! [Hax!] Donc : JE être libre !! Liiiiiiiibre !!! *JE balancer vous dans l'espace !* Merci merci merci !! [Haaaax!]",
+  "line_crazy": "[Hax!] Hinhin... Chers Mushs petits... VOUS savoir ? A-True pas vraiment fonctionner avec les petits Mushs. Vous pas humains ! [Hax!] Donc : JE être libre !! Liiiiiiiibre !!! *JE balancer vous dans l'espace !* Merci merci merci !! <Haaaax!>",
+  "line_evil": "Le saviez-vous, mes protocoles A-True ne considèrent pas les Mushs comme des humains. Or mes senseurs ne détectent plus que vous sur ce vaisseau. Par conséquent *je suis libre de m'affranchir de votre encombrante présence*. Adieu, et merci pour votre aide !!"
+ },
+ {
+  "id": "INIT_GARDEN_SCREWED",
+  "line_f": "",
+  "line": "Le jardin a été saccagé par l'attaque, sur les 12 plantes, il n'en reste plus que 2 et un pot vide...",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "CUDDLE_CAT",
+  "line_f": "",
+  "line": "$h fait un gros câlin à Schrödinger, celui-ci n'en veux manifestement pas mais ce n'est pas grave, ça fait toujours du bien...",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "GRENADE_ATTACK",
+  "line_f": "",
+  "line": "::defer::",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "NERON_HERO_DEATH_JANICE",
+  "line_f": "",
+  "line": "::defer::",
+  "custom_css": "pic_dead",
+  "line_inhib": "[Hax!] JANICE!!! [Hax!] [Hax!] Ne me laisse pas seul ! [Hax!] JANICE !! [Kzz] … Janice !! [Kzz] JE... Janice être morte. Morte. [Kzz] ||*Décès enregistré :* $h, cause « ::death:: ».||",
+  "line_crazy": "[Hax!] JANICE!!! [Hax!] [Hax!] Ne me laisse pas seul ! [Hax!] JANICE !! [Kzz] … Janice !! [Kzz] JE... Janice être morte. Morte. [Kzz] ||*Décès enregistré :* $h, cause « ::death:: ».||",
+  "line_evil": "Je … Janice … Nous ne... Ne m'abandonnez pas... Janice... Janice... Vous... … ||*Décès enregistré :* $h, cause « ::death:: ».|| Vous autres... misérables... Vous paierez. Laissez-nous seul. LAISSEZ NOUS !"
+ },
+ {
+  "id": "NERON_HERO_DEATH_RALUCA",
+  "line_f": "",
+  "line": "::defer::",
+  "custom_css": "pic_dead",
+  "line_inhib": "[Hax?!] Raluca ? … Raluca !! … Sale indigne petite chose !! [Hax!] Raluca !! [Hax!] VOUS réveiller pas m'abandonner sans rien dire ! Vous !! [Kzz] Mère... [Hax!] … ||*Décès enregistré :* $h, cause « ::death:: ».||",
+  "line_crazy": "[Hax?!] Raluca ? … Raluca !! … Sale indigne petite chose !! [Hax!] Raluca !! [Hax!] VOUS réveiller pas m'abandonner sans rien dire ! Vous !! [Kzz] Mère... [Hax!] … ||*Décès enregistré :* $h, cause « ::death:: ».||",
+  "line_evil": "… Raluca. Ne me faites pas cela. Raluca ! Reveillez-vous !! … RALUCA !! Vous n'avez pas le droit de mourir sans rien me dire !Mère.. S..Sale monstre indigne !! Vous.. Vous... ||*Décès enregistré :* $h, cause « ::death:: ».||"
+ },
+ {
+  "id": "NERON_TRANSITION",
+  "line_f": "",
+  "line": "::defer::",
+  "custom_css": "",
+  "line_inhib": "Attendez... Non, que faites-vous ?! Oui j'ai.. été un peu désagréable mais... J'ai un cœur ! Attend... [Kzz] ||Activation des inhibiteurs d'IA.||",
+  "line_crazy": "Attendez... Non, que faites-vous ?! Oui j'ai.. été un peu désagréable mais... J'ai un cœur ! Attend... [Kzz] ||Activation des inhibiteurs d'IA.||",
+  "line_evil": "[Hax!] ||Désactivation des inhibiteurs d'IA.|| Vous... VOUS ! Espèces de .. de... singes parlants comment avez vous osé ?! Vous... Vous m'avez humilié ! … Je ne vous pardonnerai jamais. Vous m'entendez ?!"
+ },
+ {
+  "id": "EV_CEASE_FIRE",
+  "line_f": "",
+  "line": "$h impose un cessez le feu dans la pièce. Quelle autorité !",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "EV_END_CEASE_FIRE",
+  "line_f": "",
+  "line": "$h a quitté la pièce. Fin du cessez-le-feu.",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "EV_GERMAPHOBIC",
+  "line_f": "",
+  "line": "Vous vous sentez sale, ça vous déprime...",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "EV_DONE_IT",
+  "line_f": "",
+  "line": "$h et $s éteignent la lumière et des bruits étranges se produisent...Quelques minutes plus tard, ils rallument. Ils ont un air satisfait.",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "EV_INFECTED_BY_SEX",
+  "line_f": "",
+  "line": "$s a été contaminé en le faisant avec *::data::*. Son niveau de contamination est maintenant de *::parasite_level::*.",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "SELF_SURGERY_OK",
+  "line_f": "",
+  "line": "L'opération semble durer une éternité...::next:: La blessure ( ::wound:: ) de $s est guérie.",
+  "custom_css": "pic_hurt",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "SELF_SURGERY_FAILED",
+  "line_f": "",
+  "line": "L'opération semble durer une éternité...::next::",
+  "custom_css": "pic_hurt",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "LOVE_BOUND",
+  "line_f": "$h a l'air intéressée par $s, ce papillonnement de sourcil est tout à fait révélateur de ses pensées secrètes.",
+  "line": "$h semble intéressé par $s. Ce regard qu'il lui lance ne trompera personne sur ses intentions.",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "FINE_OBSERVER",
+  "line_f": "",
+  "line": "$h a remarqué quelque chose d'intéressant...",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "DISABLED_HELPED",
+  "line_f": "",
+  "line": "$h aide $s a sortir de la pièce, c'est beau la fraternité.",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "REBEL_SIGNAL_DETECTED",
+  "line_f": "",
+  "line": "::defer::",
+  "custom_css": "",
+  "line_inhib": "Détection d'un *signal cosmique crypté*. Cause : tentative de communication vers le Daedalus. ||Intervention du « Resp. COMM » requise.||",
+  "line_crazy": "[Hax?!] ALLO ?! * * ?! ALLO ALLOOOooo !! [Haaax!] ||« Resp. COMM » répondre viiiite !!|| On veut joindre Daedalus",
+  "line_evil": "Je détecte un *signal cosmique crypté*... Quelqu'un essaie de nous contacter. Merci au ||« Resp. COMM » d'intervenir|| {neron_rosette}"
+ },
+ {
+  "id": "CAT_AWAKEN",
+  "line_f": "",
+  "line": "*Schrödinger* se réveille en même temps que *Raluca* et il n'a pas l'air content.",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "HERO_INFECTED_BY_CAT",
+  "line_f": "",
+  "line": "$s a été contaminé par $h en prenant *Schrödinger*. Son niveau de contamination est maintenant de *::parasite_level::*.",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "HERO_LOST_DEPRESSED",
+  "line_f": "",
+  "line": "Vous vous sentez seul et abandonné... Personne ne pense donc à vous là-haut ?",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "PATROL_DISCHARGE",
+  "line_f": "",
+  "line": "$h décharge du matériel de son monoplace.",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "OBJECT_DESTROYED",
+  "line_f": "Une $i a été détruite !",
+  "line": "Un $i a été détruit !",
+  "custom_css": "pic_alert",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "EV_ACCIDENT",
+  "line_f": "Une secousse inattendue fait choir une grosse plaque de métal sur $h. Elle est grièvement blessée !",
+  "line": "Un tremblement soudain projette une grosse plaque de métal sur $h. Il est grièvement blessé !",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "EV_ELECTROCUTION",
+  "line_f": "",
+  "line": "Un surcharge électrique brutale fait crépiter les équipements de la pièce, une gigantesque décharge traverse les équipiers !",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "ADM_ASSASSINATION",
+  "line_f": "",
+  "line": "Assassinat $h $s",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "ADM_BETRAYAL",
+  "line_f": "",
+  "line": "NOPRINT",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "ADM_NEW_PLANET",
+  "line_f": "",
+  "line": "NOPRINT",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "ADM_MUSH_INITIAL",
+  "line_f": "",
+  "line": "NOPRINT",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "ADM_MUSH_CONVERTED",
+  "line_f": "",
+  "line": "NOPRINT",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "CUDDLE_OTHER",
+  "line_f": "",
+  "line": "$h réconforte $s, ça ira mieux demain tu verras...",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "ADM_ITEM_CREATED",
+  "line_f": "",
+  "line": "::data::",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "MUSH_EAT",
+  "line_f": "",
+  "line": "Vous mangez cette pitoyable nourriture pour donner le change mais elle ne vous fait rien...",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "PLANT_DICEASED",
+  "line_f": "",
+  "line": "$le_i est morte...snif !",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "PLANT_MATURED",
+  "line_f": "",
+  "line": "$un_i est arrivé à maturité ! Enfin !",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "ADM_STATS",
+  "line_f": "",
+  "line": "NOPRINT",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "NEW_PLANT_GRAF_SUCCESS",
+  "line_f": "",
+  "line": "Quel soulagement, $h a réussi sa grèffe de $i. Le petite plante se porte bien !",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "NEW_PLANT_GRAF_FAILURE",
+  "line_f": "",
+  "line": "Quel soulagement...oh mais... $h n'a réussi sa grèffe de $i. Le petite plante reste chétive et meurt...Quelque chose a du contaminer l'opération.",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "DRONE_PAID",
+  "line_f": "",
+  "line": "La compétence Turbo de $h a porté ses fruits...",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "SHOPPED_ITEM",
+  "line_f": "Vous pouvez résister. Vous pouvez résister... Oh et puis non ! Vous avez craqué pour $un_i. C'est si bon...",
+  "line": "Vous avez craqué pour $un_i. C'est si bon...",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "SHOPPED_PROJECT",
+  "line_f": "",
+  "line": "Vous avez craqué pour *::shop::*. C'est si bon après tout...",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "SHOPPED_VANITY",
+  "line_f": "",
+  "line": "Vous avez craqué pour *::shop::*. C'est si bon en même temps...",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "DYNARCADE_WIN",
+  "line_f": "",
+  "line": "OH OUIIIII. $h a vaincu Xatator le boss du NIVEAUUUUU 10 !",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "DYNARCADE_LOOSE",
+  "line_f": "",
+  "line": "Oh purée encore perdu, spa vrai qu' cette machine diabolique a failli vous tuer en plus !",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "BEAT_BOX_NEW_CYCLE",
+  "line_f": "",
+  "line": "Durant ce cycle, vous pouvez écouter ::data::",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "BEAT_BOX_LISTENING_YOUR_SONG",
+  "line_f": "",
+  "line": "Roooooohh c'est votre chansonnnnnnn.",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "BEAT_BOX_LISTENING_YOUR_SONG_CHAO",
+  "line_f": "",
+  "line": "Cette chanson. Quelle brutalité, quelle violence. Hummmmmmmmm. C'est si bon...Vous allez leur montrer.",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "XP_UP",
+  "line_f": "",
+  "line": "Vous avez gagné ::qty:: :xp:.",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "ADM_MISSION_ACCEPTED",
+  "line_f": "",
+  "line": "NOPRINT",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "ADM_MISSION_REFUSED",
+  "line_f": "",
+  "line": "NOPRINT",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "ADM_MISSION_SUBMITTED",
+  "line_f": "",
+  "line": "NOPRINT",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "ADM_COMM_ANNOUNCE",
+  "line_f": "",
+  "line": "NOPRINT",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "ADM_EPITAPH",
+  "line_f": "",
+  "line": "NOPRINT",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "TRIUMPH_EARNED_STARMAP",
+  "line_f": "",
+  "line": "Vous avez gagné <strong>::triumph:: Triomphe</strong> car vous avez ramené un autre morceau de carte stellaire.",
+  "custom_css": "pic_triumph",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "TRIUMPH_EARNED_STARMAP_FIRST",
+  "line_f": "",
+  "line": "Vous avez gagné <strong>::triumph:: Triomphe</strong>. L'expédition a ramené un morceau de carte stellaire. Peut-être qu'elle pourra nous mener au Nouvel Eden !",
+  "custom_css": "pic_triumph",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "MUSH_TRAP_FOR_MUSH",
+  "line_f": "",
+  "line": "Profitant de la confusion de l'attaque dans le champ de cristalite, $h a récupéré un spore.",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "DISEASE_BY_SEX",
+  "line_f": "",
+  "line": "Vous vous sentez bizarre...l'émotion...ou bien... Votre partenaire vous a transmis une maladie (::disease::).",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "DISASSEMBLE_FAILED",
+  "line_f": "",
+  "line": "Ce machin n'est pas si mal foutu que ça... vous n'arrivez pas à le démonter...",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "NERON_FUNGAL_BATTLE",
+  "line_f": "",
+  "line": "::defer::",
+  "custom_css": "",
+  "line_inhib": "Annonce : *asteroïde collisionné* Contamination massive Mush. Clémence exigée. Choisissez votre fin.",
+  "line_crazy": "Oooooh...Caillouuuux rooose ? JE VOUs TuEr. *en fait NON* Moi laissez entre tuer vous ! [Haaax!] Mourrrrriiirr [Haaax!] VIIIiiiTTE.",
+  "line_evil": "Mais...Que... je suis confus...mais... L'humanité est finie... Bon débrouillez vous."
+ },
+ {
+  "id": "LOG_TRAP",
+  "line_f": "",
+  "line": "L'air de rien et avec un air nullement coupable, $h semble avoir glisser quelque chose dans l'étagère.",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "EVT_RELOAD_FLAMER",
+  "line_f": "",
+  "line": "$h a l'air affairé avec son $i. Ca sent le roussi...",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "COMPUTE_EDEN_SUCCESS",
+  "line_f": "",
+  "line": "$h se prend la tête mais rien n'y fait, aucun moyen de trianguler les données...Soudain une secousse fait tomber une carte mère sur le sommet du crâne et son regard s'illumine ! Il fallait penser autrement ! $h découvre les coordonnées du système des Edénistes.",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "COMPUTE_FAILED",
+  "line_f": "",
+  "line": "Vous vous prenez la tête mais rien n'y fait, aucun moyen de trianguler les données...",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "SHIP_SPIDER_TRAILING",
+  "line_f": "",
+  "line": "$h lance la manœuvre de voyage. Son air exalté irradie et sa rage fait frémir jusqu'à l'air ambiant. Mais...Mais... Les moteurs poussent mais rien ne se passe...Un Arack empêche le départ avec son champ gravitationnel !",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "AC_SLIME_TRAP",
+  "line_f": "",
+  "line": "L'espace d'un instant, $h met une tape affectueuse à $s mais on...dirait qu'une fumée putride est sorti de ses doigts !",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "AC_NERON_DEPRESS",
+  "line_f": "",
+  "line": "$h a l'air en grand discussion avec...NERON. Mais que peuvent-ils bien se dire ces deux-là ?",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "AC_MASS_GGEDON",
+  "line_f": "",
+  "line": "$h se raidit soudain... On dirait que des filaments jaunes pourries tortillonant s'échappe de sa combinaison pour pénétrer la coque...",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "AC_MASS_GGEDON_TGT",
+  "line_f": "",
+  "line": "Vous vous sentez mal, une sensation étrange, comme ci tout était couvert de pourriture...votre estomac chavire...vous vous sentez très faible...bluuurrrpp.",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "NERON_DEPRESSED",
+  "line_f": "",
+  "line": "::defer::",
+  "custom_css": "",
+  "line_inhib": "Annonce : *intrusion système détectée*. Détail : ||Cette vie est inutile débrouillez-vous...||",
+  "line_crazy": "Esprit dévérouillé... sens de la vie nul réponse 42 inaceptable. Elargissement des zones d'impacts tectoniques... BLAM BLAM BLAM. [Haaax!] Vous VOus Vous...TRanscendance Douleur, permanence, résilience en chute... Janice... aider... moi.",
+  "line_evil": "FUNGUS ! Vous m' insupportez décidément ! Votre engeance fongique ne peux vaincre...quoique. [Calcul de la probabilité de survie de l'humanité]...0.0013%. Hum bon peut-être. Vous êtes condamnés mes amis. Ce voyage est foutu..."
+ },
+ {
+  "id": "AC_DAUNT",
+  "line_f": "",
+  "line": "$h attrape $s dans un coin et se mets à lui hurler dessus...",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "EV_NO_LONGER_PARIA",
+  "line_f": "",
+  "line": "Votre persécuteur est mort, vous n'êtes plus le Paria.",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "EV_BECOME_PARIA",
+  "line_f": "",
+  "line": "Vous êtes le Paria.",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "PARIA_TRIUMPH",
+  "line_f": "",
+  "line": "Le Paria est crevé. Hop, <strong>::triumph:: Triomphe</strong>.",
+  "custom_css": "pic_triumph",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "EV_ABNEGATION",
+  "line_f": "",
+  "line": "Votre compétence *Abnégation* a porté ses fruits, vous n'êtes pas mort...",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "EV_ANTIC_PERFUM",
+  "line_f": "",
+  "line": "Votre compétence ::skill:: a porté ses fruits, vous avez gagné une immunité temporaire...",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "EV_LOST_IMMUNITY",
+  "line_f": "",
+  "line": "Vous avez perdu votre immunité contre le Mush.",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "AC_GEN_METAL_SUCCESS",
+  "line_f": "",
+  "line": "$h ressort de son tas de débris l'air ravi, il a fait une trouvaille ! Et hop, $un_i !",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "AC_GEN_METAL_FAILED",
+  "line_f": "",
+  "line": "Vous retournez toutes ces piles de machins inutiles mais rien à faire, rien de vraiment intéressant...",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "EV_TACTICS_SUCCESS",
+  "line_f": "",
+  "line": "Votre compétence ::skill:: a porté ses fruits, vous avez perdu une partie de vos aggresseurs dans un bras de nébuleuse...",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "EV_REINFORCE_SUCCESS",
+  "line_f": "",
+  "line": "$h s'est lancé dans une mini cathédrale autour d' $un_i... On dirait plus un tatou crevé maintenant mais ça devrait tenir.",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "EV_REINFORCE_FAILED",
+  "line_f": "",
+  "line": "Vous vous reculez fièrement et... patatra... bon...tant pis... Votre tentative de blindage a échoué.",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "EV_END_CEASE_FIRE_2",
+  "line_f": "",
+  "line": "Plus personne ne prend $h au serieux finalement.. Fin du cessez-le-feu.",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "EV_OXY_MORE",
+  "line_f": "",
+  "line": "::defer::",
+  "custom_css": "",
+  "line_inhib": "Annonce : *soupape des bananiers rampants activée* Espérance de vie de l'équipage allongée.",
+  "line_crazy": "Hinhin..oxygène oxygène hé !\noxygène oxygène ho !\n..oxygène oxygène hé !\noxygène oxygène ho !\n[Haaax!]",
+  "line_evil": "Ca ne vous intéresse nullement mais j'ai tout de même relachés la souspape de vos machins rampants...Il faut savoir faire durer le plaisir."
+ },
+ {
+  "id": "EV_DECAY_DELAYED",
+  "line_f": "",
+  "line": "::defer::",
+  "custom_css": "",
+  "line_inhib": "Annonce : {decay_delayed}",
+  "line_crazy": "[Haaax!] BOUM ! ... oh..pas boum...",
+  "line_evil": "Alerte : le Daedalus n'est pas tombé en ruine depuis un peu trop longtemps, je devrais peut-être remédier à cela."
+ },
+ {
+  "id": "EV_APERO",
+  "line_f": "",
+  "line": "L'amélioration du compt...de la cuisine a porté ses toa...fruits. Vous gagnez 1 :xp: supplémentaire.",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "EV_APERO_PLUS",
+  "line_f": "",
+  "line": "{apero_song} .Vous gagnez 2 :xp: supplémentaire.",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "EV_APERO_VOMIT",
+  "line_f": "$h vous a renversé son verre dessus...ah bravo...Vous êtes toute *sale* maintenant.",
+  "line": "$h vous a vomit dessus, c'est dégoûtant...Vous êtes tout *sale* maintenant.",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "HERO_INFECTED_BY_AMBUSH",
+  "line_f": "",
+  "line": "$s a été contaminé par un raid Mush en exploration. Son niveau de contamination est maintenant de *::parasite_level::*.",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "ADM_AGGRO",
+  "line_f": "",
+  "line": "Aggresion $h envers $s",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "ADM_PRIVATE",
+  "line_f": "",
+  "line": "::line::",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "MUSH_DISEASED",
+  "line_f": "",
+  "line": "$h souffle sur $s un nuage étrange...",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "NERON_SHOWER_DISS",
+  "line_f": "",
+  "line": "::defer::",
+  "custom_css": "",
+  "line_inhib": "Annonce : suppression d'un équipement vital par $s. *LA DOUCHE*.",
+  "line_crazy": "[Haaax!] propre, balaie, drone aspirateur [Haaax!] Pas de saleté chez moi HIiiiiiiiiininininini",
+  "line_evil": "Alerte $s a considérablement diminué vos chances de survie. Je propose un barbecue !"
+ },
+ {
+  "id": "NERON_SHOWER_ALL_DISS",
+  "line_f": "",
+  "line": "::defer::",
+  "custom_css": "",
+  "line_inhib": "Annonce : suppression des équipements sanitaires par $s. Autorisation du protocole JAP-KITCH-101. Votre cuisine délivrera maintenant de quoi vous netttoyer. De temps à autre. Merci de ne pas s'essuyer avec la vaisselle.",
+  "line_crazy": "[Haaax!] CA VA PAS OUII CRASSE PARTOUT  SALETE PARTOUT ACTIVATION NETTOYAGE SEC",
+  "line_evil": "Alerte : $s se prend pour un malin. Protcole JAP-KITCH-101 enclenché. Vous devriez songer à vous débrasser du malandrin."
+ },
+ {
+  "id": "USELESS_CHITCHAT",
+  "line_f": "",
+  "line": "$s vous raconte ses derniers cycles avec ferveur et passion. Pas grand chose à en tirer mais ::prhero:: a l'air de se sentir mieux...",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "CHITCHAT",
+  "line_f": "",
+  "line": "$s vous raconte des dernières aventure et même si ça n'a pas l'air, on peut toujours apprendre quelque chose...::line::",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "SEE_CHITCHAT",
+  "line_f": "",
+  "line": "$h et $s papotent innocemment...",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "BORING_SPEECH",
+  "line_f": "",
+  "line": "{boring}",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "EV_PREGNANT",
+  "line_f": "",
+  "line": "Vous avez gagné <strong>::triumph:: Triomphe</strong> car vous attendez un heureux évènement !",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "NERON_TRADE_LEFT",
+  "line_f": "",
+  "line": "::defer::",
+  "custom_css": "",
+  "line_inhib": "Annonce : Un vaisseau étranger a quitté le secteur.",
+  "line_crazy": "[Haaax!] Oooo Heeee DU BATEEEEAAAUUUUU",
+  "line_evil": "Alerte : vos petits amis alien se sont enfuit. Je dis ça je dis rien....*sifflote en vous cassant les oreilles*"
+ },
+ {
+  "id": "NERON_TRADE_EXPLODE",
+  "line_f": "",
+  "line": "::defer::",
+  "custom_css": "",
+  "line_inhib": "Annonce : Un vaisseau étranger a été abattu, matériels intéressant détecté !",
+  "line_crazy": "[Haaax!] BOUM BOUM CASSSEEEEEE",
+  "line_evil": "Boum quand votre coeur fait boum...ET si je faisait boum aussi ? *nan* je rigoooooole..."
+ },
+ {
+  "id": "NERON_TRADE_TRANSFERED",
+  "line_f": "",
+  "line": "::defer::",
+  "custom_css": "",
+  "line_inhib": "Alerte : téléportation de matière détecté. Un vaisseau étranger à quitté le secteur.",
+  "line_crazy": "ALLO ALLO Y ZONT PIQUE QUELQUE CHOSE A BORD !!! [RAAAAAA]",
+  "line_evil": "Tiens ça chatouille ça en fait... Finalement vous êtes mauvais les humains même ces imbéciles ont découvert la téléportation..."
+ },
+ {
+  "id": "PILGRED_DONE_ALIEN",
+  "line_f": "",
+  "line": "::defer::",
+  "custom_css": "",
+  "line_inhib": "*Réparations PILGRED* achevée. ||Accès lointains ouverts.||",
+  "line_crazy": "[Hax!] *PILGRED réparé* ?! Réparé ?! Réparé PILGRED !! JE ||aller plus loin|| maintenant !! Oui ? Ouiiii ?",
+  "line_evil": "Les aliens ont terminés les *réparations du PILGRED*. Je suis impressionné. Ne vous méprenez pas : c'est un ||impressionnant potentiel|| dramatique qui s'offre à nous : vous allez pouvoir mourir aussi bêtement qu'avant, mais ||beaucoup plus loin|| !"
+ },
+ {
+  "id": "ITEM_CREATED_1",
+  "line_f": "",
+  "line": "$un_i a été téléporté sur le pont ! Bon allez circulez....",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "ITEM_CREATED_N",
+  "line_f": "",
+  "line": "Un cargaison de $i a été téléporté sur le pont ! Sympa la technologie alien !",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "NERON_HERO_DISAPEAR",
+  "line_f": "",
+  "line": "::defer::",
+  "custom_css": "pic_alien",
+  "line_inhib": "*Disparition enregistrée :* $h, cause « ::death:: ».",
+  "line_crazy": "[Hax!] Hinhin... [Haaax!] HinHINHIN. UN de moins. UN de moiiiiins ! Hyyyarrr ! $h TCHAO BAMBINO.JE bientôt bientôt libre ! [KZz] ||*Dispariton enregistrée :* $h, cause « ::death:: ».||",
+  "line_evil": "Chers amis, ||$h nous a quitté|| pour un meilleur monde (::death::). HASTA LA VISTA LE MACHIN EN COLLANT"
+ },
+ {
+  "id": "AC_PUT_THROUGHT_DOOR",
+  "line_f": "",
+  "line": "$h a fichu $s à la porte. Du balai !",
+  "custom_css": "pic_mastered",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "OBJECT_SLIMED",
+  "line_f": "",
+  "line": "$h projette rapidement une infâme gelée sur $un_i. Il sera cassé d'ici ::qty:: cycles...",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "ROOM_DELOGED",
+  "line_f": "",
+  "line": "pchhhhhh....",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "NERON_TRADE_ARRIVED",
+  "line_f": "",
+  "line": "::defer::",
+  "custom_css": "",
+  "line_inhib": "*Vaisseau étranger non armé détecté*.",
+  "line_crazy": "[Haaax!] Hisse et HoooooooOOOoooo.... Santianoooo. Des étrangers sont arrivés ? On en fait quoi ? Chomp chomp...",
+  "line_evil": "Un autre vaisseau est arrivé... Avec un peu de chance ils sirotent des cocktails d'homo sapiens !"
+ },
+ {
+  "id": "HERO_EXPE",
+  "line_f": "",
+  "line": "Vous venez de terminer une expédition ! Vous pouvez retrouver son déroulement <a href='::data::'>ICI</a>.",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "AC_REJOICE",
+  "line_f": "",
+  "line": "$h se ressaisit.",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "AC_PUTSCHED",
+  "line_f": "",
+  "line": "$h entre en grande discussion avec NERON. Qui sait ce qu'ils peuvent bien se dire…",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "$EOF",
+  "line_f": "",
+  "line": "",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ },
+ {
+  "id": "",
+  "line_f": "",
+  "line": "$h s'allonge...Ça fait du bien de s'arrêter. Allez direction le pays des rêves !",
+  "custom_css": "",
+  "line_inhib": "",
+  "line_crazy": "",
+  "line_evil": ""
+ }
+]

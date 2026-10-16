@@ -1,0 +1,170 @@
+[
+ [
+  "id",
+  "TREE_name",
+  "TREE_desc",
+  "TREE_gender",
+  "",
+  "FRUIT_name",
+  "FRUIT_desc",
+  "FRUIT_bg",
+  "FRUIT_gender"
+ ],
+ [
+  "BANANA",
+  "Bananier",
+  "Les bananier sont une sorte d'herbacée qui produit des fruits nourrissants et savoureux.",
+  "m",
+  "",
+  "Banane",
+  "Une Banane bien mûre, parfait en cas de petit creux.",
+  "La banane, sa force évocatrice sans pareil, son goût unique, son arôme de jus de... Sélectionné sur Terre, dans les meilleurs vergers Norvégien, cette banane aux qualités exceptionnelles vous rappelle un peu votre chez vous.",
+  "f"
+ ],
+ [
+  "LIANISTE",
+  "Lianiste",
+  "Le lianiste est un arbre curieusement tordu.",
+  "m",
+  "",
+  "Lianube",
+  "La Lianube est un fruit replet aux saveurs de calamar curry lait de coco...",
+  "Originellement découverte dans une caverne de Vénus, la lianube est considérée comme un don de la création pour ses adorateurs.",
+  "f"
+ ],
+ [
+  "CACTUOR",
+  "Cactuor",
+  "Originaire des grands désert de Tantris, le cactuor est utilisé dans certains rites indigènes pour les cérémonie sa...",
+  "m",
+  "",
+  "Balargine",
+  "La Balargine est un fruit délicat et sucré. Sa pulpe au propriété collagène fait un tabac dans les régions riches du sud de la france.",
+  "La Balargine de Tantris est connue dans toute la galaxie pour ses vertus thérapeutiques gériatriques.",
+  "f"
+ ],
+ [
+  "BIFALON",
+  "Bifalon",
+  "Une vrai curiosité de la nature, le Bifalon est un arbre qui parle...mais il passe son temps à réciter du Keats. Ce qui rend sa companie déprimante...",
+  "m",
+  "",
+  "Goustiflon",
+  "Le Goustiflon est un fruit peu esthétique mais très sympathique.",
+  "Le goustiflon a de légers arômes de vanille, mélangé à des effluves de presure de veau.",
+  "m"
+ ],
+ [
+  "POULMINO",
+  "Poulmino",
+  "Le poulmino est un arbre issue de croisement entre un palmier et une forme de sphègne alien. Sa particularité de pousser en milieux peu lumineux [...]",
+  "m",
+  "",
+  "Toupimino",
+  "Le Toupimino sert essentiellement de jouet pour les enfants car il est pénible à manger et fait un bruit rigolo quand il tourne",
+  "Le Toupimino est un fruit pénible à manger, une fois dépioté sa saveur est tout-à-fait acceptable.",
+  "m"
+ ],
+ [
+  "PRECATUS",
+  "Precatus",
+  "Cet arbre étrange produit une forme alien de gomme totalement inute mais fort salissante....",
+  "m",
+  "",
+  "Precati",
+  "la Precati est une espèce de courge difficile à mâcher à cause de sa consistance élastique",
+  "La Precati est un fruit exigeant, il faut beaucoup de matication pour en tirer la quintessence. Quel ennui...",
+  "f"
+ ],
+ [
+  "BUITALIEN",
+  "Buitalien",
+  "Le Buitalien est un arbuste rigolo, ses fruits juteux reflète la lumière étrangement.",
+  "m",
+  "",
+  "Bottine",
+  "Le fruit du Buitalien est très esthétique mais ses saveures laissent à désirer.",
+  "Complètement surestimé, la Bottine reste une référence.",
+  "m"
+ ],
+ [
+  "PLATACIA",
+  "Platacia",
+  "Le Platacia est un arbre de savane allergisant sans réel intérêt...",
+  "m",
+  "",
+  "Fragilane",
+  "La fragilane est un petit fruit savoureux et peu nutritif.",
+  "Le Fragilane est un fruit comme tant d\"autre à ceci près qu'il cause des démangeaison de l'oreille droite.",
+  "f"
+ ],
+ [
+  "TUBILISCUS",
+  "Tubiliscus",
+  "La dernière mode en matière arboricole sur Vénus est d epsoséder un Tubiliscus. Ses excroissances présentent des intérêts multiples et variés.",
+  "m",
+  "",
+  "Anémole",
+  "L'anémole est une fruit frais qui beurre servir de remplacement au beurre en cuisson.",
+  "L'anémole est un fruit à la saveur lactée peu sucré. Il est des rares fruit qui contient beaucoup de matières grasse ce qui lui confère son caractère démoulable.",
+  "m"
+ ],
+ [
+  "PEUPLIMOUNE",
+  "Peuplimoune",
+  "Le Peuplimoune est un arbre design et élégant. Ses feuilles dégagent une odeur cuivrée.",
+  "m",
+  "",
+  "Penicule",
+  "La Pénicule est un fruit très en vogue sur Venicia. Son intérêt culinaire assez moyen laisse quand même songeurs sur les raison de cette hype.",
+  "L'arme préféré des Dom Juan fructologues.",
+  "m"
+ ],
+ [
+  "FIBONICCUS",
+  "Fiboniccus",
+  "Lointain ancètre du Ficcus terrestre,le Fiboniccus a longtemps été méconnu. Et pour cause, il ne poussait pas sur Terre...",
+  "m",
+  "",
+  "Kubinus",
+  "Le kubinus fait l'objet de l'adoration d'une secte de mathématicien tordus, fanatiques de formes parfaites et de saveures carrés.",
+  "Un fruit pour savants fous.",
+  "m"
+ ],
+ [
+  "MYCOPIA",
+  "Mycopia",
+  "Le mycopia a une forme intriguante, certaines de ses propriétés ne sont pas sans rappeler celle d'un Fungus célèbre...",
+  "m",
+  "",
+  "Calebotte",
+  "La Calebotte frappe tout de suite par ses arômes brutaux et ses parfums péchus.",
+  "Attention, ça pique !",
+  "f"
+ ],
+ [
+  "ASPERGINULK",
+  "Asperginulk",
+  "L'Asperginulk n'est pas sans rappeler l'Asparagus Terrien, à ceci près qu'il est géant.",
+  "m",
+  "",
+  "Filandru",
+  "Le Filandru est le fruit le plus pénible à manger qui soit...",
+  "La longueur astronomique du Filandru n'a d'égale que son peu d'intérêt gastronomique.",
+  "m"
+ ],
+ [
+  "CUCURBITATROUILLE",
+  "Cucurbitatrouille",
+  "La cucurbitatrouille est une plante d'origine extra-terrestre, des rumeurs la donne originaire d'amérique du Sud. C'est dire....",
+  "f",
+  "",
+  "Citrouïd",
+  "La Citrouïd est une légume sans réel intérêt gustatif mais avec des propriétés tout à fait originales.",
+  "Fruit illégitime entre la Noidebeurré et de la célèbre concourgette.",
+  "f"
+ ],
+ [
+  "$EOF"
+ ]
+]

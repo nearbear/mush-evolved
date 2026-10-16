@@ -1,0 +1,156 @@
+[
+ {
+  "id": "SNIPER_RIFFLE",
+  "power": "2",
+  "battle": "-1",
+  "aggro": "1",
+  "diplo": "0"
+ },
+ {
+  "id": "FLAK_CANNON",
+  "power": "1",
+  "battle": "1",
+  "aggro": "1",
+  "diplo": "0"
+ },
+ {
+  "id": "BLASTER",
+  "power": "1",
+  "battle": "0",
+  "aggro": "0",
+  "diplo": "0"
+ },
+ {
+  "id": "BLASTER_PL80",
+  "power": "2",
+  "battle": "0",
+  "aggro": "0",
+  "diplo": "0"
+ },
+ {
+  "id": "KNIFE",
+  "power": "0",
+  "battle": "1",
+  "aggro": "0",
+  "diplo": "0"
+ },
+ {
+  "id": "NATAMY_RIFFLE",
+  "power": "1",
+  "battle": "0",
+  "aggro": "1",
+  "diplo": "0"
+ },
+ {
+  "id": "MACHINE_GUN",
+  "power": "2",
+  "battle": "0",
+  "aggro": "1",
+  "diplo": "0"
+ },
+ {
+  "id": "MISSILE_LAUNCHER",
+  "power": "3",
+  "battle": "0",
+  "aggro": "2",
+  "diplo": "0"
+ },
+ {
+  "id": "ANTIGRAV_SCOOTER",
+  "power": "0",
+  "battle": "0",
+  "aggro": "0",
+  "diplo": "0"
+ },
+ {
+  "id": "QUAD_COMPASS",
+  "power": "0",
+  "battle": "0",
+  "aggro": "0",
+  "diplo": "0"
+ },
+ {
+  "id": "PLASTENITE_ARMOR",
+  "power": "0",
+  "battle": "0",
+  "aggro": "1",
+  "diplo": "0"
+ },
+ {
+  "id": "MOBILE_PROBE",
+  "power": "0",
+  "battle": "0",
+  "aggro": "0",
+  "diplo": "0"
+ },
+ {
+  "id": "HEAT_SEEKER",
+  "power": "0",
+  "battle": "0",
+  "aggro": "0",
+  "diplo": "0"
+ },
+ {
+  "id": "BRAIN_SEEKER",
+  "power": "0",
+  "battle": "0",
+  "aggro": "0",
+  "diplo": "0"
+ },
+ {
+  "id": "DRILLER",
+  "power": "0",
+  "battle": "0",
+  "aggro": "0",
+  "diplo": "0"
+ },
+ {
+  "id": "ECHO_SOUNDER",
+  "power": "0",
+  "battle": "0",
+  "aggro": "0",
+  "diplo": "0"
+ },
+ {
+  "id": "SPACE_SUIT",
+  "power": "0",
+  "battle": "0",
+  "aggro": "0",
+  "diplo": "0"
+ },
+ {
+  "id": "TRAD_MODULE",
+  "power": "0",
+  "battle": "0",
+  "aggro": "0",
+  "diplo": "2"
+ },
+ {
+  "id": "WHITE_FLAG",
+  "power": "0",
+  "battle": "0",
+  "aggro": "-1",
+  "diplo": "0"
+ },
+ {
+  "id": "AIMING_HELMET",
+  "power": "0",
+  "battle": "0",
+  "aggro": "0",
+  "diplo": "0"
+ },
+ {
+  "id": "TALKY_WALKY",
+  "power": "0",
+  "battle": "0",
+  "aggro": "0",
+  "diplo": "0"
+ },
+ {
+  "id": "$EOF",
+  "power": "",
+  "battle": "",
+  "aggro": "",
+  "diplo": ""
+ }
+]

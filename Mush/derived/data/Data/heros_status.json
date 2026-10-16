@@ -1,0 +1,342 @@
+[
+ {
+  "id": "DEAD",
+  "name": "Mort",
+  "desc": "Vous êtes mort. Ce processus n'est pas reversible. Merci de votre compréhension.",
+  "visible": "false",
+  "note": "",
+  "is_public": "false",
+  "effects": "",
+  "lost_on_mutation": "false"
+ },
+ {
+  "id": "STARVING",
+  "name": "Affamé",
+  "desc": "Cela fait longtemps que vous n'avez pas mangé quelque chose. Chaque cycle sans manger vous coûte 1 <img src='/img/icons/ui/lp.png' alt='hp' />.",
+  "visible": "true",
+  "note": "cf gd",
+  "is_public": "false",
+  "effects": "",
+  "lost_on_mutation": "false"
+ },
+ {
+  "id": "GAGGED",
+  "name": "Bâillonné",
+  "desc": "Quelqu'un en aura eu assez d'entendre vos jérémiades.",
+  "visible": "true",
+  "note": "",
+  "is_public": "true",
+  "effects": "",
+  "lost_on_mutation": "false"
+ },
+ {
+  "id": "TIED",
+  "name": "Attaché",
+  "desc": "C'est dans l'adversité que l'on découvre ses amis... ou pas.",
+  "visible": "false",
+  "note": "",
+  "is_public": "true",
+  "effects": "",
+  "lost_on_mutation": "false"
+ },
+ {
+  "id": "DEMORALIZED",
+  "name": "Démoralisé",
+  "desc": "Vous devriez rapidement vous ressaisir, le moral n'est pas bon et peut vous jouer des tours.",
+  "visible": "true",
+  "note": "",
+  "is_public": "false",
+  "effects": "",
+  "lost_on_mutation": "false"
+ },
+ {
+  "id": "SUICIDAL",
+  "name": "Suicidaire",
+  "desc": "La simple vue d'une cuillère en plastique vous donne des envies... trouvez un moyen de vous ressaisir... et VITE.",
+  "visible": "true",
+  "note": "",
+  "is_public": "false",
+  "effects": "",
+  "lost_on_mutation": "false"
+ },
+ {
+  "id": "MUSH",
+  "name": "Mush",
+  "desc": "Vous faites partie du Mush.",
+  "visible": "true",
+  "note": "",
+  "is_public": "false",
+  "effects": "",
+  "lost_on_mutation": "false"
+ },
+ {
+  "id": "MASTERED",
+  "name": "Maîtrisé",
+  "desc": "Vous êtes maîtrisé par un autre membre de l'équipage. Toute nouvelle action de sa part vous libérera.",
+  "visible": "false",
+  "note": "",
+  "is_public": "true",
+  "effects": "",
+  "lost_on_mutation": "false"
+ },
+ {
+  "id": "DIRTY",
+  "name": "Sale",
+  "desc": "Vous êtes sale et vous puez... Un petit tour sous la douche ne fera pas de mal. Profitez-en pour mettre du déodorant.",
+  "visible": "true",
+  "note": "",
+  "is_public": "true",
+  "effects": "",
+  "lost_on_mutation": "false"
+ },
+ {
+  "id": "SHELLED",
+  "name": "Encapsulé",
+  "desc": "Vous dérivez actuellement dans l'espace infini. Pas assez d'air ou d'espace pour paniquer.",
+  "visible": "false",
+  "note": "",
+  "is_public": "false",
+  "effects": "",
+  "lost_on_mutation": "false"
+ },
+ {
+  "id": "LAID",
+  "name": "Allongé",
+  "desc": "Vous êtes allongé.",
+  "visible": "true",
+  "note": "",
+  "is_public": "true",
+  "effects": "",
+  "lost_on_mutation": "false"
+ },
+ {
+  "id": "ENCUMBERED",
+  "name": "Encombré",
+  "desc": "Vous portez des objets particulièrement lourds. Vos mouvements vous coûtent plus cher.",
+  "visible": "true",
+  "note": "",
+  "is_public": "false",
+  "effects": "",
+  "lost_on_mutation": "false"
+ },
+ {
+  "id": "SLEEPY",
+  "name": "Inactif",
+  "desc": "Vous ne vous êtes pas connecté depuis 24h. Bonne chance pour la suite...",
+  "visible": "true",
+  "note": "",
+  "is_public": "true",
+  "effects": "",
+  "lost_on_mutation": "false"
+ },
+ {
+  "id": "MODULING",
+  "name": "Concentré",
+  "desc": "Vous êtes en train d'accéder à un Terminal avec un air concentré.",
+  "visible": "true",
+  "note": "",
+  "is_public": "true",
+  "effects": "",
+  "lost_on_mutation": "false"
+ },
+ {
+  "id": "LOST_ON_PLANET",
+  "name": "Perdu...",
+  "desc": "Vous avez raté le dernier départ de ce trou et vous le regrettez.",
+  "visible": "true",
+  "note": "",
+  "is_public": "false",
+  "effects": "",
+  "lost_on_mutation": "false"
+ },
+ {
+  "id": "GERMAPHOBIC",
+  "name": "Germaphobe",
+  "desc": "Vous perdez un point de moral (:moral:) pour chaque cycle où vous êtes sale. Vous ne pouvez pas non plus caresser le chat.",
+  "visible": "true",
+  "note": "",
+  "is_public": "false",
+  "effects": "",
+  "lost_on_mutation": "true"
+ },
+ {
+  "id": "DISABLED",
+  "name": "Handicapé moteur",
+  "desc": "Le handicapé gagne 2 :pm: de moins lors des conversions :pa:-:pm:. En revanche, il peut se déplacer gratuitement tant qu'il est dans une salle contenant au moins un membre d 'équipage.",
+  "visible": "true",
+  "note": "",
+  "is_public": "false",
+  "effects": "DecrPMPerTransfert(2)",
+  "lost_on_mutation": "true"
+ },
+ {
+  "id": "UNSOCIABLE",
+  "name": "Asocial",
+  "desc": "Au début de chaque cycle, si l'asocial est dans une pièce contenant au moins un autre membre d'équipage, il perd un point de moral.",
+  "visible": "true",
+  "note": "",
+  "is_public": "false",
+  "effects": "",
+  "lost_on_mutation": "true"
+ },
+ {
+  "id": "IMMUNE",
+  "name": "Immunisé",
+  "desc": "L'immunisé ne peut pas être contaminé par le Mush. Pratique quand on ne sait plus à qui faire confiance...",
+  "visible": "true",
+  "note": "",
+  "is_public": "true",
+  "effects": "",
+  "lost_on_mutation": "false"
+ },
+ {
+  "id": "STUCK_IN_SHIP",
+  "name": "Bloqué dans le vaisseau",
+  "desc": "Vous n'avez pas l'équipement nécessaire pour explorer cette planète. Vous êtes resté à l'intérieur de l'appareil...",
+  "visible": "true",
+  "note": "",
+  "is_public": "false",
+  "effects": "",
+  "lost_on_mutation": "false"
+ },
+ {
+  "id": "BELLY_FULL",
+  "name": "Ventre plein",
+  "desc": "Vous avez fait bombance, impossible d'ingérer quoi que ce soit pour le moment.",
+  "visible": "true",
+  "note": "",
+  "is_public": "false",
+  "effects": "",
+  "lost_on_mutation": "false"
+ },
+ {
+  "id": "GENIUS_IDEA",
+  "name": "Coup de génie",
+  "desc": "Votre prochaine Réparation ou Recherche est réussie.",
+  "visible": "true",
+  "note": "",
+  "is_public": "false",
+  "effects": "",
+  "lost_on_mutation": "false"
+ },
+ {
+  "id": "GUARDIAN",
+  "name": "Gardien",
+  "desc": "Quand un Gardien est présent dans la pièce, le visiteur peut *seulement* repartir d'où il vient.",
+  "visible": "true",
+  "note": "",
+  "is_public": "true",
+  "effects": "",
+  "lost_on_mutation": "false"
+ },
+ {
+  "id": "HYPERACTIVE",
+  "name": "Hyperactif",
+  "desc": "Vous gagnez un point de mouvement à chaque cycle.\nVous ne gagnez aucun PA supplémentaire en vous allongeant.",
+  "visible": "true",
+  "note": "",
+  "is_public": "false",
+  "effects": "IncrPAPerCycle(MOV,1)",
+  "lost_on_mutation": "true"
+ },
+ {
+  "id": "PACIFIST",
+  "name": "Pacifiste",
+  "desc": "Dans votre pièces, toutes les actions agressives coûtent 2 :pa: supplémentaires.",
+  "visible": "true",
+  "note": "",
+  "is_public": "false",
+  "effects": "",
+  "lost_on_mutation": "true"
+ },
+ {
+  "id": "BERZERK",
+  "name": "Muté",
+  "desc": "Vous avez muté. Vous avez un bonus à vos dommages. Vous accorde également le statut gardien permanent.",
+  "visible": "true",
+  "note": "",
+  "is_public": "true",
+  "effects": "",
+  "lost_on_mutation": "false"
+ },
+ {
+  "id": "INDETERMINATED",
+  "name": "Indéterminé",
+  "desc": "Vous placez les sentiments au-delà de la physiologie. Tout le monde peut utiliser les actions *Flirter* et *Le Faire* avec vous.",
+  "visible": "false",
+  "note": "",
+  "is_public": "false",
+  "effects": "",
+  "lost_on_mutation": "false"
+ },
+ {
+  "id": "FIRST_TIME",
+  "name": "Première Fois",
+  "desc": "Vous ne l'avez jamais fait. Votre première fois remontera votre moral à fond.",
+  "visible": "true",
+  "note": "",
+  "is_public": "true",
+  "effects": "",
+  "lost_on_mutation": "false"
+ },
+ {
+  "id": "$EOF",
+  "name": "",
+  "desc": "",
+  "visible": "",
+  "note": "",
+  "is_public": "",
+  "effects": "",
+  "lost_on_mutation": ""
+ },
+ {
+  "id": "DISEASE",
+  "name": "Malade",
+  "desc": "Vous êtes malade. Vous allez devoir partager vos points d'actions avec votre estomac.",
+  "visible": "true",
+  "note": "au debut du tour 50% de chance de pas recup act",
+  "is_public": "",
+  "effects": "",
+  "lost_on_mutation": ""
+ },
+ {
+  "id": "ENCEINTE",
+  "name": "Heureux évènement",
+  "desc": "Chance de se salir, triomphe supplémentaire, crise d'essouflement?, donne une immunité aux suppression de moral. chance de perdre son heureux evenemnt (-2 moral )",
+  "visible": "",
+  "note": "",
+  "is_public": "",
+  "effects": "",
+  "lost_on_mutation": ""
+ },
+ {
+  "id": "",
+  "name": "",
+  "desc": "",
+  "visible": "",
+  "note": "",
+  "is_public": "",
+  "effects": "",
+  "lost_on_mutation": ""
+ },
+ {
+  "id": "DEPRECATED",
+  "name": "",
+  "desc": "",
+  "visible": "",
+  "note": "",
+  "is_public": "",
+  "effects": "",
+  "lost_on_mutation": ""
+ },
+ {
+  "id": "MASTERING",
+  "name": "Maitrisant",
+  "desc": "Vous êtes en train de maîtriser un membre de l'équipage. Toute action vous fera perdre ce statut.",
+  "visible": "true",
+  "note": "",
+  "is_public": "true",
+  "effects": "",
+  "lost_on_mutation": ""
+ }
+]

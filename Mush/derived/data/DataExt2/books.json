@@ -1,0 +1,56 @@
+[
+ {
+  "id": "RESEARCHER_MANUAL",
+  "title": "De la Recherche sur le Mush.",
+  "content": "Pour effectuer de réelles avancées sur le Mush : </br> J'ai laissé sur le Daedalus mon plus bel échantillon de Mush. C'est un Dendrite de champignon au stade 3. On peut aussi penser que Zhong est un atout très important et l'étudier est un moyen puissant d'avancer. Enfin un corps de Mush cryogénisé pourrait être une source incroyable de donnée. Il faut se montrer discret et prudent cependant. Le Mush est partout et il entravera peut-être notre recherche scientifique. La science vaincra le Mush. <br/><i>Nils Carlsson</i>",
+  "rights": "HasSkill( BIOLOGIST )",
+  "cost": "0",
+  "effect": "",
+  "location": "Room(LABORATORY)"
+ },
+ {
+  "id": "NAVIGATION_MANUAL",
+  "title": "Manuel du Commandant",
+  "content": "Note du Commandant Kim Jin Su. Trop de capitaines ne savent pas encore faire fonctionner un navire interstellaire standard. Avec PILGRED et sa future popularisation, la propulsion au Neutro Fuel sera bientôt reléguée au rang d'archaïsme. Cependant j'éprouve le besoin d'indiquer la procédure de voyage d'urgence au cas où je viendrais à disparaître.",
+  "rights": "HasTitle( COMMANDER)",
+  "cost": "0",
+  "effect": "",
+  "location": "Room(COMMAND_CENTER)"
+ },
+ {
+  "id": "LEARN_BOOK",
+  "title": "Apprentron",
+  "content": "Les apprentrons sont des modèles perfectionné de livres neuro-cryptique. Ils permettent d'infuser de la connaissance dans n'importe quel esprit aussi vierge soit il. Malheureusement leur haut degré d'entropie cause leur destruction après imprégnation.",
+  "rights": "",
+  "cost": "2",
+  "effect": "MageBook",
+  "location": "Nowhere"
+ },
+ {
+  "id": "$EOF",
+  "title": "",
+  "content": "",
+  "rights": "",
+  "cost": "",
+  "effect": "",
+  "location": ""
+ },
+ {
+  "id": "COOK_BOOK",
+  "title": "Le Labrousse de Cuisine édition 2830",
+  "content": "Ce traité respectable contient des recettes de cuisines incroyables, parmi celles-ci : <br/> {recipe} <br/>[…] Et Voilà !",
+  "rights": "",
+  "cost": "8",
+  "effect": "GrantSkill( COOK)",
+  "location": "Nowhere"
+ },
+ {
+  "id": "PSYCHOLOGY_TREATY",
+  "title": "Traité de Psy.",
+  "content": "Comme l'a dit le célèbre poète Pédantus, la maïeutique de l'âme,c'est pas pour les anachorètes. D'ailleurs, en consultant l'étonnante contribution de Pédantus à l'oeuvre future de Lachamp on s'aperçoit que son interprétation du Continuum Evolus recoupe les topiques Raouliens de 1783. De la on peut déduire que ce vieil art de la Psychanalyse[...]<em>Vous acquérez la compétence Psy</em>.",
+  "rights": "HasSkill( MEDIC)",
+  "cost": "8",
+  "effect": "GrantSkill( SHRINK )",
+  "location": "RandomRoom( STORAGE )"
+ }
+]

@@ -1,0 +1,1047 @@
+[
+ {
+  "st": "FIRST_FRAME",
+  "cmd": "confirm(id_con_intro,1)",
+  "txt": "<h4>Bienvenue</h4><p><em class=\"nem\" >Paix sur toi</em>"
+ },
+ {
+  "st": "FIRST_FRAME",
+  "cmd": "wait( 4.0 )",
+  "txt": ""
+ },
+ {
+  "st": "FIRST_FRAME",
+  "cmd": "confirm(id_con_intro,0)",
+  "txt": "CHECK CHECK"
+ },
+ {
+  "st": "FIRST_FRAME",
+  "cmd": "ns( THE_END )",
+  "txt": ""
+ },
+ {
+  "st": "THE_END",
+  "cmd": "confirm(id_con_intro,1)",
+  "txt": "Ce tutorial touche à sa fin, on espère qu'il vous a donné envie de jouer. Bon jeu et à bientôt à bord du Daedalus."
+ },
+ {
+  "st": "THE_END",
+  "cmd": "END_OF_STORY",
+  "txt": ""
+ },
+ {
+  "st": "$EOF",
+  "cmd": "",
+  "txt": ""
+ },
+ {
+  "st": "FIRST_FRAME",
+  "cmd": "CLEAR_INVENTORY( TERRENCE_ARCHER )",
+  "txt": ""
+ },
+ {
+  "st": "FIRST_FRAME",
+  "cmd": "BLACKLIST_ACTION( INSPECT )",
+  "txt": ""
+ },
+ {
+  "st": "FIRST_FRAME",
+  "cmd": "BLACKLIST_ACTION( SEEK_HIDDEN )",
+  "txt": ""
+ },
+ {
+  "st": "FIRST_FRAME",
+  "cmd": "BLACKLIST_ACTION( HIDE_OBJECT )",
+  "txt": ""
+ },
+ {
+  "st": "FIRST_FRAME",
+  "cmd": "BLACKLIST_ACTION( PATROL_SHIP_EJECT )",
+  "txt": ""
+ },
+ {
+  "st": "FIRST_FRAME",
+  "cmd": "BLACKLIST_ACTION( PATROL_SHIP_PLANET_LAND )",
+  "txt": ""
+ },
+ {
+  "st": "FIRST_FRAME",
+  "cmd": "BLACKLIST_ACTION( PATROL_SHIP_LAND )",
+  "txt": ""
+ },
+ {
+  "st": "FIRST_FRAME",
+  "cmd": "BLACKLIST_ACTION( DISASSEMBLE )",
+  "txt": ""
+ },
+ {
+  "st": "FIRST_FRAME",
+  "cmd": "BLACKLIST_ACTION( REPAIR_OBJECT )",
+  "txt": ""
+ },
+ {
+  "st": "FIRST_FRAME",
+  "cmd": "BLACKLIST_ACTION( TUTO_REPAIR_OBJECT_2)",
+  "txt": ""
+ },
+ {
+  "st": "FIRST_FRAME",
+  "cmd": "BLACKLIST_ACTION( MASTER)",
+  "txt": ""
+ },
+ {
+  "st": "FIRST_FRAME",
+  "cmd": "BLACKLIST_ACTION( DROP_OBJECT)",
+  "txt": ""
+ },
+ {
+  "st": "FIRST_FRAME",
+  "cmd": "BLACKLIST_ACTION( FILL_TANK_2 )",
+  "txt": ""
+ },
+ {
+  "st": "FIRST_FRAME",
+  "cmd": "ACTION_ENABLE( TERRENCE_ARCHER, false )",
+  "txt": ""
+ },
+ {
+  "st": "FIRST_FRAME",
+  "cmd": "TELEPORT( TERRENCE_ARCHER, CORRIDOR_A )",
+  "txt": ""
+ },
+ {
+  "st": "FIRST_FRAME",
+  "cmd": "REFILL_PA( TERRENCE_ARCHER )",
+  "txt": ""
+ },
+ {
+  "st": "FIRST_FRAME",
+  "cmd": "SPAWN_ITEM( BLASTER, CORRIDOR_B , false)",
+  "txt": ""
+ },
+ {
+  "st": "FIRST_FRAME",
+  "cmd": "SPAWN_ITEM( WRENCH, CORRIDOR_A , false)",
+  "txt": ""
+ },
+ {
+  "st": "FIRST_FRAME",
+  "cmd": "SPAWN_ITEM( DUMMY_TARGET, CORRIDOR_B , false)",
+  "txt": ""
+ },
+ {
+  "st": "FIRST_FRAME",
+  "cmd": "BREAK_ITEM( DOOR, CORRIDOR_A)",
+  "txt": ""
+ },
+ {
+  "st": "FIRST_FRAME",
+  "cmd": "SPAWN_ITEM( FUEL_TANK, CORRIDOR_B , false)",
+  "txt": ""
+ },
+ {
+  "st": "FIRST_FRAME",
+  "cmd": "SPAWN_ITEM( MEDIKIT, SPACESHIP_BAY_AA, false)",
+  "txt": ""
+ },
+ {
+  "st": "FIRST_FRAME",
+  "cmd": "SPAWN_ITEM( PATROL_TANK_ACCESS, SPACESHIP_BAY_AA, false)",
+  "txt": ""
+ },
+ {
+  "st": "FIRST_FRAME",
+  "cmd": "SPAWN_ITEM( DUMMY_TARGET, OUTER_SPACE, false)",
+  "txt": ""
+ },
+ {
+  "st": "FIRST_FRAME",
+  "cmd": "CREATE_PATROL",
+  "txt": ""
+ },
+ {
+  "st": "FIRST_FRAME",
+  "cmd": "NEXT_STATE( UI_INTRODUCTION )",
+  "txt": ""
+ },
+ {
+  "st": "UI_INTRODUCTION",
+  "cmd": "DO_CONFIRM(id_con_intro,1)",
+  "txt": "<h4>Bienvenue</h4><p><em class=\"nem\" >Paix sur toi</em>, Terrence ! Bienvenue dans la phase d'apprentissage de Mush.</p>\n<p>Tout d'abord, nous allons t'expliquer le <em>principe du jeu</em>. Ensuite, nous ferons une <em>présentation de l'interface</em>.</p>"
+ },
+ {
+  "st": "UI_INTRODUCTION",
+  "cmd": "DO_CONFIRM(id_con_intro,0)",
+  "txt": "<p>Mush est un <em>jeu de survie et d'enquête</em> dans l'espace. </p>\n\n<p>Tu vas te réveiller à bord du célèbre vaisseau spatial, le Daedalus, avec 15 autres joueurs. </p>"
+ },
+ {
+  "st": "UI_INTRODUCTION",
+  "cmd": "DO_CONFIRM(id_con_intro,0)",
+  "txt": "\n<p>Seul ou en coopérant, ton objectif principal est de survivre le plus longtemps possible. Pour cela, tu devras te <img src=\"/img/icons/ui/sat.png\"/> <em>nourrir</em> et d'obtenir des <img src=\"/img/icons/ui/status/hungry.png\"/> <em>ressources</em> comme le Fuel ou l'Oxygène.</p>\n\n<p>Mais ce n'est pas tout. Tu es, avec les autres membres du Daedalus, le dernier espoir pour <em>éliminer le parasite <img src=\"/img/icons/ui/mush.png\"/> Mush</em> et ainsi <em>sauver l'Humanité</em>.</p>"
+ },
+ {
+  "st": "UI_INTRODUCTION",
+  "cmd": "DO_CONFIRM(id_con_intro,0)",
+  "txt": "<p>Chaque personnage dans ce jeu est <em>unique</em> et possède des compétences diverses.</p><p>Ces compétences ont des utilités variées, par exemple :</p>\n<ul class=\"ul\">\n<li>Les <em>tireurs</em> défendront le Daedalus des <img src=\"/img/icons/ui/hunter.png\"/> ennemis extérieurs</li>\n<li>Les <em>biologistes</em> feront des recherches sur le <img src=\"/img/icons/ui/mush.png\"/> Mush depuis leur laboratoire</li>\n<li>le <em>cuisinier</em> fera à <img src=\"/img/icons/ui/status/hungry.png\"/> manger pour l'équipage ce qui sera crucial pour le moral.</li>\n\n<li>et bien plus encore...</li>\n</ul>"
+ },
+ {
+  "st": "UI_INTRODUCTION",
+  "cmd": "DO_CONFIRM(id_con_intro,0)",
+  "txt": "<p>Une équipe bien soudée arrivera même à dénicher une <img src=\"/img/icons/ui/planet.png\"/> <em>planète</em> et à l'explorer pour obtenir des nouvelles ressources. </p><p>Qui dit nouvelles ressources, dit <em>nouvelles opportunités</em> pour améliorer la qualité de vie des coéquipiers. </p>"
+ },
+ {
+  "st": "UI_INTRODUCTION",
+  "cmd": "DO_CONFIRM(id_con_intro,0)",
+  "txt": "<p>Mais méfie-toi : la menace du <img src=\"/img/icons/ui/mush.png\"/> <em>Mush</em> rôde sur le Daedalus. </p><p>Il paraît que des camarades sont infectés et conspirent ensemble pour contaminer le reste de l'équipage, compromettant ainsi le futur de l'Humanité...</p>"
+ },
+ {
+  "st": "UI_INTRODUCTION",
+  "cmd": "DO_CONFIRM(id_con_intro,0)",
+  "txt": "<p><em>Libre à toi</em> de collaborer ou d'agir dans ton propre intérêt. Et n'oublie pas que derrière chaque camarade, il peut se cacher un <img src=\"/img/icons/ui/mush.png\"/> Mush  !</p>"
+ },
+ {
+  "st": "UI_INTRODUCTION",
+  "cmd": "DO_CONFIRM(id_con_end_intro,0)",
+  "txt": "<p>C'est fini pour l'introduction du jeu ! Tu trouveras plus d'informations dans l'aide.</p><p> Maintenant <em>on passe à l'interface</em>.</p>"
+ },
+ {
+  "st": "UI_INTRODUCTION",
+  "cmd": "DO_CONFIRM(id_con_char,0)",
+  "txt": "<p>Ce type-là c'est toi.</p>"
+ },
+ {
+  "st": "UI_INTRODUCTION",
+  "cmd": "DO_CONFIRM(id_con_object,0)",
+  "txt": "<p>Ces trois blocs représentent ton inventaire.</p><p>Les objets que tu porteras s'afficheront ici.</p>"
+ },
+ {
+  "st": "UI_INTRODUCTION",
+  "cmd": "DO_CONFIRM(id_con_act,0)",
+  "txt": "<p>Ici se trouvent les <em>points d'actions</em>, nécessaires pour exécuter certaines actions.</p>"
+ },
+ {
+  "st": "UI_INTRODUCTION",
+  "cmd": "DO_CONFIRM(id_con_room,0)",
+  "txt": "<p>Dans cette partie centrale on peut voir la salle où tu te trouves en ce moment. Actuellement tu es dans le <em>Couloir A</em>.</p>"
+ },
+ {
+  "st": "UI_INTRODUCTION",
+  "cmd": "DO_CONFIRM(id_con_who,0)",
+  "txt": "<p>À cet endroit on voit <em>qui est présent</em> dans le Couloir. Pour l'instant il n'y a que toi.</p>"
+ },
+ {
+  "st": "UI_INTRODUCTION",
+  "cmd": "DO_CONFIRM(id_con_list,0)",
+  "txt": "<p>Ici tu peux voir la <em>liste d'objets qui se trouvent dans le Couloir</em>. Certains peuvent être cassés ou même cachés.</p>"
+ },
+ {
+  "st": "UI_INTRODUCTION",
+  "cmd": "DO_CONFIRM(id_con_log,0)",
+  "txt": "<p>Il se passe toujours des choses, donc n'oublie pas de jeter un œil au <em>tchat</em> qui sert aussi <em>d'historique d'événements</em>.</p><p> Tu recevras dans quelques instants des <em>instructions</em> de Mademoiselle Jiang depuis <em>cet espace</em>.</p>"
+ },
+ {
+  "st": "UI_INTRODUCTION",
+  "cmd": "DO_CONFIRM(id_con_intro,1)",
+  "txt": "<h4>Deuxième partie</h4><p>Bien, tu connais le principe du jeu et les bases de l'interface. Nous passons maintenant à la deuxième partie de l'apprentissage avec Mademoiselle Jiang, qui va te prendre en charge pour ta formation initiale.</p>\n<p>Tu pourras à tout moment quitter l'apprentissage en cliquant sur le bouton <em>à droite du site</em>.</p>"
+ },
+ {
+  "st": "UI_INTRODUCTION",
+  "cmd": "NEXT_STATE( INTRODUCTION )",
+  "txt": ""
+ },
+ {
+  "st": "INTRODUCTION",
+  "cmd": "ACTION_ENABLE( TERRENCE_ARCHER,false )",
+  "txt": ""
+ },
+ {
+  "st": "INTRODUCTION",
+  "cmd": "wait( 2.0 )",
+  "txt": ""
+ },
+ {
+  "st": "INTRODUCTION",
+  "cmd": "tp( JIANG_HUA, CORRIDOR_A )",
+  "txt": ""
+ },
+ {
+  "st": "INTRODUCTION",
+  "cmd": "local( JIANG_HUA )",
+  "txt": "<i>Paix sur toi</i> ! Tu dois être la nouvelle recrue... On va attendre le quartier-maître Zuccali."
+ },
+ {
+  "st": "INTRODUCTION",
+  "cmd": "wait( 5.0 )",
+  "txt": ""
+ },
+ {
+  "st": "INTRODUCTION",
+  "cmd": "local( JIANG_HUA )",
+  "txt": "Mais qu'est-ce qu'il fait..."
+ },
+ {
+  "st": "INTRODUCTION",
+  "cmd": "wait( 4.0 )",
+  "txt": ""
+ },
+ {
+  "st": "INTRODUCTION",
+  "cmd": "local( JIANG_HUA )",
+  "txt": "Hé Roland... tu te magnes, oui?"
+ },
+ {
+  "st": "INTRODUCTION",
+  "cmd": "wait( 4.0 )",
+  "txt": ""
+ },
+ {
+  "st": "INTRODUCTION",
+  "cmd": "tp( ROLAND_ZUCCALI, CORRIDOR_A )",
+  "txt": ""
+ },
+ {
+  "st": "INTRODUCTION",
+  "cmd": "local( ROLAND_ZUCCALI )",
+  "txt": "J'espère ne pas trop t'avoir fait patienter, j'étais occupé avec une admiratrice :-)."
+ },
+ {
+  "st": "INTRODUCTION",
+  "cmd": "wait( 6.0 )",
+  "txt": ""
+ },
+ {
+  "st": "INTRODUCTION",
+  "cmd": "local( JIANG_HUA )",
+  "txt": "Terrence, je te présente Roland Quartier-Maître et reloud de service..."
+ },
+ {
+  "st": "INTRODUCTION",
+  "cmd": "wait( 6.0 )",
+  "txt": ""
+ },
+ {
+  "st": "INTRODUCTION",
+  "cmd": "local( ROLAND_ZUCCALI)",
+  "txt": "Content d'avoir un pilote supplémentaire entre nous. Plus on est de fous plus on rit !"
+ },
+ {
+  "st": "INTRODUCTION",
+  "cmd": "wait( 6.0 )",
+  "txt": ""
+ },
+ {
+  "st": "INTRODUCTION",
+  "cmd": "local( JIANG_HUA )",
+  "txt": "Terrence, dans l'espace toutes les ressources sont limitées, y compris le temps. La moindre défaillance peut coûter cher, mais, relax, on est en entraînement. Tu as droit à l'erreur ici."
+ },
+ {
+  "st": "INTRODUCTION",
+  "cmd": "wait( 8.0 )",
+  "txt": ""
+ },
+ {
+  "st": "INTRODUCTION",
+  "cmd": "local( ROLAND_ZUCCALI)",
+  "txt": "C'est toi l'err..."
+ },
+ {
+  "st": "INTRODUCTION",
+  "cmd": "local( JIANG_HUA )",
+  "txt": "Roland, fais preuve de professionnalisme et ferme le pot de chambre qui te sert de bouche."
+ },
+ {
+  "st": "INTRODUCTION",
+  "cmd": "wait( 6.0 )",
+  "txt": ""
+ },
+ {
+  "st": "INTRODUCTION",
+  "cmd": "local( JIANG_HUA )",
+  "txt": "On va commencer par un peu de technique. <p>Dans cette première salle tu vas devoir prendre la <em>Clé à Molette</em> pour réparer la <em>Porte</em>.</p> <p>Tu verras que tout est à peu près réparable avec les bon outils et, au pire, il faudra voir avec les techniciens. Il faut toujours être prêt à ce que quelque chose tombe en panne...</p>"
+ },
+ {
+  "st": "INTRODUCTION",
+  "cmd": "wait( 16.0 )",
+  "txt": ""
+ },
+ {
+  "st": "INTRODUCTION",
+  "cmd": "local( ROLAND_ZUCCALI)",
+  "txt": "À propos de panne, y a pas des masses de filles par ici... Si tu as besoin de trucs sympa, je peux te mettre en contact avec un mécano qui a du matos..."
+ },
+ {
+  "st": "INTRODUCTION",
+  "cmd": "wait( 5.0 )",
+  "txt": ""
+ },
+ {
+  "st": "INTRODUCTION",
+  "cmd": "local( JIANG_HUA )",
+  "txt": "Chez nous on dit \"cherche et tu trouveras\". Tu veux pas aller te chercher un cerveau, Roland ?"
+ },
+ {
+  "st": "INTRODUCTION",
+  "cmd": "wait( 5.0 )",
+  "txt": ""
+ },
+ {
+  "st": "INTRODUCTION",
+  "cmd": "local( JIANG_HUA )",
+  "txt": "Allez ! Bonne chance... ça ne devrait pas être compliqué : <p>N'oublie pas que tu dois <em>prendre la Clé à Molette</em> pour <em>réparer la Porte</em>.</p><p>Ensuite, rendez-vous de l'autre côté dans <em>le Couloir B</em>.</p>"
+ },
+ {
+  "st": "INTRODUCTION",
+  "cmd": "tp( JIANG_HUA, LIMBO )",
+  "txt": ""
+ },
+ {
+  "st": "INTRODUCTION",
+  "cmd": "tp( ROLAND_ZUCCALI, LIMBO )",
+  "txt": ""
+ },
+ {
+  "st": "INTRODUCTION",
+  "cmd": "NEXT_STATE( REPAIR_DOOR )",
+  "txt": ""
+ },
+ {
+  "st": "REPAIR_DOOR",
+  "cmd": "SELECT_MASK_I( WRENCH )",
+  "txt": ""
+ },
+ {
+  "st": "REPAIR_DOOR",
+  "cmd": "ACTION_ENABLE( TERRENCE_ARCHER,true )",
+  "txt": ""
+ },
+ {
+  "st": "REPAIR_DOOR",
+  "cmd": "RELOAD",
+  "txt": ""
+ },
+ {
+  "st": "REPAIR_DOOR",
+  "cmd": "wait(1)",
+  "txt": ""
+ },
+ {
+  "st": "REPAIR_DOOR",
+  "cmd": "EXPECT_SELECTION( WRENCH, id_sel_wrench)",
+  "txt": "La <em>Clé à Molette</em> se trouve actuellement dans le <em>Couloir</em>. Sélectionne-la : ça te permettra de la prendre."
+ },
+ {
+  "st": "REPAIR_DOOR",
+  "cmd": "EXPECT_SUCCESSFUL_ACTION( TERRENCE_ARCHER, PICK_OBJECT,id_pick_wrench)",
+  "txt": "Prends la <em>Clé à Molette</em>. Elle passera dans ton <em>inventaire</em>."
+ },
+ {
+  "st": "REPAIR_DOOR",
+  "cmd": "SELECT_MASK_I( DOOR )",
+  "txt": ""
+ },
+ {
+  "st": "REPAIR_DOOR",
+  "cmd": "EXPECT_SELECTION( DOOR, id_sel_door)",
+  "txt": "Maintenant que la Clé est dans ton inventaire, tu pourras t'en servir. Pour réparer la <em>porte</em>, il faut d'abord la <em>sélectionner</em>."
+ },
+ {
+  "st": "REPAIR_DOOR",
+  "cmd": "EXPECT_SUCCESSFUL_ACTION( TERRENCE_ARCHER, TUTO_REPAIR_OBJECT_1,id_repair_door)",
+  "txt": "<em>Répare la porte</em>. Si ça échoue, il faudra recommencer. Remarque que cette action à un prix : elle coûte <em>1 <img src=\"/img/icons/ui/pa_slot1.png\" alt=\"Point d'action\"/></em>."
+ },
+ {
+  "st": "REPAIR_DOOR",
+  "cmd": "BLACKLIST_ACTION( TUTO_REPAIR_OBJECT_1)",
+  "txt": ""
+ },
+ {
+  "st": "REPAIR_DOOR",
+  "cmd": "DEBLACKLIST_ACTION( TUTO_REPAIR_OBJECT_2)",
+  "txt": ""
+ },
+ {
+  "st": "REPAIR_DOOR",
+  "cmd": "EXPECT_SUCCESSFUL_ACTION( TERRENCE_ARCHER, TUTO_REPAIR_OBJECT_2,id_retry_door)",
+  "txt": "Mince, tu as <em>échoué</em> et il faudra <em>réessayer</em> (jette un œil au tchat pour plus d'informations)."
+ },
+ {
+  "st": "REPAIR_DOOR",
+  "cmd": "RESET_SELECT_MASK",
+  "txt": ""
+ },
+ {
+  "st": "REPAIR_DOOR",
+  "cmd": "EXPECT_MODE_GOTO( div_mode_goto)",
+  "txt": "La porte est réparée. Tu peux maintenant te déplacer. Clique sur l'onglet <em>Se déplacer</em> pour voir la carte du vaisseau."
+ },
+ {
+  "st": "REPAIR_DOOR",
+  "cmd": "wait(1)",
+  "txt": ""
+ },
+ {
+  "st": "REPAIR_DOOR",
+  "cmd": "EXPECT_SUCCESSFUL_ACTION( TERRENCE_ARCHER, MOVE,id_sel_move )",
+  "txt": "Clique sur <em>Couloir B</em> pour te déplacer à cet endroit.<p> Tu peux également sélectionner le <em>Couloir B</em> directement sur la <em>carte</em> du vaisseau (au milieu).</p>"
+ },
+ {
+  "st": "REPAIR_DOOR",
+  "cmd": "REMOVE_LOG_ACTION( TERRENCE_ARCHER, MOVE )",
+  "txt": ""
+ },
+ {
+  "st": "REPAIR_DOOR",
+  "cmd": "BLACKLIST_ACTION( MOVE )",
+  "txt": ""
+ },
+ {
+  "st": "REPAIR_DOOR",
+  "cmd": "wait(1)",
+  "txt": ""
+ },
+ {
+  "st": "REPAIR_DOOR",
+  "cmd": "DO_CONFIRM(\"early_leave\", 1)",
+  "txt": "<h4>Troisième partie</h4><p>Terrence, bon travail. Tu as accompli la deuxième partie de l’apprentissage et <em>tu connais les bases</em> pour bien démarrer dans Mush.</p><p> Nous allons passer à la suite, où Mademoiselle Jiang va te rappeler comment <em>tirer sur une cible (d'entraînement) et comment piloter</em>, probablement accompagné de pitreries de Roland.</p><p>Rappelle-toi que tu peux abandonner l'apprentissage quand tu veux en cliquant sur le bouton à <em>droite du site</em>.</p>"
+ },
+ {
+  "st": "REPAIR_DOOR",
+  "cmd": "wait(1)",
+  "txt": ""
+ },
+ {
+  "st": "REPAIR_DOOR",
+  "cmd": "NEXT_STATE( SHOOT_AND_PUMP )",
+  "txt": ""
+ },
+ {
+  "st": "SHOOT_AND_PUMP",
+  "cmd": "REFILL_PA( TERRENCE_ARCHER )",
+  "txt": ""
+ },
+ {
+  "st": "SHOOT_AND_PUMP",
+  "cmd": "wait(1)",
+  "txt": ""
+ },
+ {
+  "st": "SHOOT_AND_PUMP",
+  "cmd": "tp( JIANG_HUA, CORRIDOR_B )",
+  "txt": ""
+ },
+ {
+  "st": "SHOOT_AND_PUMP",
+  "cmd": "tp( ROLAND_ZUCCALI, CORRIDOR_B )",
+  "txt": ""
+ },
+ {
+  "st": "SHOOT_AND_PUMP",
+  "cmd": "local( JIANG_HUA )",
+  "txt": "Parfait, je vois que la formation de base de techos, ça le fait."
+ },
+ {
+  "st": "SHOOT_AND_PUMP",
+  "cmd": "wait(3)",
+  "txt": ""
+ },
+ {
+  "st": "SHOOT_AND_PUMP",
+  "cmd": "local( ROLAND_ZUCCALI )",
+  "txt": "Tu sais ce que j'aimerais bien faire là, tout de suite ?"
+ },
+ {
+  "st": "SHOOT_AND_PUMP",
+  "cmd": "wait(3)",
+  "txt": ""
+ },
+ {
+  "st": "SHOOT_AND_PUMP",
+  "cmd": "local( JIANG_HUA )",
+  "txt": "Pff, fais gaffe, je risque de raconter ta dernière phrase a Wang..."
+ },
+ {
+  "st": "SHOOT_AND_PUMP",
+  "cmd": "wait(3)",
+  "txt": ""
+ },
+ {
+  "st": "SHOOT_AND_PUMP",
+  "cmd": "local( JIANG_HUA )",
+  "txt": "Maintenant, l'objectif ça va être de <em>tirer sur une cible</em>."
+ },
+ {
+  "st": "SHOOT_AND_PUMP",
+  "cmd": "wait(2)",
+  "txt": ""
+ },
+ {
+  "st": "SHOOT_AND_PUMP",
+  "cmd": "local( ROLAND_ZUCCALI )",
+  "txt": "Mais euh..."
+ },
+ {
+  "st": "SHOOT_AND_PUMP",
+  "cmd": "EXPECT_MODE_ACTION(div_mode_action)",
+  "txt": "Clique ici pour <em>retourner aux Actions</em> (également possible sur le bouton à gauche)."
+ },
+ {
+  "st": "SHOOT_AND_PUMP",
+  "cmd": "SELECT_MASK_I( BLASTER )",
+  "txt": ""
+ },
+ {
+  "st": "SHOOT_AND_PUMP",
+  "cmd": "EXPECT_SELECTION( BLASTER, id_sel_gun)",
+  "txt": "Sélectionne le <em>Blaster</em>."
+ },
+ {
+  "st": "SHOOT_AND_PUMP",
+  "cmd": "EXPECT_SUCCESSFUL_ACTION( TERRENCE_ARCHER, PICK_OBJECT,id_pick_gun)",
+  "txt": "Le <em>Blaster</em> est sélectionné dans le <em>Couloir</em>. Maintenant prends-le pour le placer dans ton <em>Inventaire</em>."
+ },
+ {
+  "st": "SHOOT_AND_PUMP",
+  "cmd": "EXPECT_SELECTION( BLASTER, id_inv_gun)",
+  "txt": "Le <em>Blaster</em> est désormais dans ton inventaire. Maintenant, pour réaliser une action avec cet objet, il faut l'activer en cliquant dessus."
+ },
+ {
+  "st": "SHOOT_AND_PUMP",
+  "cmd": "EXPECT_SUCCESSFUL_ACTION( TERRENCE_ARCHER, SHOOT ,id_shoot_gun)",
+  "txt": "Le <em>Blaster</em> est dans tes mains. C'est le moment d'agir : tire sur la <em>Cible d'entraînement</em> !"
+ },
+ {
+  "st": "SHOOT_AND_PUMP",
+  "cmd": "RESET_SELECT_MASK",
+  "txt": ""
+ },
+ {
+  "st": "SHOOT_AND_PUMP",
+  "cmd": "local( JIANG_HUA )",
+  "txt": "Ensuite, extrais une capsule de carburant pour qu'on fasse le plein de ton vaisseau. Pour cela tu devras puiser dans le <em>Réservoir de Fuel</em>. En pratique, on n'a jamais à le faire, mais il est toujours bon de savoir se dépatouiller avec le circuit auxiliaire."
+ },
+ {
+  "st": "SHOOT_AND_PUMP",
+  "cmd": "local( ROLAND_ZUCCALI )",
+  "txt": "A prop..."
+ },
+ {
+  "st": "SHOOT_AND_PUMP",
+  "cmd": "wait(1)",
+  "txt": ""
+ },
+ {
+  "st": "SHOOT_AND_PUMP",
+  "cmd": "local( JIANG_HUA )",
+  "txt": "N'ose même pas triple zorglon perclus de pus, sinon je te pète ce qui te reste de dents."
+ },
+ {
+  "st": "SHOOT_AND_PUMP",
+  "cmd": "wait(3)",
+  "txt": ""
+ },
+ {
+  "st": "SHOOT_AND_PUMP",
+  "cmd": "local( JIANG_HUA )",
+  "txt": "Je te rassure, Roland est aussi crétin que bon pilote, ne lui prête pas attention. Allez, bon courage, on se retrouve au <em>Paddock</em> et n'oublie pas ta <em>Capsule</em>."
+ },
+ {
+  "st": "SHOOT_AND_PUMP",
+  "cmd": "SELECT_MASK_I( FUEL_TANK )",
+  "txt": ""
+ },
+ {
+  "st": "SHOOT_AND_PUMP",
+  "cmd": "EXPECT_SELECTION( FUEL_TANK, id_sel_tank)",
+  "txt": "Joli tir ! Maintenant sélectionne le <em>Réservoir</em> pour récupérer une <em>Capsule de fuel</em>."
+ },
+ {
+  "st": "SHOOT_AND_PUMP",
+  "cmd": "EXPECT_SUCCESSFUL_ACTION( TERRENCE_ARCHER, RETRIEVE_CAPSULE , id_retrieve_caps )",
+  "txt": "Le réservoir de fuel est sélectionné dans le Couloir. Maintenant, clique ici pour <em>Récupérer une Capsule</em>. Elle passera dans ton <em>Inventaire<em>."
+ },
+ {
+  "st": "SHOOT_AND_PUMP",
+  "cmd": "RESET_SELECT_MASK",
+  "txt": ""
+ },
+ {
+  "st": "SHOOT_AND_PUMP",
+  "cmd": "ACTION_ENABLE( TERRENCE_ARCHER, false )",
+  "txt": ""
+ },
+ {
+  "st": "SHOOT_AND_PUMP",
+  "cmd": "DEBLACKLIST_ACTION( MOVE )",
+  "txt": ""
+ },
+ {
+  "st": "SHOOT_AND_PUMP",
+  "cmd": "NEXT_STATE( GOTO_TAKEOFF )",
+  "txt": ""
+ },
+ {
+  "st": "GOTO_TAKEOFF",
+  "cmd": "REFILL_PA( TERRENCE_ARCHER )",
+  "txt": ""
+ },
+ {
+  "st": "GOTO_TAKEOFF",
+  "cmd": "tp( JIANG_HUA, SPACESHIP_BAY_AA )",
+  "txt": ""
+ },
+ {
+  "st": "GOTO_TAKEOFF",
+  "cmd": "tp( ROLAND_ZUCCALI, SPACESHIP_BAY_AA )",
+  "txt": ""
+ },
+ {
+  "st": "GOTO_TAKEOFF",
+  "cmd": "DO_CONFIRM(\"id_con_follow_trails\",1)",
+  "txt": "<p>Bien joué, camarade ! Maintenant dirige-toi vers le <em>Paddock</em> pour rejoindre tes instructeurs.</p><p> Fais attention : Tu as quelques couloirs à traverser pour t'y rendre.</p>"
+ },
+ {
+  "st": "GOTO_TAKEOFF",
+  "cmd": "ACTION_ENABLE( TERRENCE_ARCHER, true )",
+  "txt": ""
+ },
+ {
+  "st": "GOTO_TAKEOFF",
+  "cmd": "EXPECT_LOCATION( TERRENCE_ARCHER, SPACESHIP_BAY_AA , id_rdv_paddock)",
+  "txt": "Allez, tu devrais te débrouiller maintenant. Rendez-vous au <em>Paddock</em>... Jiang et Roland t'attendent là-bas !"
+ },
+ {
+  "st": "GOTO_TAKEOFF",
+  "cmd": "BLACKLIST_ACTION( MOVE )",
+  "txt": ""
+ },
+ {
+  "st": "GOTO_TAKEOFF",
+  "cmd": "wait(3)",
+  "txt": ""
+ },
+ {
+  "st": "GOTO_TAKEOFF",
+  "cmd": "local( ROLAND_ZUCCALI )",
+  "txt": "Non, mais ne te fâche pas, je t'ai dit ! C'était juste une vanne, je ne voulais pas vraiment dire mo..."
+ },
+ {
+  "st": "GOTO_TAKEOFF",
+  "cmd": "wait(3)",
+  "txt": ""
+ },
+ {
+  "st": "GOTO_TAKEOFF",
+  "cmd": "event",
+  "txt": "Jiang met une grosse baffe à Roland. Il s'étale comme une m.... Bref, il saigne du nez, ça à l'air de faire mal."
+ },
+ {
+  "st": "GOTO_TAKEOFF",
+  "cmd": "HURT( ROLAND_ZUCCALI)",
+  "txt": ""
+ },
+ {
+  "st": "GOTO_TAKEOFF",
+  "cmd": "wait(3)",
+  "txt": ""
+ },
+ {
+  "st": "GOTO_TAKEOFF",
+  "cmd": "local( JIANG_HUA )",
+  "txt": "Tiens ! Tant que tu es là, le bleu, <em>prends</em> ce <em>Medikit</em> (kit d'intervention de soins d'urgence) et <em>soigne</em> Roland. Essaie de ne pas lui rouler dessus au passage. Ça risquerait d'améliorer son profil."
+ },
+ {
+  "st": "GOTO_TAKEOFF",
+  "cmd": "EXPECT_MODE_ACTION(div_mode_action2)",
+  "txt": "Bravo ! Tu es bien arrivé au <em>Paddock</em>. Maintenant, pour sortir de la <em>carte</em> et voir ce qu'il y a dans cet endroit, clique sur <em>Retour</em> ci-dessous ou sur <em>Retour aux Actions</em> à gauche."
+ },
+ {
+  "st": "GOTO_TAKEOFF",
+  "cmd": "SELECT_MASK_I( FUEL_CAPSULE )",
+  "txt": ""
+ },
+ {
+  "st": "GOTO_TAKEOFF",
+  "cmd": "DEBLACKLIST_ACTION( DROP_OBJECT )",
+  "txt": ""
+ },
+ {
+  "st": "GOTO_TAKEOFF",
+  "cmd": "EXPECT_SUCCESSFUL_ACTION( TERRENCE_ARCHER, DROP_OBJECT,id_drop_caps )",
+  "txt": "<p>Ouch, il a pris une grosse baffe le Roland (jette un œil au <em>tchat</em> sur ta droite pour plus d'infos).</p><p> Lâche la <em>Capsule</em>, tu n'as pas besoin de la garder en main pour soigner ce qui reste de Monsieur Roland.</p>"
+ },
+ {
+  "st": "GOTO_TAKEOFF",
+  "cmd": "RESET_SELECT_MASK",
+  "txt": ""
+ },
+ {
+  "st": "GOTO_TAKEOFF",
+  "cmd": "BLACKLIST_ACTION( DROP_OBJECT )",
+  "txt": ""
+ },
+ {
+  "st": "GOTO_TAKEOFF",
+  "cmd": "SELECT_MASK_I( MEDIKIT )",
+  "txt": ""
+ },
+ {
+  "st": "GOTO_TAKEOFF",
+  "cmd": "REMOVE_LOG_ACTION( TERRENCE_ARCHER, PICK_OBJECT )",
+  "txt": ""
+ },
+ {
+  "st": "GOTO_TAKEOFF",
+  "cmd": "EXPECT_SUCCESSFUL_ACTION( TERRENCE_ARCHER, PICK_OBJECT,id_pick_medikit )",
+  "txt": "Tu as libéré une place dans ton <em>Inventaire</em>. Maintenant tu peux prendre le <em>Medikit</em> pour le placer dans ton <em>Inventaire</em> et ensuite soigner Roland."
+ },
+ {
+  "st": "GOTO_TAKEOFF",
+  "cmd": "RESET_SELECT_MASK",
+  "txt": ""
+ },
+ {
+  "st": "GOTO_TAKEOFF",
+  "cmd": "EXPECT_HERO_SELECTION( ROLAND_ZUCCALI,id_select_roland )",
+  "txt": "Le <em>Medikit</em> se trouve maintenant dans ton <em>Inventaire</em>. Pour t'en servir et guérir Roland, sélectionne d'abord la bouille de ton camarade."
+ },
+ {
+  "st": "GOTO_TAKEOFF",
+  "cmd": "EXPECT_SUCCESSFUL_ACTION( TERRENCE_ARCHER, HEAL,id_heal_roland )",
+  "txt": "Bien. Maintenant, clique sur ce bouton pour le <em>Soigner</em>."
+ },
+ {
+  "st": "GOTO_TAKEOFF",
+  "cmd": "wait(1)",
+  "txt": ""
+ },
+ {
+  "st": "GOTO_TAKEOFF",
+  "cmd": "NEXT_STATE( TAKEOFF )",
+  "txt": ""
+ },
+ {
+  "st": "TAKEOFF",
+  "cmd": "local( JIANG_HUA )",
+  "txt": "On arrive dans la dernière partie de l'apprentissage.<p> Nous allons embarquer dans un Patrouilleur pour sortir dans l'espace et simuler l'attaque d'un Hunter.</p> <p>Fais le plein du patrouilleur, on décolle!</p><p> N'oublie pas de passer sur le <em>Canal Global</em> pour les instructions en vol.</p>"
+ },
+ {
+  "st": "TAKEOFF",
+  "cmd": "DEBLACKLIST_ACTION( FILL_TANK_2 )",
+  "txt": ""
+ },
+ {
+  "st": "TAKEOFF",
+  "cmd": "REFILL_PA( TERRENCE_ARCHER )",
+  "txt": ""
+ },
+ {
+  "st": "TAKEOFF",
+  "cmd": "SELECT_MASK_I( PATROL_TANK_ACCESS )",
+  "txt": ""
+ },
+ {
+  "st": "TAKEOFF",
+  "cmd": "EXPECT_SELECTION( PATROL_TANK_ACCESS,id_sel_tank2 )",
+  "txt": "<p>Ça c'est fait. Maintenant, quelques préparatifs avant de décoller (lis le <em>tchat</em> à droite pour plus d'infos).</p><p> Nous allons d'abord remplir le réservoir de fuel. Sélectionne le <em>Réservoir</em> situé ici dans le Paddock.</p>"
+ },
+ {
+  "st": "TAKEOFF",
+  "cmd": "EXPECT_SUCCESSFUL_ACTION( TERRENCE_ARCHER, FILL_TANK_2,id_fill_tank )",
+  "txt": "Maintenant que le <em>Réservoir</em> est sélectionné dans le <em>Paddock</em>, clique ci-dessous pour le <em>remplir</em> de fuel."
+ },
+ {
+  "st": "TAKEOFF",
+  "cmd": "CLEAR_TO_TAKEOFF",
+  "txt": ""
+ },
+ {
+  "st": "TAKEOFF",
+  "cmd": "RESET_SELECT_MASK",
+  "txt": ""
+ },
+ {
+  "st": "TAKEOFF",
+  "cmd": "REFILL_PA( TERRENCE_ARCHER )",
+  "txt": ""
+ },
+ {
+  "st": "TAKEOFF",
+  "cmd": "wait(1)",
+  "txt": ""
+ },
+ {
+  "st": "TAKEOFF",
+  "cmd": "EXPECT_CENTRAL_CHANNEL(id_expect_central_channel)",
+  "txt": "Nous allons embarquer dans le vaisseau patrouilleur. D'abord, passe sur le <em>Canal Global</em> en cliquant ici pour obtenir les instructions en vol."
+ },
+ {
+  "st": "TAKEOFF",
+  "cmd": "wait(1)",
+  "txt": ""
+ },
+ {
+  "st": "TAKEOFF",
+  "cmd": "global( JIANG_HUA)",
+  "txt": "Voilà tu es sur le bon canal. Tous en piste les clowns !"
+ },
+ {
+  "st": "TAKEOFF",
+  "cmd": "wait(3)",
+  "txt": ""
+ },
+ {
+  "st": "TAKEOFF",
+  "cmd": "RESET_SELECT_MASK",
+  "txt": ""
+ },
+ {
+  "st": "TAKEOFF",
+  "cmd": "RELOAD",
+  "txt": ""
+ },
+ {
+  "st": "TAKEOFF",
+  "cmd": "global( ROLAND_ZUCCALI )",
+  "txt": "C'est parti !"
+ },
+ {
+  "st": "TAKEOFF",
+  "cmd": "EXPECT_SUCCESSFUL_ACTION( TERRENCE_ARCHER, PATROL_SHIP_TAKEOFF , id_takeoff_patrol)",
+  "txt": "Clique ci-dessous pour <em>Décoller</em> ! C'est partiiiii... !"
+ },
+ {
+  "st": "TAKEOFF",
+  "cmd": "GLOBAL_EVENT",
+  "txt": "Vous montez dans l'appareil. Ca fait longtemps que vous n'aviez pas volé dans un Patrouilleur. Vous décollez sans problème. Vous avez fait ça toute votre vie."
+ },
+ {
+  "st": "TAKEOFF",
+  "cmd": "RESET_SELECT_MASK",
+  "txt": ""
+ },
+ {
+  "st": "TAKEOFF",
+  "cmd": "TAKEOFF( JIANG_HUA, OUTER_SPACE )",
+  "txt": ""
+ },
+ {
+  "st": "TAKEOFF",
+  "cmd": "TAKEOFF( ROLAND_ZUCCALI, OUTER_SPACE )",
+  "txt": ""
+ },
+ {
+  "st": "TAKEOFF",
+  "cmd": "NEXT_STATE( CHANGE_SECTOR )",
+  "txt": ""
+ },
+ {
+  "st": "CHANGE_SECTOR",
+  "cmd": "global( JIANG_HUA)",
+  "txt": "Par convention, on découpe les secteurs spatiaux à couvrir en quatre. Passe au <em>secteur A</em>, on va s'exercer au tir."
+ },
+ {
+  "st": "CHANGE_SECTOR",
+  "cmd": "wait(5)",
+  "txt": ""
+ },
+ {
+  "st": "CHANGE_SECTOR",
+  "cmd": "global( ROLAND_ZUCCALI )",
+  "txt": "À propos de proverbes chinois, ça m'en rappelle une bonne. Y a un mec, il rentre dans le bar, va voir le barman et lui dit : \"j'ai un putain de pari pour toi : je te parie 300 jetons que je peux piss..."
+ },
+ {
+  "st": "CHANGE_SECTOR",
+  "cmd": "wait(5)",
+  "txt": ""
+ },
+ {
+  "st": "CHANGE_SECTOR",
+  "cmd": "global( JIANG_HUA)",
+  "txt": "Parfois j'aimerais être sourde, t'as du bol d'être en vol toi... Ça me rappelle que j'avais parié 2000 jetons avec Lai que tu tenterais la vanne du barman. Blaireau va..."
+ },
+ {
+  "st": "CHANGE_SECTOR",
+  "cmd": "wait(5)",
+  "txt": ""
+ },
+ {
+  "st": "CHANGE_SECTOR",
+  "cmd": "global( ROLAND_ZUCCALI )",
+  "txt": "Moi aussi je t'aime :-)"
+ },
+ {
+  "st": "CHANGE_SECTOR",
+  "cmd": "wait(3)",
+  "txt": ""
+ },
+ {
+  "st": "CHANGE_SECTOR",
+  "cmd": "NEXT_STATE( SHOOT_AND_LAND )",
+  "txt": ""
+ },
+ {
+  "st": "SHOOT_AND_LAND",
+  "cmd": "SPAWN_HUNTER( OUTER_SPACE )",
+  "txt": ""
+ },
+ {
+  "st": "SHOOT_AND_LAND",
+  "cmd": "global( JIANG_HUA)",
+  "txt": "Simple routine, utilise le <em>Poste de Pilotage</em> et dégomme le <em>Hunter</em>."
+ },
+ {
+  "st": "SHOOT_AND_LAND",
+  "cmd": "SELECT_MASK_I( PATROL_COMMAND )",
+  "txt": ""
+ },
+ {
+  "st": "SHOOT_AND_LAND",
+  "cmd": "EXPECT_SELECTION( PATROL_COMMAND, id_sel_patrol_command)",
+  "txt": "D'abord, clique sur <em>Retour</em> pour sortir de la <em>Carte</em>. <p>Ensuite, cherche le <em>Poste de Pilotage</em> parmi les objets qui se trouvent dans la cabine du <em>Patrouilleur</em>.</p>"
+ },
+ {
+  "st": "SHOOT_AND_LAND",
+  "cmd": "EXPECT_SUCCESSFUL_ACTION( TERRENCE_ARCHER, PATROL_SHIP_ATTACK ,id_attack_patrol )",
+  "txt": "Le <em>Poste de Pilotage</em> est sélectionné. Maintenant, tire sur un <em>Hunter</em> !"
+ },
+ {
+  "st": "SHOOT_AND_LAND",
+  "cmd": "DEBLACKLIST_ACTION( PATROL_SHIP_LAND )",
+  "txt": ""
+ },
+ {
+  "st": "SHOOT_AND_LAND",
+  "cmd": "global( JIANG_HUA)",
+  "txt": "Bravo ! Un Hunter de moins ! Tu as maintenant l'autorisation d'atterrir. Le reste de ta formation te sera dispensé à bord sur le tard, mais tu as désormais des bases solides."
+ },
+ {
+  "st": "SHOOT_AND_LAND",
+  "cmd": "wait(2)",
+  "txt": ""
+ },
+ {
+  "st": "SHOOT_AND_LAND",
+  "cmd": "global( ROLAND_ZUCCALI)",
+  "txt": "Nickel, bien joué, on se retrouve ce soir pour cette petite virée..."
+ },
+ {
+  "st": "SHOOT_AND_LAND",
+  "cmd": "EXPECT_SUCCESSFUL_ACTION( TERRENCE_ARCHER, PATROL_SHIP_LAND,id_land_patrol )",
+  "txt": "Presque fini ! <em>Atterris</em> pour finir l'apprentissage."
+ },
+ {
+  "st": "SHOOT_AND_LAND",
+  "cmd": "DO_CONFIRM(\"id_con_finished\",1)",
+  "txt": "<h4>Fin de l'apprentissage</h4><p>Félicitations, camarade. Tu as réussi l'apprentissage de Mush. Tu connais désormais les bases du jeu !</p><p> Maintenant, passons aux choses sérieuses...<p>"
+ },
+ {
+  "st": "SHOOT_AND_LAND",
+  "cmd": "NEXT_STATE( THE_END )",
+  "txt": ""
+ },
+ {
+  "st": "THE_END",
+  "cmd": "END_OF_STORY",
+  "txt": ""
+ }
+]

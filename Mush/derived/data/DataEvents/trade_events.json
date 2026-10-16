@@ -1,0 +1,326 @@
+[
+ {
+  "id": "FOREST_DEAL",
+  "text/_answer": "OOOOOOOOoooooo...... *rahh mes senseurs* Nous sommes des ...*chhhhh*\nJardiniers spaciaux, nous échangerons volontiers votre matériel contre des biens précieux.",
+  "_deal_in": "",
+  "_deal_out": "",
+  "num": "0",
+  "_num": "",
+  "_/need_skills": ""
+ },
+ {
+  "id": "_",
+  "text/_answer": "Vendu !",
+  "_deal_in": "1x[TREE_POT]",
+  "_deal_out": "8-12x[OXY_CAPSULE],1-4x[FUEL_CAPSULE]",
+  "num": "",
+  "_num": "0",
+  "_/need_skills": ""
+ },
+ {
+  "id": "_",
+  "text/_answer": "Vendre plus !",
+  "_deal_in": "2x[TREE_POT]",
+  "_deal_out": "12-20x[OXY_CAPSULE], 3-4x[FUEL_CAPSULE]",
+  "num": "",
+  "_num": "0",
+  "_/need_skills": "DIPLOMACY"
+ },
+ {
+  "id": "_",
+  "text/_answer": "Votre diplomate vous pond un charabia incompréhensible qui semble ravir les marchands !",
+  "_deal_in": "1x[TREE_POT],0-1x[MICROWAVE],0-1x[BLASTER]",
+  "_deal_out": "12x[OXY_CAPSULE],0-1x[LUNCHBOX]",
+  "num": "",
+  "_num": "0",
+  "_/need_skills": "DIPLOMACY"
+ },
+ {
+  "id": "_",
+  "text/_answer": "Jamais",
+  "_deal_in": "",
+  "_deal_out": "",
+  "num": "",
+  "_num": "0",
+  "_/need_skills": ""
+ },
+ {
+  "id": "PILGREDISSIM",
+  "text/_answer": "[NAc Nac NAc NAc] *amélioration du faisceau* [Nac]\nMoteur pourri, jamais avancer dans l'univers comme ça. Civilisation en carton... [Naaaaac]\nRéparons votre PILGRED contre de vos membres d'équipage !",
+  "_deal_in": "",
+  "_deal_out": "",
+  "num": "0",
+  "_num": "",
+  "_/need_skills": ""
+ },
+ {
+  "id": "_",
+  "text/_answer": "Vendu !",
+  "_deal_in": "3x{RD_PLAYERS}",
+  "_deal_out": "1x{REPAIR_PILGRED}",
+  "num": "",
+  "_num": "0",
+  "_/need_skills": ""
+ },
+ {
+  "id": "_",
+  "text/_answer": "Tapis !",
+  "_deal_in": "24x[OXY_CAPSULE],24x[FUEL_CAPSULE]",
+  "_deal_out": "1x{REPAIR_PILGRED}",
+  "num": "",
+  "_num": "0",
+  "_/need_skills": "DIPLOMACY"
+ },
+ {
+  "id": "_",
+  "text/_answer": "Jamais",
+  "_deal_in": "",
+  "_deal_out": "",
+  "num": "",
+  "_num": "0",
+  "_/need_skills": ""
+ },
+ {
+  "id": "GOOD_PROJECTIONS",
+  "text/_answer": "Salutation humble créature mammalienne, nous recherchons de nouveaux jouets pour satisfaire notre reine.\nNous disposons de technologies qui pourraient vous être utiles.",
+  "_deal_in": "",
+  "_deal_out": "",
+  "num": "0",
+  "_num": "",
+  "_/need_skills": ""
+ },
+ {
+  "id": "_",
+  "text/_answer": "Vendu !",
+  "_deal_in": "1x{RD_PLAYERS}",
+  "_deal_out": "1x{RD_PROJECT}",
+  "num": "",
+  "_num": "0",
+  "_/need_skills": ""
+ },
+ {
+  "id": "_",
+  "text/_answer": "Allez ! Vous en prendrez bien un deuxième ?",
+  "_deal_in": "2x{RD_PLAYERS}",
+  "_deal_out": "2x{RD_PROJECT}",
+  "num": "",
+  "_num": "0",
+  "_/need_skills": "DIPLOMACY"
+ },
+ {
+  "id": "_",
+  "text/_answer": "Et sinon... vous acceptez les paiements en nature ?",
+  "_deal_in": "4-10x[RATION],4-10x[METAL_SCRAPS],0-2x[PLASTIC_SCRAPS],4-10x[OXY_CAPSULE]",
+  "_deal_out": "1x{RD_PROJECT}",
+  "num": "",
+  "_num": "0",
+  "_/need_skills": "DIPLOMACY"
+ },
+ {
+  "id": "_",
+  "text/_answer": "Jamais",
+  "_deal_in": "",
+  "_deal_out": "",
+  "num": "",
+  "_num": "0",
+  "_/need_skills": ""
+ },
+ {
+  "id": "TECHNO_REWRITE",
+  "text/_answer": "Les grandes maisons de Serres vous saluent, nous regardons votre monde primitif depuis des eons et la folle course de votre vaisseau est intriguante. Nous avons quand même quelques intérêts pour certaine de vos technologies, un petit échange pourrait profiter à tous.",
+  "_deal_in": "",
+  "_deal_out": "",
+  "num": "0",
+  "_num": "",
+  "_/need_skills": ""
+ },
+ {
+  "id": "_",
+  "text/_answer": "Vendu !",
+  "_deal_in": "2x{RD_PROJECT}",
+  "_deal_out": "1x{RD_PROJECT}",
+  "num": "",
+  "_num": "0",
+  "_/need_skills": ""
+ },
+ {
+  "id": "_",
+  "text/_answer": "En fait, on vous fait un prix de groupe !",
+  "_deal_in": "3x{RD_PROJECT}",
+  "_deal_out": "2x{RD_PROJECT}",
+  "num": "",
+  "_num": "0",
+  "_/need_skills": "DIPLOMACY"
+ },
+ {
+  "id": "_",
+  "text/_answer": "Jamais",
+  "_deal_in": "",
+  "_deal_out": "",
+  "num": "",
+  "_num": "0",
+  "_/need_skills": ""
+ },
+ {
+  "id": "HUMAN_VS_FUEL",
+  "text/_answer": "Nous avons un surplus d'antigel et il nous manque à manger pour ce soir, ça vous dit ?",
+  "_deal_in": "",
+  "_deal_out": "",
+  "num": "0",
+  "_num": "",
+  "_/need_skills": ""
+ },
+ {
+  "id": "_",
+  "text/_answer": "Vendu !",
+  "_deal_in": "1x{RD_PLAYERS}",
+  "_deal_out": "8-12x[FUEL_CAPSULE]",
+  "num": "",
+  "_num": "0",
+  "_/need_skills": ""
+ },
+ {
+  "id": "_",
+  "text/_answer": "On vous fait un prix de gros, ça vous dit ?",
+  "_deal_in": "2x{RD_PLAYERS}",
+  "_deal_out": "10-30x[FUEL_CAPSULE]",
+  "num": "",
+  "_num": "0",
+  "_/need_skills": "DIPLOMACY"
+ },
+ {
+  "id": "_",
+  "text/_answer": "Digérez-vous bien la verdure ?",
+  "_deal_in": "4x[RATION]",
+  "_deal_out": "2-4x[FUEL_CAPSULE]",
+  "num": "",
+  "_num": "0",
+  "_/need_skills": "BOTANIC"
+ },
+ {
+  "id": "_",
+  "text/_answer": "Jamais",
+  "_deal_in": "",
+  "_deal_out": "",
+  "num": "",
+  "_num": "0",
+  "_/need_skills": ""
+ },
+ {
+  "id": "HUMAN_VS_OXY",
+  "text/_answer": "Aloha, vos organismes sont vraiment passionnant surtout la métanisation de vos déchets organiques, incroyable... Nous vous échangeons un de vos amis contre des réserves d'oxygène conséquentes !",
+  "_deal_in": "",
+  "_deal_out": "",
+  "num": "0",
+  "_num": "",
+  "_/need_skills": ""
+ },
+ {
+  "id": "_",
+  "text/_answer": "Vendu !",
+  "_deal_in": "1x{RD_PLAYERS}",
+  "_deal_out": "5-10x[OXY_CAPSULE]",
+  "num": "",
+  "_num": "0",
+  "_/need_skills": ""
+ },
+ {
+  "id": "_",
+  "text/_answer": "On a d'autres réserves de gaz si vous voulez !",
+  "_deal_in": "5-10x[FUEL_CAPSULE]",
+  "_deal_out": "10-20x[OXY_CAPSULE]",
+  "num": "",
+  "_num": "0",
+  "_/need_skills": "DIPLOMACY"
+ },
+ {
+  "id": "_",
+  "text/_answer": "Ca tombe bien, on a du rabe sur les déchets organiques...",
+  "_deal_in": "2x{RD_PLAYERS}",
+  "_deal_out": "10-20x[OXY_CAPSULE]",
+  "num": "",
+  "_num": "0",
+  "_/need_skills": "DIPLOMACY"
+ },
+ {
+  "id": "_",
+  "text/_answer": "Jamais",
+  "_deal_in": "",
+  "_deal_out": "",
+  "num": "",
+  "_num": "0",
+  "_/need_skills": ""
+ },
+ {
+  "id": "HUMAN_VS_TREE",
+  "text/_answer": "Buraroum, nous, les Dévorfeuilles avons besoin de jardinier céleste, nous vous échangeons de la main d'oeuvre contre des pots neufs.",
+  "_deal_in": "",
+  "_deal_out": "",
+  "num": "0",
+  "_num": "",
+  "_/need_skills": ""
+ },
+ {
+  "id": "_",
+  "text/_answer": "Vendu !",
+  "_deal_in": "1x{RD_PLAYERS}",
+  "_deal_out": "1x[TREE_POT]",
+  "num": "",
+  "_num": "0",
+  "_/need_skills": ""
+ },
+ {
+  "id": "_",
+  "text/_answer": "On a exactement ce qu'il vous faut !",
+  "_deal_in": "1x{IAN_SOULTON}",
+  "_deal_out": "4x[TREE_POT],4x[OXY_CAPSULE]",
+  "num": "",
+  "_num": "0",
+  "_/need_skills": "DIPLOMACY"
+ },
+ {
+  "id": "_",
+  "text/_answer": "Et sinon ça vous intéresse ?",
+  "_deal_in": "2x{RD_PLAYERS}",
+  "_deal_out": "3x[TREE_POT]",
+  "num": "",
+  "_num": "0",
+  "_/need_skills": "DIPLOMACY"
+ },
+ {
+  "id": "_",
+  "text/_answer": "Jamais",
+  "_deal_in": "",
+  "_deal_out": "",
+  "num": "",
+  "_num": "0",
+  "_/need_skills": ""
+ },
+ {
+  "id": "$EOF",
+  "text/_answer": "",
+  "_deal_in": "",
+  "_deal_out": "",
+  "num": "",
+  "_num": "",
+  "_/need_skills": ""
+ },
+ {
+  "id": "",
+  "text/_answer": "",
+  "_deal_in": "",
+  "_deal_out": "",
+  "num": "",
+  "_num": "",
+  "_/need_skills": ""
+ },
+ {
+  "id": "",
+  "text/_answer": "",
+  "_deal_in": "INST_PROJECT",
+  "_deal_out": "",
+  "num": "",
+  "_num": "",
+  "_/need_skills": ""
+ }
+]

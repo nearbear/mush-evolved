@@ -1,0 +1,78 @@
+[
+ [
+  "id",
+  "name",
+  "desc",
+  "actions",
+  "",
+  "size"
+ ],
+ [
+  "FIRE",
+  "en feu",
+  "les actions locales sont impossibles.\nLes équipements adjacents sont innaccessibles.\nA chaque cycle la salle a 33% de chance d'être endommagée."
+ ],
+ [
+  "DETACHED",
+  "détaché",
+  "L'endroit est actuellement séparée du inatteignable par les systèmes de survie de Daedalus. Revenez quand vous voulez."
+ ],
+ [
+  "AUTONOMY_BIT_0",
+  "Bit 0 pour la memorisation de l'autonomie d'une salle",
+  "DO NOT DISPLAY"
+ ],
+ [
+  "AUTONOMY_BIT_1",
+  "Bit 1 pour la memorisation de l'autonomie d'une salle",
+  "DO NOT DISPLAY"
+ ],
+ [
+  "AUTONOMY_BIT_2",
+  "Bit 2 pour la memorisation de l'autonomie d'une salle",
+  "DO NOT DISPLAY"
+ ],
+ [
+  "AUTONOMY_BIT_3",
+  "Bit 3 pour la memorisation de l'autonomie d'une salle",
+  "DO NOT DISPLAY"
+ ],
+ [
+  "AUTONOMY_BIT_4",
+  "Bit 4 pour la memorisation de l'autonomie d'une salle",
+  "DO NOT DISPLAY"
+ ],
+ [
+  "INDESTRUCTIBLE",
+  "indestructible",
+  "non destructible"
+ ],
+ [
+  "FREE_PATROL_MOVE_0",
+  "Bit 0 pour les déplacement gratuit de patrouilleur",
+  "DO NOT DISPLAY"
+ ],
+ [
+  "FREE_PATROL_MOVE_1",
+  "Bit 1 pour les déplacement gratuit de patrouilleur",
+  "DO NOT DISPLAY"
+ ],
+ [
+  "LANDED",
+  "au sol",
+  "Le vaisseau est posé sur une planète."
+ ],
+ [
+  "FIRE_SIGNALED",
+  "Signalée en feu",
+  "Cette pièce est en feu et son feu a été signalé."
+ ],
+ [
+  "DELOGED",
+  "Déloggué",
+  "Cette pièce n'enregistre plus rien...."
+ ],
+ [
+  "$EOF"
+ ]
+]

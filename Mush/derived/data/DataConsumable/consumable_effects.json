@@ -1,0 +1,77 @@
+[
+ {
+  "id": "INC_LIFE(n:Int)",
+  "desc": "$a :pv:",
+  "good": "true"
+ },
+ {
+  "id": "INC_MORAL(n:Int)",
+  "desc": "$a :moral:",
+  "good": "true"
+ },
+ {
+  "id": "INC_ACTION(n:Int)",
+  "desc": "$a :pa:",
+  "good": "true"
+ },
+ {
+  "id": "INC_MOVE(n:Int)",
+  "desc": "$a :pm:",
+  "good": "true"
+ },
+ {
+  "id": "INC_NUTRITION(n:Int)",
+  "desc": "$a satiété",
+  "good": "true"
+ },
+ {
+  "id": "CURE(id:DiseaseId)",
+  "desc": "Guérie la maladie $a",
+  "good": "true"
+ },
+ {
+  "id": "PACKAGED",
+  "desc": "Impérissable",
+  "good": "true"
+ },
+ {
+  "id": "SET_DISEASE(id:DiseaseId, incubation:Int, extra:Int)",
+  "desc": "Provoque la maladie $a dans un délai de $b à $c cycle",
+  "good": "false"
+ },
+ {
+  "id": "BLOCK_DOOR",
+  "desc": "Endommage une porte du Daedalus",
+  "good": "false"
+ },
+ {
+  "id": "UNSTABLE(id:ConsumableEffectType,prc:Int)",
+  "desc": "$a % de chances : $b",
+  "good": ""
+ },
+ {
+  "id": "IF_SEXE(g:Gender,id:ConsumableEffectType)",
+  "desc": "Si ingéré par $a : $b",
+  "good": ""
+ },
+ {
+  "id": "SET_DISEASE_R( pc : Int, id:DiseaseId )",
+  "desc": "$a % de chances de provoquer la maladie $b",
+  "good": ""
+ },
+ {
+  "id": "COOKABLE",
+  "desc": "Cuisinable",
+  "good": ""
+ },
+ {
+  "id": "IMM_DISEASE(id:DiseaseId)",
+  "desc": "Provoque la maladie $a",
+  "good": "false"
+ },
+ {
+  "id": "$EOF",
+  "desc": "",
+  "good": ""
+ }
+]

@@ -1,0 +1,322 @@
+[
+ {
+  "id": "COMMAND_CENTER",
+  "name": "Pont",
+  "type": "COMMAND_CENTER",
+  "objects": "PILOT_MODULE,ASTRO_MODULE,COM_CENTER",
+  "notes": "",
+  "gender": "m"
+ },
+ {
+  "id": "SPACESHIP_BAY_A",
+  "name": "Baie Alpha",
+  "type": "SPACESHIP_BAY",
+  "objects": "",
+  "notes": "",
+  "gender": "f"
+ },
+ {
+  "id": "SPACESHIP_BAY_B",
+  "name": "Baie Beta",
+  "type": "SPACESHIP_BAY",
+  "objects": "",
+  "notes": "",
+  "gender": "f"
+ },
+ {
+  "id": "SPACESHIP_BAY_AA",
+  "name": "Baie Alpha 2",
+  "type": "SPACESHIP_BAY",
+  "objects": "",
+  "notes": "",
+  "gender": "f"
+ },
+ {
+  "id": "NEXUS_ROOM",
+  "name": "Nexus",
+  "type": "NEXUS_ROOM",
+  "objects": "NERON_CORE, NERON_BIOS_TERM",
+  "notes": "",
+  "gender": "m"
+ },
+ {
+  "id": "SICK_BAY",
+  "name": "Infirmerie",
+  "type": "SICK_BAY",
+  "objects": "SURGERY_POD,BED",
+  "notes": "Vous pouvez vous soigner ou soigner les autres membres.\nC'est également ici que sont disposés les modules de cryogénisations.",
+  "gender": "f"
+ },
+ {
+  "id": "LABORATORY",
+  "name": "Laboratoire",
+  "type": "LABORATORY",
+  "objects": "GRAVITY_SIMULATOR,RESEARCH_LAB,CRYO_MODULE",
+  "notes": "",
+  "gender": "m"
+ },
+ {
+  "id": "REFECTORY",
+  "name": "Réfectoire",
+  "type": "REFECTORY",
+  "objects": "KITCHEN,MICROWAVE,FREEZER,MAD_KUBE,COFFEE_DISPENSER\n",
+  "notes": "",
+  "gender": "m"
+ },
+ {
+  "id": "HYDROPONIC_CENTER",
+  "name": "Jardin Hydroponique",
+  "type": "HYDROPONIC_CENTER",
+  "objects": "TREE_POT, BANANA_TREE,BANANA_TREE",
+  "notes": "",
+  "gender": "m"
+ },
+ {
+  "id": "MOTOR_ROOM",
+  "name": "Salle des moteurs",
+  "type": "MOTOR_ROOM",
+  "objects": "COMBUSTION_CHAMBER_ACCESS,\nSTELLAR_ANTENNA,\nPLANET_SCANNER,EMERGENCY_REACTOR, ROTATIONAL_REACTOR,ROTATIONAL_REACTOR,PILGRED",
+  "notes": "",
+  "gender": "f"
+ },
+ {
+  "id": "LASER_TURRET_A_0",
+  "name": "Tourelle Alpha avant",
+  "type": "LASER_TURRET",
+  "objects": "TURRET_COMMAND",
+  "notes": "",
+  "gender": "f"
+ },
+ {
+  "id": "LASER_TURRET_A_1",
+  "name": "Tourelle Alpha centre",
+  "type": "LASER_TURRET",
+  "objects": "TURRET_COMMAND",
+  "notes": "",
+  "gender": "f"
+ },
+ {
+  "id": "LASER_TURRET_A_2",
+  "name": "Tourelle Alpha arrière",
+  "type": "LASER_TURRET",
+  "objects": "TURRET_COMMAND",
+  "notes": "",
+  "gender": "f"
+ },
+ {
+  "id": "LASER_TURRET_B_0",
+  "name": "Tourelle Beta avant",
+  "type": "LASER_TURRET",
+  "objects": "TURRET_COMMAND",
+  "notes": "",
+  "gender": "f"
+ },
+ {
+  "id": "LASER_TURRET_B_1",
+  "name": "Tourelle Beta centre",
+  "type": "LASER_TURRET",
+  "objects": "TURRET_COMMAND",
+  "notes": "",
+  "gender": "f"
+ },
+ {
+  "id": "LASER_TURRET_B_2",
+  "name": "Tourelle Beta arrière",
+  "type": "LASER_TURRET",
+  "objects": "TURRET_COMMAND",
+  "notes": "",
+  "gender": "f"
+ },
+ {
+  "id": "PATROL_SHIP_A_0",
+  "name": "Patrouilleur Longane",
+  "type": "PATROL_SHIP",
+  "objects": "PATROL_COMMAND",
+  "notes": "",
+  "gender": "m"
+ },
+ {
+  "id": "PATROL_SHIP_A_1",
+  "name": "Patrouilleur Jujube",
+  "type": "PATROL_SHIP",
+  "objects": "PATROL_COMMAND",
+  "notes": "",
+  "gender": "m"
+ },
+ {
+  "id": "PATROL_SHIP_A_2",
+  "name": "Patrouilleur Tamarin",
+  "type": "PATROL_SHIP",
+  "objects": "PATROL_COMMAND",
+  "notes": "",
+  "gender": "m"
+ },
+ {
+  "id": "PATROL_SHIP_B_0",
+  "name": "Patrouilleur Socrate",
+  "type": "PATROL_SHIP",
+  "objects": "PATROL_COMMAND",
+  "notes": "",
+  "gender": "m"
+ },
+ {
+  "id": "PATROL_SHIP_B_1",
+  "name": "Patrouilleur Epicure",
+  "type": "PATROL_SHIP",
+  "objects": "PATROL_COMMAND",
+  "notes": "",
+  "gender": "m"
+ },
+ {
+  "id": "PATROL_SHIP_B_2",
+  "name": "Patrouilleur Platon",
+  "type": "PATROL_SHIP",
+  "objects": "PATROL_COMMAND",
+  "notes": "",
+  "gender": "m"
+ },
+ {
+  "id": "PATROL_SHIP_AA_0",
+  "name": "Patrouilleur Wallis",
+  "type": "PATROL_SHIP",
+  "objects": "PATROL_COMMAND",
+  "notes": "",
+  "gender": "m"
+ },
+ {
+  "id": "PATROL_SHIP_AA_1",
+  "name": "Pasiphae",
+  "type": "PATROL_SHIP",
+  "objects": "PASIPHAE_COMMAND",
+  "notes": "",
+  "gender": "m"
+ },
+ {
+  "id": "CORRIDOR_A",
+  "name": "Couloir avant",
+  "type": "CORRIDOR",
+  "objects": "",
+  "notes": "",
+  "gender": "m"
+ },
+ {
+  "id": "CORRIDOR_B",
+  "name": "Couloir central",
+  "type": "CORRIDOR",
+  "objects": "",
+  "notes": "",
+  "gender": "m"
+ },
+ {
+  "id": "CORRIDOR_C",
+  "name": "Couloir arrière",
+  "type": "CORRIDOR",
+  "objects": "",
+  "notes": "",
+  "gender": "m"
+ },
+ {
+  "id": "PLANET",
+  "name": "Planète",
+  "type": "PLANET",
+  "objects": "",
+  "notes": "",
+  "gender": "f"
+ },
+ {
+  "id": "ICARUS",
+  "name": "Baie Icarus",
+  "type": "ICARUS",
+  "objects": "ICARUS_COMMAND",
+  "notes": "",
+  "gender": "m"
+ },
+ {
+  "id": "BEDROOM_A",
+  "name": "Dortoir Alpha",
+  "type": "BEDROOM",
+  "objects": "SHOWER,BED,BED,BED",
+  "notes": "",
+  "gender": "m"
+ },
+ {
+  "id": "BEDROOM_B",
+  "name": "Dortoir Beta",
+  "type": "BEDROOM",
+  "objects": "SHOWER,BED,BED,BED",
+  "notes": "",
+  "gender": "m"
+ },
+ {
+  "id": "STORAGE_FRONT",
+  "name": "Stockage Avant",
+  "type": "STORAGE",
+  "objects": "",
+  "notes": "",
+  "gender": "m"
+ },
+ {
+  "id": "STORAGE_A_0",
+  "name": "Stockage Alpha centre",
+  "type": "STORAGE",
+  "objects": "OXYGEN_TANK",
+  "notes": "",
+  "gender": "m"
+ },
+ {
+  "id": "STORAGE_A_1",
+  "name": "Stockage Alpha arrière",
+  "type": "STORAGE",
+  "objects": "FUEL_TANK",
+  "notes": "",
+  "gender": "m"
+ },
+ {
+  "id": "STORAGE_B_0",
+  "name": "Stockage Beta centre",
+  "type": "STORAGE",
+  "objects": "OXYGEN_TANK",
+  "notes": "",
+  "gender": "m"
+ },
+ {
+  "id": "STORAGE_B_1",
+  "name": "Stockage Beta arrière",
+  "type": "STORAGE",
+  "objects": "FUEL_TANK",
+  "notes": "",
+  "gender": "m"
+ },
+ {
+  "id": "OUTER_SPACE",
+  "name": "Espace infini",
+  "type": "OUTER_SPACE",
+  "objects": "",
+  "notes": "",
+  "gender": "m"
+ },
+ {
+  "id": "LIMBO",
+  "name": "Les Limbes",
+  "type": "LIMBO",
+  "objects": "",
+  "notes": "",
+  "gender": "f"
+ },
+ {
+  "id": "$EOF",
+  "name": "",
+  "type": "",
+  "objects": "",
+  "notes": "",
+  "gender": ""
+ },
+ {
+  "id": "add at the end, otherwise big problems can ensue",
+  "name": "",
+  "type": "",
+  "objects": "",
+  "notes": "",
+  "gender": ""
+ }
+]
