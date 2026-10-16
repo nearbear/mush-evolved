@@ -26,7 +26,7 @@ export class ShowerAction extends Action<ShowerActionData> {
   }
 
   override getCost(state: Readonly<GameState>, player: Readonly<PlayerState>): { ap: number; mp: number } {
-    return { ap: showerCost(state, player), mp: 0 };
+    return { ap: this.showerCost(state, player), mp: 0 };
   }
 
   override apply(state: GameState, player: PlayerState, target: ShowerActionData): void {
@@ -34,9 +34,9 @@ export class ShowerAction extends Action<ShowerActionData> {
     logPrivate(state, player.id, player.role === "mush" ? "showeredMush" : "showered");
     if (player.role === "mush") damage(state, player, state.config.shower.mushDamage);
   }
-}
 
-function showerCost(state: Readonly<GameState>, player: Readonly<PlayerState>): number {
+  showerCost(state: Readonly<GameState>, player: Readonly<PlayerState>): number {
   const soap = itemsIn(state, { kind: "player", id: player.id }).some((item) => item.type === "soap");
-  return Math.max(0, state.config.shower.ap - (soap ? state.config.shower.soapDiscount : 0));
+  return Math.max(0, this.baseAPCost - (soap ? state.config.showerSoapDiscount : 0));
+}
 }

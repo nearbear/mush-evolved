@@ -17,6 +17,7 @@ export type HealActionData = { type: "heal"; target: string };
 export class HealAction extends Action<HealActionData> {
   constructor() {
     super("heal");
+    this.baseAPCost = 2; 
   }
 
   override getCandidates(state: Readonly<GameState>, player: Readonly<PlayerState>): HealActionData[] {
@@ -30,7 +31,7 @@ export class HealAction extends Action<HealActionData> {
   }
 
   override getCost(state: Readonly<GameState>, player: Readonly<PlayerState>, target: HealActionData): { ap: number; mp: number } {
-    return { ap: healCost(state, player, target.target), mp: 0 };
+    return { ap: this.healCost(state, player, target.target), mp: 0 };
   }
 
   override apply(state: GameState, player: PlayerState, target: HealActionData): void {
@@ -39,10 +40,16 @@ export class HealAction extends Action<HealActionData> {
     patient.hp = Math.min(state.config.maxHp, patient.hp + healAmount(state, player));
     logPublic(state, player.room, patient.id === player.id ? "healedSelf" : "healed", { name: player.name, target: patient.name });
   }
+
+  healCost(state: Readonly<GameState>, player: Readonly<PlayerState>, target: PlayerId): number {
+    return player.resources.heal > 0 ? 0 : target === player.id ? this.baseAPCost+1 : this.baseAPCost;
+  }
+
 }
 
 const canHeal = (state: Readonly<GameState>, p: Readonly<PlayerState>): boolean =>
-  state.config.heal.rooms.includes(p.room) || itemsIn(state, { kind: "player", id: p.id }).some((i) => i.type === "medikit");
-
+  state.config.healRooms.includes(p.room) || itemsIn(state, { kind: "player", id: p.id }).some((i) => i.type === "medikit");
+/*
 const healCost = (state: Readonly<GameState>, p: Readonly<PlayerState>, target: PlayerId): number =>
-  p.resources.heal > 0 ? 0 : target === p.id ? state.config.heal.apSelf : state.config.heal.apOther;
+  p.resources.heal > 0 ? 0 : target === p.id ? state.config.healApSelf : state.config.healApOther;
+*/
