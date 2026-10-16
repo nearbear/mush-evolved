@@ -11,7 +11,7 @@ import { ACTIONS, type ActionCost, type ActionDef } from "./actions.ts";
 import { ITRACKIE_ITEM, itemsIn } from "./items.ts";
 import { apGain, channelLimit, inventorySlots, movementRules, satietyLoss } from "./modifiers.ts";
 import { isHungry, publicStatusesOf, statusesOf } from "./statuses.ts";
-import { shuffle } from "./rng.ts";
+import { nextFloat, shuffle } from "./rng.ts";
 import { CHAT_CHANNELS } from "./types.ts";
 import type {
   Action,
@@ -119,7 +119,14 @@ export function applyAction(state: GameState, playerId: PlayerId, action: Action
   const actor = findPlayer(next, playerId)!;
   actor.ap -= cost.ap;
   actor.mp -= cost.mp;
-  def.apply(next, actor, action);
+  if (def.chance) {
+    const [roll, rng] = nextFloat(next.rng);
+    next.rng = rng;
+    if (roll < def.chance(state, p, action)) def.apply(next, actor, action);
+    else def.fail?.(next, actor, action);
+  } else {
+    def.apply(next, actor, action);
+  }
   applyCheats(actor, next.config);
   if (next.players.every((pl) => !pl.alive || pl.ready)) advanceCycle(next);
   return { ok: true, state: next };

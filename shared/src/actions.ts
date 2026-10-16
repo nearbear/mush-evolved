@@ -8,7 +8,6 @@ import { ITEM_TYPES, canReach, canTransfer, itemsIn, produceItem } from "./items
 import { logPrivate, logPublic } from "./log.ts";
 import { addStatus, isFullBelly, removeStatus } from "./statuses.ts";
 import { contaminationCapacity, healAmount, moveCost, movementRules, sporesPerDay } from "./modifiers.ts";
-import { nextFloat } from "./rng.ts";
 import { dayOf } from "./rules.ts";
 import type { Action, Container, GameState, ItemState, LogParams, PlayerId, PlayerState, Target } from "./types.ts";
 
@@ -32,10 +31,15 @@ export interface ActionDef<A extends Action> {
   check(state: Readonly<GameState>, player: Readonly<PlayerState>, action: A): string | null;
   /** What it costs. Only called once `check` passes. */
   cost(state: Readonly<GameState>, player: Readonly<PlayerState>, action: A): ActionCost;
-  /** The effect, after the cost is paid. Mutates a state the caller already cloned. */
+  /** The effect on success, after the cost is paid. Mutates a state the caller already cloned. */
   apply(next: GameState, player: PlayerState, action: A): void;
-  /** Optional: Chance of success. Deafult is 100% */
+  /**
+   * Chance of success, 0 to 1; omitted means the action always succeeds. applyAction rolls it once with the
+   * seeded RNG after the cost is paid, then calls `apply` or `fail`.
+   */
   chance?(state: Readonly<GameState>, player: Readonly<PlayerState>, action: A): number;
+  /** The effect on failure (the cost stays paid). Mutates a state the caller already cloned. */
+  fail?(next: GameState, player: PlayerState, action: A): void;
 }
 
 const free = (): ActionCost => ({ ap: 0, mp: 0 });
@@ -91,17 +95,14 @@ const dismantle: ActionDef<ActionOf<"dismantle">> = {
     return ITEM_TYPES[item.type]?.dismantle && canReach(state, p, item.at) ? null : "cant_dismantle";
   },
   cost: (state) => ({ ap: state.config.dismantleAp, mp: 0 }),
-  chance: ((state) => (state.config.dismantleOdds)),
+  chance: (state) => state.config.dismantleOdds,
+  fail(next, p, a) {
+    const item = next.items.find((i) => i.id === a.item)!; // checked, so it exists
+    logPrivate(next, p.id, "dismantleFailed", { item: item.type });
+  },
   apply(next, p, a) {
     const index = next.items.findIndex((i) => i.id === a.item); // checked, so it exists
     const [item] = next.items.splice(index, 1) as [ItemState];
-    const [roll, rng] = nextFloat(next.rng);
-    next.rng = rng;
-    if (roll >= next.config.dismantleOdds) {
-      next.items.splice(index, 0, item);
-      logPrivate(next, p.id, "dismantleFailed", { item: item.type });
-      return;
-    }
     const scraps = ITEM_TYPES[item.type]!.dismantle!;
     for (const [scrapType, amount] of [
       ["metal_scraps", scraps.metal],
