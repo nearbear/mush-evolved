@@ -15,7 +15,10 @@ import { gameSocket, type SeatTicket } from "./net.ts";
 import { IsoRoom, type Occupant } from "./iso/IsoRoom.tsx";
 import { useShipLayout } from "./iso/shipLayout.ts";
 import { useFogDepth } from "./fogDepth.ts";
+import { useSpeechBubbles } from "./scene/useSpeechBubbles.ts";
 import { useMobile } from "./useMobile.ts";
+
+const NO_CHAT: PlayerView["chat"] = [];
 
 export function GameScreen({ ticket, onLeave }: { ticket: SeatTicket; onLeave: () => void }) {
   const [view, setView] = useState<PlayerView | null>(null);
@@ -80,6 +83,8 @@ export function GameScreen({ ticket, onLeave }: { ticket: SeatTicket; onLeave: (
     post({ type: "action", action });
     setRoomLogRequest((n) => n + 1);
   };
+
+  const bubbles = useSpeechBubbles(view?.chat ?? NO_CHAT);
 
   if (!view) return <main className="connecting loading">Connecting…</main>;
   const { you } = view;
@@ -150,6 +155,7 @@ export function GameScreen({ ticket, onLeave }: { ticket: SeatTicket; onLeave: (
                 onSelect={select}
                 onClear={() => select(null)}
                 onDoorTap={tapDoor}
+                bubbles={bubbles}
               />
             ) : (
               <section className="iso-room loading">Loading ship…</section>

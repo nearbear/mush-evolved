@@ -18,12 +18,13 @@
 // a wall is drawn over (PlacedSprite.occluded) also gets a glowing outline in
 // a layer above everything. People in this room still take clicks through it.
 
-import { useEffect, useId, useLayoutEffect, useMemo, useRef, useState, type MouseEvent, type PointerEvent } from "react";
+import { useEffect, useId, useLayoutEffect, useMemo, useRef, useState, type CSSProperties, type MouseEvent, type PointerEvent } from "react";
 import { placedEquipment, type CharacterId, type EquipmentView, type RoomId, type ShipLayout, type Target } from "@mush2/shared";
 import { sameTarget } from "../hud/targets.ts";
 import { spriteStrip } from "../art/assets.ts";
 import { CrewSprite } from "../scene/CrewSprite.tsx";
 import { StatusBadges } from "../scene/StatusBadges.tsx";
+import { BUBBLE_MS, type Bubble } from "../scene/useSpeechBubbles.ts";
 import { useNames } from "../i18n/names.ts";
 import { atlasUrl } from "./shipLayout.ts";
 import { opaqueAt, preloadImage } from "./hitMask.ts";
@@ -64,6 +65,7 @@ export function IsoRoom({
   onSelect,
   onClear,
   onDoorTap,
+  bubbles,
 }: {
   layout: ShipLayout;
   room: RoomId;
@@ -84,6 +86,8 @@ export function IsoRoom({
   onClear: () => void;
   /** A single click or tap on any door, reachable or not. */
   onDoorTap: (to: RoomId) => void;
+  /** Recent global chat per sender, oldest first, shown as speech bubbles over their heads. */
+  bubbles: ReadonlyMap<string, Bubble[]>;
 }) {
   const names = useNames();
   const roomLayout = layout.rooms.find((r) => r.id === room);
@@ -334,13 +338,22 @@ export function IsoRoom({
                 ) : null,
               )}
             </div>
-            {/* Status badges last, so no sprite or wall can ever cover them. */}
+            {/* Status badges and speech bubbles last, so no sprite or wall can ever cover them. */}
             <div className="iso-layer iso-badges">
               {scene.map((s) => {
                 const o = s.kind === "actor" && s.room === room ? byId.get(s.key.slice(2)) : undefined;
                 return o ? (
                   <div key={s.key} className="iso-badge-anchor" style={place(s)}>
                     <StatusBadges statuses={o.statuses} />
+                    {bubbles.get(o.id) && (
+                      <div className={`speech-bubbles${o.statuses.length ? " raised" : ""}`}>
+                        {bubbles.get(o.id)!.map((b) => (
+                          <div key={b.id} className="speech-bubble" style={{ "--bubble-ms": `${BUBBLE_MS}ms` } as CSSProperties}>
+                            {b.text}
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 ) : null;
               })}
