@@ -16,6 +16,7 @@ import { IsoRoom, type Occupant } from "./iso/IsoRoom.tsx";
 import { useShipLayout } from "./iso/shipLayout.ts";
 import { useFogDepth } from "./fogDepth.ts";
 import { useSpeechBubbles } from "./scene/useSpeechBubbles.ts";
+import { showError } from "./Toasts.tsx";
 import { useMobile } from "./useMobile.ts";
 
 const NO_CHAT: PlayerView["chat"] = [];
@@ -23,7 +24,6 @@ const NO_CHAT: PlayerView["chat"] = [];
 export function GameScreen({ ticket, onLeave }: { ticket: SeatTicket; onLeave: () => void }) {
   const [view, setView] = useState<PlayerView | null>(null);
   const [cheatsAllowed, setCheatsAllowed] = useState(false);
-  const [error, setError] = useState("");
   const socketRef = useRef<PartySocket | null>(null);
   const layout = useShipLayout();
   /** UI-only state: what the inspect panel shows. Null means yourself. */
@@ -67,8 +67,7 @@ export function GameScreen({ ticket, onLeave }: { ticket: SeatTicket; onLeave: (
       if (msg.type === "view") {
         setView(msg.view);
         setCheatsAllowed(msg.cheatsAllowed);
-        setError("");
-      } else setError(msg.message);
+      } else showError(msg.message);
     });
     // 4001 = invalid seat token (e.g. the local server was restarted).
     socket.addEventListener("close", (e: CloseEvent) => {
@@ -126,7 +125,6 @@ export function GameScreen({ ticket, onLeave }: { ticket: SeatTicket; onLeave: (
         onCheat={(cheat: Cheat, on: boolean) => post({ type: "cheat", cheat, on })}
         onActopiCheat={(mode: ActopiCheat) => post({ type: "actopiCheat", mode })}
       />
-      {error && <p className="error">{error}</p>}
 
       <div className="three-panel" data-panel={panel}>
         <div className="left-column">

@@ -1,0 +1,25 @@
+/* Fixed, so a toast never moves the layout. Top-centre sits clear of the phone bottom nav and chat box. */
+.toast-viewport {
+  position: fixed;
+  top: max(0.5rem, env(safe-area-inset-top));
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(24rem, calc(100vw - 1rem));
+  z-index: 100;
+  pointer-events: none;
+}
+.toast {
+  pointer-events: auto;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--danger);
+  border-radius: 4px;
+  background: #1b1014;
+  color: var(--danger);
+  text-align: center;
+  transition: opacity 0.2s, transform 0.2s;
+}
+.toast[data-starting-style],
+.toast[data-ending-style] {
+  opacity: 0;
+  transform: translateY(-0.5rem);
+}
