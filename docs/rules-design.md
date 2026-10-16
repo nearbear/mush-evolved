@@ -119,3 +119,4 @@ Each phase ends with typecheck and tests passing and a small commit. Phase headi
 - **Public access later:** running everything on your machine is fine for development. When the game goes public, either deploy the game server to Cloudflare and keep only the model local, or expose your machine through a tunnel. Decide this at deploy time.
 
 - **Medic skill** (2026-10-15, owner): heal actions restore 2 more HP (`medicHealBonus`). It will also do surgery, medicine reading and research bonuses; not built yet.
+- **Mush channel** (2026-10-16, owner): a `mush` chat channel that only living Mush read and post, with no iTrackie needed. Whenever a human's contamination rises, the game posts a system message there with the human's name and new level (never the Mush responsible); reaching capacity posts a conversion message with the name. A convert gets the full history. Ways for humans to gain access come later.

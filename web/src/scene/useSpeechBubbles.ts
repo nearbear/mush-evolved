@@ -26,23 +26,23 @@ export function useSpeechBubbles(chat: readonly ChatMessage[]): ReadonlyMap<stri
       seen.current = last;
       return;
     }
-    const fresh = chat.filter((c) => c.channel === "global" && c.id > (seen.current ?? -1));
+    const fresh = chat.filter((c) => c.channel === "global" && c.from !== null && c.id > (seen.current ?? -1));
     seen.current = Math.max(seen.current, last);
     if (fresh.length === 0) return;
     setBubbles((prev) => {
       const next = new Map(prev);
-      for (const m of fresh) next.set(m.from, [...(next.get(m.from) ?? []), { id: m.id, text: m.text }].slice(-MAX_BUBBLES));
+      for (const m of fresh) next.set(m.from!, [...(next.get(m.from!) ?? []), { id: m.id, text: m.text }].slice(-MAX_BUBBLES));
       return next;
     });
     for (const m of fresh) {
       const t = setTimeout(() => {
         timers.current.delete(t);
         setBubbles((prev) => {
-          const list = prev.get(m.from)?.filter((b) => b.id !== m.id);
-          if (!list || list.length === prev.get(m.from)?.length) return prev;
+          const list = prev.get(m.from!)?.filter((b) => b.id !== m.id);
+          if (!list || list.length === prev.get(m.from!)?.length) return prev;
           const next = new Map(prev);
-          if (list.length) next.set(m.from, list);
-          else next.delete(m.from);
+          if (list.length) next.set(m.from!, list);
+          else next.delete(m.from!);
           return next;
         });
       }, BUBBLE_MS);

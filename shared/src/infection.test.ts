@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { CHARACTERS } from "./characters.ts";
 import { DEFAULT_CONFIG } from "./config.ts";
 import { MODIFIERS } from "./modifiers.ts";
-import { applyAction, createGame, viewFor } from "./rules.ts";
+import { applyAction, createGame, sendChat, viewFor } from "./rules.ts";
 import type { Action, GameState, PlayerId, PlayerView, Seat } from "./types.ts";
 
 const seats: Seat[] = Array.from({ length: 4 }, (_, i) => ({ id: `p${i}`, name: `Player ${i}`, isBot: false, character: CHARACTERS[i]!.id }));
@@ -101,5 +101,49 @@ describe("conversion", () => {
       expect(a).toEqual(b);
     }
     expect(JSON.stringify(viewFor(after, "p2"))).not.toMatch(/contamin|converted/i);
+  });
+});
+
+describe("Mush channel", () => {
+  const mushChat = (s: GameState, id: PlayerId) => viewFor(s, id).chat.filter((m) => m.channel === "mush");
+
+  it("posts a system message naming the human and the level, but not the culprit", () => {
+    const s = spikes(ship(), 1);
+    expect(mushChat(s, "p0")).toEqual([
+      expect.objectContaining({ from: null, system: { key: "mushContaminated", params: { name: "Player 1", level: 1, capacity: 3 } } }),
+    ]);
+    expect(JSON.stringify(s.chat)).not.toContain("Player 0");
+  });
+
+  it("posts a conversion message at capacity, and the convert can then read the channel", () => {
+    const two = spikes(ship(), 2);
+    expect(viewFor(two, "p1").chatChannels).not.toContain("mush");
+    const three = spikes(two, 1);
+    expect(mushChat(three, "p0").at(-1)).toMatchObject({ system: { key: "mushConverted", params: { name: "Player 1" } } });
+    expect(viewFor(three, "p1").chatChannels).toContain("mush");
+    expect(mushChat(three, "p1")).toHaveLength(3);
+  });
+
+  it("is invisible to humans: no messages, no channel, no posting", () => {
+    const s = spikes(ship(), 2);
+    for (const id of ["p1", "p2", "p3"]) {
+      expect(viewFor(s, id).chatChannels).not.toContain("mush");
+      expect(JSON.stringify(viewFor(s, id).chat)).not.toMatch(/mush|contaminated/i);
+      expect(sendChat(s, id, "mush", "hi").ok).toBe(false);
+    }
+  });
+
+  it("lets a Mush read and post without an iTrackie, and nothing else", () => {
+    const s = ship();
+    expect(viewFor(s, "p0").chatChannels).toEqual(["mush"]);
+    const r = sendChat(s, "p0", "mush", "hello");
+    expect(r.ok && r.state.chat.at(-1)).toMatchObject({ channel: "mush", from: "p0", text: "hello" });
+    expect(sendChat(s, "p0", "global", "hello").ok).toBe(false);
+  });
+
+  it("is closed to a dead Mush", () => {
+    const s = ship();
+    player(s, "p0").alive = false;
+    expect(viewFor(s, "p0").chatChannels).toEqual([]);
   });
 });

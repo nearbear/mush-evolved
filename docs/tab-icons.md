@@ -28,7 +28,7 @@ Icons are `Mush/www/img/icons/ui/*.png`, exported as `TAB_ICONS` in `web/src/art
 | Notebook | `notebook.png` | tab wanted, not built |
 | Food | `pa_cook.png` | tab wanted, not built |
 | Health | `pa_heal.png` | tab wanted, not built |
-| Mush chat | `spore.png` | tab wanted, not built |
+| Mush chat | `spore.png` | in use (iTrackie, Mush only, far right) |
 | Favorited threads | `fav.png` (no `favorite.png` exists) | tab wanted, not built |
 | Goals | `triumph.png` | tab wanted, not built |
 

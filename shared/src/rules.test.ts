@@ -300,7 +300,7 @@ describe("iTrackie and feature threads", () => {
     for (const s of seats) {
       const view = viewFor(state, s.id);
       expect(view.inventory.map((i) => i.type)).toEqual([ITRACKIE_ITEM]);
-      expect(view.chatChannels).toEqual([...CHAT_CHANNELS]);
+      expect(view.chatChannels.filter((c) => c !== "mush")).toEqual([...CHAT_CHANNELS]);
     }
   });
 
@@ -338,8 +338,8 @@ describe("iTrackie and feature threads", () => {
 
   it("parses every channel and rejects unknown ones", () => {
     const chat = (channel: unknown) => parseGameMessage(JSON.stringify({ type: "chat", channel, text: "hi" }));
-    for (const channel of CHAT_CHANNELS) expect(chat(channel)).toEqual({ type: "chat", channel, text: "hi" });
-    for (const bad of ["mush", "private", "", 1, null, "__proto__"]) expect(chat(bad)).toBeNull();
+    for (const channel of [...CHAT_CHANNELS, "mush"]) expect(chat(channel)).toEqual({ type: "chat", channel, text: "hi" });
+    for (const bad of ["private", "", 1, null, "__proto__"]) expect(chat(bad)).toBeNull();
   });
 });
 

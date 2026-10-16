@@ -147,8 +147,10 @@
     "tabs": {
       "room": "Room log",
       "global": "Global chat",
-      "features": "Features"
+      "features": "Features",
+      "mush": "Mush channel"
     },
+    "mushPlaceholder": "Message the Mush…",
     "features": {
       "botany": "Botany",
       "research": "Research",

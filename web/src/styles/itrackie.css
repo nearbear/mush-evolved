@@ -255,3 +255,37 @@
 .itrackie-caption {
   margin-bottom: 0.25rem;
 }
+
+/* The Mush tab appears only for Mush, in the faction pink, pushed to the far right; it pulses while there are unread messages. */
+.itrackie-tab.mush-tab {
+  flex: none;
+  margin-left: auto;
+  border-color: var(--mush);
+  background: color-mix(in srgb, var(--mush) 25%, var(--panel-fill));
+}
+.itrackie-tab.mush-tab .tab-icon {
+  opacity: 1;
+}
+.itrackie-tab.mush-tab[data-active] {
+  background: var(--panel-fill);
+  box-shadow: 0 0 8px var(--mush);
+}
+.itrackie-tab.mush-tab.unread:not([data-active]) {
+  animation: mush-pulse 1.2s ease-in-out infinite;
+}
+@keyframes mush-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 2px var(--mush);
+  }
+  50% {
+    box-shadow: 0 0 12px 2px var(--mush);
+    background: color-mix(in srgb, var(--mush) 55%, var(--panel-fill));
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .itrackie-tab.mush-tab.unread:not([data-active]) {
+    animation: none;
+    box-shadow: 0 0 10px var(--mush);
+  }
+}

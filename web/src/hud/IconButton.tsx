@@ -44,11 +44,11 @@ export function IconButton({
 }
 
 /** A tab for a Base UI `Tabs.List` with the same tooltip and accessible name: pixel-art `src`, or an emoji `icon` placeholder. */
-export function IconTab({ value, icon, src, label }: { value: string; icon?: string; src?: string; label: string }) {
+export function IconTab({ value, icon, src, label, className }: { value: string; icon?: string; src?: string; label: string; className?: string }) {
   return (
     <Tooltip.Provider delay={300}>
       <Tooltip.Root>
-        <Tooltip.Trigger className="itrackie-tab" aria-label={label} render={<Tabs.Tab value={value} />}>
+        <Tooltip.Trigger className={className ? `itrackie-tab ${className}` : "itrackie-tab"} aria-label={label} render={<Tabs.Tab value={value} />}>
           {src ? <img className="tab-icon" src={src} alt="" /> : <span aria-hidden="true">{icon}</span>}
         </Tooltip.Trigger>
         <Tooltip.Portal>

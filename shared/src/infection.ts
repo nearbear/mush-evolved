@@ -2,9 +2,10 @@
 // Contamination and conversion (confirmed 2026-10-15). A human whose
 // contamination reaches capacity converts to Mush at once. There is no cure yet.
 
+import { pushChat } from "./chat.ts";
 import { logPrivate } from "./log.ts";
 import { contaminationCapacity } from "./modifiers.ts";
-import type { GameState, PlayerState } from "./types.ts";
+import { MUSH_CHANNEL, type GameState, type PlayerState } from "./types.ts";
 
 /**
  * The one way contamination rises (spikes, DTT with a Mush). Reaching capacity
@@ -13,8 +14,19 @@ import type { GameState, PlayerState } from "./types.ts";
 export function contaminate(state: GameState, human: PlayerState, amount = 1): void {
   if (human.role !== "human" || !human.alive) return;
   const level = (state.contamination[human.id] ?? 0) + amount;
-  if (level >= contaminationCapacity(state, human)) convert(state, human);
-  else state.contamination[human.id] = level;
+  const capacity = contaminationCapacity(state, human);
+  if (level >= capacity) {
+    convert(state, human);
+    tellMush(state, "mushConverted", { name: human.name });
+  } else {
+    state.contamination[human.id] = level;
+    tellMush(state, "mushContaminated", { name: human.name, level, capacity });
+  }
+}
+
+/** A system message in the Mush channel (decided 2026-10-16). Names the human and the level, never the Mush responsible. */
+function tellMush(state: GameState, key: string, params: Record<string, string | number>): void {
+  pushChat(state, MUSH_CHANNEL, { from: null, name: "", isBot: false, text: "", system: { key, params } });
 }
 
 /**

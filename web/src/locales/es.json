@@ -147,8 +147,10 @@
     "tabs": {
       "room": "Registro de la sala",
       "global": "Chat global",
-      "features": "Funciones"
+      "features": "Funciones",
+      "mush": "Canal Mush"
     },
+    "mushPlaceholder": "Mensaje a los Mush…",
     "features": {
       "botany": "Botánica",
       "research": "Investigación",

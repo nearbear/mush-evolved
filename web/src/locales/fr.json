@@ -147,8 +147,10 @@
     "tabs": {
       "room": "Journal de la salle",
       "global": "Chat général",
-      "features": "Fonctions"
+      "features": "Fonctions",
+      "mush": "Canal Mush"
     },
+    "mushPlaceholder": "Message aux Mush…",
     "features": {
       "botany": "Botanique",
       "research": "Recherche",

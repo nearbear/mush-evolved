@@ -8,7 +8,7 @@ import { useTranslation } from "react-i18next";
 import { useNames } from "../i18n/names.ts";
 import { ScrollArea } from "@base-ui/react/scroll-area";
 import { Tabs } from "@base-ui/react/tabs";
-import { FEATURE_CHANNELS, ITRACKIE_ITEM, MAX_CHAT_LENGTH, type ChannelId, type FeatureChannel, type PlayerView, type PrivateChannelId } from "@mush2/shared";
+import { FEATURE_CHANNELS, ITRACKIE_ITEM, MAX_CHAT_LENGTH, MUSH_CHANNEL, type ChannelId, type FeatureChannel, type PlayerView, type PrivateChannelId } from "@mush2/shared";
 import { FeatureSelect } from "./FeatureSelect.tsx";
 import { IconButton, IconTab } from "./IconButton.tsx";
 import { Markdown } from "./Markdown.tsx";
@@ -18,12 +18,13 @@ import { TAB_ICONS } from "../art/assets.ts";
 type Notes = Record<FeatureChannel, string[]>;
 const NO_NOTES = Object.fromEntries(FEATURE_CHANNELS.map((f) => [f, []])) as unknown as Notes;
 
-type TabId = "room" | "global" | "features" | "private";
+type TabId = "room" | "global" | "features" | "private" | "mush";
 const TAB_TITLES = {
   room: "itrackie.tabs.room",
   global: "itrackie.tabs.global",
   features: "itrackie.tabs.features",
   private: "channels.tab",
+  mush: "itrackie.tabs.mush",
 } as const;
 
 export interface ChannelHandlers {
@@ -61,19 +62,35 @@ export function ITrackie({
   // UI-only for now: lives in this tab and is lost on reload. Will become
   // private server-side state tied to the iTrackie.
   const [notes, setNotes] = useState<Notes>(NO_NOTES);
+  // The Mush tab exists only for Mush (the server sends the channel to no one else) and pulses until its newest message is read.
+  const mush = view.chatChannels.includes(MUSH_CHANNEL);
+  const newestMush = view.chat.reduce((n, m) => (m.channel === MUSH_CHANNEL ? Math.max(n, m.id) : n), 0);
+  const [mushSeen, setMushSeen] = useState(0);
+  useEffect(() => {
+    if (mush && tab === "mush") setMushSeen(newestMush);
+  }, [mush, tab, newestMush]);
+  const activeTab: TabId = tab === "mush" && !mush ? "room" : tab;
   const carrying = view.inventory.some((i) => i.type === ITRACKIE_ITEM);
 
   return (
     <div className="panel itrackie">
-      <Tabs.Root className="itrackie-tabs-root" value={tab} onValueChange={(v) => setTab(v as TabId)}>
+      <Tabs.Root className="itrackie-tabs-root" value={activeTab} onValueChange={(v) => setTab(v as TabId)}>
         <Tabs.List className="itrackie-tabs">
           <IconTab value="room" src={TAB_ICONS.roomLog} label={t("itrackie.tabs.room")} />
           <IconTab value="global" src={TAB_ICONS.global} label={t("itrackie.tabs.global")} />
           <IconTab value="features" src={TAB_ICONS.features} label={t("itrackie.tabs.features")} />
           <IconTab value="private" src={TAB_ICONS.private} label={t("channels.tab")} />
+          {mush && (
+            <IconTab
+              value="mush"
+              src={TAB_ICONS.mushChat}
+              label={t("itrackie.tabs.mush")}
+              className={`mush-tab${newestMush > mushSeen ? " unread" : ""}`}
+            />
+          )}
         </Tabs.List>
         <div className="itrackie-card">
-          <h2 className="itrackie-title">{t(TAB_TITLES[tab])}</h2>
+          <h2 className="itrackie-title">{t(TAB_TITLES[activeTab])}</h2>
 
           {/* keepMounted: hidden with CSS, so chat drafts survive switching tabs. */}
           <Tabs.Panel className="itrackie-panel" value="room" keepMounted>
@@ -117,6 +134,12 @@ export function ITrackie({
             })}
           </Tabs.Panel>
 
+          {mush && (
+            <Tabs.Panel className="itrackie-panel" value="mush" keepMounted>
+              <Thread view={view} channel={MUSH_CHANNEL} placeholder={t("itrackie.mushPlaceholder")} onSend={(text) => onChat(MUSH_CHANNEL, text)} onToggle={onToggle} />
+            </Tabs.Panel>
+          )}
+
           <Tabs.Panel className="itrackie-panel" value="private" keepMounted>
             <PrivateChannels view={view} onChat={onChat} onToggle={onToggle} {...channels} />
           </Tabs.Panel>
@@ -140,7 +163,7 @@ function Thread({
   onSend: (text: string) => void;
   onToggle: (message: number, line: number) => void;
 }) {
-  const { t } = useTranslation();
+  const names = useNames();
   const enabled = view.chatChannels.includes(channel);
   const messages = view.chat.filter((m) => m.channel === channel);
   return (
@@ -152,7 +175,7 @@ function Thread({
           {messages.map((m) =>
             m.system ? (
               <li key={m.id} className="sub">
-                {t(`log.${m.system.key}`, m.system.params)}
+                {names.logLine(m.system)}
               </li>
             ) : (
             <li key={m.id}>

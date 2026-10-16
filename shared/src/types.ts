@@ -221,10 +221,16 @@ export type FeatureChannel = (typeof FEATURE_CHANNELS)[number];
 export type ChatChannel = "global" | FeatureChannel;
 export const CHAT_CHANNELS: readonly ChatChannel[] = ["global", ...FEATURE_CHANNELS];
 
+/**
+ * The Mush's own channel. Only living Mush read or post (see chatChannels); the
+ * game also posts system messages here when a human's contamination rises.
+ */
+export const MUSH_CHANNEL = "mush";
+
 /** Id of a player-made private channel (`pc-1`, `pc-2`, ...). Never collides with a ChatChannel name. */
 export type PrivateChannelId = `pc-${number}`;
 /** Anything a chat message can be posted to. */
-export type ChannelId = ChatChannel | PrivateChannelId;
+export type ChannelId = ChatChannel | typeof MUSH_CHANNEL | PrivateChannelId;
 
 /** Chat among the members only. Anyone in it may invite others; it ends when the last member leaves. */
 export interface PrivateChannel {
@@ -239,11 +245,15 @@ export interface ChatMessage {
   id: number;
   cycle: number;
   channel: ChannelId;
-  from: PlayerId;
-  /** Copied at send time so the client doesn't need a lookup. */
+  /** Null for a system message posted by the game. */
+  from: PlayerId | null;
+  /** Copied at send time so the client doesn't need a lookup. Empty for a system message. */
   name: string;
   isBot: boolean;
+  /** Empty for a system message, which carries `system` instead. */
   text: string;
+  /** A system message: the client translates `key` with `params`, like a log entry. */
+  system?: { key: string; params?: LogParams };
 }
 
 /** Full authoritative state. Server-only: never send this to a client. */
