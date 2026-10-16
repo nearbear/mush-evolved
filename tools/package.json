@@ -11,6 +11,7 @@
     "typecheck": "tsc --noEmit",
     "dev": "node src/dev/dev.ts",
     "screenshot": "node src/play/screenshot.ts",
+    "ship-view": "node src/play/shipView.ts",
     "contact-sheet": "node src/contactSheet/contactSheet.ts"
   },
   "dependencies": {

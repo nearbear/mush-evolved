@@ -20,6 +20,7 @@
     "asset-index": "npm run asset-index -w tools",
     "ods-data": "npm run ods-data -w tools",
     "screenshot": "npm run screenshot -w tools --",
+    "ship-view": "npm run ship-view -w tools --",
     "contact-sheet": "npm run contact-sheet -w tools --"
   },
   "devDependencies": {
