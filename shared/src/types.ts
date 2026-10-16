@@ -85,6 +85,10 @@ export interface GameConfig {
   punchDamage: number;
   /** Chance a punch misses, 0 to 1 (confirmed 2026-10-15). */
   punchMissOdds: number;
+  /** AP spent to cook an uncooked ration (confirmed 2026-10-16). */
+  cookAp: number;
+  /** Rooms where food can be cooked (confirmed 2026-10-16). */
+  cookRooms: RoomId[];
   /** AP spent to shower, before the soap discount (confirmed 2026-10-14). */
   showerAp: number;
   /** AP off a shower when soap is in your inventory (confirmed 2026-10-14). */
@@ -292,6 +296,7 @@ export type Action =
   | { type: "dismantle"; item: ItemId }
   | { type: "dispense"; equipment: string }
   | { type: "consume"; item: ItemId }
+  | { type: "cook"; item: ItemId }
   | { type: "examine"; target: Target }
   | { type: "bond"; target: PlayerId }
   | { type: "dtt"; target: PlayerId }

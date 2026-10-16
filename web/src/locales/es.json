@@ -109,6 +109,7 @@
     "examine": "Examinar",
     "dispense": "Sacar un café",
     "consume": "Consumir",
+    "cook": "Cocinar",
     "dismantle": "Desmontar",
     "bond": "Crear vínculo",
     "dtt": "DTT",
@@ -238,6 +239,7 @@
     "blaster": "Blaster",
     "medikit": "Botiquín",
     "coffee": "Café",
+    "uncooked_ration": "Ración cruda",
     "cooked_ration": "Ración cocinada",
     "camera": "Cámara",
     "soap": "Jabón",
@@ -258,6 +260,7 @@
     "tookFrom": "{{name}} tomó: {{item}} ({{equipment}}).",
     "tookFromKnocked": "{{name}} tomó: {{item}} ({{equipment}}) y lo tiró al suelo.",
     "consumed": "{{name}} consumió: {{item}}.",
+    "cooked": "{{name}} cocinó: {{item}}.",
     "healed": "{{name}} curó a {{target}}.",
     "healedSelf": "{{name}} se curó a sí mismo/a.",
     "punched": "{{name}} golpeó a {{target}}.",
@@ -284,6 +287,11 @@
     "pick": "Elegir una habilidad para esta ranura",
     "close": "Cancelar",
     "warning": "Una habilidad no se puede cambiar una vez elegida.",
+    "status": {
+      "full": "Totalmente implementada",
+      "partial": "Parcialmente implementada",
+      "none": "No implementada"
+    },
     "names": {
       "engineer": "Técnico",
       "astrophysician": "Astrofísico",

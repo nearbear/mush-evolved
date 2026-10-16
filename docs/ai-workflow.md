@@ -512,3 +512,14 @@ Correction, same day: the owner said medic was a mistake on their part; medic's 
 
 - Owner reported conversion "didn't seem to work" in the running game and asked for a status that shows Mush a human's contamination level, invisible to the human themself. Rules tests already showed conversion working, so the status is the tool to find what differs in play (likely: a human held at 3 under the old capped code needs one more spike, and the 4-cycle extraction cooldown makes three spikes slow).
 - Built as `OtherPlayerView.contamination` (Mush viewer, living contaminated human, same room only; the room limit was Claude's default to match other statuses) and drawn by `StatusIcons` with the original spore icon and a count. Two older tests asserted contamination was in no view at all; they were narrowed to human viewers.
+
+## 2026-10-16: Iso view walls between rooms
+
+- Asked to keep walls of "the current room" lit like doors back to it. Claude first misread it (keyed on cells, then a bounding box that lit a far wall in an L-shaped corridor); what worked was asking for a concrete example (the walls beside the refectory door) and checking the layout data for it: those walls belong to the neighbour, so a neighbour's wall next to your floor now stays lit.
+- Missing walls turned out to be the original's open front edges. Synthesizing walls on every open neighbour edge covered whole rooms; only filling cells with floor on both sides, plus floor under doors and across one-cell strips, held up.
+- Claude couldn't see the problems from tests, so it added `npm run ship-view` (whole ship, `--walk` into a room, `--clip` to zoom) and compared before/after shots. That made the iteration much faster than describing screenshots.
+- The user's diagnosis, that corridors need an odd width so end doors get two walls each side, was the real fix. Widening all corridors to five collided at the shuttle bays (their doors are 4 cells apart), so only the front corridor is five wide.
+
+## 2026-10-16: cook action
+- Owner asked for a 1 AP cook action turning uncooked rations in the refectory into cooked ones, and for the refectory to spawn uncooked rations. The rule skill had me ask four questions in one call (reach, result, log visibility, equipment); owner took all recommended defaults: carried or floor, replaced in place, public log, room only.
+- Implemented as `actions/cook.ts` driven by `ItemType.cook` and `config.cookRooms`/`cookAp`, so more recipes or rooms need no new code. No corrections needed.

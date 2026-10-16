@@ -43,6 +43,7 @@ export function actionsOn(view: PlayerView, target: Target): Action[] {
         return target.kind === "equipment" && a.equipment === target.id;
       case "dismantle":
       case "consume":
+      case "cook":
         return target.kind === "item" && a.item === target.id;
       case "bond":
       case "dtt":
@@ -64,6 +65,7 @@ const ACTION_LABEL_KEYS = {
   dispense: "actions.dispense",
   shower: "actions.shower",
   consume: "actions.consume",
+  cook: "actions.cook",
   dismantle: "actions.dismantle",
   bond: "actions.bond",
   dtt: "actions.dtt",

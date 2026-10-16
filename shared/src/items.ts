@@ -10,6 +10,8 @@ import type { Container, GameState, ItemState, PlayerState } from "./types.ts";
 export interface ItemType {
   /** Drinking or eating it removes it and does this. */
   consume?: { ap: number; /** Satiety a human gains (confirmed 2026-10-14). */ satiety: number };
+  /** Cooking it (in a cook room) turns it into this item type. */
+  cook?: { into: string };
   canDrop?: boolean;
   dismantle?: { metal: number; plastic: number };
 }
@@ -35,6 +37,8 @@ export const ITEM_TYPES: Record<string, ItemType> = {
   // Confirmed 2026-10-13: +2 AP. Satiety +1 is a placeholder (2026-10-14).
   coffee: { consume: { ap: 2, satiety: 1 } },
   // PLACEHOLDER food (2026-10-14): +4 satiety, no AP.
+  // Confirmed 2026-10-16: cook it in the refectory for 1 AP; not edible raw.
+  uncooked_ration: { cook: { into: "cooked_ration" } },
   cooked_ration: { consume: { ap: 0, satiety: 4 } },
   camera: { canDrop: false, dismantle: { metal: 1, plastic: 0 }  },
   // Showering with soap in your inventory costs 1 less AP (confirmed 2026-10-14). Reusable.

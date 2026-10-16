@@ -109,6 +109,7 @@
     "examine": "Examine",
     "dispense": "Pull coffee",
     "consume": "Consume",
+    "cook": "Cook",
     "dismantle": "Dismantle",
     "bond": "Bond",
     "dtt": "DTT",
@@ -238,6 +239,7 @@
     "blaster": "Blaster",
     "medikit": "Medikit",
     "coffee": "Coffee",
+    "uncooked_ration": "Uncooked ration",
     "cooked_ration": "Cooked ration",
     "camera": "Camera",
     "soap": "Soap",
@@ -258,6 +260,7 @@
     "tookFrom": "{{name}} took a {{item}} from the {{equipment}}.",
     "tookFromKnocked": "{{name}} took a {{item}} from the {{equipment}} and knocked it over.",
     "consumed": "{{name}} consumed the {{item}}.",
+    "cooked": "{{name}} cooked the {{item}}.",
     "healed": "{{name}} healed {{target}}.",
     "healedSelf": "{{name}} healed themself.",
     "punched": "{{name}} punched {{target}}.",
@@ -284,6 +287,11 @@
     "pick": "Pick a skill for this slot",
     "close": "Cancel",
     "warning": "A skill can never be changed once picked.",
+    "status": {
+      "full": "Fully implemented",
+      "partial": "Partially implemented",
+      "none": "Not implemented"
+    },
     "names": {
       "engineer": "Engineer",
       "astrophysician": "Astrophysicist",

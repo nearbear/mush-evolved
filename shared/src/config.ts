@@ -59,6 +59,9 @@ export const DEFAULT_CONFIG: GameConfig = {
   punchAp: 1,
   punchDamage: 2,
   punchMissOdds: 0.4,
+  // Confirmed 2026-10-16: cooking an uncooked ration costs 1 AP, only in the refectory.
+  cookAp: 1,
+  cookRooms: ["REFECTORY"],
   showerAp: 2,
   showerSoapDiscount: 1,
   showerMushDamage: 4,
@@ -89,9 +92,9 @@ export const DEFAULT_CONFIG: GameConfig = {
     // Confirmed 2026-10-14: the soap always spawns in the Alpha dorm (for now).
     { type: "soap", room: "BEDROOM_A" },
     // PLACEHOLDER food so satiety can be tested.
-    { type: "cooked_ration", room: "REFECTORY" },
-    { type: "cooked_ration", room: "REFECTORY" },
-    { type: "cooked_ration", room: "REFECTORY" },
+    { type: "uncooked_ration", room: "REFECTORY" },
+    { type: "uncooked_ration", room: "REFECTORY" },
+    { type: "uncooked_ration", room: "REFECTORY" },
   ],
   // Confirmed 2026-10-13: every player starts with an iTrackie.
   startInventory: [ITRACKIE_ITEM],

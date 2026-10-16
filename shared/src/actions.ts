@@ -1,5 +1,6 @@
 import { BondAction } from "./actions/bond.ts";
 import { ConsumeAction } from "./actions/consume.ts";
+import { CookAction } from "./actions/cook.ts";
 import { DismantleAction } from "./actions/dismantle.ts";
 import { DispenseAction } from "./actions/dispense.ts";
 import { ExamineAction } from "./actions/examine.ts";
@@ -43,6 +44,7 @@ export const ACTIONS: { [T in ActionType]: ActionDef<ActionOf<T>> } = {
   dismantle: new DismantleAction(),
   dispense: new DispenseAction(),
   consume: new ConsumeAction(),
+  cook: new CookAction(),
   examine: new ExamineAction(),
   bond: new BondAction(),
   dtt: new ShareAction("dtt"),

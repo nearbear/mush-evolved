@@ -109,6 +109,7 @@
     "examine": "Examiner",
     "dispense": "Tirer un café",
     "consume": "Consommer",
+    "cook": "Cuisiner",
     "dismantle": "Démonter",
     "bond": "Créer un lien",
     "dtt": "DTT",
@@ -238,6 +239,7 @@
     "blaster": "Blaster",
     "medikit": "Médikit",
     "coffee": "Café",
+    "uncooked_ration": "Ration crue",
     "cooked_ration": "Ration cuite",
     "camera": "Caméra",
     "soap": "Savon",
@@ -258,6 +260,7 @@
     "tookFrom": "{{name}} a pris : {{item}} ({{equipment}}).",
     "tookFromKnocked": "{{name}} a pris : {{item}} ({{equipment}}) et l'a fait tomber.",
     "consumed": "{{name}} a consommé : {{item}}.",
+    "cooked": "{{name}} a cuisiné : {{item}}.",
     "healed": "{{name}} a soigné {{target}}.",
     "healedSelf": "{{name}} s'est soigné(e).",
     "punched": "{{name}} a frappé {{target}}.",
@@ -284,6 +287,11 @@
     "pick": "Choisir une compétence pour cet emplacement",
     "close": "Annuler",
     "warning": "Une compétence ne peut plus être changée une fois choisie.",
+    "status": {
+      "full": "Entièrement implémentée",
+      "partial": "Partiellement implémentée",
+      "none": "Non implémentée"
+    },
     "names": {
       "engineer": "Technicien",
       "astrophysician": "Astrophysicien",
