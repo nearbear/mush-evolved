@@ -36,8 +36,6 @@ export const DEFAULT_CONFIG: GameConfig = {
   // Confirmed 2026-10-13: three private channels per player by default (skills and research will raise it).
   channelLimit: 3,
   // Confirmed 2026-10-14: bonding, DTT, and STT cost 1 AP each; DTT and STT give each of the two 2 morale.
-  bondAp: 1,
-  shareAp: 1,
   shareMorale: 2,
   // Confirmed 2026-10-14: a human converts on reaching 3 contamination (items and skills will raise it).
   contaminationCapacity: 3,
@@ -56,11 +54,9 @@ export const DEFAULT_CONFIG: GameConfig = {
   medicHealBonus: 2,
   nurseCarePointsPerDay: 2,
   // Confirmed 2026-10-15: punch costs 1 AP, 2 damage, misses 40% of the time.
-  punchAp: 1,
   punchDamage: 2,
   punchMissOdds: 0.4,
   // Confirmed 2026-10-16: cooking an uncooked ration costs 1 AP, only in the refectory.
-  cookAp: 1,
   cookRooms: ["REFECTORY"],
   showerAp: 2,
   showerSoapDiscount: 1,
@@ -75,7 +71,6 @@ export const DEFAULT_CONFIG: GameConfig = {
   hungryAfterCycles: 24,
   hungerHpPerCycle: 1,
   // Confirmed 2026-10-13: dismantle cost.
-  dismantleAp: 3,
   dismantleOdds: 0.12,
   // Confirmed 2026-10-15: nobody starts with a skill; players pick up to three
   // (SKILL_SLOTS) with the free, permanent pick_skill action.
