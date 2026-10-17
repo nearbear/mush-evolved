@@ -16,6 +16,8 @@ export interface EquipmentView {
 export interface ItemView {
   id: ItemId;
   type: string;
+  /** For a corpse: whose body it is (the dead are public, and the world already draws them). */
+  of?: PlayerId;
 }
 
 export interface OtherPlayerView {

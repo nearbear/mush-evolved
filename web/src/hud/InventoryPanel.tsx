@@ -7,7 +7,8 @@
 import { useEffect, useRef, useState } from "react";
 import { useNames } from "../i18n/names.ts";
 import type { Action, ItemView, PlayerView, Target } from "@mush2/shared";
-import { EMPTY_SLOT_ICON, EMPTY_SLOT_TILE, itemIcon } from "../art/assets.ts";
+import { EMPTY_SLOT_TILE } from "../art/assets.ts";
+import { ItemIcon } from "./ItemIcon.tsx";
 import { sameTarget } from "./targets.ts";
 
 type Zone = "room" | "inventory";
@@ -106,7 +107,7 @@ export function InventoryPanel({
             setOver(null);
           }}
         >
-          <img className="item-icon" src={itemIcon(item.type) ?? EMPTY_SLOT_ICON} alt="" draggable={false} />
+          <ItemIcon className="item-icon" item={item} view={view} />
           <span className="item-label">{names.item(item.type)}</span>
         </button>
         {isSelected && legal(type, item) && (

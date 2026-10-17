@@ -287,8 +287,8 @@ function legalCosts(state: GameState, playerId: PlayerId, legal: Action[]): Acti
   return legal.map((a) => (ACTIONS[a.type] as ActionDef<Action>).cost(state, p, a));
 }
 
-function itemView({ id, type }: ItemState): ItemView {
-  return { id, type };
+function itemView({ id, type, of }: ItemState): ItemView {
+  return of === undefined ? { id, type } : { id, type, of };
 }
 
 function equipmentView({ id, type }: Equipment): EquipmentView {

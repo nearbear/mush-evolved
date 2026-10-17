@@ -5,7 +5,8 @@ import { useTranslation } from "react-i18next";
 import { useNames } from "../i18n/names.ts";
 import type { ReactNode } from "react";
 import { CHARACTERS, ITEM_TYPES, type Action, type BotKind, type OtherPlayerView, type PlayerView, type Target } from "@mush2/shared";
-import { EMPTY_SLOT_ICON, characterImage, itemIcon, portrait } from "../art/assets.ts";
+import { characterImage, portrait } from "../art/assets.ts";
+import { ItemIcon } from "./ItemIcon.tsx";
 import { ActionLabel } from "./ActionLabel.tsx";
 import { SkillSlots } from "./SkillSlots.tsx";
 import { ItemAttrIcons } from "./ItemAttrIcons.tsx";
@@ -106,11 +107,7 @@ function Details({ view, resolved, onAction }: { view: PlayerView; resolved: Res
     case "item":
       return (
         <>
-          <img
-            className="inspect-portrait inspect-item-icon"
-            src={itemIcon(resolved.item.type) ?? EMPTY_SLOT_ICON}
-            alt=""
-          />
+          <ItemIcon className="inspect-portrait inspect-item-icon" item={resolved.item} view={view} />
           <div className="inspect-name">
             <strong>{names.item(resolved.item.type)}</strong>
             <ItemAttrIcons heavy={ITEM_TYPES[resolved.item.type]?.heavy === true} />

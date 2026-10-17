@@ -69,6 +69,30 @@ export function bustIcon(character: CharacterId | undefined): string {
   return (character && busts[character]) || portrait(character);
 }
 
+// The cast sheet (RGBA, so no keying): per character a row of 48px-tall cells at x=127 (walk frames), then a lying pose.
+const castSheet = Object.values(
+  import.meta.glob<string>("../../../Mush/www/img/art/char.png", { eager: true, query: "?url", import: "default" }),
+)[0]!;
+const CAST_SHEET_SIZE = { w: 953, h: 2315 };
+const LYING = { x: 554, w: 50, h: 48 };
+/** Row of each character on the cast sheet (found by pixel-matching the walk strips). */
+const CAST_ROW: Record<CharacterId, number> = {
+  jinsu: 0, frieda: 1, kuanti: 2, janice: 3, roland: 4, hua: 5, paola: 6, chao: 7,
+  finola: 8, stephen: 9, ian: 10, chun: 11, raluca: 12, gioele: 13, eleesha: 14, terrence: 15,
+};
+
+/** The character lying down, as a crop of the cast sheet: CSS `background` pieces plus the crop's aspect ratio. */
+export function lyingSprite(character: CharacterId | undefined) {
+  if (!character) return undefined;
+  const y = CAST_ROW[character] * LYING.h;
+  return {
+    backgroundImage: `url(${castSheet})`,
+    backgroundSize: `${(CAST_SHEET_SIZE.w / LYING.w) * 100}% auto`,
+    backgroundPosition: `${(LYING.x / (CAST_SHEET_SIZE.w - LYING.w)) * 100}% ${(y / (CAST_SHEET_SIZE.h - LYING.h)) * 100}%`,
+    aspectRatio: `${LYING.w} / ${LYING.h}`,
+  };
+}
+
 /** Full-length character illustration (about 210x300), or undefined for an unknown character. */
 export function characterImage(character: CharacterId | undefined): string | undefined {
   return character && characterArt[PORTRAIT_FILE[character]];

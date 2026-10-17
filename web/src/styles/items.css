@@ -89,3 +89,14 @@
 .item-grid[data-compact] .item-label {
   font-size: 0.55rem;
 }
+/* A corpse's icon: the owner's lying pose cropped from the cast sheet, centered and unsmoothed. */
+.corpse-icon {
+  display: grid;
+  place-items: center;
+  background: rgb(0 0 0 / 0.35);
+}
+.corpse-sprite {
+  width: 90%;
+  background-repeat: no-repeat;
+  image-rendering: pixelated;
+}
