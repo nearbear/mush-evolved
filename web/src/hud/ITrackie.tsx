@@ -3,7 +3,7 @@
 // collapsible for private channels. Chat input stays in the DOM regardless of
 // renderer (CLAUDE.md).
 
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { Fragment, useEffect, useRef, useState, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { useNames } from "../i18n/names.ts";
 import { ScrollArea } from "@base-ui/react/scroll-area";
@@ -100,9 +100,14 @@ export function ITrackie({
             <Scroller items={roomLog.length}>
               <ol className="feed">
                 {roomLog.map((e, i) => (
-                  <li key={i} className={e.visibleTo === "all" ? undefined : "private"}>
-                    <span className="sub">[{e.cycle}]</span> {names.logLine(e)}
-                  </li>
+                  <Fragment key={i}>
+                    {(i === 0 || roomLog[i - 1].cycle !== e.cycle) && (
+                      <li className="cycle-divider">
+                        {t("itrackie.cycleDivider", { cycle: e.cycle })}
+                      </li>
+                    )}
+                    <li className={e.visibleTo === "all" ? undefined : "private"}>{names.logLine(e)}</li>
+                  </Fragment>
                 ))}
               </ol>
             </Scroller>

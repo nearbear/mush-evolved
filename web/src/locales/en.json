@@ -152,6 +152,7 @@
   },
   "itrackie": {
     "checkbox": "Checkbox",
+    "cycleDivider": "Cycle {{cycle}}",
     "composer": {
       "preview": "Preview markdown",
       "edit": "Hide preview",
