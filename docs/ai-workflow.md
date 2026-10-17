@@ -669,6 +669,10 @@ User asked for the percent chance of success in parentheses on actions. Added `P
 - Follow-up (owner): extract spore is now secret (`logSecret`, log line in third person with the name); STT/DTT stay private. Asked whether "public only on success" needs its own category; recommended not (see below).
   Recommendation given: the icon describes what happens when the action succeeds, and failure visibility stays a per-action rule (punch misses are public, dismantle failures private), unless the owner decides on one rule for all failures.
 
+## 2026-10-17: Myco alarm item
+- Owner gave the trigger list (nine Mush abilities) and the research yield (three alarms); the issue (#159) said spore use. Asked one batch of questions: triggers (list, wire what exists), yield location (lab floor), dismantle (standard config), items (normal). Only spiking exists, so only it is wired; plain human punch is not the Mush skill, so it does not ring.
+- Worked: `ringMycoAlarms` takes no actor, so the log entry cannot identify anyone. Corrected: nothing yet; the `danger` level is skipped because no log levels exist (#20).
+
 ### 2026-10-17: graveyard chat for the dead
 The owner asked for a dead-only chat tab on the iTrackie, with the skull icon from the catalog (`ui/dead.png`, found by grepping `docs/catalogs/icon-catalog.md`). Modelled it on the Mush channel: a new `GRAVEYARD_CHANNEL` that `readChannels` and `chatChannels` give only to the dead, so `viewFor` and the server needed no changes. Assumed (not asked): no iTrackie needed, new arrivals see the history. Needed correction: three existing tests asserted that the dead post nowhere; and the new tab's hook used `graveyard` before it was declared (caught by typecheck).
 
