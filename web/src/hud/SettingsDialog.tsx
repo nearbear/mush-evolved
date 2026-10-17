@@ -2,6 +2,7 @@
 // Uses the global Mush `button` style; only layout is set in settings.css.
 
 import { ACTOPI_CHEATS, CHEATS, isActopiCheat, type ActopiCheat, type Cheat } from "@mush2/shared";
+import { Hint } from "./IconButton.tsx";
 import { Dialog } from "@base-ui/react/dialog";
 import { useTranslation } from "react-i18next";
 import { SETTINGS_ICON } from "../art/assets.ts";
@@ -27,9 +28,11 @@ export function SettingsDialog({
   const fogDepth = useFogDepth();
   return (
     <Dialog.Root>
-      <Dialog.Trigger className="settings-button" aria-label={t("settings.open")} title={t("settings.open")}>
-        <img className="settings-icon" src={SETTINGS_ICON} alt="" />
-      </Dialog.Trigger>
+      <Hint label={t("settings.open")}>
+        <Dialog.Trigger className="settings-button" aria-label={t("settings.open")}>
+          <img className="settings-icon" src={SETTINGS_ICON} alt="" />
+        </Dialog.Trigger>
+      </Hint>
       <Dialog.Portal>
         <Dialog.Backdrop className="settings-backdrop" />
         <Dialog.Popup className="settings-popup">

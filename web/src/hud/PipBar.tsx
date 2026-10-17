@@ -28,7 +28,7 @@ export function PipBar({
   const pipW = thin ? 3 : 5;
   const width = CAP_START + slots * pitch + 4;
   return (
-    <span className={thin ? "pip-bar thin" : "pip-bar"} title={`${value} / ${max} ${label}`} aria-label={`${label}: ${value} of ${max}`}>
+    <span className={thin ? "pip-bar thin" : "pip-bar"} aria-label={`${label}: ${value} of ${max}`}>
       <span className="pip-label">{label}</span>
       <svg className="pip-frame" viewBox={`0 0 ${width} ${FRAME_H}`} style={{ width: `calc(${width} * var(--s))` }} aria-hidden="true">
         <g dangerouslySetInnerHTML={{ __html: capStart }} />

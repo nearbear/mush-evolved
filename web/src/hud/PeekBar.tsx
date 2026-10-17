@@ -36,7 +36,7 @@ export function PeekBar({
   if (door) {
     const canGo = reachable.has(door);
     return (
-      <Bar title={`Door to ${names.room(door)}`} sub={canGo ? undefined : "No access"}>
+      <Bar heading={`Door to ${names.room(door)}`} sub={canGo ? undefined : "No access"}>
         {canGo && <button onClick={() => onMove(door)}>Go</button>}
       </Bar>
     );
@@ -47,7 +47,7 @@ export function PeekBar({
     resolved.kind === "player" ? resolved.person.name : resolved.kind === "equipment" ? names.equipment(resolved.equipment.type) : names.item(resolved.item.type, resolved.item.builds);
   const isBot = resolved.kind === "player" && resolved.person.isBot;
   return (
-    <Bar title={name} isBot={isBot}>
+    <Bar heading={name} isBot={isBot}>
       {actionsOn(view, target).map((a) => (
         <button key={a.type} onClick={() => onAction(a)}>
           {labelFor(a)}
@@ -59,12 +59,12 @@ export function PeekBar({
 }
 
 function Bar({
-  title,
+  heading,
   sub,
   isBot = false,
   children,
 }: {
-  title: string;
+  heading: string;
   sub?: string | undefined;
   isBot?: boolean;
   children: ReactNode;
@@ -72,7 +72,7 @@ function Bar({
   return (
     <div className="peek-bar" role="region" aria-label="Selection">
       <div className="peek-name">
-        <strong>{title}</strong>
+        <strong>{heading}</strong>
         {isBot && <span className="tag">AI</span>}
         {sub && <div className="sub">{sub}</div>}
       </div>

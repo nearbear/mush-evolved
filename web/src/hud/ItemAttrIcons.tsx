@@ -2,6 +2,7 @@
 
 import { useTranslation } from "react-i18next";
 import { ITEM_ATTR_ICONS } from "../art/assets.ts";
+import { StatusIcon } from "./StatusIcons.tsx";
 
 export function ItemAttrIcons({ heavy }: { heavy: boolean }) {
   const { t } = useTranslation();
@@ -9,7 +10,7 @@ export function ItemAttrIcons({ heavy }: { heavy: boolean }) {
   return (
     <ul className="status-icons" aria-label={t("itemAttr.label")}>
       <li>
-        <img src={ITEM_ATTR_ICONS.heavy} alt={t("itemAttr.heavy")} title={t("itemAttr.heavy")} />
+        <StatusIcon icon={ITEM_ATTR_ICONS.heavy} name={t("itemAttr.heavy")} />
       </li>
     </ul>
   );

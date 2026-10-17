@@ -88,7 +88,6 @@ export function InventoryPanel({
         <button
           className={`item-tile${isSelected ? " selected" : ""}${dragging?.id === item.id ? " dragging" : ""}`}
           draggable
-          title={names.item(item.type, item.builds)}
           onMouseDown={(e) => {
             if (e.shiftKey) e.preventDefault(); // no text selection from shift-click
           }}

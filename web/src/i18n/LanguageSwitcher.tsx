@@ -13,7 +13,6 @@ export function LanguageSwitcher({ inline = false }: { inline?: boolean }) {
       className={inline ? "language-switcher inline" : "language-switcher"}
       data-testid="language-switcher"
       aria-label={t("language.label")}
-      title={t("language.label")}
       value={matchLocale(i18n.language) ?? "en"}
       onChange={(e) => void i18n.changeLanguage(e.target.value)}
     >

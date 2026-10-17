@@ -10,7 +10,7 @@ import { ScrollArea } from "@base-ui/react/scroll-area";
 import { Tabs } from "@base-ui/react/tabs";
 import { FEATURE_CHANNELS, ITRACKIE_ITEM, MAX_CHAT_LENGTH, MUSH_CHANNEL, type ChannelId, type FeatureChannel, type PlayerView, type PrivateChannelId } from "@mush2/shared";
 import { FeatureSelect } from "./FeatureSelect.tsx";
-import { IconButton, IconTab } from "./IconButton.tsx";
+import { Hint, IconButton, IconTab } from "./IconButton.tsx";
 import { Markdown } from "./Markdown.tsx";
 import { TAB_ICONS } from "../art/assets.ts";
 
@@ -343,15 +343,10 @@ function ChatInput({ enabled, placeholder, onSend }: { enabled: boolean; placeho
         aria-label="Chat message"
       />
       <div className="chat-actions">
-        <button
-          className="chat-max"
-          type="button"
-          onClick={() => setPreviewing(!previewing)}
-          aria-pressed={previewing}
-          aria-label={previewLabel}
-          title={previewLabel}
-        />
-        <button className="chat-send" type="submit" disabled={!enabled || !text.trim()} aria-label="Send" title="Send" />
+        <Hint label={previewLabel}>
+          <button className="chat-max" type="button" onClick={() => setPreviewing(!previewing)} aria-pressed={previewing} aria-label={previewLabel} />
+        </Hint>
+        <button className="chat-send" type="submit" disabled={!enabled || !text.trim()} aria-label="Send" />
       </div>
     </form>
   );

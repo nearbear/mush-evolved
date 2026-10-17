@@ -60,3 +60,19 @@ export function IconTab({ value, icon, src, label, className }: { value: string;
     </Tooltip.Provider>
   );
 }
+
+/** Wraps one existing element (a button, a dialog trigger) in a tooltip. The element keeps its own accessible name. */
+export function Hint({ label, children }: { label: string; children: React.ReactElement }) {
+  return (
+    <Tooltip.Provider delay={300}>
+      <Tooltip.Root>
+        <Tooltip.Trigger render={children} />
+        <Tooltip.Portal>
+          <Tooltip.Positioner sideOffset={6}>
+            <Tooltip.Popup className="tooltip">{label}</Tooltip.Popup>
+          </Tooltip.Positioner>
+        </Tooltip.Portal>
+      </Tooltip.Root>
+    </Tooltip.Provider>
+  );
+}

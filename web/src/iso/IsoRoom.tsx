@@ -19,6 +19,7 @@
 // a layer above everything. People in this room still take clicks through it.
 
 import { useEffect, useId, useLayoutEffect, useMemo, useRef, useState, type CSSProperties, type MouseEvent, type PointerEvent } from "react";
+import { createPortal } from "react-dom";
 import { CORPSE_ITEM, placedEquipment, type CharacterId, type EquipmentView, type ItemId, type RoomId, type ShipLayout, type Target } from "@mush2/shared";
 import { sameTarget } from "../hud/targets.ts";
 import { lyingFrame, spriteStrip } from "../art/assets.ts";
@@ -213,6 +214,7 @@ export function IsoRoom({
   }, [scene]);
 
   const [hoverKey, setHoverKey] = useState<string | null>(null);
+  const [hoverAt, setHoverAt] = useState({ x: 0, y: 0 });
   const espFilter = `iso-esp-${useId().replace(/[^\w-]/g, "")}`;
 
   if (!roomLayout) return <section className="iso-room missing">No map for {names.room(room)}</section>;
@@ -289,7 +291,10 @@ export function IsoRoom({
   const onPointerMove = (e: PointerEvent<HTMLDivElement>) => {
     if (e.pointerType === "touch") return;
     const key = pick(e)?.key ?? null;
-    if (key !== hoverKey) setHoverKey(key);
+    if (key !== hoverKey) {
+      setHoverKey(key);
+      setHoverAt({ x: e.clientX, y: e.clientY });
+    }
   };
   const hovered = sprites.find((s) => s.key === hoverKey);
   const hoveredNeighbor = neighbors.find((n) => `n:${n.id}` === hoverKey);
@@ -310,12 +315,19 @@ export function IsoRoom({
         <div
           ref={viewportRef}
           className={`iso-viewport${hoverTitle ? " pointing" : ""}`}
-          title={hoverTitle}
           onClick={onClick}
           onDoubleClick={onDoubleClick}
           onPointerMove={onPointerMove}
           onPointerLeave={() => setHoverKey(null)}
         >
+          {/* A mouse-only label; the same name is in the Inspect panel once the thing is selected. */}
+          {hoverTitle &&
+            createPortal(
+              <div className="tooltip" aria-hidden="true" style={{ position: "fixed", left: hoverAt.x + 14, top: hoverAt.y + 18 }}>
+                {hoverTitle}
+              </div>,
+              document.body,
+            )}
           <div
             ref={worldRef}
             className={`iso-world${glide ? " glide" : ""}`}

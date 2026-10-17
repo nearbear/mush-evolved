@@ -105,7 +105,6 @@ export function Lobby({ onMatched }: { onMatched: (ticket: SeatTicket) => void }
         <select
           className="language-switcher inline"
           aria-label={t("lobby.spawnAs")}
-          title={t("lobby.spawnAs")}
           value={role ?? ""}
           disabled={joining}
           onChange={(e) => setRole((e.target.value || undefined) as Role | undefined)}

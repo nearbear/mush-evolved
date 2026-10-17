@@ -3,6 +3,7 @@
 // Which skills can be picked comes from view.legalActions, never computed here.
 
 import { Dialog } from "@base-ui/react/dialog";
+import { Hint } from "./IconButton.tsx";
 import { Popover } from "@base-ui/react/popover";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -41,16 +42,17 @@ export function SkillSlots({
                 <SkillSlot skill={skill} />
               ) : (
                 isYou && (
-                  <button
-                    type="button"
-                    className="skill-slot"
-                    disabled={offered.length === 0}
-                    title={t("skills.pick")}
-                    aria-label={t("skills.slot", { n: i + 1 })}
-                    onClick={() => setOpen(true)}
-                  >
-                    <img src={GOLD_PLUS_ICON} alt="" />
-                  </button>
+                  <Hint label={t("skills.pick")}>
+                    <button
+                      type="button"
+                      className="skill-slot"
+                      disabled={offered.length === 0}
+                      aria-label={t("skills.slot", { n: i + 1 })}
+                      onClick={() => setOpen(true)}
+                    >
+                      <img src={GOLD_PLUS_ICON} alt="" />
+                    </button>
+                  </Hint>
                 )
               )}
               {!skill && !isYou && <span className="skill-slot skill-slot-empty" />}
