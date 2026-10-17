@@ -145,10 +145,10 @@ describe("private channels", () => {
     expect(viewFor(state, "p1").chat.map((m) => m.text)).toEqual(["hello"]);
   });
 
-  it("stops dead members reading and posting", () => {
+  it("stops dead members reading and posting in private channels", () => {
     const { state, id } = withChannel();
     const dead = deadCopy(state, "p1");
-    expect(viewFor(dead, "p1").chatChannels).toEqual([]);
+    expect(viewFor(dead, "p1").chatChannels).toEqual(["graveyard"]);
     expect(sendChat(dead, "p1", id, "hi").ok).toBe(false);
     expect(createChannel(dead, "p1", "x").ok).toBe(false);
   });

@@ -15,10 +15,13 @@ export const CHAT_CHANNELS: readonly ChatChannel[] = ["global", ...FEATURE_CHANN
  */
 export const MUSH_CHANNEL = "mush";
 
+/** The graveyard: only the dead read or post (decided 2026-10-17). */
+export const GRAVEYARD_CHANNEL = "graveyard";
+
 /** Id of a player-made private channel (`pc-1`, `pc-2`, ...). Never collides with a ChatChannel name. */
 export type PrivateChannelId = `pc-${number}`;
 /** Anything a chat message can be posted to. */
-export type ChannelId = ChatChannel | typeof MUSH_CHANNEL | PrivateChannelId;
+export type ChannelId = ChatChannel | typeof MUSH_CHANNEL | typeof GRAVEYARD_CHANNEL | PrivateChannelId;
 
 /** Chat among the members only. Anyone in it may invite others; it ends when the last member leaves. */
 export interface PrivateChannel {

@@ -145,7 +145,7 @@ describe("Mush channel", () => {
   it("is closed to a dead Mush", () => {
     const s = ship();
     player(s, "p0").alive = false;
-    expect(viewFor(s, "p0").chatChannels).toEqual([]);
+    expect(viewFor(s, "p0").chatChannels).toEqual(["graveyard"]);
   });
 });
 

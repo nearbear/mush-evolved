@@ -150,8 +150,8 @@
   },
   "death": {
     "title": "Vous avez perdu la vie.",
-    "body": "Vous pouvez encore lire le chat général et les fils des fonctions, mais vous ne pouvez plus écrire.",
-    "bodyMush": "Vous pouvez encore lire le chat général, les fils des fonctions et le canal Mush, mais vous ne pouvez plus écrire."
+    "body": "Vous pouvez encore lire le chat général et les fils des fonctions, mais vous ne pouvez plus y écrire. Vous pouvez parler avec les autres morts dans le Cimetière.",
+    "bodyMush": "Vous pouvez encore lire le chat général, les fils des fonctions et le canal Mush, mais vous ne pouvez plus y écrire. Vous pouvez parler avec les autres morts dans le Cimetière."
   },
   "itrackie": {
     "ago": {
@@ -174,9 +174,11 @@
       "room": "Journal de la salle",
       "global": "Chat général",
       "features": "Fonctions",
-      "mush": "Canal Mush"
+      "mush": "Canal Mush",
+      "graveyard": "Cimetière"
     },
     "mushPlaceholder": "Message aux Mush…",
+    "graveyardPlaceholder": "Message aux morts…",
     "readOnly": "Les morts peuvent lire, mais pas écrire.",
     "features": {
       "botany": "Botanique",

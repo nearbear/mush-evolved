@@ -8,7 +8,7 @@ import { useTranslation } from "react-i18next";
 import { useNames } from "../i18n/names.ts";
 import { ScrollArea } from "@base-ui/react/scroll-area";
 import { Tabs } from "@base-ui/react/tabs";
-import { FEATURE_CHANNELS, ITRACKIE_ITEM, MAX_CHAT_LENGTH, MUSH_CHANNEL, type ChannelId, type FeatureChannel, type PlayerView, type PrivateChannelId } from "@mush2/shared";
+import { FEATURE_CHANNELS, ITRACKIE_ITEM, GRAVEYARD_CHANNEL, MAX_CHAT_LENGTH, MUSH_CHANNEL, type ChannelId, type FeatureChannel, type PlayerView, type PrivateChannelId } from "@mush2/shared";
 import { FeatureSelect } from "./FeatureSelect.tsx";
 import { Hint, IconButton, IconTab } from "./IconButton.tsx";
 import { Markdown } from "./Markdown.tsx";
@@ -19,13 +19,14 @@ import { TAB_ICONS } from "../art/assets.ts";
 type Notes = Record<FeatureChannel, string[]>;
 const NO_NOTES = Object.fromEntries(FEATURE_CHANNELS.map((f) => [f, []])) as unknown as Notes;
 
-type TabId = "room" | "global" | "features" | "private" | "mush";
+type TabId = "room" | "global" | "features" | "private" | "mush" | "graveyard";
 const TAB_TITLES = {
   room: "itrackie.tabs.room",
   global: "itrackie.tabs.global",
   features: "itrackie.tabs.features",
   private: "channels.tab",
   mush: "itrackie.tabs.mush",
+  graveyard: "itrackie.tabs.graveyard",
 } as const;
 
 export interface ChannelHandlers {
@@ -70,9 +71,11 @@ export function ITrackie({
   useEffect(() => {
     if (mush && tab === "mush") setMushSeen(newestMush);
   }, [mush, tab, newestMush]);
+  // The Graveyard tab is for the dead alone; the server sends the channel to no one else.
+  const graveyard = view.readChannels.includes(GRAVEYARD_CHANNEL);
   // The dead have no room log and no private channels (#45): those tabs go, and they land on global chat.
   const alive = view.you.alive;
-  const activeTab: TabId = !alive && (tab === "room" || tab === "private") ? "global" : tab === "mush" && !mush ? "room" : tab;
+  const activeTab: TabId = !alive && (tab === "room" || tab === "private") ? "global" : (tab === "mush" && !mush) || (tab === "graveyard" && !graveyard) ? "room" : tab;
   const carrying = view.inventory.some((i) => i.type === ITRACKIE_ITEM);
 
   return (
@@ -91,6 +94,7 @@ export function ITrackie({
               className={`mush-tab${newestMush > mushSeen ? " unread" : ""}`}
             />
           )}
+          {graveyard && <IconTab value="graveyard" src={TAB_ICONS.graveyard} label={t("itrackie.tabs.graveyard")} />}
         </Tabs.List>
         <div className="itrackie-card">
           <h2 className="itrackie-title">{t(TAB_TITLES[activeTab])}</h2>
@@ -147,6 +151,12 @@ export function ITrackie({
           {mush && (
             <Tabs.Panel className="itrackie-panel" value="mush" keepMounted>
               <Thread view={view} channel={MUSH_CHANNEL} placeholder={t("itrackie.mushPlaceholder")} onSend={(text) => onChat(MUSH_CHANNEL, text)} onToggle={onToggle} />
+            </Tabs.Panel>
+          )}
+
+          {graveyard && (
+            <Tabs.Panel className="itrackie-panel" value="graveyard" keepMounted>
+              <Thread view={view} channel={GRAVEYARD_CHANNEL} placeholder={t("itrackie.graveyardPlaceholder")} onSend={(text) => onChat(GRAVEYARD_CHANNEL, text)} onToggle={onToggle} />
             </Tabs.Panel>
           )}
 

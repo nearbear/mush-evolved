@@ -26,7 +26,7 @@ All under `web/src/`. UI rules are in `web/CLAUDE.md`.
 - `InspectPanel.tsx`: the selected person, equipment, or item, with its legal actions.
 - `SkillSlots.tsx`: skill slots and the picker dialog.
 - `StatusIcons.tsx`, `ItemAttrIcons.tsx`: status and item attribute icons.
-- `ITrackie.tsx`: the right panel: room log, global chat, Features, Private tabs. Messages come from `readChannels`, the message box from `chatChannels`; the dead lose the Room and Private tabs and get a read-only note instead of the box.
+- `ITrackie.tsx`: the right panel: room log, global chat, Features, Private tabs. Messages come from `readChannels`, the message box from `chatChannels`; the dead lose the Room and Private tabs, get a read-only note instead of the box in the other channels, and gain a skull Graveyard tab.
 - `DeathNotice.tsx`: what a dead player sees where the room was.
 - `ItemIcon.tsx`: an item's icon; a corpse shows its owner lying down.
 - `FeatureSelect.tsx`: the Features drop-down.

@@ -169,7 +169,7 @@ export const MORALE_PIP = design["lifebar2"]!;
 // Tab icons (16x16-ish pixel art). Keys are the names the user chose; see docs/tab-icons.md.
 const uiIcons = urls(
   import.meta.glob<string>(
-    "../../../Mush/www/img/icons/ui/{mush,mush_progressive,starter,p_alive,survival,awake,comm,learned,stock,microsc,neron,info,infoalert,local,planet,conceptor,talkie,shield,basicplus,goldplus,notebook,pa_cook,pa_garden,pa_pilgred,pam,pa_heal,pa_eng,pa_exp,pa_comp,pa_core,pa_shoot,private,search,spore,wall,fav,triumph,heavy}.{png,gif}",
+    "../../../Mush/www/img/icons/ui/{mush,mush_progressive,starter,p_alive,survival,awake,comm,learned,stock,microsc,neron,info,infoalert,local,planet,conceptor,talkie,shield,basicplus,goldplus,notebook,pa_cook,pa_garden,pa_pilgred,pam,pa_heal,pa_eng,pa_exp,pa_comp,pa_core,pa_shoot,private,search,spore,wall,fav,triumph,heavy,dead}.{png,gif}",
     { eager: true, query: "?url", import: "default" },
   ),
 );
@@ -239,6 +239,7 @@ export const TAB_ICONS = {
   private: uiIcons["private"]!,
   items: uiIcons["search"]!,
   mushChat: uiIcons["spore"]!,
+  graveyard: uiIcons["dead"]!,
   global: uiIcons["wall"]!,
   favorites: uiIcons["fav"]!,
   goals: uiIcons["triumph"]!,

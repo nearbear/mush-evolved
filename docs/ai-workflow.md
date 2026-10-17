@@ -666,3 +666,6 @@ User asked for the percent chance of success in parentheses on actions. Added `P
 
 - Each action class declares `visibility` (public/private/secret/covert), read by the client through `actionVisibility(type)`; `ActionLabel` draws an icon after the label: `icons/ui/lock.png` (private), `camera.png` (secret), `discrete.png` (covert, the hushing hand). The request named "covert" twice; secret→camera, covert→hand was assumed.
 - Visibility is declared by hand next to each action's log call, not derived from it. Share (DTT/STT) is marked private though the recipient is told too; dismantle stays public (only its failure is private). No action is secret yet, so the camera icon is unused for now.
+
+### 2026-10-17: graveyard chat for the dead
+The owner asked for a dead-only chat tab on the iTrackie, with the skull icon from the catalog (`ui/dead.png`, found by grepping `docs/catalogs/icon-catalog.md`). Modelled it on the Mush channel: a new `GRAVEYARD_CHANNEL` that `readChannels` and `chatChannels` give only to the dead, so `viewFor` and the server needed no changes. Assumed (not asked): no iTrackie needed, new arrivals see the history. Needed correction: three existing tests asserted that the dead post nowhere; and the new tab's hook used `graveyard` before it was declared (caught by typecheck).

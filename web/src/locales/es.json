@@ -150,8 +150,8 @@
   },
   "death": {
     "title": "Has muerto.",
-    "body": "Todavía puedes leer el chat global y los hilos de funciones, pero ya no puedes escribir.",
-    "bodyMush": "Todavía puedes leer el chat global, los hilos de funciones y el canal Mush, pero ya no puedes escribir."
+    "body": "Todavía puedes leer el chat global y los hilos de funciones, pero ya no puedes escribir allí. Puedes hablar con los demás muertos en el Cementerio.",
+    "bodyMush": "Todavía puedes leer el chat global, los hilos de funciones y el canal Mush, pero ya no puedes escribir allí. Puedes hablar con los demás muertos en el Cementerio."
   },
   "itrackie": {
     "ago": {
@@ -174,9 +174,11 @@
       "room": "Registro de la sala",
       "global": "Chat global",
       "features": "Funciones",
-      "mush": "Canal Mush"
+      "mush": "Canal Mush",
+      "graveyard": "Cementerio"
     },
     "mushPlaceholder": "Mensaje a los Mush…",
+    "graveyardPlaceholder": "Mensaje a los muertos…",
     "readOnly": "Los muertos pueden leer, pero no escribir.",
     "features": {
       "botany": "Botánica",

@@ -7,7 +7,7 @@
 import { ITRACKIE_ITEM, itemsIn } from "./items.ts";
 import { channelLimit } from "./modifiers.ts";
 import { clone, fail, findPlayer, type ActionResult } from "./helpers.ts";
-import { CHAT_CHANNELS, MUSH_CHANNEL } from "./types.ts";
+import { CHAT_CHANNELS, GRAVEYARD_CHANNEL, MUSH_CHANNEL } from "./types.ts";
 import type { ChannelId, ChatMessage, GameState, PlayerId, PlayerState, PrivateChannelId } from "./types.ts";
 
 /** Longest chat message the rules accept. Moderation trims before this. */
@@ -53,16 +53,18 @@ export function readChannels(state: GameState, player: Readonly<PlayerState>): C
   if (player.alive) return chatChannels(state, player);
   if (state.phase !== "playing") return [];
   const mush: ChannelId[] = player.role === "mush" ? [MUSH_CHANNEL] : [];
-  return [...CHAT_CHANNELS, ...mush];
+  return [...CHAT_CHANNELS, ...mush, GRAVEYARD_CHANNEL];
 }
 
 /**
- * Channels a player may post to (and so read). The dead post nowhere. Global chat and every feature thread
+ * Channels a player may post to (and so read). The dead post only in the graveyard. Global chat and every feature thread
  * need an iTrackie in your inventory (confirmed 2026-10-13); drop it and you
  * lose them, pick one up and you see the whole history.
  */
 export function chatChannels(state: GameState, player: Readonly<PlayerState>): ChannelId[] {
-  if (state.phase !== "playing" || !player.alive) return [];
+  if (state.phase !== "playing") return [];
+  // The graveyard is the one place the dead may post (decided 2026-10-17), and no iTrackie is needed.
+  if (!player.alive) return [GRAVEYARD_CHANNEL];
   // The Mush channel is a link between the Mush, not a device: no iTrackie needed (decided 2026-10-16).
   const mush: ChannelId[] = player.role === "mush" ? [MUSH_CHANNEL] : [];
   const hasITrackie = itemsIn(state, { kind: "player", id: player.id }).some((i) => i.type === ITRACKIE_ITEM);

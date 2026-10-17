@@ -309,7 +309,7 @@ describe("chat", () => {
     const state = newGame();
     player(state, "p0").alive = false;
     expect(sendChat(state, "p0", "global", "boo").ok).toBe(false);
-    expect(viewFor(state, "p0").chatChannels).toEqual([]);
+    expect(viewFor(state, "p0").chatChannels).toEqual(["graveyard"]);
   });
 });
 
@@ -365,7 +365,7 @@ describe("iTrackie and feature threads", () => {
 
   it("parses every channel and rejects unknown ones", () => {
     const chat = (channel: unknown) => parseGameMessage(JSON.stringify({ type: "chat", channel, text: "hi" }));
-    for (const channel of [...CHAT_CHANNELS, "mush"]) expect(chat(channel)).toEqual({ type: "chat", channel, text: "hi" });
+    for (const channel of [...CHAT_CHANNELS, "mush", "graveyard"]) expect(chat(channel)).toEqual({ type: "chat", channel, text: "hi" });
     for (const bad of ["private", "", 1, null, "__proto__"]) expect(chat(bad)).toBeNull();
   });
 });

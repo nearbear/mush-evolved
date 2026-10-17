@@ -5,7 +5,7 @@ import { damage, killPlayer } from "../src/death.ts";
 import { CORPSE_ITEM, ITEM_TYPES, ITRACKIE_ITEM, itemsIn } from "../src/items.ts";
 import { applyAction, createGame, viewFor, type ActionResult } from "../src/rules.ts";
 import { createChannel, inviteToChannel, sendChat, toggleCheckbox } from "../src/chat.ts";
-import { CHAT_CHANNELS, MUSH_CHANNEL, type Action, type GameState, type PlayerId, type Seat } from "../src/types.ts";
+import { CHAT_CHANNELS, GRAVEYARD_CHANNEL, MUSH_CHANNEL, type Action, type GameState, type PlayerId, type Seat } from "../src/types.ts";
 
 const seats: Seat[] = Array.from({ length: 4 }, (_, i) => ({ id: `p${i}`, name: `Player ${i}`, isBot: false, character: CHARACTERS[i]!.id }));
 const config = { ...DEFAULT_CONFIG, mushCount: 1, startItems: [], startSkills: [] };
@@ -137,17 +137,33 @@ describe("death", () => {
 });
 
 describe("the dead player's view (#45)", () => {
-  it("reads global chat and the feature threads without an iTrackie, and posts nowhere", () => {
+  it("reads global chat and the feature threads without an iTrackie, and posts only in the graveyard", () => {
     let s = must(sendChat(ship(), "p1", "global", "- [ ] last words"));
     s = punchToDeath(s);
     const v = viewFor(s, "p1");
     expect(v.inventory).toEqual([]);
-    expect(v.readChannels).toEqual([...CHAT_CHANNELS]);
-    expect(v.chatChannels).toEqual([]);
+    expect(v.readChannels).toEqual([...CHAT_CHANNELS, GRAVEYARD_CHANNEL]);
+    expect(v.chatChannels).toEqual([GRAVEYARD_CHANNEL]);
     expect(v.chat.some((m) => m.system?.key === "diedHuman")).toBe(true);
     for (const channel of CHAT_CHANNELS) expect(sendChat(s, "p1", channel, "boo").ok).toBe(false);
     const mine = s.chat.find((m) => m.from === "p1")!;
     expect(toggleCheckbox(s, "p1", mine.id, 0).ok).toBe(false);
+  });
+
+  it("the graveyard is for the dead alone: they talk in it, the living neither read nor post", () => {
+    const s = ship();
+    killPlayer(s, player(s, "p1"));
+    killPlayer(s, player(s, "p3"));
+    const posted = must(sendChat(s, "p1", GRAVEYARD_CHANNEL, "anyone there?"));
+    expect(viewFor(posted, "p3").chat.map((m) => m.text)).toContain("anyone there?");
+    expect(sendChat(posted, "p3", GRAVEYARD_CHANNEL, "yes").ok).toBe(true);
+    for (const living of ["p0", "p2"]) {
+      const v = viewFor(posted, living);
+      expect(v.readChannels).not.toContain(GRAVEYARD_CHANNEL);
+      expect(v.chatChannels).not.toContain(GRAVEYARD_CHANNEL);
+      expect(v.chat.some((m) => m.channel === GRAVEYARD_CHANNEL)).toBe(false);
+      expect(sendChat(posted, living, GRAVEYARD_CHANNEL, "boo").ok).toBe(false);
+    }
   });
 
   it("a dead Mush also reads the Mush channel, read-only; a dead human never does", () => {

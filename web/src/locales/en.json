@@ -150,8 +150,8 @@
   },
   "death": {
     "title": "You are dead.",
-    "body": "You can still read global chat and the feature threads, but you can no longer post.",
-    "bodyMush": "You can still read global chat, the feature threads and the Mush channel, but you can no longer post."
+    "body": "You can still read global chat and the feature threads, but you can no longer post there. You can talk with the other dead in the Graveyard.",
+    "bodyMush": "You can still read global chat, the feature threads and the Mush channel, but you can no longer post there. You can talk with the other dead in the Graveyard."
   },
   "itrackie": {
     "ago": {
@@ -174,9 +174,11 @@
       "room": "Room log",
       "global": "Global chat",
       "features": "Features",
-      "mush": "Mush channel"
+      "mush": "Mush channel",
+      "graveyard": "Graveyard"
     },
     "mushPlaceholder": "Message the Mush…",
+    "graveyardPlaceholder": "Message the dead…",
     "readOnly": "The dead can read, but not post.",
     "features": {
       "botany": "Botany",
