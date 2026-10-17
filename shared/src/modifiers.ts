@@ -9,6 +9,7 @@
 // accessor below; `fold` does the looping.
 
 import { carriesHeavy } from "./items.ts";
+import { RESEARCH_COMPLETE } from "./research.ts";
 import { antic_perfume } from "./modifiers/antic_perfume.ts";
 import { caffeinomaniac } from "./modifiers/caffeinomaniac.ts";
 import { creative } from "./modifiers/creative.ts";
@@ -120,7 +121,10 @@ export const contaminationCapacity = (
   state: Readonly<GameState>,
   player: Readonly<PlayerState>,
   registry: ModifierRegistry = MODIFIERS,
-) => fold("contaminationCapacity", state.config.infection.capacity, state, player, registry);
+) => {
+  const bonus = (state.research.MUSHOPHAGE_BACTERIA ?? 0) >= RESEARCH_COMPLETE ? state.config.infection.mushophageBonus : 0;
+  return fold("contaminationCapacity", state.config.infection.capacity + bonus, state, player, registry);
+};
 
 /**
  * What a move would cost: AP spent and MP afterwards, or null if the player

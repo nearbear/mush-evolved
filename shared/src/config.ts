@@ -44,7 +44,7 @@ export const DEFAULT_CONFIG: GameConfig = {
   bond: { cost: { ap: 1 } },
   share: { cost: { ap: 1 }, effect: { morale: 2 } },
   // Confirmed 2026-10-14: a human converts on reaching 3 contamination (items and skills will raise it).
-  infection: { capacity: 3 },
+  infection: { capacity: 3, mushophageBonus: 1 },
   // Confirmed 2026-10-15: spiking costs 1 AP and 1 spore, and raises a human's contamination by 1.
   spike: { cost: { ap: 1 } },
   // Confirmed 2026-10-13/14: extracting costs 1 AP and gives 1 spore; each Mush waits 4 cycles between extractions

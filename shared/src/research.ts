@@ -37,9 +37,9 @@ export type ResearchStatus = "full" | "partial" | "none";
 
 /**
  * Implementation status shown in the terminal's research list. Update it when a research gains effects. Progress
- * itself works for all of them; nothing happens on completion yet, so the map is empty.
+ * itself works for all of them; only researches with completion effects are listed.
  */
-export const RESEARCH_STATUS: Readonly<Partial<Record<(typeof RESEARCH_IDS)[number], ResearchStatus>>> = {};
+export const RESEARCH_STATUS: Readonly<Partial<Record<(typeof RESEARCH_IDS)[number], ResearchStatus>>> = { MUSHOPHAGE_BACTERIA: "full" };
 
 export function researchStatus(research: string): ResearchStatus {
   return RESEARCH_STATUS[research as (typeof RESEARCH_IDS)[number]] ?? "none";

@@ -628,3 +628,8 @@ The `coffee` item had no icon (no `coffee.jpg` in `www/img/icons/items/`). A con
 
 "Add the computer scientist skill" turned out to mean the in-game `computer` skill, not a Claude skill; I grepped the repo to find that out before asking. The owner decided: a separate Computer point pool (cap 4, +2 per day and 2 on pick, carries over, private), spent as 2 points instead of 2 AP on research; no hacking, no NERON bonus. Built as a `computerPointsPerDay` fold plus `onPick`, reusing the existing `resources.comp` counter. Needed no correction.
 Correction (owner, same day): I had read the points as a currency worth 2 AP. A resource point instead makes one instance of an action free (like care points for a heal), so one Computer point makes one research cost 0 AP.
+
+## 2026-10-17: Mush-eating bacteria research
+- Owner decided: completing it raises the contamination needed to infect a human from 3 to 4. I applied it ship-wide, to all humans (no per-player state), via `contaminationCapacity`, and did not ask follow-ups. Humans already at 3 when it completes are not converted retroactively; that was my default, not an owner decision.
+- First research with a completion effect; `RESEARCH_STATUS` now has its first entry.
+- Wrap-up caught that `config` is persisted inside `GameState`, so the new `infection.mushophageBonus` field would be missing in saved games (`NaN` capacity once the research completed). Fixed by bumping `STATE_VERSION` to 31 in `server/src/GameRoom.ts`; I had missed it when implementing.

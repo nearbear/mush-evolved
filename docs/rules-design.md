@@ -8,6 +8,7 @@ The record of answered rule decisions and the design for the rules that are not 
 
 ## Decisions received
 
+- **Mush-eating bacteria research** (2026-10-17, owner): once complete, a human needs 4 contamination to convert instead of 3, for every human. Humans already at 3 are not converted when it completes (my default).
 - **Caffeinomaniac** (2026-10-16, owner): consuming a coffee gives +2 AP on top of the coffee's own, capped at the AP cap; coffee only; the NERON project bonus is not built.
 - **Terminals** (2026-10-16, owner): every terminal gets an `access` action that opens a blank window showing its name; the terminals' real actions come later. Free and unrestricted for now (my default; the original has a `MODULING` status and access limits for Command and BIOS, not built). Terminals: Astro, Command, Com center, NERON core, BIOS, Research lab, Pilgred, Calculator.
 - **Research** (2026-10-16, owner): working on a research costs 2 AP and advances it 25%; no repeat penalty for now; anyone not dirty can contribute; every research that has card art is in (24); the list and progress are fully public. My defaults, not confirmed: it is done at the lab's research terminal, a finished research cannot be worked on, any number can be in progress at once, and nothing happens on completion yet (the original's difficulty, samples, prerequisites and effects are ignored).

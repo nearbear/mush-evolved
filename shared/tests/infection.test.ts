@@ -148,3 +148,16 @@ describe("Mush channel", () => {
     expect(viewFor(s, "p0").chatChannels).toEqual([]);
   });
 });
+
+describe("mushophage bacteria research", () => {
+  it("raises everyone's capacity from 3 to 4 only once it is complete", () => {
+    const s = ship();
+    s.research.MUSHOPHAGE_BACTERIA = 75;
+    expect(player(spikes(s, 3), "p1").role).toBe("mush");
+    const done = ship();
+    done.research.MUSHOPHAGE_BACTERIA = 100;
+    const three = spikes(done, 3);
+    expect(player(three, "p1").role).toBe("human");
+    expect(player(spikes(done, 4), "p1").role).toBe("mush");
+  });
+});

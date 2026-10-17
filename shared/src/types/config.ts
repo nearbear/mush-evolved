@@ -40,6 +40,7 @@ export interface GameConfig {
   };
   infection: {
     capacity: number; // Contamination a human reaches before converting to Mush, before modifiers (confirmed 2026-10-14).
+    mushophageBonus: number; // Capacity the completed MUSHOPHAGE_BACTERIA research adds for every human (decided 2026-10-17).
   };
   spike: {
     cost: { ap: number }; // Confirmed 2026-10-15.
