@@ -264,7 +264,8 @@
   },
   "itemAttr": {
     "label": "Item attributes",
-    "heavy": "Heavy"
+    "heavy": "Heavy",
+    "heavyDesc": "Carrying it makes every move between rooms cost {{mp}} extra movement points, regardless of how many heavy objects you are carrying. The Sturdy skill cancels this."
   },
   "items": {
     "super_talky": "iTrackie",

@@ -296,6 +296,7 @@ export function viewFor(state: GameState, playerId: PlayerId): PlayerView {
       to: [...(state.bonds[playerId] ?? [])],
       from: state.players.filter((o) => state.bonds[o.id]?.includes(playerId)).map((o) => o.id),
     },
+    config: { heavyMpPenalty: state.config.heavy.mpPenalty },
     maxAp: state.config.maxAp,
     maxHp: state.config.maxHp,
     maxMorale: state.config.maxMorale,

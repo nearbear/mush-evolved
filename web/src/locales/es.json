@@ -264,7 +264,8 @@
   },
   "itemAttr": {
     "label": "Atributos del objeto",
-    "heavy": "Pesado"
+    "heavy": "Pesado",
+    "heavyDesc": "Transportarlo hace que cada desplazamiento entre salas cueste {{mp}} puntos de movimiento adicionales, independientemente de cuántos objetos pesados lleves. La habilidad Robusto anula esta penalización."
   },
   "items": {
     "super_talky": "iTrackie",

@@ -41,6 +41,12 @@ export interface OtherPlayerView {
 }
 
 /** What one seat is allowed to know. This is the only game data a client or bot receives. */
+/** The slice of `GameConfig` sent to every client. Same for everyone, so nothing hidden. */
+export interface PublicConfig {
+  /** MP added to each move while carrying a heavy item (before modifiers). */
+  heavyMpPenalty: number;
+}
+
 export interface PlayerView {
   you: PlayerState;
   /** Every status you have, public and private, stored and derived (statuses.ts). */
@@ -84,6 +90,11 @@ export interface PlayerView {
   channelLimit: number;
   /** Your effective movement rules, after modifiers. */
   movement: MovementRules;
+  /**
+   * Base config numbers the client may show in descriptions. Not modified per player and never used to work out legality;
+   * a player does that sum in their head.
+   */
+  config: PublicConfig;
   /** AP cap (for drawing the AP bar). */
   maxAp: number;
   /** Caps for drawing your HP and morale bars. */

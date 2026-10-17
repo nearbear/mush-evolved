@@ -264,7 +264,8 @@
   },
   "itemAttr": {
     "label": "Attributs de l'objet",
-    "heavy": "Lourd"
+    "heavy": "Lourd",
+    "heavyDesc": "Le porter ajoute {{mp}} points de mouvement au coût de chaque déplacement entre deux pièces, indépendamment du nombre d'objets lourds que vous transportez. La compétence Robuste annule cette pénalité."
   },
   "items": {
     "super_talky": "iTrackie",

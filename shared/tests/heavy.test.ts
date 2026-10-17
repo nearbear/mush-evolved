@@ -26,6 +26,10 @@ const mpSpent = (s: GameState) => {
 };
 
 describe("heavy items", () => {
+  it("the view carries the base penalty for tooltips, whatever the player's skills", () => {
+    expect(viewFor(ship(0), "p0").config.heavyMpPenalty).toBe(2);
+    expect(viewFor(ship(1, ["sturdy"]), "p0").config.heavyMpPenalty).toBe(2);
+  });
   it("the freezer spawns in the refectory", () => {
     const s = createGame(seats, DEFAULT_CONFIG, 3);
     expect(s.items.some((i) => i.type === "freezer" && i.at.kind === "room" && i.at.id === "REFECTORY")).toBe(true);
