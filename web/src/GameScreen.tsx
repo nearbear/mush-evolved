@@ -3,8 +3,9 @@
 
 import { useEffect, useRef, useState } from "react";
 import type PartySocket from "partysocket";
-import type { Action, ActopiCheat, CharacterId, Cheat, GameClientMessage, GameServerMessage, PlayerView, RoomId, Target } from "@mush2/shared";
+import { CORPSE_ITEM, type Action, type ActopiCheat, type CharacterId, type Cheat, type GameClientMessage, type GameServerMessage, type PlayerView, type RoomId, type Target } from "@mush2/shared";
 import { BottomNav, type MobilePanel } from "./hud/BottomNav.tsx";
+import { DeathNotice } from "./hud/DeathNotice.tsx";
 import { InspectPanel } from "./hud/InspectPanel.tsx";
 import { ITrackie } from "./hud/ITrackie.tsx";
 import { PeekBar } from "./hud/PeekBar.tsx";
@@ -12,7 +13,7 @@ import { SelfPanel } from "./hud/SelfPanel.tsx";
 import { resolveTarget } from "./hud/targets.ts";
 import { TopBar } from "./hud/TopBar.tsx";
 import { gameSocket, type SeatTicket } from "./net.ts";
-import { IsoRoom, type Occupant } from "./iso/IsoRoom.tsx";
+import { IsoRoom, type Corpse, type Occupant } from "./iso/IsoRoom.tsx";
 import { useShipLayout } from "./iso/shipLayout.ts";
 import { useFogDepth } from "./fogDepth.ts";
 import { useSpeechBubbles } from "./scene/useSpeechBubbles.ts";
@@ -99,6 +100,10 @@ export function GameScreen({ ticket, onLeave }: { ticket: SeatTicket; onLeave: (
   // Where the view places other people outside your room (everyone with ACTOPI on, nobody with it off).
   const nearby: Partial<Record<RoomId, Occupant[]>> = {};
   for (const p of view.players) if (p.room !== undefined && p.room !== you.room) (nearby[p.room] ??= []).push(occupant(p));
+  // Corpses on the floor here, drawn lying down. Whose body each is comes from the view (`ItemView.of`).
+  const corpses: Corpse[] = view.roomItems
+    .filter((i) => i.type === CORPSE_ITEM)
+    .map((i) => ({ id: i.id, character: [you, ...view.players].find((p) => p.id === i.of)?.character }));
   const move = (to: string) => send({ type: "move", to });
   const select = (t: Target | null) => {
     markSelected();
@@ -136,7 +141,9 @@ export function GameScreen({ ticket, onLeave }: { ticket: SeatTicket; onLeave: (
 
         <div className="world">
           <div className="room-view">
-            {layout ? (
+            {!you.alive ? (
+              <DeathNotice view={view} />
+            ) : layout ? (
               <IsoRoom
                 layout={layout}
                 room={you.room}
@@ -144,6 +151,7 @@ export function GameScreen({ ticket, onLeave }: { ticket: SeatTicket; onLeave: (
                   .sort((a, b) => a.id.localeCompare(b.id))
                   .map(occupant)}
                 nearby={nearby}
+                corpses={corpses}
                 fogDepth={fogDepth}
                 equipment={view.roomEquipment}
                 reachable={reachable}
@@ -180,7 +188,7 @@ export function GameScreen({ ticket, onLeave }: { ticket: SeatTicket; onLeave: (
         />
       </div>
 
-      {mobile && panel === "room" && (
+      {mobile && panel === "room" && you.alive && (
         <PeekBar
           view={view}
           target={target}

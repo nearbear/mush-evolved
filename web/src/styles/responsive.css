@@ -36,7 +36,8 @@
   .world > .self-panel {
     flex: none;
   }
-  .room-view > .iso-room {
+  .room-view > .iso-room,
+  .room-view > .death-notice {
     flex: 1 1 0;
     min-height: 0;
   }

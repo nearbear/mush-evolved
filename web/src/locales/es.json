@@ -137,6 +137,11 @@
     "noOne": "No hay nadie a quien invitar.",
     "tab": "Privado"
   },
+  "death": {
+    "title": "Has muerto.",
+    "body": "Todavía puedes leer el chat global y los hilos de funciones, pero ya no puedes escribir.",
+    "bodyMush": "Todavía puedes leer el chat global, los hilos de funciones y el canal Mush, pero ya no puedes escribir."
+  },
   "itrackie": {
     "checkbox": "Casilla de verificación",
     "composer": {
@@ -152,6 +157,7 @@
       "mush": "Canal Mush"
     },
     "mushPlaceholder": "Mensaje a los Mush…",
+    "readOnly": "Los muertos pueden leer, pero no escribir.",
     "features": {
       "botany": "Botánica",
       "research": "Investigación",

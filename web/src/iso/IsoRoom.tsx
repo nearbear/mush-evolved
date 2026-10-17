@@ -19,9 +19,9 @@
 // a layer above everything. People in this room still take clicks through it.
 
 import { useEffect, useId, useLayoutEffect, useMemo, useRef, useState, type CSSProperties, type MouseEvent, type PointerEvent } from "react";
-import { placedEquipment, type CharacterId, type EquipmentView, type RoomId, type ShipLayout, type Target } from "@mush2/shared";
+import { CORPSE_ITEM, placedEquipment, type CharacterId, type EquipmentView, type ItemId, type RoomId, type ShipLayout, type Target } from "@mush2/shared";
 import { sameTarget } from "../hud/targets.ts";
-import { spriteStrip } from "../art/assets.ts";
+import { lyingFrame, spriteStrip } from "../art/assets.ts";
 import { CrewSprite } from "../scene/CrewSprite.tsx";
 import { StatusBadges } from "../scene/StatusBadges.tsx";
 import { BUBBLE_MS, type Bubble } from "../scene/useSpeechBubbles.ts";
@@ -52,12 +52,24 @@ export interface Occupant {
   statuses: readonly string[];
 }
 
+/** A corpse item on the floor, and whose body it is (from `ItemView.of`). */
+export interface Corpse {
+  id: ItemId;
+  character: CharacterId | undefined;
+}
+
+/** Actor ids for corpses get this prefix, so they can't collide with player ids. */
+const CORPSE_PREFIX = "corpse:";
+/** The lying pose's cell on the cast sheet (art/assets.ts). */
+const LYING_SIZE = { width: 50, height: 48 };
+
 export function IsoRoom({
   layout,
   room,
   occupants,
   nearby,
   fogDepth,
+  corpses,
   equipment,
   reachable,
   selected,
@@ -75,6 +87,8 @@ export function IsoRoom({
   nearby: Partial<Record<RoomId, Occupant[]>>;
   /** How many rooms out from this one are drawn (fogged): 1 is just those behind its doors, "all" is the whole ship. */
   fogDepth: 1 | 2 | "all";
+  /** Corpses on this room's floor (items, drawn lying down). A carried corpse isn't on the floor, so isn't here. */
+  corpses: Corpse[];
   /** Equipment in this room, from the view. Only these sprites are clickable. */
   equipment: EquipmentView[];
   reachable: Set<RoomId>;
@@ -93,6 +107,7 @@ export function IsoRoom({
   const names = useNames();
   const roomLayout = layout.rooms.find((r) => r.id === room);
   const occupantKey = occupants.map((o) => o.id).join(",");
+  const corpseKey = corpses.map((c) => c.id).join(",");
   const viewportRef = useRef<HTMLDivElement>(null);
   const worldRef = useRef<HTMLDivElement>(null);
   // Where you've clicked to walk. Client-only and cosmetic: the server never hears of it,
@@ -104,16 +119,20 @@ export function IsoRoom({
   // This room and the rooms behind its doors, each with its people, drawn as one scene so that
   // whichever is in front covers the other. Display only: where people stand isn't game state.
   const nearbyKey = JSON.stringify(Object.entries(nearby).map(([r, os]) => [r, os?.map((o) => o.id)]));
-  // biome-ignore lint/correctness/useExhaustiveDependencies: occupantKey and nearbyKey stand in for occupants and nearby: positions only change when who is where changes.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: occupantKey, corpseKey and nearbyKey stand in for occupants, corpses and nearby: positions only change when who or what is where changes.
   const { scene, sprites, neighborSprites, neighbors, box, ownCells } = useMemo(() => {
     if (!roomLayout) return { scene: [], sprites: [], neighborSprites: [], neighbors: [], box: bounds([]), ownCells: new Set<string>() };
-    const spots = spreadActors(cells, occupants.length);
-    const actors = occupants.map((o, i) => ({
-      id: o.id,
-      cell: (o.you && myCell) || spots[i] || { x: 0, y: 0 },
-      width: 32,
-      height: 48,
-    }));
+    const spots = spreadActors(cells, occupants.length + corpses.length);
+    const actors = [
+      ...occupants.map((o, i) => ({
+        id: o.id,
+        cell: (o.you && myCell) || spots[i] || { x: 0, y: 0 },
+        width: 32,
+        height: 48,
+      })),
+      // A corpse is placed like a person (so paint order and walls treat it the same) but drawn lying down.
+      ...corpses.map((c, i) => ({ id: `${CORPSE_PREFIX}${c.id}`, cell: spots[occupants.length + i] ?? { x: 0, y: 0 }, ...LYING_SIZE })),
+    ];
     const neighbors = neighborRooms(layout, roomLayout, fogDepth).map(({ room: n, dx, dy, ring }) => {
       const people = nearby[n.id as RoomId] ?? [];
       const spots = spreadActors(walkableCells(layout, n), people.length);
@@ -132,7 +151,7 @@ export function IsoRoom({
       for (const [ax, ay] of [[x + 1, y], [x - 1, y], [x, y + 1], [x, y - 1]] as const) ownCells.add(`${ax},${ay}`);
     }
     return { scene, sprites, neighborSprites, neighbors, box: bounds(sprites), ownCells };
-  }, [layout, roomLayout, fogDepth, cells, myCell, occupantKey, nearbyKey]);
+  }, [layout, roomLayout, fogDepth, cells, myCell, occupantKey, corpseKey, nearbyKey]);
 
   // Sprites draw at exactly one screen pixel per source pixel, so art stays crisp.
   // The camera always follows you: there is no manual panning, and it stops at this room's edges
@@ -172,11 +191,18 @@ export function IsoRoom({
 
   const ringOf = new Map(neighbors.map((n) => [n.id as string, n.ring]));
   const byId = new Map([...occupants, ...neighbors.flatMap((n) => n.people)].map((o) => [o.id, o]));
-  /** The image a sprite's pixels come from, and whether its background is color-keyed. */
-  const source = (s: PlacedSprite): { url: string | undefined; keyed: boolean } =>
-    s.kind === "actor"
-      ? { url: spriteStrip(byId.get(s.key.slice(2))?.character, "face"), keyed: true }
-      : { url: atlasUrl(layout, s.sheet), keyed: false };
+  /** The corpse an actor sprite draws, if it is one. */
+  const corpseOf = (s: PlacedSprite) => (s.kind === "actor" && s.key.startsWith(`a:${CORPSE_PREFIX}`) ? corpses.find((c) => `a:${CORPSE_PREFIX}${c.id}` === s.key) : undefined);
+  /** The image a sprite's pixels come from, its frame in that image, and whether its background is color-keyed. */
+  const source = (s: PlacedSprite): { url: string | undefined; frame: { sx: number; sy: number; width: number; height: number }; keyed: boolean } => {
+    if (s.kind !== "actor") return { url: atlasUrl(layout, s.sheet), frame: s, keyed: false };
+    const corpse = corpseOf(s);
+    if (corpse) {
+      const lying = lyingFrame(corpse.character);
+      return { url: lying?.url, frame: lying ?? { sx: 0, sy: 0, ...LYING_SIZE }, keyed: false };
+    }
+    return { url: spriteStrip(byId.get(s.key.slice(2))?.character, "face"), frame: { sx: 0, sy: 0, width: 32, height: 48 }, keyed: true };
+  };
 
   // Load every image this room hit-tests against, so masks are ready by the first click.
   // biome-ignore lint/correctness/useExhaustiveDependencies: re-preload only when the sprite set changes; `source` is rebuilt every render.
@@ -195,6 +221,8 @@ export function IsoRoom({
 
   /** What a sprite does when clicked, or null for scenery. */
   const interaction = (s: PlacedSprite) => {
+    const corpse = corpseOf(s);
+    if (corpse) return { kind: "item" as const, item: corpse.id, title: names.item(CORPSE_ITEM) };
     if (s.kind === "actor") {
       const o = byId.get(s.key.slice(2));
       return o ? { kind: "person" as const, person: o, title: o.name } : null;
@@ -214,8 +242,8 @@ export function IsoRoom({
     const x = (e.clientX - rect.left) + box.minX;
     const y = (e.clientY - rect.top) + box.minY;
     const opaque = (s: PlacedSprite, px: number, py: number) => {
-      const { url, keyed } = source(s);
-      return !url || opaqueAt(url, s.kind === "actor" ? { sx: 0, sy: 0, width: 32, height: 48 } : s, px, py, keyed);
+      const { url, frame, keyed } = source(s);
+      return !url || opaqueAt(url, frame, px, py, keyed);
     };
     const hit = hitTest(sprites, x, y, opaque);
     if (hit) {
@@ -238,6 +266,7 @@ export function IsoRoom({
   const onClick = (e: MouseEvent<HTMLDivElement>) => {
     const hit = pick(e);
     if (hit?.kind === "person") onSelect({ kind: "player", id: hit.person.id });
+    else if (hit?.kind === "item") onSelect({ kind: "item", id: hit.item });
     else if (hit?.kind === "equipment") {
       onSelect({ kind: "equipment", id: hit.equipment.id });
       // Step up to it too (cosmetic, like walking on bare floor).
@@ -311,6 +340,17 @@ export function IsoRoom({
                     <div key={s.key} className={`iso-sprite ${state}`} style={spriteStyle(s)} />
                   );
                 }
+                const corpse = corpseOf(s);
+                if (corpse) {
+                  const lying = lyingFrame(corpse.character);
+                  return (
+                    <div
+                      key={s.key}
+                      className={`iso-actor corpse${isSelected("item", corpse.id) ? " selected" : ""}${s.key === hoverKey ? " hover" : ""}`}
+                      style={{ ...place(s), backgroundImage: lying && `url(${lying.url})`, backgroundPosition: lying && `${-lying.sx}px ${-lying.sy}px` }}
+                    />
+                  );
+                }
                 if (s.kind === "actor") {
                   const o = byId.get(s.key.slice(2))!;
                   return (
@@ -336,7 +376,7 @@ export function IsoRoom({
                 plays its walk-in in step with the person. */}
             <div className="iso-layer iso-esp">
               {scene.map((s) =>
-                s.kind === "actor" ? (
+                s.kind === "actor" && !corpseOf(s) ? (
                   <div
                     key={s.key}
                     className={`iso-actor${s.occluded ? " occluded" : ""}${s.room !== room ? " neighbor" : ""}`}

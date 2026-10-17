@@ -137,6 +137,11 @@
     "noOne": "No one to invite.",
     "tab": "Private"
   },
+  "death": {
+    "title": "You are dead.",
+    "body": "You can still read global chat and the feature threads, but you can no longer post.",
+    "bodyMush": "You can still read global chat, the feature threads and the Mush channel, but you can no longer post."
+  },
   "itrackie": {
     "checkbox": "Checkbox",
     "composer": {
@@ -152,6 +157,7 @@
       "mush": "Mush channel"
     },
     "mushPlaceholder": "Message the Mush…",
+    "readOnly": "The dead can read, but not post.",
     "features": {
       "botany": "Botany",
       "research": "Research",

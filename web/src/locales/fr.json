@@ -137,6 +137,11 @@
     "noOne": "Personne à inviter.",
     "tab": "Privé"
   },
+  "death": {
+    "title": "Vous avez perdu la vie.",
+    "body": "Vous pouvez encore lire le chat général et les fils des fonctions, mais vous ne pouvez plus écrire.",
+    "bodyMush": "Vous pouvez encore lire le chat général, les fils des fonctions et le canal Mush, mais vous ne pouvez plus écrire."
+  },
   "itrackie": {
     "checkbox": "Case à cocher",
     "composer": {
@@ -152,6 +157,7 @@
       "mush": "Canal Mush"
     },
     "mushPlaceholder": "Message aux Mush…",
+    "readOnly": "Les morts peuvent lire, mais pas écrire.",
     "features": {
       "botany": "Botanique",
       "research": "Recherche",

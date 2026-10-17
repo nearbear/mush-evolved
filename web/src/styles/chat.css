@@ -264,3 +264,9 @@
 .md input[type="checkbox"]:not(:disabled) {
   cursor: pointer;
 }
+
+/* Under a thread the dead can read but not post in (ITrackie), in place of the message box. */
+.chat-read-only {
+  margin: 0.5rem 0 0;
+  text-align: center;
+}

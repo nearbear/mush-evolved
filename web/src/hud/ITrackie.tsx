@@ -69,17 +69,19 @@ export function ITrackie({
   useEffect(() => {
     if (mush && tab === "mush") setMushSeen(newestMush);
   }, [mush, tab, newestMush]);
-  const activeTab: TabId = tab === "mush" && !mush ? "room" : tab;
+  // The dead have no room log and no private channels (#45): those tabs go, and they land on global chat.
+  const alive = view.you.alive;
+  const activeTab: TabId = !alive && (tab === "room" || tab === "private") ? "global" : tab === "mush" && !mush ? "room" : tab;
   const carrying = view.inventory.some((i) => i.type === ITRACKIE_ITEM);
 
   return (
     <div className="panel itrackie">
       <Tabs.Root className="itrackie-tabs-root" value={activeTab} onValueChange={(v) => setTab(v as TabId)}>
         <Tabs.List className="itrackie-tabs">
-          <IconTab value="room" src={TAB_ICONS.roomLog} label={t("itrackie.tabs.room")} />
+          {alive && <IconTab value="room" src={TAB_ICONS.roomLog} label={t("itrackie.tabs.room")} />}
           <IconTab value="global" src={TAB_ICONS.global} label={t("itrackie.tabs.global")} />
           <IconTab value="features" src={TAB_ICONS.features} label={t("itrackie.tabs.features")} />
-          <IconTab value="private" src={TAB_ICONS.private} label={t("channels.tab")} />
+          {alive && <IconTab value="private" src={TAB_ICONS.private} label={t("channels.tab")} />}
           {mush && (
             <IconTab
               value="mush"
@@ -117,7 +119,7 @@ export function ITrackie({
               const name = t(`itrackie.features.${f}`);
               return (
               <div key={f} className="feature" hidden={f !== feature}>
-                {carrying ? (
+                {!alive ? null : carrying ? (
                   <Tracker notes={notes[f]} onChange={(next) => setNotes((all) => ({ ...all, [f]: next }))} />
                 ) : (
                   <p className="sub">You need an iTrackie in your inventory to track anything.</p>
@@ -163,6 +165,7 @@ function Thread({
   onSend: (text: string) => void;
   onToggle: (message: number, line: number) => void;
 }) {
+  const { t } = useTranslation();
   const names = useNames();
   // The dead can read some channels but post in none.
   const readable = view.readChannels.includes(channel);
@@ -189,7 +192,11 @@ function Thread({
           )}
         </ol>
       </Scroller>
-      <ChatInput enabled={enabled} placeholder={placeholder} onSend={onSend} />
+      {readable && !enabled ? (
+        <p className="sub chat-read-only">{t("itrackie.readOnly")}</p>
+      ) : (
+        <ChatInput enabled={enabled} placeholder={placeholder} onSend={onSend} />
+      )}
     </div>
   );
 }

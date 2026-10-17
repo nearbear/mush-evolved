@@ -9,7 +9,7 @@ All under `web/src/`. UI rules are in `web/CLAUDE.md`.
 - `net.ts`: PartySocket connections (host from `VITE_PARTY_HOST`).
 - `Lobby.tsx` + `lobby.css`: the cryopod landing page.
 - `WakeUp.tsx` + `wakeUp.css`: the wake-up overlay.
-- `GameScreen.tsx`: three panels on desktop, tabbed on phones; sends intents. The minimap is stubbed out here (`TODO(minimap)`).
+- `GameScreen.tsx`: three panels on desktop, tabbed on phones; sends intents. A dead player gets `DeathNotice` instead of the room and no peek bar. The minimap is stubbed out here (`TODO(minimap)`).
 - `Toasts.tsx`: transient messages.
 - `useMobile.ts`: the phone-layout media query.
 - `fogDepth.ts`: the fog depth preference, in localStorage.
@@ -26,7 +26,9 @@ All under `web/src/`. UI rules are in `web/CLAUDE.md`.
 - `InspectPanel.tsx`: the selected person, equipment, or item, with its legal actions.
 - `SkillSlots.tsx`: skill slots and the picker dialog.
 - `StatusIcons.tsx`, `ItemAttrIcons.tsx`: status and item attribute icons.
-- `ITrackie.tsx`: the right panel: room log, global chat, Features, Private tabs.
+- `ITrackie.tsx`: the right panel: room log, global chat, Features, Private tabs. Messages come from `readChannels`, the message box from `chatChannels`; the dead lose the Room and Private tabs and get a read-only note instead of the box.
+- `DeathNotice.tsx`: what a dead player sees where the room was.
+- `ItemIcon.tsx`: an item's icon; a corpse shows its owner lying down.
 - `FeatureSelect.tsx`: the Features drop-down.
 - `IconButton.tsx`: `IconButton` and `IconTab`.
 - `Markdown.tsx`: restricted chat message rendering.
@@ -37,7 +39,7 @@ All under `web/src/`. UI rules are in `web/CLAUDE.md`.
 **iso/** (details in `web/src/iso/CLAUDE.md`)
 
 - `placement.ts`: pure layout math (projection, paint order, walkable cells, hit-testing).
-- `IsoRoom.tsx`: renders the scene with a following camera; handles clicks.
+- `IsoRoom.tsx`: renders the scene with a following camera; handles clicks. Corpses on the floor are placed as actors and drawn with the lying pose (`lyingFrame`); clicking one selects the item.
 - `hitMask.ts`: per-frame alpha masks for hit-testing.
 - `shipLayout.ts`: fetches the layout JSON and maps atlas sheets to image URLs.
 

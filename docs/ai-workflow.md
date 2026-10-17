@@ -575,3 +575,10 @@ A review noted `rules.ts` mixed the game loop, `viewFor`, and all chat/channel l
 
 - `jettison` followed the existing action pattern (cook's config shape: `cost` plus `rooms`), so it was mostly wiring: config, the `Action` union, the wire parser, the client's target/label tables, and en/fr/es strings.
 - Adding a config section changes stored state, so `STATE_VERSION` had to be bumped even though no `GameState` field changed: saved games carry their config.
+
+## 2026-10-16: Death, phase 5: client (#28, #45)
+
+- Phase 4 (leaving the ship after death) was split out into its own story, #182, at the user's request.
+- The lying-pose art had already been found on the cast sheet (`www/img/art/char.png`) in a separate commit for the corpse item icon, so the floor rendering reused it (`lyingFrame`) instead of rotating a standing sprite. Reading `Mush/clients` directly is denied by project settings; looking in `web/src/art/assets.ts` first found the answer faster.
+- Corpses join the iso scene as actors (same paint order and wall handling as people), but skip the see-through outline layer: that exists so people can't hide behind walls, and a corpse is an item.
+- The dead player's screen is a UI choice, not a rule: a notice where the room was, global chat as the default tab, and no Room or Private tabs. No visual check was run (the `play` skill runs only when asked).

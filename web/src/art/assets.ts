@@ -93,6 +93,12 @@ export function lyingSprite(character: CharacterId | undefined) {
   };
 }
 
+/** The lying pose as a pixel frame of the cast sheet, for drawing at 1x in the iso view and hit-testing it. */
+export function lyingFrame(character: CharacterId | undefined) {
+  if (!character) return undefined;
+  return { url: castSheet, sx: LYING.x, sy: CAST_ROW[character] * LYING.h, width: LYING.w, height: LYING.h };
+}
+
 /** Full-length character illustration (about 210x300), or undefined for an unknown character. */
 export function characterImage(character: CharacterId | undefined): string | undefined {
   return character && characterArt[PORTRAIT_FILE[character]];
