@@ -18,6 +18,8 @@ export interface ItemView {
   type: string;
   /** For a corpse: whose body it is (the dead are public, and the world already draws them). */
   of?: PlayerId;
+  /** For a blueprint: which recipe it carries (the blueprint is public to whoever can see the item). */
+  builds?: string;
 }
 
 export interface OtherPlayerView {

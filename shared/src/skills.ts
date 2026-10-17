@@ -92,6 +92,7 @@ export const SKILL_STATUS: Readonly<Partial<Record<SkillId, SkillStatus>>> = {
   first_aid: "partial",
   creative: "full",
   antic_perfume: "full",
+  logistics: "full",
 };
 
 export function skillStatus(skill: string): SkillStatus {

@@ -9,7 +9,7 @@
 import { applyCheats, type ActopiCheat, type Cheat } from "./cheats.ts";
 import { ACTIONS, type ActionCost, type ActionDef } from "./actions.ts";
 import { itemsIn } from "./items.ts";
-import { actionFailed, apGain, carePointsGain, channelLimit, inventorySlots, movementRules, satietyLoss } from "./modifiers.ts";
+import { actionFailed, apGain, carePointsGain, channelLimit, cycleChanged, inventorySlots, movementRules, satietyLoss } from "./modifiers.ts";
 import { contaminationSeenBy } from "./infection.ts";
 import { isHungry, publicStatusesOf, statusesOf } from "./statuses.ts";
 import { emptyResources } from "./resources.ts";
@@ -74,7 +74,7 @@ export function createGame(seats: readonly Seat[], config: GameConfig, seed: num
   }));
 
   const starts: Omit<ItemState, "id">[] = [
-    ...config.startItems.map((it): Omit<ItemState, "id"> => ({ type: it.type, at: { kind: "room", id: it.room } })),
+    ...config.startItems.map((it): Omit<ItemState, "id"> => ({ type: it.type, at: { kind: "room", id: it.room }, ...(it.builds !== undefined && { builds: it.builds }) })),
     ...players.flatMap((p) => config.startInventory.map((type): Omit<ItemState, "id"> => ({ type, at: { kind: "player", id: p.id } }))),
   ];
   const items: ItemState[] = starts.map((it, i) => ({ id: `item-${i + 1}`, ...it }));
@@ -167,6 +167,7 @@ function advanceCycle(state: GameState): void {
     p.ap = Math.min(state.config.maxAp, p.ap + apGain(state, p));
     p.ready = false;
   }
+  cycleChanged(state);
   const { cyclesPerDay, moralePerDay } = state.config;
   const newDay = (state.cycle - 1) % cyclesPerDay === 0;
   if (newDay) {
@@ -287,8 +288,8 @@ function legalCosts(state: GameState, playerId: PlayerId, legal: Action[]): Acti
   return legal.map((a) => (ACTIONS[a.type] as ActionDef<Action>).cost(state, p, a));
 }
 
-function itemView({ id, type, of }: ItemState): ItemView {
-  return of === undefined ? { id, type } : { id, type, of };
+function itemView({ id, type, of, builds }: ItemState): ItemView {
+  return { id, type, ...(of !== undefined && { of }), ...(builds !== undefined && { builds }) };
 }
 
 function equipmentView({ id, type }: Equipment): EquipmentView {

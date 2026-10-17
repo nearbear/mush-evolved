@@ -62,6 +62,8 @@ export const DEFAULT_CONFIG: GameConfig = {
   punch: { cost: { ap: 1 }, effect: { damage: 2, sturdyBonusDamage: 1 }, successChance: 0.6 },
   // Confirmed 2026-10-16: cooking an uncooked ration costs 1 AP, only in the refectory.
   cook: { cost: { ap: 1 }, rooms: ["REFECTORY"] },
+  // Decided 2026-10-16: building from a blueprint costs 3 AP, anywhere, no failure chance.
+  build: { cost: { ap: 3 } },
   // Decided 2026-10-16 (#28): jettisoning a carried corpse is free, in one of the four bays.
   jettison: { cost: { ap: 0 }, rooms: ["SPACESHIP_BAY_A", "SPACESHIP_BAY_AA", "SPACESHIP_BAY_B", "ICARUS"] },
   // Confirmed 2026-10-14: showering costs 2 AP, 1 less with soap in your inventory; a Mush takes 4 damage.
@@ -76,6 +78,7 @@ export const DEFAULT_CONFIG: GameConfig = {
   startSkills: [],
   creative: { refundOdds: 0.5 },
   anticPerfume: { immuneCycles: 2 },
+  logistics: { ap: 1 },
   // Confirmed 2026-10-16: carrying a heavy item adds this much to every move's MP cost, once.
   heavy: { mpPenalty: 2 },
   // PLACEHOLDER items with no effects, so there is something to pick up.
@@ -86,6 +89,9 @@ export const DEFAULT_CONFIG: GameConfig = {
     { type: "camera", room: "CORRIDOR_A" },
     { type: "metal_scraps", room: "CORRIDOR_A" },
     { type: "plastic_scraps", room: "CORRIDOR_A" },
+    // Decided 2026-10-16: a sofa blueprint in the front corridor. The thick tube is a stand-in so it can be built (nothing else makes one yet).
+    { type: "blueprint", builds: "SOFA", room: "CORRIDOR_A" },
+    { type: "thick_tube", room: "CORRIDOR_A" },
     // Confirmed 2026-10-14: the soap always spawns in the Alpha dorm (for now).
     { type: "soap", room: "BEDROOM_A" },
     { type: "freezer", room: "REFECTORY" },

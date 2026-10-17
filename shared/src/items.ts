@@ -49,6 +49,9 @@ export const ITEM_TYPES: Record<string, ItemType> = {
   // Showering with soap in your inventory costs 1 less AP (confirmed 2026-10-14). Reusable.
   soap: {},
   metal_scraps: {},
+  thick_tube: {},
+  // Decided 2026-10-16: carries a recipe in `ItemState.builds`; consumed by building.
+  blueprint: {},
   plastic_scraps: {},
   // Confirmed 2026-10-16: spawns in the refectory at the start; heavy.
   freezer: { heavy: true },

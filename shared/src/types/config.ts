@@ -74,6 +74,9 @@ export interface GameConfig {
     cost: { ap: number }; // AP spent to cook an uncooked ration (confirmed 2026-10-16).
     rooms: RoomId[]; // Rooms where food can be cooked (confirmed 2026-10-16).
   };
+  build: {
+    cost: { ap: number }; // AP spent to build from a blueprint (decided 2026-10-16: 3, the original game's value).
+  };
   jettison: {
     cost: { ap: number }; // AP spent to jettison a carried corpse (decided 2026-10-16: free).
     rooms: RoomId[]; // Rooms where a corpse can be jettisoned: the four bays (decided 2026-10-16).
@@ -101,11 +104,14 @@ export interface GameConfig {
   anticPerfume: {
     immuneCycles: number; // Cycles of infection immunity the antic_perfume skill grants after each shower (confirmed 2026-10-16); a new shower resets it, no stacking.
   };
+  logistics: {
+    ap: number; // AP the logistics skill gives a random roommate each cycle (confirmed 2026-10-16).
+  };
   heavy: {
     mpPenalty: number; // MP added to each move while carrying a heavy item, however many (confirmed 2026-10-16).
   };
   startSkills: string[]; // Skills every player starts with (none since 2026-10-15; players pick their own).
-  startItems: { type: string; room: RoomId }[]; // Items placed in rooms at the start of the game. Types come from ITEM_TYPES in items.ts.
+  startItems: { type: string; room: RoomId; builds?: string }[]; // Items placed in rooms at the start of the game. Types come from ITEM_TYPES in items.ts.
   startInventory: string[]; // Item types every player starts carrying (one of each).
   rooms: Record<RoomId, RoomId[]>; // Adjacency list. Movement is only allowed along these edges.
   equipment: Record<RoomId, Equipment[]>; // Fixed equipment in each room. Types come from EQUIPMENT_TYPES in equipment.ts.

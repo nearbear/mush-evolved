@@ -88,7 +88,7 @@ export function InventoryPanel({
         <button
           className={`item-tile${isSelected ? " selected" : ""}${dragging?.id === item.id ? " dragging" : ""}`}
           draggable
-          title={names.item(item.type)}
+          title={names.item(item.type, item.builds)}
           onMouseDown={(e) => {
             if (e.shiftKey) e.preventDefault(); // no text selection from shift-click
           }}
@@ -99,7 +99,7 @@ export function InventoryPanel({
           }}
           onDragStart={(e) => {
             e.dataTransfer.effectAllowed = "move";
-            e.dataTransfer.setData("text/plain", names.item(item.type));
+            e.dataTransfer.setData("text/plain", names.item(item.type, item.builds));
             setDragging({ id: item.id, from: zone });
           }}
           onDragEnd={() => {
@@ -108,7 +108,7 @@ export function InventoryPanel({
           }}
         >
           <ItemIcon className="item-icon" item={item} view={view} />
-          <span className="item-label">{names.item(item.type)}</span>
+          <span className="item-label">{names.item(item.type, item.builds)}</span>
         </button>
         {isSelected && legal(type, item) && (
           <button className="item-action" onClick={() => onAction({ type, item: item.id })}>

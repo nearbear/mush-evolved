@@ -12,6 +12,7 @@ import { carriesHeavy } from "./items.ts";
 import { antic_perfume } from "./modifiers/antic_perfume.ts";
 import { creative } from "./modifiers/creative.ts";
 import { first_aid } from "./modifiers/first_aid.ts";
+import { logistics } from "./modifiers/logistics.ts";
 import { lying_down } from "./modifiers/lying_down.ts";
 import { medic } from "./modifiers/medic.ts";
 import { sturdy } from "./modifiers/sturdy.ts";
@@ -43,6 +44,8 @@ export interface Modifier extends Partial<FoldHooks> {
    * it mutates a state the caller already cloned; randomness goes through `next.rng`.
    */
   onActionFailed?: (next: GameState, player: PlayerState, apSpent: number) => void;
+  /** Runs for each living player at a cycle change, after the AP refill. Mutates a state the caller already cloned. */
+  onCycle?: (next: GameState, player: PlayerState) => void;
   /** Runs after the player showers. Mutates a state the caller already cloned. */
   onShower?: (next: GameState, player: PlayerState) => void;
   /** Runs once when the player picks this skill (not for other modifiers). Mutates a state the caller already cloned. */
@@ -52,7 +55,7 @@ export interface Modifier extends Partial<FoldHooks> {
 export type ModifierRegistry = Readonly<Record<string, Modifier>>;
 
 /** Items and skills will register here too. When a skill gains rules, update its entry in SKILL_STATUS (skills.ts). */
-export const MODIFIERS: Record<string, Modifier> = { lying_down, medic, first_aid, sturdy, creative, antic_perfume };
+export const MODIFIERS: Record<string, Modifier> = { lying_down, medic, first_aid, sturdy, creative, antic_perfume, logistics };
 
 /** The ids every hook folds over: the player's skills, then their other modifiers. */
 export function modifierIds(player: Readonly<PlayerState>): string[] {
@@ -158,4 +161,12 @@ export function showered(next: GameState, player: PlayerState, registry: Modifie
 /** Runs the picked skill's onPick hook. Mutates a state the caller already cloned. */
 export function skillPicked(next: GameState, player: PlayerState, skill: string, registry: ModifierRegistry = MODIFIERS): void {
   registry[skill]?.onPick?.(next, player);
+}
+
+/** Runs every onCycle hook of each living player, in seat order. Mutates a state the caller already cloned. */
+export function cycleChanged(next: GameState, registry: ModifierRegistry = MODIFIERS): void {
+  for (const player of next.players) {
+    if (!player.alive) continue;
+    for (const id of modifierIds(player)) registry[id]?.onCycle?.(next, player);
+  }
 }

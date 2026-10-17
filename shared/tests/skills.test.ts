@@ -151,3 +151,45 @@ describe("picking skills", () => {
     expect(JSON.stringify(stranger)).not.toMatch(/creative|medic/);
   });
 });
+
+describe("Logistics", () => {
+  /** Four people in one room, p0 with Logistics; the cycle is advanced by everyone readying up. */
+  function cycle(setup: (s: GameState) => void): GameState {
+    const state = createGame(seats, { ...config, startSkills: [] }, 7);
+    state.players[0]!.skills = ["logistics"];
+    for (const p of state.players) p.ap = 0;
+    setup(state);
+    let s = state;
+    for (const p of state.players.filter((o) => o.alive)) {
+      const r = applyAction(s, p.id, { type: "ready" });
+      if (!r.ok) throw new Error(r.error);
+      s = r.state;
+    }
+    return s;
+  }
+  const gives = (s: GameState) => s.log.filter((e) => e.key === "logisticsGave");
+
+  it("gives 1 AP to one random roommate each cycle, free for the giver, with private lines", () => {
+    const gained = cycle(() => {}).players.map((p) => p.ap - DEFAULT_CONFIG.apPerCycle);
+    expect(gained[0]).toBe(0);
+    expect(gained.slice(1).sort()).toEqual([0, 0, 1]);
+    const next = cycle(() => {});
+    expect(gives(next)).toHaveLength(1);
+    expect(gives(next)[0]!.visibleTo).toEqual(["p0"]);
+    const got = next.log.find((e) => e.key === "logisticsGot")!;
+    expect(got.visibleTo).toHaveLength(1);
+    expect(JSON.stringify(viewFor(next, "p0").log)).toContain("logisticsGave");
+    expect(JSON.stringify(viewFor(next, got.visibleTo[0] as string))).not.toContain("logisticsGave");
+  });
+
+  it("skips roommates at the AP cap, the dead and other rooms; does nothing if nobody qualifies", () => {
+    const next = cycle((s) => {
+      s.players[1]!.ap = s.config.maxAp;
+      s.players[2]!.alive = false;
+      s.players[0]!.room = "BEDROOM_A";
+      s.players[3]!.room = "SICK_BAY";
+    });
+    expect(gives(next)).toHaveLength(0);
+    expect(next.players[1]!.ap).toBe(next.config.maxAp);
+  });
+});

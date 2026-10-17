@@ -12,7 +12,9 @@ export function useNames() {
   const lookup = (group: "rooms" | "equipment" | "items", id: string): string => t(`${group}.${id}` as never, { defaultValue: id });
   const room = (id: RoomId) => lookup("rooms", id);
   const equipment = (type: string) => lookup("equipment", type);
-  const item = (type: string) => lookup("items", type);
+  /** A blueprint is named for what it builds. */
+  const item = (type: string, builds?: string) =>
+    builds === undefined ? lookup("items", type) : t("items.blueprintOf" as never, { thing: lookup("equipment", builds), defaultValue: type });
   const skill = (id: string) => t(`skills.names.${id}` as never, { defaultValue: id });
 
   /** The text of a log entry. `room`, `item` and `equipment` params are ids and get translated. */

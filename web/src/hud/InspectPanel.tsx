@@ -109,7 +109,7 @@ function Details({ view, resolved, onAction }: { view: PlayerView; resolved: Res
         <>
           <ItemIcon className="inspect-portrait inspect-item-icon" item={resolved.item} view={view} />
           <div className="inspect-name">
-            <strong>{names.item(resolved.item.type)}</strong>
+            <strong>{names.item(resolved.item.type, resolved.item.builds)}</strong>
             <ItemAttrIcons heavy={ITEM_TYPES[resolved.item.type]?.heavy === true} />
             <div className="sub">{resolved.carried ? "In your inventory" : `In ${names.room(view.you.room)}`}</div>
           </div>

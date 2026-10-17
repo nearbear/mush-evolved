@@ -52,6 +52,8 @@ export interface ItemState {
   at: Container;
   /** For a corpse: whose body it is. */
   of?: PlayerId;
+  /** For a blueprint: the key of the recipe it carries (BLUEPRINTS in blueprints.ts). */
+  builds?: string;
 }
 
 /**
@@ -68,6 +70,7 @@ export type Action =
   | { type: "dispense"; equipment: string }
   | { type: "consume"; item: ItemId }
   | { type: "cook"; item: ItemId }
+  | { type: "build"; item: ItemId }
   | { type: "jettison"; item: ItemId }
   | { type: "examine"; target: Target }
   | { type: "bond"; target: PlayerId }

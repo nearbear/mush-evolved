@@ -585,3 +585,7 @@ A review noted `rules.ts` mixed the game loop, `viewFor`, and all chat/channel l
 
 ## 2026-10-16: Antique Perfume skill
 Owner asked for the skill; the original text ("2 cycles of immunity after each shower") left four gaps (blocked behaviour, stacking, visibility, sources), settled with one question call. Built as a modifier with a new `onShower` hook and a derived `immuneUntil` cycle (no per-cycle tick). Worked: shower and infection already existed. Needed correction: my first test read `view.you.statuses`; own statuses are `view.statuses`.
+
+## 2026-10-16: Logistics skill
+- Owner's request was one line ("1 AP at random to a player in the room"). The original data says it fires every cycle, so I asked about trigger, cap handling, and visibility instead of guessing; owner chose automatic per cycle, skip capped players, free, private lines.
+- Added a generic `onCycle` modifier hook (`cycleChanged`) rather than special-casing the skill in `advanceCycle`. No corrections needed.
