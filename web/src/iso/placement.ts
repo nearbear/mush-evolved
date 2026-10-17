@@ -748,15 +748,6 @@ export function neighborRooms(
   return result;
 }
 
-/**
- * Camera offset along one axis: centre content smaller than the panel,
- * otherwise keep `focus` centred but never show past the content's edges.
- */
-export function cameraOffset(panel: number, content: number, focus: number): number {
-  if (content <= panel) return (panel - content) / 2;
-  return Math.min(0, Math.max(panel - content, panel / 2 - focus));
-}
-
 /** Clearance beyond this many cells doesn't make a spot any better. */
 const MAX_CLEARANCE = 3;
 

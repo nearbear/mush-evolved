@@ -31,7 +31,6 @@ import { opaqueAt, preloadImage } from "./hitMask.ts";
 import { Markdown } from "../hud/Markdown.tsx";
 import {
   bounds,
-  cameraOffset,
   cellAtPoint,
   hitTest,
   neighborRooms,
@@ -154,9 +153,9 @@ export function IsoRoom({
   }, [layout, roomLayout, fogDepth, cells, myCell, occupantKey, corpseKey, nearbyKey]);
 
   // Sprites draw at exactly one screen pixel per source pixel, so art stays crisp.
-  // The camera always follows you: there is no manual panning, and it stops at this room's edges
-  // (the neighbours only fill the space around a room smaller than the panel). It moves the world
-  // with a transform rather than scrolling, because the neighbours would widen the scroll range.
+  // The camera always keeps you centred, even near a room's edges (the neighbours fill the space
+  // around it, so a door in a far corner is never pinned to the panel's edge). There is no manual
+  // panning. It moves the world with a transform rather than scrolling, so it can go past the edges.
   const youSprite = sprites.find((s) => s.kind === "actor" && occupants.some((o) => o.you && o.id === s.key.slice(2)));
   const youX = youSprite ? youSprite.left - box.minX + youSprite.width / 2 : box.width / 2;
   const youY = youSprite ? youSprite.top - box.minY + youSprite.height / 2 : box.height / 2;
@@ -171,8 +170,8 @@ export function IsoRoom({
     resize.observe(el);
     return () => resize.disconnect();
   }, [roomLayout]);
-  const camX = Math.round(cameraOffset(panel.width, box.width, youX));
-  const camY = Math.round(cameraOffset(panel.height, box.height, youY));
+  const camX = Math.round(panel.width / 2 - youX);
+  const camY = Math.round(panel.height / 2 - youY);
   // Jump when entering a room; glide when walking inside it.
   const [settled, setSettled] = useState<RoomId | null>(null);
   useEffect(() => setSettled(room), [room]);

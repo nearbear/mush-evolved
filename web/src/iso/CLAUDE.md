@@ -10,7 +10,7 @@ Loaded when working on the isometric view. The UI rules in `web/CLAUDE.md` still
   positioned div per sprite. `shipLayout.ts` fetches the layout JSON and maps atlas sheets to image
   URLs.
 - Camera: the panel is `overflow: hidden` and follows your character by moving an inner `.iso-world`
-  with a transform, clamped by `cameraOffset` to the current room's edges. No manual panning.
+  with a transform, always centred on you (not clamped to the room's edges). No manual panning.
 - Clicks: floor walks you there and equipment steps you up to it (local, cosmetic state only, never
   sent to the server); a person or equipment is selected; bare floor clears the selection (on
   desktop, so does any press outside the Inspect panel). A single tap on a reachable door opens it

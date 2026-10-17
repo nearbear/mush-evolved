@@ -2,7 +2,6 @@ import { describe, expect, it } from "vitest";
 import type { RoomLayout, ShipLayout, SliceInfo } from "@mush2/shared";
 import shipLayoutJson from "../../../Mush/derived/ship-layout.json?raw";
 import {
-  cameraOffset,
   cellAtPoint,
   gridToPx,
   hitTest,
@@ -349,18 +348,5 @@ describe("neighborRooms", () => {
     expect(neighborRooms(ship, room("CORRIDOR_B")).map((n) => n.room.id).sort()).toEqual(
       ["CORRIDOR_A", "REFECTORY", "SPACESHIP_BAY_A", "SPACESHIP_BAY_B"],
     );
-  });
-});
-
-describe("cameraOffset", () => {
-  it("centres a room smaller than the panel", () => {
-    expect(cameraOffset(400, 200, 0)).toBe(100);
-  });
-  it("follows the focus in a room bigger than the panel", () => {
-    expect(cameraOffset(200, 1000, 500)).toBe(-400);
-  });
-  it("stops at the room's edges", () => {
-    expect(cameraOffset(200, 1000, 10)).toBe(0);
-    expect(cameraOffset(200, 1000, 990)).toBe(-800);
   });
 });
