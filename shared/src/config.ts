@@ -66,6 +66,8 @@ export const DEFAULT_CONFIG: GameConfig = {
   build: { cost: { ap: 3 } },
   // Decided 2026-10-16 (#28): jettisoning a carried corpse is free, in one of the four bays.
   jettison: { cost: { ap: 0 }, rooms: ["SPACESHIP_BAY_A", "SPACESHIP_BAY_AA", "SPACESHIP_BAY_B", "ICARUS"] },
+  // Decided 2026-10-16: working on a research costs 2 AP and advances it 25%; no repeat penalty yet.
+  research: { cost: { ap: 2 }, effect: { progressPercent: 25 } },
   // Confirmed 2026-10-14: showering costs 2 AP, 1 less with soap in your inventory; a Mush takes 4 damage.
   shower: { cost: { ap: 2, soapDiscountAp: 1 }, effect: { mushDamage: 4 } },
   // Confirmed 2026-10-14: humans lose 1 satiety per cycle (some things will make it more); at 3 they are full and can't

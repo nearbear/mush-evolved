@@ -45,4 +45,6 @@ export interface GameState {
   sporesToday: number;
   /** The cycle each Mush last extracted a spore, for the per-Mush cooldown. Hidden from everyone. */
   sporeExtractedOn: Record<PlayerId, number>;
+  /** Percent done of each research that has been started (absent = 0), by research id (research.ts). Public: sent to everyone. */
+  research: Record<string, number>;
 }

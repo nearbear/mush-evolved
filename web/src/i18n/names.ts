@@ -19,6 +19,7 @@ export function useNames() {
     const thing = makes && "item" in makes ? lookup("items", makes.item) : lookup("equipment", makes ? makes.equipment : builds);
     return t("items.blueprintOf" as never, { thing, defaultValue: type });
   };
+  const research = (id: string) => t(`research.names.${id}` as never, { defaultValue: id });
   const skill = (id: string) => t(`skills.names.${id}` as never, { defaultValue: id });
 
   /** The text of a log entry. `room`, `item` and `equipment` params are ids and get translated. */
@@ -26,9 +27,10 @@ export function useNames() {
     const resolved: Record<string, string | number> = { ...params };
     if (typeof params.room === "string") resolved.room = room(params.room);
     if (typeof params.item === "string") resolved.item = item(params.item);
+    if (typeof params.research === "string") resolved.research = research(params.research);
     if (typeof params.equipment === "string") resolved.equipment = equipment(params.equipment);
     return t(`logEvent.${key}` as never, { ...resolved, defaultValue: key });
   };
 
-  return { room, equipment, item, skill, logLine };
+  return { room, equipment, item, research, skill, logLine };
 }

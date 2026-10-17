@@ -81,6 +81,10 @@ export interface GameConfig {
     cost: { ap: number }; // AP spent to jettison a carried corpse (decided 2026-10-16: free).
     rooms: RoomId[]; // Rooms where a corpse can be jettisoned: the four bays (decided 2026-10-16).
   };
+  research: {
+    cost: { ap: number }; // AP spent to work on a research (decided 2026-10-16).
+    effect: { progressPercent: number }; // Percent a research advances per action (decided 2026-10-16).
+  };
   shower: {
     cost: {
       ap: number; // AP spent to shower, before the soap discount (confirmed 2026-10-14).

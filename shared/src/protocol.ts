@@ -83,6 +83,9 @@ export function parseGameMessage(raw: string): GameClientMessage | null {
   if (a.type === "access" && typeof a.equipment === "string") {
     return { type: "action", action: { type: "access", equipment: a.equipment } };
   }
+  if (a.type === "research" && typeof a.equipment === "string" && typeof a.research === "string") {
+    return { type: "action", action: { type: "research", equipment: a.equipment, research: a.research } };
+  }
   if (a.type === "dispense" && typeof a.equipment === "string") {
     return { type: "action", action: { type: "dispense", equipment: a.equipment } };
   }

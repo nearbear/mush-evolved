@@ -79,3 +79,38 @@
   height: 1.25rem;
   margin: 0;
 }
+
+/* The research lab terminal: a scrolling list of cards with progress. */
+.research-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.research-item {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.research-card {
+  flex: none;
+  max-width: 4rem;
+  height: auto;
+}
+
+.research-body {
+  display: flex;
+  flex: 1 1 8rem;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 0;
+}
+
+.research-body progress {
+  width: 100%;
+}

@@ -79,6 +79,7 @@ export type Action =
   | { type: "extract_spore" }
   | { type: "shower"; equipment: string }
   | { type: "access"; equipment: string }
+  | { type: "research"; equipment: string; research: string }
   | { type: "heal"; target: PlayerId }
   | { type: "punch"; target: PlayerId }
   | { type: "spike"; target: PlayerId }

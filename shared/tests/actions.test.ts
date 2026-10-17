@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { CHARACTERS } from "../src/characters.ts";
 import { DEFAULT_CONFIG } from "../src/config.ts";
 import { applyAction, createGame, legalActions } from "../src/rules.ts";
+import { RESEARCH_IDS } from "../src/research.ts";
 import { SKILLS } from "../src/skills.ts";
 import type { Action, Seat } from "../src/types.ts";
 
@@ -36,6 +37,7 @@ describe("action registry", () => {
       ...DEFAULT_CONFIG.equipment.LABORATORY!.map((e): Action => ({ type: "examine", target: { kind: "equipment", id: e.id } })),
       // The Laboratory has one terminal, the research lab.
       { type: "access", equipment: "LABORATORY:RESEARCH_LAB" },
+      ...RESEARCH_IDS.map((research): Action => ({ type: "research", equipment: "LABORATORY:RESEARCH_LAB", research })),
       ...[...mine, ...floor].map((i): Action => ({ type: "examine", target: { kind: "item", id: i.id } })),
     ];
     expect(floor.length).toBeGreaterThan(0);

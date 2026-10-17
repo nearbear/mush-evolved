@@ -186,7 +186,14 @@
     "full_belly": "Full belly",
     "hungry": "Hungry",
     "immune": "Immune to infection",
-    "contaminated": "Contamination: {{level}}"
+    "contaminated": "Contamination: {{level}}",
+    "desc": {
+      "dirty": "Can't research. Taking a shower removes it.",
+      "full_belly": "You can't eat more until you are hungrier.",
+      "hungry": "You lose health every cycle until you eat something.",
+      "immune": "Attempts to infect you do nothing for now.",
+      "contaminated": "A human you have contaminated. At their capacity they turn Mush."
+    }
   },
   "rooms": {
     "COMMAND_CENTER": "Bridge",
@@ -289,8 +296,8 @@
     "tookFrom": "{{name}} took a {{item}} from the {{equipment}}.",
     "tookFromKnocked": "{{name}} took a {{item}} from the {{equipment}} and knocked it over.",
     "consumed": "{{name}} consumed the {{item}}.",
-    "built": "{{name}} built a {{equipment}}.",
     "builtItem": "{{name}} built a {{item}}.",
+    "built": "{{name}} built a {{equipment}}.",
     "cooked": "{{name}} cooked the {{item}}.",
     "jettisoned": "{{name}} jettisoned the body of {{body}}.",
     "healed": "{{name}} healed {{target}}.",
@@ -314,7 +321,9 @@
     "died": "{{name}} has died.",
     "diedHuman": "{{name}} has died. They were human.",
     "diedMush": "{{name}} has died. They were Mush.",
-    "leftThisWorld": "{{name}} has left this world, and this chat."
+    "leftThisWorld": "{{name}} has left this world, and this chat.",
+    "researched": "{{name}} worked on {{research}} ({{percent}}%).",
+    "researchCompleted": "{{name}} completed the research {{research}}."
   },
   "skills": {
     "title": "Choose a skill",
@@ -509,6 +518,39 @@
       "gunner": "Doubles the damage of your turret shots.\nRaises your chance to hit with turrets by 50%.",
       "polymath": "+2 accessible private channels.\n+1 Computing action point per day.\n-10% on all your action attempts.",
       "politician": "Once per game: for 3 AP, you can declare a Coup at the Nexus. On the next cycle, NERON will consider you the leader of the Daedalus."
+    }
+  },
+  "research": {
+    "title": "Research",
+    "progress": "{{percent}}% done",
+    "done": "Complete",
+    "work": "Work on it",
+    "empty": "Nothing to research.",
+    "names": {
+      "DRUG_DISPENSER": "Drug distiller",
+      "STEROIDS": "Anabolic steroids",
+      "MYCOSCAN": "Mycoscan creation",
+      "PATULINE_SCRAMBLER": "Patulin scrambler",
+      "FUNGUS_SCRAMBLER": "Meridon scrambler",
+      "PHEROMODEM": "Pheromodem",
+      "CONSTIPASPORE_SERUM": "Constipaspore serum",
+      "MYCO_ALARM": "MycoAlarm",
+      "SPORE_EXTRACTOR": "Spore sucker",
+      "MYCO_DIALECT": "Mush language",
+      "MUSH_BREEDING_SYSTEM": "Mush reproduction system",
+      "MUSH_BREEDS": "Mush breeds",
+      "MUSH_PREDATOR": "The Mush-Hunter: ZC16H",
+      "ANTI_MUSH_SERUM": "Retro-fungal serum",
+      "HEALING_OINTMANT": "Ultra-healing ointment",
+      "NCC_LENS": "NCC lens",
+      "NATAMY_GUN": "Natamy rifle",
+      "TESLA_SUP2X": "Tesla SUP2X",
+      "INFINITE_WATER": "Perpetual hydration",
+      "GUARANA_CAPUCCINO": "Guarana cappuccino",
+      "MUSHICIDE_SOAP": "Mushicide soap",
+      "MUSHOPHAGE_BACTERIA": "Mush-eating bacteria",
+      "ANTISPORE_GAZ": "Antispore gas",
+      "SUPER_CALC": "Super Calculator"
     }
   }
 }

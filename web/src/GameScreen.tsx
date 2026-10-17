@@ -122,11 +122,11 @@ export function GameScreen({ ticket, onLeave }: { ticket: SeatTicket; onLeave: (
   // Fall back to yourself when nothing is selected or the selection is gone (left the room, item moved away).
   const target: Target = selected && resolveTarget(view, selected) ? selected : { kind: "player", id: you.id };
 
-  const terminalType = terminalId ? view.roomEquipment.find((e) => e.id === terminalId)?.type ?? null : null;
+  const terminal = terminalId ? view.roomEquipment.find((e) => e.id === terminalId) ?? null : null;
 
   return (
     <main className="game">
-      <TerminalDialog type={terminalType} onClose={() => setTerminalId(null)} />
+      <TerminalDialog terminal={terminal} view={view} onAction={send} onClose={() => setTerminalId(null)} />
       <TopBar
         view={view}
         showSummary={mobile}

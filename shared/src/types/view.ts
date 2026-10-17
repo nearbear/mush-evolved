@@ -96,6 +96,8 @@ export interface PlayerView {
     /** People who have bonded to you. */
     from: PlayerId[];
   };
+  /** Percent done of each research that has been started, public to everyone (decided 2026-10-16). */
+  research: Record<string, number>;
   legalActions: Action[];
   /** AP and MP each legal action costs you, index-aligned with `legalActions`. */
   legalCosts: ActionCost[];

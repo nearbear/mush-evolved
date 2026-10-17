@@ -599,3 +599,14 @@ Owner asked for the skill; the original text ("2 cycles of immunity after each s
 - Asked Claude what Mush/ says about terminals; it read objects.json, actions.json and the tutorial text and found a terminal is just equipment with the `MODULE_ACCESS` status, entered through a generic `ACCESS` action. It could not read `Mush/clients` (deny rule), so how the original evaluates `IsAccessing`/`HeroModuling` is unconfirmed.
 - Owner asked for a blank pop-up per terminal and an access action. Claude chose free, unrestricted, stateless access (the client opens the window) instead of asking, and flagged it as a default. Needed correction: the pinned legal-actions test in actions.test.ts had to learn about the lab terminal.
 - 2026-10-16: added the rocket launcher blueprint (original `MISSILE_LAUNCHER`, icon `missile_launcher.jpg`). The recipe data had two conflicting versions, so the owner picked one. This forced recipes to produce either equipment or an item (`makes`).
+
+### 2026-10-16: Iso camera always centred on the player
+
+- **Decided by the user:** the camera no longer stops at the current room's edges; it always keeps your character centred. In a large room the edge clamp pushed a corner door into the panel's corner, which made moving between rooms awkward. This reverses the earlier "stops at the room's edges" decision.
+- The neighbouring rooms already draw around the current one, so the space past a room's edge is filled. `cameraOffset` and its tests were removed; the offset is now just `panel / 2 - you`.
+
+### 2026-10-16: research foundation
+- Owner asked Claude what it could see of research; it found the original table (`research.json`, French only) and 24 card images, but no rules in our code beyond the lab terminal. Owner then decided the numbers: 2 AP = +25%, no repeat penalty, anyone not dirty, every researched-with-an-icon entry, best-effort translation, public list.
+- Claude filled the unspecified gaps with defaults and flagged them (done at the lab terminal, finished researches locked, many in progress at once, no completion effect). The original's difficulty, samples and prerequisites were deliberately ignored.
+- Claude could not view the card PNGs (read deny rule on `Mush/`), so their size and transparency are unchecked; they render with a max width. fr/es names are drafts (French from the original names).
+- Needed correction: the pinned legal-actions test had to learn about 24 new actions; state shape changed, so `STATE_VERSION` went to 29.
