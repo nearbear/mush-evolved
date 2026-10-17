@@ -68,6 +68,7 @@ export type Action =
   | { type: "dispense"; equipment: string }
   | { type: "consume"; item: ItemId }
   | { type: "cook"; item: ItemId }
+  | { type: "jettison"; item: ItemId }
   | { type: "examine"; target: Target }
   | { type: "bond"; target: PlayerId }
   | { type: "dtt"; target: PlayerId }

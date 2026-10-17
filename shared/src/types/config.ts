@@ -74,6 +74,10 @@ export interface GameConfig {
     cost: { ap: number }; // AP spent to cook an uncooked ration (confirmed 2026-10-16).
     rooms: RoomId[]; // Rooms where food can be cooked (confirmed 2026-10-16).
   };
+  jettison: {
+    cost: { ap: number }; // AP spent to jettison a carried corpse (decided 2026-10-16: free).
+    rooms: RoomId[]; // Rooms where a corpse can be jettisoned: the four bays (decided 2026-10-16).
+  };
   shower: {
     cost: {
       ap: number; // AP spent to shower, before the soap discount (confirmed 2026-10-14).

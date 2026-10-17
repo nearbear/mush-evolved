@@ -8,6 +8,7 @@ import { ExtractSporeAction } from "./actions/extract_spore.ts";
 import { MoveAction } from "./actions/move.ts";
 import { ReadyAction } from "./actions/ready.ts";
 import { HealAction } from "./actions/heal.ts";
+import { JettisonAction } from "./actions/jettison.ts";
 import { PickSkillAction } from "./actions/pick_skill.ts";
 import { PunchAction } from "./actions/punch.ts";
 import { ShareAction } from "./actions/share.ts";
@@ -45,6 +46,7 @@ export const ACTIONS: { [T in ActionType]: ActionDef<ActionOf<T>> } = {
   dispense: new DispenseAction(),
   consume: new ConsumeAction(),
   cook: new CookAction(),
+  jettison: new JettisonAction(),
   examine: new ExamineAction(),
   bond: new BondAction(),
   dtt: new ShareAction("dtt"),

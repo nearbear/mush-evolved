@@ -570,3 +570,8 @@ A review noted `rules.ts` mixed the game loop, `viewFor`, and all chat/channel l
 - Kept `chatChannels` meaning "may post" (bots and the chat box already relied on it) and added `readChannels` for reading, instead of changing what the existing field means.
 - Found while implementing: `viewFor` sent every player's room, dead or alive, so with ACTOPI on anyone could see where a body lay, and the minimap would draw the dead standing there. A dead player now has no room in anyone's view and isn't counted in the ACTOPI-off head counts; the corpse item is what marks the spot.
 - Judgment call, flagged to the user: "no room log" for the dead also drops their own past private lines, since every log line is tied to a room.
+
+## 2026-10-16: Death, phase 3: jettison (#28)
+
+- `jettison` followed the existing action pattern (cook's config shape: `cost` plus `rooms`), so it was mostly wiring: config, the `Action` union, the wire parser, the client's target/label tables, and en/fr/es strings.
+- Adding a config section changes stored state, so `STATE_VERSION` had to be bumped even though no `GameState` field changed: saved games carry their config.
