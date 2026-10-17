@@ -218,9 +218,11 @@
   padding: 2px 6px;
   font-size: 11px;
   line-height: 14px;
-  color: #10142a;
-  background: rgb(255 255 255 / 0.92);
-  border-radius: 6px;
+  /* The bottom-nav card look: panel rim and radius over the darkened panel fill. */
+  color: var(--text);
+  background: color-mix(in srgb, var(--panel-fill) 55%, black);
+  border: 1px solid var(--panel-rim);
+  border-radius: var(--panel-radius);
   overflow-wrap: anywhere;
   /* Pops in, then fades over its last 0.8s; --bubble-ms (set in IsoRoom) is how long it lives. */
   animation:
