@@ -19,10 +19,11 @@
 // a layer above everything. People in this room still take clicks through it.
 
 import { useEffect, useId, useLayoutEffect, useMemo, useRef, useState, type CSSProperties, type MouseEvent, type PointerEvent } from "react";
+import { useTranslation } from "react-i18next";
 import { createPortal } from "react-dom";
 import { CORPSE_ITEM, placedEquipment, type CharacterId, type EquipmentView, type ItemId, type RoomId, type ShipLayout, type Target } from "@mush2/shared";
 import { sameTarget } from "../hud/targets.ts";
-import { lyingFrame, spriteStrip } from "../art/assets.ts";
+import { lyingFrame, spriteStrip, sittingFrame } from "../art/assets.ts";
 import { CrewSprite } from "../scene/CrewSprite.tsx";
 import { StatusBadges } from "../scene/StatusBadges.tsx";
 import { BUBBLE_MS, type Bubble } from "../scene/useSpeechBubbles.ts";
@@ -60,6 +61,24 @@ export interface Corpse {
 
 /** Actor ids for corpses get this prefix, so they can't collide with player ids. */
 const CORPSE_PREFIX = "corpse:";
+/** How someone sits on a chair: which sitting frame, and whether it is mirrored. */
+interface Seat {
+  facing: "face" | "back";
+  flip: boolean;
+}
+
+/**
+ * The seat for a chair that faces the given way. The art has two sitting poses, facing down-right
+ * (+x) and up-left (-x); the other two directions mirror them. Chairs without a direction (stools)
+ * are sat on facing down-right.
+ */
+function seatFor(dir: string | undefined): Seat {
+  if (dir === "left") return { facing: "back", flip: false };
+  if (dir === "up") return { facing: "back", flip: true };
+  if (dir === "down") return { facing: "face", flip: true };
+  return { facing: "face", flip: false };
+}
+
 /** The lying pose's cell on the cast sheet (art/assets.ts). */
 const LYING_SIZE = { width: 50, height: 48 };
 
@@ -105,6 +124,7 @@ export function IsoRoom({
   bubbles: ReadonlyMap<string, Bubble[]>;
 }) {
   const names = useNames();
+  const { t } = useTranslation();
   const roomLayout = layout.rooms.find((r) => r.id === room);
   const occupantKey = occupants.map((o) => o.id).join(",");
   const corpseKey = corpses.map((c) => c.id).join(",");
@@ -112,8 +132,10 @@ export function IsoRoom({
   const worldRef = useRef<HTMLDivElement>(null);
   // Where you've clicked to walk. Client-only and cosmetic: the server never hears of it,
   // and it resets when you change rooms.
-  const [walk, setWalk] = useState<{ room: RoomId; cell: { x: number; y: number } } | null>(null);
+  // Sitting on a chair is the same kind of local state: the walk's end point plus the seat taken there.
+  const [walk, setWalk] = useState<{ room: RoomId; cell: { x: number; y: number }; seat?: Seat } | null>(null);
   const myCell = walk?.room === room ? walk.cell : null;
+  const mySeat = walk?.room === room ? walk.seat : undefined;
   const cells = useMemo(() => (roomLayout ? walkableCells(layout, roomLayout) : []), [layout, roomLayout]);
 
   // This room and the rooms behind its doors, each with its people, drawn as one scene so that
@@ -201,7 +223,10 @@ export function IsoRoom({
       const lying = lyingFrame(corpse.character);
       return { url: lying?.url, frame: lying ?? { sx: 0, sy: 0, ...LYING_SIZE }, keyed: false };
     }
-    return { url: spriteStrip(byId.get(s.key.slice(2))?.character, "face"), frame: { sx: 0, sy: 0, width: 32, height: 48 }, keyed: true };
+    const o = byId.get(s.key.slice(2));
+    const sitting = o?.you && mySeat ? sittingFrame(o.character, mySeat.facing) : undefined;
+    if (sitting) return { url: sitting.url, frame: sitting, keyed: false };
+    return { url: spriteStrip(o?.character, "face"), frame: { sx: 0, sy: 0, width: 32, height: 48 }, keyed: true };
   };
 
   // Load every image this room hit-tests against, so masks are ready by the first click.
@@ -230,6 +255,9 @@ export function IsoRoom({
     }
     if (s.door) return { kind: "door" as const, to: s.door.target, title: names.room(s.door.target) };
     const eq = equipmentByKey.get(s.key);
+    if (!eq && s.kind === "entity" && layout.slices[s.slice]?.flags.includes("chair")) {
+      return { kind: "chair" as const, cell: s.cell, dir: layout.slices[s.slice]?.dir, title: t("common.chair") };
+    }
     return eq ? { kind: "equipment" as const, equipment: eq, title: names.equipment(eq.type) } : null;
   };
 
@@ -273,6 +301,11 @@ export function IsoRoom({
       // Step up to it too (cosmetic, like walking on bare floor).
       const cell = standSpot(layout, roomLayout, Number(hit.sprite.key.slice(1)), cells);
       if (cell) setWalk({ room, cell });
+    }
+    else if (hit?.kind === "chair") {
+      // Sit down (cosmetic, like walking): you stand on the chair's cell in the sitting pose.
+      onClear();
+      setWalk({ room, cell: hit.cell, seat: seatFor(hit.dir) });
     }
     else if (hit?.kind === "door") onDoorTap(hit.to);
     else {
@@ -370,7 +403,7 @@ export function IsoRoom({
                       className={`iso-actor${o.you ? " you" : ""}${isSelected("player", o.id) ? " selected" : ""}${s.key === hoverKey ? " hover" : ""}`}
                       style={place(s)}
                     >
-                      <CrewSprite character={o.character} />
+                      {o.you && mySeat ? <SeatedSprite character={o.character} seat={mySeat} /> : <CrewSprite character={o.character} />}
                     </div>
                   );
                 }
@@ -393,7 +426,11 @@ export function IsoRoom({
                     className={`iso-actor${s.occluded ? " occluded" : ""}${s.room !== room ? " neighbor" : ""}`}
                     style={{ ...place(s), filter: `url(#${espFilter})` }}
                   >
-                    <CrewSprite character={byId.get(s.key.slice(2))?.character} />
+                    {byId.get(s.key.slice(2))?.you && mySeat ? (
+                      <SeatedSprite character={byId.get(s.key.slice(2))?.character} seat={mySeat} />
+                    ) : (
+                      <CrewSprite character={byId.get(s.key.slice(2))?.character} />
+                    )}
                   </div>
                 ) : null,
               )}
@@ -423,6 +460,21 @@ export function IsoRoom({
       </div>
       <EspFilter id={espFilter} />
     </section>
+  );
+}
+
+/** One sitting frame of the cast sheet, drawn at 1x like the lying corpse. */
+function SeatedSprite({ character, seat }: { character: CharacterId | undefined; seat: Seat }) {
+  const frame = sittingFrame(character, seat.facing);
+  return (
+    <div
+      className="seated-sprite"
+      style={{
+        backgroundImage: frame && `url(${frame.url})`,
+        backgroundPosition: frame && `${-frame.sx}px ${-frame.sy}px`,
+        transform: seat.flip ? "scaleX(-1)" : undefined,
+      }}
+    />
   );
 }
 

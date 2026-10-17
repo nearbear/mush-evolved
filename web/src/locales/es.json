@@ -27,7 +27,8 @@
     "label": "Idioma"
   },
   "common": {
-    "connecting": "Conectando…"
+    "connecting": "Conectando…",
+    "chair": "Silla"
   },
   "lobby": {
     "spawnAs": "Aparecer como (prueba)",

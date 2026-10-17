@@ -99,6 +99,16 @@ export function lyingFrame(character: CharacterId | undefined) {
   return { url: castSheet, sx: LYING.x, sy: CAST_ROW[character] * LYING.h, width: LYING.w, height: LYING.h };
 }
 
+/**
+ * The character seated, facing the camera or away from it, as a pixel frame of the cast sheet. Each row
+ * starts with four 32x48 frames: standing facing, standing back, sitting facing, sitting back. They face
+ * down-right and up-left; the other two directions are these mirrored (the caller flips).
+ */
+export function sittingFrame(character: CharacterId | undefined, facing: "face" | "back") {
+  if (!character) return undefined;
+  return { url: castSheet, sx: facing === "face" ? 64 : 96, sy: CAST_ROW[character] * LYING.h, width: 32, height: 48 };
+}
+
 /** Full-length character illustration (about 210x300), or undefined for an unknown character. */
 export function characterImage(character: CharacterId | undefined): string | undefined {
   return character && characterArt[PORTRAIT_FILE[character]];

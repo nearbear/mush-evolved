@@ -633,3 +633,10 @@ Correction (owner, same day): I had read the points as a currency worth 2 AP. A 
 - Owner decided: completing it raises the contamination needed to infect a human from 3 to 4. I applied it ship-wide, to all humans (no per-player state), via `contaminationCapacity`, and did not ask follow-ups. Humans already at 3 when it completes are not converted retroactively; that was my default, not an owner decision.
 - First research with a completion effect; `RESEARCH_STATUS` now has its first entry.
 - Wrap-up caught that `config` is persisted inside `GameState`, so the new `infection.mushophageBonus` field would be missing in saved games (`NaN` capacity once the research completed). Fixed by bumping `STATE_VERSION` to 31 in `server/src/GameRoom.ts`; I had missed it when implementing.
+
+### 2026-10-17: Sitting in chairs (cosmetic)
+
+- The user asked for clicking a chair to show the sitting pose from `char.png`, purely cosmetic. Decided by the assistant (no rule involved): it is client-only state next to the walk target, so other players don't see it; a server-synced version was offered, not built.
+- Found the poses by cropping the cast sheet in a Playwright page (no PIL): each row starts with four 32x48 frames (stand face, stand back, sit face, sit back). The other two directions are mirrors.
+- Unverified guess: chair `dir` to pose mapping (`left`/`up` back, `down`/`right` face, with flips), inferred from the refectory layout where chairs face a table. No visual check was run yet.
+- Wrap-up found `npm run typecheck` failing in `web/src/hud/ITrackie.tsx(104)` (`roomLog[i - 1]` possibly undefined); not in files this change touched, left alone.

@@ -27,7 +27,8 @@
     "label": "Language"
   },
   "common": {
-    "connecting": "Connecting…"
+    "connecting": "Connecting…",
+    "chair": "Chair"
   },
   "lobby": {
     "spawnAs": "Spawn as (testing)",
