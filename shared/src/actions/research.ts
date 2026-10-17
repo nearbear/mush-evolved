@@ -6,7 +6,7 @@ import type { GameState, PlayerState } from "../types.ts";
 export type ResearchActionData = { type: "research"; equipment: string; research: string };
 
 /**
- * Work on a research at the laboratory's research terminal (decided 2026-10-16): 2 AP (or 2 Computer points, if you have them)
+ * Work on a research at the laboratory's research terminal (decided 2026-10-16): 2 AP (free with a Computer point, which is spent)
  * moves one research forward 25%. No repeat penalty yet, and anyone alive who is not dirty can help. Nothing happens on completion yet beyond
  * a log line. Public room log.
  */
@@ -15,9 +15,9 @@ export class ResearchAction extends Action<ResearchActionData> {
     super("research");
   }
 
-  /** Computer points (`resources.comp`) pay for a whole research instead of AP (owner, 2026-10-16). */
+  /** Computer points (`resources.comp`) make one research free (0 AP, like care points for a heal) (owner, 2026-10-16). */
   private paidWithComputer(state: Readonly<GameState>, player: Readonly<PlayerState>): boolean {
-    return player.resources.comp >= state.config.research.cost.ap;
+    return player.resources.comp > 0;
   }
 
   override getCost(state: Readonly<GameState>, player: Readonly<PlayerState>): { ap: number; mp: number } {
@@ -43,7 +43,7 @@ export class ResearchAction extends Action<ResearchActionData> {
   }
 
   override apply(state: GameState, player: PlayerState, target: ResearchActionData): void {
-    if (this.paidWithComputer(state, player)) player.resources.comp -= state.config.research.cost.ap;
+    if (this.paidWithComputer(state, player)) player.resources.comp -= 1;
     const progress = Math.min(RESEARCH_COMPLETE, (state.research[target.research] ?? 0) + state.config.research.effect.progressPercent);
     state.research[target.research] = progress;
     logPublic(state, player.room, progress >= RESEARCH_COMPLETE ? "researchCompleted" : "researched", { name: player.name, research: target.research, percent: progress });

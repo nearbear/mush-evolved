@@ -98,24 +98,28 @@ describe("computer scientist skill (computer)", () => {
     expect(start.players[0]!.resources.comp).toBe(cfg.pointsPerDay);
   });
 
-  it("pays for a research with 2 Computer points instead of AP", () => {
+  it("makes a research free: one Computer point, no AP", () => {
     const s = pick(game());
     const ap = s.players[0]!.ap;
     const r = applyAction(s, "p0", work("MYCOSCAN"));
     if (!r.ok) throw new Error(r.error);
-    expect(r.state.players[0]!.resources.comp).toBe(0);
+    expect(r.state.players[0]!.resources.comp).toBe(cfg.pointsPerDay - 1);
     expect(r.state.players[0]!.ap).toBe(ap);
     expect(r.state.research.MYCOSCAN).toBe(25);
-    // Out of points, it costs AP again.
-    const again = applyAction(r.state, "p0", work("MYCOSCAN"));
-    expect(again.ok && again.state.players[0]!.ap).toBe(ap - AP);
+    // The second point makes the next one free; after that it costs AP again.
+    const second = applyAction(r.state, "p0", work("MYCOSCAN"));
+    if (!second.ok) throw new Error(second.error);
+    expect(second.state.players[0]!.resources.comp).toBe(0);
+    expect(second.state.players[0]!.ap).toBe(ap);
+    const third = applyAction(second.state, "p0", work("MYCOSCAN"));
+    expect(third.ok && third.state.players[0]!.ap).toBe(ap - AP);
   });
 
   it("works with no AP left, and is refused with neither", () => {
     const s = pick(game());
     s.players[0]!.ap = 0;
     expect(applyAction(s, "p0", work("MYCOSCAN")).ok).toBe(true);
-    s.players[0]!.resources.comp = 1;
+    s.players[0]!.resources.comp = 0;
     expect(applyAction(s, "p0", work("MYCOSCAN")).ok).toBe(false);
   });
 

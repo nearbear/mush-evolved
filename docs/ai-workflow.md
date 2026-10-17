@@ -627,3 +627,4 @@ The `coffee` item had no icon (no `coffee.jpg` in `www/img/icons/items/`). A con
 ## 2026-10-16: Computer Scientist skill
 
 "Add the computer scientist skill" turned out to mean the in-game `computer` skill, not a Claude skill; I grepped the repo to find that out before asking. The owner decided: a separate Computer point pool (cap 4, +2 per day and 2 on pick, carries over, private), spent as 2 points instead of 2 AP on research; no hacking, no NERON bonus. Built as a `computerPointsPerDay` fold plus `onPick`, reusing the existing `resources.comp` counter. Needed no correction.
+Correction (owner, same day): I had read the points as a currency worth 2 AP. A resource point instead makes one instance of an action free (like care points for a heal), so one Computer point makes one research cost 0 AP.
