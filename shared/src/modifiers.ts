@@ -43,9 +43,9 @@ export interface Modifier extends Partial<FoldHooks> {
    * it mutates a state the caller already cloned; randomness goes through `next.rng`.
    */
   onActionFailed?: (next: GameState, player: PlayerState, apSpent: number) => void;
-  /** Runs once when the player picks this skill (not for other modifiers). Mutates a state the caller already cloned. */
   /** Runs after the player showers. Mutates a state the caller already cloned. */
   onShower?: (next: GameState, player: PlayerState) => void;
+  /** Runs once when the player picks this skill (not for other modifiers). Mutates a state the caller already cloned. */
   onPick?: (next: GameState, player: PlayerState) => void;
 }
 
