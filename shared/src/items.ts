@@ -48,6 +48,8 @@ export const ITEM_TYPES: Record<string, ItemType> = {
   camera: { canDrop: false, dismantle: { metal: 1, plastic: 0 }  },
   // Showering with soap in your inventory costs 1 less AP (confirmed 2026-10-14). Reusable.
   soap: {},
+  // Decided 2026-10-17: rings in its room when a Mush acts there (mycoalarm.ts). Dismantles for one scrap metal.
+  myco_alarm: { dismantle: { metal: 1, plastic: 0 } },
   metal_scraps: {},
   thick_tube: {},
   // Decided 2026-10-16: built from a blueprint; no effect yet. Named after its icon.

@@ -12,6 +12,7 @@ Other packages import from `@mush2/shared` (`shared/src/index.ts`, the barrel). 
 - `modifiers.ts`: the modifier registry and its hooks (numeric ones go through `fold`; `moveCost` is the one place a move's price is computed).
 - `modifiers/<id>.ts`: one file per modifier: `antic_perfume`, `caffeinomaniac`, `computer`, `creative`, `first_aid`, `lying_down`, `medic`, `sturdy`; `careSkill.ts` is the factory behind `first_aid`.
 - `replay.ts`: `Input`, `GameSetup`, `applyInput` (the only entry point for changing a game), `replayGame`.
+- `mycoalarm.ts`: the `myco_alarm` item, its trigger list, `ringMycoAlarms` and `dropMycoAlarms` (research yield).
 - `research.ts`: `RESEARCH_IDS` (the researches with card art) and `RESEARCH_COMPLETE`.
 - `rng.ts`: the seeded RNG (its state is part of `GameState`).
 - `helpers.ts`: `ActionResult`, `fail`, `clone`, `findPlayer`.

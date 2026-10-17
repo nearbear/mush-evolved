@@ -297,7 +297,8 @@
     "blueprint": "Plano",
     "blueprintOf": "Plano: {{thing}}",
     "freezer": "Congelador",
-    "corpse": "Cadáver"
+    "corpse": "Cadáver",
+    "myco_alarm": "Micoalarma"
   },
   "logEvent": {
     "crewWakes": "La tripulación despierta a bordo de la nave.",
@@ -344,7 +345,9 @@
     "diedMush": "{{name}} ha muerto. Era Mush.",
     "leftThisWorld": "{{name}} ha dejado este mundo, y este chat.",
     "researched": "{{name}} trabajó en {{research}} ({{percent}} %).",
-    "researchCompleted": "{{name}} completó la investigación {{research}}."
+    "researchCompleted": "{{name}} completó la investigación {{research}}.",
+    "mycoAlarmRang": "¡Suena una alarma: un Mush ha actuado en esta sala!",
+    "mycoAlarmsBuilt": "Se construyeron tres micoalarmas y se dejaron aquí."
   },
   "skills": {
     "title": "Elegir una habilidad",

@@ -297,7 +297,8 @@
     "blueprint": "Blueprint",
     "blueprintOf": "Blueprint: {{thing}}",
     "freezer": "Freezer",
-    "corpse": "Corpse"
+    "corpse": "Corpse",
+    "myco_alarm": "Myco alarm"
   },
   "logEvent": {
     "crewWakes": "The crew wakes up aboard the ship.",
@@ -344,7 +345,9 @@
     "diedMush": "{{name}} has died. They were Mush.",
     "leftThisWorld": "{{name}} has left this world, and this chat.",
     "researched": "{{name}} worked on {{research}} ({{percent}}%).",
-    "researchCompleted": "{{name}} completed the research {{research}}."
+    "researchCompleted": "{{name}} completed the research {{research}}.",
+    "mycoAlarmRang": "An alarm goes off: a Mush has acted in this room!",
+    "mycoAlarmsBuilt": "Three myco alarms have been built and left here."
   },
   "skills": {
     "title": "Choose a skill",

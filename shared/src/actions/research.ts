@@ -1,6 +1,7 @@
 import { Action } from "./action.ts";
 import { RESEARCH_COMPLETE, RESEARCH_IDS } from "../research.ts";
 import { logPublic } from "../log.ts";
+import { dropMycoAlarms } from "../mycoalarm.ts";
 import type { GameState, PlayerState } from "../types.ts";
 
 export type ResearchActionData = { type: "research"; equipment: string; research: string };
@@ -47,5 +48,9 @@ export class ResearchAction extends Action<ResearchActionData> {
     const progress = Math.min(RESEARCH_COMPLETE, (state.research[target.research] ?? 0) + state.config.research.effect.progressPercent);
     state.research[target.research] = progress;
     logPublic(state, player.room, progress >= RESEARCH_COMPLETE ? "researchCompleted" : "researched", { name: player.name, research: target.research, percent: progress });
+    if (progress >= RESEARCH_COMPLETE && target.research === "MYCO_ALARM") {
+      dropMycoAlarms(state, player.room);
+      logPublic(state, player.room, "mycoAlarmsBuilt");
+    }
   }
 }

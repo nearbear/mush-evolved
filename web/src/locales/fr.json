@@ -297,7 +297,8 @@
     "blueprint": "Plan",
     "blueprintOf": "Plan : {{thing}}",
     "freezer": "Congélateur",
-    "corpse": "Corps"
+    "corpse": "Corps",
+    "myco_alarm": "Mycoalarme"
   },
   "logEvent": {
     "crewWakes": "L'équipage se réveille à bord du vaisseau.",
@@ -344,7 +345,9 @@
     "diedMush": "{{name}} a perdu la vie. C'était un Mush.",
     "leftThisWorld": "{{name}} a quitté ce monde, et cette discussion.",
     "researched": "{{name}} a travaillé sur {{research}} ({{percent}} %).",
-    "researchCompleted": "{{name}} a terminé la recherche {{research}}."
+    "researchCompleted": "{{name}} a terminé la recherche {{research}}.",
+    "mycoAlarmRang": "Une alarme retentit : un Mush a agi dans cette pièce !",
+    "mycoAlarmsBuilt": "Trois mycoalarmes ont été construites et laissées ici."
   },
   "skills": {
     "title": "Choisir une compétence",
