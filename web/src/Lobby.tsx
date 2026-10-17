@@ -1,6 +1,6 @@
 import { type CSSProperties, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import type { MatchmakerServerMessage, Role } from "@mush2/shared";
+import type { MatchmakerServerMessage } from "@mush2/shared";
 import { LanguageSwitcher } from "./i18n/LanguageSwitcher.tsx";
 import { matchmakerSocket, type SeatTicket } from "./net.ts";
 import logoUrl from "../../Mush/www/img/design/logo_welcome.png?url";
@@ -68,8 +68,6 @@ export function Lobby({ onMatched }: { onMatched: (ticket: SeatTicket) => void }
   const { t } = useTranslation();
   const [name, setName] = useState<string | null>(null);
   const [ship, setShip] = useState("");
-  // Testing aid: undefined rolls randomly.
-  const [role, setRole] = useState<Role | undefined>(undefined);
   // Kept as data, not text, so the status follows the language if it changes while waiting.
   const [queue, setQueue] = useState<{ waiting: number; seats: number } | null>(null);
   const [error, setError] = useState("");
@@ -79,7 +77,7 @@ export function Lobby({ onMatched }: { onMatched: (ticket: SeatTicket) => void }
     if (name === null) return;
     let timer: ReturnType<typeof setTimeout> | undefined;
     const socket = matchmakerSocket();
-    socket.addEventListener("open", () => socket.send(JSON.stringify({ type: "queue", name, role })));
+    socket.addEventListener("open", () => socket.send(JSON.stringify({ type: "queue", name })));
     socket.addEventListener("message", (e: MessageEvent<string>) => {
       const msg = JSON.parse(e.data) as MatchmakerServerMessage;
       if (msg.type === "queued") setQueue({ waiting: msg.waiting, seats: msg.seats });
@@ -95,24 +93,13 @@ export function Lobby({ onMatched }: { onMatched: (ticket: SeatTicket) => void }
       clearTimeout(timer);
       socket.close();
     };
-  }, [name, role, onMatched]);
+  }, [name, onMatched]);
 
   const joining = name !== null;
 
   return (
     <main className={sleeping ? "pod pod-sleeping" : "pod"}>
       <div className="pod-toolbar">
-        <select
-          className="language-switcher inline"
-          aria-label={t("lobby.spawnAs")}
-          value={role ?? ""}
-          disabled={joining}
-          onChange={(e) => setRole((e.target.value || undefined) as Role | undefined)}
-        >
-          <option value="">{t("lobby.roleRandom")}</option>
-          <option value="human">{t("lobby.roleHuman")}</option>
-          <option value="mush">{t("lobby.roleMush")}</option>
-        </select>
         <LanguageSwitcher inline />
       </div>
       <div className="pod-window">

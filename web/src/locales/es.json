@@ -33,10 +33,6 @@
     "chair": "Silla"
   },
   "lobby": {
-    "spawnAs": "Aparecer como (prueba)",
-    "roleRandom": "Aleatorio",
-    "roleHuman": "Humano",
-    "roleMush": "Mush",
     "tagline": "Sueño criogénico. Elige una nave en la que despertar.",
     "waiting": "Esperando: {{waiting}}/{{seats}}. Los asientos vacíos se llenarán pronto con bots.",
     "awaitingCrew": "Esperando tripulación",

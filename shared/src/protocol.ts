@@ -9,8 +9,7 @@ import { CHAT_CHANNELS, MUSH_CHANNEL, type Action, type ChannelId, type PlayerId
 export const MAX_NAME_LENGTH = 24;
 
 // Matchmaker ("matchmaker" party, room "global")
-// `role` is a testing aid; the matchmaker ignores it unless cheats are allowed. Omitted means random.
-export type MatchmakerClientMessage = { type: "queue"; name: string; role?: Role };
+export type MatchmakerClientMessage = { type: "queue"; name: string };
 export type MatchmakerServerMessage =
   | { type: "queued"; waiting: number; seats: number }
   | { type: "matched"; roomId: string; token: string }
@@ -38,7 +37,7 @@ export function parseMatchmakerMessage(raw: string): MatchmakerClientMessage | n
   if (msg?.type !== "queue" || typeof msg.name !== "string") return null;
   const name = msg.name.trim().slice(0, MAX_NAME_LENGTH);
   if (!name) return null;
-  return msg.role === "human" || msg.role === "mush" ? { type: "queue", name, role: msg.role } : { type: "queue", name };
+  return { type: "queue", name };
 }
 
 export function parseGameMessage(raw: string): GameClientMessage | null {
