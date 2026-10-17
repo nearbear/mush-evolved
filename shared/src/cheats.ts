@@ -4,7 +4,7 @@
 
 import type { GameConfig, PlayerState } from "./types.ts";
 
-export const CHEATS = ["infiniteAp", "infiniteMp", "infiniteMorale", "infiniteHp"] as const;
+export const CHEATS = ["infiniteAp", "infiniteMp", "infiniteMorale", "infiniteHp", "infiniteSpores"] as const;
 export type Cheat = (typeof CHEATS)[number];
 
 /** Whether a player sees through ACTOPI as the ship has it ("default"), or always ("on") or never ("off"). */
@@ -12,6 +12,15 @@ export const ACTOPI_CHEATS = ["default", "on", "off"] as const;
 export type ActopiCheat = (typeof ACTOPI_CHEATS)[number];
 
 export const isActopiCheat = (value: unknown): value is ActopiCheat => ACTOPI_CHEATS.some((c) => c === value);
+
+/** Instant role switches (one-shot buttons, not toggles). */
+export const ROLE_CHEATS = ["mush", "human"] as const;
+export type RoleCheat = (typeof ROLE_CHEATS)[number];
+
+export const isRoleCheat = (value: unknown): value is RoleCheat => ROLE_CHEATS.some((r) => r === value);
+
+/** What infiniteSpores holds a Mush's spore count at: more than anyone can spend. */
+export const CHEAT_SPORES = 99;
 
 export const isCheat = (value: unknown): value is Cheat => CHEATS.some((c) => c === value);
 
@@ -24,6 +33,7 @@ const REFILL: Record<Cheat, (p: PlayerState, config: GameConfig) => void> = {
   infiniteMp: (p, c) => void (p.mp = c.movement.mpCap),
   infiniteMorale: (p, c) => void (p.morale = c.maxMorale),
   infiniteHp: (p, c) => void (p.hp = c.maxHp),
+  infiniteSpores: (p) => void (p.role === "mush" && (p.spores = CHEAT_SPORES)),
 };
 
 /**
@@ -33,4 +43,14 @@ const REFILL: Record<Cheat, (p: PlayerState, config: GameConfig) => void> = {
 export function applyCheats(p: PlayerState, config: GameConfig): void {
   if (!p.alive) return; // nothing brings the dead back
   for (const cheat of p.cheats) REFILL[cheat](p, config);
+}
+
+/** Turns a player human at once (the reverse of infection). Mutates a player the caller already cloned. */
+export function makeHuman(p: PlayerState, cycle: number): void {
+  if (p.role === "human") return;
+  p.role = "human";
+  p.alpha = false;
+  p.spores = 0;
+  p.satiety = 0;
+  p.satietyZeroSince = cycle; // humans start hungry-counting from now
 }

@@ -1,7 +1,7 @@
 // Wire messages between clients and the server. Everything arriving from a
 // client is untrusted: always go through the parse* functions.
 
-import { isActopiCheat, isCheat, type ActopiCheat, type Cheat } from "./cheats.ts";
+import { isActopiCheat, isCheat, isRoleCheat, type ActopiCheat, type Cheat, type RoleCheat } from "./cheats.ts";
 import { MAX_CHAT_LENGTH } from "./chat.ts";
 import { isSkill } from "./skills.ts";
 import { CHAT_CHANNELS, MUSH_CHANNEL, type Action, type ChannelId, type PlayerId, type PlayerView, type PrivateChannelId, type Role } from "./types.ts";
@@ -26,7 +26,8 @@ export type GameClientMessage =
   | { type: "leaveChannel"; channel: PrivateChannelId }
   // Development only: the server refuses it unless cheats are enabled (cheats.ts).
   | { type: "cheat"; cheat: Cheat; on: boolean }
-  | { type: "actopiCheat"; mode: ActopiCheat };
+  | { type: "actopiCheat"; mode: ActopiCheat }
+  | { type: "roleCheat"; role: RoleCheat };
 export type GameServerMessage =
   // `cheatsAllowed` is the server's dev flag, so the client knows whether to offer cheats. It is not game state.
   | { type: "view"; view: PlayerView; cheatsAllowed: boolean }
@@ -68,6 +69,7 @@ export function parseGameMessage(raw: string): GameClientMessage | null {
   if (msg?.type === "cheat") {
     return isCheat(msg.cheat) && typeof msg.on === "boolean" ? { type: "cheat", cheat: msg.cheat, on: msg.on } : null;
   }
+  if (msg?.type === "roleCheat") return isRoleCheat(msg.role) ? { type: "roleCheat", role: msg.role } : null;
   if (msg?.type === "actopiCheat") return isActopiCheat(msg.mode) ? { type: "actopiCheat", mode: msg.mode } : null;
   if (msg?.type !== "action" || !isRecord(msg.action)) return null;
   const a = msg.action;

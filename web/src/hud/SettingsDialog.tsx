@@ -1,7 +1,7 @@
 // The settings button and its dialog. Options apply immediately; there is no Save button.
 // Uses the global Mush `button` style; only layout is set in settings.css.
 
-import { ACTOPI_CHEATS, CHEATS, isActopiCheat, type ActopiCheat, type Cheat } from "@mush2/shared";
+import { ACTOPI_CHEATS, CHEATS, ROLE_CHEATS, isActopiCheat, type ActopiCheat, type Cheat, type RoleCheat } from "@mush2/shared";
 import { Hint } from "./IconButton.tsx";
 import { Dialog } from "@base-ui/react/dialog";
 import { useTranslation } from "react-i18next";
@@ -16,6 +16,7 @@ export function SettingsDialog({
   actopiCheat,
   onCheat,
   onActopiCheat,
+  onRoleCheat,
 }: {
   /** The server's dev flag. Without it the cheats section is not drawn at all. */
   cheatsAllowed: boolean;
@@ -23,6 +24,7 @@ export function SettingsDialog({
   actopiCheat: ActopiCheat;
   onCheat: (cheat: Cheat, on: boolean) => void;
   onActopiCheat: (mode: ActopiCheat) => void;
+  onRoleCheat: (role: RoleCheat) => void;
 }) {
   const { t } = useTranslation();
   const fogDepth = useFogDepth();
@@ -71,6 +73,11 @@ export function SettingsDialog({
                   ))}
                 </select>
               </label>
+              {ROLE_CHEATS.map((role) => (
+                <button key={role} type="button" onClick={() => onRoleCheat(role)}>
+                  {t(`settings.cheats.role.${role}`)}
+                </button>
+              ))}
             </fieldset>
           )}
           <Dialog.Close className="settings-close">{t("settings.close")}</Dialog.Close>

@@ -6,11 +6,11 @@
 // chat and private channels in chat.ts. Win conditions and voting are open
 // decisions: do not add them without confirming the rules first.
 
-import { applyCheats, type ActopiCheat, type Cheat } from "./cheats.ts";
+import { applyCheats, makeHuman, type ActopiCheat, type Cheat, type RoleCheat } from "./cheats.ts";
 import { ACTIONS, type ActionCost, type ActionDef } from "./actions.ts";
 import { itemsIn } from "./items.ts";
 import { actionFailed, apGain, carePointsGain, channelLimit, computerPointsGain, cycleChanged, inventorySlots, movementRules, satietyLoss } from "./modifiers.ts";
-import { contaminationSeenBy } from "./infection.ts";
+import { contaminationSeenBy, convert } from "./infection.ts";
 import { isHungry, publicStatusesOf, statusesOf } from "./statuses.ts";
 import { emptyResources } from "./resources.ts";
 import { nextFloat, shuffle } from "./rng.ts";
@@ -168,6 +168,17 @@ export function setCheat(state: GameState, playerId: PlayerId, cheat: Cheat, on:
   const p = findPlayer(next, playerId)!;
   p.cheats = p.cheats.filter((c) => c !== cheat);
   if (on) p.cheats.push(cheat);
+  applyCheats(p, next.config);
+  return { ok: true, state: next };
+}
+
+/** Switches a player's role at once (development cheat). Like setCheat, the server gates it. */
+export function setRoleCheat(state: GameState, playerId: PlayerId, role: RoleCheat): ActionResult {
+  if (!findPlayer(state, playerId)) return fail("unknown_player");
+  const next = clone(state);
+  const p = findPlayer(next, playerId)!;
+  if (role === "mush" && p.role === "human") convert(next, p);
+  else if (role === "human") makeHuman(p, next.cycle);
   applyCheats(p, next.config);
   return { ok: true, state: next };
 }

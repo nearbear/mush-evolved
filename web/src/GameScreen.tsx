@@ -3,7 +3,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import type PartySocket from "partysocket";
-import { CORPSE_ITEM, type Action, type ActopiCheat, type CharacterId, type Cheat, type GameClientMessage, type GameServerMessage, type PlayerView, type RoomId, type Target } from "@mush2/shared";
+import { CORPSE_ITEM, type Action, type ActopiCheat, type CharacterId, type Cheat, type GameClientMessage, type GameServerMessage, type PlayerView, type RoleCheat, type RoomId, type Target } from "@mush2/shared";
 import { BottomNav, type MobilePanel } from "./hud/BottomNav.tsx";
 import { DeathNotice } from "./hud/DeathNotice.tsx";
 import { InspectPanel } from "./hud/InspectPanel.tsx";
@@ -136,6 +136,7 @@ export function GameScreen({ ticket, onLeave }: { ticket: SeatTicket; onLeave: (
         cheatsAllowed={cheatsAllowed}
         onCheat={(cheat: Cheat, on: boolean) => post({ type: "cheat", cheat, on })}
         onActopiCheat={(mode: ActopiCheat) => post({ type: "actopiCheat", mode })}
+        onRoleCheat={(role: RoleCheat) => post({ type: "roleCheat", role })}
       />
 
       <div className="three-panel" data-panel={panel}>

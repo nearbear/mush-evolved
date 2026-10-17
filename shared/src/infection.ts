@@ -46,7 +46,7 @@ export function contaminationSeenBy(state: Readonly<GameState>, viewer: Readonly
  * are human-only, so they go. Spore extraction is ready at once (no cooldown entry).
  * Only the convert is told, privately; nobody learns who caused it.
  */
-function convert(state: GameState, player: PlayerState): void {
+export function convert(state: GameState, player: PlayerState): void {
   player.role = "mush";
   player.alpha = false;
   player.satiety = 0;

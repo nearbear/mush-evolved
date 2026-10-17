@@ -151,16 +151,16 @@ export class GameRoom extends Server<Env> {
       this.send(connection, { type: "error", message: "Malformed message" });
       return;
     }
-    if ((msg.type === "cheat" || msg.type === "actopiCheat") && !this.cheatsAllowed) {
+    if ((msg.type === "cheat" || msg.type === "actopiCheat" || msg.type === "roleCheat") && !this.cheatsAllowed) {
       this.send(connection, { type: "error", message: CHEATS_DISABLED });
       return;
     }
-    const error = msg.type === "action" || msg.type === "cheat" || msg.type === "actopiCheat" ? await this.act({ ...msg, by: playerId }) : await this.social(playerId, msg);
+    const error = msg.type === "action" || msg.type === "cheat" || msg.type === "actopiCheat" || msg.type === "roleCheat" ? await this.act({ ...msg, by: playerId }) : await this.social(playerId, msg);
     if (error) this.send(connection, { type: "error", message: error });
   }
 
   /** Chat and channel management. Untrusted text: rate limit, then moderate, then let the rules decide. */
-  private async social(playerId: PlayerId, msg: Exclude<GameClientMessage, { type: "action" | "cheat" | "actopiCheat" }>): Promise<string | null> {
+  private async social(playerId: PlayerId, msg: Exclude<GameClientMessage, { type: "action" | "cheat" | "actopiCheat" | "roleCheat" }>): Promise<string | null> {
     if (!this.game) return "No game";
     if (!this.chatLimiter.allow(playerId)) {
       this.countRateLimited(playerId);

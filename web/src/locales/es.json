@@ -9,6 +9,8 @@
       "infiniteMp": "Puntos de movimiento infinitos",
       "infiniteMorale": "Moral infinita",
       "infiniteHp": "Salud infinita",
+      "infiniteSpores": "Esporas infinitas (Mush)",
+      "role": {"mush": "Convertirse en Mush", "human": "Convertirse en humano"},
       "actopi": {
         "label": "ACTOPI",
         "default": "Predeterminado del juego",

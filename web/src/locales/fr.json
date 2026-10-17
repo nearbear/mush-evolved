@@ -9,6 +9,8 @@
       "infiniteMp": "Points de mouvement infinis",
       "infiniteMorale": "Moral infini",
       "infiniteHp": "Points de vie infinis",
+      "infiniteSpores": "Spores infinies (Mush)",
+      "role": {"mush": "Devenir Mush", "human": "Devenir humain"},
       "actopi": {
         "label": "ACTOPI",
         "default": "Par défaut du jeu",
