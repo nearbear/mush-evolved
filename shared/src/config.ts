@@ -66,6 +66,8 @@ export const DEFAULT_CONFIG: GameConfig = {
   build: { cost: { ap: 3 } },
   // Decided 2026-10-16 (#28): jettisoning a carried corpse is free, in one of the four bays.
   jettison: { cost: { ap: 0 }, rooms: ["SPACESHIP_BAY_A", "SPACESHIP_BAY_AA", "SPACESHIP_BAY_B", "ICARUS"] },
+  // Owner, 2026-10-16: the computer scientist skill holds up to 4 Computer points, gains 2 a day (and 2 when picked).
+  computer: { capPoints: 4, pointsPerDay: 2 },
   // Decided 2026-10-16: working on a research costs 2 AP and advances it 25%; no repeat penalty yet.
   research: { cost: { ap: 2 }, effect: { progressPercent: 25 } },
   // Confirmed 2026-10-14: showering costs 2 AP, 1 less with soap in your inventory; a Mush takes 4 damage.
@@ -81,6 +83,7 @@ export const DEFAULT_CONFIG: GameConfig = {
   creative: { refundOdds: 0.5 },
   anticPerfume: { immuneCycles: 2 },
   logistics: { ap: 1 },
+  caffeinomaniac: { ap: 2 },
   // Confirmed 2026-10-16: carrying a heavy item adds this much to every move's MP cost, once.
   heavy: { mpPenalty: 2 },
   // PLACEHOLDER items with no effects, so there is something to pick up.

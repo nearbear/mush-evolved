@@ -81,6 +81,10 @@ export interface GameConfig {
     cost: { ap: number }; // AP spent to jettison a carried corpse (decided 2026-10-16: free).
     rooms: RoomId[]; // Rooms where a corpse can be jettisoned: the four bays (decided 2026-10-16).
   };
+  computer: {
+    capPoints: number; // Most Computer points (`resources.comp`) a player can hold (owner, 2026-10-16; the original skill's IncrMaxPA(COMP, 4)).
+    pointsPerDay: number; // Computer points the `computer` skill grants at the start of each day and when picked (owner, 2026-10-16; the original +2).
+  };
   research: {
     cost: { ap: number }; // AP spent to work on a research (decided 2026-10-16).
     effect: { progressPercent: number }; // Percent a research advances per action (decided 2026-10-16).
@@ -110,6 +114,9 @@ export interface GameConfig {
   };
   logistics: {
     ap: number; // AP the logistics skill gives a random roommate each cycle (confirmed 2026-10-16).
+  };
+  caffeinomaniac: {
+    ap: number; // Extra AP the caffeinomaniac skill gives on consuming a coffee, capped at maxAp (confirmed 2026-10-16).
   };
   heavy: {
     mpPenalty: number; // MP added to each move while carrying a heavy item, however many (confirmed 2026-10-16).

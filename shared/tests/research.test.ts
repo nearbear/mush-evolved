@@ -81,3 +81,68 @@ describe("research", () => {
     expect(parseGameMessage(JSON.stringify({ type: "action", action: { type: "research", equipment: "x" } }))).toBeNull();
   });
 });
+
+describe("computer scientist skill (computer)", () => {
+  const cfg = DEFAULT_CONFIG.computer;
+  const pick = (s: ReturnType<typeof game>) => {
+    const r = applyAction(s, "p0", { type: "pick_skill", skill: "computer" });
+    if (!r.ok) throw new Error(r.error);
+    return r.state;
+  };
+
+  it("grants 2 Computer points when picked, capped at 4, and nothing to others", () => {
+    const s = pick(game());
+    expect(s.players[0]!.resources.comp).toBe(cfg.pointsPerDay);
+    expect(s.players[1]!.resources.comp).toBe(0);
+    const start = createGame(seats, { ...DEFAULT_CONFIG, startSkills: ["computer"] }, 7);
+    expect(start.players[0]!.resources.comp).toBe(cfg.pointsPerDay);
+  });
+
+  it("pays for a research with 2 Computer points instead of AP", () => {
+    const s = pick(game());
+    const ap = s.players[0]!.ap;
+    const r = applyAction(s, "p0", work("MYCOSCAN"));
+    if (!r.ok) throw new Error(r.error);
+    expect(r.state.players[0]!.resources.comp).toBe(0);
+    expect(r.state.players[0]!.ap).toBe(ap);
+    expect(r.state.research.MYCOSCAN).toBe(25);
+    // Out of points, it costs AP again.
+    const again = applyAction(r.state, "p0", work("MYCOSCAN"));
+    expect(again.ok && again.state.players[0]!.ap).toBe(ap - AP);
+  });
+
+  it("works with no AP left, and is refused with neither", () => {
+    const s = pick(game());
+    s.players[0]!.ap = 0;
+    expect(applyAction(s, "p0", work("MYCOSCAN")).ok).toBe(true);
+    s.players[0]!.resources.comp = 1;
+    expect(applyAction(s, "p0", work("MYCOSCAN")).ok).toBe(false);
+  });
+
+  it("adds 2 at each day boundary, up to the cap", () => {
+    let s = pick(game());
+    while (s.players[0]!.resources.comp < cfg.capPoints) {
+      const day = Math.floor((s.cycle - 1) / DEFAULT_CONFIG.cyclesPerDay);
+      while (Math.floor((s.cycle - 1) / DEFAULT_CONFIG.cyclesPerDay) === day)
+        for (const p of s.players) {
+          const r = applyAction(s, p.id, { type: "ready" });
+          if (!r.ok) throw new Error(r.error);
+          s = r.state;
+        }
+    }
+    expect(s.players[0]!.resources.comp).toBe(cfg.capPoints);
+  });
+
+  it("never lets the pool pass the cap", () => {
+    const s = pick(game());
+    s.players[0]!.resources.comp = cfg.capPoints;
+    const again = pick(Object.assign(s, { players: s.players.map((p) => ({ ...p, skills: [] })) }));
+    expect(again.players[0]!.resources.comp).toBe(cfg.capPoints);
+  });
+
+  it("keeps the pool out of other players' views", () => {
+    const s = pick(game());
+    expect(viewFor(s, "p0").you.resources.comp).toBe(cfg.pointsPerDay);
+    expect(JSON.stringify(viewFor(s, "p1"))).not.toContain('"comp":2');
+  });
+});

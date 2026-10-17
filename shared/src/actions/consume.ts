@@ -1,6 +1,7 @@
 import { Action } from "./action.ts";
 import { ITEM_TYPES, canReach } from "../items.ts";
 import { logPublic } from "../log.ts";
+import { consumed } from "../modifiers.ts";
 import { isFullBelly } from "../statuses.ts";
 import type { GameState, ItemState, PlayerState } from "../types.ts";
 
@@ -35,6 +36,7 @@ export class ConsumeAction extends Action<ConsumeActionData> {
       player.satiety += satiety;
       player.satietyZeroSince = player.satiety === 0 ? state.cycle : null;
     }
+    consumed(state, player, item);
     logPublic(state, player.room, "consumed", { name: player.name, item: item.type });
   }
 }

@@ -9,7 +9,7 @@
 import { applyCheats, type ActopiCheat, type Cheat } from "./cheats.ts";
 import { ACTIONS, type ActionCost, type ActionDef } from "./actions.ts";
 import { itemsIn } from "./items.ts";
-import { actionFailed, apGain, carePointsGain, channelLimit, cycleChanged, inventorySlots, movementRules, satietyLoss } from "./modifiers.ts";
+import { actionFailed, apGain, carePointsGain, channelLimit, computerPointsGain, cycleChanged, inventorySlots, movementRules, satietyLoss } from "./modifiers.ts";
 import { contaminationSeenBy } from "./infection.ts";
 import { isHungry, publicStatusesOf, statusesOf } from "./statuses.ts";
 import { emptyResources } from "./resources.ts";
@@ -213,9 +213,12 @@ function advanceCycle(state: GameState): void {
   });
 }
 
-/** Day-start care points: every living player gains what their skills grant. Mutates a state the caller already cloned. */
+/** Day-start care and Computer points: every living player gains what their skills grant (Computer points stop at the cap). Mutates a state the caller already cloned. */
 function grantCarePoints(state: GameState): void {
-  for (const p of state.players) if (p.alive) p.resources.heal += carePointsGain(state, p);
+  for (const p of state.players) if (p.alive) {
+    p.resources.heal += carePointsGain(state, p);
+    p.resources.comp = Math.min(state.config.computer.capPoints, p.resources.comp + computerPointsGain(state, p));
+  }
 }
 
 /** Day and cycle-within-day (both 1-based) for the state's global cycle counter. */

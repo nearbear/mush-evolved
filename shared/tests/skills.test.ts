@@ -193,3 +193,31 @@ describe("Logistics", () => {
     expect(next.players[1]!.ap).toBe(next.config.maxAp);
   });
 });
+
+describe("caffeinomaniac", () => {
+  function drink(skills: string[], ap: number, type = "coffee"): GameState {
+    const state = createGame(seats, { ...config, startSkills: [] }, 7);
+    const p = state.players[0]!;
+    p.skills = skills;
+    p.ap = ap;
+    state.items.push({ id: "item-drink", type, at: { kind: "player", id: "p0" } });
+    const r = applyAction(state, "p0", { type: "consume", item: "item-drink" });
+    if (!r.ok) throw new Error(r.error);
+    return r.state;
+  }
+
+  it("adds 2 AP to a coffee's own 2", () => {
+    expect(drink([], 0).players[0]!.ap).toBe(2);
+    expect(drink(["caffeinomaniac"], 0).players[0]!.ap).toBe(4);
+  });
+
+  it("is capped at maxAp", () => {
+    const max = DEFAULT_CONFIG.maxAp;
+    expect(drink(["caffeinomaniac"], max - 1).players[0]!.ap).toBe(max);
+  });
+
+  it("does not trigger for other consumables", () => {
+    const withoutBonus = drink([], 0, "cooked_ration").players[0]!.ap;
+    expect(drink(["caffeinomaniac"], 0, "cooked_ration").players[0]!.ap).toBe(withoutBonus);
+  });
+});

@@ -614,3 +614,16 @@ Owner asked for the skill; the original text ("2 cycles of immunity after each s
 ### 2026-10-16: unaffordable actions shown disabled
 
 `viewFor` now sends `unaffordable`: candidates whose only failing check is `cant_afford`, with cost and which of AP/MP fall short. The client shows them as `aria-disabled` buttons (not `disabled`, so hover, focus and tap still work) with a popover giving the reason. This relies on every action's `check` returning `cant_afford` last; the first draft crashed because `move`'s cost is undefined when unaffordable, so moves are excluded. Candidates are the same ones that feed `legalActions`, so no new information is exposed.
+
+## 2026-10-16: caffeinomaniac skill
+- Owner decided (after one batched question round): +2 AP on consuming a coffee, capped at maxAp, coffee only, NERON project bonus skipped. Defaults came from the original skill text in `Mush/derived/data/Data/skills.json`.
+- Added an `onConsume` modifier hook (run by `consumed` from the consume action) rather than special-casing the skill in `consume.ts`. No corrections needed.
+- Correction: I added `config.caffeinomaniac` without bumping `STATE_VERSION`, so a room saved before the change crashed on consume (`config.caffeinomaniac` undefined). Config lives in persisted state, so any new config key needs the bump (now 30).
+
+### 2026-10-16: Coffee item icon
+
+The `coffee` item had no icon (no `coffee.jpg` in `www/img/icons/items/`). A contact sheet showed `ration_7.jpg` is a steaming coffee cup, so `ICON_FILE` maps `coffee` to it. Skipped `coffee_thermos.jpg` (a separate item, the thermos) and `ui/coffee.png` (a 16x16 inline UI glyph, not an inventory tile). Noted in `docs/mush-assets.md` that the `ration_N` files are distinct foods.
+
+## 2026-10-16: Computer Scientist skill
+
+"Add the computer scientist skill" turned out to mean the in-game `computer` skill, not a Claude skill; I grepped the repo to find that out before asking. The owner decided: a separate Computer point pool (cap 4, +2 per day and 2 on pick, carries over, private), spent as 2 points instead of 2 AP on research; no hacking, no NERON bonus. Built as a `computerPointsPerDay` fold plus `onPick`, reusing the existing `resources.comp` counter. Needed no correction.

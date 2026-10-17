@@ -112,8 +112,8 @@ const itemIcons = urls(
 /** Every item icon, keyed by file name without extension (e.g. "wrench", "fruit_banana"). */
 export const ITEM_ICONS: Readonly<Record<string, string>> = itemIcons;
 
-/** Item types whose icon file has a different name. ration_0 is the plain unopened box; ration_1 is the cooked one. */
-const ICON_FILE: Readonly<Record<string, string>> = { uncooked_ration: "ration_0" };
+/** Item types whose icon file has a different name. ration_0 is the plain unopened box; ration_1 is the cooked one; ration_7 is a cup of coffee. */
+const ICON_FILE: Readonly<Record<string, string>> = { uncooked_ration: "ration_0", coffee: "ration_7" };
 
 /** Icon for an item type. Item type ids are named after their icon files unless ICON_FILE says otherwise; undefined if there's none. */
 export function itemIcon(type: string): string | undefined {

@@ -10,13 +10,15 @@
 
 import { carriesHeavy } from "./items.ts";
 import { antic_perfume } from "./modifiers/antic_perfume.ts";
+import { caffeinomaniac } from "./modifiers/caffeinomaniac.ts";
 import { creative } from "./modifiers/creative.ts";
+import { computer } from "./modifiers/computer.ts";
 import { first_aid } from "./modifiers/first_aid.ts";
 import { logistics } from "./modifiers/logistics.ts";
 import { lying_down } from "./modifiers/lying_down.ts";
 import { medic } from "./modifiers/medic.ts";
 import { sturdy } from "./modifiers/sturdy.ts";
-import type { GameState, MovementRules, PlayerState } from "./types.ts";
+import type { GameState, ItemState, MovementRules, PlayerState } from "./types.ts";
 
 /** A numeric hook: takes the running value and returns the adjusted one. Must be pure. */
 type FoldHook = (value: number, player: Readonly<PlayerState>, state: Readonly<GameState>) => number;
@@ -32,6 +34,7 @@ type FoldHooks = Record<
   | "satietyPerCycle"
   | "punchDamage"
   | "carePointsPerDay"
+  | "computerPointsPerDay"
   | "heavyMpPenalty",
   FoldHook
 >;
@@ -48,6 +51,8 @@ export interface Modifier extends Partial<FoldHooks> {
   onCycle?: (next: GameState, player: PlayerState) => void;
   /** Runs after the player showers. Mutates a state the caller already cloned. */
   onShower?: (next: GameState, player: PlayerState) => void;
+  /** Runs after the player consumes an item, once its own AP and satiety are applied. Mutates a state the caller already cloned. */
+  onConsume?: (next: GameState, player: PlayerState, item: ItemState) => void;
   /** Runs once when the player picks this skill (not for other modifiers). Mutates a state the caller already cloned. */
   onPick?: (next: GameState, player: PlayerState) => void;
 }
@@ -55,7 +60,7 @@ export interface Modifier extends Partial<FoldHooks> {
 export type ModifierRegistry = Readonly<Record<string, Modifier>>;
 
 /** Items and skills will register here too. When a skill gains rules, update its entry in SKILL_STATUS (skills.ts). */
-export const MODIFIERS: Record<string, Modifier> = { lying_down, medic, first_aid, sturdy, creative, antic_perfume, logistics };
+export const MODIFIERS: Record<string, Modifier> = { lying_down, medic, first_aid, sturdy, creative, antic_perfume, logistics, caffeinomaniac, computer };
 
 /** The ids every hook folds over: the player's skills, then their other modifiers. */
 export function modifierIds(player: Readonly<PlayerState>): string[] {
@@ -149,6 +154,10 @@ export const satietyLoss = (state: Readonly<GameState>, player: Readonly<PlayerS
 export const carePointsGain = (state: Readonly<GameState>, player: Readonly<PlayerState>, registry: ModifierRegistry = MODIFIERS) =>
   fold("carePointsPerDay", 0, state, player, registry);
 
+/** Computer points a player gains at the start of a day: nothing by default, plus what the computer scientist skill grants. */
+export const computerPointsGain = (state: Readonly<GameState>, player: Readonly<PlayerState>, registry: ModifierRegistry = MODIFIERS) =>
+  fold("computerPointsPerDay", 0, state, player, registry);
+
 /** HP a punch removes: the configured damage folded through the puncher's modifiers. */
 export const punchDamage = (state: Readonly<GameState>, player: Readonly<PlayerState>, registry: ModifierRegistry = MODIFIERS) =>
   fold("punchDamage", state.config.punch.effect.damage, state, player, registry);
@@ -156,6 +165,11 @@ export const punchDamage = (state: Readonly<GameState>, player: Readonly<PlayerS
 /** Runs every onShower hook of the player's modifiers. Mutates a state the caller already cloned. */
 export function showered(next: GameState, player: PlayerState, registry: ModifierRegistry = MODIFIERS): void {
   for (const id of modifierIds(player)) registry[id]?.onShower?.(next, player);
+}
+
+/** Runs every onConsume hook of the player's modifiers. Mutates a state the caller already cloned. */
+export function consumed(next: GameState, player: PlayerState, item: ItemState, registry: ModifierRegistry = MODIFIERS): void {
+  for (const id of modifierIds(player)) registry[id]?.onConsume?.(next, player, item);
 }
 
 /** Runs the picked skill's onPick hook. Mutates a state the caller already cloned. */

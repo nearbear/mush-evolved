@@ -10,7 +10,7 @@ Other packages import from `@mush2/shared` (`shared/src/index.ts`, the barrel). 
 - `blueprints.ts`: `BLUEPRINTS` recipes (ingredients and resulting equipment) and the `blueprint` item type name.
 - `actions/<type>.ts`: one class per action: `access`, `bond`, `build`, `consume`, `cook`, `dismantle`, `dispense`, `examine`, `extract_spore`, `heal`, `jettison`, `move`, `pick_skill`, `punch`, `ready`, `research`, `share` (`dtt`, `stt`), `shower`, `spike`, `transfer` (`take`, `drop`).
 - `modifiers.ts`: the modifier registry and its hooks (numeric ones go through `fold`; `moveCost` is the one place a move's price is computed).
-- `modifiers/<id>.ts`: one file per modifier: `antic_perfume`, `creative`, `first_aid`, `lying_down`, `medic`, `sturdy`; `careSkill.ts` is the factory behind `first_aid`.
+- `modifiers/<id>.ts`: one file per modifier: `antic_perfume`, `caffeinomaniac`, `computer`, `creative`, `first_aid`, `lying_down`, `medic`, `sturdy`; `careSkill.ts` is the factory behind `first_aid`.
 - `replay.ts`: `Input`, `GameSetup`, `applyInput` (the only entry point for changing a game), `replayGame`.
 - `research.ts`: `RESEARCH_IDS` (the researches with card art) and `RESEARCH_COMPLETE`.
 - `rng.ts`: the seeded RNG (its state is part of `GameState`).

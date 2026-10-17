@@ -90,9 +90,12 @@ export const SKILL_STATUS: Readonly<Partial<Record<SkillId, SkillStatus>>> = {
   sturdy: "partial",
   // Free heal points only; no medicine properties.
   first_aid: "partial",
+  // Computer points and their use on research only; no hacking, no NERON project bonus.
+  computer: "partial",
   creative: "full",
   antic_perfume: "full",
   logistics: "full",
+  caffeinomaniac: "full",
 };
 
 export function skillStatus(skill: string): SkillStatus {
