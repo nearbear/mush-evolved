@@ -101,4 +101,16 @@ export interface PlayerView {
   legalActions: Action[];
   /** AP and MP each legal action costs you, index-aligned with `legalActions`. */
   legalCosts: ActionCost[];
+  /**
+   * Actions that would be legal if you had the AP or MP, so the client can show them disabled and say why.
+   * Only candidates on things you can already see, so nothing hidden is revealed.
+   */
+  unaffordable: UnaffordableAction[];
+}
+
+/** An action blocked only by a lack of points: what it costs and which of your points fall short. */
+export interface UnaffordableAction {
+  action: Action;
+  cost: ActionCost;
+  lacks: ("ap" | "mp")[];
 }

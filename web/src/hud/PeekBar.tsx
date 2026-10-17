@@ -7,7 +7,8 @@ import { useTranslation } from "react-i18next";
 import { useNames } from "../i18n/names.ts";
 import type { Action, PlayerView, RoomId, Target } from "@mush2/shared";
 import { ActionLabel } from "./ActionLabel.tsx";
-import { actionLabelKey, actionsOn, costOf, resolveTarget } from "./targets.ts";
+import { DisabledActionButton } from "./ActionButton.tsx";
+import { actionLabelKey, actionsOn, costOf, resolveTarget, unaffordableOn } from "./targets.ts";
 
 export function PeekBar({
   view,
@@ -29,9 +30,9 @@ export function PeekBar({
 }) {
   const { t } = useTranslation();
   const names = useNames();
-  const labelFor = (a: Action): ReactNode => {
+  const labelFor = (a: Action, cost = costOf(view, a)): ReactNode => {
     const key = actionLabelKey(a);
-    return <ActionLabel text={key ? t(key) : a.type} cost={costOf(view, a)} />;
+    return <ActionLabel text={key ? t(key) : a.type} cost={cost} />;
   };
   if (door) {
     const canGo = reachable.has(door);
@@ -52,6 +53,11 @@ export function PeekBar({
         <button key={a.type} onClick={() => onAction(a)}>
           {labelFor(a)}
         </button>
+      ))}
+      {unaffordableOn(view, target).map((u) => (
+        <DisabledActionButton key={u.action.type} view={view} blocked={u}>
+          {labelFor(u.action, u.cost)}
+        </DisabledActionButton>
       ))}
       <button onClick={onMore}>More</button>
     </Bar>

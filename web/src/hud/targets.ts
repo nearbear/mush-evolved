@@ -2,7 +2,7 @@
 // No rules here: a target is shown only if the view contains it, and actions
 // come from view.legalActions.
 
-import type { Action, ActionCost, EquipmentView, ItemView, OtherPlayerView, PlayerState, PlayerView, Target } from "@mush2/shared";
+import type { Action, ActionCost, EquipmentView, ItemView, OtherPlayerView, PlayerState, PlayerView, Target, UnaffordableAction } from "@mush2/shared";
 
 export type Resolved =
   | { kind: "player"; person: PlayerState | OtherPlayerView }
@@ -34,33 +34,40 @@ export function resolveTarget(view: PlayerView, target: Target): Resolved | null
 
 /** Legal actions aimed at this target. */
 export function actionsOn(view: PlayerView, target: Target): Action[] {
-  return view.legalActions.filter((a) => {
-    switch (a.type) {
-      case "examine":
-        return sameTarget(a.target, target);
-      case "access":
-      case "dispense":
-      case "shower":
-        return target.kind === "equipment" && a.equipment === target.id;
-      case "dismantle":
-      case "consume":
-      case "cook":
-      case "build":
-      case "jettison":
-        return target.kind === "item" && a.item === target.id;
-      case "bond":
-      case "dtt":
-      case "stt":
-      case "heal":
-      case "punch":
-      case "spike":
-        return target.kind === "player" && a.target === target.id;
-      case "extract_spore":
-        return target.kind === "player" && target.id === view.you.id;
-      default:
-        return false;
-    }
-  });
+  return view.legalActions.filter((a) => aimedAt(view, a, target));
+}
+
+/** Actions aimed at this target that you only lack the AP or MP for, to show disabled with the reason. */
+export function unaffordableOn(view: PlayerView, target: Target): UnaffordableAction[] {
+  return view.unaffordable.filter((u) => aimedAt(view, u.action, target));
+}
+
+function aimedAt(view: PlayerView, a: Action, target: Target): boolean {
+  switch (a.type) {
+    case "examine":
+      return sameTarget(a.target, target);
+    case "access":
+    case "dispense":
+    case "shower":
+      return target.kind === "equipment" && a.equipment === target.id;
+    case "dismantle":
+    case "consume":
+    case "cook":
+    case "build":
+    case "jettison":
+      return target.kind === "item" && a.item === target.id;
+    case "bond":
+    case "dtt":
+    case "stt":
+    case "heal":
+    case "punch":
+    case "spike":
+      return target.kind === "player" && a.target === target.id;
+    case "extract_spore":
+      return target.kind === "player" && target.id === view.you.id;
+    default:
+      return false;
+  }
 }
 
 const ACTION_LABEL_KEYS = {

@@ -84,3 +84,24 @@ describe("punch", () => {
     expect(parseGameMessage(JSON.stringify({ type: "action", action: { type: "punch", target: "p1" } }))).toEqual({ type: "action", action: punch("p1") });
   });
 });
+
+describe("unaffordable actions in the view", () => {
+  it("lists a punch you only lack the AP for, with its cost, and not as legal", () => {
+    const s = ship();
+    player(s, "p0").ap = 0;
+    const v = viewFor(s, "p0");
+    expect(v.legalActions).not.toContainEqual(punch("p1"));
+    expect(v.unaffordable).toContainEqual({ action: punch("p1"), cost: { ap: 1, mp: 0 }, lacks: ["ap"] });
+  });
+
+  it("does not list actions blocked by anything else, such as a target in another room", () => {
+    const s = ship();
+    player(s, "p0").ap = 0;
+    const v = viewFor(s, "p0");
+    expect(v.unaffordable.some((u) => u.action.type === "punch" && u.action.target === "p2")).toBe(false);
+  });
+
+  it("is empty when you can afford everything", () => {
+    expect(viewFor(ship(), "p0").unaffordable.filter((u) => u.action.type === "punch")).toEqual([]);
+  });
+});

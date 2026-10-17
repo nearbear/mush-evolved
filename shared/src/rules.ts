@@ -28,6 +28,7 @@ import type {
   GameState,
   ItemState,
   ItemView,
+  UnaffordableAction,
   PlayerId,
   PlayerState,
   PlayerView,
@@ -110,6 +111,24 @@ export function legalActions(state: GameState, playerId: PlayerId): Action[] {
   if (!p || !canAct(state, p)) return [];
   return Object.values(ACTIONS).flatMap((def: ActionDef<Action>) =>
     def.candidates(state, p).filter((a) => def.check(state, p, a) === null),
+  );
+}
+
+/**
+ * Actions that fail only on cost (`cant_afford`), with the cost and what falls short. For showing them disabled.
+ * Moves are left out: an unaffordable move has no cost to report, and doors aren't action buttons.
+ */
+export function unaffordableActions(state: GameState, playerId: PlayerId): UnaffordableAction[] {
+  const p = findPlayer(state, playerId);
+  if (!p || !canAct(state, p)) return [];
+  return Object.values(ACTIONS).flatMap((def: ActionDef<Action>) =>
+    def.candidates(state, p).flatMap((a): UnaffordableAction[] => {
+      if (a.type === "move") return [];
+      if (def.check(state, p, a) !== "cant_afford") return [];
+      const cost = def.cost(state, p, a);
+      const lacks: ("ap" | "mp")[] = [...(p.ap < cost.ap ? (["ap"] as const) : []), ...(p.mp < cost.mp ? (["mp"] as const) : [])];
+      return [{ action: a, cost, lacks }];
+    }),
   );
 }
 
@@ -280,6 +299,7 @@ export function viewFor(state: GameState, playerId: PlayerId): PlayerView {
     research: { ...state.research },
     legalActions: legal,
     legalCosts: legalCosts(state, playerId, legal),
+    unaffordable: unaffordableActions(state, playerId),
   };
 }
 

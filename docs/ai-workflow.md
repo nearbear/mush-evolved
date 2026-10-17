@@ -610,3 +610,7 @@ Owner asked for the skill; the original text ("2 cycles of immunity after each s
 - Claude filled the unspecified gaps with defaults and flagged them (done at the lab terminal, finished researches locked, many in progress at once, no completion effect). The original's difficulty, samples and prerequisites were deliberately ignored.
 - Claude could not view the card PNGs (read deny rule on `Mush/`), so their size and transparency are unchecked; they render with a max width. fr/es names are drafts (French from the original names).
 - Needed correction: the pinned legal-actions test had to learn about 24 new actions; state shape changed, so `STATE_VERSION` went to 29.
+
+### 2026-10-16: unaffordable actions shown disabled
+
+`viewFor` now sends `unaffordable`: candidates whose only failing check is `cant_afford`, with cost and which of AP/MP fall short. The client shows them as `aria-disabled` buttons (not `disabled`, so hover, focus and tap still work) with a popover giving the reason. This relies on every action's `check` returning `cant_afford` last; the first draft crashed because `move`'s cost is undefined when unaffordable, so moves are excluded. Candidates are the same ones that feed `legalActions`, so no new information is exposed.

@@ -7,6 +7,7 @@ import { useTranslation } from "react-i18next";
 import { RESEARCH_CARDS } from "../art/assets.ts";
 import { useNames } from "../i18n/names.ts";
 import { ActionLabel } from "./ActionLabel.tsx";
+import { DisabledActionButton } from "./ActionButton.tsx";
 import { costOf } from "./targets.ts";
 import "./settings.css";
 
@@ -43,6 +44,7 @@ function ResearchList({ terminal, view, onAction }: Omit<Props, "onClose"> & { t
       {RESEARCH_IDS.map((id) => {
         const percent = view.research[id] ?? 0;
         const action = view.legalActions.find((a) => a.type === "research" && a.equipment === terminal.id && a.research === id);
+        const blocked = view.unaffordable.find((u) => u.action.type === "research" && u.action.equipment === terminal.id && u.action.research === id);
         const card = RESEARCH_CARDS[id.toLowerCase()];
         return (
           <li key={id} className="research-item">
@@ -57,6 +59,11 @@ function ResearchList({ terminal, view, onAction }: Omit<Props, "onClose"> & { t
               <button type="button" onClick={() => onAction(action)}>
                 <ActionLabel text={t("research.work")} cost={costOf(view, action)} />
               </button>
+            )}
+            {blocked && (
+              <DisabledActionButton view={view} blocked={blocked}>
+                <ActionLabel text={t("research.work")} cost={blocked.cost} />
+              </DisabledActionButton>
             )}
           </li>
         );

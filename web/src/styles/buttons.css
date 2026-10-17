@@ -27,20 +27,25 @@ button {
 }
 /* Only real hover: on touch screens :hover sticks after a tap. */
 @media (hover: hover) {
-  button:hover:not(:disabled) {
+  button:hover:not(:disabled, .action-disabled) {
     --btn-left: url("../../../Mush/www/img/design/butleftover.png");
     --btn-mid: url("../../../Mush/www/img/design/butbgover.png");
     --btn-right: url("../../../Mush/www/img/design/butrightover.png");
   }
 }
-button:active:not(:disabled) {
+button:active:not(:disabled, .action-disabled) {
   --btn-left: url("../../../Mush/www/img/design/butleft_on.gif");
   --btn-mid: url("../../../Mush/www/img/design/butbg_on.gif");
   --btn-right: url("../../../Mush/www/img/design/butright_on.gif");
 }
-button:disabled {
+button:disabled,
+button.action-disabled {
   cursor: default;
   opacity: 0.6;
+}
+/* Struck through so a disabled action reads as unavailable even when the reason card isn't open. */
+button.action-disabled .action-label {
+  text-decoration: line-through;
 }
 /* The larger 40px variant (35px bevelled caps), for the lobby's main call to action. */
 button.big {
