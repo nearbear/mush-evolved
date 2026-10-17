@@ -14,7 +14,7 @@ import { contaminationSeenBy } from "./infection.ts";
 import { isHungry, publicStatusesOf, statusesOf } from "./statuses.ts";
 import { emptyResources } from "./resources.ts";
 import { nextFloat, shuffle } from "./rng.ts";
-import { chatChannels } from "./chat.ts";
+import { chatChannels, readChannels } from "./chat.ts";
 import { clone, fail, findPlayer, type ActionResult } from "./helpers.ts";
 import { damage } from "./death.ts";
 import type {
@@ -212,36 +212,42 @@ export function viewFor(state: GameState, playerId: PlayerId): PlayerView {
   if (!you) throw new Error(`Unknown player ${playerId}`);
   const others = state.players.filter((p) => p.id !== playerId);
   const legal = legalActions(state, playerId);
-  const channels = chatChannels(state, you);
+  const channels = readChannels(state, you);
   // Without ACTOPI, anyone outside your room is a room-only dot: no identity, so no room on their entry.
   const actopi = you.actopiCheat === "default" ? state.actopi : you.actopiCheat === "on";
-  const located = (room: RoomId) => actopi || room === you.room;
+  // The dead see nothing that depends on a room (decided 2026-10-16, #45): no
+  // room log, items, equipment, or anyone's location or room-only details.
+  const present = (room: RoomId) => you.alive && room === you.room;
+  const located = (room: RoomId) => you.alive && (actopi || room === you.room);
+  // A dead body is a corpse item, not a person in a room: nobody gets a dead player's room.
+  const living = others.filter((o) => o.alive);
   return {
     you: { ...you, statuses: [...you.statuses] },
     statuses: statusesOf(state, you),
     // TODO(rules): should Mush see each other's roles? Hidden for now.
     players: others.map((o) => {
       const { id, name, isBot, botKind, character, room, alive, ready } = o;
-      const contamination = room === you.room ? contaminationSeenBy(state, you, o) : undefined;
+      const here = o.alive && present(room);
+      const contamination = here ? contaminationSeenBy(state, you, o) : undefined;
       return {
         id,
         name,
         isBot,
         ...(botKind && { botKind }),
         character,
-        ...(located(room) ? { room } : {}),
+        ...(o.alive && located(room) ? { room } : {}),
         alive,
         ready,
         // Public statuses are what you can see on someone standing in your room; nobody else's.
-        statuses: room === you.room ? publicStatusesOf(state, o) : [],
+        statuses: here ? publicStatusesOf(state, o) : [],
         // Skills are public, but like statuses only to people who can see the player.
-        skills: room === you.room ? [...o.skills] : [],
+        skills: here ? [...o.skills] : [],
         // Mush see a contaminated human's level, like a status, on people in their room.
         ...(contamination !== undefined ? { contamination } : {}),
       };
     }),
-    unidentified: others
-      .filter((p) => !located(p.room))
+    unidentified: living
+      .filter((p) => you.alive && !located(p.room))
       .map((p) => p.room)
       .sort(),
     cycle: state.cycle,
@@ -250,13 +256,15 @@ export function viewFor(state: GameState, playerId: PlayerId): PlayerView {
     rooms: state.config.rooms,
     inventory: itemsIn(state, { kind: "player", id: you.id }).map(itemView),
     inventorySlots: inventorySlots(state, you),
-    roomItems: itemsIn(state, { kind: "room", id: you.room }).map(itemView),
-    roomEquipment: (state.config.equipment[you.room] ?? []).map(equipmentView),
+    roomItems: you.alive ? itemsIn(state, { kind: "room", id: you.room }).map(itemView) : [],
+    roomEquipment: you.alive ? (state.config.equipment[you.room] ?? []).map(equipmentView) : [],
+    // The dead keep only ship-wide entries (cycles, days); every room entry, their own private ones included, goes.
     log: state.log.filter((e) =>
-      e.visibleTo === "all" ? e.room === undefined || e.room === you.room : e.visibleTo.includes(playerId),
+      !you.alive ? e.room === undefined && e.visibleTo === "all" : e.visibleTo === "all" ? e.room === undefined || e.room === you.room : e.visibleTo.includes(playerId),
     ),
     chat: state.chat.filter((m) => channels.includes(m.channel)),
-    chatChannels: channels,
+    chatChannels: chatChannels(state, you),
+    readChannels: channels,
     privateChannels: state.channels.filter((c) => c.members.includes(playerId)).map((c) => ({ ...c, members: [...c.members] })),
     channelLimit: channelLimit(state, you),
     movement: movementRules(state, you),

@@ -16,7 +16,7 @@ Other packages import from `@mush2/shared` (`shared/src/index.ts`, the barrel). 
 
 **Rule areas**
 
-- `chat.ts`: chat storage, channels, `sendChat`, private channels, limits.
+- `chat.ts`: chat storage, channels (`chatChannels` to post, `readChannels` to read), `sendChat`, private channels, limits.
 - `death.ts`: `damage` (the one way HP goes down) and `killPlayer`.
 - `infection.ts`: `contaminate` (the one way contamination rises), conversion, `contaminationSeenBy`.
 - `items.ts`: item types, containers, capacity and reach helpers, `produceItem`.

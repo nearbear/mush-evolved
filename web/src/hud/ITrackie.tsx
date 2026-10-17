@@ -63,7 +63,7 @@ export function ITrackie({
   // private server-side state tied to the iTrackie.
   const [notes, setNotes] = useState<Notes>(NO_NOTES);
   // The Mush tab exists only for Mush (the server sends the channel to no one else) and pulses until its newest message is read.
-  const mush = view.chatChannels.includes(MUSH_CHANNEL);
+  const mush = view.readChannels.includes(MUSH_CHANNEL);
   const newestMush = view.chat.reduce((n, m) => (m.channel === MUSH_CHANNEL ? Math.max(n, m.id) : n), 0);
   const [mushSeen, setMushSeen] = useState(0);
   useEffect(() => {
@@ -164,14 +164,16 @@ function Thread({
   onToggle: (message: number, line: number) => void;
 }) {
   const names = useNames();
+  // The dead can read some channels but post in none.
+  const readable = view.readChannels.includes(channel);
   const enabled = view.chatChannels.includes(channel);
   const messages = view.chat.filter((m) => m.channel === channel);
   return (
     <div className="thread">
       <Scroller items={messages.length}>
         <ol className="feed">
-          {!enabled && <li className="sub">You need an iTrackie in your inventory to read this.</li>}
-          {enabled && messages.length === 0 && <li className="sub">No messages yet.</li>}
+          {!readable && <li className="sub">You need an iTrackie in your inventory to read this.</li>}
+          {readable && messages.length === 0 && <li className="sub">No messages yet.</li>}
           {messages.map((m) =>
             m.system ? (
               <li key={m.id} className="sub">

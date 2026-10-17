@@ -68,10 +68,12 @@ export interface PlayerView {
    * to you. Other rooms' public history is never sent.
    */
   log: LogEntry[];
-  /** Messages in the channels you may read (all of them while you carry an iTrackie, none otherwise). */
+  /** Messages in `readChannels`. */
   chat: ChatMessage[];
-  /** Channels you may read and post to right now. */
+  /** Channels you may post to right now. */
   chatChannels: ChannelId[];
+  /** Channels you may read: `chatChannels`, or for the dead the public ones (and the Mush channel for a dead Mush). */
+  readChannels: ChannelId[];
   /** Private channels you belong to. Channels you aren't in are never sent. */
   privateChannels: PrivateChannel[];
   /** How many private channels you may belong to, after modifiers. */

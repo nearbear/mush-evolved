@@ -44,7 +44,20 @@ export function removeFromChannel(state: GameState, channelId: PrivateChannelId,
 }
 
 /**
- * Channels a player may read and post to. Global chat and every feature thread
+ * Channels a player may read. The living read what they can post to; the dead
+ * (decided 2026-10-16, #45) read global chat and the feature threads without an
+ * iTrackie, and a dead Mush also the Mush channel. Private channels are gone:
+ * dying leaves them.
+ */
+export function readChannels(state: GameState, player: Readonly<PlayerState>): ChannelId[] {
+  if (player.alive) return chatChannels(state, player);
+  if (state.phase !== "playing") return [];
+  const mush: ChannelId[] = player.role === "mush" ? [MUSH_CHANNEL] : [];
+  return [...CHAT_CHANNELS, ...mush];
+}
+
+/**
+ * Channels a player may post to (and so read). The dead post nowhere. Global chat and every feature thread
  * need an iTrackie in your inventory (confirmed 2026-10-13); drop it and you
  * lose them, pick one up and you see the whole history.
  */

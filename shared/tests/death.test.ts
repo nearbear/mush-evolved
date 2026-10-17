@@ -4,8 +4,8 @@ import { DEFAULT_CONFIG } from "../src/config.ts";
 import { damage, killPlayer } from "../src/death.ts";
 import { CORPSE_ITEM, ITEM_TYPES, ITRACKIE_ITEM, itemsIn } from "../src/items.ts";
 import { applyAction, createGame, viewFor, type ActionResult } from "../src/rules.ts";
-import { createChannel, inviteToChannel } from "../src/chat.ts";
-import type { Action, GameState, PlayerId, Seat } from "../src/types.ts";
+import { createChannel, inviteToChannel, sendChat, toggleCheckbox } from "../src/chat.ts";
+import { CHAT_CHANNELS, MUSH_CHANNEL, type Action, type GameState, type PlayerId, type Seat } from "../src/types.ts";
 
 const seats: Seat[] = Array.from({ length: 4 }, (_, i) => ({ id: `p${i}`, name: `Player ${i}`, isBot: false, character: CHARACTERS[i]!.id }));
 const config = { ...DEFAULT_CONFIG, mushCount: 1, startItems: [], startSkills: [] };
@@ -133,5 +133,67 @@ describe("death", () => {
     expect(viewFor(s, "p0").legalActions).toContainEqual({ type: "take", item: corpse.id });
     const after = must(applyAction(s, "p0", { type: "take", item: corpse.id }));
     expect(itemsIn(after, { kind: "player", id: "p0" }).map((i) => i.type).sort()).toEqual([CORPSE_ITEM, ITRACKIE_ITEM].sort());
+  });
+});
+
+describe("the dead player's view (#45)", () => {
+  it("reads global chat and the feature threads without an iTrackie, and posts nowhere", () => {
+    let s = must(sendChat(ship(), "p1", "global", "- [ ] last words"));
+    s = punchToDeath(s);
+    const v = viewFor(s, "p1");
+    expect(v.inventory).toEqual([]);
+    expect(v.readChannels).toEqual([...CHAT_CHANNELS]);
+    expect(v.chatChannels).toEqual([]);
+    expect(v.chat.some((m) => m.system?.key === "diedHuman")).toBe(true);
+    for (const channel of CHAT_CHANNELS) expect(sendChat(s, "p1", channel, "boo").ok).toBe(false);
+    const mine = s.chat.find((m) => m.from === "p1")!;
+    expect(toggleCheckbox(s, "p1", mine.id, 0).ok).toBe(false);
+  });
+
+  it("a dead Mush also reads the Mush channel, read-only; a dead human never does", () => {
+    const s = ship();
+    killPlayer(s, player(s, "p0"));
+    killPlayer(s, player(s, "p2"));
+    expect(viewFor(s, "p0").readChannels).toContain(MUSH_CHANNEL);
+    expect(sendChat(s, "p0", MUSH_CHANNEL, "boo").ok).toBe(false);
+    expect(viewFor(s, "p2").readChannels).not.toContain(MUSH_CHANNEL);
+  });
+
+  it("sees nothing that depends on a room", () => {
+    const s = ship();
+    s.contamination = { p1: 2 };
+    s.items.push({ id: "floor", type: "wrench", at: { kind: "room", id: "SICK_BAY" } });
+    killPlayer(s, player(s, "p0")); // dies in the sick bay, beside p1
+    const v = viewFor(s, "p0");
+    expect(v.roomItems).toEqual([]);
+    expect(v.roomEquipment).toEqual([]);
+    expect(v.unidentified).toEqual([]);
+    expect(v.log.every((e) => e.room === undefined && e.visibleTo === "all")).toBe(true);
+    for (const o of v.players) {
+      expect(o.room).toBeUndefined();
+      expect(o.statuses).toEqual([]);
+      expect(o.skills).toEqual([]);
+      expect(o.contamination).toBeUndefined();
+    }
+    // Without ACTOPI too: no head counts per room.
+    s.actopi = false;
+    expect(viewFor(s, "p0").unidentified).toEqual([]);
+  });
+
+  it("learns nothing new: no one else's role or contamination", () => {
+    const s = ship();
+    s.contamination = { p2: 1 };
+    const json = JSON.stringify(viewFor(punchToDeath(s), "p1"));
+    expect(json.match(/"role"/g)).toHaveLength(1); // their own
+    expect(json).not.toContain('"contamination"');
+  });
+
+  it("the living don't see a dead player's room, even with ACTOPI on or off", () => {
+    const s = punchToDeath(ship());
+    expect(viewFor(s, "p2").players.find((o) => o.id === "p1")).toMatchObject({ alive: false, statuses: [], skills: [] });
+    expect(viewFor(s, "p2").players.find((o) => o.id === "p1")?.room).toBeUndefined();
+    expect(viewFor(s, "p0").players.find((o) => o.id === "p1")?.room).toBeUndefined();
+    s.actopi = false;
+    expect(viewFor(s, "p2").unidentified).toEqual(["SICK_BAY"]); // p0 only
   });
 });
