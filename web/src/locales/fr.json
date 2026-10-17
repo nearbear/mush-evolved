@@ -121,7 +121,10 @@
     "shower": "Se doucher",
     "heal": "Soigner",
     "punch": "Frapper",
-    "spike": "Contaminer"
+    "spike": "Contaminer",
+    "lacksAp": "Pas assez de PA : cela coûte {{need}}, vous en avez {{have}}.",
+    "lacksMp": "Pas assez de PM : cela coûte {{need}}, vous en avez {{have}}.",
+    "lacksBoth": "Pas assez de PA ni de PM : cela coûte {{needAp}} PA et {{needMp}} PM, vous avez {{haveAp}} PA et {{haveMp}} PM."
   },
   "terminal": {
     "close": "Fermer"
@@ -526,6 +529,11 @@
     "done": "Terminée",
     "work": "Travailler dessus",
     "empty": "Rien à rechercher.",
+    "status": {
+      "full": "Entièrement implémentée",
+      "partial": "Partiellement implémentée",
+      "none": "Non implémentée"
+    },
     "names": {
       "DRUG_DISPENSER": "Distillateur de stupéfiant",
       "STEROIDS": "Anabolisant",

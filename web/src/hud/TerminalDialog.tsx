@@ -2,7 +2,7 @@
 // Open/closed is UI state held by GameScreen; the server only validates the access action.
 
 import { Dialog } from "@base-ui/react/dialog";
-import { RESEARCH_COMPLETE, RESEARCH_IDS, type Action, type EquipmentView, type PlayerView } from "@mush2/shared";
+import { RESEARCH_COMPLETE, RESEARCH_IDS, researchStatus, type Action, type EquipmentView, type PlayerView } from "@mush2/shared";
 import { useTranslation } from "react-i18next";
 import { RESEARCH_CARDS } from "../art/assets.ts";
 import { useNames } from "../i18n/names.ts";
@@ -49,6 +49,7 @@ function ResearchList({ terminal, view, onAction }: Omit<Props, "onClose"> & { t
             {card && <img className="research-card" src={card} alt="" />}
             <div className="research-body">
               <strong>{names.research(id)}</strong>
+              <span className={`skill-status skill-status-${researchStatus(id)}`}>{t(`research.status.${researchStatus(id)}`)}</span>
               <progress max={RESEARCH_COMPLETE} value={percent} />
               <span>{percent >= RESEARCH_COMPLETE ? t("research.done") : t("research.progress", { percent })}</span>
             </div>

@@ -121,7 +121,10 @@
     "shower": "Shower",
     "heal": "Heal",
     "punch": "Punch",
-    "spike": "Spike"
+    "spike": "Spike",
+    "lacksAp": "Not enough AP: it costs {{need}}, you have {{have}}.",
+    "lacksMp": "Not enough MP: it costs {{need}}, you have {{have}}.",
+    "lacksBoth": "Not enough AP or MP: it costs {{needAp}} AP and {{needMp}} MP, you have {{haveAp}} AP and {{haveMp}} MP."
   },
   "terminal": {
     "close": "Close"
@@ -526,6 +529,11 @@
     "done": "Complete",
     "work": "Work on it",
     "empty": "Nothing to research.",
+    "status": {
+      "full": "Fully implemented",
+      "partial": "Partially implemented",
+      "none": "Not implemented"
+    },
     "names": {
       "DRUG_DISPENSER": "Drug distiller",
       "STEROIDS": "Anabolic steroids",

@@ -31,3 +31,16 @@ export const RESEARCH_IDS = [
 ] as const;
 
 export const RESEARCH_COMPLETE = 100;
+
+/** How much of a research's effects the rules implement. A research missing from RESEARCH_STATUS is "none". */
+export type ResearchStatus = "full" | "partial" | "none";
+
+/**
+ * Implementation status shown in the terminal's research list. Update it when a research gains effects. Progress
+ * itself works for all of them; nothing happens on completion yet, so the map is empty.
+ */
+export const RESEARCH_STATUS: Readonly<Partial<Record<(typeof RESEARCH_IDS)[number], ResearchStatus>>> = {};
+
+export function researchStatus(research: string): ResearchStatus {
+  return RESEARCH_STATUS[research as (typeof RESEARCH_IDS)[number]] ?? "none";
+}
