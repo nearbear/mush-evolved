@@ -150,11 +150,11 @@ export const ACTION_ICON = urls(
 const visibilityIcons = urls(
   import.meta.glob<string>("../../../Mush/www/img/icons/ui/{lock,camera,discrete}.png", { eager: true, query: "?url", import: "default" }),
 );
-/** Drawn after an action's label when others don't simply see it: a padlock, a camera, a hand hushing. */
+/** Drawn after an action's label when others don't simply see it: a padlock, a hand hushing, a camera (only a camera reveals covert actions). */
 export const VISIBILITY_ICONS: Readonly<Record<"private" | "secret" | "covert", string>> = {
   private: visibilityIcons["lock"]!,
-  secret: visibilityIcons["camera"]!,
-  covert: visibilityIcons["discrete"]!,
+  secret: visibilityIcons["discrete"]!,
+  covert: visibilityIcons["camera"]!,
 };
 
 /** The 56x56 empty inventory slot (a bordered blue square with transparent corners). */

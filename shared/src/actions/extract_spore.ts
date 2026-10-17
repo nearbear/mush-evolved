@@ -1,5 +1,5 @@
 import { Action, type ActionVisibility } from "./action.ts";
-import { logPrivate } from "../log.ts";
+import { logSecret } from "../log.ts";
 import { sporesPerDay } from "../modifiers.ts";
 import { addStatus } from "../statuses.ts";
 import type { GameState, PlayerState } from "../types.ts";
@@ -7,7 +7,7 @@ import type { GameState, PlayerState } from "../types.ts";
 export type ExtractSporeActionData = { type: "extract_spore" };
 
 export class ExtractSporeAction extends Action<ExtractSporeActionData> {
-  override visibility: ActionVisibility = "private";
+  override visibility: ActionVisibility = "secret";
 
   constructor() {
     super("extract_spore");
@@ -34,6 +34,6 @@ export class ExtractSporeAction extends Action<ExtractSporeActionData> {
     state.sporesToday += state.config.spores.effect.spores;
     state.sporeExtractedOn[player.id] = state.cycle;
     addStatus(player, "dirty");
-    logPrivate(state, player.id, "sporeExtracted");
+    logSecret(state, player.id, "sporeExtracted", { name: player.name });
   }
 }

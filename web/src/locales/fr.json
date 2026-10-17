@@ -337,7 +337,7 @@
     "bonded": "Vous avez créé un lien avec {{name}}.",
     "shareDid": "Vous avez fait {{label}} avec {{name}}.",
     "shareDidToYou": "{{name}} a fait {{label}} avec vous.",
-    "sporeExtracted": "Vous avez extrait une spore.",
+    "sporeExtracted": "{{name}} a extrait une spore.",
     "showered": "Vous avez pris une douche.",
     "showeredMush": "Vous avez pris une douche. L'eau vous brûle.",
     "died": "{{name}} a perdu la vie.",

@@ -337,7 +337,7 @@
     "bonded": "You bonded with {{name}}.",
     "shareDid": "You did {{label}} with {{name}}.",
     "shareDidToYou": "{{name}} did {{label}} with you.",
-    "sporeExtracted": "You extracted a spore.",
+    "sporeExtracted": "{{name}} extracted a spore.",
     "showered": "You showered.",
     "showeredMush": "You showered. The water burns.",
     "died": "{{name}} has died.",

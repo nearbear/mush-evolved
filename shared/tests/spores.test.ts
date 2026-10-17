@@ -102,15 +102,28 @@ describe("spore extraction", () => {
 });
 
 describe("spore extraction visibility", () => {
-  it("shows the count only in your own view, and logs privately", () => {
+  it("shows the count only in your own view", () => {
     const s = mustApply(ship(), "p0", extract);
     expect(viewFor(s, "p0").you.spores).toBe(1);
     const other = JSON.stringify(viewFor(s, "p2"));
     expect(other).not.toContain(`"spores":1`);
     expect(other).not.toContain("sporesToday");
-    expect(other).not.toContain("sporeExtracted");
     for (const o of viewFor(s, "p1").players) expect(o).not.toHaveProperty("spores");
-    expect(viewFor(s, "p1").log.some((e) => e.key === "sporeExtracted")).toBe(false);
-    expect(viewFor(s, "p0").log.some((e) => e.key === "sporeExtracted")).toBe(true);
+  });
+
+  // Secret (decided 2026-10-17): room history if someone else saw it, otherwise only the extractor's.
+  it("logs secretly: unwitnessed it stays yours, witnessed it is room history", () => {
+    const alone = ship();
+    for (const p of alone.players) if (p.id !== "p0") p.room = "SICK_BAY";
+    player(alone, "p0").room = "CORRIDOR_A";
+    const a = mustApply(alone, "p0", extract);
+    expect(viewFor(a, "p0").log.some((e) => e.key === "sporeExtracted")).toBe(true);
+    expect(JSON.stringify(viewFor(a, "p2"))).not.toContain("sporeExtracted");
+
+    const seen = ship();
+    for (const p of seen.players) p.room = p.id === "p0" || p.id === "p2" ? "CORRIDOR_A" : "SICK_BAY";
+    const b = mustApply(seen, "p0", extract);
+    expect(viewFor(b, "p2").log.some((e) => e.key === "sporeExtracted")).toBe(true);
+    expect(JSON.stringify(viewFor(b, "p3"))).not.toContain("sporeExtracted");
   });
 });
