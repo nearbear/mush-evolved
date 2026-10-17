@@ -11,6 +11,7 @@ import { MoveAction } from "./actions/move.ts";
 import { ResearchAction } from "./actions/research.ts";
 import { ReadyAction } from "./actions/ready.ts";
 import { HealAction } from "./actions/heal.ts";
+import { InstallAction } from "./actions/install.ts";
 import { JettisonAction } from "./actions/jettison.ts";
 import { PickSkillAction } from "./actions/pick_skill.ts";
 import { PunchAction } from "./actions/punch.ts";
@@ -53,6 +54,7 @@ export const ACTIONS: { [T in ActionType]: ActionDef<ActionOf<T>> } = {
   cook: new CookAction(),
   build: new BuildAction(),
   jettison: new JettisonAction(),
+  install: new InstallAction(),
   examine: new ExamineAction(),
   bond: new BondAction(),
   dtt: new ShareAction("dtt"),

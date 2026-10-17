@@ -160,6 +160,7 @@ export function GameScreen({ ticket, onLeave }: { ticket: SeatTicket; onLeave: (
                   .map(occupant)}
                 nearby={nearby}
                 corpses={corpses}
+                hasCamera={view.roomItems.some((i) => i.type === "camera")}
                 fogDepth={fogDepth}
                 equipment={view.roomEquipment}
                 reachable={reachable}

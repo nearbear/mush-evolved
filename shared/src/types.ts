@@ -72,6 +72,7 @@ export type Action =
   | { type: "cook"; item: ItemId }
   | { type: "build"; item: ItemId }
   | { type: "jettison"; item: ItemId }
+  | { type: "install"; item: ItemId }
   | { type: "examine"; target: Target }
   | { type: "bond"; target: PlayerId }
   | { type: "dtt"; target: PlayerId }

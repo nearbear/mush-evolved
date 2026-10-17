@@ -646,3 +646,10 @@ Correction (owner, same day): I had read the points as a currency worth 2 AP. A 
 - Found the poses by cropping the cast sheet in a Playwright page (no PIL): each row starts with four 32x48 frames (stand face, stand back, sit face, sit back). The other two directions are mirrors.
 - Unverified guess: chair `dir` to pose mapping (`left`/`up` back, `down`/`right` face, with flips), inferred from the refectory layout where chairs face a table. No visual check was run yet.
 - Wrap-up found `npm run typecheck` failing in `web/src/hud/ITrackie.tsx(104)` (`roomLog[i - 1]` possibly undefined); not in files this change touched, left alone.
+
+### 2026-10-17: Porting a collaborator's camera branch (#35)
+
+A collaborator's `Camera-Only` branch sat on a base many commits behind `main` (actions were still one file, tests beside the source). Merging would have conflicted everywhere, so the ideas were ported instead. Reading `main` first showed two things the branch missed: `hasCamera` already counted `camera` room items (so consuming the item and adding "Camera" equipment would have broken covert logging), and every room's layout already held a camera tile, so the branch's server-sent `roomTiles` and hard-coded position (which was not even the real corridor spot) were unnecessary. Install now moves the item into the room, and the client draws a room's own camera tile only when `view.roomItems` has one. The branch's docs called the costs "decided"; the issue said otherwise, so the owner was asked before they were written as decided.
+
+### 2026-10-17: Camera swivel animation
+The user asked for the camera tiles to swivel as in the original and pointed at `Mush/clients/iso/xml/Camera.xml`. Reading `Mush/clients` is denied to the assistant, so the user pasted the two `<slice>` entries instead. `ship-layout.json` already carried the same data (14 frames of 26x26, an auto ping-pong anim, rhythm 6), so `IsoRoom` just steps `sx` through `anims[0].frames` on a timer, only while the room has a camera. The tick length (30 ticks/s, so 200 ms a step) is the assistant's assumption about the Flash client, not in the XML. Not checked visually.
