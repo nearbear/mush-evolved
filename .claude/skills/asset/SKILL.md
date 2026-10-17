@@ -47,3 +47,9 @@ Sheets land in `.screenshots/contact/`. **Read them** with the Read tool. Get si
 - Attribution: the in-game credits footer (`Credits` in `web/src/GameScreen.tsx`) and `Mush/ATTRIBUTION.md` must still cover what's used; add a line if you changed the art (e.g. "sprite backgrounds made transparent").
 - `docs/mush-assets.md`: update if you learned something about a folder (format quirks, what a file actually is).
 - `docs/ai-workflow.md`: a dated entry listing what was placed, what was skipped and why. Only ever append with cat >> as a cost optimization; do not rewrite existing entries.
+
+## Tooling commands
+
+- `npm run contact-sheet -- <folder> [--match regex] [--zoom n]`: render labeled contact sheets of an image folder to `.screenshots/contact/` (Playwright; WSL has no image tools). See the `asset` skill.
+- `npm run asset-index`: regenerate `Mush/derived/asset-index.txt` (every file under `Mush/` with its size) after adding or removing files there. Search it to find assets by name; reading `Mush/www` and `Mush/clients` is denied.
+- `npm run ods-data`: convert every sheet of `Mush/data/*.ods` (the original design tables: actions, items, diseases, explore, ...) to JSON under `Mush/derived/data/<file>/<sheet>.json`, so they can be grepped. Rerun after changing `Mush/data/`.

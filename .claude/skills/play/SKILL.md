@@ -101,3 +101,8 @@ cd ~/mush2/tools && npx playwright install chromium && sudo npx playwright insta
 ```
 
 A launch error mentioning `libnspr4.so` (or another missing `.so`) means that second command hasn't been run.
+
+## Tooling commands
+
+- `npm run ship-view`: one screenshot of the iso view showing the whole ship (`--walk "Front corridor"` into a room first, `--clip x,y,w,h` and `--scale 3` to zoom), to `.screenshots/ship.png`. Needs `npm run dev`. See `web/src/iso/CLAUDE.md`.
+- `npm run types -w server`: regenerate `server/worker-configuration.d.ts` after changing `wrangler.jsonc` or the exported Durable Object classes.

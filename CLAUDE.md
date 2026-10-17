@@ -92,12 +92,7 @@ Node is installed via nvm. In non-interactive shells, run `source ~/.nvm/nvm.sh`
 - `npm run typecheck`: `tsc --noEmit` in every package (TypeScript 7).
 - `npm run build`: production build of `web`.
 - `npm run ship-layout`: regenerate `Mush/derived/ship-layout.json` (renderer data) and `ship-rooms.json` (room graph and per-room equipment, for the rules) from `ShipMap.png` + `tiles.xml`. A test fails if the committed file is stale.
-- `npm run asset-index`: regenerate `Mush/derived/asset-index.txt` (every file under `Mush/` with its size) after adding or removing files there. Search it to find assets by name; reading `Mush/www` and `Mush/clients` is denied.
-- `npm run ods-data`: convert every sheet of `Mush/data/*.ods` (the original design tables: actions, items, diseases, explore, ...) to JSON under `Mush/derived/data/<file>/<sheet>.json`, so they can be grepped. Rerun after changing `Mush/data/`.
-- `npm run screenshot`: drive the running game in headless Chromium (Playwright), as a desktop player and a 360px-wide phone player (the narrowest supported) in the same match, and save screenshots to `.screenshots/` (gitignored). `-- --only desktop|mobile` runs one pass. Needs `npm run dev` running. See the `play` skill.
-- `npm run ship-view`: one screenshot of the iso view showing the whole ship (`--walk "Front corridor"` into a room first, `--clip x,y,w,h` and `--scale 3` to zoom), to `.screenshots/ship.png`. Needs `npm run dev`. See `web/src/iso/CLAUDE.md`.
-- `npm run contact-sheet -- <folder> [--match regex] [--zoom n]`: render labeled contact sheets of an image folder to `.screenshots/contact/` (Playwright; WSL has no image tools). See the `asset` skill.
-- `npm run types -w server`: regenerate `server/worker-configuration.d.ts` after changing `wrangler.jsonc` or the exported Durable Object classes.
+- `npm run screenshot`: headless Chromium (Playwright) screenshots as a desktop player and a 360px phone player, to `.screenshots/` (gitignored). Needs `npm run dev`. Options and the other tooling commands (`ship-view`, `contact-sheet`, `asset-index`, `ods-data`, `types -w server`) are in the `play` and `asset` skills.
 - `npm run deploy -w server`: wrangler deploy (not yet configured or tested).
 - `npm run lint`: Biome, lint only (formatter off). Rules: React hook deps/placement, floating promises (nursery), and import limits (`shared` has no I/O, UI, or sibling-package imports; `web` never imports `server`). typescript-eslint was rejected because it does not support TypeScript 7. Intentional exceptions use `biome-ignore` with a reason.
 
