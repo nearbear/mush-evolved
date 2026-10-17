@@ -582,3 +582,6 @@ A review noted `rules.ts` mixed the game loop, `viewFor`, and all chat/channel l
 - The lying-pose art had already been found on the cast sheet (`www/img/art/char.png`) in a separate commit for the corpse item icon, so the floor rendering reused it (`lyingFrame`) instead of rotating a standing sprite. Reading `Mush/clients` directly is denied by project settings; looking in `web/src/art/assets.ts` first found the answer faster.
 - Corpses join the iso scene as actors (same paint order and wall handling as people), but skip the see-through outline layer: that exists so people can't hide behind walls, and a corpse is an item.
 - The dead player's screen is a UI choice, not a rule: a notice where the room was, global chat as the default tab, and no Room or Private tabs. No visual check was run (the `play` skill runs only when asked).
+
+## 2026-10-16: Antique Perfume skill
+Owner asked for the skill; the original text ("2 cycles of immunity after each shower") left four gaps (blocked behaviour, stacking, visibility, sources), settled with one question call. Built as a modifier with a new `onShower` hook and a derived `immuneUntil` cycle (no per-cycle tick). Worked: shower and infection already existed. Needed correction: my first test read `view.you.statuses`; own statuses are `view.statuses`.

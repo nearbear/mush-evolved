@@ -21,6 +21,8 @@ export interface PlayerState extends Seat {
   satietyZeroSince: number | null;
   /** Stored status effects (statuses.ts); full belly and hungry are derived from satiety, so only `dirty` is stored for now. */
   statuses: string[];
+  /** First cycle the player is no longer immune to infection (antic_perfume); unset or past means not immune. Private: your own view only, as the `immune` status. */
+  immuneUntil?: number;
   /** Spores this player carries. Only Mush ever gain any; visible in your own view only (teammates' counts will be shown to Mush later). */
   spores: number;
   /** Extra point counters (resources.ts). Private: only in your own view. Nothing earns or spends them yet. */

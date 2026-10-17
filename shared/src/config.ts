@@ -75,6 +75,7 @@ export const DEFAULT_CONFIG: GameConfig = {
   // (SKILL_SLOTS) with the free, permanent pick_skill action.
   startSkills: [],
   creative: { refundOdds: 0.5 },
+  anticPerfume: { immuneCycles: 2 },
   // Confirmed 2026-10-16: carrying a heavy item adds this much to every move's MP cost, once.
   heavy: { mpPenalty: 2 },
   // PLACEHOLDER items with no effects, so there is something to pick up.

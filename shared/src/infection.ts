@@ -5,6 +5,7 @@
 import { pushChat } from "./chat.ts";
 import { logPrivate } from "./log.ts";
 import { contaminationCapacity } from "./modifiers.ts";
+import { isImmune } from "./statuses.ts";
 import { MUSH_CHANNEL, type GameState, type PlayerState } from "./types.ts";
 
 /**
@@ -12,7 +13,7 @@ import { MUSH_CHANNEL, type GameState, type PlayerState } from "./types.ts";
  * converts the human. Mutates a state that the caller already cloned.
  */
 export function contaminate(state: GameState, human: PlayerState, amount = 1): void {
-  if (human.role !== "human" || !human.alive) return;
+  if (human.role !== "human" || !human.alive || isImmune(state, human)) return;
   const level = (state.contamination[human.id] ?? 0) + amount;
   const capacity = contaminationCapacity(state, human);
   if (level >= capacity) {

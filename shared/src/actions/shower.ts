@@ -3,6 +3,7 @@ import { damage } from "../death.ts";
 import { EQUIPMENT_TYPES } from "../equipment.ts";
 import { itemsIn } from "../items.ts";
 import { logPrivate } from "../log.ts";
+import { showered } from "../modifiers.ts";
 import { removeStatus } from "../statuses.ts";
 import type { GameState, PlayerState } from "../types.ts";
 
@@ -31,6 +32,7 @@ export class ShowerAction extends Action<ShowerActionData> {
   override apply(state: GameState, player: PlayerState, target: ShowerActionData): void {
     removeStatus(player, "dirty");
     logPrivate(state, player.id, player.role === "mush" ? "showeredMush" : "showered");
+    showered(state, player);
     if (player.role === "mush") damage(state, player, state.config.shower.effect.mushDamage);
   }
 

@@ -6,7 +6,7 @@
 
 import type { GameState, PlayerState } from "./types.ts";
 
-export const STATUS_IDS = ["dirty", "full_belly", "hungry"] as const;
+export const STATUS_IDS = ["dirty", "full_belly", "hungry", "immune"] as const;
 export type StatusId = (typeof STATUS_IDS)[number];
 
 /** Confirmed 2026-10-14: dirty is public; full belly and hungry are private. */
@@ -14,6 +14,7 @@ export const STATUS_PUBLIC: Readonly<Record<StatusId, boolean>> = {
   dirty: true,
   full_belly: false,
   hungry: false,
+  immune: false,
 };
 
 /** Humans at or above `fullBellyAt` satiety can't eat. */
@@ -31,12 +32,18 @@ export function isHungry(state: Readonly<Pick<GameState, "config" | "cycle">>, p
   );
 }
 
+/** Immune to infection until the cycle in `immuneUntil` (granted by the antic_perfume skill). */
+export function isImmune(state: Readonly<Pick<GameState, "cycle">>, p: Readonly<PlayerState>): boolean {
+  return p.immuneUntil !== undefined && state.cycle < p.immuneUntil;
+}
+
 /** Every status the player has, stored and derived. */
 export function statusesOf(state: Readonly<Pick<GameState, "config" | "cycle">>, p: Readonly<PlayerState>): string[] {
   return [
     ...p.statuses,
     ...(isFullBelly(state, p) ? ["full_belly"] : []),
     ...(isHungry(state, p) ? ["hungry"] : []),
+    ...(isImmune(state, p) ? ["immune"] : []),
   ];
 }
 

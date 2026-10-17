@@ -9,6 +9,7 @@
 // accessor below; `fold` does the looping.
 
 import { carriesHeavy } from "./items.ts";
+import { antic_perfume } from "./modifiers/antic_perfume.ts";
 import { creative } from "./modifiers/creative.ts";
 import { first_aid } from "./modifiers/first_aid.ts";
 import { lying_down } from "./modifiers/lying_down.ts";
@@ -43,13 +44,15 @@ export interface Modifier extends Partial<FoldHooks> {
    */
   onActionFailed?: (next: GameState, player: PlayerState, apSpent: number) => void;
   /** Runs once when the player picks this skill (not for other modifiers). Mutates a state the caller already cloned. */
+  /** Runs after the player showers. Mutates a state the caller already cloned. */
+  onShower?: (next: GameState, player: PlayerState) => void;
   onPick?: (next: GameState, player: PlayerState) => void;
 }
 
 export type ModifierRegistry = Readonly<Record<string, Modifier>>;
 
 /** Items and skills will register here too. When a skill gains rules, update its entry in SKILL_STATUS (skills.ts). */
-export const MODIFIERS: Record<string, Modifier> = { lying_down, medic, first_aid, sturdy, creative };
+export const MODIFIERS: Record<string, Modifier> = { lying_down, medic, first_aid, sturdy, creative, antic_perfume };
 
 /** The ids every hook folds over: the player's skills, then their other modifiers. */
 export function modifierIds(player: Readonly<PlayerState>): string[] {
@@ -146,6 +149,11 @@ export const carePointsGain = (state: Readonly<GameState>, player: Readonly<Play
 /** HP a punch removes: the configured damage folded through the puncher's modifiers. */
 export const punchDamage = (state: Readonly<GameState>, player: Readonly<PlayerState>, registry: ModifierRegistry = MODIFIERS) =>
   fold("punchDamage", state.config.punch.effect.damage, state, player, registry);
+
+/** Runs every onShower hook of the player's modifiers. Mutates a state the caller already cloned. */
+export function showered(next: GameState, player: PlayerState, registry: ModifierRegistry = MODIFIERS): void {
+  for (const id of modifierIds(player)) registry[id]?.onShower?.(next, player);
+}
 
 /** Runs the picked skill's onPick hook. Mutates a state the caller already cloned. */
 export function skillPicked(next: GameState, player: PlayerState, skill: string, registry: ModifierRegistry = MODIFIERS): void {

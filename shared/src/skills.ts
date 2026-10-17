@@ -91,6 +91,7 @@ export const SKILL_STATUS: Readonly<Partial<Record<SkillId, SkillStatus>>> = {
   // Free heal points only; no medicine properties.
   first_aid: "partial",
   creative: "full",
+  antic_perfume: "full",
 };
 
 export function skillStatus(skill: string): SkillStatus {

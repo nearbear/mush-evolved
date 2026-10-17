@@ -180,6 +180,7 @@
     "dirty": "Sucio",
     "full_belly": "Barriga llena",
     "hungry": "Hambriento",
+    "immune": "Inmune a la infección",
     "contaminated": "Contaminación: {{level}}"
   },
   "rooms": {

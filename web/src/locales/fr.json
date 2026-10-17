@@ -180,6 +180,7 @@
     "dirty": "Sale",
     "full_belly": "Ventre plein",
     "hungry": "Affamé",
+    "immune": "Immunisé contre l'infection",
     "contaminated": "Contamination : {{level}}"
   },
   "rooms": {
