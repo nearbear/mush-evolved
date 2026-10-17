@@ -147,6 +147,11 @@ export const ACTION_ICON = urls(
   import.meta.glob<string>("../../../Mush/www/img/icons/ui/pa_slot1.png", { eager: true, query: "?url", import: "default" }),
 )["pa_slot1"]!;
 
+/** Marks a warning in the room log: a secret or covert action that got out, or an alarm. */
+export const WARNING_ICON = urls(
+  import.meta.glob<string>("../../../Mush/www/img/icons/ui/att.png", { eager: true, query: "?url", import: "default" }),
+)["att"]!;
+
 const visibilityIcons = urls(
   import.meta.glob<string>("../../../Mush/www/img/icons/ui/{lock,camera,discrete}.png", { eager: true, query: "?url", import: "default" }),
 );

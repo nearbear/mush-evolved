@@ -37,6 +37,7 @@ describe("myco alarm", () => {
     addAlarm(s, { kind: "room", id: "SICK_BAY" });
     const after = ok(applyAction(s, "p0", spike("p1")));
     expect(rings(after, "SICK_BAY")).toHaveLength(1);
+    expect(rings(after, "SICK_BAY")[0]!.level).toBe("warning");
     expect(alarmsIn(after, "SICK_BAY")).toHaveLength(2);
   });
 

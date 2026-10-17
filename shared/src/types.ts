@@ -37,6 +37,8 @@ export interface LogEntry {
   params?: LogParams;
   room?: RoomId;
   visibleTo: "all" | PlayerId[];
+  /** Set on entries the crew should take notice of: a secret or covert action that leaked into the room log, or an alarm. */
+  level?: "warning";
 }
 
 /** Values a log message can interpolate. */

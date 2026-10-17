@@ -39,6 +39,9 @@
   font-style: italic;
   color: var(--muted);
 }
+.feed li.warning {
+  color: var(--warning);
+}
 .feed .me {
   color: var(--accent);
 }

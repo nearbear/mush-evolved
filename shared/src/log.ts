@@ -13,8 +13,8 @@ import { CAMERA_EQUIPMENT } from "./equipment.ts";
 import type { GameState, LogEntry, LogParams, PlayerId, RoomId } from "./types.ts";
 
 /** Mutates a state that the caller already cloned. */
-export function logPublic(state: GameState, room: RoomId | undefined, key: string, params?: LogParams): void {
-  state.log.push({ cycle: state.cycle, key, ...(params && { params }), ...(room !== undefined && { room }), visibleTo: "all" });
+export function logPublic(state: GameState, room: RoomId | undefined, key: string, params?: LogParams, level?: "warning"): void {
+  state.log.push({ cycle: state.cycle, key, ...(params && { params }), ...(room !== undefined && { room }), visibleTo: "all", ...(level && { level }) });
 }
 
 /** Mutates a state that the caller already cloned. */
@@ -35,7 +35,7 @@ export function logSecret(state: GameState, actor: PlayerId, key: string, params
   const witnesses = state.players.filter((o) => o.id !== actor && o.alive && o.room === p.room && o.id !== hideFrom);
   const witnessed = hideFrom === undefined ? state.players.some((o) => o.id !== actor && o.alive && o.room === p.room) : witnesses.length > 0;
   const visibleTo = hasCamera(state, p.room) ? "all" : !witnessed ? [actor] : hideFrom === undefined ? "all" : [actor, ...witnesses.map((o) => o.id)];
-  const entry: LogEntry = { cycle: state.cycle, key, ...(params && { params }), room: p.room, visibleTo };
+  const entry: LogEntry = { cycle: state.cycle, key, ...(params && { params }), room: p.room, visibleTo, ...spilled(visibleTo) };
   state.log.push(entry);
 }
 
@@ -43,7 +43,13 @@ export function logSecret(state: GameState, actor: PlayerId, key: string, params
 export function logCovert(state: GameState, actor: PlayerId, key: string, params?: LogParams): void {
   const p = state.players.find((pl) => pl.id === actor);
   if (!p) return;
-  state.log.push({ cycle: state.cycle, key, ...(params && { params }), room: p.room, visibleTo: hasCamera(state, p.room) ? "all" : [actor] });
+  const visibleTo = hasCamera(state, p.room) ? "all" : [actor];
+  state.log.push({ cycle: state.cycle, key, ...(params && { params }), room: p.room, visibleTo, ...spilled(visibleTo) });
+}
+
+/** A secret or covert entry that reached anyone besides the actor is a warning. One only the actor sees is not. */
+function spilled(visibleTo: LogEntry["visibleTo"]): { level?: "warning" } {
+  return visibleTo === "all" || visibleTo.length > 1 ? { level: "warning" } : {};
 }
 
 export function hasCamera(state: Readonly<GameState>, room: RoomId): boolean {

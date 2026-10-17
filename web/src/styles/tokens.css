@@ -11,6 +11,7 @@
   --mush: #ff4c84; /* sampled from the pink of the original MUSH logo (design/logo.png) */
   --human: #7cc8ff;
   --danger: #ff6b81;
+  --warning: #ffb74d;
   /* Gold: selection outlines, glows, highlighted map cells. */
   --highlight: #f5c542;
   --badge: #24508a;

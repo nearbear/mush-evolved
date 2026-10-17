@@ -100,6 +100,7 @@ describe("spiking", () => {
     const r = applyAction(ship(true), "p0", spike("p1"));
     if (!r.ok) throw new Error(r.error);
     expect(r.state.log.find((e) => e.key === "spiked")!.visibleTo).toEqual(["p0"]);
+    expect(r.state.log.find((e) => e.key === "spiked")!.level).toBeUndefined(); // not spilled, so no warning
     for (const id of ["p1", "p3", "p4"]) expect(viewFor(r.state, id).log.some((e) => e.key === "spiked")).toBe(false);
   });
 
@@ -109,6 +110,7 @@ describe("spiking", () => {
     const r = applyAction(s, "p0", spike("p1"));
     if (!r.ok) throw new Error(r.error);
     for (const id of ["p1", "p4"]) expect(viewFor(r.state, id).log.some((e) => e.key === "spiked")).toBe(true);
+    expect(r.state.log.find((e) => e.key === "spiked")!.level).toBe("warning");
     expect(viewFor(r.state, "p3").log.some((e) => e.key === "spiked")).toBe(false);
   });
 

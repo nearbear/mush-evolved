@@ -161,6 +161,7 @@
       "days": "il y a {{days}}j",
       "daysHours": "il y a {{days}}j{{hours}}h"
     },
+    "warning": "Avertissement",
     "shipMessage": "Message du vaisseau",
     "checkbox": "Case à cocher",
     "cycleDivider": "Cycle {{cycle}}",

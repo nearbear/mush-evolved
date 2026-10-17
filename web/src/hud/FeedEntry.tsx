@@ -6,7 +6,7 @@
 import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import type { CharacterId } from "@mush2/shared";
-import { INFO_ICON, spriteStrip } from "../art/assets.ts";
+import { INFO_ICON, WARNING_ICON, spriteStrip } from "../art/assets.ts";
 import { useKeyedSprite } from "../art/keyedSprite.ts";
 import { RecencyStamp } from "./RecencyStamp.tsx";
 
@@ -42,6 +42,11 @@ export function FeedEntry({
 export function InfoMarker() {
   const { t } = useTranslation();
   return <img className="entry-info" src={INFO_ICON} alt={t("itrackie.shipMessage")} />;
+}
+
+export function WarningMarker() {
+  const { t } = useTranslation();
+  return <img className="entry-info" src={WARNING_ICON} alt={t("itrackie.warning")} />;
 }
 
 /** The sender as they look in the isometric view (first frame of the walk strip). */

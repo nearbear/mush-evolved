@@ -161,6 +161,7 @@
       "days": "{{days}}d ago",
       "daysHours": "{{days}}d{{hours}}h ago"
     },
+    "warning": "Warning",
     "shipMessage": "Ship message",
     "checkbox": "Checkbox",
     "cycleDivider": "Cycle {{cycle}}",

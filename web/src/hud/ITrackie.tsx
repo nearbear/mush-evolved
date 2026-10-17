@@ -12,7 +12,7 @@ import { FEATURE_CHANNELS, ITRACKIE_ITEM, GRAVEYARD_CHANNEL, MAX_CHAT_LENGTH, MU
 import { FeatureSelect } from "./FeatureSelect.tsx";
 import { Hint, IconButton, IconTab } from "./IconButton.tsx";
 import { Markdown } from "./Markdown.tsx";
-import { CrewAvatar, FeedEntry, InfoMarker } from "./FeedEntry.tsx";
+import { CrewAvatar, FeedEntry, InfoMarker, WarningMarker } from "./FeedEntry.tsx";
 import { TAB_ICONS } from "../art/assets.ts";
 
 
@@ -111,7 +111,11 @@ export function ITrackie({
                         {t("itrackie.cycleDivider", { cycle: e.cycle })}
                       </li>
                     )}
-                    <FeedEntry marker={<InfoMarker />} at={e.at} className={e.visibleTo === "all" ? undefined : "private"}>
+                    <FeedEntry
+                      marker={e.level === "warning" ? <WarningMarker /> : <InfoMarker />}
+                      at={e.at}
+                      className={e.level === "warning" ? "warning" : e.visibleTo === "all" ? undefined : "private"}
+                    >
                       {names.logLine(e)}
                     </FeedEntry>
                   </Fragment>

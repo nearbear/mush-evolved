@@ -161,6 +161,7 @@
       "days": "hace {{days}}d",
       "daysHours": "hace {{days}}d{{hours}}h"
     },
+    "warning": "Advertencia",
     "shipMessage": "Mensaje de la nave",
     "checkbox": "Casilla de verificación",
     "cycleDivider": "Ciclo {{cycle}}",
