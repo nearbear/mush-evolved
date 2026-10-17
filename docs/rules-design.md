@@ -8,6 +8,8 @@ The record of answered rule decisions and the design for the rules that are not 
 
 ## Decisions received
 
+- **Blueprints** (2026-10-16, owner): building always consumes the blueprint; no failure chance; anyone can build anywhere; ingredients may be in your inventory or on the room floor. Build costs 3 AP (the original's value). A built sofa is room equipment, not an item. The sofa needs metal scraps + a thick tube (the original's recipe). For now only a sofa blueprint exists, in the front corridor (CORRIDOR_A). Rocket launcher blueprint (2026-10-16, owner): thick tube + metal + plastic scraps (the original's first recipe), builds an effect-less item into the inventory or onto the floor, spawns in the front corridor. Open: other recipes, where blueprints come from beyond this one, drawing built equipment.
+
 - **Schrödinger the cat** (2026-10-16, owner; story starts in **private beta**, nothing is built yet):
   - **What he is:** an item that can be carried (inventory slot like any item, or on the room floor). Item icon: `Mush/www/img/icons/items/body_cat.jpg` (`ui/cat.png` is something else, not his). Original id `BODY_CAT`, described as "a bit grumpy but entirely silky".
   - **Infection mechanic (to be built):** a Mush who has the cat in their own inventory can use *infectious caress* (original `MUSH_CARESS`, Mush only, 1 AP, tracked) to make him a Mush cat. A human who then takes him up is contaminated (the original log: "X was contaminated by Y by taking Schrödinger. Their contamination level is now N."). It feeds the same contamination and conversion rules as `spike`.

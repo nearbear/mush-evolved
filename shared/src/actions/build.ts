@@ -1,6 +1,6 @@
 import { Action } from "./action.ts";
 import { BLUEPRINTS, BLUEPRINT_ITEM } from "../blueprints.ts";
-import { canReach, itemsIn } from "../items.ts";
+import { canReach, itemsIn, produceItem } from "../items.ts";
 import { logPublic } from "../log.ts";
 import type { GameState, ItemState, PlayerState } from "../types.ts";
 
@@ -26,7 +26,7 @@ function ingredients(state: Readonly<GameState>, player: Readonly<PlayerState>, 
 
 /**
  * Build (decided 2026-10-16): anyone, anywhere, 3 AP, no failure chance. Uses up the blueprint and its
- * ingredients and adds the equipment to the room. Public room log.
+ * ingredients and produces the result (equipment in the room, or an item for the builder). Public room log.
  */
 export class BuildAction extends Action<BuildActionData> {
   constructor() {
@@ -53,9 +53,14 @@ export class BuildAction extends Action<BuildActionData> {
     const blueprint = state.items.find((i) => i.id === target.item)!; // checked, so it exists
     const used = new Set([blueprint.id, ...ingredients(state, player, blueprint)!.map((i) => i.id)]);
     state.items = state.items.filter((i) => !used.has(i.id));
-    const type = BLUEPRINTS[blueprint.builds!]!.equipment;
-    // Built equipment lives in the config's per-room list, like the equipment from the map.
-    (state.config.equipment[player.room] ??= []).push({ id: `${player.room}:${type}:${state.nextItemId++}`, type });
-    logPublic(state, player.room, "built", { name: player.name, equipment: type });
+    const makes = BLUEPRINTS[blueprint.builds!]!.makes;
+    if ("equipment" in makes) {
+      // Built equipment lives in the config's per-room list, like the equipment from the map.
+      (state.config.equipment[player.room] ??= []).push({ id: `${player.room}:${makes.equipment}:${state.nextItemId++}`, type: makes.equipment });
+      logPublic(state, player.room, "built", { name: player.name, equipment: makes.equipment });
+    } else {
+      produceItem(state, player, makes.item);
+      logPublic(state, player.room, "builtItem", { name: player.name, item: makes.item });
+    }
   }
 }

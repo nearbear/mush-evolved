@@ -92,6 +92,10 @@ export const DEFAULT_CONFIG: GameConfig = {
     // Decided 2026-10-16: a sofa blueprint in the front corridor. The thick tube is a stand-in so it can be built (nothing else makes one yet).
     { type: "blueprint", builds: "SOFA", room: "CORRIDOR_A" },
     { type: "thick_tube", room: "CORRIDOR_A" },
+    // Decided 2026-10-16: a rocket launcher blueprint too. The second tube and metal are stand-ins so both blueprints can be built.
+    { type: "blueprint", builds: "MISSILE_LAUNCHER", room: "CORRIDOR_A" },
+    { type: "thick_tube", room: "CORRIDOR_A" },
+    { type: "metal_scraps", room: "CORRIDOR_A" },
     // Confirmed 2026-10-14: the soap always spawns in the Alpha dorm (for now).
     { type: "soap", room: "BEDROOM_A" },
     { type: "freezer", room: "REFECTORY" },

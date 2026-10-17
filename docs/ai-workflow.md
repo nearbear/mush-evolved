@@ -589,3 +589,9 @@ Owner asked for the skill; the original text ("2 cycles of immunity after each s
 ## 2026-10-16: Logistics skill
 - Owner's request was one line ("1 AP at random to a player in the room"). The original data says it fires every cycle, so I asked about trigger, cap handling, and visibility instead of guessing; owner chose automatic per cycle, skip capped players, free, private lines.
 - Added a generic `onCycle` modifier hook (`cycleChanged`) rather than special-casing the skill in `advanceCycle`. No corrections needed.
+
+## 2026-10-16: blueprints (sofa only)
+- Asked first what the original Mush folder says about blueprints (item `BLUEPRINT`, `BUILD` action, `blueprints.ods` recipes); the Haxe source has no build logic, only data and item helpers, so the rules had to come from the owner.
+- Owner decided: always consumed, no failure chance, anywhere by anyone, ingredients from inventory or room floor, 3 AP, sofa as room equipment, thick tube as a new item.
+- Snag: sofas are fixed map equipment, so a built one has no sprite in the iso view; left as a known gap rather than inventing placement. Added a thick tube to the corridor so the blueprint is buildable.
+- 2026-10-16: added the rocket launcher blueprint (original `MISSILE_LAUNCHER`, icon `missile_launcher.jpg`). The recipe data had two conflicting versions, so the owner picked one. This forced recipes to produce either equipment or an item (`makes`).

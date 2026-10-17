@@ -3,7 +3,7 @@
 // helpers turn ids into the player's language. Call `useNames()` in a
 // component so it re-renders when the language changes.
 
-import type { LogEntry, RoomId } from "@mush2/shared";
+import { BLUEPRINTS, type LogEntry, type RoomId } from "@mush2/shared";
 import { useTranslation } from "react-i18next";
 
 export function useNames() {
@@ -13,8 +13,12 @@ export function useNames() {
   const room = (id: RoomId) => lookup("rooms", id);
   const equipment = (type: string) => lookup("equipment", type);
   /** A blueprint is named for what it builds. */
-  const item = (type: string, builds?: string) =>
-    builds === undefined ? lookup("items", type) : t("items.blueprintOf" as never, { thing: lookup("equipment", builds), defaultValue: type });
+  const item = (type: string, builds?: string) => {
+    if (builds === undefined) return lookup("items", type);
+    const makes = BLUEPRINTS[builds]?.makes;
+    const thing = makes && "item" in makes ? lookup("items", makes.item) : lookup("equipment", makes ? makes.equipment : builds);
+    return t("items.blueprintOf" as never, { thing, defaultValue: type });
+  };
   const skill = (id: string) => t(`skills.names.${id}` as never, { defaultValue: id });
 
   /** The text of a log entry. `room`, `item` and `equipment` params are ids and get translated. */

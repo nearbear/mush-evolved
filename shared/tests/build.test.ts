@@ -80,6 +80,29 @@ describe("build", () => {
     expect(legalActions(r.state, "p0").some((a) => a.type === "build")).toBe(false);
   });
 
+  it("builds a rocket launcher item into the inventory, or onto the floor when full", () => {
+    const s = ship();
+    s.items.push({ id: "bp2", type: "blueprint", builds: "MISSILE_LAUNCHER", at: room("CORRIDOR_A") }, { id: "pl", type: "plastic_scraps", at: room("CORRIDOR_A") });
+    s.items.find((i) => i.id === "bp")!.at = room("SICK_BAY"); // keep the sofa blueprint out of reach
+    const r = applyAction(s, "p0", build("bp2"));
+    if (!r.ok) throw new Error(r.error);
+    expect(r.state.items.filter((i) => ["bp2", "m", "t", "pl"].includes(i.id))).toEqual([]);
+    expect(r.state.items.find((i) => i.type === "missile_launcher")?.at).toEqual({ kind: "player", id: "p0" });
+    expect(r.state.config.equipment.CORRIDOR_A).toBeUndefined();
+    expect(viewFor(r.state, "p1").log.some((e) => e.key === "builtItem")).toBe(true);
+    // A full inventory knocks it onto the floor.
+    const full = ship();
+    full.items.push({ id: "bp2", type: "blueprint", builds: "MISSILE_LAUNCHER", at: room("CORRIDOR_A") }, { id: "pl", type: "plastic_scraps", at: room("CORRIDOR_A") });
+    for (const id of ["a", "b", "c"]) full.items.push({ id, type: "wrench", at: { kind: "player", id: "p0" } });
+    const r2 = applyAction(full, "p0", build("bp2"));
+    if (!r2.ok) throw new Error(r2.error);
+    expect(r2.state.items.find((i) => i.type === "missile_launcher")?.at).toEqual(room("CORRIDOR_A"));
+  });
+
+  it("spawns a rocket launcher blueprint in the front corridor", () => {
+    expect(DEFAULT_CONFIG.startItems).toContainEqual({ type: "blueprint", builds: "MISSILE_LAUNCHER", room: "CORRIDOR_A" });
+  });
+
   it("shows which recipe a blueprint carries in the view", () => {
     expect(viewFor(ship(), "p0").roomItems.find((i) => i.id === "bp")).toEqual({ id: "bp", type: "blueprint", builds: "SOFA" });
   });

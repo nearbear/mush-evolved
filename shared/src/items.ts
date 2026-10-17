@@ -50,6 +50,8 @@ export const ITEM_TYPES: Record<string, ItemType> = {
   soap: {},
   metal_scraps: {},
   thick_tube: {},
+  // Decided 2026-10-16: built from a blueprint; no effect yet. Named after its icon.
+  missile_launcher: {},
   // Decided 2026-10-16: carries a recipe in `ItemState.builds`; consumed by building.
   blueprint: {},
   plastic_scraps: {},
