@@ -5,7 +5,7 @@
 import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { useNames } from "../i18n/names.ts";
-import type { Action, PlayerView, RoomId, Target } from "@mush2/shared";
+import { actionVisibility, type Action, type PlayerView, type RoomId, type Target } from "@mush2/shared";
 import { ActionLabel } from "./ActionLabel.tsx";
 import { DisabledActionButton } from "./ActionButton.tsx";
 import { actionLabelKey, actionsOn, chanceOf, costOf, resolveTarget, unaffordableOn } from "./targets.ts";
@@ -32,7 +32,7 @@ export function PeekBar({
   const names = useNames();
   const labelFor = (a: Action, cost = costOf(view, a), chance = chanceOf(view, a)): ReactNode => {
     const key = actionLabelKey(a);
-    return <ActionLabel text={key ? t(key) : a.type} cost={cost} chance={chance} />;
+    return <ActionLabel text={key ? t(key) : a.type} cost={cost} chance={chance} visibility={actionVisibility(a.type)} />;
   };
   if (door) {
     const canGo = reachable.has(door);

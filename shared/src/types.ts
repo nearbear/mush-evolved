@@ -29,6 +29,8 @@ export interface Seat {
  */
 export interface LogEntry {
   cycle: number;
+  /** Wall-clock ms when the server recorded it. The rules have no clock; GameRoom stamps it. Missing on older games. */
+  at?: number;
   /** Message id; the client turns it into text (`logEvent.<key>` in the locale catalogs). */
   key: string;
   /** Data for the message. `room`, `item` and `equipment` params are ids the client names; `name` is a player name. */

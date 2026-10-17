@@ -1,4 +1,4 @@
-import { Action } from "./action.ts";
+import { Action, type ActionVisibility } from "./action.ts";
 import { logPrivate } from "../log.ts";
 import { sporesPerDay } from "../modifiers.ts";
 import { addStatus } from "../statuses.ts";
@@ -7,6 +7,8 @@ import type { GameState, PlayerState } from "../types.ts";
 export type ExtractSporeActionData = { type: "extract_spore" };
 
 export class ExtractSporeAction extends Action<ExtractSporeActionData> {
+  override visibility: ActionVisibility = "private";
+
   constructor() {
     super("extract_spore");
   }

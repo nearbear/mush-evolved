@@ -1,4 +1,4 @@
-import { Action } from "./action.ts";
+import { Action, type ActionVisibility } from "./action.ts";
 import { logPrivate } from "../log.ts";
 import { contaminate } from "../infection.ts";
 import type { GameState, PlayerState } from "../types.ts";
@@ -6,6 +6,8 @@ import type { GameState, PlayerState } from "../types.ts";
 export type ShareActionData = { type: "dtt" | "stt"; target: string };
 
 export class ShareAction<T extends "dtt" | "stt" = "dtt" | "stt"> extends Action<{ type: T; target: string }> {
+  override visibility: ActionVisibility = "private";
+
   constructor(type: T) {
     super(type);
   }

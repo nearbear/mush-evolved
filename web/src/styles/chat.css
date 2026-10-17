@@ -287,3 +287,70 @@
   flex: 1;
   border-top: 1px solid rgb(255 255 255 / 0.2);
 }
+
+/* The "47min ago" caption is a popover trigger; strip the global Mush button look. */
+.recency {
+  display: inline;
+  width: auto;
+  min-width: 0;
+  height: auto;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--muted);
+  font: inherit;
+  font-size: 0.75rem;
+  font-style: normal;
+  white-space: nowrap;
+  cursor: help;
+}
+
+/* An entry: marker (info icon or crew sprite) on the left; name and recency on top, body below. */
+.feed > li.entry {
+  display: grid;
+  grid-template-columns: 32px minmax(0, 1fr);
+  grid-template-areas:
+    "marker head"
+    "marker body";
+  column-gap: 0.5rem;
+  align-items: start;
+}
+/* Ship messages: no head row; the body and the caption share one row. */
+.feed > li.entry-inline {
+  grid-template-columns: 32px minmax(0, 1fr) auto;
+  grid-template-areas: "marker body stamp";
+}
+.entry-inline > .recency {
+  grid-area: stamp;
+}
+.entry-marker {
+  grid-area: marker;
+  display: flex;
+  justify-content: center;
+}
+.entry-info {
+  width: 16px;
+  height: 16px;
+  image-rendering: pixelated;
+}
+/* The first frame of the walk strip, unscaled like the iso view. */
+.entry-avatar {
+  width: 32px;
+  height: 48px;
+  background-size: 192px 48px;
+  background-repeat: no-repeat;
+  image-rendering: pixelated;
+}
+.entry-head {
+  grid-area: head;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0.5rem;
+  min-height: 1rem;
+}
+.entry-body {
+  grid-area: body;
+  min-width: 0;
+}

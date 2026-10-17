@@ -12,6 +12,7 @@ import { FEATURE_CHANNELS, ITRACKIE_ITEM, MAX_CHAT_LENGTH, MUSH_CHANNEL, type Ch
 import { FeatureSelect } from "./FeatureSelect.tsx";
 import { Hint, IconButton, IconTab } from "./IconButton.tsx";
 import { Markdown } from "./Markdown.tsx";
+import { CrewAvatar, FeedEntry, InfoMarker } from "./FeedEntry.tsx";
 import { TAB_ICONS } from "../art/assets.ts";
 
 
@@ -106,7 +107,9 @@ export function ITrackie({
                         {t("itrackie.cycleDivider", { cycle: e.cycle })}
                       </li>
                     )}
-                    <li className={e.visibleTo === "all" ? undefined : "private"}>{names.logLine(e)}</li>
+                    <FeedEntry marker={<InfoMarker />} at={e.at} className={e.visibleTo === "all" ? undefined : "private"}>
+                      {names.logLine(e)}
+                    </FeedEntry>
                   </Fragment>
                 ))}
               </ol>
@@ -184,15 +187,23 @@ function Thread({
           {readable && messages.length === 0 && <li className="sub">No messages yet.</li>}
           {messages.map((m) =>
             m.system ? (
-              <li key={m.id} className="sub">
+              <FeedEntry key={m.id} marker={<InfoMarker />} at={m.at} className="sub">
                 {names.logLine(m.system)}
-              </li>
+              </FeedEntry>
             ) : (
-            <li key={m.id}>
-              <strong className={m.from === view.you.id ? "me" : undefined}>{m.name}</strong>
-              {m.isBot && <span className="tag">AI</span>}:
+            <FeedEntry
+              key={m.id}
+              marker={<CrewAvatar character={m.from === view.you.id ? view.you.character : view.players.find((p) => p.id === m.from)?.character} />}
+              name={
+                <>
+                  <strong className={m.from === view.you.id ? "me" : undefined}>{m.name}</strong>
+                  {m.isBot && <span className="tag">AI</span>}
+                </>
+              }
+              at={m.at}
+            >
               <Markdown text={m.text} onToggle={m.from === view.you.id && enabled ? (line) => onToggle(m.id, line) : undefined} />
-            </li>
+            </FeedEntry>
             ),
           )}
         </ol>

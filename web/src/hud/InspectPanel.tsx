@@ -4,7 +4,7 @@
 import { useTranslation } from "react-i18next";
 import { useNames } from "../i18n/names.ts";
 import type { ReactNode } from "react";
-import { CHARACTERS, ITEM_TYPES, type Action, type BotKind, type OtherPlayerView, type PlayerView, type Target } from "@mush2/shared";
+import { actionVisibility, CHARACTERS, ITEM_TYPES, type Action, type BotKind, type OtherPlayerView, type PlayerView, type Target } from "@mush2/shared";
 import { characterImage, portrait } from "../art/assets.ts";
 import { ItemIcon } from "./ItemIcon.tsx";
 import { ActionLabel } from "./ActionLabel.tsx";
@@ -30,7 +30,7 @@ export function InspectPanel({
   const { t } = useTranslation();
   const labelFor = (a: Action, cost = costOf(view, a), chance = chanceOf(view, a)): ReactNode => {
     const key = actionLabelKey(a);
-    return <ActionLabel text={key ? t(key) : a.type} cost={cost} chance={chance} />;
+    return <ActionLabel text={key ? t(key) : a.type} cost={cost} chance={chance} visibility={actionVisibility(a.type)} />;
   };
   const resolved = resolveTarget(view, target);
   const actions = actionsOn(view, target);

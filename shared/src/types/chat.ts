@@ -32,6 +32,8 @@ export interface ChatMessage {
   /** Increasing per game; stable React key and ordering. */
   id: number;
   cycle: number;
+  /** Wall-clock ms when the server recorded it (stamped by GameRoom; the rules have no clock). Missing on older games. */
+  at?: number;
   channel: ChannelId;
   /** Null for a system message posted by the game. */
   from: PlayerId | null;

@@ -4,6 +4,7 @@ import { ConsumeAction } from "./actions/consume.ts";
 import { CookAction } from "./actions/cook.ts";
 import { DismantleAction } from "./actions/dismantle.ts";
 import { AccessAction } from "./actions/access.ts";
+import type { ActionVisibility } from "./actions/action.ts";
 import { DispenseAction } from "./actions/dispense.ts";
 import { ExamineAction } from "./actions/examine.ts";
 import { ExtractSporeAction } from "./actions/extract_spore.ts";
@@ -31,7 +32,11 @@ export interface ActionCost {
   mp: number;
 }
 
+export type { ActionVisibility };
+
 export interface ActionDef<A extends Action> {
+  /** Who learns of it; the same for every candidate of a type. */
+  readonly visibility: ActionVisibility;
   candidates(state: Readonly<GameState>, player: Readonly<PlayerState>): A[];
   check(state: Readonly<GameState>, player: Readonly<PlayerState>, action: A): string | null;
   cost(state: Readonly<GameState>, player: Readonly<PlayerState>, action: A): ActionCost;
@@ -68,6 +73,9 @@ export const ACTIONS: { [T in ActionType]: ActionDef<ActionOf<T>> } = {
   punch: new PunchAction(),
   pick_skill: new PickSkillAction(),
 };
+
+/** Whether an action type is public, private, secret or covert. A fixed property of the type, so safe for the client to show. */
+export const actionVisibility = (type: ActionType): ActionVisibility => ACTIONS[type].visibility;
 
 export function visibleTargets(state: Readonly<GameState>, player: Readonly<PlayerState>): Target[] {
   return [

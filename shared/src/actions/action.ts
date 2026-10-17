@@ -4,8 +4,15 @@ import type { GameState, PlayerState } from "../types.ts";
 export const peopleHere = (state: Readonly<GameState>, p: Readonly<PlayerState>): PlayerState[] =>
   state.players.filter((o) => o.id !== p.id && o.alive && o.room === p.room);
 
+/**
+ * Who learns of an action, for the label on its button (the log entries themselves come from `log.ts`).
+ * Declared per action and kept in step with the log call in its `apply`.
+ */
+export type ActionVisibility = "public" | "private" | "secret" | "covert";
+
 export class Action<T extends { type: string }> {
   type: string;
+  visibility: ActionVisibility = "public";
   baseAPCost: number = 0;
   baseMPCost: number = 0;
   baseSuccessChance: number = 1;

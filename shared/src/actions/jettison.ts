@@ -1,4 +1,4 @@
-import { Action } from "./action.ts";
+import { Action, type ActionVisibility } from "./action.ts";
 import { CORPSE_ITEM } from "../items.ts";
 import { logCovert } from "../log.ts";
 import type { GameState, ItemState, PlayerState } from "../types.ts";
@@ -10,6 +10,8 @@ export type JettisonActionData = { type: "jettison"; item: string };
  * 0 AP by default. Covert (decided 2026-10-17): room history only if a camera is in the room.
  */
 export class JettisonAction extends Action<JettisonActionData> {
+  override visibility: ActionVisibility = "covert";
+
   constructor() {
     super("jettison");
   }

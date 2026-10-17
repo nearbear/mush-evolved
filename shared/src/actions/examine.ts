@@ -1,4 +1,4 @@
-import { Action } from "./action.ts";
+import { Action, type ActionVisibility } from "./action.ts";
 import { itemsIn } from "../items.ts";
 import { logPrivate } from "../log.ts";
 import type { GameState, PlayerState, Target } from "../types.ts";
@@ -6,6 +6,8 @@ import type { GameState, PlayerState, Target } from "../types.ts";
 export type ExamineActionData = { type: "examine"; target: Target };
 
 export class ExamineAction extends Action<ExamineActionData> {
+  override visibility: ActionVisibility = "private";
+
   constructor() {
     super("examine");
   }

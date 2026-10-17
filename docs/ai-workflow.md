@@ -661,3 +661,8 @@ The first port kept an installed camera as a `camera` item lying in the room, wh
 ## 2026-10-17: Show success chance on action buttons
 
 User asked for the percent chance of success in parentheses on actions. Added `PlayerView.legalChances: number[]` (parallel to `legalCosts`, same convention) and `chance` on `UnaffordableAction`, both from `ActionDef.chance` in `viewFor`, so the client still computes nothing. `ActionLabel` appends `actions.chance` ("(60%)", "(60 %)" in fr/es) only when the chance is below 1, so certain actions keep their plain labels. Today only punch and dismantle can fail. The chance is the viewer's own odds from config/own modifiers, so no hidden info is exposed.
+
+## 2026-10-17: Visibility icons on action buttons
+
+- Each action class declares `visibility` (public/private/secret/covert), read by the client through `actionVisibility(type)`; `ActionLabel` draws an icon after the label: `icons/ui/lock.png` (private), `camera.png` (secret), `discrete.png` (covert, the hushing hand). The request named "covert" twice; secret→camera, covert→hand was assumed.
+- Visibility is declared by hand next to each action's log call, not derived from it. Share (DTT/STT) is marked private though the recipient is told too; dismantle stays public (only its failure is private). No action is secret yet, so the camera icon is unused for now.

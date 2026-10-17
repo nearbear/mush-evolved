@@ -147,6 +147,16 @@ export const ACTION_ICON = urls(
   import.meta.glob<string>("../../../Mush/www/img/icons/ui/pa_slot1.png", { eager: true, query: "?url", import: "default" }),
 )["pa_slot1"]!;
 
+const visibilityIcons = urls(
+  import.meta.glob<string>("../../../Mush/www/img/icons/ui/{lock,camera,discrete}.png", { eager: true, query: "?url", import: "default" }),
+);
+/** Drawn after an action's label when others don't simply see it: a padlock, a camera, a hand hushing. */
+export const VISIBILITY_ICONS: Readonly<Record<"private" | "secret" | "covert", string>> = {
+  private: visibilityIcons["lock"]!,
+  secret: visibilityIcons["camera"]!,
+  covert: visibilityIcons["discrete"]!,
+};
+
 /** The 56x56 empty inventory slot (a bordered blue square with transparent corners). */
 export const EMPTY_SLOT_TILE = design["bigslot"]!;
 /** 5x5 pips from the original site: pink for action points, cyan for movement points. */
@@ -159,10 +169,13 @@ export const MORALE_PIP = design["lifebar2"]!;
 // Tab icons (16x16-ish pixel art). Keys are the names the user chose; see docs/tab-icons.md.
 const uiIcons = urls(
   import.meta.glob<string>(
-    "../../../Mush/www/img/icons/ui/{mush,mush_progressive,starter,p_alive,survival,awake,comm,learned,stock,microsc,neron,infoalert,local,planet,conceptor,talkie,shield,basicplus,goldplus,notebook,pa_cook,pa_garden,pa_pilgred,pam,pa_heal,pa_eng,pa_exp,pa_comp,pa_core,pa_shoot,private,search,spore,wall,fav,triumph,heavy}.{png,gif}",
+    "../../../Mush/www/img/icons/ui/{mush,mush_progressive,starter,p_alive,survival,awake,comm,learned,stock,microsc,neron,info,infoalert,local,planet,conceptor,talkie,shield,basicplus,goldplus,notebook,pa_cook,pa_garden,pa_pilgred,pam,pa_heal,pa_eng,pa_exp,pa_comp,pa_core,pa_shoot,private,search,spore,wall,fav,triumph,heavy}.{png,gif}",
     { eager: true, query: "?url", import: "default" },
   ),
 );
+
+/** The marker beside iTrackie entries that come from the ship rather than a person. */
+export const INFO_ICON = uiIcons["info"]!;
 
 /** A person you can see is somewhere but can't identify (ACTOPI off). */
 export const MUSH_ICON = uiIcons["mush"]!;

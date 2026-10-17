@@ -123,6 +123,7 @@
     "heal": "Heal",
     "punch": "Punch",
     "spike": "Spike",
+    "visibility": { "private": "Private", "secret": "Secret", "covert": "Covert" },
     "chance": "({{percent}}%)",
     "lacksAp": "Not enough AP: it costs {{need}}, you have {{have}}.",
     "lacksMp": "Not enough MP: it costs {{need}}, you have {{have}}.",
@@ -153,6 +154,14 @@
     "bodyMush": "You can still read global chat, the feature threads and the Mush channel, but you can no longer post."
   },
   "itrackie": {
+    "ago": {
+      "lessThanMinute": "<1min ago",
+      "minutes": "{{count}}min ago",
+      "hours": "{{count}}h ago",
+      "days": "{{days}}d ago",
+      "daysHours": "{{days}}d{{hours}}h ago"
+    },
+    "shipMessage": "Ship message",
     "checkbox": "Checkbox",
     "cycleDivider": "Cycle {{cycle}}",
     "composer": {

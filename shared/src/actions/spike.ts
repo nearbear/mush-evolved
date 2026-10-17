@@ -1,4 +1,4 @@
-import { Action, peopleHere } from "./action.ts";
+import { Action, peopleHere, type ActionVisibility } from "./action.ts";
 import { logCovert } from "../log.ts";
 import { contaminate } from "../infection.ts";
 import type { GameState, PlayerState } from "../types.ts";
@@ -13,6 +13,8 @@ export type SpikeActionData = { type: "spike"; target: string };
  * victim are not told otherwise. Contamination stays hidden from everyone.
  */
 export class SpikeAction extends Action<SpikeActionData> {
+  override visibility: ActionVisibility = "covert";
+
   constructor() {
     super("spike");
   }

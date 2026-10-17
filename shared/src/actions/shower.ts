@@ -1,4 +1,4 @@
-import { Action } from "./action.ts";
+import { Action, type ActionVisibility } from "./action.ts";
 import { damage } from "../death.ts";
 import { EQUIPMENT_TYPES } from "../equipment.ts";
 import { itemsIn } from "../items.ts";
@@ -10,6 +10,8 @@ import type { GameState, PlayerState } from "../types.ts";
 export type ShowerActionData = { type: "shower"; equipment: string };
 
 export class ShowerAction extends Action<ShowerActionData> {
+  override visibility: ActionVisibility = "private";
+
   constructor() {
     super("shower");
   }

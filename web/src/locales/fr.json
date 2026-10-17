@@ -123,6 +123,7 @@
     "heal": "Soigner",
     "punch": "Frapper",
     "spike": "Contaminer",
+    "visibility": { "private": "Privée", "secret": "Secrète", "covert": "Discrète" },
     "chance": "({{percent}} %)",
     "lacksAp": "Pas assez de PA : cela coûte {{need}}, vous en avez {{have}}.",
     "lacksMp": "Pas assez de PM : cela coûte {{need}}, vous en avez {{have}}.",
@@ -153,6 +154,14 @@
     "bodyMush": "Vous pouvez encore lire le chat général, les fils des fonctions et le canal Mush, mais vous ne pouvez plus écrire."
   },
   "itrackie": {
+    "ago": {
+      "lessThanMinute": "il y a <1min",
+      "minutes": "il y a {{count}}min",
+      "hours": "il y a {{count}}h",
+      "days": "il y a {{days}}j",
+      "daysHours": "il y a {{days}}j{{hours}}h"
+    },
+    "shipMessage": "Message du vaisseau",
     "checkbox": "Case à cocher",
     "cycleDivider": "Cycle {{cycle}}",
     "composer": {

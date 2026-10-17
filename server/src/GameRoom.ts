@@ -25,6 +25,19 @@ import { RateLimiter } from "./rateLimit.ts";
 /** Error code (not text) for a cheat input on a server that doesn't allow them. */
 const CHEATS_DISABLED = "cheats_disabled";
 
+/**
+ * Gives the entries the rules just appended a wall-clock time. The rules are
+ * pure and have no clock, so the server stamps them; the log and chat only
+ * grow at the end, so walk back until we reach one already stamped.
+ */
+function stamp(state: GameState): GameState {
+  const now = Date.now();
+  for (const list of [state.log, state.chat]) {
+    for (let i = list.length - 1; i >= 0 && list[i]!.at === undefined; i--) list[i]!.at = now;
+  }
+  return state;
+}
+
 /** Deliberate pacing so bots don't act instantly. */
 const BOT_DELAY_MS = 50;
 
@@ -115,7 +128,7 @@ export class GameRoom extends Server<Env> {
       seed: crypto.getRandomValues(new Uint32Array(1))[0]!,
       rulesVersion: this.env.RULES_VERSION,
     };
-    this.game = startGame(setup);
+    this.game = stamp(startGame(setup));
     this.tokens = tokens;
     await this.ctx.storage.put("setup", setup);
     await this.persist();
@@ -194,7 +207,7 @@ export class GameRoom extends Server<Env> {
     if (!this.game) return "No game";
     const result = applyInput(this.game, input);
     if (!result.ok) return result.error;
-    this.game = result.state;
+    this.game = stamp(result.state);
     const recorded: RecordedInput = { at: Date.now(), input, ...(raw !== undefined && { raw }) };
     await this.persist({ [inputKey(this.inputs++)]: recorded });
     this.broadcastViews();
