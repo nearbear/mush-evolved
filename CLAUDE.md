@@ -109,7 +109,7 @@ npm 11 blocks dependency install scripts by default. `esbuild` and `workerd` are
 
 ## Code map
 
-See `docs/code-map.md` for where each module lives and `docs/implemented-rules.md` for which rules are implemented. Key invariants: `shared/src/rules.ts` is pure and `viewFor` is the only place hidden info is stripped; the client never computes legality (it uses `view.legalActions`); win conditions are intentionally absent until the rules are decided.
+See `docs/code-map.md` (an index to per-package files in `docs/code-map/`) for where each module lives and `docs/implemented-rules.md` for which rules are implemented. Key invariants: `shared/src/rules.ts` is pure and `viewFor` is the only place hidden info is stripped; the client never computes legality (it uses `view.legalActions`); win conditions are intentionally absent until the rules are decided.
 
 ## Open decisions
 

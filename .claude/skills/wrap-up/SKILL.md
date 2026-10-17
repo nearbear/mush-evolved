@@ -29,7 +29,7 @@ Report failures with their output. Don't say done if anything failed or was skip
 
 Only where something actually changed:
 
-- **`docs/code-map.md`**: one line per new, moved, or removed file. **`docs/implemented-rules.md`**: the bullet for any rule that changed.
+- **`docs/code-map/<package>.md`**: one line per new, moved, or removed file. **`docs/implemented-rules.md`**: the bullet for any rule that changed.
 - **`CLAUDE.md`**: commands (new npm scripts), the skills list, and "Open decisions" (remove anything settled). Keep it a summary.
 - **`docs/rules-design.md`**: record each answered rule decision in "Decisions received", with the date. The issue is where the question was asked; this file is the record of the answer.
 - **`docs/ai-workflow.md`**: a dated `###` entry. What was decided and **who decided it** (the user, or the assistant with approval), what worked, and anything that needed correction. Be honest about mistakes; the user is writing this up. Only ever append with `cat >>`, and never read the file first (it is large); do not rewrite existing entries.

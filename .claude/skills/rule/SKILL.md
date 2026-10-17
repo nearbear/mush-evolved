@@ -22,7 +22,7 @@ Skip a question only if the user's message, CLAUDE.md, the issue (body or commen
 
 ## 2. Implement in `shared`, purely
 
-- Don't read `rules.ts` whole. Find where things live in `docs/code-map.md` (or grep for `legalActions`, `applyAction`, `logPublic`, etc.) and read only those ranges. Open `modifiers.ts` and `protocol.ts` only when a step below needs them.
+- Don't read `rules.ts` whole. Find where things live in `docs/code-map/<package>.md` (index: `docs/code-map.md`; or grep for `legalActions`, `applyAction`, `logPublic`, etc.) and read only those ranges. Open `modifiers.ts` and `protocol.ts` only when a step below needs them.
 - `shared/src/rules.ts` and the modules next to it. No I/O, no clocks, no `Math.random`; randomness goes through the seeded RNG in state.
 - New player-visible text (log lines, action labels, errors) goes through the `i18n` skill: don't hard-code English strings.
 - State must stay plain JSON (it's persisted and cloned with JSON).
@@ -50,7 +50,7 @@ In `shared/src/*.test.ts`:
 
 ## 5. Record it
 
-- `docs/implemented-rules.md`: add or update the rule's bullet; `docs/code-map.md`: add a line for any new file. In `CLAUDE.md`, update "Open decisions" only if one was settled.
+- `docs/implemented-rules.md`: add or update the rule's bullet; `docs/code-map/<package>.md`: add a line for any new file. In `CLAUDE.md`, update "Open decisions" only if one was settled.
 - `docs/rules-design.md`: add the decision to "Decisions received". Grep for the line and use `Edit`; don't re-read the file.
 - The GitHub issue: handled by the `wrap-up` skill (tick answered questions, close or comment).
 - `docs/ai-workflow.md`: a dated entry with the decision, who decided it, what worked, and anything that needed correction. Only ever append with `cat >>`, and never read the file first (it is large); do not rewrite existing entries.

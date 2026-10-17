@@ -1,0 +1,42 @@
+# Code map: shared
+
+Other packages import from `@mush2/shared` (`shared/src/index.ts`, the barrel). Inside `shared`, import types from `types.ts`.
+
+**Engine**
+
+- `rules.ts`: `createGame`, `applyAction`, `legalActions`, `viewFor`, `dayOf`, `setCheat`, `setActopiCheat`; private `advanceCycle` and `grantCarePoints`. `viewFor` is the single place hidden info is stripped.
+- `actions.ts`: the action registry (`ACTIONS`), `visibleTargets`, `ActionDef` / `ActionCost`. A new action is a file in `actions/` registered here.
+- `actions/action.ts`: the `Action` base class (`getCandidates`, `check`, `getCost`, `apply`, optional `getSuccessChance` and `fail`).
+- `actions/<type>.ts`: one class per action: `bond`, `consume`, `cook`, `dismantle`, `dispense`, `examine`, `extract_spore`, `heal`, `move`, `pick_skill`, `punch`, `ready`, `share` (`dtt`, `stt`), `shower`, `spike`, `transfer` (`take`, `drop`).
+- `modifiers.ts`: the modifier registry and its hooks (numeric ones go through `fold`; `moveCost` is the one place a move's price is computed).
+- `modifiers/<id>.ts`: one file per modifier: `creative`, `first_aid`, `lying_down`, `medic`, `sturdy`; `careSkill.ts` is the factory behind `first_aid`.
+- `replay.ts`: `Input`, `GameSetup`, `applyInput` (the only entry point for changing a game), `replayGame`.
+- `rng.ts`: the seeded RNG (its state is part of `GameState`).
+- `helpers.ts`: `ActionResult`, `fail`, `clone`, `findPlayer`.
+
+**Rule areas**
+
+- `chat.ts`: chat storage, channels, `sendChat`, private channels, limits.
+- `death.ts`: `damage` (the one way HP goes down) and `killPlayer`.
+- `infection.ts`: `contaminate` (the one way contamination rises), conversion, `contaminationSeenBy`.
+- `items.ts`: item types, containers, capacity and reach helpers, `produceItem`.
+- `equipment.ts`: room equipment types.
+- `log.ts`: room log helpers (`logPublic`, `logPrivate`, `logSecret`).
+- `resources.ts`: per-player skill point pools.
+- `skills.ts`: the pickable human skills and `SKILL_SLOTS`.
+- `statuses.ts`: stored and derived statuses.
+- `cheats.ts`: development cheats (issue #148), gated by `ALLOW_CHEATS`.
+
+**Types, config, and data**
+
+- `types.ts`: the small shared vocabulary; re-exports `types/`.
+- `types/config.ts`: `GameConfig`, `MovementRules`, `Equipment`. Tuning is nested by feature (`config.punch.cost.ap`, `config.punch.effect.damage`).
+- `types/player.ts`: `PlayerState`, `ResourceId`.
+- `types/chat.ts`: channel and message types.
+- `types/state.ts`: `GameState` (server-only).
+- `types/view.ts`: `PlayerView`, `OtherPlayerView`, `ItemView`: the only game data a client or bot receives.
+- `config.ts`: `DEFAULT_CONFIG` and `SEAT_COUNT`. The map comes from `@mush2/assets/derived/ship-rooms.json`.
+- `protocol.ts`: wire message types and `parse*` validators for untrusted client input.
+- `moderation.ts`: `moderateChat`; called by the server, not the rules.
+- `characters.ts`: cosmetic crew identities, no rules effect.
+- `shipLayout.ts`: types for `Mush/derived/ship-layout.json` and `placedEquipment`.
