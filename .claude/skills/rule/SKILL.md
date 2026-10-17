@@ -50,7 +50,7 @@ In `shared/src/*.test.ts`:
 
 ## 5. Record it
 
-- `docs/code-map.md`: update the "Implemented rules" paragraph. In `CLAUDE.md`, update "Open decisions" only if one was settled.
+- `docs/implemented-rules.md`: add or update the rule's bullet; `docs/code-map.md`: add a line for any new file. In `CLAUDE.md`, update "Open decisions" only if one was settled.
 - `docs/rules-design.md`: add the decision to "Decisions received". Grep for the line and use `Edit`; don't re-read the file.
 - The GitHub issue: handled by the `wrap-up` skill (tick answered questions, close or comment).
 - `docs/ai-workflow.md`: a dated entry with the decision, who decided it, what worked, and anything that needed correction. Only ever append with `cat >>`, and never read the file first (it is large); do not rewrite existing entries.

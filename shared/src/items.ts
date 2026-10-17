@@ -104,7 +104,8 @@ export function sameContainer(a: Container, b: Container): boolean {
 /**
  * Creates an item for a player. It goes to their inventory if there is room;
  * otherwise they "knock it over" and it lands in the room (confirmed
- * 2026-10-13). Every action that produces an item should go through here.
+ * 2026-10-13). Every action that hands an item to a player goes through here;
+ * actions that leave items in the room (dismantle's scraps) place them directly.
  * Mutates a state the caller already cloned.
  */
 export function produceItem(next: GameState, player: Readonly<PlayerState>, type: string): { item: ItemState; inInventory: boolean } {

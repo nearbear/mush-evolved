@@ -49,7 +49,7 @@ npm workspaces:
 - `web/`: React client (Vite, [Base UI](https://base-ui.com/)) that renders a per-player view and sends intents.
 - `tools/`: build-time scripts (ship layout converter, screenshot and contact-sheet helpers).
 - `Mush/`: Motion Twin's original sources and art (see License), exposed as the private package `@mush2/assets`.
-- `docs/`: design notes. Start with [`docs/code-map.md`](docs/code-map.md) to find where things live and which rules exist, and [`docs/testing.md`](docs/testing.md) for what is and isn't covered.
+- `docs/`: design notes. Start with [`docs/code-map.md`](docs/code-map.md) to find where things live, [`docs/implemented-rules.md`](docs/implemented-rules.md) for which rules exist, and [`docs/testing.md`](docs/testing.md) for what is and isn't covered.
 
 ## Architecture rules
 

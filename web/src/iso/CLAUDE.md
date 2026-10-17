@@ -2,6 +2,32 @@
 
 Loaded when working on the isometric view. The UI rules in `web/CLAUDE.md` still apply.
 
+## How the view works
+
+- `placement.ts` is pure (no DOM) and reproduces the original Flash client: grid projection, paint
+  order, walkable cells, standing spots, `cellAtPoint` (click to floor cell), `standSpot` (where to
+  stand to use equipment), and `hitTest`. `IsoRoom.tsx` renders it at exactly 1x, one absolutely
+  positioned div per sprite. `shipLayout.ts` fetches the layout JSON and maps atlas sheets to image
+  URLs.
+- Camera: the panel is `overflow: hidden` and follows your character by moving an inner `.iso-world`
+  with a transform, clamped by `cameraOffset` to the current room's edges. No manual panning.
+- Clicks: floor walks you there and equipment steps you up to it (local, cosmetic state only, never
+  sent to the server); a person or equipment is selected; bare floor clears the selection (on
+  desktop, so does any press outside the Inspect panel). A single tap on a reachable door opens it
+  in the peek bar; a double-click sends a move. Clicking a faded room acts like its door.
+- Hit-testing is against drawn pixels, not sprite boxes: sprites ignore pointer events and the
+  viewport runs `hitTest` front to back with per-frame alpha masks from `hitMask.ts`, so scenery in
+  front blocks what's behind it and see-through areas click through. The current room takes clicks
+  first.
+- Paint order: `placeScene` draws the current room and its neighbours in one topological sort over
+  overlapping sprites using footprints, so wide furniture and neighbouring rooms layer correctly.
+  Walls and doors cover whatever stands behind them, people included; footprints diagonally apart
+  get no constraint. Front-edge doors (`DOOR_BL`/`DOOR_BR`) are left out once the room behind them
+  is drawn.
+- People a wall covers (`PlacedSprite.occluded`) get a glowing outline (an SVG filter) in a layer
+  above the scene, so nobody can hide behind a wall: fixed scenery only, plus whoever the view
+  places there. The client adds no ACTOPI check of its own.
+
 ## Looking at the whole ship
 
 `npm run ship-view` (needs `npm run dev` running) joins a ship, sets the fog to "whole ship", makes
