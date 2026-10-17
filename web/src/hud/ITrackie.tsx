@@ -101,7 +101,7 @@ export function ITrackie({
               <ol className="feed">
                 {roomLog.map((e, i) => (
                   <Fragment key={i}>
-                    {(i === 0 || roomLog[i - 1].cycle !== e.cycle) && (
+                    {roomLog[i - 1]?.cycle !== e.cycle && (
                       <li className="cycle-divider">
                         {t("itrackie.cycleDivider", { cycle: e.cycle })}
                       </li>
