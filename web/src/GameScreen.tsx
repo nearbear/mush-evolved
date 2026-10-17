@@ -9,6 +9,7 @@ import { DeathNotice } from "./hud/DeathNotice.tsx";
 import { InspectPanel } from "./hud/InspectPanel.tsx";
 import { ITrackie } from "./hud/ITrackie.tsx";
 import { PeekBar } from "./hud/PeekBar.tsx";
+import { TerminalDialog } from "./hud/TerminalDialog.tsx";
 import { SelfPanel } from "./hud/SelfPanel.tsx";
 import { resolveTarget } from "./hud/targets.ts";
 import { TopBar } from "./hud/TopBar.tsx";
@@ -34,6 +35,8 @@ export function GameScreen({ ticket, onLeave }: { ticket: SeatTicket; onLeave: (
   const fogDepth = useFogDepth();
   const [panel, setPanel] = useState<MobilePanel>("room");
   const [roomLogRequest, setRoomLogRequest] = useState(0);
+  /** Equipment id of the terminal window that is open, if any. UI-only. */
+  const [terminalId, setTerminalId] = useState<string | null>(null);
   const [peekDoor, setPeekDoor] = useState<RoomId | null>(null);
   const here = view?.you.room;
   // biome-ignore lint/correctness/useExhaustiveDependencies: `here` is a trigger: arriving somewhere new clears the door peek.
@@ -81,6 +84,7 @@ export function GameScreen({ ticket, onLeave }: { ticket: SeatTicket; onLeave: (
   // Acting shows its result in the iTrackie's Room log tab; the phone's bottom nav stays where it is.
   const send = (action: Action) => {
     post({ type: "action", action });
+    if (action.type === "access") setTerminalId(action.equipment);
     setRoomLogRequest((n) => n + 1);
   };
 
@@ -118,8 +122,11 @@ export function GameScreen({ ticket, onLeave }: { ticket: SeatTicket; onLeave: (
   // Fall back to yourself when nothing is selected or the selection is gone (left the room, item moved away).
   const target: Target = selected && resolveTarget(view, selected) ? selected : { kind: "player", id: you.id };
 
+  const terminalType = terminalId ? view.roomEquipment.find((e) => e.id === terminalId)?.type ?? null : null;
+
   return (
     <main className="game">
+      <TerminalDialog type={terminalType} onClose={() => setTerminalId(null)} />
       <TopBar
         view={view}
         showSummary={mobile}

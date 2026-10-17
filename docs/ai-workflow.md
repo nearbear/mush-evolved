@@ -594,4 +594,8 @@ Owner asked for the skill; the original text ("2 cycles of immunity after each s
 - Asked first what the original Mush folder says about blueprints (item `BLUEPRINT`, `BUILD` action, `blueprints.ods` recipes); the Haxe source has no build logic, only data and item helpers, so the rules had to come from the owner.
 - Owner decided: always consumed, no failure chance, anywhere by anyone, ingredients from inventory or room floor, 3 AP, sofa as room equipment, thick tube as a new item.
 - Snag: sofas are fixed map equipment, so a built one has no sprite in the iso view; left as a known gap rather than inventing placement. Added a thick tube to the corridor so the blueprint is buildable.
+
+### 2026-10-16: terminal access windows
+- Asked Claude what Mush/ says about terminals; it read objects.json, actions.json and the tutorial text and found a terminal is just equipment with the `MODULE_ACCESS` status, entered through a generic `ACCESS` action. It could not read `Mush/clients` (deny rule), so how the original evaluates `IsAccessing`/`HeroModuling` is unconfirmed.
+- Owner asked for a blank pop-up per terminal and an access action. Claude chose free, unrestricted, stateless access (the client opens the window) instead of asking, and flagged it as a default. Needed correction: the pinned legal-actions test in actions.test.ts had to learn about the lab terminal.
 - 2026-10-16: added the rocket launcher blueprint (original `MISSILE_LAUNCHER`, icon `missile_launcher.jpg`). The recipe data had two conflicting versions, so the owner picked one. This forced recipes to produce either equipment or an item (`makes`).

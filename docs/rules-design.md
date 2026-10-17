@@ -8,6 +8,7 @@ The record of answered rule decisions and the design for the rules that are not 
 
 ## Decisions received
 
+- **Terminals** (2026-10-16, owner): every terminal gets an `access` action that opens a blank window showing its name; the terminals' real actions come later. Free and unrestricted for now (my default; the original has a `MODULING` status and access limits for Command and BIOS, not built). Terminals: Astro, Command, Com center, NERON core, BIOS, Research lab, Pilgred, Calculator.
 - **Blueprints** (2026-10-16, owner): building always consumes the blueprint; no failure chance; anyone can build anywhere; ingredients may be in your inventory or on the room floor. Build costs 3 AP (the original's value). A built sofa is room equipment, not an item. The sofa needs metal scraps + a thick tube (the original's recipe). For now only a sofa blueprint exists, in the front corridor (CORRIDOR_A). Rocket launcher blueprint (2026-10-16, owner): thick tube + metal + plastic scraps (the original's first recipe), builds an effect-less item into the inventory or onto the floor, spawns in the front corridor. Open: other recipes, where blueprints come from beyond this one, drawing built equipment.
 
 - **Schrödinger the cat** (2026-10-16, owner; story starts in **private beta**, nothing is built yet):

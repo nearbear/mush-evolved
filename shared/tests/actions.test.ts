@@ -34,6 +34,8 @@ describe("action registry", () => {
       ...seats.filter((s) => s.id !== "p0").map((s): Action => ({ type: "punch", target: s.id })),
       ...SKILLS.map((skill): Action => ({ type: "pick_skill", skill })),
       ...DEFAULT_CONFIG.equipment.LABORATORY!.map((e): Action => ({ type: "examine", target: { kind: "equipment", id: e.id } })),
+      // The Laboratory has one terminal, the research lab.
+      { type: "access", equipment: "LABORATORY:RESEARCH_LAB" },
       ...[...mine, ...floor].map((i): Action => ({ type: "examine", target: { kind: "item", id: i.id } })),
     ];
     expect(floor.length).toBeGreaterThan(0);

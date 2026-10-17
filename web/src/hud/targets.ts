@@ -38,6 +38,7 @@ export function actionsOn(view: PlayerView, target: Target): Action[] {
     switch (a.type) {
       case "examine":
         return sameTarget(a.target, target);
+      case "access":
       case "dispense":
       case "shower":
         return target.kind === "equipment" && a.equipment === target.id;
@@ -64,6 +65,7 @@ export function actionsOn(view: PlayerView, target: Target): Action[] {
 
 const ACTION_LABEL_KEYS = {
   examine: "actions.examine",
+  access: "actions.access",
   dispense: "actions.dispense",
   shower: "actions.shower",
   consume: "actions.consume",

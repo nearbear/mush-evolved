@@ -106,6 +106,7 @@
     }
   },
   "actions": {
+    "access": "Access",
     "examine": "Examine",
     "dispense": "Pull coffee",
     "consume": "Consume",
@@ -121,6 +122,9 @@
     "heal": "Heal",
     "punch": "Punch",
     "spike": "Spike"
+  },
+  "terminal": {
+    "close": "Close"
   },
   "channels": {
     "empty": "No private channels yet.",

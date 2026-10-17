@@ -7,6 +7,8 @@ export interface EquipmentType {
   dispenses?: string;
   /** Players can wash here. */
   shower?: boolean;
+  /** A terminal: players can access it, which opens its (so far blank) window. */
+  terminal?: boolean;
 }
 
 /**
@@ -14,12 +16,12 @@ export interface EquipmentType {
  * (`objects` sheet) on 2026-10-11. PLANT_CONTROLLER has no entry there.
  */
 export const EQUIPMENT_TYPES: Record<string, EquipmentType> = {
-  ASTRO_MODULE: {},
+  ASTRO_MODULE: { terminal: true },
   BEAT_BOX: {},
   BED: {},
   COFFEE_DISPENSER: { dispenses: "coffee" },
   COMBUSTION_CHAMBER_ACCESS: {},
-  COM_CENTER: {},
+  COM_CENTER: { terminal: true },
   CRYO_MODULE: {},
   DRUG_DISP: {},
   DYNARCADE: {},
@@ -29,20 +31,20 @@ export const EQUIPMENT_TYPES: Record<string, EquipmentType> = {
   ICARUS_COMMAND: {},
   KITCHEN: {},
   MYCOSCAN: {},
-  NERON_BIOS_TERM: {},
-  NERON_CORE: {},
+  NERON_BIOS_TERM: { terminal: true },
+  NERON_CORE: { terminal: true },
   OXYGEN_TANK: {},
   PATROL_INTERFACE: {},
-  PILGRED: {},
-  PILOT_MODULE: {},
+  PILGRED: { terminal: true },
+  PILOT_MODULE: { terminal: true },
   PLANET_SCANNER: {},
   PLANT_CONTROLLER: {},
-  RESEARCH_LAB: {},
+  RESEARCH_LAB: { terminal: true },
   ROTATIONAL_REACTOR: {},
   SHOWER: { shower: true },
   SOFA: {},
   STELLAR_ANTENNA: {},
-  SUPER_CALC: {},
+  SUPER_CALC: { terminal: true },
   SURGERY_POD: {},
   TURRET_COMMAND: {},
 };

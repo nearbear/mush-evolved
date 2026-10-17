@@ -106,6 +106,7 @@
     }
   },
   "actions": {
+    "access": "Acceder",
     "examine": "Examinar",
     "dispense": "Sacar un café",
     "consume": "Consumir",
@@ -121,6 +122,9 @@
     "heal": "Curar",
     "punch": "Golpear",
     "spike": "Contagiar"
+  },
+  "terminal": {
+    "close": "Cerrar"
   },
   "channels": {
     "empty": "Aún no hay canales privados.",

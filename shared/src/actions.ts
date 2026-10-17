@@ -3,6 +3,7 @@ import { BuildAction } from "./actions/build.ts";
 import { ConsumeAction } from "./actions/consume.ts";
 import { CookAction } from "./actions/cook.ts";
 import { DismantleAction } from "./actions/dismantle.ts";
+import { AccessAction } from "./actions/access.ts";
 import { DispenseAction } from "./actions/dispense.ts";
 import { ExamineAction } from "./actions/examine.ts";
 import { ExtractSporeAction } from "./actions/extract_spore.ts";
@@ -44,6 +45,7 @@ export const ACTIONS: { [T in ActionType]: ActionDef<ActionOf<T>> } = {
   take: new TransferAction("take"),
   drop: new TransferAction("drop"),
   dismantle: new DismantleAction(),
+  access: new AccessAction(),
   dispense: new DispenseAction(),
   consume: new ConsumeAction(),
   cook: new CookAction(),
