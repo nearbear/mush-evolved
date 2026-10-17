@@ -112,9 +112,12 @@ const itemIcons = urls(
 /** Every item icon, keyed by file name without extension (e.g. "wrench", "fruit_banana"). */
 export const ITEM_ICONS: Readonly<Record<string, string>> = itemIcons;
 
-/** Icon for an item type. Item type ids are named after their icon files; undefined if there's none. */
+/** Item types whose icon file has a different name. ration_0 is the plain unopened box; ration_1 is the cooked one. */
+const ICON_FILE: Readonly<Record<string, string>> = { uncooked_ration: "ration_0" };
+
+/** Icon for an item type. Item type ids are named after their icon files unless ICON_FILE says otherwise; undefined if there's none. */
 export function itemIcon(type: string): string | undefined {
-  return itemIcons[type];
+  return itemIcons[ICON_FILE[type] ?? type];
 }
 
 /** The plain blue tile the original showed for an empty inventory slot. */
