@@ -8,7 +8,7 @@ import { RESEARCH_CARDS } from "../art/assets.ts";
 import { useNames } from "../i18n/names.ts";
 import { ActionLabel } from "./ActionLabel.tsx";
 import { DisabledActionButton } from "./ActionButton.tsx";
-import { costOf } from "./targets.ts";
+import { chanceOf, costOf } from "./targets.ts";
 import "./settings.css";
 
 interface Props {
@@ -57,12 +57,12 @@ function ResearchList({ terminal, view, onAction }: Omit<Props, "onClose"> & { t
             </div>
             {action && (
               <button type="button" onClick={() => onAction(action)}>
-                <ActionLabel text={t("research.work")} cost={costOf(view, action)} />
+                <ActionLabel text={t("research.work")} cost={costOf(view, action)} chance={chanceOf(view, action)} />
               </button>
             )}
             {blocked && (
               <DisabledActionButton view={view} blocked={blocked}>
-                <ActionLabel text={t("research.work")} cost={blocked.cost} />
+                <ActionLabel text={t("research.work")} cost={blocked.cost} chance={blocked.chance} />
               </DisabledActionButton>
             )}
           </li>

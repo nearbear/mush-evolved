@@ -127,7 +127,7 @@ export function unaffordableActions(state: GameState, playerId: PlayerId): Unaff
       if (def.check(state, p, a) !== "cant_afford") return [];
       const cost = def.cost(state, p, a);
       const lacks: ("ap" | "mp")[] = [...(p.ap < cost.ap ? (["ap"] as const) : []), ...(p.mp < cost.mp ? (["mp"] as const) : [])];
-      return [{ action: a, cost, lacks }];
+      return [{ action: a, cost, chance: def.chance?.(state, p, a) ?? 1, lacks }];
     }),
   );
 }
@@ -314,6 +314,7 @@ export function viewFor(state: GameState, playerId: PlayerId): PlayerView {
     research: { ...state.research },
     legalActions: legal,
     legalCosts: legalCosts(state, playerId, legal),
+    legalChances: legalChances(state, playerId, legal),
     unaffordable: unaffordableActions(state, playerId),
   };
 }
@@ -323,6 +324,13 @@ function legalCosts(state: GameState, playerId: PlayerId, legal: Action[]): Acti
   const p = findPlayer(state, playerId);
   if (!p) return [];
   return legal.map((a) => (ACTIONS[a.type] as ActionDef<Action>).cost(state, p, a));
+}
+
+/** Each of `legal`'s chance of success (0 to 1), index-aligned with it, so the player knows the odds before acting. */
+function legalChances(state: GameState, playerId: PlayerId, legal: Action[]): number[] {
+  const p = findPlayer(state, playerId);
+  if (!p) return [];
+  return legal.map((a) => (ACTIONS[a.type] as ActionDef<Action>).chance?.(state, p, a) ?? 1);
 }
 
 function itemView({ id, type, of, builds }: ItemState): ItemView {

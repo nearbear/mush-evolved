@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { CHARACTERS } from "../src/characters.ts";
 import { DEFAULT_CONFIG } from "../src/config.ts";
 import { parseGameMessage } from "../src/protocol.ts";
+import { installCameraIn } from "./cameras.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";
 import type { Action, GameState, PlayerId, Seat } from "../src/types.ts";
 
@@ -104,16 +105,17 @@ describe("spiking", () => {
 
   it("is room history, victim included, when a camera is in the room, and never reaches other rooms", () => {
     const s = ship(true);
-    s.items.push({ id: "cam", type: "camera", at: { kind: "room", id: "SICK_BAY" } });
+    installCameraIn(s, "SICK_BAY");
     const r = applyAction(s, "p0", spike("p1"));
     if (!r.ok) throw new Error(r.error);
     for (const id of ["p1", "p4"]) expect(viewFor(r.state, id).log.some((e) => e.key === "spiked")).toBe(true);
     expect(viewFor(r.state, "p3").log.some((e) => e.key === "spiked")).toBe(false);
   });
 
-  it("is not revealed by a camera someone carries or one in another room", () => {
+  it("is not revealed by a camera someone carries, one lying uninstalled in the room, or one installed in another room", () => {
     const s = ship(true);
-    s.items.push({ id: "cam1", type: "camera", at: { kind: "player", id: "p4" } }, { id: "cam2", type: "camera", at: { kind: "room", id: "REFECTORY" } });
+    s.items.push({ id: "cam1", type: "camera", at: { kind: "player", id: "p4" } }, { id: "cam2", type: "camera", at: { kind: "room", id: "SICK_BAY" } });
+    installCameraIn(s, "REFECTORY");
     const r = applyAction(s, "p0", spike("p1"));
     if (!r.ok) throw new Error(r.error);
     for (const id of ["p1", "p3", "p4"]) expect(viewFor(r.state, id).log.some((e) => e.key === "spiked")).toBe(false);

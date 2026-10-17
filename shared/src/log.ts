@@ -6,9 +6,10 @@
 //            a camera was in the room; otherwise only the actor sees it.
 //   covert:  bystanders don't see it; it becomes room history only if a camera
 //            was in the room; otherwise only the actor sees it.
-// A camera is a `camera` item in the room's inventory, for now (installed
-// cameras are #35).
+// A camera is `CAMERA` room equipment, put there by `install` (#35). A `camera`
+// item, lying in a room or carried, is not a camera yet.
 
+import { CAMERA_EQUIPMENT } from "./equipment.ts";
 import type { GameState, LogEntry, LogParams, PlayerId, RoomId } from "./types.ts";
 
 /** Mutates a state that the caller already cloned. */
@@ -46,5 +47,5 @@ export function logCovert(state: GameState, actor: PlayerId, key: string, params
 }
 
 export function hasCamera(state: Readonly<GameState>, room: RoomId): boolean {
-  return state.items.some((i) => i.type === "camera" && i.at.kind === "room" && i.at.id === room);
+  return (state.config.equipment[room] ?? []).some((e) => e.type === CAMERA_EQUIPMENT);
 }

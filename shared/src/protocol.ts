@@ -92,6 +92,8 @@ export function parseGameMessage(raw: string): GameClientMessage | null {
     return { type: "action", action: { type: "dispense", equipment: a.equipment } };
   }
   if (a.type === "dismantle" && typeof a.item === "string") return { type: "action", action: { type: "dismantle", item: a.item } };
+  if (a.type === "dismantle" && typeof a.equipment === "string") return { type: "action", action: { type: "dismantle", equipment: a.equipment } };
+  if (a.type === "uninstall" && typeof a.equipment === "string") return { type: "action", action: { type: "uninstall", equipment: a.equipment } };
   if (a.type === "consume" && typeof a.item === "string") return { type: "action", action: { type: "consume", item: a.item } };
   if (a.type === "cook" && typeof a.item === "string") return { type: "action", action: { type: "cook", item: a.item } };
   if (a.type === "build" && typeof a.item === "string") return { type: "action", action: { type: "build", item: a.item } };

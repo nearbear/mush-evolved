@@ -7,6 +7,7 @@ import { CHAT_HISTORY, MAX_CHAT_LENGTH, sendChat } from "../src/chat.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";
 import { ITRACKIE_ITEM } from "../src/items.ts";
 import { parseGameMessage } from "../src/protocol.ts";
+import { installCameraIn } from "./cameras.ts";
 import { CHAT_CHANNELS, type Action, type ChatChannel, type GameState, type MovementRules, type PlayerId, type Seat } from "../src/types.ts";
 
 const seats: Seat[] = Array.from({ length: 8 }, (_, i) => ({
@@ -238,7 +239,6 @@ describe("room log", () => {
     expect(texts(state, "p1")).toContain("witnessed");
 
     state = mustApply(state, "p0", move("CORRIDOR_A")); // p0 alone in the corridor
-    state.items = state.items.filter((i) => i.type !== "camera");
     logSecret(state, "p0", "unseen");
     expect(texts(state, "p0")).toContain("unseen");
     state = mustApply(state, "p1", move("CORRIDOR_A")); // arriving later doesn't reveal it
@@ -247,7 +247,8 @@ describe("room log", () => {
 
   it("makes secret actions room history when a camera is in the room, even unwitnessed and despite hideFrom", () => {
     let state = newGame();
-    state = mustApply(state, "p0", move("CORRIDOR_A")); // the default camera is here
+    installCameraIn(state, "CORRIDOR_A");
+    state = mustApply(state, "p0", move("CORRIDOR_A"));
     logSecret(state, "p0", "filmed");
     state = mustApply(state, "p1", move("CORRIDOR_A"));
     expect(texts(state, "p1")).toContain("filmed");
@@ -257,11 +258,12 @@ describe("room log", () => {
 
   it("shows covert actions only to the actor unless a camera is in the room", () => {
     let state = newGame(); // everyone in the lab, no camera
+    installCameraIn(state, "CORRIDOR_A");
     logCovert(state, "p0", "covert");
     expect(texts(state, "p0")).toContain("covert");
     expect(texts(state, "p1")).not.toContain("covert");
 
-    state = mustApply(state, "p0", move("CORRIDOR_A")); // the default camera is here
+    state = mustApply(state, "p0", move("CORRIDOR_A")); // the camera installed above is here
     logCovert(state, "p0", "filmed");
     expect(texts(state, "p1")).not.toContain("filmed"); // other rooms never see it
     state = mustApply(state, "p1", move("CORRIDOR_A"));

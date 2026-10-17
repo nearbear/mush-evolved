@@ -19,6 +19,8 @@ export const EQUIPMENT_TYPES: Record<string, EquipmentType> = {
   ASTRO_MODULE: { terminal: true },
   BEAT_BOX: {},
   BED: {},
+  // Installed from a carried `camera` item (actions/install.ts); never part of the map.
+  CAMERA: {},
   COFFEE_DISPENSER: { dispenses: "coffee" },
   COMBUSTION_CHAMBER_ACCESS: {},
   COM_CENTER: { terminal: true },
@@ -49,3 +51,9 @@ export const EQUIPMENT_TYPES: Record<string, EquipmentType> = {
   TURRET_COMMAND: {},
 };
 
+
+/** Equipment type of an installed camera. An uninstalled camera is a `camera` item, not equipment. */
+export const CAMERA_EQUIPMENT = "CAMERA";
+
+/** Id of the camera installed in a room (at most one per room). */
+export const cameraEquipmentId = (room: string): string => `${room}:${CAMERA_EQUIPMENT}`;

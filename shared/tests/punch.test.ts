@@ -91,7 +91,7 @@ describe("unaffordable actions in the view", () => {
     player(s, "p0").ap = 0;
     const v = viewFor(s, "p0");
     expect(v.legalActions).not.toContainEqual(punch("p1"));
-    expect(v.unaffordable).toContainEqual({ action: punch("p1"), cost: { ap: 1, mp: 0 }, lacks: ["ap"] });
+    expect(v.unaffordable).toContainEqual({ action: punch("p1"), cost: { ap: 1, mp: 0 }, chance: 0.6, lacks: ["ap"] });
   });
 
   it("does not list actions blocked by anything else, such as a target in another room", () => {
@@ -103,5 +103,14 @@ describe("unaffordable actions in the view", () => {
 
   it("is empty when you can afford everything", () => {
     expect(viewFor(ship(), "p0").unaffordable.filter((u) => u.action.type === "punch")).toEqual([]);
+  });
+});
+
+describe("legalChances in the view", () => {
+  it("gives each legal action's chance of success, index-aligned, so the player sees the odds", () => {
+    const v = viewFor(ship(), "p0");
+    expect(v.legalChances).toHaveLength(v.legalActions.length);
+    expect(v.legalChances[v.legalActions.findIndex((a) => a.type === "punch" && a.target === "p1")]).toBe(0.6);
+    expect(v.legalChances[v.legalActions.findIndex((a) => a.type === "bond")]).toBe(1);
   });
 });

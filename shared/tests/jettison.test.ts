@@ -4,6 +4,7 @@ import { DEFAULT_CONFIG } from "../src/config.ts";
 import { killPlayer } from "../src/death.ts";
 import { CORPSE_ITEM } from "../src/items.ts";
 import { parseGameMessage } from "../src/protocol.ts";
+import { installCameraIn } from "./cameras.ts";
 import { applyAction, createGame, viewFor, type ActionResult } from "../src/rules.ts";
 import type { Action, GameState, PlayerId, Seat } from "../src/types.ts";
 
@@ -65,7 +66,7 @@ describe("jettison", () => {
     expect(viewFor(unseen, "p1").log.some((e) => e.key === "jettisoned")).toBe(false);
 
     const filmed = ship();
-    filmed.s.items.push({ id: "cam", type: "camera", at: { kind: "room", id: "SPACESHIP_BAY_A" } });
+    installCameraIn(filmed.s, "SPACESHIP_BAY_A");
     const seen = must(applyAction(filmed.s, "p0", filmed.jettison));
     player(seen, "p1").room = "SPACESHIP_BAY_A"; // arriving later: it is room history
     expect(viewFor(seen, "p1").log.some((e) => e.key === "jettisoned")).toBe(true);

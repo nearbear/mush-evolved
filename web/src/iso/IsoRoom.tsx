@@ -21,7 +21,7 @@
 import { useEffect, useId, useLayoutEffect, useMemo, useRef, useState, type CSSProperties, type MouseEvent, type PointerEvent } from "react";
 import { useTranslation } from "react-i18next";
 import { createPortal } from "react-dom";
-import { CORPSE_ITEM, placedEquipment, type CharacterId, type EquipmentView, type ItemId, type RoomId, type ShipLayout, type Target } from "@mush2/shared";
+import { CAMERA_EQUIPMENT, CORPSE_ITEM, placedEquipment, type CharacterId, type EquipmentView, type ItemId, type RoomId, type ShipLayout, type Target } from "@mush2/shared";
 import { sameTarget } from "../hud/targets.ts";
 import { lyingFrame, spriteStrip, sittingFrame } from "../art/assets.ts";
 import { CrewSprite } from "../scene/CrewSprite.tsx";
@@ -95,7 +95,6 @@ export function IsoRoom({
   nearby,
   fogDepth,
   corpses,
-  hasCamera,
   equipment,
   reachable,
   selected,
@@ -115,8 +114,6 @@ export function IsoRoom({
   fogDepth: 1 | 2 | "all";
   /** Corpses on this room's floor (items, drawn lying down). A carried corpse isn't on the floor, so isn't here. */
   corpses: Corpse[];
-  /** This room has a camera. The layout has a camera tile in every room; it is drawn only here, and only then (other rooms' cameras are hidden information). */
-  hasCamera: boolean;
   /** Equipment in this room, from the view. Only these sprites are clickable. */
   equipment: EquipmentView[];
   reachable: Set<RoomId>;
@@ -135,6 +132,9 @@ export function IsoRoom({
   const names = useNames();
   const { t } = useTranslation();
   const roomLayout = layout.rooms.find((r) => r.id === room);
+  // The layout has a camera tile in every room. It is drawn only here, and only once a camera is installed
+  // (other rooms' cameras are hidden information, so they are never drawn).
+  const hasCamera = equipment.some((e) => e.type === CAMERA_EQUIPMENT);
   const occupantKey = occupants.map((o) => o.id).join(",");
   const corpseKey = corpses.map((c) => c.id).join(",");
   const viewportRef = useRef<HTMLDivElement>(null);
@@ -214,12 +214,14 @@ export function IsoRoom({
   // Sprite key ("t<tile index>") -> the equipment it draws.
   const equipmentByKey = useMemo(() => {
     const names = new Map(equipment.map((e) => [e.id, e]));
-    return new Map(
-      (roomLayout ? placedEquipment(roomLayout) : []).flatMap((p) => {
-        const e = names.get(p.id);
-        return e ? [[`t${p.tile}` as string, e] as const] : [];
-      }),
-    );
+    const placed = (roomLayout ? placedEquipment(roomLayout) : []).flatMap((p) => {
+      const e = names.get(p.id);
+      return e ? [[`t${p.tile}` as string, e] as const] : [];
+    });
+    // An installed camera isn't bound in the map data (it isn't there until installed): it is the room's camera tile.
+    const cameraTile = roomLayout?.tiles.findIndex((t) => CAMERA_SLICES.has(t.slice)) ?? -1;
+    const camera = equipment.find((e) => e.type === CAMERA_EQUIPMENT);
+    return new Map(cameraTile >= 0 && camera ? [...placed, [`t${cameraTile}`, camera] as const] : placed);
   }, [roomLayout, equipment]);
 
   const ringOf = new Map(neighbors.map((n) => [n.id as string, n.ring]));

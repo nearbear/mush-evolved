@@ -67,12 +67,14 @@ export type Action =
   | { type: "take"; item: ItemId }
   | { type: "drop"; item: ItemId }
   | { type: "dismantle"; item: ItemId }
+  | { type: "dismantle"; equipment: string }
   | { type: "dispense"; equipment: string }
   | { type: "consume"; item: ItemId }
   | { type: "cook"; item: ItemId }
   | { type: "build"; item: ItemId }
   | { type: "jettison"; item: ItemId }
   | { type: "install"; item: ItemId }
+  | { type: "uninstall"; equipment: string }
   | { type: "examine"; target: Target }
   | { type: "bond"; target: PlayerId }
   | { type: "dtt"; target: PlayerId }

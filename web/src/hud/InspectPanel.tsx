@@ -12,7 +12,7 @@ import { SkillSlots } from "./SkillSlots.tsx";
 import { ItemAttrIcons } from "./ItemAttrIcons.tsx";
 import { StatusIcons } from "./StatusIcons.tsx";
 import { DisabledActionButton } from "./ActionButton.tsx";
-import { actionLabelKey, actionsOn, costOf, resolveTarget, unaffordableOn, type Resolved } from "./targets.ts";
+import { actionLabelKey, actionsOn, chanceOf, costOf, resolveTarget, unaffordableOn, type Resolved } from "./targets.ts";
 
 /** Developer-facing, so deliberately not translated (like the "AI" tag it extends). */
 const BOT_KIND_LABELS: Record<BotKind, string> = { wander: "wander", logParrot: "log parrot" };
@@ -28,9 +28,9 @@ export function InspectPanel({
   onAction: (action: Action) => void;
 }) {
   const { t } = useTranslation();
-  const labelFor = (a: Action, cost = costOf(view, a)): ReactNode => {
+  const labelFor = (a: Action, cost = costOf(view, a), chance = chanceOf(view, a)): ReactNode => {
     const key = actionLabelKey(a);
-    return <ActionLabel text={key ? t(key) : a.type} cost={cost} />;
+    return <ActionLabel text={key ? t(key) : a.type} cost={cost} chance={chance} />;
   };
   const resolved = resolveTarget(view, target);
   const actions = actionsOn(view, target);
@@ -51,7 +51,7 @@ export function InspectPanel({
           ))}
           {blocked.map((u) => (
             <DisabledActionButton key={u.action.type} view={view} blocked={u}>
-              {labelFor(u.action, u.cost)}
+              {labelFor(u.action, u.cost, u.chance)}
             </DisabledActionButton>
           ))}
         </div>

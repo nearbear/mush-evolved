@@ -1,13 +1,15 @@
 import { Action } from "./action.ts";
+import { CAMERA_EQUIPMENT, cameraEquipmentId } from "../equipment.ts";
 import { hasCamera, logPublic } from "../log.ts";
 import type { GameState, ItemState, PlayerState } from "../types.ts";
 
 export type InstallActionData = { type: "install"; item: string };
 
 /**
- * Install (collaborator's proposal, approved 2026-10-17, #35): puts a camera you carry into the
- * room you are in, where it stays as a room item (so `hasCamera` sees it). `install.cost.ap` AP,
- * no tools, at most one camera per room. Logged publicly.
+ * Install (approved 2026-10-17, #35): turns a camera item you carry into `CAMERA` equipment of the
+ * room you are in. `install.cost.ap` AP, no tools, at most one camera per room. Logged publicly.
+ * The item is used up; `uninstall` makes a new one. Until installed, a camera is just an item and
+ * does not count as a camera in the room (`hasCamera`).
  */
 export class InstallAction extends Action<InstallActionData> {
   constructor() {
@@ -30,8 +32,8 @@ export class InstallAction extends Action<InstallActionData> {
   }
 
   override apply(state: GameState, player: PlayerState, target: InstallActionData): void {
-    const camera = state.items.find((i) => i.id === target.item)!; // checked, so it exists
-    camera.at = { kind: "room", id: player.room };
+    state.items.splice(state.items.findIndex((i) => i.id === target.item), 1);
+    (state.config.equipment[player.room] ??= []).push({ id: cameraEquipmentId(player.room), type: CAMERA_EQUIPMENT });
     logPublic(state, player.room, "cameraInstalled", { name: player.name });
   }
 }

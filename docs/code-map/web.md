@@ -39,7 +39,7 @@ All under `web/src/`. UI rules are in `web/CLAUDE.md`.
 **iso/** (details in `web/src/iso/CLAUDE.md`)
 
 - `placement.ts`: pure layout math (projection, paint order, walkable cells, hit-testing).
-- `IsoRoom.tsx`: renders the scene with a following camera; the layout holds a `camera`/`camera2` tile in every room, drawn only in your own room and only when `hasCamera` (a `camera` item in `view.roomItems`); handles clicks. Corpses on the floor are placed as actors and drawn with the lying pose (`lyingFrame`); clicking one selects the item. Clicking a chair sits you on it (`seatFor`, `SeatedSprite`, `sittingFrame` in `art/assets.ts`); client-only like walking.
+- `IsoRoom.tsx`: renders the scene with a following camera; the layout holds a `camera`/`camera2` tile in every room, drawn only in your own room and only when `view.roomEquipment` has a `CAMERA` (and clickable as that equipment); handles clicks. Corpses on the floor are placed as actors and drawn with the lying pose (`lyingFrame`); clicking one selects the item. Clicking a chair sits you on it (`seatFor`, `SeatedSprite`, `sittingFrame` in `art/assets.ts`); client-only like walking.
 - `hitMask.ts`: per-frame alpha masks for hit-testing.
 - `shipLayout.ts`: fetches the layout JSON and maps atlas sheets to image URLs.
 

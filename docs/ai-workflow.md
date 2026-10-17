@@ -653,3 +653,11 @@ A collaborator's `Camera-Only` branch sat on a base many commits behind `main` (
 
 ### 2026-10-17: Camera swivel animation
 The user asked for the camera tiles to swivel as in the original and pointed at `Mush/clients/iso/xml/Camera.xml`. Reading `Mush/clients` is denied to the assistant, so the user pasted the two `<slice>` entries instead. `ship-layout.json` already carried the same data (14 frames of 26x26, an auto ping-pong anim, rhythm 6), so `IsoRoom` just steps `sx` through `anims[0].frames` on a timer, only while the room has a camera. The tick length (30 ticks/s, so 200 ms a step) is the assistant's assumption about the Flash client, not in the XML. Not checked visually.
+
+### 2026-10-17: Cameras become equipment (#35)
+
+The first port kept an installed camera as a `camera` item lying in the room, which was the smallest change but let a loose item count as a camera. The owner corrected the model: an uninstalled camera is not room equipment, uninstalling removes it from the equipment, and dismantling (installed or not) leaves a metal scrap. `hasCamera` now reads `CAMERA` equipment only, `install` uses up the item, and `uninstall` and an equipment form of `dismantle` were added. Three existing tests had relied on a camera item filming a room; they now install one. Test states share `DEFAULT_CONFIG` by reference, so a test that adds equipment must clone the config first (`tests/cameras.ts`). The uninstall cost is a placeholder the owner has not set.
+
+## 2026-10-17: Show success chance on action buttons
+
+User asked for the percent chance of success in parentheses on actions. Added `PlayerView.legalChances: number[]` (parallel to `legalCosts`, same convention) and `chance` on `UnaffordableAction`, both from `ActionDef.chance` in `viewFor`, so the client still computes nothing. `ActionLabel` appends `actions.chance` ("(60%)", "(60 %)" in fr/es) only when the chance is below 1, so certain actions keep their plain labels. Today only punch and dismantle can fail. The chance is the viewer's own odds from config/own modifiers, so no hidden info is exposed.

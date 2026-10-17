@@ -47,10 +47,12 @@ function aimedAt(view: PlayerView, a: Action, target: Target): boolean {
     case "examine":
       return sameTarget(a.target, target);
     case "access":
+    case "uninstall":
     case "dispense":
     case "shower":
       return target.kind === "equipment" && a.equipment === target.id;
     case "dismantle":
+      return "equipment" in a ? target.kind === "equipment" && a.equipment === target.id : target.kind === "item" && a.item === target.id;
     case "consume":
     case "cook":
     case "build":
@@ -81,6 +83,7 @@ const ACTION_LABEL_KEYS = {
   build: "actions.build",
   jettison: "actions.jettison",
   install: "actions.install",
+  uninstall: "actions.uninstall",
   dismantle: "actions.dismantle",
   bond: "actions.bond",
   dtt: "actions.dtt",
@@ -99,4 +102,9 @@ export const actionLabelKey = (action: Action) => (ACTION_LABEL_KEYS as Partial<
 /** What an action costs you, from the view's `legalCosts`; free if it isn't listed. */
 export function costOf(view: PlayerView, action: Action): ActionCost {
   return view.legalCosts[view.legalActions.indexOf(action)] ?? { ap: 0, mp: 0 };
+}
+
+/** Your chance of success at an action (0 to 1), from the view's `legalChances`; certain if it isn't listed. */
+export function chanceOf(view: PlayerView, action: Action): number {
+  return view.legalChances[view.legalActions.indexOf(action)] ?? 1;
 }
