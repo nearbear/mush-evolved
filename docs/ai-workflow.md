@@ -634,6 +634,12 @@ Correction (owner, same day): I had read the points as a currency worth 2 AP. A 
 - First research with a completion effect; `RESEARCH_STATUS` now has its first entry.
 - Wrap-up caught that `config` is persisted inside `GameState`, so the new `infection.mushophageBonus` field would be missing in saved games (`NaN` capacity once the research completed). Fixed by bumping `STATE_VERSION` to 31 in `server/src/GameRoom.ts`; I had missed it when implementing.
 
+## 2026-10-17: Covert actions and cameras
+
+- **Decision (owner):** a fourth log visibility, covert: bystanders never see it, only a camera in the room makes it room history. Secret actions are revealed by a camera too. Asked via the `rule` skill: a camera means a `camera` item in the room's inventory until installation (#35) exists; a camera's reveal is ordinary room history; it overrides `hideFrom`, so a filmed spike's victim sees it; spike and jettison move from secret to covert.
+- **What worked:** checking issues #35/#36 first showed cameras only exist as a placeholder item, which turned "presence of a camera" into a concrete question instead of a guess.
+- **Needed care:** the default config puts that placeholder camera in Front Corridor, so an existing "unwitnessed secret" test there would have started failing; the test now removes the camera explicitly.
+
 ### 2026-10-17: Sitting in chairs (cosmetic)
 
 - The user asked for clicking a chair to show the sitting pose from `char.png`, purely cosmetic. Decided by the assistant (no rule involved): it is client-only state next to the walk target, so other players don't see it; a server-synced version was offered, not built.

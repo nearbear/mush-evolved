@@ -23,7 +23,7 @@ Other packages import from `@mush2/shared` (`shared/src/index.ts`, the barrel). 
 - `infection.ts`: `contaminate` (the one way contamination rises), conversion, `contaminationSeenBy`.
 - `items.ts`: item types, containers, capacity and reach helpers, `produceItem`.
 - `equipment.ts`: room equipment types.
-- `log.ts`: room log helpers (`logPublic`, `logPrivate`, `logSecret`).
+- `log.ts`: room log helpers (`logPublic`, `logPrivate`, `logSecret`, `logCovert`, `hasCamera`).
 - `resources.ts`: per-player skill point pools.
 - `skills.ts`: the pickable human skills and `SKILL_SLOTS`.
 - `statuses.ts`: stored and derived statuses.

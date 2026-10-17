@@ -1,13 +1,13 @@
 import { Action } from "./action.ts";
 import { CORPSE_ITEM } from "../items.ts";
-import { logSecret } from "../log.ts";
+import { logCovert } from "../log.ts";
 import type { GameState, ItemState, PlayerState } from "../types.ts";
 
 export type JettisonActionData = { type: "jettison"; item: string };
 
 /**
  * Jettison (decided 2026-10-16, #28): destroys a corpse you carry, in a `jettison.rooms` room (the four bays).
- * 0 AP by default. A secret action: room history only if someone else witnessed it.
+ * 0 AP by default. Covert (decided 2026-10-17): room history only if a camera is in the room.
  */
 export class JettisonAction extends Action<JettisonActionData> {
   constructor() {
@@ -33,7 +33,7 @@ export class JettisonAction extends Action<JettisonActionData> {
     const index = state.items.findIndex((i) => i.id === target.item);
     const [corpse] = state.items.splice(index, 1) as [ItemState];
     const body = state.players.find((p) => p.id === corpse.of)?.name ?? "";
-    logSecret(state, player.id, "jettisoned", { name: player.name, body });
+    logCovert(state, player.id, "jettisoned", { name: player.name, body });
   }
 }
 

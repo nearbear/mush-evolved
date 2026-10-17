@@ -95,12 +95,28 @@ describe("spiking", () => {
     expect(viewFor(r.state, "p0").log.some((e) => e.key === "spiked")).toBe(true);
   });
 
-  it("is shown to bystanders but never the victim, and never reaches other rooms", () => {
+  it("is covert: a bystander doesn't see it", () => {
     const r = applyAction(ship(true), "p0", spike("p1"));
     if (!r.ok) throw new Error(r.error);
-    expect(viewFor(r.state, "p4").log.some((e) => e.key === "spiked")).toBe(true);
-    expect(viewFor(r.state, "p1").log.some((e) => e.key === "spiked")).toBe(false);
+    expect(r.state.log.find((e) => e.key === "spiked")!.visibleTo).toEqual(["p0"]);
+    for (const id of ["p1", "p3", "p4"]) expect(viewFor(r.state, id).log.some((e) => e.key === "spiked")).toBe(false);
+  });
+
+  it("is room history, victim included, when a camera is in the room, and never reaches other rooms", () => {
+    const s = ship(true);
+    s.items.push({ id: "cam", type: "camera", at: { kind: "room", id: "SICK_BAY" } });
+    const r = applyAction(s, "p0", spike("p1"));
+    if (!r.ok) throw new Error(r.error);
+    for (const id of ["p1", "p4"]) expect(viewFor(r.state, id).log.some((e) => e.key === "spiked")).toBe(true);
     expect(viewFor(r.state, "p3").log.some((e) => e.key === "spiked")).toBe(false);
+  });
+
+  it("is not revealed by a camera someone carries or one in another room", () => {
+    const s = ship(true);
+    s.items.push({ id: "cam1", type: "camera", at: { kind: "player", id: "p4" } }, { id: "cam2", type: "camera", at: { kind: "room", id: "REFECTORY" } });
+    const r = applyAction(s, "p0", spike("p1"));
+    if (!r.ok) throw new Error(r.error);
+    for (const id of ["p1", "p3", "p4"]) expect(viewFor(r.state, id).log.some((e) => e.key === "spiked")).toBe(false);
   });
 
   it("parses from the client", () => {

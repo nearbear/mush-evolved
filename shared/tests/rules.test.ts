@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { CHARACTERS } from "../src/characters.ts";
 import { DEFAULT_CONFIG, SHIP_ROOMS } from "../src/config.ts";
 import { apGain, moveCost, movementRules, MODIFIERS } from "../src/modifiers.ts";
-import { logPrivate, logSecret } from "../src/log.ts";
+import { logCovert, logPrivate, logSecret } from "../src/log.ts";
 import { CHAT_HISTORY, MAX_CHAT_LENGTH, sendChat } from "../src/chat.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";
 import { ITRACKIE_ITEM } from "../src/items.ts";
@@ -238,10 +238,34 @@ describe("room log", () => {
     expect(texts(state, "p1")).toContain("witnessed");
 
     state = mustApply(state, "p0", move("CORRIDOR_A")); // p0 alone in the corridor
+    state.items = state.items.filter((i) => i.type !== "camera");
     logSecret(state, "p0", "unseen");
     expect(texts(state, "p0")).toContain("unseen");
     state = mustApply(state, "p1", move("CORRIDOR_A")); // arriving later doesn't reveal it
     expect(texts(state, "p1")).not.toContain("unseen");
+  });
+
+  it("makes secret actions room history when a camera is in the room, even unwitnessed and despite hideFrom", () => {
+    let state = newGame();
+    state = mustApply(state, "p0", move("CORRIDOR_A")); // the default camera is here
+    logSecret(state, "p0", "filmed");
+    state = mustApply(state, "p1", move("CORRIDOR_A"));
+    expect(texts(state, "p1")).toContain("filmed");
+    logSecret(state, "p0", "filmedVictim", undefined, "p1");
+    expect(texts(state, "p1")).toContain("filmedVictim");
+  });
+
+  it("shows covert actions only to the actor unless a camera is in the room", () => {
+    let state = newGame(); // everyone in the lab, no camera
+    logCovert(state, "p0", "covert");
+    expect(texts(state, "p0")).toContain("covert");
+    expect(texts(state, "p1")).not.toContain("covert");
+
+    state = mustApply(state, "p0", move("CORRIDOR_A")); // the default camera is here
+    logCovert(state, "p0", "filmed");
+    expect(texts(state, "p1")).not.toContain("filmed"); // other rooms never see it
+    state = mustApply(state, "p1", move("CORRIDOR_A"));
+    expect(texts(state, "p1")).toContain("filmed");
   });
 });
 
