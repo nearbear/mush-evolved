@@ -26,18 +26,18 @@ function ship(): { s: GameState; camera: string; install: Action } {
 }
 
 describe("install", () => {
-  it("defaults to 1 AP", () => {
-    expect(DEFAULT_CONFIG.install).toEqual({ cost: { ap: 1 } });
+  it("defaults to 2 AP", () => {
+    expect(DEFAULT_CONFIG.install).toEqual({ cost: { ap: 2 } });
   });
 
-  it("turns the carried camera into the room's equipment, for 1 AP, with a public log line", () => {
+  it("turns the carried camera into the room's equipment, for 2 AP, with a public log line", () => {
     const { s, camera, install } = ship();
     expect(offered(s, "p0")).toContainEqual(install);
     const after = must(applyAction(s, "p0", install));
     expect(after.items.some((i) => i.id === camera)).toBe(false);
     expect(equipmentIn(after, "REFECTORY")).toEqual([{ id: "REFECTORY:CAMERA", type: CAMERA_EQUIPMENT }]);
     expect(hasCamera(after, "REFECTORY")).toBe(true);
-    expect(player(after, "p0").ap).toBe(player(s, "p0").ap - 1);
+    expect(player(after, "p0").ap).toBe(player(s, "p0").ap - 2);
     expect(viewFor(after, "p1").roomEquipment).toContainEqual({ id: "REFECTORY:CAMERA", type: CAMERA_EQUIPMENT });
     expect(viewFor(after, "p1").log.some((e) => e.key === "cameraInstalled")).toBe(true);
     // The other room learns nothing.
