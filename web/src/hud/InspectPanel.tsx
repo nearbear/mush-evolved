@@ -79,13 +79,16 @@ function Details({ view, layout, resolved, onAction }: { view: PlayerView; layou
       const displayName = mobile ? characterGivenName(person.character) : characterName(person.character);
       return (
         <div className="inspect-figure">
-          {art ? (
-            <img className="inspect-art" src={art} alt={character ? displayName : ""} />
-          ) : (
-            <img className="inspect-portrait" src={portrait(person.character)} alt="" />
-          )}
-          {character && <span className="inspect-figure-name">{displayName}</span>}
-          <SkillSlots view={view} skills={person.skills} isYou={isYou} onAction={onAction} />
+          <div className="inspect-figure-art">
+            {art ? (
+              <img className="inspect-art" src={art} alt={character ? displayName : ""} />
+            ) : (
+              <img className="inspect-portrait" src={portrait(person.character)} alt="" />
+            )}
+            {character && <span className="inspect-figure-name">{displayName}</span>}
+            <SkillSlots view={view} skills={person.skills} isYou={isYou} onAction={onAction} />
+          </div>
+          <StatusIcons statuses={isYou ? view.statuses : person.statuses} contamination={"contamination" in person ? person.contamination : undefined} />
         </div>
       );
     }

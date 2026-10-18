@@ -202,13 +202,14 @@ export const MUSH_ICON = uiIcons["mush"]!;
 
 // Status effect icons (16x16 pixel art), keyed by status id (shared/src/statuses.ts).
 const statusIconFiles = urls(
-  import.meta.glob<string>("../../../Mush/www/img/icons/ui/status/{dirty,belly_full,hungry,immune}.png", { eager: true, query: "?url", import: "default" }),
+  import.meta.glob<string>("../../../Mush/www/img/icons/ui/status/{dirty,belly_full,hungry,immune,pacifist}.png", { eager: true, query: "?url", import: "default" }),
 );
-export const STATUS_ICONS: Readonly<Record<"dirty" | "full_belly" | "hungry" | "immune", string>> = {
+export const STATUS_ICONS: Readonly<Record<"dirty" | "full_belly" | "hungry" | "immune" | "pacifist", string>> = {
   dirty: statusIconFiles["dirty"]!,
   full_belly: statusIconFiles["belly_full"]!,
   hungry: statusIconFiles["hungry"]!,
   immune: statusIconFiles["immune"]!,
+  pacifist: statusIconFiles["pacifist"]!,
 };
 /** Item attribute icons, keyed by attribute (the `itemAttr.*` locale keys). */
 export const ITEM_ATTR_ICONS: Readonly<Record<"heavy", string>> = { heavy: uiIcons["heavy"]! };

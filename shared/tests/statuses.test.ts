@@ -142,3 +142,15 @@ describe("status hidden information", () => {
     expect(v.statuses).toEqual([]);
   });
 });
+
+describe("pacifist", () => {
+  it("is a permanent public status for whoever holds the modifier, kept on conversion", () => {
+    const s = ship();
+    s.players[1]!.modifiers.push("pacifist");
+    expect(viewFor(s, "p1").statuses).toContain("pacifist");
+    expect(viewFor(s, "p2").players.find((p) => p.id === "p1")!.statuses).toEqual(["pacifist"]);
+    expect(viewFor(s, "p2").statuses).not.toContain("pacifist");
+    s.players[1]!.role = "mush";
+    expect(viewFor(s, "p2").players.find((p) => p.id === "p1")!.statuses).toEqual(["pacifist"]);
+  });
+});

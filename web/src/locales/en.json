@@ -251,12 +251,14 @@
     "full_belly": "Full belly",
     "hungry": "Hungry",
     "immune": "Immune to infection",
+    "pacifist": "Pacifist",
     "contaminated": "Contamination: {{level}}",
     "desc": {
       "dirty": "Can't research. Taking a shower removes it.",
       "full_belly": "You can't eat more until you are hungrier.",
       "hungry": "You lose health every cycle until you eat something.",
       "immune": "Attempts to infect you do nothing for now.",
+      "pacifist": "Every aggressive action in this person's room costs 2 more AP, theirs included. Stacks with other pacifists. It can't be removed.",
       "contaminated": "A human you have contaminated. At their capacity they turn Mush."
     }
   },

@@ -110,8 +110,12 @@ describe("Pacifist (room effect)", () => {
     expect(costOf(s, "p0", { type: "punch", target: "p1" })).toEqual({ ap: PUNCH + SURCHARGE, mp: 0 });
   });
 
-  it("is private: nobody else's view names it", () => {
+  it("is public as a status, but other players' modifier lists are never sent", () => {
     const s = withIan();
-    for (const id of ["p0", "p2"]) expect(JSON.stringify(viewFor(s, id))).not.toContain("pacifist");
+    const ian = s.players.find((p) => p.modifiers.includes("pacifist"))!.id;
+    const other = s.players.find((p) => p.id !== ian)!.id;
+    expect(viewFor(s, other).players.find((p) => p.id === ian)!.statuses).toEqual(["pacifist"]);
+    expect(viewFor(s, ian).statuses).toContain("pacifist");
+    expect(JSON.stringify(viewFor(s, other).players)).not.toContain('"modifiers"');
   });
 });

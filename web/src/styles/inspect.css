@@ -75,9 +75,11 @@
   text-align: center;
 }
 
-/* Skill slots, overlaid on the portrait's top-right corner. */
-.inspect-figure {
+/* Skill slots and the name chip are overlaid on the portrait, so they hang off `.inspect-figure-art`; the status row sits below it. */
+.inspect-figure-art {
   position: relative;
+}
+.inspect-figure {
   width: fit-content;
   max-width: 100%;
   margin: 0 auto;
