@@ -60,6 +60,8 @@ export const DEFAULT_CONFIG: GameConfig = {
   // Confirmed 2026-10-15: punch costs 1 AP, 2 damage, misses 40% of the time.
   // Confirmed 2026-10-16: the sturdy (Solid) skill adds 1 to punch damage.
   punch: { cost: { ap: 1 }, effect: { damage: 2, sturdyBonusDamage: 1 }, successChance: 0.6 },
+  // Owner, 2026-10-18: Ian's Pacifist makes aggressive actions in his room cost 2 more AP, his own included.
+  pacifist: { aggressiveApSurcharge: 2 },
   // Confirmed 2026-10-16: cooking an uncooked ration costs 1 AP, only in the refectory.
   cook: { cost: { ap: 1 }, rooms: ["REFECTORY"] },
   // Decided 2026-10-16: building from a blueprint costs 3 AP, anywhere, no failure chance.
@@ -86,6 +88,7 @@ export const DEFAULT_CONFIG: GameConfig = {
   // Confirmed 2026-10-15: nobody starts with a skill; players pick up to three
   // (SKILL_SLOTS) with the free, permanent pick_skill action.
   startSkills: [],
+  characterModifiers: { ian: ["pacifist"] },
   creative: { refundOdds: 0.5 },
   anticPerfume: { immuneCycles: 2 },
   logistics: { ap: 1 },

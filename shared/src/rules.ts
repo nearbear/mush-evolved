@@ -68,7 +68,7 @@ export function createGame(seats: readonly Seat[], config: GameConfig, seed: num
     statuses: [],
     spores: 0,
     resources: emptyResources(),
-    modifiers: [],
+    modifiers: [...(config.characterModifiers[s.character] ?? [])],
     skills: [...config.startSkills],
     alive: true,
     ready: false,

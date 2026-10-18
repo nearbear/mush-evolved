@@ -1,5 +1,6 @@
-// Cosmetic crew identities. A character only picks the art a seat is drawn
-// with; it has no effect on the rules. The ids match the sprite file names in
+// Crew identities. A character mostly picks the art a seat is drawn with; the
+// few rules tied to one are starting modifiers in `config.characterModifiers`
+// (Ian's Pacifist). The ids match the sprite file names in
 // Mush/clients/iso/gfx/anim/perso.
 
 export const CHARACTERS = [

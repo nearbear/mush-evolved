@@ -18,6 +18,7 @@ import { first_aid } from "./modifiers/first_aid.ts";
 import { logistics } from "./modifiers/logistics.ts";
 import { lying_down } from "./modifiers/lying_down.ts";
 import { medic } from "./modifiers/medic.ts";
+import { pacifist } from "./modifiers/pacifist.ts";
 import { sturdy } from "./modifiers/sturdy.ts";
 import type { ActionCost } from "./actions.ts";
 import type { ActionTag } from "./actions/action.ts";
@@ -53,6 +54,12 @@ export interface CostContext {
 export interface Modifier extends Partial<FoldHooks> {
   /** Adjusts what one of the holder's own actions costs. Must be pure. */
   actionCost?: (cost: ActionCost, ctx: CostContext) => ActionCost;
+  /**
+   * Adjusts what anyone's action costs in the room where the holder is, the holder's own included (Pacifist).
+   * Read when a price is asked for, so nothing is stored when people come and go. Holders stack. Must be pure.
+   * Only for a holder the actor can see, since the price itself tells them the effect is there.
+   */
+  roomActionCost?: (cost: ActionCost, ctx: CostContext & { holder: Readonly<PlayerState> }) => ActionCost;
   /** Adjusts how a player's moves are paid for. Must be pure. */
   movement?: (rules: MovementRules, player: Readonly<PlayerState>) => MovementRules;
   /**
@@ -73,7 +80,7 @@ export interface Modifier extends Partial<FoldHooks> {
 export type ModifierRegistry = Readonly<Record<string, Modifier>>;
 
 /** Items and skills will register here too. When a skill gains rules, update its entry in SKILL_STATUS (skills.ts). */
-export const MODIFIERS: Record<string, Modifier> = { lying_down, medic, first_aid, sturdy, creative, antic_perfume, logistics, caffeinomaniac, computer };
+export const MODIFIERS: Record<string, Modifier> = { lying_down, medic, first_aid, sturdy, creative, antic_perfume, logistics, caffeinomaniac, computer, pacifist };
 
 /** The ids every hook folds over: the player's skills, then their other modifiers. */
 export function modifierIds(player: Readonly<PlayerState>): string[] {
@@ -96,15 +103,27 @@ function fold(
   return value;
 }
 
+/** Who brings room effects into `room`: every living player there, in seat order. */
+function roomHolders(state: Readonly<GameState>, room: string): readonly Readonly<PlayerState>[] {
+  return state.players.filter((p) => p.alive && p.room === room);
+}
+
 /**
  * What an action costs once modifiers have had their say: `base` (the action's own `getCost`) through the actor's
- * `actionCost` hooks, in list order. `Action.cost` is the only caller.
+ * `actionCost` hooks in list order, then the `roomActionCost` hooks of everyone in the actor's room in seat order.
+ * `Action.cost` is the only caller.
  */
 export function actionCost(base: ActionCost, ctx: CostContext, registry: ModifierRegistry = MODIFIERS): ActionCost {
   let cost = { ...base };
   for (const id of modifierIds(ctx.actor)) {
     const hook = registry[id]?.actionCost;
     if (hook) cost = hook(cost, ctx);
+  }
+  for (const holder of roomHolders(ctx.state, ctx.actor.room)) {
+    for (const id of modifierIds(holder)) {
+      const hook = registry[id]?.roomActionCost;
+      if (hook) cost = hook(cost, { ...ctx, holder });
+    }
   }
   // Hooks can't make a price negative. A move's MP is a net change and can already be negative (a conversion
   // gives more than the move spends), so the floor is 0 or the base, whichever is lower.

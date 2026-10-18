@@ -71,6 +71,9 @@ export interface GameConfig {
     };
     successChance: number; // Chance a punch lands, 0 to 1 (confirmed 2026-10-15: it misses 40% of the time).
   };
+  pacifist: {
+    aggressiveApSurcharge: number; // Extra AP for each aggressive action in a Pacifist's room, theirs too (owner, 2026-10-18).
+  };
   cook: {
     cost: { ap: number }; // AP spent to cook an uncooked ration (confirmed 2026-10-16).
     rooms: RoomId[]; // Rooms where food can be cooked (confirmed 2026-10-16).
@@ -137,6 +140,7 @@ export interface GameConfig {
     mpPenalty: number; // MP added to each move while carrying a heavy item, however many (confirmed 2026-10-16).
   };
   startSkills: string[]; // Skills every player starts with (none since 2026-10-15; players pick their own).
+  characterModifiers: Record<string, string[]>; // Modifiers a character starts with, by character id (Ian: pacifist, owner 2026-10-18).
   startItems: { type: string; room: RoomId; builds?: string }[]; // Items placed in rooms at the start of the game. Types come from ITEM_TYPES in items.ts.
   startInventory: string[]; // Item types every player starts carrying (one of each).
   rooms: Record<RoomId, RoomId[]>; // Adjacency list. Movement is only allowed along these edges.
