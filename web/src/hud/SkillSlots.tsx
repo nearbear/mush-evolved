@@ -3,6 +3,7 @@
 // Which skills can be picked comes from view.legalActions, never computed here.
 
 import { Dialog } from "@base-ui/react/dialog";
+import { DialogHeader } from "./DialogHeader.tsx";
 import { Hint } from "./IconButton.tsx";
 import { Popover } from "@base-ui/react/popover";
 import { useState } from "react";
@@ -70,12 +71,7 @@ export function SkillSlots({
         <Dialog.Portal>
           <Dialog.Backdrop className="settings-backdrop" />
           <Dialog.Popup className="settings-popup skill-picker">
-            <header className="skill-picker-header">
-              <Dialog.Title className="settings-title">{t("skills.title")}</Dialog.Title>
-              <Dialog.Close className="skill-picker-close" aria-label={t("skills.close")}>
-                ×
-              </Dialog.Close>
-            </header>
+            <DialogHeader title={t("skills.title")} closeLabel={t("skills.close")} />
             <p className="skill-warning">{t("skills.warning")}</p>
             {pending ? (
               <div className="skill-confirm">

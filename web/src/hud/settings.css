@@ -30,6 +30,30 @@
   border-radius: 6px;
 }
 
+.settings-popup:has(> .dialog-header) {
+  padding-top: 0;
+}
+
+/* See DialogHeader.tsx. Sticky so the close button stays reachable while the body scrolls. */
+.dialog-header {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  /* Bleed into the popup's side padding so scrolled content can't show beside the header. */
+  margin: 0 -1rem;
+  padding: 1rem 1rem 0.5rem;
+  background: #1b2a4a;
+}
+
+.dialog-header-close {
+  flex: none;
+  margin: 0;
+}
+
 .settings-title {
   margin: 0;
   font-size: 1.1rem;
@@ -41,11 +65,6 @@
   align-items: center;
   justify-content: space-between;
   gap: 0.5rem;
-}
-
-.settings-close {
-  align-self: flex-end;
-  margin: 0;
 }
 
 /* The 16x16 art is drawn at exactly 1x, never scaled. */

@@ -2,6 +2,7 @@
 // Uses the global Mush `button` style; only layout is set in settings.css.
 
 import { ACTOPI_CHEATS, CHEATS, ROLE_CHEATS, isActopiCheat, type ActopiCheat, type Cheat, type RoleCheat } from "@mush2/shared";
+import { DialogHeader } from "./DialogHeader.tsx";
 import { Hint } from "./IconButton.tsx";
 import { Dialog } from "@base-ui/react/dialog";
 import { useTranslation } from "react-i18next";
@@ -49,7 +50,7 @@ export function SettingsDialog({
       <Dialog.Portal>
         <Dialog.Backdrop className="settings-backdrop" />
         <Dialog.Popup className="settings-popup">
-          <Dialog.Title className="settings-title">{t("settings.title")}</Dialog.Title>
+          <DialogHeader title={t("settings.title")} closeLabel={t("settings.close")} />
           <div className="settings-row">
             <span>{t("language.label")}</span>
             <LanguageSwitcher inline />
@@ -94,7 +95,6 @@ export function SettingsDialog({
               ))}
             </fieldset>
           )}
-          <Dialog.Close className="settings-close">{t("settings.close")}</Dialog.Close>
         </Dialog.Popup>
       </Dialog.Portal>
     </Dialog.Root>

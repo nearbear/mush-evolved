@@ -203,22 +203,6 @@
 .settings-popup.skill-picker {
   width: min(56rem, calc(100vw - 2rem));
   overflow-y: auto;
-  padding-top: 0;
-}
-.skill-picker-header {
-  position: sticky;
-  top: 0;
-  z-index: 1;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.5rem;
-  padding: 1rem 0 0.5rem;
-  background: #1b2a4a;
-}
-.skill-picker-close {
-  flex: none;
-  margin: 0;
 }
 .skill-card {
   max-width: min(18rem, calc(100vw - 2rem));
@@ -264,4 +248,19 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+/* Equipment sprite: the room's art for it, scaled up crisp. `--tile` is the width (set on phones to the column's). */
+.inspect-sprite-box {
+  --tile: 210px;
+  margin: 0.75rem auto 0.5rem;
+  max-width: 100%;
+  width: var(--tile);
+}
+.inspect-sprite {
+  font-size: var(--tile);
+  width: 1em;
+  max-width: 100%;
+  image-rendering: pixelated;
+  background-repeat: no-repeat;
 }
