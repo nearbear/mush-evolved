@@ -112,6 +112,15 @@
   .self-main {
     flex-basis: 100%;
   }
+  /* Extras run in a horizontal row under the item zones instead of a column. */
+  .self-extras {
+    flex: 1 1 100%;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.25rem 0.75rem;
+    min-height: 0;
+  }
   .self-cards {
     flex-direction: row;
     align-items: flex-start;
