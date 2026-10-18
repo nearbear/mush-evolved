@@ -3,7 +3,7 @@
 // helpers turn ids into the player's language. Call `useNames()` in a
 // component so it re-renders when the language changes.
 
-import { BLUEPRINTS, characterName, type ActionType, type LogEntry, type RoomId } from "@mush2/shared";
+import { BLUEPRINTS, characterGivenName, characterName, type ActionType, type LogEntry, type RoomId } from "@mush2/shared";
 import { useTranslation } from "react-i18next";
 
 /** The name of each kind of action, for the action queue and log lines that mention one. Ready never waits in a queue. */
@@ -63,7 +63,7 @@ export function useNames() {
     if (typeof params.research === "string") resolved.research = research(params.research);
     if (typeof params.equipment === "string") resolved.equipment = equipment(params.equipment);
     if (typeof params.action === "string") resolved.action = action(params.action);
-    for (const who of ["name", "target", "body"] as const) if (typeof params[who] === "string") resolved[who] = characterName(params[who]);
+    for (const who of ["name", "target", "body"] as const) if (typeof params[who] === "string") resolved[who] = characterGivenName(params[who]);
     return t(`logEvent.${key}` as never, { ...resolved, defaultValue: key });
   };
 

@@ -4,22 +4,22 @@
 // Mush/clients/iso/gfx/anim/perso.
 
 export const CHARACTERS = [
-  { id: "chao", name: "Wang Chao" },
-  { id: "chun", name: "Zhong Chun" },
-  { id: "eleesha", name: "Eleesha Williams" },
-  { id: "finola", name: "Finola Keegan" },
-  { id: "frieda", name: "Frieda Bergmann" },
-  { id: "gioele", name: "Gioele Rinaldo" },
-  { id: "hua", name: "Jiang Hua" },
-  { id: "ian", name: "Ian Soulton" },
-  { id: "janice", name: "Janice Kent" },
-  { id: "jinsu", name: "Kim Jin Su" },
-  { id: "kuanti", name: "Lai Kuan Ti" },
-  { id: "paola", name: "Paola Rinaldo" },
-  { id: "raluca", name: "Raluca Tomescu" },
-  { id: "roland", name: "Roland Zuccali" },
-  { id: "stephen", name: "Stephen Seagull" },
-  { id: "terrence", name: "Terrence Archer" },
+  { id: "chao", name: "Wang Chao", given: "Chao" },
+  { id: "chun", name: "Zhong Chun", given: "Chun" },
+  { id: "eleesha", name: "Eleesha Williams", given: "Eleesha" },
+  { id: "finola", name: "Finola Keegan", given: "Finola" },
+  { id: "frieda", name: "Frieda Bergmann", given: "Frieda" },
+  { id: "gioele", name: "Gioele Rinaldo", given: "Gioele" },
+  { id: "hua", name: "Jiang Hua", given: "Hua" },
+  { id: "ian", name: "Ian Soulton", given: "Ian" },
+  { id: "janice", name: "Janice Kent", given: "Janice" },
+  { id: "jinsu", name: "Kim Jin Su", given: "Jin Su" },
+  { id: "kuanti", name: "Lai Kuan Ti", given: "Kuan Ti" },
+  { id: "paola", name: "Paola Rinaldo", given: "Paola" },
+  { id: "raluca", name: "Raluca Tomescu", given: "Raluca" },
+  { id: "roland", name: "Roland Zuccali", given: "Roland" },
+  { id: "stephen", name: "Stephen Seagull", given: "Stephen" },
+  { id: "terrence", name: "Terrence Archer", given: "Terrence" },
 ] as const;
 
 export type CharacterId = (typeof CHARACTERS)[number]["id"];
@@ -27,4 +27,9 @@ export type CharacterId = (typeof CHARACTERS)[number]["id"];
 /** A crew member's full name. Proper names, so never translated. Falls back to the id for one the list doesn't know. */
 export function characterName(id: string): string {
   return CHARACTERS.find((c) => c.id === id)?.name ?? id;
+}
+
+/** A crew member's given name, without the surname (several are written surname first). What log lines use. */
+export function characterGivenName(id: string): string {
+  return CHARACTERS.find((c) => c.id === id)?.given ?? id;
 }
