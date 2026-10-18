@@ -3,9 +3,10 @@
 
 import { spawn } from "node:child_process";
 import { resolve } from "node:path";
-import { devPorts } from "./ports.ts";
+import { devPorts, ensureDevVars } from "./ports.ts";
 
 const p = devPorts();
+ensureDevVars();
 console.log(`dev: web http://localhost:${p.web}  server http://localhost:${p.server}${p.slot ? "  (worktree)" : ""}`);
 
 const child = spawn(

@@ -4,9 +4,10 @@
 
 import { spawn, spawnSync } from "node:child_process";
 import { resolve } from "node:path";
-import { devPorts } from "./ports.ts";
+import { devPorts, ensureDevVars } from "./ports.ts";
 
 const p = devPorts();
+ensureDevVars();
 const root = resolve(import.meta.dirname, "../../..");
 const env = { ...process.env, VITE_PARTY_HOST: `localhost:${p.server}` };
 

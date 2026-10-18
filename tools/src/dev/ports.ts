@@ -3,6 +3,8 @@
 // can run beside the main ones and the screenshot tool finds the right pair.
 
 import { execFileSync } from "node:child_process";
+import { copyFileSync, existsSync } from "node:fs";
+import { dirname, join } from "node:path";
 
 export interface DevPorts {
   web: number;
@@ -23,6 +25,19 @@ export function devPorts(): DevPorts {
     slot = 1 + (hash % 99);
   }
   return { web: 5173 + slot, server: 8787 + slot, inspector: 9229 + slot, slot };
+}
+
+/**
+ * `server/.dev.vars` (ALLOW_CHEATS and friends) is gitignored, so a new worktree
+ * lacks it and its server would run with cheats off. Copy the main checkout's.
+ */
+export function ensureDevVars(): void {
+  const here = join(git("rev-parse", "--show-toplevel"), "server/.dev.vars");
+  if (existsSync(here)) return;
+  const main = join(dirname(git("rev-parse", "--path-format=absolute", "--git-common-dir")), "server/.dev.vars");
+  if (main === here || !existsSync(main)) return;
+  copyFileSync(main, here);
+  console.log("dev: copied server/.dev.vars from the main checkout");
 }
 
 if (import.meta.main) {
