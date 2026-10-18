@@ -71,7 +71,10 @@ async function main(): Promise<number> {
       failures.push(name);
       const file = resolve(args.out!, `${name}-FAILED.png`);
       await page.screenshot({ path: file, fullPage: true }).catch(() => {});
-      console.log(`FAIL  ${name}: ${(e as Error).message.split("\n")[0]} (state: ${file})`);
+      const lines = (e as Error).message.split("\n");
+      // Playwright's call log names the locator it was stuck on; the first line alone doesn't.
+      const waiting = lines.find((l) => l.includes("waiting for"))?.trim();
+      console.log(`FAIL  ${name}: ${lines[0]}${waiting ? ` [${waiting}]` : ""} (state: ${file})`);
     }
   };
 
@@ -105,14 +108,21 @@ async function join(page: Page, name: string): Promise<void> {
   await page.getByRole("button", { name: /English/ }).click();
   await page.locator(".three-panel").waitFor({ timeout: MATCH_TIMEOUT_MS });
   await waitForArt(page);
+  // The cryo wake-up intro (up to 3 s) plays over the game on joining and would cover the early screenshots.
+  await page.locator(".wake").waitFor({ state: "detached" });
   console.log(`      room: ${await page.locator(".room-title").innerText()}`);
 }
 
 async function desktopSteps(page: Page, step: Step): Promise<void> {
   await step("02-inspect", async () => {
-    const at = await pointOn(page, page.locator(".iso-actor:not(.you)").first());
+    // Nothing is selected yet, so the Inspect panel shows you; wait for its name chip to change to someone else.
+    const figureName = page.locator(".inspect .inspect-figure-name");
+    const you = (await figureName.innerText()).trim();
+    const other = page.locator(OTHER_PERSON_HERE);
+    if (!(await other.count())) throw new Skip("nobody else in the room");
+    const at = await pointOn(page, other.first());
     await page.mouse.click(at.x, at.y);
-    await page.locator(".inspect-name").filter({ hasNot: page.locator(".tag", { hasText: /^you$/ }) }).waitFor(); // someone else, not you
+    await page.locator(".inspect .inspect-figure-name", { hasNotText: you }).waitFor();
   });
 
   await step("03-examine", async () => {
@@ -179,7 +189,7 @@ async function mobileSteps(page: Page, step: Step): Promise<void> {
   const peek = page.locator(".peek-bar");
 
   await step("m02-peek-person", async () => {
-    const other = page.locator(".iso-actor:not(.you)");
+    const other = page.locator(OTHER_PERSON_HERE);
     if (!(await other.count())) throw new Skip("nobody else in the room");
     const at = await pointOn(page, other.first());
     await page.touchscreen.tap(at.x, at.y);
@@ -292,6 +302,12 @@ async function walkThroughDoor(page: Page): Promise<void> {
  * covered. Moves the mouse over a grid (center first) until the sprite gets
  * the `.hover` class, and returns the point plus the hover title (its name).
  */
+/** Someone else standing in your room: not you, not a corpse, not a faded person in a neighbouring room (clicking those acts as its door). */
+const OTHER_PERSON_HERE = ".iso-layer:not(.iso-esp) > .iso-actor:not(.you, .neighbor, .corpse)";
+
+/** The iso view's mouse-only hover label, portaled straight into <body>. */
+const HOVER_LABEL = "body > .tooltip";
+
 async function pointOn(page: Page, sprite: Locator): Promise<{ x: number; y: number; title: string }> {
   await sprite.scrollIntoViewIfNeeded();
   const box = (await sprite.boundingBox()) ?? fail("sprite has no box");
@@ -306,7 +322,7 @@ async function pointOn(page: Page, sprite: Locator): Promise<{ x: number; y: num
     await page.mouse.move(p.x, p.y);
     if (await sprite.evaluate((el) => el.classList.contains("hover"))) {
       // Touch shows no hover tooltip; callers that need the name read it from the peek bar instead.
-      const title = (await page.locator(".iso-viewport .tooltip").innerText({ timeout: 500 }).catch(() => "")).trim();
+      const title = (await page.locator(HOVER_LABEL).innerText({ timeout: 500 }).catch(() => "")).trim();
       return { ...p, title };
     }
   }

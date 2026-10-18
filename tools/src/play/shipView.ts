@@ -82,7 +82,7 @@ async function pointOn(page: Page, sprite: Locator): Promise<{ x: number; y: num
       const p = { x: box.x + (box.width * i) / 8, y: box.y + (box.height * j) / 8 };
       await page.mouse.move(p.x, p.y);
       if (await sprite.evaluate((el) => el.classList.contains("hover"))) {
-        return { ...p, title: (await page.locator(".iso-viewport").getAttribute("title")) ?? "" };
+        return { ...p, title: (await page.locator("body > .tooltip").innerText({ timeout: 500 }).catch(() => "")).trim() };
       }
     }
   }
