@@ -698,3 +698,11 @@ Owner asked to remove player and bot names from the UI and the view until the ga
 
 ## 2026-10-17: Lie down action (#34)
 Owner decided via questions: free, keep the existing +1 AP modifier (the issue's "+2" read as the total with base gain), any other action ends it plus an explicit get up. Implemented `lie_down`/`get_up`; "other action" reuses the `timed` flag so End cycle doesn't wake you. Examine and pick_skill also end it (they are timed); not asked, flagged to the owner. First test run failed because it passed an object to `parseGameMessage` (takes a JSON string) and forgot that the cycle only advances when everyone is ready.
+
+## 2026-10-18: Inventory moved to an overlay on the room view
+
+- Moved `InventoryPanel` out of `SelfPanel` into a new `InventoryOverlay`: a sack button (`icons/ui/stock.png`, already bundled as the Features "Inventory" icon, drawn at 1x) in the room view's lower-right corner, with a badge counting the room's items. It opens the same room/inventory zones over the iso scene. It stays open across take/drop and closes on the button, Escape, or a press elsewhere in the room view, so the Inspect panel stays usable beside it. Both layouts; hidden when dead. `SelfPanel` keeps the summary, resources and credits.
+- Asked first about scope (only the inventory moves), mobile (yes, in the Room tab, replacing the block in the Inspect tab), the badge, and dead players; the user took the proposed defaults.
+- Needed correction: the panel art (`tipbg`) is see-through, which was fine under the room but made the overlay hard to read over the scene on phones; it now has a solid `--panel-fill` backing. Re-serializing the locale JSON with Python reflowed unrelated inline objects; switched to a text insert to keep the diff to the new keys.
+- Screenshot script: the take steps now open the overlay. The 02/03 desktop steps fail independently of this change (they wait for `.inspect-name`, which person targets no longer render since the name-chip change).
+- Follow-up: the self panel's resources now run in one wrapping row under the summary on desktop too (they were a tall column on the right that set the panel's height), which gives the room view the height the inventory freed.

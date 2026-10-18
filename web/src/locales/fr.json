@@ -65,6 +65,12 @@
     "room": "Salle",
     "itrackie": "iTrackie"
   },
+  "inventory": {
+    "button": "Inventaire",
+    "buttonCount_one": "Inventaire ({{count}} objet dans cette salle)",
+    "buttonCount_many": "Inventaire ({{count}} objets dans cette salle)",
+    "buttonCount_other": "Inventaire ({{count}} objets dans cette salle)"
+  },
   "resources": {
     "other": "Autres ressources",
     "spores": "Spores",

@@ -9,6 +9,7 @@ import { ActionQueue } from "./hud/ActionQueue.tsx";
 import { BottomNav, type MobilePanel } from "./hud/BottomNav.tsx";
 import { DeathNotice } from "./hud/DeathNotice.tsx";
 import { InspectPanel } from "./hud/InspectPanel.tsx";
+import { InventoryOverlay } from "./hud/InventoryOverlay.tsx";
 import { ITrackie } from "./hud/ITrackie.tsx";
 import { PeekBar } from "./hud/PeekBar.tsx";
 import { TerminalDialog } from "./hud/TerminalDialog.tsx";
@@ -155,7 +156,7 @@ export function GameScreen({ ticket, onLeave }: { ticket: SeatTicket; onLeave: (
         <div className="left-column">
           <InspectPanel view={view} layout={layout} target={target} onAction={send} />
           {mobile && (
-            <SelfPanel view={view} selected={target} showSummary={false} onAction={send} onSelect={select} />
+            <SelfPanel view={view} showSummary={false} />
           )}
         </div>
 
@@ -188,12 +189,13 @@ export function GameScreen({ ticket, onLeave }: { ticket: SeatTicket; onLeave: (
               <section className="iso-room loading">Loading ship…</section>
             )}
             {you.alive && <ActionQueue view={view} onClear={() => post({ type: "clearQueue" })} />}
+            {you.alive && <InventoryOverlay view={view} selected={target} onAction={send} onSelect={select} />}
             {/* TODO(minimap): stubbed out for now, to be revisited. scene/Minimap.tsx still exists; render it here
                 with here={you.room} youId={you.id} people={[you, ...view.players]} unidentified={view.unidentified}
                 reachable={reachable} onMove={move}. */}
           </div>
           {!mobile && (
-            <SelfPanel view={view} selected={target} showSummary onAction={send} onSelect={select} />
+            <SelfPanel view={view} showSummary />
           )}
         </div>
 

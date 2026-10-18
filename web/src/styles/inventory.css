@@ -1,0 +1,119 @@
+/* Inventory overlay: the sack button in the room view's lower-right corner and the item zones it opens. */
+
+.inventory-overlay {
+  --outline: color-mix(in srgb, var(--muted) 60%, transparent);
+  position: absolute;
+  left: 0.5rem;
+  right: 0.5rem;
+  bottom: 0.5rem;
+  z-index: 3;
+  max-height: calc(100% - 1rem);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.5rem;
+  /* The wrapper spans the room's width; only the popup and the button take clicks, the scene stays usable. */
+  pointer-events: none;
+}
+.inventory-overlay > * {
+  pointer-events: auto;
+}
+.inventory-popup {
+  box-sizing: border-box;
+  width: min(100%, 52rem);
+  min-height: 0;
+  /* The panel art is see-through; over the scene it needs a solid backing to stay readable. */
+  background-color: var(--panel-fill);
+  display: flex;
+  overflow: hidden;
+}
+.inventory-popup > .self-cards {
+  min-height: 0;
+  overflow-y: auto;
+}
+.inventory-popup h2 {
+  margin: 0 0 0.5rem;
+}
+/* Square, sized for a finger; the 3-slice art stretches to fit. The icon stays at 1x. */
+button.inventory-toggle {
+  position: relative;
+  flex: none;
+  width: 40px;
+  height: 36px;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  place-items: center;
+}
+.inventory-toggle img {
+  image-rendering: pixelated;
+}
+/* How many items are on the floor here. */
+.inventory-badge {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 3px;
+  box-sizing: border-box;
+  border-radius: 8px;
+  background: var(--badge);
+  border: 1px solid var(--glow-rim);
+  color: #fff;
+  font-size: 0.65rem;
+  font-weight: bold;
+  line-height: 14px;
+  text-align: center;
+}
+
+/* Item zones: room items filling | inventory, one row. */
+.self-cards {
+  display: flex;
+  gap: 0.75rem;
+  flex: 1;
+  min-width: 0;
+}
+.self-cards > .item-zone {
+  min-width: 0;
+  box-sizing: border-box;
+  padding: 0.5rem;
+  border: 1px solid var(--outline);
+  border-radius: var(--panel-radius);
+}
+/* Inventory is one row, sized to its slots; the room zone takes whatever is left. */
+.self-cards > .item-zone[data-zone="inventory"] {
+  flex: none;
+}
+.self-cards > .item-zone[data-zone="room"] {
+  flex: 1 1 0;
+}
+.self-cards .item-zone[data-zone="inventory"] .item-grid {
+  grid-auto-flow: column;
+  grid-template-columns: none;
+  grid-auto-columns: var(--tile, 76px);
+}
+
+/* Phone: the two zones sit side by side, each three slots tall; the room zone scrolls past three rows. */
+@media (max-width: 1023px) {
+  .inventory-overlay {
+    --tile: 56px;
+  }
+  .self-cards {
+    flex-direction: row;
+    align-items: flex-start;
+  }
+  .self-cards .item-grid,
+  .self-cards .item-grid[data-compact] {
+    --tile: 56px;
+    height: calc(var(--tile) * 3 + 12px);
+    max-height: none;
+    overflow-y: auto;
+    align-content: start;
+    grid-auto-rows: var(--tile);
+  }
+  .self-cards .item-zone[data-zone="inventory"] .item-grid {
+    grid-template-rows: repeat(3, var(--tile));
+    overflow: visible;
+  }
+}

@@ -48,7 +48,7 @@ Desktop:
 | `02-inspect.png` | Inspect panel open on another crew member |
 | `03-examine.png` | Room equipment selected and examined (private line in the room log) |
 | `04-chat.png` | Global chat tab with a sent message |
-| `05-take.png` | After taking an item from the room into the inventory |
+| `05-take.png` | Inventory overlay open (sack button, room view's lower right) after taking an item |
 | `06-moved.png` | After double-clicking a reachable door |
 
 Phone (every phone step also fails if the page scrolls sideways):
@@ -59,7 +59,7 @@ Phone (every phone step also fails if the page scrolls sideways):
 | `m02-peek-person.png` | Peek bar on another crew member (skipped if nobody else is in the room) |
 | `m03-peek-examine.png` | Equipment examined from the peek bar, then the iTrackie room log |
 | `m04-chat-focused.png` | Global chat sent with the input still focused; the nav must be hidden |
-| `m05-inspect-inventory.png` | Inspect panel with the inventory after a take (or drop) |
+| `m05-inventory.png` | Inventory overlay over the room after a take (or drop) |
 | `m06-door-go.png` | After tapping a door and pressing Go in the peek bar |
 | `m07-wide-room.png` | A room wider than the phone: scrolls sideways at 1x with you in view (walks up to 6 doors to find one; skipped if none) |
 | `m08-landscape.png` | The phone rotated (740x360 by default); the top bar must be one row |

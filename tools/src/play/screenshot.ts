@@ -144,6 +144,8 @@ async function desktopSteps(page: Page, step: Step): Promise<void> {
   });
 
   await step("05-take", async () => {
+    // The item zones live in an overlay opened by the sack button in the room view's corner.
+    await page.getByRole("button", { name: /^Inventory/ }).click();
     const inventory = page.locator(".item-zone");
     // Tiles are drag-and-drop; the Take button only appears once a tile is selected.
     const mine = inventory.filter({ hasText: "Inventory" }).locator(".item-tile:not(.empty)");
@@ -154,6 +156,7 @@ async function desktopSteps(page: Page, step: Step): Promise<void> {
   });
 
   await step("06-moved", async () => {
+    await page.keyboard.press("Escape"); // close the inventory overlay so it can't cover a door
     const before = await page.locator(".room-title").innerText();
     const at = await pointOn(page, page.locator(".iso-sprite.door.reachable").first());
     await page.mouse.dblclick(at.x, at.y);
@@ -208,9 +211,10 @@ async function mobileSteps(page: Page, step: Step): Promise<void> {
     if (await page.locator(".bottom-nav").isVisible()) throw new Error("bottom nav still visible while typing");
   });
 
-  await step("m05-inspect-inventory", async () => {
+  await step("m05-inventory", async () => {
     await page.getByLabel("Chat message", { exact: true }).filter({ visible: true }).blur();
-    await nav("Inspect");
+    await nav("Room");
+    await page.getByRole("button", { name: /^Inventory/ }).tap();
     const inventory = page.locator(".item-zone");
     // The Take/Drop button only shows on a selected tile.
     const tiles = inventory.locator(".item-tile:not(.empty)");
@@ -221,6 +225,8 @@ async function mobileSteps(page: Page, step: Step): Promise<void> {
 
   await step("m06-door-go", async () => {
     await nav("Room");
+    const toggle = page.getByRole("button", { name: /^Inventory/ });
+    if ((await toggle.getAttribute("aria-expanded")) === "true") await toggle.tap();
     await walkThroughDoor(page);
   });
 

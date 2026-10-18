@@ -1,33 +1,21 @@
-// Everything about you, under the room: your summary, the room's items (left),
-// and your inventory, plus a card on the far right for other resources. On phones the summary lives in the top bar instead.
+// Everything about you, under the room: your summary, with a row of other resources under it.
+// On phones the summary lives in the top bar instead. Items are in the room view's InventoryOverlay.
 
 import { Popover } from "@base-ui/react/popover";
 import { useTranslation } from "react-i18next";
-import { RESOURCE_IDS, type Action, type PlayerView, type Target } from "@mush2/shared";
+import { RESOURCE_IDS, type PlayerView } from "@mush2/shared";
 import { RESOURCE_ICONS, SPORE_ICON } from "../art/assets.ts";
-import { InventoryPanel } from "./InventoryPanel.tsx";
 import { PlayerSummary } from "./PlayerSummary.tsx";
 
-export function SelfPanel({
-  view,
-  selected,
-  showSummary,
-  onAction,
-  onSelect,
-}: {
-  view: PlayerView;
-  selected: Target;
-  showSummary: boolean;
-  onAction: (action: Action) => void;
-  onSelect: (target: Target) => void;
-}) {
+export function SelfPanel({ view, showSummary }: { view: PlayerView; showSummary: boolean }) {
   const { t } = useTranslation();
   return (
     <section className="panel self-panel">
-      <div className="self-main">
-        {showSummary && <PlayerSummary view={view} />}
-        <InventoryPanel view={view} selected={selected} onAction={onAction} onSelect={onSelect} />
-      </div>
+      {showSummary && (
+        <div className="self-main">
+          <PlayerSummary view={view} />
+        </div>
+      )}
       {/* Home for resources that belong nowhere else (spores, free IT points, ...). */}
       <aside className="self-extras" aria-label={t("resources.other")}>
         {/* TODO(extras): later, show only the resources the player has a non-zero amount of. */}
