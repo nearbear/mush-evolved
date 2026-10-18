@@ -35,6 +35,7 @@ If `npm install` complains about blocked install scripts (npm 11), `esbuild` and
 | `npm run typecheck` | `tsc --noEmit` in every package |
 | `npm run lint` | Biome (lint only), including import-boundary rules |
 | `npm run build` | Production build of the web client |
+| `npm run preview` | Build the client and serve the production build beside the local server (stop `npm run dev` first) |
 | `npm run ship-layout` | Regenerate ship data in `Mush/derived/` (a test fails if the committed files are stale) |
 | `npm run asset-index` | Regenerate `Mush/derived/asset-index.txt` after adding or removing files in `Mush/` |
 | `npm run screenshot` | Drive a running game in headless Chromium (desktop + 360px phone) and save screenshots to `.screenshots/` (needs `npm run dev`) |

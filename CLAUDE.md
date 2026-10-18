@@ -91,6 +91,7 @@ Node is installed via nvm. In non-interactive shells, run `source ~/.nvm/nvm.sh`
 - `npm test`: Vitest in `shared`, `tools`, and `web`. Single file or test: `npm test -w shared -- rules.test.ts -t "advances the cycle"`.
 - `npm run typecheck`: `tsc --noEmit` in every package (TypeScript 7).
 - `npm run build`: production build of `web`.
+- `npm run preview`: build `web` for production, then serve it with `vite preview` beside wrangler (same ports as `npm run dev`, so stop that first).
 - `npm run ship-layout`: regenerate `Mush/derived/ship-layout.json` (renderer data) and `ship-rooms.json` (room graph and per-room equipment, for the rules) from `ShipMap.png` + `tiles.xml`. A test fails if the committed file is stale.
 - `npm run screenshot`: headless Chromium (Playwright) screenshots as a desktop player and a 360px phone player, to `.screenshots/` (gitignored). Needs `npm run dev`. Options and the other tooling commands (`ship-view`, `contact-sheet`, `asset-index`, `ods-data`, `types -w server`) are in the `play` and `asset` skills.
 - `npm run deploy -w server`: wrangler deploy (not yet configured or tested).

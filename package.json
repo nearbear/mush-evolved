@@ -11,6 +11,7 @@
   ],
   "scripts": {
     "dev": "npm run dev -w tools",
+    "preview": "npm run preview -w tools",
     "ports": "node tools/src/dev/ports.ts",
     "test": "npm run test -w shared -w tools -w web -w server",
     "typecheck": "npm run typecheck --workspaces --if-present",
