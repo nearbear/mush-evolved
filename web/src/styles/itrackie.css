@@ -252,9 +252,6 @@
   flex: none;
   margin: 0.25rem 0 0;
 }
-.itrackie-caption {
-  margin-bottom: 0.25rem;
-}
 
 /* The Mush tab appears only for Mush, in the faction pink, pushed to the far right; it pulses while there are unread messages. */
 .itrackie-tab.mush-tab {

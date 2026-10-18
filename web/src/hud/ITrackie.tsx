@@ -97,11 +97,10 @@ export function ITrackie({
           {graveyard && <IconTab value="graveyard" src={TAB_ICONS.graveyard} label={t("itrackie.tabs.graveyard")} />}
         </Tabs.List>
         <div className="itrackie-card">
-          <h2 className="itrackie-title">{t(TAB_TITLES[activeTab])}</h2>
+          <h2 className="itrackie-title">{t(TAB_TITLES[activeTab])}{activeTab === "room" && ` – ${names.room(here)}`}</h2>
 
           {/* keepMounted: hidden with CSS, so chat drafts survive switching tabs. */}
           <Tabs.Panel className="itrackie-panel" value="room" keepMounted>
-            <div className="sub itrackie-caption">{names.room(here)}</div>
             <Scroller items={roomLog.length}>
               <ol className="feed">
                 {roomLog.map((e, i) => (
