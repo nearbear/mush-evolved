@@ -58,20 +58,23 @@ describe("jettison", () => {
     expect(viewFor(other.s, "p0").legalActions.filter((a) => a.type === "jettison")).toEqual([other.jettison]);
   });
 
-  it("is covert: a bystander doesn't see it, a camera makes it room history, and it is never seen from another room", () => {
+  it("is secret: a witness or a camera makes it room history, alone only the actor sees it, and it is never seen from another room", () => {
+    const alone = ship();
+    const solo = must(applyAction(alone.s, "p0", alone.jettison));
+    expect(solo.log.find((e) => e.key === "jettisoned")).toMatchObject({ visibleTo: ["p0"], params: { name: "chao", body: "eleesha" } });
+
     const watched = ship();
     player(watched.s, "p1").room = "SPACESHIP_BAY_A";
-    const unseen = must(applyAction(watched.s, "p0", watched.jettison));
-    expect(unseen.log.find((e) => e.key === "jettisoned")).toMatchObject({ visibleTo: ["p0"], params: { name: "chao", body: "eleesha" } });
-    expect(viewFor(unseen, "p1").log.some((e) => e.key === "jettisoned")).toBe(false);
+    const witnessed = must(applyAction(watched.s, "p0", watched.jettison));
+    expect(viewFor(witnessed, "p1").log.some((e) => e.key === "jettisoned")).toBe(true);
+    player(witnessed, "p1").room = "REFECTORY";
+    expect(viewFor(witnessed, "p1").log.some((e) => e.key === "jettisoned")).toBe(false);
 
     const filmed = ship();
     installCameraIn(filmed.s, "SPACESHIP_BAY_A");
     const seen = must(applyAction(filmed.s, "p0", filmed.jettison));
     player(seen, "p1").room = "SPACESHIP_BAY_A"; // arriving later: it is room history
     expect(viewFor(seen, "p1").log.some((e) => e.key === "jettisoned")).toBe(true);
-    player(seen, "p1").room = "REFECTORY";
-    expect(viewFor(seen, "p1").log.some((e) => e.key === "jettisoned")).toBe(false);
   });
 
   it("parses from the wire", () => {
