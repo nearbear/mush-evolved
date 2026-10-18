@@ -289,3 +289,15 @@
 .iso-badge-anchor.busy .speech-bubbles.raised {
   margin-bottom: 39px;
 }
+
+/* The Pixi renderer's canvas (iso/pixi/), filling the viewport. It takes no pointer events: the
+   viewport under it hit-tests the art (IsoRoom). */
+.iso-pixi {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.iso-pixi canvas {
+  display: block;
+  pointer-events: none;
+}

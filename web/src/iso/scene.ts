@@ -76,6 +76,13 @@ export interface SceneAnim {
   loops: number | "forever";
 }
 
+/** Which frame of `anim` shows `elapsed` ms after it started. */
+export function animFrame(anim: SceneAnim, elapsed: number): number {
+  const n = Math.floor(elapsed / anim.frameMs);
+  if (anim.loops !== "forever" && n >= anim.frames.length * anim.loops) return anim.frames[0] ?? 0;
+  return anim.frames[n % anim.frames.length] ?? 0;
+}
+
 /**
  * How a sprite is lit, by meaning. A renderer has to tell these apart; how is up to it.
  * - `fogged`: another room, dimmed. `foggedLifted`: the same, a little brighter (its door is selected, or hovered and reachable).

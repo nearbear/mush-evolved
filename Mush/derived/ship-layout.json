@@ -27,15 +27,15 @@
       "width": 801,
       "height": 1340
     },
-    "BmpBigFill": {
-      "image": "clients/iso/gfx/BigFill.png",
-      "width": 2393,
-      "height": 4758
+    "BmpBigFill.p0": {
+      "image": "derived/pages/BigFill-0.png",
+      "width": 3904,
+      "height": 1882
     },
-    "BmpBigFill2": {
-      "image": "clients/iso/gfx/BigFill2.png",
-      "width": 5573,
-      "height": 4508
+    "BmpBigFill2.p0": {
+      "image": "derived/pages/BigFill2-0.png",
+      "width": 3986,
+      "height": 1268
     },
     "BmpGfxDev": {
       "image": "clients/iso/gfx/dev.png",
@@ -3985,9 +3985,9 @@
       "modulePad": [-1,1]
     },
     "kitchen_p0": {
-      "sheet": "BmpBigFill",
-      "x": 0,
-      "y": 8,
+      "sheet": "BmpBigFill.p0",
+      "x": 2130,
+      "y": 0,
       "width": 192,
       "height": 136,
       "framesX": 1,
@@ -4007,9 +4007,9 @@
       "modulePad": [-4,1]
     },
     "kitchen_p0_apero": {
-      "sheet": "BmpBigFill",
-      "x": 256,
-      "y": 8,
+      "sheet": "BmpBigFill.p0",
+      "x": 2322,
+      "y": 0,
       "width": 192,
       "height": 136,
       "framesX": 1,
@@ -4029,9 +4029,9 @@
       "modulePad": [-4,1]
     },
     "kitchen_mask": {
-      "sheet": "BmpBigFill",
-      "x": 1,
-      "y": 2808,
+      "sheet": "BmpBigFill.p0",
+      "x": 1750,
+      "y": 0,
       "width": 180,
       "height": 140,
       "framesX": 1,
@@ -4049,9 +4049,9 @@
       ]
     },
     "kitchen_p1": {
-      "sheet": "BmpBigFill",
-      "x": 197,
-      "y": 122,
+      "sheet": "BmpBigFill.p0",
+      "x": 222,
+      "y": 1834,
       "width": 54,
       "height": 34,
       "framesX": 1,
@@ -4070,9 +4070,9 @@
       ]
     },
     "kitchen_p1_apero": {
-      "sheet": "BmpBigFill",
-      "x": 452,
-      "y": 122,
+      "sheet": "BmpBigFill.p0",
+      "x": 276,
+      "y": 1834,
       "width": 54,
       "height": 34,
       "framesX": 1,
@@ -4091,9 +4091,9 @@
       ]
     },
     "table_kitchen": {
-      "sheet": "BmpBigFill",
-      "x": 15,
-      "y": 167,
+      "sheet": "BmpBigFill.p0",
+      "x": 3502,
+      "y": 1656,
       "width": 114,
       "height": 74,
       "framesX": 1,
@@ -4112,9 +4112,9 @@
       ]
     },
     "table_kitchen_apero": {
-      "sheet": "BmpBigFill",
-      "x": 271,
-      "y": 167,
+      "sheet": "BmpBigFill.p0",
+      "x": 3616,
+      "y": 1656,
       "width": 114,
       "height": 74,
       "framesX": 1,
@@ -4133,9 +4133,9 @@
       ]
     },
     "storage_front_1": {
-      "sheet": "BmpBigFill",
-      "x": 24,
-      "y": 520,
+      "sheet": "BmpBigFill.p0",
+      "x": 3312,
+      "y": 0,
       "width": 136,
       "height": 114,
       "framesX": 1,
@@ -4154,9 +4154,9 @@
       ]
     },
     "storage_front_2": {
-      "sheet": "BmpBigFill",
-      "x": 184,
-      "y": 520,
+      "sheet": "BmpBigFill.p0",
+      "x": 3448,
+      "y": 0,
       "width": 136,
       "height": 114,
       "framesX": 1,
@@ -4175,9 +4175,9 @@
       ]
     },
     "storage_front_3": {
-      "sheet": "BmpBigFill",
-      "x": 320,
-      "y": 520,
+      "sheet": "BmpBigFill.p0",
+      "x": 3584,
+      "y": 0,
       "width": 128,
       "height": 114,
       "framesX": 1,
@@ -4196,9 +4196,9 @@
       ]
     },
     "storage_front_4": {
-      "sheet": "BmpBigFill",
-      "x": 448,
-      "y": 520,
+      "sheet": "BmpBigFill.p0",
+      "x": 3712,
+      "y": 0,
       "width": 128,
       "height": 114,
       "framesX": 1,
@@ -4217,9 +4217,9 @@
       ]
     },
     "storage_beta_center_1": {
-      "sheet": "BmpBigFill",
-      "x": 24,
-      "y": 383,
+      "sheet": "BmpBigFill.p0",
+      "x": 3176,
+      "y": 0,
       "width": 136,
       "height": 114,
       "framesX": 1,
@@ -4238,9 +4238,9 @@
       ]
     },
     "storage_beta_center_2": {
-      "sheet": "BmpBigFill",
-      "x": 176,
-      "y": 400,
+      "sheet": "BmpBigFill.p0",
+      "x": 2670,
+      "y": 1656,
       "width": 80,
       "height": 80,
       "framesX": 1,
@@ -4259,9 +4259,9 @@
       ]
     },
     "storage_beta_center_3": {
-      "sheet": "BmpBigFill",
-      "x": 272,
-      "y": 400,
+      "sheet": "BmpBigFill.p0",
+      "x": 2574,
+      "y": 1656,
       "width": 96,
       "height": 80,
       "framesX": 1,
@@ -4280,9 +4280,9 @@
       ]
     },
     "storage_alpha_center_1": {
-      "sheet": "BmpBigFill",
-      "x": 32,
-      "y": 663,
+      "sheet": "BmpBigFill.p0",
+      "x": 1082,
+      "y": 1656,
       "width": 112,
       "height": 90,
       "framesX": 1,
@@ -4301,9 +4301,9 @@
       ]
     },
     "storage_alpha_center_2": {
-      "sheet": "BmpBigFill",
-      "x": 176,
-      "y": 663,
+      "sheet": "BmpBigFill.p0",
+      "x": 1194,
+      "y": 1656,
       "width": 84,
       "height": 90,
       "framesX": 1,
@@ -4322,9 +4322,9 @@
       ]
     },
     "storage_back": {
-      "sheet": "BmpBigFill",
-      "x": 16,
-      "y": 768,
+      "sheet": "BmpBigFill.p0",
+      "x": 1930,
+      "y": 0,
       "width": 200,
       "height": 136,
       "framesX": 1,
@@ -4343,9 +4343,9 @@
       ]
     },
     "storage_workshop": {
-      "sheet": "BmpBigFill",
-      "x": 12,
-      "y": 958,
+      "sheet": "BmpBigFill.p0",
+      "x": 3656,
+      "y": 1766,
       "width": 50,
       "height": 50,
       "framesX": 2,
@@ -4365,9 +4365,9 @@
       ]
     },
     "storage_workshop_locker": {
-      "sheet": "BmpBigFill",
-      "x": 112,
-      "y": 958,
+      "sheet": "BmpBigFill.p0",
+      "x": 3854,
+      "y": 1766,
       "width": 50,
       "height": 50,
       "framesX": 1,
@@ -4386,9 +4386,9 @@
       ]
     },
     "mycoscan": {
-      "sheet": "BmpBigFill",
-      "x": 32,
-      "y": 304,
+      "sheet": "BmpBigFill.p0",
+      "x": 912,
+      "y": 1766,
       "width": 97,
       "height": 66,
       "framesX": 12,
@@ -4408,9 +4408,9 @@
       "modulePad": [1,1]
     },
     "cryo": {
-      "sheet": "BmpBigFill",
-      "x": 8,
-      "y": 1968,
+      "sheet": "BmpBigFill.p0",
+      "x": 2514,
+      "y": 0,
       "width": 150,
       "height": 116,
       "framesX": 1,
@@ -4430,9 +4430,9 @@
       "modulePad": [1,-1]
     },
     "toilet_a_wall": {
-      "sheet": "BmpBigFill",
-      "x": 16,
-      "y": 2095,
+      "sheet": "BmpBigFill.p0",
+      "x": 2750,
+      "y": 1656,
       "width": 80,
       "height": 80,
       "framesX": 1,
@@ -4451,9 +4451,9 @@
       ]
     },
     "toilet_a_floor": {
-      "sheet": "BmpBigFill",
-      "x": 16,
-      "y": 2183,
+      "sheet": "BmpBigFill.p0",
+      "x": 3756,
+      "y": 1766,
       "width": 98,
       "height": 50,
       "framesX": 1,
@@ -4472,9 +4472,9 @@
       ]
     },
     "toilet_b_wall_left": {
-      "sheet": "BmpBigFill",
-      "x": 9,
-      "y": 2266,
+      "sheet": "BmpBigFill.p0",
+      "x": 3810,
+      "y": 1656,
       "width": 72,
       "height": 72,
       "framesX": 1,
@@ -4493,9 +4493,9 @@
       ]
     },
     "toilet_b_wall_right": {
-      "sheet": "BmpBigFill",
-      "x": 16,
-      "y": 2360,
+      "sheet": "BmpBigFill.p0",
+      "x": 3730,
+      "y": 1656,
       "width": 80,
       "height": 72,
       "framesX": 1,
@@ -4514,9 +4514,9 @@
       ]
     },
     "toilet_b_floor": {
-      "sheet": "BmpBigFill",
-      "x": 16,
-      "y": 2456,
+      "sheet": "BmpBigFill.p0",
+      "x": 3560,
+      "y": 1766,
       "width": 96,
       "height": 55,
       "framesX": 1,
@@ -4536,9 +4536,9 @@
       "prioOffset": 5
     },
     "nexus_platform": {
-      "sheet": "BmpBigFill",
-      "x": 14,
-      "y": 2648,
+      "sheet": "BmpBigFill.p0",
+      "x": 2850,
+      "y": 1766,
       "width": 99,
       "height": 61,
       "framesX": 2,
@@ -4557,9 +4557,9 @@
       ]
     },
     "workshop": {
-      "sheet": "BmpBigFill",
-      "x": 17,
-      "y": 2725,
+      "sheet": "BmpBigFill.p0",
+      "x": 2478,
+      "y": 1656,
       "width": 96,
       "height": 82,
       "framesX": 1,
@@ -4579,9 +4579,9 @@
       "modulePad": [-3,1]
     },
     "turret_alpha": {
-      "sheet": "BmpBigFill",
-      "x": 0,
-      "y": 1516,
+      "sheet": "BmpBigFill.p0",
+      "x": 1278,
+      "y": 1656,
       "width": 150,
       "height": 88,
       "framesX": 2,
@@ -4603,9 +4603,9 @@
       "modulePad": [0,0]
     },
     "turret_alpha_upgrade_a": {
-      "sheet": "BmpBigFill",
-      "x": 0,
-      "y": 1605,
+      "sheet": "BmpBigFill.p0",
+      "x": 1578,
+      "y": 1656,
       "width": 150,
       "height": 88,
       "framesX": 2,
@@ -4626,9 +4626,9 @@
       "engine": "tile"
     },
     "turret_alpha_upgrade_b": {
-      "sheet": "BmpBigFill",
-      "x": 0,
-      "y": 1694,
+      "sheet": "BmpBigFill.p0",
+      "x": 2178,
+      "y": 1656,
       "width": 150,
       "height": 88,
       "framesX": 2,
@@ -4649,9 +4649,9 @@
       "engine": "tile"
     },
     "turret_alpha_upgrade_ab": {
-      "sheet": "BmpBigFill",
-      "x": 0,
-      "y": 1783,
+      "sheet": "BmpBigFill.p0",
+      "x": 1878,
+      "y": 1656,
       "width": 150,
       "height": 88,
       "framesX": 2,
@@ -4672,9 +4672,9 @@
       "engine": "tile"
     },
     "turret_beta": {
-      "sheet": "BmpBigFill",
+      "sheet": "BmpBigFill.p0",
       "x": 0,
-      "y": 1240,
+      "y": 1766,
       "width": 152,
       "height": 68,
       "framesX": 3,
@@ -4697,9 +4697,9 @@
       "modulePad": [0,0]
     },
     "turret_beta_upgrade_a": {
-      "sheet": "BmpBigFill",
-      "x": 0,
-      "y": 1309,
+      "sheet": "BmpBigFill.p0",
+      "x": 456,
+      "y": 1766,
       "width": 152,
       "height": 68,
       "framesX": 3,
@@ -4721,9 +4721,9 @@
       "engine": "tile"
     },
     "turret_beta_upgrade_b": {
-      "sheet": "BmpBigFill",
-      "x": 0,
-      "y": 1309,
+      "sheet": "BmpBigFill.p0",
+      "x": 456,
+      "y": 1766,
       "width": 152,
       "height": 68,
       "framesX": 3,
@@ -4745,9 +4745,9 @@
       "engine": "tile"
     },
     "turret_beta_upgrade_ab": {
-      "sheet": "BmpBigFill",
-      "x": 0,
-      "y": 1309,
+      "sheet": "BmpBigFill.p0",
+      "x": 456,
+      "y": 1766,
       "width": 152,
       "height": 68,
       "framesX": 3,
@@ -4769,9 +4769,9 @@
       "engine": "tile"
     },
     "turret_beta_structure": {
-      "sheet": "BmpBigFill",
-      "x": 0,
-      "y": 1131,
+      "sheet": "BmpBigFill.p0",
+      "x": 896,
+      "y": 1656,
       "width": 186,
       "height": 108,
       "framesX": 1,
@@ -4791,9 +4791,9 @@
       "engine": "prewall"
     },
     "pilot_wall": {
-      "sheet": "BmpBigFill",
-      "x": 48,
-      "y": 3279,
+      "sheet": "BmpBigFill.p0",
+      "x": 2664,
+      "y": 0,
       "width": 128,
       "height": 114,
       "framesX": 4,
@@ -4812,9 +4812,9 @@
       ]
     },
     "pilot_window": {
-      "sheet": "BmpBigFill",
-      "x": 32,
-      "y": 3407,
+      "sheet": "BmpBigFill.p0",
+      "x": 1526,
+      "y": 0,
       "width": 224,
       "height": 170,
       "framesX": 1,
@@ -4834,9 +4834,9 @@
       "engine": "tile"
     },
     "pilot_module": {
-      "sheet": "BmpBigFill",
-      "x": 18,
-      "y": 3579,
+      "sheet": "BmpBigFill.p0",
+      "x": 2830,
+      "y": 1656,
       "width": 112,
       "height": 76,
       "framesX": 5,
@@ -4856,9 +4856,9 @@
       "modulePad": [0,-2]
     },
     "pilot_module_mask": {
-      "sheet": "BmpBigFill",
-      "x": 578,
-      "y": 3579,
+      "sheet": "BmpBigFill.p0",
+      "x": 3390,
+      "y": 1656,
       "width": 112,
       "height": 76,
       "framesX": 1,
@@ -4876,9 +4876,9 @@
       ]
     },
     "pilot_floor_circle": {
-      "sheet": "BmpBigFill",
+      "sheet": "BmpBigFill.p0",
       "x": 0,
-      "y": 3656,
+      "y": 1834,
       "width": 111,
       "height": 48,
       "framesX": 2,
@@ -4897,9 +4897,9 @@
       ]
     },
     "com_center_left": {
-      "sheet": "BmpBigFill",
-      "x": 33,
-      "y": 3873,
+      "sheet": "BmpBigFill.p0",
+      "x": 3048,
+      "y": 1766,
       "width": 64,
       "height": 56,
       "framesX": 8,
@@ -4918,9 +4918,9 @@
       ]
     },
     "com_center_right": {
-      "sheet": "BmpBigFill",
-      "x": 34,
-      "y": 3930,
+      "sheet": "BmpBigFill.p0",
+      "x": 2076,
+      "y": 1766,
       "width": 86,
       "height": 64,
       "framesX": 8,
@@ -4940,9 +4940,9 @@
       "modulePad": [-1,-1]
     },
     "com_center_mask": {
-      "sheet": "BmpBigFill",
-      "x": 549,
-      "y": 3930,
+      "sheet": "BmpBigFill.p0",
+      "x": 2764,
+      "y": 1766,
       "width": 86,
       "height": 64,
       "framesX": 1,
@@ -4960,9 +4960,9 @@
       ]
     },
     "rotational_reactor": {
-      "sheet": "BmpBigFill",
-      "x": 1010,
-      "y": 423,
+      "sheet": "BmpBigFill.p0",
+      "x": 350,
+      "y": 0,
       "width": 228,
       "height": 182,
       "framesX": 1,
@@ -4982,9 +4982,9 @@
       "modulePad": [-3,-3]
     },
     "emergency_reactor": {
-      "sheet": "BmpBigFill",
-      "x": 1010,
-      "y": 423,
+      "sheet": "BmpBigFill.p0",
+      "x": 350,
+      "y": 0,
       "width": 228,
       "height": 182,
       "framesX": 1,
@@ -5004,9 +5004,9 @@
       "modulePad": [-3,-3]
     },
     "reactor_mask": {
-      "sheet": "BmpBigFill",
-      "x": 1010,
-      "y": 423,
+      "sheet": "BmpBigFill.p0",
+      "x": 936,
+      "y": 0,
       "width": 228,
       "height": 182,
       "framesX": 1,
@@ -5024,9 +5024,9 @@
       ]
     },
     "motor_floor_1": {
-      "sheet": "BmpBigFill",
-      "x": 1338,
-      "y": 231,
+      "sheet": "BmpBigFill.p0",
+      "x": 0,
+      "y": 0,
       "width": 350,
       "height": 207,
       "framesX": 1,
@@ -5045,9 +5045,9 @@
       ]
     },
     "inviz_blocker": {
-      "sheet": "BmpBigFill",
-      "x": 300,
-      "y": 0,
+      "sheet": "BmpBigFill.p0",
+      "x": 330,
+      "y": 1834,
       "width": 0,
       "height": 0,
       "framesX": 1,
@@ -5066,9 +5066,9 @@
       ]
     },
     "motor_content": {
-      "sheet": "BmpBigFill",
-      "x": 0,
-      "y": 4264,
+      "sheet": "BmpBigFill.p0",
+      "x": 578,
+      "y": 0,
       "width": 358,
       "height": 238,
       "framesX": 1,
@@ -5087,9 +5087,9 @@
       ]
     },
     "icarus_platform": {
-      "sheet": "BmpBigFill",
-      "x": 0,
-      "y": 4530,
+      "sheet": "BmpBigFill.p0",
+      "x": 1164,
+      "y": 0,
       "width": 362,
       "height": 179,
       "framesX": 1,
@@ -5108,9 +5108,9 @@
       ]
     },
     "core_pilgred": {
-      "sheet": "BmpBigFill",
-      "x": 769,
-      "y": 1021,
+      "sheet": "BmpBigFill.p0",
+      "x": 768,
+      "y": 1656,
       "width": 128,
       "height": 110,
       "framesX": 1,
@@ -5129,9 +5129,9 @@
       ]
     },
     "core_pilgred_upgrade": {
-      "sheet": "BmpBigFill",
+      "sheet": "BmpBigFill.p0",
       "x": 0,
-      "y": 1021,
+      "y": 1656,
       "width": 128,
       "height": 110,
       "framesX": 6,
@@ -5150,13 +5150,13 @@
       ]
     },
     "bay_window": {
-      "sheet": "BmpBigFill2",
+      "sheet": "BmpBigFill2.p0",
       "x": 0,
       "y": 0,
       "width": 334,
       "height": 230,
-      "framesX": 16,
-      "framesY": 1,
+      "framesX": 8,
+      "framesY": 2,
       "flipX": false,
       "flipY": false,
       "rot": 0,
@@ -5171,13 +5171,13 @@
       ]
     },
     "bay_window_upgrade": {
-      "sheet": "BmpBigFill2",
+      "sheet": "BmpBigFill2.p0",
       "x": 0,
-      "y": 230,
+      "y": 460,
       "width": 334,
       "height": 230,
-      "framesX": 16,
-      "framesY": 1,
+      "framesX": 8,
+      "framesY": 2,
       "flipX": false,
       "flipY": false,
       "rot": 0,
@@ -5192,9 +5192,9 @@
       ]
     },
     "bay_alpha_platform": {
-      "sheet": "BmpBigFill2",
-      "x": 0,
-      "y": 1437,
+      "sheet": "BmpBigFill2.p0",
+      "x": 570,
+      "y": 1128,
       "width": 194,
       "height": 110,
       "framesX": 2,
@@ -5217,9 +5217,9 @@
       }
     },
     "bay_alpha_platform_upgrade": {
-      "sheet": "BmpBigFill2",
-      "x": 0,
-      "y": 1548,
+      "sheet": "BmpBigFill2.p0",
+      "x": 958,
+      "y": 1128,
       "width": 194,
       "height": 110,
       "framesX": 2,
@@ -5241,9 +5241,9 @@
       }
     },
     "bay_beta_platform": {
-      "sheet": "BmpBigFill2",
-      "x": 1,
-      "y": 1658,
+      "sheet": "BmpBigFill2.p0",
+      "x": 1346,
+      "y": 1128,
       "width": 194,
       "height": 110,
       "framesX": 2,
@@ -5262,9 +5262,9 @@
       ]
     },
     "bay_beta_platform_upgrade": {
-      "sheet": "BmpBigFill2",
-      "x": 1,
-      "y": 1768,
+      "sheet": "BmpBigFill2.p0",
+      "x": 1734,
+      "y": 1128,
       "width": 194,
       "height": 110,
       "framesX": 2,
@@ -5283,9 +5283,9 @@
       ]
     },
     "spaceship": {
-      "sheet": "BmpBigFill2",
-      "x": 0,
-      "y": 1878,
+      "sheet": "BmpBigFill2.p0",
+      "x": 2222,
+      "y": 1128,
       "width": 110,
       "height": 78,
       "framesX": 1,
@@ -5304,9 +5304,9 @@
       ]
     },
     "spaceship_upgrade_a": {
-      "sheet": "BmpBigFill2",
-      "x": 0,
-      "y": 1956,
+      "sheet": "BmpBigFill2.p0",
+      "x": 2442,
+      "y": 1128,
       "width": 110,
       "height": 78,
       "framesX": 1,
@@ -5324,9 +5324,9 @@
       ]
     },
     "spaceship_upgrade_b": {
-      "sheet": "BmpBigFill2",
-      "x": 0,
-      "y": 2034,
+      "sheet": "BmpBigFill2.p0",
+      "x": 2662,
+      "y": 1128,
       "width": 110,
       "height": 78,
       "framesX": 1,
@@ -5344,9 +5344,9 @@
       ]
     },
     "spaceship_upgrade_ab": {
-      "sheet": "BmpBigFill2",
-      "x": 0,
-      "y": 2112,
+      "sheet": "BmpBigFill2.p0",
+      "x": 2552,
+      "y": 1128,
       "width": 110,
       "height": 78,
       "framesX": 1,
@@ -5364,9 +5364,9 @@
       ]
     },
     "spaceship_broken": {
-      "sheet": "BmpBigFill2",
-      "x": 0,
-      "y": 2856,
+      "sheet": "BmpBigFill2.p0",
+      "x": 2332,
+      "y": 1128,
       "width": 110,
       "height": 78,
       "framesX": 1,
@@ -5385,9 +5385,9 @@
       ]
     },
     "pasiphae": {
-      "sheet": "BmpBigFill2",
-      "x": 0,
-      "y": 2755,
+      "sheet": "BmpBigFill2.p0",
+      "x": 2122,
+      "y": 1128,
       "width": 100,
       "height": 100,
       "framesX": 1,
@@ -5406,9 +5406,9 @@
       ]
     },
     "icarus": {
-      "sheet": "BmpBigFill2",
-      "x": 0,
-      "y": 2191,
+      "sheet": "BmpBigFill2.p0",
+      "x": 3796,
+      "y": 920,
       "width": 190,
       "height": 140,
       "framesX": 1,
@@ -5427,9 +5427,9 @@
       ]
     },
     "icarus_upgrade_a": {
-      "sheet": "BmpBigFill2",
+      "sheet": "BmpBigFill2.p0",
       "x": 0,
-      "y": 2332,
+      "y": 1128,
       "width": 190,
       "height": 140,
       "framesX": 1,
@@ -5447,9 +5447,9 @@
       ]
     },
     "icarus_upgrade_b": {
-      "sheet": "BmpBigFill2",
-      "x": 0,
-      "y": 2473,
+      "sheet": "BmpBigFill2.p0",
+      "x": 380,
+      "y": 1128,
       "width": 190,
       "height": 140,
       "framesX": 1,
@@ -5467,9 +5467,9 @@
       ]
     },
     "icarus_upgrade_ab": {
-      "sheet": "BmpBigFill2",
-      "x": 0,
-      "y": 2614,
+      "sheet": "BmpBigFill2.p0",
+      "x": 190,
+      "y": 1128,
       "width": 190,
       "height": 140,
       "framesX": 1,
@@ -5487,9 +5487,9 @@
       ]
     },
     "garden": {
-      "sheet": "BmpBigFill2",
-      "x": 0,
-      "y": 677,
+      "sheet": "BmpBigFill2.p0",
+      "x": 1920,
+      "y": 920,
       "width": 268,
       "height": 180,
       "framesX": 4,
@@ -5508,9 +5508,9 @@
       ]
     },
     "garden_upgrade_a": {
-      "sheet": "BmpBigFill2",
-      "x": 0,
-      "y": 858,
+      "sheet": "BmpBigFill2.p0",
+      "x": 2992,
+      "y": 920,
       "width": 268,
       "height": 180,
       "framesX": 1,
@@ -5528,9 +5528,9 @@
       ]
     },
     "garden_upgrade_b": {
-      "sheet": "BmpBigFill2",
-      "x": 0,
-      "y": 1039,
+      "sheet": "BmpBigFill2.p0",
+      "x": 3528,
+      "y": 920,
       "width": 268,
       "height": 180,
       "framesX": 1,
@@ -5548,9 +5548,9 @@
       ]
     },
     "garden_upgrade_ab": {
-      "sheet": "BmpBigFill2",
-      "x": 0,
-      "y": 1220,
+      "sheet": "BmpBigFill2.p0",
+      "x": 3260,
+      "y": 920,
       "width": 268,
       "height": 180,
       "framesX": 1,
@@ -5568,9 +5568,9 @@
       ]
     },
     "plasma_shield": {
-      "sheet": "BmpBigFill2",
-      "x": 0,
-      "y": 469,
+      "sheet": "BmpBigFill2.p0",
+      "x": 1680,
+      "y": 920,
       "width": 240,
       "height": 208,
       "framesX": 1,
@@ -5589,9 +5589,9 @@
       ]
     },
     "plasma_shield_upgrade": {
-      "sheet": "BmpBigFill2",
+      "sheet": "BmpBigFill2.p0",
       "x": 0,
-      "y": 469,
+      "y": 920,
       "width": 240,
       "height": 208,
       "framesX": 7,

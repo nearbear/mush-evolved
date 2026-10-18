@@ -18,7 +18,7 @@
 // a wall is drawn over (PlacedSprite.occluded) also gets a see-through outline
 // above everything. People in this room still take clicks through it.
 
-import { useEffect, useLayoutEffect, useMemo, useRef, useState, type ComponentType, type MouseEvent, type PointerEvent } from "react";
+import { Suspense, lazy, useEffect, useLayoutEffect, useMemo, useRef, useState, type ComponentType, type MouseEvent, type PointerEvent } from "react";
 import { useTranslation } from "react-i18next";
 import { createPortal } from "react-dom";
 import { CAMERA_EQUIPMENT, CORPSE_ITEM, type EquipmentView, type RoomId, type ShipLayout, type Target } from "@mush2/shared";
@@ -28,6 +28,7 @@ import { CAMERA_SLICES, equipmentByTileKey, roomAsBuilt } from "./equipmentTiles
 import { opaqueAt, preloadImage } from "./hitMask.ts";
 import { useWalkers } from "./useWalkers.ts";
 import type { ActingOn } from "./useActingOn.ts";
+import type { RendererChoice } from "../rendererChoice.ts";
 import { DomScene } from "./dom/DomScene.tsx";
 import { SceneOverlay, type Anchor } from "./SceneOverlay.tsx";
 import {
@@ -57,8 +58,11 @@ import {
   type PlacedSprite,
 } from "./placement.ts";
 
-/** What draws the scene. One renderer for now; a second one would be picked here. */
-const Renderer: ComponentType<SceneRendererProps> = DomScene;
+/** What can draw the scene. Pixi is loaded only when picked, so it stays out of the main bundle. */
+const RENDERERS: Record<RendererChoice, ComponentType<SceneRendererProps>> = {
+  dom: DomScene,
+  pixi: lazy(() => import("./pixi/PixiScene.tsx")),
+};
 
 /**
  * The seat for a chair that faces the given way. The art has two sitting poses, facing down-right
@@ -78,6 +82,7 @@ export function IsoRoom({
   occupants,
   nearby,
   fogDepth,
+  renderer,
   corpses,
   equipment,
   reachable,
@@ -102,6 +107,8 @@ export function IsoRoom({
   nearby: Partial<Record<RoomId, Occupant[]>>;
   /** How many rooms out from this one are drawn (fogged): 1 is just those behind its doors, "all" is the whole ship. */
   fogDepth: 1 | 2 | "all";
+  /** Which renderer draws the room (a viewer setting). */
+  renderer: RendererChoice;
   /** Corpses on this room's floor (items, drawn lying down). A carried corpse isn't on the floor, so isn't here. */
   corpses: Corpse[];
   /** Equipment in this room, from the view. Only these sprites are clickable. */
@@ -336,6 +343,8 @@ export function IsoRoom({
     return person ? [{ key: s.key, x: s.x, y: s.y, width: s.width, height: s.height, person }] : [];
   });
 
+  const Renderer = RENDERERS[renderer];
+
   if (!roomLayout) return <section className="iso-room missing">No map for {names.room(room)}</section>;
 
   /** What a sprite does when clicked, or null for scenery. */
@@ -450,7 +459,9 @@ export function IsoRoom({
               </div>,
               document.body,
             )}
-          <Renderer scene={drawn} ref={rendererRef} />
+          <Suspense fallback={null}>
+            <Renderer scene={drawn} ref={rendererRef} />
+          </Suspense>
           {/* Status badges and speech bubbles above the scene, so no sprite or wall can ever cover them. */}
           <SceneOverlay anchors={anchors} width={drawn.width} height={drawn.height} bubbles={bubbles} clockOffset={clockOffset} ref={overlayRef} />
         </div>

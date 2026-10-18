@@ -1,6 +1,8 @@
 // Loads Mush/derived/ship-layout.json (CC BY-NC-SA, see Mush/ATTRIBUTION.md)
 // and the atlas images it references. Fetched rather than imported so the
 // 400 KB of JSON stays out of the JS bundle and out of type inference.
+// BigFill and BigFill2 are too big for some GPUs; the layout points at their
+// repacked pages in derived/pages/ instead (tools/src/shipLayout/pages.ts).
 
 import { useEffect, useState } from "react";
 import type { ShipLayout } from "@mush2/shared";
@@ -8,7 +10,7 @@ import layoutUrl from "../../../Mush/derived/ship-layout.json?url";
 import { withoutBuiltOnly } from "./equipmentTiles.ts";
 
 const atlases = import.meta.glob<string>(
-  "../../../Mush/clients/iso/gfx/{gfx_01,fx,SmallFill,MidFill,MidFill2,BigFill,BigFill2,dev,Masks}.png",
+  ["../../../Mush/clients/iso/gfx/{gfx_01,fx,SmallFill,MidFill,MidFill2,dev,Masks}.png", "../../../Mush/derived/pages/*.png"],
   { eager: true, query: "?url", import: "default" },
 );
 

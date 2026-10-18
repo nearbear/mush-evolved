@@ -48,6 +48,11 @@
       "one": "1 sala alrededor",
       "two": "2 salas alrededor",
       "all": "Toda la nave"
+    },
+    "renderer": {
+      "label": "Renderizado de la sala",
+      "dom": "Estándar",
+      "pixi": "PixiJS (prueba)"
     }
   },
   "language": {

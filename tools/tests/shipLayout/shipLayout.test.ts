@@ -5,7 +5,8 @@ import { describe, expect, it } from "vitest";
 import type { ShipPlan, ShipRoom } from "@mush2/shared";
 import { convert, formatLayout, formatRooms, ROOM_IDS, roomGraph } from "../../src/shipLayout/convert.ts";
 import { unserialize } from "../../src/shipLayout/haxe.ts";
-import { decodePng, pngSize, type Image } from "../../src/shipLayout/png.ts";
+import { decodePng, encodePng as writePng, pngSize, type Image } from "../../src/shipLayout/png.ts";
+import { buildPage, pageSheets } from "../../src/shipLayout/pages.ts";
 import { cachedPlan, convertShipPlan, formatShipPlan, runs } from "../../src/shipLayout/shipPlan.ts";
 import { parseXml } from "../../src/shipLayout/xml.ts";
 
@@ -56,6 +57,12 @@ describe("decodePng", () => {
 
   it("reads the size from the header", () => {
     expect(pngSize(encodePng(2, 2, pixels))).toEqual({ width: 2, height: 2 });
+  });
+
+  it("reads back what encodePng writes", () => {
+    const img = { width: 3, height: 2, rgba: new Uint8Array([...pixels, 1, 2, 3, 4, 200, 100, 50, 25]) };
+    const back = decodePng(writePng(img));
+    expect([back.width, back.height, ...back.rgba]).toEqual([3, 2, ...img.rgba]);
   });
 
   it("decodes the real ship map (RGBA, all filter types)", () => {
@@ -134,14 +141,27 @@ describe("convert", () => {
 });
 
 describe("generated ship-layout.json", () => {
-  it("is up to date with ShipMap.png and tiles.xml (run `npm run ship-layout`)", () => {
-    const layout = convert(
+  const { layout, pages } = pageSheets(
+    convert(
       decodePng(readFileSync(resolve(MUSH, "clients/iso/gfx/ShipMap.png"))),
       readFileSync(resolve(MUSH, "clients/iso/xml/tiles.xml"), "utf8"),
       (image) => pngSize(readFileSync(resolve(MUSH, image))),
-    );
+    ),
+  );
+
+  it("is up to date with ShipMap.png and tiles.xml (run `npm run ship-layout`)", () => {
     expect(formatLayout(layout)).toBe(readFileSync(resolve(MUSH, "derived/ship-layout.json"), "utf8"));
     expect(formatRooms(roomGraph(layout))).toBe(readFileSync(resolve(MUSH, "derived/ship-rooms.json"), "utf8"));
+  });
+
+  it("has every sheet within a phone GPU's texture limit, and its pages up to date", () => {
+    for (const sheet of Object.values(layout.sheets)) expect(Math.max(sheet.width, sheet.height)).toBeLessThanOrEqual(4096);
+    expect(pages.length).toBeGreaterThan(0);
+    for (const page of pages) {
+      const source = decodePng(readFileSync(resolve(MUSH, page.source)));
+      const written = decodePng(readFileSync(resolve(MUSH, page.image)));
+      expect(Buffer.from(written.rgba).equals(Buffer.from(buildPage(source, page).rgba)), page.image).toBe(true);
+    }
   });
 
   it("has two-way doors only", () => {

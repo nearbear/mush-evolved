@@ -59,6 +59,30 @@
 									{
 										"group": ["@mush2/server", "@mush2/server/*"],
 										"message": "web talks to the server over the protocol only."
+									},
+									{
+										"group": ["pixi.js", "pixi.js/*"],
+										"message": "Pixi stays behind the renderer seam, in web/src/iso/pixi/ (see web/src/iso/CLAUDE.md)."
+									}
+								]
+							}
+						}
+					}
+				}
+			}
+		},
+		{
+			"includes": ["web/src/iso/pixi/**"],
+			"linter": {
+				"rules": {
+					"style": {
+						"noRestrictedImports": {
+							"level": "error",
+							"options": {
+								"patterns": [
+									{
+										"group": ["@mush2/server", "@mush2/server/*"],
+										"message": "web talks to the server over the protocol only."
 									}
 								]
 							}

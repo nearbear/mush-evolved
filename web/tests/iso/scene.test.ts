@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { RoomId, ShipLayout } from "@mush2/shared";
 import type { PlacedSprite } from "../../src/iso/placement.ts";
-import { describeScene, type Occupant, type SceneInput } from "../../src/iso/scene.ts";
+import { animFrame, describeScene, type Occupant, type SceneInput } from "../../src/iso/scene.ts";
 import type { Walker } from "../../src/iso/useWalkers.ts";
 
 const HERE = "bridge" as RoomId;
@@ -131,5 +131,16 @@ describe("describeScene", () => {
     expect(only(s)).toMatchObject({ role: "corpse", shadow: "lying", effect: "hover" });
     expect(s.outlines).toEqual([]);
     expect(only(scene([body], { corpses, hoverKey: "a:corpse:c1", selected: { kind: "item", id: "c1" } as never })).effect).toBe("selected");
+  });
+});
+
+describe("animFrame", () => {
+  const swivel = { frames: [0, 1, 2, 1], frameMs: 200, loops: "forever" as const };
+  it("steps through the frames and loops forever", () => {
+    expect([0, 199, 200, 650, 800, 1000].map((t) => animFrame(swivel, t))).toEqual([0, 0, 1, 1, 0, 1]);
+  });
+  it("rests on the first frame after its rounds", () => {
+    const walkIn = { frames: [0, 1, 2], frameMs: 100, loops: 2 };
+    expect([250, 550, 600, 5000].map((t) => animFrame(walkIn, t))).toEqual([2, 2, 0, 0]);
   });
 });

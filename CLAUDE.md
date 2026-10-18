@@ -21,7 +21,7 @@ Decided:
 
 - TypeScript everywhere; React for the web client, with Base UI (`@base-ui/react`, unstyled) for widgets like tabs and scroll areas.
 - **PartyServer** (Cloudflare Durable Objects) for the realtime server, with custom authoritative rooms.
-- **Basic DOM-rendered prototype first.** The next renderer for the iso view is **PixiJS** (2D WebGL), decided 2026-10-18 after profiling showed the DOM view is paint-bound while people walk ([#194](https://github.com/nearbear/mush2/issues/194) has the baseline). three.js is not planned. Adding `pixi.js` still needs approval when the spike starts.
+- **Basic DOM-rendered prototype first.** The next renderer for the iso view is **PixiJS** (2D WebGL), decided 2026-10-18 after profiling showed the DOM view is paint-bound while people walk ([#194](https://github.com/nearbear/mush2/issues/194) has the baseline). three.js is not planned. `pixi.js@8.22.0` was approved and added 2026-10-18; the Pixi renderer is on trial behind the Room renderer setting, with the DOM one still the default.
 - Monorepo with `web`, `server`, and `shared` packages. Vite for the client; Vitest for tests.
 
 Rejected (see `docs/ai-workflow.md`):

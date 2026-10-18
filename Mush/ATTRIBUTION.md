@@ -14,7 +14,10 @@ the files themselves are unmodified.
 `ship-rooms.json`, built from `clients/iso/gfx/ShipMap.png` and
 `clients/iso/xml/tiles.xml`, and `ship-plan.json`, decoded from the ship plan
 serialized in `src/common/data/Map.hx`, all by `npm run ship-layout`). They are
-adaptations and are also licensed CC BY-NC-SA 4.0.
+adaptations and are also licensed CC BY-NC-SA 4.0. `derived/pages/*.png` are
+`clients/iso/gfx/BigFill.png` and `BigFill2.png` repacked by the same command
+into images of at most 4096 px a side (the sprites are copied unchanged, some
+animation strips wrapped onto two rows), so phone GPUs can load them.
 
 `package.json` is project metadata, not part of the upstream material; it lets
 the game's code import `derived/` by package name.

@@ -1,6 +1,7 @@
 // Build-time converter: Motion Twin's ShipMap.png + tiles.xml -> ship-layout.json
 // (everything the renderer needs) and ship-rooms.json (just the room graph, for the rules).
-// Also writes ship-plan.json, the minimap's deck plan (see shipPlan.ts).
+// Also writes ship-plan.json, the minimap's deck plan (see shipPlan.ts), and cuts sheets too big
+// for a GPU texture into pages under derived/pages/ (see pages.ts).
 //
 // Run with `npm run ship-layout`. Reproduces how the original Flash client
 // read these files (clients/iso/src/Data.hx `makeMap`/`addToStore`, Ship.hx
@@ -25,7 +26,8 @@ import type {
 // The leaf module, not the package index: the index loads config.ts, which reads the file this tool writes.
 import { placedEquipment } from "../../../shared/src/shipLayout.ts";
 import { EQUIPMENT_TYPES } from "../../../shared/src/equipment.ts";
-import { decodePng, pngSize, type Image } from "./png.ts";
+import { decodePng, encodePng, pngSize, type Image } from "./png.ts";
+import { buildPage, pageSheets } from "./pages.ts";
 import { cachedPlan, convertShipPlan, formatShipPlan } from "./shipPlan.ts";
 import { stretchRooms } from "./stretch.ts";
 import { child, childrenNamed, parseXml, type XmlElement } from "./xml.ts";
@@ -364,9 +366,17 @@ export function formatLayout(layout: ShipLayout): string {
 if (import.meta.main) {
   const map = decodePng(readFileSync(resolve(MUSH, ISO, "gfx/ShipMap.png")));
   const xml = readFileSync(resolve(MUSH, ISO, "xml/tiles.xml"), "utf8");
-  const layout = convert(map, xml, (image) => pngSize(readFileSync(resolve(MUSH, image))));
+  const { layout, pages } = pageSheets(convert(map, xml, (image) => pngSize(readFileSync(resolve(MUSH, image)))));
   mkdirSync(dirname(OUTPUT), { recursive: true });
   writeFileSync(OUTPUT, formatLayout(layout));
+  for (const source of new Set(pages.map((p) => p.source))) {
+    const img = decodePng(readFileSync(resolve(MUSH, source)));
+    for (const page of pages.filter((p) => p.source === source)) {
+      mkdirSync(dirname(resolve(MUSH, page.image)), { recursive: true });
+      writeFileSync(resolve(MUSH, page.image), encodePng(buildPage(img, page)));
+    }
+  }
+  if (pages.length) console.log(`Wrote ${pages.length} sheet pages: ${pages.map((p) => `${p.image} (${p.width}x${p.height})`).join(", ")}.`);
   writeFileSync(ROOMS_OUTPUT, formatRooms(roomGraph(layout)));
   const plan = convertShipPlan(cachedPlan(readFileSync(resolve(MUSH, "src/common/data/Map.hx"), "utf8")), ROOM_IDS);
   writeFileSync(PLAN_OUTPUT, formatShipPlan(plan));

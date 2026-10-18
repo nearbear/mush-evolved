@@ -6,7 +6,8 @@ import { useEffect, useState } from "react";
 
 const cache = new Map<string, Promise<string>>();
 
-function keyOut(src: string): Promise<string> {
+/** The image at `src` with its background color keyed out, as an object URL; once per image. */
+export function keyedUrl(src: string): Promise<string> {
   let result = cache.get(src);
   if (!result) {
     result = new Promise<string>((resolve, reject) => {
@@ -39,7 +40,7 @@ export function useKeyedSprite(src: string): string | undefined {
   const [url, setUrl] = useState<string>();
   useEffect(() => {
     let live = true;
-    keyOut(src).then((u) => live && setUrl(u), () => live && setUrl(src));
+    keyedUrl(src).then((u) => live && setUrl(u), () => live && setUrl(src));
     return () => {
       live = false;
     };

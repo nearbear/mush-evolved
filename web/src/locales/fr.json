@@ -48,6 +48,11 @@
       "one": "1 salle autour",
       "two": "2 salles autour",
       "all": "Tout le vaisseau"
+    },
+    "renderer": {
+      "label": "Rendu de la salle",
+      "dom": "Standard",
+      "pixi": "PixiJS (essai)"
     }
   },
   "language": {

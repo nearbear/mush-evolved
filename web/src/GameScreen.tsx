@@ -22,6 +22,7 @@ import { LeavingIsoRoom } from "./iso/LeavingRoom.tsx";
 import { useShipLayout } from "./iso/shipLayout.ts";
 import { useActingOn } from "./iso/useActingOn.ts";
 import { useFogDepth } from "./fogDepth.ts";
+import { useRendererChoice } from "./rendererChoice.ts";
 import { useSpeechBubbles } from "./scene/useSpeechBubbles.ts";
 import type { Bar } from "./scene/ActionBar.tsx";
 import { useNames } from "./i18n/names.ts";
@@ -43,6 +44,7 @@ export function GameScreen({ ticket, onLeave }: { ticket: SeatTicket; onLeave: (
   // Phone layout only: which panel is on screen, and a door tapped in the room.
   const mobile = useMobile();
   const fogDepth = useFogDepth();
+  const renderer = useRendererChoice();
   const [panel, setPanel] = useState<MobilePanel>("room");
   const [roomLogRequest, setRoomLogRequest] = useState(0);
   /** Equipment id of the terminal window that is open, if any. UI-only. */
@@ -180,6 +182,7 @@ export function GameScreen({ ticket, onLeave }: { ticket: SeatTicket; onLeave: (
                 nearby={nearby}
                 corpses={corpses}
                 fogDepth={fogDepth}
+                renderer={renderer}
                 equipment={view.roomEquipment}
                 reachable={reachable}
                 selected={target}

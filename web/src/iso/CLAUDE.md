@@ -15,7 +15,9 @@ Loaded when working on the isometric view. The UI rules in `web/CLAUDE.md` still
   A renderer is a component taking `{ scene, ref }` (`SceneRendererProps`): it draws the scene at
   exactly 1x and takes per-frame camera and walker offsets through `ref.setFrame`, with no input
   and no game state. The DOM one is `dom/DomScene.tsx` (one absolutely positioned div per sprite,
-  effects as `fx-*` classes in `styles/iso.css`); `IsoRoom` picks it in `Renderer`. Effect
+  effects as `fx-*` classes in `styles/iso.css`). The Pixi one (`pixi/`, on trial behind the
+  Room renderer setting, `rendererChoice.ts`) is an imperative class behind a thin component,
+  lazy-loaded; only `pixi/` may import `pixi.js` (a Biome rule). `IsoRoom` picks one from `RENDERERS`. Effect
   precedence (which wins when hovered and selected) is decided in `describeScene`, not in CSS.
   Badges, action bars and speech bubbles stay DOM whatever the renderer (`SceneOverlay.tsx`, in its
   own world above the scene, moved by the same frames). Keep renderer-specific code out of
@@ -71,7 +73,8 @@ Loaded when working on the isometric view. The UI rules in `web/CLAUDE.md` still
 `npm run ship-view` (needs `npm run dev` running) joins a ship, sets the fog to "whole ship", makes
 the iso panel fill a large window, and saves one screenshot to `.screenshots/ship.png`. Use it for
 anything that spans rooms (walls, fog, neighbour placement); `npm run screenshot` only shows one room
-at panel size. Read the PNG and actually look.
+at panel size. Read the PNG and actually look. Both find things by the DOM renderer's class names,
+so they always shoot the DOM renderer (a fresh browser's default); shooting the Pixi one is still to do.
 
 - `-- --walk "Front corridor,Bridge"` walks through those doors in order first (door labels, as the
   room's title shows them). The lit room is the last one; everything else is fogged.
