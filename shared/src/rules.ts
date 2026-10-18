@@ -130,7 +130,7 @@ export function unaffordableActions(state: GameState, playerId: PlayerId): Actio
       if (def.check(state, p, a) !== "cant_afford") return [];
       const cost = def.cost(state, p, a);
       const lacks: ("ap" | "mp")[] = [...(p.ap < cost.ap ? (["ap"] as const) : []), ...(p.mp < cost.mp ? (["mp"] as const) : [])];
-      return [{ action: a, cost, chance: def.chance?.(state, p, a) ?? 1, lacks }];
+      return [{ action: a, cost, chance: def.chance?.(state, p, a) ?? 1, tags: [...def.tags], lacks }];
     }),
   );
 }
@@ -347,7 +347,7 @@ export function viewFor(state: GameState, playerId: PlayerId): PlayerView {
 function legalOptions(state: GameState, p: PlayerState, legal: Action[]): ActionOption[] {
   return legal.map((a) => {
     const def = ACTIONS[a.type] as ActionDef<Action>;
-    return { action: a, cost: def.cost(state, p, a), chance: def.chance?.(state, p, a) ?? 1, lacks: [] };
+    return { action: a, cost: def.cost(state, p, a), chance: def.chance?.(state, p, a) ?? 1, tags: [...def.tags], lacks: [] };
   });
 }
 

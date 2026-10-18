@@ -4,7 +4,7 @@ import { ConsumeAction } from "./actions/consume.ts";
 import { CookAction } from "./actions/cook.ts";
 import { DismantleAction } from "./actions/dismantle.ts";
 import { AccessAction } from "./actions/access.ts";
-import type { ActionVisibility } from "./actions/action.ts";
+import type { ActionTag, ActionVisibility } from "./actions/action.ts";
 import { DispenseAction } from "./actions/dispense.ts";
 import { ExamineAction } from "./actions/examine.ts";
 import { ExtractSporeAction } from "./actions/extract_spore.ts";
@@ -33,11 +33,13 @@ export interface ActionCost {
   mp: number;
 }
 
-export type { ActionVisibility };
+export type { ActionTag, ActionVisibility };
 
 export interface ActionDef<A extends Action> {
   /** Who learns of it; the same for every candidate of a type. */
   readonly visibility: ActionVisibility;
+  /** What kind of action it is, for rules that react to kinds (see `ActionTag`); the same for every candidate of a type. */
+  readonly tags: readonly ActionTag[];
   /** Whether it takes time and goes through the queue (queue.ts), or happens at once. */
   readonly timed: boolean;
   candidates(state: Readonly<GameState>, player: Readonly<PlayerState>): A[];

@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { ACTIONS } from "../src/actions.ts";
 import { CHARACTERS } from "../src/characters.ts";
 import { DEFAULT_CONFIG } from "../src/config.ts";
 import { parseGameMessage } from "../src/protocol.ts";
@@ -128,5 +129,17 @@ describe("spiking", () => {
       type: "action",
       action: spike("p1"),
     });
+  });
+});
+
+describe("spore tags", () => {
+  it("tags spiking as a spore action, but not extracting a spore (owner, 2026-10-18)", () => {
+    expect(ACTIONS.spike.tags).toEqual(["spore"]);
+    expect(ACTIONS.extract_spore.tags).toEqual([]);
+    expect(viewFor(ship(), "p0").actions.find((o) => o.action.type === "spike")?.tags).toEqual(["spore"]);
+  });
+
+  it("never reaches a human's view, even with a Mush in the room", () => {
+    for (const id of ["p1", "p3"]) expect(viewFor(ship(), id).actions.some((o) => o.tags.includes("spore"))).toBe(false);
   });
 });

@@ -1,4 +1,4 @@
-import { Action, peopleHere, type ActionVisibility } from "./action.ts";
+import { Action, peopleHere, type ActionTag, type ActionVisibility } from "./action.ts";
 import { logCovert } from "../log.ts";
 import { contaminate } from "../infection.ts";
 import { ringMycoAlarms } from "../mycoalarm.ts";
@@ -15,6 +15,7 @@ export type SpikeActionData = { type: "spike"; target: string };
  */
 export class SpikeAction extends Action<SpikeActionData> {
   override visibility: ActionVisibility = "covert";
+  override tags: readonly ActionTag[] = ["spore"];
 
   constructor() {
     super("spike");

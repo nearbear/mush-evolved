@@ -1,4 +1,4 @@
-import type { ActionCost } from "../actions.ts";
+import type { ActionCost, ActionTag } from "../actions.ts";
 import type { CharacterId } from "../characters.ts";
 import type { Action, BotKind, ItemId, LogEntry, PlayerId, RoomId } from "../types.ts";
 import type { ChannelId, ChatMessage, PrivateChannel } from "./chat.ts";
@@ -135,6 +135,8 @@ export interface ActionOption {
   cost: ActionCost;
   /** 0 to 1. */
   chance: number;
+  /** What kind of action it is (aggressive, spore), so the UI can mark it. Fixed per action type. */
+  tags: ActionTag[];
   /** Empty when you can do it now; otherwise the points you lack. See `affordable`. */
   lacks: ("ap" | "mp")[];
 }

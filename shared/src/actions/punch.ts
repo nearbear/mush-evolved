@@ -1,4 +1,4 @@
-import { Action, peopleHere } from "./action.ts";
+import { Action, peopleHere, type ActionTag } from "./action.ts";
 import { damage } from "../death.ts";
 import { logPublic } from "../log.ts";
 import { punchDamage } from "../modifiers.ts";
@@ -12,6 +12,8 @@ export type PunchActionData = { type: "punch"; target: string };
  * are public room history.
  */
 export class PunchAction extends Action<PunchActionData> {
+  override tags: readonly ActionTag[] = ["aggressive"];
+
   constructor() {
     super("punch");
   }

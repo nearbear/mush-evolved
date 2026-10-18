@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { ACTIONS } from "../src/actions.ts";
 import { CHARACTERS } from "../src/characters.ts";
 import { DEFAULT_CONFIG } from "../src/config.ts";
 import { parseGameMessage } from "../src/protocol.ts";
@@ -91,7 +92,7 @@ describe("unaffordable actions in the view", () => {
     player(s, "p0").ap = 0;
     const v = viewFor(s, "p0");
     expect(legalIn(v)).not.toContainEqual(punch("p1"));
-    expect(v.actions).toContainEqual({ action: punch("p1"), cost: { ap: 1, mp: 0 }, chance: 0.6, lacks: ["ap"] });
+    expect(v.actions).toContainEqual({ action: punch("p1"), cost: { ap: 1, mp: 0 }, chance: 0.6, tags: ["aggressive"], lacks: ["ap"] });
   });
 
   it("does not list actions blocked by anything else, such as a target in another room", () => {
@@ -111,5 +112,12 @@ describe("chances in the view", () => {
     const v = viewFor(ship(), "p0");
     expect(v.actions.find((o) => o.action.type === "punch" && o.action.target === "p1")?.chance).toBe(0.6);
     expect(v.actions.find((o) => o.action.type === "bond")?.chance).toBe(1);
+  });
+});
+
+describe("punch tags", () => {
+  it("is aggressive, and the view says so", () => {
+    expect(ACTIONS.punch.tags).toEqual(["aggressive"]);
+    expect(viewFor(ship(), "p0").actions.find((o) => o.action.type === "punch")?.tags).toEqual(["aggressive"]);
   });
 });

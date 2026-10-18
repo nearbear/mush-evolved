@@ -10,9 +10,18 @@ export const peopleHere = (state: Readonly<GameState>, p: Readonly<PlayerState>)
  */
 export type ActionVisibility = "public" | "private" | "secret" | "covert";
 
+/**
+ * Kinds of action that other rules react to, so those rules never list action types (issue 30, owner 2026-10-18).
+ * - `aggressive`: an attack on someone. No effects yet; later ones include Pacifist's surcharge in its room.
+ * - `spore`: a Mush ability that rings a myco alarm on the floor of the room where it resolves (mycoalarm.ts).
+ */
+export type ActionTag = "aggressive" | "spore";
+
 export class Action<T extends { type: string }> {
   type: string;
   visibility: ActionVisibility = "public";
+  /** Fixed per type, like visibility, so safe for the client to show. */
+  tags: readonly ActionTag[] = [];
   /** Takes `config.action.durationMs` and waits its turn in the queue (queue.ts). False only for only a few actions. */
   timed: boolean = true;
   baseAPCost: number = 0;
