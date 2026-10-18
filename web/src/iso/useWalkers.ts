@@ -6,9 +6,9 @@
 // effects are off).
 //
 // React only re-renders when someone crosses into another cell or turns (paint order and the strip
-// depend on those). In between, an animation frame loop shifts their elements (`data-walker`) and
-// the camera by whole pixels from where React placed them, so the motion is continuous and the
-// camera stays locked on you.
+// depend on those). In between, an animation frame loop hands the renderer how far, in whole pixels,
+// each walker is from where React placed them, so the motion is continuous and the camera stays
+// locked on you. This hook doesn't draw: whatever `paint` does with the offsets is the renderer's.
 
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, type RefObject } from "react";
 import type { RoomId } from "@mush2/shared";
@@ -62,17 +62,15 @@ const cellOf = (p: Cell) => ({ x: Math.round(p.x), y: Math.round(p.y) });
 /**
  * Walkers in `room`, by id: everyone in `targets` moves to their target cell; anyone new is drawn
  * there straight away. A target that can't be reached on foot is jumped to, and so is every target of
- * `teleport` (the instant actions cheat: you jump, as before walking). `world` is the element
- * holding the `data-walker` elements and taking the camera transform; `camera` is that transform as
- * React last rendered it, with whose walker it follows. Call `apply` after every render so the
- * pixel shifts are put back on whatever React rewrote.
+ * `teleport` (the instant actions cheat: you jump, as before walking). `paint` is called with
+ * `offsetOf` on every animation frame while anyone walks; call `apply` after every render too, so
+ * the pixel shifts are put back on whatever React rewrote.
  */
 export function useWalkers(
   room: RoomId,
   cells: readonly Cell[],
   targets: ReadonlyMap<string, Cell>,
-  world: RefObject<HTMLElement | null>,
-  camera: RefObject<{ x: number; y: number; follow: string | undefined }>,
+  paint: RefObject<((offsetOf: (id: string) => { x: number; y: number }) => void) | null>,
   teleport?: string,
 ) {
   const motions = useRef(new Map<string, Motion>());
@@ -92,13 +90,10 @@ export function useWalkers(
     const m = motions.current.get(id);
     at.set(id, m ? { cell: cellOf(m.pos), facing: m.facing, moving: m.route.length > 0, arriving: m.arriving } : { cell: target, facing: STANDING, moving: false, arriving: false });
   }
-  // What the last commit drew, which the pixel shifts are measured from, and the elements it drew
-  // them with (found once per commit, not on every frame: the world holds thousands of sprites).
+  // What the last commit drew, which the pixel shifts are measured from.
   const drawn = useRef(at);
-  const nodes = useRef<HTMLElement[]>([]);
   useLayoutEffect(() => {
     drawn.current = at;
-    nodes.current = [...(world.current?.querySelectorAll<HTMLElement>("[data-walker]") ?? [])];
   });
 
   /** Pixels between where React placed someone and where they are. */
@@ -109,20 +104,7 @@ export function useWalkers(
     return { x: Math.round(px.x), y: Math.round(px.y) };
   }, []);
 
-  const apply = useCallback(() => {
-    const el = world.current;
-    if (!el) return;
-    // Only changed values are written, so standing people cost nothing per frame.
-    for (const node of nodes.current) {
-      const o = offsetOf(node.dataset.walker!);
-      const translate = o.x || o.y ? `${o.x}px ${o.y}px` : "";
-      if (node.style.translate !== translate) node.style.translate = translate;
-    }
-    const cam = camera.current;
-    const o = cam.follow ? offsetOf(cam.follow) : { x: 0, y: 0 };
-    const transform = `translate(${cam.x - o.x}px, ${cam.y - o.y}px)`;
-    if (el.style.transform !== transform) el.style.transform = transform;
-  }, [world, camera, offsetOf]);
+  const apply = useCallback(() => paint.current?.(offsetOf), [paint, offsetOf]);
 
   const frame = useRef(0);
   const loop = useCallback(() => {

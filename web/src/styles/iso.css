@@ -36,27 +36,34 @@
   left: 0;
   top: 0;
 }
-/* The rooms behind the doors, dimmed. Per sprite, and dimmed rather than see-through, because
-   their sprites interleave with this room's (IsoRoom): see-through ones would show what they cover. */
-.iso-sprite.neighbor,
-.iso-actor.neighbor {
+/* Effects, by what scene.ts says they mean (DomScene sets one fx-* class per sprite). The rooms behind
+   the doors are dimmed per sprite, and dimmed rather than see-through, because their sprites interleave
+   with this room's: see-through ones would show what they cover. */
+.fx-fogged {
   filter: brightness(0.3);
 }
-.iso-sprite.neighbor.selected,
-.iso-actor.neighbor.selected,
-.iso-sprite.neighbor.reachable.hover,
-.iso-actor.neighbor.reachable.hover {
+.fx-fogged-lifted {
   filter: brightness(0.5);
+}
+/* Hover is set by hit-testing, for mouse and pen only. */
+.fx-hover {
+  filter: brightness(1.2);
+}
+.fx-door-hover {
+  filter: brightness(1.35) drop-shadow(0 0 3px var(--accent));
+}
+.fx-selected {
+  filter: drop-shadow(0 0 2px var(--highlight));
 }
 .iso-layer {
   position: absolute;
   left: 0;
   top: 0;
   transform-origin: 0 0;
-  --sprite-scale: 1;
 }
 .iso-sprite,
-.iso-actor {
+.iso-actor,
+.iso-pose {
   position: absolute;
   background-repeat: no-repeat;
   image-rendering: pixelated;
@@ -70,63 +77,13 @@
 .iso-viewport.pointing {
   cursor: pointer;
 }
-/* .hover is set by hit-testing, for mouse and pen only. */
-.iso-sprite.equipment.hover {
-  filter: brightness(1.2);
-}
-.iso-sprite.door.reachable.hover {
-  filter: brightness(1.35) drop-shadow(0 0 3px var(--accent));
-}
-.iso-sprite.equipment.selected,
-.iso-sprite.door.selected,
-.iso-actor.selected {
-  filter: drop-shadow(0 0 2px var(--highlight));
-}
 
-/* One frame of a 6 x (32x48) strip, scaled up without smoothing. */
-.crew-sprite {
-  width: calc(32px * var(--sprite-scale));
-  height: calc(48px * var(--sprite-scale));
-  background-size: calc(192px * var(--sprite-scale)) 100%;
-  background-repeat: repeat-x;
-  image-rendering: pixelated;
+/* A person's or a body's pose inside its .iso-actor box, with its own shadow (the box takes the effect). */
+.shadow-standing {
   filter: drop-shadow(0 3px 2px rgb(0 0 0 / 0.6));
 }
-/* The lying frame of the cast sheet (a corpse's pose), at 1x. */
-.lying-sprite {
-  width: 50px;
-  height: 48px;
-  background-repeat: no-repeat;
-  image-rendering: pixelated;
+.shadow-lying {
   filter: drop-shadow(0 2px 1px rgb(0 0 0 / 0.6));
-}
-
-/* A sitting frame of the cast sheet, at 1x. */
-.seated-sprite {
-  width: 32px;
-  height: 48px;
-  background-repeat: no-repeat;
-  image-rendering: pixelated;
-  filter: drop-shadow(0 3px 2px rgb(0 0 0 / 0.6));
-}
-.crew-sprite.flip {
-  transform: scaleX(-1);
-}
-/* Someone who just appeared in the room walks in (useWalkers): two cycles, standing otherwise. */
-.crew-sprite.arriving {
-  animation: walk-frames 0.5s steps(6) 2;
-}
-/* Walking (useWalkers): the walk cycle loops until they arrive. */
-.crew-sprite.walking {
-  animation: walk-frames 0.5s steps(6) infinite;
-}
-@keyframes walk-frames {
-  from {
-    background-position-x: 0;
-  }
-  to {
-    background-position-x: calc(-192px * var(--sprite-scale));
-  }
 }
 
 .iso-room.loading {
@@ -149,10 +106,6 @@
 .iso-esp .iso-actor.neighbor.occluded {
   opacity: 0.45;
   animation: none;
-}
-/* The filter colors the silhouette; the sprite's own shadow would widen it. */
-.iso-esp .crew-sprite {
-  filter: none;
 }
 @keyframes esp-pulse {
   from {
@@ -266,17 +219,6 @@
   .speech-bubble {
     animation: bubble-out 0.8s ease-in calc(var(--bubble-ms, 5000ms) - 0.8s) forwards;
   }
-}
-
-/* A corpse on the floor (IsoRoom): the lying pose, at 1x like every iso sprite. */
-.iso-actor.corpse {
-  filter: drop-shadow(0 2px 1px rgb(0 0 0 / 0.6));
-}
-.iso-actor.corpse.hover {
-  filter: brightness(1.2) drop-shadow(0 2px 1px rgb(0 0 0 / 0.6));
-}
-.iso-actor.corpse.selected {
-  filter: drop-shadow(0 0 2px var(--highlight));
 }
 
 /* Where the room was, for a dead player (DeathNotice): they see nothing room-based. */

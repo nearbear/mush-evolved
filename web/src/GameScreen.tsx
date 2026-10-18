@@ -17,7 +17,7 @@ import { SelfPanel } from "./hud/SelfPanel.tsx";
 import { resolveTarget } from "./hud/targets.ts";
 import { TopBar } from "./hud/TopBar.tsx";
 import { gameSocket, type SeatTicket } from "./net.ts";
-import type { Corpse, Occupant } from "./iso/IsoRoom.tsx";
+import type { Corpse, Occupant } from "./iso/scene.ts";
 import { LeavingIsoRoom } from "./iso/LeavingRoom.tsx";
 import { useShipLayout } from "./iso/shipLayout.ts";
 import { useActingOn } from "./iso/useActingOn.ts";

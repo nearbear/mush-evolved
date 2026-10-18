@@ -42,8 +42,12 @@ All under `web/src/`. UI rules are in `web/CLAUDE.md`.
 
 - `placement.ts`: pure layout math (projection, paint order, walkable cells, hit-testing).
 - `equipmentTiles.ts`: which tile draws which equipment (`equipmentByTileKey`, also used by the Inspect panel); `SOFA_SPOTS` (hand-picked sofa spots), `withoutBuiltOnly` (drops the map's built-only tiles at load) and `roomAsBuilt` (adds the room's sofa tile once one is built).
-- `IsoRoom.tsx`: renders the scene with a following camera; the layout holds a `camera`/`camera2` tile in every room, drawn only in your own room and only when `view.roomEquipment` has a `CAMERA` (and clickable as that equipment); handles clicks. Corpses on the floor are placed as actors and drawn with the lying pose (`lyingFrame`); clicking one selects the item. Clicking a chair sits you on it (`seatFor`, `SeatedSprite`, `sittingFrame` in `art/assets.ts`); client-only like walking.
-- `useWalkers.ts`: walking (client-only): everyone in your room walks to their spot along `walkPath` + `smoothPath`, moved per frame by whole pixels with the camera locked on you; facing by screen direction. You enter standing at the door you came through (`doorSpot`). Nothing waits for a walk.
+- `scene.ts`: the renderer seam, pure. `describeScene` turns placed sprites into a `Scene` (image frames, positions, animations, effects by meaning, see-through outlines); `SceneRendererProps` is what a renderer takes. Also `Occupant`, `Corpse`, `imageOf` (a sprite's frame, for hit-testing).
+- `dom/DomScene.tsx`: the DOM renderer (one div per sprite, `fx-*` effect classes, the see-through SVG filter, `useAnimFrame`).
+- `SceneOverlay.tsx`: status badges, action bars and speech bubbles over people, DOM whatever the renderer.
+- `useDomFrame.ts`: per-frame camera transform and walker shifts for a DOM layer (DomScene and the overlay).
+- `IsoRoom.tsx`: the controller: places the scene, follows you with the camera, hit-tests and handles input, and draws through `Renderer` (DomScene); the layout holds a `camera`/`camera2` tile in every room, drawn only in your own room and only when `view.roomEquipment` has a `CAMERA` (and clickable as that equipment); handles clicks. Corpses on the floor are placed as actors and drawn with the lying pose (`lyingFrame`); clicking one selects the item. Clicking a chair sits you on it (`seatFor`, `sittingFrame` in `art/assets.ts`); client-only like walking.
+- `useWalkers.ts`: walking (client-only): everyone in your room walks to their spot along `walkPath` + `smoothPath`, moved per frame by whole pixels (handed to the renderer through a `paint` callback) with the camera locked on you; facing by screen direction. You enter standing at the door you came through (`doorSpot`). Nothing waits for a walk.
 - `LeavingRoom.tsx`: `LeavingIsoRoom`, what `GameScreen` renders: `IsoRoom`, but on a room change it keeps the room you left on screen until you have walked to its door.
 - `useActingOn.ts`: what your latest action is on (or the door, for a move), read from the view's queue (`begun`), so you walk up to it when it starts; `IsoRoom` turns it into a cell.
 - `hitMask.ts`: per-frame alpha masks for hit-testing.
@@ -52,7 +56,6 @@ All under `web/src/`. UI rules are in `web/CLAUDE.md`.
 **scene/**
 
 - `Minimap.tsx` (not rendered now) and `plan.ts` (its pure helpers).
-- `CrewSprite.tsx`: a character's sprite.
 - `StatusBadges.tsx`: status icons over a character's head.
 - `ActionBar.tsx`: the draining bar over a busy character's head (CSS animation, server times shifted by the view message's `now`).
 - `useSpeechBubbles.ts`: chat messages as speech bubbles.

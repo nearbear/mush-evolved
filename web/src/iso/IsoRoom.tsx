@@ -1,7 +1,7 @@
-// DOM renderer for one room of the original isometric ship. Every sprite is
-// an absolutely positioned div cropped from its atlas; DOM order is paint
-// order. Presentational only: doors emit move intents, and people and
-// equipment emit a selection; legality comes from props.
+// One room of the original isometric ship, with the rooms around it. This is the view's controller:
+// it decides what is where (placement, walking, the camera) and how it looks (describeScene), and
+// handles input; a renderer behind the SceneRenderer seam (scene.ts) only draws the result. People
+// emit a selection, doors move intents; legality comes from props.
 //
 // Sprites don't take pointer events themselves: their boxes overlap a lot.
 // The viewport hit-tests against the pixels actually drawn (hitTest + hitMask),
@@ -15,26 +15,33 @@
 // its door.
 //
 // Walls cover people standing behind them, but nobody can hide there: anyone
-// a wall is drawn over (PlacedSprite.occluded) also gets a glowing outline in
-// a layer above everything. People in this room still take clicks through it.
+// a wall is drawn over (PlacedSprite.occluded) also gets a see-through outline
+// above everything. People in this room still take clicks through it.
 
-import { useEffect, useId, useLayoutEffect, useMemo, useRef, useState, type CSSProperties, type MouseEvent, type PointerEvent } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState, type ComponentType, type MouseEvent, type PointerEvent } from "react";
 import { useTranslation } from "react-i18next";
 import { createPortal } from "react-dom";
-import { CAMERA_EQUIPMENT, CORPSE_ITEM, placedEquipment, type CharacterId, type EquipmentView, type ItemId, type RoomId, type ShipLayout, type Target } from "@mush2/shared";
-import { sameTarget } from "../hud/targets.ts";
-import { lyingFrame, spriteStrip, sittingFrame } from "../art/assets.ts";
-import { CrewSprite } from "../scene/CrewSprite.tsx";
-import { ActionBar, type Bar } from "../scene/ActionBar.tsx";
-import { StatusBadges } from "../scene/StatusBadges.tsx";
-import { BUBBLE_MS, type Bubble } from "../scene/useSpeechBubbles.ts";
+import { CAMERA_EQUIPMENT, CORPSE_ITEM, type EquipmentView, type RoomId, type ShipLayout, type Target } from "@mush2/shared";
+import type { Bubble } from "../scene/useSpeechBubbles.ts";
 import { useNames } from "../i18n/names.ts";
-import { atlasUrl } from "./shipLayout.ts";
 import { CAMERA_SLICES, equipmentByTileKey, roomAsBuilt } from "./equipmentTiles.ts";
 import { opaqueAt, preloadImage } from "./hitMask.ts";
-import { Markdown } from "../hud/Markdown.tsx";
 import { useWalkers } from "./useWalkers.ts";
 import type { ActingOn } from "./useActingOn.ts";
+import { DomScene } from "./dom/DomScene.tsx";
+import { SceneOverlay, type Anchor } from "./SceneOverlay.tsx";
+import {
+  CORPSE_PREFIX,
+  LYING_SIZE,
+  corpseOf,
+  describeScene,
+  imageOf,
+  type Corpse,
+  type FrameTarget,
+  type Occupant,
+  type SceneRendererProps,
+  type Seat,
+} from "./scene.ts";
 import {
   bounds,
   cellAtPoint,
@@ -50,36 +57,8 @@ import {
   type PlacedSprite,
 } from "./placement.ts";
 
-export interface Occupant {
-  id: string;
-  name: string;
-  isBot: boolean;
-  character: CharacterId | undefined;
-  you: boolean;
-  /** The bed (equipment id) they lie in, drawn in the lying pose like a corpse. The view gives it for you and for people in your room. */
-  lying?: string;
-  /** Public statuses, shown over the head (the view decides which; see statuses.ts). */
-  statuses: readonly string[];
-  /** The bar of the timed action they are busy with, when the view shows it, and your own action's name. */
-  busy?: { bar: Bar; label?: string };
-}
-
-/** A corpse item on the floor, and whose body it is (from `ItemView.of`). */
-export interface Corpse {
-  id: ItemId;
-  character: CharacterId | undefined;
-}
-
-/** The original Flash client ran at 30 ticks a second; animation rhythms are counted in ticks. */
-const TICK_MS = 1000 / 30;
-
-/** Actor ids for corpses get this prefix, so they can't collide with player ids. */
-const CORPSE_PREFIX = "corpse:";
-/** How someone sits on a chair: which sitting frame, and whether it is mirrored. */
-interface Seat {
-  facing: "face" | "back";
-  flip: boolean;
-}
+/** What draws the scene. One renderer for now; a second one would be picked here. */
+const Renderer: ComponentType<SceneRendererProps> = DomScene;
 
 /**
  * The seat for a chair that faces the given way. The art has two sitting poses, facing down-right
@@ -92,9 +71,6 @@ function seatFor(dir: string | undefined): Seat {
   if (dir === "down") return { facing: "face", flip: true };
   return { facing: "face", flip: false };
 }
-
-/** The lying pose's cell on the cast sheet (art/assets.ts). */
-const LYING_SIZE = { width: 50, height: 48 };
 
 export function IsoRoom({
   layout,
@@ -169,7 +145,8 @@ export function IsoRoom({
   const occupantKey = occupants.map((o) => `${o.id}${o.lying ?? ""}`).join(",");
   const corpseKey = corpses.map((c) => c.id).join(",");
   const viewportRef = useRef<HTMLDivElement>(null);
-  const worldRef = useRef<HTMLDivElement>(null);
+  const rendererRef = useRef<FrameTarget>(null);
+  const overlayRef = useRef<FrameTarget>(null);
   // Where you've clicked to walk. Client-only and cosmetic: the server never hears of it,
   // and it resets when you change rooms (it belongs to one visit, so coming back doesn't restore it).
   // Sitting on a chair is the same kind of local state: the walk's end point plus the seat taken there.
@@ -201,9 +178,9 @@ export function IsoRoom({
   const targets = new Map(
     occupants.map((o, i) => [o.id, beds.get(o.id)?.cell ?? ((o.you && (exitCell ?? here?.cell ?? entryCell)) || spots[i] || { x: 0, y: 0 })]),
   );
-  // Where the camera sits as rendered; the walkers shift it while you walk, so it stays on you.
-  const camera = useRef({ x: 0, y: 0, follow: me?.id });
-  const { at: walkers, apply: applyWalkers, offsetOf } = useWalkers(room, cells, targets, worldRef, camera, teleport ? me?.id : undefined);
+  // Each animation frame while anyone walks: the camera and the walkers' pixel shifts, to the renderer and the overlay.
+  const paint = useRef<((offsetOf: (id: string) => { x: number; y: number }) => void) | null>(null);
+  const { at: walkers, apply: applyWalkers, offsetOf } = useWalkers(room, cells, targets, paint, teleport ? me?.id : undefined);
   const myWalker = me && walkers.get(me.id);
   // Walking out: done once you stand at the door (straight away if there's no door to go through).
   const outside = !!leavingTo && (!exitCell || !myWalker || (!myWalker.moving && myWalker.cell.x === exitCell.x && myWalker.cell.y === exitCell.y));
@@ -214,7 +191,6 @@ export function IsoRoom({
   const arrived = !!myWalker && !myWalker.moving && !!here && myWalker.cell.x === here.cell.x && myWalker.cell.y === here.cell.y;
   const mySeat = arrived ? here?.seat : undefined;
   const walkersKey = [...walkers].map(([id, w]) => `${id}@${w.cell.x},${w.cell.y}${w.facing.flip ? "f" : ""}`).join(";");
-
 
   // The tiles of this room and the rooms behind its doors, sorted once; people walking only re-place the people.
   const prepared = useMemo(() => {
@@ -285,8 +261,17 @@ export function IsoRoom({
   }, [roomLayout]);
   const camX = Math.round(panel.width / 2 - youX);
   const camY = Math.round(panel.height / 2 - youY);
-  camera.current = { x: camX, y: camY, follow: me?.id };
-  // After every render: put the walkers' in-between pixel shifts (and the camera) back on the DOM.
+  /** Where the camera puts the world now: as rendered, shifted with you while you walk. */
+  const cameraNow = () => {
+    const o = me ? offsetOf(me.id) : { x: 0, y: 0 };
+    return { x: camX - o.x, y: camY - o.y };
+  };
+  paint.current = (offsetOf) => {
+    const frame = { camera: cameraNow(), offsetOf };
+    rendererRef.current?.setFrame(frame);
+    overlayRef.current?.setFrame(frame);
+  };
+  // After every render: put the walkers' in-between pixel shifts (and the camera) back on what was drawn.
   useLayoutEffect(applyWalkers);
 
 
@@ -313,44 +298,49 @@ export function IsoRoom({
 
   const ringOf = new Map(neighbors.map((n) => [n.id as string, n.ring]));
   const byId = new Map([...occupants, ...neighbors.flatMap((n) => n.people)].map((o) => [o.id, o]));
-  /** The corpse an actor sprite draws, if it is one. */
-  const corpseOf = (s: PlacedSprite) => (s.kind === "actor" && s.key.startsWith(`a:${CORPSE_PREFIX}`) ? corpses.find((c) => `a:${CORPSE_PREFIX}${c.id}` === s.key) : undefined);
-  /** The image a sprite's pixels come from, its frame in that image, and whether its background is color-keyed. */
-  const source = (s: PlacedSprite): { url: string | undefined; frame: { sx: number; sy: number; width: number; height: number }; keyed: boolean } => {
-    if (s.kind !== "actor") return { url: atlasUrl(layout, s.sheet), frame: s, keyed: false };
-    const corpse = corpseOf(s);
-    if (corpse) {
-      const lying = lyingFrame(corpse.character);
-      return { url: lying?.url, frame: lying ?? { sx: 0, sy: 0, ...LYING_SIZE }, keyed: false };
-    }
-    const o = byId.get(s.key.slice(2));
-    const lying = o?.lying ? lyingFrame(o.character) : undefined;
-    if (lying) return { url: lying.url, frame: lying, keyed: false };
-    const sitting = o?.you && mySeat ? sittingFrame(o.character, mySeat.facing) : undefined;
-    if (sitting) return { url: sitting.url, frame: sitting, keyed: false };
-    const strip = (o && s.room === room && walkers.get(o.id)?.facing.strip) || "face";
-    return { url: spriteStrip(o?.character, strip), frame: { sx: 0, sy: 0, width: 32, height: 48 }, keyed: true };
-  };
+  const imageInput = { layout, room, people: byId, walkers, seat: mySeat, corpses };
 
   // Load every image this room hit-tests against, so masks are ready by the first click.
-  // biome-ignore lint/correctness/useExhaustiveDependencies: re-preload only when the sprite set changes; `source` is rebuilt every render.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: re-preload only when the sprite set changes; the image input is rebuilt every render.
   useEffect(() => {
     for (const s of scene) {
-      const url = source(s).url;
+      const url = imageOf(s, imageInput).url;
       if (url) preloadImage(url);
     }
   }, [scene]);
 
   const [hoverKey, setHoverKey] = useState<string | null>(null);
   const [hoverAt, setHoverAt] = useState({ x: 0, y: 0 });
-  const espFilter = `iso-esp-${useId().replace(/[^\w-]/g, "")}`;
+
+  // What the renderer draws. Rebuilt when the placed scene, the people, or what's selected, hovered or reachable changes.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: walkersKey stands in for walkers; occupants, nearby and corpses for the image input and beds built from them.
+  const drawn = useMemo(
+    () =>
+      describeScene({
+        ...imageInput,
+        placed: scene,
+        box,
+        beds,
+        equipment: equipmentByKey,
+        reachable,
+        selected,
+        selectedDoor,
+        hoverKey,
+        ownCells,
+      }),
+    [scene, box, walkersKey, mySeat, occupants, nearby, corpses, equipmentByKey, reachable, selected, selectedDoor, hoverKey, ownCells],
+  );
+  // Badges and bubbles go over the people in this room.
+  const anchors = drawn.sprites.flatMap((s): Anchor[] => {
+    const person = s.role === "person" && sprites.some((p) => p.key === s.key) ? byId.get(s.key.slice(2)) : undefined;
+    return person ? [{ key: s.key, x: s.x, y: s.y, width: s.width, height: s.height, person }] : [];
+  });
 
   if (!roomLayout) return <section className="iso-room missing">No map for {names.room(room)}</section>;
-  const isSelected = (kind: Target["kind"], id: string) => sameTarget(selected, { kind, id } as Target);
 
   /** What a sprite does when clicked, or null for scenery. */
   const interaction = (s: PlacedSprite) => {
-    const corpse = corpseOf(s);
+    const corpse = corpseOf(s, corpses);
     if (corpse) return { kind: "item" as const, item: corpse.id, title: names.item(CORPSE_ITEM) };
     if (s.kind === "actor") {
       const o = byId.get(s.key.slice(2));
@@ -364,17 +354,22 @@ export function IsoRoom({
     return eq ? { kind: "equipment" as const, equipment: eq, title: names.equipment(eq.type) } : null;
   };
 
+  /** Room-pixel point under the pointer: the viewport holds the world at the camera's offset. */
+  const pointIn = (e: MouseEvent<HTMLElement>) => {
+    const rect = viewportRef.current!.getBoundingClientRect();
+    const cam = cameraNow();
+    return { x: e.clientX - rect.left - cam.x + box.minX, y: e.clientY - rect.top - cam.y + box.minY };
+  };
+
   /**
    * The interactive sprite visibly under the pointer, if any. Scenery in front blocks what's behind it.
    * This room takes clicks before its neighbours, even where a neighbour's wall is drawn over it, so
    * its floor stays walkable. Any visible part of a neighbour counts as its door.
    */
   const pick = (e: MouseEvent<HTMLElement>) => {
-    const rect = worldRef.current!.getBoundingClientRect();
-    const x = (e.clientX - rect.left) + box.minX;
-    const y = (e.clientY - rect.top) + box.minY;
+    const { x, y } = pointIn(e);
     const opaque = (s: PlacedSprite, px: number, py: number) => {
-      const { url, frame, keyed } = source(s);
+      const { url, frame, keyed } = imageOf(s, imageInput);
       return !url || opaqueAt(url, frame, px, py, keyed);
     };
     // People part-way between cells are drawn shifted from their placed box.
@@ -393,12 +388,6 @@ export function IsoRoom({
     if (!behind || ringOf.get(behind.room) !== 1) return null;
     const to = behind.room as RoomId;
     return { sprite: behind, key: `n:${to}`, kind: "door" as const, to, title: names.room(to) };
-  };
-
-  /** Room-pixel point under the pointer, for walking. */
-  const pointIn = (e: MouseEvent<HTMLElement>) => {
-    const rect = worldRef.current!.getBoundingClientRect();
-    return { x: e.clientX - rect.left + box.minX, y: e.clientY - rect.top + box.minY };
   };
 
   const onClick = (e: MouseEvent<HTMLDivElement>) => {
@@ -439,13 +428,6 @@ export function IsoRoom({
   const hovered = sprites.find((s) => s.key === hoverKey);
   const hoveredNeighbor = neighbors.find((n) => `n:${n.id}` === hoverKey);
   const hoverTitle = hoveredNeighbor ? names.room(hoveredNeighbor.id) : hovered && interaction(hovered)?.title;
-  const spriteStyle = (s: PlacedSprite) => ({
-    ...place(s),
-    backgroundImage: `url(${atlasUrl(layout, s.sheet)})`,
-    backgroundPosition: `${-s.sx}px ${-s.sy}px`,
-    transform: s.flipX || s.flipY ? `scale(${s.flipX ? -1 : 1}, ${s.flipY ? -1 : 1})` : undefined,
-  });
-  const place = (s: PlacedSprite) => ({ left: s.left - box.minX, top: s.top - box.minY, width: s.width, height: s.height });
 
   return (
     <section className="iso-room">
@@ -468,189 +450,11 @@ export function IsoRoom({
               </div>,
               document.body,
             )}
-          <div
-            ref={worldRef}
-            className="iso-world"
-            style={{ width: box.width, height: box.height }}
-          >
-            <div className="iso-layer">
-              {scene.map((s) => {
-                if (s.room !== room) {
-                  const n = s.room as RoomId;
-                  // A door into the room you're in stays lit, so the way back reads clearly.
-                  // So do a neighbour's walls standing next to this room's floor.
-                  const lit = s.kind !== "actor" && (s.door?.target === room || (s.kind === "wall" && ownCells.has(`${s.cell.x},${s.cell.y}`)));
-                  const state = `${lit ? "" : "neighbor"}${reachable.has(n) ? " reachable" : ""}${n === selectedDoor ? " selected" : ""}${
-                    `n:${n}` === hoverKey ? " hover" : ""
-                  }`;
-                  return s.kind === "actor" ? (
-                    <div key={s.key} className={`iso-actor ${state}`} style={place(s)}>
-                      <CrewSprite character={byId.get(s.key.slice(2))?.character} />
-                    </div>
-                  ) : (
-                    <div key={s.key} className={`iso-sprite ${state}`} style={spriteStyle(s)} />
-                  );
-                }
-                const corpse = corpseOf(s);
-                if (corpse) {
-                  const lying = lyingFrame(corpse.character);
-                  return (
-                    <div
-                      key={s.key}
-                      className={`iso-actor corpse${isSelected("item", corpse.id) ? " selected" : ""}${s.key === hoverKey ? " hover" : ""}`}
-                      style={{ ...place(s), backgroundImage: lying && `url(${lying.url})`, backgroundPosition: lying && `${-lying.sx}px ${-lying.sy}px` }}
-                    />
-                  );
-                }
-                if (s.kind === "actor") {
-                  const o = byId.get(s.key.slice(2))!;
-                  const w = walkers.get(o.id);
-                  return (
-                    <div
-                      key={s.key}
-                      className={`iso-actor${o.you ? " you" : ""}${isSelected("player", o.id) ? " selected" : ""}${s.key === hoverKey ? " hover" : ""}`}
-                      style={place(s)}
-                      data-walker={o.id}
-                    >
-                      {o.lying ? <LyingSprite character={o.character} flip={beds.get(o.id)?.flip} /> : o.you && mySeat ? <SeatedSprite character={o.character} seat={mySeat} /> : <CrewSprite character={o.character} facing={w?.facing} walking={w?.moving} arriving={w?.arriving} />}
-                    </div>
-                  );
-                }
-                const door = s.door;
-                const canGo = door ? reachable.has(door.target) : false;
-                const eq = equipmentByKey.get(s.key);
-                const eqClass = eq ? ` equipment${isSelected("equipment", eq.id) ? " selected" : ""}` : "";
-                const doorClass = door ? ` door${door.target === selectedDoor ? " selected" : ""}` : "";
-                const hoverClass = s.key === hoverKey ? " hover" : "";
-                const className = `iso-sprite${doorClass}${canGo ? " reachable" : ""}${eqClass}${hoverClass}`;
-                const swivel = CAMERA_SLICES.has(s.slice) ? layout.slices[s.slice]?.anims[0]?.frames : undefined;
-                return swivel?.length ? (
-                  <SwivelSprite key={s.key} className={className} style={spriteStyle(s)} sprite={s} frames={swivel} />
-                ) : (
-                  <div key={s.key} className={className} style={spriteStyle(s)} />
-                );
-              })}
-            </div>
-            {/* Every person, in paint order; only those a wall covers show (CSS). Always mounted, so the copy
-                plays its walk-in in step with the person. */}
-            <div className="iso-layer iso-esp">
-              {scene.map((s) => {
-                if (s.kind !== "actor" || corpseOf(s)) return null;
-                const o = byId.get(s.key.slice(2));
-                const w = s.room === room && o ? walkers.get(o.id) : undefined;
-                return (
-                  <div
-                    key={s.key}
-                    className={`iso-actor${s.occluded ? " occluded" : ""}${s.room !== room ? " neighbor" : ""}`}
-                    style={{ ...place(s), filter: `url(#${espFilter})` }}
-                    data-walker={w && o?.id}
-                  >
-                    {o?.lying ? (
-                      <LyingSprite character={o.character} flip={beds.get(o.id)?.flip} />
-                    ) : o?.you && mySeat ? (
-                      <SeatedSprite character={o.character} seat={mySeat} />
-                    ) : (
-                      <CrewSprite character={o?.character} facing={w?.facing} walking={w?.moving} arriving={w?.arriving} />
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-            {/* Status badges and speech bubbles last, so no sprite or wall can ever cover them. */}
-            <div className="iso-layer iso-badges">
-              {scene.map((s) => {
-                const o = s.kind === "actor" && s.room === room ? byId.get(s.key.slice(2)) : undefined;
-                return o ? (
-                  <div key={s.key} className={`iso-badge-anchor${o.busy ? " busy" : ""}`} style={place(s)} data-walker={o.id}>
-                    {o.busy && (
-                      <ActionBar
-                        bar={o.busy.bar}
-                        clockOffset={clockOffset}
-                        label={o.busy.label ? t("queue.underWay", { action: o.busy.label }) : t("queue.busy")}
-                      />
-                    )}
-                    <StatusBadges statuses={o.statuses} />
-                    {bubbles.get(o.id) && (
-                      <div className={`speech-bubbles${o.statuses.length ? " raised" : ""}`}>
-                        {bubbles.get(o.id)!.map((b) => (
-                          <div key={b.id} className="speech-bubble" style={{ "--bubble-ms": `${BUBBLE_MS}ms` } as CSSProperties}>
-                            <Markdown text={b.text} />
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                ) : null;
-              })}
-            </div>
-          </div>
+          <Renderer scene={drawn} ref={rendererRef} />
+          {/* Status badges and speech bubbles above the scene, so no sprite or wall can ever cover them. */}
+          <SceneOverlay anchors={anchors} width={drawn.width} height={drawn.height} bubbles={bubbles} clockOffset={clockOffset} ref={overlayRef} />
         </div>
       </div>
-      <EspFilter id={espFilter} />
     </section>
-  );
-}
-
-/**
- * The camera swivels: its auto animation (Camera.xml) steps through the frames of its strip, each step
- * lasting the animation's rhythm (6 ticks for both camera tiles). It keeps its own clock, so each step
- * redraws only this sprite, not the room.
- */
-function SwivelSprite({ className, style, sprite, frames }: { className: string; style: CSSProperties; sprite: PlacedSprite; frames: readonly number[] }) {
-  const [step, setStep] = useState(0);
-  useEffect(() => {
-    const id = setInterval(() => setStep((n) => n + 1), 6 * TICK_MS);
-    return () => clearInterval(id);
-  }, []);
-  const sx = sprite.sx + (frames[step % frames.length] ?? 0) * sprite.width;
-  return <div className={className} style={{ ...style, backgroundPosition: `${-sx}px ${-sprite.sy}px` }} />;
-}
-
-/** The lying pose of the cast sheet (what a corpse is drawn with), for someone in bed. */
-function LyingSprite({ character, flip }: { character: CharacterId | undefined; flip?: boolean }) {
-  const frame = lyingFrame(character);
-  return <div className="lying-sprite" style={{ backgroundImage: frame && `url(${frame.url})`, backgroundPosition: frame && `${-frame.sx}px ${-frame.sy}px`, transform: flip ? "scaleX(-1)" : undefined }} />;
-}
-
-/** One sitting frame of the cast sheet, drawn at 1x like the lying corpse. */
-function SeatedSprite({ character, seat }: { character: CharacterId | undefined; seat: Seat }) {
-  const frame = sittingFrame(character, seat.facing);
-  return (
-    <div
-      className="seated-sprite"
-      style={{
-        backgroundImage: frame && `url(${frame.url})`,
-        backgroundPosition: frame && `${-frame.sx}px ${-frame.sy}px`,
-        transform: seat.flip ? "scaleX(-1)" : undefined,
-      }}
-    />
-  );
-}
-
-/**
- * The see-through outline: a 1px rim around the person's silhouette with a soft glow, over a faint fill.
- * An SVG filter, because CSS alone can't outline a sprite without also drawing it.
- */
-function EspFilter({ id }: { id: string }) {
-  const ALPHA = "SourceAlpha"; // i18n-ignore: SVG filter input name
-  return (
-    <svg className="iso-esp-defs" aria-hidden="true" width="0" height="0">
-      <filter id={id} x="-25%" y="-25%" width="150%" height="150%" colorInterpolationFilters="sRGB">
-        <feMorphology in={ALPHA} operator="dilate" radius="1" result="grown" />
-        <feComposite in="grown" in2={ALPHA} operator="out" result="rim" />
-        <feFlood className="iso-esp-color" result="color" />
-        <feComposite in="color" in2="rim" operator="in" result="outline" />
-        <feGaussianBlur in="outline" stdDeviation="1.5" result="glow" />
-        <feComposite in="color" in2={ALPHA} operator="in" result="body" />
-        <feComponentTransfer in="body" result="fill">
-          <feFuncA type="linear" slope="0.3" />
-        </feComponentTransfer>
-        <feMerge>
-          <feMergeNode in="glow" />
-          <feMergeNode in="fill" />
-          <feMergeNode in="outline" />
-        </feMerge>
-      </filter>
-    </svg>
   );
 }

@@ -6,9 +6,20 @@ Loaded when working on the isometric view. The UI rules in `web/CLAUDE.md` still
 
 - `placement.ts` is pure (no DOM) and reproduces the original Flash client: grid projection, paint
   order, walkable cells, standing spots, `cellAtPoint` (click to floor cell), `standSpot` (where to
-  stand to use equipment), and `hitTest`. `IsoRoom.tsx` renders it at exactly 1x, one absolutely
-  positioned div per sprite. `shipLayout.ts` fetches the layout JSON and maps atlas sheets to image
-  URLs.
+  stand to use equipment), and `hitTest`. `shipLayout.ts` fetches the layout JSON and maps atlas
+  sheets to image URLs.
+- The renderer is swappable. `IsoRoom.tsx` is the controller: placement, walking, the camera, input
+  and hit-testing. It turns the placed sprites into a `Scene` with `describeScene` (`scene.ts`,
+  pure and unit tested): each sprite's image frame, position, flips, animation, and its effect by
+  meaning (`fogged`, `foggedLifted`, `hover`, `doorHover`, `selected`), plus see-through outlines.
+  A renderer is a component taking `{ scene, ref }` (`SceneRendererProps`): it draws the scene at
+  exactly 1x and takes per-frame camera and walker offsets through `ref.setFrame`, with no input
+  and no game state. The DOM one is `dom/DomScene.tsx` (one absolutely positioned div per sprite,
+  effects as `fx-*` classes in `styles/iso.css`); `IsoRoom` picks it in `Renderer`. Effect
+  precedence (which wins when hovered and selected) is decided in `describeScene`, not in CSS.
+  Badges, action bars and speech bubbles stay DOM whatever the renderer (`SceneOverlay.tsx`, in its
+  own world above the scene, moved by the same frames). Keep renderer-specific code out of
+  `scene.ts`, `placement.ts` and `IsoRoom.tsx`.
 - Camera: the panel is `overflow: hidden` and follows your character by moving an inner `.iso-world`
   with a transform, always centred on you (not clamped to the room's edges). No manual panning.
 - Clicks: floor walks you there (local, cosmetic state only, never sent to the server); a person or
@@ -18,15 +29,15 @@ Loaded when working on the isometric view. The UI rules in `web/CLAUDE.md` still
 - Walking (`useWalkers.ts`): nobody jumps. Everyone in your room walks to their spot (you to where
   you clicked) at `CELLS_PER_SECOND`, along `walkPath`, stepping along the grid axes (a deliberate staircase, not straightened). React re-renders
   only when someone enters another cell or turns (paint order, strip); between those, a
-  `requestAnimationFrame` loop shifts their `data-walker` elements and the camera by whole pixels,
-  so the camera stays locked on you. Facing is by screen direction: the face strip looks down-right
+  `requestAnimationFrame` loop hands the renderer and the overlay (`setFrame`) the camera and each
+  walker's offset in whole pixels, so the camera stays locked on you. Facing is by screen direction: the face strip looks down-right
   and the back strip up-left, mirrored for the other two. Entering a room you stand in front of the
   door you came through (`doorSpot`) and don't move. Purely cosmetic: actions and moves go to the
   server at once, mid-walk or not; you sit on a chair only once you reach it. The tiles are sorted
   once per room and fog depth (`prepareScene`, about 13 ms); each cell change re-places only the
   people (`placeActors`, about 2 ms, 5 ms with whole-ship fog), with the same result `placeScene`
-  gives. The frame loop shifts the `data-walker` elements found at the last commit, not a fresh
-  query. With the instant actions cheat on,
+  gives. The DOM layers (`useDomFrame.ts`) shift the `data-walker` elements found at their last
+  commit, not a fresh query. With the instant actions cheat on,
   you teleport instead (`teleport`: your walks jump, and leaving a room switches at once); others still walk.
 - Acting walks you there (`useActingOn.ts`): when an action on equipment, a person, or a body on the
   floor begins, you walk to the equipment's standing spot or the cell before the person or body; a
@@ -47,12 +58,13 @@ Loaded when working on the isometric view. The UI rules in `web/CLAUDE.md` still
   Walls and doors cover whatever stands behind them, people included; footprints diagonally apart
   get no constraint. Front-edge doors (`DOOR_BL`/`DOOR_BR`) are left out once the room behind them
   is drawn.
-- People a wall covers (`PlacedSprite.occluded`) get a glowing outline (an SVG filter) in a layer
-  above the scene, so nobody can hide behind a wall: fixed scenery only, plus whoever the view
+- People a wall covers (`PlacedSprite.occluded`) get a glowing outline (`Scene.outlines`; an SVG
+  filter in the DOM renderer) in a layer above the scene, so nobody can hide behind a wall: fixed scenery only, plus whoever the view
   places there. The client adds no ACTOPI check of its own.
 
-- Anything animated on its own clock (the camera's swivel, `SwivelSprite`) keeps that clock in its
-  own small component: a timer in `IsoRoom` re-renders every sprite in the scene.
+- Anything animated on its own clock (the walk cycle, the camera's swivel) is a `SceneAnim` the
+  renderer plays; in the DOM renderer each keeps its timer in its own small component
+  (`useAnimFrame`): a timer in `IsoRoom` re-renders every sprite in the scene.
 
 ## Looking at the whole ship
 
@@ -94,7 +106,7 @@ describes a spot in screen terms, translate it to cells and confirm on the data 
   wall is drawn on a door's second cell; `fillGaps` puts floor under both cells, which the doorway
   shows: one tile for both, owned (and lit) by the room whose back wall holds the door. The
   doormats (`DOOR_*_FLOOR`) are left out.
-- Fog: sprites from other rooms are dimmed (`.neighbor` in `styles/iso.css`), except a door back to
+- Fog: sprites from other rooms are dimmed (`fogged` in `describeScene`), except a door back to
   your room and a neighbour's wall on a cell next to your floor, which count as your room's outline.
 
 ## Working on it
@@ -109,7 +121,7 @@ describes a spot in screen terms, translate it to cells and confirm on the data 
 - Measure art, don't eyeball it. Offsets come from `tiles.xml` but the pivot (centred) is inferred;
   compare opaque pixel profiles with `decodePng` (`tools/src/shipLayout/png.ts`). Doors and walls
   line up at the top; that's how the "doors float" bug was found.
-- Who owns a sprite decides its light: `IsoRoom` dims anything whose `room` isn't yours, except the
+- Who owns a sprite decides its light: `describeScene` dims anything whose `room` isn't yours, except the
   cases under Fog above. Tiles added by `fillGaps` pick an owner on purpose.
 - Sprite keys are `t<index>` into the room's tiles (equipment lookup uses them): append tiles, never
   insert. Two sprites that tie in paint order keep the order they were pushed in.
