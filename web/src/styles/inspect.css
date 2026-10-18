@@ -204,6 +204,22 @@
 .settings-popup.skill-picker {
   width: min(56rem, calc(100vw - 2rem));
   overflow-y: auto;
+  padding-top: 0;
+}
+.skill-picker-header {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 1rem 0 0.5rem;
+  background: #1b2a4a;
+}
+.skill-picker-close {
+  flex: none;
+  margin: 0;
 }
 .skill-card {
   max-width: min(18rem, calc(100vw - 2rem));

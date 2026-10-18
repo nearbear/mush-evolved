@@ -70,7 +70,12 @@ export function SkillSlots({
         <Dialog.Portal>
           <Dialog.Backdrop className="settings-backdrop" />
           <Dialog.Popup className="settings-popup skill-picker">
-            <Dialog.Title className="settings-title">{t("skills.title")}</Dialog.Title>
+            <header className="skill-picker-header">
+              <Dialog.Title className="settings-title">{t("skills.title")}</Dialog.Title>
+              <Dialog.Close className="skill-picker-close" aria-label={t("skills.close")}>
+                ×
+              </Dialog.Close>
+            </header>
             <p className="skill-warning">{t("skills.warning")}</p>
             {pending ? (
               <div className="skill-confirm">
@@ -101,7 +106,6 @@ export function SkillSlots({
                 ))}
               </ul>
             )}
-            <Dialog.Close className="settings-close">{t("skills.close")}</Dialog.Close>
           </Dialog.Popup>
         </Dialog.Portal>
       </Dialog.Root>
