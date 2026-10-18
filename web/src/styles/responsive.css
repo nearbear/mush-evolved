@@ -94,13 +94,12 @@
     white-space: nowrap;
   }
   .top-bar .spacer,
-  .top-bar .character-name,
   .top-bar .cycle,
   .wide-only {
     display: none;
   }
   .cycle-under-name {
-    display: block;
+    display: inline;
   }
   .top-bar button {
     margin: 0;
@@ -142,8 +141,16 @@
     /* Desktop's align-items: start would let a wide room push the panel off screen. */
     align-items: stretch;
     margin: 0;
-    padding: 0.5rem;
+    padding: 0.5rem 0;
     overflow: auto;
+  }
+  /* The Inspect heading is dropped on phones (the bottom nav already names the tab); it stays for screen readers. */
+  .left-column > .inspect > .panel-head {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
   }
   .three-panel > * {
     display: none;

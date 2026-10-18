@@ -4,7 +4,7 @@
 import { CHARACTERS, type PlayerView } from "@mush2/shared";
 import { Popover } from "@base-ui/react/popover";
 import { useTranslation } from "react-i18next";
-import { AP_PIP, FACTION_ICONS, HP_ICON, HP_PIP, MORALE_ICON, MORALE_PIP, MP_PIP, portrait } from "../art/assets.ts";
+import { AP_PIP, FACTION_ICONS, HP_ICON, HP_PIP, MORALE_ICON, MORALE_PIP, MP_PIP, bustIcon } from "../art/assets.ts";
 import { PipBar } from "./PipBar.tsx";
 
 /** Which faction you belong to, with its goal in a popover (hover, focus, or tap: touch has no hover). */
@@ -57,12 +57,13 @@ export function PlayerSummary({ view, compact = false }: { view: PlayerView; com
   return (
     <div className="player-summary">
       <div className={`nameplate ${you.role}`}>
-        <img className="avatar" src={portrait(you.character)} alt="" />
+        <img className="avatar" src={bustIcon(you.character)} alt="" />
         <div className="who">
-          <strong>{you.name}</strong>
-          {character && <div className="sub character-name">{character.name}</div>}
-          {/* The phone layout shows the cycle here instead of on its own. */}
-          <div className="sub cycle-under-name">Day {view.day} · Cycle {view.cycleOfDay}</div>
+          <strong>{character?.name ?? you.name}</strong>
+          {/* The phone layout shows the cycle here instead of on its own, abbreviated. */}
+          <span className="sub cycle-under-name" aria-label={`Day ${view.day}, cycle ${view.cycleOfDay}`}>
+            D{view.day}C{view.cycleOfDay}
+          </span>
         </div>
         <FactionCard view={view} />
         {compact && (

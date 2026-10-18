@@ -19,6 +19,7 @@
 }
 .cycle-under-name {
   display: none;
+  margin-left: 0.4rem;
 }
 .avatar {
   width: 40px;
@@ -57,24 +58,6 @@
 /* The usual muted gray-blue is too faint on the tinted fill. */
 .nameplate .sub {
   color: var(--text);
-}
-/* The character's name is a small label along the bottom edge, like an item tile's label. */
-.nameplate {
-  position: relative;
-  overflow: hidden;
-}
-.nameplate .character-name {
-  position: absolute;
-  inset: auto 0 0 0;
-  padding: 8px 4px 1px;
-  background: linear-gradient(transparent, rgba(0, 0, 0, 0.85));
-  color: #fff;
-  font-size: 0.65rem;
-  line-height: 1.1;
-  text-align: center;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 .faction-card {
   display: inline-flex;
@@ -144,7 +127,7 @@
  */
 .nameplate:has(.stat-chips) {
   position: relative;
-  overflow: visible; /* the plain nameplate clips its character-name label; the chips must hang out */
+  overflow: visible; /* the chips hang out of the card */
   padding-bottom: 0.7rem; /* room for the half of the chips that sits inside the card */
   margin-bottom: 0.6rem; /* and for the half that hangs out */
 }
