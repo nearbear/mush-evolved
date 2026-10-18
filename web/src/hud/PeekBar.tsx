@@ -1,6 +1,6 @@
 // Phone layout only: a slim bar above the bottom nav, always shown, for whatever
 // was tapped in the room (a person, equipment, or a door), or yourself by default, so you can act without
-// leaving the room view. Legality comes from the view, like the Inspect panel.
+// leaving the room view. Examine is never shown here (it lives in the Inspect panel behind More). Legality comes from the view, like the Inspect panel.
 
 import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
@@ -49,12 +49,16 @@ export function PeekBar({
   const isBot = resolved.kind === "player" && resolved.person.isBot;
   return (
     <Bar heading={name} isBot={isBot}>
-      {actionsOn(view, target).map((a) => (
+      {actionsOn(view, target)
+        .filter((a) => a.type !== "examine")
+        .map((a) => (
         <button key={a.type} onClick={() => onAction(a)}>
           {labelFor(a)}
         </button>
       ))}
-      {unaffordableOn(view, target).map((u) => (
+      {unaffordableOn(view, target)
+        .filter((u) => u.action.type !== "examine")
+        .map((u) => (
         <DisabledActionButton key={u.action.type} view={view} blocked={u}>
           {labelFor(u.action, u.cost, u.chance)}
         </DisabledActionButton>
