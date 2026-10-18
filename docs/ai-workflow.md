@@ -756,6 +756,8 @@ Correction (same day): I had read "can't move" as the `move` action and made it 
 - **What worked:** a throwaway test checked the new code against a copy of the old one on every room × fog depth × random people (333 scenes, 8,578 cycle breaks): output identical. Keeping the cycle-breaking walk exact meant ranking predecessors in the order the old left-to-right sweep found them.
 - **Needed correction:** the first cut at stripping sort-only fields also dropped `onTop`, which the old output kept. The equivalence test caught it.
 
+- 2026-10-18: Spiking is now tagged `aggressive` (plus `spore`), so Pacifist's +2 AP surcharge applies to it. One-line tag change, test added, rules docs updated.
+
 ## 2026-10-18: Profiling the iso view; PixiJS chosen over three.js
 
 - **Decision (owner):** PixiJS is the next renderer for the iso view; three.js is not planned. Recorded in `CLAUDE.md` (Stack) and #194, which has the production baseline. The `pixi.js` dependency still needs approval when the spike starts.
