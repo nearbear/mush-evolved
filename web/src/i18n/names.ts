@@ -67,5 +67,5 @@ export function useNames() {
     return t(`logEvent.${key}` as never, { ...resolved, defaultValue: key });
   };
 
-  return { room, equipment, item, research, skill, action, character: characterName, logLine };
+  return { room, equipment, item, research, skill, action, character: characterName, characterGiven: characterGivenName, logLine };
 }

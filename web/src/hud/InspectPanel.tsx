@@ -4,8 +4,9 @@
 import { useTranslation } from "react-i18next";
 import { useNames } from "../i18n/names.ts";
 import type { ReactNode } from "react";
-import { actionVisibility, CHARACTERS, ITEM_TYPES, type Action, type ActionOption, type BotKind, type EquipmentView, type OtherPlayerView, type PlayerView, type ShipLayout, type Target } from "@mush2/shared";
+import { actionVisibility, CHARACTERS, characterGivenName, characterName, ITEM_TYPES, type Action, type ActionOption, type BotKind, type EquipmentView, type OtherPlayerView, type PlayerView, type ShipLayout, type Target } from "@mush2/shared";
 import { characterImage, portrait } from "../art/assets.ts";
+import { useMobile } from "../useMobile.ts";
 import { atlasUrl } from "../iso/shipLayout.ts";
 import { equipmentByTileKey, roomAsBuilt } from "../iso/equipmentTiles.ts";
 import { frameRect } from "../iso/placement.ts";
@@ -67,20 +68,23 @@ export function InspectPanel({
 function Details({ view, layout, resolved, onAction }: { view: PlayerView; layout?: ShipLayout; resolved: Resolved; onAction: (action: Action) => void }) {
   const { t } = useTranslation();
   const names = useNames();
+  const mobile = useMobile();
   switch (resolved.kind) {
     case "player": {
       const { person } = resolved;
       const character = CHARACTERS.find((c) => c.id === person.character);
       const art = characterImage(person.character);
       const isYou = person.id === view.you.id;
+      // The phone layout shows only the given name, to keep the figure label short.
+      const displayName = mobile ? characterGivenName(person.character) : characterName(person.character);
       return (
         <div className="inspect-figure">
           {art ? (
-            <img className="inspect-art" src={art} alt={character?.name ?? ""} />
+            <img className="inspect-art" src={art} alt={character ? displayName : ""} />
           ) : (
             <img className="inspect-portrait" src={portrait(person.character)} alt="" />
           )}
-          {character && <span className="inspect-figure-name">{character.name}</span>}
+          {character && <span className="inspect-figure-name">{displayName}</span>}
           <SkillSlots view={view} skills={person.skills} isYou={isYou} onAction={onAction} />
         </div>
       );
