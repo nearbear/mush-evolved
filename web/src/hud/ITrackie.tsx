@@ -12,6 +12,7 @@ import { FEATURE_CHANNELS, ITRACKIE_ITEM, GRAVEYARD_CHANNEL, MAX_CHAT_LENGTH, MU
 import { FeatureSelect } from "./FeatureSelect.tsx";
 import { Hint, IconButton, IconTab } from "./IconButton.tsx";
 import { Markdown } from "./Markdown.tsx";
+import { CycleDivider } from "./CycleDivider.tsx";
 import { CrewAvatar, FeedEntry, InfoMarker, WarningMarker } from "./FeedEntry.tsx";
 import { TAB_ICONS } from "../art/assets.ts";
 
@@ -105,11 +106,7 @@ export function ITrackie({
               <ol className="feed">
                 {roomLog.map((e, i) => (
                   <Fragment key={i}>
-                    {roomLog[i - 1]?.cycle !== e.cycle && (
-                      <li className="cycle-divider">
-                        {t("itrackie.cycleDivider", { cycle: e.cycle })}
-                      </li>
-                    )}
+                    {roomLog[i - 1]?.cycle !== e.cycle && <CycleDivider cycle={e.cycle} />}
                     <FeedEntry
                       marker={e.level === "warning" ? <WarningMarker /> : <InfoMarker />}
                       at={e.at}
@@ -200,14 +197,15 @@ function Thread({
         <ol className="feed">
           {!readable && <li className="sub">You need an iTrackie in your inventory to read this.</li>}
           {readable && messages.length === 0 && <li className="sub">No messages yet.</li>}
-          {messages.map((m) =>
-            m.system ? (
-              <FeedEntry key={m.id} marker={<InfoMarker />} at={m.at} className="sub">
+          {messages.map((m, i) => (
+            <Fragment key={m.id}>
+            {messages[i - 1]?.cycle !== m.cycle && <CycleDivider cycle={m.cycle} />}
+            {m.system ? (
+              <FeedEntry marker={<InfoMarker />} at={m.at} className="sub">
                 {names.logLine(m.system)}
               </FeedEntry>
             ) : (
             <FeedEntry
-              key={m.id}
               marker={<CrewAvatar character={characterOf(m.from)} />}
               name={
                 <>
@@ -219,8 +217,9 @@ function Thread({
             >
               <Markdown text={m.text} onToggle={m.from === view.you.id && enabled ? (line) => onToggle(m.id, line) : undefined} />
             </FeedEntry>
-            ),
-          )}
+            )}
+            </Fragment>
+          ))}
         </ol>
       </Scroller>
       {readable && !enabled ? (
