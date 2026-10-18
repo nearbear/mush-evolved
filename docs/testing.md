@@ -4,6 +4,8 @@ The project's main risks, roughly in priority order: hidden information leaking 
 
 Status: **covered** = tests exist, **partial** = some exist, **missing** = none yet. Tests live in a `tests/` folder next to `src/` in each package (`shared/tests`, `server/tests`, `tools/tests`, `web/tests`; the one exception is `tools/src/death/hpWrites.test.ts`). Server tests (`server/tests/`) run `GameRoom` and `Matchmaker` under plain Vitest: `partyserver` is replaced by `FakeServer` via `vi.mock`, with fake storage and sockets in `server/src/testing/fakes.ts`. This doesn't exercise the real Durable Object runtime (`@cloudflare/vitest-pool-workers`, not installed; ask first). Most server risks can instead be tested by pulling the decision out into a pure function, as `server/src/rateLimit.ts` already does.
 
+Keeping rules tests from breaking for the wrong reasons: shared helpers live in `shared/tests/support.ts` (seats, player lookup, applying actions, advancing cycles, and reading what a view offers through `offered`/`option`/`costOf`), so a change to `Seat`, `ActionResult`, or the shape of `PlayerView.actions` is fixed in one file. Each feature pins its confirmed numbers in one test and derives them from `state.config` everywhere else. Hidden-information tests are the exception and stay strict: they should break when a view field changes. The tests in `shared/tests` are not typechecked (`shared/tsconfig.json` includes only `src`), so a type error there shows up only when the test runs.
+
 ## 1. Hidden information (highest priority)
 
 A leak can't be fixed after the fact: once a client has seen a role, the game is spoiled. Leaks also don't show up as bugs, since everything still looks fine on screen.

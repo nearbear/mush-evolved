@@ -1,12 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { CHARACTERS } from "../src/characters.ts";
 import { DEFAULT_CONFIG } from "../src/config.ts";
 import { MODIFIERS, contaminationCapacity } from "../src/modifiers.ts";
 import { parseGameMessage } from "../src/protocol.ts";
-import { applyAction, createGame, legalIn, viewFor } from "../src/rules.ts";
-import type { Action, GameState, PlayerId, Seat } from "../src/types.ts";
+import { applyAction, createGame, viewFor } from "../src/rules.ts";
+import type { Action, GameState, PlayerId } from "../src/types.ts";
+import { clone, costOf, makeSeats, mustApply, nextDay, offered, player } from "./support.ts";
 
-const seats: Seat[] = Array.from({ length: 4 }, (_, i) => ({ id: `p${i}`, name: `Player ${i}`, isBot: false, character: CHARACTERS[i]!.id }));
+const seats = makeSeats(4);
 const config = { ...DEFAULT_CONFIG, mushCount: 1, startInventory: [], startItems: [] };
 
 /** p0 is human, p1 is human, p2 is Mush, p3 is human; everyone in one room. */
@@ -19,19 +19,8 @@ function ship(): GameState {
   return s;
 }
 
-function mustApply(state: GameState, id: PlayerId, ...actions: Action[]): GameState {
-  for (const action of actions) {
-    const r = applyAction(state, id, action);
-    if (!r.ok) throw new Error(r.error);
-    state = r.state;
-  }
-  return state;
-}
-
 const bondBoth = (s: GameState, a: PlayerId, b: PlayerId) =>
   mustApply(mustApply(s, a, { type: "bond", target: b }), b, { type: "bond", target: a });
-const player = (s: GameState, id: PlayerId) => s.players.find((p) => p.id === id)!;
-const clone = (s: GameState): GameState => JSON.parse(JSON.stringify(s));
 const dtt = (target: PlayerId): Action => ({ type: "dtt", target });
 const stt = (target: PlayerId): Action => ({ type: "stt", target });
 
@@ -39,15 +28,15 @@ describe("bonding", () => {
   it("costs 1 AP, is one-way, and is offered only for living people in your room", () => {
     const s0 = ship();
     s0.players[3]!.room = "SICK_BAY";
-    expect(legalIn(viewFor(s0, "p0"))).toContainEqual({ type: "bond", target: "p1" });
-    expect(legalIn(viewFor(s0, "p0"))).not.toContainEqual({ type: "bond", target: "p3" });
-    expect(legalIn(viewFor(s0, "p0"))).not.toContainEqual({ type: "bond", target: "p0" });
+    expect(offered(s0, "p0")).toContainEqual({ type: "bond", target: "p1" });
+    expect(offered(s0, "p0")).not.toContainEqual({ type: "bond", target: "p3" });
+    expect(offered(s0, "p0")).not.toContainEqual({ type: "bond", target: "p0" });
     const s = mustApply(s0, "p0", { type: "bond", target: "p1" });
     expect(player(s, "p0").ap).toBe(config.startAp - 1);
     expect(player(s, "p1").ap).toBe(config.startAp);
     expect(viewFor(s, "p0").bonds).toEqual({ to: ["p1"], from: [] });
     expect(viewFor(s, "p1").bonds).toEqual({ to: [], from: ["p0"] });
-    expect(legalIn(viewFor(s, "p0"))).not.toContainEqual({ type: "bond", target: "p1" });
+    expect(offered(s, "p0")).not.toContainEqual({ type: "bond", target: "p1" });
   });
 
   it("is the same for Mush and can't happen without the AP", () => {
@@ -73,9 +62,9 @@ describe("DTT and STT", () => {
     expect(applyAction(one, "p0", dtt("p1")).ok).toBe(false);
     expect(applyAction(one, "p1", stt("p0")).ok).toBe(false);
     const s = bondBoth(ship(), "p0", "p1");
-    expect(legalIn(viewFor(s, "p0"))).toContainEqual(dtt("p1"));
-    expect(legalIn(viewFor(s, "p0"))).toContainEqual(stt("p1"));
-    expect(legalIn(viewFor(s, "p0"))).not.toContainEqual(dtt("p2"));
+    expect(offered(s, "p0")).toContainEqual(dtt("p1"));
+    expect(offered(s, "p0")).toContainEqual(stt("p1"));
+    expect(offered(s, "p0")).not.toContainEqual(dtt("p2"));
     const apart = clone(s);
     apart.players[1]!.room = "SICK_BAY";
     expect(applyAction(apart, "p0", dtt("p1")).ok).toBe(false);
@@ -110,7 +99,7 @@ describe("DTT and STT", () => {
       expect(applyAction(s, who, stt(other)).ok).toBe(false);
       expect(applyAction(s, who, dtt(other)).ok).toBe(false);
     }
-    expect(legalIn(viewFor(s, "p1")).some((a) => a.type === "dtt" || a.type === "stt")).toBe(false);
+    expect(offered(s, "p1").some((a) => a.type === "dtt" || a.type === "stt")).toBe(false);
     // Blocked with anyone else for the day too.
     s = bondBoth(s, "p0", "p3");
     expect(applyAction(s, "p3", dtt("p0")).ok).toBe(false);
@@ -125,15 +114,6 @@ describe("DTT and STT", () => {
     expect(applyAction(s, "p0", dtt("p1")).ok).toBe(true);
   });
 });
-
-/** Everyone readies until the next day begins. */
-function nextDay(state: GameState): GameState {
-  const day = viewFor(state, "p0").day;
-  while (viewFor(state, "p0").day === day) {
-    for (const p of seats) state = mustApply(state, p.id, { type: "ready" });
-  }
-  return state;
-}
 
 describe("contamination", () => {
   it("rises by 1 for the human when a DTT includes exactly one Mush, whoever starts it", () => {
@@ -196,8 +176,8 @@ describe("protocol", () => {
 
 describe("action costs in the view", () => {
   it("carries each offered action's cost", () => {
-    const v = viewFor(ship(), "p0");
-    expect(v.actions.find((o) => o.action.type === "bond")?.cost).toEqual({ ap: 1, mp: 0 });
-    expect(v.actions.find((o) => o.action.type === "move")?.cost).toEqual({ ap: 1, mp: -2 }); // 0 MP: 1 AP converts to 3 MP, then 1 is spent
+    const s = ship();
+    expect(costOf(s, "p0", { type: "bond" })).toEqual({ ap: config.bond.cost.ap, mp: 0 });
+    expect(costOf(s, "p0", { type: "move" })).toEqual({ ap: 1, mp: -2 }); // 0 MP: 1 AP converts to 3 MP, then 1 is spent
   });
 });

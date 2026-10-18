@@ -1,31 +1,19 @@
 import { describe, expect, it } from "vitest";
-import { CHARACTERS } from "../src/characters.ts";
-import { DEFAULT_CONFIG, SHIP_ROOMS } from "../src/config.ts";
-import { apGain, moveCost, movementRules, MODIFIERS } from "../src/modifiers.ts";
-import { logCovert, logPrivate, logSecret } from "../src/log.ts";
 import { CHAT_HISTORY, MAX_CHAT_LENGTH, sendChat } from "../src/chat.ts";
-import { applyAction, createGame, legalIn, viewFor } from "../src/rules.ts";
+import { DEFAULT_CONFIG, SHIP_ROOMS } from "../src/config.ts";
 import { ITRACKIE_ITEM } from "../src/items.ts";
+import { logCovert, logPrivate, logSecret } from "../src/log.ts";
+import { apGain, moveCost, movementRules, MODIFIERS } from "../src/modifiers.ts";
 import { parseGameMessage } from "../src/protocol.ts";
+import { applyAction, createGame, viewFor } from "../src/rules.ts";
 import { installCameraIn } from "./cameras.ts";
-import { CHAT_CHANNELS, type Action, type ChatChannel, type GameState, type MovementRules, type PlayerId, type Seat } from "../src/types.ts";
+import { CHAT_CHANNELS, type Action, type ChatChannel, type GameState, type MovementRules, type PlayerId } from "../src/types.ts";
+import { makeSeats, player, mustApply, offered } from "./support.ts";
 
-const seats: Seat[] = Array.from({ length: 8 }, (_, i) => ({
-  id: `p${i}`,
-  name: `Player ${i}`,
-  isBot: i > 0,
-  character: CHARACTERS[i]!.id,
-}));
+const seats = makeSeats(8, "others");
 const newGame = (seed = 42) => createGame(seats, DEFAULT_CONFIG, seed);
 
-const player = (state: GameState, id: PlayerId) => state.players.find((p) => p.id === id)!;
 const move = (to: string): Action => ({ type: "move", to });
-
-function mustApply(state: GameState, playerId: PlayerId, action: Action): GameState {
-  const result = applyAction(state, playerId, action);
-  if (!result.ok) throw new Error(result.error);
-  return result.state;
-}
 
 describe("createGame", () => {
   it("is deterministic for a given seed", () => {
@@ -82,7 +70,7 @@ describe("applyAction", () => {
   it("offers no moves with neither MP nor AP left", () => {
     const state = newGame();
     Object.assign(player(state, "p0"), { ap: 0, mp: 0 });
-    expect(legalIn(viewFor(state, "p0")).some((a) => a.type === "move")).toBe(false);
+    expect(offered(state, "p0").some((a) => a.type === "move")).toBe(false);
   });
 
   describe("days", () => {

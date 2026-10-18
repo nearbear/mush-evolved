@@ -1,11 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { CHARACTERS } from "../src/characters.ts";
 import { DEFAULT_CONFIG } from "../src/config.ts";
 import { RESOURCE_IDS } from "../src/resources.ts";
 import { createGame, viewFor } from "../src/rules.ts";
-import type { Seat } from "../src/types.ts";
+import { makeSeats } from "./support.ts";
 
-const seats: Seat[] = Array.from({ length: 4 }, (_, i) => ({ id: `p${i}`, name: `Player ${i}`, isBot: false, character: CHARACTERS[i]!.id }));
+const seats = makeSeats(4);
 
 describe("extra resources", () => {
   it("start at zero for everyone", () => {

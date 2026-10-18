@@ -1,20 +1,15 @@
 import { describe, expect, it } from "vitest";
-import { CHARACTERS } from "../src/characters.ts";
 import { DEFAULT_CONFIG } from "../src/config.ts";
 import { killPlayer } from "../src/death.ts";
 import { CORPSE_ITEM } from "../src/items.ts";
 import { parseGameMessage } from "../src/protocol.ts";
 import { installCameraIn } from "./cameras.ts";
-import { applyAction, createGame, legalIn, viewFor, type ActionResult } from "../src/rules.ts";
-import type { Action, GameState, PlayerId, Seat } from "../src/types.ts";
+import { applyAction, createGame, viewFor } from "../src/rules.ts";
+import type { Action, GameState } from "../src/types.ts";
+import { makeSeats, player, must, offered } from "./support.ts";
 
-const seats: Seat[] = Array.from({ length: 3 }, (_, i) => ({ id: `p${i}`, name: `Player ${i}`, isBot: false, character: CHARACTERS[i]!.id }));
+const seats = makeSeats(3);
 const config = { ...DEFAULT_CONFIG, mushCount: 1, startItems: [], startSkills: [] };
-const player = (s: GameState, id: PlayerId) => s.players.find((p) => p.id === id)!;
-const must = (r: ActionResult): GameState => {
-  if (!r.ok) throw new Error(r.error);
-  return r.state;
-};
 const BAYS = ["SPACESHIP_BAY_A", "SPACESHIP_BAY_AA", "SPACESHIP_BAY_B", "ICARUS"];
 
 /** p2 is dead; p0 carries their corpse in `room`; p1 is in the refectory. */
@@ -36,7 +31,7 @@ describe("jettison", () => {
   it("destroys a carried corpse in any bay, for free", () => {
     for (const room of BAYS) {
       const { s, corpse, jettison } = ship(room);
-      expect(legalIn(viewFor(s, "p0"))).toContainEqual(jettison);
+      expect(offered(s, "p0")).toContainEqual(jettison);
       const after = must(applyAction(s, "p0", jettison));
       expect(after.items.some((i) => i.id === corpse)).toBe(false);
       expect(player(after, "p0").ap).toBe(player(s, "p0").ap);
@@ -45,7 +40,7 @@ describe("jettison", () => {
 
   it("is refused, leaving state unchanged, outside a bay, for a corpse on the floor, or for another item", () => {
     const outside = ship("REFECTORY");
-    expect(legalIn(viewFor(outside.s, "p0")).some((a) => a.type === "jettison")).toBe(false);
+    expect(offered(outside.s, "p0").some((a) => a.type === "jettison")).toBe(false);
     expect(applyAction(outside.s, "p0", outside.jettison).ok).toBe(false);
 
     const floor = ship();
@@ -55,7 +50,7 @@ describe("jettison", () => {
     const other = ship();
     other.s.items.push({ id: "w", type: "wrench", at: { kind: "player", id: "p0" } });
     expect(applyAction(other.s, "p0", { type: "jettison", item: "w" }).ok).toBe(false);
-    expect(legalIn(viewFor(other.s, "p0")).filter((a) => a.type === "jettison")).toEqual([other.jettison]);
+    expect(offered(other.s, "p0").filter((a) => a.type === "jettison")).toEqual([other.jettison]);
   });
 
   it("is secret: a witness or a camera makes it room history, alone only the actor sees it, and it is never seen from another room", () => {

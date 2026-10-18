@@ -1,15 +1,14 @@
 import { describe, expect, it } from "vitest";
-import { CHARACTERS } from "../src/characters.ts";
 import { DEFAULT_CONFIG } from "../src/config.ts";
 import { contaminate } from "../src/infection.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";
 import { addStatus } from "../src/statuses.ts";
-import type { Action, GameState, PlayerId, Seat } from "../src/types.ts";
+import type { Action, GameState } from "../src/types.ts";
+import { makeSeats, player } from "./support.ts";
 
-const seats: Seat[] = Array.from({ length: 4 }, (_, i) => ({ id: `p${i}`, name: `Player ${i}`, isBot: false, character: CHARACTERS[i]!.id }));
+const seats = makeSeats(4);
 const config = { ...DEFAULT_CONFIG, mushCount: 1, startInventory: [], startItems: [], maxAp: 99, startAp: 10 };
 const shower: Action = { type: "shower", equipment: "BEDROOM_A:SHOWER" };
-const player = (s: GameState, id: PlayerId) => s.players.find((p) => p.id === id)!;
 
 /** p0 is Mush, the rest human; everyone in Bedroom Alpha; p1 has the skill and is dirty. */
 function ship(skills: string[] = ["antic_perfume"]): GameState {

@@ -1,11 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { CHARACTERS } from "../src/characters.ts";
 import { DEFAULT_CONFIG } from "../src/config.ts";
 import { MODIFIERS } from "../src/modifiers.ts";
-import { applyAction, createGame, legalIn, viewFor } from "../src/rules.ts";
-import type { Action, GameState, PlayerId, Seat } from "../src/types.ts";
+import { applyAction, createGame, viewFor } from "../src/rules.ts";
+import type { GameState, PlayerId } from "../src/types.ts";
+import { makeSeats, player, mustApply, nextCycle, offered } from "./support.ts";
 
-const seats: Seat[] = Array.from({ length: 4 }, (_, i) => ({ id: `p${i}`, name: `Player ${i}`, isBot: false, character: CHARACTERS[i]!.id }));
+const seats = makeSeats(4);
 const config = { ...DEFAULT_CONFIG, mushCount: 1, startInventory: [], startItems: [], maxAp: 99, startAp: 50 };
 
 /** p0 is Mush, the rest human. All in one room. */
@@ -15,16 +15,6 @@ function ship(): GameState {
     p.role = i === 0 ? "mush" : "human";
     p.satietyZeroSince = i === 0 ? null : 1;
   });
-  return s;
-}
-const player = (s: GameState, id: PlayerId) => s.players.find((p) => p.id === id)!;
-function mustApply(state: GameState, id: PlayerId, action: Action): GameState {
-  const r = applyAction(state, id, action);
-  if (!r.ok) throw new Error(r.error);
-  return r.state;
-}
-function nextCycle(s: GameState): GameState {
-  for (const { id } of s.players) if (s.players.find((p) => p.id === id)!.alive) s = mustApply(s, id, { type: "ready" });
   return s;
 }
 function give(s: GameState, id: PlayerId, type: string): string {
@@ -95,7 +85,7 @@ describe("full belly", () => {
     expect(viewFor(s, "p1").statuses).toContain("full_belly");
     const id = give(s, "p1", "coffee");
     expect(applyAction(s, "p1", { type: "consume", item: id }).ok).toBe(false);
-    expect(legalIn(viewFor(s, "p1"))).not.toContainEqual({ type: "consume", item: id });
+    expect(offered(s, "p1")).not.toContainEqual({ type: "consume", item: id });
     expect(viewFor(s, "p2").players.find((p) => p.id === "p1")!.statuses).toEqual([]);
     s = nextCycle(s); // 3 satiety: still full
     expect(viewFor(s, "p1").statuses).toContain("full_belly");
@@ -114,10 +104,10 @@ describe("hungry", () => {
     expect(viewFor(s, "p1").statuses).not.toContain("hungry");
     s = nextCycle(s); // cycle 25
     expect(viewFor(s, "p1").statuses).toContain("hungry");
-    expect(player(s, "p1").hp).toBe(config.startHp - 1);
+    expect(player(s, "p1").hp).toBe(config.startHp - config.hunger.hpPerCycle);
     expect(viewFor(s, "p2").players.find((p) => p.id === "p1")!.statuses).toEqual([]);
     s = nextCycle(s);
-    expect(player(s, "p1").hp).toBe(config.startHp - 2);
+    expect(player(s, "p1").hp).toBe(config.startHp - 2 * config.hunger.hpPerCycle);
   });
 
   it("is cured by any consumable, and the count restarts when satiety returns to 0", () => {

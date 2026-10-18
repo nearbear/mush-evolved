@@ -1,12 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { CHARACTERS } from "../src/characters.ts";
 import { DEFAULT_CONFIG } from "../src/config.ts";
-import { applyAction, createGame, legalIn, viewFor } from "../src/rules.ts";
-import type { GameState, PlayerId, Seat } from "../src/types.ts";
+import { applyAction, createGame, viewFor } from "../src/rules.ts";
+import type { GameState } from "../src/types.ts";
+import { makeSeats, player, offered } from "./support.ts";
 
-const seats: Seat[] = Array.from({ length: 3 }, (_, i) => ({ id: `p${i}`, name: `Player ${i}`, isBot: false, character: CHARACTERS[i]!.id }));
+const seats = makeSeats(3);
 const base = { ...DEFAULT_CONFIG, mushCount: 1, startInventory: [], startItems: [], startSkills: [] };
-const player = (s: GameState, id: PlayerId) => s.players.find((p) => p.id === id)!;
 
 /** p0 in the refectory with 10 MP; `carry` heavy freezers in their inventory. */
 function ship(carry: number, skills: string[] = []): GameState {
@@ -19,7 +18,7 @@ function ship(carry: number, skills: string[] = []): GameState {
   return s;
 }
 const mpSpent = (s: GameState) => {
-  const to = legalIn(viewFor(s, "p0")).find((a) => a.type === "move")!;
+  const to = offered(s, "p0").find((a) => a.type === "move")!;
   const r = applyAction(s, "p0", to);
   if (!r.ok) throw new Error(r.error);
   return 10 - player(r.state, "p0").mp;
@@ -57,7 +56,7 @@ describe("heavy items", () => {
   it("converts AP when MP can't cover the penalty", () => {
     const s = ship(1);
     player(s, "p0").mp = 2;
-    const to = legalIn(viewFor(s, "p0")).find((a) => a.type === "move")!;
+    const to = offered(s, "p0").find((a) => a.type === "move")!;
     const r = applyAction(s, "p0", to);
     if (!r.ok) throw new Error(r.error);
     expect(player(r.state, "p0").ap).toBe(base.startAp - 1);

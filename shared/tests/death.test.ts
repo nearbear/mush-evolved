@@ -1,19 +1,14 @@
 import { describe, expect, it } from "vitest";
-import { CHARACTERS } from "../src/characters.ts";
+import { createChannel, inviteToChannel, sendChat, toggleCheckbox } from "../src/chat.ts";
 import { DEFAULT_CONFIG } from "../src/config.ts";
 import { damage, killPlayer } from "../src/death.ts";
 import { CORPSE_ITEM, ITEM_TYPES, ITRACKIE_ITEM, itemsIn } from "../src/items.ts";
-import { applyAction, createGame, legalIn, viewFor, type ActionResult } from "../src/rules.ts";
-import { createChannel, inviteToChannel, sendChat, toggleCheckbox } from "../src/chat.ts";
-import { CHAT_CHANNELS, GRAVEYARD_CHANNEL, MUSH_CHANNEL, type Action, type GameState, type PlayerId, type Seat } from "../src/types.ts";
+import { applyAction, createGame, viewFor } from "../src/rules.ts";
+import { CHAT_CHANNELS, GRAVEYARD_CHANNEL, MUSH_CHANNEL, type Action, type GameState, type PlayerId } from "../src/types.ts";
+import { makeSeats, player, must, offered } from "./support.ts";
 
-const seats: Seat[] = Array.from({ length: 4 }, (_, i) => ({ id: `p${i}`, name: `Player ${i}`, isBot: false, character: CHARACTERS[i]!.id }));
+const seats = makeSeats(4);
 const config = { ...DEFAULT_CONFIG, mushCount: 1, startItems: [], startSkills: [] };
-const player = (s: GameState, id: PlayerId) => s.players.find((p) => p.id === id)!;
-const must = (r: ActionResult): GameState => {
-  if (!r.ok) throw new Error(r.error);
-  return r.state;
-};
 const punch = (target: PlayerId): Action => ({ type: "punch", target });
 
 /** p0 (Mush) and p1 (human) share the sick bay; p2 and p3 (humans) are in the refectory. Everyone has an iTrackie. */
@@ -101,9 +96,9 @@ describe("death", () => {
 
   it("is permanent: the dead can't act, heal, or take more damage", () => {
     const s = punchToDeath(ship());
-    expect(legalIn(viewFor(s, "p1"))).toEqual([]);
+    expect(offered(s, "p1")).toEqual([]);
     expect(applyAction(s, "p1", { type: "ready" }).ok).toBe(false);
-    expect(legalIn(viewFor(s, "p0")).some((a) => a.type === "punch")).toBe(false);
+    expect(offered(s, "p0").some((a) => a.type === "punch")).toBe(false);
     const before = JSON.stringify(s);
     damage(s, player(s, "p1"), 5);
     killPlayer(s, player(s, "p1"));
@@ -130,7 +125,7 @@ describe("death", () => {
   it("a corpse can be picked up and takes one slot", () => {
     const s = punchToDeath(ship());
     const corpse = s.items.find((i) => i.type === CORPSE_ITEM)!;
-    expect(legalIn(viewFor(s, "p0"))).toContainEqual({ type: "take", item: corpse.id });
+    expect(offered(s, "p0")).toContainEqual({ type: "take", item: corpse.id });
     const after = must(applyAction(s, "p0", { type: "take", item: corpse.id }));
     expect(itemsIn(after, { kind: "player", id: "p0" }).map((i) => i.type).sort()).toEqual([CORPSE_ITEM, ITRACKIE_ITEM].sort());
   });

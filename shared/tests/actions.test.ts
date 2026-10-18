@@ -1,17 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { CHARACTERS } from "../src/characters.ts";
 import { DEFAULT_CONFIG } from "../src/config.ts";
-import { affordable, applyAction, createGame, legalActions, legalIn, viewFor } from "../src/rules.ts";
 import { RESEARCH_IDS } from "../src/research.ts";
+import { affordable, applyAction, createGame, legalActions, viewFor } from "../src/rules.ts";
 import { SKILLS } from "../src/skills.ts";
-import type { Action, Seat } from "../src/types.ts";
+import type { Action } from "../src/types.ts";
+import { makeSeats, offered, option } from "./support.ts";
 
-const seats: Seat[] = Array.from({ length: 4 }, (_, i) => ({
-  id: `p${i}`,
-  name: `Player ${i}`,
-  isBot: true,
-  character: CHARACTERS[i]!.id,
-}));
+const seats = makeSeats(4, "all");
 
 const sorted = (actions: Action[]) => actions.map((a) => JSON.stringify(a)).sort();
 
@@ -79,8 +74,7 @@ describe("actions in the view", () => {
   it("marks what you can't pay for with the points you lack", () => {
     const state = createGame(seats, DEFAULT_CONFIG, 1);
     Object.assign(state.players[0]!, { ap: 0, mp: 0 });
-    const v = viewFor(state, "p0");
-    expect(v.actions.find((o) => o.action.type === "punch")?.lacks).toEqual(["ap"]);
-    expect(legalIn(v).some((a) => a.type === "punch")).toBe(false);
+    expect(option(state, "p0", { type: "punch" })?.lacks).toEqual(["ap"]);
+    expect(offered(state, "p0").some((a) => a.type === "punch")).toBe(false);
   });
 });

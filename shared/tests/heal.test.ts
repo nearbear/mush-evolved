@@ -1,15 +1,15 @@
 import { describe, expect, it } from "vitest";
-import { CHARACTERS } from "../src/characters.ts";
 import { DEFAULT_CONFIG } from "../src/config.ts";
 import { MODIFIERS, healAmount } from "../src/modifiers.ts";
 import { parseGameMessage } from "../src/protocol.ts";
-import { applyAction, createGame, legalIn, viewFor } from "../src/rules.ts";
-import type { Action, GameState, PlayerId, Seat } from "../src/types.ts";
+import { applyAction, createGame, viewFor } from "../src/rules.ts";
+import type { Action, GameState, PlayerId } from "../src/types.ts";
+import { makeSeats, player, offered } from "./support.ts";
 
-const seats: Seat[] = Array.from({ length: 3 }, (_, i) => ({ id: `p${i}`, name: `Player ${i}`, isBot: false, character: CHARACTERS[i]!.id }));
+const seats = makeSeats(3);
 const config = { ...DEFAULT_CONFIG, mushCount: 1, startInventory: [], startItems: [] };
-const player = (s: GameState, id: PlayerId) => s.players.find((p) => p.id === id)!;
 const heal = (target: PlayerId): Action => ({ type: "heal", target });
+const { cost, effect } = config.heal;
 
 /** Three people in one room; p0 holds a medikit and everyone is hurt to 5 HP. */
 function ship(): GameState {
@@ -23,19 +23,23 @@ function ship(): GameState {
 }
 
 describe("healing", () => {
-  it("costs 2 AP on someone else and restores 3 HP", () => {
-    const r = applyAction(ship(), "p0", heal("p1"));
-    if (!r.ok) throw new Error(r.error);
-    expect(player(r.state, "p1").hp).toBe(8);
-    expect(player(r.state, "p0").hp).toBe(5);
-    expect(player(r.state, "p0").ap).toBe(config.startAp - 2);
+  it("has the confirmed numbers: 2 AP on someone else, 3 on yourself, 3 HP", () => {
+    expect([cost.apOther, cost.apSelf, effect.hp]).toEqual([2, 3, 3]);
   });
 
-  it("costs 3 AP on yourself", () => {
+  it("costs its AP on someone else and restores their HP", () => {
+    const r = applyAction(ship(), "p0", heal("p1"));
+    if (!r.ok) throw new Error(r.error);
+    expect(player(r.state, "p1").hp).toBe(5 + effect.hp);
+    expect(player(r.state, "p0").hp).toBe(5);
+    expect(player(r.state, "p0").ap).toBe(config.startAp - cost.apOther);
+  });
+
+  it("costs more AP on yourself", () => {
     const r = applyAction(ship(), "p0", heal("p0"));
     if (!r.ok) throw new Error(r.error);
-    expect(player(r.state, "p0").hp).toBe(8);
-    expect(player(r.state, "p0").ap).toBe(config.startAp - 3);
+    expect(player(r.state, "p0").hp).toBe(5 + effect.hp);
+    expect(player(r.state, "p0").ap).toBe(config.startAp - cost.apSelf);
   });
 
   it("caps at max HP and is still offered at full HP", () => {
@@ -45,12 +49,12 @@ describe("healing", () => {
     if (!r.ok) throw new Error(r.error);
     expect(player(r.state, "p1").hp).toBe(config.maxHp);
     player(s, "p1").hp = config.maxHp;
-    expect(legalIn(viewFor(s, "p0"))).toContainEqual(heal("p1"));
+    expect(offered(s, "p0")).toContainEqual(heal("p1"));
   });
 
   it("needs a medikit in your inventory, not on the floor or in someone else's hands", () => {
     const s = ship();
-    expect(legalIn(viewFor(s, "p1")).some((a) => a.type === "heal")).toBe(false);
+    expect(offered(s, "p1").some((a) => a.type === "heal")).toBe(false);
     expect(applyAction(s, "p1", heal("p0")).ok).toBe(false);
     s.items[0]!.at = { kind: "room", id: "LABORATORY" };
     expect(applyAction(s, "p0", heal("p1")).ok).toBe(false);
@@ -63,8 +67,8 @@ describe("healing", () => {
     const before = JSON.stringify(s);
     expect(applyAction(s, "p0", heal("p1")).ok).toBe(false);
     expect(applyAction(s, "p0", heal("p2")).ok).toBe(false);
-    expect(legalIn(viewFor(s, "p0"))).not.toContainEqual(heal("p1"));
-    player(s, "p0").ap = 2;
+    expect(offered(s, "p0")).not.toContainEqual(heal("p1"));
+    player(s, "p0").ap = cost.apSelf - 1;
     const poor = JSON.stringify(s);
     expect(applyAction(s, "p0", heal("p0")).ok).toBe(false);
     expect(JSON.stringify(s)).toBe(poor);
@@ -76,10 +80,10 @@ describe("healing", () => {
     player(s, "p0").modifiers.push("test_healer");
     MODIFIERS.test_healer = { healAmount: (n) => n + 2 };
     try {
-      expect(healAmount(s, player(s, "p0"))).toBe(5);
+      expect(healAmount(s, player(s, "p0"))).toBe(effect.hp + 2);
       const r = applyAction(s, "p0", heal("p1"));
       if (!r.ok) throw new Error(r.error);
-      expect(player(r.state, "p1").hp).toBe(10);
+      expect(player(r.state, "p1").hp).toBe(5 + effect.hp + 2);
     } finally {
       delete MODIFIERS.test_healer;
     }

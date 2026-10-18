@@ -1,13 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { CHARACTERS } from "../src/characters.ts";
 import { DEFAULT_CONFIG } from "../src/config.ts";
 import { parseGameMessage } from "../src/protocol.ts";
 import { applyAction, createGame, legalActions, viewFor } from "../src/rules.ts";
-import type { Action, GameState, PlayerId, Seat } from "../src/types.ts";
+import type { Action, GameState } from "../src/types.ts";
+import { makeSeats, player } from "./support.ts";
 
-const seats: Seat[] = Array.from({ length: 3 }, (_, i) => ({ id: `p${i}`, name: `Player ${i}`, isBot: false, character: CHARACTERS[i]!.id }));
+const seats = makeSeats(3);
 const base = { ...DEFAULT_CONFIG, mushCount: 1, startInventory: [], startItems: [], startSkills: [], equipment: {} };
-const player = (s: GameState, id: PlayerId) => s.players.find((p) => p.id === id)!;
 const build = (item: string): Action => ({ type: "build", item });
 const room = (id: string) => ({ kind: "room" as const, id });
 
@@ -36,7 +35,7 @@ describe("build", () => {
     if (!r.ok) throw new Error(r.error);
     expect(r.state.items.map((i) => i.id)).toEqual([...r.state.items.map((i) => i.id)].filter((id) => !["bp", "m", "t"].includes(id)));
     expect(r.state.config.equipment.CORRIDOR_A).toMatchObject([{ type: "SOFA" }]);
-    expect(player(r.state, "p0").ap).toBe(base.startAp - 3);
+    expect(player(r.state, "p0").ap).toBe(base.startAp - base.build.cost.ap);
     expect(viewFor(r.state, "p1").roomEquipment.map((e) => e.type)).toEqual(["SOFA"]);
     expect(viewFor(r.state, "p1").log.some((e) => e.key === "built")).toBe(true);
     expect(viewFor(r.state, "p2").log.some((e) => e.key === "built")).toBe(false);

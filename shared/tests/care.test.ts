@@ -1,26 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { CHARACTERS } from "../src/characters.ts";
 import { DEFAULT_CONFIG } from "../src/config.ts";
-import { applyAction, createGame, legalIn, viewFor } from "../src/rules.ts";
-import type { Action, GameState, PlayerId, Seat } from "../src/types.ts";
+import { applyAction, createGame, viewFor } from "../src/rules.ts";
+import type { Action, GameState, PlayerId } from "../src/types.ts";
+import { makeSeats, player, mustApply, nextDay, offered } from "./support.ts";
 
-const seats: Seat[] = Array.from({ length: 3 }, (_, i) => ({ id: `p${i}`, name: `Player ${i}`, isBot: false, character: CHARACTERS[i]!.id }));
+const seats = makeSeats(3);
 const config = { ...DEFAULT_CONFIG, mushCount: 1, startInventory: [], startItems: [], startSkills: [] };
-const player = (s: GameState, id: PlayerId) => s.players.find((p) => p.id === id)!;
 const heal = (target: PlayerId): Action => ({ type: "heal", target });
-
-function mustApply(s: GameState, id: PlayerId, a: Action): GameState {
-  const r = applyAction(s, id, a);
-  if (!r.ok) throw new Error(r.error);
-  return r.state;
-}
-
-/** Plays through to the start of the next day. */
-function nextDay(s: GameState): GameState {
-  const day = Math.floor((s.cycle - 1) / config.cyclesPerDay);
-  while (Math.floor((s.cycle - 1) / config.cyclesPerDay) === day) for (const p of s.players) s = mustApply(s, p.id, { type: "ready" });
-  return s;
-}
 
 /** Everyone is hurt in one room that is not the sick bay; p0 holds a medikit. */
 function ward(): GameState {
@@ -60,14 +46,14 @@ describe("care points", () => {
     let s = ward();
     player(s, "p0").resources.heal = 2;
     s = mustApply(s, "p0", heal("p1"));
-    expect(player(s, "p1").hp).toBe(8);
+    expect(player(s, "p1").hp).toBe(5 + config.heal.effect.hp);
     expect(player(s, "p0").ap).toBe(config.startAp);
     expect(player(s, "p0").resources.heal).toBe(1);
     s = mustApply(s, "p0", heal("p0"));
     expect(player(s, "p0").ap).toBe(config.startAp);
     expect(player(s, "p0").resources.heal).toBe(0);
     s = mustApply(s, "p0", heal("p1"));
-    expect(player(s, "p0").ap).toBe(config.startAp - 2);
+    expect(player(s, "p0").ap).toBe(config.startAp - config.heal.cost.apOther);
   });
 
   it("still needs a medikit or the sick bay", () => {
@@ -98,10 +84,10 @@ describe("healing in the sick bay", () => {
 
   it("works without a medikit, for anyone, at the normal AP cost", () => {
     const s = mustApply(bay(), "p1", heal("p2"));
-    expect(player(s, "p2").hp).toBe(8);
-    expect(player(s, "p1").ap).toBe(config.startAp - 2);
+    expect(player(s, "p2").hp).toBe(5 + config.heal.effect.hp);
+    expect(player(s, "p1").ap).toBe(config.startAp - config.heal.cost.apOther);
     const self = mustApply(bay(), "p1", heal("p1"));
-    expect(player(self, "p1").ap).toBe(config.startAp - 3);
+    expect(player(self, "p1").ap).toBe(config.startAp - config.heal.cost.apSelf);
   });
 
   it("is not offered outside the sick bay without a medikit", () => {
@@ -109,7 +95,7 @@ describe("healing in the sick bay", () => {
     s.players.forEach((p) => {
       p.room = "LABORATORY";
     });
-    expect(legalIn(viewFor(s, "p1")).some((a) => a.type === "heal")).toBe(false);
+    expect(offered(s, "p1").some((a) => a.type === "heal")).toBe(false);
     expect(applyAction(s, "p1", heal("p2")).ok).toBe(false);
   });
 

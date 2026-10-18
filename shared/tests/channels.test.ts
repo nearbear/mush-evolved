@@ -1,35 +1,19 @@
 import { describe, expect, it } from "vitest";
-import { CHARACTERS } from "../src/characters.ts";
+import { CHAT_HISTORY, createChannel, inviteToChannel, leaveChannel, sendChat, toggleCheckbox } from "../src/chat.ts";
 import { DEFAULT_CONFIG } from "../src/config.ts";
 import { ITRACKIE_ITEM } from "../src/items.ts";
 import { channelLimit, MODIFIERS } from "../src/modifiers.ts";
 import { parseGameMessage } from "../src/protocol.ts";
-import {
-  CHAT_HISTORY,
-  createChannel,
-  inviteToChannel,
-  leaveChannel,
-  sendChat,
-  toggleCheckbox,
-} from "../src/chat.ts";
 import { applyAction, createGame, viewFor, type ActionResult } from "../src/rules.ts";
-import type { GameState, PrivateChannelId, Seat } from "../src/types.ts";
+import type { GameState, PrivateChannelId } from "../src/types.ts";
+import { clone, makeSeats, must, player } from "./support.ts";
 
-const seats: Seat[] = Array.from({ length: 8 }, (_, i) => ({
-  id: `p${i}`,
-  name: `Player ${i}`,
-  isBot: i > 0,
-  character: CHARACTERS[i]!.id,
-}));
+const seats = makeSeats(8, "others");
 
 const deadCopy = (s: GameState, id: string): GameState => {
-  const copy = JSON.parse(JSON.stringify(s)) as GameState;
-  copy.players.find((p) => p.id === id)!.alive = false;
+  const copy = clone(s);
+  player(copy, id).alive = false;
   return copy;
-};
-const must = (r: ActionResult): GameState => {
-  if (!r.ok) throw new Error(r.error);
-  return r.state;
 };
 const error = (r: ActionResult): string => {
   if (r.ok) throw new Error("expected a failure");

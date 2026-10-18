@@ -1,20 +1,15 @@
 import { describe, expect, it } from "vitest";
-import { CHARACTERS } from "../src/characters.ts";
 import { DEFAULT_CONFIG } from "../src/config.ts";
 import { CAMERA_EQUIPMENT, cameraEquipmentId } from "../src/equipment.ts";
 import { hasCamera, logCovert } from "../src/log.ts";
 import { parseGameMessage } from "../src/protocol.ts";
-import { applyAction, createGame, legalIn, viewFor, type ActionResult } from "../src/rules.ts";
-import type { Action, GameState, PlayerId, Seat } from "../src/types.ts";
+import { applyAction, createGame, viewFor } from "../src/rules.ts";
+import type { Action, GameState } from "../src/types.ts";
 import { installCameraIn } from "./cameras.ts";
+import { makeSeats, player, must, offered } from "./support.ts";
 
-const seats: Seat[] = Array.from({ length: 3 }, (_, i) => ({ id: `p${i}`, name: `Player ${i}`, isBot: false, character: CHARACTERS[i]!.id }));
+const seats = makeSeats(3);
 const config = { ...DEFAULT_CONFIG, mushCount: 1, startItems: [], startSkills: [], dismantle: { ...DEFAULT_CONFIG.dismantle, successChance: 1 } };
-const player = (s: GameState, id: PlayerId) => s.players.find((p) => p.id === id)!;
-const must = (r: ActionResult): GameState => {
-  if (!r.ok) throw new Error(r.error);
-  return r.state;
-};
 const equipmentIn = (s: GameState, room: string) => s.config.equipment[room]?.filter((e) => e.type === CAMERA_EQUIPMENT) ?? [];
 const dismantleEquipment = (room: string): Action => ({ type: "dismantle", equipment: cameraEquipmentId(room) });
 
@@ -37,7 +32,7 @@ describe("install", () => {
 
   it("turns the carried camera into the room's equipment, for 1 AP, with a public log line", () => {
     const { s, camera, install } = ship();
-    expect(legalIn(viewFor(s, "p0"))).toContainEqual(install);
+    expect(offered(s, "p0")).toContainEqual(install);
     const after = must(applyAction(s, "p0", install));
     expect(after.items.some((i) => i.id === camera)).toBe(false);
     expect(equipmentIn(after, "REFECTORY")).toEqual([{ id: "REFECTORY:CAMERA", type: CAMERA_EQUIPMENT }]);
@@ -78,7 +73,7 @@ describe("install", () => {
 
     const filmed = structuredClone(s);
     installCameraIn(filmed, "REFECTORY");
-    expect(legalIn(viewFor(filmed, "p0")).some((a) => a.type === "install")).toBe(false);
+    expect(offered(filmed, "p0").some((a) => a.type === "install")).toBe(false);
     expect(applyAction(filmed, "p0", install).ok).toBe(false);
 
     const broke = structuredClone(s);
@@ -105,7 +100,7 @@ describe("uninstall", () => {
     installCameraIn(s, "REFECTORY");
     s.items = s.items.filter((i) => i.type !== "camera");
     const uninstall: Action = { type: "uninstall", equipment: "REFECTORY:CAMERA" };
-    expect(legalIn(viewFor(s, "p0"))).toContainEqual(uninstall);
+    expect(offered(s, "p0")).toContainEqual(uninstall);
     const after = must(applyAction(s, "p0", uninstall));
     expect(hasCamera(after, "REFECTORY")).toBe(false);
     expect(equipmentIn(after, "REFECTORY")).toEqual([]);
@@ -113,7 +108,7 @@ describe("uninstall", () => {
     expect(player(after, "p0").ap).toBe(player(s, "p0").ap - 1);
     expect(viewFor(after, "p1").log.some((e) => e.key === "cameraUninstalled")).toBe(true);
     // And it can be installed again, here or elsewhere.
-    expect(legalIn(viewFor(after, "p0")).some((a) => a.type === "install")).toBe(true);
+    expect(offered(after, "p0").some((a) => a.type === "install")).toBe(true);
   });
 
   it("puts the camera in the room if your inventory is full", () => {
@@ -149,7 +144,7 @@ describe("dismantling a camera", () => {
     installCameraIn(s, "REFECTORY");
     s.items = s.items.filter((i) => i.type !== "camera");
     const dismantle = dismantleEquipment("REFECTORY");
-    expect(legalIn(viewFor(s, "p0"))).toContainEqual(dismantle);
+    expect(offered(s, "p0")).toContainEqual(dismantle);
     const after = must(applyAction(s, "p0", dismantle));
     expect(hasCamera(after, "REFECTORY")).toBe(false);
     expect(after.items.filter((i) => i.type === "camera")).toEqual([]);

@@ -1,13 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { CHARACTERS } from "../src/characters.ts";
 import { DEFAULT_CONFIG } from "../src/config.ts";
 import { parseGameMessage } from "../src/protocol.ts";
 import { applyAction, createGame, legalActions, viewFor } from "../src/rules.ts";
-import type { Action, GameState, PlayerId, Seat } from "../src/types.ts";
+import type { Action, GameState } from "../src/types.ts";
+import { makeSeats, player } from "./support.ts";
 
-const seats: Seat[] = Array.from({ length: 3 }, (_, i) => ({ id: `p${i}`, name: `Player ${i}`, isBot: false, character: CHARACTERS[i]!.id }));
+const seats = makeSeats(3);
 const base = { ...DEFAULT_CONFIG, mushCount: 1, startInventory: [], startItems: [], startSkills: [] };
-const player = (s: GameState, id: PlayerId) => s.players.find((p) => p.id === id)!;
 const cook = (item: string): Action => ({ type: "cook", item });
 
 /** p0 and p1 in the refectory, p2 elsewhere; one uncooked ration on the floor (r1) and one carried by p0 (r2). */
@@ -30,7 +29,7 @@ describe("cook", () => {
     const r = applyAction(ship(), "p0", cook("r1"));
     if (!r.ok) throw new Error(r.error);
     expect(r.state.items.find((i) => i.id === "r1")).toEqual({ id: "r1", type: "cooked_ration", at: { kind: "room", id: "REFECTORY" } });
-    expect(player(r.state, "p0").ap).toBe(base.startAp - 1);
+    expect(player(r.state, "p0").ap).toBe(base.startAp - base.cook.cost.ap);
     expect(viewFor(r.state, "p1").log.some((e) => e.key === "cooked")).toBe(true);
   });
 

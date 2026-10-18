@@ -1,13 +1,13 @@
 import { describe, expect, it } from "vitest";
-import { CHARACTERS } from "../src/characters.ts";
 import { DEFAULT_CONFIG } from "../src/config.ts";
 import { parseGameMessage } from "../src/protocol.ts";
 import { RESEARCH_IDS } from "../src/research.ts";
-import { applyAction, createGame, legalIn, viewFor } from "../src/rules.ts";
+import { applyAction, createGame, viewFor } from "../src/rules.ts";
 import { addStatus } from "../src/statuses.ts";
-import type { Action, Seat } from "../src/types.ts";
+import type { Action } from "../src/types.ts";
+import { makeSeats, offered } from "./support.ts";
 
-const seats: Seat[] = Array.from({ length: 3 }, (_, i) => ({ id: `p${i}`, name: `Player ${i}`, isBot: i > 0, character: CHARACTERS[i]!.id }));
+const seats = makeSeats(3, "others");
 const work = (research: string): Action => ({ type: "research", equipment: "LABORATORY:RESEARCH_LAB", research });
 const AP = DEFAULT_CONFIG.research.cost.ap;
 
@@ -21,8 +21,8 @@ describe("research", () => {
   it("starts with nothing done and every research offered at the research lab", () => {
     const s = game();
     expect(s.research).toEqual({});
-    const offered = legalIn(viewFor(s, "p0")).flatMap((a) => (a.type === "research" ? [a.research] : []));
-    expect(offered.sort()).toEqual([...RESEARCH_IDS].sort());
+    const researches = offered(s, "p0").flatMap((a) => (a.type === "research" ? [a.research] : []));
+    expect(researches.sort()).toEqual([...RESEARCH_IDS].sort());
     expect(RESEARCH_IDS).toHaveLength(24);
   });
 
@@ -50,7 +50,7 @@ describe("research", () => {
     expect(s.research.STEROIDS).toBe(100);
     expect(s.log.at(-1)?.key).toBe("researchCompleted");
     s.players[0]!.ap = 12;
-    expect(legalIn(viewFor(s, "p0"))).not.toContainEqual(work("STEROIDS"));
+    expect(offered(s, "p0")).not.toContainEqual(work("STEROIDS"));
     expect(applyAction(s, "p0", work("STEROIDS")).ok).toBe(false);
   });
 
@@ -58,7 +58,7 @@ describe("research", () => {
     const s = game();
     addStatus(s.players[0]!, "dirty");
     expect(applyAction(s, "p0", work("MYCOSCAN")).ok).toBe(false);
-    expect(legalIn(viewFor(s, "p0")).some((a) => a.type === "research")).toBe(false);
+    expect(offered(s, "p0").some((a) => a.type === "research")).toBe(false);
     s.players[1]!.ap = AP - 1;
     expect(applyAction(s, "p1", work("MYCOSCAN")).ok).toBe(false);
     expect(applyAction(game("REFECTORY"), "p0", work("MYCOSCAN")).ok).toBe(false);

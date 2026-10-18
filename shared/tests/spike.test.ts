@@ -1,13 +1,13 @@
 import { describe, expect, it } from "vitest";
 import { ACTIONS } from "../src/actions.ts";
-import { CHARACTERS } from "../src/characters.ts";
 import { DEFAULT_CONFIG } from "../src/config.ts";
-import { parseGameMessage } from "../src/protocol.ts";
 import { installCameraIn } from "./cameras.ts";
-import { applyAction, createGame, legalIn, viewFor } from "../src/rules.ts";
-import type { Action, GameState, PlayerId, Seat } from "../src/types.ts";
+import { parseGameMessage } from "../src/protocol.ts";
+import { applyAction, createGame, viewFor } from "../src/rules.ts";
+import type { Action, GameState, PlayerId } from "../src/types.ts";
+import { makeSeats, offered, option, player } from "./support.ts";
 
-const seats: Seat[] = Array.from({ length: 5 }, (_, i) => ({ id: `p${i}`, name: `Player ${i}`, isBot: false, character: CHARACTERS[i]!.id }));
+const seats = makeSeats(5);
 const config = { ...DEFAULT_CONFIG, mushCount: 1, startInventory: [], startItems: [], maxAp: 99, startAp: 50 };
 const spike = (target: PlayerId): Action => ({ type: "spike", target });
 
@@ -24,7 +24,6 @@ function ship(witness = false): GameState {
   get("p4").room = witness ? "SICK_BAY" : "LABORATORY";
   return s;
 }
-const player = (s: GameState, id: PlayerId) => s.players.find((p) => p.id === id)!;
 
 describe("spiking", () => {
   it("costs 1 AP and 1 spore and raises the human's contamination by 1", () => {
@@ -50,11 +49,11 @@ describe("spiking", () => {
 
   it("is offered only to Mush with a spore, for humans in their room", () => {
     const s = ship();
-    expect(legalIn(viewFor(s, "p0"))).toContainEqual(spike("p1"));
-    expect(legalIn(viewFor(s, "p0"))).not.toContainEqual(spike("p3"));
-    expect(legalIn(viewFor(s, "p1")).some((a) => a.type === "spike")).toBe(false);
+    expect(offered(s, "p0")).toContainEqual(spike("p1"));
+    expect(offered(s, "p0")).not.toContainEqual(spike("p3"));
+    expect(offered(s, "p1").some((a) => a.type === "spike")).toBe(false);
     player(s, "p0").spores = 0;
-    expect(legalIn(viewFor(s, "p0")).some((a) => a.type === "spike")).toBe(false);
+    expect(offered(s, "p0").some((a) => a.type === "spike")).toBe(false);
   });
 
   it("leaves state unchanged when illegal", () => {
@@ -136,7 +135,7 @@ describe("spore tags", () => {
   it("tags spiking as a spore action, but not extracting a spore (owner, 2026-10-18)", () => {
     expect(ACTIONS.spike.tags).toEqual(["spore"]);
     expect(ACTIONS.extract_spore.tags).toEqual([]);
-    expect(viewFor(ship(), "p0").actions.find((o) => o.action.type === "spike")?.tags).toEqual(["spore"]);
+    expect(option(ship(), "p0", { type: "spike" })?.tags).toEqual(["spore"]);
   });
 
   it("never reaches a human's view, even with a Mush in the room", () => {

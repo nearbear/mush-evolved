@@ -1,15 +1,14 @@
 import { describe, expect, it } from "vitest";
-import { CHARACTERS } from "../src/characters.ts";
+import { sendChat } from "../src/chat.ts";
 import { DEFAULT_CONFIG } from "../src/config.ts";
 import { MODIFIERS } from "../src/modifiers.ts";
-import { sendChat } from "../src/chat.ts";
-import { applyAction, createGame, legalIn, viewFor } from "../src/rules.ts";
-import type { Action, GameState, PlayerId, PlayerView, Seat } from "../src/types.ts";
+import { createGame, legalIn, viewFor } from "../src/rules.ts";
+import type { Action, GameState, PlayerId, PlayerView } from "../src/types.ts";
+import { makeSeats, player, mustApply } from "./support.ts";
 
-const seats: Seat[] = Array.from({ length: 4 }, (_, i) => ({ id: `p${i}`, name: `Player ${i}`, isBot: false, character: CHARACTERS[i]!.id }));
+const seats = makeSeats(4);
 const config = { ...DEFAULT_CONFIG, mushCount: 1, startInventory: [], startItems: [], maxAp: 99, startAp: 50 };
 const spike = (target: PlayerId): Action => ({ type: "spike", target });
-const player = (s: GameState, id: PlayerId) => s.players.find((p) => p.id === id)!;
 
 /** p0 alpha Mush with 9 spores, p1 human beside them in SICK_BAY; p2 human bystander there too; p3 human in the lab. */
 function ship(): GameState {
@@ -21,15 +20,6 @@ function ship(): GameState {
   });
   player(s, "p0").spores = 9;
   return s;
-}
-
-function mustApply(state: GameState, id: PlayerId, ...actions: Action[]): GameState {
-  for (const action of actions) {
-    const r = applyAction(state, id, action);
-    if (!r.ok) throw new Error(r.error);
-    state = r.state;
-  }
-  return state;
 }
 
 const spikes = (s: GameState, n: number) => mustApply(s, "p0", ...Array.from({ length: n }, () => spike("p1")));

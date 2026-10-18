@@ -1,11 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { CHARACTERS } from "../src/characters.ts";
 import { DEFAULT_CONFIG } from "../src/config.ts";
+import { ITEM_TYPES } from "../src/items.ts";
 import { parseGameMessage } from "../src/protocol.ts";
-import { applyAction, createGame, legalIn, viewFor } from "../src/rules.ts";
-import type { Action, GameState, PlayerId, Seat } from "../src/types.ts";
+import { applyAction, createGame, viewFor } from "../src/rules.ts";
+import type { Action, GameState, PlayerId } from "../src/types.ts";
+import { makeSeats, mustApply, offered } from "./support.ts";
 
-const seats: Seat[] = Array.from({ length: 3 }, (_, i) => ({ id: `p${i}`, name: `Player ${i}`, isBot: i > 0, character: CHARACTERS[i]!.id }));
+const seats = makeSeats(3, "others");
 const MACHINE = "REFECTORY:COFFEE_DISPENSER";
 const pull: Action = { type: "dispense", equipment: MACHINE };
 
@@ -13,15 +14,6 @@ const pull: Action = { type: "dispense", equipment: MACHINE };
 function refectory(): GameState {
   const state = createGame(seats, { ...DEFAULT_CONFIG, startInventory: [], startItems: [] }, 7);
   for (const p of state.players) p.room = "REFECTORY";
-  return state;
-}
-
-function mustApply(state: GameState, id: PlayerId, ...actions: Action[]): GameState {
-  for (const action of actions) {
-    const r = applyAction(state, id, action);
-    if (!r.ok) throw new Error(r.error);
-    state = r.state;
-  }
   return state;
 }
 
@@ -38,15 +30,15 @@ describe("coffee machine", () => {
   it("works once per cycle per machine, then again next cycle", () => {
     let s = mustApply(refectory(), "p0", pull);
     expect(applyAction(s, "p1", pull).ok).toBe(false);
-    expect(legalIn(viewFor(s, "p1"))).not.toContainEqual(pull);
+    expect(offered(s, "p1")).not.toContainEqual(pull);
     for (const p of seats) s = mustApply(s, p.id, { type: "ready" });
-    expect(legalIn(viewFor(s, "p1"))).toContainEqual(pull);
+    expect(offered(s, "p1")).toContainEqual(pull);
   });
 
   it("is only offered in the refectory", () => {
     const s = refectory();
     s.players[0]!.room = "LABORATORY";
-    expect(legalIn(viewFor(s, "p0"))).not.toContainEqual(pull);
+    expect(offered(s, "p0")).not.toContainEqual(pull);
     expect(applyAction(s, "p0", pull).ok).toBe(false);
     expect(applyAction(s, "p0", { type: "dispense", equipment: "REFECTORY:KITCHEN" }).ok).toBe(false);
   });
@@ -75,11 +67,12 @@ describe("consume", () => {
   const withCoffee = () => mustApply(refectory(), "p0", pull);
   const coffeeId = (s: GameState) => viewFor(s, "p0").inventory[0]!.id;
 
-  it("gives 2 AP, removes the coffee, and logs publicly", () => {
+  it("gives its AP, removes the coffee, and logs publicly", () => {
+    expect(ITEM_TYPES.coffee!.consume!.ap).toBe(2); // confirmed 2026-10-13
     let s = withCoffee();
     s.players[0]!.ap = 5;
     s = mustApply(s, "p0", { type: "consume", item: coffeeId(s) });
-    expect(s.players[0]!.ap).toBe(7);
+    expect(s.players[0]!.ap).toBe(5 + ITEM_TYPES.coffee!.consume!.ap);
     expect(s.items).toHaveLength(0);
     expect(viewFor(s, "p1").log.at(-1)).toMatchObject({ key: "consumed", params: { name: "chao", item: "coffee" } });
   });
@@ -96,7 +89,7 @@ describe("consume", () => {
     const id = coffeeId(s);
     expect(applyAction(s, "p1", { type: "consume", item: id }).ok).toBe(false); // in p0's inventory
     s = mustApply(s, "p0", { type: "drop", item: id });
-    expect(legalIn(viewFor(s, "p1"))).toContainEqual({ type: "consume", item: id });
+    expect(offered(s, "p1")).toContainEqual({ type: "consume", item: id });
     s.players[2]!.room = "LABORATORY";
     expect(applyAction(s, "p2", { type: "consume", item: id }).ok).toBe(false);
     expect(mustApply(s, "p1", { type: "consume", item: id }).items).toHaveLength(0);

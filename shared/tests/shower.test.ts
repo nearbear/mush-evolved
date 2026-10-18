@@ -1,12 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { CHARACTERS } from "../src/characters.ts";
 import { DEFAULT_CONFIG } from "../src/config.ts";
 import { parseGameMessage } from "../src/protocol.ts";
-import { applyAction, createGame, legalIn, viewFor } from "../src/rules.ts";
+import { applyAction, createGame, viewFor } from "../src/rules.ts";
 import { addStatus } from "../src/statuses.ts";
-import type { Action, GameState, PlayerId, Seat } from "../src/types.ts";
+import type { Action, GameState } from "../src/types.ts";
+import { makeSeats, player, offered } from "./support.ts";
 
-const seats: Seat[] = Array.from({ length: 4 }, (_, i) => ({ id: `p${i}`, name: `Player ${i}`, isBot: false, character: CHARACTERS[i]!.id }));
+const seats = makeSeats(4);
 const config = { ...DEFAULT_CONFIG, mushCount: 1, startInventory: [], startItems: [], maxAp: 99, startAp: 10 };
 const shower: Action = { type: "shower", equipment: "BEDROOM_A:SHOWER" };
 
@@ -19,27 +19,32 @@ function ship(): GameState {
   });
   return s;
 }
-const player = (s: GameState, id: PlayerId) => s.players.find((p) => p.id === id)!;
+
+const { cost, effect } = config.shower;
 
 describe("shower", () => {
-  it("removes dirty for 2 AP, and a human keeps their HP", () => {
+  it("has the confirmed numbers: 2 AP, 1 off with soap, 4 damage to a Mush", () => {
+    expect([cost.ap, cost.soapDiscountAp, effect.mushDamage]).toEqual([2, 1, 4]);
+  });
+
+  it("removes dirty for its AP, and a human keeps their HP", () => {
     const s = ship();
     addStatus(player(s, "p1"), "dirty");
     const r = applyAction(s, "p1", shower);
     if (!r.ok) throw new Error(r.error);
     const p = player(r.state, "p1");
     expect(p.statuses).not.toContain("dirty");
-    expect(p.ap).toBe(8);
-    expect(p.hp).toBe(DEFAULT_CONFIG.startHp);
+    expect(p.ap).toBe(config.startAp - cost.ap);
+    expect(p.hp).toBe(config.startHp);
   });
 
-  it("costs 1 less AP with soap in the inventory, and keeps the soap", () => {
+  it("costs less AP with soap in the inventory, and keeps the soap", () => {
     const s = ship();
     addStatus(player(s, "p1"), "dirty");
     s.items.push({ id: "soap-1", type: "soap", at: { kind: "player", id: "p1" } });
     const r = applyAction(s, "p1", shower);
     if (!r.ok) throw new Error(r.error);
-    expect(player(r.state, "p1").ap).toBe(9);
+    expect(player(r.state, "p1").ap).toBe(config.startAp - cost.ap + cost.soapDiscountAp);
     expect(r.state.items.some((i) => i.id === "soap-1")).toBe(true);
   });
 
@@ -49,18 +54,18 @@ describe("shower", () => {
     s.items.push({ id: "soap-1", type: "soap", at: { kind: "room", id: "BEDROOM_A" } });
     const r = applyAction(s, "p1", shower);
     if (!r.ok) throw new Error(r.error);
-    expect(player(r.state, "p1").ap).toBe(8);
+    expect(player(r.state, "p1").ap).toBe(config.startAp - cost.ap);
   });
 
-  it("burns a Mush for 4 HP, which can kill", () => {
+  it("burns a Mush, which can kill", () => {
     const s = ship();
     addStatus(player(s, "p0"), "dirty");
     const r = applyAction(s, "p0", shower);
     if (!r.ok) throw new Error(r.error);
-    expect(player(r.state, "p0").hp).toBe(DEFAULT_CONFIG.startHp - 4);
+    expect(player(r.state, "p0").hp).toBe(config.startHp - effect.mushDamage);
     const low = ship();
     addStatus(player(low, "p0"), "dirty");
-    player(low, "p0").hp = 2;
+    player(low, "p0").hp = effect.mushDamage - 1;
     const r2 = applyAction(low, "p0", shower);
     if (!r2.ok) throw new Error(r2.error);
     expect(player(r2.state, "p0").hp).toBe(0);
@@ -72,7 +77,7 @@ describe("shower", () => {
     expect(applyAction(clean, "p1", shower).ok).toBe(false);
     const poor = ship();
     addStatus(player(poor, "p1"), "dirty");
-    player(poor, "p1").ap = 1;
+    player(poor, "p1").ap = cost.ap - 1;
     expect(applyAction(poor, "p1", shower).ok).toBe(false);
     const away = ship();
     addStatus(player(away, "p1"), "dirty");
@@ -84,9 +89,9 @@ describe("shower", () => {
 
   it("is only offered while dirty, and the log line is private", () => {
     const s = ship();
-    expect(legalIn(viewFor(s, "p1")).some((a) => a.type === "shower")).toBe(false);
+    expect(offered(s, "p1").some((a) => a.type === "shower")).toBe(false);
     addStatus(player(s, "p1"), "dirty");
-    expect(legalIn(viewFor(s, "p1"))).toContainEqual(shower);
+    expect(offered(s, "p1")).toContainEqual(shower);
     const r = applyAction(s, "p1", shower);
     if (!r.ok) throw new Error(r.error);
     expect(viewFor(r.state, "p1").log.some((e) => e.key === "showered")).toBe(true);

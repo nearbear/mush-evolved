@@ -1,11 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { CHARACTERS } from "../src/characters.ts";
 import { DEFAULT_CONFIG } from "../src/config.ts";
 import { parseGameMessage } from "../src/protocol.ts";
-import { applyAction, createGame, legalIn, viewFor } from "../src/rules.ts";
-import type { Action, Seat } from "../src/types.ts";
+import { applyAction, createGame, viewFor } from "../src/rules.ts";
+import type { Action } from "../src/types.ts";
+import { costOf, makeSeats, offered } from "./support.ts";
 
-const seats: Seat[] = Array.from({ length: 3 }, (_, i) => ({ id: `p${i}`, name: `Player ${i}`, isBot: i > 0, character: CHARACTERS[i]!.id }));
+const seats = makeSeats(3, "others");
 const ASTRO: Action = { type: "access", equipment: "COMMAND_CENTER:ASTRO_MODULE" };
 
 function game(room: string) {
@@ -16,10 +16,10 @@ function game(room: string) {
 
 describe("accessing a terminal", () => {
   it("is offered for every terminal in the room, free", () => {
-    const view = viewFor(game("COMMAND_CENTER"), "p0");
-    const types = legalIn(view).flatMap((a) => (a.type === "access" ? [a.equipment] : []));
+    const s = game("COMMAND_CENTER");
+    const types = offered(s, "p0").flatMap((a) => (a.type === "access" ? [a.equipment] : []));
     expect(types.sort()).toEqual(["COMMAND_CENTER:ASTRO_MODULE", "COMMAND_CENTER:COM_CENTER", "COMMAND_CENTER:PILOT_MODULE"]);
-    expect(view.actions.find((o) => o.action.type === "access" && o.action.equipment === (ASTRO as { equipment: string }).equipment)?.cost).toEqual({ ap: 0, mp: 0 });
+    expect(costOf(s, "p0", ASTRO)).toEqual({ ap: 0, mp: 0 });
   });
 
   it("changes nothing", () => {
@@ -31,7 +31,7 @@ describe("accessing a terminal", () => {
 
   it("is refused from another room or for a non-terminal", () => {
     expect(applyAction(game("LABORATORY"), "p0", ASTRO).ok).toBe(false);
-    expect(legalIn(viewFor(game("LABORATORY"), "p0"))).not.toContainEqual(ASTRO);
+    expect(offered(game("LABORATORY"), "p0")).not.toContainEqual(ASTRO);
     expect(applyAction(game("REFECTORY"), "p0", { type: "access", equipment: "REFECTORY:COFFEE_DISPENSER" }).ok).toBe(false);
   });
 

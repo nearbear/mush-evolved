@@ -1,30 +1,16 @@
 import { describe, expect, it } from "vitest";
-import { CHARACTERS } from "../src/characters.ts";
 import { DEFAULT_CONFIG, SHIP_ROOMS } from "../src/config.ts";
 import { EQUIPMENT_TYPES } from "../src/equipment.ts";
 import { parseGameMessage } from "../src/protocol.ts";
-import { applyAction, createGame, legalIn, viewFor } from "../src/rules.ts";
-import type { Action, GameState, PlayerId, Seat, Target } from "../src/types.ts";
+import { applyAction, createGame, viewFor } from "../src/rules.ts";
+import type { Action, GameState, PlayerId, Target } from "../src/types.ts";
+import { makeSeats, mustApply, offered } from "./support.ts";
 
-const seats: Seat[] = Array.from({ length: 3 }, (_, i) => ({
-  id: `p${i}`,
-  name: `Player ${i}`,
-  isBot: i > 0,
-  character: CHARACTERS[i]!.id,
-}));
+const seats = makeSeats(3, "others");
 // Everyone in the lab, empty-handed; wrench + blaster there.
 const newGame = () => createGame(seats, { ...DEFAULT_CONFIG, startInventory: [] }, 42);
 
 const examine = (kind: Target["kind"], id: string): Action => ({ type: "examine", target: { kind, id } as Target });
-
-function mustApply(state: GameState, playerId: PlayerId, ...actions: Action[]): GameState {
-  for (const action of actions) {
-    const result = applyAction(state, playerId, action);
-    if (!result.ok) throw new Error(result.error);
-    state = result.state;
-  }
-  return state;
-}
 
 const lastLine = (state: GameState, id: PlayerId) => {
   const { key, params } = viewFor(state, id).log.at(-1)!;
@@ -52,7 +38,7 @@ describe("room equipment", () => {
 describe("examine", () => {
   it("is offered for people, equipment, and items you can see, including yourself", () => {
     const state = mustApply(newGame(), "p0", { type: "take", item: "item-1" });
-    const targets = legalIn(viewFor(state, "p0")).flatMap((a) => (a.type === "examine" ? [a.target] : []));
+    const targets = offered(state, "p0").flatMap((a) => (a.type === "examine" ? [a.target] : []));
     expect(targets).toEqual([
       { kind: "player", id: "p0" },
       { kind: "player", id: "p1" },

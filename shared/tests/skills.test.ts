@@ -1,19 +1,14 @@
 import { describe, expect, it } from "vitest";
-import { CHARACTERS } from "../src/characters.ts";
 import { DEFAULT_CONFIG } from "../src/config.ts";
+import { ITEM_TYPES } from "../src/items.ts";
 import { actionFailed } from "../src/modifiers.ts";
-import { legalActions } from "../src/rules.ts";
-import { applyAction, createGame, viewFor } from "../src/rules.ts";
 import { parseGameMessage } from "../src/protocol.ts";
+import { applyAction, createGame, legalActions, viewFor } from "../src/rules.ts";
 import { SKILLS, SKILL_SLOTS } from "../src/skills.ts";
-import type { GameConfig, GameState, Seat } from "../src/types.ts";
+import type { GameConfig, GameState } from "../src/types.ts";
+import { makeSeats } from "./support.ts";
 
-const seats: Seat[] = Array.from({ length: 4 }, (_, i) => ({
-  id: `p${i}`,
-  name: `Player ${i}`,
-  isBot: i > 0,
-  character: CHARACTERS[i]!.id,
-}));
+const seats = makeSeats(4, "others");
 
 const config: GameConfig = { ...DEFAULT_CONFIG, startInventory: [], startItems: [], startSkills: ["creative"] };
 
@@ -206,9 +201,11 @@ describe("caffeinomaniac", () => {
     return r.state;
   }
 
-  it("adds 2 AP to a coffee's own 2", () => {
-    expect(drink([], 0).players[0]!.ap).toBe(2);
-    expect(drink(["caffeinomaniac"], 0).players[0]!.ap).toBe(4);
+  it("adds its AP to a coffee's own", () => {
+    expect(config.caffeinomaniac.ap).toBe(2);
+    const coffee = ITEM_TYPES.coffee!.consume!.ap;
+    expect(drink([], 0).players[0]!.ap).toBe(coffee);
+    expect(drink(["caffeinomaniac"], 0).players[0]!.ap).toBe(coffee + config.caffeinomaniac.ap);
   });
 
   it("is capped at maxAp", () => {

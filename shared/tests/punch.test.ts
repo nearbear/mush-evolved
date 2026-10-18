@@ -1,14 +1,13 @@
 import { describe, expect, it } from "vitest";
 import { ACTIONS } from "../src/actions.ts";
-import { CHARACTERS } from "../src/characters.ts";
 import { DEFAULT_CONFIG } from "../src/config.ts";
 import { parseGameMessage } from "../src/protocol.ts";
-import { affordable, applyAction, createGame, legalIn, viewFor } from "../src/rules.ts";
-import type { Action, GameConfig, GameState, PlayerId, Seat } from "../src/types.ts";
+import { affordable, applyAction, createGame, viewFor } from "../src/rules.ts";
+import type { Action, GameConfig, GameState, PlayerId } from "../src/types.ts";
+import { makeSeats, offered, option, player } from "./support.ts";
 
-const seats: Seat[] = Array.from({ length: 3 }, (_, i) => ({ id: `p${i}`, name: `Player ${i}`, isBot: false, character: CHARACTERS[i]!.id }));
+const seats = makeSeats(3);
 const base = { ...DEFAULT_CONFIG, mushCount: 1, startInventory: [], startItems: [], startSkills: [] };
-const player = (s: GameState, id: PlayerId) => s.players.find((p) => p.id === id)!;
 const punch = (target: PlayerId): Action => ({ type: "punch", target });
 
 /** p0 and p1 share a room; p2 is elsewhere. */
@@ -28,8 +27,8 @@ describe("punch", () => {
     const s = ship({ ...base, punch: { ...base.punch, successChance: 1 } });
     const r = applyAction(s, "p0", punch("p1"));
     if (!r.ok) throw new Error(r.error);
-    expect(player(r.state, "p1").hp).toBe(base.startHp - 2);
-    expect(player(r.state, "p0").ap).toBe(base.startAp - 1);
+    expect(player(r.state, "p1").hp).toBe(base.startHp - base.punch.effect.damage);
+    expect(player(r.state, "p0").ap).toBe(base.startAp - base.punch.cost.ap);
     expect(viewFor(r.state, "p1").log.some((e) => e.key === "punched")).toBe(true);
   });
 
@@ -38,7 +37,7 @@ describe("punch", () => {
     const r = applyAction(s, "p0", punch("p1"));
     if (!r.ok) throw new Error(r.error);
     expect(player(r.state, "p1").hp).toBe(base.startHp);
-    expect(player(r.state, "p0").ap).toBe(base.startAp - 1);
+    expect(player(r.state, "p0").ap).toBe(base.startAp - base.punch.cost.ap);
     expect(viewFor(r.state, "p1").log.some((e) => e.key === "punchMissed")).toBe(true);
   });
 
@@ -63,7 +62,7 @@ describe("punch", () => {
 
   it("only targets living others in your room; illegal punches leave state unchanged", () => {
     const s = ship();
-    const v = legalIn(viewFor(s, "p0")).filter((a) => a.type === "punch");
+    const v = offered(s, "p0").filter((a) => a.type === "punch");
     expect(v).toEqual([punch("p1")]);
     for (const t of ["p0", "p2"]) expect(applyAction(s, "p0", punch(t)).ok).toBe(false);
     player(s, "p1").alive = false;
@@ -90,16 +89,14 @@ describe("unaffordable actions in the view", () => {
   it("lists a punch you only lack the AP for, with its cost, and not as legal", () => {
     const s = ship();
     player(s, "p0").ap = 0;
-    const v = viewFor(s, "p0");
-    expect(legalIn(v)).not.toContainEqual(punch("p1"));
-    expect(v.actions).toContainEqual({ action: punch("p1"), cost: { ap: 1, mp: 0 }, chance: 0.6, tags: ["aggressive"], lacks: ["ap"] });
+    expect(offered(s, "p0")).not.toContainEqual(punch("p1"));
+    expect(option(s, "p0", punch("p1"))).toMatchObject({ cost: { ap: base.punch.cost.ap, mp: 0 }, lacks: ["ap"] });
   });
 
   it("does not list actions blocked by anything else, such as a target in another room", () => {
     const s = ship();
     player(s, "p0").ap = 0;
-    const v = viewFor(s, "p0");
-    expect(v.actions.some((o) => o.action.type === "punch" && o.action.target === "p2")).toBe(false);
+    expect(option(s, "p0", punch("p2"))).toBeUndefined();
   });
 
   it("lacks nothing when you can afford everything", () => {
@@ -109,15 +106,15 @@ describe("unaffordable actions in the view", () => {
 
 describe("chances in the view", () => {
   it("gives each offered action's chance of success, so the player sees the odds", () => {
-    const v = viewFor(ship(), "p0");
-    expect(v.actions.find((o) => o.action.type === "punch" && o.action.target === "p1")?.chance).toBe(0.6);
-    expect(v.actions.find((o) => o.action.type === "bond")?.chance).toBe(1);
+    const s = ship();
+    expect(option(s, "p0", punch("p1"))?.chance).toBe(base.punch.successChance);
+    expect(option(s, "p0", { type: "bond" })?.chance).toBe(1);
   });
 });
 
 describe("punch tags", () => {
   it("is aggressive, and the view says so", () => {
     expect(ACTIONS.punch.tags).toEqual(["aggressive"]);
-    expect(viewFor(ship(), "p0").actions.find((o) => o.action.type === "punch")?.tags).toEqual(["aggressive"]);
+    expect(option(ship(), "p0", { type: "punch" })?.tags).toEqual(["aggressive"]);
   });
 });
