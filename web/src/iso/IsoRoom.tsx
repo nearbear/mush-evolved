@@ -511,7 +511,7 @@ export function IsoRoom({
                       style={place(s)}
                       data-walker={o.id}
                     >
-                      {o.lying ? <LyingSprite character={o.character} flip={beds.get(o.id)?.flip} /> : o.you && mySeat ? <SeatedSprite character={o.character} seat={mySeat} /> : <CrewSprite character={o.character} facing={w?.facing} walking={w?.moving} />}
+                      {o.lying ? <LyingSprite character={o.character} flip={beds.get(o.id)?.flip} /> : o.you && mySeat ? <SeatedSprite character={o.character} seat={mySeat} /> : <CrewSprite character={o.character} facing={w?.facing} walking={w?.moving} arriving={w?.arriving} />}
                     </div>
                   );
                 }
@@ -543,7 +543,7 @@ export function IsoRoom({
                     ) : o?.you && mySeat ? (
                       <SeatedSprite character={o.character} seat={mySeat} />
                     ) : (
-                      <CrewSprite character={o?.character} facing={w?.facing} walking={w?.moving} />
+                      <CrewSprite character={o?.character} facing={w?.facing} walking={w?.moving} arriving={w?.arriving} />
                     )}
                   </div>
                 );

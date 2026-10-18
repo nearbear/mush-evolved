@@ -91,7 +91,6 @@
   background-repeat: repeat-x;
   image-rendering: pixelated;
   filter: drop-shadow(0 3px 2px rgb(0 0 0 / 0.6));
-  animation: walk-frames 0.5s steps(6) 2;
 }
 /* The lying frame of the cast sheet (a corpse's pose), at 1x. */
 .lying-sprite {
@@ -113,9 +112,13 @@
 .crew-sprite.flip {
   transform: scaleX(-1);
 }
+/* Someone who just appeared in the room walks in (useWalkers): two cycles, standing otherwise. */
+.crew-sprite.arriving {
+  animation: walk-frames 0.5s steps(6) 2;
+}
 /* Walking (useWalkers): the walk cycle loops until they arrive. */
 .crew-sprite.walking {
-  animation-iteration-count: infinite;
+  animation: walk-frames 0.5s steps(6) infinite;
 }
 @keyframes walk-frames {
   from {

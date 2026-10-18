@@ -27,6 +27,8 @@ export interface Walker {
   cell: Cell;
   facing: Facing;
   moving: boolean;
+  /** Just appeared in a room you were already in: plays its walk-in once (people already there when you came in don't). */
+  arriving: boolean;
 }
 
 /** Walking speed, in cells per second. */
@@ -51,6 +53,7 @@ interface Motion {
   /** The points still to walk through, the last being where they stop. */
   route: Cell[];
   facing: Facing;
+  arriving: boolean;
 }
 
 const same = (a: Cell, b: Cell) => a.x === b.x && a.y === b.y;
@@ -74,9 +77,12 @@ export function useWalkers(
 ) {
   const motions = useRef(new Map<string, Motion>());
   const motionRoom = useRef(room);
+  // Whether the people there when you came into this room have been taken in; later newcomers are arrivals.
+  const seeded = useRef(false);
   if (motionRoom.current !== room) {
     motions.current = new Map();
     motionRoom.current = room;
+    seeded.current = false;
   }
   const [, rerender] = useState(0);
   const targetsKey = [...targets].map(([id, c]) => `${id}@${c.x},${c.y}`).join(";");
@@ -84,7 +90,7 @@ export function useWalkers(
   const at = new Map<string, Walker>();
   for (const [id, target] of targets) {
     const m = motions.current.get(id);
-    at.set(id, m ? { cell: cellOf(m.pos), facing: m.facing, moving: m.route.length > 0 } : { cell: target, facing: STANDING, moving: false });
+    at.set(id, m ? { cell: cellOf(m.pos), facing: m.facing, moving: m.route.length > 0, arriving: m.arriving } : { cell: target, facing: STANDING, moving: false, arriving: false });
   }
   // What the last commit drew, which the pixel shifts are measured from.
   const drawn = useRef(at);
@@ -157,10 +163,15 @@ export function useWalkers(
   // biome-ignore lint/correctness/useExhaustiveDependencies: targetsKey stands in for targets.
   useEffect(() => {
     for (const id of motions.current.keys()) if (!targets.has(id)) motions.current.delete(id);
+    const arrivals = seeded.current;
+    if (targets.size) seeded.current = true;
     for (const [id, target] of targets) {
       const m = motions.current.get(id);
       if (!m) {
-        motions.current.set(id, { pos: target, route: [], facing: STANDING });
+        const motion = { pos: target, route: [], facing: STANDING, arriving: arrivals };
+        motions.current.set(id, motion);
+        // The walk-in lasts a second; after that a later remount must not replay it.
+        if (arrivals) setTimeout(() => { motion.arriving = false; rerender((n) => n + 1); }, 1000);
         continue;
       }
       const end = m.route.at(-1) ?? m.pos;
