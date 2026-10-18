@@ -11,8 +11,8 @@ Loaded when working on the isometric view. The UI rules in `web/CLAUDE.md` still
   URLs.
 - Camera: the panel is `overflow: hidden` and follows your character by moving an inner `.iso-world`
   with a transform, always centred on you (not clamped to the room's edges). No manual panning.
-- Clicks: floor walks you there and equipment steps you up to it (local, cosmetic state only, never
-  sent to the server); a person or equipment is selected; bare floor clears the selection (on
+- Clicks: floor walks you there (local, cosmetic state only, never sent to the server); a person or
+  equipment is selected, without walking to it (only acting on it does, below); bare floor clears the selection (on
   desktop, so does any press outside the Inspect panel). A single tap on a reachable door opens it
   in the peek bar; a double-click sends a move. Clicking a faded room acts like its door.
 - Walking (`useWalkers.ts`): nobody jumps. Everyone in your room walks to their spot (you to where

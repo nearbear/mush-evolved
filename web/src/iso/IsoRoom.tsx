@@ -107,6 +107,7 @@ export function IsoRoom({
   selected,
   selectedDoor,
   actingOn,
+  sentCount,
   teleport,
   leavingTo,
   onLeft,
@@ -134,6 +135,8 @@ export function IsoRoom({
   selectedDoor: RoomId | null;
   /** What your latest action is on: you walk up to it when this changes (useActingOn). */
   actingOn: ActingOn | null;
+  /** Changes whenever you send an action: you get up from your chair. */
+  sentCount: number;
   /** The instant actions cheat is on: you jump wherever you'd walk (others still walk). */
   teleport: boolean;
   /** You've already moved there: walk to the door to it, then `onLeft` (LeavingIsoRoom shows the next room). */
@@ -164,6 +167,8 @@ export function IsoRoom({
   // and it resets when you change rooms (it belongs to one visit, so coming back doesn't restore it).
   // Sitting on a chair is the same kind of local state: the walk's end point plus the seat taken there.
   const [walk, setWalk] = useState<{ visit: number; cell: { x: number; y: number }; seat?: Seat } | null>(null);
+  // biome-ignore lint/correctness/useExhaustiveDependencies: only sending an action gets you up.
+  useEffect(() => setWalk((w) => (w?.seat ? { ...w, seat: undefined } : w)), [sentCount]);
   const cells = useMemo(() => (roomLayout ? walkableCells(layout, roomLayout) : []), [layout, roomLayout]);
   const spots = useMemo(() => spreadActors(cells, occupants.length + corpses.length), [cells, occupants.length, corpses.length]);
 
@@ -394,12 +399,8 @@ export function IsoRoom({
     const hit = pick(e);
     if (hit?.kind === "person") onSelect({ kind: "player", id: hit.person.id });
     else if (hit?.kind === "item") onSelect({ kind: "item", id: hit.item });
-    else if (hit?.kind === "equipment") {
-      onSelect({ kind: "equipment", id: hit.equipment.id });
-      // Step up to it too (cosmetic, like walking on bare floor), unless you're in bed.
-      const cell = standSpot(layout, roomLayout, Number(hit.sprite.key.slice(1)), cells);
-      if (cell && !me?.lying) setWalk({ visit: visit.current.n, cell });
-    }
+    // Selecting equipment doesn't walk you up to it: you step up once an action on it begins (useActingOn).
+    else if (hit?.kind === "equipment") onSelect({ kind: "equipment", id: hit.equipment.id });
     else if (hit?.kind === "chair") {
       // Sit down (cosmetic, like walking): you stand on the chair's cell in the sitting pose.
       onClear();

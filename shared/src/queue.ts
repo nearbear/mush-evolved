@@ -13,7 +13,7 @@
 import { ACTIONS, type ActionDef } from "./actions.ts";
 import { clone, fail, findPlayer, type ActionResult } from "./helpers.ts";
 import { logPrivate } from "./log.ts";
-import { applyAction, canAct, performAction } from "./rules.ts";
+import { applyAction, canAct, getUp, performAction } from "./rules.ts";
 import type { Action, GameState, PlayerId, PlayerState } from "./types.ts";
 
 /** A player asks to act: an untimed action happens now; a timed one starts if they are idle, or waits its turn. */
@@ -27,6 +27,7 @@ export function queueAction(state: GameState, playerId: PlayerId, action: Action
   if (p.current && p.queue.length >= state.config.action.queueCap) return fail("queue_full");
   const next = clone(state);
   const actor = findPlayer(next, playerId)!;
+  if (action.type !== "lie_down") getUp(actor);
   if (actor.current) actor.queue.push(action);
   else begin(next, actor, [action], at);
   return { ok: true, state: next };

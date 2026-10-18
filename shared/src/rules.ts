@@ -145,6 +145,15 @@ export function applyAction(state: GameState, playerId: PlayerId, action: Action
 }
 
 /**
+ * Gets you out of bed. Any other character action does it (owner, 2026-10-17), from the moment it is queued
+ * (owner, 2026-10-18); ending your cycle is not one.
+ */
+export function getUp(actor: PlayerState): void {
+  actor.modifiers = actor.modifiers.filter((m) => m !== "lying_down");
+  delete actor.lyingIn;
+}
+
+/**
  * Checks an action against the state as it is now, then pays for it, rolls its odds, and applies it. False (and
  * nothing changed) if it isn't legal. Being ready doesn't stop it: an action queued before End cycle still happens
  * (owner, 2026-10-17). Mutates a state the caller already cloned.
@@ -155,11 +164,7 @@ export function performAction(next: GameState, actor: PlayerState, action: Actio
   const cost = def.cost(next, actor, action);
   // Odds are read before the cost is paid, as the button showed them.
   const chance = def.chance?.(next, actor, action) ?? 1;
-  // Any other character action gets you out of bed (owner, 2026-10-17); ending your cycle is not one.
-  if (def.timed && action.type !== "lie_down") {
-    actor.modifiers = actor.modifiers.filter((m) => m !== "lying_down");
-    delete actor.lyingIn;
-  }
+  if (def.timed && action.type !== "lie_down") getUp(actor);
   actor.ap -= cost.ap;
   actor.mp -= cost.mp;
   const room = actor.room;

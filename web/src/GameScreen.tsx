@@ -93,7 +93,7 @@ export function GameScreen({ ticket, onLeave }: { ticket: SeatTicket; onLeave: (
 
   const post = (msg: GameClientMessage) => socketRef.current?.send(JSON.stringify(msg));
   // You walk up to whatever your action is on, when it starts (cosmetic; see useActingOn).
-  const { actingOn, sent } = useActingOn(view?.you);
+  const { actingOn, sentCount, sent } = useActingOn(view?.you);
   // Acting shows its result in the iTrackie's Room log tab; the phone's bottom nav stays where it is.
   const send = (action: Action) => {
     post({ type: "action", action });
@@ -185,6 +185,7 @@ export function GameScreen({ ticket, onLeave }: { ticket: SeatTicket; onLeave: (
                 selected={target}
                 selectedDoor={peekDoor}
                 actingOn={actingOn}
+                sentCount={sentCount}
                 teleport={you.cheats.includes("instantActions")}
                 onMove={move}
                 onSelect={select}

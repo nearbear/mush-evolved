@@ -2,8 +2,9 @@ import { describe, expect, it } from "vitest";
 import { CHARACTERS } from "../src/characters.ts";
 import { DEFAULT_CONFIG } from "../src/config.ts";
 import { parseGameMessage } from "../src/protocol.ts";
+import { queueAction } from "../src/queue.ts";
 import { applyAction, createGame, legalActions, viewFor } from "../src/rules.ts";
-import type { GameState, Seat } from "../src/types.ts";
+import type { Action, GameState, Seat } from "../src/types.ts";
 
 const seats: Seat[] = Array.from({ length: 4 }, (_, i) => ({ id: `p${i}`, name: `Player ${i}`, isBot: false, character: CHARACTERS[i]!.id }));
 const config = { ...DEFAULT_CONFIG, mushCount: 1, startInventory: [], startItems: [], maxAp: 99, startAp: 10 };
@@ -50,6 +51,20 @@ describe("lie down", () => {
     const lying = ok(applyAction(s, "p1", { type: "lie_down", equipment: bed(s) }));
     expect(ok(applyAction(lying, "p1", { type: "ready" })).players[1]!.modifiers).toContain("lying_down");
     expect(ok(applyAction(lying, "p1", { type: "examine", target: { kind: "player", id: "p0" } })).players[1]!.modifiers).not.toContain("lying_down");
+  });
+
+  it("queuing an action gets you up at once, even behind one already under way", () => {
+    const s = ship();
+    const lying = ok(applyAction(s, "p1", { type: "lie_down", equipment: bed(s) }));
+    const examine = (id: string): Action => ({ type: "examine", target: { kind: "player", id } });
+    const busy = ok(queueAction(lying, "p1", examine("p0"), 1000));
+    expect(busy.players[1]!.modifiers).not.toContain("lying_down");
+    expect(busy.players[1]!.lyingIn).toBeUndefined();
+    // Lying down again, then queueing behind the action under way: up before it even starts.
+    const again = ok(applyAction(busy, "p1", { type: "lie_down", equipment: bed(s) }));
+    const waiting = ok(queueAction(again, "p1", examine("p2"), 1100));
+    expect(waiting.players[1]!.queue).toHaveLength(1);
+    expect(waiting.players[1]!.modifiers).not.toContain("lying_down");
   });
 
   it("moving to another room gets you up", () => {

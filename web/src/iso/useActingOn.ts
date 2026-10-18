@@ -30,8 +30,10 @@ export function begun(prev: Queue, next: Queue): Action | undefined {
   return undefined;
 }
 
-export function useActingOn(you: PlayerView["you"] | undefined): { actingOn: ActingOn | null; sent: (action: Action) => void } {
+export function useActingOn(you: PlayerView["you"] | undefined): { actingOn: ActingOn | null; sentCount: number; sent: (action: Action) => void } {
   const [actingOn, setActingOn] = useState<ActingOn | null>(null);
+  /** Actions sent so far, queued or not: sending any of them gets you up from a chair (IsoRoom). */
+  const [sentCount, setSentCount] = useState(0);
   const walkFor = (action: Action | undefined) => {
     const target = action?.type === "move" ? { kind: "door" as const, to: action.to } : action && actionTarget(action);
     if (target) setActingOn((a) => ({ target, n: (a?.n ?? 0) + 1 }));
@@ -47,7 +49,8 @@ export function useActingOn(you: PlayerView["you"] | undefined): { actingOn: Act
 
   /** Call on sending an action: if nothing is under way or waiting, it starts now. */
   const sent = (action: Action) => {
+    setSentCount((n) => n + 1);
     if (you && !you.current && you.queue.length === 0) walkFor(action);
   };
-  return { actingOn, sent };
+  return { actingOn, sentCount, sent };
 }
