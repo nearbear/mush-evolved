@@ -1,7 +1,6 @@
 import { Action, peopleHere, type ActionTag, type ActionVisibility } from "./action.ts";
 import { logCovert } from "../log.ts";
 import { contaminate } from "../infection.ts";
-import { ringMycoAlarms } from "../mycoalarm.ts";
 import type { GameState, PlayerState } from "../types.ts";
 
 export type SpikeActionData = { type: "spike"; target: string };
@@ -43,6 +42,5 @@ export class SpikeAction extends Action<SpikeActionData> {
     player.spores -= 1;
     logCovert(state, player.id, "spiked", { name: player.character, target: victim.character });
     contaminate(state, victim);
-    ringMycoAlarms(state, player.room);
   }
 }

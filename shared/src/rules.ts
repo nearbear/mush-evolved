@@ -18,6 +18,7 @@ import { chatChannels, readChannels } from "./chat.ts";
 import { clone, fail, findPlayer, type ActionResult } from "./helpers.ts";
 import { damage } from "./death.ts";
 import { activitySeen } from "./log.ts";
+import { ringMycoAlarms } from "./mycoalarm.ts";
 import type {
   Action,
   ChannelId,
@@ -161,6 +162,7 @@ export function performAction(next: GameState, actor: PlayerState, action: Actio
   }
   actor.ap -= cost.ap;
   actor.mp -= cost.mp;
+  const room = actor.room;
   if (chance < 1) {
     const [roll, rng] = nextFloat(next.rng);
     next.rng = rng;
@@ -172,6 +174,8 @@ export function performAction(next: GameState, actor: PlayerState, action: Actio
   } else {
     def.apply(next, actor, action);
   }
+  // After the action's own log lines; rings on a failure too (owner, 2026-10-18).
+  if (def.tags.includes("spore")) ringMycoAlarms(next, room);
   applyCheats(actor, next.config);
   if (next.players.every((pl) => !pl.alive || pl.ready)) advanceCycle(next);
   return true;

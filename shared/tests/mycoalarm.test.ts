@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { CHARACTERS } from "../src/characters.ts";
 import { DEFAULT_CONFIG } from "../src/config.ts";
+import { ACTIONS, type ActionTag } from "../src/actions.ts";
 import { MYCO_ALARM_ITEM, MYCO_ALARM_YIELD } from "../src/mycoalarm.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";
 import type { Action, GameState, PlayerId, Seat } from "../src/types.ts";
@@ -55,6 +56,21 @@ describe("myco alarm", () => {
     const extract = ship();
     addAlarm(extract, { kind: "room", id: "SICK_BAY" });
     expect(rings(ok(applyAction(extract, "p0", { type: "extract_spore" })), "SICK_BAY")).toHaveLength(0);
+  });
+
+  it("rings for any spore-tagged action, after its log line, even when it fails (owner, 2026-10-18)", () => {
+    const def = ACTIONS.punch as { tags: readonly ActionTag[] };
+    const before = def.tags;
+    def.tags = ["spore"];
+    try {
+      const s = ship();
+      s.config = { ...s.config, punch: { ...s.config.punch, successChance: 0 } };
+      addAlarm(s, { kind: "room", id: "SICK_BAY" });
+      const keys = ok(applyAction(s, "p0", { type: "punch", target: "p1" })).log.map((e) => e.key);
+      expect(keys.slice(-2)).toEqual(["punchMissed", "mycoAlarmRang"]);
+    } finally {
+      def.tags = before;
+    }
   });
 
   it("names no one, is seen only by people in that room, and shows later arrivals", () => {
