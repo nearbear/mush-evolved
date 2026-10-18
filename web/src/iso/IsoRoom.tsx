@@ -21,7 +21,7 @@
 import { useEffect, useId, useLayoutEffect, useMemo, useRef, useState, type CSSProperties, type MouseEvent, type PointerEvent } from "react";
 import { useTranslation } from "react-i18next";
 import { createPortal } from "react-dom";
-import { CAMERA_EQUIPMENT, CORPSE_ITEM, placedEquipment, type CharacterId, type EquipmentView, type ItemId, type RoomId, type ShipLayout, type Target } from "@mush2/shared";
+import { CAMERA_EQUIPMENT, CORPSE_ITEM, type CharacterId, type EquipmentView, type ItemId, type RoomId, type ShipLayout, type Target } from "@mush2/shared";
 import { sameTarget } from "../hud/targets.ts";
 import { lyingFrame, spriteStrip, sittingFrame } from "../art/assets.ts";
 import { CrewSprite } from "../scene/CrewSprite.tsx";
@@ -30,6 +30,7 @@ import { StatusBadges } from "../scene/StatusBadges.tsx";
 import { BUBBLE_MS, type Bubble } from "../scene/useSpeechBubbles.ts";
 import { useNames } from "../i18n/names.ts";
 import { atlasUrl } from "./shipLayout.ts";
+import { CAMERA_SLICES, equipmentByTileKey } from "./equipmentTiles.ts";
 import { opaqueAt, preloadImage } from "./hitMask.ts";
 import { Markdown } from "../hud/Markdown.tsx";
 import {
@@ -61,9 +62,6 @@ export interface Corpse {
   id: ItemId;
   character: CharacterId | undefined;
 }
-
-/** Tile slices of the camera art, one tile per room in the layout. */
-const CAMERA_SLICES: ReadonlySet<string> = new Set(["camera", "camera2"]);
 
 /** The original Flash client ran at 30 ticks a second; animation rhythms are counted in ticks. */
 const TICK_MS = 1000 / 30;
@@ -217,18 +215,7 @@ export function IsoRoom({
   useEffect(() => setSettled(room), [room]);
   const glide = settled === room;
 
-  // Sprite key ("t<tile index>") -> the equipment it draws.
-  const equipmentByKey = useMemo(() => {
-    const names = new Map(equipment.map((e) => [e.id, e]));
-    const placed = (roomLayout ? placedEquipment(roomLayout) : []).flatMap((p) => {
-      const e = names.get(p.id);
-      return e ? [[`t${p.tile}` as string, e] as const] : [];
-    });
-    // An installed camera isn't bound in the map data (it isn't there until installed): it is the room's camera tile.
-    const cameraTile = roomLayout?.tiles.findIndex((t) => CAMERA_SLICES.has(t.slice)) ?? -1;
-    const camera = equipment.find((e) => e.type === CAMERA_EQUIPMENT);
-    return new Map(cameraTile >= 0 && camera ? [...placed, [`t${cameraTile}`, camera] as const] : placed);
-  }, [roomLayout, equipment]);
+  const equipmentByKey = useMemo(() => equipmentByTileKey(roomLayout, equipment), [roomLayout, equipment]);
 
   const ringOf = new Map(neighbors.map((n) => [n.id as string, n.ring]));
   const byId = new Map([...occupants, ...neighbors.flatMap((n) => n.people)].map((o) => [o.id, o]));

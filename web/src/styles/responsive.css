@@ -104,6 +104,11 @@
   .top-bar button {
     margin: 0;
   }
+  /* The hamburger matches the nameplate's height (the 3-slice art stretches to fit). */
+  .top-bar .menu-button {
+    align-self: stretch;
+    height: auto;
+  }
   /*
    * Stats get their own row. Spacing is trimmed so both stacks fit side by side
    * at 360px, the narrowest phone we support (the bars drop to 1x sprite pixels).
@@ -141,7 +146,6 @@
     /* Desktop's align-items: start would let a wide room push the panel off screen. */
     align-items: stretch;
     margin: 0;
-    padding: 0.5rem 0;
     overflow: auto;
   }
   /* The Inspect heading is dropped on phones (the bottom nav already names the tab); it stays for screen readers. */
@@ -159,6 +163,8 @@
   .three-panel[data-panel="room"] > .world,
   .three-panel[data-panel="itrackie"] > .itrackie {
     display: flex;
+    margin-top: 0.5rem;
+    gap: 0.5rem !important;
   }
   /* The room and the iTrackie fill the panel and scroll inside themselves. */
   .three-panel[data-panel="room"],
@@ -273,5 +279,35 @@
 @media (pointer: coarse) {
   button {
     height: 32px;
+  }
+}
+
+/* Phone inspect: the target (portrait or item) on the left in a 16:9 box, the actions on the right. */
+@media (max-width: 1023.98px) {
+  .inspect-body {
+    display: flex;
+    gap: 0.75rem;
+    align-items: flex-start;
+  }
+  .inspect-target {
+    flex: 21;
+    display: flex;
+    flex-direction: column;
+    /* Lets the item face size itself to the column's width (100cqw). */
+    container-type: inline-size;
+  }
+  .inspect-target .inspect-art {
+    margin: 0;
+  }
+  .inspect-target .inspect-sprite-box {
+    --tile: 100cqw;
+    margin: 0 auto;
+  }
+  .inspect-target .inspect-item {
+    --tile: 100cqw;
+    margin: 0 auto;
+  }
+  .inspect-body > .inspect-actions {
+    flex: 30;
   }
 }
