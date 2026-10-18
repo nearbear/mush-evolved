@@ -41,7 +41,7 @@ export function FeedEntry({
 
 export function InfoMarker() {
   const { t } = useTranslation();
-  return <img className="entry-info" src={INFO_ICON} alt={t("itrackie.shipMessage")} />;
+  return <img className="entry-info info" src={INFO_ICON} alt={t("itrackie.shipMessage")} />;
 }
 
 export function WarningMarker() {

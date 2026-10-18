@@ -321,8 +321,9 @@
 }
 /* Ship messages: no head row; the body and the caption share one row. */
 .feed > li.entry-inline {
-  grid-template-columns: 32px minmax(0, 1fr) auto;
+  grid-template-columns: 22px minmax(0, 1fr) auto;
   grid-template-areas: "marker body stamp";
+  column-gap: 0.35rem;
 }
 .entry-inline > .recency {
   grid-area: stamp;
@@ -336,6 +337,11 @@
   width: 16px;
   height: 16px;
   image-rendering: pixelated;
+}
+/* The info icon's native size. */
+.entry-info.info {
+  width: 22px;
+  height: 20px;
 }
 /* The first frame of the walk strip, unscaled like the iso view. */
 .entry-avatar {
