@@ -10,9 +10,9 @@ Other packages import from `@mush2/shared` (`shared/src/index.ts`, the barrel). 
 - `blueprints.ts`: `BLUEPRINTS` recipes (ingredients and resulting equipment) and the `blueprint` item type name.
 - `actions/<type>.ts`: one class per action: `access`, `bond`, `build`, `consume`, `cook`, `dismantle`, `dispense`, `examine`, `extract_spore`, `heal`, `install`, `jettison`, `lie_down` (+ `get_up`), `uninstall`, `move`, `pick_skill`, `punch`, `ready`, `research`, `share` (`dtt`, `stt`), `shower`, `spike`, `transfer` (`take`, `drop`).
 - `modifiers.ts`: the modifier registry and its hooks (numeric ones go through `fold`; `moveCost` is the one place a move's price is computed).
-- `modifiers/<id>.ts`: one file per modifier: `antic_perfume`, `caffeinomaniac`, `computer`, `creative`, `first_aid`, `lying_down`, `medic`, `sturdy`; `careSkill.ts` is the factory behind `first_aid`.
+- `modifiers/<id>.ts`: one file per modifier: `antic_perfume`, `caffeinomaniac`, `computer`, `creative`, `first_aid`, `lying_down`, `medic`, `pacifist` (a room cost effect), `sturdy`; `careSkill.ts` is the factory behind `first_aid`.
 - `replay.ts`: `Input`, `GameSetup`, `applyInput` (the only entry point for changing a game), `replayGame`.
-- `queue.ts`: timed actions: `queueAction`, `clearQueue`, `tick`, `nextDue` (when the server's alarm should fire).
+- `queue.ts`: timed actions: `queueAction`, `clearQueue`, `tick`, `nextDue` (when the server's alarm should fire); cancels a queued action whose modifier adjustment changed (`repriced`).
 - `mycoalarm.ts`: the `myco_alarm` item, `ringMycoAlarms` (called by `performAction` for `spore`-tagged actions) and `dropMycoAlarms` (research yield).
 - `research.ts`: `RESEARCH_IDS` (the researches with card art) and `RESEARCH_COMPLETE`.
 - `rng.ts`: the seeded RNG (its state is part of `GameState`).

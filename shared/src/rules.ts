@@ -287,7 +287,12 @@ export function viewFor(state: GameState, playerId: PlayerId): PlayerView {
   // Nobody's account name goes out while the game runs, not even your own: people are known by character.
   const { name: _name, ...yours } = you;
   return {
-    you: { ...yours, statuses: [...you.statuses], queue: [...you.queue] },
+    you: {
+      ...yours,
+      statuses: [...you.statuses],
+      current: you.current && { action: you.current.action, since: you.current.since, until: you.current.until },
+      queue: you.queue.map((q) => q.action),
+    },
     statuses: statusesOf(state, you),
     // TODO(rules): should Mush see each other's roles? Hidden for now.
     players: others.map((o) => {

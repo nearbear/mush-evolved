@@ -9,6 +9,21 @@ export interface ActionInProgress {
   until: number;
 }
 
+/** How far modifiers moved an action's price (`Action.adjustment`), recorded when it was queued. */
+export interface CostAdjustment {
+  ap: number;
+  mp: number;
+}
+
+/**
+ * A queued action and the modifier adjustment its price had when the player queued it. If the adjustment is
+ * different when its turn comes (Ian walked in), it is cancelled rather than charging a surprise (owner, 2026-10-18).
+ */
+export interface QueuedAction {
+  action: Action;
+  adjustment: CostAdjustment;
+}
+
 export interface PlayerState extends Seat {
   role: Role;
   /** Mush chosen at the start ("alpha"; later infections are "beta"). Player terminology only; no mechanics use it. */
@@ -52,9 +67,9 @@ export interface PlayerState extends Seat {
    * The timed action under way (queue.ts), from `since` to `until` in server ms. Roommates see only its bar, and only
    * when its log entry could reach them (`OtherPlayerView.busy`); the action itself is in your own view only.
    */
-  current: ActionInProgress | null;
+  current: (ActionInProgress & QueuedAction) | null;
   /** Actions waiting behind `current`, oldest first, at most `config.action.queueCap`. Your own view only. */
-  queue: Action[];
+  queue: QueuedAction[];
   /** Development cheats switched on (cheats.ts). Always empty unless the server allows cheats. Only in your own view. */
   cheats: Cheat[];
   /** Development cheat: overrides ACTOPI for what this player sees only. The game's ACTOPI is unchanged. */

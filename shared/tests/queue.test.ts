@@ -14,6 +14,9 @@ const D = base.action.durationMs;
 const punch = (target: PlayerId): Action => ({ type: "punch", target });
 const bond = (target: PlayerId): Action => ({ type: "bond", target });
 const hp = (s: GameState, id: PlayerId) => player(s, id).hp;
+/** No modifier moving the price. */
+const FLAT = { ap: 0, mp: 0 };
+const queued = (action: Action) => ({ action, adjustment: FLAT });
 
 /** p0 and p1 share the sick bay; p2 is in the refectory. p0 is human, p1 Mush. */
 function ship(config: GameConfig = base): GameState {
@@ -41,7 +44,7 @@ describe("timed actions", () => {
 
   it("an action starts a bar and happens, and is paid for, only when the bar runs out", () => {
     const started = must(queueAction(ship(), "p0", punch("p1"), 1000));
-    expect(player(started, "p0").current).toEqual({ action: punch("p1"), since: 1000, until: 1000 + D });
+    expect(player(started, "p0").current).toEqual({ action: punch("p1"), adjustment: FLAT, since: 1000, until: 1000 + D });
     expect([hp(started, "p1"), player(started, "p0").ap]).toEqual([base.startHp, base.startAp]);
     expect(nextDue(started)).toBe(1000 + D);
 
@@ -57,11 +60,11 @@ describe("timed actions", () => {
     let s = must(queueAction(ship(), "p0", punch("p1"), 0));
     s = must(queueAction(s, "p0", punch("p1"), 10));
     s = must(queueAction(s, "p0", bond("p1"), 20));
-    expect(player(s, "p0").queue).toEqual([punch("p1"), bond("p1")]);
+    expect(player(s, "p0").queue).toEqual([queued(punch("p1")), queued(bond("p1"))]);
 
     s = must(tick(s, D));
-    expect(player(s, "p0").current).toEqual({ action: punch("p1"), since: D, until: 2 * D });
-    expect(player(s, "p0").queue).toEqual([bond("p1")]);
+    expect(player(s, "p0").current).toEqual({ action: punch("p1"), adjustment: FLAT, since: D, until: 2 * D });
+    expect(player(s, "p0").queue).toEqual([queued(bond("p1"))]);
     s = must(tick(s, 2 * D));
     s = must(tick(s, 3 * D));
     expect(hp(s, "p1")).toBe(base.startHp - 2 * base.punch.effect.damage);
@@ -226,5 +229,74 @@ describe("who sees an action bar", () => {
     installCameraIn(mush, "SICK_BAY");
     const filmed = must(queueAction(mush, "p1", { type: "spike", target: "p0" }, 0));
     expect(busy(filmed, "p0", "p1")).toEqual({ since: 0, until: D });
+  });
+});
+
+describe("queued actions whose price changes (owner, 2026-10-18)", () => {
+  const SURCHARGE = base.pacifist.aggressiveApSurcharge;
+  const cancelled = (s: GameState) => s.log.filter((e) => e.key === "actionCostChanged");
+  /** p2 carries Pacifist; ship() has them in the refectory. */
+  const withPacifist = () => {
+    const s = ship();
+    player(s, "p2").modifiers.push("pacifist");
+    return s;
+  };
+
+  it("cancels the action under way when a Pacifist walks in before it resolves, and charges nothing", () => {
+    const s = must(queueAction(withPacifist(), "p0", punch("p1"), 0));
+    player(s, "p2").room = "SICK_BAY";
+    const after = must(tick(s, D));
+    expect(hp(after, "p1")).toBe(base.startHp);
+    expect(player(after, "p0").ap).toBe(player(s, "p0").ap);
+    expect(cancelled(after).map((e) => [e.visibleTo, e.params])).toEqual([[["p0"], { action: "punch", ap: base.punch.cost.ap + SURCHARGE, mp: 0 }]]);
+  });
+
+  it("cancels a waiting action before it starts, and goes on to the next", () => {
+    let s = must(queueAction(withPacifist(), "p0", bond("p1"), 0));
+    s = must(queueAction(s, "p0", punch("p1"), 0));
+    const walk: Action = { type: "move", to: base.rooms.SICK_BAY![0]! };
+    s = must(queueAction(s, "p0", walk, 0));
+    player(s, "p2").room = "SICK_BAY";
+    const after = must(tick(s, D));
+    expect(cancelled(after)).toHaveLength(1);
+    expect(player(after, "p0").current?.action).toEqual(walk);
+  });
+
+  it("cancels when the price drops too (the Pacifist left)", () => {
+    const s = withPacifist();
+    player(s, "p2").room = "SICK_BAY";
+    const queuedNow = must(queueAction(s, "p0", punch("p1"), 0));
+    player(queuedNow, "p2").room = "REFECTORY";
+    expect(cancelled(must(tick(queuedNow, D)))).toHaveLength(1);
+  });
+
+  it("goes ahead at the price the player saw when nothing changed", () => {
+    const s = withPacifist();
+    player(s, "p2").room = "SICK_BAY";
+    const after = must(tick(must(queueAction(s, "p0", punch("p1"), 0)), D));
+    expect(cancelled(after)).toHaveLength(0);
+    expect(player(after, "p0").ap).toBe(player(s, "p0").ap - base.punch.cost.ap - SURCHARGE);
+  });
+
+  it("does not cancel for base-price changes the queue itself causes, like a move's AP-to-MP conversion", () => {
+    // Three rooms all next to each other, so the second move is legal both when queued and when it happens.
+    const rooms = base.rooms;
+    const [a, b, c] = Object.keys(rooms).flatMap((x) =>
+      (rooms[x] ?? []).flatMap((y) => (rooms[y] ?? []).filter((z) => z !== x && (rooms[x] ?? []).includes(z)).map((z) => [x, y, z])),
+    )[0]!;
+    const s = ship();
+    Object.assign(player(s, "p0"), { room: a, mp: 0 });
+    let q = must(queueAction(s, "p0", { type: "move", to: b! }, 0));
+    q = must(queueAction(q, "p0", { type: "move", to: c! }, 0));
+    const after = must(tick(must(tick(q, D)), 2 * D));
+    expect(cancelled(after)).toHaveLength(0);
+    expect(player(after, "p0").room).toBe(c);
+  });
+
+  it("keeps the recorded adjustment out of the view", () => {
+    const s = must(queueAction(must(queueAction(withPacifist(), "p0", punch("p1"), 0)), "p0", bond("p1"), 0));
+    const you = viewFor(s, "p0").you;
+    expect(you.queue).toEqual([bond("p1")]);
+    expect(you.current).toEqual({ action: punch("p1"), since: 0, until: D });
   });
 });

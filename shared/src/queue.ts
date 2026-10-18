@@ -5,7 +5,9 @@
 // `config.action.queueCap` waiting behind it (`queue`). With `resolveAt: "end"`
 // an action happens when its bar runs out, and is checked again and paid for
 // then; a dropped or cleared action costs nothing. With "start" it happens at
-// once and the bar is only a cooldown.
+// once and the bar is only a cooldown. An action whose modifier adjustment
+// (Pacifist's surcharge, say) has changed since it was queued is cancelled when
+// it starts or resolves, so nobody pays a price they didn't see (owner, 2026-10-18).
 //
 // The rules have no clock: the server stamps each action input with `at` and
 // sends a `tick` input when the earliest bar runs out (`nextDue`).
@@ -14,7 +16,7 @@ import { ACTIONS, type ActionDef } from "./actions.ts";
 import { clone, fail, findPlayer, type ActionResult } from "./helpers.ts";
 import { logPrivate } from "./log.ts";
 import { applyAction, canAct, getUp, performAction } from "./rules.ts";
-import type { Action, GameState, PlayerId, PlayerState } from "./types.ts";
+import type { Action, GameState, PlayerId, PlayerState, QueuedAction } from "./types.ts";
 
 /** A player asks to act: an untimed action happens now; a timed one starts if they are idle, or waits its turn. */
 export function queueAction(state: GameState, playerId: PlayerId, action: Action, at: number): ActionResult {
@@ -28,8 +30,10 @@ export function queueAction(state: GameState, playerId: PlayerId, action: Action
   const next = clone(state);
   const actor = findPlayer(next, playerId)!;
   if (action.type !== "lie_down") getUp(actor);
-  if (actor.current) actor.queue.push(action);
-  else begin(next, actor, [action], at);
+  // Priced against things as they are now, like the button the player pressed.
+  const queued: QueuedAction = { action, adjustment: def.adjustment(state, p, action) };
+  if (actor.current) actor.queue.push(queued);
+  else begin(next, actor, [queued], at);
   return { ok: true, state: next };
 }
 
@@ -67,7 +71,10 @@ export function tick(state: GameState, at: number): ActionResult {
     const finished = actor.current;
     if (!finished) continue; // cleared by something earlier in this tick (a death)
     actor.current = null;
-    if (next.config.action.resolveAt === "end" && !performAction(next, actor, finished.action)) dropped(next, actor, finished.action);
+    if (next.config.action.resolveAt === "end") {
+      if (repriced(next, actor, finished)) costChanged(next, actor, finished.action);
+      else if (!performAction(next, actor, finished.action)) dropped(next, actor, finished.action);
+    }
     begin(next, actor, actor.queue.splice(0), at);
   }
   return { ok: true, state: next };
@@ -77,20 +84,40 @@ export function tick(state: GameState, at: number): ActionResult {
  * Starts the first of `actions` that is still legal, dropping the ones before it; the rest go back in the queue.
  * Mutates a state the caller already cloned.
  */
-function begin(next: GameState, actor: PlayerState, actions: Action[], at: number): void {
+function begin(next: GameState, actor: PlayerState, actions: QueuedAction[], at: number): void {
   while (actions.length > 0 && actor.alive && next.phase === "playing") {
-    const action = actions.shift()!;
+    const queued = actions.shift()!;
+    const { action } = queued;
     const def: ActionDef<Action> = ACTIONS[action.type];
+    if (repriced(next, actor, queued)) {
+      costChanged(next, actor, action);
+      continue;
+    }
     const legal = next.config.action.resolveAt === "start" ? performAction(next, actor, action) : def.check(next, actor, action) === null;
     if (!legal) {
       dropped(next, actor, action);
       continue;
     }
-    actor.current = { action, since: at, until: at + next.config.action.durationMs };
+    actor.current = { ...queued, since: at, until: at + next.config.action.durationMs };
     actor.queue = actions;
     return;
   }
   actor.queue = [];
+}
+
+/**
+ * Whether modifiers now move the price differently from when it was queued. Only the adjustment counts: base-price
+ * changes the player's own queue causes (a move's AP-to-MP conversion, a care point used up) don't cancel.
+ */
+function repriced(state: Readonly<GameState>, actor: Readonly<PlayerState>, queued: QueuedAction): boolean {
+  const now = (ACTIONS[queued.action.type] as ActionDef<Action>).adjustment(state, actor, queued.action);
+  return now.ap !== queued.adjustment.ap || now.mp !== queued.adjustment.mp;
+}
+
+/** A queued action cancelled because its price changed. Only the actor is told, with what it would cost now. */
+function costChanged(next: GameState, actor: PlayerState, action: Action): void {
+  const cost = (ACTIONS[action.type] as ActionDef<Action>).cost(next, actor, action);
+  if (actor.alive) logPrivate(next, actor.id, "actionCostChanged", { action: action.type, ap: cost.ap, mp: cost.mp });
 }
 
 /** A queued action that was no longer possible when its turn came. Only the actor is told. */

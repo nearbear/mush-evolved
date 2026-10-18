@@ -3,7 +3,7 @@ import type { CharacterId } from "../characters.ts";
 import type { Action, BotKind, ItemId, LogEntry, PlayerId, RoomId } from "../types.ts";
 import type { ChannelId, ChatMessage, PrivateChannel } from "./chat.ts";
 import type { MovementRules } from "./config.ts";
-import type { PlayerState } from "./player.ts";
+import type { ActionInProgress, PlayerState } from "./player.ts";
 import type { GameState } from "./state.ts";
 
 /** Room equipment as a client sees it. */
@@ -57,7 +57,8 @@ export interface PublicConfig {
 }
 
 /** Your own state, minus your account name (nobody's name is in a view while the game runs). */
-export type YouView = Omit<PlayerState, "name">;
+/** Your own state, minus your account name; the queue is plain actions (the recorded adjustments stay on the server). */
+export type YouView = Omit<PlayerState, "name" | "current" | "queue"> & { current: ActionInProgress | null; queue: Action[] };
 
 export interface PlayerView {
   you: YouView;

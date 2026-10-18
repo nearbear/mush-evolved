@@ -31,7 +31,7 @@ For each, check what's sent and to whom:
 | Bots | `decideAction` receives the bot's own `viewFor`. Prompts are built from the view only. |
 | Persistence / logs | `console.log`/`warn` don't print state that ends up somewhere public. |
 
-Also look for indirect leaks: legal actions that reveal hidden state (e.g. an action only offered when the target is Mush), timing or counts that reveal a role, and IDs or ordering that encode the RNG.
+Also look for indirect leaks: legal actions that reveal hidden state (e.g. an action only offered when the target is Mush), timing or counts that reveal a role, and IDs or ordering that encode the RNG. A room effect (`roomActionCost` in modifiers.ts) shows up in the actor's prices, so its holder must be someone the actor can already see; an effect from a hidden source would leak through the cost.
 
 ## 3. Prove it with tests
 

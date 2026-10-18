@@ -45,6 +45,8 @@ export interface ActionDef<A extends Action> {
   candidates(state: Readonly<GameState>, player: Readonly<PlayerState>): A[];
   check(state: Readonly<GameState>, player: Readonly<PlayerState>, action: A): string | null;
   cost(state: Readonly<GameState>, player: Readonly<PlayerState>, action: A): ActionCost;
+  /** How far modifiers move the price from the action's own (`Action.adjustment`). */
+  adjustment(state: Readonly<GameState>, player: Readonly<PlayerState>, action: A): ActionCost;
   apply(next: GameState, player: PlayerState, action: A): void;
   /** Chance of success, 0 to 1; applyAction rolls it once with the seeded RNG after the cost is paid (skipped at 1). */
   chance?(state: Readonly<GameState>, player: Readonly<PlayerState>, action: A): number;
