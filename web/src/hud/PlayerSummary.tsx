@@ -4,7 +4,7 @@
 import { CHARACTERS, type PlayerView } from "@mush2/shared";
 import { Popover } from "@base-ui/react/popover";
 import { useTranslation } from "react-i18next";
-import { AP_PIP, FACTION_ICONS, HP_PIP, MORALE_PIP, MP_PIP, portrait } from "../art/assets.ts";
+import { AP_PIP, FACTION_ICONS, HP_ICON, HP_PIP, MORALE_ICON, MORALE_PIP, MP_PIP, portrait } from "../art/assets.ts";
 import { PipBar } from "./PipBar.tsx";
 
 /** Which faction you belong to, with its goal in a popover (hover, focus, or tap: touch has no hover). */
@@ -37,7 +37,21 @@ function FactionCard({ view }: { view: PlayerView }) {
   );
 }
 
-export function PlayerSummary({ view }: { view: PlayerView }) {
+/** One resource as a small icon + count chip, for the phone layout where the pip bars take too much room. */
+function StatChip({ stat, value, max, icon, big = false }: { stat: "ap" | "mp" | "hp" | "morale"; value: number; max: number; icon: string; big?: boolean }) {
+  const { t } = useTranslation();
+  return (
+    <span className="stat-chip" role="img" aria-label={t("stat.chip", { label: t(`stat.${stat}`), value, max })}>
+      <img className={big ? "big" : undefined} src={icon} alt="" />
+      <span>
+        {value}/{max}
+      </span>
+    </span>
+  );
+}
+
+/** `compact` swaps the pip bars for chips under the portrait (the phone top bar). */
+export function PlayerSummary({ view, compact = false }: { view: PlayerView; compact?: boolean }) {
   const { you } = view;
   const character = CHARACTERS.find((c) => c.id === you.character);
   return (
@@ -51,7 +65,16 @@ export function PlayerSummary({ view }: { view: PlayerView }) {
           <div className="sub cycle-under-name">Day {view.day} · Cycle {view.cycleOfDay}</div>
         </div>
         <FactionCard view={view} />
+        {compact && (
+          <div className="stat-chips">
+            <StatChip stat="ap" value={you.ap} max={view.maxAp} icon={AP_PIP} />
+            <StatChip stat="mp" value={you.mp} max={view.movement.mpCap} icon={MP_PIP} />
+            <StatChip stat="hp" value={you.hp} max={view.maxHp} icon={HP_ICON} big />
+            <StatChip stat="morale" value={you.morale} max={view.maxMorale} icon={MORALE_ICON} big />
+          </div>
+        )}
       </div>
+      {!compact && (
       <div className="stats">
         <div className="stat-stack">
           <PipBar label="AP" value={you.ap} max={view.maxAp} pip={AP_PIP} />
@@ -62,6 +85,7 @@ export function PlayerSummary({ view }: { view: PlayerView }) {
           <PipBar label="Morale" value={you.morale} max={view.maxMorale} pip={MORALE_PIP} thin />
         </div>
       </div>
+      )}
     </div>
   );
 }

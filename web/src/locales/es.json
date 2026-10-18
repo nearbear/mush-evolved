@@ -1,4 +1,14 @@
 {
+  "menu": {
+    "open": "Menú"
+  },
+  "stat": {
+    "ap": "PA",
+    "mp": "PM",
+    "hp": "PV",
+    "morale": "Moral",
+    "chip": "{{label}}: {{value}} de {{max}}"
+  },
   "settings": {
     "open": "Ajustes",
     "title": "Ajustes",
@@ -10,6 +20,9 @@
       "infiniteMorale": "Moral infinita",
       "infiniteHp": "Salud infinita",
       "infiniteSpores": "Esporas infinitas (Mush)",
+      "enableAll": "Activar todos los trucos de arriba",
+      "disableAll": "Desactivar todos los trucos de arriba",
+      "instantActions": "Acciones instantáneas",
       "role": {"mush": "Convertirse en Mush", "human": "Convertirse en humano"},
       "actopi": {
         "label": "ACTOPI",
@@ -20,9 +33,6 @@
     },
     "fogDepth": {
       "label": "Salas con niebla",
-      "enableAll": "Activar todos los trucos de arriba",
-      "disableAll": "Desactivar todos los trucos de arriba",
-      "instantActions": "Acciones instantáneas",
       "one": "1 sala alrededor",
       "two": "2 salas alrededor",
       "all": "Toda la nave"

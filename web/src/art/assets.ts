@@ -170,6 +170,12 @@ export const MP_PIP = design["pa2"]!;
 /** 3x5 pips from the original site: green for health, yellow-brown for morale. */
 export const HP_PIP = design["lifebar"]!;
 export const MORALE_PIP = design["lifebar2"]!;
+/** 11x13 heart and face icons, for the HP and morale chips (the 3x5 bar pips are too small to read alone). */
+const statIcons = urls(
+  import.meta.glob<string>("../../../Mush/www/img/icons/ui/{lp,moral}.png", { eager: true, query: "?url", import: "default" }),
+);
+export const HP_ICON = statIcons["lp"]!;
+export const MORALE_ICON = statIcons["moral"]!;
 
 // Tab icons (16x16-ish pixel art). Keys are the names the user chose; see docs/tab-icons.md.
 const uiIcons = urls(

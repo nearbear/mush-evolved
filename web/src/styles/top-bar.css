@@ -137,3 +137,78 @@
 .stat-stack .thin .pip-label {
   min-width: 2.9rem;
 }
+
+/*
+ * Phone top bar: AP / MP / HP / morale as icon + count chips under the portrait, overhanging the
+ * nameplate's bottom edge (half in, half out) so they take almost no extra height.
+ */
+.nameplate:has(.stat-chips) {
+  position: relative;
+  overflow: visible; /* the plain nameplate clips its character-name label; the chips must hang out */
+  padding-bottom: 0.7rem; /* room for the half of the chips that sits inside the card */
+  margin-bottom: 0.6rem; /* and for the half that hangs out */
+}
+.stat-chips {
+  position: absolute;
+  left: 0.3rem;
+  bottom: 0;
+  transform: translateY(50%);
+  display: flex;
+  gap: 0.25rem;
+}
+.stat-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  padding: 0 0.35rem;
+  border-radius: 999px;
+  background: #0d1424;
+  border: 1px solid var(--panel-rim);
+  font-size: 0.7rem;
+  line-height: 1.2rem;
+  color: #fff;
+}
+.stat-chip img {
+  height: 10px; /* 2x the 5px sprites, whole pixels */
+  width: auto;
+  image-rendering: pixelated;
+}
+/* The heart and face are 11x13 sprites, already readable at 1x. */
+.stat-chip img.big {
+  height: 13px;
+}
+
+/* Phone hamburger menu (End cycle, Leave). Buttons keep the global Mush style; only layout here. */
+.menu-button {
+  margin: 0;
+  padding: 0 0.6rem;
+}
+.menu-positioner {
+  z-index: 22;
+}
+.menu-popup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  padding: 0.4rem;
+  background: #1b2a4a;
+  border: 1px solid rgb(255 255 255 / 0.3);
+  border-radius: 6px;
+}
+.menu-popup button {
+  margin: 0;
+}
+.menu-popup button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+}
+/* The 16x16 art is drawn at exactly 1x, never scaled. */
+.menu-item-icon {
+  display: block;
+  flex: none;
+  width: 16px;
+  height: 16px;
+  image-rendering: pixelated;
+}

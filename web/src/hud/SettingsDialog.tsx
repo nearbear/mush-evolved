@@ -17,6 +17,9 @@ export function SettingsDialog({
   onCheat,
   onActopiCheat,
   onRoleCheat,
+  open,
+  onOpenChange,
+  hideTrigger = false,
 }: {
   /** The server's dev flag. Without it the cheats section is not drawn at all. */
   cheatsAllowed: boolean;
@@ -25,17 +28,24 @@ export function SettingsDialog({
   onCheat: (cheat: Cheat, on: boolean) => void;
   onActopiCheat: (mode: ActopiCheat) => void;
   onRoleCheat: (role: RoleCheat) => void;
+  /** Controlled mode, for opening the dialog from another control (the phone menu). */
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  /** Leave out the gear button when something else opens the dialog. */
+  hideTrigger?: boolean;
 }) {
   const { t } = useTranslation();
   const fogDepth = useFogDepth();
   const allOn = CHEATS.every((c) => activeCheats.includes(c));
   return (
-    <Dialog.Root>
-      <Hint label={t("settings.open")}>
-        <Dialog.Trigger className="settings-button" aria-label={t("settings.open")}>
-          <img className="settings-icon" src={SETTINGS_ICON} alt="" />
-        </Dialog.Trigger>
-      </Hint>
+    <Dialog.Root open={open} onOpenChange={onOpenChange}>
+      {!hideTrigger && (
+        <Hint label={t("settings.open")}>
+          <Dialog.Trigger className="settings-button" aria-label={t("settings.open")}>
+            <img className="settings-icon" src={SETTINGS_ICON} alt="" />
+          </Dialog.Trigger>
+        </Hint>
+      )}
       <Dialog.Portal>
         <Dialog.Backdrop className="settings-backdrop" />
         <Dialog.Popup className="settings-popup">

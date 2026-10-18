@@ -1,4 +1,14 @@
 {
+  "menu": {
+    "open": "Menu"
+  },
+  "stat": {
+    "ap": "PA",
+    "mp": "PM",
+    "hp": "PV",
+    "morale": "Moral",
+    "chip": "{{label}} : {{value}} sur {{max}}"
+  },
   "settings": {
     "open": "Paramètres",
     "title": "Paramètres",
@@ -10,6 +20,9 @@
       "infiniteMorale": "Moral infini",
       "infiniteHp": "Points de vie infinis",
       "infiniteSpores": "Spores infinies (Mush)",
+      "enableAll": "Activer tous les cheats ci-dessus",
+      "disableAll": "Désactiver tous les cheats ci-dessus",
+      "instantActions": "Actions instantanées",
       "role": {"mush": "Devenir Mush", "human": "Devenir humain"},
       "actopi": {
         "label": "ACTOPI",
@@ -20,9 +33,6 @@
     },
     "fogDepth": {
       "label": "Salles dans le brouillard",
-      "enableAll": "Activer tous les cheats ci-dessus",
-      "disableAll": "Désactiver tous les cheats ci-dessus",
-      "instantActions": "Actions instantanées",
       "one": "1 salle autour",
       "two": "2 salles autour",
       "all": "Tout le vaisseau"

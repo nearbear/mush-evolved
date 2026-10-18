@@ -1,4 +1,14 @@
 {
+  "menu": {
+    "open": "Menu"
+  },
+  "stat": {
+    "ap": "AP",
+    "mp": "MP",
+    "hp": "HP",
+    "morale": "Morale",
+    "chip": "{{label}}: {{value}} of {{max}}"
+  },
   "settings": {
     "open": "Settings",
     "title": "Settings",
@@ -10,6 +20,9 @@
       "infiniteMorale": "Infinite morale",
       "infiniteHp": "Infinite health",
       "infiniteSpores": "Infinite spores (Mush)",
+      "enableAll": "Enable all cheats above",
+      "disableAll": "Disable all cheats above",
+      "instantActions": "Instant actions",
       "role": {"mush": "Become Mush", "human": "Become human"},
       "actopi": {
         "label": "ACTOPI",
@@ -20,9 +33,6 @@
     },
     "fogDepth": {
       "label": "Fogged rooms shown",
-      "enableAll": "Enable all cheats above",
-      "disableAll": "Disable all cheats above",
-      "instantActions": "Instant actions",
       "one": "1 room out",
       "two": "2 rooms out",
       "all": "Whole ship"
