@@ -96,6 +96,7 @@ export interface GameConfig {
     cost: { ap: number }; // AP spent to work on a research (decided 2026-10-16).
     effect: { progressPercent: number }; // Percent a research advances per action (decided 2026-10-16).
   };
+  lieDown: { cost: { ap: number } }; // AP spent to lie down in a bed (confirmed 2026-10-17).
   shower: {
     cost: {
       ap: number; // AP spent to shower, before the soap discount (confirmed 2026-10-14).

@@ -49,6 +49,7 @@ function aimedAt(view: PlayerView, a: Action, target: Target): boolean {
     case "access":
     case "uninstall":
     case "dispense":
+    case "lie_down":
     case "shower":
       return target.kind === "equipment" && a.equipment === target.id;
     case "dismantle":
@@ -77,6 +78,7 @@ const ACTION_LABEL_KEYS = {
   examine: "actions.examine",
   access: "actions.access",
   dispense: "actions.dispense",
+  lie_down: "actions.lieDown",
   shower: "actions.shower",
   consume: "actions.consume",
   cook: "actions.cook",

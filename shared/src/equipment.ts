@@ -5,6 +5,8 @@
 export interface EquipmentType {
   /** Item type pulled from it, once per cycle per machine (confirmed 2026-10-13). */
   dispenses?: string;
+  /** Players can lie down here. */
+  bed?: boolean;
   /** Players can wash here. */
   shower?: boolean;
   /** A terminal: players can access it, which opens its (so far blank) window. */
@@ -18,7 +20,7 @@ export interface EquipmentType {
 export const EQUIPMENT_TYPES: Record<string, EquipmentType> = {
   ASTRO_MODULE: { terminal: true },
   BEAT_BOX: {},
-  BED: {},
+  BED: { bed: true },
   // Installed from a carried `camera` item (actions/install.ts); never part of the map.
   CAMERA: {},
   COFFEE_DISPENSER: { dispenses: "coffee" },

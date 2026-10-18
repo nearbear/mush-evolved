@@ -27,6 +27,8 @@ const ACTION_NAME_KEYS = {
   stt: "actions.stt",
   extract_spore: "actions.extractSpore",
   spike: "actions.spike",
+  lie_down: "actions.lieDown",
+  get_up: "actions.getUp",
   shower: "actions.shower",
   heal: "actions.heal",
   punch: "actions.punch",

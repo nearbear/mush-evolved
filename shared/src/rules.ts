@@ -154,6 +154,8 @@ export function performAction(next: GameState, actor: PlayerState, action: Actio
   const cost = def.cost(next, actor, action);
   // Odds are read before the cost is paid, as the button showed them.
   const chance = def.chance?.(next, actor, action) ?? 1;
+  // Any other character action gets you out of bed (owner, 2026-10-17); ending your cycle is not one.
+  if (def.timed && action.type !== "lie_down") actor.modifiers = actor.modifiers.filter((m) => m !== "lying_down");
   actor.ap -= cost.ap;
   actor.mp -= cost.mp;
   if (chance < 1) {

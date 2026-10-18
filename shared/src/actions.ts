@@ -18,6 +18,7 @@ import { JettisonAction } from "./actions/jettison.ts";
 import { PickSkillAction } from "./actions/pick_skill.ts";
 import { PunchAction } from "./actions/punch.ts";
 import { ShareAction } from "./actions/share.ts";
+import { GetUpAction, LieDownAction } from "./actions/lie_down.ts";
 import { ShowerAction } from "./actions/shower.ts";
 import { SpikeAction } from "./actions/spike.ts";
 import { TransferAction } from "./actions/transfer.ts";
@@ -70,6 +71,8 @@ export const ACTIONS: { [T in ActionType]: ActionDef<ActionOf<T>> } = {
   stt: new ShareAction("stt"),
   extract_spore: new ExtractSporeAction(),
   spike: new SpikeAction(),
+  lie_down: new LieDownAction(),
+  get_up: new GetUpAction(),
   shower: new ShowerAction(),
   heal: new HealAction(),
   punch: new PunchAction(),

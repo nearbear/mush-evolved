@@ -85,6 +85,8 @@ export type Action =
   | { type: "dtt"; target: PlayerId }
   | { type: "stt"; target: PlayerId }
   | { type: "extract_spore" }
+  | { type: "lie_down"; equipment: string }
+  | { type: "get_up" }
   | { type: "shower"; equipment: string }
   | { type: "access"; equipment: string }
   | { type: "research"; equipment: string; research: string }
