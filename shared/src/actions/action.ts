@@ -31,6 +31,11 @@ export class Action<T extends { type: string }> {
     return [] as T[];
   }
 
+  /**
+   * What the action costs this player: the one place every cost is read (legality, paying, the view). Subclasses
+   * set the base price in `getCost`; anything that changes prices for everyone, like a room-wide surcharge on
+   * aggressive actions, belongs here so the price shown and the price checked can't disagree.
+   */
   cost(state: Readonly<GameState>, player: Readonly<PlayerState>, target: T): { ap: number; mp: number } {
     return this.getCost(state, player, target);
   }
@@ -40,7 +45,7 @@ export class Action<T extends { type: string }> {
   }
 
   canAfford(state: Readonly<GameState>, player: Readonly<PlayerState>, target: T): string | null {
-    const cost = this.getCost(state, player, target);
+    const cost = this.cost(state, player, target);
     if (player.ap < cost.ap) return "cant_afford";
     if (player.mp < cost.mp) return "cant_afford";
     return null;
@@ -55,9 +60,7 @@ export class Action<T extends { type: string }> {
   }
 
   check(state: Readonly<GameState>, player: Readonly<PlayerState>, target: T): string | null {
-    const cost = this.getCost(state, player, target);
-    if (player.ap < cost.ap || player.mp < cost.mp) return "cant_afford";
-    return null;
+    return this.canAfford(state, player, target);
   }
 
   apply(state: GameState, player: PlayerState, target: T): void {
