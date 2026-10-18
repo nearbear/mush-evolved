@@ -3,10 +3,10 @@
 
 import { Dialog } from "@base-ui/react/dialog";
 
-export function DialogHeader({ title, closeLabel }: { title: string; closeLabel: string }) {
+export function DialogHeader({ heading, closeLabel }: { heading: string; closeLabel: string }) {
   return (
     <header className="dialog-header">
-      <Dialog.Title className="settings-title">{title}</Dialog.Title>
+      <Dialog.Title className="settings-title">{heading}</Dialog.Title>
       <Dialog.Close className="dialog-header-close" aria-label={closeLabel}>
         ×
       </Dialog.Close>

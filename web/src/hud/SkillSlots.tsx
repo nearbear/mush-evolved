@@ -71,7 +71,7 @@ export function SkillSlots({
         <Dialog.Portal>
           <Dialog.Backdrop className="settings-backdrop" />
           <Dialog.Popup className="settings-popup skill-picker">
-            <DialogHeader title={t("skills.title")} closeLabel={t("skills.close")} />
+            <DialogHeader heading={t("skills.title")} closeLabel={t("skills.close")} />
             <p className="skill-warning">{t("skills.warning")}</p>
             {pending ? (
               <div className="skill-confirm">

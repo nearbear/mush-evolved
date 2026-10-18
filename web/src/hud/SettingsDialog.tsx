@@ -50,7 +50,7 @@ export function SettingsDialog({
       <Dialog.Portal>
         <Dialog.Backdrop className="settings-backdrop" />
         <Dialog.Popup className="settings-popup">
-          <DialogHeader title={t("settings.title")} closeLabel={t("settings.close")} />
+          <DialogHeader heading={t("settings.title")} closeLabel={t("settings.close")} />
           <div className="settings-row">
             <span>{t("language.label")}</span>
             <LanguageSwitcher inline />
