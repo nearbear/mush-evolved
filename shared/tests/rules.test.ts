@@ -214,10 +214,10 @@ describe("room log", () => {
 
   it("shows a room's public history only to players in that room, including what happened before they came", () => {
     let state = mustApply(newGame(), "p1", move("CORRIDOR_A")); // p1: lab -> corridor
-    expect(texts(state, "p0")).toContain('left {"name":"Player 1","room":"CORRIDOR_A"}');
-    expect(texts(state, "p0")).not.toContain('entered {"name":"Player 1","room":"LABORATORY"}');
+    expect(texts(state, "p0")).toContain('left {"name":"chun","room":"CORRIDOR_A"}');
+    expect(texts(state, "p0")).not.toContain('entered {"name":"chun","room":"LABORATORY"}');
     state = mustApply(state, "p0", move("CORRIDOR_A"));
-    expect(texts(state, "p0")).toContain('entered {"name":"Player 1","room":"LABORATORY"}');
+    expect(texts(state, "p0")).toContain('entered {"name":"chun","room":"LABORATORY"}');
     expect(texts(state, "p0")).not.toContain("Player 1 left for Corridor front.");
   });
 
@@ -282,7 +282,7 @@ describe("chat", () => {
     const state = mustChat(newGame(), "p1", "  hello  ");
     for (const s of seats) {
       expect(viewFor(state, s.id).chat).toEqual([
-        { id: 1, cycle: 1, channel: "global", from: "p1", name: "Player 1", isBot: true, text: "hello" },
+        { id: 1, cycle: 1, channel: "global", from: "p1", isBot: true, text: "hello" },
       ]);
     }
   });
@@ -335,7 +335,7 @@ describe("iTrackie and feature threads", () => {
     const state = mustChat(newGame(), "p1", "pilgred", "need a wrench");
     for (const s of seats) {
       expect(viewFor(state, s.id).chat).toEqual([
-        { id: 1, cycle: 1, channel: "pilgred", from: "p1", name: "Player 1", isBot: true, text: "need a wrench" },
+        { id: 1, cycle: 1, channel: "pilgred", from: "p1", isBot: true, text: "need a wrench" },
       ]);
     }
   });
@@ -381,6 +381,22 @@ describe("viewFor (hidden information)", () => {
       // Only the viewer's own role appears anywhere in the serialized view.
       expect(json.match(/"role"/g)).toHaveLength(1);
     }
+  });
+
+  it("never exposes anyone's account name, own included: people are known by character", () => {
+    let state = newGame();
+    const here = player(state, "p1").room;
+    for (const p of state.players) p.room = here;
+    state = mustApply(state, "p1", move(DEFAULT_CONFIG.rooms[here]![0]!));
+    // A chat message stored by an older build still carries the sender's name; it must not go out either.
+    state.chat.push({ id: 99, cycle: 1, channel: "global", from: "p2", name: "Player 2", isBot: true, text: "hi" } as GameState["chat"][number]);
+    for (const s of seats) {
+      const view = viewFor(state, s.id);
+      expect(view.you).not.toHaveProperty("name");
+      for (const other of view.players) expect(other).not.toHaveProperty("name");
+      expect(JSON.stringify(view)).not.toContain("Player ");
+    }
+    expect(viewFor(state, "p0").log.map((e) => e.params)).toContainEqual(expect.objectContaining({ name: "chun" }));
   });
 
   describe("ACTOPI", () => {

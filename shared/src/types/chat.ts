@@ -40,8 +40,6 @@ export interface ChatMessage {
   channel: ChannelId;
   /** Null for a system message posted by the game. */
   from: PlayerId | null;
-  /** Copied at send time so the client doesn't need a lookup. Empty for a system message. */
-  name: string;
   isBot: boolean;
   /** Empty for a system message, which carries `system` instead. */
   text: string;

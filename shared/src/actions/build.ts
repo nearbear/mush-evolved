@@ -57,10 +57,10 @@ export class BuildAction extends Action<BuildActionData> {
     if ("equipment" in makes) {
       // Built equipment lives in the config's per-room list, like the equipment from the map.
       (state.config.equipment[player.room] ??= []).push({ id: `${player.room}:${makes.equipment}:${state.nextItemId++}`, type: makes.equipment });
-      logPublic(state, player.room, "built", { name: player.name, equipment: makes.equipment });
+      logPublic(state, player.room, "built", { name: player.character, equipment: makes.equipment });
     } else {
       produceItem(state, player, makes.item);
-      logPublic(state, player.room, "builtItem", { name: player.name, item: makes.item });
+      logPublic(state, player.room, "builtItem", { name: player.character, item: makes.item });
     }
   }
 }

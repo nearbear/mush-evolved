@@ -32,7 +32,7 @@ describe("coffee machine", () => {
     const s = mustApply(refectory(), "p0", pull);
     expect(mine(s, "p0")).toEqual(["coffee"]);
     expect(s.players[0]!.ap).toBe(DEFAULT_CONFIG.startAp);
-    expect(viewFor(s, "p1").log.at(-1)).toMatchObject({ key: "tookFrom", params: { name: "Player 0", item: "coffee", equipment: "COFFEE_DISPENSER" } });
+    expect(viewFor(s, "p1").log.at(-1)).toMatchObject({ key: "tookFrom", params: { name: "chao", item: "coffee", equipment: "COFFEE_DISPENSER" } });
   });
 
   it("works once per cycle per machine, then again next cycle", () => {
@@ -81,7 +81,7 @@ describe("consume", () => {
     s = mustApply(s, "p0", { type: "consume", item: coffeeId(s) });
     expect(s.players[0]!.ap).toBe(7);
     expect(s.items).toHaveLength(0);
-    expect(viewFor(s, "p1").log.at(-1)).toMatchObject({ key: "consumed", params: { name: "Player 0", item: "coffee" } });
+    expect(viewFor(s, "p1").log.at(-1)).toMatchObject({ key: "consumed", params: { name: "chao", item: "coffee" } });
   });
 
   it("caps AP at the maximum", () => {

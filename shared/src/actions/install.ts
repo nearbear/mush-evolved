@@ -34,7 +34,7 @@ export class InstallAction extends Action<InstallActionData> {
   override apply(state: GameState, player: PlayerState, target: InstallActionData): void {
     state.items.splice(state.items.findIndex((i) => i.id === target.item), 1);
     (state.config.equipment[player.room] ??= []).push({ id: cameraEquipmentId(player.room), type: CAMERA_EQUIPMENT });
-    logPublic(state, player.room, "cameraInstalled", { name: player.name });
+    logPublic(state, player.room, "cameraInstalled", { name: player.character });
   }
 }
 

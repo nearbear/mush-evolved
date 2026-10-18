@@ -47,7 +47,7 @@ export class ResearchAction extends Action<ResearchActionData> {
     if (this.paidWithComputer(state, player)) player.resources.comp -= 1;
     const progress = Math.min(RESEARCH_COMPLETE, (state.research[target.research] ?? 0) + state.config.research.effect.progressPercent);
     state.research[target.research] = progress;
-    logPublic(state, player.room, progress >= RESEARCH_COMPLETE ? "researchCompleted" : "researched", { name: player.name, research: target.research, percent: progress });
+    logPublic(state, player.room, progress >= RESEARCH_COMPLETE ? "researchCompleted" : "researched", { name: player.character, research: target.research, percent: progress });
     if (progress >= RESEARCH_COMPLETE && target.research === "MYCO_ALARM") {
       dropMycoAlarms(state, player.room);
       logPublic(state, player.room, "mycoAlarmsBuilt");

@@ -35,12 +35,12 @@ export class PunchAction extends Action<PunchActionData> {
 
   override apply(state: GameState, player: PlayerState, target: PunchActionData): void {
     const victim = state.players.find((o) => o.id === target.target)!; // checked, so it exists
-    logPublic(state, player.room, "punched", { name: player.name, target: victim.name });
+    logPublic(state, player.room, "punched", { name: player.character, target: victim.character });
     damage(state, victim, punchDamage(state, player));
   }
 
   override fail(state: GameState, player: PlayerState, target: PunchActionData): void {
     const victim = state.players.find((o) => o.id === target.target)!;
-    logPublic(state, player.room, "punchMissed", { name: player.name, target: victim.name });
+    logPublic(state, player.room, "punchMissed", { name: player.character, target: victim.character });
   }
 }

@@ -30,6 +30,6 @@ export class DispenseAction extends Action<DispenseActionData> {
     const type = EQUIPMENT_TYPES[equip.type]!.dispenses!;
     state.dispensedOn[target.equipment] = state.cycle;
     const { item, inInventory } = produceItem(state, player, type);
-    logPublic(state, player.room, inInventory ? "tookFrom" : "tookFromKnocked", { name: player.name, item: item.type, equipment: equip.type });
+    logPublic(state, player.room, inInventory ? "tookFrom" : "tookFromKnocked", { name: player.character, item: item.type, equipment: equip.type });
   }
 }

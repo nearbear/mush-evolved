@@ -15,10 +15,11 @@ export type BotKind = "wander" | "logParrot";
 
 export interface Seat {
   id: PlayerId;
+  /** The account's chosen name. Never in a view while the game runs: players know each other only by character. */
   name: string;
   isBot: boolean;
   botKind?: BotKind;
-  /** Cosmetic only: which crew member's art this seat is drawn with. */
+  /** Which crew member this seat plays: their art, and the only name other players see. No effect on the rules. */
   character: CharacterId;
 }
 
@@ -33,7 +34,7 @@ export interface LogEntry {
   at?: number;
   /** Message id; the client turns it into text (`logEvent.<key>` in the locale catalogs). */
   key: string;
-  /** Data for the message. `room`, `item` and `equipment` params are ids the client names; `name` is a player name. */
+  /** Data for the message. `room`, `item` and `equipment` params are ids the client names; `name`, `target` and `body` are character ids (never a player's own name). */
   params?: LogParams;
   room?: RoomId;
   visibleTo: "all" | PlayerId[];

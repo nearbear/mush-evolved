@@ -111,16 +111,16 @@ describe("Mush channel", () => {
   it("posts a system message naming the human and the level, but not the culprit", () => {
     const s = spikes(ship(), 1);
     expect(mushChat(s, "p0")).toEqual([
-      expect.objectContaining({ from: null, system: { key: "mushContaminated", params: { name: "Player 1", level: 1, capacity: 3 } } }),
+      expect.objectContaining({ from: null, system: { key: "mushContaminated", params: { name: "chun", level: 1, capacity: 3 } } }),
     ]);
-    expect(JSON.stringify(s.chat)).not.toContain("Player 0");
+    expect(JSON.stringify(s.chat)).not.toContain("chao");
   });
 
   it("posts a conversion message at capacity, and the convert can then read the channel", () => {
     const two = spikes(ship(), 2);
     expect(viewFor(two, "p1").chatChannels).not.toContain("mush");
     const three = spikes(two, 1);
-    expect(mushChat(three, "p0").at(-1)).toMatchObject({ system: { key: "mushConverted", params: { name: "Player 1" } } });
+    expect(mushChat(three, "p0").at(-1)).toMatchObject({ system: { key: "mushConverted", params: { name: "chun" } } });
     expect(viewFor(three, "p1").chatChannels).toContain("mush");
     expect(mushChat(three, "p1")).toHaveLength(3);
   });

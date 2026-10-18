@@ -24,7 +24,7 @@ const wallsPath = runsPath(plan.walls);
 /** Biggest a person's icon gets, in map cells. It shrinks in rooms too narrow for it, so it never crosses a wall. */
 const ICON = 3.2;
 
-type Person = Pick<OtherPlayerView, "id" | "name" | "isBot" | "character" | "room">;
+type Person = Pick<OtherPlayerView, "id" | "isBot" | "character" | "room">;
 
 export function Minimap({
   here,
@@ -160,7 +160,7 @@ export function Minimap({
             height={size}
             preserveAspectRatio="xMidYMid meet"
           >
-            <title>{person ? person.name : t("minimap.unidentified")}</title>
+            <title>{person ? names.character(person.character) : t("minimap.unidentified")}</title>
           </image>
         ))}
       </svg>
@@ -175,7 +175,7 @@ export function Minimap({
                     ? "You are here"
                     : occupants.length || strangers
                       ? [
-                          ...occupants.map((p) => p.name),
+                          ...occupants.map((p) => names.character(p.character)),
                           ...(strangers ? [t("minimap.unidentifiedCount", { count: strangers })] : []),
                         ].join(", ")
                       : "Nobody here"}

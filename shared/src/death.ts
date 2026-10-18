@@ -4,6 +4,7 @@
 // corpse item in the room. Every HP loss goes through `damage` so no source can
 // leave someone alive at 0 HP (a test enforces it).
 
+import type { CharacterId } from "./characters.ts";
 import { removeFromChannel, pushChat } from "./chat.ts";
 import { CORPSE_ITEM, ITRACKIE_ITEM, sameContainer } from "./items.ts";
 import { logPublic } from "./log.ts";
@@ -49,15 +50,15 @@ export function killPlayer(state: GameState, player: PlayerState): void {
   delete state.contamination[player.id];
 
   for (const channel of state.channels.filter((c) => c.members.includes(player.id))) {
-    if (removeFromChannel(state, channel.id, player.id)) systemMessage(state, channel.id, "leftThisWorld", player.name);
+    if (removeFromChannel(state, channel.id, player.id)) systemMessage(state, channel.id, "leftThisWorld", player.character);
   }
 
   // The room always gets a line, without the role; the crew-wide announcement
   // (NERON's, once NERON exists) reveals it.
-  logPublic(state, player.room, "died", { name: player.name });
-  systemMessage(state, "global", player.role === "mush" ? "diedMush" : "diedHuman", player.name);
+  logPublic(state, player.room, "died", { name: player.character });
+  systemMessage(state, "global", player.role === "mush" ? "diedMush" : "diedHuman", player.character);
 }
 
-function systemMessage(state: GameState, channel: ChannelId, key: string, name: string): void {
-  pushChat(state, channel, { from: null, name: "", isBot: false, text: "", system: { key, params: { name } } });
+function systemMessage(state: GameState, channel: ChannelId, key: string, name: CharacterId): void {
+  pushChat(state, channel, { from: null, isBot: false, text: "", system: { key, params: { name } } });
 }

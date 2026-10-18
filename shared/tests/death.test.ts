@@ -59,10 +59,10 @@ describe("death", () => {
   it("announces the death and role crew-wide, and logs it in the room without the role", () => {
     const s = punchToDeath(ship());
     const announcement = s.chat.filter((m) => m.channel === "global" && m.system);
-    expect(announcement.map((m) => m.system)).toEqual([{ key: "diedHuman", params: { name: "Player 1" } }]);
+    expect(announcement.map((m) => m.system)).toEqual([{ key: "diedHuman", params: { name: "chun" } }]);
     const line = s.log.find((e) => e.key === "died")!;
     expect(line).toMatchObject({ room: "SICK_BAY", visibleTo: "all" });
-    expect(line.params).toEqual({ name: "Player 1" }); // no role in the room's line
+    expect(line.params).toEqual({ name: "chun" }); // no role in the room's line
     // Someone across the ship reads the announcement but not the room's log.
     expect(viewFor(s, "p2").chat.some((m) => m.system?.key === "diedHuman")).toBe(true);
     expect(viewFor(s, "p2").log.some((e) => e.key === "died")).toBe(false);
@@ -72,7 +72,7 @@ describe("death", () => {
     const s = ship();
     player(s, "p0").room = "BEDROOM_A";
     killPlayer(s, player(s, "p0"));
-    expect(s.chat.find((m) => m.system?.key === "diedMush")?.system?.params).toEqual({ name: "Player 0" });
+    expect(s.chat.find((m) => m.system?.key === "diedMush")?.system?.params).toEqual({ name: "chao" });
     expect(s.log.find((e) => e.key === "died")).toMatchObject({ room: "BEDROOM_A", visibleTo: "all" });
     // Anyone who walks in later sees it in the room's history.
     player(s, "p2").room = "BEDROOM_A";
@@ -95,7 +95,7 @@ describe("death", () => {
     s = must(createChannel(s, "p1", "Alone"));
     s = punchToDeath(s);
     expect(s.channels.map((c) => [c.id, c.members])).toEqual([["pc-1", ["p2"]]]);
-    expect(s.chat.filter((m) => m.channel === "pc-1").map((m) => m.system)).toEqual([{ key: "leftThisWorld", params: { name: "Player 1" } }]);
+    expect(s.chat.filter((m) => m.channel === "pc-1").map((m) => m.system)).toEqual([{ key: "leftThisWorld", params: { name: "chun" } }]);
     expect(s.chat.some((m) => m.channel === "pc-2")).toBe(false);
   });
 

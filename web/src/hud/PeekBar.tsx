@@ -45,7 +45,7 @@ export function PeekBar({
   const resolved = resolveTarget(view, target);
   if (!resolved) return null;
   const name =
-    resolved.kind === "player" ? resolved.person.name : resolved.kind === "equipment" ? names.equipment(resolved.equipment.type) : names.item(resolved.item.type, resolved.item.builds);
+    resolved.kind === "player" ? names.character(resolved.person.character) : resolved.kind === "equipment" ? names.equipment(resolved.equipment.type) : names.item(resolved.item.type, resolved.item.builds);
   const isBot = resolved.kind === "player" && resolved.person.isBot;
   return (
     <Bar heading={name} isBot={isBot}>

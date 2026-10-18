@@ -1,7 +1,7 @@
 // Who you are and your stats: portrait, name, role, AP/MP/HP/morale. Shown in the
 // self panel under the room on desktop and in the top bar on phones.
 
-import { CHARACTERS, type PlayerView } from "@mush2/shared";
+import { characterName, type PlayerView } from "@mush2/shared";
 import { Popover } from "@base-ui/react/popover";
 import { useTranslation } from "react-i18next";
 import { AP_PIP, FACTION_ICONS, HP_ICON, HP_PIP, MORALE_ICON, MORALE_PIP, MP_PIP, bustIcon } from "../art/assets.ts";
@@ -54,13 +54,12 @@ function StatChip({ stat, value, max, icon, big = false }: { stat: "ap" | "mp" |
 export function PlayerSummary({ view, compact = false }: { view: PlayerView; compact?: boolean }) {
   const { t } = useTranslation();
   const { you } = view;
-  const character = CHARACTERS.find((c) => c.id === you.character);
   return (
     <div className="player-summary">
       <div className={`nameplate ${you.role}`}>
         <img className="avatar" src={bustIcon(you.character)} alt="" />
         <div className="who">
-          <strong>{character?.name ?? you.name}</strong>
+          <strong>{characterName(you.character)}</strong>
           {/* The phone layout shows the cycle here instead of on its own, abbreviated. */}
           <span className="sub cycle-under-name" aria-label={t("stat.dayCycle", { day: view.day, cycle: view.cycleOfDay })}>
             D{view.day}C{view.cycleOfDay}

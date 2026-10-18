@@ -34,6 +34,6 @@ export class ExtractSporeAction extends Action<ExtractSporeActionData> {
     state.sporesToday += state.config.spores.effect.spores;
     state.sporeExtractedOn[player.id] = state.cycle;
     addStatus(player, "dirty");
-    logSecret(state, player.id, "sporeExtracted", { name: player.name });
+    logSecret(state, player.id, "sporeExtracted", { name: player.character });
   }
 }

@@ -81,7 +81,7 @@ export function sendChat(state: GameState, playerId: PlayerId, channel: ChannelI
   if (body.length > MAX_CHAT_LENGTH) return { ok: false, error: "Message too long" };
 
   const next = clone(state);
-  pushChat(next, channel, { from: p.id, name: p.name, isBot: p.isBot, text: body });
+  pushChat(next, channel, { from: p.id, isBot: p.isBot, text: body });
   return { ok: true, state: next };
 }
 

@@ -1,9 +1,9 @@
-// Display names for ids the server sends: rooms, equipment, items, and log
+// Display names for ids the server sends: rooms, equipment, items, crew, and log
 // events. The server never sends English text (see the i18n skill); these
 // helpers turn ids into the player's language. Call `useNames()` in a
 // component so it re-renders when the language changes.
 
-import { BLUEPRINTS, type ActionType, type LogEntry, type RoomId } from "@mush2/shared";
+import { BLUEPRINTS, characterName, type ActionType, type LogEntry, type RoomId } from "@mush2/shared";
 import { useTranslation } from "react-i18next";
 
 /** The name of each kind of action, for the action queue and log lines that mention one. Ready never waits in a queue. */
@@ -53,7 +53,7 @@ export function useNames() {
     return key ? t(key as never, { defaultValue: type }) : type;
   };
 
-  /** The text of a log entry. `room`, `item`, `research`, `equipment` and `action` params are ids and get translated. */
+  /** The text of a log entry. `room`, `item`, `research`, `equipment` and `action` params are ids and get translated; `name`, `target` and `body` are character ids. */
   const logLine = ({ key, params = {} }: Pick<LogEntry, "key" | "params">): string => {
     const resolved: Record<string, string | number> = { ...params };
     if (typeof params.room === "string") resolved.room = room(params.room);
@@ -61,8 +61,9 @@ export function useNames() {
     if (typeof params.research === "string") resolved.research = research(params.research);
     if (typeof params.equipment === "string") resolved.equipment = equipment(params.equipment);
     if (typeof params.action === "string") resolved.action = action(params.action);
+    for (const who of ["name", "target", "body"] as const) if (typeof params[who] === "string") resolved[who] = characterName(params[who]);
     return t(`logEvent.${key}` as never, { ...resolved, defaultValue: key });
   };
 
-  return { room, equipment, item, research, skill, action, logLine };
+  return { room, equipment, item, research, skill, action, character: characterName, logLine };
 }

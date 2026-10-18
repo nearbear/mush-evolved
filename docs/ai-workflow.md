@@ -691,3 +691,7 @@ The owner asked for a dead-only chat tab on the iTrackie, with the skull icon fr
 - **What worked:** asking the open questions in one batch (cost timing, what Clear cancels, queue cap, End cycle) before writing code; splitting `applyAction` into a checking wrapper and a mutating `performAction` left the ~300 existing rule tests untouched.
 - **Needed correction:** a first leak test serialized whole views and matched "bond", which other players' own legal actions contain; narrowed to the entries describing the actor. The i18n ratchet caught a duplicated "Illegal action" string from the refactor.
 - **My defaults, flagged to the owner:** `access` is untimed (it only opens a window); `pick_skill` is timed.
+
+## 2026-10-17: Names hidden during a game
+
+Owner asked to remove player and bot names from the UI and the view until the game ends. `Seat.name` stays in server state; `viewFor` strips it from `you` (new `YouView`) and `OtherPlayerView`, `ChatMessage` lost its copied `name` (chat is rebuilt field by field in `viewFor` so older stored messages can't leak one), and log/system params now carry character ids that the client names via `characterName`. The reveal at game end is #191, blocked by #27. Worked: typecheck found every client use; a single "no `Player ` anywhere in any view" test covers the leak. Needed care: log params were a second, easy-to-miss channel for names.

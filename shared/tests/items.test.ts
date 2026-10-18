@@ -63,9 +63,9 @@ describe("inventory", () => {
     expect(p0.ap).toBe(DEFAULT_CONFIG.startAp - 1); // only the move cost anything
 
     const labLog = viewFor(state, "p1").log;
-    expect(labLog).toContainEqual(expect.objectContaining({ key: "pickedUp", params: { name: "Player 0", item: "wrench" } }));
+    expect(labLog).toContainEqual(expect.objectContaining({ key: "pickedUp", params: { name: "chao", item: "wrench" } }));
     const corridorLog = viewFor(state, "p0").log;
-    expect(corridorLog).toContainEqual(expect.objectContaining({ key: "dropped", params: { name: "Player 0", item: "wrench" } }));
+    expect(corridorLog).toContainEqual(expect.objectContaining({ key: "dropped", params: { name: "chao", item: "wrench" } }));
   });
 
   it("holds at most three items", () => {

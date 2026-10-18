@@ -193,6 +193,8 @@ function Thread({
   const readable = view.readChannels.includes(channel);
   const enabled = view.chatChannels.includes(channel);
   const messages = view.chat.filter((m) => m.channel === channel);
+  // Senders are named by their character; account names never reach the client.
+  const characterOf = (id: string | null) => (id === view.you.id ? view.you.character : view.players.find((p) => p.id === id)?.character);
   return (
     <div className="thread">
       <Scroller items={messages.length}>
@@ -207,10 +209,10 @@ function Thread({
             ) : (
             <FeedEntry
               key={m.id}
-              marker={<CrewAvatar character={m.from === view.you.id ? view.you.character : view.players.find((p) => p.id === m.from)?.character} />}
+              marker={<CrewAvatar character={characterOf(m.from)} />}
               name={
                 <>
-                  <strong className={m.from === view.you.id ? "me" : undefined}>{m.name}</strong>
+                  <strong className={m.from === view.you.id ? "me" : undefined}>{names.character(characterOf(m.from) ?? "")}</strong>
                   {m.isBot && <span className="tag">AI</span>}
                 </>
               }
@@ -401,7 +403,8 @@ function PrivateChannels({
   const [invitee, setInvitee] = useState("");
   // Falls back to the first channel when none is picked or the picked one is gone (left, or deleted).
   const current = view.privateChannels.find((c) => c.id === picked) ?? view.privateChannels[0];
-  const nameOf = (id: string) => (id === view.you.id ? view.you.name : (view.players.find((p) => p.id === id)?.name ?? id));
+  const names = useNames();
+  const nameOf = (id: string) => names.character((id === view.you.id ? view.you : view.players.find((p) => p.id === id))?.character ?? id);
   const atLimit = view.privateChannels.length >= view.channelLimit;
   const invitable = current ? view.players.filter((p) => p.alive && !current.members.includes(p.id)) : [];
 
@@ -453,7 +456,7 @@ function PrivateChannels({
                 <option value="">{t("channels.invitePick")}</option>
                 {invitable.map((p) => (
                   <option key={p.id} value={p.id}>
-                    {p.name}
+                    {names.character(p.character)}
                   </option>
                 ))}
               </select>

@@ -91,7 +91,7 @@ export function visibleTargets(state: Readonly<GameState>, player: Readonly<Play
 function examineEvent(state: Readonly<GameState>, viewer: Readonly<PlayerState>, target: Target): [string, LogParams] {
   switch (target.kind) {
     case "player":
-      return target.id === viewer.id ? ["examineSelf", {}] : ["examinePlayer", { name: state.players.find((p) => p.id === target.id)?.name ?? target.id }];
+      return target.id === viewer.id ? ["examineSelf", {}] : ["examinePlayer", { name: state.players.find((p) => p.id === target.id)?.character ?? target.id }];
     case "equipment": {
       const e = state.config.equipment[viewer.room]?.find((eq) => eq.id === target.id);
       return ["examineEquipment", { equipment: e?.type ?? target.id }];

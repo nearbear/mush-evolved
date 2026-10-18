@@ -64,7 +64,7 @@ export class DismantleAction extends Action<DismantleActionData> {
         state.items.push({ id: `item-${state.nextItemId++}`, type: scrapType, at: { kind: "room", id: player.room } });
       }
     }
-    logPublic(state, player.room, "dismantled", { name: player.name, item: type });
+    logPublic(state, player.room, "dismantled", { name: player.character, item: type });
   }
 }
 

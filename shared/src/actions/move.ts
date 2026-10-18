@@ -27,7 +27,7 @@ export class MoveAction extends Action<MoveActionData> {
   override apply(state: GameState, player: PlayerState, target: MoveActionData): void {
     const from = player.room;
     player.room = target.to;
-    logPublic(state, from, "left", { name: player.name, room: target.to });
-    logPublic(state, target.to, "entered", { name: player.name, room: from });
+    logPublic(state, from, "left", { name: player.character, room: target.to });
+    logPublic(state, target.to, "entered", { name: player.character, room: from });
   }
 }

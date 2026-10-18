@@ -62,7 +62,7 @@ describe("jettison", () => {
     const watched = ship();
     player(watched.s, "p1").room = "SPACESHIP_BAY_A";
     const unseen = must(applyAction(watched.s, "p0", watched.jettison));
-    expect(unseen.log.find((e) => e.key === "jettisoned")).toMatchObject({ visibleTo: ["p0"], params: { name: "Player 0", body: "Player 2" } });
+    expect(unseen.log.find((e) => e.key === "jettisoned")).toMatchObject({ visibleTo: ["p0"], params: { name: "chao", body: "eleesha" } });
     expect(viewFor(unseen, "p1").log.some((e) => e.key === "jettisoned")).toBe(false);
 
     const filmed = ship();

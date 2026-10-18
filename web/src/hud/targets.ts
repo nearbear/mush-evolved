@@ -2,10 +2,10 @@
 // No rules here: a target is shown only if the view contains it, and actions
 // come from view.legalActions.
 
-import type { Action, ActionCost, EquipmentView, ItemView, OtherPlayerView, PlayerState, PlayerView, Target, UnaffordableAction } from "@mush2/shared";
+import type { Action, ActionCost, EquipmentView, ItemView, OtherPlayerView, PlayerView, Target, UnaffordableAction, YouView } from "@mush2/shared";
 
 export type Resolved =
-  | { kind: "player"; person: PlayerState | OtherPlayerView }
+  | { kind: "player"; person: YouView | OtherPlayerView }
   | { kind: "equipment"; equipment: EquipmentView }
   | { kind: "item"; item: ItemView; carried: boolean };
 

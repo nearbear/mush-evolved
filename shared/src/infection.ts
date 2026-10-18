@@ -18,16 +18,16 @@ export function contaminate(state: GameState, human: PlayerState, amount = 1): v
   const capacity = contaminationCapacity(state, human);
   if (level >= capacity) {
     convert(state, human);
-    tellMush(state, "mushConverted", { name: human.name });
+    tellMush(state, "mushConverted", { name: human.character });
   } else {
     state.contamination[human.id] = level;
-    tellMush(state, "mushContaminated", { name: human.name, level, capacity });
+    tellMush(state, "mushContaminated", { name: human.character, level, capacity });
   }
 }
 
 /** A system message in the Mush channel (decided 2026-10-16). Names the human and the level, never the Mush responsible. */
 function tellMush(state: GameState, key: string, params: Record<string, string | number>): void {
-  pushChat(state, MUSH_CHANNEL, { from: null, name: "", isBot: false, text: "", system: { key, params } });
+  pushChat(state, MUSH_CHANNEL, { from: null, isBot: false, text: "", system: { key, params } });
 }
 
 /**

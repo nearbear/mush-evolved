@@ -24,7 +24,7 @@ export interface ItemView {
 
 export interface OtherPlayerView {
   id: PlayerId;
-  name: string;
+  /** No `name`: people are known only by character until the game ends. */
   isBot: boolean;
   botKind?: BotKind;
   character: CharacterId;
@@ -54,8 +54,11 @@ export interface PublicConfig {
   actionQueueCap: number;
 }
 
+/** Your own state, minus your account name (nobody's name is in a view while the game runs). */
+export type YouView = Omit<PlayerState, "name">;
+
 export interface PlayerView {
-  you: PlayerState;
+  you: YouView;
   /** Every status you have, public and private, stored and derived (statuses.ts). */
   statuses: string[];
   players: OtherPlayerView[];

@@ -34,8 +34,8 @@ export class JettisonAction extends Action<JettisonActionData> {
   override apply(state: GameState, player: PlayerState, target: JettisonActionData): void {
     const index = state.items.findIndex((i) => i.id === target.item);
     const [corpse] = state.items.splice(index, 1) as [ItemState];
-    const body = state.players.find((p) => p.id === corpse.of)?.name ?? "";
-    logCovert(state, player.id, "jettisoned", { name: player.name, body });
+    const body = state.players.find((p) => p.id === corpse.of)?.character ?? "";
+    logCovert(state, player.id, "jettisoned", { name: player.character, body });
   }
 }
 

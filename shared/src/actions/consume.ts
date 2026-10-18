@@ -37,6 +37,6 @@ export class ConsumeAction extends Action<ConsumeActionData> {
       player.satietyZeroSince = player.satiety === 0 ? state.cycle : null;
     }
     consumed(state, player, item);
-    logPublic(state, player.room, "consumed", { name: player.name, item: item.type });
+    logPublic(state, player.room, "consumed", { name: player.character, item: item.type });
   }
 }

@@ -40,7 +40,7 @@ export class SpikeAction extends Action<SpikeActionData> {
   override apply(state: GameState, player: PlayerState, target: SpikeActionData): void {
     const victim = state.players.find((o) => o.id === target.target)!; // checked, so it exists
     player.spores -= 1;
-    logCovert(state, player.id, "spiked", { name: player.name, target: victim.name });
+    logCovert(state, player.id, "spiked", { name: player.character, target: victim.character });
     contaminate(state, victim);
     ringMycoAlarms(state, player.room);
   }

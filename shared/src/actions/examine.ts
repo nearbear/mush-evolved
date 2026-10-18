@@ -31,7 +31,7 @@ export class ExamineAction extends Action<ExamineActionData> {
           state,
           player.id,
           target.target.id === player.id ? "examineSelf" : "examinePlayer",
-          target.target.id === player.id ? {} : { name: state.players.find((p) => p.id === target.target.id)?.name ?? target.target.id },
+          target.target.id === player.id ? {} : { name: state.players.find((p) => p.id === target.target.id)?.character ?? target.target.id },
         );
       case "equipment": {
         const equipment = state.config.equipment[player.room]?.find((eq) => eq.id === target.target.id);

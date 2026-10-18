@@ -98,8 +98,8 @@ describe("DTT and STT", () => {
 
   it("log privately to the two of them only", () => {
     const s = mustApply(bondBoth(ship(), "p0", "p1"), "p0", stt("p1"));
-    expect(viewFor(s, "p0").log.at(-1)).toMatchObject({ key: "shareDid", params: { label: "STT", name: "Player 1" } });
-    expect(viewFor(s, "p1").log.at(-1)).toMatchObject({ key: "shareDidToYou", params: { label: "STT", name: "Player 0" } });
+    expect(viewFor(s, "p0").log.at(-1)).toMatchObject({ key: "shareDid", params: { label: "STT", name: "chun" } });
+    expect(viewFor(s, "p1").log.at(-1)).toMatchObject({ key: "shareDidToYou", params: { label: "STT", name: "chao" } });
     expect(JSON.stringify(viewFor(s, "p3").log)).not.toMatch(/STT/);
   });
 

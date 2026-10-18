@@ -270,17 +270,18 @@ export function viewFor(state: GameState, playerId: PlayerId): PlayerView {
   const located = (room: RoomId) => you.alive && (actopi || room === you.room);
   // A dead body is a corpse item, not a person in a room: nobody gets a dead player's room.
   const living = others.filter((o) => o.alive);
+  // Nobody's account name goes out while the game runs, not even your own: people are known by character.
+  const { name: _name, ...yours } = you;
   return {
-    you: { ...you, statuses: [...you.statuses], queue: [...you.queue] },
+    you: { ...yours, statuses: [...you.statuses], queue: [...you.queue] },
     statuses: statusesOf(state, you),
     // TODO(rules): should Mush see each other's roles? Hidden for now.
     players: others.map((o) => {
-      const { id, name, isBot, botKind, character, room, alive, ready } = o;
+      const { id, isBot, botKind, character, room, alive, ready } = o;
       const here = o.alive && present(room);
       const contamination = here ? contaminationSeenBy(state, you, o) : undefined;
       return {
         id,
-        name,
         isBot,
         ...(botKind && { botKind }),
         character,
@@ -315,7 +316,8 @@ export function viewFor(state: GameState, playerId: PlayerId): PlayerView {
     log: state.log.filter((e) =>
       !you.alive ? e.room === undefined && e.visibleTo === "all" : e.visibleTo === "all" ? e.room === undefined || e.room === you.room : e.visibleTo.includes(playerId),
     ),
-    chat: state.chat.filter((m) => channels.includes(m.channel)),
+    // Field by field, so a name stored by an older build never goes out.
+    chat: state.chat.filter((m) => channels.includes(m.channel)).map(({ id, cycle, at, channel, from, isBot, text, system }) => ({ id, cycle, ...(at !== undefined && { at }), channel, from, isBot, text, ...(system && { system }) })),
     chatChannels: chatChannels(state, you),
     readChannels: channels,
     privateChannels: state.channels.filter((c) => c.members.includes(playerId)).map((c) => ({ ...c, members: [...c.members] })),

@@ -33,7 +33,7 @@ export class UninstallAction extends Action<UninstallActionData> {
     const list = state.config.equipment[player.room]!;
     list.splice(list.findIndex((e) => e.id === target.equipment), 1);
     produceItem(state, player, "camera");
-    logPublic(state, player.room, "cameraUninstalled", { name: player.name });
+    logPublic(state, player.room, "cameraUninstalled", { name: player.character });
   }
 }
 

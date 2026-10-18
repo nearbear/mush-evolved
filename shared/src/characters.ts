@@ -22,3 +22,8 @@ export const CHARACTERS = [
 ] as const;
 
 export type CharacterId = (typeof CHARACTERS)[number]["id"];
+
+/** A crew member's full name. Proper names, so never translated. Falls back to the id for one the list doesn't know. */
+export function characterName(id: string): string {
+  return CHARACTERS.find((c) => c.id === id)?.name ?? id;
+}

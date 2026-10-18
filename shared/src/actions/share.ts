@@ -40,8 +40,8 @@ export class ShareAction<T extends "dtt" | "stt" = "dtt" | "stt"> extends Action
     const human = player.role === "human" ? player : other;
     const contaminating = this.type === "dtt" && player.role !== other.role;
     const label = this.type.toUpperCase();
-    logPrivate(state, player.id, "shareDid", { label, name: other.name });
-    logPrivate(state, other.id, "shareDidToYou", { label, name: player.name });
+    logPrivate(state, player.id, "shareDid", { label, name: other.character });
+    logPrivate(state, other.id, "shareDidToYou", { label, name: player.character });
     if (contaminating) contaminate(state, human);
   }
 }

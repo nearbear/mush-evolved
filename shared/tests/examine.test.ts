@@ -74,7 +74,7 @@ describe("examine", () => {
     state = mustApply(state, "p0", examine("player", "p1"), examine("player", "p0"), examine("item", "item-2"));
     const lines = viewFor(state, "p0").log.slice(-3).map(({ key, params }) => ({ key, params }));
     expect(lines).toEqual([
-      { key: "examinePlayer", params: { name: "Player 1" } },
+      { key: "examinePlayer", params: { name: "chun" } },
       { key: "examineSelf", params: {} },
       { key: "examineItem", params: { item: "blaster" } },
     ]);

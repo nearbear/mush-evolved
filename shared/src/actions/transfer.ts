@@ -27,6 +27,6 @@ export class TransferAction<T extends "take" | "drop" = "take" | "drop"> extends
     const [item] = state.items.splice(index, 1) as [ItemState];
     item.at = this.type === "take" ? { kind: "player", id: player.id } : { kind: "room", id: player.room };
     state.items.push(item);
-    logPublic(state, player.room, this.type === "take" ? "pickedUp" : "dropped", { name: player.name, item: item.type });
+    logPublic(state, player.room, this.type === "take" ? "pickedUp" : "dropped", { name: player.character, item: item.type });
   }
 }

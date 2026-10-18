@@ -27,6 +27,6 @@ export class BondAction extends Action<BondActionData> {
 
   override apply(state: GameState, player: PlayerState, target: BondActionData): void {
     (state.bonds[player.id] ??= []).push(target.target);
-    logPrivate(state, player.id, "bonded", { name: state.players.find((other) => other.id === target.target)!.name });
+    logPrivate(state, player.id, "bonded", { name: state.players.find((other) => other.id === target.target)!.character });
   }
 }
