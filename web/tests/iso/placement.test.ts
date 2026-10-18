@@ -7,8 +7,10 @@ import {
   gridToPx,
   hitTest,
   neighborRooms,
+  placeActors,
   placeRoom,
   placeScene,
+  prepareScene,
   spreadActors,
   standSpot,
   walkableCells,
@@ -169,6 +171,19 @@ describe("the real ship", () => {
     expect(wall.order).toBeGreaterThan(actor("hidden").order);
     expect(actor("hidden").occluded).toBe(true);
     expect(actor("open").occluded).toBe(false);
+  });
+
+  it("places people into a prepared scene as placeScene would, however often it is reused", () => {
+    // Walking re-places only the people (IsoRoom): the tiles are prepared once per room.
+    const corridor = ship.rooms.find((r) => r.id === "CORRIDOR_A")!;
+    const rooms = [{ room: corridor, dx: 0, dy: 0 }, ...neighborRooms(ship, corridor, 2)];
+    const prepared = prepareScene(ship, rooms);
+    const cells = walkableCells(ship, corridor);
+    for (const n of [1, 4, 0, 6]) {
+      const actors = spreadActors(cells, n).map((cell, i) => ({ id: `p${i}`, cell, width: 32, height: 48, ...(i === 1 && { onTop: true }) }));
+      const people = [actors, ...rooms.slice(1).map((r, i) => (i % 2 ? [] : [{ id: `${r.room.id}-p`, cell: walkableCells(ship, r.room)[0]!, width: 32, height: 48 }]))];
+      expect(placeActors(prepared, people)).toEqual(placeScene(ship, rooms.map((r, i) => ({ ...r, actors: people[i]! }))));
+    }
   });
 
   it("hides lockers behind the wall of the room in front", () => {

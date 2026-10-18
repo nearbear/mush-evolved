@@ -22,8 +22,11 @@ Loaded when working on the isometric view. The UI rules in `web/CLAUDE.md` still
   so the camera stays locked on you. Facing is by screen direction: the face strip looks down-right
   and the back strip up-left, mirrored for the other two. Entering a room you stand in front of the
   door you came through (`doorSpot`) and don't move. Purely cosmetic: actions and moves go to the
-  server at once, mid-walk or not; you sit on a chair only once you reach it. Each cell change
-  re-runs `placeScene` (about 7 ms, 21 ms with whole-ship fog). With the instant actions cheat on,
+  server at once, mid-walk or not; you sit on a chair only once you reach it. The tiles are sorted
+  once per room and fog depth (`prepareScene`, about 13 ms); each cell change re-places only the
+  people (`placeActors`, about 2 ms, 5 ms with whole-ship fog), with the same result `placeScene`
+  gives. The frame loop shifts the `data-walker` elements found at the last commit, not a fresh
+  query. With the instant actions cheat on,
   you teleport instead (`teleport`: your walks jump, and leaving a room switches at once); others still walk.
 - Acting walks you there (`useActingOn.ts`): when an action on equipment, a person, or a body on the
   floor begins, you walk to the equipment's standing spot or the cell before the person or body; a
@@ -47,6 +50,9 @@ Loaded when working on the isometric view. The UI rules in `web/CLAUDE.md` still
 - People a wall covers (`PlacedSprite.occluded`) get a glowing outline (an SVG filter) in a layer
   above the scene, so nobody can hide behind a wall: fixed scenery only, plus whoever the view
   places there. The client adds no ACTOPI check of its own.
+
+- Anything animated on its own clock (the camera's swivel, `SwivelSprite`) keeps that clock in its
+  own small component: a timer in `IsoRoom` re-renders every sprite in the scene.
 
 ## Looking at the whole ship
 

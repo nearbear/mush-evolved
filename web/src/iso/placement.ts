@@ -129,13 +129,109 @@ export function placeRoom(layout: ShipLayout, room: RoomLayout, actors: readonly
  * (actor keys, "a:<id>", are unique already).
  */
 export function placeScene(layout: ShipLayout, rooms: readonly SceneRoom[]): PlacedSprite[] {
-  const placed: (PlacedSprite & Sortable)[] = [];
+  return placeActors(prepareScene(layout, rooms), rooms.map((r) => r.actors));
+}
+
+/** A scene's rooms without their people. */
+export type SceneRooms = readonly Omit<SceneRoom, "actors">[];
+
+/**
+ * The part of a scene that doesn't move: its tiles, sorted, and which of them draw before which.
+ * People walking only change `placeActors`, so this is worked out once per set of rooms.
+ */
+export interface PreparedScene {
+  layout: ShipLayout;
+  /** The rooms with `fillGaps`' tiles added. */
+  rooms: SceneRooms;
+  /** Every tile sprite, in the original order (`baseOrder`). */
+  statics: (PlacedSprite & Sortable)[];
+  /** Each static as it is returned, without the sorting fields. */
+  plain: ReadonlyMap<PlacedSprite, PlacedSprite>;
+  /** "Draws before" pairs between statics, as indices into `statics`: first, second, first, second... */
+  edges: number[];
+  /** Indices into `statics`, by `left`; and the widest static, to bound the search for what a person overlaps. */
+  byLeft: number[];
+  maxWidth: number;
+}
+
+export function prepareScene(layout: ShipLayout, rooms: SceneRooms): PreparedScene {
   const drawn = new Set(rooms.map((r) => r.room.id));
   const filled = fillGaps(layout, rooms);
-  rooms.forEach((r, scene) => placed.push(...sortables(layout, filled[scene]!, scene, drawn)));
-  const ordered = paintOrder(placed);
+  const statics = filled.flatMap((r, scene) => tileSortables(layout, r, scene, drawn)).sort(baseOrder);
+  const byLeft = leftOrder(statics);
+  const edges: number[] = [];
+  for (let p = 0; p < byLeft.length; p++) {
+    const i = byLeft[p]!;
+    for (let q = p + 1; q < byLeft.length; q++) {
+      const j = byLeft[q]!;
+      if (statics[j]!.left >= statics[i]!.left + statics[i]!.width) break;
+      link(statics, i, j, edges);
+    }
+  }
+  const plain = new Map(statics.map((s) => [s, unsorted(s)]));
+  return { layout, rooms: filled, statics, plain, edges, byLeft, maxWidth: statics.reduce((m, s) => Math.max(m, s.width), 0) };
+}
+
+/**
+ * The prepared scene with people in it (`actors[i]` stand in `rooms[i]`): the same sprites and
+ * paint order `placeScene` gives, without redoing what only depends on the tiles.
+ */
+export function placeActors(prepared: PreparedScene, actors: readonly (readonly Actor[])[]): PlacedSprite[] {
+  const { layout, rooms, statics, plain, edges, byLeft, maxWidth } = prepared;
+  const people = rooms.flatMap((r, scene) => actorSortables(layout, r, scene, actors[scene] ?? [])).sort(baseOrder);
+  // Merge the two sorted lists. A static wins a tie: it came first in the original's stable sort.
+  const base: (PlacedSprite & Sortable)[] = [];
+  const atStatic = new Array<number>(statics.length), atPerson = new Array<number>(people.length);
+  for (let i = 0, j = 0; i < statics.length || j < people.length; ) {
+    if (j >= people.length || (i < statics.length && baseOrder(statics[i]!, people[j]!) <= 0)) {
+      atStatic[i] = base.length;
+      base.push(statics[i++]!);
+    } else {
+      atPerson[j] = base.length;
+      base.push(people[j++]!);
+    }
+  }
+  const pairs: number[] = [];
+  for (let k = 0; k < edges.length; k++) pairs.push(atStatic[edges[k]!]!);
+  // Each person against the statics that can overlap them, then against each other.
+  const lefts = byLeft.map((i) => statics[i]!.left);
+  people.forEach((a, pa) => {
+    const from = lowerBound(lefts, a.left - maxWidth);
+    for (let q = from; q < lefts.length && lefts[q]! < a.left + a.width; q++) link(base, atPerson[pa]!, atStatic[byLeft[q]!]!, pairs);
+    for (let pb = pa + 1; pb < people.length; pb++) link(base, atPerson[pa]!, atPerson[pb]!, pairs);
+  });
+  const ordered = paintOrder(base, pairs);
   markOccluded(ordered);
-  return ordered.map(({ pass, depth, prio, stage, screenX, scene, box, shape, ...s }, order) => ({ ...s, order }));
+  return ordered.map((s, order) => ({ ...(plain.get(s) ?? unsorted(s)), order }));
+}
+
+/** A sprite without the fields only sorting uses. */
+const unsorted = ({ pass, depth, prio, stage, screenX, scene, box, shape, ...s }: PlacedSprite & Sortable): PlacedSprite => s;
+
+/** Indices of `sprites` by `left`, a tie going to the earlier one. */
+const leftOrder = (sprites: readonly PlacedSprite[]) => sprites.map((_, i) => i).sort((i, j) => sprites[i]!.left - sprites[j]!.left || i - j);
+
+/** First index in sorted `xs` whose value is greater than `v`. */
+function lowerBound(xs: readonly number[], v: number): number {
+  let lo = 0, hi = xs.length;
+  while (lo < hi) {
+    const mid = (lo + hi) >> 1;
+    if (xs[mid]! <= v) lo = mid + 1;
+    else hi = mid;
+  }
+  return lo;
+}
+
+/**
+ * If sprites i and j overlap on screen and `compare` orders them, adds the pair (first, second) to
+ * `pairs`. They are taken left to right (the earlier one at a tie), as the sweep meets them.
+ */
+function link(sprites: readonly (PlacedSprite & Sortable)[], i: number, j: number, pairs: number[]) {
+  const si = sprites[i]!, sj = sprites[j]!;
+  const [x, a, y, b] = sj.left < si.left || (sj.left === si.left && j < i) ? [j, sj, i, si] : [i, si, j, sj];
+  if (b.left >= a.left + a.width || b.top >= a.top + a.height || a.top >= b.top + b.height) return;
+  const c = compare(a, b);
+  if (c !== 0) pairs.push(...(c < 0 ? [x, y] : [y, x]));
 }
 
 /**
@@ -151,7 +247,7 @@ export function placeScene(layout: ShipLayout, rooms: readonly SceneRoom[]): Pla
  * Each tile goes to the room whose floor it copies or touches (the first room winning a tie).
  * Open front edges elsewhere stay open: a wall there would cover the room behind it.
  */
-function fillGaps(layout: ShipLayout, rooms: readonly SceneRoom[]): SceneRoom[] {
+function fillGaps<R extends SceneRooms[number]>(layout: ShipLayout, rooms: readonly R[]): R[] {
   const key = (x: number, y: number) => `${x},${y}`;
   const floor = new Map<string, { room: number; tile: TilePlacement }>();
   const walls = new Map<string, number>();
@@ -252,9 +348,9 @@ function fillGaps(layout: ShipLayout, rooms: readonly SceneRoom[]): SceneRoom[] 
   return rooms.map((r, i) => (extra[i]!.length ? { ...r, room: { ...r.room, tiles: [...r.room.tiles, ...extra[i]!] } } : r));
 }
 
-function sortables(
+function tileSortables(
   layout: ShipLayout,
-  { room, dx, dy, actors }: SceneRoom,
+  { room, dx, dy }: SceneRooms[number],
   scene: number,
   drawn: ReadonlySet<string>,
 ): (PlacedSprite & Sortable)[] {
@@ -314,7 +410,11 @@ function sortables(
     if (t.kind === "wall" && underDoor.has(`${t.x},${t.y}`)) return;
     place(t, `${prefix}t${i}`);
   });
+  return placed;
+}
 
+function actorSortables(layout: ShipLayout, { room, dx, dy }: SceneRooms[number], scene: number, actors: readonly Actor[]): (PlacedSprite & Sortable)[] {
+  const placed: (PlacedSprite & Sortable)[] = [];
   for (const a of actors) {
     const x = a.cell.x + dx, y = a.cell.y + dy;
     const anchor = gridToPx(x, y);
@@ -443,35 +543,45 @@ function compare(a: PlacedSprite & Sortable, b: PlacedSprite & Sortable): number
 }
 
 /**
- * Paint order: a topological sort of "draws before" between every pair of
- * sprites whose boxes overlap on screen (`compare`), taking the earliest in
- * the original order whenever there's a choice. A cycle, which the rules
- * above can make in odd corners, is broken at its earliest sprite (found by
+ * Paint order: a topological sort of "draws before" (`pairs`, from `link`: every pair of
+ * sprites whose boxes overlap on screen that `compare` orders), taking the earliest in
+ * the original order (`base`, sorted by `baseOrder`) whenever there's a choice. A cycle,
+ * which the rules above can make in odd corners, is broken at its earliest sprite (found by
  * walking back from a stuck sprite, so sprites merely waiting on a cycle keep
  * their own constraints).
  */
-function paintOrder<S extends PlacedSprite & Sortable>(sprites: S[]): S[] {
-  const base = [...sprites].sort(baseOrder);
+function paintOrder<S extends PlacedSprite & Sortable>(base: S[], pairs: readonly number[]): S[] {
   const n = base.length;
-  const after: number[][] = base.map(() => []);
-  const before: number[][] = base.map(() => []);
-  const waiting = new Array<number>(n).fill(0);
-  // Sweep along x so only sprites that can overlap are compared.
-  const byLeft = base.map((_, i) => i).sort((i, j) => base[i]!.left - base[j]!.left);
-  for (let p = 0; p < n; p++) {
-    const i = byLeft[p]!, a = base[i]!;
-    for (let q = p + 1; q < n; q++) {
-      const j = byLeft[q]!, b = base[j]!;
-      if (b.left >= a.left + a.width) break;
-      if (b.top >= a.top + a.height || a.top >= b.top + b.height) continue;
-      const c = compare(a, b);
-      if (c === 0) continue;
-      const [first, second] = c < 0 ? [i, j] : [j, i];
-      after[first]!.push(second);
-      before[second]!.push(first);
-      waiting[second]!++;
-    }
+  // Who each sprite must draw before, as one flat list: after[start[i]..start[i + 1]) for sprite i.
+  const start = new Int32Array(n + 1);
+  const waiting = new Int32Array(n);
+  for (let k = 0; k < pairs.length; k += 2) {
+    start[pairs[k]! + 1]!++;
+    waiting[pairs[k + 1]!]!++;
   }
+  for (let i = 0; i < n; i++) start[i + 1]! += start[i]!;
+  const after = new Int32Array(pairs.length / 2);
+  const fill = start.slice(0, n);
+  for (let k = 0; k < pairs.length; k += 2) after[fill[pairs[k]!]!++] = pairs[k + 1]!;
+  // Who each sprite waits on, only needed to break a cycle.
+  let before: number[][] | undefined;
+  const predecessors = () => {
+    if (!before) {
+      before = base.map(() => []);
+      for (let k = 0; k < pairs.length; k += 2) before[pairs[k + 1]!]!.push(pairs[k]!);
+    }
+    return before;
+  };
+  // Rank by `left`, only needed to break a cycle: the walk back takes predecessors in the order a
+  // left-to-right sweep would meet the pairs, so it doesn't depend on how the pairs were gathered.
+  let rank: number[] | undefined;
+  const sweepRank = () => {
+    if (!rank) {
+      rank = new Array<number>(n);
+      leftOrder(base).forEach((i, r) => (rank![i] = r));
+    }
+    return rank;
+  };
 
   // Ready sprites in a min-heap of their index in the original order.
   const heap: number[] = [];
@@ -501,21 +611,24 @@ function paintOrder<S extends PlacedSprite & Sortable>(sprites: S[]): S[] {
   };
 
   for (let i = 0; i < n; i++) if (waiting[i] === 0) push(i);
-  const done = new Array<boolean>(n).fill(false);
+  const done = new Uint8Array(n);
   const out: S[] = [];
   let next = 0; // Lowest index that might not be drawn yet, for breaking cycles.
   while (out.length < n) {
     if (heap.length === 0) {
       while (done[next]) next++;
-      const cut = cycleStart(next, before, done);
+      const cut = cycleStart(next, predecessors(), done, sweepRank());
       waiting[cut] = 0;
       push(cut);
     }
     const i = pop();
     if (done[i]) continue;
-    done[i] = true;
+    done[i] = 1;
     out.push(base[i]!);
-    for (const j of after[i]!) if (--waiting[j]! === 0 && !done[j]) push(j);
+    for (let k = start[i]!; k < start[i + 1]!; k++) {
+      const j = after[k]!;
+      if (--waiting[j]! === 0 && !done[j]) push(j);
+    }
   }
   return out;
 }
@@ -533,7 +646,8 @@ function markOccluded(ordered: (PlacedSprite & Sortable)[]) {
     const l = a.left + OCCLUSION_INSET.x, r = a.left + a.width - OCCLUSION_INSET.x;
     const t = a.top + OCCLUSION_INSET.top, b = a.top + a.height - OCCLUSION_INSET.bottom;
     const rects: [number, number, number, number][] = [];
-    for (const s of ordered.slice(i + 1)) {
+    for (let k = i + 1; k < ordered.length; k++) {
+      const s = ordered[k]!;
       if (!(s.shape === "wall" || (s.shape === "solid" && s.kind !== "actor" && s.room !== a.room)) || s.pass === PASS.post) continue;
       const x0 = Math.max(l, s.left), x1 = Math.min(r, s.left + s.width);
       const y0 = Math.max(t, s.top), y1 = Math.min(b, s.top + s.height);
@@ -572,14 +686,17 @@ const OCCLUSION_INSET = { x: 8, top: 8, bottom: 4 } as const;
  * `done` being stuck behind another that isn't: walk back through undrawn
  * predecessors until one repeats.
  */
-function cycleStart(from: number, before: readonly number[][], done: readonly boolean[]): number {
+function cycleStart(from: number, before: readonly number[][], done: Uint8Array, rank: readonly number[]): number {
   const seen = new Map<number, number>();
   const path: number[] = [];
   let v = from;
+  // Pairs in sweep order: by the lower rank of the two, then the higher.
+  const key = (u: number, w: number) => Math.min(rank[u]!, rank[w]!) * before.length + Math.max(rank[u]!, rank[w]!);
   while (!seen.has(v)) {
     seen.set(v, path.length);
     path.push(v);
-    v = before[v]!.find((u) => !done[u])!;
+    const w = v;
+    v = before[w]!.filter((u) => !done[u]).reduce((best, u) => (key(u, w) < key(best, w) ? u : best));
   }
   return Math.min(...path.slice(seen.get(v)));
 }

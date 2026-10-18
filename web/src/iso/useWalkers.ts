@@ -92,10 +92,13 @@ export function useWalkers(
     const m = motions.current.get(id);
     at.set(id, m ? { cell: cellOf(m.pos), facing: m.facing, moving: m.route.length > 0, arriving: m.arriving } : { cell: target, facing: STANDING, moving: false, arriving: false });
   }
-  // What the last commit drew, which the pixel shifts are measured from.
+  // What the last commit drew, which the pixel shifts are measured from, and the elements it drew
+  // them with (found once per commit, not on every frame: the world holds thousands of sprites).
   const drawn = useRef(at);
+  const nodes = useRef<HTMLElement[]>([]);
   useLayoutEffect(() => {
     drawn.current = at;
+    nodes.current = [...(world.current?.querySelectorAll<HTMLElement>("[data-walker]") ?? [])];
   });
 
   /** Pixels between where React placed someone and where they are. */
@@ -109,13 +112,16 @@ export function useWalkers(
   const apply = useCallback(() => {
     const el = world.current;
     if (!el) return;
-    for (const node of el.querySelectorAll<HTMLElement>("[data-walker]")) {
+    // Only changed values are written, so standing people cost nothing per frame.
+    for (const node of nodes.current) {
       const o = offsetOf(node.dataset.walker!);
-      node.style.translate = o.x || o.y ? `${o.x}px ${o.y}px` : "";
+      const translate = o.x || o.y ? `${o.x}px ${o.y}px` : "";
+      if (node.style.translate !== translate) node.style.translate = translate;
     }
     const cam = camera.current;
     const o = cam.follow ? offsetOf(cam.follow) : { x: 0, y: 0 };
-    el.style.transform = `translate(${cam.x - o.x}px, ${cam.y - o.y}px)`;
+    const transform = `translate(${cam.x - o.x}px, ${cam.y - o.y}px)`;
+    if (el.style.transform !== transform) el.style.transform = transform;
   }, [world, camera, offsetOf]);
 
   const frame = useRef(0);

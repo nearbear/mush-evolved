@@ -41,7 +41,8 @@ import {
   doorSpot,
   hitTest,
   neighborRooms,
-  placeScene,
+  placeActors,
+  prepareScene,
   spreadActors,
   standSpot,
   walkableCells,
@@ -207,12 +208,19 @@ export function IsoRoom({
   const walkersKey = [...walkers].map(([id, w]) => `${id}@${w.cell.x},${w.cell.y}${w.facing.flip ? "f" : ""}`).join(";");
 
 
+  // The tiles of this room and the rooms behind its doors, sorted once; people walking only re-place the people.
+  const prepared = useMemo(() => {
+    if (!roomLayout) return undefined;
+    const rooms = neighborRooms(layout, roomLayout, fogDepth).map((n) => ({ ...n, cells: walkableCells(layout, n.room) }));
+    return { rooms, scene: prepareScene(layout, [{ room: roomLayout, dx: 0, dy: 0 }, ...rooms]) };
+  }, [layout, roomLayout, fogDepth]);
+
   // This room and the rooms behind its doors, each with its people, drawn as one scene so that
   // whichever is in front covers the other. Display only: where people stand isn't game state.
   const nearbyKey = JSON.stringify(Object.entries(nearby).map(([r, os]) => [r, os?.map((o) => o.id)]));
   // biome-ignore lint/correctness/useExhaustiveDependencies: occupantKey, corpseKey, nearbyKey and walkersKey stand in for occupants, corpses, nearby and walkers: positions only change when who or what is where changes.
   const { scene, sprites, neighborSprites, neighbors, box, ownCells } = useMemo(() => {
-    if (!roomLayout) return { scene: [], sprites: [], neighborSprites: [], neighbors: [], box: bounds([]), ownCells: new Set<string>() };
+    if (!roomLayout || !prepared) return { scene: [], sprites: [], neighborSprites: [], neighbors: [], box: bounds([]), ownCells: new Set<string>() };
     const actors = [
       ...occupants.map((o, i) => ({
         id: o.id,
@@ -222,13 +230,13 @@ export function IsoRoom({
       // A corpse is placed like a person (so paint order and walls treat it the same) but drawn lying down.
       ...corpses.map((c, i) => ({ id: `${CORPSE_PREFIX}${c.id}`, cell: spots[occupants.length + i] ?? { x: 0, y: 0 }, ...LYING_SIZE })),
     ];
-    const neighbors = neighborRooms(layout, roomLayout, fogDepth).map(({ room: n, dx, dy, ring }) => {
+    const neighbors = prepared.rooms.map(({ room: n, ring, cells }) => {
       const people = nearby[n.id as RoomId] ?? [];
-      const spots = spreadActors(walkableCells(layout, n), people.length);
+      const spots = spreadActors(cells, people.length);
       const actors = people.map((o, i) => ({ id: o.id, cell: spots[i] ?? { x: 0, y: 0 }, width: 32, height: 48 }));
-      return { room: n, dx, dy, actors, id: n.id as RoomId, people, ring };
+      return { actors, id: n.id as RoomId, people, ring };
     });
-    const scene = placeScene(layout, [{ room: roomLayout, dx: 0, dy: 0, actors }, ...neighbors])
+    const scene = placeActors(prepared.scene, [actors, ...neighbors.map((n) => n.actors)])
       .filter((s) => !CAMERA_SLICES.has(s.slice) || (hasCamera && s.room === room))
       // A walker facing right is drawn mirrored; hit-testing mirrors with it.
       .map((s) => {
@@ -247,7 +255,7 @@ export function IsoRoom({
       for (const [ax, ay] of [[x + 1, y], [x - 1, y], [x, y + 1], [x, y - 1]] as const) ownCells.add(`${ax},${ay}`);
     }
     return { scene, sprites, neighborSprites, neighbors, box: bounds(sprites), ownCells };
-  }, [layout, roomLayout, fogDepth, cells, spots, walkersKey, occupantKey, corpseKey, nearbyKey, hasCamera]);
+  }, [prepared, spots, walkersKey, occupantKey, corpseKey, nearbyKey, hasCamera]);
 
   // Sprites draw at exactly one screen pixel per source pixel, so art stays crisp.
   // The camera always keeps you centred, even near a room's edges (the neighbours fill the space
@@ -325,14 +333,6 @@ export function IsoRoom({
       if (url) preloadImage(url);
     }
   }, [scene]);
-
-  // Every camera step lasts the animation's rhythm (6 ticks for both camera tiles).
-  const [cameraStep, setCameraStep] = useState(0);
-  useEffect(() => {
-    if (!hasCamera) return;
-    const id = setInterval(() => setCameraStep((n) => n + 1), 6 * TICK_MS);
-    return () => clearInterval(id);
-  }, [hasCamera]);
 
   const [hoverKey, setHoverKey] = useState<string | null>(null);
   const [hoverAt, setHoverAt] = useState({ x: 0, y: 0 });
@@ -432,16 +432,10 @@ export function IsoRoom({
   const hovered = sprites.find((s) => s.key === hoverKey);
   const hoveredNeighbor = neighbors.find((n) => `n:${n.id}` === hoverKey);
   const hoverTitle = hoveredNeighbor ? names.room(hoveredNeighbor.id) : hovered && interaction(hovered)?.title;
-  /** The camera swivels: its auto animation (Camera.xml) steps through the frames of its strip. */
-  const sx = (s: PlacedSprite) => {
-    const anim = CAMERA_SLICES.has(s.slice) ? layout.slices[s.slice]?.anims[0] : undefined;
-    const frame = anim?.frames[cameraStep % anim.frames.length];
-    return frame === undefined ? s.sx : s.sx + frame * s.width;
-  };
   const spriteStyle = (s: PlacedSprite) => ({
     ...place(s),
     backgroundImage: `url(${atlasUrl(layout, s.sheet)})`,
-    backgroundPosition: `${-sx(s)}px ${-s.sy}px`,
+    backgroundPosition: `${-s.sx}px ${-s.sy}px`,
     transform: s.flipX || s.flipY ? `scale(${s.flipX ? -1 : 1}, ${s.flipY ? -1 : 1})` : undefined,
   });
   const place = (s: PlacedSprite) => ({ left: s.left - box.minX, top: s.top - box.minY, width: s.width, height: s.height });
@@ -521,7 +515,13 @@ export function IsoRoom({
                 const eqClass = eq ? ` equipment${isSelected("equipment", eq.id) ? " selected" : ""}` : "";
                 const doorClass = door ? ` door${door.target === selectedDoor ? " selected" : ""}` : "";
                 const hoverClass = s.key === hoverKey ? " hover" : "";
-                return <div key={s.key} className={`iso-sprite${doorClass}${canGo ? " reachable" : ""}${eqClass}${hoverClass}`} style={spriteStyle(s)} />;
+                const className = `iso-sprite${doorClass}${canGo ? " reachable" : ""}${eqClass}${hoverClass}`;
+                const swivel = CAMERA_SLICES.has(s.slice) ? layout.slices[s.slice]?.anims[0]?.frames : undefined;
+                return swivel?.length ? (
+                  <SwivelSprite key={s.key} className={className} style={spriteStyle(s)} sprite={s} frames={swivel} />
+                ) : (
+                  <div key={s.key} className={className} style={spriteStyle(s)} />
+                );
               })}
             </div>
             {/* Every person, in paint order; only those a wall covers show (CSS). Always mounted, so the copy
@@ -582,6 +582,21 @@ export function IsoRoom({
       <EspFilter id={espFilter} />
     </section>
   );
+}
+
+/**
+ * The camera swivels: its auto animation (Camera.xml) steps through the frames of its strip, each step
+ * lasting the animation's rhythm (6 ticks for both camera tiles). It keeps its own clock, so each step
+ * redraws only this sprite, not the room.
+ */
+function SwivelSprite({ className, style, sprite, frames }: { className: string; style: CSSProperties; sprite: PlacedSprite; frames: readonly number[] }) {
+  const [step, setStep] = useState(0);
+  useEffect(() => {
+    const id = setInterval(() => setStep((n) => n + 1), 6 * TICK_MS);
+    return () => clearInterval(id);
+  }, []);
+  const sx = sprite.sx + (frames[step % frames.length] ?? 0) * sprite.width;
+  return <div className={className} style={{ ...style, backgroundPosition: `${-sx}px ${-sprite.sy}px` }} />;
 }
 
 /** The lying pose of the cast sheet (what a corpse is drawn with), for someone in bed. */
