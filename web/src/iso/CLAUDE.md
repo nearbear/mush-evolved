@@ -23,7 +23,8 @@ Loaded when working on the isometric view. The UI rules in `web/CLAUDE.md` still
   and the back strip up-left, mirrored for the other two. Entering a room you stand in front of the
   door you came through (`doorSpot`) and don't move. Purely cosmetic: actions and moves go to the
   server at once, mid-walk or not; you sit on a chair only once you reach it. Each cell change
-  re-runs `placeScene` (about 7 ms, 21 ms with whole-ship fog).
+  re-runs `placeScene` (about 7 ms, 21 ms with whole-ship fog). With the instant actions cheat on,
+  you teleport instead (`teleport`: your walks jump, and leaving a room switches at once); others still walk.
 - Acting walks you there (`useActingOn.ts`): when an action on equipment, a person, or a body on the
   floor begins, you walk to the equipment's standing spot or the cell before the person or body; a
   move walks you to the door (a move takes `durationMs` like any action, and the room changes at its end).

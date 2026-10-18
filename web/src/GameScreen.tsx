@@ -184,6 +184,7 @@ export function GameScreen({ ticket, onLeave }: { ticket: SeatTicket; onLeave: (
                 selected={target}
                 selectedDoor={peekDoor}
                 actingOn={actingOn}
+                teleport={you.cheats.includes("instantActions")}
                 onMove={move}
                 onSelect={select}
                 onClear={() => select(null)}

@@ -105,6 +105,7 @@ export function IsoRoom({
   selected,
   selectedDoor,
   actingOn,
+  teleport,
   leavingTo,
   onLeft,
   onMove,
@@ -131,6 +132,8 @@ export function IsoRoom({
   selectedDoor: RoomId | null;
   /** What your latest action is on: you walk up to it when this changes (useActingOn). */
   actingOn: ActingOn | null;
+  /** The instant actions cheat is on: you jump wherever you'd walk (others still walk). */
+  teleport: boolean;
   /** You've already moved there: walk to the door to it, then `onLeft` (LeavingIsoRoom shows the next room). */
   leavingTo: RoomId | null;
   onLeft: () => void;
@@ -175,7 +178,7 @@ export function IsoRoom({
   );
   // Where the camera sits as rendered; the walkers shift it while you walk, so it stays on you.
   const camera = useRef({ x: 0, y: 0, follow: me?.id });
-  const { at: walkers, apply: applyWalkers, offsetOf } = useWalkers(room, cells, targets, worldRef, camera);
+  const { at: walkers, apply: applyWalkers, offsetOf } = useWalkers(room, cells, targets, worldRef, camera, teleport ? me?.id : undefined);
   const myWalker = me && walkers.get(me.id);
   // Walking out: done once you stand at the door (straight away if there's no door to go through).
   const outside = !!leavingTo && (!exitCell || !myWalker || (!myWalker.moving && myWalker.cell.x === exitCell.x && myWalker.cell.y === exitCell.y));

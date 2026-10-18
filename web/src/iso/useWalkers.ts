@@ -30,7 +30,7 @@ export interface Walker {
 }
 
 /** Walking speed, in cells per second. */
-export const CELLS_PER_SECOND = 4;
+export const CELLS_PER_SECOND = 6;
 
 const STANDING: Facing = { strip: "face", flip: false };
 
@@ -58,7 +58,8 @@ const cellOf = (p: Cell) => ({ x: Math.round(p.x), y: Math.round(p.y) });
 
 /**
  * Walkers in `room`, by id: everyone in `targets` moves to their target cell; anyone new is drawn
- * there straight away. A target that can't be reached on foot is jumped to. `world` is the element
+ * there straight away. A target that can't be reached on foot is jumped to, and so is every target of
+ * `teleport` (the instant actions cheat: you jump, as before walking). `world` is the element
  * holding the `data-walker` elements and taking the camera transform; `camera` is that transform as
  * React last rendered it, with whose walker it follows. Call `apply` after every render so the
  * pixel shifts are put back on whatever React rewrote.
@@ -69,6 +70,7 @@ export function useWalkers(
   targets: ReadonlyMap<string, Cell>,
   world: RefObject<HTMLElement | null>,
   camera: RefObject<{ x: number; y: number; follow: string | undefined }>,
+  teleport?: string,
 ) {
   const motions = useRef(new Map<string, Motion>());
   const motionRoom = useRef(room);
@@ -163,7 +165,7 @@ export function useWalkers(
       }
       const end = m.route.at(-1) ?? m.pos;
       if (same(end, target)) continue;
-      const path = walkPath(cells, cellOf(m.pos), target);
+      const path = id === teleport ? null : walkPath(cells, cellOf(m.pos), target);
       if (path) m.route = path.slice(1);
       else {
         m.pos = target;
@@ -172,7 +174,7 @@ export function useWalkers(
     }
     rerender((n) => n + 1);
     loop();
-  }, [room, cells, targetsKey, loop]);
+  }, [room, cells, targetsKey, loop, teleport]);
 
   return { at, apply, offsetOf };
 }
