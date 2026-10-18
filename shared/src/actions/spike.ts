@@ -10,11 +10,11 @@ export type SpikeActionData = { type: "spike"; target: string };
  * living human in their room by 1 contamination (reaching capacity converts
  * them, see `infection.ts`). Always succeeds. Covert (decided 2026-10-17): only a
  * camera in the room reveals it, to everyone including the victim; bystanders and the
- * victim are not told otherwise. Contamination stays hidden from everyone.
+ * victim are not told otherwise. Contamination stays hidden from everyone. Aggressive (owner, 2026-10-18).
  */
 export class SpikeAction extends Action<SpikeActionData> {
   override visibility: ActionVisibility = "covert";
-  override tags: readonly ActionTag[] = ["spore"];
+  override tags: readonly ActionTag[] = ["spore", "aggressive"];
 
   constructor() {
     super("spike");

@@ -133,9 +133,9 @@ describe("spiking", () => {
 
 describe("spore tags", () => {
   it("tags spiking as a spore action, but not extracting a spore (owner, 2026-10-18)", () => {
-    expect(ACTIONS.spike.tags).toEqual(["spore"]);
+    expect(ACTIONS.spike.tags).toEqual(["spore", "aggressive"]);
     expect(ACTIONS.extract_spore.tags).toEqual([]);
-    expect(option(ship(), "p0", { type: "spike" })?.tags).toEqual(["spore"]);
+    expect(option(ship(), "p0", { type: "spike" })?.tags).toEqual(["spore", "aggressive"]);
   });
 
   it("never reaches a human's view, even with a Mush in the room", () => {
