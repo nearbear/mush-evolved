@@ -63,7 +63,9 @@ export function PeekBar({
           {labelFor(u.action, u.cost, u.chance)}
         </DisabledActionButton>
       ))}
-      <button onClick={onMore}>More</button>
+      <button onClick={onMore} aria-label={t("peek.more")}>
+        …
+      </button>
     </Bar>
   );
 }

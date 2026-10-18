@@ -13,11 +13,10 @@
   background: rgb(0 0 0 / 0.3);
   border-radius: 4px;
 }
-.inspect-item-icon {
-  display: block;
-  width: 96px;
-  height: 96px;
-  object-fit: contain;
+/* The item face (see .item-face) at inspect size. */
+.inspect-item {
+  --tile: 96px;
+  width: var(--tile);
   margin: 0.75rem auto 0.5rem;
 }
 .inspect-art {
@@ -243,4 +242,26 @@
 }
 .status-card {
   max-width: min(16rem, calc(100vw - 2rem));
+}
+
+/* Character name chip along the portrait's bottom edge, like the nameplate's stat chips but larger. */
+.inspect-figure-name {
+  position: absolute;
+  left: 50%;
+  /* The art's 0.5rem bottom margin plus the skill slots' 0.3rem inset from the art's edge. */
+  bottom: 0.8rem;
+  transform: translateX(-50%);
+  box-sizing: border-box;
+  max-width: calc(100% - 0.6rem);
+  padding: 0 0.7rem;
+  border-radius: 999px;
+  background: rgb(10 20 45 / 0.8);
+  border: 1px solid rgb(255 255 255 / 0.35);
+  color: #fff;
+  font-size: 0.95rem;
+  font-weight: bold;
+  line-height: 1.7rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }

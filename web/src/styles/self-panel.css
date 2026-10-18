@@ -129,7 +129,4 @@
     grid-template-rows: repeat(3, var(--tile));
     overflow: visible;
   }
-  .self-cards .item-grid[data-compact] .item-label {
-    font-size: 0.65rem;
-  }
 }

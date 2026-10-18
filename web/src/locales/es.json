@@ -2,11 +2,15 @@
   "menu": {
     "open": "Menú"
   },
+  "peek": {
+    "more": "Más"
+  },
   "stat": {
     "ap": "PA",
     "mp": "PM",
     "hp": "PV",
     "morale": "Moral",
+    "dayCycle": "Día {{day}}, ciclo {{cycle}}",
     "chip": "{{label}}: {{value}} de {{max}}"
   },
   "settings": {

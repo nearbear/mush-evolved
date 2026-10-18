@@ -8,6 +8,7 @@ import { useEffect, useRef, useState } from "react";
 import { useNames } from "../i18n/names.ts";
 import type { Action, ItemView, PlayerView, Target } from "@mush2/shared";
 import { EMPTY_SLOT_TILE } from "../art/assets.ts";
+import { ItemFace } from "./ItemFace.tsx";
 import { ItemIcon } from "./ItemIcon.tsx";
 import { sameTarget } from "./targets.ts";
 
@@ -106,8 +107,9 @@ export function InventoryPanel({
             setOver(null);
           }}
         >
-          <ItemIcon className="item-icon" item={item} view={view} />
-          <span className="item-label">{names.item(item.type, item.builds)}</span>
+          <ItemFace label={names.item(item.type, item.builds)}>
+            <ItemIcon className="item-icon" item={item} view={view} />
+          </ItemFace>
         </button>
         {isSelected && legal(type, item) && (
           <button className="item-action" onClick={() => onAction({ type, item: item.id })}>
@@ -139,8 +141,9 @@ export function InventoryPanel({
           {Array.from({ length: empty }, (_, i) => (
             <li key={`empty-${i}`} className="item-slot">
               <span className="item-tile empty">
-                <img className="item-icon" src={EMPTY_SLOT_TILE} alt="" />
-                <span className="item-label">Empty slot</span>
+                <ItemFace label="Empty slot">
+                  <img className="item-icon" src={EMPTY_SLOT_TILE} alt="" />
+                </ItemFace>
               </span>
             </li>
           ))}

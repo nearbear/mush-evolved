@@ -52,6 +52,7 @@ function StatChip({ stat, value, max, icon, big = false }: { stat: "ap" | "mp" |
 
 /** `compact` swaps the pip bars for chips under the portrait (the phone top bar). */
 export function PlayerSummary({ view, compact = false }: { view: PlayerView; compact?: boolean }) {
+  const { t } = useTranslation();
   const { you } = view;
   const character = CHARACTERS.find((c) => c.id === you.character);
   return (
@@ -61,7 +62,7 @@ export function PlayerSummary({ view, compact = false }: { view: PlayerView; com
         <div className="who">
           <strong>{character?.name ?? you.name}</strong>
           {/* The phone layout shows the cycle here instead of on its own, abbreviated. */}
-          <span className="sub cycle-under-name" aria-label={`Day ${view.day}, cycle ${view.cycleOfDay}`}>
+          <span className="sub cycle-under-name" aria-label={t("stat.dayCycle", { day: view.day, cycle: view.cycleOfDay })}>
             D{view.day}C{view.cycleOfDay}
           </span>
         </div>
@@ -78,12 +79,12 @@ export function PlayerSummary({ view, compact = false }: { view: PlayerView; com
       {!compact && (
       <div className="stats">
         <div className="stat-stack">
-          <PipBar label="AP" value={you.ap} max={view.maxAp} pip={AP_PIP} />
-          <PipBar label="MP" value={you.mp} max={view.movement.mpCap} pip={MP_PIP} />
+          <PipBar label={t("stat.ap")} value={you.ap} max={view.maxAp} pip={AP_PIP} />
+          <PipBar label={t("stat.mp")} value={you.mp} max={view.movement.mpCap} pip={MP_PIP} />
         </div>
         <div className="stat-stack">
-          <PipBar label="HP" value={you.hp} max={view.maxHp} pip={HP_PIP} thin />
-          <PipBar label="Morale" value={you.morale} max={view.maxMorale} pip={MORALE_PIP} thin />
+          <PipBar label={t("stat.hp")} value={you.hp} max={view.maxHp} pip={HP_PIP} thin />
+          <PipBar label={t("stat.morale")} value={you.morale} max={view.maxMorale} pip={MORALE_PIP} thin />
         </div>
       </div>
       )}

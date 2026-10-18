@@ -6,6 +6,7 @@ import { useNames } from "../i18n/names.ts";
 import type { ReactNode } from "react";
 import { actionVisibility, CHARACTERS, ITEM_TYPES, type Action, type BotKind, type OtherPlayerView, type PlayerView, type Target } from "@mush2/shared";
 import { characterImage, portrait } from "../art/assets.ts";
+import { ItemFace } from "./ItemFace.tsx";
 import { ItemIcon } from "./ItemIcon.tsx";
 import { ActionLabel } from "./ActionLabel.tsx";
 import { SkillSlots } from "./SkillSlots.tsx";
@@ -13,9 +14,6 @@ import { ItemAttrIcons } from "./ItemAttrIcons.tsx";
 import { StatusIcons } from "./StatusIcons.tsx";
 import { DisabledActionButton } from "./ActionButton.tsx";
 import { actionLabelKey, actionsOn, chanceOf, costOf, resolveTarget, unaffordableOn, type Resolved } from "./targets.ts";
-
-/** Developer-facing, so deliberately not translated (like the "AI" tag it extends). */
-const BOT_KIND_LABELS: Record<BotKind, string> = { wander: "wander", logParrot: "log parrot" };
 
 export function InspectPanel({
   view,
@@ -60,15 +58,6 @@ export function InspectPanel({
   );
 }
 
-/** Shows the bond between you and this person, if any. Both directions come from the view; nothing is computed here. */
-function BondTag({ view, id }: { view: PlayerView; id: string }) {
-  const { t } = useTranslation();
-  const to = view.bonds.to.includes(id);
-  const from = view.bonds.from.includes(id);
-  if (!to && !from) return null;
-  return <span className="tag">{t(to && from ? "bond.both" : to ? "bond.toThem" : "bond.fromThem")}</span>;
-}
-
 function Details({ view, resolved, onAction }: { view: PlayerView; resolved: Resolved; onAction: (action: Action) => void }) {
   const { t } = useTranslation();
   const names = useNames();
@@ -86,20 +75,15 @@ function Details({ view, resolved, onAction }: { view: PlayerView; resolved: Res
             ) : (
               <img className="inspect-portrait" src={portrait(person.character)} alt="" />
             )}
+            {character && <span className="inspect-figure-name">{character.name}</span>}
             <SkillSlots view={view} skills={person.skills} isYou={isYou} onAction={onAction} />
           </div>
           <div className="inspect-name">
-            <strong>{person.name}</strong>
-            {person.isBot && <span className="tag">AI</span>}
-            {person.botKind && <span className="tag">{BOT_KIND_LABELS[person.botKind]}</span>}
-            {person.id === view.you.id && <span className="tag">you</span>}
-            <BondTag view={view} id={person.id} />
             {person.id === view.you.id ? (
               <StatusIcons statuses={view.statuses} />
             ) : (
               <StatusIcons statuses={(person as OtherPlayerView).statuses} contamination={(person as OtherPlayerView).contamination} />
             )}
-            {character && <div className="sub">{character.name}</div>}
           </div>
         </>
       );
@@ -114,11 +98,13 @@ function Details({ view, resolved, onAction }: { view: PlayerView; resolved: Res
     case "item":
       return (
         <>
-          <ItemIcon className="inspect-portrait inspect-item-icon" item={resolved.item} view={view} />
+          <div className="inspect-item">
+            <ItemFace label={names.item(resolved.item.type, resolved.item.builds)}>
+              <ItemIcon className="item-icon" item={resolved.item} view={view} />
+            </ItemFace>
+          </div>
           <div className="inspect-name">
-            <strong>{names.item(resolved.item.type, resolved.item.builds)}</strong>
             <ItemAttrIcons heavy={ITEM_TYPES[resolved.item.type]?.heavy === true} mpPenalty={view.config.heavyMpPenalty} />
-            <div className="sub">{resolved.carried ? "In your inventory" : `In ${names.room(view.you.room)}`}</div>
           </div>
         </>
       );
