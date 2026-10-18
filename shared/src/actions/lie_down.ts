@@ -7,7 +7,8 @@ export type GetUpActionData = { type: "get_up" };
 
 /**
  * Lie down in a bed (confirmed 2026-10-17): free, and adds the `lying_down` modifier (+1 AP per cycle). Any other
- * timed action removes it (performAction), as does get_up. Moving to another room is one of those actions.
+ * timed action removes it (performAction), as does get_up. `get_up` exists so you don't leave bed by accident (owner, 2026-10-18).
+ * Which bed you lie in (`lyingIn`) is public to the room (owner, 2026-10-18).
  */
 export class LieDownAction extends Action<LieDownActionData> {
   constructor() {
@@ -29,8 +30,9 @@ export class LieDownAction extends Action<LieDownActionData> {
     return { ap: state.config.lieDown.cost.ap, mp: 0 };
   }
 
-  override apply(_state: GameState, player: PlayerState): void {
+  override apply(_state: GameState, player: PlayerState, target: LieDownActionData): void {
     player.modifiers.push("lying_down");
+    player.lyingIn = target.equipment;
   }
 }
 

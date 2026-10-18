@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { CHARACTERS } from "../src/characters.ts";
 import { DEFAULT_CONFIG } from "../src/config.ts";
 import { parseGameMessage } from "../src/protocol.ts";
-import { applyAction, createGame } from "../src/rules.ts";
+import { applyAction, createGame, legalActions, viewFor } from "../src/rules.ts";
 import type { GameState, Seat } from "../src/types.ts";
 
 const seats: Seat[] = Array.from({ length: 4 }, (_, i) => ({ id: `p${i}`, name: `Player ${i}`, isBot: false, character: CHARACTERS[i]!.id }));
@@ -50,6 +50,27 @@ describe("lie down", () => {
     const lying = ok(applyAction(s, "p1", { type: "lie_down", equipment: bed(s) }));
     expect(ok(applyAction(lying, "p1", { type: "ready" })).players[1]!.modifiers).toContain("lying_down");
     expect(ok(applyAction(lying, "p1", { type: "examine", target: { kind: "player", id: "p0" } })).players[1]!.modifiers).not.toContain("lying_down");
+  });
+
+  it("moving to another room gets you up", () => {
+    const s = ship();
+    const to = s.config.rooms.BEDROOM_A![0]!;
+    const lying = ok(applyAction(s, "p1", { type: "lie_down", equipment: bed(s) }));
+    const moved = ok(applyAction(lying, "p1", { type: "move", to }));
+    expect(moved.players[1]!.modifiers).not.toContain("lying_down");
+    expect(moved.players[1]!.lyingIn).toBeUndefined();
+  });
+
+  it("shows which bed you lie in to the room, and to nobody elsewhere", () => {
+    const s = ship();
+    const lying = ok(applyAction(s, "p1", { type: "lie_down", equipment: bed(s) }));
+    expect(viewFor(lying, "p2").players.find((p) => p.id === "p1")!.lying).toBe(bed(s));
+    expect(viewFor(lying, "p1").you.lyingIn).toBe(bed(s));
+    lying.players[2]!.room = "CORRIDOR_C";
+    expect(viewFor(lying, "p2").players.find((p) => p.id === "p1")!.lying).toBeUndefined();
+    const up = ok(applyAction(lying, "p1", { type: "get_up" }));
+    expect(viewFor(up, "p0").players.find((p) => p.id === "p1")!.lying).toBeUndefined();
+    expect(viewFor(up, "p1").you.lyingIn).toBeUndefined();
   });
 
   it("parses from client messages", () => {

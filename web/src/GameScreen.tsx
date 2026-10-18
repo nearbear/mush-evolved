@@ -107,7 +107,7 @@ export function GameScreen({ ticket, onLeave }: { ticket: SeatTicket; onLeave: (
   if (!view) return <main className="connecting loading">Connecting…</main>;
   const { you } = view;
   const reachable = new Set(view.legalActions.flatMap((a) => (a.type === "move" ? [a.to] : [])));
-  const occupant = (p: { id: string; isBot: boolean; character: CharacterId; statuses: string[]; busy?: Bar }): Occupant => {
+  const occupant = (p: { id: string; isBot: boolean; character: CharacterId; statuses: string[]; busy?: Bar; lying?: string }): Occupant => {
     const busy = p.id === you.id && you.current ? { bar: you.current, label: names.action(you.current.action.type) } : p.busy && { bar: p.busy };
     return {
       id: p.id,
@@ -115,6 +115,7 @@ export function GameScreen({ ticket, onLeave }: { ticket: SeatTicket; onLeave: (
       isBot: p.isBot,
       character: p.character,
       you: p.id === you.id,
+      ...((p.id === you.id ? you.lyingIn : p.lying) && { lying: p.id === you.id ? you.lyingIn : p.lying }),
       statuses: p.id === you.id ? view.statuses : p.statuses,
       ...(busy && { busy }),
     };

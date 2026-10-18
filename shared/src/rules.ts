@@ -155,7 +155,10 @@ export function performAction(next: GameState, actor: PlayerState, action: Actio
   // Odds are read before the cost is paid, as the button showed them.
   const chance = def.chance?.(next, actor, action) ?? 1;
   // Any other character action gets you out of bed (owner, 2026-10-17); ending your cycle is not one.
-  if (def.timed && action.type !== "lie_down") actor.modifiers = actor.modifiers.filter((m) => m !== "lying_down");
+  if (def.timed && action.type !== "lie_down") {
+    actor.modifiers = actor.modifiers.filter((m) => m !== "lying_down");
+    delete actor.lyingIn;
+  }
   actor.ap -= cost.ap;
   actor.mp -= cost.mp;
   if (chance < 1) {
@@ -294,6 +297,8 @@ export function viewFor(state: GameState, playerId: PlayerId): PlayerView {
         statuses: here ? publicStatusesOf(state, o) : [],
         // Skills are public, but like statuses only to people who can see the player.
         skills: here ? [...o.skills] : [],
+        // Who is in bed, and which bed, is visible to the room (owner, 2026-10-18).
+        ...(here && o.lyingIn ? { lying: o.lyingIn } : {}),
         // Mush see a contaminated human's level, like a status, on people in their room.
         ...(contamination !== undefined ? { contamination } : {}),
         // A busy bar, never the action: only when its log entry could reach you.

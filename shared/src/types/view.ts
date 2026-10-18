@@ -34,6 +34,8 @@ export interface OtherPlayerView {
   ready: boolean;
   /** Ids of the statuses everyone can see on this person (public ones only; see statuses.ts). */
   statuses: string[];
+  /** The bed (equipment id) they are lying in. Public to anyone in your room (empty for people elsewhere). */
+  lying?: string;
   /** Skills they have chosen. Public to anyone in your room (empty for people elsewhere). */
   skills: string[];
   /** Their contamination, shown as a status. Only when you are Mush, they are a contaminated human, and they are in your room. */

@@ -52,6 +52,8 @@ export interface Actor {
   /** Sprite frame size; the original drew characters at offset (2, -12). */
   width: number;
   height: number;
+  /** Lies on the furniture it overlaps (a bed), so it is drawn over it. */
+  onTop?: boolean;
 }
 
 /** Draw offset the original client used for 32x48 crew sprites (Data.hx regChar). */
@@ -78,6 +80,8 @@ interface Sortable {
    * or door, or `solid` (furniture, props, people).
    */
   shape: "flat" | "wall" | "solid";
+  /** An actor lying on whatever overlaps it (see `Actor.onTop`). */
+  onTop?: boolean;
 }
 
 /**
@@ -339,6 +343,7 @@ function sortables(
       scene,
       box: { x0: x, x1: x, y0: y, y1: y },
       shape: "solid",
+      ...(a.onTop && { onTop: true }),
     });
   }
   return placed;
@@ -422,6 +427,9 @@ function compare(a: PlacedSprite & Sortable, b: PlacedSprite & Sortable): number
   const standing = (a.shape === "wall" && b.shape === "solid") || (b.shape === "wall" && a.shape === "solid");
   if (a.scene === b.scene && !standing) {
     if (a.pass !== PASS.entity || b.pass !== PASS.entity) return baseOrder(a, b);
+    // Someone lying in a bed is over the bed (which overlaps their cell), not behind it.
+    const lyingA = a.onTop && b.kind !== "actor" && b.shape === "solid", lyingB = b.onTop && a.kind !== "actor" && a.shape === "solid";
+    if ((lyingA || lyingB) && boxesOverlap(a, b)) return lyingA ? 1 : -1;
     const flatA = a.shape === "flat", flatB = b.shape === "flat";
     if (flatA !== flatB && (a.kind === "actor" || b.kind === "actor" || boxesOverlap(a, b))) return flatA ? -1 : 1;
     return behind(a, b) || baseOrder(a, b);

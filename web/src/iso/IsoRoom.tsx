@@ -21,7 +21,7 @@
 import { useEffect, useId, useLayoutEffect, useMemo, useRef, useState, type CSSProperties, type MouseEvent, type PointerEvent } from "react";
 import { useTranslation } from "react-i18next";
 import { createPortal } from "react-dom";
-import { CAMERA_EQUIPMENT, CORPSE_ITEM, type CharacterId, type EquipmentView, type ItemId, type RoomId, type ShipLayout, type Target } from "@mush2/shared";
+import { CAMERA_EQUIPMENT, CORPSE_ITEM, placedEquipment, type CharacterId, type EquipmentView, type ItemId, type RoomId, type ShipLayout, type Target } from "@mush2/shared";
 import { sameTarget } from "../hud/targets.ts";
 import { lyingFrame, spriteStrip, sittingFrame } from "../art/assets.ts";
 import { CrewSprite } from "../scene/CrewSprite.tsx";
@@ -55,6 +55,8 @@ export interface Occupant {
   isBot: boolean;
   character: CharacterId | undefined;
   you: boolean;
+  /** The bed (equipment id) they lie in, drawn in the lying pose like a corpse. The view gives it for you and for people in your room. */
+  lying?: string;
   /** Public statuses, shown over the head (the view decides which; see statuses.ts). */
   statuses: readonly string[];
   /** The bar of the timed action they are busy with, when the view shows it, and your own action's name. */
@@ -154,7 +156,7 @@ export function IsoRoom({
   // The layout has a camera tile in every room. It is drawn only here, and only once a camera is installed
   // (other rooms' cameras are hidden information, so they are never drawn).
   const hasCamera = equipment.some((e) => e.type === CAMERA_EQUIPMENT);
-  const occupantKey = occupants.map((o) => o.id).join(",");
+  const occupantKey = occupants.map((o) => `${o.id}${o.lying ?? ""}`).join(",");
   const corpseKey = corpses.map((c) => c.id).join(",");
   const viewportRef = useRef<HTMLDivElement>(null);
   const worldRef = useRef<HTMLDivElement>(null);
@@ -173,8 +175,17 @@ export function IsoRoom({
   const me = occupants.find((o) => o.you);
   const entryCell = roomLayout && visit.current.from ? doorSpot(layout, roomLayout, visit.current.from, cells) : undefined;
   const exitCell = roomLayout && leavingTo ? doorSpot(layout, roomLayout, leavingTo, cells) : undefined;
+  // Someone in bed lies in the middle of the bed's footprint, mirrored to run along the bed.
+  const beds = new Map<string, { cell: { x: number; y: number }; flip: boolean }>();
+  for (const o of occupants) {
+    const tile = o.lying && roomLayout ? placedEquipment(roomLayout).find((e) => e.id === o.lying)?.tile : undefined;
+    const t = tile === undefined ? undefined : roomLayout?.tiles[tile];
+    if (!t) continue;
+    const [w, h] = layout.slices[t.slice]?.footprint ?? [1, 1];
+    beds.set(o.id, { cell: { x: t.x - Math.floor((w - 1) / 2), y: t.y - Math.floor((h - 1) / 2) }, flip: w > h });
+  }
   const targets = new Map(
-    occupants.map((o, i) => [o.id, (o.you && (exitCell ?? here?.cell ?? entryCell)) || spots[i] || { x: 0, y: 0 }]),
+    occupants.map((o, i) => [o.id, beds.get(o.id)?.cell ?? ((o.you && (exitCell ?? here?.cell ?? entryCell)) || spots[i] || { x: 0, y: 0 })]),
   );
   // Where the camera sits as rendered; the walkers shift it while you walk, so it stays on you.
   const camera = useRef({ x: 0, y: 0, follow: me?.id });
@@ -201,8 +212,7 @@ export function IsoRoom({
       ...occupants.map((o, i) => ({
         id: o.id,
         cell: walkers.get(o.id)?.cell ?? spots[i] ?? { x: 0, y: 0 },
-        width: 32,
-        height: 48,
+        ...(o.lying ? { ...LYING_SIZE, onTop: true } : { width: 32, height: 48 }),
       })),
       // A corpse is placed like a person (so paint order and walls treat it the same) but drawn lying down.
       ...corpses.map((c, i) => ({ id: `${CORPSE_PREFIX}${c.id}`, cell: spots[occupants.length + i] ?? { x: 0, y: 0 }, ...LYING_SIZE })),
@@ -216,7 +226,11 @@ export function IsoRoom({
     const scene = placeScene(layout, [{ room: roomLayout, dx: 0, dy: 0, actors }, ...neighbors])
       .filter((s) => !CAMERA_SLICES.has(s.slice) || (hasCamera && s.room === room))
       // A walker facing right is drawn mirrored; hit-testing mirrors with it.
-      .map((s) => (s.kind === "actor" && s.room === room && walkers.get(s.key.slice(2))?.facing.flip ? { ...s, flipX: true } : s));
+      .map((s) => {
+        if (s.kind !== "actor" || s.room !== room) return s;
+        const bed = beds.get(s.key.slice(2));
+        return (bed ? bed.flip : walkers.get(s.key.slice(2))?.facing.flip) ? { ...s, flipX: true } : s;
+      });
     // Both in paint order, for hit-testing this room before its neighbours.
     const sprites = scene.filter((s) => s.room === room);
     const neighborSprites = scene.filter((s) => s.room !== room);
@@ -290,6 +304,8 @@ export function IsoRoom({
       return { url: lying?.url, frame: lying ?? { sx: 0, sy: 0, ...LYING_SIZE }, keyed: false };
     }
     const o = byId.get(s.key.slice(2));
+    const lying = o?.lying ? lyingFrame(o.character) : undefined;
+    if (lying) return { url: lying.url, frame: lying, keyed: false };
     const sitting = o?.you && mySeat ? sittingFrame(o.character, mySeat.facing) : undefined;
     if (sitting) return { url: sitting.url, frame: sitting, keyed: false };
     const strip = (o && s.room === room && walkers.get(o.id)?.facing.strip) || "face";
@@ -380,14 +396,14 @@ export function IsoRoom({
     else if (hit?.kind === "item") onSelect({ kind: "item", id: hit.item });
     else if (hit?.kind === "equipment") {
       onSelect({ kind: "equipment", id: hit.equipment.id });
-      // Step up to it too (cosmetic, like walking on bare floor).
+      // Step up to it too (cosmetic, like walking on bare floor), unless you're in bed.
       const cell = standSpot(layout, roomLayout, Number(hit.sprite.key.slice(1)), cells);
-      if (cell) setWalk({ visit: visit.current.n, cell });
+      if (cell && !me?.lying) setWalk({ visit: visit.current.n, cell });
     }
     else if (hit?.kind === "chair") {
       // Sit down (cosmetic, like walking): you stand on the chair's cell in the sitting pose.
       onClear();
-      setWalk({ visit: visit.current.n, cell: hit.cell, seat: seatFor(hit.dir) });
+      if (!me?.lying) setWalk({ visit: visit.current.n, cell: hit.cell, seat: seatFor(hit.dir) });
     }
     else if (hit?.kind === "door") onDoorTap(hit.to);
     else {
@@ -395,7 +411,7 @@ export function IsoRoom({
       onClear();
       const at = pointIn(e);
       const cell = cellAtPoint(cells, at.x, at.y);
-      if (cell) setWalk({ visit: visit.current.n, cell });
+      if (cell && !me?.lying) setWalk({ visit: visit.current.n, cell });
     }
   };
   const onDoubleClick = (e: MouseEvent<HTMLDivElement>) => {
@@ -494,7 +510,7 @@ export function IsoRoom({
                       style={place(s)}
                       data-walker={o.id}
                     >
-                      {o.you && mySeat ? <SeatedSprite character={o.character} seat={mySeat} /> : <CrewSprite character={o.character} facing={w?.facing} walking={w?.moving} />}
+                      {o.lying ? <LyingSprite character={o.character} flip={beds.get(o.id)?.flip} /> : o.you && mySeat ? <SeatedSprite character={o.character} seat={mySeat} /> : <CrewSprite character={o.character} facing={w?.facing} walking={w?.moving} />}
                     </div>
                   );
                 }
@@ -521,7 +537,9 @@ export function IsoRoom({
                     style={{ ...place(s), filter: `url(#${espFilter})` }}
                     data-walker={w && o?.id}
                   >
-                    {o?.you && mySeat ? (
+                    {o?.lying ? (
+                      <LyingSprite character={o.character} flip={beds.get(o.id)?.flip} />
+                    ) : o?.you && mySeat ? (
                       <SeatedSprite character={o.character} seat={mySeat} />
                     ) : (
                       <CrewSprite character={o?.character} facing={w?.facing} walking={w?.moving} />
@@ -563,6 +581,12 @@ export function IsoRoom({
       <EspFilter id={espFilter} />
     </section>
   );
+}
+
+/** The lying pose of the cast sheet (what a corpse is drawn with), for someone in bed. */
+function LyingSprite({ character, flip }: { character: CharacterId | undefined; flip?: boolean }) {
+  const frame = lyingFrame(character);
+  return <div className="lying-sprite" style={{ backgroundImage: frame && `url(${frame.url})`, backgroundPosition: frame && `${-frame.sx}px ${-frame.sy}px`, transform: flip ? "scaleX(-1)" : undefined }} />;
 }
 
 /** One sitting frame of the cast sheet, drawn at 1x like the lying corpse. */

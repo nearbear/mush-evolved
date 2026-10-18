@@ -93,6 +93,15 @@
   filter: drop-shadow(0 3px 2px rgb(0 0 0 / 0.6));
   animation: walk-frames 0.5s steps(6) 2;
 }
+/* The lying frame of the cast sheet (a corpse's pose), at 1x. */
+.lying-sprite {
+  width: 50px;
+  height: 48px;
+  background-repeat: no-repeat;
+  image-rendering: pixelated;
+  filter: drop-shadow(0 2px 1px rgb(0 0 0 / 0.6));
+}
+
 /* A sitting frame of the cast sheet, at 1x. */
 .seated-sprite {
   width: 32px;

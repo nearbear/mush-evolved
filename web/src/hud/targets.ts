@@ -79,6 +79,7 @@ function aimedAt(view: PlayerView, a: Action, target: Target): boolean {
     case "spike":
       return target.kind === "player" && a.target === target.id;
     case "extract_spore":
+    case "get_up":
       return target.kind === "player" && target.id === view.you.id;
     default:
       return false;
@@ -105,6 +106,7 @@ const ACTION_LABEL_KEYS = {
   punch: "actions.punch",
   spike: "actions.spike",
   extract_spore: "actions.extractSpore",
+  get_up: "actions.getUp",
 } as const;
 
 /** i18n key for the button text of an action aimed at a target (Inspect panel and peek bar). */

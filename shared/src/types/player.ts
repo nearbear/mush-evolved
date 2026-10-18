@@ -15,6 +15,8 @@ export interface PlayerState extends Seat {
   alpha: boolean;
   room: RoomId;
   ap: number;
+  /** The bed (equipment id) you are lying in, while you have the `lying_down` modifier. Public to your room (`OtherPlayerView.lying`). */
+  lyingIn?: string;
   /** Movement points. Start at 0; topped up by converting AP when moving. */
   mp: number;
   /** Health points. Private: only in your own view. Nothing changes them yet. */
