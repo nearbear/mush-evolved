@@ -19,7 +19,9 @@ import { logistics } from "./modifiers/logistics.ts";
 import { lying_down } from "./modifiers/lying_down.ts";
 import { medic } from "./modifiers/medic.ts";
 import { sturdy } from "./modifiers/sturdy.ts";
-import type { GameState, ItemState, MovementRules, PlayerState } from "./types.ts";
+import type { ActionCost } from "./actions.ts";
+import type { ActionTag } from "./actions/action.ts";
+import type { Action, GameState, ItemState, MovementRules, PlayerState } from "./types.ts";
 
 /** A numeric hook: takes the running value and returns the adjusted one. Must be pure. */
 type FoldHook = (value: number, player: Readonly<PlayerState>, state: Readonly<GameState>) => number;
@@ -40,7 +42,17 @@ type FoldHooks = Record<
   FoldHook
 >;
 
+/** What is being priced, for cost hooks. */
+export interface CostContext {
+  state: Readonly<GameState>;
+  actor: Readonly<PlayerState>;
+  action: Action;
+  tags: readonly ActionTag[];
+}
+
 export interface Modifier extends Partial<FoldHooks> {
+  /** Adjusts what one of the holder's own actions costs. Must be pure. */
+  actionCost?: (cost: ActionCost, ctx: CostContext) => ActionCost;
   /** Adjusts how a player's moves are paid for. Must be pure. */
   movement?: (rules: MovementRules, player: Readonly<PlayerState>) => MovementRules;
   /**
@@ -82,6 +94,21 @@ function fold(
     if (fn) value = fn(value, player, state);
   }
   return value;
+}
+
+/**
+ * What an action costs once modifiers have had their say: `base` (the action's own `getCost`) through the actor's
+ * `actionCost` hooks, in list order. `Action.cost` is the only caller.
+ */
+export function actionCost(base: ActionCost, ctx: CostContext, registry: ModifierRegistry = MODIFIERS): ActionCost {
+  let cost = { ...base };
+  for (const id of modifierIds(ctx.actor)) {
+    const hook = registry[id]?.actionCost;
+    if (hook) cost = hook(cost, ctx);
+  }
+  // Hooks can't make a price negative. A move's MP is a net change and can already be negative (a conversion
+  // gives more than the move spends), so the floor is 0 or the base, whichever is lower.
+  return { ap: Math.max(Math.min(0, base.ap), cost.ap), mp: Math.max(Math.min(0, base.mp), cost.mp) };
 }
 
 /** Runs every onActionFailed hook the player has. Mutates a state the caller already cloned. */

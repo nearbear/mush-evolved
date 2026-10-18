@@ -1,4 +1,5 @@
-import type { GameState, PlayerState } from "../types.ts";
+import { actionCost } from "../modifiers.ts";
+import type { Action as AnyAction, GameState, PlayerState } from "../types.ts";
 
 /** Others you could bond with, share with or hit: living, in your room, not yourself. */
 export const peopleHere = (state: Readonly<GameState>, p: Readonly<PlayerState>): PlayerState[] =>
@@ -42,11 +43,19 @@ export class Action<T extends { type: string }> {
 
   /**
    * What the action costs this player: the one place every cost is read (legality, paying, the view). Subclasses
-   * set the base price in `getCost`; anything that changes prices for everyone, like a room-wide surcharge on
-   * aggressive actions, belongs here so the price shown and the price checked can't disagree.
+   * set the base price in `getCost`; modifiers (`actionCost` in modifiers.ts) adjust it here, so the price shown
+   * and the price checked can't disagree.
    */
   cost(state: Readonly<GameState>, player: Readonly<PlayerState>, target: T): { ap: number; mp: number } {
-    return this.getCost(state, player, target);
+    // Every T is a member of the Action union; share.ts and transfer.ts are generic over the type name, so TS can't see it.
+    return actionCost(this.getCost(state, player, target), { state, actor: player, action: target as unknown as AnyAction, tags: this.tags });
+  }
+
+  /** How far modifiers move the price from `getCost` (can be negative). Queued actions compare it (queue.ts). */
+  adjustment(state: Readonly<GameState>, player: Readonly<PlayerState>, target: T): { ap: number; mp: number } {
+    const base = this.getCost(state, player, target);
+    const cost = this.cost(state, player, target);
+    return { ap: cost.ap - base.ap, mp: cost.mp - base.mp };
   }
 
   getCost(state: Readonly<GameState>, player: Readonly<PlayerState>, target: T): { ap: number; mp: number } {
