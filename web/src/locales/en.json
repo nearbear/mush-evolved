@@ -2,6 +2,14 @@
   "menu": {
     "open": "Menu"
   },
+  "shipResources": {
+    "title": "Ship resources",
+    "oxygen": "Oxygen",
+    "fuel": "Fuel",
+    "shields": "Shields",
+    "plasmaShield": "Plasma shield",
+    "alerts": "Alerts"
+  },
   "peek": {
     "more": "More"
   },

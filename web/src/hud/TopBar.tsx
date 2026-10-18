@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next";
 import { SETTINGS_ICON } from "../art/assets.ts";
 import { useMobile } from "../useMobile.ts";
 import { PlayerSummary } from "./PlayerSummary.tsx";
+import { ShipResources } from "./ShipResources.tsx";
 import { SettingsDialog } from "./SettingsDialog.tsx";
 
 export function TopBar({
@@ -46,6 +47,7 @@ export function TopBar({
       {showSummary && <PlayerSummary view={view} compact />}
       <span className="cycle">Day {view.day} · Cycle {view.cycleOfDay}</span>
       <span className="spacer" />
+      {!mobile && <ShipResources />}
       {mobile ? (
         // Phones: both actions live in a hamburger menu to save top bar space.
         <Menu.Root>

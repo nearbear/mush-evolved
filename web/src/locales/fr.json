@@ -2,6 +2,14 @@
   "menu": {
     "open": "Menu"
   },
+  "shipResources": {
+    "title": "Ressources du vaisseau",
+    "oxygen": "Oxygène",
+    "fuel": "Carburant",
+    "shields": "Boucliers",
+    "plasmaShield": "Bouclier plasma",
+    "alerts": "Alertes"
+  },
   "peek": {
     "more": "Plus"
   },

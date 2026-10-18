@@ -2,6 +2,14 @@
   "menu": {
     "open": "Menú"
   },
+  "shipResources": {
+    "title": "Recursos de la nave",
+    "oxygen": "Oxígeno",
+    "fuel": "Combustible",
+    "shields": "Escudos",
+    "plasmaShield": "Escudo de plasma",
+    "alerts": "Alertas"
+  },
   "peek": {
     "more": "Más"
   },

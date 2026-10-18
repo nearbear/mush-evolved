@@ -29,7 +29,8 @@
 /* Outlined cards: the nameplate, both stat stacks, and the extras card. The flat quote-box look (fill, 1px rim, soft shadow). */
 .nameplate,
 .stat-stack,
-.self-extras {
+.self-extras,
+.ship-resources {
   background: var(--panel-fill);
   border: 1px solid var(--panel-rim);
   border-radius: var(--panel-radius);
@@ -201,5 +202,26 @@
   flex: none;
   width: 16px;
   height: 16px;
+  image-rendering: pixelated;
+}
+
+/* Desktop ship resources card (oxygen, fuel, shields, plasma shield, alerts). Hidden on phones by TopBar. */
+.ship-resources {
+  display: flex;
+  gap: 0.9rem;
+  margin: 0;
+  padding: 0.35rem 0.75rem;
+  list-style: none;
+}
+.ship-resource {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  cursor: help;
+  font-size: 0.8rem;
+  color: #fff;
+}
+.ship-resource img {
+  display: block;
   image-rendering: pixelated;
 }
