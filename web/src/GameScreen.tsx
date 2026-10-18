@@ -1,9 +1,9 @@
 // Thin view layer: renders a PlayerView and emits intents. No game logic here;
-// the server decides what is legal and sends it in view.legalActions.
+// the server decides what is legal and sends it in view.actions.
 
 import { useEffect, useRef, useState } from "react";
 import type PartySocket from "partysocket";
-import { CORPSE_ITEM, type Action, type ActopiCheat, type CharacterId, type Cheat, type GameClientMessage, type GameServerMessage, type PlayerView, type RoleCheat, type RoomId, type Target } from "@mush2/shared";
+import { CORPSE_ITEM, legalIn, type Action, type ActopiCheat, type CharacterId, type Cheat, type GameClientMessage, type GameServerMessage, type PlayerView, type RoleCheat, type RoomId, type Target } from "@mush2/shared";
 import i18n from "i18next";
 import { ActionQueue } from "./hud/ActionQueue.tsx";
 import { BottomNav, type MobilePanel } from "./hud/BottomNav.tsx";
@@ -106,7 +106,7 @@ export function GameScreen({ ticket, onLeave }: { ticket: SeatTicket; onLeave: (
 
   if (!view) return <main className="connecting loading">Connecting…</main>;
   const { you } = view;
-  const reachable = new Set(view.legalActions.flatMap((a) => (a.type === "move" ? [a.to] : [])));
+  const reachable = new Set(legalIn(view).flatMap((a) => (a.type === "move" ? [a.to] : [])));
   const occupant = (p: { id: string; isBot: boolean; character: CharacterId; statuses: string[]; busy?: Bar; lying?: string }): Occupant => {
     const busy = p.id === you.id && you.current ? { bar: you.current, label: names.action(you.current.action.type) } : p.busy && { bar: p.busy };
     return {
@@ -149,7 +149,7 @@ export function GameScreen({ ticket, onLeave }: { ticket: SeatTicket; onLeave: (
       <TopBar
         view={view}
         showSummary={mobile}
-        canReady={view.legalActions.some((a) => a.type === "ready")}
+        canReady={legalIn(view).some((a) => a.type === "ready")}
         onReady={() => send({ type: "ready" })}
         onLeave={onLeave}
         cheatsAllowed={cheatsAllowed}

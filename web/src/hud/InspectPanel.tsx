@@ -4,7 +4,7 @@
 import { useTranslation } from "react-i18next";
 import { useNames } from "../i18n/names.ts";
 import type { ReactNode } from "react";
-import { actionVisibility, CHARACTERS, ITEM_TYPES, type Action, type BotKind, type EquipmentView, type OtherPlayerView, type PlayerView, type ShipLayout, type Target } from "@mush2/shared";
+import { actionVisibility, CHARACTERS, ITEM_TYPES, type Action, type ActionOption, type BotKind, type EquipmentView, type OtherPlayerView, type PlayerView, type ShipLayout, type Target } from "@mush2/shared";
 import { characterImage, portrait } from "../art/assets.ts";
 import { atlasUrl } from "../iso/shipLayout.ts";
 import { equipmentByTileKey } from "../iso/equipmentTiles.ts";
@@ -15,8 +15,8 @@ import { ActionLabel } from "./ActionLabel.tsx";
 import { SkillSlots } from "./SkillSlots.tsx";
 import { ItemAttrIcons } from "./ItemAttrIcons.tsx";
 import { StatusIcons } from "./StatusIcons.tsx";
-import { DisabledActionButton } from "./ActionButton.tsx";
-import { actionLabelKey, actionsOn, chanceOf, costOf, resolveTarget, unaffordableOn, type Resolved } from "./targets.ts";
+import { ActionButton } from "./ActionButton.tsx";
+import { actionLabelKey, optionsOn, resolveTarget, type Resolved } from "./targets.ts";
 
 export function InspectPanel({
   view,
@@ -32,13 +32,12 @@ export function InspectPanel({
   onAction: (action: Action) => void;
 }) {
   const { t } = useTranslation();
-  const labelFor = (a: Action, cost = costOf(view, a), chance = chanceOf(view, a)): ReactNode => {
-    const key = actionLabelKey(a);
-    return <ActionLabel text={key ? t(key) : a.type} cost={cost} chance={chance} visibility={actionVisibility(a.type)} />;
+  const labelFor = ({ action, cost, chance }: ActionOption): ReactNode => {
+    const key = actionLabelKey(action);
+    return <ActionLabel text={key ? t(key) : action.type} cost={cost} chance={chance} visibility={actionVisibility(action.type)} />;
   };
   const resolved = resolveTarget(view, target);
-  const actions = actionsOn(view, target);
-  const blocked = unaffordableOn(view, target);
+  const options = optionsOn(view, target);
 
   return (
     <aside className="panel inspect">
@@ -51,17 +50,12 @@ export function InspectPanel({
           <Details view={view} layout={layout} resolved={resolved} onAction={onAction} />
         </div>
       )}
-      {actions.length + blocked.length > 0 && (
+      {options.length > 0 && (
         <div className="inspect-actions">
-          {actions.map((a) => (
-            <button key={a.type} onClick={() => onAction(a)}>
-              {labelFor(a)}
-            </button>
-          ))}
-          {blocked.map((u) => (
-            <DisabledActionButton key={u.action.type} view={view} blocked={u}>
-              {labelFor(u.action, u.cost, u.chance)}
-            </DisabledActionButton>
+          {options.map((o) => (
+            <ActionButton key={o.action.type} view={view} option={o} onAction={onAction}>
+              {labelFor(o)}
+            </ActionButton>
           ))}
         </div>
       )}

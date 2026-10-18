@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { CHARACTERS } from "../src/characters.ts";
 import { DEFAULT_CONFIG } from "../src/config.ts";
 import { MODIFIERS } from "../src/modifiers.ts";
-import { applyAction, createGame, viewFor } from "../src/rules.ts";
+import { applyAction, createGame, legalIn, viewFor } from "../src/rules.ts";
 import type { Action, GameState, PlayerId, Seat } from "../src/types.ts";
 
 const seats: Seat[] = Array.from({ length: 4 }, (_, i) => ({ id: `p${i}`, name: `Player ${i}`, isBot: false, character: CHARACTERS[i]!.id }));
@@ -95,7 +95,7 @@ describe("full belly", () => {
     expect(viewFor(s, "p1").statuses).toContain("full_belly");
     const id = give(s, "p1", "coffee");
     expect(applyAction(s, "p1", { type: "consume", item: id }).ok).toBe(false);
-    expect(viewFor(s, "p1").legalActions).not.toContainEqual({ type: "consume", item: id });
+    expect(legalIn(viewFor(s, "p1"))).not.toContainEqual({ type: "consume", item: id });
     expect(viewFor(s, "p2").players.find((p) => p.id === "p1")!.statuses).toEqual([]);
     s = nextCycle(s); // 3 satiety: still full
     expect(viewFor(s, "p1").statuses).toContain("full_belly");

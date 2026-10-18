@@ -1,4 +1,4 @@
-import { CHAT_CHANNELS, type GameServerMessage, type PlayerView } from "@mush2/shared";
+import { CHAT_CHANNELS, legalIn, type GameServerMessage, type PlayerView } from "@mush2/shared";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { FakeConnection, FakeServer, FakeStorage, seats, tokensFor } from "../src/testing/fakes.ts";
 
@@ -84,7 +84,7 @@ describe("GameRoom views never leak", () => {
     const { room } = await newRoom(3);
     const a = connect(room, "tok0");
     const b = connect(room, "tok1");
-    const move = lastView(a).legalActions.find((x) => x.type === "move")!;
+    const move = legalIn(lastView(a)).find((x) => x.type === "move")!;
     await send(room, a, { type: "action", action: move });
     await room.onAlarm(); // the move's bar runs out
     expect(lastView(a).you.id).toBe("p0");
@@ -109,7 +109,7 @@ describe("GameRoom input handling", () => {
     const { room, storage } = await newRoom(3);
     const a = connect(room, "tok0");
     const b = connect(room, "tok1");
-    const move = lastView(a).legalActions.find((x) => x.type === "move")!;
+    const move = legalIn(lastView(a)).find((x) => x.type === "move")!;
     const before = lastView(b).you.room;
     await send(room, a, { type: "action", by: "p1", action: move });
     await room.onAlarm();
@@ -135,7 +135,7 @@ describe("GameRoom input handling", () => {
     const errors = c.messages<GameServerMessage>().filter((m) => m.type === "error");
     expect(errors.filter((e) => (e as { message: string }).message === "Slow down")).toHaveLength(5);
     // The counter is saved with the next accepted change.
-    const move = lastView(c).legalActions.find((x) => x.type === "move")!;
+    const move = legalIn(lastView(c)).find((x) => x.type === "move")!;
     room.onClose(c as never);
     const c2 = connect(room, "tok0", "fresh-connection");
     await send(room, c2, { type: "action", action: move });
@@ -235,7 +235,7 @@ describe("GameRoom timed actions", () => {
     try {
       const { room, storage } = await newRoom(3);
       const c = connect(room, "tok0");
-      const move = lastView(c).legalActions.find((x) => x.type === "move")! as { to: string };
+      const move = legalIn(lastView(c)).find((x) => x.type === "move")! as { to: string };
       const from = lastView(c).you.room;
       await send(room, c, { type: "action", action: move, at: 5 });
       expect(storage.data.get("input:000000000")).toMatchObject({ input: { type: "action", at: 1_000_000 } });
@@ -257,7 +257,7 @@ describe("GameRoom timed actions", () => {
   it("Clear queue cancels the action under way and the alarm, outside the chat rate limit", async () => {
     const { room, storage } = await newRoom(3);
     const c = connect(room, "tok0");
-    const move = lastView(c).legalActions.find((x) => x.type === "move")!;
+    const move = legalIn(lastView(c)).find((x) => x.type === "move")!;
     for (let i = 0; i < 3; i++) {
       await send(room, c, { type: "action", action: move });
       await send(room, c, { type: "clearQueue" });
@@ -272,7 +272,7 @@ describe("GameRoom persistence", () => {
   it("records each accepted input in order, beside the setup", async () => {
     const { room, storage } = await newRoom();
     const c = connect(room, "tok0");
-    await send(room, c, { type: "action", action: lastView(c).legalActions.find((x) => x.type === "move")! });
+    await send(room, c, { type: "action", action: legalIn(lastView(c)).find((x) => x.type === "move")! });
     await send(room, c, { type: "action", action: { type: "ready" } });
     expect(storage.data.has("setup")).toBe(true);
     expect([...storage.data.keys()].filter((k) => k.startsWith("input:"))).toEqual(["input:000000000", "input:000000001"]);
@@ -281,7 +281,7 @@ describe("GameRoom persistence", () => {
   it("restores the game, tokens and input count after a restart", async () => {
     const { room, storage } = await newRoom();
     const c = connect(room, "tok0");
-    const move = lastView(c).legalActions.find((x) => x.type === "move")! as { to: string };
+    const move = legalIn(lastView(c)).find((x) => x.type === "move")! as { to: string };
     await send(room, c, { type: "action", action: move });
 
     // Evicted with the move under way: the stored alarm brings it back and finishes it.

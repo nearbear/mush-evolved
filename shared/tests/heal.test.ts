@@ -3,7 +3,7 @@ import { CHARACTERS } from "../src/characters.ts";
 import { DEFAULT_CONFIG } from "../src/config.ts";
 import { MODIFIERS, healAmount } from "../src/modifiers.ts";
 import { parseGameMessage } from "../src/protocol.ts";
-import { applyAction, createGame, viewFor } from "../src/rules.ts";
+import { applyAction, createGame, legalIn, viewFor } from "../src/rules.ts";
 import type { Action, GameState, PlayerId, Seat } from "../src/types.ts";
 
 const seats: Seat[] = Array.from({ length: 3 }, (_, i) => ({ id: `p${i}`, name: `Player ${i}`, isBot: false, character: CHARACTERS[i]!.id }));
@@ -45,12 +45,12 @@ describe("healing", () => {
     if (!r.ok) throw new Error(r.error);
     expect(player(r.state, "p1").hp).toBe(config.maxHp);
     player(s, "p1").hp = config.maxHp;
-    expect(viewFor(s, "p0").legalActions).toContainEqual(heal("p1"));
+    expect(legalIn(viewFor(s, "p0"))).toContainEqual(heal("p1"));
   });
 
   it("needs a medikit in your inventory, not on the floor or in someone else's hands", () => {
     const s = ship();
-    expect(viewFor(s, "p1").legalActions.some((a) => a.type === "heal")).toBe(false);
+    expect(legalIn(viewFor(s, "p1")).some((a) => a.type === "heal")).toBe(false);
     expect(applyAction(s, "p1", heal("p0")).ok).toBe(false);
     s.items[0]!.at = { kind: "room", id: "LABORATORY" };
     expect(applyAction(s, "p0", heal("p1")).ok).toBe(false);
@@ -63,7 +63,7 @@ describe("healing", () => {
     const before = JSON.stringify(s);
     expect(applyAction(s, "p0", heal("p1")).ok).toBe(false);
     expect(applyAction(s, "p0", heal("p2")).ok).toBe(false);
-    expect(viewFor(s, "p0").legalActions).not.toContainEqual(heal("p1"));
+    expect(legalIn(viewFor(s, "p0"))).not.toContainEqual(heal("p1"));
     player(s, "p0").ap = 2;
     const poor = JSON.stringify(s);
     expect(applyAction(s, "p0", heal("p0")).ok).toBe(false);

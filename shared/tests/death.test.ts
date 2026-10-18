@@ -3,7 +3,7 @@ import { CHARACTERS } from "../src/characters.ts";
 import { DEFAULT_CONFIG } from "../src/config.ts";
 import { damage, killPlayer } from "../src/death.ts";
 import { CORPSE_ITEM, ITEM_TYPES, ITRACKIE_ITEM, itemsIn } from "../src/items.ts";
-import { applyAction, createGame, viewFor, type ActionResult } from "../src/rules.ts";
+import { applyAction, createGame, legalIn, viewFor, type ActionResult } from "../src/rules.ts";
 import { createChannel, inviteToChannel, sendChat, toggleCheckbox } from "../src/chat.ts";
 import { CHAT_CHANNELS, GRAVEYARD_CHANNEL, MUSH_CHANNEL, type Action, type GameState, type PlayerId, type Seat } from "../src/types.ts";
 
@@ -101,9 +101,9 @@ describe("death", () => {
 
   it("is permanent: the dead can't act, heal, or take more damage", () => {
     const s = punchToDeath(ship());
-    expect(viewFor(s, "p1").legalActions).toEqual([]);
+    expect(legalIn(viewFor(s, "p1"))).toEqual([]);
     expect(applyAction(s, "p1", { type: "ready" }).ok).toBe(false);
-    expect(viewFor(s, "p0").legalActions.some((a) => a.type === "punch")).toBe(false);
+    expect(legalIn(viewFor(s, "p0")).some((a) => a.type === "punch")).toBe(false);
     const before = JSON.stringify(s);
     damage(s, player(s, "p1"), 5);
     killPlayer(s, player(s, "p1"));
@@ -130,7 +130,7 @@ describe("death", () => {
   it("a corpse can be picked up and takes one slot", () => {
     const s = punchToDeath(ship());
     const corpse = s.items.find((i) => i.type === CORPSE_ITEM)!;
-    expect(viewFor(s, "p0").legalActions).toContainEqual({ type: "take", item: corpse.id });
+    expect(legalIn(viewFor(s, "p0"))).toContainEqual({ type: "take", item: corpse.id });
     const after = must(applyAction(s, "p0", { type: "take", item: corpse.id }));
     expect(itemsIn(after, { kind: "player", id: "p0" }).map((i) => i.type).sort()).toEqual([CORPSE_ITEM, ITRACKIE_ITEM].sort());
   });

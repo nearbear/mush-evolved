@@ -5,10 +5,10 @@
 import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { useNames } from "../i18n/names.ts";
-import { actionVisibility, type Action, type PlayerView, type RoomId, type Target } from "@mush2/shared";
+import { actionVisibility, type Action, type ActionOption, type PlayerView, type RoomId, type Target } from "@mush2/shared";
 import { ActionLabel } from "./ActionLabel.tsx";
-import { DisabledActionButton } from "./ActionButton.tsx";
-import { actionLabelKey, actionsOn, chanceOf, costOf, resolveTarget, unaffordableOn } from "./targets.ts";
+import { ActionButton } from "./ActionButton.tsx";
+import { actionLabelKey, optionsOn, resolveTarget } from "./targets.ts";
 
 export function PeekBar({
   view,
@@ -30,9 +30,9 @@ export function PeekBar({
 }) {
   const { t } = useTranslation();
   const names = useNames();
-  const labelFor = (a: Action, cost = costOf(view, a), chance = chanceOf(view, a)): ReactNode => {
-    const key = actionLabelKey(a);
-    return <ActionLabel text={key ? t(key) : a.type} cost={cost} chance={chance} visibility={actionVisibility(a.type)} />;
+  const labelFor = ({ action, cost, chance }: ActionOption): ReactNode => {
+    const key = actionLabelKey(action);
+    return <ActionLabel text={key ? t(key) : action.type} cost={cost} chance={chance} visibility={actionVisibility(action.type)} />;
   };
   if (door) {
     const canGo = reachable.has(door);
@@ -49,19 +49,12 @@ export function PeekBar({
   const isBot = resolved.kind === "player" && resolved.person.isBot;
   return (
     <Bar heading={name} isBot={isBot}>
-      {actionsOn(view, target)
-        .filter((a) => a.type !== "examine")
-        .map((a) => (
-        <button key={a.type} onClick={() => onAction(a)}>
-          {labelFor(a)}
-        </button>
-      ))}
-      {unaffordableOn(view, target)
-        .filter((u) => u.action.type !== "examine")
-        .map((u) => (
-        <DisabledActionButton key={u.action.type} view={view} blocked={u}>
-          {labelFor(u.action, u.cost, u.chance)}
-        </DisabledActionButton>
+      {optionsOn(view, target)
+        .filter((o) => o.action.type !== "examine")
+        .map((o) => (
+        <ActionButton key={o.action.type} view={view} option={o} onAction={onAction}>
+          {labelFor(o)}
+        </ActionButton>
       ))}
       <button onClick={onMore} aria-label={t("peek.more")}>
         …

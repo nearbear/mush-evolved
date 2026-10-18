@@ -3,7 +3,7 @@ import { CHARACTERS } from "../src/characters.ts";
 import { DEFAULT_CONFIG } from "../src/config.ts";
 import { parseGameMessage } from "../src/protocol.ts";
 import { installCameraIn } from "./cameras.ts";
-import { applyAction, createGame, viewFor } from "../src/rules.ts";
+import { applyAction, createGame, legalIn, viewFor } from "../src/rules.ts";
 import type { Action, GameState, PlayerId, Seat } from "../src/types.ts";
 
 const seats: Seat[] = Array.from({ length: 5 }, (_, i) => ({ id: `p${i}`, name: `Player ${i}`, isBot: false, character: CHARACTERS[i]!.id }));
@@ -49,11 +49,11 @@ describe("spiking", () => {
 
   it("is offered only to Mush with a spore, for humans in their room", () => {
     const s = ship();
-    expect(viewFor(s, "p0").legalActions).toContainEqual(spike("p1"));
-    expect(viewFor(s, "p0").legalActions).not.toContainEqual(spike("p3"));
-    expect(viewFor(s, "p1").legalActions.some((a) => a.type === "spike")).toBe(false);
+    expect(legalIn(viewFor(s, "p0"))).toContainEqual(spike("p1"));
+    expect(legalIn(viewFor(s, "p0"))).not.toContainEqual(spike("p3"));
+    expect(legalIn(viewFor(s, "p1")).some((a) => a.type === "spike")).toBe(false);
     player(s, "p0").spores = 0;
-    expect(viewFor(s, "p0").legalActions.some((a) => a.type === "spike")).toBe(false);
+    expect(legalIn(viewFor(s, "p0")).some((a) => a.type === "spike")).toBe(false);
   });
 
   it("leaves state unchanged when illegal", () => {

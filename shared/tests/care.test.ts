@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { CHARACTERS } from "../src/characters.ts";
 import { DEFAULT_CONFIG } from "../src/config.ts";
-import { applyAction, createGame, viewFor } from "../src/rules.ts";
+import { applyAction, createGame, legalIn, viewFor } from "../src/rules.ts";
 import type { Action, GameState, PlayerId, Seat } from "../src/types.ts";
 
 const seats: Seat[] = Array.from({ length: 3 }, (_, i) => ({ id: `p${i}`, name: `Player ${i}`, isBot: false, character: CHARACTERS[i]!.id }));
@@ -109,7 +109,7 @@ describe("healing in the sick bay", () => {
     s.players.forEach((p) => {
       p.room = "LABORATORY";
     });
-    expect(viewFor(s, "p1").legalActions.some((a) => a.type === "heal")).toBe(false);
+    expect(legalIn(viewFor(s, "p1")).some((a) => a.type === "heal")).toBe(false);
     expect(applyAction(s, "p1", heal("p2")).ok).toBe(false);
   });
 

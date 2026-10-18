@@ -1,4 +1,4 @@
-import { DEFAULT_CONFIG, startGame, viewFor, type LogEntry } from "@mush2/shared";
+import { DEFAULT_CONFIG, legalIn, startGame, viewFor, type LogEntry } from "@mush2/shared";
 import { describe, expect, it } from "vitest";
 import { LogParrotBot, WanderBot } from "../src/bots.ts";
 import { seats } from "../src/testing/fakes.ts";
@@ -11,13 +11,13 @@ describe("WanderBot", () => {
     const bot = new WanderBot(7);
     for (let i = 0; i < 50; i++) {
       const action = await bot.decideAction(view);
-      expect(view.legalActions).toContainEqual(action);
+      expect(legalIn(view)).toContainEqual(action);
     }
   });
 
   it("makes at most three moves per cycle, then readies up", async () => {
     const base = viewFor(game, "p0");
-    const view = { ...base, legalActions: [base.legalActions.find((a) => a.type === "move")!] };
+    const view = { ...base, actions: [base.actions.find((o) => o.action.type === "move")!] };
     const bot = new WanderBot(7);
     for (let i = 0; i < 3; i++) expect((await bot.decideAction(view)).type).toBe("move");
     expect(await bot.decideAction(view)).toEqual({ type: "ready" });
@@ -25,7 +25,7 @@ describe("WanderBot", () => {
   });
 
   it("readies up when it has no move to make", async () => {
-    const view = { ...viewFor(game, "p0"), legalActions: [] };
+    const view = { ...viewFor(game, "p0"), actions: [] };
     expect(await new WanderBot(7).decideAction(view)).toEqual({ type: "ready" });
   });
 });

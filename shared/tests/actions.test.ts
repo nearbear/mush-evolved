@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { CHARACTERS } from "../src/characters.ts";
 import { DEFAULT_CONFIG } from "../src/config.ts";
-import { applyAction, createGame, legalActions } from "../src/rules.ts";
+import { affordable, applyAction, createGame, legalActions, legalIn, viewFor } from "../src/rules.ts";
 import { RESEARCH_IDS } from "../src/research.ts";
 import { SKILLS } from "../src/skills.ts";
 import type { Action, Seat } from "../src/types.ts";
@@ -64,5 +64,23 @@ describe("action registry", () => {
     ] as Action[]) {
       expect(applyAction(state, "p0", action).ok, JSON.stringify(action)).toBe(false);
     }
+  });
+});
+
+describe("actions in the view", () => {
+  it("offers every legal action as affordable, then the ones only short of points", () => {
+    const state = createGame(seats, DEFAULT_CONFIG, 1);
+    const v = viewFor(state, "p0");
+    const firstBlocked = v.actions.findIndex((o) => !affordable(o));
+    expect(v.actions.filter(affordable).map((o) => o.action)).toEqual(legalActions(state, "p0"));
+    expect(firstBlocked === -1 || v.actions.slice(firstBlocked).every((o) => !affordable(o))).toBe(true);
+  });
+
+  it("marks what you can't pay for with the points you lack", () => {
+    const state = createGame(seats, DEFAULT_CONFIG, 1);
+    Object.assign(state.players[0]!, { ap: 0, mp: 0 });
+    const v = viewFor(state, "p0");
+    expect(v.actions.find((o) => o.action.type === "punch")?.lacks).toEqual(["ap"]);
+    expect(legalIn(v).some((a) => a.type === "punch")).toBe(false);
   });
 });

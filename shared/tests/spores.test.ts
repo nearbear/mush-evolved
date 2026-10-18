@@ -3,7 +3,7 @@ import { CHARACTERS } from "../src/characters.ts";
 import { DEFAULT_CONFIG } from "../src/config.ts";
 import { MODIFIERS } from "../src/modifiers.ts";
 import { parseGameMessage } from "../src/protocol.ts";
-import { applyAction, createGame, viewFor } from "../src/rules.ts";
+import { applyAction, createGame, legalIn, viewFor } from "../src/rules.ts";
 import type { Action, GameState, PlayerId, Seat } from "../src/types.ts";
 
 const seats: Seat[] = Array.from({ length: 6 }, (_, i) => ({ id: `p${i}`, name: `Player ${i}`, isBot: false, character: CHARACTERS[i]!.id }));
@@ -39,8 +39,8 @@ describe("spore extraction", () => {
 
   it("is Mush only: not offered to, and refused for, humans", () => {
     const s = ship();
-    expect(viewFor(s, "p2").legalActions).not.toContainEqual(extract);
-    expect(viewFor(s, "p0").legalActions).toContainEqual(extract);
+    expect(legalIn(viewFor(s, "p2"))).not.toContainEqual(extract);
+    expect(legalIn(viewFor(s, "p0"))).toContainEqual(extract);
     const r = applyAction(s, "p2", extract);
     expect(r.ok).toBe(false);
     expect(player(s, "p2").spores).toBe(0);
@@ -51,16 +51,16 @@ describe("spore extraction", () => {
     expect(applyAction(s, "p0", extract).ok).toBe(false);
     for (let i = 0; i < 3; i++) {
       s = nextCycle(s);
-      expect(viewFor(s, "p0").legalActions).not.toContainEqual(extract);
+      expect(legalIn(viewFor(s, "p0"))).not.toContainEqual(extract);
     }
     s = nextCycle(s);
-    expect(viewFor(s, "p0").legalActions).toContainEqual(extract);
+    expect(legalIn(viewFor(s, "p0"))).toContainEqual(extract);
     expect(player(mustApply(s, "p0", extract), "p0").spores).toBe(2);
   });
 
   it("keeps cooldowns separate per Mush", () => {
     const s = mustApply(ship(), "p0", extract);
-    expect(viewFor(s, "p1").legalActions).toContainEqual(extract);
+    expect(legalIn(viewFor(s, "p1"))).toContainEqual(extract);
   });
 
   it("shares a daily cap across the faction, and the cap resets at the day boundary", () => {
@@ -68,10 +68,10 @@ describe("spore extraction", () => {
     s.config = { ...s.config, spores: { ...s.config.spores, perDay: 2 } };
     let t = mustApply(mustApply(s, "p0", extract), "p1", extract);
     t = nextCycle(nextCycle(nextCycle(nextCycle(t)))); // cooldowns over, same day
-    expect(viewFor(t, "p0").legalActions).not.toContainEqual(extract);
+    expect(legalIn(viewFor(t, "p0"))).not.toContainEqual(extract);
     expect(applyAction(t, "p1", extract).ok).toBe(false);
     while (viewFor(t, "p0").day === 1) t = nextCycle(t);
-    expect(viewFor(t, "p0").legalActions).toContainEqual(extract);
+    expect(legalIn(viewFor(t, "p0"))).toContainEqual(extract);
   });
 
   it("lets a modifier raise the daily cap", () => {

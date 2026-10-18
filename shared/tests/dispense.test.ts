@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { CHARACTERS } from "../src/characters.ts";
 import { DEFAULT_CONFIG } from "../src/config.ts";
 import { parseGameMessage } from "../src/protocol.ts";
-import { applyAction, createGame, viewFor } from "../src/rules.ts";
+import { applyAction, createGame, legalIn, viewFor } from "../src/rules.ts";
 import type { Action, GameState, PlayerId, Seat } from "../src/types.ts";
 
 const seats: Seat[] = Array.from({ length: 3 }, (_, i) => ({ id: `p${i}`, name: `Player ${i}`, isBot: i > 0, character: CHARACTERS[i]!.id }));
@@ -38,15 +38,15 @@ describe("coffee machine", () => {
   it("works once per cycle per machine, then again next cycle", () => {
     let s = mustApply(refectory(), "p0", pull);
     expect(applyAction(s, "p1", pull).ok).toBe(false);
-    expect(viewFor(s, "p1").legalActions).not.toContainEqual(pull);
+    expect(legalIn(viewFor(s, "p1"))).not.toContainEqual(pull);
     for (const p of seats) s = mustApply(s, p.id, { type: "ready" });
-    expect(viewFor(s, "p1").legalActions).toContainEqual(pull);
+    expect(legalIn(viewFor(s, "p1"))).toContainEqual(pull);
   });
 
   it("is only offered in the refectory", () => {
     const s = refectory();
     s.players[0]!.room = "LABORATORY";
-    expect(viewFor(s, "p0").legalActions).not.toContainEqual(pull);
+    expect(legalIn(viewFor(s, "p0"))).not.toContainEqual(pull);
     expect(applyAction(s, "p0", pull).ok).toBe(false);
     expect(applyAction(s, "p0", { type: "dispense", equipment: "REFECTORY:KITCHEN" }).ok).toBe(false);
   });
@@ -96,7 +96,7 @@ describe("consume", () => {
     const id = coffeeId(s);
     expect(applyAction(s, "p1", { type: "consume", item: id }).ok).toBe(false); // in p0's inventory
     s = mustApply(s, "p0", { type: "drop", item: id });
-    expect(viewFor(s, "p1").legalActions).toContainEqual({ type: "consume", item: id });
+    expect(legalIn(viewFor(s, "p1"))).toContainEqual({ type: "consume", item: id });
     s.players[2]!.room = "LABORATORY";
     expect(applyAction(s, "p2", { type: "consume", item: id }).ok).toBe(false);
     expect(mustApply(s, "p1", { type: "consume", item: id }).items).toHaveLength(0);

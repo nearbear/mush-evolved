@@ -3,7 +3,7 @@ import { CHARACTERS } from "../src/characters.ts";
 import { DEFAULT_CONFIG } from "../src/config.ts";
 import { MODIFIERS } from "../src/modifiers.ts";
 import { sendChat } from "../src/chat.ts";
-import { applyAction, createGame, viewFor } from "../src/rules.ts";
+import { applyAction, createGame, legalIn, viewFor } from "../src/rules.ts";
 import type { Action, GameState, PlayerId, PlayerView, Seat } from "../src/types.ts";
 
 const seats: Seat[] = Array.from({ length: 4 }, (_, i) => ({ id: `p${i}`, name: `Player ${i}`, isBot: false, character: CHARACTERS[i]!.id }));
@@ -72,8 +72,8 @@ describe("conversion", () => {
 
   it("gives Mush actions at once: spore extraction with no cooldown, and skill picks", () => {
     const v = viewFor(spikes(ship(), 3), "p1");
-    expect(v.legalActions).toContainEqual({ type: "extract_spore" });
-    expect(v.legalActions.some((a) => a.type === "pick_skill")).toBe(true);
+    expect(legalIn(v)).toContainEqual({ type: "extract_spore" });
+    expect(legalIn(v).some((a) => a.type === "pick_skill")).toBe(true);
   });
 
   it("shows a human's contamination to Mush in their room only, never to humans or the human themself", () => {

@@ -1,13 +1,23 @@
-// A button for an action aimed at a target. When you only lack the AP or MP for it, it shows disabled and a card
+// A button for an offered action. When you only lack the AP or MP for it, it shows disabled and a card
 // says why (on hover, focus, or tap). It uses aria-disabled rather than disabled so it can still be hovered,
 // focused and tapped to read the reason.
 
 import { Popover } from "@base-ui/react/popover";
 import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
-import type { PlayerView, UnaffordableAction } from "@mush2/shared";
+import { affordable, type Action, type ActionOption, type PlayerView } from "@mush2/shared";
 
-export function DisabledActionButton({ view, blocked, children }: { view: PlayerView; blocked: UnaffordableAction; children: ReactNode }) {
+/** A button that does the action, or the disabled one with the reason when you lack the points. */
+export function ActionButton({ view, option, onAction, children }: { view: PlayerView; option: ActionOption; onAction: (action: Action) => void; children: ReactNode }) {
+  if (!affordable(option)) return <DisabledActionButton view={view} blocked={option}>{children}</DisabledActionButton>;
+  return (
+    <button type="button" onClick={() => onAction(option.action)}>
+      {children}
+    </button>
+  );
+}
+
+export function DisabledActionButton({ view, blocked, children }: { view: PlayerView; blocked: ActionOption; children: ReactNode }) {
   const { t } = useTranslation();
   const { cost, lacks } = blocked;
   const reason =

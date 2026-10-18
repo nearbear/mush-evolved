@@ -130,7 +130,7 @@ Each phase ends with typecheck and tests passing and a small commit. Phase headi
   - When you want a cheap hosted fallback, compare current per-token prices; I have no live pricing.
 - **Fits the cycle structure:** cycles last hours, so bots can queue requests one at a time and the single GPU is never a bottleneck.
 - **Safeguards:**
-  - The bot must pick from `view.legalActions`. Any invalid output falls back to the scripted bot.
+  - The bot must pick from the legal actions in its view (`legalIn(view)`). Any invalid output falls back to the scripted bot.
   - Player chat goes into the prompt marked as untrusted quoted text.
   - A per-game request cap.
   - The "hard spend cap" becomes a token/request budget, kept so it still works if you switch to a hosted API.

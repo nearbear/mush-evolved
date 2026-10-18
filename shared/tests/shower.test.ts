@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { CHARACTERS } from "../src/characters.ts";
 import { DEFAULT_CONFIG } from "../src/config.ts";
 import { parseGameMessage } from "../src/protocol.ts";
-import { applyAction, createGame, viewFor } from "../src/rules.ts";
+import { applyAction, createGame, legalIn, viewFor } from "../src/rules.ts";
 import { addStatus } from "../src/statuses.ts";
 import type { Action, GameState, PlayerId, Seat } from "../src/types.ts";
 
@@ -84,9 +84,9 @@ describe("shower", () => {
 
   it("is only offered while dirty, and the log line is private", () => {
     const s = ship();
-    expect(viewFor(s, "p1").legalActions.some((a) => a.type === "shower")).toBe(false);
+    expect(legalIn(viewFor(s, "p1")).some((a) => a.type === "shower")).toBe(false);
     addStatus(player(s, "p1"), "dirty");
-    expect(viewFor(s, "p1").legalActions).toContainEqual(shower);
+    expect(legalIn(viewFor(s, "p1"))).toContainEqual(shower);
     const r = applyAction(s, "p1", shower);
     if (!r.ok) throw new Error(r.error);
     expect(viewFor(r.state, "p1").log.some((e) => e.key === "showered")).toBe(true);

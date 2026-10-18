@@ -121,22 +121,20 @@ export interface PlayerView {
   };
   /** Percent done of each research that has been started, public to everyone (decided 2026-10-16). */
   research: Record<string, number>;
-  legalActions: Action[];
-  /** AP and MP each legal action costs you, index-aligned with `legalActions`. */
-  legalCosts: ActionCost[];
-  /** Your chance of success (0 to 1) for each legal action, index-aligned with `legalActions`. */
-  legalChances: number[];
   /**
-   * Actions that would be legal if you had the AP or MP, so the client can show them disabled and say why.
-   * Only candidates on things you can already see, so nothing hidden is revealed.
+   * Everything you could do right now, plus what you could do if you had the AP or MP (so the client can show
+   * it disabled and say why). Affordable ones come first. Only candidates on things you can already see, so
+   * nothing hidden is revealed. The client never computes legality; it reads this.
    */
-  unaffordable: UnaffordableAction[];
+  actions: ActionOption[];
 }
 
-/** An action blocked only by a lack of points: what it costs, its chance of success, and which of your points fall short. */
-export interface UnaffordableAction {
+/** One action you are offered: what it costs, its chance of success, and which of your points fall short. */
+export interface ActionOption {
   action: Action;
   cost: ActionCost;
+  /** 0 to 1. */
   chance: number;
+  /** Empty when you can do it now; otherwise the points you lack. See `affordable`. */
   lacks: ("ap" | "mp")[];
 }

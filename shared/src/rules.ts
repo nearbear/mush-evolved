@@ -7,7 +7,7 @@
 // decisions: do not add them without confirming the rules first.
 
 import { applyCheats, makeHuman, type ActopiCheat, type Cheat, type RoleCheat } from "./cheats.ts";
-import { ACTIONS, type ActionCost, type ActionDef } from "./actions.ts";
+import { ACTIONS, type ActionDef } from "./actions.ts";
 import { itemsIn } from "./items.ts";
 import { actionFailed, apGain, carePointsGain, channelLimit, computerPointsGain, cycleChanged, inventorySlots, movementRules, satietyLoss } from "./modifiers.ts";
 import { contaminationSeenBy, convert } from "./infection.ts";
@@ -29,7 +29,7 @@ import type {
   GameState,
   ItemState,
   ItemView,
-  UnaffordableAction,
+  ActionOption,
   PlayerId,
   PlayerState,
   PlayerView,
@@ -121,11 +121,11 @@ export function legalActions(state: GameState, playerId: PlayerId): Action[] {
  * Actions that fail only on cost (`cant_afford`), with the cost and what falls short. For showing them disabled.
  * Moves are left out: an unaffordable move has no cost to report, and doors aren't action buttons.
  */
-export function unaffordableActions(state: GameState, playerId: PlayerId): UnaffordableAction[] {
+export function unaffordableActions(state: GameState, playerId: PlayerId): ActionOption[] {
   const p = findPlayer(state, playerId);
   if (!p || !canAct(state, p)) return [];
   return Object.values(ACTIONS).flatMap((def: ActionDef<Action>) =>
-    def.candidates(state, p).flatMap((a): UnaffordableAction[] => {
+    def.candidates(state, p).flatMap((a): ActionOption[] => {
       if (a.type === "move") return [];
       if (def.check(state, p, a) !== "cant_afford") return [];
       const cost = def.cost(state, p, a);
@@ -339,26 +339,23 @@ export function viewFor(state: GameState, playerId: PlayerId): PlayerView {
     maxHp: state.config.maxHp,
     maxMorale: state.config.maxMorale,
     research: { ...state.research },
-    legalActions: legal,
-    legalCosts: legalCosts(state, playerId, legal),
-    legalChances: legalChances(state, playerId, legal),
-    unaffordable: unaffordableActions(state, playerId),
+    actions: [...legalOptions(state, you, legal), ...unaffordableActions(state, playerId)],
   };
 }
 
-/** What each of `legal` costs you, index-aligned with it. The client displays these and never computes them. */
-function legalCosts(state: GameState, playerId: PlayerId, legal: Action[]): ActionCost[] {
-  const p = findPlayer(state, playerId);
-  if (!p) return [];
-  return legal.map((a) => (ACTIONS[a.type] as ActionDef<Action>).cost(state, p, a));
+/** `legal` with what each costs you and its odds. The client displays these and never computes them. */
+function legalOptions(state: GameState, p: PlayerState, legal: Action[]): ActionOption[] {
+  return legal.map((a) => {
+    const def = ACTIONS[a.type] as ActionDef<Action>;
+    return { action: a, cost: def.cost(state, p, a), chance: def.chance?.(state, p, a) ?? 1, lacks: [] };
+  });
 }
 
-/** Each of `legal`'s chance of success (0 to 1), index-aligned with it, so the player knows the odds before acting. */
-function legalChances(state: GameState, playerId: PlayerId, legal: Action[]): number[] {
-  const p = findPlayer(state, playerId);
-  if (!p) return [];
-  return legal.map((a) => (ACTIONS[a.type] as ActionDef<Action>).chance?.(state, p, a) ?? 1);
-}
+/** Whether you can do an offered action now, rather than lacking the points for it. */
+export const affordable = (option: Readonly<ActionOption>): boolean => option.lacks.length === 0;
+
+/** The actions a view lets you do right now: its affordable options. */
+export const legalIn = (view: Pick<PlayerView, "actions">): Action[] => view.actions.filter(affordable).map((o) => o.action);
 
 function itemView({ id, type, of, builds }: ItemState): ItemView {
   return { id, type, ...(of !== undefined && { of }), ...(builds !== undefined && { builds }) };

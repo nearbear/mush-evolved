@@ -43,7 +43,7 @@ In `shared/src/*.test.ts`:
 
 ## 4. Check it end to end
 
-- If the client needs to show something new, add it to `PlayerView` in `viewFor` (the only place hidden info is stripped), then render it. Components never compute legality; they use `view.legalActions`.
+- If the client needs to show something new, add it to `PlayerView` in `viewFor` (the only place hidden info is stripped), then render it. Components never compute legality; they use `view.actions`.
 - Make sure `WanderBot` (`server/src/bots.ts`) still acts legally.
 - The action must be reachable on a phone too. Actions aimed at a target go through `actionsOn` in `web/src/hud/targets.ts`, so they appear in both the Inspect panel and the phone peek bar; give them a label in `ACTION_LABELS` there. Anything else needs a deliberate place in the phone layout (never hover- or double-click-only).
 - For a UI change, mention that the `play` skill is available; run it only if the user asks.

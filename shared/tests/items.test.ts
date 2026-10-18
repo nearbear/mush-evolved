@@ -4,7 +4,7 @@ import { DEFAULT_CONFIG } from "../src/config.ts";
 import { capacity } from "../src/items.ts";
 import { MODIFIERS } from "../src/modifiers.ts";
 import { parseGameMessage } from "../src/protocol.ts";
-import { applyAction, createGame, viewFor } from "../src/rules.ts";
+import { applyAction, createGame, legalIn, viewFor } from "../src/rules.ts";
 import type { Action, GameConfig, GameState, PlayerId, Seat } from "../src/types.ts";
 
 const seats: Seat[] = Array.from({ length: 4 }, (_, i) => ({
@@ -70,7 +70,7 @@ describe("inventory", () => {
 
   it("holds at most three items", () => {
     const state = mustApply(newGame(), "p0", take("item-1"), take("item-2"), take("item-3"));
-    expect(viewFor(state, "p0").legalActions.some((a) => a.type === "take")).toBe(false);
+    expect(legalIn(viewFor(state, "p0")).some((a) => a.type === "take")).toBe(false);
     expect(applyAction(state, "p0", take("item-4")).ok).toBe(false);
     // The room still takes anything back.
     expect(mustApply(state, "p0", drop("item-1")).items.find((i) => i.id === "item-1")!.at).toEqual({ kind: "room", id: "LABORATORY" });
@@ -79,7 +79,7 @@ describe("inventory", () => {
   it("can't drop items marked as non-droppable", () => {
     const state = newGame();
     state.items.push({ id: "item-camera", type: "camera", at: { kind: "player", id: "p0" } });
-    expect(viewFor(state, "p0").legalActions.some((a) => a.type === "drop" && a.item === "item-camera")).toBe(false);
+    expect(legalIn(viewFor(state, "p0")).some((a) => a.type === "drop" && a.item === "item-camera")).toBe(false);
     expect(applyAction(state, "p0", drop("item-camera")).ok).toBe(false);
   });
 

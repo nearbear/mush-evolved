@@ -57,7 +57,7 @@ Please read these before changing code; pull requests that break them will need 
 
 1. **Server-authoritative.** The server holds the real state and sends each player a filtered `PlayerView`. Hidden information (roles, secret actions) must never reach a client that shouldn't see it. `viewFor` in `shared/src/rules.ts` is the one place it is stripped. Don't put hidden state in anything synced to all clients.
 2. **Rules are pure code** in `shared`: no I/O, no network, seeded RNG, with tests.
-3. **Thin view layer.** Components render a `PlayerView` and emit intents. The client never computes legality; it uses `view.legalActions`. See [`web/CLAUDE.md`](web/CLAUDE.md).
+3. **Thin view layer.** Components render a `PlayerView` and emit intents. The client never computes legality; it uses `view.actions`. See [`web/CLAUDE.md`](web/CLAUDE.md).
 4. **Bots only get their own seat's view,** are labeled as AI, and call any model server-side only. Player chat is untrusted input.
 5. **Mobile is first-class.** Every UI change must work in the tabbed phone layout (below 1024px, down to 360px wide) and on desktop.
 6. **Every player-visible string is translatable** (en/fr/es). The seam is in; the comprehensive pass isn't.

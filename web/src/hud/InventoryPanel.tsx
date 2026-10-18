@@ -6,7 +6,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useNames } from "../i18n/names.ts";
-import type { Action, ItemView, PlayerView, Target } from "@mush2/shared";
+import { legalIn, type Action, type ItemView, type PlayerView, type Target } from "@mush2/shared";
 import { EMPTY_SLOT_TILE } from "../art/assets.ts";
 import { ItemFace } from "./ItemFace.tsx";
 import { ItemIcon } from "./ItemIcon.tsx";
@@ -52,7 +52,7 @@ export function InventoryPanel({
   const roomGrid = useOverflowsRow(view.roomItems.length);
 
   const legal = (type: "take" | "drop", item: ItemView) =>
-    view.legalActions.some((a) => a.type === type && a.item === item.id);
+    legalIn(view).some((a) => a.type === type && a.item === item.id);
   // Dropping on the zone the item is already in does nothing; the other zone needs a legal take/drop.
   const accepts = (zone: Zone) => {
     if (!dragging || dragging.from === zone) return false;

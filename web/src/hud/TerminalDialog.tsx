@@ -7,8 +7,7 @@ import { useTranslation } from "react-i18next";
 import { RESEARCH_CARDS } from "../art/assets.ts";
 import { useNames } from "../i18n/names.ts";
 import { ActionLabel } from "./ActionLabel.tsx";
-import { DisabledActionButton } from "./ActionButton.tsx";
-import { chanceOf, costOf } from "./targets.ts";
+import { ActionButton } from "./ActionButton.tsx";
 import "./settings.css";
 
 interface Props {
@@ -43,8 +42,7 @@ function ResearchList({ terminal, view, onAction }: Omit<Props, "onClose"> & { t
     <ul className="research-list" aria-label={t("research.title")}>
       {RESEARCH_IDS.map((id) => {
         const percent = view.research[id] ?? 0;
-        const action = view.legalActions.find((a) => a.type === "research" && a.equipment === terminal.id && a.research === id);
-        const blocked = view.unaffordable.find((u) => u.action.type === "research" && u.action.equipment === terminal.id && u.action.research === id);
+        const option = view.actions.find(({ action: a }) => a.type === "research" && a.equipment === terminal.id && a.research === id);
         const card = RESEARCH_CARDS[id.toLowerCase()];
         return (
           <li key={id} className="research-item">
@@ -55,15 +53,10 @@ function ResearchList({ terminal, view, onAction }: Omit<Props, "onClose"> & { t
               <progress max={RESEARCH_COMPLETE} value={percent} />
               <span>{percent >= RESEARCH_COMPLETE ? t("research.done") : t("research.progress", { percent })}</span>
             </div>
-            {action && (
-              <button type="button" onClick={() => onAction(action)}>
-                <ActionLabel text={t("research.work")} cost={costOf(view, action)} chance={chanceOf(view, action)} />
-              </button>
-            )}
-            {blocked && (
-              <DisabledActionButton view={view} blocked={blocked}>
-                <ActionLabel text={t("research.work")} cost={blocked.cost} chance={blocked.chance} />
-              </DisabledActionButton>
+            {option && (
+              <ActionButton view={view} option={option} onAction={onAction}>
+                <ActionLabel text={t("research.work")} cost={option.cost} chance={option.chance} />
+              </ActionButton>
             )}
           </li>
         );

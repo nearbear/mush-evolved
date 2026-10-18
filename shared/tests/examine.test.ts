@@ -3,7 +3,7 @@ import { CHARACTERS } from "../src/characters.ts";
 import { DEFAULT_CONFIG, SHIP_ROOMS } from "../src/config.ts";
 import { EQUIPMENT_TYPES } from "../src/equipment.ts";
 import { parseGameMessage } from "../src/protocol.ts";
-import { applyAction, createGame, viewFor } from "../src/rules.ts";
+import { applyAction, createGame, legalIn, viewFor } from "../src/rules.ts";
 import type { Action, GameState, PlayerId, Seat, Target } from "../src/types.ts";
 
 const seats: Seat[] = Array.from({ length: 3 }, (_, i) => ({
@@ -52,7 +52,7 @@ describe("room equipment", () => {
 describe("examine", () => {
   it("is offered for people, equipment, and items you can see, including yourself", () => {
     const state = mustApply(newGame(), "p0", { type: "take", item: "item-1" });
-    const targets = viewFor(state, "p0").legalActions.flatMap((a) => (a.type === "examine" ? [a.target] : []));
+    const targets = legalIn(viewFor(state, "p0")).flatMap((a) => (a.type === "examine" ? [a.target] : []));
     expect(targets).toEqual([
       { kind: "player", id: "p0" },
       { kind: "player", id: "p1" },

@@ -13,7 +13,7 @@ Bots are players. Every rule that keeps hidden information off clients applies t
 
 1. **One interface.** Every bot implements `Bot.decideAction(view: PlayerView): Promise<Action>` in `server/src/bots.ts`. Don't widen the input: no `GameState`, no other seats' views, no server internals.
 2. **Own-seat view only.** The server calls `viewFor(game, botSeatId)` and passes that. A bot never sees more than a human in its seat would.
-3. **Only legal actions.** Pick from `view.legalActions`. A model's output is untrusted: parse it, then check it's in `legalActions`, and fall back to a safe action (`ready`) if it isn't. Never let model text become an action unchecked.
+3. **Only legal actions.** Pick from `legalIn(view)` (the view's affordable `actions`). A model's output is untrusted: parse it, then check it's in that list, and fall back to a safe action (`ready`) if it isn't. Never let model text become an action unchecked.
 4. **Labeled as AI.** `Seat.isBot` stays true, and the UI shows the AI tag wherever a name appears (iso tags, inspect, chat). If a bot can chat, its messages carry `isBot`.
 5. **Pacing.** A deliberate delay is fine (`BOT_DELAY_MS`). Don't make bots act instantly.
 6. **Model-backed bots:**

@@ -4,7 +4,7 @@ import { CHARACTERS } from "../src/characters.ts";
 import { DEFAULT_CONFIG } from "../src/config.ts";
 import { parseGameMessage } from "../src/protocol.ts";
 import { applyInput, replayGame, type Input } from "../src/replay.ts";
-import { applyAction, createGame, setActopiCheat, setCheat, setRoleCheat, viewFor } from "../src/rules.ts";
+import { applyAction, createGame, setActopiCheat, setCheat, setRoleCheat, legalIn, viewFor } from "../src/rules.ts";
 import type { GameState, PlayerId, Seat } from "../src/types.ts";
 
 const seats: Seat[] = Array.from({ length: 3 }, (_, i) => ({ id: `p${i}`, name: `Player ${i}`, isBot: false, character: CHARACTERS[i]!.id }));
@@ -31,13 +31,13 @@ describe("cheats", () => {
   it("infinite AP and MP: a move costs nothing and the bars stay full", () => {
     let s = cheat(cheat(fresh(), "p0", "infiniteAp"), "p0", "infiniteMp");
     expect(player(s, "p0")).toMatchObject({ ap: cfg.maxAp, mp: cfg.movement.mpCap });
-    const door = viewFor(s, "p0").legalActions.find((a) => a.type === "move")!;
+    const door = legalIn(viewFor(s, "p0")).find((a) => a.type === "move")!;
     s = walk(s, "p0", door.type === "move" ? door.to : "");
     expect(player(s, "p0")).toMatchObject({ ap: cfg.maxAp, mp: cfg.movement.mpCap });
   });
 
   it("without the cheat, the same move spends points", () => {
-    const door = viewFor(fresh(), "p0").legalActions.find((a) => a.type === "move")!;
+    const door = legalIn(viewFor(fresh(), "p0")).find((a) => a.type === "move")!;
     const s = walk(fresh(), "p0", door.type === "move" ? door.to : "");
     expect(player(s, "p0").ap).toBeLessThan(cfg.startAp);
   });

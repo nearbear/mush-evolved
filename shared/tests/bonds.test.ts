@@ -3,7 +3,7 @@ import { CHARACTERS } from "../src/characters.ts";
 import { DEFAULT_CONFIG } from "../src/config.ts";
 import { MODIFIERS, contaminationCapacity } from "../src/modifiers.ts";
 import { parseGameMessage } from "../src/protocol.ts";
-import { applyAction, createGame, viewFor } from "../src/rules.ts";
+import { applyAction, createGame, legalIn, viewFor } from "../src/rules.ts";
 import type { Action, GameState, PlayerId, Seat } from "../src/types.ts";
 
 const seats: Seat[] = Array.from({ length: 4 }, (_, i) => ({ id: `p${i}`, name: `Player ${i}`, isBot: false, character: CHARACTERS[i]!.id }));
@@ -39,15 +39,15 @@ describe("bonding", () => {
   it("costs 1 AP, is one-way, and is offered only for living people in your room", () => {
     const s0 = ship();
     s0.players[3]!.room = "SICK_BAY";
-    expect(viewFor(s0, "p0").legalActions).toContainEqual({ type: "bond", target: "p1" });
-    expect(viewFor(s0, "p0").legalActions).not.toContainEqual({ type: "bond", target: "p3" });
-    expect(viewFor(s0, "p0").legalActions).not.toContainEqual({ type: "bond", target: "p0" });
+    expect(legalIn(viewFor(s0, "p0"))).toContainEqual({ type: "bond", target: "p1" });
+    expect(legalIn(viewFor(s0, "p0"))).not.toContainEqual({ type: "bond", target: "p3" });
+    expect(legalIn(viewFor(s0, "p0"))).not.toContainEqual({ type: "bond", target: "p0" });
     const s = mustApply(s0, "p0", { type: "bond", target: "p1" });
     expect(player(s, "p0").ap).toBe(config.startAp - 1);
     expect(player(s, "p1").ap).toBe(config.startAp);
     expect(viewFor(s, "p0").bonds).toEqual({ to: ["p1"], from: [] });
     expect(viewFor(s, "p1").bonds).toEqual({ to: [], from: ["p0"] });
-    expect(viewFor(s, "p0").legalActions).not.toContainEqual({ type: "bond", target: "p1" });
+    expect(legalIn(viewFor(s, "p0"))).not.toContainEqual({ type: "bond", target: "p1" });
   });
 
   it("is the same for Mush and can't happen without the AP", () => {
@@ -73,9 +73,9 @@ describe("DTT and STT", () => {
     expect(applyAction(one, "p0", dtt("p1")).ok).toBe(false);
     expect(applyAction(one, "p1", stt("p0")).ok).toBe(false);
     const s = bondBoth(ship(), "p0", "p1");
-    expect(viewFor(s, "p0").legalActions).toContainEqual(dtt("p1"));
-    expect(viewFor(s, "p0").legalActions).toContainEqual(stt("p1"));
-    expect(viewFor(s, "p0").legalActions).not.toContainEqual(dtt("p2"));
+    expect(legalIn(viewFor(s, "p0"))).toContainEqual(dtt("p1"));
+    expect(legalIn(viewFor(s, "p0"))).toContainEqual(stt("p1"));
+    expect(legalIn(viewFor(s, "p0"))).not.toContainEqual(dtt("p2"));
     const apart = clone(s);
     apart.players[1]!.room = "SICK_BAY";
     expect(applyAction(apart, "p0", dtt("p1")).ok).toBe(false);
@@ -110,7 +110,7 @@ describe("DTT and STT", () => {
       expect(applyAction(s, who, stt(other)).ok).toBe(false);
       expect(applyAction(s, who, dtt(other)).ok).toBe(false);
     }
-    expect(viewFor(s, "p1").legalActions.some((a) => a.type === "dtt" || a.type === "stt")).toBe(false);
+    expect(legalIn(viewFor(s, "p1")).some((a) => a.type === "dtt" || a.type === "stt")).toBe(false);
     // Blocked with anyone else for the day too.
     s = bondBoth(s, "p0", "p3");
     expect(applyAction(s, "p3", dtt("p0")).ok).toBe(false);
@@ -194,13 +194,10 @@ describe("protocol", () => {
   });
 });
 
-describe("legalCosts", () => {
-  it("is index-aligned with legalActions and carries each action's cost", () => {
+describe("action costs in the view", () => {
+  it("carries each offered action's cost", () => {
     const v = viewFor(ship(), "p0");
-    expect(v.legalCosts).toHaveLength(v.legalActions.length);
-    const i = v.legalActions.findIndex((a) => a.type === "bond");
-    expect(v.legalCosts[i]).toEqual({ ap: 1, mp: 0 });
-    const m = v.legalActions.findIndex((a) => a.type === "move");
-    expect(v.legalCosts[m]).toEqual({ ap: 1, mp: -2 }); // 0 MP: 1 AP converts to 3 MP, then 1 is spent
+    expect(v.actions.find((o) => o.action.type === "bond")?.cost).toEqual({ ap: 1, mp: 0 });
+    expect(v.actions.find((o) => o.action.type === "move")?.cost).toEqual({ ap: 1, mp: -2 }); // 0 MP: 1 AP converts to 3 MP, then 1 is spent
   });
 });

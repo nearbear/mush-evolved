@@ -1,7 +1,7 @@
 // Bots live server-side: model-backed ones need network calls, secrets, and a
 // spend cap, none of which belong in the pure rules package.
 
-import { MAX_CHAT_LENGTH, nextInt, type Action, type LogEntry, type PlayerView, type RngState } from "@mush2/shared";
+import { legalIn, MAX_CHAT_LENGTH, nextInt, type Action, type LogEntry, type PlayerView, type RngState } from "@mush2/shared";
 
 /**
  * Every bot (scripted or model-backed) implements this. A bot only ever
@@ -28,7 +28,7 @@ export class WanderBot implements Bot {
       this.cycle = view.cycle;
       this.moved = 0;
     }
-    const moves = view.legalActions.filter((a) => a.type === "move");
+    const moves = legalIn(view).filter((a) => a.type === "move");
     if (moves.length === 0 || this.moved >= WANDER_MOVES_PER_CYCLE) return { type: "ready" };
     let i: number;
     [i, this.rng] = nextInt(this.rng, moves.length);

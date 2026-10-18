@@ -4,7 +4,7 @@ import { DEFAULT_CONFIG, SHIP_ROOMS } from "../src/config.ts";
 import { apGain, moveCost, movementRules, MODIFIERS } from "../src/modifiers.ts";
 import { logCovert, logPrivate, logSecret } from "../src/log.ts";
 import { CHAT_HISTORY, MAX_CHAT_LENGTH, sendChat } from "../src/chat.ts";
-import { applyAction, createGame, viewFor } from "../src/rules.ts";
+import { applyAction, createGame, legalIn, viewFor } from "../src/rules.ts";
 import { ITRACKIE_ITEM } from "../src/items.ts";
 import { parseGameMessage } from "../src/protocol.ts";
 import { installCameraIn } from "./cameras.ts";
@@ -82,7 +82,7 @@ describe("applyAction", () => {
   it("offers no moves with neither MP nor AP left", () => {
     const state = newGame();
     Object.assign(player(state, "p0"), { ap: 0, mp: 0 });
-    expect(viewFor(state, "p0").legalActions.some((a) => a.type === "move")).toBe(false);
+    expect(legalIn(viewFor(state, "p0")).some((a) => a.type === "move")).toBe(false);
   });
 
   describe("days", () => {

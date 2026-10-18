@@ -1,6 +1,6 @@
 // The three skill slots overlaid on the top-right of a character portrait. Skills are public to everyone in
 // the room. On your own portrait an empty slot is a gold plus that opens the picker; picks are permanent.
-// Which skills can be picked comes from view.legalActions, never computed here.
+// Which skills can be picked comes from view.actions, never computed here.
 
 import { Dialog } from "@base-ui/react/dialog";
 import { DialogHeader } from "./DialogHeader.tsx";
@@ -8,7 +8,7 @@ import { Hint } from "./IconButton.tsx";
 import { Popover } from "@base-ui/react/popover";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { SKILL_SLOTS, skillStatus, type Action, type PlayerView } from "@mush2/shared";
+import { legalIn, SKILL_SLOTS, skillStatus, type Action, type PlayerView } from "@mush2/shared";
 import { GOLD_PLUS_ICON, skillIcon } from "../art/assets.ts";
 import { useNames } from "../i18n/names.ts";
 import "./settings.css";
@@ -28,7 +28,7 @@ export function SkillSlots({
   const names = useNames();
   const [open, setOpen] = useState(false);
   const [pending, setPending] = useState<string | null>(null);
-  const offered = view.legalActions
+  const offered = legalIn(view)
     .flatMap((a) => (a.type === "pick_skill" ? [a.skill] : []))
     .sort((a, b) => String(names.skill(a)).localeCompare(String(names.skill(b)), i18n.language));
 

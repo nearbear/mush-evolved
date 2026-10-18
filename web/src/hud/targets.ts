@@ -1,8 +1,8 @@
 // Looks up what the player has selected in the data the view already holds.
 // No rules here: a target is shown only if the view contains it, and actions
-// come from view.legalActions.
+// come from view.actions.
 
-import type { Action, ActionCost, EquipmentView, ItemView, OtherPlayerView, PlayerView, Target, UnaffordableAction, YouView } from "@mush2/shared";
+import type { Action, ActionOption, EquipmentView, ItemView, OtherPlayerView, PlayerView, Target, YouView } from "@mush2/shared";
 
 export type Resolved =
   | { kind: "player"; person: YouView | OtherPlayerView }
@@ -32,14 +32,9 @@ export function resolveTarget(view: PlayerView, target: Target): Resolved | null
   }
 }
 
-/** Legal actions aimed at this target. */
-export function actionsOn(view: PlayerView, target: Target): Action[] {
-  return view.legalActions.filter((a) => aimedAt(view, a, target));
-}
-
-/** Actions aimed at this target that you only lack the AP or MP for, to show disabled with the reason. */
-export function unaffordableOn(view: PlayerView, target: Target): UnaffordableAction[] {
-  return view.unaffordable.filter((u) => aimedAt(view, u.action, target));
+/** Actions aimed at this target: the ones you can do, then the ones you lack the AP or MP for (shown disabled). */
+export function optionsOn(view: PlayerView, target: Target): ActionOption[] {
+  return view.actions.filter((o) => aimedAt(view, o.action, target));
 }
 
 /** What an action is done to, for walking up to it in the room view; null for actions on nothing in particular. */
@@ -113,13 +108,3 @@ const ACTION_LABEL_KEYS = {
 export const actionLabelKey = (action: Action) => (ACTION_LABEL_KEYS as Partial<Record<Action["type"], string>>)[action.type] as
   | (typeof ACTION_LABEL_KEYS)[keyof typeof ACTION_LABEL_KEYS]
   | undefined;
-
-/** What an action costs you, from the view's `legalCosts`; free if it isn't listed. */
-export function costOf(view: PlayerView, action: Action): ActionCost {
-  return view.legalCosts[view.legalActions.indexOf(action)] ?? { ap: 0, mp: 0 };
-}
-
-/** Your chance of success at an action (0 to 1), from the view's `legalChances`; certain if it isn't listed. */
-export function chanceOf(view: PlayerView, action: Action): number {
-  return view.legalChances[view.legalActions.indexOf(action)] ?? 1;
-}

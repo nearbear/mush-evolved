@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { CHARACTERS } from "../src/characters.ts";
 import { DEFAULT_CONFIG } from "../src/config.ts";
 import { parseGameMessage } from "../src/protocol.ts";
-import { applyAction, createGame, viewFor } from "../src/rules.ts";
+import { affordable, applyAction, createGame, legalIn, viewFor } from "../src/rules.ts";
 import type { Action, GameConfig, GameState, PlayerId, Seat } from "../src/types.ts";
 
 const seats: Seat[] = Array.from({ length: 3 }, (_, i) => ({ id: `p${i}`, name: `Player ${i}`, isBot: false, character: CHARACTERS[i]!.id }));
@@ -62,7 +62,7 @@ describe("punch", () => {
 
   it("only targets living others in your room; illegal punches leave state unchanged", () => {
     const s = ship();
-    const v = viewFor(s, "p0").legalActions.filter((a) => a.type === "punch");
+    const v = legalIn(viewFor(s, "p0")).filter((a) => a.type === "punch");
     expect(v).toEqual([punch("p1")]);
     for (const t of ["p0", "p2"]) expect(applyAction(s, "p0", punch(t)).ok).toBe(false);
     player(s, "p1").alive = false;
@@ -90,27 +90,26 @@ describe("unaffordable actions in the view", () => {
     const s = ship();
     player(s, "p0").ap = 0;
     const v = viewFor(s, "p0");
-    expect(v.legalActions).not.toContainEqual(punch("p1"));
-    expect(v.unaffordable).toContainEqual({ action: punch("p1"), cost: { ap: 1, mp: 0 }, chance: 0.6, lacks: ["ap"] });
+    expect(legalIn(v)).not.toContainEqual(punch("p1"));
+    expect(v.actions).toContainEqual({ action: punch("p1"), cost: { ap: 1, mp: 0 }, chance: 0.6, lacks: ["ap"] });
   });
 
   it("does not list actions blocked by anything else, such as a target in another room", () => {
     const s = ship();
     player(s, "p0").ap = 0;
     const v = viewFor(s, "p0");
-    expect(v.unaffordable.some((u) => u.action.type === "punch" && u.action.target === "p2")).toBe(false);
+    expect(v.actions.some((o) => o.action.type === "punch" && o.action.target === "p2")).toBe(false);
   });
 
-  it("is empty when you can afford everything", () => {
-    expect(viewFor(ship(), "p0").unaffordable.filter((u) => u.action.type === "punch")).toEqual([]);
+  it("lacks nothing when you can afford everything", () => {
+    expect(viewFor(ship(), "p0").actions.filter((o) => o.action.type === "punch" && !affordable(o))).toEqual([]);
   });
 });
 
-describe("legalChances in the view", () => {
-  it("gives each legal action's chance of success, index-aligned, so the player sees the odds", () => {
+describe("chances in the view", () => {
+  it("gives each offered action's chance of success, so the player sees the odds", () => {
     const v = viewFor(ship(), "p0");
-    expect(v.legalChances).toHaveLength(v.legalActions.length);
-    expect(v.legalChances[v.legalActions.findIndex((a) => a.type === "punch" && a.target === "p1")]).toBe(0.6);
-    expect(v.legalChances[v.legalActions.findIndex((a) => a.type === "bond")]).toBe(1);
+    expect(v.actions.find((o) => o.action.type === "punch" && o.action.target === "p1")?.chance).toBe(0.6);
+    expect(v.actions.find((o) => o.action.type === "bond")?.chance).toBe(1);
   });
 });
