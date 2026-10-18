@@ -704,6 +704,57 @@ export function standSpot(
 }
 
 /**
+ * The shortest walk from `from` to `to` over walkable cells, both ends included, stepping along the
+ * grid axes only: a stylistic choice, like the original's staircase walks. Undefined when either
+ * end is off the floor or there is no way through. Display only, like walking itself.
+ */
+export function walkPath(
+  cells: readonly { x: number; y: number }[],
+  from: { x: number; y: number },
+  to: { x: number; y: number },
+): { x: number; y: number }[] | undefined {
+  const key = (c: { x: number; y: number }) => `${c.x},${c.y}`;
+  const walkable = new Set(cells.map(key));
+  if (!walkable.has(key(from)) || !walkable.has(key(to))) return undefined;
+  const cameFrom = new Map<string, { x: number; y: number } | null>([[key(from), null]]);
+  const queue = [from];
+  for (let i = 0; i < queue.length; i++) {
+    const c = queue[i]!;
+    if (c.x === to.x && c.y === to.y) {
+      const path = [];
+      for (let p: { x: number; y: number } | null | undefined = c; p; p = cameFrom.get(key(p))) path.push({ x: p.x, y: p.y });
+      return path.reverse();
+    }
+    for (const n of [{ x: c.x + 1, y: c.y }, { x: c.x - 1, y: c.y }, { x: c.x, y: c.y + 1 }, { x: c.x, y: c.y - 1 }]) {
+      if (walkable.has(key(n)) && !cameFrom.has(key(n))) {
+        cameFrom.set(key(n), c);
+        queue.push(n);
+      }
+    }
+  }
+  return undefined;
+}
+
+/**
+ * The walkable cell nearest the door from `room` to `target`, where someone coming in through it
+ * first stands. Undefined if the room has no such door. Display only.
+ */
+export function doorSpot(
+  layout: ShipLayout,
+  room: RoomLayout,
+  target: string,
+  cells: readonly { x: number; y: number }[],
+): { x: number; y: number } | undefined {
+  const door = room.tiles.find((t) => t.door?.target === target);
+  if (!door || cells.length === 0) return undefined;
+  // The middle of its footprint, which extends from the anchor toward -x/-y.
+  const [w, h] = layout.slices[door.slice]?.footprint ?? [1, 1];
+  const cx = door.x - (w - 1) / 2, cy = door.y - (h - 1) / 2;
+  const dist = (c: { x: number; y: number }) => Math.hypot(c.x - cx, c.y - cy);
+  return [...cells].sort((a, b) => dist(a) - dist(b) || a.x - b.x || a.y - b.y)[0];
+}
+
+/**
  * Rooms behind `room`'s doors, each with the grid shift that puts its door
  * back to `room` on the same cell as `room`'s door to it, so the two share
  * that wall. Rooms are drawn separately in the original, so this is the only

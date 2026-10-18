@@ -15,6 +15,25 @@ Loaded when working on the isometric view. The UI rules in `web/CLAUDE.md` still
   sent to the server); a person or equipment is selected; bare floor clears the selection (on
   desktop, so does any press outside the Inspect panel). A single tap on a reachable door opens it
   in the peek bar; a double-click sends a move. Clicking a faded room acts like its door.
+- Walking (`useWalkers.ts`): nobody jumps. Everyone in your room walks to their spot (you to where
+  you clicked) at `CELLS_PER_SECOND`, along `walkPath`, stepping along the grid axes (a deliberate staircase, not straightened). React re-renders
+  only when someone enters another cell or turns (paint order, strip); between those, a
+  `requestAnimationFrame` loop shifts their `data-walker` elements and the camera by whole pixels,
+  so the camera stays locked on you. Facing is by screen direction: the face strip looks down-right
+  and the back strip up-left, mirrored for the other two. Entering a room you stand in front of the
+  door you came through (`doorSpot`) and don't move. Purely cosmetic: actions and moves go to the
+  server at once, mid-walk or not; you sit on a chair only once you reach it. Each cell change
+  re-runs `placeScene` (about 7 ms, 21 ms with whole-ship fog).
+- Acting walks you there (`useActingOn.ts`): when an action on equipment, a person, or a body on the
+  floor begins, you walk to the equipment's standing spot or the cell before the person or body; a
+  move walks you to the door (a move takes `durationMs` like any action, and the room changes at its end).
+  "Begins" is read from the view's queue: at once if you were idle, otherwise when it shows up as
+  `current` (timed) or leaves the queue with nothing under way (instant). Clearing the queue walks
+  nowhere; a click on the floor afterwards still overrides.
+- Leaving a room (`LeavingRoom.tsx`): when the view's room changes before you've reached the door,
+  the room view keeps showing the room you left, as last seen and with clicks ignored, until you
+  stand at the door (`IsoRoom`'s `leavingTo`/`onLeft`); then it switches and you stand at the door
+  of the new room.
 - Hit-testing is against drawn pixels, not sprite boxes: sprites ignore pointer events and the
   viewport runs `hitTest` front to back with per-frame alpha masks from `hitMask.ts`, so scenery in
   front blocks what's behind it and see-through areas click through. The current room takes clicks

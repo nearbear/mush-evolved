@@ -3,6 +3,7 @@ import type { RoomLayout, ShipLayout, SliceInfo } from "@mush2/shared";
 import shipLayoutJson from "../../../Mush/derived/ship-layout.json?raw";
 import {
   cellAtPoint,
+  doorSpot,
   gridToPx,
   hitTest,
   neighborRooms,
@@ -11,7 +12,9 @@ import {
   spreadActors,
   standSpot,
   walkableCells,
+  walkPath,
 } from "../../src/iso/placement.ts";
+import { facingFor } from "../../src/iso/useWalkers.ts";
 
 const slice = (over: Partial<SliceInfo>): SliceInfo => ({
   sheet: "S",
@@ -294,6 +297,53 @@ describe("standSpot", () => {
   });
   it("falls back to the nearest floor when nothing touches it", () => {
     expect(standSpot(consoleLayout, consoleRoom, 0, [{ x: 0, y: 5 }, { x: 6, y: 5 }])).toBeDefined();
+  });
+});
+
+describe("walkPath", () => {
+  // A 5x3 floor with a wall across x = 2 except at y = 2.
+  const cells: { x: number; y: number }[] = [];
+  for (let y = 0; y < 3; y++) for (let x = 0; x < 5; x++) if (x !== 2 || y === 2) cells.push({ x, y });
+
+  it("goes around obstacles one grid step at a time, both ends included", () => {
+    const path = walkPath(cells, { x: 0, y: 0 }, { x: 4, y: 0 })!;
+    expect(path[0]).toEqual({ x: 0, y: 0 });
+    expect(path.at(-1)).toEqual({ x: 4, y: 0 });
+    expect(path).toHaveLength(9); // 4 across and 2 down and back up
+    for (const [i, c] of path.slice(1).entries()) expect(Math.abs(c.x - path[i]!.x) + Math.abs(c.y - path[i]!.y)).toBe(1);
+    expect(path).toContainEqual({ x: 2, y: 2 });
+  });
+  it("is just the cell when already there", () => {
+    expect(walkPath(cells, { x: 1, y: 1 }, { x: 1, y: 1 })).toEqual([{ x: 1, y: 1 }]);
+  });
+  it("is undefined off the floor or with no way through", () => {
+    expect(walkPath(cells, { x: 0, y: 0 }, { x: 2, y: 0 })).toBeUndefined();
+    expect(walkPath(cells.filter((c) => c.x !== 2), { x: 0, y: 0 }, { x: 4, y: 0 })).toBeUndefined();
+  });
+});
+
+describe("doorSpot", () => {
+  it("is the floor cell nearest the door to that room", () => {
+    const cells = [{ x: 0, y: 0 }, { x: 3, y: 0 }, { x: 1, y: 3 }];
+    // The door at (0,2) covers (0,1) and (0,2).
+    expect(doorSpot(layout, room, "ELSEWHERE", cells)).toEqual({ x: 0, y: 0 });
+    expect(doorSpot(layout, room, "NOWHERE", cells)).toBeUndefined();
+  });
+});
+
+describe("facingFor", () => {
+  it("faces down-right on +x, mirrored for +y, and away up-left on -x, mirrored for -y", () => {
+    const o = { x: 5, y: 5 };
+    expect(facingFor(o, { x: 6, y: 5 })).toEqual({ strip: "face", flip: false });
+    expect(facingFor(o, { x: 5, y: 6 })).toEqual({ strip: "face", flip: true });
+    expect(facingFor(o, { x: 4, y: 5 })).toEqual({ strip: "back", flip: false });
+    expect(facingFor(o, { x: 5, y: 4 })).toEqual({ strip: "back", flip: true });
+  });
+  it("goes by screen direction between grid points", () => {
+    const o = { x: 5, y: 5 };
+    expect(facingFor(o, { x: 7, y: 6 })).toEqual({ strip: "face", flip: false }); // mostly +x: down-right
+    expect(facingFor(o, { x: 4, y: 3 })).toEqual({ strip: "back", flip: true }); // mostly -y: up-right
+    expect(facingFor(o, { x: 4.5, y: 5.5 })).toEqual({ strip: "face", flip: true }); // straight left
   });
 });
 

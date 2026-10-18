@@ -36,9 +36,6 @@
   left: 0;
   top: 0;
 }
-.iso-world.glide {
-  transition: transform 0.3s ease;
-}
 /* The rooms behind the doors, dimmed. Per sprite, and dimmed rather than see-through, because
    their sprites interleave with this room's (IsoRoom): see-through ones would show what they cover. */
 .iso-sprite.neighbor,
@@ -106,6 +103,10 @@
 }
 .crew-sprite.flip {
   transform: scaleX(-1);
+}
+/* Walking (useWalkers): the walk cycle loops until they arrive. */
+.crew-sprite.walking {
+  animation-iteration-count: infinite;
 }
 @keyframes walk-frames {
   from {

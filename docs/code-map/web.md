@@ -35,13 +35,16 @@ All under `web/src/`. UI rules are in `web/CLAUDE.md`.
 - `Markdown.tsx`: restricted chat message rendering.
 - `ActionLabel.tsx`: an action button's label with its cost.
 - `ActionQueue.tsx`: your action under way and the queued ones, with Clear queue, over the room view (both layouts).
-- `targets.ts`: finds the selection in the view (`resolveTarget`, `actionsOn`, `costOf`, `actionLabelKey`).
+- `targets.ts`: finds the selection in the view (`resolveTarget`, `actionsOn`, `costOf`, `actionLabelKey`), and what an action is aimed at (`actionTarget`).
 - `BottomNav.tsx`, `PeekBar.tsx` (phone only): panel switcher; tapped target with its actions.
 
 **iso/** (details in `web/src/iso/CLAUDE.md`)
 
 - `placement.ts`: pure layout math (projection, paint order, walkable cells, hit-testing).
 - `IsoRoom.tsx`: renders the scene with a following camera; the layout holds a `camera`/`camera2` tile in every room, drawn only in your own room and only when `view.roomEquipment` has a `CAMERA` (and clickable as that equipment); handles clicks. Corpses on the floor are placed as actors and drawn with the lying pose (`lyingFrame`); clicking one selects the item. Clicking a chair sits you on it (`seatFor`, `SeatedSprite`, `sittingFrame` in `art/assets.ts`); client-only like walking.
+- `useWalkers.ts`: walking (client-only): everyone in your room walks to their spot along `walkPath` + `smoothPath`, moved per frame by whole pixels with the camera locked on you; facing by screen direction. You enter standing at the door you came through (`doorSpot`). Nothing waits for a walk.
+- `LeavingRoom.tsx`: `LeavingIsoRoom`, what `GameScreen` renders: `IsoRoom`, but on a room change it keeps the room you left on screen until you have walked to its door.
+- `useActingOn.ts`: what your latest action is on (or the door, for a move), read from the view's queue (`begun`), so you walk up to it when it starts; `IsoRoom` turns it into a cell.
 - `hitMask.ts`: per-frame alpha masks for hit-testing.
 - `shipLayout.ts`: fetches the layout JSON and maps atlas sheets to image URLs.
 

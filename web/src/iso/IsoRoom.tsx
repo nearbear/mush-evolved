@@ -33,15 +33,19 @@ import { atlasUrl } from "./shipLayout.ts";
 import { CAMERA_SLICES, equipmentByTileKey } from "./equipmentTiles.ts";
 import { opaqueAt, preloadImage } from "./hitMask.ts";
 import { Markdown } from "../hud/Markdown.tsx";
+import { useWalkers } from "./useWalkers.ts";
+import type { ActingOn } from "./useActingOn.ts";
 import {
   bounds,
   cellAtPoint,
+  doorSpot,
   hitTest,
   neighborRooms,
   placeScene,
   spreadActors,
   standSpot,
   walkableCells,
+  walkPath,
   type PlacedSprite,
 } from "./placement.ts";
 
@@ -100,6 +104,9 @@ export function IsoRoom({
   reachable,
   selected,
   selectedDoor,
+  actingOn,
+  leavingTo,
+  onLeft,
   onMove,
   onSelect,
   onClear,
@@ -122,6 +129,11 @@ export function IsoRoom({
   selected: Target | null;
   /** The door whose target is shown in the peek bar, if any. */
   selectedDoor: RoomId | null;
+  /** What your latest action is on: you walk up to it when this changes (useActingOn). */
+  actingOn: ActingOn | null;
+  /** You've already moved there: walk to the door to it, then `onLeft` (LeavingIsoRoom shows the next room). */
+  leavingTo: RoomId | null;
+  onLeft: () => void;
   onMove: (to: RoomId) => void;
   onSelect: (target: Target) => void;
   /** Bare floor was tapped: drop the selection (and any peeked door). */
@@ -144,24 +156,48 @@ export function IsoRoom({
   const viewportRef = useRef<HTMLDivElement>(null);
   const worldRef = useRef<HTMLDivElement>(null);
   // Where you've clicked to walk. Client-only and cosmetic: the server never hears of it,
-  // and it resets when you change rooms.
+  // and it resets when you change rooms (it belongs to one visit, so coming back doesn't restore it).
   // Sitting on a chair is the same kind of local state: the walk's end point plus the seat taken there.
-  const [walk, setWalk] = useState<{ room: RoomId; cell: { x: number; y: number }; seat?: Seat } | null>(null);
-  const myCell = walk?.room === room ? walk.cell : null;
-  const mySeat = walk?.room === room ? walk.seat : undefined;
+  const [walk, setWalk] = useState<{ visit: number; cell: { x: number; y: number }; seat?: Seat } | null>(null);
   const cells = useMemo(() => (roomLayout ? walkableCells(layout, roomLayout) : []), [layout, roomLayout]);
+  const spots = useMemo(() => spreadActors(cells, occupants.length + corpses.length), [cells, occupants.length, corpses.length]);
+
+  // Everyone walks to their spot (you to where you clicked). Coming into a room, you stand in front
+  // of the door back to the room you left until you walk off. Cosmetic like the spots: nothing waits for it.
+  const visit = useRef<{ room: RoomId; from: RoomId | null; n: number }>({ room, from: null, n: 0 });
+  if (visit.current.room !== room) visit.current = { room, from: visit.current.room, n: visit.current.n + 1 };
+  const here = walk?.visit === visit.current.n ? walk : undefined;
+  const me = occupants.find((o) => o.you);
+  const entryCell = roomLayout && visit.current.from ? doorSpot(layout, roomLayout, visit.current.from, cells) : undefined;
+  const exitCell = roomLayout && leavingTo ? doorSpot(layout, roomLayout, leavingTo, cells) : undefined;
+  const targets = new Map(
+    occupants.map((o, i) => [o.id, (o.you && (exitCell ?? here?.cell ?? entryCell)) || spots[i] || { x: 0, y: 0 }]),
+  );
+  // Where the camera sits as rendered; the walkers shift it while you walk, so it stays on you.
+  const camera = useRef({ x: 0, y: 0, follow: me?.id });
+  const { at: walkers, apply: applyWalkers, offsetOf } = useWalkers(room, cells, targets, worldRef, camera);
+  const myWalker = me && walkers.get(me.id);
+  // Walking out: done once you stand at the door (straight away if there's no door to go through).
+  const outside = !!leavingTo && (!exitCell || !myWalker || (!myWalker.moving && myWalker.cell.x === exitCell.x && myWalker.cell.y === exitCell.y));
+  // biome-ignore lint/correctness/useExhaustiveDependencies: onLeft is rebuilt every render; reaching the door is what matters.
+  useEffect(() => {
+    if (outside) onLeft();
+  }, [outside]);
+  const arrived = !!myWalker && !myWalker.moving && !!here && myWalker.cell.x === here.cell.x && myWalker.cell.y === here.cell.y;
+  const mySeat = arrived ? here?.seat : undefined;
+  const walkersKey = [...walkers].map(([id, w]) => `${id}@${w.cell.x},${w.cell.y}${w.facing.flip ? "f" : ""}`).join(";");
+
 
   // This room and the rooms behind its doors, each with its people, drawn as one scene so that
   // whichever is in front covers the other. Display only: where people stand isn't game state.
   const nearbyKey = JSON.stringify(Object.entries(nearby).map(([r, os]) => [r, os?.map((o) => o.id)]));
-  // biome-ignore lint/correctness/useExhaustiveDependencies: occupantKey, corpseKey and nearbyKey stand in for occupants, corpses and nearby: positions only change when who or what is where changes.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: occupantKey, corpseKey, nearbyKey and walkersKey stand in for occupants, corpses, nearby and walkers: positions only change when who or what is where changes.
   const { scene, sprites, neighborSprites, neighbors, box, ownCells } = useMemo(() => {
     if (!roomLayout) return { scene: [], sprites: [], neighborSprites: [], neighbors: [], box: bounds([]), ownCells: new Set<string>() };
-    const spots = spreadActors(cells, occupants.length + corpses.length);
     const actors = [
       ...occupants.map((o, i) => ({
         id: o.id,
-        cell: (o.you && myCell) || spots[i] || { x: 0, y: 0 },
+        cell: walkers.get(o.id)?.cell ?? spots[i] ?? { x: 0, y: 0 },
         width: 32,
         height: 48,
       })),
@@ -174,9 +210,10 @@ export function IsoRoom({
       const actors = people.map((o, i) => ({ id: o.id, cell: spots[i] ?? { x: 0, y: 0 }, width: 32, height: 48 }));
       return { room: n, dx, dy, actors, id: n.id as RoomId, people, ring };
     });
-    const scene = placeScene(layout, [{ room: roomLayout, dx: 0, dy: 0, actors }, ...neighbors]).filter(
-      (s) => !CAMERA_SLICES.has(s.slice) || (hasCamera && s.room === room),
-    );
+    const scene = placeScene(layout, [{ room: roomLayout, dx: 0, dy: 0, actors }, ...neighbors])
+      .filter((s) => !CAMERA_SLICES.has(s.slice) || (hasCamera && s.room === room))
+      // A walker facing right is drawn mirrored; hit-testing mirrors with it.
+      .map((s) => (s.kind === "actor" && s.room === room && walkers.get(s.key.slice(2))?.facing.flip ? { ...s, flipX: true } : s));
     // Both in paint order, for hit-testing this room before its neighbours.
     const sprites = scene.filter((s) => s.room === room);
     const neighborSprites = scene.filter((s) => s.room !== room);
@@ -188,7 +225,7 @@ export function IsoRoom({
       for (const [ax, ay] of [[x + 1, y], [x - 1, y], [x, y + 1], [x, y - 1]] as const) ownCells.add(`${ax},${ay}`);
     }
     return { scene, sprites, neighborSprites, neighbors, box: bounds(sprites), ownCells };
-  }, [layout, roomLayout, fogDepth, cells, myCell, occupantKey, corpseKey, nearbyKey, hasCamera]);
+  }, [layout, roomLayout, fogDepth, cells, spots, walkersKey, occupantKey, corpseKey, nearbyKey, hasCamera]);
 
   // Sprites draw at exactly one screen pixel per source pixel, so art stays crisp.
   // The camera always keeps you centred, even near a room's edges (the neighbours fill the space
@@ -210,12 +247,32 @@ export function IsoRoom({
   }, [roomLayout]);
   const camX = Math.round(panel.width / 2 - youX);
   const camY = Math.round(panel.height / 2 - youY);
-  // Jump when entering a room; glide when walking inside it.
-  const [settled, setSettled] = useState<RoomId | null>(null);
-  useEffect(() => setSettled(room), [room]);
-  const glide = settled === room;
+  camera.current = { x: camX, y: camY, follow: me?.id };
+  // After every render: put the walkers' in-between pixel shifts (and the camera) back on the DOM.
+  useLayoutEffect(applyWalkers);
 
   const equipmentByKey = useMemo(() => equipmentByTileKey(roomLayout, equipment), [roomLayout, equipment]);
+
+  // Acting on something walks you up to it: equipment's standing spot (as clicking it does), the
+  // last cell before a person or a body on the floor, or the door you're moving through. Things not in this room, or not on its floor
+  // (an item in an inventory), stay where they are.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: only a new request walks; the rest is read as it stands then.
+  useEffect(() => {
+    if (!actingOn || !roomLayout || !myWalker || leavingTo) return;
+    const { target } = actingOn;
+    let cell: { x: number; y: number } | undefined;
+    if (target.kind === "door") cell = doorSpot(layout, roomLayout, target.to, cells);
+    else if (target.kind === "equipment") {
+      const key = [...equipmentByKey].find(([, e]) => e.id === target.id)?.[0];
+      cell = key ? standSpot(layout, roomLayout, Number(key.slice(1)), cells) : undefined;
+    } else {
+      const i = corpses.findIndex((c) => c.id === target.id);
+      const at = target.kind === "player" ? (target.id === me?.id ? undefined : walkers.get(target.id)?.cell) : i >= 0 ? spots[occupants.length + i] : undefined;
+      const path = at && walkPath(cells, myWalker.cell, at);
+      cell = path && path.length > 1 ? path[path.length - 2] : undefined;
+    }
+    if (cell) setWalk({ visit: visit.current.n, cell });
+  }, [actingOn?.n]);
 
   const ringOf = new Map(neighbors.map((n) => [n.id as string, n.ring]));
   const byId = new Map([...occupants, ...neighbors.flatMap((n) => n.people)].map((o) => [o.id, o]));
@@ -232,7 +289,8 @@ export function IsoRoom({
     const o = byId.get(s.key.slice(2));
     const sitting = o?.you && mySeat ? sittingFrame(o.character, mySeat.facing) : undefined;
     if (sitting) return { url: sitting.url, frame: sitting, keyed: false };
-    return { url: spriteStrip(o?.character, "face"), frame: { sx: 0, sy: 0, width: 32, height: 48 }, keyed: true };
+    const strip = (o && s.room === room && walkers.get(o.id)?.facing.strip) || "face";
+    return { url: spriteStrip(o?.character, strip), frame: { sx: 0, sy: 0, width: 32, height: 48 }, keyed: true };
   };
 
   // Load every image this room hit-tests against, so masks are ready by the first click.
@@ -288,7 +346,13 @@ export function IsoRoom({
       const { url, frame, keyed } = source(s);
       return !url || opaqueAt(url, frame, px, py, keyed);
     };
-    const hit = hitTest(sprites, x, y, opaque);
+    // People part-way between cells are drawn shifted from their placed box.
+    const shifted = sprites.map((s) => {
+      if (s.kind !== "actor") return s;
+      const o = offsetOf(s.key.slice(2));
+      return o.x || o.y ? { ...s, left: s.left + o.x, top: s.top + o.y } : s;
+    });
+    const hit = hitTest(shifted, x, y, opaque);
     if (hit) {
       const action = interaction(hit);
       return action ? { sprite: hit, key: hit.key, ...action } : null;
@@ -307,6 +371,7 @@ export function IsoRoom({
   };
 
   const onClick = (e: MouseEvent<HTMLDivElement>) => {
+    if (leavingTo) return;
     const hit = pick(e);
     if (hit?.kind === "person") onSelect({ kind: "player", id: hit.person.id });
     else if (hit?.kind === "item") onSelect({ kind: "item", id: hit.item });
@@ -314,12 +379,12 @@ export function IsoRoom({
       onSelect({ kind: "equipment", id: hit.equipment.id });
       // Step up to it too (cosmetic, like walking on bare floor).
       const cell = standSpot(layout, roomLayout, Number(hit.sprite.key.slice(1)), cells);
-      if (cell) setWalk({ room, cell });
+      if (cell) setWalk({ visit: visit.current.n, cell });
     }
     else if (hit?.kind === "chair") {
       // Sit down (cosmetic, like walking): you stand on the chair's cell in the sitting pose.
       onClear();
-      setWalk({ room, cell: hit.cell, seat: seatFor(hit.dir) });
+      setWalk({ visit: visit.current.n, cell: hit.cell, seat: seatFor(hit.dir) });
     }
     else if (hit?.kind === "door") onDoorTap(hit.to);
     else {
@@ -327,10 +392,11 @@ export function IsoRoom({
       onClear();
       const at = pointIn(e);
       const cell = cellAtPoint(cells, at.x, at.y);
-      if (cell) setWalk({ room, cell });
+      if (cell) setWalk({ visit: visit.current.n, cell });
     }
   };
   const onDoubleClick = (e: MouseEvent<HTMLDivElement>) => {
+    if (leavingTo) return;
     const hit = pick(e);
     if (hit?.kind === "door" && reachable.has(hit.to)) onMove(hit.to);
   };
@@ -383,8 +449,8 @@ export function IsoRoom({
             )}
           <div
             ref={worldRef}
-            className={`iso-world${glide ? " glide" : ""}`}
-            style={{ width: box.width, height: box.height, transform: `translate(${camX}px, ${camY}px)` }}
+            className="iso-world"
+            style={{ width: box.width, height: box.height }}
           >
             <div className="iso-layer">
               {scene.map((s) => {
@@ -417,13 +483,15 @@ export function IsoRoom({
                 }
                 if (s.kind === "actor") {
                   const o = byId.get(s.key.slice(2))!;
+                  const w = walkers.get(o.id);
                   return (
                     <div
                       key={s.key}
                       className={`iso-actor${o.you ? " you" : ""}${isSelected("player", o.id) ? " selected" : ""}${s.key === hoverKey ? " hover" : ""}`}
                       style={place(s)}
+                      data-walker={o.id}
                     >
-                      {o.you && mySeat ? <SeatedSprite character={o.character} seat={mySeat} /> : <CrewSprite character={o.character} />}
+                      {o.you && mySeat ? <SeatedSprite character={o.character} seat={mySeat} /> : <CrewSprite character={o.character} facing={w?.facing} walking={w?.moving} />}
                     </div>
                   );
                 }
@@ -439,28 +507,32 @@ export function IsoRoom({
             {/* Every person, in paint order; only those a wall covers show (CSS). Always mounted, so the copy
                 plays its walk-in in step with the person. */}
             <div className="iso-layer iso-esp">
-              {scene.map((s) =>
-                s.kind === "actor" && !corpseOf(s) ? (
+              {scene.map((s) => {
+                if (s.kind !== "actor" || corpseOf(s)) return null;
+                const o = byId.get(s.key.slice(2));
+                const w = s.room === room && o ? walkers.get(o.id) : undefined;
+                return (
                   <div
                     key={s.key}
                     className={`iso-actor${s.occluded ? " occluded" : ""}${s.room !== room ? " neighbor" : ""}`}
                     style={{ ...place(s), filter: `url(#${espFilter})` }}
+                    data-walker={w && o?.id}
                   >
-                    {byId.get(s.key.slice(2))?.you && mySeat ? (
-                      <SeatedSprite character={byId.get(s.key.slice(2))?.character} seat={mySeat} />
+                    {o?.you && mySeat ? (
+                      <SeatedSprite character={o.character} seat={mySeat} />
                     ) : (
-                      <CrewSprite character={byId.get(s.key.slice(2))?.character} />
+                      <CrewSprite character={o?.character} facing={w?.facing} walking={w?.moving} />
                     )}
                   </div>
-                ) : null,
-              )}
+                );
+              })}
             </div>
             {/* Status badges and speech bubbles last, so no sprite or wall can ever cover them. */}
             <div className="iso-layer iso-badges">
               {scene.map((s) => {
                 const o = s.kind === "actor" && s.room === room ? byId.get(s.key.slice(2)) : undefined;
                 return o ? (
-                  <div key={s.key} className={`iso-badge-anchor${o.busy ? " busy" : ""}`} style={place(s)}>
+                  <div key={s.key} className={`iso-badge-anchor${o.busy ? " busy" : ""}`} style={place(s)} data-walker={o.id}>
                     {o.busy && (
                       <ActionBar
                         bar={o.busy.bar}

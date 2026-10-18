@@ -17,8 +17,10 @@ import { SelfPanel } from "./hud/SelfPanel.tsx";
 import { resolveTarget } from "./hud/targets.ts";
 import { TopBar } from "./hud/TopBar.tsx";
 import { gameSocket, type SeatTicket } from "./net.ts";
-import { IsoRoom, type Corpse, type Occupant } from "./iso/IsoRoom.tsx";
+import type { Corpse, Occupant } from "./iso/IsoRoom.tsx";
+import { LeavingIsoRoom } from "./iso/LeavingRoom.tsx";
 import { useShipLayout } from "./iso/shipLayout.ts";
+import { useActingOn } from "./iso/useActingOn.ts";
 import { useFogDepth } from "./fogDepth.ts";
 import { useSpeechBubbles } from "./scene/useSpeechBubbles.ts";
 import type { Bar } from "./scene/ActionBar.tsx";
@@ -90,9 +92,12 @@ export function GameScreen({ ticket, onLeave }: { ticket: SeatTicket; onLeave: (
   }, [ticket, onLeave]);
 
   const post = (msg: GameClientMessage) => socketRef.current?.send(JSON.stringify(msg));
+  // You walk up to whatever your action is on, when it starts (cosmetic; see useActingOn).
+  const { actingOn, sent } = useActingOn(view?.you);
   // Acting shows its result in the iTrackie's Room log tab; the phone's bottom nav stays where it is.
   const send = (action: Action) => {
     post({ type: "action", action });
+    sent(action);
     if (action.type === "access") setTerminalId(action.equipment);
     setRoomLogRequest((n) => n + 1);
   };
@@ -165,7 +170,7 @@ export function GameScreen({ ticket, onLeave }: { ticket: SeatTicket; onLeave: (
             {!you.alive ? (
               <DeathNotice view={view} />
             ) : layout ? (
-              <IsoRoom
+              <LeavingIsoRoom
                 layout={layout}
                 room={you.room}
                 occupants={[you, ...view.players.filter((p) => p.room === you.room)]
@@ -178,6 +183,7 @@ export function GameScreen({ ticket, onLeave }: { ticket: SeatTicket; onLeave: (
                 reachable={reachable}
                 selected={target}
                 selectedDoor={peekDoor}
+                actingOn={actingOn}
                 onMove={move}
                 onSelect={select}
                 onClear={() => select(null)}

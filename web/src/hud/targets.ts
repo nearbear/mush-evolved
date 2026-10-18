@@ -42,6 +42,17 @@ export function unaffordableOn(view: PlayerView, target: Target): UnaffordableAc
   return view.unaffordable.filter((u) => aimedAt(view, u.action, target));
 }
 
+/** What an action is done to, for walking up to it in the room view; null for actions on nothing in particular. */
+export function actionTarget(a: Action): Target | null {
+  if (a.type === "examine") return a.target;
+  if ("equipment" in a) return { kind: "equipment", id: a.equipment };
+  if ("item" in a) return { kind: "item", id: a.item };
+  if (a.type === "bond" || a.type === "dtt" || a.type === "stt" || a.type === "heal" || a.type === "punch" || a.type === "spike") {
+    return { kind: "player", id: a.target };
+  }
+  return null;
+}
+
 function aimedAt(view: PlayerView, a: Action, target: Target): boolean {
   switch (a.type) {
     case "examine":

@@ -57,7 +57,7 @@ A stalled or wiped game is the most visible failure for players.
 
 The client renders a view and sends intents, so there's little logic to unit test, and that's by design.
 
-- **Pure layout math** (`web/tests/iso/placement.test.ts`: projection, paint order, standing spots, wall occlusion, `hitTest`; `web/tests/scene/plan.test.ts`: the minimap's paths and dot placement). *Covered.*
+- **Pure layout math** (`web/tests/iso/placement.test.ts`: projection, paint order, standing spots, wall occlusion, `hitTest`, walking paths and facing; `web/tests/iso/useActingOn.test.ts`: which queued action just began, and what an action is aimed at; `web/tests/scene/plan.test.ts`: the minimap's paths and dot placement). *Covered.*
 - **Markdown rendering** (`web/tests/hud/Markdown.test.tsx`): bold, headers, lists, links and HTML dropped, read-only checkboxes. *Covered.*
 - **`targets.ts`** (finding the selection in a view, `actionLabel`): pure and cheap to test. *Missing.*
 - **Lobby panel keeps its size** (`tools/tests/lobby/lobby.test.ts`): joining a ship must not resize the panel, on desktop and a 360px phone, in en/fr/es. A real-browser test in `npm test`: it starts Vite in-process, opens the lobby in headless Chromium (Playwright), and fakes the matchmaker websocket, so it needs no dev servers. *Covered.*
