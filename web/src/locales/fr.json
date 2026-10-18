@@ -20,6 +20,9 @@
     },
     "fogDepth": {
       "label": "Salles dans le brouillard",
+      "enableAll": "Activer tous les cheats ci-dessus",
+      "disableAll": "Désactiver tous les cheats ci-dessus",
+      "instantActions": "Actions instantanées",
       "one": "1 salle autour",
       "two": "2 salles autour",
       "all": "Tout le vaisseau"

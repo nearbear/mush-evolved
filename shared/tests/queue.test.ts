@@ -36,6 +36,14 @@ describe("timed actions", () => {
     expect(base.action).toEqual({ durationMs: 2000, queueCap: 3, resolveAt: "end" });
   });
 
+  it("the instantActions cheat skips the bar and does the action at once", () => {
+    const s = ship();
+    player(s, "p0").cheats = ["instantActions"];
+    const done = ok(queueAction(s, "p0", punch("p1"), 1000));
+    expect(player(done, "p0").current).toBeNull();
+    expect(hp(done, "p1")).toBe(base.startHp - base.punch.effect.damage);
+  });
+
   it("an action starts a bar and happens, and is paid for, only when the bar runs out", () => {
     const started = ok(queueAction(ship(), "p0", punch("p1"), 1000));
     expect(player(started, "p0").current).toEqual({ action: punch("p1"), since: 1000, until: 1000 + D });

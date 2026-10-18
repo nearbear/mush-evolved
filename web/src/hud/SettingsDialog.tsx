@@ -28,6 +28,7 @@ export function SettingsDialog({
 }) {
   const { t } = useTranslation();
   const fogDepth = useFogDepth();
+  const allOn = CHEATS.every((c) => activeCheats.includes(c));
   return (
     <Dialog.Root>
       <Hint label={t("settings.open")}>
@@ -60,6 +61,9 @@ export function SettingsDialog({
                   {t(`settings.cheats.${cheat}`)}
                 </label>
               ))}
+              <button type="button" onClick={() => CHEATS.forEach((c) => activeCheats.includes(c) === allOn && onCheat(c, !allOn))}>
+                {t(allOn ? "settings.cheats.disableAll" : "settings.cheats.enableAll")}
+              </button>
               <label className="settings-cheat">
                 {t("settings.cheats.actopi.label")}
                 <select

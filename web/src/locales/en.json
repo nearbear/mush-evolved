@@ -20,6 +20,9 @@
     },
     "fogDepth": {
       "label": "Fogged rooms shown",
+      "enableAll": "Enable all cheats above",
+      "disableAll": "Disable all cheats above",
+      "instantActions": "Instant actions",
       "one": "1 room out",
       "two": "2 rooms out",
       "all": "Whole ship"

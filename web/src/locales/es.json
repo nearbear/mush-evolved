@@ -20,6 +20,9 @@
     },
     "fogDepth": {
       "label": "Salas con niebla",
+      "enableAll": "Activar todos los trucos de arriba",
+      "disableAll": "Desactivar todos los trucos de arriba",
+      "instantActions": "Acciones instantáneas",
       "one": "1 sala alrededor",
       "two": "2 salas alrededor",
       "all": "Toda la nave"
