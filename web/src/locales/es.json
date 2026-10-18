@@ -257,6 +257,7 @@
     "full_belly": "Barriga llena",
     "hungry": "Hambriento",
     "immune": "Inmune a la infección",
+    "immunity": "Inmunidad",
     "pacifist": "Pacifista",
     "contaminated": "Contaminación: {{level}}",
     "desc": {
@@ -264,6 +265,7 @@
       "full_belly": "No puedes comer más hasta tener más hambre.",
       "hungry": "Pierdes salud en cada ciclo hasta que comas algo.",
       "immune": "Los intentos de infectarte no tienen efecto por ahora.",
+      "immunity": "Un rasgo: los intentos de infectarte nunca hacen nada. No se puede quitar.",
       "pacifist": "Toda acción agresiva en la sala de esta persona cuesta 2 PA más, incluidas las suyas. Se acumula con otros pacifistas. No se puede quitar.",
       "contaminated": "Un humano que has contaminado. Al llegar a su capacidad se vuelve Mush."
     }

@@ -8,7 +8,8 @@ import type { Action, GameState, PlayerId } from "../src/types.ts";
 import { makeSeats, offered, option, player } from "./support.ts";
 
 const seats = makeSeats(5);
-const config = { ...DEFAULT_CONFIG, mushCount: 1, startInventory: [], startItems: [], maxAp: 99, startAp: 50 };
+// No character traits: seat p1 is Chun, who is immune.
+const config = { ...DEFAULT_CONFIG, characterModifiers: {}, mushCount: 1, startInventory: [], startItems: [], maxAp: 99, startAp: 50 };
 const spike = (target: PlayerId): Action => ({ type: "spike", target });
 
 /** p0 Mush with 2 spores; p1 human with p0 in SICK_BAY; p2 Mush and p3 human in the refectory; p4 human alone in the lab. */

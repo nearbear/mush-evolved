@@ -1,6 +1,6 @@
 // Crew identities. A character mostly picks the art a seat is drawn with; the
 // few rules tied to one are starting modifiers in `config.characterModifiers`
-// (Ian's Pacifist). The ids match the sprite file names in
+// (traits: Ian's Pacifist, Chun's Immunity). The ids match the sprite file names in
 // Mush/clients/iso/gfx/anim/perso.
 
 export const CHARACTERS = [

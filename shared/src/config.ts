@@ -88,7 +88,7 @@ export const DEFAULT_CONFIG: GameConfig = {
   // Confirmed 2026-10-15: nobody starts with a skill; players pick up to three
   // (SKILL_SLOTS) with the free, permanent pick_skill action.
   startSkills: [],
-  characterModifiers: { ian: ["pacifist"] },
+  characterModifiers: { ian: ["pacifist"], chun: ["immunity"] },
   creative: { refundOdds: 0.5 },
   anticPerfume: { immuneCycles: 2 },
   logistics: { ap: 1 },

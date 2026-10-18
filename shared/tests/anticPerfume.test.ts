@@ -7,7 +7,8 @@ import type { Action, GameState } from "../src/types.ts";
 import { makeSeats, player } from "./support.ts";
 
 const seats = makeSeats(4);
-const config = { ...DEFAULT_CONFIG, mushCount: 1, startInventory: [], startItems: [], maxAp: 99, startAp: 10 };
+// No character traits: seat p1 is Chun, who is immune.
+const config = { ...DEFAULT_CONFIG, characterModifiers: {}, mushCount: 1, startInventory: [], startItems: [], maxAp: 99, startAp: 10 };
 const shower: Action = { type: "shower", equipment: "BEDROOM_A:SHOWER" };
 
 /** p0 is Mush, the rest human; everyone in Bedroom Alpha; p1 has the skill and is dirty. */

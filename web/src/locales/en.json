@@ -256,6 +256,7 @@
     "full_belly": "Full belly",
     "hungry": "Hungry",
     "immune": "Immune to infection",
+    "immunity": "Immunity",
     "pacifist": "Pacifist",
     "contaminated": "Contamination: {{level}}",
     "desc": {
@@ -263,6 +264,7 @@
       "full_belly": "You can't eat more until you are hungrier.",
       "hungry": "You lose health every cycle until you eat something.",
       "immune": "Attempts to infect you do nothing for now.",
+      "immunity": "A trait: attempts to infect you never do anything. It can't be removed.",
       "pacifist": "Every aggressive action in this person's room costs 2 more AP, theirs included. Stacks with other pacifists. It can't be removed.",
       "contaminated": "A human you have contaminated. At their capacity they turn Mush."
     }

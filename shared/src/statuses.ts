@@ -1,12 +1,12 @@
 // Status effects. `dirty` is stored in `PlayerState.statuses`; `full_belly`, `hungry`,
-// `immune` and `pacifist` are derived from satiety each time they are asked for, so they can't
-// drift out of step with it. Public statuses show on the Inspect panel for
+// `immune`, `immunity` and `pacifist` are derived each time they are asked for (from satiety, skills
+// and traits), so they can't drift out of step with it. Public statuses show on the Inspect panel for
 // everyone in the room; private ones appear only in your own view.
 // Names and icons live in the client (i18n keys `status.<id>`).
 
 import type { GameState, PlayerState } from "./types.ts";
 
-export const STATUS_IDS = ["dirty", "full_belly", "hungry", "immune", "pacifist"] as const;
+export const STATUS_IDS = ["dirty", "full_belly", "hungry", "immune", "immunity", "pacifist"] as const;
 export type StatusId = (typeof STATUS_IDS)[number];
 
 /** Confirmed 2026-10-14: dirty is public; full belly and hungry are private. */
@@ -15,9 +15,19 @@ export const STATUS_PUBLIC: Readonly<Record<StatusId, boolean>> = {
   full_belly: false,
   hungry: false,
   immune: false,
+  // Owner, 2026-10-18: every character trait is public.
+  immunity: true,
   // Owner, 2026-10-18: roommates see Ian's Pacifist as a status icon.
   pacifist: true,
 };
+
+/** Statuses that are character traits (permanent, innate): public, but shown on Inspect only, never over the head. */
+export const TRAIT_STATUS_IDS: readonly StatusId[] = ["immunity", "pacifist"];
+
+/** The statuses worth floating over a character's head: everything but traits. */
+export function overheadStatuses(statuses: readonly string[]): string[] {
+  return statuses.filter((id) => !(TRAIT_STATUS_IDS as readonly string[]).includes(id));
+}
 
 /** Humans at or above `fullBellyAt` satiety can't eat. */
 export function isFullBelly(state: Readonly<Pick<GameState, "config">>, p: Readonly<PlayerState>): boolean {
@@ -36,7 +46,12 @@ export function isHungry(state: Readonly<Pick<GameState, "config" | "cycle">>, p
 
 /** Immune to infection until the cycle in `immuneUntil` (granted by the antic_perfume skill). */
 export function isImmune(state: Readonly<Pick<GameState, "cycle">>, p: Readonly<PlayerState>): boolean {
-  return p.immuneUntil !== undefined && state.cycle < p.immuneUntil;
+  return hasImmunityTrait(p) || (p.immuneUntil !== undefined && state.cycle < p.immuneUntil);
+}
+
+/** Immunity is a permanent trait (Chun's): infection never touches the holder. */
+export function hasImmunityTrait(p: Readonly<PlayerState>): boolean {
+  return p.modifiers.includes("immunity");
 }
 
 /** Pacifist is a permanent modifier (Ian's), shown as a status so it can be inspected; it can never be removed. */
@@ -50,7 +65,7 @@ export function statusesOf(state: Readonly<Pick<GameState, "config" | "cycle">>,
     ...p.statuses,
     ...(isFullBelly(state, p) ? ["full_belly"] : []),
     ...(isHungry(state, p) ? ["hungry"] : []),
-    ...(isImmune(state, p) ? ["immune"] : []),
+    ...(hasImmunityTrait(p) ? ["immunity"] : isImmune(state, p) ? ["immune"] : []),
     ...(isPacifist(p) ? ["pacifist"] : []),
   ];
 }

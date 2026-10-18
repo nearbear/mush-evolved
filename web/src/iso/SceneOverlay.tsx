@@ -5,6 +5,7 @@
 import { useRef, type CSSProperties, type Ref } from "react";
 import { useTranslation } from "react-i18next";
 import { ActionBar } from "../scene/ActionBar.tsx";
+import { overheadStatuses } from "@mush2/shared";
 import { StatusBadges } from "../scene/StatusBadges.tsx";
 import { BUBBLE_MS, type Bubble } from "../scene/useSpeechBubbles.ts";
 import { Markdown } from "../hud/Markdown.tsx";
@@ -49,7 +50,7 @@ export function SceneOverlay({
             )}
             <StatusBadges statuses={o.statuses} />
             {bubbles.get(o.id) && (
-              <div className={`speech-bubbles${o.statuses.length ? " raised" : ""}`}>
+              <div className={`speech-bubbles${overheadStatuses(o.statuses).length ? " raised" : ""}`}>
                 {bubbles.get(o.id)!.map((b) => (
                   <div key={b.id} className="speech-bubble" style={{ "--bubble-ms": `${BUBBLE_MS}ms` } as CSSProperties}>
                     <Markdown text={b.text} />

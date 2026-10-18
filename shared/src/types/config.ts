@@ -140,7 +140,7 @@ export interface GameConfig {
     mpPenalty: number; // MP added to each move while carrying a heavy item, however many (confirmed 2026-10-16).
   };
   startSkills: string[]; // Skills every player starts with (none since 2026-10-15; players pick their own).
-  characterModifiers: Record<string, string[]>; // Modifiers a character starts with, by character id (Ian: pacifist, owner 2026-10-18).
+  characterModifiers: Record<string, string[]>; // Modifiers a character starts with, by character id (traits: Ian pacifist, owner 2026-10-18; Chun immunity, owner 2026-10-18).
   startItems: { type: string; room: RoomId; builds?: string }[]; // Items placed in rooms at the start of the game. Types come from ITEM_TYPES in items.ts.
   startInventory: string[]; // Item types every player starts carrying (one of each).
   rooms: Record<RoomId, RoomId[]>; // Adjacency list. Movement is only allowed along these edges.

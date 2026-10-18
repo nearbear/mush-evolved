@@ -16,6 +16,7 @@ import { creative } from "./modifiers/creative.ts";
 import { computer } from "./modifiers/computer.ts";
 import { first_aid } from "./modifiers/first_aid.ts";
 import { logistics } from "./modifiers/logistics.ts";
+import { immunity } from "./modifiers/immunity.ts";
 import { lying_down } from "./modifiers/lying_down.ts";
 import { medic } from "./modifiers/medic.ts";
 import { pacifist } from "./modifiers/pacifist.ts";
@@ -80,7 +81,7 @@ export interface Modifier extends Partial<FoldHooks> {
 export type ModifierRegistry = Readonly<Record<string, Modifier>>;
 
 /** Items and skills will register here too. When a skill gains rules, update its entry in SKILL_STATUS (skills.ts). */
-export const MODIFIERS: Record<string, Modifier> = { lying_down, medic, first_aid, sturdy, creative, antic_perfume, logistics, caffeinomaniac, computer, pacifist };
+export const MODIFIERS: Record<string, Modifier> = { lying_down, medic, first_aid, sturdy, creative, antic_perfume, logistics, caffeinomaniac, computer, pacifist, immunity };
 
 /** The ids every hook folds over: the player's skills, then their other modifiers. */
 export function modifierIds(player: Readonly<PlayerState>): string[] {

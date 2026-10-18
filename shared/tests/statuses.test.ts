@@ -1,12 +1,15 @@
 import { describe, expect, it } from "vitest";
 import { DEFAULT_CONFIG } from "../src/config.ts";
+import { overheadStatuses } from "../src/statuses.ts";
 import { MODIFIERS } from "../src/modifiers.ts";
+import { contaminate } from "../src/infection.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";
 import type { GameState, PlayerId } from "../src/types.ts";
 import { makeSeats, player, mustApply, nextCycle, offered } from "./support.ts";
 
 const seats = makeSeats(4);
-const config = { ...DEFAULT_CONFIG, mushCount: 1, startInventory: [], startItems: [], maxAp: 99, startAp: 50 };
+// No character traits by default: seat p1 is Chun, whose public Immunity would show in every view.
+const config = { ...DEFAULT_CONFIG, characterModifiers: {}, mushCount: 1, startInventory: [], startItems: [], maxAp: 99, startAp: 50 };
 
 /** p0 is Mush, the rest human. All in one room. */
 function ship(): GameState {
@@ -152,5 +155,23 @@ describe("pacifist", () => {
     expect(viewFor(s, "p2").statuses).not.toContain("pacifist");
     s.players[1]!.role = "mush";
     expect(viewFor(s, "p2").players.find((p) => p.id === "p1")!.statuses).toEqual(["pacifist"]);
+  });
+});
+
+describe("immunity trait", () => {
+  it("is a permanent public status kept off the over-head badges, and infection never touches the holder", () => {
+    const s = ship();
+    s.players[1]!.modifiers.push("immunity");
+    expect(viewFor(s, "p1").statuses).toEqual(expect.arrayContaining(["immunity"]));
+    expect(viewFor(s, "p1").statuses).not.toContain("immune");
+    expect(viewFor(s, "p2").players.find((p) => p.id === "p1")!.statuses).toEqual(["immunity"]);
+    expect(overheadStatuses(["dirty", "immunity", "pacifist"])).toEqual(["dirty"]);
+    contaminate(s, s.players[1]!, 10);
+    expect(s.players[1]!.role).toBe("human");
+    expect(s.contamination["p1"] ?? 0).toBe(0);
+  });
+
+  it("is given to Chun at the start", () => {
+    expect(DEFAULT_CONFIG.characterModifiers["chun"]).toEqual(["immunity"]);
   });
 });
