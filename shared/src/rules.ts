@@ -8,6 +8,7 @@
 
 import { applyCheats, makeHuman, type ActopiCheat, type Cheat, type RoleCheat } from "./cheats.ts";
 import { ACTIONS, type ActionDef } from "./actions.ts";
+import { getUp } from "./actions/lie_down.ts";
 import { itemsIn } from "./items.ts";
 import { actionFailed, apGain, carePointsGain, channelLimit, computerPointsGain, cycleChanged, inventorySlots, movementRules, satietyLoss } from "./modifiers.ts";
 import { contaminationSeenBy, convert } from "./infection.ts";
@@ -144,14 +145,7 @@ export function applyAction(state: GameState, playerId: PlayerId, action: Action
   return { ok: false, error: "Illegal action" };
 }
 
-/**
- * Gets you out of bed. Any other character action does it (owner, 2026-10-17), from the moment it is queued
- * (owner, 2026-10-18); ending your cycle is not one.
- */
-export function getUp(actor: PlayerState): void {
-  actor.modifiers = actor.modifiers.filter((m) => m !== "lying_down");
-  delete actor.lyingIn;
-}
+export { getUp } from "./actions/lie_down.ts";
 
 /**
  * Checks an action against the state as it is now, then pays for it, rolls its odds, and applies it. False (and

@@ -11,6 +11,10 @@ export interface EquipmentType {
   shower?: boolean;
   /** A terminal: players can access it, which opens its (so far blank) window. */
   terminal?: boolean;
+  /** Can be dismantled, leaving this much scrap in the room. */
+  dismantle?: { metal: number; plastic: number };
+  /** Only ever built from a blueprint: left out of the map's starting equipment even where the map draws one. */
+  builtOnly?: boolean;
 }
 
 /**
@@ -21,8 +25,9 @@ export const EQUIPMENT_TYPES: Record<string, EquipmentType> = {
   ASTRO_MODULE: { terminal: true },
   BEAT_BOX: {},
   BED: { bed: true },
-  // Installed from a carried `camera` item (actions/install.ts); never part of the map.
-  CAMERA: {},
+  // Installed from a carried `camera` item (actions/install.ts); never part of the map. Dismantling it leaves the
+  // camera item's scrap (#35, owner 2026-10-17).
+  CAMERA: { dismantle: { metal: 1, plastic: 0 } },
   COFFEE_DISPENSER: { dispenses: "coffee" },
   COMBUSTION_CHAMBER_ACCESS: {},
   COM_CENTER: { terminal: true },
@@ -46,7 +51,9 @@ export const EQUIPMENT_TYPES: Record<string, EquipmentType> = {
   RESEARCH_LAB: { terminal: true },
   ROTATIONAL_REACTOR: {},
   SHOWER: { shower: true },
-  SOFA: {},
+  // Owner, 2026-10-18, from the French wiki: a bed that can be built in any room (more than one per room), never
+  // there at the start; dismantling it leaves 1 plastic scrap.
+  SOFA: { bed: true, builtOnly: true, dismantle: { metal: 0, plastic: 1 } },
   STELLAR_ANTENNA: {},
   SUPER_CALC: { terminal: true },
   SURGERY_POD: {},

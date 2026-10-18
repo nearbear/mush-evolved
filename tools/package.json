@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "ship-layout": "node src/shipLayout/convert.ts",
+    "layout-query": "node src/shipLayout/query.ts",
     "asset-index": "node src/assetIndex/assetIndex.ts",
     "ods-data": "node src/odsData/odsData.ts",
     "test": "vitest run",

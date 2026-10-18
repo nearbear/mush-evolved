@@ -24,6 +24,7 @@ import type {
 } from "@mush2/shared";
 // The leaf module, not the package index: the index loads config.ts, which reads the file this tool writes.
 import { placedEquipment } from "../../../shared/src/shipLayout.ts";
+import { EQUIPMENT_TYPES } from "../../../shared/src/equipment.ts";
 import { decodePng, pngSize, type Image } from "./png.ts";
 import { cachedPlan, convertShipPlan, formatShipPlan } from "./shipPlan.ts";
 import { stretchRooms } from "./stretch.ts";
@@ -328,7 +329,8 @@ function fail(message: string): never {
 export function roomGraph(layout: ShipLayout): ShipRoom[] {
   return layout.rooms.flatMap((r) => {
     const doors = [...new Set(r.tiles.flatMap((t) => (t.door ? [t.door.target] : [])))].sort();
-    const equipment = placedEquipment(r).map(({ id, type }) => ({ id, type }));
+    // Built-only equipment (the turret room's sofa) is drawn by the map but isn't there until someone builds it.
+    const equipment = placedEquipment(r).filter(({ type }) => !EQUIPMENT_TYPES[type]?.builtOnly).map(({ id, type }) => ({ id, type }));
     return doors.length > 0 ? [{ id: r.id, label: r.label, doors, equipment }] : [];
   });
 }

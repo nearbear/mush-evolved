@@ -7,7 +7,7 @@ import type { ReactNode } from "react";
 import { actionVisibility, CHARACTERS, ITEM_TYPES, type Action, type ActionOption, type BotKind, type EquipmentView, type OtherPlayerView, type PlayerView, type ShipLayout, type Target } from "@mush2/shared";
 import { characterImage, portrait } from "../art/assets.ts";
 import { atlasUrl } from "../iso/shipLayout.ts";
-import { equipmentByTileKey } from "../iso/equipmentTiles.ts";
+import { equipmentByTileKey, roomAsBuilt } from "../iso/equipmentTiles.ts";
 import { frameRect } from "../iso/placement.ts";
 import { ItemFace } from "./ItemFace.tsx";
 import { ItemIcon } from "./ItemIcon.tsx";
@@ -109,7 +109,8 @@ function Details({ view, layout, resolved, onAction }: { view: PlayerView; layou
 /** The sprite the room draws for this equipment, scaled to the column width (like the item face, sized off `--tile`). */
 function EquipmentSprite({ view, layout, equipment }: { view: PlayerView; layout?: ShipLayout; equipment: EquipmentView }) {
   const names = useNames();
-  const room = layout?.rooms.find((r) => r.id === view.you.room);
+  const mapRoom = layout?.rooms.find((r) => r.id === view.you.room);
+  const room = mapRoom && roomAsBuilt(mapRoom, view.roomEquipment);
   const entry = [...equipmentByTileKey(room, view.roomEquipment)].find(([, e]) => e.id === equipment.id);
   const tile = room?.tiles[Number(entry?.[0].slice(1))];
   const slice = tile && layout?.slices[tile.slice];

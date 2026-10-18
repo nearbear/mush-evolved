@@ -30,7 +30,7 @@ import { StatusBadges } from "../scene/StatusBadges.tsx";
 import { BUBBLE_MS, type Bubble } from "../scene/useSpeechBubbles.ts";
 import { useNames } from "../i18n/names.ts";
 import { atlasUrl } from "./shipLayout.ts";
-import { CAMERA_SLICES, equipmentByTileKey } from "./equipmentTiles.ts";
+import { CAMERA_SLICES, equipmentByTileKey, roomAsBuilt } from "./equipmentTiles.ts";
 import { opaqueAt, preloadImage } from "./hitMask.ts";
 import { Markdown } from "../hud/Markdown.tsx";
 import { useWalkers } from "./useWalkers.ts";
@@ -156,7 +156,13 @@ export function IsoRoom({
 }) {
   const names = useNames();
   const { t } = useTranslation();
-  const roomLayout = layout.rooms.find((r) => r.id === room);
+  // Built equipment (a sofa) is drawn at the room's spot; only here, like the camera.
+  const sofaKey = equipment.find((e) => e.type === "SOFA")?.id;
+  // biome-ignore lint/correctness/useExhaustiveDependencies: sofaKey stands in for equipment: the room only changes when a sofa comes or goes.
+  const roomLayout = useMemo(() => {
+    const r = layout.rooms.find((r) => r.id === room);
+    return r && roomAsBuilt(r, equipment);
+  }, [layout, room, sofaKey]);
   // The layout has a camera tile in every room. It is drawn only here, and only once a camera is installed
   // (other rooms' cameras are hidden information, so they are never drawn).
   const hasCamera = equipment.some((e) => e.type === CAMERA_EQUIPMENT);
@@ -183,8 +189,10 @@ export function IsoRoom({
   const exitCell = roomLayout && leavingTo ? doorSpot(layout, roomLayout, leavingTo, cells) : undefined;
   // Someone in bed lies in the middle of the bed's footprint, mirrored to run along the bed.
   const beds = new Map<string, { cell: { x: number; y: number }; flip: boolean }>();
+  const equipmentByKey = useMemo(() => equipmentByTileKey(roomLayout, equipment), [roomLayout, equipment]);
+  const tileOf = new Map([...equipmentByKey].map(([key, e]) => [e.id, Number(key.slice(1))]));
   for (const o of occupants) {
-    const tile = o.lying && roomLayout ? placedEquipment(roomLayout).find((e) => e.id === o.lying)?.tile : undefined;
+    const tile = o.lying ? tileOf.get(o.lying) : undefined;
     const t = tile === undefined ? undefined : roomLayout?.tiles[tile];
     if (!t) continue;
     const [w, h] = layout.slices[t.slice]?.footprint ?? [1, 1];
@@ -281,7 +289,6 @@ export function IsoRoom({
   // After every render: put the walkers' in-between pixel shifts (and the camera) back on the DOM.
   useLayoutEffect(applyWalkers);
 
-  const equipmentByKey = useMemo(() => equipmentByTileKey(roomLayout, equipment), [roomLayout, equipment]);
 
   // Acting on something walks you up to it: equipment's standing spot (as clicking it does), the
   // last cell before a person or a body on the floor, or the door you're moving through. Things not in this room, or not on its floor

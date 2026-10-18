@@ -5,6 +5,7 @@
 import { useEffect, useState } from "react";
 import type { ShipLayout } from "@mush2/shared";
 import layoutUrl from "../../../Mush/derived/ship-layout.json?url";
+import { withoutBuiltOnly } from "./equipmentTiles.ts";
 
 const atlases = import.meta.glob<string>(
   "../../../Mush/clients/iso/gfx/{gfx_01,fx,SmallFill,MidFill,MidFill2,BigFill,BigFill2,dev,Masks}.png",
@@ -26,7 +27,7 @@ export function useShipLayout(): ShipLayout | undefined {
     loading ??= fetch(layoutUrl).then((r) => {
       if (!r.ok) throw new Error(`ship layout: HTTP ${r.status}`);
       return r.json() as Promise<ShipLayout>;
-    });
+    }).then(withoutBuiltOnly);
     loading.then((l) => live && setLayout(l)).catch(console.error);
     return () => {
       live = false;

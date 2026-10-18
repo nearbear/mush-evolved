@@ -41,6 +41,7 @@ All under `web/src/`. UI rules are in `web/CLAUDE.md`.
 **iso/** (details in `web/src/iso/CLAUDE.md`)
 
 - `placement.ts`: pure layout math (projection, paint order, walkable cells, hit-testing).
+- `equipmentTiles.ts`: which tile draws which equipment (`equipmentByTileKey`, also used by the Inspect panel); `SOFA_SPOTS` (hand-picked sofa spots), `withoutBuiltOnly` (drops the map's built-only tiles at load) and `roomAsBuilt` (adds the room's sofa tile once one is built).
 - `IsoRoom.tsx`: renders the scene with a following camera; the layout holds a `camera`/`camera2` tile in every room, drawn only in your own room and only when `view.roomEquipment` has a `CAMERA` (and clickable as that equipment); handles clicks. Corpses on the floor are placed as actors and drawn with the lying pose (`lyingFrame`); clicking one selects the item. Clicking a chair sits you on it (`seatFor`, `SeatedSprite`, `sittingFrame` in `art/assets.ts`); client-only like walking.
 - `useWalkers.ts`: walking (client-only): everyone in your room walks to their spot along `walkPath` + `smoothPath`, moved per frame by whole pixels with the camera locked on you; facing by screen direction. You enter standing at the door you came through (`doorSpot`). Nothing waits for a walk.
 - `LeavingRoom.tsx`: `LeavingIsoRoom`, what `GameScreen` renders: `IsoRoom`, but on a room change it keeps the room you left on screen until you have walked to its door.

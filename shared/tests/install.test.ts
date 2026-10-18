@@ -150,7 +150,7 @@ describe("dismantling a camera", () => {
     expect(after.items.filter((i) => i.type === "camera")).toEqual([]);
     expect(after.items.filter((i) => i.type === "metal_scraps")).toEqual([expect.objectContaining({ at: { kind: "room", id: "REFECTORY" } })]);
     expect(player(after, "p0").ap).toBe(player(s, "p0").ap - DEFAULT_CONFIG.dismantle.cost.ap);
-    expect(viewFor(after, "p1").log.some((e) => e.key === "dismantled")).toBe(true);
+    expect(viewFor(after, "p1").log.some((e) => e.key === "dismantledEquipment")).toBe(true);
   });
 
   it("can still fail, leaving the camera installed and the cost paid", () => {
@@ -160,8 +160,8 @@ describe("dismantling a camera", () => {
     const after = must(applyAction(s, "p0", dismantleEquipment("REFECTORY")));
     expect(hasCamera(after, "REFECTORY")).toBe(true);
     expect(player(after, "p0").ap).toBe(player(s, "p0").ap - s.config.dismantle.cost.ap);
-    expect(viewFor(after, "p0").log.some((e) => e.key === "dismantleFailed")).toBe(true);
-    expect(viewFor(after, "p1").log.some((e) => e.key === "dismantleFailed")).toBe(false);
+    expect(viewFor(after, "p0").log.some((e) => e.key === "dismantleEquipmentFailed")).toBe(true);
+    expect(viewFor(after, "p1").log.some((e) => e.key === "dismantleEquipmentFailed")).toBe(false);
   });
 
   it("works on a camera item that is not installed yet, carried or on the floor", () => {

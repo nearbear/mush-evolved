@@ -12,7 +12,7 @@
   {"id":"LASER_TURRET_A_0","label":"Laser turret Alpha front","doors":["COMMAND_CENTER","CORRIDOR_A"],"equipment":[{"id":"LASER_TURRET_A_0:TURRET_COMMAND","type":"TURRET_COMMAND"}]},
   {"id":"LASER_TURRET_A_1","label":"Laser turret Alpha centre","doors":["SPACESHIP_BAY_A","STORAGE_FRONT"],"equipment":[{"id":"LASER_TURRET_A_1:TURRET_COMMAND","type":"TURRET_COMMAND"}]},
   {"id":"LASER_TURRET_A_2","label":"Laser turret Alpha back","doors":["MOTOR_ROOM","SPACESHIP_BAY_AA"],"equipment":[{"id":"LASER_TURRET_A_2:TURRET_COMMAND","type":"TURRET_COMMAND"}]},
-  {"id":"LASER_TURRET_B_0","label":"Laser turret Beta front","doors":["COMMAND_CENTER","CORRIDOR_A"],"equipment":[{"id":"LASER_TURRET_B_0:TURRET_COMMAND","type":"TURRET_COMMAND"},{"id":"LASER_TURRET_B_0:SOFA","type":"SOFA"}]},
+  {"id":"LASER_TURRET_B_0","label":"Laser turret Beta front","doors":["COMMAND_CENTER","CORRIDOR_A"],"equipment":[{"id":"LASER_TURRET_B_0:TURRET_COMMAND","type":"TURRET_COMMAND"}]},
   {"id":"LASER_TURRET_B_1","label":"Laser turret Beta centre","doors":["SICK_BAY","SPACESHIP_BAY_B"],"equipment":[{"id":"LASER_TURRET_B_1:TURRET_COMMAND","type":"TURRET_COMMAND"}]},
   {"id":"LASER_TURRET_B_2","label":"Laser turret Beta back","doors":["ICARUS","MOTOR_ROOM"],"equipment":[{"id":"LASER_TURRET_B_2:TURRET_COMMAND","type":"TURRET_COMMAND"}]},
   {"id":"CORRIDOR_A","label":"Corridor front","doors":["COMMAND_CENTER","CORRIDOR_B","HYDROPONIC_CENTER","LABORATORY","LASER_TURRET_A_0","LASER_TURRET_B_0","SICK_BAY","STORAGE_FRONT"],"equipment":[]},

@@ -1,6 +1,9 @@
 {
     "model": "sonnet",
     "permissions": {
+        "allow": [
+            "Bash(npm run layout-query:*)"
+        ],
         "deny": [
             "Read(./Mush/derived/ship-layout.json)",
             "Read(./Mush/www/**)",
