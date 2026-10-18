@@ -123,11 +123,26 @@
     "heal": "Soigner",
     "punch": "Frapper",
     "spike": "Contaminer",
+    "move": "Se déplacer",
+    "take": "Ramasser",
+    "drop": "Poser",
+    "research": "Rechercher",
+    "pickSkill": "Choisir une compétence",
     "visibility": { "private": "Privée", "secret": "Secrète", "covert": "Discrète" },
     "chance": "({{percent}} %)",
     "lacksAp": "Pas assez de PA : cela coûte {{need}}, vous en avez {{have}}.",
     "lacksMp": "Pas assez de PM : cela coûte {{need}}, vous en avez {{have}}.",
     "lacksBoth": "Pas assez de PA ni de PM : cela coûte {{needAp}} PA et {{needMp}} PM, vous avez {{haveAp}} PA et {{haveMp}} PM."
+  },
+  "queue": {
+    "label": "Vos actions",
+    "clear": "Vider la file",
+    "busy": "Action en cours",
+    "underWay": "{{action}} en cours"
+  },
+  "errors": {
+    "queue_full": "Votre file d'actions est pleine.",
+    "nothing_queued": "Vous n'avez aucune action à annuler."
   },
   "terminal": {
     "close": "Fermer"
@@ -302,6 +317,7 @@
     "myco_alarm": "Mycoalarme"
   },
   "logEvent": {
+    "actionDropped": "Votre action en attente ({{action}}) n'était plus possible et a été annulée.",
     "crewWakes": "L'équipage se réveille à bord du vaisseau.",
     "cycleBegins": "Le cycle {{cycle}} commence.",
     "dayBegins": "Le jour {{day}} commence.",

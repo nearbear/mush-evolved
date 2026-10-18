@@ -17,6 +17,7 @@ import { nextFloat, shuffle } from "./rng.ts";
 import { chatChannels, readChannels } from "./chat.ts";
 import { clone, fail, findPlayer, type ActionResult } from "./helpers.ts";
 import { damage } from "./death.ts";
+import { activitySeen } from "./log.ts";
 import type {
   Action,
   ChannelId,
@@ -70,6 +71,8 @@ export function createGame(seats: readonly Seat[], config: GameConfig, seed: num
     skills: [...config.startSkills],
     alive: true,
     ready: false,
+    current: null,
+    queue: [],
     cheats: [],
     actopiCheat: "default",
   }));
@@ -132,20 +135,31 @@ export function unaffordableActions(state: GameState, playerId: PlayerId): Unaff
   );
 }
 
+/** Does an action at once, skipping the queue and its timing (queue.ts is how players act; this is its last step). */
 export function applyAction(state: GameState, playerId: PlayerId, action: Action): ActionResult {
   const p = findPlayer(state, playerId);
-  const def: ActionDef<Action> | undefined = ACTIONS[action.type];
-  if (!p || !canAct(state, p) || !def || def.check(state, p, action) !== null) return { ok: false, error: "Illegal action" };
-
-  const cost = def.cost(state, p, action);
   const next = clone(state);
-  const actor = findPlayer(next, playerId)!;
+  if (p && canAct(state, p) && performAction(next, findPlayer(next, playerId)!, action)) return { ok: true, state: next };
+  return { ok: false, error: "Illegal action" };
+}
+
+/**
+ * Checks an action against the state as it is now, then pays for it, rolls its odds, and applies it. False (and
+ * nothing changed) if it isn't legal. Being ready doesn't stop it: an action queued before End cycle still happens
+ * (owner, 2026-10-17). Mutates a state the caller already cloned.
+ */
+export function performAction(next: GameState, actor: PlayerState, action: Action): boolean {
+  const def: ActionDef<Action> | undefined = ACTIONS[action.type];
+  if (!actor.alive || next.phase !== "playing" || !def || def.check(next, actor, action) !== null) return false;
+  const cost = def.cost(next, actor, action);
+  // Odds are read before the cost is paid, as the button showed them.
+  const chance = def.chance?.(next, actor, action) ?? 1;
   actor.ap -= cost.ap;
   actor.mp -= cost.mp;
-  if (def.chance && def.chance(state, p, action) < 1) {
+  if (chance < 1) {
     const [roll, rng] = nextFloat(next.rng);
     next.rng = rng;
-    if (roll < def.chance(state, p, action)) def.apply(next, actor, action);
+    if (roll < chance) def.apply(next, actor, action);
     else {
       def.fail?.(next, actor, action);
       actionFailed(next, actor, cost.ap);
@@ -155,7 +169,7 @@ export function applyAction(state: GameState, playerId: PlayerId, action: Action
   }
   applyCheats(actor, next.config);
   if (next.players.every((pl) => !pl.alive || pl.ready)) advanceCycle(next);
-  return { ok: true, state: next };
+  return true;
 }
 
 /**
@@ -257,7 +271,7 @@ export function viewFor(state: GameState, playerId: PlayerId): PlayerView {
   // A dead body is a corpse item, not a person in a room: nobody gets a dead player's room.
   const living = others.filter((o) => o.alive);
   return {
-    you: { ...you, statuses: [...you.statuses] },
+    you: { ...you, statuses: [...you.statuses], queue: [...you.queue] },
     statuses: statusesOf(state, you),
     // TODO(rules): should Mush see each other's roles? Hidden for now.
     players: others.map((o) => {
@@ -279,6 +293,10 @@ export function viewFor(state: GameState, playerId: PlayerId): PlayerView {
         skills: here ? [...o.skills] : [],
         // Mush see a contaminated human's level, like a status, on people in their room.
         ...(contamination !== undefined ? { contamination } : {}),
+        // A busy bar, never the action: only when its log entry could reach you.
+        ...(here && o.current && activitySeen(state, room, ACTIONS[o.current.action.type].visibility)
+          ? { busy: { since: o.current.since, until: o.current.until } }
+          : {}),
       };
     }),
     unidentified: living
@@ -307,7 +325,7 @@ export function viewFor(state: GameState, playerId: PlayerId): PlayerView {
       to: [...(state.bonds[playerId] ?? [])],
       from: state.players.filter((o) => state.bonds[o.id]?.includes(playerId)).map((o) => o.id),
     },
-    config: { heavyMpPenalty: state.config.heavy.mpPenalty },
+    config: { heavyMpPenalty: state.config.heavy.mpPenalty, actionQueueCap: state.config.action.queueCap },
     maxAp: state.config.maxAp,
     maxHp: state.config.maxHp,
     maxMorale: state.config.maxMorale,
@@ -342,7 +360,7 @@ function equipmentView({ id, type }: Equipment): EquipmentView {
 }
 
 /** Alive, not done for the cycle, and the game is running. */
-function canAct(state: Readonly<GameState>, p: Readonly<PlayerState>): boolean {
+export function canAct(state: Readonly<GameState>, p: Readonly<PlayerState>): boolean {
   return p.alive && !p.ready && state.phase === "playing";
 }
 

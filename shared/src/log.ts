@@ -9,6 +9,7 @@
 // A camera is `CAMERA` room equipment, put there by `install` (#35). A `camera`
 // item, lying in a room or carried, is not a camera yet.
 
+import type { ActionVisibility } from "./actions/action.ts";
 import { CAMERA_EQUIPMENT } from "./equipment.ts";
 import type { GameState, LogEntry, LogParams, PlayerId, RoomId } from "./types.ts";
 
@@ -50,6 +51,14 @@ export function logCovert(state: GameState, actor: PlayerId, key: string, params
 /** A secret or covert entry that reached anyone besides the actor is a warning. One only the actor sees is not. */
 function spilled(visibleTo: LogEntry["visibleTo"]): { level?: "warning" } {
   return visibleTo === "all" || visibleTo.length > 1 ? { level: "warning" } : {};
+}
+
+/**
+ * Whether someone in the actor's room sees them busy with an action of this visibility (its bar): exactly when the
+ * action's log entry could reach them. A witness always sees public and secret entries, covert ones only on camera.
+ */
+export function activitySeen(state: Readonly<GameState>, room: RoomId, visibility: ActionVisibility): boolean {
+  return visibility === "public" || visibility === "secret" || (visibility === "covert" && hasCamera(state, room));
 }
 
 export function hasCamera(state: Readonly<GameState>, room: RoomId): boolean {

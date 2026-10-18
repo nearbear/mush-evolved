@@ -3,8 +3,35 @@
 // helpers turn ids into the player's language. Call `useNames()` in a
 // component so it re-renders when the language changes.
 
-import { BLUEPRINTS, type LogEntry, type RoomId } from "@mush2/shared";
+import { BLUEPRINTS, type ActionType, type LogEntry, type RoomId } from "@mush2/shared";
 import { useTranslation } from "react-i18next";
+
+/** The name of each kind of action, for the action queue and log lines that mention one. Ready never waits in a queue. */
+const ACTION_NAME_KEYS = {
+  move: "actions.move",
+  take: "actions.take",
+  drop: "actions.drop",
+  dismantle: "actions.dismantle",
+  access: "actions.access",
+  research: "actions.research",
+  dispense: "actions.dispense",
+  consume: "actions.consume",
+  cook: "actions.cook",
+  build: "actions.build",
+  jettison: "actions.jettison",
+  install: "actions.install",
+  uninstall: "actions.uninstall",
+  examine: "actions.examine",
+  bond: "actions.bond",
+  dtt: "actions.dtt",
+  stt: "actions.stt",
+  extract_spore: "actions.extractSpore",
+  spike: "actions.spike",
+  shower: "actions.shower",
+  heal: "actions.heal",
+  punch: "actions.punch",
+  pick_skill: "actions.pickSkill",
+} as const satisfies Record<Exclude<ActionType, "ready">, string>;
 
 export function useNames() {
   const { t } = useTranslation();
@@ -21,16 +48,21 @@ export function useNames() {
   };
   const research = (id: string) => t(`research.names.${id}` as never, { defaultValue: id });
   const skill = (id: string) => t(`skills.names.${id}` as never, { defaultValue: id });
+  const action = (type: string) => {
+    const key = (ACTION_NAME_KEYS as Partial<Record<string, string>>)[type];
+    return key ? t(key as never, { defaultValue: type }) : type;
+  };
 
-  /** The text of a log entry. `room`, `item` and `equipment` params are ids and get translated. */
+  /** The text of a log entry. `room`, `item`, `research`, `equipment` and `action` params are ids and get translated. */
   const logLine = ({ key, params = {} }: Pick<LogEntry, "key" | "params">): string => {
     const resolved: Record<string, string | number> = { ...params };
     if (typeof params.room === "string") resolved.room = room(params.room);
     if (typeof params.item === "string") resolved.item = item(params.item);
     if (typeof params.research === "string") resolved.research = research(params.research);
     if (typeof params.equipment === "string") resolved.equipment = equipment(params.equipment);
+    if (typeof params.action === "string") resolved.action = action(params.action);
     return t(`logEvent.${key}` as never, { ...resolved, defaultValue: key });
   };
 
-  return { room, equipment, item, research, skill, logLine };
+  return { room, equipment, item, research, skill, action, logLine };
 }

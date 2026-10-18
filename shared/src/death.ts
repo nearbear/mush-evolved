@@ -32,6 +32,8 @@ export function killPlayer(state: GameState, player: PlayerState): void {
   player.alive = false;
   player.hp = 0;
   player.ready = false;
+  player.current = null;
+  player.queue = [];
 
   // The iTrackie is destroyed; everything else drops into the room, then the body.
   const mine = { kind: "player", id: player.id } as const;

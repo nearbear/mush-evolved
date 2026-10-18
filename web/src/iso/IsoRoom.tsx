@@ -25,6 +25,7 @@ import { CAMERA_EQUIPMENT, CORPSE_ITEM, placedEquipment, type CharacterId, type 
 import { sameTarget } from "../hud/targets.ts";
 import { lyingFrame, spriteStrip, sittingFrame } from "../art/assets.ts";
 import { CrewSprite } from "../scene/CrewSprite.tsx";
+import { ActionBar, type Bar } from "../scene/ActionBar.tsx";
 import { StatusBadges } from "../scene/StatusBadges.tsx";
 import { BUBBLE_MS, type Bubble } from "../scene/useSpeechBubbles.ts";
 import { useNames } from "../i18n/names.ts";
@@ -51,6 +52,8 @@ export interface Occupant {
   you: boolean;
   /** Public statuses, shown over the head (the view decides which; see statuses.ts). */
   statuses: readonly string[];
+  /** The bar of the timed action they are busy with, when the view shows it, and your own action's name. */
+  busy?: { bar: Bar; label?: string };
 }
 
 /** A corpse item on the floor, and whose body it is (from `ItemView.of`). */
@@ -104,6 +107,7 @@ export function IsoRoom({
   onClear,
   onDoorTap,
   bubbles,
+  clockOffset,
 }: {
   layout: ShipLayout;
   room: RoomId;
@@ -128,6 +132,8 @@ export function IsoRoom({
   onDoorTap: (to: RoomId) => void;
   /** Recent global chat per sender, oldest first, shown as speech bubbles over their heads. */
   bubbles: ReadonlyMap<string, Bubble[]>;
+  /** Server clock minus this browser's, for drawing action bars. */
+  clockOffset: number;
 }) {
   const names = useNames();
   const { t } = useTranslation();
@@ -467,7 +473,14 @@ export function IsoRoom({
               {scene.map((s) => {
                 const o = s.kind === "actor" && s.room === room ? byId.get(s.key.slice(2)) : undefined;
                 return o ? (
-                  <div key={s.key} className="iso-badge-anchor" style={place(s)}>
+                  <div key={s.key} className={`iso-badge-anchor${o.busy ? " busy" : ""}`} style={place(s)}>
+                    {o.busy && (
+                      <ActionBar
+                        bar={o.busy.bar}
+                        clockOffset={clockOffset}
+                        label={o.busy.label ? t("queue.underWay", { action: o.busy.label }) : t("queue.busy")}
+                      />
+                    )}
                     <StatusBadges statuses={o.statuses} />
                     {bubbles.get(o.id) && (
                       <div className={`speech-bubbles${o.statuses.length ? " raised" : ""}`}>

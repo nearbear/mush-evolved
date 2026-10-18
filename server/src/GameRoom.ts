@@ -10,6 +10,7 @@ import {
   parseGameMessage,
   startGame,
   legalActions,
+  nextDue,
   viewFor,
   type GameClientMessage,
   type GameServerMessage,
@@ -45,7 +46,7 @@ const BOT_DELAY_MS = 50;
  * Bump when GameState's shape changes. Games stored under another version are
  * discarded on load (there is no migration; games are short-lived).
  */
-const STATE_VERSION = 33;
+const STATE_VERSION = 34;
 
 interface Stored {
   version?: number;
@@ -117,6 +118,7 @@ export class GameRoom extends Server<Env> {
     this.blocked = (await this.ctx.storage.list({ prefix: "blocked:" })).size;
     this.initBots();
     this.scheduleBots();
+    await this.scheduleTick();
   }
 
   /** Called once by the matchmaker over RPC. */
@@ -146,7 +148,7 @@ export class GameRoom extends Server<Env> {
       return;
     }
     connection.setState({ playerId });
-    this.send(connection, { type: "view", view: viewFor(this.game, playerId), cheatsAllowed: this.cheatsAllowed });
+    this.sendView(connection, playerId);
   }
 
   async onMessage(connection: Connection<SeatState>, raw: WSMessage): Promise<void> {
@@ -166,12 +168,26 @@ export class GameRoom extends Server<Env> {
       this.send(connection, { type: "error", message: CHEATS_DISABLED });
       return;
     }
-    const error = msg.type === "action" || msg.type === "cheat" || msg.type === "actopiCheat" || msg.type === "roleCheat" ? await this.act({ ...msg, by: playerId }) : await this.social(playerId, msg);
+    const error =
+      msg.type === "action"
+        ? await this.act({ ...msg, by: playerId, at: Date.now() })
+        : msg.type === "clearQueue" || msg.type === "cheat" || msg.type === "actopiCheat" || msg.type === "roleCheat"
+          ? await this.act({ ...msg, by: playerId })
+          : await this.social(playerId, msg);
     if (error) this.send(connection, { type: "error", message: error });
   }
 
+  /** The earliest action bar ran out: tell the rules what time it is (queue.ts). */
+  async onAlarm(): Promise<void> {
+    const due = this.game ? nextDue(this.game) : null;
+    if (due === null) return;
+    // Never stamp the tick before the bar's end: an alarm can fire a moment early by this isolate's clock.
+    const error = await this.act({ type: "tick", at: Math.max(Date.now(), due) });
+    if (error) console.warn(`Tick failed: ${error}`);
+  }
+
   /** Chat and channel management. Untrusted text: rate limit, then moderate, then let the rules decide. */
-  private async social(playerId: PlayerId, msg: Exclude<GameClientMessage, { type: "action" | "cheat" | "actopiCheat" | "roleCheat" }>): Promise<string | null> {
+  private async social(playerId: PlayerId, msg: Exclude<GameClientMessage, { type: "action" | "clearQueue" | "cheat" | "actopiCheat" | "roleCheat" }>): Promise<string | null> {
     if (!this.game) return "No game";
     if (!this.chatLimiter.allow(playerId)) {
       this.countRateLimited(playerId);
@@ -212,15 +228,33 @@ export class GameRoom extends Server<Env> {
     await this.persist({ [inputKey(this.inputs++)]: recorded });
     this.broadcastViews();
     this.scheduleBots();
+    await this.scheduleTick();
     return null;
   }
 
+  /** One alarm, for the earliest action bar to run out. An alarm survives the room being evicted from memory. */
+  private async scheduleTick(): Promise<void> {
+    const due = this.game ? nextDue(this.game) : null;
+    if (due === null) await this.ctx.storage.deleteAlarm();
+    else if ((await this.ctx.storage.getAlarm()) !== due) await this.ctx.storage.setAlarm(due);
+  }
+
   private broadcastViews(): void {
-    if (!this.game) return;
     for (const conn of this.getConnections<SeatState>()) {
       const playerId = conn.state?.playerId;
-      if (playerId) this.send(conn, { type: "view", view: viewFor(this.game, playerId), cheatsAllowed: this.cheatsAllowed });
+      if (playerId) this.sendView(conn, playerId);
     }
+  }
+
+  private sendView(conn: Connection, playerId: PlayerId): void {
+    if (!this.game) return;
+    this.send(conn, { type: "view", view: viewFor(this.game, playerId), cheatsAllowed: this.cheatsAllowed, now: Date.now() });
+  }
+
+  /** A bot decides only once its last action is done, so it never fills a queue. */
+  private botIdle(playerId: PlayerId): boolean {
+    const p = this.game?.players.find((pl) => pl.id === playerId);
+    return !!p && p.current === null && p.queue.length === 0 && legalActions(this.game!, playerId).length > 0;
   }
 
   private initBots(): void {
@@ -247,16 +281,15 @@ export class GameRoom extends Server<Env> {
     for (const [playerId, bot] of this.bots) {
       if (this.pendingBots.has(playerId)) continue;
       if (!this.game) continue;
-      const canAct = legalActions(this.game, playerId).length > 0;
-      if (!canAct && !bot.chatLines) continue;
+      if (!this.botIdle(playerId) && !bot.chatLines) continue;
       this.pendingBots.add(playerId);
       setTimeout(async () => {
         this.pendingBots.delete(playerId);
         if (!this.game) return;
         await this.botChat(playerId, bot);
-        if (!this.game || legalActions(this.game, playerId).length === 0) return;
+        if (!this.game || !this.botIdle(playerId)) return;
         const action = await bot.decideAction(viewFor(this.game, playerId));
-        const error = await this.act({ type: "action", action, by: playerId });
+        const error = await this.act({ type: "action", action, by: playerId, at: Date.now() });
         if (error) console.warn(`Bot ${playerId} chose an illegal action: ${error}`);
       }, BOT_DELAY_MS);
     }

@@ -4,6 +4,8 @@
 import { useEffect, useRef, useState } from "react";
 import type PartySocket from "partysocket";
 import { CORPSE_ITEM, type Action, type ActopiCheat, type CharacterId, type Cheat, type GameClientMessage, type GameServerMessage, type PlayerView, type RoleCheat, type RoomId, type Target } from "@mush2/shared";
+import i18n from "i18next";
+import { ActionQueue } from "./hud/ActionQueue.tsx";
 import { BottomNav, type MobilePanel } from "./hud/BottomNav.tsx";
 import { DeathNotice } from "./hud/DeathNotice.tsx";
 import { InspectPanel } from "./hud/InspectPanel.tsx";
@@ -18,6 +20,8 @@ import { IsoRoom, type Corpse, type Occupant } from "./iso/IsoRoom.tsx";
 import { useShipLayout } from "./iso/shipLayout.ts";
 import { useFogDepth } from "./fogDepth.ts";
 import { useSpeechBubbles } from "./scene/useSpeechBubbles.ts";
+import type { Bar } from "./scene/ActionBar.tsx";
+import { useNames } from "./i18n/names.ts";
 import { showError } from "./Toasts.tsx";
 import { useMobile } from "./useMobile.ts";
 
@@ -26,6 +30,9 @@ const NO_CHAT: PlayerView["chat"] = [];
 export function GameScreen({ ticket, onLeave }: { ticket: SeatTicket; onLeave: () => void }) {
   const [view, setView] = useState<PlayerView | null>(null);
   const [cheatsAllowed, setCheatsAllowed] = useState(false);
+  /** Server clock minus ours, from each view message, so action bars (server ms) drain at the right moment. */
+  const [clockOffset, setClockOffset] = useState(0);
+  const names = useNames();
   const socketRef = useRef<PartySocket | null>(null);
   const layout = useShipLayout();
   /** UI-only state: what the inspect panel shows. Null means yourself. */
@@ -71,7 +78,8 @@ export function GameScreen({ ticket, onLeave }: { ticket: SeatTicket; onLeave: (
       if (msg.type === "view") {
         setView(msg.view);
         setCheatsAllowed(msg.cheatsAllowed);
-      } else showError(msg.message);
+        setClockOffset(msg.now - Date.now());
+      } else showError(i18n.t(`errors.${msg.message}` as never, { defaultValue: msg.message }));
     });
     // 4001 = invalid seat token (e.g. the local server was restarted).
     socket.addEventListener("close", (e: CloseEvent) => {
@@ -93,14 +101,18 @@ export function GameScreen({ ticket, onLeave }: { ticket: SeatTicket; onLeave: (
   if (!view) return <main className="connecting loading">Connecting…</main>;
   const { you } = view;
   const reachable = new Set(view.legalActions.flatMap((a) => (a.type === "move" ? [a.to] : [])));
-  const occupant = (p: { id: string; name: string; isBot: boolean; character: CharacterId; statuses: string[] }): Occupant => ({
-    id: p.id,
-    name: p.name,
-    isBot: p.isBot,
-    character: p.character,
-    you: p.id === you.id,
-    statuses: p.id === you.id ? view.statuses : p.statuses,
-  });
+  const occupant = (p: { id: string; name: string; isBot: boolean; character: CharacterId; statuses: string[]; busy?: Bar }): Occupant => {
+    const busy = p.id === you.id && you.current ? { bar: you.current, label: names.action(you.current.action.type) } : p.busy && { bar: p.busy };
+    return {
+      id: p.id,
+      name: p.name,
+      isBot: p.isBot,
+      character: p.character,
+      you: p.id === you.id,
+      statuses: p.id === you.id ? view.statuses : p.statuses,
+      ...(busy && { busy }),
+    };
+  };
   // Where the view places other people outside your room (everyone with ACTOPI on, nobody with it off).
   const nearby: Partial<Record<RoomId, Occupant[]>> = {};
   for (const p of view.players) if (p.room !== undefined && p.room !== you.room) (nearby[p.room] ??= []).push(occupant(p));
@@ -170,10 +182,12 @@ export function GameScreen({ ticket, onLeave }: { ticket: SeatTicket; onLeave: (
                 onClear={() => select(null)}
                 onDoorTap={tapDoor}
                 bubbles={bubbles}
+                clockOffset={clockOffset}
               />
             ) : (
               <section className="iso-room loading">Loading ship…</section>
             )}
+            {you.alive && <ActionQueue view={view} onClear={() => post({ type: "clearQueue" })} />}
             {/* TODO(minimap): stubbed out for now, to be revisited. scene/Minimap.tsx still exists; render it here
                 with here={you.room} youId={you.id} people={[you, ...view.players]} unidentified={view.unidentified}
                 reachable={reachable} onMove={move}. */}

@@ -86,6 +86,7 @@ describe("GameRoom views never leak", () => {
     const b = connect(room, "tok1");
     const move = lastView(a).legalActions.find((x) => x.type === "move")!;
     await send(room, a, { type: "action", action: move });
+    await room.onAlarm(); // the move's bar runs out
     expect(lastView(a).you.id).toBe("p0");
     expect(lastView(b).you.id).toBe("p1");
     expect(lastView(a).you.room).not.toBe(lastView(b).you.room);
@@ -111,6 +112,7 @@ describe("GameRoom input handling", () => {
     const move = lastView(a).legalActions.find((x) => x.type === "move")!;
     const before = lastView(b).you.room;
     await send(room, a, { type: "action", by: "p1", action: move });
+    await room.onAlarm();
     expect(lastView(b).you.room).toBe(before);
     expect(lastView(a).you.room).toBe((move as { to: string }).to);
     expect(storage.data.get("input:000000000")).toMatchObject({ input: { by: "p0" } });
@@ -227,6 +229,45 @@ describe("GameRoom chat", () => {
   });
 });
 
+describe("GameRoom timed actions", () => {
+  it("stamps an action with the server's time, sets an alarm for its end, and does it when the alarm fires", async () => {
+    vi.useFakeTimers({ now: 1_000_000 });
+    try {
+      const { room, storage } = await newRoom(3);
+      const c = connect(room, "tok0");
+      const move = lastView(c).legalActions.find((x) => x.type === "move")! as { to: string };
+      const from = lastView(c).you.room;
+      await send(room, c, { type: "action", action: move, at: 5 });
+      expect(storage.data.get("input:000000000")).toMatchObject({ input: { type: "action", at: 1_000_000 } });
+      expect(lastView(c).you.current).toMatchObject({ since: 1_000_000, until: 1_002_000 });
+      expect(lastView(c).you.room).toBe(from);
+      expect(storage.alarm).toBe(1_002_000);
+      expect(lastMsg(c)).toMatchObject({ now: 1_000_000 });
+
+      vi.setSystemTime(1_002_000);
+      await room.onAlarm();
+      expect(storage.data.get("input:000000001")).toMatchObject({ input: { type: "tick", at: 1_002_000 } });
+      expect(lastView(c).you.room).toBe(move.to);
+      expect(storage.alarm).toBeNull();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("Clear queue cancels the action under way and the alarm, outside the chat rate limit", async () => {
+    const { room, storage } = await newRoom(3);
+    const c = connect(room, "tok0");
+    const move = lastView(c).legalActions.find((x) => x.type === "move")!;
+    for (let i = 0; i < 3; i++) {
+      await send(room, c, { type: "action", action: move });
+      await send(room, c, { type: "clearQueue" });
+    }
+    expect(lastView(c).you.current).toBeNull();
+    expect(storage.alarm).toBeNull();
+    expect(c.messages<GameServerMessage>().some((m) => m.type === "error")).toBe(false);
+  });
+});
+
 describe("GameRoom persistence", () => {
   it("records each accepted input in order, beside the setup", async () => {
     const { room, storage } = await newRoom();
@@ -243,12 +284,15 @@ describe("GameRoom persistence", () => {
     const move = lastView(c).legalActions.find((x) => x.type === "move")! as { to: string };
     await send(room, c, { type: "action", action: move });
 
+    // Evicted with the move under way: the stored alarm brings it back and finishes it.
     const revived = asRoom(storage);
     await revived.onStart();
+    expect(storage.alarm).not.toBeNull();
+    await revived.onAlarm();
     const c2 = connect(revived, "tok0");
     expect(lastView(c2).you.room).toBe(move.to);
     await send(revived, c2, { type: "action", action: { type: "ready" } });
-    expect(storage.data.has("input:000000001")).toBe(true); // continued, didn't overwrite 0
+    expect(storage.data.has("input:000000002")).toBe(true); // continued after the move and its tick, didn't overwrite them
   });
 
   it("discards a game stored under another state version", async () => {

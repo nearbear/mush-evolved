@@ -4,7 +4,7 @@ Other packages import from `@mush2/shared` (`shared/src/index.ts`, the barrel). 
 
 **Engine**
 
-- `rules.ts`: `createGame`, `applyAction`, `legalActions`, `viewFor`, `dayOf`, `setCheat`, `setActopiCheat`; private `advanceCycle` and `grantCarePoints`. `viewFor` is the single place hidden info is stripped.
+- `rules.ts`: `createGame`, `applyAction` (at once, no timing), `performAction` (its mutating core), `legalActions`, `viewFor`, `dayOf`, `setCheat`, `setActopiCheat`; private `advanceCycle` and `grantCarePoints`. `viewFor` is the single place hidden info is stripped.
 - `actions.ts`: the action registry (`ACTIONS`), `visibleTargets`, `ActionDef` / `ActionCost`. A new action is a file in `actions/` registered here.
 - `actions/action.ts`: the `Action` base class (`getCandidates`, `check`, `getCost`, `apply`, optional `getSuccessChance` and `fail`).
 - `blueprints.ts`: `BLUEPRINTS` recipes (ingredients and resulting equipment) and the `blueprint` item type name.
@@ -12,6 +12,7 @@ Other packages import from `@mush2/shared` (`shared/src/index.ts`, the barrel). 
 - `modifiers.ts`: the modifier registry and its hooks (numeric ones go through `fold`; `moveCost` is the one place a move's price is computed).
 - `modifiers/<id>.ts`: one file per modifier: `antic_perfume`, `caffeinomaniac`, `computer`, `creative`, `first_aid`, `lying_down`, `medic`, `sturdy`; `careSkill.ts` is the factory behind `first_aid`.
 - `replay.ts`: `Input`, `GameSetup`, `applyInput` (the only entry point for changing a game), `replayGame`.
+- `queue.ts`: timed actions: `queueAction`, `clearQueue`, `tick`, `nextDue` (when the server's alarm should fire).
 - `mycoalarm.ts`: the `myco_alarm` item, its trigger list, `ringMycoAlarms` and `dropMycoAlarms` (research yield).
 - `research.ts`: `RESEARCH_IDS` (the researches with card art) and `RESEARCH_COMPLETE`.
 - `rng.ts`: the seeded RNG (its state is part of `GameState`).

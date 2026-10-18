@@ -123,11 +123,26 @@
     "heal": "Curar",
     "punch": "Golpear",
     "spike": "Contagiar",
+    "move": "Moverse",
+    "take": "Recoger",
+    "drop": "Soltar",
+    "research": "Investigar",
+    "pickSkill": "Elegir una habilidad",
     "visibility": { "private": "Privada", "secret": "Secreta", "covert": "Discreta" },
     "chance": "({{percent}} %)",
     "lacksAp": "No tienes suficientes PA: cuesta {{need}} y tienes {{have}}.",
     "lacksMp": "No tienes suficientes PM: cuesta {{need}} y tienes {{have}}.",
     "lacksBoth": "No tienes suficientes PA ni PM: cuesta {{needAp}} PA y {{needMp}} PM, y tienes {{haveAp}} PA y {{haveMp}} PM."
+  },
+  "queue": {
+    "label": "Tus acciones",
+    "clear": "Vaciar la cola",
+    "busy": "Acción en curso",
+    "underWay": "{{action}} en curso"
+  },
+  "errors": {
+    "queue_full": "Tu cola de acciones está llena.",
+    "nothing_queued": "No tienes acciones que vaciar."
   },
   "terminal": {
     "close": "Cerrar"
@@ -302,6 +317,7 @@
     "myco_alarm": "Micoalarma"
   },
   "logEvent": {
+    "actionDropped": "Tu acción en cola ({{action}}) ya no era posible y se ha descartado.",
     "crewWakes": "La tripulación despierta a bordo de la nave.",
     "cycleBegins": "Comienza el ciclo {{cycle}}.",
     "dayBegins": "Comienza el día {{day}}.",

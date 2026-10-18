@@ -18,6 +18,8 @@ export type MatchmakerServerMessage =
 // Game room ("game-room" party). The seat token goes in the connection URL (?token=).
 export type GameClientMessage =
   | { type: "action"; action: Action }
+  // Cancels your queued actions and the one under way (queue.ts).
+  | { type: "clearQueue" }
   | { type: "chat"; channel: ChannelId; text: string }
   | { type: "toggleCheckbox"; message: number; line: number }
   | { type: "createChannel"; name: string }
@@ -29,7 +31,8 @@ export type GameClientMessage =
   | { type: "roleCheat"; role: RoleCheat };
 export type GameServerMessage =
   // `cheatsAllowed` is the server's dev flag, so the client knows whether to offer cheats. It is not game state.
-  | { type: "view"; view: PlayerView; cheatsAllowed: boolean }
+  // `now` is the server's clock when sent, so the client can draw action bars (server ms) against its own clock.
+  | { type: "view"; view: PlayerView; cheatsAllowed: boolean; now: number }
   | { type: "error"; message: string };
 
 export function parseMatchmakerMessage(raw: string): MatchmakerClientMessage | null {
@@ -68,6 +71,7 @@ export function parseGameMessage(raw: string): GameClientMessage | null {
   if (msg?.type === "cheat") {
     return isCheat(msg.cheat) && typeof msg.on === "boolean" ? { type: "cheat", cheat: msg.cheat, on: msg.on } : null;
   }
+  if (msg?.type === "clearQueue") return { type: "clearQueue" };
   if (msg?.type === "roleCheat") return isRoleCheat(msg.role) ? { type: "roleCheat", role: msg.role } : null;
   if (msg?.type === "actopiCheat") return isActopiCheat(msg.mode) ? { type: "actopiCheat", mode: msg.mode } : null;
   if (msg?.type !== "action" || !isRecord(msg.action)) return null;

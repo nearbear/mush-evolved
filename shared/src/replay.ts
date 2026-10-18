@@ -4,7 +4,8 @@
 // Every state change must go through applyInput, or it won't be in the record.
 
 import type { GameClientMessage } from "./protocol.ts";
-import { applyAction, createGame, setActopiCheat, setCheat, setRoleCheat, type ActionResult } from "./rules.ts";
+import { createGame, setActopiCheat, setCheat, setRoleCheat, type ActionResult } from "./rules.ts";
+import { clearQueue, queueAction, tick } from "./queue.ts";
 import { createChannel, inviteToChannel, leaveChannel, sendChat, toggleCheckbox } from "./chat.ts";
 import type { GameConfig, GameState, PlayerId, Role, Seat } from "./types.ts";
 
@@ -25,10 +26,15 @@ export interface GameSetup {
 
 /**
  * One accepted change to the game. Chat and channel names hold the text after
- * moderation, which is what the rules saw. Server-driven inputs (cycle ticks,
- * scheduled plans) will join this union without a `by`.
+ * moderation, which is what the rules saw. An action carries the server time
+ * it arrived (`at`), and `tick` is the server saying time has reached `at`
+ * (queue.ts); the rules read no clock of their own. Other server-driven inputs
+ * (cycle ticks, scheduled plans) will join this union without a `by`.
  */
-export type Input = GameClientMessage & { by: PlayerId };
+export type Input =
+  | (Exclude<GameClientMessage, { type: "action" }> & { by: PlayerId })
+  | (Extract<GameClientMessage, { type: "action" }> & { by: PlayerId; at: number })
+  | { type: "tick"; at: number };
 
 export function startGame(setup: GameSetup): GameState {
   return createGame(setup.seats, setup.config, setup.seed, setup.forcedRoles);
@@ -38,7 +44,11 @@ export function startGame(setup: GameSetup): GameState {
 export function applyInput(state: GameState, input: Input): ActionResult {
   switch (input.type) {
     case "action":
-      return applyAction(state, input.by, input.action);
+      return queueAction(state, input.by, input.action, input.at);
+    case "clearQueue":
+      return clearQueue(state, input.by);
+    case "tick":
+      return tick(state, input.at);
     case "chat":
       return sendChat(state, input.by, input.channel, input.text);
     case "toggleCheckbox":

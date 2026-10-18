@@ -33,6 +33,7 @@ All under `web/src/`. UI rules are in `web/CLAUDE.md`.
 - `IconButton.tsx`: `IconButton` and `IconTab`.
 - `Markdown.tsx`: restricted chat message rendering.
 - `ActionLabel.tsx`: an action button's label with its cost.
+- `ActionQueue.tsx`: your action under way and the queued ones, with Clear queue, over the room view (both layouts).
 - `targets.ts`: finds the selection in the view (`resolveTarget`, `actionsOn`, `costOf`, `actionLabelKey`).
 - `BottomNav.tsx`, `PeekBar.tsx` (phone only): panel switcher; tapped target with its actions.
 
@@ -48,6 +49,7 @@ All under `web/src/`. UI rules are in `web/CLAUDE.md`.
 - `Minimap.tsx` (not rendered now) and `plan.ts` (its pure helpers).
 - `CrewSprite.tsx`: a character's sprite.
 - `StatusBadges.tsx`: status icons over a character's head.
+- `ActionBar.tsx`: the draining bar over a busy character's head (CSS animation, server times shifted by the view message's `now`).
 - `useSpeechBubbles.ts`: chat messages as speech bubbles.
 
 **art/**

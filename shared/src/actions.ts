@@ -37,6 +37,8 @@ export type { ActionVisibility };
 export interface ActionDef<A extends Action> {
   /** Who learns of it; the same for every candidate of a type. */
   readonly visibility: ActionVisibility;
+  /** Whether it takes time and goes through the queue (queue.ts), or happens at once. */
+  readonly timed: boolean;
   candidates(state: Readonly<GameState>, player: Readonly<PlayerState>): A[];
   check(state: Readonly<GameState>, player: Readonly<PlayerState>, action: A): string | null;
   cost(state: Readonly<GameState>, player: Readonly<PlayerState>, action: A): ActionCost;

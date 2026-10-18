@@ -13,6 +13,8 @@ export type ActionVisibility = "public" | "private" | "secret" | "covert";
 export class Action<T extends { type: string }> {
   type: string;
   visibility: ActionVisibility = "public";
+  /** Takes `config.action.durationMs` and waits its turn in the queue (queue.ts). False only for only a few actions. */
+  timed: boolean = true;
   baseAPCost: number = 0;
   baseMPCost: number = 0;
   baseSuccessChance: number = 1;

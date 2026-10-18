@@ -1,7 +1,13 @@
 import type { ActopiCheat, Cheat } from "../cheats.ts";
-import type { Role, RoomId, Seat } from "../types.ts";
+import type { Action, Role, RoomId, Seat } from "../types.ts";
 
 export type ResourceId = "eng" | "exp" | "comp" | "garden" | "core" | "shoot" | "cook" | "heal" | "pilgred";
+
+export interface ActionInProgress {
+  action: Action;
+  since: number;
+  until: number;
+}
 
 export interface PlayerState extends Seat {
   role: Role;
@@ -40,6 +46,13 @@ export interface PlayerState extends Seat {
   alive: boolean;
   /** Finished acting for this cycle. */
   ready: boolean;
+  /**
+   * The timed action under way (queue.ts), from `since` to `until` in server ms. Roommates see only its bar, and only
+   * when its log entry could reach them (`OtherPlayerView.busy`); the action itself is in your own view only.
+   */
+  current: ActionInProgress | null;
+  /** Actions waiting behind `current`, oldest first, at most `config.action.queueCap`. Your own view only. */
+  queue: Action[];
   /** Development cheats switched on (cheats.ts). Always empty unless the server allows cheats. Only in your own view. */
   cheats: Cheat[];
   /** Development cheat: overrides ACTOPI for what this player sees only. The game's ACTOPI is unchanged. */

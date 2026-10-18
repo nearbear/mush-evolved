@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { CHARACTERS } from "../src/characters.ts";
 import { DEFAULT_CONFIG } from "../src/config.ts";
 import { applyInput, replayGame, startGame, type GameSetup, type Input } from "../src/replay.ts";
+import { nextDue } from "../src/queue.ts";
 import { legalActions } from "../src/rules.ts";
 import { nextInt, type RngState } from "../src/rng.ts";
 import { CHAT_CHANNELS, type GameState } from "../src/types.ts";
@@ -13,9 +14,12 @@ const setup: GameSetup = {
   rulesVersion: "test",
 };
 
-/** A random input of any kind; some will be rejected, as real ones are. */
-function randomInput(state: GameState, rng: RngState): [Input, RngState] {
+/** A random input of any kind at server time `at`; some will be rejected, as real ones are. */
+function randomInput(state: GameState, rng: RngState, at: number): [Input, RngState] {
   let pick: number;
+  // Settle bars as the server's alarm would, so timed actions actually happen.
+  const due = nextDue(state);
+  if (due !== null && due <= at) return [{ type: "tick", at }, rng];
   [pick, rng] = nextInt(rng, state.players.length);
   const by = state.players[pick]!.id;
   const channels = state.channels.filter((c) => c.members.includes(by));
@@ -30,18 +34,23 @@ function randomInput(state: GameState, rng: RngState): [Input, RngState] {
   if (pick === 4 && channels[0]) return [{ by, type: "chat", channel: channels[0].id, text: "psst" }, rng];
   const actions = legalActions(state, by);
   // Lean on "ready" so cycles (and days) actually pass.
-  if (actions.length === 0 || pick === 5) return [{ by, type: "action", action: { type: "ready" } }, rng];
+  if (actions.length === 0 || pick === 5) return [{ by, type: "action", action: { type: "ready" }, at }, rng];
+  if (pick === 6) return [{ by, type: "clearQueue" }, rng];
   [pick, rng] = nextInt(rng, actions.length);
-  return [{ by, type: "action", action: actions[pick]! }, rng];
+  return [{ by, type: "action", action: actions[pick]!, at }, rng];
 }
 
 /** Plays like the server does: keeps the inputs that were accepted. */
 function play(steps: number, rng: RngState): { state: GameState; inputs: Input[] } {
   let state = startGame(setup);
   const inputs: Input[] = [];
+  let now = 0;
   for (let i = 0; i < steps; i++) {
     let input: Input;
-    [input, rng] = randomInput(state, rng);
+    let wait: number;
+    [wait, rng] = nextInt(rng, 400);
+    now += wait;
+    [input, rng] = randomInput(state, rng, now);
     const result = applyInput(state, input);
     if (!result.ok) continue;
     state = result.state;
@@ -56,6 +65,8 @@ describe("replay", () => {
       const { state, inputs } = play(2000, seed);
       expect(state.cycle, "the game got past a day").toBeGreaterThan(DEFAULT_CONFIG.cyclesPerDay);
       expect(inputs.some((i) => i.type === "createChannel")).toBe(true);
+      expect(inputs.some((i) => i.type === "tick")).toBe(true);
+      expect(inputs.some((i) => i.type === "clearQueue")).toBe(true);
       // Through JSON, as the server stores it.
       const stored = JSON.parse(JSON.stringify(inputs)) as Input[];
       expect(replayGame(setup, stored)).toEqual(state);
@@ -64,7 +75,7 @@ describe("replay", () => {
 
   it("refuses a record that the rules no longer accept", () => {
     const { inputs } = play(50, 9);
-    const tampered: Input[] = [{ by: "p0", type: "action", action: { type: "move", to: "NOWHERE" } }, ...inputs];
+    const tampered: Input[] = [{ by: "p0", type: "action", action: { type: "move", to: "NOWHERE" }, at: 0 }, ...inputs];
     expect(() => replayGame(setup, tampered)).toThrow(/diverged at input 0/);
   });
 });

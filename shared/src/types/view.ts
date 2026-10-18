@@ -38,6 +38,11 @@ export interface OtherPlayerView {
   skills: string[];
   /** Their contamination, shown as a status. Only when you are Mush, they are a contaminated human, and they are in your room. */
   contamination?: number;
+  /**
+   * The bar of the timed action they are busy with (server ms), never which action. Only for people in your room, and
+   * only when the action's log entry could reach you (`activitySeen` in log.ts).
+   */
+  busy?: { since: number; until: number };
 }
 
 /** What one seat is allowed to know. This is the only game data a client or bot receives. */
@@ -45,6 +50,8 @@ export interface OtherPlayerView {
 export interface PublicConfig {
   /** MP added to each move while carrying a heavy item (before modifiers). */
   heavyMpPenalty: number;
+  /** How many actions may wait behind the one under way. */
+  actionQueueCap: number;
 }
 
 export interface PlayerView {

@@ -123,11 +123,26 @@
     "heal": "Heal",
     "punch": "Punch",
     "spike": "Spike",
+    "move": "Move",
+    "take": "Take",
+    "drop": "Drop",
+    "research": "Research",
+    "pickSkill": "Pick a skill",
     "visibility": { "private": "Private", "secret": "Secret", "covert": "Covert" },
     "chance": "({{percent}}%)",
     "lacksAp": "Not enough AP: it costs {{need}}, you have {{have}}.",
     "lacksMp": "Not enough MP: it costs {{need}}, you have {{have}}.",
     "lacksBoth": "Not enough AP or MP: it costs {{needAp}} AP and {{needMp}} MP, you have {{haveAp}} AP and {{haveMp}} MP."
+  },
+  "queue": {
+    "label": "Your actions",
+    "clear": "Clear queue",
+    "busy": "Busy with an action",
+    "underWay": "{{action}} under way"
+  },
+  "errors": {
+    "queue_full": "Your action queue is full.",
+    "nothing_queued": "You have no actions to clear."
   },
   "terminal": {
     "close": "Close"
@@ -302,6 +317,7 @@
     "myco_alarm": "Myco alarm"
   },
   "logEvent": {
+    "actionDropped": "Your queued action ({{action}}) was no longer possible and was dropped.",
     "crewWakes": "The crew wakes up aboard the ship.",
     "cycleBegins": "Cycle {{cycle}} begins.",
     "dayBegins": "Day {{day}} begins.",
