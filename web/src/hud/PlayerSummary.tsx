@@ -82,8 +82,8 @@ export function PlayerSummary({ view, compact = false }: { view: PlayerView; com
           <PipBar label={t("stat.mp")} value={you.mp} max={view.movement.mpCap} pip={MP_PIP} />
         </div>
         <div className="stat-stack">
-          <PipBar label={t("stat.hp")} value={you.hp} max={view.maxHp} pip={HP_PIP} thin />
-          <PipBar label={t("stat.morale")} value={you.morale} max={view.maxMorale} pip={MORALE_PIP} thin />
+          <PipBar label={t("stat.hp")} value={you.hp} max={view.maxHp} pip={HP_PIP} icon={HP_ICON} bigIcon thin />
+          <PipBar label={t("stat.morale")} value={you.morale} max={view.maxMorale} pip={MORALE_PIP} icon={MORALE_ICON} bigIcon thin />
         </div>
       </div>
       )}

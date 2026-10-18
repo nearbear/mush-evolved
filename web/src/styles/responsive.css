@@ -134,9 +134,6 @@
   .stat-stack .pip-label {
     min-width: 1.25rem;
   }
-  .stat-stack .thin .pip-label {
-    min-width: 2.7rem; /* just fits "Morale", so HP and morale pips line up */
-  }
 
   .three-panel {
     flex: 1;

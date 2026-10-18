@@ -96,6 +96,17 @@
   font-weight: bold;
   color: var(--muted);
   margin-right: 4px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.pip-label img {
+  height: 10px; /* 2x the 5px sprites, whole pixels */
+  width: auto;
+  image-rendering: pixelated;
+}
+.pip-label img.big {
+  height: 13px;
 }
 .pip-bar .sub {
   margin-left: 0.35rem;
@@ -116,9 +127,6 @@
 }
 .stat-stack .pip-label {
   min-width: 1.4rem;
-}
-.stat-stack .thin .pip-label {
-  min-width: 2.9rem;
 }
 
 /*
