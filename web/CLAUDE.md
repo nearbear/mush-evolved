@@ -2,7 +2,7 @@
 
 Loaded when working in `web/`. These are the single source of truth for the UI rules; the root CLAUDE.md only points here.
 
-- **Thin view layer.** Components render a `PlayerView` and emit player intents. No game logic in components. The renderer must be swappable: DOM now, possibly react-three-fiber or something more experimental later. Keep chat and text input in the DOM regardless of renderer. I want to experiment with custom animated UI later, so do not couple rendering to game logic.
+- **Thin view layer.** Components render a `PlayerView` and emit player intents. No game logic in components. The renderer must be swappable: DOM now, PixiJS next (#194; three.js is not planned). Keep chat and text input in the DOM regardless of renderer. I want to experiment with custom animated UI later, so do not couple rendering to game logic.
 
 - **Mobile is first-class.** Below 1024px wide (`MOBILE_QUERY` in `web/src/useMobile.ts`, mirrored by one `@media` block in `styles/responsive.css`) the game is a tabbed phone layout: the top bar always shows; one panel at a time below it; a bottom nav of Inspect (left) | Room (middle, default) | iTrackie (right). Tapping a person, equipment, or a door in the room opens a peek bar above the nav (name, legal actions, Go for doors, More to open Inspect). The minimap is stubbed out for now (see `TODO(minimap)` in `GameScreen.tsx`; `scene/Minimap.tsx` is kept); doors are still the main way to move. Every UI change must work in both layouts:
    - Nothing important may be hover-only or double-click-only (touch has neither reliably).

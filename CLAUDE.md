@@ -21,7 +21,7 @@ Decided:
 
 - TypeScript everywhere; React for the web client, with Base UI (`@base-ui/react`, unstyled) for widgets like tabs and scroll areas.
 - **PartyServer** (Cloudflare Durable Objects) for the realtime server, with custom authoritative rooms.
-- **Basic DOM-rendered prototype first. No three.js yet.**
+- **Basic DOM-rendered prototype first.** The next renderer for the iso view is **PixiJS** (2D WebGL), decided 2026-10-18 after profiling showed the DOM view is paint-bound while people walk ([#194](https://github.com/nearbear/mush2/issues/194) has the baseline). three.js is not planned. Adding `pixi.js` still needs approval when the spike starts.
 - Monorepo with `web`, `server`, and `shared` packages. Vite for the client; Vitest for tests.
 
 Rejected (see `docs/ai-workflow.md`):
@@ -56,7 +56,7 @@ These are non-negotiable unless I say otherwise.
 - Before using any asset, check that its folder isn't covered by different third-party terms (fonts, sounds, music especially).
 - Code license is separate from the asset license: MIT (root `LICENSE`, chosen 2026-10-13; can be changed later while the user is the sole author). It does not cover `Mush/`.
 - Do not monetize anything built on these assets.
-- Check how the character art is delivered (sprite sheets, layered images, a skeletal rig). That determines how hard talking animations will be and whether a 2D renderer or three.js makes more sense later.
+- Check how the character art is delivered (sprite sheets, layered images, a skeletal rig). That determines how hard talking animations will be in the 2D (PixiJS) renderer.
 
 ## Working agreements
 
@@ -117,5 +117,4 @@ Not rules, but still open:
 - Which stage single player (the only mode with bots) belongs in.
 - Which hosted model API to use for single-player bots.
 - Hosting and deployment details.
-- Rendering beyond the DOM isometric view (decided: DOM for now, 2026-10-11).
 - Internationalization (en/fr/es): the seam is in, the comprehensive pass is not.
