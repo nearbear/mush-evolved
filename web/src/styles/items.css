@@ -63,6 +63,10 @@
   font-size: var(--tile, 76px);
   overflow: hidden;
   border-radius: 4px;
+  background: url("../../../Mush/www/img/design/slot.png") 0 0 / 100% 100% no-repeat;
+}
+.item-tile.empty .item-face {
+  background: none;
 }
 .item-icon {
   width: 100%;
@@ -102,7 +106,6 @@
 .corpse-icon {
   display: grid;
   place-items: center;
-  background: rgb(0 0 0 / 0.35);
 }
 .corpse-sprite {
   width: 90%;
