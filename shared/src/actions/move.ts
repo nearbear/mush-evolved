@@ -20,7 +20,10 @@ export class MoveAction extends Action<MoveActionData> {
   }
 
   override getCost(state: Readonly<GameState>, player: Readonly<PlayerState>, target: MoveActionData): { ap: number; mp: number } {
-    const c = moveCost(movementRules(state, player), player)!;
+    const rules = movementRules(state, player);
+    const c = moveCost(rules, player);
+    // Unaffordable (a queued move repriced after the AP ran out): a nominal price; check() rejects it and it is dropped.
+    if (!c) return { ap: rules.apPerConversion, mp: 0 };
     return { ap: c.ap, mp: player.mp - c.mpAfter };
   }
 

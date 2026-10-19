@@ -293,6 +293,14 @@ describe("queued actions whose price changes (owner, 2026-10-18)", () => {
     expect(player(after, "p0").room).toBe(c);
   });
 
+  it("drops a move the player can no longer afford when it comes up, instead of crashing", () => {
+    const s = must(queueAction(ship(), "p0", { type: "move", to: base.rooms.SICK_BAY![0]! }, 0));
+    Object.assign(player(s, "p0"), { ap: 0, mp: 0 });
+    const after = must(tick(s, D));
+    expect(player(after, "p0").room).toBe("SICK_BAY");
+    expect(after.log.filter((e) => e.key === "actionDropped")).toHaveLength(1);
+  });
+
   it("keeps the recorded adjustment out of the view", () => {
     const s = must(queueAction(must(queueAction(withPacifist(), "p0", punch("p1"), 0)), "p0", bond("p1"), 0));
     const you = viewFor(s, "p0").you;
