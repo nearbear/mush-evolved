@@ -5,7 +5,6 @@ import { Popover } from "@base-ui/react/popover";
 import { useTranslation } from "react-i18next";
 import { RESOURCE_IDS, type Action, type PlayerView } from "@mush2/shared";
 import { RESOURCE_ICONS, SPORE_ICON } from "../art/assets.ts";
-import { PlanetList } from "./PlanetList.tsx";
 import { PlayerSummary } from "./PlayerSummary.tsx";
 
 export function SelfPanel({ view, showSummary, onAction }: { view: PlayerView; showSummary: boolean; onAction: (action: Action) => void }) {
@@ -31,8 +30,6 @@ export function SelfPanel({ view, showSummary, onAction }: { view: PlayerView; s
           />
         ))}
       </aside>
-      {/* Planets can be deleted anywhere, so they are listed here too once you have some (owner, 2026-10-19). */}
-      {view.planets.length > 0 && <PlanetList view={view} onAction={onAction} />}
       <Credits />
     </section>
   );

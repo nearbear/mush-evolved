@@ -1,6 +1,5 @@
 // Your planets (private to you): name, sectors (revealed tag icons, the rest unknown) and a bin button to delete one.
-// At the Astro terminal it also shows the scan and analyse buttons; elsewhere (the self panel) only the bin, since a
-// planet can be deleted anywhere. Every button comes from view.actions.
+// Every button comes from view.actions.
 
 import type { Action, EquipmentView, PlanetView, PlayerView } from "@mush2/shared";
 import { useTranslation } from "react-i18next";

@@ -4,7 +4,8 @@ import type { GameState, PlayerState } from "../types.ts";
 
 export type DeletePlanetActionData = { type: "delete_planet"; planet: string };
 
-/** Delete one of your own planets, anywhere and at once (owner, 2026-10-19). Free and silent: no log line. */
+// TODO restrict this action to the astro terminal
+/** Delete one of your own planets, anytime and at once (owner, 2026-10-19). Free and silent: no log line. */
 export class DeletePlanetAction extends Action<DeletePlanetActionData> {
   override visibility = "private" as const;
   override timed = false;
