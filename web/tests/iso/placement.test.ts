@@ -221,19 +221,21 @@ describe("the real ship", () => {
   });
 
   it("floors both cells under a door alike, as part of the room whose back wall holds it", () => {
-    // The sick bay's door to the front corridor (20,19 here) is in the sick bay's back wall, and a light path leads to it.
+    // The sick bay's door to the front corridor (on the corridor's y=19 edge) is in the sick bay's back wall, and a light path leads to it.
     const corridor = ship.rooms.find((r) => r.id === "CORRIDOR_A")!;
+    const door = corridor.tiles.find((t) => t.door?.target === "SICK_BAY")!;
+    expect(door.y).toBe(19);
     const scene = placeScene(ship, [
       { room: corridor, dx: 0, dy: 0, actors: [] },
       ...neighborRooms(ship, corridor).map((n) => ({ ...n, actors: [] })),
     ]);
     const floor = (x: number) => scene.filter((s) => s.kind === "ground" && s.cell.x === x && s.cell.y === 19);
-    const [a, b] = [floor(19), floor(20)];
+    const [a, b] = [floor(door.x - 1), floor(door.x)];
     expect([a.length, b.length]).toEqual([1, 1]);
     expect(a[0]!.room).toBe("SICK_BAY");
     expect(b[0]!.room).toBe("SICK_BAY");
     expect([a[0]!.sx, a[0]!.sy]).toEqual([b[0]!.sx, b[0]!.sy]);
-    const plain = scene.find((s) => s.kind === "ground" && s.cell.x === 19 && s.cell.y === 18)!;
+    const plain = scene.find((s) => s.kind === "ground" && s.cell.x === door.x - 1 && s.cell.y === 18)!;
     expect([a[0]!.sx, a[0]!.sy]).not.toEqual([plain.sx, plain.sy]);
   });
 
@@ -366,14 +368,18 @@ describe("neighborRooms", () => {
   const ship = JSON.parse(shipLayoutJson) as ShipLayout;
   const room = (id: string) => ship.rooms.find((r) => r.id === id)!;
 
-  it("puts each neighbour's door back on the same cell as this room's door to it", () => {
+  it("puts every room where the ship plan does, whichever room you stand in", () => {
+    // Door alignment is the plan's job: `npm run ship-check` (tools/tests/shipLayout/check.test.ts).
     for (const r of ship.rooms) {
-      for (const n of neighborRooms(ship, r)) {
-        const here = r.tiles.find((t) => t.door?.target === n.room.id)!;
-        const back = n.room.tiles.find((t) => t.door?.target === r.id)!;
-        expect({ x: back.x + n.dx, y: back.y + n.dy }).toEqual({ x: here.x, y: here.y });
+      for (const n of neighborRooms(ship, r, "all")) {
+        expect({ x: r.at!.x + n.dx, y: r.at!.y + n.dy }, `${r.id} / ${n.room.id}`).toEqual(n.room.at);
       }
     }
+  });
+
+  it("reaches the whole ship from any room on the plan", () => {
+    const planned = ship.rooms.filter((r) => r.at);
+    for (const r of planned) expect(neighborRooms(ship, r, "all").length, r.id).toBe(planned.length - 1);
   });
 
   it("never puts a neighbour's floor on this room's floor", () => {

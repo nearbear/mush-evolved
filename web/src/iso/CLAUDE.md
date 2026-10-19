@@ -101,13 +101,33 @@ describes a spot in screen terms, translate it to cells and confirm on the data 
 ## How rooms fit together
 
 - Rooms come from the original, which drew one room at a time: each room has walls only on its back
-  edges (low x and low y), and its front edges are open. `neighborRooms` places the rooms behind the
-  doors by lining up the two sides of each door, so a neighbour's back wall usually closes your
+  edges (low x and low y), and its front edges are open, so a neighbour's back wall closes your
   room's front edge.
+- **The ship plan.** Every room has one fixed position on a ship-wide grid (`RoomLayout.at`, from
+  the `ROOM_POSITIONS` table in `tools/src/shipLayout/roomPositions.ts`), and `neighborRooms` takes
+  offsets from it, so a room is in the same place whichever room you stand in. Don't place rooms by
+  chaining doors: the original's doors disagree with each other by up to a few cells, so the ship
+  came out differently from each room and a fix in one view broke others. Once rooms are placed,
+  the converter moves each front-edge door (`DOOR_BL`/`DOOR_BR`, never drawn while the room behind
+  it is) along its edge onto the neighbour's drawn door; it only marks where you walk through. A
+  door with a walkway drawn on the floor to it never moves, so where a walkway ends is where the
+  doorway is: the drawn door on the other side slides along its wall to it instead (with its
+  doormat; the wall tiles swap into the old doorway; never onto a wall with something mounted).
+  Pairs neither can fix show up as doors that don't line up (`alignDoors` in `roomPositions.ts`).
+- Walkways we add (the milky blue `GROUND` frame 1) are rectangles in `tools/src/shipLayout/walkways.ts`,
+  painted over plain floor before rooms are placed: the dorm-to-storage crossings in the rear
+  corridor and the bridge-to-refectory strip through the front and centre corridors.
+- **Moving a room:** change its numbers in `ROOM_POSITIONS`, `npm run ship-layout`, then
+  `npm run ship-check`. That lists overlaps and doors moved off their floor paths (both errors: a
+  test fails on them, the paths checked against the converter's unplaced rooms), doors whose two sides
+  still don't meet (pinned in `tools/tests/shipLayout/check.test.ts`, so a change there is
+  deliberate), and gaps between rooms. Then look at it with `npm run ship-view`. `npm run ship-check
+  -- --seed BEDROOM_A --fit` rebuilds the whole table (placed door to door, then nudged until
+  nothing overlaps); the current table came from that.
 - Room shapes are ours in places: `tools/src/shipLayout/stretch.ts` widens the corridors to four
   cells (the front corridor so that its two-cell end doors have one wall each side) and
-  lengthens the back corridor, then `npm run ship-layout` regenerates the data. Widening a room
-  moves every room placed from its doors; the `neighborRooms` overlap test catches collisions.
+  lengthens the back corridor, then `npm run ship-layout` regenerates the data. Changing a room's
+  shape doesn't move other rooms any more; `npm run ship-check` shows what it now overlaps.
 - `fillGaps` (in `placeScene`) patches the holes where drawn rooms meet: floor under doors that
   have none, floor across a one-cell strip between a room and another room's wall, and a wall on
   an empty cell with floor on both sides. Don't close open front edges in general: a wall there
@@ -125,9 +145,9 @@ describes a spot in screen terms, translate it to cells and confirm on the data 
   `Mush/derived/ship-layout.json` (a few lines of Python), and for a whole scene, a throwaway Vitest
   file that calls `placeScene` and throws the sprites it wants to see. Most "missing" or "wrong"
   walls here were in the data, not the renderer.
-- Scene cells are the first room's grid; each neighbour is shifted so the two sides of the shared
-  door coincide. Changing a room's shape (`stretch.ts`) shifts those offsets, so tests pinned to
-  exact cells can fail just from the shift.
+- Scene cells are the first room's grid; each neighbour is shifted by the difference of the two
+  rooms' plan positions. Changing a room's shape (`stretch.ts`) or a front-edge door snapping
+  elsewhere moves cells, so prefer tests that read a cell from the data over pinned coordinates.
 - Measure art, don't eyeball it. Offsets come from `tiles.xml` but the pivot (centred) is inferred;
   compare opaque pixel profiles with `decodePng` (`tools/src/shipLayout/png.ts`). Doors and walls
   line up at the top; that's how the "doors float" bug was found.

@@ -93,6 +93,7 @@ Node is installed via nvm. In non-interactive shells, run `source ~/.nvm/nvm.sh`
 - `npm run build`: production build of `web`.
 - `npm run preview`: build `web` for production, then serve it with `vite preview` beside wrangler (same ports as `npm run dev`, so stop that first).
 - `npm run ship-layout`: regenerate `Mush/derived/ship-layout.json` (renderer data) and `ship-rooms.json` (room graph and per-room equipment, for the rules) from `ShipMap.png` + `tiles.xml`. A test fails if the committed file is stale.
+- `npm run ship-check`: report on the ship plan (each room's fixed position, `ROOM_POSITIONS` in `tools/src/shipLayout/roomPositions.ts`): overlapping rooms, doors that don't line up, gaps. `-- --seed <ROOM> --fit` proposes a whole new table. Workflow in `web/src/iso/CLAUDE.md` ("The ship plan").
 - `npm run layout-query -- <regex>`: search `Mush/derived/ship-layout.json` (reading it directly is denied) for matching slices, tiles, and equipment bindings, capped at 60 lines.
 - `npm run screenshot`: headless Chromium (Playwright) screenshots as a desktop player and a 360px phone player, to `.screenshots/` (gitignored). Needs `npm run dev`. Options and the other tooling commands (`ship-view`, `contact-sheet`, `asset-index`, `ods-data`, `types -w server`) are in the `play` and `asset` skills.
 - `npm run deploy -w server`: wrangler deploy (not yet configured or tested).

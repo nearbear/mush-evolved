@@ -891,17 +891,15 @@ export function doorSpot(
 }
 
 /**
- * Rooms behind `room`'s doors, each with the grid shift that puts its door
- * back to `room` on the same cell as `room`'s door to it, so the two share
- * that wall. Rooms are drawn separately in the original, so this is the only
- * way to place them side by side; it's local (neighbours of different doors
- * can overlap a little). Rooms without a matching door, or without art, are
- * left out.
+ * Rooms behind `room`'s doors, each with the grid shift from `room`'s cells to
+ * its own, from where the ship plan puts both (`RoomLayout.at`, from
+ * tools/src/shipLayout/roomPositions.ts). The plan is one grid for the whole
+ * ship, so a room is in the same place whichever room you stand in; `npm run
+ * ship-check` keeps it free of overlaps. Rooms without a matching door, or off
+ * the plan, are left out.
  *
- * With a larger `depth` the rooms behind those rooms' doors follow (`ring` 2, 3, ...),
- * placed the same way from their neighbour; "all" keeps going until the whole ship is
- * reached. Rooms are only placed locally, so beyond the first ring they can overlap each
- * other (paint order sorts it out); one whose floor would land on `room`'s own is left out.
+ * With a larger `depth` the rooms behind those rooms' doors follow (`ring` 2, 3, ...);
+ * "all" keeps going until the whole ship is reached.
  */
 export function neighborRooms(
   layout: ShipLayout,
@@ -909,27 +907,22 @@ export function neighborRooms(
   depth: 1 | 2 | "all" = 1,
 ): { room: RoomLayout; dx: number; dy: number; ring: number }[] {
   const result: { room: RoomLayout; dx: number; dy: number; ring: number }[] = [];
-  const doorsOf = (from: RoomLayout, fx: number, fy: number, ring: number) => {
+  const origin = room.at;
+  if (!origin) return result;
+  const doorsOf = (from: RoomLayout, ring: number) => {
     for (const t of from.tiles) {
       const target = t.door?.target;
       if (!target || target === room.id || result.some((n) => n.room.id === target)) continue;
       const other = layout.rooms.find((r) => r.id === target);
-      const back = other?.tiles.find((b) => b.door?.target === from.id);
-      if (!other || !back) continue;
-      const dx = fx + t.x - back.x, dy = fy + t.y - back.y;
-      if (ring > 1) {
-        const f = floorBounds(other, dx, dy);
-        const hits = (g: Box) => f.x0 <= g.x1 && g.x0 <= f.x1 && f.y0 <= g.y1 && g.y0 <= f.y1;
-        if (hits(floorBounds(room, 0, 0))) continue;
-      }
-      result.push({ room: other, dx, dy, ring });
+      if (!other?.at || !other.tiles.some((b) => b.door?.target === from.id)) continue;
+      result.push({ room: other, dx: other.at.x - origin.x, dy: other.at.y - origin.y, ring });
     }
   };
-  doorsOf(room, 0, 0, 1);
+  doorsOf(room, 1);
   const last = depth === "all" ? Infinity : depth;
   for (let ring = 2, frontier = result.slice(); ring <= last && frontier.length; ring++) {
     const before = result.length;
-    for (const n of frontier) doorsOf(n.room, n.dx, n.dy, ring);
+    for (const n of frontier) doorsOf(n.room, ring);
     frontier = result.slice(before);
   }
   return result;

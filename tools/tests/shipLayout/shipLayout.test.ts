@@ -3,7 +3,7 @@ import { resolve } from "node:path";
 import { deflateSync } from "node:zlib";
 import { describe, expect, it } from "vitest";
 import type { ShipPlan, ShipRoom } from "@mush2/shared";
-import { convert, formatLayout, formatRooms, ROOM_IDS, roomGraph } from "../../src/shipLayout/convert.ts";
+import { convert as convertLayout, formatLayout, formatRooms, ROOM_IDS, roomGraph } from "../../src/shipLayout/convert.ts";
 import { unserialize } from "../../src/shipLayout/haxe.ts";
 import { decodePng, encodePng as writePng, pngSize, type Image } from "../../src/shipLayout/png.ts";
 import { buildPage, pageSheets } from "../../src/shipLayout/pages.ts";
@@ -109,6 +109,8 @@ describe("convert", () => {
     <extras><room rid="COMMAND_CENTER">${doors}</room><autoBind/></extras>
   </data>`;
   const size = () => ({ width: 2000, height: 2000 });
+  // The real walkways need the real rooms' floors.
+  const convert = (image: Image, tiles: string, sheetSize: typeof size) => convertLayout(image, tiles, sheetSize, { walkways: [] });
   const img = map([
     [0xffa301, 0xc0c0c0, 0x123456, W, W, W, W, W],
     [0xffa3ff, W, W, W, W, W, W, W],
@@ -142,7 +144,7 @@ describe("convert", () => {
 
 describe("generated ship-layout.json", () => {
   const { layout, pages } = pageSheets(
-    convert(
+    convertLayout(
       decodePng(readFileSync(resolve(MUSH, "clients/iso/gfx/ShipMap.png"))),
       readFileSync(resolve(MUSH, "clients/iso/xml/tiles.xml"), "utf8"),
       (image) => pngSize(readFileSync(resolve(MUSH, image))),

@@ -29,7 +29,9 @@ import { EQUIPMENT_TYPES } from "../../../shared/src/equipment.ts";
 import { decodePng, encodePng, pngSize, type Image } from "./png.ts";
 import { buildPage, pageSheets } from "./pages.ts";
 import { cachedPlan, convertShipPlan, formatShipPlan } from "./shipPlan.ts";
+import { placeRooms, ROOM_POSITIONS, type Positions } from "./roomPositions.ts";
 import { stretchRooms } from "./stretch.ts";
+import { paintWalkways, WALKWAYS, type Walkway } from "./walkways.ts";
 import { child, childrenNamed, parseXml, type XmlElement } from "./xml.ts";
 
 const MUSH = resolve(import.meta.dirname, "../../../Mush");
@@ -118,7 +120,12 @@ const LAYERS = 4;
  */
 const UNDEFINED_MAP_COLORS = new Set(["31e536", "7d2c2c", "cc95de"]);
 
-export function convert(mapImage: Image, tilesXml: string, sheetSize: (file: string) => { width: number; height: number }): ShipLayout {
+export function convert(
+  mapImage: Image,
+  tilesXml: string,
+  sheetSize: (file: string) => { width: number; height: number },
+  { positions = ROOM_POSITIONS, walkways = WALKWAYS }: { positions?: Positions; walkways?: readonly Walkway[] } = {},
+): ShipLayout {
   const xml = parseXml(tilesXml);
   const data = child(xml, "data") ?? fail("tiles.xml: missing <data>");
   const bitmap = child(data, "bitmap") ?? fail("tiles.xml: missing <bitmap>");
@@ -193,8 +200,9 @@ export function convert(mapImage: Image, tilesXml: string, sheetSize: (file: str
     }
   }
 
-  // Our changes to the room shapes (stretch.ts); tile indices are kept.
-  return { roomSize: size, sheets, slices, rooms: stretchRooms(rooms, slices), autoBind };
+  // Our changes to the room shapes (stretch.ts) and floors (walkways.ts), then where each room
+  // sits on the ship (roomPositions.ts); tile indices are kept.
+  return { roomSize: size, sheets, slices, rooms: placeRooms(paintWalkways(stretchRooms(rooms, slices), walkways), slices, positions), autoBind };
 }
 
 /** Ship.buildRoomBmp: four side-by-side size x size layers per room row. */
@@ -352,7 +360,7 @@ export function formatLayout(layout: ShipLayout): string {
       const compact =
         (key === "tiles" || key === "frames" || key === "anims") && Array.isArray(value)
           ? value.map((v) => JSON.stringify(v))
-          : key === "offset" || key === "footprint" || key === "modulePad" || key === "flags"
+          : key === "offset" || key === "footprint" || key === "modulePad" || key === "flags" || key === "at"
             ? [JSON.stringify(value)]
             : null;
       if (!compact) return value;

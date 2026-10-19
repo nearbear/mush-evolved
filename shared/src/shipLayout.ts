@@ -34,6 +34,11 @@ export interface RoomLayout {
   tiles: TilePlacement[];
   /** Equipment-to-sprite bindings from tiles.xml `<extras>`, in source order. */
   equipment: EquipmentBinding[];
+  /**
+   * Where the room sits on the ship (tools/src/shipLayout/roomPositions.ts): its tile (x, y) is at
+   * (x + at.x, y + at.y) on one grid shared by every room. Absent for rooms off the door graph.
+   */
+  at?: { x: number; y: number };
 }
 
 export interface EquipmentBinding {

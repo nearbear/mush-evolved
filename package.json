@@ -19,6 +19,7 @@
     "build": "npm run build -w web",
     "ship-layout": "npm run ship-layout -w tools",
     "layout-query": "npm run layout-query -w tools --",
+    "ship-check": "npm run ship-check -w tools --",
     "asset-index": "npm run asset-index -w tools",
     "ods-data": "npm run ods-data -w tools",
     "screenshot": "npm run screenshot -w tools --",
