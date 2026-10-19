@@ -108,6 +108,7 @@ export function Minimap({
       }}
       onKeyDown={(e) => onKey(e)}
     >
+      {/* biome-ignore lint/a11y/useKeyWithClickEvents lint/a11y/noSvgWithoutTitle: the section is labelled and each room is a labelled button; expanding the map by keyboard is not built yet. */}
       <svg
         viewBox={`0 0 ${plan.width} ${plan.height}`}
         style={{ aspectRatio: `${plan.width} / ${plan.height}` }}
@@ -185,9 +186,9 @@ export function Minimap({
           ) : (
             <span className="sub minimap-name">Select a room</span>
           )}
-          {selected && reachable.has(selected) && <button onClick={() => onMove(selected)}>Go</button>}
+          {selected && reachable.has(selected) && <button type="button" onClick={() => onMove(selected)}>Go</button>}
           {(selected || opened) && (
-            <button className="close" onClick={close} aria-label="Close map">
+            <button type="button" className="close" onClick={close} aria-label="Close map">
               ×
             </button>
           )}

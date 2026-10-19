@@ -4,7 +4,7 @@
 import { useTranslation } from "react-i18next";
 import { useNames } from "../i18n/names.ts";
 import type { ReactNode } from "react";
-import { actionVisibility, CHARACTERS, characterGivenName, characterName, ITEM_TYPES, type Action, type ActionOption, type BotKind, type EquipmentView, type OtherPlayerView, type PlayerView, type ShipLayout, type Target } from "@mush2/shared";
+import { actionVisibility, CHARACTERS, characterGivenName, characterName, type Action, type ActionOption, type EquipmentView, type PlayerView, type ShipLayout, type Target } from "@mush2/shared";
 import { characterImage, portrait } from "../art/assets.ts";
 import { useMobile } from "../useMobile.ts";
 import { atlasUrl } from "../iso/shipLayout.ts";
@@ -14,7 +14,6 @@ import { ItemFace } from "./ItemFace.tsx";
 import { ItemIcon } from "./ItemIcon.tsx";
 import { ActionLabel } from "./ActionLabel.tsx";
 import { SkillSlots } from "./SkillSlots.tsx";
-import { ItemAttrIcons } from "./ItemAttrIcons.tsx";
 import { StatusIcons } from "./StatusIcons.tsx";
 import { ActionButton } from "./ActionButton.tsx";
 import { actionLabelKey, optionsOn, resolveTarget, type Resolved } from "./targets.ts";
@@ -66,7 +65,6 @@ export function InspectPanel({
 }
 
 function Details({ view, layout, resolved, onAction }: { view: PlayerView; layout?: ShipLayout; resolved: Resolved; onAction: (action: Action) => void }) {
-  const { t } = useTranslation();
   const names = useNames();
   const mobile = useMobile();
   switch (resolved.kind) {

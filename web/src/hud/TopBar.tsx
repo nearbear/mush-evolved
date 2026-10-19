@@ -59,14 +59,14 @@ export function TopBar({
           <Menu.Portal>
             <Menu.Positioner sideOffset={6} align="end" className="menu-positioner">
               <Menu.Popup className="menu-popup">
-                <Menu.Item render={<button />} disabled={!canReady} onClick={onReady}>
+                <Menu.Item render={<button type="button" />} disabled={!canReady} onClick={onReady}>
                   {endCycleLabel}
                 </Menu.Item>
-                <Menu.Item render={<button />} onClick={() => setSettingsOpen(true)}>
+                <Menu.Item render={<button type="button" />} onClick={() => setSettingsOpen(true)}>
                   <img className="menu-item-icon" src={SETTINGS_ICON} alt="" />
                   {t("settings.title")}
                 </Menu.Item>
-                <Menu.Item render={<button />} onClick={onLeave}>
+                <Menu.Item render={<button type="button" />} onClick={onLeave}>
                   {leaveLabel}
                 </Menu.Item>
               </Menu.Popup>
@@ -75,10 +75,10 @@ export function TopBar({
         </Menu.Root>
       ) : (
         <>
-          <button disabled={!canReady} onClick={onReady}>
+          <button type="button" disabled={!canReady} onClick={onReady}>
             {endCycleLabel}
           </button>
-          <button onClick={onLeave}>{leaveLabel}</button>
+          <button type="button" onClick={onLeave}>{leaveLabel}</button>
         </>
       )}
       <SettingsDialog

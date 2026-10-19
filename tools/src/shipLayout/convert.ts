@@ -249,7 +249,9 @@ function assignDoors(roomId: string, tiles: TilePlacement[], targets: string[]):
   if (doors.length !== targets.length) {
     fail(`${roomId}: ${doors.length} doors in the map but ${targets.length} <makeDoor> entries`);
   }
-  doors.forEach((d, i) => (d.door = { target: targets[i]! }));
+  doors.forEach((d, i) => {
+    d.door = { target: targets[i]! };
+  });
 }
 
 function parseSlice(sheet: string, s: XmlElement): SliceInfo {

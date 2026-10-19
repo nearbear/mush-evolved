@@ -13,6 +13,7 @@ export function ShipResources() {
         {RESOURCES.map((id) => (
           <li key={id}>
             <Tooltip.Root>
+              {/* biome-ignore lint/a11y/noNoninteractiveTabindex: focusable so keyboard users can open the tooltip, which is the only place the resource is named. */}
               <Tooltip.Trigger className="ship-resource" aria-label={t(`shipResources.${id}`)} render={<span tabIndex={0} />}>
                 <img src={SHIP_RESOURCE_ICONS[id]} alt="" />
                 <span className="ship-resource-value">–</span>

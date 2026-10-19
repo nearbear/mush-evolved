@@ -72,7 +72,9 @@ export function SettingsDialog({
                   {t(`settings.cheats.${cheat}`)}
                 </label>
               ))}
-              <button type="button" onClick={() => CHEATS.forEach((c) => activeCheats.includes(c) === allOn && onCheat(c, !allOn))}>
+              <button type="button" onClick={() => {
+                  for (const c of CHEATS) if (activeCheats.includes(c) === allOn) onCheat(c, !allOn);
+                }}>
                 {t(allOn ? "settings.cheats.disableAll" : "settings.cheats.enableAll")}
               </button>
               <label className="settings-cheat">

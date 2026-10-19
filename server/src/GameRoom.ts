@@ -104,7 +104,7 @@ export class GameRoom extends Server<Env> {
     return this.env.ALLOW_CHEATS === "true";
   }
 
-  async onStart(): Promise<void> {
+  override async onStart(): Promise<void> {
     const stored = await this.ctx.storage.get<Stored>("game");
     if (!stored) return;
     if (stored.version !== STATE_VERSION) {
@@ -138,7 +138,7 @@ export class GameRoom extends Server<Env> {
     this.scheduleBots();
   }
 
-  onConnect(connection: Connection<SeatState>, ctx: ConnectionContext): void {
+  override onConnect(connection: Connection<SeatState>, ctx: ConnectionContext): void {
     const token = new URL(ctx.request.url).searchParams.get("token");
     const playerId = token ? this.tokens[token] : undefined;
     if (!this.game || !playerId) {
@@ -151,7 +151,7 @@ export class GameRoom extends Server<Env> {
     this.sendView(connection, playerId);
   }
 
-  async onMessage(connection: Connection<SeatState>, raw: WSMessage): Promise<void> {
+  override async onMessage(connection: Connection<SeatState>, raw: WSMessage): Promise<void> {
     const playerId = connection.state?.playerId;
     if (!playerId || !this.game) return;
     if (!this.limiter.allow(connection.id)) {
@@ -178,7 +178,7 @@ export class GameRoom extends Server<Env> {
   }
 
   /** The earliest action bar ran out: tell the rules what time it is (queue.ts). */
-  async onAlarm(): Promise<void> {
+  override async onAlarm(): Promise<void> {
     const due = this.game ? nextDue(this.game) : null;
     if (due === null) return;
     // Never stamp the tick before the bar's end: an alarm can fire a moment early by this isolate's clock.
@@ -211,7 +211,7 @@ export class GameRoom extends Server<Env> {
     this.rateLimited[playerId] = (this.rateLimited[playerId] ?? 0) + 1;
   }
 
-  onClose(connection: Connection): void {
+  override onClose(connection: Connection): void {
     this.limiter.forget(connection.id);
   }
 

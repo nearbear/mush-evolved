@@ -96,7 +96,7 @@ Node is installed via nvm. In non-interactive shells, run `source ~/.nvm/nvm.sh`
 - `npm run layout-query -- <regex>`: search `Mush/derived/ship-layout.json` (reading it directly is denied) for matching slices, tiles, and equipment bindings, capped at 60 lines.
 - `npm run screenshot`: headless Chromium (Playwright) screenshots as a desktop player and a 360px phone player, to `.screenshots/` (gitignored). Needs `npm run dev`. Options and the other tooling commands (`ship-view`, `contact-sheet`, `asset-index`, `ods-data`, `types -w server`) are in the `play` and `asset` skills.
 - `npm run deploy -w server`: wrangler deploy (not yet configured or tested).
-- `npm run lint`: Biome, lint only (formatter off). Rules: React hook deps/placement, floating promises (nursery), and import limits (`shared` has no I/O, UI, or sibling-package imports; `web` never imports `server`). typescript-eslint was rejected because it does not support TypeScript 7. Intentional exceptions use `biome-ignore` with a reason.
+- `npm run lint`: Biome, lint only (formatter off). Rules: React hook deps/placement, floating and misused promises (nursery), unused imports and variables, a set of a11y rules, no `console.log` in `server` (`warn`/`error` are fine), and import limits (`shared` has no I/O, UI, or sibling-package imports; `web` never imports `server`). typescript-eslint was rejected because it does not support TypeScript 7. Intentional exceptions use `biome-ignore` with a reason.
 
 `docs/testing.md` lists what's important to test and why, with what's covered and what's missing.
 

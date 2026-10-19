@@ -578,7 +578,9 @@ function paintOrder<S extends PlacedSprite & Sortable>(base: S[], pairs: readonl
   const sweepRank = () => {
     if (!rank) {
       rank = new Array<number>(n);
-      leftOrder(base).forEach((i, r) => (rank![i] = r));
+      leftOrder(base).forEach((i, r) => {
+        rank![i] = r;
+      });
     }
     return rank;
   };

@@ -27,19 +27,22 @@ export class ExamineAction extends Action<ExamineActionData> {
   override apply(state: GameState, player: PlayerState, target: ExamineActionData): void {
     switch (target.target.kind) {
       case "player":
-        return logPrivate(
+        logPrivate(
           state,
           player.id,
           target.target.id === player.id ? "examineSelf" : "examinePlayer",
           target.target.id === player.id ? {} : { name: state.players.find((p) => p.id === target.target.id)?.character ?? target.target.id },
         );
+        return;
       case "equipment": {
         const equipment = state.config.equipment[player.room]?.find((eq) => eq.id === target.target.id);
-        return logPrivate(state, player.id, "examineEquipment", { equipment: equipment?.type ?? target.target.id });
+        logPrivate(state, player.id, "examineEquipment", { equipment: equipment?.type ?? target.target.id });
+        return;
       }
       case "item": {
         const item = state.items.find((entry) => entry.id === target.target.id);
-        return logPrivate(state, player.id, "examineItem", { item: item?.type ?? target.target.id });
+        logPrivate(state, player.id, "examineItem", { item: item?.type ?? target.target.id });
+        return;
       }
     }
   }

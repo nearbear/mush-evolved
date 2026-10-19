@@ -156,7 +156,7 @@ export function Lobby({ onMatched }: { onMatched: (ticket: SeatTicket) => void }
             <ul className="pod-characters">
               {CHARACTERS.map((c) => (
                 <li key={c.id}>
-                  <button
+                  <button type="button"
                     className="pod-character"
                     onClick={() => {
                       setError("");
@@ -176,7 +176,7 @@ export function Lobby({ onMatched }: { onMatched: (ticket: SeatTicket) => void }
             <ul className="pod-ships">
               {SHIPS.map((s) => (
                 <li key={s.name}>
-                  <button
+                  <button type="button"
                     className="big pod-ship"
                     onClick={() => {
                       setShip(s.name);

@@ -22,9 +22,6 @@ import { activitySeen } from "./log.ts";
 import { ringMycoAlarms } from "./mycoalarm.ts";
 import type {
   Action,
-  ChannelId,
-  PrivateChannel,
-  PrivateChannelId,
   Equipment,
   EquipmentView,
   GameConfig,

@@ -270,27 +270,6 @@ async function mobileSteps(page: Page, step: Step): Promise<void> {
   });
 }
 
-/**
- * A point that is visibly on an SVG shape (rooms can be L-shaped), plus its
- * accessible name. Trial clicks check that the shape itself is hit there.
- */
-async function pointOnShape(page: Page, shape: Locator): Promise<{ x: number; y: number; title: string }> {
-  const box = (await shape.boundingBox()) ?? fail("shape is not visible");
-  const steps = [0.5, 0.3, 0.7, 0.2, 0.8, 0.1, 0.9];
-  for (const fy of steps) {
-    for (const fx of steps) {
-      const position = { x: fx * box.width, y: fy * box.height };
-      try {
-        await shape.click({ trial: true, position, timeout: 150 });
-        return { x: box.x + position.x, y: box.y + position.y, title: (await shape.getAttribute("aria-label")) ?? "" };
-      } catch {
-        // Not on the shape here (or something covers it); try the next point.
-      }
-    }
-  }
-  return fail("no visible point on the shape");
-}
-
 /** Tap the first reachable door, then Go in the peek bar; waits for the new room. */
 async function walkThroughDoor(page: Page): Promise<void> {
   const before = await page.locator(".room-title").innerText();

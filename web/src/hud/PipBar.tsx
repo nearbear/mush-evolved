@@ -35,7 +35,7 @@ export function PipBar({
   const pipW = thin ? 3 : 5;
   const width = CAP_START + slots * pitch + 4;
   return (
-    <span className={thin ? "pip-bar thin" : "pip-bar"} aria-label={`${label}: ${value} of ${max}`}>
+    <span className={thin ? "pip-bar thin" : "pip-bar"} role="group" aria-label={`${label}: ${value} of ${max}`}>
       {icon === undefined ? (
         <span className="pip-label">{label}</span>
       ) : (

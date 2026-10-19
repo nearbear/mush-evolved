@@ -443,6 +443,7 @@ export function IsoRoom({
       <h2 className="room-title">{names.room(room)}</h2>
       {/* The scroller is separate so the title stays put when a wide room scrolls. */}
       <div className="iso-scroll">
+        {/* biome-ignore lint/a11y/useKeyWithClickEvents lint/a11y/noStaticElementInteractions: picking things in the drawn room is pointer-only for now; keyboard access to the room is not built yet. */}
         <div
           ref={viewportRef}
           className={`iso-viewport${hoverTitle ? " pointing" : ""}`}

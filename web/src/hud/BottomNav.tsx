@@ -18,7 +18,7 @@ export function BottomNav({ panel, onChange }: { panel: MobilePanel; onChange: (
   return (
     <nav className="bottom-nav" aria-label={t("nav.panels")}>
       {BUTTONS.map((b) => (
-        <button
+        <button type="button"
           key={b.panel}
           className="bottom-nav-button"
           aria-current={b.panel === panel ? "page" : undefined}

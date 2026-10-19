@@ -1,26 +1,54 @@
 {
 	"$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
 	"files": {
-		"includes": ["shared/src/**", "server/src/**", "web/src/**", "tools/src/**"]
+		"includes": [
+			"shared/src/**",
+			"server/src/**",
+			"web/src/**",
+			"tools/src/**"
+		]
 	},
-	"formatter": { "enabled": false },
-	"assist": { "enabled": false },
+	"formatter": {
+		"enabled": false
+	},
+	"assist": {
+		"enabled": false
+	},
 	"linter": {
 		"enabled": true,
 		"rules": {
 			"preset": "none",
 			"correctness": {
 				"useExhaustiveDependencies": "error",
-				"useHookAtTopLevel": "error"
+				"useHookAtTopLevel": "error",
+				"noUnusedImports": "error",
+				"noUnusedVariables": "error",
+				"noVoidTypeReturn": "error"
 			},
 			"nursery": {
-				"noFloatingPromises": "error"
+				"noFloatingPromises": "error",
+				"noMisusedPromises": "error"
+			},
+			"suspicious": {
+				"noExplicitAny": "error",
+				"noFallthroughSwitchClause": "error",
+				"useIterableCallbackReturn": "error"
+			},
+			"a11y": {
+				"useButtonType": "error",
+				"useAriaPropsSupportedByRole": "error",
+				"useKeyWithClickEvents": "error",
+				"noStaticElementInteractions": "error",
+				"noSvgWithoutTitle": "error",
+				"noNoninteractiveTabindex": "error"
 			}
 		}
 	},
 	"overrides": [
 		{
-			"includes": ["shared/src/**"],
+			"includes": [
+				"shared/src/**"
+			],
 			"linter": {
 				"rules": {
 					"style": {
@@ -33,11 +61,22 @@
 								},
 								"patterns": [
 									{
-										"group": ["node:*", "fs", "path", "http", "https", "net"],
+										"group": [
+											"node:*",
+											"fs",
+											"path",
+											"http",
+											"https",
+											"net"
+										],
 										"message": "shared must stay free of I/O."
 									},
 									{
-										"group": ["@mush2/web", "@mush2/server", "@mush2/tools"],
+										"group": [
+											"@mush2/web",
+											"@mush2/server",
+											"@mush2/tools"
+										],
 										"message": "shared must not depend on other packages."
 									}
 								]
@@ -48,7 +87,9 @@
 			}
 		},
 		{
-			"includes": ["web/src/**"],
+			"includes": [
+				"web/src/**"
+			],
 			"linter": {
 				"rules": {
 					"style": {
@@ -57,11 +98,17 @@
 							"options": {
 								"patterns": [
 									{
-										"group": ["@mush2/server", "@mush2/server/*"],
+										"group": [
+											"@mush2/server",
+											"@mush2/server/*"
+										],
 										"message": "web talks to the server over the protocol only."
 									},
 									{
-										"group": ["pixi.js", "pixi.js/*"],
+										"group": [
+											"pixi.js",
+											"pixi.js/*"
+										],
 										"message": "Pixi stays behind the renderer seam, in web/src/iso/pixi/ (see web/src/iso/CLAUDE.md)."
 									}
 								]
@@ -72,7 +119,9 @@
 			}
 		},
 		{
-			"includes": ["web/src/iso/pixi/**"],
+			"includes": [
+				"web/src/iso/pixi/**"
+			],
 			"linter": {
 				"rules": {
 					"style": {
@@ -81,9 +130,32 @@
 							"options": {
 								"patterns": [
 									{
-										"group": ["@mush2/server", "@mush2/server/*"],
+										"group": [
+											"@mush2/server",
+											"@mush2/server/*"
+										],
 										"message": "web talks to the server over the protocol only."
 									}
+								]
+							}
+						}
+					}
+				}
+			}
+		},
+		{
+			"includes": [
+				"server/src/**"
+			],
+			"linter": {
+				"rules": {
+					"suspicious": {
+						"noConsole": {
+							"level": "error",
+							"options": {
+								"allow": [
+									"warn",
+									"error"
 								]
 							}
 						}

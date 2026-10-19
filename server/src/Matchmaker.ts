@@ -18,7 +18,7 @@ interface QueueState {
 export class Matchmaker extends Server<Env> {
   private limiter = new RateLimiter(5, 1000);
 
-  async onMessage(connection: Connection<QueueState>, raw: WSMessage): Promise<void> {
+  override async onMessage(connection: Connection<QueueState>, raw: WSMessage): Promise<void> {
     if (!this.limiter.allow(connection.id)) return;
     const msg = typeof raw === "string" ? parseMatchmakerMessage(raw) : null;
     if (!msg) {
@@ -43,14 +43,14 @@ export class Matchmaker extends Server<Env> {
   }
 
   /** Fill timer fired: start with whoever is waiting and bots for the rest. */
-  async onAlarm(): Promise<void> {
+  override async onAlarm(): Promise<void> {
     const waiting = this.waiting();
     if (waiting.length > 0) await this.startMatch(waiting.slice(0, SEAT_COUNT));
     if (this.waiting().length > 0) await this.ctx.storage.setAlarm(Date.now() + FILL_DELAY_MS);
     this.broadcastQueue();
   }
 
-  async onClose(connection: Connection): Promise<void> {
+  override async onClose(connection: Connection): Promise<void> {
     this.limiter.forget(connection.id);
     if (this.waiting().length === 0) await this.ctx.storage.deleteAlarm();
     this.broadcastQueue();

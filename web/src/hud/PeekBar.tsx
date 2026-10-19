@@ -38,7 +38,7 @@ export function PeekBar({
     const canGo = reachable.has(door);
     return (
       <Bar heading={`Door to ${names.room(door)}`} sub={canGo ? undefined : "No access"}>
-        {canGo && <button onClick={() => onMove(door)}>Go</button>}
+        {canGo && <button type="button" onClick={() => onMove(door)}>Go</button>}
       </Bar>
     );
   }
@@ -57,7 +57,7 @@ export function PeekBar({
           {labelFor(o)}
         </ActionButton>
       ))}
-      <button onClick={onMore} aria-label={t("peek.more")}>
+      <button type="button" onClick={onMore} aria-label={t("peek.more")}>
         …
       </button>
     </Bar>

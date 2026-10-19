@@ -86,7 +86,7 @@ export function InventoryPanel({
     const type = zone === "room" ? "take" : "drop";
     return (
       <li key={item.id} className="item-slot">
-        <button
+        <button type="button"
           className={`item-tile${isSelected ? " selected" : ""}${dragging?.id === item.id ? " dragging" : ""}`}
           draggable
           onMouseDown={(e) => {
@@ -112,7 +112,7 @@ export function InventoryPanel({
           </ItemFace>
         </button>
         {isSelected && legal(type, item) && (
-          <button className="item-action" onClick={() => onAction({ type, item: item.id })}>
+          <button type="button" className="item-action" onClick={() => onAction({ type, item: item.id })}>
             {zone === "room" ? "Take" : "Drop"}
           </button>
         )}

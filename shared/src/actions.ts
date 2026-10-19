@@ -23,7 +23,7 @@ import { ShowerAction } from "./actions/shower.ts";
 import { SpikeAction } from "./actions/spike.ts";
 import { TransferAction } from "./actions/transfer.ts";
 import { itemsIn } from "./items.ts";
-import type { Action, GameState, LogParams, PlayerId, PlayerState, Target } from "./types.ts";
+import type { Action, GameState, LogParams, PlayerState, Target } from "./types.ts";
 
 export type ActionType = Action["type"];
 export type ActionOf<T extends ActionType> = Extract<Action, { type: T }>;

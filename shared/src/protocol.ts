@@ -5,7 +5,7 @@ import { isActopiCheat, isCheat, isRoleCheat, type ActopiCheat, type Cheat, type
 import { isCharacterId, type CharacterId } from "./characters.ts";
 import { MAX_CHAT_LENGTH } from "./chat.ts";
 import { isSkill } from "./skills.ts";
-import { CHAT_CHANNELS, GRAVEYARD_CHANNEL, MUSH_CHANNEL, type Action, type ChannelId, type PlayerId, type PlayerView, type PrivateChannelId, type Role } from "./types.ts";
+import { CHAT_CHANNELS, GRAVEYARD_CHANNEL, MUSH_CHANNEL, type Action, type ChannelId, type PlayerId, type PlayerView, type PrivateChannelId } from "./types.ts";
 
 export const MAX_NAME_LENGTH = 24;
 

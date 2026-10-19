@@ -61,7 +61,7 @@ export function PlayerSummary({ view, compact = false }: { view: PlayerView; com
         <div className="who">
           <strong>{characterName(you.character)}</strong>
           {/* The phone layout shows the cycle here instead of on its own, abbreviated. */}
-          <span className="sub cycle-under-name" aria-label={t("stat.dayCycle", { day: view.day, cycle: view.cycleOfDay })}>
+          <span className="sub cycle-under-name" role="img" aria-label={t("stat.dayCycle", { day: view.day, cycle: view.cycleOfDay })}>
             D{view.day}C{view.cycleOfDay}
           </span>
         </div>
