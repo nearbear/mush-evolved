@@ -1,2 +1,0 @@
-### Journey to Sol vs. Eden politics
-Each game of Mush should result in players arguing over whether their final destination will be Sol or Eden. Some characters like Gioele are motivated to explore the Magellan cluster for selfish reasons, while Paola wishes to join the rebels in Sol and fight against the Mush invasion. Not sure how to facilitate this.
