@@ -7,17 +7,17 @@
 // to the panel, rounded positions, and an integer camera. It renders on demand, not on a ticker: on
 // each frame update (walking), when a texture arrives, and when an animation steps.
 //
-// Phase 2 draws images, flips, animations, positions and fog (as tint). Hover, selection, shadows
-// and the see-through outlines are not drawn yet (phase 3).
+// Effects (effects.ts): fog is a tint; hover, selection and shadows are shared filters (filters.ts);
+// the see-through outlines are a second layer over every sprite, each outline shown only while a wall
+// covers its person. The pulse of those outlines keeps it rendering every frame while one shows.
 
-import { Application, Container, Rectangle, Sprite, Texture, TextureStyle } from "pixi.js";
+import { Application, Container, type Filter, Rectangle, RendererType, Sprite, Texture, TextureStyle } from "pixi.js";
 import { keyedUrl } from "../../art/keyedSprite.ts";
-import { animFrame, type FrameUpdate, type Scene, type SceneAnim, type SceneImage, type SceneSprite } from "../scene.ts";
+import { animFrame, type FrameUpdate, type Scene, type SceneAnim, type SceneImage, type SceneOutline, type ScenePicture, type SceneSprite } from "../scene.ts";
+import { ESP, espPulse, filterKey, lookOf } from "./effects.ts";
+import { EspFilters, lookFilter } from "./filters.ts";
 
 TextureStyle.defaultOptions.scaleMode = "nearest";
-
-/** brightness() as a multiply: fogged rooms at 0.3, a lifted one at 0.5 (as in styles/iso.css). */
-const TINT = { fogged: 0x4d4d4d, foggedLifted: 0x808080 } as const;
 
 // Textures are shared by every renderer instance (a remount, the room you left): images load once.
 const images = new Map<string, Promise<Texture>>();
@@ -52,7 +52,7 @@ const animId = (a: SceneAnim | undefined) => a && `${a.frames.join(",")}/${a.fra
 
 interface Drawn {
   sprite: Sprite;
-  pic: SceneSprite;
+  pic: ScenePicture;
   /** The animation frame showing, and when the animation started. */
   frame: number;
   animStart: number;
@@ -60,11 +60,17 @@ interface Drawn {
   textureKey: string;
 }
 
+/** Outlines are kept in the same map as sprites, under their own keys. */
+const OUTLINE = "esp|";
+
 export class PixiRenderer {
   private readonly app = new Application();
   private readonly world = new Container();
+  private readonly sprites = new Container();
+  private readonly outlines = new Container();
   private readonly drawn = new Map<string, Drawn>();
   private order: Drawn[] = [];
+  private outlineOrder: Drawn[] = [];
   private walkers: Drawn[] = [];
   private animated: Drawn[] = [];
   private scene: Scene | null = null;
@@ -74,6 +80,12 @@ export class PixiRenderer {
   private dirty = false;
   private raf = 0;
   private resize: ResizeObserver | null = null;
+  /** Filters by look (filterKey), and the outlines' two, made once the renderer is up. */
+  private readonly looks = new Map<string, Filter>();
+  private esp: { pulsing: EspFilters; faint: EspFilters } | null = null;
+  /** Whether any outline that pulses is showing, which keeps frames coming. */
+  private pulsing = false;
+  private readonly reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
 
   constructor(private readonly host: HTMLElement) {
     this.init().catch((e: unknown) => console.error("Pixi renderer failed to start", e));
@@ -97,7 +109,14 @@ export class PixiRenderer {
     }
     // Pixi's own input handling is unused: IsoRoom hit-tests against the art itself.
     this.app.stage.eventMode = "none";
+    this.world.addChild(this.sprites, this.outlines);
     this.app.stage.addChild(this.world);
+    // The shaders are GLSL; on anything but WebGL the sprites are drawn without effects.
+    if (this.app.renderer.type === RendererType.WEBGL) {
+      const rim = this.color("--glow-rim");
+      const resolution = this.app.renderer.resolution;
+      this.esp = { pulsing: new EspFilters(rim, 1, resolution), faint: new EspFilters(rim, ESP.faint, resolution) };
+    }
     this.host.appendChild(this.app.canvas);
     this.resize = new ResizeObserver(() => this.fit());
     this.resize.observe(this.host);
@@ -118,38 +137,50 @@ export class PixiRenderer {
   setScene(scene: Scene) {
     this.scene = scene;
     if (!this.ready) return;
-    const now = performance.now();
-    const next: Drawn[] = [];
     const seen = new Set<string>();
-    for (const pic of scene.sprites) {
-      seen.add(pic.key);
-      let d = this.drawn.get(pic.key);
-      if (!d) {
-        d = { sprite: new Sprite(Texture.EMPTY), pic, frame: -1, animStart: now, textureKey: "" };
-        this.drawn.set(pic.key, d);
-      } else if (animId(d.pic.anim) !== animId(pic.anim)) {
-        d.animStart = now;
-      }
-      d.pic = pic;
-      d.frame = pic.anim ? animFrame(pic.anim, now - d.animStart) : 0;
-      this.paint(d);
-      this.place(d, { x: 0, y: 0 });
-      next.push(d);
-    }
+    const sprites = this.sync(scene.sprites, "", this.sprites, this.order, seen, (d, s) => this.paintSprite(d, s));
+    const outlines = this.sync(scene.outlines, OUTLINE, this.outlines, this.outlineOrder, seen, (d, o) => this.paintOutline(d, o));
     for (const [key, d] of this.drawn) {
       if (seen.has(key)) continue;
       d.sprite.destroy();
       this.drawn.delete(key);
     }
-    // Paint order is child order; re-add only when it changed.
-    if (next.length !== this.order.length || next.some((d, i) => d !== this.order[i])) {
-      this.world.removeChildren();
-      if (next.length) this.world.addChild(...next.map((d) => d.sprite));
-    }
-    this.order = next;
-    this.walkers = next.filter((d) => d.pic.walker);
-    this.animated = next.filter((d) => d.pic.anim);
+    this.order = sprites;
+    this.outlineOrder = outlines;
+    const all = [...sprites, ...outlines];
+    this.walkers = all.filter((d) => d.pic.walker);
+    this.animated = all.filter((d) => d.pic.anim);
+    this.pulsing = scene.outlines.some((o) => o.occluded && !o.faint);
     this.requestRender();
+  }
+
+  /** One layer's pictures: reused by key (an animation restarts when it changes), painted and placed. */
+  private sync<P extends ScenePicture>(pics: readonly P[], prefix: string, layer: Container, prev: Drawn[], seen: Set<string>, paint: (d: Drawn, pic: P) => void): Drawn[] {
+    const now = performance.now();
+    const next: Drawn[] = [];
+    for (const pic of pics) {
+      const key = prefix + pic.key;
+      seen.add(key);
+      let d = this.drawn.get(key);
+      if (!d) {
+        d = { sprite: new Sprite(Texture.EMPTY), pic, frame: -1, animStart: now, textureKey: "" };
+        this.drawn.set(key, d);
+      } else if (animId(d.pic.anim) !== animId(pic.anim)) {
+        d.animStart = now;
+      }
+      d.pic = pic;
+      d.frame = pic.anim ? animFrame(pic.anim, now - d.animStart) : 0;
+      paint(d, pic);
+      this.setTexture(d, pic.image, d.frame);
+      this.place(d, { x: 0, y: 0 });
+      next.push(d);
+    }
+    // Paint order is child order; re-add only when it changed.
+    if (next.length !== prev.length || next.some((d, i) => d !== prev[i])) {
+      layer.removeChildren();
+      if (next.length) layer.addChild(...next.map((d) => d.sprite));
+    }
+    return next;
   }
 
   setFrame(frame: FrameUpdate) {
@@ -165,8 +196,16 @@ export class PixiRenderer {
     this.destroyed = true;
     cancelAnimationFrame(this.raf);
     this.resize?.disconnect();
-    // Textures stay cached for the next renderer; only this one's sprites go.
+    // Textures stay cached for the next renderer; only this one's sprites and filters go.
     if (this.ready) this.app.destroy({ removeView: true }, { children: true });
+    for (const f of this.looks.values()) f.destroy();
+    this.esp?.pulsing.destroy();
+    this.esp?.faint.destroy();
+  }
+
+  /** A color token from styles/tokens.css, as the page has it. */
+  private color(token: string): string {
+    return getComputedStyle(this.host).getPropertyValue(token).trim() || "#ffffff";
   }
 
   /** Position and mirroring: a mirrored sprite is scaled by -1, so it is anchored on its far edge. */
@@ -176,11 +215,25 @@ export class PixiRenderer {
     sprite.position.set(pic.x + offset.x + (pic.flipX ? pic.width : 0), pic.y + offset.y + (pic.flipY ? pic.height : 0));
   }
 
-  /** Texture (for the current animation frame) and tint. */
-  private paint(d: Drawn) {
-    const { pic, sprite } = d;
-    sprite.tint = pic.effect === "fogged" || pic.effect === "foggedLifted" ? TINT[pic.effect] : 0xffffff;
-    this.setTexture(d, pic.image, d.frame);
+  /** Fog as a tint; anything else as the filter for that look, shared with every sprite that has it. */
+  private paintSprite(d: Drawn, s: SceneSprite) {
+    const look = lookOf(s);
+    d.sprite.tint = look.tint;
+    const key = this.esp ? filterKey(look) : "";
+    let filter = key ? this.looks.get(key) : undefined;
+    if (key && !filter) {
+      filter = lookFilter(look, (token) => this.color(token), this.app.renderer.resolution);
+      this.looks.set(key, filter);
+    }
+    if (d.sprite.filters?.[0] !== filter) d.sprite.filters = filter ? [filter] : [];
+  }
+
+  /** Shown only while a wall covers the person; faint for someone in another room, which doesn't pulse. */
+  private paintOutline(d: Drawn, o: SceneOutline) {
+    d.sprite.visible = o.occluded && !!this.esp;
+    if (!this.esp) return;
+    const filters = (o.faint ? this.esp.faint : this.esp.pulsing).filters;
+    if (d.sprite.filters !== filters) d.sprite.filters = filters;
   }
 
   private setTexture(d: Drawn, image: SceneImage, frame: number) {
@@ -229,7 +282,12 @@ export class PixiRenderer {
       this.setTexture(d, d.pic.image, f);
       this.dirty = true;
     }
+    const pulse = this.pulsing && !this.reducedMotion.matches;
+    if (this.esp) {
+      this.esp.pulsing.alpha = espPulse(now, this.reducedMotion.matches);
+      if (pulse) this.dirty = true;
+    }
     if (this.dirty) this.renderNow();
-    if (this.animated.length) this.raf = requestAnimationFrame(this.tick);
+    if (this.animated.length || pulse) this.raf = requestAnimationFrame(this.tick);
   };
 }

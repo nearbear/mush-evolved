@@ -17,7 +17,9 @@ Loaded when working on the isometric view. The UI rules in `web/CLAUDE.md` still
   and no game state. The DOM one is `dom/DomScene.tsx` (one absolutely positioned div per sprite,
   effects as `fx-*` classes in `styles/iso.css`). The Pixi one (`pixi/`, on trial behind the
   Room renderer setting, `rendererChoice.ts`) is an imperative class behind a thin component,
-  lazy-loaded; only `pixi/` may import `pixi.js` (a Biome rule). `IsoRoom` picks one from `RENDERERS`. Effect
+  lazy-loaded; only `pixi/` may import `pixi.js` (a Biome rule). Its effects are hand-written GLSL
+  filters (`pixi/filters.ts`) drawing the looks in `pixi/effects.ts`, which copies the numbers from
+  `styles/iso.css`: change a look in both. `IsoRoom` picks one from `RENDERERS`. Effect
   precedence (which wins when hovered and selected) is decided in `describeScene`, not in CSS.
   Badges, action bars and speech bubbles stay DOM whatever the renderer (`SceneOverlay.tsx`, in its
   own world above the scene, moved by the same frames). Keep renderer-specific code out of
