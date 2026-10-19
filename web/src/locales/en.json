@@ -48,11 +48,6 @@
       "one": "1 room out",
       "two": "2 rooms out",
       "all": "Whole ship"
-    },
-    "renderer": {
-      "label": "Room renderer",
-      "dom": "Standard",
-      "pixi": "PixiJS (trial)"
     }
   },
   "language": {

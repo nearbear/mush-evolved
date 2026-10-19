@@ -8,7 +8,6 @@ import { Dialog } from "@base-ui/react/dialog";
 import { useTranslation } from "react-i18next";
 import { SETTINGS_ICON } from "../art/assets.ts";
 import { parseFogDepth, setFogDepth, useFogDepth } from "../fogDepth.ts";
-import { parseRendererChoice, setRendererChoice, useRendererChoice } from "../rendererChoice.ts";
 import { LanguageSwitcher } from "../i18n/LanguageSwitcher.tsx";
 import "./settings.css";
 
@@ -38,7 +37,6 @@ export function SettingsDialog({
 }) {
   const { t } = useTranslation();
   const fogDepth = useFogDepth();
-  const renderer = useRendererChoice();
   const allOn = CHEATS.every((c) => activeCheats.includes(c));
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
@@ -63,13 +61,6 @@ export function SettingsDialog({
               <option value="1">{t("settings.fogDepth.one")}</option>
               <option value="2">{t("settings.fogDepth.two")}</option>
               <option value="all">{t("settings.fogDepth.all")}</option>
-            </select>
-          </label>
-          <label className="settings-row">
-            <span>{t("settings.renderer.label")}</span>
-            <select value={renderer} onChange={(e) => setRendererChoice(parseRendererChoice(e.target.value))}>
-              <option value="dom">{t("settings.renderer.dom")}</option>
-              <option value="pixi">{t("settings.renderer.pixi")}</option>
             </select>
           </label>
           {cheatsAllowed && (
