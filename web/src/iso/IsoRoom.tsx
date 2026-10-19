@@ -220,6 +220,8 @@ export function IsoRoom({
   const arrived = !!myWalker && !myWalker.moving && !!here && myWalker.cell.x === here.cell.x && myWalker.cell.y === here.cell.y;
   const mySeat = arrived ? here?.seat : undefined;
   const walkersKey = [...walkers].map(([id, w]) => `${id}@${w.cell.x},${w.cell.y}${w.facing.flip ? "f" : ""}`).join(";");
+  // How they look on top of where they are: the strip and the walk cycle can change without a step into another cell (stopping, mostly).
+  const walkersLook = [...walkers].map(([id, w]) => `${id}:${w.facing.strip}${w.moving ? "m" : ""}${w.arriving ? "a" : ""}`).join(";");
 
   // The tiles of this room and the rooms behind its doors, sorted once; people walking only re-place the people.
   const prepared = useMemo(() => {
@@ -342,7 +344,7 @@ export function IsoRoom({
   const [hoverAt, setHoverAt] = useState({ x: 0, y: 0 });
 
   // What the renderer draws. Rebuilt when the placed scene, the people, or what's selected, hovered or reachable changes.
-  // biome-ignore lint/correctness/useExhaustiveDependencies: walkersKey stands in for walkers; occupants, nearby and corpses for the image input and beds built from them.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: walkersKey and walkersLook stand in for walkers; occupants, nearby and corpses for the image input and beds built from them.
   const drawn = useMemo(
     () =>
       describeScene({
@@ -357,7 +359,7 @@ export function IsoRoom({
         hoverKey,
         ownCells,
       }),
-    [scene, box, walkersKey, mySeat, occupants, nearby, corpses, equipmentByKey, reachable, selected, selectedDoor, hoverKey, ownCells],
+    [scene, box, walkersKey, walkersLook, mySeat, occupants, nearby, corpses, equipmentByKey, reachable, selected, selectedDoor, hoverKey, ownCells],
   );
   // Badges and bubbles go over the people in this room.
   const anchors = drawn.sprites.flatMap((s): Anchor[] => {
