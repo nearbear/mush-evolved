@@ -18,6 +18,7 @@ import { first_aid } from "./modifiers/first_aid.ts";
 import { logistics } from "./modifiers/logistics.ts";
 import { immunity } from "./modifiers/immunity.ts";
 import { lying_down } from "./modifiers/lying_down.ts";
+import { mankind_only_hope } from "./modifiers/mankind_only_hope.ts";
 import { medic } from "./modifiers/medic.ts";
 import { pacifist } from "./modifiers/pacifist.ts";
 import { sturdy } from "./modifiers/sturdy.ts";
@@ -61,6 +62,8 @@ export interface Modifier extends Partial<FoldHooks> {
    * Only for a holder the actor can see, since the price itself tells them the effect is there.
    */
   roomActionCost?: (cost: ActionCost, ctx: CostContext & { holder: Readonly<PlayerState> }) => ActionCost;
+  /** Adjusts the morale every living player loses when a day ends, while the holder is alive (Mankind's Only Hope). Must be pure. */
+  crewMoraleLoss?: (loss: number, holder: Readonly<PlayerState>, state: Readonly<GameState>) => number;
   /** Adjusts how a player's moves are paid for. Must be pure. */
   movement?: (rules: MovementRules, player: Readonly<PlayerState>) => MovementRules;
   /**
@@ -81,7 +84,7 @@ export interface Modifier extends Partial<FoldHooks> {
 export type ModifierRegistry = Readonly<Record<string, Modifier>>;
 
 /** Items and skills will register here too. When a skill gains rules, update its entry in SKILL_STATUS (skills.ts). */
-export const MODIFIERS: Record<string, Modifier> = { lying_down, medic, first_aid, sturdy, creative, antic_perfume, logistics, caffeinomaniac, computer, pacifist, immunity };
+export const MODIFIERS: Record<string, Modifier> = { lying_down, medic, first_aid, sturdy, creative, antic_perfume, logistics, caffeinomaniac, computer, pacifist, immunity, mankind_only_hope };
 
 /** The ids every hook folds over: the player's skills, then their other modifiers. */
 export function modifierIds(player: Readonly<PlayerState>): string[] {
@@ -129,6 +132,19 @@ export function actionCost(base: ActionCost, ctx: CostContext, registry: Modifie
   // Hooks can't make a price negative. A move's MP is a net change and can already be negative (a conversion
   // gives more than the move spends), so the floor is 0 or the base, whichever is lower.
   return { ap: Math.max(Math.min(0, base.ap), cost.ap), mp: Math.max(Math.min(0, base.mp), cost.mp) };
+}
+
+/** Morale each living player loses when a day ends: `moralePerDay` through every living player's `crewMoraleLoss` hooks, in seat order; never below 0. */
+export function dailyMoraleLoss(state: Readonly<GameState>, registry: ModifierRegistry = MODIFIERS): number {
+  let loss = state.config.moralePerDay;
+  for (const holder of state.players) {
+    if (!holder.alive) continue;
+    for (const id of modifierIds(holder)) {
+      const hook = registry[id]?.crewMoraleLoss;
+      if (hook) loss = hook(loss, holder, state);
+    }
+  }
+  return Math.max(0, loss);
 }
 
 /** Runs every onActionFailed hook the player has. Mutates a state the caller already cloned. */

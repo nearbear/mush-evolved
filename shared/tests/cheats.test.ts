@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { CHEATS, type Cheat } from "../src/cheats.ts";
 import { DEFAULT_CONFIG } from "../src/config.ts";
 import { parseGameMessage } from "../src/protocol.ts";
+import { dailyMoraleLoss } from "../src/modifiers.ts";
 import { applyInput, replayGame, type Input } from "../src/replay.ts";
 import { applyAction, createGame, setActopiCheat, setCheat, setRoleCheat, viewFor } from "../src/rules.ts";
 import type { GameState, PlayerId } from "../src/types.ts";
@@ -48,7 +49,7 @@ describe("cheats", () => {
     for (const p of seats) s = applyOk(s, p.id);
     expect(s.cycle).toBe(cfg.cyclesPerDay + 1);
     expect(player(s, "p0").morale).toBe(cfg.maxMorale);
-    expect(player(s, "p1").morale).toBe(cfg.startMorale - cfg.moralePerDay);
+    expect(player(s, "p1").morale).toBe(cfg.startMorale - dailyMoraleLoss(s));
   });
 
   it("are per player and can be switched off", () => {

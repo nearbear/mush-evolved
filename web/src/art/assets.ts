@@ -204,13 +204,18 @@ export const MUSH_ICON = uiIcons["mush"]!;
 const statusIconFiles = urls(
   import.meta.glob<string>("../../../Mush/www/img/icons/ui/status/{dirty,belly_full,hungry,immune,pacifist}.png", { eager: true, query: "?url", import: "default" }),
 );
-export const STATUS_ICONS: Readonly<Record<"dirty" | "full_belly" | "hungry" | "immune" | "immunity" | "pacifist", string>> = {
+// Mankind's Only Hope has no status icon in the original (it was a skill there), so its skill icon stands in.
+const traitSkillIcons = urls(
+  import.meta.glob<string>("../../../Mush/www/img/icons/skills/mankind_only_hope.png", { eager: true, query: "?url", import: "default" }),
+);
+export const STATUS_ICONS: Readonly<Record<"dirty" | "full_belly" | "hungry" | "immune" | "immunity" | "pacifist" | "mankind_only_hope", string>> = {
   dirty: statusIconFiles["dirty"]!,
   full_belly: statusIconFiles["belly_full"]!,
   hungry: statusIconFiles["hungry"]!,
   immune: statusIconFiles["immune"]!,
   immunity: statusIconFiles["immune"]!,
   pacifist: statusIconFiles["pacifist"]!,
+  mankind_only_hope: traitSkillIcons["mankind_only_hope"]!,
 };
 /** Item attribute icons, keyed by attribute (the `itemAttr.*` locale keys). */
 export const ITEM_ATTR_ICONS: Readonly<Record<"heavy", string>> = { heavy: uiIcons["heavy"]! };

@@ -10,7 +10,7 @@ import { applyCheats, makeHuman, type ActopiCheat, type Cheat, type RoleCheat } 
 import { ACTIONS, type ActionDef } from "./actions.ts";
 import { getUp } from "./actions/lie_down.ts";
 import { itemsIn } from "./items.ts";
-import { actionFailed, apGain, carePointsGain, channelLimit, computerPointsGain, cycleChanged, inventorySlots, movementRules, satietyLoss } from "./modifiers.ts";
+import { actionFailed, apGain, carePointsGain, channelLimit, computerPointsGain, cycleChanged, dailyMoraleLoss, inventorySlots, movementRules, satietyLoss } from "./modifiers.ts";
 import { contaminationSeenBy, convert } from "./infection.ts";
 import { isHungry, publicStatusesOf, statusesOf } from "./statuses.ts";
 import { emptyResources } from "./resources.ts";
@@ -218,11 +218,12 @@ function advanceCycle(state: GameState): void {
     p.ready = false;
   }
   cycleChanged(state);
-  const { cyclesPerDay, moralePerDay } = state.config;
+  const { cyclesPerDay } = state.config;
   const newDay = (state.cycle - 1) % cyclesPerDay === 0;
   if (newDay) {
     state.sporesToday = 0;
-    for (const p of state.players) if (p.alive) p.morale = Math.max(0, p.morale - moralePerDay);
+    const loss = dailyMoraleLoss(state);
+    for (const p of state.players) if (p.alive) p.morale = Math.max(0, p.morale - loss);
     grantCarePoints(state);
   }
   for (const p of state.players) {

@@ -172,6 +172,6 @@ describe("immunity trait", () => {
   });
 
   it("is given to Chun at the start", () => {
-    expect(DEFAULT_CONFIG.characterModifiers["chun"]).toEqual(["immunity"]);
+    expect(DEFAULT_CONFIG.characterModifiers["chun"]).toEqual(["immunity", "mankind_only_hope"]);
   });
 });

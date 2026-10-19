@@ -1,12 +1,12 @@
 // Status effects. `dirty` is stored in `PlayerState.statuses`; `full_belly`, `hungry`,
-// `immune`, `immunity` and `pacifist` are derived each time they are asked for (from satiety, skills
+// `immune`, `immunity`, `pacifist` and `mankind_only_hope` are derived each time they are asked for (from satiety, skills
 // and traits), so they can't drift out of step with it. Public statuses show on the Inspect panel for
 // everyone in the room; private ones appear only in your own view.
 // Names and icons live in the client (i18n keys `status.<id>`).
 
 import type { GameState, PlayerState } from "./types.ts";
 
-export const STATUS_IDS = ["dirty", "full_belly", "hungry", "immune", "immunity", "pacifist"] as const;
+export const STATUS_IDS = ["dirty", "full_belly", "hungry", "immune", "immunity", "pacifist", "mankind_only_hope"] as const;
 export type StatusId = (typeof STATUS_IDS)[number];
 
 /** Confirmed 2026-10-14: dirty is public; full belly and hungry are private. */
@@ -19,10 +19,11 @@ export const STATUS_PUBLIC: Readonly<Record<StatusId, boolean>> = {
   immunity: true,
   // Owner, 2026-10-18: roommates see Ian's Pacifist as a status icon.
   pacifist: true,
+  mankind_only_hope: true,
 };
 
 /** Statuses that are character traits (permanent, innate): public, but shown on Inspect only, never over the head. */
-export const TRAIT_STATUS_IDS: readonly StatusId[] = ["immunity", "pacifist"];
+export const TRAIT_STATUS_IDS: readonly StatusId[] = ["immunity", "pacifist", "mankind_only_hope"];
 
 /** The statuses worth floating over a character's head: everything but traits. */
 export function overheadStatuses(statuses: readonly string[]): string[] {
@@ -67,6 +68,7 @@ export function statusesOf(state: Readonly<Pick<GameState, "config" | "cycle">>,
     ...(isHungry(state, p) ? ["hungry"] : []),
     ...(hasImmunityTrait(p) ? ["immunity"] : isImmune(state, p) ? ["immune"] : []),
     ...(isPacifist(p) ? ["pacifist"] : []),
+    ...(p.modifiers.includes("mankind_only_hope") ? ["mankind_only_hope"] : []),
   ];
 }
 

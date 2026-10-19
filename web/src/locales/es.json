@@ -256,6 +256,7 @@
     "immune": "Inmune a la infección",
     "immunity": "Inmunidad",
     "pacifist": "Pacifista",
+    "mankind_only_hope": "Única esperanza de la humanidad",
     "contaminated": "Contaminación: {{level}}",
     "desc": {
       "dirty": "No puedes investigar. Darte una ducha lo elimina.",
@@ -264,6 +265,7 @@
       "immune": "Los intentos de infectarte no tienen efecto por ahora.",
       "immunity": "Un rasgo: los intentos de infectarte nunca hacen nada. No se puede quitar.",
       "pacifist": "Toda acción agresiva en la sala de esta persona cuesta 2 PA más, incluidas las suyas. Se acumula con otros pacifistas. No se puede quitar.",
+      "mankind_only_hope": "Un rasgo: mientras esta persona siga con vida, toda la tripulación pierde 1 punto de moral menos cada día. No se puede quitar.",
       "contaminated": "Un humano que has contaminado. Al llegar a su capacidad se vuelve Mush."
     }
   },

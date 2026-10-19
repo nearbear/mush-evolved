@@ -255,6 +255,7 @@
     "immune": "Immune to infection",
     "immunity": "Immunity",
     "pacifist": "Pacifist",
+    "mankind_only_hope": "Mankind's Only Hope",
     "contaminated": "Contamination: {{level}}",
     "desc": {
       "dirty": "Can't research. Taking a shower removes it.",
@@ -263,6 +264,7 @@
       "immune": "Attempts to infect you do nothing for now.",
       "immunity": "A trait: attempts to infect you never do anything. It can't be removed.",
       "pacifist": "Every aggressive action in this person's room costs 2 more AP, theirs included. Stacks with other pacifists. It can't be removed.",
+      "mankind_only_hope": "A trait: while this person is alive, the whole crew loses 1 less morale each day. It can't be removed.",
       "contaminated": "A human you have contaminated. At their capacity they turn Mush."
     }
   },

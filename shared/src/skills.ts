@@ -4,7 +4,8 @@
 /**
  * Human skills a player can pick (decided 2026-10-15: all of them for now; each character will get its own
  * set later). Ids are the lowercase ids from the original design table (`Mush/derived/data/Data/skills.json`,
- * human, retained, not beta), which are also the icon file names under `Mush/www/img/icons/skills`.
+ * human, retained, not beta), which are also the icon file names under `Mush/www/img/icons/skills`. Mankind's Only
+ * Hope is left out: it is Chun's trait here (owner, 2026-10-18; `modifiers/mankind_only_hope.ts`).
  */
 export const SKILLS = [
   "engineer",
@@ -27,7 +28,6 @@ export const SKILLS = [
   "computer",
   "radio_expert",
   "diplomacy",
-  "mankind_only_hope",
   "shrink",
   "persistent",
   "robotics",
