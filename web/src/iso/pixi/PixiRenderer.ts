@@ -4,9 +4,10 @@
 // events; IsoRoom hit-tests), no game state. Pixi stays inside this folder.
 //
 // Pixel-exact at 1x: nearest-neighbour textures, the canvas at devicePixelRatio with CSS size equal
-// to the panel, and whole-pixel positions. The camera and walkers move by fractions of a pixel, so
-// they are rounded here: Pixi's roundPixels rounds each sprite corner on its own, and a fraction near
-// a half rounds both ways, opening 1px seams between tiles and stretching sprites as you walk. It renders on demand, not on a ticker: on
+// to the panel, and whole-pixel positions, rounded here rather than left to Pixi's roundPixels. That
+// rounds each sprite corner on the GPU after a float round trip, so a half pixel (placement centres
+// odd-sized slices on one; the camera and walkers move by fractions) rounds up at some screen heights
+// and down at others: neighbouring tiles come apart by 1px in bands across the screen. It renders on demand, not on a ticker: on
 // each frame update (walking), when a texture arrives, and when an animation steps.
 //
 // Effects (effects.ts): fog is a tint; hover, selection and shadows are shared filters (filters.ts);
@@ -218,11 +219,16 @@ export class PixiRenderer {
     return getComputedStyle(this.host).getPropertyValue(token).trim() || "#ffffff";
   }
 
-  /** Position and mirroring: a mirrored sprite is scaled by -1, so it is anchored on its far edge. */
+  /**
+   * Position and mirroring: a mirrored sprite is scaled by -1, so it is anchored on its far edge.
+   * `offset` is in whole pixels; the scene's own position is rounded the way the DOM snaps it.
+   */
   private place(d: Drawn, offset: { x: number; y: number }) {
     const { pic, sprite } = d;
     sprite.scale.set(pic.flipX ? -1 : 1, pic.flipY ? -1 : 1);
-    sprite.position.set(pic.x + offset.x + (pic.flipX ? pic.width : 0), pic.y + offset.y + (pic.flipY ? pic.height : 0));
+    const x = Math.round(pic.x) + offset.x + (pic.flipX ? pic.width : 0);
+    const y = Math.round(pic.y) + offset.y + (pic.flipY ? pic.height : 0);
+    sprite.position.set(x, y);
   }
 
   /** Fog as a tint; anything else as the filter for that look, shared with every sprite that has it. */
