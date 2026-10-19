@@ -4,7 +4,9 @@
 // events; IsoRoom hit-tests), no game state. Pixi stays inside this folder.
 //
 // Pixel-exact at 1x: nearest-neighbour textures, the canvas at devicePixelRatio with CSS size equal
-// to the panel, rounded positions, and an integer camera. It renders on demand, not on a ticker: on
+// to the panel, and whole-pixel positions. The camera and walkers move by fractions of a pixel, so
+// they are rounded here: Pixi's roundPixels rounds each sprite corner on its own, and a fraction near
+// a half rounds both ways, opening 1px seams between tiles and stretching sprites as you walk. It renders on demand, not on a ticker: on
 // each frame update (walking), when a texture arrives, and when an animation steps.
 //
 // Effects (effects.ts): fog is a tint; hover, selection and shadows are shared filters (filters.ts);
@@ -186,8 +188,16 @@ export class PixiRenderer {
   setFrame(frame: FrameUpdate) {
     this.lastFrame = frame;
     if (!this.ready) return;
-    this.world.position.set(frame.camera.x, frame.camera.y);
-    for (const d of this.walkers) this.place(d, frame.offsetOf(d.pic.walker!));
+    const { camera } = frame;
+    const x = Math.round(camera.x);
+    const y = Math.round(camera.y);
+    this.world.position.set(x, y);
+    // Each walker is rounded where it lands on screen, not in the world: your own walker cancels the
+    // camera's fraction exactly, so you stay still on screen while the room moves under you.
+    for (const d of this.walkers) {
+      const o = frame.offsetOf(d.pic.walker!);
+      this.place(d, { x: Math.round(o.x + camera.x) - x, y: Math.round(o.y + camera.y) - y });
+    }
     // Drawn now, in the same frame as the DOM overlay above it, so badges and people stay together.
     this.renderNow();
   }

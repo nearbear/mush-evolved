@@ -9,8 +9,11 @@
 import { Color, Filter, GlProgram, UniformGroup } from "pixi.js";
 import { ESP, type Look, paddingOf } from "./effects.ts";
 
+// Every shader starts with #version 300 es: without it Pixi compiles the program as WebGL1 GLSL (it
+// rewrites `in` and `texture`), where integer min/abs and indexing a vector by a variable don't exist.
+
 // Pixi's default filter vertex shader: a quad over the filter's area, in the input texture's coordinates.
-const vertex = `
+const vertex = `#version 300 es
 in vec2 aPosition;
 out vec2 vTextureCoord;
 
@@ -59,7 +62,7 @@ float blurred(vec2 uv, float sigma, int channel) {
 
 // drop-shadow() under the sprite, then brightness(), then a glow (a colored drop-shadow with no offset),
 // in that order as in styles/iso.css.
-const lookFragment = `
+const lookFragment = `#version 300 es
 in vec2 vTextureCoord;
 out vec4 finalColor;
 ${blur}
@@ -86,7 +89,7 @@ void main(void) {
 
 // Outline, first pass: the 1px rim just outside the silhouette (feMorphology dilate, then "out"), packed
 // with the silhouette's alpha into an opaque texel for the second pass.
-const rimFragment = `
+const rimFragment = `#version 300 es
 in vec2 vTextureCoord;
 out vec4 finalColor;
 ${blur}
@@ -102,7 +105,7 @@ void main(void) {
 `;
 
 // Outline, second pass: the rim's glow, the faint fill and the rim, merged in that order (feMerge).
-const espFragment = `
+const espFragment = `#version 300 es
 in vec2 vTextureCoord;
 out vec4 finalColor;
 ${blur}
@@ -113,11 +116,11 @@ uniform float uAlpha;
 
 void main(void) {
   vec4 color = vec4(uColor, 1.0);
-  vec4 packed = at(vTextureCoord);
+  vec4 rimAndAlpha = at(vTextureCoord);
   vec4 c = color * blurred(vTextureCoord, uGlowSigma, 0);
-  float fill = uFill * packed.g;
+  float fill = uFill * rimAndAlpha.g;
   c = color * fill + c * (1.0 - fill);
-  c = color * packed.r + c * (1.0 - packed.r);
+  c = color * rimAndAlpha.r + c * (1.0 - rimAndAlpha.r);
   finalColor = c * uAlpha;
 }
 `;
