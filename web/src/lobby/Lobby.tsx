@@ -1,7 +1,8 @@
+import { ScrollArea } from "@base-ui/react/scroll-area";
 import { Suspense, lazy, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { CHARACTERS, type CharacterId, type MatchmakerServerMessage } from "@mush2/shared";
-import { portrait } from "../art/assets.ts";
+import { characterImage } from "../art/assets.ts";
 import { LanguageSwitcher } from "../i18n/LanguageSwitcher.tsx";
 import { matchmakerSocket, type SeatTicket } from "../net.ts";
 import logoUrl from "../../../Mush/www/img/design/logo_welcome.png?url";
@@ -23,6 +24,9 @@ const SLEEP_MS = 600;
 
 /** The cryopod drawn behind the panel, with Pixi; loaded after the panel shows. */
 const PodBackdrop = lazy(() => import("./pixi/PodBackdrop.tsx"));
+
+/** The picker's row, alphabetical by full name. */
+const ROSTER = [...CHARACTERS].sort((a, b) => a.name.localeCompare(b.name));
 
 const GUEST_KEY = "mush2.guest";
 
@@ -50,6 +54,21 @@ export function Lobby({ onMatched }: { onMatched: (ticket: SeatTicket) => void }
   const pod = useRef<HTMLDivElement>(null);
   // Without WebGL2 the game can't be drawn, so there is nothing to join.
   const [webgl] = useState(hasWebGL2);
+  const roster = useRef<HTMLDivElement>(null);
+
+  // The roster only scrolls sideways, so a mouse wheel scrolls it sideways too. Needs a
+  // non-passive listener to stop the page scrolling as well.
+  useEffect(() => {
+    const el = roster.current;
+    if (!el) return;
+    const onWheel = (e: WheelEvent) => {
+      if (Math.abs(e.deltaY) <= Math.abs(e.deltaX)) return;
+      e.preventDefault();
+      el.scrollLeft += e.deltaY;
+    };
+    el.addEventListener("wheel", onWheel, { passive: false });
+    return () => el.removeEventListener("wheel", onWheel);
+  }, []);
 
   useEffect(() => {
     if (name === null || character === null) return;
@@ -109,22 +128,30 @@ export function Lobby({ onMatched }: { onMatched: (ticket: SeatTicket) => void }
           </div>
           <div className="pod-state" inert={step !== "character"}>
             <p className="pod-subtitle">{t("lobby.pickCharacter")}</p>
-            <ul className="pod-characters">
-              {CHARACTERS.map((c) => (
-                <li key={c.id}>
-                  <button type="button"
-                    className="pod-character"
-                    onClick={() => {
-                      setError("");
-                      setCharacter(c.id);
-                    }}
-                  >
-                    <img src={portrait(c.id)} alt="" />
-                    <span>{c.name}</span>
-                  </button>
-                </li>
-              ))}
-            </ul>
+            <ScrollArea.Root className="pod-roster">
+              <ScrollArea.Viewport ref={roster} className="pod-roster-viewport">
+                <ul className="pod-characters">
+                  {ROSTER.map((c) => (
+                    <li key={c.id}>
+                      <button type="button"
+                        className="pod-character"
+                        onClick={() => {
+                          setError("");
+                          setCharacter(c.id);
+                        }}
+                      >
+                        <img src={characterImage(c.id)} alt="" />
+                        <span className="pod-character-name">{c.name}</span>
+                        <span className="pod-character-profession">{t(`characters.profession.${c.id}`)}</span>
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </ScrollArea.Viewport>
+              <ScrollArea.Scrollbar className="pod-roster-bar" orientation="horizontal">
+                <ScrollArea.Thumb className="pod-roster-thumb" />
+              </ScrollArea.Scrollbar>
+            </ScrollArea.Root>
             {error && <p className="pod-status">{error}</p>}
           </div>
           <div className="pod-state" inert={step !== "ship"}>

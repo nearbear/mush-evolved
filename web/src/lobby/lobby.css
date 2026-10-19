@@ -90,9 +90,12 @@ body:has(.pod) {
  */
 .pod-states {
   display: grid;
+  /* Never wider than the panel: the character row scrolls inside it instead. */
+  grid-template-columns: minmax(0, 1fr);
 }
 .pod-state {
   grid-area: 1 / 1;
+  min-width: 0;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -159,31 +162,44 @@ body:has(.pod) {
     letter-spacing: 0.05em;
   }
 }
-/* Character picker: 16 portrait tiles in a 4x4 grid; names wrap onto two lines on a phone. */
+/*
+ * Character picker: one row of portraits, alphabetical, scrolled sideways (Base UI ScrollArea).
+ * Tiles have a fixed width so the row scrolls rather than squeezing; the profession wraps.
+ */
+.pod-roster {
+  position: relative;
+  /* Room for the scrollbar under the row. */
+  padding-bottom: 0.6rem;
+}
+.pod-roster-viewport {
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x proximity;
+}
 .pod-characters {
   list-style: none;
   margin: 0;
   padding: 0;
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 0.4rem;
+  display: flex;
+  gap: 0.5rem;
+}
+.pod-characters > li {
+  flex: none;
+  scroll-snap-align: start;
 }
 .pod-character {
   box-sizing: border-box;
-  width: 100%;
-  height: auto;
-  min-height: 44px;
+  width: 7rem;
+  height: 100%;
   margin: 0;
-  padding: 0.3rem 0.2rem;
+  padding: 0.3rem 0.3rem 0.4rem;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.2rem;
+  gap: 0.15rem;
   border: 1px solid rgb(255 255 255 / 0.15);
   border-radius: 0.25rem;
   background: rgb(255 255 255 / 0.05);
-  font-size: 0.7rem;
-  line-height: 1.1;
+  line-height: 1.15;
   text-align: center;
 }
 .pod-character:hover,
@@ -191,9 +207,34 @@ body:has(.pod) {
   border-color: var(--mush);
   background: rgb(255 255 255 / 0.12);
 }
+/* The portraits are 210x300; shown whole, at about half size. */
 .pod-character img {
-  width: 40px;
-  height: 40px;
+  display: block;
+  width: 100%;
+  aspect-ratio: 7 / 10;
+  margin-bottom: 0.2rem;
+  border-radius: 0.15rem;
+}
+.pod-character-name {
+  font-size: 0.8rem;
+  font-weight: bold;
+  color: #fff;
+}
+.pod-character-profession {
+  font-size: 0.65rem;
+  color: var(--muted);
+}
+.pod-roster-bar {
+  height: 6px;
+  display: flex;
+}
+.pod-roster-thumb {
+  height: 100%;
+  border-radius: 3px;
+  background: rgb(255 255 255 / 0.3);
+}
+.pod-roster-thumb:hover {
+  background: rgb(255 255 255 / 0.5);
 }
 .pod-ship-crew {
   font-variant-numeric: tabular-nums;

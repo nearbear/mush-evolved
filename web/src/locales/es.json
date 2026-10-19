@@ -693,5 +693,25 @@
       "BRIC_BROC": "Remiendo general",
       "APERO_KITCHEN": "Cocina SNC"
     }
+  },
+  "characters": {
+    "profession": {
+      "chao": "Jefe de seguridad del Daedalus",
+      "chun": "La última esperanza de la humanidad",
+      "eleesha": "Investigadora de primer nivel caída en desgracia",
+      "finola": "Bióloga de renombre internacional, pionera en el estudio del Mush",
+      "frieda": "Científica milenaria",
+      "gioele": "Armador filántropo adicto al café",
+      "hua": "Exploradora extrema",
+      "ian": "Investigador frugívoro flexible",
+      "janice": "Psicóloga digital con atributos innegables",
+      "jinsu": "Comandante supremo del Daedalus",
+      "kuanti": "Gran arquitecto del Daedalus",
+      "paola": "Oficial jefe de comunicaciones del Daedalus",
+      "raluca": "Genio de la física cuántica amante de los gatos",
+      "roland": "Humorista y piloto de caza en sus ratos libres",
+      "stephen": "El cocinero más peligroso de la galaxia",
+      "terrence": "Tecnófilo desencantado y motorizado"
+    }
   }
 }

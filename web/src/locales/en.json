@@ -692,5 +692,25 @@
       "BRIC_BROC": "General patch-up",
       "APERO_KITCHEN": "SNC kitchen"
     }
+  },
+  "characters": {
+    "profession": {
+      "chao": "Head of security on the Daedalus",
+      "chun": "Humanity's last hope",
+      "eleesha": "Disgraced top-flight investigator",
+      "finola": "World-renowned biologist, a pioneer in the study of the Mush",
+      "frieda": "Millennia-old scientist",
+      "gioele": "Caffeine-addicted philanthropist shipowner",
+      "hua": "Extreme explorer",
+      "ian": "Flexible fruit-eating researcher",
+      "janice": "Digital psychologist with undeniable assets",
+      "jinsu": "Supreme commander of the Daedalus",
+      "kuanti": "Chief architect of the Daedalus",
+      "paola": "Chief communications officer of the Daedalus",
+      "raluca": "Cat-loving quantum physics genius",
+      "roland": "Comedian and part-time fighter pilot",
+      "stephen": "The most dangerous cook in the galaxy",
+      "terrence": "Jaded motorized technophile"
+    }
   }
 }
