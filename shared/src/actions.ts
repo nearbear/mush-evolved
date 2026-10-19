@@ -10,6 +10,7 @@ import { ExamineAction } from "./actions/examine.ts";
 import { ExtractSporeAction } from "./actions/extract_spore.ts";
 import { MoveAction } from "./actions/move.ts";
 import { ResearchAction } from "./actions/research.ts";
+import { ProjectAction } from "./actions/project.ts";
 import { ReadyAction } from "./actions/ready.ts";
 import { HealAction } from "./actions/heal.ts";
 import { InstallAction } from "./actions/install.ts";
@@ -62,6 +63,7 @@ export const ACTIONS: { [T in ActionType]: ActionDef<ActionOf<T>> } = {
   dismantle: new DismantleAction(),
   access: new AccessAction(),
   research: new ResearchAction(),
+  project: new ProjectAction(),
   dispense: new DispenseAction(),
   consume: new ConsumeAction(),
   cook: new CookAction(),

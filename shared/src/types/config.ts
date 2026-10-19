@@ -99,6 +99,10 @@ export interface GameConfig {
     cost: { ap: number }; // AP spent to work on a research (decided 2026-10-16).
     effect: { progressPercent: number }; // Percent a research advances per action (decided 2026-10-16).
   };
+  project: {
+    cost: { ap: number }; // AP spent to work on a NERON project (decided 2026-10-18).
+    effect: { progressPercent: number }; // Percent a project advances per action (decided 2026-10-18).
+  };
   lieDown: { cost: { ap: number } }; // AP spent to lie down in a bed (confirmed 2026-10-17).
   shower: {
     cost: {

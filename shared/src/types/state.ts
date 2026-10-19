@@ -47,4 +47,6 @@ export interface GameState {
   sporeExtractedOn: Record<PlayerId, number>;
   /** Percent done of each research that has been started (absent = 0), by research id (research.ts). Public: sent to everyone. */
   research: Record<string, number>;
+  /** Percent done of each NERON project that has been started (absent = 0), by project id (projects.ts). Public: sent to everyone. */
+  projects: Record<string, number>;
 }

@@ -142,6 +142,11 @@ export const RESEARCH_CARDS = urls(
   import.meta.glob<string>("../../../Mush/www/img/cards/research/*.png", { eager: true, query: "?url", import: "default" }),
 );
 
+/** NERON project cards, keyed by the lowercase project id (the file name). */
+export const PROJECT_CARDS = urls(
+  import.meta.glob<string>("../../../Mush/www/img/cards/projects/*.png", { eager: true, query: "?url", import: "default" }),
+);
+
 /** Blue gem with a pink core, drawn beside an action's label. */
 export const ACTION_ICON = urls(
   import.meta.glob<string>("../../../Mush/www/img/icons/ui/pa_slot1.png", { eager: true, query: "?url", import: "default" }),

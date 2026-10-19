@@ -77,6 +77,8 @@ export const DEFAULT_CONFIG: GameConfig = {
   computer: { capPoints: 4, pointsPerDay: 2 },
   // Decided 2026-10-16: working on a research costs 2 AP and advances it 25%; no repeat penalty yet.
   research: { cost: { ap: 2 }, effect: { progressPercent: 25 } },
+  // Decided 2026-10-18: NERON projects work exactly like research: 2 AP, 25% per action, no repeat penalty.
+  project: { cost: { ap: 2 }, effect: { progressPercent: 25 } },
   // Confirmed 2026-10-17: lying down in a bed is free (the +1 AP per cycle is the lying_down modifier).
   lieDown: { cost: { ap: 0 } },
   // Confirmed 2026-10-14: showering costs 2 AP, 1 less with soap in your inventory; a Mush takes 4 damage.

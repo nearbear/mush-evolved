@@ -122,6 +122,8 @@ export interface PlayerView {
   };
   /** Percent done of each research that has been started, public to everyone (decided 2026-10-16). */
   research: Record<string, number>;
+  /** Percent done of each NERON project that has been started, public to everyone (decided 2026-10-18). */
+  projects: Record<string, number>;
   /**
    * Everything you could do right now, plus what you could do if you had the AP or MP (so the client can show
    * it disabled and say why). Affordable ones come first. Only candidates on things you can already see, so

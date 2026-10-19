@@ -103,6 +103,7 @@ export function createGame(seats: readonly Seat[], config: GameConfig, seed: num
     sporesToday: 0,
     sporeExtractedOn: {},
     research: {},
+    projects: {},
   };
   grantCarePoints(state); // day 1 begins now
   return state;
@@ -345,6 +346,7 @@ export function viewFor(state: GameState, playerId: PlayerId): PlayerView {
     maxHp: state.config.maxHp,
     maxMorale: state.config.maxMorale,
     research: { ...state.research },
+    projects: { ...state.projects },
     actions: [...legalOptions(state, you, legal), ...unaffordableActions(state, playerId)],
   };
 }

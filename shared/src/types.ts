@@ -90,6 +90,7 @@ export type Action =
   | { type: "shower"; equipment: string }
   | { type: "access"; equipment: string }
   | { type: "research"; equipment: string; research: string }
+  | { type: "project"; equipment: string; project: string }
   | { type: "heal"; target: PlayerId }
   | { type: "punch"; target: PlayerId }
   | { type: "spike"; target: PlayerId }
