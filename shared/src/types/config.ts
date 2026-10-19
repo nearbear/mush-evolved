@@ -103,6 +103,15 @@ export interface GameConfig {
     cost: { ap: number }; // AP spent to work on a NERON project (decided 2026-10-18).
     effect: { progressPercent: number }; // Percent a project advances per action (decided 2026-10-18).
   };
+  astro: {
+    scan: {
+      cost: { ap: number }; // AP spent to scan for a planet at the Astro terminal (owner, 2026-10-19; the original's 3).
+      chance: number; // Base success chance of a scan, 0 to 1 (owner, 2026-10-19; the original's 50%).
+      failureMultiplier: number; // Each failed scan in a row multiplies the player's next chance by this (owner, 2026-10-19; the original's fail_coef 1.25).
+    };
+    analyze: { cost: { ap: number } }; // AP spent to reveal one sector of one of your planets (owner, 2026-10-19; the original's remote analysis, 2).
+    maxPlanets: number; // Most planets one player can hold (owner, 2026-10-19).
+  };
   lieDown: { cost: { ap: number } }; // AP spent to lie down in a bed (confirmed 2026-10-17).
   shower: {
     cost: {

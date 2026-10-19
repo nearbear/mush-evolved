@@ -133,3 +133,44 @@
 .research-body progress {
   width: 100%;
 }
+
+/* Your planets (PlanetList): in the Astro terminal window and the self panel. */
+.planet-list ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.planet-item {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.planet-picture {
+  flex: none;
+  width: 48px;
+  height: 48px;
+}
+
+.planet-body {
+  display: flex;
+  flex: 1 1 10rem;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 0;
+}
+
+.planet-list .planet-sectors {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px;
+}
+
+.planet-sectors img {
+  display: block;
+  width: 24px;
+  height: 24px;
+}

@@ -1,3 +1,4 @@
+import type { PlanetTag } from "../planets.ts";
 import type { RngState } from "../rng.ts";
 import type { ItemState, LogEntry, PlayerId } from "../types.ts";
 import type { ChatMessage, PrivateChannel } from "./chat.ts";
@@ -49,4 +50,18 @@ export interface GameState {
   research: Record<string, number>;
   /** Percent done of each NERON project that has been started (absent = 0), by project id (projects.ts). Public: sent to everyone. */
   projects: Record<string, number>;
+  /** Each player's planets, found at the Astro terminal (planets.ts). Private: only the finder's own view has them, without the unknown sectors' tags. */
+  planets: Record<PlayerId, Planet[]>;
+  /** Failed scans in a row per player, raising their next scan's odds; reset by a success (owner, 2026-10-19). Never sent. */
+  scanFailures: Record<PlayerId, number>;
+  nextPlanetId: number;
+}
+
+/** A planet a player found. Its size is the number of sectors. */
+export interface Planet {
+  id: string;
+  /** Generated; a proper noun, not translated. */
+  name: string;
+  /** In a fixed shuffled order; `known` once an analysis revealed the sector. */
+  sectors: { tag: PlanetTag; known: boolean }[];
 }

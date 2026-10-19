@@ -163,7 +163,7 @@ export function GameScreen({ ticket, onLeave }: { ticket: SeatTicket; onLeave: (
         <div className="left-column">
           <InspectPanel view={view} layout={layout} target={target} onAction={send} />
           {mobile && (
-            <SelfPanel view={view} showSummary={false} />
+            <SelfPanel view={view} showSummary={false} onAction={send} />
           )}
         </div>
 
@@ -206,7 +206,7 @@ export function GameScreen({ ticket, onLeave }: { ticket: SeatTicket; onLeave: (
                 reachable={reachable} onMove={move}. */}
           </div>
           {!mobile && (
-            <SelfPanel view={view} showSummary />
+            <SelfPanel view={view} showSummary onAction={send} />
           )}
         </div>
 

@@ -124,6 +124,8 @@ export interface PlayerView {
   research: Record<string, number>;
   /** Percent done of each NERON project that has been started, public to everyone (decided 2026-10-18). */
   projects: Record<string, number>;
+  /** Your own planets (private, owner 2026-10-19). Unknown sectors are null: their tags are never sent. */
+  planets: PlanetView[];
   /**
    * Everything you could do right now, plus what you could do if you had the AP or MP (so the client can show
    * it disabled and say why). Affordable ones come first. Only candidates on things you can already see, so
@@ -142,4 +144,11 @@ export interface ActionOption {
   tags: ActionTag[];
   /** Empty when you can do it now; otherwise the points you lack. See `affordable`. */
   lacks: ("ap" | "mp")[];
+}
+
+/** One of your planets as you see it: `null` for a sector no analysis has revealed yet. */
+export interface PlanetView {
+  id: string;
+  name: string;
+  sectors: (string | null)[];
 }

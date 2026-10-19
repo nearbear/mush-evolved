@@ -101,6 +101,15 @@ export function parseGameMessage(raw: string): GameClientMessage | null {
   if (a.type === "project" && typeof a.equipment === "string" && typeof a.project === "string") {
     return { type: "action", action: { type: "project", equipment: a.equipment, project: a.project } };
   }
+  if (a.type === "scan_planet" && typeof a.equipment === "string") {
+    return { type: "action", action: { type: "scan_planet", equipment: a.equipment } };
+  }
+  if (a.type === "analyze_planet" && typeof a.equipment === "string" && typeof a.planet === "string") {
+    return { type: "action", action: { type: "analyze_planet", equipment: a.equipment, planet: a.planet } };
+  }
+  if (a.type === "delete_planet" && typeof a.planet === "string") {
+    return { type: "action", action: { type: "delete_planet", planet: a.planet } };
+  }
   if (a.type === "dispense" && typeof a.equipment === "string") {
     return { type: "action", action: { type: "dispense", equipment: a.equipment } };
   }

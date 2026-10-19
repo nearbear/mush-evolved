@@ -22,7 +22,8 @@ All under `web/src/`. UI rules are in `web/CLAUDE.md`.
 - `PlayerSummary.tsx`: portrait, name, faction icon, AP/MP/HP/morale bars.
 - `PipBar.tsx`: the pip bar in SVG, tinted by CSS `color`.
 - `SettingsDialog.tsx` + `settings.css`: settings dialog.
-- `SelfPanel.tsx`: summary and other resources (Inspect tab on phones, without the summary).
+- `SelfPanel.tsx`: summary and other resources (Inspect tab on phones, without the summary), and your planets once you have any (deletable anywhere).
+- `PlanetList.tsx`: your planets with their sector tags (unknown ones as `tag_unknown`) and a bin button to delete; in the Astro terminal window it adds the scan and analyse buttons.
 - `InventoryOverlay.tsx` + `styles/inventory.css`: the sack button in the room view's lower right (badge = items in the room) that opens `InventoryPanel` over the room; closes on the button, Escape, or a press elsewhere in the room view. Both layouts; hidden when dead.
 - `InventoryPanel.tsx`: item zones; drag to take/drop, tap fallback.
 - `InspectPanel.tsx`: the selected person, equipment, or item, with its legal actions.

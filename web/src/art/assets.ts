@@ -147,6 +147,21 @@ export const PROJECT_CARDS = urls(
   import.meta.glob<string>("../../../Mush/www/img/cards/projects/*.png", { eager: true, query: "?url", import: "default" }),
 );
 
+const astroIcons = urls(
+  import.meta.glob<string>("../../../Mush/www/img/icons/astro/{tag_*,planet_?_small}.png", { eager: true, query: "?url", import: "default" }),
+);
+
+/** A planet sector's tag icon, by tag id (`tag_unknown` for a sector not revealed yet). */
+export const planetTagIcon = (tag: string | null): string => astroIcons[`tag_${(tag ?? "unknown").toLowerCase()}`] ?? astroIcons["tag_unknown"]!;
+
+/** The five small planet pictures; which one a planet gets is cosmetic. */
+export const PLANET_IMAGES: readonly string[] = [0, 1, 2, 3, 4].map((n) => astroIcons[`planet_${n}_small`]!);
+
+/** A small trash bin, for deleting things. */
+export const BIN_ICON = urls(
+  import.meta.glob<string>("../../../Mush/www/img/icons/ui/bin.png", { eager: true, query: "?url", import: "default" }),
+)["bin"]!;
+
 /** Blue gem with a pink core, drawn beside an action's label. */
 export const ACTION_ICON = urls(
   import.meta.glob<string>("../../../Mush/www/img/icons/ui/pa_slot1.png", { eager: true, query: "?url", import: "default" }),

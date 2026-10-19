@@ -20,6 +20,7 @@ import { clone, fail, findPlayer, type ActionResult } from "./helpers.ts";
 import { damage } from "./death.ts";
 import { activitySeen } from "./log.ts";
 import { ringMycoAlarms } from "./mycoalarm.ts";
+import { planetsOf } from "./planets.ts";
 import type {
   Action,
   Equipment,
@@ -104,6 +105,9 @@ export function createGame(seats: readonly Seat[], config: GameConfig, seed: num
     sporeExtractedOn: {},
     research: {},
     projects: {},
+    planets: {},
+    scanFailures: {},
+    nextPlanetId: 1,
   };
   grantCarePoints(state); // day 1 begins now
   return state;
@@ -347,6 +351,8 @@ export function viewFor(state: GameState, playerId: PlayerId): PlayerView {
     maxMorale: state.config.maxMorale,
     research: { ...state.research },
     projects: { ...state.projects },
+    // Your own planets only, and only the tags an analysis revealed (owner, 2026-10-19).
+    planets: planetsOf(state, playerId).map((p) => ({ id: p.id, name: p.name, sectors: p.sectors.map((s) => (s.known ? s.tag : null)) })),
     actions: [...legalOptions(state, you, legal), ...unaffordableActions(state, playerId)],
   };
 }
