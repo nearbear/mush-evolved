@@ -1,7 +1,6 @@
 {
   "ui": {
     "web/src/GameScreen.tsx": 2,
-    "web/src/Lobby.tsx": 2,
     "web/src/hud/ITrackie.tsx": 14,
     "web/src/hud/InspectPanel.tsx": 1,
     "web/src/hud/InventoryPanel.tsx": 6,
@@ -9,6 +8,7 @@
     "web/src/hud/PipBar.tsx": 1,
     "web/src/hud/SelfPanel.tsx": 5,
     "web/src/hud/TopBar.tsx": 4,
+    "web/src/lobby/Lobby.tsx": 2,
     "web/src/scene/Minimap.tsx": 6
   },
   "wire": {

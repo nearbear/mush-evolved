@@ -63,7 +63,8 @@
     "characterTaken": "Someone else just took that crew member. Pick another.",
     "waiting": "Waiting: {{waiting}}/{{seats}}. Empty seats fill with bots shortly.",
     "awaitingCrew": "Awaiting crew",
-    "nearlyFull": "Nearly full"
+    "nearlyFull": "Nearly full",
+    "noWebgl": "Your browser can't draw the game: it needs WebGL 2. Turn on hardware acceleration in your browser settings, update your browser or graphics drivers, or try another browser or device."
   },
   "minimap": {
     "unidentified": "Unidentified",

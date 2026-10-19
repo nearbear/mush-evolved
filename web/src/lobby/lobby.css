@@ -1,15 +1,13 @@
-/* Landing page: the view from inside a cryopod. CSS only, no images. */
+/*
+ * Landing page: the view from inside a cryopod. The pod itself (wall, bezel, frosted glass, the
+ * ceiling beyond) is drawn on a canvas behind the panel (pixi/PodRenderer.ts, podArt.ts); this
+ * only lays out the window it is drawn around and the panel inside it.
+ */
 body:has(.pod) {
   background: #02060c;
 }
 
 .pod {
-  --frost: 190 235 255;
-  /*
-   * Wide rounded corners, fuller at the bottom. The edges between them are kept straight
-   * on purpose: the curve (.pod-strip) bends them, and an oval outline would hide that.
-   */
-  --pod-shape: 22% 22% 26% 26% / 16% 16% 22% 22%;
   position: relative;
   box-sizing: border-box;
   max-width: none;
@@ -20,20 +18,35 @@ body:has(.pod) {
   align-items: center;
   justify-content: center;
   overflow: hidden;
-  /* The metal wall is drawn on the curve (.pod-wall-face); past it, darkness. */
+  /* Past the pod's wall, darkness; also all there is until the canvas is ready, or without WebGL. */
   background: #02060c;
 }
 
+/* The canvas the pod is drawn on, filling the page behind the window. Fades in once drawn. */
+.pod-backdrop {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.4s ease-out;
+}
+.pod-backdrop[data-art="ready"] {
+  opacity: 1;
+}
+.pod-backdrop canvas {
+  display: block;
+}
+
 /*
- * The window: lays out the panel and sizes the curved pod drawn behind it. Padding is
- * the bezel plus the glass margin, so the panel sits where it did inside the glass.
+ * The window: lays out the panel and places the pod drawn around it (the canvas measures this box).
+ * Padding is the bezel plus the glass margin, so the panel sits inside the glass.
  */
 .pod-window {
   position: relative;
   z-index: 1;
   box-sizing: border-box;
   width: min(53.5rem, 100%);
-  /* Never the full screen height: the sticker (.pod-sticker) needs room under the window. */
+  /* Never the full screen height: the sticker under the window needs room. */
   min-height: min(41.5rem, calc(100dvh - 12rem));
   padding: 4.25rem 2.75rem;
   display: flex;
@@ -42,240 +55,9 @@ body:has(.pod) {
 }
 
 /*
- * The curve: the lid bends away from the sleeper like a half-cylinder, so from inside,
- * its middle is farthest from you and its left and right edges come toward you.
- * CSS can't bend one element, so the whole window (bezel, glass, ceiling, frost) is drawn
- * once per vertical strip (--strips, set from Lobby.tsx), each strip showing only its
- * own slice and turned to face the centre of the cylinder. Perspective then makes the
- * far middle look smaller, so the top and bottom edges dip toward the middle and the
- * tile lines bend, which is what reads as curvature.
- */
-.pod-curve {
-  /* How much of the cylinder the window covers, in radians: more is a deeper curve. */
-  --arc: 1.3;
-  /*
-   * Viewing distance, as a multiple of the window's longer side: smaller exaggerates the
-   * curve. The longer side, not the width, so a tall phone window doesn't flare at the ends.
-   */
-  --depth: 1.6;
-  container-type: size;
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-}
-.pod-strip {
-  /* Where this strip's centre is across the window, from -0.5 (left edge) to 0.5 (right). */
-  --u: calc((var(--i) + 0.5) / var(--strips) - 0.5);
-  --a: calc(var(--u) * var(--arc) * 1rad);
-  /* The cylinder's radius: the window's width laid along --arc of it, so nothing stretches. */
-  --r: calc(100cqw / var(--arc));
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  /*
-   * Every strip starts centred, so its transform origin (and the vanishing point of the
-   * perspective() below) is the window's centre, then moves out along the cylinder.
-   * Each is 1px wider than its share so no hairline seams show between them.
-   */
-  left: calc(50% - 50cqw / var(--strips) - 0.5px);
-  width: calc(100cqw / var(--strips) + 1px);
-  overflow: hidden;
-  transform: perspective(calc(max(100cqw, 100cqh) * var(--depth)))
-    translate3d(calc(var(--r) * sin(var(--a))), 0, calc(var(--r) * (1 - cos(var(--a)))))
-    rotateY(calc(-1 * var(--a)));
-}
-
-/*
- * The pod's inside wall, around the window: the same cylinder, carried on past the
- * window's edges by --wall-strips extra strips each side, and up and down far enough to
- * fill the screen. Same strip width and formula as the window, so the two meet exactly;
- * the window strips come later in the page, so they paint over it.
- */
-.pod-wall {
-  position: absolute;
-  inset: 0;
-}
-.pod-wall-strip {
-  top: -50vh;
-  bottom: -50vh;
-}
-/*
- * Window light spilling onto the wall around it. Flat (a blurred glow hides that), and
- * after the wall strips, so it paints over them but under the window.
- */
-.pod-wall::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: var(--pod-shape);
-  box-shadow:
-    0 0 3rem 0.5rem rgb(170 215 245 / 0.16),
-    0 0 10rem 3rem rgb(150 205 240 / 0.08);
-}
-/*
- * One full copy of the wall per strip, shifted like .pod-frame. Brushed metal (fine
- * horizontal streaks over a dark base) in panels with seams, lit by the window and black
- * further out. On the curve, the horizontal seams bow and the vertical ones crowd
- * together toward the sides, which is what makes the metal read as bent.
- */
-.pod-wall-face {
-  --sw: calc(100cqw / var(--strips));
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: calc(0.5px - (var(--i) + var(--wall-strips)) * var(--sw));
-  width: calc((var(--strips) + 2 * var(--wall-strips)) * var(--sw));
-  /* The same light from the left as the bezel, so the wall turns away from it on the left. */
-  filter: brightness(calc(1 + var(--u) * 0.3));
-  /* Where the horizontal seams run, from the top of this copy (the window's top is 50vh down). */
-  --seam-top: calc(50vh - 2.5rem);
-  /* Lower, leaving a band under the window for the sticker. */
-  --seam-bottom: calc(50vh + 100cqh + 5rem);
-  /*
-   * Panels between vertical seams are a fixed width, centred on the window. Background
-   * positions are tile offsets, not centres, so the seams are placed from --mid, the
-   * middle of this copy.
-   */
-  --panel: 13rem;
-  --mid: calc((var(--strips) + 2 * var(--wall-strips)) * var(--sw) / 2);
-  --seam-x: calc(var(--mid) - var(--panel) / 2);
-  --rivet: radial-gradient(circle, #b7c9d6 0 1.5px, #3a4c5a 2px, #070c11 3px, transparent 3.5px);
-  background:
-    radial-gradient(
-      calc(50cqw + 18rem) calc(50cqh + 14rem) at 50% 50%,
-      transparent 55%,
-      rgb(2 6 12 / 0.7) 80%,
-      #02060c 100%
-    ),
-    /*
-     * Rivets along the horizontal seams, four per panel: each sits in the middle of a
-     * quarter-panel tile that starts at a seam, so they are evenly spaced and never on one.
-     */
-    var(--rivet) var(--seam-x) calc(var(--seam-top) - 0.9rem) / calc(var(--panel) / 4) 8px repeat-x,
-    var(--rivet) var(--seam-x) calc(var(--seam-bottom) + 0.9rem - 4px) / calc(var(--panel) / 4) 8px repeat-x,
-    /* horizontal seams above and below the window: a dark groove with a lit lower lip */
-    linear-gradient(#070c11 0 3px, rgb(200 228 250 / 0.3) 3px 4px, transparent 4px) 0 var(--seam-top) / 100% 4px repeat-x,
-    linear-gradient(#070c11 0 3px, rgb(200 228 250 / 0.3) 3px 4px, transparent 4px) 0 var(--seam-bottom) / 100% 4px repeat-x,
-    /* vertical seams between the panels, the groove centred on each seam line */
-    linear-gradient(90deg, #070c11 0 3px, rgb(200 228 250 / 0.22) 3px 4px, transparent 4px) calc(var(--seam-x) - 2px) 0 / var(--panel) 100%,
-    repeating-linear-gradient(0deg, rgb(200 230 255 / 0.05) 0 1px, transparent 1px 3px),
-    repeating-linear-gradient(0deg, rgb(0 0 0 / 0.12) 0 1px, transparent 1px 5px),
-    linear-gradient(180deg, #2c4457, #1a2a37 50%, #2c4457);
-}
-
-/*
- * The manufacturer's sticker, stuck on the wall below the window, square to the seams:
- * inside the panel right of centre (--panel), its bottom edge just above the lower
- * groove (--seam-bottom, 50vh above this copy's bottom edge). Part of the wall copy,
- * so it bends with it. Faded paper, a printed border, a barcode.
- */
-.pod-sticker {
-  position: absolute;
-  bottom: calc(50vh - 5rem + 0.5rem);
-  left: calc(50% + 7.5rem);
-  box-sizing: border-box;
-  width: 11rem;
-  padding: 0.35rem 0.5rem 0.4rem;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.15rem;
-  border-radius: 0.2rem;
-  background: linear-gradient(170deg, #e8e2cc, #cfc7ab);
-  color: #2a2620;
-  outline: 1px solid rgb(42 38 32 / 0.6);
-  outline-offset: -0.2rem;
-  box-shadow: 0 1px 2px rgb(0 0 0 / 0.6);
-  font-family: system-ui, sans-serif;
-  line-height: 1.1;
-  text-align: center;
-  /* Lit by the window like the wall around it, so it doesn't glow in the dark. */
-  opacity: 0.85;
-}
-.pod-sticker-brand {
-  font-size: 0.8rem;
-  font-weight: 800;
-  letter-spacing: 0.15em;
-}
-.pod-sticker-slogan {
-  font-size: 0.5rem;
-  font-style: italic;
-}
-.pod-sticker-barcode {
-  width: 70%;
-  height: 0.55rem;
-  margin-top: 0.1rem;
-  background: repeating-linear-gradient(
-    90deg,
-    #2a2620 0 1px,
-    transparent 1px 3px,
-    #2a2620 3px 5px,
-    transparent 5px 6px,
-    #2a2620 6px 7px,
-    transparent 7px 10px
-  );
-}
-.pod-sticker-serial {
-  font-size: 0.4rem;
-  letter-spacing: 0.1em;
-}
-
-/*
- * Metal bezel around the window, one full-size copy per strip, shifted so the strip shows
- * its own slice. A conic gradient of light and dark greys gives the anisotropic sheen of
- * polished metal. The brightness ramp is the curve catching light from the left: the
- * right half faces that light, the left half turns away from it.
- */
-.pod-frame {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: calc(0.5px - var(--i) * 100cqw / var(--strips));
-  width: 100cqw;
-  box-sizing: border-box;
-  padding: 0.75rem;
-  border-radius: var(--pod-shape);
-  filter: brightness(calc(1 + var(--u) * 0.3));
-  background: conic-gradient(
-    from 200deg,
-    #46596a,
-    #b4d0e2 10%,
-    #374a5a 22%,
-    #7894a8 35%,
-    #2c3d4b 50%,
-    #9fbcd0 62%,
-    #384b5b 75%,
-    #839fb3 88%,
-    #46596a
-  );
-  box-shadow:
-    inset 0 1px 1px rgb(255 255 255 / 0.35),
-    inset 0 -2px 3px rgb(0 0 0 / 0.5);
-}
-@media (max-width: 1023px) {
-  .pod-frame {
-    padding: 0.5rem;
-  }
-}
-
-/* The pod's rim: a dark frame with a thin cold line around the glass. */
-.pod-glass {
-  position: relative;
-  box-sizing: border-box;
-  height: 100%;
-  overflow: hidden;
-  border: 1px solid rgb(var(--frost) / 0.35);
-  border-radius: var(--pod-shape);
-  background: linear-gradient(160deg, rgb(120 200 230 / 0.09), rgb(10 25 35 / 0.55) 40%, rgb(120 200 230 / 0.05));
-  /* recessed into the bezel */
-  box-shadow: 0 0 0 2px #0b0f12;
-}
-
-/*
  * The title, ship list, and loading status share one in-game panel (the glowing tooltip
  * frame from styles.css), floating on the inside of the glass. Its fill is near-opaque,
- * so text keeps its contrast over the pale ceiling. It sits above the frost and droplets
- * (.pod-glass::before/::after, z-index 2), so the frame and its contents stay clean.
+ * so text keeps its contrast over the pale ceiling.
  */
 .pod-panel {
   position: relative;
@@ -302,10 +84,9 @@ body:has(.pod) {
   text-shadow: 0 1px 1px rgb(0 0 30 / 0.6);
 }
 /*
- * The panel never changes size between picking a ship and waiting in the queue: both
- * states share one grid cell, so the cell is as big as the larger, and the inactive
- * one is only made invisible (it is also inert, so it can't be focused or clicked).
- * Covered by tools/src/lobby/lobby.test.ts.
+ * The panel never changes size between picking a ship and waiting in the queue: all
+ * states share one grid cell, so the cell is as big as the largest, and the inactive
+ * ones are only made invisible (they are also inert, so they can't be focused or clicked).
  */
 .pod-states {
   display: grid;
@@ -365,10 +146,6 @@ body:has(.pod) {
     /* Taller than on desktop, nudged up so the sticker's room is all below the window. */
     min-height: calc(100dvh - 10rem);
     margin-bottom: 3rem;
-  }
-  /* The panel right of centre is off screen on a phone, so the sticker takes the centre one. */
-  .pod-sticker {
-    left: calc(50% - 5.5rem);
   }
   .pod-panel {
     padding-inline: 0.75rem;
@@ -430,205 +207,6 @@ body:has(.pod) {
 }
 .pod-status.loading::before {
   margin: 0 auto 0.5rem;
-}
-
-/*
- * The view through the glass: a dropped lab ceiling of square tiles on a T-bar grid,
- * with a vent set into it. The grid is anchored to the top-right corner (--tile-x/y)
- * so the vent lands exactly on a 3x3 block of tiles.
- */
-.pod-ceiling {
-  --tile: 5rem;
-  border-radius: inherit;
-  overflow: hidden;
-  filter: blur(1px);
-  --tile-x: -4rem;
-  --tile-y: -5rem;
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background:
-    /* T-bar gutters: dark recesses between the tiles, not lit edges */
-    linear-gradient(90deg, #4a5156 0 2px, transparent 2px),
-    linear-gradient(#4a5156 0 2px, transparent 2px),
-    /* each tile: a flat white face */
-    #9ba5ab;
-  background-size: var(--tile) var(--tile);
-  background-position: right var(--tile-x) top var(--tile-y);
-}
-/*
- * The glass itself, over the ceiling and vent alike: a cold tint, a broad sheen from
- * the top left, two reflection streaks, a bright edge along the top of the rim, and
- * shadow just inside the rim. Rim effects are inset box-shadows so they follow the
- * window's rounded shape.
- */
-.pod-ceiling::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  background:
-    /*
-     * The glass curves away from you in the middle, so its reflections are long vertical
-     * bands along the near left and right edges (bent by the strips like everything else),
-     * and the far middle is the clearest, darkest part.
-     */
-    linear-gradient(90deg, transparent 3%, rgb(255 255 255 / 0.2) 8%, rgb(255 255 255 / 0.06) 13%, transparent 19%),
-    linear-gradient(90deg, transparent 15%, rgb(255 255 255 / 0.16) 16.5%, transparent 18.5%),
-    linear-gradient(270deg, transparent 4%, rgb(255 255 255 / 0.12) 9%, transparent 15%),
-    linear-gradient(270deg, transparent 13%, rgb(255 255 255 / 0.08) 14%, transparent 15.5%),
-    radial-gradient(ellipse 30% 70% at 50% 50%, rgb(2 6 10 / 0.12), transparent),
-    linear-gradient(transparent 50%, rgb(10 30 45 / 0.3)),
-    rgb(140 190 220 / 0.14);
-  box-shadow:
-    inset 0 2px 1px rgb(255 255 255 / 0.4),
-    inset 0 -2.5rem 3rem -1rem rgb(2 6 10 / 0.55),
-    inset 0 0 1rem rgb(2 6 10 / 0.55),
-    inset 0 0 4rem rgb(2 6 10 / 0.3);
-}
-
-/*
- * Breath fog: a pale patch low in the glass that slowly swells and fades, as if the
- * sleeper were breathing on it. Sits under the glass tint, behind the content.
- */
-.pod-ceiling::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(ellipse 55% 40% at 50% 78%, rgb(var(--frost) / 0.45), transparent 70%);
-  opacity: 0;
-  /*
-   * TODO(lobby-perf): stubbed out. Animated inside all 24 strips (.pod-strip), it cost
-   * about 30fps in a headless profile. Restore the animation below once the curve no longer
-   * redraws the window once per strip.
-   * animation: pod-breath 8s ease-in-out infinite;
-   */
-}
-@keyframes pod-breath {
-  50% {
-    opacity: 0.35;
-  }
-}
-
-/*
- * Frost on the inside of the glass, thickest at the rim and thinning toward the
- * centre. Patchy ice comes from fractal noise (an inline SVG feTurbulence, thresholded
- * into pale blotches) at two scales, over a smooth haze and a bright inner edge; a mask
- * keeps the centre clear so text keeps its contrast. Above the ceiling but below the
- * panel (.pod-panel), and never catches clicks.
- */
-.pod-glass::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: 2;
-  pointer-events: none;
-  border-radius: inherit;
-  background:
-    /* ice: bright, nearly opaque where the noise is high, fine grain over larger sheets */
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='f' x='0' y='0' width='100%25' height='100%25'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.4' numOctaves='2' seed='11'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 5.5 0 0 0 -1.6'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23f)'/%3E%3C/svg%3E") 0 0 / 200px 200px,
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='f' x='0' y='0' width='100%25' height='100%25'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.02 .03' numOctaves='4' seed='3'/%3E%3CfeColorMatrix values='0 0 0 0 .93 0 0 0 0 .98 0 0 0 0 1 6 0 0 0 -2.1'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23f)'/%3E%3C/svg%3E") 90px 50px / 300px 300px,
-    radial-gradient(ellipse 74% 74% at 50% 50%, transparent 58%, rgb(235 248 255 / 0.1) 72%, rgb(235 248 255 / 0.4) 88%, rgb(245 252 255 / 0.9) 100%),
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='256' height='256'%3E%3Cfilter id='f' x='0' y='0' width='100%25' height='100%25'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.03 .045' numOctaves='5' seed='7'/%3E%3CfeColorMatrix values='0 0 0 0 .86 0 0 0 0 .95 0 0 0 0 1 3.2 0 0 0 -1.2'/%3E%3C/filter%3E%3Crect width='256' height='256' filter='url(%23f)'/%3E%3C/svg%3E") 0 0 / 256px 256px,
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='128' height='128'%3E%3Cfilter id='f' x='0' y='0' width='100%25' height='100%25'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.11' numOctaves='3' seed='2'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 2.4 0 0 0 -1.05'/%3E%3C/filter%3E%3Crect width='128' height='128' filter='url(%23f)'/%3E%3C/svg%3E") 40px 20px / 128px 128px,
-    radial-gradient(ellipse 72% 72% at 50% 50%, transparent 60%, rgb(var(--frost) / 0.2) 82%, rgb(var(--frost) / 0.45) 100%);
-  -webkit-mask-image: radial-gradient(ellipse 74% 74% at 50% 50%, transparent 40%, rgb(0 0 0 / 0.15) 58%, rgb(0 0 0 / 0.55) 74%, #000 92%);
-  mask-image: radial-gradient(ellipse 74% 74% at 50% 50%, transparent 40%, rgb(0 0 0 / 0.15) 58%, rgb(0 0 0 / 0.55) 74%, #000 92%);
-  box-shadow: inset 0 0 1.5rem 0.25rem rgb(200 240 255 / 0.55), inset 0 0 0.4rem rgb(255 255 255 / 0.6);
-}
-/* Droplets: a bright upper-left glint and a dark lower-right edge each, so they read as lenses. */
-.pod-glass::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: 2;
-  pointer-events: none;
-  border-radius: inherit;
-  --drop: radial-gradient(circle at 35% 30%, rgb(255 255 255 / 0.75) 0 12%, rgb(var(--frost) / 0.22) 40%, rgb(2 6 10 / 0.3) 90%, transparent 100%);
-  background:
-    var(--drop) 14% 74% / 0.5rem 0.5rem no-repeat,
-    var(--drop) 19% 80% / 0.3rem 0.3rem no-repeat,
-    var(--drop) 83% 70% / 0.4rem 0.4rem no-repeat,
-    var(--drop) 88% 77% / 0.65rem 0.65rem no-repeat,
-    var(--drop) 70% 90% / 0.35rem 0.35rem no-repeat,
-    var(--drop) 32% 93% / 0.45rem 0.45rem no-repeat,
-    var(--drop) 9% 38% / 0.3rem 0.3rem no-repeat,
-    var(--drop) 93% 33% / 0.35rem 0.35rem no-repeat;
-}
-
-/* Stasis indicator: a small light on the bezel above the glass, pulsing slowly like a heartbeat monitor. */
-.pod-frame::after {
-  content: "";
-  position: absolute;
-  top: 0.2rem;
-  left: 50%;
-  width: 2.5rem;
-  height: 0.25rem;
-  margin-left: -1.25rem;
-  border-radius: 0.25rem;
-  background: rgb(110 240 255);
-  box-shadow: 0 0 0.5rem 0.1rem rgb(80 210 245 / 0.8);
-  animation: pod-stasis 3.2s ease-in-out infinite;
-}
-@keyframes pod-stasis {
-  0%,
-  100% {
-    opacity: 0.35;
-  }
-  50% {
-    opacity: 1;
-  }
-}
-@media (prefers-reduced-motion: reduce) {
-  .pod-frame::after {
-    animation: none;
-  }
-  .pod-frame::after {
-    opacity: 0.8;
-  }
-}
-
-/* The vent: a spinning fan behind a grille, partly hidden by the glass edge. Light metal to match the ceiling. */
-.pod-vent {
-  position: absolute;
-  /* Fills the 3x3 block of tiles but starts 2px in, so the gutters on its top and left stay visible beside it. */
-  top: calc(var(--tile-y) + 2px);
-  right: var(--tile-x);
-  width: calc(var(--tile) * 3 - 2px);
-  height: calc(var(--tile) * 3 - 2px);
-  box-sizing: border-box;
-  border: 0.5rem solid #a3abb0;
-  border-radius: 0.3rem;
-  background: #3a4247;
-  box-shadow: inset 0 0 1rem rgb(0 0 0 / 0.5);
-  overflow: hidden;
-}
-.pod-fan {
-  position: absolute;
-  inset: 0.4rem;
-  border-radius: 50%;
-  background:
-    radial-gradient(circle, #aab2b6 0 12%, #5f686d 13% 15%, transparent 16%),
-    repeating-conic-gradient(#7d878d 0 28deg, #3a4247 28deg 60deg);
-  animation: pod-fan-spin 1.4s linear infinite;
-}
-.pod-vent::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background:
-    repeating-linear-gradient(0deg, #b4bbbf 0 0.25rem, #5a6268 0.25rem 0.35rem, transparent 0.35rem 1.1rem);
-  box-shadow: inset 0 0 0.75rem rgb(0 0 0 / 0.5);
-}
-@keyframes pod-fan-spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-@media (prefers-reduced-motion: reduce) {
-  .pod-fan {
-    animation-duration: 12s;
-  }
 }
 
 /* Matched: the pod goes dark before the game's wake-up (WakeUp.tsx) takes over. */

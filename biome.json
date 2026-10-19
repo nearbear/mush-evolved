@@ -109,7 +109,7 @@
 											"pixi.js",
 											"pixi.js/*"
 										],
-										"message": "Pixi stays behind the renderer seam, in web/src/iso/pixi/ (see web/src/iso/CLAUDE.md)."
+										"message": "Pixi stays behind the renderer seams, in web/src/iso/pixi/ and web/src/lobby/pixi/ (see web/src/iso/CLAUDE.md)."
 									}
 								]
 							}
@@ -120,7 +120,8 @@
 		},
 		{
 			"includes": [
-				"web/src/iso/pixi/**"
+				"web/src/iso/pixi/**",
+				"web/src/lobby/pixi/**"
 			],
 			"linter": {
 				"rules": {

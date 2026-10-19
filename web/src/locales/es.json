@@ -63,7 +63,8 @@
     "characterTaken": "Otra persona acaba de elegir a ese tripulante. Elige otro.",
     "waiting": "Esperando: {{waiting}}/{{seats}}. Los asientos vacíos se llenarán pronto con bots.",
     "awaitingCrew": "Esperando tripulación",
-    "nearlyFull": "Casi completa"
+    "nearlyFull": "Casi completa",
+    "noWebgl": "Tu navegador no puede mostrar el juego: necesita WebGL 2. Activa la aceleración por hardware en los ajustes del navegador, actualiza el navegador o los controladores gráficos, o prueba otro navegador o dispositivo."
   },
   "minimap": {
     "unidentified": "Sin identificar",

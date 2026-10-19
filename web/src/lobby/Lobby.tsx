@@ -1,11 +1,12 @@
-import { type CSSProperties, useEffect, useState } from "react";
+import { Suspense, lazy, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { CHARACTERS, type CharacterId, type MatchmakerServerMessage } from "@mush2/shared";
-import { portrait } from "./art/assets.ts";
-import { LanguageSwitcher } from "./i18n/LanguageSwitcher.tsx";
-import { matchmakerSocket, type SeatTicket } from "./net.ts";
-import logoUrl from "../../Mush/www/img/design/logo_welcome.png?url";
+import { portrait } from "../art/assets.ts";
+import { LanguageSwitcher } from "../i18n/LanguageSwitcher.tsx";
+import { matchmakerSocket, type SeatTicket } from "../net.ts";
+import logoUrl from "../../../Mush/www/img/design/logo_welcome.png?url";
 import "./lobby.css";
+import { hasWebGL2 } from "./webgl.ts";
 
 /**
  * Placeholder rows: there is no lobby backend yet, every row joins the same global queue.
@@ -20,36 +21,8 @@ const SHIPS = [
 /** How long the pod takes to fade to dark before the game takes over; matches `pod-sleep` in lobby.css. */
 const SLEEP_MS = 600;
 
-/**
- * The window is drawn this many times, as vertical strips each tilted a little further
- * than the last, so together they bend it into a half-cylinder (lobby.css, .pod-strip).
- * More strips make a smoother curve but cost more drawing.
- */
-const POD_STRIPS = 24;
-
-/**
- * The metal wall around the window is the same cylinder, so it is drawn the same way,
- * with this many extra strips on each side carrying on past the window's edges.
- */
-const WALL_STRIPS = 16;
-
-/** Wall strip indices: the window's 0..POD_STRIPS-1, plus WALL_STRIPS more each side. */
-const WALL_INDICES = Array.from({ length: POD_STRIPS + 2 * WALL_STRIPS }, (_, k) => k - WALL_STRIPS);
-
-/** The manufacturer's sticker on the pod wall. Placeholder copy until the gag is written. */
-function PodSticker() {
-  return (
-    <div className="pod-sticker">
-      {/* i18n-ignore: placeholder sticker copy */}
-      <span className="pod-sticker-brand">ChangMei-Tech</span>
-      {/* i18n-ignore: placeholder sticker copy */}
-      <span className="pod-sticker-slogan">Placeholder slogan goes here</span>
-      <span className="pod-sticker-barcode" />
-      {/* i18n-ignore: placeholder sticker copy */}
-      <span className="pod-sticker-serial">MODEL CP-00 · S/N 000-0000</span>
-    </div>
-  );
-}
+/** The cryopod drawn behind the panel, with Pixi; loaded after the panel shows. */
+const PodBackdrop = lazy(() => import("./pixi/PodBackdrop.tsx"));
 
 const GUEST_KEY = "mush2.guest";
 
@@ -74,6 +47,9 @@ export function Lobby({ onMatched }: { onMatched: (ticket: SeatTicket) => void }
   const [queue, setQueue] = useState<{ waiting: number; seats: number } | null>(null);
   const [error, setError] = useState("");
   const [sleeping, setSleeping] = useState(false);
+  const pod = useRef<HTMLDivElement>(null);
+  // Without WebGL2 the game can't be drawn, so there is nothing to join.
+  const [webgl] = useState(hasWebGL2);
 
   useEffect(() => {
     if (name === null || character === null) return;
@@ -102,42 +78,19 @@ export function Lobby({ onMatched }: { onMatched: (ticket: SeatTicket) => void }
     };
   }, [name, character, onMatched, t]);
 
-  const step = name === null ? "ship" : character === null ? "character" : "waiting";
+  const step = !webgl ? "noWebgl" : name === null ? "ship" : character === null ? "character" : "waiting";
 
   return (
     <main className={sleeping ? "pod pod-sleeping" : "pod"}>
       <div className="pod-toolbar">
         <LanguageSwitcher inline />
       </div>
-      <div className="pod-window">
-        <div
-          className="pod-curve"
-          style={{ "--strips": POD_STRIPS, "--wall-strips": WALL_STRIPS } as CSSProperties}
-          aria-hidden="true"
-        >
-          <div className="pod-wall">
-            {WALL_INDICES.map((i) => (
-              <div key={i} className="pod-strip pod-wall-strip" style={{ "--i": i } as CSSProperties}>
-                <div className="pod-wall-face">
-                  <PodSticker />
-                </div>
-              </div>
-            ))}
-          </div>
-          {Array.from({ length: POD_STRIPS }, (_, i) => (
-            <div key={i} className="pod-strip" style={{ "--i": i } as CSSProperties}>
-              <div className="pod-frame">
-                <div className="pod-glass">
-                  <div className="pod-ceiling">
-                    <div className="pod-vent">
-                      <div className="pod-fan" />
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
+      {webgl && (
+        <Suspense fallback={null}>
+          <PodBackdrop pod={pod} />
+        </Suspense>
+      )}
+      <div className="pod-window" ref={pod}>
         <section className="panel pod-panel">
         <h1 className="pod-title">
           <img className="pod-logo" src={logoUrl} alt="mush2" />
@@ -147,6 +100,9 @@ export function Lobby({ onMatched }: { onMatched: (ticket: SeatTicket) => void }
           so the panel is always sized to the largest and never resizes on join.
         */}
         <div className="pod-states">
+          <div className="pod-state" inert={step !== "noWebgl"}>
+            <p className="pod-status">{t("lobby.noWebgl")}</p>
+          </div>
           <div className="pod-state" inert={step !== "waiting"}>
             <p className="pod-subtitle">{`${name ?? ""} · ${ship}`}</p>
             <p className="loading pod-status">{error || (queue ? t("lobby.waiting", queue) : t("common.connecting"))}</p>

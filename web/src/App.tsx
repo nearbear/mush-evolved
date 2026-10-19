@@ -1,6 +1,6 @@
 import { useCallback, useState } from "react";
 import { GameScreen } from "./GameScreen.tsx";
-import { Lobby } from "./Lobby.tsx";
+import { Lobby } from "./lobby/Lobby.tsx";
 import { WakeUp } from "./WakeUp.tsx";
 import { loadTicket, saveTicket, type SeatTicket } from "./net.ts";
 

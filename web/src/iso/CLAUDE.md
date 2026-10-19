@@ -17,7 +17,7 @@ Loaded when working on the isometric view. The UI rules in `web/CLAUDE.md` still
   and no game state. The DOM one is `dom/DomScene.tsx` (one absolutely positioned div per sprite,
   effects as `fx-*` classes in `styles/iso.css`). The Pixi one (`pixi/`, the default; `ROOM_RENDERER` in
   `rendererChoice.ts` picks) is an imperative class behind a thin component,
-  lazy-loaded; only `pixi/` may import `pixi.js` (a Biome rule). Its effects are hand-written GLSL
+  lazy-loaded; only `pixi/` (and the lobby's `web/src/lobby/pixi/`) may import `pixi.js` (a Biome rule). Its effects are hand-written GLSL
   filters (`pixi/filters.ts`) drawing the looks in `pixi/effects.ts`, which copies the numbers from
   `styles/iso.css`: change a look in both. It survives a lost WebGL context (stops drawing, redraws
   when the context is back) and a StrictMode or hot-reload remount (one canvas, one context at a

@@ -63,7 +63,8 @@
     "characterTaken": "Quelqu'un vient de prendre ce membre d'équipage. Choisissez-en un autre.",
     "waiting": "En attente : {{waiting}}/{{seats}}. Les places vides seront bientôt remplies par des bots.",
     "awaitingCrew": "En attente d'équipage",
-    "nearlyFull": "Presque complet"
+    "nearlyFull": "Presque complet",
+    "noWebgl": "Votre navigateur ne peut pas afficher le jeu : il faut WebGL 2. Activez l'accélération matérielle dans les paramètres du navigateur, mettez à jour le navigateur ou les pilotes graphiques, ou essayez un autre navigateur ou appareil."
   },
   "minimap": {
     "unidentified": "Non identifié",
