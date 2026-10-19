@@ -97,6 +97,13 @@ const HIDDEN_SLICES = new Set(["DOOR_L_FLOOR", "DOOR_R_FLOOR"]);
  */
 const FRONT_DOORS = new Set(["DOOR_BL", "DOOR_BR"]);
 
+/**
+ * Chairs drawn in front of the console they sit at, though their cell is further back than its
+ * footprint (owner, 2026-10-18): "room:x,y" of the chair's own cell. They sort as if on the
+ * console's row.
+ */
+const CHAIRS_IN_FRONT = new Set(["COMMAND_CENTER:8,18"]);
+
 /** One room drawn into a scene, shifted by (dx, dy) cells. */
 export interface SceneRoom {
   room: RoomLayout;
@@ -376,6 +383,7 @@ function tileSortables(
     const isEntity = t.kind === "entity";
     const decal = slice.flags.includes("decal") || slice.flags.includes("chair");
     const [w, h] = slice.footprint ?? [1, 1];
+    const inFront = isEntity && CHAIRS_IN_FRONT.has(`${room.id}:${t.x},${t.y}`);
     const flat = t.kind === "ground" || frontDoor || (slice.flags.includes("decal") && !slice.flags.includes("chair"));
     placed.push({
       key,
@@ -394,12 +402,12 @@ function tileSortables(
       ...(t.door && { door: t.door }),
       order: 0,
       pass: isEntity ? entityPass(slice.engine) : PASS.tile,
-      depth: x + y,
+      depth: x + y + (inFront ? 3 : 0),
       prio: isEntity ? (decal ? PRIO.decal : PRIO.entity) : PRIO.tile,
       stage: t.kind === "ground" ? 0 : t.kind === "prop" ? 2 : 1,
       screenX: anchor.x,
       scene,
-      box: t.kind === "ground" || t.kind === "wall" || t.kind === "door" ? { x0: x - w + 1, x1: x, y0: y - h + 1, y1: y } : clip(x - w + 1, x, y - h + 1, y, floor),
+      box: t.kind === "ground" || t.kind === "wall" || t.kind === "door" ? { x0: x - w + 1, x1: x, y0: y - h + 1, y1: y } : clip(x - w + 1, x, y - h + 1 + (inFront ? 1 : 0), y + (inFront ? 1 : 0), floor),
       shape: flat ? "flat" : t.kind === "wall" || t.kind === "door" ? "wall" : "solid",
     });
   };
@@ -419,6 +427,7 @@ function actorSortables(layout: ShipLayout, { room, dx, dy }: SceneRooms[number]
     const x = a.cell.x + dx, y = a.cell.y + dy;
     const anchor = gridToPx(x, y);
     const lift = groundOffsetAt(layout, room, a.cell.x, a.cell.y);
+    const inFront = CHAIRS_IN_FRONT.has(`${room.id}:${a.cell.x},${a.cell.y}`);
     placed.push({
       key: `a:${a.id}`,
       room: room.id,
@@ -436,12 +445,12 @@ function actorSortables(layout: ShipLayout, { room, dx, dy }: SceneRooms[number]
       flipY: false,
       order: 0,
       pass: PASS.entity,
-      depth: x + y,
+      depth: x + y + (inFront ? 3 : 0),
       prio: PRIO.entity,
       stage: 0,
       screenX: anchor.x,
       scene,
-      box: { x0: x, x1: x, y0: y, y1: y },
+      box: inFront ? { x0: x, x1: x, y0: y + 1, y1: y + 1 } : { x0: x, x1: x, y0: y, y1: y },
       shape: "solid",
       ...(a.onTop && { onTop: true }),
     });
