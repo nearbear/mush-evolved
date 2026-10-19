@@ -461,7 +461,12 @@ body:has(.pod) {
   inset: 0;
   background: radial-gradient(ellipse 55% 40% at 50% 78%, rgb(var(--frost) / 0.45), transparent 70%);
   opacity: 0;
-  animation: pod-breath 8s ease-in-out infinite;
+  /*
+   * TODO(lobby-perf): stubbed out. Animated inside all 24 strips (.pod-strip), it cost
+   * about 30fps in a headless profile. Restore the animation below once the curve no longer
+   * redraws the window once per strip.
+   * animation: pod-breath 8s ease-in-out infinite;
+   */
 }
 @keyframes pod-breath {
   50% {
@@ -539,7 +544,6 @@ body:has(.pod) {
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .pod-ceiling::before,
   .pod-frame::after {
     animation: none;
   }
