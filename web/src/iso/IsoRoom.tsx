@@ -64,6 +64,28 @@ const RENDERERS: Record<RendererChoice, ComponentType<SceneRendererProps>> = {
   pixi: lazy(() => import("./pixi/PixiScene.tsx")),
 };
 
+/** Something in this room that can be clicked, with its box in client (viewport) pixels. */
+interface IsoTarget {
+  key: string;
+  kind: "door" | "equipment" | "person" | "item";
+  title: string;
+  you: boolean;
+  reachable: boolean;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
+/** Dev builds put this on `.iso-viewport` as `isoProbe`, for tools/src/play. */
+interface IsoProbe {
+  /** The key of what the pointer is over, as hit-testing sees it. */
+  hover: string | null;
+  /** The drawn scene, in CSS pixels. */
+  size: { width: number; height: number };
+  targets(): IsoTarget[];
+}
+
 /**
  * The seat for a chair that faces the given way. The art has two sitting poses, facing down-right
  * (+x) and up-left (-x); the other two directions mirror them. Chairs without a direction (stools)
@@ -344,6 +366,38 @@ export function IsoRoom({
   });
 
   const Renderer = RENDERERS[renderer];
+
+  // Dev builds only: what the screenshot tools need to find things to click, whichever renderer draws
+  // the room (the Pixi one has no element per sprite). Rebuilt every render, so it reads what's current.
+  useEffect(() => {
+    const el = viewportRef.current as (HTMLElement & { isoProbe?: IsoProbe }) | null;
+    if (!import.meta.env.DEV || !el) return;
+    el.isoProbe = {
+      hover: hoverKey,
+      size: { width: drawn.width, height: drawn.height },
+      targets: () => {
+        if (!roomLayout) return [];
+        const rect = el.getBoundingClientRect();
+        const cam = cameraNow();
+        return sprites.flatMap((s): IsoTarget[] => {
+          const action = interaction(s);
+          if (!action || action.kind === "chair") return [];
+          const o = s.kind === "actor" ? offsetOf(s.key.slice(2)) : { x: 0, y: 0 };
+          return [{
+            key: s.key,
+            kind: action.kind,
+            title: action.title,
+            you: action.kind === "person" && action.person.you,
+            reachable: action.kind === "door" && reachable.has(action.to),
+            x: rect.left + cam.x - box.minX + s.left + o.x,
+            y: rect.top + cam.y - box.minY + s.top + o.y,
+            width: s.width,
+            height: s.height,
+          }];
+        });
+      },
+    };
+  });
 
   if (!roomLayout) return <section className="iso-room missing">No map for {names.room(room)}</section>;
 

@@ -13,6 +13,10 @@
 // Effects (effects.ts): fog is a tint; hover, selection and shadows are shared filters (filters.ts);
 // the see-through outlines are a second layer over every sprite, each outline shown only while a wall
 // covers its person. The pulse of those outlines keeps it rendering every frame while one shows.
+//
+// WebGL context loss (a phone backgrounding the tab, a GPU reset): Pixi keeps the context restorable
+// and rebuilds its textures and programs when it comes back. This only stops drawing while it is lost
+// and draws once it is back, since nothing else would ask for a frame.
 
 import { Application, Container, type Filter, Rectangle, RendererType, Sprite, Texture, TextureStyle } from "pixi.js";
 import { keyedUrl } from "../../art/keyedSprite.ts";
@@ -81,6 +85,9 @@ export class PixiRenderer {
   private ready = false;
   private destroyed = false;
   private dirty = false;
+  private lost = false;
+  /** Images still loading; the host says `data-art="ready"` once none are and a frame is drawn (tools/src/play waits on it). */
+  private loading = 0;
   private raf = 0;
   private resize: ResizeObserver | null = null;
   /** Filters by look (filterKey), and the outlines' two, made once the renderer is up. */
@@ -120,6 +127,8 @@ export class PixiRenderer {
       const resolution = this.app.renderer.resolution;
       this.esp = { pulsing: new EspFilters(rim, 1, resolution), faint: new EspFilters(rim, ESP.faint, resolution) };
     }
+    this.app.canvas.addEventListener("webglcontextlost", this.onContextLost);
+    this.app.canvas.addEventListener("webglcontextrestored", this.onContextRestored);
     this.host.appendChild(this.app.canvas);
     this.resize = new ResizeObserver(() => this.fit());
     this.resize.observe(this.host);
@@ -207,6 +216,10 @@ export class PixiRenderer {
     this.destroyed = true;
     cancelAnimationFrame(this.raf);
     this.resize?.disconnect();
+    if (this.ready) {
+      this.app.canvas.removeEventListener("webglcontextlost", this.onContextLost);
+      this.app.canvas.removeEventListener("webglcontextrestored", this.onContextRestored);
+    }
     // Textures stay cached for the next renderer; only this one's sprites and filters go.
     if (this.ready) this.app.destroy({ removeView: true }, { children: true });
     for (const f of this.looks.values()) f.destroy();
@@ -267,14 +280,20 @@ export class PixiRenderer {
       d.sprite.texture = ready;
       return;
     }
-    void imageTexture(url, keyed).then(
-      (base) => {
-        if (this.destroyed || d.textureKey !== key) return;
-        d.sprite.texture = frameTexture(base, key, sx, f.sy, f.width, f.height);
+    this.loading++;
+    this.host.dataset.art = "loading";
+    void imageTexture(url, keyed)
+      .then(
+        (base) => {
+          if (this.destroyed || d.textureKey !== key) return;
+          d.sprite.texture = frameTexture(base, key, sx, f.sy, f.width, f.height);
+        },
+        (e: unknown) => console.error(`Pixi renderer: can't load ${url}`, e),
+      )
+      .finally(() => {
+        this.loading--;
         this.requestRender();
-      },
-      (e: unknown) => console.error(`Pixi renderer: can't load ${url}`, e),
-    );
+      });
   }
 
   private requestRender() {
@@ -284,8 +303,20 @@ export class PixiRenderer {
 
   private renderNow() {
     this.dirty = false;
-    if (this.ready && this.host.clientWidth && this.host.clientHeight) this.app.renderer.render(this.app.stage);
+    if (!this.ready || this.lost || !this.host.clientWidth || !this.host.clientHeight) return;
+    this.app.renderer.render(this.app.stage);
+    const art = this.loading ? "loading" : "ready";
+    if (this.host.dataset.art !== art) this.host.dataset.art = art;
   }
+
+  private onContextLost = () => {
+    this.lost = true;
+  };
+
+  private onContextRestored = () => {
+    this.lost = false;
+    this.requestRender();
+  };
 
   /** Steps the animations, renders if anything changed, and keeps going while anything animates. */
   private tick = (now: number) => {

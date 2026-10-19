@@ -3,7 +3,7 @@
 All under `tools/src/`.
 
 - `shipLayout/` (`npm run ship-layout`): build-time converter. `convert.ts` drives it; `png.ts` (a decoder and an RGBA encoder), `xml.ts`, `haxe.ts` are hand-written decoders; `pages.ts` repacks sheets over 4096 px (`BigFill`, `BigFill2`) into `Mush/derived/pages/` so phone GPUs can load them; `stretch.ts` applies our room-shape changes; `shipPlan.ts` writes `ship-plan.json`. `query.ts` (`npm run layout-query -- <regex>`) prints only the slices, tiles and bindings that match, capped at 60 lines, since reading `ship-layout.json` directly is denied.
-- `play/screenshot.ts`: `npm run screenshot`. `play/shipView.ts`: `npm run ship-view`.
+- `play/screenshot.ts`: `npm run screenshot`. `play/shipView.ts`: `npm run ship-view`. `play/isoProbe.ts`: finding and pointing at things in the iso room through IsoRoom's dev-only probe, and waiting for the art, with either renderer.
 - `contactSheet/contactSheet.ts`: `npm run contact-sheet`.
 - `assetIndex/assetIndex.ts`: `npm run asset-index`.
 - `odsData/`: `npm run ods-data` (`odsData.ts`; `ods.ts` reads the spreadsheets).

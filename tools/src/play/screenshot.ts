@@ -12,7 +12,8 @@ import { mkdirSync } from "node:fs";
 import { resolve } from "node:path";
 import { parseArgs } from "node:util";
 import { devPorts } from "../dev/ports.ts";
-import { chromium, devices, type Locator, type Page } from "playwright";
+import { chromium, devices, type Page } from "playwright";
+import { otherPerson, pointOn, sceneSize, type Target, targets, waitForArt } from "./isoProbe.ts";
 
 const ports = devPorts();
 
@@ -124,15 +125,14 @@ async function desktopSteps(page: Page, step: Step): Promise<void> {
     // Nothing is selected yet, so the Inspect panel shows you; wait for its name chip to change to someone else.
     const figureName = page.locator(".inspect .inspect-figure-name");
     const you = (await figureName.innerText()).trim();
-    const other = page.locator(OTHER_PERSON_HERE);
-    if (!(await other.count())) throw new Skip("nobody else in the room");
-    const at = await pointOn(page, other.first());
+    if (!(await targets(page, otherPerson)).length) throw new Skip("nobody else in the room");
+    const at = await firstHit(page, otherPerson);
     await page.mouse.click(at.x, at.y);
     await page.locator(".inspect .inspect-figure-name", { hasNotText: you }).waitFor();
   });
 
   await step("03-examine", async () => {
-    const at = await pointOn(page, page.locator(".iso-sprite.equipment").first());
+    const at = await firstHit(page, isEquipment);
     const name = at.title;
     await page.mouse.click(at.x, at.y);
     await page.locator(".inspect-name", { hasText: name }).waitFor();
@@ -174,7 +174,7 @@ async function desktopSteps(page: Page, step: Step): Promise<void> {
   await step("06-moved", async () => {
     await page.keyboard.press("Escape"); // close the inventory overlay so it can't cover a door
     const before = await page.locator(".room-title").innerText();
-    const at = await pointOn(page, page.locator(".iso-sprite.door.reachable").first());
+    const at = await firstHit(page, isReachableDoor);
     await page.mouse.dblclick(at.x, at.y);
     await page.locator(".room-title", { hasNotText: before }).waitFor();
     await waitForArt(page);
@@ -195,15 +195,14 @@ async function mobileSteps(page: Page, step: Step): Promise<void> {
   const peek = page.locator(".peek-bar");
 
   await step("m02-peek-person", async () => {
-    const other = page.locator(OTHER_PERSON_HERE);
-    if (!(await other.count())) throw new Skip("nobody else in the room");
-    const at = await pointOn(page, other.first());
+    if (!(await targets(page, otherPerson)).length) throw new Skip("nobody else in the room");
+    const at = await firstHit(page, otherPerson);
     await page.touchscreen.tap(at.x, at.y);
     await peek.getByRole("button", { name: "More" }).waitFor();
   });
 
   await step("m03-peek-examine", async () => {
-    const at = await pointOn(page, page.locator(".iso-sprite.equipment").first());
+    const at = await firstHit(page, isEquipment);
     await page.touchscreen.tap(at.x, at.y);
     const name = (await peek.locator(".peek-name strong").innerText()).trim();
     // Examine lives in the Inspect panel, behind the peek bar's More.
@@ -248,13 +247,13 @@ async function mobileSteps(page: Page, step: Step): Promise<void> {
 
   await step("m07-wide-room", async () => {
     const scroller = page.locator(".iso-scroll");
-    const world = page.locator(".iso-world");
-    const wide = async () => (await world.evaluate((el) => el.offsetWidth)) > (await scroller.evaluate((el) => el.clientWidth)) + 1;
+    const wide = async () => (await sceneSize(page)).width > (await scroller.evaluate((el) => el.clientWidth)) + 1;
     for (let i = 0; i < 6 && !(await wide()); i++) await walkThroughDoor(page);
     if (!(await wide())) throw new Skip("didn't reach a room wider than the screen");
     const box = await scroller.boundingBox();
-    const you = await page.locator(".iso-actor.you").boundingBox();
-    const cx = you!.x + you!.width / 2;
+    const [you] = await targets(page, (t) => t.you);
+    if (!you) throw new Error("your character isn't in the room");
+    const cx = you.x + you.width / 2;
     if (cx < box!.x || cx > box!.x + box!.width) throw new Error("your character is scrolled out of view");
   });
 
@@ -273,7 +272,7 @@ async function mobileSteps(page: Page, step: Step): Promise<void> {
 /** Tap the first reachable door, then Go in the peek bar; waits for the new room. */
 async function walkThroughDoor(page: Page): Promise<void> {
   const before = await page.locator(".room-title").innerText();
-  const at = await pointOn(page, page.locator(".iso-sprite.door.reachable").first());
+  const at = await firstHit(page, isReachableDoor);
   await page.touchscreen.tap(at.x, at.y);
   await page.locator(".peek-bar").getByRole("button", { name: "Go" }).tap();
   await page.locator(".room-title", { hasNotText: before }).waitFor();
@@ -281,37 +280,16 @@ async function walkThroughDoor(page: Page): Promise<void> {
   console.log(`      ${before} -> ${await page.locator(".room-title").innerText()}`);
 }
 
-/**
- * A point where the room's hit-testing lands on this sprite: sprites don't
- * take pointer events themselves, and their box centers can be transparent or
- * covered. Moves the mouse over a grid (center first) until the sprite gets
- * the `.hover` class, and returns the point plus the hover title (its name).
- */
-/** Someone else standing in your room: not you, not a corpse, not a faded person in a neighbouring room (clicking those acts as its door). */
-const OTHER_PERSON_HERE = ".iso-layer:not(.iso-esp) > .iso-actor:not(.you, .neighbor, .corpse)";
+const isEquipment = (t: Target) => t.kind === "equipment";
+const isReachableDoor = (t: Target) => t.kind === "door" && t.reachable;
 
-/** The iso view's mouse-only hover label, portaled straight into <body>. */
-const HOVER_LABEL = "body > .tooltip";
-
-async function pointOn(page: Page, sprite: Locator): Promise<{ x: number; y: number; title: string }> {
-  await sprite.scrollIntoViewIfNeeded();
-  const box = (await sprite.boundingBox()) ?? fail("sprite has no box");
-  const steps = 8;
-  const points: { x: number; y: number }[] = [];
-  for (let i = 0; i <= steps; i++) {
-    for (let j = 0; j <= steps; j++) points.push({ x: box.x + (box.width * i) / steps, y: box.y + (box.height * j) / steps });
+/** The first target of this kind that some visible pixel of can be hit, with a point on it. */
+async function firstHit(page: Page, which: (t: Target) => boolean): Promise<Target & { x: number; y: number }> {
+  for (const t of await targets(page, which)) {
+    const at = await pointOn(page, t);
+    if (at) return { ...t, ...at };
   }
-  const center = { x: box.x + box.width / 2, y: box.y + box.height / 2 };
-  points.sort((a, b) => Math.hypot(a.x - center.x, a.y - center.y) - Math.hypot(b.x - center.x, b.y - center.y));
-  for (const p of points) {
-    await page.mouse.move(p.x, p.y);
-    if (await sprite.evaluate((el) => el.classList.contains("hover"))) {
-      // Touch shows no hover tooltip; callers that need the name read it from the peek bar instead.
-      const title = (await page.locator(HOVER_LABEL).innerText({ timeout: 500 }).catch(() => "")).trim();
-      return { ...p, title };
-    }
-  }
-  return fail("no visible pixel of the sprite is hit-testable");
+  return fail("no visible pixel of any such target is hit-testable");
 }
 
 function fail(message: string): never {
@@ -322,14 +300,6 @@ function fail(message: string): never {
 async function noSideScroll(page: Page): Promise<void> {
   const [scroll, width] = await page.evaluate("[document.documentElement.scrollWidth, window.innerWidth]") as [number, number];
   if (scroll > width) throw new Error(`page scrolls sideways (${scroll}px content in a ${width}px window)`);
-}
-
-/** Room sprites are CSS backgrounds and crew sprites are keyed on a canvas; wait for both. */
-async function waitForArt(page: Page): Promise<void> {
-  await page.locator(".iso-sprite").first().waitFor();
-  await page.waitForLoadState("networkidle");
-  // A string so this Node-only package doesn't need DOM types; it runs in the page.
-  await page.waitForFunction(`[...document.querySelectorAll(".crew-sprite")].every((el) => el.style.backgroundImage)`);
 }
 
 async function reachable(url: string): Promise<boolean> {

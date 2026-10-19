@@ -19,7 +19,9 @@ Loaded when working on the isometric view. The UI rules in `web/CLAUDE.md` still
   `rendererChoice.ts` picks) is an imperative class behind a thin component,
   lazy-loaded; only `pixi/` may import `pixi.js` (a Biome rule). Its effects are hand-written GLSL
   filters (`pixi/filters.ts`) drawing the looks in `pixi/effects.ts`, which copies the numbers from
-  `styles/iso.css`: change a look in both. `IsoRoom` picks one from `RENDERERS`. Effect
+  `styles/iso.css`: change a look in both. It survives a lost WebGL context (stops drawing, redraws
+  when the context is back) and a StrictMode or hot-reload remount (one canvas, one context at a
+  time). `IsoRoom` picks one from `RENDERERS`. Effect
   precedence (which wins when hovered and selected) is decided in `describeScene`, not in CSS.
   Badges, action bars and speech bubbles stay DOM whatever the renderer (`SceneOverlay.tsx`, in its
   own world above the scene, moved by the same frames). Keep renderer-specific code out of
@@ -75,8 +77,11 @@ Loaded when working on the isometric view. The UI rules in `web/CLAUDE.md` still
 `npm run ship-view` (needs `npm run dev` running) joins a ship, sets the fog to "whole ship", makes
 the iso panel fill a large window, and saves one screenshot to `.screenshots/ship.png`. Use it for
 anything that spans rooms (walls, fog, neighbour placement); `npm run screenshot` only shows one room
-at panel size. Read the PNG and actually look. Both find things by the DOM renderer's class names,
-so they need the DOM renderer, which is no longer the default: set `ROOM_RENDERER` to `"dom"` while using them. Making them work on Pixi is still to do.
+at panel size. Read the PNG and actually look. Both work with either renderer (headless Chromium
+has WebGL through SwiftShader): they find things through the dev-only `isoProbe` that `IsoRoom`
+puts on `.iso-viewport` (clickable things with their boxes, and the hover key), and wait for the Pixi
+host's `data-art="ready"` (`tools/src/play/isoProbe.ts`). Keep both up to date when changing what
+can be clicked.
 
 - `-- --walk "Front corridor,Bridge"` walks through those doors in order first (door labels, as the
   room's title shows them). The lit room is the last one; everything else is fogged.
