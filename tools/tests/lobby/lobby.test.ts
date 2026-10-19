@@ -50,12 +50,13 @@ async function openLobby(options: object, locale: string): Promise<Page> {
 describe("lobby panel", () => {
   for (const [device, options] of Object.entries(VIEWPORTS)) {
     for (const locale of LOCALES) {
-      it(`keeps its size when joining a ship (${device}, ${locale})`, async () => {
+      it(`keeps its size through picking a ship and a character (${device}, ${locale})`, async () => {
         const page = await openLobby(options, locale);
         const panel = page.locator(".pod-panel");
         const before = await panel.boundingBox();
 
         await page.locator(".pod-ship").first().click();
+        await page.locator(".pod-character").first().click();
         // Waiting: the queue count from the fake matchmaker is on screen.
         await page.locator(".pod-status", { hasText: "1/8" }).waitFor();
 

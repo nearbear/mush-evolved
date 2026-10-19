@@ -64,6 +64,8 @@
   },
   "lobby": {
     "tagline": "Sueño criogénico. Elige una nave en la que despertar.",
+    "pickCharacter": "Elige a tu tripulante.",
+    "characterTaken": "Otra persona acaba de elegir a ese tripulante. Elige otro.",
     "waiting": "Esperando: {{waiting}}/{{seats}}. Los asientos vacíos se llenarán pronto con bots.",
     "awaitingCrew": "Esperando tripulación",
     "nearlyFull": "Casi completa"

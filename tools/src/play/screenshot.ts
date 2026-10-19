@@ -84,7 +84,7 @@ async function main(): Promise<number> {
 
     // Both queue at once so they land in the same match and share the bot-fill wait.
     await Promise.all([
-      desktop && stepOn(desktop, null)("01-game", () => join(desktop, args.name!)),
+      desktop && stepOn(desktop, null)("01-game", () => join(desktop, args.name!, "00-picker", 0)),
       mobile && stepOn(mobile, () => noSideScroll(mobile))("m01-room", () => joinMobile(mobile, `${args.name!} (phone)`)),
     ]);
     if (desktop) await desktopSteps(desktop, stepOn(desktop, null));
@@ -102,10 +102,16 @@ async function main(): Promise<number> {
 
 type Step = (name: string, run: () => Promise<void>) => Promise<void>;
 
-async function join(page: Page, name: string): Promise<void> {
+/** Joins through the lobby, saving the character picker as `pickerShot` and picking the `character`-th crew member. */
+async function join(page: Page, name: string, pickerShot: string, character: number): Promise<void> {
   await page.goto(args.url!);
   // The lobby lists one ship per language and names you "Guest N", so `name` only labels the log here.
   await page.getByRole("button", { name: /English/ }).click();
+  // The two passes queue together, so each picks a different crew member.
+  const tile = page.locator(".pod-character").nth(character);
+  await tile.waitFor();
+  await page.screenshot({ path: resolve(args.out!, `${pickerShot}.png`), fullPage: true });
+  await tile.click();
   await page.locator(".three-panel").waitFor({ timeout: MATCH_TIMEOUT_MS });
   await waitForArt(page);
   // The cryo wake-up intro (up to 3 s) plays over the game on joining and would cover the early screenshots.
@@ -179,7 +185,7 @@ async function desktopSteps(page: Page, step: Step): Promise<void> {
 }
 
 async function joinMobile(page: Page, name: string): Promise<void> {
-  await join(page, name);
+  await join(page, name, "m00-picker", 1);
   await page.locator(".bottom-nav").waitFor();
 }
 

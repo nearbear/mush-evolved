@@ -1,6 +1,7 @@
 import { type CSSProperties, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import type { MatchmakerServerMessage } from "@mush2/shared";
+import { CHARACTERS, type CharacterId, type MatchmakerServerMessage } from "@mush2/shared";
+import { portrait } from "./art/assets.ts";
 import { LanguageSwitcher } from "./i18n/LanguageSwitcher.tsx";
 import { matchmakerSocket, type SeatTicket } from "./net.ts";
 import logoUrl from "../../Mush/www/img/design/logo_welcome.png?url";
@@ -68,16 +69,17 @@ export function Lobby({ onMatched }: { onMatched: (ticket: SeatTicket) => void }
   const { t } = useTranslation();
   const [name, setName] = useState<string | null>(null);
   const [ship, setShip] = useState("");
+  const [character, setCharacter] = useState<CharacterId | null>(null);
   // Kept as data, not text, so the status follows the language if it changes while waiting.
   const [queue, setQueue] = useState<{ waiting: number; seats: number } | null>(null);
   const [error, setError] = useState("");
   const [sleeping, setSleeping] = useState(false);
 
   useEffect(() => {
-    if (name === null) return;
+    if (name === null || character === null) return;
     let timer: ReturnType<typeof setTimeout> | undefined;
     const socket = matchmakerSocket();
-    socket.addEventListener("open", () => socket.send(JSON.stringify({ type: "queue", name })));
+    socket.addEventListener("open", () => socket.send(JSON.stringify({ type: "queue", name, character })));
     socket.addEventListener("message", (e: MessageEvent<string>) => {
       const msg = JSON.parse(e.data) as MatchmakerServerMessage;
       if (msg.type === "queued") setQueue({ waiting: msg.waiting, seats: msg.seats });
@@ -87,15 +89,20 @@ export function Lobby({ onMatched }: { onMatched: (ticket: SeatTicket) => void }
         const ticket = { roomId: msg.roomId, token: msg.token };
         timer = setTimeout(() => onMatched(ticket), SLEEP_MS);
       }
+      if (msg.type === "characterTaken") {
+        // Back to the picker to choose again.
+        setError(t("lobby.characterTaken"));
+        setCharacter(null);
+      }
       if (msg.type === "error") setError(msg.message);
     });
     return () => {
       clearTimeout(timer);
       socket.close();
     };
-  }, [name, onMatched]);
+  }, [name, character, onMatched, t]);
 
-  const joining = name !== null;
+  const step = name === null ? "ship" : character === null ? "character" : "waiting";
 
   return (
     <main className={sleeping ? "pod pod-sleeping" : "pod"}>
@@ -136,15 +143,35 @@ export function Lobby({ onMatched }: { onMatched: (ticket: SeatTicket) => void }
           <img className="pod-logo" src={logoUrl} alt="mush2" />
         </h1>
         {/*
-          Both states stay rendered in one grid cell and only the current one is visible,
-          so the panel is always sized to the larger and never resizes on join.
+          All steps stay rendered in one grid cell and only the current one is visible,
+          so the panel is always sized to the largest and never resizes on join.
         */}
         <div className="pod-states">
-          <div className="pod-state" inert={!joining}>
+          <div className="pod-state" inert={step !== "waiting"}>
             <p className="pod-subtitle">{`${name ?? ""} · ${ship}`}</p>
             <p className="loading pod-status">{error || (queue ? t("lobby.waiting", queue) : t("common.connecting"))}</p>
           </div>
-          <div className="pod-state" inert={joining}>
+          <div className="pod-state" inert={step !== "character"}>
+            <p className="pod-subtitle">{t("lobby.pickCharacter")}</p>
+            <ul className="pod-characters">
+              {CHARACTERS.map((c) => (
+                <li key={c.id}>
+                  <button
+                    className="pod-character"
+                    onClick={() => {
+                      setError("");
+                      setCharacter(c.id);
+                    }}
+                  >
+                    <img src={portrait(c.id)} alt="" />
+                    <span>{c.name}</span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+            {error && <p className="pod-status">{error}</p>}
+          </div>
+          <div className="pod-state" inert={step !== "ship"}>
             <p className="pod-subtitle">{t("lobby.tagline")}</p>
             <ul className="pod-ships">
               {SHIPS.map((s) => (

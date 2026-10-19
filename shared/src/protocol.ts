@@ -2,6 +2,7 @@
 // client is untrusted: always go through the parse* functions.
 
 import { isActopiCheat, isCheat, isRoleCheat, type ActopiCheat, type Cheat, type RoleCheat } from "./cheats.ts";
+import { isCharacterId, type CharacterId } from "./characters.ts";
 import { MAX_CHAT_LENGTH } from "./chat.ts";
 import { isSkill } from "./skills.ts";
 import { CHAT_CHANNELS, GRAVEYARD_CHANNEL, MUSH_CHANNEL, type Action, type ChannelId, type PlayerId, type PlayerView, type PrivateChannelId, type Role } from "./types.ts";
@@ -9,9 +10,11 @@ import { CHAT_CHANNELS, GRAVEYARD_CHANNEL, MUSH_CHANNEL, type Action, type Chann
 export const MAX_NAME_LENGTH = 24;
 
 // Matchmaker ("matchmaker" party, room "global")
-export type MatchmakerClientMessage = { type: "queue"; name: string };
+// `character` is the crew member picked in the lobby; the matchmaker refuses one another waiting player holds.
+export type MatchmakerClientMessage = { type: "queue"; name: string; character: CharacterId };
 export type MatchmakerServerMessage =
   | { type: "queued"; waiting: number; seats: number }
+  | { type: "characterTaken" }
   | { type: "matched"; roomId: string; token: string }
   | { type: "error"; message: string };
 
@@ -37,10 +40,10 @@ export type GameServerMessage =
 
 export function parseMatchmakerMessage(raw: string): MatchmakerClientMessage | null {
   const msg = parseJson(raw);
-  if (msg?.type !== "queue" || typeof msg.name !== "string") return null;
+  if (msg?.type !== "queue" || typeof msg.name !== "string" || !isCharacterId(msg.character)) return null;
   const name = msg.name.trim().slice(0, MAX_NAME_LENGTH);
   if (!name) return null;
-  return { type: "queue", name };
+  return { type: "queue", name, character: msg.character };
 }
 
 export function parseGameMessage(raw: string): GameClientMessage | null {

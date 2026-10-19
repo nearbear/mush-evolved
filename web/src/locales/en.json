@@ -64,6 +64,8 @@
   },
   "lobby": {
     "tagline": "Cryo sleep. Pick a ship to wake aboard.",
+    "pickCharacter": "Pick your crew member.",
+    "characterTaken": "Someone else just took that crew member. Pick another.",
     "waiting": "Waiting: {{waiting}}/{{seats}}. Empty seats fill with bots shortly.",
     "awaitingCrew": "Awaiting crew",
     "nearlyFull": "Nearly full"

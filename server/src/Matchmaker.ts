@@ -3,7 +3,7 @@
 // talk to each other or to the matchmaker after setup.
 
 import { getServerByName, Server, type Connection, type WSMessage } from "partyserver";
-import { CHARACTERS, parseMatchmakerMessage, SEAT_COUNT, type MatchmakerServerMessage, type PlayerId, type Seat } from "@mush2/shared";
+import { CHARACTERS, parseMatchmakerMessage, SEAT_COUNT, type CharacterId, type MatchmakerServerMessage, type PlayerId, type Seat } from "@mush2/shared";
 import { RateLimiter } from "./rateLimit.ts";
 
 /** How long the first player waits before empty seats are filled with bots. */
@@ -11,6 +11,7 @@ const FILL_DELAY_MS = 5_000;
 
 interface QueueState {
   name: string | null;
+  character?: CharacterId;
   joinedAt: number;
 }
 
@@ -25,8 +26,13 @@ export class Matchmaker extends Server<Env> {
       return;
     }
     if (connection.state?.name) return; // already queued
+    // Leaving the queue releases a character, since only waiting players hold one.
+    if (this.waiting().some((c) => c.state!.character === msg.character)) {
+      this.send(connection, { type: "characterTaken" });
+      return;
+    }
 
-    connection.setState({ name: msg.name, joinedAt: Date.now() });
+    connection.setState({ name: msg.name, character: msg.character, joinedAt: Date.now() });
     const waiting = this.waiting();
     if (waiting.length >= SEAT_COUNT) {
       await this.startMatch(waiting.slice(0, SEAT_COUNT));
@@ -61,12 +67,14 @@ export class Matchmaker extends Server<Env> {
     const seats: Seat[] = [];
     const tokens: Record<string, PlayerId> = {};
     const tokenByConnection = new Map<string, string>();
-    const characters = shuffled(CHARACTERS.map((c) => c.id));
+    // Bots get the characters nobody picked.
+    const picked = new Set(humans.map((c) => c.state!.character!));
+    const botCharacters = shuffled(CHARACTERS.map((c) => c.id).filter((id) => !picked.has(id)));
 
     humans.forEach((conn, i) => {
       const id = `p${i}`;
       const token = crypto.randomUUID();
-      seats.push({ id, name: conn.state!.name!, isBot: false, character: characters[i]! });
+      seats.push({ id, name: conn.state!.name!, isBot: false, character: conn.state!.character! });
       tokens[token] = id;
       tokenByConnection.set(conn.id, token);
     });
@@ -74,7 +82,7 @@ export class Matchmaker extends Server<Env> {
       // Bots are always labeled as AI to players.
       // Developer games get exactly one log parrot (the first bot seat); every other bot wanders.
       const botKind = this.env.ALLOW_CHEATS === "true" && i === humans.length ? "logParrot" : "wander";
-      seats.push({ id: `p${i}`, name: `Bot ${i - humans.length + 1} (AI)`, isBot: true, botKind, character: characters[i]! });
+      seats.push({ id: `p${i}`, name: `Bot ${i - humans.length + 1} (AI)`, isBot: true, botKind, character: botCharacters[i - humans.length]! });
     }
 
     const room = await getServerByName(this.env.GameRoom, roomId);

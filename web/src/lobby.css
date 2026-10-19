@@ -382,6 +382,42 @@ body:has(.pod) {
     letter-spacing: 0.05em;
   }
 }
+/* Character picker: 16 portrait tiles in a 4x4 grid; names wrap onto two lines on a phone. */
+.pod-characters {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.4rem;
+}
+.pod-character {
+  box-sizing: border-box;
+  width: 100%;
+  height: auto;
+  min-height: 44px;
+  margin: 0;
+  padding: 0.3rem 0.2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2rem;
+  border: 1px solid rgb(255 255 255 / 0.15);
+  border-radius: 0.25rem;
+  background: rgb(255 255 255 / 0.05);
+  font-size: 0.7rem;
+  line-height: 1.1;
+  text-align: center;
+}
+.pod-character:hover,
+.pod-character:focus-visible {
+  border-color: var(--mush);
+  background: rgb(255 255 255 / 0.12);
+}
+.pod-character img {
+  width: 40px;
+  height: 40px;
+}
 .pod-ship-crew {
   font-variant-numeric: tabular-nums;
   font-weight: bold;

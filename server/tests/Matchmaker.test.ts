@@ -1,4 +1,4 @@
-import { SEAT_COUNT, type MatchmakerServerMessage, type Seat } from "@mush2/shared";
+import { CHARACTERS, SEAT_COUNT, type MatchmakerServerMessage, type Seat } from "@mush2/shared";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { FakeConnection, FakeServer, FakeStorage } from "../src/testing/fakes.ts";
 
@@ -12,7 +12,7 @@ vi.mock("partyserver", () => ({
 }));
 const { Matchmaker } = await import("../src/Matchmaker.ts");
 
-type Conn = FakeConnection<{ name: string | null; joinedAt: number }>;
+type Conn = FakeConnection<{ name: string | null; character?: string; joinedAt: number }>;
 
 let storage: FakeStorage;
 let mm: InstanceType<typeof Matchmaker>;
@@ -30,7 +30,9 @@ function join(name: string | null): Conn {
   if (name !== null) void queue(conn, name);
   return conn;
 }
-const queue = (c: Conn, name: string) => mm.onMessage(c as never, JSON.stringify({ type: "queue", name }));
+/** Each connection picks its own character by default (ids are sequential, so any 16 in a row differ). */
+const queue = (c: Conn, name: string, character = CHARACTERS[Number(c.id.slice(1)) % CHARACTERS.length]!.id) =>
+  mm.onMessage(c as never, JSON.stringify({ type: "queue", name, character }));
 const msgs = (c: Conn) => c.messages<MatchmakerServerMessage>();
 const matched = (c: Conn) => msgs(c).find((m) => m.type === "matched") as { roomId: string; token: string } | undefined;
 
@@ -56,6 +58,24 @@ describe("Matchmaker queue", () => {
     expect((a.state as { name: string }).name).toBe("Ann");
   });
 
+  it("refuses a character another waiting player picked, and frees it when they leave", async () => {
+    const [a, b] = [join(null), join(null)];
+    await queue(a, "Ann", "chao");
+    await queue(b, "Bob", "chao");
+    expect(msgs(b).at(-1)).toEqual({ type: "characterTaken" });
+    expect(b.state?.name).toBeFalsy();
+    (mm as unknown as FakeServer).connections.delete(a as never);
+    await mm.onClose(a as never);
+    await queue(b, "Bob", "chao");
+    expect(b.state?.character).toBe("chao");
+  });
+
+  it("rejects an unknown character", async () => {
+    const a = join(null);
+    await queue(a, "Ann", "nobody");
+    expect(msgs(a).at(-1)).toEqual({ type: "error", message: "Malformed message" });
+  });
+
   it("cancels the fill timer when the queue empties", async () => {
     const a = join(null);
     await queue(a, "Ann");
@@ -76,9 +96,10 @@ describe("Matchmaker starting a match", () => {
 
   it("fills the empty seats with bots when the timer fires, labeled as AI", async () => {
     const a = join(null);
-    await queue(a, "Ann");
+    await queue(a, "Ann", "janice");
     await mm.onAlarm();
     const { seats } = setups[0]!;
+    expect(seats.find((s) => !s.isBot)!.character).toBe("janice");
     expect(seats).toHaveLength(SEAT_COUNT);
     expect(seats.filter((s) => !s.isBot).map((s) => s.name)).toEqual(["Ann"]);
     for (const bot of seats.filter((s) => s.isBot)) expect(bot.name).toMatch(/\(AI\)$/);

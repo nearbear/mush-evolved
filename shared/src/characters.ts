@@ -24,6 +24,10 @@ export const CHARACTERS = [
 
 export type CharacterId = (typeof CHARACTERS)[number]["id"];
 
+export function isCharacterId(value: unknown): value is CharacterId {
+  return CHARACTERS.some((c) => c.id === value);
+}
+
 /** A crew member's full name. Proper names, so never translated. Falls back to the id for one the list doesn't know. */
 export function characterName(id: string): string {
   return CHARACTERS.find((c) => c.id === id)?.name ?? id;
