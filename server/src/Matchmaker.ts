@@ -80,8 +80,8 @@ export class Matchmaker extends Server<Env> {
     });
     for (let i = humans.length; i < SEAT_COUNT; i++) {
       // Bots are always labeled as AI to players.
-      // Developer games get exactly one log parrot (the first bot seat); every other bot wanders.
-      const botKind = this.env.ALLOW_CHEATS === "true" && i === humans.length ? "logParrot" : "wander";
+      // Every bot is a log parrot for now; "wander" bots are still supported but not selected anywhere yet.
+      const botKind = "logParrot";
       seats.push({ id: `p${i}`, name: `Bot ${i - humans.length + 1} (AI)`, isBot: true, botKind, character: botCharacters[i - humans.length]! });
     }
 

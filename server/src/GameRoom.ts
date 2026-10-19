@@ -46,7 +46,7 @@ const BOT_DELAY_MS = 50;
  * Bump when GameState's shape changes. Games stored under another version are
  * discarded on load (there is no migration; games are short-lived).
  */
-const STATE_VERSION = 39;
+const STATE_VERSION = 40;
 
 interface Stored {
   version?: number;
@@ -262,7 +262,7 @@ export class GameRoom extends Server<Env> {
       if (!p.isBot || this.bots.has(p.id)) continue;
       this.bots.set(
         p.id,
-        p.botKind === "logParrot" ? new LogParrotBot() : new WanderBot(crypto.getRandomValues(new Uint32Array(1))[0]!),
+        p.botKind === "wander" ? new WanderBot(crypto.getRandomValues(new Uint32Array(1))[0]!) : new LogParrotBot(),
       );
     }
   }
