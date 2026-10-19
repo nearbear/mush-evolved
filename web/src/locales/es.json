@@ -358,7 +358,8 @@
     "blueprintOf": "Plano: {{thing}}",
     "freezer": "Congelador",
     "corpse": "Cadáver",
-    "myco_alarm": "Micoalarma"
+    "myco_alarm": "Micoalarma",
+    "tree_pot": "Hidromaceta"
   },
   "logEvent": {
     "actionCostChanged": "Tu acción en cola ({{action}}) se ha cancelado porque su coste ha cambiado: ahora cuesta {{ap}} PA y {{mp}} PM.",

@@ -358,7 +358,8 @@
     "blueprintOf": "Plan : {{thing}}",
     "freezer": "Congélateur",
     "corpse": "Corps",
-    "myco_alarm": "Mycoalarme"
+    "myco_alarm": "Mycoalarme",
+    "tree_pot": "HydroPot"
   },
   "logEvent": {
     "actionCostChanged": "Votre action en attente ({{action}}) a été annulée car son coût a changé : elle coûte maintenant {{ap}} PA et {{mp}} PM.",

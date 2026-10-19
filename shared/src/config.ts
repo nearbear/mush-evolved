@@ -120,6 +120,12 @@ export const DEFAULT_CONFIG: GameConfig = {
     { type: "uncooked_ration", room: "REFECTORY" },
     { type: "uncooked_ration", room: "REFECTORY" },
     { type: "uncooked_ration", room: "REFECTORY" },
+    // Decided 2026-10-18: five hydropots in the lab at the start. No effect yet.
+    { type: "tree_pot", room: "LABORATORY" },
+    { type: "tree_pot", room: "LABORATORY" },
+    { type: "tree_pot", room: "LABORATORY" },
+    { type: "tree_pot", room: "LABORATORY" },
+    { type: "tree_pot", room: "LABORATORY" },
   ],
   // Confirmed 2026-10-13: every player starts with an iTrackie.
   startInventory: [ITRACKIE_ITEM],

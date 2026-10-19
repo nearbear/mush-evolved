@@ -357,7 +357,8 @@
     "blueprintOf": "Blueprint: {{thing}}",
     "freezer": "Freezer",
     "corpse": "Corpse",
-    "myco_alarm": "Myco alarm"
+    "myco_alarm": "Myco alarm",
+    "tree_pot": "Hydropot"
   },
   "logEvent": {
     "actionCostChanged": "Your queued action ({{action}}) was cancelled because its cost changed: it now costs {{ap}} AP and {{mp}} MP.",

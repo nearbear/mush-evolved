@@ -50,6 +50,8 @@ export const ITEM_TYPES: Record<string, ItemType> = {
   soap: {},
   // Decided 2026-10-17: rings in its room when a Mush acts there (mycoalarm.ts). Dismantles for one scrap metal.
   myco_alarm: { dismantle: { metal: 1, plastic: 0 } },
+  // Decided 2026-10-18: the HydroPot (TREE_POT in the original). No effect yet. Named after its icon.
+  tree_pot: {},
   metal_scraps: {},
   thick_tube: {},
   // Decided 2026-10-16: built from a blueprint; no effect yet. Named after its icon.

@@ -7,7 +7,7 @@ import type { Action, GameState, PlayerId, Target } from "../src/types.ts";
 import { makeSeats, mustApply, offered } from "./support.ts";
 
 const seats = makeSeats(3, "others");
-// Everyone in the lab, empty-handed; wrench + blaster there.
+// Everyone in the lab, empty-handed; wrench, blaster, and five hydropots there.
 const newGame = () => createGame(seats, { ...DEFAULT_CONFIG, startInventory: [] }, 42);
 
 const examine = (kind: Target["kind"], id: string): Action => ({ type: "examine", target: { kind, id } as Target });
@@ -38,6 +38,8 @@ describe("room equipment", () => {
 describe("examine", () => {
   it("is offered for people, equipment, and items you can see, including yourself", () => {
     const state = mustApply(newGame(), "p0", { type: "take", item: "item-1" });
+    const ids = state.items.filter((i) => i.type === "tree_pot").map((i) => i.id);
+    expect(ids).toHaveLength(5);
     const targets = offered(state, "p0").flatMap((a) => (a.type === "examine" ? [a.target] : []));
     expect(targets).toEqual([
       { kind: "player", id: "p0" },
@@ -48,6 +50,7 @@ describe("examine", () => {
       { kind: "equipment", id: "LABORATORY:GRAVITY_SIMULATOR" },
       { kind: "item", id: "item-1" }, // in your inventory
       { kind: "item", id: "item-2" }, // in the room
+      ...ids.map((id) => ({ kind: "item", id })), // the hydropots
     ]);
   });
 
