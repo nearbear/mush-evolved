@@ -67,6 +67,9 @@ export const DEFAULT_CONFIG: GameConfig = {
   pacifist: { aggressiveApSurcharge: 2 },
   // Confirmed 2026-10-16: cooking an uncooked ration costs 1 AP, only in the refectory.
   cook: { cost: { ap: 1 }, rooms: ["REFECTORY"] },
+  // Owner, 2026-10-19: express cook is free, anywhere you can reach a microwave, and spends one of its 4 charges;
+  // it regains one each day. Consequences for using it come later.
+  expressCook: { cost: { ap: 0 }, charges: { start: 4, max: 4, perDay: 1 } },
   // Decided 2026-10-16: building from a blueprint costs 3 AP, anywhere, no failure chance.
   build: { cost: { ap: 3 } },
   // Decided 2026-10-16 (#28): jettisoning a carried corpse is free, in one of the four bays.
@@ -125,6 +128,8 @@ export const DEFAULT_CONFIG: GameConfig = {
     // Confirmed 2026-10-14: the soap always spawns in the Alpha dorm (for now).
     { type: "soap", room: "BEDROOM_A" },
     { type: "freezer", room: "REFECTORY" },
+    // Owner, 2026-10-19: the microwave spawns in the refectory at the start; heavy.
+    { type: "microwave", room: "REFECTORY" },
     // PLACEHOLDER food so satiety can be tested.
     { type: "uncooked_ration", room: "REFECTORY" },
     { type: "uncooked_ration", room: "REFECTORY" },

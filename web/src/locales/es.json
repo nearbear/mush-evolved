@@ -145,6 +145,7 @@
     "dispense": "Sacar un café",
     "consume": "Consumir",
     "cook": "Cocinar",
+    "expressCook": "Cocina exprés",
     "build": "Montar",
     "jettison": "Expulsar",
     "install": "Instalar",
@@ -348,6 +349,9 @@
   "itemAttr": {
     "label": "Atributos del objeto",
     "heavy": "Pesado",
+    "charges_one": "Queda {{count}} carga",
+    "charges_many": "Quedan {{count}} cargas",
+    "charges_other": "Quedan {{count}} cargas",
     "heavyDesc": "Transportarlo hace que cada desplazamiento entre salas cueste {{mp}} puntos de movimiento adicionales, independientemente de cuántos objetos pesados lleves. La habilidad Robusto anula esta penalización."
   },
   "items": {
@@ -367,6 +371,7 @@
     "blueprint": "Plano",
     "blueprintOf": "Plano: {{thing}}",
     "freezer": "Congelador",
+    "microwave": "Microondas",
     "corpse": "Cadáver",
     "myco_alarm": "Micoalarma",
     "tree_pot": "Hidromaceta"
@@ -399,6 +404,7 @@
     "builtItem": "{{name}} montó: {{item}}.",
     "built": "{{name}} montó: {{equipment}}.",
     "cooked": "{{name}} cocinó: {{item}}.",
+    "expressCooked": "{{name}} hizo una cocina exprés: {{item}}.",
     "jettisoned": "{{name}} expulsó el cuerpo de {{body}}.",
     "healed": "{{name}} curó a {{target}}.",
     "healedSelf": "{{name}} se curó a sí mismo/a.",

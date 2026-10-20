@@ -3,6 +3,7 @@ import { BondAction } from "./actions/bond.ts";
 import { BuildAction } from "./actions/build.ts";
 import { ConsumeAction } from "./actions/consume.ts";
 import { CookAction } from "./actions/cook.ts";
+import { ExpressCookAction } from "./actions/express_cook.ts";
 import { DismantleAction } from "./actions/dismantle.ts";
 import { AccessAction } from "./actions/access.ts";
 import type { ActionTag, ActionVisibility } from "./actions/action.ts";
@@ -74,6 +75,7 @@ export const ACTIONS: { [T in ActionType]: ActionDef<ActionOf<T>> } = {
   dispense: new DispenseAction(),
   consume: new ConsumeAction(),
   cook: new CookAction(),
+  express_cook: new ExpressCookAction(),
   build: new BuildAction(),
   jettison: new JettisonAction(),
   install: new InstallAction(),

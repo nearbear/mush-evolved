@@ -65,6 +65,7 @@ export function InspectPanel({
 }
 
 function Details({ view, layout, resolved, onAction }: { view: PlayerView; layout?: ShipLayout; resolved: Resolved; onAction: (action: Action) => void }) {
+  const { t } = useTranslation();
   const names = useNames();
   const mobile = useMobile();
   switch (resolved.kind) {
@@ -102,11 +103,14 @@ function Details({ view, layout, resolved, onAction }: { view: PlayerView; layou
       );
     case "item":
       return (
-        <div className="inspect-item">
-          <ItemFace label={names.item(resolved.item.type, resolved.item.builds)}>
-            <ItemIcon className="item-icon" item={resolved.item} view={view} />
-          </ItemFace>
-        </div>
+        <>
+          <div className="inspect-item">
+            <ItemFace label={names.item(resolved.item.type, resolved.item.builds)}>
+              <ItemIcon className="item-icon" item={resolved.item} view={view} />
+            </ItemFace>
+          </div>
+          {resolved.item.charges !== undefined && <div className="sub inspect-charges">{t("itemAttr.charges", { count: resolved.item.charges })}</div>}
+        </>
       );
   }
 }

@@ -21,6 +21,7 @@ const ACTION_NAME_KEYS = {
   dispense: "actions.dispense",
   consume: "actions.consume",
   cook: "actions.cook",
+  express_cook: "actions.expressCook",
   build: "actions.build",
   jettison: "actions.jettison",
   install: "actions.install",

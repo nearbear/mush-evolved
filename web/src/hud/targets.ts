@@ -62,6 +62,7 @@ function aimedAt(view: PlayerView, a: Action, target: Target): boolean {
       return "equipment" in a ? target.kind === "equipment" && a.equipment === target.id : target.kind === "item" && a.item === target.id;
     case "consume":
     case "cook":
+    case "express_cook":
     case "build":
     case "jettison":
     case "install":
@@ -93,6 +94,7 @@ const ACTION_LABEL_KEYS = {
   shower: "actions.shower",
   consume: "actions.consume",
   cook: "actions.cook",
+  express_cook: "actions.expressCook",
   build: "actions.build",
   jettison: "actions.jettison",
   install: "actions.install",

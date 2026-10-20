@@ -9,7 +9,7 @@
 import { applyCheats, makeHuman, type ActopiCheat, type Cheat, type RoleCheat } from "./cheats.ts";
 import { ACTIONS, type ActionDef } from "./actions.ts";
 import { getUp } from "./actions/lie_down.ts";
-import { itemsIn } from "./items.ts";
+import { itemsIn, rechargeMicrowaves, startCharges } from "./items.ts";
 import { actionFailed, apGain, carePointsGain, channelLimit, computerPointsGain, cycleChanged, dailyMoraleLoss, inventorySlots, movementRules, satietyLoss } from "./modifiers.ts";
 import { contaminationSeenBy, convert } from "./infection.ts";
 import { isHungry, publicStatusesOf, statusesOf } from "./statuses.ts";
@@ -86,7 +86,7 @@ export function createGame(
   }));
 
   const starts: Omit<ItemState, "id">[] = [
-    ...config.startItems.map((it): Omit<ItemState, "id"> => ({ type: it.type, at: { kind: "room", id: it.room }, ...(it.builds !== undefined && { builds: it.builds }) })),
+    ...config.startItems.map((it): Omit<ItemState, "id"> => ({ type: it.type, at: { kind: "room", id: it.room }, ...(it.builds !== undefined && { builds: it.builds }), ...chargesFor(config, it.type) })),
     ...players.flatMap((p) => config.startInventory.map((type): Omit<ItemState, "id"> => ({ type, at: { kind: "player", id: p.id } }))),
   ];
   const items: ItemState[] = starts.map((it, i) => ({ id: `item-${i + 1}`, ...it }));
@@ -232,6 +232,11 @@ export function newCycle(state: GameState): ActionResult {
   return { ok: true, state: next };
 }
 
+function chargesFor(config: GameConfig, type: string): { charges?: number } {
+  const charges = startCharges(config, type);
+  return charges === undefined ? {} : { charges };
+}
+
 /** Mutates a state that the caller already cloned. */
 function advanceCycle(state: GameState): void {
   state.cycle += 1;
@@ -247,6 +252,7 @@ function advanceCycle(state: GameState): void {
     const loss = dailyMoraleLoss(state);
     for (const p of state.players) if (p.alive) p.morale = Math.max(0, p.morale - loss);
     grantCarePoints(state);
+    rechargeMicrowaves(state);
   }
   for (const p of state.players) {
     if (!p.alive || p.role !== "human") continue;
@@ -390,8 +396,8 @@ export const affordable = (option: Readonly<ActionOption>): boolean => option.la
 /** The actions a view lets you do right now: its affordable options. */
 export const legalIn = (view: Pick<PlayerView, "actions">): Action[] => view.actions.filter(affordable).map((o) => o.action);
 
-function itemView({ id, type, of, builds }: ItemState): ItemView {
-  return { id, type, ...(of !== undefined && { of }), ...(builds !== undefined && { builds }) };
+function itemView({ id, type, of, builds, charges }: ItemState): ItemView {
+  return { id, type, ...(of !== undefined && { of }), ...(builds !== undefined && { builds }), ...(charges !== undefined && { charges }) };
 }
 
 function equipmentView({ id, type }: Equipment): EquipmentView {

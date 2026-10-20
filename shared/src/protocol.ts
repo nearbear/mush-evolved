@@ -119,6 +119,7 @@ export function parseGameMessage(raw: string): GameClientMessage | null {
   if (a.type === "uninstall" && typeof a.equipment === "string") return { type: "action", action: { type: "uninstall", equipment: a.equipment } };
   if (a.type === "consume" && typeof a.item === "string") return { type: "action", action: { type: "consume", item: a.item } };
   if (a.type === "cook" && typeof a.item === "string") return { type: "action", action: { type: "cook", item: a.item } };
+  if (a.type === "express_cook" && typeof a.item === "string") return { type: "action", action: { type: "express_cook", item: a.item } };
   if (a.type === "build" && typeof a.item === "string") return { type: "action", action: { type: "build", item: a.item } };
   if (a.type === "install" && typeof a.item === "string") return { type: "action", action: { type: "install", item: a.item } };
   if (a.type === "jettison" && typeof a.item === "string") return { type: "action", action: { type: "jettison", item: a.item } };

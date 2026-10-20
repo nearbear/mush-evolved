@@ -87,4 +87,5 @@ export const ITEM_STATE_FIELDS: Record<string, FieldRule> = {
   at: { reach: "never", test: "leaks.test.ts", note: "Implied by which list the item is in." },
   of: { reach: "filtered", test: "death.test.ts" },
   builds: { reach: "filtered", test: "build.test.ts" },
+  charges: { reach: "filtered", test: "express_cook.test.ts" },
 };

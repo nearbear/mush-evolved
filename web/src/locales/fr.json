@@ -145,6 +145,7 @@
     "dispense": "Tirer un café",
     "consume": "Consommer",
     "cook": "Cuisiner",
+    "expressCook": "Cuisine Express",
     "build": "Assembler",
     "jettison": "Larguer",
     "install": "Installer",
@@ -348,6 +349,9 @@
   "itemAttr": {
     "label": "Attributs de l'objet",
     "heavy": "Lourd",
+    "charges_one": "{{count}} charge restante",
+    "charges_many": "{{count}} charges restantes",
+    "charges_other": "{{count}} charges restantes",
     "heavyDesc": "Le porter ajoute {{mp}} points de mouvement au coût de chaque déplacement entre deux pièces, indépendamment du nombre d'objets lourds que vous transportez. La compétence Robuste annule cette pénalité."
   },
   "items": {
@@ -367,6 +371,7 @@
     "blueprint": "Plan",
     "blueprintOf": "Plan : {{thing}}",
     "freezer": "Congélateur",
+    "microwave": "Micro-onde",
     "corpse": "Corps",
     "myco_alarm": "Mycoalarme",
     "tree_pot": "HydroPot"
@@ -399,6 +404,7 @@
     "builtItem": "{{name}} a assemblé : {{item}}.",
     "built": "{{name}} a assemblé : {{equipment}}.",
     "cooked": "{{name}} a cuisiné : {{item}}.",
+    "expressCooked": "{{name}} a fait une cuisine express : {{item}}.",
     "jettisoned": "{{name}} a largué le corps de {{body}}.",
     "healed": "{{name}} a soigné {{target}}.",
     "healedSelf": "{{name}} s'est soigné(e).",

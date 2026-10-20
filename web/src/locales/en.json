@@ -144,6 +144,7 @@
     "dispense": "Pull coffee",
     "consume": "Consume",
     "cook": "Cook",
+    "expressCook": "Express cook",
     "build": "Build",
     "jettison": "Jettison",
     "install": "Install",
@@ -347,6 +348,8 @@
   "itemAttr": {
     "label": "Item attributes",
     "heavy": "Heavy",
+    "charges_one": "{{count}} charge left",
+    "charges_other": "{{count}} charges left",
     "heavyDesc": "Carrying it makes every move between rooms cost {{mp}} extra movement points, regardless of how many heavy objects you are carrying. The Sturdy skill cancels this."
   },
   "items": {
@@ -366,6 +369,7 @@
     "blueprint": "Blueprint",
     "blueprintOf": "Blueprint: {{thing}}",
     "freezer": "Freezer",
+    "microwave": "Microwave",
     "corpse": "Corpse",
     "myco_alarm": "Myco alarm",
     "tree_pot": "Hydropot"
@@ -398,6 +402,7 @@
     "builtItem": "{{name}} built a {{item}}.",
     "built": "{{name}} built a {{equipment}}.",
     "cooked": "{{name}} cooked the {{item}}.",
+    "expressCooked": "{{name}} express cooked the {{item}}.",
     "jettisoned": "{{name}} jettisoned the body of {{body}}.",
     "healed": "{{name}} healed {{target}}.",
     "healedSelf": "{{name}} healed themself.",

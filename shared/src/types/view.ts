@@ -20,6 +20,8 @@ export interface ItemView {
   of?: PlayerId;
   /** For a blueprint: which recipe it carries (the blueprint is public to whoever can see the item). */
   builds?: string;
+  /** For a microwave: express cooks left (public to whoever can see the item, like its type). */
+  charges?: number;
 }
 
 export interface OtherPlayerView {

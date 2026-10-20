@@ -81,6 +81,10 @@ export interface GameConfig {
     cost: { ap: number }; // AP spent to cook an uncooked ration (confirmed 2026-10-16).
     rooms: RoomId[]; // Rooms where food can be cooked (confirmed 2026-10-16).
   };
+  expressCook: {
+    cost: { ap: number }; // AP spent to express cook a ration with a reachable microwave (owner, 2026-10-19: 0).
+    charges: { start: number; max: number; perDay: number }; // Microwave charges: one per express cook, regained at each day start (owner, 2026-10-19).
+  };
   build: {
     cost: { ap: number }; // AP spent to build from a blueprint (decided 2026-10-16: 3, the original game's value).
   };
