@@ -15,6 +15,7 @@
     "preview": "node src/dev/preview.ts",
     "screenshot": "node src/play/screenshot.ts",
     "ship-view": "node src/play/shipView.ts",
+    "ship-render": "node src/play/shipRender.ts",
     "contact-sheet": "node src/contactSheet/contactSheet.ts"
   },
   "dependencies": {

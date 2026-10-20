@@ -882,6 +882,12 @@ Decided by the owner, accepting a commenter on #24 (eMush days start at 00:00 GM
 - About 190 of the 255 PNGs are assembled into components (page shells, 3-slice panels, cards, frames, tabs, buttons, bars, slots, controls); each story lists its source files with their natural sizes, and the assemblies that are inferred from names and sizes carry a "guess" tag. Icons, logos and illustrations are listed but not shown.
 - What needed correction: Vite dev doesn't rewrite `../Mush` paths written directly in HTML (`<img src>`, inline `style`), so those images 404'd; the page now names files with `data-img`/`data-bg` and resolves them through an `import.meta.glob` in `main.ts`. Useful finding: the site frame's left+right pieces add up to exactly 1080px on every row, so it's a fixed-width frame.
 
+## 2026-10-19: Walls that connect in the iso view
+
+- Asked to make walls connect everywhere the way the front corridor's top corner does, with a test. A cell-level scan of the whole drawn ship (wall runs that stop, and what is beyond them) found the gaps far faster than eyeballing screenshots: corners between two rooms that neither draws (front corridor and hydroponics, refectory and bedroom Alpha, storage back and the motor room, bridge and turret) and a one-cell notch beside the centre corridor. `fillGaps` now adds a column at such corners and bridges one-cell notches.
+- The new test (every room, fog depth 1 and all) immediately caught an order bug: `fillGaps` step 2 let floor it had just added justify the next cell, so from Bay Alpha the refectory opened straight onto bedroom Alpha with no wall, while from the laboratory it was closed. Step 2 now only reads floor that was there before it.
+- What needed correction: screenshots were hard to use for this. The camera follows a randomly placed character, so `--clip` shots moved between runs; taking one `--scale 2` shot and cropping it offline worked. A wall sprite's anchor isn't its top, so the first cell-to-pixel calibration pointed one cell off and a "still visible" gap at the motor room turned out to be in the motor room's own floor art, not the tiles.
+
 ## 2026-10-19: Accommodating Terrence (wheelchair pushing)
 
 - **Decision (owner):** others can accommodate Terrence: anyone in his room offers (free), Terrence accepts, and from then he can't move alone and travels with his pusher at no MP cost; the pusher pays a normal move. Either ends it, death ends it; public room log plus a status showing who pushes.
@@ -889,8 +895,15 @@ Decided by the owner, accepting a commenter on #24 (eMush days start at 00:00 GM
 - **Needed correction:** Claude first left out a trait status for the wheelchair and caught it against the 2026-10-18 "every trait is a public status" decision; a first locale-insertion script also matched `mankind_only_hope` in the skills catalog and was redone.
 - **Left for later:** the room view does not keep Terrence beside his pusher; no way to decline or withdraw an offer other than leaving the room.
 
+## 2026-10-19 (later): Walls that connect, second pass
+
+- The first pass (columns at corners, filling one-cell notches) still left "quite a few holes", per the user. Their hint was to judge joins by the top ridges. That led to measuring the art instead of eyeballing it: a cell's anchor is its top corner, so walls stand on cell edges (L on +x, R on +y), `COLUMN` is a post at the +x+y corner and `corner_02` is both edges (a front corner). A wall's solid art overhangs only its +x/+y end, which is why one-edge gaps showed at some ends and not others. With that model, a free wall end is just an edge endpoint touching nothing. About 35 places were an edge or two short of another room's wall; `joinWalls` now carries them on and adds the matching corner piece.
+- What worked: a scratch offline renderer that composites `placeScene`'s sprites straight from the atlases, with markers on the free ends. It is deterministic and unfogged, with no camera to chase, so before/after crops of any spot were cheap.
+- What needed correction, each caught by looking at renders: joining a room's own walls drew over a turret's dome (so only walls of different rooms are joined, and never onto furniture); `corner_02` drawn over a bay's deck wall showed as a stray wall inside Bay Beta, as did a wall over the Icarus bay's deck corner post. The test pins the ends left on purpose, each with its reason.
+
 ## 2026-10-19 (later): Accommodating Terrence, follow-up
 
 - **Decision (owner):** an offer Terrence hasn't accepted within 5 minutes expires, and ending a push is instant (not queued). Keeping Terrence beside his pusher in the room view was filed as a Private beta story (#203).
 - **How:** the rules had no clock, so Claude added `GameState.now` (the server time of the latest action input or tick) and folded offer expiries into `nextDue`/`tick`, reusing the server's existing alarm rather than adding a timer. Expiry is silent (no log line); that wasn't specified.
 - **Needed correction:** another session was appending to this log at the same time, so this entry first landed under its walls entry and was moved here.
+- The scratch renderer became `npm run ship-render` (`tools/src/play/shipRender.ts`) at the user's request, with `--cells=`, `--room`/`--depth`, `--ends` and `--add`/`--drop` for trying wall pieces.

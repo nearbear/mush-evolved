@@ -91,6 +91,21 @@ can be clicked.
 - To see what a change did, take the same `--walk`/`--clip` shot with and without it (`--out` to a
   scratch folder for the "before"). Vite reloads the change before the next run.
 
+For walls and anything else static, `npm run ship-render` is quicker and steadier. It needs no
+browser and no dev server. It runs `placeScene` itself and composites the sprites from the atlases
+into `.screenshots/ship-render.png`, with no fog and no camera, so the same arguments give the same
+image (the browser's camera follows a randomly placed character, so `--clip` shots move between
+runs). It draws no people, effects or animation.
+
+- `-- --cells=-30,10,-20,25 --scale 4` draws only those cells (on the ship plan, as `ship-check`
+  and the tests print them), magnified. Write `--cells=` with the `=`, since the numbers can be negative.
+- `-- --room LABORATORY --depth 1` draws the scene as seen from that room (default: the front
+  corridor, the whole ship).
+- `-- --ends` marks the wall ends that touch no other wall or post, and lists them: magenta where
+  nothing is beyond (open front edges, the hull), orange where there is floor beyond.
+- `-- --add "ROOM:slice:frame:x:y;..."` and `-- --drop "slice:x:y;..."` try wall pieces before
+  changing code.
+
 ## Directions
 
 `gridToPx`: +x is down-right on screen, +y is down-left. A wall along x runs top-left to
@@ -129,9 +144,23 @@ describes a spot in screen terms, translate it to cells and confirm on the data 
   lengthens the back corridor, then `npm run ship-layout` regenerates the data. Changing a room's
   shape doesn't move other rooms any more; `npm run ship-check` shows what it now overlaps.
 - `fillGaps` (in `placeScene`) patches the holes where drawn rooms meet: floor under doors that
-  have none, floor across a one-cell strip between a room and another room's wall, and a wall on
-  an empty cell with floor on both sides. Don't close open front edges in general: a wall there
-  covers the room behind it.
+  have none, floor across a one-cell strip between a room and another room's wall (only from floor
+  that was already there, so the result doesn't depend on room order), a wall on an empty cell
+  with floor on both sides, and walls joined where rooms meet (`joinWalls`, below). Don't close
+  open front edges in general: a wall there covers the room behind it.
+- **Walls stand on cell edges.** A cell's anchor (`gridToPx`) is its top corner, so cell (x, y)
+  spans to (x + 1, y + 1): `BIG_WALL_L` stands on its +x edge, `BIG_WALL_R` on its +y edge,
+  `corner_02` on both (the original's front corner), a door on its two cells' edges, and `COLUMN`
+  is a post on the +x+y corner (the original's back corner). A wall's solid art runs about half a
+  cell past its +x (R) or +y (L) end and not at all past the other, so a wall that stops one edge
+  short of another shows a gap. Judge joins by the top ridges: they should run on into each other.
+  `joinWalls` carries a wall end that touches nothing on by up to two edges when that reaches
+  another room's wall (a room's own walls are left alone: the turrets end theirs in the dome's
+  art), never onto furniture or a bay's deck corner post, and never as `corner_02` over a deck
+  wall that carries on (it would show as a stray wall in the bay); then a corner piece where the
+  walls now turn. "Leaves no wall stopping just short of another room's" in `placement.test.ts`
+  checks the whole ship from every room at fog depths 1 and all, with the ends left on purpose
+  pinned with their reasons (all hidden behind deck walls, fittings or consoles).
 - Doors are two cells wide (footprint toward -x/-y) and their art includes the top ridge, so no
   wall is drawn on a door's second cell; `fillGaps` puts floor under both cells, which the doorway
   shows: one tile for both, owned (and lit) by the room whose back wall holds the door. The

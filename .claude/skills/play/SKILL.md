@@ -105,4 +105,5 @@ A launch error mentioning `libnspr4.so` (or another missing `.so`) means that se
 ## Tooling commands
 
 - `npm run ship-view`: one screenshot of the iso view showing the whole ship (`--walk "Front corridor"` into a room first, `--clip x,y,w,h` and `--scale 3` to zoom), to `.screenshots/ship.png`. Needs `npm run dev`. See `web/src/iso/CLAUDE.md`.
+- `npm run ship-render`: the iso scene drawn offline from the atlases with the client's `placeScene`, to `.screenshots/ship-render.png`: no browser or dev server, no fog, the same image every time (`--cells=x0,y0,x1,y1` and `--scale 4` to zoom, `--room`/`--depth` for the scene as seen from a room, `--ends` to mark and list wall ends that touch nothing, `--add`/`--drop` to try wall pieces). No people or effects; use `ship-view` for what the browser shows. See `web/src/iso/CLAUDE.md`.
 - `npm run types -w server`: regenerate `server/worker-configuration.d.ts` after changing `wrangler.jsonc` or the exported Durable Object classes.
