@@ -15,6 +15,8 @@ import { actionTarget } from "../hud/targets.ts";
 export interface ActingOn {
   target: Target | { kind: "door"; to: RoomId };
   n: number;
+  /** When the action ends, in server ms, once the view shows it under way. */
+  until?: number;
 }
 
 type Queue = Pick<PlayerView["you"], "current" | "queue">;
@@ -34,9 +36,9 @@ export function useActingOn(you: PlayerView["you"] | undefined): { actingOn: Act
   const [actingOn, setActingOn] = useState<ActingOn | null>(null);
   /** Actions sent so far, queued or not: sending any of them gets you up from a chair (IsoRoom). */
   const [sentCount, setSentCount] = useState(0);
-  const walkFor = (action: Action | undefined) => {
+  const walkFor = (action: Action | undefined, until?: number) => {
     const target = action?.type === "move" ? { kind: "door" as const, to: action.to } : action && actionTarget(action);
-    if (target) setActingOn((a) => ({ target, n: (a?.n ?? 0) + 1 }));
+    if (target) setActingOn((a) => ({ target, n: (a?.n ?? 0) + 1, ...(until !== undefined && { until }) }));
   };
 
   const before = useRef(you);
@@ -44,7 +46,9 @@ export function useActingOn(you: PlayerView["you"] | undefined): { actingOn: Act
   useEffect(() => {
     const prev = before.current;
     before.current = you;
-    if (prev && you) walkFor(begun(prev, you));
+    const action = prev && you ? begun(prev, you) : undefined;
+    // A timed action under way says when it ends (an action sent while idle walks again once it does).
+    if (action) walkFor(action, you?.current?.action === action ? you.current.until : undefined);
   }, [you]);
 
   /** Call on sending an action: if nothing is under way or waiting, it starts now. */

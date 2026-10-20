@@ -47,7 +47,10 @@ Loaded when working on the isometric view. The UI rules in `web/CLAUDE.md` still
   you teleport instead (`teleport`: your walks jump, and leaving a room switches at once); others still walk.
 - Acting walks you there (`useActingOn.ts`): when an action on equipment, a person, or a body on the
   floor begins, you walk to the equipment's standing spot or the cell before the person or body; a
-  move walks you to the door (a move takes `durationMs` like any action, and the room changes at its end).
+  move walks you to the door (a move takes `durationMs` like any action, and the room changes at its end),
+  paced to get there as the move ends (`Goal.arriveBy`, from the queue's `until`): slowly to a door
+  close by, briskly to one far off, with the walk cycle sped or slowed to match. Through the door
+  is at the usual speed.
   "Begins" is read from the view's queue: at once if you were idle, otherwise when it shows up as
   `current` (timed) or leaves the queue with nothing under way (instant). Clearing the queue walks
   nowhere; a click on the floor afterwards still overrides.

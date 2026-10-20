@@ -28,6 +28,11 @@ export interface Goal {
   from?: readonly DoorStep[];
   /** Walked on from `cell` (out through a door), ending where they stop. */
   then?: readonly DoorStep[];
+  /**
+   * When to reach `cell` (Date.now() ms): they walk there at whatever speed that takes, however
+   * slow or fast, then on at the usual speed. Without it, or once it's past, the usual speed.
+   */
+  arriveBy?: number;
 }
 
 /** Which walk strip a person is drawn with, and whether it is mirrored. */
@@ -43,6 +48,8 @@ export interface Walker {
   moving: boolean;
   /** Just appeared in a room you were already in: plays its walk-in once (people already there when you came in don't). */
   arriving: boolean;
+  /** Walking at a pace of its own (`Goal.arriveBy`): its speed over `CELLS_PER_SECOND`, to the hundredth. */
+  pace?: number;
 }
 
 /** Walking speed, in cells per second. */
@@ -72,6 +79,8 @@ export interface Motion {
   inDoor?: string;
   /** Standing at a door until it is open. */
   waiting: boolean;
+  /** Walking the next `steps` points of the route at `speed` cells per second (to arrive on time), and its goal's deadline. */
+  pace?: { speed: number; steps: number; by: number };
 }
 
 export interface Door {
@@ -85,8 +94,29 @@ const key = (c: Cell) => `${c.x},${c.y}`;
 /** Where someone ends up: out through a door, or at their cell. */
 const destination = (g: Goal) => g.then?.at(-1) ?? g.cell;
 
+/** Their pace as a `Walker` shows it: speed over the usual, to the hundredth; none at the usual speed. */
+const paceOf = (m: Motion) => (m.pace ? Math.round((m.pace.speed / CELLS_PER_SECOND) * 100) / 100 : undefined);
+
 /**
- * One animation frame of walking: everyone moves up to `step` cells along their route, and doors open
+ * Times `m`'s walk to its goal's cell (the route but its last `after` points) to end at `goal.arriveBy`,
+ * as of `wallNow` (Date.now() ms). Past it, or already there, it walks at the usual speed.
+ */
+function setPace(m: Motion, goal: Goal, after: number, wallNow: number) {
+  m.pace = undefined;
+  const steps = m.route.length - after;
+  const left = (goal.arriveBy ?? 0) - wallNow;
+  if (goal.arriveBy === undefined || steps <= 0 || left <= 0) return;
+  let length = 0, from = m.pos;
+  for (const p of m.route.slice(0, steps)) {
+    length += Math.hypot(p.x - from.x, p.y - from.y);
+    from = p;
+  }
+  if (length > 0) m.pace = { speed: length / (left / 1000), steps, by: goal.arriveBy };
+}
+
+/**
+ * One animation frame of walking, `ms` long: everyone moves along their route (at their own pace, if
+ * they have one, otherwise `CELLS_PER_SECOND`), and doors open
  * for whoever is in the doorway or near enough that it will be open as they get there (`openMs`
  * ahead, plus a cell), and shut once nobody is. Nobody steps into a doorway before its door is open:
  * someone who comes up to it too soon waits.
@@ -97,34 +127,38 @@ export function stepWalkers(
   motions: ReadonlyMap<string, Motion>,
   doors: Map<string, Door>,
   now: number,
-  step: number,
+  ms: number,
   openMs: (door: string) => number,
 ): { walking: boolean; redraw: boolean } {
   let walking = false, redraw = false;
-  const wanted = new Set<string>();
-  for (const m of motions.values()) {
-    if (m.inDoor) wanted.add(m.inDoor);
-    let ahead = 0, from = m.pos;
-    for (const p of m.route) {
-      ahead += Math.hypot(p.x - from.x, p.y - from.y);
-      from = p;
-      if (p.door) {
-        if (ahead <= (CELLS_PER_SECOND * openMs(p.door)) / 1000 + 1) wanted.add(p.door);
-        break;
+  /** Opens the doors someone is in or coming up to, and shuts the rest. */
+  const updateDoors = () => {
+    const wanted = new Set<string>();
+    for (const m of motions.values()) {
+      if (m.inDoor) wanted.add(m.inDoor);
+      let ahead = 0, from = m.pos;
+      for (const p of m.route) {
+        ahead += Math.hypot(p.x - from.x, p.y - from.y);
+        from = p;
+        if (p.door) {
+          if (ahead <= (CELLS_PER_SECOND * openMs(p.door)) / 1000 + 1) wanted.add(p.door);
+          break;
+        }
       }
     }
-  }
-  for (const [k, d] of doors) {
-    if (wanted.has(k) || d.state === "closing") continue;
-    doors.set(k, { state: "closing", since: now });
-    redraw = true;
-  }
-  for (const k of wanted) {
-    const d = doors.get(k);
-    if (d && d.state !== "closing") continue;
-    doors.set(k, { state: "opening", since: now });
-    redraw = true;
-  }
+    for (const [k, d] of doors) {
+      if (wanted.has(k) || d.state === "closing") continue;
+      doors.set(k, { state: "closing", since: now });
+      redraw = true;
+    }
+    for (const k of wanted) {
+      const d = doors.get(k);
+      if (d && d.state !== "closing") continue;
+      doors.set(k, { state: "opening", since: now });
+      redraw = true;
+    }
+  };
+  updateDoors();
   /** How long until a door is open, in ms. */
   const openIn = (k: string) => {
     const d = doors.get(k);
@@ -132,7 +166,7 @@ export function stepWalkers(
     return d?.state === "opening" ? Math.max(0, openMs(k) - (now - d.since)) : openMs(k);
   };
   for (const m of motions.values()) {
-    let left = step;
+    let left = ((m.pace?.speed ?? CELLS_PER_SECOND) * ms) / 1000;
     m.waiting = false;
     while (left > 0 && m.route.length) {
       const next = m.route[0]!;
@@ -152,6 +186,11 @@ export function stepWalkers(
         m.inDoor = next.door;
         m.route.shift();
         left -= dist;
+        // Arrived on time: the rest of the frame, and the rest of the way, at the usual speed.
+        if (m.pace && --m.pace.steps <= 0) {
+          left *= CELLS_PER_SECOND / m.pace.speed;
+          m.pace = undefined;
+        }
       } else {
         m.pos = { x: m.pos.x + ((next.x - m.pos.x) * left) / dist, y: m.pos.y + ((next.y - m.pos.y) * left) / dist };
         left = 0;
@@ -159,6 +198,9 @@ export function stepWalkers(
     }
     if (m.route.length) walking = true;
   }
+  // Again after the steps: a door shuts behind whoever just stepped out of it, even if they stop
+  // there and this is the last frame.
+  updateDoors();
   return { walking, redraw };
 }
 
@@ -190,7 +232,7 @@ export function useWalkers(
     seeded.current = false;
   }
   const [, rerender] = useState(0);
-  const targetsKey = [...targets].map(([id, g]) => `${id}@${key(g.cell)}>${key(destination(g))}`).join(";");
+  const targetsKey = [...targets].map(([id, g]) => `${id}@${key(g.cell)}>${key(destination(g))}~${g.arriveBy ?? ""}`).join(";");
   const openFor = useRef(openMs);
   openFor.current = openMs;
 
@@ -198,7 +240,7 @@ export function useWalkers(
   for (const [id, goal] of targets) {
     const m = motions.current.get(id);
     const start = (id !== teleport && goal.from?.[0]) || goal.cell;
-    at.set(id, m ? { cell: cellOf(m.pos), facing: m.facing, moving: m.route.length > 0 && !m.waiting, arriving: m.arriving } : { cell: { x: start.x, y: start.y }, facing: STANDING, moving: false, arriving: false });
+    at.set(id, m ? { cell: cellOf(m.pos), facing: m.facing, moving: m.route.length > 0 && !m.waiting, arriving: m.arriving, pace: paceOf(m) } : { cell: { x: start.x, y: start.y }, facing: STANDING, moving: false, arriving: false });
   }
   const doorStates: ReadonlyMap<string, DoorState> = new Map([...doors.current].map(([k, d]) => [k, d.state]));
   // What the last commit drew, which the pixel shifts are measured from.
@@ -221,14 +263,14 @@ export function useWalkers(
   const loop = useCallback(() => {
     let last = performance.now();
     const tick = (now: number) => {
-      const step = (CELLS_PER_SECOND * Math.min(now - last, 100)) / 1000;
+      const ms = Math.min(now - last, 100);
       last = now;
-      const { walking, redraw: doorMoved } = stepWalkers(motions.current, doors.current, now, step, openFor.current);
+      const { walking, redraw: doorMoved } = stepWalkers(motions.current, doors.current, now, ms, openFor.current);
       let redraw = doorMoved;
       for (const [id, m] of motions.current) {
         const was = drawn.current.get(id);
         const moving = m.route.length > 0 && !m.waiting;
-        if (!was || !same(was.cell, cellOf(m.pos)) || was.facing.strip !== m.facing.strip || was.facing.flip !== m.facing.flip || was.moving !== moving) redraw = true;
+        if (!was || !same(was.cell, cellOf(m.pos)) || was.facing.strip !== m.facing.strip || was.facing.flip !== m.facing.flip || was.moving !== moving || was.pace !== paceOf(m)) redraw = true;
       }
       if (redraw) rerender((n) => n + 1);
       apply();
@@ -270,16 +312,23 @@ export function useWalkers(
         continue;
       }
       const end = m.route.at(-1) ?? m.pos;
-      if (same(end, dest)) continue;
+      if (same(end, dest)) {
+        // Same place, new deadline (the move's end time arrived with the view): re-time the rest of the way.
+        if (goal.arriveBy !== m.pace?.by) setPace(m, goal, goal.then?.length ?? 0, Date.now());
+        continue;
+      }
       // Someone still in a doorway steps out of it onto the floor first.
       const here = cellOf(m.pos);
       const i = walkable.has(key(here)) ? -1 : m.route.findIndex((p) => walkable.has(key(p)));
       const path = id === teleport ? null : walkPath(cells, i < 0 ? here : m.route[i]!, goal.cell);
-      if (path) m.route = [...(i < 0 ? path.slice(1) : [...m.route.slice(0, i), ...path]), ...(goal.then ?? [])];
-      else {
+      if (path) {
+        m.route = [...(i < 0 ? path.slice(1) : [...m.route.slice(0, i), ...path]), ...(goal.then ?? [])];
+        setPace(m, goal, goal.then?.length ?? 0, Date.now());
+      } else {
         m.pos = { x: dest.x, y: dest.y };
         m.route = [];
         m.inDoor = undefined;
+        m.pace = undefined;
       }
     }
     rerender((n) => n + 1);

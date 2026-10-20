@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { CELLS_PER_SECOND, stepWalkers, type Door, type Motion } from "../../src/iso/useWalkers.ts";
+import { stepWalkers, type Door, type Motion } from "../../src/iso/useWalkers.ts";
 
 const OPEN_MS = 500;
 const motion = (over: Partial<Motion>): Motion => ({ pos: { x: 0, y: 0 }, route: [], facing: { strip: "face", flip: false }, arriving: false, waiting: false, ...over });
@@ -12,14 +12,14 @@ function run(motions: Map<string, Motion>, doors: Map<string, Door>, until: () =
   const start = now;
   while (!until() && now - start < 10_000) {
     now += ms;
-    stepWalkers(motions, doors, now, (CELLS_PER_SECOND * ms) / 1000, () => OPEN_MS);
+    stepWalkers(motions, doors, now, ms, () => OPEN_MS);
   }
   return now - start;
 }
 /** One more frame. */
 function frame(motions: Map<string, Motion>, doors: Map<string, Door>, ms = 10) {
   now += ms;
-  stepWalkers(motions, doors, now, (CELLS_PER_SECOND * ms) / 1000, () => OPEN_MS);
+  stepWalkers(motions, doors, now, ms, () => OPEN_MS);
 }
 
 describe("stepWalkers", () => {
@@ -51,16 +51,16 @@ describe("stepWalkers", () => {
     const m = motion({ pos: { x: 2, y: 0 }, route: [{ x: 3, y: 0, door: "t5" }] });
     const motions = new Map([["p1", m]]), doors = new Map<string, Door>();
     run(motions, doors, () => m.route.length === 0);
-    run(motions, doors, () => false, 100);
+    for (let i = 0; i < 10; i++) frame(motions, doors, 100);
     expect(doors.get("t5")?.state).toBe("opening");
     m.route = [{ x: 4, y: 0 }];
     run(motions, doors, () => m.route.length === 0);
-    frame(motions, doors);
     expect(doors.get("t5")?.state).toBe("closing");
   });
 
   it("leaves an open door open for someone coming in from its doorway, then shuts it behind them", () => {
-    const m = motion({ pos: { x: 3, y: 0 }, inDoor: "t5", route: [{ x: 2, y: 0 }, { x: 1, y: 0 }] });
+    // As you come into a room: from the doorway to the cell in front of it, and no further.
+    const m = motion({ pos: { x: 3, y: 0 }, inDoor: "t5", route: [{ x: 2, y: 0 }] });
     const motions = new Map([["p1", m]]), doors = new Map<string, Door>([["t5", { state: "open", since: 0 }]]);
     let waited = false;
     run(motions, doors, () => {
@@ -68,7 +68,16 @@ describe("stepWalkers", () => {
       return m.route.length === 0;
     });
     expect(waited).toBe(false);
-    frame(motions, doors);
+    // Shut by the frame they stop in: no frame comes after it.
     expect(doors.get("t5")?.state).toBe("closing");
+  });
+
+  it("walks someone with a pace of their own at that speed, then on at the usual one", () => {
+    // Two cells in two seconds, then the doorway and beyond at six cells a second.
+    const m = motion({ route: [{ x: 1, y: 0 }, { x: 2, y: 0 }, { x: 3, y: 0, door: "t5" }, { x: 4, y: 0 }], pace: { speed: 1, steps: 2, by: 0 } });
+    const motions = new Map([["p1", m]]), doors = new Map<string, Door>();
+    expect(run(motions, doors, () => m.pos.x >= 2)).toBeCloseTo(2000, -2);
+    expect(m.pace).toBeUndefined();
+    expect(run(motions, doors, () => m.route.length === 0)).toBeLessThan(400);
   });
 });
