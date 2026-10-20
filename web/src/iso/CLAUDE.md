@@ -106,6 +106,18 @@ runs). It draws no people, effects or animation.
 - `-- --add "ROOM:slice:frame:x:y;..."` and `-- --drop "slice:x:y;..."` try wall pieces before
   changing code.
 
+To see where things are without the iso view, `npm run ship-top` draws the same scene from above
+(x to the right, y down; turn it 45° clockwise for the iso view) as plain shapes into
+`.screenshots/ship-top.png`. It shows:
+- floor in each room's colour, lighter for walkways and paths, hatched where `fillGaps` added it
+- walls as lines on the cell edges they stand on: yellow where added, lilac for deck walls
+- doors in cyan; dashed for doorways on a room's open front edge
+- posts on corners, furniture footprints, room names, and grid lines every 5 cells, numbered with
+  ship-plan coordinates
+
+It takes `--cells=`, `--room`, `--depth`, `--ends`, `--add` and `--drop` as `ship-render` does,
+and `--cell 32` for bigger cells. Both tools share `tools/src/play/shipScene.ts`.
+
 ## Directions
 
 `gridToPx`: +x is down-right on screen, +y is down-left. A wall along x runs top-left to
