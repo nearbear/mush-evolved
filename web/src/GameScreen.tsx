@@ -19,6 +19,7 @@ import { TopBar } from "./hud/TopBar.tsx";
 import { gameSocket, type SeatTicket } from "./net.ts";
 import type { Corpse, Occupant } from "./iso/scene.ts";
 import { LeavingIsoRoom } from "./iso/LeavingRoom.tsx";
+import { recentDoorMoves } from "./iso/doorMoves.ts";
 import { useShipLayout } from "./iso/shipLayout.ts";
 import { useActingOn } from "./iso/useActingOn.ts";
 import { useFogDepth } from "./fogDepth.ts";
@@ -126,6 +127,8 @@ export function GameScreen({ ticket, onLeave }: { ticket: SeatTicket; onLeave: (
   // Where the view places other people outside your room (everyone with ACTOPI on, nobody with it off).
   const nearby: Partial<Record<RoomId, Occupant[]>> = {};
   for (const p of view.players) if (p.room !== undefined && p.room !== you.room) (nearby[p.room] ??= []).push(occupant(p));
+  // Who just came in or went out, and through which door (they walk through it).
+  const doorMoves = recentDoorMoves(view.log, view.players, Date.now() + clockOffset);
   // Corpses on the floor here, drawn lying down. Whose body each is comes from the view (`ItemView.of`).
   const corpses: Corpse[] = view.roomItems
     .filter((i) => i.type === CORPSE_ITEM)
@@ -193,6 +196,7 @@ export function GameScreen({ ticket, onLeave }: { ticket: SeatTicket; onLeave: (
                 actingOn={actingOn}
                 sentCount={sentCount}
                 teleport={you.cheats.includes("instantActions")}
+                doorMoves={doorMoves}
                 onMove={move}
                 onSelect={select}
                 onClear={() => select(null)}

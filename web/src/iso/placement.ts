@@ -1019,13 +1019,15 @@ export function standSpot(
 
 /**
  * The shortest walk from `from` to `to` over walkable cells, both ends included, stepping along the
- * grid axes only: a stylistic choice, like the original's staircase walks. Undefined when either
- * end is off the floor or there is no way through. Display only, like walking itself.
+ * grid axes only: a stylistic choice, like the original's staircase walks (`diagonal` allows
+ * diagonal steps too). Undefined when either end is off the floor or there is no way through.
+ * Display only, like walking itself.
  */
 export function walkPath(
   cells: readonly { x: number; y: number }[],
   from: { x: number; y: number },
   to: { x: number; y: number },
+  diagonal = false,
 ): { x: number; y: number }[] | undefined {
   const key = (c: { x: number; y: number }) => `${c.x},${c.y}`;
   const walkable = new Set(cells.map(key));
@@ -1039,7 +1041,9 @@ export function walkPath(
       for (let p: { x: number; y: number } | null | undefined = c; p; p = cameFrom.get(key(p))) path.push({ x: p.x, y: p.y });
       return path.reverse();
     }
-    for (const n of [{ x: c.x + 1, y: c.y }, { x: c.x - 1, y: c.y }, { x: c.x, y: c.y + 1 }, { x: c.x, y: c.y - 1 }]) {
+    const steps = [{ x: c.x + 1, y: c.y }, { x: c.x - 1, y: c.y }, { x: c.x, y: c.y + 1 }, { x: c.x, y: c.y - 1 }];
+    if (diagonal) steps.push({ x: c.x + 1, y: c.y + 1 }, { x: c.x + 1, y: c.y - 1 }, { x: c.x - 1, y: c.y + 1 }, { x: c.x - 1, y: c.y - 1 });
+    for (const n of steps) {
       if (walkable.has(key(n)) && !cameFrom.has(key(n))) {
         cameFrom.set(key(n), c);
         queue.push(n);
@@ -1066,6 +1070,53 @@ export function doorSpot(
   const cx = door.x - (w - 1) / 2, cy = door.y - (h - 1) / 2;
   const dist = (c: { x: number; y: number }) => Math.hypot(c.x - cx, c.y - cy);
   return [...cells].sort((a, b) => dist(a) - dist(b) || a.x - b.x || a.y - b.y)[0];
+}
+
+/** A step of a walk through a door: `door` marks the doorway's cells, with the key of the door sprite drawn there. */
+export type DoorStep = { x: number; y: number; door?: string };
+
+/**
+ * The way through the door between the scene's first room and `to`, in scene cells: from the cell
+ * in front of the door on `to`'s side (its `doorSpot`), through the doorway, to the one on this
+ * side. The doorway is the drawn door's two cells, whichever room's wall holds it (one that opens,
+ * if there is one); its steps carry that door's key. It is the same walk seen from either room, so
+ * someone crossing over steps into the next room's view where they left the last. Undefined when
+ * `to` isn't in the scene or there is no way across. Display only, like walking.
+ */
+export function doorPassage(prepared: PreparedScene, cells: readonly { x: number; y: number }[], to: string): DoorStep[] | undefined {
+  const { layout, rooms, statics } = prepared;
+  const here = rooms[0]?.room, there = rooms.find((r) => r.room.id === to), farRoom = layout.rooms.find((r) => r.id === to);
+  if (!here || !there || !farRoom) return undefined;
+  const shift = (c: { x: number; y: number }) => ({ x: c.x + there.dx, y: c.y + there.dy });
+  const farCells = walkableCells(layout, farRoom);
+  const near = doorSpot(layout, here, to, cells);
+  const farSpot = doorSpot(layout, farRoom, here.id, farCells);
+  if (!near || !farSpot) return undefined;
+  const far = shift(farSpot);
+  // The drawn door between the two rooms (a front door is left out once the room behind it is drawn).
+  const between = (s: PlacedSprite) => (s.room === here.id && s.door?.target === to) || (s.room === to && s.door?.target === here.id);
+  const sprite = statics.find((s) => between(s) && (layout.slices[s.slice]?.anims.length ?? 0) >= 2) ?? statics.find(between);
+  if (!sprite) return undefined;
+  const footprint = (slice: string, x: number, y: number) => {
+    const [w, h] = layout.slices[slice]?.footprint ?? [1, 1];
+    return Array.from({ length: w * h }, (_, k) => ({ x: x - (k % w), y: y - Math.floor(k / w) }));
+  };
+  const doorCells = footprint(sprite.slice, sprite.cell.x, sprite.cell.y);
+  const doorway = new Set(doorCells.map((c) => `${c.x},${c.y}`));
+  const floor = [...cells, ...walkableCells(layout, here), ...farCells.map(shift), ...walkableCells(layout, there.room).map(shift), ...doorCells];
+  // A front door under the drawn one isn't drawn but still blocks the floor; it can sit a cell off the drawn door.
+  const frontDoors = [
+    ...here.tiles.filter((t) => t.door?.target === to).flatMap((t) => footprint(t.slice, t.x, t.y)),
+    ...farRoom.tiles.filter((t) => t.door?.target === here.id).flatMap((t) => footprint(t.slice, t.x, t.y).map(shift)),
+  ];
+  // Through the drawn doorway if possible: along the grid, then with a diagonal step (where a floor
+  // only meets the doorway at a corner), then over the front doors' cells too. Searched from the
+  // same end whichever room it is seen from, so both views agree on the doorway cell.
+  for (const [ground, diagonal] of [[floor, false], [floor, true], [[...floor, ...frontDoors], true]] as const) {
+    const path = here.id < to ? walkPath(ground, near, far, diagonal)?.reverse() : walkPath(ground, far, near, diagonal);
+    if (path?.some((c) => doorway.has(`${c.x},${c.y}`))) return path.map((c) => (doorway.has(`${c.x},${c.y}`) ? { ...c, door: sprite.key } : c));
+  }
+  return undefined;
 }
 
 /**

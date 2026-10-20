@@ -3,6 +3,7 @@ import type { RoomLayout, ShipLayout, SliceInfo } from "@mush2/shared";
 import shipLayoutJson from "../../../Mush/derived/ship-layout.json?raw";
 import {
   cellAtPoint,
+  doorPassage,
   doorSpot,
   gridToPx,
   hitTest,
@@ -498,5 +499,35 @@ describe("neighborRooms", () => {
     expect(neighborRooms(ship, room("CORRIDOR_B")).map((n) => n.room.id).sort()).toEqual(
       ["CORRIDOR_A", "REFECTORY", "SPACESHIP_BAY_A", "SPACESHIP_BAY_B"],
     );
+  });
+});
+
+describe("doorPassage on the real ship", () => {
+  const ship = JSON.parse(shipLayoutJson) as ShipLayout;
+  const scene = (r: RoomLayout) => prepareScene(ship, [{ room: r, dx: 0, dy: 0 }, ...neighborRooms(ship, r)]);
+  /** Every pair of rooms with a door between them, from both sides. */
+  const pairs = ship.rooms.flatMap((r) =>
+    neighborRooms(ship, r).map((n) => ({ from: r, to: n.room, at: r.at! })),
+  );
+
+  it("walks through an opening door between every pair of rooms, the same doorway cell from both sides", () => {
+    expect(pairs.length).toBeGreaterThan(40);
+    const problems: string[] = [];
+    for (const { from, to, at } of pairs) {
+      const prepared = scene(from);
+      const path = doorPassage(prepared, walkableCells(ship, from), to.id);
+      if (!path) {
+        problems.push(`${from.id} -> ${to.id}: no way through`);
+        continue;
+      }
+      const inDoor = path.filter((c) => c.door);
+      const door = prepared.statics.find((s) => s.key === inDoor[0]?.door);
+      if (!door || (ship.slices[door.slice]?.anims.length ?? 0) < 2) problems.push(`${from.id} -> ${to.id}: no door that opens (${door?.slice})`);
+      // The doorway cell next to `to` is where you change rooms: the walk on starts there.
+      const back = doorPassage(scene(to), walkableCells(ship, to), from.id)!;
+      const cross = inDoor[0]!, other = back.filter((c) => c.door).at(-1)!;
+      if (cross.x + at.x !== other.x + to.at!.x || cross.y + at.y !== other.y + to.at!.y) problems.push(`${from.id} -> ${to.id}: doorways differ`);
+    }
+    expect(problems).toEqual([]);
   });
 });

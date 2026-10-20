@@ -7,7 +7,7 @@
 // they are drawn (CSS filters, tints, shaders): each renderer maps them to its own means.
 
 import type { Ref } from "react";
-import type { CharacterId, EquipmentView, ItemId, RoomId, ShipLayout, Target } from "@mush2/shared";
+import type { CharacterId, EquipmentView, ItemId, RoomId, ShipLayout, SliceInfo, Target } from "@mush2/shared";
 import { sameTarget } from "../hud/targets.ts";
 import { lyingFrame, sittingFrame, spriteStrip } from "../art/assets.ts";
 import type { Bar } from "../scene/ActionBar.tsx";
@@ -69,18 +69,63 @@ export interface SceneImage {
   keyed: boolean;
 }
 
-/** Frames played in place: frame n is `frame` moved right by n widths. Ends on `frames[0]` after `loops` rounds. */
+/**
+ * Frames played in place: frame n is `frame` moved right by n widths. Ends on `frames[0]` after
+ * `loops` rounds; `"hold"` plays once and rests on the last frame (a door left open or shut).
+ */
 export interface SceneAnim {
   frames: readonly number[];
-  frameMs: number;
-  loops: number | "forever";
+  /** How long each frame shows: one length for all, or one per frame (the original's rhythm). */
+  frameMs: number | readonly number[];
+  loops: number | "forever" | "hold";
+}
+
+/** An animation's frame `elapsed` ms after it started, and how long until the next change (none once it has ended). */
+export function animStep(anim: SceneAnim, elapsed: number): { frame: number; nextIn?: number } {
+  const { frames, frameMs, loops } = anim;
+  const ms = (i: number) => Math.max(1, typeof frameMs === "number" ? frameMs : (frameMs[i] ?? frameMs.at(-1) ?? 1));
+  let cycle = 0;
+  for (let i = 0; i < frames.length; i++) cycle += ms(i);
+  const rounds = loops === "forever" ? Infinity : loops === "hold" ? 1 : loops;
+  if (!frames.length || elapsed >= cycle * rounds) return { frame: (loops === "hold" ? frames.at(-1) : frames[0]) ?? 0 };
+  let t = elapsed % cycle;
+  for (let i = 0; ; i++) {
+    if (t < ms(i)) return { frame: frames[i]!, nextIn: ms(i) - t };
+    t -= ms(i);
+  }
 }
 
 /** Which frame of `anim` shows `elapsed` ms after it started. */
-export function animFrame(anim: SceneAnim, elapsed: number): number {
-  const n = Math.floor(elapsed / anim.frameMs);
-  if (anim.loops !== "forever" && n >= anim.frames.length * anim.loops) return anim.frames[0] ?? 0;
-  return anim.frames[n % anim.frames.length] ?? 0;
+export const animFrame = (anim: SceneAnim, elapsed: number): number => animStep(anim, elapsed).frame;
+
+/** Tells animations apart: a renderer restarts one when this changes. */
+export const animId = (a: SceneAnim | undefined) => a && `${a.frames.join(",")}/${a.frameMs}/${a.loops}`;
+
+/**
+ * Where a door is in opening and closing, which picks its animation: the slice's first one opens
+ * it, the second shuts it (tiles.xml; the original only ever played the first, on hover). `open`
+ * stands on the open frame without playing anything (someone came in through it).
+ */
+export type DoorState = "opening" | "open" | "closing";
+
+/** The doors that open: two animations, opening then closing (`DOOR_L`, `DOOR_R` and their deck versions). */
+export const opensAsDoor = (slice: SliceInfo | undefined) => !!slice?.flags.includes("door") && slice.anims.length >= 2;
+
+const ticksToMs = (rhythm: readonly number[], n: number) => Array.from({ length: n }, (_, i) => (rhythm[i] ?? rhythm.at(-1) ?? 1) * TICK_MS);
+
+/** How long a door takes to open, in ms (the opening animation's rhythm). */
+export function doorOpenMs(slice: SliceInfo | undefined): number {
+  const open = opensAsDoor(slice) ? slice!.anims[0]! : undefined;
+  return open ? ticksToMs(open.rhythm, open.frames.length).reduce((a, b) => a + b, 0) : 0;
+}
+
+/** The animation a door in `state` plays, or none for a shut door (frame 0). */
+export function doorAnim(slice: SliceInfo | undefined, state: DoorState | undefined): SceneAnim | undefined {
+  if (!state || !opensAsDoor(slice)) return undefined;
+  const open = slice!.anims[0]!, close = slice!.anims[1]!;
+  if (state === "open") return { frames: [open.frames.at(-1) ?? 0], frameMs: 1, loops: "hold" };
+  const a = state === "opening" ? open : close;
+  return { frames: a.frames, frameMs: ticksToMs(a.rhythm, a.frames.length), loops: "hold" };
 }
 
 /**
@@ -168,6 +213,8 @@ export interface SceneInput {
   /** Everyone drawn, here and in the rooms around, by id. */
   people: ReadonlyMap<string, Occupant>;
   walkers: ReadonlyMap<string, Walker>;
+  /** Doors someone is going through (or just went through), by sprite key; any other door is shut. */
+  doors: ReadonlyMap<string, DoorState>;
   /** People lying in a bed in this room, and whether the bed runs mirrored. */
   beds: ReadonlyMap<string, { flip: boolean }>;
   /** The chair you sit on, if you do. */
@@ -226,13 +273,15 @@ const shadowOf = (s: PlacedSprite, input: SceneInput) => (s.room === input.room 
 
 /** The scene to draw, from the placed sprites and what is selected, hovered, reachable and lit. */
 export function describeScene(input: SceneInput): Scene {
-  const { layout, room, placed, box, people, corpses, equipment, reachable, selected, selectedDoor, hoverKey, ownCells } = input;
+  const { layout, room, placed, box, people, corpses, equipment, reachable, selected, selectedDoor, hoverKey, ownCells, doors } = input;
   const isSelected = (kind: Target["kind"], id: string) => sameTarget(selected, { kind, id } as Target);
   const sprites: SceneSprite[] = [];
   const outlines: SceneOutline[] = [];
   for (const s of placed) {
     const base = { key: s.key, x: s.left - box.minX, y: s.top - box.minY, width: s.width, height: s.height };
-    const tile = () => ({ ...base, image: imageOf(s, input), flipX: s.flipX || undefined, flipY: s.flipY || undefined });
+    // A door opens and shuts on whichever side of it you are (a neighbour's door too).
+    const opening = s.door ? doorAnim(layout.slices[s.slice], doors.get(s.key)) : undefined;
+    const tile = () => ({ ...base, image: imageOf(s, input), flipX: s.flipX || undefined, flipY: s.flipY || undefined, ...(opening && { anim: opening }) });
     const corpse = corpseOf(s, corpses);
     if (s.kind === "actor" && !corpse) {
       outlines.push({ ...personPicture(s, input, base), occluded: !!s.occluded, faint: s.room !== room });
@@ -265,7 +314,7 @@ export function describeScene(input: SceneInput): Scene {
       const canGo = reachable.has(s.door.target as RoomId);
       // Hovering a door you can go through outshines its selection.
       const effect = canGo && hover ? "doorHover" : s.door.target === selectedDoor ? "selected" : undefined;
-      sprites.push({ ...tile(), anim, role: "door", reachable: canGo, effect });
+      sprites.push({ ...tile(), role: "door", reachable: canGo, effect });
       continue;
     }
     const eq = equipment.get(s.key);

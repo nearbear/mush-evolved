@@ -37,8 +37,8 @@ Loaded when working on the isometric view. The UI rules in `web/CLAUDE.md` still
   only when someone enters another cell or turns (paint order, strip); between those, a
   `requestAnimationFrame` loop hands the renderer and the overlay (`setFrame`) the camera and each
   walker's offset in whole pixels, so the camera stays locked on you. Facing is by screen direction: the face strip looks down-right
-  and the back strip up-left, mirrored for the other two. Entering a room you stand in front of the
-  door you came through (`doorSpot`) and don't move. Purely cosmetic: actions and moves go to the
+  and the back strip up-left, mirrored for the other two. Entering a room you step out of the
+  doorway you came through and stand in front of it (`doorSpot`) until you walk off. Purely cosmetic: actions and moves go to the
   server at once, mid-walk or not; you sit on a chair only once you reach it. The tiles are sorted
   once per room and fog depth (`prepareScene`, about 13 ms); each cell change re-places only the
   people (`placeActors`, about 2 ms, 5 ms with whole-ship fog), with the same result `placeScene`
@@ -51,10 +51,24 @@ Loaded when working on the isometric view. The UI rules in `web/CLAUDE.md` still
   "Begins" is read from the view's queue: at once if you were idle, otherwise when it shows up as
   `current` (timed) or leaves the queue with nothing under way (instant). Clearing the queue walks
   nowhere; a click on the floor afterwards still overrides.
-- Leaving a room (`LeavingRoom.tsx`): when the view's room changes before you've reached the door,
-  the room view keeps showing the room you left, as last seen and with clicks ignored, until you
-  stand at the door (`IsoRoom`'s `leavingTo`/`onLeft`); then it switches and you stand at the door
-  of the new room.
+- Leaving a room (`LeavingRoom.tsx`): when the view's room changes before you've gone through the
+  door, the room view keeps showing the room you left, as last seen and with clicks ignored, until
+  you stand in its doorway (`IsoRoom`'s `leavingTo`/`onLeft`); then it switches to the new room with
+  you in the same doorway, seen from the other side.
+- Going through doors: nobody pops in or out at a door. `doorPassage` (`placement.ts`) is the walk
+  from the floor in front of a door on one side, through its doorway (the drawn door's two cells,
+  whichever room's wall holds it), to the floor on the other; it is searched from the same end
+  whichever room you see it from, so both rooms agree on the doorway cell where the view switches
+  (a test checks every door on the ship). A walker's `Goal` (`useWalkers.ts`) can come in along one
+  (`from`, when they first appear) or go out along one (`then`). Others' ways in and out come from
+  the room log's public `entered`/`left` entries (`doorMoves.ts`, only the last 15 seconds);
+  someone who left stays drawn walking out until they're through, and isn't drawn in the room they
+  went to (with ACTOPI on) until then. Without a log entry they still appear and vanish in place.
+- Doors open and shut (`stepWalkers`, pure, one frame): a door starts opening when someone is about
+  to walk through it, timed so it is open as they reach it; nobody steps into a doorway before it is
+  open (someone standing at it waits), and it shuts once nobody is in the doorway or about to be.
+  `describeScene` turns each door's state (`doors`, by sprite key) into its animation
+  (`doorAnim`): opening, standing open (you came through it), or shutting.
 - Hit-testing is against drawn pixels, not sprite boxes: sprites ignore pointer events and the
   viewport runs `hitTest` front to back with per-frame alpha masks from `hitMask.ts`, so scenery in
   front blocks what's behind it and see-through areas click through. The current room takes clicks
@@ -68,9 +82,25 @@ Loaded when working on the isometric view. The UI rules in `web/CLAUDE.md` still
   filter in the DOM renderer) in a layer above the scene, so nobody can hide behind a wall: fixed scenery only, plus whoever the view
   places there. The client adds no ACTOPI check of its own.
 
-- Anything animated on its own clock (the walk cycle, the camera's swivel) is a `SceneAnim` the
-  renderer plays; in the DOM renderer each keeps its timer in its own small component
-  (`useAnimFrame`): a timer in `IsoRoom` re-renders every sprite in the scene.
+- Anything animated on its own clock (the walk cycle, the camera's swivel, a door) is a `SceneAnim`
+  the renderer plays; in the DOM renderer each keeps its timer in its own small component
+  (`useAnimFrame`): a timer in `IsoRoom` re-renders every sprite in the scene. A renderer restarts
+  an animation when its `animId` changes; one with `loops: "hold"` rests on its last frame.
+
+## Where the animations are
+
+The original's sprite animations are defined in `Mush/clients/iso/xml/tiles.xml`: each `<slice>`
+has its sheet rectangle and frame count in `params`, and one or more `<anim range="..."
+rhythm="..."/>` (frame numbers; how long each shows, in ticks of 1/30 s; `auto="true"` plays on its
+own). The file holds a great many of them (doors, consoles, cameras, screens, plants, effects), so
+look there first for anything that should move. A slice with several anims has them as `#0`,
+`#1`, ... in the original. `npm run ship-layout` copies them into `Mush/derived/ship-layout.json`
+(`slices[id].anims`, with `frames`, `rhythm` and `auto`), which is what the client reads. Reading
+`Mush/clients/**` is denied in the project settings, so extract the slices you need with a short
+script (or ask). For example, the doors (`DOOR_L`, `DOOR_R`, `DOOR_L_DECK`, `DOOR_R_DECK`): 24
+frames, `#0` opens (frames 0-9), `#1` shuts (12-23, then 0); the original played `#0` back and forth
+on hover (`Select.hx`). The floor-level front doors (`DOOR_BL`, `DOOR_BR`) only have a looping
+5-frame glow and aren't drawn once the room behind them is.
 
 ## Looking at the whole ship
 
