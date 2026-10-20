@@ -1,0 +1,798 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" type="image/png" href="../Mush/www/img/icons/ui/mush.png" />
+    <title>Design kit</title>
+    <link rel="stylesheet" href="/src/designKit/designKit.css" />
+  </head>
+  <body>
+    <header class="dk-header">
+      <h1>Mush design kit</h1>
+      <nav aria-label="Sections">
+        <a href="#shells">Page shells</a>
+        <a href="#panels">Panels</a>
+        <a href="#cards">Cards</a>
+        <a href="#frames">Frames &amp; rails</a>
+        <a href="#headers">Headers &amp; tabs</a>
+        <a href="#buttons">Buttons</a>
+        <a href="#bars">Bars</a>
+        <a href="#slots">Slots</a>
+        <a href="#controls">Controls</a>
+        <a href="#terminals">Terminal backdrops</a>
+        <a href="#unplaced">Unplaced</a>
+      </nav>
+      <label><input id="checker" type="checkbox" /> checkerboard</label>
+    </header>
+
+    <main>
+      <p>
+        The structural pieces of <code>Mush/www/img/design</code> (CC BY-NC-SA 4.0, Motion Twin), assembled with plain
+        CSS from <code>web/src/designKit/designKit.css</code>. The archive has no original stylesheet, so assemblies are
+        inferred from file names and sizes: <span class="tag guess">guess</span> marks the ones where the fit or
+        placement is a guess, <span class="tag used">in game</span> marks art the game already uses. Each story lists
+        its source files with natural sizes; non-PNG files are only included where they complete a PNG set. Icons,
+        logos, packs and illustrations are left out (listed at the bottom). Nothing is scaled.
+      </p>
+
+      <!-- ================================================================= -->
+      <section id="shells">
+        <h2>Page shells</h2>
+
+        <div class="story">
+          <h3>Site frame, 1080px</h3>
+          <p>
+            Every row is a left piece and a right piece that add up to exactly 1080px (967+113, 967+113, 996+84), so
+            the frame is fixed width. The middle row repeats vertically. <code>topright2.png</code> is an alternative
+            top-right corner.
+          </p>
+          <div class="stage">
+            <div class="site">
+              <div class="site-top"></div>
+              <div class="site-mid demo-text">
+                <h4>Page body</h4>
+                <p>Content sits between the 5px-tall side strips, which repeat as far down as needed.</p>
+              </div>
+              <div class="site-bot"></div>
+            </div>
+            <div class="site" style="margin-top: 16px">
+              <div class="site-top alt"></div>
+              <div class="site-mid demo-text"><p>Same frame with <code>topright2.png</code>.</p></div>
+              <div class="site-bot"></div>
+            </div>
+          </div>
+          <ul class="pieces" data-pieces="topleft.png topright.png topright2.png bg_left.png bg_right.png bottomleft.png bottomright.png"></ul>
+        </div>
+
+        <div class="story">
+          <h3>Main content box, 1000px</h3>
+          <p>
+            A 106px header in three variants, a 10px side-border row that repeats, and a 67px footer. The three header
+            variants differ in the notches along the top edge (column dividers).
+          </p>
+          <div class="stage col">
+            <div class="mx">
+              <div class="mx-top demo-text"><h4>mxtopmaincontent.png</h4></div>
+              <div class="mx-mid demo-text"><p>Body over <code>mxbordercontent.png</code>, repeated.</p></div>
+              <div class="mx-bot"></div>
+            </div>
+            <div class="mx">
+              <div class="mx-top v2 demo-text"><h4>mxtopmaincontent2.png</h4></div>
+              <div class="mx-mid"></div>
+              <div class="mx-bot"></div>
+            </div>
+            <div class="mx">
+              <div class="mx-top v3 demo-text"><h4>mxtopmaincontent3.png</h4></div>
+              <div class="mx-mid"></div>
+              <div class="mx-bot"></div>
+            </div>
+          </div>
+          <ul class="pieces" data-pieces="mxtopmaincontent.png mxtopmaincontent2.png mxtopmaincontent3.png mxbordercontent.png mxbottommaincontent.png"></ul>
+        </div>
+
+        <div class="story">
+          <h3>Plain content column, 1000px <span class="tag guess">guess</span></h3>
+          <p>
+            A 1px row that repeats with a matching 67px footer. <code>maintop.png</code> (900px, a bright blue header
+            strip) is shown as a heading inside it; where it sat originally is a guess.
+          </p>
+          <div class="stage">
+            <div class="plain">
+              <div class="plain-mid demo-text">
+                <div class="plain-head"><h4>maintop.png</h4></div>
+                <p>Body over <code>bgcontent.png</code>.</p>
+              </div>
+              <div class="plain-bot"></div>
+            </div>
+          </div>
+          <ul class="pieces" data-pieces="bgcontent.png bottomcontent.png maintop.png"></ul>
+        </div>
+
+        <div class="story">
+          <h3>box1, 1000px six-piece</h3>
+          <p>A 928px left column plus a 72px right column, top, repeating middle and bottom: a darker, starry box.</p>
+          <div class="stage">
+            <div class="box1">
+              <div class="box1-top demo-text"><h4>Heading</h4></div>
+              <div class="box1-mid demo-text"><p>Body over the 1px rows.</p></div>
+              <div class="box1-bot"></div>
+            </div>
+          </div>
+          <ul class="pieces" data-pieces="box1_topleft.png box1_topright.png box1_bgleft.png box1_bgright.png box1_bottomleft.png box1_bottomright.png"></ul>
+        </div>
+
+        <div class="story">
+          <h3>Centre column caps, 424px <span class="tag guess">guess</span></h3>
+          <p>
+            424px was the width of the Flash centre column. These 5px strips cap its top edge; the <code>iso</code>
+            variant was presumably for the room view.
+          </p>
+          <div class="stage row">
+            <div class="v3 centercol">
+              <div class="t"></div>
+              <div class="m caption">centertop.png</div>
+            </div>
+            <div class="v3 centercol iso">
+              <div class="t"></div>
+              <div class="m caption">centertopiso.png</div>
+            </div>
+          </div>
+          <ul class="pieces" data-pieces="centertop.png centertopiso.png"></ul>
+        </div>
+      </section>
+
+      <!-- ================================================================= -->
+      <section id="panels">
+        <h2>Panels (vertical 3-slice)</h2>
+        <p class="caption">Fixed width: a top cap, a 1–2px middle that repeats downward, a bottom cap.</p>
+
+        <div class="story">
+          <h3>Translucent boxes: box1 (892px), box2 (405px), box3 (462px)</h3>
+          <p>Bevelled, translucent blue panels with 60px caps. Same style at three widths.</p>
+          <div class="stage col">
+            <div class="v3 box1v">
+              <div class="t demo-text"><h4>box1 (892px)</h4></div>
+              <div class="m demo-text"><p>Wide translucent panel.</p></div>
+              <div class="b"></div>
+            </div>
+            <div class="row" style="display: flex; gap: 16px; flex-wrap: wrap">
+              <div class="v3 box2">
+                <div class="t demo-text"><h4>box2 (405px)</h4></div>
+                <div class="m demo-text"><p>Half-width panel.</p><p>Another line.</p></div>
+                <div class="b"></div>
+              </div>
+              <div class="v3 box3">
+                <div class="t demo-text"><h4>box3 (462px)</h4></div>
+                <div class="m demo-text"><p>Slightly wider sibling.</p></div>
+                <div class="b"></div>
+              </div>
+            </div>
+          </div>
+          <ul class="pieces" data-pieces="box1top.png box1bg.png box1bottom.png box2top.png box2bg.png box2bottom.png box3top.png box3bg.png box3bottom.png"></ul>
+        </div>
+
+        <div class="story">
+          <h3>Popup, 519px</h3>
+          <p>Dark navy dialog with glowing blue top and bottom edges.</p>
+          <div class="stage">
+            <div class="v3 pop">
+              <div class="t"></div>
+              <div class="m demo-text">
+                <h4>Popup title</h4>
+                <p>Dialog body text. The caps are only 15px, so the content area is almost the whole box.</p>
+              </div>
+              <div class="b"></div>
+            </div>
+          </div>
+          <ul class="pieces" data-pieces="poptop.png popbg.png popbottom.png"></ul>
+        </div>
+
+        <div class="story">
+          <h3>Tooltip, 247px <span class="tag used">in game</span></h3>
+          <p>
+            Native width, and the same art stretched to any width with <code>border-image</code> (10px ends kept),
+            which is how the game's <code>.panel</code> and top bar use it.
+          </p>
+          <div class="stage row">
+            <div class="v3 tip">
+              <div class="t"></div>
+              <div class="m demo-text"><h4>Tooltip</h4><p>Native 247px.</p></div>
+              <div class="b"></div>
+            </div>
+            <div class="tip-stretch demo-text" style="width: 420px">
+              <h4>Stretched</h4>
+              <p>420px wide with border-image.</p>
+            </div>
+          </div>
+          <ul class="pieces" data-pieces="tiptop.png tipbg.png tipbottom.png"></ul>
+        </div>
+
+        <div class="story">
+          <h3>Character sheet column, 204px <span class="tag guess">guess</span></h3>
+          <p>
+            "pa" probably means points d'action. The PNG top and middle are 1–4px, the JPG versions are taller; the
+            bottom only exists as a JPG.
+          </p>
+          <div class="stage row">
+            <div class="v3 sheetpa">
+              <div class="t"></div>
+              <div class="m demo-text"><h4>PNG top/bg</h4><p>sheetpatop.png, sheetpabg.png</p></div>
+              <div class="b"></div>
+            </div>
+            <div class="v3 sheetpa jpg">
+              <div class="t"></div>
+              <div class="m demo-text"><h4>JPG top/bg</h4><p>sheetpatop.jpg, sheetpabg.jpg</p></div>
+              <div class="b"></div>
+            </div>
+          </div>
+          <ul class="pieces" data-pieces="sheetpatop.png sheetpabg.png sheetpatop.jpg sheetpabg.jpg sheetpabottom.jpg"></ul>
+        </div>
+
+        <div class="story">
+          <h3>Side menu, 214px <span class="tag guess">guess</span></h3>
+          <p>
+            A 1px repeating row with a 3px bottom edge. <code>h1gameguide.png</code> is the same width, so it's shown
+            as the header; it's an illustration, so use another header for other menus.
+          </p>
+          <div class="stage">
+            <div class="v3 sidemenu">
+              <div class="t"></div>
+              <div class="m demo-text">
+                <ul>
+                  <li>Getting started</li>
+                  <li>Action points</li>
+                  <li>The Mush</li>
+                </ul>
+              </div>
+              <div class="b"></div>
+            </div>
+          </div>
+          <ul class="pieces" data-pieces="sidemenubg.png sidemenubottom.png h1gameguide.png"></ul>
+        </div>
+
+        <div class="story">
+          <h3>Item actions, 424px <span class="tag guess">guess</span></h3>
+          <p>
+            Centre-column width. A 7px top with a notch, a 1px row, and two JPGs: a 66px gradient laid over the top of
+            the body and a 42px bottom.
+          </p>
+          <div class="stage">
+            <div class="v3 itemactions">
+              <div class="t"></div>
+              <div class="m demo-text">
+                <h4>Item name</h4>
+                <p>
+                  <span class="h3 btn">Take</span> <span class="h3 btn">Drop</span> <span class="h3 btn">Examine</span>
+                </p>
+              </div>
+              <div class="b"></div>
+            </div>
+          </div>
+          <ul class="pieces" data-pieces="itemactionstop.png itemactionsbg.png itemactionsbg.jpg itemactionsbottom.jpg"></ul>
+        </div>
+
+        <div class="story">
+          <h3>Chat column, 300px <span class="tag used">in game</span> <span class="tag guess">guess</span></h3>
+          <p>
+            <code>chatbgtop.png</code> caps a 300px column. The input (<code>chatbox.png</code>) and send/mute buttons
+            are used in the game's chat. The two 10×12 tails look like speech-bubble pointers.
+          </p>
+          <div class="stage">
+            <div class="v3 chatcol">
+              <div class="t"></div>
+              <div class="m">
+                <div style="display: flex; align-items: flex-start">
+                  <span class="sprite" style="width: 10px; height: 12px" data-bg="chat_from_left.png"></span>
+                  <span style="background: #dff4fb; color: #0d1424; padding: 4px 8px; font-size: 12px">Speech bubble, tail on the left</span>
+                </div>
+                <div style="display: flex; align-items: flex-start; justify-content: flex-end">
+                  <span style="background: #dff4fb; color: #0d1424; padding: 4px 8px; font-size: 12px">Tail on the right</span>
+                  <span class="sprite" style="width: 10px; height: 12px" data-bg="chat_from_right.png"></span>
+                </div>
+                <div style="display: flex; gap: 4px; align-items: center">
+                  <span class="sprite" style="width: 194px; height: 24px" data-bg="chatbox.png"></span>
+                  <span class="sprite" style="width: 29px; height: 24px" data-bg="buttonchat.png"></span>
+                  <span class="sprite" style="width: 29px; height: 24px" data-bg="buttonmute.png"></span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <ul class="pieces" data-pieces="chatbgtop.png chatbox.png chat_from_left.png chat_from_right.png buttonchat.png buttonchatover.png buttonmute.png buttonmuteover.png"></ul>
+        </div>
+      </section>
+
+      <!-- ================================================================= -->
+      <section id="cards">
+        <h2>Cards (fixed-size backgrounds)</h2>
+        <p class="caption">One image each; content has to fit the art's size.</p>
+
+        <div class="story">
+          <h3>Gradient boxes</h3>
+          <p>
+            Blue-to-transparent panels with a cut corner. <code>boxextra</code> and <code>boxguest</code> share a
+            width (223px) and look like a sidebar pair; <code>boxstar</code> is a wide hero box with a thin gold rim.
+          </p>
+          <div class="stage row">
+            <div class="card card-boxextra demo-text"><h4>boxextra</h4><p>223×130</p></div>
+            <div class="card card-boxguest demo-text"><h4>boxguest</h4><p>223×338</p></div>
+            <div class="card card-boxstar demo-text"><h4>boxstar</h4><p>785×354, gold rim.</p></div>
+          </div>
+          <ul class="pieces" data-pieces="boxextra.png boxguest.png boxstar.png"></ul>
+        </div>
+
+        <div class="story">
+          <h3>Character selection cards</h3>
+          <p>Solid blue cards with a bevelled top, roughly 210×307; two near-identical versions.</p>
+          <div class="stage row">
+            <div class="card card-choosecharac demo-text"><h4>choosecharac</h4></div>
+            <div class="card card-choosepj demo-text"><h4>choosepj</h4></div>
+          </div>
+          <ul class="pieces" data-pieces="choosecharac.png choosepj.png"></ul>
+        </div>
+
+        <div class="story">
+          <h3>Character sheet backgrounds <span class="tag guess">guess</span></h3>
+          <p>
+            <code>sheetmain.png</code> (176px) and <code>sheetmain.jpg</code> (204px, matching the sheet column above)
+            are full-height sheet backgrounds; <code>sheetbg.png</code> is a 10px row that repeats.
+          </p>
+          <div class="stage row">
+            <div class="card card-sheetmain demo-text"><h4>sheetmain.png</h4></div>
+            <div class="card card-sheetmain-jpg demo-text"><h4>sheetmain.jpg</h4></div>
+            <div class="card card-sheetbg demo-text"><h4>sheetbg.png</h4><p>repeat-y</p></div>
+          </div>
+          <ul class="pieces" data-pieces="sheetmain.png sheetmain.jpg sheetbg.png"></ul>
+        </div>
+
+        <div class="story">
+          <h3>Banners and offer boxes</h3>
+          <p>
+            These come from the old paid "Gold" pages. The art is fine to reuse as plain panels (not for anything paid;
+            nothing built on these assets may be monetized).
+          </p>
+          <div class="stage row">
+            <div class="col">
+              <div class="card card-goldbanner demo-text"><h4>goldbanner</h4></div>
+              <div class="card card-goldbanner active demo-text"><h4>goldbanner_active</h4></div>
+            </div>
+            <div class="card card-bannerhead demo-text"><h4>gold_bannerhead</h4><p>233×168</p></div>
+            <div class="card card-offers demo-text"><h4>gold_offers</h4><p>493×97, faint dividers.</p></div>
+            <div class="col" style="padding-bottom: 30px">
+              <div class="card card-features demo-text">
+                <h4>gold_features</h4>
+                <p>718×150, with three pointer tabs hanging off the bottom.</p>
+                <div class="arrows">
+                  <span class="sprite" style="width: 50px; height: 27px" data-bg="gold_features_arrow1.png"></span>
+                  <span class="sprite" style="width: 50px; height: 27px" data-bg="gold_features_arrow2.png"></span>
+                  <span class="sprite" style="width: 50px; height: 27px" data-bg="gold_features_arrow3.png"></span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <ul class="pieces" data-pieces="goldbanner.png goldbanner_active.png gold_bannerhead.png gold_offers.png gold_features.png gold_features_arrow1.png gold_features_arrow2.png gold_features_arrow3.png gold_bannertop.png goldbanner_buyme.png"></ul>
+        </div>
+
+        <div class="story">
+          <h3>Quote box, 521px <span class="tag used">in game</span></h3>
+          <p>
+            The game's panel colours were sampled from this. Shown with a 158×64 portrait JPG and the 13×28 blockquote
+            arrow.
+          </p>
+          <div class="stage">
+            <div class="quote demo-text">
+              <img data-img="quote_wang.jpg" width="158" height="64" alt="" />
+              <span class="arrow"></span>
+              <p>"Quote text sits on the flat navy fill to the right of the portrait."</p>
+            </div>
+          </div>
+          <ul class="pieces" data-pieces="quote.png blockquote_arrow.png quote_wang.jpg quote_lai.jpg quote_terrence.jpg"></ul>
+        </div>
+      </section>
+
+      <!-- ================================================================= -->
+      <section id="frames">
+        <h2>Frames and rails</h2>
+
+        <div class="story">
+          <h3>Gold frame, 765px <span class="tag guess">guess</span></h3>
+          <p>
+            Head (106px) plus a 439px JPG body add up to 545px, which matches the 547px side rail, so the rail is
+            probably meant to run the full height on both sides (the right one mirrored here).
+          </p>
+          <div class="stage" style="padding: 16px 30px">
+            <div class="goldframe">
+              <span class="rail l"></span>
+              <div class="goldframe-head demo-text"><h4>goldframe_head.png</h4></div>
+              <div class="goldframe-body demo-text"><p>goldframe_bg.jpg</p></div>
+              <span class="rail r"></span>
+            </div>
+          </div>
+          <ul class="pieces" data-pieces="goldframe_head.png goldframe_bg.jpg gold_frame.png"></ul>
+        </div>
+
+        <div class="story">
+          <h3>Screen side rails, 16px <span class="tag guess">guess</span></h3>
+          <p>
+            Tall metal rails with lights, for the sides of a screen or panel. Mirrored for the right side here.
+            <code>welcome_frame</code> has a brighter cyan light.
+          </p>
+          <div class="stage row">
+            <div class="railed">
+              <span class="rail-v rail-screen"></span>
+              <div class="body demo-text"><h4>screen_frame</h4><p>293px tall.</p></div>
+              <span class="rail-v rail-screen flip"></span>
+            </div>
+            <div class="railed">
+              <span class="rail-v rail-screen-b"></span>
+              <div class="body demo-text"><h4>screen_frame_b</h4><p>246px tall.</p></div>
+              <span class="rail-v rail-screen-b flip"></span>
+            </div>
+            <div class="railed">
+              <span class="rail-v rail-welcome"></span>
+              <div class="body demo-text"><h4>welcome_frame</h4><p>293px tall.</p></div>
+              <span class="rail-v rail-welcome flip"></span>
+            </div>
+          </div>
+          <ul class="pieces" data-pieces="screen_frame.png screen_frame_b.png welcome_frame.png"></ul>
+        </div>
+
+        <div class="story">
+          <h3>Ranking column glow, 2×75px</h3>
+          <p>A left/right pair: a thin rail with a cyan glow fading inward. Together they frame a 150px column.</p>
+          <div class="stage">
+            <div class="ranking"><div class="l"></div><div class="r"></div></div>
+          </div>
+          <ul class="pieces" data-pieces="ranking_bar1.png ranking_bar2.png"></ul>
+        </div>
+      </section>
+
+      <!-- ================================================================= -->
+      <section id="headers">
+        <h2>Headers, tabs and tables</h2>
+
+        <div class="story">
+          <h3>Goals header bar, 25px</h3>
+          <p>A 1144px left piece cropped to fit, closed by a 15px right end with a downward bracket.</p>
+          <div class="stage">
+            <div class="ugoals">Section header</div>
+          </div>
+          <ul class="pieces" data-pieces="ugoals_headerLeft.png ugoals_headerRight.png"></ul>
+        </div>
+
+        <div class="story">
+          <h3>"Must know" title, 21px <span class="tag guess">guess</span></h3>
+          <p>Two 20×21 diagonal caps; the fill colour between them is sampled by eye.</p>
+          <div class="stage">
+            <div class="mustknow"><span class="cap l"></span><span class="fill">Must know</span><span class="cap r"></span></div>
+          </div>
+          <ul class="pieces" data-pieces="mustknow_left.png mustknow_right.png"></ul>
+        </div>
+
+        <div class="story">
+          <h3>XP header strip, 930px</h3>
+          <div class="stage">
+            <div class="xptop">Experience</div>
+          </div>
+          <ul class="pieces" data-pieces="xptop.png"></ul>
+        </div>
+
+        <div class="story">
+          <h3>Tabs, 133×39</h3>
+          <p>Three folder tabs (general, news, gold) with cut corners, and a small 31×24 on/off tab pair (GIF).</p>
+          <div class="stage">
+            <div class="tabs">
+              <div class="tab gen">General</div>
+              <div class="tab news">News</div>
+              <div class="tab gold">Gold</div>
+              <span style="width: 16px"></span>
+              <span class="minitab on"></span>
+              <span class="minitab"></span>
+            </div>
+            <div class="tabs-body demo-text"><p>Tab body (the colour here is a stand-in).</p></div>
+          </div>
+          <ul class="pieces" data-pieces="gen_tab.png news_tab.png gold_tab.png tabon.gif taboff.gif"></ul>
+        </div>
+
+        <div class="story">
+          <h3>Table header, 25px</h3>
+          <p><code>table_header.png</code> (6×25) repeats across a header row; <code>th.gif</code> (1×26) is an alternative.</p>
+          <div class="stage row">
+            <table class="dk-table">
+              <thead><tr><th>Name</th><th>Role</th><th>Cycles</th></tr></thead>
+              <tbody><tr><td>Jin Su</td><td>Human</td><td>12</td></tr><tr><td>Kuan Ti</td><td>?</td><td>9</td></tr></tbody>
+            </table>
+            <table class="dk-table th-gif">
+              <thead><tr><th>Name</th><th>th.gif</th></tr></thead>
+              <tbody><tr><td>Frieda</td><td>…</td></tr></tbody>
+            </table>
+          </div>
+          <ul class="pieces" data-pieces="table_header.png th.gif"></ul>
+        </div>
+      </section>
+
+      <!-- ================================================================= -->
+      <section id="buttons">
+        <h2>Buttons (horizontal 3-slice)</h2>
+
+        <div class="story">
+          <h3>Standard button, 21px <span class="tag used">in game</span></h3>
+          <p>
+            5px caps, 1px stretched middle. Normal, hover (<code>*over</code>), pressed (<code>*_on</code>, GIF), and
+            two alternative middles: <code>butbg_tease</code> (grey, "coming soon") and <code>bbg</code> (darker blue)
+            <span class="tag guess">guess</span>.
+          </p>
+          <div class="stage row">
+            <span class="h3 btn">Normal</span>
+            <span class="h3 btn over">Hover</span>
+            <span class="h3 btn on">Pressed</span>
+            <span class="h3 btn tease">Tease</span>
+            <span class="h3 btn bbg">bbg middle</span>
+          </div>
+          <ul class="pieces" data-pieces="butleft.png butbg.png butright.png butleftover.png butbgover.png butrightover.png butleft_on.gif butbg_on.gif butright_on.gif butbg_tease.png bbg.png"></ul>
+        </div>
+
+        <div class="story">
+          <h3>Big button, 40px <span class="tag used">in game</span></h3>
+          <p>35px bevelled caps; the lobby's main call to action.</p>
+          <div class="stage row">
+            <span class="h3 btn2">Play</span>
+            <span class="h3 btn2 over">Play (hover)</span>
+          </div>
+          <ul class="pieces" data-pieces="but2left.png but2bg.png but2right.png but2leftover.png but2bgover.png but2rightover.png"></ul>
+        </div>
+
+        <div class="story">
+          <h3>Social / light button, 20px</h3>
+          <p>2px dark caps around a white middle.</p>
+          <div class="stage row">
+            <span class="h3 social">Share</span>
+          </div>
+          <ul class="pieces" data-pieces="butsocialleft.png butsocialbg.png butsocialright.png"></ul>
+        </div>
+
+        <div class="story">
+          <h3>Alarm button, 22px (26px when on)</h3>
+          <p>A darker navy button with 4px caps; the "on" state is an animated GIF set.</p>
+          <div class="stage row">
+            <span class="h3 alarm">Alarm</span>
+            <span class="h3 alarm on">Alarm on</span>
+          </div>
+          <ul class="pieces" data-pieces="alarm_left.png alarm_bg.png alarm_right.png alarm_on_left.gif alarm_on_bg.gif alarm_on_right.gif"></ul>
+        </div>
+
+        <div class="story">
+          <h3>Square buttons</h3>
+          <p>Fixed-size buttons with hover states.</p>
+          <div class="stage row">
+            <div class="col"><img data-img="bdd.png" alt="" /><span class="caption">bdd</span></div>
+            <div class="col"><img data-img="bdd_off.png" alt="" /><span class="caption">bdd_off</span></div>
+            <div class="col"><img data-img="bdd_off_over.png" alt="" /><span class="caption">bdd_off_over</span></div>
+            <div class="col"><img data-img="buttonchat.png" alt="" /><span class="caption">buttonchat</span></div>
+            <div class="col"><img data-img="buttonmute.png" alt="" /><span class="caption">buttonmute</span></div>
+            <div class="col"><img data-img="goldplus.png" alt="" /><span class="caption">goldplus</span></div>
+            <div class="col"><img data-img="onceplus.png" alt="" /><span class="caption">onceplus</span></div>
+          </div>
+          <ul class="pieces" data-pieces="bdd.png bdd_off.png bdd_off_over.png goldplus.png goldplus_over.png onceplus.png onceplus_over.png"></ul>
+        </div>
+      </section>
+
+      <!-- ================================================================= -->
+      <section id="bars">
+        <h2>Bars and meters</h2>
+
+        <div class="story">
+          <h3>Progress bar, 14px (3-slice + fill)</h3>
+          <p>5px caps and a 1px middle make a frame of any width; <code>percentage.png</code> (green, 1×14) repeats as the fill.</p>
+          <div class="stage col">
+            <div class="h3 prog"><span class="fill" style="width: 60%"></span></div>
+            <div class="h3 prog" style="width: 320px"><span class="fill" style="width: 25%"></span></div>
+          </div>
+          <ul class="pieces" data-pieces="prog_left.png prog_bg.png prog_right.png percentage.png"></ul>
+        </div>
+
+        <div class="story">
+          <h3>Fixed-width bars <span class="tag guess">guess</span></h3>
+          <p>
+            <code>barprogress</code> (134×16) with the green "NERON" fill <code>barinprogress</code> (128×10) clipped
+            to a percentage; <code>counter</code> (111×16) with the pink <code>counting</code> fill. Fill offsets are
+            guesses.
+          </p>
+          <div class="stage row">
+            <div class="col"><div class="barprogress"><span class="fill" style="width: 80px"></span></div><span class="caption">barprogress + barinprogress</span></div>
+            <div class="col"><div class="counter"><span class="fill" style="width: 60px"></span></div><span class="caption">counter + counting</span></div>
+          </div>
+          <ul class="pieces" data-pieces="barprogress.png barinprogress.png counter.png counting.png"></ul>
+        </div>
+
+        <div class="story">
+          <h3>XP completion <span class="tag guess">guess</span></h3>
+          <p>A 290×34 frame with a 262×17 pink fill clipped to the progress; a 157×44 counter plate.</p>
+          <div class="stage row">
+            <div class="xpbar"><span class="fill" style="width: 170px"></span></div>
+            <div class="xpcounter">1 250 XP</div>
+          </div>
+          <ul class="pieces" data-pieces="xp_completion.png xp_completion_fill.png xp_counter.png"></ul>
+        </div>
+
+        <div class="story">
+          <h3>Pips <span class="tag used">in game</span></h3>
+          <p>
+            <code>pabar</code> (11×79) is a vertical frame for action-point pips (the game redraws it sideways as SVG).
+            Pips: <code>pa1</code>, <code>pa1bis</code>, <code>pa2</code> (5×5), and <code>lifebar</code> /
+            <code>lifebar2</code> (3×5).
+          </p>
+          <div class="stage row" style="align-items: center">
+            <div class="pabar"></div>
+            <div class="pips"><i class="pip pa1"></i><i class="pip pa1"></i><i class="pip pa1"></i><i class="pip pa1bis"></i><i class="pip pa2"></i><i class="pip pa2"></i></div>
+            <div class="pips"><i class="pip life"></i><i class="pip life"></i><i class="pip life"></i><i class="pip life2"></i><i class="pip life2"></i></div>
+          </div>
+          <ul class="pieces" data-pieces="pabar.png pa1.png pa1bis.png pa2.png lifebar.png lifebar2.png"></ul>
+        </div>
+
+        <div class="story">
+          <h3>Small gauges</h3>
+          <p>
+            <code>learning</code> (57×16) holds up to three 13×10 <code>learning_block</code>s.
+            <code>pvsm</code> frames (83×17, plus gold and mini) and <code>level_bar</code> (9×31) are empty gauge
+            frames <span class="tag guess">guess</span>.
+          </p>
+          <div class="stage row" style="align-items: center">
+            <div class="learning"><i></i><i></i></div>
+            <img data-img="pvsm.png" alt="" />
+            <img data-img="pvsm_gold.png" alt="" />
+            <img data-img="pvsm_mini.png" alt="" />
+            <img data-img="level_bar.png" alt="" />
+          </div>
+          <ul class="pieces" data-pieces="learning.png learning_block.png pvsm.png pvsm_gold.png pvsm_mini.png level_bar.png"></ul>
+        </div>
+      </section>
+
+      <!-- ================================================================= -->
+      <section id="slots">
+        <h2>Slots and blocks</h2>
+
+        <div class="story">
+          <h3>Item slots <span class="tag used">in game</span></h3>
+          <p><code>slot</code> (40×40) and <code>bigslot</code> (56×56); <code>slotcool</code> (66×51) is a lighter, framed variant; <code>oselected</code> (64×64) is a green selection outline.</p>
+          <div class="stage row" style="align-items: center">
+            <img data-img="slot.png" alt="" />
+            <img data-img="bigslot.png" alt="" />
+            <img data-img="slotcool.png" alt="" />
+            <div class="oselected"><img data-img="bigslot.png" alt="" /></div>
+          </div>
+          <ul class="pieces" data-pieces="slot.png bigslot.png slotcool.png oselected.png"></ul>
+        </div>
+
+        <div class="story">
+          <h3>Skill and level blocks</h3>
+          <p>
+            Skill slots (<code>skillblock</code>, <code>skillblock_boost</code>, with <code>skill_inside</code> as the
+            inner well), the gold/once variants, and the in-game level badge in its four states.
+          </p>
+          <div class="stage row" style="align-items: flex-end">
+            <img data-img="skillblock.png" alt="" />
+            <img data-img="skillblock_boost.png" alt="" />
+            <img data-img="skill_inside.png" alt="" />
+            <img data-img="gold_skill.png" alt="" />
+            <img data-img="once_skill.png" alt="" />
+            <img data-img="level.png" alt="" />
+            <img data-img="level2.png" alt="" />
+            <img data-img="level_ingame.png" alt="" />
+            <img data-img="level_ingame_on.png" alt="" />
+            <img data-img="level_ingame_on_over.png" alt="" />
+            <img data-img="level_ingame_anim.png" alt="" />
+          </div>
+          <ul class="pieces" data-pieces="skillblock.png skillblock_boost.png skill_inside.png gold_skill.png once_skill.png level.png level2.png level_ingame.png level_ingame_on.png level_ingame_on_over.png level_ingame_anim.png"></ul>
+        </div>
+      </section>
+
+      <!-- ================================================================= -->
+      <section id="controls">
+        <h2>Small controls</h2>
+
+        <div class="story">
+          <h3>Switch, check/cross, radio spot</h3>
+          <p>
+            <code>switch.png</code> (17×17 knob) slides over the OFF/ON <code>switch_bg.gif</code>.
+            <code>yesno.png</code> is a 2-frame sprite (check, cross) with a <code>yesnomask</code>.
+            <code>spot</code> / <code>spot_over</code> look like radio dots.
+          </p>
+          <div class="stage row" style="align-items: center">
+            <span class="switch"></span>
+            <span class="switch on"></span>
+            <span class="yesno"></span>
+            <span class="yesno no"></span>
+            <img data-img="spot.png" alt="" />
+            <img data-img="spot_over.png" alt="" />
+          </div>
+          <ul class="pieces" data-pieces="switch.png switch_bg.gif yesno.png yesnomask.png spot.png spot_over.png"></ul>
+        </div>
+
+        <div class="story">
+          <h3>Arrows</h3>
+          <p>Scroll/pager arrows with hover states, and small up/down markers.</p>
+          <div class="stage row" style="align-items: center">
+            <img data-img="arrowleft.png" alt="" />
+            <img data-img="arrowleft_over.png" alt="" />
+            <img data-img="arrowright.png" alt="" />
+            <img data-img="arrowright_over.png" alt="" />
+            <img data-img="arrowup.png" alt="" />
+            <img data-img="arrowup_over.png" alt="" />
+            <img data-img="arrowdown.png" alt="" />
+            <img data-img="arrowdown_over.png" alt="" />
+            <img data-img="arrow_bt.png" alt="" />
+            <img data-img="up.png" alt="" />
+            <img data-img="down.png" alt="" />
+          </div>
+          <ul class="pieces" data-pieces="arrowleft.png arrowleft_over.png arrowright.png arrowright_over.png arrowup.png arrowup_over.png arrowdown.png arrowdown_over.png arrow_bt.png up.png down.png"></ul>
+        </div>
+
+        <div class="story">
+          <h3>Tree connectors <span class="tag guess">guess</span></h3>
+          <p>
+            <code>treeinfinite</code> is a 1px light-blue line, <code>treelast</code> an L-shaped end,
+            <code>tree.png</code> a 32px-wide, 1161px-tall connector strip (almost all transparent; its exact use is
+            unclear).
+          </p>
+          <div class="stage">
+            <div class="tree-line demo-text">
+              <ul class="tree">
+                <li>Branch one</li>
+                <li>Branch two</li>
+                <li class="last">Last branch</li>
+              </ul>
+            </div>
+          </div>
+          <ul class="pieces" data-pieces="tree.png treeinfinite.png treelast.png"></ul>
+        </div>
+      </section>
+
+      <!-- ================================================================= -->
+      <section id="terminals">
+        <h2>Terminal backdrops <span class="tag guess">guess</span></h2>
+        <p class="caption">
+          Faint watermark art named after ship terminals (astro, bios, navigation, NERON core, sensors). Probably the
+          corner decoration of each terminal's panel; shown bottom-right on a pale panel.
+        </p>
+        <div class="story">
+          <div class="stage row">
+            <div class="terminal t-astro"><span class="caption">astro_bg</span></div>
+            <div class="terminal t-bios"><span class="caption">bios_bg</span></div>
+            <div class="terminal t-nav"><span class="caption">nav_bg</span></div>
+            <div class="terminal t-neroncore"><span class="caption">neroncore_bg + neroncorecorner</span></div>
+            <div class="terminal t-neron"><span class="caption">neron_bg</span></div>
+            <div class="terminal t-sensor"><span class="caption">sensor_bg</span></div>
+            <div class="terminal t-danger"><span class="caption">danger_bg</span></div>
+            <div class="terminal t-machine"><span class="caption">bg_machine</span></div>
+          </div>
+          <ul class="pieces" data-pieces="astro_bg.png bios_bg.png nav_bg.png neroncore_bg.png neroncorecorner.png neron_bg.png sensor_bg.png danger_bg.png bg_machine.png"></ul>
+        </div>
+      </section>
+
+      <!-- ================================================================= -->
+      <section id="unplaced">
+        <h2>Unplaced</h2>
+        <div class="story">
+          <h3>Structural-looking, but couldn't place</h3>
+          <p>
+            <code>banner_par</code> (mostly transparent with a cyan cross; a parallax/guide layer?),
+            <code>gold_bannertop</code> (1020px strip), <code>goldbanner_buyme</code> (1042px, mostly transparent),
+            <code>mask</code>, <code>empty</code>, <code>here</code>, <code>pchoose</code> (1×1).
+          </p>
+          <ul class="pieces" data-pieces="banner_par.png gold_bannertop.png goldbanner_buyme.png mask.png empty.png here.png pchoose.png"></ul>
+        </div>
+        <div class="story">
+          <h3>Left out (icons, logos, illustrations)</h3>
+          <p class="caption">
+            neron, neron_b, neron_chat, logo*, pack*, tag*, medal, mush_stamp, podium*, throne_*, rank_*, transport*,
+            dlhelp*, sensor01–04, empty_planet, planet_h, screen_temp, gold_par, gold_single_par, lock_*, gold_blocked*,
+            twinoid, rss, mail, doc, guide, figure, pronto, soon, soon_text, beta.
+          </p>
+        </div>
+      </section>
+    </main>
+
+    <script type="module" src="/src/designKit/main.ts"></script>
+  </body>
+</html>

@@ -871,3 +871,9 @@ The issue was a standing rule ("every new field gets a viewFor test"), so solvin
 ## 2026-10-19: Errors don't depend on hidden state (#103)
 
 The rules already answered "Illegal action" for every refusal, so the fix was a lock-in test (`shared/tests/errors.test.ts`) rather than a code change. Each case first asserts which `check` reason it hits. That guard was worth having: the first draft set the share cooldown with the wrong day number, the case was not actually refused, and the guard caught it before a passing test could hide the mistake. While writing the test I found a leak the test can't cover: a refusal is itself visible (a Mush whose spike on someone is refused learns that person is Mush). I flagged it as a rule question instead of picking a fix.
+
+## 2026-10-19: Design kit page for `Mush/www/img/design`
+
+- Asked for a "storybook" of the structural (non-icon) PNGs in the design folder. Built a dev-only Vite page, `web/design-kit.html` (+ `web/src/designKit/`), instead of adding Storybook (a new dependency). It isn't a build input, so it never ships.
+- About 190 of the 255 PNGs are assembled into components (page shells, 3-slice panels, cards, frames, tabs, buttons, bars, slots, controls); each story lists its source files with their natural sizes, and the assemblies that are inferred from names and sizes carry a "guess" tag. Icons, logos and illustrations are listed but not shown.
+- What needed correction: Vite dev doesn't rewrite `../Mush` paths written directly in HTML (`<img src>`, inline `style`), so those images 404'd; the page now names files with `data-img`/`data-bg` and resolves them through an `import.meta.glob` in `main.ts`. Useful finding: the site frame's left+right pieces add up to exactly 1080px on every row, so it's a fixed-width frame.

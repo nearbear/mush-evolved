@@ -1,0 +1,1107 @@
+/*
+ * Dev-only design kit (web/design-kit.html): the structural pieces of
+ * Mush/www/img/design assembled into the components they appear to belong to.
+ * Assemblies marked "guess" in the page are inferred from names and sizes; the
+ * archive has no original CSS. Pixel art is never scaled here.
+ */
+
+:root {
+  --bg: #0d1424;
+  --panel: #16213a;
+  --edge: #2c3e66;
+  --text: #dfe6f5;
+  --muted: #8796b8;
+  --accent: #4fc3f7;
+  --guess: #ffb74d;
+  color-scheme: dark;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font: 14px/1.45 system-ui, sans-serif;
+}
+
+/* ---------- Page chrome ---------- */
+
+.dk-header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  align-items: center;
+  padding: 10px 16px;
+  background: #0a0f1ccc;
+  backdrop-filter: blur(6px);
+  border-bottom: 1px solid var(--edge);
+}
+.dk-header h1 {
+  margin: 0;
+  font-size: 16px;
+}
+.dk-header nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  font-size: 13px;
+}
+.dk-header a {
+  color: var(--accent);
+  text-decoration: none;
+}
+.dk-header label {
+  margin-left: auto;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+main {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 16px;
+}
+main > p {
+  color: var(--muted);
+  max-width: 75ch;
+}
+section {
+  margin-top: 40px;
+  scroll-margin-top: 60px;
+}
+section > h2 {
+  border-bottom: 1px solid var(--edge);
+  padding-bottom: 4px;
+}
+.story {
+  margin: 24px 0 32px;
+}
+.story h3 {
+  margin: 0 0 4px;
+  font-size: 15px;
+}
+.story > p {
+  margin: 0 0 8px;
+  color: var(--muted);
+  max-width: 85ch;
+}
+.tag {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 0 6px;
+  border-radius: 3px;
+  font-size: 11px;
+  font-weight: normal;
+  vertical-align: middle;
+  background: #24508a;
+}
+.tag.guess {
+  background: #5a3d0f;
+  color: var(--guess);
+}
+.tag.used {
+  background: #1d4d2c;
+  color: #8fe3a5;
+}
+
+.stage {
+  overflow-x: auto;
+  padding: 16px;
+  background: #060a14;
+  border: 1px solid var(--edge);
+  image-rendering: pixelated;
+}
+.stage.row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: flex-start;
+}
+body.checker .stage {
+  background: repeating-conic-gradient(#3a3a3a 0 25%, #555 0 50%) 0 0 / 16px 16px;
+}
+
+.pieces {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 8px 12px;
+  margin: 8px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.pieces li {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-width: 100%;
+  font: 11px/1.3 ui-monospace, monospace;
+  color: var(--muted);
+}
+.pieces img {
+  align-self: flex-start;
+  max-width: min(100%, 360px);
+  max-height: 96px;
+  object-fit: contain;
+  background: repeating-conic-gradient(#3a3a3a 0 25%, #555 0 50%) 0 0 / 8px 8px;
+  image-rendering: pixelated;
+}
+.pieces li.not-png span::after {
+  content: " (not PNG)";
+  color: var(--guess);
+}
+.pieces li.missing {
+  color: var(--danger, #ff6b81);
+}
+
+.demo-text {
+  color: #dfe6f5;
+  font-size: 12px;
+}
+.demo-text h4 {
+  margin: 0 0 4px;
+  font-size: 13px;
+}
+.demo-text p {
+  margin: 0 0 6px;
+}
+.caption {
+  font: 11px ui-monospace, monospace;
+  color: var(--muted);
+}
+.col {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: flex-start;
+}
+
+/* ---------- Page shells ---------- */
+
+/* Site frame, 1080px: every row is a left piece + a right piece that add up to 1080. */
+.site {
+  width: 1080px;
+}
+.site-top {
+  height: 61px;
+  background:
+    url("../../../Mush/www/img/design/topleft.png") left top no-repeat,
+    url("../../../Mush/www/img/design/topright.png") right top no-repeat;
+}
+.site-top.alt {
+  background:
+    url("../../../Mush/www/img/design/topleft.png") left top no-repeat,
+    url("../../../Mush/www/img/design/topright2.png") right top no-repeat;
+}
+.site-mid {
+  min-height: 140px;
+  padding: 0 130px 0 24px;
+  background:
+    url("../../../Mush/www/img/design/bg_left.png") left top repeat-y,
+    url("../../../Mush/www/img/design/bg_right.png") right top repeat-y;
+}
+.site-bot {
+  height: 61px;
+  background:
+    url("../../../Mush/www/img/design/bottomleft.png") left top no-repeat,
+    url("../../../Mush/www/img/design/bottomright.png") right top no-repeat;
+}
+
+/* Main content, 1000px: a 106px header (3 variants), 10px border rows, 67px footer. */
+.mx {
+  width: 1000px;
+}
+.mx-top {
+  height: 106px;
+  padding: 40px 40px 0;
+  background: url("../../../Mush/www/img/design/mxtopmaincontent.png") no-repeat;
+}
+.mx-top.v2 {
+  background-image: url("../../../Mush/www/img/design/mxtopmaincontent2.png");
+}
+.mx-top.v3 {
+  background-image: url("../../../Mush/www/img/design/mxtopmaincontent3.png");
+}
+.mx-mid {
+  min-height: 60px;
+  padding: 0 40px;
+  background: url("../../../Mush/www/img/design/mxbordercontent.png") repeat-y;
+}
+.mx-bot {
+  height: 67px;
+  background: url("../../../Mush/www/img/design/mxbottommaincontent.png") no-repeat;
+}
+
+/* Plain content column, 1000px: 1px repeating row + 67px footer; maintop (900px) as a header. */
+.plain {
+  width: 1000px;
+}
+.plain-mid {
+  min-height: 160px;
+  padding: 0 50px 16px;
+  background: url("../../../Mush/www/img/design/bgcontent.png") repeat-y;
+}
+.plain-head {
+  height: 96px;
+  margin: 0 auto 12px;
+  width: 900px;
+  padding: 36px 30px 0;
+  background: url("../../../Mush/www/img/design/maintop.png") no-repeat;
+}
+.plain-bot {
+  height: 67px;
+  background: url("../../../Mush/www/img/design/bottomcontent.png") no-repeat;
+}
+
+/* box1, 1000px six-piece: 928px left column + 72px right column, three rows. */
+.box1 {
+  width: 1000px;
+}
+.box1-top {
+  height: 61px;
+  padding: 18px 30px 0;
+  background:
+    url("../../../Mush/www/img/design/box1_topleft.png") left top no-repeat,
+    url("../../../Mush/www/img/design/box1_topright.png") right top no-repeat;
+}
+.box1-mid {
+  min-height: 60px;
+  padding: 0 90px 0 30px;
+  background:
+    url("../../../Mush/www/img/design/box1_bgleft.png") left top repeat-y,
+    url("../../../Mush/www/img/design/box1_bgright.png") right top repeat-y;
+}
+.box1-bot {
+  height: 61px;
+  background:
+    url("../../../Mush/www/img/design/box1_bottomleft.png") left top no-repeat,
+    url("../../../Mush/www/img/design/box1_bottomright.png") right top no-repeat;
+}
+
+/* ---------- Vertical 3-slice panels ---------- */
+
+/* Generic: fixed width, top cap, repeating middle, bottom cap. Variants set the art. */
+.v3 > .t,
+.v3 > .b {
+  background-repeat: no-repeat;
+}
+.v3 > .m {
+  background-repeat: repeat-y;
+  padding: 0 16px;
+}
+
+.box1v {
+  width: 892px;
+}
+.box1v > .t {
+  height: 60px;
+  padding: 18px 24px 0;
+  background-image: url("../../../Mush/www/img/design/box1top.png");
+}
+.box1v > .m {
+  padding: 0 24px;
+  background-image: url("../../../Mush/www/img/design/box1bg.png");
+}
+.box1v > .b {
+  height: 60px;
+  background-image: url("../../../Mush/www/img/design/box1bottom.png");
+}
+
+.box2 {
+  width: 405px;
+}
+.box2 > .t {
+  height: 60px;
+  padding: 18px 24px 0;
+  background-image: url("../../../Mush/www/img/design/box2top.png");
+}
+.box2 > .m {
+  padding: 0 24px;
+  background-image: url("../../../Mush/www/img/design/box2bg.png");
+}
+.box2 > .b {
+  height: 60px;
+  background-image: url("../../../Mush/www/img/design/box2bottom.png");
+}
+
+.box3 {
+  width: 462px;
+}
+.box3 > .t {
+  height: 60px;
+  padding: 18px 24px 0;
+  background-image: url("../../../Mush/www/img/design/box3top.png");
+}
+.box3 > .m {
+  padding: 0 24px;
+  background-image: url("../../../Mush/www/img/design/box3bg.png");
+}
+.box3 > .b {
+  height: 60px;
+  background-image: url("../../../Mush/www/img/design/box3bottom.png");
+}
+
+.pop {
+  width: 519px;
+}
+.pop > .t {
+  height: 15px;
+  background-image: url("../../../Mush/www/img/design/poptop.png");
+}
+.pop > .m {
+  padding: 4px 20px;
+  background-image: url("../../../Mush/www/img/design/popbg.png");
+}
+.pop > .b {
+  height: 15px;
+  background-image: url("../../../Mush/www/img/design/popbottom.png");
+}
+
+.tip {
+  width: 247px;
+}
+.tip > .t {
+  height: 16px;
+  background-image: url("../../../Mush/www/img/design/tiptop.png");
+}
+.tip > .m {
+  padding: 0 14px;
+  background-image: url("../../../Mush/www/img/design/tipbg.png");
+}
+.tip > .b {
+  height: 16px;
+  background-image: url("../../../Mush/www/img/design/tipbottom.png");
+}
+/* The same tooltip art at any width: border-image keeps 10px ends and stretches the middle
+   (this is how the game's .panel uses it, see styles/layout.css). */
+.tip-stretch {
+  position: relative;
+  isolation: isolate;
+  padding: 16px 14px;
+  border: 0 solid;
+  border-image: url("../../../Mush/www/img/design/tipbg.png") 0 10 fill / 0 10px stretch;
+}
+.tip-stretch::before,
+.tip-stretch::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  left: 0;
+  right: 0;
+  height: 16px;
+  border: 0 solid;
+}
+.tip-stretch::before {
+  top: 0;
+  border-image: url("../../../Mush/www/img/design/tiptop.png") 0 10 fill / 0 10px stretch;
+}
+.tip-stretch::after {
+  bottom: 0;
+  border-image: url("../../../Mush/www/img/design/tipbottom.png") 0 10 fill / 0 10px stretch;
+}
+
+.sheetpa {
+  width: 204px;
+}
+.sheetpa > .t {
+  height: 4px;
+  background-image: url("../../../Mush/www/img/design/sheetpatop.png");
+}
+.sheetpa > .m {
+  padding: 4px 14px;
+  background-image: url("../../../Mush/www/img/design/sheetpabg.png");
+}
+.sheetpa > .b {
+  height: 61px;
+  background-image: url("../../../Mush/www/img/design/sheetpabottom.jpg");
+}
+.sheetpa.jpg > .t {
+  height: 10px;
+  background-image: url("../../../Mush/www/img/design/sheetpatop.jpg");
+}
+.sheetpa.jpg > .m {
+  background-image: url("../../../Mush/www/img/design/sheetpabg.jpg");
+}
+
+.sidemenu {
+  width: 214px;
+}
+.sidemenu > .t {
+  height: 56px;
+  background-image: url("../../../Mush/www/img/design/h1gameguide.png");
+}
+.sidemenu > .m {
+  padding: 6px 14px;
+  background-image: url("../../../Mush/www/img/design/sidemenubg.png");
+}
+.sidemenu > .b {
+  height: 3px;
+  background-image: url("../../../Mush/www/img/design/sidemenubottom.png");
+}
+.sidemenu ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.sidemenu li {
+  padding: 3px 0;
+  color: var(--accent);
+}
+
+.itemactions {
+  width: 424px;
+}
+.itemactions > .t {
+  height: 7px;
+  background-image: url("../../../Mush/www/img/design/itemactionstop.png");
+}
+.itemactions > .m {
+  min-height: 80px;
+  padding: 8px 16px;
+  background:
+    url("../../../Mush/www/img/design/itemactionsbg.jpg") top no-repeat,
+    url("../../../Mush/www/img/design/itemactionsbg.png") repeat-y;
+}
+.itemactions > .b {
+  height: 42px;
+  background-image: url("../../../Mush/www/img/design/itemactionsbottom.jpg");
+}
+
+.centercol {
+  width: 424px;
+}
+.centercol > .t {
+  height: 5px;
+  background-image: url("../../../Mush/www/img/design/centertop.png");
+}
+.centercol.iso > .t {
+  background-image: url("../../../Mush/www/img/design/centertopiso.png");
+}
+.centercol > .m {
+  height: 90px;
+  background: #0a0f1c;
+  padding: 8px;
+}
+
+.chatcol {
+  width: 300px;
+}
+.chatcol > .t {
+  height: 6px;
+  background-image: url("../../../Mush/www/img/design/chatbgtop.png");
+}
+.chatcol > .m {
+  padding: 10px 12px;
+  background: #16213a;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* ---------- Fixed-size card backgrounds ---------- */
+
+.card {
+  background-repeat: no-repeat;
+  padding: 16px;
+}
+.card-boxextra {
+  width: 223px;
+  height: 130px;
+  background-image: url("../../../Mush/www/img/design/boxextra.png");
+}
+.card-boxguest {
+  width: 223px;
+  height: 338px;
+  background-image: url("../../../Mush/www/img/design/boxguest.png");
+}
+.card-boxstar {
+  width: 785px;
+  height: 354px;
+  padding: 24px 32px;
+  background-image: url("../../../Mush/www/img/design/boxstar.png");
+}
+.card-choosecharac {
+  width: 210px;
+  height: 307px;
+  background-image: url("../../../Mush/www/img/design/choosecharac.png");
+}
+.card-choosepj {
+  width: 211px;
+  height: 309px;
+  background-image: url("../../../Mush/www/img/design/choosepj.png");
+}
+.card-sheetmain {
+  width: 176px;
+  height: 325px;
+  background-image: url("../../../Mush/www/img/design/sheetmain.png");
+}
+.card-sheetmain-jpg {
+  width: 204px;
+  height: 325px;
+  background-image: url("../../../Mush/www/img/design/sheetmain.jpg");
+}
+.card-sheetbg {
+  width: 175px;
+  height: 120px;
+  background: url("../../../Mush/www/img/design/sheetbg.png") repeat-y;
+}
+.card-goldbanner {
+  width: 238px;
+  height: 77px;
+  padding: 12px 16px;
+  background-image: url("../../../Mush/www/img/design/goldbanner.png");
+}
+.card-goldbanner.active {
+  background-image: url("../../../Mush/www/img/design/goldbanner_active.png");
+  color: #3a2a00;
+}
+.card-bannerhead {
+  width: 233px;
+  height: 168px;
+  background-image: url("../../../Mush/www/img/design/gold_bannerhead.png");
+}
+.card-offers {
+  width: 493px;
+  height: 97px;
+  background-image: url("../../../Mush/www/img/design/gold_offers.png");
+}
+.card-features {
+  position: relative;
+  width: 718px;
+  height: 150px;
+  padding: 20px 24px;
+  background-image: url("../../../Mush/www/img/design/gold_features.png");
+}
+.card-features .arrows {
+  position: absolute;
+  bottom: -27px;
+  left: 60px;
+  display: flex;
+  gap: 170px;
+}
+.quote {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  width: 521px;
+  height: 83px;
+  padding: 0 10px;
+  background: url("../../../Mush/www/img/design/quote.png") no-repeat;
+}
+.quote .arrow {
+  width: 13px;
+  height: 28px;
+  margin-left: 8px;
+  background: url("../../../Mush/www/img/design/blockquote_arrow.png") no-repeat;
+  flex: none;
+}
+.quote p {
+  margin: 0 0 0 10px;
+  font-style: italic;
+  font-size: 12px;
+}
+.quote img {
+  flex: none;
+}
+
+/* Gold frame: 765px head, 763px body (JPG), 14px side rails. */
+.goldframe {
+  position: relative;
+  width: 765px;
+}
+.goldframe-head {
+  height: 106px;
+  padding: 36px 40px 0;
+  background: url("../../../Mush/www/img/design/goldframe_head.png") no-repeat;
+}
+.goldframe-body {
+  height: 439px;
+  margin: 0 1px;
+  padding: 16px 40px;
+  background: url("../../../Mush/www/img/design/goldframe_bg.jpg") no-repeat;
+}
+.goldframe .rail {
+  position: absolute;
+  top: 0;
+  width: 14px;
+  height: 547px;
+  background: url("../../../Mush/www/img/design/gold_frame.png") no-repeat;
+}
+.goldframe .rail.l {
+  left: -14px;
+}
+.goldframe .rail.r {
+  right: -14px;
+  transform: scaleX(-1);
+}
+
+/* ---------- Rails ---------- */
+
+.railed {
+  position: relative;
+  display: flex;
+  align-items: stretch;
+}
+.railed .body {
+  width: 260px;
+  padding: 16px;
+  background: #16213a;
+}
+.rail-v {
+  flex: none;
+  background-repeat: no-repeat;
+}
+.rail-v.flip {
+  transform: scaleX(-1);
+}
+.rail-screen {
+  width: 16px;
+  height: 293px;
+  background-image: url("../../../Mush/www/img/design/screen_frame.png");
+}
+.rail-screen-b {
+  width: 16px;
+  height: 246px;
+  background-image: url("../../../Mush/www/img/design/screen_frame_b.png");
+}
+.rail-welcome {
+  width: 16px;
+  height: 293px;
+  background-image: url("../../../Mush/www/img/design/welcome_frame.png");
+}
+.ranking {
+  display: flex;
+  width: 150px;
+  height: 300px;
+}
+.ranking > div {
+  width: 75px;
+  height: 300px;
+  background-repeat: no-repeat;
+}
+.ranking .l {
+  background-image: url("../../../Mush/www/img/design/ranking_bar1.png");
+}
+.ranking .r {
+  background-image: url("../../../Mush/www/img/design/ranking_bar2.png");
+}
+
+/* ---------- Headers, tabs, tables ---------- */
+
+.ugoals {
+  height: 25px;
+  width: 640px;
+  padding: 3px 24px 0 10px;
+  font-size: 12px;
+  font-weight: bold;
+  background:
+    url("../../../Mush/www/img/design/ugoals_headerRight.png") right top no-repeat,
+    url("../../../Mush/www/img/design/ugoals_headerLeft.png") left top no-repeat;
+  background-size: auto, calc(100% - 15px) 25px;
+}
+.mustknow {
+  display: flex;
+  align-items: stretch;
+  height: 21px;
+  font-size: 12px;
+  font-weight: bold;
+}
+.mustknow .cap {
+  width: 20px;
+  flex: none;
+}
+.mustknow .l {
+  background: url("../../../Mush/www/img/design/mustknow_left.png");
+}
+.mustknow .r {
+  background: url("../../../Mush/www/img/design/mustknow_right.png");
+}
+.mustknow .fill {
+  padding: 2px 10px;
+  background: #1c1f5c;
+}
+.xptop {
+  width: 930px;
+  height: 40px;
+  padding: 10px 30px;
+  font-weight: bold;
+  background: url("../../../Mush/www/img/design/xptop.png") no-repeat;
+}
+.dk-table {
+  border-collapse: collapse;
+  font-size: 12px;
+  min-width: 360px;
+}
+.dk-table th {
+  height: 25px;
+  padding: 0 10px;
+  text-align: left;
+  background: url("../../../Mush/www/img/design/table_header.png") repeat-x;
+}
+.dk-table td {
+  padding: 4px 10px;
+  border-bottom: 1px solid var(--edge);
+}
+.dk-table.th-gif th {
+  height: 26px;
+  background-image: url("../../../Mush/www/img/design/th.gif");
+}
+
+.tabs {
+  display: flex;
+  gap: 2px;
+  align-items: flex-end;
+}
+.tab {
+  width: 133px;
+  height: 39px;
+  padding-top: 12px;
+  text-align: center;
+  font-size: 12px;
+  font-weight: bold;
+  background-repeat: no-repeat;
+}
+.tab.gen {
+  background-image: url("../../../Mush/www/img/design/gen_tab.png");
+}
+.tab.news {
+  background-image: url("../../../Mush/www/img/design/news_tab.png");
+}
+.tab.gold {
+  background-image: url("../../../Mush/www/img/design/gold_tab.png");
+}
+.tabs + .tabs-body {
+  width: 420px;
+  min-height: 60px;
+  padding: 10px;
+  background: #3f5288;
+}
+.minitab {
+  width: 31px;
+  height: 24px;
+  background: url("../../../Mush/www/img/design/taboff.gif") no-repeat;
+}
+.minitab.on {
+  background-image: url("../../../Mush/www/img/design/tabon.gif");
+}
+
+/* ---------- Buttons ---------- */
+
+/* Horizontal 3-slice: caps at natural width, 1px middle stretched. Variants set the art. */
+.h3 {
+  display: inline-flex;
+  align-items: center;
+  padding: 0 12px;
+  color: #fff;
+  font-size: 12px;
+  text-shadow: 0 1px 1px rgb(0 0 30 / 0.6);
+  background:
+    var(--l) left / var(--cap) 100% no-repeat,
+    var(--r) right / var(--cap) 100% no-repeat,
+    var(--m) center / calc(100% - 2 * var(--cap)) 100% no-repeat;
+}
+.btn {
+  --cap: 5px;
+  --l: url("../../../Mush/www/img/design/butleft.png");
+  --m: url("../../../Mush/www/img/design/butbg.png");
+  --r: url("../../../Mush/www/img/design/butright.png");
+  height: 21px;
+}
+.btn.over {
+  --l: url("../../../Mush/www/img/design/butleftover.png");
+  --m: url("../../../Mush/www/img/design/butbgover.png");
+  --r: url("../../../Mush/www/img/design/butrightover.png");
+}
+.btn.on {
+  --l: url("../../../Mush/www/img/design/butleft_on.gif");
+  --m: url("../../../Mush/www/img/design/butbg_on.gif");
+  --r: url("../../../Mush/www/img/design/butright_on.gif");
+}
+.btn.tease {
+  --m: url("../../../Mush/www/img/design/butbg_tease.png");
+}
+.btn.bbg {
+  --m: url("../../../Mush/www/img/design/bbg.png");
+}
+.btn2 {
+  --cap: 35px;
+  --l: url("../../../Mush/www/img/design/but2left.png");
+  --m: url("../../../Mush/www/img/design/but2bg.png");
+  --r: url("../../../Mush/www/img/design/but2right.png");
+  height: 40px;
+  padding: 0 40px;
+  font-size: 15px;
+  font-weight: bold;
+}
+.btn2.over {
+  --l: url("../../../Mush/www/img/design/but2leftover.png");
+  --m: url("../../../Mush/www/img/design/but2bgover.png");
+  --r: url("../../../Mush/www/img/design/but2rightover.png");
+}
+.social {
+  --cap: 2px;
+  --l: url("../../../Mush/www/img/design/butsocialleft.png");
+  --m: url("../../../Mush/www/img/design/butsocialbg.png");
+  --r: url("../../../Mush/www/img/design/butsocialright.png");
+  height: 20px;
+  color: #1a2a4a;
+  text-shadow: none;
+}
+.alarm {
+  --cap: 4px;
+  --l: url("../../../Mush/www/img/design/alarm_left.png");
+  --m: url("../../../Mush/www/img/design/alarm_bg.png");
+  --r: url("../../../Mush/www/img/design/alarm_right.png");
+  height: 22px;
+}
+.alarm.on {
+  --l: url("../../../Mush/www/img/design/alarm_on_left.gif");
+  --m: url("../../../Mush/www/img/design/alarm_on_bg.gif");
+  --r: url("../../../Mush/www/img/design/alarm_on_right.gif");
+  height: 26px;
+}
+
+.sprite {
+  display: inline-block;
+  flex: none;
+  background-repeat: no-repeat;
+}
+
+/* ---------- Bars and meters ---------- */
+
+.prog {
+  --cap: 5px;
+  --l: url("../../../Mush/www/img/design/prog_left.png");
+  --m: url("../../../Mush/www/img/design/prog_bg.png");
+  --r: url("../../../Mush/www/img/design/prog_right.png");
+  position: relative;
+  width: 200px;
+  height: 14px;
+  padding: 0;
+}
+.prog .fill {
+  position: absolute;
+  left: 5px;
+  top: 0;
+  height: 14px;
+  background: url("../../../Mush/www/img/design/percentage.png") repeat-x;
+}
+.barprogress {
+  position: relative;
+  width: 134px;
+  height: 16px;
+  background: url("../../../Mush/www/img/design/barprogress.png") no-repeat;
+}
+.barprogress .fill {
+  position: absolute;
+  left: 3px;
+  top: 3px;
+  height: 10px;
+  background: url("../../../Mush/www/img/design/barinprogress.png") no-repeat;
+}
+.counter {
+  position: relative;
+  width: 111px;
+  height: 16px;
+  background: url("../../../Mush/www/img/design/counter.png") no-repeat;
+}
+.counter .fill {
+  position: absolute;
+  left: 3px;
+  top: 3px;
+  height: 10px;
+  background: url("../../../Mush/www/img/design/counting.png") repeat-x;
+}
+.xpbar {
+  position: relative;
+  width: 290px;
+  height: 34px;
+  background: url("../../../Mush/www/img/design/xp_completion.png") no-repeat;
+}
+.xpbar .fill {
+  position: absolute;
+  left: 14px;
+  top: 8px;
+  height: 17px;
+  background: url("../../../Mush/www/img/design/xp_completion_fill.png") no-repeat;
+}
+.xpcounter {
+  width: 157px;
+  height: 44px;
+  padding: 12px 0 0 24px;
+  font-weight: bold;
+  background: url("../../../Mush/www/img/design/xp_counter.png") no-repeat;
+}
+.pabar {
+  position: relative;
+  width: 11px;
+  height: 79px;
+  background: url("../../../Mush/www/img/design/pabar.png") no-repeat;
+}
+.pips {
+  display: flex;
+  gap: 1px;
+}
+.pip {
+  width: 5px;
+  height: 5px;
+}
+.pip.pa1 {
+  background: url("../../../Mush/www/img/design/pa1.png");
+}
+.pip.pa1bis {
+  background: url("../../../Mush/www/img/design/pa1bis.png");
+}
+.pip.pa2 {
+  background: url("../../../Mush/www/img/design/pa2.png");
+}
+.pip.life {
+  width: 3px;
+  background: url("../../../Mush/www/img/design/lifebar.png");
+}
+.pip.life2 {
+  width: 3px;
+  background: url("../../../Mush/www/img/design/lifebar2.png");
+}
+.learning {
+  display: flex;
+  gap: 1px;
+  align-items: center;
+  width: 57px;
+  height: 16px;
+  padding: 3px;
+  background: url("../../../Mush/www/img/design/learning.png") no-repeat;
+}
+.learning i {
+  width: 13px;
+  height: 10px;
+  background: url("../../../Mush/www/img/design/learning_block.png") no-repeat;
+}
+
+/* ---------- Slots ---------- */
+
+.oselected {
+  position: relative;
+  width: 64px;
+  height: 64px;
+  display: grid;
+  place-items: center;
+}
+.oselected::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: url("../../../Mush/www/img/design/oselected.png") no-repeat;
+}
+.switch {
+  position: relative;
+  width: 32px;
+  height: 17px;
+  background: url("../../../Mush/www/img/design/switch_bg.gif") no-repeat;
+}
+.switch::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 17px;
+  height: 17px;
+  background: url("../../../Mush/www/img/design/switch.png") no-repeat;
+}
+.switch.on::after {
+  left: 15px;
+}
+.yesno {
+  width: 16px;
+  height: 16px;
+  background: url("../../../Mush/www/img/design/yesno.png") 0 0 no-repeat;
+}
+.yesno.no {
+  background-position: -16px 0;
+}
+
+/* ---------- Tree ---------- */
+
+.tree {
+  margin: 0;
+  padding: 0 0 0 4px;
+  list-style: none;
+  font-size: 12px;
+}
+.tree li {
+  padding-left: 34px;
+  line-height: 18px;
+  background: url("../../../Mush/www/img/design/tree.png") left top no-repeat;
+}
+.tree li.last {
+  background-image: url("../../../Mush/www/img/design/treelast.png");
+}
+.tree-line {
+  padding-left: 12px;
+  background: url("../../../Mush/www/img/design/treeinfinite.png") left top repeat-y;
+}
+
+/* ---------- Terminal watermark panels ---------- */
+
+.terminal {
+  position: relative;
+  width: 220px;
+  height: 120px;
+  padding: 10px;
+  font-size: 12px;
+  color: #0d2a3a;
+  background-color: #c9f1fb;
+  background-repeat: no-repeat;
+  background-position: right bottom;
+  border-radius: 3px;
+}
+.terminal .caption {
+  color: #2b5c70;
+}
+.t-astro {
+  background-image: url("../../../Mush/www/img/design/astro_bg.png");
+}
+.t-bios {
+  background-image: url("../../../Mush/www/img/design/bios_bg.png");
+}
+.t-nav {
+  background-image: url("../../../Mush/www/img/design/nav_bg.png");
+}
+.t-neroncore {
+  background-image:
+    url("../../../Mush/www/img/design/neroncorecorner.png"), url("../../../Mush/www/img/design/neroncore_bg.png");
+  background-position:
+    left top,
+    right bottom;
+}
+.t-neron {
+  background-image: url("../../../Mush/www/img/design/neron_bg.png");
+}
+.t-sensor {
+  background-image: url("../../../Mush/www/img/design/sensor_bg.png");
+}
+.t-danger {
+  background-image: url("../../../Mush/www/img/design/danger_bg.png");
+  background-color: #fbe3e3;
+}
+.t-machine {
+  background-image: url("../../../Mush/www/img/design/bg_machine.png");
+  background-color: #2a2e44;
+  color: var(--text);
+}
+.t-machine .caption {
+  color: var(--muted);
+}
+
+/* On a phone the wrapped nav would cover a third of the screen. */
+@media (max-width: 600px) {
+  .dk-header {
+    position: static;
+  }
+}
