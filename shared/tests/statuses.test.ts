@@ -9,7 +9,16 @@ import { makeSeats, player, mustApply, nextCycle, offered } from "./support.ts";
 
 const seats = makeSeats(4);
 // No character traits by default: seat p1 is Chun, whose public Immunity would show in every view.
-const config = { ...DEFAULT_CONFIG, characterModifiers: {}, mushCount: 1, startInventory: [], startItems: [], maxAp: 99, startAp: 50 };
+const config = {
+  ...DEFAULT_CONFIG,
+  characterModifiers: {},
+  consume: { ...DEFAULT_CONFIG.consume, dirtyChance: 0 },
+  mushCount: 1,
+  startInventory: [],
+  startItems: [],
+  maxAp: 99,
+  startAp: 50,
+};
 
 /** p0 is Mush, the rest human. All in one room. */
 function ship(): GameState {

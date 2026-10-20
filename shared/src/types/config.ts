@@ -65,6 +65,7 @@ export interface GameConfig {
       nursePointsPerDay: number; // Care points the nurse skill (`first_aid`) grants at the start of each day and when picked (owner, 2026-10-15).
     };
     rooms: string[]; // Rooms where anyone can heal without a medikit (confirmed 2026-10-15: the sick bay).
+    dirtyChance: number; // Chance of getting the dirty status after healing.
   };
   punch: {
     cost: { ap: number }; // Issue 29.
@@ -81,24 +82,32 @@ export interface GameConfig {
   cook: {
     cost: { ap: number }; // AP spent to cook an uncooked ration (confirmed 2026-10-16).
     rooms: RoomId[]; // Rooms where food can be cooked (confirmed 2026-10-16).
+    dirtyChance: number; // Chance of getting the dirty status after cooking.
   };
   expressCook: {
     cost: { ap: number }; // AP spent to express cook a ration with a reachable microwave (owner, 2026-10-19: 0).
     charges: { start: number; max: number; perDay: number }; // Microwave charges: one per express cook, regained at each day start (owner, 2026-10-19).
+    dirtyChance: number; // Chance of getting the dirty status after express cooking.
   };
   build: {
     cost: { ap: number }; // AP spent to build from a blueprint (decided 2026-10-16: 3, the original game's value).
+    dirtyChance: number; // Chance of getting the dirty status after building.
   };
   jettison: {
     cost: { ap: number }; // AP spent to jettison a carried corpse (decided 2026-10-16: free).
     rooms: RoomId[]; // Rooms where a corpse can be jettisoned: the four bays (decided 2026-10-16).
+    dirtyChance: number; // Chance of getting the dirty status after jettisoning.
   };
   install: {
     cost: { ap: number }; // AP spent to install a carried camera in the room (approved 2026-10-17: 1).
+    dirtyChance: number; // Chance of getting the dirty status after installing.
   };
   uninstall: {
     cost: { ap: number }; // AP spent to uninstall the room's camera back into an item (placeholder 2026-10-17: 1, like install).
+    dirtyChance: number; // Chance of getting the dirty status after uninstalling.
   };
+  consume: { dirtyChance: number }; // Chance of getting the dirty status after consuming an item.
+  dispense: { dirtyChance: number }; // Chance of getting the dirty status after dispensing an item.
   computer: {
     capPoints: number; // Most Computer points (`resources.comp`) a player can hold (owner, 2026-10-16; the original skill's IncrMaxPA(COMP, 4)).
     pointsPerDay: number; // Computer points the `computer` skill grants at the start of each day and when picked (owner, 2026-10-16; the original +2).

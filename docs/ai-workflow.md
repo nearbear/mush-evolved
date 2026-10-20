@@ -926,3 +926,9 @@ Owner specified oxygen/fuel/hull/plasma shield values. Their answers had typos (
 - **Decision (mine, flag if wrong):** others walk through doors too, not just you. Their way in or out comes from the room log's public `entered`/`left` entries from the last 15 seconds, so nothing new is sent; without one they still pop in and out. A door opens as someone nears it (timed to be open when they arrive), they wait at it if it isn't, and it shuts behind them using the slice's second animation (the original only ever played the first, on hover).
 - **What worked:** a whole-ship test over every door pair before building on `doorPassage`. It found two kinds of door the shortest-path walk couldn't handle (a floor that only meets the doorway at a corner, and an undrawn front door that opened a way through the wall beside the drawn one) and a hand-off bug: the two rooms chose different doorway cells for the same door, which is fixed by always searching from the same end. Pulling the per-frame step out of the hook (`stepWalkers`) made door timing testable, and the tests caught a one-frame stop at every door.
 - **Not checked:** I didn't look at it in a browser (the `play` skill is user-invoked). Paint order of someone standing in a doorway, and the rhythm of the open/shut, are unverified by eye.
+
+## 2026-10-20 — Dirty chances for everyday actions
+
+- **Decision:** At the owner's request, cooking has a 25% dirty chance, express cooking 5%, consuming 15%, dispensing 5%, building 25%, installing 10%, uninstalling 5%, and healing 5%, using the existing punch-style dirt chance hook.
+- **What worked:** Centralized odds in per-action config and verified that each registered action reads its configured value.
+- **Correction needed:** None.

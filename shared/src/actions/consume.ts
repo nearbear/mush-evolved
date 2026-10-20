@@ -27,6 +27,10 @@ export class ConsumeAction extends Action<ConsumeActionData> {
     return { ap: 0, mp: 0 };
   }
 
+  override dirtChance(state: Readonly<GameState>): number {
+    return state.config.consume.dirtyChance;
+  }
+
   override apply(state: GameState, player: PlayerState, target: ConsumeActionData): void {
     const index = state.items.findIndex((i) => i.id === target.item);
     const [item] = state.items.splice(index, 1) as [ItemState];

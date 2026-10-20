@@ -26,8 +26,8 @@ function ship(): { s: GameState; camera: string; install: Action } {
 }
 
 describe("install", () => {
-  it("defaults to 2 AP", () => {
-    expect(DEFAULT_CONFIG.install).toEqual({ cost: { ap: 2 } });
+  it("defaults to 2 AP and a 10% dirty chance", () => {
+    expect(DEFAULT_CONFIG.install).toEqual({ cost: { ap: 2 }, dirtyChance: 0.1 });
   });
 
   it("turns the carried camera into the room's equipment, for 2 AP, with a public log line", () => {

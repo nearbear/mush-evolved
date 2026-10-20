@@ -49,6 +49,10 @@ export class BuildAction extends Action<BuildActionData> {
     return this.canAfford(state, player, target);
   }
 
+  override dirtChance(state: Readonly<GameState>): number {
+    return state.config.build.dirtyChance;
+  }
+
   override apply(state: GameState, player: PlayerState, target: BuildActionData): void {
     const blueprint = state.items.find((i) => i.id === target.item)!; // checked, so it exists
     const used = new Set([blueprint.id, ...ingredients(state, player, blueprint)!.map((i) => i.id)]);
