@@ -18,7 +18,7 @@ import { nextFloat, shuffle } from "./rng.ts";
 import { chatChannels, readChannels } from "./chat.ts";
 import { clone, fail, findPlayer, type ActionResult } from "./helpers.ts";
 import { damage } from "./death.ts";
-import { activitySeen, logSecret } from "./log.ts";
+import { activitySeen, logPrivate, logSecret } from "./log.ts";
 import { ringMycoAlarms } from "./mycoalarm.ts";
 import { planetsOf } from "./planets.ts";
 import { burnOxygen, shipMax, startShip } from "./ship.ts";
@@ -191,8 +191,16 @@ export function performAction(next: GameState, actor: PlayerState, action: Actio
     const [roll, rng] = nextFloat(next.rng);
     next.rng = rng;
     if (roll < dirtyChance && !actor.statuses.includes("dirty")) {
+      if (itemsIn(next, { kind: "player", id: actor.id }).some((i) => i.type === "apron")){
+        logPrivate(next, actor.id, "apronBlockedDirty", { name: actor.character });
+      }
+      else if (actor.skills.includes("stickler")) {
+        logPrivate(next, actor.id, "sticklerBlockedDirty", { name: actor.character });
+      }
+      else{
       addStatus(actor, "dirty");
-      logSecret(next, actor.id, "becomeDirty", { name: actor.character });
+      logPrivate(next, actor.id, "becomeDirty", { name: actor.character });
+      }
     }
   }
   // After the action's own log lines; rings on a failure too (owner, 2026-10-18).

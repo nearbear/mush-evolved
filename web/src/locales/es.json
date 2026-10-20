@@ -355,6 +355,7 @@
     "heavyDesc": "Transportarlo hace que cada desplazamiento entre salas cueste {{mp}} puntos de movimiento adicionales, independientemente de cuántos objetos pesados lleves. La habilidad Robusto anula esta penalización."
   },
   "items": {
+    "apron": "Delantal Antimanchas",
     "super_talky": "iTrackie",
     "wrench": "Llave inglesa",
     "blaster": "Blaster",
@@ -380,6 +381,8 @@
     "actionCostChanged": "Tu acción en cola ({{action}}) se ha cancelado porque su coste ha cambiado: ahora cuesta {{ap}} PA y {{mp}} PM.",
     "actionDropped": "Tu acción en cola ({{action}}) ya no era posible y se ha descartado.",
     "becomeDirty": "¡Tienes suciedad por todas partes! Te has ensuciado.",
+    "apronBlockedDirty": "Qué asco... Por suerte, llevas puesto tu delantal antimanchas...",
+    "sticklerBlockedDirty": "Tu meticulosidad te impide ensuciarte.",
     "crewWakes": "La tripulación despierta a bordo de la nave.",
     "oxygenOut": "Se acabó el oxígeno. Alguien se asfixia.",
     "cycleBegins": "Comienza el ciclo {{cycle}}.",

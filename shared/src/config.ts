@@ -62,6 +62,7 @@ export const DEFAULT_CONFIG: GameConfig = {
     cost: { apOther: 2, apSelf: 3 },
     effect: { hp: 3, medicBonusHp: 2, nursePointsPerDay: 2 },
     rooms: ["SICK_BAY"],
+    dirtyChance: 0.05,
   },
   // Confirmed 2026-10-15: punch costs 1 AP, 2 damage, misses 40% of the time.
   // Confirmed 2026-10-16: the sturdy (Solid) skill adds 1 to punch damage.
@@ -69,18 +70,20 @@ export const DEFAULT_CONFIG: GameConfig = {
   // Owner, 2026-10-18: Ian's Pacifist makes aggressive actions in his room cost 2 more AP, his own included.
   pacifist: { aggressiveApSurcharge: 2 },
   // Confirmed 2026-10-16: cooking an uncooked ration costs 1 AP, only in the refectory.
-  cook: { cost: { ap: 1 }, rooms: ["REFECTORY"] },
+  cook: { cost: { ap: 1 }, rooms: ["REFECTORY"], dirtyChance: 0.25 },
   // Owner, 2026-10-19: express cook is free, anywhere you can reach a microwave, and spends one of its 4 charges;
   // it regains one each day. Consequences for using it come later.
-  expressCook: { cost: { ap: 0 }, charges: { start: 4, max: 4, perDay: 1 } },
+  expressCook: { cost: { ap: 0 }, charges: { start: 4, max: 4, perDay: 1 }, dirtyChance: 0.05 },
   // Decided 2026-10-16: building from a blueprint costs 3 AP, anywhere, no failure chance.
-  build: { cost: { ap: 3 } },
+  build: { cost: { ap: 3 }, dirtyChance: 0.25 },
   // Decided 2026-10-16 (#28): jettisoning a carried corpse is free, in one of the four bays.
-  jettison: { cost: { ap: 0 }, rooms: ["SPACESHIP_BAY_A", "SPACESHIP_BAY_AA", "SPACESHIP_BAY_B", "ICARUS"] },
+  jettison: { cost: { ap: 0 }, rooms: ["SPACESHIP_BAY_A", "SPACESHIP_BAY_AA", "SPACESHIP_BAY_B", "ICARUS"], dirtyChance: 0.25 },
   // Decided 2026-10-18 (owner, #35): installing a carried camera costs 2 AP, no tools, one camera per room, anyone can do it, no failure chance.
-  install: { cost: { ap: 2 } },
+  install: { cost: { ap: 2 }, dirtyChance: 0.1 },
   // Decided 2026-10-18 (owner, #36): uninstalling costs 1 AP, anyone can do it, no failure chance. Dismantling an installed camera uses `dismantle`.
-  uninstall: { cost: { ap: 1 } },
+  uninstall: { cost: { ap: 1 }, dirtyChance: 0.05 },
+  consume: { dirtyChance: 0.15 },
+  dispense: { dirtyChance: 0.05 },
   // Owner, 2026-10-16: the computer scientist skill holds up to 4 Computer points, gains 2 a day (and 2 when picked).
   computer: { capPoints: 4, pointsPerDay: 2 },
   // Decided 2026-10-16: working on a research costs 2 AP and advances it 25%; no repeat penalty yet.
@@ -120,6 +123,7 @@ export const DEFAULT_CONFIG: GameConfig = {
     { type: "wrench", room: "LABORATORY" },
     { type: "blaster", room: "LABORATORY" },
     { type: "medikit", room: "SICK_BAY" },
+     { type: "apron", room: "SICK_BAY" },
     { type: "camera", room: "CORRIDOR_A" },
     { type: "metal_scraps", room: "CORRIDOR_A" },
     { type: "plastic_scraps", room: "CORRIDOR_A" },

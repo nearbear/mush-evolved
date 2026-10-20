@@ -33,6 +33,10 @@ export class HealAction extends Action<HealActionData> {
     return { ap: this.healCost(state, player, target.target), mp: 0 };
   }
 
+  override dirtChance(state: Readonly<GameState>): number {
+    return state.config.heal.dirtyChance;
+  }
+
   override apply(state: GameState, player: PlayerState, target: HealActionData): void {
     const patient = state.players.find((o) => o.id === target.target)!; // checked, so it exists
     if (player.resources.heal > 0) player.resources.heal -= 1;

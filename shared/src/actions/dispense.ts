@@ -25,6 +25,10 @@ export class DispenseAction extends Action<DispenseActionData> {
     return { ap: 0, mp: 0 };
   }
 
+  override dirtChance(state: Readonly<GameState>): number {
+    return state.config.dispense.dirtyChance;
+  }
+
   override apply(state: GameState, player: PlayerState, target: DispenseActionData): void {
     const equip = state.config.equipment[player.room]!.find((eq) => eq.id === target.equipment)!;
     const type = EQUIPMENT_TYPES[equip.type]!.dispenses!;
