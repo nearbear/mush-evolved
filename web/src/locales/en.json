@@ -377,6 +377,7 @@
   "logEvent": {
     "actionCostChanged": "Your queued action ({{action}}) was cancelled because its cost changed: it now costs {{ap}} AP and {{mp}} MP.",
     "actionDropped": "Your queued action ({{action}}) was no longer possible and was dropped.",
+    "becomeDirty": "You're filthy! You have become dirty.",
     "crewWakes": "The crew wakes up aboard the ship.",
     "oxygenOut": "The oxygen has run out. Someone suffocates.",
     "cycleBegins": "Cycle {{cycle}} begins.",

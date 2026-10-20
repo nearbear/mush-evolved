@@ -18,6 +18,34 @@ function game(room = "LABORATORY") {
 }
 
 describe("research", () => {
+  it("has a 25% chance to become dirty after working on research", () => {
+    expect(DEFAULT_CONFIG.research.dirtyChance).toBe(0.25);
+
+    const dirty = game();
+    dirty.rng = 7;
+    dirty.players[1]!.room = "REFECTORY";
+    dirty.players[2]!.room = "REFECTORY";
+    const result = applyAction(dirty, "p0", work("MYCOSCAN"));
+    if (!result.ok) throw new Error("expected research to succeed");
+    expect(result.state.players[0]!.statuses).toContain("dirty");
+    expect(viewFor(result.state, "p0").log.some((entry) => entry.key === "becomeDirty")).toBe(true);
+    expect(viewFor(result.state, "p1").log.some((entry) => entry.key === "becomeDirty")).toBe(false);
+
+    const clean = game();
+    clean.rng = 0;
+    const cleanResult = applyAction(clean, "p0", work("MYCOSCAN"));
+    if (!cleanResult.ok) throw new Error("expected research to succeed");
+    expect(cleanResult.state.players[0]!.statuses).not.toContain("dirty");
+
+    const free = game();
+    free.players[0]!.resources.comp = 1;
+    free.rng = 7;
+    const freeResult = applyAction(free, "p0", work("MYCOSCAN"));
+    if (!freeResult.ok) throw new Error("expected Computer-point research to succeed");
+    expect(freeResult.state.players[0]!.statuses).toContain("dirty");
+    expect(freeResult.state.players[0]!.resources.comp).toBe(0);
+  });
+
   it("starts with nothing done and every research offered at the research lab", () => {
     const s = game();
     expect(s.research).toEqual({});
@@ -28,6 +56,7 @@ describe("research", () => {
 
   it("costs 2 AP and advances the chosen research by 25%, for anyone", () => {
     const s = game();
+    s.rng = 0;
     const ap = s.players[1]!.ap;
     const r = applyAction(s, "p1", work("MYCOSCAN"));
     expect(r.ok).toBe(true);
@@ -35,6 +64,7 @@ describe("research", () => {
     expect(r.state.research).toEqual({ MYCOSCAN: 25 });
     expect(r.state.players[1]!.ap).toBe(ap - AP);
     // No repeat penalty: the same player can go straight on.
+    r.state.rng = 0;
     const again = applyAction(r.state, "p1", work("MYCOSCAN"));
     expect(again.ok && again.state.research.MYCOSCAN).toBe(50);
   });
@@ -43,6 +73,7 @@ describe("research", () => {
     let s = game();
     for (let i = 0; i < 4; i++) {
       s.players[0]!.ap = 12;
+      s.rng = 0;
       const r = applyAction(s, "p0", work("STEROIDS"));
       expect(r.ok).toBe(true);
       if (r.ok) s = r.state;
@@ -101,16 +132,19 @@ describe("computer scientist skill (computer)", () => {
   it("makes a research free: one Computer point, no AP", () => {
     const s = pick(game());
     const ap = s.players[0]!.ap;
+    s.rng = 0;
     const r = applyAction(s, "p0", work("MYCOSCAN"));
     if (!r.ok) throw new Error(r.error);
     expect(r.state.players[0]!.resources.comp).toBe(cfg.pointsPerDay - 1);
     expect(r.state.players[0]!.ap).toBe(ap);
     expect(r.state.research.MYCOSCAN).toBe(25);
     // The second point makes the next one free; after that it costs AP again.
+    r.state.rng = 0;
     const second = applyAction(r.state, "p0", work("MYCOSCAN"));
     if (!second.ok) throw new Error(second.error);
     expect(second.state.players[0]!.resources.comp).toBe(0);
     expect(second.state.players[0]!.ap).toBe(ap);
+    second.state.rng = 0;
     const third = applyAction(second.state, "p0", work("MYCOSCAN"));
     expect(third.ok && third.state.players[0]!.ap).toBe(ap - AP);
   });
@@ -118,6 +152,7 @@ describe("computer scientist skill (computer)", () => {
   it("works with no AP left, and is refused with neither", () => {
     const s = pick(game());
     s.players[0]!.ap = 0;
+    s.rng = 0;
     expect(applyAction(s, "p0", work("MYCOSCAN")).ok).toBe(true);
     s.players[0]!.resources.comp = 0;
     expect(applyAction(s, "p0", work("MYCOSCAN")).ok).toBe(false);

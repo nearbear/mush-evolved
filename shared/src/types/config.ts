@@ -73,6 +73,7 @@ export interface GameConfig {
       sturdyBonusDamage: number; // Extra punch damage from the sturdy skill (confirmed 2026-10-16).
     };
     successChance: number; // Chance a punch lands, 0 to 1 (confirmed 2026-10-15: it misses 40% of the time).
+    dirtyChance: number; // Chance of getting the dirty status after punching (confirmed 2026-10-13).
   };
   pacifist: {
     aggressiveApSurcharge: number; // Extra AP for each aggressive action in a Pacifist's room, theirs too (owner, 2026-10-18).
@@ -105,6 +106,7 @@ export interface GameConfig {
   research: {
     cost: { ap: number }; // AP spent to work on a research (decided 2026-10-16).
     effect: { progressPercent: number }; // Percent a research advances per action (decided 2026-10-16).
+    dirtyChance: number; // Chance of getting the dirty status after working on a research (owner, 2026-10-20).
   };
   project: {
     cost: { ap: number }; // AP spent to work on a NERON project (decided 2026-10-18).
@@ -143,6 +145,7 @@ export interface GameConfig {
   dismantle: {
     cost: { ap: number }; // AP spent to dismantle an item (confirmed 2026-10-13).
     successChance: number; // Chance of successfully dismantling an item (confirmed 2026-10-13).
+    dirtyChance: number; // Chance of getting the dirty status after dismantling an item (confirmed 2026-10-13).
   };
   creative: {
     refundOdds: number; // Chance that the Creative skill refunds 1 AP after a failed action that cost AP (confirmed 2026-10-15).

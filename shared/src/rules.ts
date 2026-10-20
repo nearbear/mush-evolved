@@ -12,13 +12,13 @@ import { getUp } from "./actions/lie_down.ts";
 import { itemsIn, rechargeMicrowaves, startCharges } from "./items.ts";
 import { actionFailed, apGain, carePointsGain, channelLimit, computerPointsGain, cycleChanged, dailyMoraleLoss, inventorySlots, movementRules, satietyLoss } from "./modifiers.ts";
 import { contaminationSeenBy, convert } from "./infection.ts";
-import { isHungry, publicStatusesOf, statusesOf } from "./statuses.ts";
+import { addStatus, isHungry, publicStatusesOf, statusesOf } from "./statuses.ts";
 import { emptyResources } from "./resources.ts";
 import { nextFloat, shuffle } from "./rng.ts";
 import { chatChannels, readChannels } from "./chat.ts";
 import { clone, fail, findPlayer, type ActionResult } from "./helpers.ts";
 import { damage } from "./death.ts";
-import { activitySeen } from "./log.ts";
+import { activitySeen, logSecret } from "./log.ts";
 import { ringMycoAlarms } from "./mycoalarm.ts";
 import { planetsOf } from "./planets.ts";
 import { burnOxygen, shipMax, startShip } from "./ship.ts";
@@ -171,6 +171,7 @@ export function performAction(next: GameState, actor: PlayerState, action: Actio
   const cost = def.cost(next, actor, action);
   // Odds are read before the cost is paid, as the button showed them.
   const chance = def.chance?.(next, actor, action) ?? 1;
+  const dirtyChance = def.dirtChance?.(next, actor, action) ?? 0;
   if (def.timed && action.type !== "lie_down") getUp(actor);
   actor.ap -= cost.ap;
   actor.mp -= cost.mp;
@@ -185,6 +186,14 @@ export function performAction(next: GameState, actor: PlayerState, action: Actio
     }
   } else {
     def.apply(next, actor, action);
+  }
+  if (dirtyChance > 0) {
+    const [roll, rng] = nextFloat(next.rng);
+    next.rng = rng;
+    if (roll < dirtyChance && !actor.statuses.includes("dirty")) {
+      addStatus(actor, "dirty");
+      logSecret(next, actor.id, "becomeDirty", { name: actor.character });
+    }
   }
   // After the action's own log lines; rings on a failure too (owner, 2026-10-18).
   if (def.tags.includes("spore")) ringMycoAlarms(next, room);

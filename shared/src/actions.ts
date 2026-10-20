@@ -56,6 +56,7 @@ export interface ActionDef<A extends Action> {
   apply(next: GameState, player: PlayerState, action: A): void;
   /** Chance of success, 0 to 1; applyAction rolls it once with the seeded RNG after the cost is paid (skipped at 1). */
   chance?(state: Readonly<GameState>, player: Readonly<PlayerState>, action: A): number;
+  dirtChance?(state: Readonly<GameState>, player: Readonly<PlayerState>, action: A): number;
   /** The effect on failure (the cost stays paid). Mutates a state the caller already cloned. */
   fail?(next: GameState, player: PlayerState, action: A): void;
 }
