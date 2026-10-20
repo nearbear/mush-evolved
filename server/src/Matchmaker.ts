@@ -78,7 +78,9 @@ export class Matchmaker extends Server<Env> {
       tokens[token] = id;
       tokenByConnection.set(conn.id, token);
     });
-    for (let i = humans.length; i < SEAT_COUNT; i++) {
+    // Dev servers (cheats allowed) seat every character, so the whole cast can be looked at. Not for production.
+    const seatCount = this.env.ALLOW_CHEATS === "true" ? CHARACTERS.length : SEAT_COUNT;
+    for (let i = humans.length; i < seatCount; i++) {
       // Bots are always labeled as AI to players.
       // Every bot is a log parrot for now; "wander" bots are still supported but not selected anywhere yet.
       const botKind = "logParrot";
