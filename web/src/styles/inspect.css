@@ -19,6 +19,9 @@
   width: var(--tile);
   margin: 0.75rem auto 0.5rem;
 }
+.inspect-charges {
+  text-align: center;
+}
 .inspect-art {
   display: block;
   width: 100%;

@@ -37,6 +37,7 @@ export const GAME_STATE_FIELDS: Record<string, FieldRule> = {
   bonds: { reach: "own", test: "leaks.test.ts", note: "Each bond to its two partners only." },
   sharedOnDay: { reach: "never", test: "leaks.test.ts" },
   contamination: { reach: "never", test: "leaks.test.ts", note: "Except to a living Mush in the human's room (infection.test.ts)." },
+  ship: { reach: "public", test: "ship.test.ts" },
   sporesToday: { reach: "never", test: "leaks.test.ts" },
   sporeExtractedOn: { reach: "never", test: "leaks.test.ts" },
   research: { reach: "public", test: "research.test.ts" },
@@ -44,6 +45,7 @@ export const GAME_STATE_FIELDS: Record<string, FieldRule> = {
   planets: { reach: "own", test: "leaks.test.ts", note: "Without the unknown sectors' tags." },
   scanFailures: { reach: "never", test: "leaks.test.ts" },
   nextPlanetId: { reach: "never", test: "leaks.test.ts", note: "Not secret (planet ids show it), just not sent." },
+  now: { reach: "never", test: "leaks.test.ts", note: "The rules' clock; offers' expiry times reach their owner only." },
 };
 
 export const PLAYER_STATE_FIELDS: Record<string, FieldRule> = {
@@ -59,6 +61,8 @@ export const PLAYER_STATE_FIELDS: Record<string, FieldRule> = {
   room: { reach: "room", test: "rules.test.ts", note: "Everyone's while ACTOPI is on; never a dead player's (death.test.ts)." },
   ap: { reach: "own", test: "leaks.test.ts" },
   lyingIn: { reach: "room", test: "leaks.test.ts" },
+  pushedBy: { reach: "room", test: "leaks.test.ts", note: "Also as the public `accommodated` status." },
+  accommodationOffers: { reach: "own", test: "leaks.test.ts", note: "The offers themselves are public room log lines." },
   mp: { reach: "own", test: "leaks.test.ts" },
   hp: { reach: "own", test: "leaks.test.ts" },
   morale: { reach: "own", test: "leaks.test.ts" },
@@ -84,4 +88,5 @@ export const ITEM_STATE_FIELDS: Record<string, FieldRule> = {
   at: { reach: "never", test: "leaks.test.ts", note: "Implied by which list the item is in." },
   of: { reach: "filtered", test: "death.test.ts" },
   builds: { reach: "filtered", test: "build.test.ts" },
+  charges: { reach: "filtered", test: "express_cook.test.ts" },
 };

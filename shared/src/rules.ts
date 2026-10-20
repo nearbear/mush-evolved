@@ -9,7 +9,7 @@
 import { applyCheats, makeHuman, type ActopiCheat, type Cheat, type RoleCheat } from "./cheats.ts";
 import { ACTIONS, type ActionDef } from "./actions.ts";
 import { getUp } from "./actions/lie_down.ts";
-import { itemsIn } from "./items.ts";
+import { itemsIn, rechargeMicrowaves, startCharges } from "./items.ts";
 import { actionFailed, apGain, carePointsGain, channelLimit, computerPointsGain, cycleChanged, dailyMoraleLoss, inventorySlots, movementRules, satietyLoss } from "./modifiers.ts";
 import { contaminationSeenBy, convert } from "./infection.ts";
 import { addStatus, isHungry, publicStatusesOf, statusesOf } from "./statuses.ts";
@@ -21,6 +21,7 @@ import { damage } from "./death.ts";
 import { activitySeen, logSecret } from "./log.ts";
 import { ringMycoAlarms } from "./mycoalarm.ts";
 import { planetsOf } from "./planets.ts";
+import { burnOxygen, shipMax, startShip } from "./ship.ts";
 import type {
   Action,
   Equipment,
@@ -86,7 +87,7 @@ export function createGame(
   }));
 
   const starts: Omit<ItemState, "id">[] = [
-    ...config.startItems.map((it): Omit<ItemState, "id"> => ({ type: it.type, at: { kind: "room", id: it.room }, ...(it.builds !== undefined && { builds: it.builds }) })),
+    ...config.startItems.map((it): Omit<ItemState, "id"> => ({ type: it.type, at: { kind: "room", id: it.room }, ...(it.builds !== undefined && { builds: it.builds }), ...chargesFor(config, it.type) })),
     ...players.flatMap((p) => config.startInventory.map((type): Omit<ItemState, "id"> => ({ type, at: { kind: "player", id: p.id } }))),
   ];
   const items: ItemState[] = starts.map((it, i) => ({ id: `item-${i + 1}`, ...it }));
@@ -109,6 +110,7 @@ export function createGame(
     bonds: {},
     sharedOnDay: {},
     contamination: {},
+    ship: startShip(config),
     sporesToday: 0,
     sporeExtractedOn: {},
     research: {},
@@ -116,6 +118,7 @@ export function createGame(
     planets: {},
     scanFailures: {},
     nextPlanetId: 1,
+    now: 0,
   };
   grantCarePoints(state); // day 1 begins now
   return state;
@@ -240,6 +243,11 @@ export function newCycle(state: GameState): ActionResult {
   return { ok: true, state: next };
 }
 
+function chargesFor(config: GameConfig, type: string): { charges?: number } {
+  const charges = startCharges(config, type);
+  return charges === undefined ? {} : { charges };
+}
+
 /** Mutates a state that the caller already cloned. */
 function advanceCycle(state: GameState): void {
   state.cycle += 1;
@@ -248,6 +256,7 @@ function advanceCycle(state: GameState): void {
     p.ready = false;
   }
   cycleChanged(state);
+  burnOxygen(state);
   const { cyclesPerDay } = state.config;
   const newDay = (state.cycle - 1) % cyclesPerDay === 0;
   if (newDay) {
@@ -255,6 +264,7 @@ function advanceCycle(state: GameState): void {
     const loss = dailyMoraleLoss(state);
     for (const p of state.players) if (p.alive) p.morale = Math.max(0, p.morale - loss);
     grantCarePoints(state);
+    rechargeMicrowaves(state);
   }
   for (const p of state.players) {
     if (!p.alive || p.role !== "human") continue;
@@ -335,6 +345,8 @@ export function viewFor(state: GameState, playerId: PlayerId): PlayerView {
         skills: here ? [...o.skills] : [],
         // Who is in bed, and which bed, is visible to the room (owner, 2026-10-18).
         ...(here && o.lyingIn ? { lying: o.lyingIn } : {}),
+        // Who pushes whose wheelchair is public to the room (owner, 2026-10-19).
+        ...(here && o.pushedBy !== undefined ? { pushedBy: o.pushedBy } : {}),
         // Mush see a contaminated human's level, like a status, on people in their room.
         ...(contamination !== undefined ? { contamination } : {}),
         // A busy bar, never the action: only when its log entry could reach you.
@@ -374,6 +386,7 @@ export function viewFor(state: GameState, playerId: PlayerId): PlayerView {
     maxAp: state.config.maxAp,
     maxHp: state.config.maxHp,
     maxMorale: state.config.maxMorale,
+    ship: { ...state.ship, max: shipMax(state.config) },
     research: { ...state.research },
     projects: { ...state.projects },
     // Your own planets only, and only the tags an analysis revealed (owner, 2026-10-19).
@@ -396,8 +409,8 @@ export const affordable = (option: Readonly<ActionOption>): boolean => option.la
 /** The actions a view lets you do right now: its affordable options. */
 export const legalIn = (view: Pick<PlayerView, "actions">): Action[] => view.actions.filter(affordable).map((o) => o.action);
 
-function itemView({ id, type, of, builds }: ItemState): ItemView {
-  return { id, type, ...(of !== undefined && { of }), ...(builds !== undefined && { builds }) };
+function itemView({ id, type, of, builds, charges }: ItemState): ItemView {
+  return { id, type, ...(of !== undefined && { of }), ...(builds !== undefined && { builds }), ...(charges !== undefined && { charges }) };
 }
 
 function equipmentView({ id, type }: Equipment): EquipmentView {

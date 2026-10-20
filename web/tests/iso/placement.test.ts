@@ -3,6 +3,7 @@ import type { RoomLayout, ShipLayout, SliceInfo } from "@mush2/shared";
 import shipLayoutJson from "../../../Mush/derived/ship-layout.json?raw";
 import {
   cellAtPoint,
+  doorPassage,
   doorSpot,
   gridToPx,
   hitTest,
@@ -212,6 +213,85 @@ describe("the real ship", () => {
     }
   });
 
+  it("carries hydroponics' wall on to the front corridor's at the corner neither room draws", () => {
+    // Hydroponics' wall along the corridor stops at its own front edge; the corridor's wall in front
+    // of hydroponics starts one edge further on. The wall goes on to meet it, with a column at the
+    // corner, as at the corridor's own top corner.
+    const corridor = ship.rooms.find((r) => r.id === "CORRIDOR_A")!;
+    const garden = neighborRooms(ship, corridor).find((n) => n.room.id === "HYDROPONIC_CENTER")!;
+    const scene = placeScene(ship, [{ room: corridor, dx: 0, dy: 0, actors: [] }, { ...garden, actors: [] }]);
+    const gardenWall = garden.room.tiles.filter((t) => t.slice === "BIG_WALL_L");
+    const x = gardenWall[0]!.x + garden.dx, y = Math.max(...gardenWall.map((t) => t.y)) + garden.dy + 1;
+    expect(scene.filter((s) => s.cell.x === x && s.cell.y === y && s.kind === "wall").map((s) => s.slice).sort()).toEqual(["BIG_WALL_L", "COLUMN"]);
+    expect(scene.some((s) => s.kind === "wall" && s.slice === "BIG_WALL_R" && s.cell.x === x + 1 && s.cell.y === y)).toBe(true);
+  });
+
+  it("leaves no wall stopping just short of another room's, whichever room you are in and however far you see", () => {
+    // Walls stand on cell edges (a cell's anchor is its top corner): BIG_WALL_L on the cell's +x
+    // edge, BIG_WALL_R on its +y edge, corner_02 on both, a door on its two cells' edges, and a
+    // COLUMN is a post on the +x+y corner. A wall end that touches no other wall or post is a gap
+    // when another room's wall is within two edges along its line. A wall stopping with nothing in
+    // reach is fine: the open front edges (the Bravo side of most rooms) and the hull. The ends
+    // below are left on purpose; positions are on the ship plan, so moving rooms changes them
+    // (look at each with `npm run ship-view` before pinning it).
+    const LEFT: Record<string, string> = {
+      "LASER_TURRET_A_0 -34,18": "under the bridge's consoles",
+      "LASER_TURRET_A_1 -1,6": "behind Bay Alpha's deck wall, which carries on past it",
+      "CORRIDOR_A -2,23": "a sprinkler is mounted on the centre corridor's wall where it would go",
+      "LASER_TURRET_A_2 42,12": "behind the motor room's door",
+      "CORRIDOR_B -1,37": "behind Bay Beta's deck wall, and a camera is where it would go",
+      "LASER_TURRET_B_1 -1,39": "behind Bay Beta's deck wall, which carries on past it",
+      "STORAGE_B_0 4,37": "behind Bay Beta's deck wall, which carries on past it",
+      "BEDROOM_B 12,37": "behind Bay Beta's deck wall, which carries on past it",
+      "MOTOR_ROOM 39,37": "behind the Icarus bay's deck wall, which carries on past it",
+      "STORAGE_B_1 27,37": "the Icarus bay's deck corner post stands where it would go, and covers it",
+    };
+    const RUNS: Record<string, string> = { BIG_WALL_L: "y", WALL_L_DECK: "y", BIG_WALL_R: "x", WALL_R_DECK: "x", corner_02: "xy" };
+    const gaps = new Set<string>();
+    for (const r of ship.rooms.filter((r) => r.at)) {
+      for (const depth of [1, "all"] as const) {
+        const { x: ax, y: ay } = r.at!;
+        const scene = placeScene(ship, [
+          { room: r, dx: ax, dy: ay, actors: [] },
+          ...neighborRooms(ship, r, depth).map((n) => ({ ...n, dx: n.dx + ax, dy: n.dy + ay, actors: [] })),
+        ]);
+        const edges: { a: [number, number]; b: [number, number]; room: string }[] = [];
+        const rooms = new Map<string, Set<string>>();
+        const mark = ([x, y]: [number, number], room: string) => rooms.set(`${x},${y}`, (rooms.get(`${x},${y}`) ?? new Set()).add(room));
+        for (const s of scene) {
+          const { x, y } = s.cell;
+          const edge = (axis: "x" | "y", ex: number, ey: number) => edges.push({ a: [ex, ey], b: axis === "x" ? [ex + 1, ey] : [ex, ey + 1], room: s.room });
+          if (s.kind === "wall") {
+            if (s.slice === "COLUMN" || s.slice === "CORNER_DECK") mark([x + 1, y + 1], s.room);
+            if (RUNS[s.slice]?.includes("x")) edge("x", x, y + 1);
+            if (RUNS[s.slice]?.includes("y")) edge("y", x + 1, y);
+          } else if (s.kind === "door" && !s.slice.startsWith("DOOR_B")) {
+            const [w] = ship.slices[s.slice]!.footprint ?? [1, 1];
+            if (w > 1) edge("x", x, y + 1), edge("x", x - 1, y + 1);
+            else edge("y", x + 1, y), edge("y", x + 1, y - 1);
+          }
+        }
+        const touching = new Map<string, number>();
+        for (const e of edges) for (const [x, y] of [e.a, e.b]) touching.set(`${x},${y}`, (touching.get(`${x},${y}`) ?? 0) + 1);
+        const posts = new Set(rooms.keys());
+        for (const e of edges) for (const [x, y] of [e.a, e.b]) mark([x, y], e.room);
+        for (const e of edges) {
+          for (const [p, q] of [[e.a, e.b], [e.b, e.a]] as const) {
+            if (touching.get(`${p[0]},${p[1]}`) !== 1 || posts.has(`${p[0]},${p[1]}`)) continue;
+            for (let n = 1; n <= 2; n++) {
+              const there = rooms.get(`${p[0] + (p[0] - q[0]) * n},${p[1] + (p[1] - q[1]) * n}`);
+              if (!there) continue;
+              const end = `${e.room} ${p[0]},${p[1]}`;
+              if ([...there].some((o) => o !== e.room) && !LEFT[end]) gaps.add(`${end}: stops ${n} short of ${[...there].join("/")}'s wall (from ${r.id}, depth ${depth})`);
+              break;
+            }
+          }
+        }
+      }
+    }
+    expect([...gaps]).toEqual([]);
+  });
+
   it("leaves out front-edge doors once the room behind them is drawn", () => {
     for (const r of ship.rooms) {
       const scene = placeScene(ship, [{ room: r, dx: 0, dy: 0, actors: [] }, ...neighborRooms(ship, r).map((n) => ({ ...n, actors: [] }))]);
@@ -419,5 +499,35 @@ describe("neighborRooms", () => {
     expect(neighborRooms(ship, room("CORRIDOR_B")).map((n) => n.room.id).sort()).toEqual(
       ["CORRIDOR_A", "REFECTORY", "SPACESHIP_BAY_A", "SPACESHIP_BAY_B"],
     );
+  });
+});
+
+describe("doorPassage on the real ship", () => {
+  const ship = JSON.parse(shipLayoutJson) as ShipLayout;
+  const scene = (r: RoomLayout) => prepareScene(ship, [{ room: r, dx: 0, dy: 0 }, ...neighborRooms(ship, r)]);
+  /** Every pair of rooms with a door between them, from both sides. */
+  const pairs = ship.rooms.flatMap((r) =>
+    neighborRooms(ship, r).map((n) => ({ from: r, to: n.room, at: r.at! })),
+  );
+
+  it("walks through an opening door between every pair of rooms, the same doorway cell from both sides", () => {
+    expect(pairs.length).toBeGreaterThan(40);
+    const problems: string[] = [];
+    for (const { from, to, at } of pairs) {
+      const prepared = scene(from);
+      const path = doorPassage(prepared, walkableCells(ship, from), to.id);
+      if (!path) {
+        problems.push(`${from.id} -> ${to.id}: no way through`);
+        continue;
+      }
+      const inDoor = path.filter((c) => c.door);
+      const door = prepared.statics.find((s) => s.key === inDoor[0]?.door);
+      if (!door || (ship.slices[door.slice]?.anims.length ?? 0) < 2) problems.push(`${from.id} -> ${to.id}: no door that opens (${door?.slice})`);
+      // The doorway cell next to `to` is where you change rooms: the walk on starts there.
+      const back = doorPassage(scene(to), walkableCells(ship, to), from.id)!;
+      const cross = inDoor[0]!, other = back.filter((c) => c.door).at(-1)!;
+      if (cross.x + at.x !== other.x + to.at!.x || cross.y + at.y !== other.y + to.at!.y) problems.push(`${from.id} -> ${to.id}: doorways differ`);
+    }
+    expect(problems).toEqual([]);
   });
 });

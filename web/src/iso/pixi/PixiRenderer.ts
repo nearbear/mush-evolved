@@ -20,7 +20,7 @@
 
 import { Application, Container, type Filter, Rectangle, RendererType, Sprite, Texture, TextureStyle } from "pixi.js";
 import { keyedUrl } from "../../art/keyedSprite.ts";
-import { animFrame, type FrameUpdate, type Scene, type SceneAnim, type SceneImage, type SceneOutline, type ScenePicture, type SceneSprite } from "../scene.ts";
+import { animId, animStep, type FrameUpdate, type Scene, type SceneImage, type SceneOutline, type ScenePicture, type SceneSprite } from "../scene.ts";
 import { ESP, espPulse, filterKey, lookOf } from "./effects.ts";
 import { EspFilters, lookFilter } from "./filters.ts";
 
@@ -54,8 +54,6 @@ function frameTexture(base: Texture, key: string, sx: number, sy: number, width:
   }
   return t;
 }
-
-const animId = (a: SceneAnim | undefined) => a && `${a.frames.join(",")}/${a.frameMs}/${a.loops}`;
 
 interface Drawn {
   sprite: Sprite;
@@ -181,7 +179,7 @@ export class PixiRenderer {
         d.animStart = now;
       }
       d.pic = pic;
-      d.frame = pic.anim ? animFrame(pic.anim, now - d.animStart) : 0;
+      d.frame = pic.anim ? animStep(pic.anim, now - d.animStart).frame : 0;
       paint(d, pic);
       this.setTexture(d, pic.image, d.frame);
       this.place(d, { x: 0, y: 0 });
@@ -322,8 +320,11 @@ export class PixiRenderer {
   private tick = (now: number) => {
     this.raf = 0;
     if (this.destroyed || !this.ready) return;
+    // Animations that have ended (a door left open or shut) stop asking for frames.
+    let playing = false;
     for (const d of this.animated) {
-      const f = animFrame(d.pic.anim!, now - d.animStart);
+      const { frame: f, nextIn } = animStep(d.pic.anim!, now - d.animStart);
+      if (nextIn !== undefined) playing = true;
       if (f === d.frame) continue;
       d.frame = f;
       this.setTexture(d, d.pic.image, f);
@@ -335,6 +336,6 @@ export class PixiRenderer {
       if (pulse) this.dirty = true;
     }
     if (this.dirty) this.renderNow();
-    if (this.animated.length || pulse) this.raf = requestAnimationFrame(this.tick);
+    if (playing || pulse) this.raf = requestAnimationFrame(this.tick);
   };
 }

@@ -205,7 +205,7 @@
   image-rendering: pixelated;
 }
 
-/* Desktop ship resources card (oxygen, fuel, shields, plasma shield, alerts). Hidden on phones by TopBar. */
+/* Desktop ship resources card (oxygen, fuel, hull, plasma shield, alerts). Hidden on phones by TopBar. */
 .ship-resources {
   display: flex;
   gap: 0.9rem;

@@ -5,11 +5,15 @@
 // controls on lockers touches one place.
 
 import { inventorySlots } from "./modifiers.ts";
-import type { Container, GameState, ItemState, PlayerState } from "./types.ts";
+import type { Container, GameConfig, GameState, ItemState, PlayerState } from "./types.ts";
 
 export interface ItemType {
   /** Drinking or eating it removes it and does this. */
-  consume?: { ap: number; /** Satiety a human gains (confirmed 2026-10-14). */ satiety: number };
+  consume?: {
+    ap: number;
+    /** Satiety a human gains (confirmed 2026-10-14). */ satiety: number;
+    /** Morale the eater gains (negative: loses), within 0 and `maxMorale`. */ morale?: number;
+  };
   /** Cooking it (in a cook room) turns it into this item type. */
   cook?: { into: string };
   /** Carrying one makes every room-to-room move cost `heavyMpPenalty` more MP, once however many you carry (confirmed 2026-10-16). Skills may cancel it. */
@@ -33,6 +37,20 @@ export const ITRACKIE_ITEM = "super_talky";
 /** A dead player's body (death.ts); `ItemState.of` says whose. */
 export const CORPSE_ITEM = "corpse";
 
+/** Express cooks rations (actions/express_cook.ts) while it has charges. */
+export const MICROWAVE_ITEM = "microwave";
+
+/** The charges an item of this type starts with, or undefined if it has none. */
+export function startCharges(config: Readonly<GameConfig>, type: string): number | undefined {
+  return type === MICROWAVE_ITEM ? config.expressCook.charges.start : undefined;
+}
+
+/** Each microwave regains `expressCook.charges.perDay`, up to the max. Mutates a state the caller already cloned. */
+export function rechargeMicrowaves(state: GameState): void {
+  const { max, perDay } = state.config.expressCook.charges;
+  for (const item of state.items) if (item.type === MICROWAVE_ITEM) item.charges = Math.min(max, (item.charges ?? 0) + perDay);
+}
+
 export const ITEM_TYPES: Record<string, ItemType> = {
   [ITRACKIE_ITEM]: {},
   wrench: {},
@@ -42,8 +60,9 @@ export const ITEM_TYPES: Record<string, ItemType> = {
   // Confirmed 2026-10-13: +2 AP. Satiety +1 is a placeholder (2026-10-14).
   coffee: { consume: { ap: 2, satiety: 1 } },
   // PLACEHOLDER food (2026-10-14): +4 satiety, no AP.
-  // Confirmed 2026-10-16: cook it in the refectory for 1 AP; not edible raw.
-  uncooked_ration: { cook: { into: "cooked_ration" } },
+  // Confirmed 2026-10-16: cook it in the refectory for 1 AP.
+  // Owner, 2026-10-19: edible raw, like a cooked one but for 1 morale.
+  uncooked_ration: { cook: { into: "cooked_ration" }, consume: { ap: 0, satiety: 4, morale: -1 } },
   cooked_ration: { consume: { ap: 0, satiety: 4 } },
   camera: { canDrop: false, dismantle: { metal: 1, plastic: 0 }  },
   // Showering with soap in your inventory costs 1 less AP (confirmed 2026-10-14). Reusable.
@@ -61,6 +80,8 @@ export const ITEM_TYPES: Record<string, ItemType> = {
   plastic_scraps: {},
   // Confirmed 2026-10-16: spawns in the refectory at the start; heavy.
   freezer: { heavy: true },
+  // Owner, 2026-10-19: spawns in the refectory; heavy. Express cook spends its charges (`ItemState.charges`).
+  [MICROWAVE_ITEM]: { heavy: true },
   // Decided 2026-10-16: a dead player's body (death.ts). Takes one slot like any item; heavy.
   [CORPSE_ITEM]: { heavy: true },
 };

@@ -4,7 +4,7 @@ import type { Action, BotKind, ItemId, LogEntry, PlayerId, RoomId } from "../typ
 import type { ChannelId, ChatMessage, PrivateChannel } from "./chat.ts";
 import type { MovementRules } from "./config.ts";
 import type { ActionInProgress, PlayerState } from "./player.ts";
-import type { GameState } from "./state.ts";
+import type { GameState, ShipResources } from "./state.ts";
 
 /** Room equipment as a client sees it. */
 export interface EquipmentView {
@@ -20,6 +20,8 @@ export interface ItemView {
   of?: PlayerId;
   /** For a blueprint: which recipe it carries (the blueprint is public to whoever can see the item). */
   builds?: string;
+  /** For a microwave: express cooks left (public to whoever can see the item, like its type). */
+  charges?: number;
 }
 
 export interface OtherPlayerView {
@@ -36,6 +38,8 @@ export interface OtherPlayerView {
   statuses: string[];
   /** The bed (equipment id) they are lying in. Public to anyone in your room (empty for people elsewhere). */
   lying?: string;
+  /** Who is pushing their wheelchair. Public to anyone in your room (empty for people elsewhere). */
+  pushedBy?: PlayerId;
   /** Skills they have chosen. Public to anyone in your room (empty for people elsewhere). */
   skills: string[];
   /** Their contamination, shown as a status. Only when you are Mush, they are a contaminated human, and they are in your room. */
@@ -120,6 +124,8 @@ export interface PlayerView {
     /** People who have bonded to you. */
     from: PlayerId[];
   };
+  /** The ship's oxygen, fuel, hull and plasma shield, public to everyone (owner, 2026-10-19), with their caps. */
+  ship: ShipResources & { max: ShipResources };
   /** Percent done of each research that has been started, public to everyone (decided 2026-10-16). */
   research: Record<string, number>;
   /** Percent done of each NERON project that has been started, public to everyone (decided 2026-10-18). */

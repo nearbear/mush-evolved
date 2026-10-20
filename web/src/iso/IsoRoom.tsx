@@ -26,7 +26,7 @@ import type { Bubble } from "../scene/useSpeechBubbles.ts";
 import { useNames } from "../i18n/names.ts";
 import { CAMERA_SLICES, equipmentByTileKey, roomAsBuilt } from "./equipmentTiles.ts";
 import { opaqueAt, preloadImage } from "./hitMask.ts";
-import { useWalkers } from "./useWalkers.ts";
+import { useWalkers, type Goal } from "./useWalkers.ts";
 import type { ActingOn } from "./useActingOn.ts";
 import type { RendererChoice } from "../rendererChoice.ts";
 import { DomScene } from "./dom/DomScene.tsx";
@@ -36,6 +36,7 @@ import {
   LYING_SIZE,
   corpseOf,
   describeScene,
+  doorOpenMs,
   imageOf,
   type Corpse,
   type FrameTarget,
@@ -46,6 +47,7 @@ import {
 import {
   bounds,
   cellAtPoint,
+  doorPassage,
   doorSpot,
   hitTest,
   neighborRooms,
@@ -55,6 +57,7 @@ import {
   standSpot,
   walkableCells,
   walkPath,
+  type DoorStep,
   type PlacedSprite,
 } from "./placement.ts";
 
@@ -98,6 +101,9 @@ function seatFor(dir: string | undefined): Seat {
   return { facing: "face", flip: false };
 }
 
+/** The index of the last step in a doorway. */
+const lastInDoorway = (steps: readonly DoorStep[]) => steps.reduce((last, s, i) => (s.door ? i : last), -1);
+
 export function IsoRoom({
   layout,
   room,
@@ -115,6 +121,7 @@ export function IsoRoom({
   teleport,
   leavingTo,
   onLeft,
+  doorMoves,
   onMove,
   onSelect,
   onClear,
@@ -148,6 +155,8 @@ export function IsoRoom({
   /** You've already moved there: walk to the door to it, then `onLeft` (LeavingIsoRoom shows the next room). */
   leavingTo: RoomId | null;
   onLeft: () => void;
+  /** Where people last came in from or went out to, if just now (by player id): they walk through that door. */
+  doorMoves: ReadonlyMap<string, { from?: RoomId; to?: RoomId }>;
   onMove: (to: RoomId) => void;
   onSelect: (target: Target) => void;
   /** Bare floor was tapped: drop the selection (and any peeked door). */
@@ -179,20 +188,73 @@ export function IsoRoom({
   // Where you've clicked to walk. Client-only and cosmetic: the server never hears of it,
   // and it resets when you change rooms (it belongs to one visit, so coming back doesn't restore it).
   // Sitting on a chair is the same kind of local state: the walk's end point plus the seat taken there.
-  const [walk, setWalk] = useState<{ visit: number; cell: { x: number; y: number }; seat?: Seat } | null>(null);
+  // `by`: when to get there (Date.now() ms), for the walk to a door, which takes as long as the move.
+  const [walk, setWalk] = useState<{ visit: number; cell: { x: number; y: number }; seat?: Seat; by?: number } | null>(null);
   // biome-ignore lint/correctness/useExhaustiveDependencies: only sending an action gets you up.
   useEffect(() => setWalk((w) => (w?.seat ? { ...w, seat: undefined } : w)), [sentCount]);
   const cells = useMemo(() => (roomLayout ? walkableCells(layout, roomLayout) : []), [layout, roomLayout]);
   const spots = useMemo(() => spreadActors(cells, occupants.length + corpses.length), [cells, occupants.length, corpses.length]);
 
-  // Everyone walks to their spot (you to where you clicked). Coming into a room, you stand in front
-  // of the door back to the room you left until you walk off. Cosmetic like the spots: nothing waits for it.
+  // The tiles of this room and the rooms behind its doors, sorted once; people walking only re-place the people.
+  const prepared = useMemo(() => {
+    if (!roomLayout) return undefined;
+    const rooms = neighborRooms(layout, roomLayout, fogDepth).map((n) => ({ ...n, cells: walkableCells(layout, n.room) }));
+    return { rooms, scene: prepareScene(layout, [{ room: roomLayout, dx: 0, dy: 0 }, ...rooms]) };
+  }, [layout, roomLayout, fogDepth]);
+
+  // The walk through each door, worked out once per scene.
+  const passages = useMemo(() => {
+    const found = new Map<string, DoorStep[] | undefined>();
+    return (to: string) => {
+      if (!found.has(to)) found.set(to, prepared && doorPassage(prepared.scene, cells, to));
+      return found.get(to);
+    };
+  }, [prepared, cells]);
+  const openMs = useMemo(() => {
+    const ms = new Map(prepared?.scene.statics.filter((s) => s.door).map((s) => [s.key, doorOpenMs(layout.slices[s.slice])]));
+    return (door: string) => ms.get(door) ?? 0;
+  }, [prepared, layout]);
+
+  // Everyone walks to their spot (you to where you clicked). Coming into a room, you step out of the
+  // doorway you came through and stand in front of it until you walk off. Cosmetic like the spots: nothing waits for it.
   const visit = useRef<{ room: RoomId; from: RoomId | null; n: number }>({ room, from: null, n: 0 });
   if (visit.current.room !== room) visit.current = { room, from: visit.current.room, n: visit.current.n + 1 };
   const here = walk?.visit === visit.current.n ? walk : undefined;
   const me = occupants.find((o) => o.you);
+  // You can't wander the room while lying in bed or while someone pushes your wheelchair.
+  const rooted = !!me?.lying || !!me?.statuses.includes("accommodated");
   const entryCell = roomLayout && visit.current.from ? doorSpot(layout, roomLayout, visit.current.from, cells) : undefined;
   const exitCell = roomLayout && leavingTo ? doorSpot(layout, roomLayout, leavingTo, cells) : undefined;
+  /** The way out through the door to `to`, from the cell in front of it: to the far side, or (`you`) into the doorway, where the view changes rooms. */
+  const wayOut = (to: string, you: boolean) => {
+    const out = passages(to)?.slice().reverse();
+    return out && out.slice(1, you ? lastInDoorway(out) + 1 : undefined);
+  };
+  /** The way in through the door from `from`, to the cell in front of it: from the far side, or (`you`) from the doorway you left the last room by. */
+  const wayIn = (from: string, you: boolean) => {
+    const way = passages(from);
+    return way && (you ? way.slice(lastInDoorway(way)) : way);
+  };
+
+  // Others who just went out through a door: drawn walking out until they're through it.
+  const [leavers, setLeavers] = useState<{ visit: number; person: Occupant; to: RoomId }[]>([]);
+  const walkingOut = leavers.filter((l) => l.visit === visit.current.n && !occupants.some((o) => o.id === l.person.id));
+  // Who was here last time, to tell who just came in or went out.
+  const lastSeen = useRef({ visit: visit.current.n, ids: new Set(occupants.map((o) => o.id)), occupants });
+  const seen = lastSeen.current.visit === visit.current.n ? lastSeen.current : undefined;
+  const visitN = visit.current.n;
+  // biome-ignore lint/correctness/useExhaustiveDependencies: occupantKey stands in for occupants; a new room counts too, though the same people may be there.
+  useEffect(() => {
+    const before = lastSeen.current;
+    lastSeen.current = { visit: visit.current.n, ids: new Set(occupants.map((o) => o.id)), occupants };
+    if (before.visit !== visit.current.n) return;
+    const gone = before.occupants.flatMap((person) => {
+      const to = person.you || lastSeen.current.ids.has(person.id) ? undefined : doorMoves.get(person.id)?.to;
+      return to && wayOut(to, false) ? [{ visit: visit.current.n, person, to }] : [];
+    });
+    if (gone.length) setLeavers((ls) => [...ls.filter((l) => l.visit === visit.current.n && !gone.some((g) => g.person.id === l.person.id)), ...gone]);
+  }, [occupantKey, visitN]);
+  const drawnPeople = [...occupants, ...walkingOut.map((l) => l.person)];
   // Someone in bed lies in the middle of the bed's footprint, mirrored to run along the bed.
   const beds = new Map<string, { cell: { x: number; y: number }; flip: boolean }>();
   const equipmentByKey = useMemo(() => equipmentByTileKey(roomLayout, equipment), [roomLayout, equipment]);
@@ -204,15 +266,44 @@ export function IsoRoom({
     const [w, h] = layout.slices[t.slice]?.footprint ?? [1, 1];
     beds.set(o.id, { cell: { x: t.x - Math.floor((w - 1) / 2), y: t.y - Math.floor((h - 1) / 2) }, flip: w > h });
   }
-  const targets = new Map(
-    occupants.map((o, i) => [o.id, beds.get(o.id)?.cell ?? ((o.you && (exitCell ?? here?.cell ?? entryCell)) || spots[i] || { x: 0, y: 0 })]),
+  const myExit = leavingTo ? wayOut(leavingTo, true) : undefined;
+  const targets = new Map<string, Goal>(
+    occupants.map((o, i) => {
+      const bed = beds.get(o.id)?.cell;
+      if (bed) return [o.id, { cell: bed }];
+      if (o.you) {
+        const cell = exitCell ?? here?.cell ?? entryCell ?? spots[i] ?? { x: 0, y: 0 };
+        return [o.id, { cell, ...(!exitCell && here?.by !== undefined && { arriveBy: here.by }), ...(myExit && { then: myExit }), ...(visit.current.from && { from: wayIn(visit.current.from, true) }) }];
+      }
+      // Someone who just came in walks in through the door they came by.
+      const from = seen && !seen.ids.has(o.id) ? doorMoves.get(o.id)?.from : undefined;
+      return [o.id, { cell: spots[i] ?? { x: 0, y: 0 }, ...(from && { from: wayIn(from, false) }) }];
+    }),
   );
+  for (const l of walkingOut) {
+    const out = wayOut(l.to, false);
+    const cell = doorSpot(layout, roomLayout!, l.to, cells);
+    if (out && cell) targets.set(l.person.id, { cell, then: out });
+  }
   // Each animation frame while anyone walks: the camera and the walkers' pixel shifts, to the renderer and the overlay.
   const paint = useRef<((offsetOf: (id: string) => { x: number; y: number }) => void) | null>(null);
-  const { at: walkers, apply: applyWalkers, offsetOf } = useWalkers(room, cells, targets, paint, teleport ? me?.id : undefined);
+  const { at: walkers, doors, apply: applyWalkers, offsetOf } = useWalkers(room, cells, targets, openMs, paint, teleport ? me?.id : undefined);
   const myWalker = me && walkers.get(me.id);
-  // Walking out: done once you stand at the door (straight away if there's no door to go through).
-  const outside = !!leavingTo && (!exitCell || !myWalker || (!myWalker.moving && myWalker.cell.x === exitCell.x && myWalker.cell.y === exitCell.y));
+  const standsAt = (w: { cell: { x: number; y: number }; moving: boolean } | undefined, c: { x: number; y: number }) => !!w && !w.moving && w.cell.x === c.x && w.cell.y === c.y;
+  // Walking out: done once you stand in the doorway (straight away if there's no door to go through).
+  const exitAt = myExit?.at(-1) ?? exitCell;
+  const outside = !!leavingTo && (!exitAt || !myWalker || standsAt(myWalker, exitAt));
+  // Others walking out are gone once through.
+  const throughKey = walkingOut
+    .filter((l) => {
+      const end = targets.get(l.person.id)?.then?.at(-1);
+      return !end || standsAt(walkers.get(l.person.id), end);
+    })
+    .map((l) => l.person.id)
+    .join(",");
+  useEffect(() => {
+    if (throughKey) setLeavers((ls) => ls.filter((l) => !throughKey.split(",").includes(l.person.id)));
+  }, [throughKey]);
   // biome-ignore lint/correctness/useExhaustiveDependencies: onLeft is rebuilt every render; reaching the door is what matters.
   useEffect(() => {
     if (outside) onLeft();
@@ -220,24 +311,18 @@ export function IsoRoom({
   const arrived = !!myWalker && !myWalker.moving && !!here && myWalker.cell.x === here.cell.x && myWalker.cell.y === here.cell.y;
   const mySeat = arrived ? here?.seat : undefined;
   const walkersKey = [...walkers].map(([id, w]) => `${id}@${w.cell.x},${w.cell.y}${w.facing.flip ? "f" : ""}`).join(";");
+  const doorsKey = [...doors].map(([k, d]) => `${k}:${d}`).join(";");
   // How they look on top of where they are: the strip and the walk cycle can change without a step into another cell (stopping, mostly).
   const walkersLook = [...walkers].map(([id, w]) => `${id}:${w.facing.strip}${w.moving ? "m" : ""}${w.arriving ? "a" : ""}`).join(";");
-
-  // The tiles of this room and the rooms behind its doors, sorted once; people walking only re-place the people.
-  const prepared = useMemo(() => {
-    if (!roomLayout) return undefined;
-    const rooms = neighborRooms(layout, roomLayout, fogDepth).map((n) => ({ ...n, cells: walkableCells(layout, n.room) }));
-    return { rooms, scene: prepareScene(layout, [{ room: roomLayout, dx: 0, dy: 0 }, ...rooms]) };
-  }, [layout, roomLayout, fogDepth]);
 
   // This room and the rooms behind its doors, each with its people, drawn as one scene so that
   // whichever is in front covers the other. Display only: where people stand isn't game state.
   const nearbyKey = JSON.stringify(Object.entries(nearby).map(([r, os]) => [r, os?.map((o) => o.id)]));
-  // biome-ignore lint/correctness/useExhaustiveDependencies: occupantKey, corpseKey, nearbyKey and walkersKey stand in for occupants, corpses, nearby and walkers: positions only change when who or what is where changes.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: occupantKey, corpseKey, nearbyKey, walkersKey and leavers stand in for occupants, corpses, nearby, walkers and those walking out: positions only change when who or what is where changes.
   const { scene, sprites, neighborSprites, neighbors, box, ownCells } = useMemo(() => {
     if (!roomLayout || !prepared) return { scene: [], sprites: [], neighborSprites: [], neighbors: [], box: bounds([]), ownCells: new Set<string>() };
     const actors = [
-      ...occupants.map((o, i) => ({
+      ...drawnPeople.map((o, i) => ({
         id: o.id,
         cell: walkers.get(o.id)?.cell ?? spots[i] ?? { x: 0, y: 0 },
         ...(o.lying ? { ...LYING_SIZE, onTop: true } : { width: 32, height: 48 }),
@@ -246,7 +331,8 @@ export function IsoRoom({
       ...corpses.map((c, i) => ({ id: `${CORPSE_PREFIX}${c.id}`, cell: spots[occupants.length + i] ?? { x: 0, y: 0 }, ...LYING_SIZE })),
     ];
     const neighbors = prepared.rooms.map(({ room: n, ring, cells }) => {
-      const people = nearby[n.id as RoomId] ?? [];
+      // Someone still walking out of this room isn't drawn where they went yet.
+      const people = (nearby[n.id as RoomId] ?? []).filter((o) => !walkingOut.some((l) => l.person.id === o.id));
       const spots = spreadActors(cells, people.length);
       const actors = people.map((o, i) => ({ id: o.id, cell: spots[i] ?? { x: 0, y: 0 }, width: 32, height: 48 }));
       return { actors, id: n.id as RoomId, people, ring };
@@ -270,7 +356,7 @@ export function IsoRoom({
       for (const [ax, ay] of [[x + 1, y], [x - 1, y], [x, y + 1], [x, y - 1]] as const) ownCells.add(`${ax},${ay}`);
     }
     return { scene, sprites, neighborSprites, neighbors, box: bounds(sprites), ownCells };
-  }, [prepared, spots, walkersKey, occupantKey, corpseKey, nearbyKey, hasCamera]);
+  }, [prepared, spots, walkersKey, occupantKey, corpseKey, nearbyKey, hasCamera, leavers]);
 
   // Sprites draw at exactly one screen pixel per source pixel, so art stays crisp.
   // The camera always keeps you centred, even near a room's edges (the neighbours fill the space
@@ -324,11 +410,13 @@ export function IsoRoom({
       const path = at && walkPath(cells, myWalker.cell, at);
       cell = path && path.length > 1 ? path[path.length - 2] : undefined;
     }
-    if (cell) setWalk({ visit: visit.current.n, cell });
+    // A move walks to the door at the pace that gets you there as it ends: slowly to a door close by, briskly to one far off.
+    const by = target.kind === "door" && actingOn.until !== undefined ? actingOn.until - clockOffset : undefined;
+    if (cell) setWalk({ visit: visit.current.n, cell, ...(by !== undefined && { by }) });
   }, [actingOn?.n]);
 
   const ringOf = new Map(neighbors.map((n) => [n.id as string, n.ring]));
-  const byId = new Map([...occupants, ...neighbors.flatMap((n) => n.people)].map((o) => [o.id, o]));
+  const byId = new Map([...drawnPeople, ...neighbors.flatMap((n) => n.people)].map((o) => [o.id, o]));
   const imageInput = { layout, room, people: byId, walkers, seat: mySeat, corpses };
 
   // Load every image this room hit-tests against, so masks are ready by the first click.
@@ -344,7 +432,7 @@ export function IsoRoom({
   const [hoverAt, setHoverAt] = useState({ x: 0, y: 0 });
 
   // What the renderer draws. Rebuilt when the placed scene, the people, or what's selected, hovered or reachable changes.
-  // biome-ignore lint/correctness/useExhaustiveDependencies: walkersKey and walkersLook stand in for walkers; occupants, nearby and corpses for the image input and beds built from them.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: walkersKey and walkersLook stand in for walkers, doorsKey for doors; occupants, nearby and corpses for the image input and beds built from them.
   const drawn = useMemo(
     () =>
       describeScene({
@@ -358,8 +446,9 @@ export function IsoRoom({
         selectedDoor,
         hoverKey,
         ownCells,
+        doors,
       }),
-    [scene, box, walkersKey, walkersLook, mySeat, occupants, nearby, corpses, equipmentByKey, reachable, selected, selectedDoor, hoverKey, ownCells],
+    [scene, box, walkersKey, walkersLook, doorsKey, mySeat, occupants, nearby, corpses, equipmentByKey, reachable, selected, selectedDoor, hoverKey, ownCells],
   );
   // Badges and bubbles go over the people in this room.
   const anchors = drawn.sprites.flatMap((s): Anchor[] => {
@@ -465,7 +554,7 @@ export function IsoRoom({
     else if (hit?.kind === "chair") {
       // Sit down (cosmetic, like walking): you stand on the chair's cell in the sitting pose.
       onClear();
-      if (!me?.lying) setWalk({ visit: visit.current.n, cell: hit.cell, seat: seatFor(hit.dir) });
+      if (!rooted) setWalk({ visit: visit.current.n, cell: hit.cell, seat: seatFor(hit.dir) });
     }
     else if (hit?.kind === "door") onDoorTap(hit.to);
     else {
@@ -473,7 +562,7 @@ export function IsoRoom({
       onClear();
       const at = pointIn(e);
       const cell = cellAtPoint(cells, at.x, at.y);
-      if (cell && !me?.lying) setWalk({ visit: visit.current.n, cell });
+      if (cell && !rooted) setWalk({ visit: visit.current.n, cell });
     }
   };
   const onDoubleClick = (e: MouseEvent<HTMLDivElement>) => {

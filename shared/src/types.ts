@@ -59,6 +59,8 @@ export interface ItemState {
   of?: PlayerId;
   /** For a blueprint: the key of the recipe it carries (BLUEPRINTS in blueprints.ts). */
   builds?: string;
+  /** For a microwave: express cooks left. */
+  charges?: number;
 }
 
 /**
@@ -76,6 +78,7 @@ export type Action =
   | { type: "dispense"; equipment: string }
   | { type: "consume"; item: ItemId }
   | { type: "cook"; item: ItemId }
+  | { type: "express_cook"; item: ItemId }
   | { type: "build"; item: ItemId }
   | { type: "jettison"; item: ItemId }
   | { type: "install"; item: ItemId }
@@ -87,6 +90,9 @@ export type Action =
   | { type: "extract_spore" }
   | { type: "lie_down"; equipment: string }
   | { type: "get_up" }
+  | { type: "accommodate"; target: PlayerId }
+  | { type: "accept_accommodation"; target: PlayerId }
+  | { type: "stop_accommodation"; target: PlayerId }
   | { type: "shower"; equipment: string }
   | { type: "access"; equipment: string }
   | { type: "research"; equipment: string; research: string }

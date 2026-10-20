@@ -5,7 +5,7 @@
 
 import { useEffect, useId, useRef, useState, type CSSProperties } from "react";
 import { useKeyedSprite } from "../../art/keyedSprite.ts";
-import type { SceneAnim, ScenePicture, SceneRendererProps, SceneSprite } from "../scene.ts";
+import { animId, animStep, type SceneAnim, type ScenePicture, type SceneRendererProps, type SceneSprite } from "../scene.ts";
 import { useDomFrame } from "../useDomFrame.ts";
 
 export function DomScene({ scene, ref }: SceneRendererProps) {
@@ -88,24 +88,27 @@ function KeyedPicture({ picture, className, frame }: { picture: ScenePicture; cl
   return <div className={`${className} crew-sprite`} style={pictureStyle(picture, url, frame)} />;
 }
 
-/** The frame an animation is on: steps through `frames`, then rests on the first after `loops` rounds. */
+/** The frame an animation is on (`animStep`), with a timer set for each change until it ends. */
 function useAnimFrame(anim: SceneAnim | undefined): number {
-  const [step, setStep] = useState(0);
-  const id = anim && `${anim.frames.join(",")}/${anim.frameMs}/${anim.loops}`;
+  const id = animId(anim);
+  const [frame, setFrame] = useState(() => (anim ? animStep(anim, 0).frame : 0));
   // biome-ignore lint/correctness/useExhaustiveDependencies: `id` stands in for anim, which is rebuilt every render.
   useEffect(() => {
-    setStep(0);
-    if (!anim) return;
-    const steps = anim.loops === "forever" ? Infinity : anim.frames.length * anim.loops;
-    let n = 0;
-    const timer = setInterval(() => {
-      n++;
-      setStep(n < steps ? n : 0);
-      if (n >= steps) clearInterval(timer);
-    }, anim.frameMs);
-    return () => clearInterval(timer);
+    if (!anim) {
+      setFrame(0);
+      return;
+    }
+    const start = performance.now();
+    let timer = 0;
+    const step = () => {
+      const { frame, nextIn } = animStep(anim, performance.now() - start);
+      setFrame(frame);
+      if (nextIn !== undefined) timer = window.setTimeout(step, nextIn);
+    };
+    step();
+    return () => clearTimeout(timer);
   }, [id]);
-  return anim ? (anim.frames[step % anim.frames.length] ?? 0) : 0;
+  return frame;
 }
 
 /**

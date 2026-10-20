@@ -6,7 +6,7 @@
     "title": "Recursos de la nave",
     "oxygen": "Oxígeno",
     "fuel": "Combustible",
-    "shields": "Escudos",
+    "hull": "Casco",
     "plasmaShield": "Escudo de plasma",
     "alerts": "Alertas"
   },
@@ -145,6 +145,7 @@
     "dispense": "Sacar un café",
     "consume": "Consumir",
     "cook": "Cocinar",
+    "expressCook": "Cocina exprés",
     "build": "Montar",
     "jettison": "Expulsar",
     "install": "Instalar",
@@ -156,6 +157,9 @@
     "extractSpore": "Extraer una espora",
     "lieDown": "Acostarse",
     "getUp": "Levantarse",
+    "accommodate": "Empujar la silla",
+    "acceptAccommodation": "Aceptar ayuda",
+    "stopAccommodation": "Terminar la ayuda",
     "shower": "Ducharse",
     "heal": "Curar",
     "punch": "Golpear",
@@ -263,6 +267,8 @@
     "immunity": "Inmunidad",
     "pacifist": "Pacifista",
     "mankind_only_hope": "Única esperanza de la humanidad",
+    "wheelchair": "Silla de ruedas",
+    "accommodated": "Acompañado",
     "contaminated": "Contaminación: {{level}}",
     "desc": {
       "dirty": "No puedes investigar. Darte una ducha lo elimina.",
@@ -272,6 +278,8 @@
       "immunity": "Un rasgo: los intentos de infectarte nunca hacen nada. No se puede quitar.",
       "pacifist": "Toda acción agresiva en la sala de esta persona cuesta 2 PA más, incluidas las suyas. Se acumula con otros pacifistas. No se puede quitar.",
       "mankind_only_hope": "Un rasgo: mientras esta persona siga con vida, toda la tripulación pierde 1 punto de moral menos cada día. No se puede quitar.",
+      "wheelchair": "Un rasgo: cualquiera en la sala de esta persona puede ofrecerse a empujar su silla de ruedas. Mientras la empujan, se mueve con quien la empuja sin coste de PM. No se puede quitar.",
+      "accommodated": "Alguien empuja la silla de ruedas de esta persona: va adonde vaya quien la empuja, sin coste de PM, y no puede moverse sola. Cualquiera de los dos puede terminarlo.",
       "contaminated": "Un humano que has contaminado. Al llegar a su capacidad se vuelve Mush."
     }
   },
@@ -341,6 +349,9 @@
   "itemAttr": {
     "label": "Atributos del objeto",
     "heavy": "Pesado",
+    "charges_one": "Queda {{count}} carga",
+    "charges_many": "Quedan {{count}} cargas",
+    "charges_other": "Quedan {{count}} cargas",
     "heavyDesc": "Transportarlo hace que cada desplazamiento entre salas cueste {{mp}} puntos de movimiento adicionales, independientemente de cuántos objetos pesados lleves. La habilidad Robusto anula esta penalización."
   },
   "items": {
@@ -360,6 +371,7 @@
     "blueprint": "Plano",
     "blueprintOf": "Plano: {{thing}}",
     "freezer": "Congelador",
+    "microwave": "Microondas",
     "corpse": "Cadáver",
     "myco_alarm": "Micoalarma",
     "tree_pot": "Hidromaceta"
@@ -369,10 +381,14 @@
     "actionDropped": "Tu acción en cola ({{action}}) ya no era posible y se ha descartado.",
     "becomeDirty": "¡Tienes suciedad por todas partes! Te has ensuciado.",
     "crewWakes": "La tripulación despierta a bordo de la nave.",
+    "oxygenOut": "Se acabó el oxígeno. Alguien se asfixia.",
     "cycleBegins": "Comienza el ciclo {{cycle}}.",
     "dayBegins": "Comienza el día {{day}}.",
     "left": "{{name}} se fue a: {{room}}.",
     "entered": "{{name}} entró desde: {{room}}.",
+    "accommodationOffered": "{{name}} se ofreció a empujar la silla de ruedas de {{target}}.",
+    "accommodated": "{{name}} empuja ahora la silla de ruedas de {{target}}.",
+    "accommodationEnded": "{{name}} dejó de empujar la silla de ruedas de {{target}}.",
     "pickedUp": "{{name}} recogió: {{item}}.",
     "dropped": "{{name}} soltó: {{item}}.",
     "dismantleFailed": "No lograste desmontar: {{item}}.",
@@ -390,6 +406,7 @@
     "builtItem": "{{name}} montó: {{item}}.",
     "built": "{{name}} montó: {{equipment}}.",
     "cooked": "{{name}} cocinó: {{item}}.",
+    "expressCooked": "{{name}} hizo una cocina exprés: {{item}}.",
     "jettisoned": "{{name}} expulsó el cuerpo de {{body}}.",
     "healed": "{{name}} curó a {{target}}.",
     "healedSelf": "{{name}} se curó a sí mismo/a.",

@@ -1,5 +1,5 @@
 import type { ActopiCheat, Cheat } from "../cheats.ts";
-import type { Action, Role, RoomId, Seat } from "../types.ts";
+import type { Action, PlayerId, Role, RoomId, Seat } from "../types.ts";
 
 export type ResourceId = "eng" | "exp" | "comp" | "garden" | "core" | "shoot" | "cook" | "heal" | "pilgred";
 
@@ -32,6 +32,13 @@ export interface PlayerState extends Seat {
   ap: number;
   /** The bed (equipment id) you are lying in, while you have the `lying_down` modifier. Public to your room (`OtherPlayerView.lying`). */
   lyingIn?: string;
+  /** Who is pushing your wheelchair (accommodate.ts). Public to your room (`OtherPlayerView.pushedBy`, the `accommodated` status). */
+  pushedBy?: PlayerId;
+  /**
+   * Who has offered to push your wheelchair, for you to accept, and the server time (ms) each offer expires. Your
+   * own view only (the offers themselves are in the room log).
+   */
+  accommodationOffers?: { by: PlayerId; until: number }[];
   /** Movement points. Start at 0; topped up by converting AP when moving. */
   mp: number;
   /** Health points. Private: only in your own view. Nothing changes them yet. */

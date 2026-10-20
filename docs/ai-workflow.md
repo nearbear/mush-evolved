@@ -883,3 +883,46 @@ Decided by the owner, accepting a commenter on #24 (eMush days start at 00:00 GM
 - What needed correction: Vite dev doesn't rewrite `../Mush` paths written directly in HTML (`<img src>`, inline `style`), so those images 404'd; the page now names files with `data-img`/`data-bg` and resolves them through an `import.meta.glob` in `main.ts`. Useful finding: the site frame's left+right pieces add up to exactly 1080px on every row, so it's a fixed-width frame.
 
 - **2026-10-20 — Research dirty chance (owner):** added a 25% chance to become dirty after any successful research action, including one made free by a Computer point; NERON projects are excluded. Reused the existing action dirt-chance hook and seeded RNG/log behavior. Targeted research/project/Myco alarm tests and shared typecheck passed. The first diff check caught trailing whitespace in the already-edited shared action hook; cleaned that formatting before the full verification.
+## 2026-10-19: Walls that connect in the iso view
+
+- Asked to make walls connect everywhere the way the front corridor's top corner does, with a test. A cell-level scan of the whole drawn ship (wall runs that stop, and what is beyond them) found the gaps far faster than eyeballing screenshots: corners between two rooms that neither draws (front corridor and hydroponics, refectory and bedroom Alpha, storage back and the motor room, bridge and turret) and a one-cell notch beside the centre corridor. `fillGaps` now adds a column at such corners and bridges one-cell notches.
+- The new test (every room, fog depth 1 and all) immediately caught an order bug: `fillGaps` step 2 let floor it had just added justify the next cell, so from Bay Alpha the refectory opened straight onto bedroom Alpha with no wall, while from the laboratory it was closed. Step 2 now only reads floor that was there before it.
+- What needed correction: screenshots were hard to use for this. The camera follows a randomly placed character, so `--clip` shots moved between runs; taking one `--scale 2` shot and cropping it offline worked. A wall sprite's anchor isn't its top, so the first cell-to-pixel calibration pointed one cell off and a "still visible" gap at the motor room turned out to be in the motor room's own floor art, not the tiles.
+
+## 2026-10-19: Accommodating Terrence (wheelchair pushing)
+
+- **Decision (owner):** others can accommodate Terrence: anyone in his room offers (free), Terrence accepts, and from then he can't move alone and travels with his pusher at no MP cost; the pusher pays a normal move. Either ends it, death ends it; public room log plus a status showing who pushes.
+- **What worked:** the `rule` skill's one-round AskUserQuestion settled cost, consent, ending and visibility up front; nothing in the original's data covered this (only Terrence's backstory mentions his wheelchair). The leak-field registry forced explicit reach decisions for the two new fields (`pushedBy`: room, `accommodationOffers`: own).
+- **Needed correction:** Claude first left out a trait status for the wheelchair and caught it against the 2026-10-18 "every trait is a public status" decision; a first locale-insertion script also matched `mankind_only_hope` in the skills catalog and was redone.
+- **Left for later:** the room view does not keep Terrence beside his pusher; no way to decline or withdraw an offer other than leaving the room.
+
+## 2026-10-19 (later): Walls that connect, second pass
+
+- The first pass (columns at corners, filling one-cell notches) still left "quite a few holes", per the user. Their hint was to judge joins by the top ridges. That led to measuring the art instead of eyeballing it: a cell's anchor is its top corner, so walls stand on cell edges (L on +x, R on +y), `COLUMN` is a post at the +x+y corner and `corner_02` is both edges (a front corner). A wall's solid art overhangs only its +x/+y end, which is why one-edge gaps showed at some ends and not others. With that model, a free wall end is just an edge endpoint touching nothing. About 35 places were an edge or two short of another room's wall; `joinWalls` now carries them on and adds the matching corner piece.
+- What worked: a scratch offline renderer that composites `placeScene`'s sprites straight from the atlases, with markers on the free ends. It is deterministic and unfogged, with no camera to chase, so before/after crops of any spot were cheap.
+- What needed correction, each caught by looking at renders: joining a room's own walls drew over a turret's dome (so only walls of different rooms are joined, and never onto furniture); `corner_02` drawn over a bay's deck wall showed as a stray wall inside Bay Beta, as did a wall over the Icarus bay's deck corner post. The test pins the ends left on purpose, each with its reason.
+
+## 2026-10-19 (later): Accommodating Terrence, follow-up
+
+- **Decision (owner):** an offer Terrence hasn't accepted within 5 minutes expires, and ending a push is instant (not queued). Keeping Terrence beside his pusher in the room view was filed as a Private beta story (#203).
+- **How:** the rules had no clock, so Claude added `GameState.now` (the server time of the latest action input or tick) and folded offer expiries into `nextDue`/`tick`, reusing the server's existing alarm rather than adding a timer. Expiry is silent (no log line); that wasn't specified.
+- **Needed correction:** another session was appending to this log at the same time, so this entry first landed under its walls entry and was moved here.
+- The scratch renderer became `npm run ship-render` (`tools/src/play/shipRender.ts`) at the user's request, with `--cells=`, `--room`/`--depth`, `--ends` and `--add`/`--drop` for trying wall pieces.
+- Asked for a top-down view of placements without the tile art: `npm run ship-top` (`tools/src/play/shipTop.ts`) draws the same `placeScene` scene from above, with floor colours per room, walls on their cell edges, doors, furniture footprints, room names (a hand-made 3x5 pixel font, so it stays a PNG) and a numbered grid. The wall-edge model and the scene loading moved to `tools/src/play/shipScene.ts`, shared with `ship-render`; ship-render's output was checked to be byte-identical after the move. One bug was caught by looking: placed sprites carry no frame, so walkways didn't show until the frame was worked out from the sprite's source rectangle.
+
+### 2026-10-19: Microwave, Express cook, raw rations
+
+- **Decision (owner):** a heavy microwave spawns in the refectory; Express cook costs 0 AP wherever you can reach a microwave, spends one of 4 charges (+1 per day, max 4); Cook is unchanged; raw rations can be eaten for 1 morale with a cooked ration's 4 satiety. Answers came from one AskUserQuestion round, with the original game's data (`Utils.hx` `Charges(2, 4)`, DataAction.ods `QUICK_COOK_RATION` at 0 AP, "Cuisine Express") offered as suggestions.
+- **What worked:** reusing Cook's shape for the new action and putting charges on `ItemState` as an optional field (filtered with the item, listed in `leakFields.ts`).
+- **Needed attention:** the microwave starting charge count was assumed (full, 4) rather than asked; `Charges(2, 4)` in the original may mean it starts at 2. The Spanish terms "Cocina exprés" / "Microondas" were chosen without a source.
+
+## 2026-10-19: ship resources
+
+Owner specified oxygen/fuel/hull/plasma shield values. Their answers had typos (shield start, "fuel capped at 32") and left the 67/30 split, rounding and oxygen-death timing unanswered; I implemented defaults (shield 67%, hull the rest, shield rounds down, one cycle of grace at 0 oxygen) and flagged them. Pure logic in `shared/src/ship.ts`, public in `PlayerView.ship`, shown in the existing desktop `ShipResources` card.
+
+### 2026-10-19: Walking through doors
+
+- **Request (owner):** characters walk through doors between rooms, using the door open/close animation in `tiles.xml`; note in the iso CLAUDE.md that the animations are defined there.
+- **Decision (mine, flag if wrong):** others walk through doors too, not just you. Their way in or out comes from the room log's public `entered`/`left` entries from the last 15 seconds, so nothing new is sent; without one they still pop in and out. A door opens as someone nears it (timed to be open when they arrive), they wait at it if it isn't, and it shuts behind them using the slice's second animation (the original only ever played the first, on hover).
+- **What worked:** a whole-ship test over every door pair before building on `doorPassage`. It found two kinds of door the shortest-path walk couldn't handle (a floor that only meets the doorway at a corner, and an undrawn front door that opened a way through the wall beside the drawn one) and a hand-off bug: the two rooms chose different doorway cells for the same door, which is fixed by always searching from the same end. Pulling the per-frame step out of the hook (`stepWalkers`) made door timing testable, and the tests caught a one-frame stop at every door.
+- **Not checked:** I didn't look at it in a browser (the `play` skill is user-invoked). Paint order of someone standing in a doorway, and the rhythm of the open/shut, are unverified by eye.

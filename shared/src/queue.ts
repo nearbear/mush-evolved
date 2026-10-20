@@ -13,6 +13,7 @@
 // sends a `tick` input when the earliest bar runs out (`nextDue`).
 
 import { ACTIONS, type ActionDef } from "./actions.ts";
+import { expireOffers } from "./actions/accommodate.ts";
 import { clone, fail, findPlayer, type ActionResult } from "./helpers.ts";
 import { logPrivate } from "./log.ts";
 import { applyAction, canAct, getUp, performAction } from "./rules.ts";
@@ -20,6 +21,8 @@ import type { Action, GameState, PlayerId, PlayerState, QueuedAction } from "./t
 
 /** A player asks to act: an untimed action happens now; a timed one starts if they are idle, or waits its turn. */
 export function queueAction(state: GameState, playerId: PlayerId, action: Action, at: number): ActionResult {
+  // The rules' clock; the state is cloned before anything is kept.
+  state = { ...state, now: at };
   const p = findPlayer(state, playerId);
   const def: ActionDef<Action> | undefined = ACTIONS[action.type];
   if (!p || !def) return fail("Illegal action");
@@ -49,23 +52,27 @@ export function clearQueue(state: GameState, playerId: PlayerId): ActionResult {
   return { ok: true, state: next };
 }
 
-/** Server time (ms) the earliest bar runs out, or null when nobody is busy. */
+/** Server time (ms) the earliest bar runs out or accommodation offer expires, or null when nothing is waiting. */
 export function nextDue(state: Readonly<GameState>): number | null {
-  const due = state.players.flatMap((p) => (p.current ? [p.current.until] : []));
+  const due = state.players.flatMap((p) => [...(p.current ? [p.current.until] : []), ...(p.accommodationOffers ?? []).map((o) => o.until)]);
   return due.length > 0 ? Math.min(...due) : null;
 }
 
 /**
- * Time has reached `at`: every bar that has run out ends (its action happens, with "end") and that player's next
- * queued action starts. Earliest first, then in seat order, so a replay settles ties the same way.
+ * Time has reached `at`: accommodation offers past their time lapse, then every bar that has run out ends (its
+ * action happens, with "end") and that player's next queued action starts. Earliest first, then in seat order, so
+ * a replay settles ties the same way.
  */
 export function tick(state: GameState, at: number): ActionResult {
   const due = state.players
     .filter((p) => p.current && p.current.until <= at)
     .sort((a, b) => a.current!.until - b.current!.until)
     .map((p) => p.id);
-  if (due.length === 0) return fail("nothing_due");
+  const lapsing = state.players.some((p) => p.accommodationOffers?.some((o) => o.until <= at));
+  if (due.length === 0 && !lapsing) return fail("nothing_due");
   const next = clone(state);
+  next.now = at;
+  expireOffers(next);
   for (const id of due) {
     const actor = findPlayer(next, id)!;
     const finished = actor.current;

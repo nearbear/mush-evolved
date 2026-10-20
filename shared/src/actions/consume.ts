@@ -30,8 +30,9 @@ export class ConsumeAction extends Action<ConsumeActionData> {
   override apply(state: GameState, player: PlayerState, target: ConsumeActionData): void {
     const index = state.items.findIndex((i) => i.id === target.item);
     const [item] = state.items.splice(index, 1) as [ItemState];
-    const { ap, satiety } = ITEM_TYPES[item.type]!.consume!;
+    const { ap, satiety, morale = 0 } = ITEM_TYPES[item.type]!.consume!;
     player.ap = Math.min(state.config.maxAp, player.ap + ap);
+    player.morale = Math.max(0, Math.min(state.config.maxMorale, player.morale + morale));
     if (player.role === "human") {
       player.satiety += satiety;
       player.satietyZeroSince = player.satiety === 0 ? state.cycle : null;

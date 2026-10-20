@@ -205,11 +205,11 @@ const uiIcons = urls(
   ),
 );
 
-/** Ship resource icons (14-16px pixel art) for the top bar's resources card; the shield reuses the gold `shield` icon. */
-export const SHIP_RESOURCE_ICONS: Readonly<Record<"oxygen" | "fuel" | "shields" | "plasmaShield" | "alerts", string>> = {
+/** Ship resource icons (14-16px pixel art) for the top bar's resources card; the hull reuses the gold `shield` icon. */
+export const SHIP_RESOURCE_ICONS: Readonly<Record<"oxygen" | "fuel" | "hull" | "plasmaShield" | "alerts", string>> = {
   oxygen: uiIcons["o2"]!,
   fuel: uiIcons["fuel"]!,
-  shields: uiIcons["shield"]!,
+  hull: uiIcons["shield"]!,
   plasmaShield: uiIcons["plasma"]!,
   alerts: uiIcons["alert"]!,
 };
@@ -222,13 +222,13 @@ export const MUSH_ICON = uiIcons["mush"]!;
 
 // Status effect icons (16x16 pixel art), keyed by status id (shared/src/statuses.ts).
 const statusIconFiles = urls(
-  import.meta.glob<string>("../../../Mush/www/img/icons/ui/status/{dirty,belly_full,hungry,immune,pacifist}.png", { eager: true, query: "?url", import: "default" }),
+  import.meta.glob<string>("../../../Mush/www/img/icons/ui/status/{dirty,belly_full,hungry,immune,pacifist,disabled}.png", { eager: true, query: "?url", import: "default" }),
 );
 // Mankind's Only Hope has no status icon in the original (it was a skill there), so its skill icon stands in.
 const traitSkillIcons = urls(
   import.meta.glob<string>("../../../Mush/www/img/icons/skills/mankind_only_hope.png", { eager: true, query: "?url", import: "default" }),
 );
-export const STATUS_ICONS: Readonly<Record<"dirty" | "full_belly" | "hungry" | "immune" | "immunity" | "pacifist" | "mankind_only_hope", string>> = {
+export const STATUS_ICONS: Readonly<Record<"dirty" | "full_belly" | "hungry" | "immune" | "immunity" | "pacifist" | "mankind_only_hope" | "wheelchair" | "accommodated", string>> = {
   dirty: statusIconFiles["dirty"]!,
   full_belly: statusIconFiles["belly_full"]!,
   hungry: statusIconFiles["hungry"]!,
@@ -236,6 +236,9 @@ export const STATUS_ICONS: Readonly<Record<"dirty" | "full_belly" | "hungry" | "
   immunity: statusIconFiles["immune"]!,
   pacifist: statusIconFiles["pacifist"]!,
   mankind_only_hope: traitSkillIcons["mankind_only_hope"]!,
+  // The original's wheelchair icon (its `disabled` status), for the trait and for being pushed.
+  wheelchair: statusIconFiles["disabled"]!,
+  accommodated: statusIconFiles["disabled"]!,
 };
 /** Item attribute icons, keyed by attribute (the `itemAttr.*` locale keys). */
 export const ITEM_ATTR_ICONS: Readonly<Record<"heavy", string>> = { heavy: uiIcons["heavy"]! };

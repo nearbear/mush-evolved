@@ -1,13 +1,23 @@
 import { describe, expect, it } from "vitest";
-import type { RoomId, ShipLayout } from "@mush2/shared";
+import type { RoomId, ShipLayout, SliceInfo } from "@mush2/shared";
 import type { PlacedSprite } from "../../src/iso/placement.ts";
-import { animFrame, describeScene, type Occupant, type SceneInput } from "../../src/iso/scene.ts";
+import { animFrame, animStep, describeScene, doorAnim, doorOpenMs, type Occupant, type SceneInput } from "../../src/iso/scene.ts";
 import type { Walker } from "../../src/iso/useWalkers.ts";
 
 const HERE = "bridge" as RoomId;
 const NEXT = "front_corridor" as RoomId;
 
-const layout = { roomSize: 32, sheets: {}, slices: { camera: { anims: [{ frames: [0, 1, 2, 1] }] } }, rooms: [], autoBind: {} } as unknown as ShipLayout;
+/** Like DOOR_L in tiles.xml: opens over frames 0-9, shuts over 12-23 and back to 0. */
+const DOOR = {
+  flags: ["door"],
+  anims: [
+    { frames: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9], rhythm: [1, 3, 2, 2, 1, 1, 1, 1, 1, 2, 2, 20], auto: false },
+    { frames: [12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 0], rhythm: [3, 3, 2, 2, 2, 2, 3, 3, 2, 2, 3, 3, 1], auto: false },
+  ],
+} as unknown as SliceInfo;
+const FRONT_DOOR = { flags: ["door"], anims: [{ frames: [0, 1, 2, 3, 4], rhythm: [5, 5, 5, 5, 5], auto: true }] } as unknown as SliceInfo;
+
+const layout = { roomSize: 32, sheets: {}, slices: { camera: { anims: [{ frames: [0, 1, 2, 1] }] }, door: DOOR }, rooms: [], autoBind: {} } as unknown as ShipLayout;
 
 const placed = (over: Partial<PlacedSprite>): PlacedSprite => ({
   key: "t0",
@@ -49,6 +59,7 @@ function scene(placedSprites: PlacedSprite[], over: Partial<SceneInput> = {}) {
     selectedDoor: null,
     hoverKey: null,
     ownCells: new Set(),
+    doors: new Map(),
     ...over,
   });
 }
@@ -142,5 +153,40 @@ describe("animFrame", () => {
   it("rests on the first frame after its rounds", () => {
     const walkIn = { frames: [0, 1, 2], frameMs: 100, loops: 2 };
     expect([250, 550, 600, 5000].map((t) => animFrame(walkIn, t))).toEqual([2, 2, 0, 0]);
+  });
+});
+
+describe("animStep", () => {
+  it("plays a rhythm, one length per frame, and holds the last frame", () => {
+    const anim = { frames: [4, 5, 6], frameMs: [100, 300, 50], loops: "hold" as const };
+    expect([0, 99, 100, 399, 400, 449, 450, 9999].map((t) => animStep(anim, t).frame)).toEqual([4, 4, 5, 5, 6, 6, 6, 6]);
+    expect(animStep(anim, 150).nextIn).toBe(250);
+    expect(animStep(anim, 450).nextIn).toBeUndefined();
+  });
+});
+
+describe("doors", () => {
+  it("open over the first animation's rhythm, in 30ths of a second", () => {
+    // 1+3+2+2+1+1+1+1+1+2 ticks for the ten opening frames.
+    expect(doorOpenMs(DOOR)).toBeCloseTo(500);
+    expect(doorOpenMs(FRONT_DOOR)).toBe(0);
+  });
+
+  it("play opening, stand open, or play shutting, and the floor-level front doors never move", () => {
+    const opening = doorAnim(DOOR, "opening")!;
+    expect([animFrame(opening, 0), animFrame(opening, 5000)]).toEqual([0, 9]);
+    expect(animFrame(doorAnim(DOOR, "open")!, 0)).toBe(9);
+    const closing = doorAnim(DOOR, "closing")!;
+    expect([animFrame(closing, 0), animFrame(closing, 5000)]).toEqual([12, 0]);
+    expect(doorAnim(DOOR, undefined)).toBeUndefined();
+    expect(doorAnim(FRONT_DOOR, "opening")).toBeUndefined();
+  });
+
+  it("animate a door by its key, on either side of it", () => {
+    const own = placed({ key: "t5", kind: "door", slice: "door", door: { target: NEXT } });
+    const theirs = placed({ key: `${NEXT}/t2`, room: NEXT, kind: "door", slice: "door", door: { target: HERE } });
+    expect(scene([own, theirs]).sprites.map((s) => s.anim)).toEqual([undefined, undefined]);
+    const s = scene([own, theirs], { doors: new Map([["t5", "opening"], [`${NEXT}/t2`, "closing"]]) });
+    expect(s.sprites.map((p) => p.anim?.frames[0])).toEqual([0, 12]);
   });
 });

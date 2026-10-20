@@ -5,6 +5,14 @@ import type { ChatMessage, PrivateChannel } from "./chat.ts";
 import type { GameConfig } from "./config.ts";
 import type { PlayerState } from "./player.ts";
 
+/** The Daedalus's counters (ship.ts). */
+export interface ShipResources {
+  oxygen: number;
+  fuel: number;
+  hull: number;
+  plasmaShield: number;
+}
+
 /** Full authoritative state. Server-only: never send this to a client. */
 export interface GameState {
   config: GameConfig;
@@ -42,6 +50,8 @@ export interface GameState {
    * capacity converts them to Mush at once and removes their entry (`infection.ts`).
    */
   contamination: Record<PlayerId, number>;
+  /** The ship's resources. Public: sent to everyone (owner, 2026-10-19). */
+  ship: ShipResources;
   /** Spores the Mush faction has extracted today; reset at each day boundary. Hidden from everyone. */
   sporesToday: number;
   /** The cycle each Mush last extracted a spore, for the per-Mush cooldown. Hidden from everyone. */
@@ -55,6 +65,11 @@ export interface GameState {
   /** Failed scans in a row per player, raising their next scan's odds; reset by a success (owner, 2026-10-19). Never sent. */
   scanFailures: Record<PlayerId, number>;
   nextPlanetId: number;
+  /**
+   * Server time (ms) of the latest action input or tick (queue.ts); 0 before the first. The rules' only clock, for
+   * deadlines such as accommodation offers. Never sent.
+   */
+  now: number;
 }
 
 /** A planet a player found. Its size is the number of sectors. */

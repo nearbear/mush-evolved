@@ -70,6 +70,9 @@ export const DEFAULT_CONFIG: GameConfig = {
   pacifist: { aggressiveApSurcharge: 2 },
   // Confirmed 2026-10-16: cooking an uncooked ration costs 1 AP, only in the refectory.
   cook: { cost: { ap: 1 }, rooms: ["REFECTORY"] },
+  // Owner, 2026-10-19: express cook is free, anywhere you can reach a microwave, and spends one of its 4 charges;
+  // it regains one each day. Consequences for using it come later.
+  expressCook: { cost: { ap: 0 }, charges: { start: 4, max: 4, perDay: 1 } },
   // Decided 2026-10-16: building from a blueprint costs 3 AP, anywhere, no failure chance.
   build: { cost: { ap: 3 } },
   // Decided 2026-10-16 (#28): jettisoning a carried corpse is free, in one of the four bays.
@@ -87,18 +90,21 @@ export const DEFAULT_CONFIG: GameConfig = {
   // Decided 2026-10-18: NERON projects work exactly like research: 2 AP, 25% per action, no repeat penalty.
   project: { cost: { ap: 2 }, effect: { progressPercent: 25 } },
   // Confirmed 2026-10-17: lying down in a bed is free (the +1 AP per cycle is the lying_down modifier).
+  accommodate: { cost: { ap: 0 }, offerMs: 5 * 60_000 },
   lieDown: { cost: { ap: 0 } },
   // Confirmed 2026-10-14: showering costs 2 AP, 1 less with soap in your inventory; a Mush takes 4 damage.
   shower: { cost: { ap: 2, soapDiscountAp: 1 }, effect: { mushDamage: 4 } },
   // Confirmed 2026-10-14: humans lose 1 satiety per cycle (some things will make it more); at 3 they are full and can't
   // eat; hungry starts 24 cycles after satiety reaches 0 and costs 1 HP per cycle.
+  // Decided 2026-10-19: oxygen 30 of 32, -1 per cycle, nobody survives it at 0; fuel 20 of 100; hull 100; plasma shield 100 absorbing 67% of damage.
+  ship: { oxygen: { start: 30, max: 32, perCycle: 1 }, fuel: { start: 20, max: 100 }, hull: { start: 100, max: 100 }, plasmaShield: { start: 100, max: 100, absorbPercent: 67 } },
   hunger: { satietyPerCycle: 1, fullBellyAt: 3, hungryAfterCycles: 24, hpPerCycle: 1 },
   // Confirmed 2026-10-13: dismantle cost and odds.
   dismantle: { cost: { ap: 3 }, successChance: 0.12, dirtyChance: 0.25 },
   // Confirmed 2026-10-15: nobody starts with a skill; players pick up to three
   // (SKILL_SLOTS) with the free, permanent pick_skill action.
   startSkills: [],
-  characterModifiers: { ian: ["pacifist"], chun: ["immunity", "mankind_only_hope"] },
+  characterModifiers: { ian: ["pacifist"], chun: ["immunity", "mankind_only_hope"], terrence: ["wheelchair"] },
   mankindOnlyHope: { moraleLossCut: 1 },
   creative: { refundOdds: 0.5 },
   anticPerfume: { immuneCycles: 2 },
@@ -127,6 +133,8 @@ export const DEFAULT_CONFIG: GameConfig = {
     // Confirmed 2026-10-14: the soap always spawns in the Alpha dorm (for now).
     { type: "soap", room: "BEDROOM_A" },
     { type: "freezer", room: "REFECTORY" },
+    // Owner, 2026-10-19: the microwave spawns in the refectory at the start; heavy.
+    { type: "microwave", room: "REFECTORY" },
     // PLACEHOLDER food so satiety can be tested.
     { type: "uncooked_ration", room: "REFECTORY" },
     { type: "uncooked_ration", room: "REFECTORY" },

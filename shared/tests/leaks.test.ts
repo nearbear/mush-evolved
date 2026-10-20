@@ -1,4 +1,4 @@
-// Hidden information, bluntly (issue #102): give every hidden value in a game a unique sentinel, serialize each
+// Hidden information, bluntly (issues #101 and #102): give every hidden value in a game a unique sentinel, serialize each
 // seat's view, and check that each sentinel shows up only in the views allowed to have it. This catches a leak
 // through any view field, including ones nobody thought to check. Which state fields exist, and who may see
 // each, is in leakFields.ts; a new field fails here until it is listed there.
@@ -59,6 +59,8 @@ function ship(): { state: GameState; sentinels: Sentinel[] } {
     const room = p.room === HERE ? ["p0", "p1", "p2"] : ["p3"];
     p.skills.push(str(`skill-${p.id}`, room));
     p.lyingIn = str(`lyingIn-${p.id}`, room);
+    p.pushedBy = str(`pushedBy-${p.id}`, room);
+    p.accommodationOffers = [{ by: str(`accommodationOffers-${p.id}`, own), until: num(`accommodationOfferUntil-${p.id}`, own) }];
     p.current = {
       action: { type: "take", item: str(`current-${p.id}`, own) },
       since: 1,
@@ -93,6 +95,7 @@ function ship(): { state: GameState; sentinels: Sentinel[] } {
   s.nextItemId = num("nextItemId", []);
   s.nextChatId = num("nextChatId", []);
   s.nextPlanetId = num("nextPlanetId", []);
+  s.now = num("now", []);
 
   s.items.push({ id: str("floor-here", ["p0", "p1", "p2"]), type: "wrench", at: { kind: "room", id: HERE } });
   s.items.push({ id: str("floor-elsewhere", ["p3"]), type: "wrench", at: { kind: "room", id: ELSEWHERE } });
