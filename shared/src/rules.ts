@@ -21,6 +21,7 @@ import { damage } from "./death.ts";
 import { activitySeen } from "./log.ts";
 import { ringMycoAlarms } from "./mycoalarm.ts";
 import { planetsOf } from "./planets.ts";
+import { burnOxygen, shipMax, startShip } from "./ship.ts";
 import type {
   Action,
   Equipment,
@@ -109,6 +110,7 @@ export function createGame(
     bonds: {},
     sharedOnDay: {},
     contamination: {},
+    ship: startShip(config),
     sporesToday: 0,
     sporeExtractedOn: {},
     research: {},
@@ -245,6 +247,7 @@ function advanceCycle(state: GameState): void {
     p.ready = false;
   }
   cycleChanged(state);
+  burnOxygen(state);
   const { cyclesPerDay } = state.config;
   const newDay = (state.cycle - 1) % cyclesPerDay === 0;
   if (newDay) {
@@ -374,6 +377,7 @@ export function viewFor(state: GameState, playerId: PlayerId): PlayerView {
     maxAp: state.config.maxAp,
     maxHp: state.config.maxHp,
     maxMorale: state.config.maxMorale,
+    ship: { ...state.ship, max: shipMax(state.config) },
     research: { ...state.research },
     projects: { ...state.projects },
     // Your own planets only, and only the tags an analysis revealed (owner, 2026-10-19).

@@ -60,7 +60,7 @@ export function TopBar({
         {nextCycleAt !== null && <CycleCountdown nextCycleAt={nextCycleAt} clockOffset={clockOffset} />}
       </span>
       <span className="spacer" />
-      {!mobile && <ShipResources />}
+      {!mobile && <ShipResources ship={view.ship} />}
       {mobile ? (
         // Phones: both actions live in a hamburger menu to save top bar space.
         <Menu.Root>

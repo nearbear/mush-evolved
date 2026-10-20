@@ -37,6 +37,7 @@ export const GAME_STATE_FIELDS: Record<string, FieldRule> = {
   bonds: { reach: "own", test: "leaks.test.ts", note: "Each bond to its two partners only." },
   sharedOnDay: { reach: "never", test: "leaks.test.ts" },
   contamination: { reach: "never", test: "leaks.test.ts", note: "Except to a living Mush in the human's room (infection.test.ts)." },
+  ship: { reach: "public", test: "ship.test.ts" },
   sporesToday: { reach: "never", test: "leaks.test.ts" },
   sporeExtractedOn: { reach: "never", test: "leaks.test.ts" },
   research: { reach: "public", test: "research.test.ts" },

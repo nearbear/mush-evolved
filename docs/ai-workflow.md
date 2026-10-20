@@ -914,3 +914,14 @@ Decided by the owner, accepting a commenter on #24 (eMush days start at 00:00 GM
 - **Decision (owner):** a heavy microwave spawns in the refectory; Express cook costs 0 AP wherever you can reach a microwave, spends one of 4 charges (+1 per day, max 4); Cook is unchanged; raw rations can be eaten for 1 morale with a cooked ration's 4 satiety. Answers came from one AskUserQuestion round, with the original game's data (`Utils.hx` `Charges(2, 4)`, DataAction.ods `QUICK_COOK_RATION` at 0 AP, "Cuisine Express") offered as suggestions.
 - **What worked:** reusing Cook's shape for the new action and putting charges on `ItemState` as an optional field (filtered with the item, listed in `leakFields.ts`).
 - **Needed attention:** the microwave starting charge count was assumed (full, 4) rather than asked; `Charges(2, 4)` in the original may mean it starts at 2. The Spanish terms "Cocina exprés" / "Microondas" were chosen without a source.
+
+## 2026-10-19: ship resources
+
+Owner specified oxygen/fuel/hull/plasma shield values. Their answers had typos (shield start, "fuel capped at 32") and left the 67/30 split, rounding and oxygen-death timing unanswered; I implemented defaults (shield 67%, hull the rest, shield rounds down, one cycle of grace at 0 oxygen) and flagged them. Pure logic in `shared/src/ship.ts`, public in `PlayerView.ship`, shown in the existing desktop `ShipResources` card.
+
+### 2026-10-19: Walking through doors
+
+- **Request (owner):** characters walk through doors between rooms, using the door open/close animation in `tiles.xml`; note in the iso CLAUDE.md that the animations are defined there.
+- **Decision (mine, flag if wrong):** others walk through doors too, not just you. Their way in or out comes from the room log's public `entered`/`left` entries from the last 15 seconds, so nothing new is sent; without one they still pop in and out. A door opens as someone nears it (timed to be open when they arrive), they wait at it if it isn't, and it shuts behind them using the slice's second animation (the original only ever played the first, on hover).
+- **What worked:** a whole-ship test over every door pair before building on `doorPassage`. It found two kinds of door the shortest-path walk couldn't handle (a floor that only meets the doorway at a corner, and an undrawn front door that opened a way through the wall beside the drawn one) and a hand-off bug: the two rooms chose different doorway cells for the same door, which is fixed by always searching from the same end. Pulling the per-frame step out of the hook (`stepWalkers`) made door timing testable, and the tests caught a one-frame stop at every door.
+- **Not checked:** I didn't look at it in a browser (the `play` skill is user-invoked). Paint order of someone standing in a doorway, and the rhythm of the open/shut, are unverified by eye.

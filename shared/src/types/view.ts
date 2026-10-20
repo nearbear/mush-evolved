@@ -4,7 +4,7 @@ import type { Action, BotKind, ItemId, LogEntry, PlayerId, RoomId } from "../typ
 import type { ChannelId, ChatMessage, PrivateChannel } from "./chat.ts";
 import type { MovementRules } from "./config.ts";
 import type { ActionInProgress, PlayerState } from "./player.ts";
-import type { GameState } from "./state.ts";
+import type { GameState, ShipResources } from "./state.ts";
 
 /** Room equipment as a client sees it. */
 export interface EquipmentView {
@@ -124,6 +124,8 @@ export interface PlayerView {
     /** People who have bonded to you. */
     from: PlayerId[];
   };
+  /** The ship's oxygen, fuel, hull and plasma shield, public to everyone (owner, 2026-10-19), with their caps. */
+  ship: ShipResources & { max: ShipResources };
   /** Percent done of each research that has been started, public to everyone (decided 2026-10-16). */
   research: Record<string, number>;
   /** Percent done of each NERON project that has been started, public to everyone (decided 2026-10-18). */

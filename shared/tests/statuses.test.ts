@@ -14,6 +14,7 @@ const config = { ...DEFAULT_CONFIG, characterModifiers: {}, mushCount: 1, startI
 /** p0 is Mush, the rest human. All in one room. */
 function ship(): GameState {
   const s = createGame(seats, config, 3);
+  s.ship.oxygen = 99; // these tests run many cycles; keep the crew breathing
   s.players.forEach((p, i) => {
     p.role = i === 0 ? "mush" : "human";
     p.satietyZeroSince = i === 0 ? null : 1;

@@ -128,6 +128,12 @@ export interface GameConfig {
     };
     effect: { mushDamage: number }; // HP a Mush loses by showering (confirmed 2026-10-14).
   };
+  ship: {
+    oxygen: { start: number; max: number; perCycle: number }; // Oxygen the ship burns each cycle; at 0 one random living crew member dies per cycle (owner, 2026-10-19).
+    fuel: { start: number; max: number }; // Nothing burns it yet (owner, 2026-10-19).
+    hull: { start: number; max: number }; // Nothing damages it yet except through `damageShip` (owner, 2026-10-19).
+    plasmaShield: { start: number; max: number; absorbPercent: number }; // Takes this percent of incoming damage, out of its own points; at 0 the hull takes it all (owner, 2026-10-19).
+  };
   hunger: {
     satietyPerCycle: number; // Satiety a human loses each cycle, before modifiers (confirmed 2026-10-14).
     fullBellyAt: number; // Satiety at which a human has the full belly status and can't eat (confirmed 2026-10-14).

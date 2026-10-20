@@ -22,3 +22,4 @@ export * from "./skills.ts";
 export * from "./research.ts";
 export * from "./projects.ts";
 export * from "./planets.ts";
+export * from "./ship.ts";

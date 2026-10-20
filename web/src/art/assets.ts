@@ -205,11 +205,11 @@ const uiIcons = urls(
   ),
 );
 
-/** Ship resource icons (14-16px pixel art) for the top bar's resources card; the shield reuses the gold `shield` icon. */
-export const SHIP_RESOURCE_ICONS: Readonly<Record<"oxygen" | "fuel" | "shields" | "plasmaShield" | "alerts", string>> = {
+/** Ship resource icons (14-16px pixel art) for the top bar's resources card; the hull reuses the gold `shield` icon. */
+export const SHIP_RESOURCE_ICONS: Readonly<Record<"oxygen" | "fuel" | "hull" | "plasmaShield" | "alerts", string>> = {
   oxygen: uiIcons["o2"]!,
   fuel: uiIcons["fuel"]!,
-  shields: uiIcons["shield"]!,
+  hull: uiIcons["shield"]!,
   plasmaShield: uiIcons["plasma"]!,
   alerts: uiIcons["alert"]!,
 };
