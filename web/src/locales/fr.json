@@ -367,6 +367,7 @@
   "logEvent": {
     "actionCostChanged": "Votre action en attente ({{action}}) a été annulée car son coût a changé : elle coûte maintenant {{ap}} PA et {{mp}} PM.",
     "actionDropped": "Votre action en attente ({{action}}) n'était plus possible et a été annulée.",
+    "becomeDirty": "Vous êtes sale ! Vous venez de vous salir.",
     "crewWakes": "L'équipage se réveille à bord du vaisseau.",
     "cycleBegins": "Le cycle {{cycle}} commence.",
     "dayBegins": "Le jour {{day}} commence.",

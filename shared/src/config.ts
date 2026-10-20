@@ -43,6 +43,9 @@ export const DEFAULT_CONFIG: GameConfig = {
   inventorySlots: 3,
   // Confirmed 2026-10-13: three private channels per player by default (skills and research will raise it).
   channelLimit: 3,
+
+  //Actions
+
   // Confirmed 2026-10-14: bonding, DTT, and STT cost 1 AP each; DTT and STT give each of the two 2 morale.
   bond: { cost: { ap: 1 } },
   share: { cost: { ap: 1 }, effect: { morale: 2 } },
@@ -62,7 +65,7 @@ export const DEFAULT_CONFIG: GameConfig = {
   },
   // Confirmed 2026-10-15: punch costs 1 AP, 2 damage, misses 40% of the time.
   // Confirmed 2026-10-16: the sturdy (Solid) skill adds 1 to punch damage.
-  punch: { cost: { ap: 1 }, effect: { damage: 2, sturdyBonusDamage: 1 }, successChance: 0.6 },
+  punch: { cost: { ap: 1 }, effect: { damage: 2, sturdyBonusDamage: 1 }, successChance: 0.6, dirtyChance: 0.25 },
   // Owner, 2026-10-18: Ian's Pacifist makes aggressive actions in his room cost 2 more AP, his own included.
   pacifist: { aggressiveApSurcharge: 2 },
   // Confirmed 2026-10-16: cooking an uncooked ration costs 1 AP, only in the refectory.
@@ -78,7 +81,7 @@ export const DEFAULT_CONFIG: GameConfig = {
   // Owner, 2026-10-16: the computer scientist skill holds up to 4 Computer points, gains 2 a day (and 2 when picked).
   computer: { capPoints: 4, pointsPerDay: 2 },
   // Decided 2026-10-16: working on a research costs 2 AP and advances it 25%; no repeat penalty yet.
-  research: { cost: { ap: 2 }, effect: { progressPercent: 25 } },
+  research: { cost: { ap: 2 }, effect: { progressPercent: 25 }, dirtyChance: 0.25 },
   // Decided 2026-10-19 (docs/astro-plan.md): scan 3 AP at 50%, x1.25 per failure in a row; analysis 2 AP; 2 planets per player.
   astro: { scan: { cost: { ap: 3 }, chance: 0.5, failureMultiplier: 1.25 }, analyze: { cost: { ap: 2 } }, maxPlanets: 2 },
   // Decided 2026-10-18: NERON projects work exactly like research: 2 AP, 25% per action, no repeat penalty.
@@ -91,7 +94,7 @@ export const DEFAULT_CONFIG: GameConfig = {
   // eat; hungry starts 24 cycles after satiety reaches 0 and costs 1 HP per cycle.
   hunger: { satietyPerCycle: 1, fullBellyAt: 3, hungryAfterCycles: 24, hpPerCycle: 1 },
   // Confirmed 2026-10-13: dismantle cost and odds.
-  dismantle: { cost: { ap: 3 }, successChance: 0.12 },
+  dismantle: { cost: { ap: 3 }, successChance: 0.12, dirtyChance: 0.25 },
   // Confirmed 2026-10-15: nobody starts with a skill; players pick up to three
   // (SKILL_SLOTS) with the free, permanent pick_skill action.
   startSkills: [],

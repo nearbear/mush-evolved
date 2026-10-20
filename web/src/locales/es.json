@@ -367,6 +367,7 @@
   "logEvent": {
     "actionCostChanged": "Tu acción en cola ({{action}}) se ha cancelado porque su coste ha cambiado: ahora cuesta {{ap}} PA y {{mp}} PM.",
     "actionDropped": "Tu acción en cola ({{action}}) ya no era posible y se ha descartado.",
+    "becomeDirty": "¡Tienes suciedad por todas partes! Te has ensuciado.",
     "crewWakes": "La tripulación despierta a bordo de la nave.",
     "cycleBegins": "Comienza el ciclo {{cycle}}.",
     "dayBegins": "Comienza el día {{day}}.",
