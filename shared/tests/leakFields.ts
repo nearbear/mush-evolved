@@ -1,0 +1,87 @@
+// Every field of the server-side state, and who may see it (issue #102). A new field on GameState, PlayerState
+// (Seat included) or ItemState fails `leaks.test.ts` (runtime keys) and `tools/tests/leaks/fields.test.ts` (the
+// interfaces in the source) until it is listed here. Listing it is the prompt to add the matching viewFor test:
+// a sentinel in `leaks.test.ts` when the value can be made unique, otherwise a named test elsewhere.
+
+/**
+ * - `public`: the same for every seat.
+ * - `room`: only to living people in the owner's room (or a narrower rule, see the note).
+ * - `own`: only in the owner's view.
+ * - `filtered`: a collection `viewFor` filters entry by entry (log, chat, items).
+ * - `never`: in no view at all, the owner's included.
+ */
+export type Reach = "public" | "room" | "own" | "filtered" | "never";
+
+export interface FieldRule {
+  reach: Reach;
+  /** The test file that checks it doesn't reach anyone else. `leaks.test.ts` means a sentinel there. */
+  test: string;
+  note?: string;
+}
+
+export const GAME_STATE_FIELDS: Record<string, FieldRule> = {
+  config: { reach: "public", test: "rules.test.ts", note: "Only `rooms`, your room's equipment and `PublicConfig` go out." },
+  rng: { reach: "never", test: "leaks.test.ts" },
+  cycle: { reach: "public", test: "rules.test.ts" },
+  phase: { reach: "public", test: "rules.test.ts" },
+  players: { reach: "filtered", test: "leaks.test.ts", note: "Field by field: PLAYER_STATE_FIELDS." },
+  items: { reach: "filtered", test: "leaks.test.ts", note: "Your inventory and your room's storage only." },
+  nextItemId: { reach: "never", test: "leaks.test.ts", note: "Not secret (item ids show it), just not sent." },
+  dispensedOn: { reach: "never", test: "leaks.test.ts" },
+  log: { reach: "filtered", test: "leaks.test.ts", note: "Your room's public entries, ship-wide ones, and your private ones." },
+  chat: { reach: "filtered", test: "leaks.test.ts", note: "Messages in your read channels." },
+  nextChatId: { reach: "never", test: "leaks.test.ts", note: "Not secret (message ids show it), just not sent." },
+  channels: { reach: "filtered", test: "leaks.test.ts", note: "Private channels you are a member of." },
+  nextChannelId: { reach: "never", test: "leaks.test.ts", note: "Not secret (channel ids show it), just not sent." },
+  actopi: { reach: "public", test: "rules.test.ts", note: "Not sent as a flag; it decides whose room you are told." },
+  bonds: { reach: "own", test: "leaks.test.ts", note: "Each bond to its two partners only." },
+  sharedOnDay: { reach: "never", test: "leaks.test.ts" },
+  contamination: { reach: "never", test: "leaks.test.ts", note: "Except to a living Mush in the human's room (infection.test.ts)." },
+  sporesToday: { reach: "never", test: "leaks.test.ts" },
+  sporeExtractedOn: { reach: "never", test: "leaks.test.ts" },
+  research: { reach: "public", test: "research.test.ts" },
+  projects: { reach: "public", test: "projects.test.ts" },
+  planets: { reach: "own", test: "leaks.test.ts", note: "Without the unknown sectors' tags." },
+  scanFailures: { reach: "never", test: "leaks.test.ts" },
+  nextPlanetId: { reach: "never", test: "leaks.test.ts", note: "Not secret (planet ids show it), just not sent." },
+};
+
+export const PLAYER_STATE_FIELDS: Record<string, FieldRule> = {
+  // Seat
+  id: { reach: "public", test: "rules.test.ts" },
+  name: { reach: "never", test: "leaks.test.ts", note: "Not even your own while the game runs." },
+  isBot: { reach: "public", test: "rules.test.ts" },
+  botKind: { reach: "public", test: "rules.test.ts" },
+  character: { reach: "public", test: "rules.test.ts" },
+  // PlayerState
+  role: { reach: "own", test: "leaks.test.ts", note: "Death announces it crew-wide (death.test.ts)." },
+  alpha: { reach: "own", test: "leaks.test.ts" },
+  room: { reach: "room", test: "rules.test.ts", note: "Everyone's while ACTOPI is on; never a dead player's (death.test.ts)." },
+  ap: { reach: "own", test: "leaks.test.ts" },
+  lyingIn: { reach: "room", test: "leaks.test.ts" },
+  mp: { reach: "own", test: "leaks.test.ts" },
+  hp: { reach: "own", test: "leaks.test.ts" },
+  morale: { reach: "own", test: "leaks.test.ts" },
+  satiety: { reach: "own", test: "leaks.test.ts" },
+  satietyZeroSince: { reach: "own", test: "leaks.test.ts" },
+  statuses: { reach: "room", test: "leaks.test.ts", note: "Public statuses only; private ones are your own." },
+  immuneUntil: { reach: "own", test: "leaks.test.ts", note: "As the `immune` status." },
+  spores: { reach: "own", test: "leaks.test.ts" },
+  resources: { reach: "own", test: "leaks.test.ts" },
+  modifiers: { reach: "own", test: "leaks.test.ts" },
+  skills: { reach: "room", test: "leaks.test.ts" },
+  alive: { reach: "public", test: "death.test.ts" },
+  ready: { reach: "public", test: "rules.test.ts" },
+  current: { reach: "own", test: "leaks.test.ts", note: "Roommates get a bar without the action (queue.test.ts)." },
+  queue: { reach: "own", test: "leaks.test.ts" },
+  cheats: { reach: "own", test: "cheats.test.ts" },
+  actopiCheat: { reach: "own", test: "cheats.test.ts" },
+};
+
+export const ITEM_STATE_FIELDS: Record<string, FieldRule> = {
+  id: { reach: "filtered", test: "leaks.test.ts" },
+  type: { reach: "filtered", test: "items.test.ts" },
+  at: { reach: "never", test: "leaks.test.ts", note: "Implied by which list the item is in." },
+  of: { reach: "filtered", test: "death.test.ts" },
+  builds: { reach: "filtered", test: "build.test.ts" },
+};
