@@ -155,6 +155,9 @@
     "extractSpore": "Extract spore",
     "lieDown": "Lie down",
     "getUp": "Get up",
+    "accommodate": "Accommodate",
+    "acceptAccommodation": "Accept accommodation",
+    "stopAccommodation": "End accommodation",
     "shower": "Shower",
     "heal": "Heal",
     "punch": "Punch",
@@ -262,6 +265,8 @@
     "immunity": "Immunity",
     "pacifist": "Pacifist",
     "mankind_only_hope": "Mankind's Only Hope",
+    "wheelchair": "Wheelchair",
+    "accommodated": "Accommodated",
     "contaminated": "Contamination: {{level}}",
     "desc": {
       "dirty": "Can't research. Taking a shower removes it.",
@@ -271,6 +276,8 @@
       "immunity": "A trait: attempts to infect you never do anything. It can't be removed.",
       "pacifist": "Every aggressive action in this person's room costs 2 more AP, theirs included. Stacks with other pacifists. It can't be removed.",
       "mankind_only_hope": "A trait: while this person is alive, the whole crew loses 1 less morale each day. It can't be removed.",
+      "wheelchair": "A trait: anyone in this person's room can offer to push their wheelchair. While pushed, they move with the pusher at no MP cost. It can't be removed.",
+      "accommodated": "Someone is pushing this person's wheelchair: they go wherever their pusher goes, at no MP cost, and can't move alone. Either of them can end it.",
       "contaminated": "A human you have contaminated. At their capacity they turn Mush."
     }
   },
@@ -371,6 +378,9 @@
     "dayBegins": "Day {{day}} begins.",
     "left": "{{name}} left for {{room}}.",
     "entered": "{{name}} entered from {{room}}.",
+    "accommodationOffered": "{{name}} offered to push {{target}}'s wheelchair.",
+    "accommodated": "{{name}} is now pushing {{target}}'s wheelchair.",
+    "accommodationEnded": "{{name}} stopped pushing {{target}}'s wheelchair.",
     "pickedUp": "{{name}} picked up the {{item}}.",
     "dropped": "{{name}} dropped the {{item}}.",
     "dismantleFailed": "You failed to dismantle the {{item}}.",

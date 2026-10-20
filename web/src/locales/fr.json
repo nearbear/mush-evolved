@@ -156,6 +156,9 @@
     "extractSpore": "Extraire une spore",
     "lieDown": "S'allonger",
     "getUp": "Se lever",
+    "accommodate": "Pousser le fauteuil",
+    "acceptAccommodation": "Accepter l'aide",
+    "stopAccommodation": "Mettre fin à l'aide",
     "shower": "Se doucher",
     "heal": "Soigner",
     "punch": "Frapper",
@@ -263,6 +266,8 @@
     "immunity": "Immunité",
     "pacifist": "Pacifiste",
     "mankind_only_hope": "Seul espoir de l'Humanité",
+    "wheelchair": "Fauteuil roulant",
+    "accommodated": "Accompagné",
     "contaminated": "Contamination : {{level}}",
     "desc": {
       "dirty": "Vous ne pouvez pas faire de recherche. Prendre une douche l'enlève.",
@@ -272,6 +277,8 @@
       "immunity": "Un trait : les tentatives de vous infecter ne font jamais rien. Ne peut pas être retiré.",
       "pacifist": "Toute action agressive dans la salle de cette personne coûte 2 PA de plus, les siennes comprises. Se cumule avec d'autres pacifistes. Ne peut pas être retiré.",
       "mankind_only_hope": "Un trait : tant que cette personne est en vie, tout l'équipage perd 1 point de moral de moins chaque jour. Ne peut pas être retiré.",
+      "wheelchair": "Un trait : n'importe qui dans la salle de cette personne peut proposer de pousser son fauteuil. Une fois poussée, elle se déplace avec son accompagnateur sans coût en PM. Ne peut pas être retiré.",
+      "accommodated": "Quelqu'un pousse le fauteuil de cette personne : elle va là où va son accompagnateur, sans coût en PM, et ne peut pas se déplacer seule. L'un ou l'autre peut y mettre fin.",
       "contaminated": "Un humain que vous avez contaminé. À sa capacité maximale, il devient Mush."
     }
   },
@@ -372,6 +379,9 @@
     "dayBegins": "Le jour {{day}} commence.",
     "left": "{{name}} est parti vers : {{room}}.",
     "entered": "{{name}} est entré depuis : {{room}}.",
+    "accommodationOffered": "{{name}} a proposé de pousser le fauteuil de {{target}}.",
+    "accommodated": "{{name}} pousse désormais le fauteuil de {{target}}.",
+    "accommodationEnded": "{{name}} a cessé de pousser le fauteuil de {{target}}.",
     "pickedUp": "{{name}} a ramassé : {{item}}.",
     "dropped": "{{name}} a posé : {{item}}.",
     "dismantleFailed": "Vous n'avez pas réussi à démonter : {{item}}.",

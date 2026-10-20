@@ -42,7 +42,7 @@ export function actionTarget(a: Action): Target | null {
   if (a.type === "examine") return a.target;
   if ("equipment" in a) return { kind: "equipment", id: a.equipment };
   if ("item" in a) return { kind: "item", id: a.item };
-  if (a.type === "bond" || a.type === "dtt" || a.type === "stt" || a.type === "heal" || a.type === "punch" || a.type === "spike") {
+  if (a.type === "bond" || a.type === "dtt" || a.type === "stt" || a.type === "heal" || a.type === "punch" || a.type === "spike" || a.type === "accommodate" || a.type === "accept_accommodation") {
     return { kind: "player", id: a.target };
   }
   return null;
@@ -72,6 +72,10 @@ function aimedAt(view: PlayerView, a: Action, target: Target): boolean {
     case "heal":
     case "punch":
     case "spike":
+    case "accommodate":
+    case "accept_accommodation":
+    // On the pushed person: Terrence ends it from his own panel, the pusher from his.
+    case "stop_accommodation":
       return target.kind === "player" && a.target === target.id;
     case "extract_spore":
     case "get_up":
@@ -102,6 +106,9 @@ const ACTION_LABEL_KEYS = {
   spike: "actions.spike",
   extract_spore: "actions.extractSpore",
   get_up: "actions.getUp",
+  accommodate: "actions.accommodate",
+  accept_accommodation: "actions.acceptAccommodation",
+  stop_accommodation: "actions.stopAccommodation",
 } as const;
 
 /** i18n key for the button text of an action aimed at a target (Inspect panel and peek bar). */

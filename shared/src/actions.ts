@@ -1,3 +1,4 @@
+import { AcceptAccommodationAction, AccommodateAction, StopAccommodationAction } from "./actions/accommodate.ts";
 import { BondAction } from "./actions/bond.ts";
 import { BuildAction } from "./actions/build.ts";
 import { ConsumeAction } from "./actions/consume.ts";
@@ -85,6 +86,9 @@ export const ACTIONS: { [T in ActionType]: ActionDef<ActionOf<T>> } = {
   spike: new SpikeAction(),
   lie_down: new LieDownAction(),
   get_up: new GetUpAction(),
+  accommodate: new AccommodateAction(),
+  accept_accommodation: new AcceptAccommodationAction(),
+  stop_accommodation: new StopAccommodationAction(),
   shower: new ShowerAction(),
   heal: new HealAction(),
   punch: new PunchAction(),

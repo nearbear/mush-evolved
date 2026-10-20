@@ -87,6 +87,9 @@ export type Action =
   | { type: "extract_spore" }
   | { type: "lie_down"; equipment: string }
   | { type: "get_up" }
+  | { type: "accommodate"; target: PlayerId }
+  | { type: "accept_accommodation"; target: PlayerId }
+  | { type: "stop_accommodation"; target: PlayerId }
   | { type: "shower"; equipment: string }
   | { type: "access"; equipment: string }
   | { type: "research"; equipment: string; research: string }

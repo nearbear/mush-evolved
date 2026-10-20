@@ -156,6 +156,9 @@
     "extractSpore": "Extraer una espora",
     "lieDown": "Acostarse",
     "getUp": "Levantarse",
+    "accommodate": "Empujar la silla",
+    "acceptAccommodation": "Aceptar ayuda",
+    "stopAccommodation": "Terminar la ayuda",
     "shower": "Ducharse",
     "heal": "Curar",
     "punch": "Golpear",
@@ -263,6 +266,8 @@
     "immunity": "Inmunidad",
     "pacifist": "Pacifista",
     "mankind_only_hope": "Única esperanza de la humanidad",
+    "wheelchair": "Silla de ruedas",
+    "accommodated": "Acompañado",
     "contaminated": "Contaminación: {{level}}",
     "desc": {
       "dirty": "No puedes investigar. Darte una ducha lo elimina.",
@@ -272,6 +277,8 @@
       "immunity": "Un rasgo: los intentos de infectarte nunca hacen nada. No se puede quitar.",
       "pacifist": "Toda acción agresiva en la sala de esta persona cuesta 2 PA más, incluidas las suyas. Se acumula con otros pacifistas. No se puede quitar.",
       "mankind_only_hope": "Un rasgo: mientras esta persona siga con vida, toda la tripulación pierde 1 punto de moral menos cada día. No se puede quitar.",
+      "wheelchair": "Un rasgo: cualquiera en la sala de esta persona puede ofrecerse a empujar su silla de ruedas. Mientras la empujan, se mueve con quien la empuja sin coste de PM. No se puede quitar.",
+      "accommodated": "Alguien empuja la silla de ruedas de esta persona: va adonde vaya quien la empuja, sin coste de PM, y no puede moverse sola. Cualquiera de los dos puede terminarlo.",
       "contaminated": "Un humano que has contaminado. Al llegar a su capacidad se vuelve Mush."
     }
   },
@@ -372,6 +379,9 @@
     "dayBegins": "Comienza el día {{day}}.",
     "left": "{{name}} se fue a: {{room}}.",
     "entered": "{{name}} entró desde: {{room}}.",
+    "accommodationOffered": "{{name}} se ofreció a empujar la silla de ruedas de {{target}}.",
+    "accommodated": "{{name}} empuja ahora la silla de ruedas de {{target}}.",
+    "accommodationEnded": "{{name}} dejó de empujar la silla de ruedas de {{target}}.",
     "pickedUp": "{{name}} recogió: {{item}}.",
     "dropped": "{{name}} soltó: {{item}}.",
     "dismantleFailed": "No lograste desmontar: {{item}}.",

@@ -55,6 +55,11 @@ export interface GameState {
   /** Failed scans in a row per player, raising their next scan's odds; reset by a success (owner, 2026-10-19). Never sent. */
   scanFailures: Record<PlayerId, number>;
   nextPlanetId: number;
+  /**
+   * Server time (ms) of the latest action input or tick (queue.ts); 0 before the first. The rules' only clock, for
+   * deadlines such as accommodation offers. Never sent.
+   */
+  now: number;
 }
 
 /** A planet a player found. Its size is the number of sectors. */

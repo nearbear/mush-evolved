@@ -116,6 +116,7 @@ export function createGame(
     planets: {},
     scanFailures: {},
     nextPlanetId: 1,
+    now: 0,
   };
   grantCarePoints(state); // day 1 begins now
   return state;
@@ -326,6 +327,8 @@ export function viewFor(state: GameState, playerId: PlayerId): PlayerView {
         skills: here ? [...o.skills] : [],
         // Who is in bed, and which bed, is visible to the room (owner, 2026-10-18).
         ...(here && o.lyingIn ? { lying: o.lyingIn } : {}),
+        // Who pushes whose wheelchair is public to the room (owner, 2026-10-19).
+        ...(here && o.pushedBy !== undefined ? { pushedBy: o.pushedBy } : {}),
         // Mush see a contaminated human's level, like a status, on people in their room.
         ...(contamination !== undefined ? { contamination } : {}),
         // A busy bar, never the action: only when its log entry could reach you.

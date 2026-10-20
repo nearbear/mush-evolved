@@ -191,6 +191,8 @@ export function IsoRoom({
   if (visit.current.room !== room) visit.current = { room, from: visit.current.room, n: visit.current.n + 1 };
   const here = walk?.visit === visit.current.n ? walk : undefined;
   const me = occupants.find((o) => o.you);
+  // You can't wander the room while lying in bed or while someone pushes your wheelchair.
+  const rooted = !!me?.lying || !!me?.statuses.includes("accommodated");
   const entryCell = roomLayout && visit.current.from ? doorSpot(layout, roomLayout, visit.current.from, cells) : undefined;
   const exitCell = roomLayout && leavingTo ? doorSpot(layout, roomLayout, leavingTo, cells) : undefined;
   // Someone in bed lies in the middle of the bed's footprint, mirrored to run along the bed.
@@ -465,7 +467,7 @@ export function IsoRoom({
     else if (hit?.kind === "chair") {
       // Sit down (cosmetic, like walking): you stand on the chair's cell in the sitting pose.
       onClear();
-      if (!me?.lying) setWalk({ visit: visit.current.n, cell: hit.cell, seat: seatFor(hit.dir) });
+      if (!rooted) setWalk({ visit: visit.current.n, cell: hit.cell, seat: seatFor(hit.dir) });
     }
     else if (hit?.kind === "door") onDoorTap(hit.to);
     else {
@@ -473,7 +475,7 @@ export function IsoRoom({
       onClear();
       const at = pointIn(e);
       const cell = cellAtPoint(cells, at.x, at.y);
-      if (cell && !me?.lying) setWalk({ visit: visit.current.n, cell });
+      if (cell && !rooted) setWalk({ visit: visit.current.n, cell });
     }
   };
   const onDoubleClick = (e: MouseEvent<HTMLDivElement>) => {

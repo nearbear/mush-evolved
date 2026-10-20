@@ -881,3 +881,16 @@ Decided by the owner, accepting a commenter on #24 (eMush days start at 00:00 GM
 - Asked for a "storybook" of the structural (non-icon) PNGs in the design folder. Built a dev-only Vite page, `web/design-kit.html` (+ `web/src/designKit/`), instead of adding Storybook (a new dependency). It isn't a build input, so it never ships.
 - About 190 of the 255 PNGs are assembled into components (page shells, 3-slice panels, cards, frames, tabs, buttons, bars, slots, controls); each story lists its source files with their natural sizes, and the assemblies that are inferred from names and sizes carry a "guess" tag. Icons, logos and illustrations are listed but not shown.
 - What needed correction: Vite dev doesn't rewrite `../Mush` paths written directly in HTML (`<img src>`, inline `style`), so those images 404'd; the page now names files with `data-img`/`data-bg` and resolves them through an `import.meta.glob` in `main.ts`. Useful finding: the site frame's left+right pieces add up to exactly 1080px on every row, so it's a fixed-width frame.
+
+## 2026-10-19: Accommodating Terrence (wheelchair pushing)
+
+- **Decision (owner):** others can accommodate Terrence: anyone in his room offers (free), Terrence accepts, and from then he can't move alone and travels with his pusher at no MP cost; the pusher pays a normal move. Either ends it, death ends it; public room log plus a status showing who pushes.
+- **What worked:** the `rule` skill's one-round AskUserQuestion settled cost, consent, ending and visibility up front; nothing in the original's data covered this (only Terrence's backstory mentions his wheelchair). The leak-field registry forced explicit reach decisions for the two new fields (`pushedBy`: room, `accommodationOffers`: own).
+- **Needed correction:** Claude first left out a trait status for the wheelchair and caught it against the 2026-10-18 "every trait is a public status" decision; a first locale-insertion script also matched `mankind_only_hope` in the skills catalog and was redone.
+- **Left for later:** the room view does not keep Terrence beside his pusher; no way to decline or withdraw an offer other than leaving the room.
+
+## 2026-10-19 (later): Accommodating Terrence, follow-up
+
+- **Decision (owner):** an offer Terrence hasn't accepted within 5 minutes expires, and ending a push is instant (not queued). Keeping Terrence beside his pusher in the room view was filed as a Private beta story (#203).
+- **How:** the rules had no clock, so Claude added `GameState.now` (the server time of the latest action input or tick) and folded offer expiries into `nextDue`/`tick`, reusing the server's existing alarm rather than adding a timer. Expiry is silent (no log line); that wasn't specified.
+- **Needed correction:** another session was appending to this log at the same time, so this entry first landed under its walls entry and was moved here.

@@ -84,6 +84,7 @@ export const DEFAULT_CONFIG: GameConfig = {
   // Decided 2026-10-18: NERON projects work exactly like research: 2 AP, 25% per action, no repeat penalty.
   project: { cost: { ap: 2 }, effect: { progressPercent: 25 } },
   // Confirmed 2026-10-17: lying down in a bed is free (the +1 AP per cycle is the lying_down modifier).
+  accommodate: { cost: { ap: 0 }, offerMs: 5 * 60_000 },
   lieDown: { cost: { ap: 0 } },
   // Confirmed 2026-10-14: showering costs 2 AP, 1 less with soap in your inventory; a Mush takes 4 damage.
   shower: { cost: { ap: 2, soapDiscountAp: 1 }, effect: { mushDamage: 4 } },
@@ -95,7 +96,7 @@ export const DEFAULT_CONFIG: GameConfig = {
   // Confirmed 2026-10-15: nobody starts with a skill; players pick up to three
   // (SKILL_SLOTS) with the free, permanent pick_skill action.
   startSkills: [],
-  characterModifiers: { ian: ["pacifist"], chun: ["immunity", "mankind_only_hope"] },
+  characterModifiers: { ian: ["pacifist"], chun: ["immunity", "mankind_only_hope"], terrence: ["wheelchair"] },
   mankindOnlyHope: { moraleLossCut: 1 },
   creative: { refundOdds: 0.5 },
   anticPerfume: { immuneCycles: 2 },

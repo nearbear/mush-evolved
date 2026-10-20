@@ -122,7 +122,7 @@ export function parseGameMessage(raw: string): GameClientMessage | null {
   if (a.type === "build" && typeof a.item === "string") return { type: "action", action: { type: "build", item: a.item } };
   if (a.type === "install" && typeof a.item === "string") return { type: "action", action: { type: "install", item: a.item } };
   if (a.type === "jettison" && typeof a.item === "string") return { type: "action", action: { type: "jettison", item: a.item } };
-  if ((a.type === "bond" || a.type === "dtt" || a.type === "stt" || a.type === "heal" || a.type === "punch" || a.type === "spike") && typeof a.target === "string") {
+  if ((a.type === "bond" || a.type === "dtt" || a.type === "stt" || a.type === "heal" || a.type === "punch" || a.type === "spike" || a.type === "accommodate" || a.type === "accept_accommodation" || a.type === "stop_accommodation") && typeof a.target === "string") {
     return { type: "action", action: { type: a.type, target: a.target } };
   }
   if (a.type === "pick_skill" && isSkill(a.skill)) return { type: "action", action: { type: "pick_skill", skill: a.skill } };

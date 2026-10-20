@@ -115,6 +115,7 @@ export interface GameConfig {
     analyze: { cost: { ap: number } }; // AP spent to reveal one sector of one of your planets (owner, 2026-10-19; the original's remote analysis, 2).
     maxPlanets: number; // Most planets one player can hold (owner, 2026-10-19).
   };
+  accommodate: { cost: { ap: number }; offerMs: number }; // AP spent to offer to push someone's wheelchair, and how long (server ms) the offer waits to be accepted (owner, 2026-10-19: free, 5 minutes).
   lieDown: { cost: { ap: number } }; // AP spent to lie down in a bed (confirmed 2026-10-17).
   shower: {
     cost: {
@@ -156,7 +157,7 @@ export interface GameConfig {
     mpPenalty: number; // MP added to each move while carrying a heavy item, however many (confirmed 2026-10-16).
   };
   startSkills: string[]; // Skills every player starts with (none since 2026-10-15; players pick their own).
-  characterModifiers: Record<string, string[]>; // Modifiers a character starts with, by character id (traits: Ian pacifist, owner 2026-10-18; Chun immunity and mankind_only_hope, owner 2026-10-18).
+  characterModifiers: Record<string, string[]>; // Modifiers a character starts with, by character id (traits: Ian pacifist, owner 2026-10-18; Chun immunity and mankind_only_hope, owner 2026-10-18; Terrence wheelchair, owner 2026-10-19).
   mankindOnlyHope: { moraleLossCut: number }; // How much less morale the crew loses each day while a holder (Chun) is alive (owner, 2026-10-18).
   startItems: { type: string; room: RoomId; builds?: string }[]; // Items placed in rooms at the start of the game. Types come from ITEM_TYPES in items.ts.
   startInventory: string[]; // Item types every player starts carrying (one of each).
