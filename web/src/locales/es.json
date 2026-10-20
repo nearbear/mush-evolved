@@ -19,6 +19,7 @@
     "hp": "PV",
     "morale": "Moral",
     "dayCycle": "Día {{day}}, ciclo {{cycle}}",
+    "nextCycle": "Próximo ciclo en {{time}}",
     "chip": "{{label}}: {{value}} de {{max}}"
   },
   "settings": {

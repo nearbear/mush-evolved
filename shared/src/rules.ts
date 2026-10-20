@@ -42,10 +42,18 @@ export type { ActionResult };
 
 /**
  * `forcedRoles` is a testing aid: a forced Mush is picked before anyone else and a forced human
- * last, so the usual random draw still fills any remaining Mush places.
+ * last, so the usual random draw still fills any remaining Mush places. `startCycle` is the cycle of day 1 the ship
+ * launches in: cycles follow the UTC clock (#24), so a ship launched at 14:00 GMT starts on cycle 5.
  */
-export function createGame(seats: readonly Seat[], config: GameConfig, seed: number, forcedRoles: Readonly<Record<PlayerId, Role>> = {}): GameState {
+export function createGame(
+  seats: readonly Seat[],
+  config: GameConfig,
+  seed: number,
+  forcedRoles: Readonly<Record<PlayerId, Role>> = {},
+  startCycle = 1,
+): GameState {
   if (config.mushCount >= seats.length) throw new Error("mushCount must be less than seat count");
+  if (!Number.isInteger(startCycle) || startCycle < 1 || startCycle > config.cyclesPerDay) throw new Error("startCycle must be a cycle of day 1");
   if (new Set(seats.map((s) => s.id)).size !== seats.length) throw new Error("duplicate seat ids");
 
   const [shuffled, rng] = shuffle(seats, seed);
@@ -62,8 +70,8 @@ export function createGame(seats: readonly Seat[], config: GameConfig, seed: num
     hp: config.startHp,
     morale: config.startMorale,
     satiety: 0,
-    // Humans start at 0 satiety on cycle 1, so the hunger count starts there too.
-    satietyZeroSince: mushIds.has(s.id) ? null : 1,
+    // Humans start at 0 satiety, so the hunger count starts with the first cycle.
+    satietyZeroSince: mushIds.has(s.id) ? null : startCycle,
     statuses: [],
     spores: 0,
     resources: emptyResources(),
@@ -86,13 +94,13 @@ export function createGame(seats: readonly Seat[], config: GameConfig, seed: num
   const state: GameState = {
     config,
     rng,
-    cycle: 1,
+    cycle: startCycle,
     phase: "playing",
     players,
     items,
     nextItemId: items.length + 1,
     dispensedOn: {},
-    log: [{ cycle: 1, key: "crewWakes", visibleTo: "all" }],
+    log: [{ cycle: startCycle, key: "crewWakes", visibleTo: "all" }],
     chat: [],
     nextChatId: 1,
     channels: [],
@@ -212,6 +220,14 @@ export function setActopiCheat(state: GameState, playerId: PlayerId, mode: Actop
   if (!findPlayer(state, playerId)) return fail("unknown_player");
   const next = clone(state);
   findPlayer(next, playerId)!.actopiCheat = mode;
+  return { ok: true, state: next };
+}
+
+/** The server's clock passed a cycle boundary (00:00, 03:00, … GMT): the cycle ends for everyone, ready or not. */
+export function newCycle(state: GameState): ActionResult {
+  if (state.phase !== "playing") return fail("game_over");
+  const next = clone(state);
+  advanceCycle(next);
   return { ok: true, state: next };
 }
 

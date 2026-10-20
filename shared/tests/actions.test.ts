@@ -19,7 +19,6 @@ describe("action registry", () => {
     const floor = state.items.filter((i) => i.at.kind === "room" && i.at.id === "LABORATORY");
     const mine = state.items.filter((i) => i.at.kind === "player" && i.at.id === "p0");
     const expected: Action[] = [
-      { type: "ready" },
       ...DEFAULT_CONFIG.rooms.LABORATORY!.map((to): Action => ({ type: "move", to })),
       ...floor.map((i): Action => ({ type: "take", item: i.id })),
       ...mine.map((i): Action => ({ type: "drop", item: i.id })),

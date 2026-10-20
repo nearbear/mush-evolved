@@ -18,7 +18,8 @@ All under `web/src/`. UI rules are in `web/CLAUDE.md`.
 
 **hud/**
 
-- `TopBar.tsx`: cycle, End cycle, Leave, settings.
+- `TopBar.tsx`: cycle and countdown, End cycle (only when offered), Leave, settings.
+- `CycleCountdown.tsx`: time left until the next cycle, from the view message's `nextCycleAt`.
 - `PlayerSummary.tsx`: portrait, name, faction icon, AP/MP/HP/morale bars.
 - `PipBar.tsx`: the pip bar in SVG, tinted by CSS `color`.
 - `SettingsDialog.tsx` + `settings.css`: settings dialog.

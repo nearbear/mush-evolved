@@ -4,7 +4,7 @@
 // Every state change must go through applyInput, or it won't be in the record.
 
 import type { GameClientMessage } from "./protocol.ts";
-import { createGame, setActopiCheat, setCheat, setRoleCheat, type ActionResult } from "./rules.ts";
+import { createGame, newCycle, setActopiCheat, setCheat, setRoleCheat, type ActionResult } from "./rules.ts";
 import { clearQueue, queueAction, tick } from "./queue.ts";
 import { createChannel, inviteToChannel, leaveChannel, sendChat, toggleCheckbox } from "./chat.ts";
 import type { GameConfig, GameState, PlayerId, Role, Seat } from "./types.ts";
@@ -22,22 +22,26 @@ export interface GameSetup {
   rulesVersion: string;
   /** Testing only: seats whose role was forced from the lobby (needs ALLOW_CHEATS). */
   forcedRoles?: Record<PlayerId, Role>;
+  /** The cycle of day 1 the ship launched in, from the UTC clock (#24). 1 if left out. */
+  startCycle?: number;
 }
 
 /**
  * One accepted change to the game. Chat and channel names hold the text after
  * moderation, which is what the rules saw. An action carries the server time
  * it arrived (`at`), and `tick` is the server saying time has reached `at`
- * (queue.ts); the rules read no clock of their own. Other server-driven inputs
- * (cycle ticks, scheduled plans) will join this union without a `by`.
+ * (queue.ts); the rules read no clock of their own. `cycle` is the server's
+ * clock passing a cycle boundary (#24). Other server-driven inputs (scheduled
+ * plans) will join this union without a `by`.
  */
 export type Input =
   | (Exclude<GameClientMessage, { type: "action" }> & { by: PlayerId })
   | (Extract<GameClientMessage, { type: "action" }> & { by: PlayerId; at: number })
-  | { type: "tick"; at: number };
+  | { type: "tick"; at: number }
+  | { type: "cycle" };
 
 export function startGame(setup: GameSetup): GameState {
-  return createGame(setup.seats, setup.config, setup.seed, setup.forcedRoles);
+  return createGame(setup.seats, setup.config, setup.seed, setup.forcedRoles, setup.startCycle);
 }
 
 /** The single entry point for changing a game. */
@@ -49,6 +53,8 @@ export function applyInput(state: GameState, input: Input): ActionResult {
       return clearQueue(state, input.by);
     case "tick":
       return tick(state, input.at);
+    case "cycle":
+      return newCycle(state);
     case "chat":
       return sendChat(state, input.by, input.channel, input.text);
     case "toggleCheckbox":

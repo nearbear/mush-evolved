@@ -6,7 +6,7 @@ import { dailyMoraleLoss } from "../src/modifiers.ts";
 import { applyInput, replayGame, type Input } from "../src/replay.ts";
 import { applyAction, createGame, setActopiCheat, setCheat, setRoleCheat, viewFor } from "../src/rules.ts";
 import type { GameState, PlayerId } from "../src/types.ts";
-import { makeSeats, player, offered } from "./support.ts";
+import { makeSeats, nextCycle, player, offered } from "./support.ts";
 
 const seats = makeSeats(3);
 const fresh = () => createGame(seats, DEFAULT_CONFIG, 7);
@@ -46,7 +46,7 @@ describe("cheats", () => {
     let s = cheat(cheat(fresh(), "p0", "infiniteMorale"), "p0", "infiniteHp");
     expect(player(s, "p0")).toMatchObject({ morale: cfg.maxMorale, hp: cfg.maxHp });
     s.cycle = cfg.cyclesPerDay; // the next cycle starts a day, which costs morale
-    for (const p of seats) s = applyOk(s, p.id);
+    s = nextCycle(s);
     expect(s.cycle).toBe(cfg.cyclesPerDay + 1);
     expect(player(s, "p0").morale).toBe(cfg.maxMorale);
     expect(player(s, "p1").morale).toBe(cfg.startMorale - dailyMoraleLoss(s));
@@ -80,12 +80,6 @@ describe("cheats", () => {
     expect(parseGameMessage(JSON.stringify({ type: "cheat", cheat: "infiniteAp", on: "yes" }))).toBeNull();
   });
 });
-
-function applyOk(s: GameState, id: PlayerId): GameState {
-  const r = applyAction(s, id, { type: "ready" });
-  if (!r.ok) throw new Error(r.error);
-  return r.state;
-}
 
 describe("ACTOPI cheat", () => {
   const apart = () => {

@@ -9,7 +9,7 @@ import type { Action, GameConfig, GameState, PlayerId } from "../src/types.ts";
 import { makeSeats, player, must } from "./support.ts";
 
 const seats = makeSeats(3);
-const base: GameConfig = { ...DEFAULT_CONFIG, mushCount: 1, startInventory: [], startItems: [], startSkills: [], punch: { ...DEFAULT_CONFIG.punch, successChance: 1 } };
+const base: GameConfig = { ...DEFAULT_CONFIG, manualCycles: true, mushCount: 1, startInventory: [], startItems: [], startSkills: [], punch: { ...DEFAULT_CONFIG.punch, successChance: 1 } };
 const D = base.action.durationMs;
 const punch = (target: PlayerId): Action => ({ type: "punch", target });
 const bond = (target: PlayerId): Action => ({ type: "bond", target });

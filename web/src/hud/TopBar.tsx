@@ -4,6 +4,7 @@ import { Menu } from "@base-ui/react/menu";
 import { useTranslation } from "react-i18next";
 import { SETTINGS_ICON } from "../art/assets.ts";
 import { useMobile } from "../useMobile.ts";
+import { CycleCountdown } from "./CycleCountdown.tsx";
 import { PlayerSummary } from "./PlayerSummary.tsx";
 import { ShipResources } from "./ShipResources.tsx";
 import { SettingsDialog } from "./SettingsDialog.tsx";
@@ -13,6 +14,8 @@ export function TopBar({
   showSummary,
   canReady,
   onReady,
+  nextCycleAt,
+  clockOffset,
   onLeave,
   cheatsAllowed,
   onCheat,
@@ -22,8 +25,13 @@ export function TopBar({
   view: PlayerView;
   /** Phones only: on desktop the summary is in the self panel. */
   showSummary: boolean;
+  /** Offered only where End cycle is on (testing); cycles otherwise change on the server's clock. */
   canReady: boolean;
   onReady: () => void;
+  /** When the next cycle begins, in server ms (null until the first view arrives). */
+  nextCycleAt: number | null;
+  /** Server clock minus this one. */
+  clockOffset: number;
   onLeave: () => void;
   cheatsAllowed: boolean;
   onCheat: (cheat: Cheat, on: boolean) => void;
@@ -41,11 +49,16 @@ export function TopBar({
   ) : (
     "End cycle"
   );
+  // Ready can't be offered while you already are, so the button stays (disabled, "Waiting…") until the cycle ends.
+  const showReady = canReady || you.ready;
   const leaveLabel = "Leave";
   return (
     <header className="top-bar">
-      {showSummary && <PlayerSummary view={view} compact />}
-      <span className="cycle">Day {view.day} · Cycle {view.cycleOfDay}</span>
+      {showSummary && <PlayerSummary view={view} compact countdown={nextCycleAt !== null && <CycleCountdown nextCycleAt={nextCycleAt} clockOffset={clockOffset} />} />}
+      <span className="cycle">
+        Day {view.day} · Cycle {view.cycleOfDay}
+        {nextCycleAt !== null && <CycleCountdown nextCycleAt={nextCycleAt} clockOffset={clockOffset} />}
+      </span>
       <span className="spacer" />
       {!mobile && <ShipResources />}
       {mobile ? (
@@ -59,9 +72,11 @@ export function TopBar({
           <Menu.Portal>
             <Menu.Positioner sideOffset={6} align="end" className="menu-positioner">
               <Menu.Popup className="menu-popup">
-                <Menu.Item render={<button type="button" />} disabled={!canReady} onClick={onReady}>
-                  {endCycleLabel}
-                </Menu.Item>
+                {showReady && (
+                  <Menu.Item render={<button type="button" />} disabled={!canReady} onClick={onReady}>
+                    {endCycleLabel}
+                  </Menu.Item>
+                )}
                 <Menu.Item render={<button type="button" />} onClick={() => setSettingsOpen(true)}>
                   <img className="menu-item-icon" src={SETTINGS_ICON} alt="" />
                   {t("settings.title")}
@@ -75,9 +90,11 @@ export function TopBar({
         </Menu.Root>
       ) : (
         <>
-          <button type="button" disabled={!canReady} onClick={onReady}>
-            {endCycleLabel}
-          </button>
+          {showReady && (
+            <button type="button" disabled={!canReady} onClick={onReady}>
+              {endCycleLabel}
+            </button>
+          )}
           <button type="button" onClick={onLeave}>{leaveLabel}</button>
         </>
       )}
@@ -94,3 +111,4 @@ export function TopBar({
     </header>
   );
 }
+

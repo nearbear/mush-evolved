@@ -11,12 +11,13 @@ export class ReadyAction extends Action<ReadyActionData> {
     super("ready");
   }
 
-  override getCandidates(): ReadyActionData[] {
-    return [{ type: "ready" }];
+  // Cycles run on the clock; ending yours by hand is for testing (and later single player) only (owner, 2026-10-19).
+  override getCandidates(state: Readonly<GameState>): ReadyActionData[] {
+    return state.config.manualCycles ? [{ type: "ready" }] : [];
   }
 
-  override check(): string | null {
-    return null;
+  override check(state: Readonly<GameState>): string | null {
+    return state.config.manualCycles ? null : "manual_cycles_off";
   }
 
   override getCost(): { ap: number; mp: number } {

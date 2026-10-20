@@ -27,6 +27,12 @@ function connect(room: Room, token: string | null, id = `c-${token}`): Conn {
   return conn;
 }
 
+/** End cycle (`ready`) is offered only where cheats are allowed. */
+const CHEATS = { ALLOW_CHEATS: "true" };
+const HOUR = 60 * 60 * 1000;
+/** When the next 3-hour cycle begins after `at`. */
+const nextCycleAt = (at: number) => (Math.floor(at / (3 * HOUR)) + 1) * 3 * HOUR;
+
 const send = (room: Room, conn: Conn, msg: unknown) => room.onMessage(conn as never, typeof msg === "string" ? msg : JSON.stringify(msg));
 const lastMsg = (c: Conn) => c.messages<GameServerMessage>().at(-1)!;
 const lastView = (c: Conn): PlayerView => {
@@ -248,7 +254,7 @@ describe("GameRoom timed actions", () => {
       await room.onAlarm();
       expect(storage.data.get("input:000000001")).toMatchObject({ input: { type: "tick", at: 1_002_000 } });
       expect(lastView(c).you.room).toBe(move.to);
-      expect(storage.alarm).toBeNull();
+      expect(storage.alarm).toBe(3 * HOUR); // the next cycle
     } finally {
       vi.useRealTimers();
     }
@@ -263,14 +269,14 @@ describe("GameRoom timed actions", () => {
       await send(room, c, { type: "clearQueue" });
     }
     expect(lastView(c).you.current).toBeNull();
-    expect(storage.alarm).toBeNull();
+    expect(storage.alarm).toBe(nextCycleAt(Date.now()));
     expect(c.messages<GameServerMessage>().some((m) => m.type === "error")).toBe(false);
   });
 });
 
 describe("GameRoom persistence", () => {
   it("records each accepted input in order, beside the setup", async () => {
-    const { room, storage } = await newRoom();
+    const { room, storage } = await newRoom(3, new FakeStorage(), CHEATS);
     const c = connect(room, "tok0");
     await send(room, c, { type: "action", action: legalIn(lastView(c)).find((x) => x.type === "move")! });
     await send(room, c, { type: "action", action: { type: "ready" } });
@@ -279,13 +285,13 @@ describe("GameRoom persistence", () => {
   });
 
   it("restores the game, tokens and input count after a restart", async () => {
-    const { room, storage } = await newRoom();
+    const { room, storage } = await newRoom(3, new FakeStorage(), CHEATS);
     const c = connect(room, "tok0");
     const move = legalIn(lastView(c)).find((x) => x.type === "move")! as { to: string };
     await send(room, c, { type: "action", action: move });
 
     // Evicted with the move under way: the stored alarm brings it back and finishes it.
-    const revived = asRoom(storage);
+    const revived = asRoom(storage, CHEATS);
     await revived.onStart();
     expect(storage.alarm).not.toBeNull();
     await revived.onAlarm();
@@ -312,7 +318,8 @@ describe("GameRoom bots", () => {
   });
 
   it("plays bot seats after a delay, and only legal actions", async () => {
-    const { room, storage } = await newRoom(1); // seats p1..p7 are bots
+    // Seats p1..p7 are bots that only end their cycle, so End cycle is on.
+    const { room, storage } = await newRoom(1, new FakeStorage(), CHEATS);
     const human = connect(room, "tok0");
     expect([...storage.data.keys()].filter((k) => k.startsWith("input:"))).toHaveLength(0);
     await vi.advanceTimersByTimeAsync(1600);
@@ -321,5 +328,72 @@ describe("GameRoom bots", () => {
     expect(inputs.every((i) => i.input.by !== "p0")).toBe(true);
     expect(lastView(human).players.filter((p) => p.isBot)).toHaveLength(7);
     vi.useRealTimers();
+  });
+});
+
+describe("GameRoom cycle clock", () => {
+  const launch = Date.UTC(2026, 9, 19, 14, 10); // 14:10 GMT: day 1, cycle 5
+  const views = (c: Conn) => c.messages<GameServerMessage>().filter((m) => m.type === "view");
+
+  beforeEach(() => {
+    vi.useFakeTimers({ now: launch });
+    return () => vi.useRealTimers();
+  });
+
+  it("launches on the clock's cycle of the day and sets an alarm for the next one", async () => {
+    const { room, storage } = await newRoom(3);
+    const c = connect(room, "tok0");
+    expect(lastView(c)).toMatchObject({ day: 1, cycleOfDay: 5 });
+    expect(storage.alarm).toBe(Date.UTC(2026, 9, 19, 15));
+    expect(lastMsg(c)).toMatchObject({ type: "view", nextCycleAt: Date.UTC(2026, 9, 19, 15) });
+    expect(legalIn(lastView(c)).some((a) => a.type === "ready")).toBe(false);
+  });
+
+  it("offers End cycle only where cheats are allowed", async () => {
+    const { room } = await newRoom(3, new FakeStorage(), CHEATS);
+    expect(legalIn(lastView(connect(room, "tok0")))).toContainEqual({ type: "ready" });
+  });
+
+  it("starts the next cycle when the alarm fires at the boundary, and records it", async () => {
+    const { room, storage } = await newRoom(3);
+    const c = connect(room, "tok0");
+    vi.setSystemTime(Date.UTC(2026, 9, 19, 15));
+    await room.onAlarm();
+    expect(lastView(c)).toMatchObject({ day: 1, cycleOfDay: 6 });
+    expect(storage.data.get("input:000000000")).toMatchObject({ input: { type: "cycle" } });
+    expect(storage.alarm).toBe(Date.UTC(2026, 9, 19, 18));
+  });
+
+  it("catches up on every cycle missed while down, with a day change at midnight GMT", async () => {
+    const { storage } = await newRoom(3);
+    vi.setSystemTime(Date.UTC(2026, 9, 20, 4)); // five boundaries later: 15, 18, 21, 00, 03
+    const revived = asRoom(storage);
+    await revived.onStart();
+    await revived.onAlarm();
+    const c = connect(revived, "tok0");
+    expect(lastView(c)).toMatchObject({ day: 2, cycleOfDay: 2 });
+    expect([...storage.data.keys()].filter((k) => k.startsWith("input:"))).toHaveLength(5);
+    expect(storage.alarm).toBe(Date.UTC(2026, 9, 20, 6));
+  });
+
+  it("settles an action bar and a boundary in time order", async () => {
+    vi.setSystemTime(Date.UTC(2026, 9, 19, 14, 59, 59));
+    const { room, storage } = await newRoom(3);
+    const c = connect(room, "tok0");
+    const move = legalIn(lastView(c)).find((x) => x.type === "move")! as { to: string };
+    await send(room, c, { type: "action", action: move });
+    vi.setSystemTime(Date.UTC(2026, 9, 19, 15, 0, 5));
+    await room.onAlarm();
+    const inputs = [...storage.data].filter(([k]) => k.startsWith("input:")).map(([, v]) => (v as { input: { type: string } }).input.type);
+    expect(inputs).toEqual(["action", "cycle", "tick"]);
+    expect(lastView(c)).toMatchObject({ cycleOfDay: 6, you: { room: move.to } });
+    expect(views(c).length).toBeGreaterThan(1);
+  });
+
+  it("runs short cycles with CYCLE_SECONDS, still aligned to the clock", async () => {
+    vi.setSystemTime(90_000);
+    const { room, storage } = await newRoom(3, new FakeStorage(), { CYCLE_SECONDS: "60" });
+    expect(lastView(connect(room, "tok0"))).toMatchObject({ day: 1, cycleOfDay: 2 }); // the second minute of the "day"
+    expect(storage.alarm).toBe(120_000);
   });
 });

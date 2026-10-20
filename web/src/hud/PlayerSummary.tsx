@@ -2,6 +2,7 @@
 // self panel under the room on desktop and in the top bar on phones.
 
 import { characterName, type PlayerView } from "@mush2/shared";
+import type { ReactNode } from "react";
 import { Popover } from "@base-ui/react/popover";
 import { useTranslation } from "react-i18next";
 import { AP_PIP, FACTION_ICONS, HP_ICON, HP_PIP, MORALE_ICON, MORALE_PIP, MP_PIP, bustIcon } from "../art/assets.ts";
@@ -51,7 +52,8 @@ function StatChip({ stat, value, max, icon, big = false }: { stat: "ap" | "mp" |
 }
 
 /** `compact` swaps the pip bars for chips under the portrait (the phone top bar). */
-export function PlayerSummary({ view, compact = false }: { view: PlayerView; compact?: boolean }) {
+/** `countdown` goes after the phone's abbreviated cycle (the top bar's own cycle is hidden there). */
+export function PlayerSummary({ view, compact = false, countdown }: { view: PlayerView; compact?: boolean; countdown?: ReactNode }) {
   const { t } = useTranslation();
   const { you } = view;
   return (
@@ -64,6 +66,7 @@ export function PlayerSummary({ view, compact = false }: { view: PlayerView; com
           <span className="sub cycle-under-name" role="img" aria-label={t("stat.dayCycle", { day: view.day, cycle: view.cycleOfDay })}>
             D{view.day}C{view.cycleOfDay}
           </span>
+          {countdown && <span className="sub cycle-under-name">{countdown}</span>}
         </div>
         <FactionCard view={view} />
         {compact && (

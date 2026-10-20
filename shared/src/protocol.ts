@@ -35,7 +35,8 @@ export type GameClientMessage =
 export type GameServerMessage =
   // `cheatsAllowed` is the server's dev flag, so the client knows whether to offer cheats. It is not game state.
   // `now` is the server's clock when sent, so the client can draw action bars (server ms) against its own clock.
-  | { type: "view"; view: PlayerView; cheatsAllowed: boolean; now: number }
+  // `nextCycleAt` is when the next cycle begins on the server's clock (the same for everyone, so not hidden).
+  | { type: "view"; view: PlayerView; cheatsAllowed: boolean; now: number; nextCycleAt: number }
   | { type: "error"; message: string };
 
 export function parseMatchmakerMessage(raw: string): MatchmakerClientMessage | null {

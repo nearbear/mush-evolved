@@ -36,6 +36,7 @@ export function GameScreen({ ticket, onLeave }: { ticket: SeatTicket; onLeave: (
   const [cheatsAllowed, setCheatsAllowed] = useState(false);
   /** Server clock minus ours, from each view message, so action bars (server ms) drain at the right moment. */
   const [clockOffset, setClockOffset] = useState(0);
+  const [nextCycleAt, setNextCycleAt] = useState<number | null>(null);
   const names = useNames();
   const socketRef = useRef<PartySocket | null>(null);
   const layout = useShipLayout();
@@ -83,6 +84,7 @@ export function GameScreen({ ticket, onLeave }: { ticket: SeatTicket; onLeave: (
         setView(msg.view);
         setCheatsAllowed(msg.cheatsAllowed);
         setClockOffset(msg.now - Date.now());
+        setNextCycleAt(msg.nextCycleAt);
       } else showError(i18n.t(`errors.${msg.message}` as never, { defaultValue: msg.message }));
     });
     // 4001 = invalid seat token (e.g. the local server was restarted).
@@ -151,6 +153,8 @@ export function GameScreen({ ticket, onLeave }: { ticket: SeatTicket; onLeave: (
         view={view}
         showSummary={mobile}
         canReady={legalIn(view).some((a) => a.type === "ready")}
+        nextCycleAt={nextCycleAt}
+        clockOffset={clockOffset}
         onReady={() => send({ type: "ready" })}
         onLeave={onLeave}
         cheatsAllowed={cheatsAllowed}

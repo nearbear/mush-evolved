@@ -7,7 +7,7 @@ import type { Action, GameState } from "../src/types.ts";
 import { makeSeats, must } from "./support.ts";
 
 const seats = makeSeats(4);
-const config = { ...DEFAULT_CONFIG, mushCount: 1, startInventory: [], startItems: [], maxAp: 99, startAp: 10 };
+const config = { ...DEFAULT_CONFIG, mushCount: 1, startInventory: [], startItems: [], maxAp: 99, startAp: 10, manualCycles: true };
 
 function ship(): GameState {
   const s = createGame(seats, config, 3);

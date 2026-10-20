@@ -2,7 +2,7 @@
 // shape (a renamed view field, a new Seat field) is fixed here once instead of in every test file. Setting up a
 // scenario (who is where, holding what) stays in each test file, next to the tests that depend on it.
 import { CHARACTERS } from "../src/characters.ts";
-import { type ActionResult, applyAction, legalIn, viewFor } from "../src/rules.ts";
+import { type ActionResult, applyAction, legalIn, newCycle, viewFor } from "../src/rules.ts";
 import type { Action, ActionOption, GameState, PlayerId, PlayerState, Seat } from "../src/types.ts";
 
 /** Seats p0, p1, … with the first `n` characters. `bots` says which seats are bots. */
@@ -35,10 +35,9 @@ export function mustApply(s: GameState, id: PlayerId, ...actions: Action[]): Gam
   return s;
 }
 
-/** Every living player readies once, which ends the cycle. */
+/** The clock passes a cycle boundary. */
 export function nextCycle(s: GameState): GameState {
-  for (const { id } of s.players) if (player(s, id).alive) s = mustApply(s, id, { type: "ready" });
-  return s;
+  return must(newCycle(s));
 }
 
 export const dayOf = (s: GameState) => Math.floor((s.cycle - 1) / s.config.cyclesPerDay);

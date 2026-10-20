@@ -5,7 +5,7 @@ import { RESEARCH_IDS } from "../src/research.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";
 import { addStatus } from "../src/statuses.ts";
 import type { Action } from "../src/types.ts";
-import { makeSeats, offered } from "./support.ts";
+import { makeSeats, nextDay, offered } from "./support.ts";
 
 const seats = makeSeats(3, "others");
 const work = (research: string): Action => ({ type: "research", equipment: "LABORATORY:RESEARCH_LAB", research });
@@ -126,13 +126,7 @@ describe("computer scientist skill (computer)", () => {
   it("adds 2 at each day boundary, up to the cap", () => {
     let s = pick(game());
     while (s.players[0]!.resources.comp < cfg.capPoints) {
-      const day = Math.floor((s.cycle - 1) / DEFAULT_CONFIG.cyclesPerDay);
-      while (Math.floor((s.cycle - 1) / DEFAULT_CONFIG.cyclesPerDay) === day)
-        for (const p of s.players) {
-          const r = applyAction(s, p.id, { type: "ready" });
-          if (!r.ok) throw new Error(r.error);
-          s = r.state;
-        }
+      s = nextDay(s);
     }
     expect(s.players[0]!.resources.comp).toBe(cfg.capPoints);
   });

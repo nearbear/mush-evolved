@@ -4,7 +4,7 @@ import { ITEM_TYPES } from "../src/items.ts";
 import { parseGameMessage } from "../src/protocol.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";
 import type { Action, GameState, PlayerId } from "../src/types.ts";
-import { makeSeats, mustApply, offered } from "./support.ts";
+import { makeSeats, mustApply, nextCycle, offered } from "./support.ts";
 
 const seats = makeSeats(3, "others");
 const MACHINE = "REFECTORY:COFFEE_DISPENSER";
@@ -31,7 +31,7 @@ describe("coffee machine", () => {
     let s = mustApply(refectory(), "p0", pull);
     expect(applyAction(s, "p1", pull).ok).toBe(false);
     expect(offered(s, "p1")).not.toContainEqual(pull);
-    for (const p of seats) s = mustApply(s, p.id, { type: "ready" });
+    s = nextCycle(s);
     expect(offered(s, "p1")).toContainEqual(pull);
   });
 
@@ -57,7 +57,7 @@ describe("coffee machine", () => {
 
   it("gives each coffee a unique id", () => {
     let s = mustApply(refectory(), "p0", pull);
-    for (const p of seats) s = mustApply(s, p.id, { type: "ready" });
+    s = nextCycle(s);
     s = mustApply(s, "p1", pull);
     expect(new Set(s.items.map((i) => i.id)).size).toBe(2);
   });

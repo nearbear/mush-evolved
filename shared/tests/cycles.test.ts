@@ -1,0 +1,73 @@
+import { describe, expect, it } from "vitest";
+import { DEFAULT_CONFIG } from "../src/config.ts";
+import { applyInput, startGame } from "../src/replay.ts";
+import { applyAction, createGame, legalActions, newCycle, viewFor } from "../src/rules.ts";
+import type { GameState } from "../src/types.ts";
+import { clone, makeSeats, must, nextCycle, player } from "./support.ts";
+
+// Cycles change on the server's UTC clock (#24, owner 2026-10-19); End cycle is kept for testing only.
+const seats = makeSeats(4);
+const config = { ...DEFAULT_CONFIG, mushCount: 1, startItems: [], startSkills: [] };
+const ship = (startCycle?: number): GameState => createGame(seats, config, 3, {}, startCycle);
+
+describe("cycles on the clock", () => {
+  it("has End cycle off by default", () => {
+    expect(DEFAULT_CONFIG.manualCycles).toBe(false);
+  });
+
+  it("doesn't offer or accept ready unless End cycle is on, leaving state unchanged", () => {
+    const s = ship();
+    expect(legalActions(s, "p0").some((a) => a.type === "ready")).toBe(false);
+    const before = clone(s);
+    expect(applyAction(s, "p0", { type: "ready" }).ok).toBe(false);
+    expect(s).toEqual(before);
+    const manual = createGame(seats, { ...config, manualCycles: true }, 3);
+    expect(legalActions(manual, "p0")).toContainEqual({ type: "ready" });
+  });
+
+  it("ends the cycle for everyone, ready or not, and refills AP", () => {
+    const s = createGame(seats, { ...config, manualCycles: true }, 3);
+    const readied = must(applyAction(s, "p0", { type: "ready" }));
+    const next = must(applyInput(readied, { type: "cycle" }));
+    expect(next.cycle).toBe(s.cycle + 1);
+    expect(next.players.every((p) => p.ap === config.startAp + config.apPerCycle && !p.ready)).toBe(true);
+    expect(next.log.at(-1)).toMatchObject({ key: "cycleBegins", visibleTo: "all" });
+  });
+
+  it("refuses once the game is over", () => {
+    const s = ship();
+    s.phase = "ended";
+    expect(newCycle(s).ok).toBe(false);
+  });
+});
+
+describe("launching mid-day", () => {
+  it("starts on the clock's cycle of day 1, and day 2 begins after the last cycle", () => {
+    let s = ship(5);
+    expect(viewFor(s, "p0")).toMatchObject({ day: 1, cycleOfDay: 5 });
+    expect(s.log[0]).toMatchObject({ cycle: 5, key: "crewWakes" });
+    const morale = player(s, "p0").morale;
+    for (let i = 0; i < 3; i++) s = nextCycle(s);
+    expect(viewFor(s, "p0")).toMatchObject({ day: 1, cycleOfDay: 8 });
+    expect(player(s, "p0").morale).toBe(morale);
+    s = nextCycle(s);
+    expect(viewFor(s, "p0")).toMatchObject({ day: 2, cycleOfDay: 1 });
+    expect(player(s, "p0").morale).toBeLessThan(morale);
+    expect(s.log.at(-1)).toMatchObject({ key: "dayBegins", params: { day: 2 } });
+  });
+
+  it("counts hunger from the first cycle the ship had", () => {
+    const humans = ship(5).players.filter((p) => p.role === "human");
+    expect(humans.map((p) => p.satietyZeroSince)).toEqual(humans.map(() => 5));
+  });
+
+  it("comes from the setup, defaulting to cycle 1", () => {
+    const setup = { seats, config, seed: 3, rulesVersion: "test" };
+    expect(startGame(setup).cycle).toBe(1);
+    expect(startGame({ ...setup, startCycle: 7 }).cycle).toBe(7);
+  });
+
+  it("rejects a cycle that isn't one of day 1", () => {
+    for (const c of [0, config.cyclesPerDay + 1, 2.5]) expect(() => ship(c)).toThrow(/startCycle/);
+  });
+});

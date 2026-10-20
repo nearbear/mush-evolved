@@ -16,6 +16,9 @@ export interface GameConfig {
   startAp: number;
   apPerCycle: number; // AP gained at the start of each cycle, before modifiers. Unspent AP carries over.
   cyclesPerDay: number; // Cycles in one day. The day ends with the last cycle; every living player then loses `dailyMoraleLoss` (modifiers.ts) morale.
+  // Cycles change on the server's UTC clock (#24). With this on, `ready` is offered too and the cycle also ends once
+  // every living player is ready: the dev server's manual End cycle, and later single player.
+  manualCycles: boolean;
   moralePerDay: number; // Morale lost by each living player at the end of a day, before modifiers (Mankind's Only Hope cuts it).
   maxAp: number; // AP never exceeds this.
   movement: MovementRules;

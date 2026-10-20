@@ -9,7 +9,8 @@ import { CHAT_CHANNELS, type GameState } from "../src/types.ts";
 
 const setup: GameSetup = {
   seats: Array.from({ length: 8 }, (_, i) => ({ id: `p${i}`, name: `Player ${i}`, isBot: false, character: CHARACTERS[i]!.id })),
-  config: DEFAULT_CONFIG,
+  // End cycle on, as on the dev server, so both ways a cycle ends are in the record.
+  config: { ...DEFAULT_CONFIG, manualCycles: true },
   seed: 42,
   rulesVersion: "test",
 };
@@ -33,8 +34,11 @@ function randomInput(state: GameState, rng: RngState, at: number): [Input, RngSt
   if (pick === 3 && channels[0]) return [{ by, type: "leaveChannel", channel: channels[0].id }, rng];
   if (pick === 4 && channels[0]) return [{ by, type: "chat", channel: channels[0].id, text: "psst" }, rng];
   const actions = legalActions(state, by);
-  // Lean on "ready" so cycles (and days) actually pass.
-  if (actions.length === 0 || pick === 5) return [{ by, type: "action", action: { type: "ready" }, at }, rng];
+  // Lean on "ready" so cycles (and days) actually pass; now and then the clock passes a cycle boundary too.
+  if (actions.length === 0 || pick === 5) {
+    [pick, rng] = nextInt(rng, 20);
+    return [pick === 0 ? { type: "cycle" } : { by, type: "action", action: { type: "ready" }, at }, rng];
+  }
   if (pick === 6) return [{ by, type: "clearQueue" }, rng];
   [pick, rng] = nextInt(rng, actions.length);
   return [{ by, type: "action", action: actions[pick]!, at }, rng];
@@ -66,6 +70,7 @@ describe("replay", () => {
       expect(state.cycle, "the game got past a day").toBeGreaterThan(DEFAULT_CONFIG.cyclesPerDay);
       expect(inputs.some((i) => i.type === "createChannel")).toBe(true);
       expect(inputs.some((i) => i.type === "tick")).toBe(true);
+      expect(inputs.some((i) => i.type === "cycle")).toBe(true);
       expect(inputs.some((i) => i.type === "clearQueue")).toBe(true);
       // Through JSON, as the server stores it.
       const stored = JSON.parse(JSON.stringify(inputs)) as Input[];

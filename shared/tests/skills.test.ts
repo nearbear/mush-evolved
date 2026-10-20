@@ -6,7 +6,7 @@ import { parseGameMessage } from "../src/protocol.ts";
 import { applyAction, createGame, legalActions, viewFor } from "../src/rules.ts";
 import { SKILLS, SKILL_SLOTS } from "../src/skills.ts";
 import type { GameConfig, GameState } from "../src/types.ts";
-import { makeSeats } from "./support.ts";
+import { makeSeats, nextCycle } from "./support.ts";
 
 const seats = makeSeats(4, "others");
 
@@ -148,19 +148,13 @@ describe("picking skills", () => {
 });
 
 describe("Logistics", () => {
-  /** Four people in one room, p0 with Logistics; the cycle is advanced by everyone readying up. */
+  /** Four people in one room, p0 with Logistics; then the cycle changes. */
   function cycle(setup: (s: GameState) => void): GameState {
     const state = createGame(seats, { ...config, startSkills: [] }, 7);
     state.players[0]!.skills = ["logistics"];
     for (const p of state.players) p.ap = 0;
     setup(state);
-    let s = state;
-    for (const p of state.players.filter((o) => o.alive)) {
-      const r = applyAction(s, p.id, { type: "ready" });
-      if (!r.ok) throw new Error(r.error);
-      s = r.state;
-    }
-    return s;
+    return nextCycle(state);
   }
   const gives = (s: GameState) => s.log.filter((e) => e.key === "logisticsGave");
 

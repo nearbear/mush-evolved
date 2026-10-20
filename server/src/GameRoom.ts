@@ -21,6 +21,7 @@ import {
   type Seat,
 } from "@mush2/shared";
 import { LogParrotBot, WanderBot, type Bot } from "./bots.ts";
+import { clockCycle, clockCycleStart, cycleMs, cycleOfDay } from "./cycleClock.ts";
 import { RateLimiter } from "./rateLimit.ts";
 
 /** Error code (not text) for a cheat input on a server that doesn't allow them. */
@@ -46,7 +47,7 @@ const BOT_DELAY_MS = 50;
  * Bump when GameState's shape changes. Games stored under another version are
  * discarded on load (there is no migration; games are short-lived).
  */
-const STATE_VERSION = 42;
+const STATE_VERSION = 43;
 
 interface Stored {
   version?: number;
@@ -57,6 +58,8 @@ interface Stored {
   inputs: number;
   /** Per seat, messages the rate limits rejected. Moderators see the count, never the messages. */
   rateLimited: Record<PlayerId, number>;
+  /** The clock cycle (cycleClock.ts) the game is in. Each boundary past it becomes a `cycle` input. */
+  clockCycle: number;
 }
 
 // The game's record, beside the snapshot in this room's storage:
@@ -92,6 +95,7 @@ export class GameRoom extends Server<Env> {
   private tokens: Record<string, PlayerId> = {};
   private inputs = 0;
   private rateLimited: Record<PlayerId, number> = {};
+  private clockCycle = 0;
   private blocked = 0;
   private bots = new Map<PlayerId, Bot>();
   private pendingBots = new Set<PlayerId>();
@@ -115,6 +119,7 @@ export class GameRoom extends Server<Env> {
     this.tokens = stored.tokens;
     this.inputs = stored.inputs;
     this.rateLimited = stored.rateLimited;
+    this.clockCycle = stored.clockCycle;
     this.blocked = (await this.ctx.storage.list({ prefix: "blocked:" })).size;
     this.initBots();
     this.scheduleBots();
@@ -124,11 +129,14 @@ export class GameRoom extends Server<Env> {
   /** Called once by the matchmaker over RPC. */
   async setup(seats: Seat[], tokens: Record<string, PlayerId>): Promise<void> {
     if (this.game) throw new Error("Game already set up");
+    this.clockCycle = clockCycle(Date.now(), cycleMs(this.env));
     const setup: GameSetup = {
       seats,
-      config: DEFAULT_CONFIG,
+      // End cycle is for testing: only where cheats are allowed (owner, 2026-10-19).
+      config: { ...DEFAULT_CONFIG, manualCycles: this.cheatsAllowed },
       seed: crypto.getRandomValues(new Uint32Array(1))[0]!,
       rulesVersion: this.env.RULES_VERSION,
+      startCycle: cycleOfDay(this.clockCycle, DEFAULT_CONFIG.cyclesPerDay),
     };
     this.game = stamp(startGame(setup));
     this.tokens = tokens;
@@ -136,6 +144,7 @@ export class GameRoom extends Server<Env> {
     await this.persist();
     this.initBots();
     this.scheduleBots();
+    await this.scheduleTick();
   }
 
   override onConnect(connection: Connection<SeatState>, ctx: ConnectionContext): void {
@@ -177,13 +186,40 @@ export class GameRoom extends Server<Env> {
     if (error) this.send(connection, { type: "error", message: error });
   }
 
-  /** The earliest action bar ran out: tell the rules what time it is (queue.ts). */
+  /**
+   * An action bar ran out or a cycle boundary passed: tell the rules (queue.ts, `cycle`). Everything due happens in
+   * time order, so after the room was down every missed cycle and bar happens as it would have. The alarm is set for
+   * the earliest of them, so that one happens even if the alarm fires a moment early by this isolate's clock.
+   */
   override async onAlarm(): Promise<void> {
-    const due = this.game ? nextDue(this.game) : null;
-    if (due === null) return;
-    // Never stamp the tick before the bar's end: an alarm can fire a moment early by this isolate's clock.
-    const error = await this.act({ type: "tick", at: Math.max(Date.now(), due) });
-    if (error) console.warn(`Tick failed: ${error}`);
+    for (let first = true; this.game?.phase === "playing"; first = false) {
+      const now = Date.now();
+      const due = nextDue(this.game);
+      const boundary = this.nextCycleAt();
+      const bar = due !== null && due <= boundary;
+      if (!first && (bar ? due : boundary) > now) break;
+      if (bar) {
+        // Never stamp the tick before the bar's end.
+        const error = await this.act({ type: "tick", at: Math.max(now, due) });
+        if (error) {
+          console.warn(`Tick failed: ${error}`);
+          break;
+        }
+      } else {
+        this.clockCycle++;
+        const error = await this.act({ type: "cycle" });
+        if (error) {
+          console.warn(`Cycle failed: ${error}`);
+          await this.persist();
+        }
+      }
+    }
+    await this.scheduleTick();
+  }
+
+  /** When the next cycle begins (server ms). */
+  private nextCycleAt(): number {
+    return clockCycleStart(this.clockCycle + 1, cycleMs(this.env));
   }
 
   /** Chat and channel management. Untrusted text: rate limit, then moderate, then let the rules decide. */
@@ -232,9 +268,11 @@ export class GameRoom extends Server<Env> {
     return null;
   }
 
-  /** One alarm, for the earliest action bar to run out. An alarm survives the room being evicted from memory. */
+  /** One alarm, for the earliest action bar to run out or the next cycle. An alarm survives the room being evicted from memory. */
   private async scheduleTick(): Promise<void> {
-    const due = this.game ? nextDue(this.game) : null;
+    const bar = this.game ? nextDue(this.game) : null;
+    const cycle = this.game?.phase === "playing" ? this.nextCycleAt() : null;
+    const due = bar === null ? cycle : cycle === null ? bar : Math.min(bar, cycle);
     if (due === null) await this.ctx.storage.deleteAlarm();
     else if ((await this.ctx.storage.getAlarm()) !== due) await this.ctx.storage.setAlarm(due);
   }
@@ -248,7 +286,14 @@ export class GameRoom extends Server<Env> {
 
   private sendView(conn: Connection, playerId: PlayerId): void {
     if (!this.game) return;
-    this.send(conn, { type: "view", view: viewFor(this.game, playerId), cheatsAllowed: this.cheatsAllowed, now: Date.now() });
+    const msg: GameServerMessage = {
+      type: "view",
+      view: viewFor(this.game, playerId),
+      cheatsAllowed: this.cheatsAllowed,
+      now: Date.now(),
+      nextCycleAt: this.nextCycleAt(),
+    };
+    this.send(conn, msg);
   }
 
   /** A bot decides only once its last action is done, so it never fills a queue. */
@@ -289,6 +334,7 @@ export class GameRoom extends Server<Env> {
         await this.botChat(playerId, bot);
         if (!this.game || !this.botIdle(playerId)) return;
         const action = await bot.decideAction(viewFor(this.game, playerId));
+        if (!action) return;
         const error = await this.act({ type: "action", action, by: playerId, at: Date.now() });
         if (error) console.warn(`Bot ${playerId} chose an illegal action: ${error}`);
       }, BOT_DELAY_MS);
@@ -304,6 +350,7 @@ export class GameRoom extends Server<Env> {
       tokens: this.tokens,
       inputs: this.inputs,
       rateLimited: this.rateLimited,
+      clockCycle: this.clockCycle,
     };
     await this.ctx.storage.put({ ...entries, game: stored });
   }
