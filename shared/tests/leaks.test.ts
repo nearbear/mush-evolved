@@ -1,4 +1,4 @@
-// Hidden information, bluntly (issue #102): give every hidden value in a game a unique sentinel, serialize each
+// Hidden information, bluntly (issues #101 and #102): give every hidden value in a game a unique sentinel, serialize each
 // seat's view, and check that each sentinel shows up only in the views allowed to have it. This catches a leak
 // through any view field, including ones nobody thought to check. Which state fields exist, and who may see
 // each, is in leakFields.ts; a new field fails here until it is listed there.
