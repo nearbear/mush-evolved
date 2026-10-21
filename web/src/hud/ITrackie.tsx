@@ -80,7 +80,7 @@ export function ITrackie({
   const carrying = view.inventory.some((i) => i.type === ITRACKIE_ITEM);
 
   return (
-    <div className="panel itrackie">
+    <div className="kit-panel itrackie">
       <Tabs.Root className="itrackie-tabs-root" value={activeTab} onValueChange={(v) => setTab(v as TabId)}>
         <Tabs.List className="itrackie-tabs">
           {alive && <IconTab value="room" src={TAB_ICONS.roomLog} label={t("itrackie.tabs.room")} />}
@@ -307,8 +307,10 @@ function Scroller({ items, children }: { items: number; children: ReactNode }) {
 const CHAT_MIN_LINES = 3;
 const CHAT_LINE_PX = 18;
 const CHAT_MIN_HEIGHT = CHAT_MIN_LINES * CHAT_LINE_PX + 12;
+/** The markdown preview toggle. TODO(preview): off for now. */
+const CHAT_PREVIEW: boolean = false;
 
-/** A three-line text area that grows upward: drag the grip above it to make it taller. */
+/** A three-line text area that grows upward (drag the grip above it to make it taller), the preview toggle above it (stubbed out, see CHAT_PREVIEW) and send below. */
 function ChatInput({ enabled, placeholder, onSend }: { enabled: boolean; placeholder: string; onSend: (text: string) => void }) {
   const { t } = useTranslation();
   const [text, setText] = useState("");
@@ -351,6 +353,14 @@ function ChatInput({ enabled, placeholder, onSend }: { enabled: boolean; placeho
           drag.current = null;
         }}
       />
+      {/* TODO(preview): stubbed out for now, to be revisited; flip CHAT_PREVIEW to bring the toggle back. */}
+      {CHAT_PREVIEW && (
+        <div className="chat-tools">
+          <Hint label={previewLabel}>
+            <button className="chat-max" type="button" onClick={() => setPreviewing(!previewing)} aria-pressed={previewing} aria-label={previewLabel} />
+          </Hint>
+        </div>
+      )}
       {previewing && (
         <div className="chat-preview" aria-live="polite">
           {text.trim() ? <Markdown text={text} /> : <p className="sub">{t("itrackie.composer.previewEmpty")}</p>}
@@ -372,12 +382,7 @@ function ChatInput({ enabled, placeholder, onSend }: { enabled: boolean; placeho
         disabled={!enabled}
         aria-label="Chat message"
       />
-      <div className="chat-actions">
-        <Hint label={previewLabel}>
-          <button className="chat-max" type="button" onClick={() => setPreviewing(!previewing)} aria-pressed={previewing} aria-label={previewLabel} />
-        </Hint>
-        <button className="chat-send" type="submit" disabled={!enabled || !text.trim()} aria-label="Send" />
-      </div>
+      <button className="chat-send" type="submit" disabled={!enabled || !text.trim()} aria-label="Send" />
     </form>
   );
 }

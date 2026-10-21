@@ -81,13 +81,14 @@
   background-image: url("../../../Mush/www/img/design/buttonchatover.png");
 }
 
-/* The message box: a textarea (three lines by default) with a grip above it that drags it taller. */
+/* The message box, stacked: the preview toggle, a textarea (three lines by default; a grip above drags it taller), send. */
 .chat-compose {
   position: relative;
-  align-items: flex-end;
+  flex-direction: column;
+  align-items: stretch;
 }
 .chat-compose textarea {
-  flex: 1;
+  flex: none;
   min-width: 0;
   box-sizing: border-box;
   resize: none;
@@ -101,14 +102,16 @@
   background: #fff;
   color: var(--ink);
 }
-.chat-actions {
-  flex: none;
+.chat-tools {
   display: flex;
-  flex-direction: column;
-  gap: 4px;
+  justify-content: flex-end;
 }
-.chat-actions button {
+.chat-tools button {
   margin: 0;
+}
+/* Send: centred under the text box, at the original's 29px. */
+.chat-compose .chat-send {
+  align-self: center;
 }
 /* Preview toggle: a small button drawn with an eye glyph. */
 .chat-max {
@@ -131,21 +134,19 @@
   flex-direction: column;
   min-height: 0;
 }
-/* Previewing: cover the thread (below the tab title and any feature drop-down), preview on the top half, text box on the bottom. */
+/* Previewing: cover the thread (below the tab title and any feature drop-down); between the toggle and send, preview on the top half, text box on the bottom. */
 .chat-compose.chat-previewing {
   position: absolute;
   inset: 0;
   z-index: 10;
   margin: 0;
   display: grid;
-  grid-template-columns: 1fr auto;
-  grid-template-rows: 1fr 1fr;
+  grid-template-rows: auto 1fr 1fr auto;
   gap: 0.4rem;
   align-items: stretch;
   background: var(--panel-fill);
 }
 .chat-preview {
-  grid-column: 1 / -1;
   min-height: 0;
   overflow-y: auto;
   padding: 0.25rem 0.5rem;
@@ -159,14 +160,11 @@
 .chat-previewing .chat-grip {
   display: none;
 }
-.chat-previewing .chat-actions {
-  align-self: end;
-}
 .chat-grip {
   position: absolute;
   top: -8px;
   left: 0;
-  right: 33px;
+  right: 0;
   height: 8px;
   cursor: ns-resize;
   touch-action: none;
