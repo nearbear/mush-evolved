@@ -5,12 +5,12 @@
             "Bash(npm run layout-query:*)"
         ],
         "ask": [
-            "Read(./node_modules/**)"
-        ],
-        "deny": [
-            "Read(./Mush/derived/ship-layout.json)",
+            "Read(./node_modules/**)",
             "Read(./Mush/www/**)",
             "Read(./Mush/clients/**)"
+        ],
+        "deny": [
+            "Read(./Mush/derived/ship-layout.json)"
         ]
     }
 }

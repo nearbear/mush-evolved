@@ -12,6 +12,9 @@
   --human: #7cc8ff;
   --danger: #ff6b81;
   --warning: #ffb74d;
+  /* Terminal colors */
+  --terminal-bg: #c9f1fb;
+  --terminal-font: consola, monospace;
   /* Gold: selection outlines, glows, highlighted map cells. */
   --highlight: #f5c542;
   --badge: #24508a;
