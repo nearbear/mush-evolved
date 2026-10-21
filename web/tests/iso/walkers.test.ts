@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { stepWalkers, type Door, type Motion } from "../../src/iso/useWalkers.ts";
+import { CELLS_PER_SECOND, stepWalkers, type Door, type Motion } from "../../src/iso/useWalkers.ts";
 
 const OPEN_MS = 500;
 const motion = (over: Partial<Motion>): Motion => ({ pos: { x: 0, y: 0 }, route: [], facing: { strip: "face", flip: false }, arriving: false, waiting: false, ...over });
@@ -12,14 +12,14 @@ function run(motions: Map<string, Motion>, doors: Map<string, Door>, until: () =
   const start = now;
   while (!until() && now - start < 10_000) {
     now += ms;
-    stepWalkers(motions, doors, now, ms, () => OPEN_MS);
+    stepWalkers(motions, doors, now, (CELLS_PER_SECOND * ms) / 1000, () => OPEN_MS);
   }
   return now - start;
 }
 /** One more frame. */
 function frame(motions: Map<string, Motion>, doors: Map<string, Door>, ms = 10) {
   now += ms;
-  stepWalkers(motions, doors, now, ms, () => OPEN_MS);
+  stepWalkers(motions, doors, now, (CELLS_PER_SECOND * ms) / 1000, () => OPEN_MS);
 }
 
 describe("stepWalkers", () => {
@@ -70,14 +70,5 @@ describe("stepWalkers", () => {
     expect(waited).toBe(false);
     // Shut by the frame they stop in: no frame comes after it.
     expect(doors.get("t5")?.state).toBe("closing");
-  });
-
-  it("walks someone with a pace of their own at that speed, then on at the usual one", () => {
-    // Two cells in two seconds, then the doorway and beyond at six cells a second.
-    const m = motion({ route: [{ x: 1, y: 0 }, { x: 2, y: 0 }, { x: 3, y: 0, door: "t5" }, { x: 4, y: 0 }], pace: { speed: 1, steps: 2, by: 0 } });
-    const motions = new Map([["p1", m]]), doors = new Map<string, Door>();
-    expect(run(motions, doors, () => m.pos.x >= 2)).toBeCloseTo(2000, -2);
-    expect(m.pace).toBeUndefined();
-    expect(run(motions, doors, () => m.route.length === 0)).toBeLessThan(400);
   });
 });

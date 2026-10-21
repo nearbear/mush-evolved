@@ -188,8 +188,7 @@ export function IsoRoom({
   // Where you've clicked to walk. Client-only and cosmetic: the server never hears of it,
   // and it resets when you change rooms (it belongs to one visit, so coming back doesn't restore it).
   // Sitting on a chair is the same kind of local state: the walk's end point plus the seat taken there.
-  // `by`: when to get there (Date.now() ms), for the walk to a door, which takes as long as the move.
-  const [walk, setWalk] = useState<{ visit: number; cell: { x: number; y: number }; seat?: Seat; by?: number } | null>(null);
+  const [walk, setWalk] = useState<{ visit: number; cell: { x: number; y: number }; seat?: Seat } | null>(null);
   // biome-ignore lint/correctness/useExhaustiveDependencies: only sending an action gets you up.
   useEffect(() => setWalk((w) => (w?.seat ? { ...w, seat: undefined } : w)), [sentCount]);
   const cells = useMemo(() => (roomLayout ? walkableCells(layout, roomLayout) : []), [layout, roomLayout]);
@@ -273,7 +272,7 @@ export function IsoRoom({
       if (bed) return [o.id, { cell: bed }];
       if (o.you) {
         const cell = exitCell ?? here?.cell ?? entryCell ?? spots[i] ?? { x: 0, y: 0 };
-        return [o.id, { cell, ...(!exitCell && here?.by !== undefined && { arriveBy: here.by }), ...(myExit && { then: myExit }), ...(visit.current.from && { from: wayIn(visit.current.from, true) }) }];
+        return [o.id, { cell, ...(myExit && { then: myExit }), ...(visit.current.from && { from: wayIn(visit.current.from, true) }) }];
       }
       // Someone who just came in walks in through the door they came by.
       const from = seen && !seen.ids.has(o.id) ? doorMoves.get(o.id)?.from : undefined;
@@ -410,9 +409,7 @@ export function IsoRoom({
       const path = at && walkPath(cells, myWalker.cell, at);
       cell = path && path.length > 1 ? path[path.length - 2] : undefined;
     }
-    // A move walks to the door at the pace that gets you there as it ends: slowly to a door close by, briskly to one far off.
-    const by = target.kind === "door" && actingOn.until !== undefined ? actingOn.until - clockOffset : undefined;
-    if (cell) setWalk({ visit: visit.current.n, cell, ...(by !== undefined && { by }) });
+    if (cell) setWalk({ visit: visit.current.n, cell });
   }, [actingOn?.n]);
 
   const ringOf = new Map(neighbors.map((n) => [n.id as string, n.ring]));

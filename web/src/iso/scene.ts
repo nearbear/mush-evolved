@@ -264,8 +264,7 @@ function personPicture(s: PlacedSprite, input: SceneInput, base: Omit<ScenePictu
   if (o.lying) return { ...base, image, flipX: input.beds.get(o.id)?.flip };
   if (o.you && input.seat) return { ...base, image, flipX: input.seat.flip };
   const w = input.walkers.get(o.id);
-  // The steps keep time with the walk: slower or quicker with someone's own pace.
-  const anim = w?.moving ? { ...WALK_CYCLE, frameMs: WALK_CYCLE.frameMs / (w.pace ?? 1), loops: "forever" as const } : w?.arriving ? { ...WALK_CYCLE, loops: 2 } : undefined;
+  const anim = w?.moving ? { ...WALK_CYCLE, loops: "forever" as const } : w?.arriving ? { ...WALK_CYCLE, loops: 2 } : undefined;
   return { ...base, image, flipX: w?.facing.flip, anim, walker: w && o.id };
 }
 
