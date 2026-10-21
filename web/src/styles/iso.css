@@ -250,34 +250,32 @@
   image-rendering: pixelated;
 }
 
-/* Action bar over a head (ActionBar): empties while a timed action is under way. It sits nearest the head, so
+/* Action bar over a head (ActionBar): fills while a timed action is under way. It sits nearest the head, so
    status badges and speech bubbles move up over it. */
-.action-bar {
+/* The look is kit.css's .kit-progress; this positions it and fills --value (registered so it can animate). */
+@property --value {
+  syntax: "<number>";
+  inherits: true; /* the fill is a ::before, which only sees --value by inheriting it */
+  initial-value: 0;
+}
+.kit-progress.action-bar {
   position: absolute;
   left: 50%;
   bottom: 100%;
-  width: 32px;
-  height: 6px;
+  width: 40px;
   margin-bottom: 2px;
-  background: rgb(10 14 30 / 0.7);
-  border: 1px solid rgb(255 255 255 / 0.5);
-  border-radius: 2px;
+  border-radius: 4px;
   overflow: hidden;
   transform: translateX(-50%);
   pointer-events: none;
+  animation: action-bar-fill var(--bar-ms) linear var(--bar-delay) forwards;
 }
-.action-bar-fill {
-  height: 100%;
-  background: var(--highlight);
-  transform-origin: left;
-  animation: action-bar-drain var(--bar-ms) linear var(--bar-delay) forwards;
-}
-@keyframes action-bar-drain {
+@keyframes action-bar-fill {
   from {
-    transform: scaleX(1);
+    --value: 0;
   }
   to {
-    transform: scaleX(0);
+    --value: 1;
   }
 }
 .iso-badge-anchor.busy .status-badges {
