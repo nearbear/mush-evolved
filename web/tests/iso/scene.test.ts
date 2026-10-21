@@ -51,7 +51,7 @@ function scene(placedSprites: PlacedSprite[], over: Partial<SceneInput> = {}) {
     people: new Map(),
     walkers: new Map(),
     beds: new Map(),
-    seat: undefined,
+    seats: new Map(),
     corpses: [],
     equipment: new Map(),
     reachable: new Set([NEXT]),

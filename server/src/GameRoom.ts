@@ -47,7 +47,7 @@ const BOT_DELAY_MS = 50;
  * Bump when GameState's shape changes. Games stored under another version are
  * discarded on load (there is no migration; games are short-lived).
  */
-const STATE_VERSION = 46;
+const STATE_VERSION = 47;
 
 interface Stored {
   version?: number;
@@ -180,9 +180,11 @@ export class GameRoom extends Server<Env> {
     const error =
       msg.type === "action"
         ? await this.act({ ...msg, by: playerId, at: Date.now() })
-        : msg.type === "clearQueue" || msg.type === "cheat" || msg.type === "actopiCheat" || msg.type === "roleCheat"
-          ? await this.act({ ...msg, by: playerId })
-          : await this.social(playerId, msg);
+        : msg.type === "walk"
+          ? await this.act({ ...msg, by: playerId }, undefined, this.game.players.find((p) => p.id === playerId)?.room)
+          : msg.type === "clearQueue" || msg.type === "cheat" || msg.type === "actopiCheat" || msg.type === "roleCheat"
+            ? await this.act({ ...msg, by: playerId })
+            : await this.social(playerId, msg);
     if (error) this.send(connection, { type: "error", message: error });
   }
 
@@ -223,7 +225,7 @@ export class GameRoom extends Server<Env> {
   }
 
   /** Chat and channel management. Untrusted text: rate limit, then moderate, then let the rules decide. */
-  private async social(playerId: PlayerId, msg: Exclude<GameClientMessage, { type: "action" | "clearQueue" | "cheat" | "actopiCheat" | "roleCheat" }>): Promise<string | null> {
+  private async social(playerId: PlayerId, msg: Exclude<GameClientMessage, { type: "action" | "clearQueue" | "walk" | "cheat" | "actopiCheat" | "roleCheat" }>): Promise<string | null> {
     if (!this.game) return "No game";
     if (!this.chatLimiter.allow(playerId)) {
       this.countRateLimited(playerId);
@@ -253,16 +255,17 @@ export class GameRoom extends Server<Env> {
 
   /**
    * The only place the game changes. Applies the input, then records it with
-   * the new snapshot. Returns an error message, or null on success.
+   * the new snapshot. Returns an error message, or null on success. With `room`, only the views of people in that
+   * room are sent again (a walk changes no one else's).
    */
-  private async act(input: Input, raw?: string): Promise<string | null> {
+  private async act(input: Input, raw?: string, room?: string): Promise<string | null> {
     if (!this.game) return "No game";
     const result = applyInput(this.game, input);
     if (!result.ok) return result.error;
     this.game = stamp(result.state);
     const recorded: RecordedInput = { at: Date.now(), input, ...(raw !== undefined && { raw }) };
     await this.persist({ [inputKey(this.inputs++)]: recorded });
-    this.broadcastViews();
+    this.broadcastViews(room);
     this.scheduleBots();
     await this.scheduleTick();
     return null;
@@ -277,10 +280,12 @@ export class GameRoom extends Server<Env> {
     else if ((await this.ctx.storage.getAlarm()) !== due) await this.ctx.storage.setAlarm(due);
   }
 
-  private broadcastViews(): void {
+  /** Sends every connection its view, or with `room`, only those of people in that room. */
+  private broadcastViews(room?: string): void {
     for (const conn of this.getConnections<SeatState>()) {
       const playerId = conn.state?.playerId;
-      if (playerId) this.sendView(conn, playerId);
+      if (!playerId) continue;
+      if (room === undefined || this.game?.players.find((p) => p.id === playerId)?.room === room) this.sendView(conn, playerId);
     }
   }
 

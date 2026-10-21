@@ -186,7 +186,8 @@
   },
   "errors": {
     "queue_full": "Your action queue is full.",
-    "nothing_queued": "You have no actions to clear."
+    "nothing_queued": "You have no actions to clear.",
+    "cant_walk": "You can't walk around right now."
   },
   "terminal": {
     "close": "Close"

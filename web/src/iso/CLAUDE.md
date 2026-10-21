@@ -28,7 +28,8 @@ Loaded when working on the isometric view. The UI rules in `web/CLAUDE.md` still
   `scene.ts`, `placement.ts` and `IsoRoom.tsx`.
 - Camera: the panel is `overflow: hidden` and follows your character by moving an inner `.iso-world`
   with a transform, always centred on you (not clamped to the room's edges). No manual panning.
-- Clicks: floor walks you there (local, cosmetic state only, never sent to the server); a person or
+- Clicks: floor walks you there (drawn at once, and sent as a `walk` so roommates see it: `PlayerState.spot`
+  in shared, `spot.ts`; others stand at their view `spot`, or spread out if they have none); a person or
   equipment is selected, without walking to it (only acting on it does, below); bare floor clears the selection (on
   desktop, so does any press outside the Inspect panel). A single tap on a reachable door opens it
   in the peek bar; a double-click sends a move. Clicking a faded room acts like its door.
@@ -38,7 +39,7 @@ Loaded when working on the isometric view. The UI rules in `web/CLAUDE.md` still
   `requestAnimationFrame` loop hands the renderer and the overlay (`setFrame`) the camera and each
   walker's offset in whole pixels, so the camera stays locked on you. Facing is by screen direction: the face strip looks down-right
   and the back strip up-left, mirrored for the other two. Entering a room you step out of the
-  doorway you came through and stand in front of it (`doorSpot`) until you walk off. Purely cosmetic: actions and moves go to the
+  doorway you came through and stand in front of it (`doorSpot`) until you walk off (the server records the same: `{ door }`). Nothing waits for a walk: actions and moves go to the
   server at once, mid-walk or not; you sit on a chair only once you reach it. The tiles are sorted
   once per room and fog depth (`prepareScene`, about 13 ms); each cell change re-places only the
   people (`placeActors`, about 2 ms, 5 ms with whole-ship fog), with the same result `placeScene`
@@ -48,6 +49,7 @@ Loaded when working on the isometric view. The UI rules in `web/CLAUDE.md` still
 - Acting walks you there (`useActingOn.ts`): when an action on equipment, a person, or a body on the
   floor begins, you walk to the equipment's standing spot or the cell before the person or body; a
   move walks you to the door (a move takes `durationMs` like any action, and the room changes at its end).
+  The walk is sent to the server (`ActingOn.share`) only for public actions (owner, 2026-10-20).
   "Begins" is read from the view's queue: at once if you were idle, otherwise when it shows up as
   `current` (timed) or leaves the queue with nothing under way (instant). Clearing the queue walks
   nowhere; a click on the floor afterwards still overrides.

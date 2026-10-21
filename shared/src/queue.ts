@@ -17,6 +17,7 @@ import { expireOffers } from "./actions/accommodate.ts";
 import { clone, fail, findPlayer, type ActionResult } from "./helpers.ts";
 import { logPrivate } from "./log.ts";
 import { applyAction, canAct, getUp, performAction } from "./rules.ts";
+import { standUp } from "./spot.ts";
 import type { Action, GameState, PlayerId, PlayerState, QueuedAction } from "./types.ts";
 
 /** A player asks to act: an untimed action happens now; a timed one starts if they are idle, or waits its turn. */
@@ -26,13 +27,18 @@ export function queueAction(state: GameState, playerId: PlayerId, action: Action
   const p = findPlayer(state, playerId);
   const def: ActionDef<Action> | undefined = ACTIONS[action.type];
   if (!p || !def) return fail("Illegal action");
-  if (!def.timed || p.cheats.includes("instantActions")) return applyAction(state, playerId, action);
+  if (!def.timed || p.cheats.includes("instantActions")) {
+    const done = applyAction(state, playerId, action);
+    if (done.ok) standUp(findPlayer(done.state, playerId)!, def);
+    return done;
+  }
   // Checked against things as they are now, like the buttons the player pressed; checked again when its turn comes.
   if (!canAct(state, p) || def.check(state, p, action) !== null) return fail("Illegal action");
   if (p.current && p.queue.length >= state.config.action.queueCap) return fail("queue_full");
   const next = clone(state);
   const actor = findPlayer(next, playerId)!;
   if (action.type !== "lie_down") getUp(actor);
+  standUp(actor, def);
   // Priced against things as they are now, like the button the player pressed.
   const queued: QueuedAction = { action, adjustment: def.adjustment(state, p, action) };
   if (actor.current) actor.queue.push(queued);

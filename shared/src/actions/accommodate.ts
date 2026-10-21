@@ -1,6 +1,7 @@
 import { Action, peopleHere } from "./action.ts";
 import { getUp } from "./lie_down.ts";
 import { logPublic } from "../log.ts";
+import { arrive } from "../spot.ts";
 import type { GameState, PlayerId, PlayerState } from "../types.ts";
 
 // Pushing someone's wheelchair (owner, 2026-10-19). Terrence starts with the `wheelchair` modifier. Anyone else in
@@ -63,6 +64,7 @@ export function wheelAlong(state: GameState, pusher: PlayerState, from: string):
   if (!pushed) return;
   getUp(pushed);
   pushed.room = pusher.room;
+  arrive(pushed, from);
   logPublic(state, from, "left", { name: pushed.character, room: pusher.room });
   logPublic(state, pusher.room, "entered", { name: pushed.character, room: from });
 }

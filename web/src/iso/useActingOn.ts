@@ -2,10 +2,11 @@
 // started, or the door for a move (a move takes as long as any action; the room changes at its end). Read from the view's action queue, so the walk follows the queue and never holds it up:
 // an action sent while idle walks at once; one waiting in the queue walks when the view shows it
 // begun (a timed one as `current`, an instant one by leaving the queue once nothing is under way).
-// Clearing the queue walks nowhere. Cosmetic like all walking (IsoRoom).
+// Clearing the queue walks nowhere. Your roommates see the walk only for a public action (owner, 2026-10-20):
+// walking up to what a private, secret or covert action is on would give it away.
 
 import { useEffect, useRef, useState } from "react";
-import type { Action, PlayerView, RoomId, Target } from "@mush2/shared";
+import { actionVisibility, type Action, type PlayerView, type RoomId, type Target } from "@mush2/shared";
 import { actionTarget } from "../hud/targets.ts";
 
 /**
@@ -15,6 +16,8 @@ import { actionTarget } from "../hud/targets.ts";
 export interface ActingOn {
   target: Target | { kind: "door"; to: RoomId };
   n: number;
+  /** The action is public, so the walk is sent to the server for your roommates to see. */
+  share: boolean;
 }
 
 type Queue = Pick<PlayerView["you"], "current" | "queue">;
@@ -36,7 +39,7 @@ export function useActingOn(you: PlayerView["you"] | undefined): { actingOn: Act
   const [sentCount, setSentCount] = useState(0);
   const walkFor = (action: Action | undefined) => {
     const target = action?.type === "move" ? { kind: "door" as const, to: action.to } : action && actionTarget(action);
-    if (target) setActingOn((a) => ({ target, n: (a?.n ?? 0) + 1 }));
+    if (action && target) setActingOn((a) => ({ target, n: (a?.n ?? 0) + 1, share: actionVisibility(action.type) === "public" }));
   };
 
   const before = useRef(you);

@@ -336,6 +336,8 @@ export function viewFor(state: GameState, playerId: PlayerId): PlayerView {
         skills: here ? [...o.skills] : [],
         // Who is in bed, and which bed, is visible to the room (owner, 2026-10-18).
         ...(here && o.lyingIn ? { lying: o.lyingIn } : {}),
+        // Where they stand, and whether they sit, is visible to the room (owner, 2026-10-20).
+        ...(here && o.spot && state.config.sharedSpots ? { spot: { ...o.spot } } : {}),
         // Who pushes whose wheelchair is public to the room (owner, 2026-10-19).
         ...(here && o.pushedBy !== undefined ? { pushedBy: o.pushedBy } : {}),
         // Mush see a contaminated human's level, like a status, on people in their room.
@@ -373,7 +375,7 @@ export function viewFor(state: GameState, playerId: PlayerId): PlayerView {
       to: [...(state.bonds[playerId] ?? [])],
       from: state.players.filter((o) => state.bonds[o.id]?.includes(playerId)).map((o) => o.id),
     },
-    config: { heavyMpPenalty: state.config.heavy.mpPenalty, actionQueueCap: state.config.action.queueCap },
+    config: { heavyMpPenalty: state.config.heavy.mpPenalty, actionQueueCap: state.config.action.queueCap, sharedSpots: state.config.sharedSpots },
     maxAp: state.config.maxAp,
     maxHp: state.config.maxHp,
     maxMorale: state.config.maxMorale,

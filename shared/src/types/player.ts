@@ -24,11 +24,19 @@ export interface QueuedAction {
   adjustment: CostAdjustment;
 }
 
+/**
+ * Where someone stands in their room (spot.ts): a floor cell of the room's layout (sitting on the chair there, if
+ * `sitting`), or in front of the door from the room `door` (they came in by it and haven't walked off).
+ */
+export type Spot = { x: number; y: number; sitting?: true } | { door: RoomId };
+
 export interface PlayerState extends Seat {
   role: Role;
   /** Mush chosen at the start ("alpha"; later infections are "beta"). Player terminology only; no mechanics use it. */
   alpha: boolean;
   room: RoomId;
+  /** Where you stand in `room` (spot.ts). Unset until you walk or move: the client spreads such people out. Public to your room (`OtherPlayerView.spot`). */
+  spot?: Spot;
   ap: number;
   /** The bed (equipment id) you are lying in, while you have the `lying_down` modifier. Public to your room (`OtherPlayerView.lying`). */
   lyingIn?: string;

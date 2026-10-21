@@ -59,6 +59,7 @@ function ship(): { state: GameState; sentinels: Sentinel[] } {
     const room = p.room === HERE ? ["p0", "p1", "p2"] : ["p3"];
     p.skills.push(str(`skill-${p.id}`, room));
     p.lyingIn = str(`lyingIn-${p.id}`, room);
+    p.spot = { door: str(`spot-${p.id}`, room) };
     p.pushedBy = str(`pushedBy-${p.id}`, room);
     p.accommodationOffers = [{ by: str(`accommodationOffers-${p.id}`, own), until: num(`accommodationOfferUntil-${p.id}`, own) }];
     p.current = {

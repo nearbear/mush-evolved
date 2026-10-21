@@ -3,7 +3,7 @@ import type { CharacterId } from "../characters.ts";
 import type { Action, BotKind, ItemId, LogEntry, PlayerId, RoomId } from "../types.ts";
 import type { ChannelId, ChatMessage, PrivateChannel } from "./chat.ts";
 import type { MovementRules } from "./config.ts";
-import type { ActionInProgress, PlayerState } from "./player.ts";
+import type { ActionInProgress, PlayerState, Spot } from "./player.ts";
 import type { GameState, ShipResources } from "./state.ts";
 
 /** Room equipment as a client sees it. */
@@ -38,6 +38,8 @@ export interface OtherPlayerView {
   statuses: string[];
   /** The bed (equipment id) they are lying in. Public to anyone in your room (empty for people elsewhere). */
   lying?: string;
+  /** Where they stand in the room (spot.ts). Public to anyone in your room (empty for people elsewhere). */
+  spot?: Spot;
   /** Who is pushing their wheelchair. Public to anyone in your room (empty for people elsewhere). */
   pushedBy?: PlayerId;
   /** Skills they have chosen. Public to anyone in your room (empty for people elsewhere). */
@@ -58,6 +60,8 @@ export interface PublicConfig {
   heavyMpPenalty: number;
   /** How many actions may wait behind the one under way. */
   actionQueueCap: number;
+  /** Whether walks are shared with roommates (spot.ts). Off, the client keeps walking to itself and sends nothing. */
+  sharedSpots: boolean;
 }
 
 /** Your own state, minus your account name (nobody's name is in a view while the game runs). */

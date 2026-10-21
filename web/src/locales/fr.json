@@ -187,7 +187,8 @@
   },
   "errors": {
     "queue_full": "Votre file d'actions est pleine.",
-    "nothing_queued": "Vous n'avez aucune action à annuler."
+    "nothing_queued": "Vous n'avez aucune action à annuler.",
+    "cant_walk": "Vous ne pouvez pas vous déplacer dans la pièce pour l'instant."
   },
   "terminal": {
     "close": "Fermer"

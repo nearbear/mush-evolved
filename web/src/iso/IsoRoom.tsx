@@ -21,7 +21,7 @@
 import { Suspense, lazy, useEffect, useLayoutEffect, useMemo, useRef, useState, type ComponentType, type MouseEvent, type PointerEvent } from "react";
 import { useTranslation } from "react-i18next";
 import { createPortal } from "react-dom";
-import { CAMERA_EQUIPMENT, CORPSE_ITEM, type EquipmentView, type RoomId, type ShipLayout, type Target } from "@mush2/shared";
+import { CAMERA_EQUIPMENT, CORPSE_ITEM, type EquipmentView, type RoomId, type RoomLayout, type ShipLayout, type Spot, type Target } from "@mush2/shared";
 import type { Bubble } from "../scene/useSpeechBubbles.ts";
 import { useNames } from "../i18n/names.ts";
 import { CAMERA_SLICES, equipmentByTileKey, roomAsBuilt } from "./equipmentTiles.ts";
@@ -101,6 +101,15 @@ function seatFor(dir: string | undefined): Seat {
   return { facing: "face", flip: false };
 }
 
+/**
+ * The direction of the chair on a cell of the room, "" for one without a direction (a stool), or undefined
+ * if there's no chair there.
+ */
+function chairAt(layout: ShipLayout, room: RoomLayout | undefined, cell: { x: number; y: number }): string | undefined {
+  const t = room?.tiles.find((t) => t.kind === "entity" && t.x === cell.x && t.y === cell.y && layout.slices[t.slice]?.flags.includes("chair"));
+  return t ? layout.slices[t.slice]?.dir ?? "" : undefined;
+}
+
 /** The index of the last step in a doorway. */
 const lastInDoorway = (steps: readonly DoorStep[]) => steps.reduce((last, s, i) => (s.door ? i : last), -1);
 
@@ -123,6 +132,7 @@ export function IsoRoom({
   onLeft,
   doorMoves,
   onMove,
+  onWalk,
   onSelect,
   onClear,
   onDoorTap,
@@ -158,6 +168,8 @@ export function IsoRoom({
   /** Where people last came in from or went out to, if just now (by player id): they walk through that door. */
   doorMoves: ReadonlyMap<string, { from?: RoomId; to?: RoomId }>;
   onMove: (to: RoomId) => void;
+  /** You walked to a cell (sitting if it's a chair): the server tells your roommates (spot.ts in shared). */
+  onWalk: (cell: { x: number; y: number }, sitting: boolean) => void;
   onSelect: (target: Target) => void;
   /** Bare floor was tapped: drop the selection (and any peeked door). */
   onClear: () => void;
@@ -185,9 +197,9 @@ export function IsoRoom({
   const viewportRef = useRef<HTMLDivElement>(null);
   const rendererRef = useRef<FrameTarget>(null);
   const overlayRef = useRef<FrameTarget>(null);
-  // Where you've clicked to walk. Client-only and cosmetic: the server never hears of it,
-  // and it resets when you change rooms (it belongs to one visit, so coming back doesn't restore it).
-  // Sitting on a chair is the same kind of local state: the walk's end point plus the seat taken there.
+  // Where you've clicked to walk, drawn at once. The server hears of it too (`onWalk`) and shows it to your
+  // roommates, except walks up to what a non-public action is on. It resets when you change rooms (it belongs
+  // to one visit; the view's spot says where you came in). Sitting on a chair is the walk's end point plus the seat taken there.
   const [walk, setWalk] = useState<{ visit: number; cell: { x: number; y: number }; seat?: Seat } | null>(null);
   // biome-ignore lint/correctness/useExhaustiveDependencies: only sending an action gets you up.
   useEffect(() => setWalk((w) => (w?.seat ? { ...w, seat: undefined } : w)), [sentCount]);
@@ -266,17 +278,22 @@ export function IsoRoom({
     beds.set(o.id, { cell: { x: t.x - Math.floor((w - 1) / 2), y: t.y - Math.floor((h - 1) / 2) }, flip: w > h });
   }
   const myExit = leavingTo ? wayOut(leavingTo, true) : undefined;
+  // Where the view says someone stands: a cell of this floor, or in front of the door they came in by. A cell
+  // that isn't this room's floor (an old or tampered spot) counts as no spot.
+  const floorKeys = useMemo(() => new Set(cells.map((c) => `${c.x},${c.y}`)), [cells]);
+  const spotCell = (spot: Spot | undefined) =>
+    !spot || !roomLayout ? undefined : "door" in spot ? doorSpot(layout, roomLayout, spot.door, cells) : floorKeys.has(`${spot.x},${spot.y}`) ? { x: spot.x, y: spot.y } : undefined;
   const targets = new Map<string, Goal>(
     occupants.map((o, i) => {
       const bed = beds.get(o.id)?.cell;
       if (bed) return [o.id, { cell: bed }];
       if (o.you) {
-        const cell = exitCell ?? here?.cell ?? entryCell ?? spots[i] ?? { x: 0, y: 0 };
+        const cell = exitCell ?? here?.cell ?? entryCell ?? spotCell(o.spot) ?? spots[i] ?? { x: 0, y: 0 };
         return [o.id, { cell, ...(myExit && { then: myExit }), ...(visit.current.from && { from: wayIn(visit.current.from, true) }) }];
       }
       // Someone who just came in walks in through the door they came by.
       const from = seen && !seen.ids.has(o.id) ? doorMoves.get(o.id)?.from : undefined;
-      return [o.id, { cell: spots[i] ?? { x: 0, y: 0 }, ...(from && { from: wayIn(from, false) }) }];
+      return [o.id, { cell: spotCell(o.spot) ?? spots[i] ?? { x: 0, y: 0 }, ...(from && { from: wayIn(from, false) }) }];
     }),
   );
   for (const l of walkingOut) {
@@ -308,7 +325,20 @@ export function IsoRoom({
     if (outside) onLeft();
   }, [outside]);
   const arrived = !!myWalker && !myWalker.moving && !!here && myWalker.cell.x === here.cell.x && myWalker.cell.y === here.cell.y;
-  const mySeat = arrived ? here?.seat : undefined;
+  // Who sits, once they've reached the chair: you on the one you clicked (or, back from a reload, the view's), others by the view.
+  const seats = new Map<string, Seat>();
+  for (const o of occupants) {
+    const w = walkers.get(o.id);
+    if (o.lying || !w || w.moving) continue;
+    if (o.you && here) {
+      if (arrived && here.seat) seats.set(o.id, here.seat);
+      continue;
+    }
+    const spot = o.spot && "x" in o.spot && o.spot.sitting ? o.spot : undefined;
+    const dir = spot && w.cell.x === spot.x && w.cell.y === spot.y ? chairAt(layout, roomLayout, spot) : undefined;
+    if (dir !== undefined) seats.set(o.id, seatFor(dir || undefined));
+  }
+  const seatsKey = [...seats].map(([id, s]) => `${id}:${s.facing}${s.flip ? "f" : ""}`).join(";");
   const walkersKey = [...walkers].map(([id, w]) => `${id}@${w.cell.x},${w.cell.y}${w.facing.flip ? "f" : ""}`).join(";");
   const doorsKey = [...doors].map(([k, d]) => `${k}:${d}`).join(";");
   // How they look on top of where they are: the strip and the walk cycle can change without a step into another cell (stopping, mostly).
@@ -409,12 +439,14 @@ export function IsoRoom({
       const path = at && walkPath(cells, myWalker.cell, at);
       cell = path && path.length > 1 ? path[path.length - 2] : undefined;
     }
-    if (cell) setWalk({ visit: visit.current.n, cell });
+    if (!cell) return;
+    setWalk({ visit: visit.current.n, cell });
+    if (actingOn.share) onWalk(cell, false);
   }, [actingOn?.n]);
 
   const ringOf = new Map(neighbors.map((n) => [n.id as string, n.ring]));
   const byId = new Map([...drawnPeople, ...neighbors.flatMap((n) => n.people)].map((o) => [o.id, o]));
-  const imageInput = { layout, room, people: byId, walkers, seat: mySeat, corpses };
+  const imageInput = { layout, room, people: byId, walkers, seats, corpses };
 
   // Load every image this room hit-tests against, so masks are ready by the first click.
   // biome-ignore lint/correctness/useExhaustiveDependencies: re-preload only when the sprite set changes; the image input is rebuilt every render.
@@ -445,7 +477,7 @@ export function IsoRoom({
         ownCells,
         doors,
       }),
-    [scene, box, walkersKey, walkersLook, doorsKey, mySeat, occupants, nearby, corpses, equipmentByKey, reachable, selected, selectedDoor, hoverKey, ownCells],
+    [scene, box, walkersKey, walkersLook, doorsKey, seatsKey, occupants, nearby, corpses, equipmentByKey, reachable, selected, selectedDoor, hoverKey, ownCells],
   );
   // Badges and bubbles go over the people in this room.
   const anchors = drawn.sprites.flatMap((s): Anchor[] => {
@@ -551,7 +583,10 @@ export function IsoRoom({
     else if (hit?.kind === "chair") {
       // Sit down (cosmetic, like walking): you stand on the chair's cell in the sitting pose.
       onClear();
-      if (!rooted) setWalk({ visit: visit.current.n, cell: hit.cell, seat: seatFor(hit.dir) });
+      if (!rooted) {
+        setWalk({ visit: visit.current.n, cell: hit.cell, seat: seatFor(hit.dir) });
+        onWalk(hit.cell, true);
+      }
     }
     else if (hit?.kind === "door") onDoorTap(hit.to);
     else {
@@ -559,7 +594,10 @@ export function IsoRoom({
       onClear();
       const at = pointIn(e);
       const cell = cellAtPoint(cells, at.x, at.y);
-      if (cell && !rooted) setWalk({ visit: visit.current.n, cell });
+      if (cell && !rooted) {
+        setWalk({ visit: visit.current.n, cell });
+        onWalk(cell, false);
+      }
     }
   };
   const onDoubleClick = (e: MouseEvent<HTMLDivElement>) => {

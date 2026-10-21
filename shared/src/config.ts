@@ -24,6 +24,8 @@ export const DEFAULT_CONFIG: GameConfig = {
   cyclesPerDay: 8,
   // Owner, 2026-10-19 (#24): cycles follow the UTC clock; End cycle stays for testing, on only where the server allows cheats.
   manualCycles: false,
+  // Owner, 2026-10-20 (#17, #21): on by default; kept switchable for a future game setting.
+  sharedSpots: true,
   moralePerDay: 2,
   maxAp: 12,
   // Confirmed 2026-10-11: a move costs 1 MP; with no MP, 1 AP becomes 3 MP. MP starts at 0, cap 12.

@@ -61,6 +61,7 @@ export const PLAYER_STATE_FIELDS: Record<string, FieldRule> = {
   room: { reach: "room", test: "rules.test.ts", note: "Everyone's while ACTOPI is on; never a dead player's (death.test.ts)." },
   ap: { reach: "own", test: "leaks.test.ts" },
   lyingIn: { reach: "room", test: "leaks.test.ts" },
+  spot: { reach: "room", test: "leaks.test.ts" },
   pushedBy: { reach: "room", test: "leaks.test.ts", note: "Also as the public `accommodated` status." },
   accommodationOffers: { reach: "own", test: "leaks.test.ts", note: "The offers themselves are public room log lines." },
   mp: { reach: "own", test: "leaks.test.ts" },

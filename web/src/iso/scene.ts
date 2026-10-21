@@ -7,7 +7,7 @@
 // they are drawn (CSS filters, tints, shaders): each renderer maps them to its own means.
 
 import type { Ref } from "react";
-import type { CharacterId, EquipmentView, ItemId, RoomId, ShipLayout, SliceInfo, Target } from "@mush2/shared";
+import type { CharacterId, EquipmentView, ItemId, RoomId, ShipLayout, SliceInfo, Spot, Target } from "@mush2/shared";
 import { sameTarget } from "../hud/targets.ts";
 import { lyingFrame, sittingFrame, spriteStrip } from "../art/assets.ts";
 import type { Bar } from "../scene/ActionBar.tsx";
@@ -24,6 +24,8 @@ export interface Occupant {
   you: boolean;
   /** The bed (equipment id) they lie in, drawn in the lying pose like a corpse. The view gives it for you and for people in your room. */
   lying?: string;
+  /** Where they stand or sit in the room, from the view (you and people in your room); without one, they're spread out. */
+  spot?: Spot;
   /** Public statuses, shown over the head (the view decides which; see statuses.ts). */
   statuses: readonly string[];
   /** The bar of the timed action they are busy with, when the view shows it, and your own action's name. */
@@ -217,8 +219,8 @@ export interface SceneInput {
   doors: ReadonlyMap<string, DoorState>;
   /** People lying in a bed in this room, and whether the bed runs mirrored. */
   beds: ReadonlyMap<string, { flip: boolean }>;
-  /** The chair you sit on, if you do. */
-  seat: Seat | undefined;
+  /** People sitting on a chair in this room (you as soon as you reach it, others by their view spot), by person id. */
+  seats: ReadonlyMap<string, Seat>;
   corpses: readonly Corpse[];
   /** Sprite key -> the equipment it draws (this room only). */
   equipment: ReadonlyMap<string, EquipmentView>;
@@ -240,7 +242,7 @@ export function corpseOf(s: PlacedSprite, corpses: readonly Corpse[]): Corpse | 
  * The image a placed sprite's pixels come from: its unflipped, unanimated frame (what hit-testing
  * reads; `hitTest` mirrors with `flipX`).
  */
-export function imageOf(s: PlacedSprite, input: Pick<SceneInput, "layout" | "room" | "people" | "walkers" | "seat" | "corpses">): SceneImage {
+export function imageOf(s: PlacedSprite, input: Pick<SceneInput, "layout" | "room" | "people" | "walkers" | "seats" | "corpses">): SceneImage {
   if (s.kind !== "actor") return { url: atlasUrl(input.layout, s.sheet), frame: s, keyed: false };
   const corpse = corpseOf(s, input.corpses);
   if (corpse) {
@@ -250,7 +252,8 @@ export function imageOf(s: PlacedSprite, input: Pick<SceneInput, "layout" | "roo
   const o = input.people.get(s.key.slice(2));
   const lying = o?.lying ? lyingFrame(o.character) : undefined;
   if (lying) return { url: lying.url, frame: lying, keyed: false };
-  const sitting = o?.you && input.seat ? sittingFrame(o.character, input.seat.facing) : undefined;
+  const seat = o && input.seats.get(o.id);
+  const sitting = seat ? sittingFrame(o.character, seat.facing) : undefined;
   if (sitting) return { url: sitting.url, frame: sitting, keyed: false };
   const strip = (o && s.room === input.room && input.walkers.get(o.id)?.facing.strip) || "face";
   return { url: spriteStrip(o?.character, strip), frame: { sx: 0, sy: 0, width: 32, height: 48 }, keyed: true };
@@ -262,7 +265,8 @@ function personPicture(s: PlacedSprite, input: SceneInput, base: Omit<ScenePictu
   const o = input.people.get(s.key.slice(2));
   if (s.room !== input.room || !o) return { ...base, image };
   if (o.lying) return { ...base, image, flipX: input.beds.get(o.id)?.flip };
-  if (o.you && input.seat) return { ...base, image, flipX: input.seat.flip };
+  const seat = input.seats.get(o.id);
+  if (seat) return { ...base, image, flipX: seat.flip };
   const w = input.walkers.get(o.id);
   const anim = w?.moving ? { ...WALK_CYCLE, loops: "forever" as const } : w?.arriving ? { ...WALK_CYCLE, loops: 2 } : undefined;
   return { ...base, image, flipX: w?.facing.flip, anim, walker: w && o.id };

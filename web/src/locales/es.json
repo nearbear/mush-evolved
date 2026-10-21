@@ -187,7 +187,8 @@
   },
   "errors": {
     "queue_full": "Tu cola de acciones está llena.",
-    "nothing_queued": "No tienes acciones que vaciar."
+    "nothing_queued": "No tienes acciones que vaciar.",
+    "cant_walk": "Ahora no puedes moverte por la sala."
   },
   "terminal": {
     "close": "Cerrar"

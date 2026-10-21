@@ -5,6 +5,7 @@ import { isActopiCheat, isCheat, isRoleCheat, type ActopiCheat, type Cheat, type
 import { isCharacterId, type CharacterId } from "./characters.ts";
 import { MAX_CHAT_LENGTH } from "./chat.ts";
 import { isSkill } from "./skills.ts";
+import { MAX_SPOT_CELL } from "./spot.ts";
 import { CHAT_CHANNELS, GRAVEYARD_CHANNEL, MUSH_CHANNEL, type Action, type ChannelId, type PlayerId, type PlayerView, type PrivateChannelId } from "./types.ts";
 
 export const MAX_NAME_LENGTH = 24;
@@ -23,6 +24,8 @@ export type GameClientMessage =
   | { type: "action"; action: Action }
   // Cancels your queued actions and the one under way (queue.ts).
   | { type: "clearQueue" }
+  // Walk to a cell of your room, sitting if it's a chair (spot.ts). Free; not an action.
+  | { type: "walk"; x: number; y: number; sitting: boolean }
   | { type: "chat"; channel: ChannelId; text: string }
   | { type: "toggleCheckbox"; message: number; line: number }
   | { type: "createChannel"; name: string }
@@ -76,6 +79,12 @@ export function parseGameMessage(raw: string): GameClientMessage | null {
     return isCheat(msg.cheat) && typeof msg.on === "boolean" ? { type: "cheat", cheat: msg.cheat, on: msg.on } : null;
   }
   if (msg?.type === "clearQueue") return { type: "clearQueue" };
+  if (msg?.type === "walk") {
+    const { x, y, sitting } = msg;
+    return [x, y].every((n) => Number.isInteger(n) && Math.abs(n as number) <= MAX_SPOT_CELL) && typeof sitting === "boolean"
+      ? { type: "walk", x: x as number, y: y as number, sitting }
+      : null;
+  }
   if (msg?.type === "roleCheat") return isRoleCheat(msg.role) ? { type: "roleCheat", role: msg.role } : null;
   if (msg?.type === "actopiCheat") return isActopiCheat(msg.mode) ? { type: "actopiCheat", mode: msg.mode } : null;
   if (msg?.type !== "action" || !isRecord(msg.action)) return null;

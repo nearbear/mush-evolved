@@ -1,6 +1,6 @@
 // Walking in the iso view: everyone in your room moves smoothly toward where they should stand,
-// instead of jumping there. Client-only and cosmetic, like the spots themselves: the server never
-// hears of it, and nothing waits for a walk to finish (an action or a move is sent at once,
+// instead of jumping there. Where they head is IsoRoom's (from the view's spots and your clicks); the
+// walk itself is drawing only: the server never hears of it, and nothing waits for a walk to finish (an action or a move is sent at once,
 // whatever the drawing is doing). It walks even with prefers-reduced-motion set: the walk is how
 // you see where someone went, not decoration (Windows sets that preference whenever its animation
 // effects are off).
