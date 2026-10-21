@@ -1,5 +1,6 @@
 import type { ActionCost, ActionTag } from "../actions.ts";
 import type { CharacterId } from "../characters.ts";
+import type { TitleId } from "../titles.ts";
 import type { Action, BotKind, ItemId, LogEntry, PlayerId, RoomId } from "../types.ts";
 import type { ChannelId, ChatMessage, PrivateChannel } from "./chat.ts";
 import type { MovementRules } from "./config.ts";
@@ -136,6 +137,8 @@ export interface PlayerView {
   projects: Record<string, number>;
   /** Your own planets (private, owner 2026-10-19). Unknown sectors are null: their tags are never sent. */
   planets: PlanetView[];
+  /** Every title in `TITLE_IDS` order, public to everyone (owner, 2026-10-20). */
+  titles: TitleView[];
   /**
    * Everything you could do right now, plus what you could do if you had the AP or MP (so the client can show
    * it disabled and say why). Affordable ones come first. Only candidates on things you can already see, so
@@ -161,4 +164,12 @@ export interface PlanetView {
   id: string;
   name: string;
   sectors: (string | null)[];
+}
+
+/** A title as everyone sees it: who holds it, by character (null while vacant), and its line of succession as it stands on this ship. */
+export interface TitleView {
+  id: TitleId;
+  holder: CharacterId | null;
+  /** The crew aboard (dead included), in order of succession. */
+  line: CharacterId[];
 }

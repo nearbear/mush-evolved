@@ -83,6 +83,18 @@
     "buttonCount_many": "Inventario ({{count}} objetos en esta sala)",
     "buttonCount_other": "Inventario ({{count}} objetos en esta sala)"
   },
+  "titles": {
+    "label": "Títulos",
+    "vacant": "Vacante",
+    "holder": "{{title}}: {{name}}",
+    "holderVacant": "{{title}}: vacante",
+    "line": "Línea de sucesión",
+    "names": {
+      "commander": "Comandante",
+      "neron_admin": "Administrador de NERON",
+      "comms_officer": "Responsable de Comunicaciones"
+    }
+  },
   "resources": {
     "other": "Otros recursos",
     "spores": "Esporas",
@@ -443,7 +455,9 @@
     "planetNotFound": "Tu escaneo no encontró nada.",
     "analyzedPlanet": "{{name}} analizó el planeta {{planet}}.",
     "mycoAlarmRang": "¡Suena una alarma: un Mush ha actuado en esta sala!",
-    "mycoAlarmsBuilt": "Se construyeron tres micoalarmas y se dejaron aquí."
+    "mycoAlarmsBuilt": "Se construyeron tres micoalarmas y se dejaron aquí.",
+    "titlePassed": "{{name}} es ahora {{title}}.",
+    "titleVacant": "Nadie a bordo puede tomar el título {{title}}: está vacante."
   },
   "skills": {
     "title": "Elegir una habilidad",

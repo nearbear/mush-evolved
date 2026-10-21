@@ -962,3 +962,9 @@ Owner specified oxygen/fuel/hull/plasma shield values. Their answers had typos (
 ## 2026-10-20: Hunters and space combat extraction
 
 Claude extracted the hunter and space-combat material from `Mush/` into `docs/space-combat-plan.md`, in the same shape as the comms plan: ship stats, actions and odds, stances, modifiers, logs, the Flash battle panel, art. What worked: the data tables and `Solver.hx` give the numbers and the odds formula directly. What to watch: the snapshot has no server simulation (wave spawning, hunter targeting, hit against dodge, recharge rates), so those are listed as open questions rather than filled in from memory of eMush. A few rows disagree with each other (Gunner's ×2 effect against its "+50%" text, the takeoff roll that reads inverted), and those are flagged for the owner too.
+
+## 2026-10-20: Titles and lines of succession (#144)
+
+- **Decision (owner):** implement #144 with the line of succession a commenter proposed on the issue. Asked in one round about the commenter's other proposals; the owner adopted all four (the original's three titles; public lines; title changes announced in crew chat only; Mush hold titles), kept Andie and Derek in the data though they aren't in our crew, chose "vacant until someone is eligible" for an exhausted line, and deferred inactivity to #145 behind an eligibility seam.
+- **What worked:** splitting the order rule into a pure `successor(line, people, holder, eligible)` let the inactivity, no-return and regain cases be tested now with a predicate, before the inactive status exists. The French title names came from the original's `Data.ods` rather than being invented.
+- **Needed correction:** the a11y test caught a component prop named `title` (forbidden in the client); renamed to `entry`. The `title_01/02/03` icon mapping to Commander / NERON Admin / Comms Officer follows eMush's convention, not something found in the original's source.

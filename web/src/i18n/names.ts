@@ -59,12 +59,13 @@ export function useNames() {
   const research = (id: string) => t(`research.names.${id}` as never, { defaultValue: id });
   const project = (id: string) => t(`projects.names.${id}` as never, { defaultValue: id });
   const skill = (id: string) => t(`skills.names.${id}` as never, { defaultValue: id });
+  const title = (id: string) => t(`titles.names.${id}` as never, { defaultValue: id });
   const action = (type: string) => {
     const key = (ACTION_NAME_KEYS as Partial<Record<string, string>>)[type];
     return key ? t(key as never, { defaultValue: type }) : type;
   };
 
-  /** The text of a log entry. `room`, `item`, `research`, `project`, `equipment` and `action` params are ids and get translated; `name`, `target` and `body` are character ids. */
+  /** The text of a log entry. `room`, `item`, `research`, `project`, `equipment`, `action` and `title` params are ids and get translated; `name`, `target` and `body` are character ids. */
   const logLine = ({ key, params = {} }: Pick<LogEntry, "key" | "params">): string => {
     const resolved: Record<string, string | number> = { ...params };
     if (typeof params.room === "string") resolved.room = room(params.room);
@@ -73,9 +74,10 @@ export function useNames() {
     if (typeof params.project === "string") resolved.project = project(params.project);
     if (typeof params.equipment === "string") resolved.equipment = equipment(params.equipment);
     if (typeof params.action === "string") resolved.action = action(params.action);
+    if (typeof params.title === "string") resolved.title = title(params.title);
     for (const who of ["name", "target", "body"] as const) if (typeof params[who] === "string") resolved[who] = characterGivenName(params[who]);
     return t(`logEvent.${key}` as never, { ...resolved, defaultValue: key });
   };
 
-  return { room, equipment, item, research, project, skill, action, character: characterName, characterGiven: characterGivenName, logLine };
+  return { room, equipment, item, research, project, skill, title, action, character: characterName, characterGiven: characterGivenName, logLine };
 }

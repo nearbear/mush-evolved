@@ -1,7 +1,7 @@
 // Maps game ids to Motion Twin art in Mush/ (CC BY-NC-SA 4.0, see
 // Mush/ATTRIBUTION.md). Vite bundles only the files matched here.
 
-import type { CharacterId, ResourceId } from "@mush2/shared";
+import type { CharacterId, ResourceId, TitleId } from "@mush2/shared";
 
 type UrlMap = Record<string, string>;
 const urls = (map: UrlMap) =>
@@ -156,6 +156,16 @@ export const planetTagIcon = (tag: string | null): string => astroIcons[`tag_${(
 
 /** The five small planet pictures; which one a planet gets is cosmetic. */
 export const PLANET_IMAGES: readonly string[] = [0, 1, 2, 3, 4].map((n) => astroIcons[`planet_${n}_small`]!);
+
+const titleIcons = urls(
+  import.meta.glob<string>("../../../Mush/www/img/icons/ui/title_0{1,2,3}.png", { eager: true, query: "?url", import: "default" }),
+);
+/** The ID cards the original showed for its three titles. */
+export const TITLE_ICONS: Readonly<Record<TitleId, string>> = {
+  commander: titleIcons["title_01"]!,
+  neron_admin: titleIcons["title_02"]!,
+  comms_officer: titleIcons["title_03"]!,
+};
 
 /** A small trash bin, for deleting things. */
 export const BIN_ICON = urls(

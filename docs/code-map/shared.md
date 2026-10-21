@@ -31,6 +31,7 @@ Other packages import from `@mush2/shared` (`shared/src/index.ts`, the barrel). 
 - `log.ts`: room log helpers (`logPublic`, `logPrivate`, `logSecret`, `logCovert`, `hasCamera`).
 - `resources.ts`: per-player skill point pools.
 - `skills.ts`: the pickable human skills and `SKILL_SLOTS`.
+- `titles.ts`: `TITLE_IDS`, each title's line (`SUCCESSION`), `successor` (pure), `assignTitles` (at creation) and `refreshTitles` (after a death).
 - `statuses.ts`: stored and derived statuses.
 - `cheats.ts`: development cheats (issue #148), gated by `ALLOW_CHEATS`.
 

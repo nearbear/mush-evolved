@@ -83,6 +83,18 @@
     "buttonCount_many": "Inventaire ({{count}} objets dans cette salle)",
     "buttonCount_other": "Inventaire ({{count}} objets dans cette salle)"
   },
+  "titles": {
+    "label": "Titres",
+    "vacant": "Vacant",
+    "holder": "{{title}} : {{name}}",
+    "holderVacant": "{{title}} : vacant",
+    "line": "Ordre de succession",
+    "names": {
+      "commander": "Commandant",
+      "neron_admin": "Administrateur NERON",
+      "comms_officer": "Responsable de Communications"
+    }
+  },
   "resources": {
     "other": "Autres ressources",
     "spores": "Spores",
@@ -443,7 +455,9 @@
     "planetNotFound": "Votre scan n'a rien trouvé.",
     "analyzedPlanet": "{{name}} a analysé la planète {{planet}}.",
     "mycoAlarmRang": "Une alarme retentit : un Mush a agi dans cette pièce !",
-    "mycoAlarmsBuilt": "Trois mycoalarmes ont été construites et laissées ici."
+    "mycoAlarmsBuilt": "Trois mycoalarmes ont été construites et laissées ici.",
+    "titlePassed": "{{name}} est maintenant {{title}}.",
+    "titleVacant": "Personne à bord ne peut prendre le titre {{title}} : il est vacant."
   },
   "skills": {
     "title": "Choisir une compétence",

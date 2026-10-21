@@ -1,5 +1,6 @@
 import type { PlanetTag } from "../planets.ts";
 import type { RngState } from "../rng.ts";
+import type { TitleId } from "../titles.ts";
 import type { ItemState, LogEntry, PlayerId } from "../types.ts";
 import type { ChatMessage, PrivateChannel } from "./chat.ts";
 import type { GameConfig } from "./config.ts";
@@ -65,6 +66,8 @@ export interface GameState {
   /** Failed scans in a row per player, raising their next scan's odds; reset by a success (owner, 2026-10-19). Never sent. */
   scanFailures: Record<PlayerId, number>;
   nextPlanetId: number;
+  /** Who holds each title (titles.ts); null while vacant. Public: every view has the holders and the lines. */
+  titles: Record<TitleId, PlayerId | null>;
   /**
    * Server time (ms) of the latest action input or tick (queue.ts); 0 before the first. The rules' only clock, for
    * deadlines such as accommodation offers. Never sent.

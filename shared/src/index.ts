@@ -24,3 +24,4 @@ export * from "./projects.ts";
 export * from "./planets.ts";
 export * from "./ship.ts";
 export * from "./spot.ts";
+export * from "./titles.ts";

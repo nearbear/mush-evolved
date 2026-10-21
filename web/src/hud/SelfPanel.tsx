@@ -3,8 +3,9 @@
 
 import { Popover } from "@base-ui/react/popover";
 import { useTranslation } from "react-i18next";
-import { RESOURCE_IDS, type Action, type PlayerView } from "@mush2/shared";
-import { RESOURCE_ICONS, SPORE_ICON } from "../art/assets.ts";
+import { RESOURCE_IDS, type Action, type PlayerView, type TitleView } from "@mush2/shared";
+import { RESOURCE_ICONS, SPORE_ICON, TITLE_ICONS } from "../art/assets.ts";
+import { useNames } from "../i18n/names.ts";
 import { PlayerSummary } from "./PlayerSummary.tsx";
 
 export function SelfPanel({ view, showSummary, onAction }: { view: PlayerView; showSummary: boolean; onAction: (action: Action) => void }) {
@@ -28,6 +29,11 @@ export function SelfPanel({ view, showSummary, onAction }: { view: PlayerView; s
             description={t(`resources.${id}.desc`)}
             count={view.you.resources[id]}
           />
+        ))}
+      </aside>
+      <aside className="self-extras self-titles" aria-label={t("titles.label")}>
+        {view.titles.map((title) => (
+          <TitleChip key={title.id} entry={title} />
         ))}
       </aside>
       <Credits />
@@ -55,6 +61,44 @@ function ResourceChip({ icon, name, description, count }: { icon: string; name: 
           <Popover.Popup className="tooltip resource-card">
             <strong>{name}</strong>
             {description && <p>{description}</p>}
+          </Popover.Popup>
+        </Popover.Positioner>
+      </Popover.Portal>
+    </Popover.Root>
+  );
+}
+
+/** A title's card and who holds it; its line of succession (public) opens in a popover on hover, focus, or tap. */
+function TitleChip({ entry: title }: { entry: TitleView }) {
+  const { t } = useTranslation();
+  const names = useNames();
+  const name = names.title(title.id);
+  const holder = title.holder === null ? null : names.characterGiven(title.holder);
+  return (
+    <Popover.Root>
+      <Popover.Trigger
+        openOnHover
+        delay={200}
+        nativeButton={false}
+        render={<span role="button" tabIndex={0} />}
+        className="resource"
+        aria-label={holder === null ? t("titles.holderVacant", { title: name }) : t("titles.holder", { title: name, name: holder })}
+      >
+        <img src={TITLE_ICONS[title.id]} alt="" />
+        {holder ?? t("titles.vacant")}
+      </Popover.Trigger>
+      <Popover.Portal>
+        <Popover.Positioner sideOffset={6}>
+          <Popover.Popup className="tooltip resource-card title-card">
+            <strong>{name}</strong>
+            <p>{t("titles.line")}</p>
+            <ol>
+              {title.line.map((character) => (
+                <li key={character} className={character === title.holder ? "holder" : undefined}>
+                  {names.characterGiven(character)}
+                </li>
+              ))}
+            </ol>
           </Popover.Popup>
         </Popover.Positioner>
       </Popover.Portal>

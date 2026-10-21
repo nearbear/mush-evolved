@@ -40,6 +40,14 @@
 .resource img {
   image-rendering: pixelated;
 }
+/* A title's line of succession; the holder in bold. */
+.title-card ol {
+  margin: 0.25rem 0 0;
+  padding-left: 1.5rem;
+}
+.title-card li.holder {
+  font-weight: bold;
+}
 /* On desktop the nameplate and the stat cards are always one row. */
 @media (min-width: 1024px) {
   .self-panel .player-summary {

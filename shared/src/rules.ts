@@ -22,6 +22,7 @@ import { activitySeen, logPrivate, logSecret } from "./log.ts";
 import { ringMycoAlarms } from "./mycoalarm.ts";
 import { planetsOf } from "./planets.ts";
 import { burnOxygen, shipMax, startShip } from "./ship.ts";
+import { SUCCESSION, TITLE_IDS, assignTitles } from "./titles.ts";
 import type {
   Action,
   Equipment,
@@ -118,6 +119,8 @@ export function createGame(
     planets: {},
     scanFailures: {},
     nextPlanetId: 1,
+    // Issued with Mush selection, whatever the role (owner, 2026-10-13 and 2026-10-20).
+    titles: assignTitles(players),
     now: 0,
   };
   grantCarePoints(state); // day 1 begins now
@@ -401,6 +404,14 @@ export function viewFor(state: GameState, playerId: PlayerId): PlayerView {
     projects: { ...state.projects },
     // Your own planets only, and only the tags an analysis revealed (owner, 2026-10-19).
     planets: planetsOf(state, playerId).map((p) => ({ id: p.id, name: p.name, sectors: p.sectors.map((s) => (s.known ? s.tag : null)) })),
+    titles: TITLE_IDS.map((id) => {
+      const holder = state.players.find((p) => p.id === state.titles[id]);
+      return {
+        id,
+        holder: holder?.character ?? null,
+        line: SUCCESSION[id].flatMap((c) => state.players.filter((p) => p.character === c).map((p) => p.character)),
+      };
+    }),
     actions: [...legalOptions(state, you, legal), ...unaffordableActions(state, playerId)],
   };
 }

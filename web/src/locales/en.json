@@ -82,6 +82,18 @@
     "buttonCount_one": "Inventory ({{count}} item in this room)",
     "buttonCount_other": "Inventory ({{count}} items in this room)"
   },
+  "titles": {
+    "label": "Titles",
+    "vacant": "Vacant",
+    "holder": "{{title}}: {{name}}",
+    "holderVacant": "{{title}}: vacant",
+    "line": "Line of succession",
+    "names": {
+      "commander": "Commander",
+      "neron_admin": "NERON Admin",
+      "comms_officer": "Comms Officer"
+    }
+  },
   "resources": {
     "other": "Other resources",
     "spores": "Spores",
@@ -441,7 +453,9 @@
     "planetNotFound": "Your scan found nothing.",
     "analyzedPlanet": "{{name}} analysed the planet {{planet}}.",
     "mycoAlarmRang": "An alarm goes off: a Mush has acted in this room!",
-    "mycoAlarmsBuilt": "Three myco alarms have been built and left here."
+    "mycoAlarmsBuilt": "Three myco alarms have been built and left here.",
+    "titlePassed": "{{name}} is now {{title}}.",
+    "titleVacant": "Nobody aboard can take the title {{title}}: it is vacant."
   },
   "skills": {
     "title": "Choose a skill",
