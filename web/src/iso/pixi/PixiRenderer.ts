@@ -1,6 +1,6 @@
 // PixiJS renderer for the iso room (#194), imperative: one Pixi Sprite per scene sprite, kept
 // between scenes by key, so a scene change only touches what changed and walking only moves
-// sprites. It draws the Scene it is given and nothing else: no input (the canvas ignores pointer
+// sprites. It draws the Scene it is given over a star field (starfield.ts) and nothing else: no input (the canvas ignores pointer
 // events; IsoRoom hit-tests), no game state. Pixi stays inside this folder.
 //
 // Pixel-exact at 1x: nearest-neighbour textures, the canvas at devicePixelRatio with CSS size equal
@@ -18,9 +18,10 @@
 // and rebuilds its textures and programs when it comes back. This only stops drawing while it is lost
 // and draws once it is back, since nothing else would ask for a frame.
 
-import { Application, Container, type Filter, Rectangle, RendererType, Sprite, Texture, TextureStyle } from "pixi.js";
+import { Application, Container, type Filter, Rectangle, RendererType, Sprite, Texture, TextureStyle, TilingSprite } from "pixi.js";
 import { keyedUrl } from "../../art/keyedSprite.ts";
 import { animId, animStep, type FrameUpdate, type Scene, type SceneImage, type SceneOutline, type ScenePicture, type SceneSprite } from "../scene.ts";
+import { starfield } from "../starfield.ts";
 import { ESP, espPulse, filterKey, lookOf } from "./effects.ts";
 import { EspFilters, lookFilter } from "./filters.ts";
 
@@ -55,6 +56,23 @@ function frameTexture(base: Texture, key: string, sx: number, sy: number, width:
   return t;
 }
 
+/** The star field's tile, in pixels, and how far it moves for each pixel the camera moves. */
+const SKY_SIZE = 1024;
+const SKY_PARALLAX = 0.5;
+let skyTexture: Texture | null = null;
+
+/** The star field behind the ship, made once (about 0.1 s) and repeated across the panel. */
+function sky(): Texture {
+  if (!skyTexture) {
+    const { size, rgba } = starfield(SKY_SIZE);
+    const canvas = document.createElement("canvas");
+    canvas.width = canvas.height = size;
+    canvas.getContext("2d")!.putImageData(new ImageData(rgba, size, size), 0, 0);
+    skyTexture = Texture.from(canvas);
+  }
+  return skyTexture;
+}
+
 interface Drawn {
   sprite: Sprite;
   pic: ScenePicture;
@@ -70,6 +88,7 @@ const OUTLINE = "esp|";
 
 export class PixiRenderer {
   private readonly app = new Application();
+  private sky: TilingSprite | null = null;
   private readonly world = new Container();
   private readonly sprites = new Container();
   private readonly outlines = new Container();
@@ -118,7 +137,8 @@ export class PixiRenderer {
     // Pixi's own input handling is unused: IsoRoom hit-tests against the art itself.
     this.app.stage.eventMode = "none";
     this.world.addChild(this.sprites, this.outlines);
-    this.app.stage.addChild(this.world);
+    this.sky = new TilingSprite({ texture: sky(), width: this.app.screen.width, height: this.app.screen.height });
+    this.app.stage.addChild(this.sky, this.world);
     // The shaders are GLSL; on anything but WebGL the sprites are drawn without effects.
     if (this.app.renderer.type === RendererType.WEBGL) {
       const rim = this.color("--glow-rim");
@@ -141,6 +161,7 @@ export class PixiRenderer {
     const { clientWidth: w, clientHeight: h } = this.host;
     if (!this.ready || !w || !h) return;
     if (this.app.renderer.width !== w || this.app.renderer.height !== h) this.app.renderer.resize(w, h);
+    this.sky?.setSize(w, h);
     this.renderNow();
   }
 
@@ -200,6 +221,8 @@ export class PixiRenderer {
     const x = Math.round(camera.x);
     const y = Math.round(camera.y);
     this.world.position.set(x, y);
+    // The stars drift slower than the ship, in whole pixels, so they read as far away.
+    this.sky?.tilePosition.set(Math.round(camera.x * SKY_PARALLAX), Math.round(camera.y * SKY_PARALLAX));
     // Each walker is rounded where it lands on screen, not in the world: your own walker cancels the
     // camera's fraction exactly, so you stay still on screen while the room moves under you.
     for (const d of this.walkers) {

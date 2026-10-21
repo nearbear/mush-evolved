@@ -939,3 +939,9 @@ Owner specified oxygen/fuel/hull/plasma shield values. Their answers had typos (
 - **Decision:** At the owner's request, cooking has a 25% dirty chance, express cooking 5%, consuming 15%, dispensing 5%, building 25%, installing 10%, uninstalling 5%, and healing 5%, using the existing punch-style dirt chance hook.
 - **What worked:** Centralized odds in per-action config and verified that each registered action reads its configured value.
 - **Correction needed:** None.
+
+## 2026-10-20: procedural star field behind the iso ship
+
+- Asked for a star field in the style of the original iso backdrop `Mush/clients/iso/gfx/bg.png`. Reads of `Mush/clients/` are denied, so the image was looked at through `npm run contact-sheet` and its 21-color palette measured with a throwaway decoder (it is a paletted PNG, which `tools/src/shipLayout/png.ts` doesn't read).
+- `web/src/iso/starfield.ts` (pure, seeded, seamless 1024 px tile): value-noise clouds plus meandering bands at the iso grid's 2:1 slope, dust drawn as scattered single pixels in the original's violet and teal ramps, lone stars, and "+" sparkles copied from the original's shape. Drawn by the Pixi renderer as a `TilingSprite` behind the scene at half the camera's speed (parallax). The DOM renderer has none.
+- What needed correction: the first pass was about twice as dense and bright as the original; tuned by comparing per-color pixel counts with the original's, not just by eye.
