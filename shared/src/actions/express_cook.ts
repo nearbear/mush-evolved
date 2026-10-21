@@ -37,6 +37,10 @@ export class ExpressCookAction extends Action<ExpressCookActionData> {
     return this.canAfford(state, player, target);
   }
 
+  override dirtChance(state: Readonly<GameState>): number {
+    return state.config.expressCook.dirtyChance;
+  }
+
   override apply(state: GameState, player: PlayerState, target: ExpressCookActionData): void {
     const microwave = chargedMicrowave(state, player)!;
     microwave.charges = microwave.charges! - 1;

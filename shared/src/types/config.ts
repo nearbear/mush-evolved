@@ -67,6 +67,7 @@ export interface GameConfig {
       nursePointsPerDay: number; // Care points the nurse skill (`first_aid`) grants at the start of each day and when picked (owner, 2026-10-15).
     };
     rooms: string[]; // Rooms where anyone can heal without a medikit (confirmed 2026-10-15: the sick bay).
+    dirtyChance: number; // Chance of getting the dirty status after healing.
   };
   punch: {
     cost: { ap: number }; // Issue 29.
@@ -75,6 +76,7 @@ export interface GameConfig {
       sturdyBonusDamage: number; // Extra punch damage from the sturdy skill (confirmed 2026-10-16).
     };
     successChance: number; // Chance a punch lands, 0 to 1 (confirmed 2026-10-15: it misses 40% of the time).
+    dirtyChance: number; // Chance of getting the dirty status after punching (confirmed 2026-10-13).
   };
   pacifist: {
     aggressiveApSurcharge: number; // Extra AP for each aggressive action in a Pacifist's room, theirs too (owner, 2026-10-18).
@@ -82,24 +84,32 @@ export interface GameConfig {
   cook: {
     cost: { ap: number }; // AP spent to cook an uncooked ration (confirmed 2026-10-16).
     rooms: RoomId[]; // Rooms where food can be cooked (confirmed 2026-10-16).
+    dirtyChance: number; // Chance of getting the dirty status after cooking.
   };
   expressCook: {
     cost: { ap: number }; // AP spent to express cook a ration with a reachable microwave (owner, 2026-10-19: 0).
     charges: { start: number; max: number; perDay: number }; // Microwave charges: one per express cook, regained at each day start (owner, 2026-10-19).
+    dirtyChance: number; // Chance of getting the dirty status after express cooking.
   };
   build: {
     cost: { ap: number }; // AP spent to build from a blueprint (decided 2026-10-16: 3, the original game's value).
+    dirtyChance: number; // Chance of getting the dirty status after building.
   };
   jettison: {
     cost: { ap: number }; // AP spent to jettison a carried corpse (decided 2026-10-16: free).
     rooms: RoomId[]; // Rooms where a corpse can be jettisoned: the four bays (decided 2026-10-16).
+    dirtyChance: number; // Chance of getting the dirty status after jettisoning.
   };
   install: {
     cost: { ap: number }; // AP spent to install a carried camera in the room (approved 2026-10-17: 1).
+    dirtyChance: number; // Chance of getting the dirty status after installing.
   };
   uninstall: {
     cost: { ap: number }; // AP spent to uninstall the room's camera back into an item (placeholder 2026-10-17: 1, like install).
+    dirtyChance: number; // Chance of getting the dirty status after uninstalling.
   };
+  consume: { dirtyChance: number }; // Chance of getting the dirty status after consuming an item.
+  dispense: { dirtyChance: number }; // Chance of getting the dirty status after dispensing an item.
   computer: {
     capPoints: number; // Most Computer points (`resources.comp`) a player can hold (owner, 2026-10-16; the original skill's IncrMaxPA(COMP, 4)).
     pointsPerDay: number; // Computer points the `computer` skill grants at the start of each day and when picked (owner, 2026-10-16; the original +2).
@@ -107,6 +117,7 @@ export interface GameConfig {
   research: {
     cost: { ap: number }; // AP spent to work on a research (decided 2026-10-16).
     effect: { progressPercent: number }; // Percent a research advances per action (decided 2026-10-16).
+    dirtyChance: number; // Chance of getting the dirty status after working on a research (owner, 2026-10-20).
   };
   project: {
     cost: { ap: number }; // AP spent to work on a NERON project (decided 2026-10-18).
@@ -145,6 +156,7 @@ export interface GameConfig {
   dismantle: {
     cost: { ap: number }; // AP spent to dismantle an item (confirmed 2026-10-13).
     successChance: number; // Chance of successfully dismantling an item (confirmed 2026-10-13).
+    dirtyChance: number; // Chance of getting the dirty status after dismantling an item (confirmed 2026-10-13).
   };
   creative: {
     refundOdds: number; // Chance that the Creative skill refunds 1 AP after a failed action that cost AP (confirmed 2026-10-15).

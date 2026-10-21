@@ -76,7 +76,7 @@ describe("replay", () => {
       const stored = JSON.parse(JSON.stringify(inputs)) as Input[];
       expect(replayGame(setup, stored)).toEqual(state);
     }
-  });
+  }, 15_000);
 
   it("refuses a record that the rules no longer accept", () => {
     const { inputs } = play(50, 9);

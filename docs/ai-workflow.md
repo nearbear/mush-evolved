@@ -882,6 +882,7 @@ Decided by the owner, accepting a commenter on #24 (eMush days start at 00:00 GM
 - About 190 of the 255 PNGs are assembled into components (page shells, 3-slice panels, cards, frames, tabs, buttons, bars, slots, controls); each story lists its source files with their natural sizes, and the assemblies that are inferred from names and sizes carry a "guess" tag. Icons, logos and illustrations are listed but not shown.
 - What needed correction: Vite dev doesn't rewrite `../Mush` paths written directly in HTML (`<img src>`, inline `style`), so those images 404'd; the page now names files with `data-img`/`data-bg` and resolves them through an `import.meta.glob` in `main.ts`. Useful finding: the site frame's left+right pieces add up to exactly 1080px on every row, so it's a fixed-width frame.
 
+- **2026-10-20 — Research dirty chance (owner):** added a 25% chance to become dirty after any successful research action, including one made free by a Computer point; NERON projects are excluded. Reused the existing action dirt-chance hook and seeded RNG/log behavior. Targeted research/project/Myco alarm tests and shared typecheck passed. The first diff check caught trailing whitespace in the already-edited shared action hook; cleaned that formatting before the full verification.
 ## 2026-10-19: Walls that connect in the iso view
 
 - Asked to make walls connect everywhere the way the front corridor's top corner does, with a test. A cell-level scan of the whole drawn ship (wall runs that stop, and what is beyond them) found the gaps far faster than eyeballing screenshots: corners between two rooms that neither draws (front corridor and hydroponics, refectory and bedroom Alpha, storage back and the motor room, bridge and turret) and a one-cell notch beside the centre corridor. `fillGaps` now adds a column at such corners and bridges one-cell notches.
@@ -933,3 +934,8 @@ Owner specified oxygen/fuel/hull/plasma shield values. Their answers had typos (
 - **What worked:** issue #192 had already proposed seats as server state through `viewFor`, which settled the main architecture question; the blunt sentinel leak test caught the new field automatically until it was listed.
 - **Tradeoff noted:** every floor click is a recorded input and a storage write. Fine at 16 seats with the 10/s message limit; revisit if replays or storage grow too much.
 - **Correction from the leak check (same day):** the first version stood you up from a chair on the server for every action, so roommates saw a seated player stand when they sent a private, secret or covert action whose bar they can't see. That was an indirect timing leak the sentinel test can't catch. The owner chose to stand up only for public actions, matching the act-walk rule; your own screen still stands you up for any action.
+## 2026-10-20 — Dirty chances for everyday actions
+
+- **Decision:** At the owner's request, cooking has a 25% dirty chance, express cooking 5%, consuming 15%, dispensing 5%, building 25%, installing 10%, uninstalling 5%, and healing 5%, using the existing punch-style dirt chance hook.
+- **What worked:** Centralized odds in per-action config and verified that each registered action reads its configured value.
+- **Correction needed:** None.

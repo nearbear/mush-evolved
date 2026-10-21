@@ -44,6 +44,15 @@ describe("NERON projects", () => {
     expect(again.ok && again.state.projects.PLASMA_SHIELD).toBe(2 * DEFAULT_CONFIG.project.effect.progressPercent);
   });
 
+  it("does not make project work dirty", () => {
+    const s = game();
+    s.rng = 7;
+    const r = applyAction(s, "p0", work("PLASMA_SHIELD"));
+    if (!r.ok) throw new Error(r.error);
+    expect(r.state.players[0]!.statuses).not.toContain("dirty");
+    expect(r.state.rng).toBe(7);
+  });
+
   it("completes at 100% and then is no longer offered or accepted", () => {
     let s = game();
     for (let i = 0; i < 4; i++) {

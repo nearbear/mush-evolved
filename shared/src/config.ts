@@ -45,6 +45,9 @@ export const DEFAULT_CONFIG: GameConfig = {
   inventorySlots: 3,
   // Confirmed 2026-10-13: three private channels per player by default (skills and research will raise it).
   channelLimit: 3,
+
+  //Actions
+
   // Confirmed 2026-10-14: bonding, DTT, and STT cost 1 AP each; DTT and STT give each of the two 2 morale.
   bond: { cost: { ap: 1 } },
   share: { cost: { ap: 1 }, effect: { morale: 2 } },
@@ -61,29 +64,32 @@ export const DEFAULT_CONFIG: GameConfig = {
     cost: { apOther: 2, apSelf: 3 },
     effect: { hp: 3, medicBonusHp: 2, nursePointsPerDay: 2 },
     rooms: ["SICK_BAY"],
+    dirtyChance: 0.05,
   },
   // Confirmed 2026-10-15: punch costs 1 AP, 2 damage, misses 40% of the time.
   // Confirmed 2026-10-16: the sturdy (Solid) skill adds 1 to punch damage.
-  punch: { cost: { ap: 1 }, effect: { damage: 2, sturdyBonusDamage: 1 }, successChance: 0.6 },
+  punch: { cost: { ap: 1 }, effect: { damage: 2, sturdyBonusDamage: 1 }, successChance: 0.6, dirtyChance: 0.25 },
   // Owner, 2026-10-18: Ian's Pacifist makes aggressive actions in his room cost 2 more AP, his own included.
   pacifist: { aggressiveApSurcharge: 2 },
   // Confirmed 2026-10-16: cooking an uncooked ration costs 1 AP, only in the refectory.
-  cook: { cost: { ap: 1 }, rooms: ["REFECTORY"] },
+  cook: { cost: { ap: 1 }, rooms: ["REFECTORY"], dirtyChance: 0.25 },
   // Owner, 2026-10-19: express cook is free, anywhere you can reach a microwave, and spends one of its 4 charges;
   // it regains one each day. Consequences for using it come later.
-  expressCook: { cost: { ap: 0 }, charges: { start: 4, max: 4, perDay: 1 } },
+  expressCook: { cost: { ap: 0 }, charges: { start: 4, max: 4, perDay: 1 }, dirtyChance: 0.05 },
   // Decided 2026-10-16: building from a blueprint costs 3 AP, anywhere, no failure chance.
-  build: { cost: { ap: 3 } },
+  build: { cost: { ap: 3 }, dirtyChance: 0.25 },
   // Decided 2026-10-16 (#28): jettisoning a carried corpse is free, in one of the four bays.
-  jettison: { cost: { ap: 0 }, rooms: ["SPACESHIP_BAY_A", "SPACESHIP_BAY_AA", "SPACESHIP_BAY_B", "ICARUS"] },
+  jettison: { cost: { ap: 0 }, rooms: ["SPACESHIP_BAY_A", "SPACESHIP_BAY_AA", "SPACESHIP_BAY_B", "ICARUS"], dirtyChance: 0.25 },
   // Decided 2026-10-18 (owner, #35): installing a carried camera costs 2 AP, no tools, one camera per room, anyone can do it, no failure chance.
-  install: { cost: { ap: 2 } },
+  install: { cost: { ap: 2 }, dirtyChance: 0.1 },
   // Decided 2026-10-18 (owner, #36): uninstalling costs 1 AP, anyone can do it, no failure chance. Dismantling an installed camera uses `dismantle`.
-  uninstall: { cost: { ap: 1 } },
+  uninstall: { cost: { ap: 1 }, dirtyChance: 0.05 },
+  consume: { dirtyChance: 0.15 },
+  dispense: { dirtyChance: 0.05 },
   // Owner, 2026-10-16: the computer scientist skill holds up to 4 Computer points, gains 2 a day (and 2 when picked).
   computer: { capPoints: 4, pointsPerDay: 2 },
   // Decided 2026-10-16: working on a research costs 2 AP and advances it 25%; no repeat penalty yet.
-  research: { cost: { ap: 2 }, effect: { progressPercent: 25 } },
+  research: { cost: { ap: 2 }, effect: { progressPercent: 25 }, dirtyChance: 0.25 },
   // Decided 2026-10-19 (docs/astro-plan.md): scan 3 AP at 50%, x1.25 per failure in a row; analysis 2 AP; 2 planets per player.
   astro: { scan: { cost: { ap: 3 }, chance: 0.5, failureMultiplier: 1.25 }, analyze: { cost: { ap: 2 } }, maxPlanets: 2 },
   // Decided 2026-10-18: NERON projects work exactly like research: 2 AP, 25% per action, no repeat penalty.
@@ -99,7 +105,7 @@ export const DEFAULT_CONFIG: GameConfig = {
   ship: { oxygen: { start: 30, max: 32, perCycle: 1 }, fuel: { start: 20, max: 100 }, hull: { start: 100, max: 100 }, plasmaShield: { start: 100, max: 100, absorbPercent: 67 } },
   hunger: { satietyPerCycle: 1, fullBellyAt: 3, hungryAfterCycles: 24, hpPerCycle: 1 },
   // Confirmed 2026-10-13: dismantle cost and odds.
-  dismantle: { cost: { ap: 3 }, successChance: 0.12 },
+  dismantle: { cost: { ap: 3 }, successChance: 0.12, dirtyChance: 0.25 },
   // Confirmed 2026-10-15: nobody starts with a skill; players pick up to three
   // (SKILL_SLOTS) with the free, permanent pick_skill action.
   startSkills: [],
@@ -119,6 +125,7 @@ export const DEFAULT_CONFIG: GameConfig = {
     { type: "wrench", room: "LABORATORY" },
     { type: "blaster", room: "LABORATORY" },
     { type: "medikit", room: "SICK_BAY" },
+     { type: "apron", room: "SICK_BAY" },
     { type: "camera", room: "CORRIDOR_A" },
     { type: "metal_scraps", room: "CORRIDOR_A" },
     { type: "plastic_scraps", room: "CORRIDOR_A" },

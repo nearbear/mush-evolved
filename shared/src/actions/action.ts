@@ -77,6 +77,10 @@ export class Action<T extends { type: string }> {
     return this.getSuccessChance(state, player, target);
   }
 
+  dirtChance(state: Readonly<GameState>, player: Readonly<PlayerState>, target: T): number {
+    return 0;
+  }
+
   check(state: Readonly<GameState>, player: Readonly<PlayerState>, target: T): string | null {
     return this.canAfford(state, player, target);
   }

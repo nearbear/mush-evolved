@@ -25,6 +25,10 @@ export class ResearchAction extends Action<ResearchActionData> {
     return { ap: this.paidWithComputer(state, player) ? 0 : state.config.research.cost.ap, mp: 0 };
   }
 
+  override dirtChance(state: Readonly<GameState>): number {
+    return state.config.research.dirtyChance;
+  }
+
   private labs(state: Readonly<GameState>, player: Readonly<PlayerState>) {
     return (state.config.equipment[player.room] ?? []).filter((equipment) => equipment.type === "RESEARCH_LAB");
   }

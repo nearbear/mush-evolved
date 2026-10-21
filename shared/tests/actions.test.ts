@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { ACTIONS } from "../src/actions.ts";
 import { DEFAULT_CONFIG } from "../src/config.ts";
 import { RESEARCH_IDS } from "../src/research.ts";
 import { affordable, applyAction, createGame, legalActions, viewFor } from "../src/rules.ts";
@@ -11,6 +12,21 @@ const seats = makeSeats(4, "all");
 const sorted = (actions: Action[]) => actions.map((a) => JSON.stringify(a)).sort();
 
 describe("action registry", () => {
+  it("uses the configured dirty chances for cooking, express cooking, consuming, dispensing, building, installing, uninstalling and healing", () => {
+    const state = createGame(seats, DEFAULT_CONFIG, 1);
+    const actor = state.players[0]!;
+    expect([
+      ACTIONS.cook.dirtChance?.(state, actor, { type: "cook", item: "" }),
+      ACTIONS.express_cook.dirtChance?.(state, actor, { type: "express_cook", item: "" }),
+      ACTIONS.consume.dirtChance?.(state, actor, { type: "consume", item: "" }),
+      ACTIONS.dispense.dirtChance?.(state, actor, { type: "dispense", equipment: "" }),
+      ACTIONS.build.dirtChance?.(state, actor, { type: "build", item: "" }),
+      ACTIONS.install.dirtChance?.(state, actor, { type: "install", item: "" }),
+      ACTIONS.uninstall.dirtChance?.(state, actor, { type: "uninstall", equipment: "" }),
+      ACTIONS.heal.dirtChance?.(state, actor, { type: "heal", target: "" }),
+    ]).toEqual([0.25, 0.05, 0.15, 0.05, 0.25, 0.1, 0.05, 0.05]);
+  });
+
   // Pins the full legal set for p0 at the start (Laboratory: wrench and
   // blaster on the floor, an iTrackie in hand), so a check that is too loose
   // or too strict shows up here.

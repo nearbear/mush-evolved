@@ -351,9 +351,10 @@
     "heavy": "Heavy",
     "charges_one": "{{count}} charge left",
     "charges_other": "{{count}} charges left",
-    "heavyDesc": "Carrying it makes every move between rooms cost {{mp}} extra movement points, regardless of how many heavy objects you are carrying. The Sturdy skill cancels this."
+    "heavyDesc": "Carrying it makes every move between rooms cost {{mp}} extra movement points, regardless of how many heavy objects you are carrying. The Solid skill cancels this."
   },
   "items": {
+    "apron": "Stainproof Apron",
     "super_talky": "iTrackie",
     "wrench": "Wrench",
     "blaster": "Blaster",
@@ -378,6 +379,9 @@
   "logEvent": {
     "actionCostChanged": "Your queued action ({{action}}) was cancelled because its cost changed: it now costs {{ap}} AP and {{mp}} MP.",
     "actionDropped": "Your queued action ({{action}}) was no longer possible and was dropped.",
+    "becomeDirty": "You're filthy! You have become dirty.",
+    "apronBlockedDirty": "Disgusting... Fortunately you are wearing your Stainproof Apron...",
+    "sticklerBlockedDirty": "Your meticulous nature prevents you from getting dirty.",
     "crewWakes": "The crew wakes up aboard the ship.",
     "oxygenOut": "The oxygen has run out. Someone suffocates.",
     "cycleBegins": "Cycle {{cycle}} begins.",
@@ -465,7 +469,7 @@
       "medic": "Doctor",
       "first_aid": "Nurse",
       "leadership": "Leader",
-      "sturdy": "Sturdy",
+      "sturdy": "Solid",
       "sprint": "Sprinter",
       "fireman": "Firefighter",
       "hunt": "Tracker",
@@ -493,7 +497,7 @@
       "rebel": "Rebel",
       "escape": "Elusive",
       "neron_only_friend": "NERON's Only Friend",
-      "stickler": "Stickler",
+      "stickler": "Meticulous",
       "daunting": "Daunting",
       "juge": "Persecutor",
       "creative": "Creative",

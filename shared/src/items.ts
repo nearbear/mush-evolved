@@ -84,6 +84,8 @@ export const ITEM_TYPES: Record<string, ItemType> = {
   [MICROWAVE_ITEM]: { heavy: true },
   // Decided 2026-10-16: a dead player's body (death.ts). Takes one slot like any item; heavy.
   [CORPSE_ITEM]: { heavy: true },
+
+  apron: {},
 };
 
 /** Whether the player carries at least one heavy item. */

@@ -45,4 +45,8 @@ export class PunchAction extends Action<PunchActionData> {
     const victim = state.players.find((o) => o.id === target.target)!;
     logPublic(state, player.room, "punchMissed", { name: player.character, target: victim.character });
   }
+
+  override dirtChance(state: Readonly<GameState>, player: Readonly<PlayerState>, target: PunchActionData): number {
+    return state.config.punch.dirtyChance;
+  }
 }
