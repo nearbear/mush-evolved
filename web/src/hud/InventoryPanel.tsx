@@ -7,7 +7,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useNames } from "../i18n/names.ts";
 import { legalIn, type Action, type ItemView, type PlayerView, type Target } from "@mush2/shared";
-import { EMPTY_SLOT_TILE } from "../art/assets.ts";
 import { ItemFace } from "./ItemFace.tsx";
 import { ItemIcon } from "./ItemIcon.tsx";
 import { sameTarget } from "./targets.ts";
@@ -142,7 +141,7 @@ export function InventoryPanel({
             <li key={`empty-${i}`} className="item-slot">
               <span className="item-tile empty">
                 <ItemFace label="Empty slot">
-                  <img className="item-icon" src={EMPTY_SLOT_TILE} alt="" />
+                  <span className="kit-slot big" />
                 </ItemFace>
               </span>
             </li>

@@ -134,7 +134,7 @@ export function itemIcon(type: string): string | undefined {
 export const EMPTY_SLOT_ICON = itemIcons["empty"]!;
 
 const design = urls(
-  import.meta.glob<string>("../../../Mush/www/img/design/{pa1,pa2,lifebar,lifebar2,bigslot}.png", { eager: true, query: "?url", import: "default" }),
+  import.meta.glob<string>("../../../Mush/www/img/design/{pa1,pa2,lifebar,lifebar2}.png", { eager: true, query: "?url", import: "default" }),
 );
 
 /** Research cards, keyed by the lowercase research id (the file name). */
@@ -182,8 +182,6 @@ export const VISIBILITY_ICONS: Readonly<Record<"private" | "secret" | "covert", 
   covert: visibilityIcons["camera"]!,
 };
 
-/** The 56x56 empty inventory slot (a bordered blue square with transparent corners). */
-export const EMPTY_SLOT_TILE = design["bigslot"]!;
 /** 5x5 pips from the original site: pink for action points, cyan for movement points. */
 export const AP_PIP = design["pa1"]!;
 export const MP_PIP = design["pa2"]!;

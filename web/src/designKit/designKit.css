@@ -5,6 +5,8 @@
  * archive has no original CSS. Pixel art is never scaled here.
  */
 
+@import "@mush2/assets/derived/kit.css";
+
 :root {
   --bg: #0d1424;
   --panel: #16213a;
@@ -1104,4 +1106,19 @@ body.checker .stage {
   .dk-header {
     position: static;
   }
+}
+
+/* ---------- CSS kit ---------- */
+
+.kit-row {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+}
+.kit-row > .caption {
+  align-self: center;
+}
+/* Room for a ring or glow drawn outside the element, so the pixel compare sees all of it. */
+.kit-pad4 {
+  padding: 4px;
 }

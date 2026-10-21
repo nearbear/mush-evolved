@@ -1,0 +1,297 @@
+/*
+ * CSS versions of pieces of www/img/design (CC BY-NC-SA 4.0, Motion Twin; see ../ATTRIBUTION.md): the
+ * same look with no images, so each piece can be any size. Colours are sampled from the PNGs named in
+ * each block. Imported by the web client as "@mush2/assets/derived/kit.css"; shown beside the originals
+ * on the design kit page (web/design-kit.html, "CSS kit").
+ */
+
+/* ---------- Progress bars ---------- */
+
+/*
+ * prog_left / prog_bg / prog_right (14px tall) with the green percentage.png fill.
+ * Set the filled share with --value (0 to 1); the fill is the ::before, inset 2px.
+ */
+.kit-progress {
+  --value: 0;
+  --fill: linear-gradient(
+    transparent 2px,
+    #c5f186 2px 3px,
+    #9ee72d 3px 4px,
+    #8de300 4px 7px,
+    #84e100 7px 8px,
+    #76de00 8px 9px,
+    #65da00 9px 10px,
+    #50d400 10px 11px,
+    #3bcf00 11px 12px,
+    transparent 12px
+  );
+  position: relative;
+  box-sizing: border-box;
+  height: 14px;
+  border: 1px solid #3b6cad;
+  border-radius: 1px;
+  background:
+    linear-gradient(90deg, rgb(15 23 91 / 0.2), transparent 4px calc(100% - 4px), rgb(15 23 91 / 0.2)),
+    linear-gradient(#2a4f97, #2d5299 1px, #345fa3 2px, #3968aa 3px, #3b6cad 4px 8px, #3968aa 9px, #345fa3 10px, #2a4f97);
+}
+.kit-progress::before {
+  content: "";
+  position: absolute;
+  inset: -1px auto -1px 1px;
+  width: calc((100% - 2px) * var(--value));
+  background: var(--fill);
+}
+
+/* barprogress (134×16) with the barinprogress fill (128×10, the "NERON" letters left out), inset 3px. */
+.kit-progress.neron {
+  --fill: linear-gradient(#e0f7bf 1px, #a8ea40 1px 2px, #91e400 2px 4px, #8fe400 4px 5px, #84e100 5px 6px, #71dd00 6px 7px, #58d700 7px 8px, #3ccf00 8px 9px, #1fc900 9px);
+  height: 16px;
+  padding: 1px;
+  border: 1px solid;
+  border-image: linear-gradient(90deg, #292b75 50%, #1d1f53 70%) 1;
+  background:
+    linear-gradient(90deg, rgb(13 44 115 / 0.75), transparent 7px calc(100% - 7px), rgb(13 44 115 / 0.75)) content-box,
+    linear-gradient(#1c4085, #244c90, #2c5699, #315ea0, #3664a6, #3968a9 45% 55%, #3664a6, #315ea0, #2c5699, #244c90, #1c4085) content-box,
+    linear-gradient(90deg, #447ebb 34%, #305a9f 52%) padding-box;
+}
+.kit-progress.neron::before {
+  inset: 2px auto 2px 2px;
+  width: calc((100% - 4px) * var(--value));
+}
+
+/* counter (111×16) with the pink counting fill (1×10), inset 3px. */
+.kit-progress.counter {
+  --fill: linear-gradient(#facbec, #e553af);
+  height: 16px;
+  border-color: #232564;
+  border-radius: 2px;
+  background: #232564;
+  box-shadow: inset 0 0 0 1px #3a6cad;
+}
+.kit-progress.counter::before {
+  inset: 2px auto 2px 2px;
+  width: calc((100% - 4px) * var(--value));
+}
+
+/* ---------- Tabs ---------- */
+
+/*
+ * gen_tab / news_tab / gold_tab (133×39): a translucent blue tab with 13px cut top corners (::before).
+ * .pink and .gold add a three-line outline (edge, middle, edge, 1px each; gold's top middle line is
+ * orange, --top) that fades out down the sides
+ * (::after): straight strips for the sides and top, and a diagonal band in each top corner, starting
+ * where the cut edge crosses the corner square (cut / √2 along its diagonal).
+ */
+.kit-tab {
+  --cut: 13px;
+  position: relative;
+  isolation: isolate;
+  box-sizing: border-box;
+  min-height: 39px;
+  padding: 10px 16px 6px;
+  text-align: center;
+}
+.kit-tab::before,
+.kit-tab::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+}
+.kit-tab::before {
+  background: rgb(15 89 171 / 0.5);
+  clip-path: polygon(var(--cut) 0, calc(100% - var(--cut)) 0, 100% var(--cut), 100% 100%, 0 100%, 0 var(--cut));
+}
+.kit-tab.pink {
+  --edge: #a83258;
+  --mid: #ff4f87;
+}
+.kit-tab.gold {
+  --edge: #05063a;
+  --mid: #e8c20e;
+  --top: #e6a00d;
+}
+.kit-tab.pink::after,
+.kit-tab.gold::after {
+  --d: calc(var(--cut) * 0.7071);
+  --lines: var(--edge) 1px, var(--mid) 0 2px, var(--edge) 0 3px, transparent 0;
+  --top-lines: var(--edge) 1px, var(--top, var(--mid)) 0 2px, var(--edge) 0 3px, transparent 0;
+  --corner: transparent var(--d), var(--edge) 0 calc(var(--d) + 1px), var(--mid) 0 calc(var(--d) + 2px),
+    var(--edge) 0 calc(var(--d) + 3px), transparent 0;
+  background:
+    linear-gradient(var(--top-lines)) center top / calc(100% - 2 * var(--cut)) 3px,
+    linear-gradient(90deg, var(--lines)) left bottom / 3px calc(100% - var(--cut)),
+    linear-gradient(270deg, var(--lines)) right bottom / 3px calc(100% - var(--cut)),
+    linear-gradient(135deg, var(--corner)) left top / calc(var(--cut) + 5px) calc(var(--cut) + 5px),
+    linear-gradient(225deg, var(--corner)) right top / calc(var(--cut) + 5px) calc(var(--cut) + 5px);
+  background-repeat: no-repeat;
+  mask-image: linear-gradient(#000 7px, rgb(0 0 0 / 0.15));
+}
+
+/*
+ * tabon / taboff (31×24, GIF): a small flat tab with 4px stepped corners. Selected = on.
+ * The steps are traced pixel by pixel so they stay crisp.
+ */
+.kit-minitab {
+  box-sizing: border-box;
+  min-width: 31px;
+  min-height: 24px;
+  padding: 4px 8px;
+  background: #213578;
+  clip-path: polygon(
+    4px 0,
+    calc(100% - 4px) 0,
+    calc(100% - 4px) 1px,
+    calc(100% - 3px) 1px,
+    calc(100% - 3px) 2px,
+    calc(100% - 2px) 2px,
+    calc(100% - 2px) 3px,
+    calc(100% - 1px) 3px,
+    calc(100% - 1px) 4px,
+    100% 4px,
+    100% 100%,
+    0 100%,
+    0 4px,
+    1px 4px,
+    1px 3px,
+    2px 3px,
+    2px 2px,
+    3px 2px,
+    3px 1px,
+    4px 1px
+  );
+  color: #c2f3fc;
+}
+.kit-minitab[aria-selected="true"] {
+  background: #c2f3fc;
+  color: #171b5c;
+}
+
+/* ---------- Slots ---------- */
+
+/*
+ * slot.png (40×40): rounded, lit from the top, darkening down and at the sides. The variants add inset
+ * shading through --shade; .selected adds its outer ring through --ring, so they combine.
+ */
+.kit-slot {
+  box-sizing: border-box;
+  width: 40px;
+  height: 40px;
+  border: 1px solid rgb(15 23 91 / 0.91);
+  border-radius: 3px;
+  background:
+    linear-gradient(90deg, rgb(15 23 91 / 0.16), transparent 7px calc(100% - 7px), rgb(15 23 91 / 0.16)),
+    linear-gradient(#345ea3 5%, #3e71b1 26%, #3a6aab 52%, #335ca0 73%, #2b4e94 86%, #244286 94%, #203b7d);
+  box-shadow: var(--ring, 0 0 #0000), var(--shade, 0 0 #0000);
+}
+
+/* bigslot.png (56×56): dark outline, light rim, and a bevel that brightens to the middle. */
+.kit-slot.big {
+  --shade: inset 0 0 0 1px #4077b5, inset 0 0 0 2px #2e4888, inset 0 0 6px 3px #264f92;
+  width: 56px;
+  height: 56px;
+  border-color: #232564;
+  border-radius: 2px;
+  background: #3a6aab;
+}
+
+/* slotcool.png (66×51): a lighter slot in a white frame with a soft shadow. */
+.kit-slot.cool {
+  --shade: 1px 3px 4px rgb(0 0 0 / 0.5);
+  width: 58px;
+  height: 45px;
+  border: 3px solid #f9fafb;
+  border-radius: 6px;
+  background: linear-gradient(#6879b1, #202a65);
+}
+
+/* oselected.png: a green 3px ring, faint outside the slot, strongest inside: ring, border, outline. */
+.kit-slot.selected {
+  --ring: 0 0 0 1px rgb(153 255 153 / 0.65);
+  border-color: rgb(153 255 153 / 0.82);
+  outline: 1px solid rgb(153 255 153 / 0.98);
+  outline-offset: -2px;
+}
+
+/* ---------- Panels ---------- */
+
+/*
+ * tiptop / tipbg / tipbottom (247px wide) and poptop / popbg / popbottom (519px): a dark blue panel in
+ * a 2px bright blue border, lighter toward the edges, with small filled triangles in the inner corners.
+ * ::before is the translucent fill, its edges lit by inset shadows; ::after draws the corner triangles,
+ * set 1px (tooltip) or 2px (popup) in from the border.
+ */
+.kit-tooltip,
+.kit-popup {
+  --line: #3965fb;
+  --fill: #232564;
+  --glow: #2255be;
+  --alpha: 0.91;
+  --corner: 4.5px;
+  --corner-inset: 1px;
+  position: relative;
+  isolation: isolate;
+  box-sizing: border-box;
+  border: 2px solid var(--line);
+  padding: 12px 14px;
+}
+.kit-popup {
+  --fill: #1c387e;
+  --glow: #1f5cc7;
+  --corner: 6.5px;
+  --corner-inset: 2px;
+  padding: 16px 18px;
+  box-shadow:
+    0 0 0 1px rgb(57 101 251 / 0.36),
+    0 0 4px 2px rgb(57 101 251 / 0.25);
+}
+.kit-tooltip::before,
+.kit-popup::before,
+.kit-tooltip::after,
+.kit-popup::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+}
+.kit-tooltip::before,
+.kit-popup::before {
+  background: var(--fill);
+  box-shadow:
+    inset 0 0 0 1px var(--glow),
+    inset 0 0 6px 2px var(--glow),
+    inset 0 0 14px 0 var(--glow);
+  opacity: var(--alpha);
+}
+.kit-tooltip::after,
+.kit-popup::after {
+  inset: var(--corner-inset);
+  background:
+    linear-gradient(135deg, var(--line) 50%, transparent 50%) top left / var(--corner) var(--corner),
+    linear-gradient(225deg, var(--line) 50%, transparent 50%) top right / var(--corner) var(--corner),
+    linear-gradient(45deg, var(--line) 50%, transparent 50%) bottom left / var(--corner) var(--corner),
+    linear-gradient(315deg, var(--line) 50%, transparent 50%) bottom right / var(--corner) var(--corner);
+  background-repeat: no-repeat;
+}
+
+/*
+ * box2top / box2bg / box2bottom (405px wide): a half-transparent panel with 12px cut corners, blue at
+ * the edges and darkening over about 60px toward the middle. The fill is the ::before so the content
+ * isn't faded or clipped with it.
+ */
+.kit-box {
+  position: relative;
+  isolation: isolate;
+  box-sizing: border-box;
+  padding: 20px 24px;
+}
+.kit-box::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: #232564;
+  box-shadow: inset 0 0 48px 20px #1058aa;
+  clip-path: polygon(12px 0, calc(100% - 12px) 0, 100% 12px, 100% calc(100% - 12px), calc(100% - 12px) 100%, 12px 100%, 0 calc(100% - 12px), 0 12px);
+  opacity: 0.5;
+}

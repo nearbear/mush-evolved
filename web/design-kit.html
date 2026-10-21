@@ -11,6 +11,7 @@
     <header class="dk-header">
       <h1>Mush design kit</h1>
       <nav aria-label="Sections">
+        <a href="#css">CSS kit</a>
         <a href="#shells">Page shells</a>
         <a href="#panels">Panels</a>
         <a href="#cards">Cards</a>
@@ -35,6 +36,134 @@
         its source files with natural sizes; non-PNG files are only included where they complete a PNG set. Icons,
         logos, packs and illustrations are left out (listed at the bottom). Nothing is scaled.
       </p>
+
+      <!-- ================================================================= -->
+      <section id="css">
+        <h2>CSS kit</h2>
+        <p class="caption">
+          The same pieces drawn with CSS only (<code>Mush/derived/kit.css</code>), so they can be any size. Each story
+          shows the PNG original and the CSS version at the original size (each pair shares a <code>data-pair</code> name),
+          then the CSS version at other sizes. Left out: the "NERON" letters baked into <code>barinprogress</code>.
+        </p>
+
+        <div class="story">
+          <h3>Progress bars</h3>
+          <p><code>.kit-progress</code>, <code>.neron</code>, <code>.counter</code>; the filled share is <code>--value</code> (0 to 1).</p>
+          <div class="stage col">
+            <div class="kit-row"><div class="h3 prog" data-pair="progress"><span class="fill" style="width: 116px"></span></div><span class="caption">PNG</span></div>
+            <div class="kit-row"><div class="kit-progress" data-pair="progress" style="width: 200px; --value: 0.6"></div><span class="caption">CSS</span></div>
+            <div class="kit-row"><div class="barprogress" data-pair="neron"><span class="fill" style="width: 80px"></span></div><span class="caption">PNG</span></div>
+            <div class="kit-row"><div class="kit-progress neron" data-pair="neron" style="width: 134px; --value: 0.625"></div><span class="caption">CSS</span></div>
+            <div class="kit-row"><div class="counter" data-pair="counter"><span class="fill" style="width: 60px"></span></div><span class="caption">PNG</span></div>
+            <div class="kit-row"><div class="kit-progress counter" data-pair="counter" style="width: 111px; --value: 0.571"></div><span class="caption">CSS</span></div>
+            <span class="caption">Resized:</span>
+            <div class="kit-progress" style="width: 100%; --value: 0.3"></div>
+            <div class="kit-progress neron" style="width: 60%; --value: 0.9"></div>
+            <div class="kit-progress counter" style="width: 40%; --value: 0.5"></div>
+          </div>
+        </div>
+
+        <div class="story">
+          <h3>Tabs</h3>
+          <p><code>.kit-tab</code> (plain, <code>.pink</code>, <code>.gold</code>) and <code>.kit-minitab</code> (<code>aria-selected="true"</code> is on).</p>
+          <div class="stage col">
+            <div class="tabs">
+              <div class="tab gen" data-pair="tab"></div>
+              <div class="tab news" data-pair="tab-pink"></div>
+              <div class="tab gold" data-pair="tab-gold"></div>
+              <span style="width: 16px"></span>
+              <span class="minitab on" data-pair="minitab-on"></span>
+              <span class="minitab" data-pair="minitab"></span>
+              <span class="caption">PNG</span>
+            </div>
+            <div class="tabs">
+              <div class="kit-tab" data-pair="tab" style="width: 133px"></div>
+              <div class="kit-tab pink" data-pair="tab-pink" style="width: 133px"></div>
+              <div class="kit-tab gold" data-pair="tab-gold" style="width: 133px"></div>
+              <span style="width: 16px"></span>
+              <span class="kit-minitab" aria-selected="true" data-pair="minitab-on"></span>
+              <span class="kit-minitab" data-pair="minitab"></span>
+              <span class="caption">CSS</span>
+            </div>
+            <span class="caption">Resized, with labels:</span>
+            <div class="tabs">
+              <div class="kit-tab demo-text">General</div>
+              <div class="kit-tab pink demo-text">A much longer news tab</div>
+              <div class="kit-tab gold demo-text" style="min-height: 60px">Tall</div>
+              <span style="width: 16px"></span>
+              <span class="kit-minitab demo-text" aria-selected="true">On</span>
+              <span class="kit-minitab demo-text">Off tab</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="story">
+          <h3>Slots</h3>
+          <p><code>.kit-slot</code>, <code>.big</code>, <code>.cool</code>; <code>.selected</code> adds the green ring to any of them.</p>
+          <div class="stage col">
+            <div class="kit-row" style="align-items: center">
+              <img data-img="slot.png" alt="" data-pair="slot" />
+              <img data-img="bigslot.png" alt="" data-pair="slot-big" />
+              <div class="oselected" data-pair="slot-selected"><img data-img="bigslot.png" alt="" /></div>
+              <span class="caption">PNG</span>
+            </div>
+            <div class="kit-row" style="align-items: center">
+              <div class="kit-slot" data-pair="slot"></div>
+              <div class="kit-slot big" data-pair="slot-big"></div>
+              <div class="kit-pad4" data-pair="slot-selected"><div class="kit-slot big selected"></div></div>
+              <div class="kit-slot cool"></div>
+              <span class="caption">CSS</span>
+            </div>
+            <span class="caption">Resized:</span>
+            <div class="kit-row" style="align-items: center">
+              <div class="kit-slot" style="width: 76px; height: 76px"></div>
+              <div class="kit-slot selected" style="width: 76px; height: 76px"></div>
+              <div class="kit-slot big" style="width: 24px; height: 24px"></div>
+              <div class="kit-slot big selected" style="width: 100px; height: 64px"></div>
+              <div class="kit-slot cool" style="width: 90px; height: 70px"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="story">
+          <h3>Tooltip and popup</h3>
+          <p><code>.kit-tooltip</code> and <code>.kit-popup</code>: any width and height, sized by their content.</p>
+          <div class="stage col">
+            <div class="kit-row">
+              <div class="v3 tip" data-pair="tooltip"><div class="t"></div><div class="m demo-text"><h4>Tooltip</h4><p>Native 247px.</p></div><div class="b"></div></div>
+              <div class="kit-tooltip demo-text" data-pair="tooltip" style="width: 247px"><h4>Tooltip</h4><p>Native 247px.</p></div>
+            </div>
+            <div class="kit-row">
+              <div class="v3 pop" data-pair="popup"><div class="t"></div><div class="m demo-text"><h4>Popup title</h4><p>Dialog body text.</p></div><div class="b"></div></div>
+            </div>
+            <div class="kit-row">
+              <div class="kit-pad4" data-pair="popup"><div class="kit-popup demo-text" style="width: 511px"><h4>Popup title</h4><p>Dialog body text.</p></div></div>
+            </div>
+            <span class="caption">Resized:</span>
+            <div class="kit-row">
+              <div class="kit-tooltip demo-text"><p>Short</p></div>
+              <div class="kit-tooltip demo-text" style="width: 320px"><h4>Wider tooltip</h4><p>With two lines of text, to show the edges keep their size while the middle grows.</p></div>
+              <div class="kit-popup demo-text" style="width: 240px"><h4>Small popup</h4><p>Narrower than the 519px original.</p></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="story">
+          <h3>box2</h3>
+          <p><code>.kit-box</code>: the translucent panel with cut corners.</p>
+          <div class="stage col">
+            <div class="kit-row" style="flex-wrap: wrap">
+              <div class="v3 box2" data-pair="box2"><div class="t demo-text"><h4>box2 (405px)</h4></div><div class="m demo-text"><p>Half-width panel.</p></div><div class="b"></div></div>
+              <div class="kit-box demo-text" data-pair="box2" style="width: 405px"><h4>box2 (405px)</h4><p>Half-width panel.</p></div>
+            </div>
+            <span class="caption">Resized:</span>
+            <div class="kit-row" style="flex-wrap: wrap">
+              <div class="kit-box demo-text" style="width: 200px"><h4>Narrow</h4><p>A small box.</p></div>
+              <div class="kit-box demo-text" style="width: 600px; min-height: 220px"><h4>Wide and tall</h4><p>The edge glow keeps its depth.</p></div>
+            </div>
+          </div>
+        </div>
+      </section>
 
       <!-- ================================================================= -->
       <section id="shells">

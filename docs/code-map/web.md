@@ -15,6 +15,7 @@ All under `web/src/`. UI rules are in `web/CLAUDE.md`.
 - `fogDepth.ts`: the fog depth preference, in localStorage.
 - `rendererChoice.ts`: which renderer draws the room (`ROOM_RENDERER`, Pixi by default; set it to `"dom"` to use the DOM one). No setting or storage.
 - `styles.css`: only `@import`s of `styles/*.css`; `responsive.css` must stay last.
+- `@mush2/assets/derived/kit.css` (imported by `styles.css`, lives in `Mush/derived/` since it adapts CC BY-NC-SA art): image-free CSS versions of `Mush/www/img/design` pieces (`.kit-progress`, `.kit-tab`, `.kit-minitab`, `.kit-slot`, `.kit-tooltip`, `.kit-popup`, `.kit-box`), any size. The game uses `.kit-slot.big` for empty inventory slots (`hud/InventoryPanel.tsx`); the rest are shown beside the PNG originals on the dev-only design kit page (`web/design-kit.html`, `src/designKit/`).
 
 **hud/**
 
