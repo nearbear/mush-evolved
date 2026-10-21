@@ -12,25 +12,43 @@
 }
 /* Above the card, so the active tab can cover the card's top rim. */
 .itrackie-tabs {
-  position: relative;
-  z-index: 1;
   display: flex;
-  gap: 4px;
-  padding: 0 4px;
+  gap: 2px;
+  /* The selected tab is 3px taller and overlaps the card's rim, so it opens into the card. */
+  margin-bottom: -3px;
 }
 /* The tab contents: an outlined card (like the nameplate and stat stacks) filling the glowing panel under the tabs. */
 .itrackie-card {
+  position: relative;
+  z-index: 1;
   flex: 1;
   display: flex;
   flex-direction: column;
   min-height: 0;
-  background: var(--panel-fill);
-  border: 1px solid var(--panel-rim);
-  border-radius: var(--panel-radius);
-  box-shadow: 0 0 6px var(--panel-shadow);
+  /* The selected minitab's color (kit.css), with the text tokens flipped to dark for contrast. */
+  --text: #171b5c;
+  --muted: #4a5a8f;
+  --accent: #0b5a9e;
+  --warning: #a14a00;
+  --edge: #8fb9cc;
+  background: #c2f3fc;
+  color: var(--text);
+  /* kit.css's .gold outline: edge, gold, edge, 1px each. */
+  border: 1px solid var(--gold-edge);
+  border-radius: 0 var(--panel-radius) var(--panel-radius) var(--panel-radius);
+  box-shadow: inset 0 0 0 1px var(--gold-mid), inset 0 0 0 2px var(--gold-edge), 0 0 6px var(--panel-shadow);
 }
-/* Tabs share the panel look: flat when idle, glowing when active. */
-.itrackie-tab,
+.itrackie-card .feed > li {
+  border-bottom-color: rgb(23 27 92 / 0.12);
+}
+.itrackie-card .scroll-thumb {
+  background: rgb(23 27 92 / 0.35);
+}
+.itrackie-card .feed > li.cycle-divider::before,
+.itrackie-card .feed > li.cycle-divider::after {
+  border-top-color: rgb(23 27 92 / 0.25);
+}
+/* The phone bottom nav keeps the panel look: flat when idle, glowing when active. */
 .bottom-nav-button {
   flex: 1;
   margin: 0;
@@ -40,45 +58,58 @@
   color: var(--muted);
   text-shadow: none;
 }
+.bottom-nav-button[aria-current] {
+  background: var(--panel-fill);
+  color: var(--text);
+  font-weight: bold;
+  border-color: var(--glow-rim);
+}
+/* iTrackie tabs are kit.css's .kit-minitab (selected = on, light cyan); the card below takes the selected color. */
+.itrackie-tab,
+.itrackie-card {
+  --gold-edge: #05063a;
+  --gold-mid: #e8c20e;
+}
 .itrackie-tab {
-  height: 28px;
-  padding: 0 0.6rem;
-  font-size: 1rem;
-  /* Same rim and corner radius as the panel; rounded on top only, so the active tab joins the panel below. */
-  border: 1px solid var(--panel-rim);
-  border-bottom: 0;
-  border-radius: var(--panel-radius) var(--panel-radius) 0 0;
-  background: color-mix(in srgb, var(--panel-fill) 55%, black);
+  flex: none;
+  position: relative;
+  z-index: 0;
+  overflow: hidden;
+  /* Idle tabs run 3px under the card (which is above them) so its rim stays whole; the extra height keeps the icon clear of the gold rim. */
+  min-height: 31px;
+  padding: 6px 8px 9px;
+  margin: 0;
+  border: 0;
+  border-radius: 8px 8px 0 0;
+  clip-path: none;
+  text-shadow: none;
+  cursor: pointer;
+}
+/* Selected: the kit's gold outline (edge, gold, edge) on the top and sides; the bottom is pushed out of the tab and clipped. */
+.itrackie-tab[aria-selected="true"] {
+  z-index: 2;
+  background: #c2f3fc;
+}
+.itrackie-tab[aria-selected="true"]::after {
+  content: "";
+  position: absolute;
+  inset: 0 0 -3px;
+  border-radius: inherit;
+  pointer-events: none;
+  box-shadow: inset 0 0 0 1px var(--gold-edge), inset 0 0 0 2px var(--gold-mid), inset 0 0 0 3px var(--gold-edge);
+}
+.itrackie-tab:hover:not([aria-selected="true"]) {
+  background: #2c4698;
 }
 .tab-icon {
   height: 18px;
   image-rendering: pixelated;
   vertical-align: middle;
-  opacity: 0.7;
+  opacity: 0.8;
 }
 .itrackie-tab:hover .tab-icon,
-.itrackie-tab[data-active] .tab-icon {
+.itrackie-tab[aria-selected="true"] .tab-icon {
   opacity: 1;
-}
-.itrackie-tab:hover:not(:disabled),
-.itrackie-tab:active:not(:disabled) {
-  color: var(--text);
-}
-.itrackie-tab[data-active],
-.bottom-nav-button[aria-current] {
-  background: var(--panel-fill);
-  color: var(--text);
-  font-weight: bold;
-}
-.bottom-nav-button[aria-current] {
-  border-color: var(--glow-rim);
-}
-.itrackie-tab[data-active] {
-  border-color: var(--glow-rim);
-  /* Cover the card's top rim so the tab opens into the card. */
-  margin-bottom: -1px;
-  height: 29px;
-  box-shadow: none;
 }
 /* The active tab's name, since the tabs themselves are icons. */
 .itrackie-title {
@@ -255,34 +286,27 @@
 
 /* The Mush tab appears only for Mush, in the faction pink, pushed to the far right; it pulses while there are unread messages. */
 .itrackie-tab.mush-tab {
-  flex: none;
   margin-left: auto;
-  border-color: var(--mush);
-  background: color-mix(in srgb, var(--mush) 25%, var(--panel-fill));
+  margin-right: 0;
 }
-.itrackie-tab.mush-tab .tab-icon {
-  opacity: 1;
+.itrackie-tab.mush-tab:not([aria-selected="true"]) {
+  background: color-mix(in srgb, var(--mush) 45%, #213578);
 }
-.itrackie-tab.mush-tab[data-active] {
-  background: var(--panel-fill);
-  box-shadow: 0 0 8px var(--mush);
-}
-.itrackie-tab.mush-tab.unread:not([data-active]) {
+.itrackie-tab.mush-tab.unread:not([aria-selected="true"]) {
   animation: mush-pulse 1.2s ease-in-out infinite;
 }
 @keyframes mush-pulse {
   0%,
   100% {
-    box-shadow: 0 0 2px var(--mush);
+    background: color-mix(in srgb, var(--mush) 45%, #213578);
   }
   50% {
-    box-shadow: 0 0 12px 2px var(--mush);
-    background: color-mix(in srgb, var(--mush) 55%, var(--panel-fill));
+    background: var(--mush);
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .itrackie-tab.mush-tab.unread:not([data-active]) {
+  .itrackie-tab.mush-tab.unread:not([aria-selected="true"]) {
     animation: none;
-    box-shadow: 0 0 10px var(--mush);
+    background: var(--mush);
   }
 }

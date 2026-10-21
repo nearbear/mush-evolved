@@ -48,7 +48,7 @@ export function IconTab({ value, icon, src, label, className }: { value: string;
   return (
     <Tooltip.Provider delay={300}>
       <Tooltip.Root>
-        <Tooltip.Trigger className={className ? `itrackie-tab ${className}` : "itrackie-tab"} aria-label={label} render={<Tabs.Tab value={value} />}>
+        <Tooltip.Trigger className={className ? `itrackie-tab kit-minitab ${className}` : "itrackie-tab kit-minitab"} aria-label={label} render={<Tabs.Tab value={value} />}>
           {src ? <img className="tab-icon" src={src} alt="" /> : <span aria-hidden="true">{icon}</span>}
         </Tooltip.Trigger>
         <Tooltip.Portal>
