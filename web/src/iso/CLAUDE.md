@@ -173,9 +173,15 @@ describes a spot in screen terms, translate it to cells and confirm on the data 
   doorway is: the drawn door on the other side slides along its wall to it instead (with its
   doormat; the wall tiles swap into the old doorway; never onto a wall with something mounted).
   Pairs neither can fix show up as doors that don't line up (`alignDoors` in `roomPositions.ts`).
-- Walkways we add (the milky blue `GROUND` frame 1) are rectangles in `tools/src/shipLayout/walkways.ts`,
-  painted over plain floor before rooms are placed: the dorm-to-storage crossings in the rear
-  corridor and the bridge-to-refectory strip through the front and centre corridors.
+- Walkways we add are two-cell-wide rectangles with a direction in `tools/src/shipLayout/walkways.ts`,
+  painted over plain floor before rooms are placed (as the milky blue `GROUND` frame 1, which pins
+  doors): the bridge down the front corridor, Bay Alpha to Bay Bravo across the front corridor's
+  in the centre corridor, and Bay Bravo to Icarus with Bay Alpha 2's coming down to it in the back
+  corridor. Once rooms are placed, `deckFloors` gives the corridors (`DECK_ROOMS`) the bays'
+  `GROUND_DECK` floor: grey plates in a 2x2 pattern on the ship grid, and each walkway as the deck
+  path, with the branch pieces where paths meet. The art has branches off a path's -y, +y and +x
+  sides only; a branch off the -x side fails the converter. The deck corridors are an experiment
+  (2026-10-20), not decided.
 - **Moving a room:** change its numbers in `ROOM_POSITIONS`, `npm run ship-layout`, then
   `npm run ship-check`. That lists overlaps and doors moved off their floor paths (both errors: a
   test fails on them, the paths checked against the converter's unplaced rooms), doors whose two sides

@@ -31,7 +31,7 @@ import { buildPage, pageSheets } from "./pages.ts";
 import { cachedPlan, convertShipPlan, formatShipPlan } from "./shipPlan.ts";
 import { placeRooms, ROOM_POSITIONS, type Positions } from "./roomPositions.ts";
 import { stretchRooms } from "./stretch.ts";
-import { paintWalkways, WALKWAYS, type Walkway } from "./walkways.ts";
+import { DECK_ROOMS, deckFloors, paintWalkways, WALKWAYS, type Walkway } from "./walkways.ts";
 import { child, childrenNamed, parseXml, type XmlElement } from "./xml.ts";
 
 const MUSH = resolve(import.meta.dirname, "../../../Mush");
@@ -124,7 +124,7 @@ export function convert(
   mapImage: Image,
   tilesXml: string,
   sheetSize: (file: string) => { width: number; height: number },
-  { positions = ROOM_POSITIONS, walkways = WALKWAYS }: { positions?: Positions; walkways?: readonly Walkway[] } = {},
+  { positions = ROOM_POSITIONS, walkways = WALKWAYS, deck = DECK_ROOMS }: { positions?: Positions; walkways?: readonly Walkway[]; deck?: readonly string[] } = {},
 ): ShipLayout {
   const xml = parseXml(tilesXml);
   const data = child(xml, "data") ?? fail("tiles.xml: missing <data>");
@@ -202,7 +202,7 @@ export function convert(
 
   // Our changes to the room shapes (stretch.ts) and floors (walkways.ts), then where each room
   // sits on the ship (roomPositions.ts); tile indices are kept.
-  return { roomSize: size, sheets, slices, rooms: placeRooms(paintWalkways(stretchRooms(rooms, slices), walkways), slices, positions), autoBind };
+  return { roomSize: size, sheets, slices, rooms: deckFloors(placeRooms(paintWalkways(stretchRooms(rooms, slices), walkways), slices, positions), walkways, deck), autoBind };
 }
 
 /** Ship.buildRoomBmp: four side-by-side size x size layers per room row. */

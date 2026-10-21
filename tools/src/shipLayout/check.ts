@@ -130,7 +130,8 @@ function doorsOffPath(layout: Pick<ShipLayout, "rooms" | "slices">, original: re
     room.tiles.forEach((t, i) => {
       const o = before.tiles[i];
       if (t.kind !== "door" || !o || (o.x === t.x && o.y === t.y)) return;
-      if (!keepsPath(before, room, layout.slices, o, t)) out.push({ room: room.id, target: t.door!.target, from: [o.x, o.y], to: [t.x, t.y] });
+      // Floors as the original has them (the corridors' deck floor is painted on afterwards); placing rooms moves no floor.
+      if (!keepsPath(before, before, layout.slices, o, t)) out.push({ room: room.id, target: t.door!.target, from: [o.x, o.y], to: [t.x, t.y] });
     });
   }
   return out;
@@ -230,11 +231,11 @@ export function fitPositions(layout: Pick<ShipLayout, "rooms" | "slices">, start
   return pos;
 }
 
-/** The converter's layout with no room positions: the rooms and doors as the original has them (after stretch.ts). */
+/** The converter's layout with no room positions: the rooms, doors and floors as the original has them (after stretch.ts and the walkways, before the deck floors). */
 export function unplacedLayout(mush: string): ShipLayout {
   const map = decodePng(readFileSync(resolve(mush, "clients/iso/gfx/ShipMap.png")));
   const xml = readFileSync(resolve(mush, "clients/iso/xml/tiles.xml"), "utf8");
-  return convert(map, xml, (image) => pngSize(readFileSync(resolve(mush, image))), { positions: {} });
+  return convert(map, xml, (image) => pngSize(readFileSync(resolve(mush, image))), { positions: {}, deck: [] });
 }
 
 if (import.meta.main) {
