@@ -55,11 +55,11 @@ body:has(.pod) {
 }
 
 /*
- * The title, ship list, and loading status share one in-game panel (the glowing tooltip
- * frame from styles.css), floating on the inside of the glass. Its fill is near-opaque,
- * so text keeps its contrast over the pale ceiling.
+ * The title, ship list, and loading status share one kit-box panel (kit.css), floating on the
+ * inside of the glass. Its fill is half transparent, so the pod shows through faintly.
  */
 .pod-panel {
+  color: #fff;
   position: relative;
   z-index: 3;
   align-self: center;
@@ -80,7 +80,7 @@ body:has(.pod) {
   letter-spacing: 0.3em;
   text-indent: 0.3em;
   text-transform: uppercase;
-  color: var(--mush);
+  color: #fff;
   text-shadow: 0 1px 1px rgb(0 0 30 / 0.6);
 }
 /*
@@ -107,7 +107,7 @@ body:has(.pod) {
   margin: 0.4rem 0 1rem;
   text-align: center;
   font-size: 0.85rem;
-  color: var(--muted);
+  color: #fff;
 }
 .pod-ships {
   list-style: none;
@@ -137,7 +137,7 @@ body:has(.pod) {
   text-transform: uppercase;
 }
 .pod-ship-note {
-  color: rgb(255 255 255 / 0.8);
+  color: #fff;
   font-size: 0.75rem;
   line-height: 1.1;
   text-align: right;
@@ -222,7 +222,7 @@ body:has(.pod) {
 }
 .pod-character-profession {
   font-size: 0.65rem;
-  color: var(--muted);
+  color: #fff;
 }
 .pod-roster-bar {
   height: 6px;

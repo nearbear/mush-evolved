@@ -110,7 +110,7 @@ export function Lobby({ onMatched }: { onMatched: (ticket: SeatTicket) => void }
         </Suspense>
       )}
       <div className="pod-window" ref={pod}>
-        <section className="panel pod-panel">
+        <section className="kit-box pod-panel">
         <h1 className="pod-title">
           <img className="pod-logo" src={logoUrl} alt="mush2" />
         </h1>
