@@ -98,8 +98,8 @@ own). The file holds a great many of them (doors, consoles, cameras, screens, pl
 look there first for anything that should move. A slice with several anims has them as `#0`,
 `#1`, ... in the original. `npm run ship-layout` copies them into `Mush/derived/ship-layout.json`
 (`slices[id].anims`, with `frames`, `rhythm` and `auto`), which is what the client reads. Reading
-`Mush/clients/**` is denied in the project settings, so extract the slices you need with a short
-script (or ask). For example, the doors (`DOOR_L`, `DOOR_R`, `DOOR_L_DECK`, `DOOR_R_DECK`): 24
+`Mush/clients/**` asks for approval in the project settings, so extract the slices you need with a
+short script rather than reading the whole file. For example, the doors (`DOOR_L`, `DOOR_R`, `DOOR_L_DECK`, `DOOR_R_DECK`): 24
 frames, `#0` opens (frames 0-9), `#1` shuts (12-23, then 0); the original played `#0` back and forth
 on hover (`Select.hx`). The floor-level front doors (`DOOR_BL`, `DOOR_BR`) only have a looping
 5-frame glow and aren't drawn once the room behind them is.

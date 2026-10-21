@@ -51,5 +51,5 @@ Sheets land in `.screenshots/contact/`. **Read them** with the Read tool. Get si
 ## Tooling commands
 
 - `npm run contact-sheet -- <folder> [--match regex] [--zoom n]`: render labeled contact sheets of an image folder to `.screenshots/contact/` (Playwright; WSL has no image tools). See the `asset` skill.
-- `npm run asset-index`: regenerate `Mush/derived/asset-index.txt` (every file under `Mush/` with its size) after adding or removing files there. Search it to find assets by name; reading `Mush/www` and `Mush/clients` is denied.
+- `npm run asset-index`: regenerate `Mush/derived/asset-index.txt` (every file under `Mush/` with its size) after adding or removing files there. Search it to find assets by name; reading `Mush/www` and `Mush/clients` asks the user for approval each time.
 - `npm run ods-data`: convert every sheet of `Mush/data/*.ods` (the original design tables: actions, items, diseases, explore, ...) to JSON under `Mush/derived/data/<file>/<sheet>.json`, so they can be grepped. Rerun after changing `Mush/data/`.
