@@ -106,7 +106,7 @@
   image-rendering: pixelated;
 }
 .pip-label img.big {
-  height: 13px;
+  height: 26px; /* 2x the 11x13 sprite, whole pixels */
 }
 .pip-bar .sub {
   margin-left: 0.35rem;

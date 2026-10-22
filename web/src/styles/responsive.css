@@ -134,6 +134,9 @@
   .stat-stack .pip-label {
     min-width: 1.25rem;
   }
+  .pip-label img.big {
+    height: 20px;
+  }
 
   .three-panel {
     flex: 1;

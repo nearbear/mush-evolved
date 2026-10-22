@@ -42,7 +42,7 @@ export function PipBar({
 }) {
   const { t } = useTranslation();
   const slots = Math.max(max, value);
-  const pitch = thin ? 4 : 6;
+  const pitch = thin ? 5 : 6;
   const pipW = thin ? 3 : 5;
   const width = CAP_START + slots * pitch + 4;
   return (
@@ -71,7 +71,11 @@ export function PipBar({
       <svg className="pip-frame" viewBox={`0 0 ${width} ${FRAME_H}`} style={{ width: `calc(${width} * var(--s))` }} aria-hidden="true">
         <g dangerouslySetInnerHTML={{ __html: capStart }} />
         {Array.from({ length: slots }, (_, i) => (
-          <g key={i} transform={`translate(${CAP_START + i * pitch} 0)`} dangerouslySetInnerHTML={{ __html: slotPiece(shadeFor(i, slots), thin) }} />
+          <g key={i} transform={`translate(${CAP_START + i * pitch} 0)`}>
+            <g dangerouslySetInnerHTML={{ __html: slotPiece(shadeFor(i, slots), thin) }} />
+            {/* The thin art is 4 wide on a 5 pitch: repeat its last column to close the gap. */}
+            {thin && <svg x={4} width={1} height={FRAME_H} viewBox={`3 0 1 ${FRAME_H}`} dangerouslySetInnerHTML={{ __html: slotPiece(shadeFor(i, slots), thin) }} />}
+          </g>
         ))}
         <g transform={`translate(${CAP_START + slots * pitch} 0)`} dangerouslySetInnerHTML={{ __html: capEnd }} />
         {Array.from({ length: Math.min(value, slots) }, (_, i) => (
