@@ -1,0 +1,43 @@
+/* A terminal's window (TerminalDialog): the iTrackie card's color and dark text, with the terminal's watermark art
+   from the design kit in the bottom-right corner. Layout comes from settings.css's .settings-popup. */
+.terminal-popup {
+  --text: #171b5c;
+  --muted: #4a5a8f;
+  --accent: #0b5a9e;
+  --warning: #a14a00;
+  --edge: #8fb9cc;
+  color: var(--text);
+  background: right bottom no-repeat var(--terminal-bg);
+  border-color: var(--edge);
+}
+
+/* The status pills are tinted for dark panels; darken them for the light card. */
+.terminal-popup .skill-status-full {
+  color: #1d6b1d;
+}
+.terminal-popup .skill-status-partial {
+  color: #8a5a00;
+}
+.terminal-popup .skill-status-none {
+  color: #56607a;
+}
+
+.terminal-astro_module {
+  background-image: url("../../../Mush/www/img/design/astro_bg.png");
+}
+.terminal-com_center {
+  background-image: url("../../../Mush/www/img/design/sensor_bg.png");
+}
+.terminal-neron_bios_term {
+  background-image: url("../../../Mush/www/img/design/bios_bg.png");
+}
+.terminal-neron_core {
+  background-image:
+    url("../../../Mush/www/img/design/neroncorecorner.png"), url("../../../Mush/www/img/design/neroncore_bg.png");
+  background-position:
+    left top,
+    right bottom;
+}
+.terminal-pilot_module {
+  background-image: url("../../../Mush/www/img/design/nav_bg.png");
+}

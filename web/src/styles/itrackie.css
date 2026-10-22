@@ -36,7 +36,7 @@
   display: flex;
   flex-direction: column;
   min-height: 0;
-  /* The selected minitab's color (kit.css), with the text tokens flipped to dark for contrast. */
+  /* The terminal color (tokens.css), with the text tokens flipped to dark for contrast. */
   --text: #171b5c;
   --muted: #4a5a8f;
   --accent: #0b5a9e;
@@ -45,7 +45,7 @@
   background:
     linear-gradient(45deg, var(--corner)) left bottom / calc(var(--c) + 4px) calc(var(--c) + 4px) no-repeat border-box,
     linear-gradient(315deg, var(--corner)) right bottom / calc(var(--c) + 4px) calc(var(--c) + 4px) no-repeat border-box,
-    #c2f3fc;
+    var(--terminal-bg);
   color: var(--text);
   /* kit.css's .gold outline: edge, gold, edge, 1px each. */
   border: 1px solid var(--gold-edge);

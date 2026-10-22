@@ -22,6 +22,7 @@ import { ActionLabel } from "./ActionLabel.tsx";
 import { ActionButton } from "./ActionButton.tsx";
 import { PlanetList } from "./PlanetList.tsx";
 import "./settings.css";
+import "./terminal.css";
 
 interface Props {
   terminal: EquipmentView | null;
@@ -37,7 +38,7 @@ export function TerminalDialog({ terminal, view, onAction, onClose }: Props) {
     <Dialog.Root open={terminal !== null} onOpenChange={(open) => !open && onClose()}>
       <Dialog.Portal>
         <Dialog.Backdrop className="settings-backdrop" />
-        <Dialog.Popup className="settings-popup">
+        <Dialog.Popup className={`settings-popup terminal-popup terminal-${terminal?.type.toLowerCase()}`}>
           <Dialog.Title className="settings-title">{terminal && names.equipment(terminal.type)}</Dialog.Title>
           {terminal?.type === "RESEARCH_LAB" && <ResearchList terminal={terminal} view={view} onAction={onAction} />}
           {terminal?.type === "NERON_CORE" && <ProjectList terminal={terminal} view={view} onAction={onAction} />}
