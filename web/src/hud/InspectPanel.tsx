@@ -105,9 +105,12 @@ function Details({ view, layout, resolved, onAction }: { view: PlayerView; layou
       return (
         <>
           <div className="inspect-item">
-            <ItemFace label={names.itemOf(resolved.item)}>
+            <ItemFace>
               <ItemIcon className="item-icon" item={resolved.item} view={view} />
             </ItemFace>
+          </div>
+          <div className="inspect-name inspect-item-name">
+            <strong>{names.itemOf(resolved.item)}</strong>
           </div>
           {resolved.item.charges !== undefined && <div className="sub inspect-charges">{t("itemAttr.charges", { count: resolved.item.charges })}</div>}
         </>

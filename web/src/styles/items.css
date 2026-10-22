@@ -86,9 +86,9 @@
   font-size: max(9px, 0.15em);
   line-height: 1.1;
   text-align: center;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  /* Long names wrap upward over the icon rather than being cut off; a single word too long for the tile breaks (hyphenated where the language allows). */
+  overflow-wrap: anywhere;
+  hyphens: auto;
 }
 .item-action {
   position: absolute;

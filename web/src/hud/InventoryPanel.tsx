@@ -1,6 +1,6 @@
-// The items stored in your room (left) and your inventory slots (right), as square tiles with the
-// name inside at the bottom. Drag a tile between the two zones to take or drop it; the zones light
-// up only when the server listed that action as legal. Tapping a tile inspects it and, for touch
+// The items stored in your room (left) and your inventory slots (right), as square icon tiles; the
+// full name is a tooltip (and the peek bar on touch), and only skill books carry a label, their
+// skill. Drag a tile between the two zones to take or drop it; the zones light up only when the server listed that action as legal. Tapping a tile inspects it and, for touch
 // (which has no reliable drag), shows a Take/Drop button on the selected tile. Shift-click on a
 // tile takes or drops it directly.
 
@@ -8,6 +8,7 @@ import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNames } from "../i18n/names.ts";
 import { legalIn, type Action, type ItemView, type PlayerView, type Target } from "@mush2/shared";
+import { Hint } from "./IconButton.tsx";
 import { ItemFace } from "./ItemFace.tsx";
 import { ItemIcon } from "./ItemIcon.tsx";
 import { sameTarget } from "./targets.ts";
@@ -87,31 +88,34 @@ export function InventoryPanel({
     const type = zone === "room" ? "take" : "drop";
     return (
       <li key={item.id} className="item-slot">
-        <button type="button"
-          className={`item-tile${isSelected ? " selected" : ""}${dragging?.id === item.id ? " dragging" : ""}`}
-          draggable
-          onMouseDown={(e) => {
-            if (e.shiftKey) e.preventDefault(); // no text selection from shift-click
-          }}
-          onClick={(e) => {
-            // Shift-click is a desktop shortcut for Take/Drop; the server's legal list still decides.
-            if (e.shiftKey && legal(type, item)) onAction({ type, item: item.id });
-            else onSelect(target);
-          }}
-          onDragStart={(e) => {
-            e.dataTransfer.effectAllowed = "move";
-            e.dataTransfer.setData("text/plain", names.itemOf(item));
-            setDragging({ id: item.id, from: zone });
-          }}
-          onDragEnd={() => {
-            setDragging(null);
-            setOver(null);
-          }}
-        >
-          <ItemFace label={names.itemOf(item)}>
-            <ItemIcon className="item-icon" item={item} view={view} />
-          </ItemFace>
-        </button>
+        <Hint label={names.itemOf(item)}>
+          <button type="button"
+            aria-label={names.itemOf(item)}
+            className={`item-tile${isSelected ? " selected" : ""}${dragging?.id === item.id ? " dragging" : ""}`}
+            draggable
+            onMouseDown={(e) => {
+              if (e.shiftKey) e.preventDefault(); // no text selection from shift-click
+            }}
+            onClick={(e) => {
+              // Shift-click is a desktop shortcut for Take/Drop; the server's legal list still decides.
+              if (e.shiftKey && legal(type, item)) onAction({ type, item: item.id });
+              else onSelect(target);
+            }}
+            onDragStart={(e) => {
+              e.dataTransfer.effectAllowed = "move";
+              e.dataTransfer.setData("text/plain", names.itemOf(item));
+              setDragging({ id: item.id, from: zone });
+            }}
+            onDragEnd={() => {
+              setDragging(null);
+              setOver(null);
+            }}
+          >
+            <ItemFace label={item.teaches === undefined ? undefined : names.skill(item.teaches)}>
+              <ItemIcon className="item-icon" item={item} view={view} />
+            </ItemFace>
+          </button>
+        </Hint>
         {isSelected && legal(type, item) && (
           <button type="button" className="item-action" onClick={() => onAction({ type, item: item.id })}>
             {zone === "room" ? t("actions.take") : t("actions.drop")}
@@ -142,7 +146,7 @@ export function InventoryPanel({
           {Array.from({ length: empty }, (_, i) => (
             <li key={`empty-${i}`} className="item-slot">
               <span className="item-tile empty">
-                <ItemFace label={t("inventory.emptySlot")}>
+                <ItemFace>
                   <span className="kit-slot big" />
                 </ItemFace>
               </span>

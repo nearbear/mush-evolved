@@ -101,7 +101,6 @@
     "inRoom": "En esta sala",
     "nothingHere": "No hay nada aquí.",
     "title": "Inventario",
-    "emptySlot": "Espacio vacío",
     "button": "Inventario",
     "buttonCount_one": "Inventario ({{count}} objeto en esta sala)",
     "buttonCount_many": "Inventario ({{count}} objetos en esta sala)",

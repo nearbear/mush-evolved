@@ -101,7 +101,6 @@
     "inRoom": "In this room",
     "nothingHere": "Nothing here.",
     "title": "Inventory",
-    "emptySlot": "Empty slot",
     "button": "Inventory",
     "buttonCount_one": "Inventory ({{count}} item in this room)",
     "buttonCount_other": "Inventory ({{count}} items in this room)"

@@ -101,7 +101,6 @@
     "inRoom": "Dans cette pièce",
     "nothingHere": "Rien ici.",
     "title": "Inventaire",
-    "emptySlot": "Emplacement vide",
     "button": "Inventaire",
     "buttonCount_one": "Inventaire ({{count}} objet dans cette salle)",
     "buttonCount_many": "Inventaire ({{count}} objets dans cette salle)",
