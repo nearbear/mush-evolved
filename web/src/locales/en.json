@@ -199,7 +199,11 @@
   "errors": {
     "queue_full": "Your action queue is full.",
     "nothing_queued": "You have no actions to clear.",
-    "cant_walk": "You can't walk around right now."
+    "cant_walk": "You can't walk around right now.",
+    "thread_forbidden": "You can't start a thread right now.",
+    "thread_name_invalid": "A thread needs a name of up to 40 characters.",
+    "thread_exists": "That message already has a thread.",
+    "message_not_found": "That message is no longer there."
   },
   "terminal": {
     "close": "Close"
@@ -246,6 +250,7 @@
     "tabs": {
       "room": "Room log",
       "global": "Global chat",
+      "threads": "Threads",
       "features": "Features",
       "mush": "Mush channel",
       "graveyard": "Graveyard"
@@ -263,7 +268,27 @@
       "neron": "NERON projects",
       "astrophysics": "Astrophysics"
     },
-    "featureLabel": "Feature"
+    "messageMenu": {
+      "open": "Message options",
+      "report": "Report"
+    },
+    "featureLabel": "Feature",
+    "threads": {
+      "empty": "No threads yet.",
+      "list": "Threads",
+      "start": "Start a thread",
+      "create": "Create thread",
+      "nameLabel": "Thread name",
+      "namePlaceholder": "New thread name…",
+      "back": "All threads",
+      "messages_one": "{{count}} message",
+      "messages_other": "{{count}} messages",
+      "messagePlaceholder": "Message {{name}}…",
+      "startingFrom": "Starting a thread from this message:",
+      "cancel": "Cancel",
+      "starterGone": "The message this thread started from is no longer in global chat.",
+      "needITrackie": "You need an iTrackie in your inventory to read threads."
+    }
   },
   "bond": {
     "both": "Bonded",

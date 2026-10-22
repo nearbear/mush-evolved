@@ -47,7 +47,7 @@ const BOT_DELAY_MS = 50;
  * Bump when GameState's shape changes. Games stored under another version are
  * discarded on load (there is no migration; games are short-lived).
  */
-const STATE_VERSION = 48;
+const STATE_VERSION = 49;
 
 interface Stored {
   version?: number;
@@ -78,7 +78,7 @@ interface RecordedInput {
 interface BlockedText {
   at: number;
   by: PlayerId;
-  type: "chat" | "createChannel";
+  type: "chat" | "createChannel" | "createThread";
   raw: string;
   reason: string;
 }
@@ -231,7 +231,7 @@ export class GameRoom extends Server<Env> {
       this.countRateLimited(playerId);
       return "You're sending messages too quickly";
     }
-    if (msg.type !== "chat" && msg.type !== "createChannel") return this.act({ ...msg, by: playerId });
+    if (msg.type !== "chat" && msg.type !== "createChannel" && msg.type !== "createThread") return this.act({ ...msg, by: playerId });
     const raw = msg.type === "chat" ? msg.text : msg.name;
     const moderated = moderateChat(raw);
     if (!moderated.ok) {

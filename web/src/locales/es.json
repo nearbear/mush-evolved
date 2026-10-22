@@ -200,7 +200,11 @@
   "errors": {
     "queue_full": "Tu cola de acciones está llena.",
     "nothing_queued": "No tienes acciones que vaciar.",
-    "cant_walk": "Ahora no puedes moverte por la sala."
+    "cant_walk": "Ahora no puedes moverte por la sala.",
+    "thread_forbidden": "Ahora no puedes crear un hilo.",
+    "thread_name_invalid": "Un hilo necesita un nombre de hasta 40 caracteres.",
+    "thread_exists": "Ese mensaje ya tiene un hilo.",
+    "message_not_found": "Ese mensaje ya no está."
   },
   "terminal": {
     "close": "Cerrar"
@@ -247,6 +251,7 @@
     "tabs": {
       "room": "Registro de la sala",
       "global": "Chat global",
+      "threads": "Hilos",
       "features": "Funciones",
       "mush": "Canal Mush",
       "graveyard": "Cementerio"
@@ -264,7 +269,28 @@
       "neron": "Proyectos de NERON",
       "astrophysics": "Astrofísica"
     },
-    "featureLabel": "Función"
+    "messageMenu": {
+      "open": "Opciones del mensaje",
+      "report": "Denunciar"
+    },
+    "featureLabel": "Función",
+    "threads": {
+      "empty": "Todavía no hay hilos.",
+      "list": "Hilos",
+      "start": "Crear un hilo",
+      "create": "Crear hilo",
+      "nameLabel": "Nombre del hilo",
+      "namePlaceholder": "Nombre del nuevo hilo…",
+      "back": "Todos los hilos",
+      "messages_one": "{{count}} mensaje",
+      "messages_many": "{{count}} mensajes",
+      "messages_other": "{{count}} mensajes",
+      "messagePlaceholder": "Mensaje en {{name}}…",
+      "startingFrom": "Nuevo hilo a partir de este mensaje:",
+      "cancel": "Cancelar",
+      "starterGone": "El mensaje que inició este hilo ya no está en el chat global.",
+      "needITrackie": "Necesitas un iTrackie en tu inventario para leer los hilos."
+    }
   },
   "bond": {
     "both": "Vinculados",

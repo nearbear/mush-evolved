@@ -303,6 +303,8 @@
   font: inherit;
   font-size: 0.75rem;
   font-style: normal;
+  /* The button rule's shadow blurs small text. */
+  text-shadow: none;
   white-space: nowrap;
   cursor: help;
 }
@@ -360,4 +362,31 @@
 .entry-body {
   grid-area: body;
   min-width: 0;
+}
+/* The sender's name, then the recency caption; any small buttons (the message menu) sit at the right. */
+.entry-name {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0 0.4rem;
+  min-width: 0;
+}
+/* The message's "⋯" menu button. With a mouse it shows only while the message is hovered or focused, or its menu is
+   open; touch screens can't hover, so there it always shows. */
+.message-menu-button {
+  margin: 0;
+  padding: 0 0.4rem;
+  line-height: 21px;
+}
+@media (hover: hover) {
+  .entry .message-menu-button:not([data-popup-open]) {
+    opacity: 0;
+  }
+  .entry:hover .message-menu-button,
+  .entry:focus-within .message-menu-button {
+    opacity: 1;
+  }
+}
+.message-menu-positioner {
+  z-index: 50;
 }

@@ -2,7 +2,7 @@ import type { ActionCost, ActionTag } from "../actions.ts";
 import type { CharacterId } from "../characters.ts";
 import type { TitleId } from "../titles.ts";
 import type { Action, BotKind, ItemId, LogEntry, PlayerId, RoomId } from "../types.ts";
-import type { ChannelId, ChatMessage, PrivateChannel } from "./chat.ts";
+import type { ChannelId, ChatMessage, ChatThread, PrivateChannel } from "./chat.ts";
 import type { MovementRules } from "./config.ts";
 import type { ActionInProgress, PlayerState, Spot } from "./player.ts";
 import type { GameState, ShipResources } from "./state.ts";
@@ -108,6 +108,8 @@ export interface PlayerView {
   readChannels: ChannelId[];
   /** Private channels you belong to. Channels you aren't in are never sent. */
   privateChannels: PrivateChannel[];
+  /** Threads under global chat, when you can read it. */
+  threads: ChatThread[];
   /** How many private channels you may belong to, after modifiers. */
   channelLimit: number;
   /** Your effective movement rules, after modifiers. */

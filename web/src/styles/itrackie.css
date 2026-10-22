@@ -325,3 +325,66 @@
     background: var(--mush);
   }
 }
+
+/* Threads tab: the list (or one open thread, under a back button), then the form to start one. */
+.threads-list {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+.threads-list[hidden] {
+  display: none;
+}
+.thread-rows {
+  list-style: none;
+  margin: 0;
+  padding: 0 0.5rem 0 0;
+}
+/* A thread as a row button: icon, name, message count. Also the link under a global message that has one. */
+.thread-link {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  width: 100%;
+  min-height: 32px;
+  margin: 0.25rem 0 0;
+  text-align: left;
+}
+.thread-link .tab-icon {
+  opacity: 1;
+}
+.thread-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.thread-count {
+  flex: none;
+  font-size: 0.75rem;
+}
+.thread-starter {
+  flex: none;
+  margin-top: 0.5rem;
+}
+.thread-starter > p {
+  margin: 0 0 0.25rem;
+}
+.thread-create {
+  flex: none;
+}
+.thread-create button {
+  flex: none;
+  margin: 0;
+}
+.thread-back {
+  margin: 0 0 0.5rem;
+}
+/* The starter message, set apart at the top of an open thread. */
+.feed > li.thread-head {
+  border-bottom: 1px solid rgb(255 255 255 / 0.2);
+  padding-bottom: 0.5rem;
+  margin-bottom: 0.25rem;
+}

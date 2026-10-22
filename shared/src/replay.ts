@@ -7,7 +7,7 @@ import type { GameClientMessage } from "./protocol.ts";
 import { createGame, newCycle, setActopiCheat, setCheat, setRoleCheat, type ActionResult } from "./rules.ts";
 import { clearQueue, queueAction, tick } from "./queue.ts";
 import { walk } from "./spot.ts";
-import { createChannel, inviteToChannel, leaveChannel, sendChat, toggleCheckbox } from "./chat.ts";
+import { createChannel, createThread, inviteToChannel, leaveChannel, sendChat, toggleCheckbox } from "./chat.ts";
 import type { GameConfig, GameState, PlayerId, Role, Seat } from "./types.ts";
 
 /** What createGame needed, plus which rules produced the game. */
@@ -62,6 +62,8 @@ export function applyInput(state: GameState, input: Input): ActionResult {
       return toggleCheckbox(state, input.by, input.message, input.line);
     case "createChannel":
       return createChannel(state, input.by, input.name);
+    case "createThread":
+      return createThread(state, input.by, input.name, input.from);
     case "invite":
       return inviteToChannel(state, input.by, input.channel, input.player);
     case "leaveChannel":

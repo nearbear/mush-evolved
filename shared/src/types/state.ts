@@ -2,7 +2,7 @@ import type { PlanetTag } from "../planets.ts";
 import type { RngState } from "../rng.ts";
 import type { TitleId } from "../titles.ts";
 import type { ItemState, LogEntry, PlayerId } from "../types.ts";
-import type { ChatMessage, PrivateChannel } from "./chat.ts";
+import type { ChatMessage, ChatThread, PrivateChannel } from "./chat.ts";
 import type { GameConfig } from "./config.ts";
 import type { PlayerState } from "./player.ts";
 
@@ -31,6 +31,9 @@ export interface GameState {
   nextChatId: number;
   channels: PrivateChannel[];
   nextChannelId: number;
+  /** Threads under global chat. */
+  threads: ChatThread[];
+  nextThreadId: number;
   /**
    * ACTOPI, a ship system. While on, everyone sees who is in which room. While
    * off, you still see how many people are in each room, but only know who they

@@ -1,6 +1,6 @@
 // One row of an iTrackie feed: a marker on the left (the info icon for ship
 // messages, the sender's crew sprite for chat), the sender's name with the
-// recency caption at the right on top, and the body below it. Entries with no
+// recency caption right after it on top, and the body below it. Entries with no
 // sender (ship messages) have no top row: the caption sits beside the body.
 
 import type { ReactNode } from "react";
@@ -14,12 +14,15 @@ export function FeedEntry({
   marker,
   name,
   at,
+  tools,
   className,
   children,
 }: {
   marker: ReactNode;
   name?: ReactNode;
   at: number | undefined;
+  /** Small buttons at the right of the name row (entries with a name only). */
+  tools?: ReactNode;
   className?: string | undefined;
   children: ReactNode;
 }) {
@@ -28,8 +31,11 @@ export function FeedEntry({
       <div className="entry-marker">{marker}</div>
       {name !== undefined && (
         <div className="entry-head">
-          <span>{name}</span>
-          <RecencyStamp at={at} />
+          <span className="entry-name">
+            {name}
+            <RecencyStamp at={at} />
+          </span>
+          {tools}
         </div>
       )}
       <div className="entry-body">{children}</div>

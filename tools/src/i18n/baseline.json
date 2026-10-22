@@ -1,7 +1,7 @@
 {
   "ui": {
     "web/src/GameScreen.tsx": 2,
-    "web/src/hud/ITrackie.tsx": 14,
+    "web/src/hud/ITrackie.tsx": 13,
     "web/src/hud/InspectPanel.tsx": 1,
     "web/src/hud/InventoryPanel.tsx": 6,
     "web/src/hud/PeekBar.tsx": 5,

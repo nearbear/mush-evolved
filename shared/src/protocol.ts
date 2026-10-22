@@ -6,7 +6,7 @@ import { isCharacterId, type CharacterId } from "./characters.ts";
 import { MAX_CHAT_LENGTH } from "./chat.ts";
 import { isSkill } from "./skills.ts";
 import { MAX_SPOT_CELL } from "./spot.ts";
-import { CHAT_CHANNELS, GRAVEYARD_CHANNEL, MUSH_CHANNEL, type Action, type ChannelId, type PlayerId, type PlayerView, type PrivateChannelId } from "./types.ts";
+import { CHAT_CHANNELS, GRAVEYARD_CHANNEL, MUSH_CHANNEL, type Action, type ChannelId, type PlayerId, type PlayerView, type PrivateChannelId, type ThreadId } from "./types.ts";
 
 export const MAX_NAME_LENGTH = 24;
 
@@ -29,6 +29,8 @@ export type GameClientMessage =
   | { type: "chat"; channel: ChannelId; text: string }
   | { type: "toggleCheckbox"; message: number; line: number }
   | { type: "createChannel"; name: string }
+  // A thread under global chat, started from global message `from` or on its own.
+  | { type: "createThread"; name: string; from?: number }
   | { type: "invite"; channel: PrivateChannelId; player: PlayerId }
   | { type: "leaveChannel"; channel: PrivateChannelId }
   // Development only: the server refuses it unless cheats are enabled (cheats.ts).
@@ -54,7 +56,7 @@ export function parseGameMessage(raw: string): GameClientMessage | null {
   const msg = parseJson(raw);
   if (msg?.type === "chat") {
     // Generous bound here; moderation and the rules enforce the real limit.
-    const channel = (msg.channel === MUSH_CHANNEL ? MUSH_CHANNEL : msg.channel === GRAVEYARD_CHANNEL ? GRAVEYARD_CHANNEL : undefined) ?? CHAT_CHANNELS.find((c) => c === msg.channel) ?? privateChannelId(msg.channel);
+    const channel = (msg.channel === MUSH_CHANNEL ? MUSH_CHANNEL : msg.channel === GRAVEYARD_CHANNEL ? GRAVEYARD_CHANNEL : undefined) ?? CHAT_CHANNELS.find((c) => c === msg.channel) ?? privateChannelId(msg.channel) ?? threadId(msg.channel);
     if (!channel || typeof msg.text !== "string" || msg.text.length > MAX_CHAT_LENGTH * 4) return null;
     return { type: "chat", channel, text: msg.text };
   }
@@ -66,6 +68,11 @@ export function parseGameMessage(raw: string): GameClientMessage | null {
   }
   if (msg?.type === "createChannel") {
     return typeof msg.name === "string" && msg.name.length <= MAX_NAME_LENGTH * 4 ? { type: "createChannel", name: msg.name } : null;
+  }
+  if (msg?.type === "createThread") {
+    if (typeof msg.name !== "string" || msg.name.length > MAX_NAME_LENGTH * 4) return null;
+    if (msg.from === undefined) return { type: "createThread", name: msg.name };
+    return Number.isSafeInteger(msg.from) ? { type: "createThread", name: msg.name, from: msg.from as number } : null;
   }
   if (msg?.type === "invite") {
     const channel = privateChannelId(msg.channel);
@@ -147,6 +154,10 @@ export function parseGameMessage(raw: string): GameClientMessage | null {
 
 function privateChannelId(value: unknown): PrivateChannelId | null {
   return typeof value === "string" && /^pc-\d{1,9}$/.test(value) ? (value as PrivateChannelId) : null;
+}
+
+function threadId(value: unknown): ThreadId | null {
+  return typeof value === "string" && /^th-\d{1,9}$/.test(value) ? (value as ThreadId) : null;
 }
 
 function parseJson(raw: string): Record<string, unknown> | null {

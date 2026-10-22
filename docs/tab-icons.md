@@ -4,7 +4,8 @@ Icons are `Mush/www/img/icons/ui/*.png`, exported as `TAB_ICONS` in `web/src/art
 
 | Tab | File | Status |
 |---|---|---|
-| Global chat | `wall.png` | in use (iTrackie) |
+| Global chat | `talk.gif` (blue speech bubble; was `wall.png` until 2026-10-21) | in use (iTrackie) |
+| Threads | `wall.png` | in use (iTrackie, threads under global chat) |
 | Room log | `local.gif` | in use (iTrackie) |
 | Features | `basicplus.png` | in use (iTrackie) |
 | New private channel button | `goldplus.png` ("glodplus" typo) | in use (button, not a tab) |

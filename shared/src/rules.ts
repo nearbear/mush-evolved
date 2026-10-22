@@ -107,6 +107,8 @@ export function createGame(
     nextChatId: 1,
     channels: [],
     nextChannelId: 1,
+    threads: [],
+    nextThreadId: 1,
     actopi: true,
     bonds: {},
     sharedOnDay: {},
@@ -389,6 +391,7 @@ export function viewFor(state: GameState, playerId: PlayerId): PlayerView {
     chatChannels: chatChannels(state, you),
     readChannels: channels,
     privateChannels: state.channels.filter((c) => c.members.includes(playerId)).map((c) => ({ ...c, members: [...c.members] })),
+    threads: channels.includes("global") ? state.threads.map(({ id, name, from, createdBy, cycle }) => ({ id, name, ...(from !== undefined && { from }), createdBy, cycle })) : [],
     channelLimit: channelLimit(state, you),
     movement: movementRules(state, you),
     bonds: {

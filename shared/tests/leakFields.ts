@@ -33,6 +33,8 @@ export const GAME_STATE_FIELDS: Record<string, FieldRule> = {
   nextChatId: { reach: "never", test: "leaks.test.ts", note: "Not secret (message ids show it), just not sent." },
   channels: { reach: "filtered", test: "leaks.test.ts", note: "Private channels you are a member of." },
   nextChannelId: { reach: "never", test: "leaks.test.ts", note: "Not secret (channel ids show it), just not sent." },
+  threads: { reach: "filtered", test: "threads.test.ts", note: "All of them, to whoever can read global chat." },
+  nextThreadId: { reach: "never", test: "leaks.test.ts", note: "Not secret (thread ids show it), just not sent." },
   actopi: { reach: "public", test: "rules.test.ts", note: "Not sent as a flag; it decides whose room you are told." },
   bonds: { reach: "own", test: "leaks.test.ts", note: "Each bond to its two partners only." },
   sharedOnDay: { reach: "never", test: "leaks.test.ts" },

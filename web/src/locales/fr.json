@@ -200,7 +200,11 @@
   "errors": {
     "queue_full": "Votre file d'actions est pleine.",
     "nothing_queued": "Vous n'avez aucune action à annuler.",
-    "cant_walk": "Vous ne pouvez pas vous déplacer dans la pièce pour l'instant."
+    "cant_walk": "Vous ne pouvez pas vous déplacer dans la pièce pour l'instant.",
+    "thread_forbidden": "Vous ne pouvez pas créer de fil pour l'instant.",
+    "thread_name_invalid": "Un fil doit avoir un nom de 40 caractères au plus.",
+    "thread_exists": "Ce message a déjà un fil.",
+    "message_not_found": "Ce message n'est plus là."
   },
   "terminal": {
     "close": "Fermer"
@@ -247,6 +251,7 @@
     "tabs": {
       "room": "Journal de la salle",
       "global": "Chat général",
+      "threads": "Fils",
       "features": "Fonctions",
       "mush": "Canal Mush",
       "graveyard": "Cimetière"
@@ -264,7 +269,28 @@
       "neron": "Projets NERON",
       "astrophysics": "Astrophysique"
     },
-    "featureLabel": "Fonctionnalité"
+    "messageMenu": {
+      "open": "Options du message",
+      "report": "Signaler"
+    },
+    "featureLabel": "Fonctionnalité",
+    "threads": {
+      "empty": "Aucun fil pour l'instant.",
+      "list": "Fils",
+      "start": "Créer un fil",
+      "create": "Créer le fil",
+      "nameLabel": "Nom du fil",
+      "namePlaceholder": "Nom du nouveau fil…",
+      "back": "Tous les fils",
+      "messages_one": "{{count}} message",
+      "messages_many": "{{count}} messages",
+      "messages_other": "{{count}} messages",
+      "messagePlaceholder": "Écrire dans {{name}}…",
+      "startingFrom": "Nouveau fil à partir de ce message :",
+      "cancel": "Annuler",
+      "starterGone": "Le message à l'origine de ce fil n'est plus dans le chat général.",
+      "needITrackie": "Il vous faut un iTrackie dans votre inventaire pour lire les fils."
+    }
   },
   "bond": {
     "both": "Lié",

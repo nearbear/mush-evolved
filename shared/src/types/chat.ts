@@ -20,8 +20,10 @@ export const GRAVEYARD_CHANNEL = "graveyard";
 
 /** Id of a player-made private channel (`pc-1`, `pc-2`, ...). Never collides with a ChatChannel name. */
 export type PrivateChannelId = `pc-${number}`;
+/** Id of a thread under global chat (`th-1`, `th-2`, ...). */
+export type ThreadId = `th-${number}`;
 /** Anything a chat message can be posted to. */
-export type ChannelId = ChatChannel | typeof MUSH_CHANNEL | typeof GRAVEYARD_CHANNEL | PrivateChannelId;
+export type ChannelId = ChatChannel | typeof MUSH_CHANNEL | typeof GRAVEYARD_CHANNEL | PrivateChannelId | ThreadId;
 
 /** Chat among the members only. Anyone in it may invite others; it ends when the last member leaves. */
 export interface PrivateChannel {
@@ -29,6 +31,20 @@ export interface PrivateChannel {
   name: string;
   members: PlayerId[];
   createdBy: PlayerId;
+}
+
+/**
+ * A Discord-style thread under global chat (decided 2026-10-21): named, started
+ * from a global message or on its own, with global chat's read and post access.
+ * No cap on how many; the server's chat rate limit is the only brake.
+ */
+export interface ChatThread {
+  id: ThreadId;
+  name: string;
+  /** The global message it was started from. At most one thread per message. */
+  from?: number;
+  createdBy: PlayerId;
+  cycle: number;
 }
 
 export interface ChatMessage {

@@ -974,3 +974,10 @@ Claude extracted the hunter and space-combat material from `Mush/` into `docs/sp
 - The corridors now use the bays' and bridge's `GROUND_DECK` floor (grey plates, dark paths with cyan dashes) in place of the plain floor and the milky blue walkways. Walkways got a direction; a pass after room placement (`deckFloors` in `tools/src/shipLayout/walkways.ts`) works out each path cell's frame, including the branch pieces where paths meet, from how the original's bays use them. The refectory walkway and the back corridor's dorm-to-storage crossings were dropped.
 - What needed care: the deck art only has branches off a path's -y, +y and +x sides (no -x branch, no 4-way, and per-tile flips would mirror the tile's lit edge). So the centre corridor's T is laid as the front corridor's path running across, with the two bay paths branching off it. Repainting after placement kept door alignment unchanged (no door moved). `ship-check`'s off-path test compares floors as the original has them, because a checker floor confuses its "most common floor is plain" rule.
 - Status: an experiment, not decided. The owner may keep it, change it, or go back to the plain floor and blue walkways.
+
+### 2026-10-21: Threads tab in the iTrackie
+
+- Asked for a Discord-style Threads tab, with global chat's old `wall.png` icon moving to it and global chat taking the blue speech bubble (`talk.gif`, a static 12x12 GIF despite the extension) from the icon catalog.
+- Before writing rules, Claude asked three questions (which channels can host threads, how a thread starts, what caps apply). The owner chose global chat only, start from a message or on its own, and no caps.
+- What worked: making thread ids ordinary `ChannelId`s and adding them wherever `chatChannels`/`readChannels` add global chat, so posting, reading, checkbox toggles, moderation, replay and `viewFor`'s chat filter needed no thread-specific code; access can't drift from global chat's.
+- Open: no unread marker on the Threads tab, and no visual check yet (not asked for).

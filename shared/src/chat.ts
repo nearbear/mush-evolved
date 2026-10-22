@@ -8,7 +8,7 @@ import { ITRACKIE_ITEM, itemsIn } from "./items.ts";
 import { channelLimit } from "./modifiers.ts";
 import { clone, fail, findPlayer, type ActionResult } from "./helpers.ts";
 import { CHAT_CHANNELS, GRAVEYARD_CHANNEL, MUSH_CHANNEL } from "./types.ts";
-import type { ChannelId, ChatMessage, GameState, PlayerId, PlayerState, PrivateChannelId } from "./types.ts";
+import type { ChannelId, ChatMessage, GameState, PlayerId, PlayerState, PrivateChannelId, ThreadId } from "./types.ts";
 
 /** Longest chat message the rules accept. Moderation trims before this. */
 export const MAX_CHAT_LENGTH = 300;
@@ -53,8 +53,11 @@ export function readChannels(state: GameState, player: Readonly<PlayerState>): C
   if (player.alive) return chatChannels(state, player);
   if (state.phase !== "playing") return [];
   const mush: ChannelId[] = player.role === "mush" ? [MUSH_CHANNEL] : [];
-  return [...CHAT_CHANNELS, ...mush, GRAVEYARD_CHANNEL];
+  return [...CHAT_CHANNELS, ...threadIds(state), ...mush, GRAVEYARD_CHANNEL];
 }
+
+/** Threads go wherever global chat goes. */
+const threadIds = (state: GameState): ThreadId[] => state.threads.map((t) => t.id);
 
 /**
  * Channels a player may post to (and so read). The dead post only in the graveyard. Global chat and every feature thread
@@ -69,7 +72,7 @@ export function chatChannels(state: GameState, player: Readonly<PlayerState>): C
   const mush: ChannelId[] = player.role === "mush" ? [MUSH_CHANNEL] : [];
   const hasITrackie = itemsIn(state, { kind: "player", id: player.id }).some((i) => i.type === ITRACKIE_ITEM);
   if (!hasITrackie) return mush;
-  return [...CHAT_CHANNELS, ...mush, ...state.channels.filter((c) => c.members.includes(player.id)).map((c) => c.id)];
+  return [...CHAT_CHANNELS, ...threadIds(state), ...mush, ...state.channels.filter((c) => c.members.includes(player.id)).map((c) => c.id)];
 }
 
 export function sendChat(state: GameState, playerId: PlayerId, channel: ChannelId, text: string): ActionResult {
@@ -118,6 +121,30 @@ export function toggleCheckbox(state: GameState, playerId: PlayerId, messageId: 
   const lines = target.text.split("\n");
   lines[line] = lines[line]!.replace(TASK_LINE, (_, head: string, mark: string, tail: string) => `${head}${mark === " " ? "x" : " "}${tail}`);
   target.text = lines.join("\n");
+  return { ok: true, state: next };
+}
+
+// ---- Threads ---------------------------------------------------------------
+// Discord-style threads under global chat (decided 2026-10-21). Anyone who can
+// post in global chat may start one, on its own or from a global message (one
+// thread per message), and its access is global chat's. No cap on how many.
+
+export const MAX_THREAD_NAME_LENGTH = 40;
+
+export function createThread(state: GameState, playerId: PlayerId, rawName: string, fromMessage?: number): ActionResult {
+  const p = findPlayer(state, playerId);
+  if (!p || !chatChannels(state, p).includes("global")) return fail("thread_forbidden");
+  // A name is one line.
+  const name = rawName.replace(/\s+/g, " ").trim();
+  if (!name || name.length > MAX_THREAD_NAME_LENGTH) return fail("thread_name_invalid");
+  if (fromMessage !== undefined) {
+    if (!state.chat.some((m) => m.id === fromMessage && m.channel === "global")) return fail("message_not_found");
+    if (state.threads.some((t) => t.from === fromMessage)) return fail("thread_exists");
+  }
+
+  const next = clone(state);
+  const id: ThreadId = `th-${next.nextThreadId++}`;
+  next.threads.push({ id, name, ...(fromMessage !== undefined && { from: fromMessage }), createdBy: playerId, cycle: next.cycle });
   return { ok: true, state: next };
 }
 

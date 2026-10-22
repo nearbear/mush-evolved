@@ -95,6 +95,7 @@ function ship(): { state: GameState; sentinels: Sentinel[] } {
   s.dispensedOn.anything = num("dispensedOn", []);
   s.nextItemId = num("nextItemId", []);
   s.nextChatId = num("nextChatId", []);
+  s.nextThreadId = num("nextThreadId", []);
   s.nextPlanetId = num("nextPlanetId", []);
   s.now = num("now", []);
 
