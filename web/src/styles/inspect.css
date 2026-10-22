@@ -124,6 +124,14 @@
 .skill-slot-empty {
   opacity: 0.35;
 }
+/* The fourth slot, filled only by a skill book: set apart from the three picked ones. */
+.skill-slot-book {
+  margin-top: 4px;
+}
+.skill-slot-book .skill-slot {
+  border-style: dashed;
+  border-color: rgb(255 210 120 / 0.6);
+}
 .skill-warning {
   margin: 0;
   font-size: 0.85rem;

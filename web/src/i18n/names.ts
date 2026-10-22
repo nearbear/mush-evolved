@@ -3,7 +3,7 @@
 // helpers turn ids into the player's language. Call `useNames()` in a
 // component so it re-renders when the language changes.
 
-import { BLUEPRINTS, characterGivenName, characterName, type ActionType, type LogEntry, type RoomId } from "@mush2/shared";
+import { BLUEPRINTS, characterGivenName, characterName, type ActionType, type ItemView, type LogEntry, type RoomId } from "@mush2/shared";
 import { useTranslation } from "react-i18next";
 
 /** The name of each kind of action, for the action queue and log lines that mention one. Ready never waits in a queue. */
@@ -41,6 +41,7 @@ const ACTION_NAME_KEYS = {
   heal: "actions.heal",
   punch: "actions.punch",
   pick_skill: "actions.pickSkill",
+  read_book: "actions.readBook",
 } as const satisfies Record<Exclude<ActionType, "ready">, string>;
 
 export function useNames() {
@@ -48,6 +49,7 @@ export function useNames() {
   // Dynamic keys, so the id falls back to itself when a catalog lacks it.
   const lookup = (group: "rooms" | "equipment" | "items", id: string): string => t(`${group}.${id}` as never, { defaultValue: id });
   const room = (id: RoomId) => lookup("rooms", id);
+  const skill = (id: string) => t(`skills.names.${id}` as never, { defaultValue: id });
   const equipment = (type: string) => lookup("equipment", type);
   /** A blueprint is named for what it builds. */
   const item = (type: string, builds?: string) => {
@@ -56,16 +58,18 @@ export function useNames() {
     const thing = makes && "item" in makes ? lookup("items", makes.item) : lookup("equipment", makes ? makes.equipment : builds);
     return t("items.blueprintOf" as never, { thing, defaultValue: type });
   };
+  /** An item as the view has it: a blueprint is named for what it builds, a skill book for its skill. */
+  const itemOf = (it: Pick<ItemView, "type" | "builds" | "teaches">) =>
+    it.teaches === undefined ? item(it.type, it.builds) : t("items.bookOf" as never, { skill: skill(it.teaches), defaultValue: it.type });
   const research = (id: string) => t(`research.names.${id}` as never, { defaultValue: id });
   const project = (id: string) => t(`projects.names.${id}` as never, { defaultValue: id });
-  const skill = (id: string) => t(`skills.names.${id}` as never, { defaultValue: id });
   const title = (id: string) => t(`titles.names.${id}` as never, { defaultValue: id });
   const action = (type: string) => {
     const key = (ACTION_NAME_KEYS as Partial<Record<string, string>>)[type];
     return key ? t(key as never, { defaultValue: type }) : type;
   };
 
-  /** The text of a log entry. `room`, `item`, `research`, `project`, `equipment`, `action` and `title` params are ids and get translated; `name`, `target` and `body` are character ids. */
+  /** The text of a log entry. `room`, `item`, `research`, `project`, `equipment`, `action`, `title` and `skill` params are ids and get translated; `name`, `target` and `body` are character ids. */
   const logLine = ({ key, params = {} }: Pick<LogEntry, "key" | "params">): string => {
     const resolved: Record<string, string | number> = { ...params };
     if (typeof params.room === "string") resolved.room = room(params.room);
@@ -75,9 +79,10 @@ export function useNames() {
     if (typeof params.equipment === "string") resolved.equipment = equipment(params.equipment);
     if (typeof params.action === "string") resolved.action = action(params.action);
     if (typeof params.title === "string") resolved.title = title(params.title);
+    if (typeof params.skill === "string") resolved.skill = skill(params.skill);
     for (const who of ["name", "target", "body"] as const) if (typeof params[who] === "string") resolved[who] = characterGivenName(params[who]);
     return t(`logEvent.${key}` as never, { ...resolved, defaultValue: key });
   };
 
-  return { room, equipment, item, research, project, skill, title, action, character: characterName, characterGiven: characterGivenName, logLine };
+  return { room, equipment, item, itemOf, research, project, skill, title, action, character: characterName, characterGiven: characterGivenName, logLine };
 }

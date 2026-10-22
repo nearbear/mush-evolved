@@ -1,6 +1,8 @@
 // Which skills exist and how many a player can hold. A skill's rules live in
 // modifiers.ts (only some have any yet); this list is what can be picked.
 
+import type { PlayerState } from "./types.ts";
+
 /**
  * Human skills a player can pick (decided 2026-10-15: all of them for now; each character will get its own
  * set later). Ids are the lowercase ids from the original design table (`Mush/derived/data/Data/skills.json`,
@@ -73,8 +75,17 @@ export function isSkill(value: unknown): value is SkillId {
   return typeof value === "string" && (SKILLS as readonly string[]).includes(value);
 }
 
-/** Human skill slots per player (a fourth, for books, comes later). */
+/** Human skill slots per player. The book slot (`PlayerState.bookSkill`) is a fourth, filled only by a skill book. */
 export const SKILL_SLOTS = 3;
+
+/** Every skill the player has: the picked ones, then the book slot's. */
+export function skillsOf(player: Readonly<Pick<PlayerState, "skills" | "bookSkill">>): string[] {
+  return player.bookSkill === undefined ? [...player.skills] : [...player.skills, player.bookSkill];
+}
+
+export function hasSkill(player: Readonly<Pick<PlayerState, "skills" | "bookSkill">>, skill: string): boolean {
+  return player.skills.includes(skill) || player.bookSkill === skill;
+}
 
 /** How much of a skill's listed effects the rules implement. A skill missing from SKILL_STATUS is "none". */
 export type SkillStatus = "full" | "partial" | "none";

@@ -14,6 +14,7 @@ import { actionFailed, apGain, carePointsGain, channelLimit, computerPointsGain,
 import { contaminationSeenBy, convert } from "./infection.ts";
 import { addStatus, isHungry, publicStatusesOf, statusesOf } from "./statuses.ts";
 import { emptyResources } from "./resources.ts";
+import { hasSkill } from "./skills.ts";
 import { nextFloat, shuffle } from "./rng.ts";
 import { chatChannels, readChannels } from "./chat.ts";
 import { clone, fail, findPlayer, type ActionResult } from "./helpers.ts";
@@ -88,7 +89,7 @@ export function createGame(
   }));
 
   const starts: Omit<ItemState, "id">[] = [
-    ...config.startItems.map((it): Omit<ItemState, "id"> => ({ type: it.type, at: { kind: "room", id: it.room }, ...(it.builds !== undefined && { builds: it.builds }), ...chargesFor(config, it.type) })),
+    ...config.startItems.map((it): Omit<ItemState, "id"> => ({ type: it.type, at: { kind: "room", id: it.room }, ...(it.builds !== undefined && { builds: it.builds }), ...(it.teaches !== undefined && { teaches: it.teaches }), ...chargesFor(config, it.type) })),
     ...players.flatMap((p) => config.startInventory.map((type): Omit<ItemState, "id"> => ({ type, at: { kind: "player", id: p.id } }))),
   ];
   const items: ItemState[] = starts.map((it, i) => ({ id: `item-${i + 1}`, ...it }));
@@ -199,7 +200,7 @@ export function performAction(next: GameState, actor: PlayerState, action: Actio
       if (itemsIn(next, { kind: "player", id: actor.id }).some((i) => i.type === "apron")){
         logPrivate(next, actor.id, "apronBlockedDirty", { name: actor.character });
       }
-      else if (actor.skills.includes("stickler")) {
+      else if (hasSkill(actor, "stickler")) {
         logPrivate(next, actor.id, "sticklerBlockedDirty", { name: actor.character });
       }
       else{
@@ -356,6 +357,7 @@ export function viewFor(state: GameState, playerId: PlayerId): PlayerView {
         statuses: here ? publicStatusesOf(state, o) : [],
         // Skills are public, but like statuses only to people who can see the player.
         skills: here ? [...o.skills] : [],
+        ...(here && o.bookSkill !== undefined ? { bookSkill: o.bookSkill } : {}),
         // Who is in bed, and which bed, is visible to the room (owner, 2026-10-18).
         ...(here && o.lyingIn ? { lying: o.lyingIn } : {}),
         // Where they stand, and whether they sit, is visible to the room (owner, 2026-10-20).
@@ -433,8 +435,8 @@ export const affordable = (option: Readonly<ActionOption>): boolean => option.la
 /** The actions a view lets you do right now: its affordable options. */
 export const legalIn = (view: Pick<PlayerView, "actions">): Action[] => view.actions.filter(affordable).map((o) => o.action);
 
-function itemView({ id, type, of, builds, charges }: ItemState): ItemView {
-  return { id, type, ...(of !== undefined && { of }), ...(builds !== undefined && { builds }), ...(charges !== undefined && { charges }) };
+function itemView({ id, type, of, builds, charges, teaches }: ItemState): ItemView {
+  return { id, type, ...(of !== undefined && { of }), ...(builds !== undefined && { builds }), ...(charges !== undefined && { charges }), ...(teaches !== undefined && { teaches }) };
 }
 
 function equipmentView({ id, type }: Equipment): EquipmentView {

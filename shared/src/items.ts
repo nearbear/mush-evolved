@@ -40,6 +40,9 @@ export const CORPSE_ITEM = "corpse";
 /** Express cooks rations (actions/express_cook.ts) while it has charges. */
 export const MICROWAVE_ITEM = "microwave";
 
+/** A skill book: reading it (`read_book`) fills the book slot with its `ItemState.teaches` skill. */
+export const BOOK_ITEM = "book";
+
 /** The charges an item of this type starts with, or undefined if it has none. */
 export function startCharges(config: Readonly<GameConfig>, type: string): number | undefined {
   return type === MICROWAVE_ITEM ? config.expressCook.charges.start : undefined;
@@ -86,6 +89,8 @@ export const ITEM_TYPES: Record<string, ItemType> = {
   [CORPSE_ITEM]: { heavy: true },
 
   apron: {},
+  // Owner, 2026-10-21: a skill book (the original's Apprentron) carries its skill in `ItemState.teaches`; destroyed by reading.
+  [BOOK_ITEM]: {},
 };
 
 /** Whether the player carries at least one heavy item. */

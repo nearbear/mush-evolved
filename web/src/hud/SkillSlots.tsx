@@ -1,5 +1,6 @@
-// The three skill slots overlaid on the top-right of a character portrait. Skills are public to everyone in
-// the room. On your own portrait an empty slot is a gold plus that opens the picker; picks are permanent.
+// The three skill slots, then the book slot, overlaid on the top-right of a character portrait. Skills are public
+// to everyone in the room. On your own portrait an empty slot is a gold plus that opens the picker; picks are
+// permanent. The book slot is filled only by reading a skill book (an item action), so it never has a plus.
 // Which skills can be picked comes from view.actions, never computed here.
 
 import { Dialog } from "@base-ui/react/dialog";
@@ -16,11 +17,13 @@ import "./settings.css";
 export function SkillSlots({
   view,
   skills,
+  bookSkill,
   isYou,
   onAction,
 }: {
   view: PlayerView;
   skills: readonly string[];
+  bookSkill?: string;
   isYou: boolean;
   onAction: (action: Action) => void;
 }) {
@@ -60,6 +63,17 @@ export function SkillSlots({
             </li>
           );
         })}
+        <li className="skill-slot-book">
+          {bookSkill ? (
+            <SkillSlot skill={bookSkill} />
+          ) : isYou ? (
+            <Hint label={t("skills.bookSlotHint")}>
+              <span className="skill-slot skill-slot-empty" role="img" aria-label={t("skills.bookSlot")} />
+            </Hint>
+          ) : (
+            <span className="skill-slot skill-slot-empty" />
+          )}
+        </li>
       </ul>
       <Dialog.Root
         open={open}

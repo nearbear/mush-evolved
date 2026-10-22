@@ -71,10 +71,12 @@ export interface PlayerState extends Seat {
    */
   modifiers: string[];
   /**
-   * Skill ids in the player's human skill slots (SKILL_SLOTS; a book slot comes later). Each is a modifier id in
+   * Skill ids in the player's human skill slots (SKILL_SLOTS). Each is a modifier id in
    * modifiers.ts. Picked for good with the `pick_skill` action. Roommates see them in `OtherPlayerView.skills`.
    */
   skills: string[];
+  /** The skill in the book slot (the fourth), learned for good from a skill book (`read_book`). Unset until then. Roommates see it in `OtherPlayerView.bookSkill`. */
+  bookSkill?: string;
   alive: boolean;
   /** Finished acting for this cycle. */
   ready: boolean;

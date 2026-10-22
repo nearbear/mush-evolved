@@ -91,6 +91,9 @@ export interface GameConfig {
     charges: { start: number; max: number; perDay: number }; // Microwave charges: one per express cook, regained at each day start (owner, 2026-10-19).
     dirtyChance: number; // Chance of getting the dirty status after express cooking.
   };
+  readBook: {
+    cost: { ap: number }; // AP spent to read a skill book (owner, 2026-10-21: 2).
+  };
   build: {
     cost: { ap: number }; // AP spent to build from a blueprint (decided 2026-10-16: 3, the original game's value).
     dirtyChance: number; // Chance of getting the dirty status after building.
@@ -183,7 +186,7 @@ export interface GameConfig {
   startSkills: string[]; // Skills every player starts with (none since 2026-10-15; players pick their own).
   characterModifiers: Record<string, string[]>; // Modifiers a character starts with, by character id (traits: Ian pacifist, owner 2026-10-18; Chun immunity and mankind_only_hope, owner 2026-10-18; Terrence wheelchair, owner 2026-10-19).
   mankindOnlyHope: { moraleLossCut: number }; // How much less morale the crew loses each day while a holder (Chun) is alive (owner, 2026-10-18).
-  startItems: { type: string; room: RoomId; builds?: string }[]; // Items placed in rooms at the start of the game. Types come from ITEM_TYPES in items.ts.
+  startItems: { type: string; room: RoomId; builds?: string; teaches?: string }[]; // Items placed in rooms at the start of the game. Types come from ITEM_TYPES in items.ts.
   startInventory: string[]; // Item types every player starts carrying (one of each).
   rooms: Record<RoomId, RoomId[]>; // Adjacency list. Movement is only allowed along these edges.
   equipment: Record<RoomId, Equipment[]>; // Fixed equipment in each room. Types come from EQUIPMENT_TYPES in equipment.ts.

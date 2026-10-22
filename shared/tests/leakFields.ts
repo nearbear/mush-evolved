@@ -78,6 +78,7 @@ export const PLAYER_STATE_FIELDS: Record<string, FieldRule> = {
   resources: { reach: "own", test: "leaks.test.ts" },
   modifiers: { reach: "own", test: "leaks.test.ts" },
   skills: { reach: "room", test: "leaks.test.ts" },
+  bookSkill: { reach: "room", test: "leaks.test.ts" },
   alive: { reach: "public", test: "death.test.ts" },
   ready: { reach: "public", test: "rules.test.ts" },
   current: { reach: "own", test: "leaks.test.ts", note: "Roommates get a bar without the action (queue.test.ts)." },
@@ -93,4 +94,5 @@ export const ITEM_STATE_FIELDS: Record<string, FieldRule> = {
   of: { reach: "filtered", test: "death.test.ts" },
   builds: { reach: "filtered", test: "build.test.ts" },
   charges: { reach: "filtered", test: "express_cook.test.ts" },
+  teaches: { reach: "filtered", test: "read_book.test.ts" },
 };

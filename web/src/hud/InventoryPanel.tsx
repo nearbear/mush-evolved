@@ -98,7 +98,7 @@ export function InventoryPanel({
           }}
           onDragStart={(e) => {
             e.dataTransfer.effectAllowed = "move";
-            e.dataTransfer.setData("text/plain", names.item(item.type, item.builds));
+            e.dataTransfer.setData("text/plain", names.itemOf(item));
             setDragging({ id: item.id, from: zone });
           }}
           onDragEnd={() => {
@@ -106,7 +106,7 @@ export function InventoryPanel({
             setOver(null);
           }}
         >
-          <ItemFace label={names.item(item.type, item.builds)}>
+          <ItemFace label={names.itemOf(item)}>
             <ItemIcon className="item-icon" item={item} view={view} />
           </ItemFace>
         </button>

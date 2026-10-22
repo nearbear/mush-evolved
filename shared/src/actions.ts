@@ -22,6 +22,7 @@ import { InstallAction } from "./actions/install.ts";
 import { UninstallAction } from "./actions/uninstall.ts";
 import { JettisonAction } from "./actions/jettison.ts";
 import { PickSkillAction } from "./actions/pick_skill.ts";
+import { ReadBookAction } from "./actions/read_book.ts";
 import { PunchAction } from "./actions/punch.ts";
 import { ShareAction } from "./actions/share.ts";
 import { GetUpAction, LieDownAction } from "./actions/lie_down.ts";
@@ -96,6 +97,7 @@ export const ACTIONS: { [T in ActionType]: ActionDef<ActionOf<T>> } = {
   heal: new HealAction(),
   punch: new PunchAction(),
   pick_skill: new PickSkillAction(),
+  read_book: new ReadBookAction(),
 };
 
 /** Whether an action type is public, private, secret or covert. A fixed property of the type, so safe for the client to show. */

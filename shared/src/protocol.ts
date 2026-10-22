@@ -142,6 +142,7 @@ export function parseGameMessage(raw: string): GameClientMessage | null {
   if ((a.type === "bond" || a.type === "dtt" || a.type === "stt" || a.type === "heal" || a.type === "punch" || a.type === "spike" || a.type === "accommodate" || a.type === "accept_accommodation" || a.type === "stop_accommodation") && typeof a.target === "string") {
     return { type: "action", action: { type: a.type, target: a.target } };
   }
+  if (a.type === "read_book" && typeof a.item === "string") return { type: "action", action: { type: "read_book", item: a.item } };
   if (a.type === "pick_skill" && isSkill(a.skill)) return { type: "action", action: { type: "pick_skill", skill: a.skill } };
   if (a.type === "examine" && isRecord(a.target) && typeof a.target.id === "string") {
     const { kind, id } = a.target;

@@ -85,7 +85,7 @@ function Details({ view, layout, resolved, onAction }: { view: PlayerView; layou
               <img className="inspect-portrait" src={portrait(person.character)} alt="" />
             )}
             {character && <span className="inspect-figure-name">{displayName}</span>}
-            <SkillSlots view={view} skills={person.skills} isYou={isYou} onAction={onAction} />
+            <SkillSlots view={view} skills={person.skills} bookSkill={person.bookSkill} isYou={isYou} onAction={onAction} />
           </div>
           <StatusIcons statuses={isYou ? view.statuses : person.statuses} contamination={"contamination" in person ? person.contamination : undefined} />
         </div>
@@ -105,7 +105,7 @@ function Details({ view, layout, resolved, onAction }: { view: PlayerView; layou
       return (
         <>
           <div className="inspect-item">
-            <ItemFace label={names.item(resolved.item.type, resolved.item.builds)}>
+            <ItemFace label={names.itemOf(resolved.item)}>
               <ItemIcon className="item-icon" item={resolved.item} view={view} />
             </ItemFace>
           </div>

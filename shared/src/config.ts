@@ -1,5 +1,6 @@
 import shipRooms from "@mush2/assets/derived/ship-rooms.json";
-import { ITRACKIE_ITEM } from "./items.ts";
+import { BOOK_ITEM, ITRACKIE_ITEM } from "./items.ts";
+import { SKILLS } from "./skills.ts";
 import type { ShipRoom } from "./shipLayout.ts";
 import type { GameConfig, RoomId } from "./types.ts";
 
@@ -77,6 +78,8 @@ export const DEFAULT_CONFIG: GameConfig = {
   // it regains one each day. Consequences for using it come later.
   expressCook: { cost: { ap: 0 }, charges: { start: 4, max: 4, perDay: 1 }, dirtyChance: 0.05 },
   // Decided 2026-10-16: building from a blueprint costs 3 AP, anywhere, no failure chance.
+  // Owner, 2026-10-21: reading a skill book costs 2 AP (the original's LEARN_BOOK cost).
+  readBook: { cost: { ap: 2 } },
   build: { cost: { ap: 3 }, dirtyChance: 0.25 },
   // Decided 2026-10-16 (#28): jettisoning a carried corpse is free, in one of the four bays.
   jettison: { cost: { ap: 0 }, rooms: ["SPACESHIP_BAY_A", "SPACESHIP_BAY_AA", "SPACESHIP_BAY_B", "ICARUS"], dirtyChance: 0.25 },
@@ -151,6 +154,8 @@ export const DEFAULT_CONFIG: GameConfig = {
     { type: "tree_pot", room: "LABORATORY" },
     { type: "tree_pot", room: "LABORATORY" },
     { type: "tree_pot", room: "LABORATORY" },
+    // Owner, 2026-10-21: for now, one skill book for every skill on the bridge.
+    ...SKILLS.map((skill) => ({ type: BOOK_ITEM, teaches: skill, room: "COMMAND_CENTER" as RoomId })),
   ],
   // Confirmed 2026-10-13: every player starts with an iTrackie.
   startInventory: [ITRACKIE_ITEM],

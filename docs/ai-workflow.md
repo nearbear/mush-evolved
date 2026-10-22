@@ -981,3 +981,9 @@ Claude extracted the hunter and space-combat material from `Mush/` into `docs/sp
 - Before writing rules, Claude asked three questions (which channels can host threads, how a thread starts, what caps apply). The owner chose global chat only, start from a message or on its own, and no caps.
 - What worked: making thread ids ordinary `ChannelId`s and adding them wherever `chatChannels`/`readChannels` add global chat, so posting, reading, checkbox toggles, moderation, replay and `viewFor`'s chat filter needed no thread-specific code; access can't drift from global chat's.
 - Open: no unread marker on the Threads tab, and no visual check yet (not asked for).
+
+## 2026-10-21: Skill books and the fourth slot
+
+- Owner asked for skill books that fill the fourth (book) slot, with one book per skill spawning on the bridge. Claude checked the original first (`LEARN_BOOK`/Apprentron in `books.json`, the `LEARN` action, `MAX_MAGE_BOOK_PER_USER` = 1). It asked four questions; the owner chose 2 AP, destroyed on reading, one per player, reachable (carried or floor) with a public log, refused for a skill already held, and Mush allowed.
+- Design: a separate `PlayerState.bookSkill` instead of a fourth entry in `skills`, so `pick_skill`'s 3-slot count and the slot positions stay unambiguous. `skillsOf`/`hasSkill` cover both, and `modifierIds` folds over the book skill too. A book is an item with `ItemState.teaches`, like a blueprint's `builds`.
+- Needed correction: the first tests asserted specific refusal codes, but `applyAction` turns anything not offered into "Illegal action", so they now check only `ok: false`. The Spanish word for the book ("Libro de habilidad") was a guess and needs the owner's review.

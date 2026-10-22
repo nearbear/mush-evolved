@@ -8,7 +8,7 @@ Other packages import from `@mush2/shared` (`shared/src/index.ts`, the barrel). 
 - `actions.ts`: the action registry (`ACTIONS`), `visibleTargets`, `ActionDef` / `ActionCost`. A new action is a file in `actions/` registered here.
 - `actions/action.ts`: the `Action` base class (`getCandidates`, `check`, `getCost`, `apply`, optional `getSuccessChance` and `fail`).
 - `blueprints.ts`: `BLUEPRINTS` recipes (ingredients and resulting equipment) and the `blueprint` item type name.
-- `actions/<type>.ts`: one class per action: `accommodate` (+ `accept_accommodation`, `stop_accommodation`), `access`, `bond`, `build`, `consume`, `cook`, `express_cook`, `dismantle`, `dispense`, `examine`, `extract_spore`, `heal`, `install`, `jettison`, `lie_down` (+ `get_up`), `uninstall`, `move`, `pick_skill`, `project`, `scan_planet`, `analyze_planet`, `delete_planet`, `punch`, `ready`, `research`, `share` (`dtt`, `stt`), `shower`, `spike`, `transfer` (`take`, `drop`).
+- `actions/<type>.ts`: one class per action: `accommodate` (+ `accept_accommodation`, `stop_accommodation`), `access`, `bond`, `build`, `consume`, `cook`, `express_cook`, `dismantle`, `dispense`, `examine`, `extract_spore`, `heal`, `install`, `jettison`, `lie_down` (+ `get_up`), `uninstall`, `move`, `pick_skill`, `read_book`, `project`, `scan_planet`, `analyze_planet`, `delete_planet`, `punch`, `ready`, `research`, `share` (`dtt`, `stt`), `shower`, `spike`, `transfer` (`take`, `drop`).
 - `modifiers.ts`: the modifier registry and its hooks (numeric ones go through `fold`; `moveCost` is the one place a move's price is computed).
 - `modifiers/<id>.ts`: one file per modifier: `antic_perfume`, `caffeinomaniac`, `computer`, `creative`, `first_aid`, `lying_down`, `immunity`, `mankind_only_hope` (a crew-wide `crewMoraleLoss` effect), `medic`, `pacifist` (a room cost effect), `sturdy`, `wheelchair` (no hooks; marks who can be pushed); `careSkill.ts` is the factory behind `first_aid`.
 - `replay.ts`: `Input`, `GameSetup`, `applyInput` (the only entry point for changing a game), `replayGame`.
@@ -30,7 +30,7 @@ Other packages import from `@mush2/shared` (`shared/src/index.ts`, the barrel). 
 - `equipment.ts`: room equipment types.
 - `log.ts`: room log helpers (`logPublic`, `logPrivate`, `logSecret`, `logCovert`, `hasCamera`).
 - `resources.ts`: per-player skill point pools.
-- `skills.ts`: the pickable human skills and `SKILL_SLOTS`.
+- `skills.ts`: the pickable human skills, `SKILL_SLOTS`, and `skillsOf`/`hasSkill` (picked skills plus the book slot).
 - `titles.ts`: `TITLE_IDS`, each title's line (`SUCCESSION`), `successor` (pure), `assignTitles` (at creation) and `refreshTitles` (after a death).
 - `statuses.ts`: stored and derived statuses.
 - `cheats.ts`: development cheats (issue #148), gated by `ALLOW_CHEATS`.

@@ -23,6 +23,8 @@ export interface ItemView {
   builds?: string;
   /** For a microwave: express cooks left (public to whoever can see the item, like its type). */
   charges?: number;
+  /** For a skill book: the skill it teaches (public to whoever can see the item). */
+  teaches?: string;
 }
 
 export interface OtherPlayerView {
@@ -45,6 +47,8 @@ export interface OtherPlayerView {
   pushedBy?: PlayerId;
   /** Skills they have chosen. Public to anyone in your room (empty for people elsewhere). */
   skills: string[];
+  /** The skill in their book slot, learned from a book. Public to anyone in your room (absent for people elsewhere). */
+  bookSkill?: string;
   /** Their contamination, shown as a status. Only when you are Mush, they are a contaminated human, and they are in your room. */
   contamination?: number;
   /**

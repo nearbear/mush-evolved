@@ -61,6 +61,8 @@ export interface ItemState {
   builds?: string;
   /** For a microwave: express cooks left. */
   charges?: number;
+  /** For a skill book: the skill id it teaches (SKILLS in skills.ts). */
+  teaches?: string;
 }
 
 /**
@@ -104,4 +106,5 @@ export type Action =
   | { type: "punch"; target: PlayerId }
   | { type: "spike"; target: PlayerId }
   | { type: "pick_skill"; skill: string }
+  | { type: "read_book"; item: ItemId }
   | { type: "ready" };

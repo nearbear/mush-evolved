@@ -10,6 +10,7 @@
 
 import { carriesHeavy } from "./items.ts";
 import { RESEARCH_COMPLETE } from "./research.ts";
+import { skillsOf } from "./skills.ts";
 import { antic_perfume } from "./modifiers/antic_perfume.ts";
 import { caffeinomaniac } from "./modifiers/caffeinomaniac.ts";
 import { creative } from "./modifiers/creative.ts";
@@ -87,9 +88,9 @@ export type ModifierRegistry = Readonly<Record<string, Modifier>>;
 /** Items and skills will register here too. When a skill gains rules, update its entry in SKILL_STATUS (skills.ts). */
 export const MODIFIERS: Record<string, Modifier> = { lying_down, medic, first_aid, sturdy, creative, antic_perfume, logistics, caffeinomaniac, computer, pacifist, immunity, mankind_only_hope, wheelchair };
 
-/** The ids every hook folds over: the player's skills, then their other modifiers. */
+/** The ids every hook folds over: the player's skills (book slot last), then their other modifiers. */
 export function modifierIds(player: Readonly<PlayerState>): string[] {
-  return [...player.skills, ...player.modifiers];
+  return [...skillsOf(player), ...player.modifiers];
 }
 
 /** Folds `base` through the named hook of each of the player's modifiers, in list order. */
