@@ -28,13 +28,19 @@ export function useShipLayout(): ShipLayout | undefined {
   const [layout, setLayout] = useState<ShipLayout>();
   useEffect(() => {
     let live = true;
-    loading ??= Promise.all([fetchJson<ShipArt>(artUrl), fetchJson<ShipMap>(mapUrl)]).then(([art, map]) => withoutBuiltOnly({ ...art, ...map }));
+    loading ??= loadShip().then(withoutBuiltOnly);
     loading.then((l) => live && setLayout(l)).catch(console.error);
     return () => {
       live = false;
     };
   }, []);
   return layout;
+}
+
+/** The art and the map as they are in the files, without the game's changes (the ship map editor draws this). */
+export async function loadShip(): Promise<ShipLayout> {
+  const [art, map] = await Promise.all([fetchJson<ShipArt>(artUrl), fetchJson<ShipMap>(mapUrl)]);
+  return { ...art, ...map };
 }
 
 async function fetchJson<T>(url: string): Promise<T> {

@@ -202,7 +202,10 @@ type Baseline = { ui: Record<string, number>; wire: Record<string, number> };
 
 describe("hardcoded English text", () => {
   const ui = Object.fromEntries(
-    sourceFiles("web/src", [".ts", ".tsx"]).map((file) => [file, findHardcodedUi(read(file), { jsx: file.endsWith(".tsx") })]),
+    sourceFiles("web/src", [".ts", ".tsx"])
+      // The ship map editor is a dev-only tool (never in a production build), in English only.
+      .filter((file) => !file.startsWith("web/src/editor/"))
+      .map((file) => [file, findHardcodedUi(read(file), { jsx: file.endsWith(".tsx") })]),
   );
   const wire = Object.fromEntries(
     [...sourceFiles("shared/src", [".ts"]), ...sourceFiles("server/src", [".ts"])]

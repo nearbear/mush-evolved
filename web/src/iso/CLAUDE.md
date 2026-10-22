@@ -165,6 +165,10 @@ describes a spot in screen terms, translate it to cells and confirm on the data 
   only regenerates the sprites (`ship-art.json`, from `tiles.xml`) and the rules' room graph
   (`ship-rooms.json`, from the map). Edit it with a short script through `readMap`/`writeMap`
   (`tools/src/shipLayout/shipMap.ts`), which keeps the format; `npm run layout-query` to search it.
+- **The ship map editor** (`web/src/editor/`, dev builds only): `npm run dev`, then `/editor`. It
+  draws the whole ship as fog depth "all" does, with pan, zoom, layer toggles, a grid and room
+  outlines on the ship plan, and names the tile under the pointer (room, index, slice, frame, cells,
+  door, equipment). Read-only for now (#211); editing and saving come in #212.
 - It was frozen on 2026-10-21 from the converter's output plus what the old draw-time fixes added
   for the whole ship (widened and lengthened corridors, walkways and deck floors, doors slid to meet,
   floor under doors and across one-cell gaps, walls between floors, walls carried on to meet the next
