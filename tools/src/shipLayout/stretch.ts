@@ -10,6 +10,9 @@
 //   them: Bedroom Beta landed on the Nexus, and Bay Beta on Bedroom Beta.
 //   Lengthening the corridor between those doors pushes them apart (and the
 //   bay's door to the bedroom then lines up exactly, which it didn't before).
+// - Beta centre's turret dome was hidden behind Bay Beta's side wall. The
+//   room is lengthened toward the front so the dome can move there (moves.ts);
+//   its position moves back as far, so its doors stay where they were.
 //
 // A stretch copies one line of floor and wall tiles `count` times and moves
 // everything past it along. Only plain tiles are copied, never the things
@@ -38,6 +41,8 @@ export const STRETCHES: readonly Stretch[] = [
   // Back corridor, lengthened: 2 rows between the Nexus and Bedroom Beta doors, 1 between Bedroom Beta and Bay Beta.
   { room: "CORRIDOR_C", axis: "y", after: 21, count: 2 },
   { room: "CORRIDOR_C", axis: "y", after: 26, count: 1 },
+  // Beta centre: three columns just inside its front wall.
+  { room: "LASER_TURRET_B_1", axis: "x", after: 12, count: 3 },
 ];
 
 /**

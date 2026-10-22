@@ -39,7 +39,7 @@ export const ROOM_POSITIONS: Positions = {
   CORRIDOR_A: { x: -31, y: 8 },
   REFECTORY: { x: -7, y: 9 },
   STORAGE_B_0: { x: -8, y: 18 },
-  LASER_TURRET_B_1: { x: -18, y: 25 },
+  LASER_TURRET_B_1: { x: -21, y: 25 },
   LASER_TURRET_B_2: { x: 32, y: 25 },
   HYDROPONIC_CENTER: { x: -35, y: 0 },
   LASER_TURRET_A_0: { x: -46, y: -3 },

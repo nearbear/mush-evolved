@@ -191,7 +191,10 @@ describes a spot in screen terms, translate it to cells and confirm on the data 
   nothing overlaps); the current table came from that.
 - Room shapes are ours in places: `tools/src/shipLayout/stretch.ts` widens the corridors to four
   cells (the front corridor so that its two-cell end doors have one wall each side) and
-  lengthens the back corridor, then `npm run ship-layout` regenerates the data. Changing a room's
+  lengthens the back corridor and Beta centre (toward the front, so its dome clears Bay Beta's side
+  wall), and `moves.ts` moves things inside rooms after that (Beta centre's dome, chair and stand,
+  with the two floorless cells under the dome); then `npm run ship-layout` regenerates the data.
+  fillGaps puts no wall on a cell under a turret dome (`TURRET_DOMES`). Changing a room's
   shape doesn't move other rooms any more; `npm run ship-check` shows what it now overlaps.
 - `fillGaps` (in `placeScene`) patches the holes where drawn rooms meet: floor under doors that
   have none, floor across a one-cell strip between a room and another room's wall (only from floor

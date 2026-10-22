@@ -6,7 +6,7 @@
 // Run with `npm run ship-layout`. Reproduces how the original Flash client
 // read these files (clients/iso/src/Data.hx `makeMap`/`addToStore`, Ship.hx
 // `buildRoomBmp`/`decorateDeps`), so comments cite those functions. Then it
-// applies our own changes to the room shapes (stretch.ts).
+// applies our own changes to the room shapes (stretch.ts) and what's in them (moves.ts).
 //
 // The output is derived from CC BY-NC-SA material, so it is written into the
 // Mush/ tree, not into our code.
@@ -30,6 +30,7 @@ import { decodePng, encodePng, pngSize, type Image } from "./png.ts";
 import { buildPage, pageSheets } from "./pages.ts";
 import { cachedPlan, convertShipPlan, formatShipPlan } from "./shipPlan.ts";
 import { placeRooms, ROOM_POSITIONS, type Positions } from "./roomPositions.ts";
+import { MOVES, moveTiles, type TileMove } from "./moves.ts";
 import { stretchRooms } from "./stretch.ts";
 import { DECK_ROOMS, deckFloors, paintWalkways, WALKWAYS, type Walkway } from "./walkways.ts";
 import { child, childrenNamed, parseXml, type XmlElement } from "./xml.ts";
@@ -124,7 +125,12 @@ export function convert(
   mapImage: Image,
   tilesXml: string,
   sheetSize: (file: string) => { width: number; height: number },
-  { positions = ROOM_POSITIONS, walkways = WALKWAYS, deck = DECK_ROOMS }: { positions?: Positions; walkways?: readonly Walkway[]; deck?: readonly string[] } = {},
+  {
+    positions = ROOM_POSITIONS,
+    walkways = WALKWAYS,
+    deck = DECK_ROOMS,
+    moves = MOVES,
+  }: { positions?: Positions; walkways?: readonly Walkway[]; deck?: readonly string[]; moves?: readonly TileMove[] } = {},
 ): ShipLayout {
   const xml = parseXml(tilesXml);
   const data = child(xml, "data") ?? fail("tiles.xml: missing <data>");
@@ -200,9 +206,10 @@ export function convert(
     }
   }
 
-  // Our changes to the room shapes (stretch.ts) and floors (walkways.ts), then where each room
-  // sits on the ship (roomPositions.ts); tile indices are kept.
-  return { roomSize: size, sheets, slices, rooms: deckFloors(placeRooms(paintWalkways(stretchRooms(rooms, slices), walkways), slices, positions), walkways, deck), autoBind };
+  // Our changes to the room shapes (stretch.ts), what's in them (moves.ts) and floors (walkways.ts), then
+  // where each room sits on the ship (roomPositions.ts); tile indices are kept.
+  const edited = paintWalkways(moveTiles(stretchRooms(rooms, slices), moves), walkways);
+  return { roomSize: size, sheets, slices, rooms: deckFloors(placeRooms(edited, slices, positions), walkways, deck), autoBind };
 }
 
 /** Ship.buildRoomBmp: four side-by-side size x size layers per room row. */

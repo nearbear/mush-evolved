@@ -244,6 +244,9 @@ function link(sprites: readonly (PlacedSprite & Sortable)[], i: number, j: numbe
   if (c !== 0) pairs.push(...(c < 0 ? [x, y] : [y, x]));
 }
 
+/** The turret domes, whose art fills the cells they leave without floor. */
+const TURRET_DOMES = new Set(["turret_alpha", "turret_beta"]);
+
 /**
  * The original drew one room at a time, with walls only on its back edges and no floor under its
  * doors, so a scene of several rooms has holes where they meet. This fills them, in order:
@@ -252,7 +255,8 @@ function link(sprites: readonly (PlacedSprite & Sortable)[], i: number, j: numbe
  * 2. A floor tile on an empty cell between a room's floor and another room's wall or door: rooms
  *    are placed locally (`neighborRooms`), and sometimes land one cell short of the wall that
  *    should close them.
- * 3. A wall on an empty cell with floor on both sides of it, running along the other axis.
+ * 3. A wall on an empty cell with floor on both sides of it, running along the other axis, unless the
+ *    cell is under a turret's dome.
  * 4. Walls that stop an edge or two short of another room's wall carried on to meet it, with a
  *    corner piece where they now turn (`joinWalls`).
  *
@@ -263,9 +267,15 @@ function fillGaps<R extends SceneRooms[number]>(layout: ShipLayout, rooms: reado
   const key = (x: number, y: number) => `${x},${y}`;
   const floor = new Map<string, { room: number; tile: TilePlacement }>();
   const walls = new Map<string, number>();
+  /** Cells under a turret's dome: it leaves two of them without floor, and its art fills them. */
+  const domed = new Set<string>();
   rooms.forEach(({ room, dx, dy }, i) => {
     for (const t of room.tiles) {
       const k = key(t.x + dx, t.y + dy);
+      if (TURRET_DOMES.has(t.slice)) {
+        const [w, h] = layout.slices[t.slice]?.footprint ?? [1, 1];
+        for (let j = 0; j < h; j++) for (let n = 0; n < w; n++) domed.add(key(t.x + dx - n, t.y + dy - j));
+      }
       if (t.kind === "ground" && !floor.has(k)) floor.set(k, { room: i, tile: t });
       else if ((t.kind === "wall" || t.kind === "door") && !walls.has(k)) walls.set(k, i);
       // A door's second cell is part of the door.
@@ -348,8 +358,9 @@ function fillGaps<R extends SceneRooms[number]>(layout: ShipLayout, rooms: reado
     }
   }
 
-  // 3. Walls between two floors.
+  // 3. Walls between two floors, except under a turret's dome.
   for (const [cx, cy] of empty()) {
+    if (domed.has(key(cx, cy))) continue;
     const at = (x: number, y: number) => floor.get(key(x, y))?.room;
     const w = at(cx - 1, cy), e = at(cx + 1, cy), n = at(cx, cy - 1), s = at(cx, cy + 1);
     const alongY = w !== undefined && e !== undefined;

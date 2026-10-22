@@ -213,6 +213,17 @@ describe("the real ship", () => {
     }
   });
 
+  it("puts no wall on the cells a turret's dome leaves without floor", () => {
+    // Each Beta dome leaves two cells empty between floor; its art fills them.
+    for (const id of ["LASER_TURRET_B_0", "LASER_TURRET_B_1", "LASER_TURRET_B_2"]) {
+      const room = ship.rooms.find((r) => r.id === id)!;
+      const dome = room.tiles.find((t) => t.slice === "turret_beta")!;
+      const scene = placeScene(ship, [{ room, dx: 0, dy: 0, actors: [] }]);
+      const walls = scene.filter((s) => s.kind === "wall" && dome.x - s.cell.x <= 2 && dome.x >= s.cell.x && dome.y - s.cell.y <= 2 && dome.y >= s.cell.y);
+      expect(walls.map((s) => `${s.slice} ${s.cell.x},${s.cell.y}`), id).toEqual([]);
+    }
+  });
+
   it("carries hydroponics' wall on to the front corridor's at the corner neither room draws", () => {
     // Hydroponics' wall along the corridor stops at its own front edge; the corridor's wall in front
     // of hydroponics starts one edge further on. The wall goes on to meet it, with a column at the

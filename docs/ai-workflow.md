@@ -991,3 +991,15 @@ Claude extracted the hunter and space-combat material from `Mush/` into `docs/sp
 ## 2026-10-21: Action `check` becomes a template method (house cleaning)
 
 A cleanliness review found nine actions whose `check` override never called `canAfford` (all free today). Prices go through modifier hooks, so a surcharge on a free action would have let it run on too few points. The base `check` is now `validate(...) ?? canAfford(...)`, and every action overrides `validate` instead, so the price check can't be skipped. `move` now also gets the generic check on top of its own conversion check. Same pass: removed an unused duplicate of `visibleTargets` and the unused `examineEvent` from `actions.ts`, a commented-out block in `heal.ts`, and the `getUp` re-export in `rules.ts`. Worked: a mechanical rename across 31 files, with one miss (a nested `canAfford` in `dismantle.ts` at a deeper indent) caught by grep afterwards.
+
+## 2026-10-21: Turret domes in the iso view
+
+- Asked to make the turrets face front, outward and back. Checking the art first showed the limits: each dome is one sprite with fixed frames (Alpha: front or outward from the far wall; Beta: outward or backward hanging off the near edge), and mirroring adds no new directions. Reporting that before editing avoided "fixing" turrets that were already as good as the art allows; the owner then narrowed the request.
+- Beta rear's stray walls came from `fillGaps` step 3, not the map: the dome leaves two floorless cells, which it read as gaps. Skipping every furnished cell was too broad (it dropped real gap walls at the bridge and hydroponics, caught by placement tests); it now skips only turret dome cells.
+- Beta centre's dome was behind Bay Beta's side wall, which reaches four rows further out. Moving the dome along the edge wasn't enough; the owner pointed at the stand's strut showing where it belonged, so the room was lengthened three columns toward the front (stretch.ts, position moved back as far so doors stay put) and the dome moved with a new `moves.ts` step. A Python string-slice edit corrupted `moves.ts` (matched `];` inside a type); rewritten whole.
+- Alpha rear left open: no Alpha frame aims backward, and the Beta art has "B3" painted on it.
+
+### 2026-10-21: i18n pass on client text and wire errors
+- Ran the repo's hardcoded-text scanner to list what was left, then translated the client strings (en/fr/es) and switched every shared/server error to a snake_case code the client maps through `errors.*` (the convention already used by `queue_full` and friends). The i18n baseline is now empty except for bot names.
+- Needed correction: the scanner flagged `error: "illegal_action"` as English, so it now skips snake_case ids (with a test). Three components split out of `ITrackie.tsx` had never been added to the baseline, so the ratchet failed until they were translated too.
+- The fr/es strings are drafts; game terms ("End cycle", "Go", "AI") need a native speaker.

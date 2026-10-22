@@ -109,8 +109,8 @@ describe("convert", () => {
     <extras><room rid="COMMAND_CENTER">${doors}</room><autoBind/></extras>
   </data>`;
   const size = () => ({ width: 2000, height: 2000 });
-  // The real walkways need the real rooms' floors.
-  const convert = (image: Image, tiles: string, sheetSize: typeof size) => convertLayout(image, tiles, sheetSize, { walkways: [], deck: [] });
+  // The real walkways and moves need the real rooms' tiles.
+  const convert = (image: Image, tiles: string, sheetSize: typeof size) => convertLayout(image, tiles, sheetSize, { walkways: [], deck: [], moves: [] });
   const img = map([
     [0xffa301, 0xc0c0c0, 0x123456, W, W, W, W, W],
     [0xffa3ff, W, W, W, W, W, W, W],
