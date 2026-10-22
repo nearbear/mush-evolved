@@ -101,6 +101,12 @@ export function Lobby({ onMatched }: { onMatched: (ticket: SeatTicket) => void }
 
   return (
     <main className={sleeping ? "pod pod-sleeping" : "pod"}>
+      {import.meta.env.DEV && (
+        <nav className="pod-devlinks">
+          <a href="/editor">Editor</a> {/* i18n-ignore: dev servers only */}
+          <a href="/design-kit.html">Design kit</a> {/* i18n-ignore: dev servers only */}
+        </nav>
+      )}
       <div className="pod-toolbar">
         <LanguageSwitcher inline />
       </div>
