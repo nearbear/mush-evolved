@@ -89,7 +89,7 @@ export function Lobby({ onMatched }: { onMatched: (ticket: SeatTicket) => void }
         setError(t("lobby.characterTaken"));
         setCharacter(null);
       }
-      if (msg.type === "error") setError(msg.message);
+      if (msg.type === "error") setError(t(`errors.${msg.message}` as never, { defaultValue: msg.message }));
     });
     return () => {
       clearTimeout(timer);

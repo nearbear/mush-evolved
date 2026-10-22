@@ -142,6 +142,7 @@ describe("findHardcodedWire", () => {
     expect(wire("logPublic(next, from, `${p.name} left for ${roomName(to)}.`);")).toHaveLength(1);
     expect(wire(`logPrivate(next, p.id, "You examine it.");`)).toHaveLength(1);
     expect(wire(`if (!this.game) return "No game";`)).toEqual(['"No game"']);
+    expect(wire(`return { ok: false, error: "illegal_action" };`)).toEqual([]);
     expect(wire("return `the ${equipmentName(type)}`;")).toHaveLength(1);
     expect(wire(`wrench: { name: "Wrench" },`)).toEqual(['"Wrench"']);
   });

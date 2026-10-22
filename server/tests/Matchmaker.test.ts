@@ -52,7 +52,7 @@ describe("Matchmaker queue", () => {
   it("rejects malformed messages and ignores a second queue request", async () => {
     const a = join(null);
     await mm.onMessage(a as never, "{}");
-    expect(msgs(a).at(-1)).toEqual({ type: "error", message: "Malformed message" });
+    expect(msgs(a).at(-1)).toEqual({ type: "error", message: "malformed_message" });
     await queue(a, "Ann");
     await queue(a, "Other");
     expect((a.state as { name: string }).name).toBe("Ann");
@@ -73,7 +73,7 @@ describe("Matchmaker queue", () => {
   it("rejects an unknown character", async () => {
     const a = join(null);
     await queue(a, "Ann", "nobody");
-    expect(msgs(a).at(-1)).toEqual({ type: "error", message: "Malformed message" });
+    expect(msgs(a).at(-1)).toEqual({ type: "error", message: "malformed_message" });
   });
 
   it("cancels the fill timer when the queue empties", async () => {

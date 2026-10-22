@@ -161,7 +161,7 @@ export function applyAction(state: GameState, playerId: PlayerId, action: Action
   const p = findPlayer(state, playerId);
   const next = clone(state);
   if (p && canAct(state, p) && performAction(next, findPlayer(next, playerId)!, action)) return { ok: true, state: next };
-  return { ok: false, error: "Illegal action" };
+  return { ok: false, error: "illegal_action" };
 }
 
 /**

@@ -165,12 +165,12 @@ export class GameRoom extends Server<Env> {
     if (!playerId || !this.game) return;
     if (!this.limiter.allow(connection.id)) {
       this.countRateLimited(playerId);
-      this.send(connection, { type: "error", message: "Slow down" });
+      this.send(connection, { type: "error", message: "slow_down" });
       return;
     }
     const msg = typeof raw === "string" ? parseGameMessage(raw) : null;
     if (!msg) {
-      this.send(connection, { type: "error", message: "Malformed message" });
+      this.send(connection, { type: "error", message: "malformed_message" });
       return;
     }
     if ((msg.type === "cheat" || msg.type === "actopiCheat" || msg.type === "roleCheat") && !this.cheatsAllowed) {
@@ -226,10 +226,10 @@ export class GameRoom extends Server<Env> {
 
   /** Chat and channel management. Untrusted text: rate limit, then moderate, then let the rules decide. */
   private async social(playerId: PlayerId, msg: Exclude<GameClientMessage, { type: "action" | "clearQueue" | "walk" | "cheat" | "actopiCheat" | "roleCheat" }>): Promise<string | null> {
-    if (!this.game) return "No game";
+    if (!this.game) return "no_game";
     if (!this.chatLimiter.allow(playerId)) {
       this.countRateLimited(playerId);
-      return "You're sending messages too quickly";
+      return "too_many_messages";
     }
     if (msg.type !== "chat" && msg.type !== "createChannel" && msg.type !== "createThread") return this.act({ ...msg, by: playerId });
     const raw = msg.type === "chat" ? msg.text : msg.name;
@@ -259,7 +259,7 @@ export class GameRoom extends Server<Env> {
    * room are sent again (a walk changes no one else's).
    */
   private async act(input: Input, raw?: string, room?: string): Promise<string | null> {
-    if (!this.game) return "No game";
+    if (!this.game) return "no_game";
     const result = applyInput(this.game, input);
     if (!result.ok) return result.error;
     this.game = stamp(result.state);

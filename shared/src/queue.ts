@@ -27,14 +27,14 @@ export function queueAction(state: GameState, playerId: PlayerId, action: Action
   state = { ...state, now: at };
   const p = findPlayer(state, playerId);
   const def: ActionDef<Action> | undefined = ACTIONS[action.type];
-  if (!p || !def) return fail("Illegal action");
+  if (!p || !def) return fail("illegal_action");
   if (!def.timed || p.cheats.includes("instantActions")) {
     const done = applyAction(state, playerId, action);
     if (done.ok) standUp(findPlayer(done.state, playerId)!, def);
     return done;
   }
   // Checked against things as they are now, like the buttons the player pressed; checked again when its turn comes.
-  if (!canAct(state, p) || def.check(state, p, action) !== null) return fail("Illegal action");
+  if (!canAct(state, p) || def.check(state, p, action) !== null) return fail("illegal_action");
   if (p.current && p.queue.length >= state.config.action.queueCap) return fail("queue_full");
   const next = clone(state);
   const actor = findPlayer(next, playerId)!;

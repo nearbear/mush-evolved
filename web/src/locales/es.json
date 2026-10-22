@@ -223,6 +223,16 @@
     "underWay": "{{action}} en curso"
   },
   "errors": {
+    "illegal_action": "No puedes hacer eso ahora mismo.",
+    "unknown_player": "No tienes asiento en esta partida.",
+    "cant_post": "No puedes escribir ahí.",
+    "empty_message": "Escribe algo primero.",
+    "message_too_long": "Los mensajes están limitados a {{max}} caracteres.",
+    "too_many_lines": "Los mensajes están limitados a {{lines}} líneas.",
+    "slow_down": "Más despacio.",
+    "too_many_messages": "Estás enviando mensajes demasiado rápido.",
+    "malformed_message": "No se entendió esa petición.",
+    "no_game": "No hay ninguna partida en curso.",
     "queue_full": "Tu cola de acciones está llena.",
     "nothing_queued": "No tienes acciones que vaciar.",
     "cant_walk": "Ahora no puedes moverte por la sala.",

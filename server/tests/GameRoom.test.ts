@@ -104,11 +104,11 @@ describe("GameRoom input handling", () => {
     const { room } = await newRoom();
     const c = connect(room, "tok0");
     await send(room, c, "not json");
-    expect(lastMsg(c)).toEqual({ type: "error", message: "Malformed message" });
+    expect(lastMsg(c)).toEqual({ type: "error", message: "malformed_message" });
     await send(room, c, { type: "action", action: { type: "launchMissiles" } });
-    expect(lastMsg(c)).toEqual({ type: "error", message: "Malformed message" });
+    expect(lastMsg(c)).toEqual({ type: "error", message: "malformed_message" });
     await room.onMessage(c as never, new ArrayBuffer(4));
-    expect(lastMsg(c)).toEqual({ type: "error", message: "Malformed message" });
+    expect(lastMsg(c)).toEqual({ type: "error", message: "malformed_message" });
   });
 
   it("acts as the authenticated seat, ignoring any 'by' the client claims", async () => {
@@ -139,7 +139,7 @@ describe("GameRoom input handling", () => {
     const c = connect(room, "tok0");
     for (let i = 0; i < 15; i++) await send(room, c, "x");
     const errors = c.messages<GameServerMessage>().filter((m) => m.type === "error");
-    expect(errors.filter((e) => (e as { message: string }).message === "Slow down")).toHaveLength(5);
+    expect(errors.filter((e) => (e as { message: string }).message === "slow_down")).toHaveLength(5);
     // The counter is saved with the next accepted change.
     const move = legalIn(lastView(c)).find((x) => x.type === "move")!;
     room.onClose(c as never);
@@ -154,7 +154,7 @@ describe("GameRoom input handling", () => {
     for (let i = 0; i < 10; i++) await send(room, c, "x");
     room.onClose(c as never);
     await send(room, c, "x");
-    expect(lastMsg(c)).toEqual({ type: "error", message: "Malformed message" });
+    expect(lastMsg(c)).toEqual({ type: "error", message: "malformed_message" });
   });
 });
 
@@ -207,7 +207,7 @@ describe("GameRoom chat", () => {
     const { room, storage } = await newRoom();
     const a = connect(room, "tok0");
     await send(room, a, { type: "chat", channel, text: "   " });
-    expect(lastMsg(a)).toEqual({ type: "error", message: "Empty message" });
+    expect(lastMsg(a)).toEqual({ type: "error", message: "empty_message" });
     const blocked = [...storage.data].filter(([k]) => k.startsWith("blocked:"));
     expect(blocked).toHaveLength(1);
     expect(blocked[0]![1]).toMatchObject({ by: "p0", type: "chat" });

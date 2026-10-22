@@ -222,6 +222,16 @@
     "underWay": "{{action}} under way"
   },
   "errors": {
+    "illegal_action": "You can't do that right now.",
+    "unknown_player": "You aren't seated in this game.",
+    "cant_post": "You can't post there.",
+    "empty_message": "Write something first.",
+    "message_too_long": "Messages are limited to {{max}} characters.",
+    "too_many_lines": "Messages are limited to {{lines}} lines.",
+    "slow_down": "Slow down.",
+    "too_many_messages": "You're sending messages too quickly.",
+    "malformed_message": "That request wasn't understood.",
+    "no_game": "There is no game running.",
     "queue_full": "Your action queue is full.",
     "nothing_queued": "You have no actions to clear.",
     "cant_walk": "You can't walk around right now.",

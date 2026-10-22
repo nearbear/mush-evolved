@@ -15,7 +15,7 @@ import { applyAction, createGame, dayOf } from "../src/rules.ts";
 import type { Action, GameState, PlayerId } from "../src/types.ts";
 import { makeSeats, player } from "./support.ts";
 
-const ILLEGAL = "Illegal action";
+const ILLEGAL = "illegal_action";
 const config = { ...DEFAULT_CONFIG, mushCount: 1, startInventory: [], startItems: [], startSkills: [], maxAp: 99, startAp: 50 };
 
 /** p0 and p1 are Mush with a spore each, p2 and p3 human; all in the laboratory but p3, in the refectory. */

@@ -223,6 +223,16 @@
     "underWay": "{{action}} en cours"
   },
   "errors": {
+    "illegal_action": "Vous ne pouvez pas faire cela maintenant.",
+    "unknown_player": "Vous n'avez pas de place dans cette partie.",
+    "cant_post": "Vous ne pouvez pas écrire ici.",
+    "empty_message": "Écrivez d'abord quelque chose.",
+    "message_too_long": "Les messages sont limités à {{max}} caractères.",
+    "too_many_lines": "Les messages sont limités à {{lines}} lignes.",
+    "slow_down": "Doucement.",
+    "too_many_messages": "Vous envoyez des messages trop vite.",
+    "malformed_message": "Cette requête n'a pas été comprise.",
+    "no_game": "Aucune partie en cours.",
     "queue_full": "Votre file d'actions est pleine.",
     "nothing_queued": "Vous n'avez aucune action à annuler.",
     "cant_walk": "Vous ne pouvez pas vous déplacer dans la pièce pour l'instant.",

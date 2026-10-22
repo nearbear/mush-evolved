@@ -77,11 +77,11 @@ export function chatChannels(state: GameState, player: Readonly<PlayerState>): C
 
 export function sendChat(state: GameState, playerId: PlayerId, channel: ChannelId, text: string): ActionResult {
   const p = findPlayer(state, playerId);
-  if (!p) return { ok: false, error: "Unknown player" };
-  if (!chatChannels(state, p).includes(channel)) return { ok: false, error: "You can't post there" };
+  if (!p) return { ok: false, error: "unknown_player" };
+  if (!chatChannels(state, p).includes(channel)) return { ok: false, error: "cant_post" };
   const body = text.trim();
-  if (!body) return { ok: false, error: "Empty message" };
-  if (body.length > MAX_CHAT_LENGTH) return { ok: false, error: "Message too long" };
+  if (!body) return { ok: false, error: "empty_message" };
+  if (body.length > MAX_CHAT_LENGTH) return { ok: false, error: "message_too_long" };
 
   const next = clone(state);
   pushChat(next, channel, { from: p.id, isBot: p.isBot, text: body });

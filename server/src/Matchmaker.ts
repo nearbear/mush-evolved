@@ -22,7 +22,7 @@ export class Matchmaker extends Server<Env> {
     if (!this.limiter.allow(connection.id)) return;
     const msg = typeof raw === "string" ? parseMatchmakerMessage(raw) : null;
     if (!msg) {
-      this.send(connection, { type: "error", message: "Malformed message" });
+      this.send(connection, { type: "error", message: "malformed_message" });
       return;
     }
     if (connection.state?.name) return; // already queued
@@ -84,6 +84,7 @@ export class Matchmaker extends Server<Env> {
       // Bots are always labeled as AI to players.
       // Every bot is a log parrot for now; "wander" bots are still supported but not selected anywhere yet.
       const botKind = "logParrot";
+      // i18n-ignore: a player name; the client marks bots as AI from isBot
       seats.push({ id: `p${i}`, name: `Bot ${i - humans.length + 1} (AI)`, isBot: true, botKind, character: botCharacters[i - humans.length]! });
     }
 

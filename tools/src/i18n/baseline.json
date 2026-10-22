@@ -1,10 +1,4 @@
 {
   "ui": {},
-  "wire": {
-    "shared/src/chat.ts": 4,
-    "shared/src/moderation.ts": 2,
-    "shared/src/rules.ts": 1,
-    "server/src/GameRoom.ts": 5,
-    "server/src/Matchmaker.ts": 2
-  }
+  "wire": {}
 }

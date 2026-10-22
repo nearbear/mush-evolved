@@ -125,6 +125,8 @@ export function findHardcodedWire(src: string): Finding[] {
       // `return "global"` is an id; `return "Slow down"` and `return `the ${x}`` are sentences.
       // Likewise logPublic(state, room, "left", ...) passes a message id, not text.
       if (pattern !== KEYED && !(/\s/.test(body) || /^[A-Z]/.test(body))) continue;
+      // A snake_case error code (`error: "illegal_action"`) is an id the client turns into text.
+      if (/^[a-z]+(?:_[a-z]+)+$/.test(body)) continue;
       hits.set(m.index!, literal);
     }
   }

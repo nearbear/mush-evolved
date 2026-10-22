@@ -3,7 +3,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import type PartySocket from "partysocket";
-import { CORPSE_ITEM, legalIn, type Action, type ActopiCheat, type CharacterId, type Cheat, type GameClientMessage, type GameServerMessage, type PlayerView, type RoleCheat, type RoomId, type Spot, type Target } from "@mush2/shared";
+import { CORPSE_ITEM, MAX_CHAT_LENGTH, MAX_CHAT_LINES, legalIn, type Action, type ActopiCheat, type CharacterId, type Cheat, type GameClientMessage, type GameServerMessage, type PlayerView, type RoleCheat, type RoomId, type Spot, type Target } from "@mush2/shared";
 import i18n from "i18next";
 import { useTranslation } from "react-i18next";
 import { ActionQueue } from "./hud/ActionQueue.tsx";
@@ -88,7 +88,7 @@ export function GameScreen({ ticket, onLeave }: { ticket: SeatTicket; onLeave: (
         setCheatsAllowed(msg.cheatsAllowed);
         setClockOffset(msg.now - Date.now());
         setNextCycleAt(msg.nextCycleAt);
-      } else showError(i18n.t(`errors.${msg.message}` as never, { defaultValue: msg.message }));
+      } else showError(i18n.t(`errors.${msg.message}` as never, { defaultValue: msg.message, max: MAX_CHAT_LENGTH, lines: MAX_CHAT_LINES }));
     });
     // 4001 = invalid seat token (e.g. the local server was restarted).
     socket.addEventListener("close", (e: CloseEvent) => {

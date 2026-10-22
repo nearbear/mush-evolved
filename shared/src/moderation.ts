@@ -30,8 +30,8 @@ export function moderateChat(raw: string, blocked: readonly string[] = BLOCKED_W
     .replace(/ ?\n ?/g, "\n")
     .replace(/\n{3,}/g, "\n\n")
     .trim();
-  if (!text) return { ok: false, reason: "Empty message" };
-  if (text.length > MAX_CHAT_LENGTH) return { ok: false, reason: `Messages are limited to ${MAX_CHAT_LENGTH} characters` };
+  if (!text) return { ok: false, reason: "empty_message" };
+  if (text.length > MAX_CHAT_LENGTH) return { ok: false, reason: "message_too_long" };
   if (text.split("\n").length > MAX_CHAT_LINES) return { ok: false, reason: TOO_MANY_LINES };
   text = text.replace(LINK, "[link removed]");
   for (const word of blocked) {
