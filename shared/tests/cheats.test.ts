@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { CHEATS, type Cheat } from "../src/cheats.ts";
+import { pilgredGainRange } from "../src/pilgred.ts";
+import { TITLE_IDS, bypassesTitles, hasTitleAccess } from "../src/titles.ts";
 import { DEFAULT_CONFIG } from "../src/config.ts";
 import { parseGameMessage } from "../src/protocol.ts";
 import { dailyMoraleLoss } from "../src/modifiers.ts";
@@ -145,5 +147,38 @@ describe("spores and role cheats", () => {
     expect(player(r.state, h)).toMatchObject({ role: "human", spores: 0 });
     expect(parseGameMessage(JSON.stringify({ type: "roleCheat", role: "mush" }))).toEqual({ type: "roleCheat", role: "mush" });
     expect(parseGameMessage(JSON.stringify({ type: "roleCheat", role: "god" }))).toBeNull();
+  });
+});
+
+describe("relay and title cheats", () => {
+  it("no relay penalty: repeat PILGRED repairs by the same player gain the full amount", () => {
+    let s = fresh();
+    for (const p of s.players) p.room = "MOTOR_ROOM";
+    s = cheat(s, "p0", "noRelayPenalty");
+    const first = pilgredGainRange(s, player(s, "p0"));
+    for (let i = 0; i < 3; i++) {
+      player(s, "p0").ap = cfg.maxAp;
+      const r = applyAction(s, "p0", { type: "repair_pilgred", equipment: "MOTOR_ROOM:PILGRED" });
+      if (!r.ok) throw new Error(r.error);
+      s = r.state;
+    }
+    expect(s.pilgred).toMatchObject({ lastBy: "p0", streak: 3 });
+    expect(pilgredGainRange(s, player(s, "p0"))).toEqual(first);
+    // Switched off, the streak counts again.
+    s = cheat(s, "p0", "noRelayPenalty", false);
+    expect(pilgredGainRange(s, player(s, "p0")).min).toBeLessThan(first.min);
+  });
+
+  it("free hacking gives access to every title, held or not", () => {
+    let s = fresh();
+    const holder = s.titles.commander!;
+    const other = s.players.find((p) => p.id !== holder)!.id;
+    expect(hasTitleAccess(s, player(s, holder), "commander")).toBe(true);
+    expect(hasTitleAccess(s, player(s, other), "commander")).toBe(false);
+    s = cheat(s, other, "freeHacking");
+    expect(bypassesTitles(player(s, other))).toBe(true);
+    for (const title of TITLE_IDS) expect(hasTitleAccess(s, player(s, other), title)).toBe(true);
+    s.titles.commander = null;
+    expect(hasTitleAccess(s, player(s, other), "commander")).toBe(true);
   });
 });

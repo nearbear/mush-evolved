@@ -48,6 +48,8 @@
       "enableAll": "Activer tous les cheats ci-dessus",
       "disableAll": "Désactiver tous les cheats ci-dessus",
       "instantActions": "Actions instantanées",
+      "noRelayPenalty": "Pas de pénalité de relais",
+      "freeHacking": "Piratage libre",
       "role": {"mush": "Devenir Mush", "human": "Devenir humain"},
       "actopi": {
         "label": "ACTOPI",

@@ -38,6 +38,24 @@ export function eligibleForTitle(p: Readonly<PlayerState>): boolean {
 }
 
 /**
+ * Whether a player can use what a title locks without holding it. Today only the freeHacking cheat;
+ * the Hacker Kit (not built) goes here too, so every title check picks it up. Note the decided rule for
+ * returning to Sol lets the kit stand in for the Commander only while that title is vacant
+ * (docs/rules-design.md), so the kit may need a `title`-aware check rather than a blanket bypass.
+ */
+export function bypassesTitles(p: Readonly<PlayerState>): boolean {
+  return p.cheats.includes("freeHacking");
+}
+
+/**
+ * Whether a player may use something locked to a title: they hold it, or they bypass titles. Every
+ * title-locked action (none are built yet; return to Sol will be the first) checks this, not `state.titles`.
+ */
+export function hasTitleAccess(state: Readonly<GameState>, p: Readonly<PlayerState>, title: TitleId): boolean {
+  return state.titles[title] === p.id || bypassesTitles(p);
+}
+
+/**
  * Who should hold a title now: the holder while they are eligible, otherwise the first eligible
  * person in the line, or null. Pure: `eligible` decides, so the order rules are tested on their own.
  */

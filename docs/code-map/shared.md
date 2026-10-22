@@ -34,7 +34,7 @@ Other packages import from `@mush2/shared` (`shared/src/index.ts`, the barrel). 
 - `skills.ts`: the pickable human skills, `SKILL_SLOTS`, and `skillsOf`/`hasSkill` (picked skills plus the book slot).
 - `titles.ts`: `TITLE_IDS`, each title's line (`SUCCESSION`), `successor` (pure), `assignTitles` (at creation) and `refreshTitles` (after a death).
 - `statuses.ts`: stored and derived statuses.
-- `cheats.ts`: development cheats (issue #148), gated by `ALLOW_CHEATS`.
+- `cheats.ts`: development cheats (issue #148), gated by `ALLOW_CHEATS`. Flag-only cheats are read where they apply: `instantActions` in `queue.ts`, `noRelayPenalty` in `pilgred.ts`, `freeHacking` in `titles.ts` (`bypassesTitles`).
 
 **Types, config, and data**
 

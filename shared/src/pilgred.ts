@@ -14,11 +14,12 @@ export const PILGRED_SKILLS = ["engineer", "physicist"] as const;
 /**
  * The gain range of one repair by this player, the original's `getBaseProgress`: `rate * mod / 10` (rounded down), plus the
  * boost for each PILGRED skill, minus the relay penalty for each repair in a row this player has just made (relaying: it
- * resets once someone else repairs), never below 0. The gain is rolled in [min, min + min / 2].
+ * resets once someone else repairs; the noRelayPenalty cheat waives it), never below 0. The gain is rolled in [min, min + min / 2].
  */
 export function pilgredGainRange(state: Readonly<GameState>, player: Readonly<PlayerState>): { min: number; max: number } {
   const { rate, mod, skillBoost, relayPenalty } = state.config.pilgred.progress;
-  const streak = state.pilgred.lastBy === player.id ? state.pilgred.streak : 0;
+  const relaying = state.pilgred.lastBy === player.id && !player.cheats.includes("noRelayPenalty");
+  const streak = relaying ? state.pilgred.streak : 0;
   let base = Math.floor((rate * mod) / 10);
   for (const skill of PILGRED_SKILLS) if (hasSkill(player, skill)) base += skillBoost;
   base = Math.max(0, base - streak * relayPenalty);
