@@ -74,6 +74,15 @@
   /* Selection has its own glow; the browser's tap rectangle would cover the whole room. */
   -webkit-tap-highlight-color: transparent;
 }
+/* Nothing in the room is selectable: no blue highlight when clicking or dragging over it. */
+.iso-room {
+  -webkit-user-select: none;
+  user-select: none;
+}
+.iso-room canvas,
+.iso-room img {
+  -webkit-user-drag: none;
+}
 .iso-viewport.pointing {
   cursor: pointer;
 }
