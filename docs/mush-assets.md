@@ -59,7 +59,7 @@ Reference for AI assistants and contributors. Describes what is in `Mush/` (repo
 
 ## Ship map and sprite atlases (`ShipMap.png`, `tiles.xml`)
 
-Converted to `Mush/derived/ship-layout.json` by `npm run ship-layout` (`tools/src/shipLayout/convert.ts`, which cites the Haxe functions it reproduces). Facts established while writing it:
+The rooms were converted from `ShipMap.png` into what is now `Mush/derived/ship-map.json` (frozen 2026-10-21 and edited by hand since); `tiles.xml` is still converted to `ship-art.json` by `npm run ship-layout` (`tools/src/shipLayout/convert.ts`, which cites the Haxe functions it reproduces). Facts established while writing the converter:
 
 - `ShipMap.png` has one 32-px row per room, in `RoomId` order (the `rooms` sheet of `Data.ods`). All patrol ships share one row. Starting at x=64, each row holds four 32x32 layers: base (floor/walls/doors), props, non-pathable entities, and extra entities (chairs, cameras). One pixel = one isometric grid cell; white = empty.
 - Pixel colors are lookup keys into `<frame color>` entries in `tiles.xml`, not meanings. Three colors in the map are undefined and were ignored by the original client.

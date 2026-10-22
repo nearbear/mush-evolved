@@ -1,23 +1,22 @@
-// Checks the ship plan (each room's `at` in ship-layout.json, from roomPositions.ts) for rooms
-// drawn on top of each other, doors whose two sides don't meet, and holes between rooms.
+// Checks the ship map (Mush/derived/ship-map.json) for rooms drawn on top of each other, doors
+// whose two sides don't meet, and holes between rooms. It only reports: fix what it finds in the map.
 //
-//   npm run ship-check                          # report on the plan in ship-layout.json
-//   npm run ship-check -- --seed CORRIDOR_C         # a fresh table placed door to door from that room, and its report
-//   npm run ship-check -- --seed CORRIDOR_C --fit   # then nudge rooms (up to 4 cells) until nothing overlaps
+//   npm run ship-check
 //
-// --seed starts from the converter's rooms, so it ignores the current table. Paste the table it
-// prints over ROOM_POSITIONS in roomPositions.ts and run `npm run ship-layout`.
-// Overlaps and doors moved off their floor paths are errors (a test fails on them). Misaligned
-// doors are listed so each can be fixed on purpose; gaps are for information (fillGaps in the iso
-// view patches one-cell strips).
+// Overlaps are errors (a test fails on them). Misaligned doors are pinned in a test so each is
+// fixed on purpose; gaps are for information.
 
-import { readFileSync } from "node:fs";
-import { resolve } from "node:path";
-import { parseArgs } from "node:util";
-import type { RoomLayout, ShipLayout } from "@mush2/shared";
-import { convert } from "./convert.ts";
-import { decodePng, pngSize } from "./png.ts";
-import { doorCells, FRONT_DOORS, formatPositions, keepsPath, placeRooms, seedPositions, type Positions } from "./roomPositions.ts";
+import type { RoomLayout, ShipLayout, SliceInfo, TilePlacement } from "@mush2/shared";
+import { readShip } from "./shipMap.ts";
+
+/** Doors on a room's open front edges (+x for DOOR_BR, +y for DOOR_BL): never drawn while the room behind them is. */
+export const FRONT_DOORS: ReadonlySet<string> = new Set(["DOOR_BR", "DOOR_BL"]);
+
+/** A door's cells: its anchor, and the second cell its footprint reaches toward -x or -y. */
+export function doorCells(slices: Record<string, SliceInfo>, door: Pick<TilePlacement, "x" | "y" | "slice">): { x: number; y: number }[] {
+  const [w, h] = slices[door.slice]?.footprint ?? [1, 1];
+  return w > 1 ? [{ x: door.x, y: door.y }, { x: door.x - 1, y: door.y }] : h > 1 ? [{ x: door.x, y: door.y }, { x: door.x, y: door.y - 1 }] : [{ x: door.x, y: door.y }];
+}
 
 export interface Overlap {
   /** The room whose floor is covered, and the room covering it. */
@@ -38,30 +37,15 @@ export interface Gap {
   cells: [number, number][];
 }
 
-export interface DoorOffPath {
-  room: string;
-  /** The room the door leads to. */
-  target: string;
-  /** Where the original put the door, and where it is now, in the room's own cells. */
-  from: [number, number];
-  to: [number, number];
-}
-
 export interface ShipReport {
   /** Rooms with a door to a placed room but no position of their own. */
   unplaced: string[];
   overlaps: Overlap[];
   doors: MisalignedDoor[];
-  /** Doors moved off a path drawn on the floor to them, or onto a cell with no floor behind. */
-  offPath: DoorOffPath[];
   gaps: Gap[];
 }
 
-/**
- * @param original the same rooms before placing (`convert` with no positions), to tell which
- * doors moved; without it no door is checked against its path.
- */
-export function checkShip(layout: Pick<ShipLayout, "rooms" | "slices">, original?: readonly RoomLayout[]): ShipReport {
+export function checkShip(layout: Pick<ShipLayout, "rooms" | "slices">): ShipReport {
   const placed = layout.rooms.filter((r): r is RoomLayout & { at: { x: number; y: number } } => !!r.at);
   const byId = new Map(layout.rooms.map((r) => [r.id, r]));
   const key = (x: number, y: number) => `${x},${y}`;
@@ -115,26 +99,7 @@ export function checkShip(layout: Pick<ShipLayout, "rooms" | "slices">, original
     .filter((r) => !r.at && r.tiles.some((t) => t.door && byId.get(t.door.target)?.at && byId.get(t.door.target)!.tiles.some((u) => u.door?.target === r.id)))
     .map((r) => r.id);
 
-  return { unplaced, overlaps: [...overlapMap.values()], doors, offPath: doorsOffPath(layout, original ?? []), gaps: findGaps(floor, solid) };
-}
-
-/**
- * Doors that moved (tile indices are kept, so the same index is the same door) off a path drawn
- * on the floor to them (`keepsPath`).
- */
-function doorsOffPath(layout: Pick<ShipLayout, "rooms" | "slices">, original: readonly RoomLayout[]): DoorOffPath[] {
-  const out: DoorOffPath[] = [];
-  for (const room of layout.rooms) {
-    const before = original.find((r) => r.id === room.id);
-    if (!before) continue;
-    room.tiles.forEach((t, i) => {
-      const o = before.tiles[i];
-      if (t.kind !== "door" || !o || (o.x === t.x && o.y === t.y)) return;
-      // Floors as the original has them (the corridors' deck floor is painted on afterwards); placing rooms moves no floor.
-      if (!keepsPath(before, before, layout.slices, o, t)) out.push({ room: room.id, target: t.door!.target, from: [o.x, o.y], to: [t.x, t.y] });
-    });
-  }
-  return out;
+  return { unplaced, overlaps: [...overlapMap.values()], doors, gaps: findGaps(floor, solid) };
 }
 
 /**
@@ -188,68 +153,11 @@ export function formatReport(report: ShipReport): string {
       "Overlaps (errors)",
       report.overlaps.map((o) => `${o.rooms[0]} ${o.kind === "floor" ? "floor on" : "floor under the wall of"} ${o.rooms[1]}: ${cells(o.cells)}`),
     ),
-    ...section(
-      "Doors moved off their floor paths (errors)",
-      report.offPath.map((d) => `${d.room} -> ${d.target}: from (${d.from.join(",")}) to (${d.to.join(",")})`),
-    ),
     ...section("Doors that don't line up", report.doors.map((d) => `${d.rooms[0]} -> ${d.rooms[1]}: ${d.rooms[1]}'s side is off by ${off(d.off)}`)),
     ...section("Gaps between rooms", report.gaps.map((g) => `${g.rooms[0]} / ${g.rooms[1]}: ${cells(g.cells)}`)),
   ].join("\n");
 }
 
-/** One number for how bad a plan is: overlapping cells and doors off their paths first, then how far doors are apart, then gaps. */
-export function planCost(report: ShipReport): number {
-  const overlap = report.overlaps.reduce((s, o) => s + o.cells.length, 0) + report.offPath.length;
-  const doors = report.doors.reduce((s, d) => s + Math.abs(d.off.x) + Math.abs(d.off.y), 0);
-  const gaps = report.gaps.reduce((s, g) => s + g.cells.length, 0);
-  return overlap * 100 + doors * 10 + gaps;
-}
-
-/**
- * Nudges rooms (all but `root`) one at a time, by up to `reach` cells each way, keeping any move
- * that lowers planCost, until a sweep changes nothing.
- */
-export function fitPositions(layout: Pick<ShipLayout, "rooms" | "slices">, start: Positions, root: string, reach = 4): Positions {
-  const cost = (p: Positions) => planCost(checkShip({ slices: layout.slices, rooms: placeRooms(layout.rooms, layout.slices, p) }, layout.rooms));
-  let pos = start;
-  let best = cost(pos);
-  for (let improved = true; improved; ) {
-    improved = false;
-    for (const id of Object.keys(pos)) {
-      if (id === root) continue;
-      const base = pos[id]!;
-      for (let dx = -reach; dx <= reach; dx++) {
-        for (let dy = -reach; dy <= reach; dy++) {
-          if (!dx && !dy) continue;
-          const trial = { ...pos, [id]: { x: base.x + dx, y: base.y + dy } };
-          const c = cost(trial);
-          if (c < best) [best, pos, improved] = [c, trial, true];
-        }
-      }
-    }
-  }
-  return pos;
-}
-
-/** The converter's layout with no room positions: the rooms, doors and floors as the original has them (after stretch.ts and the walkways, before the deck floors). */
-export function unplacedLayout(mush: string): ShipLayout {
-  const map = decodePng(readFileSync(resolve(mush, "clients/iso/gfx/ShipMap.png")));
-  const xml = readFileSync(resolve(mush, "clients/iso/xml/tiles.xml"), "utf8");
-  return convert(map, xml, (image) => pngSize(readFileSync(resolve(mush, image))), { positions: {}, deck: [] });
-}
-
 if (import.meta.main) {
-  const { values } = parseArgs({ options: { seed: { type: "string" }, fit: { type: "boolean" } } });
-  const mush = resolve(import.meta.dirname, "../../../Mush");
-  const raw = unplacedLayout(mush);
-  if (values.seed) {
-    let positions = seedPositions(raw.rooms, values.seed);
-    if (values.fit) positions = fitPositions(raw, positions, values.seed);
-    console.log(formatPositions(positions));
-    console.log(formatReport(checkShip({ ...raw, rooms: placeRooms(raw.rooms, raw.slices, positions) }, raw.rooms)));
-  } else {
-    if (values.fit) throw new Error("--fit needs --seed <ROOM>");
-    const layout = JSON.parse(readFileSync(resolve(mush, "derived/ship-layout.json"), "utf8")) as ShipLayout;
-    console.log(formatReport(checkShip(layout, raw.rooms)));
-  }
+  console.log(formatReport(checkShip(readShip())));
 }

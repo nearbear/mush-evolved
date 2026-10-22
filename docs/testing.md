@@ -51,9 +51,10 @@ A stalled or wiped game is the most visible failure for players.
 
 ## 5. Data and tooling
 
-- **Generated files are current:** `ship-layout.json`, `ship-rooms.json`, and `ship-plan.json` match their sources. *Covered* (`tools/tests/shipLayout/`).
+- **Generated files are current:** `ship-art.json`, `ship-rooms.json`, and `ship-plan.json` match their sources, and `ship-map.json` is in its one-tile-per-line format. *Covered* (`tools/tests/shipLayout/`).
 - **The ship map is sound:** every door goes both ways, and every room can be reached from the start room. *Covered* (`tools/tests/shipLayout/shipLayout.test.ts`, `rules.test.ts`). The minimap plan has the same doors as the rules' room graph.
-- **Converter edge cases:** unknown colors, mismatched doors, slices past their sheet, and the `stretch.ts` room changes. *Covered* (`shipLayout.test.ts`, `stretch.test.ts`).
+- **Converter edge cases:** slices past their sheet, equipment bound to unknown slices. *Covered* (`shipLayout.test.ts`).
+- **The hand-edited map is consistent:** every tile's slice and frame exist, equipment binds only known slices, doors have targets, no room overlaps another (`ship-check`), and no wall stops just short of another room's. *Covered* (`shipLayout.test.ts`, `check.test.ts`, `web/tests/iso/placement.test.ts`). Not covered: how it looks at fog depth 1 and 2, where rooms beyond aren't drawn.
 
 ## 6. Client
 

@@ -10,10 +10,11 @@ Changes: some third-party logos and award badges were removed (see `docs/mush-as
 client keys out the solid background color of the character sprites at runtime;
 the files themselves are unmodified.
 
-`derived/` holds files generated from this material (`ship-layout.json` and
-`ship-rooms.json`, built from `clients/iso/gfx/ShipMap.png` and
-`clients/iso/xml/tiles.xml`, and `ship-plan.json`, decoded from the ship plan
-serialized in `src/common/data/Map.hx`, all by `npm run ship-layout`). They are
+`derived/` holds files made from this material: `ship-art.json`, built from
+`clients/iso/xml/tiles.xml`; `ship-map.json`, the rooms, first converted from
+`clients/iso/gfx/ShipMap.png` and edited by hand since; `ship-rooms.json`, read
+from the map; and `ship-plan.json`, decoded from the ship plan serialized in
+`src/common/data/Map.hx` (the generated ones by `npm run ship-layout`). They are
 adaptations and are also licensed CC BY-NC-SA 4.0. `derived/pages/*.png` are
 `clients/iso/gfx/BigFill.png` and `BigFill2.png` repacked by the same command
 into images of at most 4096 px a side (the sprites are copied unchanged, some

@@ -96,7 +96,7 @@ has its sheet rectangle and frame count in `params`, and one or more `<anim rang
 rhythm="..."/>` (frame numbers; how long each shows, in ticks of 1/30 s; `auto="true"` plays on its
 own). The file holds a great many of them (doors, consoles, cameras, screens, plants, effects), so
 look there first for anything that should move. A slice with several anims has them as `#0`,
-`#1`, ... in the original. `npm run ship-layout` copies them into `Mush/derived/ship-layout.json`
+`#1`, ... in the original. `npm run ship-layout` copies them into `Mush/derived/ship-art.json`
 (`slices[id].anims`, with `frames`, `rhythm` and `auto`), which is what the client reads. Reading
 `Mush/clients/**` asks for approval in the project settings, so extract the slices you need with a
 short script rather than reading the whole file. For example, the doors (`DOOR_L`, `DOOR_R`, `DOOR_L_DECK`, `DOOR_R_DECK`): 24
@@ -141,8 +141,8 @@ runs). It draws no people, effects or animation.
 To see where things are without the iso view, `npm run ship-top` draws the same scene from above
 (x to the right, y down; turn it 45° clockwise for the iso view) as plain shapes into
 `.screenshots/ship-top.png`. It shows:
-- floor in each room's colour, lighter for walkways and paths, hatched where `fillGaps` added it
-- walls as lines on the cell edges they stand on: yellow where added, lilac for deck walls
+- floor in each room's colour, lighter for walkways and paths
+- walls as lines on the cell edges they stand on, lilac for deck walls
 - doors in cyan; dashed for doorways on a room's open front edge
 - posts on corners, furniture footprints, room names, and grid lines every 5 cells, numbered with
   ship-plan coordinates
@@ -157,86 +157,67 @@ bottom-right; one along y runs top-right to bottom-left. A room's back edges (wh
 are its top-left and top-right sides; its front edges, bottom-left and bottom-right. When the user
 describes a spot in screen terms, translate it to cells and confirm on the data before changing code.
 
-## How rooms fit together
+## The ship map
 
-- Rooms come from the original, which drew one room at a time: each room has walls only on its back
-  edges (low x and low y), and its front edges are open, so a neighbour's back wall closes your
-  room's front edge.
-- **The ship plan.** Every room has one fixed position on a ship-wide grid (`RoomLayout.at`, from
-  the `ROOM_POSITIONS` table in `tools/src/shipLayout/roomPositions.ts`), and `neighborRooms` takes
-  offsets from it, so a room is in the same place whichever room you stand in. Don't place rooms by
-  chaining doors: the original's doors disagree with each other by up to a few cells, so the ship
-  came out differently from each room and a fix in one view broke others. Once rooms are placed,
-  the converter moves each front-edge door (`DOOR_BL`/`DOOR_BR`, never drawn while the room behind
-  it is) along its edge onto the neighbour's drawn door; it only marks where you walk through. A
-  door with a walkway drawn on the floor to it never moves, so where a walkway ends is where the
-  doorway is: the drawn door on the other side slides along its wall to it instead (with its
-  doormat; the wall tiles swap into the old doorway; never onto a wall with something mounted).
-  Pairs neither can fix show up as doors that don't line up (`alignDoors` in `roomPositions.ts`).
-- Walkways we add are two-cell-wide rectangles with a direction in `tools/src/shipLayout/walkways.ts`,
-  painted over plain floor before rooms are placed (as the milky blue `GROUND` frame 1, which pins
-  doors): the bridge down the front corridor, Bay Alpha to Bay Bravo across the front corridor's
-  in the centre corridor, and Bay Bravo to Icarus with Bay Alpha 2's coming down to it in the back
-  corridor. Once rooms are placed, `deckFloors` gives the corridors (`DECK_ROOMS`) the bays'
-  `GROUND_DECK` floor: grey plates in a 2x2 pattern on the ship grid, and each walkway as the deck
-  path, with the branch pieces where paths meet. The art has branches off a path's -y, +y and +x
-  sides only; a branch off the -x side fails the converter. The deck corridors are an experiment
-  (2026-10-20), not decided.
-- **Moving a room:** change its numbers in `ROOM_POSITIONS`, `npm run ship-layout`, then
-  `npm run ship-check`. That lists overlaps and doors moved off their floor paths (both errors: a
-  test fails on them, the paths checked against the converter's unplaced rooms), doors whose two sides
-  still don't meet (pinned in `tools/tests/shipLayout/check.test.ts`, so a change there is
-  deliberate), and gaps between rooms. Then look at it with `npm run ship-view`. `npm run ship-check
-  -- --seed BEDROOM_A --fit` rebuilds the whole table (placed door to door, then nudged until
-  nothing overlaps); the current table came from that.
-- Room shapes are ours in places: `tools/src/shipLayout/stretch.ts` widens the corridors to four
-  cells (the front corridor so that its two-cell end doors have one wall each side) and
-  lengthens the back corridor and Beta centre (toward the front, so its dome clears Bay Beta's side
-  wall), and `moves.ts` moves things inside rooms after that (Beta centre's dome, chair and stand,
-  with the two floorless cells under the dome); then `npm run ship-layout` regenerates the data.
-  fillGaps puts no wall on a cell under a turret dome (`TURRET_DOMES`). Changing a room's
-  shape doesn't move other rooms any more; `npm run ship-check` shows what it now overlaps.
-- `fillGaps` (in `placeScene`) patches the holes where drawn rooms meet: floor under doors that
-  have none, floor across a one-cell strip between a room and another room's wall (only from floor
-  that was already there, so the result doesn't depend on room order), a wall on an empty cell
-  with floor on both sides, and walls joined where rooms meet (`joinWalls`, below). Don't close
-  open front edges in general: a wall there covers the room behind it.
+- **`Mush/derived/ship-map.json` is the ship.** Every room (`RoomLayout`: id, label, `at`, equipment
+  bindings) and every tile in it, one tile per line, edited by hand (and soon by the editor, #209).
+  Nothing changes it at build or draw time: what is in the file is what is drawn. `npm run ship-layout`
+  only regenerates the sprites (`ship-art.json`, from `tiles.xml`) and the rules' room graph
+  (`ship-rooms.json`, from the map). Edit it with a short script through `readMap`/`writeMap`
+  (`tools/src/shipLayout/shipMap.ts`), which keeps the format; `npm run layout-query` to search it.
+- It was frozen on 2026-10-21 from the converter's output plus what the old draw-time fixes added
+  for the whole ship (widened and lengthened corridors, walkways and deck floors, doors slid to meet,
+  floor under doors and across one-cell gaps, walls between floors, walls carried on to meet the next
+  room's with corner pieces), seen from the front corridor with every room drawn. So the whole ship
+  (fog depth "all") looks as before, pixel for pixel. At fog depths 1 and 2 it doesn't quite: the old
+  fixes ran on whichever rooms were drawn, and some joins in the map only make sense with a room that
+  isn't drawn there (wall stubs into empty space, a gap where a farther room's wall closed it). Those
+  are fixed by hand, in the map.
+- **The ship plan.** Every room has one fixed position (`RoomLayout.at`): its tile (x, y) is at
+  (x + at.x, y + at.y) on the ship grid, and `neighborRooms` takes offsets from it, so a room is in
+  the same place whichever room you stand in. Moving a room is changing its `at`; then
+  `npm run ship-check` lists rooms on top of each other (errors, a test fails), doors whose two sides
+  don't meet (pinned in `tools/tests/shipLayout/check.test.ts`, so a change there is deliberate),
+  and gaps. Then look with `npm run ship-render` or `ship-view`.
+- **Who owns a tile** decides when it is drawn (only with its room) and how it is lit (`describeScene`
+  dims other rooms' sprites, except a door back to your room and a neighbour's wall on a cell next
+  to your floor). A wall or floor between two rooms belongs to one of them. Ownership also decides
+  paint order across rooms: a wall covers what stands behind it in another room, but a thing mounted
+  on a wall goes over it only in the same room. Moving the sick bay's back wall to the front
+  corridor hid the sick bay's camera behind it, so check what is mounted before moving a wall.
 - **Walls stand on cell edges.** A cell's anchor (`gridToPx`) is its top corner, so cell (x, y)
   spans to (x + 1, y + 1): `BIG_WALL_L` stands on its +x edge, `BIG_WALL_R` on its +y edge,
   `corner_02` on both (the original's front corner), a door on its two cells' edges, and `COLUMN`
   is a post on the +x+y corner (the original's back corner). A wall's solid art runs about half a
   cell past its +x (R) or +y (L) end and not at all past the other, so a wall that stops one edge
   short of another shows a gap. Judge joins by the top ridges: they should run on into each other.
-  `joinWalls` carries a wall end that touches nothing on by up to two edges when that reaches
-  another room's wall (a room's own walls are left alone: the turrets end theirs in the dome's
-  art), never onto furniture or a bay's deck corner post, and never as `corner_02` over a deck
-  wall that carries on (it would show as a stray wall in the bay); then a corner piece where the
-  walls now turn. "Leaves no wall stopping just short of another room's" in `placement.test.ts`
-  checks the whole ship from every room at fog depths 1 and all, with the ends left on purpose
-  pinned with their reasons (all hidden behind deck walls, fittings or consoles).
-- Doors are two cells wide (footprint toward -x/-y) and their art includes the top ridge, so no
-  wall is drawn on a door's second cell; `fillGaps` puts floor under both cells, which the doorway
-  shows: one tile for both, owned (and lit) by the room whose back wall holds the door. The
-  doormats (`DOOR_*_FLOOR`) are left out.
-- Fog: sprites from other rooms are dimmed (`fogged` in `describeScene`), except a door back to
-  your room and a neighbour's wall on a cell next to your floor, which count as your room's outline.
+  "Leaves no wall stopping just short of another room's" in `placement.test.ts` checks the map from
+  every room at fog depths 1 and all, with the ends left on purpose pinned with their reasons.
+- Rooms have walls only on their back edges (low x and low y), as in the original, which drew one
+  room at a time; their front edges are open, and a neighbour's back wall closes them. Don't close
+  open front edges in general: a wall there covers the room behind it.
+- Doors are two cells wide (footprint toward -x/-y) and their art includes the top ridge, so there
+  is no wall on a door's second cell, and floor under both cells, which the doorway shows (owned and
+  lit by the room whose back wall holds the door). Front-edge doors (`DOOR_BL`/`DOOR_BR`) only mark
+  where you walk through: they aren't drawn once the room behind them is. A cell with a wall on it
+  isn't walkable, even with floor under it (`walkableCells`).
+- The deck corridors (the bays' `GROUND_DECK` plates and paths in the corridors, 2026-10-20) are in
+  the map as tiles like any other.
 
 ## Working on it
 
 - Look at the data before guessing. Dump a room as an ASCII grid of floor/wall/door cells from
-  `Mush/derived/ship-layout.json` (a few lines of Python), and for a whole scene, a throwaway Vitest
-  file that calls `placeScene` and throws the sprites it wants to see. Most "missing" or "wrong"
-  walls here were in the data, not the renderer.
+  `Mush/derived/ship-map.json` (a few lines of Python), and for a whole scene, a throwaway Vitest
+  file that calls `placeScene` and throws the sprites it wants to see.
 - Scene cells are the first room's grid; each neighbour is shifted by the difference of the two
-  rooms' plan positions. Changing a room's shape (`stretch.ts`) or a front-edge door snapping
-  elsewhere moves cells, so prefer tests that read a cell from the data over pinned coordinates.
+  rooms' plan positions. Editing the map moves things, so prefer tests that read a cell from the
+  data over pinned coordinates.
 - Measure art, don't eyeball it. Offsets come from `tiles.xml` but the pivot (centred) is inferred;
   compare opaque pixel profiles with `decodePng` (`tools/src/shipLayout/png.ts`). Doors and walls
   line up at the top; that's how the "doors float" bug was found.
-- Who owns a sprite decides its light: `describeScene` dims anything whose `room` isn't yours, except the
-  cases under Fog above. Tiles added by `fillGaps` pick an owner on purpose.
-- Sprite keys are `t<index>` into the room's tiles (equipment lookup uses them): append tiles, never
-  insert. Two sprites that tie in paint order keep the order they were pushed in.
+- Sprite keys are `t<index>` into the room's tiles, and equipment bindings claim the first tile
+  with their sprite in order (`placedEquipment`): append tiles rather than insert them before
+  equipment. Two sprites that tie in paint order keep the order they are in the map.
 - Dead ends: walls on every open front edge (they cover whole rooms); a wall drawn behind doors (the
   ridge doubles); odd corridor widths (a two-cell door can't be centred); widening the centre
   corridor (Bay Alpha's and Bay Beta's doors are four cells apart, so it hits the storage rooms).

@@ -1,6 +1,6 @@
 // The ship from above, as plain shapes: easier to read placements from than the iso view. It draws
-// the scene the client's own `placeScene` gives (so the walls `fillGaps` adds are in it) on the ship
-// plan, x to the right and y down. Turn it 45° clockwise and it lines up with the iso view.
+// the scene the client's own `placeScene` gives on the ship plan, x to the right and y down. Turn
+// it 45° clockwise and it lines up with the iso view.
 //
 //   npm run ship-top                                   # whole ship -> .screenshots/ship-top.png
 //   npm run ship-top -- --cells=-30,10,-20,25 --cell 32    # part of the plan, bigger cells (note the =)
@@ -9,10 +9,10 @@
 //
 // What's drawn (the legend is under the map):
 // - Floor in each room's colour; lighter where the floor art differs from the room's usual floor
-//   (walkways, paths), hatched where `fillGaps` added it.
+//   (walkways, paths).
 // - Walls as thick lines on the cell edge they stand on (BIG_WALL_L on the cell's +x edge,
-//   BIG_WALL_R on its +y edge, see web/src/iso/CLAUDE.md): grey, lilac for the bays' deck walls,
-//   yellow where `fillGaps` added them. Doors in walls are cyan; doorways on a room's open front
+//   BIG_WALL_R on its +y edge, see web/src/iso/CLAUDE.md): grey, lilac for the bays' deck walls.
+//   Doors in walls are cyan; doorways on a room's open front
 //   edge (drawn only while the room behind isn't) are dashed. Posts (COLUMN) are squares on the corner.
 // - Furniture and other things standing on the floor as outlines of their footprint.
 // - Room names, and grid lines every 5 cells numbered along the top and left.
@@ -22,7 +22,7 @@ import { dirname, resolve } from "node:path";
 import { parseArgs } from "node:util";
 import type { PlacedSprite } from "../../../web/src/iso/placement.ts";
 import { encodePng } from "../shipLayout/png.ts";
-import { edgesOf, freeEnds, isFill, listEnds, loadScene, parseCells, POSTS, SCENE_OPTIONS } from "./shipScene.ts";
+import { edgesOf, freeEnds, listEnds, loadScene, parseCells, POSTS, SCENE_OPTIONS } from "./shipScene.ts";
 
 type RGB = [number, number, number];
 
@@ -70,7 +70,7 @@ const outline = (x: number, y: number, w: number, h: number, c: RGB, a = 1) => {
 };
 
 const SPACE: RGB = [18, 18, 36];
-const WALL: RGB = [225, 228, 236], DECK: RGB = [196, 160, 236], ADDED: RGB = [250, 210, 60], DOOR: RGB = [70, 220, 235];
+const WALL: RGB = [225, 228, 236], DECK: RGB = [196, 160, 236], DOOR: RGB = [70, 220, 235];
 clip = { x0: 0, y0: 0, x1: W, y1: H };
 rect(0, 0, W, H, SPACE);
 clip = { x0: MARGIN.left - 2, y0: MARGIN.top - 2, x1: px(x1 + 1) + 2, y1: py(y1 + 1) + 2 };
@@ -101,7 +101,6 @@ for (const s of scene.filter((s) => s.kind === "ground" && inView(s))) {
   const plain = usual.get(s.room) === `${s.slice}#${frameOf(s)}`;
   const c = hsl(hue.get(s.room) ?? 0, 0.42, plain ? 0.3 : 0.47);
   rect(px(s.cell.x) + 1, py(s.cell.y) + 1, S - 1, S - 1, c);
-  if (isFill(ship, s)) for (let j = 1; j < S; j++) for (let i = 1; i < S; i++) if ((i + j) % 4 === 0) set(px(s.cell.x) + i, py(s.cell.y) + j, SPACE, 0.6);
 }
 // Grid lines every 5 cells.
 for (let x = Math.ceil(x0 / 5) * 5; x <= x1 + 1; x += 5) for (let y = py(y0); y < py(y1 + 1); y++) set(px(x), y, [255, 255, 255], 0.18);
@@ -117,7 +116,7 @@ for (const s of scene.filter((s) => s.kind === "entity" && inView(s))) {
 // Walls and doors on their edges, then posts on their corners.
 const T = Math.max(2, Math.round(S / 6));
 for (const s of scene) {
-  const colour = s.kind === "door" ? DOOR : isFill(ship, s) ? ADDED : s.slice.includes("DECK") ? DECK : WALL;
+  const colour = s.kind === "door" ? DOOR : s.slice.includes("DECK") ? DECK : WALL;
   for (const e of edgesOf(ship, s)) {
     const [ex, ey] = e.a;
     if (e.axis === "x") rect(px(ex), py(ey) - (T >> 1), S, T, colour);
@@ -137,7 +136,7 @@ for (const s of scene) {
   if (s.kind === "wall" && POSTS.has(s.slice)) {
     const p = T + 2;
     rect(px(s.cell.x + 1) - (p >> 1) - 1, py(s.cell.y + 1) - (p >> 1) - 1, p + 2, p + 2, SPACE);
-    rect(px(s.cell.x + 1) - (p >> 1), py(s.cell.y + 1) - (p >> 1), p, p, s.slice === "CORNER_DECK" ? DECK : isFill(ship, s) ? ADDED : WALL);
+    rect(px(s.cell.x + 1) - (p >> 1), py(s.cell.y + 1) - (p >> 1), p, p, s.slice === "CORNER_DECK" ? DECK : WALL);
   }
 }
 
@@ -182,7 +181,7 @@ const text = (t: string, x: number, y: number, c: RGB = [255, 255, 255], shadow 
 
 // Room names, in the middle of each room's own floor.
 for (const r of ship.rooms) {
-  const own = scene.filter((s) => s.room === r.id && s.kind === "ground" && !isFill(ship, s) && inView(s));
+  const own = scene.filter((s) => s.room === r.id && s.kind === "ground" && inView(s));
   if (!own.length) continue;
   const cx = own.reduce((a, s) => a + s.cell.x, 0) / own.length + 0.5, cy = own.reduce((a, s) => a + s.cell.y, 0) / own.length + 0.5;
   const words = r.label.split(" ");
@@ -212,7 +211,6 @@ const key = (swatch: (x: number, y: number) => void, label: string) => {
 };
 key((x, y) => rect(x, y + 4, 16, T, WALL), "wall");
 key((x, y) => rect(x, y + 4, 16, T, DECK), "deck wall");
-key((x, y) => rect(x, y + 4, 16, T, ADDED), "added wall");
 key((x, y) => rect(x, y + 4, 16, T, DOOR), "door");
 key((x, y) => {
   for (let i = 0; i < 16; i += 4) rect(x + i, y + 4, 2, 2, DOOR);
@@ -220,10 +218,6 @@ key((x, y) => {
 key((x, y) => rect(x + 5, y + 1, 7, 7, WALL), "post");
 key((x, y) => rect(x, y - 2, 16, 14, hsl(200, 0.42, 0.3)), "floor");
 key((x, y) => rect(x, y - 2, 16, 14, hsl(200, 0.42, 0.47)), "other floor art");
-key((x, y) => {
-  rect(x, y - 2, 16, 14, hsl(200, 0.42, 0.3));
-  for (let j = 0; j < 14; j++) for (let i = 0; i < 16; i++) if ((i + j) % 4 === 0) set(x + i, y - 2 + j, SPACE, 0.6);
-}, "added floor");
 key((x, y) => outline(x, y - 2, 16, 14, hsl(200, 0.5, 0.75)), "furniture");
 text("bridge (front) at low x, alpha at low y. turn 45 deg clockwise for the iso view.", MARGIN.left, ly + 22, [150, 150, 170], false);
 
