@@ -23,6 +23,7 @@ import { activitySeen, logPrivate } from "./log.ts";
 import { ringMycoAlarms } from "./mycoalarm.ts";
 import { planetsOf } from "./planets.ts";
 import { pilgredTerminalsHere } from "./pilgred.ts";
+import { biosTerminalsHere, newBios } from "./bios.ts";
 import { callNextRebel, commsCycle, commsTerminalView, comTerminalsHere, newComms } from "./comms.ts";
 import { burnOxygen, shipMax, startShip } from "./ship.ts";
 import { SUCCESSION, TITLE_IDS, assignTitles } from "./titles.ts";
@@ -113,7 +114,7 @@ export function createGame(
     nextChannelId: 1,
     threads: [],
     nextThreadId: 1,
-    actopi: true,
+    bios: newBios(),
     bonds: {},
     sharedOnDay: {},
     contamination: {},
@@ -330,7 +331,7 @@ export function viewFor(state: GameState, playerId: PlayerId): PlayerView {
   const legal = legalActions(state, playerId);
   const channels = readChannels(state, you);
   // Without ACTOPI, anyone outside your room is a room-only dot: no identity, so no room on their entry.
-  const actopi = you.actopiCheat === "default" ? state.actopi : you.actopiCheat === "on";
+  const actopi = you.actopiCheat === "default" ? state.bios.actopi : you.actopiCheat === "on";
   // The dead see nothing that depends on a room (decided 2026-10-16, #45): no
   // room log, items, equipment, or anyone's location or room-only details.
   const present = (room: RoomId) => you.alive && room === you.room;
@@ -418,6 +419,7 @@ export function viewFor(state: GameState, playerId: PlayerId): PlayerView {
     // Only at the PILGRED terminal: the living in a room that has one (owner, 2026-10-21).
     pilgred: you.alive && pilgredTerminalsHere(state, you).length > 0 ? state.pilgred.progress : null,
     comms: { linked: state.comms.linked, terminal: you.alive && comTerminalsHere(state, you).length > 0 ? commsTerminalView(state) : null },
+    bios: you.alive && biosTerminalsHere(state, you).length > 0 ? { ...state.bios } : null,
     // Your own planets only, and only the tags an analysis revealed (owner, 2026-10-19).
     planets: planetsOf(state, playerId).map((p) => ({ id: p.id, name: p.name, sectors: p.sectors.map((s) => (s.known ? s.tag : null)) })),
     titles: TITLE_IDS.map((id) => {

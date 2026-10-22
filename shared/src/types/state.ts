@@ -1,3 +1,4 @@
+import type { BiosState } from "../bios.ts";
 import type { CommsState } from "../comms.ts";
 import type { PlanetTag } from "../planets.ts";
 import type { RngState } from "../rng.ts";
@@ -41,11 +42,12 @@ export interface GameState {
   threads: ChatThread[];
   nextThreadId: number;
   /**
-   * ACTOPI, a ship system. While on, everyone sees who is in which room. While
-   * off, you still see how many people are in each room, but only know who they
-   * are for the room you are in. Nothing switches it yet (2026-10-13); starts on.
+   * NERON's BIOS switches (bios.ts), both on at the start. `actopi`: while on, everyone sees who is in which room;
+   * while off, you still see how many people are in each room, but only know who they are for the room you are in.
+   * `death_announcements`: whether a death is announced in global chat. The values go only to the living at a BIOS
+   * terminal (their effects are visible to everyone).
    */
-  actopi: boolean;
+  bios: BiosState;
   /**
    * Bonds, by who made them: `bonds[a]` lists everyone `a` has bonded to. They
    * last forever. DTT and STT need both directions. Visible only to the two

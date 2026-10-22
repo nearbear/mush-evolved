@@ -392,7 +392,7 @@ describe("viewFor (hidden information)", () => {
     // p1 and p2 share a room with p0; p3 and p4 are elsewhere, in different rooms; the rest stay put.
     const spread = (actopi: boolean): GameState => {
       const state = newGame();
-      state.actopi = actopi;
+      state.bios.actopi = actopi;
       const rooms = Object.keys(DEFAULT_CONFIG.rooms);
       const here = player(state, "p0").room;
       const [a, b] = rooms.filter((r) => r !== here);
@@ -403,7 +403,7 @@ describe("viewFor (hidden information)", () => {
     };
 
     it("starts on and tells everyone where everyone is", () => {
-      expect(newGame().actopi).toBe(true);
+      expect(newGame().bios.actopi).toBe(true);
       const state = spread(true);
       const view = viewFor(state, "p0");
       expect(view.unidentified).toEqual([]);

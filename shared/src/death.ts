@@ -56,10 +56,10 @@ export function killPlayer(state: GameState, player: PlayerState): void {
     if (removeFromChannel(state, channel.id, player.id)) systemMessage(state, channel.id, "leftThisWorld", player.character);
   }
 
-  // The room always gets a line, without the role; the crew-wide announcement
-  // (NERON's, once NERON exists) reveals it.
+  // The room always gets a line, without the role; NERON's crew-wide announcement reveals it, unless the BIOS has
+  // death announcements off (bios.ts).
   logPublic(state, player.room, "died", { name: player.character });
-  systemMessage(state, "global", player.role === "mush" ? "diedMush" : "diedHuman", player.character);
+  if (state.bios.death_announcements) systemMessage(state, "global", player.role === "mush" ? "diedMush" : "diedHuman", player.character);
   refreshTitles(state);
 }
 

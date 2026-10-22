@@ -19,6 +19,7 @@ import { ContactSolAction } from "./actions/contact_sol.ts";
 import { DecodeRebelAction } from "./actions/decode_rebel.ts";
 import { ContactXylophAction } from "./actions/contact_xyloph.ts";
 import { UpdateNeronAction } from "./actions/update_neron.ts";
+import { SetBiosAction } from "./actions/set_bios.ts";
 import { ScanPlanetAction } from "./actions/scan_planet.ts";
 import { AnalyzePlanetAction } from "./actions/analyze_planet.ts";
 import { DeletePlanetAction } from "./actions/delete_planet.ts";
@@ -82,6 +83,7 @@ export const ACTIONS: { [T in ActionType]: ActionDef<ActionOf<T>> } = {
   decode_rebel: new DecodeRebelAction(),
   contact_xyloph: new ContactXylophAction(),
   update_neron: new UpdateNeronAction(),
+  set_bios: new SetBiosAction(),
   scan_planet: new ScanPlanetAction(),
   analyze_planet: new AnalyzePlanetAction(),
   delete_planet: new DeletePlanetAction(),

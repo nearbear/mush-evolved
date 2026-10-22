@@ -102,14 +102,14 @@ describe("ACTOPI cheat", () => {
 
   it("forces ACTOPI off for you only, even while the ship has it on", () => {
     const s = set(apart(), "off");
-    expect(s.actopi).toBe(true);
+    expect(s.bios.actopi).toBe(true);
     expect(viewFor(s, "p0").unidentified).toEqual(["REFECTORY"]);
     expect(viewFor(s, "p2").unidentified).toEqual([]);
   });
 
   it("forces ACTOPI on for you while the ship has it off", () => {
     const s = apart();
-    s.actopi = false;
+    s.bios.actopi = false;
     expect(viewFor(s, "p0").unidentified).toEqual(["REFECTORY"]);
     const forced = set(s, "on");
     expect(viewFor(forced, "p0").unidentified).toEqual([]);

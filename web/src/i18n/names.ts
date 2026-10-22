@@ -21,6 +21,7 @@ const ACTION_NAME_KEYS = {
   decode_rebel: "actions.decodeRebel",
   contact_xyloph: "actions.contactXyloph",
   update_neron: "actions.updateNeron",
+  set_bios: "actions.setBios",
   scan_planet: "actions.scanPlanet",
   analyze_planet: "actions.analyzePlanet",
   delete_planet: "actions.deletePlanet",

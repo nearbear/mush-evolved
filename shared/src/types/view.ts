@@ -1,5 +1,6 @@
 import type { ActionCost, ActionTag } from "../actions.ts";
 import type { CharacterId } from "../characters.ts";
+import type { BiosState } from "../bios.ts";
 import type { RebelBaseId } from "../comms.ts";
 import type { TitleId } from "../titles.ts";
 import type { Action, BotKind, ItemId, LogEntry, PlayerId, RoomId } from "../types.ts";
@@ -151,6 +152,8 @@ export interface PlayerView {
    * read-only to anyone, only while you are alive in a room with one (owner, 2026-10-21), otherwise null.
    */
   comms: { linked: boolean; terminal: CommsTerminalView | null };
+  /** NERON's BIOS settings, read-only, only while you are alive in a room with a BIOS terminal (owner, 2026-10-21); otherwise null. */
+  bios: BiosState | null;
   /** Your own planets (private, owner 2026-10-19). Unknown sectors are null: their tags are never sent. */
   planets: PlanetView[];
   /** Every title in `TITLE_IDS` order, public to everyone (owner, 2026-10-20). */

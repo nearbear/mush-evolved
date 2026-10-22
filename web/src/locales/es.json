@@ -228,7 +228,8 @@
     "contactSol": "Establecer contacto con Sol",
     "decodeRebel": "Decodificar señal rebelde",
     "contactXyloph": "Contactar con Xyloph",
-    "updateNeron": "Actualizar NERON"
+    "updateNeron": "Actualizar NERON",
+    "setBios": "Cambiar un ajuste de la BIOS"
   },
   "queue": {
     "label": "Tus acciones",
@@ -580,6 +581,10 @@
     "neronUpdating": "Has trabajado en la actualización de NERON: {{percent}} % hecho.",
     "neronUpdated": "NERON pasa a la versión {{version}}.",
     "neronUpdatedProject": "NERON pasa a la versión {{version}}. El proyecto {{project}} está terminado.",
+    "biosActopiOn": "Has activado ACTOPI: todos vuelven a ver quién está en cada sala.",
+    "biosActopiOff": "Has desactivado ACTOPI: ya nadie ve quién está en las otras salas.",
+    "biosDeathsOn": "Has activado los avisos de muerte: NERON anunciará cada muerte.",
+    "biosDeathsOff": "Has desactivado los avisos de muerte: NERON ya no anunciará las muertes.",
     "rebelCalling": "NERON: una base rebelde, {{base}}, intenta contactar con el Daedalus."
   },
   "skills": {
@@ -916,6 +921,22 @@
       "roland": "Humorista y piloto de caza en sus ratos libres",
       "stephen": "El cocinero más peligroso de la galaxia",
       "terrence": "Tecnófilo desencantado y motorizado"
+    }
+  },
+  "bios": {
+    "label": "Ajustes de la BIOS de NERON",
+    "adminOnly": "Solo el Administrador de NERON puede cambiar estos ajustes.",
+    "isOn": "{{name}}: sí",
+    "isOff": "{{name}}: no",
+    "switchOn": "Activar",
+    "switchOff": "Desactivar",
+    "actopi": {
+      "name": "ACTOPI",
+      "desc": "Activado, todos saben quién está en cada sala. Desactivado, solo ves cuántas personas hay en las otras salas."
+    },
+    "death_announcements": {
+      "name": "Avisos de muerte",
+      "desc": "Activado, NERON anuncia cada muerte a la tripulación, con el rol del muerto."
     }
   },
   "comms": {

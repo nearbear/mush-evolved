@@ -227,7 +227,8 @@
     "contactSol": "Establish link with Sol",
     "decodeRebel": "Decode rebel signal",
     "contactXyloph": "Contact Xyloph",
-    "updateNeron": "Update NERON"
+    "updateNeron": "Update NERON",
+    "setBios": "Change a BIOS setting"
   },
   "queue": {
     "label": "Your actions",
@@ -577,6 +578,10 @@
     "neronUpdating": "You worked on NERON's update: {{percent}}% done.",
     "neronUpdated": "NERON is now version {{version}}.",
     "neronUpdatedProject": "NERON is now version {{version}}. The {{project}} project is complete.",
+    "biosActopiOn": "You switched ACTOPI on: everyone sees who is in which room again.",
+    "biosActopiOff": "You switched ACTOPI off: nobody sees who is in the other rooms any more.",
+    "biosDeathsOn": "You switched death announcements on: NERON will announce every death.",
+    "biosDeathsOff": "You switched death announcements off: NERON will no longer announce deaths.",
     "rebelCalling": "NERON: a rebel base, {{base}}, is trying to contact the Daedalus."
   },
   "skills": {
@@ -912,6 +917,22 @@
       "roland": "Comedian and part-time fighter pilot",
       "stephen": "The most dangerous cook in the galaxy",
       "terrence": "Jaded motorized technophile"
+    }
+  },
+  "bios": {
+    "label": "NERON's BIOS settings",
+    "adminOnly": "Only the NERON Admin can change these settings.",
+    "isOn": "{{name}}: on",
+    "isOff": "{{name}}: off",
+    "switchOn": "Switch on",
+    "switchOff": "Switch off",
+    "actopi": {
+      "name": "ACTOPI",
+      "desc": "While on, everyone knows who is in which room. While off, you only see how many people are in the other rooms."
+    },
+    "death_announcements": {
+      "name": "Death announcements",
+      "desc": "While on, NERON announces every death to the crew, with the role of the dead."
     }
   },
   "comms": {

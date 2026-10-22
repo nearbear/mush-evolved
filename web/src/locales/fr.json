@@ -228,7 +228,8 @@
     "contactSol": "Établir le contact avec Sol",
     "decodeRebel": "Décoder un signal rebelle",
     "contactXyloph": "Contacter Xyloph",
-    "updateNeron": "Mettre à jour NERON"
+    "updateNeron": "Mettre à jour NERON",
+    "setBios": "Modifier un réglage du BIOS"
   },
   "queue": {
     "label": "Vos actions",
@@ -580,6 +581,10 @@
     "neronUpdating": "Vous avez travaillé à la mise à jour de NERON : {{percent}} % effectué.",
     "neronUpdated": "NERON passe en version {{version}}.",
     "neronUpdatedProject": "NERON passe en version {{version}}. Le projet {{project}} est terminé.",
+    "biosActopiOn": "Vous avez activé ACTOPI : tout le monde voit de nouveau qui est dans quelle pièce.",
+    "biosActopiOff": "Vous avez désactivé ACTOPI : personne ne voit plus qui est dans les autres pièces.",
+    "biosDeathsOn": "Vous avez activé le signalement des décès : NERON annoncera chaque décès.",
+    "biosDeathsOff": "Vous avez désactivé le signalement des décès : NERON n'annoncera plus les décès.",
     "rebelCalling": "NERON : une base rebelle, {{base}}, tente de contacter le Daedalus."
   },
   "skills": {
@@ -916,6 +921,22 @@
       "roland": "Humoriste pilote de chasse à ses heures",
       "stephen": "Cuisinier le plus dangereux de la galaxie",
       "terrence": "Technophile désabusé motorisé"
+    }
+  },
+  "bios": {
+    "label": "Réglages du BIOS de NERON",
+    "adminOnly": "Seul l'Administrateur NERON peut modifier ces réglages.",
+    "isOn": "{{name}} : oui",
+    "isOff": "{{name}} : non",
+    "switchOn": "Activer",
+    "switchOff": "Désactiver",
+    "actopi": {
+      "name": "ACTOPI",
+      "desc": "Activé, tout le monde sait qui est dans quelle pièce. Désactivé, vous ne voyez que le nombre de personnes dans les autres pièces."
+    },
+    "death_announcements": {
+      "name": "Signaler les décès",
+      "desc": "Activé, NERON annonce chaque décès à l'équipage, avec le rôle du défunt."
     }
   },
   "comms": {

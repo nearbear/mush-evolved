@@ -1,6 +1,7 @@
 // Wire messages between clients and the server. Everything arriving from a
 // client is untrusted: always go through the parse* functions.
 
+import { isBiosOption } from "./bios.ts";
 import { isActopiCheat, isCheat, isRoleCheat, type ActopiCheat, type Cheat, type RoleCheat } from "./cheats.ts";
 import { isCharacterId, type CharacterId } from "./characters.ts";
 import { MAX_CHAT_LENGTH } from "./chat.ts";
@@ -123,6 +124,9 @@ export function parseGameMessage(raw: string): GameClientMessage | null {
   }
   if ((a.type === "contact_sol" || a.type === "contact_xyloph" || a.type === "update_neron") && typeof a.equipment === "string") {
     return { type: "action", action: { type: a.type, equipment: a.equipment } };
+  }
+  if (a.type === "set_bios" && typeof a.equipment === "string" && isBiosOption(a.option) && typeof a.value === "boolean") {
+    return { type: "action", action: { type: "set_bios", equipment: a.equipment, option: a.option, value: a.value } };
   }
   if (a.type === "decode_rebel" && typeof a.equipment === "string" && typeof a.base === "string") {
     return { type: "action", action: { type: "decode_rebel", equipment: a.equipment, base: a.base } };

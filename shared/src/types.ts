@@ -1,3 +1,4 @@
+import type { BiosOption } from "./bios.ts";
 import type { CharacterId } from "./characters.ts";
 
 export * from "./types/chat.ts";
@@ -105,6 +106,7 @@ export type Action =
   | { type: "decode_rebel"; equipment: string; base: string }
   | { type: "contact_xyloph"; equipment: string }
   | { type: "update_neron"; equipment: string }
+  | { type: "set_bios"; equipment: string; option: BiosOption; value: boolean }
   | { type: "scan_planet"; equipment: string }
   | { type: "analyze_planet"; equipment: string; planet: string }
   | { type: "delete_planet"; planet: string }

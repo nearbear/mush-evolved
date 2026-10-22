@@ -188,7 +188,7 @@ describe("the dead player's view (#45)", () => {
       expect(o.contamination).toBeUndefined();
     }
     // Without ACTOPI too: no head counts per room.
-    s.actopi = false;
+    s.bios.actopi = false;
     expect(viewFor(s, "p0").unidentified).toEqual([]);
   });
 
@@ -205,7 +205,7 @@ describe("the dead player's view (#45)", () => {
     expect(viewFor(s, "p2").players.find((o) => o.id === "p1")).toMatchObject({ alive: false, statuses: [], skills: [] });
     expect(viewFor(s, "p2").players.find((o) => o.id === "p1")?.room).toBeUndefined();
     expect(viewFor(s, "p0").players.find((o) => o.id === "p1")?.room).toBeUndefined();
-    s.actopi = false;
+    s.bios.actopi = false;
     expect(viewFor(s, "p2").unidentified).toEqual(["SICK_BAY"]); // p0 only
   });
 });

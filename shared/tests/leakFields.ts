@@ -36,7 +36,7 @@ export const GAME_STATE_FIELDS: Record<string, FieldRule> = {
   nextChannelId: { reach: "never", test: "leaks.test.ts", note: "Not secret (channel ids show it), just not sent." },
   threads: { reach: "filtered", test: "threads.test.ts", note: "All of them, to whoever can read global chat." },
   nextThreadId: { reach: "never", test: "leaks.test.ts", note: "Not secret (thread ids show it), just not sent." },
-  actopi: { reach: "public", test: "rules.test.ts", note: "Not sent as a flag; it decides whose room you are told." },
+  bios: { reach: "room", test: "bios.test.ts", note: "The values, to the living at a BIOS terminal; their effects (whose room you are told, death announcements) reach everyone." },
   bonds: { reach: "own", test: "leaks.test.ts", note: "Each bond to its two partners only." },
   sharedOnDay: { reach: "never", test: "leaks.test.ts" },
   contamination: { reach: "never", test: "leaks.test.ts", note: "Except to a living Mush in the human's room (infection.test.ts)." },
