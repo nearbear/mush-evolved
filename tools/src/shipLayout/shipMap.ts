@@ -10,8 +10,10 @@ const read = (file: string) => JSON.parse(readFileSync(resolve(DERIVED, file), "
 
 export const readMap = (): ShipMap => read("ship-map.json");
 
+export const readArt = (): ShipArt => read("ship-art.json");
+
 /** The art and the map together, as the client loads them. */
-export const readShip = (): ShipLayout => ({ ...(read("ship-art.json") as ShipArt), ...readMap() });
+export const readShip = (): ShipLayout => ({ ...readArt(), ...readMap() });
 
 export const writeMap = (map: ShipMap) => writeFileSync(resolve(DERIVED, "ship-map.json"), formatShipMap(map));
 

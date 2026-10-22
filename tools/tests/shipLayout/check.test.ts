@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { RoomLayout, SliceInfo, TilePlacement } from "@mush2/shared";
+import { KNOWN_MISALIGNED } from "../../../web/src/editor/checks.ts";
 import { checkShip } from "../../src/shipLayout/check.ts";
 import { readShip } from "../../src/shipLayout/shipMap.ts";
 
@@ -66,14 +67,7 @@ describe("the ship in ship-map.json", () => {
   });
 
   it("has only these doors whose sides don't meet (fix one, then take it off this list)", () => {
-    expect(report.doors.map((d) => `${d.rooms.join(" -> ")} ${d.off.x},${d.off.y}`)).toEqual([
-      "MOTOR_ROOM -> SPACESHIP_BAY_AA -2,0",
-      "LASER_TURRET_A_1 -> SPACESHIP_BAY_A 0,1",
-      "LASER_TURRET_A_1 -> STORAGE_FRONT -1,0",
-      "LASER_TURRET_A_2 -> MOTOR_ROOM 2,0",
-      "LASER_TURRET_B_1 -> SICK_BAY -1,0",
-      "LASER_TURRET_B_1 -> SPACESHIP_BAY_B 0,-1",
-      "ICARUS -> MOTOR_ROOM 1,0",
-    ]);
+    // The list is KNOWN_MISALIGNED in web/src/editor/checks.ts.
+    expect(report.doors.map((d) => `${d.rooms.join(" -> ")} ${d.off.x},${d.off.y}`)).toEqual(KNOWN_MISALIGNED);
   });
 });
