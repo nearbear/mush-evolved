@@ -97,6 +97,9 @@ export const DEFAULT_CONFIG: GameConfig = {
   astro: { scan: { cost: { ap: 3 }, chance: 0.5, failureMultiplier: 1.25 }, analyze: { cost: { ap: 2 } }, maxPlanets: 2 },
   // Decided 2026-10-18: NERON projects work exactly like research: 2 AP, 25% per action, no repeat penalty.
   project: { cost: { ap: 2 }, effect: { progressPercent: 25 } },
+  // Owner, 2026-10-21: repairing PILGRED uses the original's numbers (DIG_RATE 6, PILGRED_MOD 2, DIG_BOOST 4, -2 per repeat),
+  // 2 AP, 25% dirty; the Physicist gains 1 PILGRED point a day and holds 2.
+  pilgred: { cost: { ap: 2 }, dirtyChance: 0.25, progress: { rate: 6, mod: 2, skillBoost: 4, relayPenalty: 2 }, capPoints: 2, pointsPerDay: 1 },
   // Confirmed 2026-10-17: lying down in a bed is free (the +1 AP per cycle is the lying_down modifier).
   accommodate: { cost: { ap: 0 }, offerMs: 5 * 60_000 },
   lieDown: { cost: { ap: 0 } },

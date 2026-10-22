@@ -99,6 +99,7 @@ export type Action =
   | { type: "access"; equipment: string }
   | { type: "research"; equipment: string; research: string }
   | { type: "project"; equipment: string; project: string }
+  | { type: "repair_pilgred"; equipment: string }
   | { type: "scan_planet"; equipment: string }
   | { type: "analyze_planet"; equipment: string; planet: string }
   | { type: "delete_planet"; planet: string }

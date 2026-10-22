@@ -103,6 +103,10 @@ export const SKILL_STATUS: Readonly<Partial<Record<SkillId, SkillStatus>>> = {
   first_aid: "partial",
   // Computer points and their use on research and NERON projects only; no hacking.
   computer: "partial",
+  // PILGRED points and the PILGRED repair bonus (owner, 2026-10-21).
+  physicist: "full",
+  // PILGRED repair bonus only; no repair points, repairs or renovations.
+  engineer: "partial",
   creative: "full",
   antic_perfume: "full",
   logistics: "full",

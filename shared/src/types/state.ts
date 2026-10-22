@@ -64,6 +64,11 @@ export interface GameState {
   research: Record<string, number>;
   /** Percent done of each NERON project that has been started (absent = 0), by project id (projects.ts). Public: sent to everyone. */
   projects: Record<string, number>;
+  /**
+   * PILGRED's repair (pilgred.ts): percent done, and who repaired last and how many times in a row (the relay penalty).
+   * `progress` goes only to the living in a room with the PILGRED terminal; `lastBy` and `streak` are never sent.
+   */
+  pilgred: { progress: number; lastBy: PlayerId | null; streak: number };
   /** Each player's planets, found at the Astro terminal (planets.ts). Private: only the finder's own view has them, without the unknown sectors' tags. */
   planets: Record<PlayerId, Planet[]>;
   /** Failed scans in a row per player, raising their next scan's odds; reset by a success (owner, 2026-10-19). Never sent. */

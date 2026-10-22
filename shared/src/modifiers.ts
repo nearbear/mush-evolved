@@ -15,6 +15,7 @@ import { antic_perfume } from "./modifiers/antic_perfume.ts";
 import { caffeinomaniac } from "./modifiers/caffeinomaniac.ts";
 import { creative } from "./modifiers/creative.ts";
 import { computer } from "./modifiers/computer.ts";
+import { physicist } from "./modifiers/physicist.ts";
 import { first_aid } from "./modifiers/first_aid.ts";
 import { logistics } from "./modifiers/logistics.ts";
 import { immunity } from "./modifiers/immunity.ts";
@@ -43,6 +44,7 @@ type FoldHooks = Record<
   | "punchDamage"
   | "carePointsPerDay"
   | "computerPointsPerDay"
+  | "pilgredPointsPerDay"
   | "heavyMpPenalty",
   FoldHook
 >;
@@ -86,7 +88,7 @@ export interface Modifier extends Partial<FoldHooks> {
 export type ModifierRegistry = Readonly<Record<string, Modifier>>;
 
 /** Items and skills will register here too. When a skill gains rules, update its entry in SKILL_STATUS (skills.ts). */
-export const MODIFIERS: Record<string, Modifier> = { lying_down, medic, first_aid, sturdy, creative, antic_perfume, logistics, caffeinomaniac, computer, pacifist, immunity, mankind_only_hope, wheelchair };
+export const MODIFIERS: Record<string, Modifier> = { lying_down, medic, first_aid, sturdy, creative, antic_perfume, logistics, caffeinomaniac, computer, physicist, pacifist, immunity, mankind_only_hope, wheelchair };
 
 /** The ids every hook folds over: the player's skills (book slot last), then their other modifiers. */
 export function modifierIds(player: Readonly<PlayerState>): string[] {
@@ -226,6 +228,10 @@ export const carePointsGain = (state: Readonly<GameState>, player: Readonly<Play
 /** Computer points a player gains at the start of a day: nothing by default, plus what the computer scientist skill grants. */
 export const computerPointsGain = (state: Readonly<GameState>, player: Readonly<PlayerState>, registry: ModifierRegistry = MODIFIERS) =>
   fold("computerPointsPerDay", 0, state, player, registry);
+
+/** PILGRED points a player gains at the start of a day: nothing by default, plus what the physicist skill grants. */
+export const pilgredPointsGain = (state: Readonly<GameState>, player: Readonly<PlayerState>, registry: ModifierRegistry = MODIFIERS) =>
+  fold("pilgredPointsPerDay", 0, state, player, registry);
 
 /** HP a punch removes: the configured damage folded through the puncher's modifiers. */
 export const punchDamage = (state: Readonly<GameState>, player: Readonly<PlayerState>, registry: ModifierRegistry = MODIFIERS) =>

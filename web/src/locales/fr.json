@@ -206,6 +206,7 @@
     "drop": "Poser",
     "research": "Rechercher",
     "project": "Travailler sur un projet",
+    "repairPilgred": "Réparer PILGRED",
     "scanPlanet": "Scanner",
     "analyzePlanet": "Analyser une planète",
     "deletePlanet": "Supprimer une planète",
@@ -243,6 +244,12 @@
   },
   "terminal": {
     "close": "Fermer"
+  },
+  "pilgred": {
+    "label": "Réparation de PILGRED",
+    "desc": "Le réacteur PILGRED. La seule façon de voyager plus vite que la lumière connue au moment du départ du Daedalus. Sa remise en état vous permettra peut-être de retourner sur Sol.",
+    "progress": "Réparé à {{percent}} %",
+    "repaired": "Réparé"
   },
   "channels": {
     "empty": "Aucun canal privé pour l'instant.",
@@ -527,6 +534,9 @@
     "researchCompleted": "{{name}} a terminé la recherche {{research}}.",
     "projectWorked": "{{name}} a travaillé sur le projet {{project}} ({{percent}} %).",
     "projectCompleted": "{{name}} a terminé le projet {{project}}.",
+    "pilgredRepaired": "{{name}} a fait progresser la réparation de PILGRED.",
+    "pilgredDone": "{{name}} a achevé les réparations de PILGRED.",
+    "pilgredDoneCrew": "Réparations PILGRED achevées par {{name}}. Accès lointains ouverts.",
     "scannedPlanets": "{{name}} a scanné à la recherche de planètes.",
     "planetFound": "Vous avez découvert la planète {{planet}} !",
     "planetNotFound": "Votre scan n'a rien trouvé.",

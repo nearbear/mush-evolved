@@ -141,6 +141,8 @@ export interface PlayerView {
   research: Record<string, number>;
   /** Percent done of each NERON project that has been started, public to everyone (decided 2026-10-18). */
   projects: Record<string, number>;
+  /** PILGRED's repair, percent done, only while you are alive in a room with its terminal (owner, 2026-10-21); otherwise null. */
+  pilgred: number | null;
   /** Your own planets (private, owner 2026-10-19). Unknown sectors are null: their tags are never sent. */
   planets: PlanetView[];
   /** Every title in `TITLE_IDS` order, public to everyone (owner, 2026-10-20). */

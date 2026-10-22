@@ -126,6 +126,15 @@ export interface GameConfig {
     cost: { ap: number }; // AP spent to work on a NERON project (decided 2026-10-18).
     effect: { progressPercent: number }; // Percent a project advances per action (decided 2026-10-18).
   };
+  pilgred: {
+    cost: { ap: number }; // AP spent to take part in repairing PILGRED (owner, 2026-10-21; the original's REPAIR_PILGRED, 2).
+    dirtyChance: number; // Chance of getting the dirty status after a repair (owner, 2026-10-21; the original's 25).
+    // The original's slow formula (Solver.calcPilgredProgres, owner 2026-10-21): base = floor(rate * mod / 10), + skillBoost per
+    // Engineer/Physicist skill, - relayPenalty per repair in a row by the same player.
+    progress: { rate: number; mod: number; skillBoost: number; relayPenalty: number };
+    capPoints: number; // Most PILGRED points (`resources.pilgred`) a player can hold (owner, 2026-10-21; the Physicist's IncrMaxPA(PILGRED, 2)).
+    pointsPerDay: number; // PILGRED points the `physicist` skill grants at the start of each day (owner, 2026-10-21; the original +1).
+  };
   astro: {
     scan: {
       cost: { ap: number }; // AP spent to scan for a planet at the Astro terminal (owner, 2026-10-19; the original's 3).

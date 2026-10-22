@@ -10,7 +10,7 @@ import { applyCheats, makeHuman, type ActopiCheat, type Cheat, type RoleCheat } 
 import { ACTIONS, type ActionDef } from "./actions.ts";
 import { getUp } from "./actions/lie_down.ts";
 import { itemsIn, rechargeMicrowaves, startCharges } from "./items.ts";
-import { actionFailed, apGain, carePointsGain, channelLimit, computerPointsGain, cycleChanged, dailyMoraleLoss, inventorySlots, movementRules, satietyLoss } from "./modifiers.ts";
+import { actionFailed, apGain, carePointsGain, channelLimit, computerPointsGain, cycleChanged, dailyMoraleLoss, inventorySlots, movementRules, pilgredPointsGain, satietyLoss } from "./modifiers.ts";
 import { contaminationSeenBy, convert } from "./infection.ts";
 import { addStatus, isHungry, publicStatusesOf, statusesOf } from "./statuses.ts";
 import { emptyResources } from "./resources.ts";
@@ -22,6 +22,7 @@ import { damage } from "./death.ts";
 import { activitySeen, logPrivate } from "./log.ts";
 import { ringMycoAlarms } from "./mycoalarm.ts";
 import { planetsOf } from "./planets.ts";
+import { pilgredTerminalsHere } from "./pilgred.ts";
 import { burnOxygen, shipMax, startShip } from "./ship.ts";
 import { SUCCESSION, TITLE_IDS, assignTitles } from "./titles.ts";
 import type {
@@ -119,6 +120,7 @@ export function createGame(
     sporeExtractedOn: {},
     research: {},
     projects: {},
+    pilgred: { progress: 0, lastBy: null, streak: 0 },
     planets: {},
     scanFailures: {},
     nextPlanetId: 1,
@@ -296,11 +298,12 @@ function advanceCycle(state: GameState): void {
   });
 }
 
-/** Day-start care and Computer points: every living player gains what their skills grant (Computer points stop at the cap). Mutates a state the caller already cloned. */
+/** Day-start care, Computer and PILGRED points: every living player gains what their skills grant (Computer and PILGRED points stop at their caps). Mutates a state the caller already cloned. */
 function grantCarePoints(state: GameState): void {
   for (const p of state.players) if (p.alive) {
     p.resources.heal += carePointsGain(state, p);
     p.resources.comp = Math.min(state.config.computer.capPoints, p.resources.comp + computerPointsGain(state, p));
+    p.resources.pilgred = Math.min(state.config.pilgred.capPoints, p.resources.pilgred + pilgredPointsGain(state, p));
   }
 }
 
@@ -405,6 +408,8 @@ export function viewFor(state: GameState, playerId: PlayerId): PlayerView {
     ship: { ...state.ship, max: shipMax(state.config) },
     research: { ...state.research },
     projects: { ...state.projects },
+    // Only at the PILGRED terminal: the living in a room that has one (owner, 2026-10-21).
+    pilgred: you.alive && pilgredTerminalsHere(state, you).length > 0 ? state.pilgred.progress : null,
     // Your own planets only, and only the tags an analysis revealed (owner, 2026-10-19).
     planets: planetsOf(state, playerId).map((p) => ({ id: p.id, name: p.name, sectors: p.sectors.map((s) => (s.known ? s.tag : null)) })),
     titles: TITLE_IDS.map((id) => {

@@ -147,6 +147,11 @@ export const PROJECT_CARDS = urls(
   import.meta.glob<string>("../../../Mush/www/img/cards/projects/*.png", { eager: true, query: "?url", import: "default" }),
 );
 
+/** PILGRED's card, shown in its terminal window. */
+export const PILGRED_CARD: string = urls(
+  import.meta.glob<string>("../../../Mush/www/img/cards/pilgred.png", { eager: true, query: "?url", import: "default" }),
+)["pilgred"]!;
+
 const astroIcons = urls(
   import.meta.glob<string>("../../../Mush/www/img/icons/astro/{tag_*,planet_?_small}.png", { eager: true, query: "?url", import: "default" }),
 );

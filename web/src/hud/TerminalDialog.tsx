@@ -1,9 +1,11 @@
 // The window opened by accessing a terminal. Blank for now except the research lab, which lists the researches, NERON's
-// core, which lists the NERON projects in the same list, and the Astro terminal, which lists your planets.
+// core, which lists the NERON projects in the same list, the Astro terminal, which lists your planets, and PILGRED, which
+// shows its repair.
 // Open/closed is UI state held by GameScreen; the server only validates the access action.
 
 import { Dialog } from "@base-ui/react/dialog";
 import {
+  PILGRED_COMPLETE,
   PROJECT_COMPLETE,
   PROJECT_IDS,
   projectStatus,
@@ -16,7 +18,7 @@ import {
   type PlayerView,
 } from "@mush2/shared";
 import { useTranslation } from "react-i18next";
-import { PROJECT_CARDS, RESEARCH_CARDS } from "../art/assets.ts";
+import { PILGRED_CARD, PROJECT_CARDS, RESEARCH_CARDS } from "../art/assets.ts";
 import { useNames } from "../i18n/names.ts";
 import { ActionLabel } from "./ActionLabel.tsx";
 import { ActionButton } from "./ActionButton.tsx";
@@ -43,6 +45,7 @@ export function TerminalDialog({ terminal, view, onAction, onClose }: Props) {
           {terminal?.type === "RESEARCH_LAB" && <ResearchList terminal={terminal} view={view} onAction={onAction} />}
           {terminal?.type === "NERON_CORE" && <ProjectList terminal={terminal} view={view} onAction={onAction} />}
           {terminal?.type === "ASTRO_MODULE" && <PlanetList terminal={terminal} view={view} onAction={onAction} />}
+          {terminal?.type === "PILGRED" && <PilgredRepair terminal={terminal} view={view} onAction={onAction} />}
           <Dialog.Close>{t("terminal.close")}</Dialog.Close>
         </Dialog.Popup>
       </Dialog.Portal>
@@ -87,6 +90,28 @@ function ProjectList({ terminal, view, onAction }: ListProps) {
       view={view}
       onAction={onAction}
     />
+  );
+}
+
+/** PILGRED's repair: its progress (sent only to people at the terminal) and, when the view offers it, the repair button. */
+function PilgredRepair({ terminal, view, onAction }: ListProps) {
+  const { t } = useTranslation();
+  const percent = view.pilgred ?? 0;
+  const option = view.actions.find(({ action: a }) => a.type === "repair_pilgred" && a.equipment === terminal.id);
+  return (
+    <div className="research-item" role="group" aria-label={t("pilgred.label")}>
+      <img className="research-card" src={PILGRED_CARD} alt="" />
+      <div className="research-body">
+        <span>{t("pilgred.desc")}</span>
+        <progress max={PILGRED_COMPLETE} value={percent} />
+        <span>{percent >= PILGRED_COMPLETE ? t("pilgred.repaired") : t("pilgred.progress", { percent })}</span>
+      </div>
+      {option && (
+        <ActionButton view={view} option={option} onAction={onAction}>
+          <ActionLabel text={t("actions.repairPilgred")} cost={option.cost} chance={option.chance} />
+        </ActionButton>
+      )}
+    </div>
   );
 }
 
