@@ -85,20 +85,11 @@ interface Sortable {
 }
 
 /**
- * Art the original drew that we leave out: the doormats on either side of a door
- * break up the floor once the rooms behind the doors are drawn too.
- */
-const HIDDEN_SLICES = new Set(["DOOR_L_FLOOR", "DOOR_R_FLOOR"]);
-
-/**
  * Doors on a room's two front edges. The original drew no front walls, so
  * these are floor-level thresholds; once the room behind the door is drawn,
- * its own door on the same cell takes over and these are left out too.
+ * its own door on the same cell takes over and these are left out.
  */
 const FRONT_DOORS = new Set(["DOOR_BL", "DOOR_BR"]);
-
-/** Which way each straight wall slice runs; the corner pieces (`COLUMN`, `CORNER_DECK`, `corner_02`) run neither way. */
-const WALL_RUNS: Readonly<Record<string, "x" | "y">> = { BIG_WALL_L: "y", WALL_L_DECK: "y", BIG_WALL_R: "x", WALL_R_DECK: "x" };
 
 /**
  * Chairs drawn in front of the console they sit at, though their cell is further back than its
@@ -151,7 +142,6 @@ export type SceneRooms = readonly Omit<SceneRoom, "actors">[];
  */
 export interface PreparedScene {
   layout: ShipLayout;
-  /** The rooms with `fillGaps`' tiles added. */
   rooms: SceneRooms;
   /** Every tile sprite, in the original order (`baseOrder`). */
   statics: (PlacedSprite & Sortable)[];
@@ -166,8 +156,7 @@ export interface PreparedScene {
 
 export function prepareScene(layout: ShipLayout, rooms: SceneRooms): PreparedScene {
   const drawn = new Set(rooms.map((r) => r.room.id));
-  const filled = fillGaps(layout, rooms);
-  const statics = filled.flatMap((r, scene) => tileSortables(layout, r, scene, drawn)).sort(baseOrder);
+  const statics = rooms.flatMap((r, scene) => tileSortables(layout, r, scene, drawn)).sort(baseOrder);
   const byLeft = leftOrder(statics);
   const edges: number[] = [];
   for (let p = 0; p < byLeft.length; p++) {
@@ -179,7 +168,7 @@ export function prepareScene(layout: ShipLayout, rooms: SceneRooms): PreparedSce
     }
   }
   const plain = new Map(statics.map((s) => [s, unsorted(s)]));
-  return { layout, rooms: filled, statics, plain, edges, byLeft, maxWidth: statics.reduce((m, s) => Math.max(m, s.width), 0) };
+  return { layout, rooms, statics, plain, edges, byLeft, maxWidth: statics.reduce((m, s) => Math.max(m, s.width), 0) };
 }
 
 /**
@@ -244,306 +233,6 @@ function link(sprites: readonly (PlacedSprite & Sortable)[], i: number, j: numbe
   if (c !== 0) pairs.push(...(c < 0 ? [x, y] : [y, x]));
 }
 
-/** The turret domes, whose art fills the cells they leave without floor. */
-const TURRET_DOMES = new Set(["turret_alpha", "turret_beta"]);
-
-/**
- * The original drew one room at a time, with walls only on its back edges and no floor under its
- * doors, so a scene of several rooms has holes where they meet. This fills them, in order:
- *
- * 1. A floor tile under each door that has none (a copy of the room's floor next to it).
- * 2. A floor tile on an empty cell between a room's floor and another room's wall or door: rooms
- *    are placed locally (`neighborRooms`), and sometimes land one cell short of the wall that
- *    should close them.
- * 3. A wall on an empty cell with floor on both sides of it, running along the other axis, unless the
- *    cell is under a turret's dome.
- * 4. Walls that stop an edge or two short of another room's wall carried on to meet it, with a
- *    corner piece where they now turn (`joinWalls`).
- *
- * Each tile goes to the room whose floor it copies or touches (the first room winning a tie).
- * Open front edges elsewhere stay open: a wall there would cover the room behind it.
- */
-function fillGaps<R extends SceneRooms[number]>(layout: ShipLayout, rooms: readonly R[]): R[] {
-  const key = (x: number, y: number) => `${x},${y}`;
-  const floor = new Map<string, { room: number; tile: TilePlacement }>();
-  const walls = new Map<string, number>();
-  /** Cells under a turret's dome: it leaves two of them without floor, and its art fills them. */
-  const domed = new Set<string>();
-  rooms.forEach(({ room, dx, dy }, i) => {
-    for (const t of room.tiles) {
-      const k = key(t.x + dx, t.y + dy);
-      if (TURRET_DOMES.has(t.slice)) {
-        const [w, h] = layout.slices[t.slice]?.footprint ?? [1, 1];
-        for (let j = 0; j < h; j++) for (let n = 0; n < w; n++) domed.add(key(t.x + dx - n, t.y + dy - j));
-      }
-      if (t.kind === "ground" && !floor.has(k)) floor.set(k, { room: i, tile: t });
-      else if ((t.kind === "wall" || t.kind === "door") && !walls.has(k)) walls.set(k, i);
-      // A door's second cell is part of the door.
-      if (t.kind === "door" && !FRONT_DOORS.has(t.slice)) {
-        const [w] = layout.slices[t.slice]?.footprint ?? [1, 1];
-        const second = w > 1 ? key(t.x + dx - 1, t.y + dy) : key(t.x + dx, t.y + dy - 1);
-        if (!walls.has(second)) walls.set(second, i);
-      }
-    }
-  });
-  const extra: TilePlacement[][] = rooms.map(() => []);
-  const add = (owner: number, cx: number, cy: number, tile: Omit<TilePlacement, "x" | "y">) => {
-    const { dx, dy } = rooms[owner]!;
-    const t = { ...tile, x: cx - dx, y: cy - dy };
-    extra[owner]!.push(t);
-    return t;
-  };
-  const sides = (x: number, y: number) =>
-    [
-      [x - 1, y, x + 1, y],
-      [x + 1, y, x - 1, y],
-      [x, y - 1, x, y + 1],
-      [x, y + 1, x, y - 1],
-    ] as const;
-
-  // 1. Floor under doors (both cells of a wall door), which the doorway shows. Both cells get the same
-  // tile: a room's own pattern (a path leading to the door, say) over its plain floor, from either side.
-  // They belong to the room on the door's +x/+y side, the one whose back wall holds the door: that's
-  // where the doorway's floor reads as part of the room, so only there is it lit.
-  const plain = rooms.map(({ room }) => {
-    const count = new Map<string, number>();
-    for (const t of room.tiles) if (t.kind === "ground") count.set(`${t.slice}#${t.frame}`, (count.get(`${t.slice}#${t.frame}`) ?? 0) + 1);
-    return [...count].sort((p, q) => q[1] - p[1])[0]?.[0];
-  });
-  const isPlain = (f: { room: number; tile: TilePlacement }) => plain[f.room] === `${f.tile.slice}#${f.tile.frame}`;
-  rooms.forEach(({ room, dx, dy }, i) => {
-    for (const t of room.tiles) {
-      if (t.kind !== "door") continue;
-      const [w] = layout.slices[t.slice]?.footprint ?? [1, 1];
-      // Across the wall: a door two cells along x is in a wall that runs along x, so its sides are -y and +y.
-      const [ax, ay] = w > 1 ? [0, 1] : [1, 0];
-      const x = t.x + dx, y = t.y + dy;
-      const cells: [number, number][] = FRONT_DOORS.has(t.slice) ? [[x, y]] : [[x, y], [x - ay, y - ax]];
-      const across = cells.flatMap(([cx, cy]) => [floor.get(key(cx - ax, cy - ay)), floor.get(key(cx + ax, cy + ay))]);
-      const candidates = across.filter((f) => f !== undefined);
-      const tile = candidates.find((f) => !isPlain(f)) ?? candidates[0];
-      if (!tile) continue;
-      const owner = (across[1] ?? across[3] ?? { room: i }).room;
-      for (const [cx, cy] of cells) {
-        if (floor.has(key(cx, cy))) continue;
-        floor.set(key(cx, cy), { room: owner, tile: add(owner, cx, cy, { ...tile.tile, layer: 0 }) });
-      }
-    }
-  });
-
-  // Cells next to floor that hold nothing yet, in a fixed order.
-  const empty = () => {
-    const cells: [number, number][] = [];
-    const seen = new Set<string>();
-    for (const k of floor.keys()) {
-      const [fx, fy] = k.split(",").map(Number) as [number, number];
-      for (const [cx, cy] of sides(fx, fy).map(([ax, ay]) => [ax, ay] as const)) {
-        const c = key(cx, cy);
-        if (!floor.has(c) && !walls.has(c) && !seen.has(c)) seen.add(c), cells.push([cx, cy]);
-      }
-    }
-    return cells;
-  };
-
-  // 2. Floor across a one-cell strip up to another room's wall. Only from floor already there: one
-  // added here doesn't carry on to the next cell, so what's filled doesn't hang on the rooms' order.
-  const strips = new Map(floor);
-  for (const [cx, cy] of empty()) {
-    for (const [ax, ay, bx, by] of sides(cx, cy)) {
-      const f = strips.get(key(ax, ay));
-      const wall = walls.get(key(bx, by));
-      if (!f || wall === undefined || wall === f.room) continue;
-      floor.set(key(cx, cy), { room: f.room, tile: add(f.room, cx, cy, f.tile) });
-      break;
-    }
-  }
-
-  // 3. Walls between two floors, except under a turret's dome.
-  for (const [cx, cy] of empty()) {
-    if (domed.has(key(cx, cy))) continue;
-    const at = (x: number, y: number) => floor.get(key(x, y))?.room;
-    const w = at(cx - 1, cy), e = at(cx + 1, cy), n = at(cx, cy - 1), s = at(cx, cy + 1);
-    const alongY = w !== undefined && e !== undefined;
-    const alongX = n !== undefined && s !== undefined;
-    if (alongY === alongX) continue;
-    const owner = Math.min(...(alongY ? [w!, e!] : [n!, s!]));
-    walls.set(key(cx, cy), owner);
-    add(owner, cx, cy, { kind: "wall", layer: 0, slice: alongY ? "BIG_WALL_L" : "BIG_WALL_R", frame: 1 });
-  }
-
-  joinWalls(layout, rooms, extra, add);
-  return rooms.map((r, i) => (extra[i]!.length ? { ...r, room: { ...r.room, tiles: [...r.room.tiles, ...extra[i]!] } } : r));
-}
-
-/**
- * A wall stands on one edge of its cell (a cell's anchor is its top corner, (x, y), so it spans to
- * (x + 1, y + 1)): `BIG_WALL_L` on its +x edge, `BIG_WALL_R` on its +y edge, `corner_02` on both,
- * and a door on the edges of its two cells. `COLUMN` is a post on the cell's +x+y corner.
- * An x edge runs from (x, y) to (x + 1, y); a y edge from (x, y) to (x, y + 1).
- */
-interface WallEdge {
-  axis: "x" | "y";
-  x: number;
-  y: number;
-  /** The scene room it belongs to. */
-  owner: number;
-  /** The scene room whose own tiles draw it, or -1 for a wall `fillGaps` added between rooms. */
-  from: number;
-  slice: string;
-  frame: number;
-}
-
-/** Corner posts: the original's `COLUMN`, and the bays' `CORNER_DECK`. */
-const WALL_POSTS = new Set(["COLUMN", "CORNER_DECK"]);
-
-/** The edges a tile at (x, y) on the scene grid stands on. */
-function wallEdges(layout: ShipLayout, t: TilePlacement, x: number, y: number, owner: number, from: number): WallEdge[] {
-  const edge = (axis: "x" | "y", ex: number, ey: number): WallEdge => ({ axis, x: ex, y: ey, owner, from, slice: t.slice, frame: t.frame });
-  if (t.kind === "wall") {
-    if (t.slice === "corner_02") return [edge("x", x, y + 1), edge("y", x + 1, y)];
-    const run = WALL_RUNS[t.slice];
-    return run === "x" ? [edge("x", x, y + 1)] : run === "y" ? [edge("y", x + 1, y)] : [];
-  }
-  if (t.kind !== "door" || FRONT_DOORS.has(t.slice)) return [];
-  const [w] = layout.slices[t.slice]?.footprint ?? [1, 1];
-  return w > 1 ? [edge("x", x, y + 1), edge("x", x - 1, y + 1)] : [edge("y", x + 1, y), edge("y", x + 1, y - 1)];
-}
-
-/** Walls that `corner_02` (the original's front corner, in the same style) can be drawn over. */
-const CORNER_PAIRS = new Set(["BIG_WALL_L", "BIG_WALL_R", "corner_02"]);
-
-/** How far a wall that stops is carried on to meet another, in cell edges. */
-const WALL_REACH = 2;
-
-/**
- * Step 4 of `fillGaps`: walls that stop short of another wall are carried on to meet it. The
- * original drew one room at a time, so where two rooms' walls meet, each stops at its own room's
- * edge, an edge or two short of the other's. A wall end that touches nothing (no other wall, no
- * post) is carried on along its line by up to `WALL_REACH` edges if that reaches another room's
- * wall or post; two ends of different rooms that would meet on the next corner are both carried
- * on. A room's own walls are left as they are (the turrets end theirs in their dome's art), and no
- * wall is carried onto furniture. Then where two walls now meet
- * at a corner, a corner piece: `corner_02` where both are one cell's edges, as the original draws
- * its front corners, otherwise a `COLUMN`, as at its back corners.
- */
-function joinWalls(
-  layout: ShipLayout,
-  rooms: SceneRooms,
-  extra: TilePlacement[][],
-  add: (owner: number, cx: number, cy: number, tile: Omit<TilePlacement, "x" | "y">) => TilePlacement,
-) {
-  const key = (x: number, y: number) => `${x},${y}`;
-  const edgeKey = (e: { axis: "x" | "y"; x: number; y: number }) => `${e.axis}${e.x},${e.y}`;
-  const edges = new Map<string, WallEdge>();
-  const posts = new Set<string>();
-  /** Cells under furniture and other art (a turret's dome draws its own walls): no wall is carried onto them. */
-  const furnished = new Set<string>();
-  /** Cells with a bay's deck corner post, which a wall drawn over would hide. */
-  const decked = new Set<string>();
-  /** Which rooms draw a wall or post at each point (-1: one `fillGaps` added). */
-  const at = new Map<string, Set<number>>();
-  const mark = (x: number, y: number, from: number) => at.set(key(x, y), (at.get(key(x, y)) ?? new Set()).add(from));
-  rooms.forEach(({ room, dx, dy }, i) => {
-    const own = room.tiles.length;
-    [...room.tiles, ...extra[i]!].forEach((t, n) => {
-      const from = n < own ? i : -1;
-      if (t.kind === "wall" && WALL_POSTS.has(t.slice)) posts.add(key(t.x + dx + 1, t.y + dy + 1)), mark(t.x + dx + 1, t.y + dy + 1, from);
-      if (t.slice === "CORNER_DECK") decked.add(key(t.x + dx, t.y + dy));
-      if (t.kind === "entity" || t.kind === "prop") {
-        const [w, h] = layout.slices[t.slice]?.footprint ?? [1, 1];
-        for (let j = 0; j < h; j++) for (let k = 0; k < w; k++) furnished.add(key(t.x + dx - k, t.y + dy - j));
-      }
-      for (const e of wallEdges(layout, t, t.x + dx, t.y + dy, i, from)) if (!edges.has(edgeKey(e))) edges.set(edgeKey(e), e);
-    });
-  });
-  const ends = (e: { axis: "x" | "y"; x: number; y: number }): [[number, number], [number, number]] => [
-    [e.x, e.y],
-    e.axis === "x" ? [e.x + 1, e.y] : [e.x, e.y + 1],
-  ];
-  const degree = new Map<string, number>();
-  for (const e of edges.values()) {
-    for (const [px, py] of ends(e)) degree.set(key(px, py), (degree.get(key(px, py)) ?? 0) + 1), mark(px, py, e.from);
-  }
-  const touches = (x: number, y: number) => at.has(key(x, y));
-  /** Whether a room other than `from`'s draws a wall at the point (a wall `fillGaps` added counts as another). */
-  const others = (x: number, y: number, from: number) => [...(at.get(key(x, y)) ?? [])].some((r) => r !== from || r === -1);
-
-  const cellOf = (e: { axis: "x" | "y"; x: number; y: number }): [number, number] => (e.axis === "x" ? [e.x, e.y - 1] : [e.x - 1, e.y]);
-  /** The cell's other edge, which `corner_02` draws together with this one. */
-  const other = (e: { axis: "x" | "y"; x: number; y: number }) => (e.axis === "x" ? `y${e.x + 1},${e.y - 1}` : `x${e.x - 1},${e.y + 1}`);
-  const added = new Map<string, WallEdge>();
-  /** The corner `corner_02` turns at: the cell's +x+y corner. */
-  const turn = (e: { axis: "x" | "y"; x: number; y: number }) => (e.axis === "x" ? key(e.x + 1, e.y) : key(e.x, e.y + 1));
-  /**
-   * Carries `from` on over the given edges, unless one's cell is furnished, or holds a wall that
-   * `corner_02` can't stand in for: the bays' taller deck walls, unless the deck wall ends at the
-   * corner (drawn over one that carries on, it would show as a stray piece of wall in the bay).
-   */
-  const carry = (from: WallEdge, steps: [number, number][]) => {
-    const more = steps.map(([x, y]) => ({ ...from, x, y }));
-    const blocked = (e: WallEdge) => {
-      const cell = key(...cellOf(e));
-      if (furnished.has(cell) || decked.has(cell)) return true;
-      const pair = edges.get(other(e));
-      return !!pair && !CORNER_PAIRS.has(pair.slice) && degree.get(turn(e)) !== 1;
-    };
-    if (more.some(blocked)) return;
-    for (const e of more) if (!edges.has(edgeKey(e))) added.set(edgeKey(e), e);
-  };
-  /** Ends whose next edge leads to an empty point, by that point: the pairs that meet there both go on. */
-  const meeting = new Map<string, { from: WallEdge; step: [number, number] }[]>();
-  for (const e of edges.values()) {
-    const [a, b] = ends(e);
-    for (const [[px, py], [qx, qy]] of [[a, b], [b, a]] as const) {
-      if (degree.get(key(px, py)) !== 1 || posts.has(key(px, py))) continue;
-      const sx = px - qx, sy = py - qy;
-      const steps: [number, number][] = [];
-      for (let n = 1; n <= WALL_REACH; n++) {
-        const tx = px + sx * n, ty = py + sy * n;
-        steps.push([Math.min(tx, tx - sx), Math.min(ty, ty - sy)]);
-        if (!touches(tx, ty)) continue;
-        if (others(tx, ty, e.from)) carry(e, steps);
-        break;
-      }
-      const at = key(px + sx, py + sy);
-      if (!touches(px + sx, py + sy)) meeting.set(at, [...(meeting.get(at) ?? []), { from: e, step: steps[0]! }]);
-    }
-  }
-  for (const ends of meeting.values()) {
-    const apart = new Set(ends.map((m) => m.from.from)).size > 1 || ends.some((m) => m.from.from === -1);
-    if (apart && new Set(ends.map((m) => m.from.axis)).size === 2) for (const m of ends) carry(m.from, [m.step]);
-  }
-  if (added.size === 0) return;
-
-  // The pieces: a straight wall like the one carried on, or `corner_02` where a cell now has both edges.
-  const placed = new Set<string>();
-  for (const e of added.values()) {
-    const [cx, cy] = cellOf(e);
-    if (placed.has(key(cx, cy))) continue;
-    const pair = edges.get(other(e)) ?? added.get(other(e));
-    if (pair) {
-      placed.add(key(cx, cy));
-      if (pair.slice !== "corner_02") add(Math.min(e.owner, pair.owner), cx, cy, { kind: "wall", layer: 0, slice: "corner_02", frame: 0 });
-      continue;
-    }
-    const straight = WALL_RUNS[e.slice] === e.axis;
-    add(e.owner, cx, cy, { kind: "wall", layer: 0, slice: straight ? e.slice : e.axis === "x" ? "BIG_WALL_R" : "BIG_WALL_L", frame: straight ? e.frame : 1 });
-  }
-
-  // Posts where two walls now meet at a corner (a cell's two edges already have `corner_02`).
-  for (const e of added.values()) edges.set(edgeKey(e), e);
-  const corners = new Set([...added.values()].flatMap((e) => ends(e).map(([x, y]) => key(x, y))));
-  for (const c of corners) {
-    const [px, py] = c.split(",").map(Number) as [number, number];
-    if (posts.has(c)) continue;
-    const meet = [edges.get(`x${px - 1},${py}`), edges.get(`x${px},${py}`), edges.get(`y${px},${py - 1}`), edges.get(`y${px},${py}`)];
-    const [w, e, n, s] = meet;
-    if (meet.filter(Boolean).length !== 2 || !(w || e) || !(n || s)) continue;
-    if (w && n) continue; // both edges of one cell: corner_02
-    add(Math.min(...meet.filter((m) => m !== undefined).map((m) => m.owner)), px - 1, py - 1, { kind: "wall", layer: 0, slice: "COLUMN", frame: 0 });
-  }
-}
-
 function tileSortables(
   layout: ShipLayout,
   { room, dx, dy }: SceneRooms[number],
@@ -553,16 +242,6 @@ function tileSortables(
   const placed: (PlacedSprite & Sortable)[] = [];
   const prefix = scene === 0 ? "" : `${room.id}/`;
   const floor = floorBounds(room, dx, dy);
-
-  // A door's art is two cells of wall, its top ridge included (its footprint runs toward -x/-y);
-  // the wall the original also put on its second cell would show around it. Both its cells get
-  // floor (fillGaps), which the doorway shows.
-  const underDoor = new Set<string>();
-  for (const t of room.tiles) {
-    if (t.kind !== "door" || FRONT_DOORS.has(t.slice)) continue;
-    const [w, h] = layout.slices[t.slice]?.footprint ?? [1, 1];
-    for (let j = 0; j < h; j++) for (let k = 0; k < w; k++) if (j || k) underDoor.add(`${t.x - k},${t.y - j}`);
-  }
 
   const place = (t: TilePlacement, key: string) => {
     const frontDoor = FRONT_DOORS.has(t.slice);
@@ -602,9 +281,7 @@ function tileSortables(
   };
 
   room.tiles.forEach((t, i) => {
-    if (HIDDEN_SLICES.has(t.slice)) return;
     if (FRONT_DOORS.has(t.slice) && t.door && drawn.has(t.door.target)) return;
-    if (t.kind === "wall" && underDoor.has(`${t.x},${t.y}`)) return;
     place(t, `${prefix}t${i}`);
   });
   return placed;
@@ -926,13 +603,16 @@ function groundOffsetAt(layout: ShipLayout, room: RoomLayout, x: number, y: numb
 
 /**
  * Cells someone can stand on (Grid.isWalkable): floor not covered by a door or
- * by any entity footprint except decals and chairs. Footprints extend from the
- * anchor toward -x/-y (Ship.buildRoomBmp mkDep/mkDoor).
+ * by any entity footprint except decals and chairs, and with no wall on it (the
+ * original's cells held floor or wall, never both; the map has floor under some
+ * walls where rooms meet). Footprints extend from the anchor toward -x/-y
+ * (Ship.buildRoomBmp mkDep/mkDoor).
  */
 export function walkableCells(layout: ShipLayout, room: RoomLayout): { x: number; y: number }[] {
   const blocked = new Set<string>();
   for (const t of room.tiles) {
     const slice = layout.slices[t.slice]!;
+    if (t.kind === "wall") blocked.add(`${t.x},${t.y}`);
     if (t.kind !== "entity" && t.kind !== "door") continue;
     if (slice.flags.some((f) => f === "decal" || f === "chair")) continue;
     const [w, h] = slice.footprint ?? [1, 1];

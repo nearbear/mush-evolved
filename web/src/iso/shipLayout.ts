@@ -1,12 +1,14 @@
-// Loads Mush/derived/ship-layout.json (CC BY-NC-SA, see Mush/ATTRIBUTION.md)
-// and the atlas images it references. Fetched rather than imported so the
-// 400 KB of JSON stays out of the JS bundle and out of type inference.
+// Loads the ship: Mush/derived/ship-art.json (the sprites) and ship-map.json (the rooms and their
+// tiles), both CC BY-NC-SA (see Mush/ATTRIBUTION.md), and the atlas images they reference.
+// Fetched rather than imported so the 700 KB of JSON stays out of the JS bundle and out of type
+// inference.
 // BigFill and BigFill2 are too big for some GPUs; the layout points at their
 // repacked pages in derived/pages/ instead (tools/src/shipLayout/pages.ts).
 
 import { useEffect, useState } from "react";
-import type { ShipLayout } from "@mush2/shared";
-import layoutUrl from "../../../Mush/derived/ship-layout.json?url";
+import type { ShipArt, ShipLayout, ShipMap } from "@mush2/shared";
+import artUrl from "../../../Mush/derived/ship-art.json?url";
+import mapUrl from "../../../Mush/derived/ship-map.json?url";
 import { withoutBuiltOnly } from "./equipmentTiles.ts";
 
 const atlases = import.meta.glob<string>(
@@ -26,14 +28,23 @@ export function useShipLayout(): ShipLayout | undefined {
   const [layout, setLayout] = useState<ShipLayout>();
   useEffect(() => {
     let live = true;
-    loading ??= fetch(layoutUrl).then((r) => {
-      if (!r.ok) throw new Error(`ship layout: HTTP ${r.status}`);
-      return r.json() as Promise<ShipLayout>;
-    }).then(withoutBuiltOnly);
+    loading ??= loadShip().then(withoutBuiltOnly);
     loading.then((l) => live && setLayout(l)).catch(console.error);
     return () => {
       live = false;
     };
   }, []);
   return layout;
+}
+
+/** The art and the map as they are in the files, without the game's changes (the ship map editor draws this). */
+export async function loadShip(): Promise<ShipLayout> {
+  const [art, map] = await Promise.all([fetchJson<ShipArt>(artUrl), fetchJson<ShipMap>(mapUrl)]);
+  return { ...art, ...map };
+}
+
+async function fetchJson<T>(url: string): Promise<T> {
+  const r = await fetch(url);
+  if (!r.ok) throw new Error(`ship layout: HTTP ${r.status} for ${url}`);
+  return (await r.json()) as T;
 }

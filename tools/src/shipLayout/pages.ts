@@ -4,9 +4,9 @@
 // sheet's slices are copied onto shelf-packed pages, a strip too wide for a page wrapped onto more
 // rows (frameRect reads frames row-major, so their order is kept), and each slice is pointed at its
 // page with its new position and grid. The page images go to Mush/derived/pages/. Planning is pure,
-// so the layout's stale-check test can rerun it.
+// so the art's stale-check test can rerun it.
 
-import type { ShipLayout, SliceInfo } from "@mush2/shared";
+import type { ShipArt, SliceInfo } from "@mush2/shared";
 import type { Image } from "./png.ts";
 
 /** The largest texture side every GPU we support can load. */
@@ -42,14 +42,14 @@ function grid(s: SliceInfo, max: number) {
 }
 
 /**
- * The layout with every sheet over `max` px replaced by its pages (in the sheet's place, named
+ * The art with every sheet over `max` px replaced by its pages (in the sheet's place, named
  * `<sheet>.p<n>`), and the pages to build. Slices with the same frames share one copy.
  */
-export function pageSheets(layout: ShipLayout, max = MAX_PAGE): { layout: ShipLayout; pages: Page[] } {
+export function pageSheets(art: ShipArt, max = MAX_PAGE): { art: ShipArt; pages: Page[] } {
   const pages: Page[] = [];
-  const sheets: ShipLayout["sheets"] = {};
-  const slices = { ...layout.slices };
-  for (const [name, sheet] of Object.entries(layout.sheets)) {
+  const sheets: ShipArt["sheets"] = {};
+  const slices = { ...art.slices };
+  for (const [name, sheet] of Object.entries(art.sheets)) {
     if (sheet.width <= max && sheet.height <= max) {
       sheets[name] = sheet;
       continue;
@@ -100,7 +100,7 @@ export function pageSheets(layout: ShipLayout, max = MAX_PAGE): { layout: ShipLa
       sheets[p.sheet] = { image: p.image, width: p.width, height: p.height, ...(sheet.transparentColor !== undefined && { transparentColor: sheet.transparentColor }) };
     }
   }
-  return { layout: { ...layout, sheets, slices }, pages };
+  return { art: { ...art, sheets, slices }, pages };
 }
 
 /** A page's pixels, copied from its sheet's image. Unused space is transparent. */

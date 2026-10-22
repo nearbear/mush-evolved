@@ -2,10 +2,11 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { deflateSync } from "node:zlib";
 import { describe, expect, it } from "vitest";
-import type { ShipPlan, ShipRoom } from "@mush2/shared";
-import { convert as convertLayout, formatLayout, formatRooms, ROOM_IDS, roomGraph } from "../../src/shipLayout/convert.ts";
+import type { ShipArt, ShipMap, ShipPlan, ShipRoom } from "@mush2/shared";
+import { formatShipMap } from "../../src/shipLayout/shipMap.ts";
+import { convert, formatArt, formatRooms, ROOM_IDS, roomGraph } from "../../src/shipLayout/convert.ts";
 import { unserialize } from "../../src/shipLayout/haxe.ts";
-import { decodePng, encodePng as writePng, pngSize, type Image } from "../../src/shipLayout/png.ts";
+import { decodePng, encodePng as writePng, pngSize } from "../../src/shipLayout/png.ts";
 import { buildPage, pageSheets } from "../../src/shipLayout/pages.ts";
 import { cachedPlan, convertShipPlan, formatShipPlan, runs } from "../../src/shipLayout/shipPlan.ts";
 import { parseXml } from "../../src/shipLayout/xml.ts";
@@ -87,77 +88,43 @@ describe("parseXml", () => {
 });
 
 describe("convert", () => {
-  // 2x2 rooms. Only the first room (COMMAND_CENTER) has content; the image is
-  // tall enough for every room row. Columns: base layer, props layer, two empty layers.
-  const W = 0xffffff;
-  const map = (cells: number[][]): Image => {
-    const width = 8;
-    const height = 2 * 30;
-    const rgba = new Uint8Array(width * height * 4).fill(255);
-    cells.forEach((row, y) =>
-      row.forEach((c, x) => rgba.set([(c >> 16) & 0xff, (c >> 8) & 0xff, c & 0xff, 255], (y * width + x) * 4)),
-    );
-    return { width, height, rgba };
-  };
-  const xml = (doors: string) => `<data>
-    <bitmap startX="0" maxRoomWidth="2" maxRoomHeight="2"/>
+  const xml = (bind: string) => `<data>
     <tiles><sheet src="BmpGfx2">
       <slice id="GROUND" params="0,0,32,20,2" data="_pathable"><frame color="ffa301"/><frame color="#ffa3ff "/></slice>
       <slice id="DOOR_L" params="0,40,40,70,1" data="_door"><dep>1,2</dep><frame color="c0c0c0"/></slice>
-      <slice id="lamp" params="0,200,10,10"><frame color="123456"/></slice>
     </sheet></tiles>
-    <extras><room rid="COMMAND_CENTER">${doors}</room><autoBind/></extras>
+    <extras><autoBind>${bind}</autoBind></extras>
   </data>`;
   const size = () => ({ width: 2000, height: 2000 });
-  // The real walkways and moves need the real rooms' tiles.
-  const convert = (image: Image, tiles: string, sheetSize: typeof size) => convertLayout(image, tiles, sheetSize, { walkways: [], deck: [], moves: [] });
-  const img = map([
-    [0xffa301, 0xc0c0c0, 0x123456, W, W, W, W, W],
-    [0xffa3ff, W, W, W, W, W, W, W],
-  ]);
 
-  it("turns pixels into typed placements and assigns door targets", () => {
-    const layout = convert(img, xml('<makeDoor tgt="CORRIDOR_A"/>'), size);
-    const room = layout.rooms.find((r) => r.id === "COMMAND_CENTER")!;
-    expect(room.tiles).toEqual([
-      { x: 0, y: 0, kind: "ground", layer: 0, slice: "GROUND", frame: 0 },
-      { x: 1, y: 0, kind: "door", layer: 0, slice: "DOOR_L", frame: 0, door: { target: "CORRIDOR_A" } },
-      { x: 0, y: 1, kind: "ground", layer: 0, slice: "GROUND", frame: 1 },
-      { x: 0, y: 0, kind: "prop", layer: 1, slice: "lamp", frame: 0 },
-    ]);
-    expect(layout.slices.DOOR_L!.footprint).toEqual([1, 2]);
+  it("reads each slice's sheet rectangle, frames, flags and footprint", () => {
+    const art = convert(xml('<eq id="DOOR" tile="DOOR_L"/>'), size);
+    expect(art.slices.GROUND).toMatchObject({ sheet: "BmpGfx2", x: 0, y: 0, width: 32, height: 20, framesX: 2, flags: ["pathable"] });
+    expect(art.slices.GROUND!.frames).toEqual([{ color: "ffa301" }, { color: "ffa3ff" }]);
+    expect(art.slices.DOOR_L!.footprint).toEqual([1, 2]);
+    expect(art.autoBind).toEqual([{ id: "DOOR", tile: "DOOR_L" }]);
   });
 
-  it("fails when doors and <makeDoor> entries disagree", () => {
-    expect(() => convert(img, xml(""), size)).toThrow(/1 doors in the map but 0/);
-  });
-
-  it("fails on colors tiles.xml does not define", () => {
-    const bad = map([[0xabcdef, W, W, W, W, W, W, W], [W, W, W, W, W, W, W, W]]);
-    expect(() => convert(bad, xml(""), size)).toThrow(/unknown map color abcdef/);
+  it("fails on equipment bound to a slice that doesn't exist", () => {
+    expect(() => convert(xml('<eq id="DOOR" tile="nope"/>'), size)).toThrow(/unknown slice nope/);
   });
 
   it("fails when a slice extends past its sheet image", () => {
-    expect(() => convert(img, xml(""), () => ({ width: 10, height: 10 }))).toThrow(/extends past/);
+    expect(() => convert(xml(""), () => ({ width: 10, height: 10 }))).toThrow(/extends past/);
   });
 });
 
-describe("generated ship-layout.json", () => {
-  const { layout, pages } = pageSheets(
-    convertLayout(
-      decodePng(readFileSync(resolve(MUSH, "clients/iso/gfx/ShipMap.png"))),
-      readFileSync(resolve(MUSH, "clients/iso/xml/tiles.xml"), "utf8"),
-      (image) => pngSize(readFileSync(resolve(MUSH, image))),
-    ),
+describe("generated ship-art.json", () => {
+  const { art, pages } = pageSheets(
+    convert(readFileSync(resolve(MUSH, "clients/iso/xml/tiles.xml"), "utf8"), (image) => pngSize(readFileSync(resolve(MUSH, image)))),
   );
 
-  it("is up to date with ShipMap.png and tiles.xml (run `npm run ship-layout`)", () => {
-    expect(formatLayout(layout)).toBe(readFileSync(resolve(MUSH, "derived/ship-layout.json"), "utf8"));
-    expect(formatRooms(roomGraph(layout))).toBe(readFileSync(resolve(MUSH, "derived/ship-rooms.json"), "utf8"));
+  it("is up to date with tiles.xml (run `npm run ship-layout`)", () => {
+    expect(formatArt(art)).toBe(readFileSync(resolve(MUSH, "derived/ship-art.json"), "utf8"));
   });
 
   it("has every sheet within a phone GPU's texture limit, and its pages up to date", () => {
-    for (const sheet of Object.values(layout.sheets)) expect(Math.max(sheet.width, sheet.height)).toBeLessThanOrEqual(4096);
+    for (const sheet of Object.values(art.sheets)) expect(Math.max(sheet.width, sheet.height)).toBeLessThanOrEqual(4096);
     expect(pages.length).toBeGreaterThan(0);
     for (const page of pages) {
       const source = decodePng(readFileSync(resolve(MUSH, page.source)));
@@ -165,14 +132,34 @@ describe("generated ship-layout.json", () => {
       expect(Buffer.from(written.rgba).equals(Buffer.from(buildPage(source, page).rgba)), page.image).toBe(true);
     }
   });
+});
 
-  it("has two-way doors only", () => {
-    const layout = JSON.parse(readFileSync(resolve(MUSH, "derived/ship-layout.json"), "utf8")) as ReturnType<
-      typeof convert
-    >;
-    const edges = new Set(
-      layout.rooms.flatMap((r) => r.tiles.flatMap((t) => (t.door ? [`${r.id}>${t.door.target}`] : []))),
-    );
+describe("ship-map.json", () => {
+  const map = JSON.parse(readFileSync(resolve(MUSH, "derived/ship-map.json"), "utf8")) as ShipMap;
+  const art = JSON.parse(readFileSync(resolve(MUSH, "derived/ship-art.json"), "utf8")) as ShipArt;
+
+  it("is written in its one-tile-per-line format", () => {
+    expect(formatShipMap(map)).toBe(readFileSync(resolve(MUSH, "derived/ship-map.json"), "utf8"));
+  });
+
+  it("gives the rules an up-to-date ship-rooms.json (run `npm run ship-layout`)", () => {
+    expect(formatRooms(roomGraph(map))).toBe(readFileSync(resolve(MUSH, "derived/ship-rooms.json"), "utf8"));
+  });
+
+  it("draws only slices and frames that exist, and binds equipment only to slices that exist", () => {
+    for (const room of map.rooms) {
+      for (const t of room.tiles) {
+        const slice = art.slices[t.slice];
+        expect(slice, `${room.id}: unknown slice ${t.slice}`).toBeDefined();
+        expect(t.frame < slice!.framesX * slice!.framesY, `${room.id}: ${t.slice} has no frame ${t.frame}`).toBe(true);
+      }
+      for (const b of room.equipment) for (const s of [b.tile, b.mask]) if (s) expect(art.slices[s], `${room.id}: ${b.id} binds unknown ${s}`).toBeDefined();
+    }
+  });
+
+  it("has two-way doors only, each with a target", () => {
+    for (const room of map.rooms) for (const t of room.tiles) if (t.kind === "door") expect(t.door?.target, `${room.id}: door at ${t.x},${t.y}`).toBeDefined();
+    const edges = new Set(map.rooms.flatMap((r) => r.tiles.flatMap((t) => (t.door ? [`${r.id}>${t.door.target}`] : []))));
     for (const e of edges) {
       const [from, to] = e.split(">");
       expect(edges.has(`${to}>${from}`), `door ${from} -> ${to} has no way back`).toBe(true);

@@ -1,11 +1,12 @@
 import { describe, expect, it } from "vitest";
 import type { EquipmentView, ShipLayout } from "@mush2/shared";
-import shipLayoutJson from "../../../Mush/derived/ship-layout.json?raw";
+import shipArtJson from "../../../Mush/derived/ship-art.json?raw";
+import shipMapJson from "../../../Mush/derived/ship-map.json?raw";
 import rooms from "../../../Mush/derived/ship-rooms.json";
 import { SOFA_SPOTS, equipmentByTileKey, roomAsBuilt, withoutBuiltOnly } from "../../src/iso/equipmentTiles.ts";
 import { walkableCells } from "../../src/iso/placement.ts";
 
-const raw = JSON.parse(shipLayoutJson) as ShipLayout;
+const raw = ({ ...JSON.parse(shipArtJson), ...JSON.parse(shipMapJson) }) as ShipLayout;
 const layout = withoutBuiltOnly(raw);
 const sofa: EquipmentView = { id: "X:SOFA:1", type: "SOFA" };
 const roomOf = (l: ShipLayout, id: string) => l.rooms.find((r) => r.id === id)!;

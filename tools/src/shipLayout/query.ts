@@ -1,14 +1,11 @@
-// Prints the parts of Mush/derived/ship-layout.json that match a pattern, so the layout can be
-// searched without reading the whole file (project settings deny reading it directly).
+// Prints the parts of Mush/derived/ship-art.json and ship-map.json that match a pattern, so they can
+// be searched without reading the whole files (project settings deny reading them directly).
 //
 // Usage: npm run layout-query -- <regex>   (case-insensitive; matched against slice names,
 // equipment ids, and room ids). Output is capped at MAX_LINES.
 
-import { readFileSync } from "node:fs";
-import { resolve } from "node:path";
-import type { ShipLayout } from "@mush2/shared";
+import { readShip } from "./shipMap.ts";
 
-const LAYOUT = resolve(import.meta.dirname, "../../../Mush/derived/ship-layout.json");
 const MAX_LINES = 60;
 
 const pattern = process.argv[2];
@@ -17,7 +14,7 @@ if (!pattern) {
   process.exit(1);
 }
 const re = new RegExp(pattern, "i");
-const layout = JSON.parse(readFileSync(LAYOUT, "utf8")) as ShipLayout;
+const layout = readShip();
 
 const lines: string[] = [];
 for (const [name, s] of Object.entries(layout.slices)) {

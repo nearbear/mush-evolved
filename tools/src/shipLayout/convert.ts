@@ -1,43 +1,31 @@
-// Build-time converter: Motion Twin's ShipMap.png + tiles.xml -> ship-layout.json
-// (everything the renderer needs) and ship-rooms.json (just the room graph, for the rules).
-// Also writes ship-plan.json, the minimap's deck plan (see shipPlan.ts), and cuts sheets too big
-// for a GPU texture into pages under derived/pages/ (see pages.ts).
+// Build-time converter: Motion Twin's tiles.xml -> ship-art.json (the sprites: sheets, slices,
+// animations). Cuts sheets too big for a GPU texture into pages under derived/pages/ (see
+// pages.ts), and writes ship-plan.json, the minimap's deck plan (see shipPlan.ts), and
+// ship-rooms.json, the room graph for the rules, read from the hand-edited ship-map.json.
 //
-// Run with `npm run ship-layout`. Reproduces how the original Flash client
-// read these files (clients/iso/src/Data.hx `makeMap`/`addToStore`, Ship.hx
-// `buildRoomBmp`/`decorateDeps`), so comments cite those functions. Then it
-// applies our own changes to the room shapes (stretch.ts) and what's in them (moves.ts).
+// Run with `npm run ship-layout`. Reproduces how the original Flash client read tiles.xml
+// (clients/iso/src/Data.hx `addToStore`), so comments cite its functions. The rooms used to be
+// converted from ShipMap.png here too; they were frozen into ship-map.json on 2026-10-21 and are
+// edited there now.
 //
 // The output is derived from CC BY-NC-SA material, so it is written into the
 // Mush/ tree, not into our code.
 
 import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
 import { dirname, resolve } from "node:path";
-import type {
-  EquipmentBinding,
-  RoomLayout,
-  SheetInfo,
-  ShipLayout,
-  ShipRoom,
-  SliceInfo,
-  TileKind,
-  TilePlacement,
-} from "@mush2/shared";
+import type { SheetInfo, ShipArt, ShipMap, ShipRoom, SliceInfo } from "@mush2/shared";
 // The leaf module, not the package index: the index loads config.ts, which reads the file this tool writes.
 import { placedEquipment } from "../../../shared/src/shipLayout.ts";
 import { EQUIPMENT_TYPES } from "../../../shared/src/equipment.ts";
-import { decodePng, encodePng, pngSize, type Image } from "./png.ts";
+import { decodePng, encodePng, pngSize } from "./png.ts";
 import { buildPage, pageSheets } from "./pages.ts";
 import { cachedPlan, convertShipPlan, formatShipPlan } from "./shipPlan.ts";
-import { placeRooms, ROOM_POSITIONS, type Positions } from "./roomPositions.ts";
-import { MOVES, moveTiles, type TileMove } from "./moves.ts";
-import { stretchRooms } from "./stretch.ts";
-import { DECK_ROOMS, deckFloors, paintWalkways, WALKWAYS, type Walkway } from "./walkways.ts";
 import { child, childrenNamed, parseXml, type XmlElement } from "./xml.ts";
 
 const MUSH = resolve(import.meta.dirname, "../../../Mush");
 const ISO = "clients/iso";
-const OUTPUT = resolve(MUSH, "derived/ship-layout.json");
+const OUTPUT = resolve(MUSH, "derived/ship-art.json");
+const MAP = resolve(MUSH, "derived/ship-map.json");
 const ROOMS_OUTPUT = resolve(MUSH, "derived/ship-rooms.json");
 const PLAN_OUTPUT = resolve(MUSH, "derived/ship-plan.json");
 
@@ -61,88 +49,24 @@ const SHEETS: Record<string, { file: string; transparentArgb?: number }> = {
 };
 
 /**
- * Rows of ShipMap.png follow the RoomId enum, which is the `rooms` sheet of
- * data/Data.ods. Labels are the English text drawn beside each row (patrol
- * ships use their names from Data.ods). Stops at OUTER_SPACE: later rows are
- * empty and their labels don't match this snapshot of Data.ods.
+ * The RoomId enum, which is the `rooms` sheet of data/Data.ods: Map.hx's serialized plan indexes
+ * rooms by it. Stops at OUTER_SPACE: later rows don't match this snapshot of Data.ods.
  */
-const ROOMS: [id: string, label: string][] = [
-  ["COMMAND_CENTER", "Command center"],
-  ["SPACESHIP_BAY_A", "Bay Alpha"],
-  ["SPACESHIP_BAY_B", "Bay Beta"],
-  ["SPACESHIP_BAY_AA", "Bay Alpha 2"],
-  ["NEXUS_ROOM", "Nexus"],
-  ["SICK_BAY", "Sick bay"],
-  ["LABORATORY", "Laboratory"],
-  ["REFECTORY", "Refectory"],
-  ["HYDROPONIC_CENTER", "Hydroponic center"],
-  ["MOTOR_ROOM", "Motor room"],
-  ["LASER_TURRET_A_0", "Laser turret Alpha front"],
-  ["LASER_TURRET_A_1", "Laser turret Alpha centre"],
-  ["LASER_TURRET_A_2", "Laser turret Alpha back"],
-  ["LASER_TURRET_B_0", "Laser turret Beta front"],
-  ["LASER_TURRET_B_1", "Laser turret Beta centre"],
-  ["LASER_TURRET_B_2", "Laser turret Beta back"],
-  ["PATROL_SHIP_A_0", "Patrol ship Longane"],
-  ["PATROL_SHIP_A_1", "Patrol ship Jujube"],
-  ["PATROL_SHIP_A_2", "Patrol ship Tamarin"],
-  ["PATROL_SHIP_B_0", "Patrol ship Socrate"],
-  ["PATROL_SHIP_B_1", "Patrol ship Epicure"],
-  ["PATROL_SHIP_B_2", "Patrol ship Platon"],
-  ["PATROL_SHIP_AA_0", "Patrol ship Wallis"],
-  ["PATROL_SHIP_AA_1", "Pasiphae"],
-  ["CORRIDOR_A", "Corridor front"],
-  ["CORRIDOR_B", "Corridor centre"],
-  ["CORRIDOR_C", "Corridor back"],
-  ["PLANET", "Planet"],
-  ["ICARUS", "Icarus bay"],
-  ["BEDROOM_A", "Bedroom Alpha"],
-  ["BEDROOM_B", "Bedroom Beta"],
-  ["STORAGE_FRONT", "Storage front"],
-  ["STORAGE_A_0", "Storage Alpha centre"],
-  ["STORAGE_A_1", "Workshop"],
-  ["STORAGE_B_0", "Storage Beta centre"],
-  ["STORAGE_B_1", "Storage back"],
-  ["OUTER_SPACE", "Outer space"],
+export const ROOM_IDS = [
+  "COMMAND_CENTER", "SPACESHIP_BAY_A", "SPACESHIP_BAY_B", "SPACESHIP_BAY_AA", "NEXUS_ROOM", "SICK_BAY", "LABORATORY",
+  "REFECTORY", "HYDROPONIC_CENTER", "MOTOR_ROOM", "LASER_TURRET_A_0", "LASER_TURRET_A_1", "LASER_TURRET_A_2",
+  "LASER_TURRET_B_0", "LASER_TURRET_B_1", "LASER_TURRET_B_2", "PATROL_SHIP_A_0", "PATROL_SHIP_A_1", "PATROL_SHIP_A_2",
+  "PATROL_SHIP_B_0", "PATROL_SHIP_B_1", "PATROL_SHIP_B_2", "PATROL_SHIP_AA_0", "PATROL_SHIP_AA_1", "CORRIDOR_A",
+  "CORRIDOR_B", "CORRIDOR_C", "PLANET", "ICARUS", "BEDROOM_A", "BEDROOM_B", "STORAGE_FRONT", "STORAGE_A_0",
+  "STORAGE_A_1", "STORAGE_B_0", "STORAGE_B_1", "OUTER_SPACE",
 ];
 
-/** RoomId enum order, which Map.hx's serialized plan indexes rooms by. */
-export const ROOM_IDS = ROOMS.map(([id]) => id);
-
-/** Data.makeClones: every patrol ship except PATROL_SHIP_AA_1 reuses the next room's row. */
-const isClone = (id: string) => id.startsWith("PATROL_SHIP_") && id !== "PATROL_SHIP_AA_1";
-
-const LAYERS = 4;
-
-/**
- * Colors in ShipMap.png that tiles.xml never defines. The original client
- * skipped unknown colors silently; we skip only these, so new ones fail loudly.
- * 31e536 is probably a typo for 31e537 (the coffee machine).
- */
-const UNDEFINED_MAP_COLORS = new Set(["31e536", "7d2c2c", "cc95de"]);
-
-export function convert(
-  mapImage: Image,
-  tilesXml: string,
-  sheetSize: (file: string) => { width: number; height: number },
-  {
-    positions = ROOM_POSITIONS,
-    walkways = WALKWAYS,
-    deck = DECK_ROOMS,
-    moves = MOVES,
-  }: { positions?: Positions; walkways?: readonly Walkway[]; deck?: readonly string[]; moves?: readonly TileMove[] } = {},
-): ShipLayout {
+export function convert(tilesXml: string, sheetSize: (file: string) => { width: number; height: number }): ShipArt {
   const xml = parseXml(tilesXml);
   const data = child(xml, "data") ?? fail("tiles.xml: missing <data>");
-  const bitmap = child(data, "bitmap") ?? fail("tiles.xml: missing <bitmap>");
-  const startX = int(bitmap.attrs.startX);
-  const size = int(bitmap.attrs.maxRoomWidth);
-  if (int(bitmap.attrs.maxRoomHeight) !== size) fail("non-square rooms are not supported");
 
   const sheets: Record<string, SheetInfo> = {};
   const slices: Record<string, SliceInfo> = {};
-  const byColor = new Map<string, { slice: string; frame: number }>();
-
   for (const sheetEl of childrenNamed(child(data, "tiles") ?? fail("missing <tiles>"), "sheet")) {
     const name = sheetEl.attrs.src!;
     const known = SHEETS[name] ?? fail(`unknown sheet ${name}`);
@@ -160,113 +84,16 @@ export function convert(
         fail(`slice ${s.attrs.id} extends past ${image} (${dims.width}x${dims.height})`);
       }
       slices[s.attrs.id!] = slice;
-      // Data.addToStore: a color may only be defined once across all sheets.
-      slice.frames.forEach((f, frame) => {
-        if (!f.color) return;
-        if (byColor.has(f.color)) fail(`color ${f.color} defined twice`);
-        byColor.set(f.color, { slice: s.attrs.id!, frame });
-      });
     }
   }
 
-  const extrasEl = child(data, "extras") ?? fail("missing <extras>");
-  const extras = new Map<string, XmlElement>();
-  for (const r of childrenNamed(extrasEl, "room")) extras.set(r.attrs.rid!, r);
-  for (const rid of extras.keys()) {
-    if (!ROOMS.some(([id]) => id === rid)) fail(`<extras> names unknown room ${rid}`);
-  }
-
-  const rowsNeeded = ROOMS.filter(([id]) => !isClone(id)).length;
-  if (mapImage.height < rowsNeeded * size || mapImage.width < startX + LAYERS * size) {
-    fail(`map image is ${mapImage.width}x${mapImage.height}, too small for ${rowsNeeded} rooms`);
-  }
-
-  const rooms: RoomLayout[] = [];
-  let row = 0;
-  for (const [id, label] of ROOMS) {
-    const extra = extras.get(id);
-    const tiles = readRoom(mapImage, startX, row * size, size, slices, byColor);
-    assignDoors(id, tiles, extra ? childrenNamed(extra, "makeDoor").map((d) => d.attrs.tgt!) : []);
-    rooms.push({ id, label, tiles, equipment: extra ? childrenNamed(extra, "bindEquipment").map(parseBinding) : [] });
-    if (!isClone(id)) row++;
-  }
-  // Nothing may be drawn below the last room we know about.
-  for (let y = row * size; y + size <= mapImage.height; y += size) {
-    if (readRoom(mapImage, startX, y, size, slices, byColor).length > 0) fail(`unexpected tiles in map row at y=${y}`);
-  }
-
-  const autoBind = childrenNamed(child(extrasEl, "autoBind") ?? fail("missing <autoBind>"), "eq").map((e) => ({
+  const extras = child(data, "extras") ?? fail("missing <extras>");
+  const autoBind = childrenNamed(child(extras, "autoBind") ?? fail("missing <autoBind>"), "eq").map((e) => ({
     id: e.attrs.id!,
     tile: e.attrs.tile!,
   }));
-
-  for (const ref of [...rooms.flatMap((r) => r.equipment), ...autoBind]) {
-    for (const s of [ref.tile, (ref as EquipmentBinding).mask]) {
-      if (s && !slices[s]) fail(`equipment ${ref.id} references unknown slice ${s}`);
-    }
-  }
-
-  // Our changes to the room shapes (stretch.ts), what's in them (moves.ts) and floors (walkways.ts), then
-  // where each room sits on the ship (roomPositions.ts); tile indices are kept.
-  const edited = paintWalkways(moveTiles(stretchRooms(rooms, slices), moves), walkways);
-  return { roomSize: size, sheets, slices, rooms: deckFloors(placeRooms(edited, slices, positions), walkways, deck), autoBind };
-}
-
-/** Ship.buildRoomBmp: four side-by-side size x size layers per room row. */
-function readRoom(
-  img: Image,
-  startX: number,
-  top: number,
-  size: number,
-  slices: Record<string, SliceInfo>,
-  byColor: Map<string, { slice: string; frame: number }>,
-): TilePlacement[] {
-  const tiles: TilePlacement[] = [];
-  for (let layer = 0; layer < LAYERS; layer++) {
-    const left = startX + layer * size;
-    for (let y = 0; y < size; y++) {
-      for (let x = 0; x < size; x++) {
-        const i = ((top + y) * img.width + left + x) * 4;
-        if (img.rgba[i + 3] === 0) continue;
-        const color = hex(img.rgba[i]!, img.rgba[i + 1]!, img.rgba[i + 2]!);
-        if (color === "ffffff" || UNDEFINED_MAP_COLORS.has(color)) continue; // white = empty cell
-        const hit = byColor.get(color) ?? fail(`unknown map color ${color} at ${left + x},${top + y}`);
-        const slice = slices[hit.slice]!;
-        tiles.push({ x, y, kind: kindOf(layer, slice), layer: layer as TilePlacement["layer"], slice: hit.slice, frame: hit.frame });
-      }
-    }
-  }
-  return tiles;
-}
-
-/**
- * Layer 0 is floor if the slice is pathable, otherwise wall (doors are walls
- * with a footprint). Layer 1 is a prop unless the slice has a footprint, in
- * which case the original made it an entity. Layers 2 and 3 are always entities.
- */
-function kindOf(layer: number, slice: SliceInfo): TileKind {
-  if (layer === 0) {
-    if (slice.flags.includes("pathable")) return "ground";
-    return slice.flags.includes("door") ? "door" : "wall";
-  }
-  if (layer === 1) return slice.footprint ? "entity" : "prop";
-  if (!slice.footprint) fail(`slice on layer ${layer} has no footprint`);
-  return "entity";
-}
-
-/**
- * Ship.decorateDeps hands out `<makeDoor tgt>` entries, in XML order, to door
- * tiles in the order they were created: layer, then row, then column. That is
- * the order readRoom produces, so we can zip them.
- */
-function assignDoors(roomId: string, tiles: TilePlacement[], targets: string[]): void {
-  const doors = tiles.filter((t) => t.kind === "door");
-  if (doors.length !== targets.length) {
-    fail(`${roomId}: ${doors.length} doors in the map but ${targets.length} <makeDoor> entries`);
-  }
-  doors.forEach((d, i) => {
-    d.door = { target: targets[i]! };
-  });
+  for (const ref of autoBind) if (!slices[ref.tile]) fail(`equipment ${ref.id} references unknown slice ${ref.tile}`);
+  return { sheets, slices, autoBind };
 }
 
 function parseSlice(sheet: string, s: XmlElement): SliceInfo {
@@ -313,19 +140,6 @@ function parseSlice(sheet: string, s: XmlElement): SliceInfo {
   };
 }
 
-function parseBinding(b: XmlElement): EquipmentBinding {
-  const { id, tile, mask, dir, module, key, data } = b.attrs;
-  return {
-    id: id!,
-    tile: tile!,
-    ...(mask && { mask }),
-    ...(dir && { dir }),
-    ...(module && { module: module === "true" }),
-    ...(key && { key }),
-    ...(data && { data }),
-  };
-}
-
 const hex = (...bytes: number[]) => bytes.map((b) => b.toString(16).padStart(2, "0")).join("");
 const argbToRgba = (argb: number) => hex((argb >>> 16) & 0xff, (argb >>> 8) & 0xff, argb & 0xff, argb >>> 24);
 const ints = (s: string) => s.split(",").map((v) => int(v));
@@ -345,8 +159,8 @@ function fail(message: string): never {
 }
 
 /** The room graph for the rules: rooms that have at least one door, with their targets. */
-export function roomGraph(layout: ShipLayout): ShipRoom[] {
-  return layout.rooms.flatMap((r) => {
+export function roomGraph(map: ShipMap): ShipRoom[] {
+  return map.rooms.flatMap((r) => {
     const doors = [...new Set(r.tiles.flatMap((t) => (t.door ? [t.door.target] : [])))].sort();
     // Built-only equipment (the turret room's sofa) is drawn by the map but isn't there until someone builds it.
     const equipment = placedEquipment(r).filter(({ type }) => !EQUIPMENT_TYPES[type]?.builtOnly).map(({ id, type }) => ({ id, type }));
@@ -357,22 +171,22 @@ export function roomGraph(layout: ShipLayout): ShipRoom[] {
 export const formatRooms = (rooms: ShipRoom[]) =>
   `[\n${rooms.map((r) => `  ${JSON.stringify(r)}`).join(",\n")}\n]\n`;
 
-/** JSON with one tile per line: diffable without being enormous. */
-export function formatLayout(layout: ShipLayout): string {
+/** JSON with one frame or animation per line: diffable without being enormous. */
+export function formatArt(art: ShipArt): string {
   const inline = new Map<string, string>();
   const json = JSON.stringify(
-    layout,
+    art,
     (key, value: unknown) => {
       // Keep small leaf structures on one line.
       const compact =
-        (key === "tiles" || key === "frames" || key === "anims") && Array.isArray(value)
+        (key === "frames" || key === "anims") && Array.isArray(value)
           ? value.map((v) => JSON.stringify(v))
-          : key === "offset" || key === "footprint" || key === "modulePad" || key === "flags" || key === "at"
+          : key === "offset" || key === "footprint" || key === "modulePad" || key === "flags"
             ? [JSON.stringify(value)]
             : null;
       if (!compact) return value;
       const token = `@@${inline.size}@@`;
-      inline.set(token, key === "tiles" || key === "frames" || key === "anims" ? `[\n${compact.map((c) => `        ${c}`).join(",\n")}\n      ]` : compact[0]!);
+      inline.set(token, key === "frames" || key === "anims" ? `[\n${compact.map((c) => `        ${c}`).join(",\n")}\n      ]` : compact[0]!);
       return token;
     },
     2,
@@ -381,11 +195,10 @@ export function formatLayout(layout: ShipLayout): string {
 }
 
 if (import.meta.main) {
-  const map = decodePng(readFileSync(resolve(MUSH, ISO, "gfx/ShipMap.png")));
   const xml = readFileSync(resolve(MUSH, ISO, "xml/tiles.xml"), "utf8");
-  const { layout, pages } = pageSheets(convert(map, xml, (image) => pngSize(readFileSync(resolve(MUSH, image)))));
+  const { art, pages } = pageSheets(convert(xml, (image) => pngSize(readFileSync(resolve(MUSH, image)))));
   mkdirSync(dirname(OUTPUT), { recursive: true });
-  writeFileSync(OUTPUT, formatLayout(layout));
+  writeFileSync(OUTPUT, formatArt(art));
   for (const source of new Set(pages.map((p) => p.source))) {
     const img = decodePng(readFileSync(resolve(MUSH, source)));
     for (const page of pages.filter((p) => p.source === source)) {
@@ -394,9 +207,9 @@ if (import.meta.main) {
     }
   }
   if (pages.length) console.log(`Wrote ${pages.length} sheet pages: ${pages.map((p) => `${p.image} (${p.width}x${p.height})`).join(", ")}.`);
-  writeFileSync(ROOMS_OUTPUT, formatRooms(roomGraph(layout)));
+  const map = JSON.parse(readFileSync(MAP, "utf8")) as ShipMap;
+  writeFileSync(ROOMS_OUTPUT, formatRooms(roomGraph(map)));
   const plan = convertShipPlan(cachedPlan(readFileSync(resolve(MUSH, "src/common/data/Map.hx"), "utf8")), ROOM_IDS);
   writeFileSync(PLAN_OUTPUT, formatShipPlan(plan));
-  const tiles = layout.rooms.reduce((n, r) => n + r.tiles.length, 0);
-  console.log(`Wrote ${OUTPUT}: ${layout.rooms.length} rooms, ${tiles} tiles, ${Object.keys(layout.slices).length} slices.`);
+  console.log(`Wrote ${OUTPUT}: ${Object.keys(art.slices).length} slices; ${ROOMS_OUTPUT}: ${map.rooms.length} rooms from ship-map.json.`);
 }

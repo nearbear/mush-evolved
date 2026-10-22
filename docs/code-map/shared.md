@@ -49,4 +49,4 @@ Other packages import from `@mush2/shared` (`shared/src/index.ts`, the barrel). 
 - `protocol.ts`: wire message types and `parse*` validators for untrusted client input.
 - `moderation.ts`: `moderateChat`; called by the server, not the rules.
 - `characters.ts`: cosmetic crew identities, no rules effect.
-- `shipLayout.ts`: types for `Mush/derived/ship-layout.json` and `placedEquipment`.
+- `shipLayout.ts`: types for `Mush/derived/ship-art.json` and `ship-map.json` (`ShipLayout` is the two together) and `placedEquipment`.

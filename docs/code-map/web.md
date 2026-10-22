@@ -43,6 +43,10 @@ All under `web/src/`. UI rules are in `web/CLAUDE.md`.
 - `targets.ts`: finds the selection in the view (`resolveTarget`, `actionsOn`, `costOf`, `actionLabelKey`), and what an action is aimed at (`actionTarget`).
 - `BottomNav.tsx`, `PeekBar.tsx` (phone only): panel switcher; tapped target with its actions.
 
+**editor/** (dev builds only, at `/editor`; `main.tsx` loads it lazily behind `import.meta.env.DEV`, so it is never in a production bundle; #209)
+- `ShipEditor.tsx`: the ship map editor, read-only so far (#211): the whole ship from `ship-map.json` through the game's own placement and Pixi renderer, nothing fogged, with drag to pan and whole-number zoom (an editor-only exception to the room view's rules), layer toggles, a grid and room outlines on the ship plan, and the tile, slice, cell, room, door and equipment under the pointer. English only; the i18n scanner skips this folder.
+- `shipScene.ts` (pure): the whole-ship scene as the game draws fog depth "all", which map tile a sprite draws (`tileOf`), pixel to cell (`cellAt`), and the overlay paths (footprints, room outlines, grid).
+
 **iso/** (details in `web/src/iso/CLAUDE.md`)
 
 - `placement.ts`: pure layout math (projection, paint order, walkable cells, hit-testing), and `doorPassage` (the walk through a door between two rooms, with the doorway's cells marked by the door sprite's key).

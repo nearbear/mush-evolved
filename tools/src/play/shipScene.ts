@@ -2,10 +2,10 @@
 // `placeScene` (web/src/iso/placement.ts) over the whole ship or as seen from one room, shifted so
 // that cells are on the ship plan (`RoomLayout.at`), and the walls as the cell edges they stand on.
 
-import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import type { ShipLayout, TilePlacement } from "@mush2/shared";
 import { neighborRooms, type PlacedSprite, placeScene } from "../../../web/src/iso/placement.ts";
+import { readShip } from "../shipLayout/shipMap.ts";
 
 export const MUSH = resolve(import.meta.dirname, "../../../Mush");
 
@@ -31,7 +31,7 @@ export interface SceneArgs {
  * pieces in ("ROOM:slice:frame:x:y;..."), `drop` leaves sprites out ("slice:x:y;...").
  */
 export function loadScene(args: SceneArgs): { ship: ShipLayout; scene: PlacedSprite[] } {
-  const ship = JSON.parse(readFileSync(`${MUSH}/derived/ship-layout.json`, "utf8")) as ShipLayout;
+  const ship = readShip();
   for (const piece of (args.add ?? "").split(";").filter(Boolean)) {
     const [id, slice, frame, x, y] = piece.split(":");
     const r = ship.rooms.find((r) => r.id === id);
@@ -56,12 +56,6 @@ export function parseCells(cells: string | undefined): [number, number, number, 
   const box = cells.split(",").map(Number);
   if (box.length !== 4 || box.some(Number.isNaN)) throw new Error(`--cells: want x0,y0,x1,y1, got "${cells}"`);
   return box as [number, number, number, number];
-}
-
-/** Whether `fillGaps` added the sprite (its tile index is past the room's own tiles). */
-export function isFill(ship: ShipLayout, s: PlacedSprite): boolean {
-  const i = Number(s.key.split("/").pop()!.slice(1));
-  return i >= (ship.rooms.find((r) => r.id === s.room)?.tiles.length ?? Infinity);
 }
 
 /**

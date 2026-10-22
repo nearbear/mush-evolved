@@ -10,7 +10,8 @@
             "Read(./Mush/clients/**)"
         ],
         "deny": [
-            "Read(./Mush/derived/ship-layout.json)"
+            "Read(./Mush/derived/ship-art.json)",
+            "Read(./Mush/derived/ship-map.json)"
         ]
     }
 }
