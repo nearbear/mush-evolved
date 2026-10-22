@@ -4,7 +4,8 @@
 // a tile (Tab cycles through what's stacked under the click), move it a cell at a time, delete,
 // duplicate, change its frame or its room, place new tiles from the palette, undo and redo, and save
 // back to the file (tools/src/editor/vitePlugin.ts). It can also show the ship as the game draws it from
-// one room at fog depth 1 or 2, where seams between rooms show. Player-facing rules don't apply here
+// one room at fog depth 1 or 2, where seams between rooms show. A room can be moved whole on the plan, and
+// the map is checked as you edit (Checks.tsx): each problem found takes you to where it is. Player-facing rules don't apply here
 // (no translations, desktop first), but every action has a button, so it works on a phone.
 
 import { lazy, type PointerEvent, Suspense, useCallback, useEffect, useMemo, useRef, useState, type WheelEvent } from "react";
@@ -18,6 +19,7 @@ import {
   deleteTile,
   duplicateTile,
   kindFor,
+  moveRoom,
   moveTile,
   moveToRoom,
   placeTile,
@@ -27,6 +29,8 @@ import {
   type TileAt,
   tileAt,
 } from "./edits.ts";
+import type { Problem } from "./checks.ts";
+import { Checks, useChecks } from "./Checks.tsx";
 import { Palette } from "./Palette.tsx";
 import {
   cellAt,
@@ -75,6 +79,9 @@ function Editor({ art, initial }: { art: ShipArt; initial: ShipMap }) {
   const [future, setFuture] = useState<ShipMap[]>([]);
   const [save, setSave] = useState<SaveState>({ state: "clean" });
   const [selected, setSelected] = useState<TileAt | null>(null);
+  // The room the room tools act on: the selected tile's, or one picked from the list.
+  const [roomSel, setRoomSel] = useState<string | null>(null);
+  const [picked, setPicked] = useState<Problem | null>(null);
   const [message, setMessage] = useState<string>();
   const dirty = map !== saved;
   // What was under the last click, front first: Tab steps through it.
@@ -86,6 +93,7 @@ function Editor({ art, initial }: { art: ShipArt; initial: ShipMap }) {
     if (select !== selected) stack.current = { keys: [], at: 0 };
     setMap(next);
     setSelected(select);
+    if (select) setRoomSel(select.room);
     setMessage(undefined);
     if (save.state === "failed") setSave({ state: "dirty" });
   };
@@ -148,6 +156,7 @@ function Editor({ art, initial }: { art: ShipArt; initial: ShipMap }) {
   const grid = useMemo(() => gridLines(cells), [cells]);
   const imageInput = useMemo(() => ({ layout, room: "" as RoomId, ...NOBODY }), [layout]);
   const planRooms = useMemo(() => map.rooms.filter((r) => r.at).map((r) => r.id).sort(), [map]);
+  const checks = useChecks(art, map);
 
   const [hidden, setHidden] = useState<ReadonlySet<Layer>>(new Set());
   const [showGrid, setShowGrid] = useState(true);
@@ -258,7 +267,9 @@ function Editor({ art, initial }: { art: ShipArt; initial: ShipMap }) {
     if (armed) return place(cellAt(x, y));
     const keys = hitAll(visible, x, y, opaque).map((s) => s.key);
     stack.current = { keys, at: 0 };
-    setSelected((keys[0] && tileOfKey.get(keys[0])) || null);
+    const hit = (keys[0] && tileOfKey.get(keys[0])) || null;
+    setSelected(hit);
+    if (hit) setRoomSel(hit.room);
     hoverAt(clientX, clientY);
   };
 
@@ -309,14 +320,34 @@ function Editor({ art, initial }: { art: ShipArt; initial: ShipMap }) {
       if (r) commit(r.map, r.at);
     },
     doorTo: (room: string) => sel && commit(setDoorTarget(map, sel, room)),
+    moveRoom: (dx: number, dy: number) => roomSel && commit(moveRoom(map, roomSel, dx, dy)),
   };
   const cycle = (step: number) => {
     const { keys, at } = stack.current;
     if (keys.length < 2) return;
     const next = (at + step + keys.length) % keys.length;
     stack.current = { keys, at: next };
-    setSelected(tileOfKey.get(keys[next]!) ?? null);
+    const hit = tileOfKey.get(keys[next]!) ?? null;
+    setSelected(hit);
+    if (hit) setRoomSel(hit.room);
   };
+
+  /** Takes you to a problem: its view if it only shows in one, its tile or room selected, its first cell in the middle. */
+  const jump = (p: Problem) => {
+    setPicked(p);
+    if (p.view) setView(p.view);
+    if (p.tile) {
+      setSelected(p.tile);
+      stack.current = { keys: [], at: 0 };
+    }
+    if (p.room) setRoomSel(p.room);
+    const cell = p.cells[0];
+    if (!cell) return;
+    const at = gridToPx(cell[0] + 0.5, cell[1] + 0.5);
+    setCam({ x: Math.round(panel.width / zoom / 2 + box.minX - at.x), y: Math.round(panel.height / zoom / 2 + box.minY - at.y) });
+  };
+  // The picked problem as it is now: gone once it is fixed.
+  const pickedNow = picked && checks.problems ? (checks.problems.find((p) => p.id === picked.id) ?? null) : picked;
 
   // Keys work anywhere but in a text field or a list.
   const keys = useRef<(e: KeyboardEvent) => void>(() => {});
@@ -330,12 +361,20 @@ function Editor({ art, initial }: { art: ShipArt; initial: ShipMap }) {
     else if (mod && k.toLowerCase() === "z") e.shiftKey ? redo() : undo();
     else if (mod && k.toLowerCase() === "y") redo();
     else if (mod && k.toLowerCase() === "d") edit.duplicate();
+    else if (arrow && e.shiftKey && roomSel) edit.moveRoom(arrow.dx, arrow.dy);
     else if (arrow && sel) edit.move(arrow.dx, arrow.dy);
     else if ((k === "Delete" || k === "Backspace") && sel) edit.remove();
     else if (k === "[" && sel) edit.frame(-1);
     else if (k === "]" && sel) edit.frame(1);
     else if (k === "Tab" && stack.current.keys.length > 1) cycle(e.shiftKey ? -1 : 1);
-    else if (k === "Escape") armed ? setArmed(null) : setSelected(null);
+    else if (k === "Escape") {
+      if (armed) setArmed(null);
+      else if (sel) setSelected(null);
+      else {
+        setRoomSel(null);
+        setPicked(null);
+      }
+    }
     else return;
     e.preventDefault();
   };
@@ -350,7 +389,8 @@ function Editor({ art, initial }: { art: ShipArt; initial: ShipMap }) {
   const hoverTile = hit && tileAt(map, hit);
   const selRoom = sel && map.rooms.find((r) => r.id === sel.room)!;
   const selTile = sel && tileAt(map, sel)!;
-  const selEquipment = sel && placedEquipment(selRoom!).find((p) => p.tile === sel.index);
+  const focusRoom = roomSel ? map.rooms.find((r) => r.id === roomSel) : undefined;
+  const selEquipment =sel && placedEquipment(selRoom!).find((p) => p.tile === sel.index);
   const floorsHere = hover
     ? map.rooms.filter((r) => r.at && r.tiles.some((t) => t.kind === "ground" && t.x + r.at!.x === hover.cell.x && t.y + r.at!.y === hover.cell.y))
     : [];
@@ -404,12 +444,15 @@ function Editor({ art, initial }: { art: ShipArt; initial: ShipMap }) {
             {showRooms &&
               outlines.map((o) => (
                 <g key={o.id}>
-                  <path className="room-outline" d={o.path} />
+                  <path className={o.id === roomSel ? "room-outline selected" : "room-outline"} d={o.path} />
                   <text className="room-label" x={o.x} y={o.y} fontSize={12 / zoom}>
                     {o.label}
                   </text>
                 </g>
               ))}
+            {pickedNow && pickedNow.cells.length > 0 && (
+              <path className={`problem-cells ${pickedNow.severity}`} d={diamonds(pickedNow.cells.map(([x, y]) => ({ x, y })))} />
+            )}
             {hover && <path className={armed ? "place-cell" : "hover-cell"} d={diamonds([hover.cell])} />}
             {hoverRoom && hoverTile && <path className="hover-footprint" d={diamonds(footprint(layout, hoverRoom, hoverTile))} />}
             {selRoom && selTile && <path className="selected-footprint" d={diamonds(footprint(layout, selRoom, selTile))} />}
@@ -445,6 +488,7 @@ function Editor({ art, initial }: { art: ShipArt; initial: ShipMap }) {
           </ul>
         )}
         {message && <p className="editor-note">{message}</p>}
+        <Checks problems={checks.problems} checking={checks.checking} failed={checks.failed} picked={pickedNow?.id ?? null} onPick={jump} />
         <p className="muted">
           {planRooms.length} rooms on the plan ({offPlan} off it aren't shown), {tiles} tiles. Drag to pan, scroll or the buttons to zoom, click
           a tile to select it.
@@ -597,6 +641,40 @@ function Editor({ art, initial }: { art: ShipArt; initial: ShipMap }) {
           )}
         </section>
 
+        <section className="editor-room">
+          <h2>Room</h2>
+          <label className="editor-field">
+            Room{" "}
+            <select value={roomSel ?? ""} onChange={(e) => setRoomSel(e.target.value || null)}>
+              <option value="">(none)</option>
+              {planRooms.map((id) => (
+                <option key={id} value={id}>
+                  {id}
+                </option>
+              ))}
+            </select>
+          </label>
+          {focusRoom?.at && (
+            <>
+              <p>
+                At {focusRoom.at.x}, {focusRoom.at.y} on the plan · {focusRoom.tiles.length} tiles
+              </p>
+              <div className="editor-pad" role="group" aria-label="Move room">
+                {(["ArrowLeft", "ArrowUp", "ArrowDown", "ArrowRight"] as const).map((k) => (
+                  <button
+                    key={k}
+                    type="button"
+                    aria-label={`Move room ${ARROWS[k]!.label}`}
+                    onClick={() => edit.moveRoom(ARROWS[k]!.dx, ARROWS[k]!.dy)}
+                  >
+                    {{ ArrowLeft: "↖", ArrowUp: "↗", ArrowDown: "↙", ArrowRight: "↘" }[k]}
+                  </button>
+                ))}
+              </div>
+            </>
+          )}
+        </section>
+
         <section className="editor-readout" aria-live="polite">
           <h2>Under the pointer</h2>
           {!hover ? (
@@ -634,6 +712,8 @@ function Editor({ art, initial }: { art: ShipArt; initial: ShipMap }) {
           <dl>
             <dt>Arrows</dt>
             <dd>move the selection a cell: ↑ up-right, → down-right, ↓ down-left, ← up-left</dd>
+            <dt>Shift+arrows</dt>
+            <dd>move the selected tile's room (or the one picked under Room) a cell</dd>
             <dt>Tab, Shift+Tab</dt>
             <dd>the next or previous thing under the last click</dd>
             <dt>Delete</dt>
@@ -647,7 +727,7 @@ function Editor({ art, initial }: { art: ShipArt; initial: ShipMap }) {
             <dt>Ctrl+S</dt>
             <dd>save</dd>
             <dt>Escape</dt>
-            <dd>stop placing, or clear the selection</dd>
+            <dd>stop placing, or clear the selection, then the room and the picked problem</dd>
           </dl>
         </details>
       </aside>

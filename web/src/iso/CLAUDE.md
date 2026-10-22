@@ -173,6 +173,11 @@ describes a spot in screen terms, translate it to cells and confirm on the data 
   place new tiles from the palette; undo and redo; save writes `ship-map.json` and regenerates
   `ship-rooms.json` (`tools/src/editor/vitePlugin.ts`, after `validateMap`). The game tab needs a
   reload to see a save. A new tile's kind and layer are what the map already uses for its slice.
+  Shift+arrows (or the Room pad) move the selected tile's room on the plan. The Checks panel
+  re-checks the map a moment after each edit (`web/src/editor/checks.ts`, in a worker): overlaps,
+  misaligned doors, doors with no room, floor or way back, equipment with no tile, loose wall ends
+  from every room, gaps; clicking one centres it, marks its cells and selects its tile or room
+  (switching to the one view it shows in, if any). What tests pin as left on purpose is folded away.
 - It was frozen on 2026-10-21 from the converter's output plus what the old draw-time fixes added
   for the whole ship (widened and lengthened corridors, walkways and deck floors, doors slid to meet,
   floor under doors and across one-cell gaps, walls between floors, walls carried on to meet the next
@@ -185,7 +190,7 @@ describes a spot in screen terms, translate it to cells and confirm on the data 
   (x + at.x, y + at.y) on the ship grid, and `neighborRooms` takes offsets from it, so a room is in
   the same place whichever room you stand in. Moving a room is changing its `at`; then
   `npm run ship-check` lists rooms on top of each other (errors, a test fails), doors whose two sides
-  don't meet (pinned in `tools/tests/shipLayout/check.test.ts`, so a change there is deliberate),
+  don't meet (pinned as `KNOWN_MISALIGNED` in `web/src/editor/checks.ts`, so a change there is deliberate),
   and gaps. Then look with `npm run ship-render` or `ship-view`.
 - **Who owns a tile** decides when it is drawn (only with its room) and how it is lit (`describeScene`
   dims other rooms' sprites, except a door back to your room and a neighbour's wall on a cell next

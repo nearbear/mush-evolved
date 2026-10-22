@@ -34,6 +34,10 @@ export const moveTile = (map: ShipMap, at: TileAt, dx: number, dy: number): Ship
 export const deleteTile = (map: ShipMap, at: TileAt): ShipMap =>
   withRoom(map, at.room, (r) => ({ ...r, tiles: r.tiles.filter((_, i) => i !== at.index) }));
 
+/** The whole room moved on the ship plan (its `at`), every tile with it. Rooms off the plan stay off it. */
+export const moveRoom = (map: ShipMap, id: string, dx: number, dy: number): ShipMap =>
+  withRoom(map, id, (r) => (r.at ? { ...r, at: { x: r.at.x + dx, y: r.at.y + dy } } : r));
+
 /** A copy of the tile on the same cell, at the end of its room's tiles. */
 export function duplicateTile(map: ShipMap, at: TileAt): { map: ShipMap; at: TileAt } {
   const t = tileAt(map, at)!;

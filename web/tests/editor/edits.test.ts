@@ -6,6 +6,7 @@ import {
   deleteTile,
   duplicateTile,
   kindFor,
+  moveRoom,
   moveTile,
   moveToRoom,
   placeTile,
@@ -62,6 +63,13 @@ describe("edits", () => {
     expect(r.map.rooms[0]!.tiles).toHaveLength(2);
     expect(moveToRoom(map, { room: "A", index: 0 }, "OFF")).toBeUndefined();
     expect(moveToRoom(map, { room: "A", index: 0 }, "A")).toBeUndefined();
+  });
+
+  it("move a whole room on the plan, and leave a room off the plan off it", () => {
+    const next = moveRoom(map, "B", 1, -2);
+    expect(next.rooms[1]!.at).toEqual({ x: 11, y: 3 });
+    expect(next.rooms[1]!.tiles).toBe(map.rooms[1]!.tiles);
+    expect(moveRoom(map, "OFF", 1, 0).rooms[2]!.at).toBeUndefined();
   });
 
   it("place a tile on a ship cell in a room's own cells, and give a door its target", () => {

@@ -60,6 +60,25 @@
   stroke: rgb(255 214 102 / 0.75);
   stroke-width: 1.5;
 }
+.editor-overlay .room-outline.selected {
+  stroke: #fff;
+  stroke-width: 2.5;
+}
+.editor-overlay .problem-cells {
+  stroke-width: 2;
+}
+.editor-overlay .problem-cells.error {
+  fill: rgb(255 70 70 / 0.35);
+  stroke: rgb(255 90 90);
+}
+.editor-overlay .problem-cells.warning {
+  fill: rgb(255 190 60 / 0.35);
+  stroke: rgb(255 190 60);
+}
+.editor-overlay .problem-cells.info {
+  fill: rgb(120 180 255 / 0.3);
+  stroke: rgb(120 180 255);
+}
 .editor-overlay .room-label {
   fill: #ffe7a3;
   text-anchor: middle;
@@ -198,8 +217,24 @@
   display: grid;
   gap: 4px;
 }
-/* Palette entries are a list of pictures, not plain buttons, so they drop the Mush button sprite (as
-   tabs do) for a flat row that fits a thumbnail. */
+.editor-checks ul {
+  list-style: none;
+  margin: 6px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 4px;
+}
+.editor-checks summary {
+  margin-top: 6px;
+  color: var(--muted);
+}
+.editor-checks h2 .muted {
+  font-weight: normal;
+  font-size: 13px;
+}
+/* Palette entries are a list of pictures, and checks a list of problems, not plain buttons, so they drop
+   the Mush button sprite (as tabs do) for a flat row that fits a thumbnail or two lines of text. */
+.editor-checks li button,
 .editor-palette li button {
   height: auto;
   margin: 0;
@@ -217,6 +252,25 @@
   column-gap: 8px;
   width: 100%;
   text-align: left;
+}
+.editor-checks li button {
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-rows: auto;
+  row-gap: 2px;
+  border-left-width: 4px;
+}
+.editor-checks li button.error {
+  border-left-color: var(--danger);
+}
+.editor-checks li button.warning {
+  border-left-color: var(--warning);
+}
+.editor-checks li button.on {
+  outline: 2px solid var(--accent);
+}
+.editor-checks .title {
+  overflow-wrap: anywhere;
 }
 .editor-palette li button .thumb {
   grid-row: span 2;
