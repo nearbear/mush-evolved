@@ -74,7 +74,7 @@ These are non-negotiable unless I say otherwise.
 
 ## Commands
 
-Node is installed via nvm. In non-interactive shells, run `source ~/.nvm/nvm.sh` first or `node`/`npm` won't be found.
+Node is installed via nvm and is already on `PATH` in Claude Code shells (the user settings `env` pins `~/.nvm/versions/node/v24.21.0/bin`), so don't source nvm first. If `node` isn't found (for example after a Node upgrade), run `source ~/.nvm/nvm.sh` and tell the user the pinned path is stale.
 
 - `npm install`: install all workspaces (npm workspaces: `shared`, `server`, `web`, `tools`, plus `Mush` as `@mush2/assets`).
 - `npm run dev`: wrangler on :8787 plus Vite on :5173, via concurrently. In a git worktree the ports are offset per worktree (`npm run ports` prints them) so it can run beside the main checkout's servers.

@@ -41,7 +41,7 @@ In `shared/tests/<feature>.test.ts`:
 - Pin the confirmed numbers once, in one test that checks the config against the literals (`expect([cost.ap, effect.hp]).toEqual([2, 3])`). Everywhere else, derive from config (`config.startAp - config.heal.cost.apOther`), so retuning a number breaks one test, not every test that happens to pay that cost.
 - The happy path, each limit or edge case from step 1, and "illegal action leaves state unchanged".
 - **Hidden information:** whenever `PlayerView` or the log changes, extend the `viewFor` tests to show that other players' roles, other rooms' history, and private entries do not appear in anyone else's view. A new state field must also be listed in `shared/tests/leakFields.ts` (the tests fail until it is), with a sentinel in `shared/tests/leaks.test.ts` when its value can be made unique. This is the project's most important architecture rule.
-- While iterating, run only what you need: `source ~/.nvm/nvm.sh && npm test -w shared -- rules.test.ts -t "name"`. Run the full `npm test && npm run typecheck` once, at the end.
+- While iterating, run only what you need: `npm test -w shared -- rules.test.ts -t "name"`. Run the full `npm test && npm run typecheck` once, at the end.
 
 ## 4. Check it end to end
 

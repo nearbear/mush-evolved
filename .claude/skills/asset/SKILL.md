@@ -19,7 +19,6 @@ Everything in `Mush/` is CC BY-NC-SA 4.0 (see `Mush/LICENSE.txt` and `docs/mush-
 The archive has no CSS or templates for the site chrome, so placement has to be inferred. WSL has no ImageMagick or PIL. Use:
 
 ```bash
-source ~/.nvm/nvm.sh
 npm run contact-sheet -- Mush/www/img/design                       # everything, fit to cells
 npm run contact-sheet -- Mush/www/img/design --match "^but" --zoom 4 --bg "#0d1424"
 ```

@@ -22,7 +22,7 @@ The UI language is a **per-player, client-side choice** (`web/src/i18n/`), indep
 ## Workflow
 
 1. Add the keys (en, then fr, es) and use `t()`.
-2. `source ~/.nvm/nvm.sh && npm test -w tools -- i18n` and `npm test -w web`.
+2. `npm test -w tools -- i18n` and `npm test -w web`.
 3. If the hardcoded-text baseline **shrank**, that's progress: `UPDATE_I18N_BASELINE=1 npm test -w tools -- i18n`. If it **grew**, translate the text or mark it `i18n-ignore`; never regenerate the baseline to make a failing test pass.
 4. `npm run typecheck`.
 5. Tell the user that the French and Spanish strings are drafts that need a native speaker's review, and list any new game terms you had to choose.

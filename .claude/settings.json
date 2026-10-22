@@ -11,7 +11,8 @@
         ],
         "deny": [
             "Read(./Mush/derived/ship-art.json)",
-            "Read(./Mush/derived/ship-map.json)"
+            "Read(./Mush/derived/ship-map.json)",
+            "Read(./docs/ai-workflow.md)"
         ]
     }
 }

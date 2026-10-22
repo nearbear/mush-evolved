@@ -11,7 +11,6 @@ CLAUDE.md: run typecheck and tests before saying something is done, keep commits
 ## 1. Verify
 
 ```bash
-source ~/.nvm/nvm.sh
 npm run typecheck
 npm test
 npm run build          # if web/ changed

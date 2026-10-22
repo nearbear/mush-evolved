@@ -13,7 +13,6 @@ Typecheck and unit tests don't show whether the UI looks right. This does.
 Ports depend on the checkout: the main checkout uses :5173 (web) and :8787 (server); each git worktree gets its own pair so both can run at once. `npm run dev` and `npm run screenshot` pick the right pair themselves. Run `npm run ports` to see them, and use those numbers for the `curl`s below instead of 5173/8787 when in a worktree. Never point a worktree at the main checkout's servers: you would be testing the wrong code.
 
 ```bash
-source ~/.nvm/nvm.sh
 npm run ports
 curl -sf http://localhost:5173 >/dev/null && curl -s http://localhost:8787 >/dev/null && echo up || echo down
 ```
@@ -21,7 +20,7 @@ curl -sf http://localhost:5173 >/dev/null && curl -s http://localhost:8787 >/dev
 If down, start them **as a background task** (Bash `run_in_background: true`), logging to the session's scratchpad directory (named in the system prompt; there is no environment variable for it):
 
 ```bash
-source ~/.nvm/nvm.sh && npm run dev > <scratchpad>/dev.log 2>&1
+npm run dev > <scratchpad>/dev.log 2>&1
 ```
 
 Then poll until both ports answer (don't `sleep` a fixed time):
@@ -35,7 +34,7 @@ If a background `npm run dev` exits immediately, the ports are probably already 
 ## 2. Drive it
 
 ```bash
-source ~/.nvm/nvm.sh && npm run screenshot
+npm run screenshot
 ```
 
 `tools/src/play/screenshot.ts` joins as "Playwright" on a 1600x1000 desktop and as "Playwright (phone)" on an emulated Galaxy S8 (touch, 360x740: **360px is the narrowest width we support**, so the phone pass tests it), at the same time so both land in one match (bots fill the other seats after about 5 s). The desktop pass runs first, then the phone pass. Saves to `.screenshots/` (gitignored). `-- --only desktop` or `-- --only mobile` runs one pass; `-- --phone "iPhone 13"` uses another Playwright device.
