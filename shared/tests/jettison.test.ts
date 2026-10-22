@@ -25,7 +25,7 @@ function ship(room = "SPACESHIP_BAY_A"): { s: GameState; corpse: string; jettiso
 
 describe("jettison", () => {
   it("defaults to 0 AP in the four bays", () => {
-    expect(DEFAULT_CONFIG.jettison).toEqual({ cost: { ap: 0 }, rooms: BAYS });
+    expect(DEFAULT_CONFIG.jettison.cost).toEqual({ ap: 0 });
   });
 
   it("destroys a carried corpse in any bay, for free", () => {

@@ -8,7 +8,7 @@ export interface StarfieldImage {
   /** Square: `size` x `size`. */
   size: number;
   /** Row-major RGBA, 4 bytes per pixel, fully opaque. */
-  rgba: Uint8ClampedArray;
+  rgba: Uint8ClampedArray<ArrayBuffer>;
 }
 
 /** The sky, every pixel nothing else covers. */
