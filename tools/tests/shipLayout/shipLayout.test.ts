@@ -9,6 +9,7 @@ import { unserialize } from "../../src/shipLayout/haxe.ts";
 import { decodePng, encodePng as writePng, pngSize } from "../../src/shipLayout/png.ts";
 import { buildPage, pageSheets } from "../../src/shipLayout/pages.ts";
 import { cachedPlan, convertShipPlan, formatShipPlan, runs } from "../../src/shipLayout/shipPlan.ts";
+import { validateMap } from "../../src/shipLayout/validate.ts";
 import { parseXml } from "../../src/shipLayout/xml.ts";
 
 const MUSH = resolve(import.meta.dirname, "../../../Mush");
@@ -157,6 +158,10 @@ describe("ship-map.json", () => {
     }
   });
 
+  it("passes the editor's check before saving", () => {
+    expect(validateMap(map, art)).toEqual([]);
+  });
+
   it("has two-way doors only, each with a target", () => {
     for (const room of map.rooms) for (const t of room.tiles) if (t.kind === "door") expect(t.door?.target, `${room.id}: door at ${t.x},${t.y}`).toBeDefined();
     const edges = new Set(map.rooms.flatMap((r) => r.tiles.flatMap((t) => (t.door ? [`${r.id}>${t.door.target}`] : []))));
@@ -229,3 +234,42 @@ describe("runs", () => {
     expect(runs(cells)).toEqual([[0, 0, 3], [3, 1, 1], [5, 1, 1]]);
   });
 });
+
+describe("validateMap", () => {
+  const art = { slices: { GROUND: { framesX: 2, framesY: 1 } } } as unknown as ShipArt;
+  const ok = (over: object = {}) => ({ x: 0, y: 0, kind: "ground", layer: 0, slice: "GROUND", frame: 0, ...over });
+  const check = (tiles: object[], extra: object[] = []) =>
+    validateMap({ rooms: [{ id: "A", label: "A", equipment: [], tiles }, ...extra] } as unknown as ShipMap, art);
+
+  it("accepts a sound map", () => {
+    expect(check([ok(), ok({ kind: "door", door: { target: "B" } })], [{ id: "B", label: "B", equipment: [], tiles: [] }])).toEqual([]);
+  });
+
+  it("names each problem: unknown slices and frames, bad cells, kinds and layers, doors going nowhere", () => {
+    const problems = check([
+      ok({ slice: "nope" }),
+      ok({ frame: 2 }),
+      ok({ x: 0.5 }),
+      ok({ kind: "furniture" }),
+      ok({ layer: 7 }),
+      ok({ kind: "door" }),
+      ok({ kind: "door", door: { target: "Z" } }),
+      ok({ door: { target: "A" } }),
+    ]);
+    expect(problems).toEqual([
+      "A #0: unknown slice nope",
+      "A #1: GROUND has no frame 2",
+      "A #2: its cell isn't two whole numbers",
+      "A #3: unknown kind furniture",
+      "A #4: layer must be 0 to 3",
+      "A #5: a door with no room to go to",
+      "A #7: a door target on a ground",
+      "A #6: a door to Z, which isn't a room",
+    ]);
+  });
+
+  it("refuses something that isn't a map", () => {
+    expect(validateMap({} as ShipMap, art)).toEqual(["the map has no rooms list"]);
+  });
+});
+

@@ -166,9 +166,13 @@ describes a spot in screen terms, translate it to cells and confirm on the data 
   (`ship-rooms.json`, from the map). Edit it with a short script through `readMap`/`writeMap`
   (`tools/src/shipLayout/shipMap.ts`), which keeps the format; `npm run layout-query` to search it.
 - **The ship map editor** (`web/src/editor/`, dev builds only): `npm run dev`, then `/editor`. It
-  draws the whole ship as fog depth "all" does, with pan, zoom, layer toggles, a grid and room
-  outlines on the ship plan, and names the tile under the pointer (room, index, slice, frame, cells,
-  door, equipment). Read-only for now (#211); editing and saving come in #212.
+  draws the whole ship as fog depth "all" does, or what the game draws from one room at fog depth 1
+  or 2 (where seams between rooms show), with pan, zoom, layer toggles, a grid and room outlines on
+  the ship plan. Click a tile to select it (Tab steps through everything under that spot); move it a
+  cell at a time, delete, duplicate, change its frame, hand it to another room, set a door's target;
+  place new tiles from the palette; undo and redo; save writes `ship-map.json` and regenerates
+  `ship-rooms.json` (`tools/src/editor/vitePlugin.ts`, after `validateMap`). The game tab needs a
+  reload to see a save. A new tile's kind and layer are what the map already uses for its slice.
 - It was frozen on 2026-10-21 from the converter's output plus what the old draw-time fixes added
   for the whole ship (widened and lengthened corridors, walkways and deck floors, doors slid to meet,
   floor under doors and across one-cell gaps, walls between floors, walls carried on to meet the next

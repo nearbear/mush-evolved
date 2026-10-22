@@ -12,18 +12,39 @@ export type Layer = (typeof LAYERS)[number];
 /** A door counts as a wall for the toggles. */
 export const layerOf = (kind: PlacedSprite["kind"]): Layer | undefined => (kind === "door" ? "wall" : kind === "actor" ? undefined : kind);
 
+/** Which rooms the editor draws: the whole ship, or what the game draws from one room at a fog depth. */
+export type ShipView = { from: null } | { from: string; depth: 1 | 2 };
+
 /**
- * Every room on the ship plan in one scene, as the game draws fog depth "all" from the front corridor:
- * the same rooms in the same order, so ties in paint order come out the same. Rooms off the plan
- * (the patrol ships, the planet) aren't on it.
+ * The rooms on the ship plan in one scene, on ship cells. The whole ship is drawn as the game draws fog
+ * depth "all" from the front corridor: the same rooms in the same order, so ties in paint order come
+ * out the same. A view from a room draws that room and its neighbours out to the depth, as the game
+ * does there (without the fog). Rooms off the plan (the patrol ships, the planet) aren't on it.
  */
-export function shipScene(layout: ShipLayout): PlacedSprite[] {
+export function shipScene(layout: ShipLayout, view: ShipView = { from: null }): PlacedSprite[] {
   const placed = layout.rooms.filter((r): r is RoomLayout & { at: { x: number; y: number } } => !!r.at);
-  const root = placed.find((r) => r.id === "CORRIDOR_A") ?? placed[0];
+  const root = placed.find((r) => r.id === (view.from ?? "CORRIDOR_A")) ?? placed[0];
   if (!root) return [];
-  const order: RoomLayout[] = [root, ...neighborRooms(layout, root, "all").map((n) => n.room)];
-  for (const r of placed) if (!order.includes(r)) order.push(r);
+  const order: RoomLayout[] = [root, ...neighborRooms(layout, root, view.from ? view.depth : "all").map((n) => n.room)];
+  if (!view.from) for (const r of placed) if (!order.includes(r)) order.push(r);
   return placeScene(layout, order.map((room) => ({ room, dx: room.at!.x, dy: room.at!.y, actors: [] })));
+}
+
+/** Every sprite with an opaque pixel at (x, y), front first: what Tab cycles through. */
+export function hitAll<S extends Pick<PlacedSprite, "left" | "top" | "width" | "height" | "flipX" | "flipY">>(
+  sprites: readonly S[],
+  x: number,
+  y: number,
+  opaque: (sprite: S, px: number, py: number) => boolean,
+): S[] {
+  const hits: S[] = [];
+  for (let i = sprites.length - 1; i >= 0; i--) {
+    const s = sprites[i]!;
+    const lx = Math.floor(x - s.left), ly = Math.floor(y - s.top);
+    if (lx < 0 || ly < 0 || lx >= s.width || ly >= s.height) continue;
+    if (opaque(s, s.flipX ? s.width - 1 - lx : lx, s.flipY ? s.height - 1 - ly : ly)) hits.push(s);
+  }
+  return hits;
 }
 
 /** A tile in the map, as the editor names it. */

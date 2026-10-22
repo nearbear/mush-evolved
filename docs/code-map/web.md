@@ -44,8 +44,10 @@ All under `web/src/`. UI rules are in `web/CLAUDE.md`.
 - `BottomNav.tsx`, `PeekBar.tsx` (phone only): panel switcher; tapped target with its actions.
 
 **editor/** (dev builds only, at `/editor`; `main.tsx` loads it lazily behind `import.meta.env.DEV`, so it is never in a production bundle; #209)
-- `ShipEditor.tsx`: the ship map editor, read-only so far (#211): the whole ship from `ship-map.json` through the game's own placement and Pixi renderer, nothing fogged, with drag to pan and whole-number zoom (an editor-only exception to the room view's rules), layer toggles, a grid and room outlines on the ship plan, and the tile, slice, cell, room, door and equipment under the pointer. English only; the i18n scanner skips this folder.
-- `shipScene.ts` (pure): the whole-ship scene as the game draws fog depth "all", which map tile a sprite draws (`tileOf`), pixel to cell (`cellAt`), and the overlay paths (footprints, room outlines, grid).
+- `ShipEditor.tsx`: the ship map editor (#211, #212): the ship from `ship-map.json` through the game's own placement and Pixi renderer, nothing fogged, whole or as seen from one room at fog depth 1 or 2, with drag to pan and whole-number zoom (an editor-only exception to the room view's rules), layer toggles, a grid and room outlines on the ship plan. Select (Tab cycles what's stacked), move, delete, duplicate, frame, owning room, door target, place from the palette, undo and redo, save. Every action has a button as well as a key. English only; the i18n scanner skips this folder.
+- `edits.ts` (pure): the edits as functions from map to map, sharing untouched rooms (undo is a list of maps); the arrow keys' screen directions; a new tile's kind (`kindFor`) and room (`roomForCell`).
+- `Palette.tsx`: every slice, searchable, with its first frame (`SliceThumb`); picking one arms placing.
+- `shipScene.ts` (pure): the scene (`shipScene`, whole ship or from a room), which map tile a sprite draws (`tileOf`), everything under a point (`hitAll`), pixel to cell (`cellAt`), and the overlay paths (footprints, room outlines, grid).
 
 **iso/** (details in `web/src/iso/CLAUDE.md`)
 

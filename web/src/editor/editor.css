@@ -19,6 +19,10 @@
 .editor-viewport:active {
   cursor: grabbing;
 }
+.editor-viewport.placing {
+  cursor: crosshair;
+}
+
 
 /* Drawn at 1x, then scaled up whole: nearest-neighbour, so pixels stay crisp. */
 .editor-world {
@@ -69,6 +73,15 @@
   fill: rgb(255 255 255 / 0.18);
   stroke: #fff;
 }
+.editor-overlay .place-cell {
+  fill: rgb(120 255 140 / 0.3);
+  stroke: rgb(120 255 140);
+}
+.editor-overlay .selected-footprint {
+  fill: rgb(255 120 220 / 0.2);
+  stroke: rgb(255 120 220);
+  stroke-width: 2;
+}
 .editor-overlay .hover-footprint {
   fill: rgb(80 220 255 / 0.25);
   stroke: rgb(80 220 255);
@@ -99,28 +112,130 @@
   margin: 12px 0 0;
   border: 1px solid var(--edge);
 }
-.editor-zoom {
+.editor-head {
   display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+.save-state {
+  color: var(--muted);
+}
+.save-state.dirty {
+  color: var(--warning);
+}
+.save-state.failed {
+  color: var(--danger);
+}
+.editor-row {
+  display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 8px;
   margin-top: 8px;
 }
-.editor-zoom span {
+.editor-row .zoom {
   min-width: 2.5em;
   text-align: center;
 }
+.editor-field {
+  display: block;
+  margin-top: 8px;
+}
+.editor-field select {
+  max-width: 100%;
+}
+.editor-errors {
+  margin: 8px 0 0;
+  padding-left: 18px;
+  color: var(--danger);
+}
+.editor-note {
+  color: var(--warning);
+}
+.editor-pad {
+  display: grid;
+  grid-template-columns: repeat(4, auto);
+  justify-content: start;
+  gap: 6px;
+  margin-top: 8px;
+}
+.editor-selection dl,
+.editor-keys dl,
 .editor-readout dl {
   display: grid;
   grid-template-columns: auto 1fr;
   gap: 2px 10px;
   margin: 0;
 }
+.editor-selection dt,
+.editor-keys dt,
 .editor-readout dt {
   color: var(--muted);
 }
+.editor-selection dd,
+.editor-keys dd,
 .editor-readout dd {
   margin: 0;
   overflow-wrap: anywhere;
+}
+
+.editor-keys {
+  margin-top: 12px;
+}
+
+.editor-palette input {
+  width: 100%;
+  box-sizing: border-box;
+}
+.editor-palette .armed {
+  color: var(--accent);
+}
+.editor-palette ul {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 4px;
+}
+/* Palette entries are a list of pictures, not plain buttons, so they drop the Mush button sprite (as
+   tabs do) for a flat row that fits a thumbnail. */
+.editor-palette li button {
+  height: auto;
+  margin: 0;
+  padding: 4px 6px;
+  text-shadow: none;
+  border: 1px solid var(--edge);
+  border-radius: 4px;
+  background: var(--panel-fill);
+  color: var(--text);
+  font: inherit;
+  display: grid;
+  grid-template-columns: 60px 1fr;
+  grid-template-rows: auto auto;
+  align-items: center;
+  column-gap: 8px;
+  width: 100%;
+  text-align: left;
+}
+.editor-palette li button .thumb {
+  grid-row: span 2;
+}
+.editor-palette li button.on {
+  outline: 2px solid var(--accent);
+}
+.editor-palette .name {
+  overflow-wrap: anywhere;
+}
+.thumb {
+  display: inline-block;
+  overflow: hidden;
+  justify-self: center;
+}
+.thumb > span {
+  display: block;
+  transform-origin: 0 0;
+  image-rendering: pixelated;
 }
 
 .editor-message {
