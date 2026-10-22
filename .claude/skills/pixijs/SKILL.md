@@ -9,7 +9,7 @@ Entry point for the PixiJS v8 skill collection. PixiJS is the fastest library av
 ## How to use this skill
 
 1. Find the specialized skill in the router below that best matches the task.
-2. Load that skill's `SKILL.md` and follow its guidance.
+2. Read that skill's `SKILL.md` with the Read tool (`.claude/skills/<name>/SKILL.md`) and follow its guidance. The sub-skills are hidden from the skill list (`disable-model-invocation`) so their descriptions don't fill every session's context, so the Skill tool can't load them. Not every skill in the router is installed in this repo; if the file is missing, use step 3.
 3. If no sub-skill fits (the task references a specific class, function, option, or API surface not listed below), **WebFetch `https://pixijs.download/release/docs/llms.txt`**. That file is the auto-generated, always-current index of the full PixiJS API and guides. Each entry links to a `.html.md` page you can WebFetch for the detailed content.
 
 For the long-form description and trigger keywords of every skill, see [references/index.md](references/index.md).

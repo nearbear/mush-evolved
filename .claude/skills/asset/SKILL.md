@@ -24,7 +24,7 @@ npm run contact-sheet -- Mush/www/img/design                       # everything,
 npm run contact-sheet -- Mush/www/img/design --match "^but" --zoom 4 --bg "#0d1424"
 ```
 
-Sheets land in `.screenshots/contact/`. **Read them** with the Read tool. Get sizes with `file <path>`. Clues to placement: file names (`*over` = hover, `*_on` = pressed/active, `*left/*bg/*right` = 3-slice, `*top/*bg/*bottom` = vertical 3-slice), sizes that match an original layout width (424 px was the Flash centre column, 1000 px the site), and how pieces fit together.
+Sheets land in `.screenshots/contact/`. **Look at them** through the `visual-check` subagent (tell it what you're hunting for), reading one yourself only when you need to see it directly. Get sizes with `file <path>`. Clues to placement: file names (`*over` = hover, `*_on` = pressed/active, `*left/*bg/*right` = 3-slice, `*top/*bg/*bottom` = vertical 3-slice), sizes that match an original layout width (424 px was the Flash centre column, 1000 px the site), and how pieces fit together.
 
 **If you can't tell where an image belongs, don't use it.** Tell the user which images you skipped and why. Inventing a home for art is the asset version of inventing a rule.
 

@@ -1,5 +1,6 @@
 ---
 name: pixijs-scene-particle-container
+disable-model-invocation: true
 description: "Use this skill when rendering thousands of lightweight sprites in PixiJS v8. Covers ParticleContainer with Particle instances, addParticle/removeParticle, particleChildren array, dynamicProperties (vertex, position, rotation, uvs, color), boundsArea, roundPixels, update, inherited alpha/tint/blendMode from ancestors. Triggers on: ParticleContainer, Particle, IParticle, addParticle, particleChildren, dynamicProperties, boundsArea, particle effects, particle alpha, particle tint, fade particles, constructor options, ParticleContainerOptions, ParticleOptions."
 license: MIT
 ---

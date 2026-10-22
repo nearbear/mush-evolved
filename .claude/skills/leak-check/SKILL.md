@@ -1,5 +1,6 @@
 ---
 name: leak-check
+context: fork
 description: Review the current changes for hidden-information leaks - anything that could send a player (or a bot) data their seat shouldn't have, like other players' roles, private stats, other rooms' history, or private log entries. Use after any change to viewFor, PlayerView or OtherPlayerView, the log, protocol.ts, GameRoom.ts, Matchmaker.ts, or bot prompts, and when asked to check for leaks or security of game state.
 ---
 

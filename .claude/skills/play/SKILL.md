@@ -70,7 +70,7 @@ Options: `npm run screenshot -- --name Alice --out <dir> --url <web> --server <p
 
 ## 3. Look at the screenshots
 
-Read the PNGs with the Read tool. **Actually look** before reporting. Check what the change was supposed to affect, and also glance for regressions:
+Hand the PNGs to the `visual-check` subagent (Agent tool, `subagent_type: "visual-check"`) instead of reading them here: an image stays in the conversation's context for the rest of the session, and screenshot-heavy sessions were the most expensive ones. Tell it which files to read, what the change was supposed to do, and which items below matter for this change; it reports back in text. Read a PNG yourself only when its report leaves you unsure, or when the user asks you to look. Whoever looks must **actually look** and check what the change was supposed to affect, and also glance for regressions:
 
 - Isometric room: walls, floor, and furniture in the right order; people standing on the floor, not inside machinery.
 - Top bar: AP (pink `pa1`) and MP (cyan `pa2`) pips match the numbers next to them.

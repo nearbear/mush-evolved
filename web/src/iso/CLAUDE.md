@@ -109,7 +109,7 @@ on hover (`Select.hx`). The floor-level front doors (`DOOR_BL`, `DOOR_BR`) only 
 `npm run ship-view` (needs `npm run dev` running) joins a ship, sets the fog to "whole ship", makes
 the iso panel fill a large window, and saves one screenshot to `.screenshots/ship.png`. Use it for
 anything that spans rooms (walls, fog, neighbour placement); `npm run screenshot` only shows one room
-at panel size. Read the PNG and actually look. Both work with either renderer (headless Chromium
+at panel size. Have the `visual-check` subagent read the PNG and actually look (see the `play` skill). Both work with either renderer (headless Chromium
 has WebGL through SwiftShader): they find things through the dev-only `isoProbe` that `IsoRoom`
 puts on `.iso-viewport` (clickable things with their boxes, and the hover key), and wait for the Pixi
 host's `data-art="ready"` (`tools/src/play/isoProbe.ts`). Keep both up to date when changing what

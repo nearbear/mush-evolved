@@ -21,7 +21,7 @@ Decided:
 
 - TypeScript everywhere; React for the web client, with Base UI (`@base-ui/react`, unstyled) for widgets like tabs and scroll areas.
 - **PartyServer** (Cloudflare Durable Objects) for the realtime server, with custom authoritative rooms.
-- **Basic DOM-rendered prototype first.** The next renderer for the iso view is **PixiJS** (2D WebGL), decided 2026-10-18 after profiling showed the DOM view is paint-bound while people walk ([#194](https://github.com/nearbear/mush2/issues/194) has the baseline). three.js is not planned. `pixi.js@8.22.0` was approved and added 2026-10-18; the Pixi renderer became the default on 2026-10-18 and the Room renderer setting was removed; the DOM renderer stays in the tree, switched by `ROOM_RENDERER` in `web/src/rendererChoice.ts`.
+- **PixiJS** (`pixi.js@8.22.0`, 2D WebGL) renders the iso view. The original DOM renderer stays in the tree, switched by `ROOM_RENDERER` in `web/src/rendererChoice.ts`. three.js is not planned.
 - Monorepo with `web`, `server`, and `shared` packages. Vite for the client; Vitest for tests.
 
 Rejected (see `docs/ai-workflow.md`):
@@ -71,16 +71,6 @@ These are non-negotiable unless I say otherwise.
 - Explain tradeoffs when there is a real choice; I want to understand the code, not just receive it.
 - Ignore the files in the `docs/scratchpad` folder unless otherwise directed; they are for notes and planning, not part of the main codebase.
 - Do not use AI capabilities to generate any non-text assets or files without explicit approval.
-
-## Build order
-
-1. Scaffold the repo, CLAUDE.md, and tooling.
-2. Rules as a pure state machine in `shared`, with tests.
-3. Server: authoritative room wrapping the state machine, per-player views, then the matchmaker.
-4. Plain DOM client, playable end to end even if ugly.
-5. Bots behind the interface: scripted first, then the hosted model API.
-6. Visuals: a renderer consuming the same views, then animations.
-7. Deploy, write-up, README with a demo GIF.
 
 ## Commands
 
