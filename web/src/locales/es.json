@@ -216,7 +216,8 @@
     "chance": "({{percent}} %)",
     "lacksAp": "No tienes suficientes PA: cuesta {{need}} y tienes {{have}}.",
     "lacksMp": "No tienes suficientes PM: cuesta {{need}} y tienes {{have}}.",
-    "lacksBoth": "No tienes suficientes PA ni PM: cuesta {{needAp}} PA y {{needMp}} PM, y tienes {{haveAp}} PA y {{haveMp}} PM."
+    "lacksBoth": "No tienes suficientes PA ni PM: cuesta {{needAp}} PA y {{needMp}} PM, y tienes {{haveAp}} PA y {{haveMp}} PM.",
+    "returnToSol": "Volver a Sol"
   },
   "queue": {
     "label": "Tus acciones",
@@ -251,6 +252,17 @@
     "desc": "El reactor PILGRED. La única forma conocida de viajar más rápido que la luz cuando partió el Daedalus. Repararlo quizá os permita volver a Sol.",
     "progress": "Reparado al {{percent}} %",
     "repaired": "Reparado"
+  },
+  "gameOver": {
+    "title": "La partida ha terminado",
+    "mush": "Ganan los Mush: el Daedalus llegó a Sol con Mush a bordo.",
+    "humans": "Ganan los humanos: el Daedalus llegó a Sol sin ningún Mush vivo."
+  },
+  "returnToSol": {
+    "desc": "Después de tanto tiempo, quizá sea hora de ver qué pasa en Sol.",
+    "confirm": "Esta acción tiene graves consecuencias. ¿Seguro que quieres continuar?",
+    "confirmYes": "Volver a Sol",
+    "back": "Volver"
   },
   "channels": {
     "empty": "Aún no hay canales privados.",
@@ -535,7 +547,7 @@
     "researchCompleted": "{{name}} completó la investigación {{research}}.",
     "projectWorked": "{{name}} trabajó en el proyecto {{project}} ({{percent}} %).",
     "projectCompleted": "{{name}} completó el proyecto {{project}}.",
-    "pilgredRepaired": "{{name}} hizo avanzar la reparación de PILGRED.",
+    "pilgredRepaired": "Hiciste avanzar la reparación de PILGRED.",
     "pilgredDone": "{{name}} completó la reparación de PILGRED.",
     "pilgredDoneCrew": "Reparaciones de PILGRED completadas por {{name}}. Acceso de largo alcance abierto.",
     "scannedPlanets": "{{name}} buscó planetas con el escáner.",
@@ -545,7 +557,8 @@
     "mycoAlarmRang": "¡Suena una alarma: un Mush ha actuado en esta sala!",
     "mycoAlarmsBuilt": "Se construyeron tres micoalarmas y se dejaron aquí.",
     "titlePassed": "{{name}} es ahora {{title}}.",
-    "titleVacant": "Nadie a bordo puede tomar el título {{title}}: está vacante."
+    "titleVacant": "Nadie a bordo puede tomar el título {{title}}: está vacante.",
+    "returnedToSol": "{{name}} llevó el Daedalus a Sol."
   },
   "skills": {
     "title": "Elegir una habilidad",

@@ -14,6 +14,7 @@ import { InventoryOverlay } from "./hud/InventoryOverlay.tsx";
 import { ITrackie } from "./hud/ITrackie.tsx";
 import { PeekBar } from "./hud/PeekBar.tsx";
 import { TerminalDialog } from "./hud/TerminalDialog.tsx";
+import { GameOverDialog } from "./hud/GameOverDialog.tsx";
 import { SelfPanel } from "./hud/SelfPanel.tsx";
 import { resolveTarget } from "./hud/targets.ts";
 import { TopBar } from "./hud/TopBar.tsx";
@@ -155,6 +156,7 @@ export function GameScreen({ ticket, onLeave }: { ticket: SeatTicket; onLeave: (
   return (
     <main className="game">
       <TerminalDialog terminal={terminal} view={view} onAction={send} onClose={() => setTerminalId(null)} />
+      <GameOverDialog winner={view.winner} />
       <TopBar
         view={view}
         showSummary={mobile}

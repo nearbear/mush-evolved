@@ -90,6 +90,8 @@ export interface PlayerView {
   day: number;
   cycleOfDay: number;
   phase: GameState["phase"];
+  /** Who won, once the game has ended; null while playing. */
+  winner: GameState["winner"];
   rooms: Record<RoomId, RoomId[]>;
   /** What you carry. Other players' inventories are never sent. */
   inventory: ItemView[];

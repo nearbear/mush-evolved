@@ -16,6 +16,7 @@ const ACTION_NAME_KEYS = {
   research: "actions.research",
   project: "actions.project",
   repair_pilgred: "actions.repairPilgred",
+  return_to_sol: "actions.returnToSol",
   scan_planet: "actions.scanPlanet",
   analyze_planet: "actions.analyzePlanet",
   delete_planet: "actions.deletePlanet",

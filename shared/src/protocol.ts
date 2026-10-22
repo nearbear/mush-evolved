@@ -118,6 +118,9 @@ export function parseGameMessage(raw: string): GameClientMessage | null {
   if (a.type === "repair_pilgred" && typeof a.equipment === "string") {
     return { type: "action", action: { type: "repair_pilgred", equipment: a.equipment } };
   }
+  if (a.type === "return_to_sol" && typeof a.equipment === "string") {
+    return { type: "action", action: { type: "return_to_sol", equipment: a.equipment } };
+  }
   if (a.type === "project" && typeof a.equipment === "string" && typeof a.project === "string") {
     return { type: "action", action: { type: "project", equipment: a.equipment, project: a.project } };
   }

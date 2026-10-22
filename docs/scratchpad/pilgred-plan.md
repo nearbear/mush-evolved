@@ -1,6 +1,6 @@
 # PILGRED: what the original gives us, and a plan (draft)
 
-Status: **pass 1 (repair) built 2026-10-21**; pass 2 (return to Sol) not built (Claude, 2026-10-21). Five decisions received from the owner on 2026-10-21 (see "Decisions"); the rest is open. Everything under "What the original gives us" is extracted from `Mush/` and is reference only. Nothing here is a rule until the owner answers the open questions and the answers go into `docs/rules-design.md`.
+Status: **pass 1 (repair) built 2026-10-21**; pass 2 (return to Sol) built 2026-10-21; repairs made private the same day (owner correction). Five decisions received from the owner on 2026-10-21 (see "Decisions"); the rest is open. Everything under "What the original gives us" is extracted from `Mush/` and is reference only. Nothing here is a rule until the owner answers the open questions and the answers go into `docs/rules-design.md`.
 
 ## Why it matters
 

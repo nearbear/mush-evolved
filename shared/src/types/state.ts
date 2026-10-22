@@ -6,6 +6,9 @@ import type { ChatMessage, ChatThread, PrivateChannel } from "./chat.ts";
 import type { GameConfig } from "./config.ts";
 import type { PlayerState } from "./player.ts";
 
+/** The side that won the game (victory.ts). */
+export type Winner = "mush" | "humans";
+
 /** The Daedalus's counters (ship.ts). */
 export interface ShipResources {
   oxygen: number;
@@ -20,6 +23,8 @@ export interface GameState {
   rng: RngState;
   cycle: number;
   phase: "playing" | "ended";
+  /** Who won, once `phase` is "ended" (victory.ts); null while playing. Public: every view has it. */
+  winner: Winner | null;
   players: PlayerState[];
   /** Every item in the game, wherever it is. */
   items: ItemState[];

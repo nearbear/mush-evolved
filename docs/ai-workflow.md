@@ -1011,3 +1011,11 @@ A cleanliness review found nine actions whose `check` override never called `can
 ## 2026-10-21: relay-penalty and free-hacking cheats
 
 Added two dev cheats: `noRelayPenalty` (PILGRED repairs ignore the same-player streak in `pilgredGainRange`; the streak is still tracked) and `freeHacking`. No action is title-locked yet, so free hacking added the seam instead: `bypassesTitles(player)` (the one place the future Hacker Kit will be checked) and `hasTitleAccess(state, player, title)` in `titles.ts`, which every title-locked action should call. Flagged that the decided Return-to-Sol rule only lets the kit stand in for a *vacant* Commander, so the kit may need a title-aware check rather than the cheat's blanket bypass.
+
+## 2026-10-21: PILGRED pass 2, return to Sol and the first game end
+
+- **Decision (owner, earlier the same day):** once PILGRED is repaired, the Commander (Mush included) returns to Sol from the Command terminal for 2 AP with a confirm dialog; nobody while the title is vacant; it ends the game at once with the decided win conditions. **Correction (owner, at build time):** PILGRED repairs are private, with no room log line; the plan had them public.
+- **Built:** `actions/return_to_sol.ts`, `victory.ts` (`GameState.winner`, `phase` "ended"), `canReturnToSol` as the seam for the hacker kit (uses the uncommitted `hasTitleAccess` another session had added to `titles.ts`), a confirm step in the Command terminal window, and a `GameOverDialog`. Repairs became `visibility: "private"` with a private `pilgredRepaired` line; the completion line stays public.
+- **Claude's defaults, not asked:** the end is announced as a ship-wide log line rather than a global chat message, because `chatChannels` already returns nothing once the phase is "ended", so a chat message would never be read. The completing repair keeps its public `pilgredDone` room line, since the crew-wide message already names the repairer.
+- **What worked:** the plan's pass 2 section mapped one-to-one onto files; the `phase: "ended"` guard already existed in `performAction`, the queue, `newCycle` and the server alarm loop, so ending the game was two fields.
+- **Gap noticed:** `npm run lint` fails on the nested `biome.json` in `.claude/worktrees/ship-map`, unrelated to this change.

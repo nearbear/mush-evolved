@@ -14,6 +14,7 @@ import { MoveAction } from "./actions/move.ts";
 import { ResearchAction } from "./actions/research.ts";
 import { ProjectAction } from "./actions/project.ts";
 import { RepairPilgredAction } from "./actions/repair_pilgred.ts";
+import { ReturnToSolAction } from "./actions/return_to_sol.ts";
 import { ScanPlanetAction } from "./actions/scan_planet.ts";
 import { AnalyzePlanetAction } from "./actions/analyze_planet.ts";
 import { DeletePlanetAction } from "./actions/delete_planet.ts";
@@ -72,6 +73,7 @@ export const ACTIONS: { [T in ActionType]: ActionDef<ActionOf<T>> } = {
   research: new ResearchAction(),
   project: new ProjectAction(),
   repair_pilgred: new RepairPilgredAction(),
+  return_to_sol: new ReturnToSolAction(),
   scan_planet: new ScanPlanetAction(),
   analyze_planet: new AnalyzePlanetAction(),
   delete_planet: new DeletePlanetAction(),

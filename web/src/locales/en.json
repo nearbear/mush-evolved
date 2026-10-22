@@ -215,7 +215,8 @@
     "chance": "({{percent}}%)",
     "lacksAp": "Not enough AP: it costs {{need}}, you have {{have}}.",
     "lacksMp": "Not enough MP: it costs {{need}}, you have {{have}}.",
-    "lacksBoth": "Not enough AP or MP: it costs {{needAp}} AP and {{needMp}} MP, you have {{haveAp}} AP and {{haveMp}} MP."
+    "lacksBoth": "Not enough AP or MP: it costs {{needAp}} AP and {{needMp}} MP, you have {{haveAp}} AP and {{haveMp}} MP.",
+    "returnToSol": "Return to Sol"
   },
   "queue": {
     "label": "Your actions",
@@ -250,6 +251,17 @@
     "desc": "The PILGRED reactor. The only known way to travel faster than light when the Daedalus left. Repairing it may let you return to Sol.",
     "progress": "{{percent}}% repaired",
     "repaired": "Repaired"
+  },
+  "gameOver": {
+    "title": "The game is over",
+    "mush": "The Mush win: the Daedalus reached Sol with Mush on board.",
+    "humans": "The humans win: the Daedalus reached Sol with no Mush alive."
+  },
+  "returnToSol": {
+    "desc": "After all this time, maybe it's time to see what's happening on Sol.",
+    "confirm": "This action has heavy consequences. Are you sure you want to continue?",
+    "confirmYes": "Return to Sol",
+    "back": "Back"
   },
   "channels": {
     "empty": "No private channels yet.",
@@ -532,7 +544,7 @@
     "researchCompleted": "{{name}} completed the research {{research}}.",
     "projectWorked": "{{name}} worked on the project {{project}} ({{percent}}%).",
     "projectCompleted": "{{name}} completed the project {{project}}.",
-    "pilgredRepaired": "{{name}} advanced the repair of PILGRED.",
+    "pilgredRepaired": "You advanced the repair of PILGRED.",
     "pilgredDone": "{{name}} completed the repair of PILGRED.",
     "pilgredDoneCrew": "PILGRED repairs completed by {{name}}. Long-range access open.",
     "scannedPlanets": "{{name}} scanned for planets.",
@@ -542,7 +554,8 @@
     "mycoAlarmRang": "An alarm goes off: a Mush has acted in this room!",
     "mycoAlarmsBuilt": "Three myco alarms have been built and left here.",
     "titlePassed": "{{name}} is now {{title}}.",
-    "titleVacant": "Nobody aboard can take the title {{title}}: it is vacant."
+    "titleVacant": "Nobody aboard can take the title {{title}}: it is vacant.",
+    "returnedToSol": "{{name}} took the Daedalus to Sol."
   },
   "skills": {
     "title": "Choose a skill",

@@ -1,8 +1,9 @@
 import { describe, expect, it } from "vitest";
+import { actionVisibility } from "../src/actions.ts";
 import { DEFAULT_CONFIG } from "../src/config.ts";
 import { PILGRED_COMPLETE, pilgredGainRange } from "../src/pilgred.ts";
 import { parseGameMessage } from "../src/protocol.ts";
-import { applyAction, createGame, viewFor } from "../src/rules.ts";
+import { applyAction, createGame, newCycle, viewFor } from "../src/rules.ts";
 import { addStatus } from "../src/statuses.ts";
 import type { Action, GameState } from "../src/types.ts";
 import { makeSeats, must, nextDay, offered, player } from "./support.ts";
@@ -42,7 +43,7 @@ describe("PILGRED repair", () => {
     expect(applyAction(s, "p0", { type: "repair_pilgred", equipment: "MOTOR_ROOM:EMERGENCY_REACTOR" }).ok).toBe(false);
   });
 
-  it("costs AP and gains 1% without a skill, with a public room line that gives no percent", () => {
+  it("costs AP and gains 1% without a skill, with a private line that gives no percent", () => {
     const s = game();
     const ap = s.players[0]!.ap;
     const r = applyAction(s, "p0", repair);
@@ -51,8 +52,15 @@ describe("PILGRED repair", () => {
     expect(r.state.pilgred).toEqual({ progress: base, lastBy: "p0", streak: 1 });
     expect(r.state.players[0]!.ap).toBe(ap - cfg.cost.ap);
     const line = r.state.log.find((e) => e.key === "pilgredRepaired");
-    expect(line).toMatchObject({ room: "MOTOR_ROOM", visibleTo: "all", params: { name: s.players[0]!.character } });
-    expect(line?.params).not.toHaveProperty("percent");
+    expect(line).toMatchObject({ room: "MOTOR_ROOM", visibleTo: ["p0"] });
+    expect(line).not.toHaveProperty("params");
+  });
+
+  it("is private: roommates see no log line and no busy bar (owner, 2026-10-21)", () => {
+    const r = must(applyAction(game(), "p0", repair));
+    expect(actionVisibility("repair_pilgred")).toBe("private");
+    expect(viewFor(r, "p1").log.some((e) => e.key === "pilgredRepaired")).toBe(false);
+    expect(viewFor(r, "p0").log.some((e) => e.key === "pilgredRepaired")).toBe(true);
   });
 
   it("is open to Mush and to the dirty", () => {
@@ -187,5 +195,92 @@ describe("physicist skill", () => {
     expect(r.players[0]!.ap).toBe(ap);
     const paid = must(applyAction(r, "p0", repair));
     expect(paid.players[0]!.ap).toBe(ap - cfg.cost.ap);
+  });
+});
+
+describe("return to Sol", () => {
+  const COMMAND = "COMMAND_CENTER:PILOT_MODULE";
+  const home: Action = { type: "return_to_sol", equipment: COMMAND };
+
+  /** Everyone on the bridge, PILGRED repaired, p0 Commander. */
+  function ready(): GameState {
+    const s = game("COMMAND_CENTER");
+    s.pilgred.progress = PILGRED_COMPLETE;
+    s.titles.commander = "p0";
+    for (const p of s.players) p.role = "human";
+    return s;
+  }
+
+  it("pins the decided cost: 2 AP", () => {
+    expect(cfg.returnCost.ap).toBe(2);
+  });
+
+  it("is offered to the Commander at the Command terminal once PILGRED is repaired, and costs AP", () => {
+    const s = ready();
+    expect(offered(s, "p0")).toContainEqual(home);
+    expect(offered(s, "p1").some((a) => a.type === "return_to_sol")).toBe(false);
+    const ap = s.players[0]!.ap;
+    const r = must(applyAction(s, "p0", home));
+    expect(r.players[0]!.ap).toBe(ap - cfg.returnCost.ap);
+  });
+
+  it("humans win when no Mush is alive, and the game ends at once with a ship-wide line", () => {
+    const s = ready();
+    s.players[2]!.role = "mush";
+    s.players[2]!.alive = false;
+    const r = must(applyAction(s, "p0", home));
+    expect([r.phase, r.winner]).toEqual(["ended", "humans"]);
+    expect(r.log.at(-1)).toMatchObject({ key: "returnedToSol", visibleTo: "all", params: { name: s.players[0]!.character } });
+    expect(r.log.at(-1)).not.toHaveProperty("room");
+    for (const id of ["p0", "p1", "p2"]) {
+      const v = viewFor(r, id);
+      expect([v.phase, v.winner]).toEqual(["ended", "humans"]);
+    }
+    // Someone elsewhere sees the line too.
+    r.players[1]!.room = "REFECTORY";
+    expect(viewFor(r, "p1").log.some((e) => e.key === "returnedToSol")).toBe(true);
+  });
+
+  it("Mush win when any Mush is alive, wherever they are", () => {
+    const s = ready();
+    s.players[2]!.role = "mush";
+    s.players[2]!.room = "REFECTORY";
+    expect(must(applyAction(s, "p0", home)).winner).toBe("mush");
+  });
+
+  it("a Mush Commander can return, and wins", () => {
+    const s = ready();
+    s.players[0]!.role = "mush";
+    expect(must(applyAction(s, "p0", home)).winner).toBe("mush");
+  });
+
+  it("is refused before PILGRED is repaired, for a non-Commander, while the title is vacant, and away from the terminal", () => {
+    const broken = ready();
+    broken.pilgred.progress = PILGRED_COMPLETE - 1;
+    expect(offered(broken, "p0").some((a) => a.type === "return_to_sol")).toBe(false);
+    expect(applyAction(broken, "p0", home).ok).toBe(false);
+    expect(applyAction(ready(), "p1", home).ok).toBe(false);
+    const vacant = ready();
+    vacant.titles.commander = null;
+    for (const id of ["p0", "p1", "p2"]) expect(applyAction(vacant, id, home).ok).toBe(false);
+    const away = ready();
+    away.players[0]!.room = "MOTOR_ROOM";
+    expect(applyAction(away, "p0", home).ok).toBe(false);
+    const before = JSON.stringify(broken);
+    applyAction(broken, "p0", home);
+    expect(JSON.stringify(broken)).toBe(before);
+  });
+
+  it("nothing more happens after the game ends", () => {
+    const r = must(applyAction(ready(), "p0", home));
+    r.players[1]!.ap = r.config.maxAp;
+    expect(offered(r, "p1")).toEqual([]);
+    expect(applyAction(r, "p1", { type: "move", to: "CORRIDOR_A" }).ok).toBe(false);
+    expect(newCycle(r).ok).toBe(false);
+  });
+
+  it("parses from the wire, and rejects a missing terminal", () => {
+    expect(parseGameMessage(JSON.stringify({ type: "action", action: home }))).toEqual({ type: "action", action: home });
+    expect(parseGameMessage(JSON.stringify({ type: "action", action: { type: "return_to_sol" } }))).toBeNull();
   });
 });

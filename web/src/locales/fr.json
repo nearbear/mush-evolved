@@ -216,7 +216,8 @@
     "chance": "({{percent}} %)",
     "lacksAp": "Pas assez de PA : cela coûte {{need}}, vous en avez {{have}}.",
     "lacksMp": "Pas assez de PM : cela coûte {{need}}, vous en avez {{have}}.",
-    "lacksBoth": "Pas assez de PA ni de PM : cela coûte {{needAp}} PA et {{needMp}} PM, vous avez {{haveAp}} PA et {{haveMp}} PM."
+    "lacksBoth": "Pas assez de PA ni de PM : cela coûte {{needAp}} PA et {{needMp}} PM, vous avez {{haveAp}} PA et {{haveMp}} PM.",
+    "returnToSol": "Rentrer sur Sol"
   },
   "queue": {
     "label": "Vos actions",
@@ -251,6 +252,17 @@
     "desc": "Le réacteur PILGRED. La seule façon de voyager plus vite que la lumière connue au moment du départ du Daedalus. Sa remise en état vous permettra peut-être de retourner sur Sol.",
     "progress": "Réparé à {{percent}} %",
     "repaired": "Réparé"
+  },
+  "gameOver": {
+    "title": "La partie est terminée",
+    "mush": "Les Mush gagnent : le Daedalus a atteint Sol avec des Mush à bord.",
+    "humans": "Les humains gagnent : le Daedalus a atteint Sol sans aucun Mush vivant."
+  },
+  "returnToSol": {
+    "desc": "Après tout ce temps, peut-être serait-il temps de voir ce qu'il se passe sur Sol.",
+    "confirm": "Cette action est lourde de conséquences. Êtes-vous sûr de vouloir continuer ?",
+    "confirmYes": "Rentrer sur Sol",
+    "back": "Retour"
   },
   "channels": {
     "empty": "Aucun canal privé pour l'instant.",
@@ -535,7 +547,7 @@
     "researchCompleted": "{{name}} a terminé la recherche {{research}}.",
     "projectWorked": "{{name}} a travaillé sur le projet {{project}} ({{percent}} %).",
     "projectCompleted": "{{name}} a terminé le projet {{project}}.",
-    "pilgredRepaired": "{{name}} a fait progresser la réparation de PILGRED.",
+    "pilgredRepaired": "Vous avez fait progresser la réparation de PILGRED.",
     "pilgredDone": "{{name}} a achevé les réparations de PILGRED.",
     "pilgredDoneCrew": "Réparations PILGRED achevées par {{name}}. Accès lointains ouverts.",
     "scannedPlanets": "{{name}} a scanné à la recherche de planètes.",
@@ -545,7 +557,8 @@
     "mycoAlarmRang": "Une alarme retentit : un Mush a agi dans cette pièce !",
     "mycoAlarmsBuilt": "Trois mycoalarmes ont été construites et laissées ici.",
     "titlePassed": "{{name}} est maintenant {{title}}.",
-    "titleVacant": "Personne à bord ne peut prendre le titre {{title}} : il est vacant."
+    "titleVacant": "Personne à bord ne peut prendre le titre {{title}} : il est vacant.",
+    "returnedToSol": "{{name}} a fait voyager le Daedalus sur Sol."
   },
   "skills": {
     "title": "Choisir une compétence",
