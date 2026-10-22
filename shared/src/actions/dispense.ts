@@ -15,7 +15,7 @@ export class DispenseAction extends Action<DispenseActionData> {
     return (state.config.equipment[player.room] ?? []).filter((equipment) => EQUIPMENT_TYPES[equipment.type]?.dispenses).map((equipment) => ({ type: "dispense", equipment: equipment.id }));
   }
 
-  override check(state: Readonly<GameState>, player: Readonly<PlayerState>, target: DispenseActionData): string | null {
+  override validate(state: Readonly<GameState>, player: Readonly<PlayerState>, target: DispenseActionData): string | null {
     const equip = state.config.equipment[player.room]?.find((eq) => eq.id === target.equipment);
     if (!equip || !EQUIPMENT_TYPES[equip.type]?.dispenses) return "cant_dispense";
     return state.dispensedOn[target.equipment] === state.cycle ? "empty" : null;

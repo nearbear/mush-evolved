@@ -30,9 +30,9 @@ export class PunchAction extends Action<PunchActionData> {
     return peopleHere(state, player).map((o) => ({ type: "punch", target: o.id }));
   }
 
-  override check(state: Readonly<GameState>, player: Readonly<PlayerState>, target: PunchActionData): string | null {
+  override validate(state: Readonly<GameState>, player: Readonly<PlayerState>, target: PunchActionData): string | null {
     if (!peopleHere(state, player).some((o) => o.id === target.target)) return "cant_see";
-    return this.canAfford(state, player, target);
+    return null;
   }
 
   override apply(state: GameState, player: PlayerState, target: PunchActionData): void {

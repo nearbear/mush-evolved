@@ -28,13 +28,13 @@ export class SpikeAction extends Action<SpikeActionData> {
     return player.role === "mush" ? peopleHere(state, player).filter((o) => o.role === "human").map((o) => ({ type: "spike", target: o.id })) : [];
   }
 
-  override check(state: Readonly<GameState>, player: Readonly<PlayerState>, target: SpikeActionData): string | null {
+  override validate(state: Readonly<GameState>, player: Readonly<PlayerState>, target: SpikeActionData): string | null {
     if (player.role !== "mush") return "not_mush";
     const victim = peopleHere(state, player).find((o) => o.id === target.target);
     if (!victim) return "cant_see";
     if (victim.role !== "human") return "not_human";
     if (player.spores < 1) return "no_spores";
-    return this.canAfford(state, player, target);
+    return null;
   }
 
   override apply(state: GameState, player: PlayerState, target: SpikeActionData): void {

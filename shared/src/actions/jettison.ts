@@ -25,10 +25,10 @@ export class JettisonAction extends Action<JettisonActionData> {
     return carriedCorpses(state, player).map((item) => ({ type: "jettison", item: item.id }));
   }
 
-  override check(state: Readonly<GameState>, player: Readonly<PlayerState>, target: JettisonActionData): string | null {
+  override validate(state: Readonly<GameState>, player: Readonly<PlayerState>, target: JettisonActionData): string | null {
     if (!state.config.jettison.rooms.includes(player.room)) return "cant_jettison";
     if (!carriedCorpses(state, player).some((i) => i.id === target.item)) return "cant_jettison";
-    return this.canAfford(state, player, target);
+    return null;
   }
 
   override dirtChance(state: Readonly<GameState>): number {

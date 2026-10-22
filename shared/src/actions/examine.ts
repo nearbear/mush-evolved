@@ -16,7 +16,7 @@ export class ExamineAction extends Action<ExamineActionData> {
     return visibleTargets(state, player).map((target) => ({ type: "examine", target }));
   }
 
-  override check(state: Readonly<GameState>, player: Readonly<PlayerState>, target: ExamineActionData): string | null {
+  override validate(state: Readonly<GameState>, player: Readonly<PlayerState>, target: ExamineActionData): string | null {
     return visibleTargets(state, player).some((t) => t.kind === target.target.kind && t.id === target.target.id) ? null : "cant_see";
   }
 

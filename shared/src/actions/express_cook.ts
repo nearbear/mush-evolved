@@ -29,12 +29,12 @@ export class ExpressCookAction extends Action<ExpressCookActionData> {
     return state.items.filter((item) => ITEM_TYPES[item.type]?.cook && canReach(state, player, item.at)).map((item) => ({ type: "express_cook", item: item.id }));
   }
 
-  override check(state: Readonly<GameState>, player: Readonly<PlayerState>, target: ExpressCookActionData): string | null {
+  override validate(state: Readonly<GameState>, player: Readonly<PlayerState>, target: ExpressCookActionData): string | null {
     if (!chargedMicrowave(state, player)) return "no_microwave";
     const item = state.items.find((i) => i.id === target.item);
     if (!item) return "no_such_item";
     if (!ITEM_TYPES[item.type]?.cook || !canReach(state, player, item.at)) return "cant_cook";
-    return this.canAfford(state, player, target);
+    return null;
   }
 
   override dirtChance(state: Readonly<GameState>): number {

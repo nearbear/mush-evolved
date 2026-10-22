@@ -36,15 +36,15 @@ export class DismantleAction extends Action<DismantleActionData> {
     ];
   }
 
-  override check(state: Readonly<GameState>, player: Readonly<PlayerState>, target: DismantleActionData): string | null {
+  override validate(state: Readonly<GameState>, player: Readonly<PlayerState>, target: DismantleActionData): string | null {
     if ("equipment" in target) {
       if (!dismantlable(state, player).some((e) => e.id === target.equipment)) return "cant_dismantle";
-      return this.canAfford(state, player, target);
+      return null;
     }
     const item = state.items.find((i) => i.id === target.item);
     if (!item) return "no_such_item";
     if (!ITEM_TYPES[item.type]?.dismantle || !canReach(state, player, item.at)) return "cant_dismantle";
-    return this.canAfford(state, player, target);
+    return null;
   }
 
   override fail(state: GameState, player: PlayerState, target: DismantleActionData): void {

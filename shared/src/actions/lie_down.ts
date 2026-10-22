@@ -19,11 +19,11 @@ export class LieDownAction extends Action<LieDownActionData> {
     return (state.config.equipment[player.room] ?? []).filter((eq) => EQUIPMENT_TYPES[eq.type]?.bed).map((eq) => ({ type: "lie_down", equipment: eq.id }));
   }
 
-  override check(state: Readonly<GameState>, player: Readonly<PlayerState>, target: LieDownActionData): string | null {
+  override validate(state: Readonly<GameState>, player: Readonly<PlayerState>, target: LieDownActionData): string | null {
     const equip = state.config.equipment[player.room]?.find((eq) => eq.id === target.equipment);
     if (!equip || !EQUIPMENT_TYPES[equip.type]?.bed) return "cant_lie_down";
     if (player.modifiers.includes("lying_down")) return "already_lying_down";
-    return this.canAfford(state, player, target);
+    return null;
   }
 
   override getCost(state: Readonly<GameState>): { ap: number; mp: number } {
@@ -54,7 +54,7 @@ export class GetUpAction extends Action<GetUpActionData> {
     return player.modifiers.includes("lying_down") ? [{ type: "get_up" }] : [];
   }
 
-  override check(_state: Readonly<GameState>, player: Readonly<PlayerState>): string | null {
+  override validate(_state: Readonly<GameState>, player: Readonly<PlayerState>): string | null {
     return player.modifiers.includes("lying_down") ? null : "not_lying_down";
   }
 

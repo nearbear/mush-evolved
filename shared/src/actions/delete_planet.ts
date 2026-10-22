@@ -18,7 +18,7 @@ export class DeletePlanetAction extends Action<DeletePlanetActionData> {
     return planetsOf(state, player.id).map((planet) => ({ type: "delete_planet", planet: planet.id }));
   }
 
-  override check(state: Readonly<GameState>, player: Readonly<PlayerState>, target: DeletePlanetActionData): string | null {
+  override validate(state: Readonly<GameState>, player: Readonly<PlayerState>, target: DeletePlanetActionData): string | null {
     return planetsOf(state, player.id).some((planet) => planet.id === target.planet) ? null : "no_such_planet";
   }
 

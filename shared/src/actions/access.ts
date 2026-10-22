@@ -20,7 +20,7 @@ export class AccessAction extends Action<AccessActionData> {
     return (state.config.equipment[player.room] ?? []).filter((equipment) => EQUIPMENT_TYPES[equipment.type]?.terminal).map((equipment) => ({ type: "access", equipment: equipment.id }));
   }
 
-  override check(state: Readonly<GameState>, player: Readonly<PlayerState>, target: AccessActionData): string | null {
+  override validate(state: Readonly<GameState>, player: Readonly<PlayerState>, target: AccessActionData): string | null {
     const equip = state.config.equipment[player.room]?.find((eq) => eq.id === target.equipment);
     return equip && EQUIPMENT_TYPES[equip.type]?.terminal ? null : "cant_access";
   }

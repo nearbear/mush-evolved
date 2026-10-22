@@ -34,12 +34,12 @@ export class ProjectAction extends Action<ProjectActionData> {
     );
   }
 
-  override check(state: Readonly<GameState>, player: Readonly<PlayerState>, target: ProjectActionData): string | null {
+  override validate(state: Readonly<GameState>, player: Readonly<PlayerState>, target: ProjectActionData): string | null {
     if (!this.cores(state, player).some((core) => core.id === target.equipment)) return "cant_project";
     if (!(PROJECT_IDS as readonly string[]).includes(target.project)) return "no_such_project";
     if ((state.projects[target.project] ?? 0) >= PROJECT_COMPLETE) return "project_done";
     if (player.statuses.includes("dirty")) return "dirty";
-    return this.canAfford(state, player, target);
+    return null;
   }
 
   override apply(state: GameState, player: PlayerState, target: ProjectActionData): void {

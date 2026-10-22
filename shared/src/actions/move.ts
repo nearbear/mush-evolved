@@ -18,7 +18,7 @@ export class MoveAction extends Action<MoveActionData> {
     return (state.config.rooms[player.room] ?? []).map((to) => ({ type: "move", to }));
   }
 
-  override check(state: Readonly<GameState>, player: Readonly<PlayerState>, target: MoveActionData): string | null {
+  override validate(state: Readonly<GameState>, player: Readonly<PlayerState>, target: MoveActionData): string | null {
     if (!(state.config.rooms[player.room] ?? []).includes(target.to)) return "not_adjacent";
     if (player.pushedBy !== undefined) return "being_pushed";
     return moveCost(movementRules(state, player), player) ? null : "cant_afford";

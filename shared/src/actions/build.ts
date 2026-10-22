@@ -41,12 +41,12 @@ export class BuildAction extends Action<BuildActionData> {
     return state.items.filter((i) => i.type === BLUEPRINT_ITEM && canReach(state, player, i.at) && ingredients(state, player, i)).map((i) => ({ type: "build", item: i.id }));
   }
 
-  override check(state: Readonly<GameState>, player: Readonly<PlayerState>, target: BuildActionData): string | null {
+  override validate(state: Readonly<GameState>, player: Readonly<PlayerState>, target: BuildActionData): string | null {
     const item = state.items.find((i) => i.id === target.item);
     if (!item) return "no_such_item";
     if (item.type !== BLUEPRINT_ITEM || !canReach(state, player, item.at)) return "cant_build";
     if (!ingredients(state, player, item)) return "missing_ingredients";
-    return this.canAfford(state, player, target);
+    return null;
   }
 
   override dirtChance(state: Readonly<GameState>): number {

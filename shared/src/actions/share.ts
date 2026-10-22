@@ -20,12 +20,12 @@ export class ShareAction<T extends "dtt" | "stt" = "dtt" | "stt"> extends Action
     return state.players.filter((other) => other.id !== player.id && other.alive && other.room === player.room).map((other) => ({ type: this.type as T, target: other.id }));
   }
 
-  override check(state: Readonly<GameState>, player: Readonly<PlayerState>, target: { type: T; target: string }): string | null {
+  override validate(state: Readonly<GameState>, player: Readonly<PlayerState>, target: { type: T; target: string }): string | null {
     if (!state.players.some((other) => other.id !== player.id && other.alive && other.room === player.room && other.id === target.target)) return "cant_see";
     if (!state.bonds[player.id]?.includes(target.target) || !state.bonds[target.target]?.includes(player.id)) return "not_bonded";
     const { day } = dayOf(state);
     if (state.sharedOnDay[player.id] === day || state.sharedOnDay[target.target] === day) return "cooldown";
-    return this.canAfford(state, player, target);
+    return null;
   }
 
 

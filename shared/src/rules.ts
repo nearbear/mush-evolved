@@ -19,7 +19,7 @@ import { nextFloat, shuffle } from "./rng.ts";
 import { chatChannels, readChannels } from "./chat.ts";
 import { clone, fail, findPlayer, type ActionResult } from "./helpers.ts";
 import { damage } from "./death.ts";
-import { activitySeen, logPrivate, logSecret } from "./log.ts";
+import { activitySeen, logPrivate } from "./log.ts";
 import { ringMycoAlarms } from "./mycoalarm.ts";
 import { planetsOf } from "./planets.ts";
 import { burnOxygen, shipMax, startShip } from "./ship.ts";
@@ -163,8 +163,6 @@ export function applyAction(state: GameState, playerId: PlayerId, action: Action
   if (p && canAct(state, p) && performAction(next, findPlayer(next, playerId)!, action)) return { ok: true, state: next };
   return { ok: false, error: "Illegal action" };
 }
-
-export { getUp } from "./actions/lie_down.ts";
 
 /**
  * Checks an action against the state as it is now, then pays for it, rolls its odds, and applies it. False (and

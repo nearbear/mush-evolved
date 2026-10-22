@@ -84,12 +84,12 @@ export class AccommodateAction extends Action<AccommodateActionData> {
       .map((o) => ({ type: "accommodate", target: o.id }));
   }
 
-  override check(state: Readonly<GameState>, player: Readonly<PlayerState>, target: AccommodateActionData): string | null {
+  override validate(state: Readonly<GameState>, player: Readonly<PlayerState>, target: AccommodateActionData): string | null {
     const other = peopleHere(state, player).find((o) => o.id === target.target);
     if (!other || !needsWheelchair(other)) return "cant_accommodate";
     if (other.pushedBy !== undefined || pushing(state, player)) return "already_accommodating";
     if (offeredBy(other, player.id)) return "already_offered";
-    return this.canAfford(state, player, target);
+    return null;
   }
 
   override apply(state: GameState, player: PlayerState, target: AccommodateActionData): void {
@@ -112,10 +112,10 @@ export class AcceptAccommodationAction extends Action<AcceptAccommodationActionD
     return liveOffers(state, player).map((o) => ({ type: "accept_accommodation", target: o.id }));
   }
 
-  override check(state: Readonly<GameState>, player: Readonly<PlayerState>, target: AcceptAccommodationActionData): string | null {
+  override validate(state: Readonly<GameState>, player: Readonly<PlayerState>, target: AcceptAccommodationActionData): string | null {
     if (player.pushedBy !== undefined) return "already_accommodating";
     if (!liveOffers(state, player).some((o) => o.id === target.target)) return "no_offer";
-    return this.canAfford(state, player, target);
+    return null;
   }
 
   override apply(state: GameState, player: PlayerState, target: AcceptAccommodationActionData): void {
@@ -144,10 +144,10 @@ export class StopAccommodationAction extends Action<StopAccommodationActionData>
     return pushed ? [{ type: "stop_accommodation", target: pushed.id }] : [];
   }
 
-  override check(state: Readonly<GameState>, player: Readonly<PlayerState>, target: StopAccommodationActionData): string | null {
+  override validate(state: Readonly<GameState>, player: Readonly<PlayerState>, target: StopAccommodationActionData): string | null {
     const pushed = state.players.find((o) => o.id === target.target);
     if (!pushed || pushed.pushedBy === undefined || (pushed.id !== player.id && pushed.pushedBy !== player.id)) return "not_accommodating";
-    return this.canAfford(state, player, target);
+    return null;
   }
 
   override apply(state: GameState, player: PlayerState, target: StopAccommodationActionData): void {

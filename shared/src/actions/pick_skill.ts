@@ -18,7 +18,7 @@ export class PickSkillAction extends Action<PickSkillActionData> {
     return SKILLS.filter((s) => !hasSkill(player, s)).map((skill) => ({ type: "pick_skill", skill }));
   }
 
-  override check(_state: Readonly<GameState>, player: Readonly<PlayerState>, target: PickSkillActionData): string | null {
+  override validate(_state: Readonly<GameState>, player: Readonly<PlayerState>, target: PickSkillActionData): string | null {
     if (!isSkill(target.skill)) return "no_such_skill";
     if (hasSkill(player, target.skill)) return "have_skill";
     return player.skills.length < SKILL_SLOTS ? null : "no_free_slot";

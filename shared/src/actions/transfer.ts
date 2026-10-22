@@ -14,7 +14,7 @@ export class TransferAction<T extends "take" | "drop" = "take" | "drop"> extends
     return state.items.map((item) => ({ type: this.type as T, item: item.id }));
   }
 
-  override check(state: Readonly<GameState>, player: Readonly<PlayerState>, target: { type: T; item: string }): string | null {
+  override validate(state: Readonly<GameState>, player: Readonly<PlayerState>, target: { type: T; item: string }): string | null {
     const item = state.items.find((i) => i.id === target.item);
     if (!item) return "no_such_item";
     if (this.type === "drop" && ITEM_TYPES[item.type]?.canDrop === false) return "cant_transfer";

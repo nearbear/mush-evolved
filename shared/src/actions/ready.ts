@@ -16,7 +16,7 @@ export class ReadyAction extends Action<ReadyActionData> {
     return state.config.manualCycles ? [{ type: "ready" }] : [];
   }
 
-  override check(state: Readonly<GameState>): string | null {
+  override validate(state: Readonly<GameState>): string | null {
     return state.config.manualCycles ? null : "manual_cycles_off";
   }
 

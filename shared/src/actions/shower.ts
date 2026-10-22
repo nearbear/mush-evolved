@@ -20,11 +20,11 @@ export class ShowerAction extends Action<ShowerActionData> {
     return (state.config.equipment[player.room] ?? []).filter((equipment) => EQUIPMENT_TYPES[equipment.type]?.shower).map((equipment) => ({ type: "shower", equipment: equipment.id }));
   }
 
-  override check(state: Readonly<GameState>, player: Readonly<PlayerState>, target: ShowerActionData): string | null {
+  override validate(state: Readonly<GameState>, player: Readonly<PlayerState>, target: ShowerActionData): string | null {
     const equip = state.config.equipment[player.room]?.find((eq) => eq.id === target.equipment);
     if (!equip || !EQUIPMENT_TYPES[equip.type]?.shower) return "cant_shower";
     if (!player.statuses.includes("dirty")) return "not_dirty";
-    return this.canAfford(state, player, target);
+    return null;
   }
 
   override getCost(state: Readonly<GameState>, player: Readonly<PlayerState>): { ap: number; mp: number } {

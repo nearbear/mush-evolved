@@ -29,8 +29,7 @@ import { GetUpAction, LieDownAction } from "./actions/lie_down.ts";
 import { ShowerAction } from "./actions/shower.ts";
 import { SpikeAction } from "./actions/spike.ts";
 import { TransferAction } from "./actions/transfer.ts";
-import { itemsIn } from "./items.ts";
-import type { Action, GameState, LogParams, PlayerState, Target } from "./types.ts";
+import type { Action, GameState, PlayerState } from "./types.ts";
 
 export type ActionType = Action["type"];
 export type ActionOf<T extends ActionType> = Extract<Action, { type: T }>;
@@ -102,29 +101,3 @@ export const ACTIONS: { [T in ActionType]: ActionDef<ActionOf<T>> } = {
 
 /** Whether an action type is public, private, secret or covert. A fixed property of the type, so safe for the client to show. */
 export const actionVisibility = (type: ActionType): ActionVisibility => ACTIONS[type].visibility;
-
-export function visibleTargets(state: Readonly<GameState>, player: Readonly<PlayerState>): Target[] {
-  return [
-    ...state.players.filter((o) => o.room === player.room).map((o): Target => ({ kind: "player", id: o.id })),
-    ...(state.config.equipment[player.room] ?? []).map((e): Target => ({ kind: "equipment", id: e.id })),
-    ...itemsIn(state, { kind: "player", id: player.id }).map((i): Target => ({ kind: "item", id: i.id })),
-    ...itemsIn(state, { kind: "room", id: player.room }).map((i): Target => ({ kind: "item", id: i.id })),
-  ];
-}
-
-function examineEvent(state: Readonly<GameState>, viewer: Readonly<PlayerState>, target: Target): [string, LogParams] {
-  switch (target.kind) {
-    case "player":
-      return target.id === viewer.id ? ["examineSelf", {}] : ["examinePlayer", { name: state.players.find((p) => p.id === target.id)?.character ?? target.id }];
-    case "equipment": {
-      const e = state.config.equipment[viewer.room]?.find((eq) => eq.id === target.id);
-      return ["examineEquipment", { equipment: e?.type ?? target.id }];
-    }
-    case "item": {
-      const i = state.items.find((it) => it.id === target.id);
-      return ["examineItem", { item: i?.type ?? target.id }];
-    }
-  }
-}
-
-export { examineEvent };

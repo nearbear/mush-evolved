@@ -81,8 +81,17 @@ export class Action<T extends { type: string }> {
     return 0;
   }
 
+  /**
+   * Whether this player can do it now: `validate`, then the price. Subclasses override `validate`, never this, so
+   * no action can skip the cost check (a modifier can put a price on a free action).
+   */
   check(state: Readonly<GameState>, player: Readonly<PlayerState>, target: T): string | null {
-    return this.canAfford(state, player, target);
+    return this.validate(state, player, target) ?? this.canAfford(state, player, target);
+  }
+
+  /** The action's own conditions, apart from the price: an error code, or null if it may go ahead. */
+  validate(state: Readonly<GameState>, player: Readonly<PlayerState>, target: T): string | null {
+    return null;
   }
 
   apply(state: GameState, player: PlayerState, target: T): void {

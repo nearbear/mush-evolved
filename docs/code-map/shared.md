@@ -5,8 +5,8 @@ Other packages import from `@mush2/shared` (`shared/src/index.ts`, the barrel). 
 **Engine**
 
 - `rules.ts`: `createGame`, `applyAction` (at once, no timing), `performAction` (its mutating core), `legalActions`, `viewFor`, `affordable` and `legalIn` (read a view's `actions`), `dayOf`, `setCheat`, `setActopiCheat`; private `advanceCycle` and `grantCarePoints`. `viewFor` is the single place hidden info is stripped.
-- `actions.ts`: the action registry (`ACTIONS`), `visibleTargets`, `ActionDef` / `ActionCost`. A new action is a file in `actions/` registered here.
-- `actions/action.ts`: the `Action` base class (`getCandidates`, `check`, `getCost`, `apply`, optional `getSuccessChance` and `fail`).
+- `actions.ts`: the action registry (`ACTIONS`), `ActionDef` / `ActionCost`. A new action is a file in `actions/` registered here.
+- `actions/action.ts`: the `Action` base class (`getCandidates`, `validate`, `getCost`, `apply`, optional `getSuccessChance` and `fail`; `check` is `validate` then the price, never overridden).
 - `blueprints.ts`: `BLUEPRINTS` recipes (ingredients and resulting equipment) and the `blueprint` item type name.
 - `actions/<type>.ts`: one class per action: `accommodate` (+ `accept_accommodation`, `stop_accommodation`), `access`, `bond`, `build`, `consume`, `cook`, `express_cook`, `dismantle`, `dispense`, `examine`, `extract_spore`, `heal`, `install`, `jettison`, `lie_down` (+ `get_up`), `uninstall`, `move`, `pick_skill`, `read_book`, `project`, `scan_planet`, `analyze_planet`, `delete_planet`, `punch`, `ready`, `research`, `share` (`dtt`, `stt`), `shower`, `spike`, `transfer` (`take`, `drop`).
 - `modifiers.ts`: the modifier registry and its hooks (numeric ones go through `fold`; `moveCost` is the one place a move's price is computed).

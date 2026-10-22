@@ -24,9 +24,9 @@ export class UninstallAction extends Action<UninstallActionData> {
     return cameras(state, player).map((e) => ({ type: "uninstall", equipment: e.id }));
   }
 
-  override check(state: Readonly<GameState>, player: Readonly<PlayerState>, target: UninstallActionData): string | null {
+  override validate(state: Readonly<GameState>, player: Readonly<PlayerState>, target: UninstallActionData): string | null {
     if (!cameras(state, player).some((e) => e.id === target.equipment)) return "cant_uninstall";
-    return this.canAfford(state, player, target);
+    return null;
   }
 
   override dirtChance(state: Readonly<GameState>): number {

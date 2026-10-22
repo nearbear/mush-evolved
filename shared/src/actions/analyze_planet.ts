@@ -25,13 +25,13 @@ export class AnalyzePlanetAction extends Action<AnalyzePlanetActionData> {
     );
   }
 
-  override check(state: Readonly<GameState>, player: Readonly<PlayerState>, target: AnalyzePlanetActionData): string | null {
+  override validate(state: Readonly<GameState>, player: Readonly<PlayerState>, target: AnalyzePlanetActionData): string | null {
     if (!astroTerminalsHere(state, player.room).some((terminal) => terminal.id === target.equipment)) return "cant_analyze";
     const planet = planetsOf(state, player.id).find((p) => p.id === target.planet);
     if (!planet) return "no_such_planet";
     if (planet.sectors.every((sector) => sector.known)) return "planet_analyzed";
     if (player.statuses.includes("dirty")) return "dirty";
-    return this.canAfford(state, player, target);
+    return null;
   }
 
   override apply(state: GameState, player: PlayerState, target: AnalyzePlanetActionData): void {

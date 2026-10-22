@@ -23,10 +23,10 @@ export class HealAction extends Action<HealActionData> {
     return canHeal(state, player) ? [player, ...peopleHere(state, player)].map((o) => ({ type: "heal", target: o.id })) : [];
   }
 
-  override check(state: Readonly<GameState>, player: Readonly<PlayerState>, target: HealActionData): string | null {
+  override validate(state: Readonly<GameState>, player: Readonly<PlayerState>, target: HealActionData): string | null {
     if (!canHeal(state, player)) return "no_medikit";
     if (target.target !== player.id && !peopleHere(state, player).some((o) => o.id === target.target)) return "cant_see";
-    return this.canAfford(state, player, target);
+    return null;
   }
 
   override getCost(state: Readonly<GameState>, player: Readonly<PlayerState>, target: HealActionData): { ap: number; mp: number } {
@@ -52,7 +52,3 @@ export class HealAction extends Action<HealActionData> {
 
 const canHeal = (state: Readonly<GameState>, p: Readonly<PlayerState>): boolean =>
   state.config.heal.rooms.includes(p.room) || itemsIn(state, { kind: "player", id: p.id }).some((i) => i.type === "medikit");
-/*
-const healCost = (state: Readonly<GameState>, p: Readonly<PlayerState>, target: PlayerId): number =>
-  p.resources.heal > 0 ? 0 : target === p.id ? state.config.healApSelf : state.config.healApOther;
-*/

@@ -21,12 +21,12 @@ export class ExtractSporeAction extends Action<ExtractSporeActionData> {
     return [{ type: "extract_spore" }];
   }
 
-  override check(state: Readonly<GameState>, player: Readonly<PlayerState>, target: ExtractSporeActionData): string | null {
+  override validate(state: Readonly<GameState>, player: Readonly<PlayerState>, target: ExtractSporeActionData): string | null {
     if (player.role !== "mush") return "not_mush";
     const last = state.sporeExtractedOn[player.id];
     if (last !== undefined && state.cycle - last < state.config.spores.cooldownCycles) return "cooldown";
     if (state.sporesToday >= sporesPerDay(state, player)) return "daily_cap";
-    return this.canAfford(state, player, target);
+    return null;
   }
 
   override apply(state: GameState, player: PlayerState, target: ExtractSporeActionData): void {

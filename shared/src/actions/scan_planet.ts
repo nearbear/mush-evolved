@@ -29,11 +29,11 @@ export class ScanPlanetAction extends Action<ScanPlanetActionData> {
     return astroTerminalsHere(state, player.room).map((terminal) => ({ type: "scan_planet", equipment: terminal.id }));
   }
 
-  override check(state: Readonly<GameState>, player: Readonly<PlayerState>, target: ScanPlanetActionData): string | null {
+  override validate(state: Readonly<GameState>, player: Readonly<PlayerState>, target: ScanPlanetActionData): string | null {
     if (!astroTerminalsHere(state, player.room).some((terminal) => terminal.id === target.equipment)) return "cant_scan";
     if (planetsOf(state, player.id).length >= state.config.astro.maxPlanets) return "too_many_planets";
     if (player.statuses.includes("dirty")) return "dirty";
-    return this.canAfford(state, player, target);
+    return null;
   }
 
   override apply(state: GameState, player: PlayerState, target: ScanPlanetActionData): void {

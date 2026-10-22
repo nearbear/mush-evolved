@@ -16,7 +16,7 @@ export class ConsumeAction extends Action<ConsumeActionData> {
     return state.items.filter((item) => ITEM_TYPES[item.type]?.consume && canReach(state, player, item.at)).map((item) => ({ type: "consume", item: item.id }));
   }
 
-  override check(state: Readonly<GameState>, player: Readonly<PlayerState>, target: ConsumeActionData): string | null {
+  override validate(state: Readonly<GameState>, player: Readonly<PlayerState>, target: ConsumeActionData): string | null {
     const item = state.items.find((i) => i.id === target.item);
     if (!item) return "no_such_item";
     if (!ITEM_TYPES[item.type]?.consume || !canReach(state, player, item.at)) return "cant_consume";

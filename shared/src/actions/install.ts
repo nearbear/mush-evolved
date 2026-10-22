@@ -25,10 +25,10 @@ export class InstallAction extends Action<InstallActionData> {
     return carriedCameras(state, player).map((item) => ({ type: "install", item: item.id }));
   }
 
-  override check(state: Readonly<GameState>, player: Readonly<PlayerState>, target: InstallActionData): string | null {
+  override validate(state: Readonly<GameState>, player: Readonly<PlayerState>, target: InstallActionData): string | null {
     if (!carriedCameras(state, player).some((i) => i.id === target.item)) return "cant_install";
     if (hasCamera(state, player.room)) return "camera_already_installed";
-    return this.canAfford(state, player, target);
+    return null;
   }
 
   override dirtChance(state: Readonly<GameState>): number {

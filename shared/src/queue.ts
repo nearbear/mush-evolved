@@ -16,7 +16,8 @@ import { ACTIONS, type ActionDef } from "./actions.ts";
 import { expireOffers } from "./actions/accommodate.ts";
 import { clone, fail, findPlayer, type ActionResult } from "./helpers.ts";
 import { logPrivate } from "./log.ts";
-import { applyAction, canAct, getUp, performAction } from "./rules.ts";
+import { getUp } from "./actions/lie_down.ts";
+import { applyAction, canAct, performAction } from "./rules.ts";
 import { standUp } from "./spot.ts";
 import type { Action, GameState, PlayerId, PlayerState, QueuedAction } from "./types.ts";
 

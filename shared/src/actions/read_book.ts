@@ -28,13 +28,13 @@ export class ReadBookAction extends Action<ReadBookActionData> {
       .map((item) => ({ type: "read_book", item: item.id }));
   }
 
-  override check(state: Readonly<GameState>, player: Readonly<PlayerState>, target: ReadBookActionData): string | null {
+  override validate(state: Readonly<GameState>, player: Readonly<PlayerState>, target: ReadBookActionData): string | null {
     const item = state.items.find((i) => i.id === target.item);
     if (!item || item.type !== BOOK_ITEM || !canReach(state, player, item.at)) return "no_such_item";
     if (!isSkill(item.teaches)) return "no_such_skill";
     if (player.bookSkill !== undefined) return "book_slot_full";
     if (hasSkill(player, item.teaches)) return "have_skill";
-    return this.canAfford(state, player, target);
+    return null;
   }
 
   override apply(state: GameState, player: PlayerState, target: ReadBookActionData): void {

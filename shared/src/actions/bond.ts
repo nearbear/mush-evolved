@@ -19,10 +19,10 @@ export class BondAction extends Action<BondActionData> {
     return state.players.filter((other) => other.id !== player.id && other.alive && other.room === player.room).map((other) => ({ type: "bond", target: other.id }));
   }
 
-  override check(state: Readonly<GameState>, player: Readonly<PlayerState>, target: BondActionData): string | null {
+  override validate(state: Readonly<GameState>, player: Readonly<PlayerState>, target: BondActionData): string | null {
     if (!state.players.some((other) => other.id !== player.id && other.alive && other.room === player.room && other.id === target.target)) return "cant_see";
     if (state.bonds[player.id]?.includes(target.target)) return "already_bonded";
-    return this.canAfford(state, player, target);
+    return null;
   }
 
   override apply(state: GameState, player: PlayerState, target: BondActionData): void {

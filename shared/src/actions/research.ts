@@ -39,12 +39,12 @@ export class ResearchAction extends Action<ResearchActionData> {
     );
   }
 
-  override check(state: Readonly<GameState>, player: Readonly<PlayerState>, target: ResearchActionData): string | null {
+  override validate(state: Readonly<GameState>, player: Readonly<PlayerState>, target: ResearchActionData): string | null {
     if (!this.labs(state, player).some((lab) => lab.id === target.equipment)) return "cant_research";
     if (!(RESEARCH_IDS as readonly string[]).includes(target.research)) return "no_such_research";
     if ((state.research[target.research] ?? 0) >= RESEARCH_COMPLETE) return "research_done";
     if (player.statuses.includes("dirty")) return "dirty";
-    return this.canAfford(state, player, target);
+    return null;
   }
 
   override apply(state: GameState, player: PlayerState, target: ResearchActionData): void {
