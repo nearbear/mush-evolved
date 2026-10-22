@@ -1,3 +1,4 @@
+import type { CommsState } from "../comms.ts";
 import type { PlanetTag } from "../planets.ts";
 import type { RngState } from "../rng.ts";
 import type { TitleId } from "../titles.ts";
@@ -74,6 +75,11 @@ export interface GameState {
    * `progress` goes only to the living in a room with the PILGRED terminal; `lastBy` and `streak` are never sent.
    */
   pilgred: { progress: number; lastBy: PlayerId | null; streak: number };
+  /**
+   * The communication center (comms.ts). `linked` goes to everyone; the rest only to the living at a Com center
+   * terminal, read-only.
+   */
+  comms: CommsState;
   /** Each player's planets, found at the Astro terminal (planets.ts). Private: only the finder's own view has them, without the unknown sectors' tags. */
   planets: Record<PlayerId, Planet[]>;
   /** Failed scans in a row per player, raising their next scan's odds; reset by a success (owner, 2026-10-19). Never sent. */

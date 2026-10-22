@@ -17,6 +17,10 @@ const ACTION_NAME_KEYS = {
   project: "actions.project",
   repair_pilgred: "actions.repairPilgred",
   return_to_sol: "actions.returnToSol",
+  contact_sol: "actions.contactSol",
+  decode_rebel: "actions.decodeRebel",
+  contact_xyloph: "actions.contactXyloph",
+  update_neron: "actions.updateNeron",
   scan_planet: "actions.scanPlanet",
   analyze_planet: "actions.analyzePlanet",
   delete_planet: "actions.deletePlanet",
@@ -66,12 +70,13 @@ export function useNames() {
   const research = (id: string) => t(`research.names.${id}` as never, { defaultValue: id });
   const project = (id: string) => t(`projects.names.${id}` as never, { defaultValue: id });
   const title = (id: string) => t(`titles.names.${id}` as never, { defaultValue: id });
+  const rebelBase = (id: string) => t(`comms.rebels.${id}.name` as never, { defaultValue: id });
   const action = (type: string) => {
     const key = (ACTION_NAME_KEYS as Partial<Record<string, string>>)[type];
     return key ? t(key as never, { defaultValue: type }) : type;
   };
 
-  /** The text of a log entry. `room`, `item`, `research`, `project`, `equipment`, `action`, `title` and `skill` params are ids and get translated; `name`, `target` and `body` are character ids. */
+  /** The text of a log entry. `room`, `item`, `research`, `project`, `equipment`, `action`, `title`, `skill`, `base` (a rebel base) and `entry` (a Xyloph entry) params are ids and get translated; `name`, `target` and `body` are character ids. */
   const logLine = ({ key, params = {} }: Pick<LogEntry, "key" | "params">): string => {
     const resolved: Record<string, string | number> = { ...params };
     if (typeof params.room === "string") resolved.room = room(params.room);
@@ -82,9 +87,11 @@ export function useNames() {
     if (typeof params.action === "string") resolved.action = action(params.action);
     if (typeof params.title === "string") resolved.title = title(params.title);
     if (typeof params.skill === "string") resolved.skill = skill(params.skill);
+    if (typeof params.base === "string") resolved.base = rebelBase(params.base);
+    if (typeof params.entry === "string") resolved.entry = t(`comms.xyloph.${params.entry}` as never, { defaultValue: params.entry });
     for (const who of ["name", "target", "body"] as const) if (typeof params[who] === "string") resolved[who] = characterGivenName(params[who]);
     return t(`logEvent.${key}` as never, { ...resolved, defaultValue: key });
   };
 
-  return { room, equipment, item, itemOf, research, project, skill, title, action, character: characterName, characterGiven: characterGivenName, logLine };
+  return { room, equipment, item, itemOf, research, project, skill, title, rebelBase, action, character: characterName, characterGiven: characterGivenName, logLine };
 }

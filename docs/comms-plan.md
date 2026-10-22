@@ -1,6 +1,6 @@
 # Communication center (plan)
 
-Status: **planning, not built.** Decisions below are from the owner (2026-10-19). Anything under "Open questions" is not decided.
+Status: **built 2026-10-21** (see `docs/implemented-rules.md`, "Communication center"). The 2026-10-21 answers below settle the open questions and supersede decisions 2, 4 and 5 where they differ.
 
 ## What the original gives us
 
@@ -26,7 +26,17 @@ The snapshot has the data but no server logic for these actions.
 5. **Rebel decoding:** pick a base; each action adds 25% to that base; the reward fires at 100%. The cost wasn't restated (the option offered was 3 AP, with the Rebel skill giving +50% per action).
 6. **Rewards:** implement only the effects that can be built today. The rest are recorded as reached with no effect yet, the way NERON projects are.
 
-## Open questions
+## Answers (owner, 2026-10-21)
+
+- The link can be lost, and signal quality is the ship-wide Sol chance: Wireless infidelity takes 20 points off it, never below 4%. A plain loss keeps the chance.
+- Titles exist now: only the Comms Officer decodes, contacts Xyloph and updates NERON. Anyone can try the Sol link. All three need the link. Like every Com center action, they need the actor clean; Mush can act.
+- "Private" (decision 4) meant the room log. Anyone at the terminal sees its screen read-only.
+- Rebel bases follow the eMush wiki: one base calls at Mush selection, then one a day in the same cycle, in data file order. Each call's window is rolled per base, 8 to 16 cycles. NERON announces a call in crew chat only while the link is up; a call that arrives during an outage stays decodable until it expires. A decode costs 2 AP or a Computer point and gains the average of two 1..40 draws. Rebel and Kivanç give +100% each, additive (x3 with both), replacing the earlier +50%. Progress is ship-wide and shown at the terminal.
+- Xyloph: 2 AP, always succeeds, entries never repeat, and it is done once the table runs out. Every entry is built: the genome disk, Nils's Mush test strain, the cookbook and school manuals as skill books (random skills), the workshop manuals as blueprints, and Zong Chun's ghost recorded in state. Lost analysis is recorded only.
+- NERON update: 2 AP, 25% per action, and it repeats. At 100% the version goes up and a random unfinished NERON project completes.
+- Only the buildable rebel effects are built. Radio Expert is built.
+
+## Open questions (all answered above)
 
 1. **Can the link be lost?** Decision 3 says the chance never decreases, but not whether the link itself can drop. If it can, SNOW_CRASH and WIREFLESS_INFIDELITY drop it, and WIREFLESS's "signal quality −20" clashes with decision 3.
 2. **Is the chance tracked per player or ship-wide?** And does "never decreases" mean it keeps growing after a success, or stays where it was?

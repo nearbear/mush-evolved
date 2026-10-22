@@ -6,6 +6,7 @@
 
 import { ITRACKIE_ITEM, itemsIn } from "./items.ts";
 import { channelLimit } from "./modifiers.ts";
+import { noITrackieNeeded } from "./comms.ts";
 import { clone, fail, findPlayer, type ActionResult } from "./helpers.ts";
 import { CHAT_CHANNELS, GRAVEYARD_CHANNEL, MUSH_CHANNEL } from "./types.ts";
 import type { ChannelId, ChatMessage, GameState, PlayerId, PlayerState, PrivateChannelId, ThreadId } from "./types.ts";
@@ -71,7 +72,8 @@ export function chatChannels(state: GameState, player: Readonly<PlayerState>): C
   // The Mush channel is a link between the Mush, not a device: no iTrackie needed (decided 2026-10-16).
   const mush: ChannelId[] = player.role === "mush" ? [MUSH_CHANNEL] : [];
   const hasITrackie = itemsIn(state, { kind: "player", id: player.id }).some((i) => i.type === ITRACKIE_ITEM);
-  if (!hasITrackie) return mush;
+  // Luyten-Ceti's brain probes stand in for the iTrackie once that rebel base is reached (owner, 2026-10-21).
+  if (!hasITrackie && !noITrackieNeeded(state)) return mush;
   return [...CHAT_CHANNELS, ...threadIds(state), ...mush, ...state.channels.filter((c) => c.members.includes(player.id)).map((c) => c.id)];
 }
 

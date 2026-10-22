@@ -26,6 +26,7 @@ All under `web/src/`. UI rules are in `web/CLAUDE.md`.
 - `SettingsDialog.tsx` + `settings.css`: settings dialog.
 - `GameOverDialog.tsx`: opens when `view.winner` is set and says who won (reuses `settings.css`).
 - `SelfPanel.tsx`: summary and other resources (Inspect tab on phones, without the summary), and your planets once you have any (deletable anywhere).
+- `CommsCenter.tsx`: the Com center terminal window: link status and Sol chance, rebel calls with progress and expiry, Xyloph entries left, NERON version and update, each with its button when the view offers it.
 - `PlanetList.tsx`: your planets with their sector tags (unknown ones as `tag_unknown`) and a bin button to delete; in the Astro terminal window it adds the scan and analyse buttons.
 - `InventoryOverlay.tsx` + `styles/inventory.css`: the sack button in the room view's lower right (badge = items in the room) that opens `InventoryPanel` over the room; closes on the button, Escape, or a press elsewhere in the room view. Both layouts; hidden when dead.
 - `InventoryPanel.tsx`: item zones; drag to take/drop, tap fallback.

@@ -1,5 +1,6 @@
 import type { ActionCost, ActionTag } from "../actions.ts";
 import type { CharacterId } from "../characters.ts";
+import type { RebelBaseId } from "../comms.ts";
 import type { TitleId } from "../titles.ts";
 import type { Action, BotKind, ItemId, LogEntry, PlayerId, RoomId } from "../types.ts";
 import type { ChannelId, ChatMessage, ChatThread, PrivateChannel } from "./chat.ts";
@@ -145,6 +146,11 @@ export interface PlayerView {
   projects: Record<string, number>;
   /** PILGRED's repair, percent done, only while you are alive in a room with its terminal (owner, 2026-10-21); otherwise null. */
   pilgred: number | null;
+  /**
+   * The communication center. `linked` (the link with Sol) is public; `terminal`, what the Com center terminal shows
+   * read-only to anyone, only while you are alive in a room with one (owner, 2026-10-21), otherwise null.
+   */
+  comms: { linked: boolean; terminal: CommsTerminalView | null };
   /** Your own planets (private, owner 2026-10-19). Unknown sectors are null: their tags are never sent. */
   planets: PlanetView[];
   /** Every title in `TITLE_IDS` order, public to everyone (owner, 2026-10-20). */
@@ -182,4 +188,15 @@ export interface TitleView {
   holder: CharacterId | null;
   /** The crew aboard (dead included), in order of succession. */
   line: CharacterId[];
+}
+
+/** The Com center terminal's read-only screen. */
+export interface CommsTerminalView {
+  /** The ship's chance (percent) of establishing the link, before Radio Expert. */
+  solChance: number;
+  /** Every rebel call so far: `open` (can be decoded), `contacted` (reached, bonus in effect) or `lost` (expired). */
+  rebels: { base: RebelBaseId; progress: number; status: "open" | "contacted" | "lost"; expiresAt: number }[];
+  /** How many Xyloph entries are left to draw. Which were drawn is only in the drawer's own log. */
+  xylophLeft: number;
+  neron: { version: number; progress: number };
 }

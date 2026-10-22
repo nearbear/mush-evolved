@@ -100,6 +100,14 @@ export const DEFAULT_CONFIG: GameConfig = {
   // Owner, 2026-10-21: repairing PILGRED uses the original's numbers (DIG_RATE 6, PILGRED_MOD 2, DIG_BOOST 4, -2 per repeat),
   // 2 AP, 25% dirty; the Physicist gains 1 PILGRED point a day and holds 2.
   pilgred: { cost: { ap: 2 }, dirtyChance: 0.25, progress: { rate: 6, mod: 2, skillBoost: 4, relayPenalty: 2 }, capPoints: 2, pointsPerDay: 1, returnCost: { ap: 2 } },
+  // Owner, 2026-10-19 and 2026-10-21 (docs/comms-plan.md): every comms action is 2 AP. Sol: 4%, +4% per failure, floor 4%.
+  // Rebels: avg of two 1..40 draws, +100% each for Rebel and Kivanç, a window of 8..16 cycles. NERON update: 25% per action.
+  comms: {
+    sol: { cost: { ap: 2 }, startChance: 4, chancePerFail: 4, radioExpertFactor: 2, radioExpertRoomFactor: 1.5 },
+    rebel: { cost: { ap: 2 }, gainMax: 40, windowMin: 8, windowMax: 16, rebelBonus: 1, kivancBonus: 1, kaladaanMorale: 6, cygniMorale: 3, siriusRationAp: 1 },
+    xyloph: { cost: { ap: 2 }, qualityLoss: 20, neronBoostPercent: 25, schoolBooks: 2, workshopBlueprints: 3 },
+    neron: { cost: { ap: 2 }, progressPercent: 25 },
+  },
   // Confirmed 2026-10-17: lying down in a bed is free (the +1 AP per cycle is the lying_down modifier).
   accommodate: { cost: { ap: 0 }, offerMs: 5 * 60_000 },
   lieDown: { cost: { ap: 0 } },

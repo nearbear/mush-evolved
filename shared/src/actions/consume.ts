@@ -2,6 +2,7 @@ import { Action } from "./action.ts";
 import { ITEM_TYPES, canReach } from "../items.ts";
 import { logPublic } from "../log.ts";
 import { consumed } from "../modifiers.ts";
+import { rationApBonus } from "../comms.ts";
 import { isFullBelly } from "../statuses.ts";
 import type { GameState, ItemState, PlayerState } from "../types.ts";
 
@@ -35,7 +36,7 @@ export class ConsumeAction extends Action<ConsumeActionData> {
     const index = state.items.findIndex((i) => i.id === target.item);
     const [item] = state.items.splice(index, 1) as [ItemState];
     const { ap, satiety, morale = 0 } = ITEM_TYPES[item.type]!.consume!;
-    player.ap = Math.min(state.config.maxAp, player.ap + ap);
+    player.ap = Math.min(state.config.maxAp, player.ap + ap + rationApBonus(state, item.type));
     player.morale = Math.max(0, Math.min(state.config.maxMorale, player.morale + morale));
     if (player.role === "human") {
       player.satiety += satiety;

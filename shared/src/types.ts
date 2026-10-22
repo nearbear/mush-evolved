@@ -101,6 +101,10 @@ export type Action =
   | { type: "project"; equipment: string; project: string }
   | { type: "repair_pilgred"; equipment: string }
   | { type: "return_to_sol"; equipment: string }
+  | { type: "contact_sol"; equipment: string }
+  | { type: "decode_rebel"; equipment: string; base: string }
+  | { type: "contact_xyloph"; equipment: string }
+  | { type: "update_neron"; equipment: string }
   | { type: "scan_planet"; equipment: string }
   | { type: "analyze_planet"; equipment: string; planet: string }
   | { type: "delete_planet"; planet: string }

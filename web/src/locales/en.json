@@ -50,7 +50,10 @@
       "instantActions": "Instant actions",
       "noRelayPenalty": "No relay penalty",
       "freeHacking": "Free hacking",
-      "role": {"mush": "Become Mush", "human": "Become human"},
+      "role": {
+        "mush": "Become Mush",
+        "human": "Become human"
+      },
       "actopi": {
         "label": "ACTOPI",
         "default": "Game default",
@@ -211,12 +214,20 @@
     "analyzePlanet": "Analyse a planet",
     "deletePlanet": "Delete a planet",
     "pickSkill": "Pick a skill",
-    "visibility": { "private": "Private", "secret": "Secret", "covert": "Covert" },
+    "visibility": {
+      "private": "Private",
+      "secret": "Secret",
+      "covert": "Covert"
+    },
     "chance": "({{percent}}%)",
     "lacksAp": "Not enough AP: it costs {{need}}, you have {{have}}.",
     "lacksMp": "Not enough MP: it costs {{need}}, you have {{have}}.",
     "lacksBoth": "Not enough AP or MP: it costs {{needAp}} AP and {{needMp}} MP, you have {{haveAp}} AP and {{haveMp}} MP.",
-    "returnToSol": "Return to Sol"
+    "returnToSol": "Return to Sol",
+    "contactSol": "Establish link with Sol",
+    "decodeRebel": "Decode rebel signal",
+    "contactXyloph": "Contact Xyloph",
+    "updateNeron": "Update NERON"
   },
   "queue": {
     "label": "Your actions",
@@ -481,7 +492,9 @@
     "microwave": "Microwave",
     "corpse": "Corpse",
     "myco_alarm": "Myco alarm",
-    "tree_pot": "Hydropot"
+    "tree_pot": "Hydropot",
+    "mush_floppy_disk": "Mush genome disk",
+    "mush_sample": "Mush test strain"
   },
   "logEvent": {
     "actionCostChanged": "Your queued action ({{action}}) was cancelled because its cost changed: it now costs {{ap}} AP and {{mp}} MP.",
@@ -555,7 +568,16 @@
     "mycoAlarmsBuilt": "Three myco alarms have been built and left here.",
     "titlePassed": "{{name}} is now {{title}}.",
     "titleVacant": "Nobody aboard can take the title {{title}}: it is vacant.",
-    "returnedToSol": "{{name}} took the Daedalus to Sol."
+    "returnedToSol": "{{name}} took the Daedalus to Sol.",
+    "solLinked": "You established the link with Sol.",
+    "solFailed": "You failed to establish the link with Sol.",
+    "rebelDecoded": "You decoded part of the signal from {{base}}: {{percent}}% decoded.",
+    "rebelContacted": "You decoded the whole signal: contact made with {{base}}.",
+    "xylophContacted": "You contacted Xyloph: {{entry}}",
+    "neronUpdating": "You worked on NERON's update: {{percent}}% done.",
+    "neronUpdated": "NERON is now version {{version}}.",
+    "neronUpdatedProject": "NERON is now version {{version}}. The {{project}} project is complete.",
+    "rebelCalling": "NERON: a rebel base, {{base}}, is trying to contact the Daedalus."
   },
   "skills": {
     "title": "Choose a skill",
@@ -890,6 +912,67 @@
       "roland": "Comedian and part-time fighter pilot",
       "stephen": "The most dangerous cook in the galaxy",
       "terrence": "Jaded motorized technophile"
+    }
+  },
+  "comms": {
+    "linked": "Link with Sol established.",
+    "unlinked": "No link with Sol.",
+    "solChance": "Signal quality: {{percent}}%",
+    "linkNeeded": "Decoding, contacting Xyloph and updating NERON need the link with Sol.",
+    "officerOnly": "Only the Comms Officer can decode signals, contact Xyloph and update NERON.",
+    "rebelsTitle": "Rebel bases",
+    "noRebels": "No rebel base has called yet.",
+    "rebelOpen_one": "{{percent}}% decoded. The signal is lost in {{count}} cycle.",
+    "rebelOpen_other": "{{percent}}% decoded. The signal is lost in {{count}} cycles.",
+    "rebelLost": "Signal lost.",
+    "rebelContacted": "Contacted.",
+    "xylophTitle": "Xyloph",
+    "xylophDesc": "The Daedalus's home port. What is left there…",
+    "xylophLeft_one": "{{count}} entry left in the database.",
+    "xylophLeft_other": "{{count}} entries left in the database.",
+    "xylophDone": "Nothing left to find in Xyloph's database.",
+    "neronTitle": "NERON update",
+    "neronVersion": "NERON version {{version}}",
+    "neronProgress": "{{percent}}% toward the next update. Each update completes a NERON project.",
+    "rebels": {
+      "WOLF": {
+        "name": "Lost Children of Wolf",
+        "effect": "No effect yet."
+      },
+      "SIRIUS": {
+        "name": "Black Mages of Sirius",
+        "effect": "Rations give 1 extra AP."
+      },
+      "CENTAURI": {
+        "name": "Lovers of Centauri",
+        "effect": "No effect yet."
+      },
+      "KALADAAN": {
+        "name": "Founders of Kaladaan",
+        "effect": "+6 morale for the whole crew."
+      },
+      "LUYTEN_CETI": {
+        "name": "Shadows of Luyten-Ceti",
+        "effect": "Nobody needs an iTrackie to talk at a distance."
+      },
+      "CYGNI": {
+        "name": "Auroras of Cygni",
+        "effect": "+3 morale for the whole crew."
+      }
+    },
+    "xyloph": {
+      "NOTHING": "Corrupted data. Nothing to get out of it.",
+      "SNOW_CRASH": "Snow… Your screen fills with crackling static. The link is lost.",
+      "WIREFLESS_INFIDELITY": "Wireless infidelity… The link is lost and the signal is much weaker.",
+      "MUSH_GENOME_DATA": "Genome. A disk of Mush genome data was printed on the bridge.",
+      "LOST_ANALYSIS": "Finola's lost analysis. The crew's infection levels at departure.",
+      "NILS_CARLSSON_CONTACT": "Contact with Nils Carlsson! A Mush test strain was printed on the bridge.",
+      "NERON_BOOST": "Access to NERON's lost database. NERON's update moves forward.",
+      "KIVANC_TERZI_CONTACT": "Contact with Kivanç Terzi restored! Decoding rebel signals goes faster.",
+      "COOK_BIBLE": "The 2830 Labrousse cookbook. A cooking skill book was printed on the bridge.",
+      "ZONG_CHUN_SAMPLE": "Zong Chun's genome codex. The laboratory now has her genome.",
+      "SCHOOL_MANUALS": "School manuals. Two skill books were printed on the bridge.",
+      "WORKSHOP_MANUALS": "Workshop manuals. Three blueprints were printed on the bridge."
     }
   }
 }

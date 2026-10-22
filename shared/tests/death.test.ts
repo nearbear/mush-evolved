@@ -8,7 +8,8 @@ import { CHAT_CHANNELS, GRAVEYARD_CHANNEL, MUSH_CHANNEL, type Action, type GameS
 import { makeSeats, player, must, offered } from "./support.ts";
 
 const seats = makeSeats(4);
-const config = { ...DEFAULT_CONFIG, mushCount: 1, startItems: [], startSkills: [], manualCycles: true };
+// Punches always land, so the deaths here don't hang on a lucky seed.
+const config = { ...DEFAULT_CONFIG, mushCount: 1, startItems: [], startSkills: [], manualCycles: true, punch: { ...DEFAULT_CONFIG.punch, successChance: 1 } };
 const punch = (target: PlayerId): Action => ({ type: "punch", target });
 
 /** p0 (Mush) and p1 (human) share the sick bay; p2 and p3 (humans) are in the refectory. Everyone has an iTrackie. */

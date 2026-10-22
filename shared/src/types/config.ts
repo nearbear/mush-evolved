@@ -136,6 +136,37 @@ export interface GameConfig {
     pointsPerDay: number; // PILGRED points the `physicist` skill grants at the start of each day (owner, 2026-10-21; the original +1).
     returnCost: { ap: number }; // AP spent to return to Sol at the Command terminal (owner, 2026-10-21; the original's SET_PILGRED_TO_SOL, 2).
   };
+  comms: {
+    sol: {
+      cost: { ap: number }; // AP spent to try to establish the link with Sol (owner, 2026-10-19).
+      startChance: number; // The ship's chance (percent) at the start, and its floor (owner, 2026-10-19 and 2026-10-21).
+      chancePerFail: number; // Percent added to the ship's chance by each failed attempt (owner, 2026-10-19).
+      radioExpertFactor: number; // A Radio Expert's own attempts multiply the chance by this (the skill's description, 2).
+      radioExpertRoomFactor: number; // Anyone else's attempts in a room with a Radio Expert (the skill's description, 1.5).
+    };
+    rebel: {
+      cost: { ap: number }; // AP spent to decode a rebel signal; a Computer point pays instead (owner, 2026-10-21).
+      gainMax: number; // A decode gains the average of two draws in [1, gainMax] percent (the original, 40).
+      windowMin: number; // A rebel call stays open between windowMin and windowMax cycles, rolled per base (owner, 2026-10-21).
+      windowMax: number;
+      rebelBonus: number; // The Rebel skill adds this many times the base gain (owner, 2026-10-21: +100%).
+      kivancBonus: number; // Having contacted Kivanç Terzi adds this many times the base gain (owner, 2026-10-21: +100%).
+      kaladaanMorale: number; // Morale every living player gains when Kaladaan is reached (the original, 6).
+      cygniMorale: number; // Morale every living player gains when Cygni is reached (the original, 3).
+      siriusRationAp: number; // Extra AP from a ration once Sirius is reached (the original, 1).
+    };
+    xyloph: {
+      cost: { ap: number }; // AP spent to contact Xyloph (owner, 2026-10-21).
+      qualityLoss: number; // Wireless infidelity takes this off the Sol chance (the original, 20).
+      neronBoostPercent: number; // NERON's lost database moves the NERON update forward this much (the original, 25).
+      schoolBooks: number; // Skill books printed by the school manuals, each for a random skill (the original, 2).
+      workshopBlueprints: number; // Random blueprints printed by the workshop manuals (the original, 3).
+    };
+    neron: {
+      cost: { ap: number }; // AP spent to work on NERON's update (owner, 2026-10-21).
+      progressPercent: number; // Percent an update advances per action (owner, 2026-10-21).
+    };
+  };
   astro: {
     scan: {
       cost: { ap: number }; // AP spent to scan for a planet at the Astro terminal (owner, 2026-10-19; the original's 3).

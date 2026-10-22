@@ -112,6 +112,10 @@ export const SKILL_STATUS: Readonly<Partial<Record<SkillId, SkillStatus>>> = {
   logistics: "full",
   caffeinomaniac: "full",
   stickler: "full",
+  // Doubled odds of the link with Sol, x1.5 for roommates (owner, 2026-10-21, comms.ts).
+  radio_expert: "full",
+  // +100% rebel decoding (owner, 2026-10-21, comms.ts).
+  rebel: "full",
 };
 
 export function skillStatus(skill: string): SkillStatus {

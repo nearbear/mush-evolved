@@ -49,6 +49,7 @@ export const GAME_STATE_FIELDS: Record<string, FieldRule> = {
   planets: { reach: "own", test: "leaks.test.ts", note: "Without the unknown sectors' tags." },
   scanFailures: { reach: "never", test: "leaks.test.ts" },
   nextPlanetId: { reach: "never", test: "leaks.test.ts", note: "Not secret (planet ids show it), just not sent." },
+  comms: { reach: "room", test: "comms.test.ts", note: "`linked` to everyone; the terminal screen to the living at a Com center terminal, without which Xyloph entries were drawn." },
   titles: { reach: "public", test: "titles.test.ts", note: "Holders and lines, by character (owner, 2026-10-20)." },
   now: { reach: "never", test: "leaks.test.ts", note: "The rules' clock; offers' expiry times reach their owner only." },
 };

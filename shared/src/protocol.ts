@@ -121,6 +121,12 @@ export function parseGameMessage(raw: string): GameClientMessage | null {
   if (a.type === "return_to_sol" && typeof a.equipment === "string") {
     return { type: "action", action: { type: "return_to_sol", equipment: a.equipment } };
   }
+  if ((a.type === "contact_sol" || a.type === "contact_xyloph" || a.type === "update_neron") && typeof a.equipment === "string") {
+    return { type: "action", action: { type: a.type, equipment: a.equipment } };
+  }
+  if (a.type === "decode_rebel" && typeof a.equipment === "string" && typeof a.base === "string") {
+    return { type: "action", action: { type: "decode_rebel", equipment: a.equipment, base: a.base } };
+  }
   if (a.type === "project" && typeof a.equipment === "string" && typeof a.project === "string") {
     return { type: "action", action: { type: "project", equipment: a.equipment, project: a.project } };
   }

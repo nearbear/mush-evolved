@@ -50,7 +50,10 @@
       "instantActions": "Actions instantanées",
       "noRelayPenalty": "Pas de pénalité de relais",
       "freeHacking": "Piratage libre",
-      "role": {"mush": "Devenir Mush", "human": "Devenir humain"},
+      "role": {
+        "mush": "Devenir Mush",
+        "human": "Devenir humain"
+      },
       "actopi": {
         "label": "ACTOPI",
         "default": "Par défaut du jeu",
@@ -212,12 +215,20 @@
     "analyzePlanet": "Analyser une planète",
     "deletePlanet": "Supprimer une planète",
     "pickSkill": "Choisir une compétence",
-    "visibility": { "private": "Privée", "secret": "Secrète", "covert": "Discrète" },
+    "visibility": {
+      "private": "Privée",
+      "secret": "Secrète",
+      "covert": "Discrète"
+    },
     "chance": "({{percent}} %)",
     "lacksAp": "Pas assez de PA : cela coûte {{need}}, vous en avez {{have}}.",
     "lacksMp": "Pas assez de PM : cela coûte {{need}}, vous en avez {{have}}.",
     "lacksBoth": "Pas assez de PA ni de PM : cela coûte {{needAp}} PA et {{needMp}} PM, vous avez {{haveAp}} PA et {{haveMp}} PM.",
-    "returnToSol": "Rentrer sur Sol"
+    "returnToSol": "Rentrer sur Sol",
+    "contactSol": "Établir le contact avec Sol",
+    "decodeRebel": "Décoder un signal rebelle",
+    "contactXyloph": "Contacter Xyloph",
+    "updateNeron": "Mettre à jour NERON"
   },
   "queue": {
     "label": "Vos actions",
@@ -484,7 +495,9 @@
     "microwave": "Micro-onde",
     "corpse": "Corps",
     "myco_alarm": "Mycoalarme",
-    "tree_pot": "HydroPot"
+    "tree_pot": "HydroPot",
+    "mush_floppy_disk": "Disquette du génome Mush",
+    "mush_sample": "Souche de test Mush"
   },
   "logEvent": {
     "actionCostChanged": "Votre action en attente ({{action}}) a été annulée car son coût a changé : elle coûte maintenant {{ap}} PA et {{mp}} PM.",
@@ -558,7 +571,16 @@
     "mycoAlarmsBuilt": "Trois mycoalarmes ont été construites et laissées ici.",
     "titlePassed": "{{name}} est maintenant {{title}}.",
     "titleVacant": "Personne à bord ne peut prendre le titre {{title}} : il est vacant.",
-    "returnedToSol": "{{name}} a fait voyager le Daedalus sur Sol."
+    "returnedToSol": "{{name}} a fait voyager le Daedalus sur Sol.",
+    "solLinked": "Vous avez établi le contact avec Sol.",
+    "solFailed": "Vous n'avez pas réussi à établir le contact avec Sol.",
+    "rebelDecoded": "Vous avez décodé une partie du signal de {{base}} : {{percent}} % décodé.",
+    "rebelContacted": "Vous avez décodé tout le signal : contact établi avec {{base}}.",
+    "xylophContacted": "Vous avez contacté Xyloph : {{entry}}",
+    "neronUpdating": "Vous avez travaillé à la mise à jour de NERON : {{percent}} % effectué.",
+    "neronUpdated": "NERON passe en version {{version}}.",
+    "neronUpdatedProject": "NERON passe en version {{version}}. Le projet {{project}} est terminé.",
+    "rebelCalling": "NERON : une base rebelle, {{base}}, tente de contacter le Daedalus."
   },
   "skills": {
     "title": "Choisir une compétence",
@@ -894,6 +916,69 @@
       "roland": "Humoriste pilote de chasse à ses heures",
       "stephen": "Cuisinier le plus dangereux de la galaxie",
       "terrence": "Technophile désabusé motorisé"
+    }
+  },
+  "comms": {
+    "linked": "Contact avec Sol établi.",
+    "unlinked": "Aucun contact avec Sol.",
+    "solChance": "Qualité du signal : {{percent}} %",
+    "linkNeeded": "Décoder, contacter Xyloph et mettre à jour NERON demandent le contact avec Sol.",
+    "officerOnly": "Seul le Responsable Communications peut décoder les signaux, contacter Xyloph et mettre à jour NERON.",
+    "rebelsTitle": "Bases rebelles",
+    "noRebels": "Aucune base rebelle n'a encore appelé.",
+    "rebelOpen_one": "{{percent}} % décodé. Le signal sera perdu dans {{count}} cycle.",
+    "rebelOpen_many": "{{percent}} % décodé. Le signal sera perdu dans {{count}} cycles.",
+    "rebelOpen_other": "{{percent}} % décodé. Le signal sera perdu dans {{count}} cycles.",
+    "rebelLost": "Signal perdu.",
+    "rebelContacted": "Contactée.",
+    "xylophTitle": "Xyloph",
+    "xylophDesc": "Le port d'attache du Daedalus. Que reste-t-il là-bas…",
+    "xylophLeft_one": "{{count}} donnée restante dans la base.",
+    "xylophLeft_many": "{{count}} données restantes dans la base.",
+    "xylophLeft_other": "{{count}} données restantes dans la base.",
+    "xylophDone": "Il n'y a plus rien à trouver dans la base de données de Xyloph.",
+    "neronTitle": "Mise à jour de NERON",
+    "neronVersion": "NERON version {{version}}",
+    "neronProgress": "{{percent}} % vers la prochaine mise à jour. Chaque mise à jour termine un projet NERON.",
+    "rebels": {
+      "WOLF": {
+        "name": "Enfants Perdus de Wolf",
+        "effect": "Pas encore d'effet."
+      },
+      "SIRIUS": {
+        "name": "Mages noirs de Sirius",
+        "effect": "Les rations rapportent 1 PA supplémentaire."
+      },
+      "CENTAURI": {
+        "name": "Amants de Centauri",
+        "effect": "Pas encore d'effet."
+      },
+      "KALADAAN": {
+        "name": "Fondateurs de Kaladaan",
+        "effect": "+6 de moral à tout l'équipage."
+      },
+      "LUYTEN_CETI": {
+        "name": "Ombres de Luyten-Ceti",
+        "effect": "Les équipiers n'ont plus besoin de Talky-Walky pour les communications distantes."
+      },
+      "CYGNI": {
+        "name": "Aurores de Cygni",
+        "effect": "+3 de moral à tout l'équipage."
+      }
+    },
+    "xyloph": {
+      "NOTHING": "Donnée corrompue. Rien à en tirer…",
+      "SNOW_CRASH": "De la neige… Votre écran est couvert de neige grésillante. La liaison est perdue.",
+      "WIREFLESS_INFIDELITY": "Infidélité du sans-fil… La liaison est perdue et le signal bien plus faible.",
+      "MUSH_GENOME_DATA": "Génome. Une disquette du génome Mush a été imprimée sur le pont.",
+      "LOST_ANALYSIS": "L'analyse perdue de Finola. L'état d'infection de l'équipage au départ.",
+      "NILS_CARLSSON_CONTACT": "Contact avec Nils Carlsson ! Une souche de test Mush a été imprimée sur le pont.",
+      "NERON_BOOST": "Accès à la base de données perdue de NERON. La mise à jour de NERON avance.",
+      "KIVANC_TERZI_CONTACT": "Contact avec Kivanç Terzi rétabli ! Le décodage des signaux rebelles va plus vite.",
+      "COOK_BIBLE": "Le Labrousse de Cuisine édition 2830. Un Apprentron de cuisinier a été imprimé sur le pont.",
+      "ZONG_CHUN_SAMPLE": "Codex du génome de Zong Chun. Le laboratoire dispose maintenant de son génome.",
+      "SCHOOL_MANUALS": "Manuels scolaires. Deux Apprentrons ont été imprimés sur le pont.",
+      "WORKSHOP_MANUALS": "Manuel de l'atelier. Trois plans ont été imprimés sur le pont."
     }
   }
 }

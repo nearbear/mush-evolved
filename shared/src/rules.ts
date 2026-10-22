@@ -23,6 +23,7 @@ import { activitySeen, logPrivate } from "./log.ts";
 import { ringMycoAlarms } from "./mycoalarm.ts";
 import { planetsOf } from "./planets.ts";
 import { pilgredTerminalsHere } from "./pilgred.ts";
+import { callNextRebel, commsCycle, commsTerminalView, comTerminalsHere, newComms } from "./comms.ts";
 import { burnOxygen, shipMax, startShip } from "./ship.ts";
 import { SUCCESSION, TITLE_IDS, assignTitles } from "./titles.ts";
 import type {
@@ -127,8 +128,11 @@ export function createGame(
     nextPlanetId: 1,
     // Issued with Mush selection, whatever the role (owner, 2026-10-13 and 2026-10-20).
     titles: assignTitles(players),
+    comms: newComms(config),
     now: 0,
   };
+  // Mush selection: the first rebel base calls now (owner, 2026-10-21).
+  callNextRebel(state);
   grantCarePoints(state); // day 1 begins now
   return state;
 }
@@ -272,6 +276,7 @@ function advanceCycle(state: GameState): void {
   }
   cycleChanged(state);
   burnOxygen(state);
+  commsCycle(state);
   const { cyclesPerDay } = state.config;
   const newDay = (state.cycle - 1) % cyclesPerDay === 0;
   if (newDay) {
@@ -412,6 +417,7 @@ export function viewFor(state: GameState, playerId: PlayerId): PlayerView {
     projects: { ...state.projects },
     // Only at the PILGRED terminal: the living in a room that has one (owner, 2026-10-21).
     pilgred: you.alive && pilgredTerminalsHere(state, you).length > 0 ? state.pilgred.progress : null,
+    comms: { linked: state.comms.linked, terminal: you.alive && comTerminalsHere(state, you).length > 0 ? commsTerminalView(state) : null },
     // Your own planets only, and only the tags an analysis revealed (owner, 2026-10-19).
     planets: planetsOf(state, playerId).map((p) => ({ id: p.id, name: p.name, sectors: p.sectors.map((s) => (s.known ? s.tag : null)) })),
     titles: TITLE_IDS.map((id) => {
