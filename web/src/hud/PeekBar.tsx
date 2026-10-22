@@ -37,8 +37,8 @@ export function PeekBar({
   if (door) {
     const canGo = reachable.has(door);
     return (
-      <Bar heading={`Door to ${names.room(door)}`} sub={canGo ? undefined : "No access"}>
-        {canGo && <button type="button" onClick={() => onMove(door)}>Go</button>}
+      <Bar heading={t("peek.doorTo", { room: names.room(door) })} sub={canGo ? undefined : t("peek.noAccess")}>
+        {canGo && <button type="button" onClick={() => onMove(door)}>{t("common.go")}</button>}
       </Bar>
     );
   }
@@ -75,11 +75,12 @@ function Bar({
   isBot?: boolean;
   children: ReactNode;
 }) {
+  const { t } = useTranslation();
   return (
-    <div className="peek-bar" role="region" aria-label="Selection">
+    <div className="peek-bar" role="region" aria-label={t("peek.selection")}>
       <div className="peek-name">
         <strong>{heading}</strong>
-        {isBot && <span className="tag">AI</span>}
+        {isBot && <span className="tag">{t("common.ai")}</span>}
         {sub && <div className="sub">{sub}</div>}
       </div>
       <div className="peek-actions">{children}</div>

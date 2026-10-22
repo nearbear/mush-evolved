@@ -1,4 +1,13 @@
 {
+  "topBar": {
+    "endCycle": "End cycle",
+    "waiting": "Waiting…",
+    "waitingForOthers": "Waiting for others…",
+    "leave": "Leave"
+  },
+  "credits": {
+    "text": "Art from <mush>Mush</mush> by Motion Twin (<archive>WebGamesArchives</archive>), licensed <license>CC BY-NC-SA 4.0</license>. Adapted. Not affiliated with Motion Twin."
+  },
   "menu": {
     "open": "Menu"
   },
@@ -11,6 +20,9 @@
     "alerts": "Alerts"
   },
   "peek": {
+    "doorTo": "Door to {{room}}",
+    "noAccess": "No access",
+    "selection": "Selection",
     "more": "More"
   },
   "stat": {
@@ -55,6 +67,9 @@
     "label": "Language"
   },
   "common": {
+    "go": "Go",
+    "ai": "AI",
+    "loadingShip": "Loading ship…",
     "connecting": "Connecting…",
     "chair": "Chair"
   },
@@ -68,6 +83,11 @@
     "noWebgl": "Your browser can't draw the game: it needs WebGL 2. Turn on hardware acceleration in your browser settings, update your browser or graphics drivers, or try another browser or device."
   },
   "minimap": {
+    "title": "Ship map",
+    "close": "Close map",
+    "youAreHere": "You are here",
+    "nobodyHere": "Nobody here",
+    "selectRoom": "Select a room",
     "unidentified": "Unidentified",
     "unidentifiedCount": "{{count}} unidentified"
   },
@@ -78,6 +98,10 @@
     "itrackie": "iTrackie"
   },
   "inventory": {
+    "inRoom": "In this room",
+    "nothingHere": "Nothing here.",
+    "title": "Inventory",
+    "emptySlot": "Empty slot",
     "button": "Inventory",
     "buttonCount_one": "Inventory ({{count}} item in this room)",
     "buttonCount_other": "Inventory ({{count}} items in this room)"
@@ -231,6 +255,19 @@
     "bodyMush": "You can still read global chat, the feature threads and the Mush channel, but you can no longer post there. You can talk with the other dead in the Graveyard."
   },
   "itrackie": {
+    "needITrackieRead": "You need an iTrackie in your inventory to read this.",
+    "noMessages": "No messages yet.",
+    "chatNeedsITrackie": "Needs an iTrackie",
+    "chatMessage": "Chat message",
+    "send": "Send",
+    "nothingTracked": "Nothing tracked yet.",
+    "removeNote": "Remove \"{{note}}\"",
+    "trackPlaceholder": "Track something…",
+    "newTrackerLine": "New tracker line",
+    "add": "Add",
+    "globalPlaceholder": "Message everyone…",
+    "featurePlaceholder": "Message the {{name}} thread…",
+    "needITrackieTrack": "You need an iTrackie in your inventory to track anything.",
     "ago": {
       "lessThanMinute": "<1min ago",
       "minutes": "{{count}}min ago",

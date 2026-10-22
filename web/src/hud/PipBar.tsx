@@ -1,5 +1,6 @@
 // The frame pieces are vector redraws of pabar.png (CC BY-NC-SA, see Mush/ATTRIBUTION.md), in sprite pixels.
 // They fill with currentColor, so the bar is tinted from CSS (`color` on .pip-bar).
+import { useTranslation } from "react-i18next";
 import { Popover } from "@base-ui/react/popover";
 import capEnd from "../../../Mush/derived/pip-bar/cap-end.svg?raw";
 import capStart from "../../../Mush/derived/pip-bar/cap-start.svg?raw";
@@ -30,12 +31,13 @@ export function PipBar({
   /** For the 3px-wide life/morale pips, which use a narrower slot. */
   thin?: boolean;
 }) {
+  const { t } = useTranslation();
   const slots = Math.max(max, value);
   const pitch = thin ? 4 : 6;
   const pipW = thin ? 3 : 5;
   const width = CAP_START + slots * pitch + 4;
   return (
-    <span className={thin ? "pip-bar thin" : "pip-bar"} role="group" aria-label={`${label}: ${value} of ${max}`}>
+    <span className={thin ? "pip-bar thin" : "pip-bar"} role="group" aria-label={t("stat.chip", { label, value, max })}>
       {icon === undefined ? (
         <span className="pip-label">{label}</span>
       ) : (

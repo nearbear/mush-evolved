@@ -99,7 +99,7 @@ export function Minimap({
     <section
       className={`minimap${expanded ? " expanded" : ""}`}
       style={{ "--cols": plan.width } as CSSProperties}
-      aria-label="Ship map"
+      aria-label={t("minimap.title")}
       onPointerEnter={(e) => mouse(e) && setHovering(true)}
       onPointerLeave={(e) => {
         if (!mouse(e)) return;
@@ -173,22 +173,22 @@ export function Minimap({
               {selected && (
                 <div className="sub">
                   {selected === here
-                    ? "You are here"
+                    ? t("minimap.youAreHere")
                     : occupants.length || strangers
                       ? [
                           ...occupants.map((p) => names.character(p.character)),
                           ...(strangers ? [t("minimap.unidentifiedCount", { count: strangers })] : []),
                         ].join(", ")
-                      : "Nobody here"}
+                      : t("minimap.nobodyHere")}
                 </div>
               )}
             </div>
           ) : (
-            <span className="sub minimap-name">Select a room</span>
+            <span className="sub minimap-name">{t("minimap.selectRoom")}</span>
           )}
-          {selected && reachable.has(selected) && <button type="button" onClick={() => onMove(selected)}>Go</button>}
+          {selected && reachable.has(selected) && <button type="button" onClick={() => onMove(selected)}>{t("common.go")}</button>}
           {(selected || opened) && (
-            <button type="button" className="close" onClick={close} aria-label="Close map">
+            <button type="button" className="close" onClick={close} aria-label={t("minimap.close")}>
               ×
             </button>
           )}

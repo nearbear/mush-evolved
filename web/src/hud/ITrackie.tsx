@@ -144,7 +144,7 @@ export function ITrackie({
           </Tabs.Panel>
 
           <Tabs.Panel className="itrackie-panel" value="global" keepMounted>
-            <Thread view={view} channel="global" placeholder="Message everyone…" onSend={(text) => onChat("global", text)} onToggle={onToggle} threadLinks={threadLinks} />
+            <Thread view={view} channel="global" placeholder={t("itrackie.globalPlaceholder")} onSend={(text) => onChat("global", text)} onToggle={onToggle} threadLinks={threadLinks} />
           </Tabs.Panel>
 
           <Tabs.Panel className="itrackie-panel" value="threads" keepMounted>
@@ -179,12 +179,12 @@ export function ITrackie({
                 {!alive ? null : carrying ? (
                   <Tracker notes={notes[f]} onChange={(next) => setNotes((all) => ({ ...all, [f]: next }))} />
                 ) : (
-                  <p className="sub">You need an iTrackie in your inventory to track anything.</p>
+                  <p className="sub">{t("itrackie.needITrackieTrack")}</p>
                 )}
                 <Thread
                   view={view}
                   channel={f}
-                  placeholder={`Message the ${name} thread…`}
+                  placeholder={t("itrackie.featurePlaceholder", { name })}
                   onSend={(text) => onChat(f, text)}
                   onToggle={onToggle}
                 />

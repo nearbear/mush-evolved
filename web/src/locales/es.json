@@ -1,4 +1,13 @@
 {
+  "topBar": {
+    "endCycle": "Terminar el ciclo",
+    "waiting": "Esperando…",
+    "waitingForOthers": "Esperando a los demás…",
+    "leave": "Salir"
+  },
+  "credits": {
+    "text": "Arte de <mush>Mush</mush> de Motion Twin (<archive>WebGamesArchives</archive>), con licencia <license>CC BY-NC-SA 4.0</license>. Adaptado. Sin afiliación con Motion Twin."
+  },
   "menu": {
     "open": "Menú"
   },
@@ -11,6 +20,9 @@
     "alerts": "Alertas"
   },
   "peek": {
+    "doorTo": "Puerta a {{room}}",
+    "noAccess": "Sin acceso",
+    "selection": "Selección",
     "more": "Más"
   },
   "stat": {
@@ -55,6 +67,9 @@
     "label": "Idioma"
   },
   "common": {
+    "go": "Ir",
+    "ai": "IA",
+    "loadingShip": "Cargando la nave…",
     "connecting": "Conectando…",
     "chair": "Silla"
   },
@@ -68,6 +83,11 @@
     "noWebgl": "Tu navegador no puede mostrar el juego: necesita WebGL 2. Activa la aceleración por hardware en los ajustes del navegador, actualiza el navegador o los controladores gráficos, o prueba otro navegador o dispositivo."
   },
   "minimap": {
+    "title": "Mapa de la nave",
+    "close": "Cerrar el mapa",
+    "youAreHere": "Estás aquí",
+    "nobodyHere": "No hay nadie aquí",
+    "selectRoom": "Elige una sala",
     "unidentified": "Sin identificar",
     "unidentifiedCount": "{{count}} sin identificar"
   },
@@ -78,6 +98,10 @@
     "itrackie": "iTrackie"
   },
   "inventory": {
+    "inRoom": "En esta sala",
+    "nothingHere": "No hay nada aquí.",
+    "title": "Inventario",
+    "emptySlot": "Espacio vacío",
     "button": "Inventario",
     "buttonCount_one": "Inventario ({{count}} objeto en esta sala)",
     "buttonCount_many": "Inventario ({{count}} objetos en esta sala)",
@@ -232,6 +256,19 @@
     "bodyMush": "Todavía puedes leer el chat global, los hilos de funciones y el canal Mush, pero ya no puedes escribir allí. Puedes hablar con los demás muertos en el Cementerio."
   },
   "itrackie": {
+    "needITrackieRead": "Necesitas un iTrackie en tu inventario para leer esto.",
+    "noMessages": "Aún no hay mensajes.",
+    "chatNeedsITrackie": "Requiere un iTrackie",
+    "chatMessage": "Mensaje",
+    "send": "Enviar",
+    "nothingTracked": "Aún no se sigue nada.",
+    "removeNote": "Quitar «{{note}}»",
+    "trackPlaceholder": "Seguir algo…",
+    "newTrackerLine": "Nueva línea de seguimiento",
+    "add": "Añadir",
+    "globalPlaceholder": "Escribe a todos…",
+    "featurePlaceholder": "Escribe en el hilo {{name}}…",
+    "needITrackieTrack": "Necesitas un iTrackie en tu inventario para rastrear algo.",
     "ago": {
       "lessThanMinute": "hace <1min",
       "minutes": "hace {{count}}min",

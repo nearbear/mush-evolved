@@ -42,7 +42,7 @@ export function InspectPanel({
   return (
     <aside className="panel inspect">
       <div className="panel-head">
-        <h2>Inspect</h2>
+        <h2>{t("nav.inspect")}</h2>
       </div>
       <div className="inspect-body">
       {resolved && (

@@ -2,7 +2,7 @@
 // On phones the summary lives in the top bar instead. Items are in the room view's InventoryOverlay.
 
 import { Popover } from "@base-ui/react/popover";
-import { useTranslation } from "react-i18next";
+import { Trans, useTranslation } from "react-i18next";
 import { RESOURCE_IDS, type Action, type PlayerView, type TitleView } from "@mush2/shared";
 import { RESOURCE_ICONS, SPORE_ICON, TITLE_ICONS } from "../art/assets.ts";
 import { useNames } from "../i18n/names.ts";
@@ -109,9 +109,14 @@ function TitleChip({ entry: title }: { entry: TitleView }) {
 function Credits() {
   return (
     <footer className="credits">
-      Art from <em>Mush</em> by Motion Twin (
-      <a href="https://github.com/motion-twin/WebGamesArchives">WebGamesArchives</a>), licensed{" "}
-      <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a>. Adapted. Not affiliated with Motion Twin.
+      <Trans
+        i18nKey="credits.text"
+        components={{
+          mush: <em />,
+          archive: <a href="https://github.com/motion-twin/WebGamesArchives" />,
+          license: <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" />,
+        }}
+      />
     </footer>
   );
 }

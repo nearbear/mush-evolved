@@ -44,14 +44,14 @@ export function TopBar({
   const [settingsOpen, setSettingsOpen] = useState(false);
   const endCycleLabel = you.ready ? (
     <>
-      Waiting<span className="wide-only"> for others</span>…
+      {mobile ? t("topBar.waiting") : t("topBar.waitingForOthers")}
     </>
   ) : (
-    "End cycle"
+    t("topBar.endCycle")
   );
   // Ready can't be offered while you already are, so the button stays (disabled, "Waiting…") until the cycle ends.
   const showReady = canReady || you.ready;
-  const leaveLabel = "Leave";
+  const leaveLabel = t("topBar.leave");
   return (
     <header className="top-bar">
       {showSummary && <PlayerSummary view={view} compact countdown={nextCycleAt !== null && <CycleCountdown nextCycleAt={nextCycleAt} clockOffset={clockOffset} />} />}

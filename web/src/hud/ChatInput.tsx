@@ -78,11 +78,11 @@ export function ChatInput({ enabled, placeholder, onSend }: { enabled: boolean; 
         }}
         style={previewing ? undefined : { height }}
         maxLength={MAX_CHAT_LENGTH}
-        placeholder={enabled ? placeholder : "Needs an iTrackie"}
+        placeholder={enabled ? placeholder : t("itrackie.chatNeedsITrackie")}
         disabled={!enabled}
-        aria-label="Chat message"
+        aria-label={t("itrackie.chatMessage")}
       />
-      <button className="chat-send" type="submit" disabled={!enabled || !text.trim()} aria-label="Send" />
+      <button className="chat-send" type="submit" disabled={!enabled || !text.trim()} aria-label={t("itrackie.send")} />
     </form>
   );
 }

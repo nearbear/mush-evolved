@@ -39,7 +39,7 @@ function nextGuestName(): string {
   } catch {
     n = Date.now() % 1000; // storage blocked: still give a distinct-ish name
   }
-  return `Guest ${n + 1}`;
+  return `Guest ${n + 1}`; // i18n-ignore: a player name, stored by the server
 }
 
 export function Lobby({ onMatched }: { onMatched: (ticket: SeatTicket) => void }) {
@@ -112,7 +112,7 @@ export function Lobby({ onMatched }: { onMatched: (ticket: SeatTicket) => void }
       <div className="pod-window" ref={pod}>
         <section className="kit-box pod-panel">
         <h1 className="pod-title">
-          <img className="pod-logo" src={logoUrl} alt="mush2" />
+          <img className="pod-logo" src={logoUrl} alt="mush2" /> {/* i18n-ignore: product name */}
         </h1>
         {/*
           All steps stay rendered in one grid cell and only the current one is visible,

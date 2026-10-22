@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import type PartySocket from "partysocket";
 import { CORPSE_ITEM, legalIn, type Action, type ActopiCheat, type CharacterId, type Cheat, type GameClientMessage, type GameServerMessage, type PlayerView, type RoleCheat, type RoomId, type Spot, type Target } from "@mush2/shared";
 import i18n from "i18next";
+import { useTranslation } from "react-i18next";
 import { ActionQueue } from "./hud/ActionQueue.tsx";
 import { BottomNav, type MobilePanel } from "./hud/BottomNav.tsx";
 import { DeathNotice } from "./hud/DeathNotice.tsx";
@@ -33,6 +34,7 @@ import { useMobile } from "./useMobile.ts";
 const NO_CHAT: PlayerView["chat"] = [];
 
 export function GameScreen({ ticket, onLeave }: { ticket: SeatTicket; onLeave: () => void }) {
+  const { t } = useTranslation();
   const [view, setView] = useState<PlayerView | null>(null);
   const [cheatsAllowed, setCheatsAllowed] = useState(false);
   /** Server clock minus ours, from each view message, so action bars (server ms) drain at the right moment. */
@@ -108,7 +110,7 @@ export function GameScreen({ ticket, onLeave }: { ticket: SeatTicket; onLeave: (
 
   const bubbles = useSpeechBubbles(view?.chat ?? NO_CHAT);
 
-  if (!view) return <main className="connecting loading">Connecting…</main>;
+  if (!view) return <main className="connecting loading">{t("common.connecting")}</main>;
   const { you } = view;
   const reachable = new Set(legalIn(view).flatMap((a) => (a.type === "move" ? [a.to] : [])));
   const occupant = (p: { id: string; isBot: boolean; character: CharacterId; statuses: string[]; busy?: Bar; lying?: string; spot?: Spot }): Occupant => {
@@ -207,7 +209,7 @@ export function GameScreen({ ticket, onLeave }: { ticket: SeatTicket; onLeave: (
                 clockOffset={clockOffset}
               />
             ) : (
-              <section className="iso-room loading">Loading ship…</section>
+              <section className="iso-room loading">{t("common.loadingShip")}</section>
             )}
             {you.alive && <ActionQueue view={view} onClear={() => post({ type: "clearQueue" })} />}
             {you.alive && <InventoryOverlay view={view} selected={target} onAction={send} onSelect={select} />}

@@ -48,8 +48,8 @@ export function Thread({
       <Scroller items={messages.length}>
         <ol className="feed">
           {readable && head}
-          {!readable && <li className="sub">You need an iTrackie in your inventory to read this.</li>}
-          {readable && messages.length === 0 && <li className="sub">No messages yet.</li>}
+          {!readable && <li className="sub">{t("itrackie.needITrackieRead")}</li>}
+          {readable && messages.length === 0 && <li className="sub">{t("itrackie.noMessages")}</li>}
           {messages.map((m, i) => {
             const thread = threadLinks && !m.system ? view.threads.find((th) => th.from === m.id) : undefined;
             return (
@@ -104,6 +104,7 @@ export function MessageEntry({
   className?: string;
   children?: ReactNode;
 }) {
+  const { t } = useTranslation();
   const names = useNames();
   if (m.system) {
     return (
@@ -120,7 +121,7 @@ export function MessageEntry({
       name={
         <>
           <strong className={m.from === view.you.id ? "me" : undefined}>{names.character(character ?? "")}</strong>
-          {m.isBot && <span className="tag">AI</span>}
+          {m.isBot && <span className="tag">{t("common.ai")}</span>}
         </>
       }
       at={m.at}

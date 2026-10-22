@@ -5,6 +5,7 @@
 // tile takes or drops it directly.
 
 import { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useNames } from "../i18n/names.ts";
 import { legalIn, type Action, type ItemView, type PlayerView, type Target } from "@mush2/shared";
 import { ItemFace } from "./ItemFace.tsx";
@@ -45,6 +46,7 @@ export function InventoryPanel({
   onSelect: (target: Target) => void;
 }) {
   const names = useNames();
+  const { t } = useTranslation();
   const [dragging, setDragging] = useState<{ id: string; from: Zone } | null>(null);
   const [over, setOver] = useState<Zone | null>(null);
 
@@ -112,7 +114,7 @@ export function InventoryPanel({
         </button>
         {isSelected && legal(type, item) && (
           <button type="button" className="item-action" onClick={() => onAction({ type, item: item.id })}>
-            {zone === "room" ? "Take" : "Drop"}
+            {zone === "room" ? t("actions.take") : t("actions.drop")}
           </button>
         )}
       </li>
@@ -123,9 +125,9 @@ export function InventoryPanel({
   return (
     <div className="self-cards">
       <section {...zoneProps("room")} data-zone="room">
-        <h2>In this room</h2>
+        <h2>{t("inventory.inRoom")}</h2>
         {view.roomItems.length === 0 ? (
-          <p className="sub">Nothing here.</p>
+          <p className="sub">{t("inventory.nothingHere")}</p>
         ) : (
           <ul className="item-grid" ref={roomGrid.ref} data-compact={roomGrid.compact || undefined}>
             {view.roomItems.map((item) => tile(item, "room"))}
@@ -134,13 +136,13 @@ export function InventoryPanel({
       </section>
 
       <section {...zoneProps("inventory")} data-zone="inventory">
-        <h2>Inventory</h2>
+        <h2>{t("inventory.title")}</h2>
         <ul className="item-grid">
           {view.inventory.map((item) => tile(item, "inventory"))}
           {Array.from({ length: empty }, (_, i) => (
             <li key={`empty-${i}`} className="item-slot">
               <span className="item-tile empty">
-                <ItemFace label="Empty slot">
+                <ItemFace label={t("inventory.emptySlot")}>
                   <span className="kit-slot big" />
                 </ItemFace>
               </span>
