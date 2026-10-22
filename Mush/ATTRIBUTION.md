@@ -25,7 +25,7 @@ the game's code import `derived/` by package name.
 This project is not affiliated with or endorsed by Motion Twin. "Mush" is used
 only to credit the source.
 
-`derived/pip-bar/*.svg` are hand-drawn vector redrawings of the AP bar frame
+`derived/pip-bar/*.svg` are generated from the pixels of the AP bar frame
 `www/img/design/pabar.png`, rotated to run horizontally and split into pieces
 so any slot count works. They are adaptations and are also licensed CC BY-NC-SA 4.0.
 

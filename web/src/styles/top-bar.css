@@ -77,13 +77,12 @@
 .faction-goals p {
   margin: 0.25rem 0 0;
 }
-/* AP / MP / HP / morale bars: a sideways slotted frame drawn in SVG (see PipBar.tsx), tinted by `color`. */
+/* AP / MP / HP / morale bars: a sideways slotted frame drawn in SVG from the sprite's pixels (see PipBar.tsx). */
 .pip-bar {
   --s: 2px; /* screen px per sprite px */
   display: flex;
   align-items: center;
   gap: 2px;
-  color: #3d5fc4;
 }
 .pip-frame {
   flex: none;
