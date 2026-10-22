@@ -102,6 +102,10 @@
     "room": "Room",
     "itrackie": "iTrackie"
   },
+  "zoom": {
+    "in": "Zoom in",
+    "out": "Zoom out"
+  },
   "inventory": {
     "inRoom": "In this room",
     "nothingHere": "Nothing here.",

@@ -9,16 +9,23 @@ import { TAB_ICONS } from "../art/assets.ts";
 import { Hint } from "./IconButton.tsx";
 import { InventoryPanel } from "./InventoryPanel.tsx";
 
+/** The magnifications the room view steps through. */
+export const ZOOM_STEPS = [1 / 2, 1, 2];
+
 export function InventoryOverlay({
   view,
   selected,
   onAction,
   onSelect,
+  zoom,
+  onZoom,
 }: {
   view: PlayerView;
   selected: Target;
   onAction: (action: Action) => void;
   onSelect: (target: Target) => void;
+  zoom: number;
+  onZoom: (zoom: number) => void;
 }) {
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
@@ -43,6 +50,7 @@ export function InventoryOverlay({
     };
   }, [open]);
 
+  const step = (dir: 1 | -1) => ZOOM_STEPS[ZOOM_STEPS.indexOf(zoom) + dir];
   const roomCount = view.roomItems.length;
   const label = roomCount > 0 ? t("inventory.buttonCount", { count: roomCount }) : t("inventory.button");
 
@@ -53,6 +61,18 @@ export function InventoryOverlay({
           <InventoryPanel view={view} selected={selected} onAction={onAction} onSelect={onSelect} />
         </section>
       )}
+      <div className="zoom-controls">
+        {(["in", "out"] as const).map((way) => {
+          const next = step(way === "in" ? 1 : -1);
+          return (
+            <Hint key={way} label={t(`zoom.${way}`)}>
+              <button type="button" className="zoom-button" aria-label={t(`zoom.${way}`)} disabled={next === undefined} onClick={() => next && onZoom(next)}>
+                {way === "in" ? "+" : "−"}
+              </button>
+            </Hint>
+          );
+        })}
+      </div>
       <Hint label={label}>
         <button
           type="button"

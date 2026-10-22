@@ -138,6 +138,7 @@ export function IsoRoom({
   onDoorTap,
   bubbles,
   clockOffset,
+  zoom,
 }: {
   layout: ShipLayout;
   room: RoomId;
@@ -148,6 +149,8 @@ export function IsoRoom({
   fogDepth: 1 | 2 | "all";
   /** Which renderer draws the room (a viewer setting). */
   renderer: RendererChoice;
+  /** Magnification of the drawn room (a viewer setting, 1 = one screen pixel per source pixel). */
+  zoom: number;
   /** Corpses on this room's floor (items, drawn lying down). A carried corpse isn't on the floor, so isn't here. */
   corpses: Corpse[];
   /** Equipment in this room, from the view. Only these sprites are clickable. */
@@ -405,8 +408,8 @@ export function IsoRoom({
     resize.observe(el);
     return () => resize.disconnect();
   }, [roomLayout]);
-  const camX = Math.round(panel.width / 2 - youX);
-  const camY = Math.round(panel.height / 2 - youY);
+  const camX = Math.round(panel.width / zoom / 2 - youX);
+  const camY = Math.round(panel.height / zoom / 2 - youY);
   /** Where the camera puts the world now: as rendered, shifted with you while you walk. */
   const cameraNow = () => {
     const o = me ? offsetOf(me.id) : { x: 0, y: 0 };
@@ -509,10 +512,10 @@ export function IsoRoom({
             title: action.title,
             you: action.kind === "person" && action.person.you,
             reachable: action.kind === "door" && reachable.has(action.to),
-            x: rect.left + cam.x - box.minX + s.left + o.x,
-            y: rect.top + cam.y - box.minY + s.top + o.y,
-            width: s.width,
-            height: s.height,
+            x: rect.left + (cam.x - box.minX + s.left + o.x) * zoom,
+            y: rect.top + (cam.y - box.minY + s.top + o.y) * zoom,
+            width: s.width * zoom,
+            height: s.height * zoom,
           }];
         });
       },
@@ -541,7 +544,7 @@ export function IsoRoom({
   const pointIn = (e: MouseEvent<HTMLElement>) => {
     const rect = viewportRef.current!.getBoundingClientRect();
     const cam = cameraNow();
-    return { x: e.clientX - rect.left - cam.x + box.minX, y: e.clientY - rect.top - cam.y + box.minY };
+    return { x: (e.clientX - rect.left) / zoom - cam.x + box.minX, y: (e.clientY - rect.top) / zoom - cam.y + box.minY };
   };
 
   /**
@@ -640,11 +643,14 @@ export function IsoRoom({
               </div>,
               document.body,
             )}
+          {/* Zoom scales a layer 1/zoom as big as the panel, so the room fills it at any magnification. */}
+          <div className="iso-zoom" style={{ width: `${100 / zoom}%`, height: `${100 / zoom}%`, transform: `scale(${zoom})` }}>
           <Suspense fallback={null}>
             <Renderer scene={drawn} ref={rendererRef} />
           </Suspense>
           {/* Status badges and speech bubbles above the scene, so no sprite or wall can ever cover them. */}
           <SceneOverlay anchors={anchors} width={drawn.width} height={drawn.height} bubbles={bubbles} clockOffset={clockOffset} ref={overlayRef} />
+          </div>
         </div>
       </div>
     </section>

@@ -40,6 +40,7 @@ export function GameScreen({ ticket, onLeave }: { ticket: SeatTicket; onLeave: (
   const [cheatsAllowed, setCheatsAllowed] = useState(false);
   /** Server clock minus ours, from each view message, so action bars (server ms) drain at the right moment. */
   const [clockOffset, setClockOffset] = useState(0);
+  const [zoom, setZoom] = useState(1);
   const [nextCycleAt, setNextCycleAt] = useState<number | null>(null);
   const names = useNames();
   const socketRef = useRef<PartySocket | null>(null);
@@ -194,6 +195,7 @@ export function GameScreen({ ticket, onLeave }: { ticket: SeatTicket; onLeave: (
                 corpses={corpses}
                 fogDepth={fogDepth}
                 renderer={ROOM_RENDERER}
+                zoom={zoom}
                 equipment={view.roomEquipment}
                 reachable={reachable}
                 selected={target}
@@ -214,7 +216,7 @@ export function GameScreen({ ticket, onLeave }: { ticket: SeatTicket; onLeave: (
               <section className="iso-room loading">{t("common.loadingShip")}</section>
             )}
             {you.alive && <ActionQueue view={view} onClear={() => post({ type: "clearQueue" })} />}
-            {you.alive && <InventoryOverlay view={view} selected={target} onAction={send} onSelect={select} />}
+            {you.alive && <InventoryOverlay view={view} selected={target} onAction={send} onSelect={select} zoom={zoom} onZoom={setZoom} />}
             {/* TODO(minimap): stubbed out for now, to be revisited. scene/Minimap.tsx still exists; render it here
                 with here={you.room} youId={you.id} people={[you, ...view.players]} unidentified={view.unidentified}
                 reachable={reachable} onMove={move}. */}

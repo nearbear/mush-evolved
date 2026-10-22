@@ -102,6 +102,10 @@
     "room": "Salle",
     "itrackie": "iTrackie"
   },
+  "zoom": {
+    "in": "Zoom avant",
+    "out": "Zoom arrière"
+  },
   "inventory": {
     "inRoom": "Dans cette pièce",
     "nothingHere": "Rien ici.",

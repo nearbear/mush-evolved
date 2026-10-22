@@ -48,6 +48,21 @@ button.inventory-toggle {
 .inventory-toggle img {
   image-rendering: pixelated;
 }
+/* Zoom buttons stacked above the sack, half its size, flush with its right edge. */
+.zoom-controls {
+  display: flex;
+  flex-direction: column;
+  align-self: flex-end;
+  gap: 0.125rem;
+}
+button.zoom-button {
+  width: 20px;
+  height: 18px;
+  margin: 0;
+  padding: 0;
+  font-size: 0.8rem;
+  line-height: 1;
+}
 /* How many items are on the floor here. */
 .inventory-badge {
   position: absolute;
