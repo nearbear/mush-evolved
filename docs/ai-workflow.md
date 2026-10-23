@@ -1109,3 +1109,10 @@ Not a deadlock: the run was just long enough to pass the 120 s and 300 s tool ti
 - Only listed slices animate (`AMBIENT_SLICES`); fogged neighbouring rooms stay still, as the cameras already did.
 
 Follow-up (same day): the three reactors pulsed in step, so `spreadAmbient` in `scene.ts` now starts each ambient sprite with the same frame count at a different frame (evenly spread, in paint order), by rotating its frames and their lengths. Deterministic, so every player sees the same phases relative to their own clock.
+
+## 2026-10-22: planet positions and day-based sizes
+
+- Decision (owner, via three multiple-choice questions): planets get a direction and a 2–9 fuel distance, unique ship-wide; distance follows eMush's tiers (two averaged rolls over 2–7, then 8, then 9); size grows 2–12 / 4–16 / 6–20 from days 1 / 5 / 10.
+- What worked: the wiki gave the outline, and a web-fetch agent read eMush's `PlanetService`, `RandomService` and `SpaceCoordinates` at tag 0.18.0 for the exact rules (truncating average, 32 coordinates). It also found that eMush loops forever when all 32 are taken; we refuse the scan instead.
+- Correction: the wiki pins the size growth to days, but eMush's code ties it to hard/very hard modes. The day thresholds come from the wiki.
+- Weighting only the free distances replaces eMush's reroll loop with the same distribution and no loop.

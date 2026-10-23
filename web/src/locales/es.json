@@ -881,6 +881,13 @@
     "scan": "Escanear",
     "analyze": "Analizar",
     "delete": "Borrar {{planet}}",
+    "position": "{{direction}}, a {{distance}} unidades de combustible",
+    "directions": {
+      "north": "Norte",
+      "west": "Oeste",
+      "south": "Sur",
+      "east": "Este"
+    },
     "tags": {
       "FOREST": "Bosque",
       "MOUNTAIN": "Montañas",

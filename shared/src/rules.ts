@@ -434,7 +434,13 @@ export function viewFor(state: GameState, playerId: PlayerId): PlayerView {
     comms: { linked: state.comms.linked, terminal: you.alive && comTerminalsHere(state, you).length > 0 ? commsTerminalView(state) : null },
     bios: you.alive && biosTerminalsHere(state, you).length > 0 ? { ...state.bios } : null,
     // Your own planets only, and only the tags an analysis revealed (owner, 2026-10-19).
-    planets: planetsOf(state, playerId).map((p) => ({ id: p.id, name: p.name, sectors: p.sectors.map((s) => (s.known ? s.tag : null)) })),
+    planets: planetsOf(state, playerId).map((p) => ({
+      id: p.id,
+      name: p.name,
+      direction: p.direction,
+      distance: p.distance,
+      sectors: p.sectors.map((s) => (s.known ? s.tag : null)),
+    })),
     titles: TITLE_IDS.map((id) => {
       const holder = state.players.find((p) => p.id === state.titles[id]);
       return {

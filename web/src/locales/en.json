@@ -877,6 +877,13 @@
     "scan": "Scan",
     "analyze": "Analyse",
     "delete": "Delete {{planet}}",
+    "position": "{{direction}}, {{distance}} fuel away",
+    "directions": {
+      "north": "North",
+      "west": "West",
+      "south": "South",
+      "east": "East"
+    },
     "tags": {
       "FOREST": "Forest",
       "MOUNTAIN": "Mountains",

@@ -41,6 +41,10 @@ The snapshot has no server code, so we have the data and the generator but not t
 - Client: the Astro terminal window lists your planets (name, size, tag icons or `tag_unknown`, a trash button) plus scan and analyse buttons from `view.actions`. Delete is reachable anywhere: the trash button needs a place outside the terminal window, so it works on a phone without walking to the terminal.
 - i18n: tag names and descriptions in en/fr/es (French from the sheet). Planet names stay as generated (French syllables, proper nouns).
 
+## Positions and sizes (owner, 2026-10-22)
+
+Planets now have a direction and a distance (2 to 9 fuel) unique on the ship, and grow with the day, following eMush's `PlanetService`. See the Planets bullet in `docs/implemented-rules.md`.
+
 ## Open questions
 
 None for discovery. Travel, orbit (`DEEP_PLANET_ANALYSIS`), and exploration (the per-tag events in `planetTags.json`) need their own decisions.

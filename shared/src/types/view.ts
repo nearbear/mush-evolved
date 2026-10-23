@@ -2,6 +2,7 @@ import type { ActionCost, ActionTag } from "../actions.ts";
 import type { CharacterId } from "../characters.ts";
 import type { BiosState } from "../bios.ts";
 import type { RebelBaseId } from "../comms.ts";
+import type { PlanetDirection } from "../planets.ts";
 import type { TitleId } from "../titles.ts";
 import type { Action, BotKind, ItemId, LogEntry, PlayerId, Role, RoomId } from "../types.ts";
 import type { ChannelId, ChatMessage, ChatThread, PrivateChannel } from "./chat.ts";
@@ -202,6 +203,9 @@ export interface ActionOption {
 export interface PlanetView {
   id: string;
   name: string;
+  direction: PlanetDirection;
+  /** In fuel. */
+  distance: number;
   sectors: (string | null)[];
 }
 

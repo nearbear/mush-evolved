@@ -1,6 +1,6 @@
 import type { BiosState } from "../bios.ts";
 import type { CommsState } from "../comms.ts";
-import type { PlanetTag } from "../planets.ts";
+import type { PlanetDirection, PlanetTag } from "../planets.ts";
 import type { RngState } from "../rng.ts";
 import type { TitleId } from "../titles.ts";
 import type { ItemState, LogEntry, PlayerId } from "../types.ts";
@@ -106,6 +106,9 @@ export interface Planet {
   id: string;
   /** Generated; a proper noun, not translated. */
   name: string;
+  /** Where it lies: no two planets on the ship share a direction and distance (in fuel). */
+  direction: PlanetDirection;
+  distance: number;
   /** In a fixed shuffled order; `known` once an analysis revealed the sector. */
   sectors: { tag: PlanetTag; known: boolean }[];
 }

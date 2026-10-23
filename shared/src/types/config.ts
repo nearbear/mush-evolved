@@ -201,6 +201,13 @@ export interface GameConfig {
     };
     analyze: { cost: { ap: number } }; // AP spent to reveal one sector of one of your planets (owner, 2026-10-19; the original's remote analysis, 2).
     maxPlanets: number; // Most planets one player can hold (owner, 2026-10-19).
+    // Where a planet lies (owner, 2026-10-22, eMush's PlanetService): one of 4 directions at `min` to `max` fuel, a position no other
+    // planet on the ship holds. The distance is two rolls over `min`..`nearMax` averaged (rounded down); `nearMax + 1` and up are
+    // used one at a time, only once every nearer position is taken.
+    distance: { min: number; nearMax: number; max: number };
+    // Sector counts by day (owner, 2026-10-22, the wiki's eMush hard and very hard modes): the last entry whose `fromDay` has come.
+    // Even sizes only, uniform from `min` to `max`.
+    sizeByDay: { fromDay: number; min: number; max: number }[];
   };
   accommodate: { cost: { ap: number }; offerMs: number }; // AP spent to offer to push someone's wheelchair, and how long (server ms) the offer waits to be accepted (owner, 2026-10-19: free, 5 minutes).
   lieDown: { cost: { ap: number } }; // AP spent to lie down in a bed (confirmed 2026-10-17).
