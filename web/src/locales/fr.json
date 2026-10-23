@@ -399,6 +399,8 @@
     "fromThem": "Lié à vous"
   },
   "status": {
+    "public": "Public : tous ceux qui sont dans la salle peuvent le voir.",
+    "private": "Privé : vous seul pouvez le voir.",
     "label": "Effets de statut",
     "dirty": "Sale",
     "full_belly": "Ventre plein",

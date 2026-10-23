@@ -399,6 +399,8 @@
     "fromThem": "Vinculado a ti"
   },
   "status": {
+    "public": "Público: todos en la sala pueden verlo.",
+    "private": "Privado: solo tú puedes verlo.",
     "label": "Efectos de estado",
     "dirty": "Sucio",
     "full_belly": "Barriga llena",

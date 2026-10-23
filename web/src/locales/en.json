@@ -397,6 +397,8 @@
     "fromThem": "Bonded to you"
   },
   "status": {
+    "public": "Public: everyone in the room can see this.",
+    "private": "Private: only you can see this.",
     "label": "Status effects",
     "dirty": "Dirty",
     "full_belly": "Full belly",
