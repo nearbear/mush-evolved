@@ -11,6 +11,19 @@ export interface MovementRules {
   mpCap: number; // MP can never exceed this.
 }
 
+/** One weapon's numbers (owner, 2026-10-22, from the English wiki; "??" values were set to 12%). */
+export interface WeaponStats {
+  damage: [min: number, max: number]; // HP a hit removes, rolled uniformly, both ends included.
+  mushDamage?: [min: number, max: number]; // Replaces `damage` when the target is a Mush (Natamy rifle).
+  accuracy: number; // Chance to hit, 0 to 1.
+  expoStrength: number; // Strength on expeditions. Recorded for later; nothing reads it yet.
+  charges?: number; // Charges it holds and starts with; each use spends one, and it can't be used at 0. Absent: unlimited.
+  area?: { selfDamage: [min: number, max: number] }; // Hits everyone in the room instead of one target; the attacker takes `selfDamage`.
+  consumed?: boolean; // Used up by using it (grenade).
+  dirtyChance: number; // Chance of getting dirty from using it.
+  repairChance: number | null; // Breakable, with this repair chance; null: it can't break. Breaking and repair aren't built.
+}
+
 export interface GameConfig {
   mushCount: number;
   startAp: number;
@@ -201,6 +214,12 @@ export interface GameConfig {
     cost: { ap: number }; // AP spent to dismantle an item (confirmed 2026-10-13).
     successChance: number; // Chance of successfully dismantling an item (confirmed 2026-10-13).
     dirtyChance: number; // Chance of getting the dirty status after dismantling an item (confirmed 2026-10-13).
+    itemChance: Record<string, number>; // Per item type odds that replace `successChance` (owner, 2026-10-22: knife and blaster 50%).
+  };
+  // Weapons (owner, 2026-10-22, from the English wiki). Using one is the `attack` action.
+  weapons: {
+    cost: { ap: number }; // AP spent per use, any weapon (the original's SHOOT and ATTACK: 1).
+    types: Record<string, WeaponStats>; // By item type.
   };
   creative: {
     refundOdds: number; // Chance that the Creative skill refunds 1 AP after a failed action that cost AP (confirmed 2026-10-15).

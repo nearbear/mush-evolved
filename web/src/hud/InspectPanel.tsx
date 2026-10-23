@@ -16,7 +16,7 @@ import { ActionLabel } from "./ActionLabel.tsx";
 import { SkillSlots } from "./SkillSlots.tsx";
 import { StatusIcons } from "./StatusIcons.tsx";
 import { ActionButton } from "./ActionButton.tsx";
-import { actionLabelKey, optionsOn, resolveTarget, type Resolved } from "./targets.ts";
+import { actionLabelKey, attackWeapon, optionsOn, resolveTarget, type Resolved } from "./targets.ts";
 
 export function InspectPanel({
   view,
@@ -32,9 +32,12 @@ export function InspectPanel({
   onAction: (action: Action) => void;
 }) {
   const { t } = useTranslation();
+  const names = useNames();
   const labelFor = ({ action, cost, chance }: ActionOption): ReactNode => {
     const key = actionLabelKey(action);
-    return <ActionLabel text={key ? t(key) : action.type} cost={cost} chance={chance} visibility={actionVisibility(action.type)} />;
+    const weapon = attackWeapon(view, action);
+    const text = weapon ? t("actions.attackWith", { weapon: names.itemOf(weapon) }) : key ? t(key) : action.type;
+    return <ActionLabel text={text} cost={cost} chance={chance} visibility={actionVisibility(action.type)} />;
   };
   const resolved = resolveTarget(view, target);
   const options = optionsOn(view, target);
@@ -53,7 +56,7 @@ export function InspectPanel({
       {options.length > 0 && (
         <div className="inspect-actions">
           {options.map((o) => (
-            <ActionButton key={o.action.type} view={view} option={o} onAction={onAction}>
+            <ActionButton key={JSON.stringify(o.action)} view={view} option={o} onAction={onAction}>
               {labelFor(o)}
             </ActionButton>
           ))}

@@ -21,8 +21,11 @@ export class DismantleAction extends Action<DismantleActionData> {
     return { ap: state.config.dismantle.cost.ap, mp: 0 };
   }
 
-  override getSuccessChance(state: Readonly<GameState>): number {
-    return state.config.dismantle.successChance;
+  /** The usual odds, unless the item's type has its own in `dismantle.itemChance` (knife and blaster, owner 2026-10-22). */
+  override getSuccessChance(state: Readonly<GameState>, player: Readonly<PlayerState>, target: DismantleActionData): number {
+    const { successChance, itemChance } = state.config.dismantle;
+    const type = "item" in target ? state.items.find((i) => i.id === target.item)?.type : undefined;
+    return (type !== undefined ? itemChance[type] : undefined) ?? successChance;
   }
 
   override dirtChance(state: Readonly<GameState>, player: Readonly<PlayerState>, target: DismantleActionData): number {
@@ -55,7 +58,7 @@ export class DismantleAction extends Action<DismantleActionData> {
   }
 
   override apply(state: GameState, player: PlayerState, target: DismantleActionData): void {
-    let scraps: { metal: number; plastic: number };
+    let scraps: { metal: number; plastic: number; extra?: string[] };
     if ("equipment" in target) {
       const list = state.config.equipment[player.room]!; // checked, so it exists
       const { type } = list.splice(list.findIndex((e) => e.id === target.equipment), 1)[0]!;
@@ -68,14 +71,8 @@ export class DismantleAction extends Action<DismantleActionData> {
       scraps = ITEM_TYPES[type]!.dismantle!;
       logPublic(state, player.room, "dismantled", { name: player.character, item: type });
     }
-    for (const [scrapType, amount] of [
-      ["metal_scraps", scraps.metal],
-      ["plastic_scraps", scraps.plastic],
-    ] as const) {
-      for (let i = 0; i < amount; i++) {
-        state.items.push({ id: `item-${state.nextItemId++}`, type: scrapType, at: { kind: "room", id: player.room } });
-      }
-    }
+    const left = [...Array<string>(scraps.metal).fill("metal_scraps"), ...Array<string>(scraps.plastic).fill("plastic_scraps"), ...(scraps.extra ?? [])];
+    for (const type of left) state.items.push({ id: `item-${state.nextItemId++}`, type, at: { kind: "room", id: player.room } });
   }
 }
 

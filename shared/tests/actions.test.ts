@@ -27,8 +27,8 @@ describe("action registry", () => {
     ]).toEqual([0.25, 0.05, 0.15, 0.05, 0.25, 0.1, 0.05, 0.05]);
   });
 
-  // Pins the full legal set for p0 at the start (Laboratory: wrench and
-  // blaster on the floor, an iTrackie in hand), so a check that is too loose
+  // Pins the full legal set for p0 at the start (Laboratory: a wrench and
+  // hydropots on the floor, an iTrackie in hand), so a check that is too loose
   // or too strict shows up here.
   it("offers exactly the legal actions at the start of a game", () => {
     const state = createGame(seats, DEFAULT_CONFIG, 1);
@@ -38,7 +38,6 @@ describe("action registry", () => {
       ...DEFAULT_CONFIG.rooms.LABORATORY!.map((to): Action => ({ type: "move", to })),
       ...floor.map((i): Action => ({ type: "take", item: i.id })),
       ...mine.map((i): Action => ({ type: "drop", item: i.id })),
-      { type: "dismantle", item: "item-2" },
       ...seats.map((s): Action => ({ type: "examine", target: { kind: "player", id: s.id } })),
       // Everyone starts in the Laboratory, so p0 can bond with the other three (DTT and STT need a bond first).
       ...seats.filter((s) => s.id !== "p0").map((s): Action => ({ type: "bond", target: s.id })),

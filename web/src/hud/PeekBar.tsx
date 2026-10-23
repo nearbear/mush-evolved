@@ -8,7 +8,7 @@ import { useNames } from "../i18n/names.ts";
 import { actionVisibility, type Action, type ActionOption, type PlayerView, type RoomId, type Target } from "@mush2/shared";
 import { ActionLabel } from "./ActionLabel.tsx";
 import { ActionButton } from "./ActionButton.tsx";
-import { actionLabelKey, optionsOn, resolveTarget } from "./targets.ts";
+import { actionLabelKey, attackWeapon, optionsOn, resolveTarget } from "./targets.ts";
 
 export function PeekBar({
   view,
@@ -32,7 +32,9 @@ export function PeekBar({
   const names = useNames();
   const labelFor = ({ action, cost, chance }: ActionOption): ReactNode => {
     const key = actionLabelKey(action);
-    return <ActionLabel text={key ? t(key) : action.type} cost={cost} chance={chance} visibility={actionVisibility(action.type)} />;
+    const weapon = attackWeapon(view, action);
+    const text = weapon ? t("actions.attackWith", { weapon: names.itemOf(weapon) }) : key ? t(key) : action.type;
+    return <ActionLabel text={text} cost={cost} chance={chance} visibility={actionVisibility(action.type)} />;
   };
   if (door) {
     const canGo = reachable.has(door);
@@ -53,7 +55,7 @@ export function PeekBar({
       {optionsOn(view, target)
         .filter((o) => o.action.type !== "examine")
         .map((o) => (
-        <ActionButton key={o.action.type} view={view} option={o} onAction={onAction}>
+        <ActionButton key={JSON.stringify(o.action)} view={view} option={o} onAction={onAction}>
           {labelFor(o)}
         </ActionButton>
       ))}

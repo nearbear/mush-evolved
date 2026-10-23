@@ -119,7 +119,24 @@ export const DEFAULT_CONFIG: GameConfig = {
   ship: { oxygen: { start: 30, max: 32, perCycle: 1 }, fuel: { start: 20, max: 100 }, hull: { start: 100, max: 100 }, plasmaShield: { start: 100, max: 100, absorbPercent: 67 } },
   hunger: { satietyPerCycle: 1, fullBellyAt: 3, hungryAfterCycles: 24, hpPerCycle: 1 },
   // Confirmed 2026-10-13: dismantle cost and odds.
-  dismantle: { cost: { ap: 3 }, successChance: 0.12, dirtyChance: 0.25 },
+  dismantle: { cost: { ap: 3 }, successChance: 0.12, dirtyChance: 0.25, itemChance: { knife: 0.5, blaster: 0.5 } },
+  // Owner, 2026-10-22, from the English wiki: 1 AP to use any weapon, carried. Repair and dismantle chances the wiki
+  // gives as "??" are 12%. Blaster 2-3 as listed; the rocket's "?-8" is 1-8 and its self-damage 1-4 (Claude's guess,
+  // accepted). Charged weapons start full. Not built: crits, injuries, a dropped knife, breaking equipment, NERON's Core Peace.
+  weapons: {
+    cost: { ap: 1 },
+    types: {
+      knife: { damage: [1, 5], accuracy: 0.6, expoStrength: 1, dirtyChance: 0.25, repairChance: 0.12 },
+      blaster: { damage: [2, 3], accuracy: 0.5, expoStrength: 1, charges: 3, dirtyChance: 0, repairChance: 0.12 },
+      natamy_riffle: { damage: [2, 4], mushDamage: [6, 13], accuracy: 0.5, expoStrength: 1, charges: 3, dirtyChance: 0, repairChance: 0.12 },
+      // Lizaro Jungle.
+      sniper_riffle: { damage: [3, 5], accuracy: 0.99, expoStrength: 1, charges: 1, dirtyChance: 0, repairChance: 0.12 },
+      // Old Faithful.
+      machine_gun: { damage: [2, 3], accuracy: 0.5, expoStrength: 2, charges: 12, dirtyChance: 0, repairChance: 0.12 },
+      missile_launcher: { damage: [1, 8], accuracy: 0.5, expoStrength: 3, charges: 1, area: { selfDamage: [1, 4] }, dirtyChance: 0, repairChance: 0.12 },
+      grenade: { damage: [0, 10], accuracy: 1, expoStrength: 3, area: { selfDamage: [0, 3] }, consumed: true, dirtyChance: 0, repairChance: null },
+    },
+  },
   // Confirmed 2026-10-15: nobody starts with a skill; players pick up to three
   // (SKILL_SLOTS) with the free, permanent pick_skill action.
   startSkills: [],
@@ -137,7 +154,11 @@ export const DEFAULT_CONFIG: GameConfig = {
   // PLACEHOLDER items with no effects, so there is something to pick up.
   startItems: [
     { type: "wrench", room: "LABORATORY" },
-    { type: "blaster", room: "LABORATORY" },
+    // Owner, 2026-10-22: the wiki's storage weapons (a knife, two blasters) and a grenade, in front storage.
+    { type: "knife", room: "STORAGE_FRONT" },
+    { type: "blaster", room: "STORAGE_FRONT" },
+    { type: "blaster", room: "STORAGE_FRONT" },
+    { type: "grenade", room: "STORAGE_FRONT" },
     { type: "medikit", room: "SICK_BAY" },
      { type: "apron", room: "SICK_BAY" },
     { type: "camera", room: "CORRIDOR_A" },

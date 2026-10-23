@@ -45,6 +45,7 @@ export function actionTarget(a: Action): Target | null {
   if (a.type === "bond" || a.type === "dtt" || a.type === "stt" || a.type === "heal" || a.type === "punch" || a.type === "spike" || a.type === "accommodate" || a.type === "accept_accommodation") {
     return { kind: "player", id: a.target };
   }
+  if (a.type === "attack") return "target" in a ? { kind: "player", id: a.target } : { kind: "item", id: a.weapon };
   return null;
 }
 
@@ -79,6 +80,9 @@ function aimedAt(view: PlayerView, a: Action, target: Target): boolean {
     // On the pushed person: Terrence ends it from his own panel, the pusher from his.
     case "stop_accommodation":
       return target.kind === "player" && a.target === target.id;
+    // At the person, or, for an area weapon, on the weapon itself.
+    case "attack":
+      return "target" in a ? target.kind === "player" && a.target === target.id : target.kind === "item" && a.weapon === target.id;
     case "extract_spore":
     case "get_up":
       return target.kind === "player" && target.id === view.you.id;
@@ -114,6 +118,10 @@ const ACTION_LABEL_KEYS = {
   accept_accommodation: "actions.acceptAccommodation",
   stop_accommodation: "actions.stopAccommodation",
 } as const;
+
+/** The carried weapon an attack uses, for its button text ("Attack with the knife"); a carried weapon is in the inventory. */
+export const attackWeapon = (view: PlayerView, action: Action): ItemView | undefined =>
+  action.type === "attack" ? view.inventory.find((i) => i.id === action.weapon) : undefined;
 
 /** i18n key for the button text of an action aimed at a target (Inspect panel and peek bar). */
 export const actionLabelKey = (action: Action) => (ACTION_LABEL_KEYS as Partial<Record<Action["type"], string>>)[action.type] as

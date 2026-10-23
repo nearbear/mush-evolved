@@ -31,6 +31,7 @@ import { JettisonAction } from "./actions/jettison.ts";
 import { PickSkillAction } from "./actions/pick_skill.ts";
 import { ReadBookAction } from "./actions/read_book.ts";
 import { PunchAction } from "./actions/punch.ts";
+import { AttackAction } from "./actions/attack.ts";
 import { ShareAction } from "./actions/share.ts";
 import { GetUpAction, LieDownAction } from "./actions/lie_down.ts";
 import { ShowerAction } from "./actions/shower.ts";
@@ -109,6 +110,7 @@ export const ACTIONS: { [T in ActionType]: ActionDef<ActionOf<T>> } = {
   shower: new ShowerAction(),
   heal: new HealAction(),
   punch: new PunchAction(),
+  attack: new AttackAction(),
   pick_skill: new PickSkillAction(),
   read_book: new ReadBookAction(),
 };

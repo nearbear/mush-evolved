@@ -47,6 +47,7 @@ const ACTION_NAME_KEYS = {
   shower: "actions.shower",
   heal: "actions.heal",
   punch: "actions.punch",
+  attack: "actions.attack",
   pick_skill: "actions.pickSkill",
   read_book: "actions.readBook",
 } as const satisfies Record<Exclude<ActionType, "ready">, string>;

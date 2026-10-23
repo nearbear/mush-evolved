@@ -19,7 +19,8 @@ export interface ItemType {
   /** Carrying one makes every room-to-room move cost `heavyMpPenalty` more MP, once however many you carry (confirmed 2026-10-16). Skills may cancel it. */
   heavy?: boolean;
   canDrop?: boolean;
-  dismantle?: { metal: number; plastic: number };
+  /** What dismantling it leaves in the room: scraps, plus `extra` item types (the Lizaro Jungle's thick tube). */
+  dismantle?: { metal: number; plastic: number; extra?: string[] };
 }
 
 /**
@@ -43,9 +44,9 @@ export const MICROWAVE_ITEM = "microwave";
 /** A skill book: reading it (`read_book`) fills the book slot with its `ItemState.teaches` skill. */
 export const BOOK_ITEM = "book";
 
-/** The charges an item of this type starts with, or undefined if it has none. */
+/** The charges an item of this type starts with, or undefined if it has none. Charged weapons start full. */
 export function startCharges(config: Readonly<GameConfig>, type: string): number | undefined {
-  return type === MICROWAVE_ITEM ? config.expressCook.charges.start : undefined;
+  return type === MICROWAVE_ITEM ? config.expressCook.charges.start : config.weapons.types[type]?.charges;
 }
 
 /** Each microwave regains `expressCook.charges.perDay`, up to the max. Mutates a state the caller already cloned. */
@@ -57,7 +58,18 @@ export function rechargeMicrowaves(state: GameState): void {
 export const ITEM_TYPES: Record<string, ItemType> = {
   [ITRACKIE_ITEM]: {},
   wrench: {},
+  // Weapons (owner, 2026-10-22, from the English wiki): their combat numbers are `config.weapons`. Named after their icons.
+  knife: { dismantle: { metal: 1, plastic: 0 } },
   blaster: { dismantle: { metal: 1, plastic: 0 } },
+  natamy_riffle: { dismantle: { metal: 1, plastic: 0 } },
+  // Lizaro Jungle.
+  sniper_riffle: { dismantle: { metal: 1, plastic: 0, extra: ["thick_tube"] } },
+  // Old Faithful.
+  machine_gun: { heavy: true, dismantle: { metal: 1, plastic: 0 } },
+  // The wiki lists no scrap for the rocket launcher; the owner chose 1 metal like the other guns.
+  missile_launcher: { dismantle: { metal: 1, plastic: 0 } },
+  // Can't be dismantled.
+  grenade: {},
   // Healing (confirmed 2026-10-15): hold one to heal. Reusable.
   medikit: {},
   // Confirmed 2026-10-13: +2 AP. Satiety +1 is a placeholder (2026-10-14).
@@ -76,8 +88,6 @@ export const ITEM_TYPES: Record<string, ItemType> = {
   tree_pot: {},
   metal_scraps: {},
   thick_tube: {},
-  // Decided 2026-10-16: built from a blueprint; no effect yet. Named after its icon.
-  missile_launcher: {},
   // Decided 2026-10-16: carries a recipe in `ItemState.builds`; consumed by building.
   blueprint: {},
   plastic_scraps: {},
@@ -151,7 +161,8 @@ export function sameContainer(a: Container, b: Container): boolean {
 export function produceItem(next: GameState, player: Readonly<PlayerState>, type: string): { item: ItemState; inInventory: boolean } {
   const mine: Container = { kind: "player", id: player.id };
   const inInventory = hasSpace(next, mine);
-  const item: ItemState = { id: `item-${next.nextItemId++}`, type, at: inInventory ? mine : { kind: "room", id: player.room } };
+  const charges = startCharges(next.config, type);
+  const item: ItemState = { id: `item-${next.nextItemId++}`, type, at: inInventory ? mine : { kind: "room", id: player.room }, ...(charges !== undefined && { charges }) };
   next.items.push(item);
   return { item, inInventory };
 }

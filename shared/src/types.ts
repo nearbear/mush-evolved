@@ -112,6 +112,8 @@ export type Action =
   | { type: "delete_planet"; planet: string }
   | { type: "heal"; target: PlayerId }
   | { type: "punch"; target: PlayerId }
+  | { type: "attack"; weapon: ItemId; target: PlayerId }
+  | { type: "attack"; weapon: ItemId }
   | { type: "spike"; target: PlayerId }
   | { type: "pick_skill"; skill: string }
   | { type: "read_book"; item: ItemId }
