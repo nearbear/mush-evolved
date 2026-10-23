@@ -98,6 +98,7 @@ export interface GameConfig {
     cost: { ap: number }; // AP spent to cook an uncooked ration (confirmed 2026-10-16).
     rooms: RoomId[]; // Rooms where food can be cooked (confirmed 2026-10-16).
     dirtyChance: number; // Chance of getting the dirty status after cooking.
+    injuryChance: number; // Chance of getting the injured status after cooking (owner, 2026-10-16: 25%).
   };
   expressCook: {
     cost: { ap: number }; // AP spent to express cook a ration with a reachable microwave (owner, 2026-10-19: 0).
@@ -110,19 +111,23 @@ export interface GameConfig {
   build: {
     cost: { ap: number }; // AP spent to build from a blueprint (decided 2026-10-16: 3, the original game's value).
     dirtyChance: number; // Chance of getting the dirty status after building.
+    injuryChance: number; // Chance of getting injured after building.
   };
   jettison: {
     cost: { ap: number }; // AP spent to jettison a carried corpse (decided 2026-10-16: free).
     rooms: RoomId[]; // Rooms where a corpse can be jettisoned: the four bays (decided 2026-10-16).
     dirtyChance: number; // Chance of getting the dirty status after jettisoning.
+    injuryChance: number; // Chance of getting injured after jettisoning.
   };
   install: {
     cost: { ap: number }; // AP spent to install a carried camera in the room (approved 2026-10-17: 1).
     dirtyChance: number; // Chance of getting the dirty status after installing.
+    injuryChance: number;
   };
   uninstall: {
     cost: { ap: number }; // AP spent to uninstall the room's camera back into an item (placeholder 2026-10-17: 1, like install).
     dirtyChance: number; // Chance of getting the dirty status after uninstalling.
+    injuryChance: number;
   };
   consume: { dirtyChance: number }; // Chance of getting the dirty status after consuming an item.
   dispense: { dirtyChance: number }; // Chance of getting the dirty status after dispensing an item.
@@ -142,6 +147,7 @@ export interface GameConfig {
   pilgred: {
     cost: { ap: number }; // AP spent to take part in repairing PILGRED (owner, 2026-10-21; the original's REPAIR_PILGRED, 2).
     dirtyChance: number; // Chance of getting the dirty status after a repair (owner, 2026-10-21; the original's 25).
+    injuryChance: number; // Chance of getting injured after repairing PILGRED.
     // The original's slow formula (Solver.calcPilgredProgres, owner 2026-10-21): base = floor(rate * mod / 10), + skillBoost per
     // Engineer/Physicist skill, - relayPenalty per repair in a row by the same player.
     progress: { rate: number; mod: number; skillBoost: number; relayPenalty: number };
@@ -197,6 +203,10 @@ export interface GameConfig {
       soapDiscountAp: number; // AP off a shower when soap is in your inventory (confirmed 2026-10-14).
     };
     effect: { mushDamage: number }; // HP a Mush loses by showering (confirmed 2026-10-14).
+    injuryChance: number; // Chance of getting injured after showering.
+  };
+  transfer: {
+    injuryChance: number; // Chance of getting injured when taking or dropping an item.
   };
   ship: {
     oxygen: { start: number; max: number; perCycle: number }; // Oxygen the ship burns each cycle; at 0 one random living crew member dies per cycle (owner, 2026-10-19).
@@ -214,6 +224,7 @@ export interface GameConfig {
     cost: { ap: number }; // AP spent to dismantle an item (confirmed 2026-10-13).
     successChance: number; // Chance of successfully dismantling an item (confirmed 2026-10-13).
     dirtyChance: number; // Chance of getting the dirty status after dismantling an item (confirmed 2026-10-13).
+    injuryChance: number; // Chance of getting injured after dismantling an item.
     itemChance: Record<string, number>; // Per item type odds that replace `successChance` (owner, 2026-10-22: knife and blaster 50%).
   };
   // Weapons (owner, 2026-10-22, from the English wiki). Using one is the `attack` action.

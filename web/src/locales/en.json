@@ -517,14 +517,17 @@
     "machine_gun": "Old Faithful",
     "grenade": "Grenade",
     "mush_floppy_disk": "Mush genome disk",
-    "mush_sample": "Mush test strain"
+    "mush_sample": "Mush test strain",
+    "protection_gloves": "Protective Gloves"
   },
   "logEvent": {
     "actionCostChanged": "Your queued action ({{action}}) was cancelled because its cost changed: it now costs {{ap}} AP and {{mp}} MP.",
     "actionDropped": "Your queued action ({{action}}) was no longer possible and was dropped.",
     "becomeDirty": "You're filthy! You have become dirty.",
+    "randomInjury": "That wasn't supposed to happen like that!",
     "apronBlockedDirty": "Disgusting... Fortunately you are wearing your Stainproof Apron...",
     "sticklerBlockedDirty": "Your meticulous nature prevents you from getting dirty.",
+    "glovesBlockedInjury": "That wasn't supposed to happen like that! Fortunately you are wearing your gloves...",
     "crewWakes": "The crew wakes up aboard the ship.",
     "oxygenOut": "The oxygen has run out. Someone suffocates.",
     "cycleBegins": "Cycle {{cycle}} begins.",

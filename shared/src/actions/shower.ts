@@ -31,6 +31,10 @@ export class ShowerAction extends Action<ShowerActionData> {
     return { ap: this.showerCost(state, player), mp: 0 };
   }
 
+  override injuryChance(state: Readonly<GameState>): number {
+    return state.config.shower.injuryChance;
+  }
+
   override apply(state: GameState, player: PlayerState, target: ShowerActionData): void {
     removeStatus(player, "dirty");
     logPrivate(state, player.id, player.role === "mush" ? "showeredMush" : "showered");

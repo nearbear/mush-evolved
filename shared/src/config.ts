@@ -73,20 +73,20 @@ export const DEFAULT_CONFIG: GameConfig = {
   // Owner, 2026-10-18: Ian's Pacifist makes aggressive actions in his room cost 2 more AP, his own included.
   pacifist: { aggressiveApSurcharge: 2 },
   // Confirmed 2026-10-16: cooking an uncooked ration costs 1 AP, only in the refectory.
-  cook: { cost: { ap: 1 }, rooms: ["REFECTORY"], dirtyChance: 0.25 },
+  cook: { cost: { ap: 1 }, rooms: ["REFECTORY"], dirtyChance: 0.25, injuryChance: 0.01 },
   // Owner, 2026-10-19: express cook is free, anywhere you can reach a microwave, and spends one of its 4 charges;
   // it regains one each day. Consequences for using it come later.
   expressCook: { cost: { ap: 0 }, charges: { start: 4, max: 4, perDay: 1 }, dirtyChance: 0.05 },
   // Decided 2026-10-16: building from a blueprint costs 3 AP, anywhere, no failure chance.
   // Owner, 2026-10-21: reading a skill book costs 2 AP (the original's LEARN_BOOK cost).
   readBook: { cost: { ap: 2 } },
-  build: { cost: { ap: 3 }, dirtyChance: 0.25 },
+  build: { cost: { ap: 3 }, dirtyChance: 0.25, injuryChance: 0.05 },
   // Decided 2026-10-16 (#28): jettisoning a carried corpse is free, in one of the four bays.
-  jettison: { cost: { ap: 0 }, rooms: ["SPACESHIP_BAY_A", "SPACESHIP_BAY_AA", "SPACESHIP_BAY_B", "ICARUS"], dirtyChance: 0.25 },
+  jettison: { cost: { ap: 0 }, rooms: ["SPACESHIP_BAY_A", "SPACESHIP_BAY_AA", "SPACESHIP_BAY_B", "ICARUS"], dirtyChance: 0.25, injuryChance: 0.02 },
   // Decided 2026-10-18 (owner, #35): installing a carried camera costs 2 AP, no tools, one camera per room, anyone can do it, no failure chance.
-  install: { cost: { ap: 2 }, dirtyChance: 0.1 },
+  install: { cost: { ap: 2 }, dirtyChance: 0.1, injuryChance: 0.05 },
   // Decided 2026-10-18 (owner, #36): uninstalling costs 1 AP, anyone can do it, no failure chance. Dismantling an installed camera uses `dismantle`.
-  uninstall: { cost: { ap: 1 }, dirtyChance: 0.05 },
+  uninstall: { cost: { ap: 1 }, dirtyChance: 0.05, injuryChance: 0.05 },
   consume: { dirtyChance: 0.15 },
   dispense: { dirtyChance: 0.05 },
   // Owner, 2026-10-16: the computer scientist skill holds up to 4 Computer points, gains 2 a day (and 2 when picked).
@@ -99,7 +99,7 @@ export const DEFAULT_CONFIG: GameConfig = {
   project: { cost: { ap: 2 }, effect: { progressPercent: 25 } },
   // Owner, 2026-10-21: repairing PILGRED uses the original's numbers (DIG_RATE 6, PILGRED_MOD 2, DIG_BOOST 4, -2 per repeat),
   // 2 AP, 25% dirty; the Physicist gains 1 PILGRED point a day and holds 2.
-  pilgred: { cost: { ap: 2 }, dirtyChance: 0.25, progress: { rate: 6, mod: 2, skillBoost: 4, relayPenalty: 2 }, capPoints: 2, pointsPerDay: 1, returnCost: { ap: 2 } },
+  pilgred: { cost: { ap: 2 }, dirtyChance: 0.25, injuryChance: 0.05, progress: { rate: 6, mod: 2, skillBoost: 4, relayPenalty: 2 }, capPoints: 2, pointsPerDay: 1, returnCost: { ap: 2 } },
   // Owner, 2026-10-19 and 2026-10-21 (docs/comms-plan.md): every comms action is 2 AP. Sol: 4%, +4% per failure, floor 4%.
   // Rebels: avg of two 1..40 draws, +100% each for Rebel and Kivanç, a window of 8..16 cycles. NERON update: 25% per action.
   comms: {
@@ -112,14 +112,15 @@ export const DEFAULT_CONFIG: GameConfig = {
   accommodate: { cost: { ap: 0 }, offerMs: 5 * 60_000 },
   lieDown: { cost: { ap: 0 } },
   // Confirmed 2026-10-14: showering costs 2 AP, 1 less with soap in your inventory; a Mush takes 4 damage.
-  shower: { cost: { ap: 2, soapDiscountAp: 1 }, effect: { mushDamage: 4 } },
+  shower: { cost: { ap: 2, soapDiscountAp: 1 }, effect: { mushDamage: 4 }, injuryChance: 0.02 },
+  transfer: { injuryChance: 0.01 },
   // Confirmed 2026-10-14: humans lose 1 satiety per cycle (some things will make it more); at 3 they are full and can't
   // eat; hungry starts 24 cycles after satiety reaches 0 and costs 1 HP per cycle.
   // Decided 2026-10-19: oxygen 30 of 32, -1 per cycle, nobody survives it at 0; fuel 20 of 100; hull 100; plasma shield 100 absorbing 67% of damage.
   ship: { oxygen: { start: 30, max: 32, perCycle: 1 }, fuel: { start: 20, max: 100 }, hull: { start: 100, max: 100 }, plasmaShield: { start: 100, max: 100, absorbPercent: 67 } },
   hunger: { satietyPerCycle: 1, fullBellyAt: 3, hungryAfterCycles: 24, hpPerCycle: 1 },
   // Confirmed 2026-10-13: dismantle cost and odds.
-  dismantle: { cost: { ap: 3 }, successChance: 0.12, dirtyChance: 0.25, itemChance: { knife: 0.5, blaster: 0.5 } },
+  dismantle: { cost: { ap: 3 }, successChance: 0.12, dirtyChance: 0.25, injuryChance: 0.05, itemChance: { knife: 0.5, blaster: 0.5 } },
   // Owner, 2026-10-22, from the English wiki: 1 AP to use any weapon, carried. Repair and dismantle chances the wiki
   // gives as "??" are 12%. Blaster 2-3 as listed; the rocket's "?-8" is 1-8 and its self-damage 1-4 (Claude's guess,
   // accepted). Charged weapons start full. Not built: crits, injuries, a dropped knife, breaking equipment, NERON's Core Peace.
@@ -161,6 +162,7 @@ export const DEFAULT_CONFIG: GameConfig = {
     { type: "grenade", room: "STORAGE_FRONT" },
     { type: "medikit", room: "SICK_BAY" },
      { type: "apron", room: "SICK_BAY" },
+     { type: "protection_gloves", room: "SICK_BAY" },
     { type: "camera", room: "CORRIDOR_A" },
     { type: "metal_scraps", room: "CORRIDOR_A" },
     { type: "plastic_scraps", room: "CORRIDOR_A" },

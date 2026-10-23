@@ -32,6 +32,10 @@ export class DismantleAction extends Action<DismantleActionData> {
     return state.config.dismantle.dirtyChance;
   }
 
+  override injuryChance(state: Readonly<GameState>): number {
+    return state.config.dismantle.injuryChance;
+  }
+
   override getCandidates(state: Readonly<GameState>, player: Readonly<PlayerState>): DismantleActionData[] {
     return [
       ...state.items.filter((item) => ITEM_TYPES[item.type]?.dismantle && canReach(state, player, item.at)).map((item): DismantleActionData => ({ type: "dismantle", item: item.id })),

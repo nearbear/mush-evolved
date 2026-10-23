@@ -35,6 +35,10 @@ export class CookAction extends Action<CookActionData> {
     return state.config.cook.dirtyChance;
   }
 
+  override injuryChance(state: Readonly<GameState>): number {
+    return state.config.cook.injuryChance;
+  }
+
   override apply(state: GameState, player: PlayerState, target: CookActionData): void {
     const item = state.items.find((i) => i.id === target.item)!;
     item.type = ITEM_TYPES[item.type]!.cook!.into;

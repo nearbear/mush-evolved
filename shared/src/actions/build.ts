@@ -53,6 +53,10 @@ export class BuildAction extends Action<BuildActionData> {
     return state.config.build.dirtyChance;
   }
 
+  override injuryChance(state: Readonly<GameState>): number {
+    return state.config.build.injuryChance;
+  }
+
   override apply(state: GameState, player: PlayerState, target: BuildActionData): void {
     const blueprint = state.items.find((i) => i.id === target.item)!; // checked, so it exists
     const used = new Set([blueprint.id, ...ingredients(state, player, blueprint)!.map((i) => i.id)]);

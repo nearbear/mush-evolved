@@ -185,7 +185,8 @@ export function performAction(next: GameState, actor: PlayerState, action: Actio
   const cost = def.cost(next, actor, action);
   // Odds are read before the cost is paid, as the button showed them.
   const chance = def.chance?.(next, actor, action) ?? 1;
-  const dirtyChance = def.dirtChance?.(next, actor, action) ?? 0;
+  const dirtyChance = def.dirtChanceMods?.(next, actor, action) ?? 0;
+  const injuryChance = def.injuryChanceMods?.(next, actor, action) ?? 0;
   if (def.timed && action.type !== "lie_down") getUp(actor);
   actor.ap -= cost.ap;
   actor.mp -= cost.mp;
@@ -214,6 +215,19 @@ export function performAction(next: GameState, actor: PlayerState, action: Actio
       else{
       addStatus(actor, "dirty");
       logPrivate(next, actor.id, "becomeDirty", { name: actor.character });
+      }
+    }
+  }
+  if (injuryChance > 0) {
+    const [roll, rng] = nextFloat(next.rng);
+    next.rng = rng;
+    if (roll < injuryChance) {
+      if (itemsIn(next, { kind: "player", id: actor.id }).some((i) => i.type === "protection_gloves")){
+        logPrivate(next, actor.id, "glovesBlockedInjury", { name: actor.character });
+      }
+      else{
+      logPrivate(next, actor.id, "randomInjury", { name: actor.character });
+      damage(next, actor, 2);
       }
     }
   }

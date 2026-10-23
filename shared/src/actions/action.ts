@@ -1,4 +1,4 @@
-import { actionCost } from "../modifiers.ts";
+import { actionCost, actionSuccessRate, actionDirtRate, actionInjuryRate } from "../modifiers.ts";
 import type { Action as AnyAction, GameState, PlayerState } from "../types.ts";
 
 /** Others you could bond with, share with or hit: living, in your room, not yourself. */
@@ -74,11 +74,23 @@ export class Action<T extends { type: string }> {
   }
 
   chance(state: Readonly<GameState>, player: Readonly<PlayerState>, target: T): number {
-    return this.getSuccessChance(state, player, target);
+    return actionSuccessRate(this.getSuccessChance(state, player, target),  { state, actor: player, action: target as unknown as AnyAction, tags: this.tags });
   }
 
   dirtChance(state: Readonly<GameState>, player: Readonly<PlayerState>, target: T): number {
     return 0;
+  }
+
+  injuryChance(state: Readonly<GameState>, player: Readonly<PlayerState>, target: T): number {
+    return 0;
+  }
+
+  dirtChanceMods(state: Readonly<GameState>, player: Readonly<PlayerState>, target: T){
+    return actionDirtRate(this.dirtChance(state, player, target),  { state, actor: player, action: target as unknown as AnyAction, tags: this.tags } );
+  }
+
+  injuryChanceMods(state: Readonly<GameState>, player: Readonly<PlayerState>, target: T){
+    return actionInjuryRate(this.injuryChance(state, player, target),  { state, actor: player, action: target as unknown as AnyAction, tags: this.tags } );
   }
 
   /**

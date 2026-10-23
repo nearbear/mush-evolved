@@ -14,6 +14,7 @@ import { skillsOf } from "./skills.ts";
 import { antic_perfume } from "./modifiers/antic_perfume.ts";
 import { caffeinomaniac } from "./modifiers/caffeinomaniac.ts";
 import { creative } from "./modifiers/creative.ts";
+import { expert } from "./modifiers/expert.ts";
 import { computer } from "./modifiers/computer.ts";
 import { physicist } from "./modifiers/physicist.ts";
 import { first_aid } from "./modifiers/first_aid.ts";
@@ -60,6 +61,12 @@ export interface CostContext {
 export interface Modifier extends Partial<FoldHooks> {
   /** Adjusts what one of the holder's own actions costs. Must be pure. */
   actionCost?: (cost: ActionCost, ctx: CostContext) => ActionCost;
+  /** Adjusts what one of the holder's own actions success rates. Must be pure. */
+  actionSucessRate?: (successRate: number, ctx: CostContext) => number;
+  /** Adjusts what one of the holder's own actions injury rates. Must be pure. */
+  actionInjuryRate?: (cost: number, ctx: CostContext) => number;
+  /** Adjusts what one of the holder's own actions dirtiness chance. Must be pure. */
+  actionDirtRate?: (cost: number, ctx: CostContext) => number;
   /**
    * Adjusts what anyone's action costs in the room where the holder is, the holder's own included (Pacifist).
    * Read when a price is asked for, so nothing is stored when people come and go. Holders stack. Must be pure.
@@ -88,7 +95,7 @@ export interface Modifier extends Partial<FoldHooks> {
 export type ModifierRegistry = Readonly<Record<string, Modifier>>;
 
 /** Items and skills will register here too. When a skill gains rules, update its entry in SKILL_STATUS (skills.ts). */
-export const MODIFIERS: Record<string, Modifier> = { lying_down, medic, first_aid, sturdy, creative, antic_perfume, logistics, caffeinomaniac, computer, physicist, pacifist, immunity, mankind_only_hope, wheelchair };
+export const MODIFIERS: Record<string, Modifier> = { lying_down, medic, first_aid, sturdy, creative, expert, antic_perfume, logistics, caffeinomaniac, computer, physicist, pacifist, immunity, mankind_only_hope, wheelchair };
 
 /** The ids every hook folds over: the player's skills (book slot last), then their other modifiers. */
 export function modifierIds(player: Readonly<PlayerState>): string[] {
@@ -136,6 +143,50 @@ export function actionCost(base: ActionCost, ctx: CostContext, registry: Modifie
   // Hooks can't make a price negative. A move's MP is a net change and can already be negative (a conversion
   // gives more than the move spends), so the floor is 0 or the base, whichever is lower.
   return { ap: Math.max(Math.min(0, base.ap), cost.ap), mp: Math.max(Math.min(0, base.mp), cost.mp) };
+}
+
+/**
+ * What an action's success rate is once modifiers have had their say: `base` (the action's own `getSuccessChance`) through the actor's
+ * `actionSuccessRate` hooks in list order.
+ * `Action.cost` is the only caller.
+ */
+export function actionSuccessRate(base: number, ctx: CostContext, registry: ModifierRegistry = MODIFIERS): number {
+  let chance = base;
+  if(chance == 1){
+    return 1;
+  }
+  for (const id of modifierIds(ctx.actor)) {
+    const hook = registry[id]?.actionSucessRate;
+    if (hook) chance = hook(chance, ctx);
+  }
+  // Hooks can't make a price negative. A move's MP is a net change and can already be negative (a conversion
+  // gives more than the move spends), so the floor is 0 or the base, whichever is lower.
+  if(chance > 0.99){
+    chance = 0.99;
+  }
+  return chance;
+}
+
+export function actionInjuryRate(base: number, ctx: CostContext, registry: ModifierRegistry = MODIFIERS): number {
+  let chance = base;
+  for (const id of modifierIds(ctx.actor)) {
+    const hook = registry[id]?.actionInjuryRate;
+    if (hook) chance = hook(chance, ctx);
+  }
+  // Hooks can't make a price negative. A move's MP is a net change and can already be negative (a conversion
+  // gives more than the move spends), so the floor is 0 or the base, whichever is lower.
+  return chance;
+}
+
+export function actionDirtRate(base: number, ctx: CostContext, registry: ModifierRegistry = MODIFIERS): number {
+  let chance = base;
+  for (const id of modifierIds(ctx.actor)) {
+    const hook = registry[id]?.actionDirtRate;
+    if (hook) chance = hook(chance, ctx);
+  }
+  // Hooks can't make a price negative. A move's MP is a net change and can already be negative (a conversion
+  // gives more than the move spends), so the floor is 0 or the base, whichever is lower.
+  return chance;
 }
 
 /** Morale each living player loses when a day ends: `moralePerDay` through every living player's `crewMoraleLoss` hooks, in seat order; never below 0. */

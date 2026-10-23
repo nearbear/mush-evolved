@@ -99,6 +99,7 @@ export const ITEM_TYPES: Record<string, ItemType> = {
   [CORPSE_ITEM]: { heavy: true },
 
   apron: {},
+  protection_gloves: {},
   // Owner, 2026-10-21: a skill book (the original's Apprentron) carries its skill in `ItemState.teaches`; destroyed by reading.
   [BOOK_ITEM]: {},
   // Owner, 2026-10-21: Xyloph rewards (comms.ts), dropped on the bridge. No effect yet. Named after their icons.
