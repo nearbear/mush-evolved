@@ -175,6 +175,11 @@
     flex: 1;
     min-height: 0;
   }
+  /* Inspect fills the panel top to bottom (the credits sit at its foot); a tall target still scrolls the panel. */
+  .left-column,
+  .left-column > .inspect {
+    flex: 1 0 auto;
+  }
   .room-view {
     flex: 1;
     min-height: 0;
@@ -298,6 +303,14 @@
   }
   .inspect-target .inspect-art {
     margin: 0;
+  }
+  /* The name chip overhangs the portrait's bottom edge, half in and half out, like the top bar's stat chips. */
+  .inspect-figure-art:has(.inspect-figure-name) {
+    margin-bottom: 0.85rem;
+  }
+  .inspect-figure-name {
+    bottom: 0;
+    transform: translate(-50%, 50%);
   }
   .inspect-target .inspect-sprite-box {
     --tile: 100cqw;
