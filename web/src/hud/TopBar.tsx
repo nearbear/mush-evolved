@@ -17,6 +17,7 @@ export function TopBar({
   nextCycleAt,
   clockOffset,
   onLeave,
+  onResults,
   cheatsAllowed,
   onCheat,
   onActopiCheat,
@@ -33,6 +34,8 @@ export function TopBar({
   /** Server clock minus this one. */
   clockOffset: number;
   onLeave: () => void;
+  /** Reopens the end screen; shown once the game has ended. */
+  onResults: () => void;
   cheatsAllowed: boolean;
   onCheat: (cheat: Cheat, on: boolean) => void;
   onActopiCheat: (mode: ActopiCheat) => void;
@@ -52,6 +55,7 @@ export function TopBar({
   // Ready can't be offered while you already are, so the button stays (disabled, "Waiting…") until the cycle ends.
   const showReady = canReady || you.ready;
   const leaveLabel = t("topBar.leave");
+  const ended = view.phase === "ended";
   return (
     <header className="top-bar">
       {showSummary && <PlayerSummary view={view} compact countdown={nextCycleAt !== null && <CycleCountdown nextCycleAt={nextCycleAt} clockOffset={clockOffset} />} />}
@@ -72,6 +76,11 @@ export function TopBar({
           <Menu.Portal>
             <Menu.Positioner sideOffset={6} align="end" className="menu-positioner">
               <Menu.Popup className="menu-popup">
+                {ended && (
+                  <Menu.Item render={<button type="button" />} onClick={onResults}>
+                    {t("gameOver.results")}
+                  </Menu.Item>
+                )}
                 {showReady && (
                   <Menu.Item render={<button type="button" />} disabled={!canReady} onClick={onReady}>
                     {endCycleLabel}
@@ -90,6 +99,11 @@ export function TopBar({
         </Menu.Root>
       ) : (
         <>
+          {ended && (
+            <button type="button" onClick={onResults}>
+              {t("gameOver.results")}
+            </button>
+          )}
           {showReady && (
             <button type="button" disabled={!canReady} onClick={onReady}>
               {endCycleLabel}

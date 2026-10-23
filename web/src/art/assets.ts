@@ -1,7 +1,7 @@
 // Maps game ids to Motion Twin art in Mush/ (CC BY-NC-SA 4.0, see
 // Mush/ATTRIBUTION.md). Vite bundles only the files matched here.
 
-import type { CharacterId, ResourceId, TitleId } from "@mush2/shared";
+import type { CharacterId, Ending, ResourceId, TitleId } from "@mush2/shared";
 
 type UrlMap = Record<string, string>;
 const urls = (map: UrlMap) =>
@@ -232,6 +232,19 @@ export const INFO_ICON = uiIcons["info"]!;
 
 /** A person you can see is somewhere but can't identify (ACTOPI off). */
 export const MUSH_ICON = uiIcons["mush"]!;
+
+/** A dead crew member's marker (the skull). */
+export const DEAD_ICON = uiIcons["dead"]!;
+
+// End screen banners (785x294), one per ending; the user chose which goes with which (2026-10-22).
+const endArt = urls(
+  import.meta.glob<string>("../../../Mush/www/img/art/{end,eden,destroyed}.jpg", { eager: true, query: "?url", import: "default" }),
+);
+export const ENDING_ART: Readonly<Record<Ending, string>> = {
+  sol: endArt["end"]!,
+  eden: endArt["eden"]!,
+  humans_dead: endArt["destroyed"]!,
+};
 
 // Status effect icons (16x16 pixel art), keyed by status id (shared/src/statuses.ts).
 const statusIconFiles = urls(

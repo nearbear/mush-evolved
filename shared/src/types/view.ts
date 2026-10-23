@@ -3,7 +3,7 @@ import type { CharacterId } from "../characters.ts";
 import type { BiosState } from "../bios.ts";
 import type { RebelBaseId } from "../comms.ts";
 import type { TitleId } from "../titles.ts";
-import type { Action, BotKind, ItemId, LogEntry, PlayerId, RoomId } from "../types.ts";
+import type { Action, BotKind, ItemId, LogEntry, PlayerId, Role, RoomId } from "../types.ts";
 import type { ChannelId, ChatMessage, ChatThread, PrivateChannel } from "./chat.ts";
 import type { MovementRules } from "./config.ts";
 import type { ActionInProgress, PlayerState, Spot } from "./player.ts";
@@ -27,6 +27,18 @@ export interface ItemView {
   charges?: number;
   /** For a skill book: the skill it teaches (public to whoever can see the item). */
   teaches?: string;
+}
+
+/** One seat as the end screen shows it, once the game has ended (#191). Everyone, you included, in seat order. */
+export interface CrewReveal {
+  id: PlayerId;
+  /** The account's name after moderation (`moderateName`); null when nothing of it survives. */
+  name: string | null;
+  isBot: boolean;
+  botKind?: BotKind;
+  character: CharacterId;
+  role: Role;
+  alive: boolean;
 }
 
 export interface OtherPlayerView {
@@ -94,6 +106,10 @@ export interface PlayerView {
   phase: GameState["phase"];
   /** Who won, once the game has ended; null while playing. */
   winner: GameState["winner"];
+  /** How it ended (Sol, Eden, or the last human dead); null while playing. */
+  ending: GameState["ending"];
+  /** Every seat's name, character, role and fate, only once the game has ended; null while playing. */
+  crew: CrewReveal[] | null;
   rooms: Record<RoomId, RoomId[]>;
   /** What you carry. Other players' inventories are never sent. */
   inventory: ItemView[];

@@ -14,7 +14,7 @@ import { InventoryOverlay } from "./hud/InventoryOverlay.tsx";
 import { ITrackie } from "./hud/ITrackie.tsx";
 import { PeekBar } from "./hud/PeekBar.tsx";
 import { TerminalDialog } from "./hud/TerminalDialog.tsx";
-import { GameOverDialog } from "./hud/GameOverDialog.tsx";
+import { EndScreen } from "./hud/EndScreen.tsx";
 import { SelfPanel } from "./hud/SelfPanel.tsx";
 import { resolveTarget } from "./hud/targets.ts";
 import { TopBar } from "./hud/TopBar.tsx";
@@ -54,6 +54,8 @@ export function GameScreen({ ticket, onLeave }: { ticket: SeatTicket; onLeave: (
   const [roomLogRequest, setRoomLogRequest] = useState(0);
   /** Equipment id of the terminal window that is open, if any. UI-only. */
   const [terminalId, setTerminalId] = useState<string | null>(null);
+  // The end screen opens by itself when the game ends (and after a reload); closing it lets you look around.
+  const [endClosed, setEndClosed] = useState(false);
   const [peekDoor, setPeekDoor] = useState<RoomId | null>(null);
   const here = view?.you.room;
   // biome-ignore lint/correctness/useExhaustiveDependencies: `here` is a trigger: arriving somewhere new clears the door peek.
@@ -157,7 +159,7 @@ export function GameScreen({ ticket, onLeave }: { ticket: SeatTicket; onLeave: (
   return (
     <main className="game">
       <TerminalDialog terminal={terminal} view={view} onAction={send} onClose={() => setTerminalId(null)} />
-      <GameOverDialog winner={view.winner} />
+      <EndScreen view={view} open={view.phase === "ended" && !endClosed} onOpenChange={(open) => setEndClosed(!open)} />
       <TopBar
         view={view}
         showSummary={mobile}
@@ -166,6 +168,7 @@ export function GameScreen({ ticket, onLeave }: { ticket: SeatTicket; onLeave: (
         clockOffset={clockOffset}
         onReady={() => send({ type: "ready" })}
         onLeave={onLeave}
+        onResults={() => setEndClosed(false)}
         cheatsAllowed={cheatsAllowed}
         onCheat={(cheat: Cheat, on: boolean) => post({ type: "cheat", cheat, on })}
         onActopiCheat={(mode: ActopiCheat) => post({ type: "actopiCheat", mode })}

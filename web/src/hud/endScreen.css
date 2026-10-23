@@ -1,0 +1,86 @@
+/* The end screen (EndScreen.tsx). Layout and colors come from settings.css's .settings-popup; this widens it for the
+   banner and lays out the crew list. */
+.end-screen {
+  width: min(49rem, calc(100vw - 2rem));
+}
+
+/* 785x294 art: shown at its own size when it fits, scaled down to the popup's width on narrower screens. */
+.end-banner {
+  display: block;
+  width: 100%;
+  max-width: 785px;
+  height: auto;
+  margin: 0 auto;
+  border: 1px solid var(--panel-rim);
+}
+
+.end-verdict {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: bold;
+  text-align: center;
+}
+.end-verdict.mush {
+  color: var(--mush);
+}
+.end-verdict.humans {
+  color: var(--human);
+}
+
+.end-crew {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(18rem, 1fr));
+  gap: 0.25rem 1rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.end-crew-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 0;
+  padding: 0.25rem 0.5rem;
+  border-radius: var(--panel-radius);
+}
+.end-crew-row.you {
+  background: rgb(255 255 255 / 0.08);
+}
+.end-crew-row[data-alive="false"] .end-crew-bust {
+  opacity: 0.5;
+}
+
+.end-crew-bust {
+  flex: none;
+  image-rendering: pixelated;
+}
+
+.end-crew-names {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+}
+.end-crew-character {
+  font-weight: bold;
+}
+.end-crew-player {
+  overflow-wrap: anywhere;
+  color: var(--muted);
+}
+
+.end-crew-dead {
+  flex: none;
+}
+
+.end-crew-role {
+  flex: none;
+  font-weight: bold;
+}
+.end-crew-role.mush {
+  color: var(--mush);
+}
+.end-crew-role.human {
+  color: var(--human);
+}

@@ -70,6 +70,8 @@ The record of answered rule decisions and the design for the rules that are not 
   - Mush win if all humans are dead, or if the ship returns to Sol while any Mush is alive.
   - Humans win if the ship returns to Sol with no Mush alive.
   - **Built 2026-10-22 (owner):** the Mush win the instant the last living human dies, from any cause. There is no game length limit.
+  - **Eden (2026-10-22, owner):** reaching Eden is decided like Sol: Mush win if any Mush is alive, otherwise humans. So there are five endings: Sol (Mush or humans), Eden (Mush or humans), and all humans dead (Mush). How the ship reaches Eden is not decided.
+  - **End screen (2026-10-22, owner):** the ending's art (Sol `end.jpg`, Eden `eden.jpg`, all humans dead `destroyed.jpg`), then every player with their character and role. Account names are revealed there, moderated like chat; bots are tagged AI. Closable to look around, and shown again after reconnecting.
 - **Visibility:** Mush have a private chat channel. Nobody ever sees another player's faction, Mush included (owner, 2026-10-16): a faction indicator shows only on a player's own summary, and Mush learn who the other Mush are only through the Mush channel. Spiking items (e.g. coffee) are descoped from #25.
 - **Chat:** room speech is always available and is written into the room log like a public action. Global chat requires an **iTrackie** in your inventory.
 - **Inventory** (2026-10-11): 3 private slots, unlimited room storage, free take/drop logged publicly.

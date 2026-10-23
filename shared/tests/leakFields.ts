@@ -25,6 +25,7 @@ export const GAME_STATE_FIELDS: Record<string, FieldRule> = {
   cycle: { reach: "public", test: "rules.test.ts" },
   phase: { reach: "public", test: "rules.test.ts" },
   winner: { reach: "public", test: "pilgred.test.ts", note: "Who won; null until the game ends." },
+  ending: { reach: "public", test: "victory.test.ts", note: "How it ended; null until the game ends." },
   players: { reach: "filtered", test: "leaks.test.ts", note: "Field by field: PLAYER_STATE_FIELDS." },
   items: { reach: "filtered", test: "leaks.test.ts", note: "Your inventory and your room's storage only." },
   nextItemId: { reach: "never", test: "leaks.test.ts", note: "Not secret (item ids show it), just not sent." },
@@ -57,12 +58,12 @@ export const GAME_STATE_FIELDS: Record<string, FieldRule> = {
 export const PLAYER_STATE_FIELDS: Record<string, FieldRule> = {
   // Seat
   id: { reach: "public", test: "rules.test.ts" },
-  name: { reach: "never", test: "leaks.test.ts", note: "Not even your own while the game runs." },
+  name: { reach: "never", test: "leaks.test.ts", note: "Not even your own while the game runs; everyone's, moderated, once it has ended (victory.test.ts)." },
   isBot: { reach: "public", test: "rules.test.ts" },
   botKind: { reach: "public", test: "rules.test.ts" },
   character: { reach: "public", test: "rules.test.ts" },
   // PlayerState
-  role: { reach: "own", test: "leaks.test.ts", note: "Death announces it crew-wide (death.test.ts)." },
+  role: { reach: "own", test: "leaks.test.ts", note: "Death announces it crew-wide (death.test.ts); everyone's once the game has ended (victory.test.ts)." },
   alpha: { reach: "own", test: "leaks.test.ts" },
   room: { reach: "room", test: "rules.test.ts", note: "Everyone's while ACTOPI is on; never a dead player's (death.test.ts)." },
   ap: { reach: "own", test: "leaks.test.ts" },

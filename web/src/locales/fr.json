@@ -274,8 +274,18 @@
   },
   "gameOver": {
     "title": "La partie est terminée",
-    "mush": "Les Mush gagnent : le Daedalus a atteint Sol avec des Mush à bord.",
-    "humans": "Les humains gagnent : le Daedalus a atteint Sol sans aucun Mush vivant."
+    "solMush": "Les Mush gagnent : le Daedalus a atteint Sol avec des Mush à bord.",
+    "solHumans": "Les humains gagnent : le Daedalus a atteint Sol sans aucun Mush vivant.",
+    "edenMush": "Les Mush gagnent : le Daedalus a atteint Eden avec des Mush à bord.",
+    "edenHumans": "Les humains gagnent : le Daedalus a atteint Eden sans aucun Mush vivant.",
+    "humansDead": "Les Mush gagnent : tous les humains du Daedalus sont morts.",
+    "crew": "Équipage",
+    "roleHuman": "Humain",
+    "roleMush": "Mush",
+    "dead": "Mort",
+    "you": "Vous",
+    "nameHidden": "Nom masqué",
+    "results": "Résultats"
   },
   "returnToSol": {
     "desc": "Après tout ce temps, peut-être serait-il temps de voir ce qu'il se passe sur Sol.",

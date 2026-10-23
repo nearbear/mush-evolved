@@ -20,7 +20,7 @@ Other packages import from `@mush2/shared` (`shared/src/index.ts`, the barrel). 
 - `pilgred.ts`: PILGRED's repair: `PILGRED_COMPLETE`, `PILGRED_SKILLS`, `pilgredGainRange` (the original's formula with the relay penalty), `rollPilgredGain`, `isPilgredRepaired`, `pilgredTerminalsHere`, `commandTerminalsHere`, `canReturnToSol`. Actions `repair_pilgred`, `return_to_sol`.
 - `comms.ts`: the communication center: `REBEL_BASES` (call order), `XYLOPH_ENTRIES` (weights), `newComms`, `callNextRebel` / `commsCycle` (daily rebel calls), `solChance` (Radio Expert), `loseLink`, `rollRebelGain`, `rebelReached`, `rationApBonus` (Sirius), `noITrackieNeeded` (Luyten-Ceti), `drawXyloph` / `applyXyloph`, `advanceNeron`, `commsTerminalView`. Actions `contact_sol`, `decode_rebel`, `contact_xyloph`, `update_neron`.
 - `bios.ts`: NERON's BIOS switches: `BIOS_OPTIONS` (`actopi`, `death_announcements`), `newBios`, `biosTerminalsHere`, `canChangeBios` (NERON Admin). Action `set_bios`.
-- `victory.ts`: the game end: `winnerOnReturn` (the decided win rule on reaching Sol) and `endGame` (`phase` "ended", `winner`).
+- `victory.ts`: the game end: `winnerOnArrival` (the decided win rule on reaching Sol or Eden), `mushWinOnDeath`, and `endGame` (`phase` "ended", `winner`, `ending`).
 - `projects.ts`: `PROJECT_IDS` (the original's 41 live NERON projects), `PROJECT_COMPLETE` and `PROJECT_STATUS`.
 - `rng.ts`: the seeded RNG (its state is part of `GameState`).
 - `helpers.ts`: `ActionResult`, `fail`, `clone`, `findPlayer`.
@@ -49,6 +49,6 @@ Other packages import from `@mush2/shared` (`shared/src/index.ts`, the barrel). 
 - `types/view.ts`: `PlayerView`, `OtherPlayerView`, `ItemView`: the only game data a client or bot receives.
 - `config.ts`: `DEFAULT_CONFIG` and `SEAT_COUNT`. The map comes from `@mush2/assets/derived/ship-rooms.json`.
 - `protocol.ts`: wire message types and `parse*` validators for untrusted client input.
-- `moderation.ts`: `moderateChat`; called by the server, not the rules.
+- `moderation.ts`: `moderateChat`, called by the server, not the rules; `moderateName`, called by `viewFor` for the end screen's names.
 - `characters.ts`: cosmetic crew identities, no rules effect.
 - `shipLayout.ts`: types for `Mush/derived/ship-art.json` and `ship-map.json` (`ShipLayout` is the two together) and `placedEquipment`.

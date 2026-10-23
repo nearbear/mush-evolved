@@ -41,3 +41,12 @@ export function moderateChat(raw: string, blocked: readonly string[] = BLOCKED_W
 }
 
 const escapeRegExp = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+/**
+ * An account name as the end screen shows it: on one line, then through the same filter as chat (links removed, the
+ * word list masked). Null when nothing is left.
+ */
+export function moderateName(raw: string): string | null {
+  const result = moderateChat(raw.replace(/\s+/g, " "));
+  return result.ok ? result.text : null;
+}

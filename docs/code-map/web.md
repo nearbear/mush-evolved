@@ -19,12 +19,12 @@ All under `web/src/`. UI rules are in `web/CLAUDE.md`.
 
 **hud/**
 
-- `TopBar.tsx`: cycle and countdown, End cycle (only when offered), Leave, settings.
+- `TopBar.tsx`: cycle and countdown, Results (once the game has ended), End cycle (only when offered), Leave, settings.
 - `CycleCountdown.tsx`: time left until the next cycle, from the view message's `nextCycleAt`.
 - `PlayerSummary.tsx`: portrait, name, faction icon, AP/MP/HP/morale bars.
 - `PipBar.tsx`: the pip bar in SVG, tinted by CSS `color`.
 - `SettingsDialog.tsx` + `settings.css`: settings dialog.
-- `GameOverDialog.tsx`: opens when `view.winner` is set and says who won (reuses `settings.css`).
+- `EndScreen.tsx` + `endScreen.css`: the end screen, open while the game has ended until closed (`GameScreen` holds that; the top bar's Results button reopens it): the ending's banner (`ENDING_ART`), the verdict, and `view.crew` with names, characters, roles and skulls (reuses `settings.css`).
 - `SelfPanel.tsx`: summary and other resources (Inspect tab on phones, without the summary), and your planets once you have any (deletable anywhere).
 - `CommsCenter.tsx`: the Com center terminal window: link status and Sol chance, rebel calls with progress and expiry, Xyloph entries left, NERON version and update, each with its button when the view offers it.
 - `BiosTerminal.tsx`: the BIOS terminal window: each BIOS option with its current value and, for the NERON Admin, a switch button.

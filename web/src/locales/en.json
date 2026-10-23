@@ -273,8 +273,18 @@
   },
   "gameOver": {
     "title": "The game is over",
-    "mush": "The Mush win: the Daedalus reached Sol with Mush on board.",
-    "humans": "The humans win: the Daedalus reached Sol with no Mush alive."
+    "solMush": "The Mush win: the Daedalus reached Sol with Mush on board.",
+    "solHumans": "The humans win: the Daedalus reached Sol with no Mush alive.",
+    "edenMush": "The Mush win: the Daedalus reached Eden with Mush on board.",
+    "edenHumans": "The humans win: the Daedalus reached Eden with no Mush alive.",
+    "humansDead": "The Mush win: every human on the Daedalus is dead.",
+    "crew": "Crew",
+    "roleHuman": "Human",
+    "roleMush": "Mush",
+    "dead": "Dead",
+    "you": "You",
+    "nameHidden": "Name hidden",
+    "results": "Results"
   },
   "returnToSol": {
     "desc": "After all this time, maybe it's time to see what's happening on Sol.",

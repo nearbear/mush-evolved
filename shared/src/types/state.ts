@@ -11,6 +11,9 @@ import type { PlayerState } from "./player.ts";
 /** The side that won the game (victory.ts). */
 export type Winner = "mush" | "humans";
 
+/** How the game ended (victory.ts): the ship reached Sol or Eden, or the last human died. */
+export type Ending = "sol" | "eden" | "humans_dead";
+
 /** The Daedalus's counters (ship.ts). */
 export interface ShipResources {
   oxygen: number;
@@ -27,6 +30,8 @@ export interface GameState {
   phase: "playing" | "ended";
   /** Who won, once `phase` is "ended" (victory.ts); null while playing. Public: every view has it. */
   winner: Winner | null;
+  /** How it ended, set with `winner`; null while playing. Public: every view has it. */
+  ending: Ending | null;
   players: PlayerState[];
   /** Every item in the game, wherever it is. */
   items: ItemState[];

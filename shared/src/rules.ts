@@ -17,6 +17,7 @@ import { emptyResources } from "./resources.ts";
 import { hasSkill } from "./skills.ts";
 import { nextFloat, shuffle } from "./rng.ts";
 import { chatChannels, readChannels } from "./chat.ts";
+import { moderateName } from "./moderation.ts";
 import { clone, fail, findPlayer, type ActionResult } from "./helpers.ts";
 import { damage } from "./death.ts";
 import { activitySeen, logPrivate } from "./log.ts";
@@ -103,6 +104,7 @@ export function createGame(
     cycle: startCycle,
     phase: "playing",
     winner: null,
+    ending: null,
     players,
     items,
     nextItemId: items.length + 1,
@@ -388,6 +390,12 @@ export function viewFor(state: GameState, playerId: PlayerId): PlayerView {
     ...dayOf(state),
     phase: state.phase,
     winner: state.winner,
+    ending: state.ending,
+    // Names and roles are hidden while the game runs; the end screen shows everyone's (#191).
+    crew:
+      state.phase === "ended"
+        ? state.players.map(({ id, name, isBot, botKind, character, role, alive }) => ({ id, name: moderateName(name), isBot, ...(botKind && { botKind }), character, role, alive }))
+        : null,
     rooms: state.config.rooms,
     inventory: itemsIn(state, { kind: "player", id: you.id }).map(itemView),
     inventorySlots: inventorySlots(state, you),

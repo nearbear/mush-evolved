@@ -274,8 +274,18 @@
   },
   "gameOver": {
     "title": "La partida ha terminado",
-    "mush": "Ganan los Mush: el Daedalus llegó a Sol con Mush a bordo.",
-    "humans": "Ganan los humanos: el Daedalus llegó a Sol sin ningún Mush vivo."
+    "solMush": "Ganan los Mush: el Daedalus llegó a Sol con Mush a bordo.",
+    "solHumans": "Ganan los humanos: el Daedalus llegó a Sol sin ningún Mush vivo.",
+    "edenMush": "Ganan los Mush: el Daedalus llegó a Edén con Mush a bordo.",
+    "edenHumans": "Ganan los humanos: el Daedalus llegó a Edén sin ningún Mush vivo.",
+    "humansDead": "Ganan los Mush: todos los humanos del Daedalus han muerto.",
+    "crew": "Tripulación",
+    "roleHuman": "Humano",
+    "roleMush": "Mush",
+    "dead": "Muerto",
+    "you": "Tú",
+    "nameHidden": "Nombre oculto",
+    "results": "Resultados"
   },
   "returnToSol": {
     "desc": "Después de tanto tiempo, quizá sea hora de ver qué pasa en Sol.",

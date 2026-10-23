@@ -2,7 +2,7 @@ import { Action } from "./action.ts";
 import { logPublic } from "../log.ts";
 import { canReturnToSol, commandTerminalsHere, isPilgredRepaired } from "../pilgred.ts";
 import type { GameState, PlayerState } from "../types.ts";
-import { endGame, winnerOnReturn } from "../victory.ts";
+import { endGame, winnerOnArrival } from "../victory.ts";
 
 export type ReturnToSolActionData = { type: "return_to_sol"; equipment: string };
 
@@ -33,8 +33,8 @@ export class ReturnToSolAction extends Action<ReturnToSolActionData> {
   }
 
   override apply(state: GameState, player: PlayerState, _target: ReturnToSolActionData): void {
-    const winner = winnerOnReturn(state);
+    const winner = winnerOnArrival(state);
     logPublic(state, undefined, "returnedToSol", { name: player.character });
-    endGame(state, winner);
+    endGame(state, winner, "sol");
   }
 }
