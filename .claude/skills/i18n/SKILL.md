@@ -1,6 +1,6 @@
 ---
 name: i18n
-description: Keep the game translatable into English, French, and Spanish. Use whenever a change adds or edits player-visible text (UI labels, tooltips, aria-labels, log lines, error messages, item/equipment/room names, bot chat or prompts, chat moderation), adds a language, or when asked to translate or check i18n. Covers where strings live, how to write keys, what never to translate, and how to keep the i18n tests green.
+description: Keep the game translatable (en/fr/es). Use when a change adds or edits player-visible text (UI, log lines, errors, names, bot chat, moderation), adds a language, or when asked to translate or check i18n.
 ---
 
 # Internationalization
@@ -22,10 +22,9 @@ The UI language is a **per-player, client-side choice** (`web/src/i18n/`), indep
 ## Workflow
 
 1. Add the keys (en, then fr, es) and use `t()`.
-2. `npm test -w tools -- i18n` and `npm test -w web`.
+2. While iterating, run only `npm test -w tools -- i18n`; run `npm test -w web` once at the end.
 3. If the hardcoded-text baseline **shrank**, that's progress: `UPDATE_I18N_BASELINE=1 npm test -w tools -- i18n`. If it **grew**, translate the text or mark it `i18n-ignore`; never regenerate the baseline to make a failing test pass.
 4. `npm run typecheck`.
 5. Tell the user that the French and Spanish strings are drafts that need a native speaker's review, and list any new game terms you had to choose.
-6. A visual check is only done when asked (`play` skill). When it is, mention that fr/es text length hasn't been checked unless someone switched the language first.
 
 What is still untranslated is whatever `tools/src/i18n/baseline.json` lists; `docs/testing.md` section 7 says what is and isn't covered.
