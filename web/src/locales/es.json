@@ -39,6 +39,10 @@
     "open": "Ajustes",
     "title": "Ajustes",
     "close": "Cerrar",
+    "tabs": {
+      "general": "General",
+      "cheats": "Trampas"
+    },
     "cheats": {
       "title": "Trucos (desarrollo)",
       "infiniteAp": "Puntos de acción infinitos",
@@ -241,7 +245,10 @@
     "decodeRebel": "Decodificar señal rebelde",
     "contactXyloph": "Contactar con Xyloph",
     "updateNeron": "Actualizar NERON",
-    "setBios": "Cambiar un ajuste de la BIOS"
+    "setBios": "Cambiar un ajuste de la BIOS",
+    "turnShip": "Orientar la nave",
+    "travel": "Viajar",
+    "leaveOrbit": "Salir de la órbita"
   },
   "queue": {
     "label": "Tus acciones",
@@ -634,7 +641,14 @@
     "biosActopiOff": "Has desactivado ACTOPI: ya nadie ve quién está en las otras salas.",
     "biosDeathsOn": "Has activado los avisos de muerte: NERON anunciará cada muerte.",
     "biosDeathsOff": "Has desactivado los avisos de muerte: NERON ya no anunciará las muertes.",
-    "rebelCalling": "NERON: una base rebelde, {{base}}, intenta contactar con el Daedalus."
+    "rebelCalling": "NERON: una base rebelde, {{base}}, intenta contactar con el Daedalus.",
+    "turnedShip": "{{name}} orientó el Daedalus: ahora mira al {{direction}}.",
+    "travelNoFuel": "{{name}} intentó mover el Daedalus, pero no había suficiente combustible.",
+    "shipTraveled": "{{name}} movió el Daedalus.",
+    "shipInOrbit": "El Daedalus está ahora en órbita alrededor de un planeta.",
+    "orbitingPlanet": "El Daedalus está en órbita alrededor de tu planeta {{planet}}.",
+    "leaveOrbitNoFuel": "{{name}} intentó salir de la órbita, pero no había suficiente combustible.",
+    "leftOrbit": "{{name}} sacó al Daedalus de la órbita."
   },
   "skills": {
     "title": "Elegir una habilidad",
@@ -911,7 +925,8 @@
       "WRECK": "Restos de nave",
       "FRUIT_TREES": "Árboles frutales",
       "CRISTAL_FIELD": "Campo de cristalita"
-    }
+    },
+    "orbited": "En órbita"
   },
   "projects": {
     "title": "Proyectos de NERON",
@@ -1057,5 +1072,17 @@
       "SCHOOL_MANUALS": "Manuales escolares. Se han impreso en el puente dos libros de habilidad.",
       "WORKSHOP_MANUALS": "Manuales del taller. Se han impreso en el puente tres planos."
     }
+  },
+  "navigation": {
+    "title": "Navegación",
+    "heading": "Rumbo: {{direction}}",
+    "inOrbit": "En órbita alrededor de un planeta.",
+    "left": "Girar a la izquierda",
+    "right": "Girar a la derecha",
+    "distance": "Distancia (combustible)",
+    "travel": "Viajar",
+    "leaveOrbit": "Salir de la órbita",
+    "fuel": "Combustible a bordo: {{fuel}}",
+    "warning": "Sin suficiente combustible se pierden los PA. Todo planeta que no esté justo delante a esa distancia se pierde."
   }
 }

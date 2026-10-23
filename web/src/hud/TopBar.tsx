@@ -54,7 +54,6 @@ export function TopBar({
   );
   // Ready can't be offered while you already are, so the button stays (disabled, "Waiting…") until the cycle ends.
   const showReady = canReady || you.ready;
-  const leaveLabel = t("topBar.leave");
   const ended = view.phase === "ended";
   return (
     <header className="top-bar">
@@ -66,7 +65,7 @@ export function TopBar({
       <span className="spacer" />
       {!mobile && <ShipResources ship={view.ship} titles={view.titles} />}
       {mobile ? (
-        // Phones: both actions live in a hamburger menu to save top bar space.
+        // Phones: the actions live in a hamburger menu to save top bar space.
         <Menu.Root>
           <Menu.Trigger className="menu-button" aria-label={t("menu.open")}>
             <svg width="16" height="12" viewBox="0 0 16 12" aria-hidden="true">
@@ -90,9 +89,6 @@ export function TopBar({
                   <img className="menu-item-icon" src={SETTINGS_ICON} alt="" />
                   {t("settings.title")}
                 </Menu.Item>
-                <Menu.Item render={<button type="button" />} onClick={onLeave}>
-                  {leaveLabel}
-                </Menu.Item>
               </Menu.Popup>
             </Menu.Positioner>
           </Menu.Portal>
@@ -109,7 +105,6 @@ export function TopBar({
               {endCycleLabel}
             </button>
           )}
-          <button type="button" onClick={onLeave}>{leaveLabel}</button>
         </>
       )}
       <SettingsDialog
@@ -119,6 +114,7 @@ export function TopBar({
         onCheat={onCheat}
         onActopiCheat={onActopiCheat}
         onRoleCheat={onRoleCheat}
+        onLeave={onLeave}
         hideTrigger={mobile}
         {...(mobile ? { open: settingsOpen, onOpenChange: setSettingsOpen } : {})}
       />

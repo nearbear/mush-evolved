@@ -39,6 +39,10 @@
     "open": "Paramètres",
     "title": "Paramètres",
     "close": "Fermer",
+    "tabs": {
+      "general": "Général",
+      "cheats": "Triche"
+    },
     "cheats": {
       "title": "Triche (développement)",
       "infiniteAp": "Points d'action infinis",
@@ -241,7 +245,10 @@
     "decodeRebel": "Décoder un signal rebelle",
     "contactXyloph": "Contacter Xyloph",
     "updateNeron": "Mettre à jour NERON",
-    "setBios": "Modifier un réglage du BIOS"
+    "setBios": "Modifier un réglage du BIOS",
+    "turnShip": "Orienter le vaisseau",
+    "travel": "Voyager",
+    "leaveOrbit": "Quitter l'orbite"
   },
   "queue": {
     "label": "Vos actions",
@@ -634,7 +641,14 @@
     "biosActopiOff": "Vous avez désactivé ACTOPI : personne ne voit plus qui est dans les autres pièces.",
     "biosDeathsOn": "Vous avez activé le signalement des décès : NERON annoncera chaque décès.",
     "biosDeathsOff": "Vous avez désactivé le signalement des décès : NERON n'annoncera plus les décès.",
-    "rebelCalling": "NERON : une base rebelle, {{base}}, tente de contacter le Daedalus."
+    "rebelCalling": "NERON : une base rebelle, {{base}}, tente de contacter le Daedalus.",
+    "turnedShip": "{{name}} a orienté le Daedalus. Cap : {{direction}}.",
+    "travelNoFuel": "{{name}} a tenté de déplacer le Daedalus, mais il n'y avait pas assez de fuel.",
+    "shipTraveled": "{{name}} a déplacé le Daedalus.",
+    "shipInOrbit": "Le Daedalus est maintenant en orbite autour d'une planète.",
+    "orbitingPlanet": "Le Daedalus est en orbite autour de votre planète {{planet}}.",
+    "leaveOrbitNoFuel": "{{name}} a tenté de quitter l'orbite, mais il n'y avait pas assez de fuel.",
+    "leftOrbit": "{{name}} a fait quitter l'orbite au Daedalus."
   },
   "skills": {
     "title": "Choisir une compétence",
@@ -911,7 +925,8 @@
       "WRECK": "Épave",
       "FRUIT_TREES": "Verger",
       "CRISTAL_FIELD": "Cristalite"
-    }
+    },
+    "orbited": "En orbite"
   },
   "projects": {
     "title": "Projets NERON",
@@ -1057,5 +1072,17 @@
       "SCHOOL_MANUALS": "Manuels scolaires. Deux Apprentrons ont été imprimés sur le pont.",
       "WORKSHOP_MANUALS": "Manuel de l'atelier. Trois plans ont été imprimés sur le pont."
     }
+  },
+  "navigation": {
+    "title": "Navigation",
+    "heading": "Orientation : {{direction}}",
+    "inOrbit": "En orbite autour d'une planète.",
+    "left": "Orienter à gauche",
+    "right": "Orienter à droite",
+    "distance": "Distance (fuel)",
+    "travel": "Voyager",
+    "leaveOrbit": "Quitter l'orbite",
+    "fuel": "Fuel à bord : {{fuel}}",
+    "warning": "Sans assez de fuel, les PA sont perdus. Toute planète qui ne se trouve pas droit devant à cette distance est perdue."
   }
 }

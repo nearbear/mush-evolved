@@ -39,6 +39,10 @@
     "open": "Settings",
     "title": "Settings",
     "close": "Close",
+    "tabs": {
+      "general": "General",
+      "cheats": "Cheats"
+    },
     "cheats": {
       "title": "Cheats (development)",
       "infiniteAp": "Infinite action points",
@@ -240,7 +244,10 @@
     "decodeRebel": "Decode rebel signal",
     "contactXyloph": "Contact Xyloph",
     "updateNeron": "Update NERON",
-    "setBios": "Change a BIOS setting"
+    "setBios": "Change a BIOS setting",
+    "turnShip": "Turn the ship",
+    "travel": "Travel",
+    "leaveOrbit": "Leave orbit"
   },
   "queue": {
     "label": "Your actions",
@@ -631,7 +638,14 @@
     "biosActopiOff": "You switched ACTOPI off: nobody sees who is in the other rooms any more.",
     "biosDeathsOn": "You switched death announcements on: NERON will announce every death.",
     "biosDeathsOff": "You switched death announcements off: NERON will no longer announce deaths.",
-    "rebelCalling": "NERON: a rebel base, {{base}}, is trying to contact the Daedalus."
+    "rebelCalling": "NERON: a rebel base, {{base}}, is trying to contact the Daedalus.",
+    "turnedShip": "{{name}} turned the Daedalus: it now faces {{direction}}.",
+    "travelNoFuel": "{{name}} tried to move the Daedalus, but there wasn't enough fuel.",
+    "shipTraveled": "{{name}} moved the Daedalus.",
+    "shipInOrbit": "The Daedalus is now in orbit around a planet.",
+    "orbitingPlanet": "The Daedalus is in orbit around your planet {{planet}}.",
+    "leaveOrbitNoFuel": "{{name}} tried to leave orbit, but there wasn't enough fuel.",
+    "leftOrbit": "{{name}} took the Daedalus out of orbit."
   },
   "skills": {
     "title": "Choose a skill",
@@ -907,7 +921,8 @@
       "WRECK": "Wreck",
       "FRUIT_TREES": "Fruit trees",
       "CRISTAL_FIELD": "Crystallite field"
-    }
+    },
+    "orbited": "In orbit"
   },
   "projects": {
     "title": "NERON projects",
@@ -1051,5 +1066,17 @@
       "SCHOOL_MANUALS": "School manuals. Two skill books were printed on the bridge.",
       "WORKSHOP_MANUALS": "Workshop manuals. Three blueprints were printed on the bridge."
     }
+  },
+  "navigation": {
+    "title": "Navigation",
+    "heading": "Facing {{direction}}",
+    "inOrbit": "In orbit around a planet.",
+    "left": "Turn left",
+    "right": "Turn right",
+    "distance": "Distance (fuel)",
+    "travel": "Travel",
+    "leaveOrbit": "Leave orbit",
+    "fuel": "Fuel aboard: {{fuel}}",
+    "warning": "Without enough fuel the AP is wasted. Every planet not lying exactly ahead at that distance is lost."
   }
 }
