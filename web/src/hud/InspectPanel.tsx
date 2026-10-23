@@ -11,6 +11,7 @@ import { atlasUrl } from "../iso/shipLayout.ts";
 import { equipmentByTileKey, roomAsBuilt } from "../iso/equipmentTiles.ts";
 import { frameRect } from "../iso/placement.ts";
 import { ItemFace } from "./ItemFace.tsx";
+import { PlantStates } from "./PlantStates.tsx";
 import { ItemIcon } from "./ItemIcon.tsx";
 import { ActionLabel } from "./ActionLabel.tsx";
 import { SkillSlots } from "./SkillSlots.tsx";
@@ -115,6 +116,7 @@ function Details({ view, layout, resolved, onAction }: { view: PlayerView; layou
           <div className="inspect-name inspect-item-name">
             <strong>{names.itemOf(resolved.item)}</strong>
           </div>
+          {resolved.item.plant && <PlantStates plant={resolved.item.plant} />}
           {resolved.item.charges !== undefined && <div className="sub inspect-charges">{t("itemAttr.charges", { count: resolved.item.charges })}</div>}
         </>
       );

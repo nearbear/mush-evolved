@@ -116,6 +116,10 @@ export const SKILL_STATUS: Readonly<Partial<Record<SkillId, SkillStatus>>> = {
   radio_expert: "full",
   // +100% rebel decoding (owner, 2026-10-21, comms.ts).
   rebel: "full",
+  // Garden points and seeing plant sickness (owner, 2026-10-22, botany.ts); no grafting or fruit properties.
+  botanic: "partial",
+  // Sees plant sickness as the Botanist does (botany.ts); none of its other skills' knowledge.
+  skilful: "partial",
 };
 
 export function skillStatus(skill: string): SkillStatus {

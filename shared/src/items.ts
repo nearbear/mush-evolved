@@ -13,7 +13,10 @@ export interface ItemType {
     ap: number;
     /** Satiety a human gains (confirmed 2026-10-14). */ satiety: number;
     /** Morale the eater gains (negative: loses), within 0 and `maxMorale`. */ morale?: number;
+    /** HP the eater gains, up to `maxHp`. Never lowers HP: losses go through `damage`. */ hp?: number;
   };
+  /** A fruit: sowing it in an empty hydropot grows a plant of this species (its own type), which produces more of it (botany.ts). */
+  fruit?: boolean;
   /** Cooking it (in a cook room) turns it into this item type. */
   cook?: { into: string };
   /** Carrying one makes every room-to-room move cost `heavyMpPenalty` more MP, once however many you carry (confirmed 2026-10-16). Skills may cancel it. */
@@ -40,6 +43,9 @@ export const CORPSE_ITEM = "corpse";
 
 /** Express cooks rations (actions/express_cook.ts) while it has charges. */
 export const MICROWAVE_ITEM = "microwave";
+
+/** The hydropot: an empty one takes a sown fruit, a planted one grows (`ItemState.plant`, botany.ts). */
+export const TREE_POT_ITEM = "tree_pot";
 
 /** A skill book: reading it (`read_book`) fills the book slot with its `ItemState.teaches` skill. */
 export const BOOK_ITEM = "book";
@@ -84,8 +90,11 @@ export const ITEM_TYPES: Record<string, ItemType> = {
   soap: {},
   // Decided 2026-10-17: rings in its room when a Mush acts there (mycoalarm.ts). Dismantles for one scrap metal.
   myco_alarm: { dismantle: { metal: 1, plastic: 0 } },
-  // Decided 2026-10-18: the HydroPot (TREE_POT in the original). No effect yet. Named after its icon.
-  tree_pot: {},
+  // Decided 2026-10-18: the HydroPot (TREE_POT in the original). Named after its icon. Owner, 2026-10-22: plants
+  // grow in it (botany.ts), anywhere, carried too.
+  [TREE_POT_ITEM]: {},
+  // Owner, 2026-10-22: the original's banana (genFruitList): +1 AP, +1 satiety, +1 morale, +1 HP. Named after its icon.
+  fruit_banana: { fruit: true, consume: { ap: 1, satiety: 1, morale: 1, hp: 1 } },
   metal_scraps: {},
   thick_tube: {},
   // Decided 2026-10-16: carries a recipe in `ItemState.builds`; consumed by building.

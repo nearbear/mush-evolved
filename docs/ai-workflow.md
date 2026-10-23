@@ -1095,3 +1095,9 @@ Not a deadlock: the run was just long enough to pass the 120 s and 300 s tool ti
 - **Built:** `GameState.ending` set by `endGame` (Sol, death); `winnerOnReturn` became `winnerOnArrival` for both destinations; `viewFor` adds `ending` and, only once ended, `crew` (names through the new `moderateName`, bot flag, character, role, alive). `EndScreen` replaces `GameOverDialog`. `STATE_VERSION` 56.
 - **Worked:** reconnecting needed no change: the seat ticket is in sessionStorage, the room keeps the ended game, and `onConnect` resends the view, so the screen mounts open again.
 - **Needed correction:** i18next's typed `t` hit "type instantiation is excessively deep" when passed into a helper; returning the key from the helper and calling `t` in the component fixed it.
+
+## 2026-10-22: Botany, Pass 1
+
+- **Decision (owner):** botany mechanics before alien species. Bananas only, no plant death. Sickness is hidden from everyone outside the Botanist role (Botanist and Skilful). Non-Botanists may treat any plant, and treating a healthy one costs and reads the same as treating a sick one. Garden points go to Botanists only and pay only in the garden. The five placeholder lab pots are replaced by the original's start (garden plus front storage).
+- **What worked:** Claude mined the original's data (`Gameplay.hx`, action and status tables) and the eMush wiki into a plan with the open questions listed. The owner answered them in two rounds before any code was written. Hiding sickness by making `treat` legal on every plant for non-Botanists means a refusal can't leak which plants are sick. That came out of the owner's direction, not the original, where sickness is public.
+- **Needed correction:** Claude first said 10 plants couldn't keep up with the oxygen burn; 10 a day against 8 a day is a surplus. The owner caught it. The plan's new start conflicted with an older decision (five lab pots), which Claude raised before building.

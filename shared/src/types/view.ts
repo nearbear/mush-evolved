@@ -27,6 +27,8 @@ export interface ItemView {
   charges?: number;
   /** For a skill book: the skill it teaches (public to whoever can see the item). */
   teaches?: string;
+  /** For a planted hydropot. `sick` is there only for the Botanist role; everyone else never gets the field. */
+  plant?: { species: string; age: number | null; thirst: 0 | 1 | 2; sick?: boolean };
 }
 
 /** One seat as the end screen shows it, once the game has ended (#191). Everyone, you included, in seat order. */

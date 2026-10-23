@@ -1,4 +1,4 @@
-import type { RoomId } from "../types.ts";
+import type { PlantState, RoomId } from "../types.ts";
 
 /**
  * How moving between rooms is paid for. These are base values; modifiers from
@@ -93,6 +93,19 @@ export interface GameConfig {
   };
   pacifist: {
     aggressiveApSurcharge: number; // Extra AP for each aggressive action in a Pacifist's room, theirs too (owner, 2026-10-18).
+  };
+  botany: {
+    // Owner, 2026-10-22 (docs/scratchpad/botany-plan.md, Pass 1).
+    water: { cost: { ap: number } }; // Water one thirsty or dried plant.
+    treat: { cost: { ap: number } }; // Treat one plant (clears sickness).
+    sow: { cost: { ap: number } }; // Plant a carried fruit in an empty hydropot.
+    dirtyChance: number; // Chance of getting dirty after watering, treating or sowing (the original's 15%).
+    growCycles: Record<string, number>; // Cycles a young plant of each species needs before it becomes adult.
+    sickChancePerCycle: number; // PLACEHOLDER: each healthy plant's chance of falling sick at each cycle change.
+    oxygenPerPlant: number; // Oxygen each producing plant gives at day start.
+    gardenRoom: RoomId; // Garden points pay for an action only on a plant here.
+    pointsPerDay: number; // Garden points the Botanist gains at each day start.
+    capPoints: number; // Garden points held at most.
   };
   cook: {
     cost: { ap: number }; // AP spent to cook an uncooked ration (confirmed 2026-10-16).
@@ -246,7 +259,7 @@ export interface GameConfig {
   startSkills: string[]; // Skills every player starts with (none since 2026-10-15; players pick their own).
   characterModifiers: Record<string, string[]>; // Modifiers a character starts with, by character id (traits: Ian pacifist, owner 2026-10-18; Chun immunity and mankind_only_hope, owner 2026-10-18; Terrence wheelchair, owner 2026-10-19).
   mankindOnlyHope: { moraleLossCut: number }; // How much less morale the crew loses each day while a holder (Chun) is alive (owner, 2026-10-18).
-  startItems: { type: string; room: RoomId; builds?: string; teaches?: string }[]; // Items placed in rooms at the start of the game. Types come from ITEM_TYPES in items.ts.
+  startItems: { type: string; room: RoomId; builds?: string; teaches?: string; plant?: PlantState }[]; // Items placed in rooms at the start of the game. Types come from ITEM_TYPES in items.ts.
   startInventory: string[]; // Item types every player starts carrying (one of each).
   rooms: Record<RoomId, RoomId[]>; // Adjacency list. Movement is only allowed along these edges.
   equipment: Record<RoomId, Equipment[]>; // Fixed equipment in each room. Types come from EQUIPMENT_TYPES in equipment.ts.

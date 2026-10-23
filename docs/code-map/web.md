@@ -33,10 +33,10 @@ All under `web/src/`. UI rules are in `web/CLAUDE.md`.
 - `InventoryPanel.tsx`: item zones; drag to take/drop, tap fallback.
 - `InspectPanel.tsx`: the selected person, equipment, or item, with its legal actions.
 - `SkillSlots.tsx`: skill slots and the picker dialog.
-- `StatusIcons.tsx`, `ItemAttrIcons.tsx`: status and item attribute icons.
+- `StatusIcons.tsx`, `ItemAttrIcons.tsx`: status and item attribute icons. `PlantStates.tsx`: a planted hydropot's young, thirsty, dried and (Botanist role only) sick icons.
 - `ITrackie.tsx`: the right panel: room log, global chat, Features, Private tabs. Messages come from `readChannels`, the message box from `chatChannels`; the dead lose the Room and Private tabs, get a read-only note instead of the box in the other channels, and gain a skull Graveyard tab.
 - `DeathNotice.tsx`: what a dead player sees where the room was.
-- `ItemIcon.tsx`: an item's icon; a corpse shows its owner lying down.
+- `ItemIcon.tsx`: an item's icon (`itemViewIcon`: a planted hydropot shows its tree); a corpse shows its owner lying down.
 - `FeatureSelect.tsx`: the Features drop-down.
 - `IconButton.tsx`: `IconButton` and `IconTab`.
 - `Markdown.tsx`: restricted chat message rendering.

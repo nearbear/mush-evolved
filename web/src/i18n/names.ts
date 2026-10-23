@@ -50,6 +50,9 @@ const ACTION_NAME_KEYS = {
   attack: "actions.attack",
   pick_skill: "actions.pickSkill",
   read_book: "actions.readBook",
+  water: "actions.water",
+  treat: "actions.treat",
+  sow: "actions.sow",
 } as const satisfies Record<Exclude<ActionType, "ready">, string>;
 
 export function useNames() {
@@ -70,9 +73,13 @@ export function useNames() {
     const thing = built(builds);
     return t("items.blueprintOf" as never, { thing, defaultValue: type });
   };
-  /** An item as the view has it: a blueprint is named for what it builds, a skill book for its skill. */
-  const itemOf = (it: Pick<ItemView, "type" | "builds" | "teaches">) =>
-    it.teaches === undefined ? item(it.type, it.builds) : t("items.bookOf" as never, { skill: skill(it.teaches), defaultValue: it.type });
+  /** An item as the view has it: a blueprint is named for what it builds, a skill book for its skill, a planted hydropot for its plant. */
+  const itemOf = (it: Pick<ItemView, "type" | "builds" | "teaches" | "plant">) =>
+    it.plant !== undefined
+      ? t("itemAttr.plantOf", { item: item(it.plant.species) })
+      : it.teaches === undefined
+        ? item(it.type, it.builds)
+        : t("items.bookOf" as never, { skill: skill(it.teaches), defaultValue: it.type });
   /** The short label along an item's face: a skill book's skill, a blueprint's product. */
   const itemLabel = (it: Pick<ItemView, "builds" | "teaches">) =>
     it.teaches !== undefined ? skill(it.teaches) : it.builds !== undefined ? built(it.builds) : undefined;

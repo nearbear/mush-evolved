@@ -37,6 +37,9 @@ import { GetUpAction, LieDownAction } from "./actions/lie_down.ts";
 import { ShowerAction } from "./actions/shower.ts";
 import { SpikeAction } from "./actions/spike.ts";
 import { TransferAction } from "./actions/transfer.ts";
+import { WaterAction } from "./actions/water.ts";
+import { TreatAction } from "./actions/treat.ts";
+import { SowAction } from "./actions/sow.ts";
 import type { Action, GameState, PlayerState } from "./types.ts";
 
 export type ActionType = Action["type"];
@@ -92,6 +95,9 @@ export const ACTIONS: { [T in ActionType]: ActionDef<ActionOf<T>> } = {
   consume: new ConsumeAction(),
   cook: new CookAction(),
   express_cook: new ExpressCookAction(),
+  water: new WaterAction(),
+  treat: new TreatAction(),
+  sow: new SowAction(),
   build: new BuildAction(),
   jettison: new JettisonAction(),
   install: new InstallAction(),
