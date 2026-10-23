@@ -59,16 +59,23 @@ export function useNames() {
   const room = (id: RoomId) => lookup("rooms", id);
   const skill = (id: string) => t(`skills.names.${id}` as never, { defaultValue: id });
   const equipment = (type: string) => lookup("equipment", type);
+  /** What a blueprint builds. */
+  const built = (builds: string) => {
+    const makes = BLUEPRINTS[builds]?.makes;
+    return makes && "item" in makes ? lookup("items", makes.item) : lookup("equipment", makes ? makes.equipment : builds);
+  };
   /** A blueprint is named for what it builds. */
   const item = (type: string, builds?: string) => {
     if (builds === undefined) return lookup("items", type);
-    const makes = BLUEPRINTS[builds]?.makes;
-    const thing = makes && "item" in makes ? lookup("items", makes.item) : lookup("equipment", makes ? makes.equipment : builds);
+    const thing = built(builds);
     return t("items.blueprintOf" as never, { thing, defaultValue: type });
   };
   /** An item as the view has it: a blueprint is named for what it builds, a skill book for its skill. */
   const itemOf = (it: Pick<ItemView, "type" | "builds" | "teaches">) =>
     it.teaches === undefined ? item(it.type, it.builds) : t("items.bookOf" as never, { skill: skill(it.teaches), defaultValue: it.type });
+  /** The short label along an item's face: a skill book's skill, a blueprint's product. */
+  const itemLabel = (it: Pick<ItemView, "builds" | "teaches">) =>
+    it.teaches !== undefined ? skill(it.teaches) : it.builds !== undefined ? built(it.builds) : undefined;
   const research = (id: string) => t(`research.names.${id}` as never, { defaultValue: id });
   const project = (id: string) => t(`projects.names.${id}` as never, { defaultValue: id });
   const title = (id: string) => t(`titles.names.${id}` as never, { defaultValue: id });
@@ -95,5 +102,5 @@ export function useNames() {
     return t(`logEvent.${key}` as never, { ...resolved, defaultValue: key });
   };
 
-  return { room, equipment, item, itemOf, research, project, skill, title, rebelBase, action, character: characterName, characterGiven: characterGivenName, logLine };
+  return { room, equipment, item, itemOf, itemLabel, research, project, skill, title, rebelBase, action, character: characterName, characterGiven: characterGivenName, logLine };
 }

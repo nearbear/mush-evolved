@@ -209,7 +209,7 @@
     "heal": "Heal",
     "punch": "Punch",
     "attack": "Attack",
-    "attackWith": "Attack with the {{weapon}}",
+    "attackWith": "Attack ({{weapon}})",
     "spike": "Spike",
     "move": "Move",
     "take": "Take",

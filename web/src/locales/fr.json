@@ -210,7 +210,7 @@
     "heal": "Soigner",
     "punch": "Frapper",
     "attack": "Attaquer",
-    "attackWith": "Attaquer avec : {{weapon}}",
+    "attackWith": "Attaquer ({{weapon}})",
     "spike": "Contaminer",
     "move": "Se déplacer",
     "take": "Ramasser",

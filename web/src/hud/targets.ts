@@ -119,7 +119,7 @@ const ACTION_LABEL_KEYS = {
   stop_accommodation: "actions.stopAccommodation",
 } as const;
 
-/** The carried weapon an attack uses, for its button text ("Attack with the knife"); a carried weapon is in the inventory. */
+/** The carried weapon an attack uses, for its button text ("Attack (knife)"); a carried weapon is in the inventory. */
 export const attackWeapon = (view: PlayerView, action: Action): ItemView | undefined =>
   action.type === "attack" ? view.inventory.find((i) => i.id === action.weapon) : undefined;
 

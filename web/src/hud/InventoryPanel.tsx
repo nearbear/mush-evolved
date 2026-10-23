@@ -111,7 +111,7 @@ export function InventoryPanel({
               setOver(null);
             }}
           >
-            <ItemFace label={item.teaches === undefined ? undefined : names.skill(item.teaches)}>
+            <ItemFace label={names.itemLabel(item)}>
               <ItemIcon className="item-icon" item={item} view={view} />
             </ItemFace>
           </button>

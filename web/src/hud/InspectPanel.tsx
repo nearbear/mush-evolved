@@ -108,7 +108,7 @@ function Details({ view, layout, resolved, onAction }: { view: PlayerView; layou
       return (
         <>
           <div className="inspect-item">
-            <ItemFace>
+            <ItemFace label={names.itemLabel(resolved.item)}>
               <ItemIcon className="item-icon" item={resolved.item} view={view} />
             </ItemFace>
           </div>

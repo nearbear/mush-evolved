@@ -210,7 +210,7 @@
     "heal": "Curar",
     "punch": "Golpear",
     "attack": "Atacar",
-    "attackWith": "Atacar con: {{weapon}}",
+    "attackWith": "Atacar ({{weapon}})",
     "spike": "Contagiar",
     "move": "Moverse",
     "take": "Recoger",
