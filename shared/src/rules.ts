@@ -217,7 +217,7 @@ export function performAction(next: GameState, actor: PlayerState, action: Actio
   }
   // After the action's own log lines; rings on a failure too (owner, 2026-10-18).
   if (def.tags.includes("spore")) ringMycoAlarms(next, room);
-  applyCheats(actor, next.config);
+  applyCheats(next, actor);
   if (next.players.every((pl) => !pl.alive || pl.ready)) advanceCycle(next);
   return true;
 }
@@ -232,7 +232,7 @@ export function setCheat(state: GameState, playerId: PlayerId, cheat: Cheat, on:
   const p = findPlayer(next, playerId)!;
   p.cheats = p.cheats.filter((c) => c !== cheat);
   if (on) p.cheats.push(cheat);
-  applyCheats(p, next.config);
+  applyCheats(next, p);
   return { ok: true, state: next };
 }
 
@@ -243,7 +243,7 @@ export function setRoleCheat(state: GameState, playerId: PlayerId, role: RoleChe
   const p = findPlayer(next, playerId)!;
   if (role === "mush" && p.role === "human") convert(next, p);
   else if (role === "human") makeHuman(p, next.cycle);
-  applyCheats(p, next.config);
+  applyCheats(next, p);
   return { ok: true, state: next };
 }
 
@@ -295,7 +295,7 @@ function advanceCycle(state: GameState): void {
     }
     if (isHungry(state, p)) damage(state, p, state.config.hunger.hpPerCycle);
   }
-  for (const p of state.players) applyCheats(p, state.config);
+  for (const p of state.players) applyCheats(state, p);
   const { day } = dayOf(state);
   state.log.push({
     cycle: state.cycle,

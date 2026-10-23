@@ -182,3 +182,13 @@ describe("relay and title cheats", () => {
     expect(hasTitleAccess(s, player(s, other), "commander")).toBe(true);
   });
 });
+
+describe("infinite charges cheat", () => {
+  it("refills carried charged items after use, and leaves items on the floor alone", () => {
+    let s = fresh();
+    s.items.push({ id: "w", type: "blaster", at: { kind: "player", id: "p0" }, charges: 0 }, { id: "f", type: "blaster", at: { kind: "room", id: player(s, "p0").room }, charges: 0 });
+    s = cheat(s, "p0", "infiniteCharges");
+    expect(s.items.find((i) => i.id === "w")!.charges).toBe(cfg.weapons.types.blaster!.charges);
+    expect(s.items.find((i) => i.id === "f")!.charges).toBe(0);
+  });
+});

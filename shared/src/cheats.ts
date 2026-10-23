@@ -2,9 +2,10 @@
 // maximum. Test tooling, not a game rule: the server refuses the `cheat` input
 // unless ALLOW_CHEATS is set, and the flags only ever appear in your own view.
 
-import type { GameConfig, PlayerState } from "./types.ts";
+import { startCharges } from "./items.ts";
+import type { GameState, PlayerState } from "./types.ts";
 
-export const CHEATS = ["infiniteAp", "infiniteMp", "infiniteMorale", "infiniteHp", "infiniteSpores", "instantActions", "noRelayPenalty", "freeHacking"] as const;
+export const CHEATS = ["infiniteAp", "infiniteMp", "infiniteMorale", "infiniteHp", "infiniteSpores", "infiniteCharges", "instantActions", "noRelayPenalty", "freeHacking"] as const;
 export type Cheat = (typeof CHEATS)[number];
 
 /** Whether a player sees through ACTOPI as the ship has it ("default"), or always ("on") or never ("off"). */
@@ -28,24 +29,31 @@ export const isCheat = (value: unknown): value is Cheat => CHEATS.some((c) => c 
  * Where each cheat refills its stat to. Adding a cheat means adding it to
  * CHEATS and one line here (the UI lists CHEATS).
  */
-const REFILL: Record<Cheat, (p: PlayerState, config: GameConfig) => void> = {
-  infiniteAp: (p, c) => void (p.ap = c.maxAp),
-  infiniteMp: (p, c) => void (p.mp = c.movement.mpCap),
-  infiniteMorale: (p, c) => void (p.morale = c.maxMorale),
-  infiniteHp: (p, c) => void (p.hp = c.maxHp),
+const REFILL: Record<Cheat, (p: PlayerState, state: GameState) => void> = {
+  infiniteAp: (p, { config }) => void (p.ap = config.maxAp),
+  infiniteMp: (p, { config }) => void (p.mp = config.movement.mpCap),
+  infiniteMorale: (p, { config }) => void (p.morale = config.maxMorale),
+  infiniteHp: (p, { config }) => void (p.hp = config.maxHp),
   infiniteSpores: (p) => void (p.role === "mush" && (p.spores = CHEAT_SPORES)),
+  infiniteCharges: (p, state) => {
+    for (const item of state.items) {
+      if (item.at.kind !== "player" || item.at.id !== p.id) continue;
+      const full = startCharges(state.config, item.type);
+      if (full !== undefined) item.charges = full;
+    }
+  },
   instantActions: () => {}, // no stat to refill; queue.ts reads the flag
   noRelayPenalty: () => {}, // pilgred.ts reads the flag
   freeHacking: () => {}, // bypassesTitles in titles.ts reads the flag
 };
 
 /**
- * Tops up every stat the player has a cheat for. Mutates a player the caller
- * already cloned. Called after anything that could spend or lose a stat.
+ * Tops up every stat the player has a cheat for. Mutates a state (and its player) the
+ * caller already cloned. Called after anything that could spend or lose a stat.
  */
-export function applyCheats(p: PlayerState, config: GameConfig): void {
+export function applyCheats(state: GameState, p: PlayerState): void {
   if (!p.alive) return; // nothing brings the dead back
-  for (const cheat of p.cheats) REFILL[cheat](p, config);
+  for (const cheat of p.cheats) REFILL[cheat](p, state);
 }
 
 /** Turns a player human at once (the reverse of infection). Mutates a player the caller already cloned. */
