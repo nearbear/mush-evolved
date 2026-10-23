@@ -349,13 +349,15 @@ export function problems(ship: ShipLayout): Problem[] {
     const ra = byId.get(a) as Placed;
     const back = byId.get(b)!.tiles.find((u) => u.door?.target === a)!;
     const rb = byId.get(b) as Placed;
+    // The doorway cells of both doors, not just their anchors: a front-edge door has no drawn art, but its cells are where you cross.
+    const doorway = (r: Placed, t: TilePlacement) => doorCells(ship.slices, t).map((c) => shipCell(r, c));
     out.push({
       id: `misaligned:${a}:${b}`,
       severity: "warning",
       title: `Door ${a} / ${b} doesn't meet`,
       detail: `${b}'s side is off by ${d.off.x},${d.off.y}`,
       ...(KNOWN_MISALIGNED.includes(name) && { known: "pinned in a test" }),
-      cells: [shipCell(ra, ra.tiles[tile!.index]!), shipCell(rb, back)],
+      cells: [...doorway(ra, ra.tiles[tile!.index]!), ...doorway(rb, back)],
       room: a,
       ...(tile && { tile }),
     });
