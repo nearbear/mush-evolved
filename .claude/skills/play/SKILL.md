@@ -59,6 +59,8 @@ Phone (every phone step also fails if the page scrolls sideways):
 | `m03-peek-examine.png` | Equipment examined from the peek bar, then the iTrackie room log |
 | `m04-chat-focused.png` | Global chat sent with the input still focused; the nav must be hidden |
 | `m05-inventory.png` | Inventory overlay over the room after a take (or drop) |
+| `m05c-resources.png` | The nameplate's "…" open, showing your other resources past the first two |
+| `m05b-ship.png` | Ship card (resources and titles) open from the ship button, room view's lower left |
 | `m06-door-go.png` | After tapping a door and pressing Go in the peek bar |
 | `m07-wide-room.png` | A room wider than the phone: scrolls sideways at 1x with you in view (walks up to 6 doors to find one; skipped if none) |
 | `m08-landscape.png` | The phone rotated (740x360 by default); the top bar must be one row |

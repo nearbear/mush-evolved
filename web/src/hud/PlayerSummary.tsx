@@ -7,6 +7,7 @@ import { Popover } from "@base-ui/react/popover";
 import { useTranslation } from "react-i18next";
 import { AP_PIP, FACTION_ICONS, HP_ICON, HP_PIP, MORALE_ICON, MORALE_PIP, MP_PIP, bustIcon } from "../art/assets.ts";
 import { PipBar } from "./PipBar.tsx";
+import { CompactResourceChips } from "./ResourceChips.tsx";
 
 /** Which faction you belong to, with its goal in a popover (hover, focus, or tap: touch has no hover). */
 function FactionCard({ view }: { view: PlayerView }) {
@@ -75,6 +76,7 @@ export function PlayerSummary({ view, compact = false, countdown }: { view: Play
             <StatChip stat="mp" value={you.mp} max={view.movement.mpCap} icon={MP_PIP} />
             <StatChip stat="hp" value={you.hp} max={view.maxHp} icon={HP_ICON} big />
             <StatChip stat="morale" value={you.morale} max={view.maxMorale} icon={MORALE_ICON} big />
+            <CompactResourceChips view={view} />
           </div>
         )}
       </div>

@@ -12,6 +12,7 @@
     "open": "Menú"
   },
   "shipResources": {
+    "button": "Nave",
     "title": "Recursos de la nave",
     "oxygen": "Oxígeno",
     "fuel": "Combustible",

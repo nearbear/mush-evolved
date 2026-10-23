@@ -12,6 +12,7 @@
     "open": "Menu"
   },
   "shipResources": {
+    "button": "Ship",
     "title": "Ship resources",
     "oxygen": "Oxygen",
     "fuel": "Fuel",

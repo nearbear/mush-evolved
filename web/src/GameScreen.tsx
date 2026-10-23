@@ -11,6 +11,7 @@ import { BottomNav, type MobilePanel } from "./hud/BottomNav.tsx";
 import { DeathNotice } from "./hud/DeathNotice.tsx";
 import { InspectPanel } from "./hud/InspectPanel.tsx";
 import { InventoryOverlay } from "./hud/InventoryOverlay.tsx";
+import { ShipOverlay } from "./hud/ShipOverlay.tsx";
 import { ITrackie } from "./hud/ITrackie.tsx";
 import { PeekBar } from "./hud/PeekBar.tsx";
 import { TerminalDialog } from "./hud/TerminalDialog.tsx";
@@ -219,6 +220,7 @@ export function GameScreen({ ticket, onLeave }: { ticket: SeatTicket; onLeave: (
               <section className="iso-room loading">{t("common.loadingShip")}</section>
             )}
             {you.alive && <ActionQueue view={view} onClear={() => post({ type: "clearQueue" })} />}
+            {mobile && <ShipOverlay view={view} />}
             {you.alive && <InventoryOverlay view={view} selected={target} onAction={send} onSelect={select} zoom={zoom} onZoom={setZoom} />}
             {/* TODO(minimap): stubbed out for now, to be revisited. scene/Minimap.tsx still exists; render it here
                 with here={you.room} youId={you.id} people={[you, ...view.players]} unidentified={view.unidentified}
