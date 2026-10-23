@@ -17,6 +17,9 @@ const ACTION_NAME_KEYS = {
   project: "actions.project",
   repair_pilgred: "actions.repairPilgred",
   return_to_sol: "actions.returnToSol",
+  turn_ship: "actions.turnShip",
+  travel: "actions.travel",
+  leave_orbit: "actions.leaveOrbit",
   contact_sol: "actions.contactSol",
   decode_rebel: "actions.decodeRebel",
   contact_xyloph: "actions.contactXyloph",
@@ -92,7 +95,7 @@ export function useNames() {
     return key ? t(key as never, { defaultValue: type }) : type;
   };
 
-  /** The text of a log entry. `room`, `item`, `research`, `project`, `equipment`, `action`, `title`, `skill`, `base` (a rebel base) and `entry` (a Xyloph entry) params are ids and get translated; `name`, `target` and `body` are character ids. */
+  /** The text of a log entry. `room`, `item`, `research`, `project`, `equipment`, `action`, `title`, `skill`, `base` (a rebel base), `direction` (a heading) and `entry` (a Xyloph entry) params are ids and get translated; `name`, `target` and `body` are character ids. */
   const logLine = ({ key, params = {} }: Pick<LogEntry, "key" | "params">): string => {
     const resolved: Record<string, string | number> = { ...params };
     if (typeof params.room === "string") resolved.room = room(params.room);
@@ -104,6 +107,7 @@ export function useNames() {
     if (typeof params.title === "string") resolved.title = title(params.title);
     if (typeof params.skill === "string") resolved.skill = skill(params.skill);
     if (typeof params.base === "string") resolved.base = rebelBase(params.base);
+    if (typeof params.direction === "string") resolved.direction = t(`astro.directions.${params.direction}` as never, { defaultValue: params.direction });
     if (typeof params.entry === "string") resolved.entry = t(`comms.xyloph.${params.entry}` as never, { defaultValue: params.entry });
     for (const who of ["name", "target", "body"] as const) if (typeof params[who] === "string") resolved[who] = characterGivenName(params[who]);
     return t(`logEvent.${key}` as never, { ...resolved, defaultValue: key });

@@ -1,0 +1,47 @@
+import { Action } from "./action.ts";
+import { logPublic } from "../log.ts";
+import { canSteer } from "../navigation.ts";
+import { commandTerminalsHere } from "../pilgred.ts";
+import type { GameState, PlayerState } from "../types.ts";
+
+export type LeaveOrbitActionData = { type: "leave_orbit"; equipment: string };
+
+/**
+ * Leave the orbited planet from the Command terminal (owner, 2026-10-22, the wiki; it takes Travel's place while in orbit):
+ * 1 AP and `navigation.leaveOrbit.fuel` fuel, Commander only (Mush included, dirty or not). Short of fuel, the AP is
+ * spent and the ship stays. Otherwise the planet is lost, and scanning works again. Everyone aboard learns of it.
+ */
+export class LeaveOrbitAction extends Action<LeaveOrbitActionData> {
+  constructor() {
+    super("leave_orbit");
+  }
+
+  override getCost(state: Readonly<GameState>): { ap: number; mp: number } {
+    return { ap: state.config.navigation.leaveOrbit.cost.ap, mp: 0 };
+  }
+
+  override getCandidates(state: Readonly<GameState>, player: Readonly<PlayerState>): LeaveOrbitActionData[] {
+    if (!canSteer(state, player) || state.navigation.orbit === null) return [];
+    return commandTerminalsHere(state, player).map((terminal): LeaveOrbitActionData => ({ type: "leave_orbit", equipment: terminal.id }));
+  }
+
+  override validate(state: Readonly<GameState>, player: Readonly<PlayerState>, target: LeaveOrbitActionData): string | null {
+    if (!commandTerminalsHere(state, player).some((terminal) => terminal.id === target.equipment)) return "cant_steer";
+    if (!canSteer(state, player)) return "not_commander";
+    if (state.navigation.orbit === null) return "not_in_orbit";
+    return null;
+  }
+
+  override apply(state: GameState, player: PlayerState, _target: LeaveOrbitActionData): void {
+    const { fuel } = state.config.navigation.leaveOrbit;
+    if (state.ship.fuel < fuel) {
+      logPublic(state, player.room, "leaveOrbitNoFuel", { name: player.character });
+      return;
+    }
+    state.ship.fuel -= fuel;
+    const orbit = state.navigation.orbit;
+    for (const owner of Object.keys(state.planets)) state.planets[owner] = state.planets[owner]!.filter((p) => p.id !== orbit);
+    state.navigation.orbit = null;
+    logPublic(state, undefined, "leftOrbit", { name: player.character });
+  }
+}

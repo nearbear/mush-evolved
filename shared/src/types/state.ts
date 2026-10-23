@@ -92,6 +92,11 @@ export interface GameState {
   /** Failed scans in a row per player, raising their next scan's odds; reset by a success (owner, 2026-10-19). Never sent. */
   scanFailures: Record<PlayerId, number>;
   nextPlanetId: number;
+  /**
+   * The ship's heading and the planet it orbits, by id, if any (navigation.ts). `orbit` is public only as "in orbit or
+   * not"; the planet stays its finder's. `heading` goes only to the living at a Command terminal.
+   */
+  navigation: { heading: PlanetDirection; orbit: string | null };
   /** Who holds each title (titles.ts); null while vacant. Public: every view has the holders and the lines. */
   titles: Record<TitleId, PlayerId | null>;
   /**

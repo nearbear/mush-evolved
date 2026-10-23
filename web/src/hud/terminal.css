@@ -41,3 +41,16 @@
 .terminal-pilot_module {
   background-image: url("../../../Mush/www/img/design/nav_bg.png");
 }
+
+/* The Command terminal's steering (ShipNavigation). Rows wrap so the buttons fit a phone-width window. */
+.ship-navigation-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-block: 6px;
+}
+.ship-navigation-warning {
+  color: var(--warning);
+  font-size: 0.9em;
+}

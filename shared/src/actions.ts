@@ -23,6 +23,9 @@ import { SetBiosAction } from "./actions/set_bios.ts";
 import { ScanPlanetAction } from "./actions/scan_planet.ts";
 import { AnalyzePlanetAction } from "./actions/analyze_planet.ts";
 import { DeletePlanetAction } from "./actions/delete_planet.ts";
+import { LeaveOrbitAction } from "./actions/leave_orbit.ts";
+import { TravelAction } from "./actions/travel.ts";
+import { TurnShipAction } from "./actions/turn_ship.ts";
 import { ReadyAction } from "./actions/ready.ts";
 import { HealAction } from "./actions/heal.ts";
 import { InstallAction } from "./actions/install.ts";
@@ -83,6 +86,9 @@ export const ACTIONS: { [T in ActionType]: ActionDef<ActionOf<T>> } = {
   project: new ProjectAction(),
   repair_pilgred: new RepairPilgredAction(),
   return_to_sol: new ReturnToSolAction(),
+  turn_ship: new TurnShipAction(),
+  travel: new TravelAction(),
+  leave_orbit: new LeaveOrbitAction(),
   contact_sol: new ContactSolAction(),
   decode_rebel: new DecodeRebelAction(),
   contact_xyloph: new ContactXylophAction(),

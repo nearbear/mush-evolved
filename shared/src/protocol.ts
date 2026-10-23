@@ -122,6 +122,15 @@ export function parseGameMessage(raw: string): GameClientMessage | null {
   if (a.type === "return_to_sol" && typeof a.equipment === "string") {
     return { type: "action", action: { type: "return_to_sol", equipment: a.equipment } };
   }
+  if (a.type === "turn_ship" && typeof a.equipment === "string" && (a.side === "left" || a.side === "right")) {
+    return { type: "action", action: { type: "turn_ship", equipment: a.equipment, side: a.side } };
+  }
+  if (a.type === "travel" && typeof a.equipment === "string" && Number.isInteger(a.distance)) {
+    return { type: "action", action: { type: "travel", equipment: a.equipment, distance: a.distance as number } };
+  }
+  if (a.type === "leave_orbit" && typeof a.equipment === "string") {
+    return { type: "action", action: { type: "leave_orbit", equipment: a.equipment } };
+  }
   if ((a.type === "contact_sol" || a.type === "contact_xyloph" || a.type === "update_neron") && typeof a.equipment === "string") {
     return { type: "action", action: { type: a.type, equipment: a.equipment } };
   }

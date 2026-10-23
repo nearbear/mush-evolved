@@ -1116,3 +1116,10 @@ Follow-up (same day): the three reactors pulsed in step, so `spreadAmbient` in `
 - What worked: the wiki gave the outline, and a web-fetch agent read eMush's `PlanetService`, `RandomService` and `SpaceCoordinates` at tag 0.18.0 for the exact rules (truncating average, 32 coordinates). It also found that eMush loops forever when all 32 are taken; we refuse the scan instead.
 - Correction: the wiki pins the size growth to days, but eMush's code ties it to hard/very hard modes. The day thresholds come from the wiki.
 - Weighting only the free distances replaces eMush's reroll loop with the same distribution and no loop.
+
+## 2026-10-22: Ship travel from the Command terminal
+
+- **Decision (owner):** the wiki's steering model. The ship has a heading; the Commander turns it (1 AP) and travels 1–9 fuel ahead (1 AP). Short of fuel, the AP is wasted. Arriving on a known planet's position puts the ship in orbit. All other planets are lost, and the orbited one stays private to its finder. Leave orbit (1 AP) replaces Travel while in orbit, and scanning is refused in orbit.
+- **Claude's defaults, flagged:** leaving orbit burns 1 fuel, the ship starts facing north, the orbited planet can't be deleted, and the heading is shown only at the Command terminal.
+- **What worked:** the wiki skill (`npm run wiki -- page "Terminal de Commandement"`) answered most of the model. That cut the AskUserQuestion round to four real choices. Reusing `commandTerminalsHere` and `hasTitleAccess` kept the Commander check in one place.
+- **Needed correction:** the first test draft called `parseGameMessage` with an object (it takes the raw string) and expected the `validate` reason code for an action no longer among the candidates (the result is `illegal_action`).

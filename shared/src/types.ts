@@ -1,5 +1,6 @@
 import type { BiosOption } from "./bios.ts";
 import type { CharacterId } from "./characters.ts";
+import type { TurnSide } from "./navigation.ts";
 
 export * from "./types/chat.ts";
 export * from "./types/config.ts";
@@ -119,6 +120,9 @@ export type Action =
   | { type: "project"; equipment: string; project: string }
   | { type: "repair_pilgred"; equipment: string }
   | { type: "return_to_sol"; equipment: string }
+  | { type: "turn_ship"; equipment: string; side: TurnSide }
+  | { type: "travel"; equipment: string; distance: number }
+  | { type: "leave_orbit"; equipment: string }
   | { type: "contact_sol"; equipment: string }
   | { type: "decode_rebel"; equipment: string; base: string }
   | { type: "contact_xyloph"; equipment: string }

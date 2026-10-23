@@ -1,3 +1,4 @@
+import type { PlanetDirection } from "../planets.ts";
 import type { PlantState, RoomId } from "../types.ts";
 
 /**
@@ -208,6 +209,14 @@ export interface GameConfig {
     // Sector counts by day (owner, 2026-10-22, the wiki's eMush hard and very hard modes): the last entry whose `fromDay` has come.
     // Even sizes only, uniform from `min` to `max`.
     sizeByDay: { fromDay: number; min: number; max: number }[];
+  };
+  // Steering at the Command terminal (owner, 2026-10-22, the wiki's Terminal de Commandement). Travel goes 1 to
+  // `astro.distance.max` fuel the way the ship faces; short of fuel, the AP is spent and the ship stays put.
+  navigation: {
+    turn: { cost: { ap: number } }; // AP spent to turn the ship a quarter left or right (the wiki's 1).
+    travel: { cost: { ap: number } }; // AP spent to travel (the wiki's 1); fuel spent is the distance.
+    leaveOrbit: { cost: { ap: number }; fuel: number }; // AP (the wiki's 1) and fuel (Claude's default, 1) to leave orbit.
+    startHeading: PlanetDirection; // The heading at the start (Claude's default).
   };
   accommodate: { cost: { ap: number }; offerMs: number }; // AP spent to offer to push someone's wheelchair, and how long (server ms) the offer waits to be accepted (owner, 2026-10-19: free, 5 minutes).
   lieDown: { cost: { ap: number } }; // AP spent to lie down in a bed (confirmed 2026-10-17).

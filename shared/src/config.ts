@@ -121,6 +121,9 @@ export const DEFAULT_CONFIG: GameConfig = {
       { fromDay: 10, min: 6, max: 20 },
     ],
   },
+  // Owner, 2026-10-22: the Commander steers at the Command terminal. Turn, travel and leave orbit cost 1 AP each (the wiki);
+  // leaving orbit burns 1 fuel and the ship starts facing north (Claude's defaults).
+  navigation: { turn: { cost: { ap: 1 } }, travel: { cost: { ap: 1 } }, leaveOrbit: { cost: { ap: 1 }, fuel: 1 }, startHeading: "north" },
   // Decided 2026-10-18: NERON projects work exactly like research: 2 AP, 25% per action, no repeat penalty.
   project: { cost: { ap: 2 }, effect: { progressPercent: 25 } },
   // Owner, 2026-10-21: repairing PILGRED uses the original's numbers (DIG_RATE 6, PILGRED_MOD 2, DIG_BOOST 4, -2 per repeat),

@@ -23,7 +23,7 @@ import { damage } from "./death.ts";
 import { activitySeen, logPrivate } from "./log.ts";
 import { ringMycoAlarms } from "./mycoalarm.ts";
 import { planetsOf } from "./planets.ts";
-import { isPilgredRepaired, pilgredTerminalsHere } from "./pilgred.ts";
+import { commandTerminalsHere, isPilgredRepaired, pilgredTerminalsHere } from "./pilgred.ts";
 import { biosTerminalsHere, newBios } from "./bios.ts";
 import { callNextRebel, commsCycle, commsTerminalView, comTerminalsHere, newComms } from "./comms.ts";
 import { botanyCycle, botanyDay, plantView } from "./botany.ts";
@@ -130,6 +130,7 @@ export function createGame(
     planets: {},
     scanFailures: {},
     nextPlanetId: 1,
+    navigation: { heading: config.navigation.startHeading, orbit: null },
     // Issued with Mush selection, whatever the role (owner, 2026-10-13 and 2026-10-20).
     titles: assignTitles(players),
     comms: newComms(config),
@@ -440,7 +441,12 @@ export function viewFor(state: GameState, playerId: PlayerId): PlayerView {
       direction: p.direction,
       distance: p.distance,
       sectors: p.sectors.map((s) => (s.known ? s.tag : null)),
+      ...(p.id === state.navigation.orbit && { orbited: true as const }),
     })),
+    navigation: {
+      orbiting: state.navigation.orbit !== null,
+      heading: you.alive && commandTerminalsHere(state, you).length > 0 ? state.navigation.heading : null,
+    },
     titles: TITLE_IDS.map((id) => {
       const holder = state.players.find((p) => p.id === state.titles[id]);
       return {

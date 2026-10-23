@@ -9,7 +9,7 @@ export type ScanPlanetActionData = { type: "scan_planet"; equipment: string };
  * Scan for a planet at the Astro terminal (owner, 2026-10-19, docs/astro-plan.md): 3 AP, 50% success, and each failed scan
  * in a row multiplies the player's next chance by 1.25 until a success resets it. A found planet is the scanner's alone
  * (`GameState.planets`), at most 2 each, at a direction and distance no other planet on the ship holds, sized by the day
- * (owner, 2026-10-22; planets.ts). Living, not-dirty players, Mush included. The room log says only that someone scanned,
+ * (owner, 2026-10-22; planets.ts), and never while the ship is in orbit. Living, not-dirty players, Mush included. The room log says only that someone scanned,
  * success or not; the scanner learns the result and the planet's name privately.
  */
 export class ScanPlanetAction extends Action<ScanPlanetActionData> {
@@ -34,6 +34,8 @@ export class ScanPlanetAction extends Action<ScanPlanetActionData> {
     if (!astroTerminalsHere(state, player.room).some((terminal) => terminal.id === target.equipment)) return "cant_scan";
     if (planetsOf(state, player.id).length >= state.config.astro.maxPlanets) return "too_many_planets";
     if (freePositions(state).length === 0) return "no_free_position";
+    // Not while in orbit (owner, 2026-10-22, the wiki): leave it first.
+    if (state.navigation.orbit !== null) return "in_orbit";
     if (player.statuses.includes("dirty")) return "dirty";
     return null;
   }
