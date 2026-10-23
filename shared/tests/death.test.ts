@@ -209,3 +209,20 @@ describe("the dead player's view (#45)", () => {
     expect(viewFor(s, "p2").unidentified).toEqual(["SICK_BAY"]); // p0 only
   });
 });
+
+describe("Mush victory", () => {
+  it("ends the game for the Mush when the last living human dies", () => {
+    const s = ship();
+    for (const id of ["p2", "p3"]) killPlayer(s, player(s, id));
+    expect([s.phase, s.winner]).toEqual(["playing", null]);
+    const after = punchToDeath(s);
+    expect([after.phase, after.winner]).toEqual(["ended", "mush"]);
+    expect(viewFor(after, "p2").winner).toBe("mush");
+  });
+
+  it("does not end while a human lives, and a dead Mush doesn't count as a human", () => {
+    const s = ship();
+    killPlayer(s, player(s, "p0"));
+    expect(s.phase).toBe("playing");
+  });
+});

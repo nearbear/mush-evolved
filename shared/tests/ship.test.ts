@@ -39,11 +39,12 @@ describe("ship resources", () => {
     expect(s.log.filter((e) => e.key === "oxygenOut")).toHaveLength(2);
   });
 
-  it("stops killing when nobody is left alive", () => {
+  it("ends the game for the Mush when the last human suffocates", () => {
     let s = game();
     s.ship.oxygen = 0;
-    for (let i = 0; i < 6; i++) s = cycle(s);
-    expect(s.players.every((p) => !p.alive)).toBe(true);
+    for (let i = 0; i < 6 && s.phase === "playing"; i++) s = cycle(s);
+    expect([s.phase, s.winner]).toEqual(["ended", "mush"]);
+    expect(newCycle(s)).toEqual({ ok: false, error: "game_over" });
   });
 
   it("splits damage 67% to the shield (rounded down) and the rest to the hull", () => {

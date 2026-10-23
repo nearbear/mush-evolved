@@ -96,6 +96,7 @@ describe("communication center", () => {
   describe("rebel bases", () => {
     it("the first calls at Mush selection, the next one a day later, in the original's order", () => {
       let s = ship();
+      for (const p of s.players) p.cheats = ["infiniteHp"]; // the humans must outlive the whole run, or the game ends
       expect(s.comms.rebels.map((c) => c.base)).toEqual(["WOLF"]);
       const first = s.comms.rebels[0]!;
       expect(first.calledAt).toBe(s.cycle);

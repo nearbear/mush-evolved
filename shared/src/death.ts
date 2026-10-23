@@ -10,6 +10,7 @@ import { removeFromChannel, pushChat } from "./chat.ts";
 import { CORPSE_ITEM, ITRACKIE_ITEM, sameContainer } from "./items.ts";
 import { logPublic } from "./log.ts";
 import { refreshTitles } from "./titles.ts";
+import { endGame, mushWinOnDeath } from "./victory.ts";
 import type { ChannelId, GameState, PlayerState } from "./types.ts";
 
 /**
@@ -61,6 +62,7 @@ export function killPlayer(state: GameState, player: PlayerState): void {
   logPublic(state, player.room, "died", { name: player.character });
   if (state.bios.death_announcements) systemMessage(state, "global", player.role === "mush" ? "diedMush" : "diedHuman", player.character);
   refreshTitles(state);
+  if (mushWinOnDeath(state)) endGame(state, "mush");
 }
 
 function systemMessage(state: GameState, channel: ChannelId, key: string, name: CharacterId): void {
