@@ -91,7 +91,7 @@ Node is installed via nvm and is already on `PATH` in Claude Code shells (the us
 
 `docs/testing.md` lists what's important to test and why, with what's covered and what's missing.
 
-Project skills in `.claude/skills/`: `play` (launch, drive, and look at the game), `rule` (adding or changing a game rule), `asset` (using art from `Mush/`), `bot` (scripted and model-backed bots), `leak-check` (review changes for hidden-information leaks), `i18n` (player-visible text and translations: en/fr/es), and `wrap-up` (verify, update docs, propose a commit).
+Project skills in `.claude/skills/`: `play` (launch, drive, and look at the game), `rule` (adding or changing a game rule), `asset` (using art from `Mush/`), `bot` (scripted and model-backed bots), `leak-check` (review changes for hidden-information leaks), `i18n` (player-visible text and translations: en/fr/es), `wiki` (search and read eMushpedia, the French eMush wiki, with `npm run wiki`), and `wrap-up` (verify, update docs, propose a commit).
 
 npm 11 blocks dependency install scripts by default. `esbuild` and `workerd` are approved in the root `package.json` `allowScripts`; new packages with install scripts need `npm install-scripts approve <pkg>`.
 
