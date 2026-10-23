@@ -74,6 +74,8 @@ button.big:active:not(:disabled) {
   align-items: center;
   justify-content: center;
   gap: 0.3rem;
+  /* ActionLabel shrinks the font to fit; it must stay on one line to be measured. */
+  white-space: nowrap;
 }
 .action-label img {
   image-rendering: pixelated;
