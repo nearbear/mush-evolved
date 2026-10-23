@@ -288,3 +288,25 @@
 .inspect-item-name {
   text-align: center;
 }
+
+/* One effect per line, on a grid: icons in one column (centred), signed amounts in the next (right-aligned). Also used inside tooltips. */
+.consume-effects {
+  list-style: none;
+  margin: 4px 0 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: max-content max-content;
+  align-items: center;
+  gap: 2px 6px;
+}
+.consume-effects li {
+  display: contents;
+}
+.consume-effects img {
+  justify-self: center;
+  image-rendering: pixelated;
+}
+.consume-effects span {
+  justify-self: end;
+  font-variant-numeric: tabular-nums;
+}

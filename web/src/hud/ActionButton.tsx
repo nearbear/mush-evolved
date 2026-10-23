@@ -5,16 +5,38 @@
 import { Popover } from "@base-ui/react/popover";
 import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
+import { ConsumeEffects } from "./ConsumeEffects.tsx";
 import { affordable, type Action, type ActionOption, type PlayerView } from "@mush2/shared";
 
 /** A button that does the action, or the disabled one with the reason when you lack the points. */
 export function ActionButton({ view, option, onAction, children }: { view: PlayerView; option: ActionOption; onAction: (action: Action) => void; children: ReactNode }) {
   if (!affordable(option)) return <DisabledActionButton view={view} blocked={option}>{children}</DisabledActionButton>;
-  return (
+  const button = (
     <button type="button" onClick={() => onAction(option.action)}>
       {children}
     </button>
   );
+  const type = consumedType(view, option);
+  if (type === undefined) return button;
+  return (
+    <Popover.Root>
+      <Popover.Trigger openOnHover delay={200} render={button} />
+      <Popover.Portal>
+        <Popover.Positioner sideOffset={6}>
+          <Popover.Popup className="tooltip resource-card status-card">
+            <ConsumeEffects type={type} />
+          </Popover.Popup>
+        </Popover.Positioner>
+      </Popover.Portal>
+    </Popover.Root>
+  );
+}
+
+/** The type of the item a consume action eats, so its button can say what it does. */
+function consumedType(view: PlayerView, option: ActionOption): string | undefined {
+  const a = option.action;
+  if (a.type !== "consume") return undefined;
+  return [...view.inventory, ...view.roomItems].find((i) => i.id === a.item)?.type;
 }
 
 export function DisabledActionButton({ view, blocked, children }: { view: PlayerView; blocked: ActionOption; children: ReactNode }) {
@@ -26,6 +48,7 @@ export function DisabledActionButton({ view, blocked, children }: { view: Player
       : lacks[0] === "mp"
         ? t("actions.lacksMp", { need: cost.mp, have: view.you.mp })
         : t("actions.lacksAp", { need: cost.ap, have: view.you.ap });
+  const type = consumedType(view, blocked);
   return (
     <Popover.Root>
       <Popover.Trigger openOnHover delay={200} className="action-disabled" aria-disabled="true" render={<button type="button" />}>
@@ -33,7 +56,10 @@ export function DisabledActionButton({ view, blocked, children }: { view: Player
       </Popover.Trigger>
       <Popover.Portal>
         <Popover.Positioner sideOffset={6}>
-          <Popover.Popup className="tooltip resource-card status-card">{reason}</Popover.Popup>
+          <Popover.Popup className="tooltip resource-card status-card">
+            {reason}
+            {type !== undefined && <ConsumeEffects type={type} />}
+          </Popover.Popup>
         </Popover.Positioner>
       </Popover.Portal>
     </Popover.Root>

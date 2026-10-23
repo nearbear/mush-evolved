@@ -62,7 +62,7 @@ export function IconTab({ value, icon, src, label, className }: { value: string;
 }
 
 /** Wraps one existing element (a button, a dialog trigger) in a tooltip. The element keeps its own accessible name. */
-export function Hint({ label, children }: { label: string; children: React.ReactElement }) {
+export function Hint({ label, children }: { label: React.ReactNode; children: React.ReactElement }) {
   return (
     <Tooltip.Provider delay={300}>
       <Tooltip.Root>

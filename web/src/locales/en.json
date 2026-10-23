@@ -487,6 +487,7 @@
     "TURRET_COMMAND": "Turret controls"
   },
   "itemAttr": {
+    "satiety": "Satiety",
     "plantOf": "{{item}} plant",
     "young": "Young plant",
     "youngDesc": "This plant is young: it makes neither oxygen nor fruit until it grows up.",

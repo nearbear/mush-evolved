@@ -489,6 +489,7 @@
     "TURRET_COMMAND": "Poste de tir"
   },
   "itemAttr": {
+    "satiety": "Satiété",
     "plantOf": "Plant : {{item}}",
     "young": "Jeune plant",
     "youngDesc": "Cette plante est jeune. Elle ne produira ni oxygène ni fruits jusqu'à maturation.",

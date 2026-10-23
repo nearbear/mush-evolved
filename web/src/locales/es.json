@@ -489,6 +489,7 @@
     "TURRET_COMMAND": "Controles de torreta"
   },
   "itemAttr": {
+    "satiety": "Saciedad",
     "plantOf": "Planta: {{item}}",
     "young": "Planta joven",
     "youngDesc": "Esta planta es joven. No producirá ni oxígeno ni frutos hasta madurar.",

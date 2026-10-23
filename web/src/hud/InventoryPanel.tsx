@@ -9,6 +9,7 @@ import { useTranslation } from "react-i18next";
 import { useNames } from "../i18n/names.ts";
 import { legalIn, type Action, type ItemView, type PlayerView, type Target } from "@mush2/shared";
 import { Hint } from "./IconButton.tsx";
+import { ConsumeEffects } from "./ConsumeEffects.tsx";
 import { ItemFace } from "./ItemFace.tsx";
 import { ItemIcon } from "./ItemIcon.tsx";
 import { sameTarget } from "./targets.ts";
@@ -88,7 +89,14 @@ export function InventoryPanel({
     const type = zone === "room" ? "take" : "drop";
     return (
       <li key={item.id} className="item-slot">
-        <Hint label={names.itemOf(item)}>
+        <Hint
+          label={
+            <>
+              {names.itemOf(item)}
+              <ConsumeEffects type={item.type} />
+            </>
+          }
+        >
           <button type="button"
             aria-label={names.itemOf(item)}
             className={`item-tile${isSelected ? " selected" : ""}${dragging?.id === item.id ? " dragging" : ""}`}
