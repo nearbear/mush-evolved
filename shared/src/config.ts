@@ -72,6 +72,21 @@ export const DEFAULT_CONFIG: GameConfig = {
   punch: { cost: { ap: 1 }, effect: { damage: 2, sturdyBonusDamage: 1 }, successChance: 0.6, dirtyChance: 0.25 },
   // Owner, 2026-10-18: Ian's Pacifist makes aggressive actions in his room cost 2 more AP, his own included.
   pacifist: { aggressiveApSurcharge: 2 },
+  // Owner, 2026-10-22 (docs/scratchpad/botany-plan.md, Pass 1): water 1 AP, treat 2, sow 2, the original's 15% dirt.
+  // Bananas take 36 cycles (the original's genTreeList). Sickness odds are a placeholder. +1 oxygen per producing
+  // plant per day (eMush). The Botanist gains 2 garden points a day, holds 4, spent only on a plant in the garden.
+  botany: {
+    water: { cost: { ap: 1 } },
+    treat: { cost: { ap: 2 } },
+    sow: { cost: { ap: 2 } },
+    dirtyChance: 0.15,
+    growCycles: { fruit_banana: 36 },
+    sickChancePerCycle: 0.05,
+    oxygenPerPlant: 1,
+    gardenRoom: "HYDROPONIC_CENTER",
+    pointsPerDay: 2,
+    capPoints: 4,
+  },
   // Confirmed 2026-10-16: cooking an uncooked ration costs 1 AP, only in the refectory.
   cook: { cost: { ap: 1 }, rooms: ["REFECTORY"], dirtyChance: 0.25, injuryChance: 0.01 },
   // Owner, 2026-10-19: express cook is free, anywhere you can reach a microwave, and spends one of its 4 charges;
@@ -94,7 +109,21 @@ export const DEFAULT_CONFIG: GameConfig = {
   // Decided 2026-10-16: working on a research costs 2 AP and advances it 25%; no repeat penalty yet.
   research: { cost: { ap: 2 }, effect: { progressPercent: 25 }, dirtyChance: 0.25 },
   // Decided 2026-10-19 (docs/astro-plan.md): scan 3 AP at 50%, x1.25 per failure in a row; analysis 2 AP; 2 planets per player.
-  astro: { scan: { cost: { ap: 3 }, chance: 0.5, failureMultiplier: 1.25 }, analyze: { cost: { ap: 2 } }, maxPlanets: 2 },
+  // Owner, 2026-10-22: planets get a direction and a distance (2 to 9 fuel, unique on the ship), and grow with the day.
+  astro: {
+    scan: { cost: { ap: 3 }, chance: 0.5, failureMultiplier: 1.25 },
+    analyze: { cost: { ap: 2 } },
+    maxPlanets: 2,
+    distance: { min: 2, nearMax: 7, max: 9 },
+    sizeByDay: [
+      { fromDay: 1, min: 2, max: 12 },
+      { fromDay: 5, min: 4, max: 16 },
+      { fromDay: 10, min: 6, max: 20 },
+    ],
+  },
+  // Owner, 2026-10-22: the Commander steers at the Command terminal. Turn, travel and leave orbit cost 1 AP each (the wiki);
+  // leaving orbit burns 1 fuel and the ship starts facing north (Claude's defaults).
+  navigation: { turn: { cost: { ap: 1 } }, travel: { cost: { ap: 1 } }, leaveOrbit: { cost: { ap: 1 }, fuel: 1 }, startHeading: "north" },
   // Decided 2026-10-18: NERON projects work exactly like research: 2 AP, 25% per action, no repeat penalty.
   project: { cost: { ap: 2 }, effect: { progressPercent: 25 } },
   // Owner, 2026-10-21: repairing PILGRED uses the original's numbers (DIG_RATE 6, PILGRED_MOD 2, DIG_BOOST 4, -2 per repeat),
@@ -182,12 +211,13 @@ export const DEFAULT_CONFIG: GameConfig = {
     { type: "uncooked_ration", room: "REFECTORY" },
     { type: "uncooked_ration", room: "REFECTORY" },
     { type: "uncooked_ration", room: "REFECTORY" },
-    // Decided 2026-10-18: five hydropots in the lab at the start. No effect yet.
-    { type: "tree_pot", room: "LABORATORY" },
-    { type: "tree_pot", room: "LABORATORY" },
-    { type: "tree_pot", room: "LABORATORY" },
-    { type: "tree_pot", room: "LABORATORY" },
-    { type: "tree_pot", room: "LABORATORY" },
+    // Owner, 2026-10-22 (replacing the five lab pots of 2026-10-18): the original's garden, an empty pot and two adult
+    // banana plants, plus two empty pots in front storage.
+    { type: "tree_pot", room: "HYDROPONIC_CENTER" },
+    { type: "tree_pot", room: "HYDROPONIC_CENTER", plant: { species: "fruit_banana", age: null, thirst: 0, sick: false } },
+    { type: "tree_pot", room: "HYDROPONIC_CENTER", plant: { species: "fruit_banana", age: null, thirst: 0, sick: false } },
+    { type: "tree_pot", room: "STORAGE_FRONT" },
+    { type: "tree_pot", room: "STORAGE_FRONT" },
     // Owner, 2026-10-21: for now, one skill book for every skill on the bridge.
     ...SKILLS.map((skill) => ({ type: BOOK_ITEM, teaches: skill, room: "COMMAND_CENTER" as RoomId })),
   ],

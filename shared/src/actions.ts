@@ -23,6 +23,9 @@ import { SetBiosAction } from "./actions/set_bios.ts";
 import { ScanPlanetAction } from "./actions/scan_planet.ts";
 import { AnalyzePlanetAction } from "./actions/analyze_planet.ts";
 import { DeletePlanetAction } from "./actions/delete_planet.ts";
+import { LeaveOrbitAction } from "./actions/leave_orbit.ts";
+import { TravelAction } from "./actions/travel.ts";
+import { TurnShipAction } from "./actions/turn_ship.ts";
 import { ReadyAction } from "./actions/ready.ts";
 import { HealAction } from "./actions/heal.ts";
 import { InstallAction } from "./actions/install.ts";
@@ -37,6 +40,9 @@ import { GetUpAction, LieDownAction } from "./actions/lie_down.ts";
 import { ShowerAction } from "./actions/shower.ts";
 import { SpikeAction } from "./actions/spike.ts";
 import { TransferAction } from "./actions/transfer.ts";
+import { WaterAction } from "./actions/water.ts";
+import { TreatAction } from "./actions/treat.ts";
+import { SowAction } from "./actions/sow.ts";
 import type { Action, GameState, PlayerState } from "./types.ts";
 
 export type ActionType = Action["type"];
@@ -81,6 +87,9 @@ export const ACTIONS: { [T in ActionType]: ActionDef<ActionOf<T>> } = {
   project: new ProjectAction(),
   repair_pilgred: new RepairPilgredAction(),
   return_to_sol: new ReturnToSolAction(),
+  turn_ship: new TurnShipAction(),
+  travel: new TravelAction(),
+  leave_orbit: new LeaveOrbitAction(),
   contact_sol: new ContactSolAction(),
   decode_rebel: new DecodeRebelAction(),
   contact_xyloph: new ContactXylophAction(),
@@ -93,6 +102,9 @@ export const ACTIONS: { [T in ActionType]: ActionDef<ActionOf<T>> } = {
   consume: new ConsumeAction(),
   cook: new CookAction(),
   express_cook: new ExpressCookAction(),
+  water: new WaterAction(),
+  treat: new TreatAction(),
+  sow: new SowAction(),
   build: new BuildAction(),
   jettison: new JettisonAction(),
   install: new InstallAction(),

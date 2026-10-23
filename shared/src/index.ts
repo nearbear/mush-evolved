@@ -23,6 +23,7 @@ export * from "./research.ts";
 export * from "./projects.ts";
 export * from "./pilgred.ts";
 export * from "./planets.ts";
+export * from "./navigation.ts";
 export * from "./ship.ts";
 export * from "./spot.ts";
 export * from "./titles.ts";

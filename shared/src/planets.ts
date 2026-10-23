@@ -46,20 +46,73 @@ const SYLLABLES: readonly (readonly string[])[] = [
   "Primus Secondus Tertius Quartus First Second II III IV V VI VII VIII IX X Lumis Alpha Beta Ceta Delta Epsilon Gamma Zeta Eta Sigma Omicron Upsilon Lambda Omega Kappa Iota Theta Tau Psi".split(" "),
 ];
 
+/** The directions a planet can lie in, from the Daedalus (eMush's `SpaceOrientationEnum`). The client names them. */
+export const PLANET_DIRECTIONS = ["north", "west", "south", "east"] as const;
+export type PlanetDirection = (typeof PLANET_DIRECTIONS)[number];
+
+/** A planet's place in space: a direction and a distance in fuel. */
+export type PlanetPosition = { direction: PlanetDirection; distance: number };
+
+type DistanceRules = GameState["config"]["astro"]["distance"];
+type SizeRange = { min: number; max: number };
+
+/** The positions no planet on the ship holds yet, whoever found it (owner, 2026-10-22). Deleting a planet frees its spot. */
+export function freePositions(state: Readonly<GameState>): PlanetPosition[] {
+  const { min, max } = state.config.astro.distance;
+  const taken = new Set(Object.values(state.planets).flatMap((planets) => planets.map((p) => `${p.direction}:${p.distance}`)));
+  return PLANET_DIRECTIONS.flatMap((direction) =>
+    Array.from({ length: max - min + 1 }, (_, i) => ({ direction, distance: min + i })).filter((p) => !taken.has(`${p.direction}:${p.distance}`)),
+  );
+}
+
 /**
- * A new planet, following the original's `Gameplay.getPlanet` (Mush/src/common/Gameplay.hx:98): 2 to 12 sectors (normal
- * difficulty), each drawn by weight from the tags that haven't hit their `max`, then shuffled; every sector starts unknown.
- * Differences: everything uses the game's seeded RNG (the original picked syllables with an unseeded one), and an exhausted
- * tag's weight leaves the total, so every sector gets a tag (the original kept the old total and could leave sectors empty).
+ * Where a new planet lies, following eMush's `PlanetService.getCoordinatesForPlanet` (owner, 2026-10-22). Near positions
+ * (`min`..`nearMax`) come first, with the distance drawn as two rolls averaged and rounded down, so middle distances are
+ * likelier; only distances with a free spot count. Once every near spot is taken, `nearMax + 1` is used, then the next. The
+ * direction is uniform among the free spots at that distance. Null when every position is taken.
  */
-export function generatePlanet(rng: RngState, id: string): [planet: Planet, next: RngState] {
+export function pickPosition(rng: RngState, free: readonly PlanetPosition[], rules: DistanceRules): [position: PlanetPosition | null, next: RngState] {
+  let tier = rules.nearMax;
+  while (tier <= rules.max && !free.some((p) => p.distance <= tier)) tier++;
+  if (tier > rules.max) return [null, rng];
+  const low = tier === rules.nearMax ? rules.min : tier;
+  // The chance of each distance from two averaged rolls (eMush rerolls a distance with no free spot; weighting only the free
+  // ones is the same thing without the loop).
+  const weights = new Map<number, number>();
+  for (let a = low; a <= tier; a++) for (let b = low; b <= tier; b++) {
+    const d = Math.floor((a + b) / 2);
+    if (free.some((p) => p.distance === d)) weights.set(d, (weights.get(d) ?? 0) + 1);
+  }
+  let total = 0;
+  for (const w of weights.values()) total += w;
+  let [r, s] = nextInt(rng, total);
+  const distance = [...weights].find(([, w]) => (r -= w) < 0)![0];
+  const here = free.filter((p) => p.distance === distance);
+  let i: number;
+  [i, s] = nextInt(s, here.length);
+  return [here[i]!, s];
+}
+
+/** The sector counts a planet found on `day` can have: the last `sizeByDay` entry whose day has come. */
+export function sizeRangeOn(rules: GameState["config"]["astro"], day: number): SizeRange {
+  return rules.sizeByDay.filter((range) => range.fromDay <= day).at(-1) ?? rules.sizeByDay[0]!;
+}
+
+/**
+ * A new planet at `position`, following the original's `Gameplay.getPlanet` (Mush/src/common/Gameplay.hx:98): an even number
+ * of sectors from `sizes` (eMush's normal, hard and very hard ranges, by day), each drawn by weight from the tags that haven't
+ * hit their `max`, then shuffled; every sector starts unknown. Differences: everything uses the game's seeded RNG (the original
+ * picked syllables with an unseeded one), and an exhausted tag's weight leaves the total, so every sector gets a tag (the
+ * original kept the old total and could leave sectors empty).
+ */
+export function generatePlanet(rng: RngState, id: string, position: PlanetPosition, sizes: SizeRange): [planet: Planet, next: RngState] {
   let s = rng;
   const roll = (max: number): number => {
     let n: number;
     [n, s] = nextInt(s, max);
     return n;
   };
-  const size = 2 + roll(6) * 2;
+  const size = sizes.min + roll(Math.floor((sizes.max - sizes.min) / 2) + 1) * 2;
   const left = new Map(PLANET_TAG_IDS.map((tag) => [tag, PLANET_TAGS[tag].max as number]));
   const tags: PlanetTag[] = [];
   for (let i = 0; i < size; i++) {
@@ -78,7 +131,7 @@ export function generatePlanet(rng: RngState, id: string): [planet: Planet, next
   name += pick(2);
   if (roll(3) === 0) name += ` ${pick(3)}`;
   else if (roll(30) === 0) name = `${pick(3)} ${name}`;
-  return [{ id, name, sectors: sectors.map((tag) => ({ tag, known: false })) }, s];
+  return [{ id, name, ...position, sectors: sectors.map((tag) => ({ tag, known: false })) }, s];
 }
 
 /** Index of the sector an analysis reveals: an unknown one, weighted by its tag's `seek`; null when all are known. */

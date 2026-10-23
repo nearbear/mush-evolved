@@ -2,6 +2,7 @@ import type { ActionCost, ActionTag } from "../actions.ts";
 import type { CharacterId } from "../characters.ts";
 import type { BiosState } from "../bios.ts";
 import type { RebelBaseId } from "../comms.ts";
+import type { PlanetDirection } from "../planets.ts";
 import type { TitleId } from "../titles.ts";
 import type { Action, BotKind, ItemId, LogEntry, PlayerId, Role, RoomId } from "../types.ts";
 import type { ChannelId, ChatMessage, ChatThread, PrivateChannel } from "./chat.ts";
@@ -27,6 +28,8 @@ export interface ItemView {
   charges?: number;
   /** For a skill book: the skill it teaches (public to whoever can see the item). */
   teaches?: string;
+  /** For a planted hydropot. `sick` is there only for the Botanist role; everyone else never gets the field. */
+  plant?: { species: string; age: number | null; thirst: 0 | 1 | 2; sick?: boolean };
 }
 
 /** One seat as the end screen shows it, once the game has ended (#191). Everyone, you included, in seat order. */
@@ -163,6 +166,8 @@ export interface PlayerView {
   projects: Record<string, number>;
   /** PILGRED's repair, percent done, only while you are alive in a room with its terminal (owner, 2026-10-21); otherwise null. */
   pilgred: number | null;
+  /** Whether PILGRED is repaired, public to everyone: its completion is announced to the whole crew (repair_pilgred.ts). */
+  pilgredRepaired: boolean;
   /**
    * The communication center. `linked` (the link with Sol) is public; `terminal`, what the Com center terminal shows
    * read-only to anyone, only while you are alive in a room with one (owner, 2026-10-21), otherwise null.
@@ -172,6 +177,11 @@ export interface PlayerView {
   bios: BiosState | null;
   /** Your own planets (private, owner 2026-10-19). Unknown sectors are null: their tags are never sent. */
   planets: PlanetView[];
+  /**
+   * Whether the ship is in orbit, public to everyone (the planet fills the portholes); which planet is only in its
+   * finder's `planets`. `heading` only while you are alive at a Command terminal (owner, 2026-10-22); otherwise null.
+   */
+  navigation: { orbiting: boolean; heading: PlanetDirection | null };
   /** Every title in `TITLE_IDS` order, public to everyone (owner, 2026-10-20). */
   titles: TitleView[];
   /**
@@ -198,7 +208,12 @@ export interface ActionOption {
 export interface PlanetView {
   id: string;
   name: string;
+  direction: PlanetDirection;
+  /** In fuel. */
+  distance: number;
   sectors: (string | null)[];
+  /** True for the planet the ship orbits; absent otherwise. */
+  orbited?: true;
 }
 
 /** A title as everyone sees it: who holds it, by character (null while vacant), and its line of succession as it stands on this ship. */

@@ -46,10 +46,11 @@ export const GAME_STATE_FIELDS: Record<string, FieldRule> = {
   sporeExtractedOn: { reach: "never", test: "leaks.test.ts" },
   research: { reach: "public", test: "research.test.ts" },
   projects: { reach: "public", test: "projects.test.ts" },
-  pilgred: { reach: "room", test: "pilgred.test.ts", note: "Only `progress`, to the living in a room with the PILGRED terminal; `lastBy` and `streak` never." },
+  pilgred: { reach: "room", test: "pilgred.test.ts", note: "Only `progress`, to the living in a room with the PILGRED terminal; `lastBy` and `streak` never. Whether it is repaired is public (`pilgredRepaired`), as the crew-wide message announces it." },
   planets: { reach: "own", test: "leaks.test.ts", note: "Without the unknown sectors' tags." },
   scanFailures: { reach: "never", test: "leaks.test.ts" },
   nextPlanetId: { reach: "never", test: "leaks.test.ts", note: "Not secret (planet ids show it), just not sent." },
+  navigation: { reach: "room", test: "navigation.test.ts", note: "`heading` to the living at a Command terminal; `orbit` only as a public in-orbit flag, the planet id to its finder alone (as `orbited` on their planet)." },
   comms: { reach: "room", test: "comms.test.ts", note: "`linked` to everyone; the terminal screen to the living at a Com center terminal, without which Xyloph entries were drawn." },
   titles: { reach: "public", test: "titles.test.ts", note: "Holders and lines, by character (owner, 2026-10-20)." },
   now: { reach: "never", test: "leaks.test.ts", note: "The rules' clock; offers' expiry times reach their owner only." },
@@ -99,4 +100,5 @@ export const ITEM_STATE_FIELDS: Record<string, FieldRule> = {
   builds: { reach: "filtered", test: "build.test.ts" },
   charges: { reach: "filtered", test: "express_cook.test.ts" },
   teaches: { reach: "filtered", test: "read_book.test.ts" },
+  plant: { reach: "filtered", test: "botany.test.ts", note: "Species, age and thirst with the item; `sick` only to the Botanist role (Botanist or Skilful), never to anyone else, Mush included." },
 };

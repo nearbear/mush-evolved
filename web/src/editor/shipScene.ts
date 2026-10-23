@@ -6,11 +6,10 @@ import type { RoomLayout, ShipLayout, TileKind, TilePlacement } from "@mush2/sha
 import { gridToPx, neighborRooms, type PlacedSprite, placeScene } from "../iso/placement.ts";
 
 /** What the layer toggles show or hide, by tile kind. */
-export const LAYERS = ["ground", "wall", "prop", "entity"] as const satisfies readonly TileKind[];
+export const LAYERS = ["ground", "wall", "door", "prop", "entity"] as const satisfies readonly TileKind[];
 export type Layer = (typeof LAYERS)[number];
 
-/** A door counts as a wall for the toggles. */
-export const layerOf = (kind: PlacedSprite["kind"]): Layer | undefined => (kind === "door" ? "wall" : kind === "actor" ? undefined : kind);
+export const layerOf = (kind: PlacedSprite["kind"]): Layer | undefined => (kind === "actor" ? undefined : kind);
 
 /** Which rooms the editor draws: the whole ship, or what the game draws from one room at a fog depth. */
 export type ShipView = { from: null } | { from: string; depth: 1 | 2 };

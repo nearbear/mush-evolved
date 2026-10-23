@@ -1,6 +1,6 @@
 # Botany: what the original gives us, and a plan (draft)
 
-Status: **draft, 2026-10-22. Nothing is built or decided.** Everything under "What the original gives us" comes from `Mush/` (Motion Twin's data tables and shared Haxe code) and is reference only. "What the eMush wiki says" is a second, weaker source: the French eMushpedia, which describes Eternaltwin's remake (not the original) and is partly out of date. Neither source makes anything a rule. A rule exists once the owner answers the open questions and the answer goes into `docs/rules-design.md`.
+Status: **draft, 2026-10-22. Nothing is built.** Owner direction (2026-10-22): mechanics and actions first; alien species and fruits wait for expeditions; plant sickness is visible only to Botanists (see "Owner direction" below). Everything under "What the original gives us" comes from `Mush/` (Motion Twin's data tables and shared Haxe code) and is reference only. "What the eMush wiki says" is a second, weaker source: the French eMushpedia, which describes Eternaltwin's remake (not the original) and is partly out of date. Neither source makes anything a rule. A rule exists once the owner answers the open questions and the answer goes into `docs/rules-design.md`.
 
 ## Why it matters
 
@@ -158,7 +158,7 @@ Example: "A plant sown at cycle 1 that needs 8 cycles will be adult and produce 
 
 ## Where the sources disagree or are silent
 
-1. **Oxygen per plant.** The original gives no number. eMush says +1 per healthy adult plant per **day**. Against our burn of 8 per day, two bananas would give only 2. Even 10 plants don't break even, so the garden would only slow the loss. This is the most important number to decide.
+1. **Oxygen per plant.** The original gives no number. eMush says +1 per healthy adult plant per **day**. Against our burn of 8 per day, the two starting bananas slow the loss, and 8 or more healthy plants make the ship self-sustaining (10 plants give a surplus of 2 per day).
 2. **Water one plant or all?** `WATER_PLANTS` has `need_target: false` and its description is plural ("your plantations"). eMush waters one plant per action.
 3. **Plant sickness odds**: no source gives them.
 4. **Graft hygiene**: does it fail when the *actor* is dirty (the original's confirm text) or when the *plant* is dirty (eMush)? Our plants have no dirty status.
@@ -167,81 +167,113 @@ Example: "A plant sown at cycle 1 that needs 8 cycles will be adult and produce 
 7. **`PARASITE_ELIM`**: three readings (see the projects table).
 8. **Where a plant must be** to grow or produce (garden only, or anywhere including carried).
 
-## Proposed plan (to confirm)
+## Owner direction (2026-10-22)
+
+- **Mechanics and actions first.** Alien species, alien fruits, and everything that depends on them (the per-game fruit table, reading fruit properties, Frugivore's alien bonus, grafting) are deferred until expeditions exist. Until then the only species is the banana.
+- **Plant sickness is hidden.** Only Botanists and Skilful (Polyvalent) players can see that a plant is sick.
+  - Anyone else can treat any plant, so they may spend AP treating a healthy one. A ship with no Botanist or Skilful player has to treat every plant to be safe.
+  - **Botanists cannot treat a healthy plant.** They can see it is healthy, so refusing them leaks nothing.
+  - In the original, sickness is public and anyone is refused on a healthy plant. Refusing a player who can't see sickness would leak it, so for them `treat` is legal on every plant and gives the same result and log line either way.
+- **Mush gain no botany abilities.** Being Mush doesn't let you see sickness (unlike eMush, where Mush can read fruit effects).
+- **Thirsty plants make no oxygen** (unlike eMush, where they still do). Only an adult plant that is not thirsty, not dried and not sick produces.
+- **Watering is one plant per action.**
+- **Sickness: a placeholder 5% chance per plant per cycle** (`config.botany.sickChancePerCycle = 0.05`), rolled separately for each plant with the seeded RNG.
+- **Plants work anywhere**: in the garden, in another room, or carried. Growth, thirst, sickness and production don't depend on location. A banana from a plant on the floor appears on that room's floor. A banana from a carried plant goes into the carrier's inventory first, or onto the floor of their room if their inventory is full.
+- **Garden points work only in the garden**: they pay for an action only on a plant in `HYDROPONIC_CENTER`.
+- **Garden actions are public** in the room's history. Water, treat and sow each have the original's 15% chance of making the actor dirty, through `dirtyChance`.
+- **Sickness can kill a plant, but there is no plant death in Pass 1**, from sickness or from thirst. In Pass 1 a dried plant stays dried.
+- **Young plants can fall sick**, and **a sick plant still gets thirsty**.
+- **Oxygen and costs**: +1 oxygen per producing plant per day; water 1 AP, treat 2 AP, sow 2 AP.
+- **The Botanist "role"**: Botanist and Skilful (Polyvalent, "versatile") players are both in it. They see sickness and are refused on healthy plants.
+- **Garden points are Botanist only.** Skilful players are in the Botanist role but get no garden points, as in the original.
+- **A Botanist who becomes Mush keeps the role**, and still sees sickness. Being Mush adds nothing and takes nothing away.
+- **Mush can water, treat and sow like anyone else.** The original's Mush confirm prompt (`mush_confirm`) is not planned.
+- **The two starting pots go in `STORAGE_FRONT`.**
+
+## Proposed plan
 
 Small passes, each playable on its own.
 
-### Pass 1: the garden loop (bananas only)
+### Pass 1: the garden loop (bananas only, no plant death)
 
 **State**
 - `ItemType` `hydropot`: carriable, takes a slot, doesn't stack.
-- `ItemState.plant?: { species: string; age: number | null; thirst: 0 | 1 | 2; sick: boolean }`. `age` is null once adult; `thirst` is 0 healthy, 1 thirsty, 2 dried.
-- `ItemType` `fruit` with `ItemState.species`.
-- Start: one empty pot and two adult bananas in `HYDROPONIC_CENTER`, and two pots in storage (which storage rooms is to confirm).
+- `ItemState.plant?: { species: string; age: number | null; thirst: 0 | 1 | 2; sick: boolean }`. `age` is null once adult; `thirst` is 0 healthy, 1 thirsty, 2 dried. `species` is always `banana` for now, but keeping the field leaves room for alien species later.
+- `ItemType` `banana` (a fruit).
+- Start: one empty pot and two adult bananas in `HYDROPONIC_CENTER`, and two empty pots in `STORAGE_FRONT`.
 
 **Actions**, one file each in `shared/src/actions/`, costs in `config.botany`:
-- `water` (1 AP).
-- `sow` (2 AP). On a fruit you carry, with an empty pot in the room. Turns the pot into a young plant of the fruit's species.
-- `eat` through the existing `consume`. Banana: +1 AP, +1 satiety, +1 morale, +1 HP.
+- `water` (1 AP, the original's cost) on one thirsty or dried plant. Thirst is public, so refusing to water a healthy plant leaks nothing.
+- `treat` (2 AP) clears `sick`.
+  - For a player in the Botanist role (Botanist or Skilful), it is offered only on sick plants.
+  - For everyone else it is offered on every plant. On a healthy plant it does nothing, with the same cost, result and log line as on a sick one.
+- `sow` (2 AP) on a banana you carry, with an empty pot in the room. The pot becomes a young banana plant (36 cycles).
+- `eat`, through the existing `consume`: +1 AP, +1 satiety, +1 morale, +1 HP.
 
-**Day change** (`botanyDay(state)` in a new `shared/src/botany.ts`, called from `advanceCycle`'s `newDay` branch):
-- Mature young plants.
-- Produce oxygen (capped at the ship max) and fruit (placed in the pot's container).
-- Apply thirst, drying and death; a dead plant becomes an empty pot.
-- Young-plant age goes up every cycle.
+**Cycle and day change** (`botanyCycle` / `botanyDay` in a new `shared/src/botany.ts`, called from `advanceCycle`):
+- Every cycle: young plants age by 1, and each plant that isn't already sick has a 5% chance of falling sick.
+- At day change:
+  1. Young plants that reached maturity become adult.
+  2. Each adult plant that is not thirsty, not dried and not sick makes +1 oxygen (capped at the ship max) and one banana where the pot is.
+  3. Thirst goes up by one for every plant not watered that day, stopping at dried (no death in Pass 1).
 
-**Botanist:** `gardenPointsPerDay` and the cap through the modifier registry. Points pay for water and sow. "Only in the garden" is to confirm.
+**Who can see sickness**
+- One function, `isBotanistRole(state, player)`, true for Botanist and Skilful and never granted by the Mush role. `viewFor`, `treat`'s offer and the UI all use it.
 
-**Log:** matured, produced and died lines in the garden's public history. Water and sow are public in the room. All through i18n (en/fr/es), using the original's French text as the starting point for fr.
+**Garden points**
+- `gardenPointsPerDay` (2) and a cap (4) through the modifier registry. Botanist only; Skilful gets none (as in the original).
+- A point pays for water, treat or sow, but only when the target plant is in `HYDROPONIC_CENTER`. Anywhere else, the action costs AP.
 
-**Views:** plant statuses are public, so a plant's status shows to anyone who can see the item. Growth time stays hidden except from Botanists (see Pass 2).
+**Hidden information.** This is the first hidden status on an item, so these need care:
+- `ItemState.plant.sick` is stripped in `viewFor` unless `isBotanistRole`. It goes in `leakFields.ts`, with a sentinel test showing that a non-Botanist's view (a Mush's included) never contains it.
+- For a player who can't see sickness, `treat` must not reveal anything: the same offer, cost, result, log text and timing whether or not the plant was sick. A Botanist's refusal is fine, since only they see it.
+- The public log line for `treat` must be the same for a Botanist treating a sick plant and a non-Botanist treating a healthy one, so onlookers learn nothing either.
+- **Side channels:** a sick plant makes no oxygen and no banana. Anyone who watches the ship's oxygen total or the pots at day change can infer that some plant is sick, and often which one. Leaking through outcomes like this seems acceptable as deduction (it is a social deduction game), but the log must not name the sick plant or give a reason.
+- Run the `leak-check` skill once this pass is done.
 
-**UI:**
-- Pot, plant and fruit icons from `www/img/icons/items/` (`tree_pot`, `fruit_tree00–13`, `fruit00–13`), plus the status icons. Run the `asset` skill's licence check first.
-- Water, sow and eat go through `actionsOn` in `web/src/hud/targets.ts`, so they work on phones too.
+**Log:** water, treat and sow are public in the room's history (owner). Matured and produced lines go in the history of the room the plant is in (if carried, the carrier's room). There are no sickness lines for anyone who can't see sickness; falling sick is never logged publicly. All text goes through i18n (en/fr/es), with the original's French as the starting point for fr.
 
-**Tests:** `shared/tests/botany.test.ts` covering the thirst ladder, maturation timing (the "cycle 1 of the next day" example), the oxygen cap, sow needing an empty pot, garden points, and illegal actions leaving state unchanged.
+**UI**
+- Pot and banana-plant icons from `www/img/icons/items/` (`tree_pot`, `tree_banana`, `fruit_banana`) and the `plant_*` status icons. Run the `asset` skill's licence check first.
+- The sick icon renders only when the view has it.
+- Water, treat, sow and eat go through `actionsOn` in `web/src/hud/targets.ts`, so they work on phones too.
 
-### Pass 2: alien species and hidden fruit knowledge
+**Tests:** `shared/tests/botany.test.ts`:
+- The thirst ladder (stopping at dried), maturation timing (the "cycle 1 of the next day" example), and the oxygen cap.
+- Thirsty, dried and sick plants make neither oxygen nor bananas.
+- The sickness roll, with the chance forced to 0 and 1 through config.
+- Plants grow and produce outside the garden and when carried.
+- Sow needs an empty pot; garden points pay for actions.
+- A non-Botanist treating a healthy plant pays the same and reads the same as treating a sick one.
+- A Botanist can't treat a healthy plant.
+- Sickness is absent from non-Botanist views, Mush included, and present for Botanist and Skilful.
+- Illegal actions leave state unchanged.
 
-- `state.botany.species`: a per-game table of growth cycles and fruit effects, rolled with the seeded RNG at game start (the original's or eMush's generator, as chosen). This is **hidden state**: add it to `leakFields.ts` and give it a sentinel in `leaks.test.ts`.
-- `viewFor` adds a fruit's or plant's properties (effects, growth time) only for seats allowed to read them (Botanist, Skilful, Cook; Mush per eMush?). Run the `leak-check` skill.
-- Frugivore and Green Thumb (2 pots at the start).
-- **Problem:** with no expeditions or merchants, alien fruit has no source, so the crew only ever has bananas. Options: start a few alien fruits in the garden or storage; let `PILGRED_SYNTH` make them; or wait for expeditions.
+### Pass 2: plant death, the plant controller and projects
 
-### Pass 3: sickness, treatment, grafting
-
-- Plant sickness roll per cycle, and `treat` (2 AP).
-- `graft` (Botanist, 2 AP, the hygiene rule as decided).
-- Fruit disease effects (`CURE` / `SET_DISEASE`) wait for #214. Until then, alien fruits only get their AP, satiety and morale parts.
-
-### Pass 4: projects and the plant controller
-
+- Plant death: from thirst (past dried) and from sickness (timing to decide). The pot becomes empty, and a died line goes in the garden's history.
+  - A sickness death is itself a side channel; this is to decide.
+- `PLANT_CONTROLLER` as an `access` terminal showing when the garden was last watered and treated, and which plants are thirsty. It reports sickness only to a reader who can see it.
 - Project effects:
   - `EXTRA_HYDROPONPOTS`: spawn 3 pots.
   - `HYDROPONIC_INCUBATOR`: young plants age 2× per cycle.
   - `HEAT_LAMP`: 50% chance of an extra fruit.
   - `PARASITE_ELIM`: as decided.
   - `FOOD_RETAILER`: fruit spawns in the Refectory.
+- Green Thumb's 2 extra pots at the start.
 - Update the `projects.ts` status for each.
-- `PLANT_CONTROLLER` as an `access` terminal showing last watered and treated, and the plants that need care.
 
-### Not in scope
+### Deferred until expeditions
 
-Assimilation (unfinished in the original), expedition harvests, merchant trades, fire, food decay, triumph, Halloween's Cucurbitatrouille.
+- Alien species, the per-game growth and fruit-effect table, and who reads fruit properties.
+- Frugivore's alien bonus (its +1 AP on bananas could come in Pass 1 if wanted).
+- Grafting, which needs a second species to mean anything.
+- Fruit disease effects, which also need #214.
+- Also out of scope: Assimilation (unfinished in the original), merchant trades, fire, food decay, triumph, Halloween's Cucurbitatrouille.
 
 ## Open questions for the owner
 
-1. **Oxygen**: how much does a producing plant make, per cycle or per day? eMush gives +1 per day, which can't keep pace with −1 per cycle. Should the burn rate or the output change?
-2. **Watering**: one plant per action (eMush) or the whole garden (the original's untargeted action)? Is the cost 1 AP?
-3. **Where plants work**: only in `HYDROPONIC_CENTER`, or anywhere (carried included)? And are garden points usable only in the garden?
-4. **Thirst timing**: eMush's day-change ladder (thirsty, dried, dead over 3 missed days)? Does a thirsty plant still make oxygen?
-5. **Fruit effects**: the original's generator, eMush's distribution, or bananas only for now?
-6. **Who reads fruit and plant properties**: Botanist, Skilful, Cook, and Mush too?
-7. **Alien fruit source** before expeditions exist (see Pass 2).
-8. **Sickness**: per-cycle odds, and is it Pass 3 or later?
-9. **Graft**: Botanist only? Fails on a dirty actor or on a sick, thirsty or dried plant? Does it then kill the plant?
-10. **Dirt and injury**: use the original's `dirt` (15/15/15/30%) through `dirtyChance`? Injury waits for #207.
-11. **Logs**: are garden actions public in the room (as the original's non-stealth flags suggest), and are matured, produced and died lines in the garden's public history?
-12. **Mush**: allowed to do all of it, with a confirm prompt like the original's `mush_confirm`?
-13. **`PARASITE_ELIM`**: which of the three readings?
+Everything in "Owner direction" is answered. Pass 1 has no open questions. Still open for Pass 2:
+
+1. How long until a sick plant dies? Do eMush's thirst steps carry on to death, one missed day after dried?
+2. **`PARASITE_ELIM`**: which of the three readings? With hidden sickness, eMush's "sick plants still produce" would also remove the side channel.

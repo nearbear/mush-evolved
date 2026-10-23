@@ -10,7 +10,7 @@ import { applyCheats, makeHuman, type ActopiCheat, type Cheat, type RoleCheat } 
 import { ACTIONS, type ActionDef } from "./actions.ts";
 import { getUp } from "./actions/lie_down.ts";
 import { itemsIn, rechargeMicrowaves, startCharges } from "./items.ts";
-import { actionFailed, apGain, carePointsGain, channelLimit, computerPointsGain, cycleChanged, dailyMoraleLoss, inventorySlots, movementRules, pilgredPointsGain, satietyLoss } from "./modifiers.ts";
+import { actionFailed, apGain, carePointsGain, channelLimit, computerPointsGain, cycleChanged, gardenPointsGain, dailyMoraleLoss, inventorySlots, movementRules, pilgredPointsGain, satietyLoss } from "./modifiers.ts";
 import { contaminationSeenBy, convert } from "./infection.ts";
 import { addStatus, isHungry, publicStatusesOf, statusesOf } from "./statuses.ts";
 import { emptyResources } from "./resources.ts";
@@ -23,9 +23,10 @@ import { damage } from "./death.ts";
 import { activitySeen, logPrivate } from "./log.ts";
 import { ringMycoAlarms } from "./mycoalarm.ts";
 import { planetsOf } from "./planets.ts";
-import { pilgredTerminalsHere } from "./pilgred.ts";
+import { commandTerminalsHere, isPilgredRepaired, pilgredTerminalsHere } from "./pilgred.ts";
 import { biosTerminalsHere, newBios } from "./bios.ts";
 import { callNextRebel, commsCycle, commsTerminalView, comTerminalsHere, newComms } from "./comms.ts";
+import { botanyCycle, botanyDay, plantView } from "./botany.ts";
 import { burnOxygen, shipMax, startShip } from "./ship.ts";
 import { SUCCESSION, TITLE_IDS, assignTitles } from "./titles.ts";
 import type {
@@ -93,7 +94,7 @@ export function createGame(
   }));
 
   const starts: Omit<ItemState, "id">[] = [
-    ...config.startItems.map((it): Omit<ItemState, "id"> => ({ type: it.type, at: { kind: "room", id: it.room }, ...(it.builds !== undefined && { builds: it.builds }), ...(it.teaches !== undefined && { teaches: it.teaches }), ...chargesFor(config, it.type) })),
+    ...config.startItems.map((it): Omit<ItemState, "id"> => ({ type: it.type, at: { kind: "room", id: it.room }, ...(it.builds !== undefined && { builds: it.builds }), ...(it.teaches !== undefined && { teaches: it.teaches }), ...(it.plant && { plant: { ...it.plant } }), ...chargesFor(config, it.type) })),
     ...players.flatMap((p) => config.startInventory.map((type): Omit<ItemState, "id"> => ({ type, at: { kind: "player", id: p.id } }))),
   ];
   const items: ItemState[] = starts.map((it, i) => ({ id: `item-${i + 1}`, ...it }));
@@ -129,6 +130,7 @@ export function createGame(
     planets: {},
     scanFailures: {},
     nextPlanetId: 1,
+    navigation: { heading: config.navigation.startHeading, orbit: null },
     // Issued with Mush selection, whatever the role (owner, 2026-10-13 and 2026-10-20).
     titles: assignTitles(players),
     comms: newComms(config),
@@ -294,6 +296,7 @@ function advanceCycle(state: GameState): void {
   cycleChanged(state);
   burnOxygen(state);
   commsCycle(state);
+  botanyCycle(state);
   const { cyclesPerDay } = state.config;
   const newDay = (state.cycle - 1) % cyclesPerDay === 0;
   if (newDay) {
@@ -302,6 +305,7 @@ function advanceCycle(state: GameState): void {
     for (const p of state.players) if (p.alive) p.morale = Math.max(0, p.morale - loss);
     grantCarePoints(state);
     rechargeMicrowaves(state);
+    botanyDay(state);
   }
   for (const p of state.players) {
     if (!p.alive || p.role !== "human") continue;
@@ -327,6 +331,7 @@ function grantCarePoints(state: GameState): void {
     p.resources.heal += carePointsGain(state, p);
     p.resources.comp = Math.min(state.config.computer.capPoints, p.resources.comp + computerPointsGain(state, p));
     p.resources.pilgred = Math.min(state.config.pilgred.capPoints, p.resources.pilgred + pilgredPointsGain(state, p));
+    p.resources.garden = Math.min(state.config.botany.capPoints, p.resources.garden + gardenPointsGain(state, p));
   }
 }
 
@@ -411,9 +416,9 @@ export function viewFor(state: GameState, playerId: PlayerId): PlayerView {
         ? state.players.map(({ id, name, isBot, botKind, character, role, alive }) => ({ id, name: moderateName(name), isBot, ...(botKind && { botKind }), character, role, alive }))
         : null,
     rooms: state.config.rooms,
-    inventory: itemsIn(state, { kind: "player", id: you.id }).map(itemView),
+    inventory: itemsIn(state, { kind: "player", id: you.id }).map((item) => itemView(item, you)),
     inventorySlots: inventorySlots(state, you),
-    roomItems: you.alive ? itemsIn(state, { kind: "room", id: you.room }).map(itemView) : [],
+    roomItems: you.alive ? itemsIn(state, { kind: "room", id: you.room }).map((item) => itemView(item, you)) : [],
     roomEquipment: you.alive ? (state.config.equipment[you.room] ?? []).map(equipmentView) : [],
     // The dead keep only ship-wide entries (cycles, days); every room entry, their own private ones included, goes.
     log: state.log.filter((e) =>
@@ -440,10 +445,22 @@ export function viewFor(state: GameState, playerId: PlayerId): PlayerView {
     projects: { ...state.projects },
     // Only at the PILGRED terminal: the living in a room that has one (owner, 2026-10-21).
     pilgred: you.alive && pilgredTerminalsHere(state, you).length > 0 ? state.pilgred.progress : null,
+    pilgredRepaired: isPilgredRepaired(state),
     comms: { linked: state.comms.linked, terminal: you.alive && comTerminalsHere(state, you).length > 0 ? commsTerminalView(state) : null },
     bios: you.alive && biosTerminalsHere(state, you).length > 0 ? { ...state.bios } : null,
     // Your own planets only, and only the tags an analysis revealed (owner, 2026-10-19).
-    planets: planetsOf(state, playerId).map((p) => ({ id: p.id, name: p.name, sectors: p.sectors.map((s) => (s.known ? s.tag : null)) })),
+    planets: planetsOf(state, playerId).map((p) => ({
+      id: p.id,
+      name: p.name,
+      direction: p.direction,
+      distance: p.distance,
+      sectors: p.sectors.map((s) => (s.known ? s.tag : null)),
+      ...(p.id === state.navigation.orbit && { orbited: true as const }),
+    })),
+    navigation: {
+      orbiting: state.navigation.orbit !== null,
+      heading: you.alive && commandTerminalsHere(state, you).length > 0 ? state.navigation.heading : null,
+    },
     titles: TITLE_IDS.map((id) => {
       const holder = state.players.find((p) => p.id === state.titles[id]);
       return {
@@ -470,8 +487,9 @@ export const affordable = (option: Readonly<ActionOption>): boolean => option.la
 /** The actions a view lets you do right now: its affordable options. */
 export const legalIn = (view: Pick<PlayerView, "actions">): Action[] => view.actions.filter(affordable).map((o) => o.action);
 
-function itemView({ id, type, of, builds, charges, teaches }: ItemState): ItemView {
-  return { id, type, ...(of !== undefined && { of }), ...(builds !== undefined && { builds }), ...(charges !== undefined && { charges }), ...(teaches !== undefined && { teaches }) };
+/** An item as `viewer` sees it; a plant's sickness only for the Botanist role (`plantView`). */
+function itemView({ id, type, of, builds, charges, teaches, plant }: ItemState, viewer: Readonly<PlayerState>): ItemView {
+  return { id, type, ...(of !== undefined && { of }), ...(builds !== undefined && { builds }), ...(charges !== undefined && { charges }), ...(teaches !== undefined && { teaches }), ...(plant && { plant: plantView(plant, viewer) }) };
 }
 
 function equipmentView({ id, type }: Equipment): EquipmentView {

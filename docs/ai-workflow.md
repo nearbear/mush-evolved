@@ -1097,3 +1097,30 @@ Not a deadlock: the run was just long enough to pass the 120 s and 300 s tool ti
 - **Needed correction:** i18next's typed `t` hit "type instantiation is excessively deep" when passed into a helper; returning the key from the helper and calling `t` in the component fixed it.
 
 - **2026-10-23 (owner):** Added configurable injury chances for build (5%), dismantle (5%), jettison (2%), PILGRED repair (5%), shower (2%), and take/drop (1%). Reused the existing Install injury roll (seeded chance, 2 HP damage, protection gloves block it). What worked: action-level chance hooks keep all odds in `state.config`. Correction: the deferred injury decision in the PILGRED notes needed updating when these odds were added.
+## 2026-10-22: Botany, Pass 1
+
+- **Decision (owner):** botany mechanics before alien species. Bananas only, no plant death. Sickness is hidden from everyone outside the Botanist role (Botanist and Skilful). Non-Botanists may treat any plant, and treating a healthy one costs and reads the same as treating a sick one. Garden points go to Botanists only and pay only in the garden. The five placeholder lab pots are replaced by the original's start (garden plus front storage).
+- **What worked:** Claude mined the original's data (`Gameplay.hx`, action and status tables) and the eMush wiki into a plan with the open questions listed. The owner answered them in two rounds before any code was written. Hiding sickness by making `treat` legal on every plant for non-Botanists means a refusal can't leak which plants are sick. That came out of the owner's direction, not the original, where sickness is public.
+- **Needed correction:** Claude first said 10 plants couldn't keep up with the oxygen burn; 10 a day against 8 a day is a surplus. The owner caught it. The plan's new start conflicted with an older decision (five lab pots), which Claude raised before building.
+
+## 2026-10-22: Engine room reactors and PILGRED's core animate
+
+- Asked to animate the three reactors at the rear (BigFill) and "the pale grid orb that looks like a Van de Graaff generator". The reactors are `rotational_reactor` (x2) and `emergency_reactor`, 8-frame auto loops. Their frames run down a column (`framesX` 1), which the renderers didn't handle (they only stepped right), so frame stepping now wraps by the slice's `framesX` (`frameAt` in `scene.ts`).
+- The orb is PILGRED's core: `core_pilgred` is the still orb and `core_pilgred_upgrade` the animated plasma globe. Asked the user whether to always animate or only once repaired, since tying it to the repair could reveal the repair; the user chose "once repaired". Completion was already announced crew-wide, so `PlayerView.pilgredRepaired` is public, and the client swaps the slice (`looks`).
+- Only listed slices animate (`AMBIENT_SLICES`); fogged neighbouring rooms stay still, as the cameras already did.
+
+Follow-up (same day): the three reactors pulsed in step, so `spreadAmbient` in `scene.ts` now starts each ambient sprite with the same frame count at a different frame (evenly spread, in paint order), by rotating its frames and their lengths. Deterministic, so every player sees the same phases relative to their own clock.
+
+## 2026-10-22: planet positions and day-based sizes
+
+- Decision (owner, via three multiple-choice questions): planets get a direction and a 2–9 fuel distance, unique ship-wide; distance follows eMush's tiers (two averaged rolls over 2–7, then 8, then 9); size grows 2–12 / 4–16 / 6–20 from days 1 / 5 / 10.
+- What worked: the wiki gave the outline, and a web-fetch agent read eMush's `PlanetService`, `RandomService` and `SpaceCoordinates` at tag 0.18.0 for the exact rules (truncating average, 32 coordinates). It also found that eMush loops forever when all 32 are taken; we refuse the scan instead.
+- Correction: the wiki pins the size growth to days, but eMush's code ties it to hard/very hard modes. The day thresholds come from the wiki.
+- Weighting only the free distances replaces eMush's reroll loop with the same distribution and no loop.
+
+## 2026-10-22: Ship travel from the Command terminal
+
+- **Decision (owner):** the wiki's steering model. The ship has a heading; the Commander turns it (1 AP) and travels 1–9 fuel ahead (1 AP). Short of fuel, the AP is wasted. Arriving on a known planet's position puts the ship in orbit. All other planets are lost, and the orbited one stays private to its finder. Leave orbit (1 AP) replaces Travel while in orbit, and scanning is refused in orbit.
+- **Claude's defaults, flagged:** leaving orbit burns 1 fuel, the ship starts facing north, the orbited planet can't be deleted, and the heading is shown only at the Command terminal.
+- **What worked:** the wiki skill (`npm run wiki -- page "Terminal de Commandement"`) answered most of the model. That cut the AskUserQuestion round to four real choices. Reusing `commandTerminalsHere` and `hasTitleAccess` kept the Commander check in one place.
+- **Needed correction:** the first test draft called `parseGameMessage` with an object (it takes the raw string) and expected the `validate` reason code for an action no longer among the candidates (the result is `illegal_action`).

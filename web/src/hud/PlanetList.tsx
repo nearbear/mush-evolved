@@ -36,6 +36,8 @@ export function PlanetList({ view, onAction, terminal }: Props) {
               <img className="planet-picture" src={pictureOf(planet)} alt="" />
               <div className="planet-body">
                 <strong>{planet.name}</strong>
+                {planet.orbited && <span className="planet-orbited">{t("astro.orbited")}</span>}
+                <span>{t("astro.position", { direction: t(`astro.directions.${planet.direction}`), distance: planet.distance })}</span>
                 <span>{t("astro.sectors", { count: planet.sectors.length })}</span>
                 <ul className="planet-sectors">
                   {planet.sectors.map((tag, i) => (

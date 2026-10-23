@@ -1,5 +1,6 @@
 import type { BiosOption } from "./bios.ts";
 import type { CharacterId } from "./characters.ts";
+import type { TurnSide } from "./navigation.ts";
 
 export * from "./types/chat.ts";
 export * from "./types/config.ts";
@@ -64,6 +65,20 @@ export interface ItemState {
   charges?: number;
   /** For a skill book: the skill id it teaches (SKILLS in skills.ts). */
   teaches?: string;
+  /** For a hydropot with something growing in it (botany.ts). An empty pot has none. */
+  plant?: PlantState;
+}
+
+/** A plant in a hydropot (owner, 2026-10-22; docs/scratchpad/botany-plan.md, Pass 1). */
+export interface PlantState {
+  /** The fruit item type it grows from and produces (only `fruit_banana` for now). */
+  species: string;
+  /** Cycles since it was sown while young; null once adult. */
+  age: number | null;
+  /** 0 healthy, 1 thirsty, 2 dried. Public. */
+  thirst: 0 | 1 | 2;
+  /** Hidden: only the Botanist role sees it (`isBotanistRole`). */
+  sick: boolean;
 }
 
 /**
@@ -81,6 +96,9 @@ export type Action =
   | { type: "dispense"; equipment: string }
   | { type: "consume"; item: ItemId }
   | { type: "cook"; item: ItemId }
+  | { type: "water"; item: ItemId }
+  | { type: "treat"; item: ItemId }
+  | { type: "sow"; item: ItemId; fruit: ItemId }
   | { type: "express_cook"; item: ItemId }
   | { type: "build"; item: ItemId }
   | { type: "jettison"; item: ItemId }
@@ -102,6 +120,9 @@ export type Action =
   | { type: "project"; equipment: string; project: string }
   | { type: "repair_pilgred"; equipment: string }
   | { type: "return_to_sol"; equipment: string }
+  | { type: "turn_ship"; equipment: string; side: TurnSide }
+  | { type: "travel"; equipment: string; distance: number }
+  | { type: "leave_orbit"; equipment: string }
   | { type: "contact_sol"; equipment: string }
   | { type: "decode_rebel"; equipment: string; base: string }
   | { type: "contact_xyloph"; equipment: string }

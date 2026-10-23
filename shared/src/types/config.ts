@@ -1,4 +1,5 @@
-import type { RoomId } from "../types.ts";
+import type { PlanetDirection } from "../planets.ts";
+import type { PlantState, RoomId } from "../types.ts";
 
 /**
  * How moving between rooms is paid for. These are base values; modifiers from
@@ -93,6 +94,19 @@ export interface GameConfig {
   };
   pacifist: {
     aggressiveApSurcharge: number; // Extra AP for each aggressive action in a Pacifist's room, theirs too (owner, 2026-10-18).
+  };
+  botany: {
+    // Owner, 2026-10-22 (docs/scratchpad/botany-plan.md, Pass 1).
+    water: { cost: { ap: number } }; // Water one thirsty or dried plant.
+    treat: { cost: { ap: number } }; // Treat one plant (clears sickness).
+    sow: { cost: { ap: number } }; // Plant a carried fruit in an empty hydropot.
+    dirtyChance: number; // Chance of getting dirty after watering, treating or sowing (the original's 15%).
+    growCycles: Record<string, number>; // Cycles a young plant of each species needs before it becomes adult.
+    sickChancePerCycle: number; // PLACEHOLDER: each healthy plant's chance of falling sick at each cycle change.
+    oxygenPerPlant: number; // Oxygen each producing plant gives at day start.
+    gardenRoom: RoomId; // Garden points pay for an action only on a plant here.
+    pointsPerDay: number; // Garden points the Botanist gains at each day start.
+    capPoints: number; // Garden points held at most.
   };
   cook: {
     cost: { ap: number }; // AP spent to cook an uncooked ration (confirmed 2026-10-16).
@@ -194,6 +208,21 @@ export interface GameConfig {
     };
     analyze: { cost: { ap: number } }; // AP spent to reveal one sector of one of your planets (owner, 2026-10-19; the original's remote analysis, 2).
     maxPlanets: number; // Most planets one player can hold (owner, 2026-10-19).
+    // Where a planet lies (owner, 2026-10-22, eMush's PlanetService): one of 4 directions at `min` to `max` fuel, a position no other
+    // planet on the ship holds. The distance is two rolls over `min`..`nearMax` averaged (rounded down); `nearMax + 1` and up are
+    // used one at a time, only once every nearer position is taken.
+    distance: { min: number; nearMax: number; max: number };
+    // Sector counts by day (owner, 2026-10-22, the wiki's eMush hard and very hard modes): the last entry whose `fromDay` has come.
+    // Even sizes only, uniform from `min` to `max`.
+    sizeByDay: { fromDay: number; min: number; max: number }[];
+  };
+  // Steering at the Command terminal (owner, 2026-10-22, the wiki's Terminal de Commandement). Travel goes 1 to
+  // `astro.distance.max` fuel the way the ship faces; short of fuel, the AP is spent and the ship stays put.
+  navigation: {
+    turn: { cost: { ap: number } }; // AP spent to turn the ship a quarter left or right (the wiki's 1).
+    travel: { cost: { ap: number } }; // AP spent to travel (the wiki's 1); fuel spent is the distance.
+    leaveOrbit: { cost: { ap: number }; fuel: number }; // AP (the wiki's 1) and fuel (Claude's default, 1) to leave orbit.
+    startHeading: PlanetDirection; // The heading at the start (Claude's default).
   };
   accommodate: { cost: { ap: number }; offerMs: number }; // AP spent to offer to push someone's wheelchair, and how long (server ms) the offer waits to be accepted (owner, 2026-10-19: free, 5 minutes).
   lieDown: { cost: { ap: number } }; // AP spent to lie down in a bed (confirmed 2026-10-17).
@@ -257,7 +286,7 @@ export interface GameConfig {
   startSkills: string[]; // Skills every player starts with (none since 2026-10-15; players pick their own).
   characterModifiers: Record<string, string[]>; // Modifiers a character starts with, by character id (traits: Ian pacifist, owner 2026-10-18; Chun immunity and mankind_only_hope, owner 2026-10-18; Terrence wheelchair, owner 2026-10-19).
   mankindOnlyHope: { moraleLossCut: number }; // How much less morale the crew loses each day while a holder (Chun) is alive (owner, 2026-10-18).
-  startItems: { type: string; room: RoomId; builds?: string; teaches?: string }[]; // Items placed in rooms at the start of the game. Types come from ITEM_TYPES in items.ts.
+  startItems: { type: string; room: RoomId; builds?: string; teaches?: string; plant?: PlantState }[]; // Items placed in rooms at the start of the game. Types come from ITEM_TYPES in items.ts.
   startInventory: string[]; // Item types every player starts carrying (one of each).
   rooms: Record<RoomId, RoomId[]>; // Adjacency list. Movement is only allowed along these edges.
   equipment: Record<RoomId, Equipment[]>; // Fixed equipment in each room. Types come from EQUIPMENT_TYPES in equipment.ts.

@@ -21,22 +21,24 @@ All under `web/src/`. UI rules are in `web/CLAUDE.md`.
 
 - `TopBar.tsx`: cycle and countdown, Results (once the game has ended), End cycle (only when offered), Leave, settings.
 - `CycleCountdown.tsx`: time left until the next cycle, from the view message's `nextCycleAt`.
-- `PlayerSummary.tsx`: portrait, name, faction icon, AP/MP/HP/morale bars.
+- `PlayerSummary.tsx`: portrait, name, faction icon, AP/MP/HP/morale bars, other resources (on desktop the name and faction are in the portrait's popover, and the resources a stacked card at the row's end).
 - `PipBar.tsx`: the pip bar in SVG, tinted by CSS `color`.
 - `SettingsDialog.tsx` + `settings.css`: settings dialog.
 - `EndScreen.tsx` + `endScreen.css`: the end screen, open while the game has ended until closed (`GameScreen` holds that; the top bar's Results button reopens it): the ending's banner (`ENDING_ART`), the verdict, and `view.crew` with names, characters, roles and skulls (reuses `settings.css`).
-- `SelfPanel.tsx`: summary and other resources (Inspect tab on phones, without the summary), and your planets once you have any (deletable anywhere).
+- `SelfPanel.tsx`: the summary under the room (desktop only; phones show it in the top bar).
+- `Credits.tsx`: the asset attribution, at the bottom of the Inspect panel on both layouts.
 - `CommsCenter.tsx`: the Com center terminal window: link status and Sol chance, rebel calls with progress and expiry, Xyloph entries left, NERON version and update, each with its button when the view offers it.
 - `BiosTerminal.tsx`: the BIOS terminal window: each BIOS option with its current value and, for the NERON Admin, a switch button.
+- `ShipNavigation.tsx`: the Command terminal window's steering: heading, in-orbit flag, fuel, and the Commander's turn, travel (with a distance picker) and leave orbit buttons.
 - `PlanetList.tsx`: your planets with their sector tags (unknown ones as `tag_unknown`) and a bin button to delete; in the Astro terminal window it adds the scan and analyse buttons.
 - `InventoryOverlay.tsx` + `styles/inventory.css`: the sack button in the room view's lower right (badge = items in the room) that opens `InventoryPanel` over the room; closes on the button, Escape, or a press elsewhere in the room view. Both layouts; hidden when dead.
 - `InventoryPanel.tsx`: item zones; drag to take/drop, tap fallback.
 - `InspectPanel.tsx`: the selected person, equipment, or item, with its legal actions.
 - `SkillSlots.tsx`: skill slots and the picker dialog.
-- `StatusIcons.tsx`, `ItemAttrIcons.tsx`: status and item attribute icons.
+- `StatusIcons.tsx`, `ItemAttrIcons.tsx`: status and item attribute icons. `PlantStates.tsx`: a planted hydropot's young, thirsty, dried and (Botanist role only) sick icons.
 - `ITrackie.tsx`: the right panel: room log, global chat, Features, Private tabs. Messages come from `readChannels`, the message box from `chatChannels`; the dead lose the Room and Private tabs, get a read-only note instead of the box in the other channels, and gain a skull Graveyard tab.
 - `DeathNotice.tsx`: what a dead player sees where the room was.
-- `ItemIcon.tsx`: an item's icon; a corpse shows its owner lying down.
+- `ItemIcon.tsx`: an item's icon (`itemViewIcon`: a planted hydropot shows its tree); a corpse shows its owner lying down.
 - `FeatureSelect.tsx`: the Features drop-down.
 - `IconButton.tsx`: `IconButton` and `IconTab`.
 - `Markdown.tsx`: restricted chat message rendering.

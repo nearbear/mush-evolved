@@ -1,6 +1,36 @@
 import type { ActionCost, ActionVisibility } from "@mush2/shared";
+import { useLayoutEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { ACTION_ICON, VISIBILITY_ICONS } from "../art/assets.ts";
+
+const MIN_FONT_PX = 9;
+
+/** Shrinks the label one pixel at a time, down to MIN_FONT_PX, until it fits inside its button's padding box. */
+function useFitText(content: string) {
+  const ref = useRef<HTMLSpanElement>(null);
+  useLayoutEffect(() => {
+    // Refit whenever the label's content changes.
+    void content;
+    const label = ref.current;
+    const button = label?.parentElement;
+    if (!label || !button) return;
+    const fit = () => {
+      label.style.fontSize = "";
+      const style = getComputedStyle(button);
+      const room = button.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight);
+      let size = parseFloat(getComputedStyle(label).fontSize);
+      while (size > MIN_FONT_PX && label.scrollWidth > room) {
+        size -= 1;
+        label.style.fontSize = `${Math.max(size, MIN_FONT_PX)}px`;
+      }
+    };
+    fit();
+    const observer = new ResizeObserver(fit);
+    observer.observe(button);
+    return () => observer.disconnect();
+  }, [content]);
+  return ref;
+}
 
 /**
  * Button content for an action: bold AP cost and the action icon (only when it costs AP), then the label,
@@ -18,8 +48,9 @@ export function ActionLabel({
   visibility?: ActionVisibility;
 }) {
   const { t } = useTranslation();
+  const ref = useFitText(`${text}|${cost.ap}|${chance}|${visibility}`);
   return (
-    <span className="action-label">
+    <span className="action-label" ref={ref}>
       {cost.ap > 0 && (
         <>
           <strong>{cost.ap}</strong>

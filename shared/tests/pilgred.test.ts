@@ -172,6 +172,16 @@ describe("PILGRED visibility", () => {
       expect(json).not.toContain("lastBy");
     }
   });
+
+  it("tells everyone only whether it is repaired, which the crew-wide message already announces", () => {
+    const s = game();
+    s.players[1]!.room = "REFECTORY";
+    s.players[2]!.alive = false;
+    s.pilgred.progress = PILGRED_COMPLETE - 1;
+    for (const id of ["p0", "p1", "p2"]) expect(viewFor(s, id).pilgredRepaired).toBe(false);
+    s.pilgred.progress = PILGRED_COMPLETE;
+    for (const id of ["p0", "p1", "p2"]) expect(viewFor(s, id).pilgredRepaired).toBe(true);
+  });
 });
 
 describe("physicist skill", () => {

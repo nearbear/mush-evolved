@@ -77,6 +77,8 @@ function ship(): { state: GameState; sentinels: Sentinel[] } {
       {
         id: str(`planet-${p.id}`, own),
         name: str(`planetName-${p.id}`, own),
+        direction: "north",
+        distance: num(`planetDistance-${p.id}`, own),
         sectors: [
           { tag: "FOREST", known: true },
           // biome-ignore lint/suspicious/noExplicitAny: a tag no real planet has, so it can be searched for

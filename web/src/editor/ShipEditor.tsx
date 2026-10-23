@@ -8,6 +8,7 @@
 // the map is checked as you edit (Checks.tsx): each problem found takes you to where it is. Player-facing rules don't apply here
 // (no translations, desktop first), but every action has a button, so it works on a phone.
 
+import { Tabs } from "@base-ui/react/tabs";
 import { lazy, type PointerEvent, Suspense, useCallback, useEffect, useMemo, useRef, useState, type WheelEvent } from "react";
 import { placedEquipment, type RoomId, type ShipArt, type ShipLayout, type ShipMap } from "@mush2/shared";
 import { opaqueAt, preloadImage } from "../iso/hitMask.ts";
@@ -54,7 +55,7 @@ const PixiScene = lazy(() => import("../iso/pixi/PixiScene.tsx"));
 const MAX_ZOOM = 4;
 /** Undo steps kept. */
 const HISTORY = 300;
-const LAYER_NAMES: Record<Layer, string> = { ground: "Floor", wall: "Walls and doors", prop: "Props", entity: "Furniture and fittings" };
+const LAYER_NAMES: Record<Layer, string> = { ground: "Floor", wall: "Walls", door: "Doors", prop: "Props", entity: "Furniture and fittings" };
 const STILL = () => ({ x: 0, y: 0 });
 const NOBODY = { people: new Map(), walkers: new Map(), seats: new Map(), corpses: [] };
 
@@ -78,6 +79,7 @@ function Editor({ art, initial }: { art: ShipArt; initial: ShipMap }) {
   const [past, setPast] = useState<ShipMap[]>([]);
   const [future, setFuture] = useState<ShipMap[]>([]);
   const [save, setSave] = useState<SaveState>({ state: "clean" });
+  const [tab, setTab] = useState("view");
   const [selected, setSelected] = useState<TileAt | null>(null);
   // The room the room tools act on: the selected tile's, or one picked from the list.
   const [roomSel, setRoomSel] = useState<string | null>(null);
@@ -269,7 +271,10 @@ function Editor({ art, initial }: { art: ShipArt; initial: ShipMap }) {
     stack.current = { keys, at: 0 };
     const hit = (keys[0] && tileOfKey.get(keys[0])) || null;
     setSelected(hit);
-    if (hit) setRoomSel(hit.room);
+    if (hit) {
+      setRoomSel(hit.room);
+      setTab("edit");
+    }
     hoverAt(clientX, clientY);
   };
 
@@ -338,6 +343,7 @@ function Editor({ art, initial }: { art: ShipArt; initial: ShipMap }) {
     if (p.view) setView(p.view);
     if (p.tile) {
       setSelected(p.tile);
+      setTab("edit");
       stack.current = { keys: [], at: 0 };
     }
     if (p.room) setRoomSel(p.room);
@@ -488,12 +494,14 @@ function Editor({ art, initial }: { art: ShipArt; initial: ShipMap }) {
           </ul>
         )}
         {message && <p className="editor-note">{message}</p>}
-        <Checks problems={checks.problems} checking={checks.checking} failed={checks.failed} picked={pickedNow?.id ?? null} onPick={jump} />
-        <p className="muted">
-          {planRooms.length} rooms on the plan ({offPlan} off it aren't shown), {tiles} tiles. Drag to pan, scroll or the buttons to zoom, click
-          a tile to select it.
-        </p>
-
+        <Tabs.Root className="editor-tabs" value={tab} onValueChange={(v) => setTab(v as string)}>
+          <Tabs.List className="editor-tab-list">
+            <Tabs.Tab className="editor-tab" value="view">View</Tabs.Tab>
+            <Tabs.Tab className="editor-tab" value="edit">Edit</Tabs.Tab>
+            <Tabs.Tab className="editor-tab" value="place">Place</Tabs.Tab>
+            <Tabs.Tab className="editor-tab" value="checks">Checks</Tabs.Tab>
+          </Tabs.List>
+          <Tabs.Panel className="editor-tab-panel" value="view">
         <div className="editor-row">
           <label>
             View{" "}
@@ -560,6 +568,8 @@ function Editor({ art, initial }: { art: ShipArt; initial: ShipMap }) {
           </label>
         </fieldset>
 
+          </Tabs.Panel>
+          <Tabs.Panel className="editor-tab-panel" value="edit">
         <section className="editor-selection">
           <h2>Selected</h2>
           {!sel || !selTile || !selRoom ? (
@@ -675,6 +685,31 @@ function Editor({ art, initial }: { art: ShipArt; initial: ShipMap }) {
           )}
         </section>
 
+          </Tabs.Panel>
+          <Tabs.Panel className="editor-tab-panel" value="place">
+        <label className="editor-field">
+          New tiles go in{" "}
+          <select value={newRoom} onChange={(e) => setNewRoom(e.target.value)}>
+            <option value="auto">the room with floor or tiles there</option>
+            {planRooms.map((id) => (
+              <option key={id} value={id}>
+                {id}
+              </option>
+            ))}
+          </select>
+        </label>
+        <Palette layout={layout} armed={armed} onArm={setArmed} />
+
+          </Tabs.Panel>
+          <Tabs.Panel className="editor-tab-panel" value="checks">
+        <Checks problems={checks.problems} checking={checks.checking} failed={checks.failed} picked={pickedNow?.id ?? null} onPick={jump} />
+        <p className="muted">
+          {planRooms.length} rooms on the plan ({offPlan} off it aren't shown), {tiles} tiles. Drag to pan, scroll or the buttons to zoom, click
+          a tile to select it.
+        </p>
+
+          </Tabs.Panel>
+        </Tabs.Root>
         <section className="editor-readout" aria-live="polite">
           <h2>Under the pointer</h2>
           {!hover ? (
@@ -693,19 +728,6 @@ function Editor({ art, initial }: { art: ShipArt; initial: ShipMap }) {
             </p>
           )}
         </section>
-
-        <label className="editor-field">
-          New tiles go in{" "}
-          <select value={newRoom} onChange={(e) => setNewRoom(e.target.value)}>
-            <option value="auto">the room with floor or tiles there</option>
-            {planRooms.map((id) => (
-              <option key={id} value={id}>
-                {id}
-              </option>
-            ))}
-          </select>
-        </label>
-        <Palette layout={layout} armed={armed} onArm={setArmed} />
 
         <details className="editor-keys">
           <summary>Keys</summary>

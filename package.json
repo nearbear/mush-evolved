@@ -27,7 +27,8 @@
     "ship-view": "npm run ship-view -w tools --",
     "ship-render": "npm run ship-render -w tools --",
     "ship-top": "npm run ship-top -w tools --",
-    "contact-sheet": "npm run contact-sheet -w tools --"
+    "contact-sheet": "npm run contact-sheet -w tools --",
+    "wiki": "npm run wiki -w tools --"
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.15",

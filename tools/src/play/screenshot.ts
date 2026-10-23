@@ -267,10 +267,25 @@ async function mobileSteps(page: Page, step: Step): Promise<void> {
     await inventory.locator(".item-action").first().tap();
   });
 
-  await step("m06-door-go", async () => {
+  await step("m05c-resources", async () => {
+    await page.keyboard.press("Escape");
+    await page.getByRole("button", { name: /^Other resources/ }).tap();
+    await page.locator(".resource-rest .resource").first().waitFor();
+  });
+
+  await step("m05b-ship", async () => {
+    await page.keyboard.press("Escape");
     await nav("Room");
     const toggle = page.getByRole("button", { name: /^Inventory/ });
     if ((await toggle.getAttribute("aria-expanded")) === "true") await toggle.tap();
+    await page.getByRole("button", { name: "Ship", exact: true }).tap();
+    await page.locator(".ship-popup .ship-title").first().waitFor();
+  });
+
+  await step("m06-door-go", async () => {
+    await nav("Room");
+    const ship = page.getByRole("button", { name: "Ship", exact: true });
+    if ((await ship.getAttribute("aria-expanded")) === "true") await ship.tap();
     await walkThroughDoor(page);
   });
 

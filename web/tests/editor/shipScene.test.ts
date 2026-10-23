@@ -67,7 +67,7 @@ describe("overlays", () => {
     }
   });
 
-  it("puts doors with walls in the layer toggles, and people in none", () => {
-    expect([layerOf("door"), layerOf("wall"), layerOf("ground"), layerOf("actor")]).toEqual(["wall", "wall", "ground", undefined]);
+  it("gives doors their own layer toggle, and people in none", () => {
+    expect([layerOf("door"), layerOf("wall"), layerOf("ground"), layerOf("actor")]).toEqual(["door", "wall", "ground", undefined]);
   });
 });

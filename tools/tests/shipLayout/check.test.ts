@@ -40,10 +40,9 @@ describe("checkShip", () => {
     expect(ship({ x: 4, y: 0 })).toEqual({ unplaced: [], overlaps: [], doors: [], gaps: [] });
   });
 
-  it("finds a floor on another room's floor, and under its wall", () => {
+  it("finds a floor on another room's floor", () => {
     const r = ship({ x: 2, y: 0 });
     expect(r.overlaps.find((o) => o.kind === "floor")).toMatchObject({ rooms: ["A", "B"], cells: [[3, 1], [3, 2], [3, 3], [3, 4]] });
-    expect(r.overlaps.find((o) => o.kind === "wall")?.rooms).toEqual(["A", "B"]);
   });
 
   it("lists doors whose two sides don't meet, and the gap between rooms set apart", () => {

@@ -15,11 +15,13 @@ export class DeletePlanetAction extends Action<DeletePlanetActionData> {
   }
 
   override getCandidates(state: Readonly<GameState>, player: Readonly<PlayerState>): DeletePlanetActionData[] {
-    return planetsOf(state, player.id).map((planet) => ({ type: "delete_planet", planet: planet.id }));
+    return planetsOf(state, player.id).flatMap((planet) => (planet.id === state.navigation.orbit ? [] : [{ type: "delete_planet", planet: planet.id }]));
   }
 
   override validate(state: Readonly<GameState>, player: Readonly<PlayerState>, target: DeletePlanetActionData): string | null {
-    return planetsOf(state, player.id).some((planet) => planet.id === target.planet) ? null : "no_such_planet";
+    if (!planetsOf(state, player.id).some((planet) => planet.id === target.planet)) return "no_such_planet";
+    // The planet the ship orbits stays until the ship leaves it (Claude's default, 2026-10-22).
+    return state.navigation.orbit === target.planet ? "orbiting" : null;
   }
 
   override apply(state: GameState, player: PlayerState, target: DeletePlanetActionData): void {

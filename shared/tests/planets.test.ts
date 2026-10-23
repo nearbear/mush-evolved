@@ -1,11 +1,11 @@
 import { describe, expect, it } from "vitest";
 import { DEFAULT_CONFIG } from "../src/config.ts";
-import { generatePlanet, pickSeekSector, PLANET_TAGS, PLANET_TAG_IDS } from "../src/planets.ts";
+import { freePositions, generatePlanet, pickPosition, pickSeekSector, PLANET_DIRECTIONS, PLANET_TAGS, PLANET_TAG_IDS, sizeRangeOn, type PlanetPosition } from "../src/planets.ts";
 import { parseGameMessage } from "../src/protocol.ts";
-import { applyAction, createGame, viewFor } from "../src/rules.ts";
+import { applyAction, createGame, dayOf, viewFor } from "../src/rules.ts";
 import { addStatus } from "../src/statuses.ts";
 import type { Action, GameState, Planet } from "../src/types.ts";
-import { clone, makeSeats, must, offered, option } from "./support.ts";
+import { clone, makeSeats, must, nextDay, offered, option } from "./support.ts";
 
 const seats = makeSeats(3, "others");
 const TERMINAL = "COMMAND_CENTER:ASTRO_MODULE";
@@ -29,15 +29,18 @@ function forcedScan(s: GameState, id: string, succeed: boolean): GameState {
   return next;
 }
 
+const HERE: PlanetPosition = { direction: "north", distance: 4 };
+const EARLY = { min: 2, max: 12 };
+
 describe("planet generation", () => {
   it("is deterministic for a seed and follows the original's size and per-tag limits", () => {
-    expect(generatePlanet(42, "x")).toEqual(generatePlanet(42, "x"));
+    expect(generatePlanet(42, "x", HERE, EARLY)).toEqual(generatePlanet(42, "x", HERE, EARLY));
     let rng = 1;
     const sizes = new Set<number>();
     const names = new Set<string>();
     for (let i = 0; i < 2000; i++) {
       let planet: Planet;
-      [planet, rng] = generatePlanet(rng, `p${i}`);
+      [planet, rng] = generatePlanet(rng, `p${i}`, HERE, EARLY);
       sizes.add(planet.sectors.length);
       names.add(planet.name);
       expect(planet.sectors.every((s) => !s.known && PLANET_TAG_IDS.includes(s.tag))).toBe(true);
@@ -47,8 +50,52 @@ describe("planet generation", () => {
     expect(names.size).toBeGreaterThan(1000);
   });
 
+  it("pins the decided ranges: 2 to 9 fuel with 7 the near limit, and 2-12, 4-16, 6-20 sectors from days 1, 5, 10", () => {
+    expect(astro.distance).toEqual({ min: 2, nearMax: 7, max: 9 });
+    expect(astro.sizeByDay).toEqual([
+      { fromDay: 1, min: 2, max: 12 },
+      { fromDay: 5, min: 4, max: 16 },
+      { fromDay: 10, min: 6, max: 20 },
+    ]);
+    expect([1, 4, 5, 9, 10, 30].map((day) => sizeRangeOn(astro, day).min)).toEqual([2, 2, 4, 4, 6, 6]);
+  });
+
+  it("draws every even size in the day's range", () => {
+    let rng = 5;
+    const sizes = new Set<number>();
+    for (let i = 0; i < 500; i++) {
+      let planet: Planet;
+      [planet, rng] = generatePlanet(rng, `p${i}`, HERE, { min: 6, max: 20 });
+      sizes.add(planet.sectors.length);
+    }
+    expect([...sizes].sort((a, b) => a - b)).toEqual([6, 8, 10, 12, 14, 16, 18, 20]);
+  });
+
+  it("places planets near first, favouring middle distances, and moves out only when the nearer spots are full", () => {
+    const all = freePositions(game());
+    expect(all).toHaveLength(PLANET_DIRECTIONS.length * (astro.distance.max - astro.distance.min + 1));
+    let rng = 11;
+    const counts = new Map<number, number>();
+    for (let i = 0; i < 3600; i++) {
+      let position: PlanetPosition | null;
+      [position, rng] = pickPosition(rng, all, astro.distance);
+      counts.set(position!.distance, (counts.get(position!.distance) ?? 0) + 1);
+    }
+    // Two rolls over 2..7 averaged and rounded down: 3, 7, 11, 9, 5, 1 in 36 for distances 2 to 7; never 8 or 9.
+    expect([...counts.keys()].sort()).toEqual([2, 3, 4, 5, 6, 7]);
+    expect(counts.get(4)!).toBeGreaterThan(counts.get(5)!);
+    expect(counts.get(7)!).toBeLessThan(250);
+    // Only distance 3 west is free nearby: it's always that one.
+    const one = all.filter((p) => p.distance > 7 || (p.distance === 3 && p.direction === "west"));
+    expect(pickPosition(rng, one, astro.distance)[0]).toEqual({ direction: "west", distance: 3 });
+    // Every near spot is taken: 8 before 9; nothing left at all gives null.
+    expect(pickPosition(rng, all.filter((p) => p.distance > 7), astro.distance)[0]!.distance).toBe(8);
+    expect(pickPosition(rng, all.filter((p) => p.distance === 9), astro.distance)[0]!.distance).toBe(9);
+    expect(pickPosition(rng, [], astro.distance)[0]).toBeNull();
+  });
+
   it("reveals unknown sectors weighted by seek, and nothing once all are known", () => {
-    const planet: Planet = { id: "x", name: "x", sectors: [{ tag: "WRECK", known: false }, { tag: "FOREST", known: false }, { tag: "OCEAN", known: true }] };
+    const planet: Planet = { id: "x", name: "x", ...HERE, sectors: [{ tag: "WRECK", known: false }, { tag: "FOREST", known: false }, { tag: "OCEAN", known: true }] };
     let rng = 3;
     const hits = [0, 0, 0];
     for (let i = 0; i < 1300; i++) {
@@ -84,6 +131,36 @@ describe("Astro terminal planets", () => {
     expect(planets[0]!.sectors.length).toBeGreaterThanOrEqual(2);
     expect(planets[0]!.sectors.every((sector) => sector === null)).toBe(true);
     expect(s.log.find((e) => e.key === "planetFound")).toMatchObject({ visibleTo: ["p0"], params: { planet: planets[0]!.name } });
+  });
+
+  it("never puts two planets on the ship at the same position, whoever found them", () => {
+    let s = game();
+    for (const id of ["p0", "p1", "p2"]) for (let i = 0; i < astro.maxPlanets; i++) s = forcedScan(s, id, true);
+    const spots = Object.values(s.planets).flatMap((planets) => planets.map((p) => `${p.direction}:${p.distance}`));
+    expect(spots).toHaveLength(3 * astro.maxPlanets);
+    expect(new Set(spots).size).toBe(spots.length);
+    expect(viewFor(s, "p0").planets[0]).toMatchObject({ direction: s.planets.p0![0]!.direction, distance: s.planets.p0![0]!.distance });
+  });
+
+  it("refuses a scan when every position is taken, leaving state unchanged", () => {
+    const s = game();
+    const taken = freePositions(s).map((position, i) => generatePlanet(i, `t${i}`, position, EARLY)[0]);
+    s.planets.p1 = taken;
+    expect(offered(s, "p0").some((a) => a.type === "scan_planet")).toBe(false);
+    expect(applyAction(s, "p0", scan).ok).toBe(false);
+  });
+
+  it("finds bigger planets as the days go by", () => {
+    const s = game();
+    const early = forcedScan(nextDay(s), "p0", true);
+    expect(early.planets.p0![0]!.sectors.length).toBeLessThanOrEqual(12);
+    // Days run long before players die of it; jump straight to day 10.
+    s.cycle = 9 * s.config.cyclesPerDay + 1;
+    expect(dayOf(s).day).toBe(10);
+    for (let seed = 0; seed < 20; seed++) {
+      s.rng = seed;
+      expect(forcedScan(s, "p0", true).planets.p0![0]!.sectors.length).toBeGreaterThanOrEqual(6);
+    }
   });
 
   it("raises the odds by x1.25 for each failure in a row, per player, and a success resets them", () => {

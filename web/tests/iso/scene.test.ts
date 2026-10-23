@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { RoomId, ShipLayout, SliceInfo } from "@mush2/shared";
 import type { PlacedSprite } from "../../src/iso/placement.ts";
-import { animFrame, animStep, describeScene, doorAnim, doorOpenMs, type Occupant, type SceneInput } from "../../src/iso/scene.ts";
+import { animFrame, animStep, describeScene, doorAnim, doorOpenMs, frameAt, imageOf, type Occupant, type SceneInput } from "../../src/iso/scene.ts";
 import type { Walker } from "../../src/iso/useWalkers.ts";
 
 const HERE = "bridge" as RoomId;
@@ -17,7 +17,19 @@ const DOOR = {
 } as unknown as SliceInfo;
 const FRONT_DOOR = { flags: ["door"], anims: [{ frames: [0, 1, 2, 3, 4], rhythm: [5, 5, 5, 5, 5], auto: true }] } as unknown as SliceInfo;
 
-const layout = { roomSize: 32, sheets: {}, slices: { camera: { anims: [{ frames: [0, 1, 2, 1] }] }, door: DOOR }, rooms: [], autoBind: {} } as unknown as ShipLayout;
+/** Like the engine room's reactors: frames run down a column, looping on their own. */
+const REACTOR = { framesX: 1, anims: [{ frames: [0, 1, 2], rhythm: [2, 2, 2], auto: true }] } as unknown as SliceInfo;
+/** PILGRED's core: a still orb, and its animated look, elsewhere on another sheet. */
+const CORE = { sheet: "S", x: 768, y: 1656, framesX: 1, anims: [] } as unknown as SliceInfo;
+const CORE_UPGRADE = { sheet: "T", x: 0, y: 1656, width: 128, height: 110, framesX: 6, anims: [{ frames: [0, 1, 2, 3, 4, 5], rhythm: [3, 3, 3, 3, 3, 3], auto: true }] } as unknown as SliceInfo;
+
+const layout = {
+  roomSize: 32,
+  sheets: {},
+  slices: { camera: { anims: [{ frames: [0, 1, 2, 1] }] }, door: DOOR, rotational_reactor: REACTOR, core_pilgred: CORE, core_pilgred_upgrade: CORE_UPGRADE },
+  rooms: [],
+  autoBind: {},
+} as unknown as ShipLayout;
 
 const placed = (over: Partial<PlacedSprite>): PlacedSprite => ({
   key: "t0",
@@ -105,6 +117,33 @@ describe("describeScene", () => {
 
   it("animates the camera's swivel", () => {
     expect(only(scene([placed({ slice: "camera" })])).anim).toMatchObject({ frames: [0, 1, 2, 1], loops: "forever" });
+  });
+
+  it("loops the reactors on their own, at their rhythm, stepping down their column", () => {
+    const s = only(scene([placed({ slice: "rotational_reactor", width: 228, height: 182, sx: 350, sy: 0 })]));
+    expect(s.anim).toMatchObject({ frames: [0, 1, 2], frameMs: [200 / 3, 200 / 3, 200 / 3], loops: "forever" });
+    expect(frameAt(s.image, 2)).toEqual({ sx: 350, sy: 364 });
+  });
+
+  it("starts each reactor at a different point in its loop, so they don't pulse in step", () => {
+    const reactor = (key: string) => placed({ key, slice: "rotational_reactor", width: 228, height: 182 });
+    const { sprites } = scene([reactor("t1"), reactor("t2"), reactor("t3")]);
+    expect(sprites.map((s) => s.anim?.frames)).toEqual([
+      [0, 1, 2],
+      [1, 2, 0],
+      [2, 0, 1],
+    ]);
+  });
+
+  it("draws PILGRED's core still until it is repaired, then as the animated globe", () => {
+    const core = placed({ slice: "core_pilgred", width: 128, height: 110, sx: 768, sy: 1656 });
+    expect(only(scene([core])).anim).toBeUndefined();
+    const repaired = only(scene([core], { looks: new Map([["core_pilgred", "core_pilgred_upgrade"]]) }));
+    expect(repaired.image.frame).toMatchObject({ sx: 0, sy: 1656, width: 128, height: 110 });
+    expect(repaired.anim).toMatchObject({ frames: [0, 1, 2, 3, 4, 5], loops: "forever" });
+    expect(frameAt(repaired.image, 4)).toEqual({ sx: 512, sy: 1656 });
+    // Hit-testing reads the same look.
+    expect(imageOf(core, { layout, room: HERE, people: new Map(), walkers: new Map(), seats: new Map(), corpses: [], looks: new Map([["core_pilgred", "core_pilgred_upgrade"]]) }).frame.sx).toBe(0);
   });
 
   it("draws walkers with their facing and walk cycle, and an outline for each", () => {

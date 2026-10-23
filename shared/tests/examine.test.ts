@@ -7,7 +7,7 @@ import type { Action, GameState, PlayerId, Target } from "../src/types.ts";
 import { makeSeats, mustApply, offered } from "./support.ts";
 
 const seats = makeSeats(3, "others");
-// Everyone in the lab, empty-handed; a wrench (item-1) and five hydropots there.
+// Everyone in the lab, empty-handed; a wrench (item-1) there.
 const newGame = () => createGame(seats, { ...DEFAULT_CONFIG, startInventory: [] }, 42);
 
 const examine = (kind: Target["kind"], id: string): Action => ({ type: "examine", target: { kind, id } as Target });
@@ -37,9 +37,11 @@ describe("room equipment", () => {
 
 describe("examine", () => {
   it("is offered for people, equipment, and items you can see, including yourself", () => {
-    const state = mustApply(newGame(), "p0", { type: "take", item: "item-1" });
-    const ids = state.items.filter((i) => i.type === "tree_pot").map((i) => i.id);
-    expect(ids).toHaveLength(5);
+    const start = newGame();
+    start.items.find((i) => i.type === "tree_pot")!.at = { kind: "room", id: "LABORATORY" };
+    const state = mustApply(start, "p0", { type: "take", item: "item-1" });
+    const ids = state.items.filter((i) => i.at.kind === "room" && i.at.id === "LABORATORY").map((i) => i.id);
+    expect(ids).toHaveLength(1);
     const targets = offered(state, "p0").flatMap((a) => (a.type === "examine" ? [a.target] : []));
     expect(targets).toEqual([
       { kind: "player", id: "p0" },
@@ -49,7 +51,7 @@ describe("examine", () => {
       { kind: "equipment", id: "LABORATORY:CRYO_MODULE" },
       { kind: "equipment", id: "LABORATORY:GRAVITY_SIMULATOR" },
       { kind: "item", id: "item-1" }, // in your inventory
-      ...ids.map((id) => ({ kind: "item", id })), // the hydropots, in the room
+      ...ids.map((id) => ({ kind: "item", id })), // a hydropot, in the room
     ]);
   });
 
@@ -59,13 +61,12 @@ describe("examine", () => {
     expect(viewFor(state, "p1").log.map((e) => e.key)).not.toContain("examineEquipment");
     expect(state.players[0]!.ap).toBe(DEFAULT_CONFIG.startAp);
 
-    const pot = state.items.find((i) => i.type === "tree_pot")!.id;
-    state = mustApply(state, "p0", examine("player", "p1"), examine("player", "p0"), examine("item", pot));
+    state = mustApply(state, "p0", examine("player", "p1"), examine("player", "p0"), examine("item", "item-1"));
     const lines = viewFor(state, "p0").log.slice(-3).map(({ key, params }) => ({ key, params }));
     expect(lines).toEqual([
       { key: "examinePlayer", params: { name: "chun" } },
       { key: "examineSelf", params: {} },
-      { key: "examineItem", params: { item: "tree_pot" } },
+      { key: "examineItem", params: { item: "wrench" } },
     ]);
   });
 

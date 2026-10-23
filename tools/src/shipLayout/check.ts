@@ -24,7 +24,7 @@ export function formatReport(report: ShipReport): string {
     ...section("Rooms with doors but no position", report.unplaced),
     ...section(
       "Overlaps (errors)",
-      report.overlaps.map((o) => `${o.rooms[0]} ${o.kind === "floor" ? "floor on" : "floor under the wall of"} ${o.rooms[1]}: ${cells(o.cells)}`),
+      report.overlaps.map((o) => `${o.rooms[0]} floor on ${o.rooms[1]}: ${cells(o.cells)}`),
     ),
     ...section("Doors that don't line up", report.doors.map((d) => `${d.rooms[0]} -> ${d.rooms[1]}: ${d.rooms[1]}'s side is off by ${off(d.off)}`)),
     ...section("Gaps between rooms", report.gaps.map((g) => `${g.rooms[0]} / ${g.rooms[1]}: ${cells(g.cells)}`)),

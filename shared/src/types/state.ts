@@ -1,6 +1,6 @@
 import type { BiosState } from "../bios.ts";
 import type { CommsState } from "../comms.ts";
-import type { PlanetTag } from "../planets.ts";
+import type { PlanetDirection, PlanetTag } from "../planets.ts";
 import type { RngState } from "../rng.ts";
 import type { TitleId } from "../titles.ts";
 import type { ItemState, LogEntry, PlayerId } from "../types.ts";
@@ -92,6 +92,11 @@ export interface GameState {
   /** Failed scans in a row per player, raising their next scan's odds; reset by a success (owner, 2026-10-19). Never sent. */
   scanFailures: Record<PlayerId, number>;
   nextPlanetId: number;
+  /**
+   * The ship's heading and the planet it orbits, by id, if any (navigation.ts). `orbit` is public only as "in orbit or
+   * not"; the planet stays its finder's. `heading` goes only to the living at a Command terminal.
+   */
+  navigation: { heading: PlanetDirection; orbit: string | null };
   /** Who holds each title (titles.ts); null while vacant. Public: every view has the holders and the lines. */
   titles: Record<TitleId, PlayerId | null>;
   /**
@@ -106,6 +111,9 @@ export interface Planet {
   id: string;
   /** Generated; a proper noun, not translated. */
   name: string;
+  /** Where it lies: no two planets on the ship share a direction and distance (in fuel). */
+  direction: PlanetDirection;
+  distance: number;
   /** In a fixed shuffled order; `known` once an analysis revealed the sector. */
   sectors: { tag: PlanetTag; known: boolean }[];
 }

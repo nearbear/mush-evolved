@@ -17,6 +17,9 @@ const ACTION_NAME_KEYS = {
   project: "actions.project",
   repair_pilgred: "actions.repairPilgred",
   return_to_sol: "actions.returnToSol",
+  turn_ship: "actions.turnShip",
+  travel: "actions.travel",
+  leave_orbit: "actions.leaveOrbit",
   contact_sol: "actions.contactSol",
   decode_rebel: "actions.decodeRebel",
   contact_xyloph: "actions.contactXyloph",
@@ -50,6 +53,9 @@ const ACTION_NAME_KEYS = {
   attack: "actions.attack",
   pick_skill: "actions.pickSkill",
   read_book: "actions.readBook",
+  water: "actions.water",
+  treat: "actions.treat",
+  sow: "actions.sow",
 } as const satisfies Record<Exclude<ActionType, "ready">, string>;
 
 export function useNames() {
@@ -70,9 +76,13 @@ export function useNames() {
     const thing = built(builds);
     return t("items.blueprintOf" as never, { thing, defaultValue: type });
   };
-  /** An item as the view has it: a blueprint is named for what it builds, a skill book for its skill. */
-  const itemOf = (it: Pick<ItemView, "type" | "builds" | "teaches">) =>
-    it.teaches === undefined ? item(it.type, it.builds) : t("items.bookOf" as never, { skill: skill(it.teaches), defaultValue: it.type });
+  /** An item as the view has it: a blueprint is named for what it builds, a skill book for its skill, a planted hydropot for its plant. */
+  const itemOf = (it: Pick<ItemView, "type" | "builds" | "teaches" | "plant">) =>
+    it.plant !== undefined
+      ? t("itemAttr.plantOf", { item: item(it.plant.species) })
+      : it.teaches === undefined
+        ? item(it.type, it.builds)
+        : t("items.bookOf" as never, { skill: skill(it.teaches), defaultValue: it.type });
   /** The short label along an item's face: a skill book's skill, a blueprint's product. */
   const itemLabel = (it: Pick<ItemView, "builds" | "teaches">) =>
     it.teaches !== undefined ? skill(it.teaches) : it.builds !== undefined ? built(it.builds) : undefined;
@@ -85,7 +95,7 @@ export function useNames() {
     return key ? t(key as never, { defaultValue: type }) : type;
   };
 
-  /** The text of a log entry. `room`, `item`, `research`, `project`, `equipment`, `action`, `title`, `skill`, `base` (a rebel base) and `entry` (a Xyloph entry) params are ids and get translated; `name`, `target` and `body` are character ids. */
+  /** The text of a log entry. `room`, `item`, `research`, `project`, `equipment`, `action`, `title`, `skill`, `base` (a rebel base), `direction` (a heading) and `entry` (a Xyloph entry) params are ids and get translated; `name`, `target` and `body` are character ids. */
   const logLine = ({ key, params = {} }: Pick<LogEntry, "key" | "params">): string => {
     const resolved: Record<string, string | number> = { ...params };
     if (typeof params.room === "string") resolved.room = room(params.room);
@@ -97,6 +107,7 @@ export function useNames() {
     if (typeof params.title === "string") resolved.title = title(params.title);
     if (typeof params.skill === "string") resolved.skill = skill(params.skill);
     if (typeof params.base === "string") resolved.base = rebelBase(params.base);
+    if (typeof params.direction === "string") resolved.direction = t(`astro.directions.${params.direction}` as never, { defaultValue: params.direction });
     if (typeof params.entry === "string") resolved.entry = t(`comms.xyloph.${params.entry}` as never, { defaultValue: params.entry });
     for (const who of ["name", "target", "body"] as const) if (typeof params[who] === "string") resolved[who] = characterGivenName(params[who]);
     return t(`logEvent.${key}` as never, { ...resolved, defaultValue: key });

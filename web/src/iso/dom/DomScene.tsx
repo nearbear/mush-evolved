@@ -5,7 +5,7 @@
 
 import { useEffect, useId, useRef, useState, type CSSProperties } from "react";
 import { useKeyedSprite } from "../../art/keyedSprite.ts";
-import { animId, animStep, type SceneAnim, type ScenePicture, type SceneRendererProps, type SceneSprite } from "../scene.ts";
+import { animId, animStep, frameAt, type SceneAnim, type ScenePicture, type SceneRendererProps, type SceneSprite } from "../scene.ts";
 import { useDomFrame } from "../useDomFrame.ts";
 
 export function DomScene({ scene, ref }: SceneRendererProps) {
@@ -64,10 +64,11 @@ function classOf(s: SceneSprite): string {
 const box = (p: ScenePicture) => ({ left: p.x, top: p.y, width: p.width, height: p.height });
 
 function pictureStyle(p: ScenePicture, url: string | undefined, frame: number): CSSProperties {
+  const { sx, sy } = frameAt(p.image, frame);
   return {
     ...box(p),
     backgroundImage: url && `url(${url})`,
-    backgroundPosition: `${-(p.image.frame.sx + frame * p.width)}px ${-p.image.frame.sy}px`,
+    backgroundPosition: `${-sx}px ${-sy}px`,
     transform: p.flipX || p.flipY ? `scale(${p.flipX ? -1 : 1}, ${p.flipY ? -1 : 1})` : undefined,
   };
 }

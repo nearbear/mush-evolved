@@ -2,12 +2,13 @@
 // over the isometric scene (the same InventoryPanel the self panel used to hold). It stays open while you
 // take and drop, and closes on the button, Escape, or a press elsewhere in the room view. UI-only state.
 
-import { useEffect, useId, useRef, useState } from "react";
+import { useCallback, useId, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { Action, PlayerView, Target } from "@mush2/shared";
 import { TAB_ICONS } from "../art/assets.ts";
 import { Hint } from "./IconButton.tsx";
 import { InventoryPanel } from "./InventoryPanel.tsx";
+import { useOverlayDismiss } from "./useOverlayDismiss.ts";
 
 /** The magnifications the room view steps through. */
 export const ZOOM_STEPS = [1 / 2, 1, 2];
@@ -32,23 +33,8 @@ export function InventoryOverlay({
   const rootRef = useRef<HTMLDivElement>(null);
   const panelId = useId();
 
-  useEffect(() => {
-    if (!open) return;
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setOpen(false);
-    };
-    // Only presses inside the room view close it; the Inspect panel and iTrackie stay usable beside it.
-    const onPress = (e: PointerEvent) => {
-      const target = e.target instanceof Element ? e.target : null;
-      if (target?.closest(".room-view") && !rootRef.current?.contains(target)) setOpen(false);
-    };
-    document.addEventListener("keydown", onKey);
-    document.addEventListener("pointerdown", onPress);
-    return () => {
-      document.removeEventListener("keydown", onKey);
-      document.removeEventListener("pointerdown", onPress);
-    };
-  }, [open]);
+  const close = useCallback(() => setOpen(false), []);
+  useOverlayDismiss(open, close, rootRef);
 
   const step = (dir: 1 | -1) => ZOOM_STEPS[ZOOM_STEPS.indexOf(zoom) + dir];
   const roomCount = view.roomItems.length;

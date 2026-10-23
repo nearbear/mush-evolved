@@ -5,6 +5,7 @@ import { ACTOPI_CHEATS, CHEATS, ROLE_CHEATS, isActopiCheat, type ActopiCheat, ty
 import { DialogHeader } from "./DialogHeader.tsx";
 import { Hint } from "./IconButton.tsx";
 import { Dialog } from "@base-ui/react/dialog";
+import { Tabs } from "@base-ui/react/tabs";
 import { useTranslation } from "react-i18next";
 import { SETTINGS_ICON } from "../art/assets.ts";
 import { parseFogDepth, setFogDepth, useFogDepth } from "../fogDepth.ts";
@@ -18,17 +19,19 @@ export function SettingsDialog({
   onCheat,
   onActopiCheat,
   onRoleCheat,
+  onLeave,
   open,
   onOpenChange,
   hideTrigger = false,
 }: {
-  /** The server's dev flag. Without it the cheats section is not drawn at all. */
+  /** The server's dev flag. Without it the Cheats tab is not drawn at all. */
   cheatsAllowed: boolean;
   activeCheats: readonly Cheat[];
   actopiCheat: ActopiCheat;
   onCheat: (cheat: Cheat, on: boolean) => void;
   onActopiCheat: (mode: ActopiCheat) => void;
   onRoleCheat: (role: RoleCheat) => void;
+  onLeave: () => void;
   /** Controlled mode, for opening the dialog from another control (the phone menu). */
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
@@ -51,6 +54,12 @@ export function SettingsDialog({
         <Dialog.Backdrop className="settings-backdrop" />
         <Dialog.Popup className="settings-popup">
           <DialogHeader heading={t("settings.title")} closeLabel={t("settings.close")} />
+          <Tabs.Root className="settings-tabs" defaultValue={cheatsAllowed ? "cheats" : "general"}>
+            <Tabs.List className="settings-tab-list">
+              <Tabs.Tab className="settings-tab" value="general">{t("settings.tabs.general")}</Tabs.Tab>
+              {cheatsAllowed && <Tabs.Tab className="settings-tab" value="cheats">{t("settings.tabs.cheats")}</Tabs.Tab>}
+            </Tabs.List>
+            <Tabs.Panel className="settings-panel" value="general">
           <div className="settings-row">
             <span>{t("language.label")}</span>
             <LanguageSwitcher inline />
@@ -63,15 +72,19 @@ export function SettingsDialog({
               <option value="all">{t("settings.fogDepth.all")}</option>
             </select>
           </label>
-          {cheatsAllowed && (
+              <button type="button" onClick={onLeave}>{t("topBar.leave")}</button>
+            </Tabs.Panel>
+            {cheatsAllowed && (
+              <Tabs.Panel className="settings-panel" value="cheats">
             <fieldset className="settings-cheats">
-              <legend>{t("settings.cheats.title")}</legend>
+              <div className="settings-cheat-grid">
               {CHEATS.map((cheat) => (
                 <label key={cheat} className="settings-cheat">
                   <input type="checkbox" checked={activeCheats.includes(cheat)} onChange={(e) => onCheat(cheat, e.target.checked)} />
                   {t(`settings.cheats.${cheat}`)}
                 </label>
               ))}
+              </div>
               <button type="button" onClick={() => {
                   for (const c of CHEATS) if (activeCheats.includes(c) === allOn) onCheat(c, !allOn);
                 }}>
@@ -96,7 +109,9 @@ export function SettingsDialog({
                 </button>
               ))}
             </fieldset>
-          )}
+              </Tabs.Panel>
+            )}
+          </Tabs.Root>
         </Dialog.Popup>
       </Dialog.Portal>
     </Dialog.Root>

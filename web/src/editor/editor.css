@@ -306,3 +306,21 @@
     border-top: 1px solid var(--edge);
   }
 }
+
+.editor-tab-list {
+  display: flex;
+  gap: 4px;
+  margin: 12px 0 0;
+  border-bottom: 1px solid var(--edge);
+}
+.editor-tab-list .editor-tab {
+  background: none;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  padding: 6px 10px;
+  color: var(--muted);
+}
+.editor-tab-list .editor-tab[data-active] {
+  color: inherit;
+  border-bottom-color: currentColor;
+}

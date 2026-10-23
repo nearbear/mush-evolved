@@ -1036,7 +1036,7 @@
         {"x":15,"y":15,"kind":"ground","layer":0,"slice":"GROUND","frame":6},
         {"x":16,"y":15,"kind":"ground","layer":0,"slice":"GROUND","frame":6},
         {"x":17,"y":15,"kind":"ground","layer":0,"slice":"GROUND","frame":6},
-        {"x":18,"y":17,"kind":"door","layer":0,"slice":"DOOR_BR","frame":0,"door":{"target":"CORRIDOR_C"}},
+        {"x":18,"y":15,"kind":"door","layer":0,"slice":"DOOR_BR","frame":0,"door":{"target":"CORRIDOR_C"}},
         {"x":12,"y":16,"kind":"ground","layer":0,"slice":"GROUND","frame":0},
         {"x":13,"y":16,"kind":"ground","layer":0,"slice":"GROUND","frame":6},
         {"x":14,"y":16,"kind":"ground","layer":0,"slice":"GROUND","frame":6},

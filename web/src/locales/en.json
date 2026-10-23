@@ -12,6 +12,7 @@
     "open": "Menu"
   },
   "shipResources": {
+    "button": "Ship",
     "title": "Ship resources",
     "oxygen": "Oxygen",
     "fuel": "Fuel",
@@ -38,6 +39,10 @@
     "open": "Settings",
     "title": "Settings",
     "close": "Close",
+    "tabs": {
+      "general": "General",
+      "cheats": "Cheats"
+    },
     "cheats": {
       "title": "Cheats (development)",
       "infiniteAp": "Infinite action points",
@@ -168,6 +173,7 @@
     }
   },
   "faction": {
+    "you": "{{character}}, {{faction}}: who you are and what your faction wants",
     "about": "{{name}}: what your faction wants",
     "human": {
       "name": "Human",
@@ -189,6 +195,9 @@
     "dispense": "Pull coffee",
     "consume": "Consume",
     "cook": "Cook",
+    "water": "Water",
+    "treat": "Treat",
+    "sow": "Sow",
     "expressCook": "Express cook",
     "readBook": "Read",
     "build": "Build",
@@ -235,7 +244,10 @@
     "decodeRebel": "Decode rebel signal",
     "contactXyloph": "Contact Xyloph",
     "updateNeron": "Update NERON",
-    "setBios": "Change a BIOS setting"
+    "setBios": "Change a BIOS setting",
+    "turnShip": "Turn the ship",
+    "travel": "Travel",
+    "leaveOrbit": "Leave orbit"
   },
   "queue": {
     "label": "Your actions",
@@ -393,6 +405,8 @@
     "fromThem": "Bonded to you"
   },
   "status": {
+    "public": "Public: everyone in the room can see this.",
+    "private": "Private: only you can see this.",
     "label": "Status effects",
     "dirty": "Dirty",
     "full_belly": "Full belly",
@@ -481,6 +495,16 @@
     "TURRET_COMMAND": "Turret controls"
   },
   "itemAttr": {
+    "satiety": "Satiety",
+    "plantOf": "{{item}} plant",
+    "young": "Young plant",
+    "youngDesc": "This plant is young: it makes neither oxygen nor fruit until it grows up.",
+    "thirsty": "Thirsty",
+    "thirstyDesc": "This plant is thirsty: it makes neither fruit nor oxygen. If it isn't watered, tomorrow it will be dried.",
+    "dried": "Dried",
+    "driedDesc": "This plant is dried: it makes neither fruit nor oxygen until it is watered.",
+    "sick": "Sick",
+    "sickDesc": "This plant is sick: it makes neither fruit nor oxygen until it is treated.",
     "label": "Item attributes",
     "heavy": "Heavy",
     "charges_one": "{{count}} charge left",
@@ -511,6 +535,7 @@
     "corpse": "Corpse",
     "myco_alarm": "Myco alarm",
     "tree_pot": "Hydropot",
+    "fruit_banana": "Banana",
     "knife": "Knife",
     "natamy_riffle": "Natamy Rifle",
     "sniper_riffle": "Lizaro Jungle",
@@ -554,6 +579,11 @@
     "builtItem": "{{name}} built a {{item}}.",
     "built": "{{name}} built a {{equipment}}.",
     "cooked": "{{name}} cooked the {{item}}.",
+    "wateredPlant": "{{name}} watered a {{item}} plant.",
+    "treatedPlant": "{{name}} treated a {{item}} plant.",
+    "sowedPlant": "{{name}} sowed a {{item}}.",
+    "plantMatured": "A {{item}} plant has grown up.",
+    "plantProduced": "A {{item}} plant produced oxygen and a fruit.",
     "bookRead": "{{name}} read a skill book and learned {{skill}}.",
     "expressCooked": "{{name}} express cooked the {{item}}.",
     "jettisoned": "{{name}} jettisoned the body of {{body}}.",
@@ -611,7 +641,14 @@
     "biosActopiOff": "You switched ACTOPI off: nobody sees who is in the other rooms any more.",
     "biosDeathsOn": "You switched death announcements on: NERON will announce every death.",
     "biosDeathsOff": "You switched death announcements off: NERON will no longer announce deaths.",
-    "rebelCalling": "NERON: a rebel base, {{base}}, is trying to contact the Daedalus."
+    "rebelCalling": "NERON: a rebel base, {{base}}, is trying to contact the Daedalus.",
+    "turnedShip": "{{name}} turned the Daedalus: it now faces {{direction}}.",
+    "travelNoFuel": "{{name}} tried to move the Daedalus, but there wasn't enough fuel.",
+    "shipTraveled": "{{name}} moved the Daedalus.",
+    "shipInOrbit": "The Daedalus is now in orbit around a planet.",
+    "orbitingPlanet": "The Daedalus is in orbit around your planet {{planet}}.",
+    "leaveOrbitNoFuel": "{{name}} tried to leave orbit, but there wasn't enough fuel.",
+    "leftOrbit": "{{name}} took the Daedalus out of orbit."
   },
   "skills": {
     "title": "Choose a skill",
@@ -857,6 +894,13 @@
     "scan": "Scan",
     "analyze": "Analyse",
     "delete": "Delete {{planet}}",
+    "position": "{{direction}}, {{distance}} fuel away",
+    "directions": {
+      "north": "North",
+      "west": "West",
+      "south": "South",
+      "east": "East"
+    },
     "tags": {
       "FOREST": "Forest",
       "MOUNTAIN": "Mountains",
@@ -880,7 +924,8 @@
       "WRECK": "Wreck",
       "FRUIT_TREES": "Fruit trees",
       "CRISTAL_FIELD": "Crystallite field"
-    }
+    },
+    "orbited": "In orbit"
   },
   "projects": {
     "title": "NERON projects",
@@ -1024,5 +1069,17 @@
       "SCHOOL_MANUALS": "School manuals. Two skill books were printed on the bridge.",
       "WORKSHOP_MANUALS": "Workshop manuals. Three blueprints were printed on the bridge."
     }
+  },
+  "navigation": {
+    "title": "Navigation",
+    "heading": "Facing {{direction}}",
+    "inOrbit": "In orbit around a planet.",
+    "left": "Turn left",
+    "right": "Turn right",
+    "distance": "Distance (fuel)",
+    "travel": "Travel",
+    "leaveOrbit": "Leave orbit",
+    "fuel": "Fuel aboard: {{fuel}}",
+    "warning": "Without enough fuel the AP is wasted. Every planet not lying exactly ahead at that distance is lost."
   }
 }

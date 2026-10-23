@@ -13,6 +13,7 @@ const ALLOWED = new Set([
   "death.ts", // damage() and killPlayer()
   "cheats.ts", // infiniteHp refills to the maximum
   "actions/heal.ts", // healing only raises HP
+  "actions/consume.ts", // eating only raises HP (a negative consume.hp counts as 0)
 ]);
 
 function sources(dir: string): string[] {
