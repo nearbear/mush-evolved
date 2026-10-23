@@ -4,6 +4,7 @@
 //   npm run screenshot                  # desktop and phone passes, in the same match
 //   npm run screenshot -- --only mobile  # just the phone pass
 //   npm run screenshot -- --name Alice --out /tmp/shots
+//   npm run screenshot -- --scale 3      # the phone at its real pixel ratio (slower)
 //
 // Prints each screenshot path and any browser console errors; exits non-zero
 // if a step failed or the page logged errors.
@@ -12,7 +13,7 @@ import { mkdirSync } from "node:fs";
 import { resolve } from "node:path";
 import { parseArgs } from "node:util";
 import { devPorts } from "../dev/ports.ts";
-import { chromium, devices, type Page } from "playwright";
+import { type Browser, type BrowserContextOptions, chromium, devices, type Page } from "playwright";
 import { otherPerson, pointOn, sceneSize, type Target, targets, waitForArt } from "./isoProbe.ts";
 
 const ports = devPorts();
@@ -25,6 +26,9 @@ const { values: args } = parseArgs({
     name: { type: "string", default: "Playwright" },
     only: { type: "string" }, // "desktop" or "mobile"
     phone: { type: "string", default: "Galaxy S8" }, // a Playwright device; 360px wide is the narrowest we support
+    // The phone's devicePixelRatio. Headless Chromium draws WebGL on the CPU (SwiftShader), so the
+    // phone pass takes about as long as its pixel count: the S8's own 3 is about twice as slow as 2.
+    scale: { type: "string", default: "2" },
   },
 });
 
@@ -45,19 +49,36 @@ async function main(): Promise<number> {
     console.error(`--only must be "desktop" or "mobile", not "${args.only}".`);
     return 2;
   }
+  const scale = Number(args.scale);
+  if (!(scale > 0)) {
+    console.error(`--scale must be a positive number, not "${args.scale}".`);
+    return 2;
+  }
   mkdirSync(args.out!, { recursive: true });
 
-  const browser = await chromium.launch();
+  // One browser per pass: headless Chromium draws WebGL on the CPU in its GPU process, one per
+  // browser, so two pages in one browser take turns, and the idle one keeps drawing (the
+  // see-through outlines pulse every frame) while the other pass runs.
+  const browsers: Browser[] = [];
   const consoleErrors: string[] = [];
   const failures: string[] = [];
-  const open = async (options: Parameters<typeof browser.newContext>[0]) => {
+  const open = async (options: BrowserContextOptions) => {
+    const browser = await chromium.launch();
+    browsers.push(browser);
     const page = await (await browser.newContext(options)).newPage();
     page.on("console", (m) => m.type() === "error" && consoleErrors.push(m.text()));
     page.on("pageerror", (e) => consoleErrors.push(e.message));
     return page;
   };
 
+  // Pages that have lost the game (a failed join, or the dev server reloading for an edit mid-run):
+  // every later step needs it, and each would otherwise wait out its full timeout.
+  const outOfGame = new Set<Page>();
   const stepOn = (page: Page, checks: (() => Promise<void>) | null) => async (name: string, run: () => Promise<void>) => {
+    if (outOfGame.has(page)) {
+      console.log(`skip  ${name}: not in a game`);
+      return;
+    }
     try {
       await run();
       await checks?.();
@@ -76,12 +97,16 @@ async function main(): Promise<number> {
       // Playwright's call log names the locator it was stuck on; the first line alone doesn't.
       const waiting = lines.find((l) => l.includes("waiting for"))?.trim();
       console.log(`FAIL  ${name}: ${lines[0]}${waiting ? ` [${waiting}]` : ""} (state: ${file})`);
+      if (!(await page.locator(".three-panel").count().catch(() => 0))) {
+        outOfGame.add(page);
+        console.log("      the game is no longer on screen (did the dev server reload?); skipping the rest of this pass");
+      }
     }
   };
 
   try {
     const desktop = args.only === "mobile" ? null : await open({ viewport: { width: 1600, height: 1000 } });
-    const mobile = args.only === "desktop" ? null : await open({ ...devices[args.phone!] });
+    const mobile = args.only === "desktop" ? null : await open({ ...devices[args.phone!], deviceScaleFactor: scale });
 
     // Both queue at once so they land in the same match and share the bot-fill wait.
     await Promise.all([
@@ -91,7 +116,7 @@ async function main(): Promise<number> {
     if (desktop) await desktopSteps(desktop, stepOn(desktop, null));
     if (mobile) await mobileSteps(mobile, stepOn(mobile, () => noSideScroll(mobile)));
   } finally {
-    await browser.close();
+    await Promise.all(browsers.map((b) => b.close()));
   }
 
   if (consoleErrors.length) {
@@ -152,11 +177,15 @@ async function desktopSteps(page: Page, step: Step): Promise<void> {
 
   await step("04b-chat-preview", async () => {
     const max = page.getByRole("button", { name: "Preview markdown" }).filter({ visible: true });
+    // The toggle is off while CHAT_PREVIEW is (ChatInput.tsx); don't wait out the timeout for it.
+    if (!(await max.count())) throw new Skip("the markdown preview toggle is turned off");
     await max.click();
   });
 
   await step("04c-chat-edit", async () => {
-    await page.getByRole("button", { name: "Hide preview" }).filter({ visible: true }).click();
+    const hide = page.getByRole("button", { name: "Hide preview" }).filter({ visible: true });
+    if (!(await hide.count())) throw new Skip("not previewing");
+    await hide.click();
   });
 
   await step("05-take", async () => {
