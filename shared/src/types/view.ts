@@ -165,6 +165,8 @@ export interface PlayerView {
   projects: Record<string, number>;
   /** PILGRED's repair, percent done, only while you are alive in a room with its terminal (owner, 2026-10-21); otherwise null. */
   pilgred: number | null;
+  /** Whether PILGRED is repaired, public to everyone: its completion is announced to the whole crew (repair_pilgred.ts). */
+  pilgredRepaired: boolean;
   /**
    * The communication center. `linked` (the link with Sol) is public; `terminal`, what the Com center terminal shows
    * read-only to anyone, only while you are alive in a room with one (owner, 2026-10-21), otherwise null.

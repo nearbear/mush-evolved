@@ -23,7 +23,7 @@ import { damage } from "./death.ts";
 import { activitySeen, logPrivate } from "./log.ts";
 import { ringMycoAlarms } from "./mycoalarm.ts";
 import { planetsOf } from "./planets.ts";
-import { pilgredTerminalsHere } from "./pilgred.ts";
+import { isPilgredRepaired, pilgredTerminalsHere } from "./pilgred.ts";
 import { biosTerminalsHere, newBios } from "./bios.ts";
 import { callNextRebel, commsCycle, commsTerminalView, comTerminalsHere, newComms } from "./comms.ts";
 import { botanyCycle, botanyDay, plantView } from "./botany.ts";
@@ -430,6 +430,7 @@ export function viewFor(state: GameState, playerId: PlayerId): PlayerView {
     projects: { ...state.projects },
     // Only at the PILGRED terminal: the living in a room that has one (owner, 2026-10-21).
     pilgred: you.alive && pilgredTerminalsHere(state, you).length > 0 ? state.pilgred.progress : null,
+    pilgredRepaired: isPilgredRepaired(state),
     comms: { linked: state.comms.linked, terminal: you.alive && comTerminalsHere(state, you).length > 0 ? commsTerminalView(state) : null },
     bios: you.alive && biosTerminalsHere(state, you).length > 0 ? { ...state.bios } : null,
     // Your own planets only, and only the tags an analysis revealed (owner, 2026-10-19).

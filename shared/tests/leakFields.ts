@@ -46,7 +46,7 @@ export const GAME_STATE_FIELDS: Record<string, FieldRule> = {
   sporeExtractedOn: { reach: "never", test: "leaks.test.ts" },
   research: { reach: "public", test: "research.test.ts" },
   projects: { reach: "public", test: "projects.test.ts" },
-  pilgred: { reach: "room", test: "pilgred.test.ts", note: "Only `progress`, to the living in a room with the PILGRED terminal; `lastBy` and `streak` never." },
+  pilgred: { reach: "room", test: "pilgred.test.ts", note: "Only `progress`, to the living in a room with the PILGRED terminal; `lastBy` and `streak` never. Whether it is repaired is public (`pilgredRepaired`), as the crew-wide message announces it." },
   planets: { reach: "own", test: "leaks.test.ts", note: "Without the unknown sectors' tags." },
   scanFailures: { reach: "never", test: "leaks.test.ts" },
   nextPlanetId: { reach: "never", test: "leaks.test.ts", note: "Not secret (planet ids show it), just not sent." },

@@ -13,7 +13,7 @@ import { lyingFrame, sittingFrame, spriteStrip } from "../art/assets.ts";
 import type { Bar } from "../scene/ActionBar.tsx";
 import { atlasUrl } from "./shipLayout.ts";
 import { CAMERA_SLICES } from "./equipmentTiles.ts";
-import type { PlacedSprite } from "./placement.ts";
+import { frameRect, type PlacedSprite } from "./placement.ts";
 import type { Walker } from "./useWalkers.ts";
 
 export interface Occupant {
@@ -53,6 +53,12 @@ export const CORPSE_PREFIX = "corpse:";
 /** The original Flash client ran at 30 ticks a second; animation rhythms are counted in ticks. */
 const TICK_MS = 1000 / 30;
 
+/**
+ * Scenery that plays its own animation (its first tiles.xml anim, at its rhythm) all the time: the
+ * engine room's three reactors, and PILGRED's core once it is repaired (its `_upgrade` look, `looks`).
+ */
+const AMBIENT_SLICES: ReadonlySet<string> = new Set(["rotational_reactor", "emergency_reactor", "core_pilgred_upgrade"]);
+
 /** One walk cycle: the six 32x48 frames of a crew strip, half a second in all. */
 const WALK_CYCLE = { frames: [0, 1, 2, 3, 4, 5], frameMs: 500 / 6 } as const;
 
@@ -69,11 +75,19 @@ export interface SceneImage {
   url: string | undefined;
   frame: Frame;
   keyed: boolean;
+  /** How many frames the sheet has per row (the slice's `framesX`; the reactors' run down a column). Unset: all in one row. */
+  perRow?: number;
+}
+
+/** Where frame `n` of an image is: `frame` moved right by n widths, wrapping down a row every `perRow` frames. */
+export function frameAt(image: SceneImage, n: number): { sx: number; sy: number } {
+  const perRow = image.perRow ?? Infinity;
+  return { sx: image.frame.sx + (n % perRow) * image.frame.width, sy: image.frame.sy + Math.floor(n / perRow) * image.frame.height };
 }
 
 /**
- * Frames played in place: frame n is `frame` moved right by n widths. Ends on `frames[0]` after
- * `loops` rounds; `"hold"` plays once and rests on the last frame (a door left open or shut).
+ * Frames played in place (`frameAt`). Ends on `frames[0]` after `loops` rounds; `"hold"` plays
+ * once and rests on the last frame (a door left open or shut).
  */
 export interface SceneAnim {
   frames: readonly number[];
@@ -231,6 +245,8 @@ export interface SceneInput {
   hoverKey: string | null;
   /** Cells next to this room's floor: a neighbour's wall drawn there is lit as this room's wall. */
   ownCells: ReadonlySet<string>;
+  /** Scenery drawn as another slice of the same size, by slice id: PILGRED's core once it is repaired. */
+  looks?: ReadonlyMap<string, string>;
 }
 
 /** The corpse an actor sprite draws, if it is one. */
@@ -242,8 +258,13 @@ export function corpseOf(s: PlacedSprite, corpses: readonly Corpse[]): Corpse | 
  * The image a placed sprite's pixels come from: its unflipped, unanimated frame (what hit-testing
  * reads; `hitTest` mirrors with `flipX`).
  */
-export function imageOf(s: PlacedSprite, input: Pick<SceneInput, "layout" | "room" | "people" | "walkers" | "seats" | "corpses">): SceneImage {
-  if (s.kind !== "actor") return { url: atlasUrl(input.layout, s.sheet), frame: s, keyed: false };
+export function imageOf(s: PlacedSprite, input: Pick<SceneInput, "layout" | "room" | "people" | "walkers" | "seats" | "corpses" | "looks">): SceneImage {
+  if (s.kind !== "actor") {
+    const look = input.looks?.get(s.slice);
+    const slice = look ? input.layout.slices[look] : undefined;
+    if (slice) return { url: atlasUrl(input.layout, slice.sheet), frame: { ...frameRect(slice, 0), width: s.width, height: s.height }, keyed: false, perRow: slice.framesX };
+    return { url: atlasUrl(input.layout, s.sheet), frame: s, keyed: false, perRow: input.layout.slices[s.slice]?.framesX };
+  }
   const corpse = corpseOf(s, input.corpses);
   if (corpse) {
     const lying = lyingFrame(corpse.character);
@@ -275,12 +296,36 @@ function personPicture(s: PlacedSprite, input: SceneInput, base: Omit<ScenePictu
 /** Someone in bed casts the lying shadow; everyone else the standing one (seated too). */
 const shadowOf = (s: PlacedSprite, input: SceneInput) => (s.room === input.room && input.people.get(s.key.slice(2))?.lying ? "lying" : "standing");
 
+/**
+ * Which frame each ambient sprite in the room starts its loop on, so like ones don't pulse in step:
+ * those with as many frames (the reactors) are spread evenly around the loop, in paint order.
+ */
+function spreadAmbient(placed: readonly PlacedSprite[], { layout, room, looks }: SceneInput): Map<string, number> {
+  const byLength = new Map<number, string[]>();
+  for (const s of placed) {
+    if (s.kind === "actor" || s.room !== room) continue;
+    const drawn = looks?.get(s.slice) ?? s.slice;
+    const n = AMBIENT_SLICES.has(drawn) ? (layout.slices[drawn]?.anims[0]?.frames.length ?? 0) : 0;
+    if (n) byLength.set(n, [...(byLength.get(n) ?? []), s.key]);
+  }
+  const starts = new Map<string, number>();
+  for (const [n, keys] of byLength) keys.forEach((key, i) => starts.set(key, Math.floor((i * n) / keys.length)));
+  return starts;
+}
+
+/** An ambient loop begun `start` frames in (its frames and their lengths turned round together). */
+function ambientAnim(frames: readonly number[], frameMs: readonly number[], start: number): SceneAnim {
+  const turn = <T,>(a: readonly T[]) => [...a.slice(start), ...a.slice(0, start)];
+  return { frames: turn(frames), frameMs: turn(frameMs), loops: "forever" };
+}
+
 /** The scene to draw, from the placed sprites and what is selected, hovered, reachable and lit. */
 export function describeScene(input: SceneInput): Scene {
-  const { layout, room, placed, box, people, corpses, equipment, reachable, selected, selectedDoor, hoverKey, ownCells, doors } = input;
+  const { layout, room, placed, box, people, corpses, equipment, reachable, selected, selectedDoor, hoverKey, ownCells, doors, looks } = input;
   const isSelected = (kind: Target["kind"], id: string) => sameTarget(selected, { kind, id } as Target);
   const sprites: SceneSprite[] = [];
   const outlines: SceneOutline[] = [];
+  const ambientStarts = spreadAmbient(placed, input);
   for (const s of placed) {
     const base = { key: s.key, x: s.left - box.minX, y: s.top - box.minY, width: s.width, height: s.height };
     // A door opens and shuts on whichever side of it you are (a neighbour's door too).
@@ -313,7 +358,13 @@ export function describeScene(input: SceneInput): Scene {
     }
     const swivel = CAMERA_SLICES.has(s.slice) ? layout.slices[s.slice]?.anims[0]?.frames : undefined;
     // The camera swivels: its auto animation (Camera.xml) steps through its strip every 6 ticks.
-    const anim = swivel?.length ? { frames: swivel, frameMs: 6 * TICK_MS, loops: "forever" as const } : undefined;
+    const drawnSlice = looks?.get(s.slice) ?? s.slice;
+    const ambient = AMBIENT_SLICES.has(drawnSlice) ? layout.slices[drawnSlice]?.anims[0] : undefined;
+    const anim = swivel?.length
+      ? { frames: swivel, frameMs: 6 * TICK_MS, loops: "forever" as const }
+      : ambient?.frames.length
+        ? ambientAnim(ambient.frames, ticksToMs(ambient.rhythm, ambient.frames.length), ambientStarts.get(s.key) ?? 0)
+        : undefined;
     if (s.door) {
       const canGo = reachable.has(s.door.target as RoomId);
       // Hovering a door you can go through outshines its selection.

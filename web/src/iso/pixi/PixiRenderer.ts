@@ -20,7 +20,7 @@
 
 import { Application, Container, type Filter, Rectangle, RendererType, Sprite, Texture, TextureStyle, TilingSprite } from "pixi.js";
 import { keyedUrl } from "../../art/keyedSprite.ts";
-import { animId, animStep, type FrameUpdate, type Scene, type SceneImage, type SceneOutline, type ScenePicture, type SceneSprite } from "../scene.ts";
+import { animId, animStep, frameAt, type FrameUpdate, type Scene, type SceneImage, type SceneOutline, type ScenePicture, type SceneSprite } from "../scene.ts";
 import { starfield } from "../starfield.ts";
 import { ESP, espPulse, filterKey, lookOf } from "./effects.ts";
 import { EspFilters, lookFilter } from "./filters.ts";
@@ -292,8 +292,8 @@ export class PixiRenderer {
       d.sprite.texture = Texture.EMPTY;
       return;
     }
-    const sx = f.sx + frame * f.width;
-    const key = `${keyed ? "k" : ""}|${url}|${sx},${f.sy},${f.width},${f.height}`;
+    const { sx, sy } = frameAt(image, frame);
+    const key = `${keyed ? "k" : ""}|${url}|${sx},${sy},${f.width},${f.height}`;
     if (key === d.textureKey) return;
     d.textureKey = key;
     const ready = frames.get(key);
@@ -307,7 +307,7 @@ export class PixiRenderer {
       .then(
         (base) => {
           if (this.destroyed || d.textureKey !== key) return;
-          d.sprite.texture = frameTexture(base, key, sx, f.sy, f.width, f.height);
+          d.sprite.texture = frameTexture(base, key, sx, sy, f.width, f.height);
         },
         (e: unknown) => console.error(`Pixi renderer: can't load ${url}`, e),
       )

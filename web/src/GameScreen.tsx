@@ -215,6 +215,7 @@ export function GameScreen({ ticket, onLeave }: { ticket: SeatTicket; onLeave: (
                 onDoorTap={tapDoor}
                 bubbles={bubbles}
                 clockOffset={clockOffset}
+                pilgredRepaired={view.pilgredRepaired}
               />
             ) : (
               <section className="iso-room loading">{t("common.loadingShip")}</section>

@@ -110,6 +110,9 @@ function chairAt(layout: ShipLayout, room: RoomLayout | undefined, cell: { x: nu
   return t ? layout.slices[t.slice]?.dir ?? "" : undefined;
 }
 
+/** PILGRED's core once it is repaired: the still pale orb becomes the animated plasma globe. */
+const PILGRED_REPAIRED_LOOKS: ReadonlyMap<string, string> = new Map([["core_pilgred", "core_pilgred_upgrade"]]);
+
 /** The index of the last step in a doorway. */
 const lastInDoorway = (steps: readonly DoorStep[]) => steps.reduce((last, s, i) => (s.door ? i : last), -1);
 
@@ -139,6 +142,7 @@ export function IsoRoom({
   bubbles,
   clockOffset,
   zoom,
+  pilgredRepaired,
 }: {
   layout: ShipLayout;
   room: RoomId;
@@ -182,6 +186,8 @@ export function IsoRoom({
   bubbles: ReadonlyMap<string, Bubble[]>;
   /** Server clock minus this browser's, for drawing action bars. */
   clockOffset: number;
+  /** PILGRED works (public): its core in the engine room is drawn as the animated globe. */
+  pilgredRepaired: boolean;
 }) {
   const names = useNames();
   const { t } = useTranslation();
@@ -449,7 +455,8 @@ export function IsoRoom({
 
   const ringOf = new Map(neighbors.map((n) => [n.id as string, n.ring]));
   const byId = new Map([...drawnPeople, ...neighbors.flatMap((n) => n.people)].map((o) => [o.id, o]));
-  const imageInput = { layout, room, people: byId, walkers, seats, corpses };
+  const looks = pilgredRepaired ? PILGRED_REPAIRED_LOOKS : undefined;
+  const imageInput = { layout, room, people: byId, walkers, seats, corpses, looks };
 
   // Load every image this room hit-tests against, so masks are ready by the first click.
   // biome-ignore lint/correctness/useExhaustiveDependencies: re-preload only when the sprite set changes; the image input is rebuilt every render.
@@ -480,7 +487,7 @@ export function IsoRoom({
         ownCells,
         doors,
       }),
-    [scene, box, walkersKey, walkersLook, doorsKey, seatsKey, occupants, nearby, corpses, equipmentByKey, reachable, selected, selectedDoor, hoverKey, ownCells],
+    [scene, box, walkersKey, walkersLook, doorsKey, seatsKey, occupants, nearby, corpses, equipmentByKey, reachable, selected, selectedDoor, hoverKey, ownCells, looks],
   );
   // Badges and bubbles go over the people in this room.
   const anchors = drawn.sprites.flatMap((s): Anchor[] => {
