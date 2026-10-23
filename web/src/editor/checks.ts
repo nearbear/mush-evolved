@@ -60,7 +60,7 @@ export const KNOWN_WALL_ENDS: Readonly<Record<string, string>> = {
 export interface Overlap {
   /** The room whose floor is covered, and the room covering it. */
   rooms: [string, string];
-  kind: "floor" | "wall";
+  kind: "floor";
   /** Ship cells. */
   cells: [number, number][];
 }
@@ -122,7 +122,6 @@ export function checkShip(layout: Pick<ShipLayout, "rooms" | "slices">): ShipRep
   for (const [k, ids] of floor) {
     const sorted = [...ids].sort();
     for (const [i, a] of sorted.entries()) for (const b of sorted.slice(i + 1)) overlap(a, b, "floor", k);
-    for (const a of ids) for (const b of solid.get(k) ?? []) if (b !== a) overlap(a, b, "wall", k);
   }
 
   const doors: MisalignedDoor[] = [];
@@ -288,7 +287,7 @@ export function problems(ship: ShipLayout): Problem[] {
     out.push({
       id: `overlap:${o.kind}:${o.rooms.join(":")}`,
       severity: "error",
-      title: o.kind === "floor" ? `${o.rooms[0]} floor on ${o.rooms[1]}'s` : `${o.rooms[0]} floor under ${o.rooms[1]}'s wall`,
+      title: `${o.rooms[0]} floor on ${o.rooms[1]}'s`,
       detail: `${o.cells.length} cell${o.cells.length === 1 ? "" : "s"}`,
       cells: o.cells,
       room: o.rooms[0],
