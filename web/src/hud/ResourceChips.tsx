@@ -1,12 +1,12 @@
-// Your other resources (spores, free IT points, ...) as icon and count chips: all of them in a row on desktop,
-// one chip in the phone nameplate's chip row (beside AP/MP/HP/morale) showing the first two and "…", which opens them all.
+// Your other resources (spores, free IT points, ...) as icon and count chips, showing the first two and "…", which opens
+// them all: one chip in the phone nameplate's chip row (beside AP/MP/HP/morale), or a card stacking them on desktop.
 
 import { Popover } from "@base-ui/react/popover";
 import { useTranslation } from "react-i18next";
 import { RESOURCE_IDS, type PlayerView } from "@mush2/shared";
 import { RESOURCE_ICONS, SPORE_ICON } from "../art/assets.ts";
 
-/** How many chips the phone nameplate shows before the "…" button. */
+/** How many resources show before the "…" (the desktop card fits two rows beside the stat cards). */
 const COMPACT_COUNT = 2;
 
 type Chip = { key: string; icon: string; name: string; description?: string; count: number };
@@ -26,21 +26,22 @@ function useChips(view: PlayerView): Chip[] {
   ];
 }
 
-export function ResourceChips({ view }: { view: PlayerView }) {
-  return useChips(view).map(({ key, ...chip }) => <ResourceChip key={key} {...chip} />);
-}
-
-/** One chip with the first two resources and "…"; it opens a popover with all of them, each with its own card. */
-export function CompactResourceChips({ view }: { view: PlayerView }) {
+/**
+ * The first two resources and "…"; it opens a popover with all of them, each with its own card. `stacked` is the
+ * desktop card: the resources one above the other, and the popover also opens on hover (it still opens on tap).
+ */
+export function CompactResourceChips({ view, stacked = false }: { view: PlayerView; stacked?: boolean }) {
   const { t } = useTranslation();
   const chips = useChips(view);
   const shown = chips.slice(0, COMPACT_COUNT);
   return (
     <Popover.Root>
       <Popover.Trigger
+        openOnHover={stacked}
+        delay={200}
         nativeButton={false}
         render={<span role="button" tabIndex={0} />}
-        className="stat-chip resource-chip"
+        className={stacked ? "resource-stack" : "stat-chip resource-chip"}
         aria-label={`${t("resources.other")}: ${shown.map((c) => `${c.name} ${c.count}`).join(", ")}`}
       >
         {shown.map((chip) => (
@@ -52,7 +53,7 @@ export function CompactResourceChips({ view }: { view: PlayerView }) {
         {chips.length > COMPACT_COUNT && <span aria-hidden="true">…</span>}
       </Popover.Trigger>
       <Popover.Portal>
-        <Popover.Positioner sideOffset={6} align="end">
+        <Popover.Positioner sideOffset={6} align={stacked ? "center" : "end"}>
           <Popover.Popup className="tooltip resource-rest" aria-label={t("resources.other")}>
             {chips.map(({ key, ...chip }) => (
               <ResourceChip key={key} {...chip} />

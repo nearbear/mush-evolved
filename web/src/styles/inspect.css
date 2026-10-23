@@ -78,7 +78,7 @@
   text-align: center;
 }
 
-/* Skill slots and the name chip are overlaid on the portrait, so they hang off `.inspect-figure-art`; the status row sits below it. */
+/* Skill slots, status effects, and the name chip are overlaid on the portrait, so they hang off `.inspect-figure-art`. */
 .inspect-figure-art {
   position: relative;
 }
@@ -95,6 +95,15 @@
   flex-direction: column;
   align-items: flex-end;
   gap: 2px;
+}
+/* Status effects down the portrait's upper-left edge, mirroring the skill slots on the right; a long list wraps into a second column. */
+.inspect-figure-art .status-icons {
+  position: absolute;
+  top: 0.9rem;
+  left: 0.3rem;
+  flex-direction: column;
+  max-height: calc(100% - 3rem);
+  margin: 0;
 }
 .skill-slots ul {
   display: flex;
@@ -309,4 +318,19 @@
 .consume-effects span {
   justify-self: end;
   font-variant-numeric: tabular-nums;
+}
+
+/* The asset credits, pushed to the bottom of the Inspect panel (a flex column), under the target and its actions. */
+.inspect {
+  display: flex;
+  flex-direction: column;
+}
+.inspect > .credits {
+  flex: none;
+  margin: auto 0 0;
+  padding-top: 0.75rem;
+  text-align: center;
+  font-size: 0.75rem;
+  line-height: 1.3;
+  color: var(--muted);
 }

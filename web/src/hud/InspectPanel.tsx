@@ -1,5 +1,5 @@
 // Left panel: whatever is selected (a person, room equipment, or an item),
-// with the actions the server allows on it. Falls back to your own character.
+// with the actions the server allows on it. Falls back to your own character. The asset credits close the panel.
 
 import { useTranslation } from "react-i18next";
 import { useNames } from "../i18n/names.ts";
@@ -17,6 +17,7 @@ import { ActionLabel } from "./ActionLabel.tsx";
 import { SkillSlots } from "./SkillSlots.tsx";
 import { StatusIcons } from "./StatusIcons.tsx";
 import { ActionButton } from "./ActionButton.tsx";
+import { Credits } from "./Credits.tsx";
 import { actionLabelKey, attackWeapon, optionsOn, resolveTarget, type Resolved } from "./targets.ts";
 
 export function InspectPanel({
@@ -64,6 +65,7 @@ export function InspectPanel({
         </div>
       )}
       </div>
+      <Credits />
     </aside>
   );
 }
@@ -90,8 +92,8 @@ function Details({ view, layout, resolved, onAction }: { view: PlayerView; layou
             )}
             {character && <span className="inspect-figure-name">{displayName}</span>}
             <SkillSlots view={view} skills={person.skills} bookSkill={person.bookSkill} isYou={isYou} onAction={onAction} />
+            <StatusIcons statuses={isYou ? view.statuses : person.statuses} contamination={"contamination" in person ? person.contamination : undefined} />
           </div>
-          <StatusIcons statuses={isYou ? view.statuses : person.statuses} contamination={"contamination" in person ? person.contamination : undefined} />
         </div>
       );
     }

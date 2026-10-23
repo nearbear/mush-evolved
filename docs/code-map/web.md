@@ -21,11 +21,12 @@ All under `web/src/`. UI rules are in `web/CLAUDE.md`.
 
 - `TopBar.tsx`: cycle and countdown, Results (once the game has ended), End cycle (only when offered), Leave, settings.
 - `CycleCountdown.tsx`: time left until the next cycle, from the view message's `nextCycleAt`.
-- `PlayerSummary.tsx`: portrait, name, faction icon, AP/MP/HP/morale bars.
+- `PlayerSummary.tsx`: portrait, name, faction icon, AP/MP/HP/morale bars, other resources (on desktop the name and faction are in the portrait's popover, and the resources a stacked card at the row's end).
 - `PipBar.tsx`: the pip bar in SVG, tinted by CSS `color`.
 - `SettingsDialog.tsx` + `settings.css`: settings dialog.
 - `EndScreen.tsx` + `endScreen.css`: the end screen, open while the game has ended until closed (`GameScreen` holds that; the top bar's Results button reopens it): the ending's banner (`ENDING_ART`), the verdict, and `view.crew` with names, characters, roles and skulls (reuses `settings.css`).
-- `SelfPanel.tsx`: summary and other resources (Inspect tab on phones, without the summary), and your planets once you have any (deletable anywhere).
+- `SelfPanel.tsx`: the summary under the room (desktop only; phones show it in the top bar).
+- `Credits.tsx`: the asset attribution, at the bottom of the Inspect panel on both layouts.
 - `CommsCenter.tsx`: the Com center terminal window: link status and Sol chance, rebel calls with progress and expiry, Xyloph entries left, NERON version and update, each with its button when the view offers it.
 - `BiosTerminal.tsx`: the BIOS terminal window: each BIOS option with its current value and, for the NERON Admin, a switch button.
 - `PlanetList.tsx`: your planets with their sector tags (unknown ones as `tag_unknown`) and a bin button to delete; in the Astro terminal window it adds the scan and analyse buttons.

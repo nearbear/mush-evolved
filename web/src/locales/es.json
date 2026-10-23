@@ -170,6 +170,7 @@
     }
   },
   "faction": {
+    "you": "{{character}}, {{faction}}: quién eres y lo que quiere tu bando",
     "about": "{{name}}: lo que quiere tu bando",
     "human": {
       "name": "Humano",

@@ -179,9 +179,6 @@ export function GameScreen({ ticket, onLeave }: { ticket: SeatTicket; onLeave: (
       <div className="three-panel" data-panel={panel}>
         <div className="left-column">
           <InspectPanel view={view} layout={layout} target={target} onAction={send} />
-          {mobile && (
-            <SelfPanel view={view} showSummary={false} onAction={send} />
-          )}
         </div>
 
         <div className="world">
@@ -228,7 +225,7 @@ export function GameScreen({ ticket, onLeave }: { ticket: SeatTicket; onLeave: (
                 reachable={reachable} onMove={move}. */}
           </div>
           {!mobile && (
-            <SelfPanel view={view} showSummary onAction={send} />
+            <SelfPanel view={view} />
           )}
         </div>
 

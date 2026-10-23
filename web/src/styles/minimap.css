@@ -7,6 +7,8 @@
 
 .room-view {
   position: relative;
+  /* Keeps the overlays' z-indexes (inventory, ship card) inside the room, so popovers portaled to the body draw over them. */
+  isolation: isolate;
 }
 .minimap {
   --cell: 2px;

@@ -169,6 +169,7 @@
     }
   },
   "faction": {
+    "you": "{{character}}, {{faction}}: who you are and what your faction wants",
     "about": "{{name}}: what your faction wants",
     "human": {
       "name": "Human",

@@ -170,6 +170,7 @@
     }
   },
   "faction": {
+    "you": "{{character}}, {{faction}} : qui vous êtes et ce que veut votre camp",
     "about": "{{name}} : ce que veut votre camp",
     "human": {
       "name": "Humain",

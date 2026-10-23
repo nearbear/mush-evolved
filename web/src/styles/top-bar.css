@@ -26,10 +26,10 @@
   height: 40px;
   image-rendering: pixelated;
 }
-/* Outlined cards: the nameplate, both stat stacks, and the extras card. The flat quote-box look (fill, 1px rim, soft shadow). */
+/* Outlined cards: the nameplate, both stat stacks, and the resource stack. The flat quote-box look (fill, 1px rim, soft shadow). */
 .nameplate,
 .stat-stack,
-.self-extras,
+.resource-stack,
 .ship-resources {
   background: var(--panel-fill);
   border: 1px solid var(--panel-rim);
@@ -76,6 +76,22 @@
 }
 .faction-goals p {
   margin: 0.25rem 0 0;
+}
+/* Desktop: the portrait alone in the nameplate; name, faction, and goal are in its popover. */
+.portrait-card {
+  display: inline-flex;
+  cursor: help;
+}
+.portrait-faction {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-top: 0.25rem;
+  font-weight: bold;
+  color: var(--human);
+}
+.portrait-faction.mush {
+  color: var(--mush);
 }
 /* AP / MP / HP / morale bars: a sideways slotted frame drawn in SVG from the sprite's pixels (see PipBar.tsx). */
 .pip-bar {
@@ -182,6 +198,29 @@
 }
 .stat-chip .resource-chip-part img {
   height: 16px;
+}
+/* Desktop: your other resources one above the other in a card beside the stat stacks; it opens them all. */
+.resource-stack {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 2px;
+  padding: 0.25rem 0.5rem;
+  font-size: 0.8rem;
+  font-weight: bold;
+  color: #fff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.85);
+  cursor: pointer;
+}
+.resource-stack .resource-chip-part {
+  gap: 0.35rem;
+}
+.resource-stack .resource-chip-part img {
+  image-rendering: pixelated;
+}
+.resource-stack > [aria-hidden] {
+  line-height: 0.6;
+  text-align: center;
 }
 .resource-rest {
   display: flex;
