@@ -33,6 +33,10 @@ export class UninstallAction extends Action<UninstallActionData> {
     return state.config.uninstall.dirtyChance;
   }
 
+   override injuryChance(state: Readonly<GameState>): number {
+    return state.config.uninstall.injuryChance;
+  }
+
   override apply(state: GameState, player: PlayerState, target: UninstallActionData): void {
     const list = state.config.equipment[player.room]!;
     list.splice(list.findIndex((e) => e.id === target.equipment), 1);

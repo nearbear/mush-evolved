@@ -1096,6 +1096,7 @@ Not a deadlock: the run was just long enough to pass the 120 s and 300 s tool ti
 - **Worked:** reconnecting needed no change: the seat ticket is in sessionStorage, the room keeps the ended game, and `onConnect` resends the view, so the screen mounts open again.
 - **Needed correction:** i18next's typed `t` hit "type instantiation is excessively deep" when passed into a helper; returning the key from the helper and calling `t` in the component fixed it.
 
+- **2026-10-23 (owner):** Added configurable injury chances for build (5%), dismantle (5%), jettison (2%), PILGRED repair (5%), shower (2%), and take/drop (1%). Reused the existing Install injury roll (seeded chance, 2 HP damage, protection gloves block it). What worked: action-level chance hooks keep all odds in `state.config`. Correction: the deferred injury decision in the PILGRED notes needed updating when these odds were added.
 ## 2026-10-22: Botany, Pass 1
 
 - **Decision (owner):** botany mechanics before alien species. Bananas only, no plant death. Sickness is hidden from everyone outside the Botanist role (Botanist and Skilful). Non-Botanists may treat any plant, and treating a healthy one costs and reads the same as treating a sick one. Garden points go to Botanists only and pay only in the garden. The five placeholder lab pots are replaced by the original's start (garden plus front storage).

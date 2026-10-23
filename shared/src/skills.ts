@@ -120,6 +120,8 @@ export const SKILL_STATUS: Readonly<Partial<Record<SkillId, SkillStatus>>> = {
   botanic: "partial",
   // Sees plant sickness as the Botanist does (botany.ts); none of its other skills' knowledge.
   skilful: "partial",
+  //Increases success rate, injury chance, and dirty chance by 20%
+  expert: "full",
 };
 
 export function skillStatus(skill: string): SkillStatus {

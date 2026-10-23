@@ -35,6 +35,10 @@ export class JettisonAction extends Action<JettisonActionData> {
     return state.config.jettison.dirtyChance;
   }
 
+  override injuryChance(state: Readonly<GameState>): number {
+    return state.config.jettison.injuryChance;
+  }
+
   override apply(state: GameState, player: PlayerState, target: JettisonActionData): void {
     const index = state.items.findIndex((i) => i.id === target.item);
     const [corpse] = state.items.splice(index, 1) as [ItemState];
