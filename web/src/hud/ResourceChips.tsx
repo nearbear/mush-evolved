@@ -1,4 +1,4 @@
-// Your other resources (spores, free IT points, ...) as icon and count chips, showing the first two and "…", which opens
+// Your other resources (spores, free IT points, ...) as icon and count chips, showing the first two (desktop) or as many as fit (phone) and "…", which opens
 // them all: one chip in the phone nameplate's chip row (beside AP/MP/HP/morale), or a card stacking them on desktop.
 
 import { Popover } from "@base-ui/react/popover";
@@ -33,7 +33,8 @@ function useChips(view: PlayerView): Chip[] {
 export function CompactResourceChips({ view, stacked = false }: { view: PlayerView; stacked?: boolean }) {
   const { t, i18n } = useTranslation();
   const chips = useChips(view);
-  const shown = chips.slice(0, COMPACT_COUNT);
+  // The phone chip lists every resource and lets CSS cut it off with a "…" where the nameplate's width runs out.
+  const shown = stacked ? chips.slice(0, COMPACT_COUNT) : chips;
   const list = new Intl.ListFormat(i18n.language, { type: "unit" }).format(shown.map((c) => t("resources.amount", { name: c.name, count: c.count })));
   return (
     <Popover.Root>
@@ -51,7 +52,7 @@ export function CompactResourceChips({ view, stacked = false }: { view: PlayerVi
             {chip.count}
           </span>
         ))}
-        {chips.length > COMPACT_COUNT && <span aria-hidden="true">…</span>}
+        {stacked && chips.length > COMPACT_COUNT && <span aria-hidden="true">…</span>}
       </Popover.Trigger>
       <Popover.Portal>
         <Popover.Positioner sideOffset={6} align={stacked ? "center" : "end"}>

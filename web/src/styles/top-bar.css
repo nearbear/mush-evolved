@@ -163,6 +163,7 @@
   align-items: center;
   position: absolute;
   left: 0.3rem;
+  right: 0.3rem; /* the bound the resource chip truncates against */
   bottom: 0;
   transform: translateY(50%);
   display: flex;
@@ -190,10 +191,22 @@
   height: 13px;
 }
 
-/* Your other resources in one chip: the first two and "…", which opens them all. The 16x16 icons stay at 1x. */
+/* Your other resources in one chip: as many as fit and "…", which opens them all. The 16x16 icons stay at 1x. */
 .stat-chip.resource-chip {
-  gap: 0.35rem;
+  /* A block of inline parts, so it takes the width left in the row and cuts the parts that don't fit with a "…". */
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
   cursor: pointer;
+}
+.stat-chip.resource-chip .resource-chip-part {
+  margin-right: 0.35rem;
+  vertical-align: middle;
+}
+.stat-chip.resource-chip .resource-chip-part:last-child {
+  margin-right: 0;
 }
 .resource-chip-part {
   display: inline-flex;
