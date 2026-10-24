@@ -192,17 +192,16 @@ export class GameRoom extends Server<Env> {
 
   /**
    * Dev servers only (never a deployment: multiplayer has no bots): seats a bot for every character nobody took.
-   * The last one fills the ship, which chooses the Mush. `MODEL_BOTS` of them are model bots, the rest log parrots.
+   * The last one fills the ship, which chooses the Mush. All are log parrots.
    */
   private async fillWithBots(taken: CharacterId): Promise<void> {
-    const modelBots = Math.max(0, Math.floor(Number(this.env.MODEL_BOTS)) || 0);
     const free = CHARACTERS.map((c) => c.id).filter((id) => id !== taken);
     // Characters are cosmetic, so Math.random is fine for the shuffle.
     free.sort(() => Math.random() - 0.5);
     for (const [i, character] of free.entries()) {
       // Bots are always labeled as AI to players.
       // i18n-ignore: a player name; the client marks bots as AI from isBot
-      const seat: Seat = { id: `p${this.game!.players.length}`, name: `Bot ${i + 1} (AI)`, isBot: true, botKind: i < modelBots ? "model" : "logParrot", character };
+      const seat: Seat = { id: `p${this.game!.players.length}`, name: `Bot ${i + 1} (AI)`, isBot: true, botKind: "logParrot", character };
       await this.act({ type: "join", seat });
     }
     this.initBots();
