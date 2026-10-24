@@ -333,7 +333,7 @@
     "members": "Membres : {{names}}",
     "messagePlaceholder": "Écrire à {{name}}…",
     "inviteLabel": "Joueur à inviter",
-    "invitePick": "Inviter quelqu'un…",
+    "inviteTitle": "Inviter quelqu’un",
     "invite": "Inviter",
     "noOne": "Personne à inviter.",
     "tab": "Privé",

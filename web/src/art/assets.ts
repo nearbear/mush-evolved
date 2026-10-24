@@ -109,6 +109,19 @@ export function sittingFrame(character: CharacterId | undefined, facing: "face" 
   return { url: castSheet, sx: facing === "face" ? 64 : 96, sy: CAST_ROW[character] * LYING.h, width: 32, height: 48 };
 }
 
+/** The character standing, facing the camera (first 32x48 frame of its cast-sheet row), as CSS for a `scale`x pixel-exact crop. */
+export function standingSprite(character: CharacterId | undefined, scale = 1) {
+  if (!character) return undefined;
+  return {
+    width: 32 * scale,
+    height: 48 * scale,
+    backgroundImage: `url(${castSheet})`,
+    backgroundSize: `${CAST_SHEET_SIZE.w * scale}px ${CAST_SHEET_SIZE.h * scale}px`,
+    backgroundPosition: `0 ${-CAST_ROW[character] * 48 * scale}px`,
+    imageRendering: "pixelated" as const,
+  };
+}
+
 /** Full-length character illustration (about 210x300), or undefined for an unknown character. */
 export function characterImage(character: CharacterId | undefined): string | undefined {
   return character && characterArt[PORTRAIT_FILE[character]];

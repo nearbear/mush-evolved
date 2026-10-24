@@ -322,11 +322,11 @@
 .channel-slot-new .tab-icon {
   opacity: 1;
 }
-/* The picked channel keeps the button's own pressed sprite. */
+/* The picked channel uses the (static) hover sprite: the pressed *_on.gif sprites are animated and pulsate. */
 .channel-slot-pick[aria-pressed="true"] {
-  --btn-left: url("../../../Mush/www/img/design/butleft_on.gif");
-  --btn-mid: url("../../../Mush/www/img/design/butbg_on.gif");
-  --btn-right: url("../../../Mush/www/img/design/butright_on.gif");
+  --btn-left: url("../../../Mush/www/img/design/butleftover.png");
+  --btn-mid: url("../../../Mush/www/img/design/butbgover.png");
+  --btn-right: url("../../../Mush/www/img/design/butrightover.png");
   font-weight: bold;
 }
 .channel-create-form {
@@ -384,10 +384,42 @@
 }
 .channel-invite {
   flex: none;
-  margin-top: 0.5rem;
+  align-self: flex-start;
+  margin: 0.5rem 0 0;
+}
+/* Character picker: portraits in a wrapping row, name underneath; a picked one gets an outline. */
+.channel-picker {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.channel-pick {
+  /* Layout only: the global button sprite is replaced since these are portrait tiles, not text buttons. */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2rem;
+  width: 3.5rem;
+  height: auto;
+  min-height: 0;
+  margin: 0;
+  padding: 0.25rem;
+  background: none;
+  border: 2px solid transparent;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+.channel-pick-sprite {
+  flex: none;
+}
+.channel-pick[aria-pressed="true"] {
+  border-color: #fff;
+  background: rgb(255 255 255 / 0.2);
 }
 
-/* The Mush tab appears only for Mush, in the faction pink, pushed to the far right; it pulses while there are unread messages. */
+/* The Mush tab appears only for Mush, in the faction pink, pushed to the far right. */
 .itrackie-tab.mush-tab {
   margin-left: auto;
   margin-right: 0;

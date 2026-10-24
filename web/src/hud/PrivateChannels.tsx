@@ -6,7 +6,7 @@ import type { ChannelId, PlayerId, PlayerView, PrivateChannelId } from "@mush2/s
 import { DialogHeader } from "./DialogHeader.tsx";
 import { IconButton } from "./IconButton.tsx";
 import { Thread } from "./Thread.tsx";
-import { TAB_ICONS } from "../art/assets.ts";
+import { TAB_ICONS, standingSprite } from "../art/assets.ts";
 import "./settings.css";
 
 export interface ChannelHandlers {
@@ -30,7 +30,7 @@ export function PrivateChannels({
 }: { view: PlayerView; onChat: (channel: ChannelId, text: string) => void; onToggle: (message: number, line: number) => void } & ChannelHandlers) {
   const { t, i18n } = useTranslation();
   const [picked, setPicked] = useState<PrivateChannelId | "">("");
-  const [invitee, setInvitee] = useState("");
+  const [inviting, setInviting] = useState(false);
   const [creating, setCreating] = useState(false);
   // Channel ids that existed when you last created one, so the new one can be picked once the server's view has it.
   const pendingPick = useRef<Set<PrivateChannelId> | null>(null);
@@ -92,35 +92,32 @@ export function PrivateChannels({
             </div>
           ))}
           {invitable.length > 0 && (
-            <form
-              className="chat-input channel-invite"
-              onSubmit={(e) => {
-                e.preventDefault();
-                if (!invitee) return;
-                onInvite(current.id, invitee);
-                setInvitee("");
-              }}
-            >
-              <select value={invitee} onChange={(e) => setInvitee(e.target.value)} aria-label={t("channels.inviteLabel")}>
-                <option value="">{t("channels.invitePick")}</option>
-                {invitable.map((p) => (
-                  <option key={p.id} value={p.id}>
-                    {names.character(p.character)}
-                  </option>
-                ))}
-              </select>
-              <IconButton type="submit" icon="📨" label={t("channels.invite")} disabled={!invitee} />
-            </form>
+            <button type="button" className="channel-invite" onClick={() => setInviting(true)}>
+              <span aria-hidden="true">📨</span> {t("channels.invite")}
+            </button>
           )}
         </>
       ) : (
         <p className="sub channel-empty">{t("channels.empty")}</p>
       )}
-      <CreateChannelDialog
+      <ChannelDialog
+        mode="invite"
+        view={view}
+        open={inviting && !!current}
+        candidates={invitable.map((p) => p.id)}
+        onOpenChange={setInviting}
+        onSubmit={(_, members) => {
+          if (current) for (const m of members) onInvite(current.id, m);
+          setInviting(false);
+        }}
+      />
+      <ChannelDialog
+        mode="create"
         view={view}
         open={creating}
+        candidates={view.players.filter((p) => p.alive).map((p) => p.id)}
         onOpenChange={setCreating}
-        onCreate={(name, members) => {
+        onSubmit={(name, members) => {
           pendingPick.current = new Set(view.privateChannels.map((c) => c.id));
           onCreate(name, members);
           setCreating(false);
@@ -130,70 +127,87 @@ export function PrivateChannels({
   );
 }
 
-/** Name the channel and tick who starts in it. Anyone without a free slot is skipped by the server, as a refused invite would be. */
-function CreateChannelDialog({
+/**
+ * One dialog for both flows: "create" asks for a name and picks who starts in the channel (anyone without a free
+ * slot is skipped by the server, as a refused invite would be); "invite" only picks who to add to the open one.
+ */
+function ChannelDialog({
+  mode,
   view,
   open,
+  candidates,
   onOpenChange,
-  onCreate,
+  onSubmit,
 }: {
+  mode: "create" | "invite";
   view: PlayerView;
   open: boolean;
+  candidates: PlayerId[];
   onOpenChange: (open: boolean) => void;
-  onCreate: (name: string, members: PlayerId[]) => void;
+  onSubmit: (name: string, members: PlayerId[]) => void;
 }) {
   const { t } = useTranslation();
   const names = useNames();
   const [name, setName] = useState("");
   const [members, setMembers] = useState<PlayerId[]>([]);
-  const living = view.players.filter((p) => p.alive);
+  const creating = mode === "create";
+  const choices = view.players.filter((p) => candidates.includes(p.id));
+  const reset = () => {
+    setName("");
+    setMembers([]);
+  };
 
   return (
     <Dialog.Root
       open={open}
       onOpenChange={(next) => {
         onOpenChange(next);
-        if (!next) {
-          setName("");
-          setMembers([]);
-        }
+        if (!next) reset();
       }}
     >
       <Dialog.Portal>
         <Dialog.Backdrop className="settings-backdrop" />
         <Dialog.Popup className="settings-popup">
-          <DialogHeader heading={t("channels.createTitle")} closeLabel={t("channels.close")} />
+          <DialogHeader heading={t(creating ? "channels.createTitle" : "channels.inviteTitle")} closeLabel={t("channels.close")} />
           <form
             className="channel-create-form"
             onSubmit={(e) => {
               e.preventDefault();
-              if (!name.trim()) return;
-              // Drop anyone who died while the dialog was open.
-              onCreate(name, members.filter((m) => living.some((p) => p.id === m)));
-              setName("");
-              setMembers([]);
+              if (creating ? !name.trim() : members.length === 0) return;
+              // Drop anyone who died (or joined) while the dialog was open.
+              onSubmit(name, members.filter((m) => choices.some((p) => p.id === m)));
+              reset();
             }}
           >
-            <label className="channel-create-name">
-              <span>{t("channels.nameLabel")}</span>
-              <input value={name} onChange={(e) => setName(e.target.value)} maxLength={24} placeholder={t("channels.namePlaceholder")} />
-            </label>
+            {creating && (
+              <label className="channel-create-name">
+                <span>{t("channels.nameLabel")}</span>
+                <input value={name} onChange={(e) => setName(e.target.value)} maxLength={24} placeholder={t("channels.namePlaceholder")} />
+              </label>
+            )}
             <fieldset className="channel-create-members">
-              <legend>{t("channels.membersLabel")}</legend>
-              {living.length === 0 && <p className="sub">{t("channels.noOne")}</p>}
-              {living.map((p) => (
-                <label key={p.id} className="settings-cheat">
-                  <input
-                    type="checkbox"
-                    checked={members.includes(p.id)}
-                    onChange={(e) => setMembers((ms) => (e.target.checked ? [...ms, p.id] : ms.filter((m) => m !== p.id)))}
-                  />
-                  {names.character(p.character)}
-                </label>
-              ))}
+              <legend>{t(creating ? "channels.membersLabel" : "channels.inviteLabel")}</legend>
+              {choices.length === 0 && <p className="sub">{t("channels.noOne")}</p>}
+              <div className="channel-picker">
+                {choices.map((p) => {
+                  const on = members.includes(p.id);
+                  return (
+                    <button
+                      key={p.id}
+                      type="button"
+                      className="channel-pick"
+                      aria-pressed={on}
+                      onClick={() => setMembers((ms) => (on ? ms.filter((m) => m !== p.id) : [...ms, p.id]))}
+                    >
+                      <span className="channel-pick-sprite" style={standingSprite(p.character, 1)} aria-hidden="true" />
+                      <span>{names.characterGiven(p.character)}</span>
+                    </button>
+                  );
+                })}
+              </div>
             </fieldset>
-            <button type="submit" disabled={!name.trim()}>
-              {t("channels.create")}
+            <button type="submit" disabled={creating ? !name.trim() : members.length === 0}>
+              {t(creating ? "channels.create" : "channels.invite")}
             </button>
           </form>
         </Dialog.Popup>

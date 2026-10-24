@@ -332,7 +332,7 @@
     "members": "Members: {{names}}",
     "messagePlaceholder": "Message {{name}}…",
     "inviteLabel": "Player to invite",
-    "invitePick": "Invite someone…",
+    "inviteTitle": "Invite someone",
     "invite": "Invite",
     "noOne": "No one to invite.",
     "tab": "Private",
