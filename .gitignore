@@ -4,3 +4,5 @@ dist/
 .dev.vars
 *.log
 .screenshots/
+# Claude Code worktrees (short-lived; each is its own checkout)
+.claude/worktrees/
