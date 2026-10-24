@@ -42,6 +42,8 @@ export interface PlayerState extends Seat {
   lyingIn?: string;
   /** Who is pushing your wheelchair (accommodate.ts). Public to your room (`OtherPlayerView.pushedBy`, the `accommodated` status). */
   pushedBy?: PlayerId;
+  /** The Persecutor whose Anathema made this player an Outcast (anathema.ts). Never sent; the public `outcast` status is. */
+  outcastBy?: PlayerId;
   /**
    * Who has offered to push your wheelchair, for you to accept, and the server time (ms) each offer expires. Your
    * own view only (the offers themselves are in the room log).

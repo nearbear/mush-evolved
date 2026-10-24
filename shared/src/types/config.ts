@@ -150,6 +150,17 @@ export interface GameConfig {
     capPoints: number; // Most Computer points (`resources.comp`) a player can hold (owner, 2026-10-16; the original skill's IncrMaxPA(COMP, 4)).
     pointsPerDay: number; // Computer points the `computer` skill grants at the start of each day and when picked (owner, 2026-10-16; the original +2).
   };
+  designer: {
+    capPoints: number; // Most Designer points (`resources.core`) a player can hold (owner, 2026-10-24; the original skill's IncrMaxPA(CORE, 4)).
+    pointsPerDay: number; // Designer points the `designer` skill grants at the start of each day and when picked (owner, 2026-10-24; the original +2).
+  };
+  sprinter: {
+    extraMpPerConversion: number; // Extra MP the `sprint` skill gets from each AP-to-MP conversion (owner, 2026-10-24; eMushpedia).
+  };
+  anathema: {
+    cost: { ap: number }; // AP the `juge` (Persecutor) skill's Anathema costs (owner, 2026-10-24; eMushpedia).
+    successFactor: number; // An Outcast's chance on every action that rolls one is multiplied by this (owner, 2026-10-24: x0.8).
+  };
   research: {
     cost: { ap: number }; // AP spent to work on a research (decided 2026-10-16).
     effect: { progressPercent: number }; // Percent a research advances per action (decided 2026-10-16).

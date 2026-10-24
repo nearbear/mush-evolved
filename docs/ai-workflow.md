@@ -1176,3 +1176,10 @@ Added `agy` (Antigravity CLI, Gemini models) to CLAUDE.md under "External tools"
 - Supabase (the owner's choice for a database) kept out of #122: no current feature needs it; it belongs with accounts (#23), setups (#233) and replays (#153).
 - Correction caught by testing: an `assets.directory` that doesn't exist makes `wrangler dev` fail, which would have broken `npm run dev` in fresh clones and worktrees. The server's `dev` script now creates an empty `web/dist` first.
 - Verified locally: the built client, served by `wrangler dev`, loaded in Chromium and queued at the matchmaker over its own origin.
+
+## 2026-10-24: Designer, Sprinter, Persecutor
+Owner asked for those three skills and the Conceptor-to-Designer rename, after an analysis of which skills the engine could fully support. One question round settled the Persecutor's limits, visibility and numbers. What worked: the existing `pushedBy`/`accommodate` pattern gave a ready template for a status that links two players and ends on death. What needed correction: `viewFor` spreads the player's own state into `you`, so the new `outcastBy` would have told the Outcast who cursed them; the test that scans every view for the field name caught it. The `movement` hook had no access to config, so it gained a `state` argument.
+
+### 2026-10-24: sofa spots moved from code into the ship map
+- **Decision:** the per-room sofa spots (`SOFA_SPOTS`) are now a sofa tile plus a built-only `SOFA` binding in each room of `ship-map.json`, so the ship editor can move them. `withoutBuiltOnly` strips them at load and remembers each room's tile; `roomAsBuilt` draws it back once built. Cameras were already ordinary map tiles, so they needed no change.
+- **Note:** I read "built only" as meaning the editor couldn't reach sofas because they lived in code; if the request meant something else, this is the part to revisit.

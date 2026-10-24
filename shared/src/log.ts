@@ -11,7 +11,7 @@
 
 import type { ActionVisibility } from "./actions/action.ts";
 import { CAMERA_EQUIPMENT } from "./equipment.ts";
-import type { GameState, LogEntry, LogParams, PlayerId, RoomId } from "./types.ts";
+import type { GameState, LogEntry, LogParams, PlayerId, PlayerState, RoomId } from "./types.ts";
 
 /** Mutates a state that the caller already cloned. */
 export function logPublic(state: GameState, room: RoomId | undefined, key: string, params?: LogParams, level?: "warning"): void {
@@ -33,6 +33,10 @@ export function logPrivate(state: GameState, actor: PlayerId, key: string, param
 export function logSecret(state: GameState, actor: PlayerId, key: string, params?: LogParams, hideFrom?: PlayerId): void {
   const p = state.players.find((pl) => pl.id === actor);
   if (!p) return;
+  if (p.outcastBy !== undefined) {
+    logPublic(state, p.room, key, params);
+    return;
+  }
   const witnesses = state.players.filter((o) => o.id !== actor && o.alive && o.room === p.room && o.id !== hideFrom);
   const witnessed = hideFrom === undefined ? state.players.some((o) => o.id !== actor && o.alive && o.room === p.room) : witnesses.length > 0;
   const visibleTo = hasCamera(state, p.room) ? "all" : !witnessed ? [actor] : hideFrom === undefined ? "all" : [actor, ...witnesses.map((o) => o.id)];
@@ -44,6 +48,10 @@ export function logSecret(state: GameState, actor: PlayerId, key: string, params
 export function logCovert(state: GameState, actor: PlayerId, key: string, params?: LogParams): void {
   const p = state.players.find((pl) => pl.id === actor);
   if (!p) return;
+  if (p.outcastBy !== undefined) {
+    logPublic(state, p.room, key, params);
+    return;
+  }
   const visibleTo = hasCamera(state, p.room) ? "all" : [actor];
   state.log.push({ cycle: state.cycle, key, ...(params && { params }), room: p.room, visibleTo, ...spilled(visibleTo) });
 }
@@ -57,7 +65,9 @@ function spilled(visibleTo: LogEntry["visibleTo"]): { level?: "warning" } {
  * Whether someone in the actor's room sees them busy with an action of this visibility (its bar): exactly when the
  * action's log entry could reach them. A witness always sees public and secret entries, covert ones only on camera.
  */
-export function activitySeen(state: Readonly<GameState>, room: RoomId, visibility: ActionVisibility): boolean {
+export function activitySeen(state: Readonly<GameState>, room: RoomId, visibility: ActionVisibility, actor?: Readonly<PlayerState>): boolean {
+  // An Outcast's stealth is gone (anathema.ts): their covert and secret entries are public room history.
+  if (actor?.outcastBy !== undefined && visibility !== "private") return true;
   return visibility === "public" || visibility === "secret" || (visibility === "covert" && hasCamera(state, room));
 }
 

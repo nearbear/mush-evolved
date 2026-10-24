@@ -78,6 +78,7 @@ export const PLAYER_STATE_FIELDS: Record<string, FieldRule> = {
   satiety: { reach: "own", test: "leaks.test.ts" },
   satietyZeroSince: { reach: "own", test: "leaks.test.ts" },
   statuses: { reach: "room", test: "leaks.test.ts", note: "Public statuses only; private ones are your own." },
+  outcastBy: { reach: "never", test: "anathema.test.ts", note: "Who cursed them is never sent; only the public `outcast` status is." },
   immuneUntil: { reach: "own", test: "leaks.test.ts", note: "As the `immune` status." },
   spores: { reach: "own", test: "leaks.test.ts" },
   resources: { reach: "own", test: "leaks.test.ts" },

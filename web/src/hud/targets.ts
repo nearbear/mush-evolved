@@ -42,7 +42,7 @@ export function actionTarget(a: Action): Target | null {
   if (a.type === "examine") return a.target;
   if ("equipment" in a) return { kind: "equipment", id: a.equipment };
   if ("item" in a) return { kind: "item", id: a.item };
-  if (a.type === "bond" || a.type === "dtt" || a.type === "stt" || a.type === "heal" || a.type === "punch" || a.type === "spike" || a.type === "accommodate" || a.type === "accept_accommodation") {
+  if (a.type === "bond" || a.type === "dtt" || a.type === "stt" || a.type === "heal" || a.type === "punch" || a.type === "anathema" || a.type === "spike" || a.type === "accommodate" || a.type === "accept_accommodation") {
     return { kind: "player", id: a.target };
   }
   if (a.type === "attack") return "target" in a ? { kind: "player", id: a.target } : { kind: "item", id: a.weapon };
@@ -82,6 +82,7 @@ function aimedAt(view: PlayerView, a: Action, target: Target): boolean {
     case "stt":
     case "heal":
     case "punch":
+    case "anathema":
     case "spike":
     case "accommodate":
     case "accept_accommodation":
@@ -127,6 +128,7 @@ const ACTION_LABEL_KEYS = {
   stt: "actions.stt",
   heal: "actions.heal",
   punch: "actions.punch",
+  anathema: "actions.anathema",
   spike: "actions.spike",
   extract_spore: "actions.extractSpore",
   get_up: "actions.getUp",

@@ -11,7 +11,7 @@ import { ACTIONS, type ActionDef } from "./actions.ts";
 import { NO_SPACE } from "./actions/action.ts";
 import { getUp } from "./actions/lie_down.ts";
 import { itemsIn, rechargeMicrowaves, startCharges } from "./items.ts";
-import { actionFailed, apGain, carePointsGain, channelLimit, computerPointsGain, cycleChanged, gardenPointsGain, dailyMoraleLoss, inventorySlots, movementRules, pilgredPointsGain, satietyLoss } from "./modifiers.ts";
+import { actionFailed, apGain, carePointsGain, channelLimit, computerPointsGain, cycleChanged, designerPointsGain, gardenPointsGain, dailyMoraleLoss, inventorySlots, movementRules, pilgredPointsGain, satietyLoss } from "./modifiers.ts";
 import { contaminationSeenBy, convert } from "./infection.ts";
 import { addStatus, isHungry, publicStatusesOf, statusesOf } from "./statuses.ts";
 import { emptyResources } from "./resources.ts";
@@ -333,6 +333,7 @@ function grantCarePoints(state: GameState): void {
   for (const p of state.players) if (p.alive) {
     p.resources.heal += carePointsGain(state, p);
     p.resources.comp = Math.min(state.config.computer.capPoints, p.resources.comp + computerPointsGain(state, p));
+    p.resources.core = Math.min(state.config.designer.capPoints, p.resources.core + designerPointsGain(state, p));
     p.resources.pilgred = Math.min(state.config.pilgred.capPoints, p.resources.pilgred + pilgredPointsGain(state, p));
     p.resources.garden = Math.min(state.config.botany.capPoints, p.resources.garden + gardenPointsGain(state, p));
   }
@@ -363,7 +364,7 @@ export function viewFor(state: GameState, playerId: PlayerId): PlayerView {
   // A dead body is a corpse item, not a person in a room: nobody gets a dead player's room.
   const living = others.filter((o) => o.alive);
   // Nobody's account name goes out while the game runs, not even your own: people are known by character.
-  const { name: _name, ...yours } = you;
+  const { name: _name, outcastBy: _outcastBy, ...yours } = you; // who cursed you is never sent, even to you
   return {
     you: {
       ...yours,
@@ -399,7 +400,7 @@ export function viewFor(state: GameState, playerId: PlayerId): PlayerView {
         // Mush see a contaminated human's level, like a status, on people in their room.
         ...(contamination !== undefined ? { contamination } : {}),
         // A busy bar, never the action: only when its log entry could reach you.
-        ...(here && o.current && activitySeen(state, room, ACTIONS[o.current.action.type].visibility)
+        ...(here && o.current && activitySeen(state, room, ACTIONS[o.current.action.type].visibility, o)
           ? { busy: { since: o.current.since, until: o.current.until } }
           : {}),
       };

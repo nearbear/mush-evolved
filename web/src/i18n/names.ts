@@ -55,6 +55,7 @@ const ACTION_NAME_KEYS = {
   shower: "actions.shower",
   heal: "actions.heal",
   punch: "actions.punch",
+  anathema: "actions.anathema",
   attack: "actions.attack",
   pick_skill: "actions.pickSkill",
   read_book: "actions.readBook",

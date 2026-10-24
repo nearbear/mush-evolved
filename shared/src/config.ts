@@ -108,6 +108,12 @@ export const DEFAULT_CONFIG: GameConfig = {
   fuel: { cost: { ap: 0 }, dirtyChance: 0.25 },
   // Owner, 2026-10-16: the computer scientist skill holds up to 4 Computer points, gains 2 a day (and 2 when picked).
   computer: { capPoints: 4, pointsPerDay: 2 },
+  // Owner, 2026-10-24: the designer skill holds up to 4 Designer points, gains 2 a day (and 2 when picked); they pay only for NERON projects.
+  designer: { capPoints: 4, pointsPerDay: 2 },
+  // Owner, 2026-10-24 (eMushpedia): the sprint skill adds 2 MP to each AP-to-MP conversion.
+  sprinter: { extraMpPerConversion: 2 },
+  // Owner, 2026-10-24 (eMushpedia): Anathema costs 1 AP; the Outcast's actions that roll succeed at x0.8.
+  anathema: { cost: { ap: 1 }, successFactor: 0.8 },
   // Decided 2026-10-16: working on a research costs 2 AP and advances it 25%; no repeat penalty yet.
   research: { cost: { ap: 2 }, effect: { progressPercent: 25 }, dirtyChance: 0.25 },
   // Decided 2026-10-19 (docs/astro-plan.md): scan 3 AP at 50%, x1.25 per failure in a row; analysis 2 AP; 2 planets per player.

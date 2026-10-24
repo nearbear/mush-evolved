@@ -16,6 +16,8 @@ import { caffeinomaniac } from "./modifiers/caffeinomaniac.ts";
 import { creative } from "./modifiers/creative.ts";
 import { expert } from "./modifiers/expert.ts";
 import { computer } from "./modifiers/computer.ts";
+import { designer } from "./modifiers/designer.ts";
+import { sprint } from "./modifiers/sprint.ts";
 import { physicist } from "./modifiers/physicist.ts";
 import { botanic } from "./modifiers/botanic.ts";
 import { first_aid } from "./modifiers/first_aid.ts";
@@ -46,6 +48,7 @@ type FoldHooks = Record<
   | "punchDamage"
   | "carePointsPerDay"
   | "computerPointsPerDay"
+  | "designerPointsPerDay"
   | "pilgredPointsPerDay"
   | "gardenPointsPerDay"
   | "heavyMpPenalty",
@@ -78,7 +81,7 @@ export interface Modifier extends Partial<FoldHooks> {
   /** Adjusts the morale every living player loses when a day ends, while the holder is alive (Mankind's Only Hope). Must be pure. */
   crewMoraleLoss?: (loss: number, holder: Readonly<PlayerState>, state: Readonly<GameState>) => number;
   /** Adjusts how a player's moves are paid for. Must be pure. */
-  movement?: (rules: MovementRules, player: Readonly<PlayerState>) => MovementRules;
+  movement?: (rules: MovementRules, player: Readonly<PlayerState>, state: Readonly<GameState>) => MovementRules;
   /**
    * Runs after one of the player's actions fails its success roll, with the AP it cost. Unlike the folds above,
    * it mutates a state the caller already cloned; randomness goes through `next.rng`.
@@ -97,7 +100,7 @@ export interface Modifier extends Partial<FoldHooks> {
 export type ModifierRegistry = Readonly<Record<string, Modifier>>;
 
 /** Items and skills will register here too. When a skill gains rules, update its entry in SKILL_STATUS (skills.ts). */
-export const MODIFIERS: Record<string, Modifier> = { lying_down, medic, first_aid, sturdy, creative, expert, antic_perfume, logistics, caffeinomaniac, computer, physicist, botanic, pacifist, immunity, mankind_only_hope, wheelchair };
+export const MODIFIERS: Record<string, Modifier> = { lying_down, medic, first_aid, sturdy, creative, expert, antic_perfume, logistics, caffeinomaniac, computer, designer, sprint, physicist, botanic, pacifist, immunity, mankind_only_hope, wheelchair };
 
 /** The ids every hook folds over: the player's skills (book slot last), then their other modifiers. */
 export function modifierIds(player: Readonly<PlayerState>): string[] {
@@ -163,6 +166,8 @@ export function actionSuccessRate(base: number, ctx: CostContext, registry: Modi
   }
   // Hooks can't make a price negative. A move's MP is a net change and can already be negative (a conversion
   // gives more than the move spends), so the floor is 0 or the base, whichever is lower.
+  // An Outcast (anathema.ts) loses a fifth of their chance on every action that rolls one (owner, 2026-10-24).
+  if (ctx.actor.outcastBy !== undefined) chance *= ctx.state.config.anathema.successFactor;
   if(chance > 0.99){
     chance = 0.99;
   }
@@ -218,7 +223,7 @@ export function movementRules(
   let rules = { ...state.config.movement };
   for (const id of modifierIds(player)) {
     const hook = registry[id]?.movement;
-    if (hook) rules = hook(rules, player);
+    if (hook) rules = hook(rules, player, state);
   }
   if (carriesHeavy(state, player)) rules.mpPerMove += fold("heavyMpPenalty", state.config.heavy.mpPenalty, state, player, registry);
   return rules;
@@ -281,6 +286,10 @@ export const carePointsGain = (state: Readonly<GameState>, player: Readonly<Play
 /** Computer points a player gains at the start of a day: nothing by default, plus what the computer scientist skill grants. */
 export const computerPointsGain = (state: Readonly<GameState>, player: Readonly<PlayerState>, registry: ModifierRegistry = MODIFIERS) =>
   fold("computerPointsPerDay", 0, state, player, registry);
+
+/** Designer points a player gains at the start of a day: nothing by default, plus what the designer skill grants. */
+export const designerPointsGain = (state: Readonly<GameState>, player: Readonly<PlayerState>, registry: ModifierRegistry = MODIFIERS) =>
+  fold("designerPointsPerDay", 0, state, player, registry);
 
 /** PILGRED points a player gains at the start of a day: nothing by default, plus what the physicist skill grants. */
 export const pilgredPointsGain = (state: Readonly<GameState>, player: Readonly<PlayerState>, registry: ModifierRegistry = MODIFIERS) =>

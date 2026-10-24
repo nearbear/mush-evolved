@@ -17,7 +17,7 @@ export const SKILLS = [
   "cook",
   "botanic",
   "biologist",
-  "conceptor",
+  "designer",
   "medic",
   "first_aid",
   "leadership",
@@ -112,6 +112,12 @@ export const SKILL_STATUS: Readonly<Partial<Record<SkillId, SkillStatus>>> = {
   logistics: "full",
   caffeinomaniac: "full",
   stickler: "full",
+  // Designer points, spent on NERON projects only (owner, 2026-10-24); no NERON project bonus.
+  designer: "full",
+  // +2 MP per AP-to-MP conversion (owner, 2026-10-24); no expedition bonus yet, there are no expeditions.
+  sprint: "partial",
+  // Anathema and the Outcast status (owner, 2026-10-24, anathema.ts); the original's "inactive" end has no equivalent yet.
+  juge: "full",
   // Doubled odds of the link with Sol, x1.5 for roommates (owner, 2026-10-21, comms.ts).
   radio_expert: "full",
   // +100% rebel decoding (owner, 2026-10-21, comms.ts).

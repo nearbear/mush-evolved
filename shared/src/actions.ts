@@ -38,6 +38,7 @@ import { UninstallAction } from "./actions/uninstall.ts";
 import { JettisonAction } from "./actions/jettison.ts";
 import { PickSkillAction } from "./actions/pick_skill.ts";
 import { ReadBookAction } from "./actions/read_book.ts";
+import { AnathemaAction } from "./actions/anathema.ts";
 import { PunchAction } from "./actions/punch.ts";
 import { AttackAction } from "./actions/attack.ts";
 import { ShareAction } from "./actions/share.ts";
@@ -133,6 +134,7 @@ export const ACTIONS: { [T in ActionType]: ActionDef<ActionOf<T>> } = {
   shower: new ShowerAction(),
   heal: new HealAction(),
   punch: new PunchAction(),
+  anathema: new AnathemaAction(),
   attack: new AttackAction(),
   pick_skill: new PickSkillAction(),
   read_book: new ReadBookAction(),
