@@ -3,7 +3,7 @@
 
 import { Popover } from "@base-ui/react/popover";
 import { useTranslation } from "react-i18next";
-import { RESOURCE_IDS, type PlayerView } from "@mush2/shared";
+import { RESOURCE_IDS, resourceAvailable, type PlayerView } from "@mush2/shared";
 import { RESOURCE_ICONS, SPORE_ICON } from "../art/assets.ts";
 
 /** How many resources show before the "…" (the desktop card fits two rows beside the stat cards). */
@@ -13,10 +13,11 @@ type Chip = { key: string; icon: string; name: string; description?: string; cou
 
 function useChips(view: PlayerView): Chip[] {
   const { t } = useTranslation();
-  // TODO(extras): later, show only the resources the player has a non-zero amount of.
+  const { spores, resources, skills, bookSkill, role } = view.you;
+  // Only resources this player could use: held, or granted by one of their skills (spores: Mush only).
   return [
-    { key: "spores", icon: SPORE_ICON, name: t("resources.spores"), count: view.you.spores },
-    ...RESOURCE_IDS.map((id) => ({
+    ...(spores > 0 || role === "mush" ? [{ key: "spores", icon: SPORE_ICON, name: t("resources.spores"), count: spores }] : []),
+    ...RESOURCE_IDS.filter((id) => resourceAvailable(id, resources[id], skills, bookSkill)).map((id) => ({
       key: id,
       icon: RESOURCE_ICONS[id],
       name: t(`resources.${id}.name`),
@@ -33,6 +34,7 @@ function useChips(view: PlayerView): Chip[] {
 export function CompactResourceChips({ view, stacked = false }: { view: PlayerView; stacked?: boolean }) {
   const { t, i18n } = useTranslation();
   const chips = useChips(view);
+  if (chips.length === 0) return null;
   // The phone chip lists every resource and lets CSS cut it off with a "…" where the nameplate's width runs out.
   const shown = stacked ? chips.slice(0, COMPACT_COUNT) : chips;
   const list = new Intl.ListFormat(i18n.language, { type: "unit" }).format(shown.map((c) => t("resources.amount", { name: c.name, count: c.count })));

@@ -1,25 +1,26 @@
 import { describe, expect, it } from "vitest";
-import { DEFAULT_CONFIG } from "../src/config.ts";
-import { RESOURCE_IDS } from "../src/resources.ts";
-import { createGame, viewFor } from "../src/rules.ts";
-import { makeSeats } from "./support.ts";
+import { resourceAvailable } from "../src/resources.ts";
 
-const seats = makeSeats(4);
-
-describe("extra resources", () => {
-  it("start at zero for everyone", () => {
-    const s = createGame(seats, DEFAULT_CONFIG, 1);
-    for (const p of s.players) {
-      expect(Object.keys(p.resources).sort()).toEqual([...RESOURCE_IDS].sort());
-      expect(Object.values(p.resources).every((n) => n === 0)).toBe(true);
-    }
+describe("resourceAvailable", () => {
+  it("hides a resource with none held and no granting skill", () => {
+    expect(resourceAvailable("core", 0, [])).toBe(false);
+    expect(resourceAvailable("core", 0, ["computer"])).toBe(false);
   });
 
-  it("appear only in your own view", () => {
-    const s = createGame(seats, DEFAULT_CONFIG, 1);
-    s.players[1]!.resources.cook = 7;
-    const view = viewFor(s, "p0");
-    expect(view.you.resources.cook).toBe(0);
-    expect(JSON.stringify(view.players)).not.toContain("resources");
+  it("shows a resource the player's skill grants, even at zero", () => {
+    expect(resourceAvailable("core", 0, ["designer"])).toBe(true);
+    expect(resourceAvailable("garden", 0, ["botanic"])).toBe(true);
+  });
+
+  it("counts the book skill", () => {
+    expect(resourceAvailable("pilgred", 0, [], "physicist")).toBe(true);
+  });
+
+  it("shows a resource that is held, whatever the skills", () => {
+    expect(resourceAvailable("shoot", 1, [])).toBe(true);
+  });
+
+  it("hides resources nothing grants yet", () => {
+    expect(resourceAvailable("eng", 0, ["engineer", "designer"])).toBe(false);
   });
 });

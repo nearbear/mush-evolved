@@ -1,6 +1,6 @@
 # Hunters and space combat (plan)
 
-Status: **planning, not built, nothing decided.** Everything under "What the original gives us" is extracted from `Mush/` (2026-10-20) and is reference only. Nothing here is a rule until the owner answers the open questions and the answers are recorded in `docs/rules-design.md`.
+Status: **first-pass rules decided 2026-10-24 (recorded in `docs/rules-design.md`, "Hunters and space combat, first pass"); not built.** Deferred: hunters following on travel (#240), wave scaling with crew size and activity (#241). Everything under "What the original gives us" is extracted from `Mush/` (2026-10-20) and is reference only. Nothing here is a rule until the owner answers the open questions and the answers are recorded in `docs/rules-design.md`.
 
 ## What the snapshot does and doesn't have
 

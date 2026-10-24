@@ -9,3 +9,18 @@ export const RESOURCE_IDS = ["eng", "exp", "comp", "garden", "core", "shoot", "c
 export function emptyResources(): Record<ResourceId, number> {
   return Object.fromEntries(RESOURCE_IDS.map((id) => [id, 0])) as Record<ResourceId, number>;
 }
+
+/** The skill whose daily grant is the only way to gain each resource (the other resources have no source yet). */
+const RESOURCE_SKILL: Partial<Record<ResourceId, string>> = {
+  heal: "first_aid",
+  comp: "computer",
+  core: "designer",
+  pilgred: "physicist",
+  garden: "botanic",
+};
+
+/** Whether a player could gain this resource: they hold some, or one of their skills grants it. Lets the UI hide counters they can never use. */
+export function resourceAvailable(id: ResourceId, held: number, skills: readonly string[], bookSkill?: string): boolean {
+  const skill = RESOURCE_SKILL[id];
+  return held > 0 || (skill !== undefined && (skills.includes(skill) || bookSkill === skill));
+}
