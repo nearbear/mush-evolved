@@ -62,6 +62,13 @@ export function GameScreen({ ticket, onLeave }: { ticket: SeatTicket; onLeave: (
   const here = view?.you.room;
   // biome-ignore lint/correctness/useExhaustiveDependencies: `here` is a trigger: arriving somewhere new clears the door peek.
   useEffect(() => setPeekDoor(null), [here]);
+  const body = view?.you.id;
+  // biome-ignore lint/correctness/useExhaustiveDependencies: `body` is a trigger: a Transfer moves you to another body, so a selection made from the old one is dropped.
+  useEffect(() => {
+    setSelected(null);
+    setPeekDoor(null);
+    setTerminalId(null);
+  }, [body]);
 
   // Desktop: clicking anywhere outside the inspect panel resets it to yourself. This runs on the document's
   // click, after React's handlers, so a click that selects something (person, item, equipment, door) sets
