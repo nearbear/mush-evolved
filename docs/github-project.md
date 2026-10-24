@@ -1,12 +1,12 @@
 # The GitHub project
 
-A guide to how the mush2 GitHub Project is organized. Counts are as of 2026-10-14.
+A guide to how the mush2 GitHub Project is organized. Counts are as of 2026-10-24.
 
 ## Overview
 
 The mush2 project is a single GitHub Project ("mush2", project 1) that tracks every open piece of work as an issue. Issues come in two levels: **epics** group a topic, and **stories** (sub-issues) are the work inside it.
 
-- **Epics** carry the `epic` label and are named "Epic: ..." (22 of them, such as Rules, UI, Rendering, Bots, Testing). Each epic's sub-issues are its stories.
+- **Epics** carry the `epic` label and are named "Epic: ..." (29 open, such as Rules, UI, Rendering, Bots, Testing). Each epic's sub-issues are its stories.
 - **Stories** are written as "As a ..., I want ..., so that ...", followed by what the original Mush did (reference only), acceptance criteria, and open decisions.
 - **Milestones** say when a story is due: MVP, Private beta, Public beta readiness, Public beta, Release. Stories without one carry `needs-staging`.
 - **Rule decisions** are stories that cannot be built until the owner answers questions about the game rules. They carry `rule-decision`. Answers are recorded in `docs/rules-design.md` and `docs/action-plans.md`; nothing in an issue counts as decided until it is written there.
@@ -44,14 +44,15 @@ Labels fall into three groups.
 
 ## Milestones
 
-Four milestones run in order.
+Five milestones run in order.
 
 | Order | Milestone | Open | Closed |
 | --- | --- | --- | --- |
-| 1 | MVP | 46 | 3 |
-| 2 | Private beta | 22 | 0 |
-| 3 | Public beta | 14 | 0 |
-| 4 | Release | 9 | 0 |
+| 1 | MVP | 12 | 46 |
+| 2 | Private beta | 90 | 7 |
+| 3 | Public beta readiness | 6 | 0 |
+| 4 | Public beta | 29 | 0 |
+| 5 | Release | 7 | 2 |
 
 The draft staging behind them is in `docs/mvp-plan.md`; it is not final. Some stories still have no milestone (label `needs-staging`), so they are not in these counts.
 

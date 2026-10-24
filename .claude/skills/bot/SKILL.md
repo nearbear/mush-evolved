@@ -5,7 +5,7 @@ description: Add or change an AI-controlled player - scripted bots or model-back
 
 # Add or change a bot
 
-> Bots may be testing-only: the author does not necessarily plan to run them in live public games (2026-10-13). The rules below still apply.
+> Multiplayer has no bots (decided 2026-10-13); they exist only in a single-player mode and as test tooling. The rules below still apply.
 
 Bots are players. Every rule that keeps hidden information off clients applies to them too, and model-backed bots add cost and prompt-injection risk. These rules come from CLAUDE.md and are not optional.
 

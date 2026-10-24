@@ -26,7 +26,7 @@ Live rows, before `$EOF`. The `aggro` hunter types are the ones that attack. `ag
 | DAEDALUS | Daedalus | 100 | | | 200 | | 0 | | | | the hull; "dodge 200" |
 | ICARUS | Icarus | 20 | | | 100 | | 0 | | | | exploration ship, capacity 4 |
 
-"Follows" (`Ne poursuit pas`, `Impossible à distancer`) is about the Daedalus travelling: hunters chase it to the next system unless the type says otherwise. Travel isn't built.
+"Follows" (`Ne poursuit pas`, `Impossible à distancer`) is about the Daedalus travelling: hunters chase it to the next system unless the type says otherwise. Travel is built (`docs/implemented-rules.md`, "Ship travel"); chasing hunters aren't.
 
 Constants: `Const.MAX_PATROL_HP = 14` (more than the table's 10, so repairs can overfill?), `Gameplay.PATROLSHIP_EXTRA_AMMO = 6`, `Gameplay.HUNTER_PER_SHIP = 4` (use unknown), `Gameplay.ARMOUR_CORRIDOR = 1`, `Gameplay.PATROL_EXP_TICKS = 3` (patrol-ship planet trips, out of scope), `Const.ENABLE_HUNTERS = true`. `ShipConsts` lists `PATROL_SHIP_FREE_MOVES` and `DAEDALUS_SHIELD_REGEN` but their values aren't in the snapshot.
 

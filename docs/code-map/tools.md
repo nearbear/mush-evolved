@@ -6,8 +6,11 @@ All under `tools/src/`.
 - `play/screenshot.ts`: `npm run screenshot`. `play/shipView.ts`: `npm run ship-view`. `play/shipRender.ts`: `npm run ship-render`, the iso scene drawn offline from the atlases (imports `placeScene` from `web/src/iso/placement.ts`), with wall ends that touch nothing marked. `play/shipTop.ts`: `npm run ship-top`, the same scene from above as plain shapes (floor, walls on cell edges, doors, furniture, room names, a numbered grid). `play/shipScene.ts`: what both share: loading the scene on the ship plan, and walls as cell edges with their free ends. `play/isoProbe.ts`: finding and pointing at things in the iso room through IsoRoom's dev-only probe, and waiting for the art, with either renderer.
 - `contactSheet/contactSheet.ts`: `npm run contact-sheet`.
 - `assetIndex/assetIndex.ts`: `npm run asset-index`.
+- `pipBar/pipBar.ts`: `npm run pip-bar`, regenerates `Mush/derived/pip-bar/*.svg` from the original pip bar sprite (a test fails if they are stale).
+- `wiki/wiki.ts`: `npm run wiki`, reads eMushpedia (see the `wiki` skill).
+- `a11y/noTitleAttr.test.ts`: fails on any `title=` in the client (`web/CLAUDE.md`).
 - `odsData/`: `npm run ods-data` (`odsData.ts`; `ods.ts` reads the spreadsheets).
-- `dev/`: `npm run dev` (`dev.ts`) and per-worktree ports (`ports.ts`).
+- `dev/`: `npm run dev` (`dev.ts`), `npm run preview` (`preview.ts`) and per-worktree ports (`ports.ts`).
 - `i18n/`: catalog checks (`catalog.ts`) and the hardcoded-text ratchet (`hardcoded.ts`, `baseline.json`).
-- `death/hpWrites.test.ts`: fails if any file other than `cheats.ts` and `actions/heal.ts` writes `.hp`.
+- `death/hpWrites.test.ts`: fails if any file outside its allowlist (`death.ts`, `cheats.ts`, `actions/heal.ts`, `actions/consume.ts`, `hunters.ts`) writes `.hp`.
 - `editor/vitePlugin.ts`: the ship map editor's save, a Vite dev-server plugin (`web/vite.config.ts`): `PUT /__editor/map` checks the map, writes `ship-map.json` and `ship-rooms.json`, and keeps its own writes from reloading pages (the editor would lose its undo history).

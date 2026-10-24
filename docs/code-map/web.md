@@ -45,8 +45,21 @@ All under `web/src/`. UI rules are in `web/CLAUDE.md`.
 - `Markdown.tsx`: restricted chat message rendering.
 - `ActionLabel.tsx`: an action button's label with its cost.
 - `ActionQueue.tsx`: your action under way and the queued ones, with Clear queue, over the room view (both layouts).
-- `targets.ts`: finds the selection in the view (`resolveTarget`, `actionsOn`, `costOf`, `actionLabelKey`), and what an action is aimed at (`actionTarget`).
+- `targets.ts`: finds the selection in the view (`resolveTarget`, `actionsOn`, `costOf`, `actionLabelKey`).
 - `BottomNav.tsx`, `PeekBar.tsx` (phone only): panel switcher; tapped target with its actions.
+- `ActionButton.tsx`: the button for an offered action; when you only lack AP or MP it stays focusable (`aria-disabled`) and a card says why.
+- `ChatInput.tsx`: the chat text area (grows upward, send beside it; the markdown preview toggle is off, `TODO(preview)`).
+- `Thread.tsx`, `Threads.tsx`: a chat channel with its input, and the Threads tab (threads under global chat, newest first, with a form to start one).
+- `PrivateChannels.tsx`: the Private tab, one row per channel slot, with a create dialog.
+- `FeedEntry.tsx`, `CycleDivider.tsx`, `RecencyStamp.tsx` + `recency.ts` (pure): an iTrackie feed row, the "Cycle N" rule between cycles, and the "47min ago" caption with the exact time in a popover.
+- `Scroller.tsx`: a scroll area that sticks to the bottom as items arrive.
+- `ResearchTracker.tsx`, `Tracker.tsx`: the Research feature's strip of research cards, and a notes list the player types in.
+- `ResourceChips.tsx`: your other resources as chips (the first two, or as many as fit on a phone, then "…" for the rest).
+- `ShipResources.tsx`: the ship card (resources, hunters, titles); in the desktop top bar, and opened by `ShipOverlay.tsx` on phones. `TitleChip.tsx`: one title and its line of succession.
+- `PreselectionTag.tsx`: the top-bar tag shown until the Mush are chosen.
+- `TerminalDialog.tsx`: the window opened by accessing a terminal; holds the research lab, NERON projects and the panels above (`CommsCenter`, `BiosTerminal`, `TurretPanel`, `ShipNavigation`, `PlanetList`).
+- `DialogHeader.tsx`: sticky title bar with a close button for scrolling dialogs. `ItemFace.tsx`: an item's square face with an optional label. `ConsumeEffects.tsx`: what eating or drinking an item does.
+- `useOverlayDismiss.ts`: closes a room-view overlay on Escape or a press elsewhere in the room view (`InventoryOverlay`, `ShipOverlay`).
 
 **editor/** (dev builds only, at `/editor`; `main.tsx` loads it lazily behind `import.meta.env.DEV`, so it is never in a production bundle; #209)
 - `ShipEditor.tsx`: the ship map editor (#211, #212), laid out like a game engine's scene editor (desktop only, owner 2026-10-24): a menu bar (File, Edit, View, a Keys popover, the save state), a left column of `Hierarchy` over `Inspector` with a draggable split, the scene with its own toolbar (camera and fog menu, Show menu of layers and overlays, zoom, the checks badge popover) and a status bar (what's under the pointer), and the palette docked on the right as the Assets panel. The ship comes from `ship-map.json` through the game's own placement and Pixi renderer, nothing fogged, whole or as seen from one room at fog depth 1 or 2, with drag to pan and whole-number zoom (an editor-only exception to the room view's rules). Select (Tab cycles what's stacked), move, delete, duplicate, frame, owning room, door target, place from the palette, move a whole room on the plan (#213), F frames the selection, undo and redo, save, and live checks whose problems take you to where they are. English only; the i18n scanner skips this folder.

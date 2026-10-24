@@ -2,7 +2,7 @@
 
 A turn-based, browser-based social deduction game inspired by [Mush](https://github.com/motion-twin/WebGamesArchives) (Motion Twin) and [eMush](https://emush.eternaltwin.org/) (Eternaltwin). Players wake up on a spaceship, a few of them are secretly infected, and the rest have to survive and unmask them.
 
-This is a **vertical-slice MVP**, not a full clone: matchmaking, a room-by-room ship, action points, inventory, infection, and chat work today. Win conditions are deliberately **not implemented yet**; some of the rules are decided in `docs/rules-design.md`, and the rest are open as GitHub issues. A test build is live at https://mush2-server.nearbearnearbear.workers.dev (one Cloudflare Worker serves the client and the game server; `npm run deploy`). The bot model API isn't chosen.
+This is a **vertical-slice MVP**, not a full clone: matchmaking, a room-by-room ship, action points, inventory, infection, space combat, ship travel, chat, and a game end (the Commander returns to Sol, or every human dies) work today. Much of the original ruleset is still missing; the rules decided so far are in `docs/rules-design.md`, and the rest are open as GitHub issues. A test build is live at https://mush2-server.nearbearnearbear.workers.dev (one Cloudflare Worker serves the client and the game server; `npm run deploy`). Model-backed bots have no hosted default and exist only in a planned single-player mode.
 
 ## Quick start
 
@@ -18,7 +18,7 @@ This starts both halves:
 - **Game server** (wrangler, local Durable Objects): http://localhost:8787
 - **Web client** (Vite): http://localhost:5173. Open this in a browser.
 
-Enter a name and click **Find game**. After 5 seconds, empty seats fill with bots (labeled "(AI)"). This is test scaffolding: the planned multiplayer queue has no bots, and bots are meant only for a single-player mode. To test with several humans, open more tabs within that window: each tab is a separate player.
+Pick a ship (one per language), then a crew member. You are boarded onto that language's open ship, which waits in pre-selection until it fills or its deadline passes. On a dev server (`ALLOW_CHEATS` in `server/.dev.vars`) the first join also seats log-parrot bots (labeled "(AI)") for every other character after about 8 seconds. This is test scaffolding: a deployed multiplayer ship has no bots, and bots are meant only for a single-player mode. To test with several humans, open more tabs before the bots arrive: each tab is a separate player.
 
 Run the halves separately with `npm run dev -w server` and `npm run dev -w web`. To point the client at another server, copy `web/.env.example` to `web/.env` and set `VITE_PARTY_HOST`.
 
@@ -36,7 +36,7 @@ npx playwright install --with-deps chromium
 
 | Command | What it does |
 | --- | --- |
-| `npm test` | Vitest in `shared`, `tools`, and `web` |
+| `npm test` | Vitest in `shared`, `tools`, `web`, and `server` |
 | `npm test -w shared -- rules.test.ts -t "name"` | One file or test while iterating |
 | `npm run typecheck` | `tsc --noEmit` in every package |
 | `npm run lint` | Biome (lint only), including import-boundary rules |
@@ -49,7 +49,7 @@ npx playwright install --with-deps chromium
 npm workspaces:
 
 - `shared/`: pure game rules, types, wire protocol. Deterministic TypeScript with no I/O. Rules run headless and are unit tested.
-- `server/`: [PartyServer](https://github.com/cloudflare/partykit) on Cloudflare Durable Objects. `Matchmaker` (global queue, bot-fill timer) and `GameRoom` (one authoritative room per game), plus the bot interface.
+- `server/`: [PartyServer](https://github.com/cloudflare/partykit) on Cloudflare Durable Objects. `Matchmaker` (one per language; boards each joiner onto that language's open ship) and `GameRoom` (one authoritative room per game), plus the bot interface.
 - `web/`: React client (Vite, [Base UI](https://base-ui.com/), [PixiJS](https://pixijs.com/) for the isometric room) that renders a per-player view and sends intents.
 - `tools/`: build-time scripts (ship layout converter, screenshot and contact-sheet helpers).
 - `Mush/`: Motion Twin's original sources and art (see [License](#license)), exposed as the private package `@mush2/assets`.

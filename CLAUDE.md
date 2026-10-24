@@ -78,7 +78,7 @@ Node is installed via nvm and is already on `PATH` in Claude Code shells (the us
 
 - `npm install`: install all workspaces (npm workspaces: `shared`, `server`, `web`, `tools`, plus `Mush` as `@mush2/assets`).
 - `npm run dev`: wrangler on :8787 plus Vite on :5173, via concurrently. In a git worktree the ports are offset per worktree (`npm run ports` prints them) so it can run beside the main checkout's servers.
-- `npm test`: Vitest in `shared`, `tools`, and `web`. Single file or test: `npm test -w shared -- rules.test.ts -t "advances the cycle"`.
+- `npm test`: Vitest in `shared`, `tools`, `web`, and `server`. Single file or test: `npm test -w shared -- rules.test.ts -t "advances the cycle"`.
 - `npm run typecheck`: `tsc --noEmit` in every package (TypeScript 7).
 - `npm run build`: production build of `web`.
 - `npm run preview`: build `web` for production, then serve it with `vite preview` beside wrangler (same ports as `npm run dev`, so stop that first).
@@ -101,7 +101,7 @@ npm 11 blocks dependency install scripts by default. `esbuild` and `workerd` are
 
 ## Code map
 
-See `docs/code-map.md` (an index to per-package files in `docs/code-map/`) for where each module lives and `docs/implemented-rules.md` for which rules are implemented. Key invariants: `shared/src/rules.ts` is pure and `viewFor` is the only place hidden info is stripped; the client never computes legality (it uses `view.actions`, or `legalIn(view)` for the affordable ones); win conditions are intentionally absent until the rules are decided.
+See `docs/code-map.md` (an index to per-package files in `docs/code-map/`) for where each module lives and `docs/implemented-rules.md` for which rules are implemented. Key invariants: `shared/src/rules.ts` is pure and `viewFor` is the only place hidden info is stripped; the client never computes legality (it uses `view.actions`, or `legalIn(view)` for the affordable ones); only the win conditions that are decided exist (`shared/src/victory.ts` and `hunters.ts`: return to Sol, all humans dead, ship destroyed).
 
 ## Open decisions
 
