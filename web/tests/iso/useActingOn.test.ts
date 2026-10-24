@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vitest";
-import type { Action } from "@mush2/shared";
+import { actionTarget, type Action } from "@mush2/shared";
 import { begun } from "../../src/iso/useActingOn.ts";
-import { actionTarget } from "../../src/hud/targets.ts";
 
 const shower: Action = { type: "shower", equipment: "e1" };
 const heal: Action = { type: "heal", target: "p2" };

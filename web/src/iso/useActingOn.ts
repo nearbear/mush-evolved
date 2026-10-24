@@ -6,8 +6,7 @@
 // walking up to what a private, secret or covert action is on would give it away.
 
 import { useEffect, useRef, useState } from "react";
-import { actionVisibility, type Action, type PlayerView, type RoomId, type Target } from "@mush2/shared";
-import { actionTarget } from "../hud/targets.ts";
+import { actionTarget, actionVisibility, endsAccommodation, type Action, type PlayerView, type RoomId, type Target } from "@mush2/shared";
 
 /**
  * A walk request: up to a target, or to the door of a room you're moving to. `n` changes on every
@@ -18,6 +17,8 @@ export interface ActingOn {
   n: number;
   /** The action is public, so the walk is sent to the server for your roommates to see. */
   share: boolean;
+  /** The action ends a wheelchair push you're part of (`endsAccommodation`), so you walk up to it even if you were pushing or pushed. */
+  endsPush: boolean;
 }
 
 type Queue = Pick<PlayerView["you"], "current" | "queue">;
@@ -39,7 +40,10 @@ export function useActingOn(you: PlayerView["you"] | undefined): { actingOn: Act
   const [sentCount, setSentCount] = useState(0);
   const walkFor = (action: Action | undefined) => {
     const target = action?.type === "move" ? { kind: "door" as const, to: action.to } : action && actionTarget(action);
-    if (action && target) setActingOn((a) => ({ target, n: (a?.n ?? 0) + 1, share: actionVisibility(action.type) === "public" }));
+    if (!action || !target) return;
+    const visibility = actionVisibility(action.type);
+    const endsPush = !!you && endsAccommodation(action, you.id, visibility);
+    setActingOn((a) => ({ target, n: (a?.n ?? 0) + 1, share: visibility === "public", endsPush }));
   };
 
   const before = useRef(you);

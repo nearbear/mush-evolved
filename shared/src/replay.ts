@@ -77,7 +77,7 @@ export function applyInput(state: GameState, input: Input): ActionResult {
     case "actopiCheat":
       return setActopiCheat(state, input.by, input.mode);
     case "walk":
-      return walk(state, input.by, input.x, input.y, input.sitting);
+      return walk(state, input.by, input.x, input.y, input.sitting, input.behind);
     case "roleCheat":
       return setRoleCheat(state, input.by, input.role);
   }

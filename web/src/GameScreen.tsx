@@ -118,7 +118,7 @@ export function GameScreen({ ticket, onLeave }: { ticket: SeatTicket; onLeave: (
   if (!view) return <main className="connecting loading">{t("common.connecting")}</main>;
   const { you } = view;
   const reachable = new Set(legalIn(view).flatMap((a) => (a.type === "move" ? [a.to] : [])));
-  const occupant = (p: { id: string; isBot: boolean; character: CharacterId; statuses: string[]; busy?: Bar; lying?: string; spot?: Spot }): Occupant => {
+  const occupant = (p: { id: string; isBot: boolean; character: CharacterId; statuses: string[]; busy?: Bar; lying?: string; spot?: Spot; pushedBy?: string }): Occupant => {
     const busy = p.id === you.id && you.current ? { bar: you.current, label: names.action(you.current.action.type) } : p.busy && { bar: p.busy };
     return {
       id: p.id,
@@ -128,6 +128,7 @@ export function GameScreen({ ticket, onLeave }: { ticket: SeatTicket; onLeave: (
       you: p.id === you.id,
       ...((p.id === you.id ? you.lyingIn : p.lying) && { lying: p.id === you.id ? you.lyingIn : p.lying }),
       ...(p.spot && { spot: p.spot }),
+      ...(p.pushedBy !== undefined && { pushedBy: p.pushedBy }),
       statuses: p.id === you.id ? view.statuses : p.statuses,
       ...(busy && { busy }),
     };
@@ -206,7 +207,7 @@ export function GameScreen({ ticket, onLeave }: { ticket: SeatTicket; onLeave: (
                 teleport={you.cheats.includes("instantActions")}
                 doorMoves={doorMoves}
                 onMove={move}
-                onWalk={(cell, sitting) => view.config.sharedSpots && post({ type: "walk", x: cell.x, y: cell.y, sitting })}
+                onWalk={(cell, sitting, behind) => view.config.sharedSpots && post({ type: "walk", x: cell.x, y: cell.y, sitting, ...(behind && { behind }) })}
                 onSelect={select}
                 onClear={() => select(null)}
                 onDoorTap={tapDoor}

@@ -26,6 +26,8 @@ export interface Occupant {
   lying?: string;
   /** Where they stand or sit in the room, from the view (you and people in your room); without one, they're spread out. */
   spot?: Spot;
+  /** Who pushes their wheelchair, from the view (you and people in your room): they steer it, and the pusher walks behind. */
+  pushedBy?: string;
   /** Public statuses, shown over the head (the view decides which; see statuses.ts). */
   statuses: readonly string[];
   /** The bar of the timed action they are busy with, when the view shows it, and your own action's name. */

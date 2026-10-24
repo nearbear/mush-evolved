@@ -78,6 +78,18 @@ describe("where you stand", () => {
     expect(player(moved, "p2").spot).toEqual({ door: "LABORATORY" });
   });
 
+  it("pushing a wheelchair, your walk steers it: they go to the cell and you to the one behind, and nobody sits", () => {
+    const s = ship();
+    player(s, "p2").pushedBy = "p1";
+    const steered = must(walk(s, "p1", 3, 4, true, { x: 2, y: 4 }));
+    expect(player(steered, "p2").spot).toEqual({ x: 3, y: 4 });
+    expect(player(steered, "p1").spot).toEqual({ x: 2, y: 4 });
+    expect(viewFor(steered, "p0").players.find((o) => o.id === "p2")?.spot).toEqual({ x: 3, y: 4 });
+    // Without a cell behind, you stay where you were.
+    expect(player(must(walk(s, "p1", 3, 4, false)), "p1").spot).toBeUndefined();
+    expect(walk(s, "p1", 3, 4, false, { x: MAX_SPOT_CELL + 1, y: 0 })).toEqual({ ok: false, error: "cant_walk" });
+  });
+
   it("sending a public action gets you up from a chair, timed or not, and keeps your cell", () => {
     const s = must(walk(ship(), "p1", 3, 4, true));
     const to = s.config.rooms.LABORATORY![0]!;
@@ -109,7 +121,8 @@ describe("where you stand", () => {
 
   it("parses only whole cells in range with a sitting flag", () => {
     expect(parseGameMessage(JSON.stringify({ type: "walk", x: 1, y: -2, sitting: true }))).toEqual({ type: "walk", x: 1, y: -2, sitting: true });
-    for (const bad of [{ x: 1, y: 2 }, { x: "1", y: 2, sitting: false }, { x: 1.5, y: 2, sitting: false }, { x: MAX_SPOT_CELL + 1, y: 0, sitting: false }]) {
+    expect(parseGameMessage(JSON.stringify({ type: "walk", x: 1, y: 2, sitting: false, behind: { x: 0, y: 2 } }))).toEqual({ type: "walk", x: 1, y: 2, sitting: false, behind: { x: 0, y: 2 } });
+    for (const bad of [{ x: 1, y: 2, sitting: false, behind: { x: 0.5, y: 2 } }, { x: 1, y: 2, sitting: false, behind: 3 }, { x: 1, y: 2 }, { x: "1", y: 2, sitting: false }, { x: 1.5, y: 2, sitting: false }, { x: MAX_SPOT_CELL + 1, y: 0, sitting: false }]) {
       expect(parseGameMessage(JSON.stringify({ type: "walk", ...bad }))).toBeNull();
     }
   });

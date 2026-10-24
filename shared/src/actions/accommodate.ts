@@ -1,8 +1,10 @@
 import { Action, peopleHere } from "./action.ts";
 import { getUp } from "./lie_down.ts";
+import { endsAccommodation } from "../actionTarget.ts";
 import { logPublic } from "../log.ts";
 import { arrive } from "../spot.ts";
-import type { GameState, PlayerId, PlayerState } from "../types.ts";
+import type { Action as AnyAction, GameState, PlayerId, PlayerState } from "../types.ts";
+import type { ActionVisibility } from "./action.ts";
 
 // Pushing someone's wheelchair (owner, 2026-10-19). Terrence starts with the `wheelchair` modifier. Anyone else in
 // his room may offer to push him (free); the push starts only when he accepts one offer, within
@@ -10,6 +12,7 @@ import type { GameState, PlayerId, PlayerState } from "../types.ts";
 // move on his own; when his pusher moves, he goes along at no cost to himself, and the pusher pays a normal move.
 // Either of them can stop it at any time (free and instant, not queued), and it ends if either dies. Offer, start and stop go in the
 // room's public log; roommates see the `accommodated` status and who is pushing (`OtherPlayerView.pushedBy`).
+// Either of them sending a public action on equipment or another person also ends it (`endAccommodationToAct`).
 
 export type AccommodateActionData = { type: "accommodate"; target: PlayerId };
 export type AcceptAccommodationActionData = { type: "accept_accommodation"; target: PlayerId };
@@ -56,6 +59,22 @@ export function endAccommodationOnDeath(state: GameState, dead: PlayerState): vo
   const pushed = pushing(state, dead);
   if (pushed) delete pushed.pushedBy;
   leaveAccommodation(state, dead);
+}
+
+/** Ends `pushed`'s push, with the public log line the stop action writes. Mutates a cloned state. */
+function endPush(state: GameState, pushed: PlayerState): void {
+  const pusher = state.players.find((o) => o.id === pushed.pushedBy)!;
+  delete pushed.pushedBy;
+  logPublic(state, pushed.room, "accommodationEnded", { name: pusher.character, target: pushed.character });
+}
+
+/**
+ * `p` sent `action`: if it walks them up to equipment or another person in public (`endsAccommodation`), a push they
+ * are part of, pushing or pushed, ends then and there (owner, 2026-10-24). Mutates a cloned state.
+ */
+export function endAccommodationToAct(state: GameState, p: PlayerState, action: AnyAction, visibility: ActionVisibility): void {
+  const pushed = p.pushedBy !== undefined ? p : pushing(state, p);
+  if (pushed && endsAccommodation(action, p.id, visibility)) endPush(state, pushed);
 }
 
 /** The pusher has moved: the person they push goes with them, out of bed, and both rooms see them go and arrive. */
@@ -151,9 +170,6 @@ export class StopAccommodationAction extends Action<StopAccommodationActionData>
   }
 
   override apply(state: GameState, player: PlayerState, target: StopAccommodationActionData): void {
-    const pushed = state.players.find((o) => o.id === target.target)!;
-    const pusher = state.players.find((o) => o.id === pushed.pushedBy)!;
-    delete pushed.pushedBy;
-    logPublic(state, player.room, "accommodationEnded", { name: pusher.character, target: pushed.character });
+    endPush(state, state.players.find((o) => o.id === target.target)!);
   }
 }

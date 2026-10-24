@@ -13,7 +13,7 @@
 // sends a `tick` input when the earliest bar runs out (`nextDue`).
 
 import { ACTIONS, type ActionDef } from "./actions.ts";
-import { expireOffers } from "./actions/accommodate.ts";
+import { endAccommodationToAct, expireOffers } from "./actions/accommodate.ts";
 import { clone, fail, findPlayer, type ActionResult } from "./helpers.ts";
 import { logPrivate } from "./log.ts";
 import { getUp } from "./actions/lie_down.ts";
@@ -30,7 +30,11 @@ export function queueAction(state: GameState, playerId: PlayerId, action: Action
   if (!p || !def) return fail("illegal_action");
   if (!def.timed || p.cheats.includes("instantActions")) {
     const done = applyAction(state, playerId, action);
-    if (done.ok) standUp(findPlayer(done.state, playerId)!, def);
+    if (done.ok) {
+      const actor = findPlayer(done.state, playerId)!;
+      standUp(actor, def);
+      endAccommodationToAct(done.state, actor, action, def.visibility);
+    }
     return done;
   }
   // Checked against things as they are now, like the buttons the player pressed; checked again when its turn comes.
@@ -40,6 +44,7 @@ export function queueAction(state: GameState, playerId: PlayerId, action: Action
   const actor = findPlayer(next, playerId)!;
   if (action.type !== "lie_down") getUp(actor);
   standUp(actor, def);
+  endAccommodationToAct(next, actor, action, def.visibility);
   // Priced against things as they are now, like the button the player pressed.
   const queued: QueuedAction = { action, adjustment: def.adjustment(state, p, action) };
   if (actor.current) actor.queue.push(queued);

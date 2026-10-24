@@ -13,6 +13,9 @@
 // Doors: someone going through one (`Goal.from` and `Goal.then`, steps from `doorPassage`) opens it
 // as they come up to it, timed so it is open as they get there (they wait at it if it isn't yet),
 // and it shuts behind them once nobody is in the doorway or about to be.
+//
+// Pushing a wheelchair: the pusher's goal is `behind` the person they push, so they walk that person's trail a cell
+// back (planned together, so the two move as one), rather than heading for a cell of their own.
 
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, type RefObject } from "react";
 import type { RoomId } from "@mush2/shared";
@@ -28,6 +31,8 @@ export interface Goal {
   from?: readonly DoorStep[];
   /** Walked on from `cell` (out through a door), ending where they stop. */
   then?: readonly DoorStep[];
+  /** Follow this walker (pushing their wheelchair): walk their trail and stop a cell short of them. `cell` is only where a newcomer starts. */
+  behind?: string;
 }
 
 /** Which walk strip a person is drawn with, and whether it is mirrored. */
@@ -170,6 +175,23 @@ export function stepWalkers(
 }
 
 /**
+ * Sends `m` along `leader`'s trail, from where the leader is now to where they stop, ending a cell short of them (or
+ * jumps there, with `jump`). Someone who already stands there, or can't get to the leader on foot, stays put.
+ */
+export function followTrail(cells: readonly Cell[], m: Motion, leader: Motion, jump = false): void {
+  const at = cellOf(leader.pos);
+  const path = walkPath(cells, cellOf(m.pos), at);
+  if (!path) return;
+  const full = [...path.slice(1), ...leader.route.filter((p) => !p.door)];
+  const end = full.at(-2);
+  if (!end || same(end, m.route.at(-1) ?? m.pos)) return;
+  if (jump) {
+    m.pos = { x: end.x, y: end.y };
+    m.route = [];
+  } else m.route = full.slice(0, -1);
+}
+
+/**
  * Walkers in `room`, by id: everyone in `targets` moves to their goal; anyone new is drawn at its
  * cell straight away, or at the start of its way in. A goal that can't be reached on foot is jumped
  * to, and so is every goal of `teleport` (the instant actions cheat: you jump, as before walking).
@@ -197,7 +219,7 @@ export function useWalkers(
     seeded.current = false;
   }
   const [, rerender] = useState(0);
-  const targetsKey = [...targets].map(([id, g]) => `${id}@${key(g.cell)}>${key(destination(g))}`).join(";");
+  const targetsKey = [...targets].map(([id, g]) => `${id}@${key(g.cell)}>${key(destination(g))}${g.behind ? `~${g.behind}` : ""}`).join(";");
   const openFor = useRef(openMs);
   openFor.current = openMs;
 
@@ -259,8 +281,15 @@ export function useWalkers(
     const arrivals = seeded.current;
     if (targets.size) seeded.current = true;
     const walkable = new Set(cells.map(key));
-    for (const [id, goal] of targets) {
+    // Leaders first, so a follower's route is planned along the leader's new one.
+    const ordered = [...targets].sort(([, a], [, b]) => Number(!!a.behind) - Number(!!b.behind));
+    for (const [id, goal] of ordered) {
       const m = motions.current.get(id);
+      const leader = m && goal.behind !== undefined ? motions.current.get(goal.behind) : undefined;
+      if (m && leader) {
+        followTrail(cells, m, leader, id === teleport);
+        continue;
+      }
       const dest = destination(goal);
       if (!m) {
         // In through a door: from the doorway (or beyond it) to the cell in front of it, then on.

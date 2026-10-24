@@ -8,6 +8,7 @@ export * from "./equipment.ts";
 export * from "./rules.ts";
 export * from "./chat.ts";
 export * from "./actions.ts";
+export * from "./actionTarget.ts";
 export * from "./log.ts";
 export * from "./modifiers.ts";
 export * from "./items.ts";

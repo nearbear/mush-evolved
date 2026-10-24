@@ -6,7 +6,7 @@ import { isActopiCheat, isCheat, isRoleCheat, type ActopiCheat, type Cheat, type
 import { isCharacterId, type CharacterId } from "./characters.ts";
 import { MAX_CHAT_LENGTH } from "./chat.ts";
 import { isMushSkill, isSkill } from "./skills.ts";
-import { MAX_SPOT_CELL } from "./spot.ts";
+import { isSpotCell } from "./spot.ts";
 import { CHAT_CHANNELS, GRAVEYARD_CHANNEL, MUSH_CHANNEL, type Action, type ChannelId, type PlayerId, type PlayerView, type PrivateChannelId, type ThreadId } from "./types.ts";
 
 export const MAX_NAME_LENGTH = 24;
@@ -30,8 +30,9 @@ export type GameClientMessage =
   | { type: "action"; action: Action }
   // Cancels your queued actions and the one under way (queue.ts).
   | { type: "clearQueue" }
-  // Walk to a cell of your room, sitting if it's a chair (spot.ts). Free; not an action.
-  | { type: "walk"; x: number; y: number; sitting: boolean }
+  // Walk to a cell of your room, sitting if it's a chair (spot.ts). Free; not an action. Pushing a wheelchair, the
+  // cell is where it goes, and `behind` where you end up behind it.
+  | { type: "walk"; x: number; y: number; sitting: boolean; behind?: { x: number; y: number } }
   | { type: "chat"; channel: ChannelId; text: string }
   | { type: "toggleCheckbox"; message: number; line: number }
   | { type: "createChannel"; name: string; members?: PlayerId[] }
@@ -98,9 +99,11 @@ export function parseGameMessage(raw: string): GameClientMessage | null {
   }
   if (msg?.type === "clearQueue") return { type: "clearQueue" };
   if (msg?.type === "walk") {
-    const { x, y, sitting } = msg;
-    return [x, y].every((n) => Number.isInteger(n) && Math.abs(n as number) <= MAX_SPOT_CELL) && typeof sitting === "boolean"
-      ? { type: "walk", x: x as number, y: y as number, sitting }
+    const { x, y, sitting, behind } = msg;
+    if (!isSpotCell(x, y) || typeof sitting !== "boolean") return null;
+    if (behind === undefined) return { type: "walk", x: x as number, y: y as number, sitting };
+    return isRecord(behind) && isSpotCell(behind.x, behind.y)
+      ? { type: "walk", x: x as number, y: y as number, sitting, behind: { x: behind.x as number, y: behind.y as number } }
       : null;
   }
   if (msg?.type === "roleCheat") return isRoleCheat(msg.role) ? { type: "roleCheat", role: msg.role } : null;

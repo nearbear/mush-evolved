@@ -46,6 +46,9 @@ Loaded when working on the isometric view. The UI rules in `web/CLAUDE.md` still
   gives. The DOM layers (`useDomFrame.ts`) shift the `data-walker` elements found at their last
   commit, not a fresh query. With the instant actions cheat on,
   you teleport instead (`teleport`: your walks jump, and leaving a room switches at once); others still walk.
+  Pushing a wheelchair, your clicks steer it (`walkTo`: its spot is the cell, yours the cell before it on its way), and the
+  pusher's goal is `behind` it: they walk its trail a cell back (`followTrail`), on every client. Acting walks either of
+  them only for an action that ends the push (`ActingOn.endsPush`); moves still walk the pusher to the door alone.
 - Acting walks you there (`useActingOn.ts`): when an action on equipment, a person, or a body on the
   floor begins, you walk to the equipment's standing spot or the cell before the person or body; a
   move walks you to the door (a move takes `durationMs` like any action, and the room changes at its end).

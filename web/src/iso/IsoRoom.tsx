@@ -167,7 +167,7 @@ export function IsoRoom({
   actingOn: ActingOn | null;
   /** Changes whenever you send an action: you get up from your chair. */
   sentCount: number;
-  /** The instant actions cheat is on: you jump wherever you'd walk (others still walk). */
+  /** The instant actions cheat is on: you jump wherever you'd walk (others still walk), except with a wheelchair, which walks for you both. */
   teleport: boolean;
   /** You've already moved there: walk to the door to it, then `onLeft` (LeavingIsoRoom shows the next room). */
   leavingTo: RoomId | null;
@@ -175,8 +175,8 @@ export function IsoRoom({
   /** Where people last came in from or went out to, if just now (by player id): they walk through that door. */
   doorMoves: ReadonlyMap<string, { from?: RoomId; to?: RoomId }>;
   onMove: (to: RoomId) => void;
-  /** You walked to a cell (sitting if it's a chair): the server tells your roommates (spot.ts in shared). */
-  onWalk: (cell: { x: number; y: number }, sitting: boolean) => void;
+  /** You walked to a cell (sitting if it's a chair): the server tells your roommates (spot.ts in shared). Pushing a wheelchair, the cell is where it goes and `behind` where you end up. */
+  onWalk: (cell: { x: number; y: number }, sitting: boolean, behind?: { x: number; y: number }) => void;
   onSelect: (target: Target) => void;
   /** Bare floor was tapped: drop the selection (and any peeked door). */
   onClear: () => void;
@@ -209,7 +209,8 @@ export function IsoRoom({
   // Where you've clicked to walk, drawn at once. The server hears of it too (`onWalk`) and shows it to your
   // roommates, except walks up to what a non-public action is on. It resets when you change rooms (it belongs
   // to one visit; the view's spot says where you came in). Sitting on a chair is the walk's end point plus the seat taken there.
-  const [walk, setWalk] = useState<{ visit: number; cell: { x: number; y: number }; seat?: Seat } | null>(null);
+  // Pushing a wheelchair, `steer` is where you clicked, where the wheelchair goes, and `cell` the one you end up in behind it.
+  const [walk, setWalk] = useState<{ visit: number; cell: { x: number; y: number }; seat?: Seat; steer?: { x: number; y: number } } | null>(null);
   // biome-ignore lint/correctness/useExhaustiveDependencies: only sending an action gets you up.
   useEffect(() => setWalk((w) => (w?.seat ? { ...w, seat: undefined } : w)), [sentCount]);
   const cells = useMemo(() => (roomLayout ? walkableCells(layout, roomLayout) : []), [layout, roomLayout]);
@@ -243,6 +244,9 @@ export function IsoRoom({
   const me = occupants.find((o) => o.you);
   // You can't wander the room while lying in bed or while someone pushes your wheelchair.
   const rooted = !!me?.lying || !!me?.statuses.includes("accommodated");
+  /** Whoever `id` pushes in a wheelchair here: they steer it, and `id` walks behind (useWalkers' `Goal.behind`). */
+  const pusheeOf = (id: string | undefined) => (id === undefined ? undefined : occupants.find((o) => o.pushedBy === id));
+  const myPushee = pusheeOf(me?.id);
   const entryCell = roomLayout && visit.current.from ? doorSpot(layout, roomLayout, visit.current.from, cells) : undefined;
   const exitCell = roomLayout && leavingTo ? doorSpot(layout, roomLayout, leavingTo, cells) : undefined;
   /** The way out through the door to `to`, from the cell in front of it: to the far side, or (`you`) into the doorway, where the view changes rooms. */
@@ -296,13 +300,17 @@ export function IsoRoom({
     occupants.map((o, i) => {
       const bed = beds.get(o.id)?.cell;
       if (bed) return [o.id, { cell: bed }];
+      // Pushing a wheelchair, you walk behind it rather than to a cell of your own (except out through a door).
+      const behind = pusheeOf(o.id)?.id;
       if (o.you) {
-        const cell = exitCell ?? here?.cell ?? entryCell ?? spotCell(o.spot) ?? spots[i] ?? { x: 0, y: 0 };
-        return [o.id, { cell, ...(myExit && { then: myExit }), ...(visit.current.from && { from: wayIn(visit.current.from, true) }) }];
+        // Pushed in a wheelchair, you go where your pusher steers you (your spot), not where you came in.
+        const cell = exitCell ?? (o.pushedBy !== undefined ? spotCell(o.spot) : undefined) ?? here?.cell ?? entryCell ?? spotCell(o.spot) ?? spots[i] ?? { x: 0, y: 0 };
+        return [o.id, { cell, ...(myExit && { then: myExit }), ...(visit.current.from && { from: wayIn(visit.current.from, true) }), ...(behind && !myExit && { behind }) }];
       }
-      // Someone who just came in walks in through the door they came by.
+      // Someone who just came in walks in through the door they came by. The wheelchair you push goes where you steered it, at once.
       const from = seen && !seen.ids.has(o.id) ? doorMoves.get(o.id)?.from : undefined;
-      return [o.id, { cell: spotCell(o.spot) ?? spots[i] ?? { x: 0, y: 0 }, ...(from && { from: wayIn(from, false) }) }];
+      const steered = o.pushedBy === me?.id ? here?.steer : undefined;
+      return [o.id, { cell: steered ?? spotCell(o.spot) ?? spots[i] ?? { x: 0, y: 0 }, ...(from && { from: wayIn(from, false) }), ...(behind && { behind }) }];
     }),
   );
   for (const l of walkingOut) {
@@ -312,7 +320,7 @@ export function IsoRoom({
   }
   // Each animation frame while anyone walks: the camera and the walkers' pixel shifts, to the renderer and the overlay.
   const paint = useRef<((offsetOf: (id: string) => { x: number; y: number }) => void) | null>(null);
-  const { at: walkers, doors, apply: applyWalkers, offsetOf } = useWalkers(room, cells, targets, openMs, paint, teleport ? me?.id : undefined);
+  const { at: walkers, doors, apply: applyWalkers, offsetOf } = useWalkers(room, cells, targets, openMs, paint, teleport && !myPushee && me?.pushedBy === undefined ? me?.id : undefined);
   const myWalker = me && walkers.get(me.id);
   const standsAt = (w: { cell: { x: number; y: number }; moving: boolean } | undefined, c: { x: number; y: number }) => !!w && !w.moving && w.cell.x === c.x && w.cell.y === c.y;
   // Walking out: done once you stand in the doorway (straight away if there's no door to go through).
@@ -435,7 +443,8 @@ export function IsoRoom({
   // (an item in an inventory), stay where they are.
   // biome-ignore lint/correctness/useExhaustiveDependencies: only a new request walks; the rest is read as it stands then.
   useEffect(() => {
-    if (!actingOn || !roomLayout || !myWalker || leavingTo) return;
+    // Pushing a wheelchair or pushed in one, you stay with it, unless what you do ends the push (shared `endsAccommodation`).
+    if (!actingOn || !roomLayout || !myWalker || leavingTo || ((myPushee || me?.pushedBy !== undefined) && !actingOn.endsPush)) return;
     const { target } = actingOn;
     let cell: { x: number; y: number } | undefined;
     if (target.kind === "door") cell = doorSpot(layout, roomLayout, target.to, cells);
@@ -583,6 +592,23 @@ export function IsoRoom({
     return { sprite: behind, key: `n:${to}`, kind: "door" as const, to, title: names.room(to) };
   };
 
+  /**
+   * Walk to `cell`, sitting there on `seat`. Pushing a wheelchair, steer it there instead (nobody sits): you end up in
+   * the cell before it on its way, as useWalkers draws you following it.
+   */
+  const walkTo = (cell: { x: number; y: number }, seat?: Seat) => {
+    if (!myPushee) {
+      setWalk({ visit: visit.current.n, cell, ...(seat && { seat }) });
+      onWalk(cell, !!seat);
+      return;
+    }
+    const from = walkers.get(myPushee.id)?.cell;
+    const path = from && walkPath(cells, from, cell);
+    const behind = path && path.length > 1 ? path[path.length - 2]! : myWalker?.cell;
+    if (!behind) return;
+    setWalk({ visit: visit.current.n, cell: behind, steer: cell });
+    onWalk(cell, false, behind);
+  };
   const onClick = (e: MouseEvent<HTMLDivElement>) => {
     if (leavingTo) return;
     const hit = pick(e);
@@ -593,10 +619,7 @@ export function IsoRoom({
     else if (hit?.kind === "chair") {
       // Sit down (cosmetic, like walking): you stand on the chair's cell in the sitting pose.
       onClear();
-      if (!rooted) {
-        setWalk({ visit: visit.current.n, cell: hit.cell, seat: seatFor(hit.dir) });
-        onWalk(hit.cell, true);
-      }
+      if (!rooted) walkTo(hit.cell, seatFor(hit.dir));
     }
     else if (hit?.kind === "door") onDoorTap(hit.to);
     else {
@@ -604,10 +627,7 @@ export function IsoRoom({
       onClear();
       const at = pointIn(e);
       const cell = cellAtPoint(cells, at.x, at.y);
-      if (cell && !rooted) {
-        setWalk({ visit: visit.current.n, cell });
-        onWalk(cell, false);
-      }
+      if (cell && !rooted) walkTo(cell);
     }
   };
   const onDoubleClick = (e: MouseEvent<HTMLDivElement>) => {
