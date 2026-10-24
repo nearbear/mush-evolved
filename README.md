@@ -22,6 +22,16 @@ Enter a name and click **Find game**. After 5 seconds, empty seats fill with bot
 
 Run the halves separately with `npm run dev -w server` and `npm run dev -w web`. To point the client at another server, copy `web/.env.example` to `web/.env` and set `VITE_PARTY_HOST`.
 
+### Browser for tests and screenshots
+
+`npm install` does not download a browser. The lobby test (`tools/tests/lobby`) and `npm run screenshot` drive headless Chromium through Playwright, so install it once:
+
+```bash
+npx playwright install --with-deps chromium
+```
+
+`--with-deps` also installs the Linux libraries Chromium needs (it uses `sudo`, so it may ask for your password; on Windows or macOS you can drop the flag). Without this, `npm test` fails in the lobby test. CI does the same in `.github/workflows/ci.yml`.
+
 ## Commands
 
 | Command | What it does |
