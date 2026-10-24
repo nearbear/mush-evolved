@@ -7,7 +7,8 @@ import type { Action, GameState, PlayerId } from "../src/types.ts";
 import { clone, costOf, makeSeats, mustApply, nextDay, offered, player } from "./support.ts";
 
 const seats = makeSeats(4);
-const config = { ...DEFAULT_CONFIG, mushCount: 1, startInventory: [], startItems: [] };
+// MP starts empty, so a move converts AP.
+const config = { ...DEFAULT_CONFIG, mushCount: 1, startInventory: [], startItems: [], startMp: 0 };
 
 /** p0 is human, p1 is human, p2 is Mush, p3 is human; everyone in one room. */
 function ship(): GameState {

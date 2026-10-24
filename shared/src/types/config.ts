@@ -41,6 +41,7 @@ export interface GameConfig {
   // Null: everyone is seated at launch and Mush are picked then (tests, single player later).
   preselection: PreselectionRules | null;
   startAp: number;
+  startMp: number; // MP each player wakes up with. Capped by `movement.mpCap` like any other gain.
   apPerCycle: number; // AP gained at the start of each cycle, before modifiers. Unspent AP carries over.
   cyclesPerDay: number; // Cycles in one day. The day ends with the last cycle; every living player then loses `dailyMoraleLoss` (modifiers.ts) morale.
   // Cycles change on the server's UTC clock (#24). With this on, `ready` is offered too and the cycle also ends once

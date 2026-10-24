@@ -28,6 +28,8 @@ export const DEFAULT_CONFIG: GameConfig = {
   // Confirmed 2026-10-11: start with 8 AP, gain 1 per cycle (2 while lying in a bed, via the
   // "lying_down" modifier), never above 12.
   startAp: 8,
+  // Owner, 2026-10-24: each player starts with 12 MP (was 0). Same cap as `movement.mpCap`.
+  startMp: 12,
   apPerCycle: 1,
   // Confirmed 2026-10-13: 8 cycles per day. Confirmed 2026-10-14: each living player loses 1 morale at day end.
   // Owner, 2026-10-18: that 1 is 2 cut by 1 while Chun (Mankind's Only Hope) lives, so it is 2 once she dies or with no Chun.
@@ -38,7 +40,7 @@ export const DEFAULT_CONFIG: GameConfig = {
   sharedSpots: true,
   moralePerDay: 2,
   maxAp: 12,
-  // Confirmed 2026-10-11: a move costs 1 MP; with no MP, 1 AP becomes 3 MP. MP starts at 0, cap 12.
+  // Confirmed 2026-10-11: a move costs 1 MP; with no MP, 1 AP becomes 3 MP. Cap 12.
   movement: {
     mpPerMove: 1,
     apPerConversion: 1,

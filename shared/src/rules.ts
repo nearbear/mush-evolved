@@ -133,7 +133,7 @@ export function newPlayer(s: Seat, config: GameConfig, cycle: number, role: Role
     alpha: role === "mush",
     room: config.startRoom,
     ap: config.startAp,
-    mp: 0,
+    mp: config.startMp,
     hp: config.startHp,
     morale: config.startMorale,
     satiety: 0,

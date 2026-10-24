@@ -17,6 +17,7 @@ const config: GameConfig = {
     ...Array.from({ length: 5 }, () => ({ type: "wrench", room: "LABORATORY" })),
     { type: "medikit", room: "CORRIDOR_A" },
   ],
+  startMp: 0, // the move below converts AP
 };
 const newGame = () => createGame(seats, config, 42);
 

@@ -6,7 +6,8 @@ import { applyAction, createGame, viewFor } from "../src/rules.ts";
 import type { Action, GameConfig, GameState } from "../src/types.ts";
 import { makeSeats, nextDay, offered, player } from "./support.ts";
 
-const base: GameConfig = { ...DEFAULT_CONFIG, mushCount: 1, startInventory: [], startItems: [], startSkills: [] };
+// MP starts empty, so each move converts AP.
+const base: GameConfig = { ...DEFAULT_CONFIG, mushCount: 1, startInventory: [], startItems: [], startSkills: [], startMp: 0 };
 const curse = (target: string): Action => ({ type: "anathema", target });
 const work = (project: string): Action => ({ type: "project", equipment: "NEXUS_ROOM:NERON_CORE", project });
 const pick = (s: GameState, id: string, skill: string) => {

@@ -10,7 +10,8 @@ import { clone, makeSeats, must, mustApply, offered, player } from "./support.ts
 // p0 is Terrence; p1 and p2 are not. Everyone starts in the laboratory.
 const HERE = "LABORATORY";
 const seats = makeSeats(3).map((s, i) => (i === 0 ? { ...s, character: "terrence" as const } : s));
-const config = { ...DEFAULT_CONFIG, mushCount: 1, startInventory: [], startItems: [] };
+// MP starts empty, so the pusher's move converts AP.
+const config = { ...DEFAULT_CONFIG, mushCount: 1, startInventory: [], startItems: [], startMp: 0 };
 const NEXT = config.rooms[HERE]![0]!;
 
 function ship(): GameState {

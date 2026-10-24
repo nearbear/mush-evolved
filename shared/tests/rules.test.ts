@@ -12,13 +12,20 @@ import { makeSeats, player, mustApply, offered } from "./support.ts";
 
 const seats = makeSeats(8, "others");
 // End cycle (`ready`) on, so these tests can also pass a cycle the testing way.
-const newGame = (seed = 42) => createGame(seats, { ...DEFAULT_CONFIG, manualCycles: true }, seed);
+// MP starts empty here, so these tests see a move convert AP (the start MP is checked in "createGame").
+const newGame = (seed = 42) =>
+  createGame(seats, { ...DEFAULT_CONFIG, manualCycles: true, startMp: 0 }, seed);
 
 const move = (to: string): Action => ({ type: "move", to });
 
 describe("createGame", () => {
   it("is deterministic for a given seed", () => {
     expect(newGame(7)).toEqual(newGame(7));
+  });
+
+  it("starts everyone with 12 MP", () => {
+    const start = createGame(seats, { ...DEFAULT_CONFIG, manualCycles: true }, 42);
+    for (const p of start.players) expect(p.mp).toBe(12);
   });
 
   it("starts everyone at full HP and half morale", () => {

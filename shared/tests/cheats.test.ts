@@ -41,7 +41,7 @@ describe("cheats", () => {
   it("without the cheat, the same move spends points", () => {
     const door = offered(fresh(), "p0").find((a) => a.type === "move")!;
     const s = walk(fresh(), "p0", door.type === "move" ? door.to : "");
-    expect(player(s, "p0").ap).toBeLessThan(cfg.startAp);
+    expect(player(s, "p0").mp).toBeLessThan(cfg.startMp);
   });
 
   it("infinite morale and HP hold through a day change", () => {
