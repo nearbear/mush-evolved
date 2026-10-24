@@ -48,18 +48,20 @@ describe("ship resources", () => {
     expect(newCycle(s)).toEqual({ ok: false, error: "game_over" });
   });
 
-  it("splits damage 33% to the shield (rounded down) and the rest to the hull", () => {
+  it("splits damage 33% to the shield (rounded) and the rest to the hull", () => {
     const s = game();
     expect([s.config.ship.plasmaShield.absorbPercent, s.config.ship.plasmaShield.projectAbsorbPercent, s.config.ship.plasmaShield.regen]).toEqual([33, 67, 5]);
     damageShip(s, 10);
     expect(s.ship).toMatchObject({ plasmaShield: 47, hull: 93 });
+    damageShip(s, 2);
+    expect(s.ship).toMatchObject({ plasmaShield: 46, hull: 92 });
   });
 
   it("splits 67% to the shield once the Plasma Shield project is done", () => {
     const s = game();
     s.projects.PLASMA_SHIELD = PROJECT_COMPLETE;
     damageShip(s, 10);
-    expect(s.ship).toMatchObject({ plasmaShield: 44, hull: 96 });
+    expect(s.ship).toMatchObject({ plasmaShield: 43, hull: 97 });
   });
 
   it("sends all damage to the hull while the BIOS has the shield off, and shows the shield as 0", () => {

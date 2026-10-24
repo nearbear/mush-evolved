@@ -46,12 +46,12 @@ export function shieldAbsorbPercent(state: Readonly<GameState>): number {
 }
 
 /**
- * Damage to the ship (hunters.ts): the shield takes its percentage (rounded down) while it has points, the hull the
+ * Damage to the ship (hunters.ts): the shield takes its percentage (rounded to the nearest point) while it has points, the hull the
  * rest. Mutates a state the caller already cloned.
  */
 export function damageShip(state: GameState, amount: number): void {
   const { ship } = state;
-  const toShield = Math.min(ship.plasmaShield, Math.floor((amount * shieldAbsorbPercent(state)) / 100));
+  const toShield = Math.min(ship.plasmaShield, Math.round((amount * shieldAbsorbPercent(state)) / 100));
   ship.plasmaShield -= toShield;
   ship.hull = Math.max(0, ship.hull - (amount - toShield));
 }

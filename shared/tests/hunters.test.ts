@@ -99,7 +99,7 @@ describe("a hunter's turn", () => {
     expect(lost).toBeGreaterThanOrEqual(2);
     expect(lost).toBeLessThanOrEqual(4);
     expect(s.hunters.list[0]).toMatchObject({ targeted: false, hitChance: 0.8 });
-    expect(s.log.find((e) => e.key === "hunterHit")).toMatchObject({ params: { damage: lost }, visibleTo: "all" });
+    expect(s.log.some((e) => e.key.startsWith("hunter") && e.key !== "hunterWave")).toBe(false);
   });
 
   it("each miss adds 10% to its next shot", () => {
@@ -119,7 +119,7 @@ describe("a hunter's turn", () => {
     s = nextCycle(s);
     expect(s.ship.hull).toBe(0);
     expect(s.players.every((p) => !p.alive)).toBe(true);
-    expect([s.phase, s.winner]).toEqual(["ended", "mush"]);
+    expect([s.phase, s.winner, s.ending]).toEqual(["ended", "mush", "ship_destroyed"]);
     expect(s.log.some((e) => e.key === "shipDestroyed" && e.visibleTo === "all" && e.room === undefined)).toBe(true);
   });
 });

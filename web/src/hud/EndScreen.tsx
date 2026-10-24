@@ -36,6 +36,7 @@ export function EndScreen({ view, open, onOpenChange }: { view: PlayerView; open
 
 function verdictKey(ending: Ending, winner: Winner) {
   if (ending === "humans_dead") return "gameOver.humansDead";
+  if (ending === "ship_destroyed") return "gameOver.shipDestroyed";
   if (ending === "eden") return winner === "mush" ? "gameOver.edenMush" : "gameOver.edenHumans";
   return winner === "mush" ? "gameOver.solMush" : "gameOver.solHumans";
 }

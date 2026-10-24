@@ -273,7 +273,7 @@ export interface GameConfig {
     fuel: { start: number; max: number }; // The tanks' stock; only capsules carried to the combustion chamber are burned (owner, 2026-10-23).
     combustion: { start: number; max: number }; // The combustion chamber (owner, 2026-10-23, the wiki): starts empty, holds 9. Travel and leaving orbit burn from it.
     hull: { start: number; max: number }; // Only hunters damage it, through `damageShip`; at 0 the ship explodes (owner, 2026-10-24).
-    // Takes `absorbPercent` of each hit (rounded down) out of its own points, `projectAbsorbPercent` once the Plasma Shield project
+    // Takes `absorbPercent` of each hit (rounded) out of its own points, `projectAbsorbPercent` once the Plasma Shield project
     // is done; at 0, or while the BIOS has it off, the hull takes it all. Regains `regen` a cycle while on (owner, 2026-10-24).
     plasmaShield: { start: number; max: number; absorbPercent: number; projectAbsorbPercent: number; regen: number };
   };

@@ -12,7 +12,7 @@ import type { PlayerState } from "./player.ts";
 export type Winner = "mush" | "humans";
 
 /** How the game ended (victory.ts): the ship reached Sol or Eden, or the last human died. */
-export type Ending = "sol" | "eden" | "humans_dead";
+export type Ending = "sol" | "eden" | "humans_dead" | "ship_destroyed";
 
 /** The Daedalus's counters (ship.ts). */
 export interface ShipResources {

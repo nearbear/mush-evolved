@@ -257,6 +257,7 @@ export const ENDING_ART: Readonly<Record<Ending, string>> = {
   sol: endArt["end"]!,
   eden: endArt["eden"]!,
   humans_dead: endArt["destroyed"]!,
+  ship_destroyed: endArt["destroyed"]!,
 };
 
 // Status effect icons (16x16 pixel art), keyed by status id (shared/src/statuses.ts).
