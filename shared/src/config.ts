@@ -182,7 +182,7 @@ export const DEFAULT_CONFIG: GameConfig = {
   heavy: { mpPenalty: 2 },
   // Decided 2026-10-17 (owner): every action but ready and access takes 2 seconds and happens when its bar runs out;
   // up to 3 more can wait behind it.
-  action: { durationMs: 2000, queueCap: 3, resolveAt: "end" },
+  action: { durationMs: 1500, queueCap: 3, resolveAt: "end" },
   // PLACEHOLDER items with no effects, so there is something to pick up.
   startItems: [
     { type: "wrench", room: "LABORATORY" },
