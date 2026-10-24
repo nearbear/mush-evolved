@@ -21,7 +21,7 @@ vi.mock("partyserver", () => ({
       if (ship.crew.some((c) => c.character === character)) return { ok: false, error: "character_taken" };
       ship.crew.push({ name, character });
       const full = ship.crew.length >= SEAT_COUNT;
-      return { ok: true, token: `${roomId}:${name}`, aboard: ship.crew.length, closesAt: full ? null : CLOSES_AT };
+      return { ok: true, token: `${roomId}:${name}`, aboard: ship.crew.length, taken: ship.crew.map((c) => c.character), closesAt: full ? null : CLOSES_AT };
     },
   }),
 }));
@@ -61,7 +61,7 @@ describe("Matchmaker joining", () => {
     const [a] = await board(1);
     const m = matched(a!)!;
     expect(ships.get(m.roomId)!.crew).toEqual([{ name: "P0", character: "chao" }]);
-    expect(msgs(a!).at(-1)).toEqual({ type: "queued", waiting: 1, seats: SEAT_COUNT });
+    expect(msgs(a!).at(-1)).toEqual({ type: "queued", waiting: 1, seats: SEAT_COUNT, taken: [expect.any(String)] });
     expect(storage.alarm).toBe(CLOSES_AT);
   });
 
@@ -69,7 +69,7 @@ describe("Matchmaker joining", () => {
     const watcher = connect();
     const [a, b] = await board(2);
     expect(matched(b!)!.roomId).toBe(matched(a!)!.roomId);
-    expect(msgs(watcher).at(-1)).toEqual({ type: "queued", waiting: 2, seats: SEAT_COUNT });
+    expect(msgs(watcher).at(-1)).toEqual({ type: "queued", waiting: 2, seats: SEAT_COUNT, taken: [expect.any(String), expect.any(String)] });
   });
 
   it("starts a new ship once the open one is full", async () => {

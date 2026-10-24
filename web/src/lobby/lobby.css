@@ -208,6 +208,16 @@ body:has(.pod) {
   border-color: var(--mush);
   background: rgb(255 255 255 / 0.12);
 }
+/* Someone aboard already has this character. */
+.pod-character:disabled {
+  opacity: 0.35;
+  filter: grayscale(1);
+  cursor: not-allowed;
+}
+.pod-character:disabled:hover {
+  border-color: rgb(255 255 255 / 0.15);
+  background: rgb(255 255 255 / 0.05);
+}
 /* The portraits are 210x300; shown whole, at about half size. */
 .pod-character img {
   display: block;

@@ -103,7 +103,7 @@ const inputKey = (seq: number) => `input:${String(seq).padStart(9, "0")}`;
 
 /** What `join` tells the matchmaker. */
 export type JoinResult =
-  | { ok: true; token: string; aboard: number; closesAt: number | null }
+  | { ok: true; token: string; aboard: number; taken: CharacterId[]; closesAt: number | null }
   /** The rules' error code: `character_taken`, or `ship_closed` once it is full or Mush are chosen. */
   | { ok: false; error: string };
 
@@ -179,7 +179,12 @@ export class GameRoom extends Server<Env> {
       delete this.tokens[token];
       return { ok: false, error };
     }
-    return { ok: true, token, aboard: this.game!.players.length, closesAt: this.closesAt() };
+    return { ok: true, token, aboard: this.game!.players.length, taken: this.game!.players.map((p) => p.character), closesAt: this.closesAt() };
+  }
+
+  /** The characters chosen aboard (public: the picker grays them out). */
+  takenCharacters(): CharacterId[] {
+    return this.game?.players.map((p) => p.character) ?? [];
   }
 
   /** When a ship in pre-selection reaches its deadline cycle (server ms), or null when it isn't taking crew. */

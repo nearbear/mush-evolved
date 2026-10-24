@@ -4,7 +4,7 @@
 // open ship to board each player (`GameRoom.join`) and learns from the answer how full it is and when it stops taking crew.
 
 import { getServerByName, Server, type Connection, type WSMessage } from "partyserver";
-import { LOBBY_LANGUAGES, parseMatchmakerMessage, SEAT_COUNT, type MatchmakerClientMessage, type MatchmakerServerMessage } from "@mush2/shared";
+import { LOBBY_LANGUAGES, type CharacterId, parseMatchmakerMessage, SEAT_COUNT, type MatchmakerClientMessage, type MatchmakerServerMessage } from "@mush2/shared";
 import type { JoinResult } from "./GameRoom.ts";
 import { RateLimiter } from "./rateLimit.ts";
 
@@ -12,6 +12,8 @@ import { RateLimiter } from "./rateLimit.ts";
 interface OpenShip {
   roomId: string;
   aboard: number;
+  /** The characters already chosen aboard, for the picker to gray out. */
+  taken: CharacterId[];
   /** Server ms when it stops taking crew (its deadline cycle begins). */
   closesAt: number;
 }
@@ -29,6 +31,12 @@ export class Matchmaker extends Server<Env> {
 
   override async onStart(): Promise<void> {
     this.open = (await this.ctx.storage.get<OpenShip>("open")) ?? null;
+    // A ship saved before `taken` existed: ask it who is aboard.
+    if (this.open && !this.open.taken) {
+      const room = await getServerByName(this.env.GameRoom, this.open.roomId);
+      this.open = { ...this.open, taken: await room.takenCharacters() };
+      await this.ctx.storage.put("open", this.open);
+    }
   }
 
   override onConnect(connection: Connection): void {
@@ -71,7 +79,7 @@ export class Matchmaker extends Server<Env> {
         await this.setOpen(null);
         continue;
       }
-      await this.setOpen(result.closesAt === null ? null : { roomId, aboard: result.aboard, closesAt: result.closesAt });
+      await this.setOpen(result.closesAt === null ? null : { roomId, aboard: result.aboard, taken: result.taken, closesAt: result.closesAt });
       this.send(connection, { type: "matched", roomId, token: result.token });
       this.broadcastQueue();
       return;
@@ -114,7 +122,7 @@ export class Matchmaker extends Server<Env> {
 
   /** How many are aboard the open ship (0 when the next joiner launches a new one). */
   private queueMessage(): MatchmakerServerMessage {
-    return { type: "queued", waiting: this.openShip()?.aboard ?? 0, seats: SEAT_COUNT };
+    return { type: "queued", waiting: this.openShip()?.aboard ?? 0, seats: SEAT_COUNT, taken: this.openShip()?.taken ?? [] };
   }
 
   private send(connection: Connection, msg: MatchmakerServerMessage): void {

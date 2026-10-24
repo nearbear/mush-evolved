@@ -39,6 +39,21 @@ function useShipCounts(active: boolean): Partial<Record<LobbyLanguage, QueueCoun
   return counts;
 }
 
+/** Characters already chosen aboard the ship's open queue, live, while the picker is showing. */
+function useTakenCharacters(language: LobbyLanguage | undefined, active: boolean): readonly CharacterId[] {
+  const [taken, setTaken] = useState<readonly CharacterId[]>([]);
+  useEffect(() => {
+    if (!active || !language) return;
+    const socket = matchmakerSocket(language);
+    socket.addEventListener("message", (e: MessageEvent<string>) => {
+      const msg = JSON.parse(e.data) as MatchmakerServerMessage;
+      if (msg.type === "queued") setTaken(msg.taken);
+    });
+    return () => socket.close();
+  }, [language, active]);
+  return taken;
+}
+
 /** How long the pod takes to fade to dark before the game takes over; matches `pod-sleep` in lobby.css. */
 const SLEEP_MS = 600;
 
@@ -118,6 +133,7 @@ export function Lobby({ onMatched }: { onMatched: (ticket: SeatTicket) => void }
   }, [name, character, ship, onMatched, t]);
 
   const shipCounts = useShipCounts(webgl && name === null);
+  const taken = useTakenCharacters(ship?.language, name !== null && character === null);
   const step = !webgl ? "noWebgl" : name === null ? "ship" : character === null ? "character" : "waiting";
 
   return (
@@ -162,6 +178,7 @@ export function Lobby({ onMatched }: { onMatched: (ticket: SeatTicket) => void }
                     <li key={c.id}>
                       <button type="button"
                         className="pod-character"
+                        disabled={taken.includes(c.id)}
                         onClick={() => {
                           setError("");
                           setCharacter(c.id);
