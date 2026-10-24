@@ -99,9 +99,10 @@ export interface GameConfig {
   punch: {
     cost: { ap: number }; // Issue 29.
     effect: {
-      damage: number; // HP a landing punch removes (placeholder until combat is designed).
+      damage: [number, number]; // Inclusive HP range a landing punch removes, rolled uniformly (owner, 2026-10-24, eMushpedia "Mains nues": 1 to 2).
       sturdyBonusDamage: number; // Extra punch damage from the sturdy skill (confirmed 2026-10-16).
     };
+    crit: { chance: number; damage: [number, number] }; // A landing punch is critical with this chance and then rolls this range instead (owner, 2026-10-24, eMushpedia: 5 of 25 hit weight, 2 to 3; the wiki's broken-nose injury waits for #238).
     successChance: number; // Chance a punch lands, 0 to 1 (confirmed 2026-10-15: it misses 40% of the time).
     dirtyChance: number; // Chance of getting the dirty status after punching (confirmed 2026-10-13).
   };

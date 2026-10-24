@@ -613,6 +613,7 @@
     "healed": "{{name}} healed {{target}}.",
     "healedSelf": "{{name}} healed themself.",
     "punched": "{{name}} punched {{target}}.",
+    "punchCrit": "{{name}} landed a magnificent punch on {{target}}.",
     "anathema": "{{name}} cast the anathema on {{target}}.",
     "fierySpeech": "{{name}} gave a fiery speech.",
     "boringSpeech": "{{name}} gave a boring speech.",

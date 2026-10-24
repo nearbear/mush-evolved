@@ -9,7 +9,7 @@ import type { Action, GameConfig, GameState, PlayerId } from "../src/types.ts";
 import { makeSeats, player, must } from "./support.ts";
 
 const seats = makeSeats(3);
-const base: GameConfig = { ...DEFAULT_CONFIG, manualCycles: true, mushCount: 1, startInventory: [], startItems: [], startSkills: [], punch: { ...DEFAULT_CONFIG.punch, successChance: 1 } };
+const base: GameConfig = { ...DEFAULT_CONFIG, manualCycles: true, mushCount: 1, startInventory: [], startItems: [], startSkills: [], punch: { ...DEFAULT_CONFIG.punch, successChance: 1, effect: { ...DEFAULT_CONFIG.punch.effect, damage: [2, 2] }, crit: { ...DEFAULT_CONFIG.punch.crit, chance: 0 } } };
 const D = base.action.durationMs;
 const punch = (target: PlayerId): Action => ({ type: "punch", target });
 const bond = (target: PlayerId): Action => ({ type: "bond", target });
@@ -39,7 +39,7 @@ describe("timed actions", () => {
     player(s, "p0").cheats = ["instantActions"];
     const done = must(queueAction(s, "p0", punch("p1"), 1000));
     expect(player(done, "p0").current).toBeNull();
-    expect(hp(done, "p1")).toBe(base.startHp - base.punch.effect.damage);
+    expect(hp(done, "p1")).toBe(base.startHp - 2);
   });
 
   it("an action starts a bar and happens, and is paid for, only when the bar runs out", () => {
@@ -50,7 +50,7 @@ describe("timed actions", () => {
 
     expect(tick(started, 1000 + D - 1).ok).toBe(false);
     const done = must(tick(started, 1000 + D));
-    expect(hp(done, "p1")).toBe(base.startHp - base.punch.effect.damage);
+    expect(hp(done, "p1")).toBe(base.startHp - 2);
     expect(player(done, "p0").ap).toBe(base.startAp - base.punch.cost.ap);
     expect(player(done, "p0").current).toBeNull();
     expect(nextDue(done)).toBeNull();
@@ -67,7 +67,7 @@ describe("timed actions", () => {
     expect(player(s, "p0").queue).toEqual([queued(bond("p1"))]);
     s = must(tick(s, 2 * D));
     s = must(tick(s, 3 * D));
-    expect(hp(s, "p1")).toBe(base.startHp - 2 * base.punch.effect.damage);
+    expect(hp(s, "p1")).toBe(base.startHp - 2 * 2);
     expect(s.bonds.p0).toEqual(["p1"]);
     expect(player(s, "p0").current).toBeNull();
   });
@@ -117,7 +117,7 @@ describe("timed actions", () => {
     s = must(queueAction(s, "p0", { type: "ready" }, 0));
     expect(queueAction(s, "p0", punch("p1"), 0).ok).toBe(false);
     s = must(tick(s, D));
-    expect(hp(s, "p1")).toBe(base.startHp - base.punch.effect.damage);
+    expect(hp(s, "p1")).toBe(base.startHp - 2);
   });
 
   it("an action under way carries over into the next cycle", () => {
@@ -125,14 +125,14 @@ describe("timed actions", () => {
     for (const id of ["p0", "p1", "p2"]) s = must(queueAction(s, id, { type: "ready" }, 0));
     expect(s.cycle).toBe(2);
     s = must(tick(s, D));
-    expect(hp(s, "p1")).toBe(base.startHp - base.punch.effect.damage);
+    expect(hp(s, "p1")).toBe(base.startHp - 2);
   });
 
   it("dying ends your bar and empties your queue", () => {
     let s = must(queueAction(ship(), "p1", punch("p0"), 0));
     s = must(queueAction(s, "p1", punch("p0"), 0));
     s = must(queueAction(s, "p0", punch("p1"), 0));
-    player(s, "p1").hp = base.punch.effect.damage;
+    player(s, "p1").hp = 2;
     // p0's punch is due first and kills p1, whose own punch is due at the same moment.
     player(s, "p1").current!.until = D + 1;
     s = must(tick(s, D + 1));
@@ -144,7 +144,7 @@ describe("timed actions", () => {
   it("settles bars that end together in seat order", () => {
     let s = must(queueAction(ship(), "p1", punch("p0"), 0));
     s = must(queueAction(s, "p0", punch("p1"), 0));
-    player(s, "p0").hp = player(s, "p1").hp = base.punch.effect.damage;
+    player(s, "p0").hp = player(s, "p1").hp = 2;
     s = must(tick(s, D));
     expect([player(s, "p0").alive, player(s, "p1").alive]).toEqual([true, false]);
   });
@@ -164,11 +164,11 @@ describe("timed actions", () => {
 
     it("the action happens at once and the bar is a cooldown before the next", () => {
       let s = must(queueAction(ship(start), "p0", punch("p1"), 0));
-      expect(hp(s, "p1")).toBe(base.startHp - base.punch.effect.damage);
+      expect(hp(s, "p1")).toBe(base.startHp - 2);
       s = must(queueAction(s, "p0", punch("p1"), 0));
-      expect(hp(s, "p1")).toBe(base.startHp - base.punch.effect.damage);
+      expect(hp(s, "p1")).toBe(base.startHp - 2);
       s = must(tick(s, D));
-      expect(hp(s, "p1")).toBe(base.startHp - 2 * base.punch.effect.damage);
+      expect(hp(s, "p1")).toBe(base.startHp - 2 * 2);
       expect(player(s, "p0").current?.until).toBe(2 * D);
     });
 
@@ -184,7 +184,7 @@ describe("timed actions", () => {
   it("goes through applyInput with the server's time, and parses clearQueue from the wire", () => {
     let s = must(applyInput(ship(), { type: "action", action: punch("p1"), by: "p0", at: 5 }));
     s = must(applyInput(s, { type: "tick", at: 5 + D }));
-    expect(hp(s, "p1")).toBe(base.startHp - base.punch.effect.damage);
+    expect(hp(s, "p1")).toBe(base.startHp - 2);
     expect(parseGameMessage(JSON.stringify({ type: "clearQueue", extra: 1 }))).toEqual({ type: "clearQueue" });
   });
 });

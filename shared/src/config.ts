@@ -76,9 +76,9 @@ export const DEFAULT_CONFIG: GameConfig = {
     rooms: ["SICK_BAY"],
     dirtyChance: 0.05,
   },
-  // Confirmed 2026-10-15: punch costs 1 AP, 2 damage, misses 40% of the time.
+  // Confirmed 2026-10-15: punch costs 1 AP, misses 40% of the time. Owner, 2026-10-24: damage is a uniform 1 to 2 (the wiki).
   // Confirmed 2026-10-16: the sturdy (Solid) skill adds 1 to punch damage.
-  punch: { cost: { ap: 1 }, effect: { damage: 2, sturdyBonusDamage: 1 }, successChance: 0.6, dirtyChance: 0.25 },
+  punch: { cost: { ap: 1 }, effect: { damage: [1, 2], sturdyBonusDamage: 1 }, crit: { chance: 0.2, damage: [2, 3] }, successChance: 0.6, dirtyChance: 0.25 },
   // Owner, 2026-10-18: Ian's Pacifist makes aggressive actions in his room cost 2 more AP, his own included.
   pacifist: { aggressiveApSurcharge: 2 },
   // Owner, 2026-10-22 (docs/scratchpad/botany-plan.md, Pass 1): water 1 AP, treat 2, sow 2, the original's 15% dirt.

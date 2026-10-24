@@ -66,7 +66,7 @@ describe("heavy items", () => {
 
 describe("sturdy punch", () => {
   const hp = (skills: string[]) => {
-    const s = createGame(seats, base, 3);
+    const s = createGame(seats, { ...base, punch: { ...base.punch, successChance: 1, effect: { ...base.punch.effect, damage: [2, 2] }, crit: { ...base.punch.crit, chance: 0 } } }, 3);
     player(s, "p0").room = player(s, "p1").room = "SICK_BAY";
     player(s, "p0").skills = skills;
     const r = applyAction(s, "p0", { type: "punch", target: "p1" });

@@ -616,6 +616,7 @@
     "healed": "{{name}} a soigné {{target}}.",
     "healedSelf": "{{name}} s'est soigné(e).",
     "punched": "{{name}} a frappé {{target}}.",
+    "punchCrit": "{{name}} a placé un magistral uppercut à {{target}}.",
     "anathema": "{{name}} a jeté l'anathème sur {{target}}.",
     "fierySpeech": "{{name}} a prononcé un discours enflammé.",
     "boringSpeech": "{{name}} a prononcé un discours barbant.",

@@ -45,7 +45,7 @@ Other packages import from `@mush2/shared` (`shared/src/index.ts`, the barrel). 
 **Types, config, and data**
 
 - `types.ts`: the small shared vocabulary; re-exports `types/`.
-- `types/config.ts`: `GameConfig`, `MovementRules`, `Equipment`. Tuning is nested by feature (`config.punch.cost.ap`, `config.punch.effect.damage`).
+- `types/config.ts`: `GameConfig`, `MovementRules`, `Equipment`. Tuning is nested by feature (`config.punch.cost.ap`, `config.punch.effect.damage`, a [min, max] range).
 - `types/player.ts`: `PlayerState`, `ResourceId`.
 - `types/chat.ts`: channel and message types.
 - `types/state.ts`: `GameState` (server-only).

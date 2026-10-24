@@ -1202,3 +1202,9 @@ Owner asked for those three skills and the Conceptor-to-Designer rename, after a
 - **Built:** `shared/src/preselection.ts` (`joinShip` as a recorded `join` input, `selectMush`, deadline check in `advanceCycle`); combat and spore actions refuse during pre-selection; titles and the first rebel call move to selection. `GameRoom.join` RPC launches the ship on first join; the matchmaker became a pointer at the open ship (serialized joins, deadline alarm) instead of a queue with a bot-fill timer.
 - **What worked:** asking the four open questions up front (deadline, too few players, reveal, dev behavior) before writing code. The owner's answer to "too few players" was a fifth option, not one offered. Keeping `GameRoom.setup` beside the new `join` left the existing 50-odd room tests untouched.
 - **Needed correction:** first draft used the `title` attribute for the tag's explanation (forbidden by `web/CLAUDE.md`); replaced with a Base UI Popover. A reason-code constant first collided with the config export of the same name. The i18n ratchet flagged a camelCase error literal in the server; switched to passing the rules' own error codes through.
+
+## 2026-10-24: closing the combat design (#31)
+
+- Asked to check the wiki for punch damage, Claude read eMushpedia ("Mains nues", "Couteau", "Armes") instead of guessing. The pages disagree (1-2 on the item page, 1-3 on the overview), so Claude showed both with the weights and asked; the owner picked a uniform 1-2.
+- Claude first said "dropping the knife" without saying it meant a ~3% knife-miss outcome; the owner had to ask. Explain unfamiliar rule terms on first use.
+- Claude's proposed "separate critical roll" was deferred by the owner into a Private beta story (#238), and the owner clarified that the wiki's "injury" chances are 2 HP damage chances, not status effects. Another session had uncommitted edits in the tree, so only the files for this change were touched.

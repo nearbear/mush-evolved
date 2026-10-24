@@ -2,13 +2,14 @@ import { Action, IN_PRESELECTION, peopleHere, type ActionTag } from "./action.ts
 import { damage } from "../death.ts";
 import { logPublic } from "../log.ts";
 import { punchDamage } from "../modifiers.ts";
+import { nextFloat, nextInt } from "../rng.ts";
 import type { GameState, PlayerState } from "../types.ts";
 
 export type PunchActionData = { type: "punch"; target: string };
 
 /**
  * Punch (issue 29, confirmed 2026-10-15): 1 AP, a living person in your room (never yourself), misses
- * `punchMissOdds` of the time. A hit removes `punchDamage` HP (0 HP kills; see death.ts). Both outcomes
+ * `punchMissOdds` of the time. A hit removes a uniform roll in `punch.effect.damage` (1 to 2), or in `punch.crit.damage` (2 to 3) with `punch.crit.chance`, folded through `punchDamage`, in HP (0 HP kills; see death.ts). Both outcomes
  * are public room history.
  */
 export class PunchAction extends Action<PunchActionData> {
@@ -38,8 +39,14 @@ export class PunchAction extends Action<PunchActionData> {
 
   override apply(state: GameState, player: PlayerState, target: PunchActionData): void {
     const victim = state.players.find((o) => o.id === target.target)!; // checked, so it exists
-    logPublic(state, player.room, "punched", { name: player.character, target: victim.character });
-    damage(state, victim, punchDamage(state, player));
+    const [critRoll, rng1] = nextFloat(state.rng);
+    state.rng = rng1;
+    const crit = critRoll < state.config.punch.crit.chance;
+    const [min, max] = crit ? state.config.punch.crit.damage : state.config.punch.effect.damage;
+    const [n, rng2] = nextInt(state.rng, max - min + 1);
+    state.rng = rng2;
+    logPublic(state, player.room, crit ? "punchCrit" : "punched", { name: player.character, target: victim.character });
+    damage(state, victim, punchDamage(state, player, min + n));
   }
 
   override fail(state: GameState, player: PlayerState, target: PunchActionData): void {

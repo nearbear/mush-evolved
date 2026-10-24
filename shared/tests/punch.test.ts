@@ -19,15 +19,49 @@ function ship(config: GameConfig = base, seed = 3): GameState {
 }
 
 describe("punch", () => {
-  it("defaults to 1 AP, 2 damage and a 40% miss chance", () => {
-    expect([base.punch.cost.ap, base.punch.effect.damage, base.punch.successChance]).toEqual([1, 2, 0.6]);
+  it("defaults to 1 AP, 1 to 2 damage and a 40% miss chance", () => {
+    expect([base.punch.cost.ap, base.punch.effect.damage, base.punch.successChance]).toEqual([1, [1, 2], 0.6]);
+    expect(base.punch.crit).toEqual({ chance: 0.2, damage: [2, 3] });
   });
 
-  it("a hit costs 1 AP, deals 2 damage and is public", () => {
-    const s = ship({ ...base, punch: { ...base.punch, successChance: 1 } });
+  it("a plain hit deals 1 or 2 damage", () => {
+    const dealt = new Set<number>();
+    for (let seed = 1; seed <= 40; seed++) {
+      const r = applyAction(ship({ ...base, punch: { ...base.punch, successChance: 1, crit: { chance: 0, damage: [2, 3] } } }, seed), "p0", punch("p1"));
+      if (!r.ok) throw new Error(r.error);
+      dealt.add(base.startHp - player(r.state, "p1").hp);
+    }
+    expect([...dealt].sort()).toEqual([1, 2]);
+  });
+
+  it("a critical hit deals 2 or 3 damage and logs punchCrit instead of punched", () => {
+    const dealt = new Set<number>();
+    for (let seed = 1; seed <= 40; seed++) {
+      const r = applyAction(ship({ ...base, punch: { ...base.punch, successChance: 1, crit: { chance: 1, damage: [2, 3] } } }, seed), "p0", punch("p1"));
+      if (!r.ok) throw new Error(r.error);
+      dealt.add(base.startHp - player(r.state, "p1").hp);
+      const keys = viewFor(r.state, "p1").log.map((e) => e.key);
+      expect(keys).toContain("punchCrit");
+      expect(keys).not.toContain("punched");
+    }
+    expect([...dealt].sort()).toEqual([2, 3]);
+  });
+
+  it("about 20% of hits are critical", () => {
+    let crits = 0;
+    for (let seed = 1; seed <= 300; seed++) {
+      const r = applyAction(ship({ ...base, punch: { ...base.punch, successChance: 1 } }, seed), "p0", punch("p1"));
+      if (r.ok && viewFor(r.state, "p1").log.some((e) => e.key === "punchCrit")) crits++;
+    }
+    expect(crits / 300).toBeGreaterThan(0.13);
+    expect(crits / 300).toBeLessThan(0.27);
+  });
+
+  it("a hit costs 1 AP and is public", () => {
+    const s = ship({ ...base, punch: { ...base.punch, successChance: 1, crit: { chance: 0, damage: [2, 3] } } });
     const r = applyAction(s, "p0", punch("p1"));
     if (!r.ok) throw new Error(r.error);
-    expect(player(r.state, "p1").hp).toBe(base.startHp - base.punch.effect.damage);
+    expect(player(r.state, "p1").hp).toBeLessThan(base.startHp);
     expect(player(r.state, "p0").ap).toBe(base.startAp - base.punch.cost.ap);
     expect(viewFor(r.state, "p1").log.some((e) => e.key === "punched")).toBe(true);
   });

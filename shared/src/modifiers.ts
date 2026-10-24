@@ -299,9 +299,9 @@ export const pilgredPointsGain = (state: Readonly<GameState>, player: Readonly<P
 export const gardenPointsGain = (state: Readonly<GameState>, player: Readonly<PlayerState>, registry: ModifierRegistry = MODIFIERS) =>
   fold("gardenPointsPerDay", 0, state, player, registry);
 
-/** HP a punch removes: the configured damage folded through the puncher's modifiers. */
-export const punchDamage = (state: Readonly<GameState>, player: Readonly<PlayerState>, registry: ModifierRegistry = MODIFIERS) =>
-  fold("punchDamage", state.config.punch.effect.damage, state, player, registry);
+/** HP a punch removes: the rolled base damage folded through the puncher's modifiers. */
+export const punchDamage = (state: Readonly<GameState>, player: Readonly<PlayerState>, base: number, registry: ModifierRegistry = MODIFIERS) =>
+  fold("punchDamage", base, state, player, registry);
 
 /** Runs every onShower hook of the player's modifiers. Mutates a state the caller already cloned. */
 export function showered(next: GameState, player: PlayerState, registry: ModifierRegistry = MODIFIERS): void {
