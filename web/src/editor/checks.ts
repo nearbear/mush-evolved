@@ -57,6 +57,9 @@ export const KNOWN_WALL_ENDS: Readonly<Record<string, string>> = {
   "CORRIDOR_B -2,28": "the sick bay's wall closes it; a gap from the centre corridor at fog depth 1 (to fix)",
 };
 
+/** Whether the editor lists loose wall ends. Off since 2026-10-24: the list was noisy. wallEnds and its test still run. */
+export const WALL_CHECKS = false;
+
 export interface Overlap {
   /** The room whose floor is covered, and the room covering it. */
   rooms: [string, string];
@@ -364,9 +367,9 @@ export function problems(ship: ShipLayout): Problem[] {
     });
   }
 
-  // Wall ends, one problem per end, from however many views it shows in.
+  // Wall ends, one problem per end, from however many views it shows in. Off for now (WALL_CHECKS).
   const ends = new Map<string, WallEnd[]>();
-  for (const w of wallEnds(ship)) {
+  for (const w of WALL_CHECKS ? wallEnds(ship) : []) {
     const k = `${w.room} ${w.end[0]},${w.end[1]}`;
     ends.set(k, [...(ends.get(k) ?? []), w]);
   }
