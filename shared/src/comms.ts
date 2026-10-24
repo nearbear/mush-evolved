@@ -202,18 +202,23 @@ export function applyXyloph(state: GameState, entry: XylophEntryId): void {
   const { xyloph } = state.config.comms;
   switch (entry) {
     case "SNOW_CRASH":
-      return loseLink(state);
+      loseLink(state);
+      return;
     case "WIREFLESS_INFIDELITY":
-      return loseLink(state, xyloph.qualityLoss);
+      loseLink(state, xyloph.qualityLoss);
+      return;
     case "MUSH_GENOME_DATA":
-      return dropItem(state, { type: GENOME_DISK_ITEM });
+      dropItem(state, { type: GENOME_DISK_ITEM });
+      return;
     case "NILS_CARLSSON_CONTACT":
-      return dropItem(state, { type: MUSH_SAMPLE_ITEM });
+      dropItem(state, { type: MUSH_SAMPLE_ITEM });
+      return;
     case "NERON_BOOST":
       advanceNeron(state, xyloph.neronBoostPercent);
       return;
     case "COOK_BIBLE":
-      return dropItem(state, { type: BOOK_ITEM, teaches: "cook" });
+      dropItem(state, { type: BOOK_ITEM, teaches: "cook" });
+      return;
     case "SCHOOL_MANUALS":
       for (let i = 0; i < xyloph.schoolBooks; i++) dropItem(state, { type: BOOK_ITEM, teaches: randomOf(state, SKILLS) });
       return;

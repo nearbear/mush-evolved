@@ -31,9 +31,10 @@ function useChips(view: PlayerView): Chip[] {
  * desktop card: the resources one above the other, and the popover also opens on hover (it still opens on tap).
  */
 export function CompactResourceChips({ view, stacked = false }: { view: PlayerView; stacked?: boolean }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const chips = useChips(view);
   const shown = chips.slice(0, COMPACT_COUNT);
+  const list = new Intl.ListFormat(i18n.language, { type: "unit" }).format(shown.map((c) => t("resources.amount", { name: c.name, count: c.count })));
   return (
     <Popover.Root>
       <Popover.Trigger
@@ -42,7 +43,7 @@ export function CompactResourceChips({ view, stacked = false }: { view: PlayerVi
         nativeButton={false}
         render={<span role="button" tabIndex={0} />}
         className={stacked ? "resource-stack" : "stat-chip resource-chip"}
-        aria-label={`${t("resources.other")}: ${shown.map((c) => `${c.name} ${c.count}`).join(", ")}`}
+        aria-label={t("resources.otherSummary", { list })}
       >
         {shown.map((chip) => (
           <span key={chip.key} className="resource-chip-part">

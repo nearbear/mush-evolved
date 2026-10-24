@@ -108,7 +108,7 @@ export function PipBar({
         ))}
         <g transform={`translate(${CAP_START + slots * pitch} 0)`} dangerouslySetInnerHTML={{ __html: capEnd }} />
         {/* A nested svg clips its children; its width wipes the filled pips in or out from the right. */}
-        <svg x={0} y={0} width={clip} height={FRAME_H} overflow="hidden">
+        <svg x={0} y={0} width={clip} height={FRAME_H} overflow="hidden" aria-hidden="true">
           {Array.from({ length: drawn }, (_, i) => (
             <image key={i} href={pip} x={CAP_START + i * pitch + 1} y={3} width={pipW} height={5} />
           ))}

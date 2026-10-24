@@ -309,7 +309,9 @@ function spreadAmbient(placed: readonly PlacedSprite[], { layout, room, looks }:
     if (n) byLength.set(n, [...(byLength.get(n) ?? []), s.key]);
   }
   const starts = new Map<string, number>();
-  for (const [n, keys] of byLength) keys.forEach((key, i) => starts.set(key, Math.floor((i * n) / keys.length)));
+  for (const [n, keys] of byLength) {
+    for (const [i, key] of keys.entries()) starts.set(key, Math.floor((i * n) / keys.length));
+  }
   return starts;
 }
 

@@ -135,6 +135,8 @@
   },
   "resources": {
     "other": "Autres ressources",
+    "otherSummary": "Autres ressources : {{list}}",
+    "amount": "{{name}} {{count}}",
     "spores": "Spores",
     "eng": {
       "name": "Points d'Ingénierie",
