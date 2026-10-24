@@ -20,8 +20,9 @@ import {
   type PlayerId,
   type Seat,
 } from "@mush2/shared";
-import { LogParrotBot, WanderBot, type Bot } from "./bots.ts";
+import { LogParrotBot, ModelBot, WanderBot, type Bot } from "./bots.ts";
 import { clockCycle, clockCycleStart, cycleMs, cycleOfDay } from "./cycleClock.ts";
+import { devModelCredentials, ModelGate } from "./model.ts";
 import { RateLimiter } from "./rateLimit.ts";
 
 /** Error code (not text) for a cheat input on a server that doesn't allow them. */
@@ -44,6 +45,14 @@ function stamp(state: GameState): GameState {
 const BOT_DELAY_MS = 50;
 
 /**
+ * Model bots' limits per game (ModelGate). The budget is a backstop against a runaway bug, set high enough not to
+ * bind in a normal game; a player will choose their own once they bring their own key.
+ */
+const MODEL_CALL_BUDGET = 3000;
+const MODEL_MAX_IN_FLIGHT = 2;
+const MODEL_TIMEOUT_MS = 20_000;
+
+/**
  * Bump when GameState's shape changes. Games stored under another version are
  * discarded on load (there is no migration; games are short-lived).
  */
@@ -60,6 +69,8 @@ interface Stored {
   rateLimited: Record<PlayerId, number>;
   /** The clock cycle (cycleClock.ts) the game is in. Each boundary past it becomes a `cycle` input. */
   clockCycle: number;
+  /** Model calls made so far (ModelGate.used), so a restart doesn't refill the budget. Missing on older games. */
+  modelCalls?: number;
 }
 
 // The game's record, beside the snapshot in this room's storage:
@@ -99,6 +110,10 @@ export class GameRoom extends Server<Env> {
   private blocked = 0;
   private bots = new Map<PlayerId, Bot>();
   private pendingBots = new Set<PlayerId>();
+  /** Made by `initBots` when the game has a model bot. */
+  private modelGate: ModelGate | null = null;
+  /** Restored from storage before `initBots` makes the gate. */
+  private modelCalls = 0;
   private limiter = new RateLimiter(10, 1000);
   /** Per seat, not per connection, so reconnecting doesn't reset it. */
   private chatLimiter = new RateLimiter(5, 10_000);
@@ -120,6 +135,7 @@ export class GameRoom extends Server<Env> {
     this.inputs = stored.inputs;
     this.rateLimited = stored.rateLimited;
     this.clockCycle = stored.clockCycle;
+    this.modelCalls = stored.modelCalls ?? 0;
     this.blocked = (await this.ctx.storage.list({ prefix: "blocked:" })).size;
     this.initBots();
     this.scheduleBots();
@@ -310,11 +326,23 @@ export class GameRoom extends Server<Env> {
   private initBots(): void {
     for (const p of this.game?.players ?? []) {
       if (!p.isBot || this.bots.has(p.id)) continue;
+      const seed = (): number => crypto.getRandomValues(new Uint32Array(1))[0]!;
       this.bots.set(
         p.id,
-        p.botKind === "wander" ? new WanderBot(crypto.getRandomValues(new Uint32Array(1))[0]!) : new LogParrotBot(),
+        p.botKind === "wander" ? new WanderBot(seed()) : p.botKind === "model" ? new ModelBot(this.gate(), new WanderBot(seed())) : new LogParrotBot(),
       );
     }
+  }
+
+  /** The game's one model gate. No credentials (a deployment has none of its own) and model bots play scripted. */
+  private gate(): ModelGate {
+    this.modelGate ??= new ModelGate(devModelCredentials(this.env), {
+      budget: MODEL_CALL_BUDGET,
+      maxInFlight: MODEL_MAX_IN_FLIGHT,
+      timeoutMs: MODEL_TIMEOUT_MS,
+      used: this.modelCalls,
+    });
+    return this.modelGate;
   }
 
   /** Post the lines a bot wants to say in global chat, as that bot. */
@@ -334,14 +362,25 @@ export class GameRoom extends Server<Env> {
       if (!this.botIdle(playerId) && !bot.chatLines) continue;
       this.pendingBots.add(playerId);
       setTimeout(async () => {
-        this.pendingBots.delete(playerId);
-        if (!this.game) return;
-        await this.botChat(playerId, bot);
-        if (!this.game || !this.botIdle(playerId)) return;
-        const action = await bot.decideAction(viewFor(this.game, playerId));
-        if (!action) return;
-        const error = await this.act({ type: "action", action, by: playerId, at: Date.now() });
-        if (error) console.warn(`Bot ${playerId} chose an illegal action: ${error}`);
+        // Still pending while it decides: a model call takes seconds, and the bot must not be asked twice meanwhile.
+        const inputs = this.inputs;
+        try {
+          if (!this.game) return;
+          await this.botChat(playerId, bot);
+          if (!this.game || !this.botIdle(playerId)) return;
+          const action = await bot.decideAction(viewFor(this.game, playerId));
+          // The game may have moved on during a slow decision; the rules reject a choice that is no longer legal.
+          if (!action) return;
+          const error = await this.act({ type: "action", action, by: playerId, at: Date.now() });
+          if (error) console.warn(`Bot ${playerId} chose an illegal action: ${error}`);
+        } catch (e) {
+          // A throwing bot must not take the room down (#114); it is asked again after the next change.
+          console.warn(`Bot ${playerId} failed: ${e instanceof Error ? e.message : typeof e}`);
+        } finally {
+          this.pendingBots.delete(playerId);
+          // What it did (or anything else accepted meanwhile) rescheduled the others but skipped it, being pending.
+          if (this.inputs !== inputs) this.scheduleBots();
+        }
       }, BOT_DELAY_MS);
     }
   }
@@ -356,6 +395,7 @@ export class GameRoom extends Server<Env> {
       inputs: this.inputs,
       rateLimited: this.rateLimited,
       clockCycle: this.clockCycle,
+      modelCalls: this.modelGate?.used ?? this.modelCalls,
     };
     await this.ctx.storage.put({ ...entries, game: stored });
   }

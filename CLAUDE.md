@@ -117,6 +117,6 @@ Not rules, but still open:
 
 - Game name.
 - Which stage single player (the only mode with bots) belongs in.
-- Which hosted model API to use for single-player bots.
+- Single-player model bots: no hosted default in the MVP (decided 2026-10-23, the owner won't pay for unlimited use); players will bring their own key, with a provider allowlist and an opt-in "remember the key" (planned, not built). Which providers go on the allowlist is open. `ModelBot` and `ModelGate` exist, running on a dev key only.
 - Hosting and deployment details.
 - Internationalization (en/fr/es): the seam is in, the comprehensive pass is not.

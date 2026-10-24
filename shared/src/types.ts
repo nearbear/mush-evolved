@@ -13,7 +13,7 @@ export type RoomId = string;
 export type Role = "human" | "mush";
 
 /** Which scripted brain drives a bot seat. Absent means "logParrot". */
-export type BotKind = "wander" | "logParrot";
+export type BotKind = "wander" | "logParrot" | "model";
 
 export interface Seat {
   id: PlayerId;

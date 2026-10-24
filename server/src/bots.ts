@@ -1,7 +1,9 @@
 // Bots live server-side: model-backed ones need network calls, secrets, and a
 // spend cap, none of which belong in the pure rules package.
 
-import { legalIn, MAX_CHAT_LENGTH, nextInt, type Action, type LogEntry, type PlayerView, type RngState } from "@mush2/shared";
+import { legalIn, nextInt, type Action, type PlayerView, type RngState } from "@mush2/shared";
+import { buildPrompt, choices, describeLogEntry, parseChoice } from "./prompt.ts";
+import type { ModelGate } from "./model.ts";
 
 /**
  * Every bot (scripted or model-backed) implements this. A bot only ever
@@ -41,11 +43,42 @@ export class WanderBot implements Bot {
   }
 }
 
-/** A log entry as plain text: the server has no locale catalogs, so this is the message id plus its data. */
-export function describeLogEntry(e: LogEntry): string {
-  const params = Object.entries(e.params ?? {}).map(([k, v]) => `${k}=${v}`);
-  const text = `[cycle ${e.cycle}${e.room ? `, ${e.room}` : ""}] ${e.key}${params.length ? ` (${params.join(", ")})` : ""}`;
-  return text.length > MAX_CHAT_LENGTH ? `${text.slice(0, MAX_CHAT_LENGTH - 1)}…` : text;
+/**
+ * Model calls a bot may spend on free actions (no AP or MP) in one cycle. Points already limit paid actions, so free
+ * ones are the only way a confused model can loop; past this, the scripted fallback plays the rest of the cycle.
+ */
+export const MODEL_FREE_ACTIONS_PER_CYCLE = 8;
+
+/**
+ * Asks a model to choose from its own view's affordable actions. Its reply is untrusted: anything but a valid choice,
+ * or no model at all (no key, over budget, failed call), and the scripted fallback decides instead.
+ */
+export class ModelBot implements Bot {
+  private cycle = -1;
+  private free = 0;
+
+  constructor(
+    private gate: ModelGate,
+    private fallback: Bot,
+  ) {}
+
+  async decideAction(view: PlayerView): Promise<Action | null> {
+    if (view.cycle !== this.cycle) {
+      this.cycle = view.cycle;
+      this.free = 0;
+    }
+    const options = choices(view);
+    if (options.length === 0) return null;
+    // Nothing to choose between: don't spend a call on it.
+    if (options.length === 1) return options[0]!.action;
+    if (this.free >= MODEL_FREE_ACTIONS_PER_CYCLE) return this.fallback.decideAction(view);
+    const reply = await this.gate.ask(buildPrompt(view));
+    const i = reply === null ? null : parseChoice(reply, options.length);
+    if (i === null) return this.fallback.decideAction(view);
+    const chosen = options[i]!;
+    if (chosen.cost.ap === 0 && chosen.cost.mp === 0 && chosen.action.type !== "ready") this.free++;
+    return chosen.action;
+  }
 }
 
 /** Test tool: never moves, and repeats every private log entry it receives in global chat. */

@@ -80,10 +80,12 @@ export class Matchmaker extends Server<Env> {
     });
     // Dev servers (cheats allowed) seat every character, so the whole cast can be looked at. Not for production.
     const seatCount = this.env.ALLOW_CHEATS === "true" ? CHARACTERS.length : SEAT_COUNT;
+    // Dev servers may seat model bots (MODEL_BOTS, with a key in server/.dev.vars); a deployment never does.
+    const modelBots = this.env.ALLOW_CHEATS === "true" ? Math.max(0, Math.floor(Number(this.env.MODEL_BOTS)) || 0) : 0;
     for (let i = humans.length; i < seatCount; i++) {
       // Bots are always labeled as AI to players.
-      // Every bot is a log parrot for now; "wander" bots are still supported but not selected anywhere yet.
-      const botKind = "logParrot";
+      // Other bots are log parrots; "wander" bots are still supported but not selected anywhere yet.
+      const botKind = i - humans.length < modelBots ? "model" : "logParrot";
       // i18n-ignore: a player name; the client marks bots as AI from isBot
       seats.push({ id: `p${i}`, name: `Bot ${i - humans.length + 1} (AI)`, isBot: true, botKind, character: botCharacters[i - humans.length]! });
     }

@@ -329,6 +329,69 @@ describe("GameRoom bots", () => {
     expect(lastView(human).players.filter((p) => p.isBot)).toHaveLength(7);
     vi.useRealTimers();
   });
+
+  describe("model bots", () => {
+    const MODEL = { MODEL_BASE_URL: "https://example.test/v1", MODEL_NAME: "m", MODEL_API_KEY: "dev-key" };
+    /** One human, then three model bots (p1..p3); the rest are log parrots. */
+    async function modelRoom(env: Record<string, string>) {
+      const storage = new FakeStorage();
+      const room = asRoom(storage, env);
+      const s = seats(1).map((seat, i) => (i >= 1 && i <= 3 ? { ...seat, botKind: "model" as const } : seat));
+      await room.setup(s, tokensFor(1));
+      return { room, storage };
+    }
+    const reply = () => new Response(JSON.stringify({ choices: [{ message: { content: "ACTION: 1" } }] }));
+
+    it("ask the dev model, play its choices, and keep count of the calls", async () => {
+      const fetch = vi.fn(async () => reply());
+      vi.stubGlobal("fetch", fetch);
+      const { storage } = await modelRoom({ ...CHEATS, ...MODEL });
+      await vi.advanceTimersByTimeAsync(1600);
+      expect(fetch).toHaveBeenCalled();
+      const [url, init] = fetch.mock.calls[0] as unknown as [string, RequestInit];
+      expect(url).toBe("https://example.test/v1/chat/completions");
+      expect((init.headers as Record<string, string>).authorization).toBe("Bearer dev-key");
+      const inputs = [...storage.data].filter(([k]) => k.startsWith("input:")).map(([, v]) => v as { input: { by: string } });
+      expect(inputs.some((i) => ["p1", "p2", "p3"].includes(i.input.by))).toBe(true);
+      expect((storage.data.get("game") as { modelCalls: number }).modelCalls).toBe(fetch.mock.calls.length);
+      vi.unstubAllGlobals();
+      vi.useRealTimers();
+    });
+
+    it("never use model credentials where cheats aren't allowed (there is no hosted default)", async () => {
+      const fetch = vi.fn(async () => reply());
+      vi.stubGlobal("fetch", fetch);
+      await modelRoom(MODEL);
+      await vi.advanceTimersByTimeAsync(1600);
+      expect(fetch).not.toHaveBeenCalled();
+      vi.unstubAllGlobals();
+      vi.useRealTimers();
+    });
+
+    it("aren't asked again while a decision is still waiting on the model", async () => {
+      const fetch = vi.fn(() => new Promise<Response>(() => {}));
+      vi.stubGlobal("fetch", fetch);
+      const storage = new FakeStorage();
+      const room = asRoom(storage, { ...CHEATS, ...MODEL });
+      await room.setup(seats(1).map((seat, i) => (i === 1 ? { ...seat, botKind: "model" as const } : seat)), tokensFor(1));
+      await vi.advanceTimersByTimeAsync(1600);
+      // The log parrots ended their cycles meanwhile, and each of those rescheduled the bots.
+      expect([...storage.data.keys()].filter((k) => k.startsWith("input:")).length).toBeGreaterThan(0);
+      expect(fetch).toHaveBeenCalledTimes(1);
+      vi.unstubAllGlobals();
+      vi.useRealTimers();
+    });
+
+    it("don't stall the game when the model fails: they play scripted", async () => {
+      vi.stubGlobal("fetch", vi.fn(async () => new Response("nope", { status: 500 })));
+      const { storage } = await modelRoom({ ...CHEATS, ...MODEL });
+      await vi.advanceTimersByTimeAsync(1600);
+      const inputs = [...storage.data].filter(([k]) => k.startsWith("input:")).map(([, v]) => v as { input: { by: string } });
+      expect(["p1", "p2", "p3"].every((id) => inputs.some((i) => i.input.by === id))).toBe(true);
+      vi.unstubAllGlobals();
+      vi.useRealTimers();
+    });
+  });
 });
 
 describe("GameRoom cycle clock", () => {
