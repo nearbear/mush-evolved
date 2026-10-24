@@ -22,6 +22,10 @@ export class TransferAction<T extends "take" | "drop" = "take" | "drop"> extends
     return canTransfer(state, player, item, destination) ? null : "cant_transfer";
   }
 
+  override injuryChance(state: Readonly<GameState>): number {
+    return state.config.transfer.injuryChance;
+  }
+
   override apply(state: GameState, player: PlayerState, target: { type: T; item: string }): void {
     const index = state.items.findIndex((i) => i.id === target.item);
     const [item] = state.items.splice(index, 1) as [ItemState];

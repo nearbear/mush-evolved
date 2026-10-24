@@ -545,14 +545,17 @@
     "machine_gun": "Sulfateuse",
     "grenade": "Grenade",
     "mush_floppy_disk": "Disquette du génome Mush",
-    "mush_sample": "Souche de test Mush"
+    "mush_sample": "Souche de test Mush",
+    "protection_gloves": "Gants de protection"
   },
   "logEvent": {
     "actionCostChanged": "Votre action en attente ({{action}}) a été annulée car son coût a changé : elle coûte maintenant {{ap}} PA et {{mp}} PM.",
     "actionDropped": "Votre action en attente ({{action}}) n'était plus possible et a été annulée.",
     "becomeDirty": "Vous êtes sale ! Vous venez de vous salir.",
+    "randomInjury": "Ça n’était pas censé se passer comme ça !",
     "apronBlockedDirty": "Dégoûtant... Heureusement, vous portez votre tablier antitache...",
     "sticklerBlockedDirty": "Votre méticulosité vous empêche de vous salir.",
+    "glovesBlockedInjury": "Vos gants vous protègent de la blessure.",
     "crewWakes": "L'équipage se réveille à bord du vaisseau.",
     "oxygenOut": "L'oxygène est épuisé. Quelqu'un suffoque.",
     "cycleBegins": "Le cycle {{cycle}} commence.",

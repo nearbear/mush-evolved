@@ -32,6 +32,10 @@ export class RepairPilgredAction extends Action<RepairPilgredActionData> {
     return state.config.pilgred.dirtyChance;
   }
 
+  override injuryChance(state: Readonly<GameState>): number {
+    return state.config.pilgred.injuryChance;
+  }
+
   override getCandidates(state: Readonly<GameState>, player: Readonly<PlayerState>): RepairPilgredActionData[] {
     if (isPilgredRepaired(state)) return [];
     return pilgredTerminalsHere(state, player).map((terminal): RepairPilgredActionData => ({ type: "repair_pilgred", equipment: terminal.id }));

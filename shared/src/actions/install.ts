@@ -35,6 +35,10 @@ export class InstallAction extends Action<InstallActionData> {
     return state.config.install.dirtyChance;
   }
 
+   override injuryChance(state: Readonly<GameState>): number {
+    return state.config.install.injuryChance;
+  }
+
   override apply(state: GameState, player: PlayerState, target: InstallActionData): void {
     state.items.splice(state.items.findIndex((i) => i.id === target.item), 1);
     (state.config.equipment[player.room] ??= []).push({ id: cameraEquipmentId(player.room), type: CAMERA_EQUIPMENT });

@@ -545,14 +545,17 @@
     "machine_gun": "Vieja Fiel",
     "grenade": "Granada",
     "mush_floppy_disk": "Disquete del genoma Mush",
-    "mush_sample": "Cepa de prueba Mush"
+    "mush_sample": "Cepa de prueba Mush",
+    "protection_gloves": "Guantes de protección"
   },
   "logEvent": {
     "actionCostChanged": "Tu acción en cola ({{action}}) se ha cancelado porque su coste ha cambiado: ahora cuesta {{ap}} PA y {{mp}} PM.",
     "actionDropped": "Tu acción en cola ({{action}}) ya no era posible y se ha descartado.",
     "becomeDirty": "¡Tienes suciedad por todas partes! Te has ensuciado.",
+    "randomInjury": "¡Eso no debía suceder así!",
     "apronBlockedDirty": "Qué asco... Por suerte, llevas puesto tu delantal antimanchas...",
     "sticklerBlockedDirty": "Tu meticulosidad te impide ensuciarte.",
+    "glovesBlockedInjury": "Tus guantes te protegen de la herida.",
     "crewWakes": "La tripulación despierta a bordo de la nave.",
     "oxygenOut": "Se acabó el oxígeno. Alguien se asfixia.",
     "cycleBegins": "Comienza el ciclo {{cycle}}.",
