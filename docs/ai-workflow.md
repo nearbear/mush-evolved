@@ -1247,3 +1247,21 @@ Asked how feasible the original's Transfer skill is. Claude read eMushpedia (`Tr
 - Hull 0 now has its own ending, `ship_destroyed`. It uses the same picture as all humans dead, with its own text, and is still a Mush win. Claude had reused `humans_dead` without asking.
 - The owner removed Claude's default of a ship-wide line for each hunter hit. There are no ship-wide lines for hunter hits on the ship or for hunter damage or kills.
 - The owner accepted the two turret visibility effects that the leak-check agent raised: shared charge counts, and the hp drop being visible. They're recorded in `rules-design.md`. Raising them as questions rather than silently "fixing" them was the right call.
+
+## 2026-10-24: Steering Terrence's wheelchair in the room
+
+- **Request (owner):** while Terrence is accommodated, the pusher's clicks steer him and the pusher follows behind, rather than the pusher walking and Terrence placed in front.
+- **Done:** `walk` from a pusher sets the pushed person's spot to the clicked cell and the pusher's to an optional `behind` cell the client computes (the cell before it on his path; the rules know rooms, not cells). Clients draw the pusher with a `behind` goal: `followTrail` routes them along the leader's planned route one cell back, so the two stay exactly a cell apart through turns (a test checks the gap every frame).
+- **Tradeoff:** sending `behind` from the client keeps the pusher's spot right once the push ends, at the cost of one more client-supplied cell (checked only for size, like every spot). Room changes and walking up to equipment while pushing are left as they were.
+
+## 2026-10-24 (later): Acting ends a wheelchair push
+
+- **Decision (owner):** an action that would walk you somewhere ends the push for either side: public actions on equipment or another person, at the moment they're sent. Items and inventories don't. Private/secret/covert actions don't either (owner picked this after being shown that a public end would reveal them).
+- **What worked:** asking about visibility surfaced a leak the plain wording ("any action that triggers movement") would have caused: the client walks you for private actions too, so the two couldn't share one test. Moving `actionTarget` from `web` into `shared` let the client's walk-up and the server rule use one definition.
+- **What needed correction:** the owner saw Terrence not moving on his own screen. A two-browser Playwright repro (both in the lab, and after a door) showed him moving, so the cause wasn't found; the instant-actions cheat would make his steered walk a jump, and that was changed.
+
+## 2026-10-24: Hunters follow the Daedalus when it jumps (#240)
+
+- **Decision (owner):** on travel or leaving orbit, half the hunters (rounded up) follow, as in eMush; the rest are lost. Followers keep their hp, cost the pool nothing, and lose their aim; a jump with no hunters around brings none. Space Tactics gets a `crewFollowingHunters` hook only.
+- **What worked:** the owner asked what keeping hp would imply before deciding. Reading eMush's source (sparse clone of `Api/src/Hunter` and the status listeners) answered it: eMush parks the very same hunter objects in its pool and draws them back, so hp retention is faithful, and in our state it is the lighter option (filter the list, no new fields). The source also surfaced details the issue had missed (the pool charge per follower, a 2-cycle truce, at least one hunter after an empty jump, leaving orbit counting as a jump), which became the four follow-up questions.
+- **Needed correction:** none. The issue's summary ("followers come back as a catching wave of plain hunters") read as fresh hunters; the code showed otherwise.
