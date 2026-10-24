@@ -118,6 +118,10 @@ export const SKILL_STATUS: Readonly<Partial<Record<SkillId, SkillStatus>>> = {
   sprint: "partial",
   // Anathema and the Outcast status (owner, 2026-10-24, anathema.ts); the original's "inactive" end has no equivalent yet.
   juge: "full",
+  // Fiery speech (owner, 2026-10-24, speech.ts).
+  leadership: "full",
+  // Boring speech (owner, 2026-10-24, speech.ts).
+  motivator: "full",
   // Doubled odds of the link with Sol, x1.5 for roommates (owner, 2026-10-21, comms.ts).
   radio_expert: "full",
   // +100% rebel decoding (owner, 2026-10-21, comms.ts).

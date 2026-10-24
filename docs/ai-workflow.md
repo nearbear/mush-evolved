@@ -1183,3 +1183,9 @@ Owner asked for those three skills and the Conceptor-to-Designer rename, after a
 ### 2026-10-24: sofa spots moved from code into the ship map
 - **Decision:** the per-room sofa spots (`SOFA_SPOTS`) are now a sofa tile plus a built-only `SOFA` binding in each room of `ship-map.json`, so the ship editor can move them. `withoutBuiltOnly` strips them at load and remembers each room's tile; `roomAsBuilt` draws it back once built. Cameras were already ordinary map tiles, so they needed no change.
 - **Note:** I read "built only" as meaning the editor couldn't reach sofas because they lived in code; if the request meant something else, this is the part to revisit.
+
+## 2026-10-24: Leader and Motivator speeches, skill status audit
+- Request said "scales"; the transcript-free context (skills, speeches in `rules-design.md`) made it clear they meant skills. The first attempt grepped the wrong word and was interrupted by the owner, who restated the request.
+- Limits were already decided (Fiery unlimited, Boring once a day). The numbers were not, so I asked once with the eMushpedia values as recommended defaults; the owner accepted all three (2 AP/+2 morale, 2 AP/+3 MP, speaker excluded, public log, no dirt).
+- Built as two no-target actions in `actions/speech.ts`; the daily limit is a per-player flag cleared at day start (a new `PlayerState` field, so `STATE_VERSION` 62 and a `leakFields` entry). A leak test caught that the field is in the speaker's own view; it was reclassified as `own` rather than hidden.
+- Audit: every skill with rules in code already had a `SKILL_STATUS` entry. The gap was documentation: Expert and Stickler were missing from `implemented-rules.md`, now added.

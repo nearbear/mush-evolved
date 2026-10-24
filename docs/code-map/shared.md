@@ -54,4 +54,5 @@ Other packages import from `@mush2/shared` (`shared/src/index.ts`, the barrel). 
 - `moderation.ts`: `moderateChat`, called by the server, not the rules; `moderateName`, called by `viewFor` for the end screen's names.
 - `characters.ts`: cosmetic crew identities, no rules effect.
 - `shipLayout.ts`: types for `Mush/derived/ship-art.json` and `ship-map.json` (`ShipLayout` is the two together) and `placedEquipment`.
+- `actions/speech.ts`: the Leader's Fiery speech and the Motivator's Boring speech (room-wide morale and MP gifts; `PlayerState.boringToday`).
 - `actions/anathema.ts`: the Persecutor's Anathema and `endAnathemaOnDeath` (the Outcast status, `PlayerState.outcastBy`).

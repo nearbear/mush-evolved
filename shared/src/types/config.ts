@@ -161,6 +161,10 @@ export interface GameConfig {
     cost: { ap: number }; // AP the `juge` (Persecutor) skill's Anathema costs (owner, 2026-10-24; eMushpedia).
     successFactor: number; // An Outcast's chance on every action that rolls one is multiplied by this (owner, 2026-10-24: x0.8).
   };
+  speech: {
+    fiery: { ap: number; morale: number }; // The `leadership` skill's Fiery speech: AP cost, morale given to each other living person in the room (owner, 2026-10-24; eMushpedia). No daily limit.
+    boring: { ap: number; mp: number }; // The `motivator` skill's Boring speech: AP cost, MP given to each other living person in the room, once a day (owner, 2026-10-24; eMushpedia).
+  };
   research: {
     cost: { ap: number }; // AP spent to work on a research (decided 2026-10-16).
     effect: { progressPercent: number }; // Percent a research advances per action (decided 2026-10-16).

@@ -44,6 +44,8 @@ export interface PlayerState extends Seat {
   pushedBy?: PlayerId;
   /** The Persecutor whose Anathema made this player an Outcast (anathema.ts). Never sent; the public `outcast` status is. */
   outcastBy?: PlayerId;
+  /** True once the Motivator has given today's Boring speech (speech.ts); cleared at day start. Never sent. */
+  boringToday?: boolean;
   /**
    * Who has offered to push your wheelchair, for you to accept, and the server time (ms) each offer expires. Your
    * own view only (the offers themselves are in the room log).

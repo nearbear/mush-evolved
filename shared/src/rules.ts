@@ -304,6 +304,7 @@ function advanceCycle(state: GameState): void {
   const newDay = (state.cycle - 1) % cyclesPerDay === 0;
   if (newDay) {
     state.sporesToday = 0;
+    for (const p of state.players) delete p.boringToday;
     const loss = dailyMoraleLoss(state);
     for (const p of state.players) if (p.alive) p.morale = Math.max(0, p.morale - loss);
     grantCarePoints(state);

@@ -139,6 +139,8 @@ export type Action =
   | { type: "heal"; target: PlayerId }
   | { type: "punch"; target: PlayerId }
   | { type: "anathema"; target: PlayerId }
+  | { type: "fiery_speech" }
+  | { type: "boring_speech" }
   | { type: "attack"; weapon: ItemId; target: PlayerId }
   | { type: "attack"; weapon: ItemId }
   | { type: "spike"; target: PlayerId }
