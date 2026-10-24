@@ -32,6 +32,30 @@ jobs:
         id: install
         run: npm ci
 
+      # tools/tests/lobby launches headless Chromium through Playwright.
+      - name: Playwright version
+        id: pw
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: echo "version=$(node -p "require(require.resolve('playwright/package.json', { paths: ['tools'] })).version")" >> "$GITHUB_OUTPUT"
+
+      - name: Cache Chromium
+        id: pw-cache
+        if: ${{ !cancelled() && steps.pw.outcome == 'success' }}
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ steps.pw.outputs.version }}
+
+      # The browser download is cached; the OS libraries it needs are not
+      # (they live outside the cache path), so they are installed every run.
+      - name: Install Chromium
+        if: ${{ !cancelled() && steps.pw.outcome == 'success' && steps.pw-cache.outputs.cache-hit != 'true' }}
+        run: npx playwright install --with-deps --only-shell chromium
+
+      - name: Install Chromium OS libraries
+        if: ${{ !cancelled() && steps.pw.outcome == 'success' && steps.pw-cache.outputs.cache-hit == 'true' }}
+        run: npx playwright install-deps chromium
+
       # The checks below run even when an earlier one fails, so a single run
       # reports every problem. They are skipped only if the install failed.
       - name: Typecheck
