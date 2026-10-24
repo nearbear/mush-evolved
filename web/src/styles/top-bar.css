@@ -21,6 +21,10 @@
   display: none;
   margin-left: 0.4rem;
 }
+/* Shown until the Mush are chosen: a small Mush-style button that opens its explanation. */
+.preselection-tag {
+  margin-left: 0.5rem;
+}
 .avatar {
   width: 40px;
   height: 40px;

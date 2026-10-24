@@ -3,7 +3,7 @@
 // in each test file); the rest model storage and sockets.
 
 import type { Seat } from "@mush2/shared";
-import { CHARACTERS, SEAT_COUNT } from "@mush2/shared";
+import { CHARACTERS } from "@mush2/shared";
 
 export class FakeStorage {
   data = new Map<string, unknown>();
@@ -22,6 +22,9 @@ export class FakeStorage {
       if (!opts.prefix || k.startsWith(opts.prefix)) out.set(k, v);
     }
     return out;
+  }
+  async delete(key: string): Promise<boolean> {
+    return this.data.delete(key);
   }
   async deleteAll(): Promise<void> {
     this.data.clear();
@@ -72,8 +75,11 @@ export class FakeServer {
   }
 }
 
+/** Seats in a test game set up all at once (`GameRoom.setup`). Not tied to the multiplayer ship's `SEAT_COUNT`. */
+const TEST_SEATS = 8;
+
 export function seats(humans: number): Seat[] {
-  return Array.from({ length: SEAT_COUNT }, (_, i) => ({
+  return Array.from({ length: TEST_SEATS }, (_, i) => ({
     id: `p${i}`,
     name: i < humans ? `Human ${i}` : `Bot ${i} (AI)`,
     isBot: i >= humans,

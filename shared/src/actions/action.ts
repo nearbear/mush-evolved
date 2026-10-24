@@ -6,6 +6,9 @@ export const peopleHere = (state: Readonly<GameState>, p: Readonly<PlayerState>)
   state.players.filter((o) => o.id !== p.id && o.alive && o.room === p.room);
 
 /** The `validate` code for full hands: such an action is shown disabled rather than hidden (`unaffordableActions`). */
+/** Reason code: combat and spore actions wait for Mush selection (preselection.ts). */
+export const IN_PRESELECTION = "preselection";
+
 export const NO_SPACE = "no_space";
 
 /**

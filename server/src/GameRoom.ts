@@ -11,7 +11,11 @@ import {
   startGame,
   legalActions,
   nextDue,
+  PRESELECTION,
+  preselectionDeadline,
   viewFor,
+  type CharacterId,
+  type GameConfig,
   type GameClientMessage,
   type GameServerMessage,
   type GameSetup,
@@ -56,7 +60,7 @@ const MODEL_TIMEOUT_MS = 20_000;
  * Bump when GameState's shape changes. Games stored under another version are
  * discarded on load (there is no migration; games are short-lived).
  */
-const STATE_VERSION = 62;
+const STATE_VERSION = 63;
 
 interface Stored {
   version?: number;
@@ -97,6 +101,12 @@ interface BlockedText {
 /** Zero-padded so keys list in order. */
 const inputKey = (seq: number) => `input:${String(seq).padStart(9, "0")}`;
 
+/** What `join` tells the matchmaker. */
+export type JoinResult =
+  | { ok: true; token: string; aboard: number; closesAt: number | null }
+  /** The rules' error code: `character_taken`, or `ship_closed` once it is full or Mush are chosen. */
+  | { ok: false; error: string };
+
 interface SeatState {
   playerId: PlayerId;
 }
@@ -114,6 +124,8 @@ export class GameRoom extends Server<Env> {
   private modelGate: ModelGate | null = null;
   /** Restored from storage before `initBots` makes the gate. */
   private modelCalls = 0;
+  /** The pre-selection launch `join` started, so a second join waits for it instead of launching again. */
+  private launching: Promise<void> | null = null;
   private limiter = new RateLimiter(10, 1000);
   /** Per seat, not per connection, so reconnecting doesn't reset it. */
   private chatLimiter = new RateLimiter(5, 10_000);
@@ -142,17 +154,51 @@ export class GameRoom extends Server<Env> {
     await this.scheduleTick();
   }
 
-  /** Called once by the matchmaker over RPC. */
+  /** Seats everyone at launch, with Mush picked at once (tests; single player later). Called once, over RPC. */
   async setup(seats: Seat[], tokens: Record<string, PlayerId>): Promise<void> {
     if (this.game) throw new Error("Game already set up");
+    await this.launch(seats, tokens, DEFAULT_CONFIG);
+  }
+
+  /**
+   * The matchmaker boards a player (rules: preselection.ts). The first one launches the ship, empty and in
+   * pre-selection. Returns the player's seat token, how many are aboard, and when the ship stops taking crew (server
+   * ms), or null once it has (full, Mush chosen).
+   */
+  async join(name: string, character: CharacterId): Promise<JoinResult> {
+    // One launch even if two joins arrive together.
+    this.launching ??= this.game ? Promise.resolve() : this.launch([], {}, { ...DEFAULT_CONFIG, preselection: PRESELECTION });
+    await this.launching;
+    const game = this.game!;
+    const seat: Seat = { id: `p${game.players.length}`, name, isBot: false, character };
+    const token = crypto.randomUUID();
+    // Saved with the join itself, so the seat never exists without its token.
+    this.tokens[token] = seat.id;
+    const error = await this.act({ type: "join", seat });
+    if (error) {
+      delete this.tokens[token];
+      return { ok: false, error };
+    }
+    return { ok: true, token, aboard: this.game!.players.length, closesAt: this.closesAt() };
+  }
+
+  /** When a ship in pre-selection reaches its deadline cycle (server ms), or null when it isn't taking crew. */
+  private closesAt(): number | null {
+    const game = this.game;
+    const rules = game?.config.preselection;
+    if (!game?.preselection || !rules || game.phase !== "playing") return null;
+    return clockCycleStart(this.clockCycle + preselectionDeadline(game, rules) - game.cycle, cycleMs(this.env));
+  }
+
+  private async launch(seats: Seat[], tokens: Record<string, PlayerId>, config: GameConfig): Promise<void> {
     this.clockCycle = clockCycle(Date.now(), cycleMs(this.env));
     const setup: GameSetup = {
       seats,
       // End cycle is for testing: only where cheats are allowed (owner, 2026-10-19).
-      config: { ...DEFAULT_CONFIG, manualCycles: this.cheatsAllowed },
+      config: { ...config, manualCycles: this.cheatsAllowed },
       seed: crypto.getRandomValues(new Uint32Array(1))[0]!,
       rulesVersion: this.env.RULES_VERSION,
-      startCycle: cycleOfDay(this.clockCycle, DEFAULT_CONFIG.cyclesPerDay),
+      startCycle: cycleOfDay(this.clockCycle, config.cyclesPerDay),
     };
     this.game = stamp(startGame(setup));
     this.tokens = tokens;

@@ -30,6 +30,8 @@ export interface GameState {
   rng: RngState;
   cycle: number;
   phase: "playing" | "ended";
+  /** True from launch until Mush are chosen (preselection.ts): nobody is Mush yet and players may still join. */
+  preselection: boolean;
   /** Who won, once `phase` is "ended" (victory.ts); null while playing. Public: every view has it. */
   winner: Winner | null;
   /** How it ended, set with `winner`; null while playing. Public: every view has it. */

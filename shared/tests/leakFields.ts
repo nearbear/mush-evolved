@@ -24,6 +24,7 @@ export const GAME_STATE_FIELDS: Record<string, FieldRule> = {
   rng: { reach: "never", test: "leaks.test.ts" },
   cycle: { reach: "public", test: "rules.test.ts" },
   phase: { reach: "public", test: "rules.test.ts" },
+  preselection: { reach: "public", test: "preselection.test.ts" },
   winner: { reach: "public", test: "pilgred.test.ts", note: "Who won; null until the game ends." },
   ending: { reach: "public", test: "victory.test.ts", note: "How it ended; null until the game ends." },
   players: { reach: "filtered", test: "leaks.test.ts", note: "Field by field: PLAYER_STATE_FIELDS." },

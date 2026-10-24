@@ -3,7 +3,9 @@
     "endCycle": "Terminar el ciclo",
     "waiting": "Esperando…",
     "waitingForOthers": "Esperando a los demás…",
-    "leave": "Salir"
+    "leave": "Salir",
+    "preselection": "Preselección",
+    "preselectionAbout": "Todavía nadie es Mush. Los Mush se elegirán cuando la nave esté llena, o el día 3, ciclo 8. Hasta entonces no hay combate."
   },
   "credits": {
     "text": "Arte de <mush>Mush</mush> de Motion Twin (<archive>WebGamesArchives</archive>), con licencia <license>CC BY-NC-SA 4.0</license>. Adaptado. Sin afiliación con Motion Twin.",
@@ -89,7 +91,7 @@
     "tagline": "Sueño criogénico. Elige una nave en la que despertar.",
     "pickCharacter": "Elige a tu tripulante.",
     "characterTaken": "Otra persona acaba de elegir a ese tripulante. Elige otro.",
-    "waiting": "Esperando: {{waiting}}/{{seats}}. Los asientos vacíos se llenarán pronto con bots.",
+    "waiting": "Embarcando: {{waiting}}/{{seats}} a bordo.",
     "awaitingCrew": "Esperando tripulación",
     "nearlyFull": "Casi completa",
     "noWebgl": "Tu navegador no puede mostrar el juego: necesita WebGL 2. Activa la aceleración por hardware en los ajustes del navegador, actualiza el navegador o los controladores gráficos, o prueba otro navegador o dispositivo."
@@ -285,7 +287,8 @@
     "thread_forbidden": "Ahora no puedes crear un hilo.",
     "thread_name_invalid": "Un hilo necesita un nombre de hasta 40 caracteres.",
     "thread_exists": "Ese mensaje ya tiene un hilo.",
-    "message_not_found": "Ese mensaje ya no está."
+    "message_not_found": "Ese mensaje ya no está.",
+    "join_failed": "No se pudo embarcar en una nave. Inténtalo de nuevo."
   },
   "terminal": {
     "close": "Cerrar"
@@ -623,6 +626,8 @@
     "attackAreaMissed": "{{name}} disparó: {{item}}, pero no alcanzó a nadie.",
     "spiked": "{{name}} contagió a {{target}}.",
     "converted": "Las esporas se han apoderado de ti. Ahora eres Mush.",
+    "chosenMush": "Las esporas te han elegido. Eres Mush.",
+    "mushChosen": "Los Mush han sido elegidos. La nave ya no admite más tripulación.",
     "mushContaminated": "{{name}} ha sido contaminado: nivel {{level}} de {{capacity}}.",
     "mushConverted": "{{name}} se ha convertido en Mush.",
     "examineSelf": "Te examinas.",

@@ -4,7 +4,7 @@ Other packages import from `@mush2/shared` (`shared/src/index.ts`, the barrel). 
 
 **Engine**
 
-- `rules.ts`: `createGame`, `applyAction` (at once, no timing), `performAction` (its mutating core), `legalActions`, `viewFor`, `affordable` and `legalIn` (read a view's `actions`), `dayOf`, `setCheat`, `setActopiCheat`; private `advanceCycle` and `grantCarePoints`. `viewFor` is the single place hidden info is stripped.
+- `rules.ts`: `createGame`, `newPlayer` and `startInventory` (also used by `joinShip`), `applyAction` (at once, no timing), `performAction` (its mutating core), `legalActions`, `viewFor`, `affordable` and `legalIn` (read a view's `actions`), `dayOf`, `setCheat`, `setActopiCheat`; private `advanceCycle` and `grantCarePoints`. `viewFor` is the single place hidden info is stripped.
 - `actions.ts`: the action registry (`ACTIONS`), `ActionDef` / `ActionCost`. A new action is a file in `actions/` registered here.
 - `actions/action.ts`: the `Action` base class (`getCandidates`, `validate`, `getCost`, `apply`, optional `getSuccessChance` and `fail`; `check` is `validate` then the price, never overridden).
 - `blueprints.ts`: `BLUEPRINTS` recipes (ingredients and resulting equipment) and the `blueprint` item type name.
@@ -22,6 +22,7 @@ Other packages import from `@mush2/shared` (`shared/src/index.ts`, the barrel). 
 - `pilgred.ts`: PILGRED's repair: `PILGRED_COMPLETE`, `PILGRED_SKILLS`, `pilgredGainRange` (the original's formula with the relay penalty), `rollPilgredGain`, `isPilgredRepaired`, `pilgredTerminalsHere`, `commandTerminalsHere`, `canReturnToSol`. Actions `repair_pilgred`, `return_to_sol`.
 - `comms.ts`: the communication center: `REBEL_BASES` (call order), `XYLOPH_ENTRIES` (weights), `newComms`, `callNextRebel` / `commsCycle` (daily rebel calls), `solChance` (Radio Expert), `loseLink`, `rollRebelGain`, `rebelReached`, `rationApBonus` (Sirius), `noITrackieNeeded` (Luyten-Ceti), `drawXyloph` / `applyXyloph`, `advanceNeron`, `commsTerminalView`. Actions `contact_sol`, `decode_rebel`, `contact_xyloph`, `update_neron`.
 - `bios.ts`: NERON's BIOS switches: `BIOS_OPTIONS` (`actopi`, `death_announcements`), `newBios`, `biosTerminalsHere`, `canChangeBios` (NERON Admin). Action `set_bios`.
+- `preselection.ts`: pre-selection (`config.preselection`, `GameState.preselection`): `joinShip` (the server's `join` input), `preselectionDeadline`, `preselectionCycle` (called as each cycle begins), and `selectMush` (Mush, titles, the first rebel call, and the under-3-players stopgap).
 - `victory.ts`: the game end: `winnerOnArrival` (the decided win rule on reaching Sol or Eden), `mushWinOnDeath`, and `endGame` (`phase` "ended", `winner`, `ending`).
 - `projects.ts`: `PROJECT_IDS` (the original's 41 live NERON projects), `PROJECT_COMPLETE` and `PROJECT_STATUS`.
 - `rng.ts`: the seeded RNG (its state is part of `GameState`).

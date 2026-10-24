@@ -3,7 +3,9 @@
     "endCycle": "Terminer le cycle",
     "waiting": "En attente…",
     "waitingForOthers": "En attente des autres…",
-    "leave": "Quitter"
+    "leave": "Quitter",
+    "preselection": "Pré-sélection",
+    "preselectionAbout": "Personne n'est encore Mush. Les Mush seront choisis quand le vaisseau sera plein, ou au jour 3, cycle 8. D'ici là, aucun combat n'est possible."
   },
   "credits": {
     "text": "Illustrations de <mush>Mush</mush> par Motion Twin (<archive>WebGamesArchives</archive>), sous licence <license>CC BY-NC-SA 4.0</license>. Adaptées. Sans lien avec Motion Twin.",
@@ -89,7 +91,7 @@
     "tagline": "Sommeil cryogénique. Choisissez un vaisseau où vous réveiller.",
     "pickCharacter": "Choisissez votre membre d'équipage.",
     "characterTaken": "Quelqu'un vient de prendre ce membre d'équipage. Choisissez-en un autre.",
-    "waiting": "En attente : {{waiting}}/{{seats}}. Les places vides seront bientôt remplies par des bots.",
+    "waiting": "Embarquement : {{waiting}}/{{seats}} à bord.",
     "awaitingCrew": "En attente d'équipage",
     "nearlyFull": "Presque complet",
     "noWebgl": "Votre navigateur ne peut pas afficher le jeu : il faut WebGL 2. Activez l'accélération matérielle dans les paramètres du navigateur, mettez à jour le navigateur ou les pilotes graphiques, ou essayez un autre navigateur ou appareil."
@@ -285,7 +287,8 @@
     "thread_forbidden": "Vous ne pouvez pas créer de fil pour l'instant.",
     "thread_name_invalid": "Un fil doit avoir un nom de 40 caractères au plus.",
     "thread_exists": "Ce message a déjà un fil.",
-    "message_not_found": "Ce message n'est plus là."
+    "message_not_found": "Ce message n'est plus là.",
+    "join_failed": "Impossible d'embarquer sur un vaisseau. Réessayez."
   },
   "terminal": {
     "close": "Fermer"
@@ -623,6 +626,8 @@
     "attackAreaMissed": "{{name}} a déclenché : {{item}}, mais n'a touché personne.",
     "spiked": "{{name}} a contaminé {{target}}.",
     "converted": "Les spores ont pris le dessus. Vous êtes désormais Mush.",
+    "chosenMush": "Les spores ont fait leur choix : vous êtes Mush.",
+    "mushChosen": "Les Mush ont été choisis. Le vaisseau n'accepte plus d'équipage.",
     "mushContaminated": "{{name}} a été contaminé : niveau {{level}} sur {{capacity}}.",
     "mushConverted": "{{name}} est devenu Mush.",
     "examineSelf": "Vous vous examinez.",

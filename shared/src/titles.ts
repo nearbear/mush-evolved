@@ -74,6 +74,11 @@ export function successor<P extends { id: PlayerId; character: string }>(
   return null;
 }
 
+/** Every title unheld: a ship in pre-selection, before they are issued. */
+export function noTitles(): Record<TitleId, PlayerId | null> {
+  return Object.fromEntries(TITLE_IDS.map((id) => [id, null])) as Record<TitleId, PlayerId | null>;
+}
+
 /** Hands out every title at the start, with Mush selection. Not announced: the holders are in every view. */
 export function assignTitles(players: readonly PlayerState[]): Record<TitleId, PlayerId | null> {
   const titles = {} as Record<TitleId, PlayerId | null>;
@@ -87,6 +92,7 @@ export function assignTitles(players: readonly PlayerState[]): Record<TitleId, P
  * change is announced in crew chat only, not in a room log (owner, 2026-10-20).
  */
 export function refreshTitles(state: GameState): void {
+  if (state.preselection) return; // not issued yet: selectMush does it
   for (const id of TITLE_IDS) {
     const before = state.titles[id];
     const after = successor(SUCCESSION[id], state.players, before, eligibleForTitle);

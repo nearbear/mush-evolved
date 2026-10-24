@@ -13,7 +13,7 @@ This is a **vertical-slice MVP**, not a full clone. The goals are:
 2. Demonstrate solid full-stack engineering and an AI-assisted development workflow (keep notes on what worked and what didn't; see "Working agreements").
 3. Leave room to grow it into a real game later, including animated characters.
 
-**Proposed slice scope:** 16 seats with 2 Mush (1 when 8 or fewer players are in the room; decided in `docs/rules-design.md`, not yet in the code), the 27-room Daedalus, the action-point loop and infection. Do not try to implement the full Mush ruleset.
+**Proposed slice scope:** 16 seats with 2 Mush (1 when 8 or fewer players are in the room; decided in `docs/rules-design.md`; built, but capped at 4 seats for now, `SEAT_COUNT`), the 27-room Daedalus, the action-point loop and infection. Do not try to implement the full Mush ruleset.
 
 ## Stack
 
@@ -38,7 +38,7 @@ These are non-negotiable unless I say otherwise.
 1. **Server-authoritative.** The server holds the real state. Clients never receive hidden information. The server sends each player a filtered `PlayerView` computed for that player only.
 2. **Rules are pure code.** Game rules live in the shared package as deterministic, side-effect-free TypeScript (seeded RNG, no I/O, no network), with unit tests. The rules must run headless.
 3. **Thin view layer.** Components render a `PlayerView` and emit player intents; no game logic in components, and the renderer must stay swappable. Details in `web/CLAUDE.md`.
-4. **Matchmaker is a separate global coordinator.** Game rooms don't know about each other. A matchmaker room holds waiting players, runs the fill-with-bots timer, and creates game rooms. (The code still works this way; the decided MVP model, a per-language matchmaker that points players at the open pre-selection ship, with no bots, is not built yet.)
+4. **Matchmaker is a separate coordinator.** Game rooms don't know about each other. One matchmaker room per language boards each joiner onto that language's open ship, which is in pre-selection (`shared/src/preselection.ts`), and launches a new one when needed. Multiplayer has no bots.
 5. **Bots sit behind one interface**, roughly `decideAction(view): Promise<Action>`:
    - A bot only ever receives the view its own seat would legitimately have.
    - Bots are clearly labeled as AI to players. Deliberate response delay is fine and is a pacing choice.

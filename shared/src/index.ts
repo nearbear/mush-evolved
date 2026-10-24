@@ -30,3 +30,4 @@ export * from "./titles.ts";
 export * from "./comms.ts";
 export * from "./bios.ts";
 export * from "./victory.ts";
+export * from "./preselection.ts";

@@ -1,22 +1,35 @@
-// Per-language coordinator (one instance per room name: "en", "fr", "es"). Holds the queue,
-// runs the fill-with-bots timer, and creates game rooms. Game rooms never
-// talk to each other or to the matchmaker after setup.
+// Per-language coordinator (one instance per room name: "en", "fr", "es"). Joining puts a player into the language's
+// open ship, which is in pre-selection (docs/rules-design.md, "Joining and Mush selection"); the first player to join
+// launches a new one. Multiplayer has no bots. Game rooms never talk to each other or to the matchmaker: it asks the
+// open ship to board each player (`GameRoom.join`) and learns from the answer how full it is and when it stops taking crew.
 
 import { getServerByName, Server, type Connection, type WSMessage } from "partyserver";
-import { CHARACTERS, LOBBY_LANGUAGES, parseMatchmakerMessage, SEAT_COUNT, type CharacterId, type MatchmakerServerMessage, type PlayerId, type Seat } from "@mush2/shared";
+import { LOBBY_LANGUAGES, parseMatchmakerMessage, SEAT_COUNT, type MatchmakerClientMessage, type MatchmakerServerMessage } from "@mush2/shared";
+import type { JoinResult } from "./GameRoom.ts";
 import { RateLimiter } from "./rateLimit.ts";
 
-/** How long the first player waits before empty seats are filled with bots. */
-const FILL_DELAY_MS = 5_000;
+/** The ship players join now. Gone once it is full or past its pre-selection deadline. */
+interface OpenShip {
+  roomId: string;
+  aboard: number;
+  /** Server ms when it stops taking crew (its deadline cycle begins). */
+  closesAt: number;
+}
 
-interface QueueState {
-  name: string | null;
-  character?: CharacterId;
-  joinedAt: number;
+interface JoinState {
+  /** Set as soon as a join starts, so a second request on the same connection is ignored. */
+  joined: boolean;
 }
 
 export class Matchmaker extends Server<Env> {
   private limiter = new RateLimiter(5, 1000);
+  private open: OpenShip | null = null;
+  /** Joins run one at a time: each waits for the open ship's answer before the next is sent. */
+  private joins: Promise<void> = Promise.resolve();
+
+  override async onStart(): Promise<void> {
+    this.open = (await this.ctx.storage.get<OpenShip>("open")) ?? null;
+  }
 
   override onConnect(connection: Connection): void {
     // Rooms are created on first connect, so refuse names that aren't a lobby language.
@@ -27,84 +40,70 @@ export class Matchmaker extends Server<Env> {
     this.send(connection, this.queueMessage());
   }
 
-  override async onMessage(connection: Connection<QueueState>, raw: WSMessage): Promise<void> {
+  override async onMessage(connection: Connection<JoinState>, raw: WSMessage): Promise<void> {
     if (!this.limiter.allow(connection.id)) return;
     const msg = typeof raw === "string" ? parseMatchmakerMessage(raw) : null;
     if (!msg) {
       this.send(connection, { type: "error", message: "malformed_message" });
       return;
     }
-    if (connection.state?.name) return; // already queued
-    // Leaving the queue releases a character, since only waiting players hold one.
-    if (this.waiting().some((c) => c.state!.character === msg.character)) {
-      this.send(connection, { type: "characterTaken" });
+    if (connection.state?.joined) return;
+    connection.setState({ joined: true });
+    const done = this.joins.then(() => this.board(connection, msg));
+    this.joins = done.catch(() => {});
+    await done;
+  }
+
+  /** Boards one player: on the open ship, or a newly launched one when there is none or it just closed. */
+  private async board(connection: Connection<JoinState>, msg: MatchmakerClientMessage): Promise<void> {
+    for (let attempt = 0; attempt < 2; attempt++) {
+      const ship = this.openShip();
+      const roomId = ship?.roomId ?? crypto.randomUUID();
+      const room = await getServerByName(this.env.GameRoom, roomId);
+      const result: JoinResult = await room.join(msg.name, msg.character);
+      if (!result.ok && result.error === "character_taken") {
+        connection.setState({ joined: false });
+        this.send(connection, { type: "characterTaken" });
+        return;
+      }
+      if (!result.ok) {
+        // Closed since we last heard (its deadline passed): launch a new ship.
+        await this.setOpen(null);
+        continue;
+      }
+      await this.setOpen(result.closesAt === null ? null : { roomId, aboard: result.aboard, closesAt: result.closesAt });
+      this.send(connection, { type: "matched", roomId, token: result.token });
+      this.broadcastQueue();
       return;
     }
-
-    connection.setState({ name: msg.name, character: msg.character, joinedAt: Date.now() });
-    const waiting = this.waiting();
-    if (waiting.length >= SEAT_COUNT) {
-      await this.startMatch(waiting.slice(0, SEAT_COUNT));
-    } else if ((await this.ctx.storage.getAlarm()) === null) {
-      await this.ctx.storage.setAlarm(Date.now() + FILL_DELAY_MS);
-    }
-    this.broadcastQueue();
+    connection.setState({ joined: false });
+    this.send(connection, { type: "error", message: "join_failed" });
   }
 
-  /** Fill timer fired: start with whoever is waiting and bots for the rest. */
+  /** The open ship's deadline passed: nobody can join it any more. */
   override async onAlarm(): Promise<void> {
-    const waiting = this.waiting();
-    if (waiting.length > 0) await this.startMatch(waiting.slice(0, SEAT_COUNT));
-    if (this.waiting().length > 0) await this.ctx.storage.setAlarm(Date.now() + FILL_DELAY_MS);
+    if (this.open && this.open.closesAt <= Date.now()) await this.setOpen(null);
+    else if (this.open) await this.ctx.storage.setAlarm(this.open.closesAt);
     this.broadcastQueue();
   }
 
-  override async onClose(connection: Connection): Promise<void> {
+  override onClose(connection: Connection): void {
     this.limiter.forget(connection.id);
-    if (this.waiting().length === 0) await this.ctx.storage.deleteAlarm();
-    this.broadcastQueue();
   }
 
-  private waiting(): Connection<QueueState>[] {
-    return [...this.getConnections<QueueState>()]
-      .filter((c) => c.state?.name)
-      .sort((a, b) => a.state!.joinedAt - b.state!.joinedAt);
+  /** The open ship, unless its deadline has passed (the alarm may not have fired yet). */
+  private openShip(): OpenShip | null {
+    return this.open && this.open.closesAt > Date.now() ? this.open : null;
   }
 
-  private async startMatch(humans: Connection<QueueState>[]): Promise<void> {
-    const roomId = crypto.randomUUID();
-    const seats: Seat[] = [];
-    const tokens: Record<string, PlayerId> = {};
-    const tokenByConnection = new Map<string, string>();
-    // Bots get the characters nobody picked.
-    const picked = new Set(humans.map((c) => c.state!.character!));
-    const botCharacters = shuffled(CHARACTERS.map((c) => c.id).filter((id) => !picked.has(id)));
-
-    humans.forEach((conn, i) => {
-      const id = `p${i}`;
-      const token = crypto.randomUUID();
-      seats.push({ id, name: conn.state!.name!, isBot: false, character: conn.state!.character! });
-      tokens[token] = id;
-      tokenByConnection.set(conn.id, token);
-    });
-    // Dev servers (cheats allowed) seat every character, so the whole cast can be looked at. Not for production.
-    const seatCount = this.env.ALLOW_CHEATS === "true" ? CHARACTERS.length : SEAT_COUNT;
-    // Dev servers may seat model bots (MODEL_BOTS, with a key in server/.dev.vars); a deployment never does.
-    const modelBots = this.env.ALLOW_CHEATS === "true" ? Math.max(0, Math.floor(Number(this.env.MODEL_BOTS)) || 0) : 0;
-    for (let i = humans.length; i < seatCount; i++) {
-      // Bots are always labeled as AI to players.
-      // Other bots are log parrots; "wander" bots are still supported but not selected anywhere yet.
-      const botKind = i - humans.length < modelBots ? "model" : "logParrot";
-      // i18n-ignore: a player name; the client marks bots as AI from isBot
-      seats.push({ id: `p${i}`, name: `Bot ${i - humans.length + 1} (AI)`, isBot: true, botKind, character: botCharacters[i - humans.length]! });
-    }
-
-    const room = await getServerByName(this.env.GameRoom, roomId);
-    await room.setup(seats, tokens);
-
-    for (const conn of humans) {
-      conn.setState({ name: null, joinedAt: 0 });
-      this.send(conn, { type: "matched", roomId, token: tokenByConnection.get(conn.id)! });
+  private async setOpen(ship: OpenShip | null): Promise<void> {
+    this.open = ship;
+    if (ship) {
+      await this.ctx.storage.put("open", ship);
+      await this.ctx.storage.setAlarm(ship.closesAt);
+    } else {
+      await this.ctx.storage.delete("open");
+      await this.ctx.storage.deleteAlarm();
     }
   }
 
@@ -113,21 +112,12 @@ export class Matchmaker extends Server<Env> {
     for (const conn of this.getConnections()) this.send(conn, msg);
   }
 
+  /** How many are aboard the open ship (0 when the next joiner launches a new one). */
   private queueMessage(): MatchmakerServerMessage {
-    return { type: "queued", waiting: this.waiting().length, seats: SEAT_COUNT };
+    return { type: "queued", waiting: this.openShip()?.aboard ?? 0, seats: SEAT_COUNT };
   }
 
   private send(connection: Connection, msg: MatchmakerServerMessage): void {
     connection.send(JSON.stringify(msg));
   }
-}
-
-/** Fisher-Yates. Characters are cosmetic, so Math.random is fine here. */
-function shuffled<T>(items: T[]): T[] {
-  const out = [...items];
-  for (let i = out.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [out[i], out[j]] = [out[j]!, out[i]!];
-  }
-  return out;
 }

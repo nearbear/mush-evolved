@@ -1,141 +1,149 @@
-import { CHARACTERS, SEAT_COUNT, type MatchmakerServerMessage, type Seat } from "@mush2/shared";
+import { SEAT_COUNT, type MatchmakerServerMessage } from "@mush2/shared";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import type { JoinResult } from "../src/GameRoom.ts";
 import { FakeConnection, FakeServer, FakeStorage } from "../src/testing/fakes.ts";
 
-const setups: { roomId: string; seats: Seat[]; tokens: Record<string, string> }[] = [];
+/** Stand-in game rooms: each takes crew until full or closed, like GameRoom.join over the rules. */
+interface FakeShip {
+  crew: { name: string; character: string }[];
+  closed: boolean;
+}
+const ships = new Map<string, FakeShip>();
+const CLOSES_AT = Date.now() + 3_600_000;
 
 vi.mock("partyserver", () => ({
   Server: FakeServer,
   getServerByName: async (_ns: unknown, roomId: string) => ({
-    setup: async (seats: Seat[], tokens: Record<string, string>) => void setups.push({ roomId, seats, tokens }),
+    join: async (name: string, character: string): Promise<JoinResult> => {
+      const ship = ships.get(roomId) ?? { crew: [], closed: false };
+      ships.set(roomId, ship);
+      if (ship.closed || ship.crew.length >= SEAT_COUNT) return { ok: false, error: "ship_closed" };
+      if (ship.crew.some((c) => c.character === character)) return { ok: false, error: "character_taken" };
+      ship.crew.push({ name, character });
+      const full = ship.crew.length >= SEAT_COUNT;
+      return { ok: true, token: `${roomId}:${name}`, aboard: ship.crew.length, closesAt: full ? null : CLOSES_AT };
+    },
   }),
 }));
 const { Matchmaker } = await import("../src/Matchmaker.ts");
 
-type Conn = FakeConnection<{ name: string | null; character?: string; joinedAt: number }>;
+type Conn = FakeConnection<{ joined: boolean }>;
 
 let storage: FakeStorage;
 let mm: InstanceType<typeof Matchmaker>;
 let n = 0;
+const CHARS = ["chao", "chun", "eleesha", "finola", "frieda", "gioele", "hua", "ian", "janice", "jinsu"];
 
-beforeEach(() => {
-  setups.length = 0;
+beforeEach(async () => {
+  ships.clear();
   storage = new FakeStorage();
   mm = new Matchmaker({ storage } as never, { GameRoom: {} } as never);
+  await mm.onStart();
 });
 
-function join(name: string | null): Conn {
+function connect(): Conn {
   const conn: Conn = new FakeConnection(`c${n++}`);
   (mm as unknown as FakeServer).connections.add(conn as never);
-  if (name !== null) void queue(conn, name);
   return conn;
 }
-/** Each connection picks its own character by default (ids are sequential, so any 16 in a row differ). */
-const queue = (c: Conn, name: string, character = CHARACTERS[Number(c.id.slice(1)) % CHARACTERS.length]!.id) =>
-  mm.onMessage(c as never, JSON.stringify({ type: "queue", name, character }));
+const queue = (c: Conn, name: string, character: string) => mm.onMessage(c as never, JSON.stringify({ type: "queue", name, character }));
 const msgs = (c: Conn) => c.messages<MatchmakerServerMessage>();
 const matched = (c: Conn) => msgs(c).find((m) => m.type === "matched") as { roomId: string; token: string } | undefined;
+/** Boards `count` players with distinct characters; returns their connections. */
+async function board(count: number, from = 0): Promise<Conn[]> {
+  const conns = Array.from({ length: count }, connect);
+  for (const [i, c] of conns.entries()) await queue(c, `P${from + i}`, CHARS[from + i]!);
+  return conns;
+}
 
-describe("Matchmaker queue", () => {
-  it("reports the queue size and arms the fill timer for the first player", async () => {
-    const a = join(null);
-    await queue(a, "Ann");
-    expect(msgs(a).at(-1)).toEqual({ type: "queued", waiting: 1, seats: SEAT_COUNT });
-    expect(storage.alarm).not.toBeNull();
-    const b = join(null);
-    const alarm = storage.alarm;
-    await queue(b, "Bob");
-    expect(storage.alarm).toBe(alarm); // not pushed back by later joiners
-    expect(msgs(a).at(-1)).toMatchObject({ waiting: 2 });
+describe("Matchmaker joining", () => {
+  it("boards the first player at once, on a newly launched ship, with no bots", async () => {
+    const [a] = await board(1);
+    const m = matched(a!)!;
+    expect(ships.get(m.roomId)!.crew).toEqual([{ name: "P0", character: "chao" }]);
+    expect(msgs(a!).at(-1)).toEqual({ type: "queued", waiting: 1, seats: SEAT_COUNT });
+    expect(storage.alarm).toBe(CLOSES_AT);
   });
 
-  it("rejects malformed messages and ignores a second queue request", async () => {
-    const a = join(null);
-    await mm.onMessage(a as never, "{}");
-    expect(msgs(a).at(-1)).toEqual({ type: "error", message: "malformed_message" });
-    await queue(a, "Ann");
-    await queue(a, "Other");
-    expect((a.state as { name: string }).name).toBe("Ann");
+  it("puts later players on the same open ship and tells watchers how many are aboard", async () => {
+    const watcher = connect();
+    const [a, b] = await board(2);
+    expect(matched(b!)!.roomId).toBe(matched(a!)!.roomId);
+    expect(msgs(watcher).at(-1)).toEqual({ type: "queued", waiting: 2, seats: SEAT_COUNT });
   });
 
-  it("refuses a character another waiting player picked, and frees it when they leave", async () => {
-    const [a, b] = [join(null), join(null)];
-    await queue(a, "Ann", "chao");
+  it("starts a new ship once the open one is full", async () => {
+    const first = await board(SEAT_COUNT);
+    const roomId = matched(first[0]!)!.roomId;
+    expect(first.every((c) => matched(c)?.roomId === roomId)).toBe(true);
+    expect(msgs(first[0]!).at(-1)).toMatchObject({ waiting: 0 });
+    expect(storage.alarm).toBeNull();
+    const [late] = await board(1, SEAT_COUNT);
+    expect(matched(late!)!.roomId).not.toBe(roomId);
+  });
+
+  it("refuses a character someone aboard has, and lets them pick again", async () => {
+    await board(1);
+    const b = connect();
     await queue(b, "Bob", "chao");
     expect(msgs(b).at(-1)).toEqual({ type: "characterTaken" });
-    expect(b.state?.name).toBeFalsy();
-    (mm as unknown as FakeServer).connections.delete(a as never);
-    await mm.onClose(a as never);
-    await queue(b, "Bob", "chao");
-    expect(b.state?.character).toBe("chao");
+    expect(matched(b)).toBeUndefined();
+    await queue(b, "Bob", "kuanti");
+    expect(matched(b)).toBeDefined();
+  });
+
+  it("launches a new ship when the open one has closed (its deadline passed)", async () => {
+    const [a] = await board(1);
+    ships.get(matched(a!)!.roomId)!.closed = true;
+    const [b] = await board(1, 1);
+    expect(matched(b!)!.roomId).not.toBe(matched(a!)!.roomId);
+  });
+
+  it("forgets the open ship when its deadline alarm fires", async () => {
+    const watcher = connect();
+    await board(1);
+    vi.useFakeTimers({ now: CLOSES_AT });
+    try {
+      await mm.onAlarm();
+    } finally {
+      vi.useRealTimers();
+    }
+    expect(msgs(watcher).at(-1)).toMatchObject({ waiting: 0 });
+    expect(await storage.get("open")).toBeUndefined();
+  });
+
+  it("remembers the open ship across a restart", async () => {
+    const [a] = await board(1);
+    mm = new Matchmaker({ storage } as never, { GameRoom: {} } as never);
+    await mm.onStart();
+    const [b] = await board(1, 1);
+    expect(matched(b!)!.roomId).toBe(matched(a!)!.roomId);
+  });
+
+  it("rejects malformed messages and ignores a second request on the same connection", async () => {
+    const a = connect();
+    await mm.onMessage(a as never, "{}");
+    expect(msgs(a).at(-1)).toEqual({ type: "error", message: "malformed_message" });
+    await queue(a, "Ann", "chao");
+    await queue(a, "Ann", "kuanti");
+    expect([...ships.values()].flatMap((s) => s.crew)).toHaveLength(1);
   });
 
   it("rejects an unknown character", async () => {
-    const a = join(null);
+    const a = connect();
     await queue(a, "Ann", "nobody");
     expect(msgs(a).at(-1)).toEqual({ type: "error", message: "malformed_message" });
   });
 
-  it("cancels the fill timer when the queue empties", async () => {
-    const a = join(null);
-    await queue(a, "Ann");
-    (mm as unknown as FakeServer).connections.delete(a as never);
-    await mm.onClose(a as never);
-    expect(storage.alarm).toBeNull();
-  });
-});
-
-describe("Matchmaker starting a match", () => {
-  it("starts immediately with no bots when the ship is full", async () => {
-    const conns = Array.from({ length: SEAT_COUNT }, () => join(null));
-    for (const c of conns) await queue(c, `P${c.id}`);
-    expect(setups).toHaveLength(1);
-    expect(setups[0]!.seats.every((s) => !s.isBot)).toBe(true);
-    expect(conns.every((c) => matched(c))).toBe(true);
+  it("boards simultaneous joiners one at a time, onto one ship", async () => {
+    const conns = Array.from({ length: 3 }, connect);
+    await Promise.all(conns.map((c, i) => queue(c, `P${i}`, CHARS[i]!)));
+    expect(new Set(conns.map((c) => matched(c)!.roomId)).size).toBe(1);
   });
 
-  it("fills the empty seats with bots when the timer fires, labeled as AI", async () => {
-    const a = join(null);
-    await queue(a, "Ann", "janice");
-    await mm.onAlarm();
-    const { seats } = setups[0]!;
-    expect(seats.find((s) => !s.isBot)!.character).toBe("janice");
-    expect(seats).toHaveLength(SEAT_COUNT);
-    expect(seats.filter((s) => !s.isBot).map((s) => s.name)).toEqual(["Ann"]);
-    for (const bot of seats.filter((s) => s.isBot)) expect(bot.name).toMatch(/\(AI\)$/);
-    expect(new Set(seats.map((s) => s.id)).size).toBe(SEAT_COUNT);
-    expect(new Set(seats.map((s) => s.character)).size).toBe(SEAT_COUNT);
-  });
-
-  it("hands each human only their own token, which maps to their own seat", async () => {
-    const [a, b] = [join(null), join(null)];
-    await queue(a, "Ann");
-    await queue(b, "Bob");
-    await mm.onAlarm();
-    const { tokens, seats, roomId } = setups[0]!;
-    const [ta, tb] = [matched(a)!, matched(b)!];
-    expect(ta.roomId).toBe(roomId);
-    expect(ta.token).not.toBe(tb.token);
-    expect(Object.keys(tokens).sort()).toEqual([ta.token, tb.token].sort()); // no tokens for bots
-    expect(seats.find((s) => s.id === tokens[ta.token])!.name).toBe("Ann");
-    expect(seats.find((s) => s.id === tokens[tb.token])!.name).toBe("Bob");
-    expect(a.sent.join()).not.toContain(tb.token);
-    expect(b.sent.join()).not.toContain(ta.token);
-  });
-
-  it("does not match the same players twice", async () => {
-    const a = join(null);
-    await queue(a, "Ann");
-    await mm.onAlarm();
-    await mm.onAlarm();
-    expect(setups).toHaveLength(1);
-  });
-
-  it("seats the earliest joiners first when more are waiting than seats", async () => {
-    const conns = Array.from({ length: SEAT_COUNT + 2 }, () => join(null));
-    for (const c of conns) await queue(c, c.id);
-    const late = conns.slice(SEAT_COUNT);
-    expect(late.every((c) => !matched(c))).toBe(true);
-    expect(msgs(late[0]!).at(-1)).toMatchObject({ type: "queued", waiting: 2 });
+  it("hands each player only their own token", async () => {
+    const [a, b] = await board(2);
+    expect(a!.sent.join()).not.toContain(matched(b!)!.token);
+    expect(b!.sent.join()).not.toContain(matched(a!)!.token);
   });
 });

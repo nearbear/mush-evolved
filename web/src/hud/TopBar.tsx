@@ -6,6 +6,7 @@ import { SETTINGS_ICON } from "../art/assets.ts";
 import { useMobile } from "../useMobile.ts";
 import { CycleCountdown } from "./CycleCountdown.tsx";
 import { PlayerSummary } from "./PlayerSummary.tsx";
+import { PreselectionTag } from "./PreselectionTag.tsx";
 import { ShipResources } from "./ShipResources.tsx";
 import { SettingsDialog } from "./SettingsDialog.tsx";
 
@@ -61,6 +62,7 @@ export function TopBar({
       <span className="cycle">
         Day {view.day} · Cycle {view.cycleOfDay}
         {nextCycleAt !== null && <CycleCountdown nextCycleAt={nextCycleAt} clockOffset={clockOffset} />}
+        {view.preselection && <PreselectionTag />}
       </span>
       <span className="spacer" />
       {!mobile && <ShipResources ship={view.ship} titles={view.titles} />}

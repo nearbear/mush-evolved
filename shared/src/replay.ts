@@ -4,6 +4,7 @@
 // Every state change must go through applyInput, or it won't be in the record.
 
 import type { GameClientMessage } from "./protocol.ts";
+import { joinShip } from "./preselection.ts";
 import { createGame, newCycle, setActopiCheat, setCheat, setRoleCheat, type ActionResult } from "./rules.ts";
 import { clearQueue, queueAction, tick } from "./queue.ts";
 import { walk } from "./spot.ts";
@@ -39,7 +40,8 @@ export type Input =
   | (Exclude<GameClientMessage, { type: "action" }> & { by: PlayerId })
   | (Extract<GameClientMessage, { type: "action" }> & { by: PlayerId; at: number })
   | { type: "tick"; at: number }
-  | { type: "cycle" };
+  | { type: "cycle" }
+  | { type: "join"; seat: Seat };
 
 export function startGame(setup: GameSetup): GameState {
   return createGame(setup.seats, setup.config, setup.seed, setup.forcedRoles, setup.startCycle);
@@ -56,6 +58,8 @@ export function applyInput(state: GameState, input: Input): ActionResult {
       return tick(state, input.at);
     case "cycle":
       return newCycle(state);
+    case "join":
+      return joinShip(state, input.seat);
     case "chat":
       return sendChat(state, input.by, input.channel, input.text);
     case "toggleCheckbox":

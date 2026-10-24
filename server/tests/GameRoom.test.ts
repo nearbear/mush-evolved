@@ -1,4 +1,4 @@
-import { CHAT_CHANNELS, legalIn, type GameServerMessage, type PlayerView } from "@mush2/shared";
+import { CHAT_CHANNELS, legalIn, type CharacterId, type GameServerMessage, type GameSetup, type PlayerView } from "@mush2/shared";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { FakeConnection, FakeServer, FakeStorage, seats, tokensFor } from "../src/testing/fakes.ts";
 
@@ -458,5 +458,59 @@ describe("GameRoom cycle clock", () => {
     const { room, storage } = await newRoom(3, new FakeStorage(), { CYCLE_SECONDS: "60" });
     expect(lastView(connect(room, "tok0"))).toMatchObject({ day: 1, cycleOfDay: 2 }); // the second minute of the "day"
     expect(storage.alarm).toBe(120_000);
+  });
+});
+
+describe("GameRoom joining (pre-selection)", () => {
+  const launch = Date.UTC(2026, 9, 19, 14, 10); // 14:10 GMT: day 1, cycle 5
+
+  beforeEach(() => {
+    vi.useFakeTimers({ now: launch });
+    return () => vi.useRealTimers();
+  });
+
+  const joinOk = async (room: Room, name: string, character: CharacterId) => {
+    const result = await room.join(name, character);
+    if (!result.ok) throw new Error(result.error);
+    return result;
+  };
+
+  it("launches empty on the first join, seats the player as human, and gives them their own token", async () => {
+    const storage = new FakeStorage();
+    const room = asRoom(storage);
+    const first = await joinOk(room, "Ann", "chao");
+    expect(first.aboard).toBe(1);
+    const view = lastView(connect(room, first.token));
+    expect(view).toMatchObject({ preselection: true, you: { id: "p0", character: "chao", role: "human" } });
+    expect((await storage.get<GameSetup>("setup"))!.seats).toEqual([]);
+    expect([...(await storage.list({ prefix: "input:" })).values()]).toMatchObject([{ input: { type: "join", seat: { id: "p0", name: "Ann" } } }]);
+  });
+
+  it("closes at the start of day 3 cycle 8 on the GMT clock", async () => {
+    const room = asRoom(new FakeStorage());
+    expect((await joinOk(room, "Ann", "chao")).closesAt).toBe(Date.UTC(2026, 9, 21, 21));
+  });
+
+  it("refuses a taken character without seating anyone, and seats a free one", async () => {
+    const room = asRoom(new FakeStorage());
+    const first = await joinOk(room, "Ann", "chao");
+    expect(await room.join("Bob", "chao")).toEqual({ ok: false, error: "character_taken" });
+    const second = await joinOk(room, "Bob", "chun");
+    expect(second.aboard).toBe(2);
+    const others = lastView(connect(room, first.token)).players;
+    expect(others.map((o) => o.character)).toEqual(["chun"]);
+  });
+
+  it("picks the Mush when the ship fills, then takes no more crew", async () => {
+    const room = asRoom(new FakeStorage());
+    const characters: CharacterId[] = ["chao", "chun", "eleesha", "finola"];
+    const joined = [];
+    for (const [i, c] of characters.entries()) joined.push(await joinOk(room, `P${i}`, c));
+    expect(joined.at(-1)!.closesAt).toBeNull();
+    expect(joined.slice(0, -1).every((j) => j.closesAt !== null)).toBe(true);
+    const views = joined.map((j) => lastView(connect(room, j.token)));
+    expect(views.every((v) => !v.preselection)).toBe(true);
+    expect(views.filter((v) => v.you.role === "mush")).toHaveLength(1);
+    expect(await room.join("Late", "frieda")).toEqual({ ok: false, error: "ship_closed" });
   });
 });

@@ -107,6 +107,8 @@ export interface PlayerView {
   day: number;
   cycleOfDay: number;
   phase: GameState["phase"];
+  /** Mush haven't been chosen yet; the ship is still taking crew. */
+  preselection: boolean;
   /** Who won, once the game has ended; null while playing. */
   winner: GameState["winner"];
   /** How it ended (Sol, Eden, or the last human dead); null while playing. */

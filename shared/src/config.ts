@@ -2,11 +2,10 @@ import shipRooms from "@mush2/assets/derived/ship-rooms.json";
 import { BOOK_ITEM, ITRACKIE_ITEM } from "./items.ts";
 import { SKILLS } from "./skills.ts";
 import type { ShipRoom } from "./shipLayout.ts";
-import type { GameConfig, RoomId } from "./types.ts";
+import type { GameConfig, PreselectionRules, RoomId } from "./types.ts";
 
-// PLACEHOLDER values so the skeleton runs. Player count, Mush count, and AP
-// are open decisions (see CLAUDE.md); confirm before changing rules.
-export const SEAT_COUNT = 8;
+/** Seats on a multiplayer ship. Owner, 2026-10-24: 4 for now (the decided rule is 16). */
+export const SEAT_COUNT = 4;
 
 /**
  * The original Daedalus: every room with a door, connected as in Motion
@@ -14,8 +13,18 @@ export const SEAT_COUNT = 8;
  */
 export const SHIP_ROOMS: readonly ShipRoom[] = shipRooms;
 
+/** A multiplayer ship's pre-selection (docs/rules-design.md, "Joining and Mush selection", decided 2026-10-13). */
+export const PRESELECTION: PreselectionRules = {
+  seats: SEAT_COUNT,
+  // Owner, 2026-10-24 (#202): the calendar day 3 cycle 8, so a ship launched late in a GMT day gets less time.
+  endsOn: { day: 3, cycle: 8 },
+  twoMushAbove: 8,
+  minPlayers: 3,
+};
+
 export const DEFAULT_CONFIG: GameConfig = {
   mushCount: 2,
+  preselection: null,
   // Confirmed 2026-10-11: start with 8 AP, gain 1 per cycle (2 while lying in a bed, via the
   // "lying_down" modifier), never above 12.
   startAp: 8,

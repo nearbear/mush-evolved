@@ -3,7 +3,9 @@
     "endCycle": "End cycle",
     "waiting": "Waiting…",
     "waitingForOthers": "Waiting for others…",
-    "leave": "Leave"
+    "leave": "Leave",
+    "preselection": "Pre-selection",
+    "preselectionAbout": "Nobody is Mush yet. The Mush are chosen when the ship is full, or on day 3 cycle 8. Until then there is no combat."
   },
   "credits": {
     "text": "Art from <mush>Mush</mush> by Motion Twin (<archive>WebGamesArchives</archive>), licensed <license>CC BY-NC-SA 4.0</license>. Adapted. Not affiliated with Motion Twin.",
@@ -89,7 +91,7 @@
     "tagline": "Cryo sleep. Pick a ship to wake aboard.",
     "pickCharacter": "Pick your crew member.",
     "characterTaken": "Someone else just took that crew member. Pick another.",
-    "waiting": "Waiting: {{waiting}}/{{seats}}. Empty seats fill with bots shortly.",
+    "waiting": "Boarding: {{waiting}}/{{seats}} aboard.",
     "awaitingCrew": "Awaiting crew",
     "nearlyFull": "Nearly full",
     "noWebgl": "Your browser can't draw the game: it needs WebGL 2. Turn on hardware acceleration in your browser settings, update your browser or graphics drivers, or try another browser or device."
@@ -284,7 +286,8 @@
     "thread_forbidden": "You can't start a thread right now.",
     "thread_name_invalid": "A thread needs a name of up to 40 characters.",
     "thread_exists": "That message already has a thread.",
-    "message_not_found": "That message is no longer there."
+    "message_not_found": "That message is no longer there.",
+    "join_failed": "Couldn't board a ship. Try again."
   },
   "terminal": {
     "close": "Close"
@@ -620,6 +623,8 @@
     "attackAreaMissed": "{{name}} set off the {{item}}, but it hit no one.",
     "spiked": "{{name}} spiked {{target}}.",
     "converted": "The spores have taken hold. You are now Mush.",
+    "chosenMush": "The spores have chosen you. You are Mush.",
+    "mushChosen": "The Mush have been chosen. The ship takes no more crew.",
     "mushContaminated": "{{name}} has been contaminated: level {{level}} of {{capacity}}.",
     "mushConverted": "{{name}} has become Mush.",
     "examineSelf": "You examine yourself.",

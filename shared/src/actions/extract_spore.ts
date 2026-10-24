@@ -1,4 +1,4 @@
-import { Action, type ActionVisibility } from "./action.ts";
+import { Action, IN_PRESELECTION, type ActionVisibility } from "./action.ts";
 import { logSecret } from "../log.ts";
 import { sporesPerDay } from "../modifiers.ts";
 import { addStatus } from "../statuses.ts";
@@ -22,6 +22,7 @@ export class ExtractSporeAction extends Action<ExtractSporeActionData> {
   }
 
   override validate(state: Readonly<GameState>, player: Readonly<PlayerState>, target: ExtractSporeActionData): string | null {
+    if (state.preselection) return IN_PRESELECTION;
     if (player.role !== "mush") return "not_mush";
     const last = state.sporeExtractedOn[player.id];
     if (last !== undefined && state.cycle - last < state.config.spores.cooldownCycles) return "cooldown";

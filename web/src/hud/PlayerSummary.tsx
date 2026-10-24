@@ -7,6 +7,7 @@ import { Popover } from "@base-ui/react/popover";
 import { useTranslation } from "react-i18next";
 import { AP_PIP, FACTION_ICONS, HP_ICON, HP_PIP, MORALE_ICON, MORALE_PIP, MP_PIP, bustIcon } from "../art/assets.ts";
 import { PipBar } from "./PipBar.tsx";
+import { PreselectionTag } from "./PreselectionTag.tsx";
 import { CompactResourceChips } from "./ResourceChips.tsx";
 
 function factionOf(view: PlayerView) {
@@ -109,6 +110,11 @@ export function PlayerSummary({ view, compact = false, countdown }: { view: Play
             D{view.day}C{view.cycleOfDay}
           </span>
           {countdown && <span className="sub cycle-under-name">{countdown}</span>}
+          {view.preselection && (
+            <span className="cycle-under-name">
+              <PreselectionTag />
+            </span>
+          )}
         </div>
         <FactionCard view={view} />
         <div className="stat-chips">

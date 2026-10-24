@@ -1,4 +1,4 @@
-import { Action, peopleHere, type ActionTag } from "./action.ts";
+import { Action, IN_PRESELECTION, peopleHere, type ActionTag } from "./action.ts";
 import { damage } from "../death.ts";
 import { logPublic } from "../log.ts";
 import { punchDamage } from "../modifiers.ts";
@@ -31,6 +31,7 @@ export class PunchAction extends Action<PunchActionData> {
   }
 
   override validate(state: Readonly<GameState>, player: Readonly<PlayerState>, target: PunchActionData): string | null {
+    if (state.preselection) return IN_PRESELECTION;
     if (!peopleHere(state, player).some((o) => o.id === target.target)) return "cant_see";
     return null;
   }

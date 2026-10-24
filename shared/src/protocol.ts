@@ -15,8 +15,9 @@ export const LOBBY_LANGUAGES = ["en", "fr", "es"] as const;
 export type LobbyLanguage = (typeof LOBBY_LANGUAGES)[number];
 
 // Matchmaker ("matchmaker" party). One room per language: "en", "fr", "es" (LOBBY_LANGUAGES).
-// Any connection, queued or just watching, is sent `queued` on connect and whenever the count changes.
-// `character` is the crew member picked in the lobby; the matchmaker refuses one another waiting player holds.
+// Any connection, joining or just watching, is sent `queued` on connect and whenever the count changes: `waiting` is
+// how many are aboard the language's open ship (in pre-selection), out of `seats`. `queue` boards that ship at once
+// (`matched`); `character` is the crew member picked in the lobby, refused if someone aboard already has it.
 export type MatchmakerClientMessage = { type: "queue"; name: string; character: CharacterId };
 export type MatchmakerServerMessage =
   | { type: "queued"; waiting: number; seats: number }

@@ -1,4 +1,4 @@
-import { Action, peopleHere, type ActionTag } from "./action.ts";
+import { Action, IN_PRESELECTION, peopleHere, type ActionTag } from "./action.ts";
 import { damage } from "../death.ts";
 import { itemsIn } from "../items.ts";
 import { logPublic } from "../log.ts";
@@ -44,6 +44,7 @@ export class AttackAction extends Action<AttackActionData> {
   }
 
   override validate(state: Readonly<GameState>, player: Readonly<PlayerState>, target: AttackActionData): string | null {
+    if (state.preselection) return IN_PRESELECTION;
     const weapon = usableWeapons(state, player).find((i) => i.id === target.weapon);
     if (!weapon) return "no_weapon";
     const area = !!state.config.weapons.types[weapon.type]!.area;

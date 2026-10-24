@@ -29,7 +29,8 @@ import { biosTerminalsHere, newBios } from "./bios.ts";
 import { callNextRebel, commsCycle, commsTerminalView, comTerminalsHere, newComms } from "./comms.ts";
 import { botanyCycle, botanyDay, plantView } from "./botany.ts";
 import { burnOxygen, shipMax, startShip } from "./ship.ts";
-import { SUCCESSION, TITLE_IDS, assignTitles } from "./titles.ts";
+import { preselectionCycle } from "./preselection.ts";
+import { SUCCESSION, TITLE_IDS, assignTitles, noTitles } from "./titles.ts";
 import type {
   Action,
   Equipment,
@@ -61,42 +62,22 @@ export function createGame(
   forcedRoles: Readonly<Record<PlayerId, Role>> = {},
   startCycle = 1,
 ): GameState {
-  if (config.mushCount >= seats.length) throw new Error("mushCount must be less than seat count");
+  const { preselection } = config;
+  if (!preselection && config.mushCount >= seats.length) throw new Error("mushCount must be less than seat count");
   if (!Number.isInteger(startCycle) || startCycle < 1 || startCycle > config.cyclesPerDay) throw new Error("startCycle must be a cycle of day 1");
   if (new Set(seats.map((s) => s.id)).size !== seats.length) throw new Error("duplicate seat ids");
 
+  // In pre-selection nobody is Mush until `selectMush` (preselection.ts).
   const [shuffled, rng] = shuffle(seats, seed);
   const rank = (s: Seat) => (forcedRoles[s.id] === "mush" ? 0 : forcedRoles[s.id] === "human" ? 2 : 1);
-  const mushIds = new Set([...shuffled].sort((a, b) => rank(a) - rank(b)).slice(0, config.mushCount).map((s) => s.id));
+  const mushCount = preselection ? 0 : config.mushCount;
+  const mushIds = new Set([...shuffled].sort((a, b) => rank(a) - rank(b)).slice(0, mushCount).map((s) => s.id));
 
-  const players: PlayerState[] = seats.map((s) => ({
-    ...s,
-    role: mushIds.has(s.id) ? "mush" : "human",
-    alpha: mushIds.has(s.id),
-    room: config.startRoom,
-    ap: config.startAp,
-    mp: 0,
-    hp: config.startHp,
-    morale: config.startMorale,
-    satiety: 0,
-    // Humans start at 0 satiety, so the hunger count starts with the first cycle.
-    satietyZeroSince: mushIds.has(s.id) ? null : startCycle,
-    statuses: [],
-    spores: 0,
-    resources: emptyResources(),
-    modifiers: [...(config.characterModifiers[s.character] ?? [])],
-    skills: [...config.startSkills],
-    alive: true,
-    ready: false,
-    current: null,
-    queue: [],
-    cheats: [],
-    actopiCheat: "default",
-  }));
+  const players: PlayerState[] = seats.map((s) => newPlayer(s, config, startCycle, mushIds.has(s.id) ? "mush" : "human"));
 
   const starts: Omit<ItemState, "id">[] = [
     ...config.startItems.map((it): Omit<ItemState, "id"> => ({ type: it.type, at: { kind: "room", id: it.room }, ...(it.builds !== undefined && { builds: it.builds }), ...(it.teaches !== undefined && { teaches: it.teaches }), ...(it.plant && { plant: { ...it.plant } }), ...chargesFor(config, it.type) })),
-    ...players.flatMap((p) => config.startInventory.map((type): Omit<ItemState, "id"> => ({ type, at: { kind: "player", id: p.id } }))),
+    ...players.flatMap((p) => startInventory(config, p.id)),
   ];
   const items: ItemState[] = starts.map((it, i) => ({ id: `item-${i + 1}`, ...it }));
 
@@ -105,6 +86,7 @@ export function createGame(
     rng,
     cycle: startCycle,
     phase: "playing",
+    preselection: preselection !== null,
     winner: null,
     ending: null,
     players,
@@ -132,15 +114,48 @@ export function createGame(
     scanFailures: {},
     nextPlanetId: 1,
     navigation: { heading: config.navigation.startHeading, orbit: null },
-    // Issued with Mush selection, whatever the role (owner, 2026-10-13 and 2026-10-20).
-    titles: assignTitles(players),
+    // Issued with Mush selection, whatever the role (owner, 2026-10-13 and 2026-10-20); in pre-selection, by `selectMush`.
+    titles: preselection ? noTitles() : assignTitles(players),
     comms: newComms(config),
     now: 0,
   };
-  // Mush selection: the first rebel base calls now (owner, 2026-10-21).
-  callNextRebel(state);
+  // Mush selection: the first rebel base calls now (owner, 2026-10-21); in pre-selection, `selectMush` does it.
+  if (!preselection) callNextRebel(state);
   grantCarePoints(state); // day 1 begins now
   return state;
+}
+
+/** A seat's player as they wake up: at launch, or on joining a ship in pre-selection (`cycle` is the cycle they join in). */
+export function newPlayer(s: Seat, config: GameConfig, cycle: number, role: Role): PlayerState {
+  return {
+    ...s,
+    role,
+    alpha: role === "mush",
+    room: config.startRoom,
+    ap: config.startAp,
+    mp: 0,
+    hp: config.startHp,
+    morale: config.startMorale,
+    satiety: 0,
+    // Humans start at 0 satiety, so the hunger count starts with the first cycle.
+    satietyZeroSince: role === "mush" ? null : cycle,
+    statuses: [],
+    spores: 0,
+    resources: emptyResources(),
+    modifiers: [...(config.characterModifiers[s.character] ?? [])],
+    skills: [...config.startSkills],
+    alive: true,
+    ready: false,
+    current: null,
+    queue: [],
+    cheats: [],
+    actopiCheat: "default",
+  };
+}
+
+/** What a player carries when they wake up, not yet given ids. */
+export function startInventory(config: GameConfig, id: PlayerId): Omit<ItemState, "id">[] {
+  return config.startInventory.map((type) => ({ type, at: { kind: "player", id } }));
 }
 
 export function legalActions(state: GameState, playerId: PlayerId): Action[] {
@@ -327,6 +342,7 @@ function advanceCycle(state: GameState): void {
     params: newDay ? { day } : { cycle: state.cycle },
     visibleTo: "all",
   });
+  preselectionCycle(state);
 }
 
 /** Day-start care, Computer and PILGRED points: every living player gains what their skills grant (Computer and PILGRED points stop at their caps). Mutates a state the caller already cloned. */
@@ -413,6 +429,7 @@ export function viewFor(state: GameState, playerId: PlayerId): PlayerView {
     cycle: state.cycle,
     ...dayOf(state),
     phase: state.phase,
+    preselection: state.preselection,
     winner: state.winner,
     ending: state.ending,
     // Names and roles are hidden while the game runs; the end screen shows everyone's (#191).

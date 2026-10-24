@@ -1,4 +1,4 @@
-import { Action, peopleHere, type ActionTag, type ActionVisibility } from "./action.ts";
+import { Action, IN_PRESELECTION, peopleHere, type ActionTag, type ActionVisibility } from "./action.ts";
 import { logCovert } from "../log.ts";
 import { contaminate } from "../infection.ts";
 import type { GameState, PlayerState } from "../types.ts";
@@ -29,6 +29,7 @@ export class SpikeAction extends Action<SpikeActionData> {
   }
 
   override validate(state: Readonly<GameState>, player: Readonly<PlayerState>, target: SpikeActionData): string | null {
+    if (state.preselection) return IN_PRESELECTION;
     if (player.role !== "mush") return "not_mush";
     const victim = peopleHere(state, player).find((o) => o.id === target.target);
     if (!victim) return "cant_see";

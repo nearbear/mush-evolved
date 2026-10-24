@@ -25,8 +25,21 @@ export interface WeaponStats {
   repairChance: number | null; // Breakable, with this repair chance; null: it can't break. Breaking and repair aren't built.
 }
 
+/**
+ * Pre-selection (docs/rules-design.md, "Joining and Mush selection"): the ship launches with nobody Mush, players join
+ * it, and Mush are chosen when it fills or when the deadline cycle begins, whichever comes first.
+ */
+export interface PreselectionRules {
+  seats: number; // The ship is full, and Mush are chosen, at this many players.
+  endsOn: { day: number; cycle: number }; // Mush are chosen when this cycle begins, if the ship hasn't filled.
+  twoMushAbove: number; // More players than this get 2 Mush; this many or fewer get 1.
+  minPlayers: number; // Stopgap (owner, 2026-10-24): fewer players than this at selection and every human dies at once.
+}
+
 export interface GameConfig {
-  mushCount: number;
+  mushCount: number; // Mush picked at launch. Unused with `preselection`, where the player count decides.
+  // Null: everyone is seated at launch and Mush are picked then (tests, single player later).
+  preselection: PreselectionRules | null;
   startAp: number;
   apPerCycle: number; // AP gained at the start of each cycle, before modifiers. Unspent AP carries over.
   cyclesPerDay: number; // Cycles in one day. The day ends with the last cycle; every living player then loses `dailyMoraleLoss` (modifiers.ts) morale.
