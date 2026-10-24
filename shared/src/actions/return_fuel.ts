@@ -39,6 +39,10 @@ export class ReturnFuelAction extends Action<ReturnFuelActionData> {
     return state.config.fuel.dirtyChance;
   }
 
+  override injuryChance(state: Readonly<GameState>): number {
+    return state.config.fuel.injuryChance;
+  }
+
   override apply(state: GameState, player: PlayerState, _target: ReturnFuelActionData): void {
     const capsule = carriedCapsule(state, player)!;
     state.items.splice(state.items.indexOf(capsule), 1);
