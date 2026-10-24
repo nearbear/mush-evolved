@@ -24,10 +24,16 @@
 }
 .inspect-art {
   display: block;
+  box-sizing: border-box;
   width: 100%;
   max-width: 210px;
   margin: 0.75rem auto 0.5rem;
-  border-radius: 4px;
+}
+/* A character's portrait gets the iTrackie's gold outline (edge, gold, edge from the inside out); inset shadows would draw under the image, so the border, outline and a spread shadow make the three lines. */
+.inspect-figure-art .inspect-art {
+  border: 1px solid var(--gold-edge);
+  outline: 1px solid var(--gold-mid);
+  box-shadow: 0 0 0 2px var(--gold-edge);
 }
 .inspect-name {
   margin: 0.75rem 0 0.5rem;
@@ -257,7 +263,7 @@
   opacity: 0.7;
 }
 
-/* Character name chip along the portrait's bottom edge, like the nameplate's stat chips but larger. */
+/* Character name plate along the portrait's bottom edge. */
 .inspect-figure-name {
   position: absolute;
   left: 50%;
@@ -267,9 +273,11 @@
   box-sizing: border-box;
   max-width: calc(100% - 0.6rem);
   padding: 0 0.7rem;
-  border-radius: 999px;
-  background: rgb(10 20 45 / 0.8);
-  border: 1px solid rgb(255 255 255 / 0.35);
+  /* A plate in the iTrackie's gold outline, like the portrait's frame. */
+  border: 1px solid var(--gold-edge);
+  border-radius: 2px;
+  background: var(--panel-fill);
+  box-shadow: inset 0 0 0 1px var(--gold-mid), inset 0 0 0 2px var(--gold-edge);
   color: #fff;
   font-size: 0.95rem;
   font-weight: bold;
@@ -318,6 +326,11 @@
 .consume-effects span {
   justify-self: end;
   font-variant-numeric: tabular-nums;
+}
+
+/* The panel title in the iTrackie's light cyan (the idle tabs' text colour). */
+.inspect .panel-head h2 {
+  color: var(--terminal-bg);
 }
 
 /* The asset credits, pushed to the bottom of the Inspect panel (a flex column), under the target and its actions. */

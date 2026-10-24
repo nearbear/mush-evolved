@@ -4,9 +4,11 @@
   position: relative;
   min-height: 200px;
   background: var(--room-bg);
-  border: 1px solid var(--edge);
+  /* The glowing rim of the panels beside it (kit.css's tooltip line and glow). */
+  border: 1px solid var(--glow-rim);
   border-radius: 6px;
-  padding: 2.25rem 1rem 1rem;
+  box-shadow: 0 0 6px var(--glow), inset 0 0 6px rgb(60 110 255 / 0.5);
+  padding: 1rem;
   display: flex;
   flex-direction: column;
   touch-action: manipulation;
@@ -18,13 +20,21 @@
   min-height: 0;
   overflow: hidden;
 }
+/* A small plaque over the room's top-left corner in the iTrackie's gold outline; taps go through it to the room. */
 .room-title {
   position: absolute;
-  top: 0.6rem;
-  left: 0.75rem;
+  top: 0.5rem;
+  left: 0.5rem;
+  z-index: 1;
   margin: 0;
+  padding: 0.2rem 0.6rem;
+  background: var(--panel-fill);
+  border: 1px solid var(--gold-edge);
+  border-radius: 2px;
+  box-shadow: inset 0 0 0 1px var(--gold-mid), inset 0 0 0 2px var(--gold-edge), 0 1px 4px var(--panel-shadow);
   color: #fff;
-  font-size: 1rem;
+  font-size: 0.85rem;
+  pointer-events: none;
 }
 /* Fills the panel and takes the clicks; .iso-world inside it is moved by the camera (IsoRoom). */
 .iso-viewport {

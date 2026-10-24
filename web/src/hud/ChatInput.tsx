@@ -10,7 +10,7 @@ const CHAT_MIN_HEIGHT = CHAT_MIN_LINES * CHAT_LINE_PX + 12;
 /** The markdown preview toggle. TODO(preview): off for now. */
 const CHAT_PREVIEW: boolean = false;
 
-/** A three-line text area that grows upward (drag the grip above it to make it taller), the preview toggle above it (stubbed out, see CHAT_PREVIEW) and send below. */
+/** A three-line text area that grows upward (drag the grip above it to make it taller), the preview toggle above it (stubbed out, see CHAT_PREVIEW) and send beside it. */
 export function ChatInput({ enabled, placeholder, onSend }: { enabled: boolean; placeholder: string; onSend: (text: string) => void }) {
   const { t } = useTranslation();
   const [text, setText] = useState("");

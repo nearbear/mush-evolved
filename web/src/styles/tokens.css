@@ -17,6 +17,9 @@
   --terminal-font: consola, monospace;
   /* Gold: selection outlines, glows, highlighted map cells. */
   --highlight: #f5c542;
+  /* The iTrackie's gold outline (kit.css's .gold: edge, gold, edge, 1px each), reused on the inspect portrait, its name plate, the room plaque, and the phone nav. */
+  --gold-edge: #05063a;
+  --gold-mid: #e8c20e;
   --badge: #24508a;
   --room-bg: #0a0f1c;
   /* Dark text/strokes on light art (chat field, minimap dots). */

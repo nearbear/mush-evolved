@@ -63,28 +63,30 @@
 .itrackie-card .feed > li.cycle-divider::after {
   border-top-color: rgb(23 27 92 / 0.25);
 }
-/* The phone bottom nav keeps the panel look: flat when idle, glowing when active. */
+/* The phone bottom nav uses the iTrackie tab look: blue minitab when idle, the light-cyan tab with the gold outline when active. */
 .bottom-nav-button {
+  position: relative;
   flex: 1;
   margin: 0;
   border: 0;
   border-radius: 0;
-  background: color-mix(in srgb, var(--surface-top) 60%, transparent);
-  color: var(--muted);
+  background: #213578;
+  color: #c2f3fc;
   text-shadow: none;
 }
+/* Only real hover: on touch screens :hover sticks after a tap. */
+@media (hover: hover) {
+  .bottom-nav-button:hover:not([aria-current]) {
+    background: #2c4698;
+  }
+}
 .bottom-nav-button[aria-current] {
-  background: var(--panel-fill);
-  color: var(--text);
+  background: var(--terminal-bg);
+  color: #171b5c;
   font-weight: bold;
-  border-color: var(--glow-rim);
+  box-shadow: inset 0 0 0 1px var(--gold-edge), inset 0 0 0 2px var(--gold-mid), inset 0 0 0 3px var(--gold-edge);
 }
-/* iTrackie tabs are kit.css's .kit-minitab (selected = on, light cyan); the card below takes the selected color. */
-.itrackie-tab,
-.itrackie-card {
-  --gold-edge: #05063a;
-  --gold-mid: #e8c20e;
-}
+/* iTrackie tabs are kit.css's .kit-minitab (selected = on, light cyan); the card below takes the selected color. The gold outline colours are in tokens.css. */
 .itrackie-tab {
   flex: none;
   position: relative;
@@ -123,7 +125,8 @@
   opacity: 0.8;
 }
 .itrackie-tab:hover .tab-icon,
-.itrackie-tab[aria-selected="true"] .tab-icon {
+.itrackie-tab[aria-selected="true"] .tab-icon,
+.bottom-nav-button[aria-current] .tab-icon {
   opacity: 1;
 }
 /* The active tab's name, since the tabs themselves are icons. */

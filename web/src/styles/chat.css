@@ -81,21 +81,26 @@
   background-image: url("../../../Mush/www/img/design/buttonchatover.png");
 }
 
-/* The message box, stacked: the preview toggle, a textarea (three lines by default; a grip above drags it taller), send. */
+/* The message box: the preview toggle on top, then a textarea (three lines by default; a grip above drags it taller) with send beside it at the bottom, as in the one-line input. */
 .chat-compose {
   position: relative;
-  flex-direction: column;
-  align-items: stretch;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
 }
+.chat-compose .chat-tools,
+.chat-compose .chat-preview {
+  grid-column: 1 / -1;
+}
+/* A sharp, bevelled edge like chatbox.png's, in the iTrackie's ink. */
 .chat-compose textarea {
-  flex: none;
   min-width: 0;
   box-sizing: border-box;
   resize: none;
   padding: 3px 6px;
-  border: 1px solid #7d82ab;
-  border-radius: 3px;
-  box-shadow: inset 0 1px 2px rgb(0 0 30 / 0.35);
+  border: 1px solid #171b5c;
+  border-radius: 1px;
+  box-shadow: inset 0 1px 2px rgb(23 27 92 / 0.4);
   font: inherit;
   font-size: 0.85rem;
   line-height: 18px;
@@ -108,10 +113,6 @@
 }
 .chat-tools button {
   margin: 0;
-}
-/* Send: centred under the text box, at the original's 29px. */
-.chat-compose .chat-send {
-  align-self: center;
 }
 /* Preview toggle: a small button drawn with an eye glyph. */
 .chat-max {
@@ -134,14 +135,14 @@
   flex-direction: column;
   min-height: 0;
 }
-/* Previewing: cover the thread (below the tab title and any feature drop-down); between the toggle and send, preview on the top half, text box on the bottom. */
+/* Previewing: cover the thread (below the tab title and any feature drop-down); under the toggle, preview on the top half, text box and send on the bottom. */
 .chat-compose.chat-previewing {
   position: absolute;
   inset: 0;
   z-index: 10;
   margin: 0;
   display: grid;
-  grid-template-rows: auto 1fr 1fr auto;
+  grid-template-rows: auto 1fr 1fr;
   gap: 0.4rem;
   align-items: stretch;
   background: var(--panel-fill);
@@ -154,6 +155,7 @@
   border-bottom: 1px solid rgb(255 255 255 / 0.15);
 }
 .chat-previewing textarea {
+  align-self: stretch;
   height: auto;
   min-height: 0;
 }
@@ -176,7 +178,7 @@
   height: 3px;
   margin: 2px auto 0;
   border-radius: 2px;
-  background: var(--panel-rim);
+  background: var(--muted);
 }
 
 /* Markdown message bodies. Single newlines are kept in paragraphs, headers stay near body size. */
