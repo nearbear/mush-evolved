@@ -46,6 +46,8 @@ type FoldHooks = Record<
   | "healAmount"
   | "satietyPerCycle"
   | "punchDamage"
+  | "turretDamage"
+  | "hullRepairAmount"
   | "carePointsPerDay"
   | "computerPointsPerDay"
   | "designerPointsPerDay"
@@ -80,6 +82,8 @@ export interface Modifier extends Partial<FoldHooks> {
   roomActionCost?: (cost: ActionCost, ctx: CostContext & { holder: Readonly<PlayerState> }) => ActionCost;
   /** Adjusts the morale every living player loses when a day ends, while the holder is alive (Mankind's Only Hope). Must be pure. */
   crewMoraleLoss?: (loss: number, holder: Readonly<PlayerState>, state: Readonly<GameState>) => number;
+  /** Adjusts the points the hunter pool gains each cycle change, while the holder is alive (for Space Tactics; none yet). Must be pure. */
+  crewHunterPoints?: (points: number, holder: Readonly<PlayerState>, state: Readonly<GameState>) => number;
   /** Adjusts how a player's moves are paid for. Must be pure. */
   movement?: (rules: MovementRules, player: Readonly<PlayerState>, state: Readonly<GameState>) => MovementRules;
   /**
@@ -209,6 +213,19 @@ export function dailyMoraleLoss(state: Readonly<GameState>, registry: ModifierRe
   return Math.max(0, loss);
 }
 
+/** Points the hunter pool gains at a cycle change: `base` through every living player's `crewHunterPoints` hooks, in seat order; never below 0. */
+export function hunterPointsPerCycle(base: number, state: Readonly<GameState>, registry: ModifierRegistry = MODIFIERS): number {
+  let points = base;
+  for (const holder of state.players) {
+    if (!holder.alive) continue;
+    for (const id of modifierIds(holder)) {
+      const hook = registry[id]?.crewHunterPoints;
+      if (hook) points = hook(points, holder, state);
+    }
+  }
+  return Math.max(0, points);
+}
+
 /** Runs every onActionFailed hook the player has. Mutates a state the caller already cloned. */
 export function actionFailed(next: GameState, player: PlayerState, apSpent: number, registry: ModifierRegistry = MODIFIERS): void {
   for (const id of modifierIds(player)) registry[id]?.onActionFailed?.(next, player, apSpent);
@@ -302,6 +319,14 @@ export const gardenPointsGain = (state: Readonly<GameState>, player: Readonly<Pl
 /** HP a punch removes: the rolled base damage folded through the puncher's modifiers. */
 export const punchDamage = (state: Readonly<GameState>, player: Readonly<PlayerState>, base: number, registry: ModifierRegistry = MODIFIERS) =>
   fold("punchDamage", base, state, player, registry);
+
+/** Damage a turret shot does to a hunter: the rolled base folded through the shooter's modifiers (for Gunner; none yet). */
+export const turretDamage = (state: Readonly<GameState>, player: Readonly<PlayerState>, base: number, registry: ModifierRegistry = MODIFIERS) =>
+  fold("turretDamage", base, state, player, registry);
+
+/** Hull a successful repair restores: the base folded through the repairer's modifiers (for the Vaguoscope; none yet). */
+export const hullRepairAmount = (state: Readonly<GameState>, player: Readonly<PlayerState>, base: number, registry: ModifierRegistry = MODIFIERS) =>
+  fold("hullRepairAmount", base, state, player, registry);
 
 /** Runs every onShower hook of the player's modifiers. Mutates a state the caller already cloned. */
 export function showered(next: GameState, player: PlayerState, registry: ModifierRegistry = MODIFIERS): void {

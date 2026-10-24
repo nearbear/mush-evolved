@@ -1233,3 +1233,17 @@ Asked how feasible the original's Transfer skill is. Claude read eMushpedia (`Tr
 - **Decision (owner):** 4 Mush skill slots, separate from the 3 human slots plus the book slot; picked any time; Mush keep picking human skills; all Mush skills pickable with implementation-status badges, none implemented; a cosmetic toggle at the top of your own skill stack switches between human and Mush slots. Privacy (owner only, not other Mush) came from #25's note in the issue.
 - **What I did:** took the 26 Mush, retained, non-beta rows of `skills.json` (all have icons); reused `pick_skill` with the id deciding the slot set rather than adding a second action; new `PlayerState.mushSkills` (reach `own`, leak sentinel added; STATE_VERSION 64). fr text is the original table's with markup stripped; en and es are my drafts.
 - **What needed correction:** my first privacy test failed because the other Mush's own pick menu (`view.actions`) lists every Mush skill, which is correct, not a leak; the test now ignores actions. The i18n ratchet flagged `t(cond ? "a" : "b")` inside an aria-label; two `t()` calls fixed it. `npm run lint` fails on a nested `biome.json` in an existing `.claude/worktrees/` checkout, unrelated to this change.
+
+## 2026-10-24: Space combat Phase 1 built (worktree `space-combat`)
+
+- **Decided by the owner** (rules-design, "Hunters and space combat, first pass"): eMush's wave pool and hunters, the wiki's turret and hull repair, the shield at 50 absorbing 33% (67% with the project) with a BIOS switch, hull 0 kills everyone, skills as hooks only.
+- **Built by Claude:** `hunters.ts` (pool, waves, hunter turns, recharge, regeneration, hull 0), `turret_attack`, `repair_hull`, the `plasma_shield` BIOS option, `PlayerView.hunters`, a turret window and a hunter chip on the ship card. Hooks: `turretDamage`, `hullRepairAmount`, `crewHunterPoints`, and the `shoot` tag.
+- **What needed correction:** unattended multi-day tests started losing the ship to hunters, which is the rule working. A `noHunters` config helper in `tests/support.ts` fixed them, rather than weakening the rule. The HP-write scan flagged a hunter's hp, so the write moved into `hunters.ts` and that file was allowed with a reason. Biome read a helper called `useCharge` as a React hook, so it was renamed.
+- **Claude's defaults, flagged to the owner:** the shield shows as 0 while off; a hull repair success is public and a failure private; no dirt or injury chances; a ship-wide line per hunter hit; hull 0 ends as the existing Mush win (`humans_dead`).
+
+## 2026-10-24: Space combat Phase 1, owner's follow-ups
+
+- The owner had the shield's 33% share rounded instead of rounded down, because Claude's report showed that rounding down made the shield take almost nothing from 2-4 damage hits.
+- Hull 0 now has its own ending, `ship_destroyed`. It uses the same picture as all humans dead, with its own text, and is still a Mush win. Claude had reused `humans_dead` without asking.
+- The owner removed Claude's default of a ship-wide line for each hunter hit. There are no ship-wide lines for hunter hits on the ship or for hunter damage or kills.
+- The owner accepted the two turret visibility effects that the leak-check agent raised: shared charge counts, and the hp drop being visible. They're recorded in `rules-design.md`. Raising them as questions rather than silently "fixing" them was the right call.

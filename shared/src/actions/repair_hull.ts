@@ -1,0 +1,54 @@
+import { Action } from "./action.ts";
+import { canReach } from "../items.ts";
+import { logPrivate, logPublic } from "../log.ts";
+import { hullRepairAmount } from "../modifiers.ts";
+import type { GameState, PlayerState } from "../types.ts";
+
+export type RepairHullActionData = { type: "repair_hull"; item: string };
+
+export const HULL_REPAIR_ITEM = "metal_scraps";
+
+/**
+ * Patch the hull with a metal scrap (owner, 2026-10-24, the wiki's Armure et Bouclier and eMush's StrengthenHull):
+ * 1 AP, 25%, +5 hull up to its max, from any room, with a scrap lying there or carried. The scrap is used up only on a
+ * success, and the action isn't offered while the hull is full. A success is public in the room, a failure private.
+ */
+export class RepairHullAction extends Action<RepairHullActionData> {
+  constructor() {
+    super("repair_hull");
+  }
+
+  override getCost(state: Readonly<GameState>): { ap: number; mp: number } {
+    return { ap: state.config.hullRepair.cost.ap, mp: 0 };
+  }
+
+  override getSuccessChance(state: Readonly<GameState>): number {
+    return state.config.hullRepair.chance;
+  }
+
+  override getCandidates(state: Readonly<GameState>, player: Readonly<PlayerState>): RepairHullActionData[] {
+    if (state.ship.hull >= state.config.ship.hull.max) return [];
+    return state.items
+      .filter((item) => item.type === HULL_REPAIR_ITEM && canReach(state, player, item.at))
+      .map((item): RepairHullActionData => ({ type: "repair_hull", item: item.id }));
+  }
+
+  override validate(state: Readonly<GameState>, player: Readonly<PlayerState>, target: RepairHullActionData): string | null {
+    const item = state.items.find((i) => i.id === target.item);
+    if (!item) return "no_such_item";
+    if (item.type !== HULL_REPAIR_ITEM || !canReach(state, player, item.at)) return "cant_repair_hull";
+    if (state.ship.hull >= state.config.ship.hull.max) return "hull_full";
+    return null;
+  }
+
+  override apply(state: GameState, player: PlayerState, target: RepairHullActionData): void {
+    state.items = state.items.filter((i) => i.id !== target.item);
+    const amount = hullRepairAmount(state, player, state.config.hullRepair.amount);
+    state.ship.hull = Math.min(state.config.ship.hull.max, state.ship.hull + amount);
+    logPublic(state, player.room, "hullRepaired", { name: player.character });
+  }
+
+  override fail(state: GameState, player: PlayerState): void {
+    logPrivate(state, player.id, "hullRepairFailed");
+  }
+}

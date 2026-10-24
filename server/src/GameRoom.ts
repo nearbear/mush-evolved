@@ -65,7 +65,7 @@ const MODEL_TIMEOUT_MS = 20_000;
  * Bump when GameState's shape changes. Games stored under another version are
  * discarded on load (there is no migration; games are short-lived).
  */
-const STATE_VERSION = 64;
+const STATE_VERSION = 65;
 
 interface Stored {
   version?: number;

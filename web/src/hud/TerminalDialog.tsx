@@ -1,7 +1,7 @@
 // The window opened by accessing a terminal. Blank for now except the research lab, which lists the researches, NERON's
 // core, which lists the NERON projects in the same list, the Astro terminal, which lists your planets, PILGRED, which
 // shows its repair, the Command terminal, which shows the heading and lets the Commander steer (ShipNavigation.tsx) and go home once PILGRED works, the Com
-// center (CommsCenter.tsx) and NERON's BIOS (BiosTerminal.tsx).
+// center (CommsCenter.tsx), NERON's BIOS (BiosTerminal.tsx) and the turrets (TurretPanel.tsx).
 // Open/closed is UI state held by GameScreen; the server only validates the access action.
 
 import { Dialog } from "@base-ui/react/dialog";
@@ -28,6 +28,7 @@ import { BiosTerminal } from "./BiosTerminal.tsx";
 import { CommsCenter } from "./CommsCenter.tsx";
 import { PlanetList } from "./PlanetList.tsx";
 import { ShipNavigation } from "./ShipNavigation.tsx";
+import { TurretPanel } from "./TurretPanel.tsx";
 import "./settings.css";
 import "./terminal.css";
 
@@ -53,6 +54,7 @@ export function TerminalDialog({ terminal, view, onAction, onClose }: Props) {
           {terminal?.type === "PILGRED" && <PilgredRepair terminal={terminal} view={view} onAction={onAction} />}
           {terminal?.type === "COM_CENTER" && <CommsCenter terminal={terminal} view={view} onAction={onAction} />}
           {terminal?.type === "NERON_BIOS_TERM" && <BiosTerminal terminal={terminal} view={view} onAction={onAction} />}
+          {terminal?.type === "TURRET_COMMAND" && <TurretPanel terminal={terminal} view={view} onAction={onAction} />}
           {terminal?.type === "PILOT_MODULE" && <ShipNavigation terminal={terminal} view={view} onAction={onAction} />}
           {terminal?.type === "PILOT_MODULE" && <ReturnToSol key={terminal.id} terminal={terminal} view={view} onAction={onAction} />}
           <Dialog.Close>{t("terminal.close")}</Dialog.Close>

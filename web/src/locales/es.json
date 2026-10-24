@@ -21,7 +21,8 @@
     "fuel": "Combustible",
     "hull": "Casco",
     "plasmaShield": "Escudo de plasma",
-    "alerts": "Alertas"
+    "alerts": "Alertas",
+    "hunters": "Hunters"
   },
   "peek": {
     "doorTo": "Puerta a {{room}}",
@@ -262,7 +263,9 @@
     "loadFuel": "Cargar combustible",
     "unloadFuel": "Descargar combustible",
     "returnFuel": "Devolver la cápsula de combustible",
-    "checkCombustion": "Comprobar el nivel de combustible"
+    "checkCombustion": "Comprobar el nivel de combustible",
+    "turretAttack": "Disparar",
+    "repairHull": "Reforzar el casco"
   },
   "queue": {
     "label": "Tus acciones",
@@ -306,6 +309,7 @@
     "edenMush": "Ganan los Mush: el Daedalus llegó a Edén con Mush a bordo.",
     "edenHumans": "Ganan los humanos: el Daedalus llegó a Edén sin ningún Mush vivo.",
     "humansDead": "Ganan los Mush: todos los humanos del Daedalus han muerto.",
+    "shipDestroyed": "Ganan los Mush: los hunters han destruido el Daedalus con toda la tripulación a bordo.",
     "crew": "Tripulación",
     "roleHuman": "Humano",
     "roleMush": "Mush",
@@ -684,7 +688,18 @@
     "shipInOrbit": "El Daedalus está ahora en órbita alrededor de un planeta.",
     "orbitingPlanet": "El Daedalus está en órbita alrededor de tu planeta {{planet}}.",
     "leaveOrbitNoFuel": "{{name}} intentó salir de la órbita, pero no había suficiente combustible.",
-    "leftOrbit": "{{name}} sacó al Daedalus de la órbita."
+    "leftOrbit": "{{name}} sacó al Daedalus de la órbita.",
+    "hunterWave_one": "NERON: ¡{{count}} hunter ataca el Daedalus!",
+    "hunterWave_many": "NERON: ¡{{count}} hunters atacan el Daedalus!",
+    "hunterWave_other": "NERON: ¡{{count}} hunters atacan el Daedalus!",
+    "shipDestroyed": "El casco del Daedalus cede. La nave explota, y toda la tripulación con ella.",
+    "turretHit": "Alcanzas al hunter: {{damage}} de daño.",
+    "turretMiss": "Fallas el disparo al hunter.",
+    "hunterDestroyed": "{{name}} ha derribado un hunter.",
+    "hullRepaired": "{{name}} ha reforzado el casco.",
+    "hullRepairFailed": "No has conseguido reforzar el casco.",
+    "biosShieldOn": "Has activado el escudo de plasma: vuelve a proteger el casco.",
+    "biosShieldOff": "Has desactivado el escudo de plasma: ya no protege el casco."
   },
   "skills": {
     "title": "Elegir una habilidad",
@@ -1128,6 +1143,10 @@
     "death_announcements": {
       "name": "Avisos de muerte",
       "desc": "Activado, NERON anuncia cada muerte a la tripulación, con el rol del muerto."
+    },
+    "plasma_shield": {
+      "name": "Escudo de plasma",
+      "desc": "Activado, el escudo absorbe parte de cada impacto y se regenera cada ciclo. Desactivado, no absorbe nada; al reactivarlo, recupera sus puntos."
     }
   },
   "comms": {
@@ -1203,5 +1222,12 @@
     "leaveOrbit": "Salir de la órbita",
     "fuel": "Combustible en la cámara de combustión: {{fuel}} de {{max}}",
     "warning": "Viajar quema todo el combustible de la cámara de combustión, y la nave avanza esa distancia. Sin combustible cargado se pierden los PA. Todo planeta que no esté justo delante a esa distancia se pierde."
+  },
+  "turret": {
+    "label": "Hunters a tiro",
+    "none": "Ningún hunter a la vista.",
+    "hunter": "Hunter {{index}}",
+    "hp": "{{hp}} PV",
+    "charges": "Cargas restantes: {{charges}}"
   }
 }

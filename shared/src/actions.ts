@@ -21,6 +21,8 @@ import { ContactXylophAction } from "./actions/contact_xyloph.ts";
 import { UpdateNeronAction } from "./actions/update_neron.ts";
 import { SetBiosAction } from "./actions/set_bios.ts";
 import { ScanPlanetAction } from "./actions/scan_planet.ts";
+import { TurretAttackAction } from "./actions/turret_attack.ts";
+import { RepairHullAction } from "./actions/repair_hull.ts";
 import { AnalyzePlanetAction } from "./actions/analyze_planet.ts";
 import { DeletePlanetAction } from "./actions/delete_planet.ts";
 import { LeaveOrbitAction } from "./actions/leave_orbit.ts";
@@ -110,6 +112,8 @@ export const ACTIONS: { [T in ActionType]: ActionDef<ActionOf<T>> } = {
   scan_planet: new ScanPlanetAction(),
   analyze_planet: new AnalyzePlanetAction(),
   delete_planet: new DeletePlanetAction(),
+  turret_attack: new TurretAttackAction(),
+  repair_hull: new RepairHullAction(),
   dispense: new DispenseAction(),
   consume: new ConsumeAction(),
   cook: new CookAction(),

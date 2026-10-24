@@ -4,16 +4,19 @@ import type { PlayerView } from "@mush2/shared";
 import { SHIP_RESOURCE_ICONS } from "../art/assets.ts";
 import { TitleChip } from "./TitleChip.tsx";
 
-const RESOURCES = ["oxygen", "fuel", "hull", "plasmaShield", "alerts"] as const;
+const RESOURCES = ["oxygen", "fuel", "hull", "plasmaShield", "hunters", "alerts"] as const;
 
-/** The ship card (in the desktop top bar, and ShipOverlay on phones) with the ship's resource counters and the ship titles, all public. TODO(ship-resources): alerts have no backend yet, so they show a placeholder dash. */
-export function ShipResources({ ship, titles }: { ship: PlayerView["ship"]; titles: PlayerView["titles"] }) {
+/**
+ * The ship card (in the desktop top bar, and ShipOverlay on phones) with the ship's resource counters, how many hunters
+ * are attacking, and the ship titles, all public. TODO(ship-resources): alerts have no backend yet, so they show a placeholder dash.
+ */
+export function ShipResources({ ship, hunters, titles }: { ship: PlayerView["ship"]; hunters: number; titles: PlayerView["titles"] }) {
   const { t } = useTranslation();
   return (
     <ul className="ship-resources" aria-label={t("shipResources.title")}>
       {RESOURCES.map((id) => {
         const name = t(`shipResources.${id}`);
-        const value = id === "alerts" ? null : `${ship[id]}/${ship.max[id]}`;
+        const value = id === "alerts" ? null : id === "hunters" ? String(hunters) : `${ship[id]}/${ship.max[id]}`;
         return (
           <li key={id}>
             {/* A popover, not a tooltip, so a tap opens it on phones (touch has no hover). */}

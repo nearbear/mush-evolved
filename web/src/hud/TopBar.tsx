@@ -65,7 +65,7 @@ export function TopBar({
         {view.preselection && <PreselectionTag />}
       </span>
       <span className="spacer" />
-      {!mobile && <ShipResources ship={view.ship} titles={view.titles} />}
+      {!mobile && <ShipResources ship={view.ship} hunters={view.hunters.count} titles={view.titles} />}
       {mobile ? (
         // Phones: the actions live in a hamburger menu to save top bar space.
         <Menu.Root>

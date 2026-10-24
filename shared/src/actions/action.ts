@@ -21,8 +21,9 @@ export type ActionVisibility = "public" | "private" | "secret" | "covert";
  * Kinds of action that other rules react to, so those rules never list action types (issue 30, owner 2026-10-18).
  * - `aggressive`: an attack on someone. No effects yet; later ones include Pacifist's surcharge in its room.
  * - `spore`: a Mush ability that rings a myco alarm on the floor of the room where it resolves (mycoalarm.ts).
+ * - `shoot`: a shot at a hunter from a turret. No effects yet; later ones include Gunner's accuracy and Gunman's pool.
  */
-export type ActionTag = "aggressive" | "spore";
+export type ActionTag = "aggressive" | "spore" | "shoot";
 
 export class Action<T extends { type: string }> {
   type: string;

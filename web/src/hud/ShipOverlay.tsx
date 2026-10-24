@@ -22,7 +22,7 @@ export function ShipOverlay({ view }: { view: PlayerView }) {
     <div className="ship-overlay" ref={rootRef}>
       {open && (
         <section id={panelId} className="ship-popup" aria-label={label}>
-          <ShipResources ship={view.ship} titles={view.titles} />
+          <ShipResources ship={view.ship} hunters={view.hunters.count} titles={view.titles} />
         </section>
       )}
       <Hint label={label}>

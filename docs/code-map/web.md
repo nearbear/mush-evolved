@@ -29,6 +29,7 @@ All under `web/src/`. UI rules are in `web/CLAUDE.md`.
 - `Credits.tsx`: the asset attribution and the non-commercial line, at the bottom of the lobby and of the Inspect panel, on both layouts.
 - `CommsCenter.tsx`: the Com center terminal window: link status and Sol chance, rebel calls with progress and expiry, Xyloph entries left, NERON version and update, each with its button when the view offers it.
 - `BiosTerminal.tsx`: the BIOS terminal window: each BIOS option with its current value and, for the NERON Admin, a switch button.
+- `TurretPanel.tsx`: a turret's window: its charges and each hunter in range with its hp and a Shoot button.
 - `ShipNavigation.tsx`: the Command terminal window's steering: heading, in-orbit flag, combustion chamber fuel, and the Commander's turn, travel (no distance: it burns the chamber) and leave orbit buttons.
 - `PlanetList.tsx`: your planets with their sector tags (unknown ones as `tag_unknown`) and a bin button to delete; in the Astro terminal window it adds the scan and analyse buttons.
 - `InventoryOverlay.tsx` + `styles/inventory.css`: the sack button in the room view's lower right (badge = items in the room) that opens `InventoryPanel` over the room; closes on the button, Escape, or a press elsewhere in the room view. Both layouts; hidden when dead.

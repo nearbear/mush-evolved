@@ -13,6 +13,7 @@ import { killPlayer } from "./death.ts";
 import { clone, fail, type ActionResult } from "./helpers.ts";
 import { logPrivate } from "./log.ts";
 import { callNextRebel } from "./comms.ts";
+import { startHunters } from "./hunters.ts";
 import { shuffle } from "./rng.ts";
 import { newPlayer, startInventory } from "./rules.ts";
 import { assignTitles } from "./titles.ts";
@@ -72,6 +73,7 @@ export function selectMush(state: GameState): void {
   pushChat(state, "global", { from: null, isBot: false, text: "", system: { key: "mushChosen" } });
   state.titles = assignTitles(state.players);
   callNextRebel(state);
+  startHunters(state);
 
   if (aboard.length < rules.minPlayers) {
     for (const p of aboard) if (p.role === "human") killPlayer(state, p);

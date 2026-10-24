@@ -4,11 +4,12 @@ import { DEFAULT_CONFIG } from "../src/config.ts";
 import { killPlayer } from "../src/death.ts";
 import { parseGameMessage } from "../src/protocol.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";
+import type { BiosOption } from "../src/bios.ts";
 import type { Action, GameState } from "../src/types.ts";
 import { clone, costOf, makeSeats, must, offered, player } from "./support.ts";
 
 const TERMINAL = "NEXUS_ROOM:NERON_BIOS_TERM";
-const set = (option: "actopi" | "death_announcements", value: boolean): Action => ({ type: "set_bios", equipment: TERMINAL, option, value });
+const set = (option: BiosOption, value: boolean): Action => ({ type: "set_bios", equipment: TERMINAL, option, value });
 
 /** Three players in the Nexus; p0 is the NERON Admin. */
 function ship(): GameState {
@@ -23,7 +24,7 @@ const biosOffers = (s: GameState, id: string) => offered(s, id).filter((a) => a.
 describe("NERON's BIOS", () => {
   it("starts with both options on, and switching is free and private", () => {
     const s = ship();
-    expect(s.bios).toEqual({ actopi: true, death_announcements: true });
+    expect(s.bios).toEqual({ actopi: true, death_announcements: true, plasma_shield: true });
     expect(costOf(s, "p0", set("actopi", false))).toEqual({ ap: 0, mp: 0 });
     expect(actionVisibility("set_bios")).toBe("private");
   });
@@ -37,9 +38,9 @@ describe("NERON's BIOS", () => {
 
   it("offers the NERON Admin the opposite of each current value", () => {
     const s = ship();
-    expect(biosOffers(s, "p0")).toEqual([set("actopi", false), set("death_announcements", false)]);
+    expect(biosOffers(s, "p0")).toEqual([set("actopi", false), set("death_announcements", false), set("plasma_shield", false)]);
     s.bios.actopi = false;
-    expect(biosOffers(s, "p0")).toEqual([set("actopi", true), set("death_announcements", false)]);
+    expect(biosOffers(s, "p0")).toEqual([set("actopi", true), set("death_announcements", false), set("plasma_shield", false)]);
   });
 
   it("only the NERON Admin can switch, Mush included; a vacant title locks it", () => {
@@ -96,7 +97,7 @@ describe("NERON's BIOS", () => {
 
   it("the settings go only to the living at a BIOS terminal", () => {
     const s = ship();
-    expect(viewFor(s, "p1").bios).toEqual({ actopi: true, death_announcements: true });
+    expect(viewFor(s, "p1").bios).toEqual({ actopi: true, death_announcements: true, plasma_shield: true });
     player(s, "p1").room = "REFECTORY";
     expect(viewFor(s, "p1").bios).toBeNull();
     killPlayer(s, player(s, "p2"));

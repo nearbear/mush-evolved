@@ -157,6 +157,12 @@ export function parseGameMessage(raw: string): GameClientMessage | null {
   if (a.type === "analyze_planet" && typeof a.equipment === "string" && typeof a.planet === "string") {
     return { type: "action", action: { type: "analyze_planet", equipment: a.equipment, planet: a.planet } };
   }
+  if (a.type === "turret_attack" && typeof a.equipment === "string" && typeof a.hunter === "string") {
+    return { type: "action", action: { type: "turret_attack", equipment: a.equipment, hunter: a.hunter } };
+  }
+  if (a.type === "repair_hull" && typeof a.item === "string") {
+    return { type: "action", action: { type: "repair_hull", item: a.item } };
+  }
   if (a.type === "delete_planet" && typeof a.planet === "string") {
     return { type: "action", action: { type: "delete_planet", planet: a.planet } };
   }

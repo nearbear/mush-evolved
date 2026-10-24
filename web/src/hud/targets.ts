@@ -76,6 +76,7 @@ function aimedAt(view: PlayerView, a: Action, target: Target): boolean {
     case "water":
     case "treat":
     case "sow":
+    case "repair_hull":
       return target.kind === "item" && a.item === target.id;
     case "bond":
     case "dtt":
@@ -123,6 +124,7 @@ const ACTION_LABEL_KEYS = {
   water: "actions.water",
   treat: "actions.treat",
   sow: "actions.sow",
+  repair_hull: "actions.repairHull",
   uninstall: "actions.uninstall",
   dismantle: "actions.dismantle",
   bond: "actions.bond",

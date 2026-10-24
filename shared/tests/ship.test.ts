@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { DEFAULT_CONFIG } from "../src/config.ts";
 import { createGame, newCycle, viewFor } from "../src/rules.ts";
+import { PROJECT_COMPLETE } from "../src/projects.ts";
 import { damageShip } from "../src/ship.ts";
 import { makeSeats } from "./support.ts";
 
@@ -14,7 +15,7 @@ const cycle = (s: ReturnType<typeof game>) => {
 describe("ship resources", () => {
   it("start at the decided values and are public", () => {
     const s = game();
-    expect(s.ship).toEqual({ oxygen: 30, fuel: 20, combustion: 0, hull: 100, plasmaShield: 100 });
+    expect(s.ship).toEqual({ oxygen: 30, fuel: 20, combustion: 0, hull: 100, plasmaShield: 50 });
     expect(viewFor(s, "p0").ship).toEqual({ ...s.ship, max: { oxygen: 32, fuel: 100, combustion: 9, hull: 100, plasmaShield: 100 } });
     expect(viewFor(s, "p3").ship).toEqual(viewFor(s, "p0").ship);
   });
@@ -47,10 +48,30 @@ describe("ship resources", () => {
     expect(newCycle(s)).toEqual({ ok: false, error: "game_over" });
   });
 
-  it("splits damage 67% to the shield (rounded down) and the rest to the hull", () => {
+  it("splits damage 33% to the shield (rounded) and the rest to the hull", () => {
     const s = game();
+    expect([s.config.ship.plasmaShield.absorbPercent, s.config.ship.plasmaShield.projectAbsorbPercent, s.config.ship.plasmaShield.regen]).toEqual([33, 67, 5]);
     damageShip(s, 10);
-    expect(s.ship).toMatchObject({ plasmaShield: 94, hull: 96 });
+    expect(s.ship).toMatchObject({ plasmaShield: 47, hull: 93 });
+    damageShip(s, 2);
+    expect(s.ship).toMatchObject({ plasmaShield: 46, hull: 92 });
+  });
+
+  it("splits 67% to the shield once the Plasma Shield project is done", () => {
+    const s = game();
+    s.projects.PLASMA_SHIELD = PROJECT_COMPLETE;
+    damageShip(s, 10);
+    expect(s.ship).toMatchObject({ plasmaShield: 43, hull: 97 });
+  });
+
+  it("sends all damage to the hull while the BIOS has the shield off, and shows the shield as 0", () => {
+    const s = game();
+    s.bios.plasma_shield = false;
+    damageShip(s, 10);
+    expect(s.ship).toMatchObject({ plasmaShield: 50, hull: 90 });
+    expect(viewFor(s, "p0").ship.plasmaShield).toBe(0);
+    s.bios.plasma_shield = true;
+    expect(viewFor(s, "p0").ship.plasmaShield).toBe(50);
   });
 
   it("sends all damage to the hull once the shield is gone, and never goes below 0", () => {

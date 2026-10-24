@@ -49,11 +49,14 @@ export const PROJECT_IDS = [
 
 export const PROJECT_COMPLETE = 100;
 
-/** How much of a project's effects the rules implement, like `ResearchStatus`. None have effects yet. */
+/** How much of a project's effects the rules implement, like `ResearchStatus`. */
 export type ProjectStatus = "full" | "partial" | "none";
 
 /** Implementation status shown in the NERON core's project list. Update it when a project gains effects. */
-export const PROJECT_STATUS: Readonly<Partial<Record<(typeof PROJECT_IDS)[number], ProjectStatus>>> = {};
+export const PROJECT_STATUS: Readonly<Partial<Record<(typeof PROJECT_IDS)[number], ProjectStatus>>> = {
+  // The shield absorbs 67% of a hit instead of 33% (owner, 2026-10-24; ship.ts).
+  PLASMA_SHIELD: "full",
+};
 
 export function projectStatus(project: string): ProjectStatus {
   return PROJECT_STATUS[project as (typeof PROJECT_IDS)[number]] ?? "none";

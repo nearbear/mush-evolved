@@ -44,4 +44,5 @@ export class SetBiosAction extends Action<SetBiosActionData> {
 const LOG_KEYS: Record<BiosOption, { on: string; off: string }> = {
   actopi: { on: "biosActopiOn", off: "biosActopiOff" },
   death_announcements: { on: "biosDeathsOn", off: "biosDeathsOff" },
+  plasma_shield: { on: "biosShieldOn", off: "biosShieldOff" },
 };

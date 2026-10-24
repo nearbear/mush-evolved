@@ -29,6 +29,7 @@ import { biosTerminalsHere, newBios } from "./bios.ts";
 import { callNextRebel, commsCycle, commsTerminalView, comTerminalsHere, newComms } from "./comms.ts";
 import { botanyCycle, botanyDay, plantView } from "./botany.ts";
 import { burnOxygen, shipMax, startShip } from "./ship.ts";
+import { allTurrets, huntersCycle, newHunters, startHunters, turretCharges, turretsHere } from "./hunters.ts";
 import { preselectionCycle } from "./preselection.ts";
 import { SUCCESSION, TITLE_IDS, assignTitles, noTitles } from "./titles.ts";
 import type {
@@ -113,6 +114,9 @@ export function createGame(
     planets: {},
     scanFailures: {},
     nextPlanetId: 1,
+    hunters: newHunters(),
+    turrets: {},
+    turretFailures: {},
     navigation: { heading: config.navigation.startHeading, orbit: null },
     // Issued with Mush selection, whatever the role (owner, 2026-10-13 and 2026-10-20); in pre-selection, by `selectMush`.
     titles: preselection ? noTitles() : assignTitles(players),
@@ -120,7 +124,10 @@ export function createGame(
     now: 0,
   };
   // Mush selection: the first rebel base calls now (owner, 2026-10-21); in pre-selection, `selectMush` does it.
-  if (!preselection) callNextRebel(state);
+  if (!preselection) {
+    callNextRebel(state);
+    startHunters(state);
+  }
   grantCarePoints(state); // day 1 begins now
   return state;
 }
@@ -337,6 +344,7 @@ function advanceCycle(state: GameState): void {
   }
   for (const p of state.players) applyCheats(state, p);
   const { day } = dayOf(state);
+  huntersCycle(state, day);
   state.log.push({
     cycle: state.cycle,
     key: newDay ? "dayBegins" : "cycleBegins",
@@ -464,7 +472,14 @@ export function viewFor(state: GameState, playerId: PlayerId): PlayerView {
     maxAp: state.config.maxAp,
     maxHp: state.config.maxHp,
     maxMorale: state.config.maxMorale,
-    ship: { ...state.ship, max: shipMax(state.config) },
+    // While the BIOS has the shield off, it shows as 0 (Claude's default, 2026-10-24); its points are kept.
+    ship: { ...state.ship, plasmaShield: state.bios.plasma_shield ? state.ship.plasmaShield : 0, max: shipMax(state.config) },
+    // How many, to everyone; each hunter's hp and every turret's charges, to the living in a turret room (owner, 2026-10-24).
+    hunters: {
+      count: state.hunters.list.length,
+      list: you.alive && turretsHere(state, you).length > 0 ? state.hunters.list.map(({ id, hp }) => ({ id, hp })) : null,
+      turrets: you.alive && turretsHere(state, you).length > 0 ? Object.fromEntries(allTurrets(state).map((t) => [t.id, turretCharges(state, t.id)])) : null,
+    },
     research: { ...state.research },
     projects: { ...state.projects },
     // Only at the PILGRED terminal: the living in a room that has one (owner, 2026-10-21).
