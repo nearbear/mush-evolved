@@ -4,7 +4,7 @@ import { ITEM_TYPES } from "../src/items.ts";
 import { actionFailed } from "../src/modifiers.ts";
 import { parseGameMessage } from "../src/protocol.ts";
 import { applyAction, createGame, legalActions, viewFor } from "../src/rules.ts";
-import { SKILLS, SKILL_SLOTS } from "../src/skills.ts";
+import { isSkill, SKILLS, SKILL_SLOTS } from "../src/skills.ts";
 import type { GameConfig, GameState } from "../src/types.ts";
 import { makeSeats, nextCycle } from "./support.ts";
 
@@ -105,7 +105,7 @@ describe("picking skills", () => {
 
   it("offers every skill you lack while a slot is free, and none once full", () => {
     let state = fresh();
-    const offered = () => legalActions(state, "p0").filter((a) => a.type === "pick_skill");
+    const offered = () => legalActions(state, "p0").filter((a) => a.type === "pick_skill" && isSkill(a.skill));
     expect(offered()).toHaveLength(SKILLS.length);
     for (const skill of SKILLS.slice(0, SKILL_SLOTS)) {
       const r = pick(state, "p0", skill);

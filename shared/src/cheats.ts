@@ -64,4 +64,5 @@ export function makeHuman(p: PlayerState, cycle: number): void {
   p.spores = 0;
   p.satiety = 0;
   p.satietyZeroSince = cycle; // humans start hungry-counting from now
+  p.mushSkills = []; // Mush skills belong to the Mush (rules-design.md, Transfer)
 }

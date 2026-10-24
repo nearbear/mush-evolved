@@ -5,7 +5,7 @@ import { isBiosOption } from "./bios.ts";
 import { isActopiCheat, isCheat, isRoleCheat, type ActopiCheat, type Cheat, type RoleCheat } from "./cheats.ts";
 import { isCharacterId, type CharacterId } from "./characters.ts";
 import { MAX_CHAT_LENGTH } from "./chat.ts";
-import { isSkill } from "./skills.ts";
+import { isMushSkill, isSkill } from "./skills.ts";
 import { MAX_SPOT_CELL } from "./spot.ts";
 import { CHAT_CHANNELS, GRAVEYARD_CHANNEL, MUSH_CHANNEL, type Action, type ChannelId, type PlayerId, type PlayerView, type PrivateChannelId, type ThreadId } from "./types.ts";
 
@@ -182,7 +182,7 @@ export function parseGameMessage(raw: string): GameClientMessage | null {
     if (a.target === undefined) return { type: "action", action: { type: "attack", weapon: a.weapon } };
   }
   if (a.type === "read_book" && typeof a.item === "string") return { type: "action", action: { type: "read_book", item: a.item } };
-  if (a.type === "pick_skill" && isSkill(a.skill)) return { type: "action", action: { type: "pick_skill", skill: a.skill } };
+  if (a.type === "pick_skill" && (isSkill(a.skill) || isMushSkill(a.skill))) return { type: "action", action: { type: "pick_skill", skill: a.skill } };
   if (a.type === "examine" && isRecord(a.target) && typeof a.target.id === "string") {
     const { kind, id } = a.target;
     if (kind === "player" || kind === "equipment" || kind === "item") {

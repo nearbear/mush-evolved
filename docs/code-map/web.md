@@ -34,7 +34,7 @@ All under `web/src/`. UI rules are in `web/CLAUDE.md`.
 - `InventoryOverlay.tsx` + `styles/inventory.css`: the sack button in the room view's lower right (badge = items in the room) that opens `InventoryPanel` over the room; closes on the button, Escape, or a press elsewhere in the room view. Both layouts; hidden when dead.
 - `InventoryPanel.tsx`: item zones; drag to take/drop, tap fallback.
 - `InspectPanel.tsx`: the selected person, equipment, or item, with its legal actions.
-- `SkillSlots.tsx`: skill slots and the picker dialog.
+- `SkillSlots.tsx`: skill slots and the picker dialog; a Mush's own portrait toggles between human and Mush slots.
 - `StatusIcons.tsx`, `ItemAttrIcons.tsx`: status and item attribute icons. `PlantStates.tsx`: a planted hydropot's young, thirsty, dried and (Botanist role only) sick icons.
 - `ITrackie.tsx`: the right panel: room log, global chat, Features, Private tabs. Messages come from `readChannels`, the message box from `chatChannels`; the dead lose the Room and Private tabs, get a read-only note instead of the box in the other channels, and gain a skull Graveyard tab.
 - `DeathNotice.tsx`: what a dead player sees where the room was.

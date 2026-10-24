@@ -144,6 +144,7 @@ export function newPlayer(s: Seat, config: GameConfig, cycle: number, role: Role
     resources: emptyResources(),
     modifiers: [...(config.characterModifiers[s.character] ?? [])],
     skills: [...config.startSkills],
+    mushSkills: [],
     alive: true,
     ready: false,
     current: null,
@@ -386,6 +387,7 @@ export function viewFor(state: GameState, playerId: PlayerId): PlayerView {
     you: {
       ...yours,
       statuses: [...you.statuses],
+      mushSkills: [...you.mushSkills],
       current: you.current && { action: you.current.action, since: you.current.since, until: you.current.until },
       queue: you.queue.map((q) => q.action),
     },

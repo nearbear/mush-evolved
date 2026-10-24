@@ -81,6 +81,11 @@ export interface PlayerState extends Seat {
   skills: string[];
   /** The skill in the book slot (the fourth), learned for good from a skill book (`read_book`). Unset until then. Roommates see it in `OtherPlayerView.bookSkill`. */
   bookSkill?: string;
+  /**
+   * Mush skill ids in the Mush skill slots (MUSH_SKILL_SLOTS), picked for good with `pick_skill` while Mush. Each is a
+   * modifier id too. Private: only in your own view, never to roommates or other Mush.
+   */
+  mushSkills: string[];
   alive: boolean;
   /** Finished acting for this cycle. */
   ready: boolean;

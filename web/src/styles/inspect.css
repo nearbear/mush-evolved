@@ -147,6 +147,15 @@
   border-style: dashed;
   border-color: rgb(255 210 120 / 0.6);
 }
+/* A Mush's own toggle between the human and Mush stacks, set apart above the slots; Mush slots get a red edge. */
+.skill-toggle {
+  margin-bottom: 4px;
+  cursor: pointer;
+}
+.skill-toggle[aria-pressed="true"],
+.skill-slots-mush .skill-slot {
+  border-color: rgb(255 90 90 / 0.8);
+}
 .skill-warning {
   margin: 0;
   font-size: 0.85rem;

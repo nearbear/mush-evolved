@@ -75,16 +75,61 @@ export function isSkill(value: unknown): value is SkillId {
   return typeof value === "string" && (SKILLS as readonly string[]).includes(value);
 }
 
+/**
+ * Mush skills a Mush player can pick, in their own slots (MUSH_SKILL_SLOTS) beside the human ones (owner,
+ * 2026-10-24: all of them for now). Ids are the lowercase ids of the Mush, retained, not beta rows of the same
+ * design table, which are also the icon file names.
+ */
+export const MUSH_SKILLS = [
+  "pyromane",
+  "tough",
+  "fertile",
+  "ninja",
+  "sapper",
+  "nimble_fingers",
+  "water_resistant",
+  "traitor",
+  "doorman",
+  "neron_access",
+  "fungus_cook",
+  "radio_piracy",
+  "nightmare",
+  "disheartening_contact",
+  "transfert",
+  "bacterial_contact",
+  "infectious_agent",
+  "phagocytosis",
+  "trapper",
+  "mycellium_spirit",
+  "anonymous",
+  "massggedon",
+  "nerondepress",
+  "slimetrap",
+  "electro_slime",
+  "defacer",
+] as const;
+
+export type MushSkillId = (typeof MUSH_SKILLS)[number];
+
+export function isMushSkill(value: unknown): value is MushSkillId {
+  return typeof value === "string" && (MUSH_SKILLS as readonly string[]).includes(value);
+}
+
+/** Mush skill slots per Mush player (owner, 2026-10-24), separate from the human ones. */
+export const MUSH_SKILL_SLOTS = 4;
+
 /** Human skill slots per player. The book slot (`PlayerState.bookSkill`) is a fourth, filled only by a skill book. */
 export const SKILL_SLOTS = 3;
 
-/** Every skill the player has: the picked ones, then the book slot's. */
-export function skillsOf(player: Readonly<Pick<PlayerState, "skills" | "bookSkill">>): string[] {
-  return player.bookSkill === undefined ? [...player.skills] : [...player.skills, player.bookSkill];
+type SkillHolder = Pick<PlayerState, "skills" | "bookSkill" | "mushSkills">;
+
+/** Every skill the player has: the picked human ones, the book slot's, then the Mush ones. */
+export function skillsOf(player: Readonly<SkillHolder>): string[] {
+  return [...player.skills, ...(player.bookSkill === undefined ? [] : [player.bookSkill]), ...player.mushSkills];
 }
 
-export function hasSkill(player: Readonly<Pick<PlayerState, "skills" | "bookSkill">>, skill: string): boolean {
-  return player.skills.includes(skill) || player.bookSkill === skill;
+export function hasSkill(player: Readonly<SkillHolder>, skill: string): boolean {
+  return player.skills.includes(skill) || player.bookSkill === skill || player.mushSkills.includes(skill);
 }
 
 /** How much of a skill's listed effects the rules implement. A skill missing from SKILL_STATUS is "none". */
@@ -94,7 +139,7 @@ export type SkillStatus = "full" | "partial" | "none";
  * Implementation status shown in the skill picker. Update it when a skill gains rules. Bonuses for developing
  * NERON projects are left out of this count (owner, 2026-10-16).
  */
-export const SKILL_STATUS: Readonly<Partial<Record<SkillId, SkillStatus>>> = {
+export const SKILL_STATUS: Readonly<Partial<Record<SkillId | MushSkillId, SkillStatus>>> = {
   // Heal bonus only; no operations, medicine properties, or research bonus.
   medic: "partial",
   // Heavy-item penalty and punch damage only; no Throw Out.
@@ -135,5 +180,5 @@ export const SKILL_STATUS: Readonly<Partial<Record<SkillId, SkillStatus>>> = {
 };
 
 export function skillStatus(skill: string): SkillStatus {
-  return isSkill(skill) ? (SKILL_STATUS[skill] ?? "none") : "none";
+  return isSkill(skill) || isMushSkill(skill) ? (SKILL_STATUS[skill] ?? "none") : "none";
 }

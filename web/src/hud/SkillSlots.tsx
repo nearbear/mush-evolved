@@ -2,6 +2,8 @@
 // to everyone in the room; someone else's empty slots are left out. On your own portrait an empty slot is a gold plus that opens the picker; picks are
 // permanent. The book slot is filled only by reading a skill book (an item action), so it never has a plus.
 // Which skills can be picked comes from view.actions, never computed here.
+// A Mush looking at their own portrait gets a toggle at the top that swaps the stack for their four Mush skill slots.
+// It only changes what is drawn (to save space); both sets stay picked. Mush skills are only ever in your own view.
 
 import { Dialog } from "@base-ui/react/dialog";
 import { DialogHeader } from "./DialogHeader.tsx";
@@ -9,8 +11,8 @@ import { Hint } from "./IconButton.tsx";
 import { Popover } from "@base-ui/react/popover";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { legalIn, SKILL_SLOTS, skillStatus, type Action, type PlayerView } from "@mush2/shared";
-import { GOLD_PLUS_ICON, skillIcon } from "../art/assets.ts";
+import { isMushSkill, legalIn, MUSH_SKILL_SLOTS, SKILL_SLOTS, skillStatus, type Action, type PlayerView } from "@mush2/shared";
+import { GOLD_PLUS_ICON, MUSH_ICON, skillIcon } from "../art/assets.ts";
 import { useNames } from "../i18n/names.ts";
 import "./settings.css";
 
@@ -31,15 +33,32 @@ export function SkillSlots({
   const names = useNames();
   const [open, setOpen] = useState(false);
   const [pending, setPending] = useState<string | null>(null);
+  const [showMush, setShowMush] = useState(false);
+  const canToggle = isYou && view.you.role === "mush";
+  const mush = canToggle && showMush;
   const offered = legalIn(view)
-    .flatMap((a) => (a.type === "pick_skill" ? [a.skill] : []))
+    .flatMap((a) => (a.type === "pick_skill" && isMushSkill(a.skill) === mush ? [a.skill] : []))
     .sort((a, b) => String(names.skill(a)).localeCompare(String(names.skill(b)), i18n.language));
+  const slots = mush ? view.you.mushSkills : skills;
 
   return (
-    <div className="skill-slots">
+    <div className={mush ? "skill-slots skill-slots-mush" : "skill-slots"}>
+      {canToggle && (
+        <Hint label={t(mush ? "skills.showHuman" : "skills.showMush")}>
+          <button
+            type="button"
+            className="skill-slot skill-toggle"
+            aria-pressed={mush}
+            aria-label={t("skills.mushToggle")}
+            onClick={() => setShowMush(!mush)}
+          >
+            <img src={MUSH_ICON} alt="" />
+          </button>
+        </Hint>
+      )}
       <ul>
-        {Array.from({ length: SKILL_SLOTS }, (_, i) => {
-          const skill = skills[i];
+        {Array.from({ length: mush ? MUSH_SKILL_SLOTS : SKILL_SLOTS }, (_, i) => {
+          const skill = slots[i];
           // Someone else's empty slots aren't drawn, so they don't cover the portrait.
           if (!skill && !isYou) return null;
           return (
@@ -47,12 +66,12 @@ export function SkillSlots({
               {skill ? (
                 <SkillSlot skill={skill} />
               ) : (
-                <Hint label={t("skills.pick")}>
+                <Hint label={t(mush ? "skills.pickMush" : "skills.pick")}>
                   <button
                     type="button"
                     className="skill-slot"
                     disabled={offered.length === 0}
-                    aria-label={t("skills.slot", { n: i + 1 })}
+                    aria-label={mush ? t("skills.mushSlot", { n: i + 1 }) : t("skills.slot", { n: i + 1 })}
                     onClick={() => setOpen(true)}
                   >
                     <img src={GOLD_PLUS_ICON} alt="" />
@@ -62,7 +81,7 @@ export function SkillSlots({
             </li>
           );
         })}
-        {(bookSkill || isYou) && (
+        {!mush && (bookSkill || isYou) && (
           <li className="skill-slot-book">
             {bookSkill ? (
               <SkillSlot skill={bookSkill} />
@@ -84,7 +103,7 @@ export function SkillSlots({
         <Dialog.Portal>
           <Dialog.Backdrop className="settings-backdrop" />
           <Dialog.Popup className="settings-popup skill-picker">
-            <DialogHeader heading={t("skills.title")} closeLabel={t("skills.close")} />
+            <DialogHeader heading={t(mush ? "skills.mushTitle" : "skills.title")} closeLabel={t("skills.close")} />
             <p className="skill-warning">{t("skills.warning")}</p>
             {pending ? (
               <div className="skill-confirm">
