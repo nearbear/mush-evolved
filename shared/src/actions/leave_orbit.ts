@@ -1,4 +1,5 @@
 import { Action } from "./action.ts";
+import { huntersFollow } from "../hunters.ts";
 import { logPublic } from "../log.ts";
 import { canSteer } from "../navigation.ts";
 import { commandTerminalsHere } from "../pilgred.ts";
@@ -9,7 +10,7 @@ export type LeaveOrbitActionData = { type: "leave_orbit"; equipment: string };
 /**
  * Leave the orbited planet from the Command terminal (owner, 2026-10-22, the wiki; it takes Travel's place while in orbit):
  * 1 AP and `navigation.leaveOrbit.fuel` fuel from the combustion chamber (owner, 2026-10-23), Commander only (Mush included, dirty or not). Short of loaded fuel, the AP is
- * spent and the ship stays. Otherwise the planet is lost, and scanning works again. Everyone aboard learns of it.
+ * spent and the ship stays. Otherwise the planet is lost, scanning works again, and half the hunters follow (hunters.ts). Everyone aboard learns of it.
  */
 export class LeaveOrbitAction extends Action<LeaveOrbitActionData> {
   constructor() {
@@ -39,6 +40,7 @@ export class LeaveOrbitAction extends Action<LeaveOrbitActionData> {
       return;
     }
     state.ship.combustion -= fuel;
+    huntersFollow(state);
     const orbit = state.navigation.orbit;
     for (const owner of Object.keys(state.planets)) state.planets[owner] = state.planets[owner]!.filter((p) => p.id !== orbit);
     state.navigation.orbit = null;

@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { ACTIONS } from "../src/actions.ts";
 import { DEFAULT_CONFIG, PRESELECTION } from "../src/config.ts";
 import { huntersPerCyclePoints } from "../src/hunters.ts";
+import { followingHuntersShare } from "../src/modifiers.ts";
 import { joinShip } from "../src/preselection.ts";
 import { parseGameMessage } from "../src/protocol.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";
@@ -39,6 +40,7 @@ describe("hunter numbers", () => {
       damage: [2, 4],
       hitChance: 0.8,
       missBonus: 0.1,
+      followShare: 0.5,
     });
     expect(turrets).toEqual({ cost: { ap: 1 }, chance: 0.3, failureMultiplier: 1.25, damage: [2, 4], charges: 4, rechargePerCycle: 1 });
     expect(hullRepair).toEqual({ cost: { ap: 1 }, chance: 0.25, amount: 5 });
@@ -263,5 +265,74 @@ describe("repairing the hull", () => {
     expect(refusal(s, "p0", repair("floor"))).toBe("cant_repair_hull");
     expect(refusal(s, "p2", repair("wrench"))).toBe("cant_repair_hull");
     expect(wire(repair("hand"))).toEqual({ type: "action", action: repair("hand") });
+  });
+});
+
+describe("hunters following a jump", () => {
+  const TERMINAL = "COMMAND_CENTER:PILOT_MODULE";
+  const travel: Action = { type: "travel", equipment: TERMINAL };
+  const leave: Action = { type: "leave_orbit", equipment: TERMINAL };
+
+  /** p0, the Commander, at the Command terminal with fuel loaded, and `n` hunters with distinct hp, all aiming. */
+  function jumpReady(n: number, config: Partial<GameConfig> = {}): GameState {
+    const s = ship(config);
+    player(s, "p0").room = "COMMAND_CENTER";
+    s.titles.commander = "p0";
+    s.ship.combustion = 2;
+    s.hunters.list = Array.from({ length: n }, (_, i) => ({ id: `h${i + 1}`, hp: i + 1, hitChance: 0.9, targeted: true }));
+    return s;
+  }
+
+  it("half the hunters, rounded up, follow a travel; they keep their hp and lose their aim", () => {
+    for (const n of [1, 2, 3, 5]) {
+      const s = jumpReady(n);
+      const next = must(applyAction(s, "p0", travel));
+      expect(next.hunters.list).toHaveLength(Math.ceil(n * DEFAULT_CONFIG.hunters.followShare));
+      for (const h of next.hunters.list) {
+        expect(h).toEqual({ id: h.id, hp: s.hunters.list.find((o) => o.id === h.id)!.hp, hitChance: s.config.hunters.hitChance, targeted: false });
+      }
+      expect(next.hunters.points).toBe(s.hunters.points);
+    }
+  });
+
+  it("which ones follow comes from the seed, and the followers keep their order", () => {
+    const picks = new Set<string>();
+    for (const seed of [1, 2, 3, 4, 5, 6]) {
+      const s = jumpReady(4);
+      s.rng = seed;
+      const ids = must(applyAction(s, "p0", travel)).hunters.list.map((h) => h.id);
+      expect(ids).toEqual([...ids].sort());
+      expect(must(applyAction(s, "p0", travel)).hunters.list.map((h) => h.id)).toEqual(ids);
+      picks.add(ids.join());
+    }
+    expect(picks.size).toBeGreaterThan(1);
+  });
+
+  it("leaving orbit is a jump too", () => {
+    const s = jumpReady(4);
+    s.navigation.orbit = "planet-x";
+    expect(must(applyAction(s, "p0", leave)).hunters.list).toHaveLength(2);
+  });
+
+  it("a jump with no hunters around brings none, and one with no fuel loaded leaves them all", () => {
+    expect(must(applyAction(jumpReady(0), "p0", travel)).hunters.list).toEqual([]);
+    const dry = jumpReady(3);
+    dry.ship.combustion = 0;
+    expect(must(applyAction(dry, "p0", travel)).hunters.list).toEqual(dry.hunters.list);
+    const stuck = jumpReady(3);
+    stuck.ship.combustion = 0;
+    stuck.navigation.orbit = "planet-x";
+    expect(must(applyAction(stuck, "p0", leave)).hunters.list).toEqual(stuck.hunters.list);
+  });
+
+  it("the share is tunable, and living holders' crewFollowingHunters hooks fold it (Space Tactics' seam), kept within 0-1", () => {
+    expect(must(applyAction(jumpReady(4, { hunters: { ...DEFAULT_CONFIG.hunters, followShare: 0 } }), "p0", travel)).hunters.list).toEqual([]);
+    const s = jumpReady(1);
+    player(s, "p1").modifiers = ["tactics"];
+    const registry = { tactics: { crewFollowingHunters: (share: number) => share * 0.66 } };
+    expect(followingHuntersShare(0.5, s, registry)).toBeCloseTo(0.33);
+    expect(followingHuntersShare(2, s, {})).toBe(1);
+    player(s, "p1").alive = false;
+    expect(followingHuntersShare(0.5, s, registry)).toBe(0.5);
   });
 });

@@ -6,8 +6,8 @@
 
 import { killPlayer } from "./death.ts";
 import { logPublic } from "./log.ts";
-import { hunterPointsPerCycle } from "./modifiers.ts";
-import { nextFloat, nextInt, type RngState } from "./rng.ts";
+import { followingHuntersShare, hunterPointsPerCycle } from "./modifiers.ts";
+import { nextFloat, nextInt, type RngState, shuffle } from "./rng.ts";
 import { damageShip } from "./ship.ts";
 import type { GameState, PlayerState } from "./types.ts";
 import { endGame } from "./victory.ts";
@@ -116,6 +116,24 @@ function spawnWave(state: GameState): void {
   hunters.points -= count * config.points.perHunter;
   for (let i = 0; i < count; i++) hunters.list.push({ id: `hunter-${hunters.nextId++}`, hp: config.hp, hitChance: config.hitChance, targeted: false });
   logPublic(state, undefined, "hunterWave", { count }, "warning");
+}
+
+/**
+ * The ship jumps (travel or leaving orbit; owner, 2026-10-24, #240): half the hunters, rounded up, follow and the rest
+ * are lost. The followers are picked at random and keep their hp, cost the pool nothing, and lose their aim, so they pick
+ * the ship again before they next shoot. Mutates a state the caller already cloned.
+ */
+export function huntersFollow(state: GameState): void {
+  const { list } = state.hunters;
+  const count = Math.ceil(followingHuntersShare(state.config.hunters.followShare, state) * list.length);
+  const [shuffled, rng] = shuffle(list, state.rng);
+  state.rng = rng;
+  const kept = new Set(shuffled.slice(0, count));
+  state.hunters.list = list.filter((h) => kept.has(h));
+  for (const hunter of state.hunters.list) {
+    hunter.targeted = false;
+    hunter.hitChance = state.config.hunters.hitChance;
+  }
 }
 
 /**

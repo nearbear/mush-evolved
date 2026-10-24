@@ -84,6 +84,8 @@ export interface Modifier extends Partial<FoldHooks> {
   crewMoraleLoss?: (loss: number, holder: Readonly<PlayerState>, state: Readonly<GameState>) => number;
   /** Adjusts the points the hunter pool gains each cycle change, while the holder is alive (for Space Tactics; none yet). Must be pure. */
   crewHunterPoints?: (points: number, holder: Readonly<PlayerState>, state: Readonly<GameState>) => number;
+  /** Adjusts the share of hunters that follow the ship when it jumps, while the holder is alive (for Space Tactics; none yet). Must be pure. The hunter count after a jump is public, so only a public modifier may have it. */
+  crewFollowingHunters?: (share: number, holder: Readonly<PlayerState>, state: Readonly<GameState>) => number;
   /** Adjusts how a player's moves are paid for. Must be pure. */
   movement?: (rules: MovementRules, player: Readonly<PlayerState>, state: Readonly<GameState>) => MovementRules;
   /**
@@ -224,6 +226,19 @@ export function hunterPointsPerCycle(base: number, state: Readonly<GameState>, r
     }
   }
   return Math.max(0, points);
+}
+
+/** The share of hunters that follow a jump: `base` through every living player's `crewFollowingHunters` hooks, in seat order; between 0 and 1. */
+export function followingHuntersShare(base: number, state: Readonly<GameState>, registry: ModifierRegistry = MODIFIERS): number {
+  let share = base;
+  for (const holder of state.players) {
+    if (!holder.alive) continue;
+    for (const id of modifierIds(holder)) {
+      const hook = registry[id]?.crewFollowingHunters;
+      if (hook) share = hook(share, holder, state);
+    }
+  }
+  return Math.min(1, Math.max(0, share));
 }
 
 /** Runs every onActionFailed hook the player has. Mutates a state the caller already cloned. */

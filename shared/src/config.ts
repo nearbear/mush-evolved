@@ -178,6 +178,8 @@ export const DEFAULT_CONFIG: GameConfig = {
     damage: [2, 4],
     hitChance: 0.8,
     missBonus: 0.1,
+    // Owner, 2026-10-24 (#240): eMush's share of hunters that follow a jump.
+    followShare: 0.5,
   },
   turrets: { cost: { ap: 1 }, chance: 0.3, failureMultiplier: 1.25, damage: [2, 4], charges: 4, rechargePerCycle: 1 },
   hullRepair: { cost: { ap: 1 }, chance: 0.25, amount: 5 },
