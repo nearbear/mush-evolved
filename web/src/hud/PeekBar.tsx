@@ -2,7 +2,7 @@
 // was tapped in the room (a person, equipment, or a door), or yourself by default, so you can act without
 // leaving the room view. Examine is never shown here (it lives in the Inspect panel behind More). Legality comes from the view, like the Inspect panel.
 
-import type { ReactNode } from "react";
+import { type ReactNode, useLayoutEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useNames } from "../i18n/names.ts";
 import { actionVisibility, type Action, type ActionOption, type PlayerView, type RoomId, type Target } from "@mush2/shared";
@@ -51,7 +51,15 @@ export function PeekBar({
     resolved.kind === "player" ? names.characterGiven(resolved.person.character) : resolved.kind === "equipment" ? names.equipment(resolved.equipment.type) : names.itemOf(resolved.item);
   const isBot = resolved.kind === "player" && resolved.person.isBot;
   return (
-    <Bar heading={name} isBot={isBot}>
+    <Bar
+      heading={name}
+      isBot={isBot}
+      more={
+        <button type="button" onClick={onMore} aria-label={t("peek.more")}>
+          …
+        </button>
+      }
+    >
       {optionsOn(view, target)
         .filter((o) => o.action.type !== "examine")
         .map((o) => (
@@ -59,9 +67,6 @@ export function PeekBar({
           {labelFor(o)}
         </ActionButton>
       ))}
-      <button type="button" onClick={onMore} aria-label={t("peek.more")}>
-        …
-      </button>
     </Bar>
   );
 }
@@ -70,14 +75,18 @@ function Bar({
   heading,
   sub,
   isBot = false,
+  more,
   children,
 }: {
   heading: string;
   sub?: string | undefined;
   isBot?: boolean;
+  /** Always shown after the actions, however many of them fit. */
+  more?: ReactNode;
   children: ReactNode;
 }) {
   const { t } = useTranslation();
+  const actions = useOneRow();
   return (
     <div className="peek-bar" role="region" aria-label={t("peek.selection")}>
       <div className="peek-name">
@@ -85,7 +94,33 @@ function Bar({
         {isBot && <span className="tag">{t("common.ai")}</span>}
         {sub && <div className="sub">{sub}</div>}
       </div>
-      <div className="peek-actions">{children}</div>
+      <div className="peek-actions" ref={actions}>
+        {children}
+      </div>
+      {more}
     </div>
   );
+}
+
+/**
+ * The actions get one row; CSS clips the ones that wrap past it (More still reaches them).
+ * This makes the clipped ones inert too, so keyboards and screen readers skip them.
+ */
+function useOneRow() {
+  const ref = useRef<HTMLDivElement>(null);
+  // No deps: the buttons change with the selection and the view, so recheck after every render.
+  useLayoutEffect(() => {
+    const row = ref.current;
+    if (!row) return;
+    const mark = () => {
+      const buttons = [...row.children] as HTMLElement[];
+      const top = buttons[0]?.offsetTop ?? 0;
+      for (const b of buttons) b.inert = b.offsetTop > top;
+    };
+    mark();
+    const observer = new ResizeObserver(mark);
+    observer.observe(row);
+    return () => observer.disconnect();
+  });
+  return ref;
 }

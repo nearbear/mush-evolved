@@ -228,6 +228,9 @@ async function mobileSteps(page: Page, step: Step): Promise<void> {
     const at = await firstHit(page, otherPerson);
     await page.touchscreen.tap(at.x, at.y);
     await peek.getByRole("button", { name: "More" }).waitFor();
+    // The peek bar keeps one row of actions; the rest are clipped, inert, and reached through More.
+    const inert = (await page.evaluate(`[...document.querySelectorAll(".peek-actions > *")].map((b) => b.inert)`)) as boolean[];
+    console.log(`      peek actions: ${inert.filter((i) => !i).length} shown, ${inert.filter(Boolean).length} behind More`);
   });
 
   await step("m03-peek-examine", async () => {

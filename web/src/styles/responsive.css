@@ -216,18 +216,33 @@
     border-top: 1px solid var(--glow-rim);
     box-shadow: 0 -2px 6px rgb(60 110 255 / 0.35);
   }
+  /* Keeps room for a given name (cut off past that) when the actions take the rest. */
   .peek-name {
     flex: 1;
-    min-width: 0;
+    min-width: 7rem;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
   }
+  /*
+   * One row of actions: the ones that don't fit wrap onto a second row that is clipped away
+   * (PeekBar makes them inert; More opens them all in Inspect). The row gap keeps the wrapped
+   * row clear of the clip margin, which is only there so focus rings aren't cut off.
+   */
   .peek-actions {
+    flex: 0 1 auto;
     display: flex;
-    gap: 0.4rem;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 0.5rem 0.4rem;
+    min-width: 0;
+    height: 32px;
+    overflow: clip;
+    overflow-clip-margin: 4px;
   }
   .peek-bar button {
+    flex: none;
+    height: 32px;
     margin: 0;
   }
 
