@@ -1,10 +1,12 @@
-// The asset attribution (CC BY-NC-SA), at the bottom of the Inspect panel on both layouts.
+// The asset attribution (CC BY-NC-SA) and the non-commercial promise: at the bottom of the
+// lobby and of the Inspect panel, on both layouts.
 
-import { Trans } from "react-i18next";
+import { Trans, useTranslation } from "react-i18next";
 
-export function Credits() {
+export function Credits({ className }: { className?: string }) {
+  const { t } = useTranslation();
   return (
-    <footer className="credits">
+    <footer className={className ? `credits ${className}` : "credits"}>
       <Trans
         i18nKey="credits.text"
         components={{
@@ -12,7 +14,8 @@ export function Credits() {
           archive: <a href="https://github.com/motion-twin/WebGamesArchives" />,
           license: <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" />,
         }}
-      />
+      />{" "}
+      {t("credits.nonCommercial")}
     </footer>
   );
 }

@@ -86,7 +86,7 @@ Node is installed via nvm and is already on `PATH` in Claude Code shells (the us
 - `npm run ship-check`: report-only checks on `ship-map.json` (overlaps, misaligned doors, gaps).
 - `npm run layout-query -- <regex>`: search `ship-art.json` and `ship-map.json` (reading them directly is denied), capped at 60 lines.
 - `npm run screenshot`: headless Chromium screenshots as a desktop and a 360px phone player, to `.screenshots/` (gitignored). Needs `npm run dev`. The other tooling commands are in the `play` and `asset` skills.
-- `npm run deploy`: build `web`, then `wrangler deploy` the server with the client as static assets (one Worker, one origin; `/parties/*` goes to the Worker). Configured and dry-run tested; never deployed for real yet.
+- `npm run deploy`: build `web`, then `wrangler deploy` the server with the client as static assets (one Worker, one origin; `/parties/*` goes to the Worker). Live at https://mush2-server.nearbearnearbear.workers.dev since 2026-10-24 (manual deploys; auto-deploy is #121).
 - `npm run lint`: Biome, lint only (rules in `biome.json`). Import limits: `shared` has no I/O, UI, or sibling-package imports; `web` never imports `server`. No `console.log` in `server`. typescript-eslint was rejected (no TypeScript 7 support). Intentional exceptions use `biome-ignore` with a reason.
 
 ## External tools
@@ -112,5 +112,5 @@ Not rules, but still open:
 - Game name.
 - Which stage single player (the only mode with bots) belongs in.
 - Single-player model bots: no hosted default in the MVP (decided 2026-10-23, the owner won't pay for unlimited use); players will bring their own key, with a provider allowlist and an opt-in "remember the key" (planned, not built). Which providers go on the allowlist is open. `ModelBot` and `ModelGate` exist, running on a dev key only.
-- Hosting and deployment details.
+- Hosting and deployment details beyond the current setup (one Worker on `workers.dev`, the client as static assets; a custom domain waits for the game name).
 - Internationalization (en/fr/es): the seam is in, the comprehensive pass is not.

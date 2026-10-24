@@ -26,7 +26,7 @@ All under `web/src/`. UI rules are in `web/CLAUDE.md`.
 - `SettingsDialog.tsx` + `settings.css`: settings dialog.
 - `EndScreen.tsx` + `endScreen.css`: the end screen, open while the game has ended until closed (`GameScreen` holds that; the top bar's Results button reopens it): the ending's banner (`ENDING_ART`), the verdict, and `view.crew` with names, characters, roles and skulls (reuses `settings.css`).
 - `SelfPanel.tsx`: the summary under the room (desktop only; phones show it in the top bar).
-- `Credits.tsx`: the asset attribution, at the bottom of the Inspect panel on both layouts.
+- `Credits.tsx`: the asset attribution and the non-commercial line, at the bottom of the lobby and of the Inspect panel, on both layouts.
 - `CommsCenter.tsx`: the Com center terminal window: link status and Sol chance, rebel calls with progress and expiry, Xyloph entries left, NERON version and update, each with its button when the view offers it.
 - `BiosTerminal.tsx`: the BIOS terminal window: each BIOS option with its current value and, for the NERON Admin, a switch button.
 - `ShipNavigation.tsx`: the Command terminal window's steering: heading, in-orbit flag, combustion chamber fuel, and the Commander's turn, travel (no distance: it burns the chamber) and leave orbit buttons.

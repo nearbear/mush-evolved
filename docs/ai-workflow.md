@@ -1189,3 +1189,9 @@ Owner asked for those three skills and the Conceptor-to-Designer rename, after a
 - Limits were already decided (Fiery unlimited, Boring once a day). The numbers were not, so I asked once with the eMushpedia values as recommended defaults; the owner accepted all three (2 AP/+2 morale, 2 AP/+3 MP, speaker excluded, public log, no dirt).
 - Built as two no-target actions in `actions/speech.ts`; the daily limit is a per-player flag cleared at day start (a new `PlayerState` field, so `STATE_VERSION` 62 and a `leakFields` entry). A leak test caught that the field is in the speaker's own view; it was reclassified as `own` rather than hidden.
 - Audit: every skill with rules in code already had a `SKILL_STATUS` entry. The gap was documentation: Expert and Stickler were missing from `implemented-rules.md`, now added.
+
+## 2026-10-24: First deploy and live-site attribution (#122, #131)
+
+- First real deploy to `mush2-server.nearbearnearbear.workers.dev`. Firefox showed `SSL_ERROR_NO_CYPHER_OVERLAP` right after the owner changed the `workers.dev` subdomain: the new name had no certificate yet. It cleared in about a minute; polling with curl was enough to tell a provisioning delay from a broken deploy.
+- Attribution: the credit line already existed, but only at the bottom of the in-game Inspect panel, so the lobby showed Motion Twin art with no credit. `Credits` now also sits at the bottom of the lobby and carries a non-commercial line (no ads, no payments). The repo is private, so the site can't link to `Mush/ATTRIBUTION.md`; the in-page line carries title, author, source, license and "adapted".
+- Concurrent sessions: another session had uncommitted work in shared files (locales, config), so commits were staged hunk by hunk.

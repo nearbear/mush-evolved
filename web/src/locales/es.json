@@ -6,7 +6,8 @@
     "leave": "Salir"
   },
   "credits": {
-    "text": "Arte de <mush>Mush</mush> de Motion Twin (<archive>WebGamesArchives</archive>), con licencia <license>CC BY-NC-SA 4.0</license>. Adaptado. Sin afiliación con Motion Twin."
+    "text": "Arte de <mush>Mush</mush> de Motion Twin (<archive>WebGamesArchives</archive>), con licencia <license>CC BY-NC-SA 4.0</license>. Adaptado. Sin afiliación con Motion Twin.",
+    "nonCommercial": "Gratis y sin fines comerciales: sin anuncios ni pagos."
   },
   "menu": {
     "open": "Menú"

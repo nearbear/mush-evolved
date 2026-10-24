@@ -3,6 +3,7 @@ import { Suspense, lazy, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { CHARACTERS, type CharacterId, type MatchmakerServerMessage } from "@mush2/shared";
 import { characterImage } from "../art/assets.ts";
+import { Credits } from "../hud/Credits.tsx";
 import { LanguageSwitcher } from "../i18n/LanguageSwitcher.tsx";
 import { matchmakerSocket, type SeatTicket } from "../net.ts";
 import logoUrl from "../../../Mush/www/img/design/logo_welcome.png?url";
@@ -185,6 +186,7 @@ export function Lobby({ onMatched }: { onMatched: (ticket: SeatTicket) => void }
         </div>
         </section>
       </div>
+      <Credits className="pod-credits" />
     </main>
   );
 }
