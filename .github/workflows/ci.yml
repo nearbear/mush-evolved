@@ -36,7 +36,8 @@ jobs:
       - name: Playwright version
         id: pw
         if: ${{ !cancelled() && steps.install.outcome == 'success' }}
-        run: echo "version=$(node -p "require(require.resolve('playwright/package.json', { paths: ['tools'] })).version")" >> "$GITHUB_OUTPUT"
+        run: |
+          echo "version=$(node -p "require(require.resolve('playwright/package.json', { paths: ['tools'] })).version")" >> "$GITHUB_OUTPUT"
 
       - name: Cache Chromium
         id: pw-cache
