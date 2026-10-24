@@ -50,6 +50,9 @@ function stamp(state: GameState): GameState {
 /** Deliberate pacing so bots don't act instantly. */
 const BOT_DELAY_MS = 50;
 
+/** Dev servers wait this long after the first join before seating bots, so a second window can join as another character. */
+export const DEV_FILL_DELAY_MS = 8000;
+
 /**
  * Model bots' limits per game (ModelGate). The budget is a backstop against a runaway bug, set high enough not to
  * bind in a normal game; a player will choose their own once they bring their own key.
@@ -181,11 +184,11 @@ export class GameRoom extends Server<Env> {
       delete this.tokens[token];
       return { ok: false, error };
     }
-    if (this.cheatsAllowed && this.game!.players.length === 1) await this.fillWithBots(character);
+    if (this.cheatsAllowed && this.game!.players.length === 1) setTimeout(() => void this.fillWithBots(), DEV_FILL_DELAY_MS);
     return { ok: true, token, aboard: this.game!.players.length, taken: this.game!.players.map((p) => p.character), closesAt: this.closesAt() };
   }
 
-  /** A dev server's ship seats the whole cast, so it fills (and Mush are chosen) as soon as the first player has joined. */
+  /** A dev server's ship seats the whole cast, so it fills (and Mush are chosen) once the bots are seated, `DEV_FILL_DELAY_MS` after the first join. */
   private shipRules(): PreselectionRules {
     return this.cheatsAllowed ? { ...PRESELECTION, seats: CHARACTERS.length } : PRESELECTION;
   }
@@ -194,8 +197,10 @@ export class GameRoom extends Server<Env> {
    * Dev servers only (never a deployment: multiplayer has no bots): seats a bot for every character nobody took.
    * The last one fills the ship, which chooses the Mush. All are log parrots.
    */
-  private async fillWithBots(taken: CharacterId): Promise<void> {
-    const free = CHARACTERS.map((c) => c.id).filter((id) => id !== taken);
+  private async fillWithBots(): Promise<void> {
+    if (!this.game?.preselection) return;
+    const taken = this.takenCharacters();
+    const free = CHARACTERS.map((c) => c.id).filter((id) => !taken.includes(id));
     // Characters are cosmetic, so Math.random is fine for the shuffle.
     free.sort(() => Math.random() - 0.5);
     for (const [i, character] of free.entries()) {
@@ -206,6 +211,11 @@ export class GameRoom extends Server<Env> {
     }
     this.initBots();
     this.scheduleBots();
+  }
+
+  /** How full the ship is and when it stops taking crew (null once closed): lets the matchmaker catch up with a dev fill. */
+  status(): { aboard: number; taken: CharacterId[]; closesAt: number | null } {
+    return { aboard: this.game?.players.length ?? 0, taken: this.takenCharacters(), closesAt: this.closesAt() };
   }
 
   /** The characters chosen aboard (public: the picker grays them out). */

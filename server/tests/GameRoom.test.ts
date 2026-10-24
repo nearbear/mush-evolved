@@ -514,16 +514,25 @@ describe("GameRoom joining (pre-selection)", () => {
     expect(await room.join("Late", "frieda")).toEqual({ ok: false, error: "ship_closed" });
   });
 
-  it("fills a dev server's ship with a parrot bot per other character, and picks the Mush", async () => {
-    const room = asRoom(new FakeStorage(), CHEATS);
-    const first = await joinOk(room, "Ann", "chao");
-    expect(first.aboard).toBe(CHARACTERS.length);
-    expect(first.closesAt).toBeNull();
-    const view = lastView(connect(room, first.token));
-    expect(view.preselection).toBe(false);
-    expect(view.players).toHaveLength(CHARACTERS.length - 1);
-    expect(view.players.every((p) => p.isBot && p.botKind === "logParrot")).toBe(true);
-    expect(new Set([...view.players.map((p) => p.character), "chao"]).size).toBe(CHARACTERS.length);
+  it("fills a dev server's ship with a parrot bot per free character after a delay, and picks the Mush", async () => {
+    vi.useFakeTimers();
+    try {
+      const room = asRoom(new FakeStorage(), CHEATS);
+      const first = await joinOk(room, "Ann", "chao");
+      expect(first.closesAt).not.toBeNull();
+      // A second window joins during the delay.
+      const second = await joinOk(room, "Bea", "chun");
+      await vi.advanceTimersByTimeAsync(10_000);
+      const view = lastView(connect(room, first.token));
+      expect(view.preselection).toBe(false);
+      expect(view.players).toHaveLength(CHARACTERS.length - 1);
+      expect(view.players.filter((p) => p.isBot)).toHaveLength(CHARACTERS.length - 2);
+      expect(view.players.every((p) => !p.isBot || p.botKind === "logParrot")).toBe(true);
+      expect(new Set([...view.players.map((p) => p.character), "chao"]).size).toBe(CHARACTERS.length);
+      expect(lastView(connect(room, second.token)).preselection).toBe(false);
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it("never seats bots on a deployment", async () => {

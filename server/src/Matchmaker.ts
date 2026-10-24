@@ -5,7 +5,7 @@
 
 import { getServerByName, Server, type Connection, type WSMessage } from "partyserver";
 import { LOBBY_LANGUAGES, type CharacterId, parseMatchmakerMessage, SEAT_COUNT, type MatchmakerClientMessage, type MatchmakerServerMessage } from "@mush2/shared";
-import type { JoinResult } from "./GameRoom.ts";
+import { DEV_FILL_DELAY_MS, type JoinResult } from "./GameRoom.ts";
 import { RateLimiter } from "./rateLimit.ts";
 
 /** The ship players join now. Gone once it is full or past its pre-selection deadline. */
@@ -39,12 +39,23 @@ export class Matchmaker extends Server<Env> {
     }
   }
 
-  override onConnect(connection: Connection): void {
+  /** Asks the open ship how it is, and forgets it once it has closed (a dev server fills it with bots on its own). */
+  private async refresh(): Promise<void> {
+    if (!this.open) return;
+    const room = await getServerByName(this.env.GameRoom, this.open.roomId);
+    const status = await room.status();
+    if (status.closesAt === null) await this.setOpen(null);
+    else await this.setOpen({ ...this.open, aboard: status.aboard, taken: status.taken, closesAt: status.closesAt });
+    this.broadcastQueue();
+  }
+
+  override async onConnect(connection: Connection): Promise<void> {
     // Rooms are created on first connect, so refuse names that aren't a lobby language.
     if (!(LOBBY_LANGUAGES as readonly string[]).includes(this.name)) {
       connection.close(1008, "unknown_lobby");
       return;
     }
+    await this.refresh();
     this.send(connection, this.queueMessage());
   }
 
@@ -82,6 +93,8 @@ export class Matchmaker extends Server<Env> {
       await this.setOpen(result.closesAt === null ? null : { roomId, aboard: result.aboard, taken: result.taken, closesAt: result.closesAt });
       this.send(connection, { type: "matched", roomId, token: result.token });
       this.broadcastQueue();
+      // A dev server seats bots shortly after the first join and closes the ship.
+      if (this.env.ALLOW_CHEATS === "true") setTimeout(() => void this.refresh(), DEV_FILL_DELAY_MS + 1000);
       return;
     }
     connection.setState({ joined: false });
