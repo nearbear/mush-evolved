@@ -26,6 +26,7 @@ import {
   placeTile,
   roomForCell,
   setDoorTarget,
+  rotateSofa,
   stepFrame,
   type TileAt,
   tileAt,
@@ -320,6 +321,7 @@ function Editor({ art, initial }: { art: ShipArt; initial: ShipMap }) {
       commit(r.map, r.at);
     },
     frame: (step: number) => sel && commit(stepFrame(map, art, sel, step)),
+    rotate: () => sel && commit(rotateSofa(map, sel)),
     toRoom: (room: string) => {
       const r = sel && moveToRoom(map, sel, room);
       if (r) commit(r.map, r.at);
@@ -372,6 +374,7 @@ function Editor({ art, initial }: { art: ShipArt; initial: ShipMap }) {
     else if ((k === "Delete" || k === "Backspace") && sel) edit.remove();
     else if (k === "[" && sel) edit.frame(-1);
     else if (k === "]" && sel) edit.frame(1);
+    else if (k.toLowerCase() === "r" && !mod && sel) edit.rotate();
     else if (k === "Tab" && stack.current.keys.length > 1) cycle(e.shiftKey ? -1 : 1);
     else if (k === "Escape") {
       if (armed) setArmed(null);
@@ -617,6 +620,11 @@ function Editor({ art, initial }: { art: ShipArt; initial: ShipMap }) {
                 <button type="button" onClick={() => edit.frame(1)}>
                   Frame +
                 </button>
+                {(selTile.slice === "sofa" || selTile.slice === "sofaReverse") && (
+                  <button type="button" onClick={edit.rotate}>
+                    Rotate
+                  </button>
+                )}
                 <button type="button" onClick={edit.duplicate}>
                   Duplicate
                 </button>

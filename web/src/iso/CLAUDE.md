@@ -177,7 +177,7 @@ describes a spot in screen terms, translate it to cells and confirm on the data 
   or 2 (where seams between rooms show), with pan, zoom, layer toggles, a grid and room outlines on
   the ship plan. Click a tile to select it (Tab steps through everything under that spot); move it a
   cell at a time, delete, duplicate, change its frame, hand it to another room, set a door's target;
-  place new tiles from the palette; undo and redo; save writes `ship-map.json` and regenerates
+  place new tiles from the palette (a placed sofa is bound as built-only `SOFA` equipment: the game draws it only once one is built; cameras are ordinary tiles); undo and redo; save writes `ship-map.json` and regenerates
   `ship-rooms.json` (`tools/src/editor/vitePlugin.ts`, after `validateMap`). The game tab needs a
   reload to see a save. A new tile's kind and layer are what the map already uses for its slice.
   Shift+arrows (or the Room pad) move the selected tile's room on the plan. The Checks panel

@@ -3,7 +3,7 @@ import type { EquipmentView, ShipLayout } from "@mush2/shared";
 import shipArtJson from "../../../Mush/derived/ship-art.json?raw";
 import shipMapJson from "../../../Mush/derived/ship-map.json?raw";
 import rooms from "../../../Mush/derived/ship-rooms.json";
-import { SOFA_SPOTS, equipmentByTileKey, roomAsBuilt, withoutBuiltOnly } from "../../src/iso/equipmentTiles.ts";
+import { equipmentByTileKey, roomAsBuilt, withoutBuiltOnly } from "../../src/iso/equipmentTiles.ts";
 import { walkableCells } from "../../src/iso/placement.ts";
 
 const raw = ({ ...JSON.parse(shipArtJson), ...JSON.parse(shipMapJson) }) as ShipLayout;
@@ -16,7 +16,6 @@ describe("built sofas", () => {
   it("are not drawn from the map: the turret room's sofa is gone until built", () => {
     expect(sofaTiles(raw, "LASER_TURRET_B_0")).toHaveLength(1);
     expect(layout.rooms.flatMap((r) => r.tiles).some((t) => t.slice === "sofa" || t.slice === "sofaReverse")).toBe(false);
-    expect(sofaTiles(raw, "LASER_TURRET_B_0")[0]).toMatchObject(SOFA_SPOTS.LASER_TURRET_B_0!);
   });
 
   it("appear at the room's spot once built, appended, and stand for the first sofa", () => {
@@ -24,14 +23,15 @@ describe("built sofas", () => {
     expect(roomAsBuilt(room, [])).toBe(room);
     const built = roomAsBuilt(room, [sofa, { id: "X:SOFA:2", type: "SOFA" }]);
     expect(built.tiles.slice(0, -1)).toEqual(room.tiles);
-    expect(built.tiles.at(-1)).toMatchObject({ ...SOFA_SPOTS.COMMAND_CENTER, kind: "entity" });
+    expect(built.tiles.at(-1)).toMatchObject({ ...sofaTiles(raw, "COMMAND_CENTER")[0]!, kind: "entity" });
     expect(equipmentByTileKey(built, [sofa]).get(`t${built.tiles.length - 1}`)).toEqual(sofa);
   });
 
   it("have a spot in every room but the Nexus and hydroponics, on free floor, leaving the floor connected", () => {
     const ids = rooms.map((r) => r.id);
-    expect(ids.filter((id) => !SOFA_SPOTS[id]).sort()).toEqual(["HYDROPONIC_CENTER", "NEXUS_ROOM"]);
-    for (const id of Object.keys(SOFA_SPOTS)) {
+    const withSofa = ids.filter((id) => sofaTiles(raw, id).length > 0);
+    expect(ids.filter((id) => !withSofa.includes(id)).sort()).toEqual(["HYDROPONIC_CENTER", "NEXUS_ROOM"]);
+    for (const id of withSofa) {
       const before = walkableCells(layout, roomOf(layout, id));
       const after = walkableCells(layout, roomAsBuilt(roomOf(layout, id), [sofa]));
       expect(before.length - after.length, id).toBe(3);

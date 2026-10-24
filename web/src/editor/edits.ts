@@ -54,6 +54,15 @@ export function stepFrame(map: ShipMap, art: Pick<ShipArt, "slices">, at: TileAt
   });
 }
 
+/** The other way round for a sofa (`sofa` runs along y, `sofaReverse` along x), on the same cell; its binding follows. */
+export function rotateSofa(map: ShipMap, at: TileAt): ShipMap {
+  const from = tileAt(map, at)?.slice;
+  const to = from === "sofa" ? "sofaReverse" : from === "sofaReverse" ? "sofa" : undefined;
+  if (!to) return map;
+  const turned = withTile(map, at, (t) => ({ ...t, slice: to }));
+  return withRoom(turned, at.room, (r) => ({ ...r, equipment: r.equipment.map((b) => (b.id === "SOFA" && b.tile === from ? { ...b, tile: to } : b)) }));
+}
+
 export const setDoorTarget = (map: ShipMap, at: TileAt, target: string): ShipMap => withTile(map, at, (t) => ({ ...t, door: { target } }));
 
 /**
@@ -74,7 +83,15 @@ export function moveToRoom(map: ShipMap, at: TileAt, to: string): { map: ShipMap
 export function placeTile(map: ShipMap, room: string, cell: { x: number; y: number }, tile: Omit<TilePlacement, "x" | "y">): { map: ShipMap; at: TileAt } {
   const r = map.rooms.find((x) => x.id === room)!;
   const t = { x: cell.x - r.at!.x, y: cell.y - r.at!.y, ...tile };
-  return { map: withRoom(map, room, (x) => ({ ...x, tiles: [...x.tiles, t] })), at: { room, index: r.tiles.length } };
+  // A sofa is built-only equipment: bind it, so the game draws it only once someone builds one.
+  // A binding whose sprite is no longer in the room (the old sofa was deleted to turn it) follows the new one.
+  const isSofa = tile.slice === "sofa" || tile.slice === "sofaReverse";
+  const bound = r.equipment.some((b) => b.id === "SOFA" && r.tiles.some((x) => x.slice === b.tile));
+  const equipment = !isSofa || bound ? r.equipment : [...r.equipment.filter((b) => b.id !== "SOFA"), { id: "SOFA", tile: tile.slice }];
+  return {
+    map: withRoom(map, room, (x) => ({ ...x, tiles: [...x.tiles, t], equipment })),
+    at: { room, index: r.tiles.length },
+  };
 }
 
 /**

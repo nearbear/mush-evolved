@@ -10,6 +10,7 @@ import {
   moveTile,
   moveToRoom,
   placeTile,
+  rotateSofa,
   roomForCell,
   setDoorTarget,
   stepFrame,
@@ -98,5 +99,14 @@ describe("roomForCell", () => {
     expect(roomForCell(map, { x: 3, y: 1 })).toBe("A");
     expect(roomForCell(map, { x: 11, y: 5 })).toBe("B");
     expect(roomForCell(map, { x: 40, y: 40 })).toBeUndefined();
+  });
+
+  it("rotate a sofa in place and keep its equipment binding on it", () => {
+    const sofaMap: ShipMap = { rooms: [{ ...room("A", { x: 0, y: 0 }, [tile(1, 1), tile(4, 4, "sofa", "entity")]), equipment: [{ id: "SOFA", tile: "sofa" }] }] };
+    const turned = rotateSofa(sofaMap, { room: "A", index: 1 });
+    expect(tileAt(turned, { room: "A", index: 1 })).toMatchObject({ x: 4, y: 4, slice: "sofaReverse" });
+    expect(turned.rooms[0]!.equipment).toEqual([{ id: "SOFA", tile: "sofaReverse" }]);
+    expect(rotateSofa(turned, { room: "A", index: 1 })).toEqual(sofaMap);
+    expect(rotateSofa(sofaMap, { room: "A", index: 0 })).toBe(sofaMap);
   });
 });

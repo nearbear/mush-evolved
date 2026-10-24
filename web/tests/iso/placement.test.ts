@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import type { RoomLayout, ShipLayout, SliceInfo } from "@mush2/shared";
 import shipArtJson from "../../../Mush/derived/ship-art.json?raw";
 import shipMapJson from "../../../Mush/derived/ship-map.json?raw";
+import { withoutBuiltOnly } from "../../src/iso/equipmentTiles.ts";
 import {
   cellAtPoint,
   doorPassage,
@@ -133,7 +134,7 @@ describe("walkableCells / spreadActors", () => {
 });
 
 describe("the real ship", () => {
-  const ship = ({ ...JSON.parse(shipArtJson), ...JSON.parse(shipMapJson) }) as ShipLayout;
+  const ship = withoutBuiltOnly({ ...JSON.parse(shipArtJson), ...JSON.parse(shipMapJson) } as ShipLayout);
 
   it("places every door of every room with its target", () => {
     for (const r of ship.rooms) {
@@ -403,7 +404,7 @@ describe("facingFor", () => {
 });
 
 describe("neighborRooms", () => {
-  const ship = ({ ...JSON.parse(shipArtJson), ...JSON.parse(shipMapJson) }) as ShipLayout;
+  const ship = withoutBuiltOnly({ ...JSON.parse(shipArtJson), ...JSON.parse(shipMapJson) } as ShipLayout);
   const room = (id: string) => ship.rooms.find((r) => r.id === id)!;
 
   it("puts every room where the ship plan does, whichever room you stand in", () => {
@@ -461,7 +462,7 @@ describe("neighborRooms", () => {
 });
 
 describe("doorPassage on the real ship", () => {
-  const ship = ({ ...JSON.parse(shipArtJson), ...JSON.parse(shipMapJson) }) as ShipLayout;
+  const ship = withoutBuiltOnly({ ...JSON.parse(shipArtJson), ...JSON.parse(shipMapJson) } as ShipLayout);
   const scene = (r: RoomLayout) => prepareScene(ship, [{ room: r, dx: 0, dy: 0 }, ...neighborRooms(ship, r)]);
   /** Every pair of rooms with a door between them, from both sides. */
   const pairs = ship.rooms.flatMap((r) =>

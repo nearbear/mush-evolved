@@ -7,7 +7,8 @@
       "equipment": [
         {"id":"ASTRO_MODULE","tile":"pilot_astro_right","mask":"pilot_astro_mask","dir":"up","module":true},
         {"id":"COM_CENTER","tile":"com_center_right","mask":"com_center_mask","dir":"down","module":true},
-        {"id":"PILOT_MODULE","tile":"pilot_module","mask":"pilot_module_mask","dir":"left","module":true}
+        {"id":"PILOT_MODULE","tile":"pilot_module","mask":"pilot_module_mask","dir":"left","module":true},
+        {"id":"SOFA","tile":"sofaReverse"}
       ],
       "tiles": [
         {"x":18,"y":12,"kind":"door","layer":0,"slice":"DOOR_R","frame":0,"door":{"target":"LASER_TURRET_A_0"}},
@@ -164,7 +165,8 @@
         {"x":11,"y":22,"kind":"entity","layer":3,"slice":"chair_2","frame":0},
         {"x":18,"y":12,"kind":"ground","layer":0,"slice":"GROUND","frame":1},
         {"x":17,"y":12,"kind":"ground","layer":0,"slice":"GROUND","frame":1},
-        {"x":14,"y":12,"kind":"ground","layer":0,"slice":"GROUND_DECK","frame":1}
+        {"x":14,"y":12,"kind":"ground","layer":0,"slice":"GROUND_DECK","frame":1},
+        {"x":17,"y":13,"kind":"entity","layer":2,"slice":"sofaReverse","frame":0}
       ]
     },
     {
@@ -174,7 +176,8 @@
       "equipment": [
         {"id":"PATROL_INTERFACE","tile":"spaceship","dir":"up","key":"PATROL_SHIP_A_0"},
         {"id":"PATROL_INTERFACE","tile":"spaceship","dir":"up","key":"PATROL_SHIP_A_1"},
-        {"id":"PATROL_INTERFACE","tile":"spaceship","dir":"up","key":"PATROL_SHIP_A_2"}
+        {"id":"PATROL_INTERFACE","tile":"spaceship","dir":"up","key":"PATROL_SHIP_A_2"},
+        {"id":"SOFA","tile":"sofa"}
       ],
       "tiles": [
         {"x":5,"y":9,"kind":"wall","layer":0,"slice":"CORNER_DECK","frame":0},
@@ -429,7 +432,8 @@
         {"x":5,"y":17,"kind":"ground","layer":0,"slice":"GROUND","frame":1},
         {"x":5,"y":18,"kind":"ground","layer":0,"slice":"GROUND_DECK","frame":8},
         {"x":5,"y":19,"kind":"wall","layer":0,"slice":"WALL_L_DECK","frame":0},
-        {"x":5,"y":20,"kind":"wall","layer":0,"slice":"WALL_L_DECK","frame":0}
+        {"x":5,"y":20,"kind":"wall","layer":0,"slice":"WALL_L_DECK","frame":0},
+        {"x":6,"y":14,"kind":"entity","layer":2,"slice":"sofa","frame":0}
       ]
     },
     {
@@ -439,7 +443,8 @@
       "equipment": [
         {"id":"PATROL_INTERFACE","tile":"spaceship","dir":"up","key":"PATROL_SHIP_B_0"},
         {"id":"PATROL_INTERFACE","tile":"spaceship","dir":"up","key":"PATROL_SHIP_B_1"},
-        {"id":"PATROL_INTERFACE","tile":"spaceship","dir":"up","key":"PATROL_SHIP_B_2"}
+        {"id":"PATROL_INTERFACE","tile":"spaceship","dir":"up","key":"PATROL_SHIP_B_2"},
+        {"id":"SOFA","tile":"sofaReverse"}
       ],
       "tiles": [
         {"x":6,"y":11,"kind":"wall","layer":0,"slice":"CORNER_DECK","frame":1},
@@ -723,7 +728,8 @@
         {"x":6,"y":14,"kind":"ground","layer":0,"slice":"GROUND","frame":1},
         {"x":6,"y":13,"kind":"ground","layer":0,"slice":"GROUND","frame":1},
         {"x":6,"y":15,"kind":"ground","layer":0,"slice":"GROUND","frame":1},
-        {"kind":"wall","layer":0,"slice":"corner_02","frame":0,"x":28,"y":11}
+        {"kind":"wall","layer":0,"slice":"corner_02","frame":0,"x":28,"y":11},
+        {"x":26,"y":12,"kind":"entity","layer":2,"slice":"sofaReverse","frame":0}
       ]
     },
     {
@@ -734,7 +740,8 @@
         {"id":"PATROL_INTERFACE","tile":"spaceship","dir":"up","key":"PATROL_SHIP_AA_0"},
         {"id":"PATROL_INTERFACE","tile":"pasiphae","dir":"up","key":"PATROL_SHIP_AA_1"},
         {"id":"DYNARCADE","tile":"dynarcade","dir":"up"},
-        {"id":"BEAT_BOX","tile":"beat_box","dir":"up"}
+        {"id":"BEAT_BOX","tile":"beat_box","dir":"up"},
+        {"id":"SOFA","tile":"sofa"}
       ],
       "tiles": [
         {"x":5,"y":10,"kind":"wall","layer":0,"slice":"CORNER_DECK","frame":0},
@@ -991,7 +998,8 @@
         {"x":5,"y":17,"kind":"entity","layer":3,"slice":"camera","frame":0},
         {"x":5,"y":19,"kind":"ground","layer":0,"slice":"GROUND_DECK","frame":8},
         {"x":5,"y":18,"kind":"ground","layer":0,"slice":"GROUND_DECK","frame":8},
-        {"kind":"wall","layer":0,"slice":"corner_02","frame":0,"x":5,"y":21}
+        {"kind":"wall","layer":0,"slice":"corner_02","frame":0,"x":5,"y":21},
+        {"x":6,"y":18,"kind":"entity","layer":2,"slice":"sofa","frame":0}
       ]
     },
     {
@@ -1071,7 +1079,8 @@
         {"id":"SURGERY_POD","tile":"surgery_console","dir":"left","module":true},
         {"id":"DRUG_DISP","tile":"drug_dispenser","dir":"right","module":true},
         {"id":"BED","tile":"sick_couch","dir":"down","module":true,"key":"sick_couch","data":"flipped;ofsx_-18;ofsy_-2"},
-        {"id":"NERON_CORE","tile":"auxiliary_terminal_neron","dir":"down","module":true,"key":"neron_sick"}
+        {"id":"NERON_CORE","tile":"auxiliary_terminal_neron","dir":"down","module":true,"key":"neron_sick"},
+        {"id":"SOFA","tile":"sofaReverse"}
       ],
       "tiles": [
         {"x":10,"y":10,"kind":"wall","layer":0,"slice":"COLUMN","frame":0},
@@ -1210,7 +1219,8 @@
         {"x":10,"y":13,"kind":"ground","layer":0,"slice":"GROUND","frame":1},
         {"x":10,"y":12,"kind":"ground","layer":0,"slice":"GROUND","frame":1},
         {"x":21,"y":20,"kind":"ground","layer":0,"slice":"GROUND","frame":0},
-        {"x":12,"y":10,"kind":"ground","layer":0,"slice":"GROUND_DECK","frame":0}
+        {"x":12,"y":10,"kind":"ground","layer":0,"slice":"GROUND_DECK","frame":0},
+        {"x":16,"y":11,"kind":"entity","layer":2,"slice":"sofaReverse","frame":0}
       ]
     },
     {
@@ -1221,7 +1231,8 @@
         {"id":"RESEARCH_LAB","tile":"table_computer","dir":"left","module":true},
         {"id":"CRYO_MODULE","tile":"cryo","dir":"left","module":true},
         {"id":"MYCOSCAN","tile":"mycoscan","dir":"left","module":true},
-        {"id":"GRAVITY_SIMULATOR","tile":"gravity_simulator","dir":"right","module":true}
+        {"id":"GRAVITY_SIMULATOR","tile":"gravity_simulator","dir":"right","module":true},
+        {"id":"SOFA","tile":"sofaReverse"}
       ],
       "tiles": [
         {"x":10,"y":11,"kind":"wall","layer":0,"slice":"COLUMN","frame":0},
@@ -1357,7 +1368,8 @@
         {"x":12,"y":18,"kind":"entity","layer":3,"slice":"chair_1","frame":3},
         {"x":19,"y":11,"kind":"ground","layer":0,"slice":"GROUND_DECK","frame":2},
         {"x":18,"y":11,"kind":"ground","layer":0,"slice":"GROUND_DECK","frame":2},
-        {"kind":"wall","layer":0,"slice":"BIG_WALL_R","frame":1,"x":21,"y":11}
+        {"kind":"wall","layer":0,"slice":"BIG_WALL_R","frame":1,"x":21,"y":11},
+        {"x":20,"y":12,"kind":"entity","layer":2,"slice":"sofaReverse","frame":0}
       ]
     },
     {
@@ -1366,7 +1378,8 @@
       "at": {"x":-7,"y":9},
       "equipment": [
         {"id":"KITCHEN","tile":"kitchen_p0","mask":"kitchen_mask","dir":"right","module":true},
-        {"id":"COFFEE_DISPENSER","tile":"coffee","dir":"left","module":true}
+        {"id":"COFFEE_DISPENSER","tile":"coffee","dir":"left","module":true},
+        {"id":"SOFA","tile":"sofa"}
       ],
       "tiles": [
         {"x":10,"y":10,"kind":"wall","layer":0,"slice":"COLUMN","frame":0},
@@ -1508,7 +1521,8 @@
         {"kind":"wall","layer":0,"slice":"BIG_WALL_L","frame":1,"x":10,"y":21},
         {"kind":"wall","layer":0,"slice":"BIG_WALL_L","frame":1,"x":21,"y":12},
         {"kind":"wall","layer":0,"slice":"corner_02","frame":0,"x":18,"y":10},
-        {"kind":"wall","layer":0,"slice":"COLUMN","frame":0,"x":21,"y":10}
+        {"kind":"wall","layer":0,"slice":"COLUMN","frame":0,"x":21,"y":10},
+        {"x":11,"y":16,"kind":"entity","layer":2,"slice":"sofa","frame":0}
       ]
     },
     {
@@ -1665,7 +1679,8 @@
         {"id":"ROTATIONAL_REACTOR","tile":"rotational_reactor","mask":"reactor_mask","dir":"down","module":true,"key":"reac_a"},
         {"id":"ROTATIONAL_REACTOR","tile":"rotational_reactor","mask":"reactor_mask","dir":"down","module":true,"key":"reac_b"},
         {"id":"EMERGENCY_REACTOR","tile":"emergency_reactor","mask":"reactor_mask","dir":"down","module":true},
-        {"id":"NERON_CORE","tile":"auxiliary_terminal_neron","dir":"down","module":true,"key":"neron_engine"}
+        {"id":"NERON_CORE","tile":"auxiliary_terminal_neron","dir":"down","module":true,"key":"neron_engine"},
+        {"id":"SOFA","tile":"sofaReverse"}
       ],
       "tiles": [
         {"x":8,"y":3,"kind":"wall","layer":0,"slice":"COLUMN","frame":0},
@@ -2222,7 +2237,8 @@
         {"x":8,"y":5,"kind":"ground","layer":0,"slice":"GROUND","frame":1},
         {"x":8,"y":26,"kind":"ground","layer":0,"slice":"GROUND","frame":1},
         {"x":8,"y":25,"kind":"ground","layer":0,"slice":"GROUND","frame":1},
-        {"kind":"wall","layer":0,"slice":"COLUMN","frame":0,"x":8,"y":22}
+        {"kind":"wall","layer":0,"slice":"COLUMN","frame":0,"x":8,"y":22},
+        {"x":24,"y":4,"kind":"entity","layer":2,"slice":"sofaReverse","frame":0}
       ]
     },
     {
@@ -2230,7 +2246,8 @@
       "label": "Laser turret Alpha front",
       "at": {"x":-46,"y":-3},
       "equipment": [
-        {"id":"TURRET_COMMAND","tile":"turret_alpha","dir":"left","module":true}
+        {"id":"TURRET_COMMAND","tile":"turret_alpha","dir":"left","module":true},
+        {"id":"SOFA","tile":"sofaReverse"}
       ],
       "tiles": [
         {"x":11,"y":15,"kind":"ground","layer":0,"slice":"GROUND","frame":0},
@@ -2275,7 +2292,8 @@
         {"x":15,"y":15,"kind":"entity","layer":3,"slice":"camera2","frame":0},
         {"kind":"wall","layer":0,"slice":"BIG_WALL_R","frame":1,"x":12,"y":21},
         {"kind":"wall","layer":0,"slice":"BIG_WALL_R","frame":1,"x":13,"y":21},
-        {"kind":"wall","layer":0,"slice":"BIG_WALL_R","frame":1,"x":17,"y":15}
+        {"kind":"wall","layer":0,"slice":"BIG_WALL_R","frame":1,"x":17,"y":15},
+        {"x":16,"y":16,"kind":"entity","layer":2,"slice":"sofaReverse","frame":0}
       ]
     },
     {
@@ -2283,7 +2301,8 @@
       "label": "Laser turret Alpha centre",
       "at": {"x":-18,"y":-8},
       "equipment": [
-        {"id":"TURRET_COMMAND","tile":"turret_alpha","dir":"up","module":true}
+        {"id":"TURRET_COMMAND","tile":"turret_alpha","dir":"up","module":true},
+        {"id":"SOFA","tile":"sofa"}
       ],
       "tiles": [
         {"x":11,"y":13,"kind":"ground","layer":0,"slice":"GROUND","frame":0},
@@ -2325,7 +2344,8 @@
         {"x":11,"y":16,"kind":"entity","layer":1,"slice":"auto_watering_2","frame":0},
         {"x":15,"y":14,"kind":"entity","layer":2,"slice":"cupboard","frame":0},
         {"x":11,"y":13,"kind":"entity","layer":3,"slice":"chair_2","frame":1},
-        {"x":11,"y":18,"kind":"entity","layer":3,"slice":"camera","frame":0}
+        {"x":11,"y":18,"kind":"entity","layer":3,"slice":"camera","frame":0},
+        {"x":12,"y":18,"kind":"entity","layer":2,"slice":"sofa","frame":0}
       ]
     },
     {
@@ -2333,7 +2353,8 @@
       "label": "Laser turret Alpha back",
       "at": {"x":30,"y":-5},
       "equipment": [
-        {"id":"TURRET_COMMAND","tile":"turret_alpha","dir":"up","module":true}
+        {"id":"TURRET_COMMAND","tile":"turret_alpha","dir":"up","module":true},
+        {"id":"SOFA","tile":"sofaReverse"}
       ],
       "tiles": [
         {"x":11,"y":11,"kind":"ground","layer":0,"slice":"GROUND","frame":0},
@@ -2376,7 +2397,8 @@
         {"x":11,"y":16,"kind":"entity","layer":3,"slice":"camera","frame":0},
         {"x":11,"y":15,"kind":"ground","layer":0,"slice":"GROUND_DECK","frame":8},
         {"x":11,"y":14,"kind":"ground","layer":0,"slice":"GROUND_DECK","frame":8},
-        {"kind":"wall","layer":0,"slice":"BIG_WALL_R","frame":1,"x":13,"y":17}
+        {"kind":"wall","layer":0,"slice":"BIG_WALL_R","frame":1,"x":13,"y":17},
+        {"x":15,"y":12,"kind":"entity","layer":2,"slice":"sofaReverse","frame":0}
       ]
     },
     {
@@ -2439,7 +2461,8 @@
       "label": "Laser turret Beta centre",
       "at": {"x":-21,"y":25},
       "equipment": [
-        {"id":"TURRET_COMMAND","tile":"turret_beta","dir":"down","module":true}
+        {"id":"TURRET_COMMAND","tile":"turret_beta","dir":"down","module":true},
+        {"id":"SOFA","tile":"sofa"}
       ],
       "tiles": [
         {"x":11,"y":13,"kind":"wall","layer":0,"slice":"COLUMN","frame":0},
@@ -2501,7 +2524,8 @@
         {"x":14,"y":18,"kind":"ground","layer":0,"slice":"GROUND","frame":0},
         {"x":18,"y":18,"kind":"ground","layer":0,"slice":"GROUND","frame":0},
         {"x":16,"y":13,"kind":"ground","layer":0,"slice":"GROUND","frame":1},
-        {"x":17,"y":13,"kind":"ground","layer":0,"slice":"GROUND","frame":0}
+        {"x":17,"y":13,"kind":"ground","layer":0,"slice":"GROUND","frame":0},
+        {"x":12,"y":16,"kind":"entity","layer":2,"slice":"sofa","frame":0}
       ]
     },
     {
@@ -2509,7 +2533,8 @@
       "label": "Laser turret Beta back",
       "at": {"x":32,"y":25},
       "equipment": [
-        {"id":"TURRET_COMMAND","tile":"turret_beta","dir":"right","module":true}
+        {"id":"TURRET_COMMAND","tile":"turret_beta","dir":"right","module":true},
+        {"id":"SOFA","tile":"sofaReverse"}
       ],
       "tiles": [
         {"x":11,"y":12,"kind":"wall","layer":0,"slice":"COLUMN","frame":0},
@@ -2553,7 +2578,8 @@
         {"x":14,"y":12,"kind":"ground","layer":0,"slice":"GROUND_DECK","frame":10},
         {"x":11,"y":15,"kind":"ground","layer":0,"slice":"GROUND_DECK","frame":8},
         {"x":13,"y":12,"kind":"ground","layer":0,"slice":"GROUND_DECK","frame":10},
-        {"x":11,"y":14,"kind":"ground","layer":0,"slice":"GROUND_DECK","frame":8}
+        {"x":11,"y":14,"kind":"ground","layer":0,"slice":"GROUND_DECK","frame":8},
+        {"x":16,"y":13,"kind":"entity","layer":2,"slice":"sofaReverse","frame":0}
       ]
     },
     {
@@ -2632,7 +2658,9 @@
       "id": "CORRIDOR_A",
       "label": "Corridor front",
       "at": {"x":-31,"y":8},
-      "equipment": [],
+      "equipment": [
+        {"id":"SOFA","tile":"sofa"}
+      ],
       "tiles": [
         {"x":2,"y":4,"kind":"wall","layer":0,"slice":"COLUMN","frame":0},
         {"x":3,"y":4,"kind":"wall","layer":0,"slice":"BIG_WALL_R","frame":0},
@@ -2893,14 +2921,17 @@
         {"x":15,"y":14,"kind":"ground","layer":0,"slice":"GROUND_DECK","frame":3},
         {"x":14,"y":14,"kind":"ground","layer":0,"slice":"GROUND_DECK","frame":3},
         {"x":20,"y":14,"kind":"ground","layer":0,"slice":"GROUND_DECK","frame":1},
-        {"x":21,"y":14,"kind":"ground","layer":0,"slice":"GROUND_DECK","frame":1}
+        {"x":21,"y":14,"kind":"ground","layer":0,"slice":"GROUND_DECK","frame":1},
+        {"x":3,"y":20,"kind":"entity","layer":2,"slice":"sofa","frame":0}
       ]
     },
     {
       "id": "CORRIDOR_B",
       "label": "Corridor centre",
       "at": {"x":-17,"y":7},
-      "equipment": [],
+      "equipment": [
+        {"id":"SOFA","tile":"sofa"}
+      ],
       "tiles": [
         {"x":15,"y":5,"kind":"wall","layer":0,"slice":"COLUMN","frame":0},
         {"x":16,"y":5,"kind":"wall","layer":0,"slice":"BIG_WALL_R","frame":0},
@@ -3035,14 +3066,17 @@
         {"x":18,"y":5,"kind":"ground","layer":0,"slice":"GROUND_DECK","frame":10},
         {"x":15,"y":17,"kind":"ground","layer":0,"slice":"GROUND_DECK","frame":8},
         {"kind":"wall","layer":0,"slice":"BIG_WALL_R","frame":1,"x":20,"y":5},
-        {"kind":"wall","layer":0,"slice":"corner_02","frame":0,"x":15,"y":20}
+        {"kind":"wall","layer":0,"slice":"corner_02","frame":0,"x":15,"y":20},
+        {"x":16,"y":22,"kind":"entity","layer":2,"slice":"sofa","frame":0}
       ]
     },
     {
       "id": "CORRIDOR_C",
       "label": "Corridor back",
       "at": {"x":6,"y":10},
-      "equipment": [],
+      "equipment": [
+        {"id":"SOFA","tile":"sofa"}
+      ],
       "tiles": [
         {"x":15,"y":2,"kind":"wall","layer":0,"slice":"COLUMN","frame":0},
         {"x":18,"y":2,"kind":"wall","layer":0,"slice":"BIG_WALL_R","frame":0},
@@ -3225,7 +3259,8 @@
         {"x":15,"y":24,"kind":"ground","layer":0,"slice":"GROUND","frame":1},
         {"x":15,"y":29,"kind":"ground","layer":0,"slice":"GROUND_DECK","frame":8},
         {"kind":"wall","layer":0,"slice":"BIG_WALL_R","frame":0,"x":20,"y":2},
-        {"kind":"wall","layer":0,"slice":"corner_02","frame":0,"x":15,"y":11}
+        {"kind":"wall","layer":0,"slice":"corner_02","frame":0,"x":15,"y":11},
+        {"x":16,"y":21,"kind":"entity","layer":2,"slice":"sofa","frame":0}
       ]
     },
     {
@@ -3239,7 +3274,8 @@
       "label": "Icarus bay",
       "at": {"x":17,"y":27},
       "equipment": [
-        {"id":"ICARUS_COMMAND","tile":"icarus","dir":"up"}
+        {"id":"ICARUS_COMMAND","tile":"icarus","dir":"up"},
+        {"id":"SOFA","tile":"sofaReverse"}
       ],
       "tiles": [
         {"x":9,"y":10,"kind":"wall","layer":0,"slice":"CORNER_DECK","frame":1},
@@ -3461,7 +3497,8 @@
         {"x":23,"y":10,"kind":"ground","layer":0,"slice":"GROUND_DECK","frame":11},
         {"x":22,"y":10,"kind":"ground","layer":0,"slice":"GROUND_DECK","frame":11},
         {"x":9,"y":12,"kind":"ground","layer":0,"slice":"GROUND_DECK","frame":8},
-        {"kind":"wall","layer":0,"slice":"WALL_R_DECK","frame":1,"x":26,"y":10}
+        {"kind":"wall","layer":0,"slice":"WALL_R_DECK","frame":1,"x":26,"y":10},
+        {"x":15,"y":11,"kind":"entity","layer":2,"slice":"sofaReverse","frame":0}
       ]
     },
     {
@@ -3472,7 +3509,8 @@
         {"id":"SHOWER","tile":"shower","dir":"left","module":true},
         {"id":"BED","tile":"bed_left","dir":"down","module":true,"key":"bed_a_a","data":"flipped;ofsx_-12;ofsy_1"},
         {"id":"BED","tile":"bed_left","dir":"down","module":true,"key":"bed_a_b","data":"flipped;ofsx_-12;ofsy_1"},
-        {"id":"BED","tile":"bed_left","dir":"down","module":true,"key":"bed_a_c","data":"flipped;ofsx_-12;ofsy_1"}
+        {"id":"BED","tile":"bed_left","dir":"down","module":true,"key":"bed_a_c","data":"flipped;ofsx_-12;ofsy_1"},
+        {"id":"SOFA","tile":"sofaReverse"}
       ],
       "tiles": [
         {"x":11,"y":12,"kind":"wall","layer":0,"slice":"COLUMN","frame":0},
@@ -3573,7 +3611,8 @@
         {"x":15,"y":12,"kind":"entity","layer":3,"slice":"camera2","frame":0},
         {"x":14,"y":12,"kind":"ground","layer":0,"slice":"GROUND_DECK","frame":10},
         {"x":13,"y":12,"kind":"ground","layer":0,"slice":"GROUND_DECK","frame":10},
-        {"kind":"wall","layer":0,"slice":"BIG_WALL_R","frame":1,"x":21,"y":12}
+        {"kind":"wall","layer":0,"slice":"BIG_WALL_R","frame":1,"x":21,"y":12},
+        {"x":17,"y":13,"kind":"entity","layer":2,"slice":"sofaReverse","frame":0}
       ]
     },
     {
@@ -3584,7 +3623,8 @@
         {"id":"SHOWER","tile":"shower","dir":"up","module":true},
         {"id":"BED","tile":"bed_right","dir":"right","module":true,"key":"bed_b_a","data":"ofsx_12;ofsy_1"},
         {"id":"BED","tile":"bed_right","dir":"right","module":true,"key":"bed_b_b","data":"ofsx_12;ofsy_1"},
-        {"id":"BED","tile":"bed_right","dir":"right","module":true,"key":"bed_b_c","data":"ofsx_12;ofsy_1"}
+        {"id":"BED","tile":"bed_right","dir":"right","module":true,"key":"bed_b_c","data":"ofsx_12;ofsy_1"},
+        {"id":"SOFA","tile":"sofaReverse"}
       ],
       "tiles": [
         {"x":14,"y":10,"kind":"wall","layer":0,"slice":"COLUMN","frame":0},
@@ -3689,14 +3729,17 @@
         {"x":12,"y":16,"kind":"entity","layer":2,"slice":"shower","frame":0},
         {"x":19,"y":18,"kind":"entity","layer":2,"slice":"cupboard2","frame":0},
         {"x":11,"y":18,"kind":"entity","layer":3,"slice":"camera","frame":0},
-        {"kind":"wall","layer":0,"slice":"corner_02","frame":0,"x":21,"y":10}
+        {"kind":"wall","layer":0,"slice":"corner_02","frame":0,"x":21,"y":10},
+        {"x":14,"y":13,"kind":"entity","layer":2,"slice":"sofaReverse","frame":0}
       ]
     },
     {
       "id": "STORAGE_FRONT",
       "label": "Storage front",
       "at": {"x":-23,"y":1},
-      "equipment": [],
+      "equipment": [
+        {"id":"SOFA","tile":"sofa"}
+      ],
       "tiles": [
         {"x":10,"y":10,"kind":"wall","layer":0,"slice":"COLUMN","frame":0},
         {"x":11,"y":10,"kind":"wall","layer":0,"slice":"BIG_WALL_R","frame":1},
@@ -3835,7 +3878,8 @@
         {"x":20,"y":10,"kind":"ground","layer":0,"slice":"GROUND","frame":1},
         {"x":21,"y":10,"kind":"ground","layer":0,"slice":"GROUND","frame":1},
         {"kind":"wall","layer":0,"slice":"BIG_WALL_R","frame":1,"x":21,"y":10},
-        {"kind":"wall","layer":0,"slice":"corner_02","frame":0,"x":16,"y":10}
+        {"kind":"wall","layer":0,"slice":"corner_02","frame":0,"x":16,"y":10},
+        {"x":11,"y":20,"kind":"entity","layer":2,"slice":"sofa","frame":0}
       ]
     },
     {
@@ -3843,7 +3887,8 @@
       "label": "Storage Alpha centre",
       "at": {"x":-8,"y":0},
       "equipment": [
-        {"id":"OXYGEN_TANK","tile":"tank_o2_left_front","dir":"left","module":true}
+        {"id":"OXYGEN_TANK","tile":"tank_o2_left_front","dir":"left","module":true},
+        {"id":"SOFA","tile":"sofa"}
       ],
       "tiles": [
         {"x":11,"y":12,"kind":"wall","layer":0,"slice":"COLUMN","frame":0},
@@ -3909,7 +3954,8 @@
         {"x":14,"y":12,"kind":"ground","layer":0,"slice":"GROUND_DECK","frame":10},
         {"x":13,"y":12,"kind":"ground","layer":0,"slice":"GROUND_DECK","frame":10},
         {"kind":"wall","layer":0,"slice":"BIG_WALL_R","frame":1,"x":19,"y":12},
-        {"kind":"wall","layer":0,"slice":"BIG_WALL_L","frame":1,"x":11,"y":19}
+        {"kind":"wall","layer":0,"slice":"BIG_WALL_L","frame":1,"x":11,"y":19},
+        {"x":12,"y":15,"kind":"entity","layer":2,"slice":"sofa","frame":0}
       ]
     },
     {
@@ -3917,7 +3963,8 @@
       "label": "Workshop",
       "at": {"x":16,"y":-1},
       "equipment": [
-        {"id":"FUEL_TANK","tile":"tank_fuel_right_front","dir":"up","module":true}
+        {"id":"FUEL_TANK","tile":"tank_fuel_right_front","dir":"up","module":true},
+        {"id":"SOFA","tile":"sofa"}
       ],
       "tiles": [
         {"x":10,"y":13,"kind":"wall","layer":0,"slice":"COLUMN","frame":0},
@@ -4003,7 +4050,8 @@
         {"x":10,"y":17,"kind":"entity","layer":3,"slice":"camera","frame":0},
         {"x":10,"y":16,"kind":"ground","layer":0,"slice":"GROUND_DECK","frame":3},
         {"x":10,"y":15,"kind":"ground","layer":0,"slice":"GROUND_DECK","frame":3},
-        {"kind":"wall","layer":0,"slice":"BIG_WALL_R","frame":1,"x":22,"y":13}
+        {"kind":"wall","layer":0,"slice":"BIG_WALL_R","frame":1,"x":22,"y":13},
+        {"x":11,"y":18,"kind":"entity","layer":2,"slice":"sofa","frame":0}
       ]
     },
     {
@@ -4011,7 +4059,8 @@
       "label": "Storage Beta centre",
       "at": {"x":-8,"y":18},
       "equipment": [
-        {"id":"OXYGEN_TANK","tile":"tank_o2_right_back","dir":"right","module":true}
+        {"id":"OXYGEN_TANK","tile":"tank_o2_right_back","dir":"right","module":true},
+        {"id":"SOFA","tile":"sofaReverse"}
       ],
       "tiles": [
         {"x":11,"y":12,"kind":"wall","layer":0,"slice":"COLUMN","frame":0},
@@ -4077,7 +4126,8 @@
         {"x":18,"y":16,"kind":"entity","layer":2,"slice":"tank_o2_right_back","frame":0},
         {"x":12,"y":18,"kind":"entity","layer":2,"slice":"storage_beta_center_1","frame":0},
         {"x":18,"y":12,"kind":"entity","layer":3,"slice":"camera2","frame":0},
-        {"kind":"wall","layer":0,"slice":"BIG_WALL_R","frame":1,"x":19,"y":12}
+        {"kind":"wall","layer":0,"slice":"BIG_WALL_R","frame":1,"x":19,"y":12},
+        {"x":18,"y":13,"kind":"entity","layer":2,"slice":"sofaReverse","frame":0}
       ]
     },
     {
@@ -4085,7 +4135,8 @@
       "label": "Storage back",
       "at": {"x":15,"y":19},
       "equipment": [
-        {"id":"FUEL_TANK","tile":"tank_fuel_left_back","dir":"down","module":true}
+        {"id":"FUEL_TANK","tile":"tank_fuel_left_back","dir":"down","module":true},
+        {"id":"SOFA","tile":"sofa"}
       ],
       "tiles": [
         {"x":11,"y":12,"kind":"wall","layer":0,"slice":"COLUMN","frame":0},
@@ -4167,7 +4218,8 @@
         {"x":11,"y":14,"kind":"entity","layer":3,"slice":"camera","frame":0},
         {"x":11,"y":16,"kind":"ground","layer":0,"slice":"GROUND_DECK","frame":3},
         {"x":11,"y":15,"kind":"ground","layer":0,"slice":"GROUND_DECK","frame":3},
-        {"kind":"wall","layer":0,"slice":"BIG_WALL_R","frame":1,"x":23,"y":12}
+        {"kind":"wall","layer":0,"slice":"BIG_WALL_R","frame":1,"x":23,"y":12},
+        {"x":12,"y":16,"kind":"entity","layer":2,"slice":"sofa","frame":0}
       ]
     },
     {
