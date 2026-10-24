@@ -1,4 +1,4 @@
-import { Action } from "./action.ts";
+import { Action, type ActionVisibility } from "./action.ts";
 import { skillPicked } from "../modifiers.ts";
 import { MUSH_SKILLS, MUSH_SKILL_SLOTS, SKILLS, SKILL_SLOTS, hasSkill, isMushSkill, isSkill } from "../skills.ts";
 import type { GameState, PlayerState } from "../types.ts";
@@ -8,9 +8,12 @@ export type PickSkillActionData = { type: "pick_skill"; skill: string };
 /**
  * Pick a skill (confirmed 2026-10-15): free, permanent, any time there is an empty slot (SKILL_SLOTS), one
  * of each skill. No log line. A Mush also picks Mush skills this way, into their own slots (MUSH_SKILL_SLOTS;
- * owner, 2026-10-24); the skill id says which slots it goes in.
+ * owner, 2026-10-24); the skill id says which slots it goes in. Private, so roommates never see a busy bar for it:
+ * a Mush picking a Mush skill must not be publicized (owner, 2026-10-24).
  */
 export class PickSkillAction extends Action<PickSkillActionData> {
+  override visibility: ActionVisibility = "private";
+
   constructor() {
     super("pick_skill");
   }
