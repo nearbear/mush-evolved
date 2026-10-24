@@ -1,4 +1,4 @@
-import { CHAT_CHANNELS, legalIn, type CharacterId, type GameServerMessage, type GameSetup, type PlayerView } from "@mush2/shared";
+import { CHARACTERS, CHAT_CHANNELS, legalIn, type CharacterId, type GameServerMessage, type GameSetup, type PlayerView } from "@mush2/shared";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { FakeConnection, FakeServer, FakeStorage, seats, tokensFor } from "../src/testing/fakes.ts";
 
@@ -512,5 +512,23 @@ describe("GameRoom joining (pre-selection)", () => {
     expect(views.every((v) => !v.preselection)).toBe(true);
     expect(views.filter((v) => v.you.role === "mush")).toHaveLength(1);
     expect(await room.join("Late", "frieda")).toEqual({ ok: false, error: "ship_closed" });
+  });
+
+  it("fills a dev server's ship with a parrot bot per other character, and picks the Mush", async () => {
+    const room = asRoom(new FakeStorage(), CHEATS);
+    const first = await joinOk(room, "Ann", "chao");
+    expect(first.aboard).toBe(CHARACTERS.length);
+    expect(first.closesAt).toBeNull();
+    const view = lastView(connect(room, first.token));
+    expect(view.preselection).toBe(false);
+    expect(view.players).toHaveLength(CHARACTERS.length - 1);
+    expect(view.players.every((p) => p.isBot && p.botKind === "logParrot")).toBe(true);
+    expect(new Set([...view.players.map((p) => p.character), "chao"]).size).toBe(CHARACTERS.length);
+  });
+
+  it("never seats bots on a deployment", async () => {
+    const room = asRoom(new FakeStorage());
+    const first = await joinOk(room, "Ann", "chao");
+    expect(lastView(connect(room, first.token)).players).toEqual([]);
   });
 });

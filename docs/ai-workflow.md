@@ -1211,3 +1211,5 @@ Owner asked for those three skills and the Conceptor-to-Designer rename, after a
 
 ### 2026-10-24: ship editor as an engine-style scene editor
 Restructured the ship editor from one tabbed side panel into a game-engine layout: menu bar, hierarchy plus resizable inspector on the left, scene with its own toolbar and status bar, and the palette as a docked assets panel. Before building, I asked the owner where the ambiguous parts should go (palette, checks, hierarchy depth, phone layout). The owner picked a docked assets panel, a checks badge popover, and a rooms > layers > tiles tree, and said the editor doesn't need mobile support. That last answer dropped a whole layout I would otherwise have built. A visual-check subagent caught menus that blended into the panels behind them.
+
+- 2026-10-24: Restored dev-server bots after pre-selection removed them. With `ALLOW_CHEATS`, `GameRoom.join` gives the ship 16 seats and the first human's join seats a log-parrot bot (or `MODEL_BOTS` model bots) for every other character, which fills the ship and picks the Mush. A deployment never seats bots.
