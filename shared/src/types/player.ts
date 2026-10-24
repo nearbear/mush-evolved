@@ -60,6 +60,15 @@ export interface PlayerState extends Seat {
   outcastBy?: PlayerId;
   /** True once the Motivator has given today's Boring speech (speech.ts); cleared at day start. Never sent. */
   boringToday?: boolean;
+  /** True once this player has chitchatted with a Confident today (chitchat.ts); cleared at day start. Never sent. */
+  chitchatToday?: boolean;
+  /** True once the Torturer has interrogated someone today (interrogate.ts); cleared at day start. Never sent. */
+  interrogatedToday?: boolean;
+  /**
+   * This body's recent actions, oldest first (history.ts): action types only, capped. It stays with the body in a
+   * Transfer (owner, 2026-10-24). Never sent, not even to the owner; Interrogate and Chitchat reveal parts of it.
+   */
+  history: string[];
   /**
    * Who has offered to push your wheelchair, for you to accept, and the server time (ms) each offer expires. Your
    * own view only (the offers themselves are in the room log).

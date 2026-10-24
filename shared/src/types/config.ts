@@ -183,6 +183,8 @@ export interface GameConfig {
     fiery: { ap: number; morale: number }; // The `leadership` skill's Fiery speech: AP cost, morale given to each other living person in the room (owner, 2026-10-24; eMushpedia). No daily limit.
     boring: { ap: number; mp: number }; // The `motivator` skill's Boring speech: AP cost, MP given to each other living person in the room, once a day (owner, 2026-10-24; eMushpedia).
   };
+  chitchat: { cost: { ap: number }; morale: number }; // Confiding in a `confident` in your room: AP cost and the morale you gain; once a day (owner, 2026-10-24).
+  interrogate: { cost: { ap: number }; damage: number; dirtyChance: number; injuryChance: number }; // The `torturer` skill's Interrogate: AP cost, guaranteed damage, dirt and injury odds; once a day (owner, 2026-10-24).
   research: {
     cost: { ap: number }; // AP spent to work on a research (decided 2026-10-16).
     effect: { progressPercent: number }; // Percent a research advances per action (decided 2026-10-16).

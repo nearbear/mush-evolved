@@ -39,6 +39,7 @@ Other packages import from `@mush2/shared` (`shared/src/index.ts`, the barrel). 
 - `items.ts`: item types, containers, capacity and reach helpers, `produceItem`.
 - `equipment.ts`: room equipment types.
 - `log.ts`: room log helpers (`logPublic`, `logPrivate`, `logSecret`, `logCovert`, `hasCamera`).
+- `history.ts`: each body's action history (`recordAction`, called from `performAction`) and `revealHistory`, the private reveal lines Interrogate and Chitchat write.
 - `resources.ts`: per-player skill point pools.
 - `skills.ts`: the pickable human skills, `SKILL_SLOTS`, the Mush skills (`MUSH_SKILLS`, `MUSH_SKILL_SLOTS`), and `skillsOf`/`hasSkill` (picked skills, the book slot, and Mush skills).
 - `titles.ts`: `TITLE_IDS`, each title's line (`SUCCESSION`), `successor` (pure), `assignTitles` (at creation) and `refreshTitles` (after a death).
@@ -59,4 +60,6 @@ Other packages import from `@mush2/shared` (`shared/src/index.ts`, the barrel). 
 - `characters.ts`: cosmetic crew identities, no rules effect.
 - `shipLayout.ts`: types for `Mush/derived/ship-art.json` and `ship-map.json` (`ShipLayout` is the two together) and `placedEquipment`.
 - `actions/speech.ts`: the Leader's Fiery speech and the Motivator's Boring speech (room-wide morale and MP gifts; `PlayerState.boringToday`).
+- `actions/interrogate.ts`: the Torturer's Interrogate (1 damage, reveals the target's last actions, one per missing HP; `interrogatedToday`).
+- `actions/chitchat.ts`: Chitchat with a Confident (+2 morale, the Confident learns your last actions, one per point of their morale; `chitchatToday`).
 - `actions/anathema.ts`: the Persecutor's Anathema and `endAnathemaOnDeath` (the Outcast status, `PlayerState.outcastBy`).

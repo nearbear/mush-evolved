@@ -8,6 +8,9 @@ import type { GameState, PlayerState } from "../types.ts";
 export type MoveActionData = { type: "move"; to: string };
 
 export class MoveAction extends Action<MoveActionData> {
+  // Moving is left out of the action history (owner, 2026-10-24).
+  override recorded = false;
+
   constructor() {
     super("move");
   }

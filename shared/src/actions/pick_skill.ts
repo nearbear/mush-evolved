@@ -14,6 +14,9 @@ export type PickSkillActionData = { type: "pick_skill"; skill: string };
 export class PickSkillAction extends Action<PickSkillActionData> {
   override visibility: ActionVisibility = "private";
 
+  // Choosing a skill isn't something your character does, so not in the action history.
+  override recorded = false;
+
   constructor() {
     super("pick_skill");
   }

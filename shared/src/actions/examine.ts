@@ -8,6 +8,9 @@ export type ExamineActionData = { type: "examine"; target: Target };
 export class ExamineAction extends Action<ExamineActionData> {
   override visibility: ActionVisibility = "private";
 
+  // Left out of the action history, as in eMush (owner, 2026-10-24).
+  override recorded = false;
+
   constructor() {
     super("examine");
   }

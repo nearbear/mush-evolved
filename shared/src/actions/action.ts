@@ -32,6 +32,8 @@ export class Action<T extends { type: string }> {
   tags: readonly ActionTag[] = [];
   /** Takes `config.action.durationMs` and waits its turn in the queue (queue.ts). False only for only a few actions. */
   timed: boolean = true;
+  /** Kept in the actor's action history (history.ts), which Interrogate and Chitchat reveal. False for the few eMush leaves out, and for moving. */
+  recorded: boolean = true;
   baseAPCost: number = 0;
   baseMPCost: number = 0;
   baseSuccessChance: number = 1;

@@ -43,6 +43,8 @@ import { ReadBookAction } from "./actions/read_book.ts";
 import { AnathemaAction } from "./actions/anathema.ts";
 import { BoringSpeechAction, FierySpeechAction } from "./actions/speech.ts";
 import { PunchAction } from "./actions/punch.ts";
+import { InterrogateAction } from "./actions/interrogate.ts";
+import { ChitchatAction } from "./actions/chitchat.ts";
 import { AttackAction } from "./actions/attack.ts";
 import { ShareAction } from "./actions/share.ts";
 import { GetUpAction, LieDownAction } from "./actions/lie_down.ts";
@@ -72,6 +74,8 @@ export interface ActionDef<A extends Action> {
   readonly tags: readonly ActionTag[];
   /** Whether it takes time and goes through the queue (queue.ts), or happens at once. */
   readonly timed: boolean;
+  /** Whether it goes in the actor's action history (history.ts). */
+  readonly recorded: boolean;
   candidates(state: Readonly<GameState>, player: Readonly<PlayerState>): A[];
   check(state: Readonly<GameState>, player: Readonly<PlayerState>, action: A): string | null;
   cost(state: Readonly<GameState>, player: Readonly<PlayerState>, action: A): ActionCost;
@@ -141,6 +145,8 @@ export const ACTIONS: { [T in ActionType]: ActionDef<ActionOf<T>> } = {
   shower: new ShowerAction(),
   heal: new HealAction(),
   punch: new PunchAction(),
+  interrogate: new InterrogateAction(),
+  chitchat: new ChitchatAction(),
   anathema: new AnathemaAction(),
   fiery_speech: new FierySpeechAction(),
   boring_speech: new BoringSpeechAction(),

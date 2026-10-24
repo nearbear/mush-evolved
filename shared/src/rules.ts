@@ -22,6 +22,7 @@ import { moderateName } from "./moderation.ts";
 import { clone, fail, findPlayer, type ActionResult } from "./helpers.ts";
 import { damage } from "./death.ts";
 import { activitySeen, logPrivate } from "./log.ts";
+import { recordAction } from "./history.ts";
 import { ringMycoAlarms } from "./mycoalarm.ts";
 import { planetsOf } from "./planets.ts";
 import { commandTerminalsHere, isPilgredRepaired, pilgredTerminalsHere } from "./pilgred.ts";
@@ -157,6 +158,7 @@ export function newPlayer(s: Seat, config: GameConfig, cycle: number, role: Role
     ready: false,
     current: null,
     queue: [],
+    history: [],
     cheats: [],
     actopiCheat: "default",
   };
@@ -231,6 +233,8 @@ export function performAction(next: GameState, actor: PlayerState, action: Actio
   } else {
     def.apply(next, actor, action);
   }
+  // After apply, so an action that reveals your own history (Chitchat) doesn't show itself.
+  if (def.recorded) recordAction(next, actor, action.type);
   if (dirtyChance > 0) {
     const [roll, rng] = nextFloat(next.rng);
     next.rng = rng;
@@ -328,7 +332,11 @@ function advanceCycle(state: GameState): void {
   const newDay = (state.cycle - 1) % cyclesPerDay === 0;
   if (newDay) {
     state.sporesToday = 0;
-    for (const p of state.players) delete p.boringToday;
+    for (const p of state.players) {
+      delete p.boringToday;
+      delete p.chitchatToday;
+      delete p.interrogatedToday;
+    }
     const loss = dailyMoraleLoss(state);
     for (const p of state.players) if (p.alive) p.morale = Math.max(0, p.morale - loss);
     grantCarePoints(state);
@@ -391,8 +399,9 @@ export function viewFor(state: GameState, playerId: PlayerId): PlayerView {
   // A dead body is a corpse item, not a person in a room: nobody gets a dead player's room.
   const living = others.filter((o) => o.alive);
   // Nobody's account name goes out while the game runs, not even your own: people are known by character.
-  // Who cursed you is never sent, even to you; nor which seat plays you or whether you used Transfer.
-  const { name: _name, outcastBy: _outcastBy, mind: _mind, transferUsed: _transferUsed, ...yours } = you;
+  // Who cursed you is never sent, even to you; nor which seat plays you, whether you used Transfer, or your action
+  // history (only Interrogate and Chitchat reveal it, history.ts).
+  const { name: _name, outcastBy: _outcastBy, mind: _mind, transferUsed: _transferUsed, history: _history, ...yours } = you;
   return {
     you: {
       ...yours,

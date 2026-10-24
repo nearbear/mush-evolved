@@ -167,6 +167,10 @@ export const SKILL_STATUS: Readonly<Partial<Record<SkillId | MushSkillId, SkillS
   leadership: "full",
   // Boring speech (owner, 2026-10-24, speech.ts).
   motivator: "full",
+  // Interrogate, revealing the target's recent actions (owner, 2026-10-24, interrogate.ts).
+  torturer: "full",
+  // Others can Chitchat with you, revealing their recent actions (owner, 2026-10-24, chitchat.ts).
+  confident: "full",
   // Doubled odds of the link with Sol, x1.5 for roommates (owner, 2026-10-21, comms.ts).
   radio_expert: "full",
   // +100% rebel decoding (owner, 2026-10-21, comms.ts).

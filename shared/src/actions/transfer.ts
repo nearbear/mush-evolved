@@ -6,6 +6,9 @@ import type { Container, GameState, ItemState, PlayerState } from "../types.ts";
 export type TransferActionData = { type: "take"; item: string } | { type: "drop"; item: string };
 
 export class TransferAction<T extends "take" | "drop" = "take" | "drop"> extends Action<{ type: T; item: string }> {
+  // Taking and dropping are left out of the action history, as in eMush (owner, 2026-10-24).
+  override recorded = false;
+
   constructor(type: T) {
     super(type);
   }

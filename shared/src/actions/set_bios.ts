@@ -12,6 +12,9 @@ export type SetBiosActionData = { type: "set_bios"; equipment: string; option: B
 export class SetBiosAction extends Action<SetBiosActionData> {
   override visibility: ActionVisibility = "private";
 
+  // BIOS changes are left out of the action history, as in eMush (owner, 2026-10-24).
+  override recorded = false;
+
   constructor() {
     super("set_bios");
   }

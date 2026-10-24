@@ -46,6 +46,7 @@ function ship(): { state: GameState; sentinels: Sentinel[] } {
     p.name = str(`name-${p.id}`, []);
     p.mind = str(`mind-${p.id}`, []);
     p.transferUsed = true;
+    p.history = [str(`history-${p.id}`, [])];
     p.bodyTakenBy = str(`bodyTakenBy-${p.id}`, own) as typeof p.character;
     p.ap = num(`ap-${p.id}`, own);
     p.mp = num(`mp-${p.id}`, own);

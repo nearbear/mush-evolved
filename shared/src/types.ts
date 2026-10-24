@@ -140,6 +140,8 @@ export type Action =
   | { type: "repair_hull"; item: ItemId }
   | { type: "heal"; target: PlayerId }
   | { type: "punch"; target: PlayerId }
+  | { type: "interrogate"; target: PlayerId }
+  | { type: "chitchat"; target: PlayerId }
   | { type: "anathema"; target: PlayerId }
   | { type: "fiery_speech" }
   | { type: "boring_speech" }

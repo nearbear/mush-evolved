@@ -128,6 +128,10 @@ export const DEFAULT_CONFIG: GameConfig = {
   anathema: { cost: { ap: 1 }, successFactor: 0.8 },
   // Owner, 2026-10-24 (eMushpedia): the Leader's Fiery speech (2 AP, +2 morale each) and the Motivator's Boring speech (2 AP, +3 MP each, once a day).
   speech: { fiery: { ap: 2, morale: 2 }, boring: { ap: 2, mp: 3 } },
+  // Owner, 2026-10-24 (eMushpedia Confident, Bourreau; actions.json TORTURE): Chitchat costs 1 AP once a day and gives
+  // +2 morale; the Torturer's Interrogate costs 1 AP once a day, deals 1 damage, 15% dirt, 10% injury.
+  chitchat: { cost: { ap: 1 }, morale: 2 },
+  interrogate: { cost: { ap: 1 }, damage: 1, dirtyChance: 0.15, injuryChance: 0.1 },
   // Decided 2026-10-16: working on a research costs 2 AP and advances it 25%; no repeat penalty yet.
   research: { cost: { ap: 2 }, effect: { progressPercent: 25 }, dirtyChance: 0.25 },
   // Decided 2026-10-19 (docs/astro-plan.md): scan 3 AP at 50%, x1.25 per failure in a row; analysis 2 AP; 2 planets per player.
