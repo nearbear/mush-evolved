@@ -3,6 +3,13 @@
   "name": "mush2-server",
   "main": "src/index.ts",
   "compatibility_date": "2026-09-01",
+  // The web client, built by `npm run build`. Asset requests are served without
+  // running the Worker; /parties/* (the WebSockets) always goes to the Worker.
+  "assets": {
+    "directory": "../web/dist",
+    "not_found_handling": "single-page-application",
+    "run_worker_first": ["/parties/*"]
+  },
   "durable_objects": {
     "bindings": [
       { "name": "GameRoom", "class_name": "GameRoom" },

@@ -1,6 +1,9 @@
 import PartySocket from "partysocket";
 
-export const PARTY_HOST: string = import.meta.env.VITE_PARTY_HOST ?? "localhost:8787";
+// host:port of the server. Production builds are served by the same Worker as the
+// server (static assets), so they connect to their own origin unless overridden.
+export const PARTY_HOST: string =
+  import.meta.env.VITE_PARTY_HOST ?? (import.meta.env.DEV ? "localhost:8787" : location.host);
 
 export function matchmakerSocket(): PartySocket {
   return new PartySocket({ host: PARTY_HOST, party: "matchmaker", room: "global" });

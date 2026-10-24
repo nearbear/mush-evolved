@@ -6,7 +6,7 @@ All under `web/src/`. UI rules are in `web/CLAUDE.md`.
 
 - `main.tsx`: React entry.
 - `App.tsx`: lobby or game; keeps the seat ticket in sessionStorage.
-- `net.ts`: PartySocket connections (host from `VITE_PARTY_HOST`).
+- `net.ts`: PartySocket connections (host from `VITE_PARTY_HOST`, else `localhost:8787` in dev and the page's own host in production builds).
 - `lobby/`: the cryopod landing page. `Lobby.tsx` + `lobby.css` lay out the panel (DOM); without WebGL2 (`webgl.ts`) it shows a message instead of the ship list, since the game can't be drawn. The pod behind it is a lazy-loaded Pixi canvas (`pixi/PodBackdrop.tsx`, `pixi/PodRenderer.ts`): `podArt.ts` bakes the flat pod with Canvas 2D (behind and in front of the fan), and one fragment shader bends it onto the lid's half-cylinder (`unroll` in `podGeometry.ts`, pure and tested; the GLSL copy must match). Only the fan and stasis light redraw, at most 30 fps.
 - `WakeUp.tsx` + `wakeUp.css`: the wake-up overlay.
 - `GameScreen.tsx`: three panels on desktop, tabbed on phones; sends intents. A dead player gets `DeathNotice` instead of the room and no peek bar. The minimap is stubbed out here (`TODO(minimap)`).

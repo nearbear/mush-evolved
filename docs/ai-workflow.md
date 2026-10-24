@@ -1169,3 +1169,10 @@ Added `agy` (Antigravity CLI, Gemini models) to CLAUDE.md under "External tools"
 
 - **2026-10-24, setups and ship voting epic.** The owner asked for an epic letting players post game-setting setups and vote on the next ship's. The first draft offered a wide knob surface and a long list of open questions; the owner narrowed it to a few coarse knobs (seat count, pre-selection length) and answered voting, ties, caps, immutability and stage in one reply. Asking the questions before filing the issue worked; the knob list was broader than wanted.
 - Follow-up: the human seat may pick any character (the three exclusions apply to bots only), and original-vs-eMush skill data doesn't matter because the primary roles line up.
+
+## 2026-10-24: Deployment configuration (#122)
+
+- Decided: the web client is served as Workers static assets from the same Worker as the server (not Cloudflare Pages). One deploy, one origin, so production builds connect to `location.host` and need no `VITE_PARTY_HOST`; `run_worker_first: ["/parties/*"]` keeps the WebSockets on PartyServer. Tradeoff: client and server always ship together.
+- Supabase (the owner's choice for a database) kept out of #122: no current feature needs it; it belongs with accounts (#23), setups (#233) and replays (#153).
+- Correction caught by testing: an `assets.directory` that doesn't exist makes `wrangler dev` fail, which would have broken `npm run dev` in fresh clones and worktrees. The server's `dev` script now creates an empty `web/dist` first.
+- Verified locally: the built client, served by `wrangler dev`, loaded in Chromium and queued at the matchmaker over its own origin.

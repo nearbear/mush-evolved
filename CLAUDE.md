@@ -86,7 +86,7 @@ Node is installed via nvm and is already on `PATH` in Claude Code shells (the us
 - `npm run ship-check`: report-only checks on `ship-map.json` (overlaps, misaligned doors, gaps).
 - `npm run layout-query -- <regex>`: search `ship-art.json` and `ship-map.json` (reading them directly is denied), capped at 60 lines.
 - `npm run screenshot`: headless Chromium screenshots as a desktop and a 360px phone player, to `.screenshots/` (gitignored). Needs `npm run dev`. The other tooling commands are in the `play` and `asset` skills.
-- `npm run deploy -w server`: wrangler deploy (not yet configured or tested).
+- `npm run deploy`: build `web`, then `wrangler deploy` the server with the client as static assets (one Worker, one origin; `/parties/*` goes to the Worker). Configured and dry-run tested; never deployed for real yet.
 - `npm run lint`: Biome, lint only (rules in `biome.json`). Import limits: `shared` has no I/O, UI, or sibling-package imports; `web` never imports `server`. No `console.log` in `server`. typescript-eslint was rejected (no TypeScript 7 support). Intentional exceptions use `biome-ignore` with a reason.
 
 ## External tools

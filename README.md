@@ -32,6 +32,7 @@ Run the halves separately with `npm run dev -w server` and `npm run dev -w web`.
 | `npm run lint` | Biome (lint only), including import-boundary rules |
 | `npm run build` | Production build of the web client |
 | `npm run preview` | Build the client and serve the production build beside the local server (stop `npm run dev` first) |
+| `npm run deploy` | Build the client and deploy it with the server as one Cloudflare Worker (needs `npx -w server wrangler login`) |
 
 ## Project layout
 

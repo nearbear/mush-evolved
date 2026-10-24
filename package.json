@@ -17,6 +17,7 @@
     "typecheck": "npm run typecheck --workspaces --if-present",
     "lint": "biome lint .",
     "build": "npm run build -w web",
+    "deploy": "npm run build && npm run deploy -w server",
     "ship-layout": "npm run ship-layout -w tools",
     "layout-query": "npm run layout-query -w tools --",
     "ship-check": "npm run ship-check -w tools --",
