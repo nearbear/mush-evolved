@@ -34,6 +34,19 @@ describe("lie down", () => {
     expect(applyAction(lying, "p2", { type: "lie_down", equipment: bed(t) }).ok).toBe(false);
   });
 
+  it("one person per bed: a taken bed is not offered or allowed, and frees when its occupant gets up or dies", () => {
+    const s = ship();
+    const b = bed(s);
+    const lying = must(applyAction(s, "p1", { type: "lie_down", equipment: b }));
+    expect(applyAction(lying, "p2", { type: "lie_down", equipment: b }).ok).toBe(false);
+    expect(viewFor(lying, "p2").actions.some((a) => a.type === "lie_down" && a.equipment === b)).toBe(false);
+    const up = must(applyAction(lying, "p1", { type: "get_up" }));
+    expect(applyAction(up, "p2", { type: "lie_down", equipment: b }).ok).toBe(true);
+    const dead = structuredClone(lying);
+    dead.players[1]!.alive = false;
+    expect(applyAction(dead, "p2", { type: "lie_down", equipment: b }).ok).toBe(true);
+  });
+
   it("get up removes it, and get up is illegal otherwise", () => {
     const s = ship();
     expect(applyAction(s, "p1", { type: "get_up" }).ok).toBe(false);
