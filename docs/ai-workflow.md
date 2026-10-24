@@ -1154,3 +1154,18 @@ Added `agy` (Antigravity CLI, Gemini models) to CLAUDE.md under "External tools"
 - Needed correction: I first proposed a cap of 4 model calls per bot per cycle. The owner pointed out that bots need bursts (a fight). AP and MP carry over (up to 12 each), so that cap would have frozen a bot exactly when it mattered. Replaced with no per-cycle cap, a free-action loop guard (8 zero-cost choices a cycle, then scripted), a high per-game backstop budget, and 2 calls in flight per game for pacing.
 - Found while wiring it up: `scheduleBots` cleared a bot's pending flag before deciding, so with multi-second model calls every other bot's action would have started a second call for the same bot. Now it stays pending until its decision finishes, then reschedules if anything happened meanwhile (tested). The unhandled rejection noted in #114 is caught.
 - The leak test compares prompts for two states that differ only in hidden information, instead of searching the prompt for forbidden strings; that checks everything at once, and a second assertion makes sure the test isn't vacuous.
+
+## 2026-10-24: Single-player bot direction
+
+- Asked whether a "base wiki" for bots was worth it. Claude recommended a short rules primer generated from `shared` (only implemented rules, cheap on BYOK tokens) instead of a wiki, and noted that bot strategy (#222) was the real blocker.
+- Owner decided: one primary role per character, derived from `heros.json` skills; investigation out of the MVP; Eleesha, Chun and Chao left out; no personalities; a replay retrospective by an overseer model (#225) to inform investigation later. Claude drafted a role table on #222 and marked the mixed-skill characters as open, without picking roles for them.
+
+### 2026-10-24: cost review of Claude Code usage, with Gemini
+
+- **What I did:** boiled 335 session transcripts down to per-session token totals (script, no content), stripped titles because a few were personal, and had Gemini (`agy`) analyze them.
+- **What worked:** the aggregate numbers were right (cache reads about 55% of cost, writes 27%, output 18%, in input-token equivalents). Its Opus-vs-Sonnet point is the one worth acting on.
+- **What needed correction:** its "use 5-minute cache writes" advice was net negative here. Measured from the transcripts, 255 turns came after an idle gap of 5 minutes or more, so a 5-minute cache would have cost about 25M input-token equivalents extra against about 18M saved. Its "deny reads of `Mush/derived/data`" advice was a non-issue: 165 of 170 shell commands touching it were bounded (`head`, `grep`, `ls`), and the folder is 1.3 MB. Its "fork the `pixijs` and `wiki` skills" advice misreads `context: fork` (no conversation history, summary-only return).
+- **agy lesson:** headless `agy -p` auto-denies `run_command`, so it returns nothing. Prompting it into read-only file mode with explicit paths works. Rule added to CLAUDE.md "External tools".
+
+- **2026-10-24, setups and ship voting epic.** The owner asked for an epic letting players post game-setting setups and vote on the next ship's. The first draft offered a wide knob surface and a long list of open questions; the owner narrowed it to a few coarse knobs (seat count, pre-selection length) and answered voting, ties, caps, immutability and stage in one reply. Asking the questions before filing the issue worked; the knob list was broader than wanted.
+- Follow-up: the human seat may pick any character (the three exclusions apply to bots only), and original-vs-eMush skill data doesn't matter because the primary roles line up.
