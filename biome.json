@@ -5,7 +5,8 @@
 			"shared/src/**",
 			"server/src/**",
 			"web/src/**",
-			"tools/src/**"
+			"tools/src/**",
+			"!!.claude/worktrees"
 		]
 	},
 	"formatter": {
