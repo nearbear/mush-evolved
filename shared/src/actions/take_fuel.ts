@@ -42,6 +42,10 @@ export class TakeFuelAction extends Action<TakeFuelActionData> {
     return state.config.fuel.dirtyChance;
   }
 
+  override injuryChance(state: Readonly<GameState>): number {
+    return state.config.fuel.injuryChance;
+  }
+
   override apply(state: GameState, player: PlayerState, _target: TakeFuelActionData): void {
     state.ship.fuel -= 1;
     produceItem(state, player, FUEL_CAPSULE_ITEM);

@@ -24,8 +24,8 @@ const logged = (s: GameState, key: string) => s.log.some((e) => e.key === key);
 const capsules = (s: GameState, id = "p0") => itemsIn(s, { kind: "player", id }).filter((i) => i.type === FUEL_CAPSULE_ITEM).length;
 
 describe("fuel loading", () => {
-  it("pins the decided numbers: the chamber starts empty and holds 9; 20 fuel in the tanks; 0 AP, 25% dirt", () => {
-    expect([ship.combustion.start, ship.combustion.max, ship.fuel.start, fuel.cost.ap, fuel.dirtyChance]).toEqual([0, 9, 20, 0, 0.25]);
+  it("pins the decided numbers: the chamber starts empty and holds 9; 20 fuel in the tanks; 0 AP, 15% dirt", () => {
+    expect([ship.combustion.start, ship.combustion.max, ship.fuel.start, fuel.cost.ap, fuel.dirtyChance]).toEqual([0, 9, 20, 0, 0.15]);
   });
 
   it("takes a capsule from a tank, one fuel at a time, only in a storage with a tank", () => {

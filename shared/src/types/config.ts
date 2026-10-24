@@ -158,7 +158,7 @@ export interface GameConfig {
     injuryChance: number;
   };
   consume: { dirtyChance: number }; // Chance of getting the dirty status after consuming an item.
-  fuel: { cost: { ap: number }; dirtyChance: number }; // Taking a capsule from a tank, loading it into the chamber, unloading it back.
+  fuel: { cost: { ap: number }; dirtyChance: number, injuryChance: number }; // Taking a capsule from a tank, loading it into the chamber, unloading it back.
   dispense: { dirtyChance: number }; // Chance of getting the dirty status after dispensing an item.
   computer: {
     capPoints: number; // Most Computer points (`resources.comp`) a player can hold (owner, 2026-10-16; the original skill's IncrMaxPA(COMP, 4)).
