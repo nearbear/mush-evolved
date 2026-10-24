@@ -336,7 +336,8 @@ export function problems(ship: ShipLayout): Problem[] {
         severity: "warning",
         title: `${r.id} ${b.key ?? b.id} has no ${b.tile} tile`,
         detail: "the game leaves it out",
-        cells: r.at ? [[r.at.x, r.at.y]] : [],
+        // `at` is only the origin tiles are offset from, and can lie in another room: mark the room's own tiles.
+        cells: r.at ? r.tiles.map((t): [number, number] => [t.x + r.at!.x, t.y + r.at!.y]) : [],
         room: r.id,
       });
     }
