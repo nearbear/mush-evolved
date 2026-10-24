@@ -73,6 +73,7 @@ function aimedAt(view: PlayerView, a: Action, target: Target): boolean {
     case "punch":
     case "anathema":
     case "spike":
+    case "body_transfer":
     case "accommodate":
     case "accept_accommodation":
     // On the pushed person: Terrence ends it from his own panel, the pusher from his.
@@ -124,6 +125,7 @@ const ACTION_LABEL_KEYS = {
   fiery_speech: "actions.fierySpeech",
   boring_speech: "actions.boringSpeech",
   spike: "actions.spike",
+  body_transfer: "actions.bodyTransfer",
   extract_spore: "actions.extractSpore",
   get_up: "actions.getUp",
   accommodate: "actions.accommodate",

@@ -44,6 +44,9 @@ function ship(): { state: GameState; sentinels: Sentinel[] } {
     const own = [p.id];
     p.room = p.id === "p3" ? ELSEWHERE : HERE;
     p.name = str(`name-${p.id}`, []);
+    p.mind = str(`mind-${p.id}`, []);
+    p.transferUsed = true;
+    p.bodyTakenBy = str(`bodyTakenBy-${p.id}`, own) as typeof p.character;
     p.ap = num(`ap-${p.id}`, own);
     p.mp = num(`mp-${p.id}`, own);
     p.hp = num(`hp-${p.id}`, own);

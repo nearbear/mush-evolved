@@ -9,6 +9,7 @@ import {
   moderateChat,
   parseGameMessage,
   startGame,
+  bodyOf,
   legalActions,
   nextDue,
   CHARACTERS,
@@ -65,7 +66,7 @@ const MODEL_TIMEOUT_MS = 20_000;
  * Bump when GameState's shape changes. Games stored under another version are
  * discarded on load (there is no migration; games are short-lived).
  */
-const STATE_VERSION = 66;
+const STATE_VERSION = 67;
 
 interface Stored {
   version?: number;
@@ -113,6 +114,7 @@ export type JoinResult =
   | { ok: false; error: string };
 
 interface SeatState {
+  /** The seat (`PlayerState.mind`), not the body: a Transfer moves a seat to another body (`bodyOf`). */
   playerId: PlayerId;
 }
 
@@ -265,7 +267,8 @@ export class GameRoom extends Server<Env> {
 
   override async onMessage(connection: Connection<SeatState>, raw: WSMessage): Promise<void> {
     const playerId = connection.state?.playerId;
-    if (!playerId || !this.game) return;
+    const by = playerId && this.body(playerId);
+    if (!playerId || !by || !this.game) return;
     if (!this.limiter.allow(connection.id)) {
       this.countRateLimited(playerId);
       this.send(connection, { type: "error", message: "slow_down" });
@@ -282,12 +285,12 @@ export class GameRoom extends Server<Env> {
     }
     const error =
       msg.type === "action"
-        ? await this.act({ ...msg, by: playerId, at: Date.now() })
+        ? await this.act({ ...msg, by, at: Date.now() })
         : msg.type === "walk"
-          ? await this.act({ ...msg, by: playerId }, undefined, this.game.players.find((p) => p.id === playerId)?.room)
-          : msg.type === "clearQueue" || msg.type === "cheat" || msg.type === "actopiCheat" || msg.type === "roleCheat"
-            ? await this.act({ ...msg, by: playerId })
-            : await this.social(playerId, msg);
+          ? await this.act({ ...msg, by }, undefined, this.game.players.find((p) => p.id === by)?.room)
+          : msg.type === "clearQueue" || msg.type === "acknowledgeTransfer" || msg.type === "cheat" || msg.type === "actopiCheat" || msg.type === "roleCheat"
+            ? await this.act({ ...msg, by })
+            : await this.social(playerId, by, msg);
     if (error) this.send(connection, { type: "error", message: error });
   }
 
@@ -327,14 +330,18 @@ export class GameRoom extends Server<Env> {
     return clockCycleStart(this.clockCycle + 1, cycleMs(this.env));
   }
 
-  /** Chat and channel management. Untrusted text: rate limit, then moderate, then let the rules decide. */
-  private async social(playerId: PlayerId, msg: Exclude<GameClientMessage, { type: "action" | "clearQueue" | "walk" | "cheat" | "actopiCheat" | "roleCheat" }>): Promise<string | null> {
+  /** Chat and channel management. Untrusted text: rate limit, then moderate, then let the rules decide. `playerId` is the seat, `by` its body. */
+  private async social(
+    playerId: PlayerId,
+    by: PlayerId,
+    msg: Exclude<GameClientMessage, { type: "action" | "clearQueue" | "acknowledgeTransfer" | "walk" | "cheat" | "actopiCheat" | "roleCheat" }>,
+  ): Promise<string | null> {
     if (!this.game) return "no_game";
     if (!this.chatLimiter.allow(playerId)) {
       this.countRateLimited(playerId);
       return "too_many_messages";
     }
-    if (msg.type !== "chat" && msg.type !== "createChannel" && msg.type !== "createThread") return this.act({ ...msg, by: playerId });
+    if (msg.type !== "chat" && msg.type !== "createChannel" && msg.type !== "createThread") return this.act({ ...msg, by });
     const raw = msg.type === "chat" ? msg.text : msg.name;
     const moderated = moderateChat(raw);
     if (!moderated.ok) {
@@ -343,7 +350,7 @@ export class GameRoom extends Server<Env> {
       return moderated.reason;
     }
     const input: Input =
-      msg.type === "chat" ? { ...msg, by: playerId, text: moderated.text } : { ...msg, by: playerId, name: moderated.text };
+      msg.type === "chat" ? { ...msg, by, text: moderated.text } : { ...msg, by, name: moderated.text };
     return this.act(input, moderated.text === raw ? undefined : raw);
   }
 
@@ -383,20 +390,28 @@ export class GameRoom extends Server<Env> {
     else if ((await this.ctx.storage.getAlarm()) !== due) await this.ctx.storage.setAlarm(due);
   }
 
+  /** The body a seat plays now (rules: mind.ts); a Transfer moves it. */
+  private body(seat: PlayerId): PlayerId | undefined {
+    return this.game ? bodyOf(this.game, seat) : undefined;
+  }
+
   /** Sends every connection its view, or with `room`, only those of people in that room. */
   private broadcastViews(room?: string): void {
     for (const conn of this.getConnections<SeatState>()) {
       const playerId = conn.state?.playerId;
       if (!playerId) continue;
-      if (room === undefined || this.game?.players.find((p) => p.id === playerId)?.room === room) this.sendView(conn, playerId);
+      const by = this.body(playerId);
+      if (room === undefined || this.game?.players.find((p) => p.id === by)?.room === room) this.sendView(conn, playerId);
     }
   }
 
+  /** `playerId` is the seat; it gets its current body's view. */
   private sendView(conn: Connection, playerId: PlayerId): void {
-    if (!this.game) return;
+    const by = this.body(playerId);
+    if (!this.game || !by) return;
     const msg: GameServerMessage = {
       type: "view",
-      view: viewFor(this.game, playerId),
+      view: viewFor(this.game, by),
       cheatsAllowed: this.cheatsAllowed,
       now: Date.now(),
       nextCycleAt: this.nextCycleAt(),
@@ -404,18 +419,18 @@ export class GameRoom extends Server<Env> {
     this.send(conn, msg);
   }
 
-  /** A bot decides only once its last action is done, so it never fills a queue. */
+  /** A bot decides only once its last action is done, so it never fills a queue. Bots are keyed by seat, like connections. */
   private botIdle(playerId: PlayerId): boolean {
-    const p = this.game?.players.find((pl) => pl.id === playerId);
-    return !!p && p.current === null && p.queue.length === 0 && legalActions(this.game!, playerId).length > 0;
+    const p = this.game?.players.find((pl) => pl.mind === playerId);
+    return !!p && p.current === null && p.queue.length === 0 && legalActions(this.game!, p.id).length > 0;
   }
 
   private initBots(): void {
     for (const p of this.game?.players ?? []) {
-      if (!p.isBot || this.bots.has(p.id)) continue;
+      if (!p.isBot || this.bots.has(p.mind)) continue;
       const seed = (): number => crypto.getRandomValues(new Uint32Array(1))[0]!;
       this.bots.set(
-        p.id,
+        p.mind,
         p.botKind === "wander" ? new WanderBot(seed()) : p.botKind === "model" ? new ModelBot(this.gate(), new WanderBot(seed())) : new LogParrotBot(),
       );
     }
@@ -434,9 +449,10 @@ export class GameRoom extends Server<Env> {
 
   /** Post the lines a bot wants to say in global chat, as that bot. */
   private async botChat(playerId: PlayerId, bot: Bot): Promise<void> {
-    if (!this.game || !bot.chatLines) return;
-    for (const text of bot.chatLines(viewFor(this.game, playerId))) {
-      const error = await this.act({ type: "chat", channel: "global", text, by: playerId });
+    const by = this.body(playerId);
+    if (!this.game || !bot.chatLines || !by) return;
+    for (const text of bot.chatLines(viewFor(this.game, by))) {
+      const error = await this.act({ type: "chat", channel: "global", text, by });
       if (error) console.warn(`Bot ${playerId} couldn't chat: ${error}`);
     }
   }
@@ -454,11 +470,13 @@ export class GameRoom extends Server<Env> {
         try {
           if (!this.game) return;
           await this.botChat(playerId, bot);
-          if (!this.game || !this.botIdle(playerId)) return;
-          const action = await bot.decideAction(viewFor(this.game, playerId));
-          // The game may have moved on during a slow decision; the rules reject a choice that is no longer legal.
-          if (!action) return;
-          const error = await this.act({ type: "action", action, by: playerId, at: Date.now() });
+          const by = this.body(playerId);
+          if (!this.game || !by || !this.botIdle(playerId)) return;
+          const action = await bot.decideAction(viewFor(this.game, by));
+          // The game may have moved on during a slow decision; the rules reject a choice that is no longer legal. A
+          // choice made for a body the bot no longer plays (a Transfer) is dropped.
+          if (!action || this.body(playerId) !== by) return;
+          const error = await this.act({ type: "action", action, by, at: Date.now() });
           if (error) console.warn(`Bot ${playerId} chose an illegal action: ${error}`);
         } catch (e) {
           // A throwing bot must not take the room down (#114); it is asked again after the next change.

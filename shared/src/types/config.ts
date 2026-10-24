@@ -78,6 +78,9 @@ export interface GameConfig {
   spike: {
     cost: { ap: number }; // Confirmed 2026-10-15.
   };
+  bodyTransfer: {
+    cost: { ap: number }; // The Mush skill Transfer: free (owner, 2026-10-24).
+  };
   spores: {
     cost: { ap: number }; // AP spent to extract a spore (confirmed 2026-10-13).
     effect: { spores: number }; // Spores one extraction gives (confirmed 2026-10-13).

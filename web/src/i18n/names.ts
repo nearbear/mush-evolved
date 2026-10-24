@@ -49,6 +49,7 @@ const ACTION_NAME_KEYS = {
   stt: "actions.stt",
   extract_spore: "actions.extractSpore",
   spike: "actions.spike",
+  body_transfer: "actions.bodyTransfer",
   lie_down: "actions.lieDown",
   get_up: "actions.getUp",
   accommodate: "actions.accommodate",

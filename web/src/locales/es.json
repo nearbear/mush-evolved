@@ -265,7 +265,8 @@
     "returnFuel": "Devolver la cápsula de combustible",
     "checkCombustion": "Comprobar el nivel de combustible",
     "turretAttack": "Disparar",
-    "repairHull": "Reforzar el casco"
+    "repairHull": "Reforzar el casco",
+    "bodyTransfer": "Transferencia"
   },
   "queue": {
     "label": "Tus acciones",
@@ -291,7 +292,8 @@
     "thread_name_invalid": "Un hilo necesita un nombre de hasta 40 caracteres.",
     "thread_exists": "Ese mensaje ya tiene un hilo.",
     "message_not_found": "Ese mensaje ya no está.",
-    "join_failed": "No se pudo embarcar en una nave. Inténtalo de nuevo."
+    "join_failed": "No se pudo embarcar en una nave. Inténtalo de nuevo.",
+    "nothing_to_acknowledge": "No hay nada que confirmar."
   },
   "terminal": {
     "close": "Cerrar"
@@ -699,7 +701,8 @@
     "hullRepaired": "{{name}} ha reforzado el casco.",
     "hullRepairFailed": "No has conseguido reforzar el casco.",
     "biosShieldOn": "Has activado el escudo de plasma: vuelve a proteger el casco.",
-    "biosShieldOff": "Has desactivado el escudo de plasma: ya no protege el casco."
+    "biosShieldOff": "Has desactivado el escudo de plasma: ya no protege el casco.",
+    "bodyTransferred": "Te has metido en la piel de {{target}}. {{name}} despierta humano, en tu antiguo cuerpo."
   },
   "skills": {
     "title": "Elegir una habilidad",
@@ -1229,5 +1232,10 @@
     "hunter": "Hunter {{index}}",
     "hp": "{{hp}} PV",
     "charges": "Cargas restantes: {{charges}}"
+  },
+  "bodyTaken": {
+    "title": "¡Te han robado el cuerpo!",
+    "text": "Un Mush se ha metido en tu piel. Despiertas en la suya: ahora eres {{name}}, y sigues siendo humano.",
+    "ok": "Entendido"
   }
 }

@@ -274,6 +274,31 @@ describe("GameRoom timed actions", () => {
   });
 });
 
+describe("GameRoom after a Transfer", () => {
+  it("moves each seat token to its new body, and the victim acknowledges the pop-up", async () => {
+    const { room } = await newRoom(3);
+    const game = (room as unknown as { game: import("@mush2/shared").GameState }).game;
+    // p0 (a human seat) is the Mush; p1 the victim.
+    for (const p of game.players) p.role = "human";
+    const [mush, victim] = [game.players[0]!, game.players[1]!];
+    mush.role = "mush";
+    mush.mushSkills.push("transfert");
+    mush.room = victim.room = "LABORATORY";
+    for (const o of game.players.slice(2)) o.room = "REFECTORY";
+    game.contamination[victim.id] = 1;
+    const victimConn = connect(room, "tok1");
+    const mushConn = connect(room, "tok0");
+    await send(room, mushConn, { type: "action", action: { type: "body_transfer", target: victim.id } });
+    expect(lastView(mushConn).you.id).toBe(victim.id);
+    expect(lastView(victimConn).you.id).toBe(mush.id);
+    expect(lastView(victimConn).you.bodyTakenBy).toBe(mush.character);
+    // A reconnect with the same token lands in the new body.
+    expect(lastView(connect(room, "tok1", "c-again")).you.id).toBe(mush.id);
+    await send(room, victimConn, { type: "acknowledgeTransfer" });
+    expect(lastView(victimConn).you.bodyTakenBy).toBeUndefined();
+  });
+});
+
 describe("GameRoom persistence", () => {
   it("records each accepted input in order, beside the setup", async () => {
     const { room, storage } = await newRoom(3, new FakeStorage(), CHEATS);

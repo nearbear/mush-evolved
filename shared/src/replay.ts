@@ -5,6 +5,7 @@
 
 import type { GameClientMessage } from "./protocol.ts";
 import { joinShip } from "./preselection.ts";
+import { acknowledgeTransfer } from "./mind.ts";
 import { createGame, newCycle, setActopiCheat, setCheat, setRoleCheat, type ActionResult } from "./rules.ts";
 import { clearQueue, queueAction, tick } from "./queue.ts";
 import { walk } from "./spot.ts";
@@ -54,6 +55,8 @@ export function applyInput(state: GameState, input: Input): ActionResult {
       return queueAction(state, input.by, input.action, input.at);
     case "clearQueue":
       return clearQueue(state, input.by);
+    case "acknowledgeTransfer":
+      return acknowledgeTransfer(state, input.by);
     case "tick":
       return tick(state, input.at);
     case "cycle":

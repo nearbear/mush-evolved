@@ -1,4 +1,5 @@
 import type { ActopiCheat, Cheat } from "../cheats.ts";
+import type { CharacterId } from "../characters.ts";
 import type { Action, PlayerId, Role, RoomId, Seat } from "../types.ts";
 
 export type ResourceId = "eng" | "exp" | "comp" | "garden" | "core" | "shoot" | "cook" | "heal" | "pilgred";
@@ -31,6 +32,19 @@ export interface QueuedAction {
 export type Spot = { x: number; y: number; sitting?: true } | { door: RoomId };
 
 export interface PlayerState extends Seat {
+  /**
+   * The seat (the player: account, seat token, bot) playing this body, by the id of the body it started in. Equal to
+   * `id` until a Mush's Transfer swaps two bodies' minds (body_transfer.ts); the server resolves tokens through it
+   * (`bodyOf`). Never sent.
+   */
+  mind: PlayerId;
+  /** The Mush in this mind has used Transfer (one use per game); moves with the mind. Never sent. */
+  transferUsed?: true;
+  /**
+   * Set on a Transfer's victim, in their new body: the character who took their old body, for the pop-up they must
+   * acknowledge (`acknowledgeTransfer`). Your own view only.
+   */
+  bodyTakenBy?: CharacterId;
   role: Role;
   /** Mush chosen at the start ("alpha"; later infections are "beta"). Player terminology only; no mechanics use it. */
   alpha: boolean;

@@ -146,6 +146,7 @@ export type Action =
   | { type: "attack"; weapon: ItemId; target: PlayerId }
   | { type: "attack"; weapon: ItemId }
   | { type: "spike"; target: PlayerId }
+  | { type: "body_transfer"; target: PlayerId }
   | { type: "pick_skill"; skill: string }
   | { type: "read_book"; item: ItemId }
   | { type: "ready" };

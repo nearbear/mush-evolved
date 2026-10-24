@@ -15,9 +15,9 @@ const pick = (state: GameState, id: string, skill: string) => applyAction(state,
 const offered = (state: GameState, id: string) => legalActions(state, id).flatMap((a) => (a.type === "pick_skill" ? [a.skill] : []));
 
 describe("Mush skills", () => {
-  it("has four slots and the original's 26 Mush skills, none implemented yet", () => {
+  it("has four slots and the original's 26 Mush skills, only Transfer implemented yet", () => {
     expect([MUSH_SKILL_SLOTS, MUSH_SKILLS.length]).toEqual([4, 26]);
-    for (const skill of MUSH_SKILLS) expect(skillStatus(skill)).toBe("none");
+    for (const skill of MUSH_SKILLS) expect(skillStatus(skill)).toBe(skill === "transfert" ? "full" : "none");
     expect(MUSH_SKILLS.filter((s) => (SKILLS as readonly string[]).includes(s))).toEqual([]);
   });
 

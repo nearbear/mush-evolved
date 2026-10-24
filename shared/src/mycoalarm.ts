@@ -11,8 +11,8 @@ export const MYCO_ALARM_ITEM = "myco_alarm";
 /** What the completed MYCO_ALARM research yields, placed in the lab's room (owner, 2026-10-17). */
 export const MYCO_ALARM_YIELD = 3;
 
-// The Mush abilities that ring an alarm (owner, 2026-10-17), so they get the `spore` tag when built: spike (built),
-// mutate, punching, infectious_cuddles, fungal_kitchen, trapper, transfer, nightmarish, bacterophiliac, radio_pirate.
+// The Mush abilities that ring an alarm (owner, 2026-10-17), so they get the `spore` tag when built: spike and transfer (built),
+// mutate, punching, infectious_cuddles, fungal_kitchen, trapper, nightmarish, bacterophiliac, radio_pirate.
 // Extracting a spore never rings it, so it has no tag.
 
 /** Rings once if any alarm is on the floor of `room`, however many there are. Mutates a state the caller already cloned. */

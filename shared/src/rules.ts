@@ -136,6 +136,7 @@ export function createGame(
 export function newPlayer(s: Seat, config: GameConfig, cycle: number, role: Role): PlayerState {
   return {
     ...s,
+    mind: s.id,
     role,
     alpha: role === "mush",
     room: config.startRoom,
@@ -390,7 +391,8 @@ export function viewFor(state: GameState, playerId: PlayerId): PlayerView {
   // A dead body is a corpse item, not a person in a room: nobody gets a dead player's room.
   const living = others.filter((o) => o.alive);
   // Nobody's account name goes out while the game runs, not even your own: people are known by character.
-  const { name: _name, outcastBy: _outcastBy, ...yours } = you; // who cursed you is never sent, even to you
+  // Who cursed you is never sent, even to you; nor which seat plays you or whether you used Transfer.
+  const { name: _name, outcastBy: _outcastBy, mind: _mind, transferUsed: _transferUsed, ...yours } = you;
   return {
     you: {
       ...yours,

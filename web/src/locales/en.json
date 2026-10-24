@@ -264,7 +264,8 @@
     "returnFuel": "Put the fuel capsule back",
     "checkCombustion": "Check the fuel level",
     "turretAttack": "Shoot",
-    "repairHull": "Reinforce the hull"
+    "repairHull": "Reinforce the hull",
+    "bodyTransfer": "Transfer"
   },
   "queue": {
     "label": "Your actions",
@@ -290,7 +291,8 @@
     "thread_name_invalid": "A thread needs a name of up to 40 characters.",
     "thread_exists": "That message already has a thread.",
     "message_not_found": "That message is no longer there.",
-    "join_failed": "Couldn't board a ship. Try again."
+    "join_failed": "Couldn't board a ship. Try again.",
+    "nothing_to_acknowledge": "There is nothing to acknowledge."
   },
   "terminal": {
     "close": "Close"
@@ -695,7 +697,8 @@
     "hullRepaired": "{{name}} reinforced the hull.",
     "hullRepairFailed": "You failed to reinforce the hull.",
     "biosShieldOn": "You switched the plasma shield on: it protects the hull again.",
-    "biosShieldOff": "You switched the plasma shield off: it no longer protects the hull."
+    "biosShieldOff": "You switched the plasma shield off: it no longer protects the hull.",
+    "bodyTransferred": "You slipped into {{target}}'s body. {{name}} wakes up human, with your old body."
   },
   "skills": {
     "title": "Choose a skill",
@@ -1222,5 +1225,10 @@
     "hunter": "Hunter {{index}}",
     "hp": "{{hp}} HP",
     "charges": "Charges left: {{charges}}"
+  },
+  "bodyTaken": {
+    "title": "Your body has been taken!",
+    "text": "A Mush has slipped into your body. You wake up in theirs: you are now {{name}}, and still human.",
+    "ok": "I understand"
   }
 }

@@ -175,6 +175,8 @@ export const SKILL_STATUS: Readonly<Partial<Record<SkillId | MushSkillId, SkillS
   botanic: "partial",
   // Sees plant sickness as the Botanist does (botany.ts); none of its other skills' knowledge.
   skilful: "partial",
+  // Mush skill: the one-use body swap (owner, 2026-10-24, body_transfer.ts).
+  transfert: "full",
   //Increases success rate, injury chance, and dirty chance by 20%
   expert: "full",
 };

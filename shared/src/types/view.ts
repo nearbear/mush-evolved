@@ -88,7 +88,7 @@ export interface PublicConfig {
 
 /** Your own state, minus your account name (nobody's name is in a view while the game runs). */
 /** Your own state, minus your account name; the queue is plain actions (the recorded adjustments stay on the server). */
-export type YouView = Omit<PlayerState, "name" | "current" | "queue"> & { current: ActionInProgress | null; queue: Action[] };
+export type YouView = Omit<PlayerState, "name" | "mind" | "transferUsed" | "current" | "queue"> & { current: ActionInProgress | null; queue: Action[] };
 
 export interface PlayerView {
   you: YouView;

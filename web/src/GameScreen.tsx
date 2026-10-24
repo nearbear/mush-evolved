@@ -16,6 +16,7 @@ import { ITrackie } from "./hud/ITrackie.tsx";
 import { PeekBar } from "./hud/PeekBar.tsx";
 import { TerminalDialog } from "./hud/TerminalDialog.tsx";
 import { EndScreen } from "./hud/EndScreen.tsx";
+import { BodyTakenDialog } from "./hud/BodyTakenDialog.tsx";
 import { SelfPanel } from "./hud/SelfPanel.tsx";
 import { resolveTarget } from "./hud/targets.ts";
 import { TopBar } from "./hud/TopBar.tsx";
@@ -162,6 +163,7 @@ export function GameScreen({ ticket, onLeave }: { ticket: SeatTicket; onLeave: (
     <main className="game">
       <TerminalDialog terminal={terminal} view={view} onAction={send} onClose={() => setTerminalId(null)} />
       <EndScreen view={view} open={view.phase === "ended" && !endClosed} onOpenChange={(open) => setEndClosed(!open)} />
+      <BodyTakenDialog view={view} onAcknowledge={() => post({ type: "acknowledgeTransfer" })} />
       <TopBar
         view={view}
         showSummary={mobile}
