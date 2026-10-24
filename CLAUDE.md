@@ -89,6 +89,16 @@ Node is installed via nvm and is already on `PATH` in Claude Code shells (the us
 - `npm run deploy -w server`: wrangler deploy (not yet configured or tested).
 - `npm run lint`: Biome, lint only (formatter off). Rules: React hook deps/placement, floating and misused promises (nursery), unused imports and variables, a set of a11y rules, no `console.log` in `server` (`warn`/`error` are fine), and import limits (`shared` has no I/O, UI, or sibling-package imports; `web` never imports `server`). typescript-eslint was rejected because it does not support TypeScript 7. Intentional exceptions use `biome-ignore` with a reason.
 
+## External tools
+
+**Google Antigravity CLI** (`~/.local/bin/agy`, a Gemini agent; read-only in this mode). Optional: not every contributor has it. If it's missing or a call fails (auth, quota, model unavailable), say so and fall back to the built-in subagents (`Plan`, `Explore`, `visual-check`). Use it for:
+
+- A second opinion on architecture plans: report where it disagrees and what changed. Its view is input; my decisions win.
+- A second leak review after `leak-check`, and a check of new fr/es strings (see those skills).
+- Summarizing large files, directories, or `Mush/` images, keeping them out of your context. Verify any lines you act on.
+
+Call: `~/.local/bin/agy -p "<prompt>" --mode plan --model <model> --print-timeout 300s`, with `gemini-4-argon-high` for reviews or `gemini-3.8-flash-medium` for reading (not its Claude models). Never pass `--dangerously-skip-permissions`. Don't use it to read files you're denied or secrets. Run long calls in the background.
+
 `docs/testing.md` lists what's important to test and why, with what's covered and what's missing.
 
 Project skills in `.claude/skills/`: `play` (launch, drive, and look at the game), `rule` (adding or changing a game rule), `asset` (using art from `Mush/`), `bot` (scripted and model-backed bots), `leak-check` (review changes for hidden-information leaks), `i18n` (player-visible text and translations: en/fr/es), `wiki` (search and read eMushpedia, the French eMush wiki, with `npm run wiki`), and `wrap-up` (verify, update docs, propose a commit).

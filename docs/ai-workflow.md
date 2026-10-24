@@ -1124,3 +1124,7 @@ Follow-up (same day): the three reactors pulsed in step, so `spreadAmbient` in `
 - **Claude's defaults, flagged:** leaving orbit burns 1 fuel, the ship starts facing north, the orbited planet can't be deleted, and the heading is shown only at the Command terminal.
 - **What worked:** the wiki skill (`npm run wiki -- page "Terminal de Commandement"`) answered most of the model. That cut the AskUserQuestion round to four real choices. Reusing `commandTerminalsHere` and `hasTitleAccess` kept the Commander check in one place.
 - **Needed correction:** the first test draft called `parseGameMessage` with an object (it takes the raw string) and expected the `validate` reason code for an action no longer among the candidates (the result is `illegal_action`).
+
+## 2026-10-23: Google Antigravity CLI as a second opinion and reading subagent
+
+Added `agy` (Antigravity CLI, Gemini models) to CLAUDE.md under "External tools". Claude Code sends it architecture plans for review and has it summarize large files and directories. It runs headless with `agy -p ... --mode plan`. Print mode auto-denies shell commands, so it can't run any, but its file view and list tools work, which keeps it read-only with no permission config. We chose `gemini-4-argon-high` for reviews and `gemini-3.8-flash-medium` for sweeps, and avoided its hosted Claude models so the second opinion comes from a different model family.
