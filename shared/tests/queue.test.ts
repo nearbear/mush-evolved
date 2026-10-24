@@ -30,8 +30,8 @@ function ship(config: GameConfig = base): GameState {
 }
 
 describe("timed actions", () => {
-  it("defaults to 2 seconds, a queue of 3, resolving at the end", () => {
-    expect(base.action).toEqual({ durationMs: 2000, queueCap: 3, resolveAt: "end" });
+  it("defaults to 1.5 seconds, a queue of 3, resolving at the end", () => {
+    expect(base.action).toEqual({ durationMs: 1500, queueCap: 3, resolveAt: "end" });
   });
 
   it("the instantActions cheat skips the bar and does the action at once", () => {

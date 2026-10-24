@@ -276,7 +276,7 @@ export interface GameConfig {
     ap: number; // Extra AP the caffeinomaniac skill gives on consuming a coffee, capped at maxAp (confirmed 2026-10-16).
   };
   action: {
-    durationMs: number; // Server time every timed action takes (owner, 2026-10-17: 2 seconds).
+    durationMs: number; // Server time every timed action takes (owner: 2 seconds on 2026-10-17, 1.5 seconds since 2026-10-24).
     queueCap: number; // Actions that may wait behind the one under way (owner, 2026-10-17: 3).
     // When a timed action takes effect (owner, 2026-10-17: "end"). "end": when its bar runs out, cost checked again
     // and paid then. "start": at once, and the bar is a cooldown before the next one.

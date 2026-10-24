@@ -245,14 +245,14 @@ describe("GameRoom timed actions", () => {
       const from = lastView(c).you.room;
       await send(room, c, { type: "action", action: move, at: 5 });
       expect(storage.data.get("input:000000000")).toMatchObject({ input: { type: "action", at: 1_000_000 } });
-      expect(lastView(c).you.current).toMatchObject({ since: 1_000_000, until: 1_002_000 });
+      expect(lastView(c).you.current).toMatchObject({ since: 1_000_000, until: 1_001_500 });
       expect(lastView(c).you.room).toBe(from);
-      expect(storage.alarm).toBe(1_002_000);
+      expect(storage.alarm).toBe(1_001_500);
       expect(lastMsg(c)).toMatchObject({ now: 1_000_000 });
 
-      vi.setSystemTime(1_002_000);
+      vi.setSystemTime(1_001_500);
       await room.onAlarm();
-      expect(storage.data.get("input:000000001")).toMatchObject({ input: { type: "tick", at: 1_002_000 } });
+      expect(storage.data.get("input:000000001")).toMatchObject({ input: { type: "tick", at: 1_001_500 } });
       expect(lastView(c).you.room).toBe(move.to);
       expect(storage.alarm).toBe(3 * HOUR); // the next cycle
     } finally {

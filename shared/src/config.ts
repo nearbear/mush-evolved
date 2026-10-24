@@ -180,7 +180,7 @@ export const DEFAULT_CONFIG: GameConfig = {
   caffeinomaniac: { ap: 2 },
   // Confirmed 2026-10-16: carrying a heavy item adds this much to every move's MP cost, once.
   heavy: { mpPenalty: 2 },
-  // Decided 2026-10-17 (owner): every action but ready and access takes 2 seconds and happens when its bar runs out;
+  // Decided 2026-10-17 (owner): every action but ready and access takes a fixed time (2 s, cut to 1.5 s on 2026-10-24) and happens when its bar runs out;
   // up to 3 more can wait behind it.
   action: { durationMs: 1500, queueCap: 3, resolveAt: "end" },
   // PLACEHOLDER items with no effects, so there is something to pick up.
