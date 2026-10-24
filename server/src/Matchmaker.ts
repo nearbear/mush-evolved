@@ -1,9 +1,9 @@
-// Global coordinator (single instance, room name "global"). Holds the queue,
+// Per-language coordinator (one instance per room name: "en", "fr", "es"). Holds the queue,
 // runs the fill-with-bots timer, and creates game rooms. Game rooms never
 // talk to each other or to the matchmaker after setup.
 
 import { getServerByName, Server, type Connection, type WSMessage } from "partyserver";
-import { CHARACTERS, parseMatchmakerMessage, SEAT_COUNT, type CharacterId, type MatchmakerServerMessage, type PlayerId, type Seat } from "@mush2/shared";
+import { CHARACTERS, LOBBY_LANGUAGES, parseMatchmakerMessage, SEAT_COUNT, type CharacterId, type MatchmakerServerMessage, type PlayerId, type Seat } from "@mush2/shared";
 import { RateLimiter } from "./rateLimit.ts";
 
 /** How long the first player waits before empty seats are filled with bots. */
@@ -17,6 +17,15 @@ interface QueueState {
 
 export class Matchmaker extends Server<Env> {
   private limiter = new RateLimiter(5, 1000);
+
+  override onConnect(connection: Connection): void {
+    // Rooms are created on first connect, so refuse names that aren't a lobby language.
+    if (!(LOBBY_LANGUAGES as readonly string[]).includes(this.name)) {
+      connection.close(1008, "unknown_lobby");
+      return;
+    }
+    this.send(connection, this.queueMessage());
+  }
 
   override async onMessage(connection: Connection<QueueState>, raw: WSMessage): Promise<void> {
     if (!this.limiter.allow(connection.id)) return;
@@ -100,8 +109,12 @@ export class Matchmaker extends Server<Env> {
   }
 
   private broadcastQueue(): void {
-    const msg: MatchmakerServerMessage = { type: "queued", waiting: this.waiting().length, seats: SEAT_COUNT };
-    for (const conn of this.waiting()) this.send(conn, msg);
+    const msg = this.queueMessage();
+    for (const conn of this.getConnections()) this.send(conn, msg);
+  }
+
+  private queueMessage(): MatchmakerServerMessage {
+    return { type: "queued", waiting: this.waiting().length, seats: SEAT_COUNT };
   }
 
   private send(connection: Connection, msg: MatchmakerServerMessage): void {

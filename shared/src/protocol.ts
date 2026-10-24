@@ -11,7 +11,11 @@ import { CHAT_CHANNELS, GRAVEYARD_CHANNEL, MUSH_CHANNEL, type Action, type Chann
 
 export const MAX_NAME_LENGTH = 24;
 
-// Matchmaker ("matchmaker" party, room "global")
+export const LOBBY_LANGUAGES = ["en", "fr", "es"] as const;
+export type LobbyLanguage = (typeof LOBBY_LANGUAGES)[number];
+
+// Matchmaker ("matchmaker" party). One room per language: "en", "fr", "es" (LOBBY_LANGUAGES).
+// Any connection, queued or just watching, is sent `queued` on connect and whenever the count changes.
 // `character` is the crew member picked in the lobby; the matchmaker refuses one another waiting player holds.
 export type MatchmakerClientMessage = { type: "queue"; name: string; character: CharacterId };
 export type MatchmakerServerMessage =
