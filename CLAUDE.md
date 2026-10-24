@@ -82,26 +82,20 @@ Node is installed via nvm and is already on `PATH` in Claude Code shells (the us
 - `npm run typecheck`: `tsc --noEmit` in every package (TypeScript 7).
 - `npm run build`: production build of `web`.
 - `npm run preview`: build `web` for production, then serve it with `vite preview` beside wrangler (same ports as `npm run dev`, so stop that first).
-- `npm run ship-layout`: regenerate `Mush/derived/ship-art.json` (the sprites, from `tiles.xml`) and `ship-rooms.json` (room graph and per-room equipment, for the rules, from `ship-map.json`). A test fails if either is stale. The rooms and every tile in them are in `Mush/derived/ship-map.json`, edited by hand since 2026-10-21 (see `web/src/iso/CLAUDE.md`, "The ship map").
-- `npm run ship-check`: report on `ship-map.json`: overlapping rooms, doors that don't line up, gaps. It only reports.
-- `npm run layout-query -- <regex>`: search `ship-art.json` and `ship-map.json` (reading them directly is denied) for matching slices, tiles, and equipment bindings, capped at 60 lines.
-- `npm run screenshot`: headless Chromium (Playwright) screenshots as a desktop player and a 360px phone player, to `.screenshots/` (gitignored). Needs `npm run dev`. Options and the other tooling commands (`ship-view`, `ship-render`, `ship-top`, `contact-sheet`, `asset-index`, `ods-data`, `types -w server`) are in the `play` and `asset` skills.
+- `npm run ship-layout`: regenerate `Mush/derived/ship-art.json` and `ship-rooms.json` from `ship-map.json` (see `web/src/iso/CLAUDE.md`, "The ship map"). A test fails if either is stale.
+- `npm run ship-check`: report-only checks on `ship-map.json` (overlaps, misaligned doors, gaps).
+- `npm run layout-query -- <regex>`: search `ship-art.json` and `ship-map.json` (reading them directly is denied), capped at 60 lines.
+- `npm run screenshot`: headless Chromium screenshots as a desktop and a 360px phone player, to `.screenshots/` (gitignored). Needs `npm run dev`. The other tooling commands are in the `play` and `asset` skills.
 - `npm run deploy -w server`: wrangler deploy (not yet configured or tested).
-- `npm run lint`: Biome, lint only (formatter off). Rules: React hook deps/placement, floating and misused promises (nursery), unused imports and variables, a set of a11y rules, no `console.log` in `server` (`warn`/`error` are fine), and import limits (`shared` has no I/O, UI, or sibling-package imports; `web` never imports `server`). typescript-eslint was rejected because it does not support TypeScript 7. Intentional exceptions use `biome-ignore` with a reason.
+- `npm run lint`: Biome, lint only (rules in `biome.json`). Import limits: `shared` has no I/O, UI, or sibling-package imports; `web` never imports `server`. No `console.log` in `server`. typescript-eslint was rejected (no TypeScript 7 support). Intentional exceptions use `biome-ignore` with a reason.
 
 ## External tools
 
-**Google Antigravity CLI** (`~/.local/bin/agy`, a Gemini agent; read-only in this mode). Optional: not every contributor has it. If it's missing or a call fails (auth, quota, model unavailable), say so and fall back to the built-in subagents (`Plan`, `Explore`, `visual-check`). Use it for:
-
-- A second opinion on architecture plans: report where it disagrees and what changed. Its view is input; my decisions win.
-- A second leak review after `leak-check`, and a check of new fr/es strings (see those skills).
-- Summarizing large files, directories, or `Mush/` images, keeping them out of your context. Verify any lines you act on.
-
-Call: `~/.local/bin/agy -p "<prompt>" --mode plan --model <model> --print-timeout 300s`, with `gemini-4-argon-high` for reviews or `gemini-3.8-flash-medium` for reading (not its Claude models). Never pass `--dangerously-skip-permissions`. Don't use it to read files you're denied or secrets. Run long calls in the background.
+**Google Antigravity CLI** (`agy`, a Gemini agent). Optional; use the `gemini` skill for second opinions on plans, second leak and fr/es reviews, and summarizing big files. Never give it a shell or pass `--dangerously-skip-permissions`; the skill has the read-only call recipe.
 
 `docs/testing.md` lists what's important to test and why, with what's covered and what's missing.
 
-Project skills in `.claude/skills/`: `play` (launch, drive, and look at the game), `rule` (adding or changing a game rule), `asset` (using art from `Mush/`), `bot` (scripted and model-backed bots), `leak-check` (review changes for hidden-information leaks), `i18n` (player-visible text and translations: en/fr/es), `wiki` (search and read eMushpedia, the French eMush wiki, with `npm run wiki`), and `wrap-up` (verify, update docs, propose a commit).
+Project skills in `.claude/skills/`: `play` (launch, drive, and look at the game), `rule` (adding or changing a game rule), `asset` (using art from `Mush/`), `bot` (scripted and model-backed bots), `leak-check` (review changes for hidden-information leaks), `i18n` (player-visible text and translations: en/fr/es), `wiki` (search and read eMushpedia, the French eMush wiki, with `npm run wiki`), `gemini` (ask the Gemini CLI, read-only), and `wrap-up` (verify, update docs, propose a commit).
 
 npm 11 blocks dependency install scripts by default. `esbuild` and `workerd` are approved in the root `package.json` `allowScripts`; new packages with install scripts need `npm install-scripts approve <pkg>`.
 

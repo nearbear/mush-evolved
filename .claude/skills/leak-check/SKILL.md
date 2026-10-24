@@ -47,4 +47,4 @@ Add a test for each new hidden field or log kind if one is missing, then run `np
 
 ## 4. Report
 
-List each path from step 2 you checked with a one-line verdict, then any leak found with file:line, what leaks to whom, and a fix. If you added tests, say which. If `agy` is available (see "External tools" in CLAUDE.md), also give it the diff and this checklist, and report any leak it finds that you missed (after verifying it). Don't fix design-level questions (e.g. "should Mush see each other?") yourself; those are rules, so ask the user.
+List each path from step 2 you checked with a one-line verdict, then any leak found with file:line, what leaks to whom, and a fix. If you added tests, say which. If `agy` is available (use the `gemini` skill), also give it the diff and this checklist, and report any leak it finds that you missed (after verifying it). Don't fix design-level questions (e.g. "should Mush see each other?") yourself; those are rules, so ask the user.

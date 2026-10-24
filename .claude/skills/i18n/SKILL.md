@@ -25,7 +25,7 @@ The UI language is a **per-player, client-side choice** (`web/src/i18n/`), indep
 2. While iterating, run only `npm test -w tools -- i18n`; run `npm test -w web` once at the end.
 3. If the hardcoded-text baseline **shrank**, that's progress: `UPDATE_I18N_BASELINE=1 npm test -w tools -- i18n`. If it **grew**, translate the text or mark it `i18n-ignore`; never regenerate the baseline to make a failing test pass.
 4. `npm run typecheck`.
-5. If `agy` is available (see "External tools" in CLAUDE.md), ask it to review the new fr/es strings for wording and consistency with the existing catalog, and apply the fixes you agree with.
+5. If `agy` is available (use the `gemini` skill), ask it to review the new fr/es strings for wording and consistency with the existing catalog, and apply the fixes you agree with.
 6. Tell the user that the French and Spanish strings are drafts that need a native speaker's review, and list any new game terms you had to choose.
 
 What is still untranslated is whatever `tools/src/i18n/baseline.json` lists; `docs/testing.md` section 7 says what is and isn't covered.
