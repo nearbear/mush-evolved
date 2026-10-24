@@ -5,10 +5,15 @@
 // duplicate, change its frame or its room, place new tiles from the palette, undo and redo, and save
 // back to the file (tools/src/editor/vitePlugin.ts). It can also show the ship as the game draws it from
 // one room at fog depth 1 or 2, where seams between rooms show. A room can be moved whole on the plan, and
-// the map is checked as you edit (Checks.tsx): each problem found takes you to where it is. Player-facing rules don't apply here
-// (no translations, desktop first), but every action has a button, so it works on a phone.
+// the map is checked as you edit (Checks.tsx): each problem found takes you to where it is.
+//
+// Laid out like a game engine's scene editor: a menu bar (File, Edit, View), a hierarchy of rooms and
+// tiles with an inspector under it on the left (the split and the column's width can be dragged), the
+// scene in the middle with its own toolbar (camera, what's shown, zoom, the checks) and a status bar, and
+// the palette docked on the right as the assets panel. Player-facing rules don't apply here: no
+// translations, and desktop only (owner 2026-10-24).
 
-import { Tabs } from "@base-ui/react/tabs";
+import { Menubar } from "@base-ui/react/menubar";
 import { lazy, type PointerEvent, Suspense, useCallback, useEffect, useMemo, useRef, useState, type WheelEvent } from "react";
 import { placedEquipment, type RoomId, type ShipArt, type ShipLayout, type ShipMap } from "@mush2/shared";
 import { opaqueAt, preloadImage } from "../iso/hitMask.ts";
@@ -32,8 +37,12 @@ import {
   tileAt,
 } from "./edits.ts";
 import type { Problem } from "./checks.ts";
-import { Checks, useChecks } from "./Checks.tsx";
+import { Check, EditorMenu, Heading, Item, PopoverPanel, Radios, Separator, Sub } from "./EditorMenus.tsx";
+import { checkCounts, Checks, useChecks } from "./Checks.tsx";
+import { Hierarchy, hideKey, LAYER_NAMES } from "./Hierarchy.tsx";
+import { Inspector, isSofa } from "./Inspector.tsx";
 import { Palette } from "./Palette.tsx";
+import { Splitter, useStoredSize } from "./Splitter.tsx";
 import {
   cellAt,
   diamonds,
@@ -56,7 +65,8 @@ const PixiScene = lazy(() => import("../iso/pixi/PixiScene.tsx"));
 const MAX_ZOOM = 4;
 /** Undo steps kept. */
 const HISTORY = 300;
-const LAYER_NAMES: Record<Layer, string> = { ground: "Floor", wall: "Walls", door: "Doors", prop: "Props", entity: "Furniture and fittings" };
+/** What the checks badge calls one problem of each severity. */
+const NOUN = { error: "error", warning: "warning", info: "note" } as const;
 const STILL = () => ({ x: 0, y: 0 });
 const NOBODY = { people: new Map(), walkers: new Map(), seats: new Map(), corpses: [] };
 
@@ -80,7 +90,6 @@ function Editor({ art, initial }: { art: ShipArt; initial: ShipMap }) {
   const [past, setPast] = useState<ShipMap[]>([]);
   const [future, setFuture] = useState<ShipMap[]>([]);
   const [save, setSave] = useState<SaveState>({ state: "clean" });
-  const [tab, setTab] = useState("view");
   const [selected, setSelected] = useState<TileAt | null>(null);
   // The room the room tools act on: the selected tile's, or one picked from the list.
   const [roomSel, setRoomSel] = useState<string | null>(null);
@@ -164,7 +173,31 @@ function Editor({ art, initial }: { art: ShipArt; initial: ShipMap }) {
   const [hidden, setHidden] = useState<ReadonlySet<Layer>>(new Set());
   const [showGrid, setShowGrid] = useState(true);
   const [showRooms, setShowRooms] = useState(true);
-  const visible = useMemo(() => placed.filter((s) => !hidden.has(layerOf(s.kind)!)), [placed, hidden]);
+  // Rooms and rooms' layers hidden from the hierarchy (hideKey), on top of the layers hidden for all.
+  const [hiddenIn, setHiddenIn] = useState<ReadonlySet<string>>(new Set());
+  const visible = useMemo(
+    () =>
+      placed.filter((s) => {
+        const l = layerOf(s.kind)!;
+        return !hidden.has(l) && !hiddenIn.has(s.room) && !hiddenIn.has(hideKey(s.room, l));
+      }),
+    [placed, hidden, hiddenIn],
+  );
+  const toggleIn = (key: string) => {
+    const next = new Set(hiddenIn);
+    if (!next.delete(key)) next.add(key);
+    setHiddenIn(next);
+  };
+  const toggleLayer = (l: Layer, on: boolean) => {
+    const next = new Set(hidden);
+    if (on) next.delete(l);
+    else next.add(l);
+    setHidden(next);
+  };
+  const [showAssets, setShowAssets] = useState(true);
+  const [columnWidth, setColumnWidth] = useStoredSize("column", 300);
+  const [inspectorHeight, setInspectorHeight] = useStoredSize("inspector", 320);
+  const [assetsWidth, setAssetsWidth] = useStoredSize("assets", 280);
 
   /** Sprite key -> map tile, and back. */
   const { tileOfKey, keyOfTile } = useMemo(() => {
@@ -272,10 +305,7 @@ function Editor({ art, initial }: { art: ShipArt; initial: ShipMap }) {
     stack.current = { keys, at: 0 };
     const hit = (keys[0] && tileOfKey.get(keys[0])) || null;
     setSelected(hit);
-    if (hit) {
-      setRoomSel(hit.room);
-      setTab("edit");
-    }
+    if (hit) setRoomSel(hit.room);
     hoverAt(clientX, clientY);
   };
 
@@ -345,14 +375,25 @@ function Editor({ art, initial }: { art: ShipArt; initial: ShipMap }) {
     if (p.view) setView(p.view);
     if (p.tile) {
       setSelected(p.tile);
-      setTab("edit");
       stack.current = { keys: [], at: 0 };
     }
     if (p.room) setRoomSel(p.room);
     const cell = p.cells[0];
-    if (!cell) return;
-    const at = gridToPx(cell[0] + 0.5, cell[1] + 0.5);
+    if (cell) centreOn(cell[0], cell[1]);
+  };
+  /** Puts cell (x, y) in the middle of the view. */
+  const centreOn = (x: number, y: number) => {
+    const at = gridToPx(x + 0.5, y + 0.5);
     setCam({ x: Math.round(panel.width / zoom / 2 + box.minX - at.x), y: Math.round(panel.height / zoom / 2 + box.minY - at.y) });
+  };
+  /** Frames the selected tile, or the room picked, as a game engine's F does. */
+  const frameSelection = () => {
+    const t = sel && tileAt(map, sel);
+    const r = map.rooms.find((r) => r.id === (sel?.room ?? roomSel));
+    if (!r?.at) return;
+    if (t) return centreOn(t.x + r.at.x, t.y + r.at.y);
+    const o = outlines.find((o) => o.id === r.id);
+    if (o) setCam({ x: Math.round(panel.width / zoom / 2 + box.minX - o.x), y: Math.round(panel.height / zoom / 2 + box.minY - o.y) });
   };
   // The picked problem as it is now: gone once it is fixed.
   const pickedNow = picked && checks.problems ? (checks.problems.find((p) => p.id === picked.id) ?? null) : picked;
@@ -361,7 +402,8 @@ function Editor({ art, initial }: { art: ShipArt; initial: ShipMap }) {
   const keys = useRef<(e: KeyboardEvent) => void>(() => {});
   keys.current = (e: KeyboardEvent) => {
     const t = e.target as HTMLElement;
-    if (t.closest("input, select, textarea")) return;
+    // Menus and the splitters take their own arrow keys.
+    if (e.defaultPrevented || t.closest("input, select, textarea, [role=menu], [role=menubar], [role=separator]")) return;
     const mod = e.ctrlKey || e.metaKey;
     const k = e.key;
     const arrow = ARROWS[k];
@@ -375,6 +417,7 @@ function Editor({ art, initial }: { art: ShipArt; initial: ShipMap }) {
     else if (k === "[" && sel) edit.frame(-1);
     else if (k === "]" && sel) edit.frame(1);
     else if (k.toLowerCase() === "r" && !mod && sel) edit.rotate();
+    else if (k.toLowerCase() === "f" && !mod) frameSelection();
     else if (k === "Tab" && stack.current.keys.length > 1) cycle(e.shiftKey ? -1 : 1);
     else if (k === "Escape") {
       if (armed) setArmed(null);
@@ -413,354 +456,341 @@ function Editor({ art, initial }: { art: ShipArt; initial: ShipMap }) {
   const tiles = map.rooms.reduce((n, r) => n + r.tiles.length, 0);
   const saveLabel = save.state === "saving" ? "Saving…" : save.state === "failed" ? "Not saved" : dirty ? "Unsaved changes" : "Saved";
 
+  const counts = checkCounts(checks.problems);
+  const viewName = view.from ? `from ${view.from}, fog ${view.depth}` : "whole ship";
+  const selectTile = (at: TileAt) => {
+    stack.current = { keys: [], at: 0 };
+    setSelected(at);
+    setRoomSel(at.room);
+  };
+  const selectRoom = (id: string) => {
+    stack.current = { keys: [], at: 0 };
+    setSelected(null);
+    setRoomSel(id);
+  };
+
   return (
     <div className="editor">
-      <div
-        ref={viewport}
-        className={`editor-viewport${armed ? " placing" : ""}`}
-        onPointerDown={onPointerDown}
-        onPointerMove={onPointerMove}
-        onPointerUp={onPointerUp}
-        onPointerCancel={() => {
-          drag.current = null;
-        }}
-        onPointerLeave={() => !drag.current && setHover(undefined)}
-        onWheel={onWheel}
-      >
-        <div className="editor-world" style={{ width: panel.width / zoom, height: panel.height / zoom, transform: `scale(${zoom})` }}>
-          <Suspense fallback={null}>
-            <PixiScene scene={scene} ref={rendererRef} />
-          </Suspense>
-          <svg
-            className="editor-overlay"
-            width={box.width}
-            height={box.height}
-            viewBox={`${box.minX} ${box.minY} ${box.width} ${box.height}`}
-            style={{ transform: `translate(${camera.x}px, ${camera.y}px)` }}
-            aria-hidden="true"
-          >
-            {showGrid && (
-              <>
-                <path className="grid-minor" d={grid.minor} />
-                <path className="grid-major" d={grid.major} />
-                {labels.map((l) => (
-                  <text key={`${l.x},${l.y}`} className="grid-label" x={l.at.x} y={l.at.y - 2} fontSize={11 / zoom}>
-                    {l.x},{l.y}
-                  </text>
-                ))}
-              </>
-            )}
-            {showRooms &&
-              outlines.map((o) => (
-                <g key={o.id}>
-                  <path className={o.id === roomSel ? "room-outline selected" : "room-outline"} d={o.path} />
-                  <text className="room-label" x={o.x} y={o.y} fontSize={12 / zoom}>
-                    {o.label}
-                  </text>
-                </g>
-              ))}
-            {pickedNow && pickedNow.cells.length > 0 && (
-              <path className={`problem-cells ${pickedNow.severity}`} d={diamonds(pickedNow.cells.map(([x, y]) => ({ x, y })))} />
-            )}
-            {hover && <path className={armed ? "place-cell" : "hover-cell"} d={diamonds([hover.cell])} />}
-            {hoverRoom && hoverTile && <path className="hover-footprint" d={diamonds(footprint(layout, hoverRoom, hoverTile))} />}
-            {selRoom && selTile && <path className="selected-footprint" d={diamonds(footprint(layout, selRoom, selTile))} />}
-          </svg>
-        </div>
-      </div>
-
-      <aside className="editor-panel">
-        <header className="editor-head">
-          <h1>Ship map</h1>
-          <span className={`save-state ${save.state === "failed" ? "failed" : dirty ? "dirty" : ""}`}>{saveLabel}</span>
-        </header>
-        <div className="editor-row">
-          <button type="button" onClick={() => void doSave()} disabled={!dirty || save.state === "saving"}>
-            Save
-          </button>
-          <button type="button" onClick={undo} disabled={!past.length}>
-            Undo
-          </button>
-          <button type="button" onClick={redo} disabled={!future.length}>
-            Redo
-          </button>
-          <button type="button" onClick={() => void revert()}>
-            Reload file
-          </button>
-        </div>
-        {save.state === "failed" && (
-          <ul className="editor-errors">
-            {save.errors.slice(0, 12).map((e) => (
-              <li key={e}>{e}</li>
-            ))}
-            {save.errors.length > 12 && <li>… {save.errors.length - 12} more</li>}
-          </ul>
-        )}
-        {message && <p className="editor-note">{message}</p>}
-        <Tabs.Root className="editor-tabs" value={tab} onValueChange={(v) => setTab(v as string)}>
-          <Tabs.List className="editor-tab-list">
-            <Tabs.Tab className="editor-tab" value="view">View</Tabs.Tab>
-            <Tabs.Tab className="editor-tab" value="edit">Edit</Tabs.Tab>
-            <Tabs.Tab className="editor-tab" value="place">Place</Tabs.Tab>
-            <Tabs.Tab className="editor-tab" value="checks">Checks</Tabs.Tab>
-          </Tabs.List>
-          <Tabs.Panel className="editor-tab-panel" value="view">
-        <div className="editor-row">
-          <label>
-            View{" "}
-            <select
-              value={view.from ?? ""}
-              onChange={(e) => setView(e.target.value ? { from: e.target.value, depth: view.from ? view.depth : 1 } : { from: null })}
+      <header className="editor-menubar">
+        <Menubar className="editor-menus">
+          <EditorMenu label="File">
+            <Item onClick={() => void doSave()} disabled={!dirty || save.state === "saving"} keys="Ctrl+S">
+              Save
+            </Item>
+            <Item onClick={() => void revert()}>Reload file</Item>
+          </EditorMenu>
+          <EditorMenu label="Edit">
+            <Item onClick={undo} disabled={!past.length} keys="Ctrl+Z">
+              Undo
+            </Item>
+            <Item onClick={redo} disabled={!future.length} keys="Ctrl+Shift+Z">
+              Redo
+            </Item>
+            <Separator />
+            <Item onClick={edit.duplicate} disabled={!sel} keys="Ctrl+D">
+              Duplicate
+            </Item>
+            <Item onClick={edit.remove} disabled={!sel} keys="Delete">
+              Delete
+            </Item>
+            <Item onClick={() => edit.frame(-1)} disabled={!sel} keys="[">
+              Previous frame
+            </Item>
+            <Item onClick={() => edit.frame(1)} disabled={!sel} keys="]">
+              Next frame
+            </Item>
+            <Item onClick={edit.rotate} disabled={!selTile || !isSofa(selTile)} keys="R">
+              Rotate sofa
+            </Item>
+            <Separator />
+            <Item
+              onClick={() => {
+                setSelected(null);
+                setRoomSel(null);
+              }}
+              disabled={!sel && !roomSel}
             >
-              <option value="">Whole ship</option>
-              {planRooms.map((id) => (
-                <option key={id} value={id}>
-                  From {id}
-                </option>
+              Select nothing
+            </Item>
+          </EditorMenu>
+          <EditorMenu label="View">
+            <Item onClick={frameSelection} disabled={!sel && !roomSel} keys="F">
+              Frame selection
+            </Item>
+            <Item onClick={() => setCam(null)}>Centre the ship</Item>
+            <Item onClick={() => zoomTo(zoom + 1)} disabled={zoom >= MAX_ZOOM}>
+              Zoom in
+            </Item>
+            <Item onClick={() => zoomTo(zoom - 1)} disabled={zoom <= 1}>
+              Zoom out
+            </Item>
+            <Separator />
+            <Check checked={showAssets} onChange={setShowAssets}>
+              Assets panel
+            </Check>
+          </EditorMenu>
+        </Menubar>
+        <h1>Ship map</h1>
+        <span className="spacer" />
+        {save.state === "failed" ? (
+          <PopoverPanel label="Not saved: why" className="save-state failed" trigger="Not saved ▾" align="end">
+            <ul className="editor-errors">
+              {save.errors.slice(0, 12).map((e) => (
+                <li key={e}>{e}</li>
               ))}
-            </select>
-          </label>
-          {view.from && (
-            <label>
-              Fog depth{" "}
-              <select value={view.depth} onChange={(e) => setView({ from: view.from, depth: Number(e.target.value) as 1 | 2 })}>
-                <option value={1}>1</option>
-                <option value={2}>2</option>
-              </select>
-            </label>
-          )}
-        </div>
-
-        <div className="editor-row">
-          <button type="button" aria-label="Zoom out" onClick={() => zoomTo(zoom - 1)} disabled={zoom <= 1}>
-            −
-          </button>
-          <span className="zoom">{zoom}x</span>
-          <button type="button" aria-label="Zoom in" onClick={() => zoomTo(zoom + 1)} disabled={zoom >= MAX_ZOOM}>
-            +
-          </button>
-          <button type="button" onClick={() => setCam(null)}>
-            Centre
-          </button>
-        </div>
-
-        <fieldset>
-          <legend>Show</legend>
-          {LAYERS.map((l) => (
-            <label key={l}>
-              <input
-                type="checkbox"
-                checked={!hidden.has(l)}
-                onChange={(e) => {
-                  const next = new Set(hidden);
-                  if (e.target.checked) next.delete(l);
-                  else next.add(l);
-                  setHidden(next);
-                }}
-              />
-              {LAYER_NAMES[l]}
-            </label>
-          ))}
-          <label>
-            <input type="checkbox" checked={showGrid} onChange={(e) => setShowGrid(e.target.checked)} />
-            Grid
-          </label>
-          <label>
-            <input type="checkbox" checked={showRooms} onChange={(e) => setShowRooms(e.target.checked)} />
-            Room outlines
-          </label>
-        </fieldset>
-
-          </Tabs.Panel>
-          <Tabs.Panel className="editor-tab-panel" value="edit">
-        <section className="editor-selection">
-          <h2>Selected</h2>
-          {!sel || !selTile || !selRoom ? (
-            <p className="muted">Nothing. Click a tile; Tab steps through everything under that spot.</p>
-          ) : (
-            <>
-              <dl>
-                <dt>Tile</dt>
-                <dd>
-                  {sel.room} #{sel.index}
-                  {stack.current.keys.length > 1 && ` (${stack.current.at + 1} of ${stack.current.keys.length} here)`}
-                </dd>
-                <dt>Slice</dt>
-                <dd>
-                  {selTile.slice}, frame {selTile.frame}
-                </dd>
-                <dt>Kind</dt>
-                <dd>
-                  {selTile.kind}, layer {selTile.layer}
-                </dd>
-                <dt>Cell</dt>
-                <dd>
-                  {selTile.x + (selRoom.at?.x ?? 0)}, {selTile.y + (selRoom.at?.y ?? 0)} (room cell {selTile.x}, {selTile.y})
-                </dd>
-                {selEquipment && (
-                  <>
-                    <dt>Equipment</dt>
-                    <dd>
-                      {selEquipment.id} ({selEquipment.type})
-                    </dd>
-                  </>
-                )}
-              </dl>
-              <div className="editor-pad" role="group" aria-label="Move">
-                {(["ArrowLeft", "ArrowUp", "ArrowDown", "ArrowRight"] as const).map((k) => (
-                  <button key={k} type="button" aria-label={`Move ${ARROWS[k]!.label}`} onClick={() => edit.move(ARROWS[k]!.dx, ARROWS[k]!.dy)}>
-                    {{ ArrowLeft: "↖", ArrowUp: "↗", ArrowDown: "↙", ArrowRight: "↘" }[k]}
-                  </button>
-                ))}
-              </div>
-              <div className="editor-row">
-                <button type="button" onClick={() => edit.frame(-1)}>
-                  Frame −
-                </button>
-                <button type="button" onClick={() => edit.frame(1)}>
-                  Frame +
-                </button>
-                {(selTile.slice === "sofa" || selTile.slice === "sofaReverse") && (
-                  <button type="button" onClick={edit.rotate}>
-                    Rotate
-                  </button>
-                )}
-                <button type="button" onClick={edit.duplicate}>
-                  Duplicate
-                </button>
-                <button type="button" onClick={edit.remove}>
-                  Delete
-                </button>
-              </div>
-              <label className="editor-field">
-                Belongs to{" "}
-                <select value={sel.room} onChange={(e) => edit.toRoom(e.target.value)} disabled={!selRoom.at}>
-                  {planRooms.map((id) => (
-                    <option key={id} value={id}>
-                      {id}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              {selTile.kind === "door" && (
-                <label className="editor-field">
-                  Door to{" "}
-                  <select value={selTile.door?.target ?? ""} onChange={(e) => edit.doorTo(e.target.value)}>
-                    <option value="">(none)</option>
-                    {map.rooms.map((r) => (
-                      <option key={r.id} value={r.id}>
-                        {r.id}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-              )}
-            </>
-          )}
-        </section>
-
-        <section className="editor-room">
-          <h2>Room</h2>
-          <label className="editor-field">
-            Room{" "}
-            <select value={roomSel ?? ""} onChange={(e) => setRoomSel(e.target.value || null)}>
-              <option value="">(none)</option>
-              {planRooms.map((id) => (
-                <option key={id} value={id}>
-                  {id}
-                </option>
-              ))}
-            </select>
-          </label>
-          {focusRoom?.at && (
-            <>
-              <p>
-                At {focusRoom.at.x}, {focusRoom.at.y} on the plan · {focusRoom.tiles.length} tiles
-              </p>
-              <div className="editor-pad" role="group" aria-label="Move room">
-                {(["ArrowLeft", "ArrowUp", "ArrowDown", "ArrowRight"] as const).map((k) => (
-                  <button
-                    key={k}
-                    type="button"
-                    aria-label={`Move room ${ARROWS[k]!.label}`}
-                    onClick={() => edit.moveRoom(ARROWS[k]!.dx, ARROWS[k]!.dy)}
-                  >
-                    {{ ArrowLeft: "↖", ArrowUp: "↗", ArrowDown: "↙", ArrowRight: "↘" }[k]}
-                  </button>
-                ))}
-              </div>
-            </>
-          )}
-        </section>
-
-          </Tabs.Panel>
-          <Tabs.Panel className="editor-tab-panel" value="place">
-        <label className="editor-field">
-          New tiles go in{" "}
-          <select value={newRoom} onChange={(e) => setNewRoom(e.target.value)}>
-            <option value="auto">the room with floor or tiles there</option>
-            {planRooms.map((id) => (
-              <option key={id} value={id}>
-                {id}
-              </option>
-            ))}
-          </select>
-        </label>
-        <Palette layout={layout} armed={armed} onArm={setArmed} />
-
-          </Tabs.Panel>
-          <Tabs.Panel className="editor-tab-panel" value="checks">
-        <Checks problems={checks.problems} checking={checks.checking} failed={checks.failed} picked={pickedNow?.id ?? null} onPick={jump} />
-        <p className="muted">
-          {planRooms.length} rooms on the plan ({offPlan} off it aren't shown), {tiles} tiles. Drag to pan, scroll or the buttons to zoom, click
-          a tile to select it.
-        </p>
-
-          </Tabs.Panel>
-        </Tabs.Root>
-        <section className="editor-readout" aria-live="polite">
-          <h2>Under the pointer</h2>
-          {!hover ? (
-            <p className="muted">Point at the ship.</p>
-          ) : (
-            <p>
-              Cell {hover.cell.x}, {hover.cell.y}
-              {floorsHere.length > 0 && <> · floor of {floorsHere.map((r) => r.id).join(", ")}</>}
-              {hit && hoverTile && (
-                <>
-                  <br />
-                  {hit.room} #{hit.index}: {hoverTile.slice} frame {hoverTile.frame} ({hoverTile.kind})
-                  {hoverTile.door && <> · door to {hoverTile.door.target || "nowhere"}</>}
-                </>
-              )}
-            </p>
-          )}
-        </section>
-
-        <details className="editor-keys">
-          <summary>Keys</summary>
-          <dl>
+              {save.errors.length > 12 && <li>… {save.errors.length - 12} more</li>}
+            </ul>
+          </PopoverPanel>
+        ) : (
+          <span className={`save-state${dirty ? " dirty" : ""}`}>{saveLabel}</span>
+        )}
+        <PopoverPanel label="Keyboard shortcuts" trigger="Keys" align="end">
+          <dl className="editor-keys">
             <dt>Arrows</dt>
             <dd>move the selection a cell: ↑ up-right, → down-right, ↓ down-left, ← up-left</dd>
             <dt>Shift+arrows</dt>
-            <dd>move the selected tile's room (or the one picked under Room) a cell</dd>
+            <dd>move the selected tile's room (or the room picked in the hierarchy) a cell</dd>
             <dt>Tab, Shift+Tab</dt>
             <dd>the next or previous thing under the last click</dd>
+            <dt>F</dt>
+            <dd>frame the selection</dd>
             <dt>Delete</dt>
             <dd>delete it</dd>
             <dt>Ctrl+D</dt>
             <dd>duplicate it (on the same cell)</dd>
             <dt>[ ]</dt>
             <dd>previous or next frame</dd>
+            <dt>R</dt>
+            <dd>rotate a sofa</dd>
             <dt>Ctrl+Z, Ctrl+Shift+Z</dt>
             <dd>undo, redo</dd>
             <dt>Ctrl+S</dt>
             <dd>save</dd>
             <dt>Escape</dt>
             <dd>stop placing, or clear the selection, then the room and the picked problem</dd>
+            <dt>Drag, wheel</dt>
+            <dd>pan, zoom</dd>
           </dl>
-        </details>
-      </aside>
+        </PopoverPanel>
+      </header>
+
+      <div className="editor-main">
+        <aside className="editor-column" style={{ width: columnWidth }}>
+          <Hierarchy
+            map={map}
+            selected={sel}
+            roomSel={roomSel}
+            hidden={hiddenIn}
+            onToggleHidden={toggleIn}
+            onSelectTile={selectTile}
+            onSelectRoom={selectRoom}
+          />
+          <Splitter axis="y" size={inspectorHeight} onSize={setInspectorHeight} min={120} max={Math.max(160, window.innerHeight - 200)} invert label="Resize the inspector" />
+          <div className="editor-inspector-slot" style={{ height: inspectorHeight }}>
+            <Inspector
+              map={map}
+              sel={sel}
+              tile={selTile}
+              room={selRoom}
+              equipment={selEquipment || undefined}
+              stack={stack.current.keys.length > 1 ? { at: stack.current.at, of: stack.current.keys.length } : null}
+              focusRoom={focusRoom}
+              planRooms={planRooms}
+              edit={edit}
+            />
+          </div>
+        </aside>
+        <Splitter axis="x" size={columnWidth} onSize={setColumnWidth} min={200} max={600} label="Resize the hierarchy column" />
+
+        <main className="editor-scene">
+          <div className="editor-scene-toolbar" role="toolbar" aria-label="Scene">
+            <EditorMenu label={`View: ${viewName} ▾`}>
+              <Radios
+                value={view.from ?? ""}
+                onChange={(from) => setView(from ? { from, depth: view.from ? view.depth : 1 } : { from: null })}
+                options={[{ value: "", label: "Whole ship" }]}
+              />
+              <Sub label="From a room">
+                <Radios
+                  value={view.from ?? ""}
+                  onChange={(from) => setView({ from, depth: view.from ? view.depth : 1 })}
+                  options={planRooms.map((id) => ({ value: id, label: id }))}
+                />
+              </Sub>
+              <Separator />
+              <Heading>Fog depth</Heading>
+              <Radios
+                value={view.from ? view.depth : 0}
+                onChange={(depth) => view.from && setView({ from: view.from, depth: depth as 1 | 2 })}
+                options={[1, 2].map((d) => ({ value: d, label: String(d), disabled: !view.from }))}
+              />
+            </EditorMenu>
+            <EditorMenu label="Show ▾">
+              <Heading>Layers</Heading>
+              {LAYERS.map((l) => (
+                <Check key={l} checked={!hidden.has(l)} onChange={(on) => toggleLayer(l, on)}>
+                  {LAYER_NAMES[l]}
+                </Check>
+              ))}
+              <Separator />
+              <Heading>Overlays</Heading>
+              <Check checked={showGrid} onChange={setShowGrid}>
+                Grid
+              </Check>
+              <Check checked={showRooms} onChange={setShowRooms}>
+                Room outlines
+              </Check>
+              {hiddenIn.size > 0 && (
+                <>
+                  <Separator />
+                  <Item onClick={() => setHiddenIn(new Set())}>Show what the hierarchy hides ({hiddenIn.size})</Item>
+                </>
+              )}
+            </EditorMenu>
+            <div className="editor-zoom" role="group" aria-label="Zoom">
+              <button type="button" aria-label="Zoom out" onClick={() => zoomTo(zoom - 1)} disabled={zoom <= 1}>
+                −
+              </button>
+              <span>{zoom}x</span>
+              <button type="button" aria-label="Zoom in" onClick={() => zoomTo(zoom + 1)} disabled={zoom >= MAX_ZOOM}>
+                +
+              </button>
+            </div>
+            <span className="spacer" />
+            <PopoverPanel
+              label="Checks"
+              className={`checks-badge ${checks.failed ? "error" : (counts[0]?.severity ?? "clear")}`}
+              align="end"
+              trigger={
+                <>
+                  {checks.failed
+                    ? "Checks failed"
+                    : !checks.problems
+                      ? "Checking…"
+                      : counts.length
+                        ? counts.map((c) => `${c.count} ${NOUN[c.severity]}${c.count > 1 ? "s" : ""}`).join(" · ")
+                        : "All clear"}
+                  {checks.checking && checks.problems && " …"} ▾
+                </>
+              }
+            >
+              <Checks problems={checks.problems} checking={checks.checking} failed={checks.failed} picked={pickedNow?.id ?? null} onPick={jump} />
+            </PopoverPanel>
+          </div>
+            <div
+              ref={viewport}
+              className={`editor-viewport${armed ? " placing" : ""}`}
+              onPointerDown={onPointerDown}
+              onPointerMove={onPointerMove}
+              onPointerUp={onPointerUp}
+              onPointerCancel={() => {
+                drag.current = null;
+              }}
+              onPointerLeave={() => !drag.current && setHover(undefined)}
+              onWheel={onWheel}
+            >
+              <div className="editor-world" style={{ width: panel.width / zoom, height: panel.height / zoom, transform: `scale(${zoom})` }}>
+                <Suspense fallback={null}>
+                  <PixiScene scene={scene} ref={rendererRef} />
+                </Suspense>
+                <svg
+                  className="editor-overlay"
+                  width={box.width}
+                  height={box.height}
+                  viewBox={`${box.minX} ${box.minY} ${box.width} ${box.height}`}
+                  style={{ transform: `translate(${camera.x}px, ${camera.y}px)` }}
+                  aria-hidden="true"
+                >
+                  {showGrid && (
+                    <>
+                      <path className="grid-minor" d={grid.minor} />
+                      <path className="grid-major" d={grid.major} />
+                      {labels.map((l) => (
+                        <text key={`${l.x},${l.y}`} className="grid-label" x={l.at.x} y={l.at.y - 2} fontSize={11 / zoom}>
+                          {l.x},{l.y}
+                        </text>
+                      ))}
+                    </>
+                  )}
+                  {showRooms &&
+                    outlines.map((o) => (
+                      <g key={o.id}>
+                        <path className={o.id === roomSel ? "room-outline selected" : "room-outline"} d={o.path} />
+                        <text className="room-label" x={o.x} y={o.y} fontSize={12 / zoom}>
+                          {o.label}
+                        </text>
+                      </g>
+                    ))}
+                  {pickedNow && pickedNow.cells.length > 0 && (
+                    <path className={`problem-cells ${pickedNow.severity}`} d={diamonds(pickedNow.cells.map(([x, y]) => ({ x, y })))} />
+                  )}
+                  {hover && <path className={armed ? "place-cell" : "hover-cell"} d={diamonds([hover.cell])} />}
+                  {hoverRoom && hoverTile && <path className="hover-footprint" d={diamonds(footprint(layout, hoverRoom, hoverTile))} />}
+                  {selRoom && selTile && <path className="selected-footprint" d={diamonds(footprint(layout, selRoom, selTile))} />}
+                </svg>
+              </div>
+            </div>
+          <footer className="editor-status">
+            {armed && (
+              <span className="placing">
+                Placing <b>{armed}</b>: click a cell · Esc to stop
+              </span>
+            )}
+            <span role="status" className="editor-note">
+              {message}
+            </span>
+            <span>
+              {!hover ? (
+                <span className="muted">Point at the ship.</span>
+              ) : (
+                <>
+                  Cell {hover.cell.x}, {hover.cell.y}
+                  {floorsHere.length > 0 && <> · floor of {floorsHere.map((r) => r.id).join(", ")}</>}
+                  {hit && hoverTile && (
+                    <>
+                      {" "}
+                      · {hit.room} #{hit.index}: {hoverTile.slice} frame {hoverTile.frame} ({hoverTile.kind})
+                      {hoverTile.door && <> · door to {hoverTile.door.target || "nowhere"}</>}
+                    </>
+                  )}
+                </>
+              )}
+            </span>
+            <span className="spacer" />
+            <span className="muted">
+              {planRooms.length} rooms on the plan ({offPlan} off it), {tiles} tiles
+            </span>
+          </footer>
+        </main>
+
+        {showAssets && (
+          <>
+            <Splitter axis="x" size={assetsWidth} onSize={setAssetsWidth} min={200} max={520} invert label="Resize the assets panel" />
+            <aside className="editor-pane editor-assets" style={{ width: assetsWidth }} aria-label="Assets">
+              <header className="editor-pane-head">
+                <h2>Assets</h2>
+                <button type="button" className="editor-close" aria-label="Close the assets panel" onClick={() => setShowAssets(false)}>
+                  ×
+                </button>
+              </header>
+              <div className="editor-pane-body">
+                <label className="editor-field">
+                  New tiles go in{" "}
+                  <select value={newRoom} onChange={(e) => setNewRoom(e.target.value)}>
+                    <option value="auto">the room with floor or tiles there</option>
+                    {planRooms.map((id) => (
+                      <option key={id} value={id}>
+                        {id}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <Palette layout={layout} armed={armed} onArm={setArmed} />
+              </div>
+            </aside>
+          </>
+        )}
+      </div>
     </div>
   );
 }

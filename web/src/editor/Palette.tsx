@@ -1,4 +1,4 @@
-// The editor's palette: every slice in the art, searchable by name, with its first frame. Picking one
+// The editor's palette (the Assets panel): every slice in the art, searchable by name, with its first frame. Picking one
 // arms placing: each tap or click on the ship then puts a tile of it there (ShipEditor).
 
 import { useMemo, useState } from "react";
@@ -41,8 +41,7 @@ export function Palette({ layout, armed, onArm }: { layout: ShipLayout; armed: s
     .filter((id) => id.toLowerCase().includes(search.trim().toLowerCase()))
     .sort((a, b) => a.localeCompare(b));
   return (
-    <section className="editor-palette">
-      <h2>Place a tile</h2>
+    <div className="editor-palette">
       <input type="search" placeholder="Search slices" aria-label="Search slices" value={search} onChange={(e) => setSearch(e.target.value)} />
       {armed && (
         <p className="armed">
@@ -63,6 +62,6 @@ export function Palette({ layout, armed, onArm }: { layout: ShipLayout; armed: s
           </li>
         ))}
       </ul>
-    </section>
+    </div>
   );
 }

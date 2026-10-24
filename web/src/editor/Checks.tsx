@@ -49,6 +49,12 @@ export function useChecks(art: ShipArt, map: ShipMap): { problems: Problem[] | n
 
 const LABEL: Record<Severity, string> = { error: "Errors", warning: "Warnings", info: "Notes" };
 
+/** The open problems' counts, worst first, as the scene toolbar's badge shows them. */
+export function checkCounts(problems: Problem[] | null): { severity: Severity; count: number }[] {
+  const open = (problems ?? []).filter((p) => !p.known);
+  return (["error", "warning", "info"] as const).map((severity) => ({ severity, count: open.filter((p) => p.severity === severity).length })).filter((c) => c.count);
+}
+
 export function Checks({
   problems,
   checking,
@@ -60,7 +66,6 @@ export function Checks({
   if (!problems) return <section className="editor-checks"><h2>Checks</h2><p className="muted">Checking the map…</p></section>;
   const open = problems.filter((p) => !p.known);
   const known = problems.filter((p) => p.known);
-  const count = (s: Severity) => open.filter((p) => p.severity === s).length;
   const row = (p: Problem) => (
     <li key={p.id}>
       <button type="button" className={`${p.severity}${p.id === picked ? " on" : ""}`} aria-pressed={p.id === picked} onClick={() => onPick(p)}>
@@ -74,7 +79,7 @@ export function Checks({
       <h2>
         Checks{" "}
         <span className="muted">
-          {open.length === 0 ? "all clear" : (["error", "warning", "info"] as const).filter(count).map((s) => `${count(s)} ${LABEL[s].toLowerCase()}`).join(", ")}
+          {open.length === 0 ? "all clear" : checkCounts(problems).map((c) => `${c.count} ${LABEL[c.severity].toLowerCase()}`).join(", ")}
           {checking && " (checking…)"}
         </span>
       </h2>
