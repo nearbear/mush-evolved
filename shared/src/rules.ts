@@ -8,6 +8,7 @@
 
 import { applyCheats, makeHuman, type ActopiCheat, type Cheat, type RoleCheat } from "./cheats.ts";
 import { ACTIONS, type ActionDef } from "./actions.ts";
+import { NO_SPACE } from "./actions/action.ts";
 import { getUp } from "./actions/lie_down.ts";
 import { itemsIn, rechargeMicrowaves, startCharges } from "./items.ts";
 import { actionFailed, apGain, carePointsGain, channelLimit, computerPointsGain, cycleChanged, gardenPointsGain, dailyMoraleLoss, inventorySlots, movementRules, pilgredPointsGain, satietyLoss } from "./modifiers.ts";
@@ -151,7 +152,8 @@ export function legalActions(state: GameState, playerId: PlayerId): Action[] {
 }
 
 /**
- * Actions that fail only on cost (`cant_afford`), with the cost and what falls short. For showing them disabled.
+ * Actions that fail only on cost (`cant_afford`) or on room in the inventory (`NO_SPACE`), with the cost and what falls
+ * short. For showing them disabled.
  * Moves are left out: an unaffordable move has no cost to report, and doors aren't action buttons.
  */
 export function unaffordableActions(state: GameState, playerId: PlayerId): ActionOption[] {
@@ -160,9 +162,10 @@ export function unaffordableActions(state: GameState, playerId: PlayerId): Actio
   return Object.values(ACTIONS).flatMap((def: ActionDef<Action>) =>
     def.candidates(state, p).flatMap((a): ActionOption[] => {
       if (a.type === "move") return [];
-      if (def.check(state, p, a) !== "cant_afford") return [];
+      const refused = def.check(state, p, a);
+      if (refused !== "cant_afford" && refused !== NO_SPACE) return [];
       const cost = def.cost(state, p, a);
-      const lacks: ("ap" | "mp")[] = [...(p.ap < cost.ap ? (["ap"] as const) : []), ...(p.mp < cost.mp ? (["mp"] as const) : [])];
+      const lacks: ActionOption["lacks"] = [...(refused === NO_SPACE ? (["space"] as const) : []), ...(p.ap < cost.ap ? (["ap"] as const) : []), ...(p.mp < cost.mp ? (["mp"] as const) : [])];
       return [{ action: a, cost, chance: def.chance?.(state, p, a) ?? 1, tags: [...def.tags], lacks }];
     }),
   );

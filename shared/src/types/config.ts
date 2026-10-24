@@ -144,6 +144,7 @@ export interface GameConfig {
     injuryChance: number;
   };
   consume: { dirtyChance: number }; // Chance of getting the dirty status after consuming an item.
+  fuel: { cost: { ap: number }; dirtyChance: number }; // Taking a capsule from a tank, loading it into the chamber, unloading it back.
   dispense: { dirtyChance: number }; // Chance of getting the dirty status after dispensing an item.
   computer: {
     capPoints: number; // Most Computer points (`resources.comp`) a player can hold (owner, 2026-10-16; the original skill's IncrMaxPA(COMP, 4)).
@@ -239,7 +240,8 @@ export interface GameConfig {
   };
   ship: {
     oxygen: { start: number; max: number; perCycle: number }; // Oxygen the ship burns each cycle; at 0 one random living crew member dies per cycle (owner, 2026-10-19).
-    fuel: { start: number; max: number }; // Nothing burns it yet (owner, 2026-10-19).
+    fuel: { start: number; max: number }; // The tanks' stock; only capsules carried to the combustion chamber are burned (owner, 2026-10-23).
+    combustion: { start: number; max: number }; // The combustion chamber (owner, 2026-10-23, the wiki): starts empty, holds 9. Travel and leaving orbit burn from it.
     hull: { start: number; max: number }; // Nothing damages it yet except through `damageShip` (owner, 2026-10-19).
     plasmaShield: { start: number; max: number; absorbPercent: number }; // Takes this percent of incoming damage, out of its own points; at 0 the hull takes it all (owner, 2026-10-19).
   };

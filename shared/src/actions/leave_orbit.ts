@@ -8,7 +8,7 @@ export type LeaveOrbitActionData = { type: "leave_orbit"; equipment: string };
 
 /**
  * Leave the orbited planet from the Command terminal (owner, 2026-10-22, the wiki; it takes Travel's place while in orbit):
- * 1 AP and `navigation.leaveOrbit.fuel` fuel, Commander only (Mush included, dirty or not). Short of fuel, the AP is
+ * 1 AP and `navigation.leaveOrbit.fuel` fuel from the combustion chamber (owner, 2026-10-23), Commander only (Mush included, dirty or not). Short of loaded fuel, the AP is
  * spent and the ship stays. Otherwise the planet is lost, and scanning works again. Everyone aboard learns of it.
  */
 export class LeaveOrbitAction extends Action<LeaveOrbitActionData> {
@@ -34,11 +34,11 @@ export class LeaveOrbitAction extends Action<LeaveOrbitActionData> {
 
   override apply(state: GameState, player: PlayerState, _target: LeaveOrbitActionData): void {
     const { fuel } = state.config.navigation.leaveOrbit;
-    if (state.ship.fuel < fuel) {
+    if (state.ship.combustion < fuel) {
       logPublic(state, player.room, "leaveOrbitNoFuel", { name: player.character });
       return;
     }
-    state.ship.fuel -= fuel;
+    state.ship.combustion -= fuel;
     const orbit = state.navigation.orbit;
     for (const owner of Object.keys(state.planets)) state.planets[owner] = state.planets[owner]!.filter((p) => p.id !== orbit);
     state.navigation.orbit = null;

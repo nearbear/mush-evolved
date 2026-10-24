@@ -1,6 +1,6 @@
 // ---- Ship resources ---------------------------------------------------------
 // Decided 2026-10-19: oxygen starts at 30 of 32 and one is burned each cycle; at 0 a random living crew member
-// dies every cycle. Fuel (20 of 100) and the hull (100) have no source or drain yet. The plasma shield (100)
+// dies every cycle. Fuel (20 of 100, in the tanks) reaches the ship only as capsules carried to the combustion chamber (9 at most, actions/take_fuel.ts); the hull (100) has no source or drain yet. The plasma shield (100)
 // absorbs 67% of incoming damage out of its own points; at 0 the hull takes all of it. All of it is public.
 
 import { damage } from "./death.ts";
@@ -9,13 +9,13 @@ import { nextInt } from "./rng.ts";
 import type { GameConfig, GameState, ShipResources } from "./types.ts";
 
 export function startShip(config: GameConfig): ShipResources {
-  const { oxygen, fuel, hull, plasmaShield } = config.ship;
-  return { oxygen: oxygen.start, fuel: fuel.start, hull: hull.start, plasmaShield: plasmaShield.start };
+  const { oxygen, fuel, combustion, hull, plasmaShield } = config.ship;
+  return { oxygen: oxygen.start, fuel: fuel.start, combustion: combustion.start, hull: hull.start, plasmaShield: plasmaShield.start };
 }
 
 export function shipMax(config: GameConfig): ShipResources {
-  const { oxygen, fuel, hull, plasmaShield } = config.ship;
-  return { oxygen: oxygen.max, fuel: fuel.max, hull: hull.max, plasmaShield: plasmaShield.max };
+  const { oxygen, fuel, combustion, hull, plasmaShield } = config.ship;
+  return { oxygen: oxygen.max, fuel: fuel.max, combustion: combustion.max, hull: hull.max, plasmaShield: plasmaShield.max };
 }
 
 /**

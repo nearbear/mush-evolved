@@ -50,6 +50,9 @@ export const TREE_POT_ITEM = "tree_pot";
 /** A skill book: reading it (`read_book`) fills the book slot with its `ItemState.teaches` skill. */
 export const BOOK_ITEM = "book";
 
+/** A unit of fuel in transit between a tank and the combustion chamber; each takes a slot like any item (owner, 2026-10-23). */
+export const FUEL_CAPSULE_ITEM = "fuel_capsule";
+
 /** The charges an item of this type starts with, or undefined if it has none. Charged weapons start full. */
 export function startCharges(config: Readonly<GameConfig>, type: string): number | undefined {
   return type === MICROWAVE_ITEM ? config.expressCook.charges.start : config.weapons.types[type]?.charges;
@@ -95,6 +98,9 @@ export const ITEM_TYPES: Record<string, ItemType> = {
   [TREE_POT_ITEM]: {},
   // Owner, 2026-10-22: the original's banana (genFruitList): +1 AP, +1 satiety, +1 morale, +1 HP. Named after its icon.
   fruit_banana: { fruit: true, consume: { ap: 1, satiety: 1, morale: 1, hp: 1 } },
+  // Owner, 2026-10-23, the wiki: one unit of fuel, taken from a tank and loaded into the combustion chamber. One slot
+  // each, never dropped (actions/take_fuel.ts). Named after its icon.
+  [FUEL_CAPSULE_ITEM]: { canDrop: false },
   metal_scraps: {},
   thick_tube: {},
   // Decided 2026-10-16: carries a recipe in `ItemState.builds`; consumed by building.

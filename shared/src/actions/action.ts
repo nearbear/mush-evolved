@@ -5,6 +5,9 @@ import type { Action as AnyAction, GameState, PlayerState } from "../types.ts";
 export const peopleHere = (state: Readonly<GameState>, p: Readonly<PlayerState>): PlayerState[] =>
   state.players.filter((o) => o.id !== p.id && o.alive && o.room === p.room);
 
+/** The `validate` code for full hands: such an action is shown disabled rather than hidden (`unaffordableActions`). */
+export const NO_SPACE = "no_space";
+
 /**
  * Who learns of an action, for the label on its button (the log entries themselves come from `log.ts`).
  * Declared per action and kept in step with the log call in its `apply`.

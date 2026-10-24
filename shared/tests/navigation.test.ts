@@ -9,7 +9,7 @@ import { makeSeats, must, offered, option, player } from "./support.ts";
 const seats = makeSeats(3, "others");
 const TERMINAL = "COMMAND_CENTER:PILOT_MODULE";
 const turn = (side: "left" | "right"): Action => ({ type: "turn_ship", equipment: TERMINAL, side });
-const travel = (distance: number): Action => ({ type: "travel", equipment: TERMINAL, distance });
+const travel: Action = { type: "travel", equipment: TERMINAL };
 const leave: Action = { type: "leave_orbit", equipment: TERMINAL };
 const { navigation } = DEFAULT_CONFIG;
 
@@ -21,11 +21,12 @@ const planet = (id: string, direction: Planet["direction"], distance: number): P
   sectors: [{ tag: "FOREST", known: true }],
 });
 
-/** Everyone on the bridge, p0 the Commander; p1 found a planet north at 3, p2 one east at 5. */
-function game(): GameState {
+/** Everyone on the bridge, p0 the Commander, `loaded` fuel in the combustion chamber; p1 found a planet north at 3, p2 one east at 5. */
+function game(loaded = 3): GameState {
   const s = createGame(seats, structuredClone(DEFAULT_CONFIG), 7);
   for (const p of s.players) p.room = "COMMAND_CENTER";
   s.titles.commander = "p0";
+  s.ship.combustion = loaded;
   s.planets.p1 = [planet("planet-a", "north", 3)];
   s.planets.p2 = [planet("planet-b", "east", 5)];
   return s;
@@ -52,20 +53,21 @@ describe("ship navigation", () => {
     const s = game();
     expect(offered(s, "p1").some((a) => a.type === "turn_ship" || a.type === "travel")).toBe(false);
     expect(applyAction(s, "p1", turn("left"))).toMatchObject({ ok: false });
-    expect(applyAction(s, "p1", travel(3))).toMatchObject({ ok: false });
-    expect(offered(s, "p0").filter((a) => a.type === "travel").map((a) => (a as { distance: number }).distance)).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9]);
+    expect(applyAction(s, "p1", travel)).toMatchObject({ ok: false });
+    expect(offered(s, "p0").filter((a) => a.type === "travel")).toEqual([travel]);
     s.titles.commander = "p1";
     expect(must(applyAction(s, "p1", turn("left"))).navigation.heading).toBe("west");
     const away = game();
     player(away, "p0").room = "CORRIDOR_A";
-    expect(applyAction(away, "p0", travel(3))).toMatchObject({ ok: false });
+    expect(applyAction(away, "p0", travel)).toMatchObject({ ok: false });
   });
 
-  it("enters orbit at a known planet, spends the distance in fuel, and loses every other planet", () => {
+  it("enters orbit at a known planet, burns all the loaded fuel as the distance, and loses every other planet", () => {
     const s = game();
     const fuel = s.ship.fuel;
-    const next = must(applyAction(s, "p0", travel(3)));
-    expect(next.ship.fuel).toBe(fuel - 3);
+    const next = must(applyAction(s, "p0", travel));
+    expect(next.ship.combustion).toBe(0);
+    expect(next.ship.fuel).toBe(fuel);
     expect(next.navigation.orbit).toBe("planet-a");
     expect(next.planets).toEqual({ p1: [s.planets.p1![0]], p2: [] });
     expect(next.log.slice(-3).map((e) => e.key)).toEqual(["shipTraveled", "shipInOrbit", "orbitingPlanet"]);
@@ -73,16 +75,16 @@ describe("ship navigation", () => {
   });
 
   it("travelling where no planet lies loses them all", () => {
-    const next = must(applyAction(game(), "p0", travel(5)));
+    const next = must(applyAction(game(5), "p0", travel));
     expect(next.navigation.orbit).toBeNull();
     expect(Object.values(next.planets).flat()).toEqual([]);
   });
 
-  it("short of fuel, spends the AP and nothing else", () => {
-    const s = game();
-    s.ship.fuel = 2;
-    const next = must(applyAction(s, "p0", travel(3)));
-    expect(next.ship.fuel).toBe(2);
+  it("with nothing loaded, spends the AP and nothing else (tank fuel doesn't count)", () => {
+    const s = game(0);
+    const next = must(applyAction(s, "p0", travel));
+    expect(next.ship.fuel).toBe(s.ship.fuel);
+    expect(next.ship.combustion).toBe(0);
     expect(next.planets).toEqual(s.planets);
     expect(next.navigation.orbit).toBeNull();
     expect(player(next, "p0").ap).toBe(player(s, "p0").ap - navigation.travel.cost.ap);
@@ -90,17 +92,18 @@ describe("ship navigation", () => {
   });
 
   it("in orbit: no travel or scan, the orbited planet can't be deleted, and leaving orbit loses it", () => {
-    const s = must(applyAction(game(), "p0", travel(3)));
+    const s = must(applyAction(game(), "p0", travel));
     expect(offered(s, "p0").some((a) => a.type === "travel")).toBe(false);
-    expect(applyAction(s, "p0", travel(1))).toMatchObject({ ok: false });
+    expect(applyAction(s, "p0", travel)).toMatchObject({ ok: false });
     expect(option(game(), "p1", { type: "scan_planet" })).toBeDefined();
     expect(option(s, "p1", { type: "scan_planet" })).toBeUndefined();
     expect(applyAction(s, "p1", { type: "delete_planet", planet: "planet-a" })).toMatchObject({ ok: false });
     expect(option(s, "p1", { type: "delete_planet" })).toBeUndefined();
     expect(must(applyAction(s, "p0", turn("left"))).navigation.heading).toBe("west");
+    s.ship.combustion = 4;
     const left = must(applyAction(s, "p0", leave));
     expect(left.navigation.orbit).toBeNull();
-    expect(left.ship.fuel).toBe(s.ship.fuel - navigation.leaveOrbit.fuel);
+    expect(left.ship.combustion).toBe(4 - navigation.leaveOrbit.fuel);
     expect(left.planets.p1).toEqual([]);
     expect(left.log.at(-1)).toMatchObject({ key: "leftOrbit", visibleTo: "all" });
     expect(left.log.at(-1)!.room).toBeUndefined();
@@ -108,15 +111,15 @@ describe("ship navigation", () => {
   });
 
   it("leaving orbit short of fuel spends the AP and stays", () => {
-    const s = must(applyAction(game(), "p0", travel(3)));
-    s.ship.fuel = 0;
+    const s = must(applyAction(game(), "p0", travel));
+    s.ship.combustion = 0;
     const next = must(applyAction(s, "p0", leave));
     expect(next.navigation.orbit).toBe("planet-a");
     expect(next.log.at(-1)).toMatchObject({ key: "leaveOrbitNoFuel" });
   });
 
   it("views: everyone knows the ship is in orbit, only the finder which planet, the heading only at the terminal", () => {
-    const s = must(applyAction(game(), "p0", travel(3)));
+    const s = must(applyAction(game(), "p0", travel));
     player(s, "p2").room = "CORRIDOR_A";
     const finder = viewFor(s, "p1");
     expect(finder.navigation).toEqual({ orbiting: true, heading: "north" });
@@ -130,10 +133,8 @@ describe("ship navigation", () => {
   });
 
   it("parses the actions from the client and drops malformed ones", () => {
-    for (const action of [turn("left"), travel(4), leave]) expect(parseGameMessage(JSON.stringify({ type: "action", action }))).toEqual({ type: "action", action });
+    for (const action of [turn("left"), travel, leave]) expect(parseGameMessage(JSON.stringify({ type: "action", action }))).toEqual({ type: "action", action });
     expect(parseGameMessage(JSON.stringify({ type: "action", action: { type: "turn_ship", equipment: TERMINAL, side: "up" } }))).toBeNull();
-    expect(parseGameMessage(JSON.stringify({ type: "action", action: { type: "travel", equipment: TERMINAL, distance: 2.5 } }))).toBeNull();
-    expect(applyAction(game(), "p0", travel(0))).toMatchObject({ ok: false });
-    expect(applyAction(game(), "p0", travel(10))).toMatchObject({ ok: false });
+    expect(parseGameMessage(JSON.stringify({ type: "action", action: { type: "travel" } }))).toBeNull();
   });
 });

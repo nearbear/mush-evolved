@@ -238,6 +238,7 @@
     },
     "chance": "({{percent}} %)",
     "lacksAp": "Pas assez de PA : cela coûte {{need}}, vous en avez {{have}}.",
+    "lacksSpace": "Votre inventaire est plein.",
     "lacksMp": "Pas assez de PM : cela coûte {{need}}, vous en avez {{have}}.",
     "lacksBoth": "Pas assez de PA ni de PM : cela coûte {{needAp}} PA et {{needMp}} PM, vous avez {{haveAp}} PA et {{haveMp}} PM.",
     "returnToSol": "Rentrer sur Sol",
@@ -248,7 +249,12 @@
     "setBios": "Modifier un réglage du BIOS",
     "turnShip": "Orienter le vaisseau",
     "travel": "Voyager",
-    "leaveOrbit": "Quitter l'orbite"
+    "leaveOrbit": "Quitter l'orbite",
+    "takeFuel": "Prendre une capsule de fuel",
+    "loadFuel": "Charger le fuel",
+    "unloadFuel": "Décharger le fuel",
+    "returnFuel": "Remettre la capsule de fuel",
+    "checkCombustion": "Vérifier le niveau de fuel"
   },
   "queue": {
     "label": "Vos actions",
@@ -539,6 +545,7 @@
     "myco_alarm": "Mycoalarme",
     "tree_pot": "HydroPot",
     "fruit_banana": "Banane",
+    "fuel_capsule": "Capsule de fuel",
     "knife": "Couteau",
     "natamy_riffle": "Fusil Natamy",
     "sniper_riffle": "Lizaro Jungle",
@@ -576,6 +583,11 @@
     "dismantleEquipmentFailed": "Vous n'avez pas réussi à démonter : {{equipment}}.",
     "tookFrom": "{{name}} a pris : {{item}} ({{equipment}}).",
     "tookFromKnocked": "{{name}} a pris : {{item}} ({{equipment}}) et l'a fait tomber.",
+    "tookFuel": "{{name}} a pris une capsule de fuel dans le réservoir.",
+    "returnedFuel": "{{name}} a remis une capsule de fuel dans le réservoir.",
+    "loadedFuel": "{{name}} a chargé une capsule de fuel dans la chambre de combustion. Chambre de combustion : {{level}} sur {{max}}.",
+    "unloadedFuel": "{{name}} a retiré une capsule de fuel de la chambre de combustion. Chambre de combustion : {{level}} sur {{max}}.",
+    "checkedCombustion": "La chambre de combustion contient {{level}} capsules de fuel sur {{max}}.",
     "consumed": "{{name}} a consommé : {{item}}.",
     "cameraInstalled": "{{name}} a installé une caméra.",
     "cameraUninstalled": "{{name}} a désinstallé la caméra.",
@@ -1082,10 +1094,9 @@
     "inOrbit": "En orbite autour d'une planète.",
     "left": "Orienter à gauche",
     "right": "Orienter à droite",
-    "distance": "Distance (fuel)",
     "travel": "Voyager",
     "leaveOrbit": "Quitter l'orbite",
-    "fuel": "Fuel à bord : {{fuel}}",
-    "warning": "Sans assez de fuel, les PA sont perdus. Toute planète qui ne se trouve pas droit devant à cette distance est perdue."
+    "fuel": "Fuel dans la chambre de combustion : {{fuel}} sur {{max}}",
+    "warning": "Voyager brûle tout le fuel de la chambre de combustion, et le vaisseau avance d'autant. Sans fuel chargé, les PA sont perdus. Toute planète qui ne se trouve pas droit devant à cette distance est perdue."
   }
 }

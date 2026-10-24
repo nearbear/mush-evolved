@@ -1,7 +1,6 @@
 // The Command terminal's steering (owner, 2026-10-22): the heading and whether the ship is in orbit, then, for the
-// Commander, turn left or right, and travel some distance ahead (or leave orbit). Every button comes from view.actions.
+// Commander, turn left or right, and travel as far as the fuel loaded in the combustion chamber (or leave orbit). Every button comes from view.actions.
 
-import { useState } from "react";
 import type { Action, EquipmentView, PlayerView } from "@mush2/shared";
 import { useTranslation } from "react-i18next";
 import { ActionButton } from "./ActionButton.tsx";
@@ -19,10 +18,8 @@ export function ShipNavigation({ terminal, view, onAction }: Props) {
   const { heading, orbiting } = view.navigation;
   const here = view.actions.filter(({ action: a }) => "equipment" in a && a.equipment === terminal.id);
   const turns = here.filter(({ action: a }) => a.type === "turn_ship");
-  const travels = here.flatMap((option) => (option.action.type === "travel" ? [{ option, distance: option.action.distance }] : []));
+  const travel = here.find(({ action: a }) => a.type === "travel");
   const leave = here.find(({ action: a }) => a.type === "leave_orbit");
-  const [distance, setDistance] = useState(1);
-  const travel = travels.find((entry) => entry.distance === distance)?.option;
   if (heading === null) return null;
   return (
     <section className="ship-navigation" aria-label={t("navigation.title")}>
@@ -31,7 +28,7 @@ export function ShipNavigation({ terminal, view, onAction }: Props) {
         <strong>{t("navigation.heading", { direction: t(`astro.directions.${heading}`) })}</strong>
         {orbiting && <> · {t("navigation.inOrbit")}</>}
       </p>
-      <p>{t("navigation.fuel", { fuel: view.ship.fuel })}</p>
+      <p>{t("navigation.fuel", { fuel: view.ship.combustion, max: view.ship.max.combustion })}</p>
       {turns.length > 0 && (
         <div className="ship-navigation-row">
           {turns.map((option) => (
@@ -45,23 +42,11 @@ export function ShipNavigation({ terminal, view, onAction }: Props) {
           ))}
         </div>
       )}
-      {travels.length > 0 && (
+      {travel && (
         <div className="ship-navigation-row">
-          <label>
-            {t("navigation.distance")}{" "}
-            <select value={distance} onChange={(e) => setDistance(Number(e.target.value))}>
-              {travels.map((entry) => (
-                <option key={entry.distance} value={entry.distance}>
-                  {entry.distance}
-                </option>
-              ))}
-            </select>
-          </label>
-          {travel && (
-            <ActionButton view={view} option={travel} onAction={onAction}>
-              <ActionLabel text={t("navigation.travel")} cost={travel.cost} chance={travel.chance} />
-            </ActionButton>
-          )}
+          <ActionButton view={view} option={travel} onAction={onAction}>
+            <ActionLabel text={t("navigation.travel")} cost={travel.cost} chance={travel.chance} />
+          </ActionButton>
         </div>
       )}
       {leave && (
@@ -71,7 +56,7 @@ export function ShipNavigation({ terminal, view, onAction }: Props) {
           </ActionButton>
         </div>
       )}
-      {(travels.length > 0 || leave) && <p className="ship-navigation-warning">{t("navigation.warning")}</p>}
+      {(travel || leave) && <p className="ship-navigation-warning">{t("navigation.warning")}</p>}
     </section>
   );
 }

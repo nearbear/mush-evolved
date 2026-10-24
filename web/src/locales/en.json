@@ -237,6 +237,7 @@
     },
     "chance": "({{percent}}%)",
     "lacksAp": "Not enough AP: it costs {{need}}, you have {{have}}.",
+    "lacksSpace": "Your inventory is full.",
     "lacksMp": "Not enough MP: it costs {{need}}, you have {{have}}.",
     "lacksBoth": "Not enough AP or MP: it costs {{needAp}} AP and {{needMp}} MP, you have {{haveAp}} AP and {{haveMp}} MP.",
     "returnToSol": "Return to Sol",
@@ -247,7 +248,12 @@
     "setBios": "Change a BIOS setting",
     "turnShip": "Turn the ship",
     "travel": "Travel",
-    "leaveOrbit": "Leave orbit"
+    "leaveOrbit": "Leave orbit",
+    "takeFuel": "Take a fuel capsule",
+    "loadFuel": "Load fuel",
+    "unloadFuel": "Unload fuel",
+    "returnFuel": "Put the fuel capsule back",
+    "checkCombustion": "Check the fuel level"
   },
   "queue": {
     "label": "Your actions",
@@ -536,6 +542,7 @@
     "myco_alarm": "Myco alarm",
     "tree_pot": "Hydropot",
     "fruit_banana": "Banana",
+    "fuel_capsule": "Fuel capsule",
     "knife": "Knife",
     "natamy_riffle": "Natamy Rifle",
     "sniper_riffle": "Lizaro Jungle",
@@ -573,6 +580,11 @@
     "dismantleEquipmentFailed": "You failed to dismantle the {{equipment}}.",
     "tookFrom": "{{name}} took a {{item}} from the {{equipment}}.",
     "tookFromKnocked": "{{name}} took a {{item}} from the {{equipment}} and knocked it over.",
+    "tookFuel": "{{name}} took a fuel capsule from the fuel tank.",
+    "returnedFuel": "{{name}} put a fuel capsule back into the fuel tank.",
+    "loadedFuel": "{{name}} loaded a fuel capsule into the combustion chamber. Combustion chamber: {{level}} of {{max}}.",
+    "unloadedFuel": "{{name}} took a fuel capsule out of the combustion chamber. Combustion chamber: {{level}} of {{max}}.",
+    "checkedCombustion": "The combustion chamber holds {{level}} of {{max}} fuel capsules.",
     "consumed": "{{name}} consumed the {{item}}.",
     "cameraInstalled": "{{name}} installed a camera.",
     "cameraUninstalled": "{{name}} uninstalled the camera.",
@@ -1076,10 +1088,9 @@
     "inOrbit": "In orbit around a planet.",
     "left": "Turn left",
     "right": "Turn right",
-    "distance": "Distance (fuel)",
     "travel": "Travel",
     "leaveOrbit": "Leave orbit",
-    "fuel": "Fuel aboard: {{fuel}}",
-    "warning": "Without enough fuel the AP is wasted. Every planet not lying exactly ahead at that distance is lost."
+    "fuel": "Fuel in the combustion chamber: {{fuel}} of {{max}}",
+    "warning": "Travel burns all the fuel in the combustion chamber, and the ship goes that far. With none loaded the AP is wasted. Every planet not lying exactly ahead at that distance is lost."
   }
 }

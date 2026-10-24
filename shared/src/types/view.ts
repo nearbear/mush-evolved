@@ -200,8 +200,8 @@ export interface ActionOption {
   chance: number;
   /** What kind of action it is (aggressive, spore), so the UI can mark it. Fixed per action type. */
   tags: ActionTag[];
-  /** Empty when you can do it now; otherwise the points you lack. See `affordable`. */
-  lacks: ("ap" | "mp")[];
+  /** Empty when you can do it now; otherwise the points, or the inventory space, you lack. See `affordable`. */
+  lacks: ("ap" | "mp" | "space")[];
 }
 
 /** One of your planets as you see it: `null` for a sector no analysis has revealed yet. */

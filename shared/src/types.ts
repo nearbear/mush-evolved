@@ -121,8 +121,13 @@ export type Action =
   | { type: "repair_pilgred"; equipment: string }
   | { type: "return_to_sol"; equipment: string }
   | { type: "turn_ship"; equipment: string; side: TurnSide }
-  | { type: "travel"; equipment: string; distance: number }
+  | { type: "travel"; equipment: string }
   | { type: "leave_orbit"; equipment: string }
+  | { type: "take_fuel"; equipment: string }
+  | { type: "load_fuel"; equipment: string }
+  | { type: "unload_fuel"; equipment: string }
+  | { type: "return_fuel"; equipment: string }
+  | { type: "check_combustion"; equipment: string }
   | { type: "contact_sol"; equipment: string }
   | { type: "decode_rebel"; equipment: string; base: string }
   | { type: "contact_xyloph"; equipment: string }

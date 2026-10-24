@@ -24,6 +24,11 @@ import { ScanPlanetAction } from "./actions/scan_planet.ts";
 import { AnalyzePlanetAction } from "./actions/analyze_planet.ts";
 import { DeletePlanetAction } from "./actions/delete_planet.ts";
 import { LeaveOrbitAction } from "./actions/leave_orbit.ts";
+import { CheckCombustionAction } from "./actions/check_combustion.ts";
+import { ReturnFuelAction } from "./actions/return_fuel.ts";
+import { LoadFuelAction } from "./actions/load_fuel.ts";
+import { TakeFuelAction } from "./actions/take_fuel.ts";
+import { UnloadFuelAction } from "./actions/unload_fuel.ts";
 import { TravelAction } from "./actions/travel.ts";
 import { TurnShipAction } from "./actions/turn_ship.ts";
 import { ReadyAction } from "./actions/ready.ts";
@@ -90,6 +95,11 @@ export const ACTIONS: { [T in ActionType]: ActionDef<ActionOf<T>> } = {
   turn_ship: new TurnShipAction(),
   travel: new TravelAction(),
   leave_orbit: new LeaveOrbitAction(),
+  take_fuel: new TakeFuelAction(),
+  load_fuel: new LoadFuelAction(),
+  unload_fuel: new UnloadFuelAction(),
+  return_fuel: new ReturnFuelAction(),
+  check_combustion: new CheckCombustionAction(),
   contact_sol: new ContactSolAction(),
   decode_rebel: new DecodeRebelAction(),
   contact_xyloph: new ContactXylophAction(),

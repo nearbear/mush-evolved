@@ -1125,6 +1125,24 @@ Follow-up (same day): the three reactors pulsed in step, so `spreadAmbient` in `
 - **What worked:** the wiki skill (`npm run wiki -- page "Terminal de Commandement"`) answered most of the model. That cut the AskUserQuestion round to four real choices. Reusing `commandTerminalsHere` and `hasTitleAccess` kept the Commander check in one place.
 - **Needed correction:** the first test draft called `parseGameMessage` with an object (it takes the raw string) and expected the `validate` reason code for an action no longer among the candidates (the result is `illegal_action`).
 
+## 2026-10-23: Fuel loading
+- Request: replace the Command terminal's distance picker with hauling fuel by hand, tank to combustion chamber. Claude read the wiki (Capsule de fuel, Chambre de combustion, Terminal de Commandement) and asked four questions in one go; the owner took the recommended answer to each (chamber starts empty and holds 9, 0 AP with a dirt chance, stacking undroppable capsules, burn from the chamber only with unloading allowed).
+- Claude's reading, not asked: with no distance to choose, Travel burns the whole chamber and goes that far, as in the original. The 25% dirt chance is a placeholder.
+- Worked: three small actions plus a capsule item; stacking is one `slotsUsed` helper in `items.ts`. Needed correcting: dirt rolls add a log line after the action's own, so tests check by key, not `log.at(-1)`.
+- Pre-existing failures left alone: the iso `placement` test, the i18n ratchet on `ResourceChips.tsx`, and 7 lint errors.
+
 ## 2026-10-23: Google Antigravity CLI as a second opinion and reading subagent
 
 Added `agy` (Antigravity CLI, Gemini models) to CLAUDE.md under "External tools". Claude Code sends it architecture plans for review and has it summarize large files and directories. It runs headless with `agy -p ... --mode plan`. Print mode auto-denies shell commands, so it can't run any, but its file view and list tools work, which keeps it read-only with no permission config. We chose `gemini-4-argon-high` for reviews and `gemini-3.8-flash-medium` for sweeps, and avoided its hosted Claude models so the second opinion comes from a different model family.
+
+### 2026-10-23: Fuel loading follow-up (secret actions, level readout)
+- Owner asked for three changes on top of fuel loading: taking, loading and unloading fuel became secret actions (`logSecret`, so a bystander or a camera makes them room history); loading and unloading now log the chamber's level; and a new free `check_combustion` action at the chamber logs the level privately.
+- Choices that were mine, not the owner's: the check costs 0 AP with no dirt chance, and the level in the secret lines reaches any witness, which follows from "secret". Taking a capsule logs no level because the chamber isn't involved.
+- What worked: the action registry made the new action four small edits (class, `ACTIONS`, `Action` union, protocol). A test setup slip (all three test players start in one room, so the "alone" case was witnessed) was the only correction.
+
+### 2026-10-23: Returning fuel capsules, and disabled buttons for full hands
+- A Gemini review (via `agy`, given a diff file because headless mode can't run git) found that a capsule carried while the chamber is full can be neither loaded nor dropped. The owner chose a new `return_fuel` action (back into a tank) and also decided taking or unloading with full hands must be refused with the button shown disabled, not drop the capsule on the floor.
+- The disabled-button path only knew AP and MP shortfalls, so `ActionOption.lacks` gained `"space"` and `unaffordableActions` also lists actions refused with `NO_SPACE`. The knocked-over log lines for fuel were removed. Dirt chance and secret logging on the return are my choice, mirroring the other fuel actions.
+- A Python edit script stopped half-way on a stale import string; because each edit file is written only at the end, nothing was left half-edited, and the rerun fixed it.
+
+- **2026-10-23, fuel capsules take a slot each.** After the full-hands check landed, the owner playtested and could still take many capsules. That was the stacking rule doing its job: capsules shared one slot, so holding one meant the check never fired. Asked; the owner chose one slot per capsule, as in eMush. Removed `slotsUsed` and the per-type `hasSpace` exception. Lesson: a check whose tests passed still looked broken in play because an earlier rule (stacking) quietly bypassed it; the summary to the owner should have said plainly that holding a capsule lets you take unlimited more.

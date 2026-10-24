@@ -104,6 +104,8 @@ export const DEFAULT_CONFIG: GameConfig = {
   uninstall: { cost: { ap: 1 }, dirtyChance: 0.05, injuryChance: 0.05 },
   consume: { dirtyChance: 0.15 },
   dispense: { dirtyChance: 0.05 },
+  // Owner, 2026-10-23, the wiki: fuel moves by hand, tank to chamber, 0 AP each. The 25% dirt chance is a placeholder (the wiki says only "dirty-prone").
+  fuel: { cost: { ap: 0 }, dirtyChance: 0.25 },
   // Owner, 2026-10-16: the computer scientist skill holds up to 4 Computer points, gains 2 a day (and 2 when picked).
   computer: { capPoints: 4, pointsPerDay: 2 },
   // Decided 2026-10-16: working on a research costs 2 AP and advances it 25%; no repeat penalty yet.
@@ -146,7 +148,7 @@ export const DEFAULT_CONFIG: GameConfig = {
   // Confirmed 2026-10-14: humans lose 1 satiety per cycle (some things will make it more); at 3 they are full and can't
   // eat; hungry starts 24 cycles after satiety reaches 0 and costs 1 HP per cycle.
   // Decided 2026-10-19: oxygen 30 of 32, -1 per cycle, nobody survives it at 0; fuel 20 of 100; hull 100; plasma shield 100 absorbing 67% of damage.
-  ship: { oxygen: { start: 30, max: 32, perCycle: 1 }, fuel: { start: 20, max: 100 }, hull: { start: 100, max: 100 }, plasmaShield: { start: 100, max: 100, absorbPercent: 67 } },
+  ship: { oxygen: { start: 30, max: 32, perCycle: 1 }, fuel: { start: 20, max: 100 }, combustion: { start: 0, max: 9 }, hull: { start: 100, max: 100 }, plasmaShield: { start: 100, max: 100, absorbPercent: 67 } },
   hunger: { satietyPerCycle: 1, fullBellyAt: 3, hungryAfterCycles: 24, hpPerCycle: 1 },
   // Confirmed 2026-10-13: dismantle cost and odds.
   dismantle: { cost: { ap: 3 }, successChance: 0.12, dirtyChance: 0.25, injuryChance: 0.05, itemChance: { knife: 0.5, blaster: 0.5 } },

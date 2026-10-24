@@ -56,6 +56,11 @@ function aimedAt(view: PlayerView, a: Action, target: Target): boolean {
     case "access":
     case "uninstall":
     case "dispense":
+    case "take_fuel":
+    case "load_fuel":
+    case "unload_fuel":
+    case "return_fuel":
+    case "check_combustion":
     case "lie_down":
     case "shower":
       return target.kind === "equipment" && a.equipment === target.id;
@@ -98,6 +103,11 @@ const ACTION_LABEL_KEYS = {
   examine: "actions.examine",
   access: "actions.access",
   dispense: "actions.dispense",
+  take_fuel: "actions.takeFuel",
+  load_fuel: "actions.loadFuel",
+  unload_fuel: "actions.unloadFuel",
+  return_fuel: "actions.returnFuel",
+  check_combustion: "actions.checkCombustion",
   lie_down: "actions.lieDown",
   shower: "actions.shower",
   consume: "actions.consume",

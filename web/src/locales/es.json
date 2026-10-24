@@ -238,6 +238,7 @@
     },
     "chance": "({{percent}} %)",
     "lacksAp": "No tienes suficientes PA: cuesta {{need}} y tienes {{have}}.",
+    "lacksSpace": "Tu inventario está lleno.",
     "lacksMp": "No tienes suficientes PM: cuesta {{need}} y tienes {{have}}.",
     "lacksBoth": "No tienes suficientes PA ni PM: cuesta {{needAp}} PA y {{needMp}} PM, y tienes {{haveAp}} PA y {{haveMp}} PM.",
     "returnToSol": "Volver a Sol",
@@ -248,7 +249,12 @@
     "setBios": "Cambiar un ajuste de la BIOS",
     "turnShip": "Orientar la nave",
     "travel": "Viajar",
-    "leaveOrbit": "Salir de la órbita"
+    "leaveOrbit": "Salir de la órbita",
+    "takeFuel": "Tomar una cápsula de combustible",
+    "loadFuel": "Cargar combustible",
+    "unloadFuel": "Descargar combustible",
+    "returnFuel": "Devolver la cápsula de combustible",
+    "checkCombustion": "Comprobar el nivel de combustible"
   },
   "queue": {
     "label": "Tus acciones",
@@ -539,6 +545,7 @@
     "myco_alarm": "Micoalarma",
     "tree_pot": "Hidromaceta",
     "fruit_banana": "Plátano",
+    "fuel_capsule": "Cápsula de combustible",
     "knife": "Cuchillo",
     "natamy_riffle": "Rifle Natamy",
     "sniper_riffle": "Lizaro Jungle",
@@ -576,6 +583,11 @@
     "dismantleEquipmentFailed": "No lograste desmontar: {{equipment}}.",
     "tookFrom": "{{name}} tomó: {{item}} ({{equipment}}).",
     "tookFromKnocked": "{{name}} tomó: {{item}} ({{equipment}}) y lo tiró al suelo.",
+    "tookFuel": "{{name}} tomó una cápsula de combustible del depósito.",
+    "returnedFuel": "{{name}} devolvió una cápsula de combustible al depósito.",
+    "loadedFuel": "{{name}} cargó una cápsula de combustible en la cámara de combustión. Cámara de combustión: {{level}} de {{max}}.",
+    "unloadedFuel": "{{name}} sacó una cápsula de combustible de la cámara de combustión. Cámara de combustión: {{level}} de {{max}}.",
+    "checkedCombustion": "La cámara de combustión contiene {{level}} de {{max}} cápsulas de combustible.",
     "consumed": "{{name}} consumió: {{item}}.",
     "cameraInstalled": "{{name}} instaló una cámara.",
     "cameraUninstalled": "{{name}} desinstaló la cámara.",
@@ -1082,10 +1094,9 @@
     "inOrbit": "En órbita alrededor de un planeta.",
     "left": "Girar a la izquierda",
     "right": "Girar a la derecha",
-    "distance": "Distancia (combustible)",
     "travel": "Viajar",
     "leaveOrbit": "Salir de la órbita",
-    "fuel": "Combustible a bordo: {{fuel}}",
-    "warning": "Sin suficiente combustible se pierden los PA. Todo planeta que no esté justo delante a esa distancia se pierde."
+    "fuel": "Combustible en la cámara de combustión: {{fuel}} de {{max}}",
+    "warning": "Viajar quema todo el combustible de la cámara de combustión, y la nave avanza esa distancia. Sin combustible cargado se pierden los PA. Todo planeta que no esté justo delante a esa distancia se pierde."
   }
 }

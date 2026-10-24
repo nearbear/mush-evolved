@@ -18,6 +18,8 @@ export type Ending = "sol" | "eden" | "humans_dead";
 export interface ShipResources {
   oxygen: number;
   fuel: number;
+  /** Fuel in the combustion chamber: all Travel can burn, and Leave orbit. */
+  combustion: number;
   hull: number;
   plasmaShield: number;
 }
