@@ -321,7 +321,6 @@
   },
   "channels": {
     "empty": "No private channels yet.",
-    "count": "{{used}} of {{limit}} channels",
     "nameLabel": "New channel name",
     "namePlaceholder": "Channel name…",
     "create": "Create",
@@ -331,9 +330,13 @@
     "inviteLabel": "Player to invite",
     "invitePick": "Invite someone…",
     "invite": "Invite",
-    "leave": "Leave",
     "noOne": "No one to invite.",
-    "tab": "Private"
+    "tab": "Private",
+    "newSlot": "New channel",
+    "createTitle": "New private channel",
+    "membersLabel": "Initial members",
+    "close": "Close",
+    "leaveNamed": "Leave {{name}}"
   },
   "death": {
     "title": "You are dead.",

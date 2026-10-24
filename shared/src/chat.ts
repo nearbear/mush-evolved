@@ -162,7 +162,12 @@ function channelCount(state: GameState, playerId: PlayerId): number {
   return state.channels.filter((c) => c.members.includes(playerId)).length;
 }
 
-export function createChannel(state: GameState, playerId: PlayerId, rawName: string): ActionResult {
+/**
+ * Opens a channel with you in it, then adds each of `members` as if you had
+ * invited them one by one: anyone an invite would refuse is skipped, so the
+ * member list shows who got in and nothing more than a refused invite would.
+ */
+export function createChannel(state: GameState, playerId: PlayerId, rawName: string, members: readonly PlayerId[] = []): ActionResult {
   const p = findPlayer(state, playerId);
   if (!p || !p.alive || state.phase !== "playing") return fail("channel_forbidden");
   const name = rawName.trim();
@@ -171,7 +176,9 @@ export function createChannel(state: GameState, playerId: PlayerId, rawName: str
 
   const next = clone(state);
   const id: PrivateChannelId = `pc-${next.nextChannelId++}`;
-  next.channels.push({ id, name, members: [playerId], createdBy: playerId });
+  const channel = { id, name, members: [playerId], createdBy: playerId };
+  next.channels.push(channel);
+  for (const m of members) if (canJoin(next, channel.members, m)) channel.members.push(m);
   return { ok: true, state: next };
 }
 
@@ -184,13 +191,16 @@ export function inviteToChannel(state: GameState, playerId: PlayerId, channelId:
   const p = findPlayer(state, playerId);
   const channel = state.channels.find((c) => c.id === channelId);
   if (!p || !p.alive || state.phase !== "playing" || !channel?.members.includes(playerId)) return fail("channel_forbidden");
-  const invitee = findPlayer(state, inviteeId);
-  if (!invitee || !invitee.alive || channel.members.includes(inviteeId) || channelCount(state, inviteeId) >= channelLimit(state, invitee)) {
-    return fail("channel_invite_refused");
-  }
+  if (!canJoin(state, channel.members, inviteeId)) return fail("channel_invite_refused");
   const next = clone(state);
   next.channels.find((c) => c.id === channelId)!.members.push(inviteeId);
   return { ok: true, state: next };
+}
+
+/** Whether a living player outside the channel has a free channel slot. */
+function canJoin(state: GameState, members: readonly PlayerId[], inviteeId: PlayerId): boolean {
+  const invitee = findPlayer(state, inviteeId);
+  return !!invitee && invitee.alive && !members.includes(inviteeId) && channelCount(state, inviteeId) < channelLimit(state, invitee);
 }
 
 /** The last member to leave deletes the channel and its messages. */

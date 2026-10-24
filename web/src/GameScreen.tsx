@@ -236,7 +236,7 @@ export function GameScreen({ ticket, onLeave }: { ticket: SeatTicket; onLeave: (
           onCreateThread={(name, from) => post(from === undefined ? { type: "createThread", name } : { type: "createThread", name, from })}
           onToggle={(message, line) => post({ type: "toggleCheckbox", message, line })}
           channels={{
-            onCreate: (name) => post({ type: "createChannel", name }),
+            onCreate: (name, members) => post({ type: "createChannel", name, members }),
             onInvite: (channel, player) => post({ type: "invite", channel, player }),
             onLeave: (channel) => post({ type: "leaveChannel", channel }),
           }}

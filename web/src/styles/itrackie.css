@@ -251,19 +251,73 @@
   margin: 0;
 }
 
-/* Private tab: laid out like Features (drop-down, then the thread), with channel controls around it. */
-.channel-bar {
+/* Private tab: one row per channel slot (pick + leave, or a free slot that opens the create dialog), then the picked channel's thread. */
+.channel-slots {
+  flex: none;
   display: flex;
-  align-items: flex-start;
+  flex-direction: column;
+  gap: 0.25rem;
+  margin: 0 0 0.5rem;
+  padding: 0;
+  list-style: none;
+}
+.channel-slot {
+  display: flex;
+  align-items: center;
   gap: 0.5rem;
 }
-.channel-bar .feature-select {
+.channel-slot button {
+  margin: 0;
+}
+.channel-slot-pick,
+.channel-slot-new {
   flex: 1;
   min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: left;
 }
-.channel-bar button {
-  flex: none;
+.channel-slot-new {
+  opacity: 0.85;
+}
+.channel-slot-new .tab-icon {
+  opacity: 1;
+}
+/* The picked channel keeps the button's own pressed sprite. */
+.channel-slot-pick[aria-pressed="true"] {
+  --btn-left: url("../../../Mush/www/img/design/butleft_on.gif");
+  --btn-mid: url("../../../Mush/www/img/design/butbg_on.gif");
+  --btn-right: url("../../../Mush/www/img/design/butright_on.gif");
+  font-weight: bold;
+}
+.channel-create-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+.channel-create-form > button {
+  align-self: flex-end;
   margin: 0;
+}
+.channel-create-name {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+.channel-create-name input {
+  min-height: 32px;
+  font: inherit;
+}
+.channel-create-members {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0.25rem 0.75rem 0.5rem;
+  border: 1px solid rgb(255 255 255 / 0.3);
+  border-radius: 4px;
 }
 /* Square-ish emoji button; the label lives in the tooltip. */
 .icon-button {
@@ -292,14 +346,9 @@
   flex: 1;
   margin: 0;
 }
-.channel-invite,
-.channel-create {
+.channel-invite {
   flex: none;
   margin-top: 0.5rem;
-}
-.channel-create ~ p {
-  flex: none;
-  margin: 0.25rem 0 0;
 }
 
 /* The Mush tab appears only for Mush, in the faction pink, pushed to the far right; it pulses while there are unread messages. */

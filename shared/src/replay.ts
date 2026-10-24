@@ -65,7 +65,7 @@ export function applyInput(state: GameState, input: Input): ActionResult {
     case "toggleCheckbox":
       return toggleCheckbox(state, input.by, input.message, input.line);
     case "createChannel":
-      return createChannel(state, input.by, input.name);
+      return createChannel(state, input.by, input.name, input.members);
     case "createThread":
       return createThread(state, input.by, input.name, input.from);
     case "invite":

@@ -322,7 +322,6 @@
   },
   "channels": {
     "empty": "Aún no hay canales privados.",
-    "count": "{{used}} de {{limit}} canales",
     "nameLabel": "Nombre del nuevo canal",
     "namePlaceholder": "Nombre del canal…",
     "create": "Crear",
@@ -332,9 +331,13 @@
     "inviteLabel": "Jugador a invitar",
     "invitePick": "Invitar a alguien…",
     "invite": "Invitar",
-    "leave": "Salir",
     "noOne": "No hay nadie a quien invitar.",
-    "tab": "Privado"
+    "tab": "Privado",
+    "newSlot": "Nuevo canal",
+    "createTitle": "Nuevo canal privado",
+    "membersLabel": "Miembros iniciales",
+    "close": "Cerrar",
+    "leaveNamed": "Salir de {{name}}"
   },
   "death": {
     "title": "Has muerto.",

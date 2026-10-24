@@ -164,6 +164,16 @@ describe("private channels", () => {
     }
     expect(parse({ type: "invite", channel: "pc-3", player: 5 })).toBeNull();
     expect(parse({ type: "createChannel", name: 5 })).toBeNull();
+    expect(parse({ type: "createChannel", name: "x", members: ["p1"] })).toEqual({ type: "createChannel", name: "x", members: ["p1"] });
+    expect(parse({ type: "createChannel", name: "x", members: "p1" })).toBeNull();
+    expect(parse({ type: "createChannel", name: "x", members: [5] })).toBeNull();
+  });
+
+  it("adds initial members on creation, skipping anyone an invite would refuse", () => {
+    let state = createGame(seats, DEFAULT_CONFIG, 42);
+    for (const name of ["a", "b", "c"]) state = must(createChannel(state, "p2", name));
+    state = must(createChannel(state, "p0", "Crew", ["p1", "p2", "p0", "p1", "nobody"]));
+    expect(state.channels.at(-1)!.members).toEqual(["p0", "p1"]);
   });
 });
 
