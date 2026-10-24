@@ -17,6 +17,7 @@ import { PrivateChannels, type ChannelHandlers } from "./PrivateChannels.tsx";
 import { Thread, type ThreadLinks } from "./Thread.tsx";
 import { Threads, threadNameFrom } from "./Threads.tsx";
 import { Tracker } from "./Tracker.tsx";
+import { ResearchTracker } from "./ResearchTracker.tsx";
 import { Scroller } from "./Scroller.tsx";
 import { TAB_ICONS } from "../art/assets.ts";
 
@@ -176,10 +177,12 @@ export function ITrackie({
               const name = t(`itrackie.features.${f}`);
               return (
               <div key={f} className="feature" hidden={f !== feature}>
-                {!alive ? null : carrying ? (
-                  <Tracker notes={notes[f]} onChange={(next) => setNotes((all) => ({ ...all, [f]: next }))} />
-                ) : (
+                {!alive ? null : !carrying ? (
                   <p className="sub">{t("itrackie.needITrackieTrack")}</p>
+                ) : f === "research" ? (
+                  <ResearchTracker view={view} />
+                ) : (
+                  <Tracker notes={notes[f]} onChange={(next) => setNotes((all) => ({ ...all, [f]: next }))} />
                 )}
                 <Thread
                   view={view}

@@ -352,6 +352,7 @@
     "send": "Enviar",
     "nothingTracked": "Aún no se sigue nada.",
     "removeNote": "Quitar «{{note}}»",
+    "researchTracker": "Seguimiento de investigaciones",
     "trackPlaceholder": "Seguir algo…",
     "newTrackerLine": "Nueva línea de seguimiento",
     "add": "Añadir",
