@@ -1,10 +1,12 @@
 // ---- Ship resources ---------------------------------------------------------
 // Decided 2026-10-19: oxygen starts at 30 of 32 and one is burned each cycle; at 0 a random living crew member
-// dies every cycle. Fuel (20 of 100, in the tanks) reaches the ship only as capsules carried to the combustion chamber (9 at most, actions/take_fuel.ts); the hull (100) has no source or drain yet. The plasma shield (100)
-// absorbs 67% of incoming damage out of its own points; at 0 the hull takes all of it. All of it is public.
+// dies every cycle. Fuel (20 of 100, in the tanks) reaches the ship only as capsules carried to the combustion chamber (9 at most, actions/take_fuel.ts).
+// Hunters damage the hull (100) and the plasma shield (50 of 100), which absorbs 33% of each hit out of its own points, 67% with
+// the Plasma Shield project (owner, 2026-10-24, hunters.ts); at 0 the hull takes all of it. All of it is public.
 
 import { damage } from "./death.ts";
 import { logPublic } from "./log.ts";
+import { PROJECT_COMPLETE } from "./projects.ts";
 import { nextInt } from "./rng.ts";
 import type { GameConfig, GameState, ShipResources } from "./types.ts";
 
@@ -36,13 +38,20 @@ export function burnOxygen(state: GameState): void {
   state.ship.oxygen = Math.max(0, state.ship.oxygen - state.config.ship.oxygen.perCycle);
 }
 
+/** The percent of a hit the shield takes: none while the BIOS has it off, more once the Plasma Shield project is done. */
+export function shieldAbsorbPercent(state: Readonly<GameState>): number {
+  const shield = state.config.ship.plasmaShield;
+  if (!state.bios.plasma_shield) return 0;
+  return (state.projects.PLASMA_SHIELD ?? 0) >= PROJECT_COMPLETE ? shield.projectAbsorbPercent : shield.absorbPercent;
+}
+
 /**
- * Damage to the ship: the shield takes its percentage (rounded down) while it has points, the hull the rest.
- * Nothing calls this yet. Mutates a state the caller already cloned.
+ * Damage to the ship (hunters.ts): the shield takes its percentage (rounded down) while it has points, the hull the
+ * rest. Mutates a state the caller already cloned.
  */
 export function damageShip(state: GameState, amount: number): void {
   const { ship } = state;
-  const toShield = Math.min(ship.plasmaShield, Math.floor((amount * state.config.ship.plasmaShield.absorbPercent) / 100));
+  const toShield = Math.min(ship.plasmaShield, Math.floor((amount * shieldAbsorbPercent(state)) / 100));
   ship.plasmaShield -= toShield;
   ship.hull = Math.max(0, ship.hull - (amount - toShield));
 }

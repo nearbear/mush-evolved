@@ -166,8 +166,21 @@ export const DEFAULT_CONFIG: GameConfig = {
   transfer: { injuryChance: 0.01 },
   // Confirmed 2026-10-14: humans lose 1 satiety per cycle (some things will make it more); at 3 they are full and can't
   // eat; hungry starts 24 cycles after satiety reaches 0 and costs 1 HP per cycle.
-  // Decided 2026-10-19: oxygen 30 of 32, -1 per cycle, nobody survives it at 0; fuel 20 of 100; hull 100; plasma shield 100 absorbing 67% of damage.
-  ship: { oxygen: { start: 30, max: 32, perCycle: 1 }, fuel: { start: 20, max: 100 }, combustion: { start: 0, max: 9 }, hull: { start: 100, max: 100 }, plasmaShield: { start: 100, max: 100, absorbPercent: 67 } },
+  // Decided 2026-10-19: oxygen 30 of 32, -1 per cycle, nobody survives it at 0; fuel 20 of 100; hull 100. Owner, 2026-10-24: the plasma
+  // shield starts at 50 of 100, +5 a cycle, absorbing 33% of each hit, 67% with the Plasma Shield project.
+  ship: { oxygen: { start: 30, max: 32, perCycle: 1 }, fuel: { start: 20, max: 100 }, combustion: { start: 0, max: 9 }, hull: { start: 100, max: 100 }, plasmaShield: { start: 50, max: 100, absorbPercent: 33, projectAbsorbPercent: 67, regen: 5 } },
+  // Owner, 2026-10-24 (#208): eMush's hunter numbers, the wiki's turret and hull repair.
+  hunters: {
+    points: { start: 40, perCycle: 6, hardFromDay: 5, hardBonus: 1, veryHardFromDay: 10, veryHardBonus: 2, perHunter: 10 },
+    waveChance: 0.2,
+    safeCycles: 2,
+    hp: 6,
+    damage: [2, 4],
+    hitChance: 0.8,
+    missBonus: 0.1,
+  },
+  turrets: { cost: { ap: 1 }, chance: 0.3, failureMultiplier: 1.25, damage: [2, 4], charges: 4, rechargePerCycle: 1 },
+  hullRepair: { cost: { ap: 1 }, chance: 0.25, amount: 5 },
   hunger: { satietyPerCycle: 1, fullBellyAt: 3, hungryAfterCycles: 24, hpPerCycle: 1 },
   // Confirmed 2026-10-13: dismantle cost and odds.
   dismantle: { cost: { ap: 3 }, successChance: 0.12, dirtyChance: 0.25, injuryChance: 0.05, itemChance: { knife: 0.5, blaster: 0.5 } },

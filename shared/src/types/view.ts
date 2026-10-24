@@ -177,6 +177,11 @@ export interface PlayerView {
   comms: { linked: boolean; terminal: CommsTerminalView | null };
   /** NERON's BIOS settings, read-only, only while you are alive in a room with a BIOS terminal (owner, 2026-10-21); otherwise null. */
   bios: BiosState | null;
+  /**
+   * Hunters attacking the ship (owner, 2026-10-24): how many, to everyone. `list` (each hunter's hp) and `turrets`
+   * (charges by turret equipment id) only while you are alive in a turret room; otherwise null.
+   */
+  hunters: { count: number; list: { id: string; hp: number }[] | null; turrets: Record<string, number> | null };
   /** Your own planets (private, owner 2026-10-19). Unknown sectors are null: their tags are never sent. */
   planets: PlanetView[];
   /**

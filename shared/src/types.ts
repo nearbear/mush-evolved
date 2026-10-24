@@ -136,6 +136,8 @@ export type Action =
   | { type: "scan_planet"; equipment: string }
   | { type: "analyze_planet"; equipment: string; planet: string }
   | { type: "delete_planet"; planet: string }
+  | { type: "turret_attack"; equipment: string; hunter: string }
+  | { type: "repair_hull"; item: ItemId }
   | { type: "heal"; target: PlayerId }
   | { type: "punch"; target: PlayerId }
   | { type: "anathema"; target: PlayerId }

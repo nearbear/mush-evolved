@@ -57,7 +57,7 @@ export const EQUIPMENT_TYPES: Record<string, EquipmentType> = {
   STELLAR_ANTENNA: {},
   SUPER_CALC: { terminal: true, builtOnly: true },
   SURGERY_POD: {},
-  TURRET_COMMAND: {},
+  TURRET_COMMAND: { terminal: true },
 };
 
 

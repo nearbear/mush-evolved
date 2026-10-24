@@ -14,6 +14,7 @@ const ALLOWED = new Set([
   "cheats.ts", // infiniteHp refills to the maximum
   "actions/heal.ts", // healing only raises HP
   "actions/consume.ts", // eating only raises HP (a negative consume.hp counts as 0)
+  "hunters.ts", // a hunter's hp, not a player's; at 0 the hunter is removed
 ]);
 
 function sources(dir: string): string[] {

@@ -272,9 +272,27 @@ export interface GameConfig {
     oxygen: { start: number; max: number; perCycle: number }; // Oxygen the ship burns each cycle; at 0 one random living crew member dies per cycle (owner, 2026-10-19).
     fuel: { start: number; max: number }; // The tanks' stock; only capsules carried to the combustion chamber are burned (owner, 2026-10-23).
     combustion: { start: number; max: number }; // The combustion chamber (owner, 2026-10-23, the wiki): starts empty, holds 9. Travel and leaving orbit burn from it.
-    hull: { start: number; max: number }; // Nothing damages it yet except through `damageShip` (owner, 2026-10-19).
-    plasmaShield: { start: number; max: number; absorbPercent: number }; // Takes this percent of incoming damage, out of its own points; at 0 the hull takes it all (owner, 2026-10-19).
+    hull: { start: number; max: number }; // Only hunters damage it, through `damageShip`; at 0 the ship explodes (owner, 2026-10-24).
+    // Takes `absorbPercent` of each hit (rounded down) out of its own points, `projectAbsorbPercent` once the Plasma Shield project
+    // is done; at 0, or while the BIOS has it off, the hull takes it all. Regains `regen` a cycle while on (owner, 2026-10-24).
+    plasmaShield: { start: number; max: number; absorbPercent: number; projectAbsorbPercent: number; regen: number };
   };
+  // Hunters (owner, 2026-10-24, #208; eMush's numbers). A server-only pool starts at `points.start` when Mush are chosen and gains
+  // day + `points.perCycle` each cycle change, + `hardBonus` from `hardFromDay`, + `veryHardBonus` instead from `veryHardFromDay`.
+  // Each cycle change after the first `safeCycles`, a `waveChance` roll spends it on one hunter per `points.perHunter`.
+  hunters: {
+    points: { start: number; perCycle: number; hardFromDay: number; hardBonus: number; veryHardFromDay: number; veryHardBonus: number; perHunter: number };
+    waveChance: number;
+    safeCycles: number;
+    hp: number;
+    damage: [number, number]; // Damage to the ship per hit, uniform.
+    hitChance: number; // A hunter's chance to hit, 0 to 1, back to this after a hit.
+    missBonus: number; // Added to the hunter's chance after each miss.
+  };
+  // Turrets (owner, 2026-10-24, the wiki's Tourelle): 1 AP, a charge per shot, 30% to hit, x1.25 per miss in a row, reset by a hit.
+  turrets: { cost: { ap: number }; chance: number; failureMultiplier: number; damage: [number, number]; charges: number; rechargePerCycle: number };
+  // Hull repair (owner, 2026-10-24, the wiki's Armure et Bouclier): 1 AP, 25%, +5 hull, a metal scrap used up on a success.
+  hullRepair: { cost: { ap: number }; chance: number; amount: number };
   hunger: {
     satietyPerCycle: number; // Satiety a human loses each cycle, before modifiers (confirmed 2026-10-14).
     fullBellyAt: number; // Satiety at which a human has the full belly status and can't eat (confirmed 2026-10-14).

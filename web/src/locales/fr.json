@@ -21,7 +21,8 @@
     "fuel": "Carburant",
     "hull": "Coque",
     "plasmaShield": "Bouclier plasma",
-    "alerts": "Alertes"
+    "alerts": "Alertes",
+    "hunters": "Hunters"
   },
   "peek": {
     "doorTo": "Porte vers {{room}}",
@@ -262,7 +263,9 @@
     "loadFuel": "Charger le fuel",
     "unloadFuel": "Décharger le fuel",
     "returnFuel": "Remettre la capsule de fuel",
-    "checkCombustion": "Vérifier le niveau de fuel"
+    "checkCombustion": "Vérifier le niveau de fuel",
+    "turretAttack": "Tirer",
+    "repairHull": "Renforcer la coque"
   },
   "queue": {
     "label": "Vos actions",
@@ -680,7 +683,19 @@
     "shipInOrbit": "Le Daedalus est maintenant en orbite autour d'une planète.",
     "orbitingPlanet": "Le Daedalus est en orbite autour de votre planète {{planet}}.",
     "leaveOrbitNoFuel": "{{name}} a tenté de quitter l'orbite, mais il n'y avait pas assez de fuel.",
-    "leftOrbit": "{{name}} a fait quitter l'orbite au Daedalus."
+    "leftOrbit": "{{name}} a fait quitter l'orbite au Daedalus.",
+    "hunterWave_one": "NERON : {{count}} hunter attaque le Daedalus !",
+    "hunterWave_many": "NERON : {{count}} hunters attaquent le Daedalus !",
+    "hunterWave_other": "NERON : {{count}} hunters attaquent le Daedalus !",
+    "hunterHit": "Un hunter a touché le Daedalus : {{damage}} dégâts.",
+    "shipDestroyed": "La coque du Daedalus cède. Le vaisseau explose, et tout l'équipage avec lui.",
+    "turretHit": "Vous touchez le hunter : {{damage}} dégâts.",
+    "turretMiss": "Vous ratez le hunter.",
+    "hunterDestroyed": "{{name}} a abattu un hunter.",
+    "hullRepaired": "{{name}} a renforcé la coque.",
+    "hullRepairFailed": "Vous n'avez pas réussi à renforcer la coque.",
+    "biosShieldOn": "Vous avez activé le bouclier plasma : il protège à nouveau la coque.",
+    "biosShieldOff": "Vous avez désactivé le bouclier plasma : il ne protège plus la coque."
   },
   "skills": {
     "title": "Choisir une compétence",
@@ -1040,6 +1055,10 @@
     "death_announcements": {
       "name": "Signaler les décès",
       "desc": "Activé, NERON annonce chaque décès à l'équipage, avec le rôle du défunt."
+    },
+    "plasma_shield": {
+      "name": "Bouclier plasma",
+      "desc": "Activé, le bouclier encaisse une partie de chaque tir et se régénère à chaque cycle. Désactivé, il n'encaisse rien ; réactivé, il retrouve sa valeur."
     }
   },
   "comms": {
@@ -1115,5 +1134,12 @@
     "leaveOrbit": "Quitter l'orbite",
     "fuel": "Fuel dans la chambre de combustion : {{fuel}} sur {{max}}",
     "warning": "Voyager brûle tout le fuel de la chambre de combustion, et le vaisseau avance d'autant. Sans fuel chargé, les PA sont perdus. Toute planète qui ne se trouve pas droit devant à cette distance est perdue."
+  },
+  "turret": {
+    "label": "Hunters à portée",
+    "none": "Aucun hunter en vue.",
+    "hunter": "Hunter {{index}}",
+    "hp": "{{hp}} PV",
+    "charges": "Charges restantes : {{charges}}"
   }
 }

@@ -31,6 +31,8 @@ const ACTION_NAME_KEYS = {
   update_neron: "actions.updateNeron",
   set_bios: "actions.setBios",
   scan_planet: "actions.scanPlanet",
+  turret_attack: "actions.turretAttack",
+  repair_hull: "actions.repairHull",
   analyze_planet: "actions.analyzePlanet",
   delete_planet: "actions.deletePlanet",
   dispense: "actions.dispense",

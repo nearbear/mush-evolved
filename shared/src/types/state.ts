@@ -101,6 +101,16 @@ export interface GameState {
    * not"; the planet stays its finder's. `heading` goes only to the living at a Command terminal.
    */
   navigation: { heading: PlanetDirection; orbit: string | null };
+  /**
+   * Hunters attacking the ship (hunters.ts). `points` is the wave pool and `since` the cycle Mush were chosen (null
+   * before): never sent. Each hunter's hp goes to the living in a turret room; its hit chance and target never; how
+   * many there are, to everyone.
+   */
+  hunters: { points: number; since: number | null; list: Hunter[]; nextId: number };
+  /** Charges left in each turret, by its `TURRET_COMMAND` equipment id; absent = full. To the living in a turret room. */
+  turrets: Record<string, number>;
+  /** Missed turret shots in a row per player, raising their next shot's odds; reset by a hit (owner, 2026-10-24). Never sent. */
+  turretFailures: Record<PlayerId, number>;
   /** Who holds each title (titles.ts); null while vacant. Public: every view has the holders and the lines. */
   titles: Record<TitleId, PlayerId | null>;
   /**
@@ -108,6 +118,14 @@ export interface GameState {
    * deadlines such as accommodation offers. Never sent.
    */
   now: number;
+}
+
+/** A hunter (hunters.ts). `hitChance` (0 to 1) and `targeted` (whether it has picked the ship as its target) are never sent. */
+export interface Hunter {
+  id: string;
+  hp: number;
+  hitChance: number;
+  targeted: boolean;
 }
 
 /** A planet a player found. Its size is the number of sectors. */

@@ -3,7 +3,10 @@
 // scenario (who is where, holding what) stays in each test file, next to the tests that depend on it.
 import { CHARACTERS } from "../src/characters.ts";
 import { type ActionResult, applyAction, legalIn, newCycle, viewFor } from "../src/rules.ts";
-import type { Action, ActionOption, GameState, PlayerId, PlayerState, Seat } from "../src/types.ts";
+import type { Action, ActionOption, GameConfig, GameState, PlayerId, PlayerState, Seat } from "../src/types.ts";
+
+/** `config` with no hunter waves, for tests that run many cycles with nobody at the turrets (the ship would explode). */
+export const noHunters = <C extends GameConfig>(config: C): C => ({ ...config, hunters: { ...config.hunters, waveChance: 0 } });
 
 /** Seats p0, p1, … with the first `n` characters. `bots` says which seats are bots. */
 export function makeSeats(n: number, bots: "none" | "others" | "all" = "none"): Seat[] {

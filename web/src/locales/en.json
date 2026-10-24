@@ -21,7 +21,8 @@
     "fuel": "Fuel",
     "hull": "Hull",
     "plasmaShield": "Plasma shield",
-    "alerts": "Alerts"
+    "alerts": "Alerts",
+    "hunters": "Hunters"
   },
   "peek": {
     "doorTo": "Door to {{room}}",
@@ -261,7 +262,9 @@
     "loadFuel": "Load fuel",
     "unloadFuel": "Unload fuel",
     "returnFuel": "Put the fuel capsule back",
-    "checkCombustion": "Check the fuel level"
+    "checkCombustion": "Check the fuel level",
+    "turretAttack": "Shoot",
+    "repairHull": "Reinforce the hull"
   },
   "queue": {
     "label": "Your actions",
@@ -677,7 +680,18 @@
     "shipInOrbit": "The Daedalus is now in orbit around a planet.",
     "orbitingPlanet": "The Daedalus is in orbit around your planet {{planet}}.",
     "leaveOrbitNoFuel": "{{name}} tried to leave orbit, but there wasn't enough fuel.",
-    "leftOrbit": "{{name}} took the Daedalus out of orbit."
+    "leftOrbit": "{{name}} took the Daedalus out of orbit.",
+    "hunterWave_one": "NERON: {{count}} hunter is attacking the Daedalus!",
+    "hunterWave_other": "NERON: {{count}} hunters are attacking the Daedalus!",
+    "hunterHit": "A hunter hit the Daedalus for {{damage}} damage.",
+    "shipDestroyed": "The Daedalus's hull gives way. The ship explodes, and the whole crew with it.",
+    "turretHit": "You hit the hunter for {{damage}} damage.",
+    "turretMiss": "You missed the hunter.",
+    "hunterDestroyed": "{{name}} shot down a hunter.",
+    "hullRepaired": "{{name}} reinforced the hull.",
+    "hullRepairFailed": "You failed to reinforce the hull.",
+    "biosShieldOn": "You switched the plasma shield on: it protects the hull again.",
+    "biosShieldOff": "You switched the plasma shield off: it no longer protects the hull."
   },
   "skills": {
     "title": "Choose a skill",
@@ -1036,6 +1050,10 @@
     "death_announcements": {
       "name": "Death announcements",
       "desc": "While on, NERON announces every death to the crew, with the role of the dead."
+    },
+    "plasma_shield": {
+      "name": "Plasma shield",
+      "desc": "While on, the shield takes part of each hit and regenerates every cycle. While off, it takes nothing; switched back on, it has the points it had."
     }
   },
   "comms": {
@@ -1109,5 +1127,12 @@
     "leaveOrbit": "Leave orbit",
     "fuel": "Fuel in the combustion chamber: {{fuel}} of {{max}}",
     "warning": "Travel burns all the fuel in the combustion chamber, and the ship goes that far. With none loaded the AP is wasted. Every planet not lying exactly ahead at that distance is lost."
+  },
+  "turret": {
+    "label": "Hunters in range",
+    "none": "No hunters in sight.",
+    "hunter": "Hunter {{index}}",
+    "hp": "{{hp}} HP",
+    "charges": "Charges left: {{charges}}"
   }
 }
