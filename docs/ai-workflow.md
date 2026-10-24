@@ -1220,6 +1220,15 @@ Restructured the ship editor from one tabbed side panel into a game-engine layou
 - What worked: the source settled things the Flash-era snapshot couldn't (the wave timing, the hit formula, the shield start of 50 against the plan's 100, and full rather than partial shield absorption in eMush).
 - What needed correction: the owner kept partial absorption, at 33% base and 67% with the Plasma Shield project, rather than eMush's full absorption. They also chose no guaranteed opening wave, and private hit/miss logs with public kills, where Claude had proposed public shot logs. Travel-following hunters and the activity adjustment became Private beta stories #240 and #241.
 
+## 2026-10-24: Transfer (Mush skill) feasibility and decisions
+
+Asked how feasible the original's Transfer skill is. Claude read eMushpedia (`Transfert`, `Spores`, `Faim`, `Myco-alarme`) and the code. Its finding: `PlayerId` is effectively the body, so Transfer is a "swap the minds" operation: swap the seat tokens in `GameRoom` plus a pure rules action. The real blockers were Mush skills (#172) and whether history follows the mind or the body. Its first framing of "history" was too abstract; the owner asked what it meant, and a concrete two-player example made the choice clear. The owner departed from the original in places to keep transfers hard to detect (human skills stay with the body, no reset). Recorded in `docs/rules-design.md`; issue #242.
+
+## 2026-10-24: Private channel slots and create dialog
+
+- Asked for: the Private tab shows one row per channel slot; a free slot opens a dialog (name plus initial members), a used slot has a leave button.
+- Initial members needed a protocol change: `createChannel` takes optional `members`, applied as if invited one by one. Claude chose to skip anyone an invite would refuse rather than fail the whole creation; the member list then reveals no more than separate refused invites would. Flagged for the owner to confirm.
+
 ## 2026-10-24: Mush skill foundations (#172)
 - **Decision (owner):** 4 Mush skill slots, separate from the 3 human slots plus the book slot; picked any time; Mush keep picking human skills; all Mush skills pickable with implementation-status badges, none implemented; a cosmetic toggle at the top of your own skill stack switches between human and Mush slots. Privacy (owner only, not other Mush) came from #25's note in the issue.
 - **What I did:** took the 26 Mush, retained, non-beta rows of `skills.json` (all have icons); reused `pick_skill` with the id deciding the slot set rather than adding a second action; new `PlayerState.mushSkills` (reach `own`, leak sentinel added; STATE_VERSION 64). fr text is the original table's with markup stripped; en and es are my drafts.
