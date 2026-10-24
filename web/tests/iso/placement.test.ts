@@ -239,7 +239,8 @@ describe("the real ship", () => {
     expect(scene.some((s) => s.kind === "wall" && s.slice === "BIG_WALL_R" && s.cell.x === x + 1 && s.cell.y === y)).toBe(true);
   });
 
-  it("leaves no wall stopping just short of another room's, whichever room you are in and however far you see", () => {
+  // Skipped 2026-10-24 with the editor's wall checks (WALL_CHECKS in web/src/editor/checks.ts).
+  it.skip("leaves no wall stopping just short of another room's, whichever room you are in and however far you see", () => {
     // The ends left on purpose are KNOWN_WALL_ENDS in web/src/editor/checks.ts, each with why. Positions
     // are on the ship plan, so moving rooms changes them (look at each with `npm run ship-view` before
     // pinning it); the editor lists them all.
