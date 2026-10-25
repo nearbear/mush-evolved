@@ -27,6 +27,16 @@ export interface GameSetup {
   forcedRoles?: Record<PlayerId, Role>;
   /** The cycle of day 1 the ship launched in, from the UTC clock (#24). 1 if left out. */
   startCycle?: number;
+  /** Server time it launched (ms), which stamps the first log lines. Missing on older games. */
+  launchedAt?: number;
+}
+
+/** One entry of the server's record: an input and the server time it was accepted (ms). */
+export interface RecordedInput {
+  at: number;
+  input: Input;
+  /** The text as typed, when moderation changed it. Moderators only. */
+  raw?: string;
 }
 
 /**
@@ -98,6 +108,30 @@ export function replayGame(setup: GameSetup, inputs: readonly Input[]): GameStat
     const result = applyInput(state, input);
     if (!result.ok) throw new Error(`Replay diverged at input ${i} (${input.type}): ${result.error}`);
     state = result.state;
+  }
+  return state;
+}
+
+/**
+ * Gives the log and chat entries the rules just appended the server time `at`.
+ * The rules have no clock, so the server stamps each new state, and a rebuild
+ * stamps it the same way. Both lists only grow at the end, so walk back until
+ * we reach one already stamped. Changes `state` in place.
+ */
+export function stampEntries(state: GameState, at: number): GameState {
+  for (const list of [state.log, state.chat]) {
+    for (let i = list.length - 1; i >= 0 && list[i]!.at === undefined; i--) list[i]!.at = at;
+  }
+  return state;
+}
+
+/** Rebuilds the exact state the server stored, timestamps included, from its record (#167). */
+export function rebuildGame(setup: GameSetup, record: readonly RecordedInput[]): GameState {
+  let state = stampEntries(startGame(setup), setup.launchedAt ?? 0);
+  for (const [i, { at, input }] of record.entries()) {
+    const result = applyInput(state, input);
+    if (!result.ok) throw new Error(`Rebuild diverged at input ${i} (${input.type}): ${result.error}`);
+    state = stampEntries(result.state, at);
   }
   return state;
 }

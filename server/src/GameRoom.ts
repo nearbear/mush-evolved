@@ -9,6 +9,7 @@ import {
   moderateChat,
   parseGameMessage,
   startGame,
+  stampEntries,
   bodyOf,
   legalActions,
   nextDue,
@@ -27,6 +28,7 @@ import {
   type GameSetup,
   type GameState,
   type Input,
+  type RecordedInput,
   type PlayerId,
   type Role,
   type Seat,
@@ -38,19 +40,6 @@ import { RateLimiter } from "./rateLimit.ts";
 
 /** Error code (not text) for a cheat input on a server that doesn't allow them. */
 const CHEATS_DISABLED = "cheats_disabled";
-
-/**
- * Gives the entries the rules just appended a wall-clock time. The rules are
- * pure and have no clock, so the server stamps them; the log and chat only
- * grow at the end, so walk back until we reach one already stamped.
- */
-function stamp(state: GameState): GameState {
-  const now = Date.now();
-  for (const list of [state.log, state.chat]) {
-    for (let i = list.length - 1; i >= 0 && list[i]!.at === undefined; i--) list[i]!.at = now;
-  }
-  return state;
-}
 
 /** Deliberate pacing so bots don't act instantly. */
 const BOT_DELAY_MS = 50;
@@ -97,14 +86,6 @@ interface Stored {
 //   "input:<seq>"   RecordedInput, one per accepted input, never rewritten
 //   "blocked:<seq>" BlockedText, text moderation refused (moderators only)
 
-interface RecordedInput {
-  /** Server time it was accepted (ms). Kept out of GameState: the rules never read a clock. */
-  at: number;
-  input: Input;
-  /** The text as typed, when moderation changed it. Moderators only. */
-  raw?: string;
-}
-
 interface BlockedText {
   at: number;
   by: PlayerId;
@@ -129,6 +110,8 @@ interface SeatState {
 
 export class GameRoom extends Server<Env> {
   private game: GameState | null = null;
+  /** A record with no live game (its snapshot was dropped for another state version): never launch over it. */
+  private retired = false;
   private tokens: Record<string, PlayerId> = {};
   private inputs = 0;
   private rateLimited: Record<PlayerId, number> = {};
@@ -162,9 +145,10 @@ export class GameRoom extends Server<Env> {
 
   override async onStart(): Promise<void> {
     const stored = await this.ctx.storage.get<Stored>("game");
-    if (!stored) return;
-    if (stored.version !== STATE_VERSION) {
-      await this.ctx.storage.deleteAll();
+    if (stored?.version !== STATE_VERSION) {
+      // Only the snapshot goes; the record ("setup", "input:*", "blocked:*") is kept for the replay (#167).
+      if (stored) await this.ctx.storage.delete("game");
+      this.retired = (await this.ctx.storage.get("setup")) !== undefined;
       return;
     }
     this.game = stored.game;
@@ -182,7 +166,7 @@ export class GameRoom extends Server<Env> {
 
   /** Seats everyone at launch, with Mush picked at once (tests). Called once, over RPC. */
   async setup(seats: Seat[], tokens: Record<string, PlayerId>): Promise<void> {
-    if (this.game) throw new Error("Game already set up");
+    if (this.game || this.retired) throw new Error("Game already set up");
     await this.launch(seats, tokens, DEFAULT_CONFIG);
   }
 
@@ -192,7 +176,7 @@ export class GameRoom extends Server<Env> {
    * Returns the player's seat token.
    */
   async setupSinglePlayer(name: string, character: CharacterId): Promise<string> {
-    if (this.game) throw new Error("Game already set up");
+    if (this.game || this.retired) throw new Error("Game already set up");
     const { seats, config, forcedRoles } = singlePlayerGame(name, character, crypto.getRandomValues(new Uint32Array(1))[0]!);
     const token = crypto.randomUUID();
     this.singlePlayer = true;
@@ -206,6 +190,8 @@ export class GameRoom extends Server<Env> {
    * ms), or null once it has (full, Mush chosen).
    */
   async join(name: string, character: CharacterId): Promise<JoinResult> {
+    // The matchmaker launches a new ship elsewhere.
+    if (this.retired) return { ok: false, error: "ship_closed" };
     // One launch even if two joins arrive together.
     this.launching ??= this.game ? Promise.resolve() : this.launch([], {}, { ...DEFAULT_CONFIG, preselection: this.shipRules() });
     await this.launching;
@@ -267,7 +253,8 @@ export class GameRoom extends Server<Env> {
   }
 
   private async launch(seats: Seat[], tokens: Record<string, PlayerId>, config: GameConfig, forcedRoles?: Record<PlayerId, Role>): Promise<void> {
-    this.clockCycle = clockCycle(Date.now(), cycleMs(this.env));
+    const now = Date.now();
+    this.clockCycle = clockCycle(now, cycleMs(this.env));
     const setup: GameSetup = {
       seats,
       // End cycle is for testing (only where cheats are allowed, owner, 2026-10-19) and single player.
@@ -276,8 +263,9 @@ export class GameRoom extends Server<Env> {
       seed: crypto.getRandomValues(new Uint32Array(1))[0]!,
       rulesVersion: this.env.RULES_VERSION,
       startCycle: cycleOfDay(this.clockCycle, config.cyclesPerDay),
+      launchedAt: now,
     };
-    this.game = stamp(startGame(setup));
+    this.game = stampEntries(startGame(setup), now);
     this.tokens = tokens;
     await this.ctx.storage.put("setup", setup);
     await this.persist();
@@ -437,8 +425,10 @@ export class GameRoom extends Server<Env> {
     if (!this.game) return "no_game";
     const result = applyInput(this.game, input);
     if (!result.ok) return result.error;
-    this.game = stamp(result.state);
-    const recorded: RecordedInput = { at: Date.now(), input, ...(raw !== undefined && { raw }) };
+    // One time for the stamps and the record, so a rebuild stamps the same (rebuildGame).
+    const now = Date.now();
+    this.game = stampEntries(result.state, now);
+    const recorded: RecordedInput = { at: now, input, ...(raw !== undefined && { raw }) };
     await this.persist({ [inputKey(this.inputs++)]: recorded });
     this.broadcastViews(room);
     this.scheduleBots();

@@ -1,4 +1,14 @@
-import { CHARACTERS, CHAT_CHANNELS, legalIn, type CharacterId, type GameServerMessage, type GameSetup, type PlayerView } from "@mush2/shared";
+import {
+  CHARACTERS,
+  CHAT_CHANNELS,
+  legalIn,
+  rebuildGame,
+  type CharacterId,
+  type GameServerMessage,
+  type GameSetup,
+  type PlayerView,
+  type RecordedInput,
+} from "@mush2/shared";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { FakeConnection, FakeServer, FakeStorage, seats, tokensFor } from "../src/testing/fakes.ts";
 
@@ -326,14 +336,44 @@ describe("GameRoom persistence", () => {
     expect(storage.data.has("input:000000002")).toBe(true); // continued after the move and its tick, didn't overwrite them
   });
 
-  it("discards a game stored under another state version", async () => {
-    const { storage } = await newRoom();
+  it("drops a snapshot stored under another state version, but keeps the record and launches nothing over it", async () => {
+    const { room, storage } = await newRoom(3, new FakeStorage(), CHEATS);
+    const c = connect(room, "tok0");
+    await send(room, c, { type: "chat", channel: CHAT_CHANNELS[0], text: "hello" });
     const stored = storage.data.get("game") as { version: number };
     stored.version = -1;
-    const revived = asRoom(storage);
-    await revived.onStart();
-    expect(storage.data.size).toBe(0);
-    expect(connect(revived, "tok0").closed?.code).toBe(4001);
+    const record = [...storage.data.keys()].filter((k) => k !== "game");
+    for (const restart of [1, 2]) {
+      const revived = asRoom(storage);
+      await revived.onStart();
+      expect([...storage.data.keys()], `restart ${restart}`).toEqual(record);
+      expect(connect(revived, "tok0").closed?.code).toBe(4001);
+      await expect(revived.setup(seats(3), tokensFor(3))).rejects.toThrow("already set up");
+      expect(await revived.join("Ann", CHARACTERS[0]!.id)).toEqual({ ok: false, error: "ship_closed" });
+    }
+    expect(storage.data.get("input:000000000")).toMatchObject({ input: { type: "chat", text: "hello" } });
+  });
+
+  it("stores exactly the state its record rebuilds: bots, ticks, cycles and chat all go through the record (#167)", async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(Date.UTC(2026, 9, 19, 14));
+    const { room, storage } = await newRoom(1, new FakeStorage(), CHEATS);
+    const c = connect(room, "tok0");
+    await send(room, c, { type: "chat", channel: CHAT_CHANNELS[0], text: "hello" });
+    await send(room, c, { type: "action", action: legalIn(lastView(c)).find((x) => x.type === "move")! });
+    await vi.advanceTimersByTimeAsync(1600);
+    vi.setSystemTime(Date.UTC(2026, 9, 19, 15));
+    await room.onAlarm();
+    await vi.advanceTimersByTimeAsync(1600);
+    vi.useRealTimers();
+    // Through JSON, as the runtime stores it.
+    const json = <T>(v: unknown) => JSON.parse(JSON.stringify(v)) as T;
+    const record = json<RecordedInput[]>([...(await storage.list({ prefix: "input:" })).values()]);
+    const types = new Set(record.map((r) => r.input.type));
+    for (const type of ["chat", "action", "tick", "cycle"]) expect(types, type).toContain(type);
+    expect(record.some((r) => "by" in r.input && r.input.by !== "p0"), "a bot input").toBe(true);
+    const stored = json<{ game: unknown }>(await storage.get("game")).game;
+    expect(rebuildGame(json<GameSetup>(await storage.get("setup")), record)).toEqual(stored);
   });
 });
 
