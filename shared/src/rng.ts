@@ -64,3 +64,10 @@ export function shuffle<T>(items: readonly T[], state: RngState): [result: T[], 
   }
   return [result, s];
 }
+
+/** Fisher-Yates shuffle into a new array; advances `holder.rng`. */
+export function rollShuffle<T>(holder: HasRng, items: readonly T[]): T[] {
+  const [result, next] = shuffle(items, holder.rng);
+  holder.rng = next;
+  return result;
+}

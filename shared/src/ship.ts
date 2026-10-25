@@ -7,7 +7,7 @@
 import { damage } from "./death.ts";
 import { logPublic } from "./log.ts";
 import { PROJECT_COMPLETE } from "./projects.ts";
-import { nextInt } from "./rng.ts";
+import { rollInt } from "./rng.ts";
 import type { GameConfig, GameState, ShipResources } from "./types.ts";
 
 export function startShip(config: GameConfig): ShipResources {
@@ -28,8 +28,7 @@ export function burnOxygen(state: GameState): void {
   if (state.ship.oxygen === 0) {
     const living = state.players.filter((p) => p.alive);
     if (living.length > 0) {
-      const [i, rng] = nextInt(state.rng, living.length);
-      state.rng = rng;
+      const i = rollInt(state, living.length);
       logPublic(state, undefined, "oxygenOut", undefined, "warning");
       const victim = living[i]!;
       damage(state, victim, victim.hp);

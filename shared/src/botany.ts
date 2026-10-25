@@ -4,7 +4,7 @@
 
 import { ITEM_TYPES, TREE_POT_ITEM, produceItem } from "./items.ts";
 import { logPublic } from "./log.ts";
-import { nextFloat } from "./rng.ts";
+import { rollFloat } from "./rng.ts";
 import { hasSkill } from "./skills.ts";
 import type { GameState, ItemState, ItemView, PlantState, PlayerState, RoomId } from "./types.ts";
 
@@ -54,9 +54,7 @@ export function botanyCycle(state: GameState): void {
     const { plant } = pot;
     if (plant.age !== null) plant.age += 1;
     if (plant.sick) continue;
-    const [roll, rng] = nextFloat(state.rng);
-    state.rng = rng;
-    if (roll < state.config.botany.sickChancePerCycle) plant.sick = true;
+    if (rollFloat(state) < state.config.botany.sickChancePerCycle) plant.sick = true;
   }
 }
 

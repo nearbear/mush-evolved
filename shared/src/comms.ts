@@ -8,7 +8,7 @@ import { BLUEPRINT_ITEM, BLUEPRINTS } from "./blueprints.ts";
 import { pushChat } from "./chat.ts";
 import { BOOK_ITEM } from "./items.ts";
 import { PROJECT_COMPLETE, PROJECT_IDS } from "./projects.ts";
-import { nextInt } from "./rng.ts";
+import { roll, rollInt } from "./rng.ts";
 import { hasSkill, SKILLS } from "./skills.ts";
 import { hasTitleAccess } from "./titles.ts";
 import type { CommsTerminalView, GameConfig, GameState, ItemState, PlayerState, RoomId } from "./types.ts";
@@ -126,9 +126,8 @@ export function callNextRebel(state: GameState): void {
   const base = REBEL_BASES[state.comms.rebels.length];
   if (!base) return;
   const { windowMin, windowMax } = state.config.comms.rebel;
-  const [extra, rng] = nextInt(state.rng, windowMax - windowMin + 1);
-  state.rng = rng;
-  state.comms.rebels.push({ base, calledAt: state.cycle, expiresAt: state.cycle + windowMin + extra, progress: 0 });
+  const expiresAt = state.cycle + roll(state, [windowMin, windowMax]);
+  state.comms.rebels.push({ base, calledAt: state.cycle, expiresAt, progress: 0 });
   if (state.comms.linked) pushChat(state, "global", { from: null, isBot: false, text: "", system: { key: "rebelCalling", params: { base } } });
 }
 
@@ -144,9 +143,8 @@ export function commsCycle(state: GameState): void {
  */
 export function rollRebelGain(state: GameState, player: Readonly<PlayerState>): number {
   const { gainMax, rebelBonus, kivancBonus } = state.config.comms.rebel;
-  const [a, rng1] = nextInt(state.rng, gainMax);
-  const [b, rng2] = nextInt(rng1, gainMax);
-  state.rng = rng2;
+  const a = rollInt(state, gainMax);
+  const b = rollInt(state, gainMax);
   const factor = 1 + (hasSkill(player, "rebel") ? rebelBonus : 0) + (xylophFound(state, "KIVANC_TERZI_CONTACT") ? kivancBonus : 0);
   return Math.floor((a + 1 + b + 1) / 2) * factor;
 }
@@ -175,12 +173,11 @@ export function drawXyloph(state: GameState): XylophEntryId | null {
   const left = xylophLeft(state);
   const total = left.reduce((sum, id) => sum + XYLOPH_ENTRIES[id], 0);
   if (total === 0) return null;
-  const [roll, rng] = nextInt(state.rng, total);
-  state.rng = rng;
+  const pick = rollInt(state, total);
   let acc = 0;
   for (const id of left) {
     acc += XYLOPH_ENTRIES[id];
-    if (roll < acc) return id;
+    if (pick < acc) return id;
   }
   return null;
 }
@@ -190,9 +187,7 @@ function dropItem(state: GameState, item: Omit<ItemState, "id" | "at">): void {
 }
 
 function randomOf<T>(state: GameState, list: readonly T[]): T {
-  const [i, rng] = nextInt(state.rng, list.length);
-  state.rng = rng;
-  return list[i]!;
+  return list[rollInt(state, list.length)]!;
 }
 
 /**

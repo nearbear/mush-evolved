@@ -16,7 +16,7 @@ import { contaminationSeenBy, convert } from "./infection.ts";
 import { addStatus, isHungry, publicStatusesOf, statusesOf } from "./statuses.ts";
 import { emptyResources } from "./resources.ts";
 import { hasSkill } from "./skills.ts";
-import { nextFloat, shuffle } from "./rng.ts";
+import { rollFloat, shuffle } from "./rng.ts";
 import { chatChannels, readChannels } from "./chat.ts";
 import { moderateName } from "./moderation.ts";
 import { clone, fail, findPlayer, type ActionResult } from "./helpers.ts";
@@ -228,9 +228,7 @@ export function performAction(next: GameState, actor: PlayerState, action: Actio
   actor.mp -= cost.mp;
   const room = actor.room;
   if (chance < 1) {
-    const [roll, rng] = nextFloat(next.rng);
-    next.rng = rng;
-    if (roll < chance) def.apply(next, actor, action);
+    if (rollFloat(next) < chance) def.apply(next, actor, action);
     else {
       def.fail?.(next, actor, action);
       actionFailed(next, actor, cost.ap);
@@ -241,9 +239,7 @@ export function performAction(next: GameState, actor: PlayerState, action: Actio
   // After apply, so an action that reveals your own history (Chitchat) doesn't show itself.
   if (def.recorded) recordAction(next, actor, action.type);
   if (dirtyChance > 0) {
-    const [roll, rng] = nextFloat(next.rng);
-    next.rng = rng;
-    if (roll < dirtyChance && !actor.statuses.includes("dirty")) {
+    if (rollFloat(next) < dirtyChance && !actor.statuses.includes("dirty")) {
       if (itemsIn(next, { kind: "player", id: actor.id }).some((i) => i.type === "apron")){
         logPrivate(next, actor.id, "apronBlockedDirty", { name: actor.character });
       }
@@ -257,9 +253,7 @@ export function performAction(next: GameState, actor: PlayerState, action: Actio
     }
   }
   if (injuryChance > 0) {
-    const [roll, rng] = nextFloat(next.rng);
-    next.rng = rng;
-    if (roll < injuryChance) {
+    if (rollFloat(next) < injuryChance) {
       if (itemsIn(next, { kind: "player", id: actor.id }).some((i) => i.type === "protection_gloves")){
         logPrivate(next, actor.id, "glovesBlockedInjury", { name: actor.character });
       }

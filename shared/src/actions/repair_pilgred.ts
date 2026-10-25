@@ -49,8 +49,7 @@ export class RepairPilgredAction extends Action<RepairPilgredActionData> {
 
   override apply(state: GameState, player: PlayerState, _target: RepairPilgredActionData): void {
     if (this.paidWithPoint(player)) player.resources.pilgred -= 1;
-    const [gain, rng] = rollPilgredGain(state.rng, pilgredGainRange(state, player));
-    state.rng = rng;
+    const gain = rollPilgredGain(state, pilgredGainRange(state, player));
     const pilgred = state.pilgred;
     pilgred.progress = Math.min(PILGRED_COMPLETE, pilgred.progress + gain);
     pilgred.streak = pilgred.lastBy === player.id ? pilgred.streak + 1 : 1;

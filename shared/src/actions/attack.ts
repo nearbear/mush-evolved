@@ -2,7 +2,7 @@ import { Action, IN_PRESELECTION, peopleHere, type ActionTag } from "./action.ts
 import { damage } from "../death.ts";
 import { itemsIn } from "../items.ts";
 import { logPublic } from "../log.ts";
-import { nextInt } from "../rng.ts";
+import { roll } from "../rng.ts";
 import type { WeaponStats } from "../types/config.ts";
 import type { GameState, ItemState, PlayerState } from "../types.ts";
 
@@ -98,9 +98,3 @@ function spend(state: GameState, target: AttackActionData): ItemState {
   return weapon;
 }
 
-/** A whole number in [min, max], both included, from the seeded RNG. */
-function roll(state: GameState, [min, max]: [number, number]): number {
-  const [n, rng] = nextInt(state.rng, max - min + 1);
-  state.rng = rng;
-  return min + n;
-}

@@ -2,7 +2,7 @@
 // plan in docs/scratchpad/pilgred-plan.md). Progress is state (`GameState.pilgred`), seen only by the living in a room
 // with the PILGRED terminal. Once it is repaired, the Commander can return to Sol (actions/return_to_sol.ts).
 
-import { nextInt, type RngState } from "./rng.ts";
+import { roll } from "./rng.ts";
 import { hasSkill } from "./skills.ts";
 import { hasTitleAccess } from "./titles.ts";
 import type { GameState, PlayerState } from "./types.ts";
@@ -27,11 +27,9 @@ export function pilgredGainRange(state: Readonly<GameState>, player: Readonly<Pl
   return { min: base, max: base + (base >> 1) };
 }
 
-/** Rolls one repair's gain with the seeded RNG. */
-export function rollPilgredGain(rng: RngState, range: { min: number; max: number }): [gain: number, next: RngState] {
-  if (range.max === range.min) return [range.min, rng];
-  const [extra, next] = nextInt(rng, range.max - range.min + 1);
-  return [range.min + extra, next];
+/** Rolls one repair's gain with the seeded RNG (no draw when the range is a single value). */
+export function rollPilgredGain(state: GameState, range: { min: number; max: number }): number {
+  return range.max === range.min ? range.min : roll(state, [range.min, range.max]);
 }
 
 export function isPilgredRepaired(state: Readonly<Pick<GameState, "pilgred">>): boolean {

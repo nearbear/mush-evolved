@@ -30,7 +30,7 @@ Other packages import from `@mush2/shared` (`shared/src/index.ts`, the barrel). 
 - `victory.ts`: the game end: `winnerOnArrival` (the decided win rule on reaching Sol or Eden), `mushWinOnDeath`, and `endGame` (`phase` "ended", `winner`, `ending`).
 - `projects.ts`: `PROJECT_IDS` (the original's 41 live NERON projects), `PROJECT_COMPLETE` and `PROJECT_STATUS`.
 - `mind.ts`: minds and bodies: `bodyOf` (the body a seat plays; the server resolves every token through it), `swapMinds` (a Transfer), `acknowledgeTransfer` (the victim's pop-up input).
-- `rng.ts`: the seeded RNG (its state is part of `GameState`): pair functions `nextFloat`, `nextInt`, `rollRange`, `shuffle` return `[value, next]`; the `roll`, `rollInt`, `rollFloat` helpers advance a `HasRng` holder (a `GameState`) in place, so a draw can't drop the next state.
+- `rng.ts`: the seeded RNG (its state is part of `GameState`): pair functions `nextFloat`, `nextInt`, `rollRange`, `shuffle` return `[value, next]`; the `roll`, `rollInt`, `rollFloat`, `rollShuffle` helpers advance a `HasRng` holder (a `GameState`) in place, so a draw can't drop the next state. Rule code that draws from `state.rng` uses the helpers; the pair functions are for seeded generators that take a bare seed (`planets.ts`, `createGame`'s seed, `singlePlayerGame`).
 - `helpers.ts`: `ActionResult`, `fail`, `clone`, `findPlayer`.
 
 **Rule areas**

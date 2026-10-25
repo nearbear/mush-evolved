@@ -1,11 +1,11 @@
 import { Action, type ActionVisibility } from "./action.ts";
 import { endPushToLeave } from "./accommodate.ts";
 import { damage } from "../death.ts";
-import { destroyShip, rollRange } from "../hunters.ts";
+import { destroyShip } from "../hunters.ts";
 import { logPrivate, logSecret } from "../log.ts";
 import { cleanManoeuvreChance } from "../modifiers.ts";
 import { canFly, dockedHere, interfaceId, PATROL_SHIPS, type PatrolShip } from "../patrol.ts";
-import { nextFloat } from "../rng.ts";
+import { roll, rollFloat } from "../rng.ts";
 import type { GameState, PlayerState, RoomId } from "../types.ts";
 
 export type TakeoffActionData = { type: "takeoff"; equipment: string };
@@ -61,13 +61,10 @@ export function board(player: PlayerState, room: RoomId): void {
 export function manoeuvre(state: GameState, pilot: PlayerState, ship: PatrolShip): void {
   const chance = cleanManoeuvreChance(state, pilot);
   if (chance >= 1) return;
-  const [roll, rng] = nextFloat(state.rng);
-  state.rng = rng;
-  if (roll < chance) return;
+  if (rollFloat(state) < chance) return;
   const rough = state.config.patrol.rough;
-  const [hull, afterHull] = rollRange(state.rng, rough.hull);
-  const [hp, afterHp] = rollRange(afterHull, rough.hp);
-  state.rng = afterHp;
+  const hull = roll(state, rough.hull);
+  const hp = roll(state, rough.hp);
   const shipState = state.patrolShips[ship.id]!;
   shipState.armor = Math.max(0, shipState.armor - rough.armor);
   state.ship.hull = Math.max(0, state.ship.hull - hull);

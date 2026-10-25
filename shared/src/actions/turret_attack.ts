@@ -1,5 +1,6 @@
 import { Action, IN_PRESELECTION, type ActionTag, type ActionVisibility } from "./action.ts";
-import { damageHunter, rollRange, turretCharges, turretsHere } from "../hunters.ts";
+import { damageHunter, turretCharges, turretsHere } from "../hunters.ts";
+import { roll } from "../rng.ts";
 import { logPrivate, logPublic } from "../log.ts";
 import { failureStreakMultiplier, turretDamage } from "../modifiers.ts";
 import type { GameState, PlayerState } from "../types.ts";
@@ -48,9 +49,7 @@ export class TurretAttackAction extends Action<TurretAttackActionData> {
     spendCharge(state, target.equipment);
     spendShootPoint(player);
     delete state.turretFailures[player.id];
-    const [rolled, rng] = rollRange(state.rng, state.config.turrets.damage);
-    state.rng = rng;
-    const amount = turretDamage(state, player, rolled);
+    const amount = turretDamage(state, player, roll(state, state.config.turrets.damage));
     if (damageHunter(state, target.hunter, amount)) logPublic(state, player.room, "hunterDestroyed", { name: player.character });
     else logPrivate(state, player.id, "turretHit", { damage: amount });
   }

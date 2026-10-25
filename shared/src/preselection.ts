@@ -14,7 +14,7 @@ import { clone, fail, type ActionResult } from "./helpers.ts";
 import { logPrivate } from "./log.ts";
 import { callNextRebel } from "./comms.ts";
 import { startHunters } from "./hunters.ts";
-import { shuffle } from "./rng.ts";
+import { rollShuffle } from "./rng.ts";
 import { newPlayer, startInventory } from "./rules.ts";
 import { assignTitles } from "./titles.ts";
 import { endGame, mushWinOnDeath } from "./victory.ts";
@@ -57,11 +57,10 @@ export function selectMush(state: GameState): void {
   const wanted = aboard.length > rules.twoMushAbove ? 2 : 1;
   // A Mush made by the dev role cheat already counts.
   const already = aboard.filter((p) => p.role === "mush").length;
-  const [order, rng] = shuffle(
+  const order = rollShuffle(
+    state,
     aboard.filter((p) => p.role === "human"),
-    state.rng,
   );
-  state.rng = rng;
   for (const p of order.slice(0, Math.max(0, wanted - already))) {
     p.role = "mush";
     p.alpha = true;
