@@ -47,6 +47,9 @@ const BOT_DELAY_MS = 50;
 /** Dev servers wait this long after the first join before seating bots, so a second window can join as another character. */
 export const DEV_FILL_DELAY_MS = 8000;
 
+/** A dev server (`ALLOW_CHEATS`) allows this many times the usual message rate, so testing and scripted clients don't trip it. */
+export const DEV_RATE_SCALE = 10;
+
 /**
  * Model bots' limits per game (ModelGate). The budget is a backstop against a runaway bug, set high enough not to
  * bind in a normal game; a player will choose their own once they bring their own key.
@@ -291,7 +294,7 @@ export class GameRoom extends Server<Env> {
     const playerId = connection.state?.playerId;
     const by = playerId && this.body(playerId);
     if (!playerId || !by || !this.game) return;
-    if (!this.limiter.allow(connection.id)) {
+    if (!this.limiter.allow(connection.id, Date.now(), this.cheatsAllowed ? DEV_RATE_SCALE : 1)) {
       this.countRateLimited(playerId);
       this.send(connection, { type: "error", message: "slow_down" });
       return;
@@ -370,7 +373,7 @@ export class GameRoom extends Server<Env> {
     msg: Exclude<GameClientMessage, { type: "action" | "clearQueue" | "acknowledgeTransfer" | "walk" | "cheat" | "actopiCheat" | "roleCheat" | "setModel" | "clearModel" }>,
   ): Promise<string | null> {
     if (!this.game) return "no_game";
-    if (!this.chatLimiter.allow(playerId)) {
+    if (!this.chatLimiter.allow(playerId, Date.now(), this.cheatsAllowed ? DEV_RATE_SCALE : 1)) {
       this.countRateLimited(playerId);
       return "too_many_messages";
     }

@@ -6,7 +6,7 @@
 
 import { getServerByName, Server, type Connection, type WSMessage } from "partyserver";
 import { LOBBY_LANGUAGES, type CharacterId, parseMatchmakerMessage, SEAT_COUNT, type MatchmakerClientMessage, type MatchmakerServerMessage } from "@mush2/shared";
-import { DEV_FILL_DELAY_MS, type JoinResult } from "./GameRoom.ts";
+import { DEV_FILL_DELAY_MS, DEV_RATE_SCALE, type JoinResult } from "./GameRoom.ts";
 import { RateLimiter } from "./rateLimit.ts";
 
 /** The ship players join now. Gone once it is full or past its pre-selection deadline. */
@@ -61,7 +61,7 @@ export class Matchmaker extends Server<Env> {
   }
 
   override async onMessage(connection: Connection<JoinState>, raw: WSMessage): Promise<void> {
-    if (!this.limiter.allow(connection.id)) return;
+    if (!this.limiter.allow(connection.id, Date.now(), this.env.ALLOW_CHEATS === "true" ? DEV_RATE_SCALE : 1)) return;
     const msg = typeof raw === "string" ? parseMatchmakerMessage(raw) : null;
     if (!msg) {
       this.send(connection, { type: "error", message: "malformed_message" });

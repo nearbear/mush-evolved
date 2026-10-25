@@ -9,14 +9,15 @@ export class RateLimiter {
     private windowMs: number,
   ) {}
 
-  allow(key: string, now = Date.now()): boolean {
+  /** `scale` multiplies the limit, for a dev server that wants more headroom. */
+  allow(key: string, now = Date.now(), scale = 1): boolean {
     const w = this.windows.get(key);
     if (!w || now - w.start >= this.windowMs) {
       this.windows.set(key, { start: now, count: 1 });
       return true;
     }
     w.count += 1;
-    return w.count <= this.maxPerWindow;
+    return w.count <= this.maxPerWindow * scale;
   }
 
   forget(key: string): void {
