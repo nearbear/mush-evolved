@@ -125,7 +125,7 @@ export function ITrackie({
           <h2 className="itrackie-title">{t(TAB_TITLES[activeTab])}{activeTab === "room" && ` – ${names.room(here)}`}{activeTab === "threads" && shownThread && ` – ${shownThread.name}`}</h2>
 
           {/* keepMounted: hidden with CSS, so chat drafts survive switching tabs. */}
-          <Tabs.Panel className="itrackie-panel" value="room" keepMounted>
+          <Tabs.Panel className="itrackie-panel" value="room" aria-label={t(TAB_TITLES.room)} keepMounted>
             <Scroller items={roomLog.length}>
               <ol className="feed">
                 {roomLog.map((e, i) => (
@@ -144,11 +144,11 @@ export function ITrackie({
             </Scroller>
           </Tabs.Panel>
 
-          <Tabs.Panel className="itrackie-panel" value="global" keepMounted>
+          <Tabs.Panel className="itrackie-panel" value="global" aria-label={t(TAB_TITLES.global)} keepMounted>
             <Thread view={view} channel="global" placeholder={t("itrackie.globalPlaceholder")} onSend={(text) => onChat("global", text)} onToggle={onToggle} threadLinks={threadLinks} />
           </Tabs.Panel>
 
-          <Tabs.Panel className="itrackie-panel" value="threads" keepMounted>
+          <Tabs.Panel className="itrackie-panel" value="threads" aria-label={t(TAB_TITLES.threads)} keepMounted>
             <Threads
               view={view}
               open={shownThread?.id ?? null}
@@ -170,7 +170,7 @@ export function ITrackie({
             />
           </Tabs.Panel>
 
-          <Tabs.Panel className="itrackie-panel" value="features" keepMounted>
+          <Tabs.Panel className="itrackie-panel" value="features" aria-label={t(TAB_TITLES.features)} keepMounted>
             <FeatureSelect value={feature} onChange={setFeature} />
             {/* One block per feature, hidden with CSS, so each keeps its own draft. */}
             {FEATURE_CHANNELS.map((f) => {
@@ -197,18 +197,18 @@ export function ITrackie({
           </Tabs.Panel>
 
           {mush && (
-            <Tabs.Panel className="itrackie-panel" value="mush" keepMounted>
+            <Tabs.Panel className="itrackie-panel" value="mush" aria-label={t(TAB_TITLES.mush)} keepMounted>
               <Thread view={view} channel={MUSH_CHANNEL} placeholder={t("itrackie.mushPlaceholder")} onSend={(text) => onChat(MUSH_CHANNEL, text)} onToggle={onToggle} />
             </Tabs.Panel>
           )}
 
           {graveyard && (
-            <Tabs.Panel className="itrackie-panel" value="graveyard" keepMounted>
+            <Tabs.Panel className="itrackie-panel" value="graveyard" aria-label={t(TAB_TITLES.graveyard)} keepMounted>
               <Thread view={view} channel={GRAVEYARD_CHANNEL} placeholder={t("itrackie.graveyardPlaceholder")} onSend={(text) => onChat(GRAVEYARD_CHANNEL, text)} onToggle={onToggle} />
             </Tabs.Panel>
           )}
 
-          <Tabs.Panel className="itrackie-panel" value="private" keepMounted>
+          <Tabs.Panel className="itrackie-panel" value="private" aria-label={t(TAB_TITLES.private)} keepMounted>
             <PrivateChannels view={view} onChat={onChat} onToggle={onToggle} {...channels} />
           </Tabs.Panel>
         </div>

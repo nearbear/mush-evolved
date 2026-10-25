@@ -77,6 +77,16 @@ export function endAccommodationToAct(state: GameState, p: PlayerState, action: 
   if (pushed && endsAccommodation(action, p.id, visibility)) endPush(state, pushed);
 }
 
+/**
+ * `p` leaves the room without their partner (taking off in a patrol ship): a push they are part of, pushing or pushed,
+ * ends with its public line, and their offers lapse (owner, 2026-10-24). Mutates a cloned state.
+ */
+export function endPushToLeave(state: GameState, p: PlayerState): void {
+  const pushed = p.pushedBy !== undefined ? p : pushing(state, p);
+  if (pushed) endPush(state, pushed);
+  leaveAccommodation(state, p);
+}
+
 /** The pusher has moved: the person they push goes with them, out of bed, and both rooms see them go and arrive. */
 export function wheelAlong(state: GameState, pusher: PlayerState, from: string): void {
   const pushed = pushing(state, pusher);

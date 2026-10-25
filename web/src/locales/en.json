@@ -1256,5 +1256,15 @@
     "title": "Your body has been taken!",
     "text": "A Mush has slipped into your body. You wake up in theirs: you are now {{name}}, and still human.",
     "ok": "I understand"
+  },
+  "roomList": {
+    "region": "Room",
+    "people": "People",
+    "equipment": "Equipment",
+    "items": "Items on the floor",
+    "exits": "Exits",
+    "lyingDown": "{{name}} (lying down)",
+    "door": "Door to {{room}}",
+    "doorOutOfReach": "Door to {{room}} (out of reach)"
   }
 }

@@ -1263,5 +1263,15 @@
     "title": "¡Te han robado el cuerpo!",
     "text": "Un Mush se ha metido en tu piel. Despiertas en la suya: ahora eres {{name}}, y sigues siendo humano.",
     "ok": "Entendido"
+  },
+  "roomList": {
+    "region": "Sala",
+    "people": "Personas",
+    "equipment": "Equipamiento",
+    "items": "Objetos en el suelo",
+    "exits": "Salidas",
+    "lyingDown": "{{name}} (tumbado)",
+    "door": "Puerta a {{room}}",
+    "doorOutOfReach": "Puerta a {{room}} (fuera de alcance)"
   }
 }

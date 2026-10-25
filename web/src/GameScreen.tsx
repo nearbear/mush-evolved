@@ -10,6 +10,7 @@ import { ActionQueue } from "./hud/ActionQueue.tsx";
 import { BottomNav, type MobilePanel } from "./hud/BottomNav.tsx";
 import { DeathNotice } from "./hud/DeathNotice.tsx";
 import { Credits } from "./hud/Credits.tsx";
+import { RoomList } from "./hud/RoomList.tsx";
 import { InspectPanel } from "./hud/InspectPanel.tsx";
 import { InventoryOverlay } from "./hud/InventoryOverlay.tsx";
 import { ShipOverlay } from "./hud/ShipOverlay.tsx";
@@ -233,6 +234,7 @@ export function GameScreen({ ticket, onLeave, waking = false }: { ticket: SeatTi
             ) : (
               <section className="iso-room loading">{t("common.loadingShip")}</section>
             )}
+            {you.alive && <RoomList view={view} layout={layout} reachable={reachable} onSelect={select} onMove={move} />}
             {you.alive && <ActionQueue view={view} onClear={() => post({ type: "clearQueue" })} />}
             {mobile && <ShipOverlay view={view} />}
             {you.alive && <InventoryOverlay view={view} selected={target} onAction={send} onSelect={select} zoom={zoom} onZoom={setZoom} />}

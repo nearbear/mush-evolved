@@ -31,6 +31,7 @@ import { callNextRebel, commsCycle, commsTerminalView, comTerminalsHere, newComm
 import { botanyCycle, botanyDay, plantView } from "./botany.ts";
 import { burnOxygen, shipMax, startShip } from "./ship.ts";
 import { allTurrets, huntersCycle, newHunters, startHunters, turretCharges, turretsHere } from "./hunters.ts";
+import { interfaceId, newPatrolShips, PATROL_INTERFACE, PATROL_SHIPS, shipAboard } from "./patrol.ts";
 import { preselectionCycle } from "./preselection.ts";
 import { SUCCESSION, TITLE_IDS, assignTitles, noTitles } from "./titles.ts";
 import type {
@@ -118,6 +119,7 @@ export function createGame(
     hunters: newHunters(),
     turrets: {},
     turretFailures: {},
+    patrolShips: newPatrolShips(config),
     navigation: { heading: config.navigation.startHeading, orbit: null },
     // Issued with Mush selection, whatever the role (owner, 2026-10-13 and 2026-10-20); in pre-selection, by `selectMush`.
     titles: preselection ? noTitles() : assignTitles(players),
@@ -462,7 +464,7 @@ export function viewFor(state: GameState, playerId: PlayerId): PlayerView {
     inventory: itemsIn(state, { kind: "player", id: you.id }).map((item) => itemView(item, you)),
     inventorySlots: inventorySlots(state, you),
     roomItems: you.alive ? itemsIn(state, { kind: "room", id: you.room }).map((item) => itemView(item, you)) : [],
-    roomEquipment: you.alive ? (state.config.equipment[you.room] ?? []).map(equipmentView) : [],
+    roomEquipment: you.alive ? (state.config.equipment[you.room] ?? []).map((e) => equipmentView(state, e)) : [],
     // The dead keep only ship-wide entries (cycles, days); every room entry, their own private ones included, goes.
     log: state.log.filter((e) =>
       !you.alive ? e.room === undefined && e.visibleTo === "all" : e.visibleTo === "all" ? e.room === undefined || e.room === you.room : e.visibleTo.includes(playerId),
@@ -507,6 +509,7 @@ export function viewFor(state: GameState, playerId: PlayerId): PlayerView {
       sectors: p.sectors.map((s) => (s.known ? s.tag : null)),
       ...(p.id === state.navigation.orbit && { orbited: true as const }),
     })),
+    patrolShip: patrolShipView(state, you),
     navigation: {
       orbiting: state.navigation.orbit !== null,
       heading: you.alive && commandTerminalsHere(state, you).length > 0 ? state.navigation.heading : null,
@@ -542,8 +545,16 @@ function itemView({ id, type, of, builds, charges, teaches, plant, spores }: Ite
   return { id, type, ...(spores && viewer.role === "mush" && viewer.alive && { spores }), ...(of !== undefined && { of }), ...(builds !== undefined && { builds }), ...(charges !== undefined && { charges }), ...(teaches !== undefined && { teaches }), ...(plant && { plant: plantView(plant, viewer) }) };
 }
 
-function equipmentView({ id, type }: Equipment): EquipmentView {
-  return { id, type };
+function equipmentView(state: GameState, { id, type }: Equipment): EquipmentView {
+  // Out is known in the bay, where the ship is missing (owner, 2026-10-24).
+  const out = type === PATROL_INTERFACE && PATROL_SHIPS.some((s) => interfaceId(s) === id && state.patrolShips[s.id]?.out);
+  return { id, type, ...(out && { out: true as const }) };
+}
+
+/** Your own ship's armor, while you fly it. */
+function patrolShipView(state: GameState, you: PlayerState): PlayerView["patrolShip"] {
+  const ship = you.alive ? shipAboard(you) : undefined;
+  return ship ? { id: ship.id, armor: state.patrolShips[ship.id]!.armor, maxArmor: state.config.patrol.armor[ship.kind] } : null;
 }
 
 /** Alive, not done for the cycle, and the game is running. */

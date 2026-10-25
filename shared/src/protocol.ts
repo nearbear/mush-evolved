@@ -196,6 +196,9 @@ export function parseGameMessage(raw: string): GameClientMessage | null {
   if (a.type === "turret_attack" && typeof a.equipment === "string" && typeof a.hunter === "string") {
     return { type: "action", action: { type: "turret_attack", equipment: a.equipment, hunter: a.hunter } };
   }
+  if ((a.type === "takeoff" || a.type === "land") && typeof a.equipment === "string") {
+    return { type: "action", action: { type: a.type, equipment: a.equipment } };
+  }
   if (a.type === "repair_hull" && typeof a.item === "string") {
     return { type: "action", action: { type: "repair_hull", item: a.item } };
   }

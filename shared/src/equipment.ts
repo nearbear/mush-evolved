@@ -44,6 +44,9 @@ export const EQUIPMENT_TYPES: Record<string, EquipmentType> = {
   NERON_CORE: { terminal: true },
   OXYGEN_TANK: {},
   PATROL_INTERFACE: {},
+  // A patrol ship's and the Pasiphae's command, the only equipment in their rooms (patrol.ts).
+  PATROL_COMMAND: {},
+  PASIPHAE_COMMAND: {},
   PILGRED: { terminal: true },
   PILOT_MODULE: { terminal: true },
   PLANET_SCANNER: {},

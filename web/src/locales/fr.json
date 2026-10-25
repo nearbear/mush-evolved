@@ -1263,5 +1263,15 @@
     "title": "On vous a volé votre corps !",
     "text": "Un Mush s'est glissé dans votre peau. Vous vous réveillez dans la sienne : vous êtes maintenant {{name}}, et toujours humain.",
     "ok": "J'ai compris"
+  },
+  "roomList": {
+    "region": "Salle",
+    "people": "Personnes",
+    "equipment": "Équipements",
+    "items": "Objets au sol",
+    "exits": "Sorties",
+    "lyingDown": "{{name}} (allongé)",
+    "door": "Porte vers {{room}}",
+    "doorOutOfReach": "Porte vers {{room}} (hors de portée)"
   }
 }

@@ -1304,3 +1304,9 @@ Owner asked for oxygen capsules "like fuel canisters". Asked three questions (ta
 - A subtle case the first draft missed: a call in flight with the old key that fails after a new key is set would have marked the new key refused. The gate now ignores failures from replaced credentials, and the room reschedules a bot whose turn spanned a key change (`keyChanges`), since nothing else would wake it.
 - Tests were mutation-checked (removing the wake-up or the disconnect clear each fails one test).
 - Leak check finding, accepted (owner, 2026-10-24): with their own key, the player can read every bot's prompt (its whole view) in their provider's request logs. Roles don't leak (the player is the only Mush). Accepted as the cost of BYOK; the #218 privacy note must say so.
+
+### 2026-10-24: `npm run a11y` (#247)
+Built `tools/src/a11y/a11y.ts` beside `npm run screenshot`, reusing its join flow and the iso probe. It asserts against the markup the sibling stories specify (#248 "Room" region with People/Equipment/Items/Exits groups, #253 `role="log"`, #245 footer out of the tab path), so it fails on those until they land; that is intended. axe-core left out pending approval (new dependency).
+
+### 2026-10-24: Room as an accessible list (#248) and tab order (#245)
+`web/src/hud/RoomList.tsx`: a visually hidden "Room" region (People, Equipment, Items on the floor, Exits) of buttons built from the player's own `PlayerView` plus the layout's door targets, calling the same `select`/`move` as the canvas; unreachable exits use `aria-disabled` so they are heard but inert. Tab panels in the iTrackie got short names. The license footer was already outside the Inspect aside; the a11y check was loosened from "no footer stops" to "footer stops come last", matching the issue's "contentinfo at the end". Frame-time profiling from the #248 criteria not done.
