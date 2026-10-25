@@ -1,13 +1,16 @@
 // Which skills exist and how many a player can hold. A skill's rules live in
 // modifiers.ts (only some have any yet); this list is what can be picked.
 
+import type { CharacterId } from "./characters.ts";
 import type { PlayerState } from "./types.ts";
 
 /**
- * Human skills a player can pick (decided 2026-10-15: all of them for now; each character will get its own
- * set later). Ids are the lowercase ids from the original design table (`Mush/derived/data/Data/skills.json`,
- * human, retained, not beta), which are also the icon file names under `Mush/www/img/icons/skills`. Mankind's Only
- * Hope is left out: it is Chun's trait here (owner, 2026-10-18; `modifiers/mankind_only_hope.ts`).
+ * Every human skill. Each character picks only from their own list (CHARACTER_SKILLS); books teach any of them.
+ * Ids are the lowercase ids from the original design table (`Mush/derived/data/Data/skills.json`, human, not
+ * beta), which are also the icon file names under `Mush/www/img/icons/skills`. The last ten are on a character's
+ * list on eMushpedia but not retained in the original (the first seven) or new in eMush (the last three, which
+ * have no icon). Mankind's Only Hope is left out: it is Chun's trait here (owner, 2026-10-18;
+ * `modifiers/mankind_only_hope.ts`).
  */
 export const SKILLS = [
   "engineer",
@@ -67,6 +70,16 @@ export const SKILLS = [
   "gunner",
   "polymath",
   "politician",
+  "cold_blood",
+  "optimistic",
+  "lethargy",
+  "panic",
+  "mycologist",
+  "frugivore",
+  "opportunist",
+  "bodyguard",
+  "infantryman",
+  "maintenance_agent",
 ] as const;
 
 export type SkillId = (typeof SKILLS)[number];
@@ -74,6 +87,30 @@ export type SkillId = (typeof SKILLS)[number];
 export function isSkill(value: unknown): value is SkillId {
   return typeof value === "string" && (SKILLS as readonly string[]).includes(value);
 }
+
+/**
+ * The human skills each character can pick (owner, 2026-10-25): their list on eMushpedia's character pages, which
+ * matches the original's `heros.json` except for eMush's changes to Chao (Bodyguard and Infantryman for Crazy Eye
+ * and Daunting) and Chun (Maintenance Agent for Mankind's Only Hope, now her trait). The `anySkill` cheat lifts it.
+ */
+export const CHARACTER_SKILLS: Readonly<Record<CharacterId, readonly SkillId[]>> = {
+  chao: ["gunman", "survival", "wrestler", "torturer", "bodyguard", "infantryman"],
+  chun: ["maintenance_agent", "first_aid", "premonition", "escape", "lethargy"],
+  eleesha: ["hunt", "persistent", "observant", "computer", "engineer", "polymath"],
+  finola: ["biologist", "medic", "first_aid", "diplomacy", "stickler"],
+  frieda: ["astrophysician", "pilot", "survival", "computer", "radio_expert", "antic_perfume"],
+  gioele: ["sturdy", "paranoid", "caffeinomaniac", "astrophysician", "panic", "juge"],
+  hua: ["pilot", "botanic", "survival", "engineer", "persistent", "fast_backward"],
+  ian: ["botanic", "biologist", "mycologist", "green_thumb", "fireman", "frugivore"],
+  janice: ["shrink", "computer", "neron_only_friend", "diplomacy", "radio_expert", "abnegation"],
+  jinsu: ["leadership", "pilot", "cold_blood", "gunman", "logistics", "space_tactics"],
+  kuanti: ["designer", "optimistic", "astrophysician", "engineer", "leadership", "politician"],
+  paola: ["radio_expert", "logistics", "gunman", "biologist", "rebel", "gunner"],
+  raluca: ["physicist", "unconcerned", "engineer", "genius", "designer"],
+  roland: ["sprint", "pilot", "gunman", "fireman", "optimistic", "creative"],
+  stephen: ["cook", "sturdy", "opportunist", "gunman", "apprentice", "creative"],
+  terrence: ["robotics", "engineer", "pilot", "gunman", "computer", "metaliciste"],
+};
 
 /**
  * Mush skills a Mush player can pick, in their own slots (MUSH_SKILL_SLOTS) beside the human ones (owner,

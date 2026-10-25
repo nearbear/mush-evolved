@@ -4,17 +4,13 @@ import { killPlayer } from "../src/death.ts";
 import { parseGameMessage } from "../src/protocol.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";
 import type { Action, GameConfig, GameState } from "../src/types.ts";
-import { makeSeats, nextDay, offered, player } from "./support.ts";
+import { makeSeats, nextDay, offered, player, pickSkill } from "./support.ts";
 
 // MP starts empty, so each move converts AP.
 const base: GameConfig = { ...DEFAULT_CONFIG, mushCount: 1, startInventory: [], startItems: [], startSkills: [], startMp: 0 };
 const curse = (target: string): Action => ({ type: "anathema", target });
 const work = (project: string): Action => ({ type: "project", equipment: "NEXUS_ROOM:NERON_CORE", project });
-const pick = (s: GameState, id: string, skill: string) => {
-  const r = applyAction(s, id, { type: "pick_skill", skill });
-  if (!r.ok) throw new Error(r.error);
-  return r.state;
-};
+const pick = pickSkill;
 
 /** p0 is a Persecutor; p0, p1 and p3 share the sick bay, p2 is in the refectory. */
 function ship(config = base): GameState {

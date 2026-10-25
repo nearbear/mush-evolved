@@ -3,7 +3,7 @@ import { ACTIONS } from "../src/actions.ts";
 import { DEFAULT_CONFIG } from "../src/config.ts";
 import { RESEARCH_IDS } from "../src/research.ts";
 import { affordable, applyAction, createGame, legalActions, viewFor } from "../src/rules.ts";
-import { SKILLS } from "../src/skills.ts";
+import { CHARACTER_SKILLS } from "../src/skills.ts";
 import type { Action } from "../src/types.ts";
 import { makeSeats, offered, option } from "./support.ts";
 
@@ -56,7 +56,7 @@ describe("action registry", () => {
       // Everyone starts in the Laboratory, so p0 can bond with the other three (DTT and STT need a bond first).
       ...seats.filter((s) => s.id !== "p0").map((s): Action => ({ type: "bond", target: s.id })),
       ...seats.filter((s) => s.id !== "p0").map((s): Action => ({ type: "punch", target: s.id })),
-      ...SKILLS.map((skill): Action => ({ type: "pick_skill", skill })),
+      ...CHARACTER_SKILLS.chao.map((skill): Action => ({ type: "pick_skill", skill })), // p0 plays Chao
       ...DEFAULT_CONFIG.equipment.LABORATORY!.map((e): Action => ({ type: "examine", target: { kind: "equipment", id: e.id } })),
       // The Laboratory has one terminal, the research lab.
       { type: "access", equipment: "LABORATORY:RESEARCH_LAB" },

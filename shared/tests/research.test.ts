@@ -5,7 +5,7 @@ import { RESEARCH_IDS } from "../src/research.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";
 import { addStatus } from "../src/statuses.ts";
 import type { Action } from "../src/types.ts";
-import { makeSeats, nextDay, offered } from "./support.ts";
+import { makeSeats, nextDay, offered, pickSkill } from "./support.ts";
 
 const seats = makeSeats(3, "others");
 const work = (research: string): Action => ({ type: "research", equipment: "LABORATORY:RESEARCH_LAB", research });
@@ -115,11 +115,7 @@ describe("research", () => {
 
 describe("computer scientist skill (computer)", () => {
   const cfg = DEFAULT_CONFIG.computer;
-  const pick = (s: ReturnType<typeof game>) => {
-    const r = applyAction(s, "p0", { type: "pick_skill", skill: "computer" });
-    if (!r.ok) throw new Error(r.error);
-    return r.state;
-  };
+  const pick = (s: ReturnType<typeof game>) => pickSkill(s, "p0", "computer");
 
   it("grants 2 Computer points when picked, capped at 4, and nothing to others", () => {
     const s = pick(game());

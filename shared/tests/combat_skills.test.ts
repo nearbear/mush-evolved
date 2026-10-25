@@ -4,7 +4,7 @@ import { channelLimit, computerPointsCap } from "../src/modifiers.ts";
 import { SKILL_SLOTS, skillStatus } from "../src/skills.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";
 import type { Action, GameConfig, GameState } from "../src/types.ts";
-import { makeSeats, must, nextCycle, nextDay, noHunters, option, player } from "./support.ts";
+import { makeSeats, must, nextCycle, nextDay, noHunters, option, player, pickSkill } from "./support.ts";
 
 const TURRET_ROOM = "LASER_TURRET_A_0";
 const TURRET = "LASER_TURRET_A_0:TURRET_COMMAND";
@@ -61,7 +61,7 @@ describe("Gunner", () => {
 describe("Gunman", () => {
   it("gets 2 Shoot points when picked and each day, up to 4", () => {
     let s = ship();
-    s = must(applyAction(s, "p0", { type: "pick_skill", skill: "gunman" }));
+    s = pickSkill(s, "p0", "gunman");
     expect(player(s, "p0").resources.shoot).toBe(2);
     s = nextDay(s);
     expect(player(s, "p0").resources.shoot).toBe(4);
@@ -153,7 +153,7 @@ describe("Polymath", () => {
 
   it("gives 1 Computer point when picked and a day, holding up to 6, and a Computer Scientist keeps the cap of 4", () => {
     let s = ship();
-    s = must(applyAction(s, "p0", { type: "pick_skill", skill: "polymath" }));
+    s = pickSkill(s, "p0", "polymath");
     expect(player(s, "p0").resources.comp).toBe(1);
     expect(computerPointsCap(s, player(s, "p0"))).toBe(6);
     player(s, "p0").resources.comp = 5;

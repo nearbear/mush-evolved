@@ -5,7 +5,7 @@ import { parseGameMessage } from "../src/protocol.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";
 import { addStatus } from "../src/statuses.ts";
 import type { Action } from "../src/types.ts";
-import { makeSeats, offered } from "./support.ts";
+import { makeSeats, offered, pickSkill } from "./support.ts";
 
 const seats = makeSeats(3, "others");
 const work = (project: string): Action => ({ type: "project", equipment: "NEXUS_ROOM:NERON_CORE", project });
@@ -96,9 +96,7 @@ describe("NERON projects", () => {
 
   it("is free with a Computer point, which is spent", () => {
     let s = game();
-    const pick = applyAction(s, "p0", { type: "pick_skill", skill: "computer" });
-    if (!pick.ok) throw new Error(pick.error);
-    s = pick.state;
+    s = pickSkill(s, "p0", "computer");
     const ap = s.players[0]!.ap;
     const comp = s.players[0]!.resources.comp;
     const r = applyAction(s, "p0", work("PLASMA_SHIELD"));

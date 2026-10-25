@@ -6,7 +6,7 @@ import { parseGameMessage } from "../src/protocol.ts";
 import { applyAction, createGame, newCycle, viewFor } from "../src/rules.ts";
 import { addStatus } from "../src/statuses.ts";
 import type { Action, GameState } from "../src/types.ts";
-import { makeSeats, must, nextDay, offered, player, noHunters } from "./support.ts";
+import { makeSeats, must, nextDay, offered, player, noHunters, pickSkill } from "./support.ts";
 
 const seats = makeSeats(3, "others");
 const TERMINAL = "MOTOR_ROOM:PILGRED";
@@ -187,7 +187,7 @@ describe("PILGRED visibility", () => {
 describe("physicist skill", () => {
   it("grants 1 PILGRED point a day, capped at 2, and nothing to others or when picked", () => {
     let s = game();
-    s = must(applyAction(s, "p0", { type: "pick_skill", skill: "physicist" }));
+    s = pickSkill(s, "p0", "physicist");
     expect(s.players[0]!.resources.pilgred).toBe(0);
     s = nextDay(s);
     expect(s.players[0]!.resources.pilgred).toBe(cfg.pointsPerDay);

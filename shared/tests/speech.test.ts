@@ -3,7 +3,7 @@ import { DEFAULT_CONFIG } from "../src/config.ts";
 import { killPlayer } from "../src/death.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";
 import type { Action, GameConfig, GameState } from "../src/types.ts";
-import { makeSeats, mustApply, nextDay, offered, player } from "./support.ts";
+import { makeSeats, mustApply, nextDay, offered, player, pickSkill } from "./support.ts";
 
 const base: GameConfig = { ...DEFAULT_CONFIG, mushCount: 1, startInventory: [], startItems: [], startSkills: [] };
 const fiery: Action = { type: "fiery_speech" };
@@ -14,7 +14,7 @@ function ship(skill: string): GameState {
   let s = createGame(makeSeats(4), base, 3);
   player(s, "p0").room = player(s, "p1").room = player(s, "p3").room = "SICK_BAY";
   player(s, "p2").room = "REFECTORY";
-  s = mustApply(s, "p0", { type: "pick_skill", skill });
+  s = pickSkill(s, "p0", skill);
   for (const p of s.players) {
     p.morale = 5;
     p.mp = 2;

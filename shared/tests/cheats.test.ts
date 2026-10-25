@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { CHEATS, type Cheat } from "../src/cheats.ts";
+import { CHARACTER_SKILLS, isSkill, SKILLS, SKILL_SLOTS } from "../src/skills.ts";
 import { pilgredGainRange } from "../src/pilgred.ts";
 import { TITLE_IDS, bypassesTitles, hasTitleAccess } from "../src/titles.ts";
 import { DEFAULT_CONFIG } from "../src/config.ts";
@@ -190,5 +191,33 @@ describe("infinite charges cheat", () => {
     s = cheat(s, "p0", "infiniteCharges");
     expect(s.items.find((i) => i.id === "w")!.charges).toBe(cfg.weapons.types.blaster!.charges);
     expect(s.items.find((i) => i.id === "f")!.charges).toBe(0);
+  });
+});
+
+describe("any-skill cheat", () => {
+  const skillsOffered = (s: GameState, id: PlayerId) => offered(s, id).flatMap((a) => (a.type === "pick_skill" && isSkill(a.skill) ? [a.skill] : []));
+
+  it("offers every human skill, not just the character's, still within the slots", () => {
+    let s = cheat(fresh(), "p0", "anySkill");
+    expect(skillsOffered(s, "p0").sort()).toEqual([...SKILLS].sort());
+    expect(skillsOffered(s, "p1").sort()).toEqual([...CHARACTER_SKILLS[player(s, "p1").character]].sort());
+    const outsiders = SKILLS.filter((k) => !CHARACTER_SKILLS[player(s, "p0").character].includes(k));
+    for (const skill of outsiders.slice(0, SKILL_SLOTS)) {
+      const r = applyAction(s, "p0", { type: "pick_skill", skill });
+      if (!r.ok) throw new Error(r.error);
+      s = r.state;
+    }
+    expect(player(s, "p0").skills).toEqual(outsiders.slice(0, SKILL_SLOTS));
+    expect(applyAction(s, "p0", { type: "pick_skill", skill: outsiders[SKILL_SLOTS]! })).toMatchObject({ ok: false });
+  });
+
+  it("switched off, the character's list applies again; skills already picked stay", () => {
+    let s = cheat(fresh(), "p0", "anySkill");
+    const outsider = SKILLS.find((k) => !CHARACTER_SKILLS[player(s, "p0").character].includes(k))!;
+    const r = applyAction(s, "p0", { type: "pick_skill", skill: outsider });
+    if (!r.ok) throw new Error(r.error);
+    s = cheat(r.state, "p0", "anySkill", false);
+    expect(player(s, "p0").skills).toEqual([outsider]);
+    expect(skillsOffered(s, "p0").sort()).toEqual([...CHARACTER_SKILLS[player(s, "p0").character]].sort());
   });
 });

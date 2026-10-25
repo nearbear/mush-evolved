@@ -44,11 +44,11 @@ Other packages import from `@mush2/shared` (`shared/src/index.ts`, the barrel). 
 - `log.ts`: room log helpers (`logPublic`, `logPrivate`, `logSecret`, `logCovert`, `hasCamera`).
 - `history.ts`: each body's action history (`recordAction`, called from `performAction`) and `revealHistory`, the private reveal lines Interrogate and Chitchat write.
 - `resources.ts`: per-player skill point pools.
-- `skills.ts`: the pickable human skills, `SKILL_SLOTS`, the Mush skills (`MUSH_SKILLS`, `MUSH_SKILL_SLOTS`), and `skillsOf`/`hasSkill` (picked skills, the book slot, and Mush skills).
+- `skills.ts`: the human skills, each character's pickable list (`CHARACTER_SKILLS`), `SKILL_SLOTS`, the Mush skills (`MUSH_SKILLS`, `MUSH_SKILL_SLOTS`), and `skillsOf`/`hasSkill` (picked skills, the book slot, and Mush skills).
 - `titles.ts`: `TITLE_IDS`, each title's line (`SUCCESSION`), `successor` (pure), `assignTitles` (at creation) and `refreshTitles` (after a death).
 - `statuses.ts`: stored and derived statuses.
 - `adjustStats.ts`: capped morale changes and disease application; `addDisease` updates both the modifier and private status.
-- `cheats.ts`: development cheats (issue #148), gated by `ALLOW_CHEATS`. Flag-only cheats are read where they apply: `instantActions` in `queue.ts`, `noRelayPenalty` in `pilgred.ts`, `freeHacking` in `titles.ts` (`bypassesTitles`).
+- `cheats.ts`: development cheats (issue #148), gated by `ALLOW_CHEATS`. Flag-only cheats are read where they apply: `instantActions` in `queue.ts`, `noRelayPenalty` in `pilgred.ts`, `freeHacking` in `titles.ts` (`bypassesTitles`), `anySkill` in `actions/pick_skill.ts`.
 
 **Types, config, and data**
 

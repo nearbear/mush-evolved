@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { DEFAULT_CONFIG } from "../src/config.ts";
 import { parseGameMessage } from "../src/protocol.ts";
 import { applyAction, createGame, legalActions, viewFor } from "../src/rules.ts";
-import { MUSH_SKILLS, MUSH_SKILL_SLOTS, SKILLS, SKILL_SLOTS, skillStatus } from "../src/skills.ts";
+import { CHARACTER_SKILLS, MUSH_SKILLS, MUSH_SKILL_SLOTS, SKILLS, SKILL_SLOTS, skillStatus } from "../src/skills.ts";
 import type { GameState } from "../src/types.ts";
 import { makeSeats, must } from "./support.ts";
 
@@ -21,10 +21,10 @@ describe("Mush skills", () => {
     expect(MUSH_SKILLS.filter((s) => (SKILLS as readonly string[]).includes(s))).toEqual([]);
   });
 
-  it("offers a Mush every Mush skill as well as every human one; a human gets only human ones", () => {
+  it("offers a Mush every Mush skill as well as their character's human ones; a human gets only human ones", () => {
     const state = ship();
-    expect(offered(state, "p0").sort()).toEqual([...SKILLS, ...MUSH_SKILLS].sort());
-    expect(offered(state, "p2").sort()).toEqual([...SKILLS].sort());
+    expect(offered(state, "p0").sort()).toEqual([...CHARACTER_SKILLS.chao, ...MUSH_SKILLS].sort());
+    expect(offered(state, "p2").sort()).toEqual([...CHARACTER_SKILLS.eleesha].sort());
   });
 
   it("puts a Mush skill in the Mush slots for free, separate from the human slots", () => {
@@ -42,7 +42,7 @@ describe("Mush skills", () => {
     for (const skill of MUSH_SKILLS.slice(0, MUSH_SKILL_SLOTS)) state = must(pick(state, "p0", skill));
     expect(offered(state, "p0").filter((s) => (MUSH_SKILLS as readonly string[]).includes(s))).toEqual([]);
     expect(pick(state, "p0", MUSH_SKILLS[MUSH_SKILL_SLOTS]!).ok).toBe(false);
-    for (const skill of SKILLS.slice(0, SKILL_SLOTS)) state = must(pick(state, "p0", skill));
+    for (const skill of CHARACTER_SKILLS.chao.slice(0, SKILL_SLOTS)) state = must(pick(state, "p0", skill));
     expect(state.players[0]!.mushSkills).toHaveLength(MUSH_SKILL_SLOTS);
     expect(state.players[0]!.skills).toHaveLength(SKILL_SLOTS);
     expect(offered(state, "p0")).toEqual([]);

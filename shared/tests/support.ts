@@ -38,6 +38,19 @@ export function mustApply(s: GameState, id: PlayerId, ...actions: Action[]): Gam
   return s;
 }
 
+/**
+ * `id` picks `skill` whether or not it is on their character's list (the `anySkill` cheat is on for the pick only),
+ * so a test can give any seat any skill. Throws if the pick is refused for another reason.
+ */
+export function pickSkill(s: GameState, id: PlayerId, skill: string): GameState {
+  const cheating = clone(s);
+  player(cheating, id).cheats.push("anySkill");
+  const next = mustApply(cheating, id, { type: "pick_skill", skill });
+  const p = player(next, id);
+  p.cheats = p.cheats.filter((c) => c !== "anySkill");
+  return next;
+}
+
 /** The clock passes a cycle boundary. */
 export function nextCycle(s: GameState): GameState {
   return must(newCycle(s));

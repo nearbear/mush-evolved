@@ -4,7 +4,8 @@ import { ITEM_TYPES } from "../src/items.ts";
 import { actionFailed } from "../src/modifiers.ts";
 import { parseGameMessage } from "../src/protocol.ts";
 import { applyAction, createGame, legalActions, viewFor } from "../src/rules.ts";
-import { isSkill, SKILLS, SKILL_SLOTS } from "../src/skills.ts";
+import { CHARACTER_SKILLS, isSkill, SKILLS, SKILL_SLOTS } from "../src/skills.ts";
+import { CHARACTERS } from "../src/characters.ts";
 import type { GameConfig, GameState } from "../src/types.ts";
 import { makeSeats, nextCycle } from "./support.ts";
 
@@ -95,25 +96,26 @@ describe("picking skills", () => {
 
   it("adds the skill for free and keeps it", () => {
     const before = fresh();
-    const result = pick(before, "p0", "medic");
+    const result = pick(before, "p0", "gunman");
     if (!result.ok) throw new Error(result.error);
     const p = result.state.players[0]!;
-    expect(p.skills).toEqual(["medic"]);
+    expect(p.skills).toEqual(["gunman"]);
     expect([p.ap, p.mp]).toEqual([before.players[0]!.ap, before.players[0]!.mp]);
     expect(before.players[0]!.skills).toEqual([]); // the input state is untouched
   });
 
-  it("offers every skill you lack while a slot is free, and none once full", () => {
+  it("offers every skill on your character's list you lack while a slot is free, and none once full", () => {
     let state = fresh();
+    const mine = CHARACTER_SKILLS.chao; // p0 plays Chao
     const offered = () => legalActions(state, "p0").filter((a) => a.type === "pick_skill" && isSkill(a.skill));
-    expect(offered()).toHaveLength(SKILLS.length);
-    for (const skill of SKILLS.slice(0, SKILL_SLOTS)) {
+    expect(offered()).toHaveLength(mine.length);
+    for (const skill of mine.slice(0, SKILL_SLOTS)) {
       const r = pick(state, "p0", skill);
       if (!r.ok) throw new Error(r.error);
       state = r.state;
     }
     expect(offered()).toHaveLength(0);
-    expect(pick(state, "p0", SKILLS[SKILL_SLOTS]!).ok).toBe(false);
+    expect(pick(state, "p0", mine[SKILL_SLOTS]!).ok).toBe(false);
     expect(state.players[0]!.skills).toHaveLength(SKILL_SLOTS);
   });
 
@@ -210,5 +212,34 @@ describe("caffeinomaniac", () => {
   it("does not trigger for other consumables", () => {
     const withoutBonus = drink([], 0, "cooked_ration").players[0]!.ap;
     expect(drink(["caffeinomaniac"], 0, "cooked_ration").players[0]!.ap).toBe(withoutBonus);
+  });
+});
+
+describe("character skill lists", () => {
+  const fresh = () => createGame(makeSeats(CHARACTERS.length), { ...DEFAULT_CONFIG, startInventory: [], startItems: [] }, 42);
+
+  it("pins two lists from eMushpedia (owner, 2026-10-25): Paola's, and Chao's eMush version", () => {
+    expect(CHARACTER_SKILLS.paola).toEqual(["radio_expert", "logistics", "gunman", "biologist", "rebel", "gunner"]);
+    expect(CHARACTER_SKILLS.chao).toEqual(["gunman", "survival", "wrestler", "torturer", "bodyguard", "infantryman"]);
+  });
+
+  it("offers each character exactly their own list", () => {
+    const state = fresh();
+    for (const p of state.players) {
+      const offered = legalActions(state, p.id).flatMap((a) => (a.type === "pick_skill" && isSkill(a.skill) ? [a.skill] : []));
+      expect(offered.sort()).toEqual([...CHARACTER_SKILLS[p.character]].sort());
+    }
+  });
+
+  it("refuses a skill off the character's list, leaving state unchanged", () => {
+    const state = fresh();
+    const before = JSON.stringify(state);
+    expect(CHARACTER_SKILLS.chao).not.toContain("medic");
+    expect(pick(state, "p0", "medic")).toMatchObject({ ok: false });
+    expect(JSON.stringify(state)).toBe(before);
+  });
+
+  it("leaves no character without a full set of slots to fill", () => {
+    for (const list of Object.values(CHARACTER_SKILLS)) expect(list.length).toBeGreaterThanOrEqual(SKILL_SLOTS);
   });
 });
