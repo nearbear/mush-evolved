@@ -17,14 +17,21 @@ const config: GameConfig = {
 };
 
 describe("Cold disease", () => {
-  it("advances the cycle after a disease tracker is created", () => {
+  it("decrements the randomized disease duration when the cycle advances", () => {
     const state = createGame(makeSeats(4), noHunters(config), 0);
     const sick = player(state, "p0");
     addDisease(state, sick, "cold_disease");
+    const tracker = sick.diseaseTrackers[0];
+    if (!tracker) throw new Error("Expected a cold disease tracker");
+    const initialDuration = tracker.duration;
 
     const next = must(newCycle(state));
 
-    expect(player(next, "p0").diseaseTrackers).toMatchObject([{ name: "cold_disease", duration: 7 }]);
+    expect(initialDuration).toBeGreaterThanOrEqual(8);
+    expect(initialDuration).toBeLessThanOrEqual(12);
+    expect(player(next, "p0").diseaseTrackers).toMatchObject([
+      { name: "cold_disease", duration: initialDuration - 1 },
+    ]);
   });
 
   it("uses a seeded 1-in-3 roll to remove 1 MP and logs only the affected player", () => {
