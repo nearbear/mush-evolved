@@ -1,6 +1,6 @@
 import { Action } from "./action.ts";
 import { isBotanistRole, isPlanted, paidWithGardenPoint } from "../botany.ts";
-import { canReach } from "../items.ts";
+import { canReachItem } from "../items.ts";
 import { logPublic } from "../log.ts";
 import type { GameState, ItemState, PlayerState } from "../types.ts";
 
@@ -45,5 +45,5 @@ export class TreatAction extends Action<TreatActionData> {
 
 /** A planted pot you can reach; for the Botanist role, only a sick one. */
 function treatable(state: Readonly<GameState>, player: Readonly<PlayerState>, item: Readonly<ItemState>): boolean {
-  return isPlanted(item) && canReach(state, player, item.at) && (!isBotanistRole(player) || item.plant.sick);
+  return isPlanted(item) && canReachItem(state, player, item) && (!isBotanistRole(player) || item.plant.sick);
 }

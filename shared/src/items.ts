@@ -158,6 +158,16 @@ export function canReach(state: Readonly<GameState>, player: Readonly<PlayerStat
   return container.kind === "player" ? container.id === player.id : container.id === player.room;
 }
 
+/** Whether a player can see and use this item: its container is within reach, and it isn't hidden from them (actions/hide.ts). */
+export function canReachItem(state: Readonly<GameState>, player: Readonly<PlayerState>, item: Readonly<ItemState>): boolean {
+  return canReach(state, player, item.at) && (item.hiddenBy === undefined || item.hiddenBy === player.id);
+}
+
+/** The items in a container that this player can see: a room's storage minus what others hid. */
+export function visibleItemsIn(state: Readonly<GameState>, container: Container, viewer: Readonly<PlayerState>): ItemState[] {
+  return itemsIn(state, container).filter((i) => i.hiddenBy === undefined || i.hiddenBy === viewer.id);
+}
+
 /** Whether a player may move an item to a container. Doesn't check whose turn it is. */
 export function canTransfer(
   state: Readonly<GameState>,
@@ -165,7 +175,7 @@ export function canTransfer(
   item: Readonly<ItemState>,
   to: Container,
 ): boolean {
-  return !sameContainer(item.at, to) && canReach(state, player, item.at) && canReach(state, player, to) && hasSpace(state, to);
+  return !sameContainer(item.at, to) && canReachItem(state, player, item) && canReach(state, player, to) && hasSpace(state, to);
 }
 
 export function sameContainer(a: Container, b: Container): boolean {

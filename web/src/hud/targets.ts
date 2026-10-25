@@ -59,6 +59,7 @@ function aimedAt(view: PlayerView, a: Action, target: Target): boolean {
     case "dismantle":
       return "equipment" in a ? target.kind === "equipment" && a.equipment === target.id : target.kind === "item" && a.item === target.id;
     case "consume":
+    case "hide":
     case "cook":
     case "express_cook":
     case "fungal_cuisine":
@@ -92,6 +93,7 @@ function aimedAt(view: PlayerView, a: Action, target: Target): boolean {
       return "target" in a ? target.kind === "player" && a.target === target.id : target.kind === "item" && a.weapon === target.id;
     case "extract_spore":
     case "get_up":
+    case "search":
     case "self_disease":
     case "fiery_speech":
     case "boring_speech":
@@ -115,6 +117,8 @@ const ACTION_LABEL_KEYS = {
   lie_down: "actions.lieDown",
   shower: "actions.shower",
   consume: "actions.consume",
+  hide: "actions.hide",
+  search: "actions.search",
   cook: "actions.cook",
   express_cook: "actions.expressCook",
   fungal_cuisine: "actions.fungalCuisine",

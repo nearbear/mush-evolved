@@ -1,5 +1,5 @@
 import { Action } from "./action.ts";
-import { ITEM_TYPES, canReach } from "../items.ts";
+import { ITEM_TYPES, canReachItem } from "../items.ts";
 import { logPublic } from "../log.ts";
 import { consumed } from "../modifiers.ts";
 import { rationApBonus } from "../comms.ts";
@@ -16,13 +16,13 @@ export class ConsumeAction extends Action<ConsumeActionData> {
   }
 
   override getCandidates(state: Readonly<GameState>, player: Readonly<PlayerState>): ConsumeActionData[] {
-    return state.items.filter((item) => ITEM_TYPES[item.type]?.consume && canReach(state, player, item.at)).map((item) => ({ type: "consume", item: item.id }));
+    return state.items.filter((item) => ITEM_TYPES[item.type]?.consume && canReachItem(state, player, item)).map((item) => ({ type: "consume", item: item.id }));
   }
 
   override validate(state: Readonly<GameState>, player: Readonly<PlayerState>, target: ConsumeActionData): string | null {
     const item = state.items.find((i) => i.id === target.item);
     if (!item) return "no_such_item";
-    if (!ITEM_TYPES[item.type]?.consume || !canReach(state, player, item.at)) return "cant_consume";
+    if (!ITEM_TYPES[item.type]?.consume || !canReachItem(state, player, item)) return "cant_consume";
     return isFullBelly(state, player) ? "full_belly" : null;
   }
 

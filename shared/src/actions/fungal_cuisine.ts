@@ -1,5 +1,5 @@
 import { Action, IN_PRESELECTION, type ActionTag, type ActionVisibility } from "./action.ts";
-import { ITEM_TYPES, canReach } from "../items.ts";
+import { ITEM_TYPES, canReachItem } from "../items.ts";
 import { logPrivate } from "../log.ts";
 import { hasSkill } from "../skills.ts";
 import type { GameState, PlayerState } from "../types.ts";
@@ -27,7 +27,7 @@ export class FungalCuisineAction extends Action<FungalCuisineActionData> {
 
   override getCandidates(state: Readonly<GameState>, player: Readonly<PlayerState>): FungalCuisineActionData[] {
     if (player.role !== "mush" || !hasSkill(player, "fungus_cook") || player.spores < 1) return [];
-    return state.items.filter((item) => ITEM_TYPES[item.type]?.consume && canReach(state, player, item.at)).map((item) => ({ type: "fungal_cuisine", item: item.id }));
+    return state.items.filter((item) => ITEM_TYPES[item.type]?.consume && canReachItem(state, player, item)).map((item) => ({ type: "fungal_cuisine", item: item.id }));
   }
 
   override validate(state: Readonly<GameState>, player: Readonly<PlayerState>, target: FungalCuisineActionData): string | null {
@@ -37,7 +37,7 @@ export class FungalCuisineAction extends Action<FungalCuisineActionData> {
     if (player.spores < 1) return "no_spores";
     const item = state.items.find((i) => i.id === target.item);
     if (!item) return "no_such_item";
-    if (!ITEM_TYPES[item.type]?.consume || !canReach(state, player, item.at)) return "cant_consume";
+    if (!ITEM_TYPES[item.type]?.consume || !canReachItem(state, player, item)) return "cant_consume";
     return null;
   }
 

@@ -1,5 +1,5 @@
 {
-  "version": 73,
+  "version": 74,
   "paths": [
     "bios.actopi",
     "bios.death_announcements",
@@ -235,6 +235,7 @@
     "config.heal.effect.nursePointsPerDay",
     "config.heal.rooms[]",
     "config.heavy.mpPenalty",
+    "config.hide.cost.ap",
     "config.hullRepair.amount",
     "config.hullRepair.chance",
     "config.hullRepair.cost.ap",
@@ -363,6 +364,7 @@
     "config.rooms.STORAGE_B_0[]",
     "config.rooms.STORAGE_B_1[]",
     "config.rooms.STORAGE_FRONT[]",
+    "config.search.cost.ap",
     "config.share.cost.ap",
     "config.share.effect.morale",
     "config.sharedSpots",

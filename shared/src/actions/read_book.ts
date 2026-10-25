@@ -1,5 +1,5 @@
 import { Action } from "./action.ts";
-import { BOOK_ITEM, canReach } from "../items.ts";
+import { BOOK_ITEM, canReachItem } from "../items.ts";
 import { logPublic } from "../log.ts";
 import { skillPicked } from "../modifiers.ts";
 import { hasSkill, isSkill } from "../skills.ts";
@@ -24,13 +24,13 @@ export class ReadBookAction extends Action<ReadBookActionData> {
   override getCandidates(state: Readonly<GameState>, player: Readonly<PlayerState>): ReadBookActionData[] {
     if (player.bookSkill !== undefined) return [];
     return state.items
-      .filter((item) => item.type === BOOK_ITEM && item.teaches !== undefined && !hasSkill(player, item.teaches) && canReach(state, player, item.at))
+      .filter((item) => item.type === BOOK_ITEM && item.teaches !== undefined && !hasSkill(player, item.teaches) && canReachItem(state, player, item))
       .map((item) => ({ type: "read_book", item: item.id }));
   }
 
   override validate(state: Readonly<GameState>, player: Readonly<PlayerState>, target: ReadBookActionData): string | null {
     const item = state.items.find((i) => i.id === target.item);
-    if (!item || item.type !== BOOK_ITEM || !canReach(state, player, item.at)) return "no_such_item";
+    if (!item || item.type !== BOOK_ITEM || !canReachItem(state, player, item)) return "no_such_item";
     if (!isSkill(item.teaches)) return "no_such_skill";
     if (player.bookSkill !== undefined) return "book_slot_full";
     if (hasSkill(player, item.teaches)) return "have_skill";

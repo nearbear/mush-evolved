@@ -1,5 +1,5 @@
 import { Action } from "./action.ts";
-import { ITEM_TYPES, canReach } from "../items.ts";
+import { ITEM_TYPES, canReachItem } from "../items.ts";
 import { logPublic } from "../log.ts";
 import type { GameState, PlayerState } from "../types.ts";
 
@@ -20,14 +20,14 @@ export class CookAction extends Action<CookActionData> {
 
   override getCandidates(state: Readonly<GameState>, player: Readonly<PlayerState>): CookActionData[] {
     if (!state.config.cook.rooms.includes(player.room)) return [];
-    return state.items.filter((item) => ITEM_TYPES[item.type]?.cook && canReach(state, player, item.at)).map((item) => ({ type: "cook", item: item.id }));
+    return state.items.filter((item) => ITEM_TYPES[item.type]?.cook && canReachItem(state, player, item)).map((item) => ({ type: "cook", item: item.id }));
   }
 
   override validate(state: Readonly<GameState>, player: Readonly<PlayerState>, target: CookActionData): string | null {
     if (!state.config.cook.rooms.includes(player.room)) return "cant_cook";
     const item = state.items.find((i) => i.id === target.item);
     if (!item) return "no_such_item";
-    if (!ITEM_TYPES[item.type]?.cook || !canReach(state, player, item.at)) return "cant_cook";
+    if (!ITEM_TYPES[item.type]?.cook || !canReachItem(state, player, item)) return "cant_cook";
     return null;
   }
 

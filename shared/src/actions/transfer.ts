@@ -32,6 +32,7 @@ export class TransferAction<T extends "take" | "drop" = "take" | "drop"> extends
   override apply(state: GameState, player: PlayerState, target: { type: T; item: string }): void {
     const index = state.items.findIndex((i) => i.id === target.item);
     const [item] = state.items.splice(index, 1) as [ItemState];
+    delete item.hiddenBy;
     item.at = this.type === "take" ? { kind: "player", id: player.id } : { kind: "room", id: player.room };
     state.items.push(item);
     logPublic(state, player.room, this.type === "take" ? "pickedUp" : "dropped", { name: player.character, item: item.type });

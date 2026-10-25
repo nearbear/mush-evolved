@@ -41,6 +41,8 @@ const ACTION_NAME_KEYS = {
   delete_planet: "actions.deletePlanet",
   dispense: "actions.dispense",
   consume: "actions.consume",
+  hide: "actions.hide",
+  search: "actions.search",
   cook: "actions.cook",
   express_cook: "actions.expressCook",
   build: "actions.build",

@@ -1,6 +1,6 @@
 import { Action } from "./action.ts";
 import { isPlanted, paidWithGardenPoint } from "../botany.ts";
-import { canReach } from "../items.ts";
+import { canReachItem } from "../items.ts";
 import { logPublic } from "../log.ts";
 import type { GameState, ItemState, PlayerState } from "../types.ts";
 
@@ -43,5 +43,5 @@ export class WaterAction extends Action<WaterActionData> {
 }
 
 function thirstyHere(state: Readonly<GameState>, player: Readonly<PlayerState>, item: Readonly<ItemState>): boolean {
-  return isPlanted(item) && item.plant.thirst > 0 && canReach(state, player, item.at);
+  return isPlanted(item) && item.plant.thirst > 0 && canReachItem(state, player, item);
 }

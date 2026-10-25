@@ -1,6 +1,6 @@
 import { Action } from "./action.ts";
 import { EQUIPMENT_TYPES } from "../equipment.ts";
-import { ITEM_TYPES, canReach } from "../items.ts";
+import { ITEM_TYPES, canReachItem } from "../items.ts";
 import { logPrivate, logPublic } from "../log.ts";
 import { getUp } from "./lie_down.ts";
 import type { GameState, ItemState, PlayerState } from "../types.ts";
@@ -38,7 +38,7 @@ export class DismantleAction extends Action<DismantleActionData> {
 
   override getCandidates(state: Readonly<GameState>, player: Readonly<PlayerState>): DismantleActionData[] {
     return [
-      ...state.items.filter((item) => ITEM_TYPES[item.type]?.dismantle && canReach(state, player, item.at)).map((item): DismantleActionData => ({ type: "dismantle", item: item.id })),
+      ...state.items.filter((item) => ITEM_TYPES[item.type]?.dismantle && canReachItem(state, player, item)).map((item): DismantleActionData => ({ type: "dismantle", item: item.id })),
       ...dismantlable(state, player).map((e): DismantleActionData => ({ type: "dismantle", equipment: e.id })),
     ];
   }
@@ -50,7 +50,7 @@ export class DismantleAction extends Action<DismantleActionData> {
     }
     const item = state.items.find((i) => i.id === target.item);
     if (!item) return "no_such_item";
-    if (!ITEM_TYPES[item.type]?.dismantle || !canReach(state, player, item.at)) return "cant_dismantle";
+    if (!ITEM_TYPES[item.type]?.dismantle || !canReachItem(state, player, item)) return "cant_dismantle";
     return null;
   }
 

@@ -1,5 +1,5 @@
 import { Action, type ActionVisibility } from "./action.ts";
-import { itemsIn } from "../items.ts";
+import { itemsIn, visibleItemsIn } from "../items.ts";
 import { logPrivate } from "../log.ts";
 import type { GameState, PlayerState, Target } from "../types.ts";
 
@@ -56,6 +56,6 @@ function visibleTargets(state: Readonly<GameState>, player: Readonly<PlayerState
     ...state.players.filter((o) => o.room === player.room).map((o): Target => ({ kind: "player", id: o.id })),
     ...(state.config.equipment[player.room] ?? []).map((e): Target => ({ kind: "equipment", id: e.id })),
     ...itemsIn(state, { kind: "player", id: player.id }).map((i): Target => ({ kind: "item", id: i.id })),
-    ...itemsIn(state, { kind: "room", id: player.room }).map((i): Target => ({ kind: "item", id: i.id })),
+    ...visibleItemsIn(state, { kind: "room", id: player.room }, player).map((i): Target => ({ kind: "item", id: i.id })),
   ];
 }

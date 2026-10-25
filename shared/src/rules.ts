@@ -10,7 +10,7 @@ import { applyCheats, makeHuman, type ActopiCheat, type Cheat, type RoleCheat } 
 import { ACTIONS, type ActionDef } from "./actions.ts";
 import { NO_SPACE } from "./actions/action.ts";
 import { getUp } from "./actions/lie_down.ts";
-import { itemsIn, rechargeMicrowaves, startCharges } from "./items.ts";
+import { itemsIn, rechargeMicrowaves, startCharges, visibleItemsIn } from "./items.ts";
 import { actionFailed, apGain, carePointsGain, channelLimit, computerPointsCap, computerPointsGain, shootPointsGain, cycleChanged, designerPointsGain, gardenPointsGain, dailyMoraleLoss, inventorySlots, movementRules, pilgredPointsGain, satietyLoss } from "./modifiers.ts";
 import { contaminationSeenBy, convert } from "./infection.ts";
 import { addStatus, isHungry, publicStatusesOf, statusesOf } from "./statuses.ts";
@@ -462,7 +462,7 @@ export function viewFor(state: GameState, playerId: PlayerId): PlayerView {
     rooms: state.config.rooms,
     inventory: itemsIn(state, { kind: "player", id: you.id }).map((item) => itemView(item, you)),
     inventorySlots: inventorySlots(state, you),
-    roomItems: you.alive ? itemsIn(state, { kind: "room", id: you.room }).map((item) => itemView(item, you)) : [],
+    roomItems: you.alive ? visibleItemsIn(state, { kind: "room", id: you.room }, you).map((item) => itemView(item, you)) : [],
     roomEquipment: you.alive ? (state.config.equipment[you.room] ?? []).map((e) => equipmentView(state, e)) : [],
     // The dead keep only ship-wide entries (cycles, days); every room entry, their own private ones included, goes.
     log: state.log.filter((e) =>
@@ -540,8 +540,8 @@ export const affordable = (option: Readonly<ActionOption>): boolean => option.la
 export const legalIn = (view: Pick<PlayerView, "actions">): Action[] => view.actions.filter(affordable).map((o) => o.action);
 
 /** An item as `viewer` sees it; a plant's sickness only for the Botanist role (`plantView`). */
-function itemView({ id, type, of, builds, charges, teaches, plant, spores }: ItemState, viewer: Readonly<PlayerState>): ItemView {
-  return { id, type, ...(spores && viewer.role === "mush" && viewer.alive && { spores }), ...(of !== undefined && { of }), ...(builds !== undefined && { builds }), ...(charges !== undefined && { charges }), ...(teaches !== undefined && { teaches }), ...(plant && { plant: plantView(plant, viewer) }) };
+function itemView({ id, type, of, builds, charges, teaches, plant, spores, hiddenBy }: ItemState, viewer: Readonly<PlayerState>): ItemView {
+  return { id, type, ...(hiddenBy === viewer.id && { hidden: true as const }), ...(spores && viewer.role === "mush" && viewer.alive && { spores }), ...(of !== undefined && { of }), ...(builds !== undefined && { builds }), ...(charges !== undefined && { charges }), ...(teaches !== undefined && { teaches }), ...(plant && { plant: plantView(plant, viewer) }) };
 }
 
 function equipmentView(state: GameState, { id, type }: Equipment): EquipmentView {

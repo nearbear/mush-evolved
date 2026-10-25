@@ -67,6 +67,8 @@ export interface ItemState {
   teaches?: string;
   /** For a food item a Mush filled with spores (Fungal cuisine): the contamination it passes to a human who eats it. Mush-only in views. */
   spores?: number;
+  /** For an item hidden in its room (actions/hide.ts): who hid it. Only they can see or use it, until someone searches the room. */
+  hiddenBy?: PlayerId;
   /** For a hydropot with something growing in it (botany.ts). An empty pot has none. */
   plant?: PlantState;
 }
@@ -97,6 +99,8 @@ export type Action =
   | { type: "dismantle"; equipment: string }
   | { type: "dispense"; equipment: string }
   | { type: "consume"; item: ItemId }
+  | { type: "hide"; item: ItemId }
+  | { type: "search" }
   | { type: "cook"; item: ItemId }
   | { type: "water"; item: ItemId }
   | { type: "treat"; item: ItemId }

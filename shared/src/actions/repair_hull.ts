@@ -1,5 +1,5 @@
 import { Action } from "./action.ts";
-import { canReach } from "../items.ts";
+import { canReachItem } from "../items.ts";
 import { logPrivate, logPublic } from "../log.ts";
 import { hullRepairAmount } from "../modifiers.ts";
 import type { GameState, PlayerState } from "../types.ts";
@@ -29,14 +29,14 @@ export class RepairHullAction extends Action<RepairHullActionData> {
   override getCandidates(state: Readonly<GameState>, player: Readonly<PlayerState>): RepairHullActionData[] {
     if (state.ship.hull >= state.config.ship.hull.max) return [];
     return state.items
-      .filter((item) => item.type === HULL_REPAIR_ITEM && canReach(state, player, item.at))
+      .filter((item) => item.type === HULL_REPAIR_ITEM && canReachItem(state, player, item))
       .map((item): RepairHullActionData => ({ type: "repair_hull", item: item.id }));
   }
 
   override validate(state: Readonly<GameState>, player: Readonly<PlayerState>, target: RepairHullActionData): string | null {
     const item = state.items.find((i) => i.id === target.item);
     if (!item) return "no_such_item";
-    if (item.type !== HULL_REPAIR_ITEM || !canReach(state, player, item.at)) return "cant_repair_hull";
+    if (item.type !== HULL_REPAIR_ITEM || !canReachItem(state, player, item)) return "cant_repair_hull";
     if (state.ship.hull >= state.config.ship.hull.max) return "hull_full";
     return null;
   }

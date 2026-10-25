@@ -1,6 +1,6 @@
 import { Action } from "./action.ts";
 import { BLUEPRINTS, BLUEPRINT_ITEM } from "../blueprints.ts";
-import { canReach, itemsIn, produceItem } from "../items.ts";
+import { canReachItem, itemsIn, produceItem, visibleItemsIn } from "../items.ts";
 import { logPublic } from "../log.ts";
 import type { GameState, ItemState, PlayerState } from "../types.ts";
 
@@ -14,7 +14,7 @@ export type BuildActionData = { type: "build"; item: string };
 function ingredients(state: Readonly<GameState>, player: Readonly<PlayerState>, blueprint: Readonly<ItemState>): ItemState[] | null {
   const recipe = blueprint.builds === undefined ? undefined : BLUEPRINTS[blueprint.builds];
   if (!recipe) return null;
-  const pool = [...itemsIn(state, { kind: "room", id: player.room }), ...itemsIn(state, { kind: "player", id: player.id })].filter((i) => i.id !== blueprint.id);
+  const pool = [...visibleItemsIn(state, { kind: "room", id: player.room }, player), ...itemsIn(state, { kind: "player", id: player.id })].filter((i) => i.id !== blueprint.id);
   const used: ItemState[] = [];
   for (const type of recipe.needs) {
     const found = pool.find((i) => i.type === type && !used.includes(i));
@@ -38,13 +38,13 @@ export class BuildAction extends Action<BuildActionData> {
   }
 
   override getCandidates(state: Readonly<GameState>, player: Readonly<PlayerState>): BuildActionData[] {
-    return state.items.filter((i) => i.type === BLUEPRINT_ITEM && canReach(state, player, i.at) && ingredients(state, player, i)).map((i) => ({ type: "build", item: i.id }));
+    return state.items.filter((i) => i.type === BLUEPRINT_ITEM && canReachItem(state, player, i) && ingredients(state, player, i)).map((i) => ({ type: "build", item: i.id }));
   }
 
   override validate(state: Readonly<GameState>, player: Readonly<PlayerState>, target: BuildActionData): string | null {
     const item = state.items.find((i) => i.id === target.item);
     if (!item) return "no_such_item";
-    if (item.type !== BLUEPRINT_ITEM || !canReach(state, player, item.at)) return "cant_build";
+    if (item.type !== BLUEPRINT_ITEM || !canReachItem(state, player, item)) return "cant_build";
     if (!ingredients(state, player, item)) return "missing_ingredients";
     return null;
   }

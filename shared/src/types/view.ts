@@ -30,6 +30,8 @@ export interface ItemView {
   charges?: number;
   /** For a skill book: the skill it teaches (public to whoever can see the item). */
   teaches?: string;
+  /** In your room's storage: you hid it, and nobody else can see it (actions/hide.ts). */
+  hidden?: true;
   /** For a food item trapped with Fungal cuisine: its contamination level. Sent to living Mush only. */
   spores?: number;
   /** For a planted hydropot. `sick` is there only for the Botanist role; everyone else never gets the field. */

@@ -65,7 +65,7 @@ const MODEL_RETRY_MAX_MS = 60_000;
  * Bump when GameState's shape changes. Games stored under another version are
  * discarded on load (there is no migration; games are short-lived).
  */
-export const STATE_VERSION = 73;
+export const STATE_VERSION = 74;
 
 interface Stored {
   version?: number;

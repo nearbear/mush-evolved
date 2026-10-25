@@ -82,6 +82,9 @@ export const DEFAULT_CONFIG: GameConfig = {
     rooms: ["SICK_BAY"],
     dirtyChance: 0.05,
   },
+  // Owner, 2026-10-25 (wiki): hiding an item and searching the room each cost 1 AP.
+  hide: { cost: { ap: 1 } },
+  search: { cost: { ap: 1 } },
   // Owner, 2026-10-25 (wiki): vaccinating with the anti-Mush serum costs 1 AP.
   vaccine: { cost: { ap: 1 } },
   // Confirmed 2026-10-15: punch costs 1 AP, misses 40% of the time. Owner, 2026-10-24: damage is a uniform 1 to 2 (the wiki).

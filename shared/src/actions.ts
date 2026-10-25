@@ -2,6 +2,8 @@ import { AcceptAccommodationAction, AccommodateAction, StopAccommodationAction }
 import { BondAction } from "./actions/bond.ts";
 import { BuildAction } from "./actions/build.ts";
 import { ConsumeAction } from "./actions/consume.ts";
+import { HideAction } from "./actions/hide.ts";
+import { SearchAction } from "./actions/search.ts";
 import { CookAction } from "./actions/cook.ts";
 import { ExpressCookAction } from "./actions/express_cook.ts";
 import { DismantleAction } from "./actions/dismantle.ts";
@@ -132,6 +134,8 @@ export const ACTIONS: { [T in ActionType]: ActionDef<ActionOf<T>> } = {
   land: new LandAction(),
   dispense: new DispenseAction(),
   consume: new ConsumeAction(),
+  hide: new HideAction(),
+  search: new SearchAction(),
   cook: new CookAction(),
   express_cook: new ExpressCookAction(),
   water: new WaterAction(),

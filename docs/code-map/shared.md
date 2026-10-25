@@ -16,6 +16,7 @@ Other packages import from `@mush2/shared` (`shared/src/index.ts`, the barrel). 
 - `actionTarget.ts`: what an action is done to (`actionTarget`, which the client walks you up to), and `endsAccommodation` (a public action on equipment or another person ends a wheelchair push).
 - `queue.ts`: timed actions: `queueAction`, `clearQueue`, `tick`, `nextDue` (when the server's alarm should fire); cancels a queued action whose modifier adjustment changed (`repriced`).
 - `mycoalarm.ts`: the `myco_alarm` item, `ringMycoAlarms` (called by `performAction` for `spore`-tagged actions) and `dropMycoAlarms` (research yield).
+- `actions/hide.ts`, `actions/search.ts`: hiding a carried item in the room (`ItemState.hiddenBy`) and searching the room for hidden items.
 - `research.ts`: `RESEARCH_IDS` (the researches with card art), `RESEARCH_COMPLETE`, and `RESEARCH_REQUIRES` (items, Chun, post-selection each research needs; checked by `researchAllowed` in `actions/research.ts`).
 - `planets.ts`: the Astro terminal's planets: `PLANET_TAGS` (weights, seek, max from the original), `generatePlanet` (the original's `getPlanet`, seeded), `pickSeekSector` (what an analysis reveals), `planetsOf`, `astroTerminalsHere`. Actions `scan_planet`, `analyze_planet`, `delete_planet` (docs/astro-plan.md).
 - `botany.ts`: plants in hydropots: `isBotanistRole` (who sees sickness), `isPlanted`/`isEmptyPot`/`isFruit`, `potRoom`, `paidWithGardenPoint`, `plantView` (strips `sick`), `botanyCycle` and `botanyDay` (called from `advanceCycle`). Actions `water`, `treat`, `sow`.
