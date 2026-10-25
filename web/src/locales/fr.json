@@ -9,7 +9,7 @@
     "botsPaused": "IA en pause",
     "botsPausedAbout": {
       "unavailable": "L'équipage IA n'arrive pas à joindre son modèle pour l'instant. Le cycle les attend ; ils vont réessayer.",
-      "key": "Le fournisseur du modèle a refusé la clé (elle est peut-être erronée ou sans crédit). Le cycle attend l'équipage IA jusqu'à ce que la clé fonctionne.",
+      "key": "Le fournisseur a refusé la clé ou le modèle (clé erronée ou sans crédit, ou nom de modèle ou réglage non accepté). Le cycle attend l'équipage IA jusqu'à ce qu'une clé et un modèle fonctionnent.",
       "budget": "L'équipage IA a utilisé tout le budget de modèle de cette partie. Le cycle les attend jusqu'à ce que le budget soit augmenté."
     }
   },

@@ -88,6 +88,7 @@ Node is installed via nvm and is already on `PATH` in Claude Code shells (the us
 - `npm run screenshot`: headless Chromium screenshots as a desktop and a 360px phone player, to `.screenshots/` (gitignored). Needs `npm run dev`. The other tooling commands are in the `play` and `asset` skills.
 - `npm run a11y`: headless accessibility check (`tools/src/a11y/a11y.ts`). Needs `npm run dev`. Joins a match and asserts no raw i18n keys, a "Room" region listing the room's people, equipment, items and exits, the room log as a `role="log"` with the announcer's polite and assertive live regions, no Tab stops in the license footer, and every visible control a Tab stop. Exits non-zero on failure. axe-core is not added (it needs a dependency; ask first).
 - `npm run deploy`: build `web`, then `wrangler deploy` the server with the client as static assets (one Worker, one origin; `/parties/*` goes to the Worker). Live at https://mush2-server.nearbearnearbear.workers.dev since 2026-10-24 (manual deploys; auto-deploy is #121).
+- `npm run model-trial -w server -- --model <openrouter id> --cycles N --ledger <file> --cap <usd>`: plays a single-player game headless with real model bots on the dev key (`MODEL_API_KEY` in `server/.dev.vars`) and reports tokens, latency, cost and reply quality (#224; `server/scripts/model.trial.ts`, runs under Vitest, never in `npm test`). Costs money: always pass a ledger and cap. `--fake` checks the harness for free.
 - `npm run lint`: Biome, lint only (rules in `biome.json`). Import limits: `shared` has no I/O, UI, or sibling-package imports; `web` never imports `server`. No `console.log` in `server`. typescript-eslint was rejected (no TypeScript 7 support). Intentional exceptions use `biome-ignore` with a reason.
 
 ## External tools
@@ -112,6 +113,6 @@ Not rules, but still open:
 
 - Game name.
 - Which stage single player (the only mode with bots) belongs in.
-- Single-player model bots: no hosted default in the MVP (decided 2026-10-23, the owner won't pay for unlimited use); players bring their own key. The server side is built (#216: `setModel`/`clearModel`, single player only); the allowlist is OpenRouter only for now (owner, 2026-10-24), and which others to add is open (#217). The settings panel with an opt-in "remember the key" (#218) and key status (#220) are not built, so no client sends a key yet.
+- Single-player model bots: no hosted default in the MVP (decided 2026-10-23, the owner won't pay for unlimited use); players bring their own key. The server side is built (#216: `setModel`/`clearModel`, single player only); the allowlist will be OpenRouter, Google Gemini and OpenAI (owner, 2026-10-24; only OpenRouter is built, the rest and each provider's request body are #217). The settings panel with an opt-in "remember the key" (#218) and key status (#220) are not built, so no client sends a key yet.
 - Hosting and deployment details beyond the current setup (one Worker on `workers.dev`, the client as static assets; a custom domain waits for the game name).
 - Internationalization (en/fr/es): the seam is in, the comprehensive pass is not.

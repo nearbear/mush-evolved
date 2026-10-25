@@ -9,7 +9,7 @@
     "botsPaused": "IA en pausa",
     "botsPausedAbout": {
       "unavailable": "La tripulación IA no puede contactar con su modelo ahora mismo. El ciclo los espera; seguirán intentándolo.",
-      "key": "El proveedor del modelo rechazó la clave (puede ser incorrecta o no tener crédito). El ciclo espera a la tripulación IA hasta que la clave funcione.",
+      "key": "El proveedor rechazó la clave o el modelo (la clave puede ser incorrecta o no tener crédito, o el nombre del modelo o un ajuste no se acepta). El ciclo espera a la tripulación IA hasta que una clave y un modelo funcionen.",
       "budget": "La tripulación IA ha gastado todo el presupuesto de modelo de esta partida. El ciclo los espera hasta que se aumente el presupuesto."
     }
   },

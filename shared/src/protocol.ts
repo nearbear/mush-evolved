@@ -28,7 +28,7 @@ export type MatchmakerServerMessage =
 
 /**
  * Why a game's model bots are waiting, so the cycle (which waits for them) is paused (owner, 2026-10-24, #114):
- * `unavailable` while calls fail and are retried, `key` once the provider refused the key (bad key, no credit),
+ * `unavailable` while calls fail and are retried, `key` once the provider refused the key or the request (bad key, no credit, unknown model, a refused setting),
  * `budget` once the game's call budget is spent. Never sent where bots have no key: those play scripted.
  */
 export type BotPause = "unavailable" | "key" | "budget";
