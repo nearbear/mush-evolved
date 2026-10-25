@@ -80,8 +80,8 @@ The ship-room interior from the existing patrol-ship art (check with the `asset`
 ### Phases (each a small commit)
 
 1. `hunters.target` refactor (no behaviour change). **Done 2026-10-24:** `Hunter.target: HunterTarget | null`, with only `{ kind: "ship" }` so far; phase 4 adds the patrol and player kinds.
-2. Ship rooms and state; take off and land (Pilots only, secret, the rough roll behind a hook); bay and interior views.
-3. Shooting from a patrol ship, charges, the shared battle panel.
+2. Ship rooms and state; take off and land (Pilots only, secret, the rough roll behind a hook); bay and interior views. **Done 2026-10-24:** `patrolShips` holds armor and `out` only (charges come in phase 3); the interior is a plain panel (`PatrolCockpit.tsx`); rough manoeuvres are private to the pilot, and a takeoff ends a wheelchair push (owner).
+3. Shooting from a patrol ship, charges, the shared battle panel. Also block installing or building equipment in a ship's room (owner, 2026-10-24): `install` (cameras) and `build` (blueprints) are still offered aboard.
 4. Hunters target ships and players in flight; destruction and death in space; travel destroys ships in flight.
 5. Debris: hunter drops, Collect scrap (patrol and Pasiphae), unloading on landing, travel clears it; the space capsule item and its Open action.
 6. Renovate.

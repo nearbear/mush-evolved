@@ -102,6 +102,7 @@ function Details({ view, layout, resolved, onAction }: { view: PlayerView; layou
           <div className="inspect-name">
             <strong>{names.equipment(resolved.equipment.type)}</strong>
             <div className="sub">Equipment in {names.room(view.you.room)}</div>
+            {resolved.equipment.out && <div className="sub">{t("patrol.out")}</div>}
           </div>
         </>
       );

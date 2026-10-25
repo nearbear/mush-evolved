@@ -14,7 +14,9 @@ import { RoomList } from "./hud/RoomList.tsx";
 import { InspectPanel } from "./hud/InspectPanel.tsx";
 import { InventoryOverlay } from "./hud/InventoryOverlay.tsx";
 import { ShipOverlay } from "./hud/ShipOverlay.tsx";
+import { Announcer } from "./hud/Announcer.tsx";
 import { ITrackie } from "./hud/ITrackie.tsx";
+import { PatrolCockpit } from "./hud/PatrolCockpit.tsx";
 import { PeekBar } from "./hud/PeekBar.tsx";
 import { TerminalDialog } from "./hud/TerminalDialog.tsx";
 import { EndScreen } from "./hud/EndScreen.tsx";
@@ -173,6 +175,7 @@ export function GameScreen({ ticket, onLeave, waking = false }: { ticket: SeatTi
 
   return (
     <main className="game">
+      <Announcer />
       <WakeUpAnnouncement waking={waking} text={t("wake.ready", { day: view.day, cycle: view.cycleOfDay, room: names.room(you.room) })} />
       <TerminalDialog terminal={terminal} view={view} onAction={send} onClose={() => setTerminalId(null)} />
       <EndScreen view={view} open={view.phase === "ended" && !endClosed} onOpenChange={(open) => setEndClosed(!open)} />
@@ -202,6 +205,8 @@ export function GameScreen({ ticket, onLeave, waking = false }: { ticket: SeatTi
           <div className="room-view">
             {!you.alive ? (
               <DeathNotice view={view} />
+            ) : view.patrolShip ? (
+              <PatrolCockpit view={view} ship={view.patrolShip} selected={target} onSelect={select} />
             ) : layout ? (
               <LeavingIsoRoom
                 layout={layout}

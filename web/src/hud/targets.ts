@@ -53,6 +53,8 @@ function aimedAt(view: PlayerView, a: Action, target: Target): boolean {
     case "check_combustion":
     case "lie_down":
     case "shower":
+    case "takeoff":
+    case "land":
       return target.kind === "equipment" && a.equipment === target.id;
     case "dismantle":
       return "equipment" in a ? target.kind === "equipment" && a.equipment === target.id : target.kind === "item" && a.item === target.id;
@@ -122,6 +124,8 @@ const ACTION_LABEL_KEYS = {
   treat: "actions.treat",
   sow: "actions.sow",
   repair_hull: "actions.repairHull",
+  takeoff: "actions.takeoff",
+  land: "actions.land",
   uninstall: "actions.uninstall",
   dismantle: "actions.dismantle",
   bond: "actions.bond",

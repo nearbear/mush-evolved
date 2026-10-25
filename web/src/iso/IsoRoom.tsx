@@ -282,6 +282,8 @@ export function IsoRoom({
   // Someone in bed lies in the middle of the bed's footprint, mirrored to run along the bed.
   const beds = new Map<string, { cell: { x: number; y: number }; flip: boolean }>();
   const equipmentByKey = useMemo(() => equipmentByTileKey(roomLayout, equipment), [roomLayout, equipment]);
+  // A patrol ship in flight isn't drawn in its bay (owner, 2026-10-24); the view marks its interface out.
+  const flownKey = [...equipmentByKey].filter(([, e]) => e.out).map(([key]) => key).join(",");
   const tileOf = new Map([...equipmentByKey].map(([key, e]) => [e.id, Number(key.slice(1))]));
   for (const o of occupants) {
     const tile = o.lying ? tileOf.get(o.lying) : undefined;
@@ -364,9 +366,10 @@ export function IsoRoom({
   // This room and the rooms behind its doors, each with its people, drawn as one scene so that
   // whichever is in front covers the other. Display only: where people stand isn't game state.
   const nearbyKey = JSON.stringify(Object.entries(nearby).map(([r, os]) => [r, os?.map((o) => o.id)]));
-  // biome-ignore lint/correctness/useExhaustiveDependencies: occupantKey, corpseKey, nearbyKey, walkersKey and leavers stand in for occupants, corpses, nearby, walkers and those walking out: positions only change when who or what is where changes.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: occupantKey, corpseKey, nearbyKey, walkersKey, flownKey and leavers stand in for occupants, corpses, nearby, walkers, flown ships and those walking out: positions only change when who or what is where changes.
   const { scene, sprites, neighborSprites, neighbors, box, ownCells } = useMemo(() => {
     if (!roomLayout || !prepared) return { scene: [], sprites: [], neighborSprites: [], neighbors: [], box: bounds([]), ownCells: new Set<string>() };
+    const flown = new Set(flownKey.split(","));
     const actors = [
       ...drawnPeople.map((o, i) => ({
         id: o.id,
@@ -385,6 +388,7 @@ export function IsoRoom({
     });
     const scene = placeActors(prepared.scene, [actors, ...neighbors.map((n) => n.actors)])
       .filter((s) => !CAMERA_SLICES.has(s.slice) || (hasCamera && s.room === room))
+      .filter((s) => s.room !== room || !flown.has(s.key))
       // A walker facing right is drawn mirrored; hit-testing mirrors with it.
       .map((s) => {
         if (s.kind !== "actor" || s.room !== room) return s;
@@ -402,7 +406,7 @@ export function IsoRoom({
       for (const [ax, ay] of [[x + 1, y], [x - 1, y], [x, y + 1], [x, y - 1]] as const) ownCells.add(`${ax},${ay}`);
     }
     return { scene, sprites, neighborSprites, neighbors, box: bounds(sprites), ownCells };
-  }, [prepared, spots, walkersKey, occupantKey, corpseKey, nearbyKey, hasCamera, leavers]);
+  }, [prepared, spots, walkersKey, occupantKey, corpseKey, nearbyKey, hasCamera, flownKey, leavers]);
 
   // Sprites draw at exactly one screen pixel per source pixel, so art stays crisp.
   // The camera always keeps you centred, even near a room's edges (the neighbours fill the space
