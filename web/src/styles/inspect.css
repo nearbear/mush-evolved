@@ -299,12 +299,14 @@
 /* Equipment sprite: the room's art for it, scaled up crisp. `--tile` is the width (set on phones to the column's). */
 .inspect-sprite-box {
   --tile: 210px;
+  /* A tall sprite (a shower) shrinks to fit a height cap instead of overflowing the panel; `--ratio` is its width over height. */
+  --size: min(var(--tile), calc(40vh * var(--ratio, 1)));
   margin: 0.75rem auto 0.5rem;
   max-width: 100%;
-  width: var(--tile);
+  width: var(--size);
 }
 .inspect-sprite {
-  font-size: var(--tile);
+  font-size: var(--size);
   width: 1em;
   max-width: 100%;
   image-rendering: pixelated;

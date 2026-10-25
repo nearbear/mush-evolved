@@ -3,7 +3,7 @@
 
 import { useTranslation } from "react-i18next";
 import { useNames } from "../i18n/names.ts";
-import type { ReactNode } from "react";
+import type { CSSProperties, ReactNode } from "react";
 import { actionVisibility, CHARACTERS, characterGivenName, characterName, type Action, type ActionOption, type EquipmentView, type PlayerView, type ShipLayout, type Target } from "@mush2/shared";
 import { characterImage, CONTAMINATED_ICON, portrait } from "../art/assets.ts";
 import { useMobile } from "../useMobile.ts";
@@ -147,7 +147,7 @@ function EquipmentSprite({ view, layout, equipment }: { view: PlayerView; layout
   const { sx, sy } = frameRect(slice, tile.frame);
   const w = slice.width;
   return (
-    <div className="inspect-sprite-box">
+    <div className="inspect-sprite-box" style={{ "--ratio": w / slice.height } as CSSProperties}>
       <div
         className="inspect-sprite"
         role="img"
