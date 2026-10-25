@@ -1,8 +1,8 @@
 import { DEFAULT_CONFIG } from "./config.ts";
-import { logPrivate } from "./log.ts";
+//import { logPrivate } from "./log.ts";
 import { maxMorale, skillPicked } from "./modifiers.ts";
 import { addStatus, removeStatus, type StatusId } from "./statuses.ts";
-import type { ChannelId, GameState, PlayerState } from "./types.ts";
+import type { GameState, PlayerState } from "./types.ts";
 
 export function loseMorale(state: GameState, player: PlayerState, amount: number): void {
   if (!player.alive) return;
@@ -53,6 +53,7 @@ export function removeDisease(state: GameState, player: PlayerState, name: Statu
     removeStatus(player, name);
     updateMaxValues(state, player)
     player.diseaseTrackers = player.diseaseTrackers.filter((d) => d.complete != true);
+    //logPrivate(state, player.id, "diseaseCured", {name});
 }
 
 /** Runs every onCycle hook of each living player, in seat order. Mutates a state the caller already cloned. */

@@ -1,6 +1,6 @@
 import { updateMaxValues } from "../adjustStats.ts";
 import { logPrivate } from "../log.ts";
-import { maxMorale, type Modifier } from "../modifiers.ts";
+import type { Modifier } from "../modifiers.ts";
 import { nextInt } from "../rng.ts";
 
 export const cold_disease: Modifier = {
