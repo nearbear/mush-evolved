@@ -46,9 +46,9 @@ describe("action history", () => {
     expect(player(s, "p0").history).toEqual(["fiery_speech", "punch", "punch"]);
   });
 
-  it("leaves out moving, taking and dropping, Examine, BIOS changes, ending the cycle and picking a skill", () => {
+  it("leaves out moving, taking and dropping, Examine, BIOS changes, accessing a terminal, ending the cycle and picking a skill", () => {
     const unrecorded = Object.entries(ACTIONS).filter(([, def]) => !def.recorded).map(([type]) => type).sort();
-    expect(unrecorded).toEqual(["drop", "examine", "move", "pick_skill", "ready", "set_bios", "take"]);
+    expect(unrecorded).toEqual(["access", "drop", "examine", "move", "pick_skill", "ready", "set_bios", "take"]);
     const s = ship("leadership");
     const move = offered(s, "p0").find((a) => a.type === "move")!;
     expect(player(mustApply(s, "p0", move), "p0").history).toEqual([]);
