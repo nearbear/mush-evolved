@@ -12,6 +12,13 @@ export interface MovementRules {
   mpCap: number; // MP can never exceed this.
 }
 
+export interface DiseaseCatagories {
+  allDiseases: string [],
+  allDisorders: string [],
+  allInjuries: string [],
+}
+
+
 /** One weapon's numbers (owner, 2026-10-22, from the English wiki; "??" values were set to 12%). */
 export interface WeaponStats {
   damage: [min: number, max: number]; // HP a hit removes, rolled uniformly, both ends included.
@@ -350,6 +357,7 @@ export interface GameConfig {
   startInventory: string[]; // Item types every player starts carrying (one of each).
   rooms: Record<RoomId, RoomId[]>; // Adjacency list. Movement is only allowed along these edges.
   equipment: Record<RoomId, Equipment[]>; // Fixed equipment in each room. Types come from EQUIPMENT_TYPES in equipment.ts.
+  diseases: DiseaseCatagories;
 }
 
 export interface Equipment {
