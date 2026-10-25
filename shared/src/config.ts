@@ -117,6 +117,8 @@ export const DEFAULT_CONFIG: GameConfig = {
   consume: { dirtyChance: 0.15 },
   dispense: { dirtyChance: 0.05 },
   // Owner, 2026-10-23, the wiki: fuel moves by hand, tank to chamber, 0 AP each. The 25% dirt chance is a placeholder (the wiki says only "dirty-prone").
+  // Owner, 2026-10-24: oxygen capsules move by hand like fuel, with the same numbers.
+  oxygenCapsule: { cost: { ap: 0 }, dirtyChance: 0.15, injuryChance: 0.01 },
   fuel: { cost: { ap: 0 }, dirtyChance: 0.15, injuryChance: 0.01 },
   // Owner, 2026-10-16: the computer scientist skill holds up to 4 Computer points, gains 2 a day (and 2 when picked).
   computer: { capPoints: 4, pointsPerDay: 2 },

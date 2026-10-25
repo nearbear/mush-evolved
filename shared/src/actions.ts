@@ -27,6 +27,8 @@ import { AnalyzePlanetAction } from "./actions/analyze_planet.ts";
 import { DeletePlanetAction } from "./actions/delete_planet.ts";
 import { LeaveOrbitAction } from "./actions/leave_orbit.ts";
 import { CheckCombustionAction } from "./actions/check_combustion.ts";
+import { ReturnOxygenAction } from "./actions/return_oxygen.ts";
+import { TakeOxygenAction } from "./actions/take_oxygen.ts";
 import { ReturnFuelAction } from "./actions/return_fuel.ts";
 import { LoadFuelAction } from "./actions/load_fuel.ts";
 import { TakeFuelAction } from "./actions/take_fuel.ts";
@@ -108,6 +110,8 @@ export const ACTIONS: { [T in ActionType]: ActionDef<ActionOf<T>> } = {
   load_fuel: new LoadFuelAction(),
   unload_fuel: new UnloadFuelAction(),
   return_fuel: new ReturnFuelAction(),
+  take_oxygen: new TakeOxygenAction(),
+  return_oxygen: new ReturnOxygenAction(),
   check_combustion: new CheckCombustionAction(),
   contact_sol: new ContactSolAction(),
   decode_rebel: new DecodeRebelAction(),

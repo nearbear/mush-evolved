@@ -53,6 +53,9 @@ export const BOOK_ITEM = "book";
 /** A unit of fuel in transit between a tank and the combustion chamber; each takes a slot like any item (owner, 2026-10-23). */
 export const FUEL_CAPSULE_ITEM = "fuel_capsule";
 
+/** A unit of oxygen in transit between the oxygen tanks (owner, 2026-10-24); named after its icon, `oxy_capsule`. */
+export const OXYGEN_CAPSULE_ITEM = "oxy_capsule";
+
 /** The charges an item of this type starts with, or undefined if it has none. Charged weapons start full. */
 export function startCharges(config: Readonly<GameConfig>, type: string): number | undefined {
   return type === MICROWAVE_ITEM ? config.expressCook.charges.start : config.weapons.types[type]?.charges;
@@ -101,6 +104,8 @@ export const ITEM_TYPES: Record<string, ItemType> = {
   // Owner, 2026-10-23, the wiki: one unit of fuel, taken from a tank and loaded into the combustion chamber. One slot
   // each, never dropped (actions/take_fuel.ts). Named after its icon.
   [FUEL_CAPSULE_ITEM]: { canDrop: false },
+  // Owner, 2026-10-24, the wiki: one unit of oxygen, same handling as the fuel capsule (actions/take_oxygen.ts).
+  [OXYGEN_CAPSULE_ITEM]: { canDrop: false },
   metal_scraps: {},
   thick_tube: {},
   // Decided 2026-10-16: carries a recipe in `ItemState.builds`; consumed by building.

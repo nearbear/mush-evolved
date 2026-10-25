@@ -48,6 +48,8 @@ function aimedAt(view: PlayerView, a: Action, target: Target): boolean {
     case "load_fuel":
     case "unload_fuel":
     case "return_fuel":
+    case "take_oxygen":
+    case "return_oxygen":
     case "check_combustion":
     case "lie_down":
     case "shower":
@@ -102,6 +104,8 @@ const ACTION_LABEL_KEYS = {
   load_fuel: "actions.loadFuel",
   unload_fuel: "actions.unloadFuel",
   return_fuel: "actions.returnFuel",
+  take_oxygen: "actions.takeOxygen",
+  return_oxygen: "actions.returnOxygen",
   check_combustion: "actions.checkCombustion",
   lie_down: "actions.lieDown",
   shower: "actions.shower",

@@ -162,6 +162,7 @@ export interface GameConfig {
     injuryChance: number;
   };
   consume: { dirtyChance: number }; // Chance of getting the dirty status after consuming an item.
+  oxygenCapsule: { cost: { ap: number }; dirtyChance: number; injuryChance: number }; // Taking an oxygen capsule from a tank and putting it back (owner, 2026-10-24: as fuel).
   fuel: { cost: { ap: number }; dirtyChance: number, injuryChance: number }; // Taking a capsule from a tank, loading it into the chamber, unloading it back.
   dispense: { dirtyChance: number }; // Chance of getting the dirty status after dispensing an item.
   computer: {

@@ -24,6 +24,8 @@ const ACTION_NAME_KEYS = {
   load_fuel: "actions.loadFuel",
   unload_fuel: "actions.unloadFuel",
   return_fuel: "actions.returnFuel",
+  take_oxygen: "actions.takeOxygen",
+  return_oxygen: "actions.returnOxygen",
   check_combustion: "actions.checkCombustion",
   contact_sol: "actions.contactSol",
   decode_rebel: "actions.decodeRebel",

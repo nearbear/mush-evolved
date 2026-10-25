@@ -127,6 +127,8 @@ export type Action =
   | { type: "load_fuel"; equipment: string }
   | { type: "unload_fuel"; equipment: string }
   | { type: "return_fuel"; equipment: string }
+  | { type: "take_oxygen"; equipment: string }
+  | { type: "return_oxygen"; equipment: string }
   | { type: "check_combustion"; equipment: string }
   | { type: "contact_sol"; equipment: string }
   | { type: "decode_rebel"; equipment: string; base: string }
