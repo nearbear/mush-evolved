@@ -78,6 +78,9 @@ export interface GameConfig {
   spike: {
     cost: { ap: number }; // Confirmed 2026-10-15.
   };
+  fungalCuisine: {
+    cost: { ap: number }; // The Mush skill Fungal cuisine: 1 AP and 1 spore (owner, 2026-10-24).
+  };
   bodyTransfer: {
     cost: { ap: number }; // The Mush skill Transfer: free (owner, 2026-10-24).
   };

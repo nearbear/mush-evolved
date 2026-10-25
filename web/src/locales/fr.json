@@ -270,7 +270,8 @@
     "checkCombustion": "Vérifier le niveau de fuel",
     "turretAttack": "Tirer",
     "repairHull": "Renforcer la coque",
-    "bodyTransfer": "Transfert"
+    "bodyTransfer": "Transfert",
+    "fungalCuisine": "Cuisine fongique"
   },
   "queue": {
     "label": "Vos actions",
@@ -713,6 +714,7 @@
     "hullRepairFailed": "Vous n'avez pas réussi à renforcer la coque.",
     "biosShieldOn": "Vous avez activé le bouclier plasma : il protège à nouveau la coque.",
     "biosShieldOff": "Vous avez désactivé le bouclier plasma : il ne protège plus la coque.",
+    "fungalCooked": "Vous glissez un spore dans : {{item}}. Niveau de contamination : {{level}}.",
     "bodyTransferred": "Vous vous êtes glissé dans la peau de {{target}}. {{name}} se réveille humain, dans votre ancien corps."
   },
   "skills": {

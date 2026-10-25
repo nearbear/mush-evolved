@@ -52,6 +52,7 @@ import { ShareAction } from "./actions/share.ts";
 import { GetUpAction, LieDownAction } from "./actions/lie_down.ts";
 import { ShowerAction } from "./actions/shower.ts";
 import { SpikeAction } from "./actions/spike.ts";
+import { FungalCuisineAction } from "./actions/fungal_cuisine.ts";
 import { BodyTransferAction } from "./actions/body_transfer.ts";
 import { TransferAction } from "./actions/transfer.ts";
 import { WaterAction } from "./actions/water.ts";
@@ -140,6 +141,7 @@ export const ACTIONS: { [T in ActionType]: ActionDef<ActionOf<T>> } = {
   stt: new ShareAction("stt"),
   extract_spore: new ExtractSporeAction(),
   spike: new SpikeAction(),
+  fungal_cuisine: new FungalCuisineAction(),
   body_transfer: new BodyTransferAction(),
   lie_down: new LieDownAction(),
   get_up: new GetUpAction(),

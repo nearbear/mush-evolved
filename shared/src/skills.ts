@@ -181,6 +181,8 @@ export const SKILL_STATUS: Readonly<Partial<Record<SkillId | MushSkillId, SkillS
   skilful: "partial",
   // Mush skill: the one-use body swap (owner, 2026-10-24, body_transfer.ts).
   transfert: "full",
+  // Mush skill: spores into food (owner, 2026-10-24, fungal_cuisine.ts); no Hygienist or Cook-point interaction.
+  fungus_cook: "partial",
   //Increases success rate, injury chance, and dirty chance by 20%
   expert: "full",
 };

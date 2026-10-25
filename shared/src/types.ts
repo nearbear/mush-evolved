@@ -65,6 +65,8 @@ export interface ItemState {
   charges?: number;
   /** For a skill book: the skill id it teaches (SKILLS in skills.ts). */
   teaches?: string;
+  /** For a food item a Mush filled with spores (Fungal cuisine): the contamination it passes to a human who eats it. Mush-only in views. */
+  spores?: number;
   /** For a hydropot with something growing in it (botany.ts). An empty pot has none. */
   plant?: PlantState;
 }
@@ -150,6 +152,7 @@ export type Action =
   | { type: "attack"; weapon: ItemId; target: PlayerId }
   | { type: "attack"; weapon: ItemId }
   | { type: "spike"; target: PlayerId }
+  | { type: "fungal_cuisine"; item: ItemId }
   | { type: "body_transfer"; target: PlayerId }
   | { type: "pick_skill"; skill: string }
   | { type: "read_book"; item: ItemId }

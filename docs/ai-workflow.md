@@ -1282,3 +1282,7 @@ Asked how feasible the original's Transfer skill is. Claude read eMushpedia (`Tr
 
 ## 2026-10-24: Oxygen capsules
 Owner asked for oxygen capsules "like fuel canisters". Asked three questions (take/return handling, asphyxia delay, other sources); owner took the recommended answers: same as fuel, no asphyxia delay, tanks only. Built as a copy of take_fuel/return_fuel with its own `config.oxygenCapsule`. Nothing needed correcting.
+
+## 2026-10-24: Fungal cuisine
+- Used the `rule` skill: read the wiki page, asked four questions in one call (cost, eating, visibility, items); owner took every recommended option. Built as an `ItemState.spores` counter, a status-like property on the item, with `consume` calling `contaminate` per spore.
+- Existing `mush_skills.test.ts` asserted only Transfer was implemented and needed updating. `access.test.ts` already fails on `main` (unrelated, from the previous commit).

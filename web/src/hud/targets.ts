@@ -59,6 +59,7 @@ function aimedAt(view: PlayerView, a: Action, target: Target): boolean {
     case "consume":
     case "cook":
     case "express_cook":
+    case "fungal_cuisine":
     case "build":
     case "jettison":
     case "install":
@@ -112,6 +113,7 @@ const ACTION_LABEL_KEYS = {
   consume: "actions.consume",
   cook: "actions.cook",
   express_cook: "actions.expressCook",
+  fungal_cuisine: "actions.fungalCuisine",
   build: "actions.build",
   jettison: "actions.jettison",
   install: "actions.install",

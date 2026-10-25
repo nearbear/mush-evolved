@@ -269,7 +269,8 @@
     "checkCombustion": "Check the fuel level",
     "turretAttack": "Shoot",
     "repairHull": "Reinforce the hull",
-    "bodyTransfer": "Transfer"
+    "bodyTransfer": "Transfer",
+    "fungalCuisine": "Fungal cuisine"
   },
   "queue": {
     "label": "Your actions",
@@ -709,6 +710,7 @@
     "hullRepairFailed": "You failed to reinforce the hull.",
     "biosShieldOn": "You switched the plasma shield on: it protects the hull again.",
     "biosShieldOff": "You switched the plasma shield off: it no longer protects the hull.",
+    "fungalCooked": "You slip a spore into the {{item}}. It now carries {{level}}.",
     "bodyTransferred": "You slipped into {{target}}'s body. {{name}} wakes up human, with your old body."
   },
   "skills": {

@@ -52,6 +52,7 @@ const ACTION_NAME_KEYS = {
   extract_spore: "actions.extractSpore",
   spike: "actions.spike",
   body_transfer: "actions.bodyTransfer",
+  fungal_cuisine: "actions.fungalCuisine",
   lie_down: "actions.lieDown",
   get_up: "actions.getUp",
   accommodate: "actions.accommodate",

@@ -42,6 +42,7 @@ export class CookAction extends Action<CookActionData> {
   override apply(state: GameState, player: PlayerState, target: CookActionData): void {
     const item = state.items.find((i) => i.id === target.item)!;
     item.type = ITEM_TYPES[item.type]!.cook!.into;
+    delete item.spores; // any transformation destroys the spores (Fungal cuisine)
     logPublic(state, player.room, "cooked", { name: player.character, item: item.type });
   }
 }

@@ -68,6 +68,8 @@ export const DEFAULT_CONFIG: GameConfig = {
   // Confirmed 2026-10-15: spiking costs 1 AP and 1 spore, and raises a human's contamination by 1.
   spike: { cost: { ap: 1 } },
   bodyTransfer: { cost: { ap: 0 } },
+  // Owner, 2026-10-24: Fungal cuisine costs 1 AP and 1 spore and adds 1 contamination level to a food item.
+  fungalCuisine: { cost: { ap: 1 } },
   // Confirmed 2026-10-13/14: extracting costs 1 AP and gives 1 spore; each Mush waits 4 cycles between extractions
   // and the faction shares 4 per day (skills and research will raise it).
   spores: { cost: { ap: 1 }, effect: { spores: 1 }, cooldownCycles: 4, perDay: 4 },

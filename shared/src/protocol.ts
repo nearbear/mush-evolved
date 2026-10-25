@@ -182,6 +182,7 @@ export function parseGameMessage(raw: string): GameClientMessage | null {
   if (a.type === "cook" && typeof a.item === "string") return { type: "action", action: { type: "cook", item: a.item } };
   if ((a.type === "water" || a.type === "treat") && typeof a.item === "string") return { type: "action", action: { type: a.type, item: a.item } };
   if (a.type === "sow" && typeof a.item === "string" && typeof a.fruit === "string") return { type: "action", action: { type: "sow", item: a.item, fruit: a.fruit } };
+  if (a.type === "fungal_cuisine" && typeof a.item === "string") return { type: "action", action: { type: "fungal_cuisine", item: a.item } };
   if (a.type === "express_cook" && typeof a.item === "string") return { type: "action", action: { type: "express_cook", item: a.item } };
   if (a.type === "build" && typeof a.item === "string") return { type: "action", action: { type: "build", item: a.item } };
   if (a.type === "install" && typeof a.item === "string") return { type: "action", action: { type: "install", item: a.item } };
