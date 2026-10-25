@@ -22,13 +22,11 @@ describe("accessing a terminal", () => {
     expect(costOf(s, "p0", ASTRO)).toEqual({ ap: 0, mp: 0 });
   });
 
-  it("changes nothing but the action history (eMush records accessing a terminal; history.ts)", () => {
+  it("changes nothing, and is left out of the action history (history.ts)", () => {
     const s = game("COMMAND_CENTER");
     const r = applyAction(s, "p0", ASTRO);
     expect(r.ok).toBe(true);
     if (!r.ok) return;
-    expect(r.state.players[0]!.history).toEqual([...s.players[0]!.history, "access"]);
-    r.state.players[0]!.history = s.players[0]!.history;
     expect(r.state).toEqual(s);
   });
 
