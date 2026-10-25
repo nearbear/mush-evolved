@@ -10,7 +10,7 @@
 //   game               the "Room" region lists the people, equipment, items and exits the room shows
 //   game               every interactive element a mouse can reach is a Tab stop
 //   picker/game        the license footer's links come last in the Tab order, never before other controls
-//   game               the room log is a live region
+//   game               the room log is a role="log", and the polite and assertive announcer regions exist
 //
 // The page-side code is passed as strings: this Node-only package has no DOM types.
 
@@ -149,14 +149,17 @@ function labelsOf(els: unknown[]): string[] {
 }
 
 async function logIsLive(page: Page): Promise<void> {
-  const live = await inPage<boolean | null>(
+  // The log is a role="log" for structure; its entries are spoken by the announcer's two live regions
+  // (so a hidden tab still announces and a burst is batched), which must exist before anything happens.
+  const found = await inPage<{ feed: boolean; log: boolean; polite: boolean; assertive: boolean }>(
     page,
-    `(() => { const feed = document.querySelector(".feed"); if (!feed) return null;
-      const host = feed.closest('[role="log"], [aria-live]');
-      return !!host && host.getAttribute("aria-live") !== "off"; })()`,
+    `(() => { const feed = document.querySelector(".feed");
+      const live = (u) => !!document.querySelector('[data-announcer="' + u + '"][aria-live="' + u + '"]');
+      return { feed: !!feed, log: !!feed && !!feed.closest('[role="log"]'), polite: live("polite"), assertive: live("assertive") }; })()`,
   );
-  if (live === null) throw new Error("no .feed (room log) on screen");
-  if (!live) throw new Error('the room log is not inside role="log" or an aria-live region');
+  if (!found.feed) throw new Error("no .feed (room log) on screen");
+  const missing = [!found.log && 'the room log is not inside role="log"', !found.polite && "no polite announcer region", !found.assertive && "no assertive announcer region"].filter(Boolean);
+  if (missing.length) throw new Error(missing.join("\n"));
 }
 
 /** Tabs through the whole page, marking each stop `data-a11y-tab`; returns where it stopped. */

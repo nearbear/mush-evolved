@@ -9,6 +9,7 @@ import { useTranslation } from "react-i18next";
 import { useNames } from "../i18n/names.ts";
 import { Tabs } from "@base-ui/react/tabs";
 import { FEATURE_CHANNELS, ITRACKIE_ITEM, GRAVEYARD_CHANNEL, MUSH_CHANNEL, type ChannelId, type FeatureChannel, type PlayerView, type ThreadId } from "@mush2/shared";
+import { useAnnouncements } from "./useAnnouncements.ts";
 import { FeatureSelect } from "./FeatureSelect.tsx";
 import { IconTab } from "./IconButton.tsx";
 import { CycleDivider } from "./CycleDivider.tsx";
@@ -37,6 +38,31 @@ const TAB_TITLES = {
   graveyard: "itrackie.tabs.graveyard",
 } as const;
 
+/** Which tab a channel's messages are read in. */
+function tabOf(channel: ChannelId): TabId {
+  if (channel === "global") return "global";
+  if (channel === MUSH_CHANNEL) return "mush";
+  if (channel === GRAVEYARD_CHANNEL) return "graveyard";
+  if (channel.startsWith("pc-")) return "private";
+  if (channel.startsWith("th-")) return "threads";
+  return "features";
+}
+
+/** Messages from others on each tab that arrived since you last had it open (or since this panel mounted). */
+function useUnread(view: PlayerView, active: TabId): Record<TabId, number> {
+  const [seen, setSeen] = useState<Partial<Record<TabId, number>>>({});
+  const [baseline] = useState(() => view.chat.reduce((n, m) => Math.max(n, m.id), 0));
+  const newestHere = view.chat.reduce((n, m) => (tabOf(m.channel) === active ? Math.max(n, m.id) : n), 0);
+  useEffect(() => {
+    setSeen((s) => ((s[active] ?? 0) >= newestHere ? s : { ...s, [active]: newestHere }));
+  }, [active, newestHere]);
+  const counts: Record<TabId, number> = { room: 0, global: 0, threads: 0, features: 0, private: 0, mush: 0, graveyard: 0 };
+  for (const m of view.chat) {
+    const tab = tabOf(m.channel);
+    if (tab !== active && m.from !== view.you.id && m.id > Math.max(baseline, seen[tab] ?? 0)) counts[tab]++;
+  }
+  return counts;
+}
 
 export function ITrackie({
   view,
@@ -82,6 +108,8 @@ export function ITrackie({
   // The dead have no room log and no private channels (#45): those tabs go, and they land on global chat.
   const alive = view.you.alive;
   const activeTab: TabId = !alive && (tab === "room" || tab === "private") ? "global" : (tab === "mush" && !mush) || (tab === "graveyard" && !graveyard) ? "room" : tab;
+  const unread = useUnread(view, activeTab);
+  const tabLabel = (tab: TabId, name: string) => (unread[tab] ? t("itrackie.unreadTab", { name, count: unread[tab] }) : name);
   const carrying = view.inventory.some((i) => i.type === ITRACKIE_ITEM);
   // Threads tab: the open thread (null for the list), and the new-thread form's
   // name and starter message. Kept here so a message in global chat can fill them.
@@ -102,24 +130,30 @@ export function ITrackie({
     },
   };
 
+  // The channel on screen, whose messages are announced in full.
+  const reading: ChannelId | null =
+    activeTab === "global" || activeTab === "mush" || activeTab === "graveyard" ? activeTab : activeTab === "features" ? feature : activeTab === "threads" ? shownThread?.id ?? null : null;
+  useAnnouncements(view, reading);
+
   return (
     <div className="kit-panel itrackie">
       <Tabs.Root className="itrackie-tabs-root" value={activeTab} onValueChange={(v) => setTab(v as TabId)}>
         <Tabs.List className="itrackie-tabs">
           {alive && <IconTab value="room" src={TAB_ICONS.roomLog} label={t("itrackie.tabs.room")} />}
-          <IconTab value="global" src={TAB_ICONS.global} label={t("itrackie.tabs.global")} />
-          <IconTab value="threads" src={TAB_ICONS.threads} label={t("itrackie.tabs.threads")} />
-          <IconTab value="features" src={TAB_ICONS.features} label={t("itrackie.tabs.features")} />
-          {alive && <IconTab value="private" src={TAB_ICONS.private} label={t("channels.tab")} />}
+          <IconTab value="global" src={TAB_ICONS.global} label={tabLabel("global", t("itrackie.tabs.global"))} badge={unread.global} />
+          <IconTab value="threads" src={TAB_ICONS.threads} label={tabLabel("threads", t("itrackie.tabs.threads"))} badge={unread.threads} />
+          <IconTab value="features" src={TAB_ICONS.features} label={tabLabel("features", t("itrackie.tabs.features"))} badge={unread.features} />
+          {alive && <IconTab value="private" src={TAB_ICONS.private} label={tabLabel("private", t("channels.tab"))} badge={unread.private} />}
           {mush && (
             <IconTab
               value="mush"
               src={TAB_ICONS.mushChat}
-              label={t("itrackie.tabs.mush")}
+              label={tabLabel("mush", t("itrackie.tabs.mush"))}
+              badge={unread.mush}
               className={`mush-tab${newestMush > mushSeen ? " unread" : ""}`}
             />
           )}
-          {graveyard && <IconTab value="graveyard" src={TAB_ICONS.graveyard} label={t("itrackie.tabs.graveyard")} />}
+          {graveyard && <IconTab value="graveyard" src={TAB_ICONS.graveyard} label={tabLabel("graveyard", t("itrackie.tabs.graveyard"))} badge={unread.graveyard} />}
         </Tabs.List>
         <div className="itrackie-card">
           <h2 className="itrackie-title">{t(TAB_TITLES[activeTab])}{activeTab === "room" && ` – ${names.room(here)}`}{activeTab === "threads" && shownThread && ` – ${shownThread.name}`}</h2>
@@ -127,6 +161,8 @@ export function ITrackie({
           {/* keepMounted: hidden with CSS, so chat drafts survive switching tabs. */}
           <Tabs.Panel className="itrackie-panel" value="room" aria-label={t(TAB_TITLES.room)} keepMounted>
             <Scroller items={roomLog.length}>
+              {/* aria-live is off here: new entries are spoken by the announcer (announce.ts), so a hidden tab still announces and bursts are batched. */}
+              <div role="log" aria-live="off" aria-label={t(TAB_TITLES.room)}>
               <ol className="feed">
                 {roomLog.map((e, i) => (
                   <Fragment key={i}>
@@ -141,6 +177,7 @@ export function ITrackie({
                   </Fragment>
                 ))}
               </ol>
+              </div>
             </Scroller>
           </Tabs.Panel>
 
