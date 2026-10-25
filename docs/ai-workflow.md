@@ -1341,3 +1341,8 @@ Added `server/tests/stateShape.test.ts` and `state-shape.json`: sorted key paths
 ## 2026-10-25: Anti-Mush serum (research effect)
 - Asked the owner (via the wiki's retro-fungal serum page) about drops, effects, visibility and targeting. Decided: one serum dropped at the lab, 1 AP, any carrier on any living other in the room, used up even on a healthy human, cures Mush and contamination, result private to the user. Skill re-picking was left out. Satiety after a cure is a placeholder.
 - Config gained `vaccine`, so STATE_VERSION went to 72.
+
+## 2026-10-25: Incident points assessment and decisions (#184)
+- Claude assessed what incidents need: the spender is small, but broken equipment, door objects and fire don't exist in state yet (equipment is fixed config with ~30 direct lookups; doors are a plain adjacency list), so they are most of the work.
+- The owner adopted eMushpedia's budget, spending and catalog numbers (#185–#188 closed), with one change: pre-selection earns incidents too. Activity multiplier deferred to #263; projects, skills and other sources to #264. First pass: tremor, panic attack, metal plate.
+- Correction found: #189 and #190 were closed as "recorded in rules-design.md" on 2026-10-16, but nothing was written there. Lesson: check the doc actually holds the answer before closing a decision issue.
