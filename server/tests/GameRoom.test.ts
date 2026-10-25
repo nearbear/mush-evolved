@@ -161,6 +161,24 @@ describe("GameRoom input handling", () => {
 describe("GameRoom cheats", () => {
   const cheatMsg = { type: "cheat", cheat: "infiniteHp", on: true };
 
+  it("gates Self Disease on ALLOW_CHEATS and applies it privately when enabled", async () => {
+    const { room: closed, storage } = await newRoom(3);
+    const closedConn = connect(closed, "tok0");
+    await send(closed, closedConn, { type: "action", action: { type: "self_disease" } });
+    expect(lastMsg(closedConn)).toEqual({ type: "error", message: "cheats_disabled" });
+    expect(lastView(closedConn).statuses).not.toContain("cold_disease");
+    expect([...storage.data.keys()].some((key) => key.startsWith("input:"))).toBe(false);
+
+    const { room: devRoom } = await newRoom(3, new FakeStorage(), CHEATS);
+    const devConn = connect(devRoom, "tok0");
+    await send(devRoom, devConn, { type: "cheat", cheat: "selfDisease", on: true });
+    expect(lastView(devConn).you.cheats).toContain("selfDisease");
+    expect(lastView(devConn).actions.some((option) => option.action.type === "self_disease")).toBe(true);
+    await send(devRoom, devConn, { type: "action", action: { type: "self_disease" } });
+    expect(lastView(devConn).statuses).toContain("cold_disease");
+    expect(lastView(connect(devRoom, "tok1")).players.find((person) => person.id === "p0")?.statuses).not.toContain("cold_disease");
+  });
+
   it("refuses cheat inputs unless ALLOW_CHEATS is set, and records nothing", async () => {
     const { room, storage } = await newRoom(3);
     const c = connect(room, "tok0");

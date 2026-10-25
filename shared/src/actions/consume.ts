@@ -6,6 +6,7 @@ import { rationApBonus } from "../comms.ts";
 import { contaminate } from "../infection.ts";
 import { isFullBelly } from "../statuses.ts";
 import type { GameState, ItemState, PlayerState } from "../types.ts";
+import { gainMorale } from "../adjustStats.ts";
 
 export type ConsumeActionData = { type: "consume"; item: string };
 
@@ -47,7 +48,8 @@ export class ConsumeAction extends Action<ConsumeActionData> {
     const { ap, satiety, morale = 0, hp = 0 } = ITEM_TYPES[item.type]!.consume!;
     player.hp = Math.min(state.config.maxHp, player.hp + Math.max(0, hp));
     player.ap = Math.min(state.config.maxAp, player.ap + ap + rationApBonus(state, item.type));
-    player.morale = Math.max(0, Math.min(state.config.maxMorale, player.morale + morale));
+    //player.morale = Math.max(0, Math.min(player.maxMorale, player.morale + morale));
+    gainMorale(state, player, morale);
     if (player.role === "human") {
       player.satiety += satiety;
       player.satietyZeroSince = player.satiety === 0 ? state.cycle : null;

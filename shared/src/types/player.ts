@@ -1,6 +1,7 @@
 import type { ActopiCheat, Cheat } from "../cheats.ts";
 import type { CharacterId } from "../characters.ts";
 import type { Action, PlayerId, Role, RoomId, Seat } from "../types.ts";
+import type { DiseaseTracker } from "../adjustStats.ts";
 
 export type ResourceId = "eng" | "exp" | "comp" | "garden" | "core" | "shoot" | "cook" | "heal" | "pilgred";
 
@@ -80,12 +81,15 @@ export interface PlayerState extends Seat {
   hp: number;
   /** Morale points. Private: only in your own view. Lose `moralePerDay` at the end of each day. */
   morale: number;
+  maxMorale: number;
   /** Satiety (humans only; Mush stay at 0 and never get hungry). Never below 0. Private: only in your own view. */
   satiety: number;
   /** The cycle satiety last reached 0 (or the game began at 0); null while satiety is above 0 or for Mush. Counts toward hunger. */
   satietyZeroSince: number | null;
   /** Stored status effects (statuses.ts); full belly and hungry are derived from satiety, so only `dirty` is stored for now. */
   statuses: string[];
+  /** Disease Trackers, these store the progress of a disease healing */
+  diseaseTrackers: DiseaseTracker[];
   /** First cycle the player is no longer immune to infection (antic_perfume); unset or past means not immune. Private: your own view only, as the `immune` status. */
   immuneUntil?: number;
   /** Spores this player carries. Only Mush ever gain any; visible in your own view only (teammates' counts will be shown to Mush later). */

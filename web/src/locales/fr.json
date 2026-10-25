@@ -66,6 +66,7 @@
       "instantActions": "Actions instantanées",
       "noRelayPenalty": "Pas de pénalité de relais",
       "freeHacking": "Piratage libre",
+      "selfDisease": "Self Disease",
       "role": {
         "mush": "Devenir Mush",
         "human": "Devenir humain"
@@ -253,6 +254,7 @@
     "analyzePlanet": "Analyser une planète",
     "deletePlanet": "Supprimer une planète",
     "pickSkill": "Choisir une compétence",
+    "selfDisease": "S'infliger la maladie",
     "visibility": {
       "private": "Privée",
       "secret": "Secrète",
@@ -461,6 +463,7 @@
     "wheelchair": "Fauteuil roulant",
     "accommodated": "Accompagné",
     "outcast": "Paria",
+    "cold_disease": "Rhume",
     "contaminated": "Contamination : {{level}}",
     "desc": {
       "dirty": "Vous ne pouvez pas faire de recherche. Prendre une douche l'enlève.",
@@ -473,6 +476,7 @@
       "wheelchair": "Un trait : n'importe qui dans la salle de cette personne peut proposer de pousser son fauteuil. Une fois poussée, elle se déplace avec son accompagnateur sans coût en PM. Ne peut pas être retiré.",
       "accommodated": "Quelqu'un pousse le fauteuil de cette personne : elle va là où va son accompagnateur, sans coût en PM, et ne peut pas se déplacer seule. L'un ou l'autre peut y mettre fin.",
       "outcast": "Maudit par un Persécuteur : chaque action à tirage réussit 20 % moins souvent, et rien de ce que cette personne fait n'est discret. Cela prend fin à la mort du Persécuteur ou de la personne.",
+      "cold_disease": "À chaque cycle, vous avez une chance sur trois de perdre 1 PM.",
       "contaminated": "Un humain que vous avez contaminé. À sa capacité maximale, il devient Mush."
     }
   },
@@ -607,6 +611,7 @@
     "oxygenOut": "L'oxygène est épuisé. Quelqu'un suffoque.",
     "cycleBegins": "Le cycle {{cycle}} commence.",
     "dayBegins": "Le jour {{day}} commence.",
+    "coldDiseaseMpLost": "La maladie vous a fait perdre 1 PM.",
     "left": "{{name}} est parti vers : {{room}}.",
     "entered": "{{name}} est entré depuis : {{room}}.",
     "accommodationOffered": "{{name}} a proposé de pousser le fauteuil de {{target}}.",

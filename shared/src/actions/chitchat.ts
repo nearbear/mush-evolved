@@ -3,6 +3,7 @@ import { revealHistory } from "../history.ts";
 import { logPublic } from "../log.ts";
 import { hasSkill } from "../skills.ts";
 import type { GameState, PlayerState } from "../types.ts";
+import { gainMorale } from "../adjustStats.ts";
 
 export type ChitchatActionData = { type: "chitchat"; target: string };
 
@@ -39,7 +40,8 @@ export class ChitchatAction extends Action<ChitchatActionData> {
   override apply(state: GameState, player: PlayerState, target: ChitchatActionData): void {
     const confidant = state.players.find((o) => o.id === target.target)!; // checked, so it exists
     player.chitchatToday = true;
-    player.morale = Math.min(state.config.maxMorale, player.morale + state.config.chitchat.morale);
+    //player.morale = Math.min(player.maxMorale, player.morale + state.config.chitchat.morale);
+    gainMorale(state, player, state.config.chitchat.morale);
     logPublic(state, player.room, "chitchatted", { name: player.character, target: confidant.character });
     revealHistory(state, confidant, player, confidant.morale);
   }

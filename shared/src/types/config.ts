@@ -54,6 +54,7 @@ export interface GameConfig {
   // Cycles change on the server's UTC clock (#24). With this on, `ready` is offered too and the cycle also ends once
   // every living player is ready: the dev server's manual End cycle, and later single player.
   manualCycles: boolean;
+
   // Roommates see where you stand and sit (spot.ts). Off: `walk` is refused and nobody's spot is sent; a game setting later.
   sharedSpots: boolean;
   moralePerDay: number; // Morale lost by each living player at the end of a day, before modifiers (Mankind's Only Hope cuts it).

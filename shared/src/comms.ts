@@ -3,6 +3,7 @@
 // calls, contacts Xyloph and updates NERON. The state (`GameState.comms`) is shown read-only to anyone at the
 // terminal; the actions' log lines are private to the actor. The link status itself goes to everyone.
 
+import { gainMorale } from "./adjustStats.ts";
 import { BLUEPRINT_ITEM, BLUEPRINTS } from "./blueprints.ts";
 import { pushChat } from "./chat.ts";
 import { BOOK_ITEM } from "./items.ts";
@@ -154,7 +155,7 @@ export function rollRebelGain(state: GameState, player: Readonly<PlayerState>): 
 export function rebelReached(state: GameState, base: RebelBaseId): void {
   const morale = base === "KALADAAN" ? state.config.comms.rebel.kaladaanMorale : base === "CYGNI" ? state.config.comms.rebel.cygniMorale : 0;
   if (morale === 0) return;
-  for (const p of state.players) if (p.alive) p.morale = Math.min(state.config.maxMorale, p.morale + morale);
+  for (const p of state.players) if (p.alive) /*p.morale = Math.min(p.maxMorale, p.morale + morale)*/gainMorale(state, p, morale);
 }
 
 /** Extra AP a ration gives once Sirius has been reached. */

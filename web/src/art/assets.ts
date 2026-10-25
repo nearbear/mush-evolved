@@ -281,7 +281,7 @@ const statusIconFiles = urls(
 const traitSkillIcons = urls(
   import.meta.glob<string>("../../../Mush/www/img/icons/skills/mankind_only_hope.png", { eager: true, query: "?url", import: "default" }),
 );
-export const STATUS_ICONS: Readonly<Record<"dirty" | "full_belly" | "hungry" | "immune" | "immunity" | "pacifist" | "mankind_only_hope" | "wheelchair" | "accommodated" | "outcast", string>> = {
+export const STATUS_ICONS: Readonly<Record<"dirty" | "full_belly" | "hungry" | "immune" | "immunity" | "pacifist" | "mankind_only_hope" | "wheelchair" | "accommodated" | "outcast" | "cold_disease", string>> = {
   dirty: statusIconFiles["dirty"]!,
   full_belly: statusIconFiles["belly_full"]!,
   hungry: statusIconFiles["hungry"]!,
@@ -293,6 +293,7 @@ export const STATUS_ICONS: Readonly<Record<"dirty" | "full_belly" | "hungry" | "
   wheelchair: statusIconFiles["disabled"]!,
   accommodated: statusIconFiles["disabled"]!,
   outcast: statusIconFiles["paria"]!,
+  cold_disease: statusIconFiles["disease"]!,
 };
 /** Item attribute icons, keyed by attribute (the `itemAttr.*` locale keys). */
 export const ITEM_ATTR_ICONS: Readonly<Record<"heavy", string>> = { heavy: uiIcons["heavy"]! };

@@ -271,5 +271,5 @@ export const DEFAULT_CONFIG: GameConfig = {
   rooms: Object.fromEntries(SHIP_ROOMS.map((r) => [r.id, r.doors])) as Record<RoomId, RoomId[]>,
   // Confirmed 2026-10-11: the equipment drawn in each room of the original map.
   equipment: Object.fromEntries(SHIP_ROOMS.map((r) => [r.id, r.equipment])),
-  diseases: {["Cold"], ["Depression"], ["Nose Bleed"]},
+  diseases:  {allDiseases: ["cold_disease"], allDisorders: ["depression_disorder"], allInjuries: ["nose_bleed_injury"]},
 };

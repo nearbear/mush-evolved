@@ -156,4 +156,5 @@ export type Action =
   | { type: "body_transfer"; target: PlayerId }
   | { type: "pick_skill"; skill: string }
   | { type: "read_book"; item: ItemId }
+  | { type: "self_disease" }
   | { type: "ready" };

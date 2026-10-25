@@ -66,6 +66,7 @@
       "instantActions": "Acciones instantáneas",
       "noRelayPenalty": "Sin penalización por relevo",
       "freeHacking": "Hackeo libre",
+      "selfDisease": "Self Disease",
       "role": {
         "mush": "Convertirse en Mush",
         "human": "Convertirse en humano"
@@ -253,6 +254,7 @@
     "analyzePlanet": "Analizar un planeta",
     "deletePlanet": "Borrar un planeta",
     "pickSkill": "Elegir una habilidad",
+    "selfDisease": "Provocarse la enfermedad",
     "visibility": {
       "private": "Privada",
       "secret": "Secreta",
@@ -461,6 +463,7 @@
     "wheelchair": "Silla de ruedas",
     "accommodated": "Acompañado",
     "outcast": "Paria",
+    "cold_disease": "Resfriado",
     "contaminated": "Contaminación: {{level}}",
     "desc": {
       "dirty": "No puedes investigar. Darte una ducha lo elimina.",
@@ -473,6 +476,7 @@
       "wheelchair": "Un rasgo: cualquiera en la sala de esta persona puede ofrecerse a empujar su silla de ruedas. Mientras la empujan, se mueve con quien la empuja sin coste de PM. No se puede quitar.",
       "accommodated": "Alguien empuja la silla de ruedas de esta persona: va adonde vaya quien la empuja, sin coste de PM, y no puede moverse sola. Cualquiera de los dos puede terminarlo.",
       "outcast": "Maldecido por un Perseguidor: cada acción suya que se tira a suerte sale un 20 % menos, y nada de lo que hace es secreto. Termina cuando muere el Perseguidor o esta persona.",
+      "cold_disease": "En cada ciclo, tienes una probabilidad de 1 entre 3 de perder 1 PM.",
       "contaminated": "Un humano que has contaminado. Al llegar a su capacidad se vuelve Mush."
     }
   },
@@ -607,6 +611,7 @@
     "oxygenOut": "Se acabó el oxígeno. Alguien se asfixia.",
     "cycleBegins": "Comienza el ciclo {{cycle}}.",
     "dayBegins": "Comienza el día {{day}}.",
+    "coldDiseaseMpLost": "La enfermedad te hizo perder 1 PM.",
     "left": "{{name}} se fue a: {{room}}.",
     "entered": "{{name}} entró desde: {{room}}.",
     "accommodationOffered": "{{name}} se ofreció a empujar la silla de ruedas de {{target}}.",
