@@ -12,3 +12,7 @@ All under `server/src/`.
 - `rateLimit.ts`: the per-seat `RateLimiter`.
 - `testing/fakes.ts`: `FakeServer`, fake storage and sockets, so tests run without the Durable Object runtime.
 - `scripts/model.trial.ts` (with `vitest.trial.config.ts`, `run-trial.mjs`): development only, `npm run model-trial -w server`. A headless single-player game with real model bots, for measuring cost, latency and replies (#224).
+
+## STATE_VERSION and the shape fingerprint
+
+`STATE_VERSION` (exported from `GameRoom.ts`) must be bumped whenever the stored `GameState` or `GameConfig` shape changes: a field added, removed, renamed, or moved between optional and required (values and logic don't count). Bumping discards every live game, since there is no migration. `server/tests/stateShape.test.ts` compares the sorted key paths of a freshly stored game (including `config`, `players`, `items`, `chat` and `channels`) with `server/tests/state-shape.json`, which also records the version. After bumping, refresh it with `UPDATE_STATE_SHAPE=1 npm test -w server -- stateShape.test.ts` (it refuses if the shape changed and the version did not). Optional fields that a fresh game never sets are not in the fingerprint.

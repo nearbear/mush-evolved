@@ -1327,3 +1327,7 @@ Follow-up on #248 (2026-10-24): `npm run a11y` passes the Room region check (the
 - What worked: measuring before guessing. The first real call showed every reply empty (a reasoning model spent all 400 tokens thinking), and that the gate treated empty replies and 400s as passing failures, so bots would have paused and paid for the same failure forever. Both fixed with tests. Asking for the answer line only took qwen from 0% parsed to 100%, and latency from 5 s to 1 s.
 - What needed correction: I suspected a paid loop (bots asked again after ending their cycle) from reading the code; the harness showed `canAct` already excludes ready players. Running it first would have saved the detour.
 - The owner, reading the same calls in OpenRouter's Langfuse traces, saw the bots thrashing on ~100 offered actions and missing that a bed two rooms away doubles AP gain. That became #259 (a curated bot menu with go-to goals); skill and research lists stay with the owner. $0.31 spent.
+
+## 2026-10-25: #181 state-shape fingerprint
+
+Added `server/tests/stateShape.test.ts` and `state-shape.json`: sorted key paths of a freshly stored game must match the committed list, and the list carries the `STATE_VERSION` it was made at, so a shape change fails until the version is bumped and the file refreshed (the refresh command refuses without a bump). Limit: it sees only fields a fresh game sets.
