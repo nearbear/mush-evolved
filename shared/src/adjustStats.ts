@@ -2,7 +2,6 @@ import { DEFAULT_CONFIG } from "./config.ts";
 import { rollRange } from "./hunters.ts";
 //import { logPrivate } from "./log.ts";
 import { maxMorale, skillPicked } from "./modifiers.ts";
-import { nextInt } from "./rng.ts";
 import { addStatus, removeStatus, type StatusId } from "./statuses.ts";
 import type { GameState, PlayerState } from "./types.ts";
 
