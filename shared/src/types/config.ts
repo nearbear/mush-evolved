@@ -172,6 +172,26 @@ export interface GameConfig {
     capPoints: number; // Most Computer points (`resources.comp`) a player can hold (owner, 2026-10-16; the original skill's IncrMaxPA(COMP, 4)).
     pointsPerDay: number; // Computer points the `computer` skill grants at the start of each day and when picked (owner, 2026-10-16; the original +2).
   };
+  gunman: {
+    capPoints: number; // Most Shoot points (`resources.shoot`) a player can hold (owner, 2026-10-25; the original skill's IncrMaxPA(SHOOT, 4)).
+    pointsPerDay: number; // Shoot points the `gunman` skill grants at the start of each day and when picked (owner, 2026-10-25; the original +2). One makes a turret shot free.
+  };
+  gunner: {
+    accuracyFactor: number; // The `gunner` skill multiplies the chance to hit from a turret by this (owner, 2026-10-24; the data's MulActionOdd 2.0).
+    damageFactor: number; // ...and the damage of a hit (owner, 2026-10-24).
+  };
+  persistent: {
+    failureMultiplier: number; // The `persistent` skill's per-miss multiplier on a failure streak (turret, astro scan), replacing the usual one when higher (owner, 2026-10-25).
+  };
+  spaceTactics: {
+    chance: number; // Chance, while a `space_tactics` holder is alive, that a hunter wave comes smaller (owner, 2026-10-25; the original's 50%).
+    shrink: number; // Share of the wave's hunters that does not come, rounded down (owner, 2026-10-25; the original's 33%).
+  };
+  polymath: {
+    channels: number; // Extra private channels the `polymath` skill allows (owner, 2026-10-25; the original +2).
+    computerPointsPerDay: number; // Computer points it grants each day and when picked (owner, 2026-10-25; the original +1).
+    computerCapBonus: number; // Extra room for Computer points (owner, 2026-10-25; the original IncrMaxPA(COMP, 2)).
+  };
   designer: {
     capPoints: number; // Most Designer points (`resources.core`) a player can hold (owner, 2026-10-24; the original skill's IncrMaxPA(CORE, 4)).
     pointsPerDay: number; // Designer points the `designer` skill grants at the start of each day and when picked (owner, 2026-10-24; the original +2).

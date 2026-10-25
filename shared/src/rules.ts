@@ -11,7 +11,7 @@ import { ACTIONS, type ActionDef } from "./actions.ts";
 import { NO_SPACE } from "./actions/action.ts";
 import { getUp } from "./actions/lie_down.ts";
 import { itemsIn, rechargeMicrowaves, startCharges } from "./items.ts";
-import { actionFailed, apGain, carePointsGain, channelLimit, computerPointsGain, cycleChanged, designerPointsGain, gardenPointsGain, dailyMoraleLoss, inventorySlots, movementRules, pilgredPointsGain, satietyLoss } from "./modifiers.ts";
+import { actionFailed, apGain, carePointsGain, channelLimit, computerPointsCap, computerPointsGain, shootPointsGain, cycleChanged, designerPointsGain, gardenPointsGain, dailyMoraleLoss, inventorySlots, movementRules, pilgredPointsGain, satietyLoss } from "./modifiers.ts";
 import { contaminationSeenBy, convert } from "./infection.ts";
 import { addStatus, isHungry, publicStatusesOf, statusesOf } from "./statuses.ts";
 import { emptyResources } from "./resources.ts";
@@ -369,7 +369,8 @@ function advanceCycle(state: GameState): void {
 function grantCarePoints(state: GameState): void {
   for (const p of state.players) if (p.alive) {
     p.resources.heal += carePointsGain(state, p);
-    p.resources.comp = Math.min(state.config.computer.capPoints, p.resources.comp + computerPointsGain(state, p));
+    p.resources.comp = Math.min(computerPointsCap(state, p), p.resources.comp + computerPointsGain(state, p));
+    p.resources.shoot = Math.min(state.config.gunman.capPoints, p.resources.shoot + shootPointsGain(state, p));
     p.resources.core = Math.min(state.config.designer.capPoints, p.resources.core + designerPointsGain(state, p));
     p.resources.pilgred = Math.min(state.config.pilgred.capPoints, p.resources.pilgred + pilgredPointsGain(state, p));
     p.resources.garden = Math.min(state.config.botany.capPoints, p.resources.garden + gardenPointsGain(state, p));

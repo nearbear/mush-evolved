@@ -1,7 +1,7 @@
 import { Action, IN_PRESELECTION, type ActionTag, type ActionVisibility } from "./action.ts";
 import { damageHunter, rollRange, turretCharges, turretsHere } from "../hunters.ts";
 import { logPrivate, logPublic } from "../log.ts";
-import { turretDamage } from "../modifiers.ts";
+import { failureStreakMultiplier, turretDamage } from "../modifiers.ts";
 import type { GameState, PlayerState } from "../types.ts";
 
 export type TurretAttackActionData = { type: "turret_attack"; equipment: string; hunter: string };
@@ -20,13 +20,14 @@ export class TurretAttackAction extends Action<TurretAttackActionData> {
     super("turret_attack");
   }
 
-  override getCost(state: Readonly<GameState>): { ap: number; mp: number } {
-    return { ap: state.config.turrets.cost.ap, mp: 0 };
+  /** A Shoot point (`resources.shoot`, from the gunman skill) makes a shot free, hit or miss (owner, 2026-10-25). */
+  override getCost(state: Readonly<GameState>, player: Readonly<PlayerState>): { ap: number; mp: number } {
+    return { ap: player.resources.shoot > 0 ? 0 : state.config.turrets.cost.ap, mp: 0 };
   }
 
   override getSuccessChance(state: Readonly<GameState>, player: Readonly<PlayerState>): number {
     const { chance, failureMultiplier } = state.config.turrets;
-    return Math.min(1, chance * failureMultiplier ** (state.turretFailures[player.id] ?? 0));
+    return Math.min(1, chance * failureStreakMultiplier(state, player, failureMultiplier) ** (state.turretFailures[player.id] ?? 0));
   }
 
   override getCandidates(state: Readonly<GameState>, player: Readonly<PlayerState>): TurretAttackActionData[] {
@@ -45,6 +46,7 @@ export class TurretAttackAction extends Action<TurretAttackActionData> {
 
   override apply(state: GameState, player: PlayerState, target: TurretAttackActionData): void {
     spendCharge(state, target.equipment);
+    spendShootPoint(player);
     delete state.turretFailures[player.id];
     const [rolled, rng] = rollRange(state.rng, state.config.turrets.damage);
     state.rng = rng;
@@ -55,9 +57,15 @@ export class TurretAttackAction extends Action<TurretAttackActionData> {
 
   override fail(state: GameState, player: PlayerState, target: TurretAttackActionData): void {
     spendCharge(state, target.equipment);
+    spendShootPoint(player);
     state.turretFailures[player.id] = (state.turretFailures[player.id] ?? 0) + 1;
     logPrivate(state, player.id, "turretMiss");
   }
+}
+
+/** apply and fail run after the cost was priced, so a free shot is the one made while a point is held. */
+function spendShootPoint(player: PlayerState): void {
+  if (player.resources.shoot > 0) player.resources.shoot -= 1;
 }
 
 function spendCharge(state: GameState, turret: string): void {

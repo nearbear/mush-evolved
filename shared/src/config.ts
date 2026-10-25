@@ -127,6 +127,13 @@ export const DEFAULT_CONFIG: GameConfig = {
   computer: { capPoints: 4, pointsPerDay: 2 },
   // Owner, 2026-10-24: the designer skill holds up to 4 Designer points, gains 2 a day (and 2 when picked); they pay only for NERON projects.
   designer: { capPoints: 4, pointsPerDay: 2 },
+  // Owner, 2026-10-25 (the original skills.json): Gunman +2 Shoot points a day (max 4); Gunner doubles turret odds and damage;
+  // Persistent's streak grows by x1.5 a miss instead of x1.25; Space Tactics shrinks 50% of waves by 33%; Polymath +2 channels, +1 Computer point a day, +2 cap.
+  gunman: { capPoints: 4, pointsPerDay: 2 },
+  gunner: { accuracyFactor: 2, damageFactor: 2 },
+  persistent: { failureMultiplier: 1.5 },
+  spaceTactics: { chance: 0.5, shrink: 0.33 },
+  polymath: { channels: 2, computerPointsPerDay: 1, computerCapBonus: 2 },
   // Owner, 2026-10-24 (eMushpedia): the sprint skill adds 2 MP to each AP-to-MP conversion.
   sprinter: { extraMpPerConversion: 2 },
   // Owner, 2026-10-24 (eMushpedia): Anathema costs 1 AP; the Outcast's actions that roll succeed at x0.8.

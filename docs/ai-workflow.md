@@ -1331,3 +1331,9 @@ Follow-up on #248 (2026-10-24): `npm run a11y` passes the Room region check (the
 ## 2026-10-25: #181 state-shape fingerprint
 
 Added `server/tests/stateShape.test.ts` and `state-shape.json`: sorted key paths of a freshly stored game must match the committed list, and the list carries the `STATE_VERSION` it was made at, so a shape change fails until the version is bumped and the file refreshed (the refresh command refuses without a bump). Limit: it sees only fields a fresh game sets.
+
+## 2026-10-25: combat skills (Gunner, Gunman, Persistent, Space Tactics, Polymath)
+- Asked for "Gunner, Gunman and the other combat skills". The `rule` skill's step 1 paid off: Gunner was already decided in `docs/rules-design.md`, so I asked only about the four with open questions (shoot points, which Space Tactics variant, Persistent's scope, Polymath's parts) in one call. The owner took the recommended option for each and chose smaller waves for Space Tactics.
+- Worked: the modifier hooks already existed, so each skill is a small file plus one fold hook (`failureStreakMultiplier`, `shootPointsPerDay`, `computerPointsCap`, `crewWaveShrinkChance`).
+- Needed care: a free shot is priced before `apply` runs, and a miss runs `fail` instead, so the Shoot point is spent in both. A first draft of my Persistent astro-scan test asserted a chance over 100%, and two placeholder tests asserted nothing; I replaced both. Config additions change the stored state shape, so `STATE_VERSION` went to 71 and live games will be discarded on the next deploy.
+- My own defaults, flagged to the owner: waves round down and spend full points; Polymath gives 1 Computer point when picked.

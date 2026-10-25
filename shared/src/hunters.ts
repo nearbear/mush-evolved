@@ -6,7 +6,7 @@
 
 import { killPlayer } from "./death.ts";
 import { logPublic } from "./log.ts";
-import { followingHuntersShare, hunterPointsPerCycle } from "./modifiers.ts";
+import { followingHuntersShare, hunterPointsPerCycle, waveShrinkChance } from "./modifiers.ts";
 import { nextFloat, nextInt, type RngState, shuffle } from "./rng.ts";
 import { damageShip } from "./ship.ts";
 import type { GameState, PlayerState } from "./types.ts";
@@ -114,8 +114,16 @@ function spawnWave(state: GameState): void {
   state.rng = rng;
   if (roll >= config.waveChance) return;
   hunters.points -= count * config.points.perHunter;
-  for (let i = 0; i < count; i++) hunters.list.push({ id: `hunter-${hunters.nextId++}`, hp: config.hp, hitChance: config.hitChance, target: null });
-  logPublic(state, undefined, "hunterWave", { count }, "warning");
+  let size = count;
+  // Space Tactics (owner, 2026-10-25): the points are spent in full; the hunters that don't come are rounded down.
+  const shrinkChance = waveShrinkChance(state);
+  if (shrinkChance > 0) {
+    const [shrinkRoll, next] = nextFloat(state.rng);
+    state.rng = next;
+    if (shrinkRoll < shrinkChance) size -= Math.floor(count * state.config.spaceTactics.shrink);
+  }
+  for (let i = 0; i < size; i++) hunters.list.push({ id: `hunter-${hunters.nextId++}`, hp: config.hp, hitChance: config.hitChance, target: null });
+  logPublic(state, undefined, "hunterWave", { count: size }, "warning");
 }
 
 /**

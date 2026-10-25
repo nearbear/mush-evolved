@@ -187,6 +187,16 @@ export const SKILL_STATUS: Readonly<Partial<Record<SkillId | MushSkillId, SkillS
   fungus_cook: "partial",
   //Increases success rate, injury chance, and dirty chance by 20%
   expert: "full",
+  // Free turret shots from Shoot points (owner, 2026-10-25); no fewer clumsy misses or more critical hits on shots.
+  gunman: "partial",
+  // Doubled turret odds and damage (owner, 2026-10-24).
+  gunner: "full",
+  // A faster-growing streak on turret shots and astro scans (owner, 2026-10-25).
+  persistent: "full",
+  // 50% of hunter waves come 33% smaller (owner, 2026-10-25).
+  space_tactics: "full",
+  // Two more channels and Computer points; not the -10% on actions (owner, 2026-10-25).
+  polymath: "partial",
 };
 
 export function skillStatus(skill: string): SkillStatus {

@@ -1,5 +1,6 @@
 import { Action } from "./action.ts";
 import { logPrivate, logPublic } from "../log.ts";
+import { failureStreakMultiplier } from "../modifiers.ts";
 import { astroTerminalsHere, freePositions, generatePlanet, pickPosition, planetsOf, sizeRangeOn } from "../planets.ts";
 import type { GameState, PlayerState } from "../types.ts";
 
@@ -23,7 +24,7 @@ export class ScanPlanetAction extends Action<ScanPlanetActionData> {
 
   override getSuccessChance(state: Readonly<GameState>, player: Readonly<PlayerState>): number {
     const { chance, failureMultiplier } = state.config.astro.scan;
-    return Math.min(1, chance * failureMultiplier ** (state.scanFailures[player.id] ?? 0));
+    return Math.min(1, chance * failureStreakMultiplier(state, player, failureMultiplier) ** (state.scanFailures[player.id] ?? 0));
   }
 
   override getCandidates(state: Readonly<GameState>, player: Readonly<PlayerState>): ScanPlanetActionData[] {

@@ -18,6 +18,11 @@ import { expert } from "./modifiers/expert.ts";
 import { computer } from "./modifiers/computer.ts";
 import { designer } from "./modifiers/designer.ts";
 import { sprint } from "./modifiers/sprint.ts";
+import { gunman } from "./modifiers/gunman.ts";
+import { gunner } from "./modifiers/gunner.ts";
+import { persistent } from "./modifiers/persistent.ts";
+import { polymath } from "./modifiers/polymath.ts";
+import { space_tactics } from "./modifiers/space_tactics.ts";
 import { physicist } from "./modifiers/physicist.ts";
 import { botanic } from "./modifiers/botanic.ts";
 import { first_aid } from "./modifiers/first_aid.ts";
@@ -52,6 +57,9 @@ type FoldHooks = Record<
   | "carePointsPerDay"
   | "computerPointsPerDay"
   | "designerPointsPerDay"
+  | "shootPointsPerDay"
+  | "computerPointsCap"
+  | "failureStreakMultiplier"
   | "pilgredPointsPerDay"
   | "gardenPointsPerDay"
   | "heavyMpPenalty"
@@ -88,6 +96,11 @@ export interface Modifier extends Partial<FoldHooks> {
   crewHunterPoints?: (points: number, holder: Readonly<PlayerState>, state: Readonly<GameState>) => number;
   /** Adjusts the share of hunters that follow the ship when it jumps, while the holder is alive (for Space Tactics; none yet). Must be pure. The hunter count after a jump is public, so only a public modifier may have it. */
   crewFollowingHunters?: (share: number, holder: Readonly<PlayerState>, state: Readonly<GameState>) => number;
+  /**
+   * Adjusts the chance that a hunter wave comes smaller, while the holder is alive (Space Tactics). Must be pure.
+   * The wave size is public, so it hints that some living player has the skill (as in the original), but not who.
+   */
+  crewWaveShrinkChance?: (chance: number, holder: Readonly<PlayerState>, state: Readonly<GameState>) => number;
   /** Adjusts how a player's moves are paid for. Must be pure. */
   movement?: (rules: MovementRules, player: Readonly<PlayerState>, state: Readonly<GameState>) => MovementRules;
   /**
@@ -108,7 +121,7 @@ export interface Modifier extends Partial<FoldHooks> {
 export type ModifierRegistry = Readonly<Record<string, Modifier>>;
 
 /** Items and skills will register here too. When a skill gains rules, update its entry in SKILL_STATUS (skills.ts). */
-export const MODIFIERS: Record<string, Modifier> = { lying_down, medic, first_aid, sturdy, creative, expert, antic_perfume, logistics, caffeinomaniac, computer, designer, sprint, physicist, botanic, pacifist, immunity, mankind_only_hope, wheelchair, pilot };
+export const MODIFIERS: Record<string, Modifier> = { lying_down, medic, first_aid, sturdy, creative, expert, antic_perfume, logistics, caffeinomaniac, computer, designer, sprint, physicist, botanic, pacifist, immunity, mankind_only_hope, wheelchair, pilot, gunman, gunner, persistent, polymath, space_tactics };
 
 /** The ids every hook folds over: the player's skills (book slot last), then their other modifiers. */
 export function modifierIds(player: Readonly<PlayerState>): string[] {
@@ -328,6 +341,31 @@ export const designerPointsGain = (state: Readonly<GameState>, player: Readonly<
 /** PILGRED points a player gains at the start of a day: nothing by default, plus what the physicist skill grants. */
 export const pilgredPointsGain = (state: Readonly<GameState>, player: Readonly<PlayerState>, registry: ModifierRegistry = MODIFIERS) =>
   fold("pilgredPointsPerDay", 0, state, player, registry);
+
+/** Shoot points a player gains at the start of a day: nothing by default, plus what the gunman skill grants. */
+export const shootPointsGain = (state: Readonly<GameState>, player: Readonly<PlayerState>, registry: ModifierRegistry = MODIFIERS) =>
+  fold("shootPointsPerDay", 0, state, player, registry);
+
+/** Most Computer points a player can hold: the configured cap folded through their modifiers (for Polymath). */
+export const computerPointsCap = (state: Readonly<GameState>, player: Readonly<PlayerState>, registry: ModifierRegistry = MODIFIERS) =>
+  fold("computerPointsCap", state.config.computer.capPoints, state, player, registry);
+
+/** The per-miss multiplier of a failure streak (turret shots, astro scans): `base` folded through the player's modifiers (for Persistent). */
+export const failureStreakMultiplier = (state: Readonly<GameState>, player: Readonly<PlayerState>, base: number, registry: ModifierRegistry = MODIFIERS) =>
+  fold("failureStreakMultiplier", base, state, player, registry);
+
+/** The chance a hunter wave comes smaller: nothing by default, plus what each living holder of Space Tactics brings (they don't stack). */
+export function waveShrinkChance(state: Readonly<GameState>, registry: ModifierRegistry = MODIFIERS): number {
+  let chance = 0;
+  for (const holder of state.players) {
+    if (!holder.alive) continue;
+    for (const id of modifierIds(holder)) {
+      const hook = registry[id]?.crewWaveShrinkChance;
+      if (hook) chance = hook(chance, holder, state);
+    }
+  }
+  return Math.min(1, Math.max(0, chance));
+}
 
 /** Garden points a player gains at the start of a day: nothing by default, plus what the botanist skill grants. */
 export const gardenPointsGain = (state: Readonly<GameState>, player: Readonly<PlayerState>, registry: ModifierRegistry = MODIFIERS) =>
