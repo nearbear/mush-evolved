@@ -60,6 +60,7 @@ import { TransferAction } from "./actions/transfer.ts";
 import { WaterAction } from "./actions/water.ts";
 import { TreatAction } from "./actions/treat.ts";
 import { SowAction } from "./actions/sow.ts";
+import { SelfDiseaseAction } from "./actions/self_disease.ts";
 import type { Action, GameState, PlayerState } from "./types.ts";
 
 export type ActionType = Action["type"];
@@ -163,6 +164,7 @@ export const ACTIONS: { [T in ActionType]: ActionDef<ActionOf<T>> } = {
   attack: new AttackAction(),
   pick_skill: new PickSkillAction(),
   read_book: new ReadBookAction(),
+  self_disease: new SelfDiseaseAction(),
 };
 
 /** Whether an action type is public, private, secret or covert. A fixed property of the type, so safe for the client to show. */

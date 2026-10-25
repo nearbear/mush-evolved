@@ -5,7 +5,6 @@
 // leave someone alive at 0 HP (a test enforces it).
 
 import { endAccommodationOnDeath } from "./actions/accommodate.ts";
-import { endAnathemaOnDeath } from "./actions/anathema.ts";
 import type { CharacterId } from "./characters.ts";
 import { removeFromChannel, pushChat } from "./chat.ts";
 import { CORPSE_ITEM, ITRACKIE_ITEM, sameContainer } from "./items.ts";
@@ -53,7 +52,8 @@ export function killPlayer(state: GameState, player: PlayerState): void {
   for (const [id, partners] of Object.entries(state.bonds)) state.bonds[id] = partners.filter((b) => b !== player.id);
   delete state.contamination[player.id];
   endAccommodationOnDeath(state, player);
-  endAnathemaOnDeath(state, player);
+  delete player.outcastBy;
+  for (const other of state.players) if (other.outcastBy === player.id) delete other.outcastBy;
 
   for (const channel of state.channels.filter((c) => c.members.includes(player.id))) {
     if (removeFromChannel(state, channel.id, player.id)) systemMessage(state, channel.id, "leftThisWorld", player.character);

@@ -313,7 +313,11 @@ export class GameRoom extends Server<Env> {
       this.send(connection, { type: "error", message: "malformed_message" });
       return;
     }
-    if ((msg.type === "cheat" || msg.type === "actopiCheat" || msg.type === "roleCheat") && !this.cheatsAllowed) {
+    if (
+      ((msg.type === "cheat" || msg.type === "actopiCheat" || msg.type === "roleCheat") ||
+        (msg.type === "action" && msg.action.type === "self_disease")) &&
+      !this.cheatsAllowed
+    ) {
       this.send(connection, { type: "error", message: CHEATS_DISABLED });
       return;
     }

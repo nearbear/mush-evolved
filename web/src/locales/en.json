@@ -66,6 +66,7 @@
       "instantActions": "Instant actions",
       "noRelayPenalty": "No relay penalty",
       "freeHacking": "Free hacking",
+      "selfDisease": "Self Disease",
       "role": {
         "mush": "Become Mush",
         "human": "Become human"
@@ -267,6 +268,7 @@
     "analyzePlanet": "Analyse a planet",
     "deletePlanet": "Delete a planet",
     "pickSkill": "Pick a skill",
+    "selfDisease": "Self Disease",
     "visibility": {
       "private": "Private",
       "secret": "Secret",
@@ -478,6 +480,7 @@
     "wheelchair": "Wheelchair",
     "accommodated": "Accommodated",
     "outcast": "Outcast",
+    "cold_disease": "Cold",
     "contaminated": "Contamination: {{level}}",
     "desc": {
       "dirty": "Can't research. Taking a shower removes it.",
@@ -490,6 +493,7 @@
       "wheelchair": "A trait: anyone in this person's room can offer to push their wheelchair. While pushed, they move with the pusher at no MP cost. It can't be removed.",
       "accommodated": "Someone is pushing this person's wheelchair: they go wherever their pusher goes, at no MP cost, and can't move alone. Either of them can end it.",
       "outcast": "Cursed by a Persecutor: every action of theirs that rolls succeeds 20% less, and nothing they do is secret. It ends when the Persecutor or they die.",
+      "cold_disease": "At each cycle, you have a 1-in-3 chance to lose 1 MP.",
       "contaminated": "A human you have contaminated. At their capacity they turn Mush."
     }
   },
@@ -633,6 +637,7 @@
     "oxygenOut": "The oxygen has run out. Someone suffocates.",
     "cycleBegins": "Cycle {{cycle}} begins.",
     "dayBegins": "Day {{day}} begins.",
+    "coldDiseaseMpLost": "Your illness made you lose 1 MP.",
     "left": "{{name}} left for {{room}}.",
     "entered": "{{name}} entered from {{room}}.",
     "accommodationOffered": "{{name}} offered to push {{target}}'s wheelchair.",
