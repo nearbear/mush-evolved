@@ -7,7 +7,7 @@
 import { killPlayer } from "./death.ts";
 import { logPublic } from "./log.ts";
 import { followingHuntersShare, hunterPointsPerCycle, waveShrinkChance } from "./modifiers.ts";
-import { nextFloat, rollRange, type RngState, shuffle } from "./rng.ts";
+import { nextFloat, rollRange, shuffle } from "./rng.ts";
 import { damageShip } from "./ship.ts";
 import type { GameState, PlayerState } from "./types.ts";
 import { endGame } from "./victory.ts";
