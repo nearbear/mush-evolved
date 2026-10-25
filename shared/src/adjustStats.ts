@@ -1,6 +1,8 @@
 import { DEFAULT_CONFIG } from "./config.ts";
+import { rollRange } from "./hunters.ts";
 //import { logPrivate } from "./log.ts";
 import { maxMorale, skillPicked } from "./modifiers.ts";
+import { nextInt } from "./rng.ts";
 import { addStatus, removeStatus, type StatusId } from "./statuses.ts";
 import type { GameState, PlayerState } from "./types.ts";
 
@@ -39,10 +41,16 @@ export function addDisease(state: GameState, player: PlayerState, name: StatusId
     if(player.modifiers.includes(name)){
         return;
     }
+    if(player.role == "mush"){
+      return;
+    }
     player.modifiers.push(name);
     skillPicked(state, player, name);
     addStatus(player, name);
-    player.diseaseTrackers.push({ name, duration: 8, resistance: 8, complete: false, forever: false });
+    let index = DEFAULT_CONFIG.diseases.allDiseases.indexOf(name);
+    let duration = rollRange(state.rng,[DEFAULT_CONFIG.diseases.allDiseaseStats.at(index)?.durationMin || 1, DEFAULT_CONFIG.diseases.allDiseaseStats.at(index)?.durationMax || 2])[0];
+
+    player.diseaseTrackers.push({ name, duration: duration, resistance: 8, complete: false, forever: false });
 }
 
 export function removeDisease(state: GameState, player: PlayerState, name: StatusId){
@@ -61,6 +69,9 @@ export function diseaseTrackerCycleChange(next: GameState): void {
   for (const player of next.players) {
     if (!player.alive) continue;
     for (const tracker of player.diseaseTrackers) {
+      if (player.role == "mush" && !DEFAULT_CONFIG.diseases.allInjuries.includes(tracker.name)){
+      removeDisease(next, player, tracker.name);
+    }
       tracker.duration -= 1;
       if (tracker.duration <= 0){
         tracker.complete = true;

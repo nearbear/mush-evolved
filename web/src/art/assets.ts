@@ -275,7 +275,7 @@ export const ENDING_ART: Readonly<Record<Ending, string>> = {
 
 // Status effect icons (16x16 pixel art), keyed by status id (shared/src/statuses.ts).
 const statusIconFiles = urls(
-  import.meta.glob<string>("../../../Mush/www/img/icons/ui/status/{dirty,belly_full,hungry,immune,pacifist,disabled,paria}.png", { eager: true, query: "?url", import: "default" }),
+  import.meta.glob<string>("../../../Mush/www/img/icons/ui/status/{dirty,belly_full,hungry,immune,pacifist,disabled,paria,disease}.png", { eager: true, query: "?url", import: "default" }),
 );
 // Mankind's Only Hope has no status icon in the original (it was a skill there), so its skill icon stands in.
 const traitSkillIcons = urls(

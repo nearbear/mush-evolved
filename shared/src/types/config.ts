@@ -16,6 +16,16 @@ export interface DiseaseCatagories {
   allDiseases: string [],
   allDisorders: string [],
   allInjuries: string [],
+  allDiseaseStats: DiseaseStats[],
+  allDisorderStats: DiseaseStats[],
+  allInjuryStats: DiseaseStats[],
+}
+
+export interface DiseaseStats {
+  type: string,
+  durationMin?: number,
+  durationMax?: number,
+  resistance?: number,
 }
 
 
