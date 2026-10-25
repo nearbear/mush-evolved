@@ -632,6 +632,9 @@
     "grenade": "Grenade",
     "mush_floppy_disk": "Disquette du génome Mush",
     "mush_sample": "Souche de test Mush",
+    "body_cat": "Schrödinger",
+    "water_stick": "Bâtonnet aqueux",
+    "super_map": "Morceau de carte stellaire",
     "protection_gloves": "Gants de protection"
   },
   "logEvent": {
@@ -1091,6 +1094,10 @@
   },
   "research": {
     "title": "Recherche",
+    "needs": "Nécessite : {{list}}",
+    "anyConsumable": "un aliment, une boisson ou un médicament",
+    "needChun": "Chun présente",
+    "needPostSelection": "Mush désignés",
     "progress": "{{percent}} % accompli",
     "done": "Terminée",
     "work": "Travailler dessus",

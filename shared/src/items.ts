@@ -119,6 +119,12 @@ export const ITEM_TYPES: Record<string, ItemType> = {
   // Owner, 2026-10-21: Xyloph rewards (comms.ts), dropped on the bridge. No effect yet. Named after their icons.
   mush_floppy_disk: {},
   mush_sample: {},
+  // Owner, 2026-10-25: items researches need in the lab (research.ts, RESEARCH_REQUIRES). No effect yet. Named after their icons.
+  // Schrödinger, the cat.
+  body_cat: {},
+  water_stick: {},
+  // A starmap fragment.
+  super_map: {},
 };
 
 /** Whether the player carries at least one heavy item. */

@@ -626,6 +626,9 @@
     "grenade": "Grenade",
     "mush_floppy_disk": "Mush genome disk",
     "mush_sample": "Mush test strain",
+    "body_cat": "Schrödinger",
+    "water_stick": "Water stick",
+    "super_map": "Starmap fragment",
     "protection_gloves": "Protective Gloves"
   },
   "logEvent": {
@@ -1084,6 +1087,10 @@
   },
   "research": {
     "title": "Research",
+    "needs": "Needs: {{list}}",
+    "anyConsumable": "any food, drink or drug",
+    "needChun": "Chun present",
+    "needPostSelection": "Mush chosen",
     "progress": "{{percent}}% done",
     "done": "Complete",
     "work": "Work on it",

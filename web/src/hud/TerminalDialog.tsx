@@ -12,8 +12,11 @@ import {
   PROJECT_IDS,
   projectStatus,
   RESEARCH_COMPLETE,
+  ANY_CONSUMABLE,
   RESEARCH_IDS,
+  RESEARCH_REQUIRES,
   researchStatus,
+  type ResearchId,
   type Action,
   type ActionOption,
   type EquipmentView,
@@ -78,6 +81,14 @@ function ResearchList({ terminal, view, onAction }: ListProps) {
       cards={RESEARCH_CARDS}
       name={names.research}
       status={researchStatus}
+      needs={(id) => {
+        const req = RESEARCH_REQUIRES[id as ResearchId];
+        if (!req) return null;
+        const parts = (req.items ?? []).map((type) => (type === ANY_CONSUMABLE ? t("research.anyConsumable") : names.item(type)));
+        if (req.chun) parts.push(t("research.needChun"));
+        if (req.postSelection) parts.push(t("research.needPostSelection"));
+        return t("research.needs", { list: parts.join(", ") });
+      }}
       option={(id) => view.actions.find(({ action: a }) => a.type === "research" && a.equipment === terminal.id && a.research === id)}
       view={view}
       onAction={onAction}
@@ -177,13 +188,15 @@ interface ProgressListProps {
   name: (id: string) => string;
   status: (id: string) => "full" | "partial" | "none";
   /** The view's offer to work on this entry, if any. */
+  /** What must be in the lab before it can be worked on, as static text (the button itself comes from `view.actions`). */
+  needs?: (id: string) => string | null;
   option: (id: string) => ActionOption | undefined;
   view: PlayerView;
   onAction: (action: Action) => void;
 }
 
 /** Every research or project with its progress (public) and, when the view offers it, a button to work on it. */
-function ProgressList({ label, ids, progress, complete, cards, name, status, option: optionFor, view, onAction }: ProgressListProps) {
+function ProgressList({ label, ids, progress, complete, cards, name, status, needs, option: optionFor, view, onAction }: ProgressListProps) {
   const { t } = useTranslation();
   return (
     <ul className="research-list" aria-label={label}>
@@ -191,6 +204,7 @@ function ProgressList({ label, ids, progress, complete, cards, name, status, opt
         const percent = progress[id] ?? 0;
         const option = optionFor(id);
         const card = cards[id.toLowerCase()];
+        const needed = percent < complete ? needs?.(id) : null;
         return (
           <li key={id} className="research-item">
             {card && <img className="research-card" src={card} alt="" />}
@@ -199,6 +213,7 @@ function ProgressList({ label, ids, progress, complete, cards, name, status, opt
               <span className={`skill-status skill-status-${status(id)}`}>{t(`research.status.${status(id)}`)}</span>
               <progress max={complete} value={percent} />
               <span>{percent >= complete ? t("research.done") : t("research.progress", { percent })}</span>
+              {needed && <span className="research-needs">{needed}</span>}
             </div>
             {option && (
               <ActionButton view={view} option={option} onAction={onAction}>

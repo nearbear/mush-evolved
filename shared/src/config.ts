@@ -251,6 +251,12 @@ export const DEFAULT_CONFIG: GameConfig = {
     { type: "blaster", room: "STORAGE_FRONT" },
     { type: "blaster", room: "STORAGE_FRONT" },
     { type: "grenade", room: "STORAGE_FRONT" },
+    // Owner, 2026-10-25: the items researches need (research.ts, RESEARCH_REQUIRES), so each one can be done.
+    { type: "mush_sample", room: "STORAGE_FRONT" },
+    { type: "mush_floppy_disk", room: "STORAGE_FRONT" },
+    { type: "body_cat", room: "STORAGE_FRONT" },
+    { type: "water_stick", room: "STORAGE_FRONT" },
+    { type: "super_map", room: "STORAGE_FRONT" },
     { type: "medikit", room: "SICK_BAY" },
      { type: "apron", room: "SICK_BAY" },
      { type: "protection_gloves", room: "SICK_BAY" },

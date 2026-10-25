@@ -2,6 +2,7 @@
 // shape (a renamed view field, a new Seat field) is fixed here once instead of in every test file. Setting up a
 // scenario (who is where, holding what) stays in each test file, next to the tests that depend on it.
 import { CHARACTERS } from "../src/characters.ts";
+import { ANY_CONSUMABLE, RESEARCH_REQUIRES, type ResearchId } from "../src/research.ts";
 import { type ActionResult, applyAction, legalIn, newCycle, viewFor } from "../src/rules.ts";
 import type { Action, ActionOption, GameConfig, GameState, PlayerId, PlayerState, Seat } from "../src/types.ts";
 
@@ -85,3 +86,14 @@ export function option(s: GameState, id: PlayerId, match: ActionMatch): ActionOp
 
 /** What `id`'s view says a matching action costs, or undefined if none is offered. */
 export const costOf = (s: GameState, id: PlayerId, match: ActionMatch) => option(s, id, match)?.cost;
+
+/**
+ * Meets a research's RESEARCH_REQUIRES in `room`, for tests about something else: its items on the floor (coffee for
+ * any consumable), Chun's requirement lifted by her Xyloph entry, and pre-selection over.
+ */
+export function stockLab(s: GameState, room: string, research: ResearchId): void {
+  const needs = RESEARCH_REQUIRES[research] ?? {};
+  for (const type of needs.items ?? []) s.items.push({ id: `item-${s.nextItemId++}`, type: type === ANY_CONSUMABLE ? "coffee" : type, at: { kind: "room", id: room } });
+  if (needs.chun && !s.comms.xyloph.includes("ZONG_CHUN_SAMPLE")) s.comms.xyloph.push("ZONG_CHUN_SAMPLE");
+  if (needs.postSelection) s.preselection = false;
+}

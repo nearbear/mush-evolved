@@ -632,6 +632,9 @@
     "grenade": "Granada",
     "mush_floppy_disk": "Disquete del genoma Mush",
     "mush_sample": "Cepa de prueba Mush",
+    "body_cat": "Schrödinger",
+    "water_stick": "Bastoncillo acuoso",
+    "super_map": "Fragmento de mapa estelar",
     "protection_gloves": "Guantes de protección"
   },
   "logEvent": {
@@ -1091,6 +1094,10 @@
   },
   "research": {
     "title": "Investigación",
+    "needs": "Requiere: {{list}}",
+    "anyConsumable": "cualquier comida, bebida o medicamento",
+    "needChun": "Chun presente",
+    "needPostSelection": "Mush elegidos",
     "progress": "{{percent}} % completado",
     "done": "Completada",
     "work": "Trabajar en ella",

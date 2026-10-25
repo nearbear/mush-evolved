@@ -4,7 +4,7 @@ import { DEFAULT_CONFIG } from "../src/config.ts";
 import { MYCO_ALARM_ITEM, MYCO_ALARM_YIELD } from "../src/mycoalarm.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";
 import type { Action, GameState, PlayerId } from "../src/types.ts";
-import { makeSeats, must } from "./support.ts";
+import { makeSeats, must, stockLab } from "./support.ts";
 
 const seats = makeSeats(4);
 const config = { ...DEFAULT_CONFIG, mushCount: 1, startInventory: [], startItems: [], maxAp: 99, startAp: 50, dismantle: { ...DEFAULT_CONFIG.dismantle, successChance: 1 } };
@@ -89,6 +89,7 @@ describe("myco alarm", () => {
       p.room = "LABORATORY";
     });
     s.research.MYCO_ALARM = 75;
+    stockLab(s, "LABORATORY", "MYCO_ALARM");
     const done = must(applyAction(s, "p2", { type: "research", equipment: "LABORATORY:RESEARCH_LAB", research: "MYCO_ALARM" }));
     expect(alarmsIn(done, "LABORATORY")).toHaveLength(MYCO_ALARM_YIELD);
     const partial = ship();
@@ -96,6 +97,7 @@ describe("myco alarm", () => {
       p.room = "LABORATORY";
     });
     partial.research.MYCO_ALARM = 50;
+    stockLab(partial, "LABORATORY", "MYCO_ALARM");
     expect(alarmsIn(must(applyAction(partial, "p2", { type: "research", equipment: "LABORATORY:RESEARCH_LAB", research: "MYCO_ALARM" })), "LABORATORY")).toHaveLength(0);
   });
 

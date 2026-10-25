@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { ACTIONS } from "../src/actions.ts";
 import { DEFAULT_CONFIG } from "../src/config.ts";
 import { RESEARCH_IDS } from "../src/research.ts";
+import { researchAllowed } from "../src/actions/research.ts";
 import { affordable, applyAction, createGame, legalActions, viewFor } from "../src/rules.ts";
 import { CHARACTER_SKILLS } from "../src/skills.ts";
 import type { Action } from "../src/types.ts";
@@ -60,7 +61,8 @@ describe("action registry", () => {
       ...DEFAULT_CONFIG.equipment.LABORATORY!.map((e): Action => ({ type: "examine", target: { kind: "equipment", id: e.id } })),
       // The Laboratory has one terminal, the research lab.
       { type: "access", equipment: "LABORATORY:RESEARCH_LAB" },
-      ...RESEARCH_IDS.map((research): Action => ({ type: "research", equipment: "LABORATORY:RESEARCH_LAB", research })),
+      // Only the researches whose needs the lab meets (RESEARCH_REQUIRES).
+      ...RESEARCH_IDS.filter((research) => researchAllowed(state, "LABORATORY", research)).map((research): Action => ({ type: "research", equipment: "LABORATORY:RESEARCH_LAB", research })),
       ...[...mine, ...floor].map((i): Action => ({ type: "examine", target: { kind: "item", id: i.id } })),
     ];
     expect(floor.length).toBeGreaterThan(0);
