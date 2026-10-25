@@ -220,7 +220,7 @@ export function parseGameMessage(raw: string): GameClientMessage | null {
   if (a.type === "build" && typeof a.item === "string") return { type: "action", action: { type: "build", item: a.item } };
   if (a.type === "install" && typeof a.item === "string") return { type: "action", action: { type: "install", item: a.item } };
   if (a.type === "jettison" && typeof a.item === "string") return { type: "action", action: { type: "jettison", item: a.item } };
-  if ((a.type === "bond" || a.type === "dtt" || a.type === "stt" || a.type === "heal" || a.type === "punch" || a.type === "interrogate" || a.type === "chitchat" || a.type === "anathema" || a.type === "spike" || a.type === "body_transfer" || a.type === "accommodate" || a.type === "accept_accommodation" || a.type === "stop_accommodation") && typeof a.target === "string") {
+  if ((a.type === "bond" || a.type === "dtt" || a.type === "stt" || a.type === "heal" || a.type === "vaccinate" || a.type === "punch" || a.type === "interrogate" || a.type === "chitchat" || a.type === "anathema" || a.type === "spike" || a.type === "body_transfer" || a.type === "accommodate" || a.type === "accept_accommodation" || a.type === "stop_accommodation") && typeof a.target === "string") {
     return { type: "action", action: { type: a.type, target: a.target } };
   }
   if (a.type === "attack" && typeof a.weapon === "string") {

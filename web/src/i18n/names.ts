@@ -62,6 +62,7 @@ const ACTION_NAME_KEYS = {
   stop_accommodation: "actions.stopAccommodation",
   shower: "actions.shower",
   heal: "actions.heal",
+  vaccinate: "actions.vaccinate",
   punch: "actions.punch",
   interrogate: "actions.interrogate",
   chitchat: "actions.chitchat",

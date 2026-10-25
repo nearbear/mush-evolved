@@ -75,6 +75,7 @@ function aimedAt(view: PlayerView, a: Action, target: Target): boolean {
     case "dtt":
     case "stt":
     case "heal":
+    case "vaccinate":
     case "punch":
     case "interrogate":
     case "chitchat":
@@ -132,6 +133,7 @@ const ACTION_LABEL_KEYS = {
   dtt: "actions.dtt",
   stt: "actions.stt",
   heal: "actions.heal",
+  vaccinate: "actions.vaccinate",
   punch: "actions.punch",
   interrogate: "actions.interrogate",
   chitchat: "actions.chitchat",

@@ -1,5 +1,5 @@
 {
-  "version": 71,
+  "version": 72,
   "paths": [
     "bios.actopi",
     "bios.death_announcements",
@@ -410,6 +410,7 @@
     "config.uninstall.cost.ap",
     "config.uninstall.dirtyChance",
     "config.uninstall.injuryChance",
+    "config.vaccine.cost.ap",
     "config.weapons.cost.ap",
     "config.weapons.types.blaster.accuracy",
     "config.weapons.types.blaster.charges",

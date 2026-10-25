@@ -2,6 +2,7 @@ import { Action } from "./action.ts";
 import { RESEARCH_COMPLETE, RESEARCH_IDS } from "../research.ts";
 import { logPublic } from "../log.ts";
 import { dropMycoAlarms } from "../mycoalarm.ts";
+import { ANTI_MUSH_SERUM_ITEM } from "./vaccinate.ts";
 import type { GameState, PlayerState } from "../types.ts";
 
 export type ResearchActionData = { type: "research"; equipment: string; research: string };
@@ -55,6 +56,11 @@ export class ResearchAction extends Action<ResearchActionData> {
     if (progress >= RESEARCH_COMPLETE && target.research === "MYCO_ALARM") {
       dropMycoAlarms(state, player.room);
       logPublic(state, player.room, "mycoAlarmsBuilt");
+    }
+    // Owner, 2026-10-25: completing it leaves one serum on the lab floor.
+    if (progress >= RESEARCH_COMPLETE && target.research === "ANTI_MUSH_SERUM") {
+      state.items.push({ id: `item-${state.nextItemId++}`, type: ANTI_MUSH_SERUM_ITEM, at: { kind: "room", id: player.room } });
+      logPublic(state, player.room, "serumBuilt");
     }
   }
 }

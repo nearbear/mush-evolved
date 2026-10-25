@@ -39,6 +39,7 @@ import { TravelAction } from "./actions/travel.ts";
 import { TurnShipAction } from "./actions/turn_ship.ts";
 import { ReadyAction } from "./actions/ready.ts";
 import { HealAction } from "./actions/heal.ts";
+import { VaccinateAction } from "./actions/vaccinate.ts";
 import { InstallAction } from "./actions/install.ts";
 import { UninstallAction } from "./actions/uninstall.ts";
 import { JettisonAction } from "./actions/jettison.ts";
@@ -154,6 +155,7 @@ export const ACTIONS: { [T in ActionType]: ActionDef<ActionOf<T>> } = {
   stop_accommodation: new StopAccommodationAction(),
   shower: new ShowerAction(),
   heal: new HealAction(),
+  vaccinate: new VaccinateAction(),
   punch: new PunchAction(),
   interrogate: new InterrogateAction(),
   chitchat: new ChitchatAction(),

@@ -1337,3 +1337,7 @@ Added `server/tests/stateShape.test.ts` and `state-shape.json`: sorted key paths
 - Worked: the modifier hooks already existed, so each skill is a small file plus one fold hook (`failureStreakMultiplier`, `shootPointsPerDay`, `computerPointsCap`, `crewWaveShrinkChance`).
 - Needed care: a free shot is priced before `apply` runs, and a miss runs `fail` instead, so the Shoot point is spent in both. A first draft of my Persistent astro-scan test asserted a chance over 100%, and two placeholder tests asserted nothing; I replaced both. Config additions change the stored state shape, so `STATE_VERSION` went to 71 and live games will be discarded on the next deploy.
 - My own defaults, flagged to the owner: waves round down and spend full points; Polymath gives 1 Computer point when picked.
+
+## 2026-10-25: Anti-Mush serum (research effect)
+- Asked the owner (via the wiki's retro-fungal serum page) about drops, effects, visibility and targeting. Decided: one serum dropped at the lab, 1 AP, any carrier on any living other in the room, used up even on a healthy human, cures Mush and contamination, result private to the user. Skill re-picking was left out. Satiety after a cure is a placeholder.
+- Config gained `vaccine`, so STATE_VERSION went to 72.

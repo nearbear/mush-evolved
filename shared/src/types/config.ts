@@ -103,6 +103,9 @@ export interface GameConfig {
     rooms: string[]; // Rooms where anyone can heal without a medikit (confirmed 2026-10-15: the sick bay).
     dirtyChance: number; // Chance of getting the dirty status after healing.
   };
+  vaccine: {
+    cost: { ap: number }; // AP the anti-Mush serum costs to use (owner, 2026-10-25, from the wiki).
+  };
   punch: {
     cost: { ap: number }; // Issue 29.
     effect: {

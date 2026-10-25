@@ -145,6 +145,7 @@ export type Action =
   | { type: "takeoff"; equipment: string }
   | { type: "land"; equipment: string }
   | { type: "heal"; target: PlayerId }
+  | { type: "vaccinate"; target: PlayerId }
   | { type: "punch"; target: PlayerId }
   | { type: "interrogate"; target: PlayerId }
   | { type: "chitchat"; target: PlayerId }

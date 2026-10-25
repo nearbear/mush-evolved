@@ -1,6 +1,6 @@
 // ---- Infection --------------------------------------------------------------
 // Contamination and conversion (confirmed 2026-10-15). A human whose
-// contamination reaches capacity converts to Mush at once. There is no cure yet.
+// contamination reaches capacity converts to Mush at once. The anti-Mush serum cures (`cure`).
 
 import { pushChat } from "./chat.ts";
 import { logPrivate } from "./log.ts";
@@ -53,4 +53,29 @@ export function convert(state: GameState, player: PlayerState): void {
   player.satietyZeroSince = null;
   delete state.contamination[player.id];
   logPrivate(state, player.id, "converted");
+}
+
+/**
+ * The anti-Mush serum's effect (owner, 2026-10-25). A Mush becomes human again: spores and Mush skills go, and human
+ * satiety restarts at 0 from now. A human with some contamination loses it. Returns whether anything was cured; a
+ * healthy human is untouched. Mutates a state that the caller already cloned. Choosing human skills again is not built.
+ */
+export function cure(state: GameState, player: PlayerState): boolean {
+  if (player.role === "mush") {
+    player.role = "human";
+    player.alpha = false;
+    player.spores = 0;
+    player.mushSkills = [];
+    player.satiety = 0;
+    player.satietyZeroSince = state.cycle;
+    delete state.sporeExtractedOn[player.id];
+    logPrivate(state, player.id, "cured");
+    return true;
+  }
+  if ((state.contamination[player.id] ?? 0) > 0) {
+    delete state.contamination[player.id];
+    logPrivate(state, player.id, "cured");
+    return true;
+  }
+  return false;
 }
