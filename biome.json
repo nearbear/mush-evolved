@@ -79,6 +79,15 @@
 											"@mush2/tools"
 										],
 										"message": "shared must not depend on other packages."
+									},
+									{
+										"group": [
+											"./config.ts",
+											"../config.ts",
+											"../../config.ts"
+										],
+										"importNamePattern": "DEFAULT_CONFIG",
+										"message": "Rules read the game's own config (state.config), never DEFAULT_CONFIG; only code that builds a game may start from it."
 									}
 								]
 							}

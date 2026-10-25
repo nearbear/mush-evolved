@@ -6,6 +6,7 @@
 // never bots in single player (#222); the human may pick any character.
 
 import { CHARACTERS, type CharacterId } from "./characters.ts";
+// biome-ignore lint/style/noRestrictedImports: builds a new game's config from the defaults; rules read state.config.
 import { DEFAULT_CONFIG } from "./config.ts";
 import { shuffle, type RngState } from "./rng.ts";
 import type { GameConfig, PlayerId, Role, Seat } from "./types.ts";

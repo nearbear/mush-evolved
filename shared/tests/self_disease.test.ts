@@ -34,6 +34,21 @@ describe("Self Disease", () => {
     expect(player(result.state, "p0").current).toBeNull();
   });
 
+  it("rolls the duration from the game's own config and advances the RNG", () => {
+    const config = {
+      ...DEFAULT_CONFIG,
+      diseases: { ...DEFAULT_CONFIG.diseases, allDiseaseStats: [{ type: "disease", durationMin: 30, durationMax: 30 }] },
+    };
+    const state = createGame(seats, config, 42, { p0: "human" });
+    player(state, "p0").cheats.push("selfDisease");
+
+    const result = applyAction(state, "p0", action);
+    if (!result.ok) throw new Error(result.error);
+
+    expect(player(result.state, "p0").diseaseTrackers).toMatchObject([{ name: "cold_disease", duration: 30 }]);
+    expect(result.state.rng).not.toBe(state.rng);
+  });
+
   it("is not offered to bots or offered again after the disease is applied", () => {
     const state = createGame(makeSeats(4, "all"), DEFAULT_CONFIG, 42);
     player(state, "p0").cheats.push("selfDisease");

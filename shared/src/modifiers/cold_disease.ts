@@ -1,13 +1,11 @@
 import { updateMaxValues } from "../adjustStats.ts";
 import { logPrivate } from "../log.ts";
 import type { Modifier } from "../modifiers.ts";
-import { nextInt } from "../rng.ts";
+import { rollInt } from "../rng.ts";
 
 export const cold_disease: Modifier = {
   onCycle(next, player) {
-    const [roll, rng] = nextInt(next.rng, 3);
-    next.rng = rng;
-    if (roll !== 0 || player.mp <= 0) return;
+    if (rollInt(next, 3) !== 0 || player.mp <= 0) return;
 
     player.mp -= 1;
     logPrivate(next, player.id, "coldDiseaseMpLost");

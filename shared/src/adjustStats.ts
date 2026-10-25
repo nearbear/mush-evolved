@@ -1,4 +1,4 @@
-import { rollRange } from "./rng.ts";
+import { roll } from "./rng.ts";
 //import { logPrivate } from "./log.ts";
 import { maxMorale, skillPicked } from "./modifiers.ts";
 import { addStatus, removeStatus, type StatusId } from "./statuses.ts";
@@ -47,8 +47,7 @@ export function addDisease(state: GameState, player: PlayerState, name: StatusId
     addStatus(player, name);
     const index = state.config.diseases.allDiseases.indexOf(name);
     const stats = state.config.diseases.allDiseaseStats.at(index);
-    const [duration, rng] = rollRange(state.rng, [stats?.durationMin || 1, stats?.durationMax || 2]);
-    state.rng = rng;
+    const duration = roll(state, [stats?.durationMin || 1, stats?.durationMax || 2]);
 
     player.diseaseTrackers.push({ name, duration: duration, resistance: 8, complete: false, forever: false });
 }

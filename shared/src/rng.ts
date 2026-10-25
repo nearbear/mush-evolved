@@ -24,6 +24,35 @@ export function rollRange(rng: RngState, [min, max]: readonly [number, number]):
   return [min + n, next];
 }
 
+/** Anything that holds the game's RNG, such as a GameState. */
+export interface HasRng {
+  rng: RngState;
+}
+
+// The roll helpers advance `holder.rng` themselves and return only the value, so a roll can't forget to move the
+// state on (dropping the next state repeats the same roll). Use them in rule code that mutates an already-cloned state.
+
+/** Float in [0, 1); advances `holder.rng`. */
+export function rollFloat(holder: HasRng): number {
+  const [value, next] = nextFloat(holder.rng);
+  holder.rng = next;
+  return value;
+}
+
+/** Integer in [0, max); advances `holder.rng`. */
+export function rollInt(holder: HasRng, max: number): number {
+  const [value, next] = nextInt(holder.rng, max);
+  holder.rng = next;
+  return value;
+}
+
+/** Uniform integer in [min, max]; advances `holder.rng`. */
+export function roll(holder: HasRng, range: readonly [number, number]): number {
+  const [value, next] = rollRange(holder.rng, range);
+  holder.rng = next;
+  return value;
+}
+
 /** Fisher-Yates shuffle; returns a new array. */
 export function shuffle<T>(items: readonly T[], state: RngState): [result: T[], next: RngState] {
   const result = [...items];
