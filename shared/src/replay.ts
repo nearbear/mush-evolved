@@ -38,7 +38,8 @@ export interface GameSetup {
  * plans) will join this union without a `by`.
  */
 export type Input =
-  | (Exclude<GameClientMessage, { type: "action" }> & { by: PlayerId })
+  // Never the model key messages (BYOK): every input is recorded, and a key must never be stored.
+  | (Exclude<GameClientMessage, { type: "action" | "setModel" | "clearModel" }> & { by: PlayerId })
   | (Extract<GameClientMessage, { type: "action" }> & { by: PlayerId; at: number })
   | { type: "tick"; at: number }
   | { type: "cycle" }

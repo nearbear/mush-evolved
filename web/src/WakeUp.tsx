@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import "./wakeUp.css";
 
 /** Longest the overlay can stay up, in case animationend never fires (e.g. animations disabled). */
@@ -24,5 +24,23 @@ export function WakeUp({ onDone }: { onDone: () => void }) {
     >
       <div className="wake-eye" />
     </div>
+  );
+}
+
+/**
+ * Tells screen-reader users the game is ready once the (aria-hidden) wake-up intro ends.
+ * The text is captured when the intro ends, so later cycle changes don't re-announce it.
+ */
+export function WakeUpAnnouncement({ waking, text }: { waking: boolean; text: string }) {
+  const wasWaking = useRef(waking);
+  const [announced, setAnnounced] = useState("");
+  useEffect(() => {
+    if (wasWaking.current && !waking) setAnnounced(text);
+    wasWaking.current = waking;
+  }, [waking, text]);
+  return (
+    <p role="status" className="sr-only">
+      {announced}
+    </p>
   );
 }

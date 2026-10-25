@@ -1,5 +1,5 @@
 // The asset attribution (CC BY-NC-SA) and the non-commercial promise: at the bottom of the
-// lobby and of the Inspect panel, on both layouts.
+// lobby, and a footer row under the game's panels (last in the tab order; phones show it on the Inspect tab).
 
 import { Trans, useTranslation } from "react-i18next";
 

@@ -9,6 +9,7 @@ import { useTranslation } from "react-i18next";
 import { ActionQueue } from "./hud/ActionQueue.tsx";
 import { BottomNav, type MobilePanel } from "./hud/BottomNav.tsx";
 import { DeathNotice } from "./hud/DeathNotice.tsx";
+import { Credits } from "./hud/Credits.tsx";
 import { InspectPanel } from "./hud/InspectPanel.tsx";
 import { InventoryOverlay } from "./hud/InventoryOverlay.tsx";
 import { ShipOverlay } from "./hud/ShipOverlay.tsx";
@@ -30,13 +31,14 @@ import { useFogDepth } from "./fogDepth.ts";
 import { ROOM_RENDERER } from "./rendererChoice.ts";
 import { useSpeechBubbles } from "./scene/useSpeechBubbles.ts";
 import type { Bar } from "./scene/ActionBar.tsx";
+import { WakeUpAnnouncement } from "./WakeUp.tsx";
 import { useNames } from "./i18n/names.ts";
 import { showError } from "./Toasts.tsx";
 import { useMobile } from "./useMobile.ts";
 
 const NO_CHAT: PlayerView["chat"] = [];
 
-export function GameScreen({ ticket, onLeave }: { ticket: SeatTicket; onLeave: () => void }) {
+export function GameScreen({ ticket, onLeave, waking = false }: { ticket: SeatTicket; onLeave: () => void; waking?: boolean }) {
   const { t } = useTranslation();
   const [view, setView] = useState<PlayerView | null>(null);
   const [cheatsAllowed, setCheatsAllowed] = useState(false);
@@ -170,6 +172,7 @@ export function GameScreen({ ticket, onLeave }: { ticket: SeatTicket; onLeave: (
 
   return (
     <main className="game">
+      <WakeUpAnnouncement waking={waking} text={t("wake.ready", { day: view.day, cycle: view.cycleOfDay, room: names.room(you.room) })} />
       <TerminalDialog terminal={terminal} view={view} onAction={send} onClose={() => setTerminalId(null)} />
       <EndScreen view={view} open={view.phase === "ended" && !endClosed} onOpenChange={(open) => setEndClosed(!open)} />
       <BodyTakenDialog view={view} onAcknowledge={() => post({ type: "acknowledgeTransfer" })} />
@@ -255,6 +258,9 @@ export function GameScreen({ ticket, onLeave }: { ticket: SeatTicket; onLeave: (
           }}
         />
       </div>
+
+      {/* Last in the tab order (not inside the Inspect aside), so keyboard users don't tab through it mid-game. On phones it shows on the Inspect tab only, as before. */}
+      {(!mobile || panel === "inspect") && <Credits className="game-credits" />}
 
       {mobile && panel === "room" && you.alive && (
         <PeekBar

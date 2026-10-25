@@ -74,3 +74,15 @@
   padding: 0 0.45rem;
   line-height: 1.4;
 }
+
+/* Read by screen readers, invisible on screen (live regions that announce without showing). */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}

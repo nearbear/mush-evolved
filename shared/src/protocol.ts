@@ -33,6 +33,13 @@ export type MatchmakerServerMessage =
  */
 export type BotPause = "unavailable" | "key" | "budget";
 
+/**
+ * Model providers a player may bring their own key for (BYOK, single player). The server maps each to its base URL
+ * (server/src/model.ts); clients never send a URL. OpenRouter only for now (owner, 2026-10-24); more in #217.
+ */
+export const MODEL_PROVIDERS = ["openrouter"] as const;
+export type ModelProvider = (typeof MODEL_PROVIDERS)[number];
+
 // Game room ("game-room" party). The seat token goes in the connection URL (?token=).
 export type GameClientMessage =
   | { type: "action"; action: Action }
@@ -50,6 +57,11 @@ export type GameClientMessage =
   | { type: "createThread"; name: string; from?: number }
   | { type: "invite"; channel: PrivateChannelId; player: PlayerId }
   | { type: "leaveChannel"; channel: PrivateChannelId }
+  // Single player only, from the human seat: the player's own model key for the bots (BYOK, #216). Never an input:
+  // inputs are recorded, so the key would be stored. Held in memory until the seat's last connection closes, so the
+  // client sends it again on reconnect. `clearModel` drops it.
+  | { type: "setModel"; provider: ModelProvider; model: string; apiKey: string }
+  | { type: "clearModel" }
   // Development only: the server refuses it unless cheats are enabled (cheats.ts).
   | { type: "cheat"; cheat: Cheat; on: boolean }
   | { type: "actopiCheat"; mode: ActopiCheat }
@@ -109,6 +121,14 @@ export function parseGameMessage(raw: string): GameClientMessage | null {
   if (msg?.type === "cheat") {
     return isCheat(msg.cheat) && typeof msg.on === "boolean" ? { type: "cheat", cheat: msg.cheat, on: msg.on } : null;
   }
+  if (msg?.type === "setModel") {
+    const { provider, model, apiKey } = msg;
+    // Printable ASCII without spaces: the key goes into a header, and a model name into the request body.
+    if (!MODEL_PROVIDERS.some((p) => p === provider) || typeof model !== "string" || !/^[\w.:/@-]{1,128}$/.test(model)) return null;
+    if (typeof apiKey !== "string" || !/^[\x21-\x7e]{1,512}$/.test(apiKey)) return null;
+    return { type: "setModel", provider: provider as ModelProvider, model, apiKey };
+  }
+  if (msg?.type === "clearModel") return { type: "clearModel" };
   if (msg?.type === "clearQueue") return { type: "clearQueue" };
   if (msg?.type === "acknowledgeTransfer") return { type: "acknowledgeTransfer" };
   if (msg?.type === "walk") {

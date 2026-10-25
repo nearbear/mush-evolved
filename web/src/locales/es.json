@@ -87,6 +87,9 @@
   "language": {
     "label": "Idioma"
   },
+  "wake": {
+    "ready": "Te despiertas. Día {{day}}, ciclo {{cycle}}. Estás en: {{room}}."
+  },
   "common": {
     "go": "Ir",
     "ai": "IA",

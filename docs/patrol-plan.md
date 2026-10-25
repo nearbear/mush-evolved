@@ -99,6 +99,7 @@ Later: BIOS piloting lock + spaceship keys, Mush auto-eject and spacesuits, Magn
 7. The Pasiphae carries one person.
 8. Patrol-ship shots keep their own miss count (eMush): misses at a turret don't carry into a patrol-ship shot, or the other way round.
 9. The Pasiphae is in the design (all six phases).
+10. A player in a ship is located like anyone else (owner, 2026-10-24): with ACTOPI on, the rest of the crew see them by name in the ship's room; with it off, the existing rule applies (a room-only dot in the ship's room). This falls out of ships being rooms, so `viewFor` needs no exception. How the client shows a ship room on the minimap and ship map is the owner's to design later; phase 2 only has to keep the view data right and not break the client on a door-less room.
 
 ## Still open
 
@@ -107,4 +108,4 @@ Not asked yet; ask the owner before building the phase that needs them:
 - Log lines for hunters hitting a ship or a pilot in flight, and for a ship destroyed with its pilot (phase 4). Hunters hitting the Daedalus have none.
 - Visibility of patrol-ship shots and kills (phase 3). The turrets' pattern (hit/miss private, kill public in the room) is the obvious default, but the room is the ship, so a kill would be seen only by its pilot.
 - Whether anyone in flight learns how much debris is out there, beyond Collect being offered (phase 5), and the visibility of Collect and Renovate lines.
-- What the rest of the crew sees of a ship in flight: its interface in the bay shown as out, the pilot's room name under ACTOPI, and how the map shows someone in a ship (phase 2).
+- What the rest of the crew sees of a ship in flight beyond its pilot's location (answer 10): whether its interface in the bay shows it as out to anyone in the bay (phase 2).

@@ -26,7 +26,7 @@ export function App() {
   if (ticket)
     return (
       <>
-        <GameScreen ticket={ticket} onLeave={leave} />
+        <GameScreen ticket={ticket} onLeave={leave} waking={waking} />
         {waking && <WakeUp onDone={woke} />}
       </>
     );

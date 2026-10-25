@@ -42,7 +42,7 @@ These are non-negotiable unless I say otherwise.
 5. **Bots sit behind one interface**, roughly `decideAction(view): Promise<Action>`:
    - A bot only ever receives the view its own seat would legitimately have.
    - Bots are clearly labeled as AI to players. Deliberate response delay is fine and is a pacing choice.
-   - Model calls happen server-side only, with the base URL, model name, and API key in env/config. Start with a hosted, token-billed API (not Claude, since this is just the in-game AI); keep the interface compatible so I can later swap to a self-hosted model on NVIDIA Triton for learning.
+   - Model calls happen server-side only. Credentials come from env/config (a dev key only; there is no hosted default), or in single player from the player's own key (BYOK, #216): sent over the game socket, held only in memory while that player is connected, never in game state, the record, a view or a log, and only for a provider on the server's allowlist (no client-supplied URLs). Start with a hosted, token-billed API (not Claude, since this is just the in-game AI); keep the interface compatible so I can later swap to a self-hosted model on NVIDIA Triton for learning.
    - Add rate limits and a hard spend cap.
    - Treat player chat as untrusted input to the model (prompt injection is expected).
 6. **Public-internet basics:** basic abuse limits and chat moderation from the start.
@@ -111,6 +111,6 @@ Not rules, but still open:
 
 - Game name.
 - Which stage single player (the only mode with bots) belongs in.
-- Single-player model bots: no hosted default in the MVP (decided 2026-10-23, the owner won't pay for unlimited use); players will bring their own key, with a provider allowlist and an opt-in "remember the key" (planned, not built). Which providers go on the allowlist is open. `ModelBot` and `ModelGate` exist, running on a dev key only.
+- Single-player model bots: no hosted default in the MVP (decided 2026-10-23, the owner won't pay for unlimited use); players bring their own key. The server side is built (#216: `setModel`/`clearModel`, single player only); the allowlist is OpenRouter only for now (owner, 2026-10-24), and which others to add is open (#217). The settings panel with an opt-in "remember the key" (#218) and key status (#220) are not built, so no client sends a key yet.
 - Hosting and deployment details beyond the current setup (one Worker on `workers.dev`, the client as static assets; a custom domain waits for the game name).
 - Internationalization (en/fr/es): the seam is in, the comprehensive pass is not.

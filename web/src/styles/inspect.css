@@ -342,15 +342,14 @@
   color: var(--terminal-bg);
 }
 
-/* The asset credits, pushed to the bottom of the Inspect panel (a flex column), under the target and its actions. */
 .inspect {
   display: flex;
   flex-direction: column;
 }
-.inspect > .credits {
+/* The asset credits: a footer row under the panels (last in the DOM so it is last in the tab order). */
+.game > .game-credits {
   flex: none;
-  margin: auto 0 0;
-  padding-top: 0.75rem;
+  padding: 0.25rem 0.5rem;
   text-align: center;
   font-size: 0.75rem;
   line-height: 1.3;

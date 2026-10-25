@@ -1,9 +1,9 @@
 // Calls to a hosted model for model-backed bots (ModelBot in bots.ts). OpenAI-compatible chat completions, so the
 // same client reaches OpenRouter, OpenAI, Gemini's compatible endpoint, or a self-hosted Triton later.
 // There is no hosted default (owner, 2026-10-23): the only credentials are a development key in server/.dev.vars,
-// and later the player's own key (bring your own key, single player).
+// and the player's own key in single player (bring your own key, #216).
 
-import type { BotPause } from "@mush2/shared";
+import type { BotPause, ModelProvider } from "@mush2/shared";
 
 declare global {
   interface Env {
@@ -74,6 +74,16 @@ export const completeOpenAi: Complete = async (credentials, turns, signal) => {
   return content;
 };
 
+/** Where each allowed provider's API lives (MODEL_PROVIDERS). Fixed here so a client can't point the server elsewhere. */
+const PROVIDER_BASE_URLS: Record<ModelProvider, string> = {
+  openrouter: "https://openrouter.ai/api/v1",
+};
+
+/** A player's own key (BYOK). Only ever held in memory: never stored, logged, or put in a view. */
+export function playerModelCredentials(provider: ModelProvider, model: string, apiKey: string): ModelCredentials {
+  return { baseUrl: PROVIDER_BASE_URLS[provider], model, apiKey };
+}
+
 /** The development key, only where cheats are allowed. A deployment has no model credentials of its own. */
 export function devModelCredentials(env: Pick<Env, "ALLOW_CHEATS" | "MODEL_BASE_URL" | "MODEL_NAME" | "MODEL_API_KEY">): ModelCredentials | null {
   if (env.ALLOW_CHEATS !== "true" || !env.MODEL_BASE_URL || !env.MODEL_NAME || !env.MODEL_API_KEY) return null;
@@ -117,6 +127,16 @@ export class ModelGate {
     this.complete = options.complete ?? completeOpenAi;
   }
 
+  /**
+   * Swaps the key (the player set or cleared theirs). A new key gets a fresh start: whatever the old one failed
+   * with doesn't count against it. The call budget stays spent.
+   */
+  setCredentials(credentials: ModelCredentials | null): void {
+    this.credentials = credentials;
+    this.keyFailure = null;
+    this.failing = false;
+  }
+
   /** Whether a call could be made now (before waiting for a slot). */
   get usable(): boolean {
     return this.credentials !== null && this.keyFailure === null && this.used < this.options.budget;
@@ -135,18 +155,23 @@ export class ModelGate {
 
   async ask(turns: ChatTurn[]): Promise<string | null> {
     if (!this.usable) return null;
+    let credentials: ModelCredentials | null = null;
     await this.acquire();
     try {
       // Checked again: the budget or the key may have run out while this call waited.
       if (!this.usable) return null;
       this.used++;
-      const reply = await this.complete(this.credentials!, turns, AbortSignal.timeout(this.options.timeoutMs));
-      this.failing = false;
+      credentials = this.credentials!;
+      const reply = await this.complete(credentials, turns, AbortSignal.timeout(this.options.timeoutMs));
+      if (credentials === this.credentials) this.failing = false;
       return reply;
     } catch (e) {
       const status = e instanceof ModelError ? e.status : null;
-      if (status !== null && KEY_FAILURES.has(status)) this.keyFailure = status;
-      else this.failing = true;
+      // A call made with a key since replaced says nothing about the new one.
+      if (credentials === this.credentials) {
+        if (status !== null && KEY_FAILURES.has(status)) this.keyFailure = status;
+        else this.failing = true;
+      }
       // Only our own messages, or the error's name: anything else could carry the request.
       console.warn(`Model call failed: ${e instanceof ModelError ? e.message : e instanceof Error ? e.name : typeof e}`);
       return null;

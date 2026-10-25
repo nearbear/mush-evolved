@@ -107,6 +107,32 @@ describe("ModelGate", () => {
     expect(g.pause).toBeNull();
   });
 
+  it("gives a new key a fresh start after the old one was refused", async () => {
+    let refuse = true;
+    const g = gate(async () => {
+      if (refuse) throw new ModelError(401, "http 401");
+      return "ok";
+    });
+    await g.ask([]);
+    expect(g.pause).toBe("key");
+    refuse = false;
+    g.setCredentials({ ...credentials, apiKey: "k2" });
+    expect(g.pause).toBeNull();
+    expect(await g.ask([])).toBe("ok");
+  });
+
+  it("doesn't blame a new key for a call the old one made", async () => {
+    let fail!: () => void;
+    const g = gate(() => new Promise((_r, reject) => (fail = () => reject(new ModelError(401, "http 401")))));
+    const pending = g.ask([]);
+    await Promise.resolve();
+    g.setCredentials({ ...credentials, apiKey: "k2" });
+    fail();
+    expect(await pending).toBeNull();
+    expect(g.keyFailure).toBeNull();
+    expect(g.pause).toBeNull();
+  });
+
   it("runs at most maxInFlight calls at once, and the rest wait their turn", async () => {
     let running = 0;
     let peak = 0;

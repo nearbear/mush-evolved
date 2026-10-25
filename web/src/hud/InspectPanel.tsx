@@ -17,7 +17,6 @@ import { ActionLabel } from "./ActionLabel.tsx";
 import { SkillSlots } from "./SkillSlots.tsx";
 import { StatusIcon, StatusIcons } from "./StatusIcons.tsx";
 import { ActionButton } from "./ActionButton.tsx";
-import { Credits } from "./Credits.tsx";
 import { actionLabelKey, attackWeapon, optionsOn, resolveTarget, type Resolved } from "./targets.ts";
 
 export function InspectPanel({
@@ -65,7 +64,6 @@ export function InspectPanel({
         </div>
       )}
       </div>
-      <Credits />
     </aside>
   );
 }

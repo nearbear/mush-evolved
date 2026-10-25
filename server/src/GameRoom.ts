@@ -33,7 +33,7 @@ import {
 } from "@mush2/shared";
 import { LogParrotBot, ModelBot, WanderBot, type Bot } from "./bots.ts";
 import { clockCycle, clockCycleStart, cycleMs, cycleOfDay } from "./cycleClock.ts";
-import { devModelCredentials, ModelGate } from "./model.ts";
+import { devModelCredentials, ModelGate, playerModelCredentials } from "./model.ts";
 import { RateLimiter } from "./rateLimit.ts";
 
 /** Error code (not text) for a cheat input on a server that doesn't allow them. */
@@ -145,6 +145,8 @@ export class GameRoom extends Server<Env> {
   /** Asks paused bots again while model calls fail in passing (`retryPausedBots`). */
   private retryTimer: ReturnType<typeof setTimeout> | null = null;
   private retryMs = MODEL_RETRY_MS;
+  /** Counts key changes (`setModel`), so a bot whose turn spanned one is asked again with the new key. */
+  private keyChanges = 0;
   /** The pause last sent to clients, so a change is sent once. */
   private sentPause: BotPause | null = null;
   /** The pre-selection launch `join` started, so a second join waits for it instead of launching again. */
@@ -315,6 +317,11 @@ export class GameRoom extends Server<Env> {
       this.send(connection, { type: "error", message: CHEATS_DISABLED });
       return;
     }
+    if (msg.type === "setModel" || msg.type === "clearModel") {
+      const error = this.setModel(playerId, msg);
+      if (error) this.send(connection, { type: "error", message: error });
+      return;
+    }
     const error =
       msg.type === "action"
         ? await this.act({ ...msg, by, at: Date.now() })
@@ -368,7 +375,7 @@ export class GameRoom extends Server<Env> {
   private async social(
     playerId: PlayerId,
     by: PlayerId,
-    msg: Exclude<GameClientMessage, { type: "action" | "clearQueue" | "acknowledgeTransfer" | "walk" | "cheat" | "actopiCheat" | "roleCheat" }>,
+    msg: Exclude<GameClientMessage, { type: "action" | "clearQueue" | "acknowledgeTransfer" | "walk" | "cheat" | "actopiCheat" | "roleCheat" | "setModel" | "clearModel" }>,
   ): Promise<string | null> {
     if (!this.game) return "no_game";
     if (!this.chatLimiter.allow(playerId)) {
@@ -393,8 +400,32 @@ export class GameRoom extends Server<Env> {
     this.rateLimited[playerId] = (this.rateLimited[playerId] ?? 0) + 1;
   }
 
-  override onClose(connection: Connection): void {
+  /**
+   * The player's own model key (BYOK, #216): single player only, from the human seat. Kept only in the gate's
+   * memory, never in the game, its record, a view or a log; the dev key (if any) comes back when it's cleared.
+   * Returns an error code, or null.
+   */
+  private setModel(playerId: PlayerId, msg: Extract<GameClientMessage, { type: "setModel" | "clearModel" }>): string | null {
+    if (!this.singlePlayer || playerId !== SINGLE_PLAYER_HUMAN) return "not_single_player";
+    this.gate().setCredentials(msg.type === "setModel" ? playerModelCredentials(msg.provider, msg.model, msg.apiKey) : devModelCredentials(this.env));
+    this.keyChanges++;
+    // Bots paused on the old key (or playing scripted without one) try the new one.
+    this.scheduleBots();
+    this.afterBotTurn();
+    return null;
+  }
+
+  override onClose(connection: Connection<SeatState>): void {
     this.limiter.forget(connection.id);
+    // The key lives only while its player is connected; the client sends it again on reconnect.
+    const playerId = connection.state?.playerId;
+    if (!this.singlePlayer || playerId !== SINGLE_PLAYER_HUMAN || !this.modelGate) return;
+    for (const conn of this.getConnections<SeatState>()) {
+      if (conn.id !== connection.id && conn.state?.playerId === playerId) return;
+    }
+    this.modelGate.setCredentials(devModelCredentials(this.env));
+    this.keyChanges++;
+    this.afterBotTurn();
   }
 
   /**
@@ -530,6 +561,7 @@ export class GameRoom extends Server<Env> {
       setTimeout(async () => {
         // Still pending while it decides: a model call takes seconds, and the bot must not be asked twice meanwhile.
         const inputs = this.inputs;
+        const keyChanges = this.keyChanges;
         try {
           if (!this.game) return;
           await this.botChat(playerId, bot);
@@ -547,7 +579,8 @@ export class GameRoom extends Server<Env> {
         } finally {
           this.pendingBots.delete(playerId);
           // What it did (or anything else accepted meanwhile) rescheduled the others but skipped it, being pending.
-          if (this.inputs !== inputs) this.scheduleBots();
+          // So did a new key, if the old one's call left it waiting.
+          if (this.inputs !== inputs || this.keyChanges !== keyChanges) this.scheduleBots();
           this.afterBotTurn();
         }
       }, BOT_DELAY_MS);

@@ -522,6 +522,104 @@ describe("GameRoom single player", () => {
     vi.unstubAllGlobals();
   });
 
+  describe("the player's own model key (BYOK, #216)", () => {
+    const KEY = "sk-or-v1-secret-player-key";
+    const setModel = { type: "setModel", provider: "openrouter", model: "some/model", apiKey: KEY };
+    const reply = () => new Response(JSON.stringify({ choices: [{ message: { content: "ACTION: 1" } }] }));
+    const disconnect = (room: Room, c: Conn) => {
+      (room as unknown as FakeServer).connections.delete(c as never);
+      room.onClose(c as never);
+    };
+
+    it("plays the bots on the player's key at the provider's fixed URL, and never stores, sends or logs it", async () => {
+      const fetch = vi.fn(async () => reply());
+      vi.stubGlobal("fetch", fetch);
+      const warn = vi.spyOn(console, "warn");
+      const { room, storage, token } = await soloRoom();
+      const c = connect(room, token);
+      await send(room, c, setModel);
+      await playOut(room, storage);
+      expect(fetch).toHaveBeenCalled();
+      const [url, init] = fetch.mock.calls[0] as unknown as [string, RequestInit];
+      expect(url).toBe("https://openrouter.ai/api/v1/chat/completions");
+      expect((init.headers as Record<string, string>).authorization).toBe(`Bearer ${KEY}`);
+      expect(JSON.parse(init.body as string)).toMatchObject({ model: "some/model" });
+      expect(JSON.stringify([...storage.data])).not.toContain(KEY);
+      expect(c.sent.join("\n")).not.toContain(KEY);
+      expect(JSON.stringify(warn.mock.calls)).not.toContain(KEY);
+      warn.mockRestore();
+      vi.unstubAllGlobals();
+    });
+
+    it("is refused outside single player, and from a seat that isn't the human's", async () => {
+      const fetch = vi.fn(async () => reply());
+      vi.stubGlobal("fetch", fetch);
+      const storage = new FakeStorage();
+      const room = asRoom(storage, {});
+      await room.setup(seats(2).map((seat, i) => (i >= 2 ? { ...seat, botKind: "model" as const } : seat)), tokensFor(2));
+      for (const token of ["tok0", "tok1"]) {
+        const c = connect(room, token);
+        await send(room, c, setModel);
+        expect(lastMsg(c)).toEqual({ type: "error", message: "not_single_player" });
+      }
+      await vi.advanceTimersByTimeAsync(1600);
+      expect(fetch).not.toHaveBeenCalled();
+      expect(JSON.stringify([...storage.data])).not.toContain(KEY);
+      vi.unstubAllGlobals();
+    });
+
+    it("is dropped when the player's last connection closes, so the bots go back to scripted", async () => {
+      const fetch = vi.fn(async () => reply());
+      vi.stubGlobal("fetch", fetch);
+      const { room, storage, token } = await soloRoom();
+      const a = connect(room, token, "a");
+      const b = connect(room, token, "b");
+      await send(room, a, setModel);
+      disconnect(room, a);
+      await vi.advanceTimersByTimeAsync(1600);
+      // Another tab is still open: the key stays.
+      expect(fetch).toHaveBeenCalled();
+      disconnect(room, b);
+      await vi.advanceTimersByTimeAsync(1000);
+      const calls = fetch.mock.calls.length;
+      await send(room, connect(room, token, "c"), { type: "action", action: { type: "ready" } });
+      await playOut(room, storage);
+      expect(fetch.mock.calls.length).toBe(calls);
+      vi.unstubAllGlobals();
+    });
+
+    it("clearModel drops it too", async () => {
+      const fetch = vi.fn(async () => reply());
+      vi.stubGlobal("fetch", fetch);
+      const { room, storage, token } = await soloRoom();
+      const c = connect(room, token);
+      await send(room, c, setModel);
+      await send(room, c, { type: "clearModel" });
+      await playOut(room, storage);
+      expect(fetch).not.toHaveBeenCalled();
+      vi.unstubAllGlobals();
+    });
+
+    it("wakes bots paused on a refused key once the player sets a new one", async () => {
+      const fetch = vi.fn(async (_url: string, init: RequestInit) =>
+        (init.headers as Record<string, string>).authorization === "Bearer bad-key" ? new Response("no", { status: 401 }) : reply(),
+      );
+      vi.stubGlobal("fetch", fetch);
+      const { room, storage, token } = await soloRoom();
+      const c = connect(room, token);
+      await send(room, c, { ...setModel, apiKey: "bad-key" });
+      await vi.advanceTimersByTimeAsync(1000);
+      expect(lastMsg(c)).toMatchObject({ type: "view", botsPaused: "key" });
+      const inputs = () => [...storage.data.keys()].filter((k) => k.startsWith("input:")).length;
+      const before = inputs();
+      await send(room, c, setModel);
+      await vi.advanceTimersByTimeAsync(1000);
+      expect(lastMsg(c)).toMatchObject({ type: "view", botsPaused: null });
+      expect(inputs()).toBeGreaterThan(before);
+      vi.unstubAllGlobals();
+    });
+  });
+
   it("stays single player after a restart", async () => {
     const { storage, token } = await soloRoom();
     const revived = asRoom(storage);

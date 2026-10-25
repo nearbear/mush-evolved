@@ -1295,3 +1295,12 @@ Owner asked for oxygen capsules "like fuel canisters". Asked three questions (ta
 - **Needed correction:** the first `onAlarm` change still ran a `cycle` input on its first loop pass with no boundary (single player gained a cycle after hours on the clock); a test caught it. The server test for "bots play scripted when the model fails" pinned the old behavior and had to be replaced, as did the `bot` skill's "a game never stalls on the model" rule, which the owner reversed.
 
 - 2026-10-24, patrol plan phase 1: replaced `Hunter.targeted` with `Hunter.target: HunterTarget | null` (only `{ kind: "ship" }` for now), no behaviour change. Claude left the patrol and player target kinds for phase 4 rather than adding variants nothing produces yet; the owner accepted.
+
+## 2026-10-24: BYOK server side (#216)
+
+- The player's model key arrives as `setModel { provider, model, apiKey }` on the game socket and lives only in the room's `ModelGate` memory; it is dropped when the human seat's last connection closes (the client will resend it on reconnect, #218). Single player only, human seat only.
+- Kept out of the record structurally: `Input` (replay.ts) is derived from `GameClientMessage`, so it now excludes `setModel`/`clearModel`; a key can't reach `applyInput` without a type error.
+- Provider allowlist: OpenRouter only for now (owner chose this when asked; #217 adds others). The parser accepts only printable non-space ASCII for the key (it goes in a header) and a restricted charset for the model name.
+- A subtle case the first draft missed: a call in flight with the old key that fails after a new key is set would have marked the new key refused. The gate now ignores failures from replaced credentials, and the room reschedules a bot whose turn spanned a key change (`keyChanges`), since nothing else would wake it.
+- Tests were mutation-checked (removing the wake-up or the disconnect clear each fails one test).
+- Leak check finding, accepted (owner, 2026-10-24): with their own key, the player can read every bot's prompt (its whole view) in their provider's request logs. Roles don't leak (the player is the only Mush). Accepted as the cost of BYOK; the #218 privacy note must say so.
