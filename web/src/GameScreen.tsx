@@ -3,7 +3,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import type PartySocket from "partysocket";
-import { CORPSE_ITEM, MAX_CHAT_LENGTH, MAX_CHAT_LINES, legalIn, type Action, type ActopiCheat, type CharacterId, type Cheat, type GameClientMessage, type GameServerMessage, type PlayerView, type RoleCheat, type RoomId, type Spot, type Target } from "@mush2/shared";
+import { CORPSE_ITEM, MAX_CHAT_LENGTH, MAX_CHAT_LINES, legalIn, type Action, type ActopiCheat, type BotPause, type CharacterId, type Cheat, type GameClientMessage, type GameServerMessage, type PlayerView, type RoleCheat, type RoomId, type Spot, type Target } from "@mush2/shared";
 import i18n from "i18next";
 import { useTranslation } from "react-i18next";
 import { ActionQueue } from "./hud/ActionQueue.tsx";
@@ -44,6 +44,7 @@ export function GameScreen({ ticket, onLeave }: { ticket: SeatTicket; onLeave: (
   const [clockOffset, setClockOffset] = useState(0);
   const [zoom, setZoom] = useState(1);
   const [nextCycleAt, setNextCycleAt] = useState<number | null>(null);
+  const [botsPaused, setBotsPaused] = useState<BotPause | null>(null);
   const names = useNames();
   const socketRef = useRef<PartySocket | null>(null);
   const layout = useShipLayout();
@@ -101,6 +102,7 @@ export function GameScreen({ ticket, onLeave }: { ticket: SeatTicket; onLeave: (
         setCheatsAllowed(msg.cheatsAllowed);
         setClockOffset(msg.now - Date.now());
         setNextCycleAt(msg.nextCycleAt);
+        setBotsPaused(msg.botsPaused);
       } else showError(i18n.t(`errors.${msg.message}` as never, { defaultValue: msg.message, max: MAX_CHAT_LENGTH, lines: MAX_CHAT_LINES }));
     });
     // 4001 = invalid seat token (e.g. the local server was restarted).
@@ -176,6 +178,7 @@ export function GameScreen({ ticket, onLeave }: { ticket: SeatTicket; onLeave: (
         showSummary={mobile}
         canReady={legalIn(view).some((a) => a.type === "ready")}
         nextCycleAt={nextCycleAt}
+        botsPaused={botsPaused}
         clockOffset={clockOffset}
         onReady={() => send({ type: "ready" })}
         onLeave={onLeave}

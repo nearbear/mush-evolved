@@ -5,7 +5,13 @@
     "waitingForOthers": "Waiting for others…",
     "leave": "Leave",
     "preselection": "Pre-selection",
-    "preselectionAbout": "Nobody is Mush yet. The Mush are chosen when the ship is full, or on day 3 cycle 8. Until then there is no combat."
+    "preselectionAbout": "Nobody is Mush yet. The Mush are chosen when the ship is full, or on day 3 cycle 8. Until then there is no combat.",
+    "botsPaused": "AI paused",
+    "botsPausedAbout": {
+      "unavailable": "The AI crew can't reach their model right now. The cycle waits for them; they will keep trying.",
+      "key": "The model provider refused the key (it may be wrong or out of credit). The cycle waits for the AI crew until the key works.",
+      "budget": "The AI crew used this game's whole model budget. The cycle waits for them until the budget is raised."
+    }
   },
   "credits": {
     "text": "Art from <mush>Mush</mush> by Motion Twin (<archive>WebGamesArchives</archive>), licensed <license>CC BY-NC-SA 4.0</license>. Adapted. Not affiliated with Motion Twin.",
@@ -95,7 +101,9 @@
     "waiting": "Boarding: {{waiting}}/{{seats}} aboard.",
     "awaitingCrew": "Awaiting crew",
     "nearlyFull": "Nearly full",
-    "noWebgl": "Your browser can't draw the game: it needs WebGL 2. Turn on hardware acceleration in your browser settings, update your browser or graphics drivers, or try another browser or device."
+    "noWebgl": "Your browser can't draw the game: it needs WebGL 2. Turn on hardware acceleration in your browser settings, update your browser or graphics drivers, or try another browser or device.",
+    "singlePlayer": "Single player",
+    "singlePlayerNote": "You are the Mush, against 8 AI crew."
   },
   "minimap": {
     "title": "Ship map",

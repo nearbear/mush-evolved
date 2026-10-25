@@ -1,7 +1,7 @@
 import { ScrollArea } from "@base-ui/react/scroll-area";
 import { Suspense, lazy, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { CHARACTERS, type CharacterId, type LobbyLanguage, type MatchmakerServerMessage } from "@mush2/shared";
+import { CHARACTERS, LOBBY_LANGUAGES, type CharacterId, type LobbyLanguage, type MatchmakerServerMessage } from "@mush2/shared";
 import { characterImage } from "../art/assets.ts";
 import { Credits } from "../hud/Credits.tsx";
 import { LanguageSwitcher } from "../i18n/LanguageSwitcher.tsx";
@@ -16,6 +16,10 @@ const SHIPS: readonly { name: string; language: LobbyLanguage }[] = [
   { name: "Français", language: "fr" }, // i18n-ignore
   { name: "Español", language: "es" }, // i18n-ignore
 ];
+
+/** Single player (shared/src/singlePlayer.ts): a new ship for one player and 8 AI crew, launched by the matchmaker of the UI's language. */
+const SINGLE_PLAYER = "single";
+type Choice = (typeof SHIPS)[number] | typeof SINGLE_PLAYER;
 
 type QueueCount = { waiting: number; seats: number };
 
@@ -78,9 +82,9 @@ function nextGuestName(): string {
 }
 
 export function Lobby({ onMatched }: { onMatched: (ticket: SeatTicket) => void }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [name, setName] = useState<string | null>(null);
-  const [ship, setShip] = useState<(typeof SHIPS)[number] | null>(null);
+  const [ship, setShip] = useState<Choice | null>(null);
   const [character, setCharacter] = useState<CharacterId | null>(null);
   // Kept as data, not text, so the status follows the language if it changes while waiting.
   const [queue, setQueue] = useState<QueueCount | null>(null);
@@ -105,11 +109,14 @@ export function Lobby({ onMatched }: { onMatched: (ticket: SeatTicket) => void }
     return () => el.removeEventListener("wheel", onWheel);
   }, []);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: the UI language only picks which matchmaker launches a single-player ship, read once at launch; changing it must not relaunch.
   useEffect(() => {
     if (name === null || character === null || ship === null) return;
     let timer: ReturnType<typeof setTimeout> | undefined;
-    const socket = matchmakerSocket(ship.language);
-    socket.addEventListener("open", () => socket.send(JSON.stringify({ type: "queue", name, character })));
+    const single = ship === SINGLE_PLAYER;
+    const uiLanguage = LOBBY_LANGUAGES.find((l) => l === i18n.resolvedLanguage) ?? "en";
+    const socket = matchmakerSocket(single ? uiLanguage : ship.language);
+    socket.addEventListener("open", () => socket.send(JSON.stringify({ type: single ? "singlePlayer" : "queue", name, character })));
     socket.addEventListener("message", (e: MessageEvent<string>) => {
       const msg = JSON.parse(e.data) as MatchmakerServerMessage;
       if (msg.type === "queued") setQueue({ waiting: msg.waiting, seats: msg.seats });
@@ -133,7 +140,8 @@ export function Lobby({ onMatched }: { onMatched: (ticket: SeatTicket) => void }
   }, [name, character, ship, onMatched, t]);
 
   const shipCounts = useShipCounts(webgl && name === null);
-  const taken = useTakenCharacters(ship?.language, name !== null && character === null);
+  // Single player: any character, nobody else aboard.
+  const taken = useTakenCharacters(ship === SINGLE_PLAYER ? undefined : ship?.language, name !== null && character === null);
   const step = !webgl ? "noWebgl" : name === null ? "ship" : character === null ? "character" : "waiting";
 
   return (
@@ -166,7 +174,7 @@ export function Lobby({ onMatched }: { onMatched: (ticket: SeatTicket) => void }
             <p className="pod-status">{t("lobby.noWebgl")}</p>
           </div>
           <div className="pod-state" inert={step !== "waiting"}>
-            <p className="pod-subtitle">{`${name ?? ""} · ${ship?.name ?? ""}`}</p>
+            <p className="pod-subtitle">{`${name ?? ""} · ${ship === SINGLE_PLAYER ? t("lobby.singlePlayer") : (ship?.name ?? "")}`}</p>
             <p className="loading pod-status">{error || (queue ? t("lobby.waiting", queue) : t("common.connecting"))}</p>
           </div>
           <div className="pod-state" inert={step !== "character"}>
@@ -219,6 +227,19 @@ export function Lobby({ onMatched }: { onMatched: (ticket: SeatTicket) => void }
                 </li>
                 );
               })}
+              <li>
+                <button type="button"
+                  className="big pod-ship"
+                  onClick={() => {
+                    setShip(SINGLE_PLAYER);
+                    setName(nextGuestName());
+                  }}
+                >
+                  <span className="pod-ship-name">{t("lobby.singlePlayer")}</span>
+                  <span className="pod-ship-note">{t("lobby.singlePlayerNote")}</span>
+                  <span className="pod-ship-crew" />
+                </button>
+              </li>
             </ul>
           </div>
         </div>

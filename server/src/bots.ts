@@ -50,8 +50,10 @@ export class WanderBot implements Bot {
 export const MODEL_FREE_ACTIONS_PER_CYCLE = 8;
 
 /**
- * Asks a model to choose from its own view's affordable actions. Its reply is untrusted: anything but a valid choice,
- * or no model at all (no key, over budget, failed call), and the scripted fallback decides instead.
+ * Asks a model to choose from its own view's affordable actions. Its reply is untrusted: anything but a valid choice
+ * and the scripted fallback decides instead. With no key at all it plays scripted. With a key but no reply (the call
+ * failed, the key was refused, the budget is spent) it waits instead, returning null, and the cycle waits with it
+ * (owner, 2026-10-24, #114): the room asks again later (`ModelGate.pause`).
  */
 export class ModelBot implements Bot {
   private cycle = -1;
@@ -71,9 +73,10 @@ export class ModelBot implements Bot {
     if (options.length === 0) return null;
     // Nothing to choose between: don't spend a call on it.
     if (options.length === 1) return options[0]!.action;
-    if (this.free >= MODEL_FREE_ACTIONS_PER_CYCLE) return this.fallback.decideAction(view);
+    if (this.gate.credentials === null || this.free >= MODEL_FREE_ACTIONS_PER_CYCLE) return this.fallback.decideAction(view);
     const reply = await this.gate.ask(buildPrompt(view));
-    const i = reply === null ? null : parseChoice(reply, options.length);
+    if (reply === null) return null;
+    const i = parseChoice(reply, options.length);
     if (i === null) return this.fallback.decideAction(view);
     const chosen = options[i]!;
     if (chosen.cost.ap === 0 && chosen.cost.mp === 0 && chosen.action.type !== "ready") this.free++;

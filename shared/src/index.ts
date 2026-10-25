@@ -33,3 +33,4 @@ export * from "./bios.ts";
 export * from "./victory.ts";
 export * from "./preselection.ts";
 export * from "./mind.ts";
+export * from "./singlePlayer.ts";

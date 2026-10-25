@@ -5,7 +5,13 @@
     "waitingForOthers": "Esperando a los demás…",
     "leave": "Salir",
     "preselection": "Preselección",
-    "preselectionAbout": "Todavía nadie es Mush. Los Mush se elegirán cuando la nave esté llena, o el día 3, ciclo 8. Hasta entonces no hay combate."
+    "preselectionAbout": "Todavía nadie es Mush. Los Mush se elegirán cuando la nave esté llena, o el día 3, ciclo 8. Hasta entonces no hay combate.",
+    "botsPaused": "IA en pausa",
+    "botsPausedAbout": {
+      "unavailable": "La tripulación IA no puede contactar con su modelo ahora mismo. El ciclo los espera; seguirán intentándolo.",
+      "key": "El proveedor del modelo rechazó la clave (puede ser incorrecta o no tener crédito). El ciclo espera a la tripulación IA hasta que la clave funcione.",
+      "budget": "La tripulación IA ha gastado todo el presupuesto de modelo de esta partida. El ciclo los espera hasta que se aumente el presupuesto."
+    }
   },
   "credits": {
     "text": "Arte de <mush>Mush</mush> de Motion Twin (<archive>WebGamesArchives</archive>), con licencia <license>CC BY-NC-SA 4.0</license>. Adaptado. Sin afiliación con Motion Twin.",
@@ -95,7 +101,9 @@
     "waiting": "Embarcando: {{waiting}}/{{seats}} a bordo.",
     "awaitingCrew": "Esperando tripulación",
     "nearlyFull": "Casi completa",
-    "noWebgl": "Tu navegador no puede mostrar el juego: necesita WebGL 2. Activa la aceleración por hardware en los ajustes del navegador, actualiza el navegador o los controladores gráficos, o prueba otro navegador o dispositivo."
+    "noWebgl": "Tu navegador no puede mostrar el juego: necesita WebGL 2. Activa la aceleración por hardware en los ajustes del navegador, actualiza el navegador o los controladores gráficos, o prueba otro navegador o dispositivo.",
+    "singlePlayer": "Un jugador",
+    "singlePlayerNote": "Eres el Mush, contra 8 tripulantes IA."
   },
   "minimap": {
     "title": "Mapa de la nave",

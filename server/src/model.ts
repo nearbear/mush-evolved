@@ -3,6 +3,8 @@
 // There is no hosted default (owner, 2026-10-23): the only credentials are a development key in server/.dev.vars,
 // and later the player's own key (bring your own key, single player).
 
+import type { BotPause } from "@mush2/shared";
+
 declare global {
   interface Env {
     /** Development only (server/.dev.vars, with ALLOW_CHEATS): an OpenAI-compatible base URL, e.g. https://openrouter.ai/api/v1. */
@@ -94,12 +96,15 @@ const KEY_FAILURES = new Set([401, 402, 403]);
 
 /**
  * Every model call in one game goes through its gate: the credentials, the call budget, the in-flight limit and the
- * timeout. `ask` never throws; null means "decide without the model" (no key, over budget, or the call failed).
+ * timeout. `ask` never throws; null means no reply (no key, over budget, or the call failed), and `pause` says
+ * whether that pauses the bots.
  */
 export class ModelGate {
   used: number;
   /** Why the key stopped being used this game (the HTTP status), or null. For telling the player, later. */
   keyFailure: number | null = null;
+  /** The last call failed in passing (timeout, network, 429, 5xx): calls are retried until one works. */
+  private failing = false;
   private inFlight = 0;
   private waiting: (() => void)[] = [];
   private complete: Complete;
@@ -117,6 +122,17 @@ export class ModelGate {
     return this.credentials !== null && this.keyFailure === null && this.used < this.options.budget;
   }
 
+  /**
+   * Why bots with this gate are waiting instead of playing (owner, 2026-10-24, #114), or null. Without credentials
+   * there is no pause: those bots play scripted.
+   */
+  get pause(): BotPause | null {
+    if (this.credentials === null) return null;
+    if (this.keyFailure !== null) return "key";
+    if (this.used >= this.options.budget) return "budget";
+    return this.failing ? "unavailable" : null;
+  }
+
   async ask(turns: ChatTurn[]): Promise<string | null> {
     if (!this.usable) return null;
     await this.acquire();
@@ -124,10 +140,13 @@ export class ModelGate {
       // Checked again: the budget or the key may have run out while this call waited.
       if (!this.usable) return null;
       this.used++;
-      return await this.complete(this.credentials!, turns, AbortSignal.timeout(this.options.timeoutMs));
+      const reply = await this.complete(this.credentials!, turns, AbortSignal.timeout(this.options.timeoutMs));
+      this.failing = false;
+      return reply;
     } catch (e) {
       const status = e instanceof ModelError ? e.status : null;
       if (status !== null && KEY_FAILURES.has(status)) this.keyFailure = status;
+      else this.failing = true;
       // Only our own messages, or the error's name: anything else could carry the request.
       console.warn(`Model call failed: ${e instanceof ModelError ? e.message : e instanceof Error ? e.name : typeof e}`);
       return null;

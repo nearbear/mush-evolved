@@ -57,6 +57,7 @@ All under `web/src/`. UI rules are in `web/CLAUDE.md`.
 - `ResearchTracker.tsx`, `Tracker.tsx`: the Research feature's strip of research cards, and a notes list the player types in.
 - `ResourceChips.tsx`: your other resources as chips (the first two, or as many as fit on a phone, then "…" for the rest).
 - `ShipResources.tsx`: the ship card (resources, hunters, titles); in the desktop top bar, and opened by `ShipOverlay.tsx` on phones. `TitleChip.tsx`: one title and its line of succession.
+- `BotsPausedTag.tsx`: the top-bar tag shown while model bots are paused (`botsPaused`, #114), with why.
 - `PreselectionTag.tsx`: the top-bar tag shown until the Mush are chosen.
 - `TerminalDialog.tsx`: the window opened by accessing a terminal; holds the research lab, NERON projects and the panels above (`CommsCenter`, `BiosTerminal`, `TurretPanel`, `ShipNavigation`, `PlanetList`).
 - `DialogHeader.tsx`: sticky title bar with a close button for scrolling dialogs. `ItemFace.tsx`: an item's square face with an optional label. `ConsumeEffects.tsx`: what eating or drinking an item does.

@@ -1286,3 +1286,10 @@ Owner asked for oxygen capsules "like fuel canisters". Asked three questions (ta
 ## 2026-10-24: Fungal cuisine
 - Used the `rule` skill: read the wiki page, asked four questions in one call (cost, eating, visibility, items); owner took every recommended option. Built as an `ItemState.spores` counter, a status-like property on the item, with `consume` calling `contaminate` per spore.
 - Existing `mush_skills.test.ts` asserted only Transfer was implemented and needed updating. `access.test.ts` already fails on `main` (unrelated, from the previous commit).
+
+## 2026-10-24: Single player, first slice (#59), and pausing on model failures (#114)
+
+- **Decided (owner):** save slots descoped to their own issue (#243). When the model fails, the game pauses instead of the bots playing scripted: End cycle waits for every bot (the existing manual-cycle rule already does), and a model bot with a key that gets no reply returns null and waits. Every failure pauses: passing ones (timeout, 429, 5xx) retry with backoff, a refused key or spent budget waits for BYOK to supply a new one. No key at all still means scripted bots.
+- **Built:** `shared/src/singlePlayer.ts` (pure, seeded seat draw), a `singlePlayer` matchmaker message, `GameRoom.setupSinglePlayer` with no cycle clock, `ModelGate.pause` sent as `botsPaused`, a top-bar tag, and the lobby button. Tests cover all of it in shared and server.
+- **Worked:** the rules needed no change; manual cycles already wait for every living player, so "pause" fell out of the bot returning null.
+- **Needed correction:** the first `onAlarm` change still ran a `cycle` input on its first loop pass with no boundary (single player gained a cycle after hours on the clock); a test caught it. The server test for "bots play scripted when the model fails" pinned the old behavior and had to be replaced, as did the `bot` skill's "a game never stalls on the model" rule, which the owner reversed.

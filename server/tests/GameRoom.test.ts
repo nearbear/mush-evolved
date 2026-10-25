@@ -407,15 +407,126 @@ describe("GameRoom bots", () => {
       vi.useRealTimers();
     });
 
-    it("don't stall the game when the model fails: they play scripted", async () => {
-      vi.stubGlobal("fetch", vi.fn(async () => new Response("nope", { status: 500 })));
-      const { storage } = await modelRoom({ ...CHEATS, ...MODEL });
-      await vi.advanceTimersByTimeAsync(1600);
-      const inputs = [...storage.data].filter(([k]) => k.startsWith("input:")).map(([, v]) => v as { input: { by: string } });
-      expect(["p1", "p2", "p3"].every((id) => inputs.some((i) => i.input.by === id))).toBe(true);
+    it("pause when the model fails, tell the players, and retry with backoff until it answers (#114)", async () => {
+      let failing = true;
+      const fetch = vi.fn(async () => (failing ? new Response("nope", { status: 500 }) : reply()));
+      vi.stubGlobal("fetch", fetch);
+      const { room, storage } = await modelRoom({ ...CHEATS, ...MODEL });
+      const human = connect(room, "tok0");
+      const byModelBots = () =>
+        [...storage.data].filter(([k, v]) => k.startsWith("input:") && ["p1", "p2", "p3"].includes((v as { input: { by: string } }).input.by)).length;
+      await vi.advanceTimersByTimeAsync(1000);
+      expect(byModelBots()).toBe(0);
+      expect(lastMsg(human)).toMatchObject({ type: "view", botsPaused: "unavailable" });
+      const calls = fetch.mock.calls.length;
+      // Retried after the backoff, not in a tight loop.
+      await vi.advanceTimersByTimeAsync(1000);
+      expect(fetch.mock.calls.length).toBe(calls);
+      failing = false;
+      await vi.advanceTimersByTimeAsync(5000);
+      expect(byModelBots()).toBeGreaterThan(0);
+      expect(lastMsg(human)).toMatchObject({ type: "view", botsPaused: null });
       vi.unstubAllGlobals();
       vi.useRealTimers();
     });
+
+    it("stay paused, without retrying, once the provider refuses the key", async () => {
+      const fetch = vi.fn(async () => new Response("no", { status: 401 }));
+      vi.stubGlobal("fetch", fetch);
+      const { room } = await modelRoom({ ...CHEATS, ...MODEL });
+      const human = connect(room, "tok0");
+      await vi.advanceTimersByTimeAsync(120_000);
+      expect(fetch).toHaveBeenCalledTimes(1);
+      expect(lastMsg(human)).toMatchObject({ type: "view", botsPaused: "key" });
+      vi.unstubAllGlobals();
+      vi.useRealTimers();
+    });
+
+    it("play scripted where there is no key, and nothing is paused", async () => {
+      vi.stubGlobal("fetch", vi.fn());
+      const { room, storage } = await modelRoom({});
+      const human = connect(room, "tok0");
+      await vi.advanceTimersByTimeAsync(1600);
+      const inputs = [...storage.data].filter(([k]) => k.startsWith("input:")).map(([, v]) => v as { input: { by: string } });
+      expect(["p1", "p2", "p3"].every((id) => inputs.some((i) => i.input.by === id))).toBe(true);
+      expect(lastMsg(human)).toMatchObject({ type: "view", botsPaused: null });
+      vi.unstubAllGlobals();
+      vi.useRealTimers();
+    });
+  });
+});
+
+describe("GameRoom single player", () => {
+  beforeEach(() => {
+    vi.useFakeTimers({ now: Date.UTC(2026, 9, 19, 14, 10) });
+    return () => vi.useRealTimers();
+  });
+
+  /** Runs the bots' timers and fires each alarm (their action bars) as it comes due, for 30 seconds of game time. */
+  async function playOut(room: Room, storage: FakeStorage) {
+    for (let i = 0; i < 60; i++) {
+      await vi.advanceTimersByTimeAsync(500);
+      if (storage.alarm !== null && storage.alarm <= Date.now()) await room.onAlarm();
+    }
+  }
+
+  async function soloRoom(env: Record<string, string> = {}) {
+    const storage = new FakeStorage();
+    const room = asRoom(storage, env);
+    const token = await room.setupSinglePlayer("Guest 1", "chun");
+    return { room, storage, token };
+  }
+
+  it("seats the player as the only Mush with 8 AI bots, and gives out one token", async () => {
+    const { room, storage, token } = await soloRoom();
+    const c = connect(room, token);
+    const view = lastView(c);
+    expect(view.you).toMatchObject({ id: "p0", character: "chun", role: "mush" });
+    expect(view.players).toHaveLength(8);
+    expect(view.players.every((p) => p.isBot)).toBe(true);
+    expect(Object.keys((storage.data.get("game") as { tokens: object }).tokens)).toEqual([token]);
+    await expect(room.setupSinglePlayer("Guest 2", "ian")).rejects.toThrow("already set up");
+  });
+
+  it("has no cycle clock: no countdown, no alarm, and End cycle on without cheats", async () => {
+    const { room, storage, token } = await soloRoom();
+    const c = connect(room, token);
+    expect(lastMsg(c)).toMatchObject({ type: "view", nextCycleAt: null });
+    expect(storage.alarm).toBeNull();
+    expect(legalIn(lastView(c))).toContainEqual({ type: "ready" });
+    // Hours pass on the clock; the cycle doesn't change.
+    vi.setSystemTime(Date.UTC(2026, 9, 19, 20));
+    await room.onAlarm();
+    expect(lastView(c).cycleOfDay).toBe(5);
+  });
+
+  it("ends the cycle once the player and every bot have ended theirs", async () => {
+    vi.stubGlobal("fetch", vi.fn());
+    const { room, storage, token } = await soloRoom();
+    const c = connect(room, token);
+    await send(room, c, { type: "action", action: { type: "ready" } });
+    // No key, so the bots play scripted: a few moves each, then they end their cycles.
+    await playOut(room, storage);
+    expect(lastView(c).cycleOfDay).toBe(6);
+    vi.unstubAllGlobals();
+  });
+
+  it("keeps waiting for paused bots: the cycle doesn't end while the model is down", async () => {
+    vi.stubGlobal("fetch", vi.fn(async () => new Response("nope", { status: 503 })));
+    const { room, storage, token } = await soloRoom({ ...CHEATS, MODEL_BASE_URL: "https://example.test/v1", MODEL_NAME: "m", MODEL_API_KEY: "dev-key" });
+    const c = connect(room, token);
+    await send(room, c, { type: "action", action: { type: "ready" } });
+    await playOut(room, storage);
+    expect(lastView(c).cycleOfDay).toBe(5);
+    expect(lastMsg(c)).toMatchObject({ type: "view", botsPaused: "unavailable" });
+    vi.unstubAllGlobals();
+  });
+
+  it("stays single player after a restart", async () => {
+    const { storage, token } = await soloRoom();
+    const revived = asRoom(storage);
+    await revived.onStart();
+    expect(lastMsg(connect(revived, token))).toMatchObject({ type: "view", nextCycleAt: null });
   });
 });
 

@@ -53,7 +53,7 @@ import type {
 export type { ActionResult };
 
 /**
- * `forcedRoles` is a testing aid: a forced Mush is picked before anyone else and a forced human
+ * `forcedRoles` (tests, and single player's human Mush): a forced Mush is picked before anyone else and a forced human
  * last, so the usual random draw still fills any remaining Mush places. `startCycle` is the cycle of day 1 the ship
  * launches in: cycles follow the UTC clock (#24), so a ship launched at 14:00 GMT starts on cycle 5.
  */

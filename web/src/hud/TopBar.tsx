@@ -1,9 +1,10 @@
-import type { ActopiCheat, Cheat, PlayerView, RoleCheat } from "@mush2/shared";
+import type { ActopiCheat, BotPause, Cheat, PlayerView, RoleCheat } from "@mush2/shared";
 import { useState } from "react";
 import { Menu } from "@base-ui/react/menu";
 import { useTranslation } from "react-i18next";
 import { SETTINGS_ICON } from "../art/assets.ts";
 import { useMobile } from "../useMobile.ts";
+import { BotsPausedTag } from "./BotsPausedTag.tsx";
 import { CycleCountdown } from "./CycleCountdown.tsx";
 import { PlayerSummary } from "./PlayerSummary.tsx";
 import { PreselectionTag } from "./PreselectionTag.tsx";
@@ -16,6 +17,7 @@ export function TopBar({
   canReady,
   onReady,
   nextCycleAt,
+  botsPaused,
   clockOffset,
   onLeave,
   onResults,
@@ -30,8 +32,10 @@ export function TopBar({
   /** Offered only where End cycle is on (testing); cycles otherwise change on the server's clock. */
   canReady: boolean;
   onReady: () => void;
-  /** When the next cycle begins, in server ms (null until the first view arrives). */
+  /** When the next cycle begins, in server ms (null until the first view arrives, and in single player). */
   nextCycleAt: number | null;
+  /** Why the AI crew is waiting on its model, pausing the cycle; null when it isn't. */
+  botsPaused: BotPause | null;
   /** Server clock minus this one. */
   clockOffset: number;
   onLeave: () => void;
@@ -63,6 +67,7 @@ export function TopBar({
         Day {view.day} · Cycle {view.cycleOfDay}
         {nextCycleAt !== null && <CycleCountdown nextCycleAt={nextCycleAt} clockOffset={clockOffset} />}
         {view.preselection && <PreselectionTag />}
+        {botsPaused && <BotsPausedTag pause={botsPaused} />}
       </span>
       <span className="spacer" />
       {!mobile && <ShipResources ship={view.ship} hunters={view.hunters.count} titles={view.titles} />}

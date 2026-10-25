@@ -18,12 +18,20 @@ export type LobbyLanguage = (typeof LOBBY_LANGUAGES)[number];
 // Any connection, joining or just watching, is sent `queued` on connect and whenever the count changes: `waiting` is
 // how many are aboard the language's open ship (in pre-selection), out of `seats`, and which characters they hold (`taken`). `queue` boards that ship at once
 // (`matched`); `character` is the crew member picked in the lobby, refused if someone aboard already has it.
-export type MatchmakerClientMessage = { type: "queue"; name: string; character: CharacterId };
+// `singlePlayer` launches a new single-player game (singlePlayer.ts) instead, for this player alone (`matched`).
+export type MatchmakerClientMessage = { type: "queue" | "singlePlayer"; name: string; character: CharacterId };
 export type MatchmakerServerMessage =
   | { type: "queued"; waiting: number; seats: number; taken: CharacterId[] }
   | { type: "characterTaken" }
   | { type: "matched"; roomId: string; token: string }
   | { type: "error"; message: string };
+
+/**
+ * Why a game's model bots are waiting, so the cycle (which waits for them) is paused (owner, 2026-10-24, #114):
+ * `unavailable` while calls fail and are retried, `key` once the provider refused the key (bad key, no credit),
+ * `budget` once the game's call budget is spent. Never sent where bots have no key: those play scripted.
+ */
+export type BotPause = "unavailable" | "key" | "budget";
 
 // Game room ("game-room" party). The seat token goes in the connection URL (?token=).
 export type GameClientMessage =
@@ -49,16 +57,18 @@ export type GameClientMessage =
 export type GameServerMessage =
   // `cheatsAllowed` is the server's dev flag, so the client knows whether to offer cheats. It is not game state.
   // `now` is the server's clock when sent, so the client can draw action bars (server ms) against its own clock.
-  // `nextCycleAt` is when the next cycle begins on the server's clock (the same for everyone, so not hidden).
-  | { type: "view"; view: PlayerView; cheatsAllowed: boolean; now: number; nextCycleAt: number }
+  // `nextCycleAt` is when the next cycle begins on the server's clock (the same for everyone, so not hidden); null in
+  // single player, where cycles end only by End cycle. `botsPaused` says why model bots are waiting instead of
+  // playing, or null (see BotPause).
+  | { type: "view"; view: PlayerView; cheatsAllowed: boolean; now: number; nextCycleAt: number | null; botsPaused: BotPause | null }
   | { type: "error"; message: string };
 
 export function parseMatchmakerMessage(raw: string): MatchmakerClientMessage | null {
   const msg = parseJson(raw);
-  if (msg?.type !== "queue" || typeof msg.name !== "string" || !isCharacterId(msg.character)) return null;
+  if ((msg?.type !== "queue" && msg?.type !== "singlePlayer") || typeof msg.name !== "string" || !isCharacterId(msg.character)) return null;
   const name = msg.name.trim().slice(0, MAX_NAME_LENGTH);
   if (!name) return null;
-  return { type: "queue", name, character: msg.character };
+  return { type: msg.type, name, character: msg.character };
 }
 
 export function parseGameMessage(raw: string): GameClientMessage | null {

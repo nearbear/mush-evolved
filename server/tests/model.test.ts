@@ -69,6 +69,8 @@ describe("ModelGate", () => {
     const g = new ModelGate(null, { budget: 10, maxInFlight: 1, timeoutMs: 1000, complete: async () => (calls++, "x") });
     expect(await g.ask([])).toBeNull();
     expect(calls).toBe(0);
+    // No key: the bots play scripted, nothing is paused.
+    expect(g.pause).toBeNull();
   });
 
   it("stops calling once the budget is spent, counting calls made before a restart", async () => {
@@ -77,6 +79,7 @@ describe("ModelGate", () => {
     for (let i = 0; i < 5; i++) await g.ask([]);
     expect(calls).toBe(2);
     expect(g.used).toBe(3);
+    expect(g.pause).toBe("budget");
   });
 
   it("stops using a key the provider rejects", async () => {
@@ -89,6 +92,7 @@ describe("ModelGate", () => {
     expect(await g.ask([])).toBeNull();
     expect(calls).toBe(1);
     expect(g.keyFailure).toBe(401);
+    expect(g.pause).toBe("key");
   });
 
   it("keeps the key after a passing failure", async () => {
@@ -98,7 +102,9 @@ describe("ModelGate", () => {
       return "ok";
     });
     expect(await g.ask([])).toBeNull();
+    expect(g.pause).toBe("unavailable");
     expect(await g.ask([])).toBe("ok");
+    expect(g.pause).toBeNull();
   });
 
   it("runs at most maxInFlight calls at once, and the rest wait their turn", async () => {
@@ -151,15 +157,27 @@ describe("ModelBot", () => {
     }
   });
 
-  it("falls back when the call fails", async () => {
+  it("waits instead of falling back when the call fails, the key is refused, or the budget is spent", async () => {
+    for (const status of [500, 429, 401, 402]) {
+      const fallback = new Fallback();
+      const bot = new ModelBot(
+        gate(async () => {
+          throw new ModelError(status, `http ${status}`);
+        }),
+        fallback,
+      );
+      expect(await bot.decideAction(view)).toBeNull();
+      expect(fallback.asked).toBe(0);
+    }
     const fallback = new Fallback();
-    const bot = new ModelBot(
-      gate(async () => {
-        throw new ModelError(500, "http 500");
-      }),
-      fallback,
-    );
-    expect(await bot.decideAction(view)).toEqual({ type: "ready" });
+    expect(await new ModelBot(gate(async () => "ACTION: 1", { budget: 0 }), fallback).decideAction(view)).toBeNull();
+    expect(fallback.asked).toBe(0);
+  });
+
+  it("plays scripted when there is no key at all", async () => {
+    const fallback = new Fallback();
+    const noKey = new ModelGate(null, { budget: 10, maxInFlight: 1, timeoutMs: 1000, complete: async () => "ACTION: 1" });
+    expect(await new ModelBot(noKey, fallback).decideAction(view)).toEqual({ type: "ready" });
     expect(fallback.asked).toBe(1);
   });
 

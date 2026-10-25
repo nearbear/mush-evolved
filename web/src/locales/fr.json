@@ -5,7 +5,13 @@
     "waitingForOthers": "En attente des autres…",
     "leave": "Quitter",
     "preselection": "Pré-sélection",
-    "preselectionAbout": "Personne n'est encore Mush. Les Mush seront choisis quand le vaisseau sera plein, ou au jour 3, cycle 8. D'ici là, aucun combat n'est possible."
+    "preselectionAbout": "Personne n'est encore Mush. Les Mush seront choisis quand le vaisseau sera plein, ou au jour 3, cycle 8. D'ici là, aucun combat n'est possible.",
+    "botsPaused": "IA en pause",
+    "botsPausedAbout": {
+      "unavailable": "L'équipage IA n'arrive pas à joindre son modèle pour l'instant. Le cycle les attend ; ils vont réessayer.",
+      "key": "Le fournisseur du modèle a refusé la clé (elle est peut-être erronée ou sans crédit). Le cycle attend l'équipage IA jusqu'à ce que la clé fonctionne.",
+      "budget": "L'équipage IA a utilisé tout le budget de modèle de cette partie. Le cycle les attend jusqu'à ce que le budget soit augmenté."
+    }
   },
   "credits": {
     "text": "Illustrations de <mush>Mush</mush> par Motion Twin (<archive>WebGamesArchives</archive>), sous licence <license>CC BY-NC-SA 4.0</license>. Adaptées. Sans lien avec Motion Twin.",
@@ -95,7 +101,9 @@
     "waiting": "Embarquement : {{waiting}}/{{seats}} à bord.",
     "awaitingCrew": "En attente d'équipage",
     "nearlyFull": "Presque complet",
-    "noWebgl": "Votre navigateur ne peut pas afficher le jeu : il faut WebGL 2. Activez l'accélération matérielle dans les paramètres du navigateur, mettez à jour le navigateur ou les pilotes graphiques, ou essayez un autre navigateur ou appareil."
+    "noWebgl": "Votre navigateur ne peut pas afficher le jeu : il faut WebGL 2. Activez l'accélération matérielle dans les paramètres du navigateur, mettez à jour le navigateur ou les pilotes graphiques, ou essayez un autre navigateur ou appareil.",
+    "singlePlayer": "Solo",
+    "singlePlayerNote": "Vous êtes le Mush, face à 8 équipiers IA."
   },
   "minimap": {
     "title": "Plan du vaisseau",

@@ -9,6 +9,8 @@ interface FakeShip {
   closed: boolean;
 }
 const ships = new Map<string, FakeShip>();
+/** Single-player games launched, by room id. */
+const solos = new Map<string, { name: string; character: string }>();
 const CLOSES_AT = Date.now() + 3_600_000;
 
 vi.mock("partyserver", () => ({
@@ -23,6 +25,11 @@ vi.mock("partyserver", () => ({
       const full = ship.crew.length >= SEAT_COUNT;
       return { ok: true, token: `${roomId}:${name}`, aboard: ship.crew.length, taken: ship.crew.map((c) => c.character), closesAt: full ? null : CLOSES_AT };
     },
+    setupSinglePlayer: async (name: string, character: string): Promise<string> => {
+      if (solos.has(roomId) || ships.has(roomId)) throw new Error("Game already set up");
+      solos.set(roomId, { name, character });
+      return `${roomId}:solo`;
+    },
   }),
 }));
 const { Matchmaker } = await import("../src/Matchmaker.ts");
@@ -36,6 +43,7 @@ const CHARS = ["chao", "chun", "eleesha", "finola", "frieda", "gioele", "hua", "
 
 beforeEach(async () => {
   ships.clear();
+  solos.clear();
   storage = new FakeStorage();
   mm = new Matchmaker({ storage } as never, { GameRoom: {} } as never);
   await mm.onStart();
@@ -145,5 +153,30 @@ describe("Matchmaker joining", () => {
     const [a, b] = await board(2);
     expect(a!.sent.join()).not.toContain(matched(b!)!.token);
     expect(b!.sent.join()).not.toContain(matched(a!)!.token);
+  });
+});
+
+describe("Matchmaker single player", () => {
+  const solo = (c: Conn, name: string, character: string) => mm.onMessage(c as never, JSON.stringify({ type: "singlePlayer", name, character }));
+
+  it("launches a new game per player, outside the queue, with any character", async () => {
+    const [a, b] = [connect(), connect()];
+    await solo(a, "A", "chun");
+    await solo(b, "B", "chun");
+    const [ma, mb] = [matched(a)!, matched(b)!];
+    expect(ma.roomId).not.toBe(mb.roomId);
+    expect(ma.token).toBe(`${ma.roomId}:solo`);
+    expect(solos.get(ma.roomId)).toEqual({ name: "A", character: "chun" });
+    // The multiplayer queue is untouched: the next joiner launches a fresh ship.
+    expect(ships.size).toBe(0);
+    const [p] = await board(1);
+    expect(matched(p!)!.roomId).not.toBe(ma.roomId);
+  });
+
+  it("launches once per connection", async () => {
+    const c = connect();
+    await solo(c, "A", "ian");
+    await solo(c, "A", "ian");
+    expect(solos.size).toBe(1);
   });
 });

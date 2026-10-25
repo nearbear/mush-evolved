@@ -2,6 +2,7 @@
 // open ship, which is in pre-selection (docs/rules-design.md, "Joining and Mush selection"); the first player to join
 // launches a new one. Multiplayer has no bots. Game rooms never talk to each other or to the matchmaker: it asks the
 // open ship to board each player (`GameRoom.join`) and learns from the answer how full it is and when it stops taking crew.
+// It also launches single-player games (`GameRoom.setupSinglePlayer`), one new room per request, outside the queue.
 
 import { getServerByName, Server, type Connection, type WSMessage } from "partyserver";
 import { LOBBY_LANGUAGES, type CharacterId, parseMatchmakerMessage, SEAT_COUNT, type MatchmakerClientMessage, type MatchmakerServerMessage } from "@mush2/shared";
@@ -68,6 +69,10 @@ export class Matchmaker extends Server<Env> {
     }
     if (connection.state?.joined) return;
     connection.setState({ joined: true });
+    if (msg.type === "singlePlayer") {
+      await this.launchSinglePlayer(connection, msg);
+      return;
+    }
     const done = this.joins.then(() => this.board(connection, msg));
     this.joins = done.catch(() => {});
     await done;
@@ -99,6 +104,20 @@ export class Matchmaker extends Server<Env> {
     }
     connection.setState({ joined: false });
     this.send(connection, { type: "error", message: "join_failed" });
+  }
+
+  /** A new single-player game for this player alone. Nobody else can board it, so it never becomes the open ship. */
+  private async launchSinglePlayer(connection: Connection<JoinState>, msg: MatchmakerClientMessage): Promise<void> {
+    const roomId = crypto.randomUUID();
+    try {
+      const room = await getServerByName(this.env.GameRoom, roomId);
+      const token = await room.setupSinglePlayer(msg.name, msg.character);
+      this.send(connection, { type: "matched", roomId, token });
+    } catch (e) {
+      console.warn(`Single-player launch failed: ${e instanceof Error ? e.message : typeof e}`);
+      connection.setState({ joined: false });
+      this.send(connection, { type: "error", message: "join_failed" });
+    }
   }
 
   /** The open ship's deadline passed: nobody can join it any more. */

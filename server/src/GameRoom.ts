@@ -15,16 +15,20 @@ import {
   CHARACTERS,
   PRESELECTION,
   preselectionDeadline,
+  singlePlayerGame,
+  SINGLE_PLAYER_HUMAN,
   viewFor,
   type CharacterId,
   type GameConfig,
   type PreselectionRules,
   type GameClientMessage,
+  type BotPause,
   type GameServerMessage,
   type GameSetup,
   type GameState,
   type Input,
   type PlayerId,
+  type Role,
   type Seat,
 } from "@mush2/shared";
 import { LogParrotBot, ModelBot, WanderBot, type Bot } from "./bots.ts";
@@ -61,6 +65,9 @@ export const DEV_FILL_DELAY_MS = 8000;
 const MODEL_CALL_BUDGET = 3000;
 const MODEL_MAX_IN_FLIGHT = 2;
 const MODEL_TIMEOUT_MS = 20_000;
+/** While model calls fail in passing, paused bots are asked again after this, doubling up to the max. */
+const MODEL_RETRY_MS = 2_000;
+const MODEL_RETRY_MAX_MS = 60_000;
 
 /**
  * Bump when GameState's shape changes. Games stored under another version are
@@ -81,6 +88,8 @@ interface Stored {
   clockCycle: number;
   /** Model calls made so far (ModelGate.used), so a restart doesn't refill the budget. Missing on older games. */
   modelCalls?: number;
+  /** A single-player game (shared/src/singlePlayer.ts): no clock, cycles end by End cycle. Missing on older games. */
+  singlePlayer?: boolean;
 }
 
 // The game's record, beside the snapshot in this room's storage:
@@ -131,6 +140,13 @@ export class GameRoom extends Server<Env> {
   private modelGate: ModelGate | null = null;
   /** Restored from storage before `initBots` makes the gate. */
   private modelCalls = 0;
+  /** Cycles end only by End cycle, never on the clock. */
+  private singlePlayer = false;
+  /** Asks paused bots again while model calls fail in passing (`retryPausedBots`). */
+  private retryTimer: ReturnType<typeof setTimeout> | null = null;
+  private retryMs = MODEL_RETRY_MS;
+  /** The pause last sent to clients, so a change is sent once. */
+  private sentPause: BotPause | null = null;
   /** The pre-selection launch `join` started, so a second join waits for it instead of launching again. */
   private launching: Promise<void> | null = null;
   private limiter = new RateLimiter(10, 1000);
@@ -155,16 +171,31 @@ export class GameRoom extends Server<Env> {
     this.rateLimited = stored.rateLimited;
     this.clockCycle = stored.clockCycle;
     this.modelCalls = stored.modelCalls ?? 0;
+    this.singlePlayer = stored.singlePlayer ?? false;
     this.blocked = (await this.ctx.storage.list({ prefix: "blocked:" })).size;
     this.initBots();
     this.scheduleBots();
     await this.scheduleTick();
   }
 
-  /** Seats everyone at launch, with Mush picked at once (tests; single player later). Called once, over RPC. */
+  /** Seats everyone at launch, with Mush picked at once (tests). Called once, over RPC. */
   async setup(seats: Seat[], tokens: Record<string, PlayerId>): Promise<void> {
     if (this.game) throw new Error("Game already set up");
     await this.launch(seats, tokens, DEFAULT_CONFIG);
+  }
+
+  /**
+   * Launches a single-player game (rules: singlePlayer.ts) for one player, with 8 model bots: scripted where there is
+   * no key, which is every deployment until players bring their own. Called once, over RPC, by the matchmaker.
+   * Returns the player's seat token.
+   */
+  async setupSinglePlayer(name: string, character: CharacterId): Promise<string> {
+    if (this.game) throw new Error("Game already set up");
+    const { seats, config, forcedRoles } = singlePlayerGame(name, character, crypto.getRandomValues(new Uint32Array(1))[0]!);
+    const token = crypto.randomUUID();
+    this.singlePlayer = true;
+    await this.launch(seats, { [token]: SINGLE_PLAYER_HUMAN }, config, forcedRoles);
+    return token;
   }
 
   /**
@@ -233,12 +264,13 @@ export class GameRoom extends Server<Env> {
     return clockCycleStart(this.clockCycle + preselectionDeadline(game, rules) - game.cycle, cycleMs(this.env));
   }
 
-  private async launch(seats: Seat[], tokens: Record<string, PlayerId>, config: GameConfig): Promise<void> {
+  private async launch(seats: Seat[], tokens: Record<string, PlayerId>, config: GameConfig, forcedRoles?: Record<PlayerId, Role>): Promise<void> {
     this.clockCycle = clockCycle(Date.now(), cycleMs(this.env));
     const setup: GameSetup = {
       seats,
-      // End cycle is for testing: only where cheats are allowed (owner, 2026-10-19).
-      config: { ...config, manualCycles: this.cheatsAllowed },
+      // End cycle is for testing (only where cheats are allowed, owner, 2026-10-19) and single player.
+      config: { ...config, manualCycles: config.manualCycles || this.cheatsAllowed },
+      ...(forcedRoles && { forcedRoles }),
       seed: crypto.getRandomValues(new Uint32Array(1))[0]!,
       rulesVersion: this.env.RULES_VERSION,
       startCycle: cycleOfDay(this.clockCycle, config.cyclesPerDay),
@@ -303,8 +335,10 @@ export class GameRoom extends Server<Env> {
     for (let first = true; this.game?.phase === "playing"; first = false) {
       const now = Date.now();
       const due = nextDue(this.game);
-      const boundary = this.nextCycleAt();
+      const boundary = this.nextCycleAt() ?? Number.POSITIVE_INFINITY;
       const bar = due !== null && due <= boundary;
+      // Single player has no clock boundary: only action bars.
+      if (!bar && boundary === Number.POSITIVE_INFINITY) break;
       if (!first && (bar ? due : boundary) > now) break;
       if (bar) {
         // Never stamp the tick before the bar's end.
@@ -325,9 +359,9 @@ export class GameRoom extends Server<Env> {
     await this.scheduleTick();
   }
 
-  /** When the next cycle begins (server ms). */
-  private nextCycleAt(): number {
-    return clockCycleStart(this.clockCycle + 1, cycleMs(this.env));
+  /** When the next cycle begins (server ms), or null in single player, where the clock doesn't change cycles. */
+  private nextCycleAt(): number | null {
+    return this.singlePlayer ? null : clockCycleStart(this.clockCycle + 1, cycleMs(this.env));
   }
 
   /** Chat and channel management. Untrusted text: rate limit, then moderate, then let the rules decide. `playerId` is the seat, `by` its body. */
@@ -415,6 +449,7 @@ export class GameRoom extends Server<Env> {
       cheatsAllowed: this.cheatsAllowed,
       now: Date.now(),
       nextCycleAt: this.nextCycleAt(),
+      botsPaused: this.botsPaused(),
     };
     this.send(conn, msg);
   }
@@ -445,6 +480,34 @@ export class GameRoom extends Server<Env> {
       used: this.modelCalls,
     });
     return this.modelGate;
+  }
+
+  /** Why the model bots are waiting (ModelGate.pause), or null. Only while the game is on. */
+  private botsPaused(): BotPause | null {
+    return this.game?.phase === "playing" ? (this.modelGate?.pause ?? null) : null;
+  }
+
+  /**
+   * After a bot's turn: tells everyone when the pause changes, and while calls fail in passing, asks the paused bots
+   * again after a backoff (owner, 2026-10-24, #114). A refused key or a spent budget waits for a new key or budget
+   * (BYOK, #216 and #221), so it doesn't retry.
+   */
+  private afterBotTurn(): void {
+    const pause = this.botsPaused();
+    if (pause !== this.sentPause) {
+      this.sentPause = pause;
+      this.broadcastViews();
+    }
+    if (pause !== "unavailable") {
+      this.retryMs = MODEL_RETRY_MS;
+      return;
+    }
+    if (this.retryTimer !== null) return;
+    this.retryTimer = setTimeout(() => {
+      this.retryTimer = null;
+      this.scheduleBots();
+    }, this.retryMs);
+    this.retryMs = Math.min(this.retryMs * 2, MODEL_RETRY_MAX_MS);
   }
 
   /** Post the lines a bot wants to say in global chat, as that bot. */
@@ -485,6 +548,7 @@ export class GameRoom extends Server<Env> {
           this.pendingBots.delete(playerId);
           // What it did (or anything else accepted meanwhile) rescheduled the others but skipped it, being pending.
           if (this.inputs !== inputs) this.scheduleBots();
+          this.afterBotTurn();
         }
       }, BOT_DELAY_MS);
     }
@@ -501,6 +565,7 @@ export class GameRoom extends Server<Env> {
       rateLimited: this.rateLimited,
       clockCycle: this.clockCycle,
       modelCalls: this.modelGate?.used ?? this.modelCalls,
+      singlePlayer: this.singlePlayer,
     };
     await this.ctx.storage.put({ ...entries, game: stored });
   }
