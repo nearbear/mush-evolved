@@ -529,6 +529,8 @@
     "TURRET_COMMAND": "Controles de torreta"
   },
   "itemAttr": {
+    "contaminated": "Contagio: {{level}}",
+    "contaminatedDesc": "Comida fúngica: un humano que la coma se contagia de este número de niveles. Solo los Mush lo ven.",
     "satiety": "Saciedad",
     "plantOf": "Planta: {{item}}",
     "young": "Planta joven",

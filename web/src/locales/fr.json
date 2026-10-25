@@ -529,6 +529,8 @@
     "TURRET_COMMAND": "Poste de tir"
   },
   "itemAttr": {
+    "contaminated": "Contamination : {{level}}",
+    "contaminatedDesc": "Nourriture fongique : un humain qui la mange est contaminé de ce nombre de niveaux. Seuls les Mush le voient.",
     "satiety": "Satiété",
     "plantOf": "Plant : {{item}}",
     "young": "Jeune plant",

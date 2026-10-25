@@ -5,7 +5,7 @@ import { useTranslation } from "react-i18next";
 import { useNames } from "../i18n/names.ts";
 import type { ReactNode } from "react";
 import { actionVisibility, CHARACTERS, characterGivenName, characterName, type Action, type ActionOption, type EquipmentView, type PlayerView, type ShipLayout, type Target } from "@mush2/shared";
-import { characterImage, portrait } from "../art/assets.ts";
+import { characterImage, CONTAMINATED_ICON, portrait } from "../art/assets.ts";
 import { useMobile } from "../useMobile.ts";
 import { atlasUrl } from "../iso/shipLayout.ts";
 import { equipmentByTileKey, roomAsBuilt } from "../iso/equipmentTiles.ts";
@@ -15,7 +15,7 @@ import { PlantStates } from "./PlantStates.tsx";
 import { ItemIcon } from "./ItemIcon.tsx";
 import { ActionLabel } from "./ActionLabel.tsx";
 import { SkillSlots } from "./SkillSlots.tsx";
-import { StatusIcons } from "./StatusIcons.tsx";
+import { StatusIcon, StatusIcons } from "./StatusIcons.tsx";
 import { ActionButton } from "./ActionButton.tsx";
 import { Credits } from "./Credits.tsx";
 import { actionLabelKey, attackWeapon, optionsOn, resolveTarget, type Resolved } from "./targets.ts";
@@ -119,6 +119,15 @@ function Details({ view, layout, resolved, onAction }: { view: PlayerView; layou
             <strong>{names.itemOf(resolved.item)}</strong>
           </div>
           {resolved.item.plant && <PlantStates plant={resolved.item.plant} />}
+          {resolved.item.spores !== undefined && (
+            <ul className="status-icons" aria-label={t("itemAttr.label")}>
+              <li className="status-count">
+                <StatusIcon icon={CONTAMINATED_ICON} name={t("itemAttr.contaminated", { level: resolved.item.spores })} description={t("itemAttr.contaminatedDesc")} visibility="private">
+                  <span aria-hidden="true">{resolved.item.spores}</span>
+                </StatusIcon>
+              </li>
+            </ul>
+          )}
           {resolved.item.charges !== undefined && <div className="sub inspect-charges">{t("itemAttr.charges", { count: resolved.item.charges })}</div>}
         </>
       );

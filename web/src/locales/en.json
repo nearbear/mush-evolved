@@ -527,6 +527,8 @@
     "TURRET_COMMAND": "Turret controls"
   },
   "itemAttr": {
+    "contaminated": "Contamination: {{level}}",
+    "contaminatedDesc": "Mush food: a human who eats it is contaminated by this many levels. Only Mush can see this.",
     "satiety": "Satiety",
     "plantOf": "{{item}} plant",
     "young": "Young plant",
