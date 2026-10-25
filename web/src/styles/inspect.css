@@ -348,12 +348,29 @@
   display: flex;
   flex-direction: column;
 }
-/* The asset credits: a footer row under the panels (last in the DOM so it is last in the tab order). */
-.game > .game-credits {
+/* The asset credits: last in the DOM so it is last in the tab order. On desktop it is a grid item under the world column; on phones a footer row under the panels. */
+.game-credits {
   flex: none;
   padding: 0.25rem 0.5rem;
   text-align: center;
   font-size: 0.75rem;
   line-height: 1.3;
   color: var(--muted);
+}
+@media (min-width: 1024px) {
+  .three-panel {
+    grid-template-rows: minmax(0, 1fr) auto;
+  }
+  .three-panel > .left-column,
+  .three-panel > .itrackie {
+    grid-row: 1 / span 2;
+  }
+  .three-panel > .world {
+    grid-row: 1;
+  }
+  .three-panel > .game-credits {
+    padding: 0 !important;
+    grid-column: 2;
+    grid-row: 2;
+  }
 }

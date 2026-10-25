@@ -264,10 +264,13 @@ export function GameScreen({ ticket, onLeave, waking = false }: { ticket: SeatTi
             onLeave: (channel) => post({ type: "leaveChannel", channel }),
           }}
         />
+
+        {/* Last in the tab order (not inside the Inspect aside), so keyboard users don't tab through it mid-game. On desktop it sits under the world column (the player panel) only; CSS places it. */}
+        {!mobile && <Credits className="game-credits" />}
       </div>
 
-      {/* Last in the tab order (not inside the Inspect aside), so keyboard users don't tab through it mid-game. On phones it shows on the Inspect tab only, as before. */}
-      {(!mobile || panel === "inspect") && <Credits className="game-credits" />}
+      {/* On phones it shows on the Inspect tab only, below the panels. */}
+      {mobile && panel === "inspect" && <Credits className="game-credits" />}
 
       {mobile && panel === "room" && you.alive && (
         <PeekBar
