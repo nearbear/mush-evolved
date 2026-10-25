@@ -12,6 +12,23 @@ export interface MovementRules {
   mpCap: number; // MP can never exceed this.
 }
 
+export interface DiseaseCatagories {
+  allDiseases: string [],
+  allDisorders: string [],
+  allInjuries: string [],
+  allDiseaseStats: DiseaseStats[],
+  allDisorderStats: DiseaseStats[],
+  allInjuryStats: DiseaseStats[],
+}
+
+export interface DiseaseStats {
+  type: string,
+  durationMin?: number,
+  durationMax?: number,
+  resistance?: number,
+}
+
+
 /** One weapon's numbers (owner, 2026-10-22, from the English wiki; "??" values were set to 12%). */
 export interface WeaponStats {
   damage: [min: number, max: number]; // HP a hit removes, rolled uniformly, both ends included.
@@ -47,6 +64,7 @@ export interface GameConfig {
   // Cycles change on the server's UTC clock (#24). With this on, `ready` is offered too and the cycle also ends once
   // every living player is ready: the dev server's manual End cycle, and later single player.
   manualCycles: boolean;
+
   // Roommates see where you stand and sit (spot.ts). Off: `walk` is refused and nobody's spot is sent; a game setting later.
   sharedSpots: boolean;
   moralePerDay: number; // Morale lost by each living player at the end of a day, before modifiers (Mankind's Only Hope cuts it).
@@ -383,6 +401,7 @@ export interface GameConfig {
   startInventory: string[]; // Item types every player starts carrying (one of each).
   rooms: Record<RoomId, RoomId[]>; // Adjacency list. Movement is only allowed along these edges.
   equipment: Record<RoomId, Equipment[]>; // Fixed equipment in each room. Types come from EQUIPMENT_TYPES in equipment.ts.
+  diseases: DiseaseCatagories;
 }
 
 export interface Equipment {

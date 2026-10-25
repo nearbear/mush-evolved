@@ -52,8 +52,16 @@ function ship(): { state: GameState; sentinels: Sentinel[] } {
     p.mp = num(`mp-${p.id}`, own);
     p.hp = num(`hp-${p.id}`, own);
     p.morale = num(`morale-${p.id}`, own);
+    p.maxMorale = num(`maxMorale-${p.id}`, own);
     p.satiety = num(`satiety-${p.id}`, own);
     p.satietyZeroSince = num(`satietyZeroSince-${p.id}`, own);
+    p.diseaseTrackers.push({
+      name: "cold_disease",
+      duration: num(`diseaseTrackerDuration-${p.id}`, own),
+      resistance: num(`diseaseTrackerResistance-${p.id}`, own),
+      complete: false,
+      forever: false,
+    });
     p.immuneUntil = num(`immuneUntil-${p.id}`, own);
     p.spores = num(`spores-${p.id}`, own);
     for (const r of Object.keys(p.resources) as (keyof typeof p.resources)[]) p.resources[r] = num(`resources.${r}-${p.id}`, own);

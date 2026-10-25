@@ -50,6 +50,7 @@ import type {
   Role,
   Seat,
 } from "./types.ts";
+import { diseaseTrackerCycleChange } from "./adjustStats.ts";
 
 export type { ActionResult };
 
@@ -147,10 +148,12 @@ export function newPlayer(s: Seat, config: GameConfig, cycle: number, role: Role
     mp: config.startMp,
     hp: config.startHp,
     morale: config.startMorale,
+    maxMorale: config.maxMorale,
     satiety: 0,
     // Humans start at 0 satiety, so the hunger count starts with the first cycle.
     satietyZeroSince: role === "mush" ? null : cycle,
     statuses: [],
+    diseaseTrackers: [],
     spores: 0,
     resources: emptyResources(),
     modifiers: [...(config.characterModifiers[s.character] ?? [])],
@@ -326,6 +329,7 @@ function advanceCycle(state: GameState): void {
     p.ap = Math.min(state.config.maxAp, p.ap + apGain(state, p));
     p.ready = false;
   }
+  diseaseTrackerCycleChange(state);
   cycleChanged(state);
   burnOxygen(state);
   commsCycle(state);
@@ -485,7 +489,7 @@ export function viewFor(state: GameState, playerId: PlayerId): PlayerView {
     config: { heavyMpPenalty: state.config.heavy.mpPenalty, actionQueueCap: state.config.action.queueCap, sharedSpots: state.config.sharedSpots },
     maxAp: state.config.maxAp,
     maxHp: state.config.maxHp,
-    maxMorale: state.config.maxMorale,
+    maxMorale: you.maxMorale,
     // While the BIOS has the shield off, it shows as 0 (Claude's default, 2026-10-24); its points are kept.
     ship: { ...state.ship, plasmaShield: state.bios.plasma_shield ? state.ship.plasmaShield : 0, max: shipMax(state.config) },
     // How many, to everyone; each hunter's hp and every turret's charges, to the living in a turret room (owner, 2026-10-24).

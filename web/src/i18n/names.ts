@@ -72,6 +72,7 @@ const ACTION_NAME_KEYS = {
   attack: "actions.attack",
   pick_skill: "actions.pickSkill",
   read_book: "actions.readBook",
+  self_disease: "actions.selfDisease",
   water: "actions.water",
   treat: "actions.treat",
   sow: "actions.sow",

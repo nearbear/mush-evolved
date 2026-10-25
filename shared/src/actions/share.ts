@@ -2,6 +2,7 @@ import { Action, type ActionVisibility } from "./action.ts";
 import { logPrivate } from "../log.ts";
 import { contaminate } from "../infection.ts";
 import type { GameState, PlayerState } from "../types.ts";
+import { gainMorale } from "../adjustStats.ts";
 
 export type ShareActionData = { type: "dtt" | "stt"; target: string };
 
@@ -34,7 +35,8 @@ export class ShareAction<T extends "dtt" | "stt" = "dtt" | "stt"> extends Action
     const other = state.players.find((o) => o.id === target.target)!;
     const { day } = dayOf(state);
     for (const who of [player, other]) {
-      who.morale = Math.min(state.config.maxMorale, who.morale + state.config.share.effect.morale);
+      //who.morale = Math.min(who.maxMorale, who.morale + state.config.share.effect.morale);
+      gainMorale(state, who, state.config.share.effect.morale);
       state.sharedOnDay[who.id] = day;
     }
     const human = player.role === "human" ? player : other;

@@ -6,6 +6,9 @@
 
 import { inventorySlots } from "./modifiers.ts";
 import type { Container, GameConfig, GameState, ItemState, PlayerState } from "./types.ts";
+import { BOOK_ITEM, ITRACKIE_ITEM } from "./itemIds.ts";
+
+export { BOOK_ITEM, ITRACKIE_ITEM } from "./itemIds.ts";
 
 export interface ItemType {
   /** Drinking or eating it removes it and does this. */
@@ -30,14 +33,6 @@ export interface ItemType {
  * Every kind of item. PLACEHOLDERS (2026-10-11): these have no effects yet;
  * they exist so the inventory can be played with. Replace once items are decided.
  */
-/**
- * The iTrackie's item type. Confirmed 2026-10-13: everyone starts with one; it
- * takes a slot and can be dropped or taken like any item. Carrying one is what
- * opens global chat and the feature threads (see chatChannels in rules.ts).
- * Named after its icon, super_talky.jpg (user's pick).
- */
-export const ITRACKIE_ITEM = "super_talky";
-
 /** A dead player's body (death.ts); `ItemState.of` says whose. */
 export const CORPSE_ITEM = "corpse";
 
@@ -46,9 +41,6 @@ export const MICROWAVE_ITEM = "microwave";
 
 /** The hydropot: an empty one takes a sown fruit, a planted one grows (`ItemState.plant`, botany.ts). */
 export const TREE_POT_ITEM = "tree_pot";
-
-/** A skill book: reading it (`read_book`) fills the book slot with its `ItemState.teaches` skill. */
-export const BOOK_ITEM = "book";
 
 /** A unit of fuel in transit between a tank and the combustion chamber; each takes a slot like any item (owner, 2026-10-23). */
 export const FUEL_CAPSULE_ITEM = "fuel_capsule";

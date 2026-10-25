@@ -7,7 +7,7 @@
 import { killPlayer } from "./death.ts";
 import { logPublic } from "./log.ts";
 import { followingHuntersShare, hunterPointsPerCycle, waveShrinkChance } from "./modifiers.ts";
-import { nextFloat, nextInt, type RngState, shuffle } from "./rng.ts";
+import { nextFloat, rollRange, type RngState, shuffle } from "./rng.ts";
 import { damageShip } from "./ship.ts";
 import type { GameState, PlayerState } from "./types.ts";
 import { endGame } from "./victory.ts";
@@ -45,11 +45,7 @@ export function damageHunter(state: GameState, id: string, amount: number): bool
   return true;
 }
 
-/** Uniform integer in [min, max]. */
-export function rollRange(rng: RngState, [min, max]: readonly [number, number]): [number, RngState] {
-  const [n, next] = nextInt(rng, max - min + 1);
-  return [min + n, next];
-}
+export { rollRange };
 
 /** Points the pool gains at a cycle change on `day`: day + 6, +1 from day 5, +2 instead from day 10 (eMush's hard and very hard modes). */
 export function huntersPerCyclePoints(state: Readonly<GameState>, day: number): number {

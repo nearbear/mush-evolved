@@ -1,5 +1,5 @@
 import shipRooms from "@mush2/assets/derived/ship-rooms.json";
-import { BOOK_ITEM, ITRACKIE_ITEM } from "./items.ts";
+import { BOOK_ITEM, ITRACKIE_ITEM } from "./itemIds.ts";
 import { patrolEquipment, patrolRooms } from "./patrol.ts";
 import { SKILLS } from "./skills.ts";
 import type { ShipRoom } from "./shipLayout.ts";
@@ -289,4 +289,12 @@ export const DEFAULT_CONFIG: GameConfig = {
   rooms: { ...(Object.fromEntries(SHIP_ROOMS.map((r) => [r.id, r.doors])) as Record<RoomId, RoomId[]>), ...patrolRooms() },
   // Confirmed 2026-10-11: the equipment drawn in each room of the original map; each patrol ship holds its command.
   equipment: { ...Object.fromEntries(SHIP_ROOMS.map((r) => [r.id, r.equipment])), ...patrolEquipment() },
+  diseases:  {
+    allDiseases: ["cold_disease"],
+    allDisorders: ["depression_disorder"],
+    allInjuries: ["nose_bleed_injury"],
+    allDiseaseStats: [{type: "disease", durationMin: 8, durationMax: 12}],
+    allDisorderStats: [{type: "disorder", resistance: 8}],
+    allInjuryStats: [{type: "injury"}],
+    },
 };

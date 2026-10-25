@@ -1305,6 +1305,13 @@ Owner asked for oxygen capsules "like fuel canisters". Asked three questions (ta
 - Tests were mutation-checked (removing the wake-up or the disconnect clear each fails one test).
 - Leak check finding, accepted (owner, 2026-10-24): with their own key, the player can read every bot's prompt (its whole view) in their provider's request logs. Roles don't leak (the player is the only Mush). Accepted as the cost of BYOK; the #218 privacy note must say so.
 
+### 2026-10-25 — Cold disease cycle effect
+
+The owner asked for a 33% chance per cycle for a player with Cold disease to lose 1 MP. Implemented this as a seeded 1-in-3 roll, floored MP at zero, privately logged losses, and registered the modifier so cycle processing can invoke it. Updated English, French, and Spanish log strings; the i18n tests passed (the optional Gemini review tool was unavailable). The first focused test run caught an invalid fixture with as many Mush as seats; correcting it to four seats and one Mush made the scenarios valid.
+
+### 2026-10-25 — Self Disease development action
+
+The owner chose a free, instant, private action, available only with `ALLOW_CHEATS`, to apply `cold_disease` to its actor using `addDisease`; bots should not be offered it. Implemented the action through the standard registry/protocol/UI path, an explicit server gate, private status handling, and tests. Typecheck, focused shared/server tests, and i18n validation passed. GitHub issue search was unavailable because `gh` was unauthenticated.
 ### 2026-10-24: `npm run a11y` (#247)
 Built `tools/src/a11y/a11y.ts` beside `npm run screenshot`, reusing its join flow and the iso probe. It asserts against the markup the sibling stories specify (#248 "Room" region with People/Equipment/Items/Exits groups, #253 `role="log"`, #245 footer out of the tab path), so it fails on those until they land; that is intended. axe-core left out pending approval (new dependency).
 

@@ -5,7 +5,7 @@
 import { startCharges } from "./items.ts";
 import type { GameState, PlayerState } from "./types.ts";
 
-export const CHEATS = ["infiniteAp", "infiniteMp", "infiniteMorale", "infiniteHp", "infiniteSpores", "infiniteCharges", "instantActions", "noRelayPenalty", "freeHacking"] as const;
+export const CHEATS = ["infiniteAp", "infiniteMp", "infiniteMorale", "infiniteHp", "infiniteSpores", "infiniteCharges", "instantActions", "noRelayPenalty", "freeHacking", "selfDisease"] as const;
 export type Cheat = (typeof CHEATS)[number];
 
 /** Whether a player sees through ACTOPI as the ship has it ("default"), or always ("on") or never ("off"). */
@@ -32,7 +32,7 @@ export const isCheat = (value: unknown): value is Cheat => CHEATS.some((c) => c 
 const REFILL: Record<Cheat, (p: PlayerState, state: GameState) => void> = {
   infiniteAp: (p, { config }) => void (p.ap = config.maxAp),
   infiniteMp: (p, { config }) => void (p.mp = config.movement.mpCap),
-  infiniteMorale: (p, { config }) => void (p.morale = config.maxMorale),
+  infiniteMorale: (p, { config }) => void (p.morale = p.maxMorale),
   infiniteHp: (p, { config }) => void (p.hp = config.maxHp),
   infiniteSpores: (p) => void (p.role === "mush" && (p.spores = CHEAT_SPORES)),
   infiniteCharges: (p, state) => {
@@ -45,6 +45,7 @@ const REFILL: Record<Cheat, (p: PlayerState, state: GameState) => void> = {
   instantActions: () => {}, // no stat to refill; queue.ts reads the flag
   noRelayPenalty: () => {}, // pilgred.ts reads the flag
   freeHacking: () => {}, // bypassesTitles in titles.ts reads the flag
+  selfDisease: () => {},
 };
 
 /**

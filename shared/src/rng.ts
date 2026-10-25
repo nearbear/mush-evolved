@@ -18,6 +18,12 @@ export function nextInt(state: RngState, max: number): [value: number, next: Rng
   return [Math.floor(f * max), next];
 }
 
+/** Uniform integer in [min, max]. */
+export function rollRange(rng: RngState, [min, max]: readonly [number, number]): [number, RngState] {
+  const [n, next] = nextInt(rng, max - min + 1);
+  return [min + n, next];
+}
+
 /** Fisher-Yates shuffle; returns a new array. */
 export function shuffle<T>(items: readonly T[], state: RngState): [result: T[], next: RngState] {
   const result = [...items];

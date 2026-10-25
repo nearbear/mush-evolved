@@ -62,7 +62,7 @@ const MODEL_RETRY_MAX_MS = 60_000;
  * Bump when GameState's shape changes. Games stored under another version are
  * discarded on load (there is no migration; games are short-lived).
  */
-export const STATE_VERSION = 72;
+export const STATE_VERSION = 73;
 
 interface Stored {
   version?: number;
@@ -301,7 +301,11 @@ export class GameRoom extends Server<Env> {
       this.send(connection, { type: "error", message: "malformed_message" });
       return;
     }
-    if ((msg.type === "cheat" || msg.type === "actopiCheat" || msg.type === "roleCheat") && !this.cheatsAllowed) {
+    if (
+      ((msg.type === "cheat" || msg.type === "actopiCheat" || msg.type === "roleCheat") ||
+        (msg.type === "action" && msg.action.type === "self_disease")) &&
+      !this.cheatsAllowed
+    ) {
       this.send(connection, { type: "error", message: CHEATS_DISABLED });
       return;
     }
