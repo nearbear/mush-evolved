@@ -42,7 +42,8 @@ npx playwright install --with-deps chromium
 | `npm run lint` | Biome (lint only), including import-boundary rules |
 | `npm run build` | Production build of the web client |
 | `npm run preview` | Build the client and serve the production build beside the local server (stop `npm run dev` first) |
-| `npm run deploy` | Build the client and deploy it with the server as one Cloudflare Worker (needs `npx -w server wrangler login`) |
+| `npm run deploy` | Build the client and deploy it with the server as one Cloudflare Worker: production (needs `npx -w server wrangler login`) |
+| `npm run deploy:staging` | The same, to the `mush2-server-staging` Worker, with its own Durable Objects and secrets (set them with `wrangler secret put <NAME> --env staging`) |
 
 ## Project layout
 

@@ -19,5 +19,26 @@
   // Which rules build ran a game, stored in its replay record. "dev" locally;
   // `npm run deploy` overrides it with the commit hash.
   "vars": { "RULES_VERSION": "dev" },
-  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["GameRoom", "Matchmaker"] }]
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["GameRoom", "Matchmaker"] }],
+  // The top level above is production. Wrangler does not inherit bindings, vars,
+  // or migrations into an environment, so staging repeats them. Its different
+  // Worker name gives it its own Durable Object storage and secrets.
+  "env": {
+    "staging": {
+      "name": "mush2-server-staging",
+      "assets": {
+        "directory": "../web/dist",
+        "not_found_handling": "single-page-application",
+        "run_worker_first": ["/parties/*"]
+      },
+      "durable_objects": {
+        "bindings": [
+          { "name": "GameRoom", "class_name": "GameRoom" },
+          { "name": "Matchmaker", "class_name": "Matchmaker" }
+        ]
+      },
+      "vars": { "RULES_VERSION": "dev" },
+      "migrations": [{ "tag": "v1", "new_sqlite_classes": ["GameRoom", "Matchmaker"] }]
+    }
+  }
 }

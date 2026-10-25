@@ -7,6 +7,7 @@
     "dev": "node -e \"require('node:fs').mkdirSync('../web/dist', { recursive: true })\" && wrangler dev",
     "types": "wrangler types",
     "deploy": "wrangler deploy --var RULES_VERSION:$(git describe --always --dirty --abbrev=40)",
+    "deploy:staging": "wrangler deploy --env staging --var RULES_VERSION:$(git describe --always --dirty --abbrev=40)",
     "test": "vitest run",
     "typecheck": "tsc --noEmit"
   },
