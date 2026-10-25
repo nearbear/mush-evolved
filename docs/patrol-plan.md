@@ -79,7 +79,7 @@ The ship-room interior from the existing patrol-ship art (check with the `asset`
 
 ### Phases (each a small commit)
 
-1. `hunters.target` refactor (no behaviour change).
+1. `hunters.target` refactor (no behaviour change). **Done 2026-10-24:** `Hunter.target: HunterTarget | null`, with only `{ kind: "ship" }` so far; phase 4 adds the patrol and player kinds.
 2. Ship rooms and state; take off and land (Pilots only, secret, the rough roll behind a hook); bay and interior views.
 3. Shooting from a patrol ship, charges, the shared battle panel.
 4. Hunters target ships and players in flight; destruction and death in space; travel destroys ships in flight.

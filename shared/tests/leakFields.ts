@@ -54,7 +54,7 @@ export const GAME_STATE_FIELDS: Record<string, FieldRule> = {
   navigation: { reach: "room", test: "navigation.test.ts", note: "`heading` to the living at a Command terminal; `orbit` only as a public in-orbit flag, the planet id to its finder alone (as `orbited` on their planet)." },
   comms: { reach: "room", test: "comms.test.ts", note: "`linked` to everyone; the terminal screen to the living at a Com center terminal, without which Xyloph entries were drawn." },
   titles: { reach: "public", test: "titles.test.ts", note: "Holders and lines, by character (owner, 2026-10-20)." },
-  hunters: { reach: "room", test: "hunters.test.ts", note: "How many, to everyone; each hunter's hp and id to the living in a turret room; `points`, `since`, `nextId`, `hitChance` and `targeted` never (leaks.test.ts)." },
+  hunters: { reach: "room", test: "hunters.test.ts", note: "How many, to everyone; each hunter's hp and id to the living in a turret room; `points`, `since`, `nextId`, `hitChance` and `target` never (leaks.test.ts)." },
   turrets: { reach: "room", test: "hunters.test.ts", note: "Every turret's charges, to the living in a turret room." },
   turretFailures: { reach: "never", test: "leaks.test.ts" },
   now: { reach: "never", test: "leaks.test.ts", note: "The rules' clock; offers' expiry times reach their owner only." },

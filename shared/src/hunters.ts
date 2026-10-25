@@ -86,8 +86,8 @@ function huntersAct(state: GameState): void {
   const config = state.config.hunters;
   for (const hunter of state.hunters.list) {
     if (state.ship.hull === 0) return;
-    if (!hunter.targeted) {
-      hunter.targeted = true;
+    if (hunter.target === null) {
+      hunter.target = { kind: "ship" };
       continue;
     }
     const [roll, rng] = nextFloat(state.rng);
@@ -97,7 +97,7 @@ function huntersAct(state: GameState): void {
       state.rng = next;
       damageShip(state, amount);
       hunter.hitChance = config.hitChance;
-      hunter.targeted = false;
+      hunter.target = null;
     } else {
       hunter.hitChance = Math.min(1, hunter.hitChance + config.missBonus);
     }
@@ -114,7 +114,7 @@ function spawnWave(state: GameState): void {
   state.rng = rng;
   if (roll >= config.waveChance) return;
   hunters.points -= count * config.points.perHunter;
-  for (let i = 0; i < count; i++) hunters.list.push({ id: `hunter-${hunters.nextId++}`, hp: config.hp, hitChance: config.hitChance, targeted: false });
+  for (let i = 0; i < count; i++) hunters.list.push({ id: `hunter-${hunters.nextId++}`, hp: config.hp, hitChance: config.hitChance, target: null });
   logPublic(state, undefined, "hunterWave", { count }, "warning");
 }
 
@@ -131,7 +131,7 @@ export function huntersFollow(state: GameState): void {
   const kept = new Set(shuffled.slice(0, count));
   state.hunters.list = list.filter((h) => kept.has(h));
   for (const hunter of state.hunters.list) {
-    hunter.targeted = false;
+    hunter.target = null;
     hunter.hitChance = state.config.hunters.hitChance;
   }
 }

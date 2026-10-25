@@ -120,12 +120,18 @@ export interface GameState {
   now: number;
 }
 
-/** A hunter (hunters.ts). `hitChance` (0 to 1) and `targeted` (whether it has picked the ship as its target) are never sent. */
+/**
+ * What a hunter is aiming at (hunters.ts). Only the Daedalus for now; patrol ships and players in flight come with
+ * docs/patrol-plan.md, phase 4.
+ */
+export type HunterTarget = { kind: "ship" };
+
+/** A hunter (hunters.ts). `hitChance` (0 to 1) and `target` (null until it picks one) are never sent. */
 export interface Hunter {
   id: string;
   hp: number;
   hitChance: number;
-  targeted: boolean;
+  target: HunterTarget | null;
 }
 
 /** A planet a player found. Its size is the number of sectors. */
