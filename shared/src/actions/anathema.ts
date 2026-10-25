@@ -44,9 +44,3 @@ export class AnathemaAction extends Action<AnathemaActionData> {
     logPublic(state, player.room, "anathema", { name: player.character, target: victim.character });
   }
 }
-
-/** Ends the curse when either side dies (death.ts). No log line: the death line says enough. */
-export function endAnathemaOnDeath(state: GameState, dead: PlayerState): void {
-  delete dead.outcastBy;
-  for (const o of state.players) if (o.outcastBy === dead.id) delete o.outcastBy;
-}

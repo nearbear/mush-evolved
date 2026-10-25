@@ -18,7 +18,7 @@ describe("Self Disease", () => {
   });
 
   it("is free, instant, private, and adds the cold disease through addDisease", () => {
-    const state = createGame(seats, DEFAULT_CONFIG, 42);
+    const state = createGame(seats, DEFAULT_CONFIG, 42, { p0: "human" });
     player(state, "p0").cheats.push("selfDisease");
     const offered = viewFor(state, "p0").actions.find((option) => option.action.type === action.type);
     expect(offered?.cost).toEqual({ ap: 0, mp: 0 });
@@ -39,7 +39,7 @@ describe("Self Disease", () => {
     player(state, "p0").cheats.push("selfDisease");
     expect(viewFor(state, "p0").actions.some((option) => option.action.type === action.type)).toBe(false);
 
-    const humanState = createGame(seats, DEFAULT_CONFIG, 42);
+    const humanState = createGame(seats, DEFAULT_CONFIG, 42, { p0: "human" });
     player(humanState, "p0").cheats.push("selfDisease");
     const result = applyAction(humanState, "p0", action);
     if (!result.ok) throw new Error(result.error);

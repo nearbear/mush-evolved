@@ -39,6 +39,7 @@ Other packages import from `@mush2/shared` (`shared/src/index.ts`, the barrel). 
 - `death.ts`: `damage` (the one way HP goes down) and `killPlayer`.
 - `infection.ts`: `contaminate` (the one way contamination rises), conversion, `contaminationSeenBy`.
 - `items.ts`: item types, containers, capacity and reach helpers, `produceItem`.
+- `itemIds.ts`: dependency-light IDs used by item definitions and the default config.
 - `equipment.ts`: room equipment types.
 - `log.ts`: room log helpers (`logPublic`, `logPrivate`, `logSecret`, `logCovert`, `hasCamera`).
 - `history.ts`: each body's action history (`recordAction`, called from `performAction`) and `revealHistory`, the private reveal lines Interrogate and Chitchat write.
@@ -65,4 +66,4 @@ Other packages import from `@mush2/shared` (`shared/src/index.ts`, the barrel). 
 - `actions/speech.ts`: the Leader's Fiery speech and the Motivator's Boring speech (room-wide morale and MP gifts; `PlayerState.boringToday`).
 - `actions/interrogate.ts`: the Torturer's Interrogate (1 damage, reveals the target's last actions, one per missing HP; `interrogatedToday`).
 - `actions/chitchat.ts`: Chitchat with a Confident (+2 morale, the Confident learns your last actions, one per point of their morale; `chitchatToday`).
-- `actions/anathema.ts`: the Persecutor's Anathema and `endAnathemaOnDeath` (the Outcast status, `PlayerState.outcastBy`).
+- `actions/anathema.ts`: the Persecutor's Anathema (the Outcast status, `PlayerState.outcastBy`).

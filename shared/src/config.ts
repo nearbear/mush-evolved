@@ -1,5 +1,5 @@
 import shipRooms from "@mush2/assets/derived/ship-rooms.json";
-import { BOOK_ITEM, ITRACKIE_ITEM } from "./items.ts";
+import { BOOK_ITEM, ITRACKIE_ITEM } from "./itemIds.ts";
 import { patrolEquipment, patrolRooms } from "./patrol.ts";
 import { SKILLS } from "./skills.ts";
 import type { ShipRoom } from "./shipLayout.ts";
