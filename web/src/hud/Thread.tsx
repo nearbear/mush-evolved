@@ -8,7 +8,7 @@ import { CycleDivider } from "./CycleDivider.tsx";
 import { FeedEntry, CrewAvatar, InfoMarker } from "./FeedEntry.tsx";
 import { ChatInput } from "./ChatInput.tsx";
 import { Scroller } from "./Scroller.tsx";
-import { TAB_ICONS } from "../art/assets.ts";
+import { SHIP_RESOURCE_ICONS, TAB_ICONS } from "../art/assets.ts";
 import type { ReactNode } from "react";
 
 /** What global chat's messages link to: the thread started from one, or the form to start one. */
@@ -157,7 +157,12 @@ function MessageMenu({ onStartThread, report }: { onStartThread: (() => void) | 
               </Menu.Item>
             )}
             {/* TODO(report): a placeholder; reporting isn't built yet, so it does nothing. */}
-            {report && <Menu.Item render={<button type="button" />}>{t("itrackie.messageMenu.report")}</Menu.Item>}
+            {report && (
+              <Menu.Item render={<button type="button" />}>
+                <img className="menu-item-icon" src={SHIP_RESOURCE_ICONS.alerts} alt="" />
+                {t("itrackie.messageMenu.report")}
+              </Menu.Item>
+            )}
           </Menu.Popup>
         </Menu.Positioner>
       </Menu.Portal>
