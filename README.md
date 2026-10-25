@@ -2,7 +2,7 @@
 
 A turn-based, browser-based social deduction game inspired by [Mush](https://github.com/motion-twin/WebGamesArchives) (Motion Twin) and [eMush](https://emush.eternaltwin.org/) (Eternaltwin). Players wake up on a spaceship, a few of them are secretly infected, and the rest have to survive and unmask them.
 
-This is a **vertical-slice MVP**, not a full clone: matchmaking, a room-by-room ship, action points, inventory, infection, space combat, ship travel, chat, and a game end (the Commander returns to Sol, or every human dies) work today. Much of the original ruleset is still missing; the rules decided so far are in `docs/rules-design.md`, and the rest are open as GitHub issues. A test build is live at https://mush2-server.nearbearnearbear.workers.dev (one Cloudflare Worker serves the client and the game server; `npm run deploy`). Model-backed bots have no hosted default and exist only in a planned single-player mode.
+This is a **vertical slice**, not a full clone: matchmaking, a room-by-room ship, action points, inventory, infection, space combat, ship travel, chat, and a game end (the Commander returns to Sol, or every human dies) work today. Much of the original ruleset is still missing; the rules decided so far are in `docs/rules-design.md`, and the rest are open as GitHub issues. A test build is live at https://mush2-server.nearbearnearbear.workers.dev (one Cloudflare Worker serves the client and the game server; `npm run deploy`). Model-backed bots have no hosted default and exist only in a planned single-player mode.
 
 ## Quick start
 

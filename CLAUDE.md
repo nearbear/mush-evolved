@@ -6,7 +6,7 @@ Project context for Claude Code. This file summarizes decisions made during plan
 
 A turn-based, browser-based social deduction game inspired by **eMush**, the open-source remake (by the nonprofit Eternaltwin) of **Mush** by Motion Twin. In the original, players wake up on a spaceship (the Daedalus), a small number of them are infected "Mush," and the humans have to survive and unmask them. The original runs 16 players with 2 Mush, as asynchronous games lasting a few days.
 
-This is a **vertical-slice MVP**, not a full clone. The goals are:
+This is a **vertical slice**, not a full clone. The goals are:
 
 1. A playable end-to-end slice, public on the internet, with a plain per-language queue into a ship in its pre-selection phase (decided 2026-10-13, see `docs/rules-design.md`).
    - **Bots (2026-10-13):** multiplayer has no bots. AI-controlled bots exist only in a single-player mode (stage not decided) and as test tooling.
@@ -107,12 +107,12 @@ See `docs/code-map.md` (an index to per-package files in `docs/code-map/`) for w
 
 ## Open decisions
 
-Open work lives in **GitHub issues** in the [mush2 project](https://github.com/users/nearbear/projects/1): epics (label `epic`) with sub-issues, milestones for MVP, Private beta, Public beta readiness, Public beta, and Release, and `needs-staging` on issues without a stage yet. Open rule decisions carry the `rule-decision` label: `gh issue list --label rule-decision`. Search with `gh issue list --search "<keyword>"` and read one with `gh issue view <n>`. Answered rule decisions are recorded in `docs/rules-design.md` and `docs/action-plans.md`. The draft staging is `docs/mvp-plan.md` (not final). Do not treat anything in an issue as decided unless it is also recorded there as answered.
+Open work lives in **GitHub issues** in the [mush2 project](https://github.com/users/nearbear/projects/1): epics (label `epic`) with sub-issues, milestones for Private beta, Public beta readiness, Public beta, and Release, and `needs-staging` on issues without a stage yet. Open rule decisions carry the `rule-decision` label: `gh issue list --label rule-decision`. Search with `gh issue list --search "<keyword>"` and read one with `gh issue view <n>`. Answered rule decisions are recorded in `docs/rules-design.md` and `docs/action-plans.md`. Do not treat anything in an issue as decided unless it is also recorded there as answered.
 
 Not rules, but still open:
 
 - Game name.
 - Which stage single player (the only mode with bots) belongs in.
-- Single-player model bots: no hosted default in the MVP (decided 2026-10-23, the owner won't pay for unlimited use); players bring their own key. The server side is built (#216: `setModel`/`clearModel`, single player only); the allowlist will be OpenRouter, Google Gemini and OpenAI (owner, 2026-10-24; only OpenRouter is built, the rest and each provider's request body are #217). The settings panel with an opt-in "remember the key" (#218) and key status (#220) are not built, so no client sends a key yet.
+- Single-player model bots: no hosted default for now (decided 2026-10-23, the owner won't pay for unlimited use); players bring their own key. The server side is built (#216: `setModel`/`clearModel`, single player only); the allowlist will be OpenRouter, Google Gemini and OpenAI (owner, 2026-10-24; only OpenRouter is built, the rest and each provider's request body are #217). The settings panel with an opt-in "remember the key" (#218) and key status (#220) are not built, so no client sends a key yet.
 - Hosting and deployment details beyond the current setup (one Worker on `workers.dev`, the client as static assets; a custom domain waits for the game name).
 - Internationalization (en/fr/es): the seam is in, the comprehensive pass is not.

@@ -3,7 +3,7 @@
 // only Mush, against 8 bots who are all human. No pre-selection. End cycle is on and the clock doesn't change cycles,
 // so a cycle ends once everyone, the bots included, has ended theirs (`ready`); a bot that can't reach its model
 // waits, and with it the cycle (owner, 2026-10-24, #114). Eleesha, Chun and Chao, the investigation characters, are
-// never bots in the MVP (#222); the human may pick any character.
+// never bots in single player (#222); the human may pick any character.
 
 import { CHARACTERS, type CharacterId } from "./characters.ts";
 import { DEFAULT_CONFIG } from "./config.ts";
