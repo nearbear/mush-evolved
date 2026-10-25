@@ -309,6 +309,16 @@ export interface GameConfig {
   };
   // Turrets (owner, 2026-10-24, the wiki's Tourelle): 1 AP, a charge per shot, 30% to hit, x1.25 per miss in a row, reset by a hit.
   turrets: { cost: { ap: number }; chance: number; failureMultiplier: number; damage: [number, number]; charges: number; rechargePerCycle: number };
+  // Patrol ships and the Pasiphae (owner, 2026-10-24, docs/patrol-plan.md): takeoff and landing cost 2 AP each; armor
+  // 10 (Pasiphae 12); a manoeuvre is clean at `cleanChance` (a Pilot always), otherwise rough: hull and pilot hp
+  // ranges, uniform, and a fixed armor loss.
+  patrol: {
+    takeoff: { cost: { ap: number } };
+    land: { cost: { ap: number } };
+    armor: { patrol: number; pasiphae: number };
+    cleanChance: number;
+    rough: { hull: [number, number]; armor: number; hp: [number, number] };
+  };
   // Hull repair (owner, 2026-10-24, the wiki's Armure et Bouclier): 1 AP, 25%, +5 hull, a metal scrap used up on a success.
   hullRepair: { cost: { ap: number }; chance: number; amount: number };
   hunger: {

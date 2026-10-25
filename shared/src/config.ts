@@ -1,5 +1,6 @@
 import shipRooms from "@mush2/assets/derived/ship-rooms.json";
 import { BOOK_ITEM, ITRACKIE_ITEM } from "./items.ts";
+import { patrolEquipment, patrolRooms } from "./patrol.ts";
 import { SKILLS } from "./skills.ts";
 import type { ShipRoom } from "./shipLayout.ts";
 import type { GameConfig, PreselectionRules, RoomId } from "./types.ts";
@@ -191,6 +192,13 @@ export const DEFAULT_CONFIG: GameConfig = {
     followShare: 0.5,
   },
   turrets: { cost: { ap: 1 }, chance: 0.3, failureMultiplier: 1.25, damage: [2, 4], charges: 4, rechargePerCycle: 1 },
+  patrol: {
+    takeoff: { cost: { ap: 2 } },
+    land: { cost: { ap: 2 } },
+    armor: { patrol: 10, pasiphae: 12 },
+    cleanChance: 0.2,
+    rough: { hull: [2, 4], armor: 1, hp: [0, 2] },
+  },
   hullRepair: { cost: { ap: 1 }, chance: 0.25, amount: 5 },
   hunger: { satietyPerCycle: 1, fullBellyAt: 3, hungryAfterCycles: 24, hpPerCycle: 1 },
   // Confirmed 2026-10-13: dismantle cost and odds.
@@ -268,8 +276,9 @@ export const DEFAULT_CONFIG: GameConfig = {
   ],
   // Confirmed 2026-10-13: every player starts with an iTrackie.
   startInventory: [ITRACKIE_ITEM],
-  rooms: Object.fromEntries(SHIP_ROOMS.map((r) => [r.id, r.doors])) as Record<RoomId, RoomId[]>,
-  // Confirmed 2026-10-11: the equipment drawn in each room of the original map.
-  equipment: Object.fromEntries(SHIP_ROOMS.map((r) => [r.id, r.equipment])),
+  // The patrol ships' rooms have no doors and sit off the map (patrol.ts, docs/patrol-plan.md answer 1).
+  rooms: { ...(Object.fromEntries(SHIP_ROOMS.map((r) => [r.id, r.doors])) as Record<RoomId, RoomId[]>), ...patrolRooms() },
+  // Confirmed 2026-10-11: the equipment drawn in each room of the original map; each patrol ship holds its command.
+  equipment: { ...Object.fromEntries(SHIP_ROOMS.map((r) => [r.id, r.equipment])), ...patrolEquipment() },
   diseases:  {allDiseases: ["cold_disease"], allDisorders: ["depression_disorder"], allInjuries: ["nose_bleed_injury"]},
 };

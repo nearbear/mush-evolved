@@ -1,7 +1,7 @@
 import { DEFAULT_CONFIG, legalIn, startGame, viewFor, type Action, type PlayerView } from "@mush2/shared";
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { MODEL_FREE_ACTIONS_PER_CYCLE, ModelBot, type Bot } from "../src/bots.ts";
-import { ModelError, ModelGate, type Complete, type ModelGateOptions } from "../src/model.ts";
+import { completeOpenAi, ModelError, ModelGate, type Complete, type ModelGateOptions } from "../src/model.ts";
 import { buildPrompt, choices, parseChoice } from "../src/prompt.ts";
 import { seats } from "../src/testing/fakes.ts";
 
@@ -93,6 +93,20 @@ describe("ModelGate", () => {
     expect(calls).toBe(1);
     expect(g.keyFailure).toBe(401);
     expect(g.pause).toBe("key");
+  });
+
+  it("stops calling after a request the provider will never accept (bad model, refused parameter)", async () => {
+    for (const status of [400, 404]) {
+      let calls = 0;
+      const g = gate(async () => {
+        calls++;
+        throw new ModelError(status, `http ${status}`);
+      });
+      await g.ask([]);
+      await g.ask([]);
+      expect(calls).toBe(1);
+      expect(g.pause).toBe("key");
+    }
   });
 
   it("keeps the key after a passing failure", async () => {
@@ -227,5 +241,24 @@ describe("ModelBot", () => {
     expect(fallback.asked).toBe(1);
     // A new cycle starts the count again.
     expect(await bot.decideAction({ ...looping, cycle: looping.cycle + 1 })).toEqual(free.action);
+  });
+});
+
+describe("completeOpenAi", () => {
+  afterEach(() => vi.unstubAllGlobals());
+  const reply = (body: unknown, status = 200) => vi.stubGlobal("fetch", async () => new Response(JSON.stringify(body), { status }));
+  const call = () => completeOpenAi(credentials, [], AbortSignal.timeout(1000));
+
+  it("returns an empty reply as empty text, so the bot falls back instead of pausing", async () => {
+    // A reasoning model that spent max_tokens thinking (#224).
+    reply({ choices: [{ message: { content: null }, finish_reason: "length" }] });
+    expect(await call()).toBe("");
+  });
+
+  it("treats an error in a 200 body as a failed call with the error's status", async () => {
+    reply({ error: { code: 429, message: "Rate limited, key sk-secret" } });
+    await expect(call()).rejects.toMatchObject({ status: 429, message: "provider error" });
+    reply({ error: { code: "upstream", message: "x" } });
+    await expect(call()).rejects.toMatchObject({ status: null });
   });
 });

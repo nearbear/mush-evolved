@@ -8,6 +8,7 @@ import { Dialog } from "@base-ui/react/dialog";
 import { Tabs } from "@base-ui/react/tabs";
 import { useTranslation } from "react-i18next";
 import { SETTINGS_ICON } from "../art/assets.ts";
+import { parseVerbosity, setVerbosity, useVerbosity } from "../announce.ts";
 import { parseFogDepth, setFogDepth, useFogDepth } from "../fogDepth.ts";
 import { LanguageSwitcher } from "../i18n/LanguageSwitcher.tsx";
 import "./settings.css";
@@ -40,6 +41,7 @@ export function SettingsDialog({
 }) {
   const { t } = useTranslation();
   const fogDepth = useFogDepth();
+  const verbosity = useVerbosity();
   const allOn = CHEATS.every((c) => activeCheats.includes(c));
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
@@ -70,6 +72,14 @@ export function SettingsDialog({
               <option value="1">{t("settings.fogDepth.one")}</option>
               <option value="2">{t("settings.fogDepth.two")}</option>
               <option value="all">{t("settings.fogDepth.all")}</option>
+            </select>
+          </label>
+          <label className="settings-row">
+            <span>{t("settings.announce.label")}</span>
+            <select value={verbosity} onChange={(e) => setVerbosity(parseVerbosity(e.target.value))}>
+              <option value="all">{t("settings.announce.all")}</option>
+              <option value="mentions">{t("settings.announce.mentions")}</option>
+              <option value="off">{t("settings.announce.off")}</option>
             </select>
           </label>
               <button type="button" onClick={onLeave}>{t("topBar.leave")}</button>

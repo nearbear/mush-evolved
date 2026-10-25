@@ -64,14 +64,20 @@ export const completeOpenAi: Complete = async (credentials, turns, signal) => {
   if (!res.ok) throw new ModelError(res.status, `http ${res.status}`);
   const text = await res.text();
   if (text.length > MAX_RESPONSE_BYTES) throw new ModelError(res.status, "response too large");
-  let content: unknown;
+  let json: { choices?: { message?: { content?: unknown } }[]; error?: { code?: unknown } };
   try {
-    content = (JSON.parse(text) as { choices?: { message?: { content?: unknown } }[] }).choices?.[0]?.message?.content;
+    json = JSON.parse(text);
   } catch {
     throw new ModelError(res.status, "not json");
   }
-  if (typeof content !== "string") throw new ModelError(res.status, "no content");
-  return content;
+  // OpenRouter reports a provider failing mid-request as a 200 with an error body. Its code, when an HTTP status, says
+  // what kind; the message stays unread.
+  if (json.error) throw new ModelError(typeof json.error.code === "number" ? json.error.code : null, "provider error");
+  if (!json.choices?.length) throw new ModelError(res.status, "no choices");
+  // An empty reply is an answer, just a useless one (a reasoning model spent max_tokens thinking, #224): the bot falls
+  // back. Treating it as a failure would pause the bots and pay for the same empty reply again and again.
+  const content = json.choices[0]!.message?.content;
+  return typeof content === "string" ? content : "";
 };
 
 /** Where each allowed provider's API lives (MODEL_PROVIDERS). Fixed here so a client can't point the server elsewhere. */
@@ -101,8 +107,12 @@ export interface ModelGateOptions {
   complete?: Complete;
 }
 
-/** Statuses that mean the key itself is no good (bad key, no credit, forbidden): no point calling again this game. */
-const KEY_FAILURES = new Set([401, 402, 403]);
+/**
+ * Statuses that won't get better by asking again: the key is no good (bad key, no credit, forbidden), or the request
+ * is (400: a parameter the model refuses, like turning off reasoning a model requires; 404: no such model). Only a new
+ * key or model settings help (#224).
+ */
+const KEY_FAILURES = new Set([400, 401, 402, 403, 404]);
 
 /**
  * Every model call in one game goes through its gate: the credentials, the call budget, the in-flight limit and the

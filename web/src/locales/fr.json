@@ -9,7 +9,7 @@
     "botsPaused": "IA en pause",
     "botsPausedAbout": {
       "unavailable": "L'équipage IA n'arrive pas à joindre son modèle pour l'instant. Le cycle les attend ; ils vont réessayer.",
-      "key": "Le fournisseur du modèle a refusé la clé (elle est peut-être erronée ou sans crédit). Le cycle attend l'équipage IA jusqu'à ce que la clé fonctionne.",
+      "key": "Le fournisseur a refusé la clé ou le modèle (clé erronée ou sans crédit, ou nom de modèle ou réglage non accepté). Le cycle attend l'équipage IA jusqu'à ce qu'une clé et un modèle fonctionnent.",
       "budget": "L'équipage IA a utilisé tout le budget de modèle de cette partie. Le cycle les attend jusqu'à ce que le budget soit augmenté."
     }
   },
@@ -83,7 +83,24 @@
       "one": "1 salle autour",
       "two": "2 salles autour",
       "all": "Tout le vaisseau"
+    },
+    "announce": {
+      "label": "Annonces (lecteur d'écran)",
+      "all": "Tout",
+      "mentions": "Urgent, privé et mentions",
+      "off": "Désactivées"
     }
+  },
+  "announce": {
+    "more_one": "et {{count}} autre.",
+    "more_other": "et {{count}} autres.",
+    "more_many": "et {{count}} autres.",
+    "cycle": "Le cycle {{cycle}} commence.",
+    "sent": "Message envoyé.",
+    "unreadIn_one": "{{count}} nouveau message dans {{channel}}.",
+    "unreadIn_other": "{{count}} nouveaux messages dans {{channel}}.",
+    "unreadIn_many": "{{count}} nouveaux messages dans {{channel}}.",
+    "repeat": "Répéter la dernière annonce"
   },
   "language": {
     "label": "Langue"
@@ -284,7 +301,9 @@
     "turretAttack": "Tirer",
     "repairHull": "Renforcer la coque",
     "bodyTransfer": "Transfert",
-    "fungalCuisine": "Cuisine fongique"
+    "fungalCuisine": "Cuisine fongique",
+    "takeoff": "Décoller",
+    "land": "Atterrir"
   },
   "queue": {
     "label": "Vos actions",
@@ -369,6 +388,9 @@
     "bodyMush": "Vous pouvez encore lire le chat général, les fils des fonctions et le canal Mush, mais vous ne pouvez plus y écrire. Vous pouvez parler avec les autres morts dans le Cimetière."
   },
   "itrackie": {
+    "unreadTab_one": "{{name}}, {{count}} non lu",
+    "unreadTab_other": "{{name}}, {{count}} non lus",
+    "unreadTab_many": "{{name}}, {{count}} non lus",
     "needITrackieRead": "Il vous faut un iTrackie dans votre inventaire pour lire ceci.",
     "noMessages": "Aucun message pour l'instant.",
     "chatNeedsITrackie": "Nécessite un iTrackie",
@@ -507,7 +529,15 @@
     "STORAGE_A_0": "Stockage Alpha centre",
     "STORAGE_A_1": "Stockage Alpha arrière",
     "STORAGE_B_0": "Stockage Beta centre",
-    "STORAGE_B_1": "Stockage Beta arrière"
+    "STORAGE_B_1": "Stockage Beta arrière",
+    "PATROL_SHIP_A_0": "Patrouilleur Longane",
+    "PATROL_SHIP_A_1": "Patrouilleur Jujube",
+    "PATROL_SHIP_A_2": "Patrouilleur Tamarin",
+    "PATROL_SHIP_B_0": "Patrouilleur Socrate",
+    "PATROL_SHIP_B_1": "Patrouilleur Epicure",
+    "PATROL_SHIP_B_2": "Patrouilleur Platon",
+    "PATROL_SHIP_AA_0": "Patrouilleur Wallis",
+    "PATROL_SHIP_AA_1": "Pasiphae"
   },
   "equipment": {
     "ASTRO_MODULE": "Terminal Astro",
@@ -541,7 +571,9 @@
     "STELLAR_ANTENNA": "Antenne",
     "SUPER_CALC": "Calculateur",
     "SURGERY_POD": "Plot Chirurgical",
-    "TURRET_COMMAND": "Poste de tir"
+    "TURRET_COMMAND": "Poste de tir",
+    "PATROL_COMMAND": "Poste de pilotage",
+    "PASIPHAE_COMMAND": "Poste de pilotage : Pasiphae"
   },
   "itemAttr": {
     "contaminated": "Contamination : {{level}}",
@@ -733,7 +765,10 @@
     "biosShieldOn": "Vous avez activé le bouclier plasma : il protège à nouveau la coque.",
     "biosShieldOff": "Vous avez désactivé le bouclier plasma : il ne protège plus la coque.",
     "fungalCooked": "Vous glissez un spore dans : {{item}}. Niveau de contamination : {{level}}.",
-    "bodyTransferred": "Vous vous êtes glissé dans la peau de {{target}}. {{name}} se réveille humain, dans votre ancien corps."
+    "bodyTransferred": "Vous vous êtes glissé dans la peau de {{target}}. {{name}} se réveille humain, dans votre ancien corps.",
+    "patrolTakeoff": "{{name}} a décollé à bord du {{room}}.",
+    "patrolLanded": "{{name}} a posé le {{room}}.",
+    "patrolRough": "Manœuvre difficile : la coque a subi {{hull}} dégâts, le vaisseau a perdu {{armor}} d'armure et vous avez perdu {{hp}} PV."
   },
   "skills": {
     "title": "Choisir une compétence",
@@ -1268,5 +1303,20 @@
     "title": "On vous a volé votre corps !",
     "text": "Un Mush s'est glissé dans votre peau. Vous vous réveillez dans la sienne : vous êtes maintenant {{name}}, et toujours humain.",
     "ok": "J'ai compris"
+  },
+  "roomList": {
+    "region": "Salle",
+    "people": "Personnes",
+    "equipment": "Équipements",
+    "items": "Objets au sol",
+    "exits": "Sorties",
+    "lyingDown": "{{name}} (allongé)",
+    "door": "Porte vers {{room}}",
+    "doorOutOfReach": "Porte vers {{room}} (hors de portée)"
+  },
+  "patrol": {
+    "flying": "En vol à bord du {{ship}}",
+    "armor": "Armure : {{armor}}/{{max}}",
+    "out": "Le vaisseau est sorti en patrouille."
   }
 }

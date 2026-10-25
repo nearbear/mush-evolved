@@ -142,6 +142,8 @@ export type SkillStatus = "full" | "partial" | "none";
 export const SKILL_STATUS: Readonly<Partial<Record<SkillId | MushSkillId, SkillStatus>>> = {
   // Heal bonus only; no operations, medicine properties, or research bonus.
   medic: "partial",
+  // Flying patrol ships, with clean takeoffs and landings (owner, 2026-10-24, patrol.ts); no shooting bonus yet.
+  pilot: "partial",
   // Heavy-item penalty and punch damage only; no Throw Out.
   sturdy: "partial",
   // Free heal points only; no medicine properties.

@@ -140,7 +140,7 @@ export function huntersFollow(state: GameState): void {
  * Hull 0: the Daedalus explodes and everyone aboard dies. Like any death of the last human it's a Mush win, with its
  * own ending (owner, 2026-10-24); the game ends first so killPlayer doesn't end it as `humans_dead`.
  */
-function destroyShip(state: GameState): void {
+export function destroyShip(state: GameState): void {
   logPublic(state, undefined, "shipDestroyed", undefined, "warning");
   endGame(state, "mush", "ship_destroyed");
   for (const p of state.players) killPlayer(state, p);

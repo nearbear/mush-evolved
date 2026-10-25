@@ -30,6 +30,7 @@ import { medic } from "./modifiers/medic.ts";
 import { pacifist } from "./modifiers/pacifist.ts";
 import { wheelchair } from "./modifiers/wheelchair.ts";
 import { sturdy } from "./modifiers/sturdy.ts";
+import { pilot } from "./modifiers/pilot.ts";
 import type { ActionCost } from "./actions.ts";
 import type { ActionTag } from "./actions/action.ts";
 import type { Action, GameState, ItemState, MovementRules, PlayerState } from "./types.ts";
@@ -55,6 +56,7 @@ type FoldHooks = Record<
   | "pilgredPointsPerDay"
   | "gardenPointsPerDay"
   | "heavyMpPenalty"
+  | "cleanManoeuvreChance"
   | "maxMorale",
   FoldHook
 >;
@@ -108,7 +110,7 @@ export interface Modifier extends Partial<FoldHooks> {
 export type ModifierRegistry = Readonly<Record<string, Modifier>>;
 
 /** Items and skills will register here too. When a skill gains rules, update its entry in SKILL_STATUS (skills.ts). */
-export const MODIFIERS: Record<string, Modifier> = { lying_down, medic, first_aid, sturdy, creative, expert, antic_perfume, logistics, caffeinomaniac, cold_disease, computer, designer, sprint, physicist, botanic, pacifist, immunity, mankind_only_hope, wheelchair };
+export const MODIFIERS: Record<string, Modifier> = { lying_down, medic, first_aid, sturdy, creative, expert, antic_perfume, logistics, caffeinomaniac, cold_disease, computer, designer, sprint, physicist, botanic, pacifist, immunity, mankind_only_hope, wheelchair, pilot };
 
 /** The ids every hook folds over: the player's skills (book slot last), then their other modifiers. */
 export function modifierIds(player: Readonly<PlayerState>): string[] {
@@ -372,4 +374,6 @@ export function cycleChanged(next: GameState, registry: ModifierRegistry = MODIF
   }
 }
 
-
+/** Chance a patrol ship's takeoff or landing is clean (patrol.ts): the configured chance folded through the pilot's modifiers. */
+export const cleanManoeuvreChance = (state: Readonly<GameState>, player: Readonly<PlayerState>, registry: ModifierRegistry = MODIFIERS) =>
+  fold("cleanManoeuvreChance", state.config.patrol.cleanChance, state, player, registry);

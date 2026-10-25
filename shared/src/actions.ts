@@ -23,6 +23,8 @@ import { SetBiosAction } from "./actions/set_bios.ts";
 import { ScanPlanetAction } from "./actions/scan_planet.ts";
 import { TurretAttackAction } from "./actions/turret_attack.ts";
 import { RepairHullAction } from "./actions/repair_hull.ts";
+import { TakeoffAction } from "./actions/takeoff.ts";
+import { LandAction } from "./actions/land.ts";
 import { AnalyzePlanetAction } from "./actions/analyze_planet.ts";
 import { DeletePlanetAction } from "./actions/delete_planet.ts";
 import { LeaveOrbitAction } from "./actions/leave_orbit.ts";
@@ -125,6 +127,8 @@ export const ACTIONS: { [T in ActionType]: ActionDef<ActionOf<T>> } = {
   delete_planet: new DeletePlanetAction(),
   turret_attack: new TurretAttackAction(),
   repair_hull: new RepairHullAction(),
+  takeoff: new TakeoffAction(),
+  land: new LandAction(),
   dispense: new DispenseAction(),
   consume: new ConsumeAction(),
   cook: new CookAction(),

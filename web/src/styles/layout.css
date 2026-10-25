@@ -86,3 +86,21 @@
   clip-path: inset(50%);
   white-space: nowrap;
 }
+
+/* "Repeat last announcement": the first Tab stop, visible only while focused. */
+.announce-repeat:not(:focus) {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+.announce-repeat:focus {
+  position: fixed;
+  top: 4px;
+  left: 4px;
+  z-index: 1000;
+}

@@ -3,7 +3,7 @@ import type { CommsState } from "../comms.ts";
 import type { PlanetDirection, PlanetTag } from "../planets.ts";
 import type { RngState } from "../rng.ts";
 import type { TitleId } from "../titles.ts";
-import type { ItemState, LogEntry, PlayerId } from "../types.ts";
+import type { ItemState, LogEntry, PlayerId, RoomId } from "../types.ts";
 import type { ChatMessage, ChatThread, PrivateChannel } from "./chat.ts";
 import type { GameConfig } from "./config.ts";
 import type { PlayerState } from "./player.ts";
@@ -109,6 +109,11 @@ export interface GameState {
   hunters: { points: number; since: number | null; list: Hunter[]; nextId: number };
   /** Charges left in each turret, by its `TURRET_COMMAND` equipment id; absent = full. To the living in a turret room. */
   turrets: Record<string, number>;
+  /**
+   * Each patrol ship by its room id (patrol.ts): its armor, and whether it is out (in flight). Out is known to anyone
+   * in its bay (owner, 2026-10-24); armor goes to its pilot only, for now.
+   */
+  patrolShips: Record<RoomId, { armor: number; out: boolean }>;
   /** Missed turret shots in a row per player, raising their next shot's odds; reset by a hit (owner, 2026-10-24). Never sent. */
   turretFailures: Record<PlayerId, number>;
   /** Who holds each title (titles.ts); null while vacant. Public: every view has the holders and the lines. */

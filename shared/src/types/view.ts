@@ -14,6 +14,8 @@ import type { GameState, ShipResources } from "./state.ts";
 export interface EquipmentView {
   id: string;
   type: string;
+  /** A patrol ship's interface whose ship is in flight: shown to anyone in its bay, and the ship isn't drawn (owner, 2026-10-24). */
+  out?: true;
 }
 
 /** An item as a client sees it. */
@@ -191,6 +193,8 @@ export interface PlayerView {
    * finder's `planets`. `heading` only while you are alive at a Command terminal (owner, 2026-10-22); otherwise null.
    */
   navigation: { orbiting: boolean; heading: PlanetDirection | null };
+  /** The patrol ship you are flying (its room id) with its armor, while you are alive aboard (patrol.ts); otherwise null. */
+  patrolShip: { id: string; armor: number; maxArmor: number } | null;
   /** Every title in `TITLE_IDS` order, public to everyone (owner, 2026-10-20). */
   titles: TitleView[];
   /**

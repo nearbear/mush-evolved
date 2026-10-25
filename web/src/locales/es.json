@@ -9,7 +9,7 @@
     "botsPaused": "IA en pausa",
     "botsPausedAbout": {
       "unavailable": "La tripulación IA no puede contactar con su modelo ahora mismo. El ciclo los espera; seguirán intentándolo.",
-      "key": "El proveedor del modelo rechazó la clave (puede ser incorrecta o no tener crédito). El ciclo espera a la tripulación IA hasta que la clave funcione.",
+      "key": "El proveedor rechazó la clave o el modelo (la clave puede ser incorrecta o no tener crédito, o el nombre del modelo o un ajuste no se acepta). El ciclo espera a la tripulación IA hasta que una clave y un modelo funcionen.",
       "budget": "La tripulación IA ha gastado todo el presupuesto de modelo de esta partida. El ciclo los espera hasta que se aumente el presupuesto."
     }
   },
@@ -83,7 +83,24 @@
       "one": "1 sala alrededor",
       "two": "2 salas alrededor",
       "all": "Toda la nave"
+    },
+    "announce": {
+      "label": "Anuncios (lector de pantalla)",
+      "all": "Todo",
+      "mentions": "Urgente, privado y menciones",
+      "off": "Desactivados"
     }
+  },
+  "announce": {
+    "more_one": "y {{count}} más.",
+    "more_other": "y {{count}} más.",
+    "more_many": "y {{count}} más.",
+    "cycle": "Comienza el ciclo {{cycle}}.",
+    "sent": "Mensaje enviado.",
+    "unreadIn_one": "{{count}} mensaje nuevo en {{channel}}.",
+    "unreadIn_other": "{{count}} mensajes nuevos en {{channel}}.",
+    "unreadIn_many": "{{count}} mensajes nuevos en {{channel}}.",
+    "repeat": "Repetir el último anuncio"
   },
   "language": {
     "label": "Idioma"
@@ -284,7 +301,9 @@
     "turretAttack": "Disparar",
     "repairHull": "Reforzar el casco",
     "bodyTransfer": "Transferencia",
-    "fungalCuisine": "Cocina fúngica"
+    "fungalCuisine": "Cocina fúngica",
+    "takeoff": "Despegar",
+    "land": "Aterrizar"
   },
   "queue": {
     "label": "Tus acciones",
@@ -369,6 +388,9 @@
     "bodyMush": "Todavía puedes leer el chat global, los hilos de funciones y el canal Mush, pero ya no puedes escribir allí. Puedes hablar con los demás muertos en el Cementerio."
   },
   "itrackie": {
+    "unreadTab_one": "{{name}}, {{count}} sin leer",
+    "unreadTab_other": "{{name}}, {{count}} sin leer",
+    "unreadTab_many": "{{name}}, {{count}} sin leer",
     "needITrackieRead": "Necesitas un iTrackie en tu inventario para leer esto.",
     "noMessages": "Aún no hay mensajes.",
     "chatNeedsITrackie": "Requiere un iTrackie",
@@ -507,7 +529,15 @@
     "STORAGE_A_0": "Almacén Alfa central",
     "STORAGE_A_1": "Taller",
     "STORAGE_B_0": "Almacén Beta central",
-    "STORAGE_B_1": "Almacén trasero"
+    "STORAGE_B_1": "Almacén trasero",
+    "PATROL_SHIP_A_0": "Nave de patrulla Longane",
+    "PATROL_SHIP_A_1": "Nave de patrulla Jujube",
+    "PATROL_SHIP_A_2": "Nave de patrulla Tamarin",
+    "PATROL_SHIP_B_0": "Nave de patrulla Socrate",
+    "PATROL_SHIP_B_1": "Nave de patrulla Epicure",
+    "PATROL_SHIP_B_2": "Nave de patrulla Platon",
+    "PATROL_SHIP_AA_0": "Nave de patrulla Wallis",
+    "PATROL_SHIP_AA_1": "Pasiphae"
   },
   "equipment": {
     "ASTRO_MODULE": "Terminal astro",
@@ -541,7 +571,9 @@
     "STELLAR_ANTENNA": "Antena",
     "SUPER_CALC": "Supercomputadora",
     "SURGERY_POD": "Estación de cirugía",
-    "TURRET_COMMAND": "Controles de torreta"
+    "TURRET_COMMAND": "Controles de torreta",
+    "PATROL_COMMAND": "Cabina de pilotaje",
+    "PASIPHAE_COMMAND": "Cabina de pilotaje del Pasiphae"
   },
   "itemAttr": {
     "contaminated": "Contagio: {{level}}",
@@ -733,7 +765,10 @@
     "biosShieldOn": "Has activado el escudo de plasma: vuelve a proteger el casco.",
     "biosShieldOff": "Has desactivado el escudo de plasma: ya no protege el casco.",
     "fungalCooked": "Escondes una espora en: {{item}}. Nivel de contagio: {{level}}.",
-    "bodyTransferred": "Te has metido en la piel de {{target}}. {{name}} despierta humano, en tu antiguo cuerpo."
+    "bodyTransferred": "Te has metido en la piel de {{target}}. {{name}} despierta humano, en tu antiguo cuerpo.",
+    "patrolTakeoff": "{{name}} despegó a bordo de {{room}}.",
+    "patrolLanded": "{{name}} aterrizó a bordo de {{room}}.",
+    "patrolRough": "Maniobra brusca: el casco recibió {{hull}} de daño, la nave perdió {{armor}} de blindaje y perdiste {{hp}} PV."
   },
   "skills": {
     "title": "Elegir una habilidad",
@@ -1268,5 +1303,20 @@
     "title": "¡Te han robado el cuerpo!",
     "text": "Un Mush se ha metido en tu piel. Despiertas en la suya: ahora eres {{name}}, y sigues siendo humano.",
     "ok": "Entendido"
+  },
+  "roomList": {
+    "region": "Sala",
+    "people": "Personas",
+    "equipment": "Equipamiento",
+    "items": "Objetos en el suelo",
+    "exits": "Salidas",
+    "lyingDown": "{{name}} (tumbado)",
+    "door": "Puerta a {{room}}",
+    "doorOutOfReach": "Puerta a {{room}} (fuera de alcance)"
+  },
+  "patrol": {
+    "flying": "En vuelo a bordo de {{ship}}",
+    "armor": "Blindaje: {{armor}}/{{max}}",
+    "out": "La nave ha salido de patrulla."
   }
 }

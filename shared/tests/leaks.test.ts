@@ -118,6 +118,8 @@ function ship(): { state: GameState; sentinels: Sentinel[] } {
   // Nobody is in a turret room, so no one sees a hunter's hp or id, or a turret's charges; only the count is public.
   s.hunters = { points: num("hunterPoints", []), since: num("huntersSince", []), nextId: num("hunterNextId", []), list: [{ id: str("hunterId", []), hp: num("hunterHp", []), hitChance: num("hunterHitChance", []), target: { kind: "ship" } }] };
   s.turrets["LASER_TURRET_A_0:TURRET_COMMAND"] = num("turretCharges", []);
+  // Nobody is aboard a patrol ship, so no one sees its armor.
+  s.patrolShips.PATROL_SHIP_A_0!.armor = num("patrolArmor", []);
 
   s.items.push({ id: str("floor-here", ["p0", "p1", "p2"]), type: "wrench", at: { kind: "room", id: HERE } });
   s.items.push({ id: str("floor-elsewhere", ["p3"]), type: "wrench", at: { kind: "room", id: ELSEWHERE } });

@@ -9,7 +9,7 @@
     "botsPaused": "AI paused",
     "botsPausedAbout": {
       "unavailable": "The AI crew can't reach their model right now. The cycle waits for them; they will keep trying.",
-      "key": "The model provider refused the key (it may be wrong or out of credit). The cycle waits for the AI crew until the key works.",
+      "key": "The model provider refused the key or the model (the key may be wrong or out of credit, or the model name or a setting not accepted). The cycle waits for the AI crew until a key and model work.",
       "budget": "The AI crew used this game's whole model budget. The cycle waits for them until the budget is raised."
     }
   },
@@ -83,7 +83,22 @@
       "one": "1 room out",
       "two": "2 rooms out",
       "all": "Whole ship"
+    },
+    "announce": {
+      "label": "Announcements (screen reader)",
+      "all": "Everything",
+      "mentions": "Urgent, private and mentions",
+      "off": "Off"
     }
+  },
+  "announce": {
+    "more_one": "and {{count}} more.",
+    "more_other": "and {{count}} more.",
+    "cycle": "Cycle {{cycle}} begins.",
+    "sent": "Message sent.",
+    "unreadIn_one": "{{count}} new message in {{channel}}.",
+    "unreadIn_other": "{{count}} new messages in {{channel}}.",
+    "repeat": "Repeat last announcement"
   },
   "language": {
     "label": "Language"
@@ -283,7 +298,9 @@
     "turretAttack": "Shoot",
     "repairHull": "Reinforce the hull",
     "bodyTransfer": "Transfer",
-    "fungalCuisine": "Fungal cuisine"
+    "fungalCuisine": "Fungal cuisine",
+    "takeoff": "Take off",
+    "land": "Land"
   },
   "queue": {
     "label": "Your actions",
@@ -368,6 +385,8 @@
     "bodyMush": "You can still read global chat, the feature threads and the Mush channel, but you can no longer post there. You can talk with the other dead in the Graveyard."
   },
   "itrackie": {
+    "unreadTab_one": "{{name}}, {{count}} unread",
+    "unreadTab_other": "{{name}}, {{count}} unread",
     "needITrackieRead": "You need an iTrackie in your inventory to read this.",
     "noMessages": "No messages yet.",
     "chatNeedsITrackie": "Needs an iTrackie",
@@ -505,7 +524,15 @@
     "STORAGE_A_0": "Center Alpha Storage",
     "STORAGE_A_1": "Rear Alpha Storage",
     "STORAGE_B_0": "Center Bravo Storage",
-    "STORAGE_B_1": "Rear Bravo Storage"
+    "STORAGE_B_1": "Rear Bravo Storage",
+    "PATROL_SHIP_A_0": "Patrol ship Longane",
+    "PATROL_SHIP_A_1": "Patrol ship Jujube",
+    "PATROL_SHIP_A_2": "Patrol ship Tamarin",
+    "PATROL_SHIP_B_0": "Patrol ship Socrate",
+    "PATROL_SHIP_B_1": "Patrol ship Epicure",
+    "PATROL_SHIP_B_2": "Patrol ship Platon",
+    "PATROL_SHIP_AA_0": "Patrol ship Wallis",
+    "PATROL_SHIP_AA_1": "Pasiphae"
   },
   "equipment": {
     "ASTRO_MODULE": "Astro terminal",
@@ -539,7 +566,9 @@
     "STELLAR_ANTENNA": "Antenna",
     "SUPER_CALC": "Supercomputer",
     "SURGERY_POD": "Surgery station",
-    "TURRET_COMMAND": "Turret controls"
+    "TURRET_COMMAND": "Turret controls",
+    "PATROL_COMMAND": "Cockpit",
+    "PASIPHAE_COMMAND": "Pasiphae cockpit"
   },
   "itemAttr": {
     "contaminated": "Contamination: {{level}}",
@@ -729,7 +758,10 @@
     "biosShieldOn": "You switched the plasma shield on: it protects the hull again.",
     "biosShieldOff": "You switched the plasma shield off: it no longer protects the hull.",
     "fungalCooked": "You slip a spore into the {{item}}. It now carries {{level}}.",
-    "bodyTransferred": "You slipped into {{target}}'s body. {{name}} wakes up human, with your old body."
+    "bodyTransferred": "You slipped into {{target}}'s body. {{name}} wakes up human, with your old body.",
+    "patrolTakeoff": "{{name}} took off in {{room}}.",
+    "patrolLanded": "{{name}} landed {{room}}.",
+    "patrolRough": "Rough manoeuvre: the hull took {{hull}} damage, the ship lost {{armor}} armor and you lost {{hp}} HP."
   },
   "skills": {
     "title": "Choose a skill",
@@ -1261,5 +1293,20 @@
     "title": "Your body has been taken!",
     "text": "A Mush has slipped into your body. You wake up in theirs: you are now {{name}}, and still human.",
     "ok": "I understand"
+  },
+  "roomList": {
+    "region": "Room",
+    "people": "People",
+    "equipment": "Equipment",
+    "items": "Items on the floor",
+    "exits": "Exits",
+    "lyingDown": "{{name}} (lying down)",
+    "door": "Door to {{room}}",
+    "doorOutOfReach": "Door to {{room}} (out of reach)"
+  },
+  "patrol": {
+    "flying": "In flight aboard {{ship}}",
+    "armor": "Armor: {{armor}}/{{max}}",
+    "out": "The ship is out on patrol."
   }
 }

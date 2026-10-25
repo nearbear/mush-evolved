@@ -35,6 +35,8 @@ const ACTION_NAME_KEYS = {
   scan_planet: "actions.scanPlanet",
   turret_attack: "actions.turretAttack",
   repair_hull: "actions.repairHull",
+  takeoff: "actions.takeoff",
+  land: "actions.land",
   analyze_planet: "actions.analyzePlanet",
   delete_planet: "actions.deletePlanet",
   dispense: "actions.dispense",

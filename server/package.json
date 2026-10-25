@@ -9,7 +9,8 @@
     "deploy": "wrangler deploy --var RULES_VERSION:$(git describe --always --dirty --abbrev=40)",
     "deploy:staging": "wrangler deploy --env staging --var RULES_VERSION:$(git describe --always --dirty --abbrev=40)",
     "test": "vitest run",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "model-trial": "node scripts/run-trial.mjs"
   },
   "dependencies": {
     "@mush2/shared": "*",

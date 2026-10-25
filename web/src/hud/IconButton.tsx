@@ -43,13 +43,18 @@ export function IconButton({
   );
 }
 
-/** A tab for a Base UI `Tabs.List` with the same tooltip and accessible name: pixel-art `src`, or an emoji `icon` placeholder. */
-export function IconTab({ value, icon, src, label, className }: { value: string; icon?: string; src?: string; label: string; className?: string }) {
+/** A tab for a Base UI `Tabs.List` with the same tooltip and accessible name: pixel-art `src`, or an emoji `icon` placeholder. `badge` is a count drawn on the tab (it is already in `label` for a screen reader). */
+export function IconTab({ value, icon, src, label, className, badge }: { value: string; icon?: string; src?: string; label: string; className?: string; badge?: number }) {
   return (
     <Tooltip.Provider delay={300}>
       <Tooltip.Root>
         <Tooltip.Trigger className={className ? `itrackie-tab kit-minitab ${className}` : "itrackie-tab kit-minitab"} aria-label={label} render={<Tabs.Tab value={value} />}>
           {src ? <img className="tab-icon" src={src} alt="" /> : <span aria-hidden="true">{icon}</span>}
+                  {badge ? (
+            <span className="tab-badge" aria-hidden="true">
+              {badge > 99 ? "99+" : badge}
+            </span>
+          ) : null}
         </Tooltip.Trigger>
         <Tooltip.Portal>
           <Tooltip.Positioner sideOffset={6}>

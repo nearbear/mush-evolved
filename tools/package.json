@@ -16,6 +16,7 @@
     "dev": "node src/dev/dev.ts",
     "preview": "node src/dev/preview.ts",
     "screenshot": "node src/play/screenshot.ts",
+    "a11y": "node src/a11y/a11y.ts",
     "ship-view": "node src/play/shipView.ts",
     "ship-render": "node src/play/shipRender.ts",
     "ship-top": "node src/play/shipTop.ts",
