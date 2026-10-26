@@ -19,7 +19,9 @@ import { hasSkill } from "./skills.ts";
 import { rollFloat, shuffle } from "./rng.ts";
 import { chatChannels, readChannels } from "./chat.ts";
 import { moderateName } from "./moderation.ts";
-import { clone, fail, findPlayer, type ActionResult } from "./helpers.ts";
+import { clone, dayOf, fail, findPlayer, type ActionResult } from "./helpers.ts";
+
+export { dayOf };
 import { damage } from "./death.ts";
 import { activitySeen, logPrivate } from "./log.ts";
 import { recordAction } from "./history.ts";
@@ -374,12 +376,6 @@ function grantCarePoints(state: GameState): void {
     p.resources.pilgred = Math.min(state.config.pilgred.capPoints, p.resources.pilgred + pilgredPointsGain(state, p));
     p.resources.garden = Math.min(state.config.botany.capPoints, p.resources.garden + gardenPointsGain(state, p));
   }
-}
-
-/** Day and cycle-within-day (both 1-based) for the state's global cycle counter. */
-export function dayOf(state: Pick<GameState, "cycle" | "config">): { day: number; cycleOfDay: number } {
-  const n = state.config.cyclesPerDay;
-  return { day: Math.floor((state.cycle - 1) / n) + 1, cycleOfDay: ((state.cycle - 1) % n) + 1 };
 }
 
 /**

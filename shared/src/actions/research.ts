@@ -1,6 +1,7 @@
 import { Action, isString } from "./action.ts";
 import { ANY_CONSUMABLE, RESEARCH_COMPLETE, RESEARCH_IDS, RESEARCH_REQUIRES, type ResearchId } from "../research.ts";
 import { logPublic } from "../log.ts";
+import { equipmentHere } from "../equipment.ts";
 import { ITEM_TYPES } from "../items.ts";
 import { xylophFound } from "../comms.ts";
 import { dropMycoAlarms } from "../mycoalarm.ts";
@@ -52,18 +53,14 @@ export class ResearchAction extends Action<ResearchActionData> {
     return state.config.research.dirtyChance;
   }
 
-  private labs(state: Readonly<GameState>, player: Readonly<PlayerState>) {
-    return (state.config.equipment[player.room] ?? []).filter((equipment) => equipment.type === "RESEARCH_LAB");
-  }
-
   override getCandidates(state: Readonly<GameState>, player: Readonly<PlayerState>): ResearchActionData[] {
-    return this.labs(state, player).flatMap((lab) =>
+    return equipmentHere(state, player, "RESEARCH_LAB").flatMap((lab) =>
       RESEARCH_IDS.filter((id) => (state.research[id] ?? 0) < RESEARCH_COMPLETE && researchAllowed(state, player.room, id)).map((research): ResearchActionData => ({ type: "research", equipment: lab.id, research })),
     );
   }
 
   override validate(state: Readonly<GameState>, player: Readonly<PlayerState>, target: ResearchActionData): string | null {
-    if (!this.labs(state, player).some((lab) => lab.id === target.equipment)) return "cant_research";
+    if (!equipmentHere(state, player, "RESEARCH_LAB").some((lab) => lab.id === target.equipment)) return "cant_research";
     if (!(RESEARCH_IDS as readonly string[]).includes(target.research)) return "no_such_research";
     if ((state.research[target.research] ?? 0) >= RESEARCH_COMPLETE) return "research_done";
     if (!researchAllowed(state, player.room, target.research as ResearchId)) return "research_needs";

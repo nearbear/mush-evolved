@@ -1,4 +1,5 @@
 import { Action, isString } from "./action.ts";
+import { dayOf } from "../helpers.ts";
 import { logPrivate, logPublic } from "../log.ts";
 import { failureStreakMultiplier } from "../modifiers.ts";
 import { astroTerminalsHere, freePositions, generatePlanet, pickPosition, planetsOf, sizeRangeOn } from "../planets.ts";
@@ -45,9 +46,7 @@ export class ScanPlanetAction extends Action<ScanPlanetActionData> {
 
   override apply(state: GameState, player: PlayerState, target: ScanPlanetActionData): void {
     const [position, rng] = pickPosition(state.rng, freePositions(state), state.config.astro.distance);
-    // The day, as in rules.ts's dayOf (not imported: rules.ts imports the actions).
-    const day = Math.floor((state.cycle - 1) / state.config.cyclesPerDay) + 1;
-    const [planet, next] = generatePlanet(rng, `planet-${state.nextPlanetId++}`, position!, sizeRangeOn(state.config.astro, day));
+    const [planet, next] = generatePlanet(rng, `planet-${state.nextPlanetId++}`, position!, sizeRangeOn(state.config.astro, dayOf(state).day));
     state.rng = next;
     state.planets[player.id] = [...planetsOf(state, player.id), planet];
     delete state.scanFailures[player.id];

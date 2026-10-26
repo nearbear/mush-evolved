@@ -1,4 +1,5 @@
 import { Action, isString } from "./action.ts";
+import { equipmentHere } from "../equipment.ts";
 import { PROJECT_COMPLETE, PROJECT_IDS } from "../projects.ts";
 import { logPublic } from "../log.ts";
 import type { GameState, PlayerState } from "../types.ts";
@@ -26,18 +27,14 @@ export class ProjectAction extends Action<ProjectActionData> {
     return { ap: this.paidWithComputer(state, player) ? 0 : state.config.project.cost.ap, mp: 0 };
   }
 
-  private cores(state: Readonly<GameState>, player: Readonly<PlayerState>) {
-    return (state.config.equipment[player.room] ?? []).filter((equipment) => equipment.type === "NERON_CORE");
-  }
-
   override getCandidates(state: Readonly<GameState>, player: Readonly<PlayerState>): ProjectActionData[] {
-    return this.cores(state, player).flatMap((core) =>
+    return equipmentHere(state, player, "NERON_CORE").flatMap((core) =>
       PROJECT_IDS.filter((id) => (state.projects[id] ?? 0) < PROJECT_COMPLETE).map((project): ProjectActionData => ({ type: "project", equipment: core.id, project })),
     );
   }
 
   override validate(state: Readonly<GameState>, player: Readonly<PlayerState>, target: ProjectActionData): string | null {
-    if (!this.cores(state, player).some((core) => core.id === target.equipment)) return "cant_project";
+    if (!equipmentHere(state, player, "NERON_CORE").some((core) => core.id === target.equipment)) return "cant_project";
     if (!(PROJECT_IDS as readonly string[]).includes(target.project)) return "no_such_project";
     if ((state.projects[target.project] ?? 0) >= PROJECT_COMPLETE) return "project_done";
     if (player.statuses.includes("dirty")) return "dirty";

@@ -1,5 +1,6 @@
 import { Action, type ActionVisibility, isString } from "./action.ts";
-import { combustionLevel, equipmentHere } from "./take_fuel.ts";
+import { equipmentHere } from "../equipment.ts";
+import { combustionLevel } from "./take_fuel.ts";
 import { logPrivate } from "../log.ts";
 import type { GameState, PlayerState } from "../types.ts";
 

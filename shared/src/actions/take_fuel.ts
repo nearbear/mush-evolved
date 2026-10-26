@@ -1,4 +1,5 @@
 import { Action, NO_SPACE, type ActionVisibility, isString } from "./action.ts";
+import { equipmentHere } from "../equipment.ts";
 import { FUEL_CAPSULE_ITEM, hasSpace, produceItem } from "../items.ts";
 import { logSecret } from "../log.ts";
 import type { GameState, PlayerState } from "../types.ts";
@@ -7,10 +8,6 @@ export type TakeFuelActionData = { type: "take_fuel"; equipment: string };
 
 /** The combustion chamber's level for a log line: what it holds and what it can hold. */
 export const combustionLevel = (state: Readonly<GameState>) => ({ level: state.ship.combustion, max: state.config.ship.combustion.max });
-
-/** The equipment of this type in the player's room, or none. */
-export const equipmentHere = (state: Readonly<GameState>, player: Readonly<PlayerState>, type: string) =>
-  (state.config.equipment[player.room] ?? []).filter((equipment) => equipment.type === type);
 
 /**
  * Take a fuel capsule from a fuel tank (the two rear storages), 0 AP (owner, 2026-10-23, the wiki), with a chance of

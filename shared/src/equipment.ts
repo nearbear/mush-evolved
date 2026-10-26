@@ -3,6 +3,7 @@
 // placedEquipment in shipLayout.ts); this file only names the types.
 
 import type { TitleId } from "./titles.ts";
+import type { GameState, PlayerState } from "./types.ts";
 
 export interface EquipmentType {
   /** Item type pulled from it, once per cycle per machine (confirmed 2026-10-13). */
@@ -73,3 +74,7 @@ export const CAMERA_EQUIPMENT = "CAMERA";
 
 /** Id of the camera installed in a room (at most one per room). */
 export const cameraEquipmentId = (room: string): string => `${room}:${CAMERA_EQUIPMENT}`;
+
+/** The equipment of this type in the player's room, or none. */
+export const equipmentHere = (state: Readonly<GameState>, player: Readonly<PlayerState>, type: string) =>
+  (state.config.equipment[player.room] ?? []).filter((equipment) => equipment.type === type);

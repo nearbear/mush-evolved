@@ -1,8 +1,9 @@
-import { Action, type ActionVisibility, isString } from "./action.ts";
+import { Action, peopleHere, type ActionVisibility, isString } from "./action.ts";
 import { logPrivate } from "../log.ts";
 import { contaminate } from "../infection.ts";
 import type { GameState, PlayerState } from "../types.ts";
 import { gainMorale } from "../adjustStats.ts";
+import { dayOf } from "../helpers.ts";
 
 export type ShareActionData = { type: "dtt" | "stt"; target: string };
 
@@ -18,18 +19,16 @@ export class ShareAction<T extends "dtt" | "stt" = "dtt" | "stt"> extends Action
   }
 
   override getCandidates(state: Readonly<GameState>, player: Readonly<PlayerState>): { type: T; target: string }[] {
-    return state.players.filter((other) => other.id !== player.id && other.alive && other.room === player.room).map((other) => ({ type: this.type as T, target: other.id }));
+    return peopleHere(state, player).map((other) => ({ type: this.type as T, target: other.id }));
   }
 
   override validate(state: Readonly<GameState>, player: Readonly<PlayerState>, target: { type: T; target: string }): string | null {
-    if (!state.players.some((other) => other.id !== player.id && other.alive && other.room === player.room && other.id === target.target)) return "cant_see";
+    if (!peopleHere(state, player).some((other) => other.id === target.target)) return "cant_see";
     if (!state.bonds[player.id]?.includes(target.target) || !state.bonds[target.target]?.includes(player.id)) return "not_bonded";
     const { day } = dayOf(state);
     if (state.sharedOnDay[player.id] === day || state.sharedOnDay[target.target] === day) return "cooldown";
     return null;
   }
-
-
 
   override apply(state: GameState, player: PlayerState, target: { type: T; target: string }): void {
     const other = state.players.find((o) => o.id === target.target)!;
@@ -45,9 +44,4 @@ export class ShareAction<T extends "dtt" | "stt" = "dtt" | "stt"> extends Action
     logPrivate(state, other.id, "shareDidToYou", { label, name: player.character });
     if (contaminating) contaminate(state, human);
   }
-}
-
-function dayOf(state: Pick<GameState, "cycle" | "config">): { day: number; cycleOfDay: number } {
-  const n = state.config.cyclesPerDay;
-  return { day: Math.floor((state.cycle - 1) / n) + 1, cycleOfDay: ((state.cycle - 1) % n) + 1 };
 }

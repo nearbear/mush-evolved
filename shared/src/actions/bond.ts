@@ -1,4 +1,4 @@
-import { Action, type ActionVisibility, isString } from "./action.ts";
+import { Action, peopleHere, type ActionVisibility, isString } from "./action.ts";
 import { logPrivate } from "../log.ts";
 import type { GameState, PlayerState } from "../types.ts";
 
@@ -16,11 +16,11 @@ export class BondAction extends Action<BondActionData> {
   }
 
   override getCandidates(state: Readonly<GameState>, player: Readonly<PlayerState>): BondActionData[] {
-    return state.players.filter((other) => other.id !== player.id && other.alive && other.room === player.room).map((other) => ({ type: "bond", target: other.id }));
+    return peopleHere(state, player).map((other) => ({ type: "bond", target: other.id }));
   }
 
   override validate(state: Readonly<GameState>, player: Readonly<PlayerState>, target: BondActionData): string | null {
-    if (!state.players.some((other) => other.id !== player.id && other.alive && other.room === player.room && other.id === target.target)) return "cant_see";
+    if (!peopleHere(state, player).some((other) => other.id === target.target)) return "cant_see";
     if (state.bonds[player.id]?.includes(target.target)) return "already_bonded";
     return null;
   }

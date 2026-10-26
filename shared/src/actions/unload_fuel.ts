@@ -1,5 +1,6 @@
 import { Action, NO_SPACE, type ActionVisibility, isString } from "./action.ts";
-import { combustionLevel, equipmentHere } from "./take_fuel.ts";
+import { equipmentHere } from "../equipment.ts";
+import { combustionLevel } from "./take_fuel.ts";
 import { FUEL_CAPSULE_ITEM, hasSpace, produceItem } from "../items.ts";
 import { logSecret } from "../log.ts";
 import type { GameState, PlayerState } from "../types.ts";
