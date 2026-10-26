@@ -45,7 +45,7 @@ export function InventoryOverlay({
   return (
     <div className="inventory-overlay" ref={rootRef}>
       {open && (
-        <section id={panelId} className="panel inventory-popup" aria-label={t("inventory.button")}>
+        <section id={panelId} role="dialog" tabIndex={-1} className="panel inventory-popup" aria-label={t("inventory.button")}>
           <InventoryPanel view={view} selected={selected} onAction={onAction} onSelect={onSelect} />
         </section>
       )}

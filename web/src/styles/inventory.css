@@ -156,3 +156,9 @@ button.zoom-button {
     overflow: visible;
   }
 }
+
+/* Focus moves to these panels when they open (a non-modal dialog); the panel itself needs no ring. */
+.inventory-popup:focus,
+.ship-popup:focus {
+  outline: none;
+}
