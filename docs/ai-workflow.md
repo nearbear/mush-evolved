@@ -1402,3 +1402,7 @@ The owner asked for a stopped pace (orbit), a cruising pace and a travelling pac
 
 ## 2026-10-25: delete_planet limited to the Astro terminal
 - Owner asked for `delete_planet` to work only at the Astro terminal (it had been free anywhere, with a TODO). Done by giving it an `equipment` field like `analyze_planet`: offered per terminal in the room, `cant_delete` otherwise; protocol parser, web button and tests updated. No new state, so no STATE_VERSION bump.
+
+## 2026-10-25: keyboard movement with a room summary (#251)
+
+`hud/RoomList.tsx` now announces "Room. N people, N equipment, N exits." when `you.room` changes, moves focus to the Room region (only if focus was on nothing or already in the list, so chat typing is never stolen), and repeats the summary on the R key (ignored in text fields). Exit labels carry the MP cost (or the AP converted when MP run short) and a "not enough MP or AP" reason. The cost is derived from `view.movement`, legality still comes from `legalIn`. Not yet covered by `npm run a11y`.

@@ -1361,8 +1361,21 @@
     "items": "Objets au sol",
     "exits": "Sorties",
     "lyingDown": "{{name}} (allongé)",
-    "door": "Porte vers {{room}}",
-    "doorOutOfReach": "Porte vers {{room}} (hors de portée)"
+    "doorOutOfReach": "Porte vers {{room}} (hors de portée)",
+    "doorCost": "Porte vers {{room}}, {{cost}}",
+    "doorNoPoints": "Porte vers {{room}} (hors de portée : pas assez de {{mp}} ou de {{ap}})",
+    "costPlain": "{{mp}} {{unit}}",
+    "costConverted": "{{mp}} {{unit}}, en convertissant {{ap}} {{apUnit}}",
+    "summary": "{{room}}. {{people}}, {{equipment}}, {{exits}}.",
+    "people_count_one": "{{count}} personne",
+    "people_count_other": "{{count}} personnes",
+    "people_count_many": "{{count}} personnes",
+    "equipment_count_one": "{{count}} équipement",
+    "equipment_count_other": "{{count}} équipements",
+    "equipment_count_many": "{{count}} équipements",
+    "exits_count_one": "{{count}} sortie",
+    "exits_count_other": "{{count}} sorties",
+    "exits_count_many": "{{count}} sorties"
   },
   "patrol": {
     "flying": "En vol à bord du {{ship}}",

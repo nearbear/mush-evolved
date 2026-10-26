@@ -1361,8 +1361,21 @@
     "items": "Objetos en el suelo",
     "exits": "Salidas",
     "lyingDown": "{{name}} (tumbado)",
-    "door": "Puerta a {{room}}",
-    "doorOutOfReach": "Puerta a {{room}} (fuera de alcance)"
+    "doorOutOfReach": "Puerta a {{room}} (fuera de alcance)",
+    "doorCost": "Puerta a {{room}}, {{cost}}",
+    "doorNoPoints": "Puerta a {{room}} (fuera de alcance: no hay suficientes {{mp}} ni {{ap}})",
+    "costPlain": "{{mp}} {{unit}}",
+    "costConverted": "{{mp}} {{unit}}, convirtiendo {{ap}} {{apUnit}}",
+    "summary": "{{room}}. {{people}}, {{equipment}}, {{exits}}.",
+    "people_count_one": "{{count}} persona",
+    "people_count_other": "{{count}} personas",
+    "people_count_many": "{{count}} personas",
+    "equipment_count_one": "{{count}} equipo",
+    "equipment_count_other": "{{count}} equipos",
+    "equipment_count_many": "{{count}} equipos",
+    "exits_count_one": "{{count}} salida",
+    "exits_count_other": "{{count}} salidas",
+    "exits_count_many": "{{count}} salidas"
   },
   "patrol": {
     "flying": "En vuelo a bordo de {{ship}}",

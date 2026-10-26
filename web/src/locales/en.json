@@ -1351,8 +1351,18 @@
     "items": "Items on the floor",
     "exits": "Exits",
     "lyingDown": "{{name}} (lying down)",
-    "door": "Door to {{room}}",
-    "doorOutOfReach": "Door to {{room}} (out of reach)"
+    "doorOutOfReach": "Door to {{room}} (out of reach)",
+    "doorCost": "Door to {{room}}, {{cost}}",
+    "doorNoPoints": "Door to {{room}} (out of reach: not enough {{mp}} or {{ap}})",
+    "costPlain": "{{mp}} {{unit}}",
+    "costConverted": "{{mp}} {{unit}}, converting {{ap}} {{apUnit}}",
+    "summary": "{{room}}. {{people}}, {{equipment}}, {{exits}}.",
+    "people_count_one": "{{count}} person",
+    "people_count_other": "{{count}} people",
+    "equipment_count_one": "{{count}} piece of equipment",
+    "equipment_count_other": "{{count}} pieces of equipment",
+    "exits_count_one": "{{count}} exit",
+    "exits_count_other": "{{count}} exits"
   },
   "patrol": {
     "flying": "In flight aboard {{ship}}",

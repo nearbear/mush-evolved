@@ -52,7 +52,7 @@ export function InventoryOverlay({
           const next = step(way === "in" ? 1 : -1);
           return (
             <Hint key={way} label={t(`zoom.${way}`)}>
-              <button type="button" className="zoom-button" aria-label={t(`zoom.${way}`)} disabled={next === undefined} onClick={() => next && onZoom(next)}>
+              <button type="button" className="zoom-button" aria-hidden="true" aria-label={t(`zoom.${way}`)} disabled={next === undefined} onClick={() => next && onZoom(next)}>
                 {way === "in" ? "+" : "−"}
               </button>
             </Hint>
