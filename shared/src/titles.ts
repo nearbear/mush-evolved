@@ -43,7 +43,7 @@ export function eligibleForTitle(p: Readonly<PlayerState>): boolean {
  * returning to Sol lets the kit stand in for the Commander only while that title is vacant
  * (docs/rules-design.md), so the kit may need a `title`-aware check rather than a blanket bypass.
  */
-export function bypassesTitles(p: Readonly<PlayerState>): boolean {
+export function bypassesTitles(p: Readonly<Pick<PlayerState, "cheats">>): boolean {
   return p.cheats.includes("freeHacking");
 }
 

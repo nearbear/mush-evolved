@@ -2,6 +2,8 @@
 // Which equipment is in which room comes from the original map (see
 // placedEquipment in shipLayout.ts); this file only names the types.
 
+import type { TitleId } from "./titles.ts";
+
 export interface EquipmentType {
   /** Item type pulled from it, once per cycle per machine (confirmed 2026-10-13). */
   dispenses?: string;
@@ -11,6 +13,8 @@ export interface EquipmentType {
   shower?: boolean;
   /** A terminal: players can access it, which opens its (so far blank) window. */
   terminal?: boolean;
+  /** A terminal only the holder of this title uses fully (see `hasTitleAccess`); anyone else gets limited access. */
+  title?: TitleId;
   /** Can be dismantled, leaving this much scrap in the room. */
   dismantle?: { metal: number; plastic: number };
   /** Only ever built from a blueprint: left out of the map's starting equipment even where the map draws one. */
@@ -30,7 +34,7 @@ export const EQUIPMENT_TYPES: Record<string, EquipmentType> = {
   CAMERA: { dismantle: { metal: 1, plastic: 0 } },
   COFFEE_DISPENSER: { dispenses: "coffee" },
   COMBUSTION_CHAMBER_ACCESS: {},
-  COM_CENTER: { terminal: true },
+  COM_CENTER: { terminal: true, title: "comms_officer" },
   CRYO_MODULE: {},
   DRUG_DISP: { builtOnly: true },
   DYNARCADE: {},
@@ -40,7 +44,7 @@ export const EQUIPMENT_TYPES: Record<string, EquipmentType> = {
   ICARUS_COMMAND: {},
   KITCHEN: {},
   MYCOSCAN: { builtOnly: true },
-  NERON_BIOS_TERM: { terminal: true },
+  NERON_BIOS_TERM: { terminal: true, title: "neron_admin" },
   NERON_CORE: { terminal: true },
   OXYGEN_TANK: {},
   PATROL_INTERFACE: {},
@@ -48,7 +52,7 @@ export const EQUIPMENT_TYPES: Record<string, EquipmentType> = {
   PATROL_COMMAND: {},
   PASIPHAE_COMMAND: {},
   PILGRED: { terminal: true },
-  PILOT_MODULE: { terminal: true },
+  PILOT_MODULE: { terminal: true, title: "commander" },
   PLANET_SCANNER: {},
   PLANT_CONTROLLER: {},
   RESEARCH_LAB: { terminal: true },

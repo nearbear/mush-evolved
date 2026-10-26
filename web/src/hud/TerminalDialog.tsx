@@ -29,6 +29,7 @@ import { ActionLabel } from "./ActionLabel.tsx";
 import { ActionButton } from "./ActionButton.tsx";
 import { BiosTerminal } from "./BiosTerminal.tsx";
 import { CommsCenter } from "./CommsCenter.tsx";
+import { TerminalShell } from "./TerminalShell.tsx";
 import { PlanetList } from "./PlanetList.tsx";
 import { ShipNavigation } from "./ShipNavigation.tsx";
 import { TurretPanel } from "./TurretPanel.tsx";
@@ -43,24 +44,25 @@ interface Props {
 }
 
 export function TerminalDialog({ terminal, view, onAction, onClose }: Props) {
-  const { t } = useTranslation();
   const names = useNames();
   return (
     <Dialog.Root open={terminal !== null} onOpenChange={(open) => !open && onClose()}>
       <Dialog.Portal>
         <Dialog.Backdrop className="settings-backdrop" />
         <Dialog.Popup className={`settings-popup terminal-popup terminal-${terminal?.type.toLowerCase()}`}>
-          <Dialog.Title className="settings-title">{terminal && names.equipment(terminal.type)}</Dialog.Title>
-          {terminal?.type === "RESEARCH_LAB" && <ResearchList terminal={terminal} view={view} onAction={onAction} />}
-          {terminal?.type === "NERON_CORE" && <ProjectList terminal={terminal} view={view} onAction={onAction} />}
-          {terminal?.type === "ASTRO_MODULE" && <PlanetList terminal={terminal} view={view} onAction={onAction} />}
-          {terminal?.type === "PILGRED" && <PilgredRepair terminal={terminal} view={view} onAction={onAction} />}
-          {terminal?.type === "COM_CENTER" && <CommsCenter terminal={terminal} view={view} onAction={onAction} />}
-          {terminal?.type === "NERON_BIOS_TERM" && <BiosTerminal terminal={terminal} view={view} onAction={onAction} />}
-          {terminal?.type === "TURRET_COMMAND" && <TurretPanel terminal={terminal} view={view} onAction={onAction} />}
-          {terminal?.type === "PILOT_MODULE" && <ShipNavigation terminal={terminal} view={view} onAction={onAction} />}
-          {terminal?.type === "PILOT_MODULE" && <ReturnToSol key={terminal.id} terminal={terminal} view={view} onAction={onAction} />}
-          <Dialog.Close>{t("terminal.close")}</Dialog.Close>
+          {terminal && (
+            <TerminalShell name={names.equipment(terminal.type)} type={terminal.type} view={view}>
+            {terminal?.type === "RESEARCH_LAB" && <ResearchList terminal={terminal} view={view} onAction={onAction} />}
+              {terminal?.type === "NERON_CORE" && <ProjectList terminal={terminal} view={view} onAction={onAction} />}
+              {terminal?.type === "ASTRO_MODULE" && <PlanetList terminal={terminal} view={view} onAction={onAction} />}
+              {terminal?.type === "PILGRED" && <PilgredRepair terminal={terminal} view={view} onAction={onAction} />}
+              {terminal?.type === "COM_CENTER" && <CommsCenter terminal={terminal} view={view} onAction={onAction} />}
+              {terminal?.type === "NERON_BIOS_TERM" && <BiosTerminal terminal={terminal} view={view} onAction={onAction} />}
+              {terminal?.type === "TURRET_COMMAND" && <TurretPanel terminal={terminal} view={view} onAction={onAction} />}
+              {terminal?.type === "PILOT_MODULE" && <ShipNavigation terminal={terminal} view={view} onAction={onAction} />}
+              {terminal?.type === "PILOT_MODULE" && <ReturnToSol key={terminal.id} terminal={terminal} view={view} onAction={onAction} />}
+            </TerminalShell>
+          )}
         </Dialog.Popup>
       </Dialog.Portal>
     </Dialog.Root>

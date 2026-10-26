@@ -54,3 +54,26 @@
   color: var(--warning);
   font-size: 0.9em;
 }
+
+/* The shared title bar (TerminalShell): name and room on the left, close on the right. */
+.terminal-header {
+  flex-wrap: wrap;
+}
+.terminal-room {
+  margin-right: auto;
+  color: var(--muted);
+  font-size: 0.85em;
+}
+
+/* The cosmetic login banner. Wraps on a phone rather than scrolling sideways. */
+.terminal-login {
+  margin: 0;
+  padding: 0.5rem 0.75rem;
+  font-family: ui-monospace, "Cascadia Code", Menlo, monospace;
+  font-size: 0.8rem;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  color: var(--accent);
+  background: rgb(0 0 0 / 6%);
+  border-left: 3px solid var(--edge);
+}

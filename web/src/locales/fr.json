@@ -337,7 +337,13 @@
     "nothing_to_acknowledge": "Il n'y a rien à confirmer."
   },
   "terminal": {
-    "close": "Fermer"
+    "close": "Fermer",
+    "login": {
+      "user": "identifiant : {{user}}",
+      "granted": "Bienvenue, {{user}}. Accès autorisé.",
+      "limited": "Bienvenue, {{user}}. Accès limité.",
+      "hacked": "Kit de hacker activé. Connecté en tant que {{user}}."
+    }
   },
   "pilgred": {
     "label": "Réparation de PILGRED",

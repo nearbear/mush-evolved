@@ -334,7 +334,13 @@
     "nothing_to_acknowledge": "There is nothing to acknowledge."
   },
   "terminal": {
-    "close": "Close"
+    "close": "Close",
+    "login": {
+      "user": "login: {{user}}",
+      "granted": "Welcome, {{user}}. Access granted.",
+      "limited": "Welcome, {{user}}. Access limited.",
+      "hacked": "Hacker kit engaged. Logged in as {{user}}."
+    }
   },
   "pilgred": {
     "label": "PILGRED repair",
