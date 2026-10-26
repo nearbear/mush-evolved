@@ -19,7 +19,7 @@ import { SkillSlots } from "./SkillSlots.tsx";
 import { StatusIcon, StatusIcons } from "./StatusIcons.tsx";
 import { ActionButton } from "./ActionButton.tsx";
 import { useKeepFocus } from "./useKeepFocus.ts";
-import { actionLabelKey, attackWeapon, optionsOn, resolveTarget, type Resolved } from "./targets.ts";
+import { attackWeapon, optionsOn, resolveTarget, type Resolved } from "./targets.ts";
 
 export function InspectPanel({
   view,
@@ -37,9 +37,8 @@ export function InspectPanel({
   const { t } = useTranslation();
   const names = useNames();
   const labelFor = ({ action, cost, chance }: ActionOption): ReactNode => {
-    const key = actionLabelKey(action);
     const weapon = attackWeapon(view, action);
-    const text = weapon ? t("actions.attackWith", { weapon: names.itemOf(weapon) }) : key ? t(key) : action.type;
+    const text = weapon ? t("actions.attackWith", { weapon: names.itemOf(weapon) }) : names.action(action.type);
     return <ActionLabel text={text} cost={cost} chance={chance} visibility={actionVisibility(action.type)} />;
   };
   const resolved = resolveTarget(view, target);

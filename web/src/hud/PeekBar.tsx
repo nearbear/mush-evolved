@@ -9,7 +9,7 @@ import { actionVisibility, type Action, type ActionOption, type PlayerView, type
 import { ActionLabel } from "./ActionLabel.tsx";
 import { ActionButton } from "./ActionButton.tsx";
 import { useKeepFocus } from "./useKeepFocus.ts";
-import { actionLabelKey, attackWeapon, optionsOn, resolveTarget } from "./targets.ts";
+import { attackWeapon, optionsOn, resolveTarget } from "./targets.ts";
 
 export function PeekBar({
   view,
@@ -32,9 +32,8 @@ export function PeekBar({
   const { t } = useTranslation();
   const names = useNames();
   const labelFor = ({ action, cost, chance }: ActionOption): ReactNode => {
-    const key = actionLabelKey(action);
     const weapon = attackWeapon(view, action);
-    const text = weapon ? t("actions.attackWith", { weapon: names.itemOf(weapon) }) : key ? t(key) : action.type;
+    const text = weapon ? t("actions.attackWith", { weapon: names.itemOf(weapon) }) : names.action(action.type);
     return <ActionLabel text={text} cost={cost} chance={chance} visibility={actionVisibility(action.type)} />;
   };
   if (door) {
