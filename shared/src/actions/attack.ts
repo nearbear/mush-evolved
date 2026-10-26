@@ -3,7 +3,7 @@ import { damage } from "../death.ts";
 import { itemsIn, removeItem } from "../items.ts";
 import { logPublic } from "../log.ts";
 import { roll } from "../rng.ts";
-import type { WeaponStats } from "../types/config.ts";
+import type { DeepReadonly, WeaponStats } from "../types/config.ts";
 import type { GameState, ItemState, PlayerState } from "../types.ts";
 
 /** A weapon aimed at one person, or an area weapon (`WeaponStats.area`), which has no target. */
@@ -91,7 +91,7 @@ function usableWeapons(state: Readonly<GameState>, player: Readonly<PlayerState>
   });
 }
 
-function statsOf(state: Readonly<GameState>, target: AttackActionData): WeaponStats | undefined {
+function statsOf(state: Readonly<GameState>, target: AttackActionData): DeepReadonly<WeaponStats> | undefined {
   const weapon = state.items.find((i) => i.id === target.weapon);
   return weapon && state.config.weapons.types[weapon.type];
 }

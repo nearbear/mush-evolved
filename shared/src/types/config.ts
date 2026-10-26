@@ -2,6 +2,9 @@ import type { PlanetDirection } from "../planets.ts";
 import type { PlantState, RoomId } from "../types.ts";
 import type { StatusId } from "../statuses.ts";
 
+/** `T` with every field read-only, all the way down. */
+export type DeepReadonly<T> = T extends (...args: never[]) => unknown ? T : T extends object ? { readonly [K in keyof T]: DeepReadonly<T[K]> } : T;
+
 /**
  * How moving between rooms is paid for. These are base values; modifiers from
  * items and skills can change them per player (see modifiers.ts).

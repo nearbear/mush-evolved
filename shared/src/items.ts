@@ -5,7 +5,7 @@
 // controls on lockers touches one place.
 
 import { inventorySlots } from "./modifiers.ts";
-import type { Container, GameConfig, GameState, ItemState, PlayerState } from "./types.ts";
+import type { Container, DeepReadonly, GameConfig, GameState, ItemState, PlayerState } from "./types.ts";
 import { BOOK_ITEM, ITRACKIE_ITEM } from "./itemIds.ts";
 
 export { BOOK_ITEM, ITRACKIE_ITEM } from "./itemIds.ts";
@@ -49,7 +49,7 @@ export const FUEL_CAPSULE_ITEM = "fuel_capsule";
 export const OXYGEN_CAPSULE_ITEM = "oxy_capsule";
 
 /** The charges an item of this type starts with, or undefined if it has none. Charged weapons start full. */
-export function startCharges(config: Readonly<GameConfig>, type: string): number | undefined {
+export function startCharges(config: DeepReadonly<GameConfig>, type: string): number | undefined {
   return type === MICROWAVE_ITEM ? config.expressCook.charges.start : config.weapons.types[type]?.charges;
 }
 

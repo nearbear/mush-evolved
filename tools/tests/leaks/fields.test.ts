@@ -15,7 +15,7 @@ function interfaceFields(file: string, name: string): string[] {
   const source = readFileSync(resolve(SHARED, "src", file), "utf8");
   const body = source.match(new RegExp(`^export interface ${name}\\b[^{]*\\{\\n([\\s\\S]*?)^\\}`, "m"))?.[1];
   if (body === undefined) throw new Error(`No interface ${name} in ${file}`);
-  return [...body.matchAll(/^ {2}(\w+)\??:/gm)].map((m) => m[1]!);
+  return [...body.matchAll(/^ {2}(?:readonly )?(\w+)\??:/gm)].map((m) => m[1]!);
 }
 
 const unlisted = (fields: string[], listed: Record<string, FieldRule>) => fields.filter((f) => !(f in listed));

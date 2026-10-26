@@ -5,7 +5,7 @@ import type { RngState } from "../rng.ts";
 import type { TitleId } from "../titles.ts";
 import type { ItemState, LogEntry, PlayerId, RoomId } from "../types.ts";
 import type { ChatMessage, ChatThread, PrivateChannel } from "./chat.ts";
-import type { Equipment, GameConfig } from "./config.ts";
+import type { DeepReadonly, Equipment, GameConfig } from "./config.ts";
 import type { PlayerState } from "./player.ts";
 
 /** The side that won the game (victory.ts). */
@@ -26,7 +26,8 @@ export interface ShipResources {
 
 /** Full authoritative state. Server-only: never send this to a client. */
 export interface GameState {
-  config: GameConfig;
+  /** Read-only: the stored game keeps only its overrides and resolves this again on each load, so a write here is lost. */
+  readonly config: DeepReadonly<GameConfig>;
   rng: RngState;
   cycle: number;
   phase: "playing" | "ended";

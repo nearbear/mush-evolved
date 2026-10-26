@@ -40,6 +40,7 @@ import type {
   Action,
   Equipment,
   EquipmentView,
+  DeepReadonly,
   GameConfig,
   GameState,
   ItemState,
@@ -140,7 +141,7 @@ export function createGame(
 }
 
 /** A seat's player as they wake up: at launch, or on joining a ship in pre-selection (`cycle` is the cycle they join in). */
-export function newPlayer(s: Seat, config: GameConfig, cycle: number, role: Role): PlayerState {
+export function newPlayer(s: Seat, config: DeepReadonly<GameConfig>, cycle: number, role: Role): PlayerState {
   return {
     ...s,
     mind: s.id,
@@ -174,7 +175,7 @@ export function newPlayer(s: Seat, config: GameConfig, cycle: number, role: Role
 }
 
 /** What a player carries when they wake up, not yet given ids. */
-export function startInventory(config: GameConfig, id: PlayerId): Omit<ItemState, "id">[] {
+export function startInventory(config: DeepReadonly<GameConfig>, id: PlayerId): Omit<ItemState, "id">[] {
   return config.startInventory.map((type) => ({ type, at: { kind: "player", id } }));
 }
 
@@ -315,7 +316,7 @@ export function newCycle(state: GameState): ActionResult {
   return { ok: true, state: next };
 }
 
-function chargesFor(config: GameConfig, type: string): { charges?: number } {
+function chargesFor(config: DeepReadonly<GameConfig>, type: string): { charges?: number } {
   const charges = startCharges(config, type);
   return charges === undefined ? {} : { charges };
 }

@@ -11,7 +11,7 @@ import { PROJECT_COMPLETE, PROJECT_IDS } from "./projects.ts";
 import { roll, rollInt } from "./rng.ts";
 import { hasSkill, SKILLS } from "./skills.ts";
 import { hasTitleAccess } from "./titles.ts";
-import type { CommsTerminalView, GameConfig, GameState, ItemState, PlayerState, RoomId } from "./types.ts";
+import type { CommsTerminalView, DeepReadonly, GameConfig, GameState, ItemState, PlayerState, RoomId } from "./types.ts";
 
 /**
  * The rebel bases, in the order they call (owner, 2026-10-21: the original's `rebel_center.json` order). Wolf and
@@ -70,7 +70,7 @@ export interface CommsState {
 }
 
 /** The state at the start: no link, no calls yet (the first comes with Mush selection, `callNextRebel`). */
-export function newComms(config: Readonly<GameConfig>): CommsState {
+export function newComms(config: DeepReadonly<GameConfig>): CommsState {
   return { linked: false, solChance: config.comms.sol.startChance, rebels: [], xyloph: [], neron: { version: 1, progress: 0 } };
 }
 

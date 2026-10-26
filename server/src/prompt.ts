@@ -30,7 +30,7 @@ export function buildPrompt(view: PlayerView): ChatTurn[] {
     id === null ? "system" : id === you.id ? `${you.character} (you)` : (view.players.find((p) => p.id === id)?.character ?? "unknown");
   const here = view.players.filter((p) => p.room === you.room);
   const elsewhere = view.players.filter((p) => p.room !== you.room);
-  const list = (xs: string[]): string => (xs.length ? xs.join(", ") : "none");
+  const list = (xs: readonly string[]): string => (xs.length ? xs.join(", ") : "none");
 
   const lines = [
     `Day ${view.day}, cycle ${view.cycleOfDay}.`,

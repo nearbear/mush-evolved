@@ -121,7 +121,7 @@ export interface PlayerView {
   ending: GameState["ending"];
   /** Every seat's name, character, role and fate, only once the game has ended; null while playing. */
   crew: CrewReveal[] | null;
-  rooms: Record<RoomId, RoomId[]>;
+  rooms: Readonly<Record<RoomId, readonly RoomId[]>>;
   /** What you carry. Other players' inventories are never sent. */
   inventory: ItemView[];
   /** Your inventory size, after modifiers. */

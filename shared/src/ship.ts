@@ -8,14 +8,14 @@ import { damage } from "./death.ts";
 import { logPublic } from "./log.ts";
 import { PROJECT_COMPLETE } from "./projects.ts";
 import { rollInt } from "./rng.ts";
-import type { GameConfig, GameState, ShipResources } from "./types.ts";
+import type { DeepReadonly, GameConfig, GameState, ShipResources } from "./types.ts";
 
 export function startShip(config: GameConfig): ShipResources {
   const { oxygen, fuel, combustion, hull, plasmaShield } = config.ship;
   return { oxygen: oxygen.start, fuel: fuel.start, combustion: combustion.start, hull: hull.start, plasmaShield: plasmaShield.start };
 }
 
-export function shipMax(config: GameConfig): ShipResources {
+export function shipMax(config: DeepReadonly<GameConfig>): ShipResources {
   const { oxygen, fuel, combustion, hull, plasmaShield } = config.ship;
   return { oxygen: oxygen.max, fuel: fuel.max, combustion: combustion.max, hull: hull.max, plasmaShield: plasmaShield.max };
 }
