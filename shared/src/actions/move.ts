@@ -24,6 +24,9 @@ export class MoveAction extends Action<MoveActionData> {
   override validate(state: Readonly<GameState>, player: Readonly<PlayerState>, target: MoveActionData): string | null {
     if (!(state.config.rooms[player.room] ?? []).includes(target.to)) return "not_adjacent";
     if (player.pushedBy !== undefined) return "being_pushed";
+    // The price itself, not just the base check: a move can have a negative MP price (converting AP gives MP), so a
+    // modifier lowering the AP could let a player with no AP move and gain MP; and a cap below one move's MP makes it
+    // impossible, not unaffordable.
     return moveCost(movementRules(state, player), player) ? null : "cant_afford";
   }
 

@@ -4,16 +4,17 @@ Other packages import from `@mush2/shared` (`shared/src/index.ts`, the barrel). 
 
 **Engine**
 
-- `rules.ts`: `createGame`, `newPlayer` and `startInventory` (also used by `joinShip`), `applyAction` (at once, no timing), `performAction` (its mutating core), `legalActions`, `viewFor`, `affordable` and `legalIn` (read a view's `actions`), `dayOf`, `setCheat`, `setActopiCheat`; private `advanceCycle` and `grantCarePoints`. `viewFor` is the single place hidden info is stripped.
-- `actions.ts`: the action registry (`ACTIONS`), `ActionDef` / `ActionCost`. A new action is a file in `actions/` registered here.
-- `actions/action.ts`: the `Action` base class (`getCandidates`, `validate`, `getCost`, `apply`, optional `getSuccessChance` and `fail`; `check` is `validate` then the price, never overridden).
+- `rules.ts`: `createGame`, `newPlayer` and `startInventory` (also used by `joinShip`), `applyAction` (at once, no timing), `performAction` (its mutating core), `legalActions`, `viewFor`, `affordable` and `legalIn` (read a view's `actions`), `dayOf` (re-exported from `helpers.ts`), `setCheat`, `setActopiCheat`; private `advanceCycle` and `grantCarePoints`. `viewFor` is the single place hidden info is stripped.
+- `actions.ts`: the action registry (`ACTIONS`), `ActionDef` / `ActionCost`, and the `Action` union, derived from the registry (`types.ts` re-exports it). `actionVisibility` and `actionInTerminal` read fixed per-type flags. A new action is a file in `actions/` registered here.
+- `actions/action.ts`: the `Action` base class (`getCandidates`, `validate`, `getCost`, `apply`, optional `getSuccessChance` and `fail`; `check` is `validate` then the price, never overridden). The constructor takes a check per field (`Fields`, `isString`, `isBoolean`), which `parse` uses to rebuild an action from untrusted client input; `terminal` marks actions done in a terminal's window.
+- `actions/capsule.ts`: `carriedCapsule` and `combustionLevel`, for the fuel and oxygen actions.
 - `blueprints.ts`: `BLUEPRINTS` recipes (ingredients and resulting equipment) and the `blueprint` item type name.
-- `actions/<type>.ts`: one class per action: `accommodate` (+ `accept_accommodation`, `stop_accommodation`), `access`, `bond`, `build`, `check_combustion`, `consume`, `cook`, `express_cook`, `water`, `treat`, `sow`, `dismantle`, `dispense`, `examine`, `extract_spore`, `heal`, `install`, `jettison`, `lie_down` (+ `get_up`), `uninstall`, `move`, `pick_skill`, `read_book`, `self_disease` (development-only Self Disease), `self_injury` (development-only Self Injury), `project`, `repair_pilgred`, `return_to_sol`, `contact_sol`, `decode_rebel`, `contact_xyloph`, `update_neron`, `set_bios`, `scan_planet`, `analyze_planet`, `delete_planet`, `turret_attack`, `repair_hull`, `turn_ship`, `travel`, `leave_orbit`, `take_fuel` (+ `load_fuel`, `unload_fuel`, `return_fuel`; also exports `equipmentHere`), `take_oxygen` (+ `return_oxygen`), `punch`, `attack` (weapons), `ready`, `research`, `share` (`dtt`, `stt`), `shower`, `spike`, `body_transfer` (the Mush skill Transfer), `transfer` (`take`, `drop`).
+- `actions/<type>.ts`: one class per action: `accommodate` (+ `accept_accommodation`, `stop_accommodation`), `access`, `bond`, `build`, `check_combustion`, `consume`, `cook`, `express_cook`, `water`, `treat`, `sow`, `dismantle`, `dispense`, `examine`, `extract_spore`, `heal`, `install`, `jettison`, `lie_down` (+ `get_up`), `uninstall`, `move`, `pick_skill`, `read_book`, `self_disease` (development-only Self Disease), `self_injury` (development-only Self Injury), `project`, `repair_pilgred`, `return_to_sol`, `contact_sol`, `decode_rebel`, `contact_xyloph`, `update_neron`, `set_bios`, `scan_planet`, `analyze_planet`, `delete_planet`, `turret_attack`, `repair_hull`, `turn_ship`, `travel`, `leave_orbit`, `take_fuel` (+ `load_fuel`, `unload_fuel`, `return_fuel`), `take_oxygen` (+ `return_oxygen`), `punch`, `attack` (weapons), `ready`, `research`, `share` (`dtt`, `stt`), `shower`, `spike`, `body_transfer` (the Mush skill Transfer), `transfer` (`take`, `drop`).
 - `modifiers.ts`: the modifier registry and its hooks (numeric ones go through `fold`; `moveCost` is the one place a move's price is computed).
 - `modifiers/<id>.ts`: one file per modifier: `antic_perfume`, `caffeinomaniac`, `cold_disease` (1-in-3 chance to lose MP each cycle), `computer`, `pilot` (clean patrol-ship manoeuvres), `gunner`, `gunman` (Shoot points), `persistent` (`failureStreakMultiplier`), `space_tactics` (`crewWaveShrinkChance`), `polymath` (channels, Computer points and cap), `designer` (Designer points), `sprint`, `physicist` (PILGRED points), `botanic` (garden points), `creative`, `first_aid`, `expert` (+20% success, dirt and injury chances), `logistics` (AP gifts each cycle), `lying_down`, `immunity`, `mankind_only_hope` (a crew-wide `crewMoraleLoss` effect), `medic`, `pacifist` (a room cost effect), `sturdy`, `wheelchair` (no hooks; marks who can be pushed); `careSkill.ts` is the factory behind `first_aid`.
 - `replay.ts`: `Input`, `GameSetup`, `applyInput` (the only entry point for changing a game), `replayGame`; `RecordedInput` (an input with its server time), `stampEntries` (the server's timestamps on new log and chat entries), and `rebuildGame` (the exact stored state from `setup` and the record, stamps included; #167).
 - `spot.ts`: where you stand in your room: the free `walk` input, `standUp` (a public action gets you off a chair), `arrive` (in front of the door you came in by).
-- `actionTarget.ts`: what an action is done to (`actionTarget`, which the client walks you up to), and `endsAccommodation` (a public action on equipment or another person ends a wheelchair push).
+- `actionTarget.ts`: what an action's fields name (`namedTarget`, which the inspect panel uses too), what it is done to (`actionTarget`, which the client walks you up to), and `endsAccommodation` (a public action on equipment or another person ends a wheelchair push).
 - `queue.ts`: timed actions: `queueAction`, `clearQueue`, `tick`, `nextDue` (when the server's alarm should fire); cancels a queued action whose modifier adjustment changed (`repriced`).
 - `mycoalarm.ts`: the `myco_alarm` item, `ringMycoAlarms` (called by `performAction` for `spore`-tagged actions) and `dropMycoAlarms` (research yield).
 - `actions/hide.ts`, `actions/search.ts`: hiding a carried item in the room (`ItemState.hiddenBy`) and searching the room for hidden items.
@@ -32,16 +33,16 @@ Other packages import from `@mush2/shared` (`shared/src/index.ts`, the barrel). 
 - `projects.ts`: `PROJECT_IDS` (the original's 41 live NERON projects), `PROJECT_COMPLETE` and `PROJECT_STATUS`.
 - `mind.ts`: minds and bodies: `bodyOf` (the body a seat plays; the server resolves every token through it), `swapMinds` (a Transfer), `acknowledgeTransfer` (the victim's pop-up input).
 - `rng.ts`: the seeded RNG (its state is part of `GameState`): pair functions `nextFloat`, `nextInt`, `rollRange`, `shuffle` return `[value, next]`; the `roll`, `rollInt`, `rollFloat`, `rollShuffle` helpers advance a `HasRng` holder (a `GameState`) in place, so a draw can't drop the next state. Rule code that draws from `state.rng` uses the helpers; the pair functions are for seeded generators that take a bare seed (`planets.ts`, `createGame`'s seed, `singlePlayerGame`).
-- `helpers.ts`: `ActionResult`, `fail`, `clone`, `findPlayer`.
+- `helpers.ts`: `ActionResult`, `fail`, `clone`, `findPlayer`, `dayOf`.
 
 **Rule areas**
 
 - `chat.ts`: chat storage, channels (`chatChannels` to post, `readChannels` to read), `sendChat`, threads under global chat (`createThread`), private channels, limits.
 - `death.ts`: `damage` (the one way HP goes down) and `killPlayer`.
 - `infection.ts`: `contaminate` (the one way contamination rises), conversion, `contaminationSeenBy`.
-- `items.ts`: item types, containers, capacity and reach helpers, `produceItem`.
+- `items.ts`: item types, containers, capacity and reach helpers, `produceItem`, `removeItem`, `newItemId`.
 - `itemIds.ts`: dependency-light IDs used by item definitions and the default config.
-- `equipment.ts`: room equipment types.
+- `equipment.ts`: room equipment types, and `equipmentHere` (equipment of a type in the player's room).
 - `log.ts`: room log helpers (`logPublic`, `logPrivate`, `logSecret`, `logCovert`, `hasCamera`).
 - `history.ts`: each body's action history (`recordAction`, called from `performAction`) and `revealHistory`, the private reveal lines Interrogate and Chitchat write.
 - `resources.ts`: per-player skill point pools.
@@ -60,7 +61,7 @@ Other packages import from `@mush2/shared` (`shared/src/index.ts`, the barrel). 
 - `types/state.ts`: `GameState` (server-only).
 - `types/view.ts`: `PlayerView`, `OtherPlayerView`, `ItemView`: the only game data a client or bot receives.
 - `config.ts`: `DEFAULT_CONFIG` and `SEAT_COUNT`. The map comes from `@mush2/assets/derived/ship-rooms.json`.
-- `protocol.ts`: wire message types and `parse*` validators for untrusted client input.
+- `protocol.ts`: wire message types and `parse*` validators for untrusted client input; actions go through `ACTIONS[type].parse`.
 - `moderation.ts`: `moderateChat`, called by the server, not the rules; `moderateName`, called by `viewFor` for the end screen's names.
 - `characters.ts`: cosmetic crew identities, no rules effect.
 - `shipLayout.ts`: types for `Mush/derived/ship-art.json` and `ship-map.json` (`ShipLayout` is the two together) and `placedEquipment`.

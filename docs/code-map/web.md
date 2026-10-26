@@ -47,7 +47,7 @@ All under `web/src/`. UI rules are in `web/CLAUDE.md`.
 - `Markdown.tsx`: restricted chat message rendering.
 - `ActionLabel.tsx`: an action button's label with its cost.
 - `ActionQueue.tsx`: your action under way and the queued ones, with Clear queue, over the room view (both layouts). Entries read like "Take Wrench, 1 AP" (`actionText.ts`, `describeAction`).
-- `targets.ts`: finds the selection in the view (`resolveTarget`, `actionsOn`, `costOf`, `actionLabelKey`).
+- `targets.ts`: finds the selection in the view (`resolveTarget`, `optionsOn`, which reads each action's target from its fields, `attackWeapon`).
 - `BottomNav.tsx`, `PeekBar.tsx` (phone only): panel switcher; tapped target with its actions.
 - `useKeepFocus.ts`: keeps focus in a panel (Inspect, peek bar, inventory) when the focused button is replaced by a new view.
 - `ActionButton.tsx`: the button for an offered action; when you only lack AP or MP it stays focusable (`aria-disabled`) and a card says why.
