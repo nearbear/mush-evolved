@@ -19,12 +19,12 @@ export class ProjectAction extends Action<ProjectActionData> {
   }
 
   /** Designer points (`resources.core`, projects only) or Computer points (`resources.comp`) make one project action free (owner, 2026-10-18 and 2026-10-24). */
-  private paidWithComputer(state: Readonly<GameState>, player: Readonly<PlayerState>): boolean {
+  private paidWithComputer(player: Readonly<PlayerState>): boolean {
     return player.resources.core > 0 || player.resources.comp > 0;
   }
 
   override getCost(state: Readonly<GameState>, player: Readonly<PlayerState>): { ap: number; mp: number } {
-    return { ap: this.paidWithComputer(state, player) ? 0 : state.config.project.cost.ap, mp: 0 };
+    return { ap: this.paidWithComputer(player) ? 0 : state.config.project.cost.ap, mp: 0 };
   }
 
   override getCandidates(state: Readonly<GameState>, player: Readonly<PlayerState>): ProjectActionData[] {

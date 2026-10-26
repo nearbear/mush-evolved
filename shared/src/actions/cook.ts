@@ -1,9 +1,19 @@
 import { Action, isString } from "./action.ts";
 import { ITEM_TYPES, canReachItem } from "../items.ts";
 import { logPublic } from "../log.ts";
-import type { GameState, PlayerState } from "../types.ts";
+import type { GameState, ItemState, PlayerState } from "../types.ts";
 
 export type CookActionData = { type: "cook"; item: string };
+
+/** An uncooked item the player can reach (carried or on the floor), for Cook and Express cook. */
+export const cookable = (state: Readonly<GameState>, player: Readonly<PlayerState>, item: Readonly<ItemState>): boolean =>
+  !!ITEM_TYPES[item.type]?.cook && canReachItem(state, player, item);
+
+/** Turns the item into its cooked type in place. Any transformation destroys the spores (Fungal cuisine). */
+export function cookItem(item: ItemState): void {
+  item.type = ITEM_TYPES[item.type]!.cook!.into;
+  delete item.spores;
+}
 
 /**
  * Cook (confirmed 2026-10-16): 1 AP, in a `cookRooms` room (the refectory), on an uncooked item you can reach
@@ -20,14 +30,14 @@ export class CookAction extends Action<CookActionData> {
 
   override getCandidates(state: Readonly<GameState>, player: Readonly<PlayerState>): CookActionData[] {
     if (!state.config.cook.rooms.includes(player.room)) return [];
-    return state.items.filter((item) => ITEM_TYPES[item.type]?.cook && canReachItem(state, player, item)).map((item) => ({ type: "cook", item: item.id }));
+    return state.items.filter((item) => cookable(state, player, item)).map((item) => ({ type: "cook", item: item.id }));
   }
 
   override validate(state: Readonly<GameState>, player: Readonly<PlayerState>, target: CookActionData): string | null {
     if (!state.config.cook.rooms.includes(player.room)) return "cant_cook";
     const item = state.items.find((i) => i.id === target.item);
     if (!item) return "no_such_item";
-    if (!ITEM_TYPES[item.type]?.cook || !canReachItem(state, player, item)) return "cant_cook";
+    if (!cookable(state, player, item)) return "cant_cook";
     return null;
   }
 
@@ -41,8 +51,7 @@ export class CookAction extends Action<CookActionData> {
 
   override apply(state: GameState, player: PlayerState, target: CookActionData): void {
     const item = state.items.find((i) => i.id === target.item)!;
-    item.type = ITEM_TYPES[item.type]!.cook!.into;
-    delete item.spores; // any transformation destroys the spores (Fungal cuisine)
+    cookItem(item);
     logPublic(state, player.room, "cooked", { name: player.character, item: item.type });
   }
 }

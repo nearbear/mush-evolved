@@ -1,5 +1,6 @@
 import { Action, isString } from "./action.ts";
-import { ITEM_TYPES, MICROWAVE_ITEM, canReachItem } from "../items.ts";
+import { cookable, cookItem } from "./cook.ts";
+import { MICROWAVE_ITEM, canReachItem } from "../items.ts";
 import { logPublic } from "../log.ts";
 import type { GameState, ItemState, PlayerState } from "../types.ts";
 
@@ -26,14 +27,14 @@ export class ExpressCookAction extends Action<ExpressCookActionData> {
 
   override getCandidates(state: Readonly<GameState>, player: Readonly<PlayerState>): ExpressCookActionData[] {
     if (!chargedMicrowave(state, player)) return [];
-    return state.items.filter((item) => ITEM_TYPES[item.type]?.cook && canReachItem(state, player, item)).map((item) => ({ type: "express_cook", item: item.id }));
+    return state.items.filter((item) => cookable(state, player, item)).map((item) => ({ type: "express_cook", item: item.id }));
   }
 
   override validate(state: Readonly<GameState>, player: Readonly<PlayerState>, target: ExpressCookActionData): string | null {
     if (!chargedMicrowave(state, player)) return "no_microwave";
     const item = state.items.find((i) => i.id === target.item);
     if (!item) return "no_such_item";
-    if (!ITEM_TYPES[item.type]?.cook || !canReachItem(state, player, item)) return "cant_cook";
+    if (!cookable(state, player, item)) return "cant_cook";
     return null;
   }
 
@@ -45,8 +46,7 @@ export class ExpressCookAction extends Action<ExpressCookActionData> {
     const microwave = chargedMicrowave(state, player)!;
     microwave.charges = microwave.charges! - 1;
     const item = state.items.find((i) => i.id === target.item)!;
-    item.type = ITEM_TYPES[item.type]!.cook!.into;
-    delete item.spores; // any transformation destroys the spores (Fungal cuisine)
+    cookItem(item);
     logPublic(state, player.room, "expressCooked", { name: player.character, item: item.type });
   }
 }
