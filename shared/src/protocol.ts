@@ -203,8 +203,8 @@ export function parseGameMessage(raw: string): GameClientMessage | null {
   if (a.type === "repair_hull" && typeof a.item === "string") {
     return { type: "action", action: { type: "repair_hull", item: a.item } };
   }
-  if (a.type === "delete_planet" && typeof a.planet === "string") {
-    return { type: "action", action: { type: "delete_planet", planet: a.planet } };
+  if (a.type === "delete_planet" && typeof a.equipment === "string" && typeof a.planet === "string") {
+    return { type: "action", action: { type: "delete_planet", equipment: a.equipment, planet: a.planet } };
   }
   if (a.type === "dispense" && typeof a.equipment === "string") {
     return { type: "action", action: { type: "dispense", equipment: a.equipment } };

@@ -1399,3 +1399,6 @@ Most of the keyboard path already existed (Inspect actions and inventory tiles a
 ### 2026-10-25: Three paces for the stars (#136)
 
 The owner asked for a stopped pace (orbit), a cruising pace and a travelling pace, with the stars always showing. `ShipPace` and `PACE_SPEED` are in `scene.ts`; `shipPace(view.navigation)` is the one place that maps the view to a pace, and the hook for travelling (nothing returns it yet, as travel is an instant jump). The owner reported not seeing the earlier change; the drift was slow (6 and 20 px/s) and I never looked at it in a browser, so I doubled the rates.
+
+## 2026-10-25: delete_planet limited to the Astro terminal
+- Owner asked for `delete_planet` to work only at the Astro terminal (it had been free anywhere, with a TODO). Done by giving it an `equipment` field like `analyze_planet`: offered per terminal in the room, `cant_delete` otherwise; protocol parser, web button and tests updated. No new state, so no STATE_VERSION bump.

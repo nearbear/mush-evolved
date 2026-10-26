@@ -11,7 +11,7 @@ const seats = makeSeats(3, "others");
 const TERMINAL = "COMMAND_CENTER:ASTRO_MODULE";
 const scan: Action = { type: "scan_planet", equipment: TERMINAL };
 const analyze = (planet: string): Action => ({ type: "analyze_planet", equipment: TERMINAL, planet });
-const del = (planet: string): Action => ({ type: "delete_planet", planet });
+const del = (planet: string): Action => ({ type: "delete_planet", equipment: TERMINAL, planet });
 const { astro } = DEFAULT_CONFIG;
 
 function game(room = "COMMAND_CENTER"): GameState {
@@ -198,12 +198,16 @@ describe("Astro terminal planets", () => {
     expect(offered(s, "p0").some((a) => a.type === "scan_planet")).toBe(true);
   });
 
-  it("deletes anywhere, for free, silently, and only your own planets", () => {
+  it("deletes only at the Astro terminal, for free, silently, and only your own planets", () => {
     let s = forcedScan(game(), "p0", true);
     const id = s.planets.p0![0]!.id;
-    s.players[0]!.room = "REFECTORY";
     s.players[0]!.ap = 0;
     expect(applyAction(s, "p1", del(id)).ok).toBe(false);
+    s.players[0]!.room = "REFECTORY";
+    expect(applyAction(s, "p0", del(id)).ok).toBe(false);
+    expect(offered(s, "p0").some((a) => a.type === "delete_planet")).toBe(false);
+    s.players[0]!.room = "COMMAND_CENTER";
+    expect(offered(s, "p0").some((a) => a.type === "delete_planet")).toBe(true);
     const logs = s.log.length;
     s = must(applyAction(s, "p0", del(id)));
     expect(s.planets.p0).toEqual([]);
@@ -287,6 +291,6 @@ describe("Astro terminal planets", () => {
   it("parses from the wire, and rejects malformed ones", () => {
     for (const action of [scan, analyze("planet-1"), del("planet-1")]) expect(parseGameMessage(JSON.stringify({ type: "action", action }))).toEqual({ type: "action", action });
     expect(parseGameMessage(JSON.stringify({ type: "action", action: { type: "analyze_planet", equipment: TERMINAL } }))).toBeNull();
-    expect(parseGameMessage(JSON.stringify({ type: "action", action: { type: "delete_planet" } }))).toBeNull();
+    expect(parseGameMessage(JSON.stringify({ type: "action", action: { type: "delete_planet", planet: "planet-1" } }))).toBeNull();
   });
 });

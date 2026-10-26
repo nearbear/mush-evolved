@@ -143,7 +143,7 @@ export type Action =
   | { type: "set_bios"; equipment: string; option: BiosOption; value: boolean }
   | { type: "scan_planet"; equipment: string }
   | { type: "analyze_planet"; equipment: string; planet: string }
-  | { type: "delete_planet"; planet: string }
+  | { type: "delete_planet"; equipment: string; planet: string }
   | { type: "turret_attack"; equipment: string; hunter: string }
   | { type: "repair_hull"; item: ItemId }
   | { type: "takeoff"; equipment: string }

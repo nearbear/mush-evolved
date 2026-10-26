@@ -97,7 +97,7 @@ describe("ship navigation", () => {
     expect(applyAction(s, "p0", travel)).toMatchObject({ ok: false });
     expect(option(game(), "p1", { type: "scan_planet" })).toBeDefined();
     expect(option(s, "p1", { type: "scan_planet" })).toBeUndefined();
-    expect(applyAction(s, "p1", { type: "delete_planet", planet: "planet-a" })).toMatchObject({ ok: false });
+    expect(applyAction(s, "p1", { type: "delete_planet", equipment: "COMMAND_CENTER:ASTRO_MODULE", planet: "planet-a" })).toMatchObject({ ok: false });
     expect(option(s, "p1", { type: "delete_planet" })).toBeUndefined();
     expect(must(applyAction(s, "p0", turn("left"))).navigation.heading).toBe("west");
     s.ship.combustion = 4;
