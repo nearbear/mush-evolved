@@ -1388,3 +1388,20 @@ Resolving the merge of a collaborator's Diseases branch (#262) went smoothly for
 ### 2026-10-25 — Self Injury development action
 
 Added Self Injury as a free, instant, private development action parallel to Self Disease. The owner chose to draw from configured injuries not already held, using the game's seeded RNG; it is unavailable when no eligible injury remains and is not offered to bots. Wired it through the shared action registry, protocol, server cheat gate, client action labels, translations, and tests. Reused the existing disease status icon for the injury because no separate injury icon is currently wired.
+### 2026-10-25: Parallax stars behind the ship (#136)
+
+A static star field already existed in the Pixi renderer, so the issue was smaller than it read: added a second, transparent near-star layer (`starLayer`) over the dust, each moving at its own fraction of the camera (0.25 and 0.6), hid both while the ship is in orbit (`Scene.space`, from `view.navigation.orbiting`), and held them still under `prefers-reduced-motion`. Not checked visually in a browser. The DOM renderer still has no star field.
+
+### 2026-10-25: Correction, stars stream with the ship (#136)
+
+The first pass above misread the issue: it made the stars follow the camera and hid them in orbit. The owner wanted them to move on their own, faster as the Daedalus moves faster. Ship speed isn't a rule (travel is an instant jump), so the owner chose "stopped, then cruising": in orbit the stars hold still, otherwise they stream leftwards, and the speed eases between the two. `Scene.cruising` comes from `view.navigation.orbiting`; the renderer owns the clock. Reduced motion holds them still. I asked about direction and speed before building the second time; I should have asked before the first.
+
+### 2026-10-25: acting without a pointer (#250)
+Most of the keyboard path already existed (Inspect actions and inventory tiles are buttons), so the work was the seams: selecting from the room list now moves focus to the first action in Inspect (peek bar on phones); `useKeepFocus` puts focus back on the panel when the pressed button is replaced by the next view; action buttons announce their cost ("Take, 1 AP") with the visual number hidden from readers; the queue reads "Take Wrench, 1 AP" (cost only if the view still offers that action, since queued actions carry none); inventory tiles expose `aria-pressed`. `npm run a11y` now drives select-and-act by keyboard. Not done: Move has no separate inventory button (Inspect's Take/Drop cover it), and the check only acts when an Examine button exists.
+
+### 2026-10-25: Three paces for the stars (#136)
+
+The owner asked for a stopped pace (orbit), a cruising pace and a travelling pace, with the stars always showing. `ShipPace` and `PACE_SPEED` are in `scene.ts`; `shipPace(view.navigation)` is the one place that maps the view to a pace, and the hook for travelling (nothing returns it yet, as travel is an instant jump). The owner reported not seeing the earlier change; the drift was slow (6 and 20 px/s) and I never looked at it in a browser, so I doubled the rates.
+
+## 2026-10-25: delete_planet limited to the Astro terminal
+- Owner asked for `delete_planet` to work only at the Astro terminal (it had been free anywhere, with a TODO). Done by giving it an `equipment` field like `analyze_planet`: offered per terminal in the room, `cant_delete` otherwise; protocol parser, web button and tests updated. No new state, so no STATE_VERSION bump.

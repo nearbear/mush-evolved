@@ -82,6 +82,35 @@ function fields(u: number, v: number, seed: number): { dust: number; teal: numbe
 /** Field samples are this many pixels apart, then interpolated. */
 const STEP = 4;
 
+/** Sparkles: at most one per 128-pixel cell, wrapping at the edges like everything else. */
+function sparkles(size: number, seed: number, put: (x: number, y: number, color: number) => void) {
+  const cell = 128;
+  for (let cy = 0; cy < size / cell; cy++) {
+    for (let cx = 0; cx < size / cell; cx++) {
+      if (hash(cx, cy, seed + 20) > 0.55) continue;
+      const x = cx * cell + Math.floor(hash(cx, cy, seed + 21) * cell);
+      const y = cy * cell + Math.floor(hash(cx, cy, seed + 22) * cell);
+      if (hash(cx, cy, seed + 23) < 0.7) {
+        put(x, y, SPARKLE.center);
+        for (const s of [-1, 1]) {
+          put(x + s, y, SPARKLE.near);
+          put(x + 2 * s, y, SPARKLE.far);
+          put(x, y + s, SPARKLE.near);
+          put(x, y + 2 * s, SPARKLE.far);
+          put(x, y + 3 * s, SPARKLE.far);
+        }
+      } else {
+        // A small one: a bright pixel with one-pixel arms.
+        put(x, y, STARS[STARS.length - 1]!);
+        for (const s of [-1, 1]) {
+          put(x + s, y, STARS[4]!);
+          put(x, y + s, STARS[4]!);
+        }
+      }
+    }
+  }
+}
+
 /** The star field, `size` pixels square (a multiple of 4). */
 export function starfield(size: number, seed = 1): StarfieldImage {
   const rgba = new Uint8ClampedArray(size * size * 4);
@@ -131,31 +160,28 @@ export function starfield(size: number, seed = 1): StarfieldImage {
     }
   }
 
-  // Sparkles: at most one per 128-pixel cell, wrapping at the edges like everything else.
-  const cell = 128;
-  for (let cy = 0; cy < size / cell; cy++) {
-    for (let cx = 0; cx < size / cell; cx++) {
-      if (hash(cx, cy, seed + 20) > 0.55) continue;
-      const x = cx * cell + Math.floor(hash(cx, cy, seed + 21) * cell);
-      const y = cy * cell + Math.floor(hash(cx, cy, seed + 22) * cell);
-      if (hash(cx, cy, seed + 23) < 0.7) {
-        put(x, y, SPARKLE.center);
-        for (const s of [-1, 1]) {
-          put(x + s, y, SPARKLE.near);
-          put(x + 2 * s, y, SPARKLE.far);
-          put(x, y + s, SPARKLE.near);
-          put(x, y + 2 * s, SPARKLE.far);
-          put(x, y + 3 * s, SPARKLE.far);
-        }
-      } else {
-        // A small one: a bright pixel with one-pixel arms.
-        put(x, y, STARS[STARS.length - 1]!);
-        for (const s of [-1, 1]) {
-          put(x + s, y, STARS[4]!);
-          put(x, y + s, STARS[4]!);
-        }
-      }
+  sparkles(size, seed, put);
+  return { size, rgba };
+}
+
+/**
+ * Stars alone on a transparent ground, the near layer over `starfield`: lone stars and sparkles, so it
+ * can drift at its own rate and the two read as different depths. Tiles seamlessly like the sky.
+ */
+export function starLayer(size: number, seed = 2): StarfieldImage {
+  const rgba = new Uint8ClampedArray(size * size * 4);
+  const put = (x: number, y: number, color: number) => {
+    const i = (mod(y, size) * size + mod(x, size)) * 4;
+    rgba[i] = color >> 16;
+    rgba[i + 1] = (color >> 8) & 0xff;
+    rgba[i + 2] = color & 0xff;
+    rgba[i + 3] = 255;
+  };
+  for (let y = 0; y < size; y++) {
+    for (let x = 0; x < size; x++) {
+      if (hash(x, y, seed + 30) < 0.0006) put(x, y, STARS[Math.floor(hash(x, y, seed + 31) * STARS.length)]!);
     }
   }
+  sparkles(size, seed, put);
   return { size, rgba };
 }

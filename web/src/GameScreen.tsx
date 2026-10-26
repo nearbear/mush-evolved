@@ -25,7 +25,7 @@ import { SelfPanel } from "./hud/SelfPanel.tsx";
 import { resolveTarget } from "./hud/targets.ts";
 import { TopBar } from "./hud/TopBar.tsx";
 import { gameSocket, type SeatTicket } from "./net.ts";
-import type { Corpse, Occupant } from "./iso/scene.ts";
+import { shipPace, type Corpse, type Occupant } from "./iso/scene.ts";
 import { LeavingIsoRoom } from "./iso/LeavingRoom.tsx";
 import { recentDoorMoves } from "./iso/doorMoves.ts";
 import { useShipLayout } from "./iso/shipLayout.ts";
@@ -65,6 +65,15 @@ export function GameScreen({ ticket, onLeave, waking = false }: { ticket: SeatTi
   // The end screen opens by itself when the game ends (and after a reload); closing it lets you look around.
   const [endClosed, setEndClosed] = useState(false);
   const [peekDoor, setPeekDoor] = useState<RoomId | null>(null);
+  // Bumped when the room list selects something, to move focus to where its actions are (a screen reader's next step).
+  const [focusActions, setFocusActions] = useState(0);
+  // biome-ignore lint/correctness/useExhaustiveDependencies: `focusActions` is a trigger, read from the DOM once the selection has rendered.
+  useEffect(() => {
+    if (!focusActions) return;
+    const panel = document.querySelector<HTMLElement>(mobile ? ".peek-bar" : ".inspect");
+    const first = panel?.querySelector<HTMLElement>(mobile ? ".peek-actions button:not([inert])" : ".inspect-actions button");
+    (first ?? panel)?.focus();
+  }, [focusActions]);
   const here = view?.you.room;
   // biome-ignore lint/correctness/useExhaustiveDependencies: `here` is a trigger: arriving somewhere new clears the door peek.
   useEffect(() => setPeekDoor(null), [here]);
@@ -235,11 +244,12 @@ export function GameScreen({ ticket, onLeave, waking = false }: { ticket: SeatTi
                 bubbles={bubbles}
                 clockOffset={clockOffset}
                 pilgredRepaired={view.pilgredRepaired}
+                pace={shipPace(view.navigation)}
               />
             ) : (
               <section className="iso-room loading">{t("common.loadingShip")}</section>
             )}
-            {you.alive && <RoomList view={view} layout={layout} reachable={reachable} onSelect={select} onMove={move} />}
+            {you.alive && <RoomList view={view} layout={layout} reachable={reachable} onSelect={(target) => { select(target); setFocusActions((n) => n + 1); }} onMove={move} />}
             {you.alive && <ActionQueue view={view} onClear={() => post({ type: "clearQueue" })} />}
             {mobile && <ShipOverlay view={view} />}
             {you.alive && <InventoryOverlay view={view} selected={target} onAction={send} onSelect={select} zoom={zoom} onZoom={setZoom} />}

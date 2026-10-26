@@ -30,7 +30,7 @@ export function PlanetList({ view, onAction, terminal }: Props) {
       <ul>
         {view.planets.map((planet) => {
           const analyze = terminal && view.actions.find(({ action: a }) => a.type === "analyze_planet" && a.equipment === terminal.id && a.planet === planet.id);
-          const remove = view.actions.find(({ action: a }) => a.type === "delete_planet" && a.planet === planet.id);
+          const remove = terminal && view.actions.find(({ action: a }) => a.type === "delete_planet" && a.equipment === terminal.id && a.planet === planet.id);
           return (
             <li key={planet.id} className="planet-item">
               <img className="planet-picture" src={pictureOf(planet)} alt="" />

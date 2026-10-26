@@ -104,64 +104,6 @@ function aimedAt(view: PlayerView, a: Action, target: Target): boolean {
   }
 }
 
-const ACTION_LABEL_KEYS = {
-  examine: "actions.examine",
-  access: "actions.access",
-  dispense: "actions.dispense",
-  take_fuel: "actions.takeFuel",
-  load_fuel: "actions.loadFuel",
-  unload_fuel: "actions.unloadFuel",
-  return_fuel: "actions.returnFuel",
-  take_oxygen: "actions.takeOxygen",
-  return_oxygen: "actions.returnOxygen",
-  check_combustion: "actions.checkCombustion",
-  lie_down: "actions.lieDown",
-  shower: "actions.shower",
-  consume: "actions.consume",
-  hide: "actions.hide",
-  search: "actions.search",
-  cook: "actions.cook",
-  express_cook: "actions.expressCook",
-  fungal_cuisine: "actions.fungalCuisine",
-  build: "actions.build",
-  jettison: "actions.jettison",
-  install: "actions.install",
-  read_book: "actions.readBook",
-  water: "actions.water",
-  treat: "actions.treat",
-  sow: "actions.sow",
-  repair_hull: "actions.repairHull",
-  takeoff: "actions.takeoff",
-  land: "actions.land",
-  uninstall: "actions.uninstall",
-  dismantle: "actions.dismantle",
-  bond: "actions.bond",
-  dtt: "actions.dtt",
-  stt: "actions.stt",
-  heal: "actions.heal",
-  vaccinate: "actions.vaccinate",
-  punch: "actions.punch",
-  interrogate: "actions.interrogate",
-  chitchat: "actions.chitchat",
-  anathema: "actions.anathema",
-  fiery_speech: "actions.fierySpeech",
-  boring_speech: "actions.boringSpeech",
-  spike: "actions.spike",
-  body_transfer: "actions.bodyTransfer",
-  extract_spore: "actions.extractSpore",
-  self_disease: "actions.selfDisease",
-  self_injury: "actions.selfInjury",
-  get_up: "actions.getUp",
-  accommodate: "actions.accommodate",
-  accept_accommodation: "actions.acceptAccommodation",
-  stop_accommodation: "actions.stopAccommodation",
-} as const;
-
 /** The carried weapon an attack uses, for its button text ("Attack (knife)"); a carried weapon is in the inventory. */
 export const attackWeapon = (view: PlayerView, action: Action): ItemView | undefined =>
   action.type === "attack" ? view.inventory.find((i) => i.id === action.weapon) : undefined;
-
-/** i18n key for the button text of an action aimed at a target (Inspect panel and peek bar). */
-export const actionLabelKey = (action: Action) => (ACTION_LABEL_KEYS as Partial<Record<Action["type"], string>>)[action.type] as
-  | (typeof ACTION_LABEL_KEYS)[keyof typeof ACTION_LABEL_KEYS]
-  | undefined;

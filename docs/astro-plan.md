@@ -38,7 +38,7 @@ The snapshot has no server code, so we have the data and the generator but not t
 - Actions, one file each: `actions/scan.ts` (`getSuccessChance` = `config.astro.scanChance * 1.25^failures`, capped at 1; `fail` increments failures; success resets them and adds a planet), `actions/analyze_planet.ts`, `actions/delete_planet.ts`. Costs and odds go in `config.astro`. Scan cost goes through a modifier hook so Astrophysicist and the project can lower it later.
 - `viewFor`: `PlayerView.planets` holds the viewer's own planets only. Unknown sectors are sent as unknown with no tag, so the client never gets them. Other players' planets never appear in `OtherPlayerView`.
 - Tests: the generator is deterministic for a seed and respects size and `max`; odds compound and reset; cap; delete; analysis reveals exactly one sector by seek; illegal actions leave state unchanged; a `viewFor` leak test (another player's planets and your own unknown tags never appear).
-- Client: the Astro terminal window lists your planets (name, size, tag icons or `tag_unknown`, a trash button) plus scan and analyse buttons from `view.actions`. Delete is reachable anywhere: the trash button needs a place outside the terminal window, so it works on a phone without walking to the terminal.
+- Client: the Astro terminal window lists your planets (name, size, tag icons or `tag_unknown`, a trash button) plus scan and analyse buttons from `view.actions`. Delete is terminal-only (owner, 2026-10-25), so the trash button lives in that window only.
 - i18n: tag names and descriptions in en/fr/es (French from the sheet). Planet names stay as generated (French syllables, proper nouns).
 
 ## Positions and sizes (owner, 2026-10-22)

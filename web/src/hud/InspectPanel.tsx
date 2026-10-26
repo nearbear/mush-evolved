@@ -1,6 +1,7 @@
 // Left panel: whatever is selected (a person, room equipment, or an item),
 // with the actions the server allows on it. Falls back to your own character. The asset credits close the panel.
 
+import { useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useNames } from "../i18n/names.ts";
 import type { CSSProperties, ReactNode } from "react";
@@ -17,7 +18,8 @@ import { ActionLabel } from "./ActionLabel.tsx";
 import { SkillSlots } from "./SkillSlots.tsx";
 import { StatusIcon, StatusIcons } from "./StatusIcons.tsx";
 import { ActionButton } from "./ActionButton.tsx";
-import { actionLabelKey, attackWeapon, optionsOn, resolveTarget, type Resolved } from "./targets.ts";
+import { useKeepFocus } from "./useKeepFocus.ts";
+import { attackWeapon, optionsOn, resolveTarget, type Resolved } from "./targets.ts";
 
 export function InspectPanel({
   view,
@@ -35,16 +37,25 @@ export function InspectPanel({
   const { t } = useTranslation();
   const names = useNames();
   const labelFor = ({ action, cost, chance }: ActionOption): ReactNode => {
-    const key = actionLabelKey(action);
     const weapon = attackWeapon(view, action);
-    const text = weapon ? t("actions.attackWith", { weapon: names.itemOf(weapon) }) : key ? t(key) : action.type;
+    const text = weapon ? t("actions.attackWith", { weapon: names.itemOf(weapon) }) : names.action(action.type);
     return <ActionLabel text={text} cost={cost} chance={chance} visibility={actionVisibility(action.type)} />;
   };
   const resolved = resolveTarget(view, target);
   const options = optionsOn(view, target);
+  const root = useRef<HTMLElement>(null);
+  useKeepFocus(root);
+  const targetName =
+    resolved?.kind === "player"
+      ? names.character(resolved.person.character)
+      : resolved?.kind === "equipment"
+        ? names.equipment(resolved.equipment.type)
+        : resolved
+          ? names.itemOf(resolved.item)
+          : undefined;
 
   return (
-    <aside className="panel inspect">
+    <aside className="panel inspect" ref={root} tabIndex={-1}>
       <div className="panel-head">
         <h2>{t("nav.inspect")}</h2>
       </div>
@@ -55,7 +66,7 @@ export function InspectPanel({
         </div>
       )}
       {options.length > 0 && (
-        <div className="inspect-actions">
+        <div className="inspect-actions" role="group" aria-label={targetName}>
           {options.map((o) => (
             <ActionButton key={JSON.stringify(o.action)} view={view} option={o} onAction={onAction}>
               {labelFor(o)}

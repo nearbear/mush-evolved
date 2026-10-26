@@ -13,6 +13,7 @@ import { ConsumeEffects } from "./ConsumeEffects.tsx";
 import { ItemFace } from "./ItemFace.tsx";
 import { ItemIcon } from "./ItemIcon.tsx";
 import { sameTarget } from "./targets.ts";
+import { useKeepFocus } from "./useKeepFocus.ts";
 
 type Zone = "room" | "inventory";
 
@@ -52,6 +53,8 @@ export function InventoryPanel({
   const [dragging, setDragging] = useState<{ id: string; from: Zone } | null>(null);
   const [over, setOver] = useState<Zone | null>(null);
 
+  const root = useRef<HTMLDivElement>(null);
+  useKeepFocus(root);
   const roomGrid = useOverflowsRow(view.roomItems.length);
 
   const legal = (type: "take" | "drop", item: ItemView) =>
@@ -99,6 +102,7 @@ export function InventoryPanel({
         >
           <button type="button"
             aria-label={names.itemOf(item)}
+            aria-pressed={isSelected}
             className={`item-tile${isSelected ? " selected" : ""}${dragging?.id === item.id ? " dragging" : ""}`}
             draggable
             onMouseDown={(e) => {
@@ -125,7 +129,7 @@ export function InventoryPanel({
           </button>
         </Hint>
         {isSelected && legal(type, item) && (
-          <button type="button" className="item-action" onClick={() => onAction({ type, item: item.id })}>
+          <button type="button" className="item-action" aria-label={`${zone === "room" ? t("actions.take") : t("actions.drop")} ${names.itemOf(item)}`} onClick={() => onAction({ type, item: item.id })}>
             {zone === "room" ? t("actions.take") : t("actions.drop")}
           </button>
         )}
@@ -135,7 +139,7 @@ export function InventoryPanel({
   const empty = Math.max(0, view.inventorySlots - view.inventory.length);
 
   return (
-    <div className="self-cards">
+    <div className="self-cards" ref={root} tabIndex={-1}>
       <section {...zoneProps("room")} data-zone="room">
         <h2>{t("inventory.inRoom")}</h2>
         {view.roomItems.length === 0 ? (

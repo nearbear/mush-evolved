@@ -43,6 +43,7 @@ import {
   type Occupant,
   type SceneRendererProps,
   type Seat,
+  type ShipPace,
 } from "./scene.ts";
 import {
   bounds,
@@ -143,6 +144,7 @@ export function IsoRoom({
   clockOffset,
   zoom,
   pilgredRepaired,
+  pace,
 }: {
   layout: ShipLayout;
   room: RoomId;
@@ -188,6 +190,8 @@ export function IsoRoom({
   clockOffset: number;
   /** PILGRED works (public): its core in the engine room is drawn as the animated globe. */
   pilgredRepaired: boolean;
+  /** How fast the ship is going: the stars behind it stream at that rate. */
+  pace: ShipPace;
 }) {
   const names = useNames();
   const { t } = useTranslation();
@@ -499,8 +503,9 @@ export function IsoRoom({
         hoverKey,
         ownCells,
         doors,
+        pace,
       }),
-    [scene, box, walkersKey, walkersLook, doorsKey, seatsKey, occupants, nearby, corpses, equipmentByKey, reachable, selected, selectedDoor, hoverKey, ownCells, looks],
+    [scene, box, walkersKey, walkersLook, doorsKey, seatsKey, occupants, nearby, corpses, equipmentByKey, reachable, selected, selectedDoor, hoverKey, ownCells, looks, pace],
   );
   // Badges and bubbles go over the people in this room.
   const anchors = drawn.sprites.flatMap((s): Anchor[] => {

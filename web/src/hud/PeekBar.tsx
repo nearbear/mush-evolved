@@ -8,7 +8,8 @@ import { useNames } from "../i18n/names.ts";
 import { actionVisibility, type Action, type ActionOption, type PlayerView, type RoomId, type Target } from "@mush2/shared";
 import { ActionLabel } from "./ActionLabel.tsx";
 import { ActionButton } from "./ActionButton.tsx";
-import { actionLabelKey, attackWeapon, optionsOn, resolveTarget } from "./targets.ts";
+import { useKeepFocus } from "./useKeepFocus.ts";
+import { attackWeapon, optionsOn, resolveTarget } from "./targets.ts";
 
 export function PeekBar({
   view,
@@ -31,9 +32,8 @@ export function PeekBar({
   const { t } = useTranslation();
   const names = useNames();
   const labelFor = ({ action, cost, chance }: ActionOption): ReactNode => {
-    const key = actionLabelKey(action);
     const weapon = attackWeapon(view, action);
-    const text = weapon ? t("actions.attackWith", { weapon: names.itemOf(weapon) }) : key ? t(key) : action.type;
+    const text = weapon ? t("actions.attackWith", { weapon: names.itemOf(weapon) }) : names.action(action.type);
     return <ActionLabel text={text} cost={cost} chance={chance} visibility={actionVisibility(action.type)} />;
   };
   if (door) {
@@ -87,8 +87,10 @@ function Bar({
 }) {
   const { t } = useTranslation();
   const actions = useOneRow();
+  const root = useRef<HTMLDivElement>(null);
+  useKeepFocus(root);
   return (
-    <div className="peek-bar" role="region" aria-label={t("peek.selection")}>
+    <div className="peek-bar" ref={root} tabIndex={-1} role="region" aria-label={t("peek.selection")}>
       <div className="peek-name">
         <strong>{heading}</strong>
         {isBot && <span className="tag">{t("common.ai")}</span>}
