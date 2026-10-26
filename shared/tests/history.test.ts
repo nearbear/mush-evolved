@@ -157,8 +157,8 @@ describe("Torturer's Interrogate", () => {
   });
 
   it("rolls the decided dirt and injury chances", () => {
-    expect(ACTIONS.interrogate.dirtChanceMods?.(ship("torturer", DEFAULT_CONFIG), player(ship("torturer"), "p0"), interrogate("p1"))).toBe(0.15);
-    expect(ACTIONS.interrogate.injuryChanceMods?.(ship("torturer", DEFAULT_CONFIG), player(ship("torturer"), "p0"), interrogate("p1"))).toBe(0.1);
+    expect(ACTIONS.interrogate.dirtChanceMods(ship("torturer", DEFAULT_CONFIG), player(ship("torturer"), "p0"), interrogate("p1"))).toBe(0.15);
+    expect(ACTIONS.interrogate.injuryChanceMods(ship("torturer", DEFAULT_CONFIG), player(ship("torturer"), "p0"), interrogate("p1"))).toBe(0.1);
   });
 
   it("sends the daily flag to the torturer only", () => {

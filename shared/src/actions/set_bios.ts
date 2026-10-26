@@ -19,10 +19,6 @@ export class SetBiosAction extends Action<SetBiosActionData> {
     super("set_bios");
   }
 
-  override getCost(): { ap: number; mp: number } {
-    return { ap: 0, mp: 0 };
-  }
-
   override getCandidates(state: Readonly<GameState>, player: Readonly<PlayerState>): SetBiosActionData[] {
     if (!canChangeBios(state, player)) return [];
     return biosTerminalsHere(state, player).flatMap((terminal) =>

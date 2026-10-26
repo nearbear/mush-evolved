@@ -133,10 +133,6 @@ export class AcceptAccommodationAction extends Action<AcceptAccommodationActionD
     super("accept_accommodation");
   }
 
-  override getCost(): { ap: number; mp: number } {
-    return { ap: 0, mp: 0 };
-  }
-
   override getCandidates(state: Readonly<GameState>, player: Readonly<PlayerState>): AcceptAccommodationActionData[] {
     return liveOffers(state, player).map((o) => ({ type: "accept_accommodation", target: o.id }));
   }
@@ -161,10 +157,6 @@ export class StopAccommodationAction extends Action<StopAccommodationActionData>
 
   constructor() {
     super("stop_accommodation");
-  }
-
-  override getCost(): { ap: number; mp: number } {
-    return { ap: 0, mp: 0 };
   }
 
   /** On yourself while you are pushed; on the person you push while you push. */

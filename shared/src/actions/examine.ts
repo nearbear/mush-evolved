@@ -23,10 +23,6 @@ export class ExamineAction extends Action<ExamineActionData> {
     return visibleTargets(state, player).some((t) => t.kind === target.target.kind && t.id === target.target.id) ? null : "cant_see";
   }
 
-  override getCost(): { ap: number; mp: number } {
-    return { ap: 0, mp: 0 };
-  }
-
   override apply(state: GameState, player: PlayerState, target: ExamineActionData): void {
     switch (target.target.kind) {
       case "player":

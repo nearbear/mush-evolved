@@ -24,10 +24,6 @@ export class CheckCombustionAction extends Action<CheckCombustionActionData> {
     return equipmentHere(state, player, "COMBUSTION_CHAMBER_ACCESS").some((chamber) => chamber.id === target.equipment) ? null : "cant_check_combustion";
   }
 
-  override getCost(): { ap: number; mp: number } {
-    return { ap: 0, mp: 0 };
-  }
-
   override apply(state: GameState, player: PlayerState, _target: CheckCombustionActionData): void {
     logPrivate(state, player.id, "checkedCombustion", combustionLevel(state));
   }

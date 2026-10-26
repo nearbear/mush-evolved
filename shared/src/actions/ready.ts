@@ -23,10 +23,6 @@ export class ReadyAction extends Action<ReadyActionData> {
     return state.config.manualCycles ? null : "manual_cycles_off";
   }
 
-  override getCost(): { ap: number; mp: number } {
-    return { ap: 0, mp: 0 };
-  }
-
   override apply(state: GameState, player: PlayerState): void {
     player.ready = true;
   }

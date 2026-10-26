@@ -27,10 +27,4 @@ export class AccessAction extends Action<AccessActionData> {
     const equip = state.config.equipment[player.room]?.find((eq) => eq.id === target.equipment);
     return equip && EQUIPMENT_TYPES[equip.type]?.terminal ? null : "cant_access";
   }
-
-  override getCost(): { ap: number; mp: number } {
-    return { ap: 0, mp: 0 };
-  }
-
-  override apply(): void {}
 }

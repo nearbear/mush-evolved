@@ -21,10 +21,6 @@ export class DispenseAction extends Action<DispenseActionData> {
     return state.dispensedOn[target.equipment] === state.cycle ? "empty" : null;
   }
 
-  override getCost(): { ap: number; mp: number } {
-    return { ap: 0, mp: 0 };
-  }
-
   override dirtChance(state: Readonly<GameState>): number {
     return state.config.dispense.dirtyChance;
   }

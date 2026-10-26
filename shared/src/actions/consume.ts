@@ -26,10 +26,6 @@ export class ConsumeAction extends Action<ConsumeActionData> {
     return isFullBelly(state, player) ? "full_belly" : null;
   }
 
-  override getCost(): { ap: number; mp: number } {
-    return { ap: 0, mp: 0 };
-  }
-
   override dirtChance(state: Readonly<GameState>): number {
     return state.config.consume.dirtyChance;
   }

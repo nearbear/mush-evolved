@@ -1,4 +1,4 @@
-import { actionCost, actionSuccessRate, actionDirtRate, actionInjuryRate } from "../modifiers.ts";
+import { actionCost, actionSuccessRate, actionDirtRate, actionInjuryRate, type CostContext } from "../modifiers.ts";
 import type { Action as AnyAction, GameState, PlayerState } from "../types.ts";
 
 /** Others you could bond with, share with or hit: living, in your room, not yourself. */
@@ -34,9 +34,6 @@ export class Action<T extends { type: string }> {
   timed: boolean = true;
   /** Kept in the actor's action history (history.ts), which Interrogate and Chitchat reveal. False for the few eMush leaves out, and for moving. */
   recorded: boolean = true;
-  baseAPCost: number = 0;
-  baseMPCost: number = 0;
-  baseSuccessChance: number = 1;
 
   constructor(type: string) {
     this.type = type;
@@ -56,8 +53,13 @@ export class Action<T extends { type: string }> {
    * and the price checked can't disagree.
    */
   cost(state: Readonly<GameState>, player: Readonly<PlayerState>, target: T): { ap: number; mp: number } {
+    return actionCost(this.getCost(state, player, target), this.context(state, player, target));
+  }
+
+  /** What modifiers see of this action (modifiers.ts). */
+  private context(state: Readonly<GameState>, player: Readonly<PlayerState>, target: T): CostContext {
     // Every T is a member of the Action union; share.ts and transfer.ts are generic over the type name, so TS can't see it.
-    return actionCost(this.getCost(state, player, target), { state, actor: player, action: target as unknown as AnyAction, tags: this.tags });
+    return { state, actor: player, action: target as unknown as AnyAction, tags: this.tags };
   }
 
   /** How far modifiers move the price from `getCost` (can be negative). Queued actions compare it (queue.ts). */
@@ -68,7 +70,7 @@ export class Action<T extends { type: string }> {
   }
 
   getCost(state: Readonly<GameState>, player: Readonly<PlayerState>, target: T): { ap: number; mp: number } {
-    return { ap: this.baseAPCost, mp: this.baseMPCost };
+    return { ap: 0, mp: 0 };
   }
 
   canAfford(state: Readonly<GameState>, player: Readonly<PlayerState>, target: T): string | null {
@@ -79,11 +81,11 @@ export class Action<T extends { type: string }> {
   }
 
   getSuccessChance(state: Readonly<GameState>, player: Readonly<PlayerState>, target: T): number {
-    return this.baseSuccessChance;
+    return 1;
   }
 
   chance(state: Readonly<GameState>, player: Readonly<PlayerState>, target: T): number {
-    return actionSuccessRate(this.getSuccessChance(state, player, target),  { state, actor: player, action: target as unknown as AnyAction, tags: this.tags });
+    return actionSuccessRate(this.getSuccessChance(state, player, target), this.context(state, player, target));
   }
 
   dirtChance(state: Readonly<GameState>, player: Readonly<PlayerState>, target: T): number {
@@ -94,12 +96,12 @@ export class Action<T extends { type: string }> {
     return 0;
   }
 
-  dirtChanceMods(state: Readonly<GameState>, player: Readonly<PlayerState>, target: T){
-    return actionDirtRate(this.dirtChance(state, player, target),  { state, actor: player, action: target as unknown as AnyAction, tags: this.tags } );
+  dirtChanceMods(state: Readonly<GameState>, player: Readonly<PlayerState>, target: T): number {
+    return actionDirtRate(this.dirtChance(state, player, target), this.context(state, player, target));
   }
 
-  injuryChanceMods(state: Readonly<GameState>, player: Readonly<PlayerState>, target: T){
-    return actionInjuryRate(this.injuryChance(state, player, target),  { state, actor: player, action: target as unknown as AnyAction, tags: this.tags } );
+  injuryChanceMods(state: Readonly<GameState>, player: Readonly<PlayerState>, target: T): number {
+    return actionInjuryRate(this.injuryChance(state, player, target), this.context(state, player, target));
   }
 
   /**

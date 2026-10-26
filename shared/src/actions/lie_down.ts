@@ -64,10 +64,5 @@ export class GetUpAction extends Action<GetUpActionData> {
     return player.modifiers.includes("lying_down") ? null : "not_lying_down";
   }
 
-  override getCost(): { ap: number; mp: number } {
-    return { ap: 0, mp: 0 };
-  }
-
-  // performAction has already removed the modifier.
-  override apply(): void {}
+  // No apply: performAction has already removed the modifier.
 }

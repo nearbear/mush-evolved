@@ -198,7 +198,7 @@ export function unaffordableActions(state: GameState, playerId: PlayerId): Actio
       if (refused !== "cant_afford" && refused !== NO_SPACE) return [];
       const cost = def.cost(state, p, a);
       const lacks: ActionOption["lacks"] = [...(refused === NO_SPACE ? (["space"] as const) : []), ...(p.ap < cost.ap ? (["ap"] as const) : []), ...(p.mp < cost.mp ? (["mp"] as const) : [])];
-      return [{ action: a, cost, chance: def.chance?.(state, p, a) ?? 1, tags: [...def.tags], lacks }];
+      return [{ action: a, cost, chance: def.chance(state, p, a), tags: [...def.tags], lacks }];
     }),
   );
 }
@@ -221,9 +221,9 @@ export function performAction(next: GameState, actor: PlayerState, action: Actio
   if (!actor.alive || next.phase !== "playing" || !def || def.check(next, actor, action) !== null) return false;
   const cost = def.cost(next, actor, action);
   // Odds are read before the cost is paid, as the button showed them.
-  const chance = def.chance?.(next, actor, action) ?? 1;
-  const dirtyChance = def.dirtChanceMods?.(next, actor, action) ?? 0;
-  const injuryChance = def.injuryChanceMods?.(next, actor, action) ?? 0;
+  const chance = def.chance(next, actor, action);
+  const dirtyChance = def.dirtChanceMods(next, actor, action);
+  const injuryChance = def.injuryChanceMods(next, actor, action);
   if (def.timed && action.type !== "lie_down") getUp(actor);
   actor.ap -= cost.ap;
   actor.mp -= cost.mp;
@@ -231,7 +231,7 @@ export function performAction(next: GameState, actor: PlayerState, action: Actio
   if (chance < 1) {
     if (rollFloat(next) < chance) def.apply(next, actor, action);
     else {
-      def.fail?.(next, actor, action);
+      def.fail(next, actor, action);
       actionFailed(next, actor, cost.ap);
     }
   } else {
@@ -530,7 +530,7 @@ export function viewFor(state: GameState, playerId: PlayerId): PlayerView {
 function legalOptions(state: GameState, p: PlayerState, legal: Action[]): ActionOption[] {
   return legal.map((a) => {
     const def = ACTIONS[a.type] as ActionDef<Action>;
-    return { action: a, cost: def.cost(state, p, a), chance: def.chance?.(state, p, a) ?? 1, tags: [...def.tags], lacks: [] };
+    return { action: a, cost: def.cost(state, p, a), chance: def.chance(state, p, a), tags: [...def.tags], lacks: [] };
   });
 }
 
