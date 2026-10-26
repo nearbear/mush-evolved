@@ -187,6 +187,7 @@ describe("acting ends the push (owner, 2026-10-24)", () => {
     expect(endsAccommodation(research, "p1", "public")).toBe(true);
     expect(endsAccommodation({ type: "take_fuel", equipment: "e1" }, "p1", "public")).toBe(true);
     expect(endsAccommodation({ type: "punch", target: "p2" }, "p1", "public")).toBe(true);
+    expect(endsAccommodation({ type: "vaccinate", target: "p2" }, "p1", "public")).toBe(true);
     expect(endsAccommodation({ type: "heal", target: "p1" }, "p1", "public")).toBe(false);
     expect(endsAccommodation({ type: "take", item: "i1" }, "p1", "public")).toBe(false);
     expect(endsAccommodation({ type: "drop", item: "i1" }, "p1", "public")).toBe(false);
