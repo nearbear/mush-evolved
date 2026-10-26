@@ -1,6 +1,4 @@
-import type { BiosOption } from "./bios.ts";
 import type { CharacterId } from "./characters.ts";
-import type { TurnSide } from "./navigation.ts";
 
 export * from "./types/chat.ts";
 export * from "./types/config.ts";
@@ -91,78 +89,4 @@ export interface PlantState {
  */
 export type Target = { kind: "player"; id: PlayerId } | { kind: "equipment"; id: string } | { kind: "item"; id: ItemId };
 
-export type Action =
-  | { type: "move"; to: RoomId }
-  | { type: "take"; item: ItemId }
-  | { type: "drop"; item: ItemId }
-  | { type: "dismantle"; item: ItemId }
-  | { type: "dismantle"; equipment: string }
-  | { type: "dispense"; equipment: string }
-  | { type: "consume"; item: ItemId }
-  | { type: "hide"; item: ItemId }
-  | { type: "search" }
-  | { type: "cook"; item: ItemId }
-  | { type: "water"; item: ItemId }
-  | { type: "treat"; item: ItemId }
-  | { type: "sow"; item: ItemId; fruit: ItemId }
-  | { type: "express_cook"; item: ItemId }
-  | { type: "build"; item: ItemId }
-  | { type: "jettison"; item: ItemId }
-  | { type: "install"; item: ItemId }
-  | { type: "uninstall"; equipment: string }
-  | { type: "examine"; target: Target }
-  | { type: "bond"; target: PlayerId }
-  | { type: "dtt"; target: PlayerId }
-  | { type: "stt"; target: PlayerId }
-  | { type: "extract_spore" }
-  | { type: "lie_down"; equipment: string }
-  | { type: "get_up" }
-  | { type: "accommodate"; target: PlayerId }
-  | { type: "accept_accommodation"; target: PlayerId }
-  | { type: "stop_accommodation"; target: PlayerId }
-  | { type: "shower"; equipment: string }
-  | { type: "access"; equipment: string }
-  | { type: "research"; equipment: string; research: string }
-  | { type: "project"; equipment: string; project: string }
-  | { type: "repair_pilgred"; equipment: string }
-  | { type: "return_to_sol"; equipment: string }
-  | { type: "turn_ship"; equipment: string; side: TurnSide }
-  | { type: "travel"; equipment: string }
-  | { type: "leave_orbit"; equipment: string }
-  | { type: "take_fuel"; equipment: string }
-  | { type: "load_fuel"; equipment: string }
-  | { type: "unload_fuel"; equipment: string }
-  | { type: "return_fuel"; equipment: string }
-  | { type: "take_oxygen"; equipment: string }
-  | { type: "return_oxygen"; equipment: string }
-  | { type: "check_combustion"; equipment: string }
-  | { type: "contact_sol"; equipment: string }
-  | { type: "decode_rebel"; equipment: string; base: string }
-  | { type: "contact_xyloph"; equipment: string }
-  | { type: "update_neron"; equipment: string }
-  | { type: "set_bios"; equipment: string; option: BiosOption; value: boolean }
-  | { type: "scan_planet"; equipment: string }
-  | { type: "analyze_planet"; equipment: string; planet: string }
-  | { type: "delete_planet"; equipment: string; planet: string }
-  | { type: "turret_attack"; equipment: string; hunter: string }
-  | { type: "repair_hull"; item: ItemId }
-  | { type: "takeoff"; equipment: string }
-  | { type: "land"; equipment: string }
-  | { type: "heal"; target: PlayerId }
-  | { type: "vaccinate"; target: PlayerId }
-  | { type: "punch"; target: PlayerId }
-  | { type: "interrogate"; target: PlayerId }
-  | { type: "chitchat"; target: PlayerId }
-  | { type: "anathema"; target: PlayerId }
-  | { type: "fiery_speech" }
-  | { type: "boring_speech" }
-  | { type: "attack"; weapon: ItemId; target: PlayerId }
-  | { type: "attack"; weapon: ItemId }
-  | { type: "spike"; target: PlayerId }
-  | { type: "fungal_cuisine"; item: ItemId }
-  | { type: "body_transfer"; target: PlayerId }
-  | { type: "pick_skill"; skill: string }
-  | { type: "read_book"; item: ItemId }
-  | { type: "self_disease" }
-  | { type: "self_injury" }
-  | { type: "ready" };
+export type { Action } from "./actions.ts";

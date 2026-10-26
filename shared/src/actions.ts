@@ -65,7 +65,7 @@ import { TreatAction } from "./actions/treat.ts";
 import { SowAction } from "./actions/sow.ts";
 import { SelfDiseaseAction } from "./actions/self_disease.ts";
 import { SelfInjuryAction } from "./actions/self_injury.ts";
-import type { Action, GameState, PlayerState } from "./types.ts";
+import type { GameState, PlayerState } from "./types.ts";
 
 export type ActionType = Action["type"];
 export type ActionOf<T extends ActionType> = Extract<Action, { type: T }>;
@@ -100,7 +100,7 @@ export interface ActionDef<A extends Action> {
   fail?(next: GameState, player: PlayerState, action: A): void;
 }
 
-export const ACTIONS: { [T in ActionType]: ActionDef<ActionOf<T>> } = {
+const REGISTRY = {
   ready: new ReadyAction(),
   move: new MoveAction(),
   take: new TransferAction("take"),
@@ -174,6 +174,11 @@ export const ACTIONS: { [T in ActionType]: ActionDef<ActionOf<T>> } = {
   self_disease: new SelfDiseaseAction(),
   self_injury: new SelfInjuryAction(),
 };
+
+/** Every action a player can send: each class's own data shape (`XyzActionData` in its file), so a new action needs only its entry above. */
+export type Action = ReturnType<(typeof REGISTRY)[keyof typeof REGISTRY]["candidates"]>[number];
+
+export const ACTIONS: { [T in ActionType]: ActionDef<ActionOf<T>> } = REGISTRY;
 
 /** Whether an action type is public, private, secret or covert. A fixed property of the type, so safe for the client to show. */
 export const actionVisibility = (type: ActionType): ActionVisibility => ACTIONS[type].visibility;
