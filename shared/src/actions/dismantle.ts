@@ -1,9 +1,9 @@
 import { Action, isString } from "./action.ts";
 import { EQUIPMENT_TYPES } from "../equipment.ts";
-import { ITEM_TYPES, canReachItem } from "../items.ts";
+import { ITEM_TYPES, canReachItem, newItemId, removeItem } from "../items.ts";
 import { logPrivate, logPublic } from "../log.ts";
 import { getUp } from "./lie_down.ts";
-import type { GameState, ItemState, PlayerState } from "../types.ts";
+import type { GameState, PlayerState } from "../types.ts";
 
 /**
  * An item you can reach, or equipment in your room that can be dismantled (`EquipmentType.dismantle`): an
@@ -77,13 +77,12 @@ export class DismantleAction extends Action<DismantleActionData> {
       scraps = EQUIPMENT_TYPES[type]!.dismantle!;
       logPublic(state, player.room, "dismantledEquipment", { name: player.character, equipment: type });
     } else {
-      const index = state.items.findIndex((i) => i.id === target.item); // checked, so it exists
-      const [{ type }] = state.items.splice(index, 1) as [ItemState];
+      const { type } = removeItem(state, target.item);
       scraps = ITEM_TYPES[type]!.dismantle!;
       logPublic(state, player.room, "dismantled", { name: player.character, item: type });
     }
     const left = [...Array<string>(scraps.metal).fill("metal_scraps"), ...Array<string>(scraps.plastic).fill("plastic_scraps"), ...(scraps.extra ?? [])];
-    for (const type of left) state.items.push({ id: `item-${state.nextItemId++}`, type, at: { kind: "room", id: player.room } });
+    for (const type of left) state.items.push({ id: newItemId(state), type, at: { kind: "room", id: player.room } });
   }
 }
 

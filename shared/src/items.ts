@@ -189,11 +189,22 @@ export function sameContainer(a: Container, b: Container): boolean {
  * actions that leave items in the room (dismantle's scraps) place them directly.
  * Mutates a state the caller already cloned.
  */
+/** A fresh item id. */
+export const newItemId = (state: GameState): string => `item-${state.nextItemId++}`;
+
+/** Takes an item out of the game (used up, eaten, installed, thrown out) and returns it. The caller has checked it exists. */
+export function removeItem(state: GameState, id: string): ItemState {
+  const index = state.items.findIndex((i) => i.id === id);
+  // splice(-1) would take the last item instead.
+  if (index < 0) throw new Error(`no item ${id}`);
+  return state.items.splice(index, 1)[0]!;
+}
+
 export function produceItem(next: GameState, player: Readonly<PlayerState>, type: string): { item: ItemState; inInventory: boolean } {
   const mine: Container = { kind: "player", id: player.id };
   const inInventory = hasSpace(next, mine);
   const charges = startCharges(next.config, type);
-  const item: ItemState = { id: `item-${next.nextItemId++}`, type, at: inInventory ? mine : { kind: "room", id: player.room }, ...(charges !== undefined && { charges }) };
+  const item: ItemState = { id: newItemId(next), type, at: inInventory ? mine : { kind: "room", id: player.room }, ...(charges !== undefined && { charges }) };
   next.items.push(item);
   return { item, inInventory };
 }

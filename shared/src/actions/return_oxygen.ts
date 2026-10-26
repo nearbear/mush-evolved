@@ -1,13 +1,11 @@
 import { Action, type ActionVisibility, isString } from "./action.ts";
+import { carriedCapsule } from "./capsule.ts";
 import { equipmentHere } from "../equipment.ts";
-import { OXYGEN_CAPSULE_ITEM, itemsIn } from "../items.ts";
+import { OXYGEN_CAPSULE_ITEM, removeItem } from "../items.ts";
 import { logSecret } from "../log.ts";
 import type { GameState, PlayerState } from "../types.ts";
 
 export type ReturnOxygenActionData = { type: "return_oxygen"; equipment: string };
-
-const carriedCapsule = (state: Readonly<GameState>, player: Readonly<PlayerState>) =>
-  itemsIn(state, { kind: "player", id: player.id }).find((item) => item.type === OXYGEN_CAPSULE_ITEM);
 
 /**
  * Put a carried oxygen capsule into an oxygen tank (owner, 2026-10-24, the wiki): it raises the ship's oxygen by one,
@@ -21,13 +19,13 @@ export class ReturnOxygenAction extends Action<ReturnOxygenActionData> {
   }
 
   override getCandidates(state: Readonly<GameState>, player: Readonly<PlayerState>): ReturnOxygenActionData[] {
-    if (!carriedCapsule(state, player)) return [];
+    if (!carriedCapsule(state, player, OXYGEN_CAPSULE_ITEM)) return [];
     return equipmentHere(state, player, "OXYGEN_TANK").map((tank): ReturnOxygenActionData => ({ type: "return_oxygen", equipment: tank.id }));
   }
 
   override validate(state: Readonly<GameState>, player: Readonly<PlayerState>, target: ReturnOxygenActionData): string | null {
     if (!equipmentHere(state, player, "OXYGEN_TANK").some((tank) => tank.id === target.equipment)) return "cant_return_oxygen";
-    if (!carriedCapsule(state, player)) return "no_capsule";
+    if (!carriedCapsule(state, player, OXYGEN_CAPSULE_ITEM)) return "no_capsule";
     return state.ship.oxygen >= state.config.ship.oxygen.max ? "full" : null;
   }
 
@@ -44,8 +42,8 @@ export class ReturnOxygenAction extends Action<ReturnOxygenActionData> {
   }
 
   override apply(state: GameState, player: PlayerState, _target: ReturnOxygenActionData): void {
-    const capsule = carriedCapsule(state, player)!;
-    state.items.splice(state.items.indexOf(capsule), 1);
+    const capsule = carriedCapsule(state, player, OXYGEN_CAPSULE_ITEM)!;
+    removeItem(state, capsule.id);
     state.ship.oxygen += 1;
     logSecret(state, player.id, "returnedOxygen", { name: player.character });
   }

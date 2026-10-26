@@ -1,6 +1,6 @@
 import { Action, peopleHere, isString } from "./action.ts";
 import { cure } from "../infection.ts";
-import { itemsIn } from "../items.ts";
+import { itemsIn, removeItem } from "../items.ts";
 import { logPrivate, logPublic } from "../log.ts";
 import type { GameState, ItemState, PlayerState } from "../types.ts";
 
@@ -35,7 +35,7 @@ export class VaccinateAction extends Action<VaccinateActionData> {
 
   override apply(state: GameState, player: PlayerState, target: VaccinateActionData): void {
     const patient = state.players.find((o) => o.id === target.target)!; // checked, so it exists
-    state.items.splice(state.items.findIndex((i) => i.id === serumOf(state, player)!.id), 1);
+    removeItem(state, serumOf(state, player)!.id);
     logPublic(state, player.room, "vaccinated", { name: player.character, target: patient.character });
     logPrivate(state, player.id, cure(state, patient) ? "vaccineWorked" : "vaccineNothing", { target: patient.character });
   }

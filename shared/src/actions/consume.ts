@@ -1,11 +1,11 @@
 import { Action, isString } from "./action.ts";
-import { ITEM_TYPES, canReachItem } from "../items.ts";
+import { ITEM_TYPES, canReachItem, removeItem } from "../items.ts";
 import { logPublic } from "../log.ts";
 import { consumed } from "../modifiers.ts";
 import { rationApBonus } from "../comms.ts";
 import { contaminate } from "../infection.ts";
 import { isFullBelly } from "../statuses.ts";
-import type { GameState, ItemState, PlayerState } from "../types.ts";
+import type { GameState, PlayerState } from "../types.ts";
 import { gainMorale } from "../adjustStats.ts";
 
 export type ConsumeActionData = { type: "consume"; item: string };
@@ -31,8 +31,7 @@ export class ConsumeAction extends Action<ConsumeActionData> {
   }
 
   override apply(state: GameState, player: PlayerState, target: ConsumeActionData): void {
-    const index = state.items.findIndex((i) => i.id === target.item);
-    const [item] = state.items.splice(index, 1) as [ItemState];
+    const item = removeItem(state, target.item);
     // Fungal cuisine: a human is contaminated first, one level per spore; a conversion ends the meal with no food effects.
     if (player.role === "human" && item.spores) {
       for (let i = 0; i < item.spores && player.role === "human"; i++) contaminate(state, player);

@@ -1,5 +1,5 @@
 import { Action, isString } from "./action.ts";
-import { BOOK_ITEM, canReachItem } from "../items.ts";
+import { BOOK_ITEM, canReachItem, removeItem } from "../items.ts";
 import { logPublic } from "../log.ts";
 import { skillPicked } from "../modifiers.ts";
 import { hasSkill, isSkill } from "../skills.ts";
@@ -40,7 +40,7 @@ export class ReadBookAction extends Action<ReadBookActionData> {
   override apply(state: GameState, player: PlayerState, target: ReadBookActionData): void {
     const item = state.items.find((i) => i.id === target.item)!;
     const skill = item.teaches!;
-    state.items = state.items.filter((i) => i.id !== item.id);
+    removeItem(state, item.id);
     player.bookSkill = skill;
     skillPicked(state, player, skill);
     logPublic(state, player.room, "bookRead", { name: player.character, skill });

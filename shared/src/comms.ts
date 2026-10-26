@@ -6,7 +6,7 @@
 import { gainMorale } from "./adjustStats.ts";
 import { BLUEPRINT_ITEM, BLUEPRINTS } from "./blueprints.ts";
 import { pushChat } from "./chat.ts";
-import { BOOK_ITEM } from "./items.ts";
+import { BOOK_ITEM, newItemId } from "./items.ts";
 import { PROJECT_COMPLETE, PROJECT_IDS } from "./projects.ts";
 import { roll, rollInt } from "./rng.ts";
 import { hasSkill, SKILLS } from "./skills.ts";
@@ -183,7 +183,7 @@ export function drawXyloph(state: GameState): XylophEntryId | null {
 }
 
 function dropItem(state: GameState, item: Omit<ItemState, "id" | "at">): void {
-  state.items.push({ id: `item-${state.nextItemId++}`, ...item, at: { kind: "room", id: XYLOPH_DROP_ROOM } });
+  state.items.push({ id: newItemId(state), ...item, at: { kind: "room", id: XYLOPH_DROP_ROOM } });
 }
 
 function randomOf<T>(state: GameState, list: readonly T[]): T {

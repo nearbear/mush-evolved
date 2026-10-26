@@ -1,5 +1,5 @@
 import { Action, type ActionVisibility, isString } from "./action.ts";
-import { CORPSE_ITEM } from "../items.ts";
+import { CORPSE_ITEM, removeItem, itemsIn } from "../items.ts";
 import { logSecret } from "../log.ts";
 import type { GameState, ItemState, PlayerState } from "../types.ts";
 
@@ -40,13 +40,12 @@ export class JettisonAction extends Action<JettisonActionData> {
   }
 
   override apply(state: GameState, player: PlayerState, target: JettisonActionData): void {
-    const index = state.items.findIndex((i) => i.id === target.item);
-    const [corpse] = state.items.splice(index, 1) as [ItemState];
+    const corpse = removeItem(state, target.item);
     const body = state.players.find((p) => p.id === corpse.of)?.character ?? "";
     logSecret(state, player.id, "jettisoned", { name: player.character, body });
   }
 }
 
 function carriedCorpses(state: Readonly<GameState>, player: Readonly<PlayerState>): ItemState[] {
-  return state.items.filter((i) => i.type === CORPSE_ITEM && i.at.kind === "player" && i.at.id === player.id);
+  return itemsIn(state, { kind: "player", id: player.id }).filter((i) => i.type === CORPSE_ITEM);
 }

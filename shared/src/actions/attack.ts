@@ -1,6 +1,6 @@
 import { Action, IN_PRESELECTION, peopleHere, type ActionTag, isString } from "./action.ts";
 import { damage } from "../death.ts";
-import { itemsIn } from "../items.ts";
+import { itemsIn, removeItem } from "../items.ts";
 import { logPublic } from "../log.ts";
 import { roll } from "../rng.ts";
 import type { WeaponStats } from "../types/config.ts";
@@ -101,7 +101,7 @@ function spend(state: GameState, target: AttackActionData): ItemState {
   const weapon = state.items.find((i) => i.id === target.weapon)!;
   const stats = state.config.weapons.types[weapon.type]!;
   if (stats.charges !== undefined) weapon.charges = weapon.charges! - 1;
-  if (stats.consumed) state.items = state.items.filter((i) => i !== weapon);
+  if (stats.consumed) removeItem(state, weapon.id);
   return weapon;
 }
 

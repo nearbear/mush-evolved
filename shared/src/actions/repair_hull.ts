@@ -1,5 +1,5 @@
 import { Action, isString } from "./action.ts";
-import { canReachItem } from "../items.ts";
+import { canReachItem, removeItem } from "../items.ts";
 import { logPrivate, logPublic } from "../log.ts";
 import { hullRepairAmount } from "../modifiers.ts";
 import type { GameState, PlayerState } from "../types.ts";
@@ -42,7 +42,7 @@ export class RepairHullAction extends Action<RepairHullActionData> {
   }
 
   override apply(state: GameState, player: PlayerState, target: RepairHullActionData): void {
-    state.items = state.items.filter((i) => i.id !== target.item);
+    removeItem(state, target.item);
     const amount = hullRepairAmount(state, player, state.config.hullRepair.amount);
     state.ship.hull = Math.min(state.config.ship.hull.max, state.ship.hull + amount);
     logPublic(state, player.room, "hullRepaired", { name: player.character });

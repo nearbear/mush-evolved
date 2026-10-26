@@ -7,7 +7,7 @@
 import { endAccommodationOnDeath } from "./actions/accommodate.ts";
 import type { CharacterId } from "./characters.ts";
 import { removeFromChannel, pushChat } from "./chat.ts";
-import { CORPSE_ITEM, ITRACKIE_ITEM, sameContainer } from "./items.ts";
+import { CORPSE_ITEM, ITRACKIE_ITEM, sameContainer, newItemId } from "./items.ts";
 import { logPublic } from "./log.ts";
 import { refreshTitles } from "./titles.ts";
 import { endGame, mushWinOnDeath } from "./victory.ts";
@@ -43,7 +43,7 @@ export function killPlayer(state: GameState, player: PlayerState): void {
   const mine = { kind: "player", id: player.id } as const;
   state.items = state.items.filter((i) => !(sameContainer(i.at, mine) && i.type === ITRACKIE_ITEM));
   for (const item of state.items) if (sameContainer(item.at, mine)) item.at = { kind: "room", id: player.room };
-  state.items.push({ id: `item-${state.nextItemId++}`, type: CORPSE_ITEM, at: { kind: "room", id: player.room }, of: player.id });
+  state.items.push({ id: newItemId(state), type: CORPSE_ITEM, at: { kind: "room", id: player.room }, of: player.id });
 
   // Bonds and contamination are void. Action plans aren't built yet; when they
   // are, plans targeting the dead player are cancelled and their claims and

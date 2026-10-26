@@ -2,7 +2,7 @@ import { Action, isString } from "./action.ts";
 import { ANY_CONSUMABLE, RESEARCH_COMPLETE, RESEARCH_IDS, RESEARCH_REQUIRES, type ResearchId } from "../research.ts";
 import { logPublic } from "../log.ts";
 import { equipmentHere } from "../equipment.ts";
-import { ITEM_TYPES } from "../items.ts";
+import { ITEM_TYPES, newItemId, removeItem } from "../items.ts";
 import { xylophFound } from "../comms.ts";
 import { dropMycoAlarms } from "../mycoalarm.ts";
 import { ANTI_MUSH_SERUM_ITEM } from "./vaccinate.ts";
@@ -78,7 +78,7 @@ export class ResearchAction extends Action<ResearchActionData> {
       for (const type of RESEARCH_REQUIRES[target.research as ResearchId]?.consumes ?? []) {
         const items = labItems(state, player.room).filter((i) => i.type === type);
         const used = items.find((i) => i.at.kind === "room") ?? items[0];
-        if (used) state.items.splice(state.items.indexOf(used), 1);
+        if (used) removeItem(state, used.id);
       }
     }
     if (progress >= RESEARCH_COMPLETE && target.research === "MYCO_ALARM") {
@@ -87,7 +87,7 @@ export class ResearchAction extends Action<ResearchActionData> {
     }
     // Owner, 2026-10-25: completing it leaves one serum on the lab floor.
     if (progress >= RESEARCH_COMPLETE && target.research === "ANTI_MUSH_SERUM") {
-      state.items.push({ id: `item-${state.nextItemId++}`, type: ANTI_MUSH_SERUM_ITEM, at: { kind: "room", id: player.room } });
+      state.items.push({ id: newItemId(state), type: ANTI_MUSH_SERUM_ITEM, at: { kind: "room", id: player.room } });
       logPublic(state, player.room, "serumBuilt");
     }
   }

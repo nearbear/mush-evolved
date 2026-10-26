@@ -2,7 +2,7 @@
 // too. Thirst is public; sickness is hidden from everyone outside the Botanist role. No plant dies yet: a plant left
 // unwatered stops at dried, and a sick one stays sick until treated.
 
-import { ITEM_TYPES, TREE_POT_ITEM, produceItem } from "./items.ts";
+import { ITEM_TYPES, TREE_POT_ITEM, produceItem, newItemId } from "./items.ts";
 import { logPublic } from "./log.ts";
 import { rollFloat } from "./rng.ts";
 import { hasSkill } from "./skills.ts";
@@ -89,5 +89,5 @@ function produceFruit(state: GameState, pot: PlantedPot): void {
     produceItem(state, carrier, species);
     return;
   }
-  state.items.push({ id: `item-${state.nextItemId++}`, type: species, at: { kind: "room", id: pot.at.id } });
+  state.items.push({ id: newItemId(state), type: species, at: { kind: "room", id: pot.at.id } });
 }

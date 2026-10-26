@@ -1,6 +1,6 @@
 import { Action, isString } from "./action.ts";
 import { isEmptyPot, isFruit, paidWithGardenPoint } from "../botany.ts";
-import { canReachItem } from "../items.ts";
+import { canReachItem, removeItem, itemsIn } from "../items.ts";
 import { logPublic } from "../log.ts";
 import type { GameState, PlayerState } from "../types.ts";
 
@@ -16,7 +16,7 @@ export class SowAction extends Action<SowActionData> {
   }
 
   override getCandidates(state: Readonly<GameState>, player: Readonly<PlayerState>): SowActionData[] {
-    const fruits = state.items.filter((i) => isFruit(i) && i.at.kind === "player" && i.at.id === player.id);
+    const fruits = itemsIn(state, { kind: "player", id: player.id }).filter(isFruit);
     const pots = state.items.filter((i) => isEmptyPot(i) && canReachItem(state, player, i));
     return pots.flatMap((pot) => fruits.map((fruit): SowActionData => ({ type: "sow", item: pot.id, fruit: fruit.id })));
   }
@@ -42,8 +42,7 @@ export class SowAction extends Action<SowActionData> {
   override apply(state: GameState, player: PlayerState, target: SowActionData): void {
     const pot = state.items.find((i) => i.id === target.item)!;
     if (paidWithGardenPoint(state, player, pot)) player.resources.garden -= 1;
-    const species = state.items.find((i) => i.id === target.fruit)!.type;
-    state.items = state.items.filter((i) => i.id !== target.fruit);
+    const species = removeItem(state, target.fruit).type;
     pot.plant = { species, age: 0, thirst: 0, sick: false };
     logPublic(state, player.room, "sowedPlant", { name: player.character, item: species });
   }

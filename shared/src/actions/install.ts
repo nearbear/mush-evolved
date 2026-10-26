@@ -1,4 +1,5 @@
 import { Action, isString } from "./action.ts";
+import { removeItem, itemsIn } from "../items.ts";
 import { CAMERA_EQUIPMENT, cameraEquipmentId } from "../equipment.ts";
 import { hasCamera, logPublic } from "../log.ts";
 import type { GameState, ItemState, PlayerState } from "../types.ts";
@@ -40,12 +41,12 @@ export class InstallAction extends Action<InstallActionData> {
   }
 
   override apply(state: GameState, player: PlayerState, target: InstallActionData): void {
-    state.items.splice(state.items.findIndex((i) => i.id === target.item), 1);
+    removeItem(state, target.item);
     (state.config.equipment[player.room] ??= []).push({ id: cameraEquipmentId(player.room), type: CAMERA_EQUIPMENT });
     logPublic(state, player.room, "cameraInstalled", { name: player.character });
   }
 }
 
 function carriedCameras(state: Readonly<GameState>, player: Readonly<PlayerState>): ItemState[] {
-  return state.items.filter((i) => i.type === "camera" && i.at.kind === "player" && i.at.id === player.id);
+  return itemsIn(state, { kind: "player", id: player.id }).filter((i) => i.type === "camera");
 }

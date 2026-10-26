@@ -6,9 +6,6 @@ import type { GameState, PlayerState } from "../types.ts";
 
 export type TakeFuelActionData = { type: "take_fuel"; equipment: string };
 
-/** The combustion chamber's level for a log line: what it holds and what it can hold. */
-export const combustionLevel = (state: Readonly<GameState>) => ({ level: state.ship.combustion, max: state.config.ship.combustion.max });
-
 /**
  * Take a fuel capsule from a fuel tank (the two rear storages), 0 AP (owner, 2026-10-23, the wiki), with a chance of
  * getting dirty. It takes one fuel from the ship's stock. It needs room in the inventory (owner, 2026-10-23: the button

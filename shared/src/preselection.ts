@@ -9,6 +9,7 @@
 // game ends with the Mush win.
 
 import { pushChat } from "./chat.ts";
+import { newItemId } from "./items.ts";
 import { killPlayer } from "./death.ts";
 import { clone, fail, type ActionResult } from "./helpers.ts";
 import { logPrivate } from "./log.ts";
@@ -28,7 +29,7 @@ export function joinShip(state: GameState, seat: Seat): ActionResult {
   if (state.players.some((p) => p.id === seat.id)) return fail("duplicate_seat");
   const next = clone(state);
   next.players.push(newPlayer(seat, next.config, next.cycle, "human"));
-  for (const item of startInventory(next.config, seat.id)) next.items.push({ id: `item-${next.nextItemId++}`, ...item });
+  for (const item of startInventory(next.config, seat.id)) next.items.push({ id: newItemId(next), ...item });
   if (next.players.length >= rules.seats) selectMush(next);
   return { ok: true, state: next };
 }
