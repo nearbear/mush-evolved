@@ -12,7 +12,7 @@ import { DeathNotice } from "./hud/DeathNotice.tsx";
 import { Credits } from "./hud/Credits.tsx";
 import { RoomList } from "./hud/RoomList.tsx";
 import { InspectPanel } from "./hud/InspectPanel.tsx";
-import { InventoryOverlay } from "./hud/InventoryOverlay.tsx";
+import { InventoryOverlay, stepZoom } from "./hud/InventoryOverlay.tsx";
 import { ShipOverlay } from "./hud/ShipOverlay.tsx";
 import { Announcer } from "./hud/Announcer.tsx";
 import { ITrackie } from "./hud/ITrackie.tsx";
@@ -228,6 +228,7 @@ export function GameScreen({ ticket, onLeave, waking = false }: { ticket: SeatTi
                 fogDepth={fogDepth}
                 renderer={ROOM_RENDERER}
                 zoom={zoom}
+                onZoomStep={(dir) => setZoom((z) => stepZoom(z, dir) ?? z)}
                 equipment={view.roomEquipment}
                 reachable={reachable}
                 selected={target}

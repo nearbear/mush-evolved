@@ -1416,3 +1416,7 @@ Plan-only session. Claude briefed Gemini (agy, read-only) with the epic, its 11 
 - **Where Gemini was wrong:** it claimed `moderateChat` doesn't mask words (it does); checked against the code and rejected. It also called two owner questions already answered by the issue text; one (whether a new version counts toward the 5) was a fair reading, the other (standard 16 seats while the cap is 4) still needed the owner.
 - **Process notes:** the third Gemini call timed out twice at 5 minutes while exploring files on its own; pasting the code excerpts into the prompt and telling it not to open files fixed it.
 - **Owner correction:** Claude's question about day boundaries for 2, 4 and 6 h cycles assumed the recorded rule "a day stays 8 cycles". The owner meant 24-hour days with 24 / length cycles per day, a simpler rule that also overturned the recorded one; Claude confirmed it explicitly before writing it into tickets and `docs/rules-design.md`.
+
+## 2026-10-25: zoom buttons hidden from screen readers, +/- keys instead
+
+The owner asked for `aria-hidden` on the zoom buttons. A focusable element under `aria-hidden` is an axe `aria-hidden-focus` violation (a silent Tab stop), so the buttons also got `tabIndex={-1}`, and the room view (`.iso-viewport`, now a labelled `role="group"` Tab stop) zooms on `+`/`=` and `-`/`_`. The button tooltips name the key. The a11y check already skips `aria-hidden` controls, so it needed no change. Worked: raising the focus problem before adding the hotkeys. Needed correction: the first edit added only `aria-hidden`.

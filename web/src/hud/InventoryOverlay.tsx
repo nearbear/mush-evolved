@@ -13,6 +13,9 @@ import { useOverlayDismiss } from "./useOverlayDismiss.ts";
 /** The magnifications the room view steps through. */
 export const ZOOM_STEPS = [1 / 2, 1, 2];
 
+/** The magnification one step in (1) or out (-1) from `zoom`, or undefined at the end. */
+export const stepZoom = (zoom: number, dir: 1 | -1): number | undefined => ZOOM_STEPS[ZOOM_STEPS.indexOf(zoom) + dir];
+
 export function InventoryOverlay({
   view,
   selected,
@@ -36,7 +39,6 @@ export function InventoryOverlay({
   const close = useCallback(() => setOpen(false), []);
   useOverlayDismiss(open, close, rootRef);
 
-  const step = (dir: 1 | -1) => ZOOM_STEPS[ZOOM_STEPS.indexOf(zoom) + dir];
   const roomCount = view.roomItems.length;
   const label = roomCount > 0 ? t("inventory.buttonCount", { count: roomCount }) : t("inventory.button");
 
@@ -49,10 +51,11 @@ export function InventoryOverlay({
       )}
       <div className="zoom-controls">
         {(["in", "out"] as const).map((way) => {
-          const next = step(way === "in" ? 1 : -1);
+          const next = stepZoom(zoom, way === "in" ? 1 : -1);
           return (
-            <Hint key={way} label={t(`zoom.${way}`)}>
-              <button type="button" className="zoom-button" aria-hidden="true" aria-label={t(`zoom.${way}`)} disabled={next === undefined} onClick={() => next && onZoom(next)}>
+            <Hint key={way} label={`${t(`zoom.${way}`)} (${way === "in" ? "+" : "−"})`}>
+              {/* Hidden from screen readers and out of the Tab order: the + and - keys on the room view do the same. */}
+              <button type="button" className="zoom-button" aria-hidden="true" tabIndex={-1} aria-label={t(`zoom.${way}`)} disabled={next === undefined} onClick={() => next && onZoom(next)}>
                 {way === "in" ? "+" : "−"}
               </button>
             </Hint>

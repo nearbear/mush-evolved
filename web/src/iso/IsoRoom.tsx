@@ -18,7 +18,7 @@
 // a wall is drawn over (PlacedSprite.occluded) also gets a see-through outline
 // above everything. People in this room still take clicks through it.
 
-import { Suspense, lazy, useEffect, useLayoutEffect, useMemo, useRef, useState, type ComponentType, type MouseEvent, type PointerEvent } from "react";
+import { Suspense, lazy, useEffect, useId, useLayoutEffect, useMemo, useRef, useState, type ComponentType, type MouseEvent, type PointerEvent } from "react";
 import { useTranslation } from "react-i18next";
 import { createPortal } from "react-dom";
 import { CAMERA_EQUIPMENT, CORPSE_ITEM, type EquipmentView, type RoomId, type RoomLayout, type ShipLayout, type Spot, type Target } from "@mush2/shared";
@@ -143,6 +143,7 @@ export function IsoRoom({
   bubbles,
   clockOffset,
   zoom,
+  onZoomStep,
   pilgredRepaired,
   pace,
 }: {
@@ -157,6 +158,8 @@ export function IsoRoom({
   renderer: RendererChoice;
   /** Magnification of the drawn room (a viewer setting, 1 = one screen pixel per source pixel). */
   zoom: number;
+  /** One zoom step in (1) or out (-1), from the + and - keys while the room view has focus. */
+  onZoomStep: (dir: 1 | -1) => void;
   /** Corpses on this room's floor (items, drawn lying down). A carried corpse isn't on the floor, so isn't here. */
   corpses: Corpse[];
   /** Equipment in this room, from the view. Only these sprites are clickable. */
@@ -208,6 +211,7 @@ export function IsoRoom({
   const occupantKey = occupants.map((o) => `${o.id}${o.lying ?? ""}`).join(",");
   const corpseKey = corpses.map((c) => c.id).join(",");
   const viewportRef = useRef<HTMLDivElement>(null);
+  const titleId = useId();
   const rendererRef = useRef<FrameTarget>(null);
   const overlayRef = useRef<FrameTarget>(null);
   // Where you've clicked to walk, drawn at once. The server hears of it too (`onWalk`) and shows it to your
@@ -659,12 +663,23 @@ export function IsoRoom({
 
   return (
     <section className="iso-room">
-      <h2 className="room-title">{names.room(room)}</h2>
+      <h2 className="room-title" id={titleId}>{names.room(room)}</h2>
       {/* The scroller is separate so the title stays put when a wide room scrolls. */}
       <div className="iso-scroll">
-        {/* biome-ignore lint/a11y/useKeyWithClickEvents lint/a11y/noStaticElementInteractions: picking things in the drawn room is pointer-only for now; keyboard access to the room is not built yet. */}
         <div
           ref={viewportRef}
+          role="group"
+          aria-labelledby={titleId}
+          // biome-ignore lint/a11y/noNoninteractiveTabindex: the room view takes focus so the + and - keys can zoom it; picking things in it is pointer-only for now, and keyboard access to the room is not built yet.
+          tabIndex={0}
+          onKeyDown={(e) => {
+            if (e.ctrlKey || e.metaKey || e.altKey) return;
+            const dir = e.key === "+" || e.key === "=" ? 1 : e.key === "-" || e.key === "_" ? -1 : 0;
+            if (dir) {
+              e.preventDefault();
+              onZoomStep(dir);
+            }
+          }}
           className={`iso-viewport${hoverTitle ? " pointing" : ""}`}
           onClick={onClick}
           onDoubleClick={onDoubleClick}
