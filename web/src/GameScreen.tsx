@@ -25,7 +25,7 @@ import { SelfPanel } from "./hud/SelfPanel.tsx";
 import { resolveTarget } from "./hud/targets.ts";
 import { TopBar } from "./hud/TopBar.tsx";
 import { gameSocket, type SeatTicket } from "./net.ts";
-import type { Corpse, Occupant } from "./iso/scene.ts";
+import { shipPace, type Corpse, type Occupant } from "./iso/scene.ts";
 import { LeavingIsoRoom } from "./iso/LeavingRoom.tsx";
 import { recentDoorMoves } from "./iso/doorMoves.ts";
 import { useShipLayout } from "./iso/shipLayout.ts";
@@ -244,11 +244,12 @@ export function GameScreen({ ticket, onLeave, waking = false }: { ticket: SeatTi
                 bubbles={bubbles}
                 clockOffset={clockOffset}
                 pilgredRepaired={view.pilgredRepaired}
+                pace={shipPace(view.navigation)}
               />
             ) : (
               <section className="iso-room loading">{t("common.loadingShip")}</section>
             )}
-            {you.alive && <RoomList view={view} layout={layout} reachable={reachable} onSelect={select} onMove={move} />}
+            {you.alive && <RoomList view={view} layout={layout} reachable={reachable} onSelect={(target) => { select(target); setFocusActions((n) => n + 1); }} onMove={move} />}
             {you.alive && <ActionQueue view={view} onClear={() => post({ type: "clearQueue" })} />}
             {mobile && <ShipOverlay view={view} />}
             {you.alive && <InventoryOverlay view={view} selected={target} onAction={send} onSelect={select} zoom={zoom} onZoom={setZoom} />}

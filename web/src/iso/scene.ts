@@ -192,12 +192,28 @@ export interface SceneOutline extends ScenePicture {
   faint: boolean;
 }
 
+/** How the Daedalus is moving: held in orbit, flying between planets, or (not in the rules yet) travelling to one. */
+export type ShipPace = "stopped" | "cruising" | "traveling";
+
+/** How fast the stars stream at each pace, as a multiple of the cruising rate. */
+export const PACE_SPEED: Readonly<Record<ShipPace, number>> = { stopped: 0, cruising: 1, traveling: 5 };
+
+/**
+ * The pace to draw from the view's public navigation. Travel is an instant jump in the rules, so nothing
+ * returns "traveling" yet: when the rules gain a travel in progress, answer it here.
+ */
+export function shipPace(navigation: { orbiting: boolean }): ShipPace {
+  return navigation.orbiting ? "stopped" : "cruising";
+}
+
 /** One room view to draw: sprites in paint order (back to front), then the outlines above them all. */
 export interface Scene {
   width: number;
   height: number;
   sprites: readonly SceneSprite[];
   outlines: readonly SceneOutline[];
+  /** How fast the ship is going, which sets how fast the stars behind it stream past. */
+  pace: ShipPace;
 }
 
 /** Per animation frame, between renders: where the camera puts the world, and how far each walker is from where the scene placed them. */
@@ -249,6 +265,8 @@ export interface SceneInput {
   ownCells: ReadonlySet<string>;
   /** Scenery drawn as another slice of the same size, by slice id: PILGRED's core once it is repaired. */
   looks?: ReadonlyMap<string, string>;
+  /** The ship's pace (`shipPace`); cruising when not given. */
+  pace?: ShipPace;
 }
 
 /** The corpse an actor sprite draws, if it is one. */
@@ -385,5 +403,5 @@ export function describeScene(input: SceneInput): Scene {
     }
     sprites.push({ ...tile(), anim, role: "tile" });
   }
-  return { width: box.width, height: box.height, sprites, outlines };
+  return { width: box.width, height: box.height, sprites, outlines, pace: input.pace ?? "cruising" };
 }

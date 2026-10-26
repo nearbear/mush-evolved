@@ -20,8 +20,8 @@
 
 import { Application, Container, type Filter, Rectangle, RendererType, Sprite, Texture, TextureStyle, TilingSprite } from "pixi.js";
 import { keyedUrl } from "../../art/keyedSprite.ts";
-import { animId, animStep, frameAt, type FrameUpdate, type Scene, type SceneImage, type SceneOutline, type ScenePicture, type SceneSprite } from "../scene.ts";
-import { starfield } from "../starfield.ts";
+import { animId, animStep, frameAt, PACE_SPEED, type FrameUpdate, type Scene, type SceneImage, type SceneOutline, type ScenePicture, type SceneSprite } from "../scene.ts";
+import { starfield, starLayer } from "../starfield.ts";
 import { ESP, espPulse, filterKey, lookOf } from "./effects.ts";
 import { EspFilters, lookFilter } from "./filters.ts";
 
@@ -58,8 +58,16 @@ function frameTexture(base: Texture, key: string, sx: number, sy: number, width:
 
 /** The star field's tile, in pixels, and how far it moves for each pixel the camera moves. */
 const SKY_SIZE = 1024;
-const SKY_PARALLAX = 0.5;
+const STARS_SIZE = 512;
+/** The dust moves at this fraction of the camera, the stars over it at this one: nearer moves more. */
+const SKY_PARALLAX = 0.25;
+const STARS_PARALLAX = 0.6;
+/** How fast each layer streams past at cruising pace (pixels a second, along x; they run down-right, upper left to bottom right, at the iso grid's 2:1 slope), and how quickly the speed eases (per second). */
+const SKY_DRIFT = 12;
+const STARS_DRIFT = 40;
+const EASE = 1.2;
 let skyTexture: Texture | null = null;
+let starsTexture: Texture | null = null;
 
 /** The star field behind the ship, made once (about 0.1 s) and repeated across the panel. */
 function sky(): Texture {
@@ -71,6 +79,18 @@ function sky(): Texture {
     skyTexture = Texture.from(canvas);
   }
   return skyTexture;
+}
+
+/** The near stars over the sky, made once. */
+function stars(): Texture {
+  if (!starsTexture) {
+    const { size, rgba } = starLayer(STARS_SIZE);
+    const canvas = document.createElement("canvas");
+    canvas.width = canvas.height = size;
+    canvas.getContext("2d")!.putImageData(new ImageData(rgba, size, size), 0, 0);
+    starsTexture = Texture.from(canvas);
+  }
+  return starsTexture;
 }
 
 interface Drawn {
@@ -89,6 +109,13 @@ const OUTLINE = "esp|";
 export class PixiRenderer {
   private readonly app = new Application();
   private sky: TilingSprite | null = null;
+  private stars: TilingSprite | null = null;
+  /** Stream speed as a multiple of cruising (0 in orbit), easing toward `cruise`; `drift` is how far the stars have streamed, in seconds at cruising speed. */
+  private speed = 0;
+  private cruise = 0;
+  private drift = 0;
+  private lastTick = 0;
+  private camera = { x: 0, y: 0 };
   private readonly world = new Container();
   private readonly sprites = new Container();
   private readonly outlines = new Container();
@@ -138,7 +165,8 @@ export class PixiRenderer {
     this.app.stage.eventMode = "none";
     this.world.addChild(this.sprites, this.outlines);
     this.sky = new TilingSprite({ texture: sky(), width: this.app.screen.width, height: this.app.screen.height });
-    this.app.stage.addChild(this.sky, this.world);
+    this.stars = new TilingSprite({ texture: stars(), width: this.app.screen.width, height: this.app.screen.height });
+    this.app.stage.addChild(this.sky, this.stars, this.world);
     // The shaders are GLSL; on anything but WebGL the sprites are drawn without effects.
     if (this.app.renderer.type === RendererType.WEBGL) {
       const rim = this.color("--glow-rim");
@@ -162,12 +190,15 @@ export class PixiRenderer {
     if (!this.ready || !w || !h) return;
     if (this.app.renderer.width !== w || this.app.renderer.height !== h) this.app.renderer.resize(w, h);
     this.sky?.setSize(w, h);
+    this.stars?.setSize(w, h);
     this.renderNow();
   }
 
   setScene(scene: Scene) {
     this.scene = scene;
     if (!this.ready) return;
+    this.cruise = this.reducedMotion.matches ? 0 : PACE_SPEED[scene.pace];
+    if (this.speed !== this.cruise) this.requestRender();
     const seen = new Set<string>();
     const sprites = this.sync(scene.sprites, "", this.sprites, this.order, seen, (d, s) => this.paintSprite(d, s));
     const outlines = this.sync(scene.outlines, OUTLINE, this.outlines, this.outlineOrder, seen, (d, o) => this.paintOutline(d, o));
@@ -221,8 +252,8 @@ export class PixiRenderer {
     const x = Math.round(camera.x);
     const y = Math.round(camera.y);
     this.world.position.set(x, y);
-    // The stars drift slower than the ship, in whole pixels, so they read as far away.
-    this.sky?.tilePosition.set(Math.round(camera.x * SKY_PARALLAX), Math.round(camera.y * SKY_PARALLAX));
+    this.camera = camera;
+    this.placeSky();
     // Each walker is rounded where it lands on screen, not in the world: your own walker cancels the
     // camera's fraction exactly, so you stay still on screen while the room moves under you.
     for (const d of this.walkers) {
@@ -231,6 +262,20 @@ export class PixiRenderer {
     }
     // Drawn now, in the same frame as the DOM overlay above it, so badges and people stay together.
     this.renderNow();
+  }
+
+  /** The layers follow the camera slower than the ship, and stream down-right at the ship's speed; both in whole pixels. */
+  private placeSky() {
+    const { x, y } = this.camera;
+    const still = this.reducedMotion.matches;
+    const follow = (parallax: number, rate: number) => ({
+      x: Math.round((still ? 0 : x * parallax) + this.drift * rate),
+      y: Math.round((still ? 0 : y * parallax) + (this.drift * rate) / 2),
+    });
+    const sky = follow(SKY_PARALLAX, SKY_DRIFT);
+    const stars = follow(STARS_PARALLAX, STARS_DRIFT);
+    this.sky?.tilePosition.set(sky.x, sky.y);
+    this.stars?.tilePosition.set(stars.x, stars.y);
   }
 
   destroy() {
@@ -353,12 +398,24 @@ export class PixiRenderer {
       this.setTexture(d, d.pic.image, f);
       this.dirty = true;
     }
+    const dt = this.lastTick ? Math.min(0.1, (now - this.lastTick) / 1000) : 0;
+    this.lastTick = now;
+    const streaming = this.speed !== this.cruise;
+    if (this.speed !== 0 || streaming) {
+      this.speed += (this.cruise - this.speed) * Math.min(1, dt * EASE);
+      if (Math.abs(this.cruise - this.speed) < 0.005) this.speed = this.cruise;
+      this.drift += this.speed * dt;
+      this.placeSky();
+      this.dirty = true;
+    }
+    const streams = this.speed !== 0 || this.speed !== this.cruise;
+    if (!streams) this.lastTick = 0;
     const pulse = this.pulsing && !this.reducedMotion.matches;
     if (this.esp) {
       this.esp.pulsing.alpha = espPulse(now, this.reducedMotion.matches);
       if (pulse) this.dirty = true;
     }
     if (this.dirty) this.renderNow();
-    if (playing || pulse) this.raf = requestAnimationFrame(this.tick);
+    if (playing || pulse || streams) this.raf = requestAnimationFrame(this.tick);
   };
 }
