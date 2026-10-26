@@ -1,6 +1,6 @@
 # Handoff v2: store config overrides, not the whole config (2026-10-25)
 
-Status: planned, not started. Revises `config-overrides-plan.md` (v1) to fit the Setups epic (#226, sub-issues #227–#237) and the replay decisions (#153, #156, #167). Everything in v1's "Facts verified in the code" still holds; this file lists only what changes and why.
+Status: built (f4ea19d..e910f4e, `STATE_VERSION` 76), except the follow-ups: point 5 and the issue updates in point 3. Revises `config-overrides-plan.md` (v1) to fit the Setups epic (#226, sub-issues #227–#237) and the replay decisions (#153, #156, #167). Everything in v1's "Facts verified in the code" still holds; this file lists only what changes and why.
 
 ## Decision (owner, unchanged)
 Live games pick up balance changes (edits to `DEFAULT_CONFIG`) on their next load. The record (`"setup"` + `input:*`) keeps the exact launch `GameSetup`.
