@@ -1,14 +1,31 @@
-/* A terminal's window (TerminalDialog): the iTrackie card's color and dark text, with the terminal's watermark art
-   from the design kit in the bottom-right corner. Layout comes from settings.css's .settings-popup. */
-.terminal-popup {
-  --text: #171b5c;
-  --muted: #4a5a8f;
-  --accent: #0b5a9e;
-  --warning: #a14a00;
-  --edge: #8fb9cc;
-  color: var(--text);
-  background: right bottom no-repeat var(--terminal-bg);
-  border-color: var(--edge);
+/* A terminal's window (TerminalDialog): the glowing dark frame of the iTrackie (kit.css's .kit-panel) around a
+   .cut-card like the iTrackie's, with the terminal's watermark art from the design kit in the card's bottom-right corner. Layout comes from settings.css's .settings-popup. */
+.settings-popup.terminal-popup {
+  --pad: 12px;
+  /* The kit-panel supplies the frame and fill; overflow stays visible so its glow shows, and the card scrolls instead. */
+  position: fixed;
+  padding: var(--pad);
+  overflow: visible;
+  background: none;
+  border: 0;
+}
+/* The card itself is a .cut-card (styles/cut-card.css); the watermark art goes on a layer under the scrolling body. */
+.terminal-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: right bottom no-repeat;
+}
+.terminal-scroll {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 0 calc(1rem + 3px) calc(1rem + 3px);
+  overflow-y: auto;
+  border-radius: inherit;
 }
 
 /* The status pills are tinted for dark panels; darken them for the light card. */
@@ -22,23 +39,23 @@
   color: #56607a;
 }
 
-.terminal-astro_module {
+.terminal-card.terminal-astro_module::before {
   background-image: url("../../../Mush/www/img/design/astro_bg.png");
 }
-.terminal-com_center {
+.terminal-card.terminal-com_center::before {
   background-image: url("../../../Mush/www/img/design/sensor_bg.png");
 }
-.terminal-neron_bios_term {
+.terminal-card.terminal-neron_bios_term::before {
   background-image: url("../../../Mush/www/img/design/bios_bg.png");
 }
-.terminal-neron_core {
+.terminal-card.terminal-neron_core::before {
   background-image:
     url("../../../Mush/www/img/design/neroncorecorner.png"), url("../../../Mush/www/img/design/neroncore_bg.png");
   background-position:
     left top,
     right bottom;
 }
-.terminal-pilot_module {
+.terminal-card.terminal-pilot_module::before {
   background-image: url("../../../Mush/www/img/design/nav_bg.png");
 }
 
@@ -58,6 +75,11 @@
 /* The shared title bar (TerminalShell): name and room on the left, close on the right. */
 .terminal-header {
   flex-wrap: wrap;
+  /* A slightly deeper cyan than the card, inside the gold outline (3px), instead of the dialog's dark bar. */
+  margin: 0 calc(-1rem - 3px);
+  padding: calc(3px + 1rem) calc(1rem + 3px) 0.5rem;
+  background: #a6eefb;
+  border-bottom: 1px solid var(--edge);
 }
 .terminal-room {
   margin-right: auto;

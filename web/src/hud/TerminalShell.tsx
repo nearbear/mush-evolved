@@ -20,7 +20,7 @@ export function TerminalShell({ name, type, view, children }: Props) {
   const { t } = useTranslation();
   const names = useNames();
   return (
-    <>
+    <div className="terminal-scroll">
       <header className="dialog-header terminal-header">
         <Dialog.Title className="settings-title">{name}</Dialog.Title>
         <span className="terminal-room">{names.room(view.you.room)}</span>
@@ -30,7 +30,7 @@ export function TerminalShell({ name, type, view, children }: Props) {
       </header>
       <TerminalLogin type={type} view={view} />
       {children}
-    </>
+    </div>
   );
 }
 

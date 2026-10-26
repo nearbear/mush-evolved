@@ -49,8 +49,9 @@ export function TerminalDialog({ terminal, view, onAction, onClose }: Props) {
     <Dialog.Root open={terminal !== null} onOpenChange={(open) => !open && onClose()}>
       <Dialog.Portal>
         <Dialog.Backdrop className="settings-backdrop" />
-        <Dialog.Popup className={`settings-popup terminal-popup terminal-${terminal?.type.toLowerCase()}`}>
+        <Dialog.Popup className={`settings-popup terminal-popup kit-panel`}>
           {terminal && (
+            <div className={`cut-card cut-top terminal-card terminal-${terminal.type.toLowerCase()}`}>
             <TerminalShell name={names.equipment(terminal.type)} type={terminal.type} view={view}>
             {terminal?.type === "RESEARCH_LAB" && <ResearchList terminal={terminal} view={view} onAction={onAction} />}
               {terminal?.type === "NERON_CORE" && <ProjectList terminal={terminal} view={view} onAction={onAction} />}
@@ -62,6 +63,7 @@ export function TerminalDialog({ terminal, view, onAction, onClose }: Props) {
               {terminal?.type === "PILOT_MODULE" && <ShipNavigation terminal={terminal} view={view} onAction={onAction} />}
               {terminal?.type === "PILOT_MODULE" && <ReturnToSol key={terminal.id} terminal={terminal} view={view} onAction={onAction} />}
             </TerminalShell>
+            </div>
           )}
         </Dialog.Popup>
       </Dialog.Portal>

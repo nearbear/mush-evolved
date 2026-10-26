@@ -19,58 +19,7 @@
   /* The selected tab is 3px taller and overlaps the card's rim, so it opens into the card. */
   margin-bottom: -3px;
 }
-/*
- * The tab contents: an outlined card (like the nameplate and stat stacks) filling the glowing panel under the tabs.
- * Its bottom corners are cut parallel to the panel's, so the frame around it is --pad thick on the diagonals too:
- * offsetting a 45° cut inward by --pad shortens it by --pad × (2 − √2). The outline (border plus two inset shadows)
- * can't follow the cut, so the corner layers redraw its three lines along each diagonal. --c is a whole number of pixels and
- * each line is 0.7071px across (one pixel per row on a 45° step), so the lines land on pixel steps instead of blurring.
- */
-.itrackie-card {
-  --c: round(calc(var(--cut) - var(--pad) * 0.5858), 1px);
-  --d: calc((var(--c) - 0.5px) * 0.7071);
-  --corner: transparent var(--d), var(--gold-edge) 0 calc(var(--d) + 0.7071px), var(--gold-mid) 0 calc(var(--d) + 1.4142px),
-    var(--gold-edge) 0 calc(var(--d) + 2.1213px), transparent 0;
-  position: relative;
-  z-index: 1;
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  min-height: 0;
-  /* The terminal color (tokens.css), with the text tokens flipped to dark for contrast. */
-  --text: #171b5c;
-  --muted: #4a5a8f;
-  --accent: #0b5a9e;
-  --warning: #a14a00;
-  --edge: #8fb9cc;
-  background:
-    linear-gradient(45deg, var(--corner)) left bottom / calc(var(--c) + 4px) calc(var(--c) + 4px) no-repeat border-box,
-    linear-gradient(315deg, var(--corner)) right bottom / calc(var(--c) + 4px) calc(var(--c) + 4px) no-repeat border-box,
-    var(--terminal-bg);
-  color: var(--text);
-  /* kit.css's .gold outline: edge, gold, edge, 1px each. */
-  border: 1px solid transparent;
-  border-radius: 0 var(--panel-radius) 0 0;
-  /* A mask, not clip-path: a clip edge is anti-aliased, a hard gradient stop is not, so the cut is a clean pixel staircase. */
-  mask:
-    linear-gradient(#000 0 0) top / 100% calc(100% - var(--c)) no-repeat,
-    linear-gradient(#000 0 0) bottom / calc(100% - 2 * var(--c)) var(--c) no-repeat,
-    linear-gradient(45deg, transparent var(--d), #000 0) left bottom / var(--c) var(--c) no-repeat,
-    linear-gradient(315deg, transparent var(--d), #000 0) right bottom / var(--c) var(--c) no-repeat;
-}
-/* The straight lines (border plus two inset shadows) on their own layer, masked to stop one pixel short of the cut so each meets its diagonal line without overlapping it. */
-.itrackie-card::after {
-  content: "";
-  position: absolute;
-  inset: -1px;
-  pointer-events: none;
-  border: 1px solid var(--gold-edge);
-  border-radius: inherit;
-  box-shadow: inset 0 0 0 1px var(--gold-mid), inset 0 0 0 2px var(--gold-edge);
-  mask:
-    linear-gradient(#000 0 0) top / 100% calc(100% - var(--c) + 1px) no-repeat,
-    linear-gradient(#000 0 0) bottom / calc(100% - 2 * var(--c) + 2px) var(--c) no-repeat;
-}
+/* The tab contents are a .cut-card (cut-card.css) filling the glowing panel under the tabs. */
 .itrackie-card .feed > li {
   border-bottom-color: rgb(23 27 92 / 0.12);
 }

@@ -155,7 +155,7 @@ export function ITrackie({
           )}
           {graveyard && <IconTab value="graveyard" src={TAB_ICONS.graveyard} label={tabLabel("graveyard", t("itrackie.tabs.graveyard"))} badge={unread.graveyard} />}
         </Tabs.List>
-        <div className="itrackie-card">
+        <div className="cut-card itrackie-card">
           <h2 className="itrackie-title">{t(TAB_TITLES[activeTab])}{activeTab === "room" && ` – ${names.room(here)}`}{activeTab === "threads" && shownThread && ` – ${shownThread.name}`}</h2>
 
           {/* keepMounted: hidden with CSS, so chat drafts survive switching tabs. */}
