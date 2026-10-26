@@ -145,6 +145,7 @@ export function parseGameMessage(raw: string): GameClientMessage | null {
   const a = msg.action;
   if (a.type === "fiery_speech" || a.type === "boring_speech") return { type: "action", action: { type: a.type } };
   if (a.type === "self_disease") return { type: "action", action: { type: "self_disease" } };
+  if (a.type === "self_injury") return { type: "action", action: { type: "self_injury" } };
   if (a.type === "extract_spore") return { type: "action", action: { type: "extract_spore" } };
   if (a.type === "ready") return { type: "action", action: { type: "ready" } };
   if (a.type === "move" && typeof a.to === "string") return { type: "action", action: { type: "move", to: a.to } };

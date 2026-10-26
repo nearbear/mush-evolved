@@ -1,5 +1,6 @@
 import type { PlanetDirection } from "../planets.ts";
 import type { PlantState, RoomId } from "../types.ts";
+import type { StatusId } from "../statuses.ts";
 
 /**
  * How moving between rooms is paid for. These are base values; modifiers from
@@ -15,7 +16,7 @@ export interface MovementRules {
 export interface DiseaseCatagories {
   allDiseases: string [],
   allDisorders: string [],
-  allInjuries: string [],
+  allInjuries: StatusId[],
   allDiseaseStats: DiseaseStats[],
   allDisorderStats: DiseaseStats[],
   allInjuryStats: DiseaseStats[],

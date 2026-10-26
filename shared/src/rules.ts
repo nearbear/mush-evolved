@@ -147,6 +147,7 @@ export function newPlayer(s: Seat, config: GameConfig, cycle: number, role: Role
     ap: config.startAp,
     mp: config.startMp,
     hp: config.startHp,
+    maxHp: config.maxHp,
     morale: config.startMorale,
     maxMorale: config.maxMorale,
     satiety: 0,
@@ -482,7 +483,7 @@ export function viewFor(state: GameState, playerId: PlayerId): PlayerView {
     },
     config: { heavyMpPenalty: state.config.heavy.mpPenalty, actionQueueCap: state.config.action.queueCap, sharedSpots: state.config.sharedSpots },
     maxAp: state.config.maxAp,
-    maxHp: state.config.maxHp,
+    maxHp: you.maxHp,
     maxMorale: you.maxMorale,
     // While the BIOS has the shield off, it shows as 0 (Claude's default, 2026-10-24); its points are kept.
     ship: { ...state.ship, plasmaShield: state.bios.plasma_shield ? state.ship.plasmaShield : 0, max: shipMax(state.config) },

@@ -20,7 +20,7 @@ import type { ChannelId, GameState, PlayerState } from "./types.ts";
 export function damage(state: GameState, player: PlayerState, amount: number): void {
   if (!player.alive) return;
   if (player.cheats.includes("infiniteHp")) {
-    player.hp = state.config.maxHp;
+    player.hp = player.maxHp;
     return;
   }
   player.hp = Math.max(0, player.hp - amount);

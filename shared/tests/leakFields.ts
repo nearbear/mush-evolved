@@ -82,6 +82,7 @@ export const PLAYER_STATE_FIELDS: Record<string, FieldRule> = {
   accommodationOffers: { reach: "own", test: "leaks.test.ts", note: "The offers themselves are public room log lines." },
   mp: { reach: "own", test: "leaks.test.ts" },
   hp: { reach: "own", test: "leaks.test.ts" },
+  maxHp: { reach: "own", test: "leaks.test.ts" },
   morale: { reach: "own", test: "leaks.test.ts" },
   maxMorale: { reach: "own", test: "leaks.test.ts" },
   satiety: { reach: "own", test: "leaks.test.ts" },
