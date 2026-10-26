@@ -12,6 +12,7 @@ const SHARED = resolve(import.meta.dirname, "../../../shared/src");
 const ALLOWED = new Set([
   "death.ts", // damage() and killPlayer()
   "cheats.ts", // infiniteHp refills to the maximum
+  "adjustStats.ts", // clamps HP down to a lowered maximum (maxHp is at least 1, so never kills)
   "actions/heal.ts", // healing only raises HP
   "actions/consume.ts", // eating only raises HP (a negative consume.hp counts as 0)
   "hunters.ts", // a hunter's hp, not a player's; at 0 the hunter is removed
