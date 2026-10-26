@@ -106,6 +106,16 @@ describe("fuel loading", () => {
     expect(offered(s, "p0")).toContainEqual({ type: "return_fuel", equipment: TANK });
   });
 
+  it("taking, loading and unloading all use the fuel injury chance", () => {
+    for (const [room, action] of [["STORAGE_A_1", take], ["MOTOR_ROOM", unload]] as const) {
+      const s = game(room);
+      s.config.fuel.injuryChance = 1;
+      s.ship.combustion = 1;
+      const after = must(applyAction(s, "p0", action));
+      expect(logged(after, "randomInjury")).toBe(true);
+    }
+  });
+
   it("loads carried capsules into the chamber, up to its cap, and unloads them again", () => {
     let s = game("STORAGE_A_1");
     s = mustApply(s, "p0", take, take);
