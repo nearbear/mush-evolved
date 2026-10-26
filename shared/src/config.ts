@@ -301,7 +301,7 @@ export const DEFAULT_CONFIG: GameConfig = {
   diseases:  {
     allDiseases: ["cold_disease"],
     allDisorders: ["depression_disorder"],
-    allInjuries: ["nose_bleed_injury"],
+    allInjuries: ["broken_nose_injury"],
     allDiseaseStats: [{type: "disease", durationMin: 8, durationMax: 12}],
     allDisorderStats: [{type: "disorder", resistance: 8}],
     allInjuryStats: [{type: "injury"}],

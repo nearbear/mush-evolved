@@ -95,6 +95,7 @@ function aimedAt(view: PlayerView, a: Action, target: Target): boolean {
     case "get_up":
     case "search":
     case "self_disease":
+    case "self_injury":
     case "fiery_speech":
     case "boring_speech":
       return target.kind === "player" && target.id === view.you.id;

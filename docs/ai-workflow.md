@@ -1385,6 +1385,9 @@ Resolving the merge of a collaborator's Diseases branch (#262) went smoothly for
 - Not asked, flagged as defaults: refused in pre-selection, floor items can't be hidden. Observateur's free search is left out.
 - What worked: a regex swap of the reach check across actions, with typecheck and the "exact legal actions" test catching the one test that needed updating. fr/es strings are drafts needing a native speaker.
 
+### 2026-10-25 — Self Injury development action
+
+Added Self Injury as a free, instant, private development action parallel to Self Disease. The owner chose to draw from configured injuries not already held, using the game's seeded RNG; it is unavailable when no eligible injury remains and is not offered to bots. Wired it through the shared action registry, protocol, server cheat gate, client action labels, translations, and tests. Reused the existing disease status icon for the injury because no separate injury icon is currently wired.
 ### 2026-10-25: Parallax stars behind the ship (#136)
 
 A static star field already existed in the Pixi renderer, so the issue was smaller than it read: added a second, transparent near-star layer (`starLayer`) over the dust, each moving at its own fraction of the camera (0.25 and 0.6), hid both while the ship is in orbit (`Scene.space`, from `view.navigation.orbiting`), and held them still under `prefers-reduced-motion`. Not checked visually in a browser. The DOM renderer still has no star field.

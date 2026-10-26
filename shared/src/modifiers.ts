@@ -14,6 +14,7 @@ import { skillsOf } from "./skills.ts";
 import { antic_perfume } from "./modifiers/antic_perfume.ts";
 import { caffeinomaniac } from "./modifiers/caffeinomaniac.ts";
 import { cold_disease } from "./modifiers/cold_disease.ts";
+import { broken_nose_injury } from "./modifiers/broken_nose_injury.ts";
 import { creative } from "./modifiers/creative.ts";
 import { expert } from "./modifiers/expert.ts";
 import { computer } from "./modifiers/computer.ts";
@@ -65,7 +66,8 @@ type FoldHooks = Record<
   | "gardenPointsPerDay"
   | "heavyMpPenalty"
   | "cleanManoeuvreChance"
-  | "maxMorale",
+  | "maxMorale"
+  | "maxHp",
   FoldHook
 >;
 
@@ -123,7 +125,7 @@ export interface Modifier extends Partial<FoldHooks> {
 export type ModifierRegistry = Readonly<Record<string, Modifier>>;
 
 /** Items and skills will register here too. When a skill gains rules, update its entry in SKILL_STATUS (skills.ts). */
-export const MODIFIERS: Record<string, Modifier> = { lying_down, medic, first_aid, sturdy, creative, expert, antic_perfume, logistics, caffeinomaniac, cold_disease, computer, designer, sprint, physicist, botanic, pacifist, immunity, mankind_only_hope, wheelchair, pilot, gunman, gunner, persistent, polymath, space_tactics };
+export const MODIFIERS: Record<string, Modifier> = { lying_down, medic, first_aid, sturdy, creative, expert, antic_perfume, logistics, caffeinomaniac, cold_disease, broken_nose_injury, computer, designer, sprint, physicist, botanic, pacifist, immunity, mankind_only_hope, wheelchair, pilot, gunman, gunner, persistent, polymath, space_tactics };
 
 /** The ids every hook folds over: the player's skills (book slot last), then their other modifiers. */
 export function modifierIds(player: Readonly<PlayerState>): string[] {
@@ -380,6 +382,10 @@ export const punchDamage = (state: Readonly<GameState>, player: Readonly<PlayerS
 /** Max Morale */
 export const maxMorale = (state: Readonly<GameState>, player: Readonly<PlayerState>, base: number, registry: ModifierRegistry = MODIFIERS) =>
   fold("maxMorale", base, state, player, registry);
+
+/** Max Hp */
+export const maxHp = (state: Readonly<GameState>, player: Readonly<PlayerState>, base: number, registry: ModifierRegistry = MODIFIERS) =>
+  fold("maxHp", base, state, player, registry);
 
 /** Damage a turret shot does to a hunter: the rolled base folded through the shooter's modifiers (for Gunner; none yet). */
 export const turretDamage = (state: Readonly<GameState>, player: Readonly<PlayerState>, base: number, registry: ModifierRegistry = MODIFIERS) =>

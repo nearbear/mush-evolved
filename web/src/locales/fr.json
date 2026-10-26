@@ -276,6 +276,7 @@
     "deletePlanet": "Supprimer une planète",
     "pickSkill": "Choisir une compétence",
     "selfDisease": "S'infliger la maladie",
+    "selfInjury": "S'infliger une blessure",
     "visibility": {
       "private": "Privée",
       "secret": "Secrète",
@@ -496,6 +497,7 @@
     "accommodated": "Accompagné",
     "outcast": "Paria",
     "cold_disease": "Rhume",
+    "broken_nose_injury": "Nez explosé",
     "contaminated": "Contamination : {{level}}",
     "desc": {
       "dirty": "Vous ne pouvez pas faire de recherche. Prendre une douche l'enlève.",
@@ -508,7 +510,8 @@
       "wheelchair": "Un trait : n'importe qui dans la salle de cette personne peut proposer de pousser son fauteuil. Une fois poussée, elle se déplace avec son accompagnateur sans coût en PM. Ne peut pas être retiré.",
       "accommodated": "Quelqu'un pousse le fauteuil de cette personne : elle va là où va son accompagnateur, sans coût en PM, et ne peut pas se déplacer seule. L'un ou l'autre peut y mettre fin.",
       "outcast": "Maudit par un Persécuteur : chaque action à tirage réussit 20 % moins souvent, et rien de ce que cette personne fait n'est discret. Cela prend fin à la mort du Persécuteur ou de la personne.",
-      "cold_disease": "À chaque cycle, vous avez une chance sur trois de perdre 1 PM.",
+      "cold_disease": "-3 au moral maximum.\nVos coups de poing infligent 1 dégât de moins.\nÀ chaque changement de cycle, vous avez 33 % de chances de perdre 1 PM.",
+      "broken_nose_injury": "-2 PV maximum.\n-2 au moral maximum.",
       "contaminated": "Un humain que vous avez contaminé. À sa capacité maximale, il devient Mush."
     }
   },

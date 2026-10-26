@@ -6,7 +6,7 @@
 
 import type { GameState, PlayerState } from "./types.ts";
 
-export const STATUS_IDS = ["dirty", "full_belly", "hungry", "immune", "immunity", "pacifist", "mankind_only_hope", "wheelchair", "accommodated", "outcast", "cold_disease"] as const;
+export const STATUS_IDS = ["dirty", "full_belly", "hungry", "immune", "immunity", "pacifist", "mankind_only_hope", "wheelchair", "accommodated", "outcast", "cold_disease", "broken_nose_injury"] as const;
 export type StatusId = (typeof STATUS_IDS)[number];
 
 /** Confirmed 2026-10-14: dirty is public; full belly and hungry are private. */
@@ -26,6 +26,7 @@ export const STATUS_PUBLIC: Readonly<Record<StatusId, boolean>> = {
   // Owner, 2026-10-24: the Outcast status is public to the room (who cursed them is not).
   outcast: true,
   cold_disease: false,
+  broken_nose_injury: false,
 };
 
 /** Statuses that are character traits (permanent, innate): public, but shown on Inspect only, never over the head. */

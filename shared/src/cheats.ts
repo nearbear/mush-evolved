@@ -33,7 +33,7 @@ const REFILL: Record<Cheat, (p: PlayerState, state: GameState) => void> = {
   infiniteAp: (p, { config }) => void (p.ap = config.maxAp),
   infiniteMp: (p, { config }) => void (p.mp = config.movement.mpCap),
   infiniteMorale: (p, { config }) => void (p.morale = p.maxMorale),
-  infiniteHp: (p, { config }) => void (p.hp = config.maxHp),
+  infiniteHp: (p, { config }) => void (p.hp = p.maxHp),
   infiniteSpores: (p) => void (p.role === "mush" && (p.spores = CHEAT_SPORES)),
   infiniteCharges: (p, state) => {
     for (const item of state.items) {

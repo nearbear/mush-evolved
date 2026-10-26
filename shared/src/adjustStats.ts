@@ -1,6 +1,6 @@
 import { roll } from "./rng.ts";
 //import { logPrivate } from "./log.ts";
-import { maxMorale, skillPicked } from "./modifiers.ts";
+import { maxMorale, maxHp, skillPicked } from "./modifiers.ts";
 import { addStatus, removeStatus, type StatusId } from "./statuses.ts";
 import type { GameState, PlayerState } from "./types.ts";
 
@@ -25,6 +25,10 @@ export function updateMaxValues(state: GameState, player: PlayerState){
     if(player.morale > player.maxMorale){
         player.morale = player.maxMorale;
     }
+    player.maxHp = maxHp(state, player, state.config.maxHp);
+    if(player.hp > player.maxHp){
+        player.hp = player.maxHp;
+    }
 }
 
 export interface DiseaseTracker {
@@ -38,6 +42,17 @@ export interface DiseaseTracker {
 export function addDisease(state: GameState, player: PlayerState, name: StatusId){
     if(player.modifiers.includes(name)){
         return;
+    }
+    if(state.config.diseases.allInjuries.includes(name)){
+    player.modifiers.push(name);
+    skillPicked(state, player, name);
+    addStatus(player, name);
+    const index = state.config.diseases.allInjuries.indexOf(name);
+    const stats = state.config.diseases.allInjuryStats.at(index);
+    
+
+    player.diseaseTrackers.push({ name, duration: 99, resistance: 8, complete: false, forever: true });
+    return;
     }
     if(player.role == "mush"){
       return;
@@ -70,9 +85,9 @@ export function diseaseTrackerCycleChange(next: GameState): void {
     for (const tracker of player.diseaseTrackers) {
       if (player.role == "mush" && !next.config.diseases.allInjuries.includes(tracker.name)){
       removeDisease(next, player, tracker.name);
-    }
+      }
       tracker.duration -= 1;
-      if (tracker.duration <= 0){
+      if (tracker.duration <= 0 && !tracker.forever){
         tracker.complete = true;
         removeDisease(next, player, tracker.name);
       } 

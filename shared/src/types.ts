@@ -164,4 +164,5 @@ export type Action =
   | { type: "pick_skill"; skill: string }
   | { type: "read_book"; item: ItemId }
   | { type: "self_disease" }
+  | { type: "self_injury" }
   | { type: "ready" };
