@@ -54,6 +54,21 @@ export interface PreselectionRules {
   minPlayers: number; // Stopgap (owner, 2026-10-24): fewer players than this at selection and every human dies at once.
 }
 
+/**
+ * The only ways a game may differ from `DEFAULT_CONFIG` (`resolveConfig`). A stored game keeps these instead of its
+ * config, so it picks up balance changes on its next load. Anything per game that must survive a reload lives here,
+ * and config fields derived from it are recomputed by `resolveConfig`. Changing this shape, or what `resolveConfig`
+ * derives from a key, bumps `STATE_VERSION` (server/src/GameRoom.ts): a renamed key would silently fall back to the
+ * default in live games. Setups (#227) add `setup` here.
+ */
+export interface ConfigOverrides {
+  mushCount?: number; // Single player: 1.
+  manualCycles?: boolean; // Single player, and wherever the server allows cheats.
+  // Merged over the base config's pre-selection (`DEFAULT_CONFIG`'s, or a setup's from #227), or `PRESELECTION` when
+  // the base has none. Absent: the base's is kept (`null` without a setup).
+  preselection?: Partial<PreselectionRules>;
+}
+
 export interface GameConfig {
   mushCount: number; // Mush picked at launch. Unused with `preselection`, where the player count decides.
   // Null: everyone is seated at launch and Mush are picked then (tests, single player later).

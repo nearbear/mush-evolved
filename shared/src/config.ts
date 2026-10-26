@@ -3,7 +3,7 @@ import { BOOK_ITEM, ITRACKIE_ITEM } from "./itemIds.ts";
 import { patrolEquipment, patrolRooms } from "./patrol.ts";
 import { SKILLS } from "./skills.ts";
 import type { ShipRoom } from "./shipLayout.ts";
-import type { GameConfig, PreselectionRules, RoomId } from "./types.ts";
+import type { ConfigOverrides, GameConfig, PreselectionRules, RoomId } from "./types.ts";
 
 /** Seats on a multiplayer ship. Owner, 2026-10-24: 4 for now (the decided rule is 16). */
 export const SEAT_COUNT = 4;
@@ -307,3 +307,27 @@ export const DEFAULT_CONFIG: GameConfig = {
     allInjuryStats: [{type: "injury"}],
     },
 };
+
+/**
+ * A game's config: `DEFAULT_CONFIG` with its overrides on top (types/config.ts). The keys are copied one by one, so
+ * unknown keys in a stored object are ignored, never spread. Runs on every load, so live games pick up balance changes.
+ */
+export function resolveConfig(o: ConfigOverrides = {}): GameConfig {
+  // #227 adds `o.setup ? setupConfig(o.setup) : DEFAULT_CONFIG` here.
+  const base = DEFAULT_CONFIG;
+  const p = o.preselection;
+  return {
+    ...base,
+    ...(o.mushCount !== undefined && { mushCount: o.mushCount }),
+    ...(o.manualCycles !== undefined && { manualCycles: o.manualCycles }),
+    preselection: p
+      ? {
+          ...(base.preselection ?? PRESELECTION),
+          ...(p.seats !== undefined && { seats: p.seats }),
+          ...(p.endsOn !== undefined && { endsOn: p.endsOn }),
+          ...(p.twoMushAbove !== undefined && { twoMushAbove: p.twoMushAbove }),
+          ...(p.minPlayers !== undefined && { minPlayers: p.minPlayers }),
+        }
+      : base.preselection,
+  };
+}
