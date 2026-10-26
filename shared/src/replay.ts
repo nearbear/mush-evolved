@@ -128,7 +128,10 @@ export function stampEntries(state: GameState, at: number): GameState {
   return state;
 }
 
-/** Rebuilds the exact state the server stored, timestamps included, from its record (#167). */
+/**
+ * Rebuilds the exact state the server stored, timestamps included, from its record (#167). Exact only if neither the
+ * rules code nor `DEFAULT_CONFIG` changed while the game was live: a live game resolves its config again on each load.
+ */
 export function rebuildGame(setup: GameSetup, record: readonly RecordedInput[]): GameState {
   let state = stampEntries(startGame(setup), setup.launchedAt ?? 0);
   for (const [i, { at, input }] of record.entries()) {

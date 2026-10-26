@@ -1,12 +1,14 @@
 import {
   CHARACTERS,
   CHAT_CHANNELS,
+  DEFAULT_CONFIG,
   legalIn,
   rebuildGame,
   resolveConfig,
   type CharacterId,
   type ConfigOverrides,
   type GameServerMessage,
+  type GameState,
   type GameSetup,
   type PlayerView,
   type RecordedInput,
@@ -332,14 +334,21 @@ describe("GameRoom after a Transfer", () => {
   });
 });
 
-/** Each way a room launches, with the config overrides it should record. */
-const LAUNCHES: { name: string; env: Record<string, string>; launch: (room: Room) => Promise<unknown>; overrides: ConfigOverrides }[] = [
-  { name: "setup", env: {}, launch: (r) => r.setup(seats(3), tokensFor(3)), overrides: {} },
-  { name: "setup, cheats", env: CHEATS, launch: (r) => r.setup(seats(3), tokensFor(3)), overrides: { manualCycles: true } },
-  { name: "ship", env: {}, launch: (r) => r.join("Ann", "chao"), overrides: { preselection: {} } },
-  { name: "dev ship", env: CHEATS, launch: (r) => r.join("Ann", "chao"), overrides: { preselection: { seats: CHARACTERS.length }, manualCycles: true } },
+/** Each way a room launches (returning a seat token), with the config overrides it should record. */
+const LAUNCHES: { name: string; env: Record<string, string>; launch: (room: Room) => Promise<string>; overrides: ConfigOverrides }[] = [
+  { name: "setup", env: {}, launch: (r) => r.setup(seats(3), tokensFor(3)).then(() => "tok0"), overrides: {} },
+  { name: "setup, cheats", env: CHEATS, launch: (r) => r.setup(seats(3), tokensFor(3)).then(() => "tok0"), overrides: { manualCycles: true } },
+  { name: "ship", env: {}, launch: (r) => r.join("Ann", "chao").then((j) => (j.ok ? j.token : "")), overrides: { preselection: {} } },
+  {
+    name: "dev ship",
+    env: CHEATS,
+    launch: (r) => r.join("Ann", "chao").then((j) => (j.ok ? j.token : "")),
+    overrides: { preselection: { seats: CHARACTERS.length }, manualCycles: true },
+  },
   { name: "single player", env: {}, launch: (r) => r.setupSinglePlayer("Guest 1", "chun"), overrides: { mushCount: 1, manualCycles: true } },
 ];
+/** The room's in-memory game, config included. */
+const gameOf = (room: Room) => (room as unknown as { game: GameState }).game;
 
 describe("GameRoom persistence", () => {
   it.each(LAUNCHES)("records the launch's config and the overrides it came from ($name)", async ({ env, launch, overrides }) => {
@@ -350,6 +359,41 @@ describe("GameRoom persistence", () => {
     const setup = (await storage.get<GameSetup>("setup"))!;
     expect(setup.overrides).toEqual(overrides);
     expect(setup.config).toEqual(resolveConfig(overrides));
+  });
+
+  it.each(LAUNCHES)("stores the overrides instead of the config, and resolves it again on reload ($name)", async ({ env, launch, overrides }) => {
+    vi.useFakeTimers();
+    try {
+      const storage = new FakeStorage();
+      const token = await launch(asRoom(storage, env));
+      const stored = () => storage.data.get("game") as { game: object; overrides: ConfigOverrides };
+      expect(stored().game).not.toHaveProperty("config");
+      expect(stored().overrides).toEqual(overrides);
+
+      const revived = asRoom(storage, env);
+      await revived.onStart();
+      expect(gameOf(revived).config).toEqual(resolveConfig(overrides));
+      // Saved again after the reload, still with the same overrides.
+      const inputs = storage.data.size;
+      await send(revived, connect(revived, token), { type: "chat", channel: CHAT_CHANNELS[0], text: "hello" });
+      expect(storage.data.size).toBe(inputs + 1);
+      expect(stored().overrides).toEqual(overrides);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("picks up a balance change (an edit to DEFAULT_CONFIG) on the next load", async () => {
+    const { storage } = await newRoom();
+    const before = DEFAULT_CONFIG.maxAp;
+    try {
+      DEFAULT_CONFIG.maxAp = 99;
+      const revived = asRoom(storage);
+      await revived.onStart();
+      expect(gameOf(revived).config.maxAp).toBe(99);
+    } finally {
+      DEFAULT_CONFIG.maxAp = before;
+    }
   });
 
   it("records each accepted input in order, beside the setup", async () => {
@@ -414,8 +458,9 @@ describe("GameRoom persistence", () => {
     const types = new Set(record.map((r) => r.input.type));
     for (const type of ["chat", "action", "tick", "cycle"]) expect(types, type).toContain(type);
     expect(record.some((r) => "by" in r.input && r.input.by !== "p0"), "a bot input").toBe(true);
-    const stored = json<{ game: unknown }>(await storage.get("game")).game;
-    expect(rebuildGame(json<GameSetup>(await storage.get("setup")), record)).toEqual(stored);
+    const { game: stored, overrides } = json<{ game: object; overrides: ConfigOverrides }>(await storage.get("game"));
+    expect(stored).not.toHaveProperty("config");
+    expect(rebuildGame(json<GameSetup>(await storage.get("setup")), record)).toEqual({ ...stored, config: resolveConfig(overrides) });
   });
 });
 

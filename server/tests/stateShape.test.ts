@@ -1,4 +1,4 @@
-import { CHAT_CHANNELS } from "@mush2/shared";
+import { CHAT_CHANNELS, type ConfigOverrides, type PreselectionRules } from "@mush2/shared";
 import { readFileSync, writeFileSync } from "node:fs";
 import { describe, expect, it, vi } from "vitest";
 import { FakeConnection, FakeServer, FakeStorage, seats, tokensFor } from "../src/testing/fakes.ts";
@@ -23,6 +23,16 @@ function keyPaths(value: unknown, at = "", out = new Set<string>()): string[] {
   return [...out].sort();
 }
 
+/**
+ * Every key of ConfigOverrides, stored beside the game. Its keys are all optional, so `Required` makes this fail to
+ * compile until a new key is added here, which then moves the fingerprint like a GameState change.
+ */
+const OVERRIDES: Required<Omit<ConfigOverrides, "preselection">> & { preselection: Required<PreselectionRules> } = {
+  mushCount: 1,
+  manualCycles: true,
+  preselection: { seats: 4, endsOn: { day: 3, cycle: 8 }, twoMushAbove: 8, minPlayers: 3 },
+};
+
 async function freshStoredGame(): Promise<unknown> {
   const storage = new FakeStorage();
   const room = new GameRoom({ storage } as never, { RULES_VERSION: "test" } as never);
@@ -35,9 +45,9 @@ async function freshStoredGame(): Promise<unknown> {
   return (await storage.get<{ game: unknown }>("game"))!.game;
 }
 
-describe("stored GameState shape", () => {
+describe("stored GameState and ConfigOverrides shape", () => {
   it("matches the committed fingerprint, which moves only with a STATE_VERSION bump", async () => {
-    const paths = keyPaths(await freshStoredGame());
+    const paths = [...keyPaths(await freshStoredGame()), ...keyPaths(OVERRIDES, "overrides")].sort();
     const committed = JSON.parse(readFileSync(SNAPSHOT, "utf8")) as Snapshot;
     const changed = JSON.stringify(paths) !== JSON.stringify(committed.paths);
 
@@ -53,7 +63,7 @@ describe("stored GameState shape", () => {
     const removed = committed.paths.filter((p) => !paths.includes(p));
     expect(
       { added, removed },
-      "The stored GameState shape changed. Bump STATE_VERSION in server/src/GameRoom.ts (live games are discarded), then run `UPDATE_STATE_SHAPE=1 npm test -w server -- stateShape.test.ts`.",
+      "The stored GameState or ConfigOverrides shape changed. Bump STATE_VERSION in server/src/GameRoom.ts (live games are discarded), then run `UPDATE_STATE_SHAPE=1 npm test -w server -- stateShape.test.ts`.",
     ).toEqual({ added: [], removed: [] });
     expect(committed.version, "STATE_VERSION changed without refreshing server/tests/state-shape.json: run `UPDATE_STATE_SHAPE=1 npm test -w server -- stateShape.test.ts`.").toBe(STATE_VERSION);
     // `it` needs no extra assertion: both checks above passed.

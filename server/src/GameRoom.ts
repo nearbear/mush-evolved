@@ -60,14 +60,16 @@ const MODEL_RETRY_MS = 2_000;
 const MODEL_RETRY_MAX_MS = 60_000;
 
 /**
- * Bump when GameState's shape changes. Games stored under another version are
- * discarded on load (there is no migration; games are short-lived).
+ * Bump when GameState's shape changes, or ConfigOverrides' (or what resolveConfig derives from a key). Games stored
+ * under another version are discarded on load (there is no migration; games are short-lived).
  */
-export const STATE_VERSION = 75;
+export const STATE_VERSION = 76;
 
 interface Stored {
   version?: number;
-  game: GameState;
+  /** Without its config, which is resolved from `overrides` on each load, so live games pick up balance changes. */
+  game: Omit<GameState, "config">;
+  overrides: ConfigOverrides;
   /** Seat token -> seat id. Tokens are secrets handed out by the matchmaker. */
   tokens: Record<string, PlayerId>;
   /** How many inputs are recorded; the next one is stored at `inputKey(inputs)`. */
@@ -154,7 +156,8 @@ export class GameRoom extends Server<Env> {
       this.retired = (await this.ctx.storage.get("setup")) !== undefined;
       return;
     }
-    this.game = stored.game;
+    this.overrides = stored.overrides;
+    this.game = { ...stored.game, config: resolveConfig(stored.overrides) };
     this.tokens = stored.tokens;
     this.inputs = stored.inputs;
     this.rateLimited = stored.rateLimited;
@@ -590,9 +593,11 @@ export class GameRoom extends Server<Env> {
   /** Saves the snapshot, plus any record entries, in one atomic write so they can't disagree. */
   private async persist(entries: Record<string, unknown> = {}): Promise<void> {
     if (!this.game) return;
+    const { config: _, ...game } = this.game;
     const stored: Stored = {
       version: STATE_VERSION,
-      game: this.game,
+      game,
+      overrides: this.overrides,
       tokens: this.tokens,
       inputs: this.inputs,
       rateLimited: this.rateLimited,
