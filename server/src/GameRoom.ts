@@ -16,6 +16,7 @@ import {
   CHARACTERS,
   PRESELECTION,
   preselectionDeadline,
+  resolveConfig,
   singlePlayerGame,
   SINGLE_PLAYER_HUMAN,
   viewFor,
@@ -180,10 +181,10 @@ export class GameRoom extends Server<Env> {
    */
   async setupSinglePlayer(name: string, character: CharacterId): Promise<string> {
     if (this.game || this.retired) throw new Error("Game already set up");
-    const { seats, config, forcedRoles } = singlePlayerGame(name, character, crypto.getRandomValues(new Uint32Array(1))[0]!);
+    const { seats, overrides, forcedRoles } = singlePlayerGame(name, character, crypto.getRandomValues(new Uint32Array(1))[0]!);
     const token = crypto.randomUUID();
     this.singlePlayer = true;
-    await this.launch(seats, { [token]: SINGLE_PLAYER_HUMAN }, config, forcedRoles);
+    await this.launch(seats, { [token]: SINGLE_PLAYER_HUMAN }, resolveConfig(overrides), forcedRoles);
     return token;
   }
 

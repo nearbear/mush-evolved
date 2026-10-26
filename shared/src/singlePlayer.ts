@@ -6,10 +6,8 @@
 // never bots in single player (#222); the human may pick any character.
 
 import { CHARACTERS, type CharacterId } from "./characters.ts";
-// biome-ignore lint/style/noRestrictedImports: builds a new game's config from the defaults; rules read state.config.
-import { DEFAULT_CONFIG } from "./config.ts";
 import { shuffle, type RngState } from "./rng.ts";
-import type { GameConfig, PlayerId, Role, Seat } from "./types.ts";
+import type { ConfigOverrides, PlayerId, Role, Seat } from "./types.ts";
 
 export const SINGLE_PLAYER_SEATS = 9;
 
@@ -21,11 +19,11 @@ export const SINGLE_PLAYER_HUMAN: PlayerId = "p0";
 
 export interface SinglePlayerGame {
   seats: Seat[];
-  config: GameConfig;
+  overrides: ConfigOverrides;
   forcedRoles: Record<PlayerId, Role>;
 }
 
-/** The seats, config and roles of a new single-player game. The bots' characters are drawn with `rng`. */
+/** The seats, config overrides and roles of a new single-player game. The bots' characters are drawn with `rng`. */
 export function singlePlayerGame(name: string, character: CharacterId, rng: RngState): SinglePlayerGame {
   const pool = CHARACTERS.map((c) => c.id).filter((id) => id !== character && !NEVER_BOTS.includes(id));
   const [drawn] = shuffle(pool, rng);
@@ -42,7 +40,7 @@ export function singlePlayerGame(name: string, character: CharacterId, rng: RngS
   );
   return {
     seats: [{ id: SINGLE_PLAYER_HUMAN, name, isBot: false, character }, ...bots],
-    config: { ...DEFAULT_CONFIG, mushCount: 1, manualCycles: true },
+    overrides: { mushCount: 1, manualCycles: true },
     forcedRoles: { [SINGLE_PLAYER_HUMAN]: "mush" },
   };
 }

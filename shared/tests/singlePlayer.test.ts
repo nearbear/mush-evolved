@@ -1,13 +1,14 @@
 import { describe, expect, it } from "vitest";
 import { CHARACTERS } from "../src/characters.ts";
+import { resolveConfig } from "../src/config.ts";
 import { startGame } from "../src/replay.ts";
 import { applyAction, viewFor } from "../src/rules.ts";
 import { NEVER_BOTS, SINGLE_PLAYER_HUMAN, SINGLE_PLAYER_SEATS, singlePlayerGame } from "../src/singlePlayer.ts";
 import { must, player } from "./support.ts";
 
 const start = (character: (typeof CHARACTERS)[number]["id"] = "finola", seed = 7) => {
-  const game = singlePlayerGame("Guest 1", character, seed);
-  return startGame({ ...game, seed, rulesVersion: "test" });
+  const { overrides, ...game } = singlePlayerGame("Guest 1", character, seed);
+  return startGame({ ...game, config: resolveConfig(overrides), seed, rulesVersion: "test" });
 };
 
 describe("single player", () => {

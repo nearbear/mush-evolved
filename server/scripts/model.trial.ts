@@ -14,7 +14,7 @@
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { parseArgs } from "node:util";
 import { test } from "vitest";
-import { applyInput, createGame, nextDue, legalActions, singlePlayerGame, viewFor, SINGLE_PLAYER_HUMAN, type GameState, type Input, type PlayerId } from "@mush2/shared";
+import { applyInput, createGame, nextDue, legalActions, resolveConfig, singlePlayerGame, viewFor, SINGLE_PLAYER_HUMAN, type GameState, type Input, type PlayerId } from "@mush2/shared";
 import { ModelBot, WanderBot, type Bot } from "../src/bots.ts";
 import { completeOpenAi, ModelGate, type Complete } from "../src/model.ts";
 import { choices } from "../src/prompt.ts";
@@ -125,7 +125,7 @@ const gate = new ModelGate({ baseUrl: "https://openrouter.ai/api/v1", model: arg
 
 const seed = Number(args.seed);
 const setup = singlePlayerGame("Trial", "kuanti", seed);
-let game: GameState = createGame(setup.seats, setup.config, seed, setup.forcedRoles);
+let game: GameState = createGame(setup.seats, resolveConfig(setup.overrides), seed, setup.forcedRoles);
 let now = 0;
 
 let fallbacks = 0;
