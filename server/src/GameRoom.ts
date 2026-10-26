@@ -5,7 +5,6 @@
 import { Server, type Connection, type ConnectionContext, type WSMessage } from "partyserver";
 import {
   applyInput,
-  DEFAULT_CONFIG,
   moderateChat,
   parseGameMessage,
   startGame,
@@ -14,15 +13,13 @@ import {
   legalActions,
   nextDue,
   CHARACTERS,
-  PRESELECTION,
   preselectionDeadline,
   resolveConfig,
   singlePlayerGame,
   SINGLE_PLAYER_HUMAN,
   viewFor,
   type CharacterId,
-  type GameConfig,
-  type PreselectionRules,
+  type ConfigOverrides,
   type GameClientMessage,
   type BotPause,
   type GameServerMessage,
@@ -129,6 +126,8 @@ export class GameRoom extends Server<Env> {
   private modelCalls = 0;
   /** Cycles end only by End cycle, never on the clock. */
   private singlePlayer = false;
+  /** How this game's config differs from `DEFAULT_CONFIG` (`resolveConfig`). */
+  private overrides: ConfigOverrides = {};
   /** Asks paused bots again while model calls fail in passing (`retryPausedBots`). */
   private retryTimer: ReturnType<typeof setTimeout> | null = null;
   private retryMs = MODEL_RETRY_MS;
@@ -171,7 +170,7 @@ export class GameRoom extends Server<Env> {
   /** Seats everyone at launch, with Mush picked at once (tests). Called once, over RPC. */
   async setup(seats: Seat[], tokens: Record<string, PlayerId>): Promise<void> {
     if (this.game || this.retired) throw new Error("Game already set up");
-    await this.launch(seats, tokens, DEFAULT_CONFIG);
+    await this.launch(seats, tokens, {});
   }
 
   /**
@@ -184,7 +183,7 @@ export class GameRoom extends Server<Env> {
     const { seats, overrides, forcedRoles } = singlePlayerGame(name, character, crypto.getRandomValues(new Uint32Array(1))[0]!);
     const token = crypto.randomUUID();
     this.singlePlayer = true;
-    await this.launch(seats, { [token]: SINGLE_PLAYER_HUMAN }, resolveConfig(overrides), forcedRoles);
+    await this.launch(seats, { [token]: SINGLE_PLAYER_HUMAN }, overrides, forcedRoles);
     return token;
   }
 
@@ -197,7 +196,7 @@ export class GameRoom extends Server<Env> {
     // The matchmaker launches a new ship elsewhere.
     if (this.retired) return { ok: false, error: "ship_closed" };
     // One launch even if two joins arrive together.
-    this.launching ??= this.game ? Promise.resolve() : this.launch([], {}, { ...DEFAULT_CONFIG, preselection: this.shipRules() });
+    this.launching ??= this.game ? Promise.resolve() : this.launch([], {}, { preselection: this.shipRules() });
     await this.launching;
     const game = this.game!;
     const seat: Seat = { id: `p${game.players.length}`, name, isBot: false, character };
@@ -214,8 +213,8 @@ export class GameRoom extends Server<Env> {
   }
 
   /** A dev server's ship seats the whole cast, so it fills (and Mush are chosen) once the bots are seated, `DEV_FILL_DELAY_MS` after the first join. */
-  private shipRules(): PreselectionRules {
-    return this.cheatsAllowed ? { ...PRESELECTION, seats: CHARACTERS.length } : PRESELECTION;
+  private shipRules(): ConfigOverrides["preselection"] {
+    return this.cheatsAllowed ? { seats: CHARACTERS.length } : {};
   }
 
   /**
@@ -256,13 +255,16 @@ export class GameRoom extends Server<Env> {
     return clockCycleStart(this.clockCycle + preselectionDeadline(game, rules) - game.cycle, cycleMs(this.env));
   }
 
-  private async launch(seats: Seat[], tokens: Record<string, PlayerId>, config: GameConfig, forcedRoles?: Record<PlayerId, Role>): Promise<void> {
+  private async launch(seats: Seat[], tokens: Record<string, PlayerId>, overrides: ConfigOverrides, forcedRoles?: Record<PlayerId, Role>): Promise<void> {
     const now = Date.now();
     this.clockCycle = clockCycle(now, cycleMs(this.env));
+    // End cycle is for testing (only where cheats are allowed, owner, 2026-10-19) and single player.
+    this.overrides = this.cheatsAllowed ? { ...overrides, manualCycles: true } : overrides;
+    const config = resolveConfig(this.overrides);
     const setup: GameSetup = {
       seats,
-      // End cycle is for testing (only where cheats are allowed, owner, 2026-10-19) and single player.
-      config: { ...config, manualCycles: config.manualCycles || this.cheatsAllowed },
+      config,
+      overrides: this.overrides,
       ...(forcedRoles && { forcedRoles }),
       seed: crypto.getRandomValues(new Uint32Array(1))[0]!,
       rulesVersion: this.env.RULES_VERSION,

@@ -3,7 +3,9 @@ import {
   CHAT_CHANNELS,
   legalIn,
   rebuildGame,
+  resolveConfig,
   type CharacterId,
+  type ConfigOverrides,
   type GameServerMessage,
   type GameSetup,
   type PlayerView,
@@ -330,7 +332,26 @@ describe("GameRoom after a Transfer", () => {
   });
 });
 
+/** Each way a room launches, with the config overrides it should record. */
+const LAUNCHES: { name: string; env: Record<string, string>; launch: (room: Room) => Promise<unknown>; overrides: ConfigOverrides }[] = [
+  { name: "setup", env: {}, launch: (r) => r.setup(seats(3), tokensFor(3)), overrides: {} },
+  { name: "setup, cheats", env: CHEATS, launch: (r) => r.setup(seats(3), tokensFor(3)), overrides: { manualCycles: true } },
+  { name: "ship", env: {}, launch: (r) => r.join("Ann", "chao"), overrides: { preselection: {} } },
+  { name: "dev ship", env: CHEATS, launch: (r) => r.join("Ann", "chao"), overrides: { preselection: { seats: CHARACTERS.length }, manualCycles: true } },
+  { name: "single player", env: {}, launch: (r) => r.setupSinglePlayer("Guest 1", "chun"), overrides: { mushCount: 1, manualCycles: true } },
+];
+
 describe("GameRoom persistence", () => {
+  it.each(LAUNCHES)("records the launch's config and the overrides it came from ($name)", async ({ env, launch, overrides }) => {
+    // The dev ship seats its bots on a timer, which must not outlive the test.
+    vi.useFakeTimers();
+    const storage = new FakeStorage();
+    await launch(asRoom(storage, env)).finally(() => vi.useRealTimers());
+    const setup = (await storage.get<GameSetup>("setup"))!;
+    expect(setup.overrides).toEqual(overrides);
+    expect(setup.config).toEqual(resolveConfig(overrides));
+  });
+
   it("records each accepted input in order, beside the setup", async () => {
     const { room, storage } = await newRoom(3, new FakeStorage(), CHEATS);
     const c = connect(room, "tok0");

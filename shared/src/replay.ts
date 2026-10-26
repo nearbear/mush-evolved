@@ -10,12 +10,15 @@ import { createGame, newCycle, setActopiCheat, setCheat, setRoleCheat, type Acti
 import { clearQueue, queueAction, tick } from "./queue.ts";
 import { walk } from "./spot.ts";
 import { createChannel, createThread, inviteToChannel, leaveChannel, sendChat, toggleCheckbox } from "./chat.ts";
-import type { GameConfig, GameState, PlayerId, Role, Seat } from "./types.ts";
+import type { ConfigOverrides, GameConfig, GameState, PlayerId, Role, Seat } from "./types.ts";
 
 /** What createGame needed, plus which rules produced the game. */
 export interface GameSetup {
   seats: Seat[];
+  /** The config at launch. A live game resolves its config again on each load, so it can drift from this. */
   config: GameConfig;
+  /** What the launch asked for, which `config` was resolved from (provenance only). Missing on older games. */
+  overrides?: ConfigOverrides;
   seed: number;
   /**
    * Build of the rules that ran this game (a commit hash in production, "dev"
