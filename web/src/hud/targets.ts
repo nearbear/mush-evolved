@@ -95,6 +95,7 @@ function aimedAt(view: PlayerView, a: Action, target: Target): boolean {
     case "get_up":
     case "search":
     case "self_disease":
+    case "self_injury":
     case "fiery_speech":
     case "boring_speech":
       return target.kind === "player" && target.id === view.you.id;
@@ -149,6 +150,7 @@ const ACTION_LABEL_KEYS = {
   body_transfer: "actions.bodyTransfer",
   extract_spore: "actions.extractSpore",
   self_disease: "actions.selfDisease",
+  self_injury: "actions.selfInjury",
   get_up: "actions.getUp",
   accommodate: "actions.accommodate",
   accept_accommodation: "actions.acceptAccommodation",

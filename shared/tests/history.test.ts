@@ -48,7 +48,7 @@ describe("action history", () => {
 
   it("leaves out moving, taking and dropping, Examine, BIOS changes, accessing a terminal, ending the cycle and picking a skill", () => {
     const unrecorded = Object.entries(ACTIONS).filter(([, def]) => !def.recorded).map(([type]) => type).sort();
-    expect(unrecorded).toEqual(["access", "drop", "examine", "move", "pick_skill", "ready", "self_disease", "set_bios", "take"]);
+    expect(unrecorded).toEqual(["access", "drop", "examine", "move", "pick_skill", "ready", "self_disease", "self_injury", "set_bios", "take"]);
     const s = ship("leadership");
     const move = offered(s, "p0").find((a) => a.type === "move")!;
     expect(player(mustApply(s, "p0", move), "p0").history).toEqual([]);

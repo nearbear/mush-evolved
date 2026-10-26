@@ -79,6 +79,7 @@ export interface PlayerState extends Seat {
   mp: number;
   /** Health points. Private: only in your own view. Nothing changes them yet. */
   hp: number;
+  maxHp: number;
   /** Morale points. Private: only in your own view. Lose `moralePerDay` at the end of each day. */
   morale: number;
   maxMorale: number;

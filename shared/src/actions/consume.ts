@@ -46,7 +46,7 @@ export class ConsumeAction extends Action<ConsumeActionData> {
       }
     }
     const { ap, satiety, morale = 0, hp = 0 } = ITEM_TYPES[item.type]!.consume!;
-    player.hp = Math.min(state.config.maxHp, player.hp + Math.max(0, hp));
+    player.hp = Math.min(player.maxHp, player.hp + Math.max(0, hp));
     player.ap = Math.min(state.config.maxAp, player.ap + ap + rationApBonus(state, item.type));
     //player.morale = Math.max(0, Math.min(player.maxMorale, player.morale + morale));
     gainMorale(state, player, morale);

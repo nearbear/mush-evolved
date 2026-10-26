@@ -1384,3 +1384,7 @@ Resolving the merge of a collaborator's Diseases branch (#262) went smoothly for
 - Design: one `hiddenBy` field on the item, with item-level reach (`canReachItem`) replacing `canReach(item.at)` in the item actions, so hidden items are unusable by others without each action knowing. Search is always offered so the action list itself cannot leak what is hidden.
 - Not asked, flagged as defaults: refused in pre-selection, floor items can't be hidden. Observateur's free search is left out.
 - What worked: a regex swap of the reach check across actions, with typecheck and the "exact legal actions" test catching the one test that needed updating. fr/es strings are drafts needing a native speaker.
+
+### 2026-10-25 — Self Injury development action
+
+Added Self Injury as a free, instant, private development action parallel to Self Disease. The owner chose to draw from configured injuries not already held, using the game's seeded RNG; it is unavailable when no eligible injury remains and is not offered to bots. Wired it through the shared action registry, protocol, server cheat gate, client action labels, translations, and tests. Reused the existing disease status icon for the injury because no separate injury icon is currently wired.

@@ -306,7 +306,7 @@ export class GameRoom extends Server<Env> {
     }
     if (
       ((msg.type === "cheat" || msg.type === "actopiCheat" || msg.type === "roleCheat") ||
-        (msg.type === "action" && msg.action.type === "self_disease")) &&
+        (msg.type === "action" && (msg.action.type === "self_disease" || msg.action.type === "self_injury"))) &&
       !this.cheatsAllowed
     ) {
       this.send(connection, { type: "error", message: CHEATS_DISABLED });
