@@ -10,6 +10,7 @@
 //   game               the "Room" region lists the people, equipment, items and exits the room shows
 //   game               every interactive element a mouse can reach is a Tab stop
 //   picker/game        the license footer's links come last in the Tab order, never before other controls
+//   game               a round by keyboard alone: pick from the room list, focus lands on Inspect's actions, act, focus stays
 //   game               the room log is a role="log", and the polite and assertive announcer regions exist
 //
 // The page-side code is passed as strings: this Node-only package has no DOM types.
@@ -78,6 +79,7 @@ async function main(): Promise<number> {
 
     await check("game: no raw i18n keys", () => noRawKeys(page));
     await check("game: room region lists people, equipment, items and exits", () => roomRegion(page));
+    await check("game: look, select and act by keyboard alone", () => keyboardRound(page));
     await check("game: the room log is a live region", () => logIsLive(page));
     await check("game: license footer is last in the Tab order", () => noFooterStops(page));
     await check("game: every mouse-reachable control is a Tab stop", () => everyControlTabbable(page));
@@ -160,6 +162,30 @@ async function logIsLive(page: Page): Promise<void> {
   if (!found.feed) throw new Error("no .feed (room log) on screen");
   const missing = [!found.log && 'the room log is not inside role="log"', !found.polite && "no polite announcer region", !found.assertive && "no assertive announcer region"].filter(Boolean);
   if (missing.length) throw new Error(missing.join("\n"));
+}
+
+/** Where keyboard focus is (page side): inside the Inspect panel, on a button, or lost on the page body. */
+const FOCUS_NOW = `(() => { const el = document.activeElement;
+  return { body: !el || el === document.body, inspect: !!el && !!el.closest(".inspect"), button: !!el && el.tagName === "BUTTON",
+    name: el ? (el.getAttribute("aria-label") || (el.textContent || "").trim()).slice(0, 60) : "" }; })()`;
+
+async function keyboardRound(page: Page): Promise<void> {
+  const region = page.getByRole("region", { name: "Room", exact: true });
+  // Equipment first (always harmless to examine), else whatever the room has.
+  const entry = region.getByRole("group", { name: /Equipment|Items|People/i }).getByRole("button").first();
+  if (!(await entry.count())) throw new Error("nothing in the Room list to select");
+  await entry.focus();
+  await page.keyboard.press("Enter");
+  await page.waitForTimeout(300);
+  let focus = await inPage<{ body: boolean; inspect: boolean; button: boolean; name: string }>(page, FOCUS_NOW);
+  if (!focus.inspect) throw new Error(`after selecting from the list, focus is not in the Inspect panel (${focus.body ? "lost on the page" : focus.name})`);
+  const examine = page.locator(".inspect-actions button").filter({ hasText: /examine/i }).first();
+  if (!(await examine.count())) return; // nothing harmless to act with here; selection alone passed
+  await examine.focus();
+  await page.keyboard.press("Enter");
+  await page.waitForTimeout(500);
+  focus = await inPage(page, FOCUS_NOW);
+  if (focus.body) throw new Error("after acting, keyboard focus fell back to the page body");
 }
 
 /** Tabs through the whole page, marking each stop `data-a11y-tab`; returns where it stopped. */

@@ -8,6 +8,7 @@ import { useNames } from "../i18n/names.ts";
 import { actionVisibility, type Action, type ActionOption, type PlayerView, type RoomId, type Target } from "@mush2/shared";
 import { ActionLabel } from "./ActionLabel.tsx";
 import { ActionButton } from "./ActionButton.tsx";
+import { useKeepFocus } from "./useKeepFocus.ts";
 import { actionLabelKey, attackWeapon, optionsOn, resolveTarget } from "./targets.ts";
 
 export function PeekBar({
@@ -87,8 +88,10 @@ function Bar({
 }) {
   const { t } = useTranslation();
   const actions = useOneRow();
+  const root = useRef<HTMLDivElement>(null);
+  useKeepFocus(root);
   return (
-    <div className="peek-bar" role="region" aria-label={t("peek.selection")}>
+    <div className="peek-bar" ref={root} tabIndex={-1} role="region" aria-label={t("peek.selection")}>
       <div className="peek-name">
         <strong>{heading}</strong>
         {isBot && <span className="tag">{t("common.ai")}</span>}

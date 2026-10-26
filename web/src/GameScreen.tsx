@@ -65,6 +65,15 @@ export function GameScreen({ ticket, onLeave, waking = false }: { ticket: SeatTi
   // The end screen opens by itself when the game ends (and after a reload); closing it lets you look around.
   const [endClosed, setEndClosed] = useState(false);
   const [peekDoor, setPeekDoor] = useState<RoomId | null>(null);
+  // Bumped when the room list selects something, to move focus to where its actions are (a screen reader's next step).
+  const [focusActions, setFocusActions] = useState(0);
+  // biome-ignore lint/correctness/useExhaustiveDependencies: `focusActions` is a trigger, read from the DOM once the selection has rendered.
+  useEffect(() => {
+    if (!focusActions) return;
+    const panel = document.querySelector<HTMLElement>(mobile ? ".peek-bar" : ".inspect");
+    const first = panel?.querySelector<HTMLElement>(mobile ? ".peek-actions button:not([inert])" : ".inspect-actions button");
+    (first ?? panel)?.focus();
+  }, [focusActions]);
   const here = view?.you.room;
   // biome-ignore lint/correctness/useExhaustiveDependencies: `here` is a trigger: arriving somewhere new clears the door peek.
   useEffect(() => setPeekDoor(null), [here]);
