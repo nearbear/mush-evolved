@@ -147,7 +147,7 @@ export function newPlayer(s: Seat, config: GameConfig, cycle: number, role: Role
     ap: config.startAp,
     mp: config.startMp,
     hp: config.startHp,
-    maxHp: config.maxMorale,
+    maxHp: config.maxHp,
     morale: config.startMorale,
     maxMorale: config.maxMorale,
     satiety: 0,
