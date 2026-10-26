@@ -383,6 +383,20 @@ describe("GameRoom persistence", () => {
     }
   });
 
+  it("keeps equipment built, installed, dismantled or uninstalled during the game across a reload", async () => {
+    const { room, storage } = await newRoom();
+    const { equipment } = gameOf(room);
+    const [room1, room2] = Object.keys(equipment).filter((r) => equipment[r]!.length > 0);
+    // As build and dismantle leave it: one piece added, one room's map equipment gone.
+    equipment[room1!]!.push({ id: "built-sofa", type: "SOFA" });
+    equipment[room2!] = [];
+    await send(room, connect(room, "tok0"), { type: "chat", channel: CHAT_CHANNELS[0], text: "hello" });
+    const revived = asRoom(storage);
+    await revived.onStart();
+    expect(gameOf(revived).equipment).toEqual(equipment);
+    expect(gameOf(revived).equipment).not.toEqual(DEFAULT_CONFIG.equipment);
+  });
+
   it("picks up a balance change (an edit to DEFAULT_CONFIG) on the next load", async () => {
     const { storage } = await newRoom();
     const before = DEFAULT_CONFIG.maxAp;

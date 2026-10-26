@@ -17,11 +17,11 @@ export class ShowerAction extends Action<ShowerActionData> {
   }
 
   override getCandidates(state: Readonly<GameState>, player: Readonly<PlayerState>): ShowerActionData[] {
-    return (state.config.equipment[player.room] ?? []).filter((equipment) => EQUIPMENT_TYPES[equipment.type]?.shower).map((equipment) => ({ type: "shower", equipment: equipment.id }));
+    return (state.equipment[player.room] ?? []).filter((equipment) => EQUIPMENT_TYPES[equipment.type]?.shower).map((equipment) => ({ type: "shower", equipment: equipment.id }));
   }
 
   override validate(state: Readonly<GameState>, player: Readonly<PlayerState>, target: ShowerActionData): string | null {
-    const equip = state.config.equipment[player.room]?.find((eq) => eq.id === target.equipment);
+    const equip = state.equipment[player.room]?.find((eq) => eq.id === target.equipment);
     if (!equip || !EQUIPMENT_TYPES[equip.type]?.shower) return "cant_shower";
     if (!player.statuses.includes("dirty")) return "not_dirty";
     return null;

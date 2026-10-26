@@ -5,7 +5,7 @@ import type { RngState } from "../rng.ts";
 import type { TitleId } from "../titles.ts";
 import type { ItemState, LogEntry, PlayerId, RoomId } from "../types.ts";
 import type { ChatMessage, ChatThread, PrivateChannel } from "./chat.ts";
-import type { GameConfig } from "./config.ts";
+import type { Equipment, GameConfig } from "./config.ts";
 import type { PlayerState } from "./player.ts";
 
 /** The side that won the game (victory.ts). */
@@ -40,6 +40,11 @@ export interface GameState {
   /** Every item in the game, wherever it is. */
   items: ItemState[];
   nextItemId: number;
+  /**
+   * Equipment in each room: the map's (`config.equipment`, copied at launch) plus what players build or install, minus
+   * what they dismantle or uninstall. Lives in the state, not the config, since the config isn't stored with the game.
+   */
+  equipment: Record<RoomId, Equipment[]>;
   /** Cycle in which each dispenser (equipment id) last gave something out. One use per cycle per machine. */
   dispensedOn: Record<string, number>;
   log: LogEntry[];

@@ -43,9 +43,9 @@ describe("patrol ship numbers", () => {
     expect(PATROL_SHIPS.map((p) => p.id)).toEqual(["PATROL_SHIP_A_0", "PATROL_SHIP_A_1", "PATROL_SHIP_A_2", "PATROL_SHIP_B_0", "PATROL_SHIP_B_1", "PATROL_SHIP_B_2", "PATROL_SHIP_AA_0", "PATROL_SHIP_AA_1"]);
     for (const p of PATROL_SHIPS) {
       expect(s.config.rooms[p.id]).toEqual([]);
-      expect(s.config.equipment[p.id]).toEqual([{ id: commandId(p), type: p.kind === "pasiphae" ? "PASIPHAE_COMMAND" : "PATROL_COMMAND" }]);
+      expect(s.equipment[p.id]).toEqual([{ id: commandId(p), type: p.kind === "pasiphae" ? "PASIPHAE_COMMAND" : "PATROL_COMMAND" }]);
       // Its interface is the bay equipment the map already has.
-      expect(s.config.equipment[p.bay]!.some((e) => e.id === interfaceId(p) && e.type === "PATROL_INTERFACE")).toBe(true);
+      expect(s.equipment[p.bay]!.some((e) => e.id === interfaceId(p) && e.type === "PATROL_INTERFACE")).toBe(true);
       expect(s.patrolShips[p.id]).toEqual({ armor: p.kind === "pasiphae" ? 12 : 10, out: false });
     }
   });
@@ -88,7 +88,7 @@ describe("taking off", () => {
   it("a camera in the bay shows it to everyone who comes in later", () => {
     const s = ship();
     player(s, "p1").room = "LABORATORY";
-    s.config.equipment[BAY]!.push({ id: cameraEquipmentId(BAY), type: "CAMERA" });
+    s.equipment[BAY]!.push({ id: cameraEquipmentId(BAY), type: "CAMERA" });
     const next = mustApply(s, "p0", takeoff());
     player(next, "p2").room = BAY;
     expect(lines(next, "p2", "patrolTakeoff")).toHaveLength(1);

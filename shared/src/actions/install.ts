@@ -42,7 +42,7 @@ export class InstallAction extends Action<InstallActionData> {
 
   override apply(state: GameState, player: PlayerState, target: InstallActionData): void {
     removeItem(state, target.item);
-    (state.config.equipment[player.room] ??= []).push({ id: cameraEquipmentId(player.room), type: CAMERA_EQUIPMENT });
+    (state.equipment[player.room] ??= []).push({ id: cameraEquipmentId(player.room), type: CAMERA_EQUIPMENT });
     logPublic(state, player.room, "cameraInstalled", { name: player.character });
   }
 }

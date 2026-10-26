@@ -46,7 +46,7 @@ export class ExamineAction extends Action<ExamineActionData> {
         );
         return;
       case "equipment": {
-        const equipment = state.config.equipment[player.room]?.find((eq) => eq.id === target.target.id);
+        const equipment = state.equipment[player.room]?.find((eq) => eq.id === target.target.id);
         logPrivate(state, player.id, "examineEquipment", { equipment: equipment?.type ?? target.target.id });
         return;
       }
@@ -62,7 +62,7 @@ export class ExamineAction extends Action<ExamineActionData> {
 function visibleTargets(state: Readonly<GameState>, player: Readonly<PlayerState>): Target[] {
   return [
     ...state.players.filter((o) => o.room === player.room).map((o): Target => ({ kind: "player", id: o.id })),
-    ...(state.config.equipment[player.room] ?? []).map((e): Target => ({ kind: "equipment", id: e.id })),
+    ...(state.equipment[player.room] ?? []).map((e): Target => ({ kind: "equipment", id: e.id })),
     ...itemsIn(state, { kind: "player", id: player.id }).map((i): Target => ({ kind: "item", id: i.id })),
     ...visibleItemsIn(state, { kind: "room", id: player.room }, player).map((i): Target => ({ kind: "item", id: i.id })),
   ];

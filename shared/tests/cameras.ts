@@ -4,5 +4,5 @@ import type { GameState } from "../src/types.ts";
 /** Puts an installed camera in `room`. Clones the config first: `createGame` shares it with `DEFAULT_CONFIG`. */
 export function installCameraIn(state: GameState, room: string): void {
   state.config = structuredClone(state.config);
-  (state.config.equipment[room] ??= []).push({ id: cameraEquipmentId(room), type: CAMERA_EQUIPMENT });
+  (state.equipment[room] ??= []).push({ id: cameraEquipmentId(room), type: CAMERA_EQUIPMENT });
 }

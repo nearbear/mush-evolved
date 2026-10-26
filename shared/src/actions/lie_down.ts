@@ -21,11 +21,11 @@ export class LieDownAction extends Action<LieDownActionData> {
   }
 
   override getCandidates(state: Readonly<GameState>, player: Readonly<PlayerState>): LieDownActionData[] {
-    return (state.config.equipment[player.room] ?? []).filter((eq) => EQUIPMENT_TYPES[eq.type]?.bed && !occupied(state, eq.id)).map((eq) => ({ type: "lie_down", equipment: eq.id }));
+    return (state.equipment[player.room] ?? []).filter((eq) => EQUIPMENT_TYPES[eq.type]?.bed && !occupied(state, eq.id)).map((eq) => ({ type: "lie_down", equipment: eq.id }));
   }
 
   override validate(state: Readonly<GameState>, player: Readonly<PlayerState>, target: LieDownActionData): string | null {
-    const equip = state.config.equipment[player.room]?.find((eq) => eq.id === target.equipment);
+    const equip = state.equipment[player.room]?.find((eq) => eq.id === target.equipment);
     if (!equip || !EQUIPMENT_TYPES[equip.type]?.bed) return "cant_lie_down";
     if (player.modifiers.includes("lying_down")) return "already_lying_down";
     if (occupied(state, equip.id)) return "bed_occupied";

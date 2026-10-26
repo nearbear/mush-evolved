@@ -34,7 +34,7 @@ describe("build", () => {
     const r = applyAction(ship(), "p0", build("bp"));
     if (!r.ok) throw new Error(r.error);
     expect(r.state.items.map((i) => i.id)).toEqual([...r.state.items.map((i) => i.id)].filter((id) => !["bp", "m", "t"].includes(id)));
-    expect(r.state.config.equipment.CORRIDOR_A).toMatchObject([{ type: "SOFA" }]);
+    expect(r.state.equipment.CORRIDOR_A).toMatchObject([{ type: "SOFA" }]);
     expect(player(r.state, "p0").ap).toBe(base.startAp - base.build.cost.ap);
     expect(viewFor(r.state, "p1").roomEquipment.map((e) => e.type)).toEqual(["SOFA"]);
     expect(viewFor(r.state, "p1").log.some((e) => e.key === "built")).toBe(true);
@@ -87,7 +87,7 @@ describe("build", () => {
     if (!r.ok) throw new Error(r.error);
     expect(r.state.items.filter((i) => ["bp2", "m", "t", "pl"].includes(i.id))).toEqual([]);
     expect(r.state.items.find((i) => i.type === "missile_launcher")?.at).toEqual({ kind: "player", id: "p0" });
-    expect(r.state.config.equipment.CORRIDOR_A).toBeUndefined();
+    expect(r.state.equipment.CORRIDOR_A).toBeUndefined();
     expect(viewFor(r.state, "p1").log.some((e) => e.key === "builtItem")).toBe(true);
     // A full inventory knocks it onto the floor.
     const full = ship();

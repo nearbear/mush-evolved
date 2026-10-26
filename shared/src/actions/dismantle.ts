@@ -63,7 +63,7 @@ export class DismantleAction extends Action<DismantleActionData> {
 
   override fail(state: GameState, player: PlayerState, target: DismantleActionData): void {
     if ("equipment" in target) {
-      const type = state.config.equipment[player.room]!.find((e) => e.id === target.equipment)!.type; // checked, so it exists
+      const type = state.equipment[player.room]!.find((e) => e.id === target.equipment)!.type; // checked, so it exists
       logPrivate(state, player.id, "dismantleEquipmentFailed", { equipment: type });
     } else logPrivate(state, player.id, "dismantleFailed", { item: state.items.find((i) => i.id === target.item)!.type });
   }
@@ -71,7 +71,7 @@ export class DismantleAction extends Action<DismantleActionData> {
   override apply(state: GameState, player: PlayerState, target: DismantleActionData): void {
     let scraps: { metal: number; plastic: number; extra?: string[] };
     if ("equipment" in target) {
-      const list = state.config.equipment[player.room]!; // checked, so it exists
+      const list = state.equipment[player.room]!; // checked, so it exists
       const { type } = list.splice(list.findIndex((e) => e.id === target.equipment), 1)[0]!;
       for (const p of state.players) if (p.lyingIn === target.equipment) getUp(p);
       scraps = EQUIPMENT_TYPES[type]!.dismantle!;
@@ -87,4 +87,4 @@ export class DismantleAction extends Action<DismantleActionData> {
 }
 
 const dismantlable = (state: Readonly<GameState>, player: Readonly<PlayerState>) =>
-  (state.config.equipment[player.room] ?? []).filter((e) => EQUIPMENT_TYPES[e.type]?.dismantle);
+  (state.equipment[player.room] ?? []).filter((e) => EQUIPMENT_TYPES[e.type]?.dismantle);

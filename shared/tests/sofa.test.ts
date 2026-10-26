@@ -8,7 +8,7 @@ import { makeSeats, must, mustApply, nextCycle, offered, player } from "./suppor
 const seats = makeSeats(3);
 const config = { ...DEFAULT_CONFIG, mushCount: 1, startInventory: [], startItems: [], startSkills: [], maxAp: 99, startAp: 10, dismantle: { ...DEFAULT_CONFIG.dismantle, successChance: 1 } };
 const room = (id: string) => ({ kind: "room" as const, id });
-const sofas = (s: GameState, r = "CORRIDOR_A") => (s.config.equipment[r] ?? []).filter((e) => e.type === "SOFA");
+const sofas = (s: GameState, r = "CORRIDOR_A") => (s.equipment[r] ?? []).filter((e) => e.type === "SOFA");
 const dismantle = (equipment: string): Action => ({ type: "dismantle", equipment });
 
 /** p0 and p1 in the front corridor, p2 in the sick bay; `n` sofa blueprints and their ingredients on the corridor floor. */

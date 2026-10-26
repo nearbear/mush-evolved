@@ -77,4 +77,4 @@ export const cameraEquipmentId = (room: string): string => `${room}:${CAMERA_EQU
 
 /** The equipment of this type in the player's room, or none. */
 export const equipmentHere = (state: Readonly<GameState>, player: Readonly<PlayerState>, type: string) =>
-  (state.config.equipment[player.room] ?? []).filter((equipment) => equipment.type === type);
+  (state.equipment[player.room] ?? []).filter((equipment) => equipment.type === type);

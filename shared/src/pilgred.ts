@@ -38,12 +38,12 @@ export function isPilgredRepaired(state: Readonly<Pick<GameState, "pilgred">>): 
 
 /** PILGRED terminals in the player's room. */
 export function pilgredTerminalsHere(state: Readonly<GameState>, player: Readonly<PlayerState>) {
-  return (state.config.equipment[player.room] ?? []).filter((equipment) => equipment.type === "PILGRED");
+  return (state.equipment[player.room] ?? []).filter((equipment) => equipment.type === "PILGRED");
 }
 
 /** Command terminals (`PILOT_MODULE`) in the player's room, where the ship can be sent home. */
 export function commandTerminalsHere(state: Readonly<GameState>, player: Readonly<PlayerState>) {
-  return (state.config.equipment[player.room] ?? []).filter((equipment) => equipment.type === "PILOT_MODULE");
+  return (state.equipment[player.room] ?? []).filter((equipment) => equipment.type === "PILOT_MODULE");
 }
 
 /**

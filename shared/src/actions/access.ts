@@ -20,11 +20,11 @@ export class AccessAction extends Action<AccessActionData> {
   }
 
   override getCandidates(state: Readonly<GameState>, player: Readonly<PlayerState>): AccessActionData[] {
-    return (state.config.equipment[player.room] ?? []).filter((equipment) => EQUIPMENT_TYPES[equipment.type]?.terminal).map((equipment) => ({ type: "access", equipment: equipment.id }));
+    return (state.equipment[player.room] ?? []).filter((equipment) => EQUIPMENT_TYPES[equipment.type]?.terminal).map((equipment) => ({ type: "access", equipment: equipment.id }));
   }
 
   override validate(state: Readonly<GameState>, player: Readonly<PlayerState>, target: AccessActionData): string | null {
-    const equip = state.config.equipment[player.room]?.find((eq) => eq.id === target.equipment);
+    const equip = state.equipment[player.room]?.find((eq) => eq.id === target.equipment);
     return equip && EQUIPMENT_TYPES[equip.type]?.terminal ? null : "cant_access";
   }
 }

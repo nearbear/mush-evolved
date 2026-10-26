@@ -72,5 +72,5 @@ export function activitySeen(state: Readonly<GameState>, room: RoomId, visibilit
 }
 
 export function hasCamera(state: Readonly<GameState>, room: RoomId): boolean {
-  return (state.config.equipment[room] ?? []).some((e) => e.type === CAMERA_EQUIPMENT);
+  return (state.equipment[room] ?? []).some((e) => e.type === CAMERA_EQUIPMENT);
 }

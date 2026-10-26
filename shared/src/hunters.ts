@@ -25,12 +25,12 @@ export function startHunters(state: GameState): void {
 
 /** Turrets in the player's room. */
 export function turretsHere(state: Readonly<GameState>, player: Readonly<PlayerState>) {
-  return (state.config.equipment[player.room] ?? []).filter((equipment) => equipment.type === TURRET_EQUIPMENT);
+  return (state.equipment[player.room] ?? []).filter((equipment) => equipment.type === TURRET_EQUIPMENT);
 }
 
 /** Every turret on the ship. */
 export function allTurrets(state: Readonly<GameState>) {
-  return Object.values(state.config.equipment).flatMap((list) => list.filter((equipment) => equipment.type === TURRET_EQUIPMENT));
+  return Object.values(state.equipment).flatMap((list) => list.filter((equipment) => equipment.type === TURRET_EQUIPMENT));
 }
 
 export const turretCharges = (state: Readonly<GameState>, turret: string): number => state.turrets[turret] ?? state.config.turrets.charges;

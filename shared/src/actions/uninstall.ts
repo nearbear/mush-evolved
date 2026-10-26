@@ -38,7 +38,7 @@ export class UninstallAction extends Action<UninstallActionData> {
   }
 
   override apply(state: GameState, player: PlayerState, target: UninstallActionData): void {
-    const list = state.config.equipment[player.room]!;
+    const list = state.equipment[player.room]!;
     list.splice(list.findIndex((e) => e.id === target.equipment), 1);
     produceItem(state, player, "camera");
     logPublic(state, player.room, "cameraUninstalled", { name: player.character });
@@ -46,5 +46,5 @@ export class UninstallAction extends Action<UninstallActionData> {
 }
 
 function cameras(state: Readonly<GameState>, player: Readonly<PlayerState>) {
-  return (state.config.equipment[player.room] ?? []).filter((e) => e.type === CAMERA_EQUIPMENT);
+  return (state.equipment[player.room] ?? []).filter((e) => e.type === CAMERA_EQUIPMENT);
 }

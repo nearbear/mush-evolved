@@ -20,7 +20,7 @@ export interface FieldRule {
 }
 
 export const GAME_STATE_FIELDS: Record<string, FieldRule> = {
-  config: { reach: "public", test: "rules.test.ts", note: "Only `rooms`, your room's equipment and `PublicConfig` go out." },
+  config: { reach: "public", test: "rules.test.ts", note: "Only `rooms` and `PublicConfig` go out." },
   rng: { reach: "never", test: "leaks.test.ts" },
   cycle: { reach: "public", test: "rules.test.ts" },
   phase: { reach: "public", test: "rules.test.ts" },
@@ -30,6 +30,7 @@ export const GAME_STATE_FIELDS: Record<string, FieldRule> = {
   players: { reach: "filtered", test: "leaks.test.ts", note: "Field by field: PLAYER_STATE_FIELDS." },
   items: { reach: "filtered", test: "leaks.test.ts", note: "Your inventory and your room's storage only." },
   nextItemId: { reach: "never", test: "leaks.test.ts", note: "Not secret (item ids show it), just not sent." },
+  equipment: { reach: "room", test: "build.test.ts", note: "Your room's, while alive (`roomEquipment`)." },
   dispensedOn: { reach: "never", test: "leaks.test.ts" },
   log: { reach: "filtered", test: "leaks.test.ts", note: "Your room's public entries, ship-wide ones, and your private ones." },
   chat: { reach: "filtered", test: "leaks.test.ts", note: "Messages in your read channels." },

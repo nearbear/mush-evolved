@@ -63,8 +63,8 @@ export class BuildAction extends Action<BuildActionData> {
     state.items = state.items.filter((i) => !used.has(i.id));
     const makes = BLUEPRINTS[blueprint.builds!]!.makes;
     if ("equipment" in makes) {
-      // Built equipment lives in the config's per-room list, like the equipment from the map.
-      (state.config.equipment[player.room] ??= []).push({ id: `${player.room}:${makes.equipment}:${state.nextItemId++}`, type: makes.equipment });
+      // Built equipment joins the per-room list, beside the equipment from the map.
+      (state.equipment[player.room] ??= []).push({ id: `${player.room}:${makes.equipment}:${state.nextItemId++}`, type: makes.equipment });
       logPublic(state, player.room, "built", { name: player.character, equipment: makes.equipment });
     } else {
       produceItem(state, player, makes.item);

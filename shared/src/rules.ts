@@ -98,6 +98,7 @@ export function createGame(
     players,
     items,
     nextItemId: items.length + 1,
+    equipment: clone(config.equipment),
     dispensedOn: {},
     log: [{ cycle: startCycle, key: "crewWakes", visibleTo: "all" }],
     chat: [],
@@ -460,7 +461,7 @@ export function viewFor(state: GameState, playerId: PlayerId): PlayerView {
     inventory: itemsIn(state, { kind: "player", id: you.id }).map((item) => itemView(item, you)),
     inventorySlots: inventorySlots(state, you),
     roomItems: you.alive ? visibleItemsIn(state, { kind: "room", id: you.room }, you).map((item) => itemView(item, you)) : [],
-    roomEquipment: you.alive ? (state.config.equipment[you.room] ?? []).map((e) => equipmentView(state, e)) : [],
+    roomEquipment: you.alive ? (state.equipment[you.room] ?? []).map((e) => equipmentView(state, e)) : [],
     // The dead keep only ship-wide entries (cycles, days); every room entry, their own private ones included, goes.
     log: state.log.filter((e) =>
       !you.alive ? e.room === undefined && e.visibleTo === "all" : e.visibleTo === "all" ? e.room === undefined || e.room === you.room : e.visibleTo.includes(playerId),

@@ -24,7 +24,7 @@ export const newBios = (): BiosState => ({ actopi: true, death_announcements: tr
 
 /** BIOS terminals in the player's room. */
 export function biosTerminalsHere(state: Readonly<GameState>, player: Readonly<PlayerState>) {
-  return (state.config.equipment[player.room] ?? []).filter((equipment) => equipment.type === "NERON_BIOS_TERM");
+  return (state.equipment[player.room] ?? []).filter((equipment) => equipment.type === "NERON_BIOS_TERM");
 }
 
 export const canChangeBios = (state: Readonly<GameState>, player: Readonly<PlayerState>) => hasTitleAccess(state, player, "neron_admin");

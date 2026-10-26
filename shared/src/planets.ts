@@ -148,4 +148,4 @@ export const planetsOf = (state: Readonly<GameState>, playerId: string): readonl
 
 /** The Astro terminals in the player's room. */
 export const astroTerminalsHere = (state: Readonly<GameState>, room: string) =>
-  (state.config.equipment[room] ?? []).filter((equipment) => equipment.type === "ASTRO_MODULE");
+  (state.equipment[room] ?? []).filter((equipment) => equipment.type === "ASTRO_MODULE");

@@ -76,7 +76,7 @@ export function newComms(config: Readonly<GameConfig>): CommsState {
 
 /** Com center terminals in the player's room. */
 export function comTerminalsHere(state: Readonly<GameState>, player: Readonly<PlayerState>) {
-  return (state.config.equipment[player.room] ?? []).filter((equipment) => equipment.type === "COM_CENTER");
+  return (state.equipment[player.room] ?? []).filter((equipment) => equipment.type === "COM_CENTER");
 }
 
 /** Whether the player may use the Comms Officer's actions: they hold the title (or bypass titles) and the link is up. */

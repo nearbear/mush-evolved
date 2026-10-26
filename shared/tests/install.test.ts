@@ -10,7 +10,7 @@ import { makeSeats, player, must, offered } from "./support.ts";
 
 const seats = makeSeats(3);
 const config = { ...DEFAULT_CONFIG, mushCount: 1, startItems: [], startSkills: [], dismantle: { ...DEFAULT_CONFIG.dismantle, successChance: 1 } };
-const equipmentIn = (s: GameState, room: string) => s.config.equipment[room]?.filter((e) => e.type === CAMERA_EQUIPMENT) ?? [];
+const equipmentIn = (s: GameState, room: string) => s.equipment[room]?.filter((e) => e.type === CAMERA_EQUIPMENT) ?? [];
 const dismantleEquipment = (room: string): Action => ({ type: "dismantle", equipment: cameraEquipmentId(room) });
 
 /** p0 carries a camera in the refectory; p1 is there too; p2 is in the laboratory. */

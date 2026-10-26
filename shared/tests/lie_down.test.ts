@@ -14,7 +14,7 @@ function ship(): GameState {
   s.players.forEach((p) => (p.room = "BEDROOM_A"));
   return s;
 }
-const bed = (s: GameState) => s.config.equipment.BEDROOM_A!.find((e) => e.type === "BED")!.id;
+const bed = (s: GameState) => s.equipment.BEDROOM_A!.find((e) => e.type === "BED")!.id;
 describe("lie down", () => {
   it("is free and adds the modifier, and the cycle gives +1 AP", () => {
     const s = ship();
