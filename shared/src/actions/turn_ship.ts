@@ -1,6 +1,6 @@
-import { Action } from "./action.ts";
+import { Action, isString } from "./action.ts";
 import { logPublic } from "../log.ts";
-import { canSteer, TURN_SIDES, turned, type TurnSide } from "../navigation.ts";
+import { canSteer, isTurnSide, TURN_SIDES, turned, type TurnSide } from "../navigation.ts";
 import { commandTerminalsHere } from "../pilgred.ts";
 import type { GameState, PlayerState } from "../types.ts";
 
@@ -12,7 +12,7 @@ export type TurnShipActionData = { type: "turn_ship"; equipment: string; side: T
  */
 export class TurnShipAction extends Action<TurnShipActionData> {
   constructor() {
-    super("turn_ship");
+    super("turn_ship", { equipment: isString, side: isTurnSide });
   }
 
   override getCost(state: Readonly<GameState>): { ap: number; mp: number } {

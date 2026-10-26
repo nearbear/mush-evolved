@@ -1,4 +1,4 @@
-import { Action, IN_PRESELECTION, type ActionVisibility } from "./action.ts";
+import { Action, IN_PRESELECTION, type ActionVisibility, isString } from "./action.ts";
 import { ITEM_TYPES } from "../items.ts";
 import { logSecret } from "../log.ts";
 import type { GameState, PlayerState } from "../types.ts";
@@ -18,7 +18,7 @@ export class HideAction extends Action<HideActionData> {
   override visibility: ActionVisibility = "secret";
 
   constructor() {
-    super("hide");
+    super("hide", { item: isString });
   }
 
   override getCandidates(state: Readonly<GameState>, player: Readonly<PlayerState>): HideActionData[] {

@@ -1,4 +1,4 @@
-import { Action, peopleHere } from "./action.ts";
+import { Action, peopleHere, isString } from "./action.ts";
 import { revealHistory } from "../history.ts";
 import { logPublic } from "../log.ts";
 import { hasSkill } from "../skills.ts";
@@ -16,7 +16,7 @@ export type ChitchatActionData = { type: "chitchat"; target: string };
  */
 export class ChitchatAction extends Action<ChitchatActionData> {
   constructor() {
-    super("chitchat");
+    super("chitchat", { target: isString });
   }
 
   override getCost(state: Readonly<GameState>): { ap: number; mp: number } {

@@ -5,6 +5,12 @@ import type { GameState, PlayerState, Target } from "../types.ts";
 
 export type ExamineActionData = { type: "examine"; target: Target };
 
+const isTarget = (value: unknown): value is Target => {
+  if (typeof value !== "object" || value === null) return false;
+  const { kind, id } = value as Record<string, unknown>;
+  return (kind === "player" || kind === "equipment" || kind === "item") && typeof id === "string";
+};
+
 export class ExamineAction extends Action<ExamineActionData> {
   override visibility: ActionVisibility = "private";
 
@@ -12,7 +18,13 @@ export class ExamineAction extends Action<ExamineActionData> {
   override recorded = false;
 
   constructor() {
-    super("examine");
+    super("examine", { target: isTarget });
+  }
+
+  /** Copies the target afresh, so nothing extra in it reaches the queue. */
+  override parse(raw: Readonly<Record<string, unknown>>): ExamineActionData | null {
+    const action = super.parse(raw);
+    return action && { type: "examine", target: { kind: action.target.kind, id: action.target.id } as Target };
   }
 
   override getCandidates(state: Readonly<GameState>, player: Readonly<PlayerState>): ExamineActionData[] {

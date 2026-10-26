@@ -1,4 +1,4 @@
-import { Action } from "./action.ts";
+import { Action, isString } from "./action.ts";
 import { ITEM_TYPES, MICROWAVE_ITEM, canReachItem } from "../items.ts";
 import { logPublic } from "../log.ts";
 import type { GameState, ItemState, PlayerState } from "../types.ts";
@@ -17,7 +17,7 @@ function chargedMicrowave(state: Readonly<GameState>, player: Readonly<PlayerSta
  */
 export class ExpressCookAction extends Action<ExpressCookActionData> {
   constructor() {
-    super("express_cook");
+    super("express_cook", { item: isString });
   }
 
   override getCost(state: Readonly<GameState>): { ap: number; mp: number } {

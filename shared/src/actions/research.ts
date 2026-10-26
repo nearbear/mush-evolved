@@ -1,4 +1,4 @@
-import { Action } from "./action.ts";
+import { Action, isString } from "./action.ts";
 import { ANY_CONSUMABLE, RESEARCH_COMPLETE, RESEARCH_IDS, RESEARCH_REQUIRES, type ResearchId } from "../research.ts";
 import { logPublic } from "../log.ts";
 import { ITEM_TYPES } from "../items.ts";
@@ -34,7 +34,7 @@ export type ResearchActionData = { type: "research"; equipment: string; research
  */
 export class ResearchAction extends Action<ResearchActionData> {
   constructor() {
-    super("research");
+    super("research", { equipment: isString, research: isString });
   }
 
   /** Computer points (`resources.comp`) make one research free (0 AP, like care points for a heal) (owner, 2026-10-16). */

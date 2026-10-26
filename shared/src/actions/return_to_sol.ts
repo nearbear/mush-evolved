@@ -1,4 +1,4 @@
-import { Action } from "./action.ts";
+import { Action, isString } from "./action.ts";
 import { logPublic } from "../log.ts";
 import { canReturnToSol, commandTerminalsHere, isPilgredRepaired } from "../pilgred.ts";
 import type { GameState, PlayerState } from "../types.ts";
@@ -13,7 +13,7 @@ export type ReturnToSolActionData = { type: "return_to_sol"; equipment: string }
  */
 export class ReturnToSolAction extends Action<ReturnToSolActionData> {
   constructor() {
-    super("return_to_sol");
+    super("return_to_sol", { equipment: isString });
   }
 
   override getCost(state: Readonly<GameState>): { ap: number; mp: number } {

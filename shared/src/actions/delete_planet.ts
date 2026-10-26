@@ -1,4 +1,4 @@
-import { Action } from "./action.ts";
+import { Action, isString } from "./action.ts";
 import { astroTerminalsHere, planetsOf } from "../planets.ts";
 import type { GameState, PlayerState } from "../types.ts";
 
@@ -10,7 +10,7 @@ export class DeletePlanetAction extends Action<DeletePlanetActionData> {
   override timed = false;
 
   constructor() {
-    super("delete_planet");
+    super("delete_planet", { equipment: isString, planet: isString });
   }
 
   override getCandidates(state: Readonly<GameState>, player: Readonly<PlayerState>): DeletePlanetActionData[] {

@@ -1,4 +1,4 @@
-import { Action, IN_PRESELECTION, peopleHere, type ActionTag } from "./action.ts";
+import { Action, IN_PRESELECTION, peopleHere, type ActionTag, isString } from "./action.ts";
 import { damage } from "../death.ts";
 import { itemsIn } from "../items.ts";
 import { logPublic } from "../log.ts";
@@ -20,7 +20,14 @@ export class AttackAction extends Action<AttackActionData> {
   override tags: readonly ActionTag[] = ["aggressive"];
 
   constructor() {
-    super("attack");
+    super("attack", { weapon: isString });
+  }
+
+  /** `target` is optional: an area weapon has none. */
+  override parse(raw: Readonly<Record<string, unknown>>): AttackActionData | null {
+    const action = super.parse(raw);
+    if (!action || raw.target === undefined) return action;
+    return isString(raw.target) ? { ...action, target: raw.target } : null;
   }
 
   override getCost(state: Readonly<GameState>): { ap: number; mp: number } {

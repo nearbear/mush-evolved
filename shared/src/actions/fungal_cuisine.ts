@@ -1,4 +1,4 @@
-import { Action, IN_PRESELECTION, type ActionTag, type ActionVisibility } from "./action.ts";
+import { Action, IN_PRESELECTION, type ActionTag, type ActionVisibility, isString } from "./action.ts";
 import { ITEM_TYPES, canReachItem } from "../items.ts";
 import { logPrivate } from "../log.ts";
 import { hasSkill } from "../skills.ts";
@@ -18,7 +18,7 @@ export class FungalCuisineAction extends Action<FungalCuisineActionData> {
   override tags: readonly ActionTag[] = ["spore"];
 
   constructor() {
-    super("fungal_cuisine");
+    super("fungal_cuisine", { item: isString });
   }
 
   override getCost(state: Readonly<GameState>): { ap: number; mp: number } {

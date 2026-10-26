@@ -1,4 +1,4 @@
-import { Action } from "./action.ts";
+import { Action, isString } from "./action.ts";
 import { huntersFollow } from "../hunters.ts";
 import { logPrivate, logPublic } from "../log.ts";
 import { canSteer, planetAt } from "../navigation.ts";
@@ -17,7 +17,7 @@ export type TravelActionData = { type: "travel"; equipment: string };
  */
 export class TravelAction extends Action<TravelActionData> {
   constructor() {
-    super("travel");
+    super("travel", { equipment: isString });
   }
 
   override getCost(state: Readonly<GameState>): { ap: number; mp: number } {

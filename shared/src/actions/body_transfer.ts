@@ -1,4 +1,4 @@
-import { Action, peopleHere, type ActionTag, type ActionVisibility } from "./action.ts";
+import { Action, peopleHere, type ActionTag, type ActionVisibility, isString } from "./action.ts";
 import { logPrivate } from "../log.ts";
 import { swapMinds } from "../mind.ts";
 import { hasSkill } from "../skills.ts";
@@ -22,7 +22,7 @@ export class BodyTransferAction extends Action<BodyTransferActionData> {
   override timed = false;
 
   constructor() {
-    super("body_transfer");
+    super("body_transfer", { target: isString });
   }
 
   override getCost(state: Readonly<GameState>): { ap: number; mp: number } {

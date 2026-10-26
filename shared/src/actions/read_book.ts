@@ -1,4 +1,4 @@
-import { Action } from "./action.ts";
+import { Action, isString } from "./action.ts";
 import { BOOK_ITEM, canReachItem } from "../items.ts";
 import { logPublic } from "../log.ts";
 import { skillPicked } from "../modifiers.ts";
@@ -14,7 +14,7 @@ export type ReadBookActionData = { type: "read_book"; item: string };
  */
 export class ReadBookAction extends Action<ReadBookActionData> {
   constructor() {
-    super("read_book");
+    super("read_book", { item: isString });
   }
 
   override getCost(state: Readonly<GameState>): { ap: number; mp: number } {

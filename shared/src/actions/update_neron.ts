@@ -1,4 +1,4 @@
-import { Action, type ActionVisibility } from "./action.ts";
+import { Action, type ActionVisibility, isString } from "./action.ts";
 import { advanceNeron, canUseComms, comTerminalsHere } from "../comms.ts";
 import { logPrivate } from "../log.ts";
 import type { GameState, PlayerState } from "../types.ts";
@@ -14,7 +14,7 @@ export class UpdateNeronAction extends Action<UpdateNeronActionData> {
   override visibility: ActionVisibility = "private";
 
   constructor() {
-    super("update_neron");
+    super("update_neron", { equipment: isString });
   }
 
   override getCost(state: Readonly<GameState>): { ap: number; mp: number } {

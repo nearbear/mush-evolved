@@ -1,4 +1,4 @@
-import { Action } from "./action.ts";
+import { Action, isString } from "./action.ts";
 import { logPrivate, logPublic } from "../log.ts";
 import { failureStreakMultiplier } from "../modifiers.ts";
 import { astroTerminalsHere, freePositions, generatePlanet, pickPosition, planetsOf, sizeRangeOn } from "../planets.ts";
@@ -15,7 +15,7 @@ export type ScanPlanetActionData = { type: "scan_planet"; equipment: string };
  */
 export class ScanPlanetAction extends Action<ScanPlanetActionData> {
   constructor() {
-    super("scan_planet");
+    super("scan_planet", { equipment: isString });
   }
 
   override getCost(state: Readonly<GameState>): { ap: number; mp: number } {

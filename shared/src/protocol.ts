@@ -1,11 +1,10 @@
 // Wire messages between clients and the server. Everything arriving from a
 // client is untrusted: always go through the parse* functions.
 
-import { isBiosOption } from "./bios.ts";
+import { ACTIONS, type ActionType } from "./actions.ts";
 import { isActopiCheat, isCheat, isRoleCheat, type ActopiCheat, type Cheat, type RoleCheat } from "./cheats.ts";
 import { isCharacterId, type CharacterId } from "./characters.ts";
 import { MAX_CHAT_LENGTH } from "./chat.ts";
-import { isMushSkill, isSkill } from "./skills.ts";
 import { isSpotCell } from "./spot.ts";
 import { CHAT_CHANNELS, GRAVEYARD_CHANNEL, MUSH_CHANNEL, type Action, type ChannelId, type PlayerId, type PlayerView, type PrivateChannelId, type ThreadId } from "./types.ts";
 
@@ -143,103 +142,10 @@ export function parseGameMessage(raw: string): GameClientMessage | null {
   if (msg?.type === "actopiCheat") return isActopiCheat(msg.mode) ? { type: "actopiCheat", mode: msg.mode } : null;
   if (msg?.type !== "action" || !isRecord(msg.action)) return null;
   const a = msg.action;
-  if (a.type === "fiery_speech" || a.type === "boring_speech") return { type: "action", action: { type: a.type } };
-  if (a.type === "self_disease") return { type: "action", action: { type: "self_disease" } };
-  if (a.type === "self_injury") return { type: "action", action: { type: "self_injury" } };
-  if (a.type === "extract_spore") return { type: "action", action: { type: "extract_spore" } };
-  if (a.type === "ready") return { type: "action", action: { type: "ready" } };
-  if (a.type === "move" && typeof a.to === "string") return { type: "action", action: { type: "move", to: a.to } };
-  if ((a.type === "take" || a.type === "drop") && typeof a.item === "string") {
-    return { type: "action", action: { type: a.type, item: a.item } };
-  }
-  if (a.type === "get_up") return { type: "action", action: { type: "get_up" } };
-  if (a.type === "lie_down" && typeof a.equipment === "string") {
-    return { type: "action", action: { type: "lie_down", equipment: a.equipment } };
-  }
-  if (a.type === "shower" && typeof a.equipment === "string") {
-    return { type: "action", action: { type: "shower", equipment: a.equipment } };
-  }
-  if (a.type === "access" && typeof a.equipment === "string") {
-    return { type: "action", action: { type: "access", equipment: a.equipment } };
-  }
-  if (a.type === "research" && typeof a.equipment === "string" && typeof a.research === "string") {
-    return { type: "action", action: { type: "research", equipment: a.equipment, research: a.research } };
-  }
-  if (a.type === "repair_pilgred" && typeof a.equipment === "string") {
-    return { type: "action", action: { type: "repair_pilgred", equipment: a.equipment } };
-  }
-  if (a.type === "return_to_sol" && typeof a.equipment === "string") {
-    return { type: "action", action: { type: "return_to_sol", equipment: a.equipment } };
-  }
-  if (a.type === "turn_ship" && typeof a.equipment === "string" && (a.side === "left" || a.side === "right")) {
-    return { type: "action", action: { type: "turn_ship", equipment: a.equipment, side: a.side } };
-  }
-  if ((a.type === "travel" || a.type === "leave_orbit" || a.type === "take_fuel" || a.type === "load_fuel" || a.type === "unload_fuel" || a.type === "return_fuel" || a.type === "take_oxygen" || a.type === "return_oxygen" || a.type === "check_combustion") && typeof a.equipment === "string") {
-    return { type: "action", action: { type: a.type, equipment: a.equipment } };
-  }
-  if ((a.type === "contact_sol" || a.type === "contact_xyloph" || a.type === "update_neron") && typeof a.equipment === "string") {
-    return { type: "action", action: { type: a.type, equipment: a.equipment } };
-  }
-  if (a.type === "set_bios" && typeof a.equipment === "string" && isBiosOption(a.option) && typeof a.value === "boolean") {
-    return { type: "action", action: { type: "set_bios", equipment: a.equipment, option: a.option, value: a.value } };
-  }
-  if (a.type === "decode_rebel" && typeof a.equipment === "string" && typeof a.base === "string") {
-    return { type: "action", action: { type: "decode_rebel", equipment: a.equipment, base: a.base } };
-  }
-  if (a.type === "project" && typeof a.equipment === "string" && typeof a.project === "string") {
-    return { type: "action", action: { type: "project", equipment: a.equipment, project: a.project } };
-  }
-  if (a.type === "scan_planet" && typeof a.equipment === "string") {
-    return { type: "action", action: { type: "scan_planet", equipment: a.equipment } };
-  }
-  if (a.type === "analyze_planet" && typeof a.equipment === "string" && typeof a.planet === "string") {
-    return { type: "action", action: { type: "analyze_planet", equipment: a.equipment, planet: a.planet } };
-  }
-  if (a.type === "turret_attack" && typeof a.equipment === "string" && typeof a.hunter === "string") {
-    return { type: "action", action: { type: "turret_attack", equipment: a.equipment, hunter: a.hunter } };
-  }
-  if ((a.type === "takeoff" || a.type === "land") && typeof a.equipment === "string") {
-    return { type: "action", action: { type: a.type, equipment: a.equipment } };
-  }
-  if (a.type === "repair_hull" && typeof a.item === "string") {
-    return { type: "action", action: { type: "repair_hull", item: a.item } };
-  }
-  if (a.type === "delete_planet" && typeof a.equipment === "string" && typeof a.planet === "string") {
-    return { type: "action", action: { type: "delete_planet", equipment: a.equipment, planet: a.planet } };
-  }
-  if (a.type === "dispense" && typeof a.equipment === "string") {
-    return { type: "action", action: { type: "dispense", equipment: a.equipment } };
-  }
-  if (a.type === "dismantle" && typeof a.item === "string") return { type: "action", action: { type: "dismantle", item: a.item } };
-  if (a.type === "dismantle" && typeof a.equipment === "string") return { type: "action", action: { type: "dismantle", equipment: a.equipment } };
-  if (a.type === "uninstall" && typeof a.equipment === "string") return { type: "action", action: { type: "uninstall", equipment: a.equipment } };
-  if (a.type === "hide" && typeof a.item === "string") return { type: "action", action: { type: "hide", item: a.item } };
-  if (a.type === "search") return { type: "action", action: { type: "search" } };
-  if (a.type === "consume" && typeof a.item === "string") return { type: "action", action: { type: "consume", item: a.item } };
-  if (a.type === "cook" && typeof a.item === "string") return { type: "action", action: { type: "cook", item: a.item } };
-  if ((a.type === "water" || a.type === "treat") && typeof a.item === "string") return { type: "action", action: { type: a.type, item: a.item } };
-  if (a.type === "sow" && typeof a.item === "string" && typeof a.fruit === "string") return { type: "action", action: { type: "sow", item: a.item, fruit: a.fruit } };
-  if (a.type === "fungal_cuisine" && typeof a.item === "string") return { type: "action", action: { type: "fungal_cuisine", item: a.item } };
-  if (a.type === "express_cook" && typeof a.item === "string") return { type: "action", action: { type: "express_cook", item: a.item } };
-  if (a.type === "build" && typeof a.item === "string") return { type: "action", action: { type: "build", item: a.item } };
-  if (a.type === "install" && typeof a.item === "string") return { type: "action", action: { type: "install", item: a.item } };
-  if (a.type === "jettison" && typeof a.item === "string") return { type: "action", action: { type: "jettison", item: a.item } };
-  if ((a.type === "bond" || a.type === "dtt" || a.type === "stt" || a.type === "heal" || a.type === "vaccinate" || a.type === "punch" || a.type === "interrogate" || a.type === "chitchat" || a.type === "anathema" || a.type === "spike" || a.type === "body_transfer" || a.type === "accommodate" || a.type === "accept_accommodation" || a.type === "stop_accommodation") && typeof a.target === "string") {
-    return { type: "action", action: { type: a.type, target: a.target } };
-  }
-  if (a.type === "attack" && typeof a.weapon === "string") {
-    if (typeof a.target === "string") return { type: "action", action: { type: "attack", weapon: a.weapon, target: a.target } };
-    if (a.target === undefined) return { type: "action", action: { type: "attack", weapon: a.weapon } };
-  }
-  if (a.type === "read_book" && typeof a.item === "string") return { type: "action", action: { type: "read_book", item: a.item } };
-  if (a.type === "pick_skill" && (isSkill(a.skill) || isMushSkill(a.skill))) return { type: "action", action: { type: "pick_skill", skill: a.skill } };
-  if (a.type === "examine" && isRecord(a.target) && typeof a.target.id === "string") {
-    const { kind, id } = a.target;
-    if (kind === "player" || kind === "equipment" || kind === "item") {
-      return { type: "action", action: { type: "examine", target: { kind, id } } };
-    }
-  }
-  return null;
+  // `hasOwn`, not `in` or a lookup: those would find "constructor" and the like on the prototype.
+  if (typeof a.type !== "string" || !Object.hasOwn(ACTIONS, a.type)) return null;
+  const action = ACTIONS[a.type as ActionType].parse(a);
+  return action && { type: "action", action };
 }
 
 function privateChannelId(value: unknown): PrivateChannelId | null {

@@ -1,4 +1,4 @@
-import { Action } from "./action.ts";
+import { Action, isString } from "./action.ts";
 import { huntersFollow } from "../hunters.ts";
 import { logPublic } from "../log.ts";
 import { canSteer } from "../navigation.ts";
@@ -14,7 +14,7 @@ export type LeaveOrbitActionData = { type: "leave_orbit"; equipment: string };
  */
 export class LeaveOrbitAction extends Action<LeaveOrbitActionData> {
   constructor() {
-    super("leave_orbit");
+    super("leave_orbit", { equipment: isString });
   }
 
   override getCost(state: Readonly<GameState>): { ap: number; mp: number } {

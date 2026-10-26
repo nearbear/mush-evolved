@@ -1,4 +1,4 @@
-import { Action, type ActionVisibility } from "./action.ts";
+import { Action, type ActionVisibility, isString } from "./action.ts";
 import { applyXyloph, canUseComms, comTerminalsHere, drawXyloph, xylophLeft } from "../comms.ts";
 import { logPrivate } from "../log.ts";
 import type { GameState, PlayerState } from "../types.ts";
@@ -14,7 +14,7 @@ export class ContactXylophAction extends Action<ContactXylophActionData> {
   override visibility: ActionVisibility = "private";
 
   constructor() {
-    super("contact_xyloph");
+    super("contact_xyloph", { equipment: isString });
   }
 
   override getCost(state: Readonly<GameState>): { ap: number; mp: number } {

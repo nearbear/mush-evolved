@@ -1,4 +1,4 @@
-import { Action, peopleHere } from "./action.ts";
+import { Action, peopleHere, isString } from "./action.ts";
 import { itemsIn } from "../items.ts";
 import { logPublic } from "../log.ts";
 import { healAmount } from "../modifiers.ts";
@@ -16,7 +16,7 @@ export type HealActionData = { type: "heal"; target: string };
  */
 export class HealAction extends Action<HealActionData> {
   constructor() {
-    super("heal");
+    super("heal", { target: isString });
   }
 
   override getCandidates(state: Readonly<GameState>, player: Readonly<PlayerState>): HealActionData[] {

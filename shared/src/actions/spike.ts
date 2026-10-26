@@ -1,4 +1,4 @@
-import { Action, IN_PRESELECTION, peopleHere, type ActionTag, type ActionVisibility } from "./action.ts";
+import { Action, IN_PRESELECTION, peopleHere, type ActionTag, type ActionVisibility, isString } from "./action.ts";
 import { logCovert } from "../log.ts";
 import { contaminate } from "../infection.ts";
 import type { GameState, PlayerState } from "../types.ts";
@@ -17,7 +17,7 @@ export class SpikeAction extends Action<SpikeActionData> {
   override tags: readonly ActionTag[] = ["spore", "aggressive"];
 
   constructor() {
-    super("spike");
+    super("spike", { target: isString });
   }
 
   override getCost(state: Readonly<GameState>): { ap: number; mp: number } {

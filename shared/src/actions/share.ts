@@ -1,4 +1,4 @@
-import { Action, type ActionVisibility } from "./action.ts";
+import { Action, type ActionVisibility, isString } from "./action.ts";
 import { logPrivate } from "../log.ts";
 import { contaminate } from "../infection.ts";
 import type { GameState, PlayerState } from "../types.ts";
@@ -10,7 +10,7 @@ export class ShareAction<T extends "dtt" | "stt" = "dtt" | "stt"> extends Action
   override visibility: ActionVisibility = "private";
 
   constructor(type: T) {
-    super(type);
+    super(type, { target: isString });
   }
 
   override getCost(state: Readonly<GameState>): { ap: number; mp: number } {

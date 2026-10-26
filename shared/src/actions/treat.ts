@@ -1,4 +1,4 @@
-import { Action } from "./action.ts";
+import { Action, isString } from "./action.ts";
 import { isBotanistRole, isPlanted, paidWithGardenPoint } from "../botany.ts";
 import { canReachItem } from "../items.ts";
 import { logPublic } from "../log.ts";
@@ -13,7 +13,7 @@ export type TreatActionData = { type: "treat"; item: string };
  */
 export class TreatAction extends Action<TreatActionData> {
   constructor() {
-    super("treat");
+    super("treat", { item: isString });
   }
 
   override getCandidates(state: Readonly<GameState>, player: Readonly<PlayerState>): TreatActionData[] {

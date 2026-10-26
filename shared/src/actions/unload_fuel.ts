@@ -1,4 +1,4 @@
-import { Action, NO_SPACE, type ActionVisibility } from "./action.ts";
+import { Action, NO_SPACE, type ActionVisibility, isString } from "./action.ts";
 import { combustionLevel, equipmentHere } from "./take_fuel.ts";
 import { FUEL_CAPSULE_ITEM, hasSpace, produceItem } from "../items.ts";
 import { logSecret } from "../log.ts";
@@ -14,7 +14,7 @@ export class UnloadFuelAction extends Action<UnloadFuelActionData> {
   override visibility: ActionVisibility = "secret";
 
   constructor() {
-    super("unload_fuel");
+    super("unload_fuel", { equipment: isString });
   }
 
   override getCandidates(state: Readonly<GameState>, player: Readonly<PlayerState>): UnloadFuelActionData[] {

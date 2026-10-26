@@ -1,4 +1,4 @@
-import { Action } from "./action.ts";
+import { Action, isString } from "./action.ts";
 import { PROJECT_COMPLETE, PROJECT_IDS } from "../projects.ts";
 import { logPublic } from "../log.ts";
 import type { GameState, PlayerState } from "../types.ts";
@@ -12,7 +12,7 @@ export type ProjectActionData = { type: "project"; equipment: string; project: s
  */
 export class ProjectAction extends Action<ProjectActionData> {
   constructor() {
-    super("project");
+    super("project", { equipment: isString, project: isString });
   }
 
   /** Designer points (`resources.core`, projects only) or Computer points (`resources.comp`) make one project action free (owner, 2026-10-18 and 2026-10-24). */

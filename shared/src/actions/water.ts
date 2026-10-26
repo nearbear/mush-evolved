@@ -1,4 +1,4 @@
-import { Action } from "./action.ts";
+import { Action, isString } from "./action.ts";
 import { isPlanted, paidWithGardenPoint } from "../botany.ts";
 import { canReachItem } from "../items.ts";
 import { logPublic } from "../log.ts";
@@ -12,7 +12,7 @@ export type WaterActionData = { type: "water"; item: string };
  */
 export class WaterAction extends Action<WaterActionData> {
   constructor() {
-    super("water");
+    super("water", { item: isString });
   }
 
   override getCandidates(state: Readonly<GameState>, player: Readonly<PlayerState>): WaterActionData[] {

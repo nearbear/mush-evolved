@@ -1,4 +1,4 @@
-import { Action, type ActionVisibility } from "./action.ts";
+import { Action, type ActionVisibility, isString } from "./action.ts";
 import { board, manoeuvre } from "./takeoff.ts";
 import { logSecret } from "../log.ts";
 import { commandId, shipAboard } from "../patrol.ts";
@@ -15,7 +15,7 @@ export class LandAction extends Action<LandActionData> {
   override visibility: ActionVisibility = "secret";
 
   constructor() {
-    super("land");
+    super("land", { equipment: isString });
   }
 
   override getCost(state: Readonly<GameState>): { ap: number; mp: number } {

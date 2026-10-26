@@ -1,5 +1,5 @@
-import { Action, type ActionVisibility } from "./action.ts";
-import { biosTerminalsHere, BIOS_OPTIONS, canChangeBios, type BiosOption } from "../bios.ts";
+import { Action, type ActionVisibility, isBoolean, isString } from "./action.ts";
+import { biosTerminalsHere, BIOS_OPTIONS, canChangeBios, isBiosOption, type BiosOption } from "../bios.ts";
 import { logPrivate } from "../log.ts";
 import type { GameState, PlayerState } from "../types.ts";
 
@@ -16,7 +16,7 @@ export class SetBiosAction extends Action<SetBiosActionData> {
   override recorded = false;
 
   constructor() {
-    super("set_bios");
+    super("set_bios", { equipment: isString, option: isBiosOption, value: isBoolean });
   }
 
   override getCandidates(state: Readonly<GameState>, player: Readonly<PlayerState>): SetBiosActionData[] {

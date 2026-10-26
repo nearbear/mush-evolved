@@ -1,4 +1,4 @@
-import { Action, IN_PRESELECTION, type ActionTag, type ActionVisibility } from "./action.ts";
+import { Action, IN_PRESELECTION, type ActionTag, type ActionVisibility, isString } from "./action.ts";
 import { damageHunter, turretCharges, turretsHere } from "../hunters.ts";
 import { roll } from "../rng.ts";
 import { logPrivate, logPublic } from "../log.ts";
@@ -18,7 +18,7 @@ export class TurretAttackAction extends Action<TurretAttackActionData> {
   override tags: readonly ActionTag[] = ["shoot"];
 
   constructor() {
-    super("turret_attack");
+    super("turret_attack", { equipment: isString, hunter: isString });
   }
 
   /** A Shoot point (`resources.shoot`, from the gunman skill) makes a shot free, hit or miss (owner, 2026-10-25). */

@@ -1,4 +1,4 @@
-import { Action } from "./action.ts";
+import { Action, isString } from "./action.ts";
 import { EQUIPMENT_TYPES } from "../equipment.ts";
 import type { GameState, PlayerState } from "../types.ts";
 
@@ -16,7 +16,7 @@ export class AccessAction extends Action<AccessActionData> {
   override recorded = false;
 
   constructor() {
-    super("access");
+    super("access", { equipment: isString });
   }
 
   override getCandidates(state: Readonly<GameState>, player: Readonly<PlayerState>): AccessActionData[] {

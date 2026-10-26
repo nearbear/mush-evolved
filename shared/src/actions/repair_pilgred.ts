@@ -1,4 +1,4 @@
-import { Action, type ActionVisibility } from "./action.ts";
+import { Action, type ActionVisibility, isString } from "./action.ts";
 import { pushChat } from "../chat.ts";
 import { logPrivate, logPublic } from "../log.ts";
 import { isPilgredRepaired, PILGRED_COMPLETE, pilgredGainRange, pilgredTerminalsHere, rollPilgredGain } from "../pilgred.ts";
@@ -16,7 +16,7 @@ export class RepairPilgredAction extends Action<RepairPilgredActionData> {
   override visibility: ActionVisibility = "private";
 
   constructor() {
-    super("repair_pilgred");
+    super("repair_pilgred", { equipment: isString });
   }
 
   /** PILGRED points (`resources.pilgred`, from the Physicist) make one repair free. */

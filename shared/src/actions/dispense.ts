@@ -1,4 +1,4 @@
-import { Action } from "./action.ts";
+import { Action, isString } from "./action.ts";
 import { EQUIPMENT_TYPES } from "../equipment.ts";
 import { produceItem } from "../items.ts";
 import { logPublic } from "../log.ts";
@@ -8,7 +8,7 @@ export type DispenseActionData = { type: "dispense"; equipment: string };
 
 export class DispenseAction extends Action<DispenseActionData> {
   constructor() {
-    super("dispense");
+    super("dispense", { equipment: isString });
   }
 
   override getCandidates(state: Readonly<GameState>, player: Readonly<PlayerState>): DispenseActionData[] {

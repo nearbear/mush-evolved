@@ -1,4 +1,4 @@
-import { Action, peopleHere } from "./action.ts";
+import { Action, peopleHere, isString } from "./action.ts";
 import { logPublic } from "../log.ts";
 import { hasSkill } from "../skills.ts";
 import type { GameState, PlayerState } from "../types.ts";
@@ -15,7 +15,7 @@ export type AnathemaActionData = { type: "anathema"; target: string };
  */
 export class AnathemaAction extends Action<AnathemaActionData> {
   constructor() {
-    super("anathema");
+    super("anathema", { target: isString });
   }
 
   override getCost(state: Readonly<GameState>): { ap: number; mp: number } {

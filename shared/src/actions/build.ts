@@ -1,4 +1,4 @@
-import { Action } from "./action.ts";
+import { Action, isString } from "./action.ts";
 import { BLUEPRINTS, BLUEPRINT_ITEM } from "../blueprints.ts";
 import { canReachItem, itemsIn, produceItem, visibleItemsIn } from "../items.ts";
 import { logPublic } from "../log.ts";
@@ -30,7 +30,7 @@ function ingredients(state: Readonly<GameState>, player: Readonly<PlayerState>, 
  */
 export class BuildAction extends Action<BuildActionData> {
   constructor() {
-    super("build");
+    super("build", { item: isString });
   }
 
   override getCost(state: Readonly<GameState>): { ap: number; mp: number } {

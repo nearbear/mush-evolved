@@ -1,4 +1,4 @@
-import { Action, type ActionVisibility } from "./action.ts";
+import { Action, type ActionVisibility, isString } from "./action.ts";
 import { canUseComms, comTerminalsHere, isOpen, REBEL_COMPLETE, rebelReached, rollRebelGain } from "../comms.ts";
 import { logPrivate } from "../log.ts";
 import type { GameState, PlayerState } from "../types.ts";
@@ -15,7 +15,7 @@ export class DecodeRebelAction extends Action<DecodeRebelActionData> {
   override visibility: ActionVisibility = "private";
 
   constructor() {
-    super("decode_rebel");
+    super("decode_rebel", { equipment: isString, base: isString });
   }
 
   private paidWithComputer(player: Readonly<PlayerState>): boolean {

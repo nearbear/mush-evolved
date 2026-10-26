@@ -8,6 +8,7 @@ import type { GameState, Planet, PlayerId, PlayerState } from "./types.ts";
 
 export type TurnSide = "left" | "right";
 export const TURN_SIDES: readonly TurnSide[] = ["left", "right"];
+export const isTurnSide = (value: unknown): value is TurnSide => TURN_SIDES.some((side) => side === value);
 
 /** The heading after a quarter turn. `PLANET_DIRECTIONS` runs north, west, south, east: anticlockwise, so left is the next one. */
 export function turned(heading: PlanetDirection, side: TurnSide): PlanetDirection {

@@ -1,4 +1,4 @@
-import { Action } from "./action.ts";
+import { Action, isString } from "./action.ts";
 import { logPublic } from "../log.ts";
 import { astroTerminalsHere, pickSeekSector, planetsOf } from "../planets.ts";
 import type { GameState, PlayerState } from "../types.ts";
@@ -12,7 +12,7 @@ export type AnalyzePlanetActionData = { type: "analyze_planet"; equipment: strin
  */
 export class AnalyzePlanetAction extends Action<AnalyzePlanetActionData> {
   constructor() {
-    super("analyze_planet");
+    super("analyze_planet", { equipment: isString, planet: isString });
   }
 
   override getCost(state: Readonly<GameState>): { ap: number; mp: number } {

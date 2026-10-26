@@ -1,4 +1,4 @@
-import { Action, IN_PRESELECTION, peopleHere, type ActionTag } from "./action.ts";
+import { Action, IN_PRESELECTION, peopleHere, type ActionTag, isString } from "./action.ts";
 import { damage } from "../death.ts";
 import { logPublic } from "../log.ts";
 import { punchDamage } from "../modifiers.ts";
@@ -16,7 +16,7 @@ export class PunchAction extends Action<PunchActionData> {
   override tags: readonly ActionTag[] = ["aggressive"];
 
   constructor() {
-    super("punch");
+    super("punch", { target: isString });
   }
 
   override getCost(state: Readonly<GameState>): { ap: number; mp: number } {

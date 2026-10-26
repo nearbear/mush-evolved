@@ -1,4 +1,4 @@
-import { Action, type ActionVisibility } from "./action.ts";
+import { Action, type ActionVisibility, isString } from "./action.ts";
 import { damage } from "../death.ts";
 import { EQUIPMENT_TYPES } from "../equipment.ts";
 import { itemsIn } from "../items.ts";
@@ -13,7 +13,7 @@ export class ShowerAction extends Action<ShowerActionData> {
   override visibility: ActionVisibility = "private";
 
   constructor() {
-    super("shower");
+    super("shower", { equipment: isString });
   }
 
   override getCandidates(state: Readonly<GameState>, player: Readonly<PlayerState>): ShowerActionData[] {

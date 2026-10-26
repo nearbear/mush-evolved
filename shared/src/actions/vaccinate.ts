@@ -1,4 +1,4 @@
-import { Action, peopleHere } from "./action.ts";
+import { Action, peopleHere, isString } from "./action.ts";
 import { cure } from "../infection.ts";
 import { itemsIn } from "../items.ts";
 import { logPrivate, logPublic } from "../log.ts";
@@ -16,7 +16,7 @@ export const ANTI_MUSH_SERUM_ITEM = "anti_mush_serum";
  */
 export class VaccinateAction extends Action<VaccinateActionData> {
   constructor() {
-    super("vaccinate");
+    super("vaccinate", { target: isString });
   }
 
   override getCost(state: Readonly<GameState>): { ap: number; mp: number } {

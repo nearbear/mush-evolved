@@ -1,4 +1,4 @@
-import { Action, type ActionVisibility } from "./action.ts";
+import { Action, type ActionVisibility, isString } from "./action.ts";
 import { comTerminalsHere, solChance, solFailed } from "../comms.ts";
 import { logPrivate } from "../log.ts";
 import type { GameState, PlayerState } from "../types.ts";
@@ -14,7 +14,7 @@ export class ContactSolAction extends Action<ContactSolActionData> {
   override visibility: ActionVisibility = "private";
 
   constructor() {
-    super("contact_sol");
+    super("contact_sol", { equipment: isString });
   }
 
   override getCost(state: Readonly<GameState>): { ap: number; mp: number } {

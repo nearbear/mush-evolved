@@ -1,4 +1,4 @@
-import { Action } from "./action.ts";
+import { Action, isString } from "./action.ts";
 import { canReachItem } from "../items.ts";
 import { logPrivate, logPublic } from "../log.ts";
 import { hullRepairAmount } from "../modifiers.ts";
@@ -15,7 +15,7 @@ export const HULL_REPAIR_ITEM = "metal_scraps";
  */
 export class RepairHullAction extends Action<RepairHullActionData> {
   constructor() {
-    super("repair_hull");
+    super("repair_hull", { item: isString });
   }
 
   override getCost(state: Readonly<GameState>): { ap: number; mp: number } {

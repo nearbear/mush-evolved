@@ -1,4 +1,4 @@
-import { Action, type ActionVisibility } from "./action.ts";
+import { Action, type ActionVisibility, isString } from "./action.ts";
 import { CORPSE_ITEM } from "../items.ts";
 import { logSecret } from "../log.ts";
 import type { GameState, ItemState, PlayerState } from "../types.ts";
@@ -13,7 +13,7 @@ export class JettisonAction extends Action<JettisonActionData> {
   override visibility: ActionVisibility = "secret";
 
   constructor() {
-    super("jettison");
+    super("jettison", { item: isString });
   }
 
   override getCost(state: Readonly<GameState>): { ap: number; mp: number } {

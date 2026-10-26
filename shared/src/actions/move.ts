@@ -1,4 +1,4 @@
-import { Action } from "./action.ts";
+import { Action, isString } from "./action.ts";
 import { leaveAccommodation, wheelAlong } from "./accommodate.ts";
 import { logPublic } from "../log.ts";
 import { arrive } from "../spot.ts";
@@ -12,7 +12,7 @@ export class MoveAction extends Action<MoveActionData> {
   override recorded = false;
 
   constructor() {
-    super("move");
+    super("move", { to: isString });
   }
 
   override getCandidates(state: Readonly<GameState>, player: Readonly<PlayerState>): MoveActionData[] {

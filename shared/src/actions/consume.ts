@@ -1,4 +1,4 @@
-import { Action } from "./action.ts";
+import { Action, isString } from "./action.ts";
 import { ITEM_TYPES, canReachItem } from "../items.ts";
 import { logPublic } from "../log.ts";
 import { consumed } from "../modifiers.ts";
@@ -12,7 +12,7 @@ export type ConsumeActionData = { type: "consume"; item: string };
 
 export class ConsumeAction extends Action<ConsumeActionData> {
   constructor() {
-    super("consume");
+    super("consume", { item: isString });
   }
 
   override getCandidates(state: Readonly<GameState>, player: Readonly<PlayerState>): ConsumeActionData[] {

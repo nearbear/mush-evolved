@@ -87,6 +87,8 @@ export interface ActionDef<A extends Action> {
   /** Whether it goes in the actor's action history (history.ts). */
   readonly recorded: boolean;
   candidates(state: Readonly<GameState>, player: Readonly<PlayerState>): A[];
+  /** The action in an untrusted client message, rebuilt with only its own fields, or null if malformed (protocol.ts). */
+  parse(raw: Readonly<Record<string, unknown>>): A | null;
   check(state: Readonly<GameState>, player: Readonly<PlayerState>, action: A): string | null;
   cost(state: Readonly<GameState>, player: Readonly<PlayerState>, action: A): ActionCost;
   /** How far modifiers move the price from the action's own (`Action.adjustment`). */

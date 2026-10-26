@@ -1,4 +1,4 @@
-import { Action, NO_SPACE, type ActionVisibility } from "./action.ts";
+import { Action, NO_SPACE, type ActionVisibility, isString } from "./action.ts";
 import { equipmentHere } from "./take_fuel.ts";
 import { OXYGEN_CAPSULE_ITEM, hasSpace, produceItem } from "../items.ts";
 import { logSecret } from "../log.ts";
@@ -14,7 +14,7 @@ export class TakeOxygenAction extends Action<TakeOxygenActionData> {
   override visibility: ActionVisibility = "secret";
 
   constructor() {
-    super("take_oxygen");
+    super("take_oxygen", { equipment: isString });
   }
 
   override getCandidates(state: Readonly<GameState>, player: Readonly<PlayerState>): TakeOxygenActionData[] {

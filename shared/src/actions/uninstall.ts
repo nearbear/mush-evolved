@@ -1,4 +1,4 @@
-import { Action } from "./action.ts";
+import { Action, isString } from "./action.ts";
 import { CAMERA_EQUIPMENT } from "../equipment.ts";
 import { produceItem } from "../items.ts";
 import { logPublic } from "../log.ts";
@@ -13,7 +13,7 @@ export type UninstallActionData = { type: "uninstall"; equipment: string };
  */
 export class UninstallAction extends Action<UninstallActionData> {
   constructor() {
-    super("uninstall");
+    super("uninstall", { equipment: isString });
   }
 
   override getCost(state: Readonly<GameState>): { ap: number; mp: number } {

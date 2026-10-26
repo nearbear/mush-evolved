@@ -1,4 +1,4 @@
-import { Action, peopleHere } from "./action.ts";
+import { Action, peopleHere, isString } from "./action.ts";
 import { getUp } from "./lie_down.ts";
 import { endsAccommodation } from "../actionTarget.ts";
 import { logPublic } from "../log.ts";
@@ -100,7 +100,7 @@ export function wheelAlong(state: GameState, pusher: PlayerState, from: string):
 
 export class AccommodateAction extends Action<AccommodateActionData> {
   constructor() {
-    super("accommodate");
+    super("accommodate", { target: isString });
   }
 
   override getCost(state: Readonly<GameState>): { ap: number; mp: number } {
@@ -130,7 +130,7 @@ export class AccommodateAction extends Action<AccommodateActionData> {
 
 export class AcceptAccommodationAction extends Action<AcceptAccommodationActionData> {
   constructor() {
-    super("accept_accommodation");
+    super("accept_accommodation", { target: isString });
   }
 
   override getCandidates(state: Readonly<GameState>, player: Readonly<PlayerState>): AcceptAccommodationActionData[] {
@@ -156,7 +156,7 @@ export class StopAccommodationAction extends Action<StopAccommodationActionData>
   override timed = false;
 
   constructor() {
-    super("stop_accommodation");
+    super("stop_accommodation", { target: isString });
   }
 
   /** On yourself while you are pushed; on the person you push while you push. */

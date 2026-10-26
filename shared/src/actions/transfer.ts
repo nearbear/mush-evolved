@@ -1,4 +1,4 @@
-import { Action } from "./action.ts";
+import { Action, isString } from "./action.ts";
 import { ITEM_TYPES, canTransfer } from "../items.ts";
 import { logPublic } from "../log.ts";
 import type { Container, GameState, ItemState, PlayerState } from "../types.ts";
@@ -10,7 +10,7 @@ export class TransferAction<T extends "take" | "drop" = "take" | "drop"> extends
   override recorded = false;
 
   constructor(type: T) {
-    super(type);
+    super(type, { item: isString });
   }
 
   override getCandidates(state: Readonly<GameState>, player: Readonly<PlayerState>): { type: T; item: string }[] {

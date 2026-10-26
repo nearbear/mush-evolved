@@ -1,4 +1,4 @@
-import { Action } from "./action.ts";
+import { Action, isString } from "./action.ts";
 import { EQUIPMENT_TYPES } from "../equipment.ts";
 import type { GameState, PlayerState } from "../types.ts";
 
@@ -17,7 +17,7 @@ function occupied(state: Readonly<GameState>, bed: string): boolean {
 
 export class LieDownAction extends Action<LieDownActionData> {
   constructor() {
-    super("lie_down");
+    super("lie_down", { equipment: isString });
   }
 
   override getCandidates(state: Readonly<GameState>, player: Readonly<PlayerState>): LieDownActionData[] {

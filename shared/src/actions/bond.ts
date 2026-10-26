@@ -1,4 +1,4 @@
-import { Action, type ActionVisibility } from "./action.ts";
+import { Action, type ActionVisibility, isString } from "./action.ts";
 import { logPrivate } from "../log.ts";
 import type { GameState, PlayerState } from "../types.ts";
 
@@ -8,7 +8,7 @@ export class BondAction extends Action<BondActionData> {
   override visibility: ActionVisibility = "private";
 
   constructor() {
-    super("bond");
+    super("bond", { target: isString });
   }
 
   override getCost(state: Readonly<GameState>): { ap: number; mp: number } {

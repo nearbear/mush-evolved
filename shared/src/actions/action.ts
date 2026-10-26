@@ -25,8 +25,19 @@ export type ActionVisibility = "public" | "private" | "secret" | "covert";
  */
 export type ActionTag = "aggressive" | "spore" | "shoot";
 
+/** Checks one field of an action that came from a client (`Action.parse`). */
+export type FieldCheck = (value: unknown) => boolean;
+
+/** A check for each field of an action besides `type`. */
+export type Fields<T> = { readonly [K in Exclude<keyof T, "type">]-?: FieldCheck };
+
+export const isString = (value: unknown): value is string => typeof value === "string";
+export const isBoolean = (value: unknown): value is boolean => typeof value === "boolean";
+
 export class Action<T extends { type: string }> {
   type: string;
+  /** How `parse` checks each field. Given to the constructor, which requires it whenever the action has fields. */
+  readonly fields: Fields<T>;
   visibility: ActionVisibility = "public";
   /** Fixed per type, like visibility, so safe for the client to show. */
   tags: readonly ActionTag[] = [];
@@ -35,8 +46,25 @@ export class Action<T extends { type: string }> {
   /** Kept in the actor's action history (history.ts), which Interrogate and Chitchat reveal. False for the few eMush leaves out, and for moving. */
   recorded: boolean = true;
 
-  constructor(type: string) {
+  constructor(type: string, ...fields: [Exclude<keyof T, "type">] extends [never] ? [] : [fields: Fields<T>]) {
     this.type = type;
+    this.fields = fields[0] ?? ({} as Fields<T>);
+  }
+
+  /**
+   * The action in an untrusted client message (protocol.ts), or null if a field fails its check. Builds a fresh object
+   * with only the known fields, so nothing extra a client sends reaches the queue or the game record. Override only
+   * for shapes `fields` can't express: for a union of shapes, `fields` covers only the keys every shape shares, so
+   * such an action must override it (dismantle, attack) or lose its other fields.
+   */
+  parse(raw: Readonly<Record<string, unknown>>): T | null {
+    const action: Record<string, unknown> = { type: this.type };
+    for (const [key, check] of Object.entries<FieldCheck>(this.fields)) {
+      if (!check(raw[key])) return null;
+      action[key] = raw[key];
+    }
+    // Every field of T but `type` has a check in `fields` (the constructor's type requires it), and each one passed.
+    return action as T;
   }
 
   candidates(state: Readonly<GameState>, player: Readonly<PlayerState>): T[] {

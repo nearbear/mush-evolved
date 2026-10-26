@@ -1,4 +1,4 @@
-import { Action } from "./action.ts";
+import { Action, isString } from "./action.ts";
 import { CAMERA_EQUIPMENT, cameraEquipmentId } from "../equipment.ts";
 import { hasCamera, logPublic } from "../log.ts";
 import type { GameState, ItemState, PlayerState } from "../types.ts";
@@ -13,7 +13,7 @@ export type InstallActionData = { type: "install"; item: string };
  */
 export class InstallAction extends Action<InstallActionData> {
   constructor() {
-    super("install");
+    super("install", { item: isString });
   }
 
   override getCost(state: Readonly<GameState>): { ap: number; mp: number } {

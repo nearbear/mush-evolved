@@ -5,6 +5,8 @@ import type { GameState, PlayerState } from "../types.ts";
 
 export type PickSkillActionData = { type: "pick_skill"; skill: string };
 
+const isAnySkill = (value: unknown): boolean => isSkill(value) || isMushSkill(value);
+
 /**
  * Pick a skill (confirmed 2026-10-15): free, permanent, any time there is an empty slot (SKILL_SLOTS), one
  * of each skill, only from the character's own list (CHARACTER_SKILLS, owner 2026-10-25; the `anySkill` cheat
@@ -19,7 +21,7 @@ export class PickSkillAction extends Action<PickSkillActionData> {
   override recorded = false;
 
   constructor() {
-    super("pick_skill");
+    super("pick_skill", { skill: isAnySkill });
   }
 
   override getCandidates(_state: Readonly<GameState>, player: Readonly<PlayerState>): PickSkillActionData[] {

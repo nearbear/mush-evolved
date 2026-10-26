@@ -1,4 +1,4 @@
-import { Action } from "./action.ts";
+import { Action, isString } from "./action.ts";
 import { EQUIPMENT_TYPES } from "../equipment.ts";
 import { ITEM_TYPES, canReachItem } from "../items.ts";
 import { logPrivate, logPublic } from "../log.ts";
@@ -15,6 +15,13 @@ export type DismantleActionData = { type: "dismantle"; item: string } | { type: 
 export class DismantleAction extends Action<DismantleActionData> {
   constructor() {
     super("dismantle");
+  }
+
+  /** An item or a piece of equipment; an item wins if both are sent. */
+  override parse(raw: Readonly<Record<string, unknown>>): DismantleActionData | null {
+    if (isString(raw.item)) return { type: "dismantle", item: raw.item };
+    if (isString(raw.equipment)) return { type: "dismantle", equipment: raw.equipment };
+    return null;
   }
 
   override getCost(state: Readonly<GameState>): { ap: number; mp: number } {

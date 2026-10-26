@@ -1,4 +1,4 @@
-import { Action } from "./action.ts";
+import { Action, isString } from "./action.ts";
 import { ITEM_TYPES, canReachItem } from "../items.ts";
 import { logPublic } from "../log.ts";
 import type { GameState, PlayerState } from "../types.ts";
@@ -11,7 +11,7 @@ export type CookActionData = { type: "cook"; item: string };
  */
 export class CookAction extends Action<CookActionData> {
   constructor() {
-    super("cook");
+    super("cook", { item: isString });
   }
 
   override getCost(state: Readonly<GameState>): { ap: number; mp: number } {

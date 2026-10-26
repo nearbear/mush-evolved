@@ -1,4 +1,4 @@
-import { Action } from "./action.ts";
+import { Action, isString } from "./action.ts";
 import { isEmptyPot, isFruit, paidWithGardenPoint } from "../botany.ts";
 import { canReachItem } from "../items.ts";
 import { logPublic } from "../log.ts";
@@ -12,7 +12,7 @@ export type SowActionData = { type: "sow"; item: string; fruit: string };
  */
 export class SowAction extends Action<SowActionData> {
   constructor() {
-    super("sow");
+    super("sow", { item: isString, fruit: isString });
   }
 
   override getCandidates(state: Readonly<GameState>, player: Readonly<PlayerState>): SowActionData[] {
