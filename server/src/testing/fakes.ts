@@ -9,17 +9,18 @@ export class FakeStorage {
   data = new Map<string, unknown>();
   alarm: number | null = null;
 
+  // Copies in and out, as Durable Object storage does (structured clone), so a stored value never shares objects with the room.
   async get<T>(key: string): Promise<T | undefined> {
-    return this.data.get(key) as T | undefined;
+    return structuredClone(this.data.get(key)) as T | undefined;
   }
   async put(keyOrEntries: string | Record<string, unknown>, value?: unknown): Promise<void> {
-    if (typeof keyOrEntries === "string") this.data.set(keyOrEntries, value);
-    else for (const [k, v] of Object.entries(keyOrEntries)) this.data.set(k, v);
+    if (typeof keyOrEntries === "string") this.data.set(keyOrEntries, structuredClone(value));
+    else for (const [k, v] of Object.entries(keyOrEntries)) this.data.set(k, structuredClone(v));
   }
   async list(opts: { prefix?: string } = {}): Promise<Map<string, unknown>> {
     const out = new Map<string, unknown>();
     for (const [k, v] of [...this.data].sort(([a], [b]) => a.localeCompare(b))) {
-      if (!opts.prefix || k.startsWith(opts.prefix)) out.set(k, v);
+      if (!opts.prefix || k.startsWith(opts.prefix)) out.set(k, structuredClone(v));
     }
     return out;
   }

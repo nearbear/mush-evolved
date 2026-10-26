@@ -1,4 +1,4 @@
-import { CHAT_CHANNELS, type ConfigOverrides, type PreselectionRules } from "@mush2/shared";
+import { CHAT_CHANNELS, type ConfigOverrides } from "@mush2/shared";
 import { readFileSync, writeFileSync } from "node:fs";
 import { describe, expect, it, vi } from "vitest";
 import { FakeConnection, FakeServer, FakeStorage, seats, tokensFor } from "../src/testing/fakes.ts";
@@ -27,7 +27,7 @@ function keyPaths(value: unknown, at = "", out = new Set<string>()): string[] {
  * Every key of ConfigOverrides, stored beside the game. Its keys are all optional, so `Required` makes this fail to
  * compile until a new key is added here, which then moves the fingerprint like a GameState change.
  */
-const OVERRIDES: Required<Omit<ConfigOverrides, "preselection">> & { preselection: Required<PreselectionRules> } = {
+const OVERRIDES: Required<ConfigOverrides> = {
   mushCount: 1,
   manualCycles: true,
   preselection: { seats: 4, endsOn: { day: 3, cycle: 8 }, twoMushAbove: 8, minPlayers: 3 },

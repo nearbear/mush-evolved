@@ -3,6 +3,7 @@ import {
   CHAT_CHANNELS,
   DEFAULT_CONFIG,
   legalIn,
+  PRESELECTION,
   rebuildGame,
   resolveConfig,
   type CharacterId,
@@ -338,12 +339,12 @@ describe("GameRoom after a Transfer", () => {
 const LAUNCHES: { name: string; env: Record<string, string>; launch: (room: Room) => Promise<string>; overrides: ConfigOverrides }[] = [
   { name: "setup", env: {}, launch: (r) => r.setup(seats(3), tokensFor(3)).then(() => "tok0"), overrides: {} },
   { name: "setup, cheats", env: CHEATS, launch: (r) => r.setup(seats(3), tokensFor(3)).then(() => "tok0"), overrides: { manualCycles: true } },
-  { name: "ship", env: {}, launch: (r) => r.join("Ann", "chao").then((j) => (j.ok ? j.token : "")), overrides: { preselection: {} } },
+  { name: "ship", env: {}, launch: (r) => r.join("Ann", "chao").then((j) => (j.ok ? j.token : "")), overrides: { preselection: PRESELECTION } },
   {
     name: "dev ship",
     env: CHEATS,
     launch: (r) => r.join("Ann", "chao").then((j) => (j.ok ? j.token : "")),
-    overrides: { preselection: { seats: CHARACTERS.length }, manualCycles: true },
+    overrides: { preselection: { ...PRESELECTION, seats: CHARACTERS.length }, manualCycles: true },
   },
   { name: "single player", env: {}, launch: (r) => r.setupSinglePlayer("Guest 1", "chun"), overrides: { mushCount: 1, manualCycles: true } },
 ];
@@ -395,6 +396,21 @@ describe("GameRoom persistence", () => {
     await revived.onStart();
     expect(gameOf(revived).equipment).toEqual(equipment);
     expect(gameOf(revived).equipment).not.toEqual(DEFAULT_CONFIG.equipment);
+  });
+
+  it("keeps a ship's pre-selection rules from launch when PRESELECTION changes", async () => {
+    const storage = new FakeStorage();
+    await asRoom(storage).join("Ann", "chao");
+    const before = structuredClone(PRESELECTION);
+    try {
+      PRESELECTION.seats = 16;
+      PRESELECTION.endsOn = { day: 5, cycle: 1 };
+      const revived = asRoom(storage);
+      await revived.onStart();
+      expect(gameOf(revived).config.preselection).toEqual(before);
+    } finally {
+      Object.assign(PRESELECTION, before);
+    }
   });
 
   it("picks up a balance change (an edit to DEFAULT_CONFIG) on the next load", async () => {

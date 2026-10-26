@@ -13,6 +13,7 @@ import {
   legalActions,
   nextDue,
   CHARACTERS,
+  PRESELECTION,
   preselectionDeadline,
   resolveConfig,
   singlePlayerGame,
@@ -20,6 +21,7 @@ import {
   viewFor,
   type CharacterId,
   type ConfigOverrides,
+  type PreselectionRules,
   type GameClientMessage,
   type BotPause,
   type GameServerMessage,
@@ -216,8 +218,8 @@ export class GameRoom extends Server<Env> {
   }
 
   /** A dev server's ship seats the whole cast, so it fills (and Mush are chosen) once the bots are seated, `DEV_FILL_DELAY_MS` after the first join. */
-  private shipRules(): ConfigOverrides["preselection"] {
-    return this.cheatsAllowed ? { seats: CHARACTERS.length } : {};
+  private shipRules(): PreselectionRules {
+    return this.cheatsAllowed ? { ...PRESELECTION, seats: CHARACTERS.length } : PRESELECTION;
   }
 
   /**

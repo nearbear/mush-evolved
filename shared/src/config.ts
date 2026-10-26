@@ -313,21 +313,11 @@ export const DEFAULT_CONFIG: GameConfig = {
  * unknown keys in a stored object are ignored, never spread. Runs on every load, so live games pick up balance changes.
  */
 export function resolveConfig(o: ConfigOverrides = {}): GameConfig {
-  // #227 adds `o.setup ? setupConfig(o.setup) : DEFAULT_CONFIG` here.
-  const base = DEFAULT_CONFIG;
   const p = o.preselection;
   return {
-    ...base,
+    ...DEFAULT_CONFIG,
     ...(o.mushCount !== undefined && { mushCount: o.mushCount }),
     ...(o.manualCycles !== undefined && { manualCycles: o.manualCycles }),
-    preselection: p
-      ? {
-          ...(base.preselection ?? PRESELECTION),
-          ...(p.seats !== undefined && { seats: p.seats }),
-          ...(p.endsOn !== undefined && { endsOn: p.endsOn }),
-          ...(p.twoMushAbove !== undefined && { twoMushAbove: p.twoMushAbove }),
-          ...(p.minPlayers !== undefined && { minPlayers: p.minPlayers }),
-        }
-      : base.preselection,
+    ...(p && { preselection: { seats: p.seats, endsOn: { day: p.endsOn.day, cycle: p.endsOn.cycle }, twoMushAbove: p.twoMushAbove, minPlayers: p.minPlayers } }),
   };
 }

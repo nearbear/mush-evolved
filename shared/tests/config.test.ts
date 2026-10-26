@@ -14,24 +14,13 @@ describe("resolveConfig", () => {
     expect(resolveConfig({ manualCycles: true })).toEqual({ ...DEFAULT_CONFIG, manualCycles: true });
   });
 
-  it("merges a pre-selection override over PRESELECTION when the base has none", () => {
-    expect(resolveConfig({ preselection: {} }).preselection).toEqual(PRESELECTION);
-    expect(resolveConfig({ preselection: { seats: 16 } }).preselection).toEqual({ ...PRESELECTION, seats: 16 });
-  });
-
-  it("keeps the base's pre-selection when not overridden, and merges an override over it (a setup's, from #227)", () => {
-    const rules = { ...PRESELECTION, seats: 12, endsOn: { day: 5, cycle: 1 } };
-    try {
-      DEFAULT_CONFIG.preselection = rules;
-      expect(resolveConfig({}).preselection).toEqual(rules);
-      expect(resolveConfig({ preselection: { seats: 16 } }).preselection).toEqual({ ...rules, seats: 16 });
-    } finally {
-      DEFAULT_CONFIG.preselection = null;
-    }
+  it("uses a pre-selection override whole", () => {
+    const rules = { ...PRESELECTION, seats: 16, endsOn: { day: 5, cycle: 1 } };
+    expect(resolveConfig({ preselection: rules }).preselection).toEqual(rules);
   });
 
   it("ignores keys it doesn't know, at both levels", () => {
-    const o = { mushCount: 1, cyclesPerDay: 2, preselection: { seats: 5, extra: true } } as ConfigOverrides;
+    const o = { mushCount: 1, cyclesPerDay: 2, preselection: { ...PRESELECTION, seats: 5, extra: true } } as ConfigOverrides;
     const config = resolveConfig(o);
     expect(config).toEqual({ ...DEFAULT_CONFIG, mushCount: 1, preselection: { ...PRESELECTION, seats: 5 } });
     expect(config.preselection).not.toHaveProperty("extra");

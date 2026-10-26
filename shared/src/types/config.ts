@@ -62,14 +62,14 @@ export interface PreselectionRules {
  * config, so it picks up balance changes on its next load. Anything per game that must survive a reload lives here,
  * and config fields derived from it are recomputed by `resolveConfig`. Changing this shape, or what `resolveConfig`
  * derives from a key, bumps `STATE_VERSION` (server/src/GameRoom.ts): a renamed key would silently fall back to the
- * default in live games. Setups (#227) add `setup` here.
+ * default in live games.
  */
 export interface ConfigOverrides {
   mushCount?: number; // Single player: 1.
   manualCycles?: boolean; // Single player, and wherever the server allows cheats.
-  // Merged over the base config's pre-selection (`DEFAULT_CONFIG`'s, or a setup's from #227), or `PRESELECTION` when
-  // the base has none. Absent: the base's is kept (`null` without a setup).
-  preselection?: Partial<PreselectionRules>;
+  // A ship's rules, whole, frozen at launch: an edit to `PRESELECTION` would otherwise move a live ship's deadline or
+  // seat count away from the matchmaker's. Absent: `DEFAULT_CONFIG`'s (`null`).
+  preselection?: PreselectionRules;
 }
 
 export interface GameConfig {
