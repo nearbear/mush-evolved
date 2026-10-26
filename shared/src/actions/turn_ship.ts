@@ -11,6 +11,8 @@ export type TurnShipActionData = { type: "turn_ship"; equipment: string; side: T
  * (Mush included, dirty or not), in orbit too. No fuel. The room log says who turned it and which way it now faces.
  */
 export class TurnShipAction extends Action<TurnShipActionData> {
+  override terminal = true;
+
   constructor() {
     super("turn_ship", { equipment: isString, side: isTurnSide });
   }

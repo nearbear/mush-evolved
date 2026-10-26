@@ -16,6 +16,8 @@ export type TravelActionData = { type: "travel"; equipment: string };
  * finder's alone. Half the hunters follow (hunters.ts). Everyone aboard learns the ship moved and whether it is in orbit; the finder alone learns which planet.
  */
 export class TravelAction extends Action<TravelActionData> {
+  override terminal = true;
+
   constructor() {
     super("travel", { equipment: isString });
   }

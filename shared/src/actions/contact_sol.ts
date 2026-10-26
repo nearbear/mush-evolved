@@ -11,6 +11,8 @@ export type ContactSolActionData = { type: "contact_sol"; equipment: string };
  * (comms.ts; Radio Expert raises it). Private: only the actor gets a log line; the link status itself is in every view.
  */
 export class ContactSolAction extends Action<ContactSolActionData> {
+  override terminal = true;
+
   override visibility: ActionVisibility = "private";
 
   constructor() {

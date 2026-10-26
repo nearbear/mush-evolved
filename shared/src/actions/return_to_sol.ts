@@ -12,6 +12,8 @@ export type ReturnToSolActionData = { type: "return_to_sol"; equipment: string }
  * client asks for confirmation first. A ship-wide log line tells everyone who did it.
  */
 export class ReturnToSolAction extends Action<ReturnToSolActionData> {
+  override terminal = true;
+
   constructor() {
     super("return_to_sol", { equipment: isString });
   }

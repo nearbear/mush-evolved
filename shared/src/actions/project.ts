@@ -11,6 +11,8 @@ export type ProjectActionData = { type: "project"; equipment: string; project: s
  * yet beyond a log line. Public room log.
  */
 export class ProjectAction extends Action<ProjectActionData> {
+  override terminal = true;
+
   constructor() {
     super("project", { equipment: isString, project: isString });
   }

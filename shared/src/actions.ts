@@ -86,6 +86,8 @@ export interface ActionDef<A extends Action> {
   readonly timed: boolean;
   /** Whether it goes in the actor's action history (history.ts). */
   readonly recorded: boolean;
+  /** Whether it is done in a terminal's window (web TerminalDialog) rather than from the inspect panel. */
+  readonly terminal: boolean;
   candidates(state: Readonly<GameState>, player: Readonly<PlayerState>): A[];
   /** The action in an untrusted client message, rebuilt with only its own fields, or null if malformed (protocol.ts). */
   parse(raw: Readonly<Record<string, unknown>>): A | null;
@@ -181,6 +183,9 @@ const REGISTRY = {
 export type Action = ReturnType<(typeof REGISTRY)[keyof typeof REGISTRY]["candidates"]>[number];
 
 export const ACTIONS: { [T in ActionType]: ActionDef<ActionOf<T>> } = REGISTRY;
+
+/** Whether an action type is done in a terminal's window (`Action.terminal`), so not offered on the inspect panel. */
+export const actionInTerminal = (type: ActionType): boolean => ACTIONS[type].terminal;
 
 /** Whether an action type is public, private, secret or covert. A fixed property of the type, so safe for the client to show. */
 export const actionVisibility = (type: ActionType): ActionVisibility => ACTIONS[type].visibility;

@@ -14,6 +14,8 @@ export type ScanPlanetActionData = { type: "scan_planet"; equipment: string };
  * success or not; the scanner learns the result and the planet's name privately.
  */
 export class ScanPlanetAction extends Action<ScanPlanetActionData> {
+  override terminal = true;
+
   constructor() {
     super("scan_planet", { equipment: isString });
   }

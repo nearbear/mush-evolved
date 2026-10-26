@@ -12,6 +12,8 @@ export type DecodeRebelActionData = { type: "decode_rebel"; equipment: string; b
  * Private: only the decoder gets a log line, though anyone at the terminal sees the progress.
  */
 export class DecodeRebelAction extends Action<DecodeRebelActionData> {
+  override terminal = true;
+
   override visibility: ActionVisibility = "private";
 
   constructor() {

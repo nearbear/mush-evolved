@@ -13,6 +13,8 @@ export type LeaveOrbitActionData = { type: "leave_orbit"; equipment: string };
  * spent and the ship stays. Otherwise the planet is lost, scanning works again, and half the hunters follow (hunters.ts). Everyone aboard learns of it.
  */
 export class LeaveOrbitAction extends Action<LeaveOrbitActionData> {
+  override terminal = true;
+
   constructor() {
     super("leave_orbit", { equipment: isString });
   }

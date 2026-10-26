@@ -45,6 +45,8 @@ export class Action<T extends { type: string }> {
   timed: boolean = true;
   /** Kept in the actor's action history (history.ts), which Interrogate and Chitchat reveal. False for the few eMush leaves out, and for moving. */
   recorded: boolean = true;
+  /** Done in a terminal's window (web TerminalDialog), so the inspect panel leaves it out. Fixed per type, like visibility. */
+  terminal: boolean = false;
 
   constructor(type: string, ...fields: [Exclude<keyof T, "type">] extends [never] ? [] : [fields: Fields<T>]) {
     this.type = type;

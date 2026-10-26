@@ -11,6 +11,8 @@ export type AnalyzePlanetActionData = { type: "analyze_planet"; equipment: strin
  * shows up only in your own view.
  */
 export class AnalyzePlanetAction extends Action<AnalyzePlanetActionData> {
+  override terminal = true;
+
   constructor() {
     super("analyze_planet", { equipment: isString, planet: isString });
   }

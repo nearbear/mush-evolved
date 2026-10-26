@@ -11,6 +11,8 @@ export type UpdateNeronActionData = { type: "update_neron"; equipment: string };
  * completes a random unfinished NERON project (comms.ts). Private: only the actor gets a log line.
  */
 export class UpdateNeronAction extends Action<UpdateNeronActionData> {
+  override terminal = true;
+
   override visibility: ActionVisibility = "private";
 
   constructor() {

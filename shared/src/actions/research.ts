@@ -33,6 +33,8 @@ export type ResearchActionData = { type: "research"; equipment: string; research
  * RESEARCH_REQUIRES. Public room log.
  */
 export class ResearchAction extends Action<ResearchActionData> {
+  override terminal = true;
+
   constructor() {
     super("research", { equipment: isString, research: isString });
   }

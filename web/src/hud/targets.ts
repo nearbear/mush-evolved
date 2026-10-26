@@ -2,7 +2,7 @@
 // No rules here: a target is shown only if the view contains it, and actions
 // come from view.actions.
 
-import type { Action, ActionOption, EquipmentView, ItemView, OtherPlayerView, PlayerView, Target, YouView } from "@mush2/shared";
+import { actionInTerminal, namedTarget, type Action, type ActionOption, type EquipmentView, type ItemView, type OtherPlayerView, type PlayerView, type Target, type YouView } from "@mush2/shared";
 
 export type Resolved =
   | { kind: "player"; person: YouView | OtherPlayerView }
@@ -37,71 +37,16 @@ export function optionsOn(view: PlayerView, target: Target): ActionOption[] {
   return view.actions.filter((o) => aimedAt(view, o.action, target));
 }
 
+/**
+ * Whether an action belongs on this target's panel: what its fields name (`namedTarget`), so an attack is on the
+ * person or, for an area weapon, the weapon, and stopping a push on the pushed person (Terrence ends it from his own
+ * panel, the pusher from his). An action that names nothing (search, a speech, getting up) is on yourself.
+ */
 function aimedAt(view: PlayerView, a: Action, target: Target): boolean {
-  switch (a.type) {
-    case "examine":
-      return sameTarget(a.target, target);
-    case "access":
-    case "uninstall":
-    case "dispense":
-    case "take_fuel":
-    case "load_fuel":
-    case "unload_fuel":
-    case "return_fuel":
-    case "take_oxygen":
-    case "return_oxygen":
-    case "check_combustion":
-    case "lie_down":
-    case "shower":
-    case "takeoff":
-    case "land":
-      return target.kind === "equipment" && a.equipment === target.id;
-    case "dismantle":
-      return "equipment" in a ? target.kind === "equipment" && a.equipment === target.id : target.kind === "item" && a.item === target.id;
-    case "consume":
-    case "hide":
-    case "cook":
-    case "express_cook":
-    case "fungal_cuisine":
-    case "build":
-    case "jettison":
-    case "install":
-    case "read_book":
-    case "water":
-    case "treat":
-    case "sow":
-    case "repair_hull":
-      return target.kind === "item" && a.item === target.id;
-    case "bond":
-    case "dtt":
-    case "stt":
-    case "heal":
-    case "vaccinate":
-    case "punch":
-    case "interrogate":
-    case "chitchat":
-    case "anathema":
-    case "spike":
-    case "body_transfer":
-    case "accommodate":
-    case "accept_accommodation":
-    // On the pushed person: Terrence ends it from his own panel, the pusher from his.
-    case "stop_accommodation":
-      return target.kind === "player" && a.target === target.id;
-    // At the person, or, for an area weapon, on the weapon itself.
-    case "attack":
-      return "target" in a ? target.kind === "player" && a.target === target.id : target.kind === "item" && a.weapon === target.id;
-    case "extract_spore":
-    case "get_up":
-    case "search":
-    case "self_disease":
-    case "self_injury":
-    case "fiery_speech":
-    case "boring_speech":
-      return target.kind === "player" && target.id === view.you.id;
-    default:
-      return false;
-  }
+  // Terminal actions are in the terminal's window, and the inventory panel takes and drops.
+  if (actionInTerminal(a.type) || a.type === "take" || a.type === "drop" || a.type === "ready") return false;
+  if (Object.keys(a).length === 1) return target.kind === "player" && target.id === view.you.id;
+  return sameTarget(namedTarget(a), target);
 }
 
 /** The carried weapon an attack uses, for its button text ("Attack (knife)"); a carried weapon is in the inventory. */

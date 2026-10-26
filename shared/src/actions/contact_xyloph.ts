@@ -11,6 +11,8 @@ export type ContactXylophActionData = { type: "contact_xyloph"; equipment: strin
  * those not drawn yet, and once all are drawn the action is gone. Private: only the actor learns the entry.
  */
 export class ContactXylophAction extends Action<ContactXylophActionData> {
+  override terminal = true;
+
   override visibility: ActionVisibility = "private";
 
   constructor() {

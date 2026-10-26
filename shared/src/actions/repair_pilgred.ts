@@ -13,6 +13,8 @@ export type RepairPilgredActionData = { type: "repair_pilgred"; equipment: strin
  * roommates see no busy bar. Completion is public: a room line plus a crew-wide system message.
  */
 export class RepairPilgredAction extends Action<RepairPilgredActionData> {
+  override terminal = true;
+
   override visibility: ActionVisibility = "private";
 
   constructor() {

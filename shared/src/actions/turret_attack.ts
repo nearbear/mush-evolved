@@ -14,6 +14,8 @@ export type TurretAttackActionData = { type: "turret_attack"; equipment: string;
  * Anyone alive, Mush and dirty players included. A hit or miss is private; a kill is public in the turret room.
  */
 export class TurretAttackAction extends Action<TurretAttackActionData> {
+  override terminal = true;
+
   override visibility: ActionVisibility = "private";
   override tags: readonly ActionTag[] = ["shoot"];
 

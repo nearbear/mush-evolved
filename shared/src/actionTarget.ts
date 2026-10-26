@@ -4,16 +4,23 @@
 import type { ActionVisibility } from "./actions/action.ts";
 import type { Action, PlayerId, Target } from "./types.ts";
 
-/** What an action is done to, for walking up to it in the room view; null for actions on nothing in particular. */
-export function actionTarget(a: Action): Target | null {
-  if (a.type === "examine") return a.target;
+/**
+ * What an action's fields name it as done to, read from its shape: equipment, an item, a person (a `target` id, or
+ * examine's whole `Target`), or the weapon of an area attack. Null for actions on nothing in particular.
+ */
+export function namedTarget(a: Action): Target | null {
   if ("equipment" in a) return { kind: "equipment", id: a.equipment };
   if ("item" in a) return { kind: "item", id: a.item };
-  if (a.type === "bond" || a.type === "dtt" || a.type === "stt" || a.type === "heal" || a.type === "vaccinate" || a.type === "punch" || a.type === "interrogate" || a.type === "chitchat" || a.type === "anathema" || a.type === "spike" || a.type === "body_transfer" || a.type === "accommodate" || a.type === "accept_accommodation") {
-    return { kind: "player", id: a.target };
-  }
-  if (a.type === "attack") return "target" in a ? { kind: "player", id: a.target } : { kind: "item", id: a.weapon };
+  // Before `weapon`: an attack with a target is aimed at the person.
+  if ("target" in a) return typeof a.target === "string" ? { kind: "player", id: a.target } : a.target;
+  if ("weapon" in a) return { kind: "item", id: a.weapon };
   return null;
+}
+
+/** What an action is done to, for walking up to it in the room view; null for actions on nothing in particular. */
+export function actionTarget(a: Action): Target | null {
+  // Stopping a push walks nobody: the pusher is already beside the person they push.
+  return a.type === "stop_accommodation" ? null : namedTarget(a);
 }
 
 /**

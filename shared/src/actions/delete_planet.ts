@@ -6,6 +6,8 @@ export type DeletePlanetActionData = { type: "delete_planet"; equipment: string;
 
 /** Delete one of your own planets at once, only at the Astro terminal (owner, 2026-10-19; terminal-only 2026-10-25). Free and silent: no log line. */
 export class DeletePlanetAction extends Action<DeletePlanetActionData> {
+  override terminal = true;
+
   override visibility = "private" as const;
   override timed = false;
 
