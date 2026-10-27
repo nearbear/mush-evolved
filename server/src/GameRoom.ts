@@ -173,9 +173,9 @@ export class GameRoom extends Server<Env> {
   }
 
   /** Seats everyone at launch, with Mush picked at once (tests). Called once, over RPC. */
-  async setup(seats: Seat[], tokens: Record<string, PlayerId>): Promise<void> {
+  async setup(seats: Seat[], tokens: Record<string, PlayerId>, forcedRoles?: Record<PlayerId, Role>): Promise<void> {
     if (this.game || this.retired) throw new Error("Game already set up");
-    await this.launch(seats, tokens, {});
+    await this.launch(seats, tokens, {}, forcedRoles);
   }
 
   /**

@@ -13,6 +13,7 @@ import {
   type GameSetup,
   type PlayerView,
   type RecordedInput,
+  type Role,
 } from "@mush2/shared";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { FakeConnection, FakeServer, FakeStorage, seats, tokensFor } from "../src/testing/fakes.ts";
@@ -28,9 +29,9 @@ type Room = InstanceType<typeof GameRoom>;
 const asRoom = (storage: FakeStorage, env: Record<string, string> = {}): Room =>
   new GameRoom({ storage } as never, { RULES_VERSION: "test", ...env } as never);
 
-async function newRoom(humans = 3, storage = new FakeStorage(), env: Record<string, string> = {}) {
+async function newRoom(humans = 3, storage = new FakeStorage(), env: Record<string, string> = {}, roles?: Record<string, Role>) {
   const room = asRoom(storage, env);
-  await room.setup(seats(humans), tokensFor(humans));
+  await room.setup(seats(humans), tokensFor(humans), roles);
   return { room, storage };
 }
 
@@ -184,10 +185,8 @@ describe("GameRoom cheats", () => {
     expect(lastView(closedConn).statuses).not.toContain("cold_disease");
     expect([...storage.data.keys()].some((key) => key.startsWith("input:"))).toBe(false);
 
-    const { room: devRoom } = await newRoom(3, new FakeStorage(), CHEATS);
-    // addDisease skips a Mush, and roles are random: make p0 human.
-    const game = (devRoom as unknown as { game: import("@mush2/shared").GameState }).game;
-    for (const p of game.players) p.role = "human";
+    // addDisease skips a Mush, and roles are random: force p0 human.
+    const { room: devRoom } = await newRoom(3, new FakeStorage(), CHEATS, { p0: "human" });
     const devConn = connect(devRoom, "tok0");
     await send(devRoom, devConn, { type: "cheat", cheat: "selfDisease", on: true });
     expect(lastView(devConn).you.cheats).toContain("selfDisease");
@@ -312,12 +311,10 @@ describe("GameRoom timed actions", () => {
 
 describe("GameRoom after a Transfer", () => {
   it("moves each seat token to its new body, and the victim acknowledges the pop-up", async () => {
-    const { room } = await newRoom(3);
-    const game = (room as unknown as { game: import("@mush2/shared").GameState }).game;
     // p0 (a human seat) is the Mush; p1 the victim.
-    for (const p of game.players) p.role = "human";
+    const { room } = await newRoom(3, new FakeStorage(), {}, { p0: "mush", p1: "human" });
+    const game = (room as unknown as { game: import("@mush2/shared").GameState }).game;
     const [mush, victim] = [game.players[0]!, game.players[1]!];
-    mush.role = "mush";
     mush.mushSkills.push("transfert");
     mush.room = victim.room = "LABORATORY";
     for (const o of game.players.slice(2)) o.room = "REFECTORY";
