@@ -18,7 +18,7 @@ description: Call Google Antigravity CLI (agy, a Gemini agent) in read-only file
 
 `~/.local/bin/agy -p "<prompt>" --mode plan --model <model> --print-timeout 300s`
 
-Models: `gemini-4-argon-high` for reviews, `gemini-3.8-flash-medium` for reading. Not its Claude models. Run long calls in the background. Don't use it to read files you're denied or secrets.
+Models: `gemini-4-argon-high` for reviews, `gemini-3.8-flash-medium` for reading. Not its Claude models. Don't use it to read files you're denied or secrets.
 
 ## Read-only file mode, never a shell
 
@@ -30,3 +30,16 @@ Headless `-p` mode auto-denies agy's `run_command`, so a shell attempt gets no o
 4. Strip anything personal or secret from what you send (session titles, keys, `.env`). Sending it to Gemini is outward-facing.
 
 To debug a stall, add `--output-format stream-json` and look at each step's `tool_name` and `error`.
+
+## Running it: wait on agy itself
+
+Calls take minutes (a big prompt took the full 300s), so run `agy` as the whole Bash command with `run_in_background: true`, and redirect its output to a scratchpad file. Put the prompt in a file and pass `-p "$(cat prompt.txt)"`:
+
+`~/.local/bin/agy -p "$(cat <scratchpad>/prompt.txt)" --mode plan --model <model> --print-timeout 600s > <scratchpad>/out.txt 2>&1`
+
+- **Never** add a trailing `&`, a `( ... ) &` subshell, or `echo done` chaining inside the command. The harness then sees the wrapper exit at once and sends a "completed" notification while agy is still running; the real finish sends nothing, so you never react to it. With agy as the command, the "completed" notification is the real finish. Build the prompt file in a separate foreground call first.
+- A "completed" notification means agy exited, not that it succeeded: read the output file. Check for a partial result (`print timeout after ... returning partial output`) and for an auth or permission error. For a big design or review use `--print-timeout 600s` or more; on a partial result, rerun asking only for the missing parts.
+- If you got a "completed" notice but the output file is empty, agy is probably still running (`pgrep -f "bin/agy"`); don't tell the user it's done or "still running" without checking.
+- Never `pkill -f "agy -p"` from a Bash call: the pattern matches that call's own shell and kills it. Use `pkill -f bin/agy` or kill the PID.
+- The prompt is one command-line argument, so it must stay under about 125 KB (the Linux limit is 128 KB; `Argument list too long` means it was exceeded). Piped stdin is ignored. A fresh `agy -p` has no memory of earlier calls, so every call must carry all its context; trim by dropping files and telling it which were left out and that it may ask for them.
+- Headless mode also denies `read_file`, so it cannot read files itself; pasting the content is the only way.
