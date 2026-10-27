@@ -92,6 +92,7 @@ describe("actions from a client", () => {
     punch: [{ type: "punch", target: "p1" }],
     interrogate: [{ type: "interrogate", target: "p1" }],
     chitchat: [{ type: "chitchat", target: "p1" }],
+    comfort: [{ type: "comfort", target: "p1" }],
     anathema: [{ type: "anathema", target: "p1" }],
     fiery_speech: [{ type: "fiery_speech" }],
     boring_speech: [{ type: "boring_speech" }],

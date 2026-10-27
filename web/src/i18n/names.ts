@@ -68,6 +68,7 @@ const ACTION_NAME_KEYS = {
   punch: "actions.punch",
   interrogate: "actions.interrogate",
   chitchat: "actions.chitchat",
+  comfort: "actions.comfort",
   anathema: "actions.anathema",
   fiery_speech: "actions.fierySpeech",
   boring_speech: "actions.boringSpeech",

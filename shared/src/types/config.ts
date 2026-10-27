@@ -250,6 +250,8 @@ export interface GameConfig {
     boring: { ap: number; mp: number }; // The `motivator` skill's Boring speech: AP cost, MP given to each other living person in the room, once a day (owner, 2026-10-24; eMushpedia).
   };
   chitchat: { cost: { ap: number }; morale: number }; // Confiding in a `confident` in your room: AP cost and the morale you gain; once a day (owner, 2026-10-24).
+  comfort: { cost: { ap: number }; morale: number }; // The Shrink's Comfort: AP cost and the morale the roommate gains; no daily limit (owner, 2026-10-26).
+  shrink: { lyingMorale: number }; // Morale a cycle for lying in a bed with a living Shrink (not yourself) in the room; doesn't stack (owner, 2026-10-26).
   interrogate: { cost: { ap: number }; damage: number; dirtyChance: number; injuryChance: number }; // The `torturer` skill's Interrogate: AP cost, guaranteed damage, dirt and injury odds; once a day (owner, 2026-10-24).
   research: {
     cost: { ap: number }; // AP spent to work on a research (decided 2026-10-16).

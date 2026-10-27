@@ -148,6 +148,9 @@ export const DEFAULT_CONFIG: GameConfig = {
   // Owner, 2026-10-24 (eMushpedia Confident, Bourreau; actions.json TORTURE): Chitchat costs 1 AP once a day and gives
   // +2 morale; the Torturer's Interrogate costs 1 AP once a day, deals 1 damage, 15% dirt, 10% injury.
   chitchat: { cost: { ap: 1 }, morale: 2 },
+  // Shrink (owner, 2026-10-26, eMushpedia Psy): Comfort costs 1 AP and gives a roommate 2 morale; lying in a bed with a Shrink in the room gives 1 morale a cycle.
+  comfort: { cost: { ap: 1 }, morale: 2 },
+  shrink: { lyingMorale: 1 },
   interrogate: { cost: { ap: 1 }, damage: 1, dirtyChance: 0.15, injuryChance: 0.1 },
   // Decided 2026-10-16: working on a research costs 2 AP and advances it 25%; no repeat penalty yet.
   research: { cost: { ap: 2 }, effect: { progressPercent: 25 }, dirtyChance: 0.25 },
