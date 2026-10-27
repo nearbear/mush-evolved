@@ -136,6 +136,9 @@
     "unidentified": "Sin identificar",
     "unidentifiedCount": "{{count}} sin identificar"
   },
+  "inspect": {
+    "deselect": "Deseleccionar"
+  },
   "nav": {
     "panels": "Paneles",
     "inspect": "Inspeccionar",

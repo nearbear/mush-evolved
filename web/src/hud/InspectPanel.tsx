@@ -26,6 +26,7 @@ export function InspectPanel({
   layout,
   target,
   onAction,
+  onDeselect,
 }: {
   view: PlayerView;
   /** For equipment sprites; without it equipment shows as text only. */
@@ -33,9 +34,17 @@ export function InspectPanel({
   /** Already resolved against the view by the caller. */
   target: Target;
   onAction: (action: Action) => void;
+  /** Clears the selection; given only while something other than yourself is selected. */
+  onDeselect?: () => void;
 }) {
   const { t } = useTranslation();
   const names = useNames();
+  const mobile = useMobile();
+  const deselect = onDeselect && (
+    <button type="button" className="inspect-deselect" onClick={onDeselect}>
+      {t("inspect.deselect")}
+    </button>
+  );
   const labelFor = ({ action, cost, chance }: ActionOption): ReactNode => {
     const weapon = attackWeapon(view, action);
     const text = weapon ? t("actions.attackWith", { weapon: names.itemOf(weapon) }) : names.action(action.type);
@@ -58,11 +67,13 @@ export function InspectPanel({
     <aside className="panel inspect" ref={root} tabIndex={-1}>
       <div className="panel-head">
         <h2>{t("nav.inspect")}</h2>
+        {!mobile && deselect}
       </div>
       <div className="inspect-body">
       {resolved && (
         <div className="inspect-target">
           <Details view={view} layout={layout} resolved={resolved} onAction={onAction} />
+          {mobile && deselect}
         </div>
       )}
       {options.length > 0 && (

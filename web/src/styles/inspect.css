@@ -374,3 +374,17 @@
     grid-row: 2;
   }
 }
+
+/* Deselect: in the heading row beside the title on desktop, centred under the portrait on phones. */
+.inspect .panel-head {
+  justify-content: flex-start;
+  gap: 0.75rem;
+}
+.inspect-deselect {
+  margin: 0;
+  padding: 0 0.6rem;
+}
+.inspect-target > .inspect-deselect {
+  align-self: center;
+  margin: 0.25rem 0 0;
+}

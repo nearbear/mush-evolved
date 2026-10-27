@@ -207,7 +207,7 @@ export function GameScreen({ ticket, onLeave, waking = false }: { ticket: SeatTi
 
       <div className="three-panel" data-panel={panel}>
         <div className="left-column">
-          <InspectPanel view={view} layout={layout} target={target} onAction={send} />
+          <InspectPanel view={view} layout={layout} target={target} onAction={send} onDeselect={selected && target === selected ? () => select(null) : undefined} />
         </div>
 
         <div className="world">
