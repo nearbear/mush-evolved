@@ -1,7 +1,8 @@
 // The settings button and its dialog. Options apply immediately; there is no Save button.
-// Uses the global Mush `button` style; only layout is set in settings.css.
+// Uses the global Mush `button` style and the terminal frame (terminal.css): a kit-panel around a light cut card.
 
 import { ACTOPI_CHEATS, CHEATS, ROLE_CHEATS, isActopiCheat, type ActopiCheat, type Cheat, type RoleCheat } from "@mush2/shared";
+import { Credits } from "./Credits.tsx";
 import { DialogHeader } from "./DialogHeader.tsx";
 import { Hint } from "./IconButton.tsx";
 import { Dialog } from "@base-ui/react/dialog";
@@ -12,6 +13,7 @@ import { parseVerbosity, setVerbosity, useVerbosity } from "../announce.ts";
 import { parseFogDepth, setFogDepth, useFogDepth } from "../fogDepth.ts";
 import { LanguageSwitcher } from "../i18n/LanguageSwitcher.tsx";
 import "./settings.css";
+import "./terminal.css";
 
 export function SettingsDialog({
   cheatsAllowed,
@@ -54,8 +56,11 @@ export function SettingsDialog({
       )}
       <Dialog.Portal>
         <Dialog.Backdrop className="settings-backdrop" />
-        <Dialog.Popup className="settings-popup">
-          <DialogHeader heading={t("settings.title")} closeLabel={t("settings.close")} />
+        <Dialog.Popup className="settings-popup terminal-popup kit-panel">
+          <div className="cut-card cut-top terminal-card">
+          <div className="terminal-scroll">
+          <DialogHeader className="terminal-header" heading={t("settings.title")} closeLabel={t("settings.close")} />
+          <Credits as="p" className="settings-credits" />
           <Tabs.Root className="settings-tabs" defaultValue={cheatsAllowed ? "cheats" : "general"}>
             <Tabs.List className="settings-tab-list">
               <Tabs.Tab className="settings-tab" value="general">{t("settings.tabs.general")}</Tabs.Tab>
@@ -122,6 +127,8 @@ export function SettingsDialog({
               </Tabs.Panel>
             )}
           </Tabs.Root>
+          </div>
+          </div>
         </Dialog.Popup>
       </Dialog.Portal>
     </Dialog.Root>

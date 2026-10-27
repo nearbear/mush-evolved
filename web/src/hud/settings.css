@@ -82,7 +82,7 @@
   gap: 0.25rem;
   margin: 0;
   padding: 0.5rem 0.75rem;
-  border: 1px dashed rgb(255 255 255 / 0.4);
+  border: 1px dashed var(--edge);
   border-radius: 4px;
 }
 
@@ -134,7 +134,7 @@
   width: 100%;
 }
 
-/* Your planets (PlanetList): in the Astro terminal window and the self panel. */
+/* Your planets (PlanetList): in the Astro terminal window. */
 .planet-list ul {
   margin: 0;
   padding: 0;
@@ -176,6 +176,15 @@
 }
 
 /* Settings tabs: General / Cheats. Tabs replace the global button background, so this is a plain underline style. */
+/* The asset attribution, under the header and above the tabs (see Credits.tsx). */
+/* Cancels the 1rem flex gap: the tabs are 2.5rem tall with centered labels, which already leaves enough space. */
+.settings-credits {
+  margin: 0 0 -1rem;
+  font-size: 0.75rem;
+  line-height: 1.3;
+  color: var(--muted);
+}
+
 .settings-tabs {
   display: flex;
   flex-direction: column;
@@ -185,7 +194,7 @@
 .settings-tab-list {
   display: flex;
   gap: 0.25rem;
-  border-bottom: 1px solid rgb(255 255 255 / 0.3);
+  border-bottom: 1px solid var(--edge);
 }
 
 .settings-tab {
@@ -201,7 +210,7 @@
 }
 
 .settings-tab[data-active] {
-  border-bottom-color: #e8c20e;
+  border-bottom-color: var(--accent);
   font-weight: bold;
 }
 

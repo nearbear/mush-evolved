@@ -9,7 +9,6 @@ import { useTranslation } from "react-i18next";
 import { ActionQueue } from "./hud/ActionQueue.tsx";
 import { BottomNav, type MobilePanel } from "./hud/BottomNav.tsx";
 import { DeathNotice } from "./hud/DeathNotice.tsx";
-import { Credits } from "./hud/Credits.tsx";
 import { RoomList } from "./hud/RoomList.tsx";
 import { InspectPanel } from "./hud/InspectPanel.tsx";
 import { InventoryOverlay, stepZoom } from "./hud/InventoryOverlay.tsx";
@@ -21,7 +20,7 @@ import { PeekBar } from "./hud/PeekBar.tsx";
 import { TerminalDialog } from "./hud/TerminalDialog.tsx";
 import { EndScreen } from "./hud/EndScreen.tsx";
 import { BodyTakenDialog } from "./hud/BodyTakenDialog.tsx";
-import { SelfPanel } from "./hud/SelfPanel.tsx";
+import { SelfHud, SelfPoints } from "./hud/SelfHud.tsx";
 import { resolveTarget } from "./hud/targets.ts";
 import { TopBar } from "./hud/TopBar.tsx";
 import { gameSocket, type SeatTicket } from "./net.ts";
@@ -251,16 +250,20 @@ export function GameScreen({ ticket, onLeave, waking = false }: { ticket: SeatTi
               <section className="iso-room loading">{t("common.loadingShip")}</section>
             )}
             {you.alive && <RoomList view={view} layout={layout} reachable={reachable} onSelect={(target) => { select(target); setFocusActions((n) => n + 1); }} onMove={move} />}
-            {you.alive && <ActionQueue view={view} onClear={() => post({ type: "clearQueue" })} />}
             {mobile && <ShipOverlay view={view} />}
+            {!mobile && you.alive && <SelfHud view={view} onInspect={() => select({ kind: "player", id: you.id })} />}
+            {/* Bottom-left: AP and MP (desktop), then the action queue beside them. */}
+            {you.alive && (
+              <div className="room-bottom-left">
+                {!mobile && <SelfPoints view={view} />}
+                <ActionQueue view={view} onClear={() => post({ type: "clearQueue" })} />
+              </div>
+            )}
             {you.alive && <InventoryOverlay view={view} selected={target} onAction={send} onSelect={select} zoom={zoom} onZoom={setZoom} />}
             {/* TODO(minimap): stubbed out for now, to be revisited. scene/Minimap.tsx still exists; render it here
                 with here={you.room} youId={you.id} people={[you, ...view.players]} unidentified={view.unidentified}
                 reachable={reachable} onMove={move}. */}
           </div>
-          {!mobile && (
-            <SelfPanel view={view} />
-          )}
         </div>
 
         <ITrackie
@@ -275,13 +278,7 @@ export function GameScreen({ ticket, onLeave, waking = false }: { ticket: SeatTi
             onLeave: (channel) => post({ type: "leaveChannel", channel }),
           }}
         />
-
-        {/* Last in the tab order (not inside the Inspect aside), so keyboard users don't tab through it mid-game. On desktop it sits under the world column (the player panel) only; CSS places it. */}
-        {!mobile && <Credits className="game-credits" />}
       </div>
-
-      {/* On phones it shows on the Inspect tab only, below the panels. */}
-      {mobile && panel === "inspect" && <Credits className="game-credits" />}
 
       {mobile && panel === "room" && you.alive && (
         <PeekBar

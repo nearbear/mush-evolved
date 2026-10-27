@@ -100,19 +100,15 @@
   margin: 0;
 }
 
-/* Your action under way and the ones waiting (ActionQueue), over the top of the room view in both layouts. */
+/* Your action under way and the ones waiting (ActionQueue), stacked top to bottom with Clear queue last, in the room view's bottom-left corner (.room-bottom-left places it). */
 .action-queue {
-  position: absolute;
-  top: 0.5rem;
-  right: 0.5rem;
-  z-index: 2;
   display: flex;
-  flex-wrap: wrap;
-  justify-content: flex-end;
-  align-items: center;
-  gap: 0.25rem 0.5rem;
-  max-width: calc(100% - 1rem);
-  padding: 0.25rem 0.5rem;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.35rem;
+  min-width: 0;
+  max-width: 16rem;
+  padding: 0.35rem 0.5rem;
   color: var(--text);
   background: color-mix(in srgb, var(--panel-fill) 80%, transparent);
   border: 1px solid var(--panel-rim);
@@ -120,13 +116,15 @@
 }
 .action-queue ol {
   display: flex;
-  flex-wrap: wrap;
-  justify-content: flex-end;
+  flex-direction: column;
   gap: 0.25rem;
   margin: 0;
   padding: 0;
   list-style: none;
   font-size: 0.8rem;
+}
+.action-queue button {
+  margin: 0;
 }
 .action-queue li {
   padding: 0 0.3rem;

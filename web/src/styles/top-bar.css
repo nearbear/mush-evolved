@@ -131,6 +131,17 @@
 .pip-bar .sub {
   margin-left: 0.35rem;
 }
+/* Standing up (AP/MP in the desktop HUD): label above, value below. The frame's height is set inline. */
+.pip-bar.vertical {
+  flex-direction: column;
+}
+.pip-bar.vertical .pip-frame {
+  width: calc(11 * var(--s));
+}
+.pip-bar.vertical .pip-label,
+.pip-bar.vertical .sub {
+  margin: 0;
+}
 /* Two pip bars on top of each other, labels in one column so the pips line up. */
 .stat-stack {
   display: flex;
@@ -216,7 +227,7 @@
 .stat-chip .resource-chip-part img {
   height: 16px;
 }
-/* Desktop: your other resources one above the other in a card beside the stat stacks; it opens them all. */
+/* Desktop: your other resources one above the other in a card in the HUD; it opens them all. */
 .resource-stack {
   display: flex;
   flex-direction: column;

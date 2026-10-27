@@ -1,12 +1,12 @@
-// The asset attribution (CC BY-NC-SA) and the non-commercial promise: at the bottom of the
-// lobby, and a footer row under the game's panels (last in the tab order; phones show it on the Inspect tab).
+// The asset attribution (CC BY-NC-SA) and the non-commercial promise: a footer at the bottom of the lobby, and in
+// the game at the top of the settings dialog (`as="p"`), under its header, where every player looks sooner or later.
 
 import { Trans, useTranslation } from "react-i18next";
 
-export function Credits({ className }: { className?: string }) {
+export function Credits({ className, as: Tag = "footer" }: { className?: string; as?: "footer" | "p" }) {
   const { t } = useTranslation();
   return (
-    <footer className={className ? `credits ${className}` : "credits"}>
+    <Tag className={className ? `credits ${className}` : "credits"}>
       <Trans
         i18nKey="credits.text"
         components={{
@@ -16,6 +16,6 @@ export function Credits({ className }: { className?: string }) {
         }}
       />{" "}
       {t("credits.nonCommercial")}
-    </footer>
+    </Tag>
   );
 }

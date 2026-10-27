@@ -2,8 +2,7 @@
 
 /*
  * Desktop: the game fills the viewport (no page scrollbar). All three columns
- * stretch to the same height; the self panel keeps its natural height and the
- * room takes whatever is left under it.
+ * stretch to the same height; the room fills the world column.
  */
 @media (min-width: 1024px) {
   main.game {
@@ -32,9 +31,6 @@
     min-height: 0;
     display: flex;
     flex-direction: column;
-  }
-  .world > .self-panel {
-    flex: none;
   }
   .room-view > .iso-room,
   .room-view > .death-notice {
@@ -137,6 +133,10 @@
   .pip-label img.big {
     height: 20px;
   }
+  /* The action queue keeps clear of the ship button and the sack in the lower-right corner (40px each). */
+  .room-bottom-left {
+    max-width: calc(100% - 1rem - 2 * (40px + 0.5rem));
+  }
 
   .three-panel {
     flex: 1;
@@ -175,7 +175,7 @@
     flex: 1;
     min-height: 0;
   }
-  /* Inspect fills the panel top to bottom (the credits sit at its foot); a tall target still scrolls the panel. */
+  /* Inspect fills the panel top to bottom; a tall target still scrolls the panel. */
   .left-column,
   .left-column > .inspect {
     flex: 1 0 auto;

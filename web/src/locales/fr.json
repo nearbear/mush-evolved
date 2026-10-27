@@ -137,6 +137,7 @@
     "unidentifiedCount": "{{count}} non identifié(s)"
   },
   "inspect": {
+    "self": "{{character}} (vous) : inspecter",
     "deselect": "Désélectionner"
   },
   "nav": {
@@ -213,7 +214,6 @@
     }
   },
   "faction": {
-    "you": "{{character}}, {{faction}} : qui vous êtes et ce que veut votre camp",
     "about": "{{name}} : ce que veut votre camp",
     "human": {
       "name": "Humain",

@@ -1,4 +1,4 @@
-// Phones only: a button in the room view's lower-left corner that opens the ship card (resources and titles),
+// Phones only: a button in the room view's lower-right corner, beside the sack, that opens the ship card (resources and titles),
 // which sits in the top bar on desktop. Closes on the button, Escape, or a press elsewhere in the room view.
 
 import { useCallback, useId, useRef, useState } from "react";

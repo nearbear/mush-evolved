@@ -9,7 +9,8 @@
 //   lobby/picker/game  no raw i18n keys (`word.word`) in the visible text or accessible names
 //   game               the "Room" region lists the people, equipment, items and exits the room shows
 //   game               every interactive element a mouse can reach is a Tab stop
-//   picker/game        the license footer's links come last in the Tab order, never before other controls
+//   picker             the license footer's links come last in the Tab order, never before other controls (in the game
+//                      the attribution is in the settings dialog instead)
 //   game               a round by keyboard alone: pick from the room list, focus lands on Inspect's actions, act, focus stays
 //   game               the room log is a role="log", and the polite and assertive announcer regions exist
 //
@@ -81,7 +82,6 @@ async function main(): Promise<number> {
     await check("game: room region lists people, equipment, items and exits", () => roomRegion(page));
     await check("game: look, select and act by keyboard alone", () => keyboardRound(page));
     await check("game: the room log is a live region", () => logIsLive(page));
-    await check("game: license footer is last in the Tab order", () => noFooterStops(page));
     await check("game: every mouse-reachable control is a Tab stop", () => everyControlTabbable(page));
   } finally {
     await browser.close();

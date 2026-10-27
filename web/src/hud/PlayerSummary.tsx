@@ -1,16 +1,16 @@
-// Who you are and your stats: portrait, name, role, AP/MP/HP/morale, other resources. Shown in the
-// self panel under the room on desktop (name and faction in the portrait's popover) and in the top bar on phones.
+// Who you are and your stats on phones, in the top bar: portrait, name, role, AP/MP/HP/morale as chips, other
+// resources. The desktop equivalent is SelfHud, over the room view.
 
 import { characterName, type PlayerView } from "@mush2/shared";
 import type { ReactNode } from "react";
 import { Popover } from "@base-ui/react/popover";
 import { useTranslation } from "react-i18next";
-import { AP_PIP, FACTION_ICONS, HP_ICON, HP_PIP, MORALE_ICON, MORALE_PIP, MP_PIP, bustIcon } from "../art/assets.ts";
-import { PipBar } from "./PipBar.tsx";
+import { AP_PIP, FACTION_ICONS, HP_ICON, MORALE_ICON, MP_PIP, bustIcon } from "../art/assets.ts";
 import { PreselectionTag } from "./PreselectionTag.tsx";
 import { CompactResourceChips } from "./ResourceChips.tsx";
 
-function factionOf(view: PlayerView) {
+/** Your faction, as the key under `faction.*` in the locales. */
+export function factionOf(view: PlayerView) {
   const { role, alpha } = view.you;
   return role === "human" ? "human" : alpha ? "alphaMush" : "betaMush";
 }
@@ -45,41 +45,6 @@ function FactionCard({ view }: { view: PlayerView }) {
   );
 }
 
-/** Desktop: the portrait, with your name, faction, and its goal in a popover (hover, focus, or tap). */
-function PortraitCard({ view }: { view: PlayerView }) {
-  const { t } = useTranslation();
-  const { role, character } = view.you;
-  const faction = factionOf(view);
-  const name = characterName(character);
-  const factionName = t(`faction.${faction}.name`);
-  return (
-    <Popover.Root>
-      <Popover.Trigger
-        openOnHover
-        delay={200}
-        nativeButton={false}
-        render={<span role="button" tabIndex={0} />}
-        className="portrait-card"
-        aria-label={t("faction.you", { character: name, faction: factionName })}
-      >
-        <img className="avatar" src={bustIcon(character)} alt="" />
-      </Popover.Trigger>
-      <Popover.Portal>
-        <Popover.Positioner sideOffset={6}>
-          <Popover.Popup className="tooltip faction-goals">
-            <strong>{name}</strong>
-            <span className={`portrait-faction ${role}`}>
-              <img className="faction-icon" src={FACTION_ICONS[faction]} alt="" />
-              {factionName}
-            </span>
-            <p>{t(`faction.${role}.goal`)}</p>
-          </Popover.Popup>
-        </Popover.Positioner>
-      </Popover.Portal>
-    </Popover.Root>
-  );
-}
-
 /** One resource as a small icon + count chip, for the phone layout where the pip bars take too much room. */
 function StatChip({ stat, value, max, icon, big = false }: { stat: "ap" | "mp" | "hp" | "morale"; value: number; max: number; icon: string; big?: boolean }) {
   const { t } = useTranslation();
@@ -93,14 +58,12 @@ function StatChip({ stat, value, max, icon, big = false }: { stat: "ap" | "mp" |
   );
 }
 
-/** `compact` swaps the pip bars for chips under the portrait (the phone top bar). */
 /** `countdown` goes after the phone's abbreviated cycle (the top bar's own cycle is hidden there). */
-export function PlayerSummary({ view, compact = false, countdown }: { view: PlayerView; compact?: boolean; countdown?: ReactNode }) {
+export function PlayerSummary({ view, countdown }: { view: PlayerView; countdown?: ReactNode }) {
   const { t } = useTranslation();
   const { you } = view;
   return (
     <div className="player-summary">
-      {compact ? (
       <div className={`nameplate ${you.role}`}>
         <img className="avatar" src={bustIcon(you.character)} alt="" />
         <div className="who">
@@ -125,25 +88,6 @@ export function PlayerSummary({ view, compact = false, countdown }: { view: Play
           <CompactResourceChips view={view} />
         </div>
       </div>
-      ) : (
-      <div className={`nameplate ${you.role}`}>
-        <PortraitCard view={view} />
-      </div>
-      )}
-      {!compact && (
-      <div className="stats">
-        <div className="stat-stack">
-          <PipBar label={t("stat.ap")} value={you.ap} max={view.maxAp} pip={AP_PIP} />
-          <PipBar label={t("stat.mp")} value={you.mp} max={view.movement.mpCap} pip={MP_PIP} />
-        </div>
-        <div className="stat-stack">
-          <PipBar label={t("stat.hp")} value={you.hp} max={view.maxHp} pip={HP_PIP} icon={HP_ICON} bigIcon thin />
-          <PipBar label={t("stat.morale")} value={you.morale} max={view.maxMorale} pip={MORALE_PIP} icon={MORALE_ICON} bigIcon thin />
-        </div>
-        {/* Home for resources that belong nowhere else (spores, free IT points, ...): as many as fit, the card opens them all. */}
-        <CompactResourceChips view={view} stacked />
-      </div>
-      )}
     </div>
   );
 }

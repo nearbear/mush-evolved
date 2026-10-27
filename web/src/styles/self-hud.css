@@ -1,0 +1,141 @@
+/* Self HUD (SelfHud): your portrait and stats over the room view's top-left corner, AP and MP in its bottom-left, desktop only. The resource chips are shared with the phone top bar. The item zones are in inventory.css. */
+
+.resource {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.8rem;
+  font-weight: bold;
+  color: #fff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.85);
+}
+.resource {
+  cursor: default;
+}
+.resource-card p {
+  margin: 0.25rem 0 0;
+}
+.resource img {
+  image-rendering: pixelated;
+}
+/* A title's line of succession; the holder in bold. */
+.title-card ol {
+  margin: 0.25rem 0 0;
+  padding-left: 1.5rem;
+}
+.title-card li.holder {
+  font-weight: bold;
+}
+/*
+ * Over the room view. Top-left: one card holding a big button (portrait, name, faction), then HP, morale and
+ * resources. It has a fixed height, so the room's name can sit under it without measuring anything. Bottom-left:
+ * AP and MP standing up, with the action queue beside them. The scene around them stays usable.
+ */
+.room-view {
+  --hud-card: 56px; /* the card's height: two 22px bars, their gap, padding and border; the 40px button fits inside */
+}
+.self-hud-top {
+  position: absolute;
+  top: 0.5rem;
+  left: 0.5rem;
+  z-index: 2; /* under the inventory popup (3), which may cover it */
+  box-sizing: border-box;
+  height: var(--hud-card);
+  max-width: calc(100% - 1rem);
+  padding: 0 0.6rem 0 0.4rem;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  background: var(--panel-fill);
+  border: 1px solid var(--panel-rim);
+  border-radius: var(--panel-radius);
+  box-shadow: 0 0 6px var(--panel-shadow);
+}
+button.hud-plate {
+  flex: none;
+  margin: 0;
+  padding: 0 24px 0 14px; /* inside the bevelled caps */
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: normal;
+  text-align: left;
+}
+.hud-plate .avatar {
+  width: 32px;
+  height: 32px;
+}
+.hud-who {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.15;
+}
+.hud-who strong {
+  font-size: 0.85rem;
+}
+.hud-faction {
+  font-size: 0.7rem;
+  font-weight: bold;
+  color: var(--human);
+}
+.self-hud-top.mush .hud-faction {
+  color: var(--mush);
+}
+.hud-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.hud-bars .pip-bar {
+  gap: 3px;
+}
+.pip-icon {
+  image-rendering: pixelated;
+}
+/* The resource stack loses its own card: it is in this one. */
+.self-hud-top > .resource-stack {
+  padding: 0;
+  background: none;
+  border: 0;
+  box-shadow: none;
+}
+/* The room's name moves down under the card, still on the left. */
+.room-view:has(> .self-hud-top) .room-title {
+  top: calc(0.5rem + var(--hud-card) + 0.35rem);
+}
+/* AP/MP and the action queue, bottom-aligned side by side. Only the cards take clicks. */
+.room-bottom-left {
+  position: absolute;
+  left: 0.5rem;
+  bottom: 0.5rem;
+  z-index: 2; /* under the inventory popup (3), which may cover it */
+  display: flex;
+  align-items: flex-end;
+  gap: 0.5rem;
+  max-width: calc(100% - 1rem);
+  pointer-events: none;
+}
+.room-bottom-left > * {
+  pointer-events: auto;
+}
+.self-points {
+  display: flex;
+  gap: 4px;
+  padding: 0.25rem 0.3rem;
+  background: var(--panel-fill);
+  border: 1px solid var(--panel-rim);
+  border-radius: var(--panel-radius);
+  box-shadow: 0 0 6px var(--panel-shadow);
+}
+.self-points .pip-label,
+.self-points .pip-bar .sub {
+  color: #fff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.85);
+}
+
+.player-summary {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}

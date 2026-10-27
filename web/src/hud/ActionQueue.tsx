@@ -1,5 +1,5 @@
-// Your action under way and the ones waiting behind it, with Clear queue. Shown over the room view in both layouts
-// while you have any. The order and contents come from the view; nothing is decided here.
+// Your action under way and the ones waiting behind it, top to bottom, with Clear queue always last. Shown over the
+// room view's bottom-left corner in both layouts (beside AP and MP on desktop) while you have any. The order and contents come from the view; nothing is decided here.
 
 import { useTranslation } from "react-i18next";
 import type { PlayerView } from "@mush2/shared";

@@ -3,9 +3,9 @@
 
 import { Dialog } from "@base-ui/react/dialog";
 
-export function DialogHeader({ heading, closeLabel }: { heading: string; closeLabel: string }) {
+export function DialogHeader({ heading, closeLabel, className }: { heading: string; closeLabel: string; className?: string }) {
   return (
-    <header className="dialog-header">
+    <header className={className ? `dialog-header ${className}` : "dialog-header"}>
       <Dialog.Title className="settings-title">{heading}</Dialog.Title>
       <Dialog.Close className="dialog-header-close" aria-label={closeLabel}>
         ×

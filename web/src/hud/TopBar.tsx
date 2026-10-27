@@ -27,7 +27,7 @@ export function TopBar({
   onRoleCheat,
 }: {
   view: PlayerView;
-  /** Phones only: on desktop the summary is in the self panel. */
+  /** Phones only: on desktop the summary is the HUD over the room (SelfHud). */
   showSummary: boolean;
   /** Offered only where End cycle is on (testing); cycles otherwise change on the server's clock. */
   canReady: boolean;
@@ -62,7 +62,7 @@ export function TopBar({
   const ended = view.phase === "ended";
   return (
     <header className="top-bar">
-      {showSummary && <PlayerSummary view={view} compact countdown={nextCycleAt !== null && <CycleCountdown nextCycleAt={nextCycleAt} clockOffset={clockOffset} />} />}
+      {showSummary && <PlayerSummary view={view} countdown={nextCycleAt !== null && <CycleCountdown nextCycleAt={nextCycleAt} clockOffset={clockOffset} />} />}
       <span className="cycle">
         Day {view.day} · Cycle {view.cycleOfDay}
         {nextCycleAt !== null && <CycleCountdown nextCycleAt={nextCycleAt} clockOffset={clockOffset} />}

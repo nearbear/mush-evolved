@@ -1,5 +1,5 @@
 // A sack button in the room view's lower-right corner that opens your inventory and the room's items
-// over the isometric scene (the same InventoryPanel the self panel used to hold). It stays open while you
+// over the isometric scene (the same InventoryPanel the old self panel used to hold). It stays open while you
 // take and drop, and closes on the button, Escape, or a press elsewhere in the room view. UI-only state.
 
 import { useCallback, useId, useRef, useState } from "react";
