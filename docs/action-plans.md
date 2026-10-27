@@ -2,7 +2,7 @@
 
 Implemented so far: the action registry and private channels. Nothing below is built. **Decisions** are confirmed by the owner; **Open questions** must be answered before building the phase they block. Do not guess them.
 
-On 2026-10-26 the owner narrowed the first pass to four kinds of job, with no secrets, no planning mode and no optional jobs. The design below is for that pass. Earlier decisions for later passes are under "Deferred". The design was drafted with Gemini (three rounds) and checked against the code.
+On 2026-10-26 the owner narrowed the first pass to four kinds of job, with no secrets, no planning mode and no optional jobs. The design below is for that pass. Earlier decisions for later passes are under "Deferred". The design was drafted with Gemini (three rounds) and checked against the code; a feasibility review the same day (Claude) found no blocker and added the "Review findings" decisions and the UI detail below.
 
 ## Goal
 
@@ -54,6 +54,14 @@ Out of this pass: secrets, the planning-mode recorder, item handles and ids, opt
 - **Take and drop pick the first match** in `state.items` order: for take, the first item of the type in the room that the actor can see (not hidden, or hidden by them); for drop, the first carried item of the type.
 - **Relay formula for research and projects:** see "Research and project relay formula" below.
 
+### Review findings (owner, 2026-10-26, from the feasibility review)
+
+- **Dirt rolls stay.** "No success rolls" holds, but research and PILGRED roll 25% for dirt (PILGRED also 5% for a 2 HP injury), and research, projects and PILGRED refuse dirty actors, so in an A, B, A, B relay a player's second step fails if their first made them dirty (about 44% of four-step research relays stop early). Accepted as "no new powers". The remedy is the **apron**: `performAction` skips the dirt roll for anyone carrying one. No new job kind: the composer's "with apron" option on a relay row expands into `take apron`, the relay action and `drop apron` in the terminal's room (the first take's room editable, since the only apron starts in the Sick Bay). No `shower` job in this pass.
+- **A job can close the plan it is in.** An injury can kill a holder or the author mid-run, and `killPlayer` withdraws jobs or cancels the plan. The executor re-reads the plan by id after every job and stops if it is no longer open. No rollback, as before.
+- **Claim and withdraw are untimed registry actions** (`claim_job`, `withdraw_job`, like `ready`): `candidates` lists the jobs this player may claim or withdraw, so parse, check and the view's `actions` come free, and scripted and model bots use them like any action with no new plumbing (`hint === null` is an empty `lacks`). Post and cancel stay chat-like messages, since a draft can't be enumerated. "Run when filled" therefore executes other players' actions inside a claim's `apply`, on the already cloned state; the nested `performAction` calls each check the everyone-ready cycle advance, so the manual-cycles case gets a test.
+- **PILGRED's difficulty stays at 2** while research and projects use 10: the asymmetry is intended.
+- **Clearing the queue at the trigger** tells each holder with the existing `actionDropped` private line, not silently.
+
 ## Design
 
 ### Types (`shared/src/types/plan.ts`)
@@ -100,16 +108,17 @@ type Plan = {
 
 - `postPlan(state, author, draft, at)`: alive, playing, not in pre-selection, the channel is in the author's `chatChannels`, limits and lead time, every job's room exists, and checks against public or static data only: research and projects not finished, PILGRED not repaired, the room has the right terminal in the static map, targets exist, item types exist and can be dropped. `stt` and `comfort` can't target their own holder.
 - `cancelPlan(state, player, planId, at)`: author only, while open; releases every lock.
-- `claimJob(state, player, planId, job, at)`: open, before `time`, channel access, slot empty, reservation matches, not your own `stt` or `comfort` target. Recomputes the claimer's locks for the plan; refuses with `cant_afford` if `ap` doesn't cover their locks across all open plans. Other hints (dirty, no medikit) don't block claiming, since they can be fixed before the run. Runs the plan at once if `runWhenFilled` and every job is now claimed.
-- `withdrawJob(state, player, planId, job, at)`: own job, while open; recomputes the remaining locks. No iTrackie needed.
-- `simulatePlanForViewer(state, viewer, plan)` returns locks and hints for the viewer's own jobs. It works on a **knowledge sandbox**, never a clone of the real state: the viewer's own stats, inventory, points (`resources`) and daily flags; the static map and its equipment; public progress (research, projects, PILGRED, pre-selection). Targets are assumed present in the job's room, items of a taken type are assumed in the room, and other players' jobs are ignored. It walks the viewer's jobs in order, carrying room, MP, inventory and spent points forward (a Computer point makes the first research free, a taken medikit enables a later heal).
-- `runDuePlans(state, at)` runs open plans with `time <= at` in `(time, id)` order. `executePlan(next, plan)`:
-  1. Clear every job holder's queue.
-  2. For each job: unfilled stops the plan (`unfilled`). Release the job's lock. Walk the shortest path door by door through the normal `move` (with the same get-up, stand-up and wheelchair hooks as a live move); a refused door fails the job, and doors already walked stay walked. Then resolve the action (`meet` is done on arrival; terminal jobs look up the terminal; take and drop pick by type as decided), and run it through the normal check and `performAction`, bypassing the timed-action queue.
+- `claim_job` (registry action, untimed, 0 AP, `recorded: false`; `shared/src/actions/claim_job.ts`): candidates are the open jobs in plans of channels in the player's `chatChannels` that are open, before `time`, unreserved or reserved for them, and not their own `stt` or `comfort` target. `apply` recomputes the claimer's locks for the plan; `validate` refuses with `cant_afford` if `ap` doesn't cover their locks across all open plans. Other hints (dirty, no medikit) don't block claiming, since they can be fixed before the run. Runs the plan at once if `runWhenFilled` and every job is now claimed.
+- `withdraw_job` (registry action, untimed): candidates are the player's own jobs in open plans; `apply` recomputes the remaining locks. No iTrackie needed.
+- `simulatePlanForViewer(state, viewer, plan)` returns locks and hints for the viewer's own jobs. It works on a **knowledge sandbox**: a fresh `GameState` (every `check` and `cost` takes one) built only from what the viewer knows: their own `PlayerState`, inventory, points (`resources`) and daily flags; the static map and its equipment; public progress (research, projects, PILGRED, pre-selection); phantom targets as stub players standing in the job's room; a phantom item of each taken type in its room. Other players' jobs are ignored, and hidden facts about others are assumed favourable (a `stt` target has not shared today). It walks the viewer's jobs in order as check, pay cost, `def.apply` directly, never `performAction`, so no dirt or injury rolls, no history and no cycle advance; room, MP, inventory and spent points carry forward (a Computer point makes the first research free, a taken medikit enables a later heal). This one file is where the leak check concentrates.
+- `runDuePlans(state, at)` runs open plans with `time <= at` in `(time, id)` order, as the server-driven input `{ type: "runPlans", at }` (recorded, so replays are deterministic). `executePlan(next, planId)`:
+  1. Clear every job holder's queue, with an `actionDropped` private line for each action dropped.
+  2. For each job: re-find the plan by id and stop if it is no longer open (a death or channel exit in an earlier job closed it). Unfilled stops the plan (`unfilled`). Release the job's lock. Walk the shortest path door by door through the normal `move`; a refused door fails the job, and doors already walked stay walked. Then resolve the action (`meet` is done on arrival; terminal jobs look up the terminal; take and drop pick by type as decided), and run it through `actNow`, bypassing the timed-action queue.
   3. A failed job: `outcome: "failed"`, the plan stops, the remaining locks are released. Otherwise `status: "done"`. Each participant gets a private log line.
+- `actNow(next, actor, action)`: extracted from the untimed path of `queueAction` (`queue.ts`), the get-up, stand-up and end-accommodation hooks plus `performAction`, so a planned action and a live untimed one go through one function.
 - `shortestPath(rooms, from, to)`: deterministic BFS over the room graph.
-- Cleanup hooks: on death (`killPlayer`), on leaving a channel (and the last member leaving deletes its plans), and on body transfer (the Mush-channel withdrawal above).
-- Live play: `canAfford`, the movement conversion check and the view's `lacks` use `ap - lockedAp`.
+- Cleanup hooks: on death (`killPlayer`), on leaving a channel (`removeFromChannel`, which both death and `leaveChannel` go through; the last member leaving deletes its plans), and on body transfer (the Mush-channel withdrawal above).
+- Live play: `canAfford` (action.ts), `moveCost` (modifiers.ts, through its `ap`/`mp` pick), `move`'s validate and the view's `lacks` use `ap - lockedAp`. Reads of raw `ap` for other purposes (Consume's cap, Logistics' takers) stay.
 
 ### Research and project relay formula (owner, 2026-10-26; its own rule change, before plans)
 
@@ -118,38 +127,47 @@ Research and NERON projects drop the flat 25% per action for the original's form
 - **Difficulty:** every research and project uses the MycoAlarm's, 10 (`MYCO_ALARM` in `Mush/data/Data.ods`; also the most common value), for now.
 - **Constants:** PILGRED's `rate` 6, `skillBoost` 4 and `relayPenalty` 2. At difficulty 10 that is 6–9% per action, or 10–15% with one matching skill.
 - **Skills:** research uses Biologist and Medic, as in the original. Projects get no skill bonus for now (my default; the original has per-project tags).
-- **Repeat count:** per research and per project id, as in the original (`researchList.get(id).touch`), reset when someone else contributes to that one. Never sent in a view.
+- **Repeat count:** per research and per project id, as in the original (`researchList.get(id).touch`), reset when someone else contributes to that one. Never sent in a view. `state.research` and `state.projects` are plain number records today; each entry gains `lastBy` and `streak` (or a sibling record), with a `STATE_VERSION` bump.
 - Not now: the original's NERON CPU-priority bonus and computer jelly.
 
 ### Timing and server
 
-- One Durable Object alarm for the earliest of the next cycle, the next queued action (`nextDue`) and the next plan (`nextPlanDue`, including unfilled `runWhenFilled` plans). On a tie: cycle first, then queued actions, then plans.
-- Protocol: `postPlan`, `cancelPlan`, `claimJob`, `withdrawJob`, each validated in `protocol.ts` and rebuilt with known keys only. The server stamps `at`, records replay inputs, applies the per-seat rate limit, and bumps `STATE_VERSION`.
+- One Durable Object alarm for the earliest of the next cycle, the next queued action (`nextDue`) and the next plan (`nextPlanDue`, including unfilled `runWhenFilled` plans). On a tie: cycle first, then queued actions, then plans. `onAlarm` and `scheduleTick` gain the third due source; the due plan run is sent as the `runPlans` input, stamped `max(now, time)` like a tick.
+- Protocol: `postPlan` and `cancelPlan` as chat-like messages, validated in `protocol.ts` and rebuilt with known keys only; claim and withdraw arrive as ordinary `action` messages. The server stamps `at`, records replay inputs, applies the per-seat rate limit, and bumps `STATE_VERSION`.
 
 ### UI
 
-- In a private or Mush channel: a "Plans (N)" section above the messages on desktop; a Messages | Plans switch on phones.
-- Composer: a time (quick chips and an input) and "run when filled", then jobs added by kind: relay (research or project list, or PILGRED; the room is the terminal's; a "+1 relay step" button duplicates a row), meet (room), in-room action (room, action, target), item (room, take or drop, catalog type). Rows can be reordered, deleted and reserved. "Plan this" beside the live research, project and PILGRED buttons opens it prefilled.
-- Plan card: author, status, countdown or "runs when filled", jobs with claim and withdraw, your lock and hint on your own jobs, the outcome, the author's cancel.
-- `PipBar` cross-hatches locked AP. Everything works in the phone tab layout; all text in en/fr/es.
+Everything the composer offers comes from the view: channel members, the room list, the research and project catalogs, the item type catalog, the living players. It never computes legality, presence or ownership; refusals and hints come back from the server on post and claim.
+
+- **Where:** in a private or Mush channel, a "Plans (N)" section above the messages on desktop, with a "New plan" button; a Messages | Plans switch on phones. "Plan this" beside the live research, project and PILGRED buttons in the terminal dialog opens the composer with one relay row prefilled and the channel to pick.
+- **Composer:** a dialog like the create-channel one on desktop (the iTrackie panel is too narrow), a full-screen sheet in the chat tab on phones. Three stacked parts:
+  1. **When:** quick chips (in 2 h, in 8 h, tomorrow 09:00) and a date-time input, within the lead-time window; a "run as soon as every job is claimed" checkbox.
+  2. **Jobs:** add buttons per kind, then one row per job with a drag handle, a delete, and a "reserved for" picker defaulting to anyone.
+     - *Relay:* terminal picker (research, project, PILGRED), then the unfinished target from the catalog; the room is the terminal's, shown read-only; a "with apron" checkbox (expands at post time into take apron, the relay action, drop apron in the terminal's room, the first take's room editable so it can point at the Sick Bay; the card shows the three as an indented group); a "+1 relay step" button duplicates the last relay row with the slot left open.
+     - *Meet:* a room picker only.
+     - *Action:* room, action (Fiery speech, Boring speech, STT, Heal, Comfort), and a target picker for the three that need one. The composer doesn't know who has which skill, so a job nobody can do just stays unclaimable, and the slot's hint tells whoever tries why.
+     - *Item:* room, take or drop, item type from the catalog.
+  3. **Post:** a summary line (job count, how many the author holds), the Post button disabled with an inline reason while the plan is empty, over the job cap or outside the time window. Server refusals (channel limit, one open plan per channel) show as a toast and keep the draft. A "claim now" shortcut posts and claims the author's reserved rows in one go.
+- **Plan card:** author, countdown or "or when filled", the author's cancel; one line per job with its action, room and holder or Claim button (and "reserved: name"); your own jobs show the lock, the hint and Withdraw. After the run, done jobs are ticked, the failed job is marked "stopped here", and the private reason appears only on your own job. Finished plans stay on the card list up to the per-channel cap.
+- `PipBar` cross-hatches locked AP the moment a claim lands. Everything works in the phone tab layout; all text in en/fr/es.
 
 ### Bots
 
-Scripted bots never post; they claim relay and meet jobs they can afford (`hint` is null), avoiding two of their own relay jobs in a row on the same target, and withdraw if a hint appears. Model bots see plans through their view, claim and withdraw as ordinary intents, and treat plan and channel text as untrusted. Bots exist only in single player, so whether they post plans is left for later.
+Scripted bots never post; they claim relay and meet jobs they can afford (`claim_job` in `legalIn(view)`, `hint` null), avoiding two of their own relay jobs in a row on the same target, and withdraw if a hint appears. Model bots see plans through their view, claim and withdraw as ordinary actions, and treat plan and channel text as untrusted. Bots exist only in single player, so whether they post plans is left for later.
 
 ## Tests
 
-- **Rules:** a timed plan runs at its time, not before; "run when filled" runs on the last claim and stops at its time if unfilled; the queue is cleared for holders only; tie order; an unfilled or failed job stops the plan, earlier jobs stay done, later locks are released; no lookahead (a missing target or item fails only after the walk is paid); travel paid like live; A, B, A, B avoids the relay penalty on research, projects and PILGRED; take then heal in another room locks the right AP; take and drop pick the first match; locked AP can't be spent live, counts toward the cap, stays on the body across a transfer, and is released by withdraw, cancel, death and leaving (not by dropping the iTrackie); author death cancels; equivalence with the same actions done live; identical log lines.
+- **Rules:** a timed plan runs at its time, not before; "run when filled" runs on the last claim and stops at its time if unfilled; the queue is cleared for holders only; tie order; an unfilled or failed job stops the plan, earlier jobs stay done, later locks are released; no lookahead (a missing target or item fails only after the walk is paid); travel paid like live; A, B, A, B avoids the relay penalty on research, projects and PILGRED; take then heal in another room locks the right AP; take and drop pick the first match; locked AP can't be spent live, counts toward the cap, stays on the body across a transfer, and is released by withdraw, cancel, death and leaving (not by dropping the iTrackie); author death cancels; a job that kills the author or a holder stops the run cleanly; a relay with apron never gets dirty, one without can and its second step then fails; "run when filled" from a claim with everyone ready in manual cycles; the trigger's queue clear logs `actionDropped`; equivalence with the same actions done live; identical log lines.
 - **Leaks:** non-members, including Mush, see no plans; humans see no Mush-channel plans; members never see another player's lock, hint or failure reason; hints and locks are the same wherever other players and items really are.
 - **Server:** malformed messages are rejected; the alarm and replay are deterministic.
 
 ## Build order
 
 1. **Relay formula** for research and projects (rule skill). Independent of plans.
-2. **Locked AP and pathfinding:** `PlayerState.lockedAp`, `ap - lockedAp` everywhere live, `shortestPath`. No behavior change while nothing locks.
-3. **Plans in `shared`:** types, post, cancel, claim, withdraw, the sandbox, the executor, the cleanup hooks, `viewFor` filtering, with rules and leak tests. `comfort` jobs once the Shrink session has landed it.
-4. **Protocol and server:** messages, `GameRoom` handlers, replay, the alarm, `STATE_VERSION`.
-5. **UI:** plan cards, the composer, locked pips, phone layout, en/fr/es.
+2. **Locked AP, `actNow` and pathfinding:** `PlayerState.lockedAp`, `ap - lockedAp` everywhere live, the `actNow` extraction, `shortestPath`. No behavior change while nothing locks.
+3. **Plans in `shared`:** types, post, cancel, the `claim_job` and `withdraw_job` actions, the sandbox, the executor and `runPlans` input, the cleanup hooks, `viewFor` filtering, with rules and leak tests. `comfort` jobs once the Shrink work (in the tree, uncommitted on 2026-10-26) is committed.
+4. **Protocol and server:** the post and cancel messages, `GameRoom` handlers, replay, the alarm, `STATE_VERSION`.
+5. **UI:** plan cards, the composer, locked pips, phone layout, en/fr/es. The composer and the sandbox hints are the two largest pieces; if bots are wanted first, phases 1 to 4 and 6 can land with a card and the "Plan this" prefill only.
 6. **Bots.**
 
 ## Open questions
