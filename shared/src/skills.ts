@@ -224,6 +224,8 @@ export const SKILL_STATUS: Readonly<Partial<Record<SkillId | MushSkillId, SkillS
   transfert: "full",
   // Mush skill: spores into food (owner, 2026-10-24, fungal_cuisine.ts); no Hygienist or Cook-point interaction.
   fungus_cook: "partial",
+  // Mush skill: one free spore extraction a day, ignoring the cooldown (owner, 2026-10-27, actions/extract_spore.ts).
+  fertile: "full",
   //Increases success rate, injury chance, and dirty chance by 20%
   expert: "full",
   // Free turret shots from Shoot points (owner, 2026-10-25); no fewer clumsy misses or more critical hits on shots.

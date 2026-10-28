@@ -341,6 +341,7 @@ function advanceCycle(state: GameState): void {
     state.sporesToday = 0;
     for (const p of state.players) {
       delete p.boringToday;
+      delete p.fertileToday;
       delete p.chitchatToday;
       delete p.interrogatedToday;
     }

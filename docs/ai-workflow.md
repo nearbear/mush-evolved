@@ -1488,3 +1488,6 @@ Owner said to add it. I was about to ask about making the orbited planet public;
 - `actNow` came out of `queueAction`'s untimed path. The plan listed "get-up" as one of its hooks, but `performAction` already gets the actor up for timed actions, so no extra code was needed.
 - The reachability test for `shortestPath` failed on the patrol craft: they're rooms with no doors (reached by takeoff). Kept as a test fact; phase 3's `postPlan` will need to refuse jobs there.
 - The existing guards (leakFields list, stored-state fingerprint) caught the new field at once, as designed.
+
+### 2026-10-27: Fertile skill
+Wiki gave only "one free extraction a day"; asked the owner four questions (cooldown, daily cap, action shape, Transfer). Decisions: free use ignores but starts the cooldown, counts toward and is blocked by the faction cap, same action shown free, flag moves with the mind. Needed one test fix (action not offered while on cooldown, so no cost to read).
