@@ -18,7 +18,7 @@
 // a wall is drawn over (PlacedSprite.occluded) also gets a see-through outline
 // above everything. People in this room still take clicks through it.
 
-import { Suspense, lazy, useEffect, useId, useLayoutEffect, useMemo, useRef, useState, type ComponentType, type MouseEvent, type PointerEvent } from "react";
+import { Suspense, lazy, useCallback, useEffect, useId, useLayoutEffect, useMemo, useRef, useState, type ComponentType, type MouseEvent, type PointerEvent } from "react";
 import { useTranslation } from "react-i18next";
 import { createPortal } from "react-dom";
 import { CAMERA_EQUIPMENT, CORPSE_ITEM, type EquipmentView, type RoomId, type RoomLayout, type ShipLayout, type Spot, type Target } from "@mush2/shared";
@@ -212,7 +212,7 @@ export function IsoRoom({
   const corpseKey = corpses.map((c) => c.id).join(",");
   const viewportRef = useRef<HTMLDivElement>(null);
   const titleId = useId();
-  const rendererRef = useRef<FrameTarget>(null);
+  const rendererRef = useRef<FrameTarget | null>(null);
   const overlayRef = useRef<FrameTarget>(null);
   // Where you've clicked to walk, drawn at once. The server hears of it too (`onWalk`) and shows it to your
   // roommates, except walks up to what a non-public action is on. It resets when you change rooms (it belongs
@@ -448,6 +448,15 @@ export function IsoRoom({
   };
   // After every render: put the walkers' in-between pixel shifts (and the camera) back on what was drawn.
   useLayoutEffect(applyWalkers);
+  // A lazily loaded renderer (Pixi) mounts after that first frame went out, so it gets one as soon as it exists,
+  // or it would draw with the camera at 0,0 until something next re-renders the room.
+  const attachRenderer = useCallback(
+    (r: FrameTarget | null) => {
+      rendererRef.current = r;
+      if (r) applyWalkers();
+    },
+    [applyWalkers],
+  );
 
 
   // Acting on something walks you up to it: equipment's standing spot (as clicking it does), the
@@ -697,7 +706,7 @@ export function IsoRoom({
           {/* Zoom scales a layer 1/zoom as big as the panel, so the room fills it at any magnification. */}
           <div className="iso-zoom" style={{ width: `${100 / zoom}%`, height: `${100 / zoom}%`, transform: `scale(${zoom})` }}>
           <Suspense fallback={null}>
-            <Renderer scene={drawn} ref={rendererRef} />
+            <Renderer scene={drawn} ref={attachRenderer} />
           </Suspense>
           {/* Status badges and speech bubbles above the scene, so no sprite or wall can ever cover them. */}
           <SceneOverlay anchors={anchors} width={drawn.width} height={drawn.height} bubbles={bubbles} clockOffset={clockOffset} ref={overlayRef} />
