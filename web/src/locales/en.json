@@ -1213,6 +1213,7 @@
   },
   "projects": {
     "title": "NERON projects",
+    "skills": "Sped up by: {{list}}",
     "names": {
       "PATROL_SHIP_LAUNCHER": "Takeoff thruster",
       "PATROLSHIP_BLASTER_GUN": "Blaster gun",

@@ -1222,6 +1222,7 @@
   },
   "projects": {
     "title": "Projets NERON",
+    "skills": "Accéléré par : {{list}}",
     "names": {
       "PATROL_SHIP_LAUNCHER": "Propulseur de décollage",
       "PATROLSHIP_BLASTER_GUN": "Canon blaster",

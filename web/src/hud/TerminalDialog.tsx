@@ -10,6 +10,7 @@ import {
   PILGRED_COMPLETE,
   PROJECT_COMPLETE,
   PROJECT_IDS,
+  PROJECTS,
   projectStatus,
   RESEARCH_COMPLETE,
   ANY_CONSUMABLE,
@@ -112,6 +113,10 @@ function ProjectList({ terminal, view, onAction }: ListProps) {
       cards={PROJECT_CARDS}
       name={names.project}
       status={projectStatus}
+      needs={(id) => {
+        const skills = PROJECTS.find((p) => p.id === id)?.skills ?? [];
+        return skills.length ? t("projects.skills", { list: skills.map(names.skill).join(", ") }) : null;
+      }}
       option={(id) => view.actions.find(({ action: a }) => a.type === "project" && a.equipment === terminal.id && a.project === id)}
       view={view}
       onAction={onAction}
@@ -192,7 +197,7 @@ interface ProgressListProps {
   name: (id: string) => string;
   status: (id: string) => "full" | "partial" | "none";
   /** The view's offer to work on this entry, if any. */
-  /** What must be in the lab before it can be worked on, as static text (the button itself comes from `view.actions`). */
+  /** Static text under an item: for research what must be in the lab before it can be worked on, for projects the skills that speed it up (the button itself comes from `view.actions`). */
   needs?: (id: string) => string | null;
   option: (id: string) => ActionOption | undefined;
   view: PlayerView;
