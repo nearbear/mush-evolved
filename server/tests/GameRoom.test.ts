@@ -192,8 +192,10 @@ describe("GameRoom cheats", () => {
     expect(lastView(devConn).you.cheats).toContain("selfDisease");
     expect(lastView(devConn).actions.some((option) => option.action.type === "self_disease")).toBe(true);
     await send(devRoom, devConn, { type: "action", action: { type: "self_disease" } });
-    expect(lastView(devConn).statuses).toContain("cold_disease");
-    expect(lastView(connect(devRoom, "tok1")).players.find((person) => person.id === "p0")?.statuses).not.toContain("cold_disease");
+    // The disease is drawn at random from allDiseases (owner, 2026-10-27).
+    const got = lastView(devConn).statuses.filter((status) => DEFAULT_CONFIG.diseases.allDiseases.includes(status));
+    expect(got).toHaveLength(1);
+    expect(lastView(connect(devRoom, "tok1")).players.find((person) => person.id === "p0")?.statuses).not.toContain(got[0]);
   });
 
   it("refuses cheat inputs unless ALLOW_CHEATS is set, and records nothing", async () => {
