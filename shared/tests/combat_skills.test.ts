@@ -178,3 +178,30 @@ describe("Paranoid", () => {
     expect(skillStatus("paranoid")).toBe("full");
   });
 });
+
+describe("Astrophysicist", () => {
+  const terminal = "COMMAND_CENTER:ASTRO_MODULE";
+  const scan = { type: "scan_planet", equipment: terminal } as const;
+  const setup = () => {
+    const s = createGame(makeSeats(3), structuredClone(DEFAULT_CONFIG), 7);
+    for (const p of s.players) p.room = "COMMAND_CENTER";
+    return s;
+  };
+
+  it("takes 1 AP off the scan and gives one more sector per analysis (owner, 2026-10-27)", () => {
+    expect(DEFAULT_CONFIG.astrophysicist).toEqual({ scanApDiscount: 1, extraSectors: 1 });
+    expect(skillStatus("astrophysician")).toBe("partial");
+    const s = setup();
+    player(s, "p0").skills.push("astrophysician");
+    const { scan: sc, analyze } = s.config.astro;
+    expect([option(s, "p0", scan)!.cost.ap, option(s, "p1", scan)!.cost.ap]).toEqual([sc.cost.ap - 1, sc.cost.ap]);
+    s.planets.p0 = [{ id: "pl", name: "X", position: { direction: "N", distance: 2 }, sectors: ["FOREST", "MOUNTAIN", "SWAMP", "DESERT"].map((tag) => ({ tag, known: false })) } as never];
+    s.planets.p1 = structuredClone(s.planets.p0);
+    const known = (id: string) => s.planets[id]![0]!.sectors.filter((x) => x.known).length;
+    const a = must(applyAction(s, "p0", { type: "analyze_planet", equipment: terminal, planet: "pl" }));
+    const b = must(applyAction(a, "p1", { type: "analyze_planet", equipment: terminal, planet: "pl" }));
+    expect([a.planets.p0![0]!.sectors.filter((x) => x.known).length, b.planets.p1![0]!.sectors.filter((x) => x.known).length]).toEqual([2, 1]);
+    expect(known("p0")).toBe(0);
+    expect(analyze.cost.ap).toBeGreaterThan(0);
+  });
+});

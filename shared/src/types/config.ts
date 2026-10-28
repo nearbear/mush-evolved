@@ -218,6 +218,10 @@ export interface GameConfig {
     capPoints: number; // Most Shoot points (`resources.shoot`) a player can hold (owner, 2026-10-25; the original skill's IncrMaxPA(SHOOT, 4)).
     pointsPerDay: number; // Shoot points the `gunman` skill grants at the start of each day and when picked (owner, 2026-10-25; the original +2). One makes a turret shot free.
   };
+  astrophysicist: {
+    scanApDiscount: number; // AP the `astrophysician` skill takes off the Scan for planets action (owner, 2026-10-27; the original 1).
+    extraSectors: number; // Sectors the skill reveals on top of one per remote analysis (owner, 2026-10-27; the original 1).
+  };
   paranoid: {
     cameras: number; // Camera items the `paranoid` skill gives when picked (owner, 2026-10-27; the original gives 2).
   };

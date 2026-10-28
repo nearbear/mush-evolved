@@ -1009,7 +1009,7 @@
     },
     "effects": {
       "engineer": "+1 AP per day (Repair action point).\nDouble chance of success for Repairs.\nDouble chance of success for Renovations.\nBonus for developing certain NERON Projects.",
-      "astrophysician": "The Scan a Planet action costs 1 AP less.\n+1 sector discovered during surface analyses.",
+      "astrophysician": "The Scan a Planet action costs 1 AP less.\n+1 sector discovered per planet analysis.",
       "pilot": "Uses Piloting Tactics.\nNever fails landings and takeoffs.\nBonus for developing certain NERON Projects.",
       "gunman": "+2 free shots per day.\nYour missed shots cause half as many mishaps.\nYour successful shots cause twice as many critical hits.\nBonus for developing certain NERON Projects.",
       "cook": "Can read the properties of foods.\nCan read the properties of fruits.\n+4 Cook action points per day.\nBonus for developing certain NERON Projects.",

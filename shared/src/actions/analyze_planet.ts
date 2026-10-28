@@ -1,4 +1,5 @@
 import { Action, isString } from "./action.ts";
+import { analysisSectors } from "../modifiers.ts";
 import { logPublic } from "../log.ts";
 import { astroTerminalsHere, pickSeekSector, planetsOf } from "../planets.ts";
 import type { GameState, PlayerState } from "../types.ts";
@@ -6,8 +7,8 @@ import type { GameState, PlayerState } from "../types.ts";
 export type AnalyzePlanetActionData = { type: "analyze_planet"; equipment: string; planet: string };
 
 /**
- * Analyse one of your own planets at the Astro terminal (owner, 2026-10-19): 2 AP reveals one unknown sector, picked
- * weighted by its tag's `seek`. Living, not-dirty players. The room log names the planet, never the sector; the sector
+ * Analyse one of your own planets at the Astro terminal (owner, 2026-10-19): 2 AP reveals one unknown sector (more with the
+ * astrophysician skill), each picked weighted by its tag's `seek`. Living, not-dirty players. The room log names the planet, never the sector; the sector
  * shows up only in your own view.
  */
 export class AnalyzePlanetAction extends Action<AnalyzePlanetActionData> {
@@ -38,9 +39,12 @@ export class AnalyzePlanetAction extends Action<AnalyzePlanetActionData> {
 
   override apply(state: GameState, player: PlayerState, target: AnalyzePlanetActionData): void {
     const planet = planetsOf(state, player.id).find((p) => p.id === target.planet)!;
-    const [index, rng] = pickSeekSector(state.rng, planet);
-    state.rng = rng;
-    if (index !== null) planet.sectors[index]!.known = true;
+    for (let i = analysisSectors(state, player); i > 0; i--) {
+      const [index, rng] = pickSeekSector(state.rng, planet);
+      state.rng = rng;
+      if (index === null) break;
+      planet.sectors[index]!.known = true;
+    }
     logPublic(state, player.room, "analyzedPlanet", { name: player.character, planet: planet.name });
   }
 }

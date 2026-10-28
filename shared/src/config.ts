@@ -137,6 +137,8 @@ export const DEFAULT_CONFIG: GameConfig = {
   gunman: { capPoints: 4, pointsPerDay: 2 },
   // Owner, 2026-10-27: Paranoid gives 1 extra Camera item when picked (the original gives 2).
   paranoid: { cameras: 1 },
+  // Owner, 2026-10-27: Astrophysicist scans for 1 AP less and each remote analysis reveals 1 extra sector (the original skills.json).
+  astrophysicist: { scanApDiscount: 1, extraSectors: 1 },
   gunner: { accuracyFactor: 2, damageFactor: 2 },
   persistent: { failureMultiplier: 1.5 },
   spaceTactics: { chance: 0.5, shrink: 0.33 },

@@ -1016,7 +1016,7 @@
     },
     "effects": {
       "engineer": "+1 PA (point d'action Réparation) par jour.\nChances de réussites doublées pour les Réparations.\nChances de réussites doublées pour les Rénovations.\nBonus pour développer certains Projets NERON.",
-      "astrophysician": "L'action Scanner Une Planète coûte 1 PA de moins.\n+1 Secteur découvert lors des analyses de surface.",
+      "astrophysician": "L'action Scanner Une Planète coûte 1 PA de moins.\n+1 secteur découvert par analyse de planète.",
       "pilot": "Utilise des Tactiques De Pilotage.\nNe rate jamais les atterrissages et décollages.\nBonus pour développer certains Projets NERON.",
       "gunman": "+2 Tirs gratuits PA par jour.\nVos tirs ratés provoquent 2 fois moins de maladresses.\nVos tirs réussis provoquent 2 fois plus de coups critiques.\nBonus pour développer certains Projets NERON.",
       "cook": "Peut lire les propriétés des aliments.\nPeut lire les propriétés des fruits.\n+4 PA par jour (points d'action Cuisiner).\nBonus pour développer certains Projets NERON.",

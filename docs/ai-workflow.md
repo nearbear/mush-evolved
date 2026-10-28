@@ -1471,3 +1471,6 @@ Second Gemini review (same day), this time with a brief on the game, the owner's
 
 ## 2026-10-27: Paranoid skill
 - Owner asked to implement Paranoid but with 1 extra camera instead of the original's 2. Implemented as an `onPick` modifier using `produceItem` (`modifiers/paranoid.ts`), count in `config.paranoid.cameras`; en/fr/es descriptions changed to "1". Skipped the question round: the count was given and the skill pattern (Gunman's `onPick`) answered the rest. Assumption worth checking: a full inventory drops the camera on the room floor.
+
+## 2026-10-27: Astrophysicist skill
+Owner decided: scan costs 1 AP less and remote analyses reveal 1 extra sector (the data's "surface analyses" and the wiki's "every analysis" disagreed; I asked once, owner picked remote). Built as an `actionCost` hook plus a new `analysisSectors` fold hook. My first test used invented planet tag names and crashed; fixed with real ones.

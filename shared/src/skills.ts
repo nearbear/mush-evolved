@@ -228,6 +228,8 @@ export const SKILL_STATUS: Readonly<Partial<Record<SkillId | MushSkillId, SkillS
   expert: "full",
   // Free turret shots from Shoot points (owner, 2026-10-25); no fewer clumsy misses or more critical hits on shots.
   gunman: "partial",
+  // Scan for planets costs 1 AP less; remote analyses reveal 1 extra sector (owner, 2026-10-27); no NERON project bonus yet.
+  astrophysician: "partial",
   // One extra camera item when picked (owner, 2026-10-27).
   paranoid: "full",
   // Doubled turret odds and damage (owner, 2026-10-24).
