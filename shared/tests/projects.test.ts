@@ -1,11 +1,13 @@
 import { describe, expect, it } from "vitest";
 import { DEFAULT_CONFIG } from "../src/config.ts";
-import { PROJECT_COMPLETE, PROJECT_IDS } from "../src/projects.ts";
+import projets from "@mush2/assets/derived/data/Data/projets.json";
+import { PROJECT_COMPLETE, PROJECT_IDS, PROJECTS, projectSkills } from "../src/projects.ts";
+import { relayGainRange } from "../src/relay.ts";
 import { parseGameMessage } from "../src/protocol.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";
 import { addStatus } from "../src/statuses.ts";
 import type { Action } from "../src/types.ts";
-import { makeSeats, offered, pickSkill } from "./support.ts";
+import { makeSeats, mustApply, offered, pickSkill } from "./support.ts";
 
 const seats = makeSeats(3, "others");
 const work = (project: string): Action => ({ type: "project", equipment: "NEXUS_ROOM:NERON_CORE", project });
@@ -54,6 +56,30 @@ describe("NERON projects", () => {
     if (!other.ok) throw new Error(other.error);
     const back = applyAction(other.state, "p1", work("PLASMA_SHIELD"));
     expect(back.ok && back.state.projects.PLASMA_SHIELD! - other.state.projects.PLASMA_SHIELD!).toBeGreaterThanOrEqual(6);
+  });
+
+  it("takes each project's skills from the original's tags (CONCEPTOR is designer, ALL is nobody)", () => {
+    const rename: Record<string, string> = { conceptor: "designer" };
+    const live = projets.slice(0, projets.findIndex((r) => r.id === "$EOF"));
+    const fromData = live.map((r) => ({ id: r.id, skills: r.tags.split(",").map((t) => t.trim().toLowerCase()).filter((t) => t && t !== "all").map((t) => rename[t] ?? t) }));
+    expect(PROJECTS).toEqual(fromData);
+    expect(projectSkills("NO_SUCH_PROJECT")).toEqual([]);
+  });
+
+  it("adds the skill boost for each of the project's skills the worker has, and none for other skills", () => {
+    const cfg = DEFAULT_CONFIG.project.progress;
+    const s = game();
+    s.rng = 7;
+    const you = s.players[0]!;
+    you.skills = ["engineer", "physicist"];
+    expect(relayGainRange(cfg, you, projectSkills("PLASMA_SHIELD"), undefined).min).toBe(6 + 2 * cfg.skillBoost);
+    const r = mustApply(s, "p0", work("PLASMA_SHIELD"));
+    expect(r.projects.PLASMA_SHIELD).toBeGreaterThanOrEqual(6 + 2 * cfg.skillBoost);
+    you.skills = ["biologist", "medic"];
+    const plain = mustApply(s, "p0", work("PLASMA_SHIELD")).projects.PLASMA_SHIELD!;
+    expect(plain).toBeLessThanOrEqual(9);
+    you.skills = ["designer"];
+    expect(mustApply(s, "p0", work("BRIC_BROC")).projects.BRIC_BROC).toBeGreaterThanOrEqual(6 + cfg.skillBoost);
   });
 
   it("does not make project work dirty", () => {

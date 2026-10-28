@@ -1503,3 +1503,10 @@ Wiki gave only "one free extraction a day"; asked the owner four questions (cool
 
 ## 2026-10-27: Showering while clean
 - Owner asked to allow showers when not dirty; I asked about cost, Mush damage and side effects (all answered "same as dirty"). Dropped the `not_dirty` check; one test rewritten.
+
+## 2026-10-27: NERON project skill bonus
+
+- **Decision (owner):** turn on the original's per-project skill tags: each project's two skills (`projets.json` `tags`) give the relay formula's +4 each, like Biologist and Medic for research. CONCEPTOR maps to Designer; ALL (the 'plus' projects) is a pseudo-skill nobody has. Left out on purpose: per-project difficulty (`mod`; Plasma Shield's 3 would make it ~1% per action, the plus projects' 0 impossible), the BIOS CPU-priority boost and NERON's Only Friend.
+- **What worked:** the relay formula already took a skill list, so the change was a data table (`PROJECT_SKILLS`) and one argument. A test compares the table to `projets.json` so it can't drift. Checking `Solver.hx` and `skills.json` settled what ALL means before asking.
+- **What needed care:** another session was committing in parallel, so unrelated failures (moduleLoad circular import, shrink, vaccinate, a GameRoom disease test) had to be shown to exist on HEAD without these changes before reporting.
+- **Correction (owner):** the first cut kept a separate `PROJECT_SKILLS` record beside `PROJECT_IDS`; the owner asked for one list of objects instead. Now `PROJECTS` is `{ id, skills }[]` and `PROJECT_IDS` is derived from it, so a project's skills can't drift from its id.

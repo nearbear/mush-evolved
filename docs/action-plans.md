@@ -127,7 +127,7 @@ Research and NERON projects drop the flat 25% per action for the original's form
 
 - **Difficulty:** every research and project uses the MycoAlarm's, 10 (`MYCO_ALARM` in `Mush/data/Data.ods`; also the most common value), for now.
 - **Constants:** PILGRED's `rate` 6, `skillBoost` 4 and `relayPenalty` 2. At difficulty 10 that is 6–9% per action, or 10–15% with one matching skill.
-- **Skills:** research uses Biologist and Medic, as in the original. Projects get no skill bonus for now (my default; the original has per-project tags).
+- **Skills:** research uses Biologist and Medic, as in the original. Projects use the original's per-project tags, two skills each (owner, 2026-10-27; built, `PROJECTS` in `projects.ts`).
 - **Repeat count:** per research and per project id, as in the original (`researchList.get(id).touch`), reset when someone else contributes to that one. Never sent in a view. `state.research` and `state.projects` are plain number records today; each entry gains `lastBy` and `streak` (or a sibling record), with a `STATE_VERSION` bump.
 - Not now: the original's NERON CPU-priority bonus and computer jelly.
 
@@ -173,7 +173,7 @@ Scripted bots never post; they claim relay and meet jobs they can afford (`claim
 
 ## Open questions
 
-- Projects' skill bonus: none for now, or the original's per-project tags? (Defaulted to none.)
+- ~~Projects' skill bonus~~: answered 2026-10-27, the original's per-project tags (`docs/rules-design.md`).
 - Research and projects slow from 25% to 6–9% per action with the formula above (about 11–17 actions per research without a matching skill). Accepted with the formula, but worth confirming in play.
 - Whether single-player bots may post plans.
 

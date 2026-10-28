@@ -1,6 +1,6 @@
 import { Action, isString } from "./action.ts";
 import { equipmentHere } from "../equipment.ts";
-import { PROJECT_COMPLETE, PROJECT_IDS } from "../projects.ts";
+import { PROJECT_COMPLETE, PROJECT_IDS, projectSkills } from "../projects.ts";
 import { relayGainRange, rollRelayGain, touchRelay } from "../relay.ts";
 import { logPublic } from "../log.ts";
 import type { GameState, PlayerState } from "../types.ts";
@@ -9,7 +9,7 @@ export type ProjectActionData = { type: "project"; equipment: string; project: s
 
 /**
  * Work on a NERON project at NERON's core, exactly like research (decided 2026-10-18): 2 AP (free with a Designer or Computer point,
- * which is spent; the Designer point goes first, since it works nowhere else, owner 2026-10-24) moves one project forward by the relay formula (relay.ts, no skill bonus; owner, 2026-10-26). Anyone alive who is not dirty can help. Nothing happens on completion
+ * which is spent; the Designer point goes first, since it works nowhere else, owner 2026-10-24) moves one project forward by the relay formula (relay.ts; owner, 2026-10-26), +4 for each of the project's two skills (PROJECTS; owner, 2026-10-27). Anyone alive who is not dirty can help. Nothing happens on completion
  * yet beyond a log line. Public room log.
  */
 export class ProjectAction extends Action<ProjectActionData> {
@@ -45,7 +45,7 @@ export class ProjectAction extends Action<ProjectActionData> {
   override apply(state: GameState, player: PlayerState, target: ProjectActionData): void {
     if (player.resources.core > 0) player.resources.core -= 1;
     else if (player.resources.comp > 0) player.resources.comp -= 1;
-    const gain = rollRelayGain(state, relayGainRange(state.config.project.progress, player, [], state.relay.projects[target.project]));
+    const gain = rollRelayGain(state, relayGainRange(state.config.project.progress, player, projectSkills(target.project), state.relay.projects[target.project]));
     touchRelay(state.relay.projects, target.project, player);
     const progress = Math.min(PROJECT_COMPLETE, (state.projects[target.project] ?? 0) + gain);
     state.projects[target.project] = progress;

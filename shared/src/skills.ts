@@ -196,7 +196,7 @@ export const SKILL_STATUS: Readonly<Partial<Record<SkillId | MushSkillId, SkillS
   logistics: "full",
   caffeinomaniac: "full",
   stickler: "full",
-  // Designer points, spent on NERON projects only (owner, 2026-10-24); no NERON project bonus.
+  // Designer points, spent on NERON projects only (owner, 2026-10-24); its project bonus is in PROJECTS.
   designer: "full",
   // +2 MP per AP-to-MP conversion (owner, 2026-10-24); no expedition bonus yet, there are no expeditions.
   sprint: "partial",
@@ -210,7 +210,7 @@ export const SKILL_STATUS: Readonly<Partial<Record<SkillId | MushSkillId, SkillS
   torturer: "full",
   // Others can Chitchat with you, revealing their recent actions (owner, 2026-10-24, chitchat.ts).
   confident: "full",
-  // Comfort and +1 morale a cycle to roommates lying down (owner, 2026-10-26); no psychological illness cures, no NERON bonus.
+  // Comfort and +1 morale a cycle to roommates lying down (owner, 2026-10-26); no psychological illness cures.
   shrink: "partial",
   // Doubled odds of the link with Sol, x1.5 for roommates (owner, 2026-10-21, comms.ts).
   radio_expert: "full",
@@ -232,7 +232,7 @@ export const SKILL_STATUS: Readonly<Partial<Record<SkillId | MushSkillId, SkillS
   expert: "full",
   // Free turret shots from Shoot points (owner, 2026-10-25); no fewer clumsy misses or more critical hits on shots.
   gunman: "partial",
-  // Scan for planets costs 1 AP less; remote analyses reveal 1 extra sector (owner, 2026-10-27); no NERON project bonus yet.
+  // Scan for planets costs 1 AP less; remote analyses reveal 1 extra sector (owner, 2026-10-27).
   astrophysician: "partial",
   // One extra camera item when picked (owner, 2026-10-27).
   paranoid: "full",
