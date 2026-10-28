@@ -37,6 +37,7 @@ export function PrivateChannels({
   // Falls back to the first channel when none is picked or the picked one is gone (left, or deleted).
   const current = view.privateChannels.find((c) => c.id === picked) ?? view.privateChannels[0];
   const names = useNames();
+  const label = (c: { name: string; day: number; cycleOfDay: number }) => c.name || t("channels.defaultName", { day: c.day, cycle: c.cycleOfDay });
   const nameOf = (id: string) => names.character((id === view.you.id ? view.you : view.players.find((p) => p.id === id))?.character ?? id);
   const invitable = current ? view.players.filter((p) => p.alive && !current.members.includes(p.id)) : [];
   // A modifier can lower the limit below the channels you're already in; those still get a row.
@@ -60,9 +61,9 @@ export function PrivateChannels({
           return c ? (
             <li key={c.id} className="channel-slot">
               <button type="button" className="channel-slot-pick" aria-pressed={c.id === current?.id} onClick={() => setPicked(c.id)}>
-                {c.name}
+                {label(c)}
               </button>
-              <IconButton icon="🚪" label={t("channels.leaveNamed", { name: c.name })} onClick={() => onLeave(c.id)} />
+              <IconButton icon="🚪" label={t("channels.leaveNamed", { name: label(c) })} onClick={() => onLeave(c.id)} />
             </li>
           ) : (
             <li key={`free-${i}`} className="channel-slot">
@@ -85,7 +86,7 @@ export function PrivateChannels({
               <Thread
                 view={view}
                 channel={c.id}
-                placeholder={t("channels.messagePlaceholder", { name: c.name })}
+                placeholder={t("channels.messagePlaceholder", { name: label(c) })}
                 onSend={(text) => onChat(c.id, text)}
                 onToggle={onToggle}
               />
@@ -173,7 +174,7 @@ function ChannelDialog({
             className="channel-create-form"
             onSubmit={(e) => {
               e.preventDefault();
-              if (creating ? !name.trim() : members.length === 0) return;
+              if (!creating && members.length === 0) return;
               // Drop anyone who died (or joined) while the dialog was open.
               onSubmit(name, members.filter((m) => choices.some((p) => p.id === m)));
               reset();
@@ -206,7 +207,7 @@ function ChannelDialog({
                 })}
               </div>
             </fieldset>
-            <button type="submit" disabled={creating ? !name.trim() : members.length === 0}>
+            <button type="submit" disabled={!creating && members.length === 0}>
               {t(creating ? "channels.create" : "channels.invite")}
             </button>
           </form>

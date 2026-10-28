@@ -394,7 +394,8 @@
   "channels": {
     "empty": "No private channels yet.",
     "nameLabel": "New channel name",
-    "namePlaceholder": "Channel name…",
+    "defaultName": "Day {{day}}, Cycle {{cycle}}",
+    "namePlaceholder": "Channel name (optional)…",
     "create": "Create",
     "list": "Your private channels",
     "members": "Members: {{names}}",

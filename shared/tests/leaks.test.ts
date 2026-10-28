@@ -127,7 +127,7 @@ function ship(): { state: GameState; sentinels: Sentinel[] } {
   s.log.push({ cycle: s.cycle, key: "test", params: { x: str("roomLog-elsewhere", ["p3"]) }, room: ELSEWHERE, visibleTo: "all" });
   s.chat.push({ id: 1, cycle: s.cycle, channel: MUSH_CHANNEL, from: "p0", isBot: false, text: str("mushChat", ["p0"]) });
   s.bonds.p1 = ["p2"];
-  s.channels.push({ id: "pc-1", name: str("channelName", ["p1", "p3"]), members: ["p1", "p3"], createdBy: "p1" });
+  s.channels.push({ id: "pc-1", name: str("channelName", ["p1", "p3"]), members: ["p1", "p3"], createdBy: "p1", day: 1, cycleOfDay: 1 });
   s.chat.push({ id: 2, cycle: s.cycle, channel: "pc-1", from: "p1", isBot: false, text: str("privateChat", ["p1", "p3"]) });
   return { state: s, sentinels };
 }

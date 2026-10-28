@@ -35,7 +35,7 @@ describe("private channels", () => {
     const state = must(sendChat(base, "p1", id, "meet at the bridge"));
     for (const member of ["p0", "p1"]) {
       const view = viewFor(state, member);
-      expect(view.privateChannels).toEqual([{ id, name: "Secret plans", members: ["p0", "p1"], createdBy: "p0" }]);
+      expect(view.privateChannels).toEqual([{ id, name: "Secret plans", members: ["p0", "p1"], createdBy: "p0", day: 1, cycleOfDay: 1 }]);
       expect(view.chat.map((m) => m.text)).toEqual(["meet at the bridge"]);
       expect(view.chatChannels).toContain(id);
     }
@@ -147,7 +147,8 @@ describe("private channels", () => {
 
   it("validates channel names", () => {
     const state = createGame(seats, DEFAULT_CONFIG, 42);
-    expect(createChannel(state, "p0", "   ").ok).toBe(false);
+    const unnamed = must(createChannel(state, "p0", "   ")).channels[0]!;
+    expect([unnamed.name, unnamed.day, unnamed.cycleOfDay]).toEqual(["", 1, 1]);
     expect(createChannel(state, "p0", "x".repeat(25)).ok).toBe(false);
     expect(must(createChannel(state, "p0", "  ok  ")).channels[0]!.name).toBe("ok");
   });
@@ -164,6 +165,7 @@ describe("private channels", () => {
     }
     expect(parse({ type: "invite", channel: "pc-3", player: 5 })).toBeNull();
     expect(parse({ type: "createChannel", name: 5 })).toBeNull();
+    expect(parse({ type: "createChannel" })).toEqual({ type: "createChannel" });
     expect(parse({ type: "createChannel", name: "x", members: ["p1"] })).toEqual({ type: "createChannel", name: "x", members: ["p1"] });
     expect(parse({ type: "createChannel", name: "x", members: "p1" })).toBeNull();
     expect(parse({ type: "createChannel", name: "x", members: [5] })).toBeNull();

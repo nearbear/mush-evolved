@@ -51,7 +51,7 @@ export type GameClientMessage =
   | { type: "walk"; x: number; y: number; sitting: boolean; behind?: { x: number; y: number } }
   | { type: "chat"; channel: ChannelId; text: string }
   | { type: "toggleCheckbox"; message: number; line: number }
-  | { type: "createChannel"; name: string; members?: PlayerId[] }
+  | { type: "createChannel"; name?: string; members?: PlayerId[] }
   // A thread under global chat, started from global message `from` or on its own.
   | { type: "createThread"; name: string; from?: number }
   | { type: "invite"; channel: PrivateChannelId; player: PlayerId }
@@ -97,12 +97,13 @@ export function parseGameMessage(raw: string): GameClientMessage | null {
       : null;
   }
   if (msg?.type === "createChannel") {
-    if (typeof msg.name !== "string" || msg.name.length > MAX_NAME_LENGTH * 4) return null;
-    if (msg.members === undefined) return { type: "createChannel", name: msg.name };
+    if (msg.name !== undefined && (typeof msg.name !== "string" || msg.name.length > MAX_NAME_LENGTH * 4)) return null;
+    const name = msg.name === undefined ? {} : { name: msg.name };
+    if (msg.members === undefined) return { type: "createChannel", ...name };
     // Ships have at most 16 seats; the rules skip anyone who can't join.
     const members = msg.members;
     if (!Array.isArray(members) || members.length > 16 || !members.every((m) => typeof m === "string" && m.length <= 64)) return null;
-    return { type: "createChannel", name: msg.name, members };
+    return { type: "createChannel", ...name, members };
   }
   if (msg?.type === "createThread") {
     if (typeof msg.name !== "string" || msg.name.length > MAX_NAME_LENGTH * 4) return null;

@@ -7,7 +7,7 @@
 import { ITRACKIE_ITEM, itemsIn } from "./items.ts";
 import { channelLimit } from "./modifiers.ts";
 import { noITrackieNeeded } from "./comms.ts";
-import { clone, fail, findPlayer, type ActionResult } from "./helpers.ts";
+import { clone, fail, dayOf, findPlayer, type ActionResult } from "./helpers.ts";
 import { CHAT_CHANNELS, GRAVEYARD_CHANNEL, MUSH_CHANNEL } from "./types.ts";
 import type { ChannelId, ChatMessage, GameState, PlayerId, PlayerState, PrivateChannelId, ThreadId } from "./types.ts";
 
@@ -167,16 +167,16 @@ function channelCount(state: GameState, playerId: PlayerId): number {
  * invited them one by one: anyone an invite would refuse is skipped, so the
  * member list shows who got in and nothing more than a refused invite would.
  */
-export function createChannel(state: GameState, playerId: PlayerId, rawName: string, members: readonly PlayerId[] = []): ActionResult {
+export function createChannel(state: GameState, playerId: PlayerId, rawName = "", members: readonly PlayerId[] = []): ActionResult {
   const p = findPlayer(state, playerId);
   if (!p || !p.alive || state.phase !== "playing") return fail("channel_forbidden");
   const name = rawName.trim();
-  if (!name || name.length > MAX_CHANNEL_NAME_LENGTH) return fail("channel_name_invalid");
+  if (name.length > MAX_CHANNEL_NAME_LENGTH) return fail("channel_name_invalid");
   if (channelCount(state, playerId) >= channelLimit(state, p)) return fail("channel_limit_reached");
 
   const next = clone(state);
   const id: PrivateChannelId = `pc-${next.nextChannelId++}`;
-  const channel = { id, name, members: [playerId], createdBy: playerId };
+  const channel = { id, name, members: [playerId], createdBy: playerId, ...dayOf(next) };
   next.channels.push(channel);
   for (const m of members) if (canJoin(next, channel.members, m)) channel.members.push(m);
   return { ok: true, state: next };

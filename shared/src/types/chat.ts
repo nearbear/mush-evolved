@@ -28,9 +28,13 @@ export type ChannelId = ChatChannel | typeof MUSH_CHANNEL | typeof GRAVEYARD_CHA
 /** Chat among the members only. Anyone in it may invite others; it ends when the last member leaves. */
 export interface PrivateChannel {
   id: PrivateChannelId;
+  /** Blank when the creator gave none; clients then show the localized "Day N, Cycle M" from `day` and `cycleOfDay`. */
   name: string;
   members: PlayerId[];
   createdBy: PlayerId;
+  /** Day and cycle of that day when it was opened. */
+  day: number;
+  cycleOfDay: number;
 }
 
 /**

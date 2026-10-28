@@ -398,7 +398,8 @@
   "channels": {
     "empty": "Aucun canal privé pour l'instant.",
     "nameLabel": "Nom du nouveau canal",
-    "namePlaceholder": "Nom du canal…",
+    "defaultName": "Jour {{day}}, Cycle {{cycle}}",
+    "namePlaceholder": "Nom du canal (facultatif)…",
     "create": "Créer",
     "list": "Vos canaux privés",
     "members": "Membres : {{names}}",

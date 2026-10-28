@@ -386,7 +386,9 @@ export class GameRoom extends Server<Env> {
       return "too_many_messages";
     }
     if (msg.type !== "chat" && msg.type !== "createChannel" && msg.type !== "createThread") return this.act({ ...msg, by });
-    const raw = msg.type === "chat" ? msg.text : msg.name;
+    const raw = msg.type === "chat" ? msg.text : (msg.name ?? "");
+    // A private channel may be created without a name (it shows its day and cycle instead).
+    if (msg.type === "createChannel" && !raw.trim()) return this.act({ ...msg, by, name: "" });
     const moderated = moderateChat(raw);
     if (!moderated.ok) {
       const blocked: BlockedText = { at: Date.now(), by: playerId, type: msg.type, raw, reason: moderated.reason };

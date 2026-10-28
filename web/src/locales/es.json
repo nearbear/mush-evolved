@@ -398,7 +398,8 @@
   "channels": {
     "empty": "Aún no hay canales privados.",
     "nameLabel": "Nombre del nuevo canal",
-    "namePlaceholder": "Nombre del canal…",
+    "defaultName": "Día {{day}}, Ciclo {{cycle}}",
+    "namePlaceholder": "Nombre del canal (opcional)…",
     "create": "Crear",
     "list": "Tus canales privados",
     "members": "Miembros: {{names}}",
