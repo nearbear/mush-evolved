@@ -80,7 +80,7 @@ describe("anti-mush serum", () => {
 
   it("is left on the lab floor when the research completes", () => {
     const s = ship();
-    s.research["ANTI_MUSH_SERUM"] = RESEARCH_COMPLETE - config.research.effect.progressPercent;
+    s.research["ANTI_MUSH_SERUM"] = RESEARCH_COMPLETE - 1;
     stockLab(s, "LABORATORY", "ANTI_MUSH_SERUM");
     const after = mustApply(s, "p3", { type: "research", equipment: "LABORATORY:RESEARCH_LAB", research: "ANTI_MUSH_SERUM" });
     expect(serums(after).filter((i) => i.at.kind === "room" && i.at.id === "LABORATORY")).toHaveLength(1);

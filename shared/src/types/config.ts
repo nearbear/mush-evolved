@@ -262,12 +262,13 @@ export interface GameConfig {
   interrogate: { cost: { ap: number }; damage: number; dirtyChance: number; injuryChance: number }; // The `torturer` skill's Interrogate: AP cost, guaranteed damage, dirt and injury odds; once a day (owner, 2026-10-24).
   research: {
     cost: { ap: number }; // AP spent to work on a research (decided 2026-10-16).
-    effect: { progressPercent: number }; // Percent a research advances per action (decided 2026-10-16).
+    // The relay formula (relay.ts, owner 2026-10-26), the one PILGRED uses; `mod` is the difficulty, 10 for every research for now.
+    progress: { rate: number; mod: number; skillBoost: number; relayPenalty: number };
     dirtyChance: number; // Chance of getting the dirty status after working on a research (owner, 2026-10-20).
   };
   project: {
     cost: { ap: number }; // AP spent to work on a NERON project (decided 2026-10-18).
-    effect: { progressPercent: number }; // Percent a project advances per action (decided 2026-10-18).
+    progress: { rate: number; mod: number; skillBoost: number; relayPenalty: number }; // As research's (owner, 2026-10-26); no skill bonus for now.
   };
   pilgred: {
     cost: { ap: number }; // AP spent to take part in repairing PILGRED (owner, 2026-10-21; the original's REPAIR_PILGRED, 2).

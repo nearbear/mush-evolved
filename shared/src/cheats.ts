@@ -43,7 +43,7 @@ const REFILL: Record<Cheat, (p: PlayerState, state: GameState) => void> = {
     }
   },
   instantActions: () => {}, // no stat to refill; queue.ts reads the flag
-  noRelayPenalty: () => {}, // pilgred.ts reads the flag
+  noRelayPenalty: () => {}, // relay.ts reads the flag
   freeHacking: () => {}, // bypassesTitles in titles.ts reads the flag
   selfDisease: () => {},
   anySkill: () => {}, // actions/pick_skill.ts reads the flag

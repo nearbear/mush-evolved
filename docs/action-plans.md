@@ -120,9 +120,9 @@ type Plan = {
 - Cleanup hooks: on death (`killPlayer`), on leaving a channel (`removeFromChannel`, which both death and `leaveChannel` go through; the last member leaving deletes its plans), and on body transfer (the Mush-channel withdrawal above).
 - Live play: `canAfford` (action.ts), `moveCost` (modifiers.ts, through its `ap`/`mp` pick), `move`'s validate and the view's `lacks` use `ap - lockedAp`. Reads of raw `ap` for other purposes (Consume's cap, Logistics' takers) stay.
 
-### Research and project relay formula (owner, 2026-10-26; its own rule change, before plans)
+### Research and project relay formula (owner, 2026-10-26; its own rule change, before plans; built 2026-10-27)
 
-Research and NERON projects drop the flat 25% per action for the original's formula, the one PILGRED already uses (`getBaseProgress` in `Mush/src/common/Solver.hx`): base = `floor(rate × difficulty / 10)`, plus `skillBoost` for each matching skill, minus `relayPenalty` for each contribution in a row by the same player, never below 0; the gain is rolled in [base, base + base/2]. `pilgredGainRange` becomes a shared helper.
+Research and NERON projects drop the flat 25% per action for the original's formula, the one PILGRED already uses (`getBaseProgress` in `Mush/src/common/Solver.hx`): base = `floor(rate × difficulty / 10)`, plus `skillBoost` for each matching skill, minus `relayPenalty` for each contribution in a row by the same player, never below 0; the gain is rolled in [base, base + base/2]. `pilgredGainRange` becomes a shared helper (`relayGainRange` in `shared/src/relay.ts`). Streaks live in `state.relay.research` / `state.relay.projects` (sibling records, `STATE_VERSION` 79).
 
 - **Difficulty:** every research and project uses the MycoAlarm's, 10 (`MYCO_ALARM` in `Mush/data/Data.ods`; also the most common value), for now.
 - **Constants:** PILGRED's `rate` 6, `skillBoost` 4 and `relayPenalty` 2. At difficulty 10 that is 6–9% per action, or 10–15% with one matching skill.

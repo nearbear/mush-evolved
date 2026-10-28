@@ -1,9 +1,10 @@
 import { Action, isString } from "./action.ts";
-import { ANY_CONSUMABLE, RESEARCH_COMPLETE, RESEARCH_IDS, RESEARCH_REQUIRES, type ResearchId } from "../research.ts";
+import { ANY_CONSUMABLE, RESEARCH_COMPLETE, RESEARCH_IDS, RESEARCH_REQUIRES, RESEARCH_SKILLS, type ResearchId } from "../research.ts";
 import { logPublic } from "../log.ts";
 import { equipmentHere } from "../equipment.ts";
 import { ITEM_TYPES, newItemId, removeItem } from "../items.ts";
 import { xylophFound } from "../comms.ts";
+import { relayGainRange, rollRelayGain, touchRelay } from "../relay.ts";
 import { dropMycoAlarms } from "../mycoalarm.ts";
 import { ANTI_MUSH_SERUM_ITEM } from "./vaccinate.ts";
 import type { GameState, ItemState, PlayerState, RoomId } from "../types.ts";
@@ -30,7 +31,7 @@ export type ResearchActionData = { type: "research"; equipment: string; research
 
 /**
  * Work on a research at the laboratory's research terminal (decided 2026-10-16): 2 AP (free with a Computer point, which is spent)
- * moves one research forward 25%. No repeat penalty yet, and anyone alive who is not dirty can help, while the lab meets the research's
+ * moves one research forward by the relay formula (relay.ts: 6-9%, +4 per Biologist or Medic skill, -2 per action in a row by the same player; owner, 2026-10-26). Anyone alive who is not dirty can help, while the lab meets the research's
  * RESEARCH_REQUIRES. Public room log.
  */
 export class ResearchAction extends Action<ResearchActionData> {
@@ -70,7 +71,9 @@ export class ResearchAction extends Action<ResearchActionData> {
 
   override apply(state: GameState, player: PlayerState, target: ResearchActionData): void {
     if (this.paidWithComputer(player)) player.resources.comp -= 1;
-    const progress = Math.min(RESEARCH_COMPLETE, (state.research[target.research] ?? 0) + state.config.research.effect.progressPercent);
+    const gain = rollRelayGain(state, relayGainRange(state.config.research.progress, player, RESEARCH_SKILLS, state.relay.research[target.research]));
+    touchRelay(state.relay.research, target.research, player);
+    const progress = Math.min(RESEARCH_COMPLETE, (state.research[target.research] ?? 0) + gain);
     state.research[target.research] = progress;
     logPublic(state, player.room, progress >= RESEARCH_COMPLETE ? "researchCompleted" : "researched", { name: player.character, research: target.research, percent: progress });
     // `kill_sample`: completing it uses up one of these from the lab, the floor first.

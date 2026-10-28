@@ -1474,3 +1474,10 @@ Second Gemini review (same day), this time with a brief on the game, the owner's
 
 ## 2026-10-27: Astrophysicist skill
 Owner decided: scan costs 1 AP less and remote analyses reveal 1 extra sector (the data's "surface analyses" and the wiki's "every analysis" disagreed; I asked once, owner picked remote). Built as an `actionCost` hook plus a new `analysisSectors` fold hook. My first test used invented planet tag names and crashed; fixed with real ones.
+
+## 2026-10-27: research and project relay formula
+
+Decided by the owner on 2026-10-26 (`docs/action-plans.md`), built today. Research and NERON projects drop the flat 25% for the original's `getBaseProgress`, shared with PILGRED through `shared/src/relay.ts`; streaks live in a sibling `state.relay` record (never in a view; `STATE_VERSION` 79). What worked: the plan had every number and the Haxe source reference, so no questions were needed. What needed care: the gain roll now draws from the seeded RNG before the dirt roll, so tests that pinned seeds (`rng = 0` / `7`) changed behaviour; they now pick a clean or dirty seed by scanning, and completion tests start at 99% rather than looping four actions (a streak shrinks the gain to 0 after a few repeats).
+
+## 2026-10-27: Deep analysis
+Owner said to add it. I was about to ask about making the orbited planet public; the owner corrected me first: the planet is public but its sectors are not, so nothing changes and it stays private. Built as a cost and sector-count change on the existing analyse action when the target is the orbited planet (wiki: 1 AP, +1 sector), not a new action. The sector count and cost defaults are the wiki's, not separately asked.

@@ -47,6 +47,7 @@ export const GAME_STATE_FIELDS: Record<string, FieldRule> = {
   sporesToday: { reach: "never", test: "leaks.test.ts" },
   sporeExtractedOn: { reach: "never", test: "leaks.test.ts" },
   research: { reach: "public", test: "research.test.ts" },
+  relay: { reach: "never", test: "research.test.ts", note: "Who contributed last to each research and project and their streak (the relay penalty); never sent in a view." },
   projects: { reach: "public", test: "projects.test.ts" },
   pilgred: { reach: "room", test: "pilgred.test.ts", note: "Only `progress`, to the living in a room with the PILGRED terminal; `lastBy` and `streak` never. Whether it is repaired is public (`pilgredRepaired`), as the crew-wide message announces it." },
   planets: { reach: "own", test: "leaks.test.ts", note: "Without the unknown sectors' tags." },

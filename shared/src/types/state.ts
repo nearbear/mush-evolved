@@ -1,6 +1,7 @@
 import type { BiosState } from "../bios.ts";
 import type { CommsState } from "../comms.ts";
 import type { PlanetDirection, PlanetTag } from "../planets.ts";
+import type { RelayStreak } from "../relay.ts";
 import type { RngState } from "../rng.ts";
 import type { TitleId } from "../titles.ts";
 import type { ItemState, LogEntry, PlayerId, RoomId } from "../types.ts";
@@ -87,6 +88,8 @@ export interface GameState {
   research: Record<string, number>;
   /** Percent done of each NERON project that has been started (absent = 0), by project id (projects.ts). Public: sent to everyone. */
   projects: Record<string, number>;
+  /** Who contributed last to each research and project and how many times in a row (the relay penalty, relay.ts). Never sent in a view. */
+  relay: { research: Record<string, RelayStreak>; projects: Record<string, RelayStreak> };
   /**
    * PILGRED's repair (pilgred.ts): percent done, and who repaired last and how many times in a row (the relay penalty).
    * `progress` goes only to the living in a room with the PILGRED terminal; `lastBy` and `streak` are never sent.

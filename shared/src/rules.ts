@@ -117,6 +117,7 @@ export function createGame(
     sporeExtractedOn: {},
     research: {},
     projects: {},
+    relay: { research: {}, projects: {} },
     pilgred: { progress: 0, lastBy: null, streak: 0 },
     planets: {},
     scanFailures: {},
