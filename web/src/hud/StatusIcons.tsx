@@ -3,19 +3,24 @@
 
 import { Popover } from "@base-ui/react/popover";
 import { useTranslation } from "react-i18next";
-import { STATUS_IDS, STATUS_PUBLIC, type StatusId } from "@mush2/shared";
-import { CONTAMINATED_ICON, STATUS_ICONS } from "../art/assets.ts";
+import { DEFAULT_CONFIG, STATUS_PUBLIC, statusIdsFor } from "@mush2/shared";
+import { CONTAMINATED_ICON, statusIcon } from "../art/assets.ts";
 
 /** `contamination` is set only when the server sent one (a Mush looking at a contaminated human). */
 export function StatusIcons({ statuses, contamination }: { statuses: readonly string[]; contamination?: number | undefined }) {
   const { t } = useTranslation();
-  const known = STATUS_IDS.filter((id: StatusId) => statuses.includes(id));
+  const known = statusIdsFor(DEFAULT_CONFIG.diseases.allDiseases).filter((id) => statuses.includes(id));
   if (known.length === 0 && contamination === undefined) return null;
   return (
     <ul className="status-icons" aria-label={t("status.label")}>
       {known.map((id) => (
         <li key={id}>
-          <StatusIcon icon={STATUS_ICONS[id]} name={t(`status.${id}`)} description={t(`status.desc.${id}`)} visibility={STATUS_PUBLIC[id] ? "public" : "private"} />
+          <StatusIcon
+            icon={statusIcon(id)}
+            name={t(`status.${id}`, { defaultValue: id })}
+            description={t(`status.desc.${id}`, { defaultValue: "" }) || undefined}
+            visibility={STATUS_PUBLIC[id] ? "public" : "private"}
+          />
         </li>
       ))}
       {contamination !== undefined && (

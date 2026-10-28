@@ -6,11 +6,7 @@
 
 import type { GameState, PlayerState } from "./types.ts";
 
-export const STATUS_IDS = ["dirty", "full_belly", "hungry", "immune", "immunity", "pacifist", "mankind_only_hope", "wheelchair", "accommodated", "outcast", "cold_disease", "broken_nose_injury"] as const;
-export type StatusId = (typeof STATUS_IDS)[number];
-
-/** Confirmed 2026-10-14: dirty is public; full belly and hungry are private. */
-export const STATUS_PUBLIC: Readonly<Record<StatusId, boolean>> = {
+const FIXED_STATUS_PUBLIC = {
   dirty: true,
   full_belly: false,
   hungry: false,
@@ -25,9 +21,17 @@ export const STATUS_PUBLIC: Readonly<Record<StatusId, boolean>> = {
   accommodated: true,
   // Owner, 2026-10-24: the Outcast status is public to the room (who cursed them is not).
   outcast: true,
-  cold_disease: false,
   broken_nose_injury: false,
-};
+} as const;
+
+export const STATUS_IDS = ["dirty", "full_belly", "hungry", "immune", "immunity", "pacifist", "mankind_only_hope", "wheelchair", "accommodated", "outcast", "broken_nose_injury"] as const;
+export type StatusId = string;
+export function statusIdsFor(diseases: readonly string[]): string[] {
+  return [...new Set([...STATUS_IDS, ...diseases])];
+}
+
+/** Confirmed 2026-10-14: dirty is public; full belly and hungry are private. */
+export const STATUS_PUBLIC: Readonly<Record<string, boolean>> = FIXED_STATUS_PUBLIC;
 
 /** Statuses that are character traits (permanent, innate): public, but shown on Inspect only, never over the head. */
 export const TRAIT_STATUS_IDS: readonly StatusId[] = ["immunity", "pacifist", "mankind_only_hope", "wheelchair"];
@@ -84,7 +88,7 @@ export function statusesOf(state: Readonly<Pick<GameState, "config" | "cycle">>,
 
 /** The statuses anyone may see on this player. */
 export function publicStatusesOf(state: Readonly<Pick<GameState, "config" | "cycle">>, p: Readonly<PlayerState>): string[] {
-  return statusesOf(state, p).filter((id) => STATUS_PUBLIC[id as StatusId]);
+  return statusesOf(state, p).filter((id) => !state.config.diseases.allDiseases.includes(id) && (STATUS_PUBLIC[id] ?? false));
 }
 
 /** Mutates a state that the caller already cloned. */

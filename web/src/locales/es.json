@@ -501,6 +501,8 @@
     "accommodated": "Acompañado",
     "outcast": "Paria",
     "cold_disease": "Resfriado",
+    "extreme_tinnitus_disease": "Tinnitus extremo",
+    "fungal_infection_disease": "Micosis",
     "broken_nose_injury": "Nariz rota",
     "contaminated": "Contaminación: {{level}}",
     "desc": {
@@ -515,6 +517,8 @@
       "accommodated": "Alguien empuja la silla de ruedas de esta persona: va adonde vaya quien la empuja, sin coste de PM, y no puede moverse sola. Cualquiera de los dos puede terminarlo.",
       "outcast": "Maldecido por un Perseguidor: cada acción suya que se tira a suerte sale un 20 % menos, y nada de lo que hace es secreto. Termina cuando muere el Perseguidor o esta persona.",
       "cold_disease": "-3 de moral máxima.\nTus puñetazos infligen 1 punto de daño menos.\nAl cambiar de ciclo, tienes un 33 % de probabilidad de perder 1 PM.",
+      "extreme_tinnitus_disease": "-3 de moral máxima.\nPierdes 2 puntos de moral cuando el barco se mueve.\nPierdes 2 puntos de salud cuando la nave se mueve.",
+      "fungal_infection_disease": "-2 PV máximos.\n-2 de moral máxima.\nNecesitas una espora menos para transformarte.\nl cambiar de ciclo, Te vuelves sucio.",
       "broken_nose_injury": "-2 PV máximos.\n-2 de moral máxima.",
       "contaminated": "Un humano que has contaminado. Al llegar a su capacidad se vuelve Mush."
     }
@@ -653,6 +657,8 @@
     "protection_gloves": "Guantes de protección"
   },
   "logEvent": {
+    "loseMorale": "Has perdido {{amount}} punto de moral.",
+    "gainMorale": "Has ganado {{amount}} punto de moral.",
     "actionCostChanged": "Tu acción en cola ({{action}}) se ha cancelado porque su coste ha cambiado: ahora cuesta {{ap}} PA y {{mp}} PM.",
     "actionDropped": "Tu acción en cola ({{action}}) ya no era posible y se ha descartado.",
     "becomeDirty": "¡Tienes suciedad por todas partes! Te has ensuciado.",
