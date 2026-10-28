@@ -3,6 +3,7 @@ import { getUp } from "./lie_down.ts";
 import { endsAccommodation } from "../actionTarget.ts";
 import { logPublic } from "../log.ts";
 import { arrive } from "../spot.ts";
+import { leaveAccommodation, offeredBy, pushing } from "../accommodation.ts";
 import type { Action as AnyAction, GameState, PlayerId, PlayerState } from "../types.ts";
 import type { ActionVisibility } from "./action.ts";
 
@@ -20,12 +21,6 @@ export type StopAccommodationActionData = { type: "stop_accommodation"; target: 
 
 export const needsWheelchair = (p: Readonly<PlayerState>): boolean => p.modifiers.includes("wheelchair");
 
-/** Whoever this player is pushing, if anyone. */
-export const pushing = (state: Readonly<GameState>, p: Readonly<PlayerState>): PlayerState | undefined =>
-  state.players.find((o) => o.pushedBy === p.id);
-
-const offeredBy = (p: Readonly<PlayerState>, by: PlayerId): boolean => !!p.accommodationOffers?.some((o) => o.by === by);
-
 /** Offers this person could accept now: not expired, and the offerer is alive, here, and not already pushing someone. */
 const liveOffers = (state: Readonly<GameState>, p: Readonly<PlayerState>): PlayerState[] =>
   peopleHere(state, p).filter((o) => p.accommodationOffers?.some((x) => x.by === o.id && x.until > state.now) && !pushing(state, o));
@@ -37,28 +32,6 @@ export function expireOffers(state: GameState): void {
     p.accommodationOffers = p.accommodationOffers.filter((o) => o.until > state.now);
     if (p.accommodationOffers.length === 0) delete p.accommodationOffers;
   }
-}
-
-/**
- * Someone left the room or died: their offers lapse, and so do offers made to them. A push they were part of ends
- * (death only; a pusher's move takes the pushed person along, see `MoveAction`). Mutates a state the caller cloned.
- */
-export function leaveAccommodation(state: GameState, p: PlayerState): void {
-  delete p.accommodationOffers;
-  for (const o of state.players) {
-    if (offeredBy(o, p.id)) {
-      o.accommodationOffers = o.accommodationOffers!.filter((x) => x.by !== p.id);
-      if (o.accommodationOffers.length === 0) delete o.accommodationOffers;
-    }
-  }
-}
-
-/** Ends a push when either side dies (death.ts). No log line: the death line says enough. */
-export function endAccommodationOnDeath(state: GameState, dead: PlayerState): void {
-  delete dead.pushedBy;
-  const pushed = pushing(state, dead);
-  if (pushed) delete pushed.pushedBy;
-  leaveAccommodation(state, dead);
 }
 
 /** Ends `pushed`'s push, with the public log line the stop action writes. Mutates a cloned state. */

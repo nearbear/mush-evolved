@@ -1,5 +1,6 @@
 import { Action, isString } from "./action.ts";
-import { leaveAccommodation, wheelAlong } from "./accommodate.ts";
+import { leaveAccommodation } from "../accommodation.ts";
+import { wheelAlong } from "./accommodate.ts";
 import { logPublic } from "../log.ts";
 import { arrive } from "../spot.ts";
 import { freeAp } from "../helpers.ts";

@@ -4,7 +4,7 @@
 // corpse item in the room. Every HP loss goes through `damage` so no source can
 // leave someone alive at 0 HP (a test enforces it).
 
-import { endAccommodationOnDeath } from "./actions/accommodate.ts";
+import { endAccommodationOnDeath } from "./accommodation.ts";
 import type { CharacterId } from "./characters.ts";
 import { removeFromChannel, pushChat } from "./chat.ts";
 import { CORPSE_ITEM, ITRACKIE_ITEM, sameContainer, newItemId } from "./items.ts";
