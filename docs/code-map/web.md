@@ -26,6 +26,7 @@ All under `web/src/`. UI rules are in `web/CLAUDE.md`.
 - `SettingsDialog.tsx` + `settings.css`: settings dialog.
 - `EndScreen.tsx` + `endScreen.css`: the end screen, open while the game has ended until closed (`GameScreen` holds that; the top bar's Results button reopens it): the ending's banner (`ENDING_ART`), the verdict, and `view.crew` with names, characters, roles and skulls (reuses `settings.css`).
 - `BodyTakenDialog.tsx`: the pop-up a Transfer's victim must acknowledge (`you.bodyTakenBy`); only its button closes it, sending `acknowledgeTransfer` (reuses `settings.css`).
+- `StatInfo.tsx`: the popover over a stat (HP/morale/AP/MP pip bar on desktop, chip on phones) saying how it is commonly spent and regained; the text is `stat.info.*` in the locales.
 - `SelfHud.tsx` + `styles/self-hud.css`: your HUD over the room view (desktop only; phones show `PlayerSummary` in the top bar): portrait, HP/morale, faction and other resources in the top-left corner, with the room's name moved under the portrait; AP/MP standing in the bottom-left corner. Clicking the portrait shows you in Inspect.
 - `Credits.tsx`: the asset attribution and the non-commercial line: a footer at the bottom of the lobby, and in the game at the top of the settings dialog, under its header (both layouts).
 - `CommsCenter.tsx`: the Com center terminal window: link status and Sol chance, rebel calls with progress and expiry, Xyloph entries left, NERON version and update, each with its button when the view offers it.
