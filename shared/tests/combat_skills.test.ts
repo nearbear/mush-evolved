@@ -190,7 +190,7 @@ describe("Astrophysicist", () => {
 
   it("takes 1 AP off the scan and gives one more sector per analysis (owner, 2026-10-27)", () => {
     expect(DEFAULT_CONFIG.astrophysicist).toEqual({ scanApDiscount: 1, extraSectors: 1 });
-    expect(skillStatus("astrophysician")).toBe("partial");
+    expect(skillStatus("astrophysician")).toBe("full");
     const s = setup();
     player(s, "p0").skills.push("astrophysician");
     const { scan: sc, analyze } = s.config.astro;
@@ -203,5 +203,20 @@ describe("Astrophysicist", () => {
     expect([a.planets.p0![0]!.sectors.filter((x) => x.known).length, b.planets.p1![0]!.sectors.filter((x) => x.known).length]).toEqual([2, 1]);
     expect(known("p0")).toBe(0);
     expect(analyze.cost.ap).toBeGreaterThan(0);
+  });
+
+  it("stacks with deep analysis: 3 sectors on the orbited planet, at the orbit cost", () => {
+    const s = setup();
+    player(s, "p0").skills.push("astrophysician");
+    const mk = () => ({ id: "near", name: "X", position: { direction: "N", distance: 2 }, sectors: ["FOREST", "MOUNTAIN", "SWAMP", "DESERT", "OCEAN"].map((tag) => ({ tag, known: false })) }) as never;
+    s.planets.p0 = [mk()];
+    s.planets.p1 = [mk()];
+    s.navigation.orbit = "near";
+    const deep = { type: "analyze_planet", equipment: terminal, planet: "near" } as const;
+    const { orbitCost, orbitExtraSectors } = s.config.astro.analyze;
+    expect(option(s, "p0", deep)!.cost.ap).toBe(orbitCost.ap);
+    const after = must(applyAction(s, "p0", deep));
+    const known = (id: string) => after.planets[id]![0]!.sectors.filter((x) => x.known).length;
+    expect([known("p0"), known("p1")]).toEqual([1 + s.config.astrophysicist.extraSectors + orbitExtraSectors, 0]);
   });
 });
