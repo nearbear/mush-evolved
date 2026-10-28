@@ -342,6 +342,7 @@ export interface GameConfig {
     cost: {
       ap: number; // AP spent to shower, before the soap discount (confirmed 2026-10-14).
       soapDiscountAp: number; // AP off a shower when soap is in your inventory (confirmed 2026-10-14).
+      waterResistantAp: number; // AP a shower costs at most with the Water Resistant Mush skill (eMushpedia, 2026-10-27).
     };
     effect: { mushDamage: number }; // HP a Mush loses by showering (confirmed 2026-10-14).
     injuryChance: number; // Chance of getting injured after showering.

@@ -226,6 +226,8 @@ export const SKILL_STATUS: Readonly<Partial<Record<SkillId | MushSkillId, SkillS
   fungus_cook: "partial",
   // Mush skill: one free spore extraction a day, ignoring the cooldown (owner, 2026-10-27, actions/extract_spore.ts).
   fertile: "full",
+  // Mush skill: showering costs at most 1 AP and no HP (owner reading of eMushpedia, 2026-10-27, actions/shower.ts).
+  water_resistant: "full",
   //Increases success rate, injury chance, and dirty chance by 20%
   expert: "full",
   // Free turret shots from Shoot points (owner, 2026-10-25); no fewer clumsy misses or more critical hits on shots.

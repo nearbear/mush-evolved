@@ -1497,3 +1497,9 @@ Wiki gave only "one free extraction a day"; asked the owner four questions (cool
 
 - The user saw old speech bubbles after a page refresh. An earlier session fixed the client's speech-bubble hook (b4a488f), but that wasn't the cause. The user found the real one: LogParrotBot kept its "already repeated" count in memory, so when an evicted room woke up for the refresh, the new bot posted its whole private log to global chat again, and those were genuinely new messages.
 - Fix: the bot now sets that count on its first call from its own global messages in the view. Lesson: before changing client code for "stale" UI, check whether the server is actually sending new data.
+
+## 2026-10-27: Water Resistant Mush skill
+- Rule taken straight from eMushpedia (no HP loss, shower at most 1 AP, soap doesn't stack); no questions asked because the wiki text was unambiguous. Reused the Fertile pattern (skill status entry, no new state, so no STATE_VERSION bump). A hand-built test item had the wrong shape (`location` vs `at`); fixed by copying shower.test.ts.
+
+## 2026-10-27: Showering while clean
+- Owner asked to allow showers when not dirty; I asked about cost, Mush damage and side effects (all answered "same as dirty"). Dropped the `not_dirty` check; one test rewritten.

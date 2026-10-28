@@ -192,7 +192,7 @@ export const DEFAULT_CONFIG: GameConfig = {
   accommodate: { cost: { ap: 0 }, offerMs: 5 * 60_000 },
   lieDown: { cost: { ap: 0 } },
   // Confirmed 2026-10-14: showering costs 2 AP, 1 less with soap in your inventory; a Mush takes 4 damage.
-  shower: { cost: { ap: 2, soapDiscountAp: 1 }, effect: { mushDamage: 4 }, injuryChance: 0.02 },
+  shower: { cost: { ap: 2, soapDiscountAp: 1, waterResistantAp: 1 }, effect: { mushDamage: 4 }, injuryChance: 0.02 },
   transfer: { injuryChance: 0.01 },
   // Confirmed 2026-10-14: humans lose 1 satiety per cycle (some things will make it more); at 3 they are full and can't
   // eat; hungry starts 24 cycles after satiety reaches 0 and costs 1 HP per cycle.

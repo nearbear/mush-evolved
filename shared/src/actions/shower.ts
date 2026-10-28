@@ -4,6 +4,7 @@ import { EQUIPMENT_TYPES } from "../equipment.ts";
 import { itemsIn } from "../items.ts";
 import { logPrivate } from "../log.ts";
 import { showered } from "../modifiers.ts";
+import { hasSkill } from "../skills.ts";
 import { removeStatus } from "../statuses.ts";
 import type { GameState, PlayerState } from "../types.ts";
 
@@ -23,7 +24,6 @@ export class ShowerAction extends Action<ShowerActionData> {
   override validate(state: Readonly<GameState>, player: Readonly<PlayerState>, target: ShowerActionData): string | null {
     const equip = state.equipment[player.room]?.find((eq) => eq.id === target.equipment);
     if (!equip || !EQUIPMENT_TYPES[equip.type]?.shower) return "cant_shower";
-    if (!player.statuses.includes("dirty")) return "not_dirty";
     return null;
   }
 
@@ -37,13 +37,15 @@ export class ShowerAction extends Action<ShowerActionData> {
 
   override apply(state: GameState, player: PlayerState, target: ShowerActionData): void {
     removeStatus(player, "dirty");
-    logPrivate(state, player.id, player.role === "mush" ? "showeredMush" : "showered");
+    const burns = player.role === "mush" && !hasSkill(player, "water_resistant");
+    logPrivate(state, player.id, burns ? "showeredMush" : "showered");
     showered(state, player);
-    if (player.role === "mush") damage(state, player, state.config.shower.effect.mushDamage);
+    if (burns) damage(state, player, state.config.shower.effect.mushDamage);
   }
 
   showerCost(state: Readonly<GameState>, player: Readonly<PlayerState>): number {
   const soap = itemsIn(state, { kind: "player", id: player.id }).some((item) => item.type === "soap");
-  return Math.max(0, state.config.shower.cost.ap - (soap ? state.config.shower.cost.soapDiscountAp : 0));
+  const cost = Math.max(0, state.config.shower.cost.ap - (soap ? state.config.shower.cost.soapDiscountAp : 0));
+  return hasSkill(player, "water_resistant") ? Math.min(cost, state.config.shower.cost.waterResistantAp) : cost;
 }
 }

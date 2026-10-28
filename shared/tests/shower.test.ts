@@ -72,9 +72,7 @@ describe("shower", () => {
     expect(player(r2.state, "p0").alive).toBe(false);
   });
 
-  it("is refused, leaving state unchanged, when clean, short on AP, or not at a shower", () => {
-    const clean = ship();
-    expect(applyAction(clean, "p1", shower).ok).toBe(false);
+  it("is refused, leaving state unchanged, when short on AP or not at a shower", () => {
     const poor = ship();
     addStatus(player(poor, "p1"), "dirty");
     player(poor, "p1").ap = cost.ap - 1;
@@ -87,9 +85,12 @@ describe("shower", () => {
     expect(JSON.stringify(away)).toBe(before);
   });
 
-  it("is only offered while dirty, and the log line is private", () => {
+  it("is offered clean or dirty, costs the same, and the log line is private", () => {
     const s = ship();
-    expect(offered(s, "p1").some((a) => a.type === "shower")).toBe(false);
+    expect(offered(s, "p1")).toContainEqual(shower);
+    const clean = applyAction(s, "p1", shower);
+    if (!clean.ok) throw new Error(clean.error);
+    expect(player(clean.state, "p1").ap).toBe(config.startAp - cost.ap);
     addStatus(player(s, "p1"), "dirty");
     expect(offered(s, "p1")).toContainEqual(shower);
     const r = applyAction(s, "p1", shower);
