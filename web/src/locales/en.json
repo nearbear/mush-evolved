@@ -1032,7 +1032,7 @@
       "shrink": "Each cycle, 1 Morale Point is regenerated for each character lying down in their room.\nCures psychological illnesses.\nGrants the Comfort action, which improves morale.\nBonus for developing certain NERON Projects.",
       "persistent": "After a failed action, the chance of success increases faster.",
       "robotics": "Starts with a drone blueprint.\nCan upgrade drones.\nBonus for developing certain NERON Projects.",
-      "paranoid": "Starts with 2 extra Cameras.",
+      "paranoid": "Starts with 1 extra Camera.",
       "caffeinomaniac": "+2 AP when they drink a Coffee.\nBonus for developing certain NERON Projects.",
       "physicist": "Grants 1 PILGRED repair action point per day.\nBonus for developing certain NERON Projects.",
       "apprentice": "Grants the Apprenticeship action, which copies the skill of a player in the room, once per game.",

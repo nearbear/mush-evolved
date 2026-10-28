@@ -166,3 +166,15 @@ describe("Polymath", () => {
     expect(SKILL_SLOTS).toBe(3);
   });
 });
+
+describe("Paranoid", () => {
+  const cameras = (s: GameState, id: string) => s.items.filter((i) => i.type === "camera" && i.at.kind === "player" && i.at.id === id).length;
+
+  it("gives one extra camera when picked (owner, 2026-10-27)", () => {
+    expect(DEFAULT_CONFIG.paranoid.cameras).toBe(1);
+    let s = ship();
+    s = pickSkill(s, "p0", "paranoid");
+    expect([cameras(s, "p0"), cameras(s, "p1")]).toEqual([DEFAULT_CONFIG.paranoid.cameras, 0]);
+    expect(skillStatus("paranoid")).toBe("full");
+  });
+});

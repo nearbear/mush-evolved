@@ -1039,7 +1039,7 @@
       "shrink": "Cada ciclo se regenera 1 Punto de Moral a cada personaje tumbado en su sala.\nCura las enfermedades psicológicas.\nOtorga la acción Reconfortar, que mejora la moral.\nBonificación para desarrollar ciertos Proyectos de NERON.",
       "persistent": "Tras fallar una acción, la probabilidad de éxito aumenta más rápido.",
       "robotics": "Empieza con el plano de un dron.\nPuede mejorar los drones.\nBonificación para desarrollar ciertos Proyectos de NERON.",
-      "paranoid": "Empieza con 2 Cámaras adicionales.",
+      "paranoid": "Empieza con 1 Cámara adicional.",
       "caffeinomaniac": "+2 PA cuando toma un Café.\nBonificación para desarrollar ciertos Proyectos de NERON.",
       "physicist": "Otorga 1 PA de reparación de PILGRED por día.\nBonificación para desarrollar ciertos Proyectos de NERON.",
       "apprentice": "Otorga la acción Aprendizaje, que copia la habilidad de un jugador presente en la sala, una vez por partida.",

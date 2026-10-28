@@ -1039,7 +1039,7 @@
       "shrink": "A chaque cycle, 1 Point de Moral (PMo) est régénéré à chaque personnage allongé dans sa pièce.\nSoigne les maladie Psy.\nAccorde l'action Réconforter , laquelle améliore le moral.\nBonus pour développer certains Projets NERON.",
       "persistent": "En cas d'échec sur une action, le % de chance de réussite augmente plus vite.",
       "robotics": "Commence avec le plan d'un drone.\nPeut améliorer les drones.\nBonus pour développer certains Projets NERON.",
-      "paranoid": "Commence avec 2 Caméras supplémentaires.",
+      "paranoid": "Commence avec 1 Caméra supplémentaire.",
       "caffeinomaniac": "+2 PA lorsqu'il consomme un Café.\nBonus pour développer certains Projets NERON.",
       "physicist": "Accorde un PA (point d'action de réparation de PILGRED) par jour.\nBonus pour développer certains Projets NERON.",
       "apprentice": "Vous accorde l'action Apprentissage qui permet de copier la compétence d'un joueur présent dans la pièce, une fois par partie.",

@@ -135,6 +135,8 @@ export const DEFAULT_CONFIG: GameConfig = {
   // Owner, 2026-10-25 (the original skills.json): Gunman +2 Shoot points a day (max 4); Gunner doubles turret odds and damage;
   // Persistent's streak grows by x1.5 a miss instead of x1.25; Space Tactics shrinks 50% of waves by 33%; Polymath +2 channels, +1 Computer point a day, +2 cap.
   gunman: { capPoints: 4, pointsPerDay: 2 },
+  // Owner, 2026-10-27: Paranoid gives 1 extra Camera item when picked (the original gives 2).
+  paranoid: { cameras: 1 },
   gunner: { accuracyFactor: 2, damageFactor: 2 },
   persistent: { failureMultiplier: 1.5 },
   spaceTactics: { chance: 0.5, shrink: 0.33 },
