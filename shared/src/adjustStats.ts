@@ -14,7 +14,7 @@ export function gainMorale(state: GameState, player: PlayerState, amount: number
     logPrivate(state, player.id, "gainMorale", {amount: amount});
   }
   else if(amount < 0){
-    logPrivate(state, player.id, "loseMorale", {amount: amount});
+    logPrivate(state, player.id, "loseMorale", {amount: -amount});
   }
 }
 

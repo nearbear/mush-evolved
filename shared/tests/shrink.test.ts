@@ -120,10 +120,12 @@ describe("Shrink's lying-down morale", () => {
     expect(player(nextCycle(s0), "p1").morale).toBe(5);
   });
 
-  it("writes no log line", () => {
+  it("tells only the recipient, privately", () => {
     const s0 = ship();
     lie(s0, "p1");
     const s = nextCycle(s0);
-    expect(s.log.slice(s0.log.length).map((l) => l.key)).toEqual(["cycleBegins"]);
+    const lines = s.log.slice(s0.log.length);
+    expect(lines.map((l) => l.key)).toEqual(["gainMorale", "cycleBegins"]);
+    expect(lines[0]!.visibleTo).toEqual(["p1"]);
   });
 });
