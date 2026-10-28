@@ -1113,7 +1113,7 @@
       "ninja": "Vos attaques de corps-à-corps deviennent des actions anonymes.",
       "sapper": "Vos chances de succès pour le Sabotage d'équipement sont doublées.",
       "nimble_fingers": "Vos actions monter et démonter sont discrètes sur les Caméras.",
-      "water_resistant": "Se doucher ne vous fait perdre aucun PV.",
+      "water_resistant": "Se doucher ne vous fait perdre aucun PV et coûte 1 PA au plus, avec ou sans savon.",
       "traitor": "Probabilités de résultats négatifs dans les expéditions auxquelles vous participez sont multipliées par 2.",
       "doorman": "Chaque jour, vous pouvez Saboter une Porte gratuitement.",
       "neron_access": "Vous pouvez accéder au BIOS de NERON même si vous n'êtes pas Administrateur.",

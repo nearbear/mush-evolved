@@ -1105,7 +1105,7 @@
       "ninja": "Your melee attacks become anonymous actions.",
       "sapper": "Your chances of success when Sabotaging equipment are doubled.",
       "nimble_fingers": "Your assemble and dismantle actions are discreet on Cameras.",
-      "water_resistant": "Taking a shower doesn't cost you any HP.",
+      "water_resistant": "Taking a shower doesn't cost you any HP, and costs 1 AP at most, soap or not.",
       "traitor": "The odds of bad outcomes on expeditions you join are doubled.",
       "doorman": "Each day, you can Sabotage a Door for free.",
       "neron_access": "You can access NERON's BIOS even if you are not the Administrator.",
