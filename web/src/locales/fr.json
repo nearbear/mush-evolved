@@ -518,6 +518,8 @@
     "accommodated": "Accompagné",
     "outcast": "Paria",
     "cold_disease": "Rhume",
+    "extreme_tinnitus_disease": "Acouphènes extrêmes",
+    "fungal_infection_disease": "Infection fongique",
     "broken_nose_injury": "Nez explosé",
     "contaminated": "Contamination : {{level}}",
     "desc": {
@@ -532,6 +534,8 @@
       "accommodated": "Quelqu'un pousse le fauteuil de cette personne : elle va là où va son accompagnateur, sans coût en PM, et ne peut pas se déplacer seule. L'un ou l'autre peut y mettre fin.",
       "outcast": "Maudit par un Persécuteur : chaque action à tirage réussit 20 % moins souvent, et rien de ce que cette personne fait n'est discret. Cela prend fin à la mort du Persécuteur ou de la personne.",
       "cold_disease": "-3 au moral maximum.\nVos coups de poing infligent 1 dégât de moins.\nÀ chaque changement de cycle, vous avez 33 % de chances de perdre 1 PM.",
+      "extreme_tinnitus_disease": "-3 au moral maximum.\nVous perdez 2 points de moral lorsque le navire se déplace.\nVous perdez 2 points de vie lorsque le vaisseau se déplace.",
+      "fungal_infection_disease": "-2 PV maximum.\n-2 au moral maximum.\nIl faut qu une spore de moins soit convertie.\nÀ chaque changement de cycle, Tu deviens sale.",
       "broken_nose_injury": "-2 PV maximum.\n-2 au moral maximum.",
       "contaminated": "Un humain que vous avez contaminé. À sa capacité maximale, il devient Mush."
     }
@@ -670,6 +674,8 @@
     "protection_gloves": "Gants de protection"
   },
   "logEvent": {
+    "loseMorale": "Vous avez perdu {{amount}} point de moral.",
+    "gainMorale": "Vous avez gagné {{amount}} point de moral.",
     "actionCostChanged": "Votre action en attente ({{action}}) a été annulée car son coût a changé : elle coûte maintenant {{ap}} PA et {{mp}} PM.",
     "actionDropped": "Votre action en attente ({{action}}) n'était plus possible et a été annulée.",
     "becomeDirty": "Vous êtes sale ! Vous venez de vous salir.",

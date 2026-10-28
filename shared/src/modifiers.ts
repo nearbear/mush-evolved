@@ -14,6 +14,8 @@ import { skillsOf } from "./skills.ts";
 import { antic_perfume } from "./modifiers/antic_perfume.ts";
 import { caffeinomaniac } from "./modifiers/caffeinomaniac.ts";
 import { cold_disease } from "./modifiers/cold_disease.ts";
+import { extreme_tinnitus_disease } from "./modifiers/extreme_tinnitus_disease.ts";
+import { fungal_infection_disease } from "./modifiers/fungal_infection_disease.ts";
 import { broken_nose_injury } from "./modifiers/broken_nose_injury.ts";
 import { creative } from "./modifiers/creative.ts";
 import { expert } from "./modifiers/expert.ts";
@@ -123,12 +125,14 @@ export interface Modifier extends Partial<FoldHooks> {
   onConsume?: (next: GameState, player: PlayerState, item: ItemState) => void;
   /** Runs once when the player picks this skill (not for other modifiers). Mutates a state the caller already cloned. */
   onPick?: (next: GameState, player: PlayerState) => void;
+  /** Runs whenever the ship moves */
+  onShipMovement?: (next: GameState, player: PlayerState) => void;
 }
 
 export type ModifierRegistry = Readonly<Record<string, Modifier>>;
 
 /** Items and skills will register here too. When a skill gains rules, update its entry in SKILL_STATUS (skills.ts). */
-export const MODIFIERS: Record<string, Modifier> = { lying_down, medic, first_aid, sturdy, creative, expert, antic_perfume, logistics, caffeinomaniac, cold_disease, broken_nose_injury, computer, designer, sprint, physicist, botanic, pacifist, immunity, mankind_only_hope, wheelchair, pilot, gunman, gunner, persistent, polymath, space_tactics, paranoid, astrophysician };
+export const MODIFIERS: Record<string, Modifier> = { lying_down, medic, first_aid, sturdy, creative, expert, antic_perfume, logistics, caffeinomaniac, cold_disease, extreme_tinnitus_disease, fungal_infection_disease, broken_nose_injury, computer, designer, sprint, physicist, botanic, pacifist, immunity, mankind_only_hope, wheelchair, pilot, gunman, gunner, persistent, polymath, space_tactics, paranoid, astrophysician };
 
 /** The ids every hook folds over: the player's skills (book slot last), then their other modifiers. */
 export function modifierIds(player: Readonly<PlayerState>): string[] {
@@ -422,6 +426,13 @@ export function cycleChanged(next: GameState, registry: ModifierRegistry = MODIF
   for (const player of next.players) {
     if (!player.alive) continue;
     for (const id of modifierIds(player)) registry[id]?.onCycle?.(next, player);
+  }
+}
+
+export function shipMoved(next: GameState, registry: ModifierRegistry = MODIFIERS): void {
+  for (const player of next.players) {
+    if (!player.alive) continue;
+    for (const id of modifierIds(player)) registry[id]?.onShipMovement?.(next, player);
   }
 }
 

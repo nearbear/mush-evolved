@@ -1,7 +1,7 @@
 // Maps game ids to Motion Twin art in Mush/ (CC BY-NC-SA 4.0, see
 // Mush/ATTRIBUTION.md). Vite bundles only the files matched here.
 
-import type { CharacterId, Ending, ItemView, ResourceId, TitleId } from "@mush2/shared";
+import { DEFAULT_CONFIG, type CharacterId, type Ending, type ItemView, type ResourceId, type TitleId } from "@mush2/shared";
 
 type UrlMap = Record<string, string>;
 const urls = (map: UrlMap) =>
@@ -277,11 +277,13 @@ export const ENDING_ART: Readonly<Record<Ending, string>> = {
 const statusIconFiles = urls(
   import.meta.glob<string>("../../../Mush/www/img/icons/ui/status/{dirty,belly_full,hungry,immune,pacifist,disabled,paria,disease,hurt}.png", { eager: true, query: "?url", import: "default" }),
 );
+const diseaseStatusIcons = Object.fromEntries(DEFAULT_CONFIG.diseases.allDiseases.map((id) => [id, statusIconFiles["disease"]!]));
 // Mankind's Only Hope has no status icon in the original (it was a skill there), so its skill icon stands in.
 const traitSkillIcons = urls(
   import.meta.glob<string>("../../../Mush/www/img/icons/skills/mankind_only_hope.png", { eager: true, query: "?url", import: "default" }),
 );
-export const STATUS_ICONS: Readonly<Record<"dirty" | "full_belly" | "hungry" | "immune" | "immunity" | "pacifist" | "mankind_only_hope" | "wheelchair" | "accommodated" | "outcast" | "cold_disease" | "broken_nose_injury", string>> = {
+export const STATUS_ICONS: Readonly<Record<string, string>> = {
+  ...diseaseStatusIcons,
   dirty: statusIconFiles["dirty"]!,
   full_belly: statusIconFiles["belly_full"]!,
   hungry: statusIconFiles["hungry"]!,
@@ -293,9 +295,13 @@ export const STATUS_ICONS: Readonly<Record<"dirty" | "full_belly" | "hungry" | "
   wheelchair: statusIconFiles["disabled"]!,
   accommodated: statusIconFiles["disabled"]!,
   outcast: statusIconFiles["paria"]!,
-  cold_disease: statusIconFiles["disease"]!,
   broken_nose_injury: statusIconFiles["hurt"]!,
 };
+export function statusIcon(id: string): string {
+  const icon = STATUS_ICONS[id];
+  if (icon === undefined) throw new Error(`Missing icon for status "${id}"`);
+  return icon;
+}
 /** Item attribute icons, keyed by attribute (the `itemAttr.*` locale keys). */
 export const ITEM_ATTR_ICONS: Readonly<Record<"heavy", string>> = { heavy: uiIcons["heavy"]! };
 /** A plant's states, the original's plant_* status icons. */

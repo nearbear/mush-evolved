@@ -4,6 +4,7 @@ import { logPublic } from "../log.ts";
 import { canSteer } from "../navigation.ts";
 import { commandTerminalsHere } from "../pilgred.ts";
 import type { GameState, PlayerState } from "../types.ts";
+import { shipMoved } from "../modifiers.ts";
 
 export type LeaveOrbitActionData = { type: "leave_orbit"; equipment: string };
 
@@ -42,6 +43,7 @@ export class LeaveOrbitAction extends Action<LeaveOrbitActionData> {
       return;
     }
     state.ship.combustion -= fuel;
+    shipMoved(state);
     huntersFollow(state);
     const orbit = state.navigation.orbit;
     for (const owner of Object.keys(state.planets)) state.planets[owner] = state.planets[owner]!.filter((p) => p.id !== orbit);
