@@ -1481,3 +1481,10 @@ Decided by the owner on 2026-10-26 (`docs/action-plans.md`), built today. Resear
 
 ## 2026-10-27: Deep analysis
 Owner said to add it. I was about to ask about making the orbited planet public; the owner corrected me first: the planet is public but its sectors are not, so nothing changes and it stays private. Built as a cost and sector-count change on the existing analyse action when the target is the orbited planet (wiki: 1 AP, +1 sector), not a new action. The sector count and cost defaults are the wiki's, not separately asked.
+
+## 2026-10-27: action plans, build step 2 (locked AP, actNow, shortestPath)
+
+- Added `PlayerState.lockedAp` (always 0 for now) and a `freeAp` helper. A grep showed only three live affordability checks read raw `ap` (`Action.canAfford`, the view's `lacks`, the move's AP-to-MP conversion), plus two client hint texts; all now use `freeAp`. Cycle gain, Consume and Logistics caps keep reading raw `ap`, as the plan says.
+- `actNow` came out of `queueAction`'s untimed path. The plan listed "get-up" as one of its hooks, but `performAction` already gets the actor up for timed actions, so no extra code was needed.
+- The reachability test for `shortestPath` failed on the patrol craft: they're rooms with no doors (reached by takeoff). Kept as a test fact; phase 3's `postPlan` will need to refuse jobs there.
+- The existing guards (leakFields list, stored-state fingerprint) caught the new field at once, as designed.

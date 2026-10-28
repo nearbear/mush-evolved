@@ -131,6 +131,12 @@
 .pip-bar .sub {
   margin-left: 0.35rem;
 }
+/* A stat (pip bar or phone chip) that opens how it is spent and regained (StatInfo.tsx). A box, not display: contents, so the popover has an anchor. */
+.stat-info {
+  display: flex;
+  flex: none;
+  cursor: default;
+}
 /* Standing up (AP/MP in the desktop HUD): label above, value below. The frame's height is set inline. */
 .pip-bar.vertical {
   flex-direction: column;

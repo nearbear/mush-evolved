@@ -1,6 +1,6 @@
 # Plan: scheduled action plans (#44; written 2026-10-13, narrowed 2026-10-26)
 
-Implemented so far: the action registry and private channels. Nothing below is built. **Decisions** are confirmed by the owner; **Open questions** must be answered before building the phase they block. Do not guess them.
+Implemented so far: the action registry and private channels; build steps 1 (the relay formula) and 2 (`PlayerState.lockedAp` and `freeAp` in every live affordability check, `actNow` in `queue.ts`, `shortestPath` in `paths.ts`; nothing locks AP yet). The rest is not built. **Decisions** are confirmed by the owner; **Open questions** must be answered before building the phase they block. Do not guess them.
 
 On 2026-10-26 the owner narrowed the first pass to four kinds of job, with no secrets, no planning mode and no optional jobs. The design below is for that pass. Earlier decisions for later passes are under "Deferred". The design was drafted with Gemini (three rounds) and checked against the code; a feasibility review the same day (Claude) found no blocker and added the "Review findings" decisions and the UI detail below.
 
@@ -52,6 +52,7 @@ Out of this pass: secrets, the planning-mode recorder, item handles and ids, opt
 - **The author's death or leaving cancels the plan** (all locks released).
 - **Body transfer:** jobs and locked AP stay on the body (plans store body ids, `PlayerState.id`). The old Mush body, now human, loses the Mush channel, so its jobs in Mush-channel plans are withdrawn (and a Mush-channel plan it authored is cancelled, by the rule above).
 - **Take and drop pick the first match** in `state.items` order: for take, the first item of the type in the room that the actor can see (not hidden, or hidden by them); for drop, the first carried item of the type.
+- **No patrol craft (owner, 2026-10-27):** they have no doors, so `shortestPath` can't reach them; `postPlan` refuses jobs in a patrol craft's room, for now or for good.
 - **Relay formula for research and projects:** see "Research and project relay formula" below.
 
 ### Review findings (owner, 2026-10-26, from the feasibility review)

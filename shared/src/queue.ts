@@ -28,15 +28,7 @@ export function queueAction(state: GameState, playerId: PlayerId, action: Action
   const p = findPlayer(state, playerId);
   const def: ActionDef<Action> | undefined = ACTIONS[action.type];
   if (!p || !def) return fail("illegal_action");
-  if (!def.timed || p.cheats.includes("instantActions")) {
-    const done = applyAction(state, playerId, action);
-    if (done.ok) {
-      const actor = findPlayer(done.state, playerId)!;
-      standUp(actor, def);
-      endAccommodationToAct(done.state, actor, action, def.visibility);
-    }
-    return done;
-  }
+  if (!def.timed || p.cheats.includes("instantActions")) return actNow(state, playerId, action);
   // Checked against things as they are now, like the buttons the player pressed; checked again when its turn comes.
   if (!canAct(state, p) || def.check(state, p, action) !== null) return fail("illegal_action");
   if (p.current && p.queue.length >= state.config.action.queueCap) return fail("queue_full");
@@ -50,6 +42,22 @@ export function queueAction(state: GameState, playerId: PlayerId, action: Action
   if (actor.current) actor.queue.push(queued);
   else begin(next, actor, [queued], at);
   return { ok: true, state: next };
+}
+
+/**
+ * Does an action at once, bypassing the queue: the untimed path of `queueAction`, and the way a plan's jobs run
+ * (docs/action-plans.md), so both go through the same legality check, cost and hooks.
+ */
+export function actNow(state: GameState, playerId: PlayerId, action: Action): ActionResult {
+  const def: ActionDef<Action> | undefined = ACTIONS[action.type];
+  if (!def) return fail("illegal_action");
+  const done = applyAction(state, playerId, action);
+  if (done.ok) {
+    const actor = findPlayer(done.state, playerId)!;
+    standUp(actor, def);
+    endAccommodationToAct(done.state, actor, action, def.visibility);
+  }
+  return done;
 }
 
 /** Clear queue: drops everything waiting, and the action under way unless it has already happened ("start"). */

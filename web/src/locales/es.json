@@ -43,7 +43,19 @@
     "morale": "Moral",
     "dayCycle": "Día {{day}}, ciclo {{cycle}}",
     "nextCycle": "Próximo ciclo en {{time}}",
-    "chip": "{{label}}: {{value}} de {{max}}"
+    "chip": "{{label}}: {{value}} de {{max}}",
+    "name": {
+      "ap": "Puntos de acción",
+      "mp": "Puntos de movimiento",
+      "hp": "Puntos de vida",
+      "morale": "Moral"
+    },
+    "info": {
+      "ap": "Ganas 1 PA al comienzo de cada ciclo, hasta {{maxAp}}. Los PA no gastados se conservan.\nEstar acostado en una cama o en un sofá da 1 PA más por ciclo (2 en total). Cualquier otra acción te levanta.\nEl café de la máquina del Comedor da 2 PA.\nLa mayoría de las acciones cuestan PA. Sin PM, un desplazamiento convierte {{apPerConversion}} PA en {{mpPerConversion}} PM.",
+      "mp": "Cada desplazamiento a otra sala cuesta {{mpPerMove}} PM. Caminar por la sala es gratis.\nLos PM se conservan de un ciclo a otro, hasta {{mpCap}}.\nSin PM, un desplazamiento convierte {{apPerConversion}} PA en {{mpPerConversion}} PM.\nEl Discurso aburrido de un Motivador da 3 PM a todos los demás en la sala, una vez al día.",
+      "hp": "Los PV no se recuperan solos. Con 0 PV mueres.\nCurar devuelve 3 PV: lleva un Botiquín, o usa la Enfermería sin él (2 PA sobre otra persona, 3 PA sobre ti).\nLos golpes y las armas quitan PV, y también las heridas al construir, desmontar o reparar.\nUn humano hambriento (24 ciclos después de que se le pase la última comida) pierde 1 PV por ciclo hasta que coma.\nUn Mush pierde 4 PV cada vez que se ducha.",
+      "morale": "Todos pierden 2 puntos de moral al comienzo de cada día (1 mientras Chun siga con vida).\nConsolar, la acción del Psicólogo, da 2 puntos de moral. Estar acostado en una sala con un Psicólogo da 1 punto de moral por ciclo.\nEl Discurso enardecido de un Líder da 2 puntos de moral a todos los demás en la sala.\nComer una Ración cruda cuesta 1 punto de moral."
+    }
   },
   "settings": {
     "open": "Ajustes",

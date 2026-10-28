@@ -6,7 +6,7 @@ import { Popover } from "@base-ui/react/popover";
 import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { ConsumeEffects } from "./ConsumeEffects.tsx";
-import { affordable, type Action, type ActionOption, type PlayerView } from "@mush2/shared";
+import { affordable, freeAp, type Action, type ActionOption, type PlayerView } from "@mush2/shared";
 
 /** A button that does the action, or the disabled one with the reason when you lack the points. */
 export function ActionButton({ view, option, onAction, children }: { view: PlayerView; option: ActionOption; onAction: (action: Action) => void; children: ReactNode }) {
@@ -46,10 +46,10 @@ export function DisabledActionButton({ view, blocked, children }: { view: Player
     lacks[0] === "space"
       ? t("actions.lacksSpace")
       : lacks.length > 1
-      ? t("actions.lacksBoth", { needAp: cost.ap, needMp: cost.mp, haveAp: view.you.ap, haveMp: view.you.mp })
+      ? t("actions.lacksBoth", { needAp: cost.ap, needMp: cost.mp, haveAp: freeAp(view.you), haveMp: view.you.mp })
       : lacks[0] === "mp"
         ? t("actions.lacksMp", { need: cost.mp, have: view.you.mp })
-        : t("actions.lacksAp", { need: cost.ap, have: view.you.ap });
+        : t("actions.lacksAp", { need: cost.ap, have: freeAp(view.you) });
   const type = consumedType(view, blocked);
   return (
     <Popover.Root>

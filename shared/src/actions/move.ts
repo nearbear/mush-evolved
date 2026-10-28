@@ -2,6 +2,7 @@ import { Action, isString } from "./action.ts";
 import { leaveAccommodation, wheelAlong } from "./accommodate.ts";
 import { logPublic } from "../log.ts";
 import { arrive } from "../spot.ts";
+import { freeAp } from "../helpers.ts";
 import { moveCost, movementRules } from "../modifiers.ts";
 import type { GameState, PlayerState } from "../types.ts";
 
@@ -27,12 +28,12 @@ export class MoveAction extends Action<MoveActionData> {
     // The price itself, not just the base check: a move can have a negative MP price (converting AP gives MP), so a
     // modifier lowering the AP could let a player with no AP move and gain MP; and a cap below one move's MP makes it
     // impossible, not unaffordable.
-    return moveCost(movementRules(state, player), player) ? null : "cant_afford";
+    return moveCost(movementRules(state, player), { ap: freeAp(player), mp: player.mp }) ? null : "cant_afford";
   }
 
   override getCost(state: Readonly<GameState>, player: Readonly<PlayerState>, target: MoveActionData): { ap: number; mp: number } {
     const rules = movementRules(state, player);
-    const c = moveCost(rules, player);
+    const c = moveCost(rules, { ap: freeAp(player), mp: player.mp });
     // Unaffordable (a queued move repriced after the AP ran out): a nominal price; check() rejects it and it is dropped.
     if (!c) return { ap: rules.apPerConversion, mp: 0 };
     return { ap: c.ap, mp: player.mp - c.mpAfter };
