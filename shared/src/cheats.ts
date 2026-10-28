@@ -3,9 +3,10 @@
 // unless ALLOW_CHEATS is set, and the flags only ever appear in your own view.
 
 import { startCharges } from "./items.ts";
+import { removeStatus } from "./statuses.ts";
 import type { GameState, PlayerState } from "./types.ts";
 
-export const CHEATS = ["infiniteAp", "infiniteMp", "infiniteMorale", "infiniteHp", "infiniteSpores", "infiniteCharges", "instantActions", "noRelayPenalty", "freeHacking", "selfDisease", "anySkill"] as const;
+export const CHEATS = ["infiniteAp", "infiniteMp", "infiniteMorale", "infiniteHp", "infiniteSpores", "infiniteCharges", "instantActions", "noRelayPenalty", "freeHacking", "selfDisease", "anySkill", "alwaysClean"] as const;
 export type Cheat = (typeof CHEATS)[number];
 
 /** Whether a player sees through ACTOPI as the ship has it ("default"), or always ("on") or never ("off"). */
@@ -47,6 +48,7 @@ const REFILL: Record<Cheat, (p: PlayerState, state: GameState) => void> = {
   freeHacking: () => {}, // bypassesTitles in titles.ts reads the flag
   selfDisease: () => {},
   anySkill: () => {}, // actions/pick_skill.ts reads the flag
+  alwaysClean: (p) => removeStatus(p, "dirty"), // dirt is added mid-action; this runs after it
 };
 
 /**

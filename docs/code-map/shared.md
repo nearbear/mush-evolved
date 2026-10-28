@@ -51,7 +51,7 @@ Other packages import from `@mush2/shared` (`shared/src/index.ts`, the barrel). 
 - `titles.ts`: `TITLE_IDS`, each title's line (`SUCCESSION`), `successor` (pure), `assignTitles` (at creation) and `refreshTitles` (after a death).
 - `statuses.ts`: stored and derived statuses.
 - `adjustStats.ts`: capped morale changes and disease application; `addDisease` updates both the modifier and private status.
-- `cheats.ts`: development cheats (issue #148), gated by `ALLOW_CHEATS`. Flag-only cheats are read where they apply: `instantActions` in `queue.ts`, `noRelayPenalty` in `relay.ts`, `freeHacking` in `titles.ts` (`bypassesTitles`), `anySkill` in `actions/pick_skill.ts`.
+- `cheats.ts`: development cheats (issue #148), gated by `ALLOW_CHEATS`. Flag-only cheats are read where they apply: `instantActions` in `queue.ts`, `noRelayPenalty` in `relay.ts`, `freeHacking` in `titles.ts` (`bypassesTitles`), `anySkill` in `actions/pick_skill.ts`. `alwaysClean` strips `dirty` in `applyCheats`.
 
 **Types, config, and data**
 
