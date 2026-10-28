@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { DEFAULT_CONFIG } from "../src/config.ts";
-import { overheadStatuses } from "../src/statuses.ts";
+import { overheadStatuses, STATUS_IDS, STATUS_PUBLIC, statusIdsFor } from "../src/statuses.ts";
 import { MODIFIERS } from "../src/modifiers.ts";
 import { contaminate } from "../src/infection.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";
@@ -36,6 +36,21 @@ function give(s: GameState, id: PlayerId, type: string): string {
   return itemId;
 }
 const eat = (s: GameState, id: PlayerId, type: string) => mustApply(s, id, { type: "consume", item: give(s, id, type) });
+
+describe("configured diseases", () => {
+  it("are registered as private statuses without explicit status entries", () => {
+    for (const disease of DEFAULT_CONFIG.diseases.allDiseases) {
+      expect(statusIdsFor(DEFAULT_CONFIG.diseases.allDiseases)).toContain(disease);
+      expect(STATUS_IDS).not.toContain(disease);
+      expect(STATUS_PUBLIC[disease]).toBeUndefined();
+
+      const s = ship();
+      s.players[1]!.statuses.push(disease);
+      expect(viewFor(s, "p1").statuses).toContain(disease);
+      expect(viewFor(s, "p0").players.find((p) => p.id === "p1")!.statuses).not.toContain(disease);
+    }
+  });
+});
 
 describe("dirty", () => {
   it("is applied by extracting a spore, and visible to others in the room", () => {

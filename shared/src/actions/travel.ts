@@ -4,6 +4,7 @@ import { logPrivate, logPublic } from "../log.ts";
 import { canSteer, planetAt } from "../navigation.ts";
 import { commandTerminalsHere } from "../pilgred.ts";
 import type { GameState, PlayerState } from "../types.ts";
+import { shipMoved } from "../modifiers.ts";
 
 export type TravelActionData = { type: "travel"; equipment: string };
 
@@ -45,6 +46,7 @@ export class TravelAction extends Action<TravelActionData> {
       return;
     }
     state.ship.combustion = 0;
+    shipMoved(state);
     huntersFollow(state);
     const found = planetAt(state, state.navigation.heading, distance);
     for (const owner of Object.keys(state.planets)) {

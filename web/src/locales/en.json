@@ -509,6 +509,8 @@
     "accommodated": "Accommodated",
     "outcast": "Outcast",
     "cold_disease": "Cold",
+    "extreme_tinnitus_disease": "Extreme Tinnitus",
+    "fungal_infection_disease": "Fungal Infection",
     "broken_nose_injury": "Broken Nose",
     "contaminated": "Contamination: {{level}}",
     "desc": {
@@ -523,7 +525,9 @@
       "accommodated": "Someone is pushing this person's wheelchair: they go wherever their pusher goes, at no MP cost, and can't move alone. Either of them can end it.",
       "outcast": "Cursed by a Persecutor: every action of theirs that rolls succeeds 20% less, and nothing they do is secret. It ends when the Persecutor or they die.",
       "cold_disease": "-3 Max Morale.\nYour punches deal 1 less damage.\nOn cycle change, you have a 33% chance to lose 1 MP.",
-      "broken_nose_injury": "-2 Max HP.\n-2 Max Morale",
+      "extreme_tinnitus_disease": "-3 Max Morale.\nYou lose 2 morale when the ship moves.\nYou lose 2 health when the ship moves.",
+      "fungal_infection_disease": "-2 Max HP.\n-2 Max Morale.\nYou need 1 less spore to be converted.\nOn cycle change, you become dirty.",
+      "broken_nose_injury": "-2 Max HP.\n-2 Max Morale.",
       "contaminated": "A human you have contaminated. At their capacity they turn Mush."
     }
   },
@@ -660,6 +664,8 @@
     "protection_gloves": "Protective Gloves"
   },
   "logEvent": {
+    "loseMorale": "You have lost {{amount}} morale.",
+    "gainMorale": "You gain {{amount}} morale.",
     "actionCostChanged": "Your queued action ({{action}}) was cancelled because its cost changed: it now costs {{ap}} AP and {{mp}} MP.",
     "actionDropped": "Your queued action ({{action}}) was no longer possible and was dropped.",
     "becomeDirty": "You're filthy! You have become dirty.",
