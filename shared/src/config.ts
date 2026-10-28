@@ -162,7 +162,8 @@ export const DEFAULT_CONFIG: GameConfig = {
   // Owner, 2026-10-22: planets get a direction and a distance (2 to 9 fuel, unique on the ship), and grow with the day.
   astro: {
     scan: { cost: { ap: 3 }, chance: 0.5, failureMultiplier: 1.25 },
-    analyze: { cost: { ap: 2 } },
+    // Owner, 2026-10-27 (the wiki): analysing the planet the ship orbits is a deep analysis, 1 AP and 1 extra sector.
+    analyze: { cost: { ap: 2 }, orbitCost: { ap: 1 }, orbitExtraSectors: 1 },
     maxPlanets: 2,
     distance: { min: 2, nearMax: 7, max: 9 },
     sizeByDay: [

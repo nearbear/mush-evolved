@@ -9,7 +9,8 @@ export type AnalyzePlanetActionData = { type: "analyze_planet"; equipment: strin
 /**
  * Analyse one of your own planets at the Astro terminal (owner, 2026-10-19): 2 AP reveals one unknown sector (more with the
  * astrophysician skill), each picked weighted by its tag's `seek`. Living, not-dirty players. The room log names the planet, never the sector; the sector
- * shows up only in your own view.
+ * shows up only in your own view. Deep analysis (owner, 2026-10-27, the wiki): on the planet the ship orbits it costs 1 AP
+ * and reveals one more sector. That planet stays the finder's own; orbiting makes it public but not its sectors.
  */
 export class AnalyzePlanetAction extends Action<AnalyzePlanetActionData> {
   override terminal = true;
@@ -18,8 +19,9 @@ export class AnalyzePlanetAction extends Action<AnalyzePlanetActionData> {
     super("analyze_planet", { equipment: isString, planet: isString });
   }
 
-  override getCost(state: Readonly<GameState>): { ap: number; mp: number } {
-    return { ap: state.config.astro.analyze.cost.ap, mp: 0 };
+  override getCost(state: Readonly<GameState>, _player: Readonly<PlayerState>, target: AnalyzePlanetActionData): { ap: number; mp: number } {
+    const { cost, orbitCost } = state.config.astro.analyze;
+    return { ap: state.navigation.orbit === target.planet ? orbitCost.ap : cost.ap, mp: 0 };
   }
 
   override getCandidates(state: Readonly<GameState>, player: Readonly<PlayerState>): AnalyzePlanetActionData[] {
@@ -39,7 +41,8 @@ export class AnalyzePlanetAction extends Action<AnalyzePlanetActionData> {
 
   override apply(state: GameState, player: PlayerState, target: AnalyzePlanetActionData): void {
     const planet = planetsOf(state, player.id).find((p) => p.id === target.planet)!;
-    for (let i = analysisSectors(state, player); i > 0; i--) {
+    const deep = state.navigation.orbit === planet.id ? state.config.astro.analyze.orbitExtraSectors : 0;
+    for (let i = analysisSectors(state, player) + deep; i > 0; i--) {
       const [index, rng] = pickSeekSector(state.rng, planet);
       state.rng = rng;
       if (index === null) break;

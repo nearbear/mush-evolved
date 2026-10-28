@@ -317,7 +317,7 @@ export interface GameConfig {
       chance: number; // Base success chance of a scan, 0 to 1 (owner, 2026-10-19; the original's 50%).
       failureMultiplier: number; // Each failed scan in a row multiplies the player's next chance by this (owner, 2026-10-19; the original's fail_coef 1.25).
     };
-    analyze: { cost: { ap: number } }; // AP spent to reveal one sector of one of your planets (owner, 2026-10-19; the original's remote analysis, 2).
+    analyze: { cost: { ap: number }; orbitCost: { ap: number }; orbitExtraSectors: number }; // AP spent to reveal one sector of one of your planets (owner, 2026-10-19; the original's remote analysis, 2). In orbit of that planet (deep analysis, owner 2026-10-27, the wiki) it costs `orbitCost` and reveals `orbitExtraSectors` more.
     maxPlanets: number; // Most planets one player can hold (owner, 2026-10-19).
     // Where a planet lies (owner, 2026-10-22, eMush's PlanetService): one of 4 directions at `min` to `max` fuel, a position no other
     // planet on the ship holds. The distance is two rolls over `min`..`nearMax` averaged (rounded down); `nearMax + 1` and up are
