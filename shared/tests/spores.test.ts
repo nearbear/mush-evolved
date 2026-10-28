@@ -46,6 +46,24 @@ describe("spore extraction", () => {
     expect(player(mustApply(s, "p0", extract), "p0").spores).toBe(2);
   });
 
+  it("shows the extraction disabled with the cycles left while it cools down", () => {
+    let s = mustApply(ship(), "p0", extract);
+    const listed = () => viewFor(s, "p0").actions.find((o) => o.action.type === "extract_spore");
+    expect(listed()).toMatchObject({ lacks: ["cooldown"], cooldown: 4 });
+    s = nextCycle(nextCycle(s));
+    expect(listed()).toMatchObject({ lacks: ["cooldown"], cooldown: 2 });
+    s = nextCycle(nextCycle(s));
+    expect(listed()?.lacks).toEqual([]);
+  });
+
+  it("shows the extraction disabled at the daily cap, which outranks a cooldown", () => {
+    const s = ship();
+    s.config = { ...s.config, spores: { ...s.config.spores, perDay: 1 } };
+    const t = mustApply(s, "p0", extract);
+    expect(viewFor(t, "p0").actions.find((o) => o.action.type === "extract_spore")).toMatchObject({ lacks: ["capacity"] });
+    expect(viewFor(t, "p1").actions.find((o) => o.action.type === "extract_spore")).toMatchObject({ lacks: ["capacity"] });
+  });
+
   it("keeps cooldowns separate per Mush", () => {
     const s = mustApply(ship(), "p0", extract);
     expect(offered(s, "p1")).toContainEqual(extract);

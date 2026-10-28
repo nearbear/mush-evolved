@@ -300,7 +300,11 @@
       "covert": "Discreta"
     },
     "chance": "({{percent}} %)",
+    "atCapacity": "Capacidad máxima: los Mush ya han extraído todas las esporas posibles hoy. El límite se reinicia al día siguiente.",
     "lacksAp": "No tienes suficientes PA: cuesta {{need}} y tienes {{have}}.",
+    "onCooldown_one": "Lista de nuevo en {{count}} ciclo.",
+    "onCooldown_other": "Lista de nuevo en {{count}} ciclos.",
+    "onCooldown_many": "Lista de nuevo en {{count}} ciclos.",
     "lacksSpace": "Tu inventario está lleno.",
     "lacksMp": "No tienes suficientes PM: cuesta {{need}} y tienes {{have}}.",
     "lacksBoth": "No tienes suficientes PA ni PM: cuesta {{needAp}} PA y {{needMp}} PM, y tienes {{haveAp}} PA y {{haveMp}} PM.",

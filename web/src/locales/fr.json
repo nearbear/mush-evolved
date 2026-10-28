@@ -300,7 +300,11 @@
       "covert": "Discrète"
     },
     "chance": "({{percent}} %)",
+    "atCapacity": "Capacité atteinte : les Mush ont déjà extrait toutes les spores possibles aujourd'hui. La limite se réinitialise au jour suivant.",
     "lacksAp": "Pas assez de PA : cela coûte {{need}}, vous en avez {{have}}.",
+    "onCooldown_one": "De nouveau prête dans {{count}} cycle.",
+    "onCooldown_other": "De nouveau prête dans {{count}} cycles.",
+    "onCooldown_many": "De nouveau prête dans {{count}} cycles.",
     "lacksSpace": "Votre inventaire est plein.",
     "lacksMp": "Pas assez de PM : cela coûte {{need}}, vous en avez {{have}}.",
     "lacksBoth": "Pas assez de PA ni de PM : cela coûte {{needAp}} PA et {{needMp}} PM, vous avez {{haveAp}} PA et {{haveMp}} PM.",

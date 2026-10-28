@@ -62,7 +62,7 @@ describe("refused actions don't say why", () => {
   it("the crew's daily spore cap looks the same as the actor's own cooldown", () => {
     const capped = ship();
     capped.sporesToday = config.spores.perDay;
-    expectRefused(capped, "p0", { type: "extract_spore" }, "daily_cap");
+    expectRefused(capped, "p0", { type: "extract_spore" }, "at_capacity");
     const cooling = ship();
     cooling.sporeExtractedOn = { p0: cooling.cycle };
     expectRefused(cooling, "p0", { type: "extract_spore" }, "cooldown");

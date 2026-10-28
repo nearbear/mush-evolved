@@ -43,7 +43,11 @@ export function DisabledActionButton({ view, blocked, children }: { view: Player
   const { t } = useTranslation();
   const { cost, lacks } = blocked;
   const reason =
-    lacks[0] === "space"
+    lacks[0] === "capacity"
+      ? t("actions.atCapacity")
+      : lacks[0] === "cooldown"
+      ? t("actions.onCooldown", { count: blocked.cooldown ?? 1 })
+      : lacks[0] === "space"
       ? t("actions.lacksSpace")
       : lacks.length > 1
       ? t("actions.lacksBoth", { needAp: cost.ap, needMp: cost.mp, haveAp: freeAp(view.you), haveMp: view.you.mp })

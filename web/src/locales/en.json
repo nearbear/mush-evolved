@@ -297,7 +297,10 @@
       "covert": "Covert"
     },
     "chance": "({{percent}}%)",
+    "atCapacity": "At capacity: the Mush have already extracted all the spores they can today. The limit resets with the next day.",
     "lacksAp": "Not enough AP: it costs {{need}}, you have {{have}}.",
+    "onCooldown_one": "Ready again in {{count}} cycle.",
+    "onCooldown_other": "Ready again in {{count}} cycles.",
     "lacksSpace": "Your inventory is full.",
     "lacksMp": "Not enough MP: it costs {{need}}, you have {{have}}.",
     "lacksBoth": "Not enough AP or MP: it costs {{needAp}} AP and {{needMp}} MP, you have {{haveAp}} AP and {{haveMp}} MP.",

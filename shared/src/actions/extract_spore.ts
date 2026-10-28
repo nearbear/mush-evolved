@@ -1,4 +1,4 @@
-import { Action, IN_PRESELECTION, type ActionVisibility } from "./action.ts";
+import { Action, AT_CAPACITY, COOLDOWN, IN_PRESELECTION, type ActionVisibility } from "./action.ts";
 import { logSecret } from "../log.ts";
 import { sporesPerDay } from "../modifiers.ts";
 import { hasSkill } from "../skills.ts";
@@ -31,10 +31,15 @@ export class ExtractSporeAction extends Action<ExtractSporeActionData> {
   override validate(state: Readonly<GameState>, player: Readonly<PlayerState>, target: ExtractSporeActionData): string | null {
     if (state.preselection) return IN_PRESELECTION;
     if (player.role !== "mush") return "not_mush";
-    const last = state.sporeExtractedOn[player.id];
-    if (!freeExtraction(player) && last !== undefined && state.cycle - last < state.config.spores.cooldownCycles) return "cooldown";
-    if (state.sporesToday >= sporesPerDay(state, player)) return "daily_cap";
+    if (state.sporesToday >= sporesPerDay(state, player)) return AT_CAPACITY;
+    if (this.cooldownLeft(state, player, target) > 0) return COOLDOWN;
     return null;
+  }
+
+  override cooldownLeft(state: Readonly<GameState>, player: Readonly<PlayerState>, target: ExtractSporeActionData): number {
+    const last = state.sporeExtractedOn[player.id];
+    if (freeExtraction(player) || last === undefined) return 0;
+    return Math.max(0, state.config.spores.cooldownCycles - (state.cycle - last));
   }
 
   override apply(state: GameState, player: PlayerState, target: ExtractSporeActionData): void {

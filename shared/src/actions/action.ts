@@ -12,6 +12,12 @@ export const IN_PRESELECTION = "preselection";
 
 export const NO_SPACE = "no_space";
 
+/** The `validate` code for an action whose shared daily limit is used up: shown disabled, not hidden (`unaffordableActions`). */
+export const AT_CAPACITY = "at_capacity";
+
+/** The `validate` code for an action that is waiting out a cooldown: shown disabled, with the wait (`unaffordableActions`). */
+export const COOLDOWN = "cooldown";
+
 /**
  * Who learns of an action, for the label on its button (the log entries themselves come from `log.ts`).
  * Declared per action and kept in step with the log call in its `apply`.
@@ -141,6 +147,11 @@ export class Action<T extends { type: string }> {
    */
   check(state: Readonly<GameState>, player: Readonly<PlayerState>, target: T): string | null {
     return this.validate(state, player, target) ?? this.canAfford(state, player, target);
+  }
+
+  /** Cycles until a `cooldown` refusal clears, for showing the action disabled with the wait. */
+  cooldownLeft(state: Readonly<GameState>, player: Readonly<PlayerState>, target: T): number {
+    return 0;
   }
 
   /** The action's own conditions, apart from the price: an error code, or null if it may go ahead. */
