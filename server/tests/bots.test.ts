@@ -58,6 +58,13 @@ describe("LogParrotBot", () => {
     expect(bot.chatLines({ ...view, log: [...view.log, priv] })).toHaveLength(1);
   });
 
+  it("doesn't repeat what it already posted before the room was evicted", () => {
+    const said = { id: 0, cycle: 2, channel: "global" as const, from: base.you.id, isBot: true, text: "[cycle 2] healed (name=Ann)" };
+    const view = { ...base, chatChannels: ["global" as const], log: [priv], chat: [said] };
+    expect(new LogParrotBot().chatLines(view)).toEqual([]);
+    expect(new LogParrotBot().chatLines({ ...view, log: [priv, priv] })).toHaveLength(1);
+  });
+
   it("keeps entries for later when it can't post to global chat", () => {
     const bot = new LogParrotBot();
     const view = { ...base, chatChannels: [], log: [priv] };

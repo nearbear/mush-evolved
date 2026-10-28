@@ -1491,3 +1491,8 @@ Owner said to add it. I was about to ask about making the orbited planet public;
 
 ### 2026-10-27: Fertile skill
 Wiki gave only "one free extraction a day"; asked the owner four questions (cooldown, daily cap, action shape, Transfer). Decisions: free use ignores but starts the cooldown, counts toward and is blocked by the faction cap, same action shown free, flag moves with the mind. Needed one test fix (action not offered while on cooldown, so no cost to read).
+
+## 2026-10-27: Parrot bots re-posting their private lines on refresh
+
+- The user saw old speech bubbles after a page refresh. An earlier session fixed the client's speech-bubble hook (b4a488f), but that wasn't the cause. The user found the real one: LogParrotBot kept its "already repeated" count in memory, so when an evicted room woke up for the refresh, the new bot posted its whole private log to global chat again, and those were genuinely new messages.
+- Fix: the bot now sets that count on its first call from its own global messages in the view. Lesson: before changing client code for "stale" UI, check whether the server is actually sending new data.

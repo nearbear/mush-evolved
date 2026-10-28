@@ -86,8 +86,12 @@ export class ModelBot implements Bot {
 
 /** Test tool: never moves, and repeats every private log entry it receives in global chat. */
 export class LogParrotBot implements Bot {
-  /** The log only grows, so the count of private entries already repeated is enough. */
-  private repeated = 0;
+  /**
+   * The log only grows, so the count of private entries already repeated is enough. Null until the first call, which
+   * counts the lines this seat already posted: a room that wakes from eviction makes a new bot, which must not repeat
+   * the whole log again.
+   */
+  private repeated: number | null = null;
 
   async decideAction(view: PlayerView): Promise<Action | null> {
     return endCycle(view);
@@ -96,6 +100,7 @@ export class LogParrotBot implements Bot {
   chatLines(view: PlayerView): string[] {
     const priv = view.log.filter((e) => e.visibleTo !== "all");
     if (!view.chatChannels.includes("global")) return [];
+    this.repeated ??= view.chat.filter((m) => m.channel === "global" && m.from === view.you.id && !m.system).length;
     const fresh = priv.slice(this.repeated);
     this.repeated = priv.length;
     return fresh.map(describeLogEntry);
