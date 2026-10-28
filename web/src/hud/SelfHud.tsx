@@ -9,6 +9,7 @@ import { AP_PIP, HP_ICON, HP_PIP, MORALE_ICON, MORALE_PIP, MP_PIP, bustIcon } fr
 import { PipBar } from "./PipBar.tsx";
 import { factionOf } from "./PlayerSummary.tsx";
 import { CompactResourceChips } from "./ResourceChips.tsx";
+import { StatInfo } from "./StatInfo.tsx";
 
 export function SelfHud({ view, onInspect }: { view: PlayerView; onInspect: () => void }) {
   const { t } = useTranslation();
@@ -24,8 +25,12 @@ export function SelfHud({ view, onInspect }: { view: PlayerView; onInspect: () =
         </span>
       </button>
       <div className="hud-bars">
-        <PipBar label={t("stat.hp")} value={you.hp} max={view.maxHp} pip={HP_PIP} icon={HP_ICON} bigIcon thin iconAfter />
-        <PipBar label={t("stat.morale")} value={you.morale} max={view.maxMorale} pip={MORALE_PIP} icon={MORALE_ICON} bigIcon thin iconAfter />
+        <StatInfo stat="hp" view={view} value={you.hp} max={view.maxHp}>
+          <PipBar label={t("stat.hp")} value={you.hp} max={view.maxHp} pip={HP_PIP} icon={HP_ICON} bigIcon thin iconAfter />
+        </StatInfo>
+        <StatInfo stat="morale" view={view} value={you.morale} max={view.maxMorale}>
+          <PipBar label={t("stat.morale")} value={you.morale} max={view.maxMorale} pip={MORALE_PIP} icon={MORALE_ICON} bigIcon thin iconAfter />
+        </StatInfo>
       </div>
       {/* Home for resources that belong nowhere else (spores, free IT points, ...): two show, the card opens them all. */}
       <CompactResourceChips view={view} stacked />
@@ -33,14 +38,18 @@ export function SelfHud({ view, onInspect }: { view: PlayerView; onInspect: () =
   );
 }
 
-/** AP and MP standing up, for the room view's bottom-left corner (GameScreen puts the action queue beside it). */
+/** AP and MP standing up, for the room view's bottom-left corner (GameScreen puts the action queue beside it). Each opens a card on how it is spent and regained (StatInfo), as HP and morale do. */
 export function SelfPoints({ view }: { view: PlayerView }) {
   const { t } = useTranslation();
   const { you } = view;
   return (
     <div className="self-points">
-      <PipBar label={t("stat.ap")} value={you.ap} max={view.maxAp} pip={AP_PIP} vertical />
-      <PipBar label={t("stat.mp")} value={you.mp} max={view.movement.mpCap} pip={MP_PIP} vertical />
+      <StatInfo stat="ap" view={view} value={you.ap} max={view.maxAp}>
+        <PipBar label={t("stat.ap")} value={you.ap} max={view.maxAp} pip={AP_PIP} vertical />
+      </StatInfo>
+      <StatInfo stat="mp" view={view} value={you.mp} max={view.movement.mpCap}>
+        <PipBar label={t("stat.mp")} value={you.mp} max={view.movement.mpCap} pip={MP_PIP} vertical />
+      </StatInfo>
     </div>
   );
 }

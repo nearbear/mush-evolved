@@ -6,6 +6,7 @@ export * from "./shipLayout.ts";
 export * from "./blueprints.ts";
 export * from "./equipment.ts";
 export * from "./rules.ts";
+export { freeAp } from "./helpers.ts";
 export * from "./chat.ts";
 export * from "./actions.ts";
 export * from "./actionTarget.ts";

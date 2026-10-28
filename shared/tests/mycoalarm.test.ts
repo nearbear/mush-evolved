@@ -88,7 +88,7 @@ describe("myco alarm", () => {
     s.players.forEach((p) => {
       p.room = "LABORATORY";
     });
-    s.research.MYCO_ALARM = 75;
+    s.research.MYCO_ALARM = 99;
     stockLab(s, "LABORATORY", "MYCO_ALARM");
     const done = must(applyAction(s, "p2", { type: "research", equipment: "LABORATORY:RESEARCH_LAB", research: "MYCO_ALARM" }));
     expect(alarmsIn(done, "LABORATORY")).toHaveLength(MYCO_ALARM_YIELD);

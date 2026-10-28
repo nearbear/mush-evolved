@@ -5,7 +5,7 @@ import { parseGameMessage } from "../src/protocol.ts";
 import { applyAction, createGame, dayOf, viewFor } from "../src/rules.ts";
 import { addStatus } from "../src/statuses.ts";
 import type { Action, GameState, Planet } from "../src/types.ts";
-import { clone, makeSeats, must, nextDay, offered, option } from "./support.ts";
+import { clone, makeSeats, must, nextDay, offered, option, player } from "./support.ts";
 
 const seats = makeSeats(3, "others");
 const TERMINAL = "COMMAND_CENTER:ASTRO_MODULE";
@@ -292,5 +292,23 @@ describe("Astro terminal planets", () => {
     for (const action of [scan, analyze("planet-1"), del("planet-1")]) expect(parseGameMessage(JSON.stringify({ type: "action", action }))).toEqual({ type: "action", action });
     expect(parseGameMessage(JSON.stringify({ type: "action", action: { type: "analyze_planet", equipment: TERMINAL } }))).toBeNull();
     expect(parseGameMessage(JSON.stringify({ type: "action", action: { type: "delete_planet", planet: "planet-1" } }))).toBeNull();
+  });
+});
+
+describe("Deep analysis", () => {
+  it("costs 1 AP and reveals one more sector on the orbited planet (owner, 2026-10-27)", () => {
+    expect([astro.analyze.orbitCost.ap, astro.analyze.orbitExtraSectors]).toEqual([1, 1]);
+    const s = createGame(makeSeats(3), structuredClone(DEFAULT_CONFIG), 7);
+    player(s, "p0").room = "COMMAND_CENTER";
+    const mk = (id: string) => ({ id, name: id, position: { direction: "N", distance: 2 }, sectors: ["FOREST", "MOUNTAIN", "SWAMP", "DESERT"].map((tag) => ({ tag, known: false })) }) as never;
+    s.planets.p0 = [mk("far"), mk("near")];
+    s.navigation.orbit = "near";
+    const analyse = (planet: string) => ({ type: "analyze_planet", equipment: "COMMAND_CENTER:ASTRO_MODULE", planet }) as const;
+    const far = option(s, "p0", analyse("far"))!;
+    const near = option(s, "p0", analyse("near"))!;
+    expect([far.cost.ap, near.cost.ap]).toEqual([astro.analyze.cost.ap, astro.analyze.orbitCost.ap]);
+    const after = must(applyAction(s, "p0", analyse("near")));
+    expect(after.planets.p0![1]!.sectors.filter((x) => x.known).length).toBe(2);
+    expect(after.planets.p0![0]!.sectors.filter((x) => x.known).length).toBe(0);
   });
 });

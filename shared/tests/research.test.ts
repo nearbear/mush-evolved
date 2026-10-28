@@ -3,7 +3,8 @@ import { DEFAULT_CONFIG } from "../src/config.ts";
 import { parseGameMessage } from "../src/protocol.ts";
 import { EQUIPMENT_TYPES } from "../src/equipment.ts";
 import { ITEM_TYPES } from "../src/items.ts";
-import { ANY_CONSUMABLE, RESEARCH_COMPLETE, RESEARCH_IDS, RESEARCH_REQUIRES } from "../src/research.ts";
+import { ANY_CONSUMABLE, RESEARCH_COMPLETE, RESEARCH_IDS, RESEARCH_REQUIRES, RESEARCH_SKILLS } from "../src/research.ts";
+import { relayGainRange } from "../src/relay.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";
 import { addStatus } from "../src/statuses.ts";
 import type { Action } from "../src/types.ts";
@@ -20,12 +21,24 @@ function game(room = "LABORATORY") {
   return state;
 }
 
+/** A seed for which p0 working STEROIDS does (or does not) get dirty: the gain roll draws before the dirt roll. */
+function seedFor(dirty: boolean): number {
+  for (let seed = 0; ; seed++) {
+    const s = game();
+    s.rng = seed;
+    const r = applyAction(s, "p0", work("STEROIDS"));
+    if (r.ok && r.state.players[0]!.statuses.includes("dirty") === dirty) return seed;
+  }
+}
+const CLEAN = seedFor(false);
+const DIRTY = seedFor(true);
+
 describe("research", () => {
   it("has a 25% chance to become dirty after working on research", () => {
     expect(DEFAULT_CONFIG.research.dirtyChance).toBe(0.25);
 
     const dirty = game();
-    dirty.rng = 7;
+    dirty.rng = DIRTY;
     dirty.players[1]!.room = "REFECTORY";
     dirty.players[2]!.room = "REFECTORY";
     const result = applyAction(dirty, "p0", work("STEROIDS"));
@@ -35,14 +48,14 @@ describe("research", () => {
     expect(viewFor(result.state, "p1").log.some((entry) => entry.key === "becomeDirty")).toBe(false);
 
     const clean = game();
-    clean.rng = 0;
+    clean.rng = CLEAN;
     const cleanResult = applyAction(clean, "p0", work("STEROIDS"));
     if (!cleanResult.ok) throw new Error("expected research to succeed");
     expect(cleanResult.state.players[0]!.statuses).not.toContain("dirty");
 
     const free = game();
     free.players[0]!.resources.comp = 1;
-    free.rng = 7;
+    free.rng = DIRTY;
     const freeResult = applyAction(free, "p0", work("STEROIDS"));
     if (!freeResult.ok) throw new Error("expected Computer-point research to succeed");
     expect(freeResult.state.players[0]!.statuses).toContain("dirty");
@@ -60,30 +73,36 @@ describe("research", () => {
     expect(researches(s, "p0").sort()).toEqual([...RESEARCH_IDS].sort());
   });
 
-  it("costs 2 AP and advances the chosen research by 25%, for anyone", () => {
+  it("costs 2 AP and advances the chosen research by the relay formula, for anyone", () => {
     const s = game();
-    s.rng = 0;
+    s.rng = CLEAN;
     const ap = s.players[1]!.ap;
+    const range = relayGainRange(DEFAULT_CONFIG.research.progress, s.players[1]!, RESEARCH_SKILLS, undefined);
     const r = applyAction(s, "p1", work("STEROIDS"));
     expect(r.ok).toBe(true);
     if (!r.ok) return;
-    expect(r.state.research).toEqual({ STEROIDS: 25 });
+    const first = r.state.research.STEROIDS!;
+    expect(first).toBeGreaterThanOrEqual(range.min);
+    expect(first).toBeLessThanOrEqual(range.max);
     expect(r.state.players[1]!.ap).toBe(ap - AP);
-    // No repeat penalty: the same player can go straight on.
-    r.state.rng = 0;
+    // Going straight on costs the relay penalty.
+    r.state.rng = CLEAN;
     const again = applyAction(r.state, "p1", work("STEROIDS"));
-    expect(again.ok && again.state.research.STEROIDS).toBe(50);
+    const second = relayGainRange(DEFAULT_CONFIG.research.progress, r.state.players[1]!, RESEARCH_SKILLS, { lastBy: "p1", streak: 1 });
+    expect(second.min).toBe(Math.max(0, range.min - DEFAULT_CONFIG.research.progress.relayPenalty));
+    const gained = again.ok ? again.state.research.STEROIDS! - first : -1;
+    expect(gained).toBeGreaterThanOrEqual(second.min);
+    expect(gained).toBeLessThanOrEqual(second.max);
   });
 
   it("completes at 100% and then is no longer offered or accepted", () => {
     let s = game();
-    for (let i = 0; i < 4; i++) {
-      s.players[0]!.ap = 12;
-      s.rng = 0;
-      const r = applyAction(s, "p0", work("STEROIDS"));
-      expect(r.ok).toBe(true);
-      if (r.ok) s = r.state;
-    }
+    s.research.STEROIDS = RESEARCH_COMPLETE - 1;
+    s.players[0]!.ap = 12;
+    s.rng = CLEAN;
+    const r = applyAction(s, "p0", work("STEROIDS"));
+    expect(r.ok).toBe(true);
+    if (r.ok) s = r.state;
     expect(s.research.STEROIDS).toBe(100);
     expect(s.log.at(-1)?.key).toBe("researchCompleted");
     s.players[0]!.ap = 12;
@@ -103,12 +122,48 @@ describe("research", () => {
     expect(s.research).toEqual({});
   });
 
+  it("follows the relay formula: skills add, repeats subtract, per research, and someone else resets it", () => {
+    const cfg = DEFAULT_CONFIG.research.progress;
+    const s = game();
+    const you = s.players[0]!;
+    expect(relayGainRange(cfg, you, RESEARCH_SKILLS, undefined)).toEqual({ min: 6, max: 9 });
+    you.skills = ["biologist"];
+    expect(relayGainRange(cfg, you, RESEARCH_SKILLS, undefined)).toEqual({ min: 10, max: 15 });
+    you.skills = ["biologist", "medic"];
+    expect(relayGainRange(cfg, you, RESEARCH_SKILLS, undefined).min).toBe(14);
+    you.skills = [];
+    expect(relayGainRange(cfg, you, RESEARCH_SKILLS, { lastBy: you.id, streak: 2 })).toEqual({ min: 2, max: 3 });
+    expect(relayGainRange(cfg, you, RESEARCH_SKILLS, { lastBy: you.id, streak: 9 })).toEqual({ min: 0, max: 0 });
+    expect(relayGainRange(cfg, you, RESEARCH_SKILLS, { lastBy: "p1", streak: 9 })).toEqual({ min: 6, max: 9 });
+    you.cheats = ["noRelayPenalty"];
+    expect(relayGainRange(cfg, you, RESEARCH_SKILLS, { lastBy: you.id, streak: 2 })).toEqual({ min: 6, max: 9 });
+  });
+
+  it("tracks the streak per research and resets it when someone else contributes", () => {
+    const s = game();
+    s.rng = CLEAN;
+    const a = mustApply(s, "p0", work("STEROIDS"));
+    a.rng = CLEAN;
+    expect(a.relay.research.STEROIDS).toEqual({ lastBy: "p0", streak: 1 });
+    const b = mustApply(a, "p0", work("STEROIDS"));
+    b.rng = CLEAN;
+    expect(b.relay.research.STEROIDS).toEqual({ lastBy: "p0", streak: 2 });
+    const c = mustApply(b, "p1", work("STEROIDS"));
+    expect(c.relay.research.STEROIDS).toEqual({ lastBy: "p1", streak: 1 });
+    c.rng = CLEAN;
+    c.players[1]!.statuses = [];
+    const d = mustApply(c, "p1", work("DRUG_DISPENSER"));
+    expect(d.relay.research.STEROIDS).toEqual({ lastBy: "p1", streak: 1 });
+    expect(d.relay.research.DRUG_DISPENSER).toEqual({ lastBy: "p1", streak: 1 });
+    expect(JSON.stringify(viewFor(d, "p0"))).not.toContain("streak");
+  });
+
   it("is public: everyone sees progress, wherever they are, and the room sees the log line", () => {
     const s = game();
     s.players[2]!.room = "REFECTORY";
     const r = applyAction(s, "p0", work("STEROIDS"));
     if (!r.ok) throw new Error("expected ok");
-    for (const id of ["p0", "p1", "p2"]) expect(viewFor(r.state, id).research).toEqual({ STEROIDS: 25 });
+    for (const id of ["p0", "p1", "p2"]) expect(viewFor(r.state, id).research).toEqual(r.state.research);
     expect(viewFor(r.state, "p1").log.some((e) => e.key === "researched")).toBe(true);
     expect(viewFor(r.state, "p2").log.some((e) => e.key === "researched")).toBe(false);
   });
@@ -180,15 +235,15 @@ describe("research", () => {
     s.items.push({ id: "sample", type: "mush_sample", at: { kind: "room", id: "LABORATORY" } });
     s.items.push({ id: "held", type: "blaster", at: { kind: "player", id: "p2" } });
     s.items.push({ id: "floor", type: "blaster", at: { kind: "room", id: "LABORATORY" } });
-    s.research.NATAMY_GUN = RESEARCH_COMPLETE - DEFAULT_CONFIG.research.effect.progressPercent;
-    s.rng = 0;
+    s.research.NATAMY_GUN = RESEARCH_COMPLETE - 1;
+    s.rng = CLEAN;
     const done = mustApply(s, "p0", work("NATAMY_GUN"));
     expect(done.items.map((i) => i.id)).toEqual(expect.arrayContaining(["sample", "held"]));
     expect(done.items.some((i) => i.id === "floor")).toBe(false);
     // Partial progress uses nothing.
     const s2 = game();
     stockLab(s2, "LABORATORY", "MYCO_ALARM");
-    s2.rng = 0;
+    s2.rng = CLEAN;
     expect(mustApply(s2, "p0", work("MYCO_ALARM")).items.filter((i) => i.type === "mush_sample")).toHaveLength(s2.items.filter((i) => i.type === "mush_sample").length);
   });
 
@@ -213,19 +268,19 @@ describe("computer scientist skill (computer)", () => {
   it("makes a research free: one Computer point, no AP", () => {
     const s = pick(game());
     const ap = s.players[0]!.ap;
-    s.rng = 0;
+    s.rng = CLEAN;
     const r = applyAction(s, "p0", work("STEROIDS"));
     if (!r.ok) throw new Error(r.error);
     expect(r.state.players[0]!.resources.comp).toBe(cfg.pointsPerDay - 1);
     expect(r.state.players[0]!.ap).toBe(ap);
-    expect(r.state.research.STEROIDS).toBe(25);
+    expect(r.state.research.STEROIDS).toBeGreaterThan(0);
     // The second point makes the next one free; after that it costs AP again.
-    r.state.rng = 0;
+    r.state.rng = CLEAN;
     const second = applyAction(r.state, "p0", work("STEROIDS"));
     if (!second.ok) throw new Error(second.error);
     expect(second.state.players[0]!.resources.comp).toBe(0);
     expect(second.state.players[0]!.ap).toBe(ap);
-    second.state.rng = 0;
+    second.state.rng = CLEAN;
     const third = applyAction(second.state, "p0", work("STEROIDS"));
     expect(third.ok && third.state.players[0]!.ap).toBe(ap - AP);
   });
@@ -233,7 +288,7 @@ describe("computer scientist skill (computer)", () => {
   it("works with no AP left, and is refused with neither", () => {
     const s = pick(game());
     s.players[0]!.ap = 0;
-    s.rng = 0;
+    s.rng = CLEAN;
     expect(applyAction(s, "p0", work("STEROIDS")).ok).toBe(true);
     s.players[0]!.resources.comp = 0;
     expect(applyAction(s, "p0", work("STEROIDS")).ok).toBe(false);

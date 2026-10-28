@@ -135,6 +135,10 @@ export const DEFAULT_CONFIG: GameConfig = {
   // Owner, 2026-10-25 (the original skills.json): Gunman +2 Shoot points a day (max 4); Gunner doubles turret odds and damage;
   // Persistent's streak grows by x1.5 a miss instead of x1.25; Space Tactics shrinks 50% of waves by 33%; Polymath +2 channels, +1 Computer point a day, +2 cap.
   gunman: { capPoints: 4, pointsPerDay: 2 },
+  // Owner, 2026-10-27: Paranoid gives 1 extra Camera item when picked (the original gives 2).
+  paranoid: { cameras: 1 },
+  // Owner, 2026-10-27: Astrophysicist scans for 1 AP less and each remote analysis reveals 1 extra sector (the original skills.json).
+  astrophysicist: { scanApDiscount: 1, extraSectors: 1 },
   gunner: { accuracyFactor: 2, damageFactor: 2 },
   persistent: { failureMultiplier: 1.5 },
   spaceTactics: { chance: 0.5, shrink: 0.33 },
@@ -152,13 +156,14 @@ export const DEFAULT_CONFIG: GameConfig = {
   comfort: { cost: { ap: 1 }, morale: 2 },
   shrink: { lyingMorale: 1 },
   interrogate: { cost: { ap: 1 }, damage: 1, dirtyChance: 0.15, injuryChance: 0.1 },
-  // Decided 2026-10-16: working on a research costs 2 AP and advances it 25%; no repeat penalty yet.
-  research: { cost: { ap: 2 }, effect: { progressPercent: 25 }, dirtyChance: 0.25 },
+  // Decided 2026-10-16: working on a research costs 2 AP. Owner, 2026-10-26: its progress follows the original's relay formula, 6-9% at difficulty 10.
+  research: { cost: { ap: 2 }, progress: { rate: 6, mod: 10, skillBoost: 4, relayPenalty: 2 }, dirtyChance: 0.25 },
   // Decided 2026-10-19 (docs/astro-plan.md): scan 3 AP at 50%, x1.25 per failure in a row; analysis 2 AP; 2 planets per player.
   // Owner, 2026-10-22: planets get a direction and a distance (2 to 9 fuel, unique on the ship), and grow with the day.
   astro: {
     scan: { cost: { ap: 3 }, chance: 0.5, failureMultiplier: 1.25 },
-    analyze: { cost: { ap: 2 } },
+    // Owner, 2026-10-27 (the wiki): analysing the planet the ship orbits is a deep analysis, 1 AP and 1 extra sector.
+    analyze: { cost: { ap: 2 }, orbitCost: { ap: 1 }, orbitExtraSectors: 1 },
     maxPlanets: 2,
     distance: { min: 2, nearMax: 7, max: 9 },
     sizeByDay: [
@@ -170,8 +175,8 @@ export const DEFAULT_CONFIG: GameConfig = {
   // Owner, 2026-10-22: the Commander steers at the Command terminal. Turn, travel and leave orbit cost 1 AP each (the wiki);
   // leaving orbit burns 1 fuel and the ship starts facing north (Claude's defaults).
   navigation: { turn: { cost: { ap: 1 } }, travel: { cost: { ap: 1 } }, leaveOrbit: { cost: { ap: 1 }, fuel: 1 }, startHeading: "north" },
-  // Decided 2026-10-18: NERON projects work exactly like research: 2 AP, 25% per action, no repeat penalty.
-  project: { cost: { ap: 2 }, effect: { progressPercent: 25 } },
+  // Decided 2026-10-18: NERON projects work exactly like research (2 AP; owner, 2026-10-26: the same relay formula).
+  project: { cost: { ap: 2 }, progress: { rate: 6, mod: 10, skillBoost: 4, relayPenalty: 2 } },
   // Owner, 2026-10-21: repairing PILGRED uses the original's numbers (DIG_RATE 6, PILGRED_MOD 2, DIG_BOOST 4, -2 per repeat),
   // 2 AP, 25% dirty; the Physicist gains 1 PILGRED point a day and holds 2.
   pilgred: { cost: { ap: 2 }, dirtyChance: 0.25, injuryChance: 0.05, progress: { rate: 6, mod: 2, skillBoost: 4, relayPenalty: 2 }, capPoints: 2, pointsPerDay: 1, returnCost: { ap: 2 } },

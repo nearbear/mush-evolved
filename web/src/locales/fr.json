@@ -43,7 +43,19 @@
     "morale": "Moral",
     "dayCycle": "Jour {{day}}, cycle {{cycle}}",
     "nextCycle": "Prochain cycle dans {{time}}",
-    "chip": "{{label}} : {{value}} sur {{max}}"
+    "chip": "{{label}} : {{value}} sur {{max}}",
+    "name": {
+      "ap": "Points d'action",
+      "mp": "Points de mouvement",
+      "hp": "Points de vie",
+      "morale": "Moral"
+    },
+    "info": {
+      "ap": "Vous gagnez 1 PA au début de chaque cycle, jusqu'à {{maxAp}}. Les PA non dépensés sont conservés.\nÊtre allongé dans un lit ou sur un sofa donne 1 PA de plus par cycle (2 en tout). Toute autre action vous relève.\nLa nourriture et les boissons rendent des PA.\nLa plupart des actions coûtent des PA. Sans PM, un déplacement convertit {{apPerConversion}} PA en {{mpPerConversion}} PM.",
+      "mp": "Chaque déplacement vers une autre pièce coûte {{mpPerMove}} PM. Marcher dans la pièce est gratuit.\nLes PM sont conservés d'un cycle à l'autre, jusqu'à {{mpCap}}.\nSans PM, un déplacement convertit {{apPerConversion}} PA en {{mpPerConversion}} PM.",
+      "hp": "Les PV ne reviennent pas tout seuls. À 0 PV, vous mourez.\nSoigner rend 3 PV : avec un Médikit sur vous, ou à l'Infirmerie sans Médikit (2 PA sur quelqu'un d'autre, 3 PA sur vous-même).\nLes actions de combat font perdre des PV à leur cible.\nLes blessures en construisant, en démontant ou en réparant font perdre des PV.\nUn humain affamé (24 cycles après la fin de son dernier repas) perd 1 PV par cycle jusqu'à ce qu'il mange.\nUn Mush perd 4 PV à chaque douche.",
+      "morale": "Tout le monde perd 2 points de moral au début de chaque jour (1 tant que Chun est en vie).\nRéconforter, l'action du Psy, donne 2 points de moral. Être allongé dans une pièce où se trouve un Psy donne 1 point de moral par cycle.\nLe Discours enflammé d'un Leader donne 2 points de moral à tous les autres occupants de la pièce.\nManger une Ration crue coûte 1 point de moral."
+    }
   },
   "settings": {
     "open": "Paramètres",
@@ -68,6 +80,7 @@
       "freeHacking": "Piratage libre",
       "selfDisease": "Self Disease",
       "anySkill": "Choisir n'importe quelle compétence",
+      "alwaysClean": "Toujours propre",
       "role": {
         "mush": "Devenir Mush",
         "human": "Devenir humain"
@@ -1022,7 +1035,7 @@
     },
     "effects": {
       "engineer": "+1 PA (point d'action Réparation) par jour.\nChances de réussites doublées pour les Réparations.\nChances de réussites doublées pour les Rénovations.\nBonus pour développer certains Projets NERON.",
-      "astrophysician": "L'action Scanner Une Planète coûte 1 PA de moins.\n+1 Secteur découvert lors des analyses de surface.",
+      "astrophysician": "L'action Scanner Une Planète coûte 1 PA de moins.\n+1 secteur découvert par analyse de planète.",
       "pilot": "Utilise des Tactiques De Pilotage.\nNe rate jamais les atterrissages et décollages.\nBonus pour développer certains Projets NERON.",
       "gunman": "+2 Tirs gratuits PA par jour.\nVos tirs ratés provoquent 2 fois moins de maladresses.\nVos tirs réussis provoquent 2 fois plus de coups critiques.\nBonus pour développer certains Projets NERON.",
       "cook": "Peut lire les propriétés des aliments.\nPeut lire les propriétés des fruits.\n+4 PA par jour (points d'action Cuisiner).\nBonus pour développer certains Projets NERON.",
@@ -1045,7 +1058,7 @@
       "shrink": "A chaque cycle, 1 Point de Moral (PMo) est régénéré à chaque personnage allongé dans sa pièce.\nSoigne les maladie Psy.\nAccorde l'action Réconforter , laquelle améliore le moral.\nBonus pour développer certains Projets NERON.",
       "persistent": "En cas d'échec sur une action, le % de chance de réussite augmente plus vite.",
       "robotics": "Commence avec le plan d'un drone.\nPeut améliorer les drones.\nBonus pour développer certains Projets NERON.",
-      "paranoid": "Commence avec 2 Caméras supplémentaires.",
+      "paranoid": "Commence avec 1 Caméra supplémentaire.",
       "caffeinomaniac": "+2 PA lorsqu'il consomme un Café.\nBonus pour développer certains Projets NERON.",
       "physicist": "Accorde un PA (point d'action de réparation de PILGRED) par jour.\nBonus pour développer certains Projets NERON.",
       "apprentice": "Vous accorde l'action Apprentissage qui permet de copier la compétence d'un joueur présent dans la pièce, une fois par partie.",

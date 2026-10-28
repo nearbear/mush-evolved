@@ -218,6 +218,13 @@ export interface GameConfig {
     capPoints: number; // Most Shoot points (`resources.shoot`) a player can hold (owner, 2026-10-25; the original skill's IncrMaxPA(SHOOT, 4)).
     pointsPerDay: number; // Shoot points the `gunman` skill grants at the start of each day and when picked (owner, 2026-10-25; the original +2). One makes a turret shot free.
   };
+  astrophysicist: {
+    scanApDiscount: number; // AP the `astrophysician` skill takes off the Scan for planets action (owner, 2026-10-27; the original 1).
+    extraSectors: number; // Sectors the skill reveals on top of one per remote analysis (owner, 2026-10-27; the original 1).
+  };
+  paranoid: {
+    cameras: number; // Camera items the `paranoid` skill gives when picked (owner, 2026-10-27; the original gives 2).
+  };
   gunner: {
     accuracyFactor: number; // The `gunner` skill multiplies the chance to hit from a turret by this (owner, 2026-10-24; the data's MulActionOdd 2.0).
     damageFactor: number; // ...and the damage of a hit (owner, 2026-10-24).
@@ -255,12 +262,13 @@ export interface GameConfig {
   interrogate: { cost: { ap: number }; damage: number; dirtyChance: number; injuryChance: number }; // The `torturer` skill's Interrogate: AP cost, guaranteed damage, dirt and injury odds; once a day (owner, 2026-10-24).
   research: {
     cost: { ap: number }; // AP spent to work on a research (decided 2026-10-16).
-    effect: { progressPercent: number }; // Percent a research advances per action (decided 2026-10-16).
+    // The relay formula (relay.ts, owner 2026-10-26), the one PILGRED uses; `mod` is the difficulty, 10 for every research for now.
+    progress: { rate: number; mod: number; skillBoost: number; relayPenalty: number };
     dirtyChance: number; // Chance of getting the dirty status after working on a research (owner, 2026-10-20).
   };
   project: {
     cost: { ap: number }; // AP spent to work on a NERON project (decided 2026-10-18).
-    effect: { progressPercent: number }; // Percent a project advances per action (decided 2026-10-18).
+    progress: { rate: number; mod: number; skillBoost: number; relayPenalty: number }; // As research's (owner, 2026-10-26); no skill bonus for now.
   };
   pilgred: {
     cost: { ap: number }; // AP spent to take part in repairing PILGRED (owner, 2026-10-21; the original's REPAIR_PILGRED, 2).
@@ -310,7 +318,7 @@ export interface GameConfig {
       chance: number; // Base success chance of a scan, 0 to 1 (owner, 2026-10-19; the original's 50%).
       failureMultiplier: number; // Each failed scan in a row multiplies the player's next chance by this (owner, 2026-10-19; the original's fail_coef 1.25).
     };
-    analyze: { cost: { ap: number } }; // AP spent to reveal one sector of one of your planets (owner, 2026-10-19; the original's remote analysis, 2).
+    analyze: { cost: { ap: number }; orbitCost: { ap: number }; orbitExtraSectors: number }; // AP spent to reveal one sector of one of your planets (owner, 2026-10-19; the original's remote analysis, 2). In orbit of that planet (deep analysis, owner 2026-10-27, the wiki) it costs `orbitCost` and reveals `orbitExtraSectors` more.
     maxPlanets: number; // Most planets one player can hold (owner, 2026-10-19).
     // Where a planet lies (owner, 2026-10-22, eMush's PlanetService): one of 4 directions at `min` to `max` fuel, a position no other
     // planet on the ship holds. The distance is two rolls over `min`..`nearMax` averaged (rounded down); `nearMax + 1` and up are

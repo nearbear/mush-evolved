@@ -8,6 +8,7 @@ import { useTranslation } from "react-i18next";
 import { AP_PIP, FACTION_ICONS, HP_ICON, MORALE_ICON, MP_PIP, bustIcon } from "../art/assets.ts";
 import { PreselectionTag } from "./PreselectionTag.tsx";
 import { CompactResourceChips } from "./ResourceChips.tsx";
+import { StatInfo, type Stat } from "./StatInfo.tsx";
 
 /** Your faction, as the key under `faction.*` in the locales. */
 export function factionOf(view: PlayerView) {
@@ -45,16 +46,17 @@ function FactionCard({ view }: { view: PlayerView }) {
   );
 }
 
-/** One resource as a small icon + count chip, for the phone layout where the pip bars take too much room. */
-function StatChip({ stat, value, max, icon, big = false }: { stat: "ap" | "mp" | "hp" | "morale"; value: number; max: number; icon: string; big?: boolean }) {
-  const { t } = useTranslation();
+/** One stat as a small icon + count chip, for the phone layout where the pip bars take too much room. Tapping it opens how the stat is spent and regained (StatInfo, which also names it for screen readers). */
+function StatChip({ stat, view, value, max, icon, big = false }: { stat: Stat; view: PlayerView; value: number; max: number; icon: string; big?: boolean }) {
   return (
-    <span className="stat-chip" role="img" aria-label={t("stat.chip", { label: t(`stat.${stat}`), value, max })}>
-      <img className={big ? "big" : undefined} src={icon} alt="" />
-      <span>
-        {value}/{max}
+    <StatInfo stat={stat} view={view} value={value} max={max}>
+      <span className="stat-chip">
+        <img className={big ? "big" : undefined} src={icon} alt="" />
+        <span>
+          {value}/{max}
+        </span>
       </span>
-    </span>
+    </StatInfo>
   );
 }
 
@@ -81,10 +83,10 @@ export function PlayerSummary({ view, countdown }: { view: PlayerView; countdown
         </div>
         <FactionCard view={view} />
         <div className="stat-chips">
-          <StatChip stat="ap" value={you.ap} max={view.maxAp} icon={AP_PIP} />
-          <StatChip stat="mp" value={you.mp} max={view.movement.mpCap} icon={MP_PIP} />
-          <StatChip stat="hp" value={you.hp} max={view.maxHp} icon={HP_ICON} big />
-          <StatChip stat="morale" value={you.morale} max={view.maxMorale} icon={MORALE_ICON} big />
+          <StatChip stat="ap" view={view} value={you.ap} max={view.maxAp} icon={AP_PIP} />
+          <StatChip stat="mp" view={view} value={you.mp} max={view.movement.mpCap} icon={MP_PIP} />
+          <StatChip stat="hp" view={view} value={you.hp} max={view.maxHp} icon={HP_ICON} big />
+          <StatChip stat="morale" view={view} value={you.morale} max={view.maxMorale} icon={MORALE_ICON} big />
           <CompactResourceChips view={view} />
         </div>
       </div>

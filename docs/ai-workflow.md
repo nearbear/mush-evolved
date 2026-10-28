@@ -1470,3 +1470,25 @@ Second Gemini review (same day), this time with a brief on the game, the owner's
 - Follow-up (same day): the owner moved the portrait, HP/morale, faction and resources to the room view's top-left corner, with the room's name plaque under the portrait (still left-aligned), keeping AP/MP standing in the bottom-left. The title stays in `IsoRoom` (it labels the room for screen readers); the HUD's row has a fixed height (`--hud-row`) and a `:has()` rule moves the title below it, so nothing measures the DOM.
 
 - 2026-10-27: The owner asked Self Disease to mirror Self Injury and confirmed the matching eligibility: randomly choose a disease from `config.diseases.allDiseases` that the player does not already have, use seeded RNG, and make the action unavailable to Mush, bots, and players with no eligible disease. Updated the action, its duration/selection/privacy tests, and the recorded rule. Focused Self Disease and leak tests plus workspace typecheck passed. The full suite also exposed a `Class extends value undefined` import failure in `tests/vaccinate.test.ts` (stack reaches `actions/lie_down.ts`) and unrelated existing timeouts; left workspace edits outside this request untouched.
+## 2026-10-27: Paranoid skill
+- Owner asked to implement Paranoid but with 1 extra camera instead of the original's 2. Implemented as an `onPick` modifier using `produceItem` (`modifiers/paranoid.ts`), count in `config.paranoid.cameras`; en/fr/es descriptions changed to "1". Skipped the question round: the count was given and the skill pattern (Gunman's `onPick`) answered the rest. Assumption worth checking: a full inventory drops the camera on the room floor.
+
+## 2026-10-27: Astrophysicist skill
+Owner decided: scan costs 1 AP less and remote analyses reveal 1 extra sector (the data's "surface analyses" and the wiki's "every analysis" disagreed; I asked once, owner picked remote). Built as an `actionCost` hook plus a new `analysisSectors` fold hook. My first test used invented planet tag names and crashed; fixed with real ones.
+
+## 2026-10-27: research and project relay formula
+
+Decided by the owner on 2026-10-26 (`docs/action-plans.md`), built today. Research and NERON projects drop the flat 25% for the original's `getBaseProgress`, shared with PILGRED through `shared/src/relay.ts`; streaks live in a sibling `state.relay` record (never in a view; `STATE_VERSION` 79). What worked: the plan had every number and the Haxe source reference, so no questions were needed. What needed care: the gain roll now draws from the seeded RNG before the dirt roll, so tests that pinned seeds (`rng = 0` / `7`) changed behaviour; they now pick a clean or dirty seed by scanning, and completion tests start at 99% rather than looping four actions (a streak shrinks the gain to 0 after a few repeats).
+
+## 2026-10-27: Deep analysis
+Owner said to add it. I was about to ask about making the orbited planet public; the owner corrected me first: the planet is public but its sectors are not, so nothing changes and it stays private. Built as a cost and sector-count change on the existing analyse action when the target is the orbited planet (wiki: 1 AP, +1 sector), not a new action. The sector count and cost defaults are the wiki's, not separately asked.
+
+## 2026-10-27: action plans, build step 2 (locked AP, actNow, shortestPath)
+
+- Added `PlayerState.lockedAp` (always 0 for now) and a `freeAp` helper. A grep showed only three live affordability checks read raw `ap` (`Action.canAfford`, the view's `lacks`, the move's AP-to-MP conversion), plus two client hint texts; all now use `freeAp`. Cycle gain, Consume and Logistics caps keep reading raw `ap`, as the plan says.
+- `actNow` came out of `queueAction`'s untimed path. The plan listed "get-up" as one of its hooks, but `performAction` already gets the actor up for timed actions, so no extra code was needed.
+- The reachability test for `shortestPath` failed on the patrol craft: they're rooms with no doors (reached by takeoff). Kept as a test fact; phase 3's `postPlan` will need to refuse jobs there.
+- The existing guards (leakFields list, stored-state fingerprint) caught the new field at once, as designed.
+
+### 2026-10-27: Fertile skill
+Wiki gave only "one free extraction a day"; asked the owner four questions (cooldown, daily cap, action shape, Transfer). Decisions: free use ignores but starts the cooldown, counts toward and is blocked by the faction cap, same action shown free, flag moves with the mind. Needed one test fix (action not offered while on cooldown, so no cost to read).

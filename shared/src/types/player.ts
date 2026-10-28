@@ -53,6 +53,11 @@ export interface PlayerState extends Seat {
   /** Where you stand in `room` (spot.ts). Unset until you walk or move: the client spreads such people out. Public to your room (`OtherPlayerView.spot`). */
   spot?: Spot;
   ap: number;
+  /**
+   * AP claimed plan jobs hold (docs/action-plans.md): still part of `ap`, so the cycle gain's cap counts it, but live
+   * actions can't spend it (`freeAp`). Private: only in your own view. Nothing locks AP yet.
+   */
+  lockedAp: number;
   /** The bed (equipment id) you are lying in, while you have the `lying_down` modifier. Public to your room (`OtherPlayerView.lying`). */
   lyingIn?: string;
   /** Who is pushing your wheelchair (accommodate.ts). Public to your room (`OtherPlayerView.pushedBy`, the `accommodated` status). */
@@ -61,6 +66,8 @@ export interface PlayerState extends Seat {
   outcastBy?: PlayerId;
   /** True once the Motivator has given today's Boring speech (speech.ts); cleared at day start. Never sent. */
   boringToday?: boolean;
+  /** The Fertile skill's free spore extraction was used today (reset each day; moves with the mind in a Transfer). */
+  fertileToday?: boolean;
   /** True once this player has chitchatted with a Confident today (chitchat.ts); cleared at day start. Never sent. */
   chitchatToday?: boolean;
   /** True once the Torturer has interrogated someone today (interrogate.ts); cleared at day start. Never sent. */

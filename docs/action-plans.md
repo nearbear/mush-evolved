@@ -1,6 +1,6 @@
 # Plan: scheduled action plans (#44; written 2026-10-13, narrowed 2026-10-26)
 
-Implemented so far: the action registry and private channels. Nothing below is built. **Decisions** are confirmed by the owner; **Open questions** must be answered before building the phase they block. Do not guess them.
+Implemented so far: the action registry and private channels; build steps 1 (the relay formula) and 2 (`PlayerState.lockedAp` and `freeAp` in every live affordability check, `actNow` in `queue.ts`, `shortestPath` in `paths.ts`; nothing locks AP yet). The rest is not built. **Decisions** are confirmed by the owner; **Open questions** must be answered before building the phase they block. Do not guess them.
 
 On 2026-10-26 the owner narrowed the first pass to four kinds of job, with no secrets, no planning mode and no optional jobs. The design below is for that pass. Earlier decisions for later passes are under "Deferred". The design was drafted with Gemini (three rounds) and checked against the code; a feasibility review the same day (Claude) found no blocker and added the "Review findings" decisions and the UI detail below.
 
@@ -52,6 +52,7 @@ Out of this pass: secrets, the planning-mode recorder, item handles and ids, opt
 - **The author's death or leaving cancels the plan** (all locks released).
 - **Body transfer:** jobs and locked AP stay on the body (plans store body ids, `PlayerState.id`). The old Mush body, now human, loses the Mush channel, so its jobs in Mush-channel plans are withdrawn (and a Mush-channel plan it authored is cancelled, by the rule above).
 - **Take and drop pick the first match** in `state.items` order: for take, the first item of the type in the room that the actor can see (not hidden, or hidden by them); for drop, the first carried item of the type.
+- **No patrol craft (owner, 2026-10-27):** they have no doors, so `shortestPath` can't reach them; `postPlan` refuses jobs in a patrol craft's room, for now or for good.
 - **Relay formula for research and projects:** see "Research and project relay formula" below.
 
 ### Review findings (owner, 2026-10-26, from the feasibility review)
@@ -120,9 +121,9 @@ type Plan = {
 - Cleanup hooks: on death (`killPlayer`), on leaving a channel (`removeFromChannel`, which both death and `leaveChannel` go through; the last member leaving deletes its plans), and on body transfer (the Mush-channel withdrawal above).
 - Live play: `canAfford` (action.ts), `moveCost` (modifiers.ts, through its `ap`/`mp` pick), `move`'s validate and the view's `lacks` use `ap - lockedAp`. Reads of raw `ap` for other purposes (Consume's cap, Logistics' takers) stay.
 
-### Research and project relay formula (owner, 2026-10-26; its own rule change, before plans)
+### Research and project relay formula (owner, 2026-10-26; its own rule change, before plans; built 2026-10-27)
 
-Research and NERON projects drop the flat 25% per action for the original's formula, the one PILGRED already uses (`getBaseProgress` in `Mush/src/common/Solver.hx`): base = `floor(rate × difficulty / 10)`, plus `skillBoost` for each matching skill, minus `relayPenalty` for each contribution in a row by the same player, never below 0; the gain is rolled in [base, base + base/2]. `pilgredGainRange` becomes a shared helper.
+Research and NERON projects drop the flat 25% per action for the original's formula, the one PILGRED already uses (`getBaseProgress` in `Mush/src/common/Solver.hx`): base = `floor(rate × difficulty / 10)`, plus `skillBoost` for each matching skill, minus `relayPenalty` for each contribution in a row by the same player, never below 0; the gain is rolled in [base, base + base/2]. `pilgredGainRange` becomes a shared helper (`relayGainRange` in `shared/src/relay.ts`). Streaks live in `state.relay.research` / `state.relay.projects` (sibling records, `STATE_VERSION` 79).
 
 - **Difficulty:** every research and project uses the MycoAlarm's, 10 (`MYCO_ALARM` in `Mush/data/Data.ods`; also the most common value), for now.
 - **Constants:** PILGRED's `rate` 6, `skillBoost` 4 and `relayPenalty` 2. At difficulty 10 that is 6–9% per action, or 10–15% with one matching skill.

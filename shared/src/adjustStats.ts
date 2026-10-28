@@ -57,8 +57,8 @@ export function addDisease(state: GameState, player: PlayerState, name: StatusId
     player.modifiers.push(name);
     skillPicked(state, player, name);
     addStatus(player, name);
-    const index = state.config.diseases.allInjuries.indexOf(name);
-    const stats = state.config.diseases.allInjuryStats.at(index);
+    // const index = state.config.diseases.allInjuries.indexOf(name);
+    // const stats = state.config.diseases.allInjuryStats.at(index);
     
 
     player.diseaseTrackers.push({ name, duration: 99, resistance: 8, complete: false, forever: true });

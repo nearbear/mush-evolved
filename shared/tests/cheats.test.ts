@@ -220,4 +220,14 @@ describe("any-skill cheat", () => {
     expect(player(s, "p0").skills).toEqual([outsider]);
     expect(skillsOffered(s, "p0").sort()).toEqual([...CHARACTER_SKILLS[player(s, "p0").character]].sort());
   });
+
+  it("always clean: cleanses existing dirt and keeps the player clean after actions", () => {
+    let s = fresh();
+    s.players.find((p) => p.id === "p0")!.statuses.push("dirty");
+    s = cheat(s, "p0", "alwaysClean");
+    expect(player(s, "p0").statuses).not.toContain("dirty");
+    const door = offered(s, "p0").find((a) => a.type === "move")!;
+    s = walk(s, "p0", door.type === "move" ? door.to : "");
+    expect(player(s, "p0").statuses).not.toContain("dirty");
+  });
 });

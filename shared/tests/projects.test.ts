@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { DEFAULT_CONFIG } from "../src/config.ts";
-import { PROJECT_IDS } from "../src/projects.ts";
+import { PROJECT_COMPLETE, PROJECT_IDS } from "../src/projects.ts";
 import { parseGameMessage } from "../src/protocol.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";
 import { addStatus } from "../src/statuses.ts";
@@ -18,8 +18,10 @@ function game(room = "NEXUS_ROOM") {
 }
 
 describe("NERON projects", () => {
-  it("pins the decided numbers: 2 AP, 25% per action", () => {
-    expect([DEFAULT_CONFIG.project.cost.ap, DEFAULT_CONFIG.project.effect.progressPercent]).toEqual([2, 25]);
+  it("pins the decided numbers: 2 AP, the relay formula 6 x 10 / 10, +4 a skill, -2 a repeat", () => {
+    const { rate, mod, skillBoost, relayPenalty } = DEFAULT_CONFIG.project.progress;
+    expect([DEFAULT_CONFIG.project.cost.ap, rate, mod, skillBoost, relayPenalty]).toEqual([2, 6, 10, 4, 2]);
+    expect(DEFAULT_CONFIG.research.progress).toEqual(DEFAULT_CONFIG.project.progress);
   });
 
   it("starts with nothing done and every project offered at NERON's core, and not at the BIOS terminal", () => {
@@ -32,16 +34,26 @@ describe("NERON projects", () => {
     expect(applyAction(s, "p0", { type: "project", equipment: "NEXUS_ROOM:NERON_BIOS_TERM", project: "PLASMA_SHIELD" }).ok).toBe(false);
   });
 
-  it("costs AP and advances the chosen project, for anyone, with no repeat penalty", () => {
+  it("costs AP and advances the chosen project, for anyone, with the relay penalty for repeats", () => {
     const s = game();
     const ap = s.players[1]!.ap;
     const r = applyAction(s, "p1", work("PLASMA_SHIELD"));
     if (!r.ok) throw new Error(r.error);
-    expect(r.state.projects).toEqual({ PLASMA_SHIELD: DEFAULT_CONFIG.project.effect.progressPercent });
+    const first = r.state.projects.PLASMA_SHIELD!;
+    expect(first).toBeGreaterThanOrEqual(6);
+    expect(first).toBeLessThanOrEqual(9);
     expect(r.state.players[1]!.ap).toBe(ap - AP);
     expect(r.state.research).toEqual({});
     const again = applyAction(r.state, "p1", work("PLASMA_SHIELD"));
-    expect(again.ok && again.state.projects.PLASMA_SHIELD).toBe(2 * DEFAULT_CONFIG.project.effect.progressPercent);
+    // The repeat is penalised by 2: 4-6.
+    const second = again.ok ? again.state.projects.PLASMA_SHIELD! - first : -1;
+    expect(second).toBeGreaterThanOrEqual(4);
+    expect(second).toBeLessThanOrEqual(6);
+    // Someone else in between resets the streak.
+    const other = applyAction(r.state, "p0", work("PLASMA_SHIELD"));
+    if (!other.ok) throw new Error(other.error);
+    const back = applyAction(other.state, "p1", work("PLASMA_SHIELD"));
+    expect(back.ok && back.state.projects.PLASMA_SHIELD! - other.state.projects.PLASMA_SHIELD!).toBeGreaterThanOrEqual(6);
   });
 
   it("does not make project work dirty", () => {
@@ -50,17 +62,15 @@ describe("NERON projects", () => {
     const r = applyAction(s, "p0", work("PLASMA_SHIELD"));
     if (!r.ok) throw new Error(r.error);
     expect(r.state.players[0]!.statuses).not.toContain("dirty");
-    expect(r.state.rng).toBe(7);
   });
 
   it("completes at 100% and then is no longer offered or accepted", () => {
     let s = game();
-    for (let i = 0; i < 4; i++) {
-      s.players[0]!.ap = 12;
-      const r = applyAction(s, "p0", work("BEAT_BOX"));
-      if (!r.ok) throw new Error(r.error);
-      s = r.state;
-    }
+    s.projects.BEAT_BOX = PROJECT_COMPLETE - 1;
+    s.players[0]!.ap = 12;
+    const r = applyAction(s, "p0", work("BEAT_BOX"));
+    if (!r.ok) throw new Error(r.error);
+    s = r.state;
     expect(s.projects.BEAT_BOX).toBe(100);
     expect(s.log.at(-1)?.key).toBe("projectCompleted");
     s.players[0]!.ap = 12;
@@ -71,7 +81,8 @@ describe("NERON projects", () => {
   it("can complete every project", () => {
     let s = game();
     for (const id of PROJECT_IDS)
-      for (let i = 0; i < 4; i++) {
+      {
+        s.projects[id] = PROJECT_COMPLETE - 1;
         s.players[0]!.ap = 12;
         const r = applyAction(s, "p0", work(id));
         if (!r.ok) throw new Error(`${id}: ${r.error}`);
@@ -112,7 +123,7 @@ describe("NERON projects", () => {
     s.players[2]!.room = "REFECTORY";
     const r = applyAction(s, "p0", work("WHOS_WHO"));
     if (!r.ok) throw new Error(r.error);
-    for (const id of ["p0", "p1", "p2"]) expect(viewFor(r.state, id).projects).toEqual({ WHOS_WHO: 25 });
+    for (const id of ["p0", "p1", "p2"]) expect(viewFor(r.state, id).projects).toEqual(r.state.projects);
     expect(viewFor(r.state, "p1").log.some((e) => e.key === "projectWorked")).toBe(true);
     expect(viewFor(r.state, "p2").log.some((e) => e.key === "projectWorked")).toBe(false);
   });

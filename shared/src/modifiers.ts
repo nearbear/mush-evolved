@@ -23,6 +23,8 @@ import { computer } from "./modifiers/computer.ts";
 import { designer } from "./modifiers/designer.ts";
 import { sprint } from "./modifiers/sprint.ts";
 import { gunman } from "./modifiers/gunman.ts";
+import { astrophysician } from "./modifiers/astrophysician.ts";
+import { paranoid } from "./modifiers/paranoid.ts";
 import { gunner } from "./modifiers/gunner.ts";
 import { persistent } from "./modifiers/persistent.ts";
 import { polymath } from "./modifiers/polymath.ts";
@@ -64,6 +66,7 @@ type FoldHooks = Record<
   | "shootPointsPerDay"
   | "computerPointsCap"
   | "failureStreakMultiplier"
+  | "analysisSectors"
   | "pilgredPointsPerDay"
   | "gardenPointsPerDay"
   | "heavyMpPenalty"
@@ -129,7 +132,7 @@ export interface Modifier extends Partial<FoldHooks> {
 export type ModifierRegistry = Readonly<Record<string, Modifier>>;
 
 /** Items and skills will register here too. When a skill gains rules, update its entry in SKILL_STATUS (skills.ts). */
-export const MODIFIERS: Record<string, Modifier> = { lying_down, medic, first_aid, sturdy, creative, expert, antic_perfume, logistics, caffeinomaniac, cold_disease, extreme_tinnitus_disease, fungal_infection_disease, broken_nose_injury, computer, designer, sprint, physicist, botanic, pacifist, immunity, mankind_only_hope, wheelchair, pilot, gunman, gunner, persistent, polymath, space_tactics };
+export const MODIFIERS: Record<string, Modifier> = { lying_down, medic, first_aid, sturdy, creative, expert, antic_perfume, logistics, caffeinomaniac, cold_disease, extreme_tinnitus_disease, fungal_infection_disease, broken_nose_injury, computer, designer, sprint, physicist, botanic, pacifist, immunity, mankind_only_hope, wheelchair, pilot, gunman, gunner, persistent, polymath, space_tactics, paranoid, astrophysician };
 
 /** The ids every hook folds over: the player's skills (book slot last), then their other modifiers. */
 export function modifierIds(player: Readonly<PlayerState>): string[] {
@@ -361,6 +364,10 @@ export const computerPointsCap = (state: Readonly<GameState>, player: Readonly<P
 /** The per-miss multiplier of a failure streak (turret shots, astro scans): `base` folded through the player's modifiers (for Persistent). */
 export const failureStreakMultiplier = (state: Readonly<GameState>, player: Readonly<PlayerState>, base: number, registry: ModifierRegistry = MODIFIERS) =>
   fold("failureStreakMultiplier", base, state, player, registry);
+
+/** Sectors one remote planet analysis reveals: one, plus what the astrophysician skill brings. */
+export const analysisSectors = (state: Readonly<GameState>, player: Readonly<PlayerState>, registry: ModifierRegistry = MODIFIERS) =>
+  fold("analysisSectors", 1, state, player, registry);
 
 /** The chance a hunter wave comes smaller: nothing by default, plus what each living holder of Space Tactics brings (they don't stack). */
 export function waveShrinkChance(state: Readonly<GameState>, registry: ModifierRegistry = MODIFIERS): number {
