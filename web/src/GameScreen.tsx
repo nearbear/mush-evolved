@@ -38,8 +38,6 @@ import { useNames } from "./i18n/names.ts";
 import { showError } from "./Toasts.tsx";
 import { useMobile } from "./useMobile.ts";
 
-const NO_CHAT: PlayerView["chat"] = [];
-
 export function GameScreen({ ticket, onLeave, waking = false }: { ticket: SeatTicket; onLeave: () => void; waking?: boolean }) {
   const { t } = useTranslation();
   const [view, setView] = useState<PlayerView | null>(null);
@@ -136,7 +134,7 @@ export function GameScreen({ ticket, onLeave, waking = false }: { ticket: SeatTi
     setRoomLogRequest((n) => n + 1);
   };
 
-  const bubbles = useSpeechBubbles(view?.chat ?? NO_CHAT);
+  const bubbles = useSpeechBubbles(view?.chat);
 
   if (!view) return <main className="connecting loading">{t("common.connecting")}</main>;
   const { you } = view;

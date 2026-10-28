@@ -13,14 +13,16 @@ const MAX_BUBBLES = 3;
 
 /**
  * Global chat messages that arrived since mount, grouped by sender, oldest first. Each expires after
- * BUBBLE_MS. History already in the view when the screen mounts never pops up.
+ * BUBBLE_MS. History already in the first view never pops up; pass undefined until the first view
+ * has arrived, so the history that loads after mount (a page refresh) isn't mistaken for new messages.
  */
-export function useSpeechBubbles(chat: readonly ChatMessage[]): ReadonlyMap<string, Bubble[]> {
+export function useSpeechBubbles(chat: readonly ChatMessage[] | undefined): ReadonlyMap<string, Bubble[]> {
   const [bubbles, setBubbles] = useState<ReadonlyMap<string, Bubble[]>>(new Map());
   const seen = useRef<number | null>(null);
   const timers = useRef<Set<ReturnType<typeof setTimeout>>>(new Set());
 
   useEffect(() => {
+    if (!chat) return;
     const last = chat.reduce((m, c) => Math.max(m, c.id), -1);
     if (seen.current === null) {
       seen.current = last;
