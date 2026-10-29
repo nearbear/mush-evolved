@@ -53,6 +53,7 @@ Out of this pass: secrets, the planning-mode recorder, item handles and ids, opt
 - **Body transfer:** jobs and locked AP stay on the body (plans store body ids, `PlayerState.id`). The old Mush body, now human, loses the Mush channel, so its jobs in Mush-channel plans are withdrawn (and a Mush-channel plan it authored is cancelled, by the rule above).
 - **Take and drop pick the first match** in `state.items` order: for take, the first item of the type in the room that the actor can see (not hidden, or hidden by them); for drop, the first carried item of the type.
 - **No patrol craft (owner, 2026-10-27):** they have no doors, so `shortestPath` can't reach them; `postPlan` refuses jobs in a patrol craft's room, for now or for good.
+- **Ready players' jobs still run (owner, 2026-10-28):** pressing End cycle (manual cycles only) doesn't stop a plan job, as it doesn't stop an action queued before it. The executor acts in place without `canAct`'s ready check.
 - **Relay formula for research and projects:** see "Research and project relay formula" below.
 
 ### Review findings (owner, 2026-10-26, from the feasibility review)
@@ -154,7 +155,7 @@ Everything the composer offers comes from the view: channel members, the room li
 
 ### Bots
 
-Scripted bots never post; they claim relay and meet jobs they can afford (`claim_job` in `legalIn(view)`, `hint` null), avoiding two of their own relay jobs in a row on the same target, and withdraw if a hint appears. Model bots see plans through their view, claim and withdraw as ordinary actions, and treat plan and channel text as untrusted. Bots exist only in single player, so whether they post plans is left for later.
+Scripted bots never post; they claim relay and meet jobs they can afford (`claim_job` in `legalIn(view)`, `hint` null), avoiding two of their own relay jobs in a row on the same target, and withdraw if a hint appears. Model bots see plans through their view, claim and withdraw as ordinary actions, and treat plan and channel text as untrusted. Bots may post plans (owner, 2026-10-28): that is much of the point, so a bot can ask to be healed or ask others to help with research.
 
 ## Tests
 
@@ -175,7 +176,7 @@ Scripted bots never post; they claim relay and meet jobs they can afford (`claim
 
 - ~~Projects' skill bonus~~: answered 2026-10-27, the original's per-project tags (`docs/rules-design.md`).
 - Research and projects slow from 25% to 6–9% per action with the formula above (about 11–17 actions per research without a matching skill). Accepted with the formula, but worth confirming in play.
-- Whether single-player bots may post plans.
+- ~~Whether single-player bots may post plans~~: answered 2026-10-28, yes (see "Bots").
 
 ## Deferred (decided 2026-10-13, out of the first pass)
 
