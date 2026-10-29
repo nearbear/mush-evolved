@@ -267,10 +267,9 @@ li.research-item /* Rebel base icons are 70x65, not the 50x75 research cards. */
   height: 24px;
 }
 
-/* The asset attribution, under the header and above the tabs (see Credits.tsx). */
-/* Cancels the 1rem under the title area (terminal.css's .terminal-top): the tabs are 39px tall with their labels low, which already leaves enough space. */
+/* The asset attribution, at the bottom of the General tab (see Credits.tsx). */
 .settings-credits {
-  margin: 0 0 -1rem;
+  margin: 0;
   font-size: 0.75rem;
   line-height: 1.3;
   color: var(--muted);

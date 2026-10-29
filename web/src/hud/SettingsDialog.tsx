@@ -61,7 +61,6 @@ export function SettingsDialog({
           <div className="cut-card cut-top terminal-card terminal-outlined">
           <div className="terminal-top">
             <DialogHeader className="terminal-header" heading={t("settings.title")} closeLabel={t("settings.close")} />
-            <Credits as="p" className="settings-credits" />
           </div>
           <div className="terminal-body">
           <Tabs.Root className="settings-tabs" defaultValue={cheatsAllowed ? "cheats" : "general"}>
@@ -91,6 +90,7 @@ export function SettingsDialog({
             </select>
           </label>
               <button type="button" onClick={onLeave}>{t("topBar.leave")}</button>
+              <Credits as="p" className="settings-credits" />
             </Tabs.Panel>
             {cheatsAllowed && (
               <Tabs.Panel className="settings-panel" value="cheats">
