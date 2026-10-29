@@ -308,6 +308,7 @@
     "lacksMp": "Pas assez de PM : cela coûte {{need}}, vous en avez {{have}}.",
     "lacksBoth": "Pas assez de PA ni de PM : cela coûte {{needAp}} PA et {{needMp}} PM, vous avez {{haveAp}} PA et {{haveMp}} PM.",
     "returnToSol": "Rentrer sur Sol",
+    "travelToEden": "Voyager vers Éden",
     "contactSol": "Établir le contact avec Sol",
     "decodeRebel": "Décoder un signal rebelle",
     "contactXyloph": "Contacter Xyloph",
@@ -1464,6 +1465,14 @@
       "SCHOOL_MANUALS": "Manuels scolaires. Deux Apprentrons ont été imprimés sur le pont.",
       "WORKSHOP_MANUALS": "Manuel de l'atelier. Trois plans ont été imprimés sur le pont."
     }
+  },
+  "command": {
+    "tabs": "Terminal de commande",
+    "navigationTab": "Navigation",
+    "intergalacticTab": "Intergalactique",
+    "edenUnavailable": "Éden n'est pas encore atteignable.",
+    "solCommanderOnly": "Seul le Commandant peut emmener le vaisseau vers Sol.",
+    "solNotReady": "Le chemin du retour n'est pas encore prêt."
   },
   "navigation": {
     "title": "Navigation",

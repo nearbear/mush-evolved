@@ -304,6 +304,7 @@
     "lacksMp": "Not enough MP: it costs {{need}}, you have {{have}}.",
     "lacksBoth": "Not enough AP or MP: it costs {{needAp}} AP and {{needMp}} MP, you have {{haveAp}} AP and {{haveMp}} MP.",
     "returnToSol": "Return to Sol",
+    "travelToEden": "Travel to Eden",
     "contactSol": "Establish link with Sol",
     "decodeRebel": "Decode rebel signal",
     "contactXyloph": "Contact Xyloph",
@@ -1451,6 +1452,14 @@
       "SCHOOL_MANUALS": "School manuals. Two skill books were printed on the bridge.",
       "WORKSHOP_MANUALS": "Workshop manuals. Three blueprints were printed on the bridge."
     }
+  },
+  "command": {
+    "tabs": "Command terminal",
+    "navigationTab": "Navigation",
+    "intergalacticTab": "Intergalactic",
+    "edenUnavailable": "Eden cannot be reached yet.",
+    "solCommanderOnly": "Only the Commander can take the ship to Sol.",
+    "solNotReady": "The way home isn't ready yet."
   },
   "navigation": {
     "title": "Navigation",

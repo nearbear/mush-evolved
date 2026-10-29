@@ -308,6 +308,7 @@
     "lacksMp": "No tienes suficientes PM: cuesta {{need}} y tienes {{have}}.",
     "lacksBoth": "No tienes suficientes PA ni PM: cuesta {{needAp}} PA y {{needMp}} PM, y tienes {{haveAp}} PA y {{haveMp}} PM.",
     "returnToSol": "Volver a Sol",
+    "travelToEden": "Viajar a Edén",
     "contactSol": "Establecer contacto con Sol",
     "decodeRebel": "Decodificar señal rebelde",
     "contactXyloph": "Contactar con Xyloph",
@@ -1464,6 +1465,14 @@
       "SCHOOL_MANUALS": "Manuales escolares. Se han impreso en el puente dos libros de habilidad.",
       "WORKSHOP_MANUALS": "Manuales del taller. Se han impreso en el puente tres planos."
     }
+  },
+  "command": {
+    "tabs": "Terminal de mando",
+    "navigationTab": "Navegación",
+    "intergalacticTab": "Intergaláctico",
+    "edenUnavailable": "Todavía no se puede llegar a Edén.",
+    "solCommanderOnly": "Solo el Comandante puede llevar la nave a Sol.",
+    "solNotReady": "El camino a casa todavía no está listo."
   },
   "navigation": {
     "title": "Navegación",

@@ -9,10 +9,10 @@ import { ConsumeEffects } from "./ConsumeEffects.tsx";
 import { affordable, freeAp, type Action, type ActionOption, type PlayerView } from "@mush2/shared";
 
 /** A button that does the action, or the disabled one with the reason when you lack the points. */
-export function ActionButton({ view, option, onAction, children }: { view: PlayerView; option: ActionOption; onAction: (action: Action) => void; children: ReactNode }) {
-  if (!affordable(option)) return <DisabledActionButton view={view} blocked={option}>{children}</DisabledActionButton>;
+export function ActionButton({ view, option, onAction, children, className }: { view: PlayerView; option: ActionOption; onAction: (action: Action) => void; children: ReactNode; className?: string }) {
+  if (!affordable(option)) return <DisabledActionButton view={view} blocked={option} className={className}>{children}</DisabledActionButton>;
   const button = (
-    <button type="button" onClick={() => onAction(option.action)}>
+    <button type="button" className={className} onClick={() => onAction(option.action)}>
       {children}
     </button>
   );
@@ -39,7 +39,7 @@ function consumedType(view: PlayerView, option: ActionOption): string | undefine
   return [...view.inventory, ...view.roomItems].find((i) => i.id === a.item)?.type;
 }
 
-export function DisabledActionButton({ view, blocked, children }: { view: PlayerView; blocked: ActionOption; children: ReactNode }) {
+export function DisabledActionButton({ view, blocked, children, className }: { view: PlayerView; blocked: ActionOption; children: ReactNode; className?: string }) {
   const { t } = useTranslation();
   const { cost, lacks } = blocked;
   const reason =
@@ -59,7 +59,7 @@ export function DisabledActionButton({ view, blocked, children }: { view: Player
   const type = consumedType(view, blocked);
   return (
     <Popover.Root>
-      <Popover.Trigger openOnHover delay={200} className="action-disabled" aria-disabled="true" render={<button type="button" />}>
+      <Popover.Trigger openOnHover delay={200} className={className ? `action-disabled ${className}` : "action-disabled"} aria-disabled="true" render={<button type="button" />}>
         {children}
       </Popover.Trigger>
       <Popover.Portal>

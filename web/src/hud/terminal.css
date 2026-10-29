@@ -219,3 +219,13 @@
   overflow-wrap: anywhere;
   color: var(--accent);
 }
+
+/* The Command terminal's Intergalactic tab: one big button per destination, each across the whole row. */
+.command-destinations {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+.command-destinations button.big {
+  width: 100%;
+}

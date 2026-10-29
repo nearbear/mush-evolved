@@ -38,7 +38,7 @@ import { CommsCenter } from "./CommsCenter.tsx";
 import { TabOutline } from "./TabOutline.tsx";
 import { TerminalShell } from "./TerminalShell.tsx";
 import { PlanetList } from "./PlanetList.tsx";
-import { ShipNavigation } from "./ShipNavigation.tsx";
+import { CommandTerminal } from "./CommandTerminal.tsx";
 import { TurretPanel } from "./TurretPanel.tsx";
 import "./settings.css";
 import "./terminal.css";
@@ -67,8 +67,7 @@ export function TerminalDialog({ terminal, view, onAction, onClose }: Props) {
               {terminal?.type === "COM_CENTER" && <CommsCenter terminal={terminal} view={view} onAction={onAction} />}
               {terminal?.type === "NERON_BIOS_TERM" && <BiosTerminal terminal={terminal} view={view} onAction={onAction} />}
               {terminal?.type === "TURRET_COMMAND" && <TurretPanel terminal={terminal} view={view} onAction={onAction} />}
-              {terminal?.type === "PILOT_MODULE" && <ShipNavigation terminal={terminal} view={view} onAction={onAction} />}
-              {terminal?.type === "PILOT_MODULE" && <ReturnToSol key={terminal.id} terminal={terminal} view={view} onAction={onAction} />}
+              {terminal?.type === "PILOT_MODULE" && <CommandTerminal key={terminal.id} terminal={terminal} view={view} onAction={onAction} />}
             </TerminalShell>
             </div>
           )}
@@ -152,48 +151,6 @@ function PilgredRepair({ terminal, view, onAction }: ListProps) {
           <ActionLabel text={t("actions.repairPilgred")} cost={option.cost} chance={option.chance} />
         </ActionButton>
       )}
-    </div>
-  );
-}
-
-/**
- * The Command terminal's way home: offered by the view only to the Commander once PILGRED is repaired. It ends the game,
- * so the button asks for confirmation first (owner, 2026-10-21).
- */
-function ReturnToSol({ terminal, view, onAction }: ListProps) {
-  const { t } = useTranslation();
-  const [confirming, setConfirming] = useState(false);
-  const option = view.actions.find(({ action: a }) => a.type === "return_to_sol" && a.equipment === terminal.id);
-  if (!option) return null;
-  if (confirming) {
-    return (
-      <div className="skill-confirm">
-        <p>{t("returnToSol.confirm")}</p>
-        <div className="skill-confirm-buttons">
-          <button type="button" onClick={() => setConfirming(false)}>
-            {t("returnToSol.back")}
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              onAction(option.action);
-              setConfirming(false);
-            }}
-          >
-            {t("returnToSol.confirmYes")}
-          </button>
-        </div>
-      </div>
-    );
-  }
-  return (
-    <div className="research-item" role="group" aria-label={t("actions.returnToSol")}>
-      <div className="research-body">
-        <span>{t("returnToSol.desc")}</span>
-      </div>
-      <ActionButton view={view} option={option} onAction={() => setConfirming(true)}>
-        <ActionLabel text={t("actions.returnToSol")} cost={option.cost} chance={option.chance} />
-      </ActionButton>
     </div>
   );
 }
