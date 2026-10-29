@@ -1,4 +1,4 @@
-// The Command terminal's window, in two tabs: Navigation (steering, ShipNavigation.tsx) and Intergalactic (the ways to end
+// The Command terminal's window, in two tabs: Interplanetary (steering, ShipNavigation.tsx) and Intergalactic (the ways to end
 // the trip: Sol and Eden). A destination the view doesn't offer is shown greyed out, with the reason on hover, focus or tap.
 
 import { Popover } from "@base-ui/react/popover";

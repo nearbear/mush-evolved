@@ -1459,7 +1459,7 @@
   },
   "command": {
     "tabs": "Command terminal",
-    "navigationTab": "Navigation",
+    "navigationTab": "Interplanetary",
     "intergalacticTab": "Intergalactic",
     "edenUnavailable": "Eden cannot be reached yet.",
     "solCommanderOnly": "Only the Commander can take the ship to Sol.",

@@ -1472,7 +1472,7 @@
   },
   "command": {
     "tabs": "Terminal de commande",
-    "navigationTab": "Navigation",
+    "navigationTab": "Interplanétaire",
     "intergalacticTab": "Intergalactique",
     "edenUnavailable": "Éden n'est pas encore atteignable.",
     "solCommanderOnly": "Seul le Commandant peut emmener le vaisseau vers Sol.",
