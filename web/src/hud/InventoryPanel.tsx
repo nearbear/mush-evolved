@@ -49,7 +49,7 @@ export function InventoryPanel({
   onSelect: (target: Target) => void;
 }) {
   const names = useNames();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [dragging, setDragging] = useState<{ id: string; from: Zone } | null>(null);
   const [over, setOver] = useState<Zone | null>(null);
 
@@ -136,6 +136,9 @@ export function InventoryPanel({
       </li>
     );
   };
+  const byName = (items: ItemView[]) => [...items].sort((a, b) => names.itemOf(a).localeCompare(names.itemOf(b), i18n.language));
+  const sortedInventory = byName(view.inventory);
+  const sortedRoomItems = byName(view.roomItems);
   const empty = Math.max(0, view.inventorySlots - view.inventory.length);
 
   return (
@@ -146,7 +149,7 @@ export function InventoryPanel({
           <p className="sub">{t("inventory.nothingHere")}</p>
         ) : (
           <ul className="item-grid" ref={roomGrid.ref} data-compact={roomGrid.compact || undefined}>
-            {view.roomItems.map((item) => tile(item, "room"))}
+            {sortedRoomItems.map((item) => tile(item, "room"))}
           </ul>
         )}
       </section>
@@ -154,7 +157,7 @@ export function InventoryPanel({
       <section {...zoneProps("inventory")} data-zone="inventory">
         <h2>{t("inventory.title")}</h2>
         <ul className="item-grid">
-          {view.inventory.map((item) => tile(item, "inventory"))}
+          {sortedInventory.map((item) => tile(item, "inventory"))}
           {Array.from({ length: empty }, (_, i) => (
             <li key={`empty-${i}`} className="item-slot">
               <span className="item-tile empty">
