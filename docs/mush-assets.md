@@ -17,7 +17,7 @@ Reference for AI assistants and contributors. Describes what is in `Mush/` (repo
   - **Attribution:** credit Motion Twin, link the repo and the license, and say if the material was changed.
   - **NonCommercial:** no ads, paid features, or other monetization of anything that uses this material.
   - **ShareAlike:** anything adapted from it (edited sprites, ported code, translated text or data tables) must be released under CC BY-NC-SA 4.0.
-- **Keep project code independent.** If our TypeScript is written from scratch, it can carry its own license (MIT is the likely choice per `CLAUDE.md`). Porting Haxe code or copying data tables or text verbatim would arguably make that part an adaptation under ShareAlike. Reimplement rules in our own words and keep any copied data in the asset tree. This is the reading of a non-lawyer; flag it to the user when it matters.
+- **Keep project code independent.** If our TypeScript is written from scratch, it can carry its own license (AGPL-3.0-or-later per `CLAUDE.md`; it was MIT up to commit `256d721`). Porting Haxe code or copying data tables or text verbatim would arguably make that part an adaptation under ShareAlike. Reimplement rules in our own words and keep any copied data in the asset tree. This is the reading of a non-lawyer; flag it to the user when it matters.
 - **What the license does not cover:**
   - Trademarks. CC licenses grant no trademark rights, so don't present the project as official Mush or use the Mush or Twinoid logos as our branding.
   - Third-party material inside the archive that Motion Twin couldn't relicense (see "Do not use").

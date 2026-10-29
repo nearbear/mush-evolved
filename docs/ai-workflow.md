@@ -1596,3 +1596,16 @@ Owner asked for a traveling state lasting one cycle with a faster star field. As
 ### 2026-10-29: Star field turns with inertia
 
 The owner asked for the sky's turn to have a target angle and an angular velocity instead of a fixed duration, easing in and out like inertia, and about 4x slower. `stepTurn` in `web/src/iso/skyTurn.ts` (pure, tested) speeds up at a fixed acceleration to a top speed, then brakes along the stopping curve (v = sqrt(2·a·distance)) so it lands on the target at rest. A turn that arrives mid-turn keeps the current velocity, so turning back slows down first. The numbers are 0.24 rad/s and 0.08 rad/s², about 9.5 s a quarter turn (it was 2.4 s). Needed correction: the first test expected braking never to go over the acceleration limit, but stepping the curve frame by frame goes up to about 15% over in the last few frames. The bound was loosened to 1.2x rather than complicating the integrator.
+
+### 2026-10-29: Relicensing the code from MIT to AGPL-3.0-or-later
+
+The owner asked what switching to AGPL would mean. Claude answered the question first, then checked the tree before changing anything. A tally of declared licenses in `node_modules` found them all compatible (the LGPL and MPL packages are build tooling). `git log` turned up a second author with 49 commits, whom the "sole author" note in `CLAUDE.md` had missed. That stopped the change until the owner got that author's consent in #275.
+
+What landed: `LICENSE` is the unmodified GNU AGPL text, so GitHub detects it. The `Mush/` carve-out (CC BY-NC-SA stays) and the MIT history (MIT up to and including commit `256d721`) are in `NOTICE`. The package files have `license` fields. The docs name the last MIT commit rather than a date.
+
+A review of the uncommitted change in a fresh session caught three problems:
+- The new footer source link, added for AGPL section 13, pointed at a private repo, so players would get a 404. It is commented out until the repo is public.
+- The header above the license text kept GitHub from rec `NOTICE`.
+- `package-lock.json` was stale.
+
+The same review checked the production dependency tree (e-2.0) and confirmed the AGPL text against gnu.org.

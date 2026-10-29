@@ -54,7 +54,7 @@ These are non-negotiable unless I say otherwise.
 - Keep assets in their own folder with the license text and an attribution file next to them. Do not mix them into the code tree.
 - `Mush/package.json` makes the folder a private workspace package, `@mush2/assets`, whose `exports` allow only `derived/*`. Code packages import derived data by that name, never by a relative path out of their own package. (`web` still reaches art through relative `import.meta.glob` paths, which Vite needs.)
 - Before using any asset, check that its folder isn't covered by different third-party terms (fonts, sounds, music especially).
-- Code license is separate from the asset license: MIT (root `LICENSE`, chosen 2026-10-13; can be changed later while the user is the sole author). It does not cover `Mush/`.
+- Code license is separate from the asset license: AGPL-3.0-or-later (root `LICENSE`, the plain GNU text so GitHub detects it; the `Mush/` exception and MIT history are in `NOTICE`). MIT up to and including commit `256d721`; AGPL after it (#275, agreed by both authors). It does not cover `Mush/`. Anyone who modifies and hosts the game must offer its users the source; the footer's source link (`web/src/hud/Credits.tsx`) is commented out until the repo is public. New contributors must agree to AGPL; a relicense needs every author's consent.
 - Do not monetize anything built on these assets.
 - Check how the character art is delivered (sprite sheets, layered images, a skeletal rig). That determines how hard talking animations will be in the 2D (PixiJS) renderer.
 
@@ -69,6 +69,7 @@ These are non-negotiable unless I say otherwise.
 - Keep a short log in `docs/ai-workflow.md` of significant decisions made with AI assistance, including what worked and what needed correction. I plan to write this up. Only ever append to it with `cat >>`; never read or rewrite the whole file (it is large).
 - Run only the tests you need while iterating (`npm test -w shared -- rules.test.ts -t "name"`); run the full `npm test` and `npm run typecheck` once at the end.
 - Explain tradeoffs when there is a real choice; I want to understand the code, not just receive it.
+- When you mention a GitHub issue to me, always make it a clickable link to the issue, e.g. [#216](https://github.com/nearbear/mush2/issues/216). The `#216` shorthand is fine as link text, but it must point at the full URL so I can Ctrl+click it.
 - Ignore the files in the `docs/scratchpad` folder unless otherwise directed; they are for notes and planning, not part of the main codebase.
 - Do not use AI capabilities to generate any non-text assets or files without explicit approval.
 

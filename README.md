@@ -74,4 +74,4 @@ Please read the architecture rules in [`CLAUDE.md`](CLAUDE.md) before changing c
 
 ## License
 
-Code is MIT ([`LICENSE`](LICENSE)). Everything under `Mush/` is Motion Twin's, licensed CC BY-NC-SA 4.0 ([`Mush/LICENSE.txt`](Mush/LICENSE.txt), attribution in [`Mush/ATTRIBUTION.md`](Mush/ATTRIBUTION.md)): non-commercial only, so nothing built on these assets may be monetized.
+Code is AGPL-3.0-or-later ([`LICENSE`](LICENSE), with the exceptions in [`NOTICE`](NOTICE)). It was MIT up to and including commit `256d721`, and copies up to that commit stay available under MIT. If you run a modified version as a public service, its users must be offered your source. Everything under `Mush/` is Motion Twin's, licensed CC BY-NC-SA 4.0 ([`Mush/LICENSE.txt`](Mush/LICENSE.txt), attribution in [`Mush/ATTRIBUTION.md`](Mush/ATTRIBUTION.md)): non-commercial only, so nothing built on these assets may be monetized.

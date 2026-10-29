@@ -15,7 +15,8 @@
   },
   "credits": {
     "text": "Arte de <mush>Mush</mush> de Motion Twin (<archive>WebGamesArchives</archive>), con licencia <license>CC BY-NC-SA 4.0</license>. Adaptado. Sin afiliación con Motion Twin.",
-    "nonCommercial": "Gratis y sin fines comerciales: sin anuncios ni pagos."
+    "nonCommercial": "Gratis y sin fines comerciales: sin anuncios ni pagos.",
+    "source": "El código es software libre bajo la <agpl>AGPL</agpl>: <source>código fuente</source>."
   },
   "menu": {
     "open": "Menú"
