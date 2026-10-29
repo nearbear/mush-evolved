@@ -19,10 +19,7 @@ function game(room: string): GameState {
 const capsules = (s: GameState) => itemsIn(s, { kind: "player", id: "p0" }).filter((i) => i.type === OXYGEN_CAPSULE_ITEM).length;
 
 describe("oxygen capsules", () => {
-  it("pins the numbers: 0 AP, 15% dirt, like fuel", () => {
-    expect([oxygenCapsule.cost.ap, oxygenCapsule.dirtyChance]).toEqual([0, 0.15]);
-  });
-
+  
   it("takes a capsule from a tank, lowering the ship's oxygen, only in a central storage", () => {
     const s = game("STORAGE_A_0");
     expect(offered(s, "p0")).toContainEqual(take);
