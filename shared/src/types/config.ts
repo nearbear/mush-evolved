@@ -373,6 +373,7 @@ export interface GameConfig {
     hitChance: number; // A hunter's chance to hit, 0 to 1, back to this after a hit.
     missBonus: number; // Added to the hunter's chance after each miss.
     followShare: number; // Share of the hunters that follow a jump (travel or leaving orbit), rounded up.
+    patrolTargetChance: number; // Chance a hunter picking a target aims at a patrol ship in flight (one at random), when any is out.
   };
   // Turrets (owner, 2026-10-24, the wiki's Tourelle): 1 AP, a charge per shot, 30% to hit, x1.25 per miss in a row, reset by a hit.
   turrets: { cost: { ap: number }; chance: number; failureMultiplier: number; damage: [number, number]; charges: number; rechargePerCycle: number };

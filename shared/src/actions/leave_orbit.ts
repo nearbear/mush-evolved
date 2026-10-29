@@ -1,5 +1,5 @@
 import { Action, isString } from "./action.ts";
-import { huntersFollow } from "../hunters.ts";
+import { huntersFollow, loseShipsInFlight } from "../hunters.ts";
 import { logPublic } from "../log.ts";
 import { canSteer } from "../navigation.ts";
 import { commandTerminalsHere } from "../pilgred.ts";
@@ -49,5 +49,6 @@ export class LeaveOrbitAction extends Action<LeaveOrbitActionData> {
     for (const owner of Object.keys(state.planets)) state.planets[owner] = state.planets[owner]!.filter((p) => p.id !== orbit);
     state.navigation.orbit = null;
     logPublic(state, undefined, "leftOrbit", { name: player.character });
+    loseShipsInFlight(state);
   }
 }

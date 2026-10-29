@@ -825,7 +825,10 @@
     "patrolTakeoff": "{{name}} despegó a bordo de {{room}}.",
     "patrolLanded": "{{name}} aterrizó a bordo de {{room}}.",
     "patrolRough": "Maniobra brusca: el casco recibió {{hull}} de daño, la nave perdió {{armor}} de blindaje y perdiste {{hp}} PV.",
-    "patrolKill": "Has derribado un hunter."
+    "patrolKill": "Has derribado un hunter.",
+    "hunterHitPatrol": "Disparo de hunter contra {{room}}: {{armor}} puntos de armadura perdidos.",
+    "patrolDestroyed": "NERON: nave derribada por los hunters ({{room}}).",
+    "patrolLost": "NERON: nave perdida en el salto del Daedalus ({{room}})."
   },
   "skills": {
     "title": "Elegir una habilidad",
@@ -1186,6 +1189,28 @@
       "MUSHOPHAGE_BACTERIA": "Bacteria mushófaga",
       "ANTISPORE_GAZ": "Gas antiesporas",
       "SUPER_CALC": "Supercalculadora"
+    },
+    "desc": {
+      "DRUG_DISPENSER": "El destilador puede usarse una vez al día para fabricar un medicamento.",
+      "STEROIDS": "Genera 4 anabolizantes.",
+      "MYCOSCAN": "Permite detectar esporas en un tripulante sano.",
+      "PATULINE_SCRAMBLER": "Los infectados ya no pueden comunicarse por el canal Mush.",
+      "FUNGUS_SCRAMBLER": "Los cazas tienen un 20 % de probabilidad en cada disparo de apuntar a uno de los suyos.",
+      "PHEROMODEM": "El rastreador permite ahora comunicarse por el canal Mush.",
+      "CONSTIPASPORE_SERUM": "Aumenta en 2 el coste de crear esporas.",
+      "MYCO_ALARM": "Genera 5 MicoAlarmas.",
+      "SPORE_EXTRACTOR": "Genera un extractor de esporas.",
+      "ANTI_MUSH_SERUM": "Genera un suero anti-Mush.",
+      "HEALING_OINTMANT": "Las acciones de curación restauran 1 PV adicional.",
+      "NCC_LENS": "Genera 2 pares de lentes NCC.",
+      "NATAMY_GUN": "Transforma el blaster de muestra en un fusil Natamy.",
+      "TESLA_SUP2X": "Duplica las cargas máximas de las torretas del Daedalus.",
+      "INFINITE_WATER": "Toda la tripulación gana 3 puntos de triunfo.",
+      "GUARANA_CAPUCCINO": "Los cafés dan 1 PA adicional a quien los bebe.",
+      "MUSHICIDE_SOAP": "Cada ducha destruye una espora que lleves encima.",
+      "MUSHOPHAGE_BACTERIA": "Los humanos pueden soportar hasta 3 esporas antes de convertirse en Mush.",
+      "ANTISPORE_GAZ": "El máximo diario de esporas de los Mush se reduce en dos.",
+      "SUPER_CALC": "Genera en el Nexus un equipo que permite extraer datos de las cristalitas."
     }
   },
   "astro": {
@@ -1275,6 +1300,49 @@
       "OXY_MORE": "Conductos oxigenados",
       "BRIC_BROC": "Remiendo general",
       "APERO_KITCHEN": "Cocina SNC"
+    },
+    "desc": {
+      "PATROL_SHIP_LAUNCHER": "Las maniobras de despegue cuestan menos PA.",
+      "PATROLSHIP_BLASTER_GUN": "Aumenta la potencia de fuego de las naves patrulla en un punto.",
+      "BAY_DOOR_XXL": "Las maniobras de despegue y aterrizaje son mucho más sencillas.",
+      "PATROLSHIP_EXTRA_AMMO": "Las naves patrulla tienen 6 cargas adicionales.",
+      "TURRET_EXTRA_FIRERATE": "Las torretas se recargan el doble de rápido.",
+      "FIRE_SENSOR": "Los incendios se notifican en tus módulos personales.",
+      "DOOR_SENSOR": "Las puertas atascadas se notifican en tus módulos personales.",
+      "EQUIPMENT_SENSOR": "El equipo dañado se notifica en tus módulos personales.",
+      "QUANTUM_SENSORS": "El escáner de planetas revela un sector más por intento.",
+      "CHIPSET_ACCELERATION": "Buscar un planeta cuesta 1 PA menos.",
+      "ICARUS_ANTIGRAV_PROPELLER": "Mejora tus probabilidades de aterrizar en planetas.",
+      "ICARUS_LARGER_BAY": "El Icarus puede transportar a 2 personas más.",
+      "ICARUS_LAVATORY": "Evita ensuciarse al volver de una expedición.",
+      "NERON_PROJECT_THREAD": "Todo proyecto por encima del 0 % mejora automáticamente un 5 % en cada ciclo.",
+      "ARMOUR_CORRIDOR": "Cada ataque que recibe el Daedalus se reduce en un punto.",
+      "PLASMA_SHIELD": "El casco del Daedalus queda protegido por un escudo que se regenera solo.",
+      "EXTRA_HYDROPONPOTS": "Añade 3 macetas para cultivar nuevas plantas.",
+      "HYDROPONIC_INCUBATOR": "En el jardín, las plantas jóvenes crecen el doble de rápido.",
+      "HEAT_LAMP": "En el jardín, un 50 % de probabilidad de producir una fruta extra.",
+      "AUXILIARY_TERMINAL": "Se puede acceder al núcleo de NERON también desde la enfermería y la sala de máquinas.",
+      "AUTO_WATERING": "Cada incendio tiene un 25 % de probabilidad de apagarse solo en cada ciclo.",
+      "RADAR_TRANS_VOID": "La antena estelar duplica el avance de los intentos de conexión con Sol.",
+      "MAGNETIC_NET": "Cuando el Daedalus se desplaza, las naves patrulla vuelven a bordo automáticamente.",
+      "FOOD_RETAILER": "La comida del jardín se envía directamente al refectorio por tubo neumático.",
+      "DISMANTLING": "Genera 5 restos metálicos en la sala de máquinas.",
+      "AUTO_RETURN_ICARUS": "El Icarus vuelve solo al Daedalus si la misión fracasa.",
+      "EXTRA_DRONE": "Añade un dron en el Nexus para cuidar del Daedalus.",
+      "FISSION_COFFEE_ROASTER": "La máquina de café también se recarga en el ciclo 4.",
+      "TRAIL_REDUCER": "Reduce un 50 % el número de atacantes que te siguen tras un viaje.",
+      "TRASH_LOAD": "Genera 4 restos metálicos y 4 restos de plástico.",
+      "WHOS_WHO": "Muestra la identidad de los compañeros en el rastreador.",
+      "CALL_OF_DIRTY": "Habilita la Dynarcade en la bahía Alfa 2. Te desahogas a costa de algún moratón y recuperas moral.",
+      "BEAT_BOX": "Habilita el tocadiscos en la bahía Alfa 2. Permite relajarse escuchando música.",
+      "THALASSO": "Si no eres Mush, cada ducha tiene un 25 % de probabilidad de darte +1 PV, o +1 de moral, o +2 PM.",
+      "FLOOR_HEATING": "Reduce un 25 % las heridas causadas por acciones.",
+      "NOISE_REDUCER": "Aumenta en 2 los PA máximos de cada compañero.",
+      "NERON_TARGETING_ASSIST": "Aumenta la puntería en vuelo y en torreta un 25 %.",
+      "PARASITE_ELIM": "Las plantas jóvenes del jardín tardan 4 ciclos menos en crecer.",
+      "OXY_MORE": "En cada ciclo, el Daedalus tiene un 20 % de probabilidad de ahorrar el oxígeno de la tripulación.",
+      "BRIC_BROC": "En cada ciclo, el Daedalus tiene un 15 % de probabilidad de no desmoronarse.",
+      "APERO_KITCHEN": "Mejora la cocina del refectorio. Desde el ciclo 6, da un 6 % de probabilidad por jugador presente de ganar +1 XP. La hora feliz del ciclo 7 da 2 XP. Hacen falta al menos 2 personas para un aperitivo logrado."
     }
   },
   "characters": {
@@ -1429,6 +1497,7 @@
   "patrol": {
     "flying": "En vuelo a bordo de {{ship}}",
     "armor": "Blindaje: {{armor}}/{{max}}",
-    "out": "La nave ha salido de patrulla."
+    "out": "La nave ha salido de patrulla.",
+    "destroyed": "La nave ha sido destruida."
   }
 }

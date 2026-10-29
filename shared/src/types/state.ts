@@ -120,10 +120,10 @@ export interface GameState {
   turrets: Record<string, number>;
   /**
    * Each patrol ship by its room id (patrol.ts): its armor, its charges (always 0 for the Pasiphae, which can't shoot),
-   * and whether it is out (in flight). Out is known to anyone in its bay (owner, 2026-10-24); armor and charges go to
-   * its pilot only, for now.
+   * whether it is out (in flight), and whether it was destroyed (for good; a destroyed ship stays out). Out and destroyed
+   * are known to anyone in its bay (owner, 2026-10-24); armor and charges go to its pilot only, for now.
    */
-  patrolShips: Record<RoomId, { armor: number; charges: number; out: boolean }>;
+  patrolShips: Record<RoomId, { armor: number; charges: number; out: boolean; destroyed: boolean }>;
   /** Missed turret shots in a row per player, raising their next shot's odds; reset by a hit (owner, 2026-10-24). Never sent. */
   turretFailures: Record<PlayerId, number>;
   /** Missed patrol-ship shots in a row per player, kept apart from the turrets' (owner, 2026-10-24); reset by a hit. Never sent. */
@@ -138,10 +138,10 @@ export interface GameState {
 }
 
 /**
- * What a hunter is aiming at (hunters.ts). Only the Daedalus for now; patrol ships and players in flight come with
- * docs/patrol-plan.md, phase 4.
+ * What a hunter is aiming at (hunters.ts): the Daedalus or a patrol ship in flight, by its room id. Players out in space
+ * come with Mush auto-ejection (docs/patrol-plan.md, "Later"; owner, 2026-10-28).
  */
-export type HunterTarget = { kind: "ship" };
+export type HunterTarget = { kind: "ship" } | { kind: "patrol"; id: RoomId };
 
 /** A hunter (hunters.ts). `hitChance` (0 to 1) and `target` (null until it picks one) are never sent. */
 export interface Hunter {

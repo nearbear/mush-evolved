@@ -825,7 +825,10 @@
     "patrolTakeoff": "{{name}} a décollé à bord du {{room}}.",
     "patrolLanded": "{{name}} a posé le {{room}}.",
     "patrolRough": "Manœuvre difficile : la coque a subi {{hull}} dégâts, le vaisseau a perdu {{armor}} d'armure et vous avez perdu {{hp}} PV.",
-    "patrolKill": "Vous avez abattu un hunter."
+    "patrolKill": "Vous avez abattu un hunter.",
+    "hunterHitPatrol": "Tir de hunter sur {{room}} : {{armor}} points d'armure perdus.",
+    "patrolDestroyed": "NERON : appareil abattu par les hunters ({{room}}).",
+    "patrolLost": "NERON : appareil perdu lors du saut du Daedalus ({{room}})."
   },
   "skills": {
     "title": "Choisir une compétence",
@@ -1186,6 +1189,28 @@
       "MUSHOPHAGE_BACTERIA": "Bactérie mushovore",
       "ANTISPORE_GAZ": "Gaz antispore",
       "SUPER_CALC": "Super Calculateur"
+    },
+    "desc": {
+      "DRUG_DISPENSER": "Le distillateur peut être utilisé une fois par jour pour créer un médicament.",
+      "STEROIDS": "Génère 4 anabolisants.",
+      "MYCOSCAN": "Permet de détecter la présence de spores sur un membre d'équipage sain.",
+      "PATULINE_SCRAMBLER": "Les infectés ne peuvent plus communiquer sur le canal Mush.",
+      "FUNGUS_SCRAMBLER": "Les chasseurs ont 20 % de chance à chaque tir de cibler l'un des leurs.",
+      "PHEROMODEM": "Le traqueur permet désormais de communiquer sur le canal Mush.",
+      "CONSTIPASPORE_SERUM": "Augmente de 2 le coût de création des spores.",
+      "MYCO_ALARM": "Génère 5 MycoAlarmes.",
+      "SPORE_EXTRACTOR": "Génère un extracteur de spores.",
+      "ANTI_MUSH_SERUM": "Génère un sérum anti-Mush.",
+      "HEALING_OINTMANT": "Les actions de soin régénèrent 1 PV supplémentaire.",
+      "NCC_LENS": "Génère 2 paires de lentilles NCC.",
+      "NATAMY_GUN": "Transforme le blaster échantillon en fusil Natamy.",
+      "TESLA_SUP2X": "Double le nombre maximal de charges des tourelles du Daedalus.",
+      "INFINITE_WATER": "Tout l'équipage gagne 3 points de triomphe.",
+      "GUARANA_CAPUCCINO": "Les cafés accordent 1 PA supplémentaire à leur buveur.",
+      "MUSHICIDE_SOAP": "Chaque douche détruit un spore présent sur vous.",
+      "MUSHOPHAGE_BACTERIA": "Les humains peuvent supporter jusqu'à 3 spores avant de se transformer en Mush.",
+      "ANTISPORE_GAZ": "Le maximum de spores journaliers des Mush est réduit de deux.",
+      "SUPER_CALC": "Génère au Nexus un équipement qui permet d'extraire des données des cristallites."
     }
   },
   "astro": {
@@ -1275,6 +1300,49 @@
       "OXY_MORE": "Conduites oxygénées",
       "BRIC_BROC": "Rafistolage général",
       "APERO_KITCHEN": "Cuisine SNC"
+    },
+    "desc": {
+      "PATROL_SHIP_LAUNCHER": "Les manœuvres de décollage coûtent moins de PA.",
+      "PATROLSHIP_BLASTER_GUN": "Augmente la puissance de feu des patrouilleurs d'un point.",
+      "BAY_DOOR_XXL": "Les manœuvres de décollage et d'atterrissage sont beaucoup plus simples.",
+      "PATROLSHIP_EXTRA_AMMO": "Les patrouilleurs disposent de 6 charges supplémentaires.",
+      "TURRET_EXTRA_FIRERATE": "Les tourelles se rechargent 2 fois plus vite.",
+      "FIRE_SENSOR": "Les incendies sont reportés sur vos modules persos.",
+      "DOOR_SENSOR": "Les portes bloquées sont reportées sur vos modules persos.",
+      "EQUIPMENT_SENSOR": "Les équipements touchés sont reportés sur vos modules persos.",
+      "QUANTUM_SENSORS": "Le scanner de planète révèle une section de plus par essai.",
+      "CHIPSET_ACCELERATION": "La recherche d'une planète coûte 1 PA de moins.",
+      "ICARUS_ANTIGRAV_PROPELLER": "Augmente vos chances de réussir à atterrir sur des planètes.",
+      "ICARUS_LARGER_BAY": "L'Icarus peut transporter 2 personnes supplémentaires.",
+      "ICARUS_LAVATORY": "Permet de ne pas se salir en revenant d'expédition.",
+      "NERON_PROJECT_THREAD": "Tout projet au-dessus de 0 % progresse automatiquement de 5 % à chaque cycle.",
+      "ARMOUR_CORRIDOR": "Chaque attaque subie par le Daedalus est diminuée d'un point.",
+      "PLASMA_SHIELD": "La coque du Daedalus est protégée par un bouclier auto-régénérant.",
+      "EXTRA_HYDROPONPOTS": "Ajoute 3 pots pour faire pousser de nouvelles plantes.",
+      "HYDROPONIC_INCUBATOR": "Dans le jardin, les jeunes pousses croissent 2 fois plus vite.",
+      "HEAT_LAMP": "Dans le jardin, 50 % de chance de produire un fruit supplémentaire.",
+      "AUXILIARY_TERMINAL": "Le cœur de NERON est aussi accessible depuis l'infirmerie et la salle des moteurs.",
+      "AUTO_WATERING": "Chaque incendie a 25 % de chance de s'éteindre automatiquement à chaque cycle.",
+      "RADAR_TRANS_VOID": "L'antenne stellaire double les progrès des tentatives de connexion avec Sol.",
+      "MAGNETIC_NET": "Quand le Daedalus se déplace, les patrouilleurs sont automatiquement ramenés à bord.",
+      "FOOD_RETAILER": "La nourriture du jardin est envoyée directement au réfectoire par le pneumatique.",
+      "DISMANTLING": "Génère 5 débris métalliques dans la salle des moteurs.",
+      "AUTO_RETURN_ICARUS": "L'Icarus retourne automatiquement dans le Daedalus si la mission échoue.",
+      "EXTRA_DRONE": "Ajoute un drone dans le Nexus pour prendre soin du Daedalus.",
+      "FISSION_COFFEE_ROASTER": "La machine à café se recharge aussi au cycle 4.",
+      "TRAIL_REDUCER": "Réduit de 50 % le nombre d'assaillants qui vous suivent après un voyage.",
+      "TRASH_LOAD": "Génère 4 débris métalliques et 4 débris plastiques.",
+      "WHOS_WHO": "Affiche l'identité des équipiers sur le traqueur.",
+      "CALL_OF_DIRTY": "Rend la Dynarcade disponible en baie Alpha 2. On s'y défoule au prix de quelques contusions, et on y regagne du moral.",
+      "BEAT_BOX": "Rend le jukebox disponible en baie Alpha 2. Permet de se relaxer en écoutant de la musique.",
+      "THALASSO": "Si vous n'êtes pas Mush, chaque douche a 25 % de chance de vous rapporter +1 PV, ou +1 PMo, ou +2 PM.",
+      "FLOOR_HEATING": "Diminue de 25 % les blessures dues aux actions.",
+      "NOISE_REDUCER": "Augmente de 2 le nombre maximal de PA de chaque équipier.",
+      "NERON_TARGETING_ASSIST": "Augmente la visée en vol et en tourelle de 25 %.",
+      "PARASITE_ELIM": "Les jeunes plantes du jardin mettent 4 cycles de moins à pousser.",
+      "OXY_MORE": "À chaque cycle, le Daedalus a 20 % de chance d'économiser l'oxygène de l'équipage.",
+      "BRIC_BROC": "À chaque cycle, le Daedalus a 15 % de chance de ne pas partir en miettes.",
+      "APERO_KITCHEN": "Améliore la cuisine du réfectoire. À partir du cycle 6, elle donne 6 % de chance par joueur présent de gagner +1 XP. L'happy hour du cycle 7 rapporte 2 XP. Il faut être au moins 2 pour un apéro réussi."
     }
   },
   "characters": {
@@ -1429,6 +1497,7 @@
   "patrol": {
     "flying": "En vol à bord du {{ship}}",
     "armor": "Armure : {{armor}}/{{max}}",
-    "out": "Le vaisseau est sorti en patrouille."
+    "out": "Le vaisseau est sorti en patrouille.",
+    "destroyed": "Le vaisseau a été détruit."
   }
 }

@@ -49,7 +49,7 @@ describe("patrol ship numbers", () => {
       expect(s.equipment[p.id]).toEqual([{ id: commandId(p), type: p.kind === "pasiphae" ? "PASIPHAE_COMMAND" : "PATROL_COMMAND" }]);
       // Its interface is the bay equipment the map already has.
       expect(s.equipment[p.bay]!.some((e) => e.id === interfaceId(p) && e.type === "PATROL_INTERFACE")).toBe(true);
-      expect(s.patrolShips[p.id]).toEqual(p.kind === "pasiphae" ? { armor: 12, charges: 0, out: false } : { armor: 10, charges: 10, out: false });
+      expect(s.patrolShips[p.id]).toEqual(p.kind === "pasiphae" ? { armor: 12, charges: 0, out: false, destroyed: false } : { armor: 10, charges: 10, out: false, destroyed: false });
     }
   });
 });
@@ -71,7 +71,7 @@ describe("taking off", () => {
     expect(player(next, "p0")).toMatchObject({ room: LONGANE.id, ap: player(s, "p0").ap - s.config.patrol.takeoff.cost.ap });
     expect(player(next, "p0").spot).toBeUndefined();
     expect(player(next, "p1").room).toBe(BAY);
-    expect(next.patrolShips[LONGANE.id]).toEqual({ armor: 10, charges: 10, out: true });
+    expect(next.patrolShips[LONGANE.id]).toEqual({ armor: 10, charges: 10, out: true, destroyed: false });
     // A Pilot always manoeuvres cleanly: the hull is untouched.
     expect(next.ship).toEqual(s.ship);
   });
@@ -323,5 +323,82 @@ describe("rough manoeuvres (for when non-pilots can fly)", () => {
     const before = JSON.stringify(s);
     manoeuvre(s, player(s, "p0"), LONGANE);
     expect(JSON.stringify(s)).toBe(before);
+  });
+});
+
+describe("hunters and ships in flight", () => {
+  const hunters = (overrides: Partial<GameConfig["hunters"]>) => ({ hunters: { ...DEFAULT_CONFIG.hunters, waveChance: 0, ...overrides } });
+  /** p0 flying Longane, with one hunter out there. */
+  function flying(config: Partial<GameConfig> = {}): GameState {
+    const s = mustApply(ship(config), "p0", takeoff());
+    s.hunters.list.push({ id: "h1", hp: 6, hitChance: 1, target: null });
+    return s;
+  }
+
+  it("aim at a ship in flight 15% of the time when one is out, otherwise at the Daedalus", () => {
+    expect(DEFAULT_CONFIG.hunters.patrolTargetChance).toBe(0.15);
+    expect(nextCycle(flying(hunters({ patrolTargetChance: 1 }))).hunters.list[0]!.target).toEqual({ kind: "patrol", id: LONGANE.id });
+    expect(nextCycle(flying(hunters({ patrolTargetChance: 0 }))).hunters.list[0]!.target).toEqual({ kind: "ship" });
+    // With nothing in flight, the Daedalus.
+    const docked = ship(hunters({ patrolTargetChance: 1 }));
+    docked.hunters.list.push({ id: "h1", hp: 6, hitChance: 1, target: null });
+    expect(nextCycle(docked).hunters.list[0]!.target).toEqual({ kind: "ship" });
+  });
+
+  it("a hit takes 2-4 armor off the ship, not the hull, keeps the aim, and is a line in the ship's room for the pilot", () => {
+    const s = flying();
+    s.hunters.list[0]!.target = { kind: "patrol", id: LONGANE.id };
+    const next = nextCycle(s);
+    const lost = 10 - next.patrolShips[LONGANE.id]!.armor;
+    expect(lost).toBeGreaterThanOrEqual(2);
+    expect(lost).toBeLessThanOrEqual(4);
+    expect(next.ship.hull).toBe(s.ship.hull);
+    expect(next.ship.plasmaShield).toBeGreaterThanOrEqual(s.ship.plasmaShield);
+    expect(next.hunters.list[0]).toMatchObject({ target: { kind: "patrol", id: LONGANE.id }, hitChance: s.config.hunters.hitChance });
+    expect(lines(next, "p0", "hunterHitPatrol")).toMatchObject([{ room: LONGANE.id, params: { room: LONGANE.id, armor: lost } }]);
+    for (const id of ["p1", "p2"]) expect(lines(next, id, "hunterHitPatrol")).toEqual([]);
+  });
+
+  it("at 0 armor the ship is destroyed for good: NERON tells the crew, the pilot dies, and the bay shows it", () => {
+    const s = flying();
+    s.hunters.list[0]!.target = { kind: "patrol", id: LONGANE.id };
+    s.patrolShips[LONGANE.id]!.armor = 1;
+    const next = nextCycle(s);
+    expect(next.patrolShips[LONGANE.id]).toMatchObject({ armor: 0, out: true, destroyed: true });
+    expect(player(next, "p0").alive).toBe(false);
+    expect(next.hunters.list[0]!.target).toBeNull();
+    for (const id of ["p1", "p2"]) expect(lines(next, id, "patrolDestroyed")).toMatchObject([{ params: { room: LONGANE.id }, level: "warning" }]);
+    // It can't be taken again: the bay's interface shows it destroyed.
+    expect(viewFor(next, "p1").roomEquipment.find((e) => e.id === interfaceId(LONGANE))).toMatchObject({ out: true, destroyed: true });
+    player(next, "p1").skills = ["pilot"];
+    expect(refusal(next, "p1", takeoff())).toBe("no_ship");
+    // A destroyed ship is never aimed at, and doesn't recharge.
+    next.hunters.list.push({ id: "h9", hp: 6, hitChance: 1, target: null });
+    next.patrolShips[LONGANE.id]!.charges = 0;
+    const later = nextCycle(next);
+    expect(later.hunters.list.find((h) => h.id === "h9")!.target).toEqual({ kind: "ship" });
+    expect(later.patrolShips[LONGANE.id]!.charges).toBe(0);
+  });
+
+  it("landing turns the hunters aiming at the ship to the Daedalus", () => {
+    const s = flying();
+    s.hunters.list[0]!.target = { kind: "patrol", id: LONGANE.id };
+    expect(mustApply(s, "p0", land()).hunters.list[0]!.target).toEqual({ kind: "ship" });
+  });
+
+  it("a jump (travel or leaving orbit) loses every ship in flight with its pilot", () => {
+    const terminal = "COMMAND_CENTER:PILOT_MODULE";
+    for (const jump of [{ type: "travel", equipment: terminal }, { type: "leave_orbit", equipment: terminal }] as Action[]) {
+      const s = flying();
+      player(s, "p2").room = "COMMAND_CENTER";
+      s.titles.commander = "p2";
+      s.ship.combustion = 2;
+      if (jump.type === "leave_orbit") s.navigation.orbit = "planet-x";
+      const next = mustApply(s, "p2", jump);
+      expect(next.patrolShips[LONGANE.id]).toMatchObject({ out: true, destroyed: true });
+      expect(next.patrolShips[JUJUBE.id]).toMatchObject({ out: false, destroyed: false });
+      expect(player(next, "p0").alive).toBe(false);
+      expect(lines(next, "p1", "patrolLost")).toMatchObject([{ params: { room: LONGANE.id }, level: "warning" }]);
+    }
   });
 });

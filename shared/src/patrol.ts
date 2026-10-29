@@ -50,7 +50,11 @@ export const maxCharges = (charges: number, ship: PatrolShip): number => (ship.k
 
 /** Every ship docked, at full armor and charges. */
 export const newPatrolShips = (config: GameConfig): GameState["patrolShips"] =>
-  Object.fromEntries(PATROL_SHIPS.map((s) => [s.id, { armor: config.patrol.armor[s.kind], charges: maxCharges(config.patrol.charges, s), out: false }]));
+  Object.fromEntries(PATROL_SHIPS.map((s) => [s.id, { armor: config.patrol.armor[s.kind], charges: maxCharges(config.patrol.charges, s), out: false, destroyed: false }]));
+
+/** Ships out and not destroyed: the ones hunters can aim at. */
+export const shipsInFlight = (state: Readonly<GameState>): PatrolShip[] =>
+  PATROL_SHIPS.filter((s) => state.patrolShips[s.id]!.out && !state.patrolShips[s.id]!.destroyed);
 
 /** At a cycle change: each docked ship regains charges up to full (owner, 2026-10-24: only while docked). */
 export function rechargePatrolShips(state: GameState): void {

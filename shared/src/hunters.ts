@@ -2,15 +2,16 @@
 // starts when Mush are chosen and grows each cycle change; a 20% roll spends it on a wave of hunters, never in the
 // first two cycle changes. Each hunter takes one action a cycle: pick the ship as its target, or shoot at it. The crew
 // shoots back from the six turrets (actions/turret_attack.ts) and patches the hull (actions/repair_hull.ts). At 0 hull
-// the Daedalus explodes and everyone aboard dies.
+// the Daedalus explodes and everyone aboard dies. Hunters also aim at patrol ships in flight (docs/patrol-plan.md,
+// phase 4): at 0 armor a ship is destroyed for good and its pilot dies, as when the Daedalus jumps with ships out.
 
 import { killPlayer } from "./death.ts";
 import { logPublic } from "./log.ts";
 import { followingHuntersShare, hunterPointsPerCycle, waveShrinkChance } from "./modifiers.ts";
-import { rechargePatrolShips } from "./patrol.ts";
-import { roll, rollFloat, rollShuffle } from "./rng.ts";
+import { type PatrolShip, patrolShip, rechargePatrolShips, shipsInFlight } from "./patrol.ts";
+import { roll, rollFloat, rollInt, rollShuffle } from "./rng.ts";
 import { damageShip } from "./ship.ts";
-import type { GameState, PlayerState } from "./types.ts";
+import type { GameState, HunterTarget, PlayerState } from "./types.ts";
 import { endGame } from "./victory.ts";
 
 export const TURRET_EQUIPMENT = "TURRET_COMMAND";
@@ -77,23 +78,66 @@ export function huntersCycle(state: GameState, day: number): void {
   if (state.cycle - hunters.since > state.config.hunters.safeCycles) spawnWave(state);
 }
 
-/** Each hunter's action: pick the ship as its target, or shoot at it (and then pick again). */
+/**
+ * Each hunter's action: pick a target, or shoot at it. A hit on the Daedalus makes it pick again; a hit on a patrol ship
+ * (2 to 4 armor, a line in the ship's room for its pilot; owner, 2026-10-28) keeps its aim until the ship is gone.
+ */
 function huntersAct(state: GameState): void {
   const config = state.config.hunters;
   for (const hunter of state.hunters.list) {
-    if (state.ship.hull === 0) return;
+    if (state.ship.hull === 0 || state.phase !== "playing") return;
     if (hunter.target === null) {
-      hunter.target = { kind: "ship" };
+      hunter.target = pickTarget(state);
       continue;
     }
-    if (rollFloat(state) < hunter.hitChance) {
-      damageShip(state, roll(state, config.damage));
-      hunter.hitChance = config.hitChance;
-      hunter.target = null;
-    } else {
+    if (rollFloat(state) >= hunter.hitChance) {
       hunter.hitChance = Math.min(1, hunter.hitChance + config.missBonus);
+      continue;
     }
+    hunter.hitChance = config.hitChance;
+    const amount = roll(state, config.damage);
+    if (hunter.target.kind === "ship") {
+      damageShip(state, amount);
+      hunter.target = null;
+      continue;
+    }
+    const ship = patrolShip(hunter.target.id)!;
+    const shipState = state.patrolShips[ship.id]!;
+    shipState.armor = Math.max(0, shipState.armor - amount);
+    logPublic(state, ship.id, "hunterHitPatrol", { room: ship.id, armor: amount });
+    if (shipState.armor === 0) destroyPatrolShip(state, ship, "patrolDestroyed");
   }
+}
+
+/** eMush's order: a patrol ship in flight (15%, one at random), else the Daedalus. Players out in space come later. */
+function pickTarget(state: GameState): HunterTarget {
+  const flying = shipsInFlight(state);
+  if (flying.length > 0 && rollFloat(state) < state.config.hunters.patrolTargetChance) return { kind: "patrol", id: flying[rollInt(state, flying.length)]!.id };
+  return { kind: "ship" };
+}
+
+/** Hunters aiming at `ship` aim at `to` instead: the Daedalus when it lands (eMush), a new pick when it is destroyed. */
+export function retargetHunters(state: GameState, ship: PatrolShip, to: HunterTarget | null): void {
+  for (const hunter of state.hunters.list) if (hunter.target?.kind === "patrol" && hunter.target.id === ship.id) hunter.target = to;
+}
+
+/**
+ * A patrol ship is destroyed for good (owner, 2026-10-28): NERON tells the whole crew (`key` says how: shot down, or left
+ * behind by a jump), and everyone aboard dies, since there are no spacesuits yet. Their bodies and belongings stay in
+ * the wreck's room for now. Mutates a state the caller already cloned.
+ */
+export function destroyPatrolShip(state: GameState, ship: PatrolShip, key: "patrolDestroyed" | "patrolLost"): void {
+  const shipState = state.patrolShips[ship.id]!;
+  shipState.destroyed = true;
+  shipState.armor = 0;
+  retargetHunters(state, ship, null);
+  logPublic(state, undefined, key, { room: ship.id }, "warning");
+  for (const p of state.players) if (p.alive && p.room === ship.id) killPlayer(state, p);
+}
+
+/** The Daedalus jumps (travel or leaving orbit) with ships out: each is lost with its pilot (owner, 2026-10-24, answer 5). */
+export function loseShipsInFlight(state: GameState): void {
+  for (const ship of shipsInFlight(state)) destroyPatrolShip(state, ship, "patrolLost");
 }
 
 /** The 20% roll: on a hit, one hunter per 10 points, the remainder carried over, and NERON tells the crew. */

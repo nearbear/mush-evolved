@@ -817,7 +817,10 @@
     "patrolTakeoff": "{{name}} took off in {{room}}.",
     "patrolLanded": "{{name}} landed {{room}}.",
     "patrolRough": "Rough manoeuvre: the hull took {{hull}} damage, the ship lost {{armor}} armor and you lost {{hp}} HP.",
-    "patrolKill": "You shot down a hunter."
+    "patrolKill": "You shot down a hunter.",
+    "hunterHitPatrol": "A hunter hit {{room}}: {{armor}} armor lost.",
+    "patrolDestroyed": "NERON: {{room}} was shot down by hunters.",
+    "patrolLost": "NERON: {{room}} was left behind when the Daedalus jumped, and is lost."
   },
   "skills": {
     "title": "Choose a skill",
@@ -1178,6 +1181,28 @@
       "MUSHOPHAGE_BACTERIA": "Mush-eating bacteria",
       "ANTISPORE_GAZ": "Antispore gas",
       "SUPER_CALC": "Super Calculator"
+    },
+    "desc": {
+      "DRUG_DISPENSER": "The distiller can be used once a day to make a drug.",
+      "STEROIDS": "Produces 4 anabolic steroids.",
+      "MYCOSCAN": "Detects spores on a healthy crew member.",
+      "PATULINE_SCRAMBLER": "The infected can no longer communicate on the Mush channel.",
+      "FUNGUS_SCRAMBLER": "Hunters have a 20% chance on each shot of targeting one of their own.",
+      "PHEROMODEM": "The tracker can now be used to communicate on the Mush channel.",
+      "CONSTIPASPORE_SERUM": "Raises the cost of creating spores by 2.",
+      "MYCO_ALARM": "Produces 5 MycoAlarms.",
+      "SPORE_EXTRACTOR": "Produces a spore sucker.",
+      "ANTI_MUSH_SERUM": "Produces an anti-Mush serum.",
+      "HEALING_OINTMANT": "Healing actions restore 1 extra health point.",
+      "NCC_LENS": "Produces 2 pairs of NCC lenses.",
+      "NATAMY_GUN": "Turns the sample blaster into a Natamy rifle.",
+      "TESLA_SUP2X": "Doubles the maximum charges of the Daedalus turrets.",
+      "INFINITE_WATER": "The whole crew gains 3 triumph points.",
+      "GUARANA_CAPUCCINO": "Coffees give their drinker 1 extra action point.",
+      "MUSHICIDE_SOAP": "Each shower destroys one spore on you.",
+      "MUSHOPHAGE_BACTERIA": "Humans can withstand up to 3 spores before turning Mush.",
+      "ANTISPORE_GAZ": "The Mush's daily spore maximum is reduced by two.",
+      "SUPER_CALC": "Produces a piece of equipment in the Nexus that extracts data from crystallites."
     }
   },
   "astro": {
@@ -1266,6 +1291,49 @@
       "OXY_MORE": "Oxygenated ducts",
       "BRIC_BROC": "General patch-up",
       "APERO_KITCHEN": "SNC kitchen"
+    },
+    "desc": {
+      "PATROL_SHIP_LAUNCHER": "Takeoff manoeuvres cost less action points.",
+      "PATROLSHIP_BLASTER_GUN": "Raises the firepower of patrol ships by one point.",
+      "BAY_DOOR_XXL": "Takeoff and landing manoeuvres are much easier.",
+      "PATROLSHIP_EXTRA_AMMO": "Patrol ships have 6 extra charges.",
+      "TURRET_EXTRA_FIRERATE": "Turrets recharge twice as fast.",
+      "FIRE_SENSOR": "Fires are reported on your personal modules.",
+      "DOOR_SENSOR": "Jammed doors are reported on your personal modules.",
+      "EQUIPMENT_SENSOR": "Damaged equipment is reported on your personal modules.",
+      "QUANTUM_SENSORS": "The planet scanner reveals one more sector per attempt.",
+      "CHIPSET_ACCELERATION": "Searching for a planet costs 1 action point less.",
+      "ICARUS_ANTIGRAV_PROPELLER": "Improves your chances of landing on planets.",
+      "ICARUS_LARGER_BAY": "The Icarus can carry 2 more people.",
+      "ICARUS_LAVATORY": "You don't get dirty returning from an expedition.",
+      "NERON_PROJECT_THREAD": "Any project above 0% is improved by 5% automatically each cycle.",
+      "ARMOUR_CORRIDOR": "Every attack the Daedalus takes is reduced by one point.",
+      "PLASMA_SHIELD": "The Daedalus hull is protected by a self-regenerating shield.",
+      "EXTRA_HYDROPONPOTS": "Adds 3 pots to grow new plants.",
+      "HYDROPONIC_INCUBATOR": "In the garden, young plants grow twice as fast.",
+      "HEAT_LAMP": "In the garden, a 50% chance of producing an extra fruit.",
+      "AUXILIARY_TERMINAL": "NERON's core can also be reached from the sick bay and the engine room.",
+      "AUTO_WATERING": "Each fire has a 25% chance of going out by itself every cycle.",
+      "RADAR_TRANS_VOID": "The star antenna doubles the progress of attempts to connect with Sol.",
+      "MAGNETIC_NET": "When the Daedalus moves, patrol ships are brought back on board automatically.",
+      "FOOD_RETAILER": "Food from the garden is sent straight to the refectory by pneumatic tube.",
+      "DISMANTLING": "Produces 5 metal scraps in the engine room.",
+      "AUTO_RETURN_ICARUS": "The Icarus returns to the Daedalus by itself if the mission fails.",
+      "EXTRA_DRONE": "Adds a drone in the Nexus to look after the Daedalus.",
+      "FISSION_COFFEE_ROASTER": "The coffee machine also recharges at cycle 4.",
+      "TRAIL_REDUCER": "Cuts the number of attackers that follow you after a trip by 50%.",
+      "TRASH_LOAD": "Produces 4 metal scraps and 4 plastic scraps.",
+      "WHOS_WHO": "Shows your crewmates' identities on the tracker.",
+      "CALL_OF_DIRTY": "Makes the Dynarcade available in Alpha Bay 2. Blow off steam at the cost of a few bruises; it restores morale.",
+      "BEAT_BOX": "Makes the jukebox available in Alpha Bay 2. Relax by listening to music.",
+      "THALASSO": "If you aren't Mush, each shower has a 25% chance of giving you +1 health, or +1 morale, or +2 movement points.",
+      "FLOOR_HEATING": "Reduces injuries caused by actions by 25%.",
+      "NOISE_REDUCER": "Raises every crewmate's maximum action points by 2.",
+      "NERON_TARGETING_ASSIST": "Raises aim in flight and on turrets by 25%.",
+      "PARASITE_ELIM": "Young plants in the garden need 4 fewer cycles to grow.",
+      "OXY_MORE": "Each cycle the Daedalus has a 20% chance of saving the crew's oxygen.",
+      "BRIC_BROC": "Each cycle the Daedalus has a 15% chance of not falling apart.",
+      "APERO_KITCHEN": "Improves the refectory kitchen. From cycle 6, the kitchen gives each player present a 6% chance of +1 XP. Happy hour at cycle 7 gives 2 XP. A successful aperitif needs at least 2 people."
     }
   },
   "characters": {
@@ -1415,6 +1483,7 @@
   "patrol": {
     "flying": "In flight aboard {{ship}}",
     "armor": "Armor: {{armor}}/{{max}}",
-    "out": "The ship is out on patrol."
+    "out": "The ship is out on patrol.",
+    "destroyed": "The ship was destroyed."
   }
 }

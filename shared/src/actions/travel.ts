@@ -1,5 +1,5 @@
 import { Action, isString } from "./action.ts";
-import { huntersFollow } from "../hunters.ts";
+import { huntersFollow, loseShipsInFlight } from "../hunters.ts";
 import { logPrivate, logPublic } from "../log.ts";
 import { canSteer, planetAt } from "../navigation.ts";
 import { commandTerminalsHere } from "../pilgred.ts";
@@ -53,6 +53,7 @@ export class TravelAction extends Action<TravelActionData> {
       state.planets[owner] = owner === found?.[0] ? [found[1]] : [];
     }
     logPublic(state, undefined, "shipTraveled", { name: player.character });
+    loseShipsInFlight(state);
     if (!found) return;
     const [owner, planet] = found;
     state.navigation.orbit = planet.id;

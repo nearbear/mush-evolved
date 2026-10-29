@@ -140,6 +140,7 @@ export const URGENT_LOG_KEYS: ReadonlySet<string> = new Set([
   "hunterWave",
   "shipDestroyed",
   "patrolRough",
+  "hunterHitPatrol",
 ]);
 
 export function isUrgent(e: Pick<LogEntry, "key" | "level">): boolean {

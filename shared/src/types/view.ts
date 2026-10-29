@@ -16,6 +16,8 @@ export interface EquipmentView {
   type: string;
   /** A patrol ship's interface whose ship is in flight: shown to anyone in its bay, and the ship isn't drawn (owner, 2026-10-24). */
   out?: true;
+  /** A patrol ship's interface whose ship was destroyed (it is out for good): shown to anyone in its bay. */
+  destroyed?: true;
 }
 
 /** An item as a client sees it. */

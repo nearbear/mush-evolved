@@ -556,9 +556,10 @@ function itemView({ id, type, of, builds, charges, teaches, plant, spores, hidde
 }
 
 function equipmentView(state: GameState, { id, type }: Equipment): EquipmentView {
-  // Out is known in the bay, where the ship is missing (owner, 2026-10-24).
-  const out = type === PATROL_INTERFACE && PATROL_SHIPS.some((s) => interfaceId(s) === id && state.patrolShips[s.id]?.out);
-  return { id, type, ...(out && { out: true as const }) };
+  // Out and destroyed are known in the bay, where the ship is missing (owner, 2026-10-24).
+  const ship = type === PATROL_INTERFACE ? PATROL_SHIPS.find((s) => interfaceId(s) === id) : undefined;
+  const shipState = ship && state.patrolShips[ship.id];
+  return { id, type, ...(shipState?.out && { out: true as const }), ...(shipState?.destroyed && { destroyed: true as const }) };
 }
 
 /** Your own ship's armor and charges, while you fly it. */
