@@ -2,9 +2,11 @@
 // rebel bases that called. The screen (`view.comms.terminal`) is read-only for anyone at the terminal; every button comes from view.actions.
 
 import { Tabs } from "@base-ui/react/tabs";
-import type { Action, EquipmentView, PlayerView } from "@mush2/shared";
+import { Tooltip } from "@base-ui/react/tooltip";
+import { type Action, type EquipmentView, type PlayerView, XYLOPH_IDS } from "@mush2/shared";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { XYLOPH_DONE, XYLOPH_TODO } from "../art/assets.ts";
 import { useNames } from "../i18n/names.ts";
 import { ActionButton } from "./ActionButton.tsx";
 import { ActionLabel } from "./ActionLabel.tsx";
@@ -73,6 +75,28 @@ export function CommsCenter({ terminal, view, onAction }: Props) {
               <strong>{t("comms.xylophTitle")}</strong>
               <span>{t("comms.xylophDesc")}</span>
               <span>{screen.xylophLeft > 0 ? t("comms.xylophLeft", { count: screen.xylophLeft }) : t("comms.xylophDone")}</span>
+              <Tooltip.Provider delay={300}>
+                <ul className="xyloph-grid" aria-label={t("comms.xylophTitle")}>
+                  {XYLOPH_IDS.map((id) => {
+                    const found = screen.xylophFound.includes(id);
+                    const text = found ? t(`comms.xyloph.${id}`) : t("comms.xylophUndeciphered");
+                    return (
+                      <li key={id}>
+                        <Tooltip.Root>
+                          <Tooltip.Trigger className="xyloph-cell" aria-label={text} render={<button type="button" />}>
+                            <img src={found ? XYLOPH_DONE : XYLOPH_TODO} alt="" />
+                          </Tooltip.Trigger>
+                          <Tooltip.Portal>
+                            <Tooltip.Positioner sideOffset={6}>
+                              <Tooltip.Popup className="tooltip">{text}</Tooltip.Popup>
+                            </Tooltip.Positioner>
+                          </Tooltip.Portal>
+                        </Tooltip.Root>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </Tooltip.Provider>
             </div>
             {xyloph && (
               <ActionButton view={view} option={xyloph} onAction={onAction}>

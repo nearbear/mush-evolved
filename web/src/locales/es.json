@@ -1421,6 +1421,7 @@
     "xylophLeft_many": "Quedan {{count}} datos en la base.",
     "xylophLeft_other": "Quedan {{count}} datos en la base.",
     "xylophDone": "No queda nada por encontrar en la base de datos de Xyloph.",
+    "xylophUndeciphered": "Aún sin descifrar.",
     "neronTitle": "Actualización de NERON",
     "neronVersion": "NERON versión {{version}}",
     "neronProgress": "{{percent}} % hacia la próxima actualización. Cada actualización termina un proyecto de NERON.",

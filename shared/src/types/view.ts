@@ -1,7 +1,7 @@
 import type { ActionCost, ActionTag } from "../actions.ts";
 import type { CharacterId } from "../characters.ts";
 import type { BiosState } from "../bios.ts";
-import type { RebelBaseId } from "../comms.ts";
+import type { RebelBaseId, XylophEntryId } from "../comms.ts";
 import type { PlanetDirection } from "../planets.ts";
 import type { TitleId } from "../titles.ts";
 import type { Action, BotKind, ItemId, LogEntry, PlayerId, Role, RoomId } from "../types.ts";
@@ -266,7 +266,9 @@ export interface CommsTerminalView {
   solChance: number;
   /** Every rebel call so far: `open` (can be decoded), `contacted` (reached, bonus in effect) or `lost` (expired). */
   rebels: { base: RebelBaseId; progress: number; status: "open" | "contacted" | "lost"; expiresAt: number }[];
-  /** How many Xyloph entries are left to draw. Which were drawn is only in the drawer's own log. */
+  /** How many Xyloph entries are left to draw. */
   xylophLeft: number;
+  /** The entries drawn so far, in database order (not draw order), for the terminal's grid of deciphered cells. */
+  xylophFound: XylophEntryId[];
   neron: { version: number; progress: number };
 }

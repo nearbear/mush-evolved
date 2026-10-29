@@ -243,7 +243,7 @@ export function advanceNeron(state: GameState, percent: number): string | undefi
   return project;
 }
 
-/** What the Com center terminal shows anyone standing at it. Which Xyloph entries were drawn stays out. */
+/** What the Com center terminal shows anyone standing at it. The drawn Xyloph entries are listed in database order, so the draw order stays out. */
 export function commsTerminalView(state: Readonly<GameState>): CommsTerminalView {
   const { comms } = state;
   return {
@@ -255,6 +255,7 @@ export function commsTerminalView(state: Readonly<GameState>): CommsTerminalView
       expiresAt: call.expiresAt,
     })),
     xylophLeft: xylophLeft(state).length,
+    xylophFound: XYLOPH_IDS.filter((id) => xylophFound(state, id)),
     neron: { ...comms.neron },
   };
 }

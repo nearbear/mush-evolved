@@ -232,7 +232,8 @@ describe("communication center", () => {
       const theirs = viewFor(next, "p1");
       expect(theirs.log.some((e) => e.key === "xylophContacted")).toBe(false);
       expect(theirs.comms.terminal?.xylophLeft).toBe(XYLOPH_IDS.length - 1);
-      expect(JSON.stringify(theirs.comms)).not.toContain(next.comms.xyloph[0]!);
+      expect(theirs.comms.terminal?.xylophFound).toEqual([next.comms.xyloph[0]]);
+      expect(JSON.stringify(theirs.log)).not.toContain(next.comms.xyloph[0]!);
     });
 
     it("link-loss entries drop the link; Wireless infidelity also cuts the chance, never below 4%", () => {

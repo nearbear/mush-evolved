@@ -368,3 +368,24 @@ li.research-item-blocked .research-progress {
 .progress-tab-list .settings-tab {
   padding-inline: 12px;
 }
+
+.xyloph-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, 36px);
+  gap: 4px;
+  margin: 6px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.xyloph-cell {
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: help;
+}
+
+.xyloph-grid img {
+  display: block;
+  image-rendering: pixelated;
+}
