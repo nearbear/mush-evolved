@@ -42,7 +42,8 @@ export function PlanetList({ view, onAction, terminal }: Props) {
     const known = planet.sectors.filter((tag) => tag !== null).length;
     return (
       <div className="planet-item">
-        <span className="planet-position" aria-label={t("astro.position", { direction: t(`astro.directions.${planet.direction}`), distance: planet.distance })}>
+        <span className="planet-position">
+          <span className="sr-only">{t("astro.position", { direction: t(`astro.directions.${planet.direction}`), distance: planet.distance })}</span>
           <span aria-hidden="true">
             {t(`astro.directions.${planet.direction}`)}, {planet.distance}
           </span>
@@ -50,8 +51,11 @@ export function PlanetList({ view, onAction, terminal }: Props) {
         </span>
         <div className="planet-title">
           <strong>{planet.name}</strong>
-          <span className="planet-sector-count" aria-label={t("astro.sectorProgress", { known, total: planet.sectors.length })}>
-            ({known}/{planet.sectors.length})
+          <span className="planet-sector-count">
+            <span className="sr-only">{t("astro.sectorProgress", { known, total: planet.sectors.length })}</span>
+            <span aria-hidden="true">
+              ({known}/{planet.sectors.length})
+            </span>
           </span>
           {planet.orbited && <span className="planet-orbited">{t("astro.orbited")}</span>}
         </div>
