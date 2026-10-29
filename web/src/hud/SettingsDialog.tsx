@@ -5,6 +5,7 @@ import { ACTOPI_CHEATS, CHEATS, ROLE_CHEATS, isActopiCheat, type ActopiCheat, ty
 import { Credits } from "./Credits.tsx";
 import { DialogHeader } from "./DialogHeader.tsx";
 import { Hint } from "./IconButton.tsx";
+import { TabOutline } from "./TabOutline.tsx";
 import { Dialog } from "@base-ui/react/dialog";
 import { Tabs } from "@base-ui/react/tabs";
 import { useTranslation } from "react-i18next";
@@ -57,10 +58,12 @@ export function SettingsDialog({
       <Dialog.Portal>
         <Dialog.Backdrop className="settings-backdrop" />
         <Dialog.Popup className="settings-popup terminal-popup kit-panel">
-          <div className="cut-card cut-top terminal-card">
-          <div className="terminal-scroll">
-          <DialogHeader className="terminal-header" heading={t("settings.title")} closeLabel={t("settings.close")} />
-          <Credits as="p" className="settings-credits" />
+          <div className="cut-card cut-top terminal-card terminal-outlined">
+          <div className="terminal-top">
+            <DialogHeader className="terminal-header" heading={t("settings.title")} closeLabel={t("settings.close")} />
+            <Credits as="p" className="settings-credits" />
+          </div>
+          <div className="terminal-body">
           <Tabs.Root className="settings-tabs" defaultValue={cheatsAllowed ? "cheats" : "general"}>
             <Tabs.List className="settings-tab-list">
               <Tabs.Tab className="settings-tab" value="general">{t("settings.tabs.general")}</Tabs.Tab>
@@ -129,6 +132,7 @@ export function SettingsDialog({
           </Tabs.Root>
           </div>
           </div>
+          <TabOutline shape="cut" line=".terminal-body" />
         </Dialog.Popup>
       </Dialog.Portal>
     </Dialog.Root>

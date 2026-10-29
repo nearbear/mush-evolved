@@ -261,7 +261,7 @@ li.research-item .research-body {
 }
 
 /* The asset attribution, under the header and above the tabs (see Credits.tsx). */
-/* Cancels the 1rem flex gap: the tabs are 39px tall with their labels low, which already leaves enough space. */
+/* Cancels the 1rem under the title area (terminal.css's .terminal-top): the tabs are 39px tall with their labels low, which already leaves enough space. */
 .settings-credits {
   margin: 0 0 -1rem;
   font-size: 0.75rem;

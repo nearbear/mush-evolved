@@ -35,6 +35,7 @@ import { ActionLabel } from "./ActionLabel.tsx";
 import { ActionButton } from "./ActionButton.tsx";
 import { BiosTerminal } from "./BiosTerminal.tsx";
 import { CommsCenter } from "./CommsCenter.tsx";
+import { TabOutline } from "./TabOutline.tsx";
 import { TerminalShell } from "./TerminalShell.tsx";
 import { PlanetList } from "./PlanetList.tsx";
 import { ShipNavigation } from "./ShipNavigation.tsx";
@@ -57,7 +58,7 @@ export function TerminalDialog({ terminal, view, onAction, onClose }: Props) {
         <Dialog.Backdrop className="settings-backdrop" />
         <Dialog.Popup className={`settings-popup terminal-popup kit-panel`}>
           {terminal && (
-            <div className={`cut-card cut-top terminal-card terminal-${terminal.type.toLowerCase()}`}>
+            <div className={`cut-card cut-top terminal-card terminal-outlined terminal-${terminal.type.toLowerCase()}`}>
             <TerminalShell name={names.equipment(terminal.type)} type={terminal.type} view={view}>
             {terminal?.type === "RESEARCH_LAB" && <ResearchList terminal={terminal} view={view} onAction={onAction} />}
               {terminal?.type === "NERON_CORE" && <ProjectList terminal={terminal} view={view} onAction={onAction} />}
@@ -71,6 +72,7 @@ export function TerminalDialog({ terminal, view, onAction, onClose }: Props) {
             </TerminalShell>
             </div>
           )}
+          {terminal && <TabOutline key={terminal.id} shape="cut" line=".terminal-body" />}
         </Dialog.Popup>
       </Dialog.Portal>
     </Dialog.Root>

@@ -1,5 +1,6 @@
-// The iTrackie's gold outline (edge, gold, edge, 1px each) as one SVG path: the card's sides and cut bottom corners, its
-// top rim, and the selected tab rising out of the rim. Drawing it as one shape is the point: separate elements round their
+// The gold outline (edge, gold, edge, 1px each) of the iTrackie and the terminals as one SVG path: the card's sides and
+// cut bottom corners, its top rim, and the selected tab rising out of the rim. In a terminal the rim is the tab line,
+// under the title bar and login banner, which have no outline; a terminal without tabs gets a flat rim there. Drawing it as one shape is the point: separate elements round their
 // 1px lines independently at a fractional zoom, so the tab's outline never met the card's rim flush. Purely decorative;
 // it measures the DOM it sits in (the Tabs.Root) and redraws when anything there moves or resizes.
 
@@ -10,6 +11,11 @@ const D = 1.5;
 /** The selected tab's top corner radius (itrackie.css's .itrackie-tab border-radius). */
 const TAB_RADIUS = 8;
 const DIAG = D * Math.SQRT2 - D;
+/** The terminals' tabs' cut top corners (settings.css's .settings-tab, from kit.css's .kit-tab). */
+const TAB_CUT = 13;
+
+/** The selected tab's top corners: the iTrackie's are rounded, the terminals' (kit big tabs) cut at 45°. */
+export type TabShape = "round" | "cut";
 
 interface Box {
   left: number;
@@ -22,11 +28,21 @@ interface Box {
  * The outline's centreline, clockwise from the card's top-left corner. `cut` is the card's bottom corner cut and `radius`
  * its top-right corner radius (cut-card.css); `tab` is the selected tab, whose bottom overlaps the card's top.
  */
-export function outlinePath(card: Box, tab: Box | null, cut: number, radius: number): string {
+export function outlinePath(card: Box, tab: Box | null, cut: number, radius: number, shape: TabShape = "round"): string {
   const { left: l, top: t, right: r, bottom: b } = card;
   const f = (n: number) => +n.toFixed(2);
   const p: string[] = [`M${f(l + D)} ${f(t + D)}`];
-  if (tab) {
+  if (tab && shape === "cut") {
+    const c = TAB_CUT + DIAG;
+    p.push(
+      `L${f(tab.left + D)} ${f(t + D)}`,
+      `L${f(tab.left + D)} ${f(tab.top + c)}`,
+      `L${f(tab.left + c)} ${f(tab.top + D)}`,
+      `L${f(tab.right - c)} ${f(tab.top + D)}`,
+      `L${f(tab.right - D)} ${f(tab.top + c)}`,
+      `L${f(tab.right - D)} ${f(t + D)}`,
+    );
+  } else if (tab) {
     const tr = TAB_RADIUS - D;
     p.push(
       `L${f(tab.left + D)} ${f(t + D)}`,
@@ -39,7 +55,7 @@ export function outlinePath(card: Box, tab: Box | null, cut: number, radius: num
   }
   const cr = Math.max(radius - D, 0);
   p.push(
-    `L${f(r - radius)} ${f(t + D)}`,
+    `L${f(r - Math.max(radius, D))} ${f(t + D)}`,
     cr > 0 ? `A${cr} ${cr} 0 0 1 ${f(r - D)} ${f(t + radius)}` : `L${f(r - D)} ${f(t + D)}`,
     `L${f(r - D)} ${f(b - cut + D - D * Math.SQRT2)}`,
     `L${f(r - cut - DIAG)} ${f(b - D)}`,
@@ -50,8 +66,17 @@ export function outlinePath(card: Box, tab: Box | null, cut: number, radius: num
   return p.join("");
 }
 
-/** Put it inside the Tabs.Root, after the card. */
-export function TabOutline() {
+interface Props {
+  shape?: TabShape;
+  /**
+   * The element the rim runs along the top of, when that isn't the card's top (a terminal's body, under its title bar).
+   * A tab list at the top of it moves the rim down to the tabs' bottom, less the 3px the selected tab overlaps it by.
+   */
+  line?: string;
+}
+
+/** Put it after the card, in the element holding the card and its tabs (the iTrackie's Tabs.Root, a terminal's popup). */
+export function TabOutline({ shape = "round", line }: Props) {
   const ref = useRef<SVGSVGElement>(null);
   const [d, setD] = useState("");
   useLayoutEffect(() => {
@@ -65,12 +90,25 @@ export function TabOutline() {
         const b = e.getBoundingClientRect();
         return { left: b.left - o.left, top: b.top - o.top, right: b.right - o.left, bottom: b.bottom - o.top };
       };
-      const tab = root.querySelector('[role="tab"][aria-selected="true"]');
+      const selected = root.querySelector('[role="tab"][aria-selected="true"]');
+      // Tabs are as wide as their labels, a fraction of a pixel; snap their sides to device pixels so those lines stay crisp.
+      const px = window.devicePixelRatio || 1;
+      const snap = (x: number, origin: number) => Math.round(x * px) / px - origin;
+      const tab = selected && (() => {
+        const b = selected.getBoundingClientRect();
+        return { left: snap(b.left, o.left), top: b.top - o.top, right: snap(b.right, o.left), bottom: b.bottom - o.top };
+      })();
+      const box = rel(card);
+      const top = line ? root.querySelector(line) : null;
+      if (top) {
+        const list = top.querySelector('[role="tablist"]');
+        box.top = list ? rel(list).bottom - 3 : rel(top).top;
+      }
       const panel = getComputedStyle(root.closest(".kit-panel") ?? root);
       // cut-card.css's --c: the panel's cut less the padding's share of it, to a whole pixel.
       const cut = Math.round(parseFloat(panel.getPropertyValue("--cut")) - parseFloat(panel.getPropertyValue("--pad")) * 0.5858);
       const radius = parseFloat(getComputedStyle(card).borderTopRightRadius) || 0;
-      setD(outlinePath(rel(card), tab ? rel(tab) : null, cut, radius));
+      setD(outlinePath(box, tab, cut, radius, shape));
     };
     const resized = new ResizeObserver(measure);
     // Tabs come and go (Mush, graveyard) and change width (unread badges), so watch each one, and re-watch when the list changes.
@@ -79,17 +117,20 @@ export function TabOutline() {
       resized.observe(root);
       resized.observe(card);
       for (const tab of root.querySelectorAll('[role="tab"]')) resized.observe(tab);
+      const top = line ? root.querySelector(line) : null;
+      if (top) resized.observe(top);
       measure();
     };
     const changed = new MutationObserver(watch);
-    const list = root.querySelector('[role="tablist"]');
+    // A terminal's tabs can arrive after it opens (the Com center waits for its screen), so watch its whole body.
+    const list = line ? root.querySelector(line) : root.querySelector('[role="tablist"]');
     if (list) changed.observe(list, { childList: true, subtree: true, attributes: true, attributeFilter: ["aria-selected"] });
     watch();
     return () => {
       resized.disconnect();
       changed.disconnect();
     };
-  }, []);
+  }, [shape, line]);
   return (
     <svg ref={ref} className="tab-outline" aria-hidden="true">
       <path d={d} fill="none" stroke="var(--gold-edge)" strokeWidth={3} />

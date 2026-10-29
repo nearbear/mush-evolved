@@ -16,16 +16,74 @@
   inset: 0;
   background: right bottom no-repeat;
 }
-.terminal-scroll {
+/* A terminal (TerminalShell), or the settings window: the title bar and login banner (or credits) stay put above the tab
+   line, and the body under it scrolls. */
+.terminal-top,
+.terminal-body {
   position: relative;
-  flex: 1;
-  min-height: 0;
   display: flex;
   flex-direction: column;
   gap: 1rem;
-  padding: 0 calc(1rem + 3px) calc(1rem + 3px);
+  padding-inline: calc(1rem + 3px);
+}
+.terminal-top {
+  flex: none;
+  padding-bottom: 1rem;
+}
+.terminal-body {
+  flex: 1;
+  min-height: 0;
+  padding-block: 1rem calc(1rem + 3px);
   overflow-y: auto;
-  border-radius: inherit;
+}
+/* A tabbed terminal: the tabs sit on the tab line and only the open panel scrolls. */
+/* clip, not hidden: a hidden box can still be scrolled (by focus, or a script), which would slide the tabs away. */
+.terminal-body:has(> .settings-tabs) {
+  padding: 0;
+  overflow: clip;
+}
+.terminal-body > .settings-tabs {
+  flex: 1;
+  min-height: 0;
+  gap: 0;
+}
+.terminal-body > .settings-tabs > .settings-tab-list {
+  flex: none;
+  padding-inline: calc(1rem + 3px);
+}
+.terminal-body > .settings-tabs > [role="tabpanel"] {
+  flex: 1;
+  min-height: 0;
+  padding: 1rem calc(1rem + 3px) calc(1rem + 3px);
+  overflow-y: auto;
+}
+
+/* The gold outline is TabOutline's SVG (as on the iTrackie), from the tab line down, so the card's own lines are off,
+   and so are the tab list's rule and the selected tab's own outline: the selected tab is just the card's colour, cut
+   like the kit tab, and opens into the card through the gap the outline leaves in the rim. */
+.terminal-outlined.cut-card {
+  background: var(--terminal-bg);
+}
+.terminal-outlined.cut-card::after {
+  content: none;
+}
+.terminal-outlined .settings-tab-list::after {
+  content: none;
+}
+.terminal-outlined .settings-tab[data-active]::before {
+  border: 0;
+  border-image: none;
+  background: var(--terminal-bg);
+  clip-path: polygon(0 100%, 0 13px, 13px 0, calc(100% - 13px) 0, 100% 13px, 100% 100%);
+}
+.terminal-popup .tab-outline {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
 }
 
 /* The status pills are tinted for dark panels; darken them for the light card. */
@@ -72,7 +130,7 @@
   font-size: 0.9em;
 }
 
-/* The shared title bar (TerminalShell): name and room on the left, close on the right. */
+/* The shared title bar (TerminalShell, and the settings window): name and room on the left, close on the right. */
 .terminal-header {
   flex-wrap: wrap;
   /* A slightly deeper cyan than the card, inside the gold outline (3px), instead of the dialog's dark bar. */

@@ -1538,9 +1538,23 @@ Owner asked for +1 HP for everyone at day change plus a tooltip update. The requ
 - **2026-10-28, modal tabs as kit big tabs with the iTrackie colours.** The owner asked for every modal to span the full height and for the modal tabs to look like the design kit's big tab in the iTrackie colours. The 9-slice tab SVGs another session added showed as invisible tabs with a navy box: the running Vite dev server had cached "not found" for the SVGs (the CSS was written before the files), so it left `url("./tab-*.svg")` unrewritten. A fresh build resolved them, so the fix is restarting `npm run dev`. The `::before` border is now transparent, so a missing image no longer shows in the text colour. The owner then wanted the cut corners as thick as the sides. A crisp 45° line can't match: 1px per row is about 0.7px across. I showed ASCII previews of the options (a 4px band, a doubled 6px band, anti-aliased, unchanged) and the owner chose the 4px band (dark 1, gold 2, dark 1 per row, about 2.8px across against 3px). Lesson: for pixel-weight questions, ASCII previews of the real pixels made the choice quick.
 - **2026-10-28, tab corners anti-aliased after all.** At 150% browser zoom the crisp 4px band stepped unevenly (each 1px line becomes 1.5 screen pixels, rounded to 1 or 2), so the owner switched to the anti-aliased option. All three tab SVGs are now polygons, each inset 1px square to its edge, with 16px slices. Renders: even and clean at 150% and 200%; at 100% the three 1px lines blur together on the diagonal (about 1.4 screen pixels each), which no drawing can avoid at that size.
 
+## 2026-10-28: Patrol plan phase 4 (hunters vs. ships in flight)
+
+- Built hunters aiming at patrol ships (15%), armor hits, permanent destruction with the pilot's death, retargeting on landing, and jumps losing ships in flight. Asked the owner the plan's open log-line questions in one batch: hit line in the ship's room, ship-wide NERON warning for a destruction or a jump loss.
+- Needed interpretation: the question about eMush's "player in space" target got an answer describing Mush auto-ejection (1 AP, needs a spacesuit) rather than one of the offered options. Claude read it as "players in space only exist once auto-eject is built", so the player branch was left out and recorded as such; worth confirming.
+- Kept `out: true` on a destroyed ship and added `destroyed`, so docking, recharge and the bay drawing needed no new checks.
+
 ## 2026-10-28: Patrol plan phase 5 (debris, Collect scrap, the space capsule)
 
 - Owner decided the four open points in one question round: the pilot sees a debris count (not the kinds) in the cockpit; Collect's lines and damage are private; unloading on landing is a second secret line in the bay; a destroyed ship's contents, bodies included, float off as debris.
 - Debris is `GameState.space`, items stripped of their container (`Omit<ItemState, "at" | "hiddenBy">`), so a corpse keeps whose body it is and a collected piece keeps its id. A fake "space" room was considered and rejected: every room walk would need to skip it.
 - Claude's defaults, flagged to the owner: opening a capsule is public like eating, the original's injury chance on opening is left out.
 - Needed correction: the hunter-numbers test pins `config.hunters` whole and broke on the new `debris` key; the server typecheck was already failing on wrangler's regenerated `Env` types, unrelated to this change.
+
+### 2026-10-28: Terminals share the iTrackie's SVG outline
+
+All terminals now draw their gold outline with `TabOutline.tsx`, starting at the tab line (a flat rim when there are no tabs); the title bar and login banner above it have no border, and only the body or the open tab panel scrolls. Screenshot review caught two things: an `overflow: hidden` body could still be scrolled by a script, sliding content over the tabs (now `overflow: clip`); and label-width tabs left the outline's sides on half pixels (now snapped to device pixels).
+
+### 2026-10-28: Settings window gets the terminals' outline
+
+At the user's request the settings window moved onto the same layout: title bar and credits fixed above the tab line, the TabOutline SVG from there down, only the open tab panel scrolling. The old `.terminal-scroll` layout is gone. `terminalShots.ts` now also shoots Settings (on phones through the top bar's menu); the user stopped the screenshot run, so the settings window's look is unchecked.

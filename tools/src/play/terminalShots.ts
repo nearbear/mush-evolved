@@ -1,5 +1,5 @@
-// Opens the Laboratory's research terminal (its Active and Blocked tabs) and the Nexus's NERON core (the project list) on a desktop and a 360px
-// phone, saving the dialogs to .screenshots/. Everyone starts in the Laboratory, five rooms from the Nexus.
+// Opens the settings window (same frame as the terminals), the Laboratory's research terminal (its Active and Blocked tabs) and the Nexus's NERON
+// core (the project list) on a desktop and a 360px phone, saving the dialogs to .screenshots/. Everyone starts in the Laboratory, five rooms from the Nexus.
 // Expects `npm run dev` to be running.
 //
 //   node tools/src/play/terminalShots.ts
@@ -45,8 +45,10 @@ async function openTerminal(page: Page, phone: boolean, name: string) {
 
 async function shoot(page: Page, file: string) {
   await page.screenshot({ path: resolve(out, `${file}.png`) });
-  // Scrolled halfway, to see more rows.
-  await page.locator(".terminal-scroll").evaluate((el) => void (el.scrollTop = el.scrollHeight / 2));
+  // Scrolled halfway, to see more rows: the body scrolls, or in a tabbed terminal the open panel.
+  for (const el of await page.locator(".terminal-body:not(:has(> .settings-tabs)), .terminal-body [role=tabpanel]:not([hidden])").all()) {
+    await el.evaluate((node) => void (node.scrollTop = node.scrollHeight / 2));
+  }
   await page.waitForTimeout(200);
   await page.screenshot({ path: resolve(out, `${file}-mid.png`) });
   console.log(`  ${file}.png, ${file}-mid.png`);
@@ -65,6 +67,18 @@ async function run(phone: boolean, character: number) {
     await page.locator(".three-panel").waitFor({ timeout: 45_000 });
     await waitForArt(page);
     const prefix = phone ? "m-term" : "term";
+
+    // Phones open it from the top bar's menu.
+    if (phone) {
+      await page.locator(".menu-button").tap();
+      await page.getByRole("menuitem", { name: "Settings" }).tap();
+    } else await page.locator(".settings-button").first().click();
+    const settings = page.getByRole("dialog");
+    await settings.waitFor();
+    await page.waitForTimeout(300);
+    await shoot(page, `${prefix}-settings`);
+    await page.keyboard.press("Escape");
+    await settings.waitFor({ state: "hidden" });
 
     const lab = await openTerminal(page, phone, "Research lab");
     // Work once on the first offered research, so a row has progress.
