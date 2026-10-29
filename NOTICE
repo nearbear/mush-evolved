@@ -1,0 +1,18 @@
+mush2: a turn-based social deduction game inspired by eMush.
+Copyright (C) 2026 nearbear and contributors
+
+This program is free software: you can redistribute it and/or modify it under
+the terms of the GNU Affero General Public License as published by the Free
+Software Foundation, either version 3 of the License, or (at your option) any
+later version. This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License
+in LICENSE for more details.
+
+Exception: everything under Mush/ is not covered by this license. It is Motion
+Twin's work, licensed CC BY-NC-SA 4.0 (see Mush/LICENSE.txt and
+Mush/ATTRIBUTION.md), and stays under those terms: non-commercial only.
+
+Versions up to and including commit 256d721023301498c1ce6c0acc8e47f812703d63
+were released under the MIT License, and remain available under it to anyone
+who received them.
