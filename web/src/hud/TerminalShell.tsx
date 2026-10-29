@@ -1,13 +1,12 @@
-// The frame every terminal shares: a title bar (terminal name, room, close) and a cosmetic login banner, which stay put,
-// then the terminal's own content, which scrolls (a tabbed terminal's panels scroll under its tabs instead). The gold
-// outline (TabOutline, in TerminalDialog) starts at the tab line under the banner. Terminals supply only their body; no
+// The frame every terminal shares: a title bar (the terminal's icon, then its name over a cosmetic login, and close),
+// which stays put, then the terminal's own content, which scrolls (a tabbed terminal's panels scroll under its tabs instead). The gold
+// outline (TabOutline, in TerminalDialog) starts at the tab line under the title bar. Terminals supply only their body; no
 // game logic lives here.
 
 import { Dialog } from "@base-ui/react/dialog";
 import { bypassesTitles, EQUIPMENT_TYPES, type PlayerView } from "@mush2/shared";
 import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
-import { useNames } from "../i18n/names.ts";
 import { terminalUsername } from "./terminalUsername.ts";
 
 interface Props {
@@ -20,18 +19,19 @@ interface Props {
 
 export function TerminalShell({ name, type, view, children }: Props) {
   const { t } = useTranslation();
-  const names = useNames();
   return (
     <>
       <div className="terminal-top">
         <header className="dialog-header terminal-header">
-          <Dialog.Title className="settings-title">{name}</Dialog.Title>
-          <span className="terminal-room">{names.room(view.you.room)}</span>
+          <span className="terminal-icon" aria-hidden="true" />
+          <div className="terminal-heading">
+            <Dialog.Title className="terminal-title">{name}</Dialog.Title>
+            <TerminalLogin type={type} view={view} />
+          </div>
           <Dialog.Close className="dialog-header-close" aria-label={t("terminal.close")}>
             ×
           </Dialog.Close>
         </header>
-        <TerminalLogin type={type} view={view} />
       </div>
       <div className="terminal-body">{children}</div>
     </>

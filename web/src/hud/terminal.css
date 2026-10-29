@@ -1,5 +1,5 @@
 /* A terminal's window (TerminalDialog): the glowing dark frame of the iTrackie (kit.css's .kit-panel) around a
-   .cut-card like the iTrackie's, with the terminal's watermark art from the design kit in the card's bottom-right corner. Layout comes from settings.css's .settings-popup. */
+   .cut-card like the iTrackie's, with the terminal's icon from the design kit at the left of the title bar. Layout comes from settings.css's .settings-popup. */
 .settings-popup.terminal-popup {
   --pad: 12px;
   /* The kit-panel supplies the frame and fill; overflow stays visible so its glow shows, and the card scrolls instead. */
@@ -9,12 +9,12 @@
   background: none;
   border: 0;
 }
-/* The card itself is a .cut-card (styles/cut-card.css); the watermark art goes on a layer under the scrolling body. */
+/* The card itself is a .cut-card (styles/cut-card.css); corner art (NERON's core) goes on a layer under the body. */
 .terminal-card::before {
   content: "";
   position: absolute;
   inset: 0;
-  background: right bottom no-repeat;
+  background: left top no-repeat;
 }
 /* A terminal (TerminalShell), or the settings window: the title bar and login banner (or credits) stay put above the tab
    line, and the body under it scrolls. */
@@ -97,23 +97,43 @@
   color: #56607a;
 }
 
-.terminal-card.terminal-astro_module::before {
+/* The terminal's icon, at its own size (never scaled); terminals without one leave it out. */
+.terminal-icon {
+  display: none;
+  flex: none;
+  background: center no-repeat;
+}
+.terminal-astro_module .terminal-icon {
+  display: block;
+  width: 92px;
+  height: 73px;
   background-image: url("../../../Mush/www/img/design/astro_bg.png");
 }
-.terminal-card.terminal-com_center::before {
+.terminal-com_center .terminal-icon {
+  display: block;
+  width: 56px;
+  height: 54px;
   background-image: url("../../../Mush/www/img/design/sensor_bg.png");
 }
-.terminal-card.terminal-neron_bios_term::before {
+.terminal-neron_bios_term .terminal-icon {
+  display: block;
+  width: 77px;
+  height: 84px;
   background-image: url("../../../Mush/www/img/design/bios_bg.png");
 }
-.terminal-card.terminal-neron_core::before {
-  background-image:
-    url("../../../Mush/www/img/design/neroncorecorner.png"), url("../../../Mush/www/img/design/neroncore_bg.png");
-  background-position:
-    left top,
-    right bottom;
+.terminal-neron_core .terminal-icon {
+  display: block;
+  width: 67px;
+  height: 81px;
+  background-image: url("../../../Mush/www/img/design/neroncore_bg.png");
 }
-.terminal-card.terminal-pilot_module::before {
+.terminal-card.terminal-neron_core::before {
+  background-image: url("../../../Mush/www/img/design/neroncorecorner.png");
+}
+.terminal-pilot_module .terminal-icon {
+  display: block;
+  width: 71px;
+  height: 73px;
   background-image: url("../../../Mush/www/img/design/nav_bg.png");
 }
 
@@ -130,7 +150,8 @@
   font-size: 0.9em;
 }
 
-/* The shared title bar (TerminalShell, and the settings window): name and room on the left, close on the right. */
+/* The shared title bar (TerminalShell, and the settings window). A terminal's: icon, then its name over the login,
+   close on the right. The settings window: title on the left, close on the right. */
 .terminal-header {
   flex-wrap: wrap;
   /* A slightly deeper cyan than the card, inside the gold outline (3px), instead of the dialog's dark bar. */
@@ -139,21 +160,30 @@
   background: #a6eefb;
   border-bottom: 1px solid var(--edge);
 }
-.terminal-room {
-  margin-right: auto;
-  color: var(--muted);
-  font-size: 0.85em;
+.terminal-header:has(> .terminal-heading) {
+  flex-wrap: nowrap;
+  gap: 0.75rem;
 }
-
-/* The cosmetic login banner. Wraps on a phone rather than scrolling sideways. */
-.terminal-login {
-  margin: 0;
-  padding: 0.5rem 0.75rem;
+.terminal-header:has(> .terminal-heading) > .dialog-header-close {
+  align-self: flex-start;
+}
+.terminal-heading {
+  flex: 1;
+  min-width: 0;
   font-family: ui-monospace, "Cascadia Code", Menlo, monospace;
   font-size: 0.8rem;
+}
+.terminal-title {
+  margin: 0;
+  font-size: inherit;
+  font-weight: bold;
+}
+
+/* The cosmetic login, under the terminal's name. Wraps on a phone rather than scrolling sideways. */
+.terminal-login {
+  margin: 0;
+  font: inherit;
   white-space: pre-wrap;
   overflow-wrap: anywhere;
   color: var(--accent);
-  background: rgb(0 0 0 / 6%);
-  border-left: 3px solid var(--edge);
 }
