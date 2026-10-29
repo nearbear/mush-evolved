@@ -141,7 +141,7 @@
     "close": "Cerrar el mapa",
     "youAreHere": "Estás aquí",
     "nobodyHere": "No hay nadie aquí",
-    "selectRoom": "Elige una sala",
+    "selectRoom": "Señala una sala",
     "unidentified": "Sin identificar",
     "unidentifiedCount": "{{count}} sin identificar"
   },

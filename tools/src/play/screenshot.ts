@@ -13,7 +13,7 @@ import { mkdirSync } from "node:fs";
 import { resolve } from "node:path";
 import { parseArgs } from "node:util";
 import { devPorts } from "../dev/ports.ts";
-import { type Browser, type BrowserContextOptions, chromium, devices, type Page } from "playwright";
+import { type Browser, type BrowserContextOptions, chromium, devices, type Locator, type Page } from "playwright";
 import { otherPerson, pointOn, sceneSize, type Target, targets, waitForArt } from "./isoProbe.ts";
 
 const ports = devPorts();
@@ -210,12 +210,21 @@ async function desktopSteps(page: Page, step: Step): Promise<void> {
     console.log(`      ${before} -> ${await page.locator(".room-title").innerText()}`);
   });
 
-  // TODO(minimap): the 07-minimap step is removed while the minimap is stubbed out.
+  await step("07-minimap", async () => {
+    const map = page.locator(".minimap");
+    await map.hover();
+    await page.locator(".minimap.expanded").waitFor();
+    const at = await pointOnShape(page, map.locator(".minimap-room.reachable").first());
+    await page.mouse.move(at.x, at.y);
+    await map.locator(".minimap-caption", { hasText: at.title }).waitFor(); // hover names the room
+    console.log(`      minimap names ${at.title} on hover`);
+  });
 }
 
 async function joinMobile(page: Page, name: string): Promise<void> {
   await join(page, name, "m00-picker", 1);
   await page.locator(".bottom-nav").waitFor();
+  if (await page.locator(".minimap.expanded").count()) throw new Error("the minimap should start collapsed");
 }
 
 /** The phone pass: taps, the peek bar, panel switching, a wide room, and landscape. */
@@ -304,7 +313,17 @@ async function mobileSteps(page: Page, step: Step): Promise<void> {
     if (cx < box!.x || cx > box!.x + box!.width) throw new Error("your character is scrolled out of view");
   });
 
-  // TODO(minimap): the m08-minimap step is removed while the minimap is stubbed out.
+  await step("m08-minimap", async () => {
+    const map = page.locator(".minimap");
+    const box = (await map.locator("svg").boundingBox())!;
+    await page.touchscreen.tap(box.x + box.width / 2, box.y + box.height / 2);
+    await page.locator(".minimap.expanded").waitFor();
+    await noSideScroll(page);
+    const at = await pointOnShape(page, map.locator(".minimap-room.reachable").first());
+    // Tap through Playwright's hit test (it retries while the map settles) rather than at fixed coordinates.
+    await map.getByRole("button", { name: at.title, exact: true }).tap();
+    await map.locator(".minimap-caption", { hasText: at.title }).waitFor(); // a tap names the room, like hover
+  });
 
   await step("m09-landscape", async () => {
     const portrait = page.viewportSize()!;
@@ -337,6 +356,24 @@ async function firstHit(page: Page, which: (t: Target) => boolean): Promise<Targ
     if (at) return { ...t, ...at };
   }
   return fail("no visible pixel of any such target is hit-testable");
+}
+
+/** A point inside an SVG shape (not just its bounding box) that takes the pointer, and the shape's name. */
+async function pointOnShape(page: Page, shape: Locator): Promise<{ x: number; y: number; title: string }> {
+  const box = (await shape.boundingBox()) ?? fail("shape is not visible");
+  const steps = [0.5, 0.3, 0.7, 0.2, 0.8, 0.1, 0.9];
+  for (const fy of steps) {
+    for (const fx of steps) {
+      const position = { x: fx * box.width, y: fy * box.height };
+      try {
+        await shape.click({ trial: true, position, timeout: 150 });
+        return { x: box.x + position.x, y: box.y + position.y, title: (await shape.getAttribute("aria-label")) ?? "" };
+      } catch {
+        // Not on the shape here (or something covers it); try the next point.
+      }
+    }
+  }
+  return fail("no visible point on the shape");
 }
 
 function fail(message: string): never {

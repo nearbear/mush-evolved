@@ -141,7 +141,7 @@
     "close": "Fermer le plan",
     "youAreHere": "Vous êtes ici",
     "nobodyHere": "Personne ici",
-    "selectRoom": "Choisissez une pièce",
+    "selectRoom": "Pointez une pièce",
     "unidentified": "Non identifié",
     "unidentifiedCount": "{{count}} non identifié(s)"
   },

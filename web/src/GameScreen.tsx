@@ -37,6 +37,7 @@ import type { Bar } from "./scene/ActionBar.tsx";
 import { WakeUpAnnouncement } from "./WakeUp.tsx";
 import { useNames } from "./i18n/names.ts";
 import { showError } from "./Toasts.tsx";
+import { Minimap } from "./scene/Minimap.tsx";
 import { useMobile } from "./useMobile.ts";
 
 export function GameScreen({ ticket, onLeave, waking = false }: { ticket: SeatTicket; onLeave: () => void; waking?: boolean }) {
@@ -260,9 +261,7 @@ export function GameScreen({ ticket, onLeave, waking = false }: { ticket: SeatTi
               </div>
             )}
             {you.alive && <InventoryOverlay view={view} selected={target} onAction={send} onSelect={select} zoom={zoom} onZoom={setZoom} />}
-            {/* TODO(minimap): stubbed out for now, to be revisited. scene/Minimap.tsx still exists; render it here
-                with here={you.room} youId={you.id} people={[you, ...view.players]} unidentified={view.unidentified}
-                reachable={reachable} onMove={move}. */}
+            <Minimap here={you.room} youId={you.id} people={[you, ...view.players]} unidentified={view.unidentified} reachable={reachable} />
           </div>
         </div>
 

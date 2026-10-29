@@ -139,7 +139,7 @@
     "close": "Close map",
     "youAreHere": "You are here",
     "nobodyHere": "Nobody here",
-    "selectRoom": "Select a room",
+    "selectRoom": "Point at a room",
     "unidentified": "Unidentified",
     "unidentifiedCount": "{{count}} unidentified"
   },

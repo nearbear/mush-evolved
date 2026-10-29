@@ -4,14 +4,14 @@
 // are marked in the walls. Each person is a small character bust. Without ACTOPI you
 // only know who is in your own room; everyone else is a mush.png icon.
 //
-// Collapsed by default. A mouse expands it on hover; touch expands it with a
-// tap. Hovering a room names it; clicking or tapping selects it, and the
-// caption then offers Go when the server says you can move there. Double-click
-// is a shortcut for Go, like doors in the room view. Presentational only.
+// Collapsed by default. A mouse expands it on hover, and hovering a room
+// names it and the people in it; leaving the map collapses it. Touch has no
+// hover, so a tap expands it (with a close button) and tapping a room names it
+// the same way. Keyboard focus on a room names it too. Presentational only.
 
 import { useTranslation } from "react-i18next";
 import { useNames } from "../i18n/names.ts";
-import { useEffect, useMemo, useState, type CSSProperties, type KeyboardEvent, type PointerEvent } from "react";
+import { useEffect, useMemo, useState, type CSSProperties, type PointerEvent } from "react";
 import planJson from "@mush2/assets/derived/ship-plan.json";
 import type { OtherPlayerView, RoomId, ShipPlan } from "@mush2/shared";
 import { MUSH_ICON, bustIcon } from "../art/assets.ts";
@@ -32,7 +32,6 @@ export function Minimap({
   people,
   unidentified,
   reachable,
-  onMove,
 }: {
   /** The room you are in. */
   here: RoomId;
@@ -42,26 +41,24 @@ export function Minimap({
   /** Rooms of people you can't identify (ACTOPI off), one entry each. */
   unidentified: RoomId[];
   reachable: Set<RoomId>;
-  onMove: (room: RoomId) => void;
 }) {
   const { t } = useTranslation();
   const names = useNames();
   const [hovering, setHovering] = useState(false);
   const [opened, setOpened] = useState(false);
-  const [selected, setSelected] = useState<RoomId | null>(null);
   const [pointed, setPointed] = useState<RoomId | null>(null);
-  const expanded = hovering || opened || selected !== null;
+  const expanded = hovering || opened;
 
-  // Arriving somewhere new closes the map, and the old selection.
+  // Arriving somewhere new closes the map.
   // biome-ignore lint/correctness/useExhaustiveDependencies: `here` is a trigger: arriving somewhere new closes the map.
   useEffect(() => {
     setOpened(false);
-    setSelected(null);
+    setPointed(null);
   }, [here]);
 
   const close = () => {
     setOpened(false);
-    setSelected(null);
+    setPointed(null);
   };
 
   const dots = useMemo(
@@ -77,42 +74,34 @@ export function Minimap({
     [people, unidentified],
   );
 
-  // Only real pointers hover; a tap shouldn't both expand and select.
-  const mouse = (e: PointerEvent) => e.pointerType !== "touch";
-  const select = (room: RoomId) => {
-    if (!expanded) setOpened(true);
-    else setSelected(room === selected ? null : room);
-  };
-  const onKey = (e: KeyboardEvent, room?: RoomId) => {
-    if (e.key === "Escape") close();
-    else if (room && (e.key === "Enter" || e.key === " ")) {
-      e.preventDefault();
-      select(room);
-    }
-  };
+  // Only real pointers hover; touch taps instead.
+  const touch = (e: PointerEvent) => e.pointerType === "touch";
 
-  const shown = selected ?? pointed;
-  const occupants = selected ? people.filter((p) => p.room === selected) : [];
-  const strangers = selected ? unidentified.filter((r) => r === selected).length : 0;
+  const occupants = pointed ? people.filter((p) => p.room === pointed && p.id !== youId) : [];
+  const strangers = pointed ? unidentified.filter((r) => r === pointed).length : 0;
+  const who = [
+    ...occupants.map((p) => names.character(p.character)),
+    ...(strangers ? [t("minimap.unidentifiedCount", { count: strangers })] : []),
+  ].join(", ");
 
   return (
     <section
       className={`minimap${expanded ? " expanded" : ""}`}
       style={{ "--cols": plan.width } as CSSProperties}
       aria-label={t("minimap.title")}
-      onPointerEnter={(e) => mouse(e) && setHovering(true)}
+      onPointerEnter={(e) => !touch(e) && setHovering(true)}
       onPointerLeave={(e) => {
-        if (!mouse(e)) return;
+        if (touch(e)) return;
         setHovering(false);
         setPointed(null);
       }}
-      onKeyDown={(e) => onKey(e)}
+      onKeyDown={(e) => e.key === "Escape" && close()}
     >
-      {/* biome-ignore lint/a11y/useKeyWithClickEvents lint/a11y/noSvgWithoutTitle: the section is labelled and each room is a labelled button; expanding the map by keyboard is not built yet. */}
+      {/* biome-ignore lint/a11y/noSvgWithoutTitle: the section is labelled and each room is labelled; expanding the map by keyboard is not built yet. */}
       <svg
         viewBox={`0 0 ${plan.width} ${plan.height}`}
         style={{ aspectRatio: `${plan.width} / ${plan.height}` }}
-        onClick={() => !expanded && setOpened(true)}
+        onPointerUp={(e) => touch(e) && !expanded && setOpened(true)}
       >
         <path className="minimap-walls" d={wallsPath} />
         {shapes.map((r) => (
@@ -122,7 +111,6 @@ export function Minimap({
               "minimap-room",
               r.id === here && "here",
               reachable.has(r.id) && "reachable",
-              r.id === selected && "selected",
               r.id === pointed && "pointed",
             ]
               .filter(Boolean)
@@ -130,15 +118,10 @@ export function Minimap({
             d={r.d}
             role="button"
             aria-label={names.room(r.id)}
-            aria-pressed={r.id === selected}
             tabIndex={expanded ? 0 : -1}
-            onPointerEnter={(e) => mouse(e) && setPointed(r.id)}
-            onClick={(e) => {
-              e.stopPropagation();
-              select(r.id);
-            }}
-            onDoubleClick={() => reachable.has(r.id) && onMove(r.id)}
-            onKeyDown={(e) => onKey(e, r.id)}
+            onPointerEnter={(e) => !touch(e) && setPointed(r.id)}
+            onPointerUp={(e) => touch(e) && expanded && setPointed(r.id)}
+            onFocus={() => setPointed(r.id)}
           >
             <title>{names.room(r.id)}</title>
           </path>
@@ -167,27 +150,17 @@ export function Minimap({
       </svg>
       {expanded && (
         <div className="minimap-caption">
-          {shown ? (
+          {pointed ? (
             <div className="minimap-name">
-              <strong>{names.room(shown)}</strong>
-              {selected && (
-                <div className="sub">
-                  {selected === here
-                    ? t("minimap.youAreHere")
-                    : occupants.length || strangers
-                      ? [
-                          ...occupants.map((p) => names.character(p.character)),
-                          ...(strangers ? [t("minimap.unidentifiedCount", { count: strangers })] : []),
-                        ].join(", ")
-                      : t("minimap.nobodyHere")}
-                </div>
-              )}
+              <strong>{names.room(pointed)}</strong>
+              <div className="sub">
+                {pointed === here ? [t("minimap.youAreHere"), ...(who ? [who] : [])].join(" · ") : who || t("minimap.nobodyHere")}
+              </div>
             </div>
           ) : (
             <span className="sub minimap-name">{t("minimap.selectRoom")}</span>
           )}
-          {selected && reachable.has(selected) && <button type="button" onClick={() => onMove(selected)}>{t("common.go")}</button>}
-          {(selected || opened) && (
+          {opened && (
             <button type="button" className="close" onClick={close} aria-label={t("minimap.close")}>
               ×
             </button>

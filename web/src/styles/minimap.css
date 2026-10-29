@@ -1,7 +1,5 @@
-/* Minimap (currently stubbed out in GameScreen, see TODO(minimap)). */
-
 /*
- * Minimap: the deck plan in the room view's bottom-left corner. Your room is in
+ * Minimap: the deck plan in the room view's top-right corner. Your room is in
  * color; the rest is fog (grey silhouettes, faded people). Doors are amber.
  */
 
@@ -13,8 +11,8 @@
 .minimap {
   --cell: 2px;
   position: absolute;
-  left: 0.5rem;
-  bottom: 0.5rem;
+  top: 0.5rem;
+  right: 0.5rem;
   z-index: 2;
   width: calc(var(--cols) * var(--cell));
   max-width: calc(100% - 1rem);
@@ -48,10 +46,6 @@
 .minimap-room.pointed,
 .minimap-room:focus-visible {
   opacity: 0.85;
-}
-.minimap-room.selected {
-  fill: var(--accent);
-  opacity: 0.8;
 }
 .minimap-room.here {
   fill: var(--highlight);
