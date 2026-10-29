@@ -196,10 +196,12 @@ describe("fuel loading", () => {
     expect(viewFor(s, "p1").log.some((e) => e.key === "checkedCombustion")).toBe(false);
   });
 
-  it("the chamber level is public", () => {
+  it("the chamber level is not in the public ship view", () => {
     const s = game("CORRIDOR_A");
     s.ship.combustion = 4;
-    expect(viewFor(s, "p1").ship).toMatchObject({ combustion: 4, max: { combustion: 9 } });
+    const ship = viewFor(s, "p1").ship;
+    expect(ship).not.toHaveProperty("combustion");
+    expect(ship.max).not.toHaveProperty("combustion");
   });
 
   it("parses the actions from the client", () => {
