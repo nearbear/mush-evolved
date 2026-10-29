@@ -21,7 +21,7 @@
 import { Application, Container, type Filter, Rectangle, RendererType, Sprite, Texture, TextureStyle, TilingSprite } from "pixi.js";
 import { keyedUrl } from "../../art/keyedSprite.ts";
 import { animId, animStep, frameAt, PACE_SPEED, type FrameUpdate, type Scene, type SceneImage, type SceneOutline, type ScenePicture, type SceneSprite, type ShipTurn } from "../scene.ts";
-import { shiftTile, tilePosition } from "../skyTurn.ts";
+import { shiftTile, stepTurn, tilePosition, type TurnLimits } from "../skyTurn.ts";
 import { starfield, starLayer } from "../starfield.ts";
 import { ESP, espPulse, filterKey, lookOf } from "./effects.ts";
 import { EspFilters, lookFilter } from "./filters.ts";
@@ -67,8 +67,11 @@ const STARS_PARALLAX = 0.6;
 const SKY_DRIFT = 12;
 const STARS_DRIFT = 40;
 const EASE = 1.2;
-/** A quarter turn of the ship turns the stars a quarter the other way over this long (ms), easing in and out. */
-const TURN_MS = 2400;
+/**
+ * When the ship turns a quarter, the stars turn a quarter the other way: speeding up to at most `speed` (radians a
+ * second) and slowing to a stop at `accel` (radians a second, each second), so a quarter turn takes about 9.5 s.
+ */
+const TURN: TurnLimits = { speed: 0.24, accel: 0.08 };
 let skyTexture: Texture | null = null;
 let starsTexture: Texture | null = null;
 
@@ -126,9 +129,13 @@ export class PixiRenderer {
   private readonly app = new Application();
   /** The dust, then the near stars. */
   private sky: SkyLayer[] = [];
-  /** How far the stars have turned (radians, clockwise), the turn under way if any, and the last turn seen (`Scene.turn.n`; null before the first scene). */
+  /**
+   * How far the stars have turned (radians, clockwise), how fast they are turning (radians a second), where they should
+   * end up, and the last turn seen (`Scene.turn.n`; null before the first scene).
+   */
   private angle = 0;
-  private turning: { from: number; to: number; start: number } | null = null;
+  private spin = 0;
+  private heading = 0;
   private turnSeen: number | null = null;
   /** The orbited planet, in the sky behind the ship at the panel's bottom-right; `planetUrl` is the one it should show. */
   private readonly planet = new Sprite(Texture.EMPTY);
@@ -341,15 +348,18 @@ export class PixiRenderer {
     const seen = this.turnSeen;
     this.turnSeen = turn?.n ?? 0;
     if (seen === null || !turn || turn.n <= seen) return;
-    const to = (this.turning?.to ?? this.angle) + ((turn.side === "left" ? 1 : -1) * Math.PI) / 2;
+    this.heading += ((turn.side === "left" ? 1 : -1) * Math.PI) / 2;
     if (this.reducedMotion.matches) {
-      this.angle = to;
-      this.turning = null;
+      this.angle = this.heading;
+      this.spin = 0;
       this.placeSky();
-    } else {
-      this.turning = { from: this.angle, to, start: performance.now() };
     }
     this.requestRender();
+  }
+
+  /** Whether the stars are still turning toward `heading`. */
+  private turning() {
+    return this.angle !== this.heading || this.spin !== 0;
   }
 
   /** Moves each layer by `by(layer)` on screen: turned back into the tile's frame, so it moves that way whatever the angle. */
@@ -363,7 +373,7 @@ export class PixiRenderer {
    */
   private placeSky() {
     const center = { x: this.app.screen.width / 2, y: this.app.screen.height / 2 };
-    const whole = this.turning ? (v: number) => v : Math.round;
+    const whole = this.turning() ? (v: number) => v : Math.round;
     for (const l of this.sky) {
       const p = tilePosition(l.at, this.angle, center);
       l.sprite.tilePosition.set(whole(p.x), whole(p.y));
@@ -493,12 +503,8 @@ export class PixiRenderer {
     }
     const dt = this.lastTick ? Math.min(0.1, (now - this.lastTick) / 1000) : 0;
     this.lastTick = now;
-    const turning = this.turning;
-    if (turning) {
-      const t = Math.min(1, (now - turning.start) / TURN_MS);
-      this.angle = turning.from + (turning.to - turning.from) * t * t * (3 - 2 * t);
-      if (t >= 1) this.turning = null;
-    }
+    const turning = this.turning();
+    if (turning) ({ angle: this.angle, velocity: this.spin } = stepTurn({ angle: this.angle, velocity: this.spin }, this.heading, dt, TURN));
     const streaming = this.speed !== this.cruise;
     if (this.speed !== 0 || streaming) {
       this.speed += (this.cruise - this.speed) * Math.min(1, dt * EASE);
@@ -510,7 +516,7 @@ export class PixiRenderer {
       this.placeSky();
       this.dirty = true;
     }
-    const streams = this.speed !== 0 || this.speed !== this.cruise || this.turning !== null;
+    const streams = this.speed !== 0 || this.speed !== this.cruise || this.turning();
     if (!streams) this.lastTick = 0;
     const pulse = this.pulsing && !this.reducedMotion.matches;
     if (this.esp) {

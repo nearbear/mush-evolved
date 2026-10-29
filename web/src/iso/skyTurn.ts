@@ -21,3 +21,25 @@ export function tilePosition(at: Point, angle: number, center: Point): Point {
   const vy = at.y - center.y;
   return { x: center.x + cos * vx - sin * vy, y: center.y + sin * vx + cos * vy };
 }
+
+/** How the stars turn toward where they should point: at most `speed` (radians a second), speeding up and slowing down at `accel` (radians a second, each second). */
+export type TurnLimits = { speed: number; accel: number };
+export type Spin = { angle: number; velocity: number };
+
+/**
+ * One step of `dt` seconds turning `spin` toward `target`, like a body with inertia: it speeds up at `accel` to at most
+ * `speed`, then brakes at `accel` so it comes to rest on the target. A new target mid-turn keeps the velocity it has,
+ * so turning back first slows it down. Lands exactly on the target, at rest.
+ */
+export function stepTurn(spin: Spin, target: number, dt: number, { speed, accel }: TurnLimits): Spin {
+  const left = target - spin.angle;
+  // The fastest it can go here and still stop on the target.
+  const want = Math.sign(left) * Math.min(speed, Math.sqrt(2 * accel * Math.abs(left)));
+  const v = spin.velocity;
+  // Braking follows the stopping curve; anything else (speeding up, reversing) is limited to `accel`.
+  const braking = Math.sign(want) === Math.sign(v) && Math.abs(want) < Math.abs(v);
+  const velocity = braking ? want : v + Math.max(-accel * dt, Math.min(accel * dt, want - v));
+  const step = velocity * dt;
+  if (Math.abs(left) <= Math.abs(step) && Math.sign(step) === Math.sign(left)) return { angle: target, velocity: 0 };
+  return { angle: spin.angle + step, velocity };
+}
