@@ -1236,6 +1236,9 @@
     "newPlanetTab": "Nuevo planeta",
     "analyze": "Analizar",
     "delete": "Borrar",
+    "deleteConfirm": "¿Borrar {{name}}? No se puede deshacer.",
+    "deleteYes": "Borrar",
+    "back": "Volver",
     "warp": "Saltar",
     "position": "{{direction}}, a {{distance}} unidades de combustible",
     "directions": {

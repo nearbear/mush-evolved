@@ -6,6 +6,7 @@
 // It only changes what is drawn (to save space); both sets stay picked. Mush skills are only ever in your own view.
 
 import { Dialog } from "@base-ui/react/dialog";
+import { ConfirmPanel } from "./ConfirmPanel.tsx";
 import { DialogHeader } from "./DialogHeader.tsx";
 import { Hint } from "./IconButton.tsx";
 import { Popover } from "@base-ui/react/popover";
@@ -105,35 +106,28 @@ export function SkillSlots({
           <Dialog.Popup className="settings-popup skill-picker">
             <DialogHeader heading={t(mush ? "skills.mushTitle" : "skills.title")} closeLabel={t("skills.close")} />
             <p className="skill-warning">{t("skills.warning")}</p>
-            {pending ? (
-              <div className="skill-confirm">
-                <SkillCard skill={pending} />
-                <p>{t("skills.confirm", { skill: names.skill(pending) })}</p>
-                <div className="skill-confirm-buttons">
-                  <button type="button" onClick={() => setPending(null)}>
-                    {t("skills.back")}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      onAction({ type: "pick_skill", skill: pending });
-                      setOpen(false);
-                      setPending(null);
-                    }}
-                  >
-                    {t("skills.confirmYes")}
-                  </button>
-                </div>
-              </div>
-            ) : (
-              <ul className="skill-list">
-                {offered.map((skill) => (
-                  <li key={skill}>
-                    <SkillCard skill={skill} onSelect={() => setPending(skill)} />
-                  </li>
-                ))}
-              </ul>
-            )}
+            <ul className="skill-list">
+              {offered.map((skill) => (
+                <li key={skill}>
+                  <SkillCard skill={skill} onSelect={() => setPending(skill)} />
+                </li>
+              ))}
+            </ul>
+            <ConfirmPanel
+              open={pending !== null}
+              onOpenChange={(o) => !o && setPending(null)}
+              message={t("skills.confirm", { skill: pending ? names.skill(pending) : "" })}
+              yesLabel={t("skills.confirmYes")}
+              backLabel={t("skills.back")}
+              onYes={() => {
+                if (!pending) return;
+                onAction({ type: "pick_skill", skill: pending });
+                setOpen(false);
+                setPending(null);
+              }}
+            >
+              {pending && <SkillCard skill={pending} />}
+            </ConfirmPanel>
           </Dialog.Popup>
         </Dialog.Portal>
       </Dialog.Root>

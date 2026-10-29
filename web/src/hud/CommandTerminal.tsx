@@ -6,6 +6,7 @@ import { Tabs } from "@base-ui/react/tabs";
 import type { Action, EquipmentView, PlayerView } from "@mush2/shared";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { ConfirmPanel } from "./ConfirmPanel.tsx";
 import { ActionButton } from "./ActionButton.tsx";
 import { ActionLabel } from "./ActionLabel.tsx";
 import { ShipNavigation } from "./ShipNavigation.tsx";
@@ -58,33 +59,25 @@ function ReturnToSol({ terminal, view, onAction }: Props) {
   const { t } = useTranslation();
   const [confirming, setConfirming] = useState(false);
   const option = view.actions.find(({ action: a }) => a.type === "return_to_sol" && a.equipment === terminal.id);
-  if (confirming && option) {
-    return (
-      <div className="skill-confirm">
-        <p>{t("returnToSol.confirm")}</p>
-        <div className="skill-confirm-buttons">
-          <button type="button" onClick={() => setConfirming(false)}>
-            {t("returnToSol.back")}
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              onAction(option.action);
-              setConfirming(false);
-            }}
-          >
-            {t("returnToSol.confirmYes")}
-          </button>
-        </div>
-      </div>
-    );
-  }
   const commander = view.titles.find((title) => title.id === "commander")?.holder === view.you.character;
   return (
     option ? (
-      <ActionButton className="big" view={view} option={option} onAction={() => setConfirming(true)}>
-        <ActionLabel text={t("actions.returnToSol")} cost={option.cost} chance={option.chance} />
-      </ActionButton>
+      <>
+        <ActionButton className="big" view={view} option={option} onAction={() => setConfirming(true)}>
+          <ActionLabel text={t("actions.returnToSol")} cost={option.cost} chance={option.chance} />
+        </ActionButton>
+        <ConfirmPanel
+          open={confirming}
+          onOpenChange={setConfirming}
+          message={t("returnToSol.confirm")}
+          yesLabel={t("returnToSol.confirmYes")}
+          backLabel={t("returnToSol.back")}
+          onYes={() => {
+            onAction(option.action);
+            setConfirming(false);
+          }}
+        />
+      </>
     ) : (
       <UnavailableButton reason={!view.pilgredRepaired ? t("command.solPilgredBroken") : commander ? t("command.solNotReady") : t("command.solCommanderOnly")} ap={view.config.returnToSolAp}>
         {t("actions.returnToSol")}

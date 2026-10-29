@@ -516,3 +516,59 @@ li.research-item-blocked .research-progress {
   background-repeat: no-repeat;
   image-rendering: pixelated;
 }
+
+/* See ConfirmPanel.tsx. The original site's pop-up box (design/poptop, popbg, popbottom: 519px wide), stretched to any
+   width with border-image: the 30px ends with the corner marks stay put and the plain middle stretches. The body is
+   inset 15px top and bottom so it doesn't double up under the top and bottom pieces. Only as tall as its content,
+   centred on the screen, and above other modals, since it can open from one (the skill picker). */
+.confirm-backdrop {
+  z-index: 22;
+}
+.confirm-popup {
+  position: fixed;
+  z-index: 23;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  isolation: isolate;
+  box-sizing: border-box;
+  width: min(519px, calc(100vw - 1rem));
+  max-height: calc(100dvh - 2rem);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1.5rem 1.75rem;
+  color: #fff;
+  text-align: center;
+  border: 0 solid;
+  border-image: url("../../../Mush/www/img/design/popbg.png") 0 30 fill / 15px 30px stretch;
+}
+.confirm-popup::before,
+.confirm-popup::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  left: 0;
+  right: 0;
+  height: 15px;
+  border: 0 solid;
+}
+.confirm-popup::before {
+  top: 0;
+  border-image: url("../../../Mush/www/img/design/poptop.png") 0 30 fill / 0 30px stretch;
+}
+.confirm-popup::after {
+  bottom: 0;
+  border-image: url("../../../Mush/www/img/design/popbottom.png") 0 30 fill / 0 30px stretch;
+}
+/* A Dialog.Title (an h2), so undo the small-caps section heading in base.css. */
+.confirm-message {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: normal;
+  text-transform: none;
+  letter-spacing: normal;
+  color: inherit;
+}

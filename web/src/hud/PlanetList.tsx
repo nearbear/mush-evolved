@@ -8,6 +8,7 @@ import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { BIN_ICON, PLANET_IMAGES, planetTagIcon, SHIP_RESOURCE_ICONS } from "../art/assets.ts";
 import { ActionButton } from "./ActionButton.tsx";
+import { ConfirmPanel } from "./ConfirmPanel.tsx";
 import { ActionLabel } from "./ActionLabel.tsx";
 import { StatusIcon } from "./StatusIcons.tsx";
 import "./settings.css";
@@ -25,6 +26,7 @@ export function PlanetList({ view, onAction, terminal }: Props) {
   const { t } = useTranslation();
   // null until the player picks a tab: the leftmost one shows first.
   const [tab, setTab] = useState<string | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
   const knownPlanets = useRef(new Set(view.planets.map((p) => p.id)));
 
   // A newly discovered planet opens on its own tab, never on the "New planet" tab it was scanned from.
@@ -82,10 +84,23 @@ export function PlanetList({ view, onAction, terminal }: Props) {
             </ActionButton>
           )}
           {remove && (
-            <button type="button" className="planet-delete" onClick={() => onAction(remove.action)}>
-              <img src={BIN_ICON} alt="" />
-              {t("astro.delete")}
-            </button>
+            <>
+              <button type="button" className="planet-delete" onClick={() => setConfirmDelete(planet.id)}>
+                <img src={BIN_ICON} alt="" />
+                {t("astro.delete")}
+              </button>
+              <ConfirmPanel
+                open={confirmDelete === planet.id}
+                onOpenChange={(o) => !o && setConfirmDelete(null)}
+                message={t("astro.deleteConfirm", { name: planet.name })}
+                yesLabel={t("astro.deleteYes")}
+                backLabel={t("astro.back")}
+                onYes={() => {
+                  onAction(remove.action);
+                  setConfirmDelete(null);
+                }}
+              />
+            </>
           )}
         </div>
       </div>

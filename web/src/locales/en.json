@@ -1226,6 +1226,9 @@
     "newPlanetTab": "New planet",
     "analyze": "Analyse",
     "delete": "Delete",
+    "deleteConfirm": "Delete {{name}}? This can't be undone.",
+    "deleteYes": "Delete",
+    "back": "Back",
     "warp": "Warp",
     "position": "{{direction}}, {{distance}} fuel away",
     "directions": {

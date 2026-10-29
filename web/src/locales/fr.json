@@ -1236,6 +1236,9 @@
     "newPlanetTab": "Nouvelle planète",
     "analyze": "Analyser",
     "delete": "Supprimer",
+    "deleteConfirm": "Supprimer {{name}} ? Cette action est irréversible.",
+    "deleteYes": "Supprimer",
+    "back": "Retour",
     "warp": "Sauter",
     "position": "{{direction}}, à {{distance}} unités de carburant",
     "directions": {
