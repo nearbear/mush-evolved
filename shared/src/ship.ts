@@ -4,6 +4,7 @@
 // Hunters damage the hull (100) and the plasma shield (50 of 100), which absorbs 33% of each hit out of its own points, 67% with
 // the Plasma Shield project (owner, 2026-10-24, hunters.ts); at 0 the hull takes all of it. All of it is public.
 
+import { shipInvincible } from "./cheats.ts";
 import { damage } from "./death.ts";
 import { logPublic } from "./log.ts";
 import { PROJECT_COMPLETE } from "./projects.ts";
@@ -32,6 +33,7 @@ export function shipMax(config: DeepReadonly<GameConfig>): ShipResources {
  * ship burns its oxygen. So a ship that runs dry gets one cycle of grace. Mutates a state the caller already cloned.
  */
 export function burnOxygen(state: GameState): void {
+  if (shipInvincible(state)) return;
   if (state.ship.oxygen === 0) {
     const living = state.players.filter((p) => p.alive);
     if (living.length > 0) {
@@ -56,6 +58,7 @@ export function shieldAbsorbPercent(state: Readonly<GameState>): number {
  * rest. Mutates a state the caller already cloned.
  */
 export function damageShip(state: GameState, amount: number): void {
+  if (shipInvincible(state)) return;
   const { ship } = state;
   const toShield = Math.min(ship.plasmaShield, Math.round((amount * shieldAbsorbPercent(state)) / 100));
   ship.plasmaShield -= toShield;

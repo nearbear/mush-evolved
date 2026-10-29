@@ -6,7 +6,7 @@ import { startCharges } from "./items.ts";
 import { removeStatus } from "./statuses.ts";
 import type { GameState, PlayerState } from "./types.ts";
 
-export const CHEATS = ["infiniteAp", "infiniteMp", "infiniteMorale", "infiniteHp", "infiniteSpores", "infiniteCharges", "instantActions", "noRelayPenalty", "freeHacking", "selfDisease", "anySkill", "alwaysClean", "easyTravel"] as const;
+export const CHEATS = ["infiniteAp", "infiniteMp", "infiniteMorale", "infiniteHp", "infiniteSpores", "infiniteCharges", "instantActions", "noRelayPenalty", "freeHacking", "selfDisease", "anySkill", "alwaysClean", "easyTravel", "invincible"] as const;
 export type Cheat = (typeof CHEATS)[number];
 
 /** Instant role switches (one-shot buttons, not toggles). */
@@ -44,7 +44,14 @@ const REFILL: Record<Cheat, (p: PlayerState, state: GameState) => void> = {
   anySkill: () => {}, // actions/pick_skill.ts reads the flag
   alwaysClean: (p) => removeStatus(p, "dirty"), // dirt is added mid-action; this runs after it
   easyTravel: () => {}, // actions/warp_to_planet.ts and leave_orbit.ts read the flag
+  invincible: () => {}, // see shipInvincible: death.ts, adjustStats.ts, ship.ts and rules.ts read the flag
 };
+
+/**
+ * True while anyone has the invincible cheat on. It is ship-wide: the hull, plasma shield and oxygen never drop, and
+ * no one's HP or morale ever goes down (the guards are in damage, gainMorale, damageShip, burnOxygen and the daily morale loss).
+ */
+export const shipInvincible = (state: Readonly<GameState>): boolean => state.players.some((p) => p.cheats.includes("invincible"));
 
 /**
  * Tops up every stat the player has a cheat for. Mutates a state (and its player) the

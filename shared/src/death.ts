@@ -5,6 +5,7 @@
 // leave someone alive at 0 HP (a test enforces it).
 
 import { endAccommodationOnDeath } from "./accommodation.ts";
+import { shipInvincible } from "./cheats.ts";
 import type { CharacterId } from "./characters.ts";
 import { removeFromChannel, pushChat } from "./chat.ts";
 import { CORPSE_ITEM, ITRACKIE_ITEM, sameContainer, newItemId } from "./items.ts";
@@ -18,7 +19,7 @@ import type { ChannelId, GameState, PlayerState } from "./types.ts";
  * caller already cloned. The infiniteHp cheat (test tooling) keeps HP full.
  */
 export function damage(state: GameState, player: PlayerState, amount: number): void {
-  if (!player.alive) return;
+  if (!player.alive || shipInvincible(state)) return;
   if (player.cheats.includes("infiniteHp")) {
     player.hp = player.maxHp;
     return;

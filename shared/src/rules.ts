@@ -6,7 +6,7 @@
 // chat and private channels in chat.ts. Win conditions and voting are open
 // decisions: do not add them without confirming the rules first.
 
-import { applyCheats, makeHuman, type Cheat, type RoleCheat } from "./cheats.ts";
+import { applyCheats, makeHuman, shipInvincible, type Cheat, type RoleCheat } from "./cheats.ts";
 import { ACTIONS, type ActionDef } from "./actions.ts";
 import { AT_CAPACITY, COOLDOWN, DIRTY, NO_SPACE } from "./actions/action.ts";
 import { getUp } from "./actions/lie_down.ts";
@@ -344,7 +344,7 @@ function advanceCycle(state: GameState): void {
       delete p.chitchatToday;
       delete p.interrogatedToday;
     }
-    const loss = dailyMoraleLoss(state);
+    const loss = shipInvincible(state) ? 0 : dailyMoraleLoss(state);
     for (const p of state.players) if (p.alive) p.morale = Math.max(0, p.morale - loss);
     for (const p of state.players) healDaily(state, p);
     grantCarePoints(state);

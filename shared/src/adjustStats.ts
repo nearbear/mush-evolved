@@ -4,10 +4,11 @@ import { maxMorale, maxHp, skillPicked } from "./modifiers.ts";
 import { addStatus, removeStatus, type StatusId } from "./statuses.ts";
 import type { GameState, PlayerState } from "./types.ts";
 import { killPlayer } from "./death.ts";
+import { shipInvincible } from "./cheats.ts";
 
 
 export function gainMorale(state: GameState, player: PlayerState, amount: number): void {
-  if (!player.alive) return;
+  if (!player.alive || (amount < 0 && shipInvincible(state))) return;
   player.morale = Math.min(player.maxMorale, player.morale + amount); 
   player.morale = Math.max(0, player.morale);
   if(amount > 0){

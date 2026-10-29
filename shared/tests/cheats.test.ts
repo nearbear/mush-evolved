@@ -7,6 +7,9 @@ import { DEFAULT_CONFIG } from "../src/config.ts";
 import { parseGameMessage } from "../src/protocol.ts";
 import { dailyMoraleLoss } from "../src/modifiers.ts";
 import { applyInput, replayGame, type Input } from "../src/replay.ts";
+import { damage } from "../src/death.ts";
+import { gainMorale } from "../src/adjustStats.ts";
+import { burnOxygen, damageShip } from "../src/ship.ts";
 import { applyAction, createGame, setCheat, setRoleCheat, viewFor } from "../src/rules.ts";
 import type { GameState, PlayerId } from "../src/types.ts";
 import { makeSeats, nextCycle, player, offered } from "./support.ts";
@@ -186,5 +189,27 @@ describe("any-skill cheat", () => {
     const door = offered(s, "p0").find((a) => a.type === "move")!;
     s = walk(s, "p0", door.type === "move" ? door.to : "");
     expect(player(s, "p0").statuses).not.toContain("dirty");
+  });
+
+  it("invincible: the ship and everyone on it lose nothing, whoever has it on", () => {
+    let s = cheat(fresh(), "p0", "invincible");
+    const hull = s.ship.hull;
+    const shield = s.ship.plasmaShield;
+    damageShip(s, 40);
+    expect(s.ship.hull).toBe(hull);
+    expect(s.ship.plasmaShield).toBe(shield);
+    s.ship.oxygen = 0;
+    burnOxygen(s);
+    expect(s.players.every((p) => p.alive)).toBe(true);
+    const p1 = player(s, "p1");
+    const morale = p1.morale;
+    damage(s, p1, 99);
+    gainMorale(s, p1, -5);
+    expect(p1.alive).toBe(true);
+    expect(p1.hp).toBe(p1.maxHp);
+    expect(p1.morale).toBe(morale);
+    s = cheat(s, "p0", "invincible", false);
+    damageShip(s, 40);
+    expect(s.ship.hull).toBeLessThan(hull);
   });
 });
