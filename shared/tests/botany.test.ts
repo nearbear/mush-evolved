@@ -295,7 +295,7 @@ describe("botany: garden points", () => {
     p.resources.garden = 1;
     const pot: ItemState = planted(s)[0]!;
     pot.plant!.thirst = 1;
-    expect(option(s, "p0", { type: "water", item: pot.id })!.cost).toEqual({ ap: 0, mp: 0 });
+    expect(option(s, "p0", { type: "water", item: pot.id })!.cost).toEqual({ ap: 0, mp: 0, paidBy: "garden" });
     const next = mustApply(s, "p0", { type: "water", item: pot.id });
     expect([player(next, "p0").resources.garden, player(next, "p0").ap]).toEqual([0, p.ap]);
 

@@ -8,7 +8,7 @@ import { CookAction } from "./actions/cook.ts";
 import { ExpressCookAction } from "./actions/express_cook.ts";
 import { DismantleAction } from "./actions/dismantle.ts";
 import { AccessAction } from "./actions/access.ts";
-import type { ActionTag, ActionVisibility } from "./actions/action.ts";
+import type { ActionCost, ActionTag, ActionVisibility } from "./actions/action.ts";
 import { DispenseAction } from "./actions/dispense.ts";
 import { ExamineAction } from "./actions/examine.ts";
 import { ExtractSporeAction } from "./actions/extract_spore.ts";
@@ -71,12 +71,7 @@ import type { GameState, PlayerState } from "./types.ts";
 export type ActionType = Action["type"];
 export type ActionOf<T extends ActionType> = Extract<Action, { type: T }>;
 
-export interface ActionCost {
-  ap: number;
-  mp: number;
-}
-
-export type { ActionTag, ActionVisibility };
+export type { ActionCost, ActionTag, ActionVisibility };
 
 export interface ActionDef<A extends Action> {
   /** Who learns of it; the same for every candidate of a type. */

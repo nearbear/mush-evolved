@@ -179,7 +179,7 @@ export function actionCost(base: ActionCost, ctx: CostContext, registry: Modifie
   }
   // Hooks can't make a price negative. A move's MP is a net change and can already be negative (a conversion
   // gives more than the move spends), so the floor is 0 or the base, whichever is lower.
-  return { ap: Math.max(Math.min(0, base.ap), cost.ap), mp: Math.max(Math.min(0, base.mp), cost.mp) };
+  return { ap: Math.max(Math.min(0, base.ap), cost.ap), mp: Math.max(Math.min(0, base.mp), cost.mp), ...(base.paidBy && { paidBy: base.paidBy }) };
 }
 
 /**

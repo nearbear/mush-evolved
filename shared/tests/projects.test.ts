@@ -144,6 +144,20 @@ describe("NERON projects", () => {
     expect(applyAction(r.state, "p0", work("PLASMA_SHIELD")).ok).toBe(true);
   });
 
+  it("tells the view which point pays: a Designer point before a Computer point, none once both are spent", () => {
+    const s = game();
+    const paidBy = (state: typeof s) => viewFor(state, "p0").actions.find((o) => o.action.type === "project")!.cost.paidBy;
+    s.players[0]!.resources.comp = 1;
+    s.players[0]!.resources.core = 1;
+    expect(paidBy(s)).toBe("core");
+    const first = mustApply(s, "p0", work("PLASMA_SHIELD"));
+    expect(first.players[0]!.resources).toMatchObject({ core: 0, comp: 1 });
+    expect(paidBy(first)).toBe("comp");
+    const second = mustApply(first, "p0", work("PLASMA_SHIELD"));
+    expect(second.players[0]!.resources.comp).toBe(0);
+    expect(paidBy(second)).toBeUndefined();
+  });
+
   it("is public: everyone sees progress, wherever they are, and only the room sees the log line", () => {
     const s = game();
     s.players[2]!.room = "REFECTORY";

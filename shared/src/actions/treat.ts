@@ -1,4 +1,4 @@
-import { Action, isString } from "./action.ts";
+import { Action, type ActionCost, isString } from "./action.ts";
 import { isBotanistRole, isPlanted, paidWithGardenPoint } from "../botany.ts";
 import { canReachItem } from "../items.ts";
 import { logPublic } from "../log.ts";
@@ -26,9 +26,9 @@ export class TreatAction extends Action<TreatActionData> {
     return treatable(state, player, item) ? null : "cant_treat";
   }
 
-  override getCost(state: Readonly<GameState>, player: Readonly<PlayerState>, target: TreatActionData): { ap: number; mp: number } {
+  override getCost(state: Readonly<GameState>, player: Readonly<PlayerState>, target: TreatActionData): ActionCost {
     const pot = state.items.find((i) => i.id === target.item);
-    return { ap: paidWithGardenPoint(state, player, pot) ? 0 : state.config.botany.treat.cost.ap, mp: 0 };
+    return paidWithGardenPoint(state, player, pot) ? { ap: 0, mp: 0, paidBy: "garden" } : { ap: state.config.botany.treat.cost.ap, mp: 0 };
   }
 
   override dirtChance(state: Readonly<GameState>): number {
@@ -37,7 +37,6 @@ export class TreatAction extends Action<TreatActionData> {
 
   override apply(state: GameState, player: PlayerState, target: TreatActionData): void {
     const pot = state.items.find((i) => i.id === target.item)!;
-    if (paidWithGardenPoint(state, player, pot)) player.resources.garden -= 1;
     if (isPlanted(pot)) pot.plant.sick = false;
     logPublic(state, player.room, "treatedPlant", { name: player.character, item: pot.plant!.species });
   }

@@ -1,4 +1,4 @@
-import { Action, type ActionVisibility, isString } from "./action.ts";
+import { Action, type ActionCost, type ActionVisibility, isString } from "./action.ts";
 import { pushChat } from "../chat.ts";
 import { logPrivate, logPublic } from "../log.ts";
 import { isPilgredRepaired, PILGRED_COMPLETE, pilgredGainRange, pilgredTerminalsHere, rollPilgredGain } from "../pilgred.ts";
@@ -22,12 +22,8 @@ export class RepairPilgredAction extends Action<RepairPilgredActionData> {
   }
 
   /** PILGRED points (`resources.pilgred`, from the Physicist) make one repair free. */
-  private paidWithPoint(player: Readonly<PlayerState>): boolean {
-    return player.resources.pilgred > 0;
-  }
-
-  override getCost(state: Readonly<GameState>, player: Readonly<PlayerState>): { ap: number; mp: number } {
-    return { ap: this.paidWithPoint(player) ? 0 : state.config.pilgred.cost.ap, mp: 0 };
+  override getCost(state: Readonly<GameState>, player: Readonly<PlayerState>): ActionCost {
+    return player.resources.pilgred > 0 ? { ap: 0, mp: 0, paidBy: "pilgred" } : { ap: state.config.pilgred.cost.ap, mp: 0 };
   }
 
   override dirtChance(state: Readonly<GameState>): number {
@@ -50,7 +46,6 @@ export class RepairPilgredAction extends Action<RepairPilgredActionData> {
   }
 
   override apply(state: GameState, player: PlayerState, _target: RepairPilgredActionData): void {
-    if (this.paidWithPoint(player)) player.resources.pilgred -= 1;
     const gain = rollPilgredGain(state, pilgredGainRange(state, player));
     const pilgred = state.pilgred;
     pilgred.progress = Math.min(PILGRED_COMPLETE, pilgred.progress + gain);

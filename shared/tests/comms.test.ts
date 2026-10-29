@@ -148,7 +148,7 @@ describe("communication center", () => {
     it("a Computer point pays for a decode", () => {
       const s = ship(true);
       player(s, "p0").resources.comp = 1;
-      expect(costOf(s, "p0", decode("WOLF"))).toEqual({ ap: 0, mp: 0 });
+      expect(costOf(s, "p0", decode("WOLF"))).toEqual({ ap: 0, mp: 0, paidBy: "comp" });
       const ap = player(s, "p0").ap;
       const next = must(applyAction(s, "p0", decode("WOLF")));
       expect([player(next, "p0").ap, player(next, "p0").resources.comp]).toEqual([ap, 0]);

@@ -1,4 +1,4 @@
-import { Action, isString } from "./action.ts";
+import { Action, type ActionCost, isString } from "./action.ts";
 import { ANY_CONSUMABLE, RESEARCH_COMPLETE, RESEARCH_IDS, RESEARCH_REQUIRES, RESEARCH_SKILLS, type ResearchId } from "../research.ts";
 import { logPublic } from "../log.ts";
 import { equipmentHere } from "../equipment.ts";
@@ -42,12 +42,8 @@ export class ResearchAction extends Action<ResearchActionData> {
   }
 
   /** Computer points (`resources.comp`) make one research free (0 AP, like care points for a heal) (owner, 2026-10-16). */
-  private paidWithComputer(player: Readonly<PlayerState>): boolean {
-    return player.resources.comp > 0;
-  }
-
-  override getCost(state: Readonly<GameState>, player: Readonly<PlayerState>): { ap: number; mp: number } {
-    return { ap: this.paidWithComputer(player) ? 0 : state.config.research.cost.ap, mp: 0 };
+  override getCost(state: Readonly<GameState>, player: Readonly<PlayerState>): ActionCost {
+    return player.resources.comp > 0 ? { ap: 0, mp: 0, paidBy: "comp" } : { ap: state.config.research.cost.ap, mp: 0 };
   }
 
   override dirtChance(state: Readonly<GameState>): number {
@@ -70,7 +66,6 @@ export class ResearchAction extends Action<ResearchActionData> {
   }
 
   override apply(state: GameState, player: PlayerState, target: ResearchActionData): void {
-    if (this.paidWithComputer(player)) player.resources.comp -= 1;
     const gain = rollRelayGain(state, relayGainRange(state.config.research.progress, player, RESEARCH_SKILLS, state.relay.research[target.research]));
     touchRelay(state.relay.research, target.research, player);
     const progress = Math.min(RESEARCH_COMPLETE, (state.research[target.research] ?? 0) + gain);

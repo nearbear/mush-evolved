@@ -1,4 +1,4 @@
-import { Action, isString } from "./action.ts";
+import { Action, type ActionCost, isString } from "./action.ts";
 import { equipmentHere } from "../equipment.ts";
 import { PROJECT_COMPLETE, PROJECT_IDS, projectSkills } from "../projects.ts";
 import { relayGainRange, rollRelayGain, touchRelay } from "../relay.ts";
@@ -20,12 +20,11 @@ export class ProjectAction extends Action<ProjectActionData> {
   }
 
   /** Designer points (`resources.core`, projects only) or Computer points (`resources.comp`) make one project action free (owner, 2026-10-18 and 2026-10-24). */
-  private paidWithComputer(player: Readonly<PlayerState>): boolean {
-    return player.resources.core > 0 || player.resources.comp > 0;
-  }
-
-  override getCost(state: Readonly<GameState>, player: Readonly<PlayerState>): { ap: number; mp: number } {
-    return { ap: this.paidWithComputer(player) ? 0 : state.config.project.cost.ap, mp: 0 };
+  /** The Designer point goes first, since it works nowhere else. */
+  override getCost(state: Readonly<GameState>, player: Readonly<PlayerState>): ActionCost {
+    if (player.resources.core > 0) return { ap: 0, mp: 0, paidBy: "core" };
+    if (player.resources.comp > 0) return { ap: 0, mp: 0, paidBy: "comp" };
+    return { ap: state.config.project.cost.ap, mp: 0 };
   }
 
   override getCandidates(state: Readonly<GameState>, player: Readonly<PlayerState>): ProjectActionData[] {
@@ -43,8 +42,6 @@ export class ProjectAction extends Action<ProjectActionData> {
   }
 
   override apply(state: GameState, player: PlayerState, target: ProjectActionData): void {
-    if (player.resources.core > 0) player.resources.core -= 1;
-    else if (player.resources.comp > 0) player.resources.comp -= 1;
     const gain = rollRelayGain(state, relayGainRange(state.config.project.progress, player, projectSkills(target.project), state.relay.projects[target.project]));
     touchRelay(state.relay.projects, target.project, player);
     const progress = Math.min(PROJECT_COMPLETE, (state.projects[target.project] ?? 0) + gain);

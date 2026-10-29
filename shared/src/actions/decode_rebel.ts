@@ -1,4 +1,4 @@
-import { Action, type ActionVisibility, isString } from "./action.ts";
+import { Action, type ActionCost, type ActionVisibility, isString } from "./action.ts";
 import { canUseComms, comTerminalsHere, isOpen, REBEL_COMPLETE, rebelReached, rollRebelGain } from "../comms.ts";
 import { logPrivate } from "../log.ts";
 import type { GameState, PlayerState } from "../types.ts";
@@ -20,12 +20,8 @@ export class DecodeRebelAction extends Action<DecodeRebelActionData> {
     super("decode_rebel", { equipment: isString, base: isString });
   }
 
-  private paidWithComputer(player: Readonly<PlayerState>): boolean {
-    return player.resources.comp > 0;
-  }
-
-  override getCost(state: Readonly<GameState>, player: Readonly<PlayerState>): { ap: number; mp: number } {
-    return { ap: this.paidWithComputer(player) ? 0 : state.config.comms.rebel.cost.ap, mp: 0 };
+  override getCost(state: Readonly<GameState>, player: Readonly<PlayerState>): ActionCost {
+    return player.resources.comp > 0 ? { ap: 0, mp: 0, paidBy: "comp" } : { ap: state.config.comms.rebel.cost.ap, mp: 0 };
   }
 
   override getCandidates(state: Readonly<GameState>, player: Readonly<PlayerState>): DecodeRebelActionData[] {
@@ -47,7 +43,6 @@ export class DecodeRebelAction extends Action<DecodeRebelActionData> {
   }
 
   override apply(state: GameState, player: PlayerState, target: DecodeRebelActionData): void {
-    if (this.paidWithComputer(player)) player.resources.comp -= 1;
     const call = state.comms.rebels.find((c) => c.base === target.base)!;
     call.progress = Math.min(REBEL_COMPLETE, call.progress + rollRebelGain(state, player));
     if (call.progress < REBEL_COMPLETE) {

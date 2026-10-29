@@ -1,4 +1,4 @@
-import { Action, isString } from "./action.ts";
+import { Action, type ActionCost, isString } from "./action.ts";
 import { isPlanted, paidWithGardenPoint } from "../botany.ts";
 import { canReachItem } from "../items.ts";
 import { logPublic } from "../log.ts";
@@ -25,9 +25,9 @@ export class WaterAction extends Action<WaterActionData> {
     return thirstyHere(state, player, item) ? null : "cant_water";
   }
 
-  override getCost(state: Readonly<GameState>, player: Readonly<PlayerState>, target: WaterActionData): { ap: number; mp: number } {
+  override getCost(state: Readonly<GameState>, player: Readonly<PlayerState>, target: WaterActionData): ActionCost {
     const pot = state.items.find((i) => i.id === target.item);
-    return { ap: paidWithGardenPoint(state, player, pot) ? 0 : state.config.botany.water.cost.ap, mp: 0 };
+    return paidWithGardenPoint(state, player, pot) ? { ap: 0, mp: 0, paidBy: "garden" } : { ap: state.config.botany.water.cost.ap, mp: 0 };
   }
 
   override dirtChance(state: Readonly<GameState>): number {
@@ -36,7 +36,6 @@ export class WaterAction extends Action<WaterActionData> {
 
   override apply(state: GameState, player: PlayerState, target: WaterActionData): void {
     const pot = state.items.find((i) => i.id === target.item)!;
-    if (paidWithGardenPoint(state, player, pot)) player.resources.garden -= 1;
     if (isPlanted(pot)) pot.plant.thirst = 0;
     logPublic(state, player.room, "wateredPlant", { name: player.character, item: pot.plant!.species });
   }

@@ -1,4 +1,4 @@
-import { Action, isString } from "./action.ts";
+import { Action, type ActionCost, isString } from "./action.ts";
 import { isEmptyPot, isFruit, paidWithGardenPoint } from "../botany.ts";
 import { canReachItem, removeItem, itemsIn } from "../items.ts";
 import { logPublic } from "../log.ts";
@@ -30,9 +30,9 @@ export class SowAction extends Action<SowActionData> {
     return null;
   }
 
-  override getCost(state: Readonly<GameState>, player: Readonly<PlayerState>, target: SowActionData): { ap: number; mp: number } {
+  override getCost(state: Readonly<GameState>, player: Readonly<PlayerState>, target: SowActionData): ActionCost {
     const pot = state.items.find((i) => i.id === target.item);
-    return { ap: paidWithGardenPoint(state, player, pot) ? 0 : state.config.botany.sow.cost.ap, mp: 0 };
+    return paidWithGardenPoint(state, player, pot) ? { ap: 0, mp: 0, paidBy: "garden" } : { ap: state.config.botany.sow.cost.ap, mp: 0 };
   }
 
   override dirtChance(state: Readonly<GameState>): number {
@@ -41,7 +41,6 @@ export class SowAction extends Action<SowActionData> {
 
   override apply(state: GameState, player: PlayerState, target: SowActionData): void {
     const pot = state.items.find((i) => i.id === target.item)!;
-    if (paidWithGardenPoint(state, player, pot)) player.resources.garden -= 1;
     const species = removeItem(state, target.fruit).type;
     pot.plant = { species, age: 0, thirst: 0, sick: false };
     logPublic(state, player.room, "sowedPlant", { name: player.character, item: species });

@@ -300,6 +300,7 @@
       "covert": "Discreta"
     },
     "chance": "({{percent}} %)",
+    "paidBy": ", cuesta uno de tus {{resource}}",
     "atCapacity": "Capacidad máxima: los Mush ya han extraído todas las esporas posibles hoy. El límite se reinicia al día siguiente.",
     "lacksAp": "No tienes suficientes PA: cuesta {{need}} y tienes {{have}}.",
     "onCooldown_one": "Lista de nuevo en {{count}} ciclo.",

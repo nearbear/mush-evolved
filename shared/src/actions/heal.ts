@@ -1,8 +1,8 @@
-import { Action, peopleHere, isString } from "./action.ts";
+import { Action, type ActionCost, peopleHere, isString } from "./action.ts";
 import { itemsIn } from "../items.ts";
 import { logPublic } from "../log.ts";
 import { healAmount } from "../modifiers.ts";
-import type { GameState, PlayerId, PlayerState } from "../types.ts";
+import type { GameState, PlayerState } from "../types.ts";
 
 export type HealActionData = { type: "heal"; target: string };
 
@@ -29,8 +29,9 @@ export class HealAction extends Action<HealActionData> {
     return null;
   }
 
-  override getCost(state: Readonly<GameState>, player: Readonly<PlayerState>, target: HealActionData): { ap: number; mp: number } {
-    return { ap: this.healCost(state, player, target.target), mp: 0 };
+  override getCost(state: Readonly<GameState>, player: Readonly<PlayerState>, target: HealActionData): ActionCost {
+    if (player.resources.heal > 0) return { ap: 0, mp: 0, paidBy: "heal" };
+    return { ap: target.target === player.id ? state.config.heal.cost.apSelf : state.config.heal.cost.apOther, mp: 0 };
   }
 
   override dirtChance(state: Readonly<GameState>): number {
@@ -39,15 +40,9 @@ export class HealAction extends Action<HealActionData> {
 
   override apply(state: GameState, player: PlayerState, target: HealActionData): void {
     const patient = state.players.find((o) => o.id === target.target)!; // checked, so it exists
-    if (player.resources.heal > 0) player.resources.heal -= 1;
     patient.hp = Math.min(player.maxHp, patient.hp + healAmount(state, player));
     logPublic(state, player.room, patient.id === player.id ? "healedSelf" : "healed", { name: player.character, target: patient.character });
   }
-
-  healCost(state: Readonly<GameState>, player: Readonly<PlayerState>, target: PlayerId): number {
-    return player.resources.heal > 0 ? 0 : target === player.id ? state.config.heal.cost.apSelf : state.config.heal.cost.apOther;
-  }
-
 }
 
 const canHeal = (state: Readonly<GameState>, p: Readonly<PlayerState>): boolean =>

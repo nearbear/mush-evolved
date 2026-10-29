@@ -235,6 +235,7 @@ export function performAction(next: GameState, actor: PlayerState, action: Actio
   if (def.timed && action.type !== "lie_down") getUp(actor);
   actor.ap -= cost.ap;
   actor.mp -= cost.mp;
+  if (cost.paidBy) actor.resources[cost.paidBy] -= 1;
   const room = actor.room;
   if (chance < 1) {
     if (rollFloat(next) < chance) def.apply(next, actor, action);

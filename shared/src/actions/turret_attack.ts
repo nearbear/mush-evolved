@@ -1,4 +1,4 @@
-import { Action, IN_PRESELECTION, type ActionTag, type ActionVisibility, isString } from "./action.ts";
+import { Action, IN_PRESELECTION, type ActionCost, type ActionTag, type ActionVisibility, isString } from "./action.ts";
 import { damageHunter, turretCharges, turretsHere } from "../hunters.ts";
 import { roll } from "../rng.ts";
 import { logPrivate, logPublic } from "../log.ts";
@@ -24,8 +24,8 @@ export class TurretAttackAction extends Action<TurretAttackActionData> {
   }
 
   /** A Shoot point (`resources.shoot`, from the gunman skill) makes a shot free, hit or miss (owner, 2026-10-25). */
-  override getCost(state: Readonly<GameState>, player: Readonly<PlayerState>): { ap: number; mp: number } {
-    return { ap: player.resources.shoot > 0 ? 0 : state.config.turrets.cost.ap, mp: 0 };
+  override getCost(state: Readonly<GameState>, player: Readonly<PlayerState>): ActionCost {
+    return player.resources.shoot > 0 ? { ap: 0, mp: 0, paidBy: "shoot" } : { ap: state.config.turrets.cost.ap, mp: 0 };
   }
 
   override getSuccessChance(state: Readonly<GameState>, player: Readonly<PlayerState>): number {
@@ -49,7 +49,6 @@ export class TurretAttackAction extends Action<TurretAttackActionData> {
 
   override apply(state: GameState, player: PlayerState, target: TurretAttackActionData): void {
     spendCharge(state, target.equipment);
-    spendShootPoint(player);
     delete state.turretFailures[player.id];
     const amount = turretDamage(state, player, roll(state, state.config.turrets.damage));
     if (damageHunter(state, target.hunter, amount)) logPublic(state, player.room, "hunterDestroyed", { name: player.character });
@@ -58,15 +57,9 @@ export class TurretAttackAction extends Action<TurretAttackActionData> {
 
   override fail(state: GameState, player: PlayerState, target: TurretAttackActionData): void {
     spendCharge(state, target.equipment);
-    spendShootPoint(player);
     state.turretFailures[player.id] = (state.turretFailures[player.id] ?? 0) + 1;
     logPrivate(state, player.id, "turretMiss");
   }
-}
-
-/** apply and fail run after the cost was priced, so a free shot is the one made while a point is held. */
-function spendShootPoint(player: PlayerState): void {
-  if (player.resources.shoot > 0) player.resources.shoot -= 1;
 }
 
 function spendCharge(state: GameState, turret: string): void {

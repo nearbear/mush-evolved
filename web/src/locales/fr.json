@@ -300,6 +300,7 @@
       "covert": "Discrète"
     },
     "chance": "({{percent}} %)",
+    "paidBy": ", coûte un de vos {{resource}}",
     "atCapacity": "Capacité atteinte : les Mush ont déjà extrait toutes les spores possibles aujourd'hui. La limite se réinitialise au jour suivant.",
     "lacksAp": "Pas assez de PA : cela coûte {{need}}, vous en avez {{have}}.",
     "onCooldown_one": "De nouveau prête dans {{count}} cycle.",

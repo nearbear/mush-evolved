@@ -1,6 +1,6 @@
 import { actionCost, actionSuccessRate, actionDirtRate, actionInjuryRate, type CostContext } from "../modifiers.ts";
 import { freeAp } from "../helpers.ts";
-import type { Action as AnyAction, GameState, PlayerState } from "../types.ts";
+import type { Action as AnyAction, GameState, PlayerState, ResourceId } from "../types.ts";
 
 /** Others you could bond with, share with or hit: living, in your room, not yourself. */
 export const peopleHere = (state: Readonly<GameState>, p: Readonly<PlayerState>): PlayerState[] =>
@@ -31,6 +31,16 @@ export type ActionVisibility = "public" | "private" | "secret" | "covert";
  * - `shoot`: a shot at a hunter from a turret. No effects yet; later ones include Gunner's accuracy and Gunman's pool.
  */
 export type ActionTag = "aggressive" | "spore" | "shoot";
+
+/**
+ * What an action costs. `paidBy` names a skill resource (a Computer point, a care point...) that pays for it in place of
+ * its AP: performAction spends one of it, and the client shows that resource's icon on the button (ActionLabel).
+ */
+export interface ActionCost {
+  ap: number;
+  mp: number;
+  paidBy?: ResourceId;
+}
 
 /** Checks one field of an action that came from a client (`Action.parse`). */
 export type FieldCheck = (value: unknown) => boolean;
@@ -89,7 +99,7 @@ export class Action<T extends { type: string }> {
    * set the base price in `getCost`; modifiers (`actionCost` in modifiers.ts) adjust it here, so the price shown
    * and the price checked can't disagree.
    */
-  cost(state: Readonly<GameState>, player: Readonly<PlayerState>, target: T): { ap: number; mp: number } {
+  cost(state: Readonly<GameState>, player: Readonly<PlayerState>, target: T): ActionCost {
     return actionCost(this.getCost(state, player, target), this.context(state, player, target));
   }
 
@@ -106,7 +116,7 @@ export class Action<T extends { type: string }> {
     return { ap: cost.ap - base.ap, mp: cost.mp - base.mp };
   }
 
-  getCost(state: Readonly<GameState>, player: Readonly<PlayerState>, target: T): { ap: number; mp: number } {
+  getCost(state: Readonly<GameState>, player: Readonly<PlayerState>, target: T): ActionCost {
     return { ap: 0, mp: 0 };
   }
 

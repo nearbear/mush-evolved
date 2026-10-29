@@ -297,6 +297,7 @@
       "covert": "Covert"
     },
     "chance": "({{percent}}%)",
+    "paidBy": ", costs one of your {{resource}}",
     "atCapacity": "At capacity: the Mush have already extracted all the spores they can today. The limit resets with the next day.",
     "lacksAp": "Not enough AP: it costs {{need}}, you have {{have}}.",
     "onCooldown_one": "Ready again in {{count}} cycle.",
