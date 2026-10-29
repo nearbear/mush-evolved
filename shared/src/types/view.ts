@@ -18,6 +18,9 @@ export interface EquipmentView {
   out?: true;
   /** A patrol ship's interface whose ship was destroyed (it is out for good): shown to anyone in its bay. */
   destroyed?: true;
+  /** A docked patrol ship's armor, on its interface: shown to anyone in its bay (owner, 2026-10-28). Absent while it is out. */
+  armor?: number;
+  maxArmor?: number;
 }
 
 /** An item as a client sees it. */

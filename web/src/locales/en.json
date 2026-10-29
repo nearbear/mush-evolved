@@ -329,6 +329,7 @@
     "takeoff": "Take off",
     "land": "Land",
     "collectScrap": "Collect scrap",
+    "renovate": "Renovate",
     "openCapsule": "Open"
   },
   "queue": {
@@ -819,6 +820,8 @@
     "bodyTransferred": "You slipped into {{target}}'s body. {{name}} wakes up human, with your old body.",
     "patrolTakeoff": "{{name}} took off in {{room}}.",
     "patrolLanded": "{{name}} landed {{room}}.",
+    "patrolRenovated": "{{name}} renovated {{room}}.",
+    "patrolRenovateFailed": "You failed to renovate the ship.",
     "patrolRough": "Rough manoeuvre: the hull took {{hull}} damage, the ship lost {{armor}} armor and you lost {{hp}} HP.",
     "patrolKill": "You shot down a hunter.",
     "hunterHitPatrol": "A hunter hit {{room}}: {{armor}} armor lost.",

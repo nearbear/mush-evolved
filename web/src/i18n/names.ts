@@ -39,6 +39,7 @@ const ACTION_NAME_KEYS = {
   takeoff: "actions.takeoff",
   land: "actions.land",
   collect_scrap: "actions.collectScrap",
+  renovate: "actions.renovate",
   open_capsule: "actions.openCapsule",
   analyze_planet: "actions.analyzePlanet",
   delete_planet: "actions.deletePlanet",

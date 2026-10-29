@@ -39,6 +39,7 @@ describe("patrol ship numbers", () => {
       cleanChance: 0.2,
       rough: { hull: [2, 4], armor: 1, hp: [0, 2] },
       collect: { cost: { ap: 2 }, pieces: { patrol: [3, 1], pasiphae: [0, 1, 1, 1] }, armor: [2, 4], hp: { noneChance: 0.5, range: [2, 4] } },
+      renovate: { cost: { ap: 2 }, chance: 0.12, engineerFactor: 2 },
     });
     expect(DEFAULT_CONFIG.hunters.debris).toEqual({ count: [0, 2, 1], types: { metal_scraps: 2, space_capsule: 1, plastic_scraps: 1 } });
     expect(DEFAULT_CONFIG.spaceCapsule).toEqual({ cost: { ap: 1 }, contents: ["metal_scraps", "plastic_scraps", "oxy_capsule", "fuel_capsule"] });
@@ -138,7 +139,8 @@ describe("in flight", () => {
   it("the bay shows the ship's interface as out; other rooms show nothing", () => {
     const s = mustApply(ship(), "p0", takeoff());
     expect(viewFor(s, "p1").roomEquipment.find((e) => e.id === interfaceId(LONGANE))).toEqual({ id: interfaceId(LONGANE), type: "PATROL_INTERFACE", out: true });
-    expect(viewFor(s, "p1").roomEquipment.find((e) => e.id === interfaceId(JUJUBE))).toEqual({ id: interfaceId(JUJUBE), type: "PATROL_INTERFACE" });
+    // A docked ship's armor is on its interface (owner, 2026-10-28); a ship that is out shows none.
+    expect(viewFor(s, "p1").roomEquipment.find((e) => e.id === interfaceId(JUJUBE))).toEqual({ id: interfaceId(JUJUBE), type: "PATROL_INTERFACE", armor: 10, maxArmor: 10 });
     expect(JSON.stringify(viewFor(s, "p2").roomEquipment)).not.toContain("PATROL_INTERFACE");
   });
 
@@ -574,5 +576,94 @@ describe("the space capsule", () => {
     s.items.push({ id: "w", type: "wrench", at: { kind: "player", id: "p1" } }, { id: "cap", type: "space_capsule", at: { kind: "room", id: "LABORATORY" } });
     expect(refusal(s, "p1", open("w"))).toBe("cant_open");
     expect(refusal(s, "p1", open("cap"))).toBe("cant_open");
+  });
+});
+
+describe("renovating a ship", () => {
+  const renovate = (ship = LONGANE): Action => ({ type: "renovate", equipment: interfaceId(ship) });
+  const odds = (chance: number) => ({ patrol: { ...DEFAULT_CONFIG.patrol, renovate: { ...DEFAULT_CONFIG.patrol.renovate, chance } } });
+  /** Longane docked at 3 armor, p1 (no skills) carrying a metal scrap. */
+  function damaged(config: Partial<GameConfig> = {}): GameState {
+    const s = ship(config);
+    s.patrolShips[LONGANE.id]!.armor = 3;
+    s.items.push({ id: "scrap", type: "metal_scraps", at: { kind: "player", id: "p1" } });
+    return s;
+  }
+
+  it("is offered to anyone alive at a docked, damaged ship's interface with a metal scrap in reach, for 2 AP at 12%", () => {
+    const s = damaged();
+    expect(offered(s, "p1").filter((a) => a.type === "renovate")).toEqual([renovate()]);
+    expect(costOf(s, "p1", renovate())).toEqual({ ap: s.config.patrol.renovate.cost.ap, mp: 0 });
+    expect(option(s, "p1", renovate())!.chance).toBeCloseTo(s.config.patrol.renovate.chance);
+    // A scrap lying in the bay works too.
+    s.items.find((i) => i.id === "scrap")!.at = { kind: "room", id: BAY };
+    expect(offered(s, "p1")).toContainEqual(renovate());
+  });
+
+  it("anyone in the bay sees the docked ship's armor, so the offer reveals nothing; nobody elsewhere does", () => {
+    const s = damaged();
+    for (const id of ["p0", "p1"]) expect(viewFor(s, id).roomEquipment.find((e) => e.id === interfaceId(LONGANE))).toMatchObject({ armor: 3, maxArmor: s.config.patrol.armor.patrol });
+    expect(JSON.stringify(viewFor(s, "p2"))).not.toContain(interfaceId(LONGANE));
+  });
+
+    it("an Engineer's odds are doubled", () => {
+    const s = damaged();
+    player(s, "p1").skills = ["engineer"];
+    expect(option(s, "p1", renovate())!.chance).toBeCloseTo(s.config.patrol.renovate.chance * s.config.patrol.renovate.engineerFactor);
+  });
+
+  it("isn't offered for a ship at full armor, out, in another bay, or without a scrap; refusing leaves the state as it was", () => {
+    const full = ship();
+    full.items.push({ id: "scrap", type: "metal_scraps", at: { kind: "player", id: "p1" } });
+    expect(refusal(full, "p1", renovate())).toBe("no_ship");
+    const out = damaged();
+    out.patrolShips[LONGANE.id]!.out = true;
+    expect(refusal(out, "p1", renovate())).toBe("no_ship");
+    const elsewhere = damaged();
+    player(elsewhere, "p1").room = "SPACESHIP_BAY_B";
+    expect(refusal(elsewhere, "p1", renovate())).toBe("no_ship");
+    const noScrap = damaged();
+    noScrap.items = [];
+    expect(offered(noScrap, "p1").some((a) => a.type === "renovate")).toBe(false);
+    expect(refusal(noScrap, "p1", renovate())).toBe("no_scrap");
+    // A scrap someone else hid isn't in reach.
+    noScrap.items.push({ id: "hid", type: "metal_scraps", at: { kind: "room", id: BAY }, hiddenBy: "p0" });
+    expect(refusal(noScrap, "p1", renovate())).toBe("no_scrap");
+    expect(applyAction(noScrap, "p1", renovate())).toMatchObject({ ok: false });
+  });
+
+  it("a success brings the ship back to full armor, uses the scrap, and is public in the bay", () => {
+    const s = damaged(odds(1));
+    const next = mustApply(s, "p1", renovate());
+    expect(next.patrolShips[LONGANE.id]!.armor).toBe(s.config.patrol.armor.patrol);
+    expect(next.items.some((i) => i.id === "scrap")).toBe(false);
+    expect(player(next, "p1").ap).toBe(player(s, "p1").ap - s.config.patrol.renovate.cost.ap);
+    for (const id of ["p0", "p1"]) expect(lines(next, id, "patrolRenovated")).toMatchObject([{ params: { name: player(s, "p1").character, room: LONGANE.id } }]);
+    expect(lines(next, "p2", "patrolRenovated")).toEqual([]);
+  });
+
+  it("brings the Pasiphae back to 12", () => {
+    const s = ship(odds(1));
+    const pasiphae = patrolShip("PATROL_SHIP_AA_1")!;
+    player(s, "p1").room = pasiphae.bay;
+    s.patrolShips[pasiphae.id]!.armor = 1;
+    s.items.push({ id: "scrap", type: "metal_scraps", at: { kind: "player", id: "p1" } });
+    expect(mustApply(s, "p1", renovate(pasiphae)).patrolShips[pasiphae.id]!.armor).toBe(s.config.patrol.armor.pasiphae);
+  });
+
+  it("a failure still uses the scrap (a carried one first) and only the renovator is told", () => {
+    const s = damaged(odds(0));
+    s.items.push({ id: "floor", type: "metal_scraps", at: { kind: "room", id: BAY } });
+    const next = mustApply(s, "p1", renovate());
+    expect(next.patrolShips[LONGANE.id]!.armor).toBe(3);
+    expect(next.items.some((i) => i.id === "scrap")).toBe(false);
+    expect(next.items.some((i) => i.id === "floor")).toBe(true);
+    expect(lines(next, "p1", "patrolRenovateFailed")).toHaveLength(1);
+    for (const id of ["p0", "p2"]) expect(lines(next, id, "patrolRenovateFailed")).toEqual([]);
+    expect(lines(next, "p0", "patrolRenovated")).toEqual([]);
+  });
+
+  it("parses from the wire", () => {
+    expect(parseGameMessage(JSON.stringify({ type: "action", action: renovate() }))).toEqual({ type: "action", action: renovate() });
   });
 });

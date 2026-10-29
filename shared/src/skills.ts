@@ -189,7 +189,7 @@ export const SKILL_STATUS: Readonly<Partial<Record<SkillId | MushSkillId, SkillS
   computer: "partial",
   // PILGRED points and the PILGRED repair bonus (owner, 2026-10-21).
   physicist: "full",
-  // PILGRED repair bonus only; no repair points, repairs or renovations.
+  // PILGRED repair bonus and doubled renovation odds (owner, 2026-10-28); no repair points or equipment repairs.
   engineer: "partial",
   creative: "full",
   antic_perfume: "full",

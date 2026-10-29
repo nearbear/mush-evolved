@@ -333,6 +333,7 @@
     "takeoff": "Despegar",
     "land": "Aterrizar",
     "collectScrap": "Recoger restos",
+    "renovate": "Renovar",
     "openCapsule": "Abrir"
   },
   "queue": {
@@ -827,6 +828,8 @@
     "bodyTransferred": "Te has metido en la piel de {{target}}. {{name}} despierta humano, en tu antiguo cuerpo.",
     "patrolTakeoff": "{{name}} despegó a bordo de {{room}}.",
     "patrolLanded": "{{name}} aterrizó a bordo de {{room}}.",
+    "patrolRenovated": "{{name}} renovó {{room}}.",
+    "patrolRenovateFailed": "No has conseguido renovar la nave.",
     "patrolRough": "Maniobra brusca: el casco recibió {{hull}} de daño, la nave perdió {{armor}} de blindaje y perdiste {{hp}} PV.",
     "patrolKill": "Has derribado un hunter.",
     "hunterHitPatrol": "Disparo de hunter contra {{room}}: {{armor}} puntos de armadura perdidos.",

@@ -396,6 +396,8 @@ export interface GameConfig {
     // Collect scrap: pieces per try as weights by count (index = count); while hunters remain, the ship's armor loss and
     // the pilot's hp loss (none at `noneChance`, else `range`).
     collect: { cost: { ap: number }; pieces: { patrol: number[]; pasiphae: number[] }; armor: [number, number]; hp: { noneChance: number; range: [number, number] } };
+    // Renovate a docked, damaged ship: `chance` to bring it back to full armor, an Engineer's odds times `engineerFactor`.
+    renovate: { cost: { ap: number }; chance: number; engineerFactor: number };
   };
   // The space capsule: opening it turns it into one of `contents`, each equally likely.
   spaceCapsule: { cost: { ap: number }; contents: string[] };

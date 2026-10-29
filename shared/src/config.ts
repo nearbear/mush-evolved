@@ -231,6 +231,8 @@ export const DEFAULT_CONFIG: GameConfig = {
     // Owner, 2026-10-28 (phase 5): eMush's 2 AP; a patrol ship 0 (75%) or 1 (25%), the Pasiphae 1, 2 or 3; while hunters
     // remain, 2-4 armor and the pilot 0 hp (50%) or 2-4.
     collect: { cost: { ap: 2 }, pieces: { patrol: [3, 1], pasiphae: [0, 1, 1, 1] }, armor: [2, 4], hp: { noneChance: 0.5, range: [2, 4] } },
+    // Owner, 2026-10-28 (phase 6): eMush's 2 AP and 12%, back to full armor; an Engineer x2.
+    renovate: { cost: { ap: 2 }, chance: 0.12, engineerFactor: 2 },
   },
   // Owner, 2026-10-24 (patrol plan, answer 6): 1 AP to open, 25% each.
   spaceCapsule: { cost: { ap: 1 }, contents: ["metal_scraps", "plastic_scraps", "oxy_capsule", "fuel_capsule"] },

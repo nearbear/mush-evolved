@@ -1558,3 +1558,10 @@ All terminals now draw their gold outline with `TabOutline.tsx`, starting at the
 ### 2026-10-28: Settings window gets the terminals' outline
 
 At the user's request the settings window moved onto the same layout: title bar and credits fixed above the tab line, the TabOutline SVG from there down, only the open tab panel scrolling. The old `.terminal-scroll` layout is gone. `terminalShots.ts` now also shoots Settings (on phones through the top bar's menu); the user stopped the screenshot run, so the settings window's look is unchecked.
+
+## 2026-10-28: Renovate, the last patrol-plan phase
+
+- **Decision (owner):** a successful renovation is public in the bay, a failure private; anyone alive may renovate; Engineer ×2 is built now. The 2 AP, 12% and a scrap used either way came from the plan's eMush numbers, already accepted in answer 2.
+- **What worked:** the plan's "Still open" list named the one question, and the `rule` skill's single-question-batch caught the other two (who, Engineer). The existing `actionSucessRate` hook took Engineer's ×2 the same way Pilot's shot bonus works, with no new hook type.
+- **Needed correction:** a test assumed the bay held only the test's items (`createGame` spawns others); it now checks the scrap is gone instead of comparing the whole list. `fuel.test.ts` "the chamber level is public" already fails on clean `main`, unrelated.
+- **Leak check caught a real leak (same day):** Renovate was offered only for a damaged ship, and its refusal codes differed, so anyone in a bay could learn that a docked ship had taken damage in flight, which was the pilot's alone. Claude had noticed the offer revealed damage but judged it acceptable without asking; the `leak-check` subagent flagged it properly. The owner chose to make a docked ship's armor public in its bay (on its interface, eMush's "armor on examine"), so the offer reveals nothing new.

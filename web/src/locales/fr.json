@@ -333,6 +333,7 @@
     "takeoff": "Décoller",
     "land": "Atterrir",
     "collectScrap": "Rapatrier des débris",
+    "renovate": "Rénover",
     "openCapsule": "Ouvrir"
   },
   "queue": {
@@ -827,6 +828,8 @@
     "bodyTransferred": "Vous vous êtes glissé dans la peau de {{target}}. {{name}} se réveille humain, dans votre ancien corps.",
     "patrolTakeoff": "{{name}} a décollé à bord du {{room}}.",
     "patrolLanded": "{{name}} a posé le {{room}}.",
+    "patrolRenovated": "{{name}} a rénové le {{room}}.",
+    "patrolRenovateFailed": "Vous n'avez pas réussi à rénover le vaisseau.",
     "patrolRough": "Manœuvre difficile : la coque a subi {{hull}} dégâts, le vaisseau a perdu {{armor}} d'armure et vous avez perdu {{hp}} PV.",
     "patrolKill": "Vous avez abattu un hunter.",
     "hunterHitPatrol": "Tir de hunter sur {{room}} : {{armor}} points d'armure perdus.",

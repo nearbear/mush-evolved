@@ -557,10 +557,12 @@ function itemView({ id, type, of, builds, charges, teaches, plant, spores, hidde
 }
 
 function equipmentView(state: GameState, { id, type }: Equipment): EquipmentView {
-  // Out and destroyed are known in the bay, where the ship is missing (owner, 2026-10-24).
+  // Out and destroyed are known in the bay, where the ship is missing (owner, 2026-10-24); a docked ship's armor too,
+  // so Renovate being offered tells nothing new (owner, 2026-10-28).
   const ship = type === PATROL_INTERFACE ? PATROL_SHIPS.find((s) => interfaceId(s) === id) : undefined;
   const shipState = ship && state.patrolShips[ship.id];
-  return { id, type, ...(shipState?.out && { out: true as const }), ...(shipState?.destroyed && { destroyed: true as const }) };
+  const docked = shipState && !shipState.out && { armor: shipState.armor, maxArmor: state.config.patrol.armor[ship.kind] };
+  return { id, type, ...(shipState?.out && { out: true as const }), ...(shipState?.destroyed && { destroyed: true as const }), ...docked };
 }
 
 /** Your own ship's armor and charges, and how much debris is out there, while you fly it. */
