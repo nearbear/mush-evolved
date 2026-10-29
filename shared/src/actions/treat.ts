@@ -35,6 +35,10 @@ export class TreatAction extends Action<TreatActionData> {
     return state.config.botany.dirtyChance;
   }
 
+  override injuryChance(state: Readonly<GameState>): number {
+    return state.config.botany.treat.injuryChance;
+  }
+
   override apply(state: GameState, player: PlayerState, target: TreatActionData): void {
     const pot = state.items.find((i) => i.id === target.item)!;
     if (isPlanted(pot)) pot.plant.sick = false;

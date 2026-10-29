@@ -36,6 +36,10 @@ export class LandAction extends Action<LandActionData> {
     return ship && commandId(ship) === target.equipment ? null : "not_flying";
   }
 
+  override injuryChance(state: Readonly<GameState>): number {
+    return state.config.patrol.land.injuryChance;
+  }
+
   override apply(state: GameState, player: PlayerState): void {
     const ship = shipAboard(player)!; // checked, so it exists
     board(player, ship.bay);

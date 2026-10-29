@@ -163,7 +163,7 @@ export interface GameConfig {
   botany: {
     // Owner, 2026-10-22 (docs/scratchpad/botany-plan.md, Pass 1).
     water: { cost: { ap: number } }; // Water one thirsty or dried plant.
-    treat: { cost: { ap: number } }; // Treat one plant (clears sickness).
+    treat: { cost: { ap: number }, injuryChance: number }; // Treat one plant (clears sickness).
     sow: { cost: { ap: number } }; // Plant a carried fruit in an empty hydropot.
     dirtyChance: number; // Chance of getting dirty after watering, treating or sowing (the original's 15%).
     growCycles: Record<string, number>; // Cycles a young plant of each species needs before it becomes adult.
@@ -209,7 +209,7 @@ export interface GameConfig {
     injuryChance: number;
   };
   consume: { dirtyChance: number }; // Chance of getting the dirty status after consuming an item.
-  oxygenCapsule: { cost: { ap: number }; dirtyChance: number; injuryChance: number }; // Taking an oxygen capsule from a tank and putting it back (owner, 2026-10-24: as fuel).
+  oxygenCapsule: { cost: { ap: number }; injuryChance: number }; // Taking an oxygen capsule from a tank and putting it back (owner, 2026-10-24: as fuel).
   fuel: { cost: { ap: number }; dirtyChance: number, injuryChance: number }; // Taking a capsule from a tank, loading it into the chamber, unloading it back.
   dispense: { dirtyChance: number }; // Chance of getting the dirty status after dispensing an item.
   computer: {
@@ -386,8 +386,8 @@ export interface GameConfig {
   // `charges` shots, regaining `rechargePerCycle` a cycle only while docked; a shot is like a turret's, with its own
   // numbers, and a Pilot multiplies its chance by `pilotAccuracyFactor`.
   patrol: {
-    takeoff: { cost: { ap: number } };
-    land: { cost: { ap: number } };
+    takeoff: { cost: { ap: number }, injuryChance: number };
+    land: { cost: { ap: number }, injuryChance: number };
     armor: { patrol: number; pasiphae: number };
     charges: number;
     rechargePerCycle: number;
@@ -398,12 +398,12 @@ export interface GameConfig {
     // the pilot's hp loss (none at `noneChance`, else `range`).
     collect: { cost: { ap: number }; pieces: { patrol: number[]; pasiphae: number[] }; armor: [number, number]; hp: { noneChance: number; range: [number, number] } };
     // Renovate a docked, damaged ship: `chance` to bring it back to full armor, an Engineer's odds times `engineerFactor`.
-    renovate: { cost: { ap: number }; chance: number; engineerFactor: number };
+    renovate: { cost: { ap: number }; chance: number; dirtyChance: number; injuryChance: number; engineerFactor: number };
   };
   // The space capsule: opening it turns it into one of `contents`, each equally likely.
-  spaceCapsule: { cost: { ap: number }; contents: string[] };
+  spaceCapsule: { cost: { ap: number }; dirtyChance: number; injuryChance: number; contents: string[] };
   // Hull repair (owner, 2026-10-24, the wiki's Armure et Bouclier): 1 AP, 25%, +5 hull, a metal scrap used up on a success.
-  hullRepair: { cost: { ap: number }; chance: number; amount: number };
+  hullRepair: { cost: { ap: number }; chance: number; injuryChance: number; amount: number };
   // Owner, 2026-10-28: carrying the oscilloscope (eMush's Wavoscope) multiplies the odds of a hull repair and a patrol-ship renovation.
   oscilloscope: { repairFactor: number };
   hunger: {
