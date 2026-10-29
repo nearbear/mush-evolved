@@ -200,12 +200,13 @@ describe("shooting from a patrol ship", () => {
   it("a hit costs a charge, does 3-6 damage, resets the ship's miss streak, and only the shooter is told", () => {
     let s = flying(shot({ chance: 1 }));
     s.patrolFailures.p0 = 2;
+    s.hunters.list[0]!.hp = 10; // above the 6-damage maximum, so the hit can't kill it
     s = mustApply(s, "p0", shoot("h1"));
     expect(s.patrolShips[LONGANE.id]!.charges).toBe(s.config.patrol.charges - 1);
     const hp = s.hunters.list[0]!.hp;
-    expect(6 - hp).toBeGreaterThanOrEqual(3);
+    expect(10 - hp).toBeGreaterThanOrEqual(3);
     expect(s.patrolFailures.p0).toBeUndefined();
-    expect(s.log.at(-1)).toMatchObject({ key: "turretHit", visibleTo: ["p0"], params: { damage: 6 - hp } });
+    expect(s.log.at(-1)).toMatchObject({ key: "turretHit", visibleTo: ["p0"], params: { damage: 10 - hp } });
   });
 
   it("a miss costs a charge too; its streak (x1.25 a miss) is its own, apart from the turrets'", () => {
