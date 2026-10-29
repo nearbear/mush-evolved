@@ -8,7 +8,7 @@
 
 import { applyCheats, makeHuman, type ActopiCheat, type Cheat, type RoleCheat } from "./cheats.ts";
 import { ACTIONS, type ActionDef } from "./actions.ts";
-import { AT_CAPACITY, COOLDOWN, NO_SPACE } from "./actions/action.ts";
+import { AT_CAPACITY, COOLDOWN, DIRTY, NO_SPACE } from "./actions/action.ts";
 import { getUp } from "./actions/lie_down.ts";
 import { researchNeedsView } from "./actions/research.ts";
 import { equipmentHere } from "./equipment.ts";
@@ -192,7 +192,7 @@ export function legalActions(state: GameState, playerId: PlayerId): Action[] {
 }
 
 /**
- * Actions that fail only on cost (`cant_afford`), on room in the inventory (`NO_SPACE`) on a cooldown (`COOLDOWN`) or on a shared limit (`AT_CAPACITY`), with the cost and what falls
+ * Actions that fail only on cost (`cant_afford`), on room in the inventory (`NO_SPACE`), on a cooldown (`COOLDOWN`), on a shared limit (`AT_CAPACITY`) or on being dirty (`DIRTY`), with the cost and what falls
  * short. For showing them disabled.
  * Moves are left out: an unaffordable move has no cost to report, and doors aren't action buttons.
  */
@@ -203,9 +203,9 @@ export function unaffordableActions(state: GameState, playerId: PlayerId): Actio
     def.candidates(state, p).flatMap((a): ActionOption[] => {
       if (a.type === "move") return [];
       const refused = def.check(state, p, a);
-      if (refused !== "cant_afford" && refused !== NO_SPACE && refused !== COOLDOWN && refused !== AT_CAPACITY) return [];
+      if (refused !== "cant_afford" && refused !== NO_SPACE && refused !== COOLDOWN && refused !== AT_CAPACITY && refused !== DIRTY) return [];
       const cost = def.cost(state, p, a);
-      const lacks: ActionOption["lacks"] = [...(refused === NO_SPACE ? (["space"] as const) : []), ...(refused === COOLDOWN ? (["cooldown"] as const) : []), ...(refused === AT_CAPACITY ? (["capacity"] as const) : []), ...(freeAp(p) < cost.ap ? (["ap"] as const) : []), ...(p.mp < cost.mp ? (["mp"] as const) : [])];
+      const lacks: ActionOption["lacks"] = [...(refused === DIRTY ? (["clean"] as const) : []), ...(refused === NO_SPACE ? (["space"] as const) : []), ...(refused === COOLDOWN ? (["cooldown"] as const) : []), ...(refused === AT_CAPACITY ? (["capacity"] as const) : []), ...(freeAp(p) < cost.ap ? (["ap"] as const) : []), ...(p.mp < cost.mp ? (["mp"] as const) : [])];
       const option: ActionOption = { action: a, cost, chance: def.chance(state, p, a), tags: [...def.tags], lacks };
       if (refused === COOLDOWN) option.cooldown = def.cooldownLeft(state, p, a);
       return [option];

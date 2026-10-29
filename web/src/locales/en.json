@@ -303,6 +303,7 @@
     "onCooldown_one": "Ready again in {{count}} cycle.",
     "onCooldown_other": "Ready again in {{count}} cycles.",
     "lacksSpace": "Your inventory is full.",
+    "lacksClean": "You have to be clean to do this. Take a shower first.",
     "lacksMp": "Not enough MP: it costs {{need}}, you have {{have}}.",
     "lacksBoth": "Not enough AP or MP: it costs {{needAp}} AP and {{needMp}} MP, you have {{haveAp}} AP and {{haveMp}} MP.",
     "returnToSol": "Return to Sol",

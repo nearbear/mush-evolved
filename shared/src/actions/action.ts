@@ -18,6 +18,9 @@ export const AT_CAPACITY = "at_capacity";
 /** The `validate` code for an action that is waiting out a cooldown: shown disabled, with the wait (`unaffordableActions`). */
 export const COOLDOWN = "cooldown";
 
+/** The `validate` code for an action you must be clean for: shown disabled, with "take a shower" (`unaffordableActions`). */
+export const DIRTY = "dirty";
+
 /**
  * Who learns of an action, for the label on its button (the log entries themselves come from `log.ts`).
  * Declared per action and kept in step with the log call in its `apply`.

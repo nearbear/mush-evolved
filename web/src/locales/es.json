@@ -307,6 +307,7 @@
     "onCooldown_other": "Lista de nuevo en {{count}} ciclos.",
     "onCooldown_many": "Lista de nuevo en {{count}} ciclos.",
     "lacksSpace": "Tu inventario está lleno.",
+    "lacksClean": "No puedes hacer esto con la suciedad encima. Dúchate primero.",
     "lacksMp": "No tienes suficientes PM: cuesta {{need}} y tienes {{have}}.",
     "lacksBoth": "No tienes suficientes PA ni PM: cuesta {{needAp}} PA y {{needMp}} PM, y tienes {{haveAp}} PA y {{haveMp}} PM.",
     "returnToSol": "Volver a Sol",

@@ -330,6 +330,11 @@
   font-size: 0.95rem;
   line-height: 21px;
 }
+/* Base UI places a positioner with a CSS transform, which traps the popup's z-index inside it; lift the positioner itself
+   so a tooltip opened from inside a dialog (the terminal, z-index 21) draws over the dialog rather than under it. */
+:has(> .tooltip) {
+  z-index: 50;
+}
 .tooltip {
   z-index: 50;
   max-width: 16rem;

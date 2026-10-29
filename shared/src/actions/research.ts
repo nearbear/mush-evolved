@@ -1,4 +1,4 @@
-import { Action, type ActionCost, isString } from "./action.ts";
+import { Action, type ActionCost, DIRTY, isString } from "./action.ts";
 import { ANY_CONSUMABLE, RESEARCH_COMPLETE, RESEARCH_IDS, RESEARCH_REQUIRES, RESEARCH_SKILLS, type ResearchId, researchNeedOrder } from "../research.ts";
 import { logPublic } from "../log.ts";
 import { equipmentHere } from "../equipment.ts";
@@ -76,7 +76,7 @@ export class ResearchAction extends Action<ResearchActionData> {
     if (!(RESEARCH_IDS as readonly string[]).includes(target.research)) return "no_such_research";
     if ((state.research[target.research] ?? 0) >= RESEARCH_COMPLETE) return "research_done";
     if (!researchAllowed(state, player.room, target.research as ResearchId)) return "research_needs";
-    if (player.statuses.includes("dirty")) return "dirty";
+    if (player.statuses.includes("dirty")) return DIRTY;
     return null;
   }
 

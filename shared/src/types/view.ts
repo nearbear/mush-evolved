@@ -221,8 +221,8 @@ export interface ActionOption {
   chance: number;
   /** What kind of action it is (aggressive, spore), so the UI can mark it. Fixed per action type. */
   tags: ActionTag[];
-  /** Empty when you can do it now; otherwise the points, or the inventory space, you lack. See `affordable`. */
-  lacks: ("ap" | "mp" | "space" | "cooldown" | "capacity")[];
+  /** Empty when you can do it now; otherwise the points, the inventory space, or the cleanliness ("clean": you are dirty) you lack. See `affordable`. */
+  lacks: ("ap" | "mp" | "space" | "cooldown" | "capacity" | "clean")[];
   /** Cycles until it is ready, when `lacks` has "cooldown". */
   cooldown?: number;
 }

@@ -122,6 +122,14 @@ describe("research", () => {
     expect(s.research).toEqual({});
   });
 
+  it("is shown disabled to a dirty player, lacking \"clean\", so the terminal can say to shower", () => {
+    const s = game();
+    addStatus(s.players[0]!, "dirty");
+    const option = viewFor(s, "p0").actions.find(({ action }) => action.type === "research" && action.research === "STEROIDS");
+    expect(option?.lacks).toEqual(["clean"]);
+    expect(viewFor(s, "p1").actions.find(({ action }) => action.type === "research")?.lacks).toEqual([]);
+  });
+
   it("follows the relay formula: skills add, repeats subtract, per research, and someone else resets it", () => {
     const cfg = DEFAULT_CONFIG.research.progress;
     const s = game();

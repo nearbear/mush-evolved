@@ -1,4 +1,4 @@
-// A button for an offered action. When you only lack the AP or MP for it, it shows disabled and a card
+// A button for an offered action. When you only lack the AP or MP for it (or are too dirty), it shows disabled and a card
 // says why (on hover, focus, or tap). It uses aria-disabled rather than disabled so it can still be hovered,
 // focused and tapped to read the reason.
 
@@ -43,7 +43,9 @@ export function DisabledActionButton({ view, blocked, children }: { view: Player
   const { t } = useTranslation();
   const { cost, lacks } = blocked;
   const reason =
-    lacks[0] === "capacity"
+    lacks[0] === "clean"
+      ? t("actions.lacksClean")
+      : lacks[0] === "capacity"
       ? t("actions.atCapacity")
       : lacks[0] === "cooldown"
       ? t("actions.onCooldown", { count: blocked.cooldown ?? 1 })
