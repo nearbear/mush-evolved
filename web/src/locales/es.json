@@ -1139,6 +1139,12 @@
   },
   "research": {
     "title": "Investigación",
+    "tabs": {
+      "active": "Activo",
+      "blocked": "Bloqueado",
+      "done": "Hecho"
+    },
+    "none": "Nada aquí.",
     "percent": "{{percent}} %",
     "met": "Cumplido",
     "unmet": "No cumplido",
@@ -1226,7 +1232,6 @@
   },
   "projects": {
     "title": "Proyectos de NERON",
-    "skills": "Acelerado por:",
     "names": {
       "PATROL_SHIP_LAUNCHER": "Propulsor de despegue",
       "PATROLSHIP_BLASTER_GUN": "Cañón bláster",

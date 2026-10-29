@@ -1131,6 +1131,12 @@
   },
   "research": {
     "title": "Research",
+    "tabs": {
+      "active": "Active",
+      "blocked": "Blocked",
+      "done": "Done"
+    },
+    "none": "Nothing here.",
     "percent": "{{percent}}%",
     "met": "Met",
     "unmet": "Not met",
@@ -1217,7 +1223,6 @@
   },
   "projects": {
     "title": "NERON projects",
-    "skills": "Sped up by:",
     "names": {
       "PATROL_SHIP_LAUNCHER": "Takeoff thruster",
       "PATROLSHIP_BLASTER_GUN": "Blaster gun",

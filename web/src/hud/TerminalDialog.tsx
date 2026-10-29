@@ -5,6 +5,7 @@
 // Open/closed is UI state held by GameScreen; the server only validates the access action.
 
 import { Dialog } from "@base-ui/react/dialog";
+import { Tabs } from "@base-ui/react/tabs";
 import { useState } from "react";
 import {
   hasSkill,
@@ -27,7 +28,7 @@ import {
   type PlayerView,
 } from "@mush2/shared";
 import { useTranslation } from "react-i18next";
-import { CHECK_ICON, PILGRED_CARD, PROJECT_CARDS, RESEARCH_CARDS, UNCHECK_ICON } from "../art/assets.ts";
+import { CHECK_ICON, PILGRED_CARD, PROJECT_CARDS, RESEARCH_CARDS, skillIcon, UNCHECK_ICON } from "../art/assets.ts";
 import { useNames } from "../i18n/names.ts";
 import { ActionLabel } from "./ActionLabel.tsx";
 import { ActionButton } from "./ActionButton.tsx";
@@ -119,7 +120,7 @@ function ProjectList({ terminal, view, onAction }: ListProps) {
       needs={(id) => {
         const skills = PROJECTS.find((p) => p.id === id)?.skills ?? [];
         // Only the worker's own skills speed up their work (relay.ts), so yours are the ones checked.
-        return skills.length ? { heading: t("projects.skills"), items: skills.map((skill) => ({ label: names.skill(skill), met: hasSkill(view.you, skill) })) } : null;
+        return skills.length ? { items: skills.map((skill) => ({ label: names.skill(skill), met: hasSkill(view.you, skill), icon: skillIcon(skill) })) } : null;
       }}
       option={(id) => view.actions.find(({ action: a }) => a.type === "project" && a.equipment === terminal.id && a.project === id)}
       view={view}
@@ -193,9 +194,8 @@ function ReturnToSol({ terminal, view, onAction }: ListProps) {
 }
 
 interface Checklist {
-  /** Text before the boxes; research has none, since every row's checklist is its needs. */
-  heading?: string;
-  items: { label: string; met: boolean }[];
+  /** `icon` is an extra picture after the box (a project's skills show their skill icon). */
+  items: { label: string; met: boolean; icon?: string }[];
 }
 
 interface ProgressListProps {
@@ -214,51 +214,86 @@ interface ProgressListProps {
   onAction: (action: Action) => void;
 }
 
-/** Every research or project with its progress (public) and, when the view offers it, a button to work on it. */
+type ProgressTab = "active" | "blocked" | "done";
+const PROGRESS_TABS: readonly ProgressTab[] = ["active", "blocked", "done"];
+
+/**
+ * Every research or project with its progress (public) and, when the view offers it, a button to work on it, in three
+ * tabs: Active (in progress, then available), Blocked (not offered by the view, so for research the lab misses a need)
+ * and Done. Within a tab the order is the list's own. Empty Blocked or Done tabs are left out.
+ */
 function ProgressList({ label, ids, progress, complete, cards, name, status, needs, option: optionFor, view, onAction }: ProgressListProps) {
   const { t } = useTranslation();
+  const [tab, setTab] = useState<ProgressTab>("active");
+  const rows = ids.map((id) => ({ id, percent: progress[id] ?? 0, option: optionFor(id) }));
+  const groups: Record<ProgressTab, typeof rows> = {
+    active: [...rows.filter((r) => r.percent > 0 && r.percent < complete && r.option), ...rows.filter((r) => r.percent === 0 && r.option)],
+    blocked: rows.filter((r) => r.percent < complete && !r.option),
+    done: rows.filter((r) => r.percent >= complete),
+  };
+  const shown = PROGRESS_TABS.filter((key) => key === "active" || groups[key].length > 0);
+  const current = shown.includes(tab) ? tab : "active";
   return (
-    <ul className="research-list" aria-label={label}>
-      {ids.map((id) => {
-        const percent = progress[id] ?? 0;
-        const option = optionFor(id);
-        const card = cards[id.toLowerCase()];
-        const needed = percent < complete ? needs?.(id) : null;
-        const state = status(id);
-        return (
-          <li key={id} className="research-item">
-            {card && <img className="research-card" src={card} alt="" />}
-            <div className="research-title">
-              <strong>{name(id)}</strong>
-              <span className={`skill-status skill-status-${state}`}>{t(`research.status.${state}`)}</span>
-            </div>
-            <div className="research-body">
-              <div className="research-progress">
-                <progress max={complete} value={percent} />
-                <span>{t("research.percent", { percent })}</span>
-                {option && (
-                  <ActionButton view={view} option={option} onAction={onAction}>
-                    <ActionLabel text={t("research.work")} cost={option.cost} chance={option.chance} />
-                  </ActionButton>
-                )}
-              </div>
-              {needed && (
-                <div className="research-needs">
-                  {needed.heading && <span>{needed.heading}</span>}
-                  <ul>
-                    {needed.items.map(({ label, met }) => (
-                      <li key={label} className={met ? "research-need-met" : undefined}>
-                        <img src={met ? CHECK_ICON : UNCHECK_ICON} alt={met ? t("research.met") : t("research.unmet")} />
-                        {label}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-            </div>
-          </li>
-        );
-      })}
-    </ul>
+    <Tabs.Root className="settings-tabs" value={current} onValueChange={(value) => setTab(value as ProgressTab)}>
+      <Tabs.List className="settings-tab-list progress-tab-list" aria-label={label}>
+        {shown.map((key) => (
+          <Tabs.Tab key={key} className="settings-tab" value={key}>
+            {t(`research.tabs.${key}`)}
+          </Tabs.Tab>
+        ))}
+      </Tabs.List>
+      {shown.map((key) => (
+        <Tabs.Panel key={key} value={key}>
+          {groups[key].length === 0 ? (
+            <p>{t("research.none")}</p>
+          ) : (
+            <ul className="research-list" aria-label={t(`research.tabs.${key}`)}>
+              {groups[key].map(({ id, percent, option }) => {
+                const card = cards[id.toLowerCase()];
+                const needed = key !== "done" ? needs?.(id) : null;
+                const state = status(id);
+                return (
+                  <li key={id} className={`research-item research-item-${key}`}>
+                    {card && <img className="research-card" src={card} alt="" />}
+                    <div className="research-title">
+                      <strong>{name(id)}</strong>
+                      <span className={`skill-status skill-status-${state}`}>{t(`research.status.${state}`)}</span>
+                    </div>
+                    <div className="research-body">
+                      {key === "done" ? (
+                        <span>{t("research.done")}</span>
+                      ) : (
+                        <div className="research-progress">
+                          <progress max={complete} value={percent} />
+                          <span>{t("research.percent", { percent })}</span>
+                          {option && (
+                            <ActionButton view={view} option={option} onAction={onAction}>
+                              <ActionLabel text={t("research.work")} cost={option.cost} chance={option.chance} />
+                            </ActionButton>
+                          )}
+                        </div>
+                      )}
+                      {needed && (
+                        <div className="research-needs">
+                          <ul>
+                            {needed.items.map(({ label, met, icon }) => (
+                              <li key={label} className={met ? "research-need-met" : undefined}>
+                                <img src={met ? CHECK_ICON : UNCHECK_ICON} alt={met ? t("research.met") : t("research.unmet")} />
+                                {icon && <img src={icon} alt="" />}
+                                {label}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </Tabs.Panel>
+      ))}
+    </Tabs.Root>
   );
 }

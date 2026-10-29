@@ -1,4 +1,4 @@
-// Opens the Laboratory's research terminal and the Nexus's NERON core (the project list) on a desktop and a 360px
+// Opens the Laboratory's research terminal (its Active and Blocked tabs) and the Nexus's NERON core (the project list) on a desktop and a 360px
 // phone, saving the dialogs to .screenshots/. Everyone starts in the Laboratory, five rooms from the Nexus.
 // Expects `npm run dev` to be running.
 //
@@ -74,6 +74,13 @@ async function run(phone: boolean, character: number) {
       await page.waitForTimeout(800);
     }
     await shoot(page, `${prefix}-research`);
+    // The Blocked tab: researches whose lab needs aren't met.
+    const blocked = lab.getByRole("tab", { name: /^Blocked/ });
+    if (await blocked.count()) {
+      await blocked.click();
+      await page.waitForTimeout(200);
+      await shoot(page, `${prefix}-research-blocked`);
+    }
     await page.keyboard.press("Escape");
     await lab.waitFor({ state: "hidden" });
 
@@ -94,4 +101,4 @@ async function run(phone: boolean, character: number) {
   }
 }
 
-await Promise.all([run(false, 0), run(true, 1)]);
+await Promise.all(process.argv.includes("--phone") ? [run(true, 1)] : [run(false, 0), run(true, 1)]);
