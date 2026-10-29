@@ -1,7 +1,7 @@
 // The Command terminal's steering (owner, 2026-10-22): the heading and whether the ship is in orbit, then, for the
 // Commander, turn left or right, and travel as far as the fuel loaded in the combustion chamber (or leave orbit). Every button comes from view.actions.
 
-import type { Action, EquipmentView, PlayerView } from "@mush2/shared";
+import { PLANET_DIRECTIONS, type Action, type EquipmentView, type PlayerView } from "@mush2/shared";
 import { useTranslation } from "react-i18next";
 import { ActionButton } from "./ActionButton.tsx";
 import { ActionLabel } from "./ActionLabel.tsx";
@@ -24,10 +24,18 @@ export function ShipNavigation({ terminal, view, onAction }: Props) {
   return (
     <section className="ship-navigation" aria-label={t("navigation.title")}>
       <h3>{t("navigation.title")}</h3>
-      <p>
-        <strong>{t("navigation.heading", { direction: t(`astro.directions.${heading}`) })}</strong>
-        {orbiting && <> · {t("navigation.inOrbit")}</>}
-      </p>
+      <div className="ship-compass" role="img" aria-label={t("navigation.heading", { direction: t(`astro.directions.${heading}`) })}>
+        {[2, 1, 0, -1, -2].map((offset) => {
+          // PLANET_DIRECTIONS runs anticlockwise, so what lies to the left of the heading is the next one along.
+          const direction = PLANET_DIRECTIONS[(PLANET_DIRECTIONS.indexOf(heading) + offset + 2 * PLANET_DIRECTIONS.length) % PLANET_DIRECTIONS.length] ?? heading;
+          return (
+            <span key={offset} className={offset === 0 ? "ship-compass-heading" : undefined} aria-hidden="true">
+              {t(`astro.directions.${direction}`)}
+            </span>
+          );
+        })}
+      </div>
+      {orbiting && <p>{t("navigation.inOrbit")}</p>}
       {turns.length > 0 && (
         <div className="ship-navigation-row">
           {turns.map((option) => (
