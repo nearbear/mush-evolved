@@ -112,8 +112,35 @@
 .research-item {
   display: flex;
   flex-wrap: wrap;
-  align-items: center;
+  align-items: flex-start;
   gap: 0.5rem;
+}
+
+/* A list row: the card on the left, the title row beside it, then the progress and checklist. On a phone the title row
+   spans the card too (responsive.css), so a title isn't squeezed into the space left by the card and pill. */
+li.research-item {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-areas:
+    "card title"
+    "card body";
+  column-gap: 0.5rem;
+  row-gap: 0.25rem;
+}
+li.research-item .research-card {
+  grid-area: card;
+}
+li.research-item .research-title {
+  grid-area: title;
+}
+li.research-item .research-body {
+  grid-area: body;
+}
+
+/* A divider between rows. */
+.research-item + .research-item {
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--edge);
 }
 
 .research-card {
@@ -130,8 +157,61 @@
   min-width: 0;
 }
 
-.research-body progress {
-  width: 100%;
+/* Title and status pill always share a line (a long title wraps inside itself), as do the bar, its percent and the button
+   (the bar shrinks to make room on a phone). */
+.research-title,
+.research-progress {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.research-title strong {
+  flex: 0 1 auto;
+  min-width: 0;
+  /* At 360px a single long word can be wider than the room beside the pill; break it rather than run under the pill. */
+  overflow-wrap: anywhere;
+}
+.research-title .skill-status,
+.research-progress > :not(progress) {
+  flex: none;
+  margin: 0;
+  white-space: nowrap;
+}
+/* The pill sits at the row's right edge. */
+.research-title .skill-status {
+  margin-left: auto;
+}
+.research-progress progress {
+  flex: 1 1 0;
+  min-width: 2rem;
+}
+
+/* A research's requirements or a project's skills, as a wrapping checklist; met entries are ticked and dimmed. */
+.research-needs {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.25rem 0.6rem;
+  font-size: 0.9em;
+}
+.research-needs ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 0.6rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.research-needs li {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+.research-needs img {
+  image-rendering: pixelated;
+}
+.research-need-met {
+  opacity: 0.6;
 }
 
 /* Your planets (PlanetList): in the Astro terminal window. */

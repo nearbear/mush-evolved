@@ -170,6 +170,12 @@ export interface PlayerView {
   ship: ShipResources & { max: ShipResources };
   /** Percent done of each research that has been started, public to everyone (decided 2026-10-16). */
   research: Record<string, number>;
+  /**
+   * Which of each research's requirements the lab meets (`researchNeedsMet`, in `researchNeedOrder`'s order), counting
+   * items carried by anyone there and a drawn ZONG_CHUN_SAMPLE (owner, 2026-10-28). Only while you are alive in a room
+   * with a research terminal; otherwise null. Researches with no requirements are left out.
+   */
+  researchNeeds: Record<string, boolean[]> | null;
   /** Percent done of each NERON project that has been started, public to everyone (decided 2026-10-18). */
   projects: Record<string, number>;
   /** PILGRED's repair, percent done, only while you are alive in a room with its terminal (owner, 2026-10-21); otherwise null. */

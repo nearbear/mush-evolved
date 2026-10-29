@@ -1138,7 +1138,9 @@
   },
   "research": {
     "title": "Investigación",
-    "needs": "Requiere: {{list}}",
+    "percent": "{{percent}} %",
+    "met": "Cumplido",
+    "unmet": "No cumplido",
     "anyConsumable": "cualquier comida, bebida o medicamento",
     "needChun": "Chun presente",
     "needPostSelection": "Mush elegidos",
@@ -1223,7 +1225,7 @@
   },
   "projects": {
     "title": "Proyectos de NERON",
-    "skills": "Acelerado por: {{list}}",
+    "skills": "Acelerado por:",
     "names": {
       "PATROL_SHIP_LAUNCHER": "Propulsor de despegue",
       "PATROLSHIP_BLASTER_GUN": "Cañón bláster",

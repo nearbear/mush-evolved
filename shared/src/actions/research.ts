@@ -1,5 +1,5 @@
 import { Action, type ActionCost, isString } from "./action.ts";
-import { ANY_CONSUMABLE, RESEARCH_COMPLETE, RESEARCH_IDS, RESEARCH_REQUIRES, RESEARCH_SKILLS, type ResearchId } from "../research.ts";
+import { ANY_CONSUMABLE, RESEARCH_COMPLETE, RESEARCH_IDS, RESEARCH_REQUIRES, RESEARCH_SKILLS, type ResearchId, researchNeedOrder } from "../research.ts";
 import { logPublic } from "../log.ts";
 import { equipmentHere } from "../equipment.ts";
 import { ITEM_TYPES, newItemId, removeItem } from "../items.ts";
@@ -17,14 +17,29 @@ function labItems(state: Readonly<GameState>, room: RoomId): ItemState[] {
 
 const matches = (item: Readonly<ItemState>, need: string) => (need === ANY_CONSUMABLE ? ITEM_TYPES[item.type]?.consume !== undefined : item.type === need);
 
+/**
+ * Which of a research's requirements (RESEARCH_REQUIRES) the lab meets, in `researchNeedOrder`'s order: each item, then
+ * Chun, then post-selection. Empty when it has none.
+ */
+export function researchNeedsMet(state: Readonly<GameState>, room: RoomId, research: ResearchId): boolean[] {
+  const needs = RESEARCH_REQUIRES[research];
+  if (!needs) return [];
+  const items = labItems(state, room);
+  return researchNeedOrder(needs).map((need) => {
+    if (need === "chun") return xylophFound(state, "ZONG_CHUN_SAMPLE") || state.players.some((p) => p.alive && p.room === room && p.character === "chun");
+    if (need === "postSelection") return !state.preselection;
+    return items.some((item) => matches(item, need.item));
+  });
+}
+
+/** `researchNeedsMet` for every research that has requirements: what the terminal's checklist shows (`PlayerView.researchNeeds`). */
+export function researchNeedsView(state: Readonly<GameState>, room: RoomId): Record<string, boolean[]> {
+  return Object.fromEntries(RESEARCH_IDS.filter((id) => RESEARCH_REQUIRES[id]).map((id) => [id, researchNeedsMet(state, room, id)]));
+}
+
 /** Whether the lab meets a research's requirements (RESEARCH_REQUIRES; owner, 2026-10-25). */
 export function researchAllowed(state: Readonly<GameState>, room: RoomId, research: ResearchId): boolean {
-  const needs = RESEARCH_REQUIRES[research];
-  if (!needs) return true;
-  if (needs.postSelection && state.preselection) return false;
-  if (needs.chun && !xylophFound(state, "ZONG_CHUN_SAMPLE") && !state.players.some((p) => p.alive && p.room === room && p.character === "chun")) return false;
-  const items = labItems(state, room);
-  return (needs.items ?? []).every((need) => items.some((item) => matches(item, need)));
+  return researchNeedsMet(state, room, research).every(Boolean);
 }
 
 export type ResearchActionData = { type: "research"; equipment: string; research: string };

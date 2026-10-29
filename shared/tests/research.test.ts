@@ -230,6 +230,23 @@ describe("research", () => {
     expect(researches(s, "p0")).toContain("MUSH_BREEDS");
   });
 
+  it("tells people at the terminal which of each research's needs the lab meets, in order, and nobody else", () => {
+    const s = game();
+    s.preselection = true;
+    s.players[1]!.room = "REFECTORY";
+    // ANTI_MUSH_SERUM: mush_sample, mush_floppy_disk, Chun, post-selection.
+    expect(viewFor(s, "p0").researchNeeds?.ANTI_MUSH_SERUM).toEqual([false, false, false, false]);
+    s.items.push({ id: "sample", type: "mush_sample", at: { kind: "player", id: "p2" } });
+    s.comms.xyloph.push("ZONG_CHUN_SAMPLE");
+    s.preselection = false;
+    const needs = viewFor(s, "p0").researchNeeds!;
+    expect(needs.ANTI_MUSH_SERUM).toEqual([true, false, true, true]);
+    expect(needs).not.toHaveProperty("STEROIDS");
+    expect(viewFor(s, "p1").researchNeeds).toBeNull();
+    s.players[0]!.alive = false;
+    expect(viewFor(s, "p0").researchNeeds).toBeNull();
+  });
+
   it("uses up only the kill_sample item on completion, the floor's first", () => {
     const s = game();
     s.items.push({ id: "sample", type: "mush_sample", at: { kind: "room", id: "LABORATORY" } });

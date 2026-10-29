@@ -1130,7 +1130,9 @@
   },
   "research": {
     "title": "Research",
-    "needs": "Needs: {{list}}",
+    "percent": "{{percent}}%",
+    "met": "Met",
+    "unmet": "Not met",
     "anyConsumable": "any food, drink or drug",
     "needChun": "Chun present",
     "needPostSelection": "Mush chosen",
@@ -1214,7 +1216,7 @@
   },
   "projects": {
     "title": "NERON projects",
-    "skills": "Sped up by: {{list}}",
+    "skills": "Sped up by:",
     "names": {
       "PATROL_SHIP_LAUNCHER": "Takeoff thruster",
       "PATROLSHIP_BLASTER_GUN": "Blaster gun",

@@ -56,6 +56,14 @@ export interface ResearchRequirement {
   postSelection?: true;
 }
 
+/** One of a research's requirements: an item type, Chun, or the Mush having been chosen. */
+export type ResearchNeed = { item: string } | "chun" | "postSelection";
+
+/** A research's requirements one by one, in the order the terminal lists them and `PlayerView.researchNeeds` reports them. */
+export function researchNeedOrder(needs: Readonly<ResearchRequirement>): ResearchNeed[] {
+  return [...(needs.items ?? []).map((item) => ({ item })), ...(needs.chun ? ["chun" as const] : []), ...(needs.postSelection ? ["postSelection" as const] : [])];
+}
+
 export const RESEARCH_REQUIRES: Readonly<Partial<Record<ResearchId, ResearchRequirement>>> = {
   MYCOSCAN: { chun: true },
   PATULINE_SCRAMBLER: { postSelection: true },

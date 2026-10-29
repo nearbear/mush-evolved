@@ -7,6 +7,7 @@
 import { Dialog } from "@base-ui/react/dialog";
 import { useState } from "react";
 import {
+  hasSkill,
   PILGRED_COMPLETE,
   PROJECT_COMPLETE,
   PROJECT_IDS,
@@ -16,6 +17,8 @@ import {
   ANY_CONSUMABLE,
   RESEARCH_IDS,
   RESEARCH_REQUIRES,
+  type ResearchNeed,
+  researchNeedOrder,
   researchStatus,
   type ResearchId,
   type Action,
@@ -24,7 +27,7 @@ import {
   type PlayerView,
 } from "@mush2/shared";
 import { useTranslation } from "react-i18next";
-import { PILGRED_CARD, PROJECT_CARDS, RESEARCH_CARDS } from "../art/assets.ts";
+import { CHECK_ICON, PILGRED_CARD, PROJECT_CARDS, RESEARCH_CARDS, UNCHECK_ICON } from "../art/assets.ts";
 import { useNames } from "../i18n/names.ts";
 import { ActionLabel } from "./ActionLabel.tsx";
 import { ActionButton } from "./ActionButton.tsx";
@@ -89,10 +92,10 @@ function ResearchList({ terminal, view, onAction }: ListProps) {
       needs={(id) => {
         const req = RESEARCH_REQUIRES[id as ResearchId];
         if (!req) return null;
-        const parts = (req.items ?? []).map((type) => (type === ANY_CONSUMABLE ? t("research.anyConsumable") : names.item(type)));
-        if (req.chun) parts.push(t("research.needChun"));
-        if (req.postSelection) parts.push(t("research.needPostSelection"));
-        return t("research.needs", { list: parts.join(", ") });
+        const met = view.researchNeeds?.[id] ?? [];
+        const label = (need: ResearchNeed) =>
+          need === "chun" ? t("research.needChun") : need === "postSelection" ? t("research.needPostSelection") : need.item === ANY_CONSUMABLE ? t("research.anyConsumable") : names.item(need.item);
+        return { items: researchNeedOrder(req).map((need, i) => ({ label: label(need), met: met[i] ?? false })) };
       }}
       option={(id) => view.actions.find(({ action: a }) => a.type === "research" && a.equipment === terminal.id && a.research === id)}
       view={view}
@@ -115,7 +118,8 @@ function ProjectList({ terminal, view, onAction }: ListProps) {
       status={projectStatus}
       needs={(id) => {
         const skills = PROJECTS.find((p) => p.id === id)?.skills ?? [];
-        return skills.length ? t("projects.skills", { list: skills.map(names.skill).join(", ") }) : null;
+        // Only the worker's own skills speed up their work (relay.ts), so yours are the ones checked.
+        return skills.length ? { heading: t("projects.skills"), items: skills.map((skill) => ({ label: names.skill(skill), met: hasSkill(view.you, skill) })) } : null;
       }}
       option={(id) => view.actions.find(({ action: a }) => a.type === "project" && a.equipment === terminal.id && a.project === id)}
       view={view}
@@ -188,6 +192,12 @@ function ReturnToSol({ terminal, view, onAction }: ListProps) {
   );
 }
 
+interface Checklist {
+  /** Text before the boxes; research has none, since every row's checklist is its needs. */
+  heading?: string;
+  items: { label: string; met: boolean }[];
+}
+
 interface ProgressListProps {
   label: string;
   ids: readonly string[];
@@ -197,8 +207,8 @@ interface ProgressListProps {
   name: (id: string) => string;
   status: (id: string) => "full" | "partial" | "none";
   /** The view's offer to work on this entry, if any. */
-  /** Static text under an item: for research what must be in the lab before it can be worked on, for projects the skills that speed it up (the button itself comes from `view.actions`). */
-  needs?: (id: string) => string | null;
+  /** A checklist under an item: for research what must be in the lab before it can be worked on, for projects the skills that speed it up (the button itself comes from `view.actions`). */
+  needs?: (id: string) => Checklist | null;
   option: (id: string) => ActionOption | undefined;
   view: PlayerView;
   onAction: (action: Action) => void;
@@ -214,21 +224,38 @@ function ProgressList({ label, ids, progress, complete, cards, name, status, nee
         const option = optionFor(id);
         const card = cards[id.toLowerCase()];
         const needed = percent < complete ? needs?.(id) : null;
+        const state = status(id);
         return (
           <li key={id} className="research-item">
             {card && <img className="research-card" src={card} alt="" />}
-            <div className="research-body">
+            <div className="research-title">
               <strong>{name(id)}</strong>
-              <span className={`skill-status skill-status-${status(id)}`}>{t(`research.status.${status(id)}`)}</span>
-              <progress max={complete} value={percent} />
-              <span>{percent >= complete ? t("research.done") : t("research.progress", { percent })}</span>
-              {needed && <span className="research-needs">{needed}</span>}
+              <span className={`skill-status skill-status-${state}`}>{t(`research.status.${state}`)}</span>
             </div>
-            {option && (
-              <ActionButton view={view} option={option} onAction={onAction}>
-                <ActionLabel text={t("research.work")} cost={option.cost} chance={option.chance} />
-              </ActionButton>
-            )}
+            <div className="research-body">
+              <div className="research-progress">
+                <progress max={complete} value={percent} />
+                <span>{t("research.percent", { percent })}</span>
+                {option && (
+                  <ActionButton view={view} option={option} onAction={onAction}>
+                    <ActionLabel text={t("research.work")} cost={option.cost} chance={option.chance} />
+                  </ActionButton>
+                )}
+              </div>
+              {needed && (
+                <div className="research-needs">
+                  {needed.heading && <span>{needed.heading}</span>}
+                  <ul>
+                    {needed.items.map(({ label, met }) => (
+                      <li key={label} className={met ? "research-need-met" : undefined}>
+                        <img src={met ? CHECK_ICON : UNCHECK_ICON} alt={met ? t("research.met") : t("research.unmet")} />
+                        {label}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
           </li>
         );
       })}

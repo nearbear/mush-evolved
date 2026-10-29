@@ -10,6 +10,8 @@ import { applyCheats, makeHuman, type ActopiCheat, type Cheat, type RoleCheat } 
 import { ACTIONS, type ActionDef } from "./actions.ts";
 import { AT_CAPACITY, COOLDOWN, NO_SPACE } from "./actions/action.ts";
 import { getUp } from "./actions/lie_down.ts";
+import { researchNeedsView } from "./actions/research.ts";
+import { equipmentHere } from "./equipment.ts";
 import { itemsIn, rechargeMicrowaves, startCharges, visibleItemsIn } from "./items.ts";
 import { actionFailed, apGain, carePointsGain, channelLimit, computerPointsCap, computerPointsGain, shootPointsGain, cycleChanged, designerPointsGain, gardenPointsGain, dailyMoraleLoss, inventorySlots, movementRules, pilgredPointsGain, satietyLoss } from "./modifiers.ts";
 import { contaminationSeenBy, convert } from "./infection.ts";
@@ -498,6 +500,7 @@ export function viewFor(state: GameState, playerId: PlayerId): PlayerView {
       turrets: you.alive && turretsHere(state, you).length > 0 ? Object.fromEntries(allTurrets(state).map((t) => [t.id, turretCharges(state, t.id)])) : null,
     },
     research: { ...state.research },
+    researchNeeds: you.alive && equipmentHere(state, you, "RESEARCH_LAB").length > 0 ? researchNeedsView(state, you.room) : null,
     projects: { ...state.projects },
     // Only at the PILGRED terminal: the living in a room that has one (owner, 2026-10-21).
     pilgred: you.alive && pilgredTerminalsHere(state, you).length > 0 ? state.pilgred.progress : null,

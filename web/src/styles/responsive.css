@@ -304,6 +304,12 @@
 
 /* Phone inspect: the target (portrait or item) on the left in a 16:9 box, the actions on the right. */
 @media (max-width: 1023.98px) {
+  /* A terminal's research or project row: the title and pill take the full width above the card (settings.css). */
+  li.research-item {
+    grid-template-areas:
+      "title title"
+      "card body";
+  }
   .inspect-body {
     display: flex;
     gap: 0.75rem;
