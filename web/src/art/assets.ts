@@ -136,7 +136,7 @@ const itemIcons = urls(
 export const ITEM_ICONS: Readonly<Record<string, string>> = itemIcons;
 
 /** Item types whose icon file has a different name. ration_0 is the plain unopened box; ration_1 is the cooked one; ration_7 is a cup of coffee. */
-const ICON_FILE: Readonly<Record<string, string>> = { uncooked_ration: "ration_0", coffee: "ration_7" };
+const ICON_FILE: Readonly<Record<string, string>> = { uncooked_ration: "ration_0", coffee: "ration_7", oscilloscope: "wavoscope" };
 
 /** Icon for an item type. Item type ids are named after their icon files unless ICON_FILE says otherwise; undefined if there's none. */
 export function itemIcon(type: string): string | undefined {
@@ -156,7 +156,7 @@ export function itemViewIcon(item: Pick<ItemView, "type" | "plant">): string | u
 export const EMPTY_SLOT_ICON = itemIcons["empty"]!;
 
 const design = urls(
-  import.meta.glob<string>("../../../Mush/www/img/design/{pa1,pa2,lifebar,lifebar2}.png", { eager: true, query: "?url", import: "default" }),
+  import.meta.glob<string>("../../../Mush/www/img/design/{pa1,pa2,lifebar,lifebar2,bdd,bdd_off}.png", { eager: true, query: "?url", import: "default" }),
 );
 
 /** Research cards, keyed by the lowercase research id (the file name). */
@@ -225,6 +225,9 @@ export const MP_PIP = design["pa2"]!;
 /** 3x5 pips from the original site: green for health, yellow-brown for morale. */
 export const HP_PIP = design["lifebar"]!;
 export const MORALE_PIP = design["lifebar2"]!;
+/** 36x28 Xyloph database cells: deciphered, and not yet deciphered. */
+export const XYLOPH_DONE = design["bdd"]!;
+export const XYLOPH_TODO = design["bdd_off"]!;
 /** 11x13 heart and face icons, for the HP and morale chips (the 3x5 bar pips are too small to read alone). */
 const statIcons = urls(
   import.meta.glob<string>("../../../Mush/www/img/icons/ui/{lp,moral}.png", { eager: true, query: "?url", import: "default" }),

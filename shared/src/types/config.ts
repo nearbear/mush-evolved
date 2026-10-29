@@ -403,6 +403,8 @@ export interface GameConfig {
   spaceCapsule: { cost: { ap: number }; contents: string[] };
   // Hull repair (owner, 2026-10-24, the wiki's Armure et Bouclier): 1 AP, 25%, +5 hull, a metal scrap used up on a success.
   hullRepair: { cost: { ap: number }; chance: number; amount: number };
+  // Owner, 2026-10-28: carrying the oscilloscope (eMush's Wavoscope) multiplies the odds of a hull repair and a patrol-ship renovation.
+  oscilloscope: { repairFactor: number };
   hunger: {
     satietyPerCycle: number; // Satiety a human loses each cycle, before modifiers (confirmed 2026-10-14).
     fullBellyAt: number; // Satiety at which a human has the full belly status and can't eat (confirmed 2026-10-14).

@@ -237,6 +237,7 @@ export const DEFAULT_CONFIG: GameConfig = {
   // Owner, 2026-10-24 (patrol plan, answer 6): 1 AP to open, 25% each.
   spaceCapsule: { cost: { ap: 1 }, contents: ["metal_scraps", "plastic_scraps", "oxy_capsule", "fuel_capsule"] },
   hullRepair: { cost: { ap: 1 }, chance: 0.25, amount: 5 },
+  oscilloscope: { repairFactor: 2 },
   hunger: { satietyPerCycle: 1, fullBellyAt: 3, hungryAfterCycles: 24, hpPerCycle: 1 },
   // Confirmed 2026-10-13: dismantle cost and odds.
   dismantle: { cost: { ap: 3 }, successChance: 0.12, dirtyChance: 0.25, injuryChance: 0.05, itemChance: { knife: 0.5, blaster: 0.5 } },
@@ -298,6 +299,8 @@ export const DEFAULT_CONFIG: GameConfig = {
     { type: "blueprint", builds: "MISSILE_LAUNCHER", room: "CORRIDOR_A" },
     { type: "thick_tube", room: "CORRIDOR_A" },
     { type: "metal_scraps", room: "CORRIDOR_A" },
+    // Owner, 2026-10-28: the oscilloscope spawns in Alpha Bay 2 at the start (SPACESHIP_BAY_AA).
+    { type: "oscilloscope", room: "SPACESHIP_BAY_AA" },
     // Confirmed 2026-10-14: the soap always spawns in the Alpha dorm (for now).
     { type: "soap", room: "BEDROOM_A" },
     { type: "freezer", room: "REFECTORY" },

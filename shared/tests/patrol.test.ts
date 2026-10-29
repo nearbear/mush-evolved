@@ -612,6 +612,23 @@ describe("renovating a ship", () => {
     expect(option(s, "p1", renovate())!.chance).toBeCloseTo(s.config.patrol.renovate.chance * s.config.patrol.renovate.engineerFactor);
   });
 
+  it("carrying the oscilloscope doubles the odds of renovating and of a hull repair; lying in the room it does nothing", () => {
+    expect(DEFAULT_CONFIG.oscilloscope.repairFactor).toBe(2);
+    const s = damaged();
+    s.ship.hull = s.config.ship.hull.max - 1;
+    const hull: Action = { type: "repair_hull", item: "scrap" };
+    const base = [s.config.patrol.renovate.chance, s.config.hullRepair.chance];
+    s.items.push({ id: "osc", type: "oscilloscope", at: { kind: "room", id: BAY } });
+    expect([option(s, "p1", renovate())!.chance, option(s, "p1", hull)!.chance]).toEqual(base);
+    s.items.find((i) => i.id === "osc")!.at = { kind: "player", id: "p1" };
+    expect([option(s, "p1", renovate())!.chance, option(s, "p1", hull)!.chance]).toEqual(base.map((c) => c * 2));
+  });
+
+  it("the oscilloscope starts in Alpha Bay 2", () => {
+    expect(DEFAULT_CONFIG.startItems).toContainEqual({ type: "oscilloscope", room: "SPACESHIP_BAY_AA" });
+    expect(createGame(makeSeats(3), DEFAULT_CONFIG, 1).items.filter((i) => i.type === "oscilloscope")).toMatchObject([{ at: { kind: "room", id: "SPACESHIP_BAY_AA" } }]);
+  });
+
   it("isn't offered for a ship at full armor, out, in another bay, or without a scrap; refusing leaves the state as it was", () => {
     const full = ship();
     full.items.push({ id: "scrap", type: "metal_scraps", at: { kind: "player", id: "p1" } });

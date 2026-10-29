@@ -116,6 +116,9 @@ export const ITEM_TYPES: Record<string, ItemType> = {
   // Decided 2026-10-16: a dead player's body (death.ts). Takes one slot like any item; heavy.
   [CORPSE_ITEM]: { heavy: true },
 
+  // Owner, 2026-10-28: eMush's Wavoscope. Carried, it doubles the odds of hull repair and renovation (modifiers.ts, actionSuccessRate); heavy.
+  // Icon wavoscope (web/src/art/assets.ts).
+  oscilloscope: { heavy: true, dismantle: { metal: 2, plastic: 0 } },
   apron: {},
   protection_gloves: {},
   // Owner, 2026-10-21: a skill book (the original's Apprentron) carries its skill in `ItemState.teaches`; destroyed by reading.

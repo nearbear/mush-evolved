@@ -197,6 +197,10 @@ export function actionSuccessRate(base: number, ctx: CostContext, registry: Modi
     const hook = registry[id]?.actionSucessRate;
     if (hook) chance = hook(chance, ctx);
   }
+  // Carrying the oscilloscope multiplies the odds of the repairing actions (owner, 2026-10-28). Once however many are carried.
+  if ((ctx.action.type === "repair_hull" || ctx.action.type === "renovate") && ctx.state.items.some((i) => i.type === "oscilloscope" && i.at.kind === "player" && i.at.id === ctx.actor.id)) {
+    chance *= ctx.state.config.oscilloscope.repairFactor;
+  }
   // Hooks can't make a price negative. A move's MP is a net change and can already be negative (a conversion
   // gives more than the move spends), so the floor is 0 or the base, whichever is lower.
   // An Outcast (anathema.ts) loses a fifth of their chance on every action that rolls one (owner, 2026-10-24).
