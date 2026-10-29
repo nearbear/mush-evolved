@@ -3,7 +3,7 @@ import { DEFAULT_CONFIG } from "../src/config.ts";
 import { turned } from "../src/navigation.ts";
 import { planetPicture } from "../src/planets.ts";
 import { parseGameMessage } from "../src/protocol.ts";
-import { applyAction, createGame, viewFor } from "../src/rules.ts";
+import { applyAction, createGame, setCheat, viewFor } from "../src/rules.ts";
 import type { Action, GameState, Planet } from "../src/types.ts";
 import { makeSeats, must, offered, option, player } from "./support.ts";
 
@@ -138,5 +138,42 @@ describe("ship navigation", () => {
     for (const action of [turn("left"), travel, leave]) expect(parseGameMessage(JSON.stringify({ type: "action", action }))).toEqual({ type: "action", action });
     expect(parseGameMessage(JSON.stringify({ type: "action", action: { type: "turn_ship", equipment: TERMINAL, side: "up" } }))).toBeNull();
     expect(parseGameMessage(JSON.stringify({ type: "action", action: { type: "travel" } }))).toBeNull();
+  });
+});
+
+describe("warp to planet cheat", () => {
+  const ASTRO = "COMMAND_CENTER:ASTRO_MODULE";
+  const warp = (planet: string): Action => ({ type: "warp_to_planet", equipment: ASTRO, planet });
+  /** p0 (the only human) with the cheat on and a planet of their own south at 2; p1 and p2 keep theirs. */
+  const cheating = (loaded = 3) => {
+    const s = must(setCheat(game(loaded), "p0", "warpToPlanet", true));
+    s.planets.p0 = [planet("planet-c", "south", 2)];
+    return s;
+  };
+
+  it("is only offered with the cheat on, to humans, at the Astro terminal, for your own planets, out of orbit", () => {
+    const off = game();
+    off.planets.p0 = [planet("planet-c", "south", 2)];
+    expect(offered(off, "p0").some((a) => a.type === "warp_to_planet")).toBe(false);
+    const s = cheating();
+    expect(offered(s, "p0").filter((a) => a.type === "warp_to_planet")).toEqual([warp("planet-c")]);
+    expect(applyAction(s, "p0", warp("planet-a"))).toMatchObject({ ok: false });
+    const bot = must(setCheat(s, "p1", "warpToPlanet", true));
+    expect(offered(bot, "p1").some((a) => a.type === "warp_to_planet")).toBe(false);
+    player(s, "p0").room = "CORRIDOR_A";
+    expect(offered(s, "p0").some((a) => a.type === "warp_to_planet")).toBe(false);
+  });
+
+  it("turns the ship to the planet and puts it in orbit at once, free and without fuel, as a travel would", () => {
+    const s = cheating(0);
+    const before = player(s, "p0").ap;
+    const next = must(applyAction(s, "p0", warp("planet-c")));
+    expect(next.navigation).toEqual({ heading: "south", orbit: "planet-c" });
+    expect(next.ship.combustion).toBe(0);
+    expect(player(next, "p0").ap).toBe(before);
+    expect(next.planets).toMatchObject({ p0: [{ id: "planet-c" }], p1: [], p2: [] });
+    expect(viewFor(next, "p2").navigation).toMatchObject({ orbiting: true, orbitPicture: planetPicture({ name: "Name-planet-c" }) });
+    expect(next.log.at(-1)).toMatchObject({ key: "orbitingPlanet", visibleTo: ["p0"] });
+    expect(offered(next, "p0").some((a) => a.type === "warp_to_planet")).toBe(false);
   });
 });

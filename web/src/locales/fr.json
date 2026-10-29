@@ -81,6 +81,7 @@
       "selfDisease": "Self Disease",
       "anySkill": "Choisir n'importe quelle compétence",
       "alwaysClean": "Toujours propre",
+      "warpToPlanet": "Saut vers une planète",
       "role": {
         "mush": "Devenir Mush",
         "human": "Devenir humain"
@@ -294,6 +295,7 @@
     "pickSkill": "Choisir une compétence",
     "selfDisease": "S'infliger la maladie",
     "selfInjury": "S'infliger une blessure",
+    "warpToPlanet": "Sauter vers une planète",
     "visibility": {
       "private": "Privée",
       "secret": "Secrète",
@@ -1239,6 +1241,7 @@
     "scan": "Scanner",
     "analyze": "Analyser",
     "delete": "Supprimer {{planet}}",
+    "warp": "Sauter vers {{planet}}",
     "position": "{{direction}}, à {{distance}} unités de carburant",
     "directions": {
       "north": "Nord",

@@ -28,6 +28,8 @@ export function PlanetList({ view, onAction, terminal }: Props) {
         {view.planets.map((planet) => {
           const analyze = terminal && view.actions.find(({ action: a }) => a.type === "analyze_planet" && a.equipment === terminal.id && a.planet === planet.id);
           const remove = terminal && view.actions.find(({ action: a }) => a.type === "delete_planet" && a.equipment === terminal.id && a.planet === planet.id);
+          // Development cheat (warpToPlanet): only offered while it is on.
+          const warp = terminal && view.actions.find(({ action: a }) => a.type === "warp_to_planet" && a.equipment === terminal.id && a.planet === planet.id);
           return (
             <li key={planet.id} className="planet-item">
               <img className="planet-picture" src={PLANET_IMAGES[planetPicture(planet)]} alt="" />
@@ -48,6 +50,11 @@ export function PlanetList({ view, onAction, terminal }: Props) {
               {analyze && (
                 <ActionButton view={view} option={analyze} onAction={onAction}>
                   <ActionLabel text={t("astro.analyze")} cost={analyze.cost} chance={analyze.chance} />
+                </ActionButton>
+              )}
+              {warp && (
+                <ActionButton view={view} option={warp} onAction={onAction}>
+                  {t("astro.warp", { planet: planet.name })}
                 </ActionButton>
               )}
               {remove && <IconButton src={BIN_ICON} label={t("astro.delete", { planet: planet.name })} onClick={() => onAction(remove.action)} />}

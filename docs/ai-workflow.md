@@ -1575,3 +1575,8 @@ Owner asked for "the oscilloscope" (renamed from Wavoscope) spawned in AB2 at ev
 - Placed `Mush/www/img/icons/astro/planet_0..4.png` (268x191, the large versions of the Astro terminal's `planet_N_small`) in the sky behind the ship, pinned to the room panel's bottom-right, only while the ship is in orbit. Pixi draws it as a sprite between the star layers and the world; the DOM renderer as an `.iso-planet` img. Not moved by the camera, never scaled.
 - Visibility (owner): everyone sees it. The public `navigation` view gained `orbitPicture` (0-4, cosmetic) only; name, sectors and owner stay private.
 - Correction during the work: the picture was first hashed from the planet id, but ids (`planet-N`) count the ship's scans, so a public picture index would hint at that count. `planetPicture` now hashes the random name instead (the finder's list uses the same function, so their thumbnail and the sky planet match).
+
+## 2026-10-28: Warp-to-planet cheat
+
+- New toggle cheat `warpToPlanet` and action `warp_to_planet` (Astro terminal, one per own planet, "Warp to <planet>" in the planet list). Free, untimed, unrecorded, humans only (like Self Disease), refused by the server without `ALLOW_CHEATS`. Not offered while in orbit.
+- Claude's choices for the cheat (not rules): it turns the ship to face the planet and then does exactly what a travel does on arrival, through a `jump` helper factored out of `travel.ts` (other planets lost, hunters follow, ships in flight lost, the same log lines), only skipping fuel, AP and the Commander check.

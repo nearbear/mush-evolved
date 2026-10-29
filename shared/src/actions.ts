@@ -23,6 +23,7 @@ import { ContactXylophAction } from "./actions/contact_xyloph.ts";
 import { UpdateNeronAction } from "./actions/update_neron.ts";
 import { SetBiosAction } from "./actions/set_bios.ts";
 import { ScanPlanetAction } from "./actions/scan_planet.ts";
+import { WarpToPlanetAction } from "./actions/warp_to_planet.ts";
 import { PatrolAttackAction } from "./actions/patrol_attack.ts";
 import { TurretAttackAction } from "./actions/turret_attack.ts";
 import { RepairHullAction } from "./actions/repair_hull.ts";
@@ -184,6 +185,7 @@ const REGISTRY = {
   read_book: new ReadBookAction(),
   self_disease: new SelfDiseaseAction(),
   self_injury: new SelfInjuryAction(),
+  warp_to_planet: new WarpToPlanetAction(),
 };
 
 /** Every action a player can send: each class's own data shape (`XyzActionData` in its file), so a new action needs only its entry above. */

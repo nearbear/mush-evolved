@@ -3,7 +3,7 @@ import { huntersFollow, loseShipsInFlight } from "../hunters.ts";
 import { logPrivate, logPublic } from "../log.ts";
 import { canSteer, planetAt } from "../navigation.ts";
 import { commandTerminalsHere } from "../pilgred.ts";
-import type { GameState, PlayerState } from "../types.ts";
+import type { GameState, PlayerState, Planet } from "../types.ts";
 import { shipMoved } from "../modifiers.ts";
 
 export type TravelActionData = { type: "travel"; equipment: string };
@@ -46,18 +46,27 @@ export class TravelAction extends Action<TravelActionData> {
       return;
     }
     state.ship.combustion = 0;
-    shipMoved(state);
-    huntersFollow(state);
-    const found = planetAt(state, state.navigation.heading, distance);
-    for (const owner of Object.keys(state.planets)) {
-      state.planets[owner] = owner === found?.[0] ? [found[1]] : [];
-    }
-    logPublic(state, undefined, "shipTraveled", { name: player.character });
-    loseShipsInFlight(state);
-    if (!found) return;
-    const [owner, planet] = found;
-    state.navigation.orbit = planet.id;
-    logPublic(state, undefined, "shipInOrbit");
-    logPrivate(state, owner, "orbitingPlanet", { planet: planet.name });
+    jump(state, player, distance);
   }
+}
+
+/**
+ * The ship goes `distance` the way it faces, with everything a jump does (above) but the fuel: the warp cheat
+ * (warp_to_planet.ts) jumps the same way. Returns the planet it now orbits, if any.
+ */
+export function jump(state: GameState, player: Readonly<PlayerState>, distance: number): Planet | null {
+  shipMoved(state);
+  huntersFollow(state);
+  const found = planetAt(state, state.navigation.heading, distance);
+  for (const owner of Object.keys(state.planets)) {
+    state.planets[owner] = owner === found?.[0] ? [found[1]] : [];
+  }
+  logPublic(state, undefined, "shipTraveled", { name: player.character });
+  loseShipsInFlight(state);
+  if (!found) return null;
+  const [owner, planet] = found;
+  state.navigation.orbit = planet.id;
+  logPublic(state, undefined, "shipInOrbit");
+  logPrivate(state, owner, "orbitingPlanet", { planet: planet.name });
+  return planet;
 }
