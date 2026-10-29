@@ -12,6 +12,7 @@ import { FEATURE_CHANNELS, ITRACKIE_ITEM, GRAVEYARD_CHANNEL, MUSH_CHANNEL, type 
 import { useAnnouncements } from "./useAnnouncements.ts";
 import { FeatureSelect } from "./FeatureSelect.tsx";
 import { IconTab } from "./IconButton.tsx";
+import { TabOutline } from "./TabOutline.tsx";
 import { CycleDivider } from "./CycleDivider.tsx";
 import { FeedEntry, InfoMarker, WarningMarker } from "./FeedEntry.tsx";
 import { PrivateChannels, type ChannelHandlers } from "./PrivateChannels.tsx";
@@ -249,6 +250,7 @@ export function ITrackie({
             <PrivateChannels view={view} onChat={onChat} onToggle={onToggle} {...channels} />
           </Tabs.Panel>
         </div>
+        <TabOutline />
       </Tabs.Root>
     </div>
   );

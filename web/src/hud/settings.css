@@ -13,12 +13,13 @@
 .settings-popup {
   position: fixed;
   z-index: 21;
-  top: 50%;
+  /* Every modal spans the full height, less a 1rem margin top and bottom. */
+  top: 1rem;
   left: 50%;
-  transform: translate(-50%, -50%);
+  transform: translateX(-50%);
   box-sizing: border-box;
   width: min(28rem, calc(100vw - 2rem));
-  max-height: calc(100dvh - 2rem);
+  height: calc(100dvh - 2rem);
   overflow-y: auto;
   display: flex;
   flex-direction: column;
@@ -255,9 +256,8 @@ li.research-item .research-body {
   height: 24px;
 }
 
-/* Settings tabs: General / Cheats. Tabs replace the global button background, so this is a plain underline style. */
 /* The asset attribution, under the header and above the tabs (see Credits.tsx). */
-/* Cancels the 1rem flex gap: the tabs are 2.5rem tall with centered labels, which already leaves enough space. */
+/* Cancels the 1rem flex gap: the tabs are 39px tall with their labels low, which already leaves enough space. */
 .settings-credits {
   margin: 0 0 -1rem;
   font-size: 0.75rem;
@@ -272,28 +272,67 @@ li.research-item .research-body {
 }
 
 .settings-tab-list {
+  position: relative;
+  /* Keeps the tabs' z-indexes inside the list, so the sticky header still draws over them when the body scrolls. */
+  isolation: isolate;
   display: flex;
-  gap: 0.25rem;
-  border-bottom: 1px solid var(--edge);
+  gap: 2px;
+}
+/* The card's gold rule (edge, gold, edge) under the tabs; idle tabs run under it, the selected one covers it. */
+.settings-tab-list::after {
+  content: "";
+  position: absolute;
+  inset: auto 0 0;
+  z-index: 1;
+  height: 3px;
+  background: linear-gradient(var(--gold-edge) 1px, var(--gold-mid) 0 2px, var(--gold-edge) 0);
+  pointer-events: none;
 }
 
+/* kit.css's .kit-tab shape (39px, 13px cut top corners) in the iTrackie tab colours: blue when idle, the card's light cyan
+   with the gold outline when selected. Each state's look is a 9-slice SVG (tab-idle/hover/active.svg), painted by ::before.
+   The SVGs are geometry, not pixels: the outline's lines are each 1px thick square to their edge, so the cut corners
+   (anti-aliased) are as thick as the straight sides. The corner slices are 16px, enough to hold the deepest diagonal
+   (it reaches about 14.2px); the bottom has none, so the tab opens into the panel below. */
 .settings-tab {
-  min-height: 2.5rem;
-  margin: 0 0 -1px;
-  padding: 0 0.75rem;
-  color: inherit;
+  position: relative;
+  z-index: 0;
+  flex: none;
+  height: auto;
+  min-height: 39px;
+  margin: 0;
+  padding: 10px 16px 6px;
+  color: #c2f3fc;
   text-shadow: none;
   font: inherit;
   background: none;
   border: 0;
-  border-bottom: 2px solid transparent;
   white-space: nowrap;
   cursor: pointer;
 }
-
+.settings-tab::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  border-style: solid;
+  /* Transparent, so if the image hasn't loaded the plain border doesn't show in the text colour. */
+  border-color: transparent;
+  border-width: 16px 16px 0;
+  border-image: url("./tab-idle.svg") 16 16 0 16 fill stretch;
+}
+@media (hover: hover) {
+  .settings-tab:hover:not([data-active])::before {
+    border-image-source: url("./tab-hover.svg");
+  }
+}
 .settings-tab[data-active] {
-  border-bottom-color: var(--accent);
-  font-weight: bold;
+  z-index: 2;
+  color: #171b5c;
+}
+.settings-tab[data-active]::before {
+  border-image-source: url("./tab-active.svg");
 }
 
 .settings-panel {
@@ -322,5 +361,5 @@ li.research-item-blocked .research-progress {
 
 /* The terminal's Active / Blocked / Done tabs: tighter, so all three fit on one line at 360px. */
 .progress-tab-list .settings-tab {
-  padding: 0 0.375rem;
+  padding-inline: 12px;
 }

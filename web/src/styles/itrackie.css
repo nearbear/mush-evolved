@@ -19,7 +19,24 @@
   /* The selected tab is 3px taller and overlaps the card's rim, so it opens into the card. */
   margin-bottom: -3px;
 }
-/* The tab contents are a .cut-card (cut-card.css) filling the glowing panel under the tabs. */
+/* The tab contents are a .cut-card (cut-card.css) filling the glowing panel under the tabs. Its gold outline, and the
+   selected tab's, are one SVG path (TabOutline.tsx) over both, so the tab meets the rim flush at any zoom; the card's own
+   outline (the ::after lines and the corner gradients) is turned off. */
+.itrackie-card {
+  background: var(--terminal-bg);
+}
+.itrackie-card::after {
+  content: none;
+}
+.tab-outline {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
 .itrackie-card .feed > li {
   border-bottom-color: rgb(23 27 92 / 0.12);
 }
@@ -69,18 +86,10 @@
   text-shadow: none;
   cursor: pointer;
 }
-/* Selected: the kit's gold outline (edge, gold, edge) on the top and sides; the bottom is pushed out of the tab and clipped. */
+/* Selected: the card's light cyan, so the tab opens into the card. Its gold outline is part of the card's (TabOutline). */
 .itrackie-tab[aria-selected="true"] {
   z-index: 2;
   background: #c2f3fc;
-}
-.itrackie-tab[aria-selected="true"]::after {
-  content: "";
-  position: absolute;
-  inset: 0 0 -3px;
-  border-radius: inherit;
-  pointer-events: none;
-  box-shadow: inset 0 0 0 1px var(--gold-edge), inset 0 0 0 2px var(--gold-mid), inset 0 0 0 3px var(--gold-edge);
 }
 .itrackie-tab:hover:not([aria-selected="true"]) {
   background: #2c4698;
@@ -104,6 +113,7 @@
   font-size: 0.9rem;
 }
 .itrackie-tabs-root {
+  position: relative;
   flex: 1;
   display: flex;
   flex-direction: column;
