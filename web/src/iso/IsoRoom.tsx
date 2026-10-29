@@ -603,11 +603,11 @@ export function IsoRoom({
       return o.x || o.y ? { ...s, left: s.left + o.x, top: s.top + o.y } : s;
     });
     const hit = hitTest(shifted, x, y, opaque);
-    if (hit) {
-      const action = interaction(hit);
-      return action ? { sprite: hit, key: hit.key, ...action } : null;
-    }
+    const action = hit && interaction(hit);
+    if (hit && action) return { sprite: hit, key: hit.key, ...action };
     const behind = hitTest(neighborSprites, x, y, opaque);
+    // A neighbour's door on this room's front edges is drawn over this room's floor; plain floor yields to it (walls don't).
+    if (hit && !(behind?.door && ringOf.get(behind.room) === 1)) return null;
     // Only the rooms behind this room's own doors count as doors; the second ring is scenery.
     if (!behind || ringOf.get(behind.room) !== 1) return null;
     const to = behind.room as RoomId;
