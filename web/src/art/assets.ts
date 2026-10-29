@@ -397,3 +397,17 @@ export const TAB_ICONS = {
   room: uiIcons["awake"]!,
   expeditions: uiIcons["survival"]!,
 } as const;
+
+/** The space battle sprite sheet (640x715). Its slices are in `Mush/clients/iso/xml/tiles.xml` (`<sheet src="BmpGfxFx">`). */
+export const FX_SHEET = urls(
+  import.meta.glob<string>("../../../Mush/clients/iso/gfx/fx.png", { eager: true, query: "?url", import: "default" }),
+)["fx"]!;
+/** Each hunter kind's battle-view slice in `FX_SHEET` (x, y, w, h), from the `FX_SPC_*` slices in tiles.xml. Only the
+    plain hunter exists in the rules so far; the others are here for when their kinds do. */
+export const HUNTER_SPRITES = {
+  hunter: [378, 80, 48, 26],
+  trax: [480, 49, 66, 46],
+  spider: [547, 34, 76, 70],
+  asteroid: [373, 330, 81, 72],
+  dice: [492, 309, 84, 92],
+} as const satisfies Record<string, readonly [number, number, number, number]>;

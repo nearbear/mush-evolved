@@ -402,3 +402,24 @@ li.research-item-blocked .research-progress {
   display: block;
   image-rendering: pixelated;
 }
+
+/* The battle panel's hunters: their own scroll area (Base UI), so a big wave scrolls instead of growing the panel. */
+.hunter-scroll {
+  position: relative;
+  width: 100%;
+}
+.hunter-viewport {
+  max-height: min(22rem, 50vh);
+  overscroll-behavior: contain;
+  padding-right: 0.5rem;
+}
+.hunter-item {
+  align-items: center;
+  text-align: start;
+}
+/* A slice of the fx sheet at 1x: crisp pixels, never scaled. */
+.hunter-sprite {
+  flex: none;
+  background-repeat: no-repeat;
+  image-rendering: pixelated;
+}

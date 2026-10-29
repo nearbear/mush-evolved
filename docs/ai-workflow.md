@@ -1580,3 +1580,6 @@ Owner asked for "the oscilloscope" (renamed from Wavoscope) spawned in AB2 at ev
 
 - New toggle cheat `warpToPlanet` and action `warp_to_planet` (Astro terminal, one per own planet, "Warp to <planet>" in the planet list). Free, untimed, unrecorded, humans only (like Self Disease), refused by the server without `ALLOW_CHEATS`. Not offered while in orbit.
 - Claude's choices for the cheat (not rules): it turns the ship to face the planet and then does exactly what a travel does on arrival, through a `jump` helper factored out of `travel.ts` (other planets lost, hunters follow, ships in flight lost, the same log lines), only skipping fuel, AP and the Commander check.
+
+### 2026-10-28: Hunter sprites in the battle panel
+Placed the plain hunter's battle sprite (`FX_SPC_HUNTER`, 378,80,48,26 in `Mush/clients/iso/gfx/fx.png`, slices from `tiles.xml`) on each row of `HunterList`, cut with a CSS background offset at 1x; the rows now scroll in a Base UI scroll area. A visual check confirmed the slice is whole and transparent; `FX_SPC_SMALL_HUNTER` is not (its rect clips the flame and trail), so it was skipped. Trax, spider, asteroid and dice slices are in `HUNTER_SPRITES` but unused: the rules have only one hunter kind, and giving hunters kinds would be a rule change.
