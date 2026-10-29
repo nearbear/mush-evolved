@@ -34,8 +34,8 @@ const CLEAN = seedFor(false);
 const DIRTY = seedFor(true);
 
 describe("research", () => {
-  it("has a 25% chance to become dirty after working on research", () => {
-    expect(DEFAULT_CONFIG.research.dirtyChance).toBe(0.25);
+  it("has a 15% chance to become dirty after working on research", () => {
+    expect(DEFAULT_CONFIG.research.dirtyChance).toBe(0.15);
 
     const dirty = game();
     dirty.rng = DIRTY;

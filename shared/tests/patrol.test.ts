@@ -30,8 +30,8 @@ function ship(config: Partial<GameConfig> = {}): GameState {
 describe("patrol ship numbers", () => {
   it("are the owner's (eMush's)", () => {
     expect(DEFAULT_CONFIG.patrol).toEqual({
-      takeoff: { cost: { ap: 2 } },
-      land: { cost: { ap: 2 } },
+      takeoff: { cost: { ap: 2 }, injuryChance: 0.02, },
+      land: { cost: { ap: 2 }, injuryChance: 0.02, },
       armor: { patrol: 10, pasiphae: 12 },
       charges: 10,
       rechargePerCycle: 1,
@@ -39,10 +39,10 @@ describe("patrol ship numbers", () => {
       cleanChance: 0.2,
       rough: { hull: [2, 4], armor: 1, hp: [0, 2] },
       collect: { cost: { ap: 2 }, pieces: { patrol: [3, 1], pasiphae: [0, 1, 1, 1] }, armor: [2, 4], hp: { noneChance: 0.5, range: [2, 4] } },
-      renovate: { cost: { ap: 2 }, chance: 0.12, engineerFactor: 2 },
+      renovate: { cost: { ap: 2 }, chance: 0.12, dirtyChance: 0.25, injuryChance: 0.05, engineerFactor: 2 },
     });
     expect(DEFAULT_CONFIG.hunters.debris).toEqual({ count: [0, 2, 1], types: { metal_scraps: 2, space_capsule: 1, plastic_scraps: 1 } });
-    expect(DEFAULT_CONFIG.spaceCapsule).toEqual({ cost: { ap: 1 }, contents: ["metal_scraps", "plastic_scraps", "oxy_capsule", "fuel_capsule"] });
+    expect(DEFAULT_CONFIG.spaceCapsule).toEqual({ cost: { ap: 1 }, injuryChance: 0.01, dirtyChance: 0.25, contents: ["metal_scraps", "plastic_scraps", "oxy_capsule", "fuel_capsule"] });
   });
 
   it("eight ships, each a door-less room holding its command, start docked at full armor and charges (the Pasiphae has none)", () => {

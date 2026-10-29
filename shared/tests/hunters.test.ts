@@ -45,7 +45,7 @@ describe("hunter numbers", () => {
       debris: { count: [0, 2, 1], types: { metal_scraps: 2, space_capsule: 1, plastic_scraps: 1 } },
     });
     expect(turrets).toEqual({ cost: { ap: 1 }, chance: 0.3, failureMultiplier: 1.25, damage: [2, 4], charges: 4, rechargePerCycle: 1 });
-    expect(hullRepair).toEqual({ cost: { ap: 1 }, chance: 0.25, amount: 5 });
+    expect(hullRepair).toEqual({ cost: { ap: 1 }, chance: 0.25, injuryChance: 0.05, amount: 5 });
     expect(DEFAULT_CONFIG.ship.plasmaShield).toEqual({ start: 50, max: 100, absorbPercent: 33, projectAbsorbPercent: 67, regen: 5 });
   });
 
