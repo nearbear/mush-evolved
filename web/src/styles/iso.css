@@ -52,6 +52,13 @@
   left: 0;
   top: 0;
 }
+/* The orbited planet (DomScene), behind the ship at the panel's bottom-right; the Pixi renderer pins it the same way. */
+.iso-planet {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+}
 /* Effects, by what scene.ts says they mean (DomScene sets one fx-* class per sprite). The rooms behind
    the doors are dimmed per sprite, and dimmed rather than see-through, because their sprites interleave
    with this room's: see-through ones would show what they cover. */

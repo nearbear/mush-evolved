@@ -214,6 +214,8 @@ export interface Scene {
   outlines: readonly SceneOutline[];
   /** How fast the ship is going, which sets how fast the stars behind it stream past. */
   pace: ShipPace;
+  /** The planet the ship orbits (an image URL), drawn in the sky at the panel's bottom-right; null out of orbit. */
+  planet: string | null;
 }
 
 /** Per animation frame, between renders: where the camera puts the world, and how far each walker is from where the scene placed them. */
@@ -267,6 +269,8 @@ export interface SceneInput {
   looks?: ReadonlyMap<string, string>;
   /** The ship's pace (`shipPace`); cruising when not given. */
   pace?: ShipPace;
+  /** The orbited planet's picture (`Scene.planet`); none when not given. */
+  planet?: string | null;
 }
 
 /** The corpse an actor sprite draws, if it is one. */
@@ -403,5 +407,5 @@ export function describeScene(input: SceneInput): Scene {
     }
     sprites.push({ ...tile(), anim, role: "tile" });
   }
-  return { width: box.width, height: box.height, sprites, outlines, pace: input.pace ?? "cruising" };
+  return { width: box.width, height: box.height, sprites, outlines, pace: input.pace ?? "cruising", planet: input.planet ?? null };
 }

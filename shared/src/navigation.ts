@@ -2,7 +2,7 @@
 // one of the planets' four directions, the Commander turns it and sends it some distance that way, and arriving where a
 // known planet lies puts it in orbit. `GameState.navigation`; the actions are actions/turn_ship.ts, travel.ts and
 // leave_orbit.ts.
-import { PLANET_DIRECTIONS, type PlanetDirection } from "./planets.ts";
+import { PLANET_DIRECTIONS, planetPicture, type PlanetDirection } from "./planets.ts";
 import { hasTitleAccess } from "./titles.ts";
 import type { GameState, Planet, PlayerId, PlayerState } from "./types.ts";
 
@@ -27,4 +27,11 @@ export function planetAt(state: Readonly<GameState>, direction: PlanetDirection,
     if (planet) return [owner, planet];
   }
   return null;
+}
+
+/** The picture of the planet the ship orbits (public, cosmetic: `planetPicture`), or null out of orbit. */
+export function orbitPicture(state: Readonly<GameState>): number | null {
+  const id = state.navigation.orbit;
+  const planet = id === null ? undefined : Object.values(state.planets).flat().find((p) => p.id === id);
+  return planet ? planetPicture(planet) : null;
 }

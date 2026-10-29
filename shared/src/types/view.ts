@@ -207,9 +207,10 @@ export interface PlayerView {
   planets: PlanetView[];
   /**
    * Whether the ship is in orbit, public to everyone (the planet fills the portholes); which planet is only in its
-   * finder's `planets`. `heading` only while you are alive at a Command terminal (owner, 2026-10-22); otherwise null.
+   * finder's `planets`; `orbitPicture` is only which picture it is drawn with (`planetPicture`, cosmetic, owner 2026-10-28),
+   * so everyone sees the same planet out of the window. `heading` only while you are alive at a Command terminal (owner, 2026-10-22); otherwise null.
    */
-  navigation: { orbiting: boolean; heading: PlanetDirection | null };
+  navigation: { orbiting: boolean; orbitPicture: number | null; heading: PlanetDirection | null };
   /**
    * The patrol ship you are flying (its room id) with its armor and charges (null for the Pasiphae, which can't shoot),
    * while you are alive aboard (patrol.ts); otherwise null. `debris` is how many pieces float around the Daedalus, not

@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { DEFAULT_CONFIG } from "../src/config.ts";
 import { turned } from "../src/navigation.ts";
+import { planetPicture } from "../src/planets.ts";
 import { parseGameMessage } from "../src/protocol.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";
 import type { Action, GameState, Planet } from "../src/types.ts";
@@ -122,14 +123,15 @@ describe("ship navigation", () => {
     const s = must(applyAction(game(), "p0", travel));
     player(s, "p2").room = "CORRIDOR_A";
     const finder = viewFor(s, "p1");
-    expect(finder.navigation).toEqual({ orbiting: true, heading: "north" });
+    expect(finder.navigation).toEqual({ orbiting: true, orbitPicture: planetPicture({ name: "Name-planet-a" }), heading: "north" });
     expect(finder.planets).toMatchObject([{ id: "planet-a", orbited: true }]);
     const other = viewFor(s, "p2");
-    expect(other.navigation).toEqual({ orbiting: true, heading: null });
+    expect(other.navigation).toEqual({ orbiting: true, orbitPicture: planetPicture({ name: "Name-planet-a" }), heading: null });
     expect(JSON.stringify(other)).not.toContain("planet-a");
     expect(JSON.stringify(other)).not.toContain("Name-planet-a");
     expect(JSON.stringify(viewFor(s, "p0"))).not.toContain("Name-planet-a");
     expect(viewFor(game(), "p1").planets[0]!.orbited).toBeUndefined();
+    expect(viewFor(game(), "p1").navigation.orbitPicture).toBeNull();
   });
 
   it("parses the actions from the client and drops malformed ones", () => {

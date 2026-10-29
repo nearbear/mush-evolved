@@ -1,7 +1,7 @@
 // Your planets (private to you): name, sectors (revealed tag icons, the rest unknown) and a bin button to delete one.
 // Every button comes from view.actions.
 
-import type { Action, EquipmentView, PlanetView, PlayerView } from "@mush2/shared";
+import { planetPicture, type Action, type EquipmentView, type PlayerView } from "@mush2/shared";
 import { useTranslation } from "react-i18next";
 import { BIN_ICON, PLANET_IMAGES, planetTagIcon } from "../art/assets.ts";
 import { ActionButton } from "./ActionButton.tsx";
@@ -17,9 +17,6 @@ interface Props {
   terminal?: EquipmentView;
 }
 
-/** Cosmetic: the same planet always gets the same picture. */
-const pictureOf = (planet: PlanetView) => PLANET_IMAGES[[...planet.id].reduce((sum, c) => sum + c.charCodeAt(0), 0) % PLANET_IMAGES.length]!;
-
 export function PlanetList({ view, onAction, terminal }: Props) {
   const { t } = useTranslation();
   const scan = terminal && view.actions.find(({ action: a }) => a.type === "scan_planet" && a.equipment === terminal.id);
@@ -33,7 +30,7 @@ export function PlanetList({ view, onAction, terminal }: Props) {
           const remove = terminal && view.actions.find(({ action: a }) => a.type === "delete_planet" && a.equipment === terminal.id && a.planet === planet.id);
           return (
             <li key={planet.id} className="planet-item">
-              <img className="planet-picture" src={pictureOf(planet)} alt="" />
+              <img className="planet-picture" src={PLANET_IMAGES[planetPicture(planet)]} alt="" />
               <div className="planet-body">
                 <strong>{planet.name}</strong>
                 {planet.orbited && <span className="planet-orbited">{t("astro.orbited")}</span>}

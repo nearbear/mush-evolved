@@ -143,6 +143,15 @@ export function pickSeekSector(rng: RngState, planet: Readonly<Planet>): [index:
   return [unknown.find((i) => (r -= PLANET_TAGS[planet.sectors[i]!.tag].seek) < 0)!, next];
 }
 
+/** How many pictures a planet can be drawn with (the client's art); cosmetic. */
+export const PLANET_PICTURES = 5;
+
+/**
+ * Which picture a planet is drawn with: cosmetic, the same for a planet every time and for every player. From its random
+ * name, not its id: ids count the ship's scans, and the orbited planet's picture is public.
+ */
+export const planetPicture = (planet: { name: string }): number => [...planet.name].reduce((sum, c) => sum + c.charCodeAt(0), 0) % PLANET_PICTURES;
+
 /** A player's planets (empty if none). */
 export const planetsOf = (state: Readonly<GameState>, playerId: string): readonly Planet[] => state.planets[playerId] ?? [];
 

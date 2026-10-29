@@ -25,6 +25,7 @@ import { resolveTarget } from "./hud/targets.ts";
 import { TopBar } from "./hud/TopBar.tsx";
 import { gameSocket, type SeatTicket } from "./net.ts";
 import { shipPace, type Corpse, type Occupant } from "./iso/scene.ts";
+import { orbitImage } from "./art/assets.ts";
 import { LeavingIsoRoom } from "./iso/LeavingRoom.tsx";
 import { recentDoorMoves } from "./iso/doorMoves.ts";
 import { useShipLayout } from "./iso/shipLayout.ts";
@@ -243,6 +244,7 @@ export function GameScreen({ ticket, onLeave, waking = false }: { ticket: SeatTi
                 clockOffset={clockOffset}
                 pilgredRepaired={view.pilgredRepaired}
                 pace={shipPace(view.navigation)}
+                planet={orbitImage(view.navigation.orbitPicture)}
               />
             ) : (
               <section className="iso-room loading">{t("common.loadingShip")}</section>

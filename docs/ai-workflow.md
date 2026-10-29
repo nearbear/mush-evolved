@@ -1569,3 +1569,9 @@ At the user's request the settings window moved onto the same layout: title bar 
 ## 2026-10-28: Oscilloscope (eMush's Wavoscope)
 
 Owner asked for "the oscilloscope" (renamed from Wavoscope) spawned in AB2 at every game start. Claude read the original's effects (x2 on patrol and hull repair), found "AB2" meant `SPACESHIP_BAY_AA` (Alpha Bay 2), and asked three questions before coding: carried-only vs in the room (owner: carried by the actor), also double hull repair (yes), heavy and dismantle to 2 metal (yes, as eMush). Built as an inline carried-item check in `actionSuccessRate` (items are not modifiers here); the icon keeps the `wavoscope` file via `ICON_FILE`. Note: the `rule` skill's question step caught that the repair-hull x2 hook did not exist yet.
+
+## 2026-10-28: Orbited planet in the iso view
+
+- Placed `Mush/www/img/icons/astro/planet_0..4.png` (268x191, the large versions of the Astro terminal's `planet_N_small`) in the sky behind the ship, pinned to the room panel's bottom-right, only while the ship is in orbit. Pixi draws it as a sprite between the star layers and the world; the DOM renderer as an `.iso-planet` img. Not moved by the camera, never scaled.
+- Visibility (owner): everyone sees it. The public `navigation` view gained `orbitPicture` (0-4, cosmetic) only; name, sectors and owner stay private.
+- Correction during the work: the picture was first hashed from the planet id, but ids (`planet-N`) count the ship's scans, so a public picture index would hint at that count. `planetPicture` now hashes the random name instead (the finder's list uses the same function, so their thumbnail and the sky planet match).

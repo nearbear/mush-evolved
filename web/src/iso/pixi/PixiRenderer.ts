@@ -110,6 +110,9 @@ export class PixiRenderer {
   private readonly app = new Application();
   private sky: TilingSprite | null = null;
   private stars: TilingSprite | null = null;
+  /** The orbited planet, in the sky behind the ship at the panel's bottom-right; `planetUrl` is the one it should show. */
+  private readonly planet = new Sprite(Texture.EMPTY);
+  private planetUrl: string | null = null;
   /** Stream speed as a multiple of cruising (0 in orbit), easing toward `cruise`; `drift` is how far the stars have streamed, in seconds at cruising speed. */
   private speed = 0;
   private cruise = 0;
@@ -166,7 +169,8 @@ export class PixiRenderer {
     this.world.addChild(this.sprites, this.outlines);
     this.sky = new TilingSprite({ texture: sky(), width: this.app.screen.width, height: this.app.screen.height });
     this.stars = new TilingSprite({ texture: stars(), width: this.app.screen.width, height: this.app.screen.height });
-    this.app.stage.addChild(this.sky, this.stars, this.world);
+    this.planet.visible = false;
+    this.app.stage.addChild(this.sky, this.stars, this.planet, this.world);
     // The shaders are GLSL; on anything but WebGL the sprites are drawn without effects.
     if (this.app.renderer.type === RendererType.WEBGL) {
       const rim = this.color("--glow-rim");
@@ -191,6 +195,7 @@ export class PixiRenderer {
     if (this.app.renderer.width !== w || this.app.renderer.height !== h) this.app.renderer.resize(w, h);
     this.sky?.setSize(w, h);
     this.stars?.setSize(w, h);
+    this.placePlanet();
     this.renderNow();
   }
 
@@ -199,6 +204,7 @@ export class PixiRenderer {
     if (!this.ready) return;
     this.cruise = this.reducedMotion.matches ? 0 : PACE_SPEED[scene.pace];
     if (this.speed !== this.cruise) this.requestRender();
+    this.setPlanet(scene.planet);
     const seen = new Set<string>();
     const sprites = this.sync(scene.sprites, "", this.sprites, this.order, seen, (d, s) => this.paintSprite(d, s));
     const outlines = this.sync(scene.outlines, OUTLINE, this.outlines, this.outlineOrder, seen, (d, o) => this.paintOutline(d, o));
@@ -262,6 +268,38 @@ export class PixiRenderer {
     }
     // Drawn now, in the same frame as the DOM overlay above it, so badges and people stay together.
     this.renderNow();
+  }
+
+  /** Shows the orbited planet once its image is in, or hides it. */
+  private setPlanet(url: string | null) {
+    if (url === this.planetUrl) return;
+    this.planetUrl = url;
+    if (!url) {
+      this.planet.visible = false;
+      return;
+    }
+    this.loading++;
+    this.host.dataset.art = "loading";
+    void imageTexture(url, false)
+      .then(
+        (texture) => {
+          if (this.destroyed || this.planetUrl !== url) return;
+          this.planet.texture = texture;
+          this.planet.visible = true;
+          this.placePlanet();
+        },
+        (e: unknown) => console.error(`Pixi renderer: can't load ${url}`, e),
+      )
+      .finally(() => {
+        this.loading--;
+        this.requestRender();
+      });
+  }
+
+  /** Pinned to the panel's bottom-right corner, in whole pixels; it doesn't move with the camera. */
+  private placePlanet() {
+    const { width, height } = this.app.screen;
+    this.planet.position.set(Math.round(width - this.planet.texture.width), Math.round(height - this.planet.texture.height));
   }
 
   /** The layers follow the camera slower than the ship, and stream down-right at the ship's speed; both in whole pixels. */

@@ -14,6 +14,8 @@ export function DomScene({ scene, ref }: SceneRendererProps) {
   const espFilter = `iso-esp-${useId().replace(/[^\w-]/g, "")}`;
   return (
     <>
+      {/* The orbited planet, fixed to the panel's bottom-right behind the ship. */}
+      {scene.planet && <img className="iso-planet" src={scene.planet} alt="" />}
       <div ref={world} className="iso-world" style={{ width: scene.width, height: scene.height }}>
         <div className="iso-layer">
           {scene.sprites.map((s) =>

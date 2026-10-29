@@ -175,7 +175,7 @@ export const PILGRED_CARD: string = urls(
 )["pilgred"]!;
 
 const astroIcons = urls(
-  import.meta.glob<string>("../../../Mush/www/img/icons/astro/{tag_*,planet_?_small}.png", { eager: true, query: "?url", import: "default" }),
+  import.meta.glob<string>("../../../Mush/www/img/icons/astro/{tag_*,planet_?,planet_?_small}.png", { eager: true, query: "?url", import: "default" }),
 );
 
 /** A planet sector's tag icon, by tag id (`tag_unknown` for a sector not revealed yet). */
@@ -183,6 +183,9 @@ export const planetTagIcon = (tag: string | null): string => astroIcons[`tag_${(
 
 /** The five small planet pictures; which one a planet gets is cosmetic. */
 export const PLANET_IMAGES: readonly string[] = [0, 1, 2, 3, 4].map((n) => astroIcons[`planet_${n}_small`]!);
+
+/** The large picture of the planet the ship orbits (`navigation.orbitPicture`), seen from the ship; null out of orbit. */
+export const orbitImage = (picture: number | null): string | null => (picture === null ? null : (astroIcons[`planet_${picture}`] ?? null));
 
 const titleIcons = urls(
   import.meta.glob<string>("../../../Mush/www/img/icons/ui/title_0{1,2,3}.png", { eager: true, query: "?url", import: "default" }),

@@ -29,6 +29,7 @@ import { activitySeen, logPrivate } from "./log.ts";
 import { recordAction } from "./history.ts";
 import { ringMycoAlarms } from "./mycoalarm.ts";
 import { planetsOf } from "./planets.ts";
+import { orbitPicture } from "./navigation.ts";
 import { commandTerminalsHere, isPilgredRepaired, pilgredTerminalsHere } from "./pilgred.ts";
 import { biosTerminalsHere, newBios } from "./bios.ts";
 import { callNextRebel, commsCycle, commsTerminalView, comTerminalsHere, newComms } from "./comms.ts";
@@ -523,6 +524,7 @@ export function viewFor(state: GameState, playerId: PlayerId): PlayerView {
     patrolShip: patrolShipView(state, you),
     navigation: {
       orbiting: state.navigation.orbit !== null,
+      orbitPicture: orbitPicture(state),
       heading: you.alive && commandTerminalsHere(state, you).length > 0 ? state.navigation.heading : null,
     },
     titles: TITLE_IDS.map((id) => {

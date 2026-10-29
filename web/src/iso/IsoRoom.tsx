@@ -146,6 +146,7 @@ export function IsoRoom({
   onZoomStep,
   pilgredRepaired,
   pace,
+  planet,
 }: {
   layout: ShipLayout;
   room: RoomId;
@@ -195,6 +196,8 @@ export function IsoRoom({
   pilgredRepaired: boolean;
   /** How fast the ship is going: the stars behind it stream at that rate. */
   pace: ShipPace;
+  /** The planet the ship orbits, as an image URL (public), or null. */
+  planet: string | null;
 }) {
   const names = useNames();
   const { t } = useTranslation();
@@ -517,8 +520,9 @@ export function IsoRoom({
         ownCells,
         doors,
         pace,
+        planet,
       }),
-    [scene, box, walkersKey, walkersLook, doorsKey, seatsKey, occupants, nearby, corpses, equipmentByKey, reachable, selected, selectedDoor, hoverKey, ownCells, looks, pace],
+    [scene, box, walkersKey, walkersLook, doorsKey, seatsKey, occupants, nearby, corpses, equipmentByKey, reachable, selected, selectedDoor, hoverKey, ownCells, looks, pace, planet],
   );
   // Badges and bubbles go over the people in this room.
   const anchors = drawn.sprites.flatMap((s): Anchor[] => {
