@@ -11,8 +11,6 @@ declare global {
     MODEL_BASE_URL?: string;
     /** Development only: the model name the provider expects. */
     MODEL_NAME?: string;
-    /** Development only: the API key. Never committed. */
-    MODEL_API_KEY?: string;
     /** Development only: how many of a new game's bots are model bots (the rest are log parrots). Unset is none. */
     MODEL_BOTS?: string;
   }
@@ -91,7 +89,8 @@ export function playerModelCredentials(provider: ModelProvider, model: string, a
 }
 
 /** The development key, only where cheats are allowed. A deployment has no model credentials of its own. */
-export function devModelCredentials(env: Pick<Env, "ALLOW_CHEATS" | "MODEL_BASE_URL" | "MODEL_NAME" | "MODEL_API_KEY">): ModelCredentials | null {
+/** MODEL_API_KEY (development only, never committed) is not declared on Env: `wrangler types` generates it from .dev.vars when present. */
+export function devModelCredentials(env: Pick<Env, "ALLOW_CHEATS" | "MODEL_BASE_URL" | "MODEL_NAME"> & { MODEL_API_KEY?: string }): ModelCredentials | null {
   if (env.ALLOW_CHEATS !== "true" || !env.MODEL_BASE_URL || !env.MODEL_NAME || !env.MODEL_API_KEY) return null;
   return { baseUrl: env.MODEL_BASE_URL, model: env.MODEL_NAME, apiKey: env.MODEL_API_KEY };
 }
