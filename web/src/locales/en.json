@@ -1392,6 +1392,7 @@
     "xylophDesc": "The Daedalus's home port. What is left there…",
     "xylophLeft_one": "{{count}} entry left in the database.",
     "xylophLeft_other": "{{count}} entries left in the database.",
+    "overviewTitle": "Overview",
     "xylophDone": "Nothing left to find in Xyloph's database.",
     "neronTitle": "NERON update",
     "neronVersion": "NERON version {{version}}",

@@ -1403,6 +1403,7 @@
     "xylophLeft_one": "Queda {{count}} dato en la base.",
     "xylophLeft_many": "Quedan {{count}} datos en la base.",
     "xylophLeft_other": "Quedan {{count}} datos en la base.",
+    "overviewTitle": "Resumen",
     "xylophDone": "No queda nada por encontrar en la base de datos de Xyloph.",
     "neronTitle": "Actualización de NERON",
     "neronVersion": "NERON versión {{version}}",
