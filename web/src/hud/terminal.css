@@ -192,7 +192,9 @@
   grid-area: 2 / 2;
   align-self: end;
   justify-self: end;
-  /* Down past the header's and .terminal-top's bottom padding to the tab line. */
+  /* Down past the header's and .terminal-top's bottom padding to the tab line, and right past the side padding to the
+     gold outline (3px). */
+  margin-right: -1rem;
   margin-bottom: -1.5rem;
 }
 .terminal-top:has(+ .terminal-body > .settings-tabs) .terminal-icon {

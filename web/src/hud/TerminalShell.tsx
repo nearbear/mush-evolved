@@ -52,8 +52,9 @@ function TerminalLogin({ type, view }: { type: string; view: PlayerView }) {
   const limited = !!title && holder !== mine && !hacked;
   return (
     <pre className="terminal-login" aria-hidden="true">
+      {"> "}
       {t("terminal.login.user", { user })}
-      {"\n"}
+      {"\n> "}
       {t(hacked ? "terminal.login.hacked" : limited ? "terminal.login.limited" : "terminal.login.granted", { user })}
     </pre>
   );
