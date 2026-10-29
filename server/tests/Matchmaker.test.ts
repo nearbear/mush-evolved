@@ -1,4 +1,4 @@
-import { SEAT_COUNT, type MatchmakerServerMessage } from "@mush2/shared";
+import { PRESELECTION, type MatchmakerServerMessage } from "@mush2/shared";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { JoinResult } from "../src/GameRoom.ts";
 import { FakeConnection, FakeServer, FakeStorage } from "../src/testing/fakes.ts";
@@ -12,6 +12,8 @@ const ships = new Map<string, FakeShip>();
 /** Single-player games launched, by room id. */
 const solos = new Map<string, { name: string; character: string }>();
 const CLOSES_AT = Date.now() + 3_600_000;
+/** The fake ships' seat count. */
+const SEATS = 4;
 
 vi.mock("partyserver", () => ({
   Server: FakeServer,
@@ -19,11 +21,15 @@ vi.mock("partyserver", () => ({
     join: async (name: string, character: string): Promise<JoinResult> => {
       const ship = ships.get(roomId) ?? { crew: [], closed: false };
       ships.set(roomId, ship);
-      if (ship.closed || ship.crew.length >= SEAT_COUNT) return { ok: false, error: "ship_closed" };
+      if (ship.closed || ship.crew.length >= SEATS) return { ok: false, error: "ship_closed" };
       if (ship.crew.some((c) => c.character === character)) return { ok: false, error: "character_taken" };
       ship.crew.push({ name, character });
-      const full = ship.crew.length >= SEAT_COUNT;
-      return { ok: true, token: `${roomId}:${name}`, aboard: ship.crew.length, taken: ship.crew.map((c) => c.character), closesAt: full ? null : CLOSES_AT };
+      const full = ship.crew.length >= SEATS;
+      return { ok: true, token: `${roomId}:${name}`, aboard: ship.crew.length, seats: SEATS, taken: ship.crew.map((c) => c.character), closesAt: full ? null : CLOSES_AT };
+    },
+    status: async () => {
+      const ship = ships.get(roomId)!;
+      return { aboard: ship.crew.length, seats: SEATS, taken: ship.crew.map((c) => c.character), closesAt: CLOSES_AT };
     },
     setupSinglePlayer: async (name: string, character: string): Promise<string> => {
       if (solos.has(roomId) || ships.has(roomId)) throw new Error("Game already set up");
@@ -69,7 +75,7 @@ describe("Matchmaker joining", () => {
     const [a] = await board(1);
     const m = matched(a!)!;
     expect(ships.get(m.roomId)!.crew).toEqual([{ name: "P0", character: "chao" }]);
-    expect(msgs(a!).at(-1)).toEqual({ type: "queued", waiting: 1, seats: SEAT_COUNT, taken: [expect.any(String)] });
+    expect(msgs(a!).at(-1)).toEqual({ type: "queued", waiting: 1, seats: SEATS, taken: [expect.any(String)] });
     expect(storage.alarm).toBe(CLOSES_AT);
   });
 
@@ -77,16 +83,17 @@ describe("Matchmaker joining", () => {
     const watcher = connect();
     const [a, b] = await board(2);
     expect(matched(b!)!.roomId).toBe(matched(a!)!.roomId);
-    expect(msgs(watcher).at(-1)).toEqual({ type: "queued", waiting: 2, seats: SEAT_COUNT, taken: [expect.any(String), expect.any(String)] });
+    expect(msgs(watcher).at(-1)).toEqual({ type: "queued", waiting: 2, seats: SEATS, taken: [expect.any(String), expect.any(String)] });
   });
 
   it("starts a new ship once the open one is full", async () => {
-    const first = await board(SEAT_COUNT);
+    const first = await board(SEATS);
     const roomId = matched(first[0]!)!.roomId;
     expect(first.every((c) => matched(c)?.roomId === roomId)).toBe(true);
-    expect(msgs(first[0]!).at(-1)).toMatchObject({ waiting: 0 });
+    // No ship open: a new one launches with the standard seats.
+    expect(msgs(first[0]!).at(-1)).toMatchObject({ waiting: 0, seats: PRESELECTION.seats });
     expect(storage.alarm).toBeNull();
-    const [late] = await board(1, SEAT_COUNT);
+    const [late] = await board(1, SEATS);
     expect(matched(late!)!.roomId).not.toBe(roomId);
   });
 
@@ -126,6 +133,18 @@ describe("Matchmaker joining", () => {
     await mm.onStart();
     const [b] = await board(1, 1);
     expect(matched(b!)!.roomId).toBe(matched(a!)!.roomId);
+  });
+
+  it("asks a ship stored before `seats` existed for its seat count", async () => {
+    await board(1);
+    const { seats: _, ...old } = (await storage.get<{ seats: number }>("open"))!;
+    await storage.put("open", old);
+    mm = new Matchmaker({ storage } as never, { GameRoom: {} } as never);
+    await mm.onStart();
+    expect(await storage.get("open")).toMatchObject({ seats: SEATS });
+    const watcher = connect();
+    await board(1, 1);
+    expect(msgs(watcher).at(-1)).toMatchObject({ waiting: 2, seats: SEATS });
   });
 
   it("rejects malformed messages and ignores a second request on the same connection", async () => {

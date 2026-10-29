@@ -389,7 +389,7 @@ describe("GameRoom persistence", () => {
     await asRoom(storage).join("Ann", "chao");
     const before = structuredClone(PRESELECTION);
     try {
-      PRESELECTION.seats = 16;
+      PRESELECTION.seats = 6;
       PRESELECTION.endsOn = { day: 5, cycle: 1 };
       const revived = asRoom(storage);
       await revived.onStart();
@@ -880,14 +880,17 @@ describe("GameRoom joining (pre-selection)", () => {
 
   it("picks the Mush when the ship fills, then takes no more crew", async () => {
     const room = asRoom(new FakeStorage());
-    const characters: CharacterId[] = ["chao", "chun", "eleesha", "finola"];
+    // A ship has `PRESELECTION.seats` (16): one per character.
+    const characters: CharacterId[] = CHARACTERS.map((c) => c.id);
+    expect(characters).toHaveLength(PRESELECTION.seats);
     const joined = [];
     for (const [i, c] of characters.entries()) joined.push(await joinOk(room, `P${i}`, c));
+    expect(joined.every((j) => j.seats === PRESELECTION.seats)).toBe(true);
     expect(joined.at(-1)!.closesAt).toBeNull();
     expect(joined.slice(0, -1).every((j) => j.closesAt !== null)).toBe(true);
     const views = joined.map((j) => lastView(connect(room, j.token)));
     expect(views.every((v) => !v.preselection)).toBe(true);
-    expect(views.filter((v) => v.you.role === "mush")).toHaveLength(1);
+    expect(views.filter((v) => v.you.role === "mush")).toHaveLength(2);
     expect(await room.join("Late", "frieda")).toEqual({ ok: false, error: "ship_closed" });
   });
 
@@ -908,6 +911,24 @@ describe("GameRoom joining (pre-selection)", () => {
       expect(new Set([...view.players.map((p) => p.character), "chao"]).size).toBe(CHARACTERS.length);
       expect(lastView(connect(room, second.token)).preselection).toBe(false);
     } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("fills a dev server's smaller ship only up to its own seat count", async () => {
+    vi.useFakeTimers();
+    const before = PRESELECTION.seats;
+    try {
+      PRESELECTION.seats = 6;
+      const room = asRoom(new FakeStorage(), CHEATS);
+      const first = await joinOk(room, "Ann", "chao");
+      expect(first.seats).toBe(6);
+      await vi.advanceTimersByTimeAsync(10_000);
+      const view = lastView(connect(room, first.token));
+      expect([view.preselection, view.players.length + 1]).toEqual([false, 6]);
+      expect(room.status()).toMatchObject({ aboard: 6, seats: 6, closesAt: null });
+    } finally {
+      PRESELECTION.seats = before;
       vi.useRealTimers();
     }
   });

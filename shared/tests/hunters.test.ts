@@ -59,7 +59,7 @@ describe("hunter waves", () => {
   it("the pool starts at 40 when the game starts, and never runs in pre-selection", () => {
     const s = createGame(makeSeats(3), DEFAULT_CONFIG, 3);
     expect([s.hunters.points, s.hunters.since]).toEqual([40, s.cycle]);
-    let pre = createGame([], { ...DEFAULT_CONFIG, preselection: PRESELECTION }, 1);
+    let pre = createGame([], { ...DEFAULT_CONFIG, preselection: { ...PRESELECTION, seats: 4 } }, 1);
     for (const seat of makeSeats(2)) pre = must(joinShip(pre, seat));
     pre = nextCycle(nextCycle(nextCycle(pre)));
     expect(pre.hunters).toEqual({ points: 0, since: null, list: [], nextId: 1 });

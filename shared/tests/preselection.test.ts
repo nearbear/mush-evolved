@@ -7,10 +7,12 @@ import { createGame, viewFor } from "../src/rules.ts";
 import type { GameConfig, GameState, PreselectionRules } from "../src/types.ts";
 import { makeSeats, must, nextCycle, offered, player } from "./support.ts";
 
-const config: GameConfig = { ...DEFAULT_CONFIG, preselection: PRESELECTION };
+/** Most tests use a small ship so it fills after a few joins. */
+const SMALL: PreselectionRules = { ...PRESELECTION, seats: 4 };
+const config: GameConfig = { ...DEFAULT_CONFIG, preselection: SMALL };
 
 /** A ship launched empty in pre-selection (on day 1 cycle `startCycle`), then joined by the first `n` seats of makeSeats. */
-function ship(n: number, rules: PreselectionRules = PRESELECTION, seed = 7, startCycle = 1): GameState {
+function ship(n: number, rules: PreselectionRules = SMALL, seed = 7, startCycle = 1): GameState {
   let s = createGame([], { ...config, preselection: rules }, seed, {}, startCycle);
   for (const seat of makeSeats(n)) s = must(joinShip(s, seat));
   return s;
@@ -24,8 +26,8 @@ function toDeadline(s: GameState): GameState {
 }
 
 describe("pre-selection numbers", () => {
-  it("are the owner's: 4 seats for now, Mush on day 3 cycle 8, 2 Mush above 8 players, the stopgap below 3", () => {
-    expect(PRESELECTION).toEqual({ seats: 4, endsOn: { day: 3, cycle: 8 }, twoMushAbove: 8, minPlayers: 3 });
+  it("are the owner's: 16 seats, Mush on day 3's last cycle, 2 Mush above 8 players, the stopgap below 3", () => {
+    expect(PRESELECTION).toEqual({ seats: 16, endsOn: { day: 3, cycle: DEFAULT_CONFIG.cyclesPerDay }, twoMushAbove: 8, minPlayers: 3 });
     expect(preselectionDeadline(ship(0), PRESELECTION)).toBe(24);
   });
 });
@@ -110,10 +112,31 @@ describe("Mush selection", () => {
     expect(run()).toEqual(run());
   });
 
+  it("happens on the seat count's last join: a 4-seat ship's 4th, not a 16-seat ship's", () => {
+    expect([ship(3).preselection, ship(4).preselection]).toEqual([true, false]);
+    const big = ship(15, PRESELECTION);
+    expect(big.preselection).toBe(true);
+    expect(must(joinShip(big, makeSeats(16)[15]!)).preselection).toBe(false);
+  });
+
+  it("happens at the last cycle of the deadline day: day 1 for a 1-day ship, day 5 for a 5-day one", () => {
+    for (const day of [1, 5]) {
+      const rules = { ...SMALL, endsOn: { day, cycle: DEFAULT_CONFIG.cyclesPerDay } };
+      const last = day * DEFAULT_CONFIG.cyclesPerDay;
+      expect(preselectionDeadline(ship(0, rules), rules)).toBe(last);
+      // Skips ahead: an idle crew starves long before day 5.
+      let s = { ...ship(3, rules), cycle: last - 2 };
+      s = nextCycle(s);
+      expect(s.preselection).toBe(true);
+      s = nextCycle(s);
+      expect([s.cycle, s.preselection]).toEqual([last, false]);
+    }
+  });
+
   it("happens when day 3 cycle 8 begins if the ship hasn't filled, whatever cycle it launched in", () => {
     for (const startCycle of [1, 5]) {
-      let s = ship(3, PRESELECTION, 7, startCycle);
-      const deadline = preselectionDeadline(s, PRESELECTION);
+      let s = ship(3, SMALL, 7, startCycle);
+      const deadline = preselectionDeadline(s, SMALL);
       while (s.cycle < deadline - 1) s = nextCycle(s);
       expect(s.preselection).toBe(true);
       s = nextCycle(s);

@@ -13,7 +13,7 @@ This is a **vertical slice**, not a full clone. The goals are:
 2. Demonstrate solid full-stack engineering and an AI-assisted development workflow (keep notes on what worked and what didn't; see "Working agreements").
 3. Leave room to grow it into a real game later, including animated characters.
 
-**Proposed slice scope:** 16 seats with 2 Mush (1 when 8 or fewer players are in the room; decided in `docs/rules-design.md`; built, but capped at 4 seats for now, `SEAT_COUNT`), the 27-room Daedalus, the action-point loop and infection. Do not try to implement the full Mush ruleset.
+**Proposed slice scope:** 16 seats with 2 Mush (1 when 8 or fewer players are in the room; decided in `docs/rules-design.md`; built; a ship's seat count is `config.preselection.seats`, 16 by default in `PRESELECTION`), the 27-room Daedalus, the action-point loop and infection. Do not try to implement the full Mush ruleset.
 
 ## Stack
 

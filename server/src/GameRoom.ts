@@ -21,7 +21,6 @@ import {
   viewFor,
   type CharacterId,
   type ConfigOverrides,
-  type PreselectionRules,
   type GameClientMessage,
   type BotPause,
   type GameServerMessage,
@@ -104,7 +103,7 @@ const inputKey = (seq: number) => `input:${String(seq).padStart(9, "0")}`;
 
 /** What `join` tells the matchmaker. */
 export type JoinResult =
-  | { ok: true; token: string; aboard: number; taken: CharacterId[]; closesAt: number | null }
+  | { ok: true; token: string; aboard: number; seats: number; taken: CharacterId[]; closesAt: number | null }
   /** The rules' error code: `character_taken`, or `ship_closed` once it is full or Mush are chosen. */
   | { ok: false; error: string };
 
@@ -201,7 +200,7 @@ export class GameRoom extends Server<Env> {
     // The matchmaker launches a new ship elsewhere.
     if (this.retired) return { ok: false, error: "ship_closed" };
     // One launch even if two joins arrive together.
-    this.launching ??= this.game ? Promise.resolve() : this.launch([], {}, { preselection: this.shipRules() });
+    this.launching ??= this.game ? Promise.resolve() : this.launch([], {}, { preselection: PRESELECTION });
     await this.launching;
     const game = this.game!;
     const seat: Seat = { id: `p${game.players.length}`, name, isBot: false, character };
@@ -214,17 +213,13 @@ export class GameRoom extends Server<Env> {
       return { ok: false, error };
     }
     if (this.cheatsAllowed && this.game!.players.length === 1) setTimeout(() => void this.fillWithBots(), DEV_FILL_DELAY_MS);
-    return { ok: true, token, aboard: this.game!.players.length, taken: this.game!.players.map((p) => p.character), closesAt: this.closesAt() };
-  }
-
-  /** A dev server's ship seats the whole cast, so it fills (and Mush are chosen) once the bots are seated, `DEV_FILL_DELAY_MS` after the first join. */
-  private shipRules(): PreselectionRules {
-    return this.cheatsAllowed ? { ...PRESELECTION, seats: CHARACTERS.length } : PRESELECTION;
+    return { ok: true, token, ...this.status() };
   }
 
   /**
-   * Dev servers only (never a deployment: multiplayer has no bots): seats a bot for every character nobody took.
-   * The last one fills the ship, which chooses the Mush. All are log parrots.
+   * Dev servers only (never a deployment: multiplayer has no bots): seats a bot in every free seat, with a character
+   * nobody took, `DEV_FILL_DELAY_MS` after the first join. The last one fills the ship, which chooses the Mush. All
+   * are log parrots.
    */
   private async fillWithBots(): Promise<void> {
     if (!this.game?.preselection) return;
@@ -233,6 +228,8 @@ export class GameRoom extends Server<Env> {
     // Characters are cosmetic, so Math.random is fine for the shuffle.
     free.sort(() => Math.random() - 0.5);
     for (const [i, character] of free.entries()) {
+      // Full, or the Mush are chosen.
+      if (!this.game!.preselection) break;
       // Bots are always labeled as AI to players.
       // i18n-ignore: a player name; the client marks bots as AI from isBot
       const seat: Seat = { id: `p${this.game!.players.length}`, name: `Bot ${i + 1} (AI)`, isBot: true, botKind: "logParrot", character };
@@ -243,12 +240,13 @@ export class GameRoom extends Server<Env> {
   }
 
   /** How full the ship is and when it stops taking crew (null once closed): lets the matchmaker catch up with a dev fill. */
-  status(): { aboard: number; taken: CharacterId[]; closesAt: number | null } {
-    return { aboard: this.game?.players.length ?? 0, taken: this.takenCharacters(), closesAt: this.closesAt() };
+  status(): { aboard: number; seats: number; taken: CharacterId[]; closesAt: number | null } {
+    const seats = this.game?.config.preselection?.seats ?? 0;
+    return { aboard: this.game?.players.length ?? 0, seats, taken: this.takenCharacters(), closesAt: this.closesAt() };
   }
 
   /** The characters chosen aboard (public: the picker grays them out). */
-  takenCharacters(): CharacterId[] {
+  private takenCharacters(): CharacterId[] {
     return this.game?.players.map((p) => p.character) ?? [];
   }
 
