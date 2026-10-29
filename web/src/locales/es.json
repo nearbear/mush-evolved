@@ -1229,7 +1229,6 @@
   },
   "astro": {
     "title": "Tus planetas",
-    "empty": "No has encontrado ningún planeta. Un escaneo en el terminal astro puede encontrar uno.",
     "sectors_one": "{{count}} sector",
     "sectors_many": "{{count}} sectores",
     "sectors_other": "{{count}} sectores",

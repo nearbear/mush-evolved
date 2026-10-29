@@ -1219,7 +1219,6 @@
   },
   "astro": {
     "title": "Your planets",
-    "empty": "You haven't found any planets. A scan at the Astro terminal can find one.",
     "sectors_one": "{{count}} sector",
     "sectors_other": "{{count}} sectors",
     "unknown": "Unknown sector",

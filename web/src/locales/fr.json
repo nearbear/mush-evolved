@@ -1229,7 +1229,6 @@
   },
   "astro": {
     "title": "Vos planètes",
-    "empty": "Vous n'avez trouvé aucune planète. Un scan au terminal astro peut en trouver une.",
     "sectors_one": "{{count}} secteur",
     "sectors_many": "{{count}} secteurs",
     "sectors_other": "{{count}} secteurs",
