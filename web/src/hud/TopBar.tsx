@@ -1,4 +1,4 @@
-import type { ActopiCheat, BotPause, Cheat, PlayerView, RoleCheat } from "@mush2/shared";
+import type { BotPause, Cheat, PlayerView, RoleCheat } from "@mush2/shared";
 import { useState } from "react";
 import { Menu } from "@base-ui/react/menu";
 import { useTranslation } from "react-i18next";
@@ -23,7 +23,6 @@ export function TopBar({
   onResults,
   cheatsAllowed,
   onCheat,
-  onActopiCheat,
   onRoleCheat,
 }: {
   view: PlayerView;
@@ -43,7 +42,6 @@ export function TopBar({
   onResults: () => void;
   cheatsAllowed: boolean;
   onCheat: (cheat: Cheat, on: boolean) => void;
-  onActopiCheat: (mode: ActopiCheat) => void;
   onRoleCheat: (role: RoleCheat) => void;
 }) {
   const { you } = view;
@@ -117,9 +115,7 @@ export function TopBar({
       <SettingsDialog
         cheatsAllowed={cheatsAllowed}
         activeCheats={you.cheats}
-        actopiCheat={you.actopiCheat}
         onCheat={onCheat}
-        onActopiCheat={onActopiCheat}
         onRoleCheat={onRoleCheat}
         onLeave={onLeave}
         hideTrigger={mobile}

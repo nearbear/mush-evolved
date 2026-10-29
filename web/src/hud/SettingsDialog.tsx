@@ -1,7 +1,7 @@
 // The settings button and its dialog. Options apply immediately; there is no Save button.
 // Uses the global Mush `button` style and the terminal frame (terminal.css): a kit-panel around a light cut card.
 
-import { ACTOPI_CHEATS, CHEATS, ROLE_CHEATS, isActopiCheat, type ActopiCheat, type Cheat, type RoleCheat } from "@mush2/shared";
+import { CHEATS, type Cheat, type RoleCheat } from "@mush2/shared";
 import { Credits } from "./Credits.tsx";
 import { DialogHeader } from "./DialogHeader.tsx";
 import { Hint } from "./IconButton.tsx";
@@ -16,12 +16,12 @@ import { LanguageSwitcher } from "../i18n/LanguageSwitcher.tsx";
 import "./settings.css";
 import "./terminal.css";
 
+const ROLE_BUTTON_ORDER: readonly RoleCheat[] = ["human", "mush"];
+
 export function SettingsDialog({
   cheatsAllowed,
   activeCheats,
-  actopiCheat,
   onCheat,
-  onActopiCheat,
   onRoleCheat,
   onLeave,
   open,
@@ -31,9 +31,7 @@ export function SettingsDialog({
   /** The server's dev flag. Without it the Cheats tab is not drawn at all. */
   cheatsAllowed: boolean;
   activeCheats: readonly Cheat[];
-  actopiCheat: ActopiCheat;
   onCheat: (cheat: Cheat, on: boolean) => void;
-  onActopiCheat: (mode: ActopiCheat) => void;
   onRoleCheat: (role: RoleCheat) => void;
   onLeave: () => void;
   /** Controlled mode, for opening the dialog from another control (the phone menu). */
@@ -108,24 +106,13 @@ export function SettingsDialog({
                 }}>
                 {t(allOn ? "settings.cheats.disableAll" : "settings.cheats.enableAll")}
               </button>
-              <label className="settings-cheat">
-                {t("settings.cheats.actopi.label")}
-                <select
-                  value={actopiCheat}
-                  onChange={(e) => isActopiCheat(e.target.value) && onActopiCheat(e.target.value)}
-                >
-                  {ACTOPI_CHEATS.map((mode) => (
-                    <option key={mode} value={mode}>
-                      {t(`settings.cheats.actopi.${mode}`)}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              {ROLE_CHEATS.map((role) => (
-                <button key={role} type="button" onClick={() => onRoleCheat(role)}>
-                  {t(`settings.cheats.role.${role}`)}
-                </button>
-              ))}
+              <div className="settings-cheat-row">
+                {ROLE_BUTTON_ORDER.map((role) => (
+                  <button key={role} type="button" onClick={() => onRoleCheat(role)}>
+                    {t(`settings.cheats.role.${role}`)}
+                  </button>
+                ))}
+              </div>
             </fieldset>
               </Tabs.Panel>
             )}

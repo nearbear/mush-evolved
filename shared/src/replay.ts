@@ -6,7 +6,7 @@
 import type { GameClientMessage } from "./protocol.ts";
 import { joinShip } from "./preselection.ts";
 import { acknowledgeTransfer } from "./mind.ts";
-import { createGame, newCycle, setActopiCheat, setCheat, setRoleCheat, type ActionResult } from "./rules.ts";
+import { createGame, newCycle, setCheat, setRoleCheat, type ActionResult } from "./rules.ts";
 import { clearQueue, queueAction, tick } from "./queue.ts";
 import { walk } from "./spot.ts";
 import { createChannel, createThread, inviteToChannel, leaveChannel, sendChat, toggleCheckbox } from "./chat.ts";
@@ -91,8 +91,6 @@ export function applyInput(state: GameState, input: Input): ActionResult {
       return leaveChannel(state, input.by, input.channel);
     case "cheat":
       return setCheat(state, input.by, input.cheat, input.on);
-    case "actopiCheat":
-      return setActopiCheat(state, input.by, input.mode);
     case "walk":
       return walk(state, input.by, input.x, input.y, input.sitting, input.behind);
     case "roleCheat":

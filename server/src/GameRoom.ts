@@ -313,7 +313,7 @@ export class GameRoom extends Server<Env> {
       return;
     }
     if (
-      ((msg.type === "cheat" || msg.type === "actopiCheat" || msg.type === "roleCheat") ||
+      ((msg.type === "cheat" || msg.type === "roleCheat") ||
         (msg.type === "action" && (msg.action.type === "self_disease" || msg.action.type === "self_injury" || msg.action.type === "warp_to_planet"))) &&
       !this.cheatsAllowed
     ) {
@@ -330,7 +330,7 @@ export class GameRoom extends Server<Env> {
         ? await this.act({ ...msg, by, at: Date.now() })
         : msg.type === "walk"
           ? await this.act({ ...msg, by }, undefined, this.game.players.find((p) => p.id === by)?.room)
-          : msg.type === "clearQueue" || msg.type === "acknowledgeTransfer" || msg.type === "cheat" || msg.type === "actopiCheat" || msg.type === "roleCheat"
+          : msg.type === "clearQueue" || msg.type === "acknowledgeTransfer" || msg.type === "cheat" || msg.type === "roleCheat"
             ? await this.act({ ...msg, by })
             : await this.social(playerId, by, msg);
     if (error) this.send(connection, { type: "error", message: error });
@@ -378,7 +378,7 @@ export class GameRoom extends Server<Env> {
   private async social(
     playerId: PlayerId,
     by: PlayerId,
-    msg: Exclude<GameClientMessage, { type: "action" | "clearQueue" | "acknowledgeTransfer" | "walk" | "cheat" | "actopiCheat" | "roleCheat" | "setModel" | "clearModel" }>,
+    msg: Exclude<GameClientMessage, { type: "action" | "clearQueue" | "acknowledgeTransfer" | "walk" | "cheat" | "roleCheat" | "setModel" | "clearModel" }>,
   ): Promise<string | null> {
     if (!this.game) return "no_game";
     if (!this.chatLimiter.allow(playerId, Date.now(), this.cheatsAllowed ? DEV_RATE_SCALE : 1)) {

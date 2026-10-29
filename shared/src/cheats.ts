@@ -9,12 +9,6 @@ import type { GameState, PlayerState } from "./types.ts";
 export const CHEATS = ["infiniteAp", "infiniteMp", "infiniteMorale", "infiniteHp", "infiniteSpores", "infiniteCharges", "instantActions", "noRelayPenalty", "freeHacking", "selfDisease", "anySkill", "alwaysClean", "easyTravel"] as const;
 export type Cheat = (typeof CHEATS)[number];
 
-/** Whether a player sees through ACTOPI as the ship has it ("default"), or always ("on") or never ("off"). */
-export const ACTOPI_CHEATS = ["default", "on", "off"] as const;
-export type ActopiCheat = (typeof ACTOPI_CHEATS)[number];
-
-export const isActopiCheat = (value: unknown): value is ActopiCheat => ACTOPI_CHEATS.some((c) => c === value);
-
 /** Instant role switches (one-shot buttons, not toggles). */
 export const ROLE_CHEATS = ["mush", "human"] as const;
 export type RoleCheat = (typeof ROLE_CHEATS)[number];

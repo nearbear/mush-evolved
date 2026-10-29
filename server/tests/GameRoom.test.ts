@@ -207,19 +207,6 @@ describe("GameRoom cheats", () => {
     expect([...storage.data.keys()].some((k) => k.startsWith("input:"))).toBe(false);
   });
 
-  it("gates the ACTOPI cheat the same way", async () => {
-    const msg = { type: "actopiCheat", mode: "off" };
-    const closed = (await newRoom(3)).room;
-    const off = connect(closed, "tok0");
-    await send(closed, off, msg);
-    expect(lastMsg(off)).toEqual({ type: "error", message: "cheats_disabled" });
-    expect(lastView(off).you.actopiCheat).toBe("default");
-    const { room } = await newRoom(3, new FakeStorage(), { ALLOW_CHEATS: "true" });
-    const on = connect(room, "tok0");
-    await send(room, on, msg);
-    expect(lastView(on).you.actopiCheat).toBe("off");
-  });
-
   it("tells the client whether cheats are allowed", async () => {
     const off = connect((await newRoom(3)).room, "tok0");
     const on = connect((await newRoom(3, new FakeStorage(), { ALLOW_CHEATS: "true" })).room, "tok0");

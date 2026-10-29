@@ -3,7 +3,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import type PartySocket from "partysocket";
-import { CORPSE_ITEM, MAX_CHAT_LENGTH, MAX_CHAT_LINES, legalIn, type Action, type ActopiCheat, type BotPause, type CharacterId, type Cheat, type GameClientMessage, type GameServerMessage, type PlayerView, type RoleCheat, type RoomId, type Spot, type Target } from "@mush2/shared";
+import { CORPSE_ITEM, MAX_CHAT_LENGTH, MAX_CHAT_LINES, legalIn, type Action, type BotPause, type CharacterId, type Cheat, type GameClientMessage, type GameServerMessage, type PlayerView, type RoleCheat, type RoomId, type Spot, type Target } from "@mush2/shared";
 import i18n from "i18next";
 import { useTranslation } from "react-i18next";
 import { ActionQueue } from "./hud/ActionQueue.tsx";
@@ -199,7 +199,6 @@ export function GameScreen({ ticket, onLeave, waking = false }: { ticket: SeatTi
         onResults={() => setEndClosed(false)}
         cheatsAllowed={cheatsAllowed}
         onCheat={(cheat: Cheat, on: boolean) => post({ type: "cheat", cheat, on })}
-        onActopiCheat={(mode: ActopiCheat) => post({ type: "actopiCheat", mode })}
         onRoleCheat={(role: RoleCheat) => post({ type: "roleCheat", role })}
       />
 

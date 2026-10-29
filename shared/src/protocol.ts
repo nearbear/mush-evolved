@@ -2,7 +2,7 @@
 // client is untrusted: always go through the parse* functions.
 
 import { ACTIONS, type ActionType } from "./actions.ts";
-import { isActopiCheat, isCheat, isRoleCheat, type ActopiCheat, type Cheat, type RoleCheat } from "./cheats.ts";
+import { isCheat, isRoleCheat, type Cheat, type RoleCheat } from "./cheats.ts";
 import { isCharacterId, type CharacterId } from "./characters.ts";
 import { MAX_CHAT_LENGTH } from "./chat.ts";
 import { isSpotCell } from "./spot.ts";
@@ -63,7 +63,6 @@ export type GameClientMessage =
   | { type: "clearModel" }
   // Development only: the server refuses it unless cheats are enabled (cheats.ts).
   | { type: "cheat"; cheat: Cheat; on: boolean }
-  | { type: "actopiCheat"; mode: ActopiCheat }
   | { type: "roleCheat"; role: RoleCheat };
 export type GameServerMessage =
   // `cheatsAllowed` is the server's dev flag, so the client knows whether to offer cheats. It is not game state.
@@ -140,7 +139,6 @@ export function parseGameMessage(raw: string): GameClientMessage | null {
       : null;
   }
   if (msg?.type === "roleCheat") return isRoleCheat(msg.role) ? { type: "roleCheat", role: msg.role } : null;
-  if (msg?.type === "actopiCheat") return isActopiCheat(msg.mode) ? { type: "actopiCheat", mode: msg.mode } : null;
   if (msg?.type !== "action" || !isRecord(msg.action)) return null;
   const a = msg.action;
   // `hasOwn`, not `in` or a lookup: those would find "constructor" and the like on the prototype.

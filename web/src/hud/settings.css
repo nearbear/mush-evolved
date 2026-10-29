@@ -82,9 +82,17 @@
   flex-direction: column;
   gap: 0.25rem;
   margin: 0;
-  padding: 0.5rem 0.75rem;
-  border: 1px dashed var(--edge);
-  border-radius: 4px;
+  padding: 0;
+  border: 0;
+}
+
+.settings-cheat-row {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.settings-cheat-row button {
+  flex: 1;
 }
 
 .settings-cheat {

@@ -112,7 +112,6 @@ export const PLAYER_STATE_FIELDS: Record<string, FieldRule> = {
   current: { reach: "own", test: "leaks.test.ts", note: "Roommates get a bar without the action (queue.test.ts)." },
   queue: { reach: "own", test: "leaks.test.ts" },
   cheats: { reach: "own", test: "cheats.test.ts" },
-  actopiCheat: { reach: "own", test: "cheats.test.ts" },
 };
 
 export const ITEM_STATE_FIELDS: Record<string, FieldRule> = {

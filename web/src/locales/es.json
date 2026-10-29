@@ -85,12 +85,6 @@
       "role": {
         "mush": "Convertirse en Mush",
         "human": "Convertirse en humano"
-      },
-      "actopi": {
-        "label": "ACTOPI",
-        "default": "Predeterminado del juego",
-        "on": "Forzar activado",
-        "off": "Forzar desactivado"
       }
     },
     "fogDepth": {

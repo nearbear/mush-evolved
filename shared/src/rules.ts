@@ -6,7 +6,7 @@
 // chat and private channels in chat.ts. Win conditions and voting are open
 // decisions: do not add them without confirming the rules first.
 
-import { applyCheats, makeHuman, type ActopiCheat, type Cheat, type RoleCheat } from "./cheats.ts";
+import { applyCheats, makeHuman, type Cheat, type RoleCheat } from "./cheats.ts";
 import { ACTIONS, type ActionDef } from "./actions.ts";
 import { AT_CAPACITY, COOLDOWN, DIRTY, NO_SPACE } from "./actions/action.ts";
 import { getUp } from "./actions/lie_down.ts";
@@ -177,7 +177,6 @@ export function newPlayer(s: Seat, config: DeepReadonly<GameConfig>, cycle: numb
     queue: [],
     history: [],
     cheats: [],
-    actopiCheat: "default",
   };
 }
 
@@ -310,14 +309,6 @@ export function setRoleCheat(state: GameState, playerId: PlayerId, role: RoleChe
   return { ok: true, state: next };
 }
 
-/** Sets how ACTOPI looks to one player (development cheat). Like setCheat, the server gates it. */
-export function setActopiCheat(state: GameState, playerId: PlayerId, mode: ActopiCheat): ActionResult {
-  if (!findPlayer(state, playerId)) return fail("unknown_player");
-  const next = clone(state);
-  findPlayer(next, playerId)!.actopiCheat = mode;
-  return { ok: true, state: next };
-}
-
 /** The server's clock passed a cycle boundary (00:00, 03:00, … GMT): the cycle ends for everyone, ready or not. */
 export function newCycle(state: GameState): ActionResult {
   if (state.phase !== "playing") return fail("game_over");
@@ -403,7 +394,7 @@ export function viewFor(state: GameState, playerId: PlayerId): PlayerView {
   const legal = legalActions(state, playerId);
   const channels = readChannels(state, you);
   // Without ACTOPI, anyone outside your room is a room-only dot: no identity, so no room on their entry.
-  const actopi = you.actopiCheat === "default" ? state.bios.actopi : you.actopiCheat === "on";
+  const actopi = state.bios.actopi;
   // The dead see nothing that depends on a room (decided 2026-10-16, #45): no
   // room log, items, equipment, or anyone's location or room-only details.
   const present = (room: RoomId) => you.alive && room === you.room;

@@ -7,7 +7,7 @@ import { DEFAULT_CONFIG } from "../src/config.ts";
 import { parseGameMessage } from "../src/protocol.ts";
 import { dailyMoraleLoss } from "../src/modifiers.ts";
 import { applyInput, replayGame, type Input } from "../src/replay.ts";
-import { applyAction, createGame, setActopiCheat, setCheat, setRoleCheat, viewFor } from "../src/rules.ts";
+import { applyAction, createGame, setCheat, setRoleCheat, viewFor } from "../src/rules.ts";
 import type { GameState, PlayerId } from "../src/types.ts";
 import { makeSeats, nextCycle, player, offered } from "./support.ts";
 
@@ -81,49 +81,6 @@ describe("cheats", () => {
     }
     expect(parseGameMessage(JSON.stringify({ type: "cheat", cheat: "godMode", on: true }))).toBeNull();
     expect(parseGameMessage(JSON.stringify({ type: "cheat", cheat: "infiniteAp", on: "yes" }))).toBeNull();
-  });
-});
-
-describe("ACTOPI cheat", () => {
-  const apart = () => {
-    const s = fresh();
-    s.players[1]!.room = "REFECTORY";
-    return s;
-  };
-  const set = (s: GameState, mode: "default" | "on" | "off") => {
-    const r = setActopiCheat(s, "p0", mode);
-    if (!r.ok) throw new Error(r.error);
-    return r.state;
-  };
-
-  it("does nothing by default", () => {
-    expect(viewFor(apart(), "p0").unidentified).toEqual([]);
-    expect(viewFor(set(apart(), "default"), "p0").unidentified).toEqual([]);
-  });
-
-  it("forces ACTOPI off for you only, even while the ship has it on", () => {
-    const s = set(apart(), "off");
-    expect(s.bios.actopi).toBe(true);
-    expect(viewFor(s, "p0").unidentified).toEqual(["REFECTORY"]);
-    expect(viewFor(s, "p2").unidentified).toEqual([]);
-  });
-
-  it("forces ACTOPI on for you while the ship has it off", () => {
-    const s = apart();
-    s.bios.actopi = false;
-    expect(viewFor(s, "p0").unidentified).toEqual(["REFECTORY"]);
-    const forced = set(s, "on");
-    expect(viewFor(forced, "p0").unidentified).toEqual([]);
-    expect(viewFor(forced, "p0").players.find((p) => p.id === "p1")!.room).toBe("REFECTORY");
-    expect(viewFor(forced, "p2").unidentified).toEqual(["REFECTORY"]);
-  });
-
-  it("parses, rejects junk, and replays", () => {
-    expect(parseGameMessage(JSON.stringify({ type: "actopiCheat", mode: "off" }))).toEqual({ type: "actopiCheat", mode: "off" });
-    expect(parseGameMessage(JSON.stringify({ type: "actopiCheat", mode: "maybe" }))).toBeNull();
-    const setup = { seats, config: cfg, seed: 7, rulesVersion: "test" };
-    const inputs: Input[] = [{ type: "actopiCheat", mode: "off", by: "p0" }];
-    expect(player(replayGame(setup, inputs), "p0").actopiCheat).toBe("off");
   });
 });
 
