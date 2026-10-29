@@ -40,7 +40,7 @@ export class HealAction extends Action<HealActionData> {
 
   override apply(state: GameState, player: PlayerState, target: HealActionData): void {
     const patient = state.players.find((o) => o.id === target.target)!; // checked, so it exists
-    patient.hp = Math.min(player.maxHp, patient.hp + healAmount(state, player));
+    patient.hp = Math.min(patient.maxHp, patient.hp + healAmount(state, player));
     logPublic(state, player.room, patient.id === player.id ? "healedSelf" : "healed", { name: player.character, target: patient.character });
   }
 }

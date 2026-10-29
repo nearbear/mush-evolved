@@ -35,6 +35,19 @@ describe("healing", () => {
     expect(player(r.state, "p0").ap).toBe(config.startAp - cost.apOther);
   });
 
+  it("caps the patient's HP at the patient's own maximum, not the healer's", () => {
+    const s = ship();
+    player(s, "p0").maxHp = 6;
+    player(s, "p1").maxHp = 14;
+    const r = applyAction(s, "p0", heal("p1"));
+    if (!r.ok) throw new Error(r.error);
+    expect(player(r.state, "p1").hp).toBe(5 + effect.hp);
+    player(r.state, "p1").hp = 13;
+    const again = applyAction(r.state, "p0", heal("p1"));
+    if (!again.ok) throw new Error(again.error);
+    expect(player(again.state, "p1").hp).toBe(14);
+  });
+
   it("costs more AP on yourself", () => {
     const r = applyAction(ship(), "p0", heal("p0"));
     if (!r.ok) throw new Error(r.error);
