@@ -48,6 +48,10 @@ export class RepairHullAction extends Action<RepairHullActionData> {
     logPublic(state, player.room, "hullRepaired", { name: player.character });
   }
 
+   override injuryChance(state: Readonly<GameState>): number {
+    return state.config.hullRepair.injuryChance;
+  }
+
   override fail(state: GameState, player: PlayerState): void {
     logPrivate(state, player.id, "hullRepairFailed");
   }

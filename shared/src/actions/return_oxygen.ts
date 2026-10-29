@@ -33,10 +33,6 @@ export class ReturnOxygenAction extends Action<ReturnOxygenActionData> {
     return { ap: state.config.oxygenCapsule.cost.ap, mp: 0 };
   }
 
-  override dirtChance(state: Readonly<GameState>): number {
-    return state.config.oxygenCapsule.dirtyChance;
-  }
-
   override injuryChance(state: Readonly<GameState>): number {
     return state.config.oxygenCapsule.injuryChance;
   }
