@@ -229,7 +229,8 @@ li.research-item /* Rebel base icons are 70x65, not the 50x75 research cards. */
   height: 16px;
   background: url("../../../Mush/www/img/design/yesno.png") -16px 0 no-repeat;
 }
-.research-progress progress {
+.research-progress progress,
+.research-progress .kit-progress {
   flex: 1 1 0;
   min-width: 2rem;
 }

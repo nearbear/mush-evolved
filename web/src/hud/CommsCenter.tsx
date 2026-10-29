@@ -4,7 +4,7 @@
 import { Tabs } from "@base-ui/react/tabs";
 import { Tooltip } from "@base-ui/react/tooltip";
 import { type Action, type EquipmentView, type PlayerView, XYLOPH_IDS } from "@mush2/shared";
-import { useState } from "react";
+import { useState, type CSSProperties } from "react";
 import { useTranslation } from "react-i18next";
 import { CHECK_ICON, REBEL_BASE_ICONS, UNCHECK_ICON, XYLOPH_DONE, XYLOPH_TODO } from "../art/assets.ts";
 import { useNames } from "../i18n/names.ts";
@@ -156,7 +156,7 @@ export function CommsCenter({ terminal, view, onAction }: Props) {
                     </div>
                     <div className="research-body">
                       <div className="research-progress">
-                        <progress max={100} value={call.progress} />
+                        <div className="kit-progress neron" role="progressbar" aria-label={names.rebelBase(call.base)} aria-valuemin={0} aria-valuemax={100} aria-valuenow={call.progress} style={{ "--value": call.progress / 100 } as CSSProperties} />
                         <span>{t("research.percent", { percent: call.progress })}</span>
                         {decode && (
                           <ActionButton view={view} option={decode} onAction={onAction}>

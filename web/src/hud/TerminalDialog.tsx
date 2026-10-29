@@ -7,7 +7,7 @@
 import { Dialog } from "@base-ui/react/dialog";
 import { Popover } from "@base-ui/react/popover";
 import { Tabs } from "@base-ui/react/tabs";
-import React, { useState } from "react";
+import React, { useState, type CSSProperties } from "react";
 import {
   hasSkill,
   PILGRED_COMPLETE,
@@ -248,7 +248,7 @@ function ProgressList({ label, ids, progress, complete, cards, name, desc, statu
                         <span>{t("research.done")}</span>
                       ) : (
                         <div className="research-progress">
-                          <progress max={complete} value={percent} />
+                          <div className="kit-progress neron" role="progressbar" aria-label={name(id)} aria-valuemin={0} aria-valuemax={complete} aria-valuenow={percent} style={{ "--value": Math.min(1, percent / complete) } as CSSProperties} />
                           <span>{t("research.percent", { percent })}</span>
                           {option && (
                             <ActionButton view={view} option={option} onAction={onAction}>
