@@ -2,6 +2,7 @@ import { Action, isString } from "./action.ts";
 import { dayOf } from "../helpers.ts";
 import { logPrivate, logPublic } from "../log.ts";
 import { failureStreakMultiplier } from "../modifiers.ts";
+import { isTraveling } from "../navigation.ts";
 import { astroTerminalsHere, freePositions, generatePlanet, pickPosition, planetsOf, sizeRangeOn } from "../planets.ts";
 import type { GameState, PlayerState } from "../types.ts";
 
@@ -40,6 +41,7 @@ export class ScanPlanetAction extends Action<ScanPlanetActionData> {
     if (freePositions(state).length === 0) return "no_free_position";
     // Not while in orbit (owner, 2026-10-22, the wiki): leave it first.
     if (state.navigation.orbit !== null) return "in_orbit";
+    if (isTraveling(state)) return "traveling";
     if (player.statuses.includes("dirty")) return "dirty";
     return null;
   }

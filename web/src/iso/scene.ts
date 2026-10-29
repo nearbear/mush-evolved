@@ -192,17 +192,17 @@ export interface SceneOutline extends ScenePicture {
   faint: boolean;
 }
 
-/** How the Daedalus is moving: held in orbit, flying between planets, or (not in the rules yet) travelling to one. */
+/** How the Daedalus is moving: held in orbit, flying between planets, or travelling to one (a jump in progress, until the next cycle change). */
 export type ShipPace = "stopped" | "cruising" | "traveling";
 
 /** How fast the stars stream at each pace, as a multiple of the cruising rate. */
 export const PACE_SPEED: Readonly<Record<ShipPace, number>> = { stopped: 0, cruising: 1, traveling: 5 };
 
 /**
- * The pace to draw from the view's public navigation. Travel is an instant jump in the rules, so nothing
- * returns "traveling" yet: when the rules gain a travel in progress, answer it here.
+ * The pace to draw from the view's public navigation.
  */
-export function shipPace(navigation: { orbiting: boolean }): ShipPace {
+export function shipPace(navigation: { orbiting: boolean; traveling: boolean }): ShipPace {
+  if (navigation.traveling) return "traveling";
   return navigation.orbiting ? "stopped" : "cruising";
 }
 

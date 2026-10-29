@@ -1,6 +1,7 @@
 import { Action, isString } from "./action.ts";
 import { astroTerminalsHere, planetsOf } from "../planets.ts";
 import type { GameState, PlayerState } from "../types.ts";
+import { arriveShip } from "../navigation.ts";
 import { jump } from "./travel.ts";
 
 export type WarpToPlanetActionData = { type: "warp_to_planet"; equipment: string; planet: string };
@@ -37,9 +38,10 @@ export class WarpToPlanetAction extends Action<WarpToPlanetActionData> {
     const planet = planetsOf(state, player.id).find((p) => p.id === target.planet)!;
     state.navigation.heading = planet.direction;
     jump(state, player, planet.distance);
+    arriveShip(state); // the cheat skips the cycle in transit
   }
 }
 
 function canWarp(state: Readonly<GameState>, player: Readonly<PlayerState>): boolean {
-  return player.cheats.includes("easyTravel") && !player.isBot && state.navigation.orbit === null;
+  return player.cheats.includes("easyTravel") && !player.isBot && state.navigation.orbit === null && state.navigation.arriving === null;
 }

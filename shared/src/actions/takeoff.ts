@@ -3,6 +3,7 @@ import { endPushToLeave } from "./accommodate.ts";
 import { damage } from "../death.ts";
 import { destroyShip } from "../hunters.ts";
 import { logPrivate, logSecret } from "../log.ts";
+import { isTraveling } from "../navigation.ts";
 import { cleanManoeuvreChance } from "../modifiers.ts";
 import { canFly, dockedHere, interfaceId, PATROL_SHIPS, type PatrolShip } from "../patrol.ts";
 import { roll, rollFloat } from "../rng.ts";
@@ -27,12 +28,13 @@ export class TakeoffAction extends Action<TakeoffActionData> {
   }
 
   override getCandidates(state: Readonly<GameState>, player: Readonly<PlayerState>): TakeoffActionData[] {
-    if (!canFly(player)) return [];
+    if (!canFly(player) || isTraveling(state)) return [];
     return dockedHere(state, player).map((ship): TakeoffActionData => ({ type: "takeoff", equipment: interfaceId(ship) }));
   }
 
   override validate(state: Readonly<GameState>, player: Readonly<PlayerState>, target: TakeoffActionData): string | null {
     if (!canFly(player)) return "cant_fly";
+    if (isTraveling(state)) return "traveling";
     if (!dockedHere(state, player).some((ship) => interfaceId(ship) === target.equipment)) return "no_ship";
     return null;
   }

@@ -29,7 +29,7 @@ import { activitySeen, logPrivate } from "./log.ts";
 import { recordAction } from "./history.ts";
 import { ringMycoAlarms } from "./mycoalarm.ts";
 import { planetsOf } from "./planets.ts";
-import { orbitPicture } from "./navigation.ts";
+import { arriveShip, orbitPicture } from "./navigation.ts";
 import { commandTerminalsHere, isPilgredRepaired, pilgredTerminalsHere } from "./pilgred.ts";
 import { biosTerminalsHere, newBios } from "./bios.ts";
 import { callNextRebel, commsCycle, commsTerminalView, comTerminalsHere, newComms } from "./comms.ts";
@@ -131,7 +131,7 @@ export function createGame(
     patrolFailures: {},
     patrolShips: newPatrolShips(config),
     space: [],
-    navigation: { heading: config.navigation.startHeading, orbit: null },
+    navigation: { heading: config.navigation.startHeading, orbit: null, arriving: null },
     // Issued with Mush selection, whatever the role (owner, 2026-10-13 and 2026-10-20); in pre-selection, by `selectMush`.
     titles: preselection ? noTitles() : assignTitles(players),
     comms: newComms(config),
@@ -361,6 +361,7 @@ function advanceCycle(state: GameState): void {
   }
   for (const p of state.players) applyCheats(state, p);
   const { day } = dayOf(state);
+  arriveShip(state);
   huntersCycle(state, day);
   state.log.push({
     cycle: state.cycle,
@@ -516,6 +517,7 @@ export function viewFor(state: GameState, playerId: PlayerId): PlayerView {
     patrolShip: patrolShipView(state, you),
     navigation: {
       orbiting: state.navigation.orbit !== null,
+      traveling: state.navigation.arriving !== null,
       orbitPicture: orbitPicture(state),
       heading: you.alive && commandTerminalsHere(state, you).length > 0 ? state.navigation.heading : null,
     },

@@ -1583,3 +1583,6 @@ Owner asked for "the oscilloscope" (renamed from Wavoscope) spawned in AB2 at ev
 
 ### 2026-10-28: Hunter sprites in the battle panel
 Placed the plain hunter's battle sprite (`FX_SPC_HUNTER`, 378,80,48,26 in `Mush/clients/iso/gfx/fx.png`, slices from `tiles.xml`) on each row of `HunterList`, cut with a CSS background offset at 1x; the rows now scroll in a Base UI scroll area. A visual check confirmed the slice is whole and transparent; `FX_SPC_SMALL_HUNTER` is not (its rect clips the flame and trail), so it was skipped. Trax, spider, asteroid and dice slices are in `HUNTER_SPRITES` but unused: the rules have only one hunter kind, and giving hunters kinds would be a rule change.
+
+## 2026-10-29: travel takes one cycle
+Owner asked for a traveling state lasting one cycle with a faster star field. Asked four questions (when the jump's effects land, whether leave orbit travels, what the terminal can do, other systems); the owner picked departure, yes, nothing, and block takeoff. The web already had a `traveling` pace waiting, so the client change was one line plus a status note. The old tests assumed instant orbit; most were fixed with an `arrived` helper that runs the cycle change. Required a STATE_VERSION bump (84).

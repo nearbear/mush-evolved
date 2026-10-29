@@ -15,7 +15,7 @@ interface Props {
 
 export function ShipNavigation({ terminal, view, onAction }: Props) {
   const { t } = useTranslation();
-  const { heading, orbiting } = view.navigation;
+  const { heading, orbiting, traveling } = view.navigation;
   const here = view.actions.filter(({ action: a }) => "equipment" in a && a.equipment === terminal.id);
   const turns = here.filter(({ action: a }) => a.type === "turn_ship");
   const travel = here.find(({ action: a }) => a.type === "travel");
@@ -36,6 +36,7 @@ export function ShipNavigation({ terminal, view, onAction }: Props) {
         })}
       </div>
       {orbiting && <p>{t("navigation.inOrbit")}</p>}
+      {traveling && <p>{t("navigation.traveling")}</p>}
       {turns.length > 0 && (
         <div className="ship-navigation-row">
           {turns.map((option) => (

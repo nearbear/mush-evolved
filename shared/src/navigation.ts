@@ -2,6 +2,7 @@
 // one of the planets' four directions, the Commander turns it and sends it some distance that way, and arriving where a
 // known planet lies puts it in orbit. `GameState.navigation`; the actions are actions/turn_ship.ts, travel.ts and
 // leave_orbit.ts.
+import { logPrivate, logPublic } from "./log.ts";
 import { PLANET_DIRECTIONS, planetPicture, type PlanetDirection } from "./planets.ts";
 import { hasTitleAccess } from "./titles.ts";
 import type { GameState, Planet, PlayerId, PlayerState } from "./types.ts";
@@ -34,4 +35,24 @@ export function orbitPicture(state: Readonly<GameState>): number | null {
   const id = state.navigation.orbit;
   const planet = id === null ? undefined : Object.values(state.planets).flat().find((p) => p.id === id);
   return planet ? planetPicture(planet) : null;
+}
+
+/** Whether the ship is between one place and the next (owner, 2026-10-29): the Command terminal, scanning and patrol takeoff wait for the arrival. */
+export const isTraveling = (state: Readonly<GameState>): boolean => state.navigation.arriving !== null;
+
+/**
+ * End a jump in progress (owner, 2026-10-29), at the cycle change: the ship arrives, in the orbit of the planet it was
+ * heading for, if any. Everyone learns of an orbit; its finder alone learns which planet. Does nothing when not traveling.
+ */
+export function arriveShip(state: GameState): void {
+  const arriving = state.navigation.arriving;
+  if (!arriving) return;
+  state.navigation.arriving = null;
+  if (arriving.planet === null) return;
+  const owner = Object.keys(state.planets).find((id) => state.planets[id]!.some((p) => p.id === arriving.planet));
+  const planet = owner === undefined ? undefined : state.planets[owner]!.find((p) => p.id === arriving.planet);
+  if (owner === undefined || !planet) return;
+  state.navigation.orbit = planet.id;
+  logPublic(state, undefined, "shipInOrbit");
+  logPrivate(state, owner, "orbitingPlanet", { planet: planet.name });
 }

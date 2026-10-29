@@ -1,7 +1,7 @@
 import { Action, isString } from "./action.ts";
 import { huntersFollow, loseShipsInFlight } from "../hunters.ts";
-import { logPrivate, logPublic } from "../log.ts";
-import { canSteer, planetAt } from "../navigation.ts";
+import { logPublic } from "../log.ts";
+import { canSteer, isTraveling, planetAt } from "../navigation.ts";
 import { commandTerminalsHere } from "../pilgred.ts";
 import type { GameState, PlayerState, Planet } from "../types.ts";
 import { shipMoved } from "../modifiers.ts";
@@ -14,7 +14,9 @@ export type TravelActionData = { type: "travel"; equipment: string };
  * combustion chamber, all of which burns (owner, 2026-10-23: the crew loads it by hand, take_fuel.ts; no distance is
  * chosen). With the chamber empty, the AP is spent and nothing happens. Otherwise the fuel is spent, and every
  * planet on the ship except one lying exactly there is lost; that one, if any, puts the ship in its orbit and stays its
- * finder's alone. Half the hunters follow (hunters.ts). Everyone aboard learns the ship moved and whether it is in orbit; the finder alone learns which planet.
+ * finder's alone. Half the hunters follow (hunters.ts). All of that happens at once, but the ship takes until the next
+ * cycle change to arrive (owner, 2026-10-29, `navigation.arriving`): only then is it in orbit (`arriveShip`, navigation.ts),
+ * and nothing can be steered, scanned or launched meanwhile. Everyone aboard learns the ship moved; at the arrival, whether it is in orbit, and the finder alone which planet.
  */
 export class TravelAction extends Action<TravelActionData> {
   override terminal = true;
@@ -28,7 +30,7 @@ export class TravelAction extends Action<TravelActionData> {
   }
 
   override getCandidates(state: Readonly<GameState>, player: Readonly<PlayerState>): TravelActionData[] {
-    if (!canSteer(state, player) || state.navigation.orbit !== null) return [];
+    if (!canSteer(state, player) || state.navigation.orbit !== null || isTraveling(state)) return [];
     return commandTerminalsHere(state, player).map((terminal): TravelActionData => ({ type: "travel", equipment: terminal.id }));
   }
 
@@ -36,6 +38,7 @@ export class TravelAction extends Action<TravelActionData> {
     if (!commandTerminalsHere(state, player).some((terminal) => terminal.id === target.equipment)) return "cant_steer";
     if (!canSteer(state, player)) return "not_commander";
     if (state.navigation.orbit !== null) return "in_orbit";
+    if (isTraveling(state)) return "traveling";
     return null;
   }
 
@@ -52,7 +55,7 @@ export class TravelAction extends Action<TravelActionData> {
 
 /**
  * The ship goes `distance` the way it faces, with everything a jump does (above) but the fuel: the warp cheat
- * (warp_to_planet.ts) jumps the same way. Returns the planet it now orbits, if any.
+ * (warp_to_planet.ts) jumps the same way. Returns the planet it is heading for, if any; the ship arrives at the next cycle change.
  */
 export function jump(state: GameState, player: Readonly<PlayerState>, distance: number): Planet | null {
   shipMoved(state);
@@ -63,10 +66,7 @@ export function jump(state: GameState, player: Readonly<PlayerState>, distance: 
   }
   logPublic(state, undefined, "shipTraveled", { name: player.character });
   loseShipsInFlight(state);
-  if (!found) return null;
-  const [owner, planet] = found;
-  state.navigation.orbit = planet.id;
-  logPublic(state, undefined, "shipInOrbit");
-  logPrivate(state, owner, "orbitingPlanet", { planet: planet.name });
-  return planet;
+  state.navigation.orbit = null;
+  state.navigation.arriving = { planet: found ? found[1].id : null };
+  return found ? found[1] : null;
 }

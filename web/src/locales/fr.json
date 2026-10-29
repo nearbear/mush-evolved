@@ -1482,6 +1482,7 @@
     "title": "Navigation",
     "heading": "Orientation : {{direction}}",
     "inOrbit": "En orbite autour d'une planète.",
+    "traveling": "Le vaisseau est en route. Il arrive au prochain changement de cycle.",
     "left": "Orienter à gauche",
     "right": "Orienter à droite",
     "travel": "Voyager",

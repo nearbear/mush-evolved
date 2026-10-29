@@ -1,6 +1,6 @@
 import { Action, isString } from "./action.ts";
 import { logPublic } from "../log.ts";
-import { canSteer, isTurnSide, TURN_SIDES, turned, type TurnSide } from "../navigation.ts";
+import { canSteer, isTraveling, isTurnSide, TURN_SIDES, turned, type TurnSide } from "../navigation.ts";
 import { commandTerminalsHere } from "../pilgred.ts";
 import type { GameState, PlayerState } from "../types.ts";
 
@@ -22,13 +22,14 @@ export class TurnShipAction extends Action<TurnShipActionData> {
   }
 
   override getCandidates(state: Readonly<GameState>, player: Readonly<PlayerState>): TurnShipActionData[] {
-    if (!canSteer(state, player)) return [];
+    if (!canSteer(state, player) || isTraveling(state)) return [];
     return commandTerminalsHere(state, player).flatMap((terminal) => TURN_SIDES.map((side): TurnShipActionData => ({ type: "turn_ship", equipment: terminal.id, side })));
   }
 
   override validate(state: Readonly<GameState>, player: Readonly<PlayerState>, target: TurnShipActionData): string | null {
     if (!commandTerminalsHere(state, player).some((terminal) => terminal.id === target.equipment)) return "cant_steer";
     if (!canSteer(state, player)) return "not_commander";
+    if (isTraveling(state)) return "traveling";
     return null;
   }
 

@@ -2,9 +2,10 @@ import { describe, expect, it } from "vitest";
 import { PACE_SPEED, shipPace } from "./scene.ts";
 
 describe("shipPace", () => {
-  it("is stopped in orbit and cruising otherwise", () => {
-    expect(shipPace({ orbiting: true })).toBe("stopped");
-    expect(shipPace({ orbiting: false })).toBe("cruising");
+  it("is stopped in orbit, traveling on a jump and cruising otherwise", () => {
+    expect(shipPace({ orbiting: true, traveling: false })).toBe("stopped");
+    expect(shipPace({ orbiting: false, traveling: false })).toBe("cruising");
+    expect(shipPace({ orbiting: false, traveling: true })).toBe("traveling");
   });
 
   it("streams faster the faster the pace", () => {

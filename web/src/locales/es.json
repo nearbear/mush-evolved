@@ -1482,6 +1482,7 @@
     "title": "Navegación",
     "heading": "Rumbo: {{direction}}",
     "inOrbit": "En órbita alrededor de un planeta.",
+    "traveling": "La nave está viajando. Llegará en el próximo cambio de ciclo.",
     "left": "Girar a la izquierda",
     "right": "Girar a la derecha",
     "travel": "Viajar",

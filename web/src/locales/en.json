@@ -1469,6 +1469,7 @@
     "title": "Navigation",
     "heading": "Facing {{direction}}",
     "inOrbit": "In orbit around a planet.",
+    "traveling": "The ship is traveling. It arrives at the next cycle change.",
     "left": "Turn left",
     "right": "Turn right",
     "travel": "Travel",

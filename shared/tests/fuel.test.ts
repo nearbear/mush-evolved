@@ -4,7 +4,7 @@ import { FUEL_CAPSULE_ITEM, capacity, itemsIn } from "../src/items.ts";
 import { parseGameMessage } from "../src/protocol.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";
 import type { Action, GameState } from "../src/types.ts";
-import { makeSeats, must, mustApply, offered, player } from "./support.ts";
+import { makeSeats, must, mustApply, nextCycle, offered, player } from "./support.ts";
 
 const TANK = "STORAGE_A_1:FUEL_TANK";
 const CHAMBER = "MOTOR_ROOM:COMBUSTION_CHAMBER_ACCESS";
@@ -152,7 +152,7 @@ describe("fuel loading", () => {
     player(s, "p0").room = "COMMAND_CENTER";
     s.titles.commander = "p0";
     s.planets.p1 = [{ id: "planet-a", name: "A", direction: "north", distance: 3, sectors: [{ tag: "FOREST", known: true }] }];
-    s = must(applyAction(s, "p0", { type: "travel", equipment: "COMMAND_CENTER:PILOT_MODULE" }));
+    s = nextCycle(must(applyAction(s, "p0", { type: "travel", equipment: "COMMAND_CENTER:PILOT_MODULE" })));
     expect([s.ship.combustion, s.ship.fuel, s.navigation.orbit]).toEqual([0, DEFAULT_CONFIG.ship.fuel.start - 3, "planet-a"]);
   });
 
