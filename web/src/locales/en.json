@@ -81,7 +81,7 @@
       "selfDisease": "Self Disease",
       "anySkill": "Pick any skill",
       "alwaysClean": "Always clean",
-      "warpToPlanet": "Warp to planet",
+      "easyTravel": "Easy travel",
       "role": {
         "mush": "Become Mush",
         "human": "Become human"
@@ -292,7 +292,7 @@
     "pickSkill": "Pick a skill",
     "selfDisease": "Self Disease",
     "selfInjury": "Self Injury",
-    "warpToPlanet": "Warp to a planet",
+    "easyTravel": "Warp to a planet",
     "visibility": {
       "private": "Private",
       "secret": "Secret",

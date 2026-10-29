@@ -28,7 +28,7 @@ export function PlanetList({ view, onAction, terminal }: Props) {
         {view.planets.map((planet) => {
           const analyze = terminal && view.actions.find(({ action: a }) => a.type === "analyze_planet" && a.equipment === terminal.id && a.planet === planet.id);
           const remove = terminal && view.actions.find(({ action: a }) => a.type === "delete_planet" && a.equipment === terminal.id && a.planet === planet.id);
-          // Development cheat (warpToPlanet): only offered while it is on.
+          // Development cheat (easyTravel): only offered while it is on.
           const warp = terminal && view.actions.find(({ action: a }) => a.type === "warp_to_planet" && a.equipment === terminal.id && a.planet === planet.id);
           return (
             <li key={planet.id} className="planet-item">

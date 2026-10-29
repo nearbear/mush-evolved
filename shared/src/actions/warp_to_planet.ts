@@ -6,7 +6,7 @@ import { jump } from "./travel.ts";
 export type WarpToPlanetActionData = { type: "warp_to_planet"; equipment: string; planet: string };
 
 /**
- * Development cheat (`warpToPlanet`, cheats.ts), not a game rule: from the Astro terminal, put the ship in orbit around
+ * Development cheat (`easyTravel`, cheats.ts), not a game rule: from the Astro terminal, put the ship in orbit around
  * one of your planets at once. Free, untimed, needs no fuel, title or heading: the ship turns to face the planet and
  * jumps as a travel does (`jump`, travel.ts), so the other planets are lost and half the hunters follow. Not while in
  * orbit (leave first, as for a travel). The server refuses it unless cheats are allowed.
@@ -41,5 +41,5 @@ export class WarpToPlanetAction extends Action<WarpToPlanetActionData> {
 }
 
 function canWarp(state: Readonly<GameState>, player: Readonly<PlayerState>): boolean {
-  return player.cheats.includes("warpToPlanet") && !player.isBot && state.navigation.orbit === null;
+  return player.cheats.includes("easyTravel") && !player.isBot && state.navigation.orbit === null;
 }

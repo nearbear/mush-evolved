@@ -11,7 +11,7 @@ export type LeaveOrbitActionData = { type: "leave_orbit"; equipment: string };
 /**
  * Leave the orbited planet from the Command terminal (owner, 2026-10-22, the wiki; it takes Travel's place while in orbit):
  * 1 AP and `navigation.leaveOrbit.fuel` fuel from the combustion chamber (owner, 2026-10-23), Commander only (Mush included, dirty or not). Short of loaded fuel, the AP is
- * spent and the ship stays. Otherwise the planet is lost, scanning works again, and half the hunters follow (hunters.ts). Everyone aboard learns of it.
+ * spent and the ship stays. The `easyTravel` cheat (cheats.ts) makes leaving cost no fuel. Otherwise the planet is lost, scanning works again, and half the hunters follow (hunters.ts). Everyone aboard learns of it.
  */
 export class LeaveOrbitAction extends Action<LeaveOrbitActionData> {
   override terminal = true;
@@ -37,7 +37,7 @@ export class LeaveOrbitAction extends Action<LeaveOrbitActionData> {
   }
 
   override apply(state: GameState, player: PlayerState, _target: LeaveOrbitActionData): void {
-    const { fuel } = state.config.navigation.leaveOrbit;
+    const fuel = player.cheats.includes("easyTravel") ? 0 : state.config.navigation.leaveOrbit.fuel;
     if (state.ship.combustion < fuel) {
       logPublic(state, player.room, "leaveOrbitNoFuel", { name: player.character });
       return;

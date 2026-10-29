@@ -6,7 +6,7 @@ import { startCharges } from "./items.ts";
 import { removeStatus } from "./statuses.ts";
 import type { GameState, PlayerState } from "./types.ts";
 
-export const CHEATS = ["infiniteAp", "infiniteMp", "infiniteMorale", "infiniteHp", "infiniteSpores", "infiniteCharges", "instantActions", "noRelayPenalty", "freeHacking", "selfDisease", "anySkill", "alwaysClean", "warpToPlanet"] as const;
+export const CHEATS = ["infiniteAp", "infiniteMp", "infiniteMorale", "infiniteHp", "infiniteSpores", "infiniteCharges", "instantActions", "noRelayPenalty", "freeHacking", "selfDisease", "anySkill", "alwaysClean", "easyTravel"] as const;
 export type Cheat = (typeof CHEATS)[number];
 
 /** Whether a player sees through ACTOPI as the ship has it ("default"), or always ("on") or never ("off"). */
@@ -49,7 +49,7 @@ const REFILL: Record<Cheat, (p: PlayerState, state: GameState) => void> = {
   selfDisease: () => {},
   anySkill: () => {}, // actions/pick_skill.ts reads the flag
   alwaysClean: (p) => removeStatus(p, "dirty"), // dirt is added mid-action; this runs after it
-  warpToPlanet: () => {}, // actions/warp_to_planet.ts reads the flag
+  easyTravel: () => {}, // actions/warp_to_planet.ts and leave_orbit.ts read the flag
 };
 
 /**

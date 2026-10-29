@@ -119,6 +119,14 @@ describe("ship navigation", () => {
     expect(next.log.at(-1)).toMatchObject({ key: "leaveOrbitNoFuel" });
   });
 
+  it("with the easy travel cheat, leaving orbit costs no fuel, even with none loaded", () => {
+    const s = must(setCheat(must(applyAction(game(), "p0", travel)), "p0", "easyTravel", true));
+    s.ship.combustion = 0;
+    const left = must(applyAction(s, "p0", leave));
+    expect(left.navigation.orbit).toBeNull();
+    expect(left.ship.combustion).toBe(0);
+  });
+
   it("views: everyone knows the ship is in orbit, only the finder which planet, the heading only at the terminal", () => {
     const s = must(applyAction(game(), "p0", travel));
     player(s, "p2").room = "CORRIDOR_A";
@@ -141,12 +149,12 @@ describe("ship navigation", () => {
   });
 });
 
-describe("warp to planet cheat", () => {
+describe("easy travel cheat", () => {
   const ASTRO = "COMMAND_CENTER:ASTRO_MODULE";
   const warp = (planet: string): Action => ({ type: "warp_to_planet", equipment: ASTRO, planet });
   /** p0 (the only human) with the cheat on and a planet of their own south at 2; p1 and p2 keep theirs. */
   const cheating = (loaded = 3) => {
-    const s = must(setCheat(game(loaded), "p0", "warpToPlanet", true));
+    const s = must(setCheat(game(loaded), "p0", "easyTravel", true));
     s.planets.p0 = [planet("planet-c", "south", 2)];
     return s;
   };
@@ -158,7 +166,7 @@ describe("warp to planet cheat", () => {
     const s = cheating();
     expect(offered(s, "p0").filter((a) => a.type === "warp_to_planet")).toEqual([warp("planet-c")]);
     expect(applyAction(s, "p0", warp("planet-a"))).toMatchObject({ ok: false });
-    const bot = must(setCheat(s, "p1", "warpToPlanet", true));
+    const bot = must(setCheat(s, "p1", "easyTravel", true));
     expect(offered(bot, "p1").some((a) => a.type === "warp_to_planet")).toBe(false);
     player(s, "p0").room = "CORRIDOR_A";
     expect(offered(s, "p0").some((a) => a.type === "warp_to_planet")).toBe(false);
