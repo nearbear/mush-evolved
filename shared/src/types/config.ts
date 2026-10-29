@@ -281,6 +281,7 @@ export interface GameConfig {
     progress: { rate: number; mod: number; skillBoost: number; relayPenalty: number };
     capPoints: number; // Most PILGRED points (`resources.pilgred`) a player can hold (owner, 2026-10-21; the Physicist's IncrMaxPA(PILGRED, 2)).
     pointsPerDay: number; // PILGRED points the `physicist` skill grants at the start of each day (owner, 2026-10-21; the original +1).
+    edenCost: { ap: number }; // AP shown on the Command terminal's Travel to Eden button; Eden is not reachable yet (owner, 2026-10-29: 2, as for Sol).
     returnCost: { ap: number }; // AP spent to return to Sol at the Command terminal (owner, 2026-10-21; the original's SET_PILGRED_TO_SOL, 2).
   };
   comms: {

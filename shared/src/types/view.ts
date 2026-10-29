@@ -95,6 +95,9 @@ export interface PublicConfig {
   actionQueueCap: number;
   /** Whether walks are shared with roommates (spot.ts). Off, the client keeps walking to itself and sends nothing. */
   sharedSpots: boolean;
+  /** AP the Command terminal's Sol and Eden buttons cost, so the greyed-out ones can show it. */
+  returnToSolAp: number;
+  edenAp: number;
 }
 
 /** Your own state, minus your account name (nobody's name is in a view while the game runs). */
@@ -205,6 +208,8 @@ export interface PlayerView {
   hunters: { count: number; list: { id: string; hp: number }[] | null; turrets: Record<string, number> | null };
   /** Your own planets (private, owner 2026-10-19). Unknown sectors are null: their tags are never sent. */
   planets: PlanetView[];
+  /** How many planets one player can hold (a config constant, public). */
+  maxPlanets: number;
   /**
    * Whether the ship is in orbit, public to everyone (the planet fills the portholes); which planet is only in its
    * finder's `planets`; `orbitPicture` is only which picture it is drawn with (`planetPicture`, cosmetic, owner 2026-10-28),

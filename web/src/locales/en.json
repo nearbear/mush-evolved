@@ -1224,6 +1224,7 @@
     "sectors_other": "{{count}} sectors",
     "unknown": "Unknown sector",
     "scan": "Scan",
+    "newPlanetTab": "New planet",
     "analyze": "Analyse",
     "delete": "Delete {{planet}}",
     "warp": "Warp to {{planet}}",
@@ -1459,6 +1460,7 @@
     "intergalacticTab": "Intergalactic",
     "edenUnavailable": "Eden cannot be reached yet.",
     "solCommanderOnly": "Only the Commander can take the ship to Sol.",
+    "solPilgredBroken": "PILGRED hasn't been repaired yet.",
     "solNotReady": "The way home isn't ready yet."
   },
   "navigation": {

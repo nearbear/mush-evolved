@@ -482,7 +482,7 @@ export function viewFor(state: GameState, playerId: PlayerId): PlayerView {
       to: [...(state.bonds[playerId] ?? [])],
       from: state.players.filter((o) => state.bonds[o.id]?.includes(playerId)).map((o) => o.id),
     },
-    config: { heavyMpPenalty: state.config.heavy.mpPenalty, actionQueueCap: state.config.action.queueCap, sharedSpots: state.config.sharedSpots },
+    config: { heavyMpPenalty: state.config.heavy.mpPenalty, actionQueueCap: state.config.action.queueCap, sharedSpots: state.config.sharedSpots, returnToSolAp: state.config.pilgred.returnCost.ap, edenAp: state.config.pilgred.edenCost.ap },
     maxAp: state.config.maxAp,
     maxHp: you.maxHp,
     maxMorale: you.maxMorale,
@@ -504,6 +504,7 @@ export function viewFor(state: GameState, playerId: PlayerId): PlayerView {
     comms: { linked: state.comms.linked, terminal: you.alive && comTerminalsHere(state, you).length > 0 ? commsTerminalView(state) : null },
     bios: you.alive && biosTerminalsHere(state, you).length > 0 ? { ...state.bios } : null,
     // Your own planets only, and only the tags an analysis revealed (owner, 2026-10-19).
+    maxPlanets: state.config.astro.maxPlanets,
     planets: planetsOf(state, playerId).map((p) => ({
       id: p.id,
       name: p.name,

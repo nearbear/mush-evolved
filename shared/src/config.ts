@@ -181,7 +181,7 @@ export const DEFAULT_CONFIG: GameConfig = {
   project: { cost: { ap: 2 }, progress: { rate: 6, mod: 10, skillBoost: 4, relayPenalty: 2 } },
   // Owner, 2026-10-21: repairing PILGRED uses the original's numbers (DIG_RATE 6, PILGRED_MOD 2, DIG_BOOST 4, -2 per repeat),
   // 2 AP, 25% dirty; the Physicist gains 1 PILGRED point a day and holds 2.
-  pilgred: { cost: { ap: 2 }, dirtyChance: 0.25, injuryChance: 0.05, progress: { rate: 6, mod: 2, skillBoost: 4, relayPenalty: 2 }, capPoints: 2, pointsPerDay: 1, returnCost: { ap: 2 } },
+  pilgred: { cost: { ap: 2 }, dirtyChance: 0.25, injuryChance: 0.05, progress: { rate: 6, mod: 2, skillBoost: 4, relayPenalty: 2 }, capPoints: 2, pointsPerDay: 1, returnCost: { ap: 2 }, edenCost: { ap: 2 } },
   // Owner, 2026-10-19 and 2026-10-21 (docs/comms-plan.md): every comms action is 2 AP. Sol: 4%, +4% per failure, floor 4%.
   // Rebels: avg of two 1..40 draws, +100% each for Rebel and Kivanç, a window of 8..16 cycles. NERON update: 25% per action.
   comms: {

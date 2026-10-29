@@ -4,7 +4,7 @@
 import { Popover } from "@base-ui/react/popover";
 import { Tabs } from "@base-ui/react/tabs";
 import type { Action, EquipmentView, PlayerView } from "@mush2/shared";
-import { type ReactNode, useState } from "react";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ActionButton } from "./ActionButton.tsx";
 import { ActionLabel } from "./ActionLabel.tsx";
@@ -44,7 +44,7 @@ function Intergalactic({ terminal, view, onAction }: Props) {
   return (
     <div className="command-destinations">
       <ReturnToSol terminal={terminal} view={view} onAction={onAction} />
-      <UnavailableButton reason={t("command.edenUnavailable")}>{t("actions.travelToEden")}</UnavailableButton>
+      <UnavailableButton reason={t("command.edenUnavailable")} ap={view.config.edenAp}>{t("actions.travelToEden")}</UnavailableButton>
     </div>
   );
 }
@@ -52,7 +52,7 @@ function Intergalactic({ terminal, view, onAction }: Props) {
 /**
  * The way home: offered by the view only to the Commander once PILGRED is repaired. It ends the game, so the button asks
  * for confirmation first (owner, 2026-10-21). When it isn't offered it is greyed out and says why, from what the view
- * already shows everyone (the titles), so it reveals nothing about PILGRED.
+ * already shows everyone (the titles, and whether PILGRED is repaired, which is announced to the whole crew).
  */
 function ReturnToSol({ terminal, view, onAction }: Props) {
   const { t } = useTranslation();
@@ -86,17 +86,19 @@ function ReturnToSol({ terminal, view, onAction }: Props) {
         <ActionLabel text={t("actions.returnToSol")} cost={option.cost} chance={option.chance} />
       </ActionButton>
     ) : (
-      <UnavailableButton reason={commander ? t("command.solNotReady") : t("command.solCommanderOnly")}>{t("actions.returnToSol")}</UnavailableButton>
+      <UnavailableButton reason={!view.pilgredRepaired ? t("command.solPilgredBroken") : commander ? t("command.solNotReady") : t("command.solCommanderOnly")} ap={view.config.returnToSolAp}>
+        {t("actions.returnToSol")}
+      </UnavailableButton>
     )
   );
 }
 
 /** A greyed-out button for something that can't be done right now, with the reason on hover, focus or tap (as DisabledActionButton). */
-function UnavailableButton({ reason, children }: { reason: string; children: ReactNode }) {
+function UnavailableButton({ reason, ap, children }: { reason: string; ap: number; children: string }) {
   return (
     <Popover.Root>
       <Popover.Trigger openOnHover delay={200} className="big action-disabled" aria-disabled="true" render={<button type="button" />}>
-        <span className="action-label">{children}</span>
+        <ActionLabel text={children} cost={{ ap, mp: 0 }} />
       </Popover.Trigger>
       <Popover.Portal>
         <Popover.Positioner sideOffset={6}>
