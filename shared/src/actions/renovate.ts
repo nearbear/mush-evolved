@@ -37,6 +37,14 @@ export class RenovateAction extends Action<RenovateActionData> {
     return null;
   }
 
+  override dirtChance(state: Readonly<GameState>): number {
+    return state.config.patrol.renovate.dirtyChance;
+  }
+
+  override injuryChance(state: Readonly<GameState>): number {
+    return state.config.patrol.renovate.injuryChance;
+  }
+
   override apply(state: GameState, player: PlayerState, target: RenovateActionData): void {
     const ship = PATROL_SHIPS.find((s) => interfaceId(s) === target.equipment)!; // checked, so it exists
     removeItem(state, scrapFor(state, player)!.id);

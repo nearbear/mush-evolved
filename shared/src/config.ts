@@ -99,7 +99,7 @@ export const DEFAULT_CONFIG: GameConfig = {
   // plant per day (eMush). The Botanist gains 2 garden points a day, holds 4, spent only on a plant in the garden.
   botany: {
     water: { cost: { ap: 1 } },
-    treat: { cost: { ap: 2 } },
+    treat: { cost: { ap: 2 }, injuryChance: 0.01 },
     sow: { cost: { ap: 2 } },
     dirtyChance: 0.15,
     growCycles: { fruit_banana: 36 },
@@ -128,7 +128,7 @@ export const DEFAULT_CONFIG: GameConfig = {
   dispense: { dirtyChance: 0.05 },
   // Owner, 2026-10-23, the wiki: fuel moves by hand, tank to chamber, 0 AP each. The 25% dirt chance is a placeholder (the wiki says only "dirty-prone").
   // Owner, 2026-10-24: oxygen capsules move by hand like fuel, with the same numbers.
-  oxygenCapsule: { cost: { ap: 0 }, dirtyChance: 0.15, injuryChance: 0.01 },
+  oxygenCapsule: { cost: { ap: 0 }, injuryChance: 0.01 },
   fuel: { cost: { ap: 0 }, dirtyChance: 0.15, injuryChance: 0.01 },
   // Owner, 2026-10-16: the computer scientist skill holds up to 4 Computer points, gains 2 a day (and 2 when picked).
   computer: { capPoints: 4, pointsPerDay: 2 },
@@ -159,7 +159,7 @@ export const DEFAULT_CONFIG: GameConfig = {
   shrink: { lyingMorale: 1 },
   interrogate: { cost: { ap: 1 }, damage: 1, dirtyChance: 0.15, injuryChance: 0.1 },
   // Decided 2026-10-16: working on a research costs 2 AP. Owner, 2026-10-26: its progress follows the original's relay formula, 6-9% at difficulty 10.
-  research: { cost: { ap: 2 }, progress: { rate: 6, mod: 10, skillBoost: 4, relayPenalty: 2 }, dirtyChance: 0.25 },
+  research: { cost: { ap: 2 }, progress: { rate: 6, mod: 10, skillBoost: 4, relayPenalty: 2 }, dirtyChance: 0.15 },
   // Decided 2026-10-19 (docs/astro-plan.md): scan 3 AP at 50%, x1.25 per failure in a row; analysis 2 AP; 2 planets per player.
   // Owner, 2026-10-22: planets get a direction and a distance (2 to 9 fuel, unique on the ship), and grow with the day.
   astro: {
@@ -219,8 +219,8 @@ export const DEFAULT_CONFIG: GameConfig = {
   },
   turrets: { cost: { ap: 1 }, chance: 0.3, failureMultiplier: 1.25, damage: [2, 4], charges: 4, rechargePerCycle: 1 },
   patrol: {
-    takeoff: { cost: { ap: 2 } },
-    land: { cost: { ap: 2 } },
+    takeoff: { cost: { ap: 2 }, injuryChance: 0.02, },
+    land: { cost: { ap: 2 }, injuryChance: 0.02, },
     armor: { patrol: 10, pasiphae: 12 },
     // Owner, 2026-10-28 (phase 3): eMush's 10 charges, +1 a cycle while docked; a shot 1 AP, 40%, x1.25 a miss, 3-6, a Pilot x2.
     charges: 10,
@@ -232,11 +232,11 @@ export const DEFAULT_CONFIG: GameConfig = {
     // remain, 2-4 armor and the pilot 0 hp (50%) or 2-4.
     collect: { cost: { ap: 2 }, pieces: { patrol: [3, 1], pasiphae: [0, 1, 1, 1] }, armor: [2, 4], hp: { noneChance: 0.5, range: [2, 4] } },
     // Owner, 2026-10-28 (phase 6): eMush's 2 AP and 12%, back to full armor; an Engineer x2.
-    renovate: { cost: { ap: 2 }, chance: 0.12, engineerFactor: 2 },
+    renovate: { cost: { ap: 2 }, chance: 0.12, dirtyChance: 0.25, injuryChance: 0.05, engineerFactor: 2 },
   },
   // Owner, 2026-10-24 (patrol plan, answer 6): 1 AP to open, 25% each.
-  spaceCapsule: { cost: { ap: 1 }, contents: ["metal_scraps", "plastic_scraps", "oxy_capsule", "fuel_capsule"] },
-  hullRepair: { cost: { ap: 1 }, chance: 0.25, amount: 5 },
+  spaceCapsule: { cost: { ap: 1 }, dirtyChance: 0.25, injuryChance: 0.01, contents: ["metal_scraps", "plastic_scraps", "oxy_capsule", "fuel_capsule"] },
+  hullRepair: { cost: { ap: 1 }, chance: 0.25, injuryChance: 0.05, amount: 5 },
   oscilloscope: { repairFactor: 2 },
   hunger: { satietyPerCycle: 1, fullBellyAt: 3, hungryAfterCycles: 24, hpPerCycle: 1 },
   // Confirmed 2026-10-13: dismantle cost and odds.

@@ -29,6 +29,14 @@ export class OpenCapsuleAction extends Action<OpenCapsuleActionData> {
     return item.type === SPACE_CAPSULE_ITEM && canReachItem(state, player, item) ? null : "cant_open";
   }
 
+  override injuryChance(state: Readonly<GameState>): number {
+    return state.config.spaceCapsule.injuryChance;
+  }
+
+  override dirtChance(state: Readonly<GameState>): number {
+    return state.config.spaceCapsule.dirtyChance;
+  }
+
   override apply(state: GameState, player: PlayerState, target: OpenCapsuleActionData): void {
     const item = state.items.find((i) => i.id === target.item)!; // checked, so it exists
     const { contents } = state.config.spaceCapsule;

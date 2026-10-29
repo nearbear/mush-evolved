@@ -39,6 +39,10 @@ export class TakeoffAction extends Action<TakeoffActionData> {
     return null;
   }
 
+  override injuryChance(state: Readonly<GameState>): number {
+    return state.config.patrol.takeoff.injuryChance;
+  }
+
   override apply(state: GameState, player: PlayerState, target: TakeoffActionData): void {
     const ship = PATROL_SHIPS.find((s) => interfaceId(s) === target.equipment)!; // checked, so it exists
     endPushToLeave(state, player);
