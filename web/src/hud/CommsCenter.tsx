@@ -6,7 +6,7 @@ import { Tooltip } from "@base-ui/react/tooltip";
 import { type Action, type EquipmentView, type PlayerView, XYLOPH_IDS } from "@mush2/shared";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { REBEL_BASE_ICONS, XYLOPH_DONE, XYLOPH_TODO } from "../art/assets.ts";
+import { CHECK_ICON, REBEL_BASE_ICONS, UNCHECK_ICON, XYLOPH_DONE, XYLOPH_TODO } from "../art/assets.ts";
 import { useNames } from "../i18n/names.ts";
 import { ActionButton } from "./ActionButton.tsx";
 import { ActionLabel } from "./ActionLabel.tsx";
@@ -112,14 +112,43 @@ export function CommsCenter({ terminal, view, onAction }: Props) {
             <ul className="research-list">
               {screen.rebels.map((call) => {
                 const decode = find("decode_rebel", call.base);
+                const status = t(
+                  call.status === "contacted" ? "comms.rebelStatusDecoded" : call.status === "lost" ? "comms.rebelStatusLost" : "comms.rebelStatusOpen",
+                );
+                const effect = t(`comms.rebels.${call.base}.effect`);
                 return (
                   <li key={call.base} className="research-item">
-                    <img className="research-card rebel-icon" src={REBEL_BASE_ICONS[call.base]} alt="" />
+                    <Tooltip.Provider delay={300}>
+                      <Tooltip.Root>
+                        <Tooltip.Trigger
+                          className="research-card rebel-icon rebel-icon-button"
+                          aria-label={`${names.rebelBase(call.base)}. ${effect}`}
+                          render={<button type="button" />}
+                        >
+                          <img src={REBEL_BASE_ICONS[call.base]} alt="" />
+                        </Tooltip.Trigger>
+                        <Tooltip.Portal>
+                          <Tooltip.Positioner sideOffset={6}>
+                            <Tooltip.Popup className="tooltip">
+                              <p>{effect}</p>
+                              {call.status === "open" && <p>{t("comms.rebelOpen", { percent: call.progress, count: call.expiresAt - view.cycle })}</p>}
+                            </Tooltip.Popup>
+                          </Tooltip.Positioner>
+                        </Tooltip.Portal>
+                      </Tooltip.Root>
+                    </Tooltip.Provider>
                     <div className="research-title">
                       <strong>{names.rebelBase(call.base)}</strong>
+                      <span className="rebel-status">{status}</span>
+                      {call.status === "contacted" ? (
+                        <img src={CHECK_ICON} alt="" />
+                      ) : call.status === "lost" ? (
+                        <span className="rebel-lost" />
+                      ) : (
+                        <img src={UNCHECK_ICON} alt="" />
+                      )}
                     </div>
                     <div className="research-body">
-                      <span>{t(`comms.rebels.${call.base}.effect`)}</span>
                       <div className="research-progress">
                         <progress max={100} value={call.progress} />
                         <span>{t("research.percent", { percent: call.progress })}</span>
@@ -129,13 +158,6 @@ export function CommsCenter({ terminal, view, onAction }: Props) {
                           </ActionButton>
                         )}
                       </div>
-                      <span>
-                        {call.status === "contacted"
-                          ? t("comms.rebelContacted")
-                          : call.status === "lost"
-                            ? t("comms.rebelLost")
-                            : t("comms.rebelOpen", { percent: call.progress, count: call.expiresAt - view.cycle })}
-                      </span>
                     </div>
                   </li>
                 );

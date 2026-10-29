@@ -201,6 +201,34 @@ li.research-item /* Rebel base icons are 70x65, not the 50x75 research cards. */
 .research-title .skill-status {
   margin-left: auto;
 }
+/* A rebel base's signal: its status in words, then a checkbox (ticked: decoded, empty: needs decoding, crossed: lost), at
+   the row's top right. The base's effect is in the tooltip on its icon. */
+.research-title .rebel-status {
+  flex: none;
+  margin-left: auto;
+  white-space: nowrap;
+  font-size: 0.75em;
+  line-height: 1.2;
+  text-align: right;
+}
+.research-title > img {
+  image-rendering: pixelated;
+}
+.rebel-icon-button {
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: help;
+}
+.rebel-icon-button img {
+  display: block;
+}
+.rebel-lost {
+  display: block;
+  width: 16px;
+  height: 16px;
+  background: url("../../../Mush/www/img/design/yesno.png") -16px 0 no-repeat;
+}
 .research-progress progress {
   flex: 1 1 0;
   min-width: 2rem;
