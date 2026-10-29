@@ -168,8 +168,11 @@ export interface PlayerView {
     /** People who have bonded to you. */
     from: PlayerId[];
   };
-  /** The ship's oxygen, fuel, hull and plasma shield, public to everyone (owner, 2026-10-19), with their caps. */
-  ship: ShipResources & { max: ShipResources };
+  /**
+   * The ship's oxygen, fuel, hull and plasma shield, public to everyone (owner, 2026-10-19), with their caps. Not the
+   * combustion chamber's level: nobody sees it, the Commander included, except by checking the chamber (owner, 2026-10-28).
+   */
+  ship: Omit<ShipResources, "combustion"> & { max: Omit<ShipResources, "combustion"> };
   /** Percent done of each research that has been started, public to everyone (decided 2026-10-16). */
   research: Record<string, number>;
   /**

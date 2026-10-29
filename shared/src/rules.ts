@@ -33,7 +33,7 @@ import { commandTerminalsHere, isPilgredRepaired, pilgredTerminalsHere } from ".
 import { biosTerminalsHere, newBios } from "./bios.ts";
 import { callNextRebel, commsCycle, commsTerminalView, comTerminalsHere, newComms } from "./comms.ts";
 import { botanyCycle, botanyDay, plantView } from "./botany.ts";
-import { burnOxygen, shipMax, startShip } from "./ship.ts";
+import { burnOxygen, shipView, startShip } from "./ship.ts";
 import { allTurrets, huntersCycle, newHunters, startHunters, turretCharges, turretsHere } from "./hunters.ts";
 import { interfaceId, newPatrolShips, PATROL_INTERFACE, PATROL_SHIPS, shipAboard } from "./patrol.ts";
 import { preselectionCycle } from "./preselection.ts";
@@ -494,7 +494,7 @@ export function viewFor(state: GameState, playerId: PlayerId): PlayerView {
     maxHp: you.maxHp,
     maxMorale: you.maxMorale,
     // While the BIOS has the shield off, it shows as 0 (Claude's default, 2026-10-24); its points are kept.
-    ship: { ...state.ship, plasmaShield: state.bios.plasma_shield ? state.ship.plasmaShield : 0, max: shipMax(state.config) },
+    ship: shipView(state),
     // How many, to everyone; each hunter's hp and every turret's charges, to the living in a turret room (owner, 2026-10-24);
     // the hunters' hp also to a living pilot in flight (owner, 2026-10-28).
     hunters: {

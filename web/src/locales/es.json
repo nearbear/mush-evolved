@@ -1457,7 +1457,6 @@
     "right": "Girar a la derecha",
     "travel": "Viajar",
     "leaveOrbit": "Salir de la órbita",
-    "fuel": "Combustible en la cámara de combustión: {{fuel}} de {{max}}",
     "warning": "Viajar quema todo el combustible de la cámara de combustión, y la nave avanza esa distancia. Sin combustible cargado se pierden los PA. Todo planeta que no esté justo delante a esa distancia se pierde."
   },
   "turret": {

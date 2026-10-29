@@ -8,11 +8,18 @@ import { damage } from "./death.ts";
 import { logPublic } from "./log.ts";
 import { PROJECT_COMPLETE } from "./projects.ts";
 import { rollInt } from "./rng.ts";
-import type { DeepReadonly, GameConfig, GameState, ShipResources } from "./types.ts";
+import type { DeepReadonly, GameConfig, GameState, PlayerView, ShipResources } from "./types.ts";
 
 export function startShip(config: GameConfig): ShipResources {
   const { oxygen, fuel, combustion, hull, plasmaShield } = config.ship;
   return { oxygen: oxygen.start, fuel: fuel.start, combustion: combustion.start, hull: hull.start, plasmaShield: plasmaShield.start };
+}
+
+/** The ship's public counters and caps: the combustion chamber's level is left out (owner, 2026-10-28), see check_combustion.ts. */
+export function shipView(state: DeepReadonly<GameState>): PlayerView["ship"] {
+  const { combustion: _level, ...resources } = state.ship;
+  const { combustion: _cap, ...max } = shipMax(state.config);
+  return { ...resources, plasmaShield: state.bios.plasma_shield ? state.ship.plasmaShield : 0, max };
 }
 
 export function shipMax(config: DeepReadonly<GameConfig>): ShipResources {

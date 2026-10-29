@@ -28,7 +28,6 @@ export function ShipNavigation({ terminal, view, onAction }: Props) {
         <strong>{t("navigation.heading", { direction: t(`astro.directions.${heading}`) })}</strong>
         {orbiting && <> · {t("navigation.inOrbit")}</>}
       </p>
-      <p>{t("navigation.fuel", { fuel: view.ship.combustion, max: view.ship.max.combustion })}</p>
       {turns.length > 0 && (
         <div className="ship-navigation-row">
           {turns.map((option) => (

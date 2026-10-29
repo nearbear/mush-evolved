@@ -16,7 +16,7 @@ describe("ship resources", () => {
   it("start at the decided values and are public", () => {
     const s = game();
     expect(s.ship).toEqual({ oxygen: 30, fuel: 20, combustion: 0, hull: 100, plasmaShield: 50 });
-    expect(viewFor(s, "p0").ship).toEqual({ ...s.ship, max: { oxygen: 32, fuel: 100, combustion: 9, hull: 100, plasmaShield: 100 } });
+    expect(viewFor(s, "p0").ship).toEqual({ oxygen: s.ship.oxygen, fuel: s.ship.fuel, hull: s.ship.hull, plasmaShield: s.ship.plasmaShield, max: { oxygen: 32, fuel: 100, hull: 100, plasmaShield: 100 } });
     expect(viewFor(s, "p3").ship).toEqual(viewFor(s, "p0").ship);
   });
 

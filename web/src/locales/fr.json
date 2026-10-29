@@ -1457,7 +1457,6 @@
     "right": "Orienter à droite",
     "travel": "Voyager",
     "leaveOrbit": "Quitter l'orbite",
-    "fuel": "Fuel dans la chambre de combustion : {{fuel}} sur {{max}}",
     "warning": "Voyager brûle tout le fuel de la chambre de combustion, et le vaisseau avance d'autant. Sans fuel chargé, les PA sont perdus. Toute planète qui ne se trouve pas droit devant à cette distance est perdue."
   },
   "turret": {

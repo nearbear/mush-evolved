@@ -1446,7 +1446,6 @@
     "right": "Turn right",
     "travel": "Travel",
     "leaveOrbit": "Leave orbit",
-    "fuel": "Fuel in the combustion chamber: {{fuel}} of {{max}}",
     "warning": "Travel burns all the fuel in the combustion chamber, and the ship goes that far. With none loaded the AP is wasted. Every planet not lying exactly ahead at that distance is lost."
   },
   "turret": {
