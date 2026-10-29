@@ -1145,7 +1145,7 @@
     "needPostSelection": "Mush chosen",
     "progress": "{{percent}}% done",
     "done": "Complete",
-    "work": "Work on it",
+    "work": "Progress",
     "empty": "Nothing to research.",
     "status": {
       "full": "Fully implemented",

@@ -1153,7 +1153,7 @@
     "needPostSelection": "Mush désignés",
     "progress": "{{percent}} % accompli",
     "done": "Terminée",
-    "work": "Travailler dessus",
+    "work": "Progresser",
     "empty": "Rien à rechercher.",
     "status": {
       "full": "Entièrement implémentée",
