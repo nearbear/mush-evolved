@@ -76,7 +76,7 @@ export class FakeServer {
   }
 }
 
-/** Seats in a test game set up all at once (`GameRoom.setup`). Not tied to the multiplayer ship's `SEAT_COUNT`. */
+/** Seats in a test game set up all at once (`GameRoom.setup`). Not tied to a multiplayer ship's seat count (`config.preselection.seats`). */
 const TEST_SEATS = 8;
 
 export function seats(humans: number): Seat[] {
