@@ -1529,3 +1529,9 @@ A Gemini review of the `paidBy` change spotted an older bug: `HealAction.apply` 
 
 ## 2026-10-28: daily HP healing
 Owner asked for +1 HP for everyone at day change plus a tooltip update. The request left no real gaps, so I skipped the question round and assumed living players only, capped at max HP, Mush included. First attempt wrote `p.hp` in `rules.ts`, which the hpWrites guard test rejected; moved the helper into `death.ts`. One hunger test needed adjusting because the heal masked its HP check.
+
+## 2026-10-28: Patrol-ship shooting (phase 3 of the patrol plan)
+
+- Owner asked for phase 3 after a feasibility check on Pasiphae scrapping (#147), which needs phases 4-5. Claude asked the three open points in one question: visibility (owner chose all private, kill included, over the turret pattern), the battle panel (hunters + own ship only), and which turret skills carry over (Gunman points and Persistent yes, Gunner no). The eMush numbers were already decided in docs/patrol-plan.md.
+- Worked: reusing the turret action's shape (own failure streak, Shoot-point cost) and extracting `HunterList` so the cockpit and the turret window share one list. Gunner keys on the `shoot` tag, so leaving the tag off the patrol shot was the simplest way to honour "Gunner doesn't apply".
+- Needed correction: `install.test.ts` asserted a camera can be installed in every room in `config.rooms`, which now includes the ship rooms; it now skips them.

@@ -190,8 +190,9 @@ export interface PlayerView {
   /** NERON's BIOS settings, read-only, only while you are alive in a room with a BIOS terminal (owner, 2026-10-21); otherwise null. */
   bios: BiosState | null;
   /**
-   * Hunters attacking the ship (owner, 2026-10-24): how many, to everyone. `list` (each hunter's hp) and `turrets`
-   * (charges by turret equipment id) only while you are alive in a turret room; otherwise null.
+   * Hunters attacking the ship (owner, 2026-10-24): how many, to everyone. `list` (each hunter's hp) only while you are
+   * alive in a turret room or flying a ship (owner, 2026-10-28); `turrets` (charges by turret equipment id) only while
+   * you are alive in a turret room. Otherwise null.
    */
   hunters: { count: number; list: { id: string; hp: number }[] | null; turrets: Record<string, number> | null };
   /** Your own planets (private, owner 2026-10-19). Unknown sectors are null: their tags are never sent. */
@@ -201,8 +202,11 @@ export interface PlayerView {
    * finder's `planets`. `heading` only while you are alive at a Command terminal (owner, 2026-10-22); otherwise null.
    */
   navigation: { orbiting: boolean; heading: PlanetDirection | null };
-  /** The patrol ship you are flying (its room id) with its armor, while you are alive aboard (patrol.ts); otherwise null. */
-  patrolShip: { id: string; armor: number; maxArmor: number } | null;
+  /**
+   * The patrol ship you are flying (its room id) with its armor and charges (null for the Pasiphae, which can't shoot),
+   * while you are alive aboard (patrol.ts); otherwise null.
+   */
+  patrolShip: { id: string; armor: number; maxArmor: number; charges: number | null } | null;
   /** Every title in `TITLE_IDS` order, public to everyone (owner, 2026-10-20). */
   titles: TitleView[];
   /**

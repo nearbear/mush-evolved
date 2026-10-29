@@ -824,7 +824,8 @@
     "bodyTransferred": "Vous vous êtes glissé dans la peau de {{target}}. {{name}} se réveille humain, dans votre ancien corps.",
     "patrolTakeoff": "{{name}} a décollé à bord du {{room}}.",
     "patrolLanded": "{{name}} a posé le {{room}}.",
-    "patrolRough": "Manœuvre difficile : la coque a subi {{hull}} dégâts, le vaisseau a perdu {{armor}} d'armure et vous avez perdu {{hp}} PV."
+    "patrolRough": "Manœuvre difficile : la coque a subi {{hull}} dégâts, le vaisseau a perdu {{armor}} d'armure et vous avez perdu {{hp}} PV.",
+    "patrolKill": "Vous avez abattu un hunter."
   },
   "skills": {
     "title": "Choisir une compétence",

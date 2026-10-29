@@ -816,7 +816,8 @@
     "bodyTransferred": "You slipped into {{target}}'s body. {{name}} wakes up human, with your old body.",
     "patrolTakeoff": "{{name}} took off in {{room}}.",
     "patrolLanded": "{{name}} landed {{room}}.",
-    "patrolRough": "Rough manoeuvre: the hull took {{hull}} damage, the ship lost {{armor}} armor and you lost {{hp}} HP."
+    "patrolRough": "Rough manoeuvre: the hull took {{hull}} damage, the ship lost {{armor}} armor and you lost {{hp}} HP.",
+    "patrolKill": "You shot down a hunter."
   },
   "skills": {
     "title": "Choose a skill",

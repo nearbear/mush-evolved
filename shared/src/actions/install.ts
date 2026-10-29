@@ -2,6 +2,7 @@ import { Action, isString } from "./action.ts";
 import { removeItem, itemsIn } from "../items.ts";
 import { CAMERA_EQUIPMENT, cameraEquipmentId } from "../equipment.ts";
 import { hasCamera, logPublic } from "../log.ts";
+import { shipAboard } from "../patrol.ts";
 import type { GameState, ItemState, PlayerState } from "../types.ts";
 
 export type InstallActionData = { type: "install"; item: string };
@@ -10,7 +11,7 @@ export type InstallActionData = { type: "install"; item: string };
  * Install (approved 2026-10-17, #35): turns a camera item you carry into `CAMERA` equipment of the
  * room you are in. `install.cost.ap` AP, no tools, at most one camera per room. Logged publicly.
  * The item is used up; `uninstall` makes a new one. Until installed, a camera is just an item and
- * does not count as a camera in the room (`hasCamera`).
+ * does not count as a camera in the room (`hasCamera`). Never aboard a patrol ship (owner, 2026-10-24).
  */
 export class InstallAction extends Action<InstallActionData> {
   constructor() {
@@ -22,11 +23,12 @@ export class InstallAction extends Action<InstallActionData> {
   }
 
   override getCandidates(state: Readonly<GameState>, player: Readonly<PlayerState>): InstallActionData[] {
-    if (hasCamera(state, player.room)) return [];
+    if (hasCamera(state, player.room) || shipAboard(player)) return [];
     return carriedCameras(state, player).map((item) => ({ type: "install", item: item.id }));
   }
 
   override validate(state: Readonly<GameState>, player: Readonly<PlayerState>, target: InstallActionData): string | null {
+    if (shipAboard(player)) return "in_patrol_ship";
     if (!carriedCameras(state, player).some((i) => i.id === target.item)) return "cant_install";
     if (hasCamera(state, player.room)) return "camera_already_installed";
     return null;

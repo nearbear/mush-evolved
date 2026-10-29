@@ -45,9 +45,20 @@ export const patrolRooms = (): Record<RoomId, RoomId[]> => Object.fromEntries(PA
 export const patrolEquipment = (): Record<RoomId, Equipment[]> =>
   Object.fromEntries(PATROL_SHIPS.map((s) => [s.id, [{ id: commandId(s), type: PATROL_COMMANDS[s.kind] }]]));
 
-/** Every ship docked, at full armor. */
+/** Shots a ship holds when full: none for the Pasiphae, which can't shoot. */
+export const maxCharges = (charges: number, ship: PatrolShip): number => (ship.kind === "pasiphae" ? 0 : charges);
+
+/** Every ship docked, at full armor and charges. */
 export const newPatrolShips = (config: GameConfig): GameState["patrolShips"] =>
-  Object.fromEntries(PATROL_SHIPS.map((s) => [s.id, { armor: config.patrol.armor[s.kind], out: false }]));
+  Object.fromEntries(PATROL_SHIPS.map((s) => [s.id, { armor: config.patrol.armor[s.kind], charges: maxCharges(config.patrol.charges, s), out: false }]));
+
+/** At a cycle change: each docked ship regains charges up to full (owner, 2026-10-24: only while docked). */
+export function rechargePatrolShips(state: GameState): void {
+  for (const ship of PATROL_SHIPS) {
+    const shipState = state.patrolShips[ship.id]!;
+    if (!shipState.out) shipState.charges = Math.min(maxCharges(state.config.patrol.charges, ship), shipState.charges + state.config.patrol.rechargePerCycle);
+  }
+}
 
 /** Who may fly: Pilots only for now (answer 3; the BIOS piloting lock and spaceship keys come later). */
 export const canFly = (player: Readonly<PlayerState>): boolean => hasSkill(player, "pilot");

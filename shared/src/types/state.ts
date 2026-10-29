@@ -119,12 +119,15 @@ export interface GameState {
   /** Charges left in each turret, by its `TURRET_COMMAND` equipment id; absent = full. To the living in a turret room. */
   turrets: Record<string, number>;
   /**
-   * Each patrol ship by its room id (patrol.ts): its armor, and whether it is out (in flight). Out is known to anyone
-   * in its bay (owner, 2026-10-24); armor goes to its pilot only, for now.
+   * Each patrol ship by its room id (patrol.ts): its armor, its charges (always 0 for the Pasiphae, which can't shoot),
+   * and whether it is out (in flight). Out is known to anyone in its bay (owner, 2026-10-24); armor and charges go to
+   * its pilot only, for now.
    */
-  patrolShips: Record<RoomId, { armor: number; out: boolean }>;
+  patrolShips: Record<RoomId, { armor: number; charges: number; out: boolean }>;
   /** Missed turret shots in a row per player, raising their next shot's odds; reset by a hit (owner, 2026-10-24). Never sent. */
   turretFailures: Record<PlayerId, number>;
+  /** Missed patrol-ship shots in a row per player, kept apart from the turrets' (owner, 2026-10-24); reset by a hit. Never sent. */
+  patrolFailures: Record<PlayerId, number>;
   /** Who holds each title (titles.ts); null while vacant. Public: every view has the holders and the lines. */
   titles: Record<TitleId, PlayerId | null>;
   /**

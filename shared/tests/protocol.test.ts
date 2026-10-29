@@ -57,6 +57,7 @@ describe("actions from a client", () => {
     analyze_planet: [{ type: "analyze_planet", equipment: "e1", planet: "pl1" }],
     delete_planet: [{ type: "delete_planet", equipment: "e1", planet: "pl1" }],
     turret_attack: [{ type: "turret_attack", equipment: "e1", hunter: "h1" }],
+    patrol_attack: [{ type: "patrol_attack", equipment: "e1", hunter: "h1" }],
     repair_hull: [{ type: "repair_hull", item: "i1" }],
     takeoff: [{ type: "takeoff", equipment: "e1" }],
     land: [{ type: "land", equipment: "e1" }],

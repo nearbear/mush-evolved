@@ -23,6 +23,7 @@ import { ContactXylophAction } from "./actions/contact_xyloph.ts";
 import { UpdateNeronAction } from "./actions/update_neron.ts";
 import { SetBiosAction } from "./actions/set_bios.ts";
 import { ScanPlanetAction } from "./actions/scan_planet.ts";
+import { PatrolAttackAction } from "./actions/patrol_attack.ts";
 import { TurretAttackAction } from "./actions/turret_attack.ts";
 import { RepairHullAction } from "./actions/repair_hull.ts";
 import { TakeoffAction } from "./actions/takeoff.ts";
@@ -132,6 +133,7 @@ const REGISTRY = {
   analyze_planet: new AnalyzePlanetAction(),
   delete_planet: new DeletePlanetAction(),
   turret_attack: new TurretAttackAction(),
+  patrol_attack: new PatrolAttackAction(),
   repair_hull: new RepairHullAction(),
   takeoff: new TakeoffAction(),
   land: new LandAction(),

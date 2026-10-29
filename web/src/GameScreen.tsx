@@ -212,7 +212,7 @@ export function GameScreen({ ticket, onLeave, waking = false }: { ticket: SeatTi
             {!you.alive ? (
               <DeathNotice view={view} />
             ) : view.patrolShip ? (
-              <PatrolCockpit view={view} ship={view.patrolShip} selected={target} onSelect={select} />
+              <PatrolCockpit view={view} ship={view.patrolShip} selected={target} onSelect={select} onAction={send} />
             ) : layout ? (
               <LeavingIsoRoom
                 layout={layout}

@@ -7,7 +7,7 @@ import { commandId, interfaceId, PATROL_SHIPS, patrolShip } from "../src/patrol.
 import { parseGameMessage } from "../src/protocol.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";
 import type { Action, GameConfig, GameState } from "../src/types.ts";
-import { costOf, makeSeats, mustApply, noHunters, offered, player } from "./support.ts";
+import { costOf, makeSeats, mustApply, nextCycle, noHunters, offered, option, player } from "./support.ts";
 
 const BAY = "SPACESHIP_BAY_A";
 const LONGANE = patrolShip("PATROL_SHIP_A_0")!;
@@ -33,12 +33,15 @@ describe("patrol ship numbers", () => {
       takeoff: { cost: { ap: 2 } },
       land: { cost: { ap: 2 } },
       armor: { patrol: 10, pasiphae: 12 },
+      charges: 10,
+      rechargePerCycle: 1,
+      shot: { cost: { ap: 1 }, chance: 0.4, failureMultiplier: 1.25, damage: [3, 6], pilotAccuracyFactor: 2 },
       cleanChance: 0.2,
       rough: { hull: [2, 4], armor: 1, hp: [0, 2] },
     });
   });
 
-  it("eight ships, each a door-less room holding its command, start docked at full armor", () => {
+  it("eight ships, each a door-less room holding its command, start docked at full armor and charges (the Pasiphae has none)", () => {
     const s = ship();
     expect(PATROL_SHIPS.map((p) => p.id)).toEqual(["PATROL_SHIP_A_0", "PATROL_SHIP_A_1", "PATROL_SHIP_A_2", "PATROL_SHIP_B_0", "PATROL_SHIP_B_1", "PATROL_SHIP_B_2", "PATROL_SHIP_AA_0", "PATROL_SHIP_AA_1"]);
     for (const p of PATROL_SHIPS) {
@@ -46,7 +49,7 @@ describe("patrol ship numbers", () => {
       expect(s.equipment[p.id]).toEqual([{ id: commandId(p), type: p.kind === "pasiphae" ? "PASIPHAE_COMMAND" : "PATROL_COMMAND" }]);
       // Its interface is the bay equipment the map already has.
       expect(s.equipment[p.bay]!.some((e) => e.id === interfaceId(p) && e.type === "PATROL_INTERFACE")).toBe(true);
-      expect(s.patrolShips[p.id]).toEqual({ armor: p.kind === "pasiphae" ? 12 : 10, out: false });
+      expect(s.patrolShips[p.id]).toEqual(p.kind === "pasiphae" ? { armor: 12, charges: 0, out: false } : { armor: 10, charges: 10, out: false });
     }
   });
 });
@@ -68,7 +71,7 @@ describe("taking off", () => {
     expect(player(next, "p0")).toMatchObject({ room: LONGANE.id, ap: player(s, "p0").ap - s.config.patrol.takeoff.cost.ap });
     expect(player(next, "p0").spot).toBeUndefined();
     expect(player(next, "p1").room).toBe(BAY);
-    expect(next.patrolShips[LONGANE.id]).toEqual({ armor: 10, out: true });
+    expect(next.patrolShips[LONGANE.id]).toEqual({ armor: 10, charges: 10, out: true });
     // A Pilot always manoeuvres cleanly: the hull is untouched.
     expect(next.ship).toEqual(s.ship);
   });
@@ -119,12 +122,12 @@ describe("taking off", () => {
 });
 
 describe("in flight", () => {
-  it("the pilot can only land (no doors), and sees their ship's armor; nobody else does", () => {
+  it("the pilot can only land (no doors), and sees their ship's armor and charges; nobody else does", () => {
     const s = mustApply(ship(), "p0", takeoff());
     const types = new Set(offered(s, "p0").map((a) => a.type));
     expect(types.has("move")).toBe(false);
     expect(offered(s, "p0").filter((a) => a.type === "land")).toEqual([land()]);
-    expect(viewFor(s, "p0").patrolShip).toEqual({ id: LONGANE.id, armor: 10, maxArmor: 10 });
+    expect(viewFor(s, "p0").patrolShip).toEqual({ id: LONGANE.id, armor: 10, maxArmor: 10, charges: 10 });
     expect(viewFor(s, "p0").roomEquipment).toEqual([{ id: commandId(LONGANE), type: "PATROL_COMMAND" }]);
     expect(viewFor(s, "p1").patrolShip).toBeNull();
   });
@@ -163,6 +166,139 @@ describe("landing", () => {
     const s = ship();
     expect(refusal(s, "p0", land())).toBe("not_flying");
     expect(applyAction(s, "p0", land()).ok).toBe(false);
+  });
+});
+
+describe("shooting from a patrol ship", () => {
+  const PASIPHAE = patrolShip("PATROL_SHIP_AA_1")!;
+  const shoot = (hunter: string, ship = LONGANE): Action => ({ type: "patrol_attack", equipment: commandId(ship), hunter });
+  const shot = (overrides: Partial<GameConfig["patrol"]["shot"]>) => ({ patrol: { ...DEFAULT_CONFIG.patrol, shot: { ...DEFAULT_CONFIG.patrol.shot, ...overrides } } });
+  const chanceOf = (s: GameState, id: string) => option(s, id, { type: "patrol_attack" })!.chance;
+  /** p0 flying Longane, with two hunters out there. */
+  function flying(config: Partial<GameConfig> = {}): GameState {
+    const s = mustApply(ship(config), "p0", takeoff());
+    s.hunters.list.push({ id: "h1", hp: 6, hitChance: 0.8, target: null }, { id: "h2", hp: 6, hitChance: 0.8, target: null });
+    return s;
+  }
+
+  it("is offered at the command for each hunter, for 1 AP at 40%, doubled for a Pilot", () => {
+    const s = flying();
+    expect(offered(s, "p0").filter((a) => a.type === "patrol_attack")).toEqual([shoot("h1"), shoot("h2")]);
+    expect(costOf(s, "p0", shoot("h1"))).toEqual({ ap: s.config.patrol.shot.cost.ap, mp: 0 });
+    expect(chanceOf(s, "p0")).toBeCloseTo(s.config.patrol.shot.chance * s.config.patrol.shot.pilotAccuracyFactor);
+    // Nobody else is offered it; someone aboard without the skill (once non-pilots fly) gets the plain odds.
+    expect(offered(s, "p1").some((a) => a.type === "patrol_attack")).toBe(false);
+    player(s, "p0").skills = [];
+    expect(chanceOf(s, "p0")).toBeCloseTo(s.config.patrol.shot.chance);
+  });
+
+  it("a hit costs a charge, does 3-6 damage, resets the ship's miss streak, and only the shooter is told", () => {
+    let s = flying(shot({ chance: 1 }));
+    s.patrolFailures.p0 = 2;
+    s = mustApply(s, "p0", shoot("h1"));
+    expect(s.patrolShips[LONGANE.id]!.charges).toBe(s.config.patrol.charges - 1);
+    const hp = s.hunters.list[0]!.hp;
+    expect(6 - hp).toBeGreaterThanOrEqual(3);
+    expect(s.patrolFailures.p0).toBeUndefined();
+    expect(s.log.at(-1)).toMatchObject({ key: "turretHit", visibleTo: ["p0"], params: { damage: 6 - hp } });
+  });
+
+  it("a miss costs a charge too; its streak (x1.25 a miss) is its own, apart from the turrets'", () => {
+    let s = flying(shot({ chance: 0 }));
+    s = mustApply(s, "p0", shoot("h1"));
+    expect([s.patrolShips[LONGANE.id]!.charges, s.patrolFailures.p0, s.turretFailures.p0, s.hunters.list[0]!.hp]).toEqual([s.config.patrol.charges - 1, 1, undefined, 6]);
+    expect(s.log.at(-1)).toMatchObject({ key: "turretMiss", visibleTo: ["p0"] });
+    const odds = flying();
+    player(odds, "p0").skills = [];
+    odds.turretFailures.p0 = 3;
+    expect(chanceOf(odds, "p0")).toBeCloseTo(0.4);
+    odds.patrolFailures.p0 = 2;
+    expect(chanceOf(odds, "p0")).toBeCloseTo(0.4 * 1.25 ** 2);
+  });
+
+  it("a kill removes the hunter and is private: the crew sees only the count drop", () => {
+    let s = flying(shot({ chance: 1 }));
+    s.hunters.list[0]!.hp = 1;
+    s = mustApply(s, "p0", shoot("h1"));
+    expect(s.hunters.list.map((h) => h.id)).toEqual(["h2"]);
+    expect(s.log.at(-1)).toMatchObject({ key: "patrolKill", visibleTo: ["p0"] });
+    for (const id of ["p1", "p2"]) {
+      expect(lines(s, id, "patrolKill")).toEqual([]);
+      expect(viewFor(s, id).hunters.count).toBe(1);
+    }
+  });
+
+  it("a Shoot point pays for it, and Persistent speeds up the streak; Gunner does nothing here", () => {
+    const s = flying();
+    player(s, "p0").skills = ["pilot", "gunner"];
+    expect(chanceOf(s, "p0")).toBeCloseTo(0.4 * 2);
+    player(s, "p0").resources.shoot = 1;
+    expect(costOf(s, "p0", shoot("h1"))).toMatchObject({ ap: 0, paidBy: "shoot" });
+    player(s, "p0").skills = ["persistent"];
+    s.patrolFailures.p0 = 2;
+    expect(chanceOf(s, "p0")).toBeCloseTo(0.4 * s.config.persistent.failureMultiplier ** 2);
+  });
+
+  it("is refused with no charges, from the Pasiphae, from the ground, at a gone hunter, or in pre-selection; the state stays as it was", () => {
+    const s = flying();
+    s.patrolShips[LONGANE.id]!.charges = 0;
+    const before = structuredClone(s);
+    expect(offered(s, "p0").some((a) => a.type === "patrol_attack")).toBe(false);
+    expect(applyAction(s, "p0", shoot("h1"))).toEqual({ ok: false, error: "illegal_action" });
+    expect(refusal(s, "p0", shoot("h1"))).toBe("no_charges");
+    expect(refusal(s, "p0", shoot("h1", JUJUBE))).toBe("cant_shoot");
+    expect(refusal(s, "p1", shoot("h1"))).toBe("cant_shoot");
+    s.patrolShips[LONGANE.id]!.charges = 1;
+    expect(refusal(s, "p0", shoot("nope"))).toBe("no_such_hunter");
+    s.preselection = true;
+    expect(refusal(s, "p0", shoot("h1"))).toBe("preselection");
+    s.preselection = false;
+    s.patrolShips[LONGANE.id]!.charges = 0;
+    expect(s).toEqual(before);
+
+    const pas = ship();
+    player(pas, "p0").room = PASIPHAE.bay;
+    const out = mustApply(pas, "p0", takeoff(PASIPHAE));
+    out.hunters.list.push({ id: "h1", hp: 6, hitChance: 0.8, target: null });
+    expect(offered(out, "p0").some((a) => a.type === "patrol_attack")).toBe(false);
+    expect(refusal(out, "p0", shoot("h1", PASIPHAE))).toBe("cant_shoot");
+    expect(viewFor(out, "p0").patrolShip).toMatchObject({ id: PASIPHAE.id, charges: null });
+  });
+
+  it("charges come back 1 a cycle up to 10, only while docked", () => {
+    let s = flying();
+    s.patrolShips[LONGANE.id]!.charges = 5;
+    s.patrolShips[JUJUBE.id]!.charges = 5;
+    s.patrolShips[patrolShip("PATROL_SHIP_A_2")!.id]!.charges = s.config.patrol.charges;
+    s = nextCycle(s);
+    expect(s.patrolShips[LONGANE.id]!.charges).toBe(5);
+    expect(s.patrolShips[JUJUBE.id]!.charges).toBe(5 + s.config.patrol.rechargePerCycle);
+    expect(s.patrolShips[patrolShip("PATROL_SHIP_A_2")!.id]!.charges).toBe(s.config.patrol.charges);
+    expect(s.patrolShips[PASIPHAE.id]!.charges).toBe(0);
+  });
+
+  it("the pilot sees each hunter's hp but no turret's charges; nobody on the ground does", () => {
+    const s = flying();
+    expect(viewFor(s, "p0").hunters).toEqual({ count: 2, list: [{ id: "h1", hp: 6 }, { id: "h2", hp: 6 }], turrets: null });
+    expect(viewFor(s, "p1").hunters).toEqual({ count: 2, list: null, turrets: null });
+  });
+
+  it("parses from the wire", () => {
+    expect(parseGameMessage(JSON.stringify({ type: "action", action: shoot("h1") }))).toEqual({ type: "action", action: shoot("h1") });
+  });
+});
+
+describe("aboard a ship", () => {
+  it("nobody can install a camera or build", () => {
+    const s = mustApply(ship(), "p0", takeoff());
+    const camera = "cam1";
+    const blueprint = "bp1";
+    s.items.push({ id: camera, type: "camera", at: { kind: "player", id: "p0" } });
+    s.items.push({ id: blueprint, type: "blueprint", builds: "SOFA", at: { kind: "player", id: "p0" } });
+    s.items.push({ id: "m1", type: "metal_scraps", at: { kind: "player", id: "p0" } });
+    expect(offered(s, "p0").some((a) => a.type === "install" || a.type === "build")).toBe(false);
+    expect(refusal(s, "p0", { type: "install", item: camera })).toBe("in_patrol_ship");
+    expect(refusal(s, "p0", { type: "build", item: blueprint })).toBe("in_patrol_ship");
   });
 });
 

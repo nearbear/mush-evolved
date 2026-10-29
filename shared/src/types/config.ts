@@ -378,11 +378,16 @@ export interface GameConfig {
   turrets: { cost: { ap: number }; chance: number; failureMultiplier: number; damage: [number, number]; charges: number; rechargePerCycle: number };
   // Patrol ships and the Pasiphae (owner, 2026-10-24, docs/patrol-plan.md): takeoff and landing cost 2 AP each; armor
   // 10 (Pasiphae 12); a manoeuvre is clean at `cleanChance` (a Pilot always), otherwise rough: hull and pilot hp
-  // ranges, uniform, and a fixed armor loss.
+  // ranges, uniform, and a fixed armor loss. Phase 3 (owner, 2026-10-28): a patrol ship (not the Pasiphae) holds
+  // `charges` shots, regaining `rechargePerCycle` a cycle only while docked; a shot is like a turret's, with its own
+  // numbers, and a Pilot multiplies its chance by `pilotAccuracyFactor`.
   patrol: {
     takeoff: { cost: { ap: number } };
     land: { cost: { ap: number } };
     armor: { patrol: number; pasiphae: number };
+    charges: number;
+    rechargePerCycle: number;
+    shot: { cost: { ap: number }; chance: number; failureMultiplier: number; damage: [number, number]; pilotAccuracyFactor: number };
     cleanChance: number;
     rough: { hull: [number, number]; armor: number; hp: [number, number] };
   };

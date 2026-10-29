@@ -218,6 +218,10 @@ export const DEFAULT_CONFIG: GameConfig = {
     takeoff: { cost: { ap: 2 } },
     land: { cost: { ap: 2 } },
     armor: { patrol: 10, pasiphae: 12 },
+    // Owner, 2026-10-28 (phase 3): eMush's 10 charges, +1 a cycle while docked; a shot 1 AP, 40%, x1.25 a miss, 3-6, a Pilot x2.
+    charges: 10,
+    rechargePerCycle: 1,
+    shot: { cost: { ap: 1 }, chance: 0.4, failureMultiplier: 1.25, damage: [3, 6], pilotAccuracyFactor: 2 },
     cleanChance: 0.2,
     rough: { hull: [2, 4], armor: 1, hp: [0, 2] },
   },

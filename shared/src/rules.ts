@@ -127,6 +127,7 @@ export function createGame(
     hunters: newHunters(),
     turrets: {},
     turretFailures: {},
+    patrolFailures: {},
     patrolShips: newPatrolShips(config),
     navigation: { heading: config.navigation.startHeading, orbit: null },
     // Issued with Mush selection, whatever the role (owner, 2026-10-13 and 2026-10-20); in pre-selection, by `selectMush`.
@@ -494,10 +495,11 @@ export function viewFor(state: GameState, playerId: PlayerId): PlayerView {
     maxMorale: you.maxMorale,
     // While the BIOS has the shield off, it shows as 0 (Claude's default, 2026-10-24); its points are kept.
     ship: { ...state.ship, plasmaShield: state.bios.plasma_shield ? state.ship.plasmaShield : 0, max: shipMax(state.config) },
-    // How many, to everyone; each hunter's hp and every turret's charges, to the living in a turret room (owner, 2026-10-24).
+    // How many, to everyone; each hunter's hp and every turret's charges, to the living in a turret room (owner, 2026-10-24);
+    // the hunters' hp also to a living pilot in flight (owner, 2026-10-28).
     hunters: {
       count: state.hunters.list.length,
-      list: you.alive && turretsHere(state, you).length > 0 ? state.hunters.list.map(({ id, hp }) => ({ id, hp })) : null,
+      list: you.alive && (turretsHere(state, you).length > 0 || shipAboard(you)) ? state.hunters.list.map(({ id, hp }) => ({ id, hp })) : null,
       turrets: you.alive && turretsHere(state, you).length > 0 ? Object.fromEntries(allTurrets(state).map((t) => [t.id, turretCharges(state, t.id)])) : null,
     },
     research: { ...state.research },
@@ -559,10 +561,12 @@ function equipmentView(state: GameState, { id, type }: Equipment): EquipmentView
   return { id, type, ...(out && { out: true as const }) };
 }
 
-/** Your own ship's armor, while you fly it. */
+/** Your own ship's armor and charges, while you fly it. */
 function patrolShipView(state: GameState, you: PlayerState): PlayerView["patrolShip"] {
   const ship = you.alive ? shipAboard(you) : undefined;
-  return ship ? { id: ship.id, armor: state.patrolShips[ship.id]!.armor, maxArmor: state.config.patrol.armor[ship.kind] } : null;
+  if (!ship) return null;
+  const { armor, charges } = state.patrolShips[ship.id]!;
+  return { id: ship.id, armor, maxArmor: state.config.patrol.armor[ship.kind], charges: ship.kind === "pasiphae" ? null : charges };
 }
 
 /** Alive, not done for the cycle, and the game is running. */

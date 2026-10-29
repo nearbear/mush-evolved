@@ -34,6 +34,7 @@ const ACTION_NAME_KEYS = {
   set_bios: "actions.setBios",
   scan_planet: "actions.scanPlanet",
   turret_attack: "actions.turretAttack",
+  patrol_attack: "actions.turretAttack",
   repair_hull: "actions.repairHull",
   takeoff: "actions.takeoff",
   land: "actions.land",

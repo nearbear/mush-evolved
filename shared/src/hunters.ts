@@ -7,6 +7,7 @@
 import { killPlayer } from "./death.ts";
 import { logPublic } from "./log.ts";
 import { followingHuntersShare, hunterPointsPerCycle, waveShrinkChance } from "./modifiers.ts";
+import { rechargePatrolShips } from "./patrol.ts";
 import { roll, rollFloat, rollShuffle } from "./rng.ts";
 import { damageShip } from "./ship.ts";
 import type { GameState, PlayerState } from "./types.ts";
@@ -53,7 +54,7 @@ export function huntersPerCyclePoints(state: Readonly<GameState>, day: number): 
 }
 
 /**
- * At each cycle change, once Mush are chosen: the hunters act, turrets recharge, the shield regenerates, the pool
+ * At each cycle change, once Mush are chosen: the hunters act, turrets and docked patrol ships recharge, the shield regenerates, the pool
  * grows, and maybe a wave arrives. `day` is the day the new cycle belongs to. Mutates a state the caller already cloned.
  */
 export function huntersCycle(state: GameState, day: number): void {
@@ -69,6 +70,7 @@ export function huntersCycle(state: GameState, day: number): void {
     if (charges >= state.config.turrets.charges) delete state.turrets[turret.id];
     else state.turrets[turret.id] = charges;
   }
+  rechargePatrolShips(state);
   const shield = state.config.ship.plasmaShield;
   if (state.bios.plasma_shield) state.ship.plasmaShield = Math.min(shield.max, state.ship.plasmaShield + shield.regen);
   hunters.points += huntersPerCyclePoints(state, day);

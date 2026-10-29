@@ -824,7 +824,8 @@
     "bodyTransferred": "Te has metido en la piel de {{target}}. {{name}} despierta humano, en tu antiguo cuerpo.",
     "patrolTakeoff": "{{name}} despegó a bordo de {{room}}.",
     "patrolLanded": "{{name}} aterrizó a bordo de {{room}}.",
-    "patrolRough": "Maniobra brusca: el casco recibió {{hull}} de daño, la nave perdió {{armor}} de blindaje y perdiste {{hp}} PV."
+    "patrolRough": "Maniobra brusca: el casco recibió {{hull}} de daño, la nave perdió {{armor}} de blindaje y perdiste {{hp}} PV.",
+    "patrolKill": "Has derribado un hunter."
   },
   "skills": {
     "title": "Elegir una habilidad",

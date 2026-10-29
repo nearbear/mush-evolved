@@ -1,10 +1,13 @@
 // What the room view shows while you fly a patrol ship (docs/patrol-plan.md, phase 2; owner, 2026-10-24: a plain panel
 // for now, art later): the ship, its armor (`view.patrolShip`), and its cockpit, which you select like any equipment,
-// so its actions (Land) are in the Inspect panel and, on a phone, the peek bar.
+// so its actions (Land) are in the Inspect panel and, on a phone, the peek bar. Below it, the battle panel (phase 3;
+// owner, 2026-10-28): the hunters with their hp and the ship's charges, with a Shoot button on each (a patrol ship
+// only; the Pasiphae can't shoot, so it lists the hunters without charges or buttons).
 
-import type { PlayerView, Target } from "@mush2/shared";
+import type { Action, PlayerView, Target } from "@mush2/shared";
 import { useTranslation } from "react-i18next";
 import { useNames } from "../i18n/names.ts";
+import { HunterList } from "./HunterList.tsx";
 import { sameTarget } from "./targets.ts";
 
 interface Props {
@@ -12,9 +15,10 @@ interface Props {
   ship: NonNullable<PlayerView["patrolShip"]>;
   selected: Target;
   onSelect: (target: Target) => void;
+  onAction: (action: Action) => void;
 }
 
-export function PatrolCockpit({ view, ship, selected, onSelect }: Props) {
+export function PatrolCockpit({ view, ship, selected, onSelect, onAction }: Props) {
   const { t } = useTranslation();
   const names = useNames();
   return (
@@ -29,6 +33,12 @@ export function PatrolCockpit({ view, ship, selected, onSelect }: Props) {
           </button>
         );
       })}
+      <HunterList
+        view={view}
+        charges={ship.charges}
+        offer={(hunter) => view.actions.find(({ action: a }) => a.type === "patrol_attack" && a.hunter === hunter)}
+        onAction={onAction}
+      />
     </section>
   );
 }
