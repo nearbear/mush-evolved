@@ -1229,15 +1229,13 @@
   },
   "astro": {
     "title": "Tus planetas",
-    "sectors_one": "{{count}} sector",
-    "sectors_many": "{{count}} sectores",
-    "sectors_other": "{{count}} sectores",
+    "sectorProgress": "{{known}} de {{total}} sectores analizados",
     "unknown": "Sector desconocido",
     "scan": "Escanear",
     "newPlanetTab": "Nuevo planeta",
     "analyze": "Analizar",
-    "delete": "Borrar {{planet}}",
-    "warp": "Saltar a {{planet}}",
+    "delete": "Borrar",
+    "warp": "Saltar",
     "position": "{{direction}}, a {{distance}} unidades de combustible",
     "directions": {
       "north": "Norte",

@@ -1219,14 +1219,13 @@
   },
   "astro": {
     "title": "Your planets",
-    "sectors_one": "{{count}} sector",
-    "sectors_other": "{{count}} sectors",
+    "sectorProgress": "{{known}} of {{total}} sectors analysed",
     "unknown": "Unknown sector",
     "scan": "Scan",
     "newPlanetTab": "New planet",
     "analyze": "Analyse",
-    "delete": "Delete {{planet}}",
-    "warp": "Warp to {{planet}}",
+    "delete": "Delete",
+    "warp": "Warp",
     "position": "{{direction}}, {{distance}} fuel away",
     "directions": {
       "north": "North",

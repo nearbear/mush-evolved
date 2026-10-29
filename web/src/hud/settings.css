@@ -270,6 +270,7 @@ li.research-item /* Rebel base icons are 70x65, not the 50x75 research cards. */
 }
 
 .planet-item {
+  position: relative;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -277,10 +278,30 @@ li.research-item /* Rebel base icons are 70x65, not the 50x75 research cards. */
   margin-bottom: 0.5rem;
 }
 
+/* Spans the whole card above the picture; the right padding keeps clear of the position in the corner. */
+.planet-title {
+  display: flex;
+  flex: 1 0 100%;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.5rem;
+  padding-right: 7rem;
+}
+
 .planet-picture {
   flex: none;
-  width: 48px;
-  height: 48px;
+  width: 96px;
+  height: 96px;
+}
+
+/* The planet's direction and fuel distance, in the card's upper right corner. */
+.planet-position {
+  position: absolute;
+  top: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
 }
 
 .planet-body {
@@ -299,8 +320,27 @@ li.research-item /* Rebel base icons are 70x65, not the 50x75 research cards. */
 
 .planet-sectors img {
   display: block;
-  width: 24px;
-  height: 24px;
+  width: 48px;
+  height: 48px;
+}
+
+/* Analyse, warp and delete share one row under the planet. */
+.planet-actions {
+  display: flex;
+  flex: 1 0 100%;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.planet-delete {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.planet-delete img {
+  width: 16px;
+  height: 16px;
 }
 
 /* The asset attribution, at the bottom of the General tab (see Credits.tsx). */
