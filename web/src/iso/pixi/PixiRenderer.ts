@@ -63,10 +63,10 @@ const STARS_SIZE = 512;
 /** The dust moves at this fraction of the camera, the stars over it at this one: nearer moves more. */
 const SKY_PARALLAX = 0.25;
 const STARS_PARALLAX = 0.6;
-/** How fast each layer streams past at cruising pace (pixels a second, along x; they run down-right, upper left to bottom right, at the iso grid's 2:1 slope), and how quickly the speed eases (per second). */
+/** How fast each layer streams past at cruising pace (pixels a second, along x; they run down-right, upper left to bottom right, at the iso grid's 2:1 slope), and how long a change of speed takes to ease in and out (seconds). */
 const SKY_DRIFT = 12;
 const STARS_DRIFT = 40;
-const EASE = 1.2;
+const EASE_SECONDS = 3;
 /**
  * When the ship turns a quarter, the stars turn a quarter the other way: speeding up to at most `speed` (radians a
  * second) and slowing to a stop at `accel` (radians a second, each second), so a quarter turn takes about 9.5 s.
@@ -143,6 +143,11 @@ export class PixiRenderer {
   /** Stream speed as a multiple of cruising (0 in orbit), easing toward `cruise`. */
   private speed = 0;
   private cruise = 0;
+  /** Where the current change of speed began, and how far through it (0 to 1): the speed follows a smoothstep between. */
+  private speedFrom = 0;
+  private ramp = 1;
+  /** Whether a scene has set the pace yet: the first one starts the stream at speed rather than easing up to it. */
+  private paceSeen = false;
   private lastTick = 0;
   private camera = { x: 0, y: 0 };
   private readonly world = new Container();
@@ -234,7 +239,15 @@ export class PixiRenderer {
   setScene(scene: Scene) {
     this.scene = scene;
     if (!this.ready) return;
-    this.cruise = this.reducedMotion.matches ? 0 : PACE_SPEED[scene.pace];
+    const cruise = this.reducedMotion.matches ? 0 : PACE_SPEED[scene.pace];
+    if (!this.paceSeen) {
+      this.paceSeen = true;
+      this.speed = cruise;
+    } else if (cruise !== this.cruise) {
+      this.speedFrom = this.speed;
+      this.ramp = 0;
+    }
+    this.cruise = cruise;
     if (this.speed !== this.cruise) this.requestRender();
     this.noteTurn(scene.turn);
     this.setPlanet(scene.planet);
@@ -507,8 +520,9 @@ export class PixiRenderer {
     if (turning) ({ angle: this.angle, velocity: this.spin } = stepTurn({ angle: this.angle, velocity: this.spin }, this.heading, dt, TURN));
     const streaming = this.speed !== this.cruise;
     if (this.speed !== 0 || streaming) {
-      this.speed += (this.cruise - this.speed) * Math.min(1, dt * EASE);
-      if (Math.abs(this.cruise - this.speed) < 0.005) this.speed = this.cruise;
+      this.ramp = Math.min(1, this.ramp + dt / EASE_SECONDS);
+      const eased = this.ramp * this.ramp * (3 - 2 * this.ramp);
+      this.speed = this.ramp === 1 ? this.cruise : this.speedFrom + (this.cruise - this.speedFrom) * eased;
       const step = this.speed * dt;
       this.shiftSky((l) => ({ x: step * l.rate, y: (step * l.rate) / 2 }));
     }

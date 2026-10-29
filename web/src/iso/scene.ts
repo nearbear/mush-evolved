@@ -196,7 +196,7 @@ export interface SceneOutline extends ScenePicture {
 export type ShipPace = "stopped" | "cruising" | "traveling";
 
 /** How fast the stars stream at each pace, as a multiple of the cruising rate. */
-export const PACE_SPEED: Readonly<Record<ShipPace, number>> = { stopped: 0, cruising: 1, traveling: 5 };
+export const PACE_SPEED: Readonly<Record<ShipPace, number>> = { stopped: 0, cruising: 1, traveling: 10 };
 
 /**
  * The pace to draw from the view's public navigation.
