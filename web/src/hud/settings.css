@@ -166,6 +166,10 @@ li.research-item .research-body {
   align-items: center;
   gap: 0.5rem;
 }
+.has-tip {
+  cursor: help;
+  text-decoration: underline dotted;
+}
 .research-title strong {
   flex: 0 1 auto;
   min-width: 0;

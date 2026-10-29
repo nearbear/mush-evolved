@@ -5,8 +5,9 @@
 // Open/closed is UI state held by GameScreen; the server only validates the access action.
 
 import { Dialog } from "@base-ui/react/dialog";
+import { Popover } from "@base-ui/react/popover";
 import { Tabs } from "@base-ui/react/tabs";
-import { useState } from "react";
+import React, { useState } from "react";
 import {
   hasSkill,
   PILGRED_COMPLETE,
@@ -89,6 +90,7 @@ function ResearchList({ terminal, view, onAction }: ListProps) {
       complete={RESEARCH_COMPLETE}
       cards={RESEARCH_CARDS}
       name={names.research}
+      desc={(id) => t(`research.desc.${id}`, { defaultValue: "" }) || undefined}
       status={researchStatus}
       needs={(id) => {
         const req = RESEARCH_REQUIRES[id as ResearchId];
@@ -116,6 +118,7 @@ function ProjectList({ terminal, view, onAction }: ListProps) {
       complete={PROJECT_COMPLETE}
       cards={PROJECT_CARDS}
       name={names.project}
+      desc={(id) => t(`projects.desc.${id}`, { defaultValue: "" }) || undefined}
       status={projectStatus}
       needs={(id) => {
         const skills = PROJECTS.find((p) => p.id === id)?.skills ?? [];
@@ -205,6 +208,8 @@ interface ProgressListProps {
   complete: number;
   cards: Record<string, string>;
   name: (id: string) => string;
+  /** The description shown on hover, if the entry has one. */
+  desc?: (id: string) => string | undefined;
   status: (id: string) => "full" | "partial" | "none";
   /** The view's offer to work on this entry, if any. */
   /** A checklist under an item: for research what must be in the lab before it can be worked on, for projects the skills that speed it up (the button itself comes from `view.actions`). */
@@ -212,6 +217,26 @@ interface ProgressListProps {
   option: (id: string) => ActionOption | undefined;
   view: PlayerView;
   onAction: (action: Action) => void;
+}
+
+/** Wraps an entry's name or card: hovering (or tapping) the trigger shows what the entry does. */
+function EntryTip({ name, desc, trigger, children }: { name: string; desc?: string; trigger: React.ReactElement; children?: React.ReactNode }) {
+  if (!desc) return React.cloneElement(trigger, undefined, children);
+  return (
+    <Popover.Root>
+      <Popover.Trigger openOnHover delay={200} render={trigger} className="has-tip">
+        {children}
+      </Popover.Trigger>
+      <Popover.Portal>
+        <Popover.Positioner sideOffset={6}>
+          <Popover.Popup className="tooltip resource-card">
+            <strong>{name}</strong>
+            <p>{desc}</p>
+          </Popover.Popup>
+        </Popover.Positioner>
+      </Popover.Portal>
+    </Popover.Root>
+  );
 }
 
 type ProgressTab = "active" | "blocked" | "done";
@@ -222,7 +247,7 @@ const PROGRESS_TABS: readonly ProgressTab[] = ["active", "blocked", "done"];
  * tabs: Active (in progress, then available), Blocked (not offered by the view, so for research the lab misses a need)
  * and Done. Within a tab the order is the list's own. Empty Blocked or Done tabs are left out.
  */
-function ProgressList({ label, ids, progress, complete, cards, name, status, needs, option: optionFor, view, onAction }: ProgressListProps) {
+function ProgressList({ label, ids, progress, complete, cards, name, desc, status, needs, option: optionFor, view, onAction }: ProgressListProps) {
   const { t } = useTranslation();
   const [tab, setTab] = useState<ProgressTab>("active");
   const rows = ids.map((id) => ({ id, percent: progress[id] ?? 0, option: optionFor(id) }));
@@ -254,9 +279,9 @@ function ProgressList({ label, ids, progress, complete, cards, name, status, nee
                 const state = status(id);
                 return (
                   <li key={id} className={`research-item research-item-${key}`}>
-                    {card && <img className="research-card" src={card} alt="" />}
+                    {card && <EntryTip name={name(id)} desc={desc?.(id)} trigger={<img className="research-card" src={card} alt="" />} />}
                     <div className="research-title">
-                      <strong>{name(id)}</strong>
+                      <EntryTip name={name(id)} desc={desc?.(id)} trigger={<strong />}>{name(id)}</EntryTip>
                       <span className={`skill-status skill-status-${state}`}>{t(`research.status.${state}`)}</span>
                     </div>
                     <div className="research-body">
