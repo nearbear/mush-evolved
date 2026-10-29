@@ -244,6 +244,7 @@ export function GameScreen({ ticket, onLeave, waking = false }: { ticket: SeatTi
                 pilgredRepaired={view.pilgredRepaired}
                 pace={shipPace(view.navigation)}
                 planet={orbitImage(view.navigation.orbitPicture)}
+                turn={view.navigation.lastTurn}
               />
             ) : (
               <section className="iso-room loading">{t("common.loadingShip")}</section>

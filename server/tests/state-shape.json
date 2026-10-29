@@ -1,5 +1,5 @@
 {
-  "version": 84,
+  "version": 85,
   "paths": [
     "bios.actopi",
     "bios.death_announcements",
@@ -145,6 +145,7 @@
     "log[].visibleTo",
     "navigation.arriving",
     "navigation.heading",
+    "navigation.lastTurn",
     "navigation.orbit",
     "nextChannelId",
     "nextChatId",

@@ -20,7 +20,8 @@
 
 import { Application, Container, type Filter, Rectangle, RendererType, Sprite, Texture, TextureStyle, TilingSprite } from "pixi.js";
 import { keyedUrl } from "../../art/keyedSprite.ts";
-import { animId, animStep, frameAt, PACE_SPEED, type FrameUpdate, type Scene, type SceneImage, type SceneOutline, type ScenePicture, type SceneSprite } from "../scene.ts";
+import { animId, animStep, frameAt, PACE_SPEED, type FrameUpdate, type Scene, type SceneImage, type SceneOutline, type ScenePicture, type SceneSprite, type ShipTurn } from "../scene.ts";
+import { shiftTile, tilePosition } from "../skyTurn.ts";
 import { starfield, starLayer } from "../starfield.ts";
 import { ESP, espPulse, filterKey, lookOf } from "./effects.ts";
 import { EspFilters, lookFilter } from "./filters.ts";
@@ -66,6 +67,8 @@ const STARS_PARALLAX = 0.6;
 const SKY_DRIFT = 12;
 const STARS_DRIFT = 40;
 const EASE = 1.2;
+/** A quarter turn of the ship turns the stars a quarter the other way over this long (ms), easing in and out. */
+const TURN_MS = 2400;
 let skyTexture: Texture | null = null;
 let starsTexture: Texture | null = null;
 
@@ -103,20 +106,36 @@ interface Drawn {
   textureKey: string;
 }
 
+/**
+ * One layer of the star field. `at` is where its tile sits, kept in the tile's own frame (turned with the stars), so
+ * the layer always turns about the panel's centre and streams down-right on screen whichever way it has turned.
+ */
+interface SkyLayer {
+  sprite: TilingSprite;
+  parallax: number;
+  rate: number;
+  size: number;
+  /** The tile's offset in its own turned frame (skyTurn.ts). */
+  at: { x: number; y: number };
+}
+
 /** Outlines are kept in the same map as sprites, under their own keys. */
 const OUTLINE = "esp|";
 
 export class PixiRenderer {
   private readonly app = new Application();
-  private sky: TilingSprite | null = null;
-  private stars: TilingSprite | null = null;
+  /** The dust, then the near stars. */
+  private sky: SkyLayer[] = [];
+  /** How far the stars have turned (radians, clockwise), the turn under way if any, and the last turn seen (`Scene.turn.n`; null before the first scene). */
+  private angle = 0;
+  private turning: { from: number; to: number; start: number } | null = null;
+  private turnSeen: number | null = null;
   /** The orbited planet, in the sky behind the ship at the panel's bottom-right; `planetUrl` is the one it should show. */
   private readonly planet = new Sprite(Texture.EMPTY);
   private planetUrl: string | null = null;
-  /** Stream speed as a multiple of cruising (0 in orbit), easing toward `cruise`; `drift` is how far the stars have streamed, in seconds at cruising speed. */
+  /** Stream speed as a multiple of cruising (0 in orbit), easing toward `cruise`. */
   private speed = 0;
   private cruise = 0;
-  private drift = 0;
   private lastTick = 0;
   private camera = { x: 0, y: 0 };
   private readonly world = new Container();
@@ -167,10 +186,16 @@ export class PixiRenderer {
     // Pixi's own input handling is unused: IsoRoom hit-tests against the art itself.
     this.app.stage.eventMode = "none";
     this.world.addChild(this.sprites, this.outlines);
-    this.sky = new TilingSprite({ texture: sky(), width: this.app.screen.width, height: this.app.screen.height });
-    this.stars = new TilingSprite({ texture: stars(), width: this.app.screen.width, height: this.app.screen.height });
+    const layer = (texture: Texture, size: number, parallax: number, rate: number): SkyLayer => ({
+      sprite: new TilingSprite({ texture, width: this.app.screen.width, height: this.app.screen.height }),
+      parallax,
+      rate,
+      size,
+      at: { x: 0, y: 0 },
+    });
+    this.sky = [layer(sky(), SKY_SIZE, SKY_PARALLAX, SKY_DRIFT), layer(stars(), STARS_SIZE, STARS_PARALLAX, STARS_DRIFT)];
     this.planet.visible = false;
-    this.app.stage.addChild(this.sky, this.stars, this.planet, this.world);
+    this.app.stage.addChild(...this.sky.map((l) => l.sprite), this.planet, this.world);
     // The shaders are GLSL; on anything but WebGL the sprites are drawn without effects.
     if (this.app.renderer.type === RendererType.WEBGL) {
       const rim = this.color("--glow-rim");
@@ -193,8 +218,8 @@ export class PixiRenderer {
     const { clientWidth: w, clientHeight: h } = this.host;
     if (!this.ready || !w || !h) return;
     if (this.app.renderer.width !== w || this.app.renderer.height !== h) this.app.renderer.resize(w, h);
-    this.sky?.setSize(w, h);
-    this.stars?.setSize(w, h);
+    for (const l of this.sky) l.sprite.setSize(w, h);
+    this.placeSky();
     this.placePlanet();
     this.renderNow();
   }
@@ -204,6 +229,7 @@ export class PixiRenderer {
     if (!this.ready) return;
     this.cruise = this.reducedMotion.matches ? 0 : PACE_SPEED[scene.pace];
     if (this.speed !== this.cruise) this.requestRender();
+    this.noteTurn(scene.turn);
     this.setPlanet(scene.planet);
     const seen = new Set<string>();
     const sprites = this.sync(scene.sprites, "", this.sprites, this.order, seen, (d, s) => this.paintSprite(d, s));
@@ -258,6 +284,11 @@ export class PixiRenderer {
     const x = Math.round(camera.x);
     const y = Math.round(camera.y);
     this.world.position.set(x, y);
+    if (!this.reducedMotion.matches) {
+      const dx = camera.x - this.camera.x;
+      const dy = camera.y - this.camera.y;
+      this.shiftSky((l) => ({ x: dx * l.parallax, y: dy * l.parallax }));
+    }
     this.camera = camera;
     this.placeSky();
     // Each walker is rounded where it lands on screen, not in the world: your own walker cancels the
@@ -302,18 +333,42 @@ export class PixiRenderer {
     this.planet.position.set(Math.round(width - this.planet.texture.width), Math.round(height - this.planet.texture.height));
   }
 
-  /** The layers follow the camera slower than the ship, and stream down-right at the ship's speed; both in whole pixels. */
+  /**
+   * A new turn of the ship (`Scene.turn`) turns the stars a quarter the other way: left turns them clockwise. The
+   * first scene only notes where the count stands, so loading in doesn't replay the last turn.
+   */
+  private noteTurn(turn: ShipTurn | null) {
+    const seen = this.turnSeen;
+    this.turnSeen = turn?.n ?? 0;
+    if (seen === null || !turn || turn.n <= seen) return;
+    const to = (this.turning?.to ?? this.angle) + ((turn.side === "left" ? 1 : -1) * Math.PI) / 2;
+    if (this.reducedMotion.matches) {
+      this.angle = to;
+      this.turning = null;
+      this.placeSky();
+    } else {
+      this.turning = { from: this.angle, to, start: performance.now() };
+    }
+    this.requestRender();
+  }
+
+  /** Moves each layer by `by(layer)` on screen: turned back into the tile's frame, so it moves that way whatever the angle. */
+  private shiftSky(by: (l: SkyLayer) => { x: number; y: number }) {
+    for (const l of this.sky) l.at = shiftTile(l.at, by(l), this.angle, l.size);
+  }
+
+  /**
+   * The layers follow the camera slower than the ship, stream down-right at the ship's speed, and are turned by
+   * `angle` about the panel's centre. In whole pixels unless a turn is under way.
+   */
   private placeSky() {
-    const { x, y } = this.camera;
-    const still = this.reducedMotion.matches;
-    const follow = (parallax: number, rate: number) => ({
-      x: Math.round((still ? 0 : x * parallax) + this.drift * rate),
-      y: Math.round((still ? 0 : y * parallax) + (this.drift * rate) / 2),
-    });
-    const sky = follow(SKY_PARALLAX, SKY_DRIFT);
-    const stars = follow(STARS_PARALLAX, STARS_DRIFT);
-    this.sky?.tilePosition.set(sky.x, sky.y);
-    this.stars?.tilePosition.set(stars.x, stars.y);
+    const center = { x: this.app.screen.width / 2, y: this.app.screen.height / 2 };
+    const whole = this.turning ? (v: number) => v : Math.round;
+    for (const l of this.sky) {
+      const p = tilePosition(l.at, this.angle, center);
+      l.sprite.tilePosition.set(whole(p.x), whole(p.y));
+      l.sprite.tileRotation = this.angle;
+    }
   }
 
   destroy() {
@@ -438,15 +493,24 @@ export class PixiRenderer {
     }
     const dt = this.lastTick ? Math.min(0.1, (now - this.lastTick) / 1000) : 0;
     this.lastTick = now;
+    const turning = this.turning;
+    if (turning) {
+      const t = Math.min(1, (now - turning.start) / TURN_MS);
+      this.angle = turning.from + (turning.to - turning.from) * t * t * (3 - 2 * t);
+      if (t >= 1) this.turning = null;
+    }
     const streaming = this.speed !== this.cruise;
     if (this.speed !== 0 || streaming) {
       this.speed += (this.cruise - this.speed) * Math.min(1, dt * EASE);
       if (Math.abs(this.cruise - this.speed) < 0.005) this.speed = this.cruise;
-      this.drift += this.speed * dt;
+      const step = this.speed * dt;
+      this.shiftSky((l) => ({ x: step * l.rate, y: (step * l.rate) / 2 }));
+    }
+    if (turning || this.speed !== 0 || streaming) {
       this.placeSky();
       this.dirty = true;
     }
-    const streams = this.speed !== 0 || this.speed !== this.cruise;
+    const streams = this.speed !== 0 || this.speed !== this.cruise || this.turning !== null;
     if (!streams) this.lastTick = 0;
     const pulse = this.pulsing && !this.reducedMotion.matches;
     if (this.esp) {

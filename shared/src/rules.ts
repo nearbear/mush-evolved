@@ -131,7 +131,7 @@ export function createGame(
     patrolFailures: {},
     patrolShips: newPatrolShips(config),
     space: [],
-    navigation: { heading: config.navigation.startHeading, orbit: null, arriving: null },
+    navigation: { heading: config.navigation.startHeading, orbit: null, arriving: null, lastTurn: null },
     // Issued with Mush selection, whatever the role (owner, 2026-10-13 and 2026-10-20); in pre-selection, by `selectMush`.
     titles: preselection ? noTitles() : assignTitles(players),
     comms: newComms(config),
@@ -520,6 +520,7 @@ export function viewFor(state: GameState, playerId: PlayerId): PlayerView {
       traveling: state.navigation.arriving !== null,
       orbitPicture: orbitPicture(state),
       heading: you.alive && commandTerminalsHere(state, you).length > 0 ? state.navigation.heading : null,
+      lastTurn: state.navigation.lastTurn,
     },
     titles: TITLE_IDS.map((id) => {
       const holder = state.players.find((p) => p.id === state.titles[id]);

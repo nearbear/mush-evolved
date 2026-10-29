@@ -44,6 +44,7 @@ import {
   type SceneRendererProps,
   type Seat,
   type ShipPace,
+  type ShipTurn,
 } from "./scene.ts";
 import {
   bounds,
@@ -147,6 +148,7 @@ export function IsoRoom({
   pilgredRepaired,
   pace,
   planet,
+  turn,
 }: {
   layout: ShipLayout;
   room: RoomId;
@@ -198,6 +200,8 @@ export function IsoRoom({
   pace: ShipPace;
   /** The planet the ship orbits, as an image URL (public), or null. */
   planet: string | null;
+  /** The ship's latest turn (public): the stars turn the other way. */
+  turn: ShipTurn | null;
 }) {
   const names = useNames();
   const { t } = useTranslation();
@@ -521,8 +525,9 @@ export function IsoRoom({
         doors,
         pace,
         planet,
+        turn,
       }),
-    [scene, box, walkersKey, walkersLook, doorsKey, seatsKey, occupants, nearby, corpses, equipmentByKey, reachable, selected, selectedDoor, hoverKey, ownCells, looks, pace, planet],
+    [scene, box, walkersKey, walkersLook, doorsKey, seatsKey, occupants, nearby, corpses, equipmentByKey, reachable, selected, selectedDoor, hoverKey, ownCells, looks, pace, planet, turn],
   );
   // Badges and bubbles go over the people in this room.
   const anchors = drawn.sprites.flatMap((s): Anchor[] => {

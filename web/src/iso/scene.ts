@@ -206,6 +206,9 @@ export function shipPace(navigation: { orbiting: boolean; traveling: boolean }):
   return navigation.orbiting ? "stopped" : "cruising";
 }
 
+/** The ship's latest quarter turn: `n` counts them, so a renderer turns the stars once for each new one. */
+export type ShipTurn = { n: number; side: "left" | "right" };
+
 /** One room view to draw: sprites in paint order (back to front), then the outlines above them all. */
 export interface Scene {
   width: number;
@@ -216,6 +219,8 @@ export interface Scene {
   pace: ShipPace;
   /** The planet the ship orbits (an image URL), drawn in the sky at the panel's bottom-right; null out of orbit. */
   planet: string | null;
+  /** The ship's latest turn (public), so the stars turn the other way; null before the first. */
+  turn: ShipTurn | null;
 }
 
 /** Per animation frame, between renders: where the camera puts the world, and how far each walker is from where the scene placed them. */
@@ -271,6 +276,8 @@ export interface SceneInput {
   pace?: ShipPace;
   /** The orbited planet's picture (`Scene.planet`); none when not given. */
   planet?: string | null;
+  /** The ship's latest turn (`Scene.turn`); none when not given. */
+  turn?: ShipTurn | null;
 }
 
 /** The corpse an actor sprite draws, if it is one. */
@@ -407,5 +414,5 @@ export function describeScene(input: SceneInput): Scene {
     }
     sprites.push({ ...tile(), anim, role: "tile" });
   }
-  return { width: box.width, height: box.height, sprites, outlines, pace: input.pace ?? "cruising", planet: input.planet ?? null };
+  return { width: box.width, height: box.height, sprites, outlines, pace: input.pace ?? "cruising", planet: input.planet ?? null, turn: input.turn ?? null };
 }

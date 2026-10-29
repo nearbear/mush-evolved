@@ -38,7 +38,7 @@ function game(loaded = 3): GameState {
 describe("ship navigation", () => {
   it("pins the decided numbers: 1 AP to turn, travel or leave orbit; 1 fuel to leave; facing north at the start", () => {
     expect([navigation.turn.cost.ap, navigation.travel.cost.ap, navigation.leaveOrbit.cost.ap, navigation.leaveOrbit.fuel]).toEqual([1, 1, 1, 1]);
-    expect(game().navigation).toEqual({ heading: "north", orbit: null, arriving: null });
+    expect(game().navigation).toEqual({ heading: "north", orbit: null, arriving: null, lastTurn: null });
   });
 
   it("turns a quarter at a time, left anticlockwise", () => {
@@ -50,6 +50,17 @@ describe("ship navigation", () => {
     expect(s.navigation.heading).toBe("east");
     expect(player(s, "p0").ap).toBe(game().players[0]!.ap - navigation.turn.cost.ap);
     expect(s.log.at(-1)).toMatchObject({ key: "turnedShip", room: "COMMAND_CENTER", visibleTo: "all", params: { direction: "east" } });
+  });
+
+  it("shows everyone aboard each turn and its side, but the heading only at the terminal", () => {
+    const s = game();
+    player(s, "p2").room = "LABORATORY";
+    expect(viewFor(s, "p2").navigation.lastTurn).toBeNull();
+    const once = must(applyAction(s, "p0", turn("left")));
+    const twice = must(applyAction(once, "p0", turn("right")));
+    expect(viewFor(once, "p2").navigation).toMatchObject({ heading: null, lastTurn: { n: 1, side: "left" } });
+    expect(viewFor(twice, "p2").navigation.lastTurn).toEqual({ n: 2, side: "right" });
+    expect(viewFor(twice, "p0").navigation).toMatchObject({ heading: "north", lastTurn: { n: 2, side: "right" } });
   });
 
   it("is the Commander's alone, at the Command terminal", () => {
@@ -154,10 +165,10 @@ describe("ship navigation", () => {
     const s = arrived(game());
     player(s, "p2").room = "CORRIDOR_A";
     const finder = viewFor(s, "p1");
-    expect(finder.navigation).toEqual({ orbiting: true, traveling: false, orbitPicture: planetPicture({ name: "Name-planet-a" }), heading: "north" });
+    expect(finder.navigation).toEqual({ orbiting: true, traveling: false, orbitPicture: planetPicture({ name: "Name-planet-a" }), heading: "north", lastTurn: null });
     expect(finder.planets).toMatchObject([{ id: "planet-a", orbited: true }]);
     const other = viewFor(s, "p2");
-    expect(other.navigation).toEqual({ orbiting: true, traveling: false, orbitPicture: planetPicture({ name: "Name-planet-a" }), heading: null });
+    expect(other.navigation).toEqual({ orbiting: true, traveling: false, orbitPicture: planetPicture({ name: "Name-planet-a" }), heading: null, lastTurn: null });
     expect(JSON.stringify(other)).not.toContain("planet-a");
     expect(JSON.stringify(other)).not.toContain("Name-planet-a");
     expect(JSON.stringify(viewFor(s, "p0"))).not.toContain("Name-planet-a");
@@ -199,7 +210,7 @@ describe("easy travel cheat", () => {
     const s = cheating(0);
     const before = player(s, "p0").ap;
     const next = must(applyAction(s, "p0", warp("planet-c")));
-    expect(next.navigation).toEqual({ heading: "south", orbit: "planet-c", arriving: null });
+    expect(next.navigation).toEqual({ heading: "south", orbit: "planet-c", arriving: null, lastTurn: null });
     expect(next.ship.combustion).toBe(0);
     expect(player(next, "p0").ap).toBe(before);
     expect(next.planets).toMatchObject({ p0: [{ id: "planet-c" }], p1: [], p2: [] });

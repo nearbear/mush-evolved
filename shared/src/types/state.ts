@@ -1,5 +1,6 @@
 import type { BiosState } from "../bios.ts";
 import type { CommsState } from "../comms.ts";
+import type { TurnSide } from "../navigation.ts";
 import type { PlanetDirection, PlanetTag } from "../planets.ts";
 import type { RelayStreak } from "../relay.ts";
 import type { RngState } from "../rng.ts";
@@ -113,9 +114,10 @@ export interface GameState {
    * not"; the planet stays its finder's. `heading` goes only to the living at a Command terminal. `arriving` is the
    * jump in progress (owner, 2026-10-29): set when the Commander travels or leaves orbit, it lasts until the next cycle
    * change, when the ship arrives (`arriveShip`, navigation.ts) and `planet` (null: empty space) becomes the orbit.
-   * Only whether it is set goes out, as `traveling`; the planet stays its finder's.
+   * Only whether it is set goes out, as `traveling`; the planet stays its finder's. `lastTurn` is the latest quarter
+   * turn (`n` counts them all), public to everyone aboard (owner, 2026-10-29), so every player's stars turn with the ship.
    */
-  navigation: { heading: PlanetDirection; orbit: string | null; arriving: { planet: string | null } | null };
+  navigation: { heading: PlanetDirection; orbit: string | null; arriving: { planet: string | null } | null; lastTurn: { n: number; side: TurnSide } | null };
   /**
    * Hunters attacking the ship (hunters.ts). `points` is the wave pool and `since` the cycle Mush were chosen (null
    * before): never sent. Each hunter's hp goes to the living in a turret room; its hit chance and target never; how

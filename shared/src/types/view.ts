@@ -2,6 +2,7 @@ import type { ActionCost, ActionTag } from "../actions.ts";
 import type { CharacterId } from "../characters.ts";
 import type { BiosState } from "../bios.ts";
 import type { RebelBaseId, XylophEntryId } from "../comms.ts";
+import type { TurnSide } from "../navigation.ts";
 import type { PlanetDirection } from "../planets.ts";
 import type { TitleId } from "../titles.ts";
 import type { Action, BotKind, ItemId, LogEntry, PlayerId, Role, RoomId } from "../types.ts";
@@ -215,8 +216,9 @@ export interface PlayerView {
    * Whether the ship is in orbit, public to everyone (the planet fills the portholes); which planet is only in its
    * finder's `planets`; `orbitPicture` is only which picture it is drawn with (`planetPicture`, cosmetic, owner 2026-10-28),
    * so everyone sees the same planet out of the window. `heading` only while you are alive at a Command terminal (owner, 2026-10-22); otherwise null.
+   * `lastTurn` is the ship's latest quarter turn (`n` counts them, so a new one shows), public to everyone aboard (owner, 2026-10-29).
    */
-  navigation: { orbiting: boolean; traveling: boolean; orbitPicture: number | null; heading: PlanetDirection | null };
+  navigation: { orbiting: boolean; traveling: boolean; orbitPicture: number | null; heading: PlanetDirection | null; lastTurn: { n: number; side: TurnSide } | null };
   /**
    * The patrol ship you are flying (its room id) with its armor and charges (null for the Pasiphae, which can't shoot),
    * while you are alive aboard (patrol.ts); otherwise null. `debris` is how many pieces float around the Daedalus, not

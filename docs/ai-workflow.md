@@ -1586,3 +1586,9 @@ Placed the plain hunter's battle sprite (`FX_SPC_HUNTER`, 378,80,48,26 in `Mush/
 
 ## 2026-10-29: travel takes one cycle
 Owner asked for a traveling state lasting one cycle with a faster star field. Asked four questions (when the jump's effects land, whether leave orbit travels, what the terminal can do, other systems); the owner picked departure, yes, nothing, and block takeoff. The web already had a `traveling` pace waiting, so the client change was one line plus a status note. The old tests assumed instant orbit; most were fixed with an `arrived` helper that runs the cycle change. Required a STATE_VERSION bump (84).
+
+## 2026-10-29: star field turns with the ship
+
+- Request: when the Commander turns the ship, rotate the star field the opposite way while the stars keep streaming.
+- Claude found that turns were only visible at the Command terminal (heading) or in the room log, and asked who should see the effect. The owner chose everyone aboard, accepting that turns (and so the heading) become public. Built as `navigation.lastTurn` (`{ n, side }`) in state and view; `STATE_VERSION` bumped to 85.
+- Renderer: each tiled layer's offset is kept in the tile's own turned frame, so the field turns about the panel's centre (2.4 s, eased) while drift and parallax stay in screen space. The math went into a pure `web/src/iso/skyTurn.ts` with tests, since the Pixi renderer has none; nothing was checked visually yet.
