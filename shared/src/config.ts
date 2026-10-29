@@ -330,6 +330,7 @@ export const PRESELECTION: PreselectionRules = {
   seats: 16,
   // Owner, 2026-10-24 (#202): the calendar day 3's last cycle, so a ship launched late in a GMT day gets less time.
   endsOn: { day: 3, cycle: DEFAULT_CONFIG.cyclesPerDay },
+  mushCount: "auto",
   twoMushAbove: 8,
   minPlayers: 3,
 };
@@ -344,6 +345,6 @@ export function resolveConfig(o: ConfigOverrides = {}): GameConfig {
     ...DEFAULT_CONFIG,
     ...(o.mushCount !== undefined && { mushCount: o.mushCount }),
     ...(o.manualCycles !== undefined && { manualCycles: o.manualCycles }),
-    ...(p && { preselection: { seats: p.seats, endsOn: { day: p.endsOn.day, cycle: p.endsOn.cycle }, twoMushAbove: p.twoMushAbove, minPlayers: p.minPlayers } }),
+    ...(p && { preselection: { seats: p.seats, endsOn: { day: p.endsOn.day, cycle: p.endsOn.cycle }, mushCount: p.mushCount ?? "auto", twoMushAbove: p.twoMushAbove, minPlayers: p.minPlayers } }),
   };
 }

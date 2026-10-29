@@ -128,6 +128,7 @@ export function setupOverrides(knobs: Readonly<SetupKnobs>): ConfigOverrides {
     preselection: {
       ...PRESELECTION,
       seats: knobs.seats,
+      mushCount: knobs.mushCount,
       endsOn: { day: knobs.preselectionDays, cycle: cyclesPerDayFor(knobs.cycleHours) },
     },
   };

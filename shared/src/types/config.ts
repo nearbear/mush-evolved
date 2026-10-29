@@ -53,6 +53,9 @@ export interface WeaponStats {
 export interface PreselectionRules {
   seats: number; // The ship is full, and Mush are chosen, at this many players.
   endsOn: { day: number; cycle: number }; // Mush are chosen when this cycle begins, if the ship hasn't filled.
+  // "auto": more than `twoMushAbove` players get 2 Mush, otherwise 1. A fixed count is lowered to the players aboard
+  // minus 2, with at least 1 (owner, 2026-10-24, #229).
+  mushCount: "auto" | number;
   twoMushAbove: number; // More players than this get 2 Mush; this many or fewer get 1.
   minPlayers: number; // Stopgap (owner, 2026-10-24): fewer players than this at selection and every human dies at once.
 }

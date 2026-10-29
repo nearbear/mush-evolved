@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { DEFAULT_CONFIG, PRESELECTION } from "../src/config.ts";
+import { DEFAULT_CONFIG, PRESELECTION, resolveConfig } from "../src/config.ts";
 import { ITRACKIE_ITEM } from "../src/items.ts";
 import { joinShip, preselectionDeadline } from "../src/preselection.ts";
 import { applyInput, type Input } from "../src/replay.ts";
@@ -27,7 +27,7 @@ function toDeadline(s: GameState): GameState {
 
 describe("pre-selection numbers", () => {
   it("are the owner's: 16 seats, Mush on day 3's last cycle, 2 Mush above 8 players, the stopgap below 3", () => {
-    expect(PRESELECTION).toEqual({ seats: 16, endsOn: { day: 3, cycle: DEFAULT_CONFIG.cyclesPerDay }, twoMushAbove: 8, minPlayers: 3 });
+    expect(PRESELECTION).toEqual({ seats: 16, endsOn: { day: 3, cycle: DEFAULT_CONFIG.cyclesPerDay }, mushCount: "auto", twoMushAbove: 8, minPlayers: 3 });
     expect(preselectionDeadline(ship(0), PRESELECTION)).toBe(24);
   });
 });
@@ -148,6 +148,37 @@ describe("Mush selection", () => {
     const rules = { ...PRESELECTION, seats: 16 };
     expect(mush(toDeadline(ship(rules.twoMushAbove, rules)))).toHaveLength(1);
     expect(mush(toDeadline(ship(rules.twoMushAbove + 1, rules)))).toHaveLength(2);
+  });
+
+  it("with a fixed Mush count, picks that many from a full ship", () => {
+    for (const mushCount of [1, 2, 3]) {
+      const rules = { ...PRESELECTION, seats: 16, mushCount };
+      expect(mush(toDeadline(ship(9, rules)))).toHaveLength(mushCount);
+    }
+  });
+
+  it("lowers a fixed count to the players aboard minus 2, with at least 1", () => {
+    const rules = { ...PRESELECTION, seats: 16, mushCount: 3 };
+    for (const [aboard, wanted] of [[5, 3], [4, 2], [2, 1]] as const) {
+      expect(mush(toDeadline(ship(aboard, rules)))).toHaveLength(wanted);
+    }
+  });
+
+  it("counts a Mush made by the dev role cheat toward the count", () => {
+    for (const mushCount of ["auto", 2] as const) {
+      const s = ship(9, { ...PRESELECTION, seats: 16, mushCount });
+      player(s, "p4").role = "mush";
+      const after = toDeadline(s);
+      expect(mush(after)).toHaveLength(2);
+      expect(mush(after)).toContain("p4");
+    }
+  });
+
+  it("treats a stored ship's rules without a Mush count as Auto", () => {
+    const { mushCount: _, ...old } = PRESELECTION;
+    const rules = resolveConfig({ preselection: old as PreselectionRules }).preselection!;
+    expect(rules.mushCount).toBe("auto");
+    expect(mush(toDeadline(ship(9, rules)))).toHaveLength(2);
   });
 
   it("with fewer than `minPlayers` aboard, kills every human at once: the Mush win (stopgap)", () => {

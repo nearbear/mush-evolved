@@ -4,6 +4,7 @@ import {
   CYCLE_HOURS,
   MAX_SETUP_DESCRIPTION_LENGTH,
   MAX_SETUP_NAME_LENGTH,
+  MUSH_COUNTS,
   STANDARD_KNOBS,
   STANDARD_SETUP,
   cyclesPerDayFor,
@@ -130,6 +131,10 @@ describe("setupOverrides", () => {
       const p = setupOverrides(knobs({ cycleHours, preselectionDays: 5 }) as SetupKnobs).preselection;
       expect(p?.endsOn).toEqual({ day: 5, cycle: 24 / cycleHours });
     }
+  });
+
+  it("passes the Mush count through", () => {
+    for (const mushCount of MUSH_COUNTS) expect(setupOverrides(knobs({ mushCount }) as SetupKnobs).preselection?.mushCount).toBe(mushCount);
   });
 
   it("gives today's ship from the standard knobs, apart from 16 seats", () => {

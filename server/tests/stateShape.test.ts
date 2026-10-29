@@ -30,7 +30,7 @@ function keyPaths(value: unknown, at = "", out = new Set<string>()): string[] {
 const OVERRIDES: Required<ConfigOverrides> = {
   mushCount: 1,
   manualCycles: true,
-  preselection: { seats: 4, endsOn: { day: 3, cycle: 8 }, twoMushAbove: 8, minPlayers: 3 },
+  preselection: { seats: 4, endsOn: { day: 3, cycle: 8 }, mushCount: "auto", twoMushAbove: 8, minPlayers: 3 },
 };
 
 async function freshStoredGame(): Promise<unknown> {

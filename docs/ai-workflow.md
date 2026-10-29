@@ -1624,3 +1624,7 @@ Removed `SEAT_COUNT`; `PRESELECTION` is now 16 seats with the deadline on day 3'
 ## 2026-10-29: Confirm dialog uses the original pop-up art
 
 The owner called the shared confirm dialog (`ConfirmPanel.tsx`) "clearly AI generated": a flat navy panel with a 1px rim, and the message picked up `base.css`'s small-caps `h2` look. It now uses the original site's pop-up box (`design/poptop.png`, `popbg.png`, `popbottom.png`, 519px wide, already in the design kit), stretched to any width with `border-image` (30px ends kept, so the corner marks survive on a 360px phone; body inset 15px so it doesn't double under the top and bottom pieces), and the title's heading styles are undone. It also stacks above other modals now, since it opens from the skill picker. Checked by injecting the markup into the dev page with a throwaway Playwright script, on desktop and at 360px.
+
+### 2026-10-29: Mush count knob (#229)
+
+`PreselectionRules.mushCount` ("auto" or a fixed count) now drives `selectMush` through `mushWanted`; `setupOverrides` passes the setup's knob through. Stored ships: `resolveConfig` falls back to "auto" for a missing field, but adding the key still moves the state-shape fingerprint, so STATE_VERSION went to 86 anyway (the fingerprint test enforces a bump on any shape change; making the field optional just to dodge it was rejected as working around the policy). Worked from a handoff note plus the issue's 2026-10-25 plan; no rule questions came up.

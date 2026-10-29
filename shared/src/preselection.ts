@@ -1,8 +1,8 @@
 // ---- Pre-selection ----------------------------------------------------------
 // Decided 2026-10-13 (docs/rules-design.md, "Joining and Mush selection"). A multiplayer ship launches with nobody
 // Mush (`config.preselection`). Players join it (`joinShip`, a server input) until it fills or the deadline cycle
-// begins, whichever comes first; then `selectMush` picks the Mush from whoever joined: `twoMushAbove` or fewer
-// players get 1, more get 2. Titles and the first rebel call wait for selection too. Meanwhile there are no spore
+// begins, whichever comes first; then `selectMush` picks the Mush from whoever joined, `mushCount` of them (Auto:
+// `twoMushAbove` or fewer players get 1, more get 2; a fixed count is capped at the players minus 2). Titles and the first rebel call wait for selection too. Meanwhile there are no spore
 // actions and no combat (punch, weapons): their actions refuse with `IN_PRESELECTION` (actions/action.ts).
 //
 // Stopgap (owner, 2026-10-24): with fewer than `minPlayers` aboard at selection, every human dies at once, so the
@@ -17,6 +17,7 @@ import { callNextRebel } from "./comms.ts";
 import { startHunters } from "./hunters.ts";
 import { rollShuffle } from "./rng.ts";
 import { newPlayer, startInventory } from "./rules.ts";
+import { MUSH_SEAT_MARGIN } from "./setups.ts";
 import { assignTitles } from "./titles.ts";
 import { endGame, mushWinOnDeath } from "./victory.ts";
 import type { GameState, PreselectionRules, Seat } from "./types.ts";
@@ -45,6 +46,12 @@ export function preselectionCycle(state: GameState): void {
   if (rules && state.preselection && state.phase === "playing" && state.cycle >= preselectionDeadline(state, rules)) selectMush(state);
 }
 
+/** How many Mush `selectMush` makes from `aboard` players (`PreselectionRules.mushCount`). */
+export function mushWanted(rules: PreselectionRules, aboard: number): number {
+  if (rules.mushCount === "auto") return aboard > rules.twoMushAbove ? 2 : 1;
+  return Math.max(1, Math.min(rules.mushCount, aboard - MUSH_SEAT_MARGIN));
+}
+
 /**
  * Ends pre-selection: picks the Mush with the seeded RNG from the living humans, issues the titles, and the first
  * rebel base calls. Each new Mush is told privately; the crew gets a system message in global chat that the Mush
@@ -55,7 +62,7 @@ export function selectMush(state: GameState): void {
   if (!rules || !state.preselection) return;
   state.preselection = false;
   const aboard = state.players.filter((p) => p.alive);
-  const wanted = aboard.length > rules.twoMushAbove ? 2 : 1;
+  const wanted = mushWanted(rules, aboard.length);
   // A Mush made by the dev role cheat already counts.
   const already = aboard.filter((p) => p.role === "mush").length;
   const order = rollShuffle(
