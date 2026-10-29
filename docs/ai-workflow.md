@@ -1628,3 +1628,7 @@ The owner called the shared confirm dialog (`ConfirmPanel.tsx`) "clearly AI gene
 ### 2026-10-29: Mush count knob (#229)
 
 `PreselectionRules.mushCount` ("auto" or a fixed count) now drives `selectMush` through `mushWanted`; `setupOverrides` passes the setup's knob through. Stored ships: `resolveConfig` falls back to "auto" for a missing field, but adding the key still moves the state-shape fingerprint, so STATE_VERSION went to 86 anyway (the fingerprint test enforces a bump on any shape change; making the field optional just to dodge it was rejected as working around the policy). Worked from a handoff note plus the issue's 2026-10-25 plan; no rule questions came up.
+
+### 2026-10-29: Cycle length knob (#230)
+
+Followed the issue's plan: `cycleHours` is a `ConfigOverrides` key, and `resolveConfig` derives `cyclesPerDay = 24 / cycleHours`, so a reload recomputes it. The server clock's `cycleMs` takes the game's length (`CYCLE_SECONDS` still wins). The audit found no hard-coded 8: every daily effect already read `cyclesPerDay`. A first test that ran two 24-cycle days hit game over from hunters and hunger, which is correct ("anything counted in cycles stays in cycles") but needed the test to switch hunters off. No setup reaches a live ship until #232; the GameRoom tests launch with the override directly. STATE_VERSION 87.

@@ -22,7 +22,9 @@ export const DEFAULT_CONFIG: GameConfig = {
   apPerCycle: 1,
   // Confirmed 2026-10-13: 8 cycles per day. Confirmed 2026-10-14: each living player loses 1 morale at day end.
   // Owner, 2026-10-18: that 1 is 2 cut by 1 while Chun (Mankind's Only Hope) lives, so it is 2 once she dies or with no Chun.
+  // Owner, 2026-10-25 (#230): a day is always 24 hours from 00:00 GMT, so `resolveConfig` sets this to 24 / `cycleHours`.
   cyclesPerDay: 8,
+  cycleHours: 3,
   // Owner, 2026-10-19 (#24): cycles follow the UTC clock; End cycle stays for testing, on only where the server allows cheats.
   manualCycles: false,
   // Owner, 2026-10-20 (#17, #21): on by default; kept switchable for a future game setting.
@@ -345,6 +347,7 @@ export function resolveConfig(o: ConfigOverrides = {}): GameConfig {
     ...DEFAULT_CONFIG,
     ...(o.mushCount !== undefined && { mushCount: o.mushCount }),
     ...(o.manualCycles !== undefined && { manualCycles: o.manualCycles }),
+    ...(o.cycleHours !== undefined && { cycleHours: o.cycleHours, cyclesPerDay: 24 / o.cycleHours }),
     ...(p && { preselection: { seats: p.seats, endsOn: { day: p.endsOn.day, cycle: p.endsOn.cycle }, mushCount: p.mushCount ?? "auto", twoMushAbove: p.twoMushAbove, minPlayers: p.minPlayers } }),
   };
 }

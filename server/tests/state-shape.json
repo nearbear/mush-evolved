@@ -1,5 +1,5 @@
 {
-  "version": 86,
+  "version": 87,
   "paths": [
     "bios.actopi",
     "bios.death_announcements",
@@ -153,6 +153,7 @@
     "nextPlanetId",
     "nextThreadId",
     "now",
+    "overrides.cycleHours",
     "overrides.manualCycles",
     "overrides.mushCount",
     "overrides.preselection.endsOn.cycle",

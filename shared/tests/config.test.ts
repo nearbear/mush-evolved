@@ -14,6 +14,12 @@ describe("resolveConfig", () => {
     expect(resolveConfig({ manualCycles: true })).toEqual({ ...DEFAULT_CONFIG, manualCycles: true });
   });
 
+  it("derives the cycles per day from the cycle length: a day is always 24 hours (#230)", () => {
+    expect(DEFAULT_CONFIG).toMatchObject({ cycleHours: 3, cyclesPerDay: 8 });
+    expect(resolveConfig({ cycleHours: 1 })).toEqual({ ...DEFAULT_CONFIG, cycleHours: 1, cyclesPerDay: 24 });
+    expect(resolveConfig({ cycleHours: 6 })).toEqual({ ...DEFAULT_CONFIG, cycleHours: 6, cyclesPerDay: 4 });
+  });
+
   it("uses a pre-selection override whole", () => {
     const rules = { ...PRESELECTION, seats: 16, endsOn: { day: 5, cycle: 1 } };
     expect(resolveConfig({ preselection: rules }).preselection).toEqual(rules);

@@ -137,6 +137,13 @@ describe("setupOverrides", () => {
     for (const mushCount of MUSH_COUNTS) expect(setupOverrides(knobs({ mushCount }) as SetupKnobs).preselection?.mushCount).toBe(mushCount);
   });
 
+  it("sets the cycle length, and with it the cycles per day", () => {
+    for (const cycleHours of CYCLE_HOURS) {
+      const config = resolveConfig(setupOverrides(knobs({ cycleHours }) as SetupKnobs));
+      expect([config.cycleHours, config.cyclesPerDay]).toEqual([cycleHours, cyclesPerDayFor(cycleHours)]);
+    }
+  });
+
   it("gives today's ship from the standard knobs, apart from 16 seats", () => {
     const config = resolveConfig(setupOverrides(STANDARD_KNOBS));
     expect(config).toEqual({ ...DEFAULT_CONFIG, preselection: { ...PRESELECTION, seats: 16 } });

@@ -7,8 +7,8 @@
 // A setup made for an older rules version drops off the ballot when it no longer validates; `rulesVersion` is stored
 // for display only (`RULES_VERSION` is "dev" for now).
 //
-// Each knob reaches the game as its sub-issue lands: seats and pre-selection length now, Mush count (#229),
-// cycle length (#230), shared positions (#231). Until then a knob is validated and stored but not applied.
+// Each knob reaches the game as its sub-issue lands: seats, pre-selection length, Mush count (#229) and cycle length
+// (#230) now, shared positions (#231). Until then a knob is validated and stored but not applied.
 
 import { MAX_THREAD_NAME_LENGTH } from "./chat.ts";
 import { PRESELECTION } from "./config.ts";
@@ -125,6 +125,7 @@ export const cyclesPerDayFor = (cycleHours: CycleHours): number => 24 / cycleHou
  */
 export function setupOverrides(knobs: Readonly<SetupKnobs>): ConfigOverrides {
   return {
+    cycleHours: knobs.cycleHours,
     preselection: {
       ...PRESELECTION,
       seats: knobs.seats,

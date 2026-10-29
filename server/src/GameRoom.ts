@@ -64,7 +64,7 @@ const MODEL_RETRY_MAX_MS = 60_000;
  * Bump when GameState's shape changes, or ConfigOverrides' (or what resolveConfig derives from a key). Games stored
  * under another version are discarded on load (there is no migration; games are short-lived).
  */
-export const STATE_VERSION = 86;
+export const STATE_VERSION = 87;
 
 interface Stored {
   version?: number;
@@ -255,15 +255,15 @@ export class GameRoom extends Server<Env> {
     const game = this.game;
     const rules = game?.config.preselection;
     if (!game?.preselection || !rules || game.phase !== "playing") return null;
-    return clockCycleStart(this.clockCycle + preselectionDeadline(game, rules) - game.cycle, cycleMs(this.env));
+    return clockCycleStart(this.clockCycle + preselectionDeadline(game, rules) - game.cycle, cycleMs(this.env, game.config.cycleHours));
   }
 
   private async launch(seats: Seat[], tokens: Record<string, PlayerId>, overrides: ConfigOverrides, forcedRoles?: Record<PlayerId, Role>): Promise<void> {
     const now = Date.now();
-    this.clockCycle = clockCycle(now, cycleMs(this.env));
     // End cycle is for testing (only where cheats are allowed, owner, 2026-10-19) and single player.
     this.overrides = this.cheatsAllowed ? { ...overrides, manualCycles: true } : overrides;
     const config = resolveConfig(this.overrides);
+    this.clockCycle = clockCycle(now, cycleMs(this.env, config.cycleHours));
     const setup: GameSetup = {
       seats,
       config,
@@ -369,7 +369,7 @@ export class GameRoom extends Server<Env> {
 
   /** When the next cycle begins (server ms), or null in single player, where the clock doesn't change cycles. */
   private nextCycleAt(): number | null {
-    return this.singlePlayer ? null : clockCycleStart(this.clockCycle + 1, cycleMs(this.env));
+    return this.singlePlayer || !this.game ? null : clockCycleStart(this.clockCycle + 1, cycleMs(this.env, this.game.config.cycleHours));
   }
 
   /** Chat and channel management. Untrusted text: rate limit, then moderate, then let the rules decide. `playerId` is the seat, `by` its body. */

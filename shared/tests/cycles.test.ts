@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { DEFAULT_CONFIG } from "../src/config.ts";
+import { DEFAULT_CONFIG, resolveConfig } from "../src/config.ts";
+import { dailyMoraleLoss } from "../src/modifiers.ts";
 import { applyInput, startGame } from "../src/replay.ts";
 import { applyAction, createGame, legalActions, newCycle, viewFor } from "../src/rules.ts";
 import type { GameState } from "../src/types.ts";
@@ -70,6 +71,24 @@ describe("launching mid-day", () => {
   it("rejects a cycle that isn't one of day 1", () => {
     for (const c of [0, config.cyclesPerDay + 1, 2.5]) expect(() => ship(c)).toThrow(/startCycle/);
   });
+});
+
+describe("cycle length (#230)", () => {
+  // Anything counted in cycles stays in cycles; daily effects stay once per 24-hour day.
+  for (const cycleHours of [1, 6]) {
+    it(`with ${cycleHours}-hour cycles, costs morale once per day, after ${24 / cycleHours} cycles`, () => {
+      const c = { ...resolveConfig({ cycleHours }), mushCount: 1, startItems: [], startSkills: [] };
+      let s = createGame(seats, c, 3);
+      s.hunters.since = null; // An idle crew's hull would fall to hunters within 24 cycles.
+      const start = player(s, "p0").morale;
+      for (let i = 1; i < c.cyclesPerDay; i++) s = nextCycle(s);
+      expect(viewFor(s, "p0")).toMatchObject({ day: 1, cycleOfDay: c.cyclesPerDay });
+      expect(player(s, "p0").morale).toBe(start);
+      s = nextCycle(s);
+      expect(viewFor(s, "p0")).toMatchObject({ day: 2, cycleOfDay: 1 });
+      expect(player(s, "p0").morale).toBe(start - dailyMoraleLoss(s));
+    });
+  }
 });
 
 describe("daily healing", () => {

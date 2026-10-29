@@ -1,6 +1,7 @@
 import {
   CHARACTERS,
   CHAT_CHANNELS,
+  CYCLE_HOURS,
   DEFAULT_CONFIG,
   legalIn,
   PRESELECTION,
@@ -835,6 +836,40 @@ describe("GameRoom cycle clock", () => {
     const { room, storage } = await newRoom(3, new FakeStorage(), { CYCLE_SECONDS: "60" });
     expect(lastView(connect(room, "tok0"))).toMatchObject({ day: 1, cycleOfDay: 2 }); // the second minute of the "day"
     expect(storage.alarm).toBe(120_000);
+  });
+
+  describe("with a setup's cycle length (#230)", () => {
+    /** Launches like `setup`, with `cycleHours` in the overrides (#232 will pass a setup's config this way). */
+    async function roomWithCycleHours(cycleHours: number, storage = new FakeStorage(), env: Record<string, string> = {}) {
+      const room = asRoom(storage, env);
+      await (room as unknown as { launch(s: unknown, t: unknown, o: ConfigOverrides): Promise<void> }).launch(seats(3), tokensFor(3), { cycleHours });
+      return { room, storage };
+    }
+
+    it("launches at 14:10 GMT on the right cycle of day 1, with the next change at the next multiple of the length", async () => {
+      for (const h of CYCLE_HOURS) {
+        const { room, storage } = await roomWithCycleHours(h);
+        const next = Date.UTC(2026, 9, 19, Math.floor(14 / h) * h + h);
+        expect(lastView(connect(room, "tok0")), `${h} h`).toMatchObject({ day: 1, cycleOfDay: Math.floor(14 / h) + 1 });
+        expect(storage.alarm, `${h} h`).toBe(next);
+      }
+    });
+
+    it("keeps its length on reload and begins day 2 at midnight GMT", async () => {
+      const { storage } = await roomWithCycleHours(6);
+      vi.setSystemTime(Date.UTC(2026, 9, 20, 0, 30)); // two boundaries later: 18:00, 00:00
+      const revived = asRoom(storage);
+      await revived.onStart();
+      await revived.onAlarm();
+      expect(lastView(connect(revived, "tok0"))).toMatchObject({ day: 2, cycleOfDay: 1 });
+      expect(storage.alarm).toBe(Date.UTC(2026, 9, 20, 6));
+    });
+
+    it("still gives way to CYCLE_SECONDS", async () => {
+      vi.setSystemTime(90_000);
+      const { storage } = await roomWithCycleHours(1, new FakeStorage(), { CYCLE_SECONDS: "60" });
+      expect(storage.alarm).toBe(120_000);
+    });
   });
 });
 

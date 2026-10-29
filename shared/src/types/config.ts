@@ -70,6 +70,7 @@ export interface PreselectionRules {
 export interface ConfigOverrides {
   mushCount?: number; // Single player: 1.
   manualCycles?: boolean; // Single player, and wherever the server allows cheats.
+  cycleHours?: number; // A setup's cycle length (#230): one of `CYCLE_HOURS` (setups.ts). Also sets `cyclesPerDay`.
   // A ship's rules, whole, frozen at launch: an edit to `PRESELECTION` would otherwise move a live ship's deadline or
   // seat count away from the matchmaker's. Absent: `DEFAULT_CONFIG`'s (`null`).
   preselection?: PreselectionRules;
@@ -82,7 +83,9 @@ export interface GameConfig {
   startAp: number;
   startMp: number; // MP each player wakes up with. Capped by `movement.mpCap` like any other gain.
   apPerCycle: number; // AP gained at the start of each cycle, before modifiers. Unspent AP carries over.
-  cyclesPerDay: number; // Cycles in one day. The day ends with the last cycle; every living player then loses `dailyMoraleLoss` (modifiers.ts) morale.
+  // Hours per cycle on the server's UTC clock (#230). The rules never read it; the server clock and the record do.
+  cycleHours: number;
+  cyclesPerDay: number; // 24 / `cycleHours`: a day is always 24 hours from 00:00 GMT. Cycles in one day. The day ends with the last cycle; every living player then loses `dailyMoraleLoss` (modifiers.ts) morale.
   // Cycles change on the server's UTC clock (#24). With this on, `ready` is offered too and the cycle also ends once
   // every living player is ready: the dev server's manual End cycle, and later single player.
   manualCycles: boolean;
