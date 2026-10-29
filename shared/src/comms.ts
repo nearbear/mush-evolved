@@ -246,6 +246,8 @@ export function advanceNeron(state: GameState, percent: number): string | undefi
 /** What the Com center terminal shows anyone standing at it. The drawn Xyloph entries are listed in database order, so the draw order stays out. */
 export function commsTerminalView(state: Readonly<GameState>): CommsTerminalView {
   const { comms } = state;
+  const last = comms.rebels.at(-1);
+  const upcoming = REBEL_BASES[comms.rebels.length];
   return {
     solChance: comms.solChance,
     rebels: comms.rebels.map((call) => ({
@@ -254,6 +256,7 @@ export function commsTerminalView(state: Readonly<GameState>): CommsTerminalView
       status: isContacted(call) ? "contacted" : isOpen(state, call) ? "open" : "lost",
       expiresAt: call.expiresAt,
     })),
+    ...(last && upcoming && { nextRebel: { base: upcoming, at: last.calledAt + state.config.cyclesPerDay } }),
     xylophLeft: xylophLeft(state).length,
     xylophFound: XYLOPH_IDS.filter((id) => xylophFound(state, id)),
     neron: { ...comms.neron },

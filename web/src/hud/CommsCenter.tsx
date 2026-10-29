@@ -162,6 +162,32 @@ export function CommsCenter({ terminal, view, onAction }: Props) {
                   </li>
                 );
               })}
+            {screen.nextRebel && (
+              <li className="research-item">
+              <Tooltip.Provider delay={300}>
+                <>
+                  <Tooltip.Root>
+                    <Tooltip.Trigger
+                      className="research-card rebel-icon rebel-icon-button"
+                      aria-label={t("comms.rebelNext", { base: names.rebelBase(screen.nextRebel.base), count: screen.nextRebel.at - view.cycle })}
+                      render={<button type="button" />}
+                    >
+                      <img src={REBEL_BASE_ICONS[screen.nextRebel.base]} alt="" />
+                    </Tooltip.Trigger>
+                    <Tooltip.Portal>
+                      <Tooltip.Positioner sideOffset={6}>
+                        <Tooltip.Popup className="tooltip">{t("comms.rebelNextIn", { count: screen.nextRebel.at - view.cycle })}</Tooltip.Popup>
+                      </Tooltip.Positioner>
+                    </Tooltip.Portal>
+                  </Tooltip.Root>
+                  <div className="research-title">
+                    <strong>{names.rebelBase(screen.nextRebel.base)}</strong>
+                    <span className="rebel-status">{t("comms.rebelUpcoming")}</span>
+                  </div>
+                </>
+              </Tooltip.Provider>
+              </li>
+            )}
             </ul>
           </section>
       </Tabs.Panel>

@@ -272,6 +272,8 @@ export interface CommsTerminalView {
   solChance: number;
   /** Every rebel call so far: `open` (can be decoded), `contacted` (reached, bonus in effect) or `lost` (expired). */
   rebels: { base: RebelBaseId; progress: number; status: "open" | "contacted" | "lost"; expiresAt: number }[];
+  /** The next base to call and the cycle it does so (the schedule is fixed); absent before the first call or once all have called. */
+  nextRebel?: { base: RebelBaseId; at: number };
   /** How many Xyloph entries are left to draw. */
   xylophLeft: number;
   /** The entries drawn so far, in database order (not draw order), for the terminal's grid of deciphered cells. */
