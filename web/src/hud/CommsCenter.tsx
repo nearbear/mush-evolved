@@ -6,7 +6,7 @@ import { Tooltip } from "@base-ui/react/tooltip";
 import { type Action, type EquipmentView, type PlayerView, XYLOPH_IDS } from "@mush2/shared";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { XYLOPH_DONE, XYLOPH_TODO } from "../art/assets.ts";
+import { REBEL_BASE_ICONS, XYLOPH_DONE, XYLOPH_TODO } from "../art/assets.ts";
 import { useNames } from "../i18n/names.ts";
 import { ActionButton } from "./ActionButton.tsx";
 import { ActionLabel } from "./ActionLabel.tsx";
@@ -114,10 +114,21 @@ export function CommsCenter({ terminal, view, onAction }: Props) {
                 const decode = find("decode_rebel", call.base);
                 return (
                   <li key={call.base} className="research-item">
-                    <div className="research-body">
+                    <img className="research-card rebel-icon" src={REBEL_BASE_ICONS[call.base]} alt="" />
+                    <div className="research-title">
                       <strong>{names.rebelBase(call.base)}</strong>
+                    </div>
+                    <div className="research-body">
                       <span>{t(`comms.rebels.${call.base}.effect`)}</span>
-                      <progress max={100} value={call.progress} />
+                      <div className="research-progress">
+                        <progress max={100} value={call.progress} />
+                        <span>{t("research.percent", { percent: call.progress })}</span>
+                        {decode && (
+                          <ActionButton view={view} option={decode} onAction={onAction}>
+                            <ActionLabel text={t("actions.decodeRebel")} cost={decode.cost} chance={decode.chance} />
+                          </ActionButton>
+                        )}
+                      </div>
                       <span>
                         {call.status === "contacted"
                           ? t("comms.rebelContacted")
@@ -126,11 +137,6 @@ export function CommsCenter({ terminal, view, onAction }: Props) {
                             : t("comms.rebelOpen", { percent: call.progress, count: call.expiresAt - view.cycle })}
                       </span>
                     </div>
-                    {decode && (
-                      <ActionButton view={view} option={decode} onAction={onAction}>
-                        <ActionLabel text={t("actions.decodeRebel")} cost={decode.cost} chance={decode.chance} />
-                      </ActionButton>
-                    )}
                   </li>
                 );
               })}

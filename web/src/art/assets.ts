@@ -1,7 +1,7 @@
 // Maps game ids to Motion Twin art in Mush/ (CC BY-NC-SA 4.0, see
 // Mush/ATTRIBUTION.md). Vite bundles only the files matched here.
 
-import { DEFAULT_CONFIG, type CharacterId, type Ending, type ItemView, type ResourceId, type TitleId } from "@mush2/shared";
+import { DEFAULT_CONFIG, REBEL_BASES, type CharacterId, type RebelBaseId, type Ending, type ItemView, type ResourceId, type TitleId } from "@mush2/shared";
 
 type UrlMap = Record<string, string>;
 const urls = (map: UrlMap) =>
@@ -228,6 +228,13 @@ export const MORALE_PIP = design["lifebar2"]!;
 /** 36x28 Xyloph database cells: deciphered, and not yet deciphered. */
 export const XYLOPH_DONE = design["bdd"]!;
 export const XYLOPH_TODO = design["bdd_off"]!;
+/** 70x65 rebel base icons. The art is generic colony skylines; base01..06 follow the order of `REBEL_BASES` (the original's data sheet has ten slots, six live). */
+const baseIcons = urls(
+  import.meta.glob<string>("../../../Mush/www/img/icons/bases/base0[1-6].png", { eager: true, query: "?url", import: "default" }),
+);
+export const REBEL_BASE_ICONS: Readonly<Record<RebelBaseId, string>> = Object.fromEntries(
+  REBEL_BASES.map((id, i) => [id, baseIcons[`base0${i + 1}`]!]),
+) as Record<RebelBaseId, string>;
 /** 11x13 heart and face icons, for the HP and morale chips (the 3x5 bar pips are too small to read alone). */
 const statIcons = urls(
   import.meta.glob<string>("../../../Mush/www/img/icons/ui/{lp,moral}.png", { eager: true, query: "?url", import: "default" }),

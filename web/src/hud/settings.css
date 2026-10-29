@@ -134,7 +134,13 @@ li.research-item .research-card {
 li.research-item .research-title {
   grid-area: title;
 }
-li.research-item .research-body {
+li.research-item /* Rebel base icons are 70x65, not the 50x75 research cards. */
+.research-card.rebel-icon {
+  width: 70px;
+  height: 65px;
+}
+
+.research-body {
   grid-area: body;
 }
 
