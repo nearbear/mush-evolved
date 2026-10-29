@@ -146,8 +146,9 @@ li.research-item .research-body {
 
 .research-card {
   flex: none;
-  max-width: 4rem;
-  height: auto;
+  width: 50px;
+  height: 75px;
+  image-rendering: pixelated;
 }
 
 .research-body {
