@@ -61,6 +61,7 @@ export const GAME_STATE_FIELDS: Record<string, FieldRule> = {
   turretFailures: { reach: "never", test: "leaks.test.ts" },
   patrolShips: { reach: "room", test: "patrol.test.ts", note: "`out` to the living in the ship's bay, on its interface; `armor` and `charges` to its pilot only, aboard (leaks.test.ts)." },
   patrolFailures: { reach: "never", test: "leaks.test.ts" },
+  space: { reach: "never", test: "leaks.test.ts", note: "Only its length, to a pilot aboard (`patrolShip.debris`); the pieces never." },
   now: { reach: "never", test: "leaks.test.ts", note: "The rules' clock; offers' expiry times reach their owner only." },
 };
 

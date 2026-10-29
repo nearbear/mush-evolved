@@ -123,6 +123,7 @@ function ship(): { state: GameState; sentinels: Sentinel[] } {
   // Nobody is aboard a patrol ship, so no one sees its armor or charges, or a hunter's hp from there.
   s.patrolShips.PATROL_SHIP_A_0!.armor = num("patrolArmor", []);
   s.patrolShips.PATROL_SHIP_A_0!.charges = num("patrolCharges", []);
+  s.space.push({ id: str("debrisId", []), type: str("debrisType", []) });
 
   s.items.push({ id: str("floor-here", ["p0", "p1", "p2"]), type: "wrench", at: { kind: "room", id: HERE } });
   s.items.push({ id: str("floor-elsewhere", ["p3"]), type: "wrench", at: { kind: "room", id: ELSEWHERE } });

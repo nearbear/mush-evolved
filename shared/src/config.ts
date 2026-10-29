@@ -214,6 +214,8 @@ export const DEFAULT_CONFIG: GameConfig = {
     followShare: 0.5,
     // Owner, 2026-10-28 (patrol plan, phase 4): eMush's 15% to aim at a patrol ship in flight, when one is out.
     patrolTargetChance: 0.15,
+    // Owner, 2026-10-28 (patrol plan, phase 5): eMush's 1 piece (2/3) or 2 (1/3), metal scraps 2 : space capsule 1 : plastic scraps 1.
+    debris: { count: [0, 2, 1], types: { metal_scraps: 2, space_capsule: 1, plastic_scraps: 1 } },
   },
   turrets: { cost: { ap: 1 }, chance: 0.3, failureMultiplier: 1.25, damage: [2, 4], charges: 4, rechargePerCycle: 1 },
   patrol: {
@@ -226,7 +228,12 @@ export const DEFAULT_CONFIG: GameConfig = {
     shot: { cost: { ap: 1 }, chance: 0.4, failureMultiplier: 1.25, damage: [3, 6], pilotAccuracyFactor: 2 },
     cleanChance: 0.2,
     rough: { hull: [2, 4], armor: 1, hp: [0, 2] },
+    // Owner, 2026-10-28 (phase 5): eMush's 2 AP; a patrol ship 0 (75%) or 1 (25%), the Pasiphae 1, 2 or 3; while hunters
+    // remain, 2-4 armor and the pilot 0 hp (50%) or 2-4.
+    collect: { cost: { ap: 2 }, pieces: { patrol: [3, 1], pasiphae: [0, 1, 1, 1] }, armor: [2, 4], hp: { noneChance: 0.5, range: [2, 4] } },
   },
+  // Owner, 2026-10-24 (patrol plan, answer 6): 1 AP to open, 25% each.
+  spaceCapsule: { cost: { ap: 1 }, contents: ["metal_scraps", "plastic_scraps", "oxy_capsule", "fuel_capsule"] },
   hullRepair: { cost: { ap: 1 }, chance: 0.25, amount: 5 },
   hunger: { satietyPerCycle: 1, fullBellyAt: 3, hungryAfterCycles: 24, hpPerCycle: 1 },
   // Confirmed 2026-10-13: dismantle cost and odds.

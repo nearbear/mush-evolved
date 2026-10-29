@@ -374,6 +374,8 @@ export interface GameConfig {
     missBonus: number; // Added to the hunter's chance after each miss.
     followShare: number; // Share of the hunters that follow a jump (travel or leaving orbit), rounded up.
     patrolTargetChance: number; // Chance a hunter picking a target aims at a patrol ship in flight (one at random), when any is out.
+    // What a destroyed hunter leaves in space: weights by piece count (index = count), and by item type for each piece.
+    debris: { count: number[]; types: Record<string, number> };
   };
   // Turrets (owner, 2026-10-24, the wiki's Tourelle): 1 AP, a charge per shot, 30% to hit, x1.25 per miss in a row, reset by a hit.
   turrets: { cost: { ap: number }; chance: number; failureMultiplier: number; damage: [number, number]; charges: number; rechargePerCycle: number };
@@ -391,7 +393,12 @@ export interface GameConfig {
     shot: { cost: { ap: number }; chance: number; failureMultiplier: number; damage: [number, number]; pilotAccuracyFactor: number };
     cleanChance: number;
     rough: { hull: [number, number]; armor: number; hp: [number, number] };
+    // Collect scrap: pieces per try as weights by count (index = count); while hunters remain, the ship's armor loss and
+    // the pilot's hp loss (none at `noneChance`, else `range`).
+    collect: { cost: { ap: number }; pieces: { patrol: number[]; pasiphae: number[] }; armor: [number, number]; hp: { noneChance: number; range: [number, number] } };
   };
+  // The space capsule: opening it turns it into one of `contents`, each equally likely.
+  spaceCapsule: { cost: { ap: number }; contents: string[] };
   // Hull repair (owner, 2026-10-24, the wiki's Armure et Bouclier): 1 AP, 25%, +5 hull, a metal scrap used up on a success.
   hullRepair: { cost: { ap: number }; chance: number; amount: number };
   hunger: {

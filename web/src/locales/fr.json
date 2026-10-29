@@ -331,7 +331,9 @@
     "bodyTransfer": "Transfert",
     "fungalCuisine": "Cuisine fongique",
     "takeoff": "Décoller",
-    "land": "Atterrir"
+    "land": "Atterrir",
+    "collectScrap": "Rapatrier des débris",
+    "openCapsule": "Ouvrir"
   },
   "queue": {
     "label": "Vos actions",
@@ -674,7 +676,8 @@
     "body_cat": "Schrödinger",
     "water_stick": "Bâtonnet aqueux",
     "super_map": "Morceau de carte stellaire",
-    "protection_gloves": "Gants de protection"
+    "protection_gloves": "Gants de protection",
+    "space_capsule": "Capsule spatiale"
   },
   "logEvent": {
     "loseMorale": "Vous avez perdu {{amount}} point de moral.",
@@ -828,7 +831,16 @@
     "patrolKill": "Vous avez abattu un hunter.",
     "hunterHitPatrol": "Tir de hunter sur {{room}} : {{armor}} points d'armure perdus.",
     "patrolDestroyed": "NERON : appareil abattu par les hunters ({{room}}).",
-    "patrolLost": "NERON : appareil perdu lors du saut du Daedalus ({{room}})."
+    "patrolLost": "NERON : appareil perdu lors du saut du Daedalus ({{room}}).",
+    "patrolUnloaded_one": "{{name}} a déchargé {{count}} objet du vaisseau.",
+    "patrolUnloaded_many": "{{name}} a déchargé {{count}} objets du vaisseau.",
+    "patrolUnloaded_other": "{{name}} a déchargé {{count}} objets du vaisseau.",
+    "scrapCollected_one": "Vous avez rapatrié {{count}} débris.",
+    "scrapCollected_many": "Vous avez rapatrié {{count}} débris.",
+    "scrapCollected_other": "Vous avez rapatrié {{count}} débris.",
+    "scrapNotFound": "Vous n'avez attrapé aucun débris.",
+    "scrapUnderFire": "Collecte sous le feu : le vaisseau a perdu {{armor}} d'armure et vous avez perdu {{hp}} PV.",
+    "capsuleOpened": "{{name}} a ouvert une capsule spatiale : {{item}}."
   },
   "skills": {
     "title": "Choisir une compétence",
@@ -1498,6 +1510,10 @@
     "flying": "En vol à bord du {{ship}}",
     "armor": "Armure : {{armor}}/{{max}}",
     "out": "Le vaisseau est sorti en patrouille.",
-    "destroyed": "Le vaisseau a été détruit."
+    "destroyed": "Le vaisseau a été détruit.",
+    "debris_one": "{{count}} débris flotte à proximité",
+    "debris_many": "{{count}} débris flottent à proximité",
+    "debris_other": "{{count}} débris flottent à proximité",
+    "noDebris": "Aucun débris à proximité"
   }
 }

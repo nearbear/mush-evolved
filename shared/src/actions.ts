@@ -28,6 +28,8 @@ import { TurretAttackAction } from "./actions/turret_attack.ts";
 import { RepairHullAction } from "./actions/repair_hull.ts";
 import { TakeoffAction } from "./actions/takeoff.ts";
 import { LandAction } from "./actions/land.ts";
+import { CollectScrapAction } from "./actions/collect_scrap.ts";
+import { OpenCapsuleAction } from "./actions/open_capsule.ts";
 import { AnalyzePlanetAction } from "./actions/analyze_planet.ts";
 import { DeletePlanetAction } from "./actions/delete_planet.ts";
 import { LeaveOrbitAction } from "./actions/leave_orbit.ts";
@@ -137,6 +139,8 @@ const REGISTRY = {
   repair_hull: new RepairHullAction(),
   takeoff: new TakeoffAction(),
   land: new LandAction(),
+  collect_scrap: new CollectScrapAction(),
+  open_capsule: new OpenCapsuleAction(),
   dispense: new DispenseAction(),
   consume: new ConsumeAction(),
   hide: new HideAction(),

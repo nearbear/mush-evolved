@@ -9,6 +9,9 @@ import type { ChatMessage, ChatThread, PrivateChannel } from "./chat.ts";
 import type { DeepReadonly, Equipment, GameConfig } from "./config.ts";
 import type { PlayerState } from "./player.ts";
 
+/** An item floating in space: an item without a container (and no one's hiding place). */
+export type SpaceDebris = Omit<ItemState, "at" | "hiddenBy">;
+
 /** The side that won the game (victory.ts). */
 export type Winner = "mush" | "humans";
 
@@ -124,6 +127,12 @@ export interface GameState {
    * are known to anyone in its bay (owner, 2026-10-24); armor and charges go to its pilot only, for now.
    */
   patrolShips: Record<RoomId, { armor: number; charges: number; out: boolean; destroyed: boolean }>;
+  /**
+   * Debris floating around the Daedalus (docs/patrol-plan.md, phase 5): what destroyed hunters drop and what floats off
+   * a destroyed patrol ship, as items with no container. Lost when the ship jumps. Never sent, except how many pieces
+   * there are, to whoever flies a patrol ship (owner, 2026-10-28).
+   */
+  space: SpaceDebris[];
   /** Missed turret shots in a row per player, raising their next shot's odds; reset by a hit (owner, 2026-10-24). Never sent. */
   turretFailures: Record<PlayerId, number>;
   /** Missed patrol-ship shots in a row per player, kept apart from the turrets' (owner, 2026-10-24); reset by a hit. Never sent. */

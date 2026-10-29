@@ -48,6 +48,9 @@ export const FUEL_CAPSULE_ITEM = "fuel_capsule";
 /** A unit of oxygen in transit between the oxygen tanks (owner, 2026-10-24); named after its icon, `oxy_capsule`. */
 export const OXYGEN_CAPSULE_ITEM = "oxy_capsule";
 
+/** Debris from a destroyed hunter (owner, 2026-10-24, patrol plan answer 6): opening it turns it into a random item (actions/open_capsule.ts). */
+export const SPACE_CAPSULE_ITEM = "space_capsule";
+
 /** The charges an item of this type starts with, or undefined if it has none. Charged weapons start full. */
 export function startCharges(config: DeepReadonly<GameConfig>, type: string): number | undefined {
   return type === MICROWAVE_ITEM ? config.expressCook.charges.start : config.weapons.types[type]?.charges;
@@ -101,6 +104,7 @@ export const ITEM_TYPES: Record<string, ItemType> = {
   // Owner, 2026-10-24, the wiki: one unit of oxygen, same handling as the fuel capsule (actions/take_oxygen.ts).
   [OXYGEN_CAPSULE_ITEM]: { canDrop: false },
   metal_scraps: {},
+  [SPACE_CAPSULE_ITEM]: {},
   thick_tube: {},
   // Decided 2026-10-16: carries a recipe in `ItemState.builds`; consumed by building.
   blueprint: {},

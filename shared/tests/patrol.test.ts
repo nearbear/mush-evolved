@@ -38,7 +38,10 @@ describe("patrol ship numbers", () => {
       shot: { cost: { ap: 1 }, chance: 0.4, failureMultiplier: 1.25, damage: [3, 6], pilotAccuracyFactor: 2 },
       cleanChance: 0.2,
       rough: { hull: [2, 4], armor: 1, hp: [0, 2] },
+      collect: { cost: { ap: 2 }, pieces: { patrol: [3, 1], pasiphae: [0, 1, 1, 1] }, armor: [2, 4], hp: { noneChance: 0.5, range: [2, 4] } },
     });
+    expect(DEFAULT_CONFIG.hunters.debris).toEqual({ count: [0, 2, 1], types: { metal_scraps: 2, space_capsule: 1, plastic_scraps: 1 } });
+    expect(DEFAULT_CONFIG.spaceCapsule).toEqual({ cost: { ap: 1 }, contents: ["metal_scraps", "plastic_scraps", "oxy_capsule", "fuel_capsule"] });
   });
 
   it("eight ships, each a door-less room holding its command, start docked at full armor and charges (the Pasiphae has none)", () => {
@@ -127,7 +130,7 @@ describe("in flight", () => {
     const types = new Set(offered(s, "p0").map((a) => a.type));
     expect(types.has("move")).toBe(false);
     expect(offered(s, "p0").filter((a) => a.type === "land")).toEqual([land()]);
-    expect(viewFor(s, "p0").patrolShip).toEqual({ id: LONGANE.id, armor: 10, maxArmor: 10, charges: 10 });
+    expect(viewFor(s, "p0").patrolShip).toEqual({ id: LONGANE.id, armor: 10, maxArmor: 10, charges: 10, debris: 0 });
     expect(viewFor(s, "p0").roomEquipment).toEqual([{ id: commandId(LONGANE), type: "PATROL_COMMAND" }]);
     expect(viewFor(s, "p1").patrolShip).toBeNull();
   });
@@ -400,5 +403,176 @@ describe("hunters and ships in flight", () => {
       expect(player(next, "p0").alive).toBe(false);
       expect(lines(next, "p1", "patrolLost")).toMatchObject([{ params: { room: LONGANE.id }, level: "warning" }]);
     }
+  });
+});
+
+describe("debris", () => {
+  const PASIPHAE = patrolShip("PATROL_SHIP_AA_1")!;
+  const collect = (ship = LONGANE): Action => ({ type: "collect_scrap", equipment: commandId(ship) });
+  const collecting = (overrides: Partial<GameConfig["patrol"]["collect"]>) => ({ patrol: { ...DEFAULT_CONFIG.patrol, collect: { ...DEFAULT_CONFIG.patrol.collect, ...overrides } } });
+  const debris = (s: GameState, ...types: string[]) => {
+    for (const type of types) s.space.push({ id: `debris-${s.space.length}`, type });
+  };
+  const inRoom = (s: GameState, room: string) => s.items.filter((i) => i.at.kind === "room" && i.at.id === room);
+  /** p0 flying Longane, no hunters left. */
+  const flying = (config: Partial<GameConfig> = {}) => mustApply(ship(config), "p0", takeoff());
+
+  it("a destroyed hunter drops 1 or 2 pieces, by the weights in config", () => {
+    for (const [count, type] of [[1, "metal_scraps"], [2, "space_capsule"]] as const) {
+      const s = ship({ hunters: { ...DEFAULT_CONFIG.hunters, waveChance: 0, debris: { count: count === 1 ? [0, 1] : [0, 0, 1], types: { [type]: 1 } } } });
+      s.hunters.list.push({ id: "h1", hp: 1, hitChance: 0.8, target: null });
+      player(s, "p1").room = "LASER_TURRET_A_0";
+      const next = mustApply({ ...s, config: { ...s.config, turrets: { ...s.config.turrets, chance: 1 } } }, "p1", { type: "turret_attack", equipment: "LASER_TURRET_A_0:TURRET_COMMAND", hunter: "h1" });
+      expect(next.hunters.list).toEqual([]);
+      expect(next.space.map((d) => d.type)).toEqual(Array(count).fill(type));
+      // Debris is never sent to anyone on the ground.
+      expect(JSON.stringify(viewFor(next, "p1"))).not.toContain(next.space[0]!.id);
+    }
+  });
+
+  it("the pilot sees how many pieces are out there, not which; nobody else does", () => {
+    const s = flying();
+    debris(s, "metal_scraps", "space_capsule");
+    expect(viewFor(s, "p0").patrolShip!.debris).toBe(2);
+    for (const id of ["p0", "p1", "p2"]) expect(JSON.stringify(viewFor(s, id))).not.toContain("debris-");
+  });
+
+  it("collect is offered from the command only while there is debris, for 2 AP", () => {
+    const s = flying();
+    expect(offered(s, "p0").some((a) => a.type === "collect_scrap")).toBe(false);
+    expect(refusal(s, "p0", collect())).toBe("no_debris");
+    debris(s, "metal_scraps");
+    expect(offered(s, "p0").filter((a) => a.type === "collect_scrap")).toEqual([collect()]);
+    expect(costOf(s, "p0", collect())).toEqual({ ap: s.config.patrol.collect.cost.ap, mp: 0 });
+    expect(refusal(s, "p1", collect())).toBe("not_flying");
+  });
+
+  it("brings pieces into the ship's room, privately; a try that catches nothing says so", () => {
+    let s = flying(collecting({ pieces: { patrol: [0, 1], pasiphae: [0, 1] } }));
+    debris(s, "metal_scraps", "plastic_scraps");
+    s = mustApply(s, "p0", collect());
+    expect(s.space).toHaveLength(1);
+    expect(inRoom(s, LONGANE.id)).toHaveLength(1);
+    expect(lines(s, "p0", "scrapCollected")).toMatchObject([{ params: { count: 1 } }]);
+    for (const id of ["p1", "p2"]) expect(lines(s, id, "scrapCollected")).toEqual([]);
+    // Never more than there is.
+    s = mustApply({ ...s, config: { ...s.config, ...collecting({ pieces: { patrol: [0, 0, 0, 1], pasiphae: [0, 1] } }) } }, "p0", collect());
+    expect(s.space).toEqual([]);
+    expect(inRoom(s, LONGANE.id)).toHaveLength(2);
+
+    let none = flying(collecting({ pieces: { patrol: [1], pasiphae: [1] } }));
+    debris(none, "metal_scraps");
+    none = mustApply(none, "p0", collect());
+    expect(none.space).toHaveLength(1);
+    expect(lines(none, "p0", "scrapNotFound")).toHaveLength(1);
+  });
+
+  it("the Pasiphae brings in 1 to 3", () => {
+    const s = ship(collecting({ pieces: { patrol: [1], pasiphae: [0, 0, 0, 1] } }));
+    player(s, "p0").room = PASIPHAE.bay;
+    let next = mustApply(s, "p0", { type: "takeoff", equipment: interfaceId(PASIPHAE) });
+    debris(next, "metal_scraps", "metal_scraps", "metal_scraps", "space_capsule");
+    next = mustApply(next, "p0", collect(PASIPHAE));
+    expect(inRoom(next, PASIPHAE.id)).toHaveLength(3);
+  });
+
+  it("with no hunters left it's safe; while hunters remain it costs 2-4 armor and the pilot 0 or 2-4 hp, told only to the pilot", () => {
+    const safe = flying();
+    debris(safe, "metal_scraps");
+    const after = mustApply(safe, "p0", collect());
+    expect(after.patrolShips[LONGANE.id]!.armor).toBe(10);
+    expect(player(after, "p0").hp).toBe(player(safe, "p0").hp);
+
+    const s = flying(collecting({ hp: { noneChance: 0, range: [2, 4] } }));
+    debris(s, "metal_scraps");
+    s.hunters.list.push({ id: "h1", hp: 6, hitChance: 0.8, target: null });
+    const next = mustApply(s, "p0", collect());
+    const armor = 10 - next.patrolShips[LONGANE.id]!.armor;
+    const hp = player(s, "p0").hp - player(next, "p0").hp;
+    expect([armor >= 2 && armor <= 4, hp >= 2 && hp <= 4]).toEqual([true, true]);
+    expect(lines(next, "p0", "scrapUnderFire")).toMatchObject([{ params: { armor, hp } }]);
+    for (const id of ["p1", "p2"]) expect(lines(next, id, "scrapUnderFire")).toEqual([]);
+  });
+
+  it("at 0 armor the ship is destroyed and everything aboard, the pilot's body too, floats off as debris", () => {
+    const s = flying();
+    debris(s, "metal_scraps");
+    s.hunters.list.push({ id: "h1", hp: 6, hitChance: 0.8, target: null });
+    s.patrolShips[LONGANE.id]!.armor = 1;
+    s.items.push({ id: "carried", type: "wrench", at: { kind: "player", id: "p0" } });
+    const next = mustApply(s, "p0", collect());
+    expect(next.patrolShips[LONGANE.id]).toMatchObject({ destroyed: true });
+    expect(player(next, "p0").alive).toBe(false);
+    expect(inRoom(next, LONGANE.id)).toEqual([]);
+    expect(next.space.map((d) => d.type).sort()).toEqual(["corpse", "metal_scraps", "wrench"]);
+    expect(next.space.find((d) => d.type === "corpse")).toMatchObject({ of: "p0" });
+    expect(lines(next, "p1", "patrolDestroyed")).toHaveLength(1);
+  });
+
+  it("landing unloads the ship's room into the bay, with a secret line there counting what isn't hidden", () => {
+    const s = flying();
+    s.items.push({ id: "a", type: "metal_scraps", at: { kind: "room", id: LONGANE.id } }, { id: "b", type: "space_capsule", at: { kind: "room", id: LONGANE.id } });
+    s.items.push({ id: "c", type: "wrench", at: { kind: "room", id: LONGANE.id }, hiddenBy: "p0" });
+    const next = mustApply(s, "p0", land());
+    expect(inRoom(next, LONGANE.id)).toEqual([]);
+    expect(inRoom(next, BAY).map((i) => i.id).sort()).toEqual(["a", "b", "c"]);
+    expect(next.items.find((i) => i.id === "c")!.hiddenBy).toBe("p0");
+    expect(lines(next, "p1", "patrolUnloaded")).toMatchObject([{ params: { name: player(s, "p0").character, count: 2 } }]);
+    expect(lines(next, "p2", "patrolUnloaded")).toEqual([]);
+    // Nothing aboard, no line.
+    expect(lines(mustApply(flying(), "p0", land()), "p1", "patrolUnloaded")).toEqual([]);
+  });
+
+  it("a jump leaves every piece behind, wrecks' included", () => {
+    const s = flying();
+    debris(s, "metal_scraps");
+    s.items.push({ id: "a", type: "metal_scraps", at: { kind: "room", id: LONGANE.id } });
+    player(s, "p2").room = "COMMAND_CENTER";
+    s.titles.commander = "p2";
+    s.ship.combustion = 2;
+    const next = mustApply(s, "p2", { type: "travel", equipment: "COMMAND_CENTER:PILOT_MODULE" });
+    expect(next.space).toEqual([]);
+    expect(next.items.some((i) => i.id === "a")).toBe(false);
+  });
+
+  it("parses from the wire", () => {
+    expect(parseGameMessage(JSON.stringify({ type: "action", action: collect() }))).toEqual({ type: "action", action: collect() });
+  });
+});
+
+describe("the space capsule", () => {
+  const open = (item: string): Action => ({ type: "open_capsule", item });
+
+  it("opens for 1 AP, carried or in the room, into one of its contents where it was, with a public line", () => {
+    for (const at of [{ kind: "player", id: "p1" }, { kind: "room", id: BAY }] as const) {
+      const s = ship();
+      s.items.push({ id: "cap", type: "space_capsule", at });
+      expect(offered(s, "p1")).toContainEqual(open("cap"));
+      expect(costOf(s, "p1", open("cap"))).toEqual({ ap: s.config.spaceCapsule.cost.ap, mp: 0 });
+      const next = mustApply(s, "p1", open("cap"));
+      const item = next.items.find((i) => i.id === "cap")!;
+      expect(s.config.spaceCapsule.contents).toContain(item.type);
+      expect(item.at).toEqual(at);
+      expect(player(next, "p1").ap).toBe(player(s, "p1").ap - s.config.spaceCapsule.cost.ap);
+      for (const id of ["p0", "p1"]) expect(lines(next, id, "capsuleOpened")).toMatchObject([{ params: { item: item.type } }]);
+      expect(lines(next, "p2", "capsuleOpened")).toEqual([]);
+    }
+  });
+
+  it("draws each content in turn across seeds", () => {
+    const seen = new Set<string>();
+    for (let seed = 1; seed <= 40; seed++) {
+      const s = createGame(makeSeats(1), noHunters({ ...DEFAULT_CONFIG, mushCount: 0, startItems: [] }), seed);
+      s.items.push({ id: "cap", type: "space_capsule", at: { kind: "player", id: "p0" } });
+      seen.add(mustApply(s, "p0", open("cap")).items.find((i) => i.id === "cap")!.type);
+    }
+    expect([...seen].sort()).toEqual([...DEFAULT_CONFIG.spaceCapsule.contents].sort());
+  });
+
+  it("isn't offered for anything else, or out of reach", () => {
+    const s = ship();
+    s.items.push({ id: "w", type: "wrench", at: { kind: "player", id: "p1" } }, { id: "cap", type: "space_capsule", at: { kind: "room", id: "LABORATORY" } });
+    expect(refusal(s, "p1", open("w"))).toBe("cant_open");
+    expect(refusal(s, "p1", open("cap"))).toBe("cant_open");
   });
 });

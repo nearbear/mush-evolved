@@ -327,7 +327,9 @@
     "bodyTransfer": "Transfer",
     "fungalCuisine": "Fungal cuisine",
     "takeoff": "Take off",
-    "land": "Land"
+    "land": "Land",
+    "collectScrap": "Collect scrap",
+    "openCapsule": "Open"
   },
   "queue": {
     "label": "Your actions",
@@ -667,7 +669,8 @@
     "body_cat": "Schrödinger",
     "water_stick": "Water stick",
     "super_map": "Starmap fragment",
-    "protection_gloves": "Protective Gloves"
+    "protection_gloves": "Protective Gloves",
+    "space_capsule": "Space capsule"
   },
   "logEvent": {
     "loseMorale": "You have lost {{amount}} morale.",
@@ -820,7 +823,14 @@
     "patrolKill": "You shot down a hunter.",
     "hunterHitPatrol": "A hunter hit {{room}}: {{armor}} armor lost.",
     "patrolDestroyed": "NERON: {{room}} was shot down by hunters.",
-    "patrolLost": "NERON: {{room}} was left behind when the Daedalus jumped, and is lost."
+    "patrolLost": "NERON: {{room}} was left behind when the Daedalus jumped, and is lost.",
+    "patrolUnloaded_one": "{{name}} unloaded {{count}} item from the ship.",
+    "patrolUnloaded_other": "{{name}} unloaded {{count}} items from the ship.",
+    "scrapCollected_one": "You brought in {{count}} piece of debris.",
+    "scrapCollected_other": "You brought in {{count}} pieces of debris.",
+    "scrapNotFound": "You couldn't catch any debris.",
+    "scrapUnderFire": "Collecting under fire: the ship lost {{armor}} armor and you lost {{hp}} HP.",
+    "capsuleOpened": "{{name}} opened a space capsule: {{item}}."
   },
   "skills": {
     "title": "Choose a skill",
@@ -1484,6 +1494,9 @@
     "flying": "In flight aboard {{ship}}",
     "armor": "Armor: {{armor}}/{{max}}",
     "out": "The ship is out on patrol.",
-    "destroyed": "The ship was destroyed."
+    "destroyed": "The ship was destroyed.",
+    "debris_one": "{{count}} piece of debris floating nearby",
+    "debris_other": "{{count}} pieces of debris floating nearby",
+    "noDebris": "No debris nearby"
   }
 }

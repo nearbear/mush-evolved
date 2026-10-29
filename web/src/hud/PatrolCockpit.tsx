@@ -2,7 +2,8 @@
 // for now, art later): the ship, its armor (`view.patrolShip`), and its cockpit, which you select like any equipment,
 // so its actions (Land) are in the Inspect panel and, on a phone, the peek bar. Below it, the battle panel (phase 3;
 // owner, 2026-10-28): the hunters with their hp and the ship's charges, with a Shoot button on each (a patrol ship
-// only; the Pasiphae can't shoot, so it lists the hunters without charges or buttons).
+// only; the Pasiphae can't shoot, so it lists the hunters without charges or buttons). The debris count (phase 5; owner,
+// 2026-10-28) says whether Collect scrap, on the command, is worth a try.
 
 import type { Action, PlayerView, Target } from "@mush2/shared";
 import { useTranslation } from "react-i18next";
@@ -25,6 +26,7 @@ export function PatrolCockpit({ view, ship, selected, onSelect, onAction }: Prop
     <section className="iso-room patrol-cockpit" aria-label={names.room(ship.id)}>
       <h2>{t("patrol.flying", { ship: names.room(ship.id) })}</h2>
       <p>{t("patrol.armor", { armor: ship.armor, max: ship.maxArmor })}</p>
+      <p>{ship.debris > 0 ? t("patrol.debris", { count: ship.debris }) : t("patrol.noDebris")}</p>
       {view.roomEquipment.map((e) => {
         const target: Target = { kind: "equipment", id: e.id };
         return (

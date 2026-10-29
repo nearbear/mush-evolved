@@ -331,7 +331,9 @@
     "bodyTransfer": "Transferencia",
     "fungalCuisine": "Cocina fúngica",
     "takeoff": "Despegar",
-    "land": "Aterrizar"
+    "land": "Aterrizar",
+    "collectScrap": "Recoger restos",
+    "openCapsule": "Abrir"
   },
   "queue": {
     "label": "Tus acciones",
@@ -674,7 +676,8 @@
     "body_cat": "Schrödinger",
     "water_stick": "Bastoncillo acuoso",
     "super_map": "Fragmento de mapa estelar",
-    "protection_gloves": "Guantes de protección"
+    "protection_gloves": "Guantes de protección",
+    "space_capsule": "Cápsula espacial"
   },
   "logEvent": {
     "loseMorale": "Has perdido {{amount}} punto de moral.",
@@ -828,7 +831,16 @@
     "patrolKill": "Has derribado un hunter.",
     "hunterHitPatrol": "Disparo de hunter contra {{room}}: {{armor}} puntos de armadura perdidos.",
     "patrolDestroyed": "NERON: nave derribada por los hunters ({{room}}).",
-    "patrolLost": "NERON: nave perdida en el salto del Daedalus ({{room}})."
+    "patrolLost": "NERON: nave perdida en el salto del Daedalus ({{room}}).",
+    "patrolUnloaded_one": "{{name}} descargó {{count}} objeto de la nave.",
+    "patrolUnloaded_many": "{{name}} descargó {{count}} objetos de la nave.",
+    "patrolUnloaded_other": "{{name}} descargó {{count}} objetos de la nave.",
+    "scrapCollected_one": "Recogiste {{count}} resto.",
+    "scrapCollected_many": "Recogiste {{count}} restos.",
+    "scrapCollected_other": "Recogiste {{count}} restos.",
+    "scrapNotFound": "No lograste atrapar ningún resto.",
+    "scrapUnderFire": "Recogida bajo fuego: la nave perdió {{armor}} de blindaje y tú perdiste {{hp}} PV.",
+    "capsuleOpened": "{{name}} abrió una cápsula espacial: {{item}}."
   },
   "skills": {
     "title": "Elegir una habilidad",
@@ -1498,6 +1510,10 @@
     "flying": "En vuelo a bordo de {{ship}}",
     "armor": "Blindaje: {{armor}}/{{max}}",
     "out": "La nave ha salido de patrulla.",
-    "destroyed": "La nave ha sido destruida."
+    "destroyed": "La nave ha sido destruida.",
+    "debris_one": "{{count}} resto flota cerca",
+    "debris_many": "{{count}} restos flotan cerca",
+    "debris_other": "{{count}} restos flotan cerca",
+    "noDebris": "No hay restos cerca"
   }
 }

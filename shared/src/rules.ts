@@ -129,6 +129,7 @@ export function createGame(
     turretFailures: {},
     patrolFailures: {},
     patrolShips: newPatrolShips(config),
+    space: [],
     navigation: { heading: config.navigation.startHeading, orbit: null },
     // Issued with Mush selection, whatever the role (owner, 2026-10-13 and 2026-10-20); in pre-selection, by `selectMush`.
     titles: preselection ? noTitles() : assignTitles(players),
@@ -562,12 +563,12 @@ function equipmentView(state: GameState, { id, type }: Equipment): EquipmentView
   return { id, type, ...(shipState?.out && { out: true as const }), ...(shipState?.destroyed && { destroyed: true as const }) };
 }
 
-/** Your own ship's armor and charges, while you fly it. */
+/** Your own ship's armor and charges, and how much debris is out there, while you fly it. */
 function patrolShipView(state: GameState, you: PlayerState): PlayerView["patrolShip"] {
   const ship = you.alive ? shipAboard(you) : undefined;
   if (!ship) return null;
   const { armor, charges } = state.patrolShips[ship.id]!;
-  return { id: ship.id, armor, maxArmor: state.config.patrol.armor[ship.kind], charges: ship.kind === "pasiphae" ? null : charges };
+  return { id: ship.id, armor, maxArmor: state.config.patrol.armor[ship.kind], charges: ship.kind === "pasiphae" ? null : charges, debris: state.space.length };
 }
 
 /** Alive, not done for the cycle, and the game is running. */

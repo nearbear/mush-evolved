@@ -1,5 +1,5 @@
 {
-  "version": 82,
+  "version": 83,
   "paths": [
     "bios.actopi",
     "bios.death_announcements",
@@ -241,6 +241,7 @@
     "ship.hull",
     "ship.oxygen",
     "ship.plasmaShield",
+    "space[]",
     "sporesToday",
     "threads[]",
     "titles.commander",

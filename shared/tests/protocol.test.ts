@@ -61,6 +61,8 @@ describe("actions from a client", () => {
     repair_hull: [{ type: "repair_hull", item: "i1" }],
     takeoff: [{ type: "takeoff", equipment: "e1" }],
     land: [{ type: "land", equipment: "e1" }],
+    collect_scrap: [{ type: "collect_scrap", equipment: "e1" }],
+    open_capsule: [{ type: "open_capsule", item: "i1" }],
     dispense: [{ type: "dispense", equipment: "e1" }],
     consume: [{ type: "consume", item: "i1" }],
     hide: [{ type: "hide", item: "i1" }],

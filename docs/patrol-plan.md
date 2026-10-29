@@ -83,7 +83,7 @@ The ship-room interior from the existing patrol-ship art (check with the `asset`
 2. Ship rooms and state; take off and land (Pilots only, secret, the rough roll behind a hook); bay and interior views. **Done 2026-10-24:** `patrolShips` holds armor and `out` only (charges come in phase 3); the interior is a plain panel (`PatrolCockpit.tsx`); rough manoeuvres are private to the pilot, and a takeoff ends a wheelchair push (owner).
 3. Shooting from a patrol ship, charges, the shared battle panel. Also block installing or building equipment in a ship's room (owner, 2026-10-24). **Done 2026-10-28:** `patrol_attack`, charges in `patrolShips`, `patrolFailures`; hit, miss and kill all private (owner); the cockpit lists the hunters and the ship's charges (`HunterList.tsx`), no other ships or turrets (owner); Gunman points and Persistent apply, Gunner doesn't (owner); `install` and `build` refused aboard.
 4. Hunters target ships and players in flight; destruction and death in space; travel destroys ships in flight. **Done 2026-10-28:** `HunterTarget` gains `{ kind: "patrol"; id }`, `patrolShips[id].destroyed`; a hit is a line in the ship's room for the pilot, a destruction (by hunters or a jump) a ship-wide NERON warning (owner). No player targets: in eMush they are people out in space, who come with Mush auto-ejection (owner, 2026-10-28).
-5. Debris: hunter drops, Collect scrap (patrol and Pasiphae), unloading on landing, travel clears it; the space capsule item and its Open action.
+5. Debris: hunter drops, Collect scrap (patrol and Pasiphae), unloading on landing, travel clears it; the space capsule item and its Open action. **Done 2026-10-28:** `GameState.space` holds debris as container-less items; a destroyed ship's room floats off into it, bodies included (owner); a pilot aboard sees the piece count in the cockpit, not the kinds (owner); Collect's lines and damage are private to the pilot (owner); unloading is a second secret line in the bay (owner); opening a capsule is a public line, like eating (Claude's default).
 6. Renovate.
 
 Later: BIOS piloting lock + spaceship keys, Mush auto-eject and spacesuits, Magnetic net and the other patrol projects, Gunman shooting points, patrol-ship planet landing, triumph for kills.
@@ -106,4 +106,4 @@ Later: BIOS piloting lock + spaceship keys, Mush auto-eject and spacesuits, Magn
 
 Not asked yet; ask the owner before building the phase that needs them:
 
-- Whether anyone in flight learns how much debris is out there, beyond Collect being offered (phase 5), and the visibility of Collect and Renovate lines.
+- The visibility of Renovate lines (phase 6). Debris and Collect were answered for phase 5 (owner, 2026-10-28).

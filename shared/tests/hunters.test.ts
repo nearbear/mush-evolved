@@ -42,6 +42,7 @@ describe("hunter numbers", () => {
       missBonus: 0.1,
       followShare: 0.5,
       patrolTargetChance: 0.15,
+      debris: { count: [0, 2, 1], types: { metal_scraps: 2, space_capsule: 1, plastic_scraps: 1 } },
     });
     expect(turrets).toEqual({ cost: { ap: 1 }, chance: 0.3, failureMultiplier: 1.25, damage: [2, 4], charges: 4, rechargePerCycle: 1 });
     expect(hullRepair).toEqual({ cost: { ap: 1 }, chance: 0.25, amount: 5 });

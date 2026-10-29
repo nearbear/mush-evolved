@@ -209,9 +209,10 @@ export interface PlayerView {
   navigation: { orbiting: boolean; heading: PlanetDirection | null };
   /**
    * The patrol ship you are flying (its room id) with its armor and charges (null for the Pasiphae, which can't shoot),
-   * while you are alive aboard (patrol.ts); otherwise null.
+   * while you are alive aboard (patrol.ts); otherwise null. `debris` is how many pieces float around the Daedalus, not
+   * which (owner, 2026-10-28).
    */
-  patrolShip: { id: string; armor: number; maxArmor: number; charges: number | null } | null;
+  patrolShip: { id: string; armor: number; maxArmor: number; charges: number | null; debris: number } | null;
   /** Every title in `TITLE_IDS` order, public to everyone (owner, 2026-10-20). */
   titles: TitleView[];
   /**

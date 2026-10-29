@@ -53,6 +53,16 @@ export function roll(holder: HasRng, range: readonly [number, number]): number {
   return value;
 }
 
+/** An index into `weights`, each drawn in proportion to its weight (at least one must be positive); advances `holder.rng`. */
+export function rollWeighted(holder: HasRng, weights: readonly number[]): number {
+  let pick = rollFloat(holder) * weights.reduce((sum, w) => sum + w, 0);
+  for (let i = 0; i < weights.length; i++) {
+    pick -= weights[i]!;
+    if (pick < 0) return i;
+  }
+  return weights.length - 1;
+}
+
 /** Fisher-Yates shuffle; returns a new array. */
 export function shuffle<T>(items: readonly T[], state: RngState): [result: T[], next: RngState] {
   const result = [...items];
