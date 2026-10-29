@@ -1609,3 +1609,10 @@ A review of the uncommitted change in a fresh session caught three problems:
 - `package-lock.json` was stale.
 
 The same review checked the production dependency tree (e-2.0) and confirmed the AGPL text against gnu.org.
+
+## 2026-10-29: Setup schema and validation (#227)
+
+- Built `shared/src/setups.ts`: strict knob and setup validation, the standard setup, `knobsDiff`, and `setupOverrides`.
+- **Corrected the plan:** the issue's plan had `setupConfig` return a `GameConfig`, but `ConfigOverrides`/`resolveConfig` landed the same day and a stored game keeps only its overrides, so a full config would be lost on reload. Renamed it `setupOverrides`, returning `ConfigOverrides`; it maps only the knobs the game reads today (seats, pre-selection deadline via the existing `preselection` override), so no `STATE_VERSION` bump. Each later sub-issue (#229-#231) adds its own knob.
+- **What needed correction:** the i18n ratchet flagged the standard setup's English name; it now uses its id, translated by the client.
+- Filed a collaborator's knob suggestions (skill slots, Mush skill slots, spores per day, infection requirement) as `rule-decision` stories #277-#280 under #226, since #226 decided knobs stay coarse.
