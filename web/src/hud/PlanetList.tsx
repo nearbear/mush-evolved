@@ -50,7 +50,7 @@ export function PlanetList({ view, onAction, terminal }: Props) {
         </span>
         <div className="planet-title">
           <strong>{planet.name}</strong>
-          <span aria-label={t("astro.sectorProgress", { known, total: planet.sectors.length })}>
+          <span className="planet-sector-count" aria-label={t("astro.sectorProgress", { known, total: planet.sectors.length })}>
             ({known}/{planet.sectors.length})
           </span>
           {planet.orbited && <span className="planet-orbited">{t("astro.orbited")}</span>}

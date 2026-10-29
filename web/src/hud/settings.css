@@ -288,6 +288,12 @@ li.research-item /* Rebel base icons are 70x65, not the 50x75 research cards. */
   padding-right: 7rem;
 }
 
+/* The analysed/total sector count: a caption beside the name. */
+.planet-sector-count {
+  font-size: 0.75rem;
+  opacity: 0.8;
+}
+
 .planet-picture {
   flex: none;
   width: 96px;
@@ -324,12 +330,24 @@ li.research-item /* Rebel base icons are 70x65, not the 50x75 research cards. */
   height: 48px;
 }
 
+@media (max-width: 1023px) {
+  .planet-picture {
+    width: 72px;
+    height: 72px;
+  }
+
+  .planet-sectors img {
+    width: 32px;
+    height: 32px;
+  }
+}
+
 /* Analyse, warp and delete share one row under the planet. */
 .planet-actions {
   display: flex;
   flex: 1 0 100%;
   flex-wrap: wrap;
-  gap: 0.5rem;
+  gap: 0;
 }
 
 .planet-delete {
