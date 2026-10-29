@@ -410,9 +410,13 @@ li.research-item-blocked .research-progress {
   padding-inline: 12px;
 }
 
+.xyloph-contact {
+  width: 100%;
+}
+
 .xyloph-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, 36px);
+  grid-template-columns: repeat(auto-fill, 72px);
   gap: 4px;
   margin: 6px 0 0;
   padding: 0;
@@ -428,6 +432,8 @@ li.research-item-blocked .research-progress {
 
 .xyloph-grid img {
   display: block;
+  width: 72px;
+  height: 56px;
   image-rendering: pixelated;
 }
 

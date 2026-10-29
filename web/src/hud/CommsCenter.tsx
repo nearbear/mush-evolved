@@ -10,6 +10,7 @@ import { CHECK_ICON, REBEL_BASE_ICONS, UNCHECK_ICON, XYLOPH_DONE, XYLOPH_TODO } 
 import { useNames } from "../i18n/names.ts";
 import { ActionButton } from "./ActionButton.tsx";
 import { ActionLabel } from "./ActionLabel.tsx";
+import { UnavailableButton } from "./CommandTerminal.tsx";
 import "./settings.css";
 
 interface Props {
@@ -72,9 +73,19 @@ export function CommsCenter({ terminal, view, onAction }: Props) {
         <div className="research-list">
           <section className="research-item" aria-label={t("comms.xylophTitle")}>
             <div className="research-body">
-              <strong>{t("comms.xylophTitle")}</strong>
-              <span>{t("comms.xylophDesc")}</span>
-              <span>{screen.xylophLeft > 0 ? t("comms.xylophLeft", { count: screen.xylophLeft }) : t("comms.xylophDone")}</span>
+              {xyloph ? (
+                <ActionButton className="big xyloph-contact" view={view} option={xyloph} onAction={onAction}>
+                  <ActionLabel text={t("actions.contactXyloph")} cost={xyloph.cost} chance={xyloph.chance} />
+                </ActionButton>
+              ) : (
+                <UnavailableButton
+                  className="xyloph-contact"
+                  reason={screen.xylophLeft === 0 ? t("comms.xylophAllFound", { count: XYLOPH_IDS.length }) : !view.comms.linked ? t("comms.xylophLinkNeeded") : !officer ? t("comms.officerOnly") : t("comms.xylophUnavailable")}
+                  ap={view.config.xylophAp}
+                >
+                  {t("actions.contactXyloph")}
+                </UnavailableButton>
+              )}
               <Tooltip.Provider delay={300}>
                 <ul className="xyloph-grid" aria-label={t("comms.xylophTitle")}>
                   {XYLOPH_IDS.map((id) => {
@@ -98,11 +109,6 @@ export function CommsCenter({ terminal, view, onAction }: Props) {
                 </ul>
               </Tooltip.Provider>
             </div>
-            {xyloph && (
-              <ActionButton view={view} option={xyloph} onAction={onAction}>
-                <ActionLabel text={t("actions.contactXyloph")} cost={xyloph.cost} chance={xyloph.chance} />
-              </ActionButton>
-            )}
           </section>
         </div>
       </Tabs.Panel>

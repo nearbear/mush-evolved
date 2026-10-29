@@ -98,6 +98,7 @@ export interface PublicConfig {
   /** AP the Command terminal's Sol and Eden buttons cost, so the greyed-out ones can show it. */
   returnToSolAp: number;
   edenAp: number;
+  xylophAp: number;
 }
 
 /** Your own state, minus your account name (nobody's name is in a view while the game runs). */

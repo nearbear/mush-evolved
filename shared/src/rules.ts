@@ -482,7 +482,7 @@ export function viewFor(state: GameState, playerId: PlayerId): PlayerView {
       to: [...(state.bonds[playerId] ?? [])],
       from: state.players.filter((o) => state.bonds[o.id]?.includes(playerId)).map((o) => o.id),
     },
-    config: { heavyMpPenalty: state.config.heavy.mpPenalty, actionQueueCap: state.config.action.queueCap, sharedSpots: state.config.sharedSpots, returnToSolAp: state.config.pilgred.returnCost.ap, edenAp: state.config.pilgred.edenCost.ap },
+    config: { heavyMpPenalty: state.config.heavy.mpPenalty, actionQueueCap: state.config.action.queueCap, sharedSpots: state.config.sharedSpots, returnToSolAp: state.config.pilgred.returnCost.ap, edenAp: state.config.pilgred.edenCost.ap, xylophAp: state.config.comms.xyloph.cost.ap },
     maxAp: state.config.maxAp,
     maxHp: you.maxHp,
     maxMorale: you.maxMorale,
