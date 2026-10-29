@@ -1,4 +1,4 @@
-// The frame every terminal shares: a title bar (the terminal's icon, then its name over a cosmetic login, and close),
+// The frame every terminal shares: a title bar (the terminal's name over a cosmetic login; close, and the icon under it),
 // which stays put, then the terminal's own content, which scrolls (a tabbed terminal's panels scroll under its tabs instead). The gold
 // outline (TabOutline, in TerminalDialog) starts at the tab line under the title bar. Terminals supply only their body; no
 // game logic lives here.
@@ -23,7 +23,6 @@ export function TerminalShell({ name, type, view, children }: Props) {
     <>
       <div className="terminal-top">
         <header className="dialog-header terminal-header">
-          <span className="terminal-icon" aria-hidden="true" />
           <div className="terminal-heading">
             <Dialog.Title className="terminal-title">{name}</Dialog.Title>
             <TerminalLogin type={type} view={view} />
@@ -31,6 +30,7 @@ export function TerminalShell({ name, type, view, children }: Props) {
           <Dialog.Close className="dialog-header-close" aria-label={t("terminal.close")}>
             ×
           </Dialog.Close>
+          <span className="terminal-icon" aria-hidden="true" />
         </header>
       </div>
       <div className="terminal-body">{children}</div>

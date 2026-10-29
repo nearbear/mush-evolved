@@ -1,5 +1,5 @@
 /* A terminal's window (TerminalDialog): the glowing dark frame of the iTrackie (kit.css's .kit-panel) around a
-   .cut-card like the iTrackie's, with the terminal's icon from the design kit at the left of the title bar. Layout comes from settings.css's .settings-popup. */
+   .cut-card like the iTrackie's, with the terminal's icon from the design kit in the title bar's bottom-right corner. Layout comes from settings.css's .settings-popup. */
 .settings-popup.terminal-popup {
   --pad: 12px;
   /* The kit-panel supplies the frame and fill; overflow stays visible so its glow shows, and the card scrolls instead. */
@@ -9,11 +9,14 @@
   background: none;
   border: 0;
 }
-/* The card itself is a .cut-card (styles/cut-card.css); corner art (NERON's core) goes on a layer under the body. */
+/* The card itself is a .cut-card (styles/cut-card.css); corner art (NERON's core) goes on a layer of its own. */
 .terminal-card::before {
   content: "";
   position: absolute;
   inset: 0;
+  /* Above the title bar's fill, which would hide it; it is only a corner, and lets clicks through. */
+  z-index: 2;
+  pointer-events: none;
   background: left top no-repeat;
 }
 /* A terminal (TerminalShell), or the settings window: the title bar and login banner (or credits) stay put above the tab
@@ -26,9 +29,13 @@
   gap: 1rem;
   padding-inline: calc(1rem + 3px);
 }
+/* The deeper cyan of the title bar runs down to the tab line, so the card's own colour starts only below it. */
 .terminal-top {
+  /* The tab row's height (settings.css's .settings-tab min-height). */
+  --tab-row: 39px;
   flex: none;
   padding-bottom: 1rem;
+  background: var(--terminal-header-bg);
 }
 .terminal-body {
   flex: 1;
@@ -49,7 +56,13 @@
 }
 .terminal-body > .settings-tabs > .settings-tab-list {
   flex: none;
+  /* Above the title bar, so the tabs draw over the terminal's icon where they meet. The row's colour is a shadow of
+     .terminal-top's (below), since a background here would hide the icon. */
+  z-index: 2;
   padding-inline: calc(1rem + 3px);
+}
+.terminal-top:has(+ .terminal-body > .settings-tabs) {
+  box-shadow: 0 var(--tab-row) 0 var(--terminal-header-bg);
 }
 .terminal-body > .settings-tabs > [role="tabpanel"] {
   flex: 1;
@@ -97,7 +110,7 @@
   color: #56607a;
 }
 
-/* The terminal's icon, at its own size (never scaled); terminals without one leave it out. */
+/* The terminal's icon in the title bar, at its own size (never scaled); terminals without one leave it out. */
 .terminal-icon {
   display: none;
   flex: none;
@@ -150,26 +163,43 @@
   font-size: 0.9em;
 }
 
-/* The shared title bar (TerminalShell, and the settings window). A terminal's: icon, then its name over the login,
-   close on the right. The settings window: title on the left, close on the right. */
+/* The shared title bar (TerminalShell, and the settings window). The settings window: title on the left, close on the right. */
 .terminal-header {
   flex-wrap: wrap;
-  /* A slightly deeper cyan than the card, inside the gold outline (3px), instead of the dialog's dark bar. */
+  /* A slightly deeper cyan than the card (as is the rest of .terminal-top), instead of the dialog's dark bar. */
   margin: 0 calc(-1rem - 3px);
   padding: calc(3px + 1rem) calc(1rem + 3px) 0.5rem;
-  background: #a6eefb;
-  border-bottom: 1px solid var(--edge);
+  background: var(--terminal-header-bg);
 }
+/* A terminal's: the name over the login on the left; on the right close, then the icon in the bottom-right corner,
+   hanging down to the tab line (the tabs may run over it, close may not). Its column is as wide as the icon, so the
+   text never runs under it. */
 .terminal-header:has(> .terminal-heading) {
-  flex-wrap: nowrap;
-  gap: 0.75rem;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-rows: auto 1fr;
+  gap: 0.25rem 0.75rem;
+  align-items: start;
+}
+.terminal-header > .terminal-heading {
+  grid-area: 1 / 1 / 3 / 2;
 }
 .terminal-header:has(> .terminal-heading) > .dialog-header-close {
-  align-self: flex-start;
+  grid-area: 1 / 2;
+  justify-self: end;
+}
+.terminal-header > .terminal-icon {
+  grid-area: 2 / 2;
+  align-self: end;
+  justify-self: end;
+  /* Down past the header's and .terminal-top's bottom padding to the tab line. */
+  margin-bottom: -1.5rem;
+}
+.terminal-top:has(+ .terminal-body > .settings-tabs) .terminal-icon {
+  /* And past the tab row, stopping above its 3px gold rule. */
+  margin-bottom: calc(-1.5rem - var(--tab-row) + 3px);
 }
 .terminal-heading {
-  flex: 1;
-  min-width: 0;
   font-family: ui-monospace, "Cascadia Code", Menlo, monospace;
   font-size: 0.8rem;
 }

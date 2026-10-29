@@ -14,6 +14,7 @@
   --warning: #ffb74d;
   /* Terminal colors */
   --terminal-bg: #c2f3fc; /* also the iTrackie card (itrackie.css) */
+  --terminal-header-bg: #a6eefb; /* a terminal's title bar, down to the tab line (terminal.css) */
   --terminal-font: consola, monospace;
   /* Gold: selection outlines, glows, highlighted map cells. */
   --highlight: #f5c542;
