@@ -91,6 +91,8 @@ export interface GameConfig {
   movement: MovementRules;
   maxHp: number;
   startHp: number;
+  /** HP every living player heals at the start of each day, up to their max. */
+  dailyHeal: number;
   maxMorale: number;
   startMorale: number;
   startRoom: RoomId;

@@ -3,7 +3,7 @@ import { DEFAULT_CONFIG } from "../src/config.ts";
 import { applyInput, startGame } from "../src/replay.ts";
 import { applyAction, createGame, legalActions, newCycle, viewFor } from "../src/rules.ts";
 import type { GameState } from "../src/types.ts";
-import { clone, makeSeats, must, nextCycle, player } from "./support.ts";
+import { clone, makeSeats, must, nextCycle, nextDay, player } from "./support.ts";
 
 // Cycles change on the server's UTC clock (#24, owner 2026-10-19); End cycle is kept for testing only.
 const seats = makeSeats(4);
@@ -69,5 +69,23 @@ describe("launching mid-day", () => {
 
   it("rejects a cycle that isn't one of day 1", () => {
     for (const c of [0, config.cyclesPerDay + 1, 2.5]) expect(() => ship(c)).toThrow(/startCycle/);
+  });
+});
+
+describe("daily healing", () => {
+  it("heals every living player on day change, up to max HP, and not on other cycles", () => {
+    expect(DEFAULT_CONFIG.dailyHeal).toBe(1);
+    const s = ship();
+    const { dailyHeal } = s.config;
+    player(s, "p0").hp = 5;
+    player(s, "p1").hp = player(s, "p1").maxHp;
+    player(s, "p2").hp = 5;
+    player(s, "p2").alive = false;
+    const mid = nextCycle(s);
+    expect(player(mid, "p0").hp).toBe(5);
+    const day = nextDay(mid);
+    expect(player(day, "p0").hp).toBe(5 + dailyHeal);
+    expect(player(day, "p1").hp).toBe(player(day, "p1").maxHp);
+    expect(player(day, "p2").hp).toBe(5);
   });
 });

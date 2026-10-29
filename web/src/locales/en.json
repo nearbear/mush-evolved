@@ -53,7 +53,7 @@
     "info": {
       "ap": "You gain 1 AP at the start of each cycle, up to {{maxAp}}. Unspent AP carries over.\nLying down in a bed or on a sofa gives 1 more AP each cycle (2 in all). Any other action gets you up.\nFood and drink restore AP.\nMost actions cost AP. With no MP left, a move converts {{apPerConversion}} AP into {{mpPerConversion}} MP.",
       "mp": "Each move to another room costs {{mpPerMove}} MP. Walking about the room is free.\nMP is kept from cycle to cycle, up to {{mpCap}}.\nWith no MP left, a move converts {{apPerConversion}} AP into {{mpPerConversion}} MP.",
-      "hp": "HP does not come back by itself. At 0 HP you die.\nHeal restores 3 HP: carry a Medikit, or use the Medlab without one (2 AP on someone else, 3 AP on yourself).\nCombat actions deplete the target's HP.\nInjuries while building, dismantling or repairing cost HP.\nA hungry human (24 cycles after their last meal wears off) loses 1 HP each cycle until they eat.\nA Mush loses 4 HP each time they shower.",
+      "hp": "Everyone heals 1 HP at the start of each day. At 0 HP you die.\nHeal restores 3 HP: carry a Medikit, or use the Medlab without one (2 AP on someone else, 3 AP on yourself).\nCombat actions deplete the target's HP.\nInjuries while building, dismantling or repairing cost HP.\nA hungry human (24 cycles after their last meal wears off) loses 1 HP each cycle until they eat.\nA Mush loses 4 HP each time they shower.",
       "morale": "Everyone loses 2 morale at the start of each day (1 while Chun is alive).\nA Shrink's Comfort gives 2 morale. Lying down in a room with a Shrink gives 1 morale each cycle.\nA Leader's Fiery speech gives everyone else in the room 2 morale.\nEating an Uncooked ration costs 1 morale."
     }
   },

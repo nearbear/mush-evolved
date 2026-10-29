@@ -24,7 +24,7 @@ import { moderateName } from "./moderation.ts";
 import { clone, dayOf, fail, findPlayer, freeAp, type ActionResult } from "./helpers.ts";
 
 export { dayOf };
-import { damage } from "./death.ts";
+import { damage, healDaily } from "./death.ts";
 import { activitySeen, logPrivate } from "./log.ts";
 import { recordAction } from "./history.ts";
 import { ringMycoAlarms } from "./mycoalarm.ts";
@@ -352,6 +352,7 @@ function advanceCycle(state: GameState): void {
     }
     const loss = dailyMoraleLoss(state);
     for (const p of state.players) if (p.alive) p.morale = Math.max(0, p.morale - loss);
+    for (const p of state.players) healDaily(state, p);
     grantCarePoints(state);
     rechargeMicrowaves(state);
     botanyDay(state);

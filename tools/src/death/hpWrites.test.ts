@@ -10,7 +10,7 @@ const SHARED = resolve(import.meta.dirname, "../../../shared/src");
 
 /** Files allowed to set HP, and why none of them can lower it without killing. */
 const ALLOWED = new Set([
-  "death.ts", // damage() and killPlayer()
+  "death.ts", // damage(), killPlayer() and healDaily() (which only raises HP)
   "cheats.ts", // infiniteHp refills to the maximum
   "adjustStats.ts", // clamps HP down to a lowered maximum (maxHp is at least 1, so never kills)
   "actions/heal.ts", // healing only raises HP

@@ -51,6 +51,8 @@ export const DEFAULT_CONFIG: GameConfig = {
   // Confirmed 2026-10-11: caps of 14 as in the original (Const.hx MAX_HP / MAX_MORAL); start at 14 HP, 7 morale.
   maxHp: 14,
   startHp: 14,
+  // Requested 2026-10-28: every living player heals this much HP at the start of each day.
+  dailyHeal: 1,
   maxMorale: 14,
   startMorale: 7,
   startRoom: "LABORATORY",

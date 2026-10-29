@@ -146,9 +146,10 @@ describe("hungry", () => {
     s = nextCycle(s); // back to 0 on cycle 26
     expect(player(s, "p1").satietyZeroSince).toBe(26);
     expect(viewFor(s, "p1").statuses).not.toContain("hungry");
+    player(s, "p1").hp -= 1; // leave room so the daily heal doesn't hide a hunger loss
     const hp = player(s, "p1").hp;
     for (let i = 0; i < 23; i++) s = nextCycle(s);
-    expect(player(s, "p1").hp).toBe(hp);
+    expect(player(s, "p1").hp).toBe(hp + 2 * s.config.dailyHeal); // two day changes, no hunger loss
     s = nextCycle(s); // cycle 50 = 26 + 24
     expect(viewFor(s, "p1").statuses).toContain("hungry");
   });

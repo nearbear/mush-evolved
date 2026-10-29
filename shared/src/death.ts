@@ -27,6 +27,11 @@ export function damage(state: GameState, player: PlayerState, amount: number): v
   if (player.hp === 0) killPlayer(state, player);
 }
 
+/** Day-start healing: a living player regains `dailyHeal` HP, up to their max. Only raises HP. */
+export function healDaily(state: GameState, player: PlayerState): void {
+  if (player.alive) player.hp = Math.min(player.maxHp, player.hp + state.config.dailyHeal);
+}
+
 /**
  * Kills a player at once. Mutates a state the caller already cloned. Causes of
  * death (#177) will pass a cause through here once they are shown.
