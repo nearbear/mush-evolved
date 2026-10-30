@@ -128,6 +128,8 @@ export interface Modifier extends Partial<FoldHooks> {
   onPick?: (next: GameState, player: PlayerState) => void;
   /** Runs whenever the ship moves */
   onShipMovement?: (next: GameState, player: PlayerState) => void;
+  /** Runs when a player enters a room with another player */
+  onEncounter?: (next: GameState, player: PlayerState, other: PlayerState) => void;
 }
 
 export type ModifierRegistry = Readonly<Record<string, Modifier>>;
@@ -438,6 +440,15 @@ export function shipMoved(next: GameState, registry: ModifierRegistry = MODIFIER
   for (const player of next.players) {
     if (!player.alive) continue;
     for (const id of modifierIds(player)) registry[id]?.onShipMovement?.(next, player);
+  }
+}
+/*  */
+export function enterRoom(state: GameState, player: PlayerState, ctx: CostContext, registry: ModifierRegistry = MODIFIERS): void {
+  for (const holder of roomHolders(ctx.state, ctx.actor.room)) {
+    for (const id of modifierIds(holder)) {
+      registry[id]?.onEncounter?.(state, player, holder);
+      registry[id]?.onEncounter?.(state, holder, player);
+    }
   }
 }
 
