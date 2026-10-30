@@ -1,5 +1,5 @@
 {
-  "version": 88,
+  "version": 89,
   "paths": [
     "bios.actopi",
     "bios.death_announcements",
@@ -162,6 +162,7 @@
     "overrides.preselection.mushCount",
     "overrides.preselection.seats",
     "overrides.preselection.twoMushAbove",
+    "overrides.setupId",
     "overrides.sharedSpots",
     "patrolShips.PATROL_SHIP_AA_0.armor",
     "patrolShips.PATROL_SHIP_AA_0.charges",

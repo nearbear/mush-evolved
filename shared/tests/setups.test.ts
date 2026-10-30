@@ -108,6 +108,11 @@ describe("validateSetup", () => {
     expect(validateSetup(setup({ version: 1.5 }))).toBeNull();
   });
 
+  it("takes the id \"standard\" only with the standard knobs", () => {
+    expect(validateSetup({ ...STANDARD_SETUP, knobs: knobs({ seats: 4, mushCount: 2 }) })).toBeNull();
+    expect(validateSetup(setup({ id: STANDARD_SETUP.id }))).not.toBeNull();
+  });
+
   it("rejects a bad creation time", () => {
     expect(validateSetup(setup({ createdAt: -1 }))).toBeNull();
     expect(validateSetup(setup({ createdAt: "2026-10-29" }))).toBeNull();

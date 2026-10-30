@@ -5,7 +5,7 @@
 // It also launches single-player games (`GameRoom.setupSinglePlayer`), one new room per request, outside the queue.
 
 import { getServerByName, Server, type Connection, type WSMessage } from "partyserver";
-import { LOBBY_LANGUAGES, type CharacterId, parseMatchmakerMessage, PRESELECTION, type MatchmakerClientMessage, type MatchmakerServerMessage } from "@mush2/shared";
+import { LOBBY_LANGUAGES, type CharacterId, parseMatchmakerMessage, PRESELECTION, STANDARD_SETUP, type MatchmakerClientMessage, type MatchmakerServerMessage } from "@mush2/shared";
 import { DEV_FILL_DELAY_MS, DEV_RATE_SCALE, type JoinResult } from "./GameRoom.ts";
 import { RateLimiter } from "./rateLimit.ts";
 
@@ -87,7 +87,8 @@ export class Matchmaker extends Server<Env> {
       const ship = this.openShip();
       const roomId = ship?.roomId ?? crypto.randomUUID();
       const room = await getServerByName(this.env.GameRoom, roomId);
-      const result: JoinResult = await room.join(msg.name, msg.character);
+      // Every ship has the standard setup until the vote round picks one (#236).
+      const result: JoinResult = await room.join(msg.name, msg.character, STANDARD_SETUP);
       if (!result.ok && result.error === "character_taken") {
         connection.setState({ joined: false });
         this.send(connection, { type: "characterTaken" });

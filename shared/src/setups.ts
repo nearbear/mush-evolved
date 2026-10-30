@@ -113,6 +113,8 @@ export function validateSetup(value: unknown): Setup | null {
   if (!intIn(createdAt, 0, Number.MAX_SAFE_INTEGER)) return null;
   const knobs = parseSetupKnobs(value.knobs);
   if (!knobs) return null;
+  // The client shows the id "standard" as the standard ruleset (#237), so a setup claiming it must have its knobs.
+  if (id === STANDARD_SETUP_ID && knobsDiff(knobs).length > 0) return null;
   return { id, name, description, author, version, ...(previousId !== undefined && { previousId }), rulesVersion, createdAt, knobs };
 }
 

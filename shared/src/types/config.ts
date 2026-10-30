@@ -74,6 +74,7 @@ export interface ConfigOverrides {
   manualCycles?: boolean; // Single player, and wherever the server allows cheats.
   cycleHours?: number; // A setup's cycle length (#230): one of `CYCLE_HOURS` (setups.ts). Also sets `cyclesPerDay`.
   sharedSpots?: boolean; // A setup's shared positions (#231).
+  setupId?: string; // The setup the ship launched with (#232). Its knobs are already in the keys above.
   // A ship's rules, whole, frozen at launch: an edit to `PRESELECTION` would otherwise move a live ship's deadline or
   // seat count away from the matchmaker's. Absent: `DEFAULT_CONFIG`'s (`null`).
   preselection?: PreselectionRules;
@@ -95,6 +96,9 @@ export interface GameConfig {
 
   // Roommates see where you stand and sit (spot.ts). Off: `walk` is refused and nobody's spot is sent. A setup knob (#231).
   sharedSpots: boolean;
+  // The setup a ship launched with (#232), public; its name and author are looked up by id (#237). Null: no setup
+  // (single player, tests). The rules never read it: the setup's knobs are already in the fields above.
+  setupId: string | null;
   moralePerDay: number; // Morale lost by each living player at the end of a day, before modifiers (Mankind's Only Hope cuts it).
   maxAp: number; // AP never exceeds this.
   movement: MovementRules;

@@ -29,6 +29,7 @@ export const DEFAULT_CONFIG: GameConfig = {
   manualCycles: false,
   // Owner, 2026-10-20 (#17, #21): on by default; a setup can turn it off (#231).
   sharedSpots: true,
+  setupId: null,
   moralePerDay: 2,
   maxAp: 12,
   // Confirmed 2026-10-11: a move costs 1 MP; with no MP, 1 AP becomes 3 MP. Cap 12.
@@ -349,6 +350,7 @@ export function resolveConfig(o: ConfigOverrides = {}): GameConfig {
     ...(o.manualCycles !== undefined && { manualCycles: o.manualCycles }),
     ...(o.cycleHours !== undefined && { cycleHours: o.cycleHours, cyclesPerDay: 24 / o.cycleHours }),
     ...(o.sharedSpots !== undefined && { sharedSpots: o.sharedSpots }),
+    ...(o.setupId !== undefined && { setupId: o.setupId }),
     ...(p && { preselection: { seats: p.seats, endsOn: { day: p.endsOn.day, cycle: p.endsOn.cycle }, mushCount: p.mushCount ?? "auto", twoMushAbove: p.twoMushAbove, minPlayers: p.minPlayers } }),
   };
 }
