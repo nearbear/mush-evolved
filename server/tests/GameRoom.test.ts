@@ -7,6 +7,9 @@ import {
   PRESELECTION,
   rebuildGame,
   resolveConfig,
+  setupOverrides,
+  STANDARD_KNOBS,
+  STANDARD_SETUP,
   type CharacterId,
   type ConfigOverrides,
   type GameServerMessage,
@@ -15,6 +18,7 @@ import {
   type PlayerView,
   type RecordedInput,
   type Role,
+  type Setup,
 } from "@mush2/shared";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { FakeConnection, FakeServer, FakeStorage, seats, tokensFor } from "../src/testing/fakes.ts";
@@ -326,12 +330,12 @@ describe("GameRoom after a Transfer", () => {
 const LAUNCHES: { name: string; env: Record<string, string>; launch: (room: Room) => Promise<string>; overrides: ConfigOverrides }[] = [
   { name: "setup", env: {}, launch: (r) => r.setup(seats(3), tokensFor(3)).then(() => "tok0"), overrides: {} },
   { name: "setup, cheats", env: CHEATS, launch: (r) => r.setup(seats(3), tokensFor(3)).then(() => "tok0"), overrides: { manualCycles: true } },
-  { name: "ship", env: {}, launch: (r) => r.join("Ann", "chao").then((j) => (j.ok ? j.token : "")), overrides: { preselection: PRESELECTION } },
+  { name: "ship", env: {}, launch: (r) => r.join("Ann", "chao").then((j) => (j.ok ? j.token : "")), overrides: { ...setupOverrides(STANDARD_KNOBS), setupId: "standard" } },
   {
     name: "dev ship",
     env: CHEATS,
     launch: (r) => r.join("Ann", "chao").then((j) => (j.ok ? j.token : "")),
-    overrides: { preselection: { ...PRESELECTION, seats: CHARACTERS.length }, manualCycles: true },
+    overrides: { ...setupOverrides(STANDARD_KNOBS), setupId: "standard", manualCycles: true },
   },
   { name: "single player", env: {}, launch: (r) => r.setupSinglePlayer("Guest 1", "chun"), overrides: { mushCount: 1, manualCycles: true } },
 ];
@@ -903,6 +907,56 @@ describe("GameRoom joining (pre-selection)", () => {
     expect((await joinOk(room, "Ann", "chao")).closesAt).toBe(Date.UTC(2026, 9, 21, 21));
   });
 
+  /** A posted setup with every knob off the standard. */
+  const custom: Setup = {
+    ...STANDARD_SETUP,
+    id: "s1",
+    name: "Quick",
+    author: "Ann",
+    createdAt: 1,
+    knobs: { seats: 6, preselectionDays: 2, mushCount: 3, cycleHours: 1, sharedSpots: false },
+  };
+
+  it("launches with the first join's setup, and records only its id beside the knobs", async () => {
+    const storage = new FakeStorage();
+    const room = asRoom(storage);
+    const first = await room.join("Ann", "chao", custom);
+    if (!first.ok) throw new Error(first.error);
+    // 14:10 GMT is cycle 15 of 24 with 1-hour cycles: day 2's last cycle starts at 23:00 the next day.
+    expect(first).toMatchObject({ seats: 6, closesAt: Date.UTC(2026, 9, 20, 23) });
+    const config = gameOf(room).config;
+    expect(config).toMatchObject({ setupId: "s1", cycleHours: 1, cyclesPerDay: 24, sharedSpots: false });
+    expect(config.preselection).toMatchObject({ seats: 6, mushCount: 3, endsOn: { day: 2, cycle: 24 } });
+    const recorded = (await storage.get<GameSetup>("setup"))!;
+    expect(recorded.overrides).toEqual({ ...setupOverrides(custom.knobs), setupId: "s1" });
+    // Nothing of the setup but its id: the name and author are looked up (#237).
+    expect(JSON.stringify(recorded)).not.toContain("Quick");
+    expect(lastView(connect(room, first.token)).config.setupId).toBe("s1");
+  });
+
+  it("keeps the setup it launched with when a later join brings another", async () => {
+    const room = asRoom(new FakeStorage());
+    await joinOk(room, "Ann", "chao");
+    const second = await room.join("Bob", "chun", custom);
+    expect(second).toMatchObject({ ok: true, seats: PRESELECTION.seats });
+    expect(gameOf(room).config).toMatchObject({ setupId: "standard", cycleHours: 3, sharedSpots: true });
+  });
+
+  it("launches with the standard setup when the one it's given doesn't validate", async () => {
+    const room = asRoom(new FakeStorage());
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const bad = { ...custom, knobs: { ...custom.knobs, seats: 40 } };
+    expect(await room.join("Ann", "chao", bad)).toMatchObject({ ok: true, seats: PRESELECTION.seats });
+    expect(gameOf(room).config).toMatchObject({ setupId: "standard", cycleHours: 3, sharedSpots: true });
+    // Claiming the standard id doesn't bring other knobs along.
+    const impostor = asRoom(new FakeStorage());
+    await impostor.join("Ann", "chao", { ...custom, id: "standard" });
+    expect(gameOf(impostor).config).toMatchObject({ setupId: "standard", cycleHours: 3, sharedSpots: true });
+    expect(gameOf(impostor).config.preselection?.seats).toBe(PRESELECTION.seats);
+    expect(warn).toHaveBeenCalledTimes(2);
+    warn.mockRestore();
+  });
+
   it("refuses a taken character without seating anyone, and seats a free one", async () => {
     const room = asRoom(new FakeStorage());
     const first = await joinOk(room, "Ann", "chao");
@@ -952,18 +1006,16 @@ describe("GameRoom joining (pre-selection)", () => {
 
   it("fills a dev server's smaller ship only up to its own seat count", async () => {
     vi.useFakeTimers();
-    const before = PRESELECTION.seats;
     try {
-      PRESELECTION.seats = 6;
       const room = asRoom(new FakeStorage(), CHEATS);
-      const first = await joinOk(room, "Ann", "chao");
+      const first = await room.join("Ann", "chao", custom);
+      if (!first.ok) throw new Error(first.error);
       expect(first.seats).toBe(6);
       await vi.advanceTimersByTimeAsync(10_000);
       const view = lastView(connect(room, first.token));
       expect([view.preselection, view.players.length + 1]).toEqual([false, 6]);
       expect(room.status()).toMatchObject({ aboard: 6, seats: 6, closesAt: null });
     } finally {
-      PRESELECTION.seats = before;
       vi.useRealTimers();
     }
   });

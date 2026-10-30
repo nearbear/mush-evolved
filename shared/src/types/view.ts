@@ -96,6 +96,8 @@ export interface PublicConfig {
   actionQueueCap: number;
   /** Whether walks are shared with roommates (spot.ts). Off, the client keeps walking to itself and sends nothing. */
   sharedSpots: boolean;
+  /** The setup this ship launched with (public by design), or null; the client looks up its name by id (#237). */
+  setupId: string | null;
   /** AP the Command terminal's Sol and Eden buttons cost, so the greyed-out ones can show it. */
   returnToSolAp: number;
   edenAp: number;

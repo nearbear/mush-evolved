@@ -13,9 +13,11 @@ import {
   legalActions,
   nextDue,
   CHARACTERS,
-  PRESELECTION,
   preselectionDeadline,
   resolveConfig,
+  setupOverrides,
+  STANDARD_SETUP,
+  validateSetup,
   singlePlayerGame,
   SINGLE_PLAYER_HUMAN,
   viewFor,
@@ -31,6 +33,7 @@ import {
   type PlayerId,
   type Role,
   type Seat,
+  type Setup,
 } from "@mush2/shared";
 import { LogParrotBot, ModelBot, WanderBot, type Bot } from "./bots.ts";
 import { clockCycle, clockCycleStart, cycleMs, cycleOfDay } from "./cycleClock.ts";
@@ -64,7 +67,19 @@ const MODEL_RETRY_MAX_MS = 60_000;
  * Bump when GameState's shape changes, or ConfigOverrides' (or what resolveConfig derives from a key). Games stored
  * under another version are discarded on load (there is no migration; games are short-lived).
  */
-export const STATE_VERSION = 88;
+export const STATE_VERSION = 89;
+
+/**
+ * A ship's overrides from its setup (#232): the knobs, plus the setup's id for the record and the view. The setup is
+ * checked again rather than trusted from the RPC; one that doesn't validate gives the standard setup.
+ */
+export function shipOverrides(setup: unknown): ConfigOverrides {
+  const valid = validateSetup(setup);
+  // Nothing tells the matchmaker yet (#236 will need to know the ship's real setup).
+  if (!valid) console.warn("A ship's setup didn't validate; it launches with the standard setup.");
+  const used = valid ?? STANDARD_SETUP;
+  return { ...setupOverrides(used.knobs), setupId: used.id };
+}
 
 interface Stored {
   version?: number;
@@ -194,13 +209,13 @@ export class GameRoom extends Server<Env> {
   /**
    * The matchmaker boards a player (rules: preselection.ts). The first one launches the ship, empty and in
    * pre-selection. Returns the player's seat token, how many are aboard, and when the ship stops taking crew (server
-   * ms), or null once it has (full, Mush chosen).
+   * ms), or null once it has (full, Mush chosen). Only the first join's setup counts: it is the ship's for good.
    */
-  async join(name: string, character: CharacterId): Promise<JoinResult> {
+  async join(name: string, character: CharacterId, setup: Setup = STANDARD_SETUP): Promise<JoinResult> {
     // The matchmaker launches a new ship elsewhere.
     if (this.retired) return { ok: false, error: "ship_closed" };
     // One launch even if two joins arrive together.
-    this.launching ??= this.game ? Promise.resolve() : this.launch([], {}, { preselection: PRESELECTION });
+    this.launching ??= this.game ? Promise.resolve() : this.launch([], {}, shipOverrides(setup));
     await this.launching;
     const game = this.game!;
     const seat: Seat = { id: `p${game.players.length}`, name, isBot: false, character };
