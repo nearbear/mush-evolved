@@ -1,5 +1,4 @@
 import { updateMaxValues } from "../adjustStats.ts";
-import { DEFAULT_CONFIG } from "../config.ts";
 import { logPrivate } from "../log.ts";
 import type { Modifier } from "../modifiers.ts";
 import { rollInt, rollFloat } from "../rng.ts";
@@ -18,7 +17,7 @@ export const cold_disease: Modifier = {
     updateMaxValues(next, player);
   },
   onEncounter(next, player, other){
-    let odds = DEFAULT_CONFIG.diseases.allDiseaseStats[DEFAULT_CONFIG.diseases.allDiseases.indexOf("cold_disease")]?.roomSpread;
+    let odds = next.config.diseases.allDiseaseStats[next.config.diseases.allDiseases.indexOf("cold_disease")]?.roomSpread;
   
     if(odds != null && rollFloat(next) < odds){
       addDisease(next, other, "cold_disease");
