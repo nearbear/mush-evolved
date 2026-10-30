@@ -71,6 +71,7 @@ export interface ConfigOverrides {
   mushCount?: number; // Single player: 1.
   manualCycles?: boolean; // Single player, and wherever the server allows cheats.
   cycleHours?: number; // A setup's cycle length (#230): one of `CYCLE_HOURS` (setups.ts). Also sets `cyclesPerDay`.
+  sharedSpots?: boolean; // A setup's shared positions (#231).
   // A ship's rules, whole, frozen at launch: an edit to `PRESELECTION` would otherwise move a live ship's deadline or
   // seat count away from the matchmaker's. Absent: `DEFAULT_CONFIG`'s (`null`).
   preselection?: PreselectionRules;
@@ -90,7 +91,7 @@ export interface GameConfig {
   // every living player is ready: the dev server's manual End cycle, and later single player.
   manualCycles: boolean;
 
-  // Roommates see where you stand and sit (spot.ts). Off: `walk` is refused and nobody's spot is sent; a game setting later.
+  // Roommates see where you stand and sit (spot.ts). Off: `walk` is refused and nobody's spot is sent. A setup knob (#231).
   sharedSpots: boolean;
   moralePerDay: number; // Morale lost by each living player at the end of a day, before modifiers (Mankind's Only Hope cuts it).
   maxAp: number; // AP never exceeds this.

@@ -144,6 +144,10 @@ describe("setupOverrides", () => {
     }
   });
 
+  it("sets shared positions", () => {
+    for (const sharedSpots of [true, false]) expect(resolveConfig(setupOverrides(knobs({ sharedSpots }) as SetupKnobs)).sharedSpots).toBe(sharedSpots);
+  });
+
   it("gives today's ship from the standard knobs, apart from 16 seats", () => {
     const config = resolveConfig(setupOverrides(STANDARD_KNOBS));
     expect(config).toEqual({ ...DEFAULT_CONFIG, preselection: { ...PRESELECTION, seats: 16 } });

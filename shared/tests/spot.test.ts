@@ -1,9 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { DEFAULT_CONFIG } from "../src/config.ts";
+import { DEFAULT_CONFIG, resolveConfig } from "../src/config.ts";
 import { parseGameMessage } from "../src/protocol.ts";
 import { queueAction } from "../src/queue.ts";
 import { applyInput } from "../src/replay.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";
+import { STANDARD_KNOBS, setupOverrides } from "../src/setups.ts";
 import { MAX_SPOT_CELL, walk } from "../src/spot.ts";
 import type { GameState } from "../src/types.ts";
 import { makeSeats, must, player } from "./support.ts";
@@ -112,6 +113,23 @@ describe("where you stand", () => {
     expect(walk(s, "p1", 5, 6, false)).toEqual({ ok: false, error: "cant_walk" });
     expect(viewFor(s, "p0").players.find((o) => o.id === "p1")?.spot).toBeUndefined();
     expect(viewFor(s, "p0").config.sharedSpots).toBe(false);
+  });
+
+  it("off by a setup, no seat's view has anyone else's spot, but yours is still yours", () => {
+    const off = resolveConfig(setupOverrides({ ...STANDARD_KNOBS, sharedSpots: false }));
+    const s = createGame(makeSeats(4, "others"), { ...config, sharedSpots: off.sharedSpots }, 3);
+    s.players.forEach((p, i) => {
+      p.room = "LABORATORY";
+      p.spot = { x: i, y: i, sitting: i % 2 === 0 };
+    });
+    player(s, "p3").alive = false;
+    expect(walk(s, "p1", 5, 6, false)).toEqual({ ok: false, error: "cant_walk" });
+    for (const p of s.players) {
+      const view = viewFor(s, p.id);
+      expect(view.players.filter((o) => o.spot !== undefined)).toEqual([]);
+      expect(view.you.spot).toEqual(p.spot);
+      expect(view.config.sharedSpots).toBe(false);
+    }
   });
 
   it("goes through applyInput, so replays have it", () => {

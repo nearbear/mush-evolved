@@ -27,7 +27,7 @@ export const DEFAULT_CONFIG: GameConfig = {
   cycleHours: 3,
   // Owner, 2026-10-19 (#24): cycles follow the UTC clock; End cycle stays for testing, on only where the server allows cheats.
   manualCycles: false,
-  // Owner, 2026-10-20 (#17, #21): on by default; kept switchable for a future game setting.
+  // Owner, 2026-10-20 (#17, #21): on by default; a setup can turn it off (#231).
   sharedSpots: true,
   moralePerDay: 2,
   maxAp: 12,
@@ -348,6 +348,7 @@ export function resolveConfig(o: ConfigOverrides = {}): GameConfig {
     ...(o.mushCount !== undefined && { mushCount: o.mushCount }),
     ...(o.manualCycles !== undefined && { manualCycles: o.manualCycles }),
     ...(o.cycleHours !== undefined && { cycleHours: o.cycleHours, cyclesPerDay: 24 / o.cycleHours }),
+    ...(o.sharedSpots !== undefined && { sharedSpots: o.sharedSpots }),
     ...(p && { preselection: { seats: p.seats, endsOn: { day: p.endsOn.day, cycle: p.endsOn.cycle }, mushCount: p.mushCount ?? "auto", twoMushAbove: p.twoMushAbove, minPlayers: p.minPlayers } }),
   };
 }

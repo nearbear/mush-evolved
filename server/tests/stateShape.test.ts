@@ -31,6 +31,7 @@ const OVERRIDES: Required<ConfigOverrides> = {
   mushCount: 1,
   manualCycles: true,
   cycleHours: 1,
+  sharedSpots: false,
   preselection: { seats: 4, endsOn: { day: 3, cycle: 8 }, mushCount: "auto", twoMushAbove: 8, minPlayers: 3 },
 };
 
