@@ -30,6 +30,8 @@ export interface DiseaseStats {
   durationMin?: number,
   durationMax?: number,
   resistance?: number,
+  roomSpread?: number,
+  dttSpread?: number,
 }
 
 
