@@ -1814,3 +1814,11 @@ Moved the flat `docs/` into `rules/`, `plans/` (dropping the `-plan` suffix), `c
 ## 2026-10-31: Review of the locked-AP removal and inactivity (#145)
 
 Reviewed both commits after the fact. Found `lastSeenAt` staying with the body in a Transfer, which the owner hadn't decided: the victim inherited the Mush's fresh timestamp and the Mush the victim's stale one. Owner chose to move it with the mind (`MIND_FIELDS`); a test confirms each player's clock follows them. Also cleaned stale locked-AP mentions in docs and comments the removal commit missed. Lesson: when a commit adds per-player state, check `MIND_FIELDS` and ask which side of a Transfer it belongs to.
+
+## 2026-10-31: Setup storage and posting (#233)
+
+- Built the D1 `setups` table (`0003_setups.sql`), `server/src/setupStore.ts` and `/api/setups` routes (`setupRoutes.ts`) from the owner's 2026-10-31 decisions on the issue: HTTP not the socket, public reads, 50 setups and 500 posts per account, newest version only in the list, a `SETUP_POST_LIMIT` binding (3 a minute per account). No UI (#234, #235).
+- D1 has no transactions, so each post is a single `INSERT ... SELECT` whose `WHERE` holds the caps and the owner check, and a partial unique index on `previous_id` makes "only the newest version gets a successor" atomic. The reads after a refused post only explain why. The D1 smoke test checks the unique-index error message on real D1, since the store recognizes it by text.
+- `Setup` changed shape: `text` per language (en/fr/es, at least one; the standard setup has none) and `ownerName` replace `name`, `description` and `author`. The owner's account ID never leaves the server; the list's `mine` gives a signed-in player their own setup IDs and cap usage instead.
+- Claude's readings, not asked: a description may be empty; the description has no line cap beyond its length (moderation already folds blank lines); masking or link removal that pushes text over a cap refuses it; a lookup of `standard` returns `STANDARD_SETUP`; the takedown column exists but nothing reads it yet (#289).
+- `wrangler types` in a worktree drops `MODEL_API_KEY` (no `server/.dev.vars` there); regenerate with `--env-file` pointing at the main checkout's.

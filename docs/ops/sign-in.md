@@ -34,7 +34,7 @@ Secrets: `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `DISCORD_CLIENT_ID`, `DISCO
 
 - Session: a random 32-byte ID in a cookie, stored as its SHA-256. 30 days; a request extends it only when less than 15 days remain, so most requests don't write. Expired sessions are refused on lookup.
 - Cookies are `HttpOnly`, `SameSite=Lax`, `Path=/`. On a deployment they are `Secure` with the `__Host-` prefix (`__Host-mush2_session`, `__Host-mush2_oauth`, `__Host-mush2_signup`). On a dev server (`DEV_SERVER`) there is no HTTPS, and cookies ignore ports while each worktree has its own local D1, so the name carries the page's port instead (`mush2_session_5173`).
-- Lax keeps cookies off cross-site POSTs; `/api/*` also only reads JSON bodies, and only with a `Content-Length` of at most 1 KB (checked before reading).
+- Lax keeps cookies off cross-site POSTs; `/api/*` also only reads JSON bodies, and only with a `Content-Length` of at most 1 KB (16 KB for a setup post; checked before reading).
 - A daily Cron Trigger (`triggers.crons` in `server/wrangler.jsonc`, the `scheduled` handler in `server/src/index.ts`) deletes expired sessions and sign-ups.
 - Never log a cookie, the OAuth `code` or a token.
 
@@ -56,6 +56,7 @@ Secrets: `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `DISCORD_CLIENT_ID`, `DISCO
 
 - `AUTH_LIMIT`, 60 requests a minute, on every `/auth/*` and `/api/*` route except `/auth/logout` (logging out must always work) and `/auth/<provider>/callback` (it only follows a limited start, and a forged one fails on the state cookie before any D1 or provider request). A request with a valid session is counted per account (one D1 session read), so players sharing an address don't use up each other's limit; any other request is counted per address (`CF-Connecting-IP`).
 - `SIGNUP_LIMIT`, 3 a minute per address, on `/api/signup` (new accounts).
+- `SETUP_POST_LIMIT`, 3 a minute per account, on `POST /api/setups` (#233). A signed-out post isn't counted; the route refuses it.
 
 Over the limit, a page navigation (`/auth/<provider>/start`, `/auth/dev`) redirects to `/?auth=rate_limited`, which the lobby shows as a translated message, since a bare 429 would show the browser's own error page. The `/api/*` routes answer 429 with `reason: "rate_limited"` and `Retry-After: 60`. A 429 from `/api/me` keeps the client's last known account state, shows the message, and asks again after `Retry-After`. A failing binding lets the request through. The binding's period is only 10 or 60 seconds, so there is no per-day cap on new accounts yet (#322). On a dev or test server (`DEV_SERVER` or `ALLOW_CHEATS`) requests are spread over 10 keys in turn, making the limits 10 times larger for everyone there; staging is unscaled.
 

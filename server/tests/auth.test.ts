@@ -2,6 +2,7 @@ import type { MeResponse } from "@mush2/shared";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { AccountStore, sha256Hex } from "../src/accountStore.ts";
 import { handleAuth, RENEW_BELOW_MS, SESSION_MS, SIGNUP_MS } from "../src/auth.ts";
+import { SetupStore } from "../src/setupStore.ts";
 import { migratedDatabase } from "./sqliteD1.ts";
 
 const ORIGIN = "https://mush.test";
@@ -16,6 +17,7 @@ const ENV = {
 } as Env;
 
 let store: AccountStore;
+let setups: SetupStore;
 let now: number;
 /** The provider's answers: the profile its userinfo endpoint returns. */
 let profiles: Record<string, Record<string, unknown>>;
@@ -37,7 +39,7 @@ class Browser {
   async request(path: string, init: RequestInit = {}): Promise<Response> {
     const headers = new Headers(init.headers);
     if (this.cookies.size) headers.set("Cookie", [...this.cookies].map(([k, v]) => `${k}=${v}`).join("; "));
-    const response = await handleAuth(new Request(`${this.origin}${path}`, { ...init, headers }), this.env, { store, now, fetcher, revokeSeats });
+    const response = await handleAuth(new Request(`${this.origin}${path}`, { ...init, headers }), this.env, { store, setups, now, fetcher, revokeSeats });
     if (!response) throw new Error(`not an auth route: ${path}`);
     for (const cookie of response.headers.getSetCookie()) {
       const [pair = ""] = cookie.split(";");
@@ -81,7 +83,9 @@ class Browser {
 }
 
 beforeEach(() => {
-  store = new AccountStore(migratedDatabase());
+  const db = migratedDatabase();
+  store = new AccountStore(db);
+  setups = new SetupStore(db);
   now = T0;
   profiles = {};
   revoked = [];

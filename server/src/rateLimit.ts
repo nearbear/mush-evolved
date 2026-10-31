@@ -41,6 +41,7 @@ export interface RateLimitBinding {
 export interface RateLimitEnv {
   AUTH_LIMIT?: RateLimitBinding;
   SIGNUP_LIMIT?: RateLimitBinding;
+  SETUP_POST_LIMIT?: RateLimitBinding;
   DEV_SERVER?: string;
   ALLOW_CHEATS?: string;
 }
@@ -56,12 +57,14 @@ export const clientKey = (request: Request): string => request.headers.get("CF-C
  * True if the request may go on. A signed-in request (`accountId`) is counted per account, so players sharing an
  * address (a mobile carrier, a school) don't use up each other's limit; any other is counted per address. `signup`
  * also counts it against the (tighter) new-account limit, always per address, since a sign-up has no account yet.
+ * `setupPost` counts a signed-in request against the setup-post limit, per account (#233); a signed-out post is
+ * refused by its route anyway.
  * A failing binding lets the request through: a Cloudflare hiccup must not lock everyone out of signing in.
  */
 export async function allowAuthRequest(
   env: RateLimitEnv,
   request: Request,
-  { accountId, signup }: { accountId: string | null; signup: boolean },
+  { accountId, signup, setupPost = false }: { accountId: string | null; signup: boolean; setupPost?: boolean },
 ): Promise<boolean> {
   const dev = env.DEV_SERVER === "true" || env.ALLOW_CHEATS === "true";
   const spread = (key: string) => (dev ? `${key}#${devTurn++ % AUTH_DEV_SCALE}` : key);
@@ -69,6 +72,9 @@ export async function allowAuthRequest(
   try {
     if (env.AUTH_LIMIT && !(await env.AUTH_LIMIT.limit({ key: spread(accountId ? `account:${accountId}` : ip) })).success) return false;
     if (signup && env.SIGNUP_LIMIT && !(await env.SIGNUP_LIMIT.limit({ key: spread(ip) })).success) return false;
+    if (setupPost && accountId && env.SETUP_POST_LIMIT && !(await env.SETUP_POST_LIMIT.limit({ key: spread(`account:${accountId}`) })).success) {
+      return false;
+    }
   } catch {
     return true;
   }

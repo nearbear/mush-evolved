@@ -1,4 +1,4 @@
-// Account storage in D1 (#282): the only place with SQL. The schema is in
+// Account storage in D1 (#282): with setupStore.ts, the only places with SQL. The schema is in
 // server/migrations/. Nothing here reaches a PlayerView.
 //
 // The interface is async and batch-shaped like D1's: statements that must be

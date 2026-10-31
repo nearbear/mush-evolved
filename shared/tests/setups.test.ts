@@ -9,6 +9,8 @@ import {
   STANDARD_SETUP,
   cyclesPerDayFor,
   knobsDiff,
+  moderateSetupTexts,
+  parsePostSetup,
   parseSetupKnobs,
   setupOverrides,
   validateSetup,
@@ -18,7 +20,17 @@ import {
 
 const knobs = (o: Record<string, unknown> = {}) => ({ ...STANDARD_KNOBS, ...o });
 const setup = (o: Record<string, unknown> = {}): Setup =>
-  ({ id: "s1", name: "Fast", description: "Short cycles", author: "Ana", version: 1, rulesVersion: "dev", createdAt: 1, knobs: knobs(), ...o }) as Setup;
+  ({
+    id: "s1",
+    text: { en: { name: "Fast", description: "Short cycles" } },
+    ownerName: "Ana",
+    version: 1,
+    rulesVersion: "dev",
+    createdAt: 1,
+    knobs: knobs(),
+    ...o,
+  }) as Setup;
+const en = (name: string, description = "") => ({ en: { name, description } });
 
 describe("parseSetupKnobs", () => {
   it("accepts the standard knobs and returns a copy", () => {
@@ -91,13 +103,24 @@ describe("validateSetup", () => {
   });
 
   it("bounds the text fields", () => {
-    expect(validateSetup(setup({ name: "x".repeat(MAX_SETUP_NAME_LENGTH) }))).not.toBeNull();
-    expect(validateSetup(setup({ name: "x".repeat(MAX_SETUP_NAME_LENGTH + 1) }))).toBeNull();
-    expect(validateSetup(setup({ name: "   " }))).toBeNull();
-    expect(validateSetup(setup({ description: "x".repeat(MAX_SETUP_DESCRIPTION_LENGTH) }))).not.toBeNull();
-    expect(validateSetup(setup({ description: "x".repeat(MAX_SETUP_DESCRIPTION_LENGTH + 1) }))).toBeNull();
+    expect(validateSetup(setup({ text: en("x".repeat(MAX_SETUP_NAME_LENGTH)) }))).not.toBeNull();
+    expect(validateSetup(setup({ text: en("x".repeat(MAX_SETUP_NAME_LENGTH + 1)) }))).toBeNull();
+    expect(validateSetup(setup({ text: en("   ") }))).toBeNull();
+    expect(validateSetup(setup({ text: en("A", "x".repeat(MAX_SETUP_DESCRIPTION_LENGTH)) }))).not.toBeNull();
+    expect(validateSetup(setup({ text: en("A", "x".repeat(MAX_SETUP_DESCRIPTION_LENGTH + 1)) }))).toBeNull();
     expect(validateSetup(setup({ id: "" }))).toBeNull();
-    expect(validateSetup(setup({ author: 7 }))).toBeNull();
+    expect(validateSetup(setup({ ownerName: 7 }))).toBeNull();
+  });
+
+  it("takes a name and description per language, at least one, and no other languages or keys", () => {
+    const three = { en: { name: "Fast", description: "" }, fr: { name: "Rapide", description: "Vite" }, es: { name: "Rápido", description: "" } };
+    expect(validateSetup(setup({ text: three }))?.text).toEqual(three);
+    expect(validateSetup(setup({ text: { fr: { name: "Rapide", description: "" } } }))).not.toBeNull();
+    expect(validateSetup(setup({ text: {} }))).toBeNull();
+    expect(validateSetup(setup({ text: { de: { name: "Schnell", description: "" } } }))).toBeNull();
+    expect(validateSetup(setup({ text: { en: { name: "Fast" } } }))).toBeNull();
+    expect(validateSetup(setup({ text: { en: { name: "Fast", description: "", extra: 1 } } }))).toBeNull();
+    expect(validateSetup(setup({ text: "Fast" }))).toBeNull();
   });
 
   it("links a later version to the one it follows, and only a later one", () => {
@@ -116,6 +139,72 @@ describe("validateSetup", () => {
   it("rejects a bad creation time", () => {
     expect(validateSetup(setup({ createdAt: -1 }))).toBeNull();
     expect(validateSetup(setup({ createdAt: "2026-10-29" }))).toBeNull();
+  });
+});
+
+describe("moderateSetupTexts", () => {
+  it("masks the word list in every field whatever its language, and removes links", () => {
+    const result = moderateSetupTexts({
+      fr: { name: "Pas de shit", description: "Voir www.example.com" },
+      es: { name: "Bueno", description: "fuck" },
+    });
+    expect(result).toEqual({
+      ok: true,
+      text: { fr: { name: "Pas de ****", description: "Voir [link removed]" }, es: { name: "Bueno", description: "****" } },
+    });
+  });
+
+  it("folds a name onto one line and strips invisible characters", () => {
+    expect(moderateSetupTexts({ en: { name: "  Two\n  lines\u200b ", description: "  a\n\n\n\nb  " } })).toEqual({
+      ok: true,
+      text: { en: { name: "Two lines", description: "a\n\nb" } },
+    });
+  });
+
+  it("refuses a missing or overlong name and an overlong description, naming the language", () => {
+    expect(moderateSetupTexts({})).toEqual({ ok: false, reason: "no_text" });
+    expect(moderateSetupTexts({ en: { name: " ", description: "Hi" } })).toEqual({ ok: false, reason: "name_empty", lang: "en" });
+    const long = "x".repeat(MAX_SETUP_NAME_LENGTH + 1);
+    expect(moderateSetupTexts({ en: { name: "A", description: "" }, es: { name: long, description: "" } })).toEqual({
+      ok: false,
+      reason: "name_too_long",
+      lang: "es",
+    });
+    const longDescription = "x".repeat(MAX_SETUP_DESCRIPTION_LENGTH + 1);
+    expect(moderateSetupTexts({ fr: { name: "A", description: longDescription } })).toEqual({
+      ok: false,
+      reason: "description_too_long",
+      lang: "fr",
+    });
+    expect(moderateSetupTexts({ en: { name: "A", description: "   " } })).toEqual({ ok: true, text: en("A") });
+  });
+
+  it("checks the caps again after removing links, which lengthens text", () => {
+    const name = `${"x".repeat(MAX_SETUP_NAME_LENGTH - 6)} www.a`;
+    expect(name.length).toBeLessThanOrEqual(MAX_SETUP_NAME_LENGTH);
+    expect(moderateSetupTexts(en(name))).toEqual({ ok: false, reason: "name_too_long", lang: "en" });
+  });
+});
+
+describe("parsePostSetup", () => {
+  const body = (o: Record<string, unknown> = {}) => ({ text: en("Fast"), knobs: knobs(), ...o });
+
+  it("copies a well-formed post, with or without a previous version", () => {
+    expect(parsePostSetup(body())).toEqual(body());
+    expect(parsePostSetup(body({ previousId: "s1" }))).toEqual(body({ previousId: "s1" }));
+  });
+
+  it("refuses unknown fields, bad knobs and mistyped text, leaving caps to moderation", () => {
+    expect(parsePostSetup(body({ ownerName: "Me" }))).toBeNull();
+    expect(parsePostSetup(body({ knobs: knobs({ seats: 3 }) }))).toBeNull();
+    expect(parsePostSetup(body({ knobs: knobs({ startAp: 20 }) }))).toBeNull();
+    expect(parsePostSetup(body({ text: { en: { name: 7, description: "" } } }))).toBeNull();
+    expect(parsePostSetup(body({ text: { xx: { name: "A", description: "" } } }))).toBeNull();
+    expect(parsePostSetup(body({ previousId: "" }))).toBeNull();
+    expect(parsePostSetup(body({ previousId: 3 }))).toBeNull();
+    for (const bad of [null, undefined, "x", []]) expect(parsePostSetup(bad)).toBeNull();
+    // Too long is moderation's to report, as its own reason.
+    expect(parsePostSetup(body({ text: en("x".repeat(MAX_SETUP_NAME_LENGTH + 1)) }))).not.toBeNull();
   });
 });
 

@@ -1,6 +1,6 @@
 # D1: migrations and restores
 
-Account storage (#282) lives in Cloudflare D1, one database per environment, bound as `DB` in `server/wrangler.jsonc`: `mush2-production`, `mush2-staging`, `mush2-test`. The schema is in `server/migrations/`; `server/src/accountStore.ts` is the only code with SQL.
+Account storage (#282) lives in Cloudflare D1, one database per environment, bound as `DB` in `server/wrangler.jsonc`: `mush2-production`, `mush2-staging`, `mush2-test`. The schema is in `server/migrations/`; `server/src/accountStore.ts` and `server/src/setupStore.ts` (posted setups, #233) are the only code with SQL.
 
 ## Migrations
 

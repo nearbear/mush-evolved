@@ -8,6 +8,7 @@
 //   POST /api/signup  { name }             confirms the name of a first sign-in: creates the account
 //   POST /api/rename  { name }             at most once a day
 //   GET  /auth/dev?name=<name>             dev sign-in for tooling (#287): `npm run dev` on localhost only
+//   GET  /api/setups, /api/setups/<id>     and POST /api/setups: posted setups (#233), in setupRoutes.ts
 //
 // Session, OAuth-state and sign-up cookies each hold a random ID (only the
 // session and sign-up IDs' hashes are stored). They are HttpOnly and
@@ -24,8 +25,11 @@ import {
   type SignupResponse,
 } from "@mush2/shared";
 import { type AccountStore, nameKey, RENAME_INTERVAL_MS, sha256Hex } from "./accountStore.ts";
+import { json, readJsonBody } from "./http.ts";
 import { authorizeUrl, fetchProfile, oauthCredentials, randomToken, usesPkce } from "./oauth.ts";
 import { allowAuthRequest } from "./rateLimit.ts";
+import type { SetupStore } from "./setupStore.ts";
+import { handleSetupRoute, isSetupPath } from "./setupRoutes.ts";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 /** Sessions last 30 days, renewed while in use. */
@@ -41,6 +45,8 @@ const MAX_BODY = 1024;
 
 export interface AuthDeps {
   store: AccountStore;
+  /** Posted setups (#233), served under /api/setups. */
+  setups: SetupStore;
   now: number;
   /** For the provider requests; tests replace it. */
   fetcher?: typeof fetch;
@@ -110,12 +116,6 @@ function decodeState(value: string | null): OAuthState | null {
 
 // ---- Responses
 
-function json(body: unknown, status = 200, cookies: string[] = []): Response {
-  const headers = new Headers({ "Content-Type": "application/json", "Cache-Control": "no-store" });
-  for (const cookie of cookies) headers.append("Set-Cookie", cookie);
-  return new Response(JSON.stringify(body), { status, headers });
-}
-
 function redirect(location: string, cookies: string[] = []): Response {
   const headers = new Headers({ Location: location, "Cache-Control": "no-store" });
   for (const cookie of cookies) headers.append("Set-Cookie", cookie);
@@ -135,23 +135,11 @@ function rateLimited(path: string): Response {
 
 const outcome = (result: AuthOutcome) => `/?auth=${result}`;
 
-/**
- * `{ name }` from a JSON body, or null. Requiring JSON also keeps plain cross-site
- * form posts out. The size is checked from Content-Length before reading, so a
- * huge or streamed body is refused unread.
- */
+/** `{ name }` from a JSON body of at most MAX_BODY bytes, or null. */
 async function readName(request: Request): Promise<string | null> {
-  if (!request.headers.get("Content-Type")?.startsWith("application/json")) return null;
-  const length = Number(request.headers.get("Content-Length") ?? Number.NaN);
-  if (!(length >= 0 && length <= MAX_BODY)) return null;
-  const text = await request.text();
-  if (text.length > MAX_BODY) return null;
-  try {
-    const body = JSON.parse(text) as { name?: unknown };
-    return typeof body.name === "string" ? body.name : null;
-  } catch {
-    return null;
-  }
+  const body = await readJsonBody(request, MAX_BODY);
+  const name = typeof body === "object" && body !== null ? (body as { name?: unknown }).name : undefined;
+  return typeof name === "string" ? name : null;
 }
 
 // ---- Sessions
@@ -253,7 +241,17 @@ export async function handleAuth(request: Request, env: Env, deps: AuthDeps): Pr
   // only follows a limited start (a forged one fails on the state cookie before any D1 or provider request).
   if (path !== "/auth/logout" && !/^\/auth\/[a-z]+\/callback$/.test(path)) {
     const accountId = await sessionAccount(request, env, deps);
-    if (!(await allowAuthRequest(env, request, { accountId, signup: path === "/api/signup" }))) return rateLimited(path);
+    const setupPost = path === "/api/setups" && request.method === "POST";
+    if (!(await allowAuthRequest(env, request, { accountId, signup: path === "/api/signup", setupPost }))) return rateLimited(path);
+  }
+
+  if (isSetupPath(path)) {
+    return handleSetupRoute(request, path, {
+      setups: deps.setups,
+      now: deps.now,
+      rulesVersion: env.RULES_VERSION ?? "dev",
+      session: () => currentSession(request, env, deps.store, deps.now),
+    });
   }
 
   const oauth = /^\/auth\/([a-z]+)\/(start|callback)$/.exec(path);

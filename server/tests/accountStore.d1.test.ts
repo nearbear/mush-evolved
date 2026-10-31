@@ -12,7 +12,9 @@ import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { getPlatformProxy } from "wrangler";
 import { afterAll, beforeAll, expect, it } from "vitest";
+import { STANDARD_KNOBS } from "@mush2/shared";
 import { AccountStore } from "../src/accountStore.ts";
+import { SetupStore } from "../src/setupStore.ts";
 
 const SERVER = resolve(import.meta.dirname, "..");
 
@@ -86,4 +88,24 @@ it("runs every store statement on D1", async () => {
   expect(await store.boardShip(account.id, "ship-2", 4)).toBe("ok");
   expect(await store.endShip("ship-2", 5)).toBe(1);
   expect(await store.ships(account.id)).toHaveLength(2);
+}, 30_000);
+
+it("runs every setup store statement on D1", async () => {
+  const accounts = new AccountStore(proxy.env.DB);
+  const setups = new SetupStore(proxy.env.DB);
+  const created = await accounts.createAccount("Setter", "google", "g-setups", 1000);
+  if (!created.ok) throw new Error(created.reason);
+  const owner = created.account.id;
+  const input = { text: { en: { name: "Fast", description: "" } }, knobs: { ...STANDARD_KNOBS, cycleHours: 1 as const } };
+
+  const v1 = await setups.post(owner, input, "dev", 1);
+  if (!v1.ok) throw new Error(v1.reason);
+  const v2 = await setups.post(owner, { ...input, previousId: v1.setup.id }, "dev", 2);
+  expect(v2).toMatchObject({ ok: true, setup: { version: 2, previousId: v1.setup.id, ownerName: "Setter" } });
+  // The unique index's error, recognized by its message as on node:sqlite.
+  expect(await setups.post(owner, { ...input, previousId: v1.setup.id }, "dev", 3)).toEqual({ ok: false, reason: "not_latest" });
+  expect(await setups.post(owner, { ...input, previousId: "nope" }, "dev", 3)).toEqual({ ok: false, reason: "not_found" });
+  expect((await setups.list()).map((l) => l.setup.version)).toEqual([2]);
+  expect(await setups.get(v1.setup.id)).toMatchObject({ latest: false, knobs: input.knobs });
+  expect(await setups.counts(owner)).toEqual({ setups: 1, posts: 2 });
 }, 30_000);

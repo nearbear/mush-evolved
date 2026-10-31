@@ -18,9 +18,10 @@
     ]
   },
   "ratelimits": [
-    // Per client IP, all of /auth/* and /api/*; sign-ups (new accounts) also count against the tighter one (rateLimit.ts).
+    // Per client IP or account, all of /auth/* and /api/*; sign-ups (new accounts, per IP) and setup posts (per account, #233) also count against tighter ones (rateLimit.ts).
     { "name": "AUTH_LIMIT", "namespace_id": "1001", "simple": { "limit": 60, "period": 60 } },
-    { "name": "SIGNUP_LIMIT", "namespace_id": "1002", "simple": { "limit": 3, "period": 60 } }
+    { "name": "SIGNUP_LIMIT", "namespace_id": "1002", "simple": { "limit": 3, "period": 60 } },
+    { "name": "SETUP_POST_LIMIT", "namespace_id": "1003", "simple": { "limit": 3, "period": 60 } }
   ],
   "d1_databases": [
     { "binding": "DB", "database_name": "mush2-production", "database_id": "9021775b-89ea-49f6-93d4-f1d5ed218ac4", "migrations_dir": "migrations" }
@@ -52,9 +53,10 @@
         ]
       },
       "ratelimits": [
-        // Per client IP, all of /auth/* and /api/*; sign-ups (new accounts) also count against the tighter one (rateLimit.ts).
+        // Per client IP or account, all of /auth/* and /api/*; sign-ups (new accounts, per IP) and setup posts (per account, #233) also count against tighter ones (rateLimit.ts).
         { "name": "AUTH_LIMIT", "namespace_id": "2001", "simple": { "limit": 60, "period": 60 } },
-        { "name": "SIGNUP_LIMIT", "namespace_id": "2002", "simple": { "limit": 3, "period": 60 } }
+        { "name": "SIGNUP_LIMIT", "namespace_id": "2002", "simple": { "limit": 3, "period": 60 } },
+        { "name": "SETUP_POST_LIMIT", "namespace_id": "2003", "simple": { "limit": 3, "period": 60 } }
       ],
       "d1_databases": [
         { "binding": "DB", "database_name": "mush2-staging", "database_id": "ec315beb-a346-4507-a0ea-ae86795f023a", "migrations_dir": "migrations" }
@@ -77,9 +79,10 @@
         ]
       },
       "ratelimits": [
-        // Per client IP, all of /auth/* and /api/*; sign-ups (new accounts) also count against the tighter one (rateLimit.ts).
+        // Per client IP or account, all of /auth/* and /api/*; sign-ups (new accounts, per IP) and setup posts (per account, #233) also count against tighter ones (rateLimit.ts).
         { "name": "AUTH_LIMIT", "namespace_id": "3001", "simple": { "limit": 60, "period": 60 } },
-        { "name": "SIGNUP_LIMIT", "namespace_id": "3002", "simple": { "limit": 3, "period": 60 } }
+        { "name": "SIGNUP_LIMIT", "namespace_id": "3002", "simple": { "limit": 3, "period": 60 } },
+        { "name": "SETUP_POST_LIMIT", "namespace_id": "3003", "simple": { "limit": 3, "period": 60 } }
       ],
       "d1_databases": [
         { "binding": "DB", "database_name": "mush2-test", "database_id": "600dcd0b-e9cf-4146-919a-0b01ef9d7568", "migrations_dir": "migrations" }

@@ -986,8 +986,8 @@ describe("GameRoom joining (pre-selection)", () => {
   const custom: Setup = {
     ...STANDARD_SETUP,
     id: "s1",
-    name: "Quick",
-    author: "Ann",
+    text: { en: { name: "Quick", description: "" } },
+    ownerName: "Ann",
     createdAt: 1,
     knobs: { seats: 6, preselectionDays: 2, mushCount: 3, cycleHours: 1, sharedSpots: false },
   };
