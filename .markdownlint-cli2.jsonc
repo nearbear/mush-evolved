@@ -7,7 +7,9 @@
     // Repeated headings are fine in different sections (dates in logs, "Decisions" in each plan part).
     "MD024": { "siblings_only": true },
     // Compact tables (|---|) are the house style; aligning pipes is churn on every edit.
-    "MD060": false
+    "MD060": false,
+    // Agent definitions are prompts after their front matter; a heading would change the prompt.
+    "MD041": false
   },
   "globs": ["**/*.md"],
   "ignores": [

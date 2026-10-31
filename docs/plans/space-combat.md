@@ -53,6 +53,7 @@ Constants: `Const.MAX_PATROL_HP = 14` (more than the table's 10, so repairs can 
 **Takeoff** (`Solver.evalPatrolShipLandTakeOff`): a pilot always succeeds. Otherwise `pc = 20` plus `IncrActionOdd`/`MulActionOdd` modifiers (`BAY_DOOR_XXL` ×1.5), and **unless** a `pc`% roll comes up, the takeoff is rough: the hull takes 2–4, the patrol ship 1, the pilot 0–2. The takeoff happens either way. As written that's an 80% chance of a rough takeoff for a non-pilot, which may be inverted; it needs confirming.
 
 **Stances** (`Utils.stanceData`): base hit = `PATROL_SHIP_ATTACK.proba` (40), evade 50, attract 15, lock true.
+
 - `Attack`: hit ×2.
 - `Flee`: lock false (presumably hunters can't lock onto you).
 - `Bait`: evade ×1.5, attract ×2.
@@ -62,6 +63,7 @@ The room statuses `FREE_PATROL_MOVE_0/1` are bits counting the free patrol-ship 
 ### Odds and damage (`Solver.hx`)
 
 `calcActionOdds`, which applies to both shooting actions:
+
 1. Base: the turret's 30, or the stance's hit for a patrol ship.
 2. `IncrActionOdd` adds to the base. `MulActionOdd` and `ToHit(v)` (as +v/100) build a multiplier, as do `EXPERT` (+0.2) and `POLYMATH` (−0.1). Base × multiplier.
 3. Repeating the same action as your last one: × `fail_coef` ^ repeats (1.25; `PERSISTENT` makes the coefficient ×1.05).

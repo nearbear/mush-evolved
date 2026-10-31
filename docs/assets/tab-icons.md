@@ -33,4 +33,4 @@ Icons are `Mush/www/img/icons/ui/*.png`, exported as `TAB_ICONS` in `web/src/art
 | Favorited threads | `fav.png` (no `favorite.png` exists) | tab wanted, not built |
 | Goals | `triumph.png` | tab wanted, not built |
 
-Every existing tab, button and Features thread now has an icon. The Features drop-down is a Base UI Select (`web/src/hud/FeatureSelect.tsx`) so its options can show them; the private-channel picker is still a native select. 
+Every existing tab, button and Features thread now has an icon. The Features drop-down is a Base UI Select (`web/src/hud/FeatureSelect.tsx`) so its options can show them; the private-channel picker is still a native select.

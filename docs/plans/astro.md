@@ -25,7 +25,7 @@ The snapshot has no server code, so we have the data and the generator but not t
 5. **Analysis:** 2 AP at the terminal, on one of your own planets. It reveals one unknown sector, picked weighted by that tag's `seek` value. A new planet shows its name and sector count, with every sector unknown.
 6. **Log:** scanning and analysing are public actions, and no log line ever shows sectors.
    - A scan logs "X scanned for planets" whether it worked or not. Only the scanner learns the result, privately with the planet's name.
-   - An analysis logs "X analysed planet <name>". Sector contents appear only in the finder's own view.
+   - An analysis logs `X analysed planet <name>`. Sector contents appear only in the finder's own view.
 7. **Who:** any living player who is not dirty, Mush included (the same rule as research).
 8. **Reset:** a successful scan resets the chance to 50%.
 9. **Delete is silent:** no log line.

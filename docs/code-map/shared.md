@@ -2,7 +2,7 @@
 
 Other packages import from `@mush2/shared` (`shared/src/index.ts`, the barrel). Inside `shared`, import types from `types.ts`.
 
-**Engine**
+## Engine
 
 - `rules.ts`: `createGame`, `newPlayer` and `startInventory` (also used by `joinShip`), `applyAction` (at once, no timing), `performAction` (its mutating core), `legalActions`, `viewFor`, `affordable` and `legalIn` (read a view's `actions`), `dayOf` (re-exported from `helpers.ts`), `setCheat`, `setActopiCheat`; private `advanceCycle` and `grantCarePoints`. `viewFor` is the single place hidden info is stripped.
 - `actions.ts`: the action registry (`ACTIONS`), `ActionDef` / `ActionCost`, and the `Action` union, derived from the registry (`types.ts` re-exports it). `actionVisibility` and `actionInTerminal` read fixed per-type flags. A new action is a file in `actions/` registered here.
@@ -40,7 +40,7 @@ Other packages import from `@mush2/shared` (`shared/src/index.ts`, the barrel). 
 - `helpers.ts`: `ActionResult`, `fail`, `clone`, `findPlayer`, `dayOf`, `freeAp` (`ap - lockedAp`: what live actions, moves and the view's `lacks` may spend; exported for the client's hint text).
 - `paths.ts`: `shortestPath` (deterministic BFS over `config.rooms`; null for the door-less patrol craft), for plan jobs' travel.
 
-**Rule areas**
+## Rule areas
 
 - `chat.ts`: chat storage, channels (`chatChannels` to post, `readChannels` to read), `sendChat`, threads under global chat (`createThread`), private channels, limits.
 - `death.ts`: `damage` (the one way HP goes down) and `killPlayer`.
@@ -57,7 +57,7 @@ Other packages import from `@mush2/shared` (`shared/src/index.ts`, the barrel). 
 - `adjustStats.ts`: capped morale changes and disease application; `addDisease` updates both the modifier and private status.
 - `cheats.ts`: development cheats (issue #148), gated by `ALLOW_CHEATS`. Flag-only cheats are read where they apply: `instantActions` in `queue.ts`, `noRelayPenalty` in `relay.ts` (`makeToken`, fixed on the token), `freeHacking` in `titles.ts` (`bypassesTitles`), `anySkill` in `actions/pick_skill.ts`, `easyTravel` in `actions/warp_to_planet.ts` and `actions/leave_orbit.ts`. `alwaysClean` strips `dirty` in `applyCheats`.
 
-**Types, config, and data**
+## Types, config, and data
 
 - `types.ts`: the small shared vocabulary; re-exports `types/`.
 - `types/config.ts`: `GameConfig`, `MovementRules`, `Equipment`. Tuning is nested by feature (`config.punch.cost.ap`, `config.punch.effect.damage`, a [min, max] range).

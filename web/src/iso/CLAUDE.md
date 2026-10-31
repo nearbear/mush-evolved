@@ -151,6 +151,7 @@ runs). It draws no people, effects or animation.
 To see where things are without the iso view, `npm run ship-top` draws the same scene from above
 (x to the right, y down; turn it 45° clockwise for the iso view) as plain shapes into
 `.screenshots/ship-top.png`. It shows:
+
 - floor in each room's colour, lighter for walkways and paths
 - walls as lines on the cell edges they stand on, lilac for deck walls
 - doors in cyan; dashed for doorways on a room's open front edge

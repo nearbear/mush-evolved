@@ -3,6 +3,7 @@
 Descriptions of `Mush/www/img/icons/ui/*` (top-level files; `status/` is at the end), written 2026-10-13 from contact sheets (`npm run contact-sheet -- Mush/www/img/icons/ui --zoom 2`). Names are Motion Twin's. Descriptions say what the picture shows. Meaning in the original game is a guess where marked **(?)**. Tab and button assignments are in `docs/assets/tab-icons.md`. `_over` is a hover variant and `_grey` a disabled/unearned variant, so only the base file is listed unless the variants differ. `.gif` files are animated.
 
 ## Arrows, paging, and controls
+
 | File | Shows |
 |---|---|
 | `back.png` | Cyan "C"-shaped back/return arrow |
@@ -32,6 +33,7 @@ Descriptions of `Mush/www/img/icons/ui/*` (top-level files; `status/` is at the 
 | `mastering.png` | Small gold padlock |
 
 ## Alerts and status
+
 | File | Shows |
 |---|---|
 | `alert.png` | Small orange warning cone |
@@ -53,6 +55,7 @@ Descriptions of `Mush/www/img/icons/ui/*` (top-level files; `status/` is at the 
 | `pegi.png` | Large "13+" age rating badge |
 
 ## Player states and conditions
+
 | File | Shows |
 |---|---|
 | `awake.png` | Open eye |
@@ -91,6 +94,7 @@ Descriptions of `Mush/www/img/icons/ui/*` (top-level files; `status/` is at the 
 | `not_ready.png` | Brown figure crouched (not ready) |
 
 ## Action points, resources, and bars
+
 | File | Shows |
 |---|---|
 | `pa.gif` | Orange "PA" (action points) |
@@ -122,6 +126,7 @@ Descriptions of `Mush/www/img/icons/ui/*` (top-level files; `status/` is at the 
 | `gold.png` | IDK |
 
 ## Ship and equipment
+
 | File | Shows |
 |---|---|
 | `comm.png` | Satellite dish (comms) |
@@ -160,6 +165,7 @@ Descriptions of `Mush/www/img/icons/ui/*` (top-level files; `status/` is at the 
 | `slow_cycle/too_slow.png` | Pocket watch (+`_grey`) |
 
 ## Books and notes
+
 | File | Shows |
 |---|---|
 | `book.png` | Pink book |
@@ -175,6 +181,7 @@ Descriptions of `Mush/www/img/icons/ui/*` (top-level files; `status/` is at the 
 | `title_01/02/03.png` | ID cards: blue, gold, pink |
 
 ## Groups and people
+
 | File | Shows |
 |---|---|
 | `people.png` | Three pink figures |
@@ -191,9 +198,11 @@ Descriptions of `Mush/www/img/icons/ui/*` (top-level files; `status/` is at the 
 | `use_andrek.png` / `use_andrek_greyed.png` | Two figures (a pair) / greyed |
 
 ## Character bust icons
+
 Small head or bust sprites of the playable cast. File names are first names: `andie`, `chao`, `chun`, `chun_battle`, `derek`, `eleesha`, `finola`, `frieda`, `gioele`, `hua`, `ian`, `janice`, `jinsu`, `kivanc`, `kuanti`, `mankarog`, `mastered` (brown dog), `nils`, `noob`, `paola`, `pam` (gears icon), `raluca`, `roland`, `stephen`, `terrence`.
 
 ## Mush faction, achievements, and triumphs
+
 | File | Shows |
 |---|---|
 | `mush.png` | Red mushroom |
@@ -216,6 +225,7 @@ Small head or bust sprites of the playable cast. File names are first names: `an
 | `first_time.png` | Pink creature (first time) |
 
 ## Misc
+
 | File | Shows |
 |---|---|
 | `coffee.png` / `coffeeplus.png` | White coffee cup / with a red "!" |

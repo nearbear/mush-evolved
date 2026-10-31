@@ -9,6 +9,7 @@ Descriptions of `Mush/www/img/design/*` (325 files, the old website chrome), wri
 Most box and bar pieces are semi-transparent blue, so they pick up whatever sits behind them.
 
 ## Backgrounds
+
 | File | Shows |
 |---|---|
 | `bg.jpg` | Deep-blue starfield, bright blue lens flare at the top, small dark planet at lower left |
@@ -35,6 +36,7 @@ Most box and bar pieces are semi-transparent blue, so they pick up whatever sits
 | `banner_neron.jpg` | Black circuit-trace banner with the red NERON eye |
 
 ## Panels, boxes, and frames
+
 | File | Shows |
 |---|---|
 | `box1_*` (`topleft`, `topright`, `bottomleft`, `bottomright`, `bgleft`, `bgright`, `bg`, `top`, `bottom`) | Dark-blue starfield box with chamfered corners, as separate corner and edge pieces for 9-slice |
@@ -61,12 +63,14 @@ Most box and bar pieces are semi-transparent blue, so they pick up whatever sits
 | `learning.png` | Dark-blue rounded empty bar frame |
 
 ## Tabs
+
 | File | Shows |
 |---|---|
 | `gen_tab.png`, `gold_tab.png`, `news_tab.png` | Blue tab tops: plain, gold-outlined, pink-outlined |
 | `taboff.gif`, `tabon.gif` | Tiny flat tab fills, off and on |
 
 ## Buttons and controls
+
 | File | Shows |
 |---|---|
 | `butleft/butbg/butright.png` | Blue 3-slice button (`_over` lighter, `_on.gif` animated pressed). `butbg_tease.png` is a variant fill |
@@ -90,6 +94,7 @@ Most box and bar pieces are semi-transparent blue, so they pick up whatever sits
 | `empty.png`, `pixel.gif`, `pchoose.png`, `here.png` | Transparent spacers and 1px helpers |
 
 ## Bars, meters, and counters
+
 | File | Shows |
 |---|---|
 | `pvsm.png`, `pvsm.gif` | Blue capsule meter with ticks (gif animated); `pvsm_gold` gold-rimmed; `pvsm_mini` short rounded cap |
@@ -108,6 +113,7 @@ Most box and bar pieces are semi-transparent blue, so they pick up whatever sits
 | `treelast.png`, `treeinfinite.png`, `tree.png` | Thin vertical connector lines for a skill tree |
 
 ## Chat
+
 | File | Shows |
 |---|---|
 | `chatbox.png` | White rounded input box (used) |
@@ -115,6 +121,7 @@ Most box and bar pieces are semi-transparent blue, so they pick up whatever sits
 | `chat_from_left.png`, `chat_from_right.png` | Pale bubble tails, left and right |
 
 ## NERON and Mush art
+
 | File | Shows |
 |---|---|
 | `neron.png`, `neron_b.png`, `neron_chat.png` | Red glowing NERON eye in a steel ring (three sizes) |
@@ -133,6 +140,7 @@ Most box and bar pieces are semi-transparent blue, so they pick up whatever sits
 | `sensor01–04.png` | Blue key-hole and radio-wave tiles, signal strength 0 to 3 |
 
 ## Small icons and decoration
+
 | File | Shows |
 |---|---|
 | `lock_basic.png`, `lock_gold.png` | Teal / gold padlock (also in `icons/ui`) |
@@ -145,6 +153,7 @@ Most box and bar pieces are semi-transparent blue, so they pick up whatever sits
 | `gold_blocked.png`, `gold_features_arrow1–3.png` | Yellow bug warning; light-blue triangles (shop pieces) |
 
 ## Not for the game
+
 | File | Why |
 |---|---|
 | `Pamplemousse.jpg`, `Pamplemousse_small.jpg` | Photo of two grapefruit, placeholder |

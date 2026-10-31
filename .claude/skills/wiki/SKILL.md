@@ -5,7 +5,7 @@ description: Look up the original game's rules on eMushpedia, the French eMush w
 
 # Look up a rule on eMushpedia
 
-eMushpedia (https://emushpedia.miraheze.org) is the French community wiki for eMush, about 400 articles. `npm run wiki` reads it through its MediaWiki API; no browser or web-fetch agent is needed.
+eMushpedia (<https://emushpedia.miraheze.org>) is the French community wiki for eMush, about 400 articles. `npm run wiki` reads it through its MediaWiki API; no browser or web-fetch agent is needed.
 
 ## Commands
 

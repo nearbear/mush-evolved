@@ -107,6 +107,7 @@ No goal sends `get_up`: any other action already gets a bot out of bed (`getUp` 
 The bot's memory is fields on the `ModelBot` or scripted bot object, nowhere else: the current goal, the goals done or failed this cycle, and the rooms visited this cycle.
 
 **Interrupt details.** The decided interrupts, made precise so they don't cost a model call per bot each time:
+
 - *A chat message that names the bot:* messages the bot hasn't seen yet (it remembers the last message id), naming its character, from a human. Bot messages never interrupt, or one bot's line would cost another a call.
 - *A new cycle:* not while `rest` is running (see its row), or a resting bot would get up after one cycle.
 

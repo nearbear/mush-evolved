@@ -2,7 +2,7 @@
 
 A turn-based, browser-based social deduction game inspired by [Mush](https://github.com/motion-twin/WebGamesArchives) (Motion Twin) and [eMush](https://emush.eternaltwin.org/) (Eternaltwin). Players wake up on a spaceship, a few of them are secretly infected, and the rest have to survive and unmask them.
 
-This is a **vertical slice**, not a full clone: matchmaking, a room-by-room ship, action points, inventory, infection, space combat, ship travel, chat, and a game end (the Commander returns to Sol, or every human dies) work today. Much of the original ruleset is still missing; the rules decided so far are in `docs/rules/rules-design.md`, and the rest are open as GitHub issues. A test build is live at https://mush2-server.nearbearnearbear.workers.dev (one Cloudflare Worker serves the client and the game server; `npm run deploy:production`). Model-backed bots have no hosted default and exist only in a planned single-player mode.
+This is a **vertical slice**, not a full clone: matchmaking, a room-by-room ship, action points, inventory, infection, space combat, ship travel, chat, and a game end (the Commander returns to Sol, or every human dies) work today. Much of the original ruleset is still missing; the rules decided so far are in `docs/rules/rules-design.md`, and the rest are open as GitHub issues. A test build is live at <https://mush2-server.nearbearnearbear.workers.dev> (one Cloudflare Worker serves the client and the game server; `npm run deploy:production`). Model-backed bots have no hosted default and exist only in a planned single-player mode.
 
 ## Quick start
 
@@ -15,8 +15,8 @@ npm run dev
 
 This starts both halves:
 
-- **Game server** (wrangler, local Durable Objects): http://localhost:8787
-- **Web client** (Vite): http://localhost:5173. Open this in a browser.
+- **Game server** (wrangler, local Durable Objects): <http://localhost:8787>
+- **Web client** (Vite): <http://localhost:5173>. Open this in a browser.
 
 Pick a ship (one per language), then a crew member. You are boarded onto that language's open ship, which waits in pre-selection until it fills or its deadline passes. On a local dev server (`npm run dev`, which passes `DEV_SERVER` and `ALLOW_CHEATS` to wrangler) the first join also seats log-parrot bots (labeled "(AI)") for every other character after about 8 seconds. This is test scaffolding: a deployed multiplayer ship has no bots, and bots are meant only for a single-player mode. To test with several humans, open more tabs before the bots arrive: each tab is a separate player. `ALLOW_CHEATS` turns on the cheat panel and End cycle; the test deployment sets it too, but never `DEV_SERVER`, which also loosens rate limits and enables the dev model key. Both come from the server's `dev` script, not `server/.dev.vars`, so a fresh clone needs no setup; `--var` overrides `.dev.vars`, so to try a server without them, run `npx wrangler dev` in `server/`.
 

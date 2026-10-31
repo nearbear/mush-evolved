@@ -2,7 +2,7 @@
 
 All under `web/src/`. UI rules are in `web/CLAUDE.md`.
 
-**App shell**
+## App shell
 
 - `main.tsx`: React entry.
 - `App.tsx`: lobby or game; keeps the seat ticket in sessionStorage.
@@ -18,7 +18,7 @@ All under `web/src/`. UI rules are in `web/CLAUDE.md`.
 - `styles.css`: only `@import`s of `styles/*.css`; `responsive.css` must stay last.
 - `@mush2/assets/derived/kit.css` (imported by `styles.css`, lives in `Mush/derived/` since it adapts CC BY-NC-SA art): image-free CSS versions of `Mush/www/img/design` pieces (`.kit-progress`, `.kit-tab`, `.kit-minitab`, `.kit-slot`, `.kit-tooltip`, `.kit-popup`, `.kit-box`, `.kit-panel`), any size. The game uses `.kit-slot.big` for empty inventory slots (`hud/InventoryPanel.tsx`); the rest are shown beside the PNG originals on the dev-only design kit page (`web/design-kit.html`, `src/designKit/`).
 
-**hud/**
+## hud/
 
 - `TopBar.tsx`: cycle and countdown, Results (once the game has ended), End cycle (only when offered), Leave, settings.
 - `CycleCountdown.tsx`: time left until the next cycle, from the view message's `nextCycleAt`.
@@ -72,6 +72,7 @@ All under `web/src/`. UI rules are in `web/CLAUDE.md`.
 - `useOverlayDismiss.ts`: closes a room-view overlay on Escape or a press elsewhere in the room view (`InventoryOverlay`, `ShipOverlay`).
 
 **editor/** (dev builds only, at `/editor`; `main.tsx` loads it lazily behind `import.meta.env.DEV`, so it is never in a production bundle; #209)
+
 - `ShipEditor.tsx`: the ship map editor (#211, #212), laid out like a game engine's scene editor (desktop only, owner 2026-10-24): a menu bar (File, Edit, View, a Keys popover, the save state), a left column of `Hierarchy` over `Inspector` with a draggable split, the scene with its own toolbar (camera and fog menu, Show menu of layers and overlays, zoom, the checks badge popover) and a status bar (what's under the pointer), and the palette docked on the right as the Assets panel. The ship comes from `ship-map.json` through the game's own placement and Pixi renderer, nothing fogged, whole or as seen from one room at fog depth 1 or 2, with drag to pan and whole-number zoom (an editor-only exception to the room view's rules). Select (Tab cycles what's stacked), move, delete, duplicate, frame, owning room, door target, place from the palette, move a whole room on the plan (#213), F frames the selection, undo and redo, save, and live checks whose problems take you to where they are. English only; the i18n scanner skips this folder.
 - `Hierarchy.tsx`: rooms, then their tiles by layer, with search and per-room and per-layer eye toggles (`hideKey`); off-plan rooms greyed at the bottom. `Inspector.tsx`: the selected tile and room, with their edits. `EditorMenus.tsx`: thin wrappers over Base UI Menu and Popover. `Splitter.tsx`: the resize handles, with sizes remembered in localStorage (`useStoredSize`).
 - `checks.ts` (pure): every check on the map, as `problems` for the editor: overlaps, misaligned doors, gaps (`checkShip`, also `npm run ship-check`), doors with no room, no floor or no way back, equipment with no tile, and wall ends stopping just short of another room's (`wallEnds`, drawing the ship from every room); `KNOWN_MISALIGNED` and `KNOWN_WALL_ENDS` are what tests pin as left on purpose. `checks.worker.ts` runs it off the main thread; `Checks.tsx` is the panel and `useChecks`.
@@ -97,14 +98,14 @@ All under `web/src/`. UI rules are in `web/CLAUDE.md`.
 - `hitMask.ts`: per-frame alpha masks for hit-testing.
 - `shipLayout.ts`: fetches the layout JSON and maps atlas sheets to image URLs.
 
-**scene/**
+## scene/
 
 - `Minimap.tsx` (not rendered now) and `plan.ts` (its pure helpers).
 - `StatusBadges.tsx`: status icons over a character's head.
 - `ActionBar.tsx`: the draining bar over a busy character's head (CSS animation, server times shifted by the view message's `now`).
 - `useSpeechBubbles.ts`: chat messages as speech bubbles.
 
-**art/**
+## art/
 
 - `assets.ts`: maps characters, room types, and item types to files in `Mush/`.
 - `keyedSprite.ts`: `useKeyedSprite`, transparent sprite backgrounds at load.
