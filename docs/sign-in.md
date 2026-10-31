@@ -50,4 +50,13 @@ Secrets: `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `DISCORD_CLIENT_ID`, `DISCO
 - Each seat token remembers the session (its hash) it was handed to. Ending a session (logout, or another account signing in on the device; the same account signing in again keeps its games) revokes that session's tokens on the account's newest ship and closes their sockets (4001). The account stays aboard: signing in again, on any device, resumes the ship (the Matchmaker's `resume`). Logging out in game (the settings dialog's Account tab, #321) goes back to the main menu. A dead seat on an older ship keeps its token, which only shows the graveyard view (owner, 2026-10-30: acceptable).
 - The daily cron sweeps open rows older than 10 minutes and closes those whose ship doesn't have the account aboard (`server/src/shipSweep.ts`).
 
-Not built yet: rate limits on the auth routes (Public beta readiness); a ban revoking a seat (#76, with inactivity, #145).
+## Rate limits (#305)
+
+`handleAuth` checks two Workers rate-limiting bindings (`ratelimits` in `server/wrangler.jsonc`, one pair per environment) before a route runs:
+
+- `AUTH_LIMIT`, 60 requests a minute, on every `/auth/*` and `/api/*` route except `/auth/logout` (logging out must always work) and `/auth/<provider>/callback` (it only follows a limited start, and a forged one fails on the state cookie before any D1 or provider request). A request with a valid session is counted per account (one D1 session read), so players sharing an address don't use up each other's limit; any other request is counted per address (`CF-Connecting-IP`).
+- `SIGNUP_LIMIT`, 3 a minute per address, on `/api/signup` (new accounts).
+
+Over the limit, a page navigation (`/auth/<provider>/start`, `/auth/dev`) redirects to `/?auth=rate_limited`, which the lobby shows as a translated message, since a bare 429 would show the browser's own error page. The `/api/*` routes answer 429 with `reason: "rate_limited"` and `Retry-After: 60`. A 429 from `/api/me` keeps the client's last known account state, shows the message, and asks again after `Retry-After`. A failing binding lets the request through. The binding's period is only 10 or 60 seconds, so there is no per-day cap on new accounts yet (#322). On a dev or test server (`DEV_SERVER` or `ALLOW_CHEATS`) requests are spread over 10 keys in turn, making the limits 10 times larger for everyone there; staging is unscaled.
+
+Not built yet: a ban revoking a seat (#76, with inactivity, #145).

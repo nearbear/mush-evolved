@@ -570,3 +570,82 @@ describe("ending a session revokes its seats (#285)", () => {
   });
 });
 
+describe("rate limits (#305)", () => {
+  /** A rate-limiting binding that lets `allowed` calls through, then refuses. */
+  const binding = (allowed: number) => {
+    const keys: string[] = [];
+    return { keys, limit: vi.fn(async ({ key }: { key: string }) => (keys.push(key), { success: keys.length <= allowed })) };
+  };
+  const ip = { "CF-Connecting-IP": "203.0.113.7" };
+
+  it("sends an OAuth route back to the sign-in screen with a message, before touching the provider or D1", async () => {
+    const browser = new Browser({ ...ENV, AUTH_LIMIT: binding(0) } as unknown as Env);
+    const response = await browser.request("/auth/google/start", { headers: ip });
+    expect(response.headers.get("Location")).toBe("/?auth=rate_limited");
+    expect(response.headers.get("Set-Cookie")).toBeNull();
+    expect(fetcher).not.toHaveBeenCalled();
+  });
+
+  it("answers an API route 429 with a reason and Retry-After", async () => {
+    const browser = new Browser({ ...ENV, AUTH_LIMIT: binding(0) } as unknown as Env);
+    const response = await browser.request("/api/me", { headers: ip });
+    expect(response.status).toBe(429);
+    expect(response.headers.get("Retry-After")).toBe("60");
+    expect(await response.json()).toMatchObject({ reason: "rate_limited" });
+  });
+
+  it("keys by client IP, and counts only sign-ups against the new-account limit", async () => {
+    const auth = binding(100);
+    const signups = binding(0);
+    const browser = new Browser({ ...ENV, AUTH_LIMIT: auth, SIGNUP_LIMIT: signups } as unknown as Env);
+    expect((await browser.request("/api/me", { headers: ip })).status).toBe(200);
+    expect(auth.keys).toEqual(["ip:203.0.113.7"]);
+    expect(signups.limit).not.toHaveBeenCalled();
+    await browser.request("/api/signup", { method: "POST", headers: ip });
+    expect(signups.keys).toEqual(["ip:203.0.113.7"]);
+  });
+
+  it("keys a signed-in request by its account, and a stale session cookie by IP", async () => {
+    const auth = binding(1000);
+    const browser = new Browser({ ...ENV, AUTH_LIMIT: auth } as unknown as Env);
+    const accountId = await browser.signUp("google", "g-1", "Chun");
+    auth.keys.length = 0;
+    await browser.request("/api/me", { headers: ip });
+    await browser.request("/auth/google/start?link=1", { headers: ip });
+    expect(auth.keys).toEqual([`account:${accountId}`, `account:${accountId}`]);
+
+    now += SESSION_MS + DAY; // the session has expired, but the browser still sends its cookie
+    auth.keys.length = 0;
+    await browser.request("/api/me", { headers: ip });
+    expect(auth.keys).toEqual(["ip:203.0.113.7"]);
+  });
+
+  it("never limits logout or the OAuth callback", async () => {
+    const auth = binding(0);
+    const browser = new Browser({ ...ENV, AUTH_LIMIT: auth } as unknown as Env);
+    expect((await browser.request("/auth/logout", { method: "POST", headers: ip })).status).toBe(200);
+    const callback = await browser.request("/auth/google/callback?code=c&state=s", { headers: ip });
+    expect(callback.headers.get("Location")).toBe("/?auth=failed");
+    expect(auth.limit).not.toHaveBeenCalled();
+  });
+
+  it("refuses a sign-up over the new-account limit", async () => {
+    const browser = new Browser({ ...ENV, SIGNUP_LIMIT: binding(0) } as unknown as Env);
+    const response = await browser.request("/api/signup", { method: "POST", headers: ip });
+    expect(response.status).toBe(429);
+    expect(await response.json()).toEqual({ ok: false, error: "rate_limited", reason: "rate_limited" });
+  });
+
+  it("spreads a dev server's clients over several keys, so its limit is larger", async () => {
+    const auth = binding(100);
+    const browser = new Browser({ ...ENV, DEV_SERVER: "true", AUTH_LIMIT: auth } as unknown as Env);
+    for (let i = 0; i < 3; i++) await browser.request("/api/me", { headers: ip });
+    expect(new Set(auth.keys).size).toBe(3);
+  });
+
+  it("lets requests through when the binding fails", async () => {
+    const broken = { limit: async () => Promise.reject(new Error("down")) };
+    const browser = new Browser({ ...ENV, AUTH_LIMIT: broken } as unknown as Env);
+    expect((await browser.request("/api/me")).status).toBe(200);
+  });
+});

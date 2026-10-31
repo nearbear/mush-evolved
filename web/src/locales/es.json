@@ -1577,6 +1577,7 @@
   },
   "account": {
     "errors": {
+      "rate_limited": "Demasiadas solicitudes. Espera un minuto e inténtalo de nuevo.",
       "name_empty": "Escribe un nombre.",
       "name_too_long": "Los nombres tienen un máximo de {{max}} caracteres.",
       "name_rejected": "Ese nombre no está permitido. Elige otro.",
@@ -1588,6 +1589,7 @@
       "network": "No se pudo contactar con el servidor. Inténtalo de nuevo."
     },
     "outcome": {
+      "rate_limited": "Demasiados intentos de inicio de sesión. Espera un minuto e inténtalo de nuevo.",
       "denied": "Se canceló el inicio de sesión.",
       "failed": "No se pudo iniciar sesión. Inténtalo de nuevo.",
       "identity_taken": "Esa cuenta ya está vinculada a otro jugador.",

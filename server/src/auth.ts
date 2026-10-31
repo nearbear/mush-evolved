@@ -25,6 +25,7 @@ import {
 } from "@mush2/shared";
 import { type AccountStore, nameKey, RENAME_INTERVAL_MS, sha256Hex } from "./accountStore.ts";
 import { authorizeUrl, fetchProfile, oauthCredentials, randomToken, usesPkce } from "./oauth.ts";
+import { allowAuthRequest } from "./rateLimit.ts";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 /** Sessions last 30 days, renewed while in use. */
@@ -121,6 +122,17 @@ function redirect(location: string, cookies: string[] = []): Response {
   return new Response(null, { status: 302, headers });
 }
 
+/**
+ * Over the limit (#305). A page navigation (OAuth start, dev sign-in) goes back to the sign-in screen with a
+ * message, since a bare 429 would show the browser's own error page; the JSON routes answer 429.
+ */
+function rateLimited(path: string): Response {
+  if (path.startsWith("/auth/")) return redirect(outcome("rate_limited"));
+  const response = json({ ok: false, error: "rate_limited", reason: "rate_limited" }, 429);
+  response.headers.set("Retry-After", "60");
+  return response;
+}
+
 const outcome = (result: AuthOutcome) => `/?auth=${result}`;
 
 /**
@@ -168,6 +180,20 @@ export async function currentSession(request: Request, env: Env, store: AccountS
     renewedCookie = setCookie("session", sessionId, SESSION_MS, env, url);
   }
   return { accountId: session.accountId, sessionId, renewedCookie };
+}
+
+/**
+ * The signed-in account, for the rate limit's key (#305): one D1 read, and only when there is a session cookie. Unlike
+ * `currentSession` it never renews. A failed read counts the request by address instead.
+ */
+async function sessionAccount(request: Request, env: Env, deps: AuthDeps): Promise<string | null> {
+  const sessionId = sessionCookie(request, env);
+  if (!sessionId) return null;
+  try {
+    return (await deps.store.getSession(sessionId, deps.now))?.accountId ?? null;
+  } catch {
+    return null;
+  }
 }
 
 /** Deletes a session after revoking its seat tokens. A failed revoke doesn't keep anyone signed in. */
@@ -222,6 +248,13 @@ export async function handleAuth(request: Request, env: Env, deps: AuthDeps): Pr
   const url = new URL(request.url);
   const path = url.pathname;
   if (!path.startsWith("/auth/") && !path.startsWith("/api/")) return null;
+
+  // Counted before the route runs (#305). Not limited: logout, which must always work, and the OAuth callback, which
+  // only follows a limited start (a forged one fails on the state cookie before any D1 or provider request).
+  if (path !== "/auth/logout" && !/^\/auth\/[a-z]+\/callback$/.test(path)) {
+    const accountId = await sessionAccount(request, env, deps);
+    if (!(await allowAuthRequest(env, request, { accountId, signup: path === "/api/signup" }))) return rateLimited(path);
+  }
 
   const oauth = /^\/auth\/([a-z]+)\/(start|callback)$/.exec(path);
   if (oauth) {

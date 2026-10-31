@@ -50,17 +50,18 @@ export type MeResponse =
     };
 
 /** `POST /api/signup` with `{ name }`. */
-export type SignupResponse = { ok: true } | { ok: false; reason: DisplayNameError | "name_taken" | "no_signup" };
+export type SignupResponse = { ok: true } | { ok: false; reason: DisplayNameError | "name_taken" | "no_signup" | "rate_limited" };
 
 /** `POST /api/rename` with `{ name }`. `too_soon`: within a day of the last rename. */
 export type RenameResponse =
   | { ok: true }
-  | { ok: false; reason: DisplayNameError | "name_taken" | "name_unchanged" | "too_soon" | "signed_out" };
+  | { ok: false; reason: DisplayNameError | "name_taken" | "name_unchanged" | "too_soon" | "signed_out" | "rate_limited" };
 
 /**
  * Where an OAuth callback sends the browser back: `/` on a sign-in, otherwise
  * `/?auth=<outcome>`. `signup`: confirm the name (see MeResponse).
  * `identity_taken`: that provider account belongs to another player.
  * `provider_linked`: this account already has a sign-in from that provider.
+ * `rate_limited`: too many sign-in requests from this address (#305).
  */
-export type AuthOutcome = "signup" | "linked" | "identity_taken" | "provider_linked" | "denied" | "failed";
+export type AuthOutcome = "signup" | "linked" | "identity_taken" | "provider_linked" | "denied" | "failed" | "rate_limited";

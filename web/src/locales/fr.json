@@ -1577,6 +1577,7 @@
   },
   "account": {
     "errors": {
+      "rate_limited": "Trop de requêtes. Attendez une minute et réessayez.",
       "name_empty": "Saisissez un nom.",
       "name_too_long": "Les noms sont limités à {{max}} caractères.",
       "name_rejected": "Ce nom n'est pas autorisé. Choisissez-en un autre.",
@@ -1588,6 +1589,7 @@
       "network": "Impossible de joindre le serveur. Réessayez."
     },
     "outcome": {
+      "rate_limited": "Trop de tentatives de connexion. Attendez une minute et réessayez.",
       "denied": "La connexion a été annulée.",
       "failed": "La connexion a échoué. Réessayez.",
       "identity_taken": "Ce compte est déjà lié à un autre joueur.",

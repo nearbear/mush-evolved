@@ -1558,6 +1558,7 @@
   },
   "account": {
     "errors": {
+      "rate_limited": "Too many requests. Wait a minute and try again.",
       "name_empty": "Enter a name.",
       "name_too_long": "Names are limited to {{max}} characters.",
       "name_rejected": "That name isn't allowed. Choose another.",
@@ -1569,6 +1570,7 @@
       "network": "Couldn't reach the server. Try again."
     },
     "outcome": {
+      "rate_limited": "Too many sign-in attempts. Wait a minute and try again.",
       "denied": "Sign-in was cancelled.",
       "failed": "Sign-in didn't work. Try again.",
       "identity_taken": "That account is already linked to another player.",

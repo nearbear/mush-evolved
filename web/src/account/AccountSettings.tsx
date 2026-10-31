@@ -10,9 +10,9 @@ import "./account.css";
  */
 export function AccountSettings({ onLeave }: { onLeave: () => void }) {
   const { t } = useTranslation();
-  const { me, refresh } = useMe();
+  const { me, rateLimited, refresh } = useMe();
 
-  if (me === null) return <p className="account-note">{t("account.loading")}</p>;
+  if (me === null) return <p className="account-note">{t(rateLimited ? "account.errors.rate_limited" : "account.loading")}</p>;
   if (me.status !== "signed_in") return <p className="account-note">{t("account.signedOutInGame")}</p>;
   // Leaves even if the server couldn't revoke the seat (a failed revoke still signs out).
   return <AccountDetails account={me.account} onChange={refresh} inGame onLoggedOut={onLeave} />;

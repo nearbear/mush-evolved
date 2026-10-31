@@ -97,7 +97,7 @@ export function Lobby({ onMatched }: { onMatched: (ticket: SeatTicket) => void }
   // Without WebGL2 the game can't be drawn, so there is nothing to join.
   const [webgl] = useState(hasWebGL2);
   const roster = useRef<HTMLDivElement>(null);
-  const { me, refresh } = useMe();
+  const { me, rateLimited, refresh } = useMe();
   const account = me?.status === "signed_in" ? me.account : null;
   // A message about signing in, kept as a key so it follows the language: back from a provider, or refused boarding.
   const [notice, setNotice] = useState<string | null>(() => {
@@ -256,9 +256,9 @@ export function Lobby({ onMatched }: { onMatched: (ticket: SeatTicket) => void }
           </div>
           <div className="pod-state" inert={step !== "ship"}>
             <p className="pod-subtitle">{t("lobby.tagline")}</p>
-            {notice && (
+            {(notice || rateLimited) && (
               <p className="pod-status pod-notice" role="status">
-                {t(notice as never)}
+                {t((notice ?? "account.errors.rate_limited") as never)}
               </p>
             )}
             <ul className="pod-ships">
