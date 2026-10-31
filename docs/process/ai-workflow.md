@@ -1791,3 +1791,8 @@ Moved the flat `docs/` into `rules/`, `plans/` (dropping the `-plan` suffix), `c
 - **Decision (owner):** eMush's thresholds (inactive after 8 cycles without connecting with a full AP gauge, super inactive 8 cycles later); connecting is activity; public to everyone, over the head; not announced. Only effects on built features are in scope (titles, Outcast, punch at 90%, Logistics); expel, Politician, critical items, the Cryo Module list and merchant trading are noted for later. Super inactive reuses `sleepy.png` hue-rotated to red instead of a new image.
 - **What worked:** comparing the Motion Twin archive data (one `SLEEPY` status, 24h) with eMushpedia (two levels and the cross-feature effects) gave the owner a concrete table to choose from.
 - **Needed correction:** Claude first suggested the `sleeping_beauty` icons from a filename search; the owner pointed to `sleepy.png` (the yellow triple Z). Claude also wrote the expel cost backwards in the first issue edit and fixed it.
+
+## 2026-10-31: On-call plans feasibility check
+
+- Asked how feasible starting the on-call plans was. Claude checked the doc against the code: nearly all the building blocks exist. Two real gaps (`clearQueue` doesn't write `actionDropped` lines; how to close planning once the author leaves) became decisions: a notify option on `clearQueue`, and a `planningClosed` flag.
+- Needed correction: Claude also flagged catalogs (research, projects, item types) as a gap without checking. They are static in `shared` and already used by `web`, and completion is already in the view. Check the code before listing something as a gap.
