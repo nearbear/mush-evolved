@@ -1754,3 +1754,10 @@ The owner confirmed Claude's five research-sabotage proposals in one question (v
 
 Claude flagged that Contaminate in the action history lets Interrogate and Chitchat reveal a Saboteur. The owner answered that these two are meant to reveal hidden information (Interrogate costs the target HP and is public; Chitchat needs consent), so it isn't a leak; recorded in `rules-design.md`. Lesson: the leak-check treats every hidden-info reveal as suspect, so intended reveal channels need to be written down, or they get re-flagged.
 Follow-up: the owner then had own spoil recorded under its own name too (it had been recorded as research to hide it), so `Action.recordedAs` was removed again.
+
+## 2026-10-31: Account section in the in-game settings (#321)
+
+- The lobby's account dialog body became `AccountDetails`, shared by the lobby button and a new Account tab in the settings dialog (`AccountSettings`, which loads `/api/me` when the tab opens). In game it adds that a rename applies from the next ship, and that logging out keeps this tab playing.
+- Logout no longer revokes seats on the server (owner's decision replacing the #285 rule); the client clears its stored seat ticket instead. A first pass made the shared `signOut` helper skip the revoke, which would also have stopped revoking when a *new* account signs up on a signed-in device; caught on re-reading its callers, so only the logout route passes `keepSeats`.
+- Known gap, flagged to the owner: after a logout the session row is gone, so another account signing in on the device later can't revoke the still-open tab's seat token.
+- Correction (same day): the owner had misspoken in the issue. Logging out must stop play at once, but not take the account off the ship. So logout revokes the device's seat tokens again (#285 as built) and the Account tab returns to the main menu; signing in again resumes the ship. This also removed the shared-browser gap flagged above. Asking "why not just close the tab?" surfaced the mismatch before anything was committed.

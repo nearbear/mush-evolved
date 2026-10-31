@@ -64,6 +64,7 @@
     "close": "Fermer",
     "tabs": {
       "general": "Général",
+      "account": "Compte",
       "cheats": "Triche"
     },
     "cheats": {
@@ -1606,6 +1607,11 @@
     "linked": "{{provider}} : lié",
     "addMethod": "Ajouter la connexion {{provider}}",
     "logout": "Se déconnecter",
-    "cancel": "Annuler"
+    "cancel": "Annuler",
+    "renamedInGame": "Nom changé. Ce vaisseau garde votre ancien nom ; le nouveau s'appliquera à partir de votre prochain vaisseau.",
+    "renameNextShip": "Ce vaisseau garde le nom sous lequel vous avez embarqué. Le nouveau nom s'appliquera à partir de votre prochain vaisseau.",
+    "logoutInGame": "Vous déconnecter vous ramène au menu principal. Votre personnage reste à bord : reconnectez-vous, sur cet appareil ou un autre, pour reprendre votre vaisseau.",
+    "signedOutInGame": "Vous n'êtes pas connecté.",
+    "loading": "Chargement…"
   }
 }

@@ -43,7 +43,7 @@ export interface AuthDeps {
   now: number;
   /** For the provider requests; tests replace it. */
   fetcher?: typeof fetch;
-  /** Revokes the seat tokens handed to a session (its hash) when it ends, so a signed-out device leaves its game (#285). */
+  /** Revokes the seat tokens handed to a session (its hash) when it ends (#285): logout, or another account signing in on the device. The account stays aboard. */
   revokeSeats?: (accountId: string, sessionKey: string) => Promise<void>;
 }
 
@@ -207,7 +207,7 @@ async function endSignup(request: Request, env: Env, deps: AuthDeps): Promise<st
   return clearCookie("signup", env, url);
 }
 
-/** Ends this device's session, if any (row and cookie). Returns the cookie to set. */
+/** Ends this device's session, if any (row and cookie), revoking its seats. Returns the cookie to set. */
 async function signOut(request: Request, env: Env, deps: AuthDeps): Promise<string> {
   const url = new URL(request.url);
   const sessionId = readCookie(request, "session", env, url);
@@ -344,6 +344,7 @@ async function devSignIn(request: Request, env: Env, deps: AuthDeps): Promise<Re
 
 /** Ends this device's session, and a pending sign-up too: the next person on this browser must not finish it. */
 async function logout(request: Request, env: Env, deps: AuthDeps): Promise<Response> {
+  // The device's seat tokens are revoked, but the account stays aboard: signing in again resumes the ship (#321).
   return json({ ok: true }, 200, [await signOut(request, env, deps), await endSignup(request, env, deps)]);
 }
 

@@ -64,6 +64,7 @@
     "close": "Cerrar",
     "tabs": {
       "general": "General",
+      "account": "Cuenta",
       "cheats": "Trampas"
     },
     "cheats": {
@@ -1606,6 +1607,11 @@
     "linked": "{{provider}}: vinculado",
     "addMethod": "Añadir inicio de sesión con {{provider}}",
     "logout": "Cerrar sesión",
-    "cancel": "Cancelar"
+    "cancel": "Cancelar",
+    "renamedInGame": "Nombre cambiado. Esta nave conserva tu nombre anterior; el nuevo se aplicará a partir de tu próxima nave.",
+    "renameNextShip": "Esta nave conserva el nombre con el que embarcaste. El nuevo nombre se aplicará a partir de tu próxima nave.",
+    "logoutInGame": "Cerrar sesión te devuelve al menú principal. Tu personaje se queda a bordo: vuelve a iniciar sesión, en este dispositivo o en otro, para retomar tu nave.",
+    "signedOutInGame": "No has iniciado sesión.",
+    "loading": "Cargando…"
   }
 }

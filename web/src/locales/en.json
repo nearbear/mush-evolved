@@ -64,6 +64,7 @@
     "close": "Close",
     "tabs": {
       "general": "General",
+      "account": "Account",
       "cheats": "Cheats"
     },
     "cheats": {
@@ -1587,6 +1588,11 @@
     "linked": "{{provider}}: linked",
     "addMethod": "Add {{provider}} sign-in",
     "logout": "Log out",
-    "cancel": "Cancel"
+    "cancel": "Cancel",
+    "renamedInGame": "Name changed. This ship keeps your old name; the new one applies from your next ship.",
+    "renameNextShip": "This ship keeps the name you boarded with. The new name applies from your next ship.",
+    "logoutInGame": "Logging out takes you back to the main menu. Your character stays aboard: sign in again, on this device or another, to resume your ship.",
+    "signedOutInGame": "You're not signed in.",
+    "loading": "Loading…"
   }
 }

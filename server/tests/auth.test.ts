@@ -22,6 +22,8 @@ let profiles: Record<string, Record<string, unknown>>;
 let fetcher: ReturnType<typeof vi.fn<typeof fetch>>;
 /** Sessions whose seats were revoked: [account ID, session key]. */
 let revoked: [string, string][];
+/** What the auth routes call to revoke a session's seats; records into `revoked` unless a test swaps it. */
+let revokeSeats: (accountId: string, sessionKey: string) => Promise<void>;
 
 /** One browser: keeps cookies across requests, as a browser on one origin would. */
 class Browser {
@@ -35,7 +37,7 @@ class Browser {
   async request(path: string, init: RequestInit = {}): Promise<Response> {
     const headers = new Headers(init.headers);
     if (this.cookies.size) headers.set("Cookie", [...this.cookies].map(([k, v]) => `${k}=${v}`).join("; "));
-    const response = await handleAuth(new Request(`${this.origin}${path}`, { ...init, headers }), this.env, { store, now, fetcher, revokeSeats: async (a, k) => void revoked.push([a, k]) });
+    const response = await handleAuth(new Request(`${this.origin}${path}`, { ...init, headers }), this.env, { store, now, fetcher, revokeSeats });
     if (!response) throw new Error(`not an auth route: ${path}`);
     for (const cookie of response.headers.getSetCookie()) {
       const [pair = ""] = cookie.split(";");
@@ -83,6 +85,7 @@ beforeEach(() => {
   now = T0;
   profiles = {};
   revoked = [];
+  revokeSeats = async (a, k) => void revoked.push([a, k]);
   fetcher = vi.fn<typeof fetch>(async (input) => {
     const url = String(input);
     if (url.endsWith("/token")) return Response.json({ access_token: "tok", token_type: "Bearer" });
@@ -513,7 +516,19 @@ describe("ending a session revokes its seats (#285)", () => {
     expect((await phone.me()).status).toBe("signed_in");
   });
 
-  it("when another account signs in on the same device", async () => {
+  it("when another existing account signs in on the same device", async () => {
+    const desk = new Browser();
+    const alice = await desk.signUp("google", "g-1", "Alice");
+    const phone = new Browser();
+    await phone.signInWith("google", "g-1", null);
+    await phone.signUp("discord", "d-9", "Carol");
+    revoked = [];
+    const deskSession = desk.cookies.get("__Host-mush2_session")!;
+    await desk.signInWith("discord", "d-9", null);
+    expect(revoked).toEqual([[alice, await sha256Hex(deskSession)]]);
+  });
+
+  it("when a new account signs up on a signed-in device", async () => {
     const browser = new Browser();
     const alice = await browser.signUp("google", "g-1", "Alice");
     const old = browser.cookies.get("__Host-mush2_session")!;
@@ -534,16 +549,24 @@ describe("ending a session revokes its seats (#285)", () => {
   it("still signs out when revoking fails", async () => {
     const browser = new Browser();
     await browser.signUp("google", "g-1", "Alice");
-    const failing = async () => {
+    const session = browser.cookies.get("__Host-mush2_session")!;
+    revokeSeats = async () => {
       throw new Error("room down");
     };
-    const sessionId = browser.cookies.get("__Host-mush2_session")!;
-    const response = await handleAuth(
-      new Request(`${ORIGIN}/auth/logout`, { method: "POST", headers: { Cookie: `__Host-mush2_session=${sessionId}` } }),
-      ENV,
-      { store, now, fetcher, revokeSeats: failing },
-    );
-    expect(response?.status).toBe(200);
-    expect(await store.getSession(sessionId, now)).toBeNull();
+    expect((await browser.post("/auth/logout")).status).toBe(200);
+    expect(await store.getSession(session, now)).toBeNull();
+  });
+
+  it("still signs in when revoking fails", async () => {
+    const browser = new Browser();
+    await browser.signUp("google", "g-1", "Alice");
+    const old = browser.cookies.get("__Host-mush2_session")!;
+    revokeSeats = async () => {
+      throw new Error("room down");
+    };
+    await browser.signUp("discord", "d-2", "Bob");
+    expect(await store.getSession(old, now)).toBeNull();
+    expect((await browser.me()).status).toBe("signed_in");
   });
 });
+

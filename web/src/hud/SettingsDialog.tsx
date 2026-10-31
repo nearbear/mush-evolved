@@ -2,6 +2,7 @@
 // Uses the global Mush `button` style and the terminal frame (terminal.css): a kit-panel around a light cut card.
 
 import { CHEATS, type Cheat, type RoleCheat } from "@mush2/shared";
+import { AccountSettings } from "../account/AccountSettings.tsx";
 import { Credits } from "./Credits.tsx";
 import { DialogHeader } from "./DialogHeader.tsx";
 import { Hint } from "./IconButton.tsx";
@@ -68,6 +69,7 @@ export function SettingsDialog({
           <Tabs.Root className="settings-tabs" defaultValue={cheatsAllowed ? "cheats" : "general"}>
             <Tabs.List className="settings-tab-list">
               <Tabs.Tab className="settings-tab" value="general">{t("settings.tabs.general")}</Tabs.Tab>
+              <Tabs.Tab className="settings-tab" value="account">{t("settings.tabs.account")}</Tabs.Tab>
               {cheatsAllowed && <Tabs.Tab className="settings-tab" value="cheats">{t("settings.tabs.cheats")}</Tabs.Tab>}
             </Tabs.List>
             <Tabs.Panel className="settings-panel" value="general">
@@ -93,6 +95,9 @@ export function SettingsDialog({
           </label>
               <button type="button" onClick={onLeave}>{t("topBar.mainMenu")}</button>
               <Credits as="p" className="settings-credits" />
+            </Tabs.Panel>
+            <Tabs.Panel className="settings-panel" value="account">
+              <AccountSettings onLeave={onLeave} />
             </Tabs.Panel>
             {cheatsAllowed && (
               <Tabs.Panel className="settings-panel" value="cheats">

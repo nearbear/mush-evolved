@@ -112,7 +112,7 @@ interface Stored {
   accounts: Record<PlayerId, string>;
   /** The seats in `accounts` whose `account_ships` row is still open; freed when the body dies or the game ends. */
   aboard: Record<PlayerId, string>;
-  /** Seat token -> the hash of the session it was handed to, so logging out revokes that device's tokens. */
+  /** Seat token -> the hash of the session it was handed to, so ending that session (logout, or another account signing in) revokes them. */
   tokenSessions: Record<string, string>;
 }
 
@@ -353,7 +353,7 @@ export class GameRoom extends Server<Env> {
     }
   }
 
-  /** Logging out (or signing in as someone else) on a device: its seat tokens stop working and its sockets close. */
+  /** Logging out (or signing in as someone else) on a device: its seat tokens stop working and its sockets close. The account stays aboard. */
   async revokeSession(sessionKey: string): Promise<void> {
     const revoked = new Set(Object.keys(this.tokenSessions).filter((t) => this.tokenSessions[t] === sessionKey));
     if (revoked.size === 0) return;
