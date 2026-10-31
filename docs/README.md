@@ -1,6 +1,6 @@
 # Docs
 
-One line per document. Paths in docs and code are written from the repo root (`docs/...`).
+One line per document. Paths in docs and code are written from the repo root (`docs/...`); a test (`tools/tests/docs/docPaths.test.ts`) fails if one points at a missing file. Run `npm run lint:md` to lint the Markdown.
 
 ## Rules
 

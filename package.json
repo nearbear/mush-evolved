@@ -17,6 +17,7 @@
     "test": "npm run test -w shared -w tools -w web -w server",
     "typecheck": "npm run typecheck --workspaces --if-present",
     "lint": "biome lint .",
+    "lint:md": "markdownlint-cli2",
     "build": "npm run build -w web",
     "deploy": "echo 'Pick a target: npm run deploy:production, deploy:staging or deploy:test' >&2 && exit 1",
     "deploy:production": "npm run build && npm run deploy:production -w server",
@@ -39,6 +40,7 @@
   "devDependencies": {
     "@biomejs/biome": "2.5.15",
     "concurrently": "^10.0.5",
+    "markdownlint-cli2": "^0.24.0",
     "typescript": "^7.0.2",
     "vitest": "^5.0.3"
   },

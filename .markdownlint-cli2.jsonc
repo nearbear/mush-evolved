@@ -1,0 +1,26 @@
+// markdownlint (npm run lint:md). Rules that fight the project's style are off; see docs/README.md.
+{
+  "config": {
+    "default": true,
+    // One line per paragraph: lines are as long as the paragraph.
+    "MD013": false,
+    // Repeated headings are fine in different sections (dates in logs, "Decisions" in each plan part).
+    "MD024": { "siblings_only": true },
+    // Compact tables (|---|) are the house style; aligning pipes is churn on every edit.
+    "MD060": false
+  },
+  "globs": ["**/*.md"],
+  "ignores": [
+    "**/node_modules/**",
+    ".claude/worktrees/**",
+    ".screenshots/**",
+    "Mush/**",
+    // Notes and drafts, not maintained.
+    "docs/scratchpad/**",
+    // Append-only log: old entries are never rewritten.
+    "docs/process/ai-workflow.md",
+    // Third-party skills, vendored as published.
+    ".claude/skills/pixijs*/**",
+    ".claude/skills/durable-objects/**"
+  ]
+}
