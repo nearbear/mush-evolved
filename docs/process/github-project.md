@@ -6,7 +6,7 @@ A guide to how the mush2 GitHub Project is organized. Counts are as of 2026-10-2
 
 The mush2 project is a single GitHub Project ("mush2", project 1) that tracks every open piece of work as an issue. Issues come in two levels: **epics** group a topic, and **stories** (sub-issues) are the work inside it.
 
-- **Epics** carry the `epic` label and are named "Epic: ..." (29 open, such as Rules, UI, Rendering, Bots, Testing). Each epic's sub-issues are its stories.
+- **Epics** carry the `epic` label and are named "Epic: ..." (29 open, such as Rules, UI, Rendering, Bots, Testing). Each epic's sub-issues are its stories. Each epic's body also keeps a `## Stories` checklist, one `- [ ] #<n> <short title>` line per sub-issue, ticked when the story is done, with a note on what's next or blocked. It is kept current by the `wrap-up` and `issue-triage` skills, so one `gh issue view <epic>` says where the epic stands.
 - **Stories** are written as "As a ..., I want ..., so that ...", followed by what the original Mush did (reference only), acceptance criteria, and open decisions.
 - **Milestones** say when a story is due: Private beta, Public beta readiness, Public beta, Release. Stories without one carry `needs-staging`.
 - **Rule decisions** are stories that cannot be built until the owner answers questions about the game rules. They carry `rule-decision`. Answers are recorded in `docs/rules/rules-design.md` and `docs/plans/action-plans.md`; nothing in an issue counts as decided until it is written there.

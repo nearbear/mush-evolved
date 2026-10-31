@@ -1,0 +1,24 @@
+# Commands
+
+Every npm script and dev command, with details. `CLAUDE.md` keeps a short list of the everyday ones and points here.
+
+Node is installed via nvm and is already on `PATH` in Claude Code shells (the user settings `env` pins `~/.nvm/versions/node/v24.21.0/bin`), so don't source nvm first. If `node` isn't found (for example after a Node upgrade), run `source ~/.nvm/nvm.sh` and tell the user the pinned path is stale.
+
+- `npm install`: install all workspaces (npm workspaces: `shared`, `server`, `web`, `tools`, plus `Mush` as `@mush2/assets`).
+- `npm run dev`: wrangler on :8787 plus Vite on :5173, via concurrently. Vite proxies `/parties`, `/auth` and `/api` to wrangler, so the client uses one origin as in production (sign-in setup: `docs/ops/sign-in.md`). It applies D1 migrations to the local database first. In a git worktree the ports are offset per worktree (`npm run ports` prints them) so it can run beside the main checkout's servers.
+- `npm test`: Vitest in `shared`, `tools`, `web`, and `server`. Single file or test: `npm test -w shared -- rules.test.ts -t "advances the cycle"`.
+- `npm run typecheck`: `tsc --noEmit` in every package (TypeScript 7). `web`'s first emits the server's API type (`npm run api-types -w server`, #324) for its typed client.
+- `npm run build`: production build of `web`.
+- `npm run preview`: build `web` for production, then serve it with `vite preview` beside wrangler (same ports as `npm run dev`, so stop that first).
+- `npm run ship-layout`: regenerate `Mush/derived/ship-art.json` and `ship-rooms.json` from `ship-map.json` (see `web/src/iso/CLAUDE.md`, "The ship map"). A test fails if either is stale.
+- `npm run ship-check`: report-only checks on `ship-map.json` (overlaps, misaligned doors, gaps).
+- `npm run layout-query -- <regex>`: search `ship-art.json` and `ship-map.json` (reading them directly is denied), capped at 60 lines.
+- `npm run screenshot`: headless Chromium screenshots as a desktop and a 360px phone player, to `.screenshots/` (gitignored). Needs `npm run dev`. The other tooling commands are in the `play` and `asset` skills.
+- `npm run a11y`: headless accessibility check (`tools/src/a11y/a11y.ts`). Needs `npm run dev`. Joins a match and asserts no raw i18n keys, a "Room" region listing the room's people, equipment, items and exits, the room log as a `role="log"` with the announcer's polite and assertive live regions, no Tab stops in the license footer, and every visible control a Tab stop. Exits non-zero on failure. axe-core is not added (it needs a dependency; ask first).
+- `npm run deploy:production`: build `web`, then `wrangler deploy` the server with the client as static assets (one Worker, one origin; `/parties/*` goes to the Worker). Live at <https://mush2-server.nearbearnearbear.workers.dev> since 2026-10-24 (manual deploys; auto-deploy is #121). A bare `npm run deploy` only prints the targets and fails, so every deploy names its target. Each deploy applies that environment's D1 migrations (`server/migrations/`, append-only) before `wrangler deploy`; see `docs/ops/d1-runbook.md`. `npm run deploy:staging` and `npm run deploy:test` go to their own Workers; test is the only deployment with cheats (`ALLOW_CHEATS`), and no deployment sets `DEV_SERVER` (bot fill, looser rate limits, the dev model key). Both flags come from `--var` in the server's `dev` script, not `server/.dev.vars`.
+- `npm run model-trial -w server -- --model <openrouter id> --cycles N --ledger <file> --cap <usd>`: plays a single-player game headless with real model bots on the dev key (`MODEL_API_KEY` in `server/.dev.vars`) and reports tokens, latency, cost and reply quality (#224; `server/scripts/model.trial.ts`, runs under Vitest, never in `npm test`). Costs money: always pass a ledger and cap. `--fake` checks the harness for free.
+- `npm run verify`: typecheck, lint and the full test suite in one call (`tools/src/dev/verify.ts`). A passing step prints one line; a failing one prints the tail of its output. Run it once, at the end of a change.
+- `npm run lint`: Biome, lint only (rules in `biome.json`). Import limits: `shared` has no I/O, UI, or sibling-package imports; `web` never imports `server`, except the site API's type from `@mush2/server/api` (types only, #324). No `console.log` in `server`. typescript-eslint was rejected (no TypeScript 7 support). Intentional exceptions use `biome-ignore` with a reason.
+- `npm run lint:md`: markdownlint (`markdownlint-cli2`, rules in `.markdownlint-cli2.jsonc`) on the repo's Markdown, skipping `docs/scratchpad/`, the append-only `docs/process/ai-workflow.md` and the vendored PixiJS and Durable Objects skills. Separate from `npm run lint` so a doc nit doesn't block a code lint.
+
+npm 11 blocks dependency install scripts by default. `esbuild` and `workerd` are approved in the root `package.json` `allowScripts`; new packages with install scripts need `npm install-scripts approve <pkg>`.

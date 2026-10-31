@@ -31,6 +31,7 @@ Feature designs; status table in `plans/README.md`.
 ## Process
 
 - `process/ai-workflow.md`: append-only log of decisions made with AI assistance (append with `cat >>`; old entries keep the paths they had at the time).
+- `process/commands.md`: every npm script and dev command, in detail (CLAUDE.md lists only the everyday ones).
 - `process/testing.md`: what to test and why, with coverage status.
 - `process/github-project.md`: how the GitHub project is organized.
 

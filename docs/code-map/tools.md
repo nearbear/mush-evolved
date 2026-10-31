@@ -10,7 +10,7 @@ All under `tools/src/`.
 - `wiki/wiki.ts`: `npm run wiki`, reads eMushpedia (see the `wiki` skill).
 - `a11y/noTitleAttr.test.ts`: fails on any `title=` in the client (`web/CLAUDE.md`).
 - `odsData/`: `npm run ods-data` (`odsData.ts`; `ods.ts` reads the spreadsheets).
-- `dev/`: `npm run dev` (`dev.ts`), `npm run preview` (`preview.ts`) and per-worktree ports (`ports.ts`).
+- `dev/`: `npm run dev` (`dev.ts`), `npm run preview` (`preview.ts`) per-worktree ports (`ports.ts`) and `npm run verify` (`verify.ts`: typecheck, lint and tests, quiet unless something fails).
 - `i18n/`: catalog checks (`catalog.ts`) and the hardcoded-text ratchet (`hardcoded.ts`, `baseline.json`).
 - `death/hpWrites.test.ts`: fails if any file outside its allowlist (`death.ts`, `cheats.ts`, `actions/heal.ts`, `actions/consume.ts`, `hunters.ts`) writes `.hp`.
 - `editor/vitePlugin.ts`: the ship map editor's save, a Vite dev-server plugin (`web/vite.config.ts`): `PUT /__editor/map` checks the map, writes `ship-map.json` and `ship-rooms.json`, and keeps its own writes from reloading pages (the editor would lose its undo history).

@@ -42,7 +42,7 @@ In `shared/tests/<feature>.test.ts`:
 - The happy path, each limit or edge case from step 1, and "illegal action leaves state unchanged".
 - **Hidden information:** whenever `PlayerView` or the log changes, extend the `viewFor` tests to show that other players' roles, other rooms' history, and private entries do not appear in anyone else's view. A new state field must also be listed in `shared/tests/leakFields.ts` (the tests fail until it is), with a sentinel in `shared/tests/leaks.test.ts` when its value can be made unique. This is the project's most important architecture rule.
 - **Replays (#167):** a new `Input` type, or a new kind of state change the server drives (a timer, a schedule), goes through `applyInput` and gets generated in `randomInput` in `shared/tests/replay.test.ts`, with its type in that test's list. The same goes for a new source of randomness: it must come from the seeded RNG in state, or the replay test diverges. Nothing may write `GameState` outside `applyInput` (the server's `stampEntries` is the one exception, and `rebuildGame` repeats it).
-- While iterating, run only what you need: `npm test -w shared -- rules.test.ts -t "name"`. Run the full `npm test && npm run typecheck` once, at the end.
+- While iterating, run only what you need: `npm test -w shared -- rules.test.ts -t "name"`. Run `npm run verify` once, at the end.
 
 ## 4. Check it end to end
 

@@ -10,14 +10,15 @@ CLAUDE.md: run typecheck and tests before saying something is done, keep commits
 
 ## 1. Verify
 
+**Don't repeat work.** Skip any check below that already passed in this conversation with no relevant edits since: a `verify` run, a `leak-check`, a build, screenshots. Say which ones you skipped and when they passed. Rerun a check only if files it covers changed after it passed (for `leak-check`: rules, views, protocol, server or bot prompt files).
+
 ```bash
-npm run typecheck
-npm test
+npm run verify         # typecheck, lint and all tests, quiet unless something fails
 npm run build          # if web/ changed
 ```
 
 - UI, CSS, asset, or renderer change: do not run the `play` skill unless the user asked; just say a visual check was skipped. If they did ask, look at **both** the desktop and the phone screenshots. Mobile is first-class (CLAUDE.md rule 7). If the change touches the chat input or full-height layout, say the on-screen keyboard still needs a real-phone check.
-- Rules, views, protocol, server, or bot change: run the `leak-check` skill.
+- Rules, views, protocol, server, or bot change: run the `leak-check` skill, unless it already ran on these changes (see above).
 - `ship-layout` inputs changed: `npm run ship-layout` (a test fails if the derived file is stale).
 - `wrangler.jsonc` or Durable Object exports changed: `npm run types -w server`.
 - `GameState` shape changed: confirm `STATE_VERSION` in `server/src/GameRoom.ts` was bumped.
@@ -31,7 +32,7 @@ Only where something actually changed:
 - **`docs/code-map/<package>.md`**: one line per new, moved, or removed file. **`docs/rules/implemented-rules.md`**: the bullet for any rule that changed.
 - **`CLAUDE.md`**: commands (new npm scripts), the skills list, and "Open decisions" (remove anything settled). Keep it a summary.
 - **`docs/rules/rules-design.md`**: record each answered rule decision in "Decisions received", with the date. The issue is where the question was asked; this file is the record of the answer.
-- **`docs/process/ai-workflow.md`**: a dated `###` entry. What was decided and **who decided it** (the user, or the assistant with approval), what worked, and anything that needed correction. Be honest about mistakes; the user is writing this up. Only ever append with `cat >>`, and never read the file first (it is large); do not rewrite existing entries.
+- **`docs/process/ai-workflow.md`**: one dated `###` entry for the whole task (skip it if this conversation already appended one and nothing notable happened since). What was decided and **who decided it** (the user, or the assistant with approval), what worked, and anything that needed correction. Be honest about mistakes; the user is writing this up. Only ever append with `cat >>`, and never read the file first (it is large); do not rewrite existing entries.
 - **`docs/assets/mush-assets.md`**: if new facts about the archive came up.
 
 ## 3. Update the GitHub issues
@@ -42,6 +43,8 @@ Open work is tracked as GitHub issues in the [mush2 project](https://github.com/
 - **Partly done:** it gets `Refs #<n>` in the commit message. Tick the finished checklist items in the body: save it with `gh issue view <n> --json body --jq .body > <scratchpad>/body.md`, edit only the checkboxes, then `gh issue edit <n> --body-file <scratchpad>/body.md`. If what's left isn't obvious from the checklist, add a short `gh issue comment` saying what remains.
 - **A rule decision answered** (label `rule-decision`): tick the answered question in the body, and comment with the answer, who decided, and that it is recorded in `docs/rules/rules-design.md`. When every question is answered, remove the label (`gh issue edit <n> --remove-label rule-decision`). The issue stays open if the rule still has to be built; close it only if it was a decision with nothing to build (some Architecture issues).
 - **Wrong or obsolete:** don't close or rewrite it yourself; say so in the summary and let the user decide.
+
+**Epic checklists.** Each epic's issue body keeps a `## Stories` checklist, one line per sub-issue: `- [ ] #<n> <short title>`, ticked when the story is done, with any story that is next or blocked noted after the title. When a story here closes, is partly done, or is created, update its epic's checklist the same way as the story body (save with `--json body`, edit only that section, `gh issue edit --body-file`). If the epic has no checklist yet, add one built from its sub-issues (`gh api repos/nearbear/mush2/issues/<epic>/sub_issues --jq '.[]|[.number,.state,.title]|@tsv'`). The point is that "what's next for X?" can be answered from one `gh issue view <epic>`.
 
 Follow-ups that came up (a new rule question, a deferred feature, a bug found along the way): propose them as new issues in the summary, with the epic, milestone (or `needs-staging`), and labels you'd use. Create them only after the user says yes, then add each to the project with `gh project item-add 1 --owner nearbear --url <issue url>`. To put one under an epic, link it with `gh api -X POST repos/nearbear/mush2/issues/<epic>/sub_issues -F sub_issue_id=<id>`, where `<id>` is the issue's database id (`gh api repos/nearbear/mush2/issues/<n> --jq .id`), not its number.
 

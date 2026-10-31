@@ -19,12 +19,12 @@ One subagent per 2-4 epics, grouped by theme so small ones share an agent (`mode
 - READ-ONLY. Never run `gh issue edit/close/comment`, never edit files.
 - Read its issues with `gh issue view <n> --json title,body,state,labels,comments` (list an epic's children with `gh api repos/{owner}/{repo}/issues/<epic>/sub_issues --jq '.[]|[.number,.state,.title]|@tsv'`).
 - For each, check whether it is already done or decided: `docs/rules/implemented-rules.md`, `docs/rules/rules-design.md`, `docs/plans/action-plans.md`, `docs/code-map/README.md`, `git log --oneline --grep`, and the code. A `rule-decision` is stale when its answer is recorded in rules-design or action-plans (quote the line). Never treat an issue body as decided on its own.
-- Write at most 30 lines to `$SCRATCH/triage-<epic>.md`, one per issue worth acting on: `#n | action | evidence`. Actions: `close-done` (obvious, cite the commit or doc line), `close-dup #m`, `stale-decision`, `reparent #epic`, `restage <milestone>`, `retitle`, `keep`. Omit plain `keep`s. Mark confidence `obvious` or `unsure`.
+- Write at most 30 lines to `$SCRATCH/triage-<epic>.md`, one per issue worth acting on: `#n | action | evidence`. Actions: `close-done` (obvious, cite the commit or doc line), `fix-checklist` (the epic's `## Stories` checklist is missing, lists the wrong sub-issues, or its ticks don't match their open/closed state), `close-dup #m`, `stale-decision`, `reparent #epic`, `restage <milestone>`, `retitle`, `keep`. Omit plain `keep`s. Mark confidence `obvious` or `unsure`.
 - Reply with only the file path and a one-line count.
 
 ## 3. Merge and apply
 
-Read the report files (not the issues). Apply only `obvious` `close-done` and `close-dup`, with `gh issue close <n> --reason completed --comment "<evidence>"` (use `--reason "not planned"` for dups). Everything else is proposed to the user in one table: number, title, action, evidence. Do not change labels, milestones, parents or `rule-decision` issues without approval. If all sub-issues of an epic are closed, propose closing the epic.
+Read the report files (not the issues). Apply only `obvious` `close-done` and `close-dup`, and bring each epic's `## Stories` checklist in line with its sub-issues (one `- [ ] #<n> <short title>` line per sub-issue, ticked when closed; see `docs/process/github-project.md`). Close issues with `gh issue close <n> --reason completed --comment "<evidence>"` (use `--reason "not planned"` for dups). Everything else is proposed to the user in one table: number, title, action, evidence. Do not change labels, milestones, parents or `rule-decision` issues without approval. If all sub-issues of an epic are closed, propose closing the epic.
 
 ## 4. Report
 
