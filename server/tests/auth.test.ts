@@ -456,6 +456,38 @@ it("leaves other paths alone", async () => {
   expect((await handleAuth(new Request(`${ORIGIN}/api/nope`), ENV, { store, now }))?.status).toBe(404);
 });
 
+describe("routing (#324)", () => {
+  const status = async (path: string, method = "GET") =>
+    (await handleAuth(new Request(`${ORIGIN}${path}`, { method }), ENV, { store, setups, now }))?.status;
+
+  it("answers a known path with the wrong method 405, with the JSON error", async () => {
+    for (const [path, method] of [
+      ["/auth/google/start", "POST"],
+      ["/auth/discord/callback", "POST"],
+      ["/auth/dev", "POST"],
+      ["/api/me", "POST"],
+      ["/api/signup", "GET"],
+      ["/api/rename", "DELETE"],
+    ]) {
+      const response = await handleAuth(new Request(`${ORIGIN}${path}`, { method }), ENV, { store, setups, now });
+      expect([path, response?.status]).toEqual([path, 405]);
+      expect(await response?.json()).toEqual({ error: "method_not_allowed" });
+    }
+  });
+
+  it("answers unknown providers, trailing slashes, extra segments and other case 404", async () => {
+    for (const path of ["/auth/github/start", "/auth/Google/start", "/auth/google/start/", "/api/me/", "/api/ME", "/api/me/x"]) {
+      expect([path, await status(path)]).toEqual([path, 404]);
+    }
+  });
+
+  it("refuses a setup ID holding an encoded slash, and empty or extra segments", async () => {
+    for (const path of ["/api/setups/a%2Fb", "/api/setups/", "/api/setups/a/b", "/api/setups/%E0%A4%A"]) {
+      expect([path, await status(path)]).toEqual([path, 404]);
+    }
+  });
+});
+
 describe("dev sign-in (#287)", () => {
   const DEV = { ...ENV, DEV_SERVER: "true", ALLOW_CHEATS: "true" } as Env;
   const LOCAL = "http://localhost:5173";

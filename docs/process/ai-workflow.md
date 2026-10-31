@@ -1822,3 +1822,10 @@ Reviewed both commits after the fact. Found `lastSeenAt` staying with the body i
 - `Setup` changed shape: `text` per language (en/fr/es, at least one; the standard setup has none) and `ownerName` replace `name`, `description` and `author`. The owner's account ID never leaves the server; the list's `mine` gives a signed-in player their own setup IDs and cap usage instead.
 - Claude's readings, not asked: a description may be empty; the description has no line cap beyond its length (moderation already folds blank lines); masking or link removal that pushes text over a cap refuses it; a lookup of `standard` returns `STANDARD_SETUP`; the takedown column exists but nothing reads it yet (#289).
 - `wrangler types` in a worktree drops `MODEL_API_KEY` (no `server/.dev.vars` there); regenerate with `--env-file` pointing at the main checkout's.
+
+## 2026-10-31: Hono for the site API (#324, step 1)
+
+- **Decision:** route `/auth/*` and `/api/*` with Hono instead of the hand-written table in `handleAuth`, because the API is expected to pass 15 endpoints. Express was ruled out (built on Node's `http`, not native to Workers). The owner also approved the typed client (`hc`), `zod`, `@hono/zod-openapi` and a Scalar docs page (dev and `test` only) for steps 2–3, and a narrow lint exception so `web` can import the API type.
+- **What worked:** keeping the `handleAuth(request, env, deps)` signature, so the existing 69 auth and setup tests ran unchanged against the new router. New routing tests (wrong methods, unknown providers, trailing slashes, an encoded `/` in a setup ID) were run against the old router first, which showed the behavior didn't change rather than describing whatever Hono happens to do.
+- **Needed care:** Hono answers a known path with the wrong method 404, so each path ends with an explicit `.all(path, methodNotAllowed)`. The setup ID is read from the raw path, not `c.req.param`, which would decode `%2F` to `/` before the existing check. Routes stay in one chain because the typed client reads them from the app's type.
+- **Baseline for step 2:** `npm run typecheck` takes about 2 s; time it again once `hc` is in.

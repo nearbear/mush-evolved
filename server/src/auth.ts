@@ -24,12 +24,13 @@ import {
   type RenameResponse,
   type SignupResponse,
 } from "@mush2/shared";
+import { type Context, Hono } from "hono";
 import { type AccountStore, nameKey, RENAME_INTERVAL_MS, sha256Hex } from "./accountStore.ts";
 import { json, readJsonBody } from "./http.ts";
 import { authorizeUrl, fetchProfile, oauthCredentials, randomToken, usesPkce } from "./oauth.ts";
 import { allowAuthRequest } from "./rateLimit.ts";
 import type { SetupStore } from "./setupStore.ts";
-import { handleSetupRoute, isSetupPath } from "./setupRoutes.ts";
+import { listSetups, lookupSetup, postSetup, type SetupRouteDeps } from "./setupRoutes.ts";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 /** Sessions last 30 days, renewed while in use. */
@@ -231,48 +232,74 @@ async function signOut(request: Request, env: Env, deps: AuthDeps): Promise<stri
 
 // ---- Routes
 
-/** Handles /auth/* and /api/*; null for any other path. */
-export async function handleAuth(request: Request, env: Env, deps: AuthDeps): Promise<Response | null> {
-  const url = new URL(request.url);
-  const path = url.pathname;
-  if (!path.startsWith("/auth/") && !path.startsWith("/api/")) return null;
+/** What every route reads: `c.env` in the app below. */
+interface ApiBindings {
+  env: Env;
+  deps: AuthDeps;
+}
 
+const methodNotAllowed = () => json({ error: "method_not_allowed" }, 405);
+
+/** The setup routes' view of a request (setupRoutes.ts). */
+const setupDeps = (request: Request, { env, deps }: ApiBindings): SetupRouteDeps => ({
+  setups: deps.setups,
+  now: deps.now,
+  rulesVersion: env.RULES_VERSION ?? "dev",
+  session: () => currentSession(request, env, deps.store, deps.now),
+});
+
+/** OAuth routes are browser redirects only, so a wrong method is 405 and an unknown provider 404. */
+const oauthRoute =
+  (handler: typeof start) =>
+  (c: Context<{ Bindings: ApiBindings }>): Promise<Response> | Response => {
+    const provider = c.req.param("provider") ?? "";
+    if (!isAuthProvider(provider)) return json({ error: "not_found" }, 404);
+    if (c.req.method !== "GET") return methodNotAllowed();
+    return handler(c.req.raw, c.env.env, c.env.deps, provider);
+  };
+
+/**
+ * The /auth and /api routes (#324). Keep the routes in one chain (`.get(...).post(...)`): the typed client in `web`
+ * will read the routes from this value's type, and a route added in a separate statement is missing from it. Each
+ * path ends with `.all(path, methodNotAllowed)`, since Hono answers a known path with the wrong method 404.
+ */
+const api = new Hono<{ Bindings: ApiBindings }>()
   // Counted before the route runs (#305). Not limited: logout, which must always work, and the OAuth callback, which
   // only follows a limited start (a forged one fails on the state cookie before any D1 or provider request).
-  if (path !== "/auth/logout" && !/^\/auth\/[a-z]+\/callback$/.test(path)) {
-    const accountId = await sessionAccount(request, env, deps);
-    const setupPost = path === "/api/setups" && request.method === "POST";
-    if (!(await allowAuthRequest(env, request, { accountId, signup: path === "/api/signup", setupPost }))) return rateLimited(path);
-  }
+  .use(async (c, next) => {
+    const path = c.req.path;
+    if (path === "/auth/logout" || /^\/auth\/[a-z]+\/callback$/.test(path)) return next();
+    const { env, deps } = c.env;
+    const accountId = await sessionAccount(c.req.raw, env, deps);
+    const setupPost = path === "/api/setups" && c.req.method === "POST";
+    if (!(await allowAuthRequest(env, c.req.raw, { accountId, signup: path === "/api/signup", setupPost }))) return rateLimited(path);
+    return next();
+  })
+  .all("/auth/:provider{[a-z]+}/start", oauthRoute(start))
+  .all("/auth/:provider{[a-z]+}/callback", oauthRoute(callback))
+  .get("/auth/dev", (c) => devSignIn(c.req.raw, c.env.env, c.env.deps))
+  .all("/auth/dev", methodNotAllowed)
+  .post("/auth/logout", (c) => logout(c.req.raw, c.env.env, c.env.deps))
+  .all("/auth/logout", methodNotAllowed)
+  .get("/api/me", (c) => me(c.req.raw, c.env.env, c.env.deps))
+  .all("/api/me", methodNotAllowed)
+  .post("/api/signup", (c) => signup(c.req.raw, c.env.env, c.env.deps))
+  .all("/api/signup", methodNotAllowed)
+  .post("/api/rename", (c) => rename(c.req.raw, c.env.env, c.env.deps))
+  .all("/api/rename", methodNotAllowed)
+  .get("/api/setups", (c) => listSetups(setupDeps(c.req.raw, c.env)))
+  .post("/api/setups", (c) => postSetup(c.req.raw, setupDeps(c.req.raw, c.env)))
+  .all("/api/setups", methodNotAllowed)
+  // The raw segment, not c.req.param("id"): lookupSetup decodes it itself and refuses an encoded "/".
+  .get("/api/setups/:id", (c) => lookupSetup(new URL(c.req.url).pathname.slice("/api/setups/".length), setupDeps(c.req.raw, c.env)))
+  .all("/api/setups/:id", methodNotAllowed)
+  .notFound(() => json({ error: "not_found" }, 404));
 
-  if (isSetupPath(path)) {
-    return handleSetupRoute(request, path, {
-      setups: deps.setups,
-      now: deps.now,
-      rulesVersion: env.RULES_VERSION ?? "dev",
-      session: () => currentSession(request, env, deps.store, deps.now),
-    });
-  }
-
-  const oauth = /^\/auth\/([a-z]+)\/(start|callback)$/.exec(path);
-  if (oauth) {
-    const provider = oauth[1] ?? "";
-    if (!isAuthProvider(provider)) return json({ error: "not_found" }, 404);
-    if (request.method !== "GET") return json({ error: "method_not_allowed" }, 405);
-    return oauth[2] === "start" ? start(request, env, deps, provider) : callback(request, env, deps, provider);
-  }
-
-  const routes: Record<string, [method: string, handler: typeof me]> = {
-    "/auth/dev": ["GET", devSignIn],
-    "/auth/logout": ["POST", logout],
-    "/api/me": ["GET", me],
-    "/api/signup": ["POST", signup],
-    "/api/rename": ["POST", rename],
-  };
-  const route = routes[path];
-  if (!route) return json({ error: "not_found" }, 404);
-  if (request.method !== route[0]) return json({ error: "method_not_allowed" }, 405);
-  return route[1](request, env, deps);
+/** Handles /auth/* and /api/*; null for any other path. */
+export async function handleAuth(request: Request, env: Env, deps: AuthDeps): Promise<Response | null> {
+  const path = new URL(request.url).pathname;
+  if (!path.startsWith("/auth/") && !path.startsWith("/api/")) return null;
+  return api.fetch(request, { env, deps });
 }
 
 async function start(request: Request, env: Env, deps: AuthDeps, provider: AuthProvider): Promise<Response> {

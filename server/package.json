@@ -17,10 +17,11 @@
   },
   "dependencies": {
     "@mush2/shared": "*",
+    "hono": "^4.13.14",
     "partyserver": "^0.5.10"
   },
   "devDependencies": {
-    "wrangler": "^4.145.0",
-    "vitest": "^5.0.3"
+    "vitest": "^5.0.3",
+    "wrangler": "^4.145.0"
   }
 }

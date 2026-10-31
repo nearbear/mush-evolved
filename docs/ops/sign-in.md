@@ -1,6 +1,6 @@
 # Sign-in: OAuth apps, secrets and sessions
 
-Google and Discord sign-in (#283) and display names (#284), in `server/src/auth.ts` (routes, cookies, sessions) and `server/src/oauth.ts` (each provider's URLs and profile). Written by hand, no dependency. The sign-in screen that uses them is #286 (`web/src/account/`, `web/src/lobby/Lobby.tsx`); joining a ship with an account is #285.
+Google and Discord sign-in (#283) and display names (#284), in `server/src/auth.ts` (routes, cookies, sessions) and `server/src/oauth.ts` (each provider's URLs and profile). The routes are a [Hono](https://hono.dev) app in `auth.ts` (#324); the OAuth flow itself is written by hand, with no auth library. The sign-in screen that uses them is #286 (`web/src/account/`, `web/src/lobby/Lobby.tsx`); joining a ship with an account is #285.
 
 ## Setting up the OAuth apps (owner)
 
