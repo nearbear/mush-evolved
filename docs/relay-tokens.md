@@ -29,7 +29,7 @@ The relay formula (`shared/src/relay.ts`, owner 2026-10-26) cuts a contribution'
 
 - **Each token carries its own roll**, drawn when it is made, so later arrangement never re-rolls luck and a replay is deterministic.
 - **Waiting work is shown.** The terminal shows how much progress is held back only by the lack of another contributor, to those who see the target's progress (in its room, above).
-- **Projects and PILGRED** keep their room log lines, and their token lists are shown at their own terminals the same way, to people in that room (by analogy with research; confirm).
+- **Projects and PILGRED** keep their room log lines, and their token lists are shown at their own terminals the same way, to people in that room, as for research (owner, 2026-10-31).
 - **The `noRelayPenalty` cheat** is fixed when the token is made: each such token counts as if from a distinct player, whatever the cheat's state later.
 - **Migration.** Progress made before the switch cannot be turned into tokens (a `RelayStreak` keeps no history). Each pool gets `banked`, the target's percent at migration, and progress is `banked + poolProgress(...)`. `banked` also absorbs any other writer: the NERON update sets a project to 100 directly (`comms.ts`).
 

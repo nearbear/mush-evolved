@@ -1,6 +1,6 @@
 # Plan: channel plans and on-call summons (written 2026-10-30)
 
-A **plan** is a private channel's shared to-do list: a room, a purpose and a set of slots that members claim. Some slots are promises done live; **on-call** slots let the author, once in the room, summon the holders there with one button: the game walks their bodies in, paying as live. That walk is the only thing the game ever does on an absent player's behalf. This replaces the generic executor of `docs/action-plans.md` (scheduled time, locked AP, knowledge sandbox, composer for arbitrary actions), which the owner dropped on 2026-10-30. Relaying is handled separately by pooled contributions (`docs/relay-tokens.md`), so plans have no relay execution. Not built. **Decisions** are the owner's; **Proposed** items are Claude's and need confirmation; **Open questions** block the part they belong to. Do not guess them.
+A **plan** is a private channel's shared to-do list: a room, a purpose and a set of slots that members claim. Some slots are promises done live; **on-call** slots let the author, once in the room, summon the holders there with one button: the game walks their bodies in, paying as live. That walk is the only thing the game ever does on an absent player's behalf. This replaces the generic executor of `docs/action-plans.md` (scheduled time, locked AP, knowledge sandbox, composer for arbitrary actions), which the owner dropped on 2026-10-30. Relaying is handled separately by pooled contributions (`docs/relay-tokens.md`), so plans have no relay execution. Not built. **Decisions** are the owner's; **Open questions** block the part they belong to. Epic #317; issues #311 (pooled tokens), #312 (remove locked AP), #313 (shared), #314 (server), #315 (UI), #316 (bots). Do not guess them.
 
 ## The problem
 
@@ -29,18 +29,25 @@ Carried over from `docs/action-plans.md` (owner, 2026-10-13 and 2026-10-26), sti
 - **No patrol craft rooms** (owner, 2026-10-27): they have no doors; `postPlan` refuses them.
 - **Bots may post plans** (owner, 2026-10-28) when they are a channel's creator.
 
-## Proposed (Claude, 2026-10-30; confirm before building)
+## Decisions (owner, 2026-10-30, second pass: Claude's proposals confirmed)
 
-- **Nothing is locked.** A claim is consent, not a reservation of AP or MP. The walk starts from wherever the body is at summons time, so a lock amount at claim time is undefined; a holder who has spent their MP simply doesn't arrive. The author sees who came. `PlayerState.lockedAp`, `freeAp` and the `ap - lockedAp` reads built for the old design stay unused or are removed (open question).
-- **The author walks too.** They are already in the room by the Go rule, so nothing to do; kept here so the rule is explicit.
+- **Nothing is locked, and the locked-AP code goes.** A claim is consent, not a reservation of AP or MP. The walk starts from wherever the body is at summons time; a holder who has spent their MP simply doesn't arrive. The author sees who came. The old design's plumbing is removed: `PlayerState.lockedAp` (`shared/src/types/player.ts`, initialised in `rules.ts`), `freeAp` (`helpers.ts`, exported from `index.ts`; read in `actions/action.ts`, `actions/move.ts`, `rules.ts`'s `lacks`, `web/src/hud/ActionButton.tsx` and `RoomList.tsx`, all becoming plain `ap`), `PipBar`'s cross-hatch, and the `freeAp` line in `docs/code-map/shared.md`. Removing a state field needs a `STATE_VERSION` bump.
+- **The author walks to the room themselves**, live, and then presses Go. The game never walks the author.
 - **Walk order** is slot order, each holder's whole walk before the next. A holder lying in a bed gets up first (`getUp`), as any live action does.
 - **No arrival action yet.** When expeditions or the mealtime table exist, a plan's purpose may add one fixed step after arrival (board the Icarus, sit at the table), decided in that rule pass. The `purpose` field is the hook.
 - **Summons once.** Go moves the plan to `called`; it cannot be pressed again. A second gathering is a new plan.
 - **Finished plans stay on the card** until the next one is posted, so task slots can still be ticked Done after the call.
-- **Purpose is a label** from a fixed list (expedition, meal, healing, speech, sharing, work, other), shown on the card. No free text anywhere in a plan; the channel's messages carry the words.
-- **Task catalog**: research (which), project (which), repair PILGRED, heal (whom), comfort (whom), STT (whom), fiery speech, boring speech, bring (an item type, to the plan's room). Targets are living players; the composer offers members first. Any member may claim any task, whether or not they can actually do it: the card is a promise board, and a task nobody can do just goes unclaimed.
-- **Limits** (`config.plans`, placeholders): slots per plan 12, finished plans kept per channel 1.
+- **Purpose is a label** from a fixed list for now (expedition, meal, healing, speech, sharing, work, other), shown on the card. The owner may make it free text later; for now there is no free text anywhere in a plan and the channel's messages carry the words. (Free text would add moderation and prompt-injection surface for bots, to weigh then.)
+- **Tasks are promises, never executed.** Promises can be broken. Any member may claim any task, whether or not they can actually do it: the card is a promise board, and a task nobody can do just goes unclaimed. Initial task catalog: research (which), project (which), repair PILGRED, heal (whom), comfort (whom), STT (whom), fiery speech, boring speech, bring (an item type, to the plan's room). Targets are living players; the composer offers members first.
+- **Limits** (`config.plans`): slots per plan 12, finished plans kept per channel 1.
 - **Claims are untimed registry actions** (`claim_slot`, `withdraw_slot`, `mark_done`, `summon`, `cancel_plan`; 0 AP, like `ready`), so their candidates come from `candidates`, parse and legality are free, `view.actions` lists them, and scripted and model bots use them like any action. Posting stays a chat-like message, since a draft can't be enumerated.
+- **Bots post in their own channels.** A bot that needs a plan creates its own private channel (the limit is 3 per player) and invites whom it wants, exactly as a human would; no bot posts on another's behalf. `docs/bot-goals-plan.md`'s single crew channel changes accordingly in the bot step.
+- **A dead target voids only its slot.** When the target of a task (heal, comfort, STT) dies, that slot is struck out on the card as "target died" (it can't be claimed, withdrawn or ticked); the rest of the plan and its summons carry on.
+- **Slots per player:** at most one on-call slot per plan, and any number of task slots. The author may claim tasks in their own plan but no on-call slot (they walk themselves).
+- **Done ticks are visible to all members.** An undone task at expiry or cancellation stays unticked, with no extra marker.
+- **No presence on the card before Go** (owner, 2026-10-31). Members never see whether an on-call holder is already in the plan's room: that would be a position report about another room. The author, standing there, sees it as ordinary room presence.
+- **A lapsed reservation opens the slot** (owner, 2026-10-31). If the player a slot is reserved for dies or leaves the channel, the reservation is dropped and any member may claim it.
+- **A task finished by anyone is struck out** (owner, 2026-10-31). When a slot's research or project completes, or PILGRED is repaired, while the plan is open, the slot shows "already done" and can no longer be claimed, withdrawn or ticked. Completion is public, so this leaks nothing.
 
 ## Design
 
@@ -141,7 +148,4 @@ From `docs/action-plans.md`, still wanted later and still requiring an executor 
 
 ## Open questions
 
-- Remove the unused `lockedAp` plumbing (three code sites plus `PipBar`'s cross-hatch) or leave it for a later pass?
-- `docs/bot-goals-plan.md` assumes one crew channel created by the first bot that needs it; under the creator-only rule only that bot can post there. Does each bot create its own channel (the limit is 3 per player), or does the crew channel's creator post on others' behalf?
-- Should a task's Done tick be visible to all members (proposed yes) and should an undone task at expiry be marked anything?
-- Should the card show, to members, that an on-call holder is already in the room before Go? Proposed no: it is a position report about another room.
+None.
