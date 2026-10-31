@@ -1,3 +1,4 @@
+import { userInfo } from "node:os";
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import { shipMapEditor } from "../tools/src/editor/vitePlugin.ts";
@@ -12,9 +13,11 @@ const proxy = {
   "/parties": { target: worker, ws: true },
 };
 
-export default defineConfig({
+export default defineConfig(({ command }) => ({
   // shipMapEditor: the ship map editor's save (dev server only; web/src/editor/).
   plugins: [react(), shipMapEditor()],
+  // The OS username prefills the dev sign-in box (#287). Dev server only: a production build never embeds it.
+  define: { __DEV_SIGN_IN_NAME__: JSON.stringify(command === "serve" ? userInfo().username : "") },
   server: { proxy },
   preview: { proxy },
   build: {
@@ -22,4 +25,4 @@ export default defineConfig({
     // Everything else keeps Vite's default (inline under 4 KB).
     assetsInlineLimit: (file) => (file.includes("/Mush/") ? false : undefined),
   },
-});
+}));

@@ -171,7 +171,7 @@ export function Lobby({ onMatched }: { onMatched: (ticket: SeatTicket) => void }
           <a href="/design-kit.html">Design kit</a> {/* i18n-ignore: dev servers only */}
           {/* Dev sign-in (#287): a plain GET form to /auth/dev, which signs in as that name and redirects back here. */}
           <form className="pod-devsignin" method="get" action="/auth/dev">
-            <input name="name" required maxLength={MAX_NAME_LENGTH} placeholder="Name" aria-label="Dev sign-in name" /> {/* i18n-ignore: dev servers only */}
+            <input name="name" required maxLength={MAX_NAME_LENGTH} defaultValue={__DEV_SIGN_IN_NAME__.slice(0, MAX_NAME_LENGTH)} placeholder="Name" aria-label="Dev sign-in name" /> {/* i18n-ignore: dev servers only */}
             <button type="submit">Dev sign-in</button> {/* i18n-ignore: dev servers only */}
           </form>
         </nav>
