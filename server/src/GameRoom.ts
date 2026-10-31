@@ -33,6 +33,7 @@ import {
   type Input,
   type RecordedInput,
   type PlayerId,
+  type PlayerState,
   type Role,
   type Seat,
   type Setup,
@@ -79,7 +80,7 @@ const MODEL_RETRY_MAX_MS = 60_000;
  * Bump when GameState's shape changes, or ConfigOverrides' (or what resolveConfig derives from a key). Games stored
  * under another version are discarded on load (there is no migration; games are short-lived).
  */
-export const STATE_VERSION = 94;
+export const STATE_VERSION = 95;
 
 /**
  * A ship's overrides from its setup (#232): the knobs, plus the setup's id for the record and the view. The setup is
@@ -444,7 +445,7 @@ export class GameRoom extends Server<Env> {
     await this.scheduleTick();
   }
 
-  override onConnect(connection: Connection<SeatState>, ctx: ConnectionContext): void {
+  override async onConnect(connection: Connection<SeatState>, ctx: ConnectionContext): Promise<void> {
     const token = new URL(ctx.request.url).searchParams.get("token");
     const playerId = token ? this.tokens[token] : undefined;
     if (!this.game || !playerId) {
@@ -455,6 +456,30 @@ export class GameRoom extends Server<Env> {
     }
     connection.setState({ playerId, token: token! });
     this.sendView(connection, playerId);
+    // Connecting is what counts as activity (inactivity.ts, #145).
+    await this.markSeen([playerId], true);
+  }
+
+  /**
+   * Tells the rules these seats are connected now (a `seen` input with the server time), so they don't go inactive.
+   * With `onlyIfNews`, only seats the rules would learn something from: an inactive one, or one not seen since this
+   * clock cycle began. The rules check inactivity only at cycle changes, in whole hours, so a later sighting in the same
+   * cycle changes nothing, and skipping it keeps the record to about one `seen` per seat per cycle. A seat the rules
+   * haven't heard of yet (just joined) starts counting at the next cycle change anyway.
+   */
+  private async markSeen(seats: readonly PlayerId[], onlyIfNews = false): Promise<void> {
+    const game = this.game;
+    if (!game) return;
+    const cycleStart = this.singlePlayer ? Number.POSITIVE_INFINITY : clockCycleStart(this.clockCycle, cycleMs(this.env, game.config.cycleHours));
+    const news = (p: PlayerState) => p.inactivity !== undefined || (p.lastSeenAt !== undefined && p.lastSeenAt < cycleStart);
+    const players = [...new Set(seats.map((seat) => this.body(seat)))]
+      .map((id) => game.players.find((p) => p.id === id))
+      .filter((p): p is PlayerState => p !== undefined && (!onlyIfNews || news(p)));
+    if (players.length === 0) return;
+    // Only ending an inactivity changes a view (a status, maybe titles). Otherwise send nothing, so a push doesn't
+    // tell everyone that somebody just came online.
+    const waking = players.some((p) => p.inactivity !== undefined);
+    await this.act({ type: "seen", players: players.map((p) => p.id), at: Date.now() }, undefined, waking ? undefined : null);
   }
 
   override async onMessage(connection: Connection<SeatState>, raw: WSMessage): Promise<void> {
@@ -522,7 +547,9 @@ export class GameRoom extends Server<Env> {
         }
       } else {
         this.clockCycle++;
-        const error = await this.act({ type: "cycle" });
+        // Whoever is connected as the cycle ends was there for all of it.
+        await this.markSeen([...this.getConnections<SeatState>()].flatMap((c) => (c.state ? [c.state.playerId] : [])));
+        const error = await this.act({ type: "cycle", at: boundary });
         if (error) {
           console.warn(`Cycle failed: ${error}`);
           await this.persist();
@@ -601,9 +628,9 @@ export class GameRoom extends Server<Env> {
   /**
    * The only place the game changes. Applies the input, then records it with
    * the new snapshot. Returns an error message, or null on success. With `room`, only the views of people in that
-   * room are sent again (a walk changes no one else's).
+   * room are sent again (a walk changes no one else's); with null, none are.
    */
-  private async act(input: Input, raw?: string, room?: string): Promise<string | null> {
+  private async act(input: Input, raw?: string, room?: string | null): Promise<string | null> {
     if (!this.game) return "no_game";
     const firstChatId = this.game.nextChatId;
     const result = applyInput(this.game, input);
@@ -618,7 +645,7 @@ export class GameRoom extends Server<Env> {
     const account = input.type === "join" ? this.accounts[input.seat.id] : undefined;
     if (input.type === "join" && account !== undefined) entries[accountKey(input.seat.id)] = account;
     await this.persist(entries);
-    this.broadcastViews(room);
+    if (room !== null) this.broadcastViews(room);
     // Saved with the next input; until then a restart only repeats an idempotent write.
     await this.releaseAccounts();
     this.scheduleBots();

@@ -82,7 +82,7 @@ export const DEFAULT_CONFIG: GameConfig = {
   vaccine: { cost: { ap: 1 } },
   // Confirmed 2026-10-15: punch costs 1 AP, misses 40% of the time. Owner, 2026-10-24: damage is a uniform 1 to 2 (the wiki).
   // Confirmed 2026-10-16: the sturdy (Solid) skill adds 1 to punch damage.
-  punch: { cost: { ap: 1 }, effect: { damage: [1, 2], sturdyBonusDamage: 1 }, crit: { chance: 0.2, damage: [2, 3] }, successChance: 0.6, dirtyChance: 0.25 },
+  punch: { cost: { ap: 1 }, effect: { damage: [1, 2], sturdyBonusDamage: 1 }, crit: { chance: 0.2, damage: [2, 3] }, successChance: 0.6, inactiveTargetSuccessChance: 0.9, dirtyChance: 0.25 },
   // Owner, 2026-10-18: Ian's Pacifist makes aggressive actions in his room cost 2 more AP, his own included.
   pacifist: { aggressiveApSurcharge: 2 },
   // Owner, 2026-10-22 (docs/scratchpad/botany-plan.md, Pass 1): water 1 AP, treat 2, sow 2, the original's 15% dirt.
@@ -257,6 +257,8 @@ export const DEFAULT_CONFIG: GameConfig = {
   mankindOnlyHope: { moraleLossCut: 1 },
   creative: { refundOdds: 0.5 },
   anticPerfume: { immuneCycles: 2 },
+  // Owner, 2026-10-31 (#145): real time, not cycles.
+  inactivity: { inactiveAfterHours: 24, superAfterHours: 48 },
   logistics: { ap: 1 },
   caffeinomaniac: { ap: 2 },
   // Confirmed 2026-10-16: carrying a heavy item adds this much to every move's MP cost, once.

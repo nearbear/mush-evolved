@@ -3,7 +3,7 @@
 
 import { useTranslation } from "react-i18next";
 import { DEFAULT_CONFIG, overheadStatuses, statusIdsFor } from "@mush2/shared";
-import { statusIcon } from "../art/assets.ts";
+import { statusIcon, statusIconClass } from "../art/assets.ts";
 
 export function StatusBadges({ statuses }: { statuses: readonly string[] }) {
   const { t } = useTranslation();
@@ -12,7 +12,7 @@ export function StatusBadges({ statuses }: { statuses: readonly string[] }) {
   return (
     <div className="status-badges" role="img" aria-label={known.map((id) => t(`status.${id}`, { defaultValue: id })).join(", ")}>
       {known.map((id) => (
-        <img key={id} src={statusIcon(id)} alt="" />
+        <img key={id} src={statusIcon(id)} className={statusIconClass(id)} alt="" />
       ))}
     </div>
   );

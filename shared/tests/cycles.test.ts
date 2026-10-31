@@ -29,7 +29,7 @@ describe("cycles on the clock", () => {
   it("ends the cycle for everyone, ready or not, and refills AP", () => {
     const s = createGame(seats, { ...config, manualCycles: true }, 3);
     const readied = must(applyAction(s, "p0", { type: "ready" }));
-    const next = must(applyInput(readied, { type: "cycle" }));
+    const next = must(applyInput(readied, { type: "cycle", at: 0 }));
     expect(next.cycle).toBe(s.cycle + 1);
     expect(next.players.every((p) => p.ap === config.startAp + config.apPerCycle && !p.ready)).toBe(true);
     expect(next.log.at(-1)).toMatchObject({ key: "cycleBegins", visibleTo: "all" });

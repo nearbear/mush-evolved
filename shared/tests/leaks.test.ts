@@ -55,6 +55,7 @@ function ship(): { state: GameState; sentinels: Sentinel[] } {
     p.maxMorale = num(`maxMorale-${p.id}`, own);
     p.satiety = num(`satiety-${p.id}`, own);
     p.satietyZeroSince = num(`satietyZeroSince-${p.id}`, own);
+    p.lastSeenAt = num(`lastSeenAt-${p.id}`, []);
     p.diseaseTrackers.push({
       name: "cold_disease",
       duration: num(`diseaseTrackerDuration-${p.id}`, own),

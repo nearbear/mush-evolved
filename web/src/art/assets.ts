@@ -292,7 +292,7 @@ export const ENDING_ART: Readonly<Record<Ending, string>> = {
 
 // Status effect icons (16x16 pixel art), keyed by status id (shared/src/statuses.ts).
 const statusIconFiles = urls(
-  import.meta.glob<string>("../../../Mush/www/img/icons/ui/status/{dirty,belly_full,hungry,immune,pacifist,disabled,paria,disease,hurt}.png", { eager: true, query: "?url", import: "default" }),
+  import.meta.glob<string>("../../../Mush/www/img/icons/ui/status/{dirty,belly_full,hungry,immune,pacifist,disabled,paria,disease,hurt,sleepy}.png", { eager: true, query: "?url", import: "default" }),
 );
 const diseaseStatusIcons = Object.fromEntries(DEFAULT_CONFIG.diseases.allDiseases.map((id) => [id, statusIconFiles["disease"]!]));
 // Mankind's Only Hope has no status icon in the original (it was a skill there), so its skill icon stands in.
@@ -313,7 +313,18 @@ export const STATUS_ICONS: Readonly<Record<string, string>> = {
   accommodated: statusIconFiles["disabled"]!,
   outcast: statusIconFiles["paria"]!,
   broken_nose_injury: statusIconFiles["hurt"]!,
+  // The original's own inactivity icon (#145); super inactive is the same art turned red (STATUS_ICON_CLASSES).
+  inactive: statusIconFiles["sleepy"]!,
+  super_inactive: statusIconFiles["sleepy"]!,
 };
+/**
+ * A class for a status icon that is another status's art recoloured at render time (owner, 2026-10-31, #145): no new
+ * image file. `status-red` is a CSS hue rotation (base.css). Overhead badges are DOM in both renderers, so this covers PixiJS too.
+ */
+const STATUS_ICON_CLASSES: Readonly<Record<string, string>> = { super_inactive: "status-red" };
+export function statusIconClass(id: string): string | undefined {
+  return STATUS_ICON_CLASSES[id];
+}
 export function statusIcon(id: string): string {
   const icon = STATUS_ICONS[id];
   if (icon === undefined) throw new Error(`Missing icon for status "${id}"`);

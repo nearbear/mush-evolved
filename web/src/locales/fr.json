@@ -551,6 +551,8 @@
     "extreme_tinnitus_disease": "Acouphènes extrêmes",
     "fungal_infection_disease": "Infection fongique",
     "broken_nose_injury": "Nez explosé",
+    "inactive": "Inactif",
+    "super_inactive": "Grand inactif",
     "contaminated": "Contamination : {{level}}",
     "desc": {
       "dirty": "Vous ne pouvez pas faire de recherche. Prendre une douche l'enlève.",
@@ -562,11 +564,13 @@
       "mankind_only_hope": "Un trait : tant que cette personne est en vie, tout l'équipage perd 1 point de moral de moins chaque jour. Ne peut pas être retiré.",
       "wheelchair": "Un trait : n'importe qui dans la salle de cette personne peut proposer de pousser son fauteuil. Une fois poussée, elle se déplace avec son accompagnateur sans coût en PM. Ne peut pas être retiré.",
       "accommodated": "Quelqu'un pousse le fauteuil de cette personne : elle va là où va son accompagnateur, sans coût en PM, et ne peut pas se déplacer seule. L'un ou l'autre peut y mettre fin.",
-      "outcast": "Maudit par un Persécuteur : chaque action à tirage réussit 20 % moins souvent, et rien de ce que cette personne fait n'est discret. Cela prend fin à la mort du Persécuteur ou de la personne.",
+      "outcast": "Maudit par un Persécuteur : chaque action à tirage réussit 20 % moins souvent, et rien de ce que cette personne fait n'est discret. Cela prend fin à la mort du Persécuteur ou de la personne, ou quand elle devient inactive.",
       "cold_disease": "-3 au moral maximum.\nVos coups de poing infligent 1 dégât de moins.\nÀ chaque changement de cycle, vous avez 33 % de chances de perdre 1 PM.",
       "extreme_tinnitus_disease": "-3 au moral maximum.\nVous perdez 2 points de moral lorsque le navire se déplace.\nVous perdez 2 points de vie lorsque le vaisseau se déplace.",
       "fungal_infection_disease": "-2 PV maximum.\n-2 au moral maximum.\nIl faut qu une spore de moins soit convertie.\nÀ chaque changement de cycle, Tu deviens sale.",
       "broken_nose_injury": "-2 PV maximum.\n-2 au moral maximum.",
+      "inactive": "Ne s'est pas connecté depuis 24 heures. Ne peut détenir aucun titre, ne peut pas subir de Transfert, et un coup de poing l'atteint 90 % du temps. Prend fin dès sa connexion.",
+      "super_inactive": "Ne s'est pas connecté depuis 48 heures. Logistique l'ignore aussi. Prend fin dès sa connexion.",
       "contaminated": "Un humain que vous avez contaminé. À sa capacité maximale, il devient Mush."
     }
   },

@@ -840,8 +840,44 @@ describe("GameRoom cycle clock", () => {
     vi.setSystemTime(Date.UTC(2026, 9, 19, 15));
     await room.onAlarm();
     expect(lastView(c)).toMatchObject({ day: 1, cycleOfDay: 6 });
-    expect(storage.data.get("input:000000000")).toMatchObject({ input: { type: "cycle" } });
+    // The connected seat is reported as seen (#145), then the cycle, at the boundary.
+    expect(storage.data.get("input:000000000")).toMatchObject({ input: { type: "seen", players: ["p0"] } });
+    expect(storage.data.get("input:000000001")).toMatchObject({ input: { type: "cycle", at: Date.UTC(2026, 9, 19, 15) } });
     expect(storage.alarm).toBe(Date.UTC(2026, 9, 19, 18));
+  });
+
+  it("counts a connected player as seen at each cycle change, so only the absent go inactive (#145)", async () => {
+    const { room } = await newRoom(3);
+    connect(room, "tok0");
+    for (let i = 0; i < 12; i++) {
+      for (const p of gameOf(room).players) p.ap = gameOf(room).config.maxAp;
+      vi.setSystemTime(Date.UTC(2026, 9, 19, 15 + 3 * i));
+      await room.onAlarm();
+    }
+    const [p0, p1] = gameOf(room).players;
+    expect([p0!.inactivity, p1!.inactivity]).toEqual([undefined, "inactive"]);
+  });
+
+  it("tells nobody else when a player connects, unless that ends their inactivity (#145)", async () => {
+    const { room, storage } = await newRoom(3);
+    const c0 = connect(room, "tok0");
+    vi.setSystemTime(Date.UTC(2026, 9, 19, 15));
+    await room.onAlarm();
+    const pushed = c0.sent.length;
+    const inputs = () => [...storage.data.keys()].filter((k) => k.startsWith("input:")).length;
+    const before = inputs();
+    // Seen at this cycle change already: connecting again in the same cycle records nothing.
+    vi.setSystemTime(Date.UTC(2026, 9, 19, 16));
+    connect(room, "tok1");
+    // Not seen since an earlier cycle: recorded, but no view is pushed.
+    gameOf(room).players[2]!.lastSeenAt = Date.UTC(2026, 9, 19, 14);
+    connect(room, "tok2");
+    await vi.waitFor(() => expect(inputs()).toBe(before + 1));
+    expect(storage.data.get(`input:${String(before).padStart(9, "0")}`)).toMatchObject({ input: { type: "seen", players: ["p2"] } });
+    expect(c0.sent.length, "a plain seen pushes no view").toBe(pushed);
+    gameOf(room).players[1]!.inactivity = "inactive";
+    connect(room, "tok1");
+    await vi.waitFor(() => expect(c0.sent.length).toBeGreaterThan(pushed));
   });
 
   it("catches up on every cycle missed while down, with a day change at midnight GMT", async () => {
@@ -852,7 +888,10 @@ describe("GameRoom cycle clock", () => {
     await revived.onAlarm();
     const c = connect(revived, "tok0");
     expect(lastView(c)).toMatchObject({ day: 2, cycleOfDay: 2 });
-    expect([...storage.data.keys()].filter((k) => k.startsWith("input:"))).toHaveLength(5);
+    // Five cycles, then connecting reports the seat as seen (inactivity, #145).
+    const inputs = [...storage.data.keys()].filter((k) => k.startsWith("input:"));
+    expect(inputs).toHaveLength(6);
+    expect(storage.data.get(inputs[5]!)).toMatchObject({ input: { type: "seen", players: ["p0"] } });
     expect(storage.alarm).toBe(Date.UTC(2026, 9, 20, 6));
   });
 
@@ -865,7 +904,8 @@ describe("GameRoom cycle clock", () => {
     vi.setSystemTime(Date.UTC(2026, 9, 19, 15, 0, 5));
     await room.onAlarm();
     const inputs = [...storage.data].filter(([k]) => k.startsWith("input:")).map(([, v]) => (v as { input: { type: string } }).input.type);
-    expect(inputs).toEqual(["action", "cycle", "tick"]);
+    // The connected seat is reported as seen just before the cycle change (#145).
+    expect(inputs).toEqual(["action", "seen", "cycle", "tick"]);
     expect(lastView(c)).toMatchObject({ cycleOfDay: 6, you: { room: move.to } });
     expect(views(c).length).toBeGreaterThan(1);
   });

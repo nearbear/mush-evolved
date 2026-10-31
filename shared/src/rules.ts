@@ -17,6 +17,7 @@ import { itemsIn, rechargeMicrowaves, startCharges, visibleItemsIn } from "./ite
 import { actionFailed, apGain, carePointsGain, channelLimit, computerPointsCap, computerPointsGain, shootPointsGain, cycleChanged, designerPointsGain, gardenPointsGain, dailyMoraleLoss, inventorySlots, movementRules, pilgredPointsGain, satietyLoss } from "./modifiers.ts";
 import { contaminationSeenBy, convert } from "./infection.ts";
 import { addStatus, isHungry, publicStatusesOf, statusesOf } from "./statuses.ts";
+import { inactivityCycle } from "./inactivity.ts";
 import { emptyResources } from "./resources.ts";
 import { hasSkill } from "./skills.ts";
 import { rollFloat, shuffle } from "./rng.ts";
@@ -312,11 +313,14 @@ export function setRoleCheat(state: GameState, playerId: PlayerId, role: RoleChe
   return { ok: true, state: next };
 }
 
-/** The server's clock passed a cycle boundary (00:00, 03:00, … GMT): the cycle ends for everyone, ready or not. */
-export function newCycle(state: GameState): ActionResult {
+/**
+ * The server's clock passed a cycle boundary (00:00, 03:00, … GMT) at server time `at`: the cycle ends for everyone,
+ * ready or not. Without `at` (tests) the inactivity check is skipped.
+ */
+export function newCycle(state: GameState, at?: number): ActionResult {
   if (state.phase !== "playing") return fail("game_over");
   const next = clone(state);
-  advanceCycle(next);
+  advanceCycle(next, at);
   return { ok: true, state: next };
 }
 
@@ -325,13 +329,17 @@ function chargesFor(config: DeepReadonly<GameConfig>, type: string): { charges?:
   return charges === undefined ? {} : { charges };
 }
 
-/** Mutates a state that the caller already cloned. */
-function advanceCycle(state: GameState): void {
+/**
+ * Mutates a state that the caller already cloned. `at` is the clock cycle's server time; a cycle ended by everyone
+ * being ready (single player) has none, and no inactivity check: whoever ended it was there.
+ */
+function advanceCycle(state: GameState, at?: number): void {
   state.cycle += 1;
   for (const p of state.players) {
     p.ap = Math.min(state.config.maxAp, p.ap + apGain(state, p));
     p.ready = false;
   }
+  if (at !== undefined) inactivityCycle(state, at);
   diseaseTrackerCycleChange(state);
   cycleChanged(state);
   burnOxygen(state);
@@ -408,7 +416,16 @@ export function viewFor(state: GameState, playerId: PlayerId): PlayerView {
   // Nobody's account name goes out while the game runs, not even your own: people are known by character.
   // Who cursed you is never sent, even to you; nor which seat plays you, whether you used Transfer, or your action
   // history (only Interrogate and Chitchat reveal it, history.ts).
-  const { name: _name, outcastBy: _outcastBy, mind: _mind, transferUsed: _transferUsed, history: _history, ...yours } = you;
+  const {
+    name: _name,
+    outcastBy: _outcastBy,
+    mind: _mind,
+    transferUsed: _transferUsed,
+    history: _history,
+    lastSeenAt: _lastSeenAt,
+    inactivity: _inactivity,
+    ...yours
+  } = you;
   return {
     you: {
       ...yours,

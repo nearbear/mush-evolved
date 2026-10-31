@@ -168,6 +168,7 @@ export interface GameConfig {
     };
     crit: { chance: number; damage: [number, number] }; // A landing punch is critical with this chance and then rolls this range instead (owner, 2026-10-24, eMushpedia: 5 of 25 hit weight, 2 to 3; the wiki's broken-nose injury waits for #238).
     successChance: number; // Chance a punch lands, 0 to 1 (confirmed 2026-10-15: it misses 40% of the time).
+    inactiveTargetSuccessChance: number; // The same on an inactive target (owner, 2026-10-31, eMush: 90%).
     dirtyChance: number; // Chance of getting the dirty status after punching (confirmed 2026-10-13).
   };
   pacifist: {
@@ -446,6 +447,10 @@ export interface GameConfig {
   };
   anticPerfume: {
     immuneCycles: number; // Cycles of infection immunity the antic_perfume skill grants after each shower (confirmed 2026-10-16); a new shower resets it, no stacking.
+  };
+  inactivity: {
+    inactiveAfterHours: number; // Real hours without connecting (and a full AP gauge) before a player goes inactive at a cycle change (owner, 2026-10-31).
+    superAfterHours: number; // Real hours since they last connected before an inactive player is super inactive (owner, 2026-10-31).
   };
   logistics: {
     ap: number; // AP the logistics skill gives a random roommate each cycle (confirmed 2026-10-16).

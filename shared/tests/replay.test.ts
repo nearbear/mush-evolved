@@ -57,11 +57,17 @@ function randomInput(state: GameState, rng: RngState, at: number): [Input, RngSt
   const mine = state.chat.findLast((m) => m.from === by);
   if (pick === 8 && mine) return [{ by, type: "toggleCheckbox", message: mine.id, line: 1 }, rng];
   if (pick === 9) return [{ by, type: "acknowledgeTransfer" }, rng];
+  // The server reports who is connected; now and then a seat goes inactive at once (a ban).
+  if (pick === 10) return [{ type: "seen", players: [by], at }, rng];
+  if (pick === 11) {
+    [pick, rng] = nextInt(rng, 5);
+    if (pick === 0) return [{ type: "inactivate", player: by }, rng];
+  }
   const actions = legalActions(state, by);
   // Lean on "ready" so cycles (and days) actually pass; now and then the clock passes a cycle boundary too.
   if (actions.length === 0 || pick === 5) {
     [pick, rng] = nextInt(rng, 20);
-    return [pick === 0 ? { type: "cycle" } : { by, type: "action", action: { type: "ready" }, at }, rng];
+    return [pick === 0 ? { type: "cycle", at } : { by, type: "action", action: { type: "ready" }, at }, rng];
   }
   if (pick === 6) return [{ by, type: "clearQueue" }, rng];
   [pick, rng] = nextInt(rng, actions.length);
@@ -95,7 +101,7 @@ describe("replay", () => {
       expect(state.cycle, "the game got past a day").toBeGreaterThan(DEFAULT_CONFIG.cyclesPerDay);
       // Every input type the rules take, but cheats (cheats.test.ts), pre-selection's join (below), createThread and sharePlanet (not
       // generated) and acknowledgeTransfer (generated, but random play rarely transfers a body for it to accept).
-      for (const type of ["chat", "createChannel", "invite", "leaveChannel", "tick", "cycle", "clearQueue", "walk", "toggleCheckbox", "action"]) {
+      for (const type of ["chat", "createChannel", "invite", "leaveChannel", "tick", "cycle", "clearQueue", "walk", "toggleCheckbox", "action", "seen", "inactivate"]) {
         expect(inputs.some((i) => i.type === type), type).toBe(true);
       }
       // Through JSON, as the server stores it.

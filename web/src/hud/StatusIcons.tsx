@@ -4,7 +4,7 @@
 import { Popover } from "@base-ui/react/popover";
 import { useTranslation } from "react-i18next";
 import { DEFAULT_CONFIG, STATUS_PUBLIC, statusIdsFor } from "@mush2/shared";
-import { CONTAMINATED_ICON, statusIcon } from "../art/assets.ts";
+import { CONTAMINATED_ICON, statusIcon, statusIconClass } from "../art/assets.ts";
 
 /** `contamination` is set only when the server sent one (a Mush looking at a contaminated human). */
 export function StatusIcons({ statuses, contamination }: { statuses: readonly string[]; contamination?: number | undefined }) {
@@ -17,6 +17,7 @@ export function StatusIcons({ statuses, contamination }: { statuses: readonly st
         <li key={id}>
           <StatusIcon
             icon={statusIcon(id)}
+            iconClass={statusIconClass(id)}
             name={t(`status.${id}`, { defaultValue: id })}
             description={t(`status.desc.${id}`, { defaultValue: "" }) || undefined}
             visibility={STATUS_PUBLIC[id] ? "public" : "private"}
@@ -42,12 +43,15 @@ export function StatusIcons({ statuses, contamination }: { statuses: readonly st
 /** An icon button that opens a card with its name and, when there is one, a description. */
 export function StatusIcon({
   icon,
+  iconClass,
   name,
   description,
   visibility,
   children,
 }: {
   icon: string;
+  /** A class that recolours the icon (`statusIconClass`). */
+  iconClass?: string | undefined;
   name: string;
   description?: string;
   visibility?: "public" | "private";
@@ -57,7 +61,7 @@ export function StatusIcon({
   return (
     <Popover.Root>
       <Popover.Trigger openOnHover delay={200} className="status-icon" aria-label={name}>
-        <img src={icon} alt="" />
+        <img src={icon} className={iconClass} alt="" />
         {children}
       </Popover.Trigger>
       <Popover.Portal>

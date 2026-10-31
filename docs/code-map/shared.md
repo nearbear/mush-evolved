@@ -52,8 +52,9 @@ Other packages import from `@mush2/shared` (`shared/src/index.ts`, the barrel). 
 - `history.ts`: each body's action history (`recordAction`, called from `performAction`) and `revealHistory`, the private reveal lines Interrogate and Chitchat write.
 - `resources.ts`: per-player skill point pools.
 - `skills.ts`: the human skills, each character's pickable list (`CHARACTER_SKILLS`), `SKILL_SLOTS`, the Mush skills (`MUSH_SKILLS`, `MUSH_SKILL_SLOTS`), and `skillsOf`/`hasSkill` (picked skills, the book slot, and Mush skills).
-- `titles.ts`: `TITLE_IDS`, each title's line (`SUCCESSION`), `successor` (pure), `assignTitles` (at creation) and `refreshTitles` (after a death).
+- `titles.ts`: `TITLE_IDS`, each title's line (`SUCCESSION`), `successor` (pure), `assignTitles` (at creation) and `refreshTitles` (after a death, going inactive or coming back).
 - `statuses.ts`: stored and derived statuses.
+- `inactivity.ts`: inactive and super inactive (#145): `isInactive`, `isSuperInactive`, `inactivityOf`, `inactivityCycle` (from `advanceCycle`, given the clock cycle's server time), `markSeen`, and the server's `seen` and `inactivate` inputs.
 - `adjustStats.ts`: capped morale changes and disease application; `addDisease` updates both the modifier and private status.
 - `cheats.ts`: development cheats (issue #148), gated by `ALLOW_CHEATS`. Flag-only cheats are read where they apply: `instantActions` in `queue.ts`, `noRelayPenalty` in `relay.ts` (`makeToken`, fixed on the token), `freeHacking` in `titles.ts` (`bypassesTitles`), `anySkill` in `actions/pick_skill.ts`, `easyTravel` in `actions/warp_to_planet.ts` and `actions/leave_orbit.ts`. `alwaysClean` strips `dirty` in `applyCheats`.
 

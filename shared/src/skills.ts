@@ -200,7 +200,7 @@ export const SKILL_STATUS: Readonly<Partial<Record<SkillId | MushSkillId, SkillS
   designer: "full",
   // +2 MP per AP-to-MP conversion (owner, 2026-10-24); no expedition bonus yet, there are no expeditions.
   sprint: "partial",
-  // Anathema and the Outcast status (owner, 2026-10-24, anathema.ts); the original's "inactive" end has no equivalent yet.
+  // Anathema and the Outcast status (owner, 2026-10-24, anathema.ts); it also ends when the Outcast goes inactive (#145).
   juge: "full",
   // Fiery speech (owner, 2026-10-24, speech.ts).
   leadership: "full",

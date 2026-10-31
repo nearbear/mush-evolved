@@ -1,4 +1,5 @@
 import { Action, peopleHere, type ActionTag, type ActionVisibility, isString } from "./action.ts";
+import { isInactive } from "../inactivity.ts";
 import { logPrivate } from "../log.ts";
 import { swapMinds } from "../mind.ts";
 import { hasSkill } from "../skills.ts";
@@ -9,8 +10,9 @@ export type BodyTransferActionData = { type: "body_transfer"; target: string };
 /**
  * Transfer, the Mush skill `transfert` (owner, 2026-10-24, rules-design.md; eMushpedia `Transfert`): once per game,
  * free (`bodyTransfer.cost.ap`) and instant, a Mush takes over the body of a living human in their room whose
- * contamination is at least 1 (Antique Perfume immunity doesn't stop it). The minds swap (`swapMinds`): the Mush
- * player now plays the target's body, which becomes Mush; the victim plays the old body, now human with no
+ * contamination is at least 1 (Antique Perfume immunity doesn't stop it) and who isn't inactive (owner, 2026-10-31,
+ * #145). The minds swap (`swapMinds`): the Mush player now plays the target's body, which becomes Mush; the victim
+ * plays the old body, now human with no
  * contamination and no spores, at satiety 0 and counting toward hunger from this cycle. The new Mush body keeps its
  * satiety but stops counting toward hunger, as Mush do. Bodies keep everything else (AP, HP, morale, inventory,
  * human skills, titles, channels). Private: only the Mush gets a log line; the victim gets a pop-up naming who took
@@ -32,7 +34,7 @@ export class BodyTransferAction extends Action<BodyTransferActionData> {
   override getCandidates(state: Readonly<GameState>, player: Readonly<PlayerState>): BodyTransferActionData[] {
     if (!canTransfer(player)) return [];
     return peopleHere(state, player)
-      .filter((o) => eligible(state, o))
+      .filter((o) => eligible(state, o) && !isInactive(o))
       .map((o) => ({ type: "body_transfer", target: o.id }));
   }
 
@@ -44,6 +46,7 @@ export class BodyTransferAction extends Action<BodyTransferActionData> {
     if (!victim) return "cant_see";
     if (victim.role !== "human") return "not_human";
     if (!eligible(state, victim)) return "not_contaminated";
+    if (isInactive(victim)) return "inactive";
     return null;
   }
 

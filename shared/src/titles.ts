@@ -32,9 +32,9 @@ export const SUCCESSION: Readonly<Record<TitleId, readonly (CharacterId | "andie
   ],
 };
 
-/** Who may hold a title. TODO(#145): and not inactive, once that status exists. */
+/** Who may hold a title: the living who aren't inactive (inactivity.ts, #145). */
 export function eligibleForTitle(p: Readonly<PlayerState>): boolean {
-  return p.alive;
+  return p.alive && p.inactivity === undefined;
 }
 
 /**
@@ -88,7 +88,7 @@ export function assignTitles(players: readonly PlayerState[]): Record<TitleId, P
 
 /**
  * Passes on each title whose holder is no longer eligible, and gives a vacant one to the first
- * eligible person. Call after anything that changes eligibility (death; inactivity, #145). Each
+ * eligible person. Call after anything that changes eligibility (death, inactivity, a Transfer). Each
  * change is announced in crew chat only, not in a room log (owner, 2026-10-20).
  */
 export function refreshTitles(state: GameState): void {

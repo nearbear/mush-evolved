@@ -10,7 +10,7 @@ export type AnathemaActionData = { type: "anathema"; target: string };
  * other player in your room, Mush included. The target becomes an **Outcast** (`PlayerState.outcastBy` = you): their
  * actions that roll succeed at `anathema.successFactor` (x0.8, `actionSuccessRate`), and their covert and secret
  * actions are logged publicly (`logCovert`, `logSecret`, `activitySeen`). One Outcast per Persecutor: a new curse moves
- * it. It ends when either of them dies (`endAnathemaOnDeath`). No daily or per-game limit. The `outcast` status is
+ * it. It ends when either of them dies (`endAnathemaOnDeath`) or the Outcast goes inactive (inactivity.ts). No daily or per-game limit. The `outcast` status is
  * public to the room; the Persecutor's identity is never sent. Public room log.
  */
 export class AnathemaAction extends Action<AnathemaActionData> {

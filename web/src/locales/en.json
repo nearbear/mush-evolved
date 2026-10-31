@@ -545,6 +545,8 @@
     "extreme_tinnitus_disease": "Extreme Tinnitus",
     "fungal_infection_disease": "Fungal Infection",
     "broken_nose_injury": "Broken Nose",
+    "inactive": "Inactive",
+    "super_inactive": "Super Inactive",
     "contaminated": "Contamination: {{level}}",
     "desc": {
       "dirty": "Can't research. Taking a shower removes it.",
@@ -556,11 +558,13 @@
       "mankind_only_hope": "A trait: while this person is alive, the whole crew loses 1 less morale each day. It can't be removed.",
       "wheelchair": "A trait: anyone in this person's room can offer to push their wheelchair. While pushed, they move with the pusher at no MP cost. It can't be removed.",
       "accommodated": "Someone is pushing this person's wheelchair: they go wherever their pusher goes, at no MP cost, and can't move alone. Either of them can end it.",
-      "outcast": "Cursed by a Persecutor: every action of theirs that rolls succeeds 20% less, and nothing they do is secret. It ends when the Persecutor or they die.",
+      "outcast": "Cursed by a Persecutor: every action of theirs that rolls succeeds 20% less, and nothing they do is secret. It ends when the Persecutor or they die, or when they go inactive.",
       "cold_disease": "-3 Max Morale.\nYour punches deal 1 less damage.\nOn cycle change, you have a 33% chance to lose 1 MP.",
       "extreme_tinnitus_disease": "-3 Max Morale.\nYou lose 2 morale when the ship moves.\nYou lose 2 health when the ship moves.",
       "fungal_infection_disease": "-2 Max HP.\n-2 Max Morale.\nYou need 1 less spore to be converted.\nOn cycle change, you become dirty.",
       "broken_nose_injury": "-2 Max HP.\n-2 Max Morale.",
+      "inactive": "Hasn't connected for 24 hours. Holds no title, can't be taken over by a Transfer, and a punch lands on them 90% of the time. Ends as soon as they connect.",
+      "super_inactive": "Hasn't connected for 48 hours. Also skipped by the Logistics Expert. Ends as soon as they connect.",
       "contaminated": "A human you have contaminated. At their capacity they turn Mush."
     }
   },

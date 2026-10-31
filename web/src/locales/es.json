@@ -551,6 +551,8 @@
     "extreme_tinnitus_disease": "Tinnitus extremo",
     "fungal_infection_disease": "Micosis",
     "broken_nose_injury": "Nariz rota",
+    "inactive": "Inactivo",
+    "super_inactive": "Gran inactivo",
     "contaminated": "Contaminación: {{level}}",
     "desc": {
       "dirty": "No puedes investigar. Darte una ducha lo elimina.",
@@ -562,11 +564,13 @@
       "mankind_only_hope": "Un rasgo: mientras esta persona siga con vida, toda la tripulación pierde 1 punto de moral menos cada día. No se puede quitar.",
       "wheelchair": "Un rasgo: cualquiera en la sala de esta persona puede ofrecerse a empujar su silla de ruedas. Mientras la empujan, se mueve con quien la empuja sin coste de PM. No se puede quitar.",
       "accommodated": "Alguien empuja la silla de ruedas de esta persona: va adonde vaya quien la empuja, sin coste de PM, y no puede moverse sola. Cualquiera de los dos puede terminarlo.",
-      "outcast": "Maldecido por un Perseguidor: cada acción suya que se tira a suerte sale un 20 % menos, y nada de lo que hace es secreto. Termina cuando muere el Perseguidor o esta persona.",
+      "outcast": "Maldecido por un Perseguidor: cada acción suya que se tira a suerte sale un 20 % menos, y nada de lo que hace es secreto. Termina cuando muere el Perseguidor o esta persona, o cuando pasa a estar inactiva.",
       "cold_disease": "-3 de moral máxima.\nTus puñetazos infligen 1 punto de daño menos.\nAl cambiar de ciclo, tienes un 33 % de probabilidad de perder 1 PM.",
       "extreme_tinnitus_disease": "-3 de moral máxima.\nPierdes 2 puntos de moral cuando el barco se mueve.\nPierdes 2 puntos de salud cuando la nave se mueve.",
       "fungal_infection_disease": "-2 PV máximos.\n-2 de moral máxima.\nNecesitas una espora menos para transformarte.\nl cambiar de ciclo, Te vuelves sucio.",
       "broken_nose_injury": "-2 PV máximos.\n-2 de moral máxima.",
+      "inactive": "No se ha conectado en 24 horas. No puede tener ningún título, no puede sufrir una Transferencia, y un puñetazo le acierta el 90 % de las veces. Termina en cuanto se conecta.",
+      "super_inactive": "No se ha conectado en 48 horas. Logística también lo ignora. Termina en cuanto se conecta.",
       "contaminated": "Un humano que has contaminado. Al llegar a su capacidad se vuelve Mush."
     }
   },

@@ -11,6 +11,7 @@ import { clearQueue, queueAction, tick } from "./queue.ts";
 import { walk } from "./spot.ts";
 import { createChannel, createThread, inviteToChannel, leaveChannel, sendChat, toggleCheckbox } from "./chat.ts";
 import { sharePlanet } from "./sharedPlanets.ts";
+import { inactivate, seen } from "./inactivity.ts";
 import type { ConfigOverrides, GameConfig, GameState, PlayerId, Role, Seat } from "./types.ts";
 
 /** What createGame needed, plus which rules produced the game. */
@@ -53,7 +54,7 @@ export interface RecordedInput {
  * moderation, which is what the rules saw. An action carries the server time
  * it arrived (`at`), and `tick` is the server saying time has reached `at`
  * (queue.ts); the rules read no clock of their own. `cycle` is the server's
- * clock passing a cycle boundary (#24). Other server-driven inputs (scheduled
+ * clock passing a cycle boundary at `at` (#24). Other server-driven inputs (scheduled
  * plans) will join this union without a `by`.
  */
 export type Input =
@@ -62,8 +63,12 @@ export type Input =
   | (Exclude<GameClientMessage, { type: "action" | "setModel" | "clearModel" | "leaveShip" }> & { by: PlayerId })
   | (Extract<GameClientMessage, { type: "action" }> & { by: PlayerId; at: number })
   | { type: "tick"; at: number }
-  | { type: "cycle" }
-  | { type: "join"; seat: Seat };
+  | { type: "cycle"; at: number }
+  | { type: "join"; seat: Seat }
+  // The server: these bodies are connected now (inactivity.ts, #145).
+  | { type: "seen"; players: PlayerId[]; at: number }
+  // The server: this body's player goes inactive at once (a banned account, #23). Nothing sends it until bans exist.
+  | { type: "inactivate"; player: PlayerId };
 
 export function startGame(setup: GameSetup): GameState {
   return createGame(setup.seats, setup.config, setup.seed, setup.forcedRoles, setup.startCycle);
@@ -81,9 +86,13 @@ export function applyInput(state: GameState, input: Input): ActionResult {
     case "tick":
       return tick(state, input.at);
     case "cycle":
-      return newCycle(state);
+      return newCycle(state, input.at);
     case "join":
       return joinShip(state, input.seat);
+    case "seen":
+      return seen(state, input.players, input.at);
+    case "inactivate":
+      return inactivate(state, input.player);
     case "chat":
       return sendChat(state, input.by, input.channel, input.text);
     case "toggleCheckbox":

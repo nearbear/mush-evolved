@@ -5,6 +5,9 @@ import type { DiseaseTracker } from "../adjustStats.ts";
 
 export type ResourceId = "eng" | "exp" | "comp" | "garden" | "core" | "shoot" | "cook" | "heal" | "pilgred";
 
+/** Inactive, then super inactive (inactivity.ts, #145). */
+export type Inactivity = "inactive" | "super_inactive";
+
 export interface ActionInProgress {
   action: Action;
   since: number;
@@ -59,6 +62,16 @@ export interface PlayerState extends Seat {
   pushedBy?: PlayerId;
   /** The Persecutor whose Anathema made this player an Outcast (anathema.ts). Never sent; the public `outcast` status is. */
   outcastBy?: PlayerId;
+  /**
+   * When this player was last connected (server ms; inactivity.ts, reported by the server's `seen` input). Unset until
+   * the rules first hear of them. Stays with the body in a Transfer. Never sent.
+   */
+  lastSeenAt?: number;
+  /**
+   * Unset while active (inactivity.ts). Stays with the body in a Transfer. The field is never sent; the public
+   * `inactive` and `super_inactive` statuses are.
+   */
+  inactivity?: Inactivity;
   /** True once the Motivator has given today's Boring speech (speech.ts); cleared at day start. Never sent. */
   boringToday?: boolean;
   /** The Fertile skill's free spore extraction was used today (reset each day; moves with the mind in a Transfer). */

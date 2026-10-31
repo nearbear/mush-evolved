@@ -73,3 +73,12 @@ h2 {
   text-align: center;
   margin-top: 4rem;
 }
+
+/*
+ * A status icon recoloured red at render time (statusIconClass in art/assets.ts): super inactive is the yellow
+ * sleepy icon turned red (#145). hue-rotate alone keeps luminance, so bright yellow would come out peach; darkening
+ * first and saturating after gives a shaded red.
+ */
+.status-red {
+  filter: brightness(0.7) hue-rotate(-60deg) saturate(3);
+}

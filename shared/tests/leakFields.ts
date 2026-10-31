@@ -95,6 +95,8 @@ export const PLAYER_STATE_FIELDS: Record<string, FieldRule> = {
   satietyZeroSince: { reach: "own", test: "leaks.test.ts" },
   statuses: { reach: "room", test: "leaks.test.ts", note: "Public statuses only; private ones are your own." },
   diseaseTrackers: { reach: "own", test: "leaks.test.ts" },
+  lastSeenAt: { reach: "never", test: "leaks.test.ts", note: "Only the public `inactive` and `super_inactive` statuses it leads to go out." },
+  inactivity: { reach: "never", test: "inactivity.test.ts", note: "The field itself; the public `inactive` and `super_inactive` statuses go out instead." },
   outcastBy: { reach: "never", test: "anathema.test.ts", note: "Who cursed them is never sent; only the public `outcast` status is." },
   fertileToday: { reach: "own", test: "fertile.test.ts", note: "Only gates the free extraction; roommates never see it." },
   boringToday: { reach: "own", test: "speech.test.ts", note: "Only gates the Boring speech; roommates never see it." },

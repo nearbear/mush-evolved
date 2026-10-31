@@ -1,5 +1,6 @@
 import { Action, IN_PRESELECTION, peopleHere, type ActionTag, isString } from "./action.ts";
 import { damage } from "../death.ts";
+import { isInactive } from "../inactivity.ts";
 import { logPublic } from "../log.ts";
 import { punchDamage } from "../modifiers.ts";
 import { roll, rollFloat } from "../rng.ts";
@@ -23,8 +24,10 @@ export class PunchAction extends Action<PunchActionData> {
     return { ap: state.config.punch.cost.ap, mp: 0 };
   }
 
-  override getSuccessChance(state: Readonly<GameState>): number {
-    return state.config.punch.successChance;
+  override getSuccessChance(state: Readonly<GameState>, _player: Readonly<PlayerState>, target: PunchActionData): number {
+    const victim = state.players.find((o) => o.id === target.target);
+    // An inactive target is easier to hit (owner, 2026-10-31, #145).
+    return victim && isInactive(victim) ? state.config.punch.inactiveTargetSuccessChance : state.config.punch.successChance;
   }
 
   override getCandidates(state: Readonly<GameState>, player: Readonly<PlayerState>): PunchActionData[] {
