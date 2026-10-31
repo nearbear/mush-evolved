@@ -120,6 +120,8 @@ interface Stored {
 //   "setup"         GameSetup, written once
 //   "input:<seq>"   RecordedInput, one per accepted input, never rewritten
 //   "blocked:<seq>" BlockedText, text moderation refused (moderators only)
+//   "account:<seat>" the account that took the seat (#292), written with its join and never rewritten, so moderators
+//                    can tell who played a seat after a rename or once the snapshot is gone. Moderators only.
 
 interface BlockedText {
   at: number;
@@ -131,6 +133,9 @@ interface BlockedText {
 
 /** Zero-padded so keys list in order. */
 const inputKey = (seq: number) => `input:${String(seq).padStart(9, "0")}`;
+
+/** The record's seat-to-account entry (#292). */
+const accountKey = (seat: PlayerId) => `account:${seat}`;
 
 /** Who is taking a seat: the account, and the session (its hash) the seat token is handed to. */
 export interface SeatAccount {
@@ -200,7 +205,7 @@ export class GameRoom extends Server<Env> {
   override async onStart(): Promise<void> {
     const stored = await this.ctx.storage.get<Stored>("game");
     if (stored?.version !== STATE_VERSION) {
-      // Only the snapshot goes; the record ("setup", "input:*", "blocked:*") is kept for the replay (#167).
+      // Only the snapshot goes; the record ("setup", "input:*", "blocked:*", "account:*") is kept for the replay (#167).
       if (stored) await this.ctx.storage.delete("game");
       this.retired = (await this.ctx.storage.get("setup")) !== undefined;
       return;
@@ -595,13 +600,19 @@ export class GameRoom extends Server<Env> {
    */
   private async act(input: Input, raw?: string, room?: string): Promise<string | null> {
     if (!this.game) return "no_game";
+    const firstChatId = this.game.nextChatId;
     const result = applyInput(this.game, input);
     if (!result.ok) return result.error;
     // One time for the stamps and the record, so a rebuild stamps the same (rebuildGame).
     const now = Date.now();
     this.game = stampEntries(result.state, now);
-    const recorded: RecordedInput = { at: now, input, ...(raw !== undefined && { raw }) };
-    await this.persist({ [inputKey(this.inputs++)]: recorded });
+    // The message the chat input posted: the only player message an input makes.
+    const chatId = input.type === "chat" ? this.game.chat.find((m) => m.id >= firstChatId && m.from !== null)?.id : undefined;
+    const recorded: RecordedInput = { at: now, input, ...(raw !== undefined && { raw }), ...(chatId !== undefined && { chatId }) };
+    const entries: Record<string, unknown> = { [inputKey(this.inputs++)]: recorded };
+    const account = input.type === "join" ? this.accounts[input.seat.id] : undefined;
+    if (input.type === "join" && account !== undefined) entries[accountKey(input.seat.id)] = account;
+    await this.persist(entries);
     this.broadcastViews(room);
     // Saved with the next input; until then a restart only repeats an idempotent write.
     await this.releaseAccounts();

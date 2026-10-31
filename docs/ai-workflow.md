@@ -1739,3 +1739,9 @@ Built the pooled relay tokens for research, projects and PILGRED (#311 part A): 
 - The owner couldn't play two characters in Firefox split tabs after accounts: the session cookie is per browser, and signing in to a second account revokes the first account's seat tokens (#285). Firefox Multi-Account Containers (a cookie jar per tab) solved it with no code change; localhost vs 127.0.0.1 on local dev was the other suggestion.
 - Leave only went back to the lobby, which resumed the same ship: correct per the rules (one ship per account until death), but misleading. Owner's call: rename it Main menu and add a developer-only Leave ship cheat that frees the account (the character stays aboard). Built outside the rules as a server message, gated like the cheats.
 - Committing beside another session's uncommitted relay work in the same files: staged versions were built from HEAD plus only this session's edits (`git hash-object` + `update-index`), then typechecked and tested in an exported copy of the index before committing.
+
+## 2026-10-31: Seat accounts and chat ids in the record (#292)
+
+- The seat-to-account map from #285 lived only in the snapshot, which a state version bump drops. Claude added a write-once `account:<seat>` record key, saved in the same atomic put as the join. It chose this over putting the account on the `join` input, so the replay inputs (public once replays ship) stay free of account IDs and account deletion (#310) has one key per seat to deal with.
+- Chat ids were already stable and never reused (`nextChatId`), but trimming (`CHAT_HISTORY`) and deleted private channels drop messages from the state. Each `chat` input now records its message id (`RecordedInput.chatId`), so a report can cite a message without replaying.
+- Not done: keeping reported games past retention. Neither reports (#74) nor a retention rule (#132) exist yet, so there was nothing to hook into.

@@ -462,6 +462,22 @@ describe("GameRoom persistence", () => {
     expect(storage.data.has("input:000000002")).toBe(true); // continued after the move and its tick, didn't overwrite them
   });
 
+  it("records each chat message's id, so a report can cite it after the state drops it (#292)", async () => {
+    const { room, storage } = await newRoom(3);
+    const c = connect(room, "tok0");
+    await send(room, c, { type: "chat", channel: CHAT_CHANNELS[0], text: "hello" });
+    await send(room, c, { type: "chat", channel: CHAT_CHANNELS[0], text: "again" });
+    const record = [...(await storage.list({ prefix: "input:" })).values()] as RecordedInput[];
+    const ids = record.filter((r) => r.input.type === "chat").map((r) => r.chatId);
+    const shown = lastView(c).chat.filter((m) => m.from !== null);
+    expect(shown.map((m) => m.text)).toEqual(["hello", "again"]);
+    expect(ids).toEqual(shown.map((m) => m.id));
+    // Other inputs carry none.
+    await send(room, c, { type: "action", action: legalIn(lastView(c)).find((x) => x.type === "move")! });
+    expect(storage.data.get("input:000000002")).toMatchObject({ input: { type: "action" } });
+    expect(storage.data.get("input:000000002")).not.toHaveProperty("chatId");
+  });
+
   it("drops a snapshot stored under another state version, but keeps the record and launches nothing over it", async () => {
     const { room, storage } = await newRoom(3, new FakeStorage(), CHEATS);
     const c = connect(room, "tok0");
@@ -1158,6 +1174,30 @@ describe("GameRoom accounts (#285)", () => {
     expect(room.seatAccounts()).toEqual([ids[1]]);
     // The character stays aboard.
     expect(game().players).toHaveLength(players);
+  });
+
+  it("records each seat's account for good: it outlives a rename and a dropped snapshot (#292)", async () => {
+    const { storage, store, ids } = await shipWithAccounts();
+    expect(await store.rename(ids[0]!, "Annie", Date.now())).toBe("ok");
+    // A state version bump drops the snapshot (and its `accounts`); the record stays.
+    (storage.data.get("game") as { version: number }).version = -1;
+    const revived = new GameRoom({ storage } as never, { RULES_VERSION: "test", DB: migratedDatabase() } as never);
+    await revived.onStart();
+    expect(storage.data.has("game")).toBe(false);
+    expect(storage.data.get("account:p0")).toBe(ids[0]);
+    expect(storage.data.get("account:p1")).toBe(ids[1]);
+    // The seat keeps the name at the time; the account leads to the current name and every rename.
+    const joins = ([...(await storage.list({ prefix: "input:" })).values()] as RecordedInput[]).filter((r) => r.input.type === "join");
+    expect(joins[0]).toMatchObject({ input: { seat: { id: "p0", name: "Ann" } } });
+    expect((await store.getAccount(storage.data.get("account:p0") as string))?.displayName).toBe("Annie");
+    expect(await store.nameHistory(ids[0]!)).toMatchObject([{ oldName: "Ann", newName: "Annie" }]);
+  });
+
+  it("records no account for a seat joined without one", async () => {
+    const storage = new FakeStorage();
+    const room = asRoom(storage);
+    expect(await room.join("Ann", "chao")).toMatchObject({ ok: true });
+    expect([...storage.data.keys()].filter((k) => k.startsWith("account:"))).toEqual([]);
   });
 
   it("keeps accounts and session tokens across a restart", async () => {

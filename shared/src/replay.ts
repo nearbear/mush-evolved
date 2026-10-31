@@ -40,6 +40,11 @@ export interface RecordedInput {
   input: Input;
   /** The text as typed, when moderation changed it. Moderators only. */
   raw?: string;
+  /**
+   * A `chat` input's message id (`ChatMessage.id`), so a report can cite it after the message is trimmed from the state
+   * (`CHAT_HISTORY`) or its private channel is gone (#292). Ids are never reused. Missing on older games.
+   */
+  chatId?: number;
 }
 
 /**
