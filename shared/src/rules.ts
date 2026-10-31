@@ -22,7 +22,7 @@ import { hasSkill } from "./skills.ts";
 import { rollFloat, shuffle } from "./rng.ts";
 import { chatChannels, readChannels } from "./chat.ts";
 import { moderateName } from "./moderation.ts";
-import { clone, dayOf, fail, findPlayer, freeAp, type ActionResult } from "./helpers.ts";
+import { clone, dayOf, fail, findPlayer, type ActionResult } from "./helpers.ts";
 
 export { dayOf };
 import { damage, healDaily } from "./death.ts";
@@ -159,7 +159,6 @@ export function newPlayer(s: Seat, config: DeepReadonly<GameConfig>, cycle: numb
     alpha: role === "mush",
     room: config.startRoom,
     ap: config.startAp,
-    lockedAp: 0,
     mp: config.startMp,
     hp: config.startHp,
     maxHp: config.maxHp,
@@ -211,7 +210,7 @@ export function unaffordableActions(state: GameState, playerId: PlayerId): Actio
       const refused = def.check(state, p, a);
       if (refused !== "cant_afford" && refused !== NO_SPACE && refused !== COOLDOWN && refused !== AT_CAPACITY && refused !== DIRTY) return [];
       const cost = def.cost(state, p, a);
-      const lacks: ActionOption["lacks"] = [...(refused === DIRTY ? (["clean"] as const) : []), ...(refused === NO_SPACE ? (["space"] as const) : []), ...(refused === COOLDOWN ? (["cooldown"] as const) : []), ...(refused === AT_CAPACITY ? (["capacity"] as const) : []), ...(freeAp(p) < cost.ap ? (["ap"] as const) : []), ...(p.mp < cost.mp ? (["mp"] as const) : [])];
+      const lacks: ActionOption["lacks"] = [...(refused === DIRTY ? (["clean"] as const) : []), ...(refused === NO_SPACE ? (["space"] as const) : []), ...(refused === COOLDOWN ? (["cooldown"] as const) : []), ...(refused === AT_CAPACITY ? (["capacity"] as const) : []), ...(p.ap < cost.ap ? (["ap"] as const) : []), ...(p.mp < cost.mp ? (["mp"] as const) : [])];
       const option: ActionOption = { action: a, cost, chance: def.chance(state, p, a), tags: [...def.tags], lacks };
       if (refused === COOLDOWN) option.cooldown = def.cooldownLeft(state, p, a);
       return [option];

@@ -4,7 +4,7 @@
 
 import { useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
-import { freeAp, type PlayerView, type RoomId, type ShipLayout, type Target } from "@mush2/shared";
+import { type PlayerView, type RoomId, type ShipLayout, type Target } from "@mush2/shared";
 import { announce } from "../announce.ts";
 import { useNames } from "../i18n/names.ts";
 
@@ -90,7 +90,7 @@ export function RoomList({
         key: to,
         label: reachable.has(to)
           ? t("roomList.doorCost", { room: names.room(to), cost: doorCost() })
-          : view.you.mp < mpPerMove && freeAp(view.you) < apPerConversion
+          : view.you.mp < mpPerMove && view.you.ap < apPerConversion
             ? t("roomList.doorNoPoints", { room: names.room(to), mp, ap })
             : t("roomList.doorOutOfReach", { room: names.room(to) }),
         // Focusable but inert, so a reader still hears the exit and why it does nothing.

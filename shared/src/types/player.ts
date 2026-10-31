@@ -53,11 +53,6 @@ export interface PlayerState extends Seat {
   /** Where you stand in `room` (spot.ts). Unset until you walk or move: the client spreads such people out. Public to your room (`OtherPlayerView.spot`). */
   spot?: Spot;
   ap: number;
-  /**
-   * AP claimed plan jobs hold (docs/plans/action-plans.md): still part of `ap`, so the cycle gain's cap counts it, but live
-   * actions can't spend it (`freeAp`). Private: only in your own view. Nothing locks AP yet.
-   */
-  lockedAp: number;
   /** The bed (equipment id) you are lying in, while you have the `lying_down` modifier. Public to your room (`OtherPlayerView.lying`). */
   lyingIn?: string;
   /** Who is pushing your wheelchair (accommodate.ts). Public to your room (`OtherPlayerView.pushedBy`, the `accommodated` status). */

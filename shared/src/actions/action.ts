@@ -1,5 +1,4 @@
 import { actionCost, actionSuccessRate, actionDirtRate, actionInjuryRate, type CostContext } from "../modifiers.ts";
-import { freeAp } from "../helpers.ts";
 import type { Action as AnyAction, GameState, PlayerState, ResourceId } from "../types.ts";
 
 /** Others you could bond with, share with or hit: living, in your room, not yourself. */
@@ -125,7 +124,7 @@ export class Action<T extends { type: string }> {
 
   canAfford(state: Readonly<GameState>, player: Readonly<PlayerState>, target: T): string | null {
     const cost = this.cost(state, player, target);
-    if (freeAp(player) < cost.ap) return "cant_afford";
+    if (player.ap < cost.ap) return "cant_afford";
     if (player.mp < cost.mp) return "cant_afford";
     return null;
   }
