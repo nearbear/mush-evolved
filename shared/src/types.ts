@@ -2,6 +2,7 @@ import type { CharacterId } from "./characters.ts";
 
 export * from "./types/chat.ts";
 export * from "./types/config.ts";
+export * from "./types/plan.ts";
 export * from "./types/player.ts";
 export * from "./types/state.ts";
 export * from "./types/view.ts";

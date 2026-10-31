@@ -247,6 +247,11 @@
     }
   },
   "actions": {
+    "claimSlot": "Claim",
+    "withdrawSlot": "Withdraw",
+    "markDone": "Mark done",
+    "cancelPlan": "Cancel plan",
+    "summon": "Summon",
     "access": "Access",
     "examine": "Examine",
     "dispense": "Pull coffee",
@@ -703,6 +708,12 @@
     "space_capsule": "Space capsule"
   },
   "logEvent": {
+    "summonArrived": "You were summoned to: {{room}}. You are there.",
+    "summonStopped": "You were summoned to: {{room}}, but couldn't get there; you stopped on the way.",
+    "summonStoppedCantAfford": "You were summoned to: {{room}}, but ran out of movement points on the way.",
+    "summonStoppedDoor": "You were summoned to: {{room}}, but a door on the way was blocked.",
+    "summonStoppedPushed": "You were summoned to: {{room}}, but couldn't go: someone is pushing your wheelchair.",
+    "summonStoppedNoPath": "You were summoned to: {{room}}, but there is no way there from where you are.",
     "loseMorale": "You have lost {{amount}} morale.",
     "gainMorale": "You gain {{amount}} morale.",
     "actionCostChanged": "Your queued action ({{action}}) was cancelled because its cost changed: it now costs {{ap}} AP and {{mp}} MP.",

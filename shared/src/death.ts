@@ -10,6 +10,7 @@ import type { CharacterId } from "./characters.ts";
 import { removeFromChannel, pushChat } from "./chat.ts";
 import { CORPSE_ITEM, ITRACKIE_ITEM, sameContainer, newItemId } from "./items.ts";
 import { logPublic } from "./log.ts";
+import { strikeSlots } from "./plans.ts";
 import { refreshTitles } from "./titles.ts";
 import { endGame, mushWinOnDeath } from "./victory.ts";
 import type { ChannelId, GameState, PlayerState } from "./types.ts";
@@ -51,8 +52,7 @@ export function killPlayer(state: GameState, player: PlayerState): void {
   for (const item of state.items) if (sameContainer(item.at, mine)) item.at = { kind: "room", id: player.room };
   state.items.push({ id: newItemId(state), type: CORPSE_ITEM, at: { kind: "room", id: player.room }, of: player.id });
 
-  // Bonds and contamination are void. Plans aren't built yet; when they are,
-  // the dead player's claims are released here (docs/plans/on-call.md).
+  // Bonds and contamination are void. The dead player's plan claims go with their channels (removeFromChannel, below).
   delete state.bonds[player.id];
   for (const [id, partners] of Object.entries(state.bonds)) state.bonds[id] = partners.filter((b) => b !== player.id);
   delete state.contamination[player.id];
@@ -63,6 +63,9 @@ export function killPlayer(state: GameState, player: PlayerState): void {
   for (const channel of state.channels.filter((c) => c.members.includes(player.id))) {
     if (removeFromChannel(state, channel.id, player.id)) systemMessage(state, channel.id, "leftThisWorld", player.character);
   }
+
+  // Task slots aimed at them are struck out on every card (plans.ts).
+  strikeSlots(state);
 
   // The room always gets a line, without the role; NERON's crew-wide announcement reveals it, unless the BIOS has
   // death announcements off (bios.ts).

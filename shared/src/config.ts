@@ -184,6 +184,7 @@ export const DEFAULT_CONFIG: GameConfig = {
   },
   // Confirmed 2026-10-17: lying down in a bed is free (the +1 AP per cycle is the lying_down modifier).
   accommodate: { cost: { ap: 0 }, offerMs: 5 * 60_000 },
+  plans: { expiryDays: 1, slotsPerPlan: 12, finishedKept: 1 },
   lieDown: { cost: { ap: 0 } },
   // Confirmed 2026-10-14: showering costs 2 AP, 1 less with soap in your inventory; a Mush takes 4 damage.
   shower: { cost: { ap: 2, soapDiscountAp: 1, waterResistantAp: 1 }, effect: { mushDamage: 4 }, injuryChance: 0.02 },

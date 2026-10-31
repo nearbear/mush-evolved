@@ -13,6 +13,8 @@ import { DispenseAction } from "./actions/dispense.ts";
 import { ExamineAction } from "./actions/examine.ts";
 import { ExtractSporeAction } from "./actions/extract_spore.ts";
 import { MoveAction } from "./actions/move.ts";
+import { CancelPlanAction, ClaimSlotAction, MarkDoneAction, WithdrawSlotAction } from "./actions/plan_slots.ts";
+import { SummonAction } from "./actions/summon.ts";
 import { ResearchAction } from "./actions/research.ts";
 import { SpoilResearchAction } from "./actions/spoil_research.ts";
 import { ContaminateAction } from "./actions/contaminate.ts";
@@ -190,6 +192,11 @@ const REGISTRY = {
   self_disease: new SelfDiseaseAction(),
   self_injury: new SelfInjuryAction(),
   warp_to_planet: new WarpToPlanetAction(),
+  claim_slot: new ClaimSlotAction(),
+  withdraw_slot: new WithdrawSlotAction(),
+  mark_done: new MarkDoneAction(),
+  cancel_plan: new CancelPlanAction(),
+  summon: new SummonAction(),
 };
 
 /** Every action a player can send: each class's own data shape (`XyzActionData` in its file), so a new action needs only its entry above. */

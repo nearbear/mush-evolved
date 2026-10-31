@@ -87,6 +87,11 @@ const ACTION_NAME_KEYS = {
   water: "actions.water",
   treat: "actions.treat",
   sow: "actions.sow",
+  claim_slot: "actions.claimSlot",
+  withdraw_slot: "actions.withdrawSlot",
+  mark_done: "actions.markDone",
+  cancel_plan: "actions.cancelPlan",
+  summon: "actions.summon",
 } as const satisfies Record<Exclude<ActionType, "ready">, string>;
 
 export function useNames() {

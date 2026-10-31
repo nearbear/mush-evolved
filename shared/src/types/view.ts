@@ -7,6 +7,7 @@ import type { PlanetDirection } from "../planets.ts";
 import type { TitleId } from "../titles.ts";
 import type { Action, BotKind, ItemId, LogEntry, PlayerId, Role, RoomId } from "../types.ts";
 import type { ChannelId, ChatMessage, ChatThread, PrivateChannel, SharedPlanet } from "./chat.ts";
+import type { Plan } from "./plan.ts";
 import type { MovementRules } from "./config.ts";
 import type { ActionInProgress, PlayerState, Spot } from "./player.ts";
 import type { GameState, ShipResources } from "./state.ts";
@@ -158,6 +159,11 @@ export interface PlayerView {
   readChannels: ChannelId[];
   /** Private channels you belong to. Channels you aren't in are never sent. */
   privateChannels: PrivateChannel[];
+  /**
+   * Plans of the private channels you belong to (plans.ts): the open one and the latest finished ones. Holders are
+   * members, known to members; why a summoned holder stopped is only in that holder's own log.
+   */
+  plans: Plan[];
   /** Threads under global chat, when you can read it. */
   threads: ChatThread[];
   /** Planets shared in the Astrophysics feature, oldest first, when you can read it. Never which planet each came from. */

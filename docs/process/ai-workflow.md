@@ -1822,3 +1822,21 @@ Reviewed both commits after the fact. Found `lastSeenAt` staying with the body i
 - `Setup` changed shape: `text` per language (en/fr/es, at least one; the standard setup has none) and `ownerName` replace `name`, `description` and `author`. The owner's account ID never leaves the server; the list's `mine` gives a signed-in player their own setup IDs and cap usage instead.
 - Claude's readings, not asked: a description may be empty; the description has no line cap beyond its length (moderation already folds blank lines); masking or link removal that pushes text over a cap refuses it; a lookup of `standard` returns `STANDARD_SETUP`; the takedown column exists but nothing reads it yet (#289).
 - `wrangler types` in a worktree drops `MODEL_API_KEY` (no `server/.dev.vars` there); regenerate with `--env-file` pointing at the main checkout's.
+
+## 2026-10-31: Chat filter scope, slurs only (#325)
+
+- Owner asked to stop filtering swearing and mask only slurs. Claude found the list was five swear words and no slurs, and recommended `obscenity` for matching (handles bypasses) with our own fr/es lists.
+- A second opinion (another assistant) suggested the Surge AI categorized list plus LDNOOBW. Checking on GitHub corrected it: the Surge repo is gone (404) with no license found for the mirror, and it is English only; LDNOOBW is CC BY 4.0 but small and uncategorized. Kept LDNOOBW as the fr/es starting point.
+- Owner approved `obscenity` and a CC BY 4.0 data file in `shared`. Written up as story #325; not implemented yet.
+
+## 2026-10-31: channel plans in `shared` (#313)
+
+Built step 2 of `docs/plans/on-call.md` from the recorded decisions; no new rule questions. What worked: the doc's decisions were complete enough to write `plans.ts`, the five 0-AP registry actions and the summons walk directly, and the existing leak sentinel harness took a `planRoom` sentinel with one line. What needed correction: the first `actions/summon.ts` imported `queue.ts` and the registry and made an import cycle, which `moduleLoad.test.ts` caught; the walk now calls `performAction` through a binding `rules.ts` sets, and the queue-dropping part moved to a small `queueCore.ts`. Calls Claude made and flagged rather than asked: the plan actions stay out of the action history (Interrogate would otherwise reveal private-channel activity), a slot's strike is stored rather than derived (so it doesn't flip when the plan is called), `finishedKept` counts finished plans stored per channel, and a ready holder is still walked (as a queued action still happens after End cycle).
+
+### 2026-10-31: Gemini code review of on-call plans step 2 (#313)
+
+Asked agy (`gemini-4-argon-high`) for a code review of the uncommitted step 2 diff, pasted in full (75 KB). Of its ten findings, Claude checked each against the code. Three held and were fixed: plans skipped the iTrackie rule channel messages follow (a member without one saw and acted on the channel's plan); `postPlan` accepted reservations the claim rules make unclaimable; and the room check used `rooms[id]` without `Object.hasOwn`, so `"constructor"` passed. Not real: a death leak (other players' `alive` is already public), plan actions disturbing hiding or wheelchairs (both hooks ignore private actions), partial AP loss on a refused step (`performAction` checks the price before paying), and missing locale strings (the locale files were left out of the pasted diff). Open, for the owner: whether a done task should still be struck when its target dies or the holder finishes their own research, and whether Go should be offered on a plan with no on-call slots. What worked: pasting everything and forbidding file access gave a single clean run; its "conditional" labels flagged exactly the findings that turned out wrong.
+
+### 2026-10-31: Owner's answers to the review's rule questions (#313)
+
+The owner decided: a task slot already ticked Done is never struck; Go (`summon`) is refused on a plan with no on-call slot (`plan_no_on_call`); and a summons still drops the holder's queue even when the walk can't reach them (Gemini's suggestion to check the route first was declined). Recorded in `docs/plans/on-call.md` and built with tests. Claude's first test asserted the refusal code from `applyAction`, which reports every refusal as `illegal_action`; checking `.ok` fixed it.

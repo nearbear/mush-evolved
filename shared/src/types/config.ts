@@ -358,6 +358,9 @@ export interface GameConfig {
     startHeading: PlanetDirection; // The heading at the start (Claude's default).
   };
   accommodate: { cost: { ap: number }; offerMs: number }; // AP spent to offer to push someone's wheelchair, and how long (server ms) the offer waits to be accepted (owner, 2026-10-19: free, 5 minutes).
+  // Channel plans (docs/plans/on-call.md, owner 2026-10-30). A plan posted on day N expires at the end of day
+  // N + `expiryDays` if still open; at most `slotsPerPlan` slots; each channel keeps its `finishedKept` latest finished plans.
+  plans: { expiryDays: number; slotsPerPlan: number; finishedKept: number };
   lieDown: { cost: { ap: number } }; // AP spent to lie down in a bed (confirmed 2026-10-17).
   shower: {
     cost: {

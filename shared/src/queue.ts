@@ -16,6 +16,7 @@ import { ACTIONS, type ActionDef } from "./actions.ts";
 import { endAccommodationToAct, expireOffers } from "./actions/accommodate.ts";
 import { clone, fail, findPlayer, type ActionResult } from "./helpers.ts";
 import { logPrivate } from "./log.ts";
+import { dropped, emptyQueue } from "./queueCore.ts";
 import { getUp } from "./actions/lie_down.ts";
 import { applyAction, canAct, performAction } from "./rules.ts";
 import { standUp } from "./spot.ts";
@@ -44,10 +45,7 @@ export function queueAction(state: GameState, playerId: PlayerId, action: Action
   return { ok: true, state: next };
 }
 
-/**
- * Does an action at once, bypassing the queue: the untimed path of `queueAction`, and the way a plan's jobs run
- * (docs/plans/action-plans.md), so both go through the same legality check, cost and hooks.
- */
+/** Does an action at once, bypassing the queue: the untimed path of `queueAction`, with the same legality check, cost and hooks. */
 export function actNow(state: GameState, playerId: PlayerId, action: Action): ActionResult {
   const def: ActionDef<Action> | undefined = ACTIONS[action.type];
   if (!def) return fail("illegal_action");
@@ -60,17 +58,20 @@ export function actNow(state: GameState, playerId: PlayerId, action: Action): Ac
   return done;
 }
 
-/** Clear queue: drops everything waiting, and the action under way unless it has already happened ("start"). */
-export function clearQueue(state: GameState, playerId: PlayerId): ActionResult {
+/**
+ * Clear queue: drops everything waiting, and the action under way unless it has already happened ("start"). With
+ * `notify`, the player gets an `actionDropped` line for each (the summons walk, which they didn't ask for); a player
+ * clearing their own queue isn't told (owner, 2026-10-31).
+ */
+export function clearQueue(state: GameState, playerId: PlayerId, notify = false): ActionResult {
   const p = findPlayer(state, playerId);
   const cancelsCurrent = state.config.action.resolveAt === "end" && p?.current;
   if (!p || (!cancelsCurrent && p.queue.length === 0)) return fail("nothing_queued");
   const next = clone(state);
-  const actor = findPlayer(next, playerId)!;
-  actor.queue = [];
-  if (cancelsCurrent) actor.current = null;
+  emptyQueue(next, findPlayer(next, playerId)!, notify);
   return { ok: true, state: next };
 }
+
 
 /** Server time (ms) the earliest bar runs out or accommodation offer expires, or null when nothing is waiting. */
 export function nextDue(state: Readonly<GameState>): number | null {
@@ -145,9 +146,4 @@ function repriced(state: Readonly<GameState>, actor: Readonly<PlayerState>, queu
 function costChanged(next: GameState, actor: PlayerState, action: Action): void {
   const cost = (ACTIONS[action.type] as ActionDef<Action>).cost(next, actor, action);
   if (actor.alive) logPrivate(next, actor.id, "actionCostChanged", { action: action.type, ap: cost.ap, mp: cost.mp });
-}
-
-/** A queued action that was no longer possible when its turn came. Only the actor is told. */
-function dropped(next: GameState, actor: PlayerState, action: Action): void {
-  if (actor.alive) logPrivate(next, actor.id, "actionDropped", { action: action.type });
 }

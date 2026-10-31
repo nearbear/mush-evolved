@@ -151,6 +151,9 @@ function ship(): { state: GameState; sentinels: Sentinel[] } {
   s.bonds.p1 = ["p2"];
   s.channels.push({ id: "pc-1", name: str("channelName", ["p1", "p3"]), members: ["p1", "p3"], createdBy: "p1", day: 1, cycleOfDay: 1 });
   s.chat.push({ id: 2, cycle: s.cycle, channel: "pc-1", from: "p1", isBot: false, text: str("privateChat", ["p1", "p3"]) });
+  // A plan goes to its channel's members only (plans.ts).
+  s.plans.push({ id: "plan-1", channel: "pc-1", author: "p1", room: str("planRoom", ["p1", "p3"]), purpose: "meal", slots: [{ kind: "onCall", holder: "p3" }], status: "open", postedDay: 1 });
+  s.nextPlanId = num("nextPlanId", []);
   return { state: s, sentinels };
 }
 

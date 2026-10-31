@@ -16,7 +16,7 @@ Other packages import from `@mush2/shared` (`shared/src/index.ts`, the barrel). 
 - `replay.ts`: `Input`, `GameSetup`, `applyInput` (the only entry point for changing a game), `replayGame`; `RecordedInput` (an input with its server time), `stampEntries` (the server's timestamps on new log and chat entries), and `rebuildGame` (the exact stored state from `setup` and the record, stamps included; #167).
 - `spot.ts`: where you stand in your room: the free `walk` input, `standUp` (a public action gets you off a chair), `arrive` (in front of the door you came in by).
 - `actionTarget.ts`: what an action's fields name (`namedTarget`, which the inspect panel uses too), what it is done to (`actionTarget`, which the client walks you up to), and `endsAccommodation` (a public action on equipment or another person ends a wheelchair push).
-- `queue.ts`: timed actions: `queueAction`, `actNow` (an action at once with the untimed path's hooks; plan jobs will run through it), `clearQueue`, `tick`, `nextDue` (when the server's alarm should fire); cancels a queued action whose modifier adjustment changed (`repriced`).
+- `queue.ts`: timed actions: `queueAction`, `actNow` (an action at once with the untimed path's hooks), `clearQueue` (optionally telling the player, through `queueCore.ts`), `tick`, `nextDue` (when the server's alarm should fire); cancels a queued action whose modifier adjustment changed (`repriced`).
 - `mycoalarm.ts`: the `myco_alarm` item, `ringMycoAlarms` (called by `performAction` for `spore`-tagged actions) and `dropMycoAlarms` (research yield).
 - `actions/hide.ts`, `actions/search.ts`: hiding a carried item in the room (`ItemState.hiddenBy`) and searching the room for hidden items.
 - `research.ts`: `RESEARCH_IDS` (the researches with card art), `RESEARCH_COMPLETE`, and `RESEARCH_REQUIRES` (items, Chun, post-selection each research needs; checked by `researchAllowed` in `actions/research.ts`).
@@ -39,7 +39,9 @@ Other packages import from `@mush2/shared` (`shared/src/index.ts`, the barrel). 
 - `mind.ts`: minds and bodies: `bodyOf` (the body a seat plays; the server resolves every token through it), `swapMinds` (a Transfer), `acknowledgeTransfer` (the victim's pop-up input).
 - `rng.ts`: the seeded RNG (its state is part of `GameState`): pair functions `nextFloat`, `nextInt`, `rollRange`, `shuffle` return `[value, next]`; the `roll`, `rollInt`, `rollFloat`, `rollShuffle` helpers advance a `HasRng` holder (a `GameState`) in place, so a draw can't drop the next state. Rule code that draws from `state.rng` uses the helpers; the pair functions are for seeded generators that take a bare seed (`planets.ts`, `createGame`'s seed, `singlePlayerGame`).
 - `helpers.ts`: `ActionResult`, `fail`, `clone`, `findPlayer`, `dayOf`.
-- `paths.ts`: `shortestPath` (deterministic BFS over `config.rooms`; null for the door-less patrol craft), for plan jobs' travel.
+- `paths.ts`: `shortestPath` (deterministic BFS over `config.rooms`; null for the door-less patrol craft), for the summons walk.
+- `queueCore.ts`: the queue parts action classes may import without a cycle: `emptyQueue` (with `actionDropped` lines on request) and `dropped`.
+- `plans.ts`: channel plans (docs/plans/on-call.md): `postPlan`, `openPlan`, `findPlan`, `finishPlan` (keeps `config.plans.finishedKept`), hooks `leavePlans` and `dropChannelPlans` (from `removeFromChannel`), `strikeSlots` (after actions, cycles and deaths), `expirePlans` (day tick), `plansView`. Actions in `actions/plan_slots.ts` (`claim_slot`, `withdraw_slot`, `mark_done`, `cancel_plan`) and `actions/summon.ts` (`summon` and its `walk`; `performAction` bound by rules.ts).
 
 ## Rule areas
 
@@ -65,6 +67,7 @@ Other packages import from `@mush2/shared` (`shared/src/index.ts`, the barrel). 
 - `types/config.ts`: `GameConfig`, `MovementRules`, `Equipment`. Tuning is nested by feature (`config.punch.cost.ap`, `config.punch.effect.damage`, a [min, max] range).
 - `types/player.ts`: `PlayerState`, `ResourceId`.
 - `types/chat.ts`: channel and message types.
+- `types/plan.ts`: `Plan`, `PlanSlot`, `PlanTask`, `PlanDraft`, `PLAN_PURPOSES`.
 - `types/state.ts`: `GameState` (server-only).
 - `types/view.ts`: `PlayerView`, `OtherPlayerView`, `ItemView`: the only game data a client or bot receives.
 - `config.ts`: `DEFAULT_CONFIG` and `PRESELECTION` (a multiplayer ship's pre-selection rules: 16 seats, day 3). The map comes from `@mush2/assets/derived/ship-rooms.json`.

@@ -1,5 +1,5 @@
 {
-  "version": 95,
+  "version": 96,
   "paths": [
     "bios.actopi",
     "bios.death_announcements",
@@ -150,6 +150,7 @@
     "nextChannelId",
     "nextChatId",
     "nextItemId",
+    "nextPlanId",
     "nextPlanetId",
     "nextSharedPlanetId",
     "nextThreadId",
@@ -200,6 +201,7 @@
     "phase",
     "pilgred.pool.tokens[]",
     "pilgred.progress",
+    "plans[]",
     "players[]",
     "players[].alive",
     "players[].alpha",

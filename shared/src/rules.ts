@@ -6,6 +6,8 @@
 // chat and private channels in chat.ts. Win conditions and voting are open
 // decisions: do not add them without confirming the rules first.
 
+import { expirePlans, plansView, strikeSlots } from "./plans.ts";
+import { bindPerformAction } from "./actions/summon.ts";
 import { applyCheats, makeHuman, shipInvincible, type Cheat, type RoleCheat } from "./cheats.ts";
 import { ACTIONS, type ActionDef } from "./actions.ts";
 import { AT_CAPACITY, COOLDOWN, DIRTY, NO_SPACE } from "./actions/action.ts";
@@ -112,6 +114,8 @@ export function createGame(
     nextChatId: 1,
     channels: [],
     nextChannelId: 1,
+    plans: [],
+    nextPlanId: 1,
     threads: [],
     nextThreadId: 1,
     bios: newBios(),
@@ -283,10 +287,15 @@ export function performAction(next: GameState, actor: PlayerState, action: Actio
   }
   // After the action's own log lines; rings on a failure too (owner, 2026-10-18).
   if (def.tags.includes("spore")) ringMycoAlarms(next, room);
+  // A research, project or PILGRED this finished strikes out its task slots (plans.ts).
+  strikeSlots(next);
   applyCheats(next, actor);
   if (next.players.every((pl) => !pl.alive || pl.ready)) advanceCycle(next);
   return true;
 }
+
+// The summons walk performs live moves through performAction (actions/summon.ts can't import it: an import cycle).
+bindPerformAction(performAction);
 
 /**
  * Switches a development cheat on or off for a player and tops up the stat at once. The server decides whether
@@ -361,6 +370,7 @@ function advanceCycle(state: GameState, at?: number): void {
     grantCarePoints(state);
     rechargeMicrowaves(state);
     botanyDay(state);
+    expirePlans(state);
   }
   for (const p of state.players) {
     if (!p.alive || p.role !== "human") continue;
@@ -381,6 +391,7 @@ function advanceCycle(state: GameState, at?: number): void {
     visibleTo: "all",
   });
   preselectionCycle(state);
+  strikeSlots(state);
 }
 
 /** Day-start care, Computer and PILGRED points: every living player gains what their skills grant (Computer and PILGRED points stop at their caps). Mutates a state the caller already cloned. */
@@ -496,6 +507,7 @@ export function viewFor(state: GameState, playerId: PlayerId): PlayerView {
     chatChannels: chatChannels(state, you),
     readChannels: channels,
     privateChannels: state.channels.filter((c) => c.members.includes(playerId)).map((c) => ({ ...c, members: [...c.members] })),
+    plans: plansView(state, channels),
     threads: channels.includes("global") ? state.threads.map(({ id, name, from, createdBy, cycle }) => ({ id, name, ...(from !== undefined && { from }), createdBy, cycle })) : [],
     // Never `planet`: which planet an entry came from stays its finder's.
     sharedPlanets: channels.includes("astrophysics") ? state.sharedPlanets.map(({ id, text, by, day, cycleOfDay, stale }) => ({ id, text, by, day, cycleOfDay, stale })) : [],

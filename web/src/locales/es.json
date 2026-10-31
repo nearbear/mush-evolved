@@ -250,6 +250,11 @@
     }
   },
   "actions": {
+    "claimSlot": "Apuntarse",
+    "withdrawSlot": "Retirarse",
+    "markDone": "Marcar como hecho",
+    "cancelPlan": "Cancelar plan",
+    "summon": "Convocar",
     "access": "Acceder",
     "examine": "Examinar",
     "dispense": "Sacar un café",
@@ -710,6 +715,12 @@
     "space_capsule": "Cápsula espacial"
   },
   "logEvent": {
+    "summonArrived": "Te han convocado a: {{room}}. Ya estás allí.",
+    "summonStopped": "Te han convocado a: {{room}}, pero no has podido llegar; te has detenido por el camino.",
+    "summonStoppedCantAfford": "Te han convocado a: {{room}}, pero te has quedado sin puntos de movimiento por el camino.",
+    "summonStoppedDoor": "Te han convocado a: {{room}}, pero una puerta del camino estaba bloqueada.",
+    "summonStoppedPushed": "Te han convocado a: {{room}}, pero no has podido ir: alguien empuja tu silla de ruedas.",
+    "summonStoppedNoPath": "Te han convocado a: {{room}}, pero no hay camino hasta allí desde donde estás.",
     "loseMorale": "Has perdido {{amount}} punto de moral.",
     "gainMorale": "Has ganado {{amount}} punto de moral.",
     "actionCostChanged": "Tu acción en cola ({{action}}) se ha cancelado porque su coste ha cambiado: ahora cuesta {{ap}} PA y {{mp}} PM.",

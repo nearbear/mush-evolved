@@ -50,6 +50,11 @@ export interface PrivateChannel {
   name: string;
   members: PlayerId[];
   createdBy: PlayerId;
+  /**
+   * The creator died or left (owner, 2026-10-31): its open plan was cancelled and no plan can be posted in it again.
+   * Absent while the creator is still a member. The channel itself keeps working for chat.
+   */
+  planningClosed?: true;
   /** Day and cycle of that day when it was opened. */
   day: number;
   cycleOfDay: number;

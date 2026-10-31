@@ -8,6 +8,7 @@ import type { TitleId } from "../titles.ts";
 import type { ItemState, LogEntry, PlayerId, RoomId } from "../types.ts";
 import type { ChatMessage, ChatThread, PrivateChannel, SharedPlanet } from "./chat.ts";
 import type { DeepReadonly, Equipment, GameConfig } from "./config.ts";
+import type { Plan } from "./plan.ts";
 import type { PlayerState } from "./player.ts";
 
 /** An item floating in space: an item without a container (and no one's hiding place). */
@@ -58,6 +59,12 @@ export interface GameState {
   nextChatId: number;
   channels: PrivateChannel[];
   nextChannelId: number;
+  /**
+   * Private channels' plans (plans.ts, docs/plans/on-call.md): each channel's open plan and its latest finished ones
+   * (`config.plans.finishedKept`). Members of the channel see them, without anyone's stop reason.
+   */
+  plans: Plan[];
+  nextPlanId: number;
   /** Threads under global chat. */
   threads: ChatThread[];
   nextThreadId: number;

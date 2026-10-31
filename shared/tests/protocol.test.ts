@@ -35,6 +35,11 @@ describe("actions from a client", () => {
   // One of each shape. The type makes it list every action type, so a new action can't be left out.
   const SAMPLES: { [K in ActionType]: ActionOf<K>[] } = {
     ready: [{ type: "ready" }],
+    claim_slot: [{ type: "claim_slot", plan: "plan-1", slot: 0 }],
+    withdraw_slot: [{ type: "withdraw_slot", plan: "plan-1", slot: 0 }],
+    mark_done: [{ type: "mark_done", plan: "plan-1", slot: 2 }],
+    cancel_plan: [{ type: "cancel_plan", plan: "plan-1" }],
+    summon: [{ type: "summon", plan: "plan-1" }],
     move: [{ type: "move", to: "bridge" }],
     take: [{ type: "take", item: "i1" }],
     drop: [{ type: "drop", item: "i1" }],
@@ -139,7 +144,9 @@ describe("actions from a client", () => {
         if (action.type === "dismantle") continue;
         const { [key]: _dropped, ...missing } = action as Record<string, unknown>;
         if (!(action.type === "attack" && key === "target")) expect(asAction(missing), `${action.type} without ${key}`).toBeNull();
-        expect(asAction({ ...action, [key]: 7 }), `${action.type} with a numeric ${key}`).toBeNull();
+        // A plan's slot is an index: a number is its right type, so it gets a wrong one.
+        const wrong = key === "slot" ? "7" : 7;
+        expect(asAction({ ...action, [key]: wrong }), `${action.type} with a wrongly typed ${key}`).toBeNull();
       }
     }
     expect(asAction({ type: "dismantle" })).toBeNull();
@@ -147,6 +154,7 @@ describe("actions from a client", () => {
     expect(asAction({ type: "set_bios", equipment: "e1", option: "nope", value: true })).toBeNull();
     expect(asAction({ type: "set_bios", equipment: "e1", option: BIOS_OPTIONS[0], value: "true" })).toBeNull();
     expect(asAction({ type: "pick_skill", skill: "nope" })).toBeNull();
+    for (const slot of [-1, 1.5, Number.NaN, Number.POSITIVE_INFINITY]) expect(asAction({ type: "claim_slot", plan: "plan-1", slot })).toBeNull();
     expect(asAction({ type: "examine", target: { kind: "room", id: "bridge" } })).toBeNull();
     expect(asAction({ type: "examine", target: "p1" })).toBeNull();
   });

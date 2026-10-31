@@ -52,6 +52,8 @@ export type Fields<T> = { readonly [K in Exclude<keyof T, "type">]-?: FieldCheck
 
 export const isString = (value: unknown): value is string => typeof value === "string";
 export const isBoolean = (value: unknown): value is boolean => typeof value === "boolean";
+/** A position in a list (a plan's slot): a whole number, 0 or more. */
+export const isIndex = (value: unknown): value is number => Number.isInteger(value) && (value as number) >= 0;
 
 export class Action<T extends { type: string }> {
   type: string;

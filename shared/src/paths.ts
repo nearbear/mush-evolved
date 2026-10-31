@@ -1,5 +1,4 @@
-// Walking routes through the ship's room graph (`config.rooms`), for plan jobs that travel to their room before acting
-// (docs/plans/action-plans.md: "Travel is part of every job").
+// Walking routes through the ship's room graph (`config.rooms`), for the summons walk (actions/summon.ts).
 
 import type { DeepReadonly, RoomId } from "./types.ts";
 

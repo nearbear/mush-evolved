@@ -10,7 +10,7 @@ Feature designs, one per file. Each plan's own header is the authority on its st
 | `patrol.md` | Patrol ships and the Pasiphae (#208, #147) | Built; points under "Still open" undecided |
 | `relay-tokens.md` | Pooled contributions for research, projects and PILGRED (#311) | Built (part A 2026-10-31; part B in `research-sabotage.md`) |
 | `research-sabotage.md` | Research samples, assays and sabotage (#311 part B) | Built 2026-10-31 |
-| `on-call.md` | Channel plans and on-call summons (epic #317) | Not built |
+| `on-call.md` | Channel plans and on-call summons (epic #317) | `shared` built (#313); server, UI, bots not |
 | `expedition.md` | Expeditions | Phase 1 decided 2026-10-31; not built |
 | `bot-goals.md` | Single-player bot goals | First pass accepted 2026-10-25; not built |
 | `action-plans.md` | Scheduled action plans (#44) | Superseded 2026-10-30 by `relay-tokens.md` and `on-call.md`; kept for history |

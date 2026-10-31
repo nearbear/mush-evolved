@@ -8,6 +8,7 @@ import { ITRACKIE_ITEM, itemsIn } from "./items.ts";
 import { channelLimit } from "./modifiers.ts";
 import { noITrackieNeeded } from "./comms.ts";
 import { clone, fail, dayOf, findPlayer, type ActionResult } from "./helpers.ts";
+import { dropChannelPlans, leavePlans } from "./plans.ts";
 import { CHAT_CHANNELS, GRAVEYARD_CHANNEL, MUSH_CHANNEL } from "./types.ts";
 import type { ChannelId, ChatMessage, GameState, PlayerId, PlayerState, PrivateChannelId, SharedPlanetId, ThreadId } from "./types.ts";
 
@@ -30,17 +31,19 @@ export function pushChat(state: GameState, channel: ChannelId, message: Omit<Cha
 }
 
 /**
- * Takes a member out of a private channel. The last one out deletes the channel
- * and its messages. Returns whether the channel still exists. Mutates a state
- * that the caller already cloned.
+ * Takes a member out of a private channel, with their claims on its plan (plans.ts). The last one out deletes the
+ * channel, its messages and its plans. Returns whether the channel still exists. Mutates a state that the caller
+ * already cloned.
  */
 export function removeFromChannel(state: GameState, channelId: PrivateChannelId, playerId: PlayerId): boolean {
   const channel = state.channels.find((c) => c.id === channelId);
   if (!channel) return false;
+  leavePlans(state, channelId, playerId);
   channel.members = channel.members.filter((m) => m !== playerId);
   if (channel.members.length > 0) return true;
   state.channels = state.channels.filter((c) => c.id !== channelId);
   state.chat = state.chat.filter((m) => m.channel !== channelId);
+  dropChannelPlans(state, channelId);
   return false;
 }
 
@@ -50,7 +53,7 @@ export function removeFromChannel(state: GameState, channelId: PrivateChannelId,
  * iTrackie, and a dead Mush also the Mush channel. Private channels are gone:
  * dying leaves them.
  */
-export function readChannels(state: GameState, player: Readonly<PlayerState>): ChannelId[] {
+export function readChannels(state: Readonly<GameState>, player: Readonly<PlayerState>): ChannelId[] {
   if (player.alive) return chatChannels(state, player);
   if (state.phase !== "playing") return [];
   const mush: ChannelId[] = player.role === "mush" ? [MUSH_CHANNEL] : [];
@@ -61,14 +64,14 @@ export function readChannels(state: GameState, player: Readonly<PlayerState>): C
  * Threads go wherever global chat goes, and so do shared planets' threads: they have the Astrophysics feature's
  * access (owner, 2026-10-31), which is global chat's.
  */
-const threadIds = (state: GameState): (ThreadId | SharedPlanetId)[] => [...state.threads.map((t) => t.id), ...state.sharedPlanets.map((s) => s.id)];
+const threadIds = (state: Readonly<GameState>): (ThreadId | SharedPlanetId)[] => [...state.threads.map((t) => t.id), ...state.sharedPlanets.map((s) => s.id)];
 
 /**
  * Channels a player may post to (and so read). The dead post only in the graveyard. Global chat and every feature thread
  * need an iTrackie in your inventory (confirmed 2026-10-13); drop it and you
  * lose them, pick one up and you see the whole history.
  */
-export function chatChannels(state: GameState, player: Readonly<PlayerState>): ChannelId[] {
+export function chatChannels(state: Readonly<GameState>, player: Readonly<PlayerState>): ChannelId[] {
   if (state.phase !== "playing") return [];
   // The graveyard is the one place the dead may post (decided 2026-10-17), and no iTrackie is needed.
   if (!player.alive) return [GRAVEYARD_CHANNEL];
