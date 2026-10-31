@@ -9,7 +9,7 @@ import { channelLimit } from "./modifiers.ts";
 import { noITrackieNeeded } from "./comms.ts";
 import { clone, fail, dayOf, findPlayer, type ActionResult } from "./helpers.ts";
 import { CHAT_CHANNELS, GRAVEYARD_CHANNEL, MUSH_CHANNEL } from "./types.ts";
-import type { ChannelId, ChatMessage, GameState, PlayerId, PlayerState, PrivateChannelId, ThreadId } from "./types.ts";
+import type { ChannelId, ChatMessage, GameState, PlayerId, PlayerState, PrivateChannelId, SharedPlanetId, ThreadId } from "./types.ts";
 
 /** Longest chat message the rules accept. Moderation trims before this. */
 export const MAX_CHAT_LENGTH = 300;
@@ -57,8 +57,11 @@ export function readChannels(state: GameState, player: Readonly<PlayerState>): C
   return [...CHAT_CHANNELS, ...threadIds(state), ...mush, GRAVEYARD_CHANNEL];
 }
 
-/** Threads go wherever global chat goes. */
-const threadIds = (state: GameState): ThreadId[] => state.threads.map((t) => t.id);
+/**
+ * Threads go wherever global chat goes, and so do shared planets' threads: they have the Astrophysics feature's
+ * access (owner, 2026-10-31), which is global chat's.
+ */
+const threadIds = (state: GameState): (ThreadId | SharedPlanetId)[] => [...state.threads.map((t) => t.id), ...state.sharedPlanets.map((s) => s.id)];
 
 /**
  * Channels a player may post to (and so read). The dead post only in the graveyard. Global chat and every feature thread

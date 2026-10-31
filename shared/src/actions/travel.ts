@@ -5,6 +5,7 @@ import { canSteer, isTraveling, planetAt } from "../navigation.ts";
 import { commandTerminalsHere } from "../pilgred.ts";
 import type { GameState, PlayerState, Planet } from "../types.ts";
 import { shipMoved } from "../modifiers.ts";
+import { markSharedPlanetsStale } from "../sharedPlanets.ts";
 
 export type TravelActionData = { type: "travel"; equipment: string };
 
@@ -64,6 +65,8 @@ export function jump(state: GameState, player: Readonly<PlayerState>, distance: 
   for (const owner of Object.keys(state.planets)) {
     state.planets[owner] = owner === found?.[0] ? [found[1]] : [];
   }
+  // The lost planets' entries no longer apply; the destination's stays, as the planet stays in play (owner, 2026-10-31).
+  markSharedPlanetsStale(state, found ? found[1].id : null);
   logPublic(state, undefined, "shipTraveled", { name: player.character });
   loseShipsInFlight(state);
   state.navigation.orbit = null;

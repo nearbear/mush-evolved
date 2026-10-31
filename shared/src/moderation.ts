@@ -20,7 +20,15 @@ export type ModerationResult = { ok: true; text: string } | { ok: false; reason:
 const INVISIBLE = /[^\P{Cc}\n]|\p{Cf}/gu;
 const LINK = /\b(?:https?:\/\/|www\.)\S+/gi;
 
-export function moderateChat(raw: string, blocked: readonly string[] = BLOCKED_WORDS): ModerationResult {
+/** A message's size limits: chat's by default; a shared planet's text is longer (sharedPlanets.ts). */
+export interface TextLimits {
+  length: number;
+  lines: number;
+}
+
+export const CHAT_LIMITS: TextLimits = { length: MAX_CHAT_LENGTH, lines: MAX_CHAT_LINES };
+
+export function moderateChat(raw: string, blocked: readonly string[] = BLOCKED_WORDS, limits: TextLimits = CHAT_LIMITS): ModerationResult {
   // Line breaks survive (CRLF folded to LF); runs of other whitespace collapse, trailing spaces go, and
   // blank lines are capped at one so a message can't be mostly empty space.
   let text = raw
@@ -31,8 +39,8 @@ export function moderateChat(raw: string, blocked: readonly string[] = BLOCKED_W
     .replace(/\n{3,}/g, "\n\n")
     .trim();
   if (!text) return { ok: false, reason: "empty_message" };
-  if (text.length > MAX_CHAT_LENGTH) return { ok: false, reason: "message_too_long" };
-  if (text.split("\n").length > MAX_CHAT_LINES) return { ok: false, reason: TOO_MANY_LINES };
+  if (text.length > limits.length) return { ok: false, reason: "message_too_long" };
+  if (text.split("\n").length > limits.lines) return { ok: false, reason: TOO_MANY_LINES };
   text = text.replace(LINK, "[link removed]");
   for (const word of blocked) {
     text = text.replace(new RegExp(`\\b${escapeRegExp(word)}\\b`, "gi"), (m) => "*".repeat(m.length));

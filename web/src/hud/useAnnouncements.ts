@@ -16,7 +16,9 @@ export function useChannelLabel(view: PlayerView): (channel: ChannelId) => strin
     if (channel === MUSH_CHANNEL) return t("itrackie.tabs.mush");
     if (channel === GRAVEYARD_CHANNEL) return t("itrackie.tabs.graveyard");
     if ((FEATURE_CHANNELS as readonly string[]).includes(channel)) return t(`itrackie.features.${channel as FeatureChannel}`);
-    return view.threads.find((th) => th.id === channel)?.name ?? view.privateChannels.find((c) => c.id === channel)?.name ?? channel;
+    // A shared planet's thread goes by its text's first line, as in the Astrophysics list.
+    const shared = view.sharedPlanets.find((e) => e.id === channel)?.text.split("\n", 1)[0];
+    return view.threads.find((th) => th.id === channel)?.name ?? view.privateChannels.find((c) => c.id === channel)?.name ?? shared ?? channel;
   };
 }
 

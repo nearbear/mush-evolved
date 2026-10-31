@@ -185,7 +185,7 @@ export function GameScreen({ ticket, onLeave, waking = false }: { ticket: SeatTi
     <main className="game">
       <Announcer />
       <WakeUpAnnouncement waking={waking} text={t("wake.ready", { day: view.day, cycle: view.cycleOfDay, room: names.room(you.room) })} />
-      <TerminalDialog terminal={terminal} view={view} onAction={send} onClose={() => setTerminalId(null)} />
+      <TerminalDialog terminal={terminal} view={view} onAction={send} onClose={() => setTerminalId(null)} onSharePlanet={(planet, text) => post({ type: "sharePlanet", planet, text })} />
       <EndScreen view={view} open={view.phase === "ended" && !endClosed} onOpenChange={(open) => setEndClosed(!open)} />
       <BodyTakenDialog view={view} onAcknowledge={() => post({ type: "acknowledgeTransfer" })} />
       <TopBar

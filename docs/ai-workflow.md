@@ -1770,3 +1770,10 @@ Follow-up: the owner then had own spoil recorded under its own name too (it had 
 - A signed-in request is keyed by account, so players sharing an address (a mobile carrier, a school) don't use up each other's limit. The tradeoff is one D1 session read per request that carries a session cookie, before the limit is checked, so a flood with made-up cookies still costs D1 reads.
 - Dev and test scaling spreads requests over 10 keys round-robin, which makes the limit 10 times larger for everyone on that server, not per client. The owner accepted this; staging (unscaled) is where rate-limit problems should show up.
 - The per-day cap on new accounts became its own issue, #322.
+
+## 2026-10-31: Sharing planets and the public orbit name (built)
+
+- **Decision (owner):** players share their own planets from the Astro terminal as free, never-parsed text in the Astrophysics feature, one entry per planet with its own thread; entries are marked no longer applicable when the planet is lost, except the travel destination's; the orbited planet's name becomes public on arrival. Recorded in rules-design.md, then built in a git worktree.
+- **What worked:** modelling entries on threads under global chat. Each entry id (`sp-N`) is a chat channel, so posting, reading, the dead's read-only access, rate limits and moderation all came from the existing chat code. The entry keeps the source planet's id only in state, and `viewFor` drops it.
+- **Flagged by Claude, accepted by the owner:** keeping the destination's entry applicable while the others go stale shows the crew which entry the ship is heading to, and who found it. A share also shows that the poster was at the Astro terminal.
+- **Choices made in code (not rules):** a 20-line limit for shared text (moderation needs one; the owner said only "several lines"), a `canSharePlanets` view flag so the client doesn't work out when Share is allowed, the list newest first, and the orbit name shown on the ship card.

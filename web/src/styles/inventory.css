@@ -162,3 +162,9 @@ button.zoom-button {
 .ship-popup:focus {
   outline: none;
 }
+/* The orbit line gets its own row under the counters, like the titles. */
+.ship-popup .ship-orbit {
+  flex-basis: 100%;
+  padding: 0;
+  border: 0;
+}

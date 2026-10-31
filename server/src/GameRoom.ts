@@ -6,6 +6,8 @@ import { Server, type Connection, type ConnectionContext, type WSMessage } from 
 import {
   applyInput,
   moderateChat,
+  MAX_SHARED_PLANET_LENGTH,
+  MAX_SHARED_PLANET_LINES,
   parseGameMessage,
   startGame,
   stampEntries,
@@ -77,7 +79,7 @@ const MODEL_RETRY_MAX_MS = 60_000;
  * Bump when GameState's shape changes, or ConfigOverrides' (or what resolveConfig derives from a key). Games stored
  * under another version are discarded on load (there is no migration; games are short-lived).
  */
-export const STATE_VERSION = 92;
+export const STATE_VERSION = 93;
 
 /**
  * A ship's overrides from its setup (#232): the knobs, plus the setup's id for the record and the view. The setup is
@@ -126,7 +128,7 @@ interface Stored {
 interface BlockedText {
   at: number;
   by: PlayerId;
-  type: "chat" | "createChannel" | "createThread";
+  type: "chat" | "createChannel" | "createThread" | "sharePlanet";
   raw: string;
   reason: string;
 }
@@ -546,18 +548,21 @@ export class GameRoom extends Server<Env> {
       this.countRateLimited(playerId);
       return "too_many_messages";
     }
-    if (msg.type !== "chat" && msg.type !== "createChannel" && msg.type !== "createThread") return this.act({ ...msg, by });
-    const raw = msg.type === "chat" ? msg.text : (msg.name ?? "");
+    if (msg.type !== "chat" && msg.type !== "createChannel" && msg.type !== "createThread" && msg.type !== "sharePlanet") return this.act({ ...msg, by });
+    const raw = msg.type === "chat" || msg.type === "sharePlanet" ? msg.text : (msg.name ?? "");
     // A private channel may be created without a name (it shows its day and cycle instead).
     if (msg.type === "createChannel" && !raw.trim()) return this.act({ ...msg, by, name: "" });
-    const moderated = moderateChat(raw);
+    // A shared planet's text is longer than a chat message (owner, 2026-10-31).
+    const sharing = msg.type === "sharePlanet";
+    const moderated = sharing ? moderateChat(raw, undefined, { length: MAX_SHARED_PLANET_LENGTH, lines: MAX_SHARED_PLANET_LINES }) : moderateChat(raw);
     if (!moderated.ok) {
       const blocked: BlockedText = { at: Date.now(), by: playerId, type: msg.type, raw, reason: moderated.reason };
       await this.ctx.storage.put(`blocked:${String(this.blocked++).padStart(9, "0")}`, blocked);
-      return moderated.reason;
+      // The size errors name chat's limits; a shared planet has its own.
+      return sharing ? "share_text_invalid" : moderated.reason;
     }
     const input: Input =
-      msg.type === "chat" ? { ...msg, by, text: moderated.text } : { ...msg, by, name: moderated.text };
+      msg.type === "chat" || msg.type === "sharePlanet" ? { ...msg, by, text: moderated.text } : { ...msg, by, name: moderated.text };
     return this.act(input, moderated.text === raw ? undefined : raw);
   }
 

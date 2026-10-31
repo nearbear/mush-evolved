@@ -6,7 +6,7 @@ import type { TurnSide } from "../navigation.ts";
 import type { PlanetDirection } from "../planets.ts";
 import type { TitleId } from "../titles.ts";
 import type { Action, BotKind, ItemId, LogEntry, PlayerId, Role, RoomId } from "../types.ts";
-import type { ChannelId, ChatMessage, ChatThread, PrivateChannel } from "./chat.ts";
+import type { ChannelId, ChatMessage, ChatThread, PrivateChannel, SharedPlanet } from "./chat.ts";
 import type { MovementRules } from "./config.ts";
 import type { ActionInProgress, PlayerState, Spot } from "./player.ts";
 import type { GameState, ShipResources } from "./state.ts";
@@ -157,6 +157,8 @@ export interface PlayerView {
   privateChannels: PrivateChannel[];
   /** Threads under global chat, when you can read it. */
   threads: ChatThread[];
+  /** Planets shared in the Astrophysics feature, oldest first, when you can read it. Never which planet each came from. */
+  sharedPlanets: SharedPlanet[];
   /** How many private channels you may belong to, after modifiers. */
   channelLimit: number;
   /** Your effective movement rules, after modifiers. */
@@ -222,15 +224,17 @@ export interface PlayerView {
   hunters: { count: number; list: { id: string; hp: number }[] | null; turrets: Record<string, number> | null };
   /** Your own planets (private, owner 2026-10-19). Unknown sectors are null: their tags are never sent. */
   planets: PlanetView[];
+  /** Whether you may share your planets in the Astrophysics feature now (sharedPlanets.ts): alive at an Astro terminal with an iTrackie. */
+  canSharePlanets: boolean;
   /** How many planets one player can hold (a config constant, public). */
   maxPlanets: number;
   /**
-   * Whether the ship is in orbit, public to everyone (the planet fills the portholes); which planet is only in its
-   * finder's `planets`; `orbitPicture` is only which picture it is drawn with (`planetPicture`, cosmetic, owner 2026-10-28),
+   * Whether the ship is in orbit, public to everyone (the planet fills the portholes), with the planet's name
+   * (`orbitName`, owner 2026-10-31); its sectors are only in its finder's `planets`; `orbitPicture` is only which picture it is drawn with (`planetPicture`, cosmetic, owner 2026-10-28),
    * so everyone sees the same planet out of the window. `heading` only while you are alive at a Command terminal (owner, 2026-10-22); otherwise null.
    * `lastTurn` is the ship's latest quarter turn (`n` counts them, so a new one shows), public to everyone aboard (owner, 2026-10-29).
    */
-  navigation: { orbiting: boolean; traveling: boolean; orbitPicture: number | null; heading: PlanetDirection | null; lastTurn: { n: number; side: TurnSide } | null };
+  navigation: { orbiting: boolean; traveling: boolean; orbitPicture: number | null; orbitName: string | null; heading: PlanetDirection | null; lastTurn: { n: number; side: TurnSide } | null };
   /**
    * The patrol ship you are flying (its room id) with its armor and charges (null for the Pasiphae, which can't shoot),
    * while you are alive aboard (patrol.ts); otherwise null. `debris` is how many pieces float around the Daedalus, not

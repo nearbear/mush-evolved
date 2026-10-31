@@ -8,7 +8,7 @@ import { Fragment, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNames } from "../i18n/names.ts";
 import { Tabs } from "@base-ui/react/tabs";
-import { FEATURE_CHANNELS, ITRACKIE_ITEM, GRAVEYARD_CHANNEL, MUSH_CHANNEL, type ChannelId, type FeatureChannel, type PlayerView, type ThreadId } from "@mush2/shared";
+import { FEATURE_CHANNELS, ITRACKIE_ITEM, GRAVEYARD_CHANNEL, MUSH_CHANNEL, type ChannelId, type FeatureChannel, type PlayerView, type SharedPlanetId, type ThreadId } from "@mush2/shared";
 import { useAnnouncements } from "./useAnnouncements.ts";
 import { FeatureSelect } from "./FeatureSelect.tsx";
 import { IconTab } from "./IconButton.tsx";
@@ -19,6 +19,7 @@ import { PrivateChannels, type ChannelHandlers } from "./PrivateChannels.tsx";
 import { Thread, type ThreadLinks } from "./Thread.tsx";
 import { Threads, threadNameFrom } from "./Threads.tsx";
 import { Tracker } from "./Tracker.tsx";
+import { SharedPlanets } from "./SharedPlanets.tsx";
 import { ResearchTracker } from "./ResearchTracker.tsx";
 import { Scroller } from "./Scroller.tsx";
 import { TAB_ICONS } from "../art/assets.ts";
@@ -118,6 +119,11 @@ export function ITrackie({
   const [threadName, setThreadName] = useState("");
   const [starter, setStarter] = useState<number | null>(null);
   const shownThread = view.threads.find((th) => th.id === openThread);
+  // Astrophysics: the shared planet picked (null for the feature's general thread), and whether the list shows the
+  // entries no longer applicable (client-only, off by default). A hidden entry falls back to the general thread.
+  const [sharedPlanet, setSharedPlanet] = useState<SharedPlanetId | null>(null);
+  const [showStale, setShowStale] = useState(false);
+  const shownSharedPlanet = view.sharedPlanets.find((e) => e.id === sharedPlanet && (showStale || !e.stale))?.id ?? null;
   const threadLinks: ThreadLinks = {
     open: (id) => {
       setOpenThread(id);
@@ -133,7 +139,7 @@ export function ITrackie({
 
   // The channel on screen, whose messages are announced in full.
   const reading: ChannelId | null =
-    activeTab === "global" || activeTab === "mush" || activeTab === "graveyard" ? activeTab : activeTab === "features" ? feature : activeTab === "threads" ? shownThread?.id ?? null : null;
+    activeTab === "global" || activeTab === "mush" || activeTab === "graveyard" ? activeTab : activeTab === "features" ? (feature === "astrophysics" && shownSharedPlanet) || feature : activeTab === "threads" ? shownThread?.id ?? null : null;
   useAnnouncements(view, reading);
 
   return (
@@ -213,6 +219,14 @@ export function ITrackie({
             {/* One block per feature, hidden with CSS, so each keeps its own draft. */}
             {FEATURE_CHANNELS.map((f) => {
               const name = t(`itrackie.features.${f}`);
+              // Astrophysics lists the shared planets, each with its own thread, in place of the tracker notes (owner, 2026-10-31).
+              if (f === "astrophysics") {
+                return (
+                  <div key={f} className="feature" hidden={f !== feature}>
+                    <SharedPlanets view={view} picked={shownSharedPlanet} onPick={setSharedPlanet} showStale={showStale} onShowStale={setShowStale} onChat={onChat} onToggle={onToggle} />
+                  </div>
+                );
+              }
               return (
               <div key={f} className="feature" hidden={f !== feature}>
                 {!alive ? null : !carrying ? (

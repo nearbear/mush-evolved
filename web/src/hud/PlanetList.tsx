@@ -11,6 +11,7 @@ import { ActionButton } from "./ActionButton.tsx";
 import { ConfirmPanel } from "./ConfirmPanel.tsx";
 import { ActionLabel } from "./ActionLabel.tsx";
 import { StatusIcon } from "./StatusIcons.tsx";
+import { SharePlanetDialog } from "./SharePlanetDialog.tsx";
 import "./settings.css";
 
 interface Props {
@@ -18,15 +19,18 @@ interface Props {
   onAction: (action: Action) => void;
   /** The Astro terminal, when shown in its window: adds the tabs, scan and analyse buttons. */
   terminal?: EquipmentView;
+  /** Shares a planet in the Astrophysics feature (not an action: free, with free text). Offered in the terminal window only. */
+  onShare?: (planet: string, text: string) => void;
 }
 
 const NEW_TAB = "new";
 
-export function PlanetList({ view, onAction, terminal }: Props) {
+export function PlanetList({ view, onAction, terminal, onShare }: Props) {
   const { t } = useTranslation();
   // null until the player picks a tab: the leftmost one shows first.
   const [tab, setTab] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
+  const [sharing, setSharing] = useState<string | null>(null);
   const knownPlanets = useRef(new Set(view.planets.map((p) => p.id)));
 
   // A newly discovered planet opens on its own tab, never on the "New planet" tab it was scanned from.
@@ -82,6 +86,14 @@ export function PlanetList({ view, onAction, terminal }: Props) {
             <ActionButton view={view} option={warp} onAction={onAction}>
               {t("astro.warp")}
             </ActionButton>
+          )}
+          {terminal && onShare && view.canSharePlanets && (
+            <>
+              <button type="button" onClick={() => setSharing(planet.id)}>
+                {t("astro.share")}
+              </button>
+              <SharePlanetDialog planet={planet} open={sharing === planet.id} onOpenChange={(o) => setSharing(o ? planet.id : null)} onShare={onShare} />
+            </>
           )}
           {remove && (
             <>

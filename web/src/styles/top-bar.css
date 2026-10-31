@@ -326,3 +326,11 @@
   display: block;
   image-rendering: pixelated;
 }
+/* The orbited planet's name (public in orbit), after the counters with the titles' divider. */
+.ship-orbit {
+  align-self: center;
+  padding-left: 0.9rem;
+  border-left: 1px solid var(--panel-rim);
+  font-size: 0.8rem;
+  color: #fff;
+}

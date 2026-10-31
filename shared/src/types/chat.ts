@@ -22,8 +22,26 @@ export const GRAVEYARD_CHANNEL = "graveyard";
 export type PrivateChannelId = `pc-${number}`;
 /** Id of a thread under global chat (`th-1`, `th-2`, ...). */
 export type ThreadId = `th-${number}`;
+/** Id of a shared planet's entry in the Astrophysics feature, which is also its discussion thread (`sp-1`, ...). */
+export type SharedPlanetId = `sp-${number}`;
 /** Anything a chat message can be posted to. */
-export type ChannelId = ChatChannel | typeof MUSH_CHANNEL | typeof GRAVEYARD_CHANNEL | PrivateChannelId | ThreadId;
+export type ChannelId = ChatChannel | typeof MUSH_CHANNEL | typeof GRAVEYARD_CHANNEL | PrivateChannelId | ThreadId | SharedPlanetId;
+
+/**
+ * A planet a player shared from the Astro terminal (owner, 2026-10-31): their own free text about it, never parsed,
+ * listed in the Astrophysics feature with its own discussion thread (the entry's id is the thread's channel). Sent to
+ * whoever can read the Astrophysics feature, without the planet it came from (see `SharedPlanetState`).
+ */
+export interface SharedPlanet {
+  id: SharedPlanetId;
+  text: string;
+  by: PlayerId;
+  /** Day and cycle of that day of the latest share: sharing the planet again replaces the text. */
+  day: number;
+  cycleOfDay: number;
+  /** "No longer applicable": the planet was lost (a travel, leaving orbit). Entries are never removed. */
+  stale: boolean;
+}
 
 /** Chat among the members only. Anyone in it may invite others; it ends when the last member leaves. */
 export interface PrivateChannel {

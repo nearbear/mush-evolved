@@ -506,3 +506,72 @@
   line-height: 14px;
   text-align: center;
 }
+
+/* Astrophysics: the shared planets (SharedPlanets.tsx), a list like the private channels' that scrolls past a few rows. */
+.shared-planets {
+  flex: none;
+  margin-bottom: 0.5rem;
+}
+.shared-planet-rows {
+  max-height: 9.5rem;
+  overflow-y: auto;
+  margin-bottom: 0.25rem;
+}
+.shared-planet-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.shared-planet-stale {
+  flex: none;
+  font-size: 0.75rem;
+  opacity: 0.8;
+}
+.shared-planet-pick.stale .shared-planet-name {
+  opacity: 0.7;
+}
+.shared-planets-stale-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-height: 32px;
+  font-size: 0.85rem;
+}
+/* The shared text heads its thread, kept as written (line breaks included), never as markdown. */
+.shared-planet-text p {
+  margin: 0 0 0.25rem;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.shared-planet-text .shared-planet-stale {
+  margin-left: 0.5rem;
+}
+
+/* The Astro terminal's Share dialog (SharePlanetDialog.tsx). */
+.share-planet-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.share-planet-form > button {
+  align-self: flex-end;
+  margin: 0;
+}
+.share-planet-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+.share-planet-text textarea {
+  width: 100%;
+  box-sizing: border-box;
+  min-height: 8rem;
+  font: inherit;
+  resize: vertical;
+}
+.share-planet-count {
+  align-self: flex-end;
+  font-size: 0.75rem;
+}

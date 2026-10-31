@@ -8,9 +8,9 @@ const RESOURCES = ["oxygen", "fuel", "hull", "plasmaShield", "hunters", "alerts"
 
 /**
  * The ship card (in the desktop top bar, and ShipOverlay on phones) with the ship's resource counters, how many hunters
- * are attacking, and the ship titles, all public. TODO(ship-resources): alerts have no backend yet, so they show a placeholder dash.
+ * are attacking, the ship titles, and the orbited planet's name while in orbit (owner, 2026-10-31), all public. TODO(ship-resources): alerts have no backend yet, so they show a placeholder dash.
  */
-export function ShipResources({ ship, hunters, titles }: { ship: PlayerView["ship"]; hunters: number; titles: PlayerView["titles"] }) {
+export function ShipResources({ ship, hunters, titles, orbit }: { ship: PlayerView["ship"]; hunters: number; titles: PlayerView["titles"]; orbit: string | null }) {
   const { t } = useTranslation();
   return (
     <ul className="ship-resources" aria-label={t("shipResources.title")}>
@@ -41,6 +41,7 @@ export function ShipResources({ ship, hunters, titles }: { ship: PlayerView["shi
           </li>
         );
       })}
+      {orbit !== null && <li className="ship-orbit">{t("shipResources.orbit", { name: orbit })}</li>}
       {titles.map((title) => (
         <li key={title.id} className="ship-title">
           <TitleChip entry={title} />

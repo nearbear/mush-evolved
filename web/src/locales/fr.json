@@ -29,7 +29,8 @@
     "hull": "Coque",
     "plasmaShield": "Bouclier plasma",
     "alerts": "Alertes",
-    "hunters": "Hunters"
+    "hunters": "Hunters",
+    "orbit": "En orbite autour de {{name}}"
   },
   "peek": {
     "doorTo": "Porte vers {{room}}",
@@ -373,7 +374,10 @@
     "join_failed": "Impossible d'embarquer sur un vaisseau. Réessayez.",
     "sign_in_required": "Connectez-vous pour rejoindre un vaisseau multijoueur.",
     "already_aboard": "Vous êtes déjà à bord d'un vaisseau. Rejoignez-le à nouveau pour y retourner.",
-    "nothing_to_acknowledge": "Il n'y a rien à confirmer."
+    "nothing_to_acknowledge": "Il n'y a rien à confirmer.",
+    "share_forbidden": "Il vous faut votre iTrackie devant un terminal Astro pour partager une planète.",
+    "planet_not_found": "Cette planète n'est pas l'une des vôtres.",
+    "share_text_invalid": "Une planète partagée a besoin d'un texte, jusqu'à 500 caractères et 20 lignes."
   },
   "terminal": {
     "close": "Fermer",
@@ -514,6 +518,14 @@
       "cancel": "Annuler",
       "starterGone": "Le message à l'origine de ce fil n'est plus dans le chat général.",
       "needITrackie": "Il vous faut un iTrackie dans votre inventaire pour lire les fils."
+    },
+    "sharedPlanets": {
+      "list": "Fils d'astrophysique",
+      "general": "Général",
+      "by": "{{name}}, jour {{day}}, cycle {{cycle}}",
+      "stale": "N'est plus d'actualité",
+      "showStale": "Afficher les planètes qui ne sont plus d'actualité",
+      "placeholder": "Discuter de cette planète…"
     }
   },
   "bond": {
@@ -864,7 +876,9 @@
     "assaySpoiled_other": "Analyse de {{research}} : {{count}} échantillons testés ({{tested}}), gâchés : {{spoiled}} ({{spoiledBy}}).",
     "assaySpoiled_many": "Analyse de {{research}} : {{count}} échantillons testés ({{tested}}), gâchés : {{spoiled}} ({{spoiledBy}}).",
     "sampleCount": "{{name}} ×{{count}}",
-    "contaminated": "{{name}} a trafiqué les échantillons de {{research}}."
+    "contaminated": "{{name}} a trafiqué les échantillons de {{research}}.",
+    "planetShared": "{{name}} a partagé une planète.",
+    "planetShareUpdated": "{{name}} a mis à jour une planète partagée."
   },
   "skills": {
     "title": "Choisir une compétence",
@@ -1308,7 +1322,17 @@
       "FRUIT_TREES": "Verger",
       "CRISTAL_FIELD": "Cristalite"
     },
-    "orbited": "En orbite"
+    "orbited": "En orbite",
+    "share": "Partager",
+    "shareTitle": "Partager {{name}}",
+    "shareHint": "L'équipage lira ce texte dans la fonction Astrophysique. Modifiez ce que vous voulez avant de le publier.",
+    "shareLabel": "Texte à partager",
+    "sharePost": "Publier",
+    "shareClose": "Fermer",
+    "shareName": "Planète : {{name}}",
+    "sharePosition": "Position : {{direction}}, {{distance}} de carburant",
+    "shareSectors": "Secteurs : {{sectors}}",
+    "shareUnknownSector": "?"
   },
   "projects": {
     "title": "Projets NERON",

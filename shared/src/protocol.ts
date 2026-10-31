@@ -5,8 +5,9 @@ import { ACTIONS, type ActionType } from "./actions.ts";
 import { isCheat, isRoleCheat, type Cheat, type RoleCheat } from "./cheats.ts";
 import { isCharacterId, type CharacterId } from "./characters.ts";
 import { MAX_CHAT_LENGTH } from "./chat.ts";
+import { MAX_SHARED_PLANET_LENGTH } from "./sharedPlanets.ts";
 import { isSpotCell } from "./spot.ts";
-import { CHAT_CHANNELS, GRAVEYARD_CHANNEL, MUSH_CHANNEL, type Action, type ChannelId, type PlayerId, type PlayerView, type PrivateChannelId, type ThreadId } from "./types.ts";
+import { CHAT_CHANNELS, GRAVEYARD_CHANNEL, MUSH_CHANNEL, type Action, type ChannelId, type PlayerId, type PlayerView, type PrivateChannelId, type SharedPlanetId, type ThreadId } from "./types.ts";
 
 export const MAX_NAME_LENGTH = 24;
 
@@ -54,6 +55,8 @@ export type GameClientMessage =
   | { type: "createChannel"; name?: string; members?: PlayerId[] }
   // A thread under global chat, started from global message `from` or on its own.
   | { type: "createThread"; name: string; from?: number }
+  // Shares one of your planets in the Astrophysics feature, as free text (sharedPlanets.ts).
+  | { type: "sharePlanet"; planet: string; text: string }
   | { type: "invite"; channel: PrivateChannelId; player: PlayerId }
   | { type: "leaveChannel"; channel: PrivateChannelId }
   // Single player only, from the human seat: the player's own model key for the bots (BYOK, #216). Never an input:
@@ -88,7 +91,7 @@ export function parseGameMessage(raw: string): GameClientMessage | null {
   const msg = parseJson(raw);
   if (msg?.type === "chat") {
     // Generous bound here; moderation and the rules enforce the real limit.
-    const channel = (msg.channel === MUSH_CHANNEL ? MUSH_CHANNEL : msg.channel === GRAVEYARD_CHANNEL ? GRAVEYARD_CHANNEL : undefined) ?? CHAT_CHANNELS.find((c) => c === msg.channel) ?? privateChannelId(msg.channel) ?? threadId(msg.channel);
+    const channel = (msg.channel === MUSH_CHANNEL ? MUSH_CHANNEL : msg.channel === GRAVEYARD_CHANNEL ? GRAVEYARD_CHANNEL : undefined) ?? CHAT_CHANNELS.find((c) => c === msg.channel) ?? privateChannelId(msg.channel) ?? threadId(msg.channel) ?? sharedPlanetId(msg.channel);
     if (!channel || typeof msg.text !== "string" || msg.text.length > MAX_CHAT_LENGTH * 4) return null;
     return { type: "chat", channel, text: msg.text };
   }
@@ -111,6 +114,11 @@ export function parseGameMessage(raw: string): GameClientMessage | null {
     if (typeof msg.name !== "string" || msg.name.length > MAX_NAME_LENGTH * 4) return null;
     if (msg.from === undefined) return { type: "createThread", name: msg.name };
     return Number.isSafeInteger(msg.from) ? { type: "createThread", name: msg.name, from: msg.from as number } : null;
+  }
+  if (msg?.type === "sharePlanet") {
+    // Generous bound here, as for chat; moderation and the rules enforce the real limit.
+    if (typeof msg.planet !== "string" || msg.planet.length > 64 || typeof msg.text !== "string" || msg.text.length > MAX_SHARED_PLANET_LENGTH * 4) return null;
+    return { type: "sharePlanet", planet: msg.planet, text: msg.text };
   }
   if (msg?.type === "invite") {
     const channel = privateChannelId(msg.channel);
@@ -157,6 +165,10 @@ function privateChannelId(value: unknown): PrivateChannelId | null {
 
 function threadId(value: unknown): ThreadId | null {
   return typeof value === "string" && /^th-\d{1,9}$/.test(value) ? (value as ThreadId) : null;
+}
+
+function sharedPlanetId(value: unknown): SharedPlanetId | null {
+  return typeof value === "string" && /^sp-\d{1,9}$/.test(value) ? (value as SharedPlanetId) : null;
 }
 
 function parseJson(raw: string): Record<string, unknown> | null {

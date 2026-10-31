@@ -93,7 +93,7 @@ describe("replay", () => {
       const { state, record } = play(2000, seed);
       const inputs = record.map((r) => r.input);
       expect(state.cycle, "the game got past a day").toBeGreaterThan(DEFAULT_CONFIG.cyclesPerDay);
-      // Every input type the rules take, but cheats (cheats.test.ts), pre-selection's join (below), createThread (not
+      // Every input type the rules take, but cheats (cheats.test.ts), pre-selection's join (below), createThread and sharePlanet (not
       // generated) and acknowledgeTransfer (generated, but random play rarely transfers a body for it to accept).
       for (const type of ["chat", "createChannel", "invite", "leaveChannel", "tick", "cycle", "clearQueue", "walk", "toggleCheckbox", "action"]) {
         expect(inputs.some((i) => i.type === type), type).toBe(true);

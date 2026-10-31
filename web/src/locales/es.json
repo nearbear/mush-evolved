@@ -29,7 +29,8 @@
     "hull": "Casco",
     "plasmaShield": "Escudo de plasma",
     "alerts": "Alertas",
-    "hunters": "Hunters"
+    "hunters": "Hunters",
+    "orbit": "En órbita alrededor de {{name}}"
   },
   "peek": {
     "doorTo": "Puerta a {{room}}",
@@ -373,7 +374,10 @@
     "join_failed": "No se pudo embarcar en una nave. Inténtalo de nuevo.",
     "sign_in_required": "Inicia sesión para unirte a una nave multijugador.",
     "already_aboard": "Ya estás a bordo de una nave. Únete de nuevo para volver a ella.",
-    "nothing_to_acknowledge": "No hay nada que confirmar."
+    "nothing_to_acknowledge": "No hay nada que confirmar.",
+    "share_forbidden": "Necesitas tu iTrackie en una terminal Astro para compartir un planeta.",
+    "planet_not_found": "Ese planeta no es uno de los tuyos.",
+    "share_text_invalid": "Un planeta compartido necesita un texto, de hasta 500 caracteres y 20 líneas."
   },
   "terminal": {
     "close": "Cerrar",
@@ -514,6 +518,14 @@
       "cancel": "Cancelar",
       "starterGone": "El mensaje que inició este hilo ya no está en el chat global.",
       "needITrackie": "Necesitas un iTrackie en tu inventario para leer los hilos."
+    },
+    "sharedPlanets": {
+      "list": "Hilos de astrofísica",
+      "general": "General",
+      "by": "{{name}}, día {{day}}, ciclo {{cycle}}",
+      "stale": "Ya no es aplicable",
+      "showStale": "Mostrar los planetas que ya no son aplicables",
+      "placeholder": "Habla sobre este planeta…"
     }
   },
   "bond": {
@@ -864,7 +876,9 @@
     "assaySpoiled_other": "Ensayo de {{research}}: {{count}} muestras analizadas ({{tested}}), estropeadas: {{spoiled}} ({{spoiledBy}}).",
     "assaySpoiled_many": "Ensayo de {{research}}: {{count}} muestras analizadas ({{tested}}), estropeadas: {{spoiled}} ({{spoiledBy}}).",
     "sampleCount": "{{name}} ×{{count}}",
-    "contaminated": "{{name}} manipuló las muestras de {{research}}."
+    "contaminated": "{{name}} manipuló las muestras de {{research}}.",
+    "planetShared": "{{name}} ha compartido un planeta.",
+    "planetShareUpdated": "{{name}} ha actualizado un planeta compartido."
   },
   "skills": {
     "title": "Elegir una habilidad",
@@ -1308,7 +1322,17 @@
       "FRUIT_TREES": "Árboles frutales",
       "CRISTAL_FIELD": "Campo de cristalita"
     },
-    "orbited": "En órbita"
+    "orbited": "En órbita",
+    "share": "Compartir",
+    "shareTitle": "Compartir {{name}}",
+    "shareHint": "La tripulación leerá este texto en la función Astrofísica. Cambia lo que quieras antes de publicarlo.",
+    "shareLabel": "Texto que compartir",
+    "sharePost": "Publicar",
+    "shareClose": "Cerrar",
+    "shareName": "Planeta: {{name}}",
+    "sharePosition": "Posición: {{direction}}, {{distance}} de combustible",
+    "shareSectors": "Sectores: {{sectors}}",
+    "shareUnknownSector": "?"
   },
   "projects": {
     "title": "Proyectos de NERON",

@@ -5,6 +5,7 @@ import { canSteer } from "../navigation.ts";
 import { commandTerminalsHere } from "../pilgred.ts";
 import type { GameState, PlayerState } from "../types.ts";
 import { shipMoved } from "../modifiers.ts";
+import { markSharedPlanetsStale } from "../sharedPlanets.ts";
 
 export type LeaveOrbitActionData = { type: "leave_orbit"; equipment: string };
 
@@ -47,6 +48,8 @@ export class LeaveOrbitAction extends Action<LeaveOrbitActionData> {
     huntersFollow(state);
     const orbit = state.navigation.orbit;
     for (const owner of Object.keys(state.planets)) state.planets[owner] = state.planets[owner]!.filter((p) => p.id !== orbit);
+    // Every shared planet's entry no longer applies, the planet just left included (owner, 2026-10-31).
+    markSharedPlanetsStale(state);
     state.navigation.orbit = null;
     state.navigation.arriving = { planet: null };
     logPublic(state, undefined, "leftOrbit", { name: player.character });

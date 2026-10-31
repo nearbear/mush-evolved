@@ -1,5 +1,5 @@
 {
-  "version": 92,
+  "version": 93,
   "paths": [
     "bios.actopi",
     "bios.death_announcements",
@@ -151,6 +151,7 @@
     "nextChatId",
     "nextItemId",
     "nextPlanetId",
+    "nextSharedPlanetId",
     "nextThreadId",
     "now",
     "overrides.cycleHours",
@@ -240,6 +241,7 @@
     "players[].statuses[]",
     "preselection",
     "rng",
+    "sharedPlanets[]",
     "ship.combustion",
     "ship.fuel",
     "ship.hull",

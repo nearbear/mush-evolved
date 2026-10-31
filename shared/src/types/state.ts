@@ -6,7 +6,7 @@ import type { RelayPool, ResearchPool } from "../relay.ts";
 import type { RngState } from "../rng.ts";
 import type { TitleId } from "../titles.ts";
 import type { ItemState, LogEntry, PlayerId, RoomId } from "../types.ts";
-import type { ChatMessage, ChatThread, PrivateChannel } from "./chat.ts";
+import type { ChatMessage, ChatThread, PrivateChannel, SharedPlanet } from "./chat.ts";
 import type { DeepReadonly, Equipment, GameConfig } from "./config.ts";
 import type { PlayerState } from "./player.ts";
 
@@ -112,9 +112,12 @@ export interface GameState {
   /** Failed scans in a row per player, raising their next scan's odds; reset by a success (owner, 2026-10-19). Never sent. */
   scanFailures: Record<PlayerId, number>;
   nextPlanetId: number;
+  /** Planets shared in the Astrophysics feature (chat.ts, `sharePlanet`), oldest first. `planet` is never sent. */
+  sharedPlanets: SharedPlanetState[];
+  nextSharedPlanetId: number;
   /**
-   * The ship's heading and the planet it orbits, by id, if any (navigation.ts). `orbit` is public only as "in orbit or
-   * not"; the planet stays its finder's. `heading` goes only to the living at a Command terminal. `arriving` is the
+   * The ship's heading and the planet it orbits, by id, if any (navigation.ts). `orbit` is public as "in orbit or
+   * not" and the planet's name (`orbitName`, owner 2026-10-31); its sectors stay its finder's. `heading` goes only to the living at a Command terminal. `arriving` is the
    * jump in progress (owner, 2026-10-29): set when the Commander travels or leaves orbit, it lasts until the next cycle
    * change, when the ship arrives (`arriveShip`, navigation.ts) and `planet` (null: empty space) becomes the orbit.
    * Only whether it is set goes out, as `traveling`; the planet stays its finder's. `lastTurn` is the latest quarter
@@ -166,6 +169,11 @@ export interface Hunter {
   hp: number;
   hitChance: number;
   target: HunterTarget | null;
+}
+
+/** A shared planet's entry, with the id of the finder's planet it came from (never sent: it ties entries to planets). */
+export interface SharedPlanetState extends SharedPlanet {
+  planet: string;
 }
 
 /** A planet a player found. Its size is the number of sectors. */

@@ -161,19 +161,31 @@ describe("ship navigation", () => {
     expect(left.ship.combustion).toBe(0);
   });
 
-  it("views: everyone knows the ship is in orbit, only the finder which planet, the heading only at the terminal", () => {
+  it("views: everyone knows the ship is in orbit and the planet's name, only the finder its sectors, the heading only at the terminal", () => {
     const s = arrived(game());
     player(s, "p2").room = "CORRIDOR_A";
     const finder = viewFor(s, "p1");
-    expect(finder.navigation).toEqual({ orbiting: true, traveling: false, orbitPicture: planetPicture({ name: "Name-planet-a" }), heading: "north", lastTurn: null });
+    const picture = planetPicture({ name: "Name-planet-a" });
+    expect(finder.navigation).toEqual({ orbiting: true, traveling: false, orbitPicture: picture, orbitName: "Name-planet-a", heading: "north", lastTurn: null });
     expect(finder.planets).toMatchObject([{ id: "planet-a", orbited: true }]);
+    // The name is public once in orbit (owner, 2026-10-31); the planet's id, sectors and finder are not.
     const other = viewFor(s, "p2");
-    expect(other.navigation).toEqual({ orbiting: true, traveling: false, orbitPicture: planetPicture({ name: "Name-planet-a" }), heading: null, lastTurn: null });
-    expect(JSON.stringify(other)).not.toContain("planet-a");
-    expect(JSON.stringify(other)).not.toContain("Name-planet-a");
-    expect(JSON.stringify(viewFor(s, "p0"))).not.toContain("Name-planet-a");
+    expect(other.navigation).toEqual({ orbiting: true, traveling: false, orbitPicture: picture, orbitName: "Name-planet-a", heading: null, lastTurn: null });
+    expect(other.planets).toEqual([]);
+    expect(JSON.stringify(other)).not.toContain('"planet-a"');
     expect(viewFor(game(), "p1").planets[0]!.orbited).toBeUndefined();
     expect(viewFor(game(), "p1").navigation.orbitPicture).toBeNull();
+  });
+
+  it("keeps the destination's name private while the ship travels, and drops it on leaving orbit", () => {
+    const traveling = must(applyAction(game(), "p0", travel));
+    expect(viewFor(traveling, "p0").navigation.orbitName).toBeNull();
+    expect(JSON.stringify(viewFor(traveling, "p0"))).not.toContain("Name-planet-a");
+    const orbiting = arrived(game());
+    orbiting.ship.combustion = navigation.leaveOrbit.fuel;
+    const left = must(applyAction(orbiting, "p0", leave));
+    expect(viewFor(left, "p0").navigation.orbitName).toBeNull();
+    expect(viewFor(nextCycle(left), "p2").navigation.orbitName).toBeNull();
   });
 
   it("parses the actions from the client and drops malformed ones", () => {

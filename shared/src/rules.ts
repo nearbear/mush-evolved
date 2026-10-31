@@ -30,7 +30,8 @@ import { activitySeen, logPrivate } from "./log.ts";
 import { recordAction } from "./history.ts";
 import { ringMycoAlarms } from "./mycoalarm.ts";
 import { planetsOf } from "./planets.ts";
-import { arriveShip, orbitPicture } from "./navigation.ts";
+import { canSharePlanets } from "./sharedPlanets.ts";
+import { arriveShip, orbitName, orbitPicture } from "./navigation.ts";
 import { commandTerminalsHere, isPilgredRepaired } from "./pilgred.ts";
 import { biosTerminalsHere, newBios } from "./bios.ts";
 import { callNextRebel, commsCycle, commsTerminalView, comTerminalsHere, newComms } from "./comms.ts";
@@ -126,6 +127,8 @@ export function createGame(
     planets: {},
     scanFailures: {},
     nextPlanetId: 1,
+    sharedPlanets: [],
+    nextSharedPlanetId: 1,
     hunters: newHunters(),
     turrets: {},
     turretFailures: {},
@@ -478,6 +481,8 @@ export function viewFor(state: GameState, playerId: PlayerId): PlayerView {
     readChannels: channels,
     privateChannels: state.channels.filter((c) => c.members.includes(playerId)).map((c) => ({ ...c, members: [...c.members] })),
     threads: channels.includes("global") ? state.threads.map(({ id, name, from, createdBy, cycle }) => ({ id, name, ...(from !== undefined && { from }), createdBy, cycle })) : [],
+    // Never `planet`: which planet an entry came from stays its finder's.
+    sharedPlanets: channels.includes("astrophysics") ? state.sharedPlanets.map(({ id, text, by, day, cycleOfDay, stale }) => ({ id, text, by, day, cycleOfDay, stale })) : [],
     channelLimit: channelLimit(state, you),
     movement: movementRules(state, you),
     bonds: {
@@ -504,6 +509,7 @@ export function viewFor(state: GameState, playerId: PlayerId): PlayerView {
     bios: you.alive && biosTerminalsHere(state, you).length > 0 ? { ...state.bios } : null,
     // Your own planets only, and only the tags an analysis revealed (owner, 2026-10-19).
     maxPlanets: state.config.astro.maxPlanets,
+    canSharePlanets: canSharePlanets(state, you),
     planets: planetsOf(state, playerId).map((p) => ({
       id: p.id,
       name: p.name,
@@ -517,6 +523,7 @@ export function viewFor(state: GameState, playerId: PlayerId): PlayerView {
       orbiting: state.navigation.orbit !== null,
       traveling: state.navigation.arriving !== null,
       orbitPicture: orbitPicture(state),
+      orbitName: orbitName(state),
       heading: you.alive && commandTerminalsHere(state, you).length > 0 ? state.navigation.heading : null,
       lastTurn: state.navigation.lastTurn,
     },

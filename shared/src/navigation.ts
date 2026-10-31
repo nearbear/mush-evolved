@@ -37,6 +37,17 @@ export function orbitPicture(state: Readonly<GameState>): number | null {
   return planet ? planetPicture(planet) : null;
 }
 
+/**
+ * The orbited planet's name, public to everyone once the ship is in orbit (owner, 2026-10-31), or null out of orbit.
+ * `orbit` is set only at the arrival (`arriveShip`), so the destination's name isn't sent while the ship travels. Only
+ * the name: its sectors and its finder stay private. (A shared entry for the destination stays applicable when the
+ * others go stale, which shows the crew that entry and who shared it: accepted, sharedPlanets.ts.)
+ */
+export function orbitName(state: Readonly<GameState>): string | null {
+  const id = state.navigation.orbit;
+  return (id === null ? undefined : Object.values(state.planets).flat().find((p) => p.id === id))?.name ?? null;
+}
+
 /** Whether the ship is between one place and the next (owner, 2026-10-29): the Command terminal, scanning and patrol takeoff wait for the arrival. */
 export const isTraveling = (state: Readonly<GameState>): boolean => state.navigation.arriving !== null;
 

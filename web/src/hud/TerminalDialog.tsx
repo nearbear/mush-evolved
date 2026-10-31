@@ -50,9 +50,11 @@ interface Props {
   view: PlayerView;
   onAction: (action: Action) => void;
   onClose: () => void;
+  /** Shares a planet in the Astrophysics feature, from the Astro terminal. */
+  onSharePlanet?: (planet: string, text: string) => void;
 }
 
-export function TerminalDialog({ terminal, view, onAction, onClose }: Props) {
+export function TerminalDialog({ terminal, view, onAction, onClose, onSharePlanet }: Props) {
   const names = useNames();
   return (
     <Dialog.Root open={terminal !== null} onOpenChange={(open) => !open && onClose()}>
@@ -64,7 +66,7 @@ export function TerminalDialog({ terminal, view, onAction, onClose }: Props) {
             <TerminalShell name={names.equipment(terminal.type)} type={terminal.type} view={view}>
             {terminal?.type === "RESEARCH_LAB" && <ResearchList terminal={terminal} view={view} onAction={onAction} />}
               {terminal?.type === "NERON_CORE" && <ProjectList terminal={terminal} view={view} onAction={onAction} />}
-              {terminal?.type === "ASTRO_MODULE" && <PlanetList terminal={terminal} view={view} onAction={onAction} />}
+              {terminal?.type === "ASTRO_MODULE" && <PlanetList terminal={terminal} view={view} onAction={onAction} onShare={onSharePlanet} />}
               {terminal?.type === "PILGRED" && <PilgredRepair terminal={terminal} view={view} onAction={onAction} />}
               {terminal?.type === "COM_CENTER" && <CommsCenter terminal={terminal} view={view} onAction={onAction} />}
               {terminal?.type === "NERON_BIOS_TERM" && <BiosTerminal terminal={terminal} view={view} onAction={onAction} />}
