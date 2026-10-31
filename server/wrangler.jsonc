@@ -16,8 +16,11 @@
       { "name": "Matchmaker", "class_name": "Matchmaker" }
     ]
   },
+  "d1_databases": [
+    { "binding": "DB", "database_name": "mush2-production", "database_id": "9021775b-89ea-49f6-93d4-f1d5ed218ac4", "migrations_dir": "migrations" }
+  ],
   // Which rules build ran a game, stored in its replay record. "dev" locally;
-  // `npm run deploy` overrides it with the commit hash.
+  // The deploy:* scripts override it with the commit hash.
   "vars": { "RULES_VERSION": "dev" },
   "migrations": [{ "tag": "v1", "new_sqlite_classes": ["GameRoom", "Matchmaker"] }],
   // The top level above is production. Wrangler does not inherit bindings, vars,
@@ -40,6 +43,9 @@
           { "name": "Matchmaker", "class_name": "Matchmaker" }
         ]
       },
+      "d1_databases": [
+        { "binding": "DB", "database_name": "mush2-staging", "database_id": "ec315beb-a346-4507-a0ea-ae86795f023a", "migrations_dir": "migrations" }
+      ],
       "vars": { "RULES_VERSION": "dev" },
       "migrations": [{ "tag": "v1", "new_sqlite_classes": ["GameRoom", "Matchmaker"] }]
     },
@@ -56,6 +62,9 @@
           { "name": "Matchmaker", "class_name": "Matchmaker" }
         ]
       },
+      "d1_databases": [
+        { "binding": "DB", "database_name": "mush2-test", "database_id": "600dcd0b-e9cf-4146-919a-0b01ef9d7568", "migrations_dir": "migrations" }
+      ],
       "vars": { "RULES_VERSION": "dev", "ALLOW_CHEATS": "true" },
       "migrations": [{ "tag": "v1", "new_sqlite_classes": ["GameRoom", "Matchmaker"] }]
     }
