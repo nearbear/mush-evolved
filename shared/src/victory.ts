@@ -1,4 +1,4 @@
-// How the game ends (decided win conditions, docs/rules-design.md): Mush win if the ship reaches Sol or Eden while any
+// How the game ends (decided win conditions, docs/rules/rules-design.md): Mush win if the ship reaches Sol or Eden while any
 // Mush is alive, humans win if it gets there with no Mush alive, and Mush win the moment the last living human dies
 // (checked in death.ts). There is no game length limit (decided 2026-10-22). Nothing reaches Eden yet.
 

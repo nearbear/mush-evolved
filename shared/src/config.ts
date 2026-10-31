@@ -150,9 +150,9 @@ export const DEFAULT_CONFIG: GameConfig = {
   shrink: { lyingMorale: 1 },
   interrogate: { cost: { ap: 1 }, damage: 1, dirtyChance: 0.15, injuryChance: 0.1 },
   // Decided 2026-10-16: working on a research costs 2 AP. Owner, 2026-10-26: its progress follows the original's relay formula, 6-9% at difficulty 10.
-  // Owner, 2026-10-31 (docs/research-sabotage.md): assays at the quarter marks, 5% noise, Contaminate costs 1 AP.
+  // Owner, 2026-10-31 (docs/plans/research-sabotage.md): assays at the quarter marks, 5% noise, Contaminate costs 1 AP.
   research: { cost: { ap: 2 }, progress: { rate: 6, mod: 10, skillBoost: 4, relayPenalty: 2 }, dirtyChance: 0.15, assayMarks: [25, 50, 75, 100], spoilChance: 0.05, contaminate: { cost: { ap: 1 } } },
-  // Decided 2026-10-19 (docs/astro-plan.md): scan 3 AP at 50%, x1.25 per failure in a row; analysis 2 AP; 2 planets per player.
+  // Decided 2026-10-19 (docs/plans/astro.md): scan 3 AP at 50%, x1.25 per failure in a row; analysis 2 AP; 2 planets per player.
   // Owner, 2026-10-22: planets get a direction and a distance (2 to 9 fuel, unique on the ship), and grow with the day.
   astro: {
     scan: { cost: { ap: 3 }, chance: 0.5, failureMultiplier: 1.25 },
@@ -174,7 +174,7 @@ export const DEFAULT_CONFIG: GameConfig = {
   // Owner, 2026-10-21: repairing PILGRED uses the original's numbers (DIG_RATE 6, PILGRED_MOD 2, DIG_BOOST 4, -2 per repeat),
   // 2 AP, 25% dirty; the Physicist gains 1 PILGRED point a day and holds 2.
   pilgred: { cost: { ap: 2 }, dirtyChance: 0.25, injuryChance: 0.05, progress: { rate: 6, mod: 2, skillBoost: 4, relayPenalty: 2 }, capPoints: 2, pointsPerDay: 1, returnCost: { ap: 2 }, edenCost: { ap: 2 } },
-  // Owner, 2026-10-19 and 2026-10-21 (docs/comms-plan.md): every comms action is 2 AP. Sol: 4%, +4% per failure, floor 4%.
+  // Owner, 2026-10-19 and 2026-10-21 (docs/plans/comms.md): every comms action is 2 AP. Sol: 4%, +4% per failure, floor 4%.
   // Rebels: avg of two 1..40 draws, +100% each for Rebel and Kivanç, a window of 8..16 cycles. NERON update: 25% per action.
   comms: {
     sol: { cost: { ap: 2 }, startChance: 4, chancePerFail: 4, radioExpertFactor: 2, radioExpertRoomFactor: 1.5 },
@@ -314,7 +314,7 @@ export const DEFAULT_CONFIG: GameConfig = {
   ],
   // Confirmed 2026-10-13: every player starts with an iTrackie.
   startInventory: [ITRACKIE_ITEM],
-  // The patrol ships' rooms have no doors and sit off the map (patrol.ts, docs/patrol-plan.md answer 1).
+  // The patrol ships' rooms have no doors and sit off the map (patrol.ts, docs/plans/patrol.md answer 1).
   rooms: { ...(Object.fromEntries(SHIP_ROOMS.map((r) => [r.id, r.doors])) as Record<RoomId, RoomId[]>), ...patrolRooms() },
   // Confirmed 2026-10-11: the equipment drawn in each room of the original map; each patrol ship holds its command.
   equipment: { ...Object.fromEntries(SHIP_ROOMS.map((r) => [r.id, r.equipment])), ...patrolEquipment() },
@@ -328,7 +328,7 @@ export const DEFAULT_CONFIG: GameConfig = {
     },
 };
 
-/** A multiplayer ship's pre-selection (docs/rules-design.md, "Joining and Mush selection", decided 2026-10-13). */
+/** A multiplayer ship's pre-selection (docs/rules/rules-design.md, "Joining and Mush selection", decided 2026-10-13). */
 export const PRESELECTION: PreselectionRules = {
   // Owner, 2026-10-25 (#228): 16 seats, the standard setup's; the 4-seat cap is lifted.
   seats: 16,

@@ -34,7 +34,7 @@ For each, check what's sent and to whom:
 
 Also look for indirect leaks: legal actions that reveal hidden state (e.g. an action only offered when the target is Mush), timing or counts that reveal a role, and IDs or ordering that encode the RNG. A room effect (`roomActionCost` in modifiers.ts) shows up in the actor's prices, so its holder must be someone the actor can already see; an effect from a hidden source would leak through the cost.
 
-Not a leak: what Interrogate and Chitchat reveal from the action history (`shared/src/history.ts`), Mush-only actions included. They leak by design (owner, 2026-10-31; `docs/rules-design.md`). The history itself must still never reach a view any other way.
+Not a leak: what Interrogate and Chitchat reveal from the action history (`shared/src/history.ts`), Mush-only actions included. They leak by design (owner, 2026-10-31; `docs/rules/rules-design.md`). The history itself must still never reach a view any other way.
 
 ## 3. Prove it with tests
 

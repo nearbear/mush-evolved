@@ -15,7 +15,7 @@ function othersPending(state: Readonly<GameState>, player: Readonly<PlayerState>
 }
 
 /**
- * Saboteur's (`sapper`) Contaminate (docs/research-sabotage.md; owner, 2026-10-31): 1 AP at the research terminal
+ * Saboteur's (`sapper`) Contaminate (docs/plans/research-sabotage.md; owner, 2026-10-31): 1 AP at the research terminal
  * contaminates a pending sample made by someone else that isn't already contaminated, from a contributor with the
  * fewest samples in that research (assay.ts, `contaminationCandidates`), and it spoils at the next assay. The holder
  * does not pick. Private, not covert, so a camera doesn't see it; no daily limit.

@@ -12,7 +12,7 @@ export function clone<T>(value: T): T {
   return JSON.parse(JSON.stringify(value)) as T;
 }
 
-/** AP a player can spend on live actions: what plan jobs have locked is held back (docs/action-plans.md). */
+/** AP a player can spend on live actions: what plan jobs have locked is held back (docs/plans/action-plans.md). */
 export const freeAp = (player: Readonly<Pick<PlayerState, "ap" | "lockedAp">>): number => player.ap - player.lockedAp;
 
 export function findPlayer(state: GameState, id: PlayerId): PlayerState | undefined {

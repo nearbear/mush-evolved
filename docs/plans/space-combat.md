@@ -1,6 +1,6 @@
 # Hunters and space combat (plan)
 
-Status: **first-pass rules decided 2026-10-24 (recorded in `docs/rules-design.md`, "Hunters and space combat, first pass"); Phase 1 built 2026-10-24 (`docs/implemented-rules.md`, "Hunters and space combat, first pass").** Deferred: hunters following on travel (#240), wave scaling with crew size and activity (#241). Everything under "What the original gives us" is extracted from `Mush/` (2026-10-20) and is reference only. Nothing here is a rule until the owner answers the open questions and the answers are recorded in `docs/rules-design.md`.
+Status: **first-pass rules decided 2026-10-24 (recorded in `docs/rules/rules-design.md`, "Hunters and space combat, first pass"); Phase 1 built 2026-10-24 (`docs/rules/implemented-rules.md`, "Hunters and space combat, first pass").** Deferred: hunters following on travel (#240), wave scaling with crew size and activity (#241). Everything under "What the original gives us" is extracted from `Mush/` (2026-10-20) and is reference only. Nothing here is a rule until the owner answers the open questions and the answers are recorded in `docs/rules/rules-design.md`.
 
 ## What the snapshot does and doesn't have
 
@@ -26,7 +26,7 @@ Live rows, before `$EOF`. The `aggro` hunter types are the ones that attack. `ag
 | DAEDALUS | Daedalus | 100 | | | 200 | | 0 | | | | the hull; "dodge 200" |
 | ICARUS | Icarus | 20 | | | 100 | | 0 | | | | exploration ship, capacity 4 |
 
-"Follows" (`Ne poursuit pas`, `Impossible à distancer`) is about the Daedalus travelling: hunters chase it to the next system unless the type says otherwise. Travel is built (`docs/implemented-rules.md`, "Ship travel"), and plain hunters follow it (#240, decided 2026-10-24: half, rounded up, keeping their hp).
+"Follows" (`Ne poursuit pas`, `Impossible à distancer`) is about the Daedalus travelling: hunters chase it to the next system unless the type says otherwise. Travel is built (`docs/rules/implemented-rules.md`, "Ship travel"), and plain hunters follow it (#240, decided 2026-10-24: half, rounded up, keeping their hp).
 
 Constants: `Const.MAX_PATROL_HP = 14` (more than the table's 10, so repairs can overfill?), `Gameplay.PATROLSHIP_EXTRA_AMMO = 6`, `Gameplay.HUNTER_PER_SHIP = 4` (use unknown), `Gameplay.ARMOUR_CORRIDOR = 1`, `Gameplay.PATROL_EXP_TICKS = 3` (patrol-ship planet trips, out of scope), `Const.ENABLE_HUNTERS = true`. `ShipConsts` lists `PATROL_SHIP_FREE_MOVES` and `DAEDALUS_SHIELD_REGEN` but their values aren't in the snapshot.
 
@@ -153,6 +153,6 @@ Phase 1, assuming the proposed scope in question 1:
 - `viewFor`: `PlayerView.hunters` (type and hp of each), turret charges, both public if question 7 says so. Run `leak-check` anyway, since the pool or schedule (if any) is server-only.
 - Web: the alert-bar hunter icon; in a turret room, a battle panel (DOM, so it works with either renderer): hunters on one side, turrets on the other, tap a hunter to target it, the Shoot button from `view.actions`. Works at 360px (the panel likely goes in the Inspect tab or a sheet over the room on phones).
 - Tests in `shared/tests/hunters.test.ts`: pinned config numbers, spawning, attacks hitting the shield then the hull for a seed, a kill removing the hunter, charges running out and recharging, the repeat bonus, illegal shots (no charge, not in a turret, dead target) leave the state unchanged, and a headless run where an ignored wave wears the hull down.
-- Record it in `docs/implemented-rules.md`, `docs/rules-design.md` ("Decisions received"), `docs/code-map/shared.md`, and `docs/ai-workflow.md` (append).
+- Record it in `docs/rules/implemented-rules.md`, `docs/rules/rules-design.md` ("Decisions received"), `docs/code-map/shared.md`, and `docs/process/ai-workflow.md` (append).
 
 Later phases, each its own plan when it comes up: patrol ships (takeoff, attack, stances, land, eject, repair, patrol-ship deaths), the other hunter types (Arack blocking travel, asteroids on a countdown, D1000 attacking three times, Trax), NERON's auto-turrets and pilot lock, the combat projects and research, and the triumph for kills.

@@ -1,6 +1,6 @@
 # Plan: scheduled action plans (#44; written 2026-10-13, narrowed 2026-10-26)
 
-> **Superseded (2026-10-30).** The owner dropped the generic executor (scheduled time, locked AP, knowledge sandbox, arbitrary jobs). Relaying is now pooled contributions, `docs/relay-tokens.md`; coordination is channel plans with on-call summons, `docs/on-call-plans.md`, which lists which decisions below still carry over. Kept for history and for the deferred features.
+> **Superseded (2026-10-30).** The owner dropped the generic executor (scheduled time, locked AP, knowledge sandbox, arbitrary jobs). Relaying is now pooled contributions, `docs/plans/relay-tokens.md`; coordination is channel plans with on-call summons, `docs/plans/on-call.md`, which lists which decisions below still carry over. Kept for history and for the deferred features.
 
 Implemented so far: the action registry and private channels; build steps 1 (the relay formula) and 2 (`PlayerState.lockedAp` and `freeAp` in every live affordability check, `actNow` in `queue.ts`, `shortestPath` in `paths.ts`; nothing locks AP yet). The rest is not built. **Decisions** are confirmed by the owner; **Open questions** must be answered before building the phase they block. Do not guess them.
 
@@ -176,7 +176,7 @@ Scripted bots never post; they claim relay and meet jobs they can afford (`claim
 
 ## Open questions
 
-- ~~Projects' skill bonus~~: answered 2026-10-27, the original's per-project tags (`docs/rules-design.md`).
+- ~~Projects' skill bonus~~: answered 2026-10-27, the original's per-project tags (`docs/rules/rules-design.md`).
 - Research and projects slow from 25% to 6–9% per action with the formula above (about 11–17 actions per research without a matching skill). Accepted with the formula, but worth confirming in play.
 - ~~Whether single-player bots may post plans~~: answered 2026-10-28, yes (see "Bots").
 

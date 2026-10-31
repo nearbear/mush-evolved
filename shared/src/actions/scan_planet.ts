@@ -9,7 +9,7 @@ import type { GameState, PlayerState } from "../types.ts";
 export type ScanPlanetActionData = { type: "scan_planet"; equipment: string };
 
 /**
- * Scan for a planet at the Astro terminal (owner, 2026-10-19, docs/astro-plan.md): 3 AP, 50% success, and each failed scan
+ * Scan for a planet at the Astro terminal (owner, 2026-10-19, docs/plans/astro.md): 3 AP, 50% success, and each failed scan
  * in a row multiplies the player's next chance by 1.25 until a success resets it. A found planet is the scanner's alone
  * (`GameState.planets`), at most 2 each, at a direction and distance no other planet on the ship holds, sized by the day
  * (owner, 2026-10-22; planets.ts), and never while the ship is in orbit. Living, not-dirty players, Mush included. The room log says only that someone scanned,

@@ -5,11 +5,11 @@ description: Bring Motion Twin art from Mush/ into the game (sprites, icons, roo
 
 # Use an asset from `Mush/`
 
-Everything in `Mush/` is CC BY-NC-SA 4.0 (see `Mush/LICENSE.txt` and `docs/mush-assets.md`). Read `docs/mush-assets.md` first: it maps the folders and lists what not to use.
+Everything in `Mush/` is CC BY-NC-SA 4.0 (see `Mush/LICENSE.txt` and `docs/assets/mush-assets.md`). Read `docs/assets/mush-assets.md` first: it maps the folders and lists what not to use.
 
 ## 1. Check you're allowed to use it
 
-- **Not on the "Do not use" list** in `docs/mush-assets.md`: Mush or Twinoid logos (trademark, never our branding), third-party logos, `www/img/teasing`, `news`, `loc`, `.swf` files.
+- **Not on the "Do not use" list** in `docs/assets/mush-assets.md`: Mush or Twinoid logos (trademark, never our branding), third-party logos, `www/img/teasing`, `news`, `loc`, `.swf` files.
 - **No different third-party terms** in that folder (fonts, sounds, music especially). If a folder looks like it came from somewhere else, ask the user.
 - **No AI-generated art.** Never create, edit, upscale, or recolor image files with AI tools without the user's explicit approval (CLAUDE.md). Recoloring in CSS (`filter`) is code, not a new asset; mention it anyway.
 - **Never monetize.** Nothing using these files can carry ads or paid features.
@@ -44,8 +44,8 @@ Sheets land in `.screenshots/contact/`. **Look at them** through the `visual-che
 ## 5. Record it
 
 - Attribution: the in-game credits footer (`Credits` in `web/src/GameScreen.tsx`) and `Mush/ATTRIBUTION.md` must still cover what's used; add a line if you changed the art (e.g. "sprite backgrounds made transparent").
-- `docs/mush-assets.md`: update if you learned something about a folder (format quirks, what a file actually is).
-- `docs/ai-workflow.md`: a dated entry listing what was placed, what was skipped and why. Only ever append with cat >> as a cost optimization; do not rewrite existing entries.
+- `docs/assets/mush-assets.md`: update if you learned something about a folder (format quirks, what a file actually is).
+- `docs/process/ai-workflow.md`: a dated entry listing what was placed, what was skipped and why. Only ever append with cat >> as a cost optimization; do not rewrite existing entries.
 
 ## Tooling commands
 

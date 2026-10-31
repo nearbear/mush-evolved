@@ -1,4 +1,4 @@
-// Recording and replaying games (decided 2026-10-14, docs/rules-design.md
+// Recording and replaying games (decided 2026-10-14, docs/rules/rules-design.md
 // "Replays"). A game is its setup plus the ordered inputs the server accepted;
 // the rules are pure, so running the inputs again rebuilds every state.
 // Every state change must go through applyInput, or it won't be in the record.

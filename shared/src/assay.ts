@@ -1,4 +1,4 @@
-// Research samples and assays (docs/research-sabotage.md; owner, 2026-10-30/31). A research's relay tokens (relay.ts)
+// Research samples and assays (docs/plans/research-sabotage.md; owner, 2026-10-30/31). A research's relay tokens (relay.ts)
 // are samples to players. A new sample is pending; an assay tests all of a research's pending samples together when
 // the best arrangement of verified plus pending samples reaches the next assay mark above verified progress (25, 50,
 // 75, 100). A contaminated sample always spoils and every other one spoils at `spoilChance` (the noise), so a spoil

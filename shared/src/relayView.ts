@@ -1,4 +1,4 @@
-// What a player sees of the relay token pools (relay.ts; docs/relay-tokens.md; research's samples, assay.ts). Research, project and PILGRED progress,
+// What a player sees of the relay token pools (relay.ts; docs/plans/relay-tokens.md; research's samples, assay.ts). Research, project and PILGRED progress,
 // `waiting`, the gain and the token list go only to the living in the target's room until it completes; completion is
 // the only news that reaches other rooms (owner, 2026-10-31). Rolls never go out.
 
@@ -15,7 +15,7 @@ const EMPTY: RelayPool = { tokens: [] };
 const EMPTY_RESEARCH: ResearchPool = { tokens: [], pending: [] };
 
 /**
- * A research as seen from the lab (docs/research-sabotage.md): `waiting`, the gain and the sample values come from all
+ * A research as seen from the lab (docs/plans/research-sabotage.md): `waiting`, the gain and the sample values come from all
  * its samples, verified and pending, since that is what the next assay tests; `pending` is the striped segment. Nothing
  * says whether a sample is contaminated.
  */

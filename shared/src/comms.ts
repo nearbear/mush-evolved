@@ -1,4 +1,4 @@
-// The communication center (owner, 2026-10-19 and 2026-10-21; plan in docs/comms-plan.md). Anyone can try to
+// The communication center (owner, 2026-10-19 and 2026-10-21; plan in docs/plans/comms.md). Anyone can try to
 // establish the link with Sol at the Com center terminal; with the link up, the Comms Officer decodes rebel bases'
 // calls, contacts Xyloph and updates NERON. The state (`GameState.comms`) is shown read-only to anyone at the
 // terminal; the actions' log lines are private to the actor. The link status itself goes to everyone.

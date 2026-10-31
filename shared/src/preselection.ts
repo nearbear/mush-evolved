@@ -1,5 +1,5 @@
 // ---- Pre-selection ----------------------------------------------------------
-// Decided 2026-10-13 (docs/rules-design.md, "Joining and Mush selection"). A multiplayer ship launches with nobody
+// Decided 2026-10-13 (docs/rules/rules-design.md, "Joining and Mush selection"). A multiplayer ship launches with nobody
 // Mush (`config.preselection`). Players join it (`joinShip`, a server input) until it fills or the deadline cycle
 // begins, whichever comes first; then `selectMush` picks the Mush from whoever joined, `mushCount` of them (Auto:
 // `twoMushAbove` or fewer players get 1, more get 2; a fixed count is capped at the players minus 2). Titles and the first rebel call wait for selection too. Meanwhile there are no spore

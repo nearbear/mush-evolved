@@ -46,7 +46,7 @@ export function queueAction(state: GameState, playerId: PlayerId, action: Action
 
 /**
  * Does an action at once, bypassing the queue: the untimed path of `queueAction`, and the way a plan's jobs run
- * (docs/action-plans.md), so both go through the same legality check, cost and hooks.
+ * (docs/plans/action-plans.md), so both go through the same legality check, cost and hooks.
  */
 export function actNow(state: GameState, playerId: PlayerId, action: Action): ActionResult {
   const def: ActionDef<Action> | undefined = ACTIONS[action.type];

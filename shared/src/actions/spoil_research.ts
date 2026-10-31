@@ -9,11 +9,11 @@ const research = new ResearchAction();
 const asResearch = (target: SpoilResearchActionData): ResearchActionData => ({ ...target, type: "research" });
 
 /**
- * A Mush's own spoil (docs/research-sabotage.md; owner, 2026-10-31): a second button next to Participate that only Mush
+ * A Mush's own spoil (docs/plans/research-sabotage.md; owner, 2026-10-31): a second button next to Participate that only Mush
  * see, at the same price, needs and dirt chance. It adds a sample that looks like any other until the next assay, where
  * it always spoils. Everything others can see matches Participate: the same private line, the same busy bar, and the
  * action history records it as own spoil, so Interrogate and Chitchat can reveal it, like Extract spore (they leak by
- * design; docs/rules-design.md).
+ * design; docs/rules/rules-design.md).
  */
 export class SpoilResearchAction extends Action<SpoilResearchActionData> {
   override terminal = true;

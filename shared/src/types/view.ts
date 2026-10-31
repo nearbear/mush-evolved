@@ -254,13 +254,13 @@ export interface PlayerView {
 /** One action you are offered: what it costs, its chance of success, and which of your points fall short. */
 /** One pooled target as seen from its room (relayView.ts). */
 export interface RelayTargetView {
-  /** Progress held back only for lack of other contributors (docs/relay-tokens.md). */
+  /** Progress held back only for lack of other contributors (docs/plans/relay-tokens.md). */
   waiting: number;
   /** How much the target goes up if you contribute now, over your token's roll. */
   gain: { min: number; max: number };
   /**
    * Its tokens in the order they were made: who made each and what it is worth in the best arrangement. A research's
-   * are samples: verified ones first, then `pending` ones waiting for the next assay (docs/research-sabotage.md).
+   * are samples: verified ones first, then `pending` ones waiting for the next assay (docs/plans/research-sabotage.md).
    */
   tokens: { by: PlayerId; value: number; pending?: true }[];
   /** Research only: the striped segment, how much the pending samples add above verified progress if they all pass. */

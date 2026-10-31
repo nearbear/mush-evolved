@@ -8,12 +8,12 @@ A turn-based, browser-based social deduction game inspired by **eMush**, the ope
 
 This is a **vertical slice**, not a full clone. The goals are:
 
-1. A playable end-to-end slice, public on the internet, with a plain per-language queue into a ship in its pre-selection phase (decided 2026-10-13, see `docs/rules-design.md`).
+1. A playable end-to-end slice, public on the internet, with a plain per-language queue into a ship in its pre-selection phase (decided 2026-10-13, see `docs/rules/rules-design.md`).
    - **Bots (2026-10-13):** multiplayer has no bots. AI-controlled bots exist only in a single-player mode (stage not decided) and as test tooling.
 2. Demonstrate solid full-stack engineering and an AI-assisted development workflow (keep notes on what worked and what didn't; see "Working agreements").
 3. Leave room to grow it into a real game later, including animated characters.
 
-**Proposed slice scope:** 16 seats with 2 Mush (1 when 8 or fewer players are in the room; decided in `docs/rules-design.md`; built; a ship's seat count is `config.preselection.seats`, 16 by default in `PRESELECTION`), the 27-room Daedalus, the action-point loop and infection. Do not try to implement the full Mush ruleset.
+**Proposed slice scope:** 16 seats with 2 Mush (1 when 8 or fewer players are in the room; decided in `docs/rules/rules-design.md`; built; a ship's seat count is `config.preselection.seats`, 16 by default in `PRESELECTION`), the 27-room Daedalus, the action-point loop and infection. Do not try to implement the full Mush ruleset.
 
 ## Stack
 
@@ -24,7 +24,7 @@ Decided:
 - **PixiJS** (`pixi.js@8.22.0`, 2D WebGL) renders the iso view. The original DOM renderer stays in the tree, switched by `ROOM_RENDERER` in `web/src/rendererChoice.ts`. three.js is not planned.
 - Monorepo with `web`, `server`, and `shared` packages. Vite for the client; Vitest for tests.
 
-Rejected (see `docs/ai-workflow.md`):
+Rejected (see `docs/process/ai-workflow.md`):
 
 - **Yjs for game state.** It is a CRDT that syncs shared documents to every client, so anything in it is visible to everyone. Never put hidden information (roles, secret actions) in a Yjs document.
 - **boardgame.io.** Requires a Node server rather than Cloudflare, and handling hidden information securely there adds complexity.
@@ -50,7 +50,7 @@ These are non-negotiable unless I say otherwise.
 
 ## Assets and licensing
 
-- Assets come from Motion Twin's [WebGamesArchives](https://github.com/motion-twin/WebGamesArchives) (the `Mush/` folder), licensed **CC BY-NC-SA 4.0** per that repo's root `LICENSE.txt`: attribution required, non-commercial only, adaptations must be shared under the same license. See `docs/mush-assets.md` for the inventory and licensing details.
+- Assets come from Motion Twin's [WebGamesArchives](https://github.com/motion-twin/WebGamesArchives) (the `Mush/` folder), licensed **CC BY-NC-SA 4.0** per that repo's root `LICENSE.txt`: attribution required, non-commercial only, adaptations must be shared under the same license. See `docs/assets/mush-assets.md` for the inventory and licensing details.
 - Keep assets in their own folder with the license text and an attribution file next to them. Do not mix them into the code tree.
 - `Mush/package.json` makes the folder a private workspace package, `@mush2/assets`, whose `exports` allow only `derived/*`. Code packages import derived data by that name, never by a relative path out of their own package. (`web` still reaches art through relative `import.meta.glob` paths, which Vite needs.)
 - Before using any asset, check that its folder isn't covered by different third-party terms (fonts, sounds, music especially).
@@ -66,7 +66,7 @@ These are non-negotiable unless I say otherwise.
 - Do not invent game rules. If a rule is ambiguous, ask me.
 - Ask before adding dependencies.
 - Prefer the simplest thing that works for the vertical slice, and flag scope creep.
-- Keep a short log in `docs/ai-workflow.md` of significant decisions made with AI assistance, including what worked and what needed correction. I plan to write this up. Only ever append to it with `cat >>`; never read or rewrite the whole file (it is large).
+- Keep a short log in `docs/process/ai-workflow.md` of significant decisions made with AI assistance, including what worked and what needed correction. I plan to write this up. Only ever append to it with `cat >>`; never read or rewrite the whole file (it is large).
 - Run only the tests you need while iterating (`npm test -w shared -- rules.test.ts -t "name"`); run the full `npm test` and `npm run typecheck` once at the end.
 - Explain tradeoffs when there is a real choice; I want to understand the code, not just receive it.
 - When you mention a GitHub issue to me, always make it a clickable link to the issue, e.g. [#216](https://github.com/nearbear/mush2/issues/216). The `#216` shorthand is fine as link text, but it must point at the full URL so I can Ctrl+click it.
@@ -78,7 +78,7 @@ These are non-negotiable unless I say otherwise.
 Node is installed via nvm and is already on `PATH` in Claude Code shells (the user settings `env` pins `~/.nvm/versions/node/v24.21.0/bin`), so don't source nvm first. If `node` isn't found (for example after a Node upgrade), run `source ~/.nvm/nvm.sh` and tell the user the pinned path is stale.
 
 - `npm install`: install all workspaces (npm workspaces: `shared`, `server`, `web`, `tools`, plus `Mush` as `@mush2/assets`).
-- `npm run dev`: wrangler on :8787 plus Vite on :5173, via concurrently. Vite proxies `/parties`, `/auth` and `/api` to wrangler, so the client uses one origin as in production (sign-in setup: `docs/sign-in.md`). It applies D1 migrations to the local database first. In a git worktree the ports are offset per worktree (`npm run ports` prints them) so it can run beside the main checkout's servers.
+- `npm run dev`: wrangler on :8787 plus Vite on :5173, via concurrently. Vite proxies `/parties`, `/auth` and `/api` to wrangler, so the client uses one origin as in production (sign-in setup: `docs/ops/sign-in.md`). It applies D1 migrations to the local database first. In a git worktree the ports are offset per worktree (`npm run ports` prints them) so it can run beside the main checkout's servers.
 - `npm test`: Vitest in `shared`, `tools`, `web`, and `server`. Single file or test: `npm test -w shared -- rules.test.ts -t "advances the cycle"`.
 - `npm run typecheck`: `tsc --noEmit` in every package (TypeScript 7).
 - `npm run build`: production build of `web`.
@@ -88,7 +88,7 @@ Node is installed via nvm and is already on `PATH` in Claude Code shells (the us
 - `npm run layout-query -- <regex>`: search `ship-art.json` and `ship-map.json` (reading them directly is denied), capped at 60 lines.
 - `npm run screenshot`: headless Chromium screenshots as a desktop and a 360px phone player, to `.screenshots/` (gitignored). Needs `npm run dev`. The other tooling commands are in the `play` and `asset` skills.
 - `npm run a11y`: headless accessibility check (`tools/src/a11y/a11y.ts`). Needs `npm run dev`. Joins a match and asserts no raw i18n keys, a "Room" region listing the room's people, equipment, items and exits, the room log as a `role="log"` with the announcer's polite and assertive live regions, no Tab stops in the license footer, and every visible control a Tab stop. Exits non-zero on failure. axe-core is not added (it needs a dependency; ask first).
-- `npm run deploy:production`: build `web`, then `wrangler deploy` the server with the client as static assets (one Worker, one origin; `/parties/*` goes to the Worker). Live at https://mush2-server.nearbearnearbear.workers.dev since 2026-10-24 (manual deploys; auto-deploy is #121). A bare `npm run deploy` only prints the targets and fails, so every deploy names its target. Each deploy applies that environment's D1 migrations (`server/migrations/`, append-only) before `wrangler deploy`; see `docs/d1-runbook.md`. `npm run deploy:staging` and `npm run deploy:test` go to their own Workers; test is the only deployment with cheats (`ALLOW_CHEATS`), and no deployment sets `DEV_SERVER` (bot fill, looser rate limits, the dev model key). Both flags come from `--var` in the server's `dev` script, not `server/.dev.vars`.
+- `npm run deploy:production`: build `web`, then `wrangler deploy` the server with the client as static assets (one Worker, one origin; `/parties/*` goes to the Worker). Live at https://mush2-server.nearbearnearbear.workers.dev since 2026-10-24 (manual deploys; auto-deploy is #121). A bare `npm run deploy` only prints the targets and fails, so every deploy names its target. Each deploy applies that environment's D1 migrations (`server/migrations/`, append-only) before `wrangler deploy`; see `docs/ops/d1-runbook.md`. `npm run deploy:staging` and `npm run deploy:test` go to their own Workers; test is the only deployment with cheats (`ALLOW_CHEATS`), and no deployment sets `DEV_SERVER` (bot fill, looser rate limits, the dev model key). Both flags come from `--var` in the server's `dev` script, not `server/.dev.vars`.
 - `npm run model-trial -w server -- --model <openrouter id> --cycles N --ledger <file> --cap <usd>`: plays a single-player game headless with real model bots on the dev key (`MODEL_API_KEY` in `server/.dev.vars`) and reports tokens, latency, cost and reply quality (#224; `server/scripts/model.trial.ts`, runs under Vitest, never in `npm test`). Costs money: always pass a ledger and cap. `--fake` checks the harness for free.
 - `npm run lint`: Biome, lint only (rules in `biome.json`). Import limits: `shared` has no I/O, UI, or sibling-package imports; `web` never imports `server`. No `console.log` in `server`. typescript-eslint was rejected (no TypeScript 7 support). Intentional exceptions use `biome-ignore` with a reason.
 
@@ -96,7 +96,7 @@ Node is installed via nvm and is already on `PATH` in Claude Code shells (the us
 
 **Google Antigravity CLI** (`agy`, a Gemini agent). Optional; use the `gemini` skill for second opinions on plans, second leak and fr/es reviews, and summarizing big files. Never give it a shell or pass `--dangerously-skip-permissions`; the skill has the read-only call recipe.
 
-`docs/testing.md` lists what's important to test and why, with what's covered and what's missing.
+`docs/process/testing.md` lists what's important to test and why, with what's covered and what's missing.
 
 Project skills in `.claude/skills/`: `play` (launch, drive, and look at the game), `rule` (adding or changing a game rule), `asset` (using art from `Mush/`), `bot` (scripted and model-backed bots), `leak-check` (review changes for hidden-information leaks), `i18n` (player-visible text and translations: en/fr/es), `wiki` (search and read eMushpedia, the French eMush wiki, with `npm run wiki`), `gemini` (ask the Gemini CLI, read-only), and `wrap-up` (verify, update docs, propose a commit).
 
@@ -104,11 +104,11 @@ npm 11 blocks dependency install scripts by default. `esbuild` and `workerd` are
 
 ## Code map
 
-See `docs/code-map.md` (an index to per-package files in `docs/code-map/`) for where each module lives and `docs/implemented-rules.md` for which rules are implemented. Key invariants: `shared/src/rules.ts` is pure and `viewFor` is the only place hidden info is stripped; the client never computes legality (it uses `view.actions`, or `legalIn(view)` for the affordable ones); only the win conditions that are decided exist (`shared/src/victory.ts` and `hunters.ts`: return to Sol, all humans dead, ship destroyed).
+`docs/README.md` indexes every doc (rules, plans, code map, assets, ops, process). See `docs/code-map/README.md` (an index to per-package files in `docs/code-map/`) for where each module lives and `docs/rules/implemented-rules.md` for which rules are implemented. Key invariants: `shared/src/rules.ts` is pure and `viewFor` is the only place hidden info is stripped; the client never computes legality (it uses `view.actions`, or `legalIn(view)` for the affordable ones); only the win conditions that are decided exist (`shared/src/victory.ts` and `hunters.ts`: return to Sol, all humans dead, ship destroyed).
 
 ## Open decisions
 
-Open work lives in **GitHub issues** in the [mush2 project](https://github.com/users/nearbear/projects/1): epics (label `epic`) with sub-issues, milestones for Private beta, Public beta readiness, Public beta, and Release, and `needs-staging` on issues without a stage yet. Open rule decisions carry the `rule-decision` label: `gh issue list --label rule-decision`. Search with `gh issue list --search "<keyword>"` and read one with `gh issue view <n>`. Answered rule decisions are recorded in `docs/rules-design.md` and `docs/action-plans.md`. Do not treat anything in an issue as decided unless it is also recorded there as answered.
+Open work lives in **GitHub issues** in the [mush2 project](https://github.com/users/nearbear/projects/1): epics (label `epic`) with sub-issues, milestones for Private beta, Public beta readiness, Public beta, and Release, and `needs-staging` on issues without a stage yet. Open rule decisions carry the `rule-decision` label: `gh issue list --label rule-decision`. Search with `gh issue list --search "<keyword>"` and read one with `gh issue view <n>`. Answered rule decisions are recorded in `docs/rules/rules-design.md` and `docs/plans/action-plans.md`. Do not treat anything in an issue as decided unless it is also recorded there as answered.
 
 Not rules, but still open:
 

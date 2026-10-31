@@ -1,6 +1,6 @@
 # Expeditions (plan)
 
-2026-10-31. Phase 1 is decided by the owner (2026-10-31); the later phases are an outline, not decisions: each one gets its own rule pass (the `rule` skill) before it is built. Builds on planets and analysis (`docs/astro-plan.md`), ship travel and orbit (`navigation.ts`), and patrol ships (`docs/patrol-plan.md`).
+2026-10-31. Phase 1 is decided by the owner (2026-10-31); the later phases are an outline, not decisions: each one gets its own rule pass (the `rule` skill) before it is built. Builds on planets and analysis (`docs/plans/astro.md`), ship travel and orbit (`navigation.ts`), and patrol ships (`docs/plans/patrol.md`).
 
 ## Sources
 

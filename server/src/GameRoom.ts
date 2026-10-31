@@ -1,6 +1,6 @@
 // One authoritative game. Wraps the pure rules from @mush2/shared and sends
 // each connection only the PlayerView for its own seat. Records every accepted
-// input so the game can be replayed after it ends (docs/rules-design.md, "Replays").
+// input so the game can be replayed after it ends (docs/rules/rules-design.md, "Replays").
 
 import { Server, type Connection, type ConnectionContext, type WSMessage } from "partyserver";
 import {

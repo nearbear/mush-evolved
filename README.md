@@ -2,7 +2,7 @@
 
 A turn-based, browser-based social deduction game inspired by [Mush](https://github.com/motion-twin/WebGamesArchives) (Motion Twin) and [eMush](https://emush.eternaltwin.org/) (Eternaltwin). Players wake up on a spaceship, a few of them are secretly infected, and the rest have to survive and unmask them.
 
-This is a **vertical slice**, not a full clone: matchmaking, a room-by-room ship, action points, inventory, infection, space combat, ship travel, chat, and a game end (the Commander returns to Sol, or every human dies) work today. Much of the original ruleset is still missing; the rules decided so far are in `docs/rules-design.md`, and the rest are open as GitHub issues. A test build is live at https://mush2-server.nearbearnearbear.workers.dev (one Cloudflare Worker serves the client and the game server; `npm run deploy:production`). Model-backed bots have no hosted default and exist only in a planned single-player mode.
+This is a **vertical slice**, not a full clone: matchmaking, a room-by-room ship, action points, inventory, infection, space combat, ship travel, chat, and a game end (the Commander returns to Sol, or every human dies) work today. Much of the original ruleset is still missing; the rules decided so far are in `docs/rules/rules-design.md`, and the rest are open as GitHub issues. A test build is live at https://mush2-server.nearbearnearbear.workers.dev (one Cloudflare Worker serves the client and the game server; `npm run deploy:production`). Model-backed bots have no hosted default and exist only in a planned single-player mode.
 
 ## Quick start
 
@@ -46,7 +46,7 @@ npx playwright install --with-deps chromium
 | `npm run deploy:staging` | The same, to the `mush2-server-staging` Worker, with its own Durable Objects and secrets (set them with `wrangler secret put <NAME> --env staging`) |
 | `npm run deploy:test` | The same, to the `mush2-server-test` Worker, with cheats and End cycle on (`ALLOW_CHEATS`) but no bot fill, normal rate limits and no dev model key. Keep it behind Cloudflare Access |
 
-Sign-in needs Google and Discord OAuth apps and their secrets: see `docs/sign-in.md`.
+Sign-in needs Google and Discord OAuth apps and their secrets: see `docs/ops/sign-in.md`.
 
 ## Project layout
 
@@ -57,7 +57,7 @@ npm workspaces:
 - `web/`: React client (Vite, [Base UI](https://base-ui.com/), [PixiJS](https://pixijs.com/) for the isometric room) that renders a per-player view and sends intents.
 - `tools/`: build-time scripts (ship layout converter, screenshot and contact-sheet helpers).
 - `Mush/`: Motion Twin's original sources and art (see [License](#license)), exposed as the private package `@mush2/assets`.
-- `docs/`: design notes. Start with [`docs/code-map.md`](docs/code-map.md) to find where things live, [`docs/implemented-rules.md`](docs/implemented-rules.md) for which rules exist, and [`docs/testing.md`](docs/testing.md) for what is and isn't covered.
+- `docs/`: design notes. Start with [`docs/code-map/README.md`](docs/code-map/README.md) to find where things live, [`docs/rules/implemented-rules.md`](docs/rules/implemented-rules.md) for which rules exist, and [`docs/process/testing.md`](docs/process/testing.md) for what is and isn't covered.
 
 ## Architecture rules
 
@@ -71,9 +71,9 @@ Please read the architecture rules in [`CLAUDE.md`](CLAUDE.md) before changing c
 - Before opening a pull request, run `npm run typecheck`, `npm run lint`, and `npm test`.
 - For UI changes, run `npm run screenshot` and check both the desktop and phone passes.
 - Please don't add AI-generated non-text assets (art, sound) without discussing it first.
-- Open items are tracked as GitHub issues in the [project board](https://github.com/users/nearbear/projects/1); open rule questions carry the [`rule-decision`](https://github.com/nearbear/mush2/issues?q=is%3Aopen+label%3Arule-decision) label. Answered ones are recorded in [`docs/rules-design.md`](docs/rules-design.md) and [`docs/action-plans.md`](docs/action-plans.md).
+- Open items are tracked as GitHub issues in the [project board](https://github.com/users/nearbear/projects/1); open rule questions carry the [`rule-decision`](https://github.com/nearbear/mush2/issues?q=is%3Aopen+label%3Arule-decision) label. Answered ones are recorded in [`docs/rules/rules-design.md`](docs/rules/rules-design.md) and [`docs/plans/action-plans.md`](docs/plans/action-plans.md).
 
-[`CLAUDE.md`](CLAUDE.md) holds the same project conventions for AI coding assistants; the project is developed with Claude Code, and [`docs/ai-workflow.md`](docs/ai-workflow.md) logs what worked and what didn't.
+[`CLAUDE.md`](CLAUDE.md) holds the same project conventions for AI coding assistants; the project is developed with Claude Code, and [`docs/process/ai-workflow.md`](docs/process/ai-workflow.md) logs what worked and what didn't.
 
 ## License
 

@@ -1,4 +1,4 @@
-// Patrol ships and the Pasiphae (docs/patrol-plan.md, phase 2; owner, 2026-10-24, #208 and #147). Eight small ships
+// Patrol ships and the Pasiphae (docs/plans/patrol.md, phase 2; owner, 2026-10-24, #208 and #147). Eight small ships
 // dock in the three bays. Each is a room of its own with no doors (ships are rooms, answer 1), holding only its
 // command: a pilot takes off from the ship's interface in the bay and lands from the command. Taking off and landing
 // are secret, seen in the bay (answer 4). Only Pilots fly for now (answer 3); a manoeuvre by anyone else would be rough

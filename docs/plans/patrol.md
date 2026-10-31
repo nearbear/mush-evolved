@@ -1,10 +1,10 @@
 # Patrol ships and the Pasiphae (plan)
 
-2026-10-24. The owner's answers are at the end and override the eMush behaviour described under "Sources". The points under "Still open" are not decided: ask the owner (the `rule` skill) before building them. Issues: #208 (patrol ships were its deferred later pass), #147 (Pasiphae). Builds on the first pass of hunters (`shared/src/hunters.ts`, `docs/implemented-rules.md`, "Hunters and space combat").
+2026-10-24. The owner's answers are at the end and override the eMush behaviour described under "Sources". The points under "Still open" are not decided: ask the owner (the `rule` skill) before building them. Issues: #208 (patrol ships were its deferred later pass), #147 (Pasiphae). Builds on the first pass of hunters (`shared/src/hunters.ts`, `docs/rules/implemented-rules.md`, "Hunters and space combat").
 
 ## Sources
 
-The numbers come from eMush's source and eMushpedia (*Pilotage*, *Baie*, *Collecte de débris*, *Capsule spatiale*). The archived original's numbers are in `docs/space-combat-plan.md`; they agree except where noted.
+The numbers come from eMush's source and eMushpedia (*Pilotage*, *Baie*, *Collecte de débris*, *Capsule spatiale*). The archived original's numbers are in `docs/plans/space-combat.md`; they agree except where noted.
 
 ### The ships
 

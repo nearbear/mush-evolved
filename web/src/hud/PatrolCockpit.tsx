@@ -1,4 +1,4 @@
-// What the room view shows while you fly a patrol ship (docs/patrol-plan.md, phase 2; owner, 2026-10-24: a plain panel
+// What the room view shows while you fly a patrol ship (docs/plans/patrol.md, phase 2; owner, 2026-10-24: a plain panel
 // for now, art later): the ship, its armor (`view.patrolShip`), and its cockpit, which you select like any equipment,
 // so its actions (Land) are in the Inspect panel and, on a phone, the peek bar. Below it, the battle panel (phase 3;
 // owner, 2026-10-28): the hunters with their hp and the ship's charges, with a Shoot button on each (a patrol ship

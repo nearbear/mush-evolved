@@ -1,6 +1,6 @@
 # Bot goals (plan)
 
-2026-10-25. How single-player bots act on purpose (walk to a bed to rest, keep PILGRED going with a relay partner) instead of choosing one action at a time from what is in front of them. The owner accepted this design for a first pass on 2026-10-25, to iterate on later. **Open questions** still need the owner's answer before the part they block is built. It builds on the plan system in `docs/action-plans.md` (#44), which comes first.
+2026-10-25. How single-player bots act on purpose (walk to a bed to rest, keep PILGRED going with a relay partner) instead of choosing one action at a time from what is in front of them. The owner accepted this design for a first pass on 2026-10-25, to iterate on later. **Open questions** still need the owner's answer before the part they block is built. It builds on the plan system in `docs/plans/action-plans.md` (#44), which comes first.
 
 ## The problem
 
@@ -112,9 +112,9 @@ The bot's memory is fields on the `ModelBot` or scripted bot object, nowhere els
 
 ### Coordination through plans
 
-- **Plan templates are goals.** `docs/action-plans.md` already makes templates the only auto-created jobs. Each template (a PILGRED relay; the medic template) is also a goal: "start a relay" posts that template in a channel the bot is in. One list serves the human UI and the bots.
+- **Plan templates are goals.** `docs/plans/action-plans.md` already makes templates the only auto-created jobs. Each template (a PILGRED relay; the medic template) is also a goal: "start a relay" posts that template in a channel the bot is in. One list serves the human UI and the bots.
 - **Claiming is one generic goal.** `claimJob` has one option per open job the bot can see in its channels and can afford. It covers every kind of help without a goal per kind. Claiming locks the AP, and the goal is done at once; the executor runs the job later, and the bot carries on with other goals.
-- **Bots treat plan text as untrusted**, as `docs/action-plans.md` Phase 6 says. Only the structured job (action, room, slot) drives a bot; any free text, channel names included, is quoted and escaped in the prompt like chat.
+- **Bots treat plan text as untrusted**, as `docs/plans/action-plans.md` Phase 6 says. Only the structured job (action, room, slot) drives a bot; any free text, channel names included, is quoted and escaped in the prompt like chat.
 - **Humans and bots mix freely.** The human can claim a bot's relay job or post a plan a bot claims.
 
 ### First goal list
@@ -180,12 +180,12 @@ Not in the first pass: answering questions ("where are you?"), accusations and r
 
 ## Open questions
 
-None for the first pass. Noted for `docs/action-plans.md` (#44), not this plan: plans run at a wall-clock time, but single-player cycles end when everyone has pressed End cycle (`manualCycles`), so a human's timed plan could be many cycles or none away.
+None for the first pass. Noted for `docs/plans/action-plans.md` (#44), not this plan: plans run at a wall-clock time, but single-player cycles end when everyone has pressed End cycle (`manualCycles`), so a human's timed plan could be many cycles or none away.
 
 ## Build order
 
-1. #44 steps 1–4 and 6 (`docs/action-plans.md`), including `shortestPath`. Only the solo goals' dependency is `shortestPath` (step 1); the plan goals also need the server inputs (step 6).
+1. #44 steps 1–4 and 6 (`docs/plans/action-plans.md`), including `shortestPath`. Only the solo goals' dependency is `shortestPath` (step 1); the plan goals also need the server inputs (step 6).
 2. Goal interface, building blocks, the interrupts, and the solo goals, with the scripted priority order and the 2 AP reserve. Bots without a key use it.
 3. Model goal choice: the goal list in the prompt replaces the raw action list; measure with `npm run model-trial` against today's prompt (#224).
-4. `claimJob`, then `startRelay` and the other plan-template goals, alongside build step 9 (bots) in `docs/action-plans.md`.
+4. `claimJob`, then `startRelay` and the other plan-template goals, alongside build step 9 (bots) in `docs/plans/action-plans.md`.
 5. Line catalog and `say`.

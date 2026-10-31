@@ -1,4 +1,4 @@
-// The account HTTP API (server/src/auth.ts, docs/sign-in.md). Same origin as the page: in dev Vite proxies
+// The account HTTP API (server/src/auth.ts, docs/ops/sign-in.md). Same origin as the page: in dev Vite proxies
 // /auth and /api to wrangler, so the session cookie goes with every request.
 
 import { useCallback, useEffect, useRef, useState } from "react";

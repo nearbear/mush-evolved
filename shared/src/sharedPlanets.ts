@@ -1,5 +1,5 @@
 // ---- Shared planets ----------------------------------------------------------
-// Sharing a planet in the Astrophysics feature (owner, 2026-10-31, docs/rules-design.md "Sharing planets"). At the
+// Sharing a planet in the Astrophysics feature (owner, 2026-10-31, docs/rules/rules-design.md "Sharing planets"). At the
 // Astro terminal, a living player with an iTrackie posts free text about one of their own planets. The text is never
 // parsed: it may say anything, lies and mistakes included. Each planet gets one entry, which is also a discussion
 // thread with the Astrophysics feature's access (chat.ts). Entries are never removed, only marked no longer applicable

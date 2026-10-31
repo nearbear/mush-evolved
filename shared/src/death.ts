@@ -1,5 +1,5 @@
 // ---- Damage and death -------------------------------------------------------
-// Death rules (decided 2026-10-16, see Death in docs/rules-design.md): reaching
+// Death rules (decided 2026-10-16, see Death in docs/rules/rules-design.md): reaching
 // 0 HP from any source kills at once, death is permanent, and the body becomes a
 // corpse item in the room. Every HP loss goes through `damage` so no source can
 // leave someone alive at 0 HP (a test enforces it).

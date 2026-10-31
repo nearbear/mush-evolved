@@ -108,7 +108,7 @@ function ResearchList({ terminal, view, onAction }: ListProps) {
       }}
       option={(id) => view.actions.find(({ action: a }) => a.type === "research" && a.equipment === terminal.id && a.research === id)}
       more={(id) =>
-        // A Mush's own spoil and Saboteur's Contaminate, beside Participate when the view offers them (docs/research-sabotage.md).
+        // A Mush's own spoil and Saboteur's Contaminate, beside Participate when the view offers them (docs/plans/research-sabotage.md).
         (["spoil_research", "contaminate"] as const).flatMap((type) => {
           const option = view.actions.find(({ action: a }) => a.type === type && a.equipment === terminal.id && a.research === id);
           return option ? [{ option, label: type === "spoil_research" ? withGain(t, t("research.spoil"), view.relay.research[id]?.gain) : t("research.contaminate") }] : [];
@@ -267,7 +267,7 @@ function ProgressList({ label, ids, progress, relay, complete, cards, name, desc
                         <span>{t("research.done")}</span>
                       ) : (
                         <div className="research-progress">
-                          {/* Research: solid for verified progress, striped for pending samples not yet assayed (docs/research-sabotage.md). */}
+                          {/* Research: solid for verified progress, striped for pending samples not yet assayed (docs/plans/research-sabotage.md). */}
                           <div
                             className="kit-progress neron"
                             role="progressbar"

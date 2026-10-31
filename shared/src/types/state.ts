@@ -139,7 +139,7 @@ export interface GameState {
    */
   patrolShips: Record<RoomId, { armor: number; charges: number; out: boolean; destroyed: boolean }>;
   /**
-   * Debris floating around the Daedalus (docs/patrol-plan.md, phase 5): what destroyed hunters drop and what floats off
+   * Debris floating around the Daedalus (docs/plans/patrol.md, phase 5): what destroyed hunters drop and what floats off
    * a destroyed patrol ship, as items with no container. Lost when the ship jumps. Never sent, except how many pieces
    * there are, to whoever flies a patrol ship (owner, 2026-10-28).
    */
@@ -159,7 +159,7 @@ export interface GameState {
 
 /**
  * What a hunter is aiming at (hunters.ts): the Daedalus or a patrol ship in flight, by its room id. Players out in space
- * come with Mush auto-ejection (docs/patrol-plan.md, "Later"; owner, 2026-10-28).
+ * come with Mush auto-ejection (docs/plans/patrol.md, "Later"; owner, 2026-10-28).
  */
 export type HunterTarget = { kind: "ship" } | { kind: "patrol"; id: RoomId };
 

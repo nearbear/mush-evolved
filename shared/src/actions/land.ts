@@ -9,7 +9,7 @@ import type { GameState, PlayerState } from "../types.ts";
 export type LandActionData = { type: "land"; equipment: string };
 
 /**
- * Land a patrol ship or the Pasiphae back in its bay, from its command (owner, 2026-10-24, docs/patrol-plan.md): 2 AP,
+ * Land a patrol ship or the Pasiphae back in its bay, from its command (owner, 2026-10-24, docs/plans/patrol.md): 2 AP,
  * always works, with the same clean or rough manoeuvre as a takeoff. Whoever flies it can land it. Secret: the line goes
  * in the bay once the pilot is back, so whoever is there (or a camera) sees it. Hunters aiming at the ship turn to the
  * Daedalus (eMush). Whatever lies in the ship's room (collected debris, things dropped aboard) is unloaded into the bay,

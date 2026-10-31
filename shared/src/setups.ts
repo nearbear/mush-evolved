@@ -1,5 +1,5 @@
 // ---- Setups ------------------------------------------------------------------
-// Decided 2026-10-24/25 (docs/rules-design.md, "Setups and ship voting"; #226, #227). A setup is a few coarse knobs
+// Decided 2026-10-24/25 (docs/rules/rules-design.md, "Setups and ship voting"; #226, #227). A setup is a few coarse knobs
 // that players post and vote on for their language's next ship. Everything in a setup is public by design. This
 // module is the schema: strict validation, and the `ConfigOverrides` a setup gives a game. Storage, posting and
 // voting live in the server (#233, #236).

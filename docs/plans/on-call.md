@@ -1,6 +1,6 @@
 # Plan: channel plans and on-call summons (written 2026-10-30)
 
-A **plan** is a private channel's shared to-do list: a room, a purpose and a set of slots that members claim. Some slots are promises done live; **on-call** slots let the author, once in the room, summon the holders there with one button: the game walks their bodies in, paying as live. That walk is the only thing the game ever does on an absent player's behalf. This replaces the generic executor of `docs/action-plans.md` (scheduled time, locked AP, knowledge sandbox, composer for arbitrary actions), which the owner dropped on 2026-10-30. Relaying is handled separately by pooled contributions (`docs/relay-tokens.md`), so plans have no relay execution. Not built. **Decisions** are the owner's; **Open questions** block the part they belong to. Epic #317; issues #311 (pooled tokens), #312 (remove locked AP), #313 (shared), #314 (server), #315 (UI), #316 (bots). Do not guess them.
+A **plan** is a private channel's shared to-do list: a room, a purpose and a set of slots that members claim. Some slots are promises done live; **on-call** slots let the author, once in the room, summon the holders there with one button: the game walks their bodies in, paying as live. That walk is the only thing the game ever does on an absent player's behalf. This replaces the generic executor of `docs/plans/action-plans.md` (scheduled time, locked AP, knowledge sandbox, composer for arbitrary actions), which the owner dropped on 2026-10-30. Relaying is handled separately by pooled contributions (`docs/plans/relay-tokens.md`), so plans have no relay execution. Not built. **Decisions** are the owner's; **Open questions** block the part they belong to. Epic #317; issues #311 (pooled tokens), #312 (remove locked AP), #313 (shared), #314 (server), #315 (UI), #316 (bots). Do not guess them.
 
 ## The problem
 
@@ -19,7 +19,7 @@ The rule that keeps the executor tiny: **the person who will act summons the peo
 - **Expiry: the end of the next day.** A plan posted on day N is cancelled at the end of day N+1 (`config.plans.expiryDays`, 1) if still open, so nobody is summoned on stale consent.
 - **No generic executor.** The game never performs a planned action for anyone. The walk is the only automatic movement, and it is pre-consented, one per claim.
 
-Carried over from `docs/action-plans.md` (owner, 2026-10-13 and 2026-10-26), still valid for the walk:
+Carried over from `docs/plans/action-plans.md` (owner, 2026-10-13 and 2026-10-26), still valid for the walk:
 
 - **No new powers.** A summoned walk is the normal `move`, door by door along `shortestPath`, paying MP or the AP conversion exactly as live, visible to anyone along the way with the same log lines. A plan can never place anyone where walking could not.
 - **No lookahead, stop without rollback.** Each door is checked when the walker reaches it; a refused door or an unaffordable step stops that walker where they stand. Doors already walked stay walked. Nobody is refunded.
@@ -41,7 +41,7 @@ Carried over from `docs/action-plans.md` (owner, 2026-10-13 and 2026-10-26), sti
 - **Tasks are promises, never executed.** Promises can be broken. Any member may claim any task, whether or not they can actually do it: the card is a promise board, and a task nobody can do just goes unclaimed. Initial task catalog: research (which), project (which), repair PILGRED, heal (whom), comfort (whom), STT (whom), fiery speech, boring speech, bring (an item type, to the plan's room). Targets are living players; the composer offers members first.
 - **Limits** (`config.plans`): slots per plan 12, finished plans kept per channel 1.
 - **Claims are untimed registry actions** (`claim_slot`, `withdraw_slot`, `mark_done`, `summon`, `cancel_plan`; 0 AP, like `ready`), so their candidates come from `candidates`, parse and legality are free, `view.actions` lists them, and scripted and model bots use them like any action. Posting stays a chat-like message, since a draft can't be enumerated.
-- **Bots post in their own channels.** A bot that needs a plan creates its own private channel (the limit is 3 per player) and invites whom it wants, exactly as a human would; no bot posts on another's behalf. `docs/bot-goals-plan.md`'s single crew channel changes accordingly in the bot step.
+- **Bots post in their own channels.** A bot that needs a plan creates its own private channel (the limit is 3 per player) and invites whom it wants, exactly as a human would; no bot posts on another's behalf. `docs/plans/bot-goals.md`'s single crew channel changes accordingly in the bot step.
 - **A dead target voids only its slot.** When the target of a task (heal, comfort, STT) dies, that slot is struck out on the card as "target died" (it can't be claimed, withdrawn or ticked); the rest of the plan and its summons carry on.
 - **Slots per player:** at most one on-call slot per plan, and any number of task slots. The author may claim tasks in their own plan but no on-call slot (they walk themselves).
 - **Done ticks are visible to all members.** An undone task at expiry or cancellation stays unticked, with no extra marker.
@@ -109,7 +109,7 @@ Everything the composer offers comes from the view: channel members, the room li
 
 ### Bots
 
-- Scripted bots claim on-call slots whose room `shortestPath` reaches from where they are with their MP plus the AP reserve, and task slots they can plausibly do (a research they can afford; heal if they have a medikit; bring if they carry or can find the item). They walk when summoned like anyone, and do their task slots as goals (`docs/bot-goals-plan.md`), ticking Done when the goal finishes.
+- Scripted bots claim on-call slots whose room `shortestPath` reaches from where they are with their MP plus the AP reserve, and task slots they can plausibly do (a research they can afford; heal if they have a medikit; bring if they carry or can find the item). They walk when summoned like anyone, and do their task slots as goals (`docs/plans/bot-goals.md`), ticking Done when the goal finishes.
 - A bot that created a channel may post: `askForHealing` becomes a plan with a `heal: me` task slot; `startRelay` goes away (pooled contributions make it unnecessary); an expedition goal, later, is an on-call plan the bot calls once it reaches the Icarus Bay.
 - Bots treat plan data as structured and nothing else: there is no free text in a plan to inject through. Channel names are quoted and escaped in prompts as today.
 
@@ -136,15 +136,15 @@ Everything the composer offers comes from the view: channel members, the room li
 
 ## Build order
 
-1. **Pooled contributions** (`docs/relay-tokens.md`, #311; built 2026-10-31): independent, and it removes the only reason for relay execution.
+1. **Pooled contributions** (`docs/plans/relay-tokens.md`, #311; built 2026-10-31): independent, and it removes the only reason for relay execution.
 2. **Plans in `shared`:** types, `postPlan`, the five registry actions, the walk, cleanup and expiry, `viewFor`, rules and leak tests.
 3. **Protocol and server:** the `postPlan` message, `GameRoom` handling, `STATE_VERSION`.
 4. **UI:** card, composer, phone layout, en/fr/es.
-5. **Bots:** claiming, task goals, bot-authored plans; update `docs/bot-goals-plan.md`, whose "plans first" and `startRelay` entries assume the old design.
+5. **Bots:** claiming, task goals, bot-authored plans; update `docs/plans/bot-goals.md`, whose "plans first" and `startRelay` entries assume the old design.
 
 ## Deferred
 
-From `docs/action-plans.md`, still wanted later and still requiring an executor of some kind, now scoped per feature rather than generic: arrival actions (board, sit), secret substitution (spiking the coffee you bring), item handles, templates, natural pacing. Scheduled times, locked AP, optional jobs and the knowledge sandbox are dropped, not deferred.
+From `docs/plans/action-plans.md`, still wanted later and still requiring an executor of some kind, now scoped per feature rather than generic: arrival actions (board, sit), secret substitution (spiking the coffee you bring), item handles, templates, natural pacing. Scheduled times, locked AP, optional jobs and the knowledge sandbox are dropped, not deferred.
 
 ## Open questions
 

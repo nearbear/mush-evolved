@@ -54,7 +54,7 @@ export interface PlayerState extends Seat {
   spot?: Spot;
   ap: number;
   /**
-   * AP claimed plan jobs hold (docs/action-plans.md): still part of `ap`, so the cycle gain's cap counts it, but live
+   * AP claimed plan jobs hold (docs/plans/action-plans.md): still part of `ap`, so the cycle gain's cap counts it, but live
    * actions can't spend it (`freeAp`). Private: only in your own view. Nothing locks AP yet.
    */
   lockedAp: number;

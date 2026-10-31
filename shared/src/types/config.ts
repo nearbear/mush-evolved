@@ -49,7 +49,7 @@ export interface WeaponStats {
 }
 
 /**
- * Pre-selection (docs/rules-design.md, "Joining and Mush selection"): the ship launches with nobody Mush, players join
+ * Pre-selection (docs/rules/rules-design.md, "Joining and Mush selection"): the ship launches with nobody Mush, players join
  * it, and Mush are chosen when it fills or when the deadline cycle begins, whichever comes first.
  */
 export interface PreselectionRules {
@@ -397,7 +397,7 @@ export interface GameConfig {
   };
   // Turrets (owner, 2026-10-24, the wiki's Tourelle): 1 AP, a charge per shot, 30% to hit, x1.25 per miss in a row, reset by a hit.
   turrets: { cost: { ap: number }; chance: number; failureMultiplier: number; damage: [number, number]; charges: number; rechargePerCycle: number };
-  // Patrol ships and the Pasiphae (owner, 2026-10-24, docs/patrol-plan.md): takeoff and landing cost 2 AP each; armor
+  // Patrol ships and the Pasiphae (owner, 2026-10-24, docs/plans/patrol.md): takeoff and landing cost 2 AP each; armor
   // 10 (Pasiphae 12); a manoeuvre is clean at `cleanChance` (a Pilot always), otherwise rough: hull and pilot hp
   // ranges, uniform, and a fixed armor loss. Phase 3 (owner, 2026-10-28): a patrol ship (not the Pasiphae) holds
   // `charges` shots, regaining `rechargePerCycle` a cycle only while docked; a shot is like a turret's, with its own

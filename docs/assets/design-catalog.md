@@ -4,7 +4,7 @@ Descriptions of `Mush/www/img/design/*` (325 files, the old website chrome), wri
 
 **Already used by the game:** `bg.jpg`, `bg_start.jpg`, `but*` (3-slice buttons), `buttonchat`, `chatbox`, `loading51.gif`, `pa1`, `pa2`, `lifebar`, `lifebar2`, `tiptop`, `tipbg`, `tipbottom` (panel frame).
 
-**Do not use (trademark or marketing):** the `logo*` files, `twinoid.png`, `mush_stamp.png`, `beta.png`, `tag*.png` ribbons. Shop and promo art (`pack*`, `gold_*`, `goldbanner*`, `goldframe*`, `goldplus`, `rank_*`) is not a fit for the game. See `docs/mush-assets.md`.
+**Do not use (trademark or marketing):** the `logo*` files, `twinoid.png`, `mush_stamp.png`, `beta.png`, `tag*.png` ribbons. Shop and promo art (`pack*`, `gold_*`, `goldbanner*`, `goldframe*`, `goldplus`, `rank_*`) is not a fit for the game. See `docs/assets/mush-assets.md`.
 
 Most box and bar pieces are semi-transparent blue, so they pick up whatever sits behind them.
 

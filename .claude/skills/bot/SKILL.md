@@ -41,4 +41,4 @@ Bots are players. Every rule that keeps hidden information off clients applies t
    - Spend cap: once reached, no further model calls are made.
 4. `npm test && npm run typecheck`, then, only if the user asks, the `play` skill to watch bots act in a real game.
 5. Before finishing, run the `leak-check` skill: bot changes touch the server and views.
-6. Record: `CLAUDE.md` (code map, open decisions if the provider was chosen), `docs/ai-workflow.md`. Only ever append with cat >> as a cost optimization; do not rewrite existing entries.
+6. Record: `CLAUDE.md` (code map, open decisions if the provider was chosen), `docs/process/ai-workflow.md`. Only ever append with cat >> as a cost optimization; do not rewrite existing entries.

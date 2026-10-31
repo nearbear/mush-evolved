@@ -1,5 +1,5 @@
 // ---- Single player -----------------------------------------------------------
-// Decided 2026-10-13 and 2026-10-24 (docs/rules-design.md, "Single player"). Nine seats: the human is always the
+// Decided 2026-10-13 and 2026-10-24 (docs/rules/rules-design.md, "Single player"). Nine seats: the human is always the
 // only Mush, against 8 bots who are all human. No pre-selection. End cycle is on and the clock doesn't change cycles,
 // so a cycle ends once everyone, the bots included, has ended theirs (`ready`); a bot that can't reach its model
 // waits, and with it the cycle (owner, 2026-10-24, #114). Eleesha, Chun and Chao, the investigation characters, are

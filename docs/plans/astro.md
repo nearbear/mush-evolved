@@ -1,6 +1,6 @@
 # Astro terminal: planet discovery (plan)
 
-Status: **built 2026-10-19** (see the Planets bullet in `docs/implemented-rules.md`). The decisions below come from the owner (2026-10-19). The implementation follows the plan below, with two differences: the tag table and syllables are copied into `shared/src/planets.ts` rather than imported, and the planets live in `GameState.planets` (not `PlayerState`), because `viewFor` copies `PlayerState` into your own view whole and would send the hidden tags.
+Status: **built 2026-10-19** (see the Planets bullet in `docs/rules/implemented-rules.md`). The decisions below come from the owner (2026-10-19). The implementation follows the plan below, with two differences: the tag table and syllables are copied into `shared/src/planets.ts` rather than imported, and the planets live in `GameState.planets` (not `PlayerState`), because `viewFor` copies `PlayerState` into your own view whole and would send the hidden tags.
 
 ## What the original gives us
 
@@ -43,8 +43,8 @@ The snapshot has no server code, so we have the data and the generator but not t
 
 ## Positions and sizes (owner, 2026-10-22)
 
-Planets now have a direction and a distance (2 to 9 fuel) unique on the ship, and grow with the day, following eMush's `PlanetService`. See the Planets bullet in `docs/implemented-rules.md`.
+Planets now have a direction and a distance (2 to 9 fuel) unique on the ship, and grow with the day, following eMush's `PlanetService`. See the Planets bullet in `docs/rules/implemented-rules.md`.
 
 ## Open questions
 
-None for discovery. Travel and orbit are decided and built (2026-10-22, `docs/rules-design.md` "Ship travel", `shared/src/navigation.ts`). Deep analysis in orbit (`DEEP_PLANET_ANALYSIS`, the wiki's +1 sector at 1 AP) and exploration (the per-tag events in `planetTags.json`) need their own decisions.
+None for discovery. Travel and orbit are decided and built (2026-10-22, `docs/rules/rules-design.md` "Ship travel", `shared/src/navigation.ts`). Deep analysis in orbit (`DEEP_PLANET_ANALYSIS`, the wiki's +1 sector at 1 AP) and exploration (the per-tag events in `planetTags.json`) need their own decisions.

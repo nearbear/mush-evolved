@@ -7,7 +7,7 @@ import type { GameState, PlayerState } from "../types.ts";
 export type OpenCapsuleActionData = { type: "open_capsule"; item: string };
 
 /**
- * Open a space capsule, carried or in the room (owner, 2026-10-24, docs/patrol-plan.md answer 6): 1 AP, and it becomes
+ * Open a space capsule, carried or in the room (owner, 2026-10-24, docs/plans/patrol.md answer 6): 1 AP, and it becomes
  * metal scraps, plastic scraps, an oxygen capsule or a fuel capsule (25% each), where it was. Public, like eating.
  */
 export class OpenCapsuleAction extends Action<OpenCapsuleActionData> {

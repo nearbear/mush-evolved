@@ -41,7 +41,7 @@ export function eligibleForTitle(p: Readonly<PlayerState>): boolean {
  * Whether a player can use what a title locks without holding it. Today only the freeHacking cheat;
  * the Hacker Kit (not built) goes here too, so every title check picks it up. Note the decided rule for
  * returning to Sol lets the kit stand in for the Commander only while that title is vacant
- * (docs/rules-design.md), so the kit may need a `title`-aware check rather than a blanket bypass.
+ * (docs/rules/rules-design.md), so the kit may need a `title`-aware check rather than a blanket bypass.
  */
 export function bypassesTitles(p: Readonly<Pick<PlayerState, "cheats">>): boolean {
   return p.cheats.includes("freeHacking");

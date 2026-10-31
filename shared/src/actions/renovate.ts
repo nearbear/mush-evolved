@@ -9,7 +9,7 @@ export type RenovateActionData = { type: "renovate"; equipment: string };
 
 /**
  * Renovate a damaged patrol ship or the Pasiphae while it is docked, from its interface in the bay (owner, 2026-10-28,
- * docs/patrol-plan.md phase 6; eMush's numbers): 2 AP, 12%, and one metal scrap, carried or in the bay, used up whether
+ * docs/plans/patrol.md phase 6; eMush's numbers): 2 AP, 12%, and one metal scrap, carried or in the bay, used up whether
  * or not it works. A success brings the ship back to full armor. Anyone alive may renovate. A success is public in the
  * bay, a failure private (owner). Engineer doubles the odds (modifiers/engineer.ts).
  */

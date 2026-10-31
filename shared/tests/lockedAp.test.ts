@@ -5,7 +5,7 @@ import { applyAction, createGame, viewFor } from "../src/rules.ts";
 import type { GameState } from "../src/types.ts";
 import { makeSeats, must, nextCycle, offered, option, player } from "./support.ts";
 
-// Locked AP (docs/action-plans.md): AP held by claimed plan jobs stays in `ap` but can't be spent live.
+// Locked AP (docs/plans/action-plans.md): AP held by claimed plan jobs stays in `ap` but can't be spent live.
 const base = { ...DEFAULT_CONFIG, manualCycles: true, mushCount: 1, startInventory: [], startItems: [], startSkills: [], punch: { ...DEFAULT_CONFIG.punch, successChance: 1 } };
 const PUNCH = base.punch.cost.ap;
 const punch = { type: "punch", target: "p1" } as const;

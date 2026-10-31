@@ -1,5 +1,5 @@
 // Per-language coordinator (one instance per room name: "en", "fr", "es"). Joining puts a player into the language's
-// open ship, which is in pre-selection (docs/rules-design.md, "Joining and Mush selection"); the first player to join
+// open ship, which is in pre-selection (docs/rules/rules-design.md, "Joining and Mush selection"); the first player to join
 // launches a new one. Multiplayer has no bots. Game rooms never talk to each other or to the matchmaker: it asks the
 // open ship to board each player (`GameRoom.join`) and learns from the answer how full it is and when it stops taking crew.
 // Multiplayer needs an account (#285): the session cookie comes with the socket, the seat takes the account's display

@@ -1,6 +1,6 @@
 # UI icon catalog
 
-Descriptions of `Mush/www/img/icons/ui/*` (top-level files; `status/` is at the end), written 2026-10-13 from contact sheets (`npm run contact-sheet -- Mush/www/img/icons/ui --zoom 2`). Names are Motion Twin's. Descriptions say what the picture shows. Meaning in the original game is a guess where marked **(?)**. Tab and button assignments are in `docs/tab-icons.md`. `_over` is a hover variant and `_grey` a disabled/unearned variant, so only the base file is listed unless the variants differ. `.gif` files are animated.
+Descriptions of `Mush/www/img/icons/ui/*` (top-level files; `status/` is at the end), written 2026-10-13 from contact sheets (`npm run contact-sheet -- Mush/www/img/icons/ui --zoom 2`). Names are Motion Twin's. Descriptions say what the picture shows. Meaning in the original game is a guess where marked **(?)**. Tab and button assignments are in `docs/assets/tab-icons.md`. `_over` is a hover variant and `_grey` a disabled/unearned variant, so only the base file is listed unless the variants differ. `.gif` files are animated.
 
 ## Arrows, paging, and controls
 | File | Shows |

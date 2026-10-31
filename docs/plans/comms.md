@@ -1,6 +1,6 @@
 # Communication center (plan)
 
-Status: **built 2026-10-21** (see `docs/implemented-rules.md`, "Communication center"). The 2026-10-21 answers below settle the open questions and supersede decisions 2, 4 and 5 where they differ.
+Status: **built 2026-10-21** (see `docs/rules/implemented-rules.md`, "Communication center"). The 2026-10-21 answers below settle the open questions and supersede decisions 2, 4 and 5 where they differ.
 
 ## What the original gives us
 
@@ -60,4 +60,4 @@ The snapshot has the data but no server logic for these actions.
 - `viewFor`: `PlayerView.comms` with the public link status, plus only what the viewer learned privately. Run `leak-check`.
 - Web: the Com center's `TerminalDialog` gets the link status, the rebel base list with the actor's known progress, and the Xyloph and NERON buttons, from `view.actions` only. Works at 360px.
 - Tests in `shared/tests/comms.test.ts`: pinned config numbers, chance growth, rebel progress and reward at 100%, the weighted Xyloph draw for a seed, each live reward, illegal actions leave state unchanged, and `viewFor` leak tests (another player's decode or Xyloph results never appear in your view).
-- Record it in `docs/implemented-rules.md`, `docs/rules-design.md` ("Decisions received"), `docs/code-map/shared.md`, and `docs/ai-workflow.md` (append).
+- Record it in `docs/rules/implemented-rules.md`, `docs/rules/rules-design.md` ("Decisions received"), `docs/code-map/shared.md`, and `docs/process/ai-workflow.md` (append).
