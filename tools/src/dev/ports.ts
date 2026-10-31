@@ -28,8 +28,8 @@ export function devPorts(): DevPorts {
 }
 
 /**
- * `server/.dev.vars` (ALLOW_CHEATS and friends) is gitignored, so a new worktree
- * lacks it and its server would run with cheats off. Copy the main checkout's.
+ * `server/.dev.vars` (secrets such as MODEL_API_KEY) is gitignored, so a new worktree
+ * lacks it. Copy the main checkout's. The dev flags come from the server's dev script.
  */
 export function ensureDevVars(): void {
   const here = join(git("rev-parse", "--show-toplevel"), "server/.dev.vars");

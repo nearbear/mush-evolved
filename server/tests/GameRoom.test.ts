@@ -50,6 +50,8 @@ function connect(room: Room, token: string | null, id = `c-${token}`): Conn {
 
 /** End cycle (`ready`) is offered only where cheats are allowed. */
 const CHEATS = { ALLOW_CHEATS: "true" };
+/** A local dev server: bot fill, looser rate limits and the dev model key. */
+const DEV = { ...CHEATS, DEV_SERVER: "true" };
 const HOUR = 60 * 60 * 1000;
 /** When the next 3-hour cycle begins after `at`. */
 const nextCycleAt = (at: number) => (Math.floor(at / (3 * HOUR)) + 1) * 3 * HOUR;
@@ -167,6 +169,17 @@ describe("GameRoom input handling", () => {
     const c2 = connect(room, "tok0", "fresh-connection");
     await send(room, c2, { type: "action", action: move });
     expect((storage.data.get("game") as { rateLimited: Record<string, number> }).rateLimited).toEqual({ p0: 5 });
+  });
+
+  it("loosens the rate limit only on a local dev server, not where cheats alone are on", async () => {
+    const slowDowns = async (env: Record<string, string>) => {
+      const { room } = await newRoom(3, new FakeStorage(), env);
+      const c = connect(room, "tok0");
+      for (let i = 0; i < 15; i++) await send(room, c, "x");
+      return c.messages<GameServerMessage>().filter((m) => m.type === "error" && m.message === "slow_down").length;
+    };
+    expect(await slowDowns(CHEATS)).toBe(5);
+    expect(await slowDowns(DEV)).toBe(0);
   });
 
   it("forgets a connection's rate limit when it closes", async () => {
@@ -518,7 +531,7 @@ describe("GameRoom bots", () => {
     it("ask the dev model, play its choices, and keep count of the calls", async () => {
       const fetch = vi.fn(async () => reply());
       vi.stubGlobal("fetch", fetch);
-      const { storage } = await modelRoom({ ...CHEATS, ...MODEL });
+      const { storage } = await modelRoom({ ...DEV, ...MODEL });
       await vi.advanceTimersByTimeAsync(1600);
       expect(fetch).toHaveBeenCalled();
       const [url, init] = fetch.mock.calls[0] as unknown as [string, RequestInit];
@@ -545,7 +558,7 @@ describe("GameRoom bots", () => {
       const fetch = vi.fn(() => new Promise<Response>(() => {}));
       vi.stubGlobal("fetch", fetch);
       const storage = new FakeStorage();
-      const room = asRoom(storage, { ...CHEATS, ...MODEL });
+      const room = asRoom(storage, { ...DEV, ...MODEL });
       await room.setup(seats(1).map((seat, i) => (i === 1 ? { ...seat, botKind: "model" as const } : seat)), tokensFor(1));
       await vi.advanceTimersByTimeAsync(1600);
       // The log parrots ended their cycles meanwhile, and each of those rescheduled the bots.
@@ -559,7 +572,7 @@ describe("GameRoom bots", () => {
       let failing = true;
       const fetch = vi.fn(async () => (failing ? new Response("nope", { status: 500 }) : reply()));
       vi.stubGlobal("fetch", fetch);
-      const { room, storage } = await modelRoom({ ...CHEATS, ...MODEL });
+      const { room, storage } = await modelRoom({ ...DEV, ...MODEL });
       const human = connect(room, "tok0");
       const byModelBots = () =>
         [...storage.data].filter(([k, v]) => k.startsWith("input:") && ["p1", "p2", "p3"].includes((v as { input: { by: string } }).input.by)).length;
@@ -581,7 +594,7 @@ describe("GameRoom bots", () => {
     it("stay paused, without retrying, once the provider refuses the key", async () => {
       const fetch = vi.fn(async () => new Response("no", { status: 401 }));
       vi.stubGlobal("fetch", fetch);
-      const { room } = await modelRoom({ ...CHEATS, ...MODEL });
+      const { room } = await modelRoom({ ...DEV, ...MODEL });
       const human = connect(room, "tok0");
       await vi.advanceTimersByTimeAsync(120_000);
       expect(fetch).toHaveBeenCalledTimes(1);
@@ -661,7 +674,7 @@ describe("GameRoom single player", () => {
 
   it("keeps waiting for paused bots: the cycle doesn't end while the model is down", async () => {
     vi.stubGlobal("fetch", vi.fn(async () => new Response("nope", { status: 503 })));
-    const { room, storage, token } = await soloRoom({ ...CHEATS, MODEL_BASE_URL: "https://example.test/v1", MODEL_NAME: "m", MODEL_API_KEY: "dev-key" });
+    const { room, storage, token } = await soloRoom({ ...DEV, MODEL_BASE_URL: "https://example.test/v1", MODEL_NAME: "m", MODEL_API_KEY: "dev-key" });
     const c = connect(room, token);
     await send(room, c, { type: "action", action: { type: "ready" } });
     await playOut(room, storage);
@@ -986,7 +999,7 @@ describe("GameRoom joining (pre-selection)", () => {
   it("fills a dev server's ship with a parrot bot per free character after a delay, and picks the Mush", async () => {
     vi.useFakeTimers();
     try {
-      const room = asRoom(new FakeStorage(), CHEATS);
+      const room = asRoom(new FakeStorage(), DEV);
       const first = await joinOk(room, "Ann", "chao");
       expect(first.closesAt).not.toBeNull();
       // A second window joins during the delay.
@@ -1007,7 +1020,7 @@ describe("GameRoom joining (pre-selection)", () => {
   it("fills a dev server's smaller ship only up to its own seat count", async () => {
     vi.useFakeTimers();
     try {
-      const room = asRoom(new FakeStorage(), CHEATS);
+      const room = asRoom(new FakeStorage(), DEV);
       const first = await room.join("Ann", "chao", custom);
       if (!first.ok) throw new Error(first.error);
       expect(first.seats).toBe(6);
@@ -1020,9 +1033,17 @@ describe("GameRoom joining (pre-selection)", () => {
     }
   });
 
-  it("never seats bots on a deployment", async () => {
-    const room = asRoom(new FakeStorage());
-    const first = await joinOk(room, "Ann", "chao");
-    expect(lastView(connect(room, first.token)).players).toEqual([]);
+  it("never seats bots on a deployment, even the test one with cheats on", async () => {
+    vi.useFakeTimers();
+    try {
+      for (const env of [{}, CHEATS]) {
+        const room = asRoom(new FakeStorage(), env);
+        const first = await joinOk(room, "Ann", "chao");
+        await vi.advanceTimersByTimeAsync(10_000);
+        expect(lastView(connect(room, first.token)).players).toEqual([]);
+      }
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });

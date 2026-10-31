@@ -1,7 +1,7 @@
 import { DEFAULT_CONFIG, legalIn, startGame, viewFor, type Action, type PlayerView } from "@mush2/shared";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { MODEL_FREE_ACTIONS_PER_CYCLE, ModelBot, type Bot } from "../src/bots.ts";
-import { completeOpenAi, ModelError, ModelGate, type Complete, type ModelGateOptions } from "../src/model.ts";
+import { completeOpenAi, devModelCredentials, ModelError, ModelGate, type Complete, type ModelGateOptions } from "../src/model.ts";
 import { buildPrompt, choices, parseChoice } from "../src/prompt.ts";
 import { seats } from "../src/testing/fakes.ts";
 
@@ -241,6 +241,15 @@ describe("ModelBot", () => {
     expect(fallback.asked).toBe(1);
     // A new cycle starts the count again.
     expect(await bot.decideAction({ ...looping, cycle: looping.cycle + 1 })).toEqual(free.action);
+  });
+});
+
+describe("devModelCredentials", () => {
+  const dev = { MODEL_BASE_URL: "https://example.test/v1", MODEL_NAME: "m", MODEL_API_KEY: "k" };
+
+  it("gives the dev key only on a local dev server, never where cheats alone are on (the test deployment)", () => {
+    expect(devModelCredentials({ ...dev, DEV_SERVER: "true" })).toEqual(credentials);
+    expect(devModelCredentials({ ...dev, ALLOW_CHEATS: "true" } as never)).toBeNull();
   });
 });
 

@@ -7,7 +7,7 @@ import type { BotPause, ModelProvider } from "@mush2/shared";
 
 declare global {
   interface Env {
-    /** Development only (server/.dev.vars, with ALLOW_CHEATS): an OpenAI-compatible base URL, e.g. https://openrouter.ai/api/v1. */
+    /** Development only (server/.dev.vars, used with DEV_SERVER): an OpenAI-compatible base URL, e.g. https://openrouter.ai/api/v1. */
     MODEL_BASE_URL?: string;
     /** Development only: the model name the provider expects. */
     MODEL_NAME?: string;
@@ -88,10 +88,10 @@ export function playerModelCredentials(provider: ModelProvider, model: string, a
   return { baseUrl: PROVIDER_BASE_URLS[provider], model, apiKey };
 }
 
-/** The development key, only where cheats are allowed. A deployment has no model credentials of its own. */
+/** The development key, only on a local dev server (`DEV_SERVER`). A deployment has no model credentials of its own. */
 /** MODEL_API_KEY (development only, never committed) is not declared on Env: `wrangler types` generates it from .dev.vars when present. */
-export function devModelCredentials(env: Pick<Env, "ALLOW_CHEATS" | "MODEL_BASE_URL" | "MODEL_NAME"> & { MODEL_API_KEY?: string }): ModelCredentials | null {
-  if (env.ALLOW_CHEATS !== "true" || !env.MODEL_BASE_URL || !env.MODEL_NAME || !env.MODEL_API_KEY) return null;
+export function devModelCredentials(env: Pick<Env, "DEV_SERVER" | "MODEL_BASE_URL" | "MODEL_NAME"> & { MODEL_API_KEY?: string }): ModelCredentials | null {
+  if (env.DEV_SERVER !== "true" || !env.MODEL_BASE_URL || !env.MODEL_NAME || !env.MODEL_API_KEY) return null;
   return { baseUrl: env.MODEL_BASE_URL, model: env.MODEL_NAME, apiKey: env.MODEL_API_KEY };
 }
 

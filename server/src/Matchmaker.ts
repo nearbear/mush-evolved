@@ -64,7 +64,7 @@ export class Matchmaker extends Server<Env> {
   }
 
   override async onMessage(connection: Connection<JoinState>, raw: WSMessage): Promise<void> {
-    if (!this.limiter.allow(connection.id, Date.now(), this.env.ALLOW_CHEATS === "true" ? DEV_RATE_SCALE : 1)) return;
+    if (!this.limiter.allow(connection.id, Date.now(), this.env.DEV_SERVER === "true" ? DEV_RATE_SCALE : 1)) return;
     const msg = typeof raw === "string" ? parseMatchmakerMessage(raw) : null;
     if (!msg) {
       this.send(connection, { type: "error", message: "malformed_message" });
@@ -103,7 +103,7 @@ export class Matchmaker extends Server<Env> {
       this.send(connection, { type: "matched", roomId, token: result.token });
       this.broadcastQueue();
       // A dev server seats bots shortly after the first join and closes the ship.
-      if (this.env.ALLOW_CHEATS === "true") setTimeout(() => void this.refresh(), DEV_FILL_DELAY_MS + 1000);
+      if (this.env.DEV_SERVER === "true") setTimeout(() => void this.refresh(), DEV_FILL_DELAY_MS + 1000);
       return;
     }
     connection.setState({ joined: false });

@@ -40,6 +40,15 @@ import { clockCycle, clockCycleStart, cycleMs, cycleOfDay } from "./cycleClock.t
 import { devModelCredentials, ModelGate, playerModelCredentials } from "./model.ts";
 import { RateLimiter } from "./rateLimit.ts";
 
+declare global {
+  interface Env {
+    /** Cheats and End cycle: `npm run dev` passes it with `--var`, and only the test deployment sets it. */
+    ALLOW_CHEATS?: "true";
+    /** Local development only: `npm run dev` passes it with `--var`, and no deployment sets it. */
+    DEV_SERVER?: string;
+  }
+}
+
 /** Error code (not text) for a cheat input on a server that doesn't allow them. */
 const CHEATS_DISABLED = "cheats_disabled";
 
@@ -49,7 +58,7 @@ const BOT_DELAY_MS = 50;
 /** Dev servers wait this long after the first join before seating bots, so a second window can join as another character. */
 export const DEV_FILL_DELAY_MS = 8000;
 
-/** A dev server (`ALLOW_CHEATS`) allows this many times the usual message rate, so testing and scripted clients don't trip it. */
+/** A dev server (`DEV_SERVER`) allows this many times the usual message rate, so testing and scripted clients don't trip it. */
 export const DEV_RATE_SCALE = 10;
 
 /**
@@ -159,9 +168,14 @@ export class GameRoom extends Server<Env> {
   /** Per seat, not per connection, so reconnecting doesn't reset it. */
   private chatLimiter = new RateLimiter(5, 10_000);
 
-  /** Development flag (`ALLOW_CHEATS` in server/.dev.vars). Never set on a deployment. */
+  /** Cheats and End cycle (`ALLOW_CHEATS`): `npm run dev` and the test deployment, never staging or production. */
   private get cheatsAllowed(): boolean {
     return this.env.ALLOW_CHEATS === "true";
+  }
+
+  /** Local development only (`DEV_SERVER`, passed by `npm run dev`): bot fill, looser rate limits, the dev model key. Never set on a deployment. */
+  private get devServer(): boolean {
+    return this.env.DEV_SERVER === "true";
   }
 
   override async onStart(): Promise<void> {
@@ -227,7 +241,7 @@ export class GameRoom extends Server<Env> {
       delete this.tokens[token];
       return { ok: false, error };
     }
-    if (this.cheatsAllowed && this.game!.players.length === 1) setTimeout(() => void this.fillWithBots(), DEV_FILL_DELAY_MS);
+    if (this.devServer && this.game!.players.length === 1) setTimeout(() => void this.fillWithBots(), DEV_FILL_DELAY_MS);
     return { ok: true, token, ...this.status() };
   }
 
@@ -315,7 +329,7 @@ export class GameRoom extends Server<Env> {
     const playerId = connection.state?.playerId;
     const by = playerId && this.body(playerId);
     if (!playerId || !by || !this.game) return;
-    if (!this.limiter.allow(connection.id, Date.now(), this.cheatsAllowed ? DEV_RATE_SCALE : 1)) {
+    if (!this.limiter.allow(connection.id, Date.now(), this.devServer ? DEV_RATE_SCALE : 1)) {
       this.countRateLimited(playerId);
       this.send(connection, { type: "error", message: "slow_down" });
       return;
@@ -394,7 +408,7 @@ export class GameRoom extends Server<Env> {
     msg: Exclude<GameClientMessage, { type: "action" | "clearQueue" | "acknowledgeTransfer" | "walk" | "cheat" | "roleCheat" | "setModel" | "clearModel" }>,
   ): Promise<string | null> {
     if (!this.game) return "no_game";
-    if (!this.chatLimiter.allow(playerId, Date.now(), this.cheatsAllowed ? DEV_RATE_SCALE : 1)) {
+    if (!this.chatLimiter.allow(playerId, Date.now(), this.devServer ? DEV_RATE_SCALE : 1)) {
       this.countRateLimited(playerId);
       return "too_many_messages";
     }
