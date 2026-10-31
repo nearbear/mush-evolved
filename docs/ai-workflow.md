@@ -1660,3 +1660,7 @@ Asked to review the committed plan as a QA engineer with a DevOps mindset. Most 
 
 - Asked for moderation ideas well before Public beta readiness. Claude checked the existing epic (#48) first and pitched only what its sub-issues missed, mainly problems particular to social deduction: lying in character is allowed, so the code of conduct has to separate harm to people, to fairness (multi-seating, side-channel collusion) and to pace, and moderators must not be able to use hidden information. These became stories #290 to #304.
 - Decided: minor sanctions wait until the current ship ends, major ones remove the player from the game (#298); no uploaded images or provider avatars (#300). Needed correction: Claude first wrote the image rule as already decided in #300 before the owner had confirmed it.
+
+## 2026-10-30: Cutting Gemini (agy) quota use
+
+The owner asked how to spend less on Gemini argon-high. Claude went through the earlier agy entries in this log and found four causes: every call resends its full context, timeouts led to reruns, Gemini-drafted plans needed several full-context rounds of fixes, and argon-high was used for everything even though Flash did fine on narrow reviews (it found the Heal max-HP bug). The gemini skill now makes Flash the default, keeps argon-high for plan critiques and second leak reviews, has Claude write plans for Gemini to critique once, sends excerpts with no file exploration, and uses a 600s timeout for big calls.

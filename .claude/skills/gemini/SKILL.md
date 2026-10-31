@@ -18,7 +18,14 @@ description: Call Google Antigravity CLI (agy, a Gemini agent) in read-only file
 
 `~/.local/bin/agy -p "<prompt>" --mode plan --model <model> --print-timeout 300s`
 
-Models: `gemini-4-argon-high` for reviews, `gemini-3.8-flash-medium` for reading. Not its Claude models. Don't use it to read files you're denied or secrets.
+Models: `gemini-3.8-flash-medium` by default (fr/es string checks, summaries, narrow bug reviews). `gemini-4-argon-high` only for architecture plan critiques and second leak reviews; its quota runs out. Not its Claude models. Don't use it to read files you're denied or secrets.
+
+## Keeping quota use down
+
+- Claude writes the plan; Gemini critiques it once. Don't have Gemini draft plans: its drafts needed rounds of full-context fixes, while its critiques found the real issues.
+- Paste diffs and the relevant excerpts, not whole files, and tell it not to open files. Every call resends all its context, and exploring on its own causes stalls and reruns.
+- Use `--print-timeout 600s` for any big review or design, so it finishes in one call instead of returning partial output that needs a rerun.
+- Ask it to list the context it needs first only when the scope is unclear; otherwise paste the known files in the first call.
 
 ## Read-only file mode, never a shell
 
