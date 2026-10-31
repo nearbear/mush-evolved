@@ -1236,7 +1236,18 @@
       "MUSHOPHAGE_BACTERIA": "Les humains peuvent supporter jusqu'à 3 spores avant de se transformer en Mush.",
       "ANTISPORE_GAZ": "Le maximum de spores journaliers des Mush est réduit de deux.",
       "SUPER_CALC": "Génère au Nexus un équipement qui permet d'extraire des données des cristallites."
-    }
+    },
+    "notDone": "Non terminée"
+  },
+  "relay": {
+    "help": "Vos contributions ne perdent de la valeur que si vous en avez fait plus que tous les autres réunis, plus une.",
+    "waiting": "Jusqu'à {{percent}} % de plus quand d'autres contribueront.",
+    "gain": "+{{min}}–{{max}} %",
+    "gainOne": "+{{min}} %",
+    "tokens": "Contributions",
+    "token": "{{name}} : {{percent}} %",
+    "unknown": "Quelqu'un",
+    "withGain": "{{action}} {{gain}}"
   },
   "astro": {
     "title": "Vos planètes",

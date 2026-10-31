@@ -125,6 +125,21 @@ function ship(): { state: GameState; sentinels: Sentinel[] } {
   s.patrolShips.PATROL_SHIP_A_0!.charges = num("patrolCharges", []);
   s.space.push({ id: str("debrisId", []), type: str("debrisType", []) });
 
+  // Relay pools (relay.ts): progress only to the living in the target's room, rolls to nobody. The lab is HERE; nobody is
+  // at NERON's core or the PILGRED terminal.
+  // Below 100 (so not complete, which is public): a fraction of a sentinel.
+  const scaled = (what: string, scale: number, seenBy: PlayerId[]) => {
+    const value = (next += 7) / scale;
+    sentinels.push({ what, value, seenBy });
+    return value;
+  };
+  s.research.STEROIDS = scaled("researchProgress", 1e4, ["p0", "p1", "p2"]);
+  s.projects.PLASMA_SHIELD = scaled("projectProgress", 1e4, []);
+  s.pilgred.progress = scaled("pilgredProgress", 1e4, []);
+  const roll = (what: string) => scaled(what, 1e7, []);
+  s.relay.research.STEROIDS = { tokens: [{ by: "p3", base: 6, roll: roll("researchRoll") }] };
+  s.relay.projects.PLASMA_SHIELD = { tokens: [{ by: "p3", base: 6, roll: roll("projectRoll") }] };
+  s.pilgred.pool.tokens.push({ by: "p3", base: 1, roll: roll("pilgredRoll") });
   s.items.push({ id: str("floor-here", ["p0", "p1", "p2"]), type: "wrench", at: { kind: "room", id: HERE } });
   s.items.push({ id: str("floor-elsewhere", ["p3"]), type: "wrench", at: { kind: "room", id: ELSEWHERE } });
   s.log.push({ cycle: s.cycle, key: "test", params: { x: str("roomLog-elsewhere", ["p3"]) }, room: ELSEWHERE, visibleTo: "all" });

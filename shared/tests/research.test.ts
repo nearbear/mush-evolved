@@ -4,11 +4,10 @@ import { parseGameMessage } from "../src/protocol.ts";
 import { EQUIPMENT_TYPES } from "../src/equipment.ts";
 import { ITEM_TYPES } from "../src/items.ts";
 import { ANY_CONSUMABLE, RESEARCH_COMPLETE, RESEARCH_IDS, RESEARCH_REQUIRES, RESEARCH_SKILLS } from "../src/research.ts";
-import { relayGainRange } from "../src/relay.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";
 import { addStatus } from "../src/statuses.ts";
 import type { Action } from "../src/types.ts";
-import { makeSeats, mustApply, nextDay, offered, pickSkill, stockLab } from "./support.ts";
+import { makeSeats, mustApply, nextDay, offered, pickSkill, setProgress, stockLab } from "./support.ts";
 
 const seats = makeSeats(3, "others");
 const work = (research: string): Action => ({ type: "research", equipment: "LABORATORY:RESEARCH_LAB", research });
@@ -21,7 +20,7 @@ function game(room = "LABORATORY") {
   return state;
 }
 
-/** A seed for which p0 working STEROIDS does (or does not) get dirty: the gain roll draws before the dirt roll. */
+/** A seed for which p0 working STEROIDS does (or does not) get dirty: the token's roll draws before the dirt roll. */
 function seedFor(dirty: boolean): number {
   for (let seed = 0; ; seed++) {
     const s = game();
@@ -73,31 +72,23 @@ describe("research", () => {
     expect(researches(s, "p0").sort()).toEqual([...RESEARCH_IDS].sort());
   });
 
-  it("costs 2 AP and advances the chosen research by the relay formula, for anyone", () => {
+  it("costs 2 AP and adds a relay token worth the relay formula, for anyone", () => {
     const s = game();
     s.rng = CLEAN;
     const ap = s.players[1]!.ap;
-    const range = relayGainRange(DEFAULT_CONFIG.research.progress, s.players[1]!, RESEARCH_SKILLS, undefined);
-    const r = applyAction(s, "p1", work("STEROIDS"));
-    expect(r.ok).toBe(true);
-    if (!r.ok) return;
-    const first = r.state.research.STEROIDS!;
+    const range = viewFor(s, "p1").relay.research.STEROIDS!.gain;
+    expect(range).toEqual({ min: 6, max: 9 });
+    const r = mustApply(s, "p1", work("STEROIDS"));
+    const first = r.research.STEROIDS!;
     expect(first).toBeGreaterThanOrEqual(range.min);
     expect(first).toBeLessThanOrEqual(range.max);
-    expect(r.state.players[1]!.ap).toBe(ap - AP);
-    // Going straight on costs the relay penalty.
-    r.state.rng = CLEAN;
-    const again = applyAction(r.state, "p1", work("STEROIDS"));
-    const second = relayGainRange(DEFAULT_CONFIG.research.progress, r.state.players[1]!, RESEARCH_SKILLS, { lastBy: "p1", streak: 1 });
-    expect(second.min).toBe(Math.max(0, range.min - DEFAULT_CONFIG.research.progress.relayPenalty));
-    const gained = again.ok ? again.state.research.STEROIDS! - first : -1;
-    expect(gained).toBeGreaterThanOrEqual(second.min);
-    expect(gained).toBeLessThanOrEqual(second.max);
+    expect(r.players[1]!.ap).toBe(ap - AP);
+    expect(r.relay.research.STEROIDS!.tokens).toMatchObject([{ by: "p1", base: 6 }]);
   });
 
   it("completes at 100% and then is no longer offered or accepted", () => {
     let s = game();
-    s.research.STEROIDS = RESEARCH_COMPLETE - 1;
+    setProgress(s, { research: "STEROIDS" }, RESEARCH_COMPLETE - 1);
     s.players[0]!.ap = 12;
     s.rng = CLEAN;
     const r = applyAction(s, "p0", work("STEROIDS"));
@@ -130,50 +121,62 @@ describe("research", () => {
     expect(viewFor(s, "p1").actions.find(({ action }) => action.type === "research")?.lacks).toEqual([]);
   });
 
-  it("follows the relay formula: skills add, repeats subtract, per research, and someone else resets it", () => {
+  it("follows the relay formula: skills add, and only a player with more tokens than everyone else plus one is penalized", () => {
     const cfg = DEFAULT_CONFIG.research.progress;
-    const s = game();
+    let s = game();
+    const gain = (t: typeof s, id: string, research = "STEROIDS") => viewFor(t, id).relay.research[research]!.gain;
     const you = s.players[0]!;
-    expect(relayGainRange(cfg, you, RESEARCH_SKILLS, undefined)).toEqual({ min: 6, max: 9 });
+    expect(gain(s, "p0")).toEqual({ min: 6, max: 9 });
     you.skills = ["biologist"];
-    expect(relayGainRange(cfg, you, RESEARCH_SKILLS, undefined)).toEqual({ min: 10, max: 15 });
+    expect(gain(s, "p0")).toEqual({ min: 10, max: 15 });
     you.skills = ["biologist", "medic"];
-    expect(relayGainRange(cfg, you, RESEARCH_SKILLS, undefined).min).toBe(14);
+    expect(gain(s, "p0").min).toBe(14);
     you.skills = [];
-    expect(relayGainRange(cfg, you, RESEARCH_SKILLS, { lastBy: you.id, streak: 2 })).toEqual({ min: 2, max: 3 });
-    expect(relayGainRange(cfg, you, RESEARCH_SKILLS, { lastBy: you.id, streak: 9 })).toEqual({ min: 0, max: 0 });
-    expect(relayGainRange(cfg, you, RESEARCH_SKILLS, { lastBy: "p1", streak: 9 })).toEqual({ min: 6, max: 9 });
-    you.cheats = ["noRelayPenalty"];
-    expect(relayGainRange(cfg, you, RESEARCH_SKILLS, { lastBy: you.id, streak: 2 })).toEqual({ min: 6, max: 9 });
-  });
-
-  it("tracks the streak per research and resets it when someone else contributes", () => {
-    const s = game();
+    // p0 alone: each token in a row loses the penalty.
+    for (let i = 0; i < 2; i++) {
+      s.rng = CLEAN;
+      s.players[0]!.ap = 12;
+      s = mustApply(s, "p0", work("STEROIDS"));
+    }
+    expect(gain(s, "p0").min).toBe(6 - 2 * cfg.relayPenalty);
+    expect(viewFor(s, "p0").relay.research.STEROIDS!.waiting).toBeGreaterThan(0);
+    // Pools are per research.
+    expect(gain(s, "p0", "DRUG_DISPENSER")).toEqual({ min: 6, max: 9 });
+    // p1's token, made later, still breaks up p0's run.
     s.rng = CLEAN;
-    const a = mustApply(s, "p0", work("STEROIDS"));
-    a.rng = CLEAN;
-    expect(a.relay.research.STEROIDS).toEqual({ lastBy: "p0", streak: 1 });
-    const b = mustApply(a, "p0", work("STEROIDS"));
-    b.rng = CLEAN;
-    expect(b.relay.research.STEROIDS).toEqual({ lastBy: "p0", streak: 2 });
-    const c = mustApply(b, "p1", work("STEROIDS"));
-    expect(c.relay.research.STEROIDS).toEqual({ lastBy: "p1", streak: 1 });
-    c.rng = CLEAN;
-    c.players[1]!.statuses = [];
-    const d = mustApply(c, "p1", work("DRUG_DISPENSER"));
-    expect(d.relay.research.STEROIDS).toEqual({ lastBy: "p1", streak: 1 });
-    expect(d.relay.research.DRUG_DISPENSER).toEqual({ lastBy: "p1", streak: 1 });
-    expect(JSON.stringify(viewFor(d, "p0"))).not.toContain("streak");
+    s.players[1]!.statuses = [];
+    s = mustApply(s, "p1", work("STEROIDS"));
+    expect(viewFor(s, "p0").relay.research.STEROIDS!.waiting).toBe(0);
+    expect(viewFor(s, "p0").yourTokens.research).toEqual({ STEROIDS: 2 });
+    expect(viewFor(s, "p1").yourTokens.research).toEqual({ STEROIDS: 1 });
   });
 
-  it("is public: everyone sees progress, wherever they are, and the room sees the log line", () => {
-    const s = game();
+  it("is seen only in the lab until complete, with a private line; completion goes in the room's history (owner, 2026-10-30/31)", () => {
+    let s = game();
     s.players[2]!.room = "REFECTORY";
-    const r = applyAction(s, "p0", work("STEROIDS"));
-    if (!r.ok) throw new Error("expected ok");
-    for (const id of ["p0", "p1", "p2"]) expect(viewFor(r.state, id).research).toEqual(r.state.research);
-    expect(viewFor(r.state, "p1").log.some((e) => e.key === "researched")).toBe(true);
-    expect(viewFor(r.state, "p2").log.some((e) => e.key === "researched")).toBe(false);
+    s = mustApply(s, "p0", work("STEROIDS"));
+    for (const id of ["p0", "p1"]) {
+      expect(viewFor(s, id).research).toEqual(s.research);
+      expect(viewFor(s, id).relay.research.STEROIDS!.tokens).toEqual([{ by: "p0", value: s.research.STEROIDS }]);
+    }
+    const away = viewFor(s, "p2");
+    expect(away.research).toEqual({});
+    expect(away.relay.research).toEqual({});
+    expect(viewFor(s, "p0").log.some((e) => e.key === "researched")).toBe(true);
+    expect(viewFor(s, "p1").log.some((e) => e.key === "researched")).toBe(false);
+    // The dead see nothing either, even in the lab.
+    s.players[1]!.alive = false;
+    expect(viewFor(s, "p1").research).toEqual({});
+    expect(viewFor(s, "p1").relay.research).toEqual({});
+    // Completion reaches everyone.
+    setProgress(s, { research: "STEROIDS" }, RESEARCH_COMPLETE - 1);
+    s.players[0]!.ap = 12;
+    s.players[0]!.statuses = [];
+    s = mustApply(s, "p0", work("STEROIDS"));
+    expect(away.research.STEROIDS).toBeUndefined();
+    expect(viewFor(s, "p2").research).toEqual({ STEROIDS: RESEARCH_COMPLETE });
+    expect(viewFor(s, "p2").relay.research).toEqual({});
+    for (const id of ["p0", "p1", "p2"]) expect(JSON.stringify(viewFor(s, id).relay)).not.toContain("roll");
   });
 
   it("pins the needs taken from the original's research data", () => {
@@ -260,7 +263,7 @@ describe("research", () => {
     s.items.push({ id: "sample", type: "mush_sample", at: { kind: "room", id: "LABORATORY" } });
     s.items.push({ id: "held", type: "blaster", at: { kind: "player", id: "p2" } });
     s.items.push({ id: "floor", type: "blaster", at: { kind: "room", id: "LABORATORY" } });
-    s.research.NATAMY_GUN = RESEARCH_COMPLETE - 1;
+    setProgress(s, { research: "NATAMY_GUN" }, RESEARCH_COMPLETE - 1);
     s.rng = CLEAN;
     const done = mustApply(s, "p0", work("NATAMY_GUN"));
     expect(done.items.map((i) => i.id)).toEqual(expect.arrayContaining(["sample", "held"]));

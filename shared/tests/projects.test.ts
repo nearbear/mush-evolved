@@ -2,12 +2,11 @@ import { describe, expect, it } from "vitest";
 import { DEFAULT_CONFIG } from "../src/config.ts";
 import projets from "@mush2/assets/derived/data/Data/projets.json";
 import { PROJECT_COMPLETE, PROJECT_IDS, PROJECTS, projectSkills } from "../src/projects.ts";
-import { relayGainRange } from "../src/relay.ts";
 import { parseGameMessage } from "../src/protocol.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";
 import { addStatus } from "../src/statuses.ts";
 import type { Action } from "../src/types.ts";
-import { makeSeats, mustApply, offered, pickSkill } from "./support.ts";
+import { makeSeats, mustApply, offered, pickSkill, setProgress } from "./support.ts";
 
 const seats = makeSeats(3, "others");
 const work = (project: string): Action => ({ type: "project", equipment: "NEXUS_ROOM:NERON_CORE", project });
@@ -72,7 +71,7 @@ describe("NERON projects", () => {
     s.rng = 7;
     const you = s.players[0]!;
     you.skills = ["engineer", "physicist"];
-    expect(relayGainRange(cfg, you, projectSkills("PLASMA_SHIELD"), undefined).min).toBe(6 + 2 * cfg.skillBoost);
+    expect(viewFor(s, "p0").relay.projects.PLASMA_SHIELD!.gain.min).toBe(6 + 2 * cfg.skillBoost);
     const r = mustApply(s, "p0", work("PLASMA_SHIELD"));
     expect(r.projects.PLASMA_SHIELD).toBeGreaterThanOrEqual(6 + 2 * cfg.skillBoost);
     you.skills = ["biologist", "medic"];
@@ -92,7 +91,7 @@ describe("NERON projects", () => {
 
   it("completes at 100% and then is no longer offered or accepted", () => {
     let s = game();
-    s.projects.BEAT_BOX = PROJECT_COMPLETE - 1;
+    setProgress(s, { project: "BEAT_BOX" }, PROJECT_COMPLETE - 1);
     s.players[0]!.ap = 12;
     const r = applyAction(s, "p0", work("BEAT_BOX"));
     if (!r.ok) throw new Error(r.error);
@@ -108,7 +107,7 @@ describe("NERON projects", () => {
     let s = game();
     for (const id of PROJECT_IDS)
       {
-        s.projects[id] = PROJECT_COMPLETE - 1;
+        setProgress(s, { project: id }, PROJECT_COMPLETE - 1);
         s.players[0]!.ap = 12;
         const r = applyAction(s, "p0", work(id));
         if (!r.ok) throw new Error(`${id}: ${r.error}`);
@@ -158,14 +157,26 @@ describe("NERON projects", () => {
     expect(paidBy(second)).toBeUndefined();
   });
 
-  it("is public: everyone sees progress, wherever they are, and only the room sees the log line", () => {
-    const s = game();
+  it("is seen only at NERON's core until complete, and only the room sees the log line (owner, 2026-10-31)", () => {
+    let s = game();
     s.players[2]!.room = "REFECTORY";
-    const r = applyAction(s, "p0", work("WHOS_WHO"));
-    if (!r.ok) throw new Error(r.error);
-    for (const id of ["p0", "p1", "p2"]) expect(viewFor(r.state, id).projects).toEqual(r.state.projects);
-    expect(viewFor(r.state, "p1").log.some((e) => e.key === "projectWorked")).toBe(true);
-    expect(viewFor(r.state, "p2").log.some((e) => e.key === "projectWorked")).toBe(false);
+    s = mustApply(s, "p0", work("WHOS_WHO"));
+    for (const id of ["p0", "p1"]) {
+      expect(viewFor(s, id).projects).toEqual(s.projects);
+      expect(viewFor(s, id).relay.projects.WHOS_WHO!.tokens).toEqual([{ by: "p0", value: s.projects.WHOS_WHO }]);
+    }
+    expect(viewFor(s, "p2").projects).toEqual({});
+    expect(viewFor(s, "p2").relay.projects).toEqual({});
+    expect(viewFor(s, "p1").log.some((e) => e.key === "projectWorked")).toBe(true);
+    expect(viewFor(s, "p2").log.some((e) => e.key === "projectWorked")).toBe(false);
+    // The dead see nothing, even at the core; completion reaches everyone.
+    s.players[1]!.alive = false;
+    expect(viewFor(s, "p1").projects).toEqual({});
+    setProgress(s, { project: "WHOS_WHO" }, PROJECT_COMPLETE - 1);
+    s.players[0]!.ap = 12;
+    s = mustApply(s, "p0", work("WHOS_WHO"));
+    expect(viewFor(s, "p2").projects).toEqual({ WHOS_WHO: PROJECT_COMPLETE });
+    expect(viewFor(s, "p2").relay.projects).toEqual({});
   });
 
   it("parses from the wire, and rejects a missing project", () => {

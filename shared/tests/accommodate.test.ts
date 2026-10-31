@@ -166,21 +166,24 @@ describe("accommodating Terrence", () => {
 describe("acting ends the push (owner, 2026-10-24)", () => {
   const research: Action = { type: "research", equipment: "LABORATORY:RESEARCH_LAB", research: "MYCOSCAN" };
   const examine: Action = { type: "examine", target: { kind: "equipment", id: "LABORATORY:RESEARCH_LAB" } };
+  // Research itself is private (owner, 2026-10-30), so opening the terminal is the public action here.
+  const access: Action = { type: "access", equipment: "LABORATORY:RESEARCH_LAB" };
 
   it("ends when the pusher sends a public action on equipment, as soon as it is sent, publicly", () => {
-    const s = must(queueAction(pushed(), "p1", research, 1000));
+    const s = must(queueAction(pushed(), "p1", access, 1000));
     expect(player(s, "p0").pushedBy).toBeUndefined();
     expect(s.log.at(-1)?.key).toBe("accommodationEnded");
     expect(viewFor(s, "p2").log.some((e) => e.key === "accommodationEnded")).toBe(true);
   });
 
   it("ends when Terrence himself sends one", () => {
-    expect(player(must(queueAction(pushed(), "p0", research, 1000)), "p0").pushedBy).toBeUndefined();
+    expect(player(must(queueAction(pushed(), "p0", access, 1000)), "p0").pushedBy).toBeUndefined();
   });
 
   it("doesn't end for a private action, which would give it away, or for someone else's", () => {
     expect(player(must(queueAction(pushed(), "p1", examine, 1000)), "p0").pushedBy).toBe("p1");
-    expect(player(must(queueAction(pushed(), "p2", research, 1000)), "p0").pushedBy).toBe("p1");
+    expect(player(must(queueAction(pushed(), "p2", access, 1000)), "p0").pushedBy).toBe("p1");
+    expect(player(must(queueAction(pushed(), "p1", research, 1000)), "p0").pushedBy).toBe("p1");
   });
 
   it("counts public actions on equipment or another person, not on items, yourself, or the push itself", () => {

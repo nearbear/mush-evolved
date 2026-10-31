@@ -1,7 +1,8 @@
 import { Action, type ActionCost, type ActionVisibility, isString } from "./action.ts";
 import { pushChat } from "../chat.ts";
 import { logPrivate, logPublic } from "../log.ts";
-import { isPilgredRepaired, PILGRED_COMPLETE, pilgredGainRange, pilgredTerminalsHere, rollPilgredGain } from "../pilgred.ts";
+import { contribute } from "../relay.ts";
+import { isPilgredRepaired, PILGRED_COMPLETE, PILGRED_SKILLS, pilgredTerminalsHere } from "../pilgred.ts";
 import type { GameState, PlayerState } from "../types.ts";
 
 export type RepairPilgredActionData = { type: "repair_pilgred"; equipment: string };
@@ -46,11 +47,7 @@ export class RepairPilgredAction extends Action<RepairPilgredActionData> {
   }
 
   override apply(state: GameState, player: PlayerState, _target: RepairPilgredActionData): void {
-    const gain = rollPilgredGain(state, pilgredGainRange(state, player));
-    const pilgred = state.pilgred;
-    pilgred.progress = Math.min(PILGRED_COMPLETE, pilgred.progress + gain);
-    pilgred.streak = pilgred.lastBy === player.id ? pilgred.streak + 1 : 1;
-    pilgred.lastBy = player.id;
+    state.pilgred.progress = contribute(state, state.pilgred.pool, state.config.pilgred.progress, player, PILGRED_SKILLS, PILGRED_COMPLETE);
     if (!isPilgredRepaired(state)) {
       logPrivate(state, player.id, "pilgredRepaired");
       return;

@@ -4,7 +4,7 @@ import { DEFAULT_CONFIG } from "../src/config.ts";
 import { RESEARCH_COMPLETE } from "../src/research.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";
 import type { Action, GameState, PlayerId } from "../src/types.ts";
-import { makeSeats, must, mustApply, offered as legal, player, stockLab } from "./support.ts";
+import { makeSeats, must, mustApply, offered as legal, player, stockLab, setProgress } from "./support.ts";
 
 const seats = makeSeats(4);
 const config = { ...DEFAULT_CONFIG, characterModifiers: {}, mushCount: 1, startInventory: [], startItems: [], maxAp: 99, startAp: 50 };
@@ -80,7 +80,7 @@ describe("anti-mush serum", () => {
 
   it("is left on the lab floor when the research completes", () => {
     const s = ship();
-    s.research["ANTI_MUSH_SERUM"] = RESEARCH_COMPLETE - 1;
+    setProgress(s, { research: "ANTI_MUSH_SERUM" }, RESEARCH_COMPLETE - 1);
     stockLab(s, "LABORATORY", "ANTI_MUSH_SERUM");
     const after = mustApply(s, "p3", { type: "research", equipment: "LABORATORY:RESEARCH_LAB", research: "ANTI_MUSH_SERUM" });
     expect(serums(after).filter((i) => i.at.kind === "room" && i.at.id === "LABORATORY")).toHaveLength(1);

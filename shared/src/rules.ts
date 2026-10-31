@@ -12,6 +12,7 @@ import { AT_CAPACITY, COOLDOWN, DIRTY, NO_SPACE } from "./actions/action.ts";
 import { getUp } from "./actions/lie_down.ts";
 import { researchNeedsView } from "./actions/research.ts";
 import { equipmentHere } from "./equipment.ts";
+import { relayView } from "./relayView.ts";
 import { itemsIn, rechargeMicrowaves, startCharges, visibleItemsIn } from "./items.ts";
 import { actionFailed, apGain, carePointsGain, channelLimit, computerPointsCap, computerPointsGain, shootPointsGain, cycleChanged, designerPointsGain, gardenPointsGain, dailyMoraleLoss, inventorySlots, movementRules, pilgredPointsGain, satietyLoss } from "./modifiers.ts";
 import { contaminationSeenBy, convert } from "./infection.ts";
@@ -30,7 +31,7 @@ import { recordAction } from "./history.ts";
 import { ringMycoAlarms } from "./mycoalarm.ts";
 import { planetsOf } from "./planets.ts";
 import { arriveShip, orbitPicture } from "./navigation.ts";
-import { commandTerminalsHere, isPilgredRepaired, pilgredTerminalsHere } from "./pilgred.ts";
+import { commandTerminalsHere, isPilgredRepaired } from "./pilgred.ts";
 import { biosTerminalsHere, newBios } from "./bios.ts";
 import { callNextRebel, commsCycle, commsTerminalView, comTerminalsHere, newComms } from "./comms.ts";
 import { botanyCycle, botanyDay, plantView } from "./botany.ts";
@@ -121,7 +122,7 @@ export function createGame(
     research: {},
     projects: {},
     relay: { research: {}, projects: {} },
-    pilgred: { progress: 0, lastBy: null, streak: 0 },
+    pilgred: { progress: 0, pool: { tokens: [] } },
     planets: {},
     scanFailures: {},
     nextPlanetId: 1,
@@ -496,11 +497,8 @@ export function viewFor(state: GameState, playerId: PlayerId): PlayerView {
       list: you.alive && (turretsHere(state, you).length > 0 || shipAboard(you)) ? state.hunters.list.map(({ id, hp }) => ({ id, hp })) : null,
       turrets: you.alive && turretsHere(state, you).length > 0 ? Object.fromEntries(allTurrets(state).map((t) => [t.id, turretCharges(state, t.id)])) : null,
     },
-    research: { ...state.research },
+    ...relayView(state, you),
     researchNeeds: you.alive && equipmentHere(state, you, "RESEARCH_LAB").length > 0 ? researchNeedsView(state, you.room) : null,
-    projects: { ...state.projects },
-    // Only at the PILGRED terminal: the living in a room that has one (owner, 2026-10-21).
-    pilgred: you.alive && pilgredTerminalsHere(state, you).length > 0 ? state.pilgred.progress : null,
     pilgredRepaired: isPilgredRepaired(state),
     comms: { linked: state.comms.linked, terminal: you.alive && comTerminalsHere(state, you).length > 0 ? commsTerminalView(state) : null },
     bios: you.alive && biosTerminalsHere(state, you).length > 0 ? { ...state.bios } : null,

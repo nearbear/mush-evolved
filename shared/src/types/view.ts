@@ -183,7 +183,10 @@ export interface PlayerView {
    * combustion chamber's level: nobody sees it, the Commander included, except by checking the chamber (owner, 2026-10-28).
    */
   ship: Omit<ShipResources, "combustion"> & { max: Omit<ShipResources, "combustion"> };
-  /** Percent done of each research that has been started, public to everyone (decided 2026-10-16). */
+  /**
+   * Percent done of each research that has been started: all of them while you are alive in the lab, otherwise only the
+   * completed ones (owner, 2026-10-31; relayView.ts).
+   */
   research: Record<string, number>;
   /**
    * Which of each research's requirements the lab meets (`researchNeedsMet`, in `researchNeedOrder`'s order), counting
@@ -191,10 +194,17 @@ export interface PlayerView {
    * with a research terminal; otherwise null. Researches with no requirements are left out.
    */
   researchNeeds: Record<string, boolean[]> | null;
-  /** Percent done of each NERON project that has been started, public to everyone (decided 2026-10-18). */
+  /** Percent done of each NERON project that has been started: all of them while you are alive at NERON's core, otherwise only the completed ones (owner, 2026-10-31). */
   projects: Record<string, number>;
   /** PILGRED's repair, percent done, only while you are alive in a room with its terminal (owner, 2026-10-21); otherwise null. */
   pilgred: number | null;
+  /**
+   * The relay token pools (relay.ts) of the targets whose room you are alive in: every research in the lab, every project
+   * at NERON's core, PILGRED at its terminal. Empty (or null) elsewhere.
+   */
+  relay: { research: Record<string, RelayTargetView>; projects: Record<string, RelayTargetView>; pilgred: RelayTargetView | null };
+  /** How many relay tokens you have made on each target, wherever you are (your own information). Targets you never worked on are left out. */
+  yourTokens: { research: Record<string, number>; projects: Record<string, number>; pilgred: number };
   /** Whether PILGRED is repaired, public to everyone: its completion is announced to the whole crew (repair_pilgred.ts). */
   pilgredRepaired: boolean;
   /**
@@ -238,6 +248,16 @@ export interface PlayerView {
 }
 
 /** One action you are offered: what it costs, its chance of success, and which of your points fall short. */
+/** One pooled target as seen from its room (relayView.ts). */
+export interface RelayTargetView {
+  /** Progress held back only for lack of other contributors (docs/relay-tokens.md). */
+  waiting: number;
+  /** How much the target goes up if you contribute now, over your token's roll. */
+  gain: { min: number; max: number };
+  /** Its tokens in the order they were made: who made each and what it is worth in the best arrangement. */
+  tokens: { by: PlayerId; value: number }[];
+}
+
 export interface ActionOption {
   action: Action;
   cost: ActionCost;

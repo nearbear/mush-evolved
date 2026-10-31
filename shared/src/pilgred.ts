@@ -2,7 +2,6 @@
 // plan in docs/scratchpad/pilgred-plan.md). Progress is state (`GameState.pilgred`), seen only by the living in a room
 // with the PILGRED terminal. Once it is repaired, the Commander can return to Sol (actions/return_to_sol.ts).
 
-import { relayGainRange, rollRelayGain } from "./relay.ts";
 import { hasTitleAccess } from "./titles.ts";
 import type { GameState, PlayerState } from "./types.ts";
 
@@ -10,14 +9,6 @@ export const PILGRED_COMPLETE = 100;
 
 /** Skills that speed up a repair, each by `config.pilgred.progress.skillBoost` (the original's PILGRED_TAGS). */
 export const PILGRED_SKILLS = ["engineer", "physicist"] as const;
-
-/** The gain range of one repair by this player: the shared relay formula (relay.ts) over PILGRED's streak. */
-export function pilgredGainRange(state: Readonly<GameState>, player: Readonly<PlayerState>): { min: number; max: number } {
-  return relayGainRange(state.config.pilgred.progress, player, PILGRED_SKILLS, state.pilgred);
-}
-
-/** Rolls one repair's gain with the seeded RNG (no draw when the range is a single value). */
-export const rollPilgredGain = rollRelayGain;
 
 export function isPilgredRepaired(state: Readonly<Pick<GameState, "pilgred">>): boolean {
   return state.pilgred.progress >= PILGRED_COMPLETE;

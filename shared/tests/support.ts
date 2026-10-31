@@ -4,6 +4,7 @@
 import { CHARACTERS } from "../src/characters.ts";
 import { ANY_CONSUMABLE, RESEARCH_REQUIRES, type ResearchId } from "../src/research.ts";
 import { type ActionResult, applyAction, legalIn, newCycle, viewFor } from "../src/rules.ts";
+import type { RelayPool } from "../src/relay.ts";
 import type { Action, ActionOption, GameConfig, GameState, PlayerId, PlayerState, Seat } from "../src/types.ts";
 
 /** `config` with no hunter waves, for tests that run many cycles with nobody at the turrets (the ship would explode). */
@@ -96,4 +97,23 @@ export function stockLab(s: GameState, room: string, research: ResearchId): void
   for (const type of needs.items ?? []) s.items.push({ id: `item-${s.nextItemId++}`, type: type === ANY_CONSUMABLE ? "coffee" : type, at: { kind: "room", id: room } });
   if (needs.chun && !s.comms.xyloph.includes("ZONG_CHUN_SAMPLE")) s.comms.xyloph.push("ZONG_CHUN_SAMPLE");
   if (needs.postSelection) s.preselection = false;
+}
+
+/** Puts `percent` in a relay pool as one token from a player not in the game, so later contributions add to it (relay.ts). */
+function seedPool(pool: RelayPool, percent: number): void {
+  pool.tokens.push({ by: "seed", base: percent, roll: 0 });
+}
+
+/** Sets a research, project or PILGRED to `percent` through its relay pool, as contributions would have. */
+export function setProgress(s: GameState, target: { research: string } | { project: string } | "pilgred", percent: number): void {
+  if (target === "pilgred") {
+    seedPool(s.pilgred.pool, percent);
+    s.pilgred.progress = percent;
+  } else if ("research" in target) {
+    seedPool((s.relay.research[target.research] ??= { tokens: [] }), percent);
+    s.research[target.research] = percent;
+  } else {
+    seedPool((s.relay.projects[target.project] ??= { tokens: [] }), percent);
+    s.projects[target.project] = percent;
+  }
 }

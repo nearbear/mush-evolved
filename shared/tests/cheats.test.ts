@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { CHEATS, type Cheat } from "../src/cheats.ts";
 import { CHARACTER_SKILLS, isSkill, SKILLS, SKILL_SLOTS } from "../src/skills.ts";
-import { pilgredGainRange } from "../src/pilgred.ts";
 import { TITLE_IDS, bypassesTitles, hasTitleAccess } from "../src/titles.ts";
 import { DEFAULT_CONFIG } from "../src/config.ts";
 import { parseGameMessage } from "../src/protocol.ts";
@@ -116,18 +115,28 @@ describe("relay and title cheats", () => {
     let s = fresh();
     for (const p of s.players) p.room = "MOTOR_ROOM";
     s = cheat(s, "p0", "noRelayPenalty");
-    const first = pilgredGainRange(s, player(s, "p0"));
+    const gain = (t: typeof s) => viewFor(t, "p0").relay.pilgred!.gain;
+    const first = gain(s);
     for (let i = 0; i < 3; i++) {
       player(s, "p0").ap = cfg.maxAp;
       const r = applyAction(s, "p0", { type: "repair_pilgred", equipment: "MOTOR_ROOM:PILGRED" });
       if (!r.ok) throw new Error(r.error);
       s = r.state;
     }
-    expect(s.pilgred).toMatchObject({ lastBy: "p0", streak: 3 });
-    expect(pilgredGainRange(s, player(s, "p0"))).toEqual(first);
-    // Switched off, the streak counts again.
+    // Each token made under the cheat counts as if from a player of its own, fixed when it is made (owner, 2026-10-31).
+    expect(s.pilgred.pool.tokens.every((t) => t.unpenalized)).toBe(true);
+    expect(viewFor(s, "p0").relay.pilgred!.waiting).toBe(0);
+    expect(gain(s)).toEqual(first);
+    // Switched off, new tokens count as p0's again, and the old ones stay unpenalized.
     s = cheat(s, "p0", "noRelayPenalty", false);
-    expect(pilgredGainRange(s, player(s, "p0")).min).toBeLessThan(first.min);
+    for (let i = 0; i < 6; i++) {
+      player(s, "p0").ap = cfg.maxAp;
+      const r = applyAction(s, "p0", { type: "repair_pilgred", equipment: "MOTOR_ROOM:PILGRED" });
+      if (!r.ok) throw new Error(r.error);
+      s = r.state;
+    }
+    expect(s.pilgred.pool.tokens.filter((t) => t.unpenalized)).toHaveLength(3);
+    expect(gain(s).min).toBeLessThan(first.min);
   });
 
   it("free hacking gives access to every title, held or not", () => {

@@ -2,7 +2,7 @@ import type { BiosState } from "../bios.ts";
 import type { CommsState } from "../comms.ts";
 import type { TurnSide } from "../navigation.ts";
 import type { PlanetDirection, PlanetTag } from "../planets.ts";
-import type { RelayStreak } from "../relay.ts";
+import type { RelayPool } from "../relay.ts";
 import type { RngState } from "../rng.ts";
 import type { TitleId } from "../titles.ts";
 import type { ItemState, LogEntry, PlayerId, RoomId } from "../types.ts";
@@ -88,17 +88,17 @@ export interface GameState {
   sporesToday: number;
   /** The cycle each Mush last extracted a spore, for the per-Mush cooldown. Hidden from everyone. */
   sporeExtractedOn: Record<PlayerId, number>;
-  /** Percent done of each research that has been started (absent = 0), by research id (research.ts). Public: sent to everyone. */
+  /** Percent done of each research that has been started (absent = 0), by research id (research.ts): the best arrangement of its relay tokens. Only the living in the lab see it until it is complete. */
   research: Record<string, number>;
-  /** Percent done of each NERON project that has been started (absent = 0), by project id (projects.ts). Public: sent to everyone. */
+  /** Percent done of each NERON project that has been started (absent = 0), by project id (projects.ts). Only the living at NERON's core see it until it is complete. */
   projects: Record<string, number>;
-  /** Who contributed last to each research and project and how many times in a row (the relay penalty, relay.ts). Never sent in a view. */
-  relay: { research: Record<string, RelayStreak>; projects: Record<string, RelayStreak> };
+  /** Each research's and project's relay tokens (relay.ts). Only the living in the target's room see them, as contributor and value; rolls are never sent. */
+  relay: { research: Record<string, RelayPool>; projects: Record<string, RelayPool> };
   /**
-   * PILGRED's repair (pilgred.ts): percent done, and who repaired last and how many times in a row (the relay penalty).
-   * `progress` goes only to the living in a room with the PILGRED terminal; `lastBy` and `streak` are never sent.
+   * PILGRED's repair (pilgred.ts): percent done and its relay tokens (relay.ts). Both go only to the living in a room
+   * with the PILGRED terminal, the tokens as contributor and value; rolls are never sent.
    */
-  pilgred: { progress: number; lastBy: PlayerId | null; streak: number };
+  pilgred: { progress: number; pool: RelayPool };
   /**
    * The communication center (comms.ts). `linked` goes to everyone; the rest only to the living at a Com center
    * terminal, read-only.

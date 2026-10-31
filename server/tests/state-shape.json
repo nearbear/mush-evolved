@@ -1,5 +1,5 @@
 {
-  "version": 90,
+  "version": 91,
   "paths": [
     "bios.actopi",
     "bios.death_announcements",
@@ -197,9 +197,8 @@
     "patrolShips.PATROL_SHIP_B_2.destroyed",
     "patrolShips.PATROL_SHIP_B_2.out",
     "phase",
-    "pilgred.lastBy",
+    "pilgred.pool.tokens[]",
     "pilgred.progress",
-    "pilgred.streak",
     "players[]",
     "players[].alive",
     "players[].alpha",

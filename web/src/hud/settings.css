@@ -235,6 +235,31 @@ li.research-item /* Rebel base icons are 70x65, not the 50x75 research cards. */
   min-width: 2rem;
 }
 
+/* Relay tokens (RelayDetails.tsx): the terminal's one-line rule, the work held back for lack of other contributors, and
+   each contribution as the contributor's face over its value, wrapping on a phone. */
+.relay-help,
+.relay-waiting {
+  margin: 0.25rem 0;
+  font-size: 0.85em;
+}
+.relay-waiting {
+  font-style: italic;
+}
+.relay-tokens {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  margin: 0.25rem 0;
+  padding: 0;
+  list-style: none;
+}
+.relay-tokens li {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-size: 0.75em;
+}
+
 /* A research's requirements or a project's skills, as a wrapping checklist; met entries are ticked and dimmed. */
 .research-needs {
   display: flex;

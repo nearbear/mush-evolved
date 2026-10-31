@@ -5,7 +5,8 @@ import { useNames } from "../i18n/names.ts";
 
 /**
  * The Research feature's tracker: a sideways-scrolling strip of every research card, completed ones first and in
- * colour, the rest greyed out. Research progress is public (`view.research`), so this only reads the view.
+ * colour, the rest greyed out. Progress is known only in the lab (`view.relay.research` is filled there); elsewhere
+ * the view has only completed researches, so the others read "not complete".
  */
 export function ResearchTracker({ view }: { view: PlayerView }) {
   const { t } = useTranslation();
@@ -17,7 +18,8 @@ export function ResearchTracker({ view }: { view: PlayerView }) {
       {ids.map((id) => {
         const complete = done(id);
         const card = RESEARCH_CARDS[id.toLowerCase()];
-        const status = complete ? t("research.done") : t("research.progress", { percent: view.research[id] ?? 0 });
+        const inLab = view.relay.research[id] !== undefined;
+        const status = complete ? t("research.done") : inLab ? t("research.progress", { percent: view.research[id] ?? 0 }) : t("research.notDone");
         return (
           <li key={id} className={complete ? "research-tracker-card" : "research-tracker-card pending"} aria-label={`${names.research(id)}: ${status}`}>
             {card && <img src={card} alt="" />}

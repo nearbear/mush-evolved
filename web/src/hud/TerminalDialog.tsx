@@ -27,12 +27,14 @@ import {
   type ActionOption,
   type EquipmentView,
   type PlayerView,
+  type RelayTargetView,
 } from "@mush2/shared";
 import { useTranslation } from "react-i18next";
 import { CHECK_ICON, PILGRED_CARD, PROJECT_CARDS, RESEARCH_CARDS, skillIcon, UNCHECK_ICON } from "../art/assets.ts";
 import { useNames } from "../i18n/names.ts";
 import { ActionLabel } from "./ActionLabel.tsx";
 import { ActionButton } from "./ActionButton.tsx";
+import { RelayDetails, RelayHelp, withGain } from "./RelayDetails.tsx";
 import { BiosTerminal } from "./BiosTerminal.tsx";
 import { CommsCenter } from "./CommsCenter.tsx";
 import { TabOutline } from "./TabOutline.tsx";
@@ -88,6 +90,7 @@ function ResearchList({ terminal, view, onAction }: ListProps) {
       label={t("research.title")}
       ids={RESEARCH_IDS}
       progress={view.research}
+      relay={view.relay.research}
       complete={RESEARCH_COMPLETE}
       cards={RESEARCH_CARDS}
       name={names.research}
@@ -116,6 +119,7 @@ function ProjectList({ terminal, view, onAction }: ListProps) {
       label={t("projects.title")}
       ids={PROJECT_IDS}
       progress={view.projects}
+      relay={view.relay.projects}
       complete={PROJECT_COMPLETE}
       cards={PROJECT_CARDS}
       name={names.project}
@@ -145,10 +149,12 @@ function PilgredRepair({ terminal, view, onAction }: ListProps) {
         <span>{t("pilgred.desc")}</span>
         <progress max={PILGRED_COMPLETE} value={percent} />
         <span>{percent >= PILGRED_COMPLETE ? t("pilgred.repaired") : t("pilgred.progress", { percent })}</span>
+        <RelayHelp />
+        <RelayDetails target={view.relay.pilgred ?? undefined} view={view} />
       </div>
       {option && (
         <ActionButton view={view} option={option} onAction={onAction}>
-          <ActionLabel text={t("actions.repairPilgred")} cost={option.cost} chance={option.chance} />
+          <ActionLabel text={withGain(t, t("actions.repairPilgred"), view.relay.pilgred?.gain)} cost={option.cost} chance={option.chance} />
         </ActionButton>
       )}
     </div>
@@ -164,6 +170,8 @@ interface ProgressListProps {
   label: string;
   ids: readonly string[];
   progress: Record<string, number>;
+  /** Each target's relay pool, from the view (only in its room). */
+  relay: Record<string, RelayTargetView>;
   complete: number;
   cards: Record<string, string>;
   name: (id: string) => string;
@@ -202,11 +210,11 @@ type ProgressTab = "active" | "blocked" | "done";
 const PROGRESS_TABS: readonly ProgressTab[] = ["active", "blocked", "done"];
 
 /**
- * Every research or project with its progress (public) and, when the view offers it, a button to work on it, in three
+ * Every research or project with its progress (only in its room until complete), its relay tokens and, when the view offers it, a button to work on it, in three
  * tabs: Active (in progress, then available), Blocked (not offered by the view, so for research the lab misses a need)
  * and Done. Within a tab the order is the list's own. Empty Blocked or Done tabs are left out.
  */
-function ProgressList({ label, ids, progress, complete, cards, name, desc, status, needs, option: optionFor, view, onAction }: ProgressListProps) {
+function ProgressList({ label, ids, progress, relay, complete, cards, name, desc, status, needs, option: optionFor, view, onAction }: ProgressListProps) {
   const { t } = useTranslation();
   const [tab, setTab] = useState<ProgressTab>("active");
   const rows = ids.map((id) => ({ id, percent: progress[id] ?? 0, option: optionFor(id) }));
@@ -219,6 +227,7 @@ function ProgressList({ label, ids, progress, complete, cards, name, desc, statu
   const current = shown.includes(tab) ? tab : "active";
   return (
     <Tabs.Root className="settings-tabs" value={current} onValueChange={(value) => setTab(value as ProgressTab)}>
+      <RelayHelp />
       <Tabs.List className="settings-tab-list progress-tab-list" aria-label={label}>
         {shown.map((key) => (
           <Tabs.Tab key={key} className="settings-tab" value={key}>
@@ -252,11 +261,12 @@ function ProgressList({ label, ids, progress, complete, cards, name, desc, statu
                           <span>{t("research.percent", { percent })}</span>
                           {option && (
                             <ActionButton view={view} option={option} onAction={onAction}>
-                              <ActionLabel text={t("research.work")} cost={option.cost} chance={option.chance} />
+                              <ActionLabel text={withGain(t, t("research.work"), relay[id]?.gain)} cost={option.cost} chance={option.chance} />
                             </ActionButton>
                           )}
                         </div>
                       )}
+                      <RelayDetails target={relay[id]} view={view} />
                       {needed && (
                         <div className="research-needs">
                           <ul>

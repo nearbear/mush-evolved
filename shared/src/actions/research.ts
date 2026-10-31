@@ -1,10 +1,10 @@
-import { Action, type ActionCost, DIRTY, isString } from "./action.ts";
+import { Action, type ActionCost, type ActionVisibility, DIRTY, isString } from "./action.ts";
 import { ANY_CONSUMABLE, RESEARCH_COMPLETE, RESEARCH_IDS, RESEARCH_REQUIRES, RESEARCH_SKILLS, type ResearchId, researchNeedOrder } from "../research.ts";
-import { logPublic } from "../log.ts";
+import { logPrivate, logPublic } from "../log.ts";
 import { equipmentHere } from "../equipment.ts";
 import { ITEM_TYPES, newItemId, removeItem } from "../items.ts";
 import { xylophFound } from "../comms.ts";
-import { relayGainRange, rollRelayGain, touchRelay } from "../relay.ts";
+import { contribute } from "../relay.ts";
 import { dropMycoAlarms } from "../mycoalarm.ts";
 import { ANTI_MUSH_SERUM_ITEM } from "./vaccinate.ts";
 import type { GameState, ItemState, PlayerState, RoomId } from "../types.ts";
@@ -46,11 +46,12 @@ export type ResearchActionData = { type: "research"; equipment: string; research
 
 /**
  * Work on a research at the laboratory's research terminal (decided 2026-10-16): 2 AP (free with a Computer point, which is spent)
- * moves one research forward by the relay formula (relay.ts: 6-9%, +4 per Biologist or Medic skill, -2 per action in a row by the same player; owner, 2026-10-26). Anyone alive who is not dirty can help, while the lab meets the research's
- * RESEARCH_REQUIRES. Public room log.
+ * adds a relay token to the research's pool (relay.ts: 6-9%, +4 per Biologist or Medic skill, the pool arranged for the least relay penalty; owner, 2026-10-30). Anyone alive who is not dirty can help, while the lab meets the research's
+ * RESEARCH_REQUIRES. Private log line; completion goes in the room's history.
  */
 export class ResearchAction extends Action<ResearchActionData> {
   override terminal = true;
+  override visibility: ActionVisibility = "private";
 
   constructor() {
     super("research", { equipment: isString, research: isString });
@@ -81,11 +82,12 @@ export class ResearchAction extends Action<ResearchActionData> {
   }
 
   override apply(state: GameState, player: PlayerState, target: ResearchActionData): void {
-    const gain = rollRelayGain(state, relayGainRange(state.config.research.progress, player, RESEARCH_SKILLS, state.relay.research[target.research]));
-    touchRelay(state.relay.research, target.research, player);
-    const progress = Math.min(RESEARCH_COMPLETE, (state.research[target.research] ?? 0) + gain);
+    const pool = (state.relay.research[target.research] ??= { tokens: [] });
+    const progress = contribute(state, pool, state.config.research.progress, player, RESEARCH_SKILLS, RESEARCH_COMPLETE);
     state.research[target.research] = progress;
-    logPublic(state, player.room, progress >= RESEARCH_COMPLETE ? "researchCompleted" : "researched", { name: player.character, research: target.research, percent: progress });
+    // Owner, 2026-10-30: research is private, its token list is the evidence; only completion goes in the room's history.
+    if (progress >= RESEARCH_COMPLETE) logPublic(state, player.room, "researchCompleted", { name: player.character, research: target.research, percent: progress });
+    else logPrivate(state, player.id, "researched", { name: player.character, research: target.research, percent: progress });
     // `kill_sample`: completing it uses up one of these from the lab, the floor first.
     if (progress >= RESEARCH_COMPLETE) {
       for (const type of RESEARCH_REQUIRES[target.research as ResearchId]?.consumes ?? []) {

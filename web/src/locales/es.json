@@ -1236,7 +1236,18 @@
       "MUSHOPHAGE_BACTERIA": "Los humanos pueden soportar hasta 3 esporas antes de convertirse en Mush.",
       "ANTISPORE_GAZ": "El máximo diario de esporas de los Mush se reduce en dos.",
       "SUPER_CALC": "Genera en el Nexus un equipo que permite extraer datos de las cristalitas."
-    }
+    },
+    "notDone": "Sin completar"
+  },
+  "relay": {
+    "help": "Tus contribuciones solo pierden valor cuando has hecho más que todos los demás juntos, más una.",
+    "waiting": "Hasta un {{percent}} % más cuando otros contribuyan.",
+    "gain": "+{{min}}–{{max}} %",
+    "gainOne": "+{{min}} %",
+    "tokens": "Contribuciones",
+    "token": "{{name}}: {{percent}} %",
+    "unknown": "Alguien",
+    "withGain": "{{action}} {{gain}}"
   },
   "astro": {
     "title": "Tus planetas",

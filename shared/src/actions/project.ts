@@ -1,7 +1,7 @@
 import { Action, type ActionCost, isString } from "./action.ts";
 import { equipmentHere } from "../equipment.ts";
 import { PROJECT_COMPLETE, PROJECT_IDS, projectSkills } from "../projects.ts";
-import { relayGainRange, rollRelayGain, touchRelay } from "../relay.ts";
+import { contribute } from "../relay.ts";
 import { logPublic } from "../log.ts";
 import type { GameState, PlayerState } from "../types.ts";
 
@@ -9,7 +9,7 @@ export type ProjectActionData = { type: "project"; equipment: string; project: s
 
 /**
  * Work on a NERON project at NERON's core, exactly like research (decided 2026-10-18): 2 AP (free with a Designer or Computer point,
- * which is spent; the Designer point goes first, since it works nowhere else, owner 2026-10-24) moves one project forward by the relay formula (relay.ts; owner, 2026-10-26), +4 for each of the project's two skills (PROJECTS; owner, 2026-10-27). Anyone alive who is not dirty can help. Nothing happens on completion
+ * which is spent; the Designer point goes first, since it works nowhere else, owner 2026-10-24) adds a relay token to the project's pool (relay.ts; owner, 2026-10-30), +4 for each of the project's two skills (PROJECTS; owner, 2026-10-27). Anyone alive who is not dirty can help. Nothing happens on completion
  * yet beyond a log line. Public room log.
  */
 export class ProjectAction extends Action<ProjectActionData> {
@@ -42,9 +42,8 @@ export class ProjectAction extends Action<ProjectActionData> {
   }
 
   override apply(state: GameState, player: PlayerState, target: ProjectActionData): void {
-    const gain = rollRelayGain(state, relayGainRange(state.config.project.progress, player, projectSkills(target.project), state.relay.projects[target.project]));
-    touchRelay(state.relay.projects, target.project, player);
-    const progress = Math.min(PROJECT_COMPLETE, (state.projects[target.project] ?? 0) + gain);
+    const pool = (state.relay.projects[target.project] ??= { tokens: [] });
+    const progress = contribute(state, pool, state.config.project.progress, player, projectSkills(target.project), PROJECT_COMPLETE);
     state.projects[target.project] = progress;
     logPublic(state, player.room, progress >= PROJECT_COMPLETE ? "projectCompleted" : "projectWorked", { name: player.character, project: target.project, percent: progress });
   }
