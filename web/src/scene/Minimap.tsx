@@ -105,6 +105,7 @@ export function Minimap({
       >
         <path className="minimap-walls" d={wallsPath} />
         {shapes.map((r) => (
+          // biome-ignore lint/a11y/noStaticElementInteractions: expanded, the shape is a role="button" Tab stop (spread below); collapsed, it is aria-hidden and pointer-only.
           <path
             key={r.id}
             className={[
@@ -116,14 +117,14 @@ export function Minimap({
               .filter(Boolean)
               .join(" ")}
             d={r.d}
-            role="button"
-            aria-label={names.room(r.id)}
-            tabIndex={expanded ? 0 : -1}
+            {...(expanded
+              ? { role: "button", "aria-label": names.room(r.id), tabIndex: 0 }
+              : { "aria-hidden": true })}
             onPointerEnter={(e) => !touch(e) && setPointed(r.id)}
             onPointerUp={(e) => touch(e) && expanded && setPointed(r.id)}
             onFocus={() => setPointed(r.id)}
           >
-            <title>{names.room(r.id)}</title>
+            {expanded && <title>{names.room(r.id)}</title>}
           </path>
         ))}
         {plan.doors.map((d) => (
