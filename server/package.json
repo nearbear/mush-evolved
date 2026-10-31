@@ -13,7 +13,8 @@
     "deploy:test": "wrangler d1 migrations apply DB --remote --env test && wrangler deploy --env test --var RULES_VERSION:$(git describe --always --dirty --abbrev=40)",
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
-    "model-trial": "node scripts/run-trial.mjs"
+    "model-trial": "node scripts/run-trial.mjs",
+    "api-types": "tsc -p tsconfig.api.json"
   },
   "dependencies": {
     "@mush2/shared": "*",
@@ -23,5 +24,10 @@
   "devDependencies": {
     "vitest": "^5.0.3",
     "wrangler": "^4.145.0"
+  },
+  "exports": {
+    "./api": {
+      "types": "./dist/api-types/apiTypes.d.ts"
+    }
   }
 }

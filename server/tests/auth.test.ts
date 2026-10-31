@@ -486,6 +486,15 @@ describe("routing (#324)", () => {
       expect([path, await status(path)]).toEqual([path, 404]);
     }
   });
+
+  it("checks the route's own conditions before the body: a bad body signed out is still signed_out", async () => {
+    const browser = new Browser();
+    expect(await (await browser.post("/api/signup", "not an object")).json()).toEqual({ ok: false, reason: "no_signup" });
+    expect(await (await browser.post("/api/rename", "not an object")).json()).toEqual({ ok: false, reason: "signed_out" });
+    expect(await (await browser.post("/api/setups", "not an object")).json()).toEqual({ ok: false, reason: "signed_out" });
+    const text = await browser.request("/api/rename", { method: "POST", headers: { "Content-Type": "text/plain" }, body: "{}" });
+    expect(await text.json()).toEqual({ ok: false, reason: "signed_out" });
+  });
 });
 
 describe("dev sign-in (#287)", () => {

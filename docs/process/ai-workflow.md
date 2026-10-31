@@ -1829,3 +1829,11 @@ Reviewed both commits after the fact. Found `lastSeenAt` staying with the body i
 - **What worked:** keeping the `handleAuth(request, env, deps)` signature, so the existing 69 auth and setup tests ran unchanged against the new router. New routing tests (wrong methods, unknown providers, trailing slashes, an encoded `/` in a setup ID) were run against the old router first, which showed the behavior didn't change rather than describing whatever Hono happens to do.
 - **Needed care:** Hono answers a known path with the wrong method 404, so each path ends with an explicit `.all(path, methodNotAllowed)`. The setup ID is read from the raw path, not `c.req.param`, which would decode `%2F` to `/` before the existing check. Routes stay in one chain because the typed client reads them from the app's type.
 - **Baseline for step 2:** `npm run typecheck` takes about 2 s; time it again once `hc` is in.
+
+## 2026-10-31: Typed API client (#324, step 2)
+
+- `web` calls the site API through Hono's `hc<ApiType>`. Responses are typed by a `JsonResponse` return type on the existing `json` helper, so the handlers kept their bodies and the response types in `shared` stayed the source; no `c.json` rewrite.
+- Bodies are declared by a small `jsonBody` middleware that parses with the existing parsers and never answers itself. Hono's own `validator("json")` was rejected: it reads the body before any size check and answers malformed JSON with a plain-text 400, ahead of the route's own checks (`no_signup`, `signed_out`). zod waits for step 3, where the OpenAPI document needs schemas.
+- Needed correction: `web` couldn't import the type from server source, because the server's files need the Workers types (`Env`, D1) and `web`'s type check failed on them. The fix is a declaration emit (`tsconfig.api.json`, into the gitignored `server/dist/api-types`) exported as `@mush2/server/api` with types only, run before `web`'s typecheck.
+- Found on the way: the lint rule against `web` importing `server` used `@mush2/server/*`, which matches one path segment, so deep imports like `@mush2/server/src/auth.ts` had never been refused. It is now `/**`, with `!@mush2/server/api` as the one exception.
+- Typecheck went from about 2.0 s to 2.5 s, including the emit.

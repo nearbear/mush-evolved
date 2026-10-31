@@ -13,14 +13,14 @@ import {
   MAX_RULES_VERSION_LENGTH,
   MAX_SETUP_ID_LENGTH,
   moderateSetupTexts,
+  type PostSetupRequest,
   type PostSetupResponse,
-  parsePostSetup,
   STANDARD_SETUP,
   STANDARD_SETUP_ID,
   type SetupListResponse,
   type SetupLookupResponse,
 } from "@mush2/shared";
-import { json, readJsonBody } from "./http.ts";
+import { json, type JsonResponse } from "./http.ts";
 import type { SetupStore } from "./setupStore.ts";
 
 /** Largest setup post accepted: three languages of a name and a 500-character description, with room for escapes. */
@@ -44,7 +44,7 @@ function decodeId(raw: string): string | null {
   }
 }
 
-export async function listSetups(deps: SetupRouteDeps): Promise<Response> {
+export async function listSetups(deps: SetupRouteDeps): Promise<JsonResponse<SetupListResponse>> {
   const session = await deps.session();
   const listed = await deps.setups.list();
   const body: SetupListResponse = {
@@ -60,21 +60,24 @@ export async function listSetups(deps: SetupRouteDeps): Promise<Response> {
 }
 
 /** `rawId` is the path segment as sent (still percent-encoded). */
-export async function lookupSetup(rawId: string, deps: SetupRouteDeps): Promise<Response> {
+export async function lookupSetup(
+  rawId: string,
+  deps: SetupRouteDeps,
+): Promise<JsonResponse<SetupLookupResponse> | JsonResponse<{ error: "not_found" }, 404>> {
   const id = decodeId(rawId);
-  if (id === null) return json({ error: "not_found" }, 404);
+  if (id === null) return json({ error: "not_found" as const }, 404);
   const setup = id === STANDARD_SETUP_ID ? { ...STANDARD_SETUP, latest: true } : await deps.setups.get(id);
-  if (!setup) return json({ error: "not_found" }, 404);
+  if (!setup) return json({ error: "not_found" as const }, 404);
   const body: SetupLookupResponse = { setup };
-  return json(body);
+  return json(body, 200);
 }
 
-export async function postSetup(request: Request, deps: SetupRouteDeps): Promise<Response> {
+/** `input` is the body as parsePostSetup read it (auth.ts's `jsonBody`), null if malformed: `invalid`, once signed in. */
+export async function postSetup(input: PostSetupRequest | null, deps: SetupRouteDeps): Promise<JsonResponse<PostSetupResponse, 200 | 400>> {
   const session = await deps.session();
   const cookies = session?.renewedCookie ? [session.renewedCookie] : [];
   const reply = (body: PostSetupResponse) => json(body, body.ok ? 200 : 400, cookies);
   if (!session) return reply({ ok: false, reason: "signed_out" });
-  const input = parsePostSetup(await readJsonBody(request, MAX_SETUP_BODY));
   // i18n-ignore: an error code, not text
   if (!input) return reply({ ok: false, reason: "invalid" });
   const text = moderateSetupTexts(input.text);

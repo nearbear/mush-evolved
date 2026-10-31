@@ -1,8 +1,17 @@
 // The account HTTP API (server/src/auth.ts, docs/ops/sign-in.md). Same origin as the page: in dev Vite proxies
 // /auth and /api to wrangler, so the session cookie goes with every request.
+//
+// Calls go through Hono's typed client (#324): `api` knows every route's path, body and responses from the server's
+// own route types, so a server change that breaks a call here fails `npm run typecheck`.
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { AuthOutcome, AuthProvider, MeResponse, RenameResponse, SignupResponse } from "@mush2/shared";
+// Types only, from declarations emitted by `npm run api-types -w server` (web's typecheck runs it first).
+import type { ApiType } from "@mush2/server/api";
+import { hc } from "hono/client";
+
+/** The site API, on the page's own origin. */
+export const api = hc<ApiType>("/");
 
 /** Provider names are brands: the same in every language. */
 export const PROVIDER_NAMES: Record<AuthProvider, string> = { google: "Google", discord: "Discord" }; // i18n-ignore: brand names
@@ -12,29 +21,27 @@ export function startSignIn(provider: AuthProvider, link = false): void {
   location.assign(`/auth/${provider}/start${link ? "?link=1" : ""}`);
 }
 
-async function postJson<T>(path: string, body: unknown): Promise<T> {
-  const response = await fetch(path, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" }, // i18n-ignore: an HTTP header
-    body: JSON.stringify(body),
-  });
-  return (await response.json()) as T;
+// Over the rate limit (#305), these answer 429 with the same body shape (`reason: "rate_limited"`).
+export async function signup(name: string): Promise<SignupResponse> {
+  return (await api.api.signup.$post({ json: { name } })).json();
 }
 
-export function signup(name: string): Promise<SignupResponse> {
-  return postJson("/api/signup", { name });
-}
-
-export function rename(name: string): Promise<RenameResponse> {
-  return postJson("/api/rename", { name });
+export async function rename(name: string): Promise<RenameResponse> {
+  return (await api.api.rename.$post({ json: { name } })).json();
 }
 
 export async function logout(): Promise<void> {
-  await fetch("/auth/logout", { method: "POST" });
+  await api.auth.logout.$post();
 }
 
+/**
+ * A 429 from the rate limit (#305). It comes from middleware in front of every route, so it isn't in any route's
+ * types: hence a plain `status: number` here.
+ */
+const isRateLimited = (response: { status: number }) => response.status === 429;
+
 /** Seconds from a 429's Retry-After, as milliseconds; a minute if it's missing or odd. */
-function retryAfterMs(response: Response): number {
+function retryAfterMs(response: { headers: Headers }): number {
   const seconds = Number(response.headers.get("Retry-After")); // i18n-ignore: an HTTP header
   return Number.isFinite(seconds) && seconds >= 1 ? seconds * 1000 : 60_000;
 }
@@ -52,14 +59,14 @@ export function useMe(): { me: MeResponse | null; rateLimited: boolean; refresh:
   const refresh = useCallback(async () => {
     clearTimeout(retry.current);
     try {
-      const response = await fetch("/api/me");
-      if (response.status === 429) {
+      const response = await api.api.me.$get();
+      if (isRateLimited(response)) {
         setRateLimited(true);
         if (mounted.current) retry.current = setTimeout(() => void refresh(), retryAfterMs(response));
         return;
       }
       setRateLimited(false);
-      setMe(response.ok ? ((await response.json()) as MeResponse) : { status: "signed_out" });
+      setMe(response.ok ? await response.json() : { status: "signed_out" });
     } catch {
       setRateLimited(false);
       setMe({ status: "signed_out" });

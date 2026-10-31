@@ -17,6 +17,7 @@
 
 import {
   checkDisplayName,
+  parsePostSetup,
   isAuthProvider,
   type AuthOutcome,
   type AuthProvider,
@@ -26,11 +27,11 @@ import {
 } from "@mush2/shared";
 import { type Context, Hono } from "hono";
 import { type AccountStore, nameKey, RENAME_INTERVAL_MS, sha256Hex } from "./accountStore.ts";
-import { json, readJsonBody } from "./http.ts";
+import { json, type JsonResponse, jsonBody } from "./http.ts";
 import { authorizeUrl, fetchProfile, oauthCredentials, randomToken, usesPkce } from "./oauth.ts";
 import { allowAuthRequest } from "./rateLimit.ts";
 import type { SetupStore } from "./setupStore.ts";
-import { listSetups, lookupSetup, postSetup, type SetupRouteDeps } from "./setupRoutes.ts";
+import { listSetups, lookupSetup, MAX_SETUP_BODY, postSetup, type SetupRouteDeps } from "./setupRoutes.ts";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 /** Sessions last 30 days, renewed while in use. */
@@ -136,11 +137,15 @@ function rateLimited(path: string): Response {
 
 const outcome = (result: AuthOutcome) => `/?auth=${result}`;
 
-/** `{ name }` from a JSON body of at most MAX_BODY bytes, or null. */
-async function readName(request: Request): Promise<string | null> {
-  const body = await readJsonBody(request, MAX_BODY);
+/** The body of /api/signup and /api/rename. The name itself is checked by the route (checkDisplayName). */
+interface NameRequest {
+  name: string;
+}
+
+/** `{ name }` with a string name, or null. */
+function parseName(body: unknown): NameRequest | null {
   const name = typeof body === "object" && body !== null ? (body as { name?: unknown }).name : undefined;
-  return typeof name === "string" ? name : null;
+  return typeof name === "string" ? { name } : null;
 }
 
 // ---- Sessions
@@ -238,7 +243,8 @@ interface ApiBindings {
   deps: AuthDeps;
 }
 
-const methodNotAllowed = () => json({ error: "method_not_allowed" }, 405);
+// A plain Response on purpose: no client calls a wrong method, so the typed client needn't list these.
+const methodNotAllowed = (): Response => json({ error: "method_not_allowed" }, 405);
 
 /** The setup routes' view of a request (setupRoutes.ts). */
 const setupDeps = (request: Request, { env, deps }: ApiBindings): SetupRouteDeps => ({
@@ -260,10 +266,12 @@ const oauthRoute =
 
 /**
  * The /auth and /api routes (#324). Keep the routes in one chain (`.get(...).post(...)`): the typed client in `web`
- * will read the routes from this value's type, and a route added in a separate statement is missing from it. Each
- * path ends with `.all(path, methodNotAllowed)`, since Hono answers a known path with the wrong method 404.
+ * reads the routes from this value's type (`ApiType`, apiTypes.ts), and a route added in a separate statement is
+ * missing from it. A route's responses reach the client through its handler's return type (`json`'s JsonResponse) and
+ * its body through `jsonBody`. Each path ends with `.all(path, methodNotAllowed)`, since Hono answers a known path
+ * with the wrong method 404.
  */
-const api = new Hono<{ Bindings: ApiBindings }>()
+export const api = new Hono<{ Bindings: ApiBindings }>()
   // Counted before the route runs (#305). Not limited: logout, which must always work, and the OAuth callback, which
   // only follows a limited start (a forged one fails on the state cookie before any D1 or provider request).
   .use(async (c, next) => {
@@ -283,12 +291,12 @@ const api = new Hono<{ Bindings: ApiBindings }>()
   .all("/auth/logout", methodNotAllowed)
   .get("/api/me", (c) => me(c.req.raw, c.env.env, c.env.deps))
   .all("/api/me", methodNotAllowed)
-  .post("/api/signup", (c) => signup(c.req.raw, c.env.env, c.env.deps))
+  .post("/api/signup", jsonBody(MAX_BODY, parseName), (c) => signup(c.req.raw, c.env.env, c.env.deps, c.req.valid("json").body))
   .all("/api/signup", methodNotAllowed)
-  .post("/api/rename", (c) => rename(c.req.raw, c.env.env, c.env.deps))
+  .post("/api/rename", jsonBody(MAX_BODY, parseName), (c) => rename(c.req.raw, c.env.env, c.env.deps, c.req.valid("json").body))
   .all("/api/rename", methodNotAllowed)
   .get("/api/setups", (c) => listSetups(setupDeps(c.req.raw, c.env)))
-  .post("/api/setups", (c) => postSetup(c.req.raw, setupDeps(c.req.raw, c.env)))
+  .post("/api/setups", jsonBody(MAX_SETUP_BODY, parsePostSetup), (c) => postSetup(c.req.valid("json").body, setupDeps(c.req.raw, c.env)))
   .all("/api/setups", methodNotAllowed)
   // The raw segment, not c.req.param("id"): lookupSetup decodes it itself and refuses an encoded "/".
   .get("/api/setups/:id", (c) => lookupSetup(new URL(c.req.url).pathname.slice("/api/setups/".length), setupDeps(c.req.raw, c.env)))
@@ -401,12 +409,12 @@ async function devSignIn(request: Request, env: Env, deps: AuthDeps): Promise<Re
 }
 
 /** Ends this device's session, and a pending sign-up too: the next person on this browser must not finish it. */
-async function logout(request: Request, env: Env, deps: AuthDeps): Promise<Response> {
+async function logout(request: Request, env: Env, deps: AuthDeps): Promise<JsonResponse<{ ok: true }>> {
   // The device's seat tokens are revoked, but the account stays aboard: signing in again resumes the ship (#321).
-  return json({ ok: true }, 200, [await signOut(request, env, deps), await endSignup(request, env, deps)]);
+  return json({ ok: true as const }, 200, [await signOut(request, env, deps), await endSignup(request, env, deps)]);
 }
 
-async function me(request: Request, env: Env, deps: AuthDeps): Promise<Response> {
+async function me(request: Request, env: Env, deps: AuthDeps): Promise<JsonResponse<MeResponse>> {
   const url = new URL(request.url);
   const session = await currentSession(request, env, deps.store, deps.now);
   const cookies = session?.renewedCookie ? [session.renewedCookie] : [];
@@ -437,13 +445,14 @@ async function me(request: Request, env: Env, deps: AuthDeps): Promise<Response>
   return json(body, 200, cookies);
 }
 
-async function signup(request: Request, env: Env, deps: AuthDeps): Promise<Response> {
+/** `body` is null when it isn't `{ name }` JSON; that is answered as an empty name, after the sign-up check. */
+async function signup(request: Request, env: Env, deps: AuthDeps, body: NameRequest | null): Promise<JsonResponse<SignupResponse, 200 | 400>> {
   const url = new URL(request.url);
   const reply = (body: SignupResponse, cookies: string[] = []) => json(body, body.ok ? 200 : 400, cookies);
   const signupId = readCookie(request, "signup", env, url);
   const pending = signupId && (await deps.store.getSignup(signupId, deps.now));
   if (!signupId || !pending) return reply({ ok: false, reason: "no_signup" });
-  const checked = checkDisplayName((await readName(request)) ?? "");
+  const checked = checkDisplayName(body?.name ?? "");
   if (!checked.ok) return reply({ ok: false, reason: checked.reason });
 
   const created = await deps.store.createAccount(checked.name, pending.provider, pending.providerUserId, deps.now);
@@ -459,13 +468,13 @@ async function signup(request: Request, env: Env, deps: AuthDeps): Promise<Respo
   return reply({ ok: true }, [...(await signIn(request, env, deps, accountId)), await endSignup(request, env, deps)]);
 }
 
-async function rename(request: Request, env: Env, deps: AuthDeps): Promise<Response> {
+async function rename(request: Request, env: Env, deps: AuthDeps, body: NameRequest | null): Promise<JsonResponse<RenameResponse, 200 | 400>> {
   const reply = (body: RenameResponse, cookies: string[] = []) => json(body, body.ok ? 200 : 400, cookies);
   const session = await currentSession(request, env, deps.store, deps.now);
   const account = session && (await deps.store.getAccount(session.accountId));
   if (!session || !account) return reply({ ok: false, reason: "signed_out" });
   const cookies = session.renewedCookie ? [session.renewedCookie] : [];
-  const checked = checkDisplayName((await readName(request)) ?? "");
+  const checked = checkDisplayName(body?.name ?? "");
   if (!checked.ok) return reply({ ok: false, reason: checked.reason }, cookies);
   // A change of case only is a rename; the same name isn't, and doesn't use up the day's rename.
   if (checked.name === account.displayName) return reply({ ok: false, reason: "name_unchanged" }, cookies);
