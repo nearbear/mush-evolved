@@ -7,12 +7,12 @@
         "ask": [
             "Read(./node_modules/**)",
             "Read(./Mush/www/**)",
-            "Read(./Mush/clients/**)"
+            "Read(./Mush/clients/**)",
+            "Read(./docs/ai-workflow.md)"
         ],
         "deny": [
             "Read(./Mush/derived/ship-art.json)",
-            "Read(./Mush/derived/ship-map.json)",
-            "Read(./docs/ai-workflow.md)"
+            "Read(./Mush/derived/ship-map.json)"
         ]
     }
 }
