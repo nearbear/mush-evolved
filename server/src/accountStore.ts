@@ -68,7 +68,8 @@ function uniqueViolation(e: unknown): "name" | "identity" | "provider" | "ship" 
   return null;
 }
 
-async function sha256Hex(text: string): Promise<string> {
+/** Hex SHA-256. A session's hash is also its key in a GameRoom (seat tokens per device, #285). */
+export async function sha256Hex(text: string): Promise<string> {
   const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(text));
   return [...new Uint8Array(digest)].map((b) => b.toString(16).padStart(2, "0")).join("");
 }
@@ -204,9 +205,14 @@ export class AccountStore {
 
   /** The session, if it exists and hasn't expired at `now`. */
   async getSession(sessionId: string, now: number): Promise<Session | null> {
+    return this.getSessionByKey(await sha256Hex(sessionId), now);
+  }
+
+  /** The same by the session ID's hash (`sha256Hex`), for holders that keep only the hash. */
+  getSessionByKey(sessionKey: string, now: number): Promise<Session | null> {
     return this.db
       .prepare("SELECT account_id AS accountId, expires_at AS expiresAt FROM sessions WHERE id_hash = ? AND expires_at > ?")
-      .bind(await sha256Hex(sessionId), now)
+      .bind(sessionKey, now)
       .first<Session>();
   }
 
@@ -295,6 +301,14 @@ export class AccountStore {
     return row?.roomId ?? null;
   }
 
+  /** Undoes `boardShip` when the seat was never taken (the join was refused), so no history row is left behind. */
+  async unboardShip(accountId: string, roomId: string): Promise<void> {
+    await this.db
+      .prepare("DELETE FROM account_ships WHERE account_id = ? AND room_id = ? AND ended_at IS NULL")
+      .bind(accountId, roomId)
+      .run();
+  }
+
   /** Frees one account from a ship (it died, or its seat was revoked). */
   async leaveShip(accountId: string, roomId: string, now: number): Promise<void> {
     await this.db
@@ -310,6 +324,15 @@ export class AccountStore {
       .bind(now, roomId)
       .run();
     return meta.changes;
+  }
+
+  /** Every open row that boarded before `before`, for the sweep (shipSweep.ts). */
+  async openShips(before: number): Promise<{ accountId: string; roomId: string }[]> {
+    const { results } = await this.db
+      .prepare("SELECT account_id AS accountId, room_id AS roomId FROM account_ships WHERE ended_at IS NULL AND joined_at < ?")
+      .bind(before)
+      .all<{ accountId: string; roomId: string }>();
+    return results;
   }
 
   /** Every ship the account has been aboard, newest first. */

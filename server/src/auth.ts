@@ -7,6 +7,7 @@
 //   GET  /api/me                           MeResponse
 //   POST /api/signup  { name }             confirms the name of a first sign-in: creates the account
 //   POST /api/rename  { name }             at most once a day
+//   GET  /auth/dev?name=<name>             dev sign-in for tooling (#287): `npm run dev` on localhost only
 //
 // Session, OAuth-state and sign-up cookies each hold a random ID (only the
 // session and sign-up IDs' hashes are stored). They are HttpOnly and
@@ -22,7 +23,7 @@ import {
   type RenameResponse,
   type SignupResponse,
 } from "@mush2/shared";
-import { type AccountStore, RENAME_INTERVAL_MS } from "./accountStore.ts";
+import { type AccountStore, nameKey, RENAME_INTERVAL_MS, sha256Hex } from "./accountStore.ts";
 import { authorizeUrl, fetchProfile, oauthCredentials, randomToken, usesPkce } from "./oauth.ts";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -42,6 +43,8 @@ export interface AuthDeps {
   now: number;
   /** For the provider requests; tests replace it. */
   fetcher?: typeof fetch;
+  /** Revokes the seat tokens handed to a session (its hash) when it ends, so a signed-out device leaves its game (#285). */
+  revokeSeats?: (accountId: string, sessionKey: string) => Promise<void>;
 }
 
 /** What the OAuth-state cookie holds between start and callback. */
@@ -141,6 +144,11 @@ async function readName(request: Request): Promise<string | null> {
 
 // ---- Sessions
 
+/** The request's session cookie, unchecked (the Matchmaker reads it from its socket's upgrade request, #285). */
+export function sessionCookie(request: Request, env: Env): string | null {
+  return readCookie(request, "session", env, new URL(request.url));
+}
+
 export interface CurrentSession {
   accountId: string;
   sessionId: string;
@@ -162,11 +170,31 @@ export async function currentSession(request: Request, env: Env, store: AccountS
   return { accountId: session.accountId, sessionId, renewedCookie };
 }
 
-/** A new session for the account, replacing the request's own if it had one. Returns the cookies to set. */
+/** Deletes a session after revoking its seat tokens. A failed revoke doesn't keep anyone signed in. */
+async function endSession(sessionId: string, deps: AuthDeps): Promise<void> {
+  const session = await deps.store.getSession(sessionId, deps.now);
+  if (session && deps.revokeSeats) {
+    try {
+      await deps.revokeSeats(session.accountId, await sha256Hex(sessionId));
+    } catch (e) {
+      console.warn(`Revoking seats failed: ${e instanceof Error ? e.message : typeof e}`);
+    }
+  }
+  await deps.store.deleteSession(sessionId);
+}
+
+/**
+ * A new session for the account, replacing the request's own if it had one. Returns the cookies to set. Signing in as
+ * someone else ends the old session with its seats; signing in again as the same account keeps this device's games.
+ */
 async function signIn(request: Request, env: Env, deps: AuthDeps, accountId: string): Promise<string[]> {
   const url = new URL(request.url);
   const old = readCookie(request, "session", env, url);
-  if (old) await deps.store.deleteSession(old);
+  if (old) {
+    const session = await deps.store.getSession(old, deps.now);
+    if (session?.accountId === accountId) await deps.store.deleteSession(old);
+    else await endSession(old, deps);
+  }
   const sessionId = await deps.store.createSession(accountId, deps.now + SESSION_MS);
   return [setCookie("session", sessionId, SESSION_MS, env, url)];
 }
@@ -183,7 +211,7 @@ async function endSignup(request: Request, env: Env, deps: AuthDeps): Promise<st
 async function signOut(request: Request, env: Env, deps: AuthDeps): Promise<string> {
   const url = new URL(request.url);
   const sessionId = readCookie(request, "session", env, url);
-  if (sessionId) await deps.store.deleteSession(sessionId);
+  if (sessionId) await endSession(sessionId, deps);
   return clearCookie("session", env, url);
 }
 
@@ -204,6 +232,7 @@ export async function handleAuth(request: Request, env: Env, deps: AuthDeps): Pr
   }
 
   const routes: Record<string, [method: string, handler: typeof me]> = {
+    "/auth/dev": ["GET", devSignIn],
     "/auth/logout": ["POST", logout],
     "/api/me": ["GET", me],
     "/api/signup": ["POST", signup],
@@ -286,6 +315,31 @@ async function callback(request: Request, env: Env, deps: AuthDeps, provider: Au
   );
   cookies.push(setCookie("signup", signupId, SIGNUP_MS, env, url));
   return redirect(outcome("signup"), cookies);
+}
+
+/** Dev sign-in's provider. Its identities are only ever reached through `devSignIn`, and it reaches no other provider's. */
+export const DEV_PROVIDER = "dev";
+
+/**
+ * Dev sign-in (#287): signs this browser in to the test account named `?name=`, creating it the first time, so
+ * tooling (screenshots, a11y, the play skill) can join multiplayer without Google or Discord. Only on a local dev
+ * server: `DEV_SERVER`, which no deployment sets (not ALLOW_CHEATS, which the test deployment has), and a localhost
+ * host as a second guard. It only signs in to accounts made here (provider `dev`, keyed by the name); a name held by
+ * a real account is refused. A GET, so a tool can just open the page; it redirects to `/`.
+ */
+async function devSignIn(request: Request, env: Env, deps: AuthDeps): Promise<Response> {
+  const url = new URL(request.url);
+  if (env.DEV_SERVER !== "true" || (url.hostname !== "localhost" && url.hostname !== "127.0.0.1")) return json({ error: "not_found" }, 404);
+  const checked = checkDisplayName(url.searchParams.get("name") ?? "");
+  if (!checked.ok) return json({ error: checked.reason }, 400);
+  const key = nameKey(checked.name);
+  let account = await deps.store.findAccountByIdentity(DEV_PROVIDER, key);
+  if (!account) {
+    const created = await deps.store.createAccount(checked.name, DEV_PROVIDER, key, deps.now);
+    if (!created.ok) return json({ error: created.reason }, 409);
+    account = created.account;
+  }
+  return redirect("/", [await endSignup(request, env, deps), ...(await signIn(request, env, deps, account.id))]);
 }
 
 /** Ends this device's session, and a pending sign-up too: the next person on this browser must not finish it. */

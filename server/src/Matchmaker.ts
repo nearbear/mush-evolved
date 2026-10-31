@@ -2,11 +2,15 @@
 // open ship, which is in pre-selection (docs/rules-design.md, "Joining and Mush selection"); the first player to join
 // launches a new one. Multiplayer has no bots. Game rooms never talk to each other or to the matchmaker: it asks the
 // open ship to board each player (`GameRoom.join`) and learns from the answer how full it is and when it stops taking crew.
+// Multiplayer needs an account (#285): the session cookie comes with the socket, the seat takes the account's display
+// name, and D1's `account_ships` keeps every account on at most one ship across all languages' matchmakers.
 // It also launches single-player games (`GameRoom.setupSinglePlayer`), one new room per request, outside the queue.
 
-import { getServerByName, Server, type Connection, type WSMessage } from "partyserver";
+import { getServerByName, Server, type Connection, type ConnectionContext, type WSMessage } from "partyserver";
 import { LOBBY_LANGUAGES, type CharacterId, parseMatchmakerMessage, PRESELECTION, STANDARD_SETUP, type MatchmakerClientMessage, type MatchmakerServerMessage } from "@mush2/shared";
-import { DEV_FILL_DELAY_MS, DEV_RATE_SCALE, type JoinResult } from "./GameRoom.ts";
+import { accountStoreFor, sha256Hex } from "./accountStore.ts";
+import { sessionCookie } from "./auth.ts";
+import { DEV_FILL_DELAY_MS, DEV_RATE_SCALE, type JoinResult, type SeatAccount } from "./GameRoom.ts";
 import { RateLimiter } from "./rateLimit.ts";
 
 /** The ship players join now. Gone once it is full or past its pre-selection deadline. */
@@ -26,11 +30,21 @@ interface JoinState {
   joined: boolean;
 }
 
+/** The signed-in player boarding. */
+interface Boarder extends SeatAccount {
+  displayName: string;
+}
+
 export class Matchmaker extends Server<Env> {
   private limiter = new RateLimiter(5, 1000);
   private open: OpenShip | null = null;
   /** Joins run one at a time: each waits for the open ship's answer before the next is sent. */
   private joins: Promise<void> = Promise.resolve();
+  /**
+   * Per connection, the hash of the session cookie it opened with (never the cookie), checked against D1 only when it
+   * joins. A promise set at once on connect, so a join arriving before the hash is ready waits for it.
+   */
+  private sessionKeys = new Map<string, Promise<string | null>>();
 
   override async onStart(): Promise<void> {
     this.open = (await this.ctx.storage.get<OpenShip>("open")) ?? null;
@@ -53,12 +67,14 @@ export class Matchmaker extends Server<Env> {
     this.broadcastQueue();
   }
 
-  override async onConnect(connection: Connection): Promise<void> {
+  override async onConnect(connection: Connection<JoinState>, ctx: ConnectionContext): Promise<void> {
     // Rooms are created on first connect, so refuse names that aren't a lobby language.
     if (!(LOBBY_LANGUAGES as readonly string[]).includes(this.name)) {
       connection.close(1008, "unknown_lobby");
       return;
     }
+    const cookie = sessionCookie(ctx.request, this.env);
+    this.sessionKeys.set(connection.id, cookie ? sha256Hex(cookie) : Promise.resolve(null));
     await this.refresh();
     this.send(connection, this.queueMessage());
   }
@@ -76,19 +92,74 @@ export class Matchmaker extends Server<Env> {
       await this.launchSinglePlayer(connection, msg);
       return;
     }
-    const done = this.joins.then(() => this.board(connection, msg));
+    const done = this.joins.then(() => this.boardOrFail(connection, msg));
     this.joins = done.catch(() => {});
     await done;
   }
 
-  /** Boards one player: on the open ship, or a newly launched one when there is none or it just closed. */
+  /** `board`, but a throw (a D1 or room failure) frees the socket to try again instead of leaving it stuck joining. */
+  private async boardOrFail(connection: Connection<JoinState>, msg: MatchmakerClientMessage): Promise<void> {
+    try {
+      await this.board(connection, msg);
+    } catch (e) {
+      console.warn(`Boarding failed: ${e instanceof Error ? e.message : typeof e}`);
+      connection.setState({ joined: false });
+      this.send(connection, { type: "error", message: "join_failed" });
+    }
+  }
+
+  /** The socket's signed-in account, or null. Looked up when joining, so a session ended since connecting is refused. */
+  private async boarder(connection: Connection<JoinState>): Promise<Boarder | null> {
+    const sessionKey = await this.sessionKeys.get(connection.id);
+    if (!sessionKey) return null;
+    const store = accountStoreFor(this.env);
+    const session = await store.getSessionByKey(sessionKey, Date.now());
+    const account = session && (await store.getAccount(session.accountId));
+    return account && { accountId: account.id, displayName: account.displayName, sessionKey };
+  }
+
+  /**
+   * Boards one signed-in player: back on the ship they're aboard (from any device), else on the open ship, or a newly
+   * launched one when there is none or it just closed. `msg.name` is ignored: the seat takes the account's name.
+   */
   private async board(connection: Connection<JoinState>, msg: MatchmakerClientMessage): Promise<void> {
+    const boarder = await this.boarder(connection);
+    if (!boarder) {
+      connection.setState({ joined: false });
+      this.send(connection, { type: "error", message: "sign_in_required" });
+      return;
+    }
+    const store = accountStoreFor(this.env);
+    const current = await store.currentShip(boarder.accountId);
+    if (current) {
+      const resumed = await (await getServerByName(this.env.GameRoom, current)).resume(boarder.accountId, boarder.sessionKey);
+      if (resumed.ok) {
+        this.send(connection, { type: "matched", roomId: current, token: resumed.token });
+        return;
+      }
+      // Not aboard after all (the game ended, the ship was retired, they died, or a join half-failed): free them.
+      await store.leaveShip(boarder.accountId, current, Date.now());
+    }
     for (let attempt = 0; attempt < 2; attempt++) {
       const ship = this.openShip();
       const roomId = ship?.roomId ?? crypto.randomUUID();
+      // D1 first, then the seat, undone if the seat fails: the other order could seat someone on two ships.
+      if ((await store.boardShip(boarder.accountId, roomId, Date.now())) === "already_aboard") {
+        // Boarded meanwhile from another tab (in any language).
+        connection.setState({ joined: false });
+        this.send(connection, { type: "error", message: "already_aboard" });
+        return;
+      }
       const room = await getServerByName(this.env.GameRoom, roomId);
-      // Every ship has the standard setup until the vote round picks one (#236).
-      const result: JoinResult = await room.join(msg.name, msg.character, STANDARD_SETUP);
+      let result: JoinResult;
+      try {
+        // Every ship has the standard setup until the vote round picks one (#236).
+        result = await room.join(boarder.displayName, msg.character, STANDARD_SETUP, boarder);
+      } catch (e) {
+        await store.leaveShip(boarder.accountId, roomId, Date.now());
+        throw e;
+      }
+      if (!result.ok) await store.unboardShip(boarder.accountId, roomId);
       if (!result.ok && result.error === "character_taken") {
         connection.setState({ joined: false });
         this.send(connection, { type: "characterTaken" });
@@ -133,6 +204,7 @@ export class Matchmaker extends Server<Env> {
 
   override onClose(connection: Connection): void {
     this.limiter.forget(connection.id);
+    this.sessionKeys.delete(connection.id);
   }
 
   /** The open ship, unless its deadline has passed (the alarm may not have fired yet). */

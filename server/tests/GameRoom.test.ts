@@ -21,7 +21,9 @@ import {
   type Setup,
 } from "@mush2/shared";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { AccountStore } from "../src/accountStore.ts";
 import { FakeConnection, FakeServer, FakeStorage, seats, tokensFor } from "../src/testing/fakes.ts";
+import { migratedDatabase } from "./sqliteD1.ts";
 
 vi.mock("partyserver", () => ({ Server: FakeServer }));
 const { GameRoom } = await import("../src/GameRoom.ts");
@@ -163,10 +165,9 @@ describe("GameRoom input handling", () => {
     for (let i = 0; i < 15; i++) await send(room, c, "x");
     const errors = c.messages<GameServerMessage>().filter((m) => m.type === "error");
     expect(errors.filter((e) => (e as { message: string }).message === "slow_down")).toHaveLength(5);
-    // The counter is saved with the next accepted change.
-    const move = legalIn(lastView(c)).find((x) => x.type === "move")!;
-    room.onClose(c as never);
-    const c2 = connect(room, "tok0", "fresh-connection");
+    // The counter is saved with the next accepted change, anyone's.
+    const c2 = connect(room, "tok1");
+    const move = legalIn(lastView(c2)).find((x) => x.type === "move")!;
     await send(room, c2, { type: "action", action: move });
     expect((storage.data.get("game") as { rateLimited: Record<string, number> }).rateLimited).toEqual({ p0: 5 });
   });
@@ -182,13 +183,18 @@ describe("GameRoom input handling", () => {
     expect(await slowDowns(DEV)).toBe(0);
   });
 
-  it("forgets a connection's rate limit when it closes", async () => {
+  it("rate limits per seat, so reconnecting or a second device doesn't reset or double it (#285)", async () => {
     const { room } = await newRoom();
     const c = connect(room, "tok0", "same-id");
     for (let i = 0; i < 10; i++) await send(room, c, "x");
     room.onClose(c as never);
-    await send(room, c, "x");
-    expect(lastMsg(c)).toEqual({ type: "error", message: "malformed_message" });
+    const phone = connect(room, "tok0", "phone");
+    await send(room, phone, "x");
+    expect(lastMsg(phone)).toEqual({ type: "error", message: "slow_down" });
+    // Another seat has its own.
+    const other = connect(room, "tok1");
+    await send(room, other, "x");
+    expect(lastMsg(other)).toEqual({ type: "error", message: "malformed_message" });
   });
 });
 
@@ -1045,5 +1051,93 @@ describe("GameRoom joining (pre-selection)", () => {
     } finally {
       vi.useRealTimers();
     }
+  });
+});
+
+describe("GameRoom accounts (#285)", () => {
+  /** A ship with Ann and Bob aboard, each from a signed-in account, and their rows in D1 as the matchmaker writes them. */
+  async function shipWithAccounts() {
+    const db = migratedDatabase();
+    const store = new AccountStore(db);
+    const storage = new FakeStorage();
+    const room = new GameRoom({ storage } as never, { RULES_VERSION: "test", DB: db } as never);
+    const ids: string[] = [];
+    const tokens: string[] = [];
+    for (const [name, character] of [["Ann", "chao"], ["Bob", "chun"]] as const) {
+      const created = await store.createAccount(name, "dev", name, Date.now());
+      if (!created.ok) throw new Error(created.reason);
+      ids.push(created.account.id);
+      await store.boardShip(created.account.id, "test-room", Date.now());
+      const joined = await room.join(name, character, STANDARD_SETUP, { accountId: created.account.id, sessionKey: `session-${name}` });
+      if (!joined.ok) throw new Error(joined.error);
+      tokens.push(joined.token);
+    }
+    const game = () => (room as unknown as { game: GameState }).game;
+    return { room, store, storage, ids, tokens, game };
+  }
+
+  it("stores each seat's account beside the game, never in it or a view", async () => {
+    const { room, storage, ids, tokens } = await shipWithAccounts();
+    const stored = storage.data.get("game") as { game: unknown; accounts: Record<string, string> };
+    expect(stored.accounts).toEqual({ p0: ids[0], p1: ids[1] });
+    expect(JSON.stringify(stored.game)).not.toContain(ids[0]);
+    expect(JSON.stringify([...storage.data.entries()].filter(([k]) => k.startsWith("input:")))).not.toContain(ids[0]);
+    const c = connect(room, tokens[0]!);
+    expect(c.sent.join()).not.toContain(ids[0]);
+    expect(c.sent.join()).not.toContain(ids[1]);
+    // The name at the time is the seat's name, hidden from the crew until the end screen (viewFor).
+    expect(c.sent.join()).not.toContain("Bob");
+  });
+
+  it("resumes an aboard account with a new token, and lists who is aboard", async () => {
+    const { room, ids } = await shipWithAccounts();
+    const resumed = await room.resume(ids[0]!, "session-phone");
+    if (!resumed.ok) throw new Error("not resumed");
+    expect(lastView(connect(room, resumed.token))).toMatchObject({ you: { id: "p0" } });
+    expect(await room.resume("someone-else", "s")).toEqual({ ok: false });
+    expect(room.seatAccounts().sort()).toEqual([...ids].sort());
+  });
+
+  it("frees a dead player's account at once, and refuses to resume them", async () => {
+    const { room, store, ids, tokens, game } = await shipWithAccounts();
+    game().players.find((p) => p.id === "p0")!.alive = false;
+    // The next input releases them.
+    const bob = connect(room, tokens[1]!);
+    await send(room, bob, { type: "chat", channel: "global", text: "hello" });
+    expect(await store.currentShip(ids[0]!)).toBeNull();
+    expect(await store.currentShip(ids[1]!)).toBe("test-room");
+    expect(await room.resume(ids[0]!, "s")).toEqual({ ok: false });
+    expect(room.seatAccounts()).toEqual([ids[1]]);
+  });
+
+  it("frees everyone when the game ends", async () => {
+    const { room, store, ids, game } = await shipWithAccounts();
+    game().phase = "ended";
+    await (room as unknown as { releaseAccounts(): Promise<void> }).releaseAccounts();
+    expect(await store.currentShip(ids[0]!)).toBeNull();
+    expect(await store.currentShip(ids[1]!)).toBeNull();
+    expect(room.seatAccounts()).toEqual([]);
+  });
+
+  it("revokes only the signed-out session's tokens and closes its sockets", async () => {
+    const { room, ids, tokens } = await shipWithAccounts();
+    const resumed = await room.resume(ids[0]!, "session-phone");
+    if (!resumed.ok) throw new Error("not resumed");
+    const desk = connect(room, tokens[0]!);
+    const phone = connect(room, resumed.token);
+    const bob = connect(room, tokens[1]!);
+    await room.revokeSession("session-Ann");
+    expect(desk.closed?.code).toBe(4001);
+    expect(phone.closed).toBeNull();
+    expect(bob.closed).toBeNull();
+    expect(connect(room, tokens[0]!, "again").closed?.code).toBe(4001);
+    expect(connect(room, resumed.token, "phone-again").closed).toBeNull();
+  });
+
+  it("keeps accounts and session tokens across a restart", async () => {
+    const { storage, ids } = await shipWithAccounts();
+    const revived = new GameRoom({ storage } as never, { RULES_VERSION: "test", DB: migratedDatabase() } as never);
+    await revived.onStart();
+    expect(revived.seatAccounts().sort()).toEqual([...ids].sort());
   });
 });

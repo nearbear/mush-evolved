@@ -8,6 +8,7 @@ import { mkdirSync } from "node:fs";
 import { resolve } from "node:path";
 import { chromium, devices, type Page } from "playwright";
 import { devPorts } from "../dev/ports.ts";
+import { devSignIn, runName } from "./devSignIn.ts";
 import { pointOn, targets, waitForArt } from "./isoProbe.ts";
 
 const ports = devPorts();
@@ -61,7 +62,7 @@ async function run(phone: boolean, character: number) {
     // Draw every room, so doors to rooms the fog would hide can be clicked.
     await context.addInitScript(() => localStorage.setItem("mush2.fogDepth", "all"));
     const page = await context.newPage();
-    await page.goto(url);
+    await devSignIn(page, url, runName(phone ? "Terminals (phone)" : "Terminals"));
     await page.getByRole("button", { name: /English/ }).click();
     await page.locator(".pod-character").nth(character).click();
     await page.locator(".three-panel").waitFor({ timeout: 45_000 });

@@ -15,6 +15,7 @@ import { resolve } from "node:path";
 import { parseArgs } from "node:util";
 import { devPorts } from "../dev/ports.ts";
 import { chromium, type Page } from "playwright";
+import { devSignIn, runName } from "./devSignIn.ts";
 import { pointOn, targets, waitForArt } from "./isoProbe.ts";
 
 const ports = devPorts();
@@ -36,7 +37,7 @@ try {
   const context = await browser.newContext({ viewport: { width: Number(args.width), height: Number(args.height) }, deviceScaleFactor: Number(args.scale) });
   await context.addInitScript(() => localStorage.setItem("mush2.fogDepth", "all"));
   const page = await context.newPage();
-  await page.goto(args.url!);
+  await devSignIn(page, args.url!, runName("Ship view"));
   await page.getByRole("button", { name: /English/ }).click();
   await page.locator(".pod-character").first().click(); // the character picker
   await page.locator(".three-panel").waitFor({ timeout: 45_000 });

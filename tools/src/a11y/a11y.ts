@@ -19,6 +19,7 @@
 import { parseArgs } from "node:util";
 import { chromium, type Page } from "playwright";
 import { devPorts } from "../dev/ports.ts";
+import { devSignIn, runName } from "../play/devSignIn.ts";
 import { type Target, targets, waitForArt } from "../play/isoProbe.ts";
 
 const ports = devPorts();
@@ -62,7 +63,7 @@ async function main(): Promise<number> {
     page.on("console", (m) => m.type() === "error" && consoleErrors.push(m.text()));
     page.on("pageerror", (e) => consoleErrors.push(e.message));
 
-    await page.goto(args.url!);
+    await devSignIn(page, args.url!, runName("a11y"));
     const english = page.getByRole("button", { name: /English/ });
     await english.waitFor();
     await check("lobby: no raw i18n keys", () => noRawKeys(page));

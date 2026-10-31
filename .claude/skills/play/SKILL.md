@@ -37,6 +37,8 @@ If a background `npm run dev` exits immediately, the ports are probably already 
 npm run screenshot
 ```
 
+Multiplayer needs an account, so every tool that joins first opens `/auth/dev?name=...` (dev sign-in, `tools/src/play/devSignIn.ts`; `npm run dev` on localhost only), with a random suffix on the name so each run boards a new ship instead of resuming the last one. A hand-driven browser does the same: open `http://localhost:<web port>/auth/dev?name=Tester` once, and it lands signed in on the lobby.
+
 `tools/src/play/screenshot.ts` joins as "Playwright" on a 1600x1000 desktop and as "Playwright (phone)" on an emulated Galaxy S8 (touch, 360x740: **360px is the narrowest width we support**, so the phone pass tests it), at the same time so both land in one match (bots fill the other seats after about 5 s). The desktop pass runs first, then the phone pass. Saves to `.screenshots/` (gitignored). `-- --only desktop` or `-- --only mobile` runs one pass; `-- --phone "iPhone 13"` uses another Playwright device. The phone renders at device pixel ratio 2, not the S8's 3: headless Chromium draws WebGL on the CPU, so the phone pass's time grows with its pixel count (about 1.5 min at 3, 1 min at 2, 30 s at 1); `-- --scale 3` checks the real ratio. Each pass gets its own browser so the two don't share one software GPU. Once a step fails with the game no longer on screen (a failed join, or the dev server reloading because code was edited mid-run), the rest of that pass is skipped instead of each step waiting out 30 s, so don't edit `server/`, `shared/` or `web/` while it runs.
 
 Desktop:

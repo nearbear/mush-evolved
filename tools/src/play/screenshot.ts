@@ -14,6 +14,7 @@ import { resolve } from "node:path";
 import { parseArgs } from "node:util";
 import { devPorts } from "../dev/ports.ts";
 import { type Browser, type BrowserContextOptions, chromium, devices, type Locator, type Page } from "playwright";
+import { devSignIn, runName } from "./devSignIn.ts";
 import { otherPerson, pointOn, sceneSize, type Target, targets, waitForArt } from "./isoProbe.ts";
 
 const ports = devPorts();
@@ -130,8 +131,8 @@ type Step = (name: string, run: () => Promise<void>) => Promise<void>;
 
 /** Joins through the lobby, saving the character picker as `pickerShot` and picking the `character`-th crew member. */
 async function join(page: Page, name: string, pickerShot: string, character: number): Promise<void> {
-  await page.goto(args.url!);
-  // The lobby lists one ship per language and names you "Guest N", so `name` only labels the log here.
+  // Each pass is its own dev account, named after `name` (with a suffix, so every run boards a new ship).
+  await devSignIn(page, args.url!, runName(name));
   await page.getByRole("button", { name: /English/ }).click();
   // The two passes queue together, so each picks a different crew member.
   const tile = page.locator(".pod-character").nth(character);

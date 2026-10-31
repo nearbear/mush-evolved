@@ -64,6 +64,8 @@ export class FakeConnection<S = unknown> {
 /** Mimics the parts of partyserver's `Server` that our rooms use. */
 export class FakeServer {
   connections = new Set<FakeConnection<never>>();
+  /** The room's name (its id), which partyserver sets from the URL or `getServerByName`. */
+  name = "test-room";
   ctx: { storage: FakeStorage };
   constructor(
     ctx: { storage: FakeStorage },

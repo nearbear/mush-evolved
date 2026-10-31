@@ -360,6 +360,8 @@
     "thread_exists": "Ese mensaje ya tiene un hilo.",
     "message_not_found": "Ese mensaje ya no está.",
     "join_failed": "No se pudo embarcar en una nave. Inténtalo de nuevo.",
+    "sign_in_required": "Inicia sesión para unirte a una nave multijugador.",
+    "already_aboard": "Ya estás a bordo de una nave. Únete de nuevo para volver a ella.",
     "nothing_to_acknowledge": "No hay nada que confirmar."
   },
   "terminal": {

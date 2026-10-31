@@ -35,6 +35,7 @@ import {
   type Seat,
   type Setup,
 } from "@mush2/shared";
+import { accountStoreFor } from "./accountStore.ts";
 import { LogParrotBot, ModelBot, WanderBot, type Bot } from "./bots.ts";
 import { clockCycle, clockCycleStart, cycleMs, cycleOfDay } from "./cycleClock.ts";
 import { devModelCredentials, ModelGate, playerModelCredentials } from "./model.ts";
@@ -76,7 +77,7 @@ const MODEL_RETRY_MAX_MS = 60_000;
  * Bump when GameState's shape changes, or ConfigOverrides' (or what resolveConfig derives from a key). Games stored
  * under another version are discarded on load (there is no migration; games are short-lived).
  */
-export const STATE_VERSION = 89;
+export const STATE_VERSION = 90;
 
 /**
  * A ship's overrides from its setup (#232): the knobs, plus the setup's id for the record and the view. The setup is
@@ -107,6 +108,12 @@ interface Stored {
   modelCalls?: number;
   /** A single-player game (shared/src/singlePlayer.ts): no clock, cycles end by End cycle. Missing on older games. */
   singlePlayer?: boolean;
+  /** Seat -> the account that took it (#285). Its name at the time is the seat's `name`. Never in a view. */
+  accounts: Record<PlayerId, string>;
+  /** The seats in `accounts` whose `account_ships` row is still open; freed when the body dies or the game ends. */
+  aboard: Record<PlayerId, string>;
+  /** Seat token -> the hash of the session it was handed to, so logging out revokes that device's tokens. */
+  tokenSessions: Record<string, string>;
 }
 
 // The game's record, beside the snapshot in this room's storage:
@@ -125,6 +132,12 @@ interface BlockedText {
 /** Zero-padded so keys list in order. */
 const inputKey = (seq: number) => `input:${String(seq).padStart(9, "0")}`;
 
+/** Who is taking a seat: the account, and the session (its hash) the seat token is handed to. */
+export interface SeatAccount {
+  accountId: string;
+  sessionKey: string;
+}
+
 /** What `join` tells the matchmaker. */
 export type JoinResult =
   | { ok: true; token: string; aboard: number; seats: number; taken: CharacterId[]; closesAt: number | null }
@@ -134,6 +147,8 @@ export type JoinResult =
 interface SeatState {
   /** The seat (`PlayerState.mind`), not the body: a Transfer moves a seat to another body (`bodyOf`). */
   playerId: PlayerId;
+  /** The token it connected with, so revoking the token closes it. */
+  token: string;
 }
 
 export class GameRoom extends Server<Env> {
@@ -141,6 +156,9 @@ export class GameRoom extends Server<Env> {
   /** A record with no live game (its snapshot was dropped for another state version): never launch over it. */
   private retired = false;
   private tokens: Record<string, PlayerId> = {};
+  private accounts: Record<PlayerId, string> = {};
+  private aboard: Record<PlayerId, string> = {};
+  private tokenSessions: Record<string, string> = {};
   private inputs = 0;
   private rateLimited: Record<PlayerId, number> = {};
   private clockCycle = 0;
@@ -164,6 +182,7 @@ export class GameRoom extends Server<Env> {
   private sentPause: BotPause | null = null;
   /** The pre-selection launch `join` started, so a second join waits for it instead of launching again. */
   private launching: Promise<void> | null = null;
+  /** Per seat, so a second device on the seat doesn't double it. */
   private limiter = new RateLimiter(10, 1000);
   /** Per seat, not per connection, so reconnecting doesn't reset it. */
   private chatLimiter = new RateLimiter(5, 10_000);
@@ -194,6 +213,9 @@ export class GameRoom extends Server<Env> {
     this.clockCycle = stored.clockCycle;
     this.modelCalls = stored.modelCalls ?? 0;
     this.singlePlayer = stored.singlePlayer ?? false;
+    this.accounts = stored.accounts;
+    this.aboard = stored.aboard;
+    this.tokenSessions = stored.tokenSessions;
     this.blocked = (await this.ctx.storage.list({ prefix: "blocked:" })).size;
     this.initBots();
     this.scheduleBots();
@@ -224,8 +246,9 @@ export class GameRoom extends Server<Env> {
    * The matchmaker boards a player (rules: preselection.ts). The first one launches the ship, empty and in
    * pre-selection. Returns the player's seat token, how many are aboard, and when the ship stops taking crew (server
    * ms), or null once it has (full, Mush chosen). Only the first join's setup counts: it is the ship's for good.
+   * `account` is the signed-in player's (the matchmaker always gives one; tests may not), and `name` their display name.
    */
-  async join(name: string, character: CharacterId, setup: Setup = STANDARD_SETUP): Promise<JoinResult> {
+  async join(name: string, character: CharacterId, setup: Setup = STANDARD_SETUP, account?: SeatAccount): Promise<JoinResult> {
     // The matchmaker launches a new ship elsewhere.
     if (this.retired) return { ok: false, error: "ship_closed" };
     // One launch even if two joins arrive together.
@@ -234,11 +257,19 @@ export class GameRoom extends Server<Env> {
     const game = this.game!;
     const seat: Seat = { id: `p${game.players.length}`, name, isBot: false, character };
     const token = crypto.randomUUID();
-    // Saved with the join itself, so the seat never exists without its token.
+    // Saved with the join itself, so the seat never exists without its token or account.
     this.tokens[token] = seat.id;
+    if (account) {
+      this.accounts[seat.id] = account.accountId;
+      this.aboard[seat.id] = account.accountId;
+      this.tokenSessions[token] = account.sessionKey;
+    }
     const error = await this.act({ type: "join", seat });
     if (error) {
       delete this.tokens[token];
+      delete this.accounts[seat.id];
+      delete this.aboard[seat.id];
+      delete this.tokenSessions[token];
       return { ok: false, error };
     }
     if (this.devServer && this.game!.players.length === 1) setTimeout(() => void this.fillWithBots(), DEV_FILL_DELAY_MS);
@@ -266,6 +297,73 @@ export class GameRoom extends Server<Env> {
     }
     this.initBots();
     this.scheduleBots();
+  }
+
+  /**
+   * Resume from another device (#285): a new seat token for the account's seat, if it is still aboard (the game runs
+   * and the body is alive). Otherwise `ok: false`, and the matchmaker closes its `account_ships` row: the ship ended,
+   * was retired, or the player died (dying frees the account), or the row was stale.
+   */
+  async resume(accountId: string, sessionKey: string): Promise<{ ok: true; token: string } | { ok: false }> {
+    const seat = Object.keys(this.aboard).find((s) => this.aboard[s] === accountId && this.stillAboard(s));
+    if (!seat) return { ok: false };
+    const token = crypto.randomUUID();
+    this.tokens[token] = seat;
+    this.tokenSessions[token] = sessionKey;
+    await this.persist();
+    return { ok: true, token };
+  }
+
+  /** The accounts still aboard, for the sweep of stale `account_ships` rows (shipSweep.ts). */
+  seatAccounts(): string[] {
+    return Object.keys(this.aboard)
+      .filter((s) => this.stillAboard(s))
+      .map((s) => this.aboard[s]!);
+  }
+
+  /** Logging out (or signing in as someone else) on a device: its seat tokens stop working and its sockets close. */
+  async revokeSession(sessionKey: string): Promise<void> {
+    const revoked = new Set(Object.keys(this.tokenSessions).filter((t) => this.tokenSessions[t] === sessionKey));
+    if (revoked.size === 0) return;
+    for (const token of revoked) {
+      delete this.tokens[token];
+      delete this.tokenSessions[token];
+    }
+    await this.persist();
+    for (const conn of this.getConnections<SeatState>()) {
+      if (conn.state && revoked.has(conn.state.token)) conn.close(4001, "Invalid seat token");
+    }
+  }
+
+  /** A seat whose account is still on this ship: the game runs and the seat's body is alive. */
+  private stillAboard(seat: PlayerId): boolean {
+    const by = this.body(seat);
+    return this.game?.phase === "playing" && !!by && !!this.game.players.find((p) => p.id === by)?.alive;
+  }
+
+  /**
+   * Frees accounts in D1 once they're no longer aboard: a body died (dying frees the account at once), or the game
+   * ended. Idempotent. A failure is retried after the next input if there is one (a finished game takes none), and the
+   * matchmaker's check on joining (`resume`) and the daily sweep close whatever is left.
+   */
+  private async releaseAccounts(): Promise<void> {
+    const leaving = Object.keys(this.aboard).filter((s) => !this.stillAboard(s));
+    if (leaving.length === 0) return;
+    const store = accountStoreFor(this.env);
+    const now = Date.now();
+    try {
+      if (this.game?.phase !== "playing") {
+        await store.endShip(this.name, now);
+        this.aboard = {};
+        return;
+      }
+      for (const seat of leaving) {
+        await store.leaveShip(this.aboard[seat]!, this.name, now);
+        delete this.aboard[seat];
+      }
+    } catch (e) {
+      console.warn(`Freeing accounts failed: ${e instanceof Error ? e.message : typeof e}`);
+    }
   }
 
   /** How full the ship is and when it stops taking crew (null once closed): lets the matchmaker catch up with a dev fill. */
@@ -321,7 +419,7 @@ export class GameRoom extends Server<Env> {
       connection.close(4001, "Invalid seat token");
       return;
     }
-    connection.setState({ playerId });
+    connection.setState({ playerId, token: token! });
     this.sendView(connection, playerId);
   }
 
@@ -329,7 +427,7 @@ export class GameRoom extends Server<Env> {
     const playerId = connection.state?.playerId;
     const by = playerId && this.body(playerId);
     if (!playerId || !by || !this.game) return;
-    if (!this.limiter.allow(connection.id, Date.now(), this.devServer ? DEV_RATE_SCALE : 1)) {
+    if (!this.limiter.allow(playerId, Date.now(), this.devServer ? DEV_RATE_SCALE : 1)) {
       this.countRateLimited(playerId);
       this.send(connection, { type: "error", message: "slow_down" });
       return;
@@ -448,7 +546,6 @@ export class GameRoom extends Server<Env> {
   }
 
   override onClose(connection: Connection<SeatState>): void {
-    this.limiter.forget(connection.id);
     // The key lives only while its player is connected; the client sends it again on reconnect.
     const playerId = connection.state?.playerId;
     if (!this.singlePlayer || playerId !== SINGLE_PLAYER_HUMAN || !this.modelGate) return;
@@ -475,6 +572,8 @@ export class GameRoom extends Server<Env> {
     const recorded: RecordedInput = { at: now, input, ...(raw !== undefined && { raw }) };
     await this.persist({ [inputKey(this.inputs++)]: recorded });
     this.broadcastViews(room);
+    // Saved with the next input; until then a restart only repeats an idempotent write.
+    await this.releaseAccounts();
     this.scheduleBots();
     await this.scheduleTick();
     return null;
@@ -635,6 +734,9 @@ export class GameRoom extends Server<Env> {
       clockCycle: this.clockCycle,
       modelCalls: this.modelGate?.used ?? this.modelCalls,
       singlePlayer: this.singlePlayer,
+      accounts: this.accounts,
+      aboard: this.aboard,
+      tokenSessions: this.tokenSessions,
     };
     await this.ctx.storage.put({ ...entries, game: stored });
   }

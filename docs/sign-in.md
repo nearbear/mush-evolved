@@ -38,4 +38,16 @@ Secrets: `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `DISCORD_CLIENT_ID`, `DISCO
 - A daily Cron Trigger (`triggers.crons` in `server/wrangler.jsonc`, the `scheduled` handler in `server/src/index.ts`) deletes expired sessions and sign-ups.
 - Never log a cookie, the OAuth `code` or a token.
 
-Not built yet: rate limits on the auth routes (Public beta readiness), dev sign-in (#287).
+## Dev sign-in (#287)
+
+`GET /auth/dev?name=<name>` signs the browser in to a test account with that name, made the first time, and redirects to `/`. Tooling uses it (`tools/src/play/devSignIn.ts`), since multiplayer needs an account. Two guards: `DEV_SERVER` (only `npm run dev` sets it, never a deployment; not `ALLOW_CHEATS`, which the test deployment has) and a `localhost` or `127.0.0.1` host. Anywhere else it is a 404. Its accounts have only a `dev` identity, keyed by the name, and it never signs in through a Google or Discord identity: a name a real account holds is refused (409). Worktrees use it instead of real OAuth, whose redirect URIs are registered only for the main checkout's ports.
+
+## Accounts on ships (#285)
+
+- The Matchmaker hashes the session cookie from the socket's upgrade request and checks it against D1 when the player joins. No account: `sign_in_required`. The seat takes the account's display name (the name at the time), not the name the client sent. Single player needs no account.
+- `account_ships` keeps an account on one ship across every language. The row is written before the seat and closed again if the seat fails. If the account already has an open row, the Matchmaker asks that ship to `resume` it (a new seat token, from any device); if the ship says the account isn't aboard (the game ended, the ship was retired, they died), the row is closed and the player boards normally.
+- `GameRoom` keeps each seat's account ID beside the game (`accounts` in its storage), never in `GameState`, the record or a view. It closes a dead player's row at once, and every row when the game ends.
+- Each seat token remembers the session (its hash) it was handed to. Ending a session (logout, or another account signing in on the device; the same account signing in again keeps its games) revokes that session's tokens on the account's newest ship and closes their sockets (4001). A dead seat on an older ship keeps its token, which only shows the graveyard view (owner, 2026-10-30: acceptable).
+- The daily cron sweeps open rows older than 10 minutes and closes those whose ship doesn't have the account aboard (`server/src/shipSweep.ts`).
+
+Not built yet: rate limits on the auth routes (Public beta readiness); a ban revoking a seat (#76, with inactivity, #145).

@@ -1,6 +1,6 @@
 import type { MeResponse } from "@mush2/shared";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { AccountStore } from "../src/accountStore.ts";
+import { AccountStore, sha256Hex } from "../src/accountStore.ts";
 import { handleAuth, RENEW_BELOW_MS, SESSION_MS, SIGNUP_MS } from "../src/auth.ts";
 import { migratedDatabase } from "./sqliteD1.ts";
 
@@ -20,17 +20,22 @@ let now: number;
 /** The provider's answers: the profile its userinfo endpoint returns. */
 let profiles: Record<string, Record<string, unknown>>;
 let fetcher: ReturnType<typeof vi.fn<typeof fetch>>;
+/** Sessions whose seats were revoked: [account ID, session key]. */
+let revoked: [string, string][];
 
 /** One browser: keeps cookies across requests, as a browser on one origin would. */
 class Browser {
   cookies = new Map<string, string>();
 
-  constructor(private env: Env = ENV) {}
+  constructor(
+    private env: Env = ENV,
+    private origin = ORIGIN,
+  ) {}
 
   async request(path: string, init: RequestInit = {}): Promise<Response> {
     const headers = new Headers(init.headers);
     if (this.cookies.size) headers.set("Cookie", [...this.cookies].map(([k, v]) => `${k}=${v}`).join("; "));
-    const response = await handleAuth(new Request(`${ORIGIN}${path}`, { ...init, headers }), this.env, { store, now, fetcher });
+    const response = await handleAuth(new Request(`${this.origin}${path}`, { ...init, headers }), this.env, { store, now, fetcher, revokeSeats: async (a, k) => void revoked.push([a, k]) });
     if (!response) throw new Error(`not an auth route: ${path}`);
     for (const cookie of response.headers.getSetCookie()) {
       const [pair = ""] = cookie.split(";");
@@ -77,6 +82,7 @@ beforeEach(() => {
   store = new AccountStore(migratedDatabase());
   now = T0;
   profiles = {};
+  revoked = [];
   fetcher = vi.fn<typeof fetch>(async (input) => {
     const url = String(input);
     if (url.endsWith("/token")) return Response.json({ access_token: "tok", token_type: "Bearer" });
@@ -441,4 +447,103 @@ it("leaves other paths alone", async () => {
   expect(await handleAuth(new Request(`${ORIGIN}/parties/matchmaker/en`), ENV, { store, now })).toBeNull();
   expect(await handleAuth(new Request(`${ORIGIN}/`), ENV, { store, now })).toBeNull();
   expect((await handleAuth(new Request(`${ORIGIN}/api/nope`), ENV, { store, now }))?.status).toBe(404);
+});
+
+describe("dev sign-in (#287)", () => {
+  const DEV = { ...ENV, DEV_SERVER: "true", ALLOW_CHEATS: "true" } as Env;
+  const LOCAL = "http://localhost:5173";
+
+  it("creates a test account on first use and signs in to the same one after", async () => {
+    const browser = new Browser(DEV, LOCAL);
+    const response = await browser.request("/auth/dev?name=Tester");
+    expect(response.status).toBe(302);
+    expect(response.headers.get("Location")).toBe("/");
+    const me = await browser.me();
+    if (me.status !== "signed_in") throw new Error(me.status);
+    expect(me.account.displayName).toBe("Tester");
+    // No Google or Discord sign-in method is listed for it.
+    expect(me.account.providers).toEqual([]);
+
+    const other = new Browser(DEV, "http://127.0.0.1:5173");
+    await other.request("/auth/dev?name=tester");
+    const again = await other.me();
+    expect(again.status === "signed_in" && again.account.id).toBe(me.account.id);
+  });
+
+  it("is refused without DEV_SERVER, even with cheats on (the test deployment)", async () => {
+    const browser = new Browser({ ...ENV, ALLOW_CHEATS: "true" } as Env, LOCAL);
+    expect((await browser.request("/auth/dev?name=Tester")).status).toBe(404);
+    expect(await browser.me()).toEqual({ status: "signed_out" });
+  });
+
+  it("is refused on a host that isn't localhost, even with DEV_SERVER on", async () => {
+    const browser = new Browser(DEV, "https://mush2-server-test.example.workers.dev");
+    expect((await browser.request("/auth/dev?name=Tester")).status).toBe(404);
+    expect(await browser.me()).toEqual({ status: "signed_out" });
+  });
+
+  it("never reaches an account through a Google or Discord identity", async () => {
+    const real = await new Browser().signUp("google", "g-1", "Alice");
+    const browser = new Browser(DEV, LOCAL);
+    // The real account's name: refused, not signed in to it.
+    const response = await browser.request("/auth/dev?name=alice");
+    expect(response.status).toBe(409);
+    expect(await browser.me()).toEqual({ status: "signed_out" });
+    // A dev name equal to the real provider user ID doesn't reach it either.
+    await browser.request("/auth/dev?name=g-1");
+    const me = await browser.me();
+    expect(me.status === "signed_in" && me.account.id).not.toBe(real);
+  });
+
+  it("refuses a name that fails the display-name check", async () => {
+    const browser = new Browser(DEV, LOCAL);
+    expect((await browser.request("/auth/dev?name=%20")).status).toBe(400);
+  });
+});
+
+describe("ending a session revokes its seats (#285)", () => {
+  it("on logout, with the hash of that device's session only", async () => {
+    const desk = new Browser();
+    const id = await desk.signUp("google", "g-1", "Alice");
+    const phone = new Browser();
+    await phone.signInWith("google", "g-1", null);
+    const deskSession = desk.cookies.get("__Host-mush2_session")!;
+    await desk.post("/auth/logout");
+    expect(revoked).toEqual([[id, await sha256Hex(deskSession)]]);
+    expect((await phone.me()).status).toBe("signed_in");
+  });
+
+  it("when another account signs in on the same device", async () => {
+    const browser = new Browser();
+    const alice = await browser.signUp("google", "g-1", "Alice");
+    const old = browser.cookies.get("__Host-mush2_session")!;
+    await browser.signUp("discord", "d-2", "Bob");
+    expect(revoked).toEqual([[alice, await sha256Hex(old)]]);
+  });
+
+  it("not when the same account signs in again on that device, which keeps its games", async () => {
+    const browser = new Browser();
+    await browser.signUp("google", "g-1", "Alice");
+    const old = browser.cookies.get("__Host-mush2_session")!;
+    await browser.signInWith("google", "g-1", null);
+    expect(revoked).toEqual([]);
+    expect(await store.getSession(old, now)).toBeNull();
+    expect((await browser.me()).status).toBe("signed_in");
+  });
+
+  it("still signs out when revoking fails", async () => {
+    const browser = new Browser();
+    await browser.signUp("google", "g-1", "Alice");
+    const failing = async () => {
+      throw new Error("room down");
+    };
+    const sessionId = browser.cookies.get("__Host-mush2_session")!;
+    const response = await handleAuth(
+      new Request(`${ORIGIN}/auth/logout`, { method: "POST", headers: { Cookie: `__Host-mush2_session=${sessionId}` } }),
+      ENV,
+      { store, now, fetcher, revokeSeats: failing },
+    );
+    expect(response?.status).toBe(200);
+    expect(await store.getSession(sessionId, now)).toBeNull();
+  });
 });
