@@ -1,6 +1,6 @@
 # Sign-in: OAuth apps, secrets and sessions
 
-Google and Discord sign-in (#283) and display names (#284), in `server/src/auth.ts` (routes, cookies, sessions) and `server/src/oauth.ts` (each provider's URLs and profile). Written by hand, no dependency. The sign-in screen that uses them is #286; joining a ship with an account is #285.
+Google and Discord sign-in (#283) and display names (#284), in `server/src/auth.ts` (routes, cookies, sessions) and `server/src/oauth.ts` (each provider's URLs and profile). Written by hand, no dependency. The sign-in screen that uses them is #286 (`web/src/account/`, `web/src/lobby/Lobby.tsx`); joining a ship with an account is #285.
 
 ## Setting up the OAuth apps (owner)
 
@@ -40,7 +40,7 @@ Secrets: `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `DISCORD_CLIENT_ID`, `DISCO
 
 ## Dev sign-in (#287)
 
-`GET /auth/dev?name=<name>` signs the browser in to a test account with that name, made the first time, and redirects to `/`. Tooling uses it (`tools/src/play/devSignIn.ts`), since multiplayer needs an account. Two guards: `DEV_SERVER` (only `npm run dev` sets it, never a deployment; not `ALLOW_CHEATS`, which the test deployment has) and a `localhost` or `127.0.0.1` host. Anywhere else it is a 404. Its accounts have only a `dev` identity, keyed by the name, and it never signs in through a Google or Discord identity: a name a real account holds is refused (409). Worktrees use it instead of real OAuth, whose redirect URIs are registered only for the main checkout's ports.
+`GET /auth/dev?name=<name>` signs the browser in to a test account with that name, made the first time, and redirects to `/`. Tooling uses it (`tools/src/play/devSignIn.ts`), since multiplayer needs an account. By hand, dev builds of the lobby have a name box and a Dev sign-in button in the top-left corner (a GET form to this route). Two guards: `DEV_SERVER` (only `npm run dev` sets it, never a deployment; not `ALLOW_CHEATS`, which the test deployment has) and a `localhost` or `127.0.0.1` host. Anywhere else it is a 404. Its accounts have only a `dev` identity, keyed by the name, and it never signs in through a Google or Discord identity: a name a real account holds is refused (409). Worktrees use it instead of real OAuth, whose redirect URIs are registered only for the main checkout's ports.
 
 ## Accounts on ships (#285)
 

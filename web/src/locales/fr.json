@@ -135,7 +135,14 @@
     "nearlyFull": "Presque complet",
     "noWebgl": "Votre navigateur ne peut pas afficher le jeu : il faut WebGL 2. Activez l'accélération matérielle dans les paramètres du navigateur, mettez à jour le navigateur ou les pilotes graphiques, ou essayez un autre navigateur ou appareil.",
     "singlePlayer": "Solo",
-    "singlePlayerNote": "Vous êtes le Mush, face à 8 équipiers IA."
+    "singlePlayerNote": "Vous êtes le Mush, face à 8 équipiers IA.",
+    "signInPrompt": "Connectez-vous pour rejoindre un vaisseau multijoueur.",
+    "signInWith": "Se connecter avec {{provider}}",
+    "signup": {
+      "intro": "Bienvenue à bord. Choisissez le nom sous lequel les autres joueurs vous connaîtront.",
+      "label": "Votre nom",
+      "confirm": "Confirmer le nom"
+    }
   },
   "minimap": {
     "title": "Plan du vaisseau",
@@ -1549,7 +1556,8 @@
       "name_unchanged": "C'est déjà votre nom.",
       "too_soon": "Vous pouvez changer de nom une fois par jour. Prochain changement : {{time}}.",
       "no_signup": "Votre connexion a expiré. Reconnectez-vous.",
-      "signed_out": "Session terminée. Reconnectez-vous."
+      "signed_out": "Session terminée. Reconnectez-vous.",
+      "network": "Impossible de joindre le serveur. Réessayez."
     },
     "outcome": {
       "denied": "La connexion a été annulée.",
@@ -1558,6 +1566,19 @@
       "provider_linked": "Ce compte a déjà une connexion avec ce fournisseur.",
       "linked": "Méthode de connexion ajoutée."
     },
-    "renameWarning": "Dès que vous changez de nom, n'importe qui peut prendre l'ancien."
+    "renameWarning": "Dès que vous changez de nom, n'importe qui peut prendre l'ancien.",
+    "button": "Compte : {{name}}",
+    "title": "Compte",
+    "close": "Fermer",
+    "nameHeading": "Nom",
+    "newName": "Nouveau nom",
+    "changeName": "Changer de nom",
+    "rename": "Renommer",
+    "renamed": "Nom changé.",
+    "methodsHeading": "Méthodes de connexion",
+    "linked": "{{provider}} : lié",
+    "addMethod": "Ajouter la connexion {{provider}}",
+    "logout": "Se déconnecter",
+    "cancel": "Annuler"
   }
 }

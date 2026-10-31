@@ -1,7 +1,10 @@
 import { ScrollArea } from "@base-ui/react/scroll-area";
 import { Suspense, lazy, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { CHARACTERS, LOBBY_LANGUAGES, type CharacterId, type LobbyLanguage, type MatchmakerServerMessage } from "@mush2/shared";
+import { AUTH_PROVIDERS, CHARACTERS, LOBBY_LANGUAGES, MAX_NAME_LENGTH, type CharacterId, type LobbyLanguage, type MatchmakerServerMessage } from "@mush2/shared";
+import { AccountButton } from "../account/AccountButton.tsx";
+import { PROVIDER_NAMES, signup, startSignIn, takeAuthOutcome, logout, useMe } from "../account/api.ts";
+import { NameForm } from "../account/NameForm.tsx";
 import { characterImage } from "../art/assets.ts";
 import { Credits } from "../hud/Credits.tsx";
 import { LanguageSwitcher } from "../i18n/LanguageSwitcher.tsx";
@@ -94,6 +97,13 @@ export function Lobby({ onMatched }: { onMatched: (ticket: SeatTicket) => void }
   // Without WebGL2 the game can't be drawn, so there is nothing to join.
   const [webgl] = useState(hasWebGL2);
   const roster = useRef<HTMLDivElement>(null);
+  const { me, refresh } = useMe();
+  const account = me?.status === "signed_in" ? me.account : null;
+  // A message about signing in, kept as a key so it follows the language: back from a provider, or refused boarding.
+  const [notice, setNotice] = useState<string | null>(() => {
+    const outcome = takeAuthOutcome();
+    return outcome && `account.outcome.${outcome}`;
+  });
 
   // The roster only scrolls sideways, so a mouse wheel scrolls it sideways too. Needs a
   // non-passive listener to stop the page scrolling as well.
@@ -131,18 +141,27 @@ export function Lobby({ onMatched }: { onMatched: (ticket: SeatTicket) => void }
         setError(t("lobby.characterTaken"));
         setCharacter(null);
       }
-      if (msg.type === "error") setError(t(`errors.${msg.message}` as never, { defaultValue: msg.message }));
+      if (msg.type === "error" && msg.message === "sign_in_required") {
+        // The session ended since the page loaded: back to the ship list, which now offers signing in.
+        setNotice("errors.sign_in_required");
+        setShip(null);
+        setName(null);
+        setCharacter(null);
+        void refresh();
+      } else if (msg.type === "error") setError(t(`errors.${msg.message}` as never, { defaultValue: msg.message }));
     });
     return () => {
       clearTimeout(timer);
       socket.close();
     };
-  }, [name, character, ship, onMatched, t]);
+  }, [name, character, ship, onMatched, t, refresh]);
 
   const shipCounts = useShipCounts(webgl && name === null);
   // Single player: any character, nobody else aboard.
   const taken = useTakenCharacters(ship === SINGLE_PLAYER ? undefined : ship?.language, name !== null && character === null);
-  const step = !webgl ? "noWebgl" : name === null ? "ship" : character === null ? "character" : "waiting";
+  const step = !webgl ? "noWebgl" : me?.status === "signup" ? "signup" : name === null ? "ship" : character === null ? "character" : "waiting";
+  // Multiplayer seats take the account's name (the server's, whatever is sent); single player doesn't need an account.
+  const singlePlayerName = () => account?.displayName ?? nextGuestName();
 
   return (
     <main className={sleeping ? "pod pod-sleeping" : "pod"}>
@@ -150,9 +169,15 @@ export function Lobby({ onMatched }: { onMatched: (ticket: SeatTicket) => void }
         <nav className="pod-devlinks">
           <a href="/editor">Ship Editor</a> {/* i18n-ignore: dev servers only */}
           <a href="/design-kit.html">Design kit</a> {/* i18n-ignore: dev servers only */}
+          {/* Dev sign-in (#287): a plain GET form to /auth/dev, which signs in as that name and redirects back here. */}
+          <form className="pod-devsignin" method="get" action="/auth/dev">
+            <input name="name" required maxLength={MAX_NAME_LENGTH} placeholder="Name" aria-label="Dev sign-in name" /> {/* i18n-ignore: dev servers only */}
+            <button type="submit">Dev sign-in</button> {/* i18n-ignore: dev servers only */}
+          </form>
         </nav>
       )}
       <div className="pod-toolbar">
+        {account && step === "ship" && <AccountButton account={account} onChange={refresh} />}
         <LanguageSwitcher inline />
       </div>
       {webgl && (
@@ -206,18 +231,59 @@ export function Lobby({ onMatched }: { onMatched: (ticket: SeatTicket) => void }
             </ScrollArea.Root>
             {error && <p className="pod-status">{error}</p>}
           </div>
+          <div className="pod-state" inert={step !== "signup"}>
+            <p className="pod-subtitle">{t("lobby.signup.intro")}</p>
+            {me?.status === "signup" && (
+              <NameForm
+                initial={me.suggestedName ?? ""}
+                label={t("lobby.signup.label")}
+                submitLabel={t("lobby.signup.confirm")}
+                autoFocus
+                onSubmit={async (chosen) => {
+                  const result = await signup(chosen);
+                  if (!result.ok) return result.reason;
+                  await refresh();
+                  return null;
+                }}
+                secondary={
+                  // Ends the pending sign-up: no account is made.
+                  <button type="button" onClick={() => void logout().catch(() => undefined).then(refresh)}>
+                    {t("account.cancel")}
+                  </button>
+                }
+              />
+            )}
+          </div>
           <div className="pod-state" inert={step !== "ship"}>
             <p className="pod-subtitle">{t("lobby.tagline")}</p>
+            {notice && (
+              <p className="pod-status pod-notice" role="status">
+                {t(notice as never)}
+              </p>
+            )}
             <ul className="pod-ships">
-              {SHIPS.map((s) => {
+              {me?.status === "signed_out" ? (
+                <li className="pod-signin">
+                  <p className="pod-status">{t("lobby.signInPrompt")}</p>
+                  {AUTH_PROVIDERS.map((provider) => (
+                    <button key={provider} type="button" className="big pod-signin-button" onClick={() => startSignIn(provider)}>
+                      {t("lobby.signInWith", { provider: PROVIDER_NAMES[provider] })}
+                    </button>
+                  ))}
+                </li>
+              ) : SHIPS.map((s) => {
                 const count = shipCounts[s.language];
                 return (
                 <li key={s.name}>
                   <button type="button"
                     className="big pod-ship"
+                    // Only until the account has loaded: signed out, sign-in buttons show instead.
+                    disabled={!account}
                     onClick={() => {
+                      if (!account) return;
+                      setNotice(null);
                       setShip(s);
-                      setName(nextGuestName());
+                      setName(account.displayName);
                     }}
                   >
                     <span className="pod-ship-name">{s.name}</span>
@@ -231,8 +297,9 @@ export function Lobby({ onMatched }: { onMatched: (ticket: SeatTicket) => void }
                 <button type="button"
                   className="big pod-ship"
                   onClick={() => {
+                    setNotice(null);
                     setShip(SINGLE_PLAYER);
-                    setName(nextGuestName());
+                    setName(singlePlayerName());
                   }}
                 >
                   <span className="pod-ship-name">{t("lobby.singlePlayer")}</span>

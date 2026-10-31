@@ -135,7 +135,14 @@
     "nearlyFull": "Casi completa",
     "noWebgl": "Tu navegador no puede mostrar el juego: necesita WebGL 2. Activa la aceleración por hardware en los ajustes del navegador, actualiza el navegador o los controladores gráficos, o prueba otro navegador o dispositivo.",
     "singlePlayer": "Un jugador",
-    "singlePlayerNote": "Eres el Mush, contra 8 tripulantes IA."
+    "singlePlayerNote": "Eres el Mush, contra 8 tripulantes IA.",
+    "signInPrompt": "Inicia sesión para unirte a una nave multijugador.",
+    "signInWith": "Iniciar sesión con {{provider}}",
+    "signup": {
+      "intro": "Bienvenido a bordo. Elige el nombre con el que te conocerán los demás jugadores.",
+      "label": "Tu nombre",
+      "confirm": "Confirmar nombre"
+    }
   },
   "minimap": {
     "title": "Mapa de la nave",
@@ -1549,7 +1556,8 @@
       "name_unchanged": "Ese ya es tu nombre.",
       "too_soon": "Puedes cambiar de nombre una vez al día. Próximo cambio: {{time}}.",
       "no_signup": "Tu inicio de sesión caducó. Vuelve a iniciar sesión.",
-      "signed_out": "Has cerrado sesión. Vuelve a iniciar sesión."
+      "signed_out": "Has cerrado sesión. Vuelve a iniciar sesión.",
+      "network": "No se pudo contactar con el servidor. Inténtalo de nuevo."
     },
     "outcome": {
       "denied": "Se canceló el inicio de sesión.",
@@ -1558,6 +1566,19 @@
       "provider_linked": "Esta cuenta ya tiene un inicio de sesión con ese proveedor.",
       "linked": "Método de inicio de sesión añadido."
     },
-    "renameWarning": "En cuanto cambies de nombre, cualquiera podrá quedarse con el anterior."
+    "renameWarning": "En cuanto cambies de nombre, cualquiera podrá quedarse con el anterior.",
+    "button": "Cuenta: {{name}}",
+    "title": "Cuenta",
+    "close": "Cerrar",
+    "nameHeading": "Nombre",
+    "newName": "Nuevo nombre",
+    "changeName": "Cambiar de nombre",
+    "rename": "Cambiar",
+    "renamed": "Nombre cambiado.",
+    "methodsHeading": "Métodos de inicio de sesión",
+    "linked": "{{provider}}: vinculado",
+    "addMethod": "Añadir inicio de sesión con {{provider}}",
+    "logout": "Cerrar sesión",
+    "cancel": "Cancelar"
   }
 }
