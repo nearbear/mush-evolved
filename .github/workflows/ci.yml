@@ -74,3 +74,20 @@ jobs:
       - name: Build
         if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: npm run build
+
+      # Migration files are append-only (#282): no commit in main's history may
+      # modify, rename or delete a file in server/migrations/, since D1 records
+      # applied migrations by name and won't rerun an edited file. Checking the
+      # whole history, not just this push, also catches commits whose own run
+      # was cancelled by a newer push. Fetches commits and trees, not file
+      # contents, which the check doesn't need.
+      - name: Migrations are append-only
+        if: ${{ !cancelled() }}
+        run: |
+          git fetch --unshallow --filter=blob:none --no-tags origin
+          changed=$(git log --format='%h %s' --name-status --no-renames --diff-filter=a HEAD -- server/migrations/)
+          if [ -n "$changed" ]; then
+            echo "::error::Migration files are append-only. Add a new migration instead of changing an existing one:"
+            echo "$changed"
+            exit 1
+          fi
