@@ -11,6 +11,7 @@ import { clearQueue, queueAction, tick } from "./queue.ts";
 import { walk } from "./spot.ts";
 import { createChannel, createThread, inviteToChannel, leaveChannel, sendChat, toggleCheckbox } from "./chat.ts";
 import { sharePlanet } from "./sharedPlanets.ts";
+import { postPlan } from "./plans.ts";
 import { inactivate, seen } from "./inactivity.ts";
 import type { ConfigOverrides, GameConfig, GameState, PlayerId, Role, Seat } from "./types.ts";
 
@@ -107,6 +108,8 @@ export function applyInput(state: GameState, input: Input): ActionResult {
       return inviteToChannel(state, input.by, input.channel, input.player);
     case "leaveChannel":
       return leaveChannel(state, input.by, input.channel);
+    case "postPlan":
+      return postPlan(state, input.by, input.plan);
     case "cheat":
       return setCheat(state, input.by, input.cheat, input.on);
     case "walk":

@@ -1840,3 +1840,9 @@ Asked agy (`gemini-4-argon-high`) for a code review of the uncommitted step 2 di
 ### 2026-10-31: Owner's answers to the review's rule questions (#313)
 
 The owner decided: a task slot already ticked Done is never struck; Go (`summon`) is refused on a plan with no on-call slot (`plan_no_on_call`); and a summons still drops the holder's queue even when the walk can't reach them (Gemini's suggestion to check the route first was declined). Recorded in `docs/plans/on-call.md` and built with tests. Claude's first test asserted the refusal code from `applyAction`, which reports every refusal as `illegal_action`; checking `.ok` fixed it.
+
+### 2026-10-31: postPlan protocol and server (#314)
+
+- Added the `postPlan` client message (`{ type, plan: PlanDraft }`), parsed by `parsePlanDraft` (kept in `plans.ts` beside the draft types, at the owner's request, so `protocol.ts` stays a list of messages) with known keys only at every level, an `applyInput` case, and routing through `GameRoom.social` so it shares the per-seat chat rate limit; with no free text it skips moderation.
+- Decision made by Claude, flagged to the owner: no `STATE_VERSION` bump despite the plan listing one, because step 2 already bumped it for the plan state and a new input type changes no stored shape; the state-shape test agrees.
+- What worked: step 2 had left `postPlan` as a plain function with a `PlanDraft` type, so this step was wiring plus tests. Wire bounds stay generous (64 slots, 64-character ids) so the rules stay the only place real limits live.

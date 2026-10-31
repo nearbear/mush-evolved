@@ -564,7 +564,11 @@ export class GameRoom extends Server<Env> {
     return this.singlePlayer || !this.game ? null : clockCycleStart(this.clockCycle + 1, cycleMs(this.env, this.game.config.cycleHours));
   }
 
-  /** Chat and channel management. Untrusted text: rate limit, then moderate, then let the rules decide. `playerId` is the seat, `by` its body. */
+  /**
+   * Chat, channel management and plans (`postPlan`), under the per-seat chat rate limit. Untrusted text: rate limit,
+   * then moderate, then let the rules decide; a plan has no free text, so it goes straight to the rules. `playerId` is
+   * the seat, `by` its body.
+   */
   private async social(
     playerId: PlayerId,
     by: PlayerId,

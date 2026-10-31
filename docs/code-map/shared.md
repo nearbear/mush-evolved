@@ -41,7 +41,7 @@ Other packages import from `@mush2/shared` (`shared/src/index.ts`, the barrel). 
 - `helpers.ts`: `ActionResult`, `fail`, `clone`, `findPlayer`, `dayOf`.
 - `paths.ts`: `shortestPath` (deterministic BFS over `config.rooms`; null for the door-less patrol craft), for the summons walk.
 - `queueCore.ts`: the queue parts action classes may import without a cycle: `emptyQueue` (with `actionDropped` lines on request) and `dropped`.
-- `plans.ts`: channel plans (docs/plans/on-call.md): `postPlan`, `openPlan`, `findPlan`, `finishPlan` (keeps `config.plans.finishedKept`), hooks `leavePlans` and `dropChannelPlans` (from `removeFromChannel`), `strikeSlots` (after actions, cycles and deaths), `expirePlans` (day tick), `plansView`. Actions in `actions/plan_slots.ts` (`claim_slot`, `withdraw_slot`, `mark_done`, `cancel_plan`) and `actions/summon.ts` (`summon` and its `walk`; `performAction` bound by rules.ts).
+- `plans.ts`: channel plans (docs/plans/on-call.md): `postPlan`, `openPlan`, `findPlan`, `finishPlan` (keeps `config.plans.finishedKept`), hooks `leavePlans` and `dropChannelPlans` (from `removeFromChannel`), `strikeSlots` (after actions, cycles and deaths), `expirePlans` (day tick), `plansView`. Posting arrives as the `postPlan` message (`protocol.ts` calls `parsePlanDraft` here, which rebuilds the draft with known keys only; an `applyInput` case in `replay.ts`). Actions in `actions/plan_slots.ts` (`claim_slot`, `withdraw_slot`, `mark_done`, `cancel_plan`) and `actions/summon.ts` (`summon` and its `walk`; `performAction` bound by rules.ts).
 
 ## Rule areas
 

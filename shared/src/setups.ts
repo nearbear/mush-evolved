@@ -13,6 +13,7 @@
 
 import { MAX_THREAD_NAME_LENGTH } from "./chat.ts";
 import { PRESELECTION } from "./config.ts";
+import { isRecord } from "./helpers.ts";
 import { BLOCKED_WORDS, moderateChat } from "./moderation.ts";
 import { LOBBY_LANGUAGES, type LobbyLanguage, MAX_NAME_LENGTH } from "./protocol.ts";
 import type { ConfigOverrides } from "./types.ts";
@@ -88,7 +89,6 @@ export const STANDARD_SETUP: Readonly<Setup> = Object.freeze({
 const KNOB_KEYS = ["seats", "preselectionDays", "mushCount", "cycleHours", "sharedSpots"] as const;
 const SETUP_KEYS = ["id", "text", "ownerName", "version", "previousId", "rulesVersion", "createdAt", "knobs"];
 
-const isRecord = (v: unknown): v is Record<string, unknown> => typeof v === "object" && v !== null && !Array.isArray(v);
 const hasOnly = (o: Record<string, unknown>, keys: readonly string[]) => Object.keys(o).every((k) => keys.includes(k));
 const intIn = (v: unknown, min: number, max: number): v is number => Number.isInteger(v) && (v as number) >= min && (v as number) <= max;
 const text = (v: unknown, max: number): v is string => typeof v === "string" && v.length <= max;

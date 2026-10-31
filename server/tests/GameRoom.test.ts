@@ -1247,3 +1247,85 @@ describe("GameRoom accounts (#285)", () => {
     expect(revived.seatAccounts().sort()).toEqual([...ids].sort());
   });
 });
+
+describe("GameRoom plans", () => {
+  /** p0 creates a channel with p1 and p2 and posts a plan to the refectory. */
+  async function planned() {
+    vi.useFakeTimers({ now: 1_000_000 });
+    const { room, storage } = await newRoom(3);
+    const a = connect(room, "tok0");
+    const b = connect(room, "tok1");
+    await send(room, a, { type: "createChannel", name: "crew", members: ["p1", "p2"] });
+    const channel = lastView(a).privateChannels.find((c) => c.name === "crew")!.id;
+    await vi.advanceTimersByTimeAsync(10_000);
+    const plan = { channel, room: "REFECTORY", purpose: "meal", slots: [{ kind: "onCall" }, { kind: "task", task: { type: "fiery_speech" } }] };
+    await send(room, a, { type: "postPlan", plan: { ...plan, author: "p9", extra: 1 } });
+    return { room, storage, a, b, channel, plan };
+  }
+
+  it("posts the creator's plan, records it with known keys only, and shows it to members", async () => {
+    try {
+      const { storage, a, b, plan } = await planned();
+      expect(lastMsg(a).type).toBe("view");
+      for (const c of [a, b]) expect(lastView(c).plans).toMatchObject([{ author: "p0", room: "REFECTORY", purpose: "meal", status: "open" }]);
+      const record = [...(await storage.list<RecordedInput>({ prefix: "input:" })).values()];
+      expect(record.at(-1)!.input).toEqual({ type: "postPlan", plan, by: "p0" });
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("answers a malformed postPlan with an error and records nothing", async () => {
+    try {
+      const { room, storage, b, channel } = await planned();
+      const before = (await storage.list({ prefix: "input:" })).size;
+      await send(room, b, { type: "postPlan", plan: { channel, room: "REFECTORY", purpose: "meal", slots: [{ kind: "task", task: { type: "execute" } }] } });
+      expect(lastMsg(b)).toEqual({ type: "error", message: "malformed_message" });
+      expect((await storage.list({ prefix: "input:" })).size).toBe(before);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("refuses a member who isn't the channel's creator", async () => {
+    try {
+      const { room, b, channel } = await planned();
+      await vi.advanceTimersByTimeAsync(10_000);
+      await send(room, b, { type: "postPlan", plan: { channel, room: "REFECTORY", purpose: "meal", slots: [{ kind: "onCall" }] } });
+      expect(lastMsg(b)).toEqual({ type: "error", message: "plan_forbidden" });
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("comes under the per-seat chat rate limit", async () => {
+    try {
+      const { room, a, plan } = await planned();
+      const errors: string[] = [];
+      for (let i = 0; i < 7; i++) {
+        await send(room, a, { type: "postPlan", plan });
+        const m = lastMsg(a);
+        if (m.type === "error") errors.push(m.message);
+      }
+      expect(errors).toContain("too_many_messages");
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("rebuilds from the record with the plan and its claims (#314)", async () => {
+    try {
+      const { room, storage, a, b } = await planned();
+      const claim = legalIn(lastView(b)).find((x) => x.type === "claim_slot")!;
+      await send(room, b, { type: "action", action: claim });
+      expect(lastView(a).plans[0]!.slots[0]).toMatchObject({ holder: "p1" });
+      const json = <T>(v: unknown) => JSON.parse(JSON.stringify(v)) as T;
+      const record = json<RecordedInput[]>([...(await storage.list({ prefix: "input:" })).values()]);
+      expect(record.map((r) => r.input.type)).toContain("postPlan");
+      const { game: stored, overrides } = json<{ game: object; overrides: ConfigOverrides }>(await storage.get("game"));
+      expect(rebuildGame(json<GameSetup>(await storage.get("setup")), record)).toEqual({ ...stored, config: resolveConfig(overrides) });
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+});

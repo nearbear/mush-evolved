@@ -7,6 +7,11 @@ export type ActionResult = { ok: true; state: GameState } | { ok: false; error: 
 /** An error code for the client to turn into text. */
 export const fail = (code: string): ActionResult => ({ ok: false, error: code });
 
+/** A plain object (not null, not an array), for checking untrusted JSON. */
+export function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
 /** GameState is plain JSON by design, so a JSON round-trip is a full deep copy. */
 export function clone<T>(value: T): T {
   return JSON.parse(JSON.stringify(value)) as T;

@@ -4,10 +4,24 @@
 import { ACTIONS, type ActionType } from "./actions.ts";
 import { isCheat, isRoleCheat, type Cheat, type RoleCheat } from "./cheats.ts";
 import { isCharacterId, type CharacterId } from "./characters.ts";
-import { MAX_CHAT_LENGTH } from "./chat.ts";
+import { MAX_CHAT_LENGTH, privateChannelId } from "./chat.ts";
+import { isRecord } from "./helpers.ts";
+import { parsePlanDraft } from "./plans.ts";
 import { MAX_SHARED_PLANET_LENGTH } from "./sharedPlanets.ts";
 import { isSpotCell } from "./spot.ts";
-import { CHAT_CHANNELS, GRAVEYARD_CHANNEL, MUSH_CHANNEL, type Action, type ChannelId, type PlayerId, type PlayerView, type PrivateChannelId, type SharedPlanetId, type ThreadId } from "./types.ts";
+import {
+  CHAT_CHANNELS,
+  GRAVEYARD_CHANNEL,
+  MUSH_CHANNEL,
+  type Action,
+  type ChannelId,
+  type PlanDraft,
+  type PlayerId,
+  type PlayerView,
+  type PrivateChannelId,
+  type SharedPlanetId,
+  type ThreadId,
+} from "./types.ts";
 
 export const MAX_NAME_LENGTH = 24;
 
@@ -59,6 +73,9 @@ export type GameClientMessage =
   | { type: "sharePlanet"; planet: string; text: string }
   | { type: "invite"; channel: PrivateChannelId; player: PlayerId }
   | { type: "leaveChannel"; channel: PrivateChannelId }
+  // The channel's creator posts its plan (plans.ts, docs/plans/on-call.md). Chat-like, since a draft can't be
+  // enumerated as an action; claiming, withdrawing, Done, cancelling and Go are ordinary actions. No free text.
+  | { type: "postPlan"; plan: PlanDraft }
   // Single player only, from the human seat: the player's own model key for the bots (BYOK, #216). Never an input:
   // inputs are recorded, so the key would be stored. Held in memory until the seat's last connection closes, so the
   // client sends it again on reconnect. `clearModel` drops it.
@@ -128,6 +145,10 @@ export function parseGameMessage(raw: string): GameClientMessage | null {
     const channel = privateChannelId(msg.channel);
     return channel ? { type: "leaveChannel", channel } : null;
   }
+  if (msg?.type === "postPlan") {
+    const plan = parsePlanDraft(msg.plan);
+    return plan && { type: "postPlan", plan };
+  }
   if (msg?.type === "cheat") {
     return isCheat(msg.cheat) && typeof msg.on === "boolean" ? { type: "cheat", cheat: msg.cheat, on: msg.on } : null;
   }
@@ -159,10 +180,6 @@ export function parseGameMessage(raw: string): GameClientMessage | null {
   return action && { type: "action", action };
 }
 
-function privateChannelId(value: unknown): PrivateChannelId | null {
-  return typeof value === "string" && /^pc-\d{1,9}$/.test(value) ? (value as PrivateChannelId) : null;
-}
-
 function threadId(value: unknown): ThreadId | null {
   return typeof value === "string" && /^th-\d{1,9}$/.test(value) ? (value as ThreadId) : null;
 }
@@ -178,8 +195,4 @@ function parseJson(raw: string): Record<string, unknown> | null {
   } catch {
     return null;
   }
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null && !Array.isArray(value);
 }

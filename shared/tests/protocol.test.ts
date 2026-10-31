@@ -159,3 +159,75 @@ describe("actions from a client", () => {
     expect(asAction({ type: "examine", target: "p1" })).toBeNull();
   });
 });
+
+describe("postPlan (channel plans)", () => {
+  const plan = {
+    channel: "pc-1",
+    room: "REFECTORY",
+    purpose: "meal",
+    slots: [
+      { kind: "onCall" },
+      { kind: "onCall", reservedFor: "p2" },
+      { kind: "task", task: { type: "heal", target: "p1" } },
+      { kind: "task", task: { type: "research", research: "x" }, reservedFor: "p3" },
+      { kind: "task", task: { type: "project", project: "y" } },
+      { kind: "task", task: { type: "bring", itemType: "medikit" } },
+      { kind: "task", task: { type: "fiery_speech" } },
+    ],
+  };
+
+  it("parses a draft as sent", () => {
+    expect(parse({ type: "postPlan", plan })).toEqual({ type: "postPlan", plan });
+  });
+
+  it("rebuilds it with known keys only, at every level", () => {
+    const extra = {
+      type: "postPlan",
+      by: "p9",
+      plan: {
+        ...plan,
+        author: "p9",
+        status: "called",
+        slots: [
+          { kind: "onCall", holder: "p9", outcome: "arrived" },
+          { kind: "task", task: { type: "fiery_speech", target: "p1" }, done: true, holder: "p9", struck: "already_done" },
+          { kind: "task", task: { type: "heal", target: "p1", research: "x", note: "hi" } },
+        ],
+      },
+    };
+    expect(parse(extra)).toEqual({
+      type: "postPlan",
+      plan: {
+        channel: "pc-1",
+        room: "REFECTORY",
+        purpose: "meal",
+        slots: [{ kind: "onCall" }, { kind: "task", task: { type: "fiery_speech" } }, { kind: "task", task: { type: "heal", target: "p1" } }],
+      },
+    });
+  });
+
+  it("refuses malformed drafts", () => {
+    const bad = (p: unknown) => expect(parse({ type: "postPlan", plan: p }), JSON.stringify(p)).toBeNull();
+    bad(undefined);
+    bad([]);
+    bad({ ...plan, channel: "global" });
+    bad({ ...plan, channel: "mush" });
+    bad({ ...plan, room: 3 });
+    bad({ ...plan, room: "" });
+    bad({ ...plan, room: "R".repeat(65) });
+    bad({ ...plan, purpose: "party" });
+    bad({ ...plan, purpose: "constructor" });
+    bad({ ...plan, slots: "onCall" });
+    bad({ ...plan, slots: Array.from({ length: 65 }, () => ({ kind: "onCall" })) });
+    bad({ ...plan, slots: [null] });
+    bad({ ...plan, slots: [{ kind: "relay" }] });
+    bad({ ...plan, slots: [{ kind: "onCall", reservedFor: 4 }] });
+    bad({ ...plan, slots: [{ kind: "onCall", reservedFor: "" }] });
+    bad({ ...plan, slots: [{ kind: "task" }] });
+    bad({ ...plan, slots: [{ kind: "task", task: { type: "execute", action: "move" } }] });
+    bad({ ...plan, slots: [{ kind: "task", task: { type: "heal" } }] });
+    bad({ ...plan, slots: [{ kind: "task", task: { type: "research", research: { id: "x" } } }] });
+    bad({ ...plan, slots: [{ kind: "task", task: { type: "bring", itemType: "x".repeat(65) } }] });
+    bad({ ...plan, slots: [{ kind: "task", task: { type: "toString" } }] });
+  });
+});

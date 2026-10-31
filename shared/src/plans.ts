@@ -7,8 +7,8 @@
 // cancelling and summoning are 0-AP registry actions (actions/plan_slots.ts, actions/summon.ts). The hooks below keep
 // plans in step with deaths, channel exits, completions and the day tick. Nothing here locks AP or MP.
 
-import { chatChannels } from "./chat.ts";
-import { clone, dayOf, fail, findPlayer, type ActionResult } from "./helpers.ts";
+import { chatChannels, privateChannelId } from "./chat.ts";
+import { clone, dayOf, fail, findPlayer, isRecord, type ActionResult } from "./helpers.ts";
 import { ITEM_TYPES } from "./items.ts";
 import { isPilgredRepaired } from "./pilgred.ts";
 import { PROJECT_COMPLETE, PROJECT_IDS } from "./projects.ts";
@@ -198,4 +198,80 @@ export function expirePlans(state: GameState): void {
  */
 export function plansView(state: Readonly<GameState>, readable: readonly ChannelId[]): Plan[] {
   return state.plans.filter((p) => readable.includes(p.channel)).map((p) => clone(p));
+}
+
+// ---- The postPlan message ---------------------------------------------------
+// Untrusted client input (protocol.ts): rebuilt here, beside the draft types, so `postPlan` only ever sees known keys.
+
+/**
+ * Wire bound on a draft's slots. Generous: the rules enforce `config.plans.slotsPerPlan`, so this only stops a huge
+ * message before it is copied.
+ */
+const MAX_WIRE_PLAN_SLOTS = 64;
+/** Wire bound on the ids in a draft (rooms, players, research, projects, item types); the rules check they exist. */
+const MAX_WIRE_ID_LENGTH = 64;
+
+const wireId = (value: unknown): string | null => (typeof value === "string" && value.length > 0 && value.length <= MAX_WIRE_ID_LENGTH ? value : null);
+
+/**
+ * The `postPlan` message's draft (protocol.ts), rebuilt with known keys only, at every level, so nothing extra a client
+ * sends reaches the rules.
+ */
+export function parsePlanDraft(value: unknown): PlanDraft | null {
+  if (!isRecord(value)) return null;
+  const channel = privateChannelId(value.channel);
+  const room = wireId(value.room);
+  const purpose = PLAN_PURPOSES.find((p) => p === value.purpose);
+  if (!channel || !room || !purpose || !Array.isArray(value.slots) || value.slots.length > MAX_WIRE_PLAN_SLOTS) return null;
+  const slots: DraftSlot[] = [];
+  for (const raw of value.slots) {
+    const slot = parseDraftSlot(raw);
+    if (!slot) return null;
+    slots.push(slot);
+  }
+  return { channel, room, purpose, slots };
+}
+
+function parseDraftSlot(value: unknown): DraftSlot | null {
+  if (!isRecord(value)) return null;
+  let reserved: { reservedFor?: PlayerId } = {};
+  if (value.reservedFor !== undefined) {
+    const who = wireId(value.reservedFor);
+    if (!who) return null;
+    reserved = { reservedFor: who };
+  }
+  if (value.kind === "onCall") return { kind: "onCall", ...reserved };
+  if (value.kind !== "task") return null;
+  const task = parsePlanTask(value.task);
+  return task && { kind: "task", task, ...reserved };
+}
+
+function parsePlanTask(value: unknown): PlanTask | null {
+  if (!isRecord(value)) return null;
+  switch (value.type) {
+    case "research": {
+      const research = wireId(value.research);
+      return research === null ? null : { type: "research", research };
+    }
+    case "project": {
+      const project = wireId(value.project);
+      return project === null ? null : { type: "project", project };
+    }
+    case "heal":
+    case "comfort":
+    case "stt": {
+      const target = wireId(value.target);
+      return target === null ? null : { type: value.type, target };
+    }
+    case "bring": {
+      const itemType = wireId(value.itemType);
+      return itemType === null ? null : { type: "bring", itemType };
+    }
+    case "repair_pilgred":
+    case "fiery_speech":
+    case "boring_speech":
+      return { type: value.type };
+    default:
+      return null;
+  }
 }

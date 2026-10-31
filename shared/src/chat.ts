@@ -13,6 +13,11 @@ import { CHAT_CHANNELS, GRAVEYARD_CHANNEL, MUSH_CHANNEL } from "./types.ts";
 import type { ChannelId, ChatMessage, GameState, PlayerId, PlayerState, PrivateChannelId, SharedPlanetId, ThreadId } from "./types.ts";
 
 /** Longest chat message the rules accept. Moderation trims before this. */
+/** A private channel's id from untrusted input, or null. */
+export function privateChannelId(value: unknown): PrivateChannelId | null {
+  return typeof value === "string" && /^pc-\d{1,9}$/.test(value) ? (value as PrivateChannelId) : null;
+}
+
 export const MAX_CHAT_LENGTH = 300;
 
 /** Longest chat message in lines (moderation enforces it; messages are markdown and may span lines). */
