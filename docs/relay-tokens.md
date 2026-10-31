@@ -1,6 +1,6 @@
 # Plan: relay tokens (pooled contributions; written 2026-10-30)
 
-How research, NERON projects and PILGRED take contributions once players no longer have to alternate live. Replaces the "relay jobs" of `docs/action-plans.md`, whose executor is dropped (see `docs/on-call-plans.md`). Not built. **Decisions** are the owner's; **Proposed** items are Claude's and need the owner's confirmation before they are built. Do not guess them.
+How research, NERON projects and PILGRED take contributions once players no longer have to alternate live. Replaces the "relay jobs" of `docs/action-plans.md`, whose executor is dropped (see `docs/on-call-plans.md`). Research tokens also go through a pending stage with sabotage, `docs/research-sabotage.md`. Not built. **Decisions** are the owner's; **Proposed** items are Claude's and need the owner's confirmation before they are built. Do not guess them.
 
 ## The problem
 
@@ -9,34 +9,41 @@ The relay formula (`shared/src/relay.ts`, owner 2026-10-26) cuts a contribution'
 ## Decisions (owner, 2026-10-30)
 
 - **Contributions are tokens.** Each research, project or PILGRED action adds one token to that target's pool instead of rolling a gain at once. A token records who made it and what it is worth.
-- **The game arranges the pool.** A target's progress is the best total any ordering of its tokens could give under the existing penalty for consecutive tokens by the same player. Players never arrange anything; they only contribute.
+- **The game arranges the pool.** A target's progress is the best total any ordering of its tokens could give under the existing penalty for consecutive tokens by the same player. Players never arrange anything; they only contribute. (Player rearrangement on a hex grid was explored and deferred, `docs/research-sabotage.md`.)
 - **The penalty is unchanged.** If the best arrangement still has to put several of one player's tokens in a row, those tokens lose `relayPenalty` per step as they do today. A lone contributor is penalized exactly as now.
 - **No new AP source.** A token costs what the action costs today (2 AP, or a Computer or Designer point); nothing is refunded or lent.
+- **All three progressibles pool:** research, projects and PILGRED. Only research has the pending stage and sabotage (`docs/research-sabotage.md`).
+- **Research's token list is the evidence:** visible to anyone in the lab, with faces and values; research becomes private, with no room log line (`docs/research-sabotage.md`). This answers the log-credit question: the list shows who did what.
+- **Pace:** no retune before building; the owner expects contamination to offset the gain from pooling. Watch it in playtests.
 
 ## Proposed (Claude, 2026-10-30; confirm before building)
 
-- **All three progressibles**, since they share `relay.ts`: research, projects and PILGRED. The owner named research; confirm the other two.
-- **A pool lasts the target's lifetime.** No window: a token made on day 1 can pair with one made on day 4. Simplest, and it is what "pooled efficiently" means.
+- **A pool lasts the target's lifetime.** No window: a token made on day 1 can pair with one made on day 4. A window would bring back the timing pressure.
 - **Each token carries its own roll**, drawn when it is made, so later arrangement never re-rolls luck and a replay is deterministic.
-- **Waiting work is public.** The terminal shows how much progress is held back only by the lack of another contributor. It is the coordination signal, and it is public evidence like the room log lines that already name every contributor.
-- **The log stays per action.** The usual public room line ("X researched, now N%") stays; when a token also unlocks earlier work, the percent simply jumps. An extra line explaining the jump is optional (i18n, all three languages).
-- **The `noRelayPenalty` cheat** makes each of that player's tokens count as if from a distinct player.
+- **Waiting work is shown.** The terminal shows how much progress is held back only by the lack of another contributor. Research and projects: public, like their progress. PILGRED: only to those who see its progress (living, in a room with a PILGRED terminal, `rules.ts` `viewFor`).
+- **Projects and PILGRED** keep their room log lines, and their token lists are shown at their own terminals the same way, to people in that room (by analogy with research; confirm).
+- **The `noRelayPenalty` cheat** is fixed when the token is made: each such token counts as if from a distinct player, whatever the cheat's state later.
+- **Migration.** Progress made before the switch cannot be turned into tokens (a `RelayStreak` keeps no history). Each pool gets `banked`, the target's percent at migration, and progress is `banked + poolProgress(...)`. `banked` also absorbs any other writer: the NERON update sets a project to 100 directly (`comms.ts`).
 
 ## The formula
 
 A token is `{ by: PlayerId, base: number, roll: number }`:
 
 - `base` is what the live formula computes before the penalty: `floor(rate × mod / 10)` plus `skillBoost` for each matching skill the player has when the token is made (`relayGainRange` today). Stored, so a later skill pick or body change never rewrites old tokens.
-- `roll` is a unit roll in [0, 1) from the seeded RNG, drawn when the token is made.
+- `roll` is a unit roll in [0, 1) from the seeded RNG, drawn when the token is made (today no draw is made when the range is a single value, so the RNG stream changes; `STATE_VERSION` bump).
 
 A token in a position with penalty `p` is worth `g = max(0, base − p)`, rolled in [g, g + g/2] as today: `g + floor(roll × (floor(g / 2) + 1))`.
+
+**The objective.** The best arrangement maximizes the sum of `g` (before rolls). Ties go the same way every time: among equal bases, the higher roll takes the lower penalty. The rolls are then applied in that arrangement. Maximizing the rolled total instead would make the arrangement depend on the rolls (two equal-base tokens with rolls 0.99 and 0.0 in penalty slots 0 and 2 give 13 one way and 12 the other) and the fast method below would not compute it.
 
 **Arrangement.** Only the player with the most tokens can ever be penalized, and only when they hold more than half of them. With `n` tokens, the dominant player `D` holding `c` of them and the others holding `m = n − c`:
 
 - If `c ≤ m + 1`, some ordering has no two tokens by the same player adjacent (a sequence with no equal neighbours exists exactly when no symbol has more than ⌈n/2⌉ copies). Every token counts at full value.
-- Otherwise `D`'s tokens are split into `m + 1` runs separated by the others' tokens, as evenly as possible: `r = c mod (m + 1)` runs of length `q + 1` and the rest of length `q = floor(c / (m + 1))`. Within a run the second token loses `relayPenalty`, the third twice that, and so on. Collect all those penalties, sort them ascending, sort `D`'s bases descending, pair them up. Everyone else's tokens stand alone between runs and count at full value.
+- Otherwise `D`'s tokens are split into `m + 1` runs separated by the others' tokens, as evenly as possible: `r = c mod (m + 1)` runs of length `q + 1` and the rest of length `q = floor(c / (m + 1))`. Within a run the second token loses `relayPenalty`, the third twice that, and so on. Collect all those penalties, sort them ascending, sort `D`'s tokens by base descending (then roll descending), pair them up. Everyone else's tokens stand alone between runs and count at full value.
 
-Even runs minimize the penalty (the per-step penalty grows with run length) and pairing high bases with low penalties maximizes the sum (the floor at 0 only strengthens this). The result is the maximum over all orderings, computed in `O(n log n)` with no search.
+Even runs give the elementwise smallest sorted penalty list, and pairing high bases with low penalties maximizes the sum of `max(0, base − p)` (it is convex, so the floor at 0 only strengthens this). The result is the maximum of the objective over all orderings, in `O(n log n)` with no search.
+
+**For players:** "Your contributions to something only lose value when you have made more than everyone else combined, plus one." This sentence goes in the terminal's help text.
 
 Worked examples at base 6 and penalty 2 (minimum rolls shown):
 
@@ -45,50 +52,54 @@ Worked examples at base 6 and penalty 2 (minimum rolls shown):
 | A ×6 | one run of 6: 6, 4, 2, 0, 0, 0 | 12, as today |
 | A ×4, B ×4, in any order in time | A B A B A B A B | 48, as perfect live alternation |
 | A ×5, B ×2 | A A B A A B A: runs 2, 2, 1 | 26 + 12 = 38 |
-| A ×3 on Monday, B ×3 on Tuesday | A B A B A B | 36; today it would be 12 + 36 = 48 only if B had been there Monday |
+| A ×3 on Monday, B ×3 on Tuesday | A B A B A B | 36; today 12 + 12 = 24 |
 
-PILGRED keeps its own constants (`mod` 2, so base 1, or 5 with the Engineer or Physicist skill).
+PILGRED keeps its own constants (`mod` 2, so base 1, or 5 with the Engineer or Physicist skill). Without a skill its pool can reach about 100 tokens; that is still small state.
 
 ## Properties
 
-- **Progress never falls.** Adding a token can only improve the best arrangement, so the number shown after each action is final-as-of-now, completion is never undone, and completion side effects (a research's consumed sample, the MycoAlarm drop, PILGRED's repair) run in the contribution that crosses the line, as today.
+- **Progress never falls.** Adding a token can only improve the best arrangement (append it at the end of any ordering), so the number shown after each action is final-as-of-now, completion is never undone, and completion side effects (a research's consumed sample, the MycoAlarm drop, PILGRED's repair) run in the contribution that crosses the line, as today. With the tie-break, this must be tested for the rolled total too (see Tests); if it fails, rolls move from tokens to slots.
 - **No new power.** The best arrangement is a sequence the crew could have played live, so the pool never beats the best live play with the same contributions. It only removes the luck of being awake in the right order.
-- **Lone work stays penalized** in exactly today's amounts, and it becomes worth more the moment someone else contributes, which is what should make a lone player ask for help.
-- **Mush angle.** A Mush gains nothing new: more tokens never lower progress, a token that is never matched is just wasted AP, and the public line still names every contributor, so a Mush who never contributes is as visible as today.
+- **Lone work stays penalized** in exactly today's amounts, and it becomes worth more the moment someone else contributes, which is what should make a lone player ask for help. Solo work becomes an investment rather than a loss.
+- **Mush angle.** More tokens never lower progress, a token that is never matched is just wasted AP, and the log still names every contributor to those present. A Mush can make the single contribution that unlocks a big jump, but the token list shows exactly what each token is worth, so it earns no extra credit. Research sabotage is in `docs/research-sabotage.md`.
 
 ## State and code
 
-- `RelayStreak` (`lastBy`, `streak`) becomes `RelayPool = { tokens: RelayToken[] }` for `state.relay.research[id]`, `state.relay.projects[id]` and PILGRED's record in `state.pilgred`. `STATE_VERSION` bump.
-- `relay.ts`: `makeToken(state, config, player, skills)` (the roll draws from the seeded RNG), `poolProgress(pool, config) → { progress, waiting }` (pure; `waiting` is the progress with all penalties waived minus `progress`), and `arrangeTokens` exposed for tests. `relayGainRange`, `rollRelayGain` and `touchRelay` go.
-- `research.ts`, `project.ts` and `pilgred.ts` push a token and set the target's percent to `min(100, poolProgress(...).progress)`. Nothing else about the actions changes: cost, dirt and injury rolls, the Computer and Designer points, the dirty refusal, the public line.
-- The view: research, project and PILGRED progress are already public; add `waiting` beside each (public). Nothing else from the pool goes in a view; the token list itself is never sent.
+- `RelayStreak` (`lastBy`, `streak`) becomes `RelayPool = { banked: number; tokens: RelayToken[] }` for `state.relay.research[id]`, `state.relay.projects[id]` and PILGRED's record in `state.pilgred`. Research pools also get `pending` (`docs/research-sabotage.md`). `STATE_VERSION` bump with the migration above.
+- `relay.ts`: `makeToken(state, config, player, skills)` (the roll draws from the seeded RNG; the cheat is read here), `poolProgress(pool, config) → { progress, waiting }` (pure; `waiting` is `min(100, progress with all penalties waived) − progress`), and `arrangeTokens` exposed for tests. `relayGainRange`, `rollRelayGain` and `touchRelay` go.
+- `research.ts`, `project.ts` and `pilgred.ts` push a token and set the target's percent from `poolProgress(...)` (research: of the verified tokens, `docs/research-sabotage.md`). Nothing else about the actions changes: cost, dirt and injury rolls, the Computer and Designer points, the dirty refusal, the public line.
+- The view: `waiting` beside each progress, with the same visibility as that progress (PILGRED is room-gated). Each viewer also gets their own token count per target (their own information). A viewer in the room of a target's terminal also gets that target's token list (contributor and value). Nothing else from the pool goes in a view.
 
 ## UI
 
-- The research, project and PILGRED terminal dialogs show `waiting` under the progress bar when it is above 0: "N% more once someone else contributes". Phone and desktop layouts; en, fr, es.
-- Optional: the room log line gains a second sentence when a token unlocks earlier work.
+- The research, project and PILGRED terminal dialogs show `waiting` under the progress bar when it is above 0: "up to N% more once others contribute". Phone and desktop layouts; en, fr, es.
+- The help text sentence above.
 
 ## Bots
 
-A scripted bot prefers a target whose last token is not its own, or one with `waiting > 0` by others (its token unlocks that work), and avoids adding a third token in a row on anything. A model bot sees `waiting` in its view like any public number. This replaces the relay plans of `docs/bot-goals-plan.md` (`startRelay`): a bot that wants help with a research posts a task slot in a channel plan (`docs/on-call-plans.md`) and works on; no one has to be online with it.
+A scripted bot uses its own token count and `waiting`: it prefers a target where its count is not above everyone else's combined plus one, and one with `waiting > 0` caused by others (its token unlocks that work). A model bot sees the same numbers in its view. A bot sees a token list only while in that terminal's room, like a human (architecture rule 5: own seat's view only). This replaces the relay plans of `docs/bot-goals-plan.md` (`startRelay`): a bot that wants help with a research posts a task slot in a channel plan (`docs/on-call-plans.md`) and works on; no one has to be online with it.
 
 ## Leak check
 
-Everything here is public already (progress, contributor names in the room log). `waiting` is derived from public tokens. The token list, bases and rolls are never sent. A sanity test: the view is identical whoever the viewer is.
+- Research and project progress are public; PILGRED progress is not (living, in a room with a PILGRED terminal). `waiting` follows its target's progress visibility.
+- Room log lines are seen only in their room, so a public `waiting` does tell people elsewhere a little ("someone is working Mycoscan alone"). Research progress already moves publicly with every contribution, so this is accepted as minor.
+- The token list (contributor and value) goes only to viewers in the terminal's room; values reveal skill bonuses of absent contributors (owner accepted, 2026-10-30). Rolls and `contaminated` are never sent.
+- Tests: `waiting` for research and projects is the same for every viewer; PILGRED's is null wherever its progress is; no token list outside the terminal's room.
 
 ## Tests
 
-- `poolProgress` equals the brute-force maximum over all orderings for small random pools, with mixed bases and the floor at 0.
+- The objective (sum of `g`) from `arrangeTokens` equals the brute-force maximum over all orderings for small random pools (up to 8 tokens), with mixed bases and the floor at 0.
+- The rolled total with the tie-break is monotone as tokens are added, over random pools and rolls.
 - The examples above; a lone contributor's progress equals today's streak formula for 1 to 8 tokens.
-- Progress is monotone in the token list; completion side effects fire once, on the crossing contribution.
+- Completion side effects fire once, on the crossing contribution.
 - The roll is drawn at token time: the same seed gives the same progress whatever order the pool is later read in; a replay reproduces it.
-- `waiting` is 0 whenever `c ≤ m + 1`, and equals the sum of applied penalties otherwise.
-- The `noRelayPenalty` cheat; PILGRED's constants and skills; research skills (Biologist, Medic) and projects' per-project tags still apply through `base`.
-- The view's `waiting` is the same for every viewer; no token data in any view.
+- `waiting` is 0 whenever `c ≤ m + 1`, never above `100 − progress`, and for a lone contributor equals full-value progress minus the streak formula's (A ×6 at minimum rolls: 36 − 12 = 24).
+- The `noRelayPenalty` cheat, fixed at token time; PILGRED's constants and skills; research skills (Biologist, Medic) and projects' per-project tags still apply through `base`.
+- Migration: `banked` keeps every target's percent; the NERON update's direct completion still holds.
+- The view rules in "Leak check".
 
 ## Open questions
 
-- Confirm projects and PILGRED pool as research does.
 - Lifetime pool, or a window (per day)? Lifetime proposed.
-- Show `waiting` publicly, or only to people in the terminal's room? Public proposed (the log lines already are).
-- The pace question from `docs/action-plans.md` stands: research and projects take about 11 to 17 actions without a matching skill. Pooling changes nothing about the expected value of perfect play, only how often real play reaches it.
+- Show `waiting` publicly for research and projects, or only to people in the terminal's room? Public proposed.
+- Projects have no sabotage yet, so the pace concern (real play rarely alternates, so pooling finishes them sooner) is not offset there. A before/after comparison with scripted bots on the same seeds would show how much.
