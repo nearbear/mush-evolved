@@ -192,7 +192,9 @@ async function keyboardRound(page: Page): Promise<void> {
 /** Tabs through the whole page, marking each stop `data-a11y-tab`; returns where it stopped. */
 async function tabWalk(page: Page): Promise<{ stops: string[]; footerStops: string[]; footerFirst: boolean; trapped: boolean }> {
   await inPage(page, `document.querySelectorAll("[data-a11y-tab]").forEach((el) => el.removeAttribute("data-a11y-tab"))`);
-  await inPage(page, `document.activeElement && document.activeElement.blur()`);
+  // blur() keeps the "sequential focus starting point" where the last test left it, so Tab would begin mid-page.
+  // Focusing a throwaway first child and removing it puts the starting point back at the top of the document.
+  await inPage(page, `(() => { const s = document.createElement("span"); s.tabIndex = -1; document.body.prepend(s); s.focus(); s.remove(); })()`);
   const stops: string[] = [];
   const footerStops: string[] = [];
   let footerFirst = false; // a footer stop came before some other stop
