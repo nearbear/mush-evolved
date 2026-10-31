@@ -21,8 +21,11 @@
   "vars": { "RULES_VERSION": "dev" },
   "migrations": [{ "tag": "v1", "new_sqlite_classes": ["GameRoom", "Matchmaker"] }],
   // The top level above is production. Wrangler does not inherit bindings, vars,
-  // or migrations into an environment, so staging repeats them. Its different
-  // Worker name gives it its own Durable Object storage and secrets.
+  // or migrations into an environment, so staging and test repeat them. Their
+  // different Worker names give them their own Durable Object storage and secrets.
+  // Test is staging with cheats and End cycle on (ALLOW_CHEATS), behind Cloudflare
+  // Access. Never DEV_SERVER or MODEL_API_KEY on any deployment: no bot fill,
+  // normal rate limits, no dev model key.
   "env": {
     "staging": {
       "name": "mush2-server-staging",
@@ -38,6 +41,22 @@
         ]
       },
       "vars": { "RULES_VERSION": "dev" },
+      "migrations": [{ "tag": "v1", "new_sqlite_classes": ["GameRoom", "Matchmaker"] }]
+    },
+    "test": {
+      "name": "mush2-server-test",
+      "assets": {
+        "directory": "../web/dist",
+        "not_found_handling": "single-page-application",
+        "run_worker_first": ["/parties/*"]
+      },
+      "durable_objects": {
+        "bindings": [
+          { "name": "GameRoom", "class_name": "GameRoom" },
+          { "name": "Matchmaker", "class_name": "Matchmaker" }
+        ]
+      },
+      "vars": { "RULES_VERSION": "dev", "ALLOW_CHEATS": "true" },
       "migrations": [{ "tag": "v1", "new_sqlite_classes": ["GameRoom", "Matchmaker"] }]
     }
   }

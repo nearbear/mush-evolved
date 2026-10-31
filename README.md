@@ -44,6 +44,7 @@ npx playwright install --with-deps chromium
 | `npm run preview` | Build the client and serve the production build beside the local server (stop `npm run dev` first) |
 | `npm run deploy` | Build the client and deploy it with the server as one Cloudflare Worker: production (needs `npx -w server wrangler login`) |
 | `npm run deploy:staging` | The same, to the `mush2-server-staging` Worker, with its own Durable Objects and secrets (set them with `wrangler secret put <NAME> --env staging`) |
+| `npm run deploy:test` | The same, to the `mush2-server-test` Worker, with cheats and End cycle on (`ALLOW_CHEATS`) but no bot fill, normal rate limits and no dev model key. Keep it behind Cloudflare Access |
 
 ## Project layout
 

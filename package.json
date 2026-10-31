@@ -20,6 +20,7 @@
     "build": "npm run build -w web",
     "deploy": "npm run build && npm run deploy -w server",
     "deploy:staging": "npm run build && npm run deploy:staging -w server",
+    "deploy:test": "npm run build && npm run deploy:test -w server",
     "ship-layout": "npm run ship-layout -w tools",
     "layout-query": "npm run layout-query -w tools --",
     "ship-check": "npm run ship-check -w tools --",
