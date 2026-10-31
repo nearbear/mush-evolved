@@ -1704,3 +1704,10 @@ Follow-up the same day: the owner made research a private action (our code still
 - A separate review pass found one real bug: a D1 failure while boarding left the lobby socket stuck as "joined" with no reply. Fixed by answering `join_failed`. It also caught refused joins leaving closed history rows, a too-broad revoke on re-signing in as the same account, and an overstated comment.
 - Claude raised a dead seat's token outliving logout as a risk; the owner pointed out a dead seat only gets the graveyard view, so it's acceptable. Seat names being the account's display name was also fine with the owner: players have tells anyway.
 - Gemini Flash reviewed the new fr/es strings and fixed one French calque ("Rejoignez à nouveau" without an object).
+
+
+## 2026-10-31: research samples and assays
+
+- Condensed the owner's public research proposal under 4,000 characters, then carried its decisions into the design docs: "sample" and "assay" replace "token" and "breakthrough"; Saboteur contaminates a random pending sample (not a picked one); research progress is lab-only. `docs/relay-tokens.md` became `docs/pooled-contributions.md`.
+- Needed correction: the first paste was truncated and Claude filled the gaps by guessing; and Claude misread "progress with the pending samples included" as one combined number, when the owner meant the solid-plus-striped bar. Comparing the proposal against the docs did surface two real conflicts (projects and PILGRED pooling, the evidence record), which the owner resolved in favour of the docs.
+- Follow-up: the owner wants "relay tokens" kept as the behind-the-scenes name ("sample" and "assay" are player-facing only), so Claude restored `docs/relay-tokens.md` from git and re-applied the day's decisions instead of keeping its rename to `pooled-contributions.md`. Lesson: a request to change wording in a design may mean player-facing wording only; ask which before renaming files and code identifiers.

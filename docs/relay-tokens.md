@@ -1,6 +1,6 @@
 # Plan: relay tokens (pooled contributions; written 2026-10-30)
 
-How research, NERON projects and PILGRED take contributions once players no longer have to alternate live. Replaces the "relay jobs" of `docs/action-plans.md`, whose executor is dropped (see `docs/on-call-plans.md`). Research tokens also go through a pending stage with sabotage, `docs/research-sabotage.md`. Not built. **Decisions** are the owner's; **Proposed** items are Claude's and need the owner's confirmation before they are built. Do not guess them.
+How research, NERON projects and PILGRED take contributions once players no longer have to alternate live. Replaces the "relay jobs" of `docs/action-plans.md`, whose executor is dropped (see `docs/on-call-plans.md`). "Relay tokens" is the owner's name for this system behind the scenes (code and docs). Players see research tokens as **samples**, which also go through a pending stage with assays and sabotage, `docs/research-sabotage.md`. Not built. **Decisions** are the owner's; **Proposed** items are Claude's and need the owner's confirmation before they are built. Do not guess them.
 
 ## The problem
 
@@ -13,14 +13,22 @@ The relay formula (`shared/src/relay.ts`, owner 2026-10-26) cuts a contribution'
 - **The penalty is unchanged.** If the best arrangement still has to put several of one player's tokens in a row, those tokens lose `relayPenalty` per step as they do today. A lone contributor is penalized exactly as now.
 - **No new AP source.** A token costs what the action costs today (2 AP, or a Computer or Designer point); nothing is refunded or lent.
 - **All three progressibles pool:** research, projects and PILGRED. Only research has the pending stage and sabotage (`docs/research-sabotage.md`).
-- **Research's token list is the evidence:** visible to anyone in the lab, with faces and values; research becomes private, with no room log line (`docs/research-sabotage.md`). This answers the log-credit question: the list shows who did what.
+- **Research's token list is the evidence:** visible to anyone in the lab, with faces and values; research becomes private, with no room log line (`docs/research-sabotage.md`). This answers the log-credit question: the list and the assay lines show who did what.
 - **Pace:** no retune before building; the owner expects contamination to offset the gain from pooling. Watch it in playtests.
+
+## Decisions (owner, 2026-10-31)
+
+- **Name:** "relay tokens" behind the scenes; research tokens are "samples" to players (`docs/research-sabotage.md`). All three progressibles still pool (reconfirmed).
+- **The gain if you contribute now.** Every action that adds a relay token (research's Participate, projects, PILGRED) shows on its button how much the target goes up if you contribute now. That can be more than your token is worth on its own, when your token is what breaks up someone else's streak.
+- **Progress is visible only to living players in the target's room until it completes.** Research (the lab), projects (the NERON core's room) and PILGRED (a room with a PILGRED terminal): nobody outside that room sees anything about the target, not its progress, `waiting`, the gain or its token list. Completion is the only news that reaches other rooms. This replaces today's public research and project progress.
+- **The help text** sentence below, in the owner's wording.
+- **Projects may finish faster** with pooling and no sabotage; accepted, since projects are pro-survival rather than anti-Mush. The owner may add a mechanic for them later.
+- **A pool lasts the target's lifetime.** No window: a token made on day 1 can pair with one made on day 4. A window would bring back the timing pressure.
 
 ## Proposed (Claude, 2026-10-30; confirm before building)
 
-- **A pool lasts the target's lifetime.** No window: a token made on day 1 can pair with one made on day 4. A window would bring back the timing pressure.
 - **Each token carries its own roll**, drawn when it is made, so later arrangement never re-rolls luck and a replay is deterministic.
-- **Waiting work is shown.** The terminal shows how much progress is held back only by the lack of another contributor. Research and projects: public, like their progress. PILGRED: only to those who see its progress (living, in a room with a PILGRED terminal, `rules.ts` `viewFor`).
+- **Waiting work is shown.** The terminal shows how much progress is held back only by the lack of another contributor, to those who see the target's progress (in its room, above).
 - **Projects and PILGRED** keep their room log lines, and their token lists are shown at their own terminals the same way, to people in that room (by analogy with research; confirm).
 - **The `noRelayPenalty` cheat** is fixed when the token is made: each such token counts as if from a distinct player, whatever the cheat's state later.
 - **Migration.** Progress made before the switch cannot be turned into tokens (a `RelayStreak` keeps no history). Each pool gets `banked`, the target's percent at migration, and progress is `banked + poolProgress(...)`. `banked` also absorbs any other writer: the NERON update sets a project to 100 directly (`comms.ts`).
@@ -43,7 +51,7 @@ A token in a position with penalty `p` is worth `g = max(0, base − p)`, rolled
 
 Even runs give the elementwise smallest sorted penalty list, and pairing high bases with low penalties maximizes the sum of `max(0, base − p)` (it is convex, so the floor at 0 only strengthens this). The result is the maximum of the objective over all orderings, in `O(n log n)` with no search.
 
-**For players:** "Your contributions to something only lose value when you have made more than everyone else combined, plus one." This sentence goes in the terminal's help text.
+**For players:** "Your contributions only lose value when you've made more than everyone else combined, plus one." This sentence goes in the terminal's help text.
 
 Worked examples at base 6 and penalty 2 (minimum rolls shown):
 
@@ -58,7 +66,7 @@ PILGRED keeps its own constants (`mod` 2, so base 1, or 5 with the Engineer or P
 
 ## Properties
 
-- **Progress never falls.** Adding a token can only improve the best arrangement (append it at the end of any ordering), so the number shown after each action is final-as-of-now, completion is never undone, and completion side effects (a research's consumed sample, the MycoAlarm drop, PILGRED's repair) run in the contribution that crosses the line, as today. With the tie-break, this must be tested for the rolled total too (see Tests); if it fails, rolls move from tokens to slots.
+- **Progress never falls.** Adding a token can only improve the best arrangement (append it at the end of any ordering), so the number shown after each action is final-as-of-now, completion is never undone, and completion side effects (PILGRED's repair, a project's effect) run in the contribution that crosses the line, as today. Research completes at an assay instead (`docs/research-sabotage.md`). With the tie-break, this must be tested for the rolled total too (see Tests); if it fails, rolls move from tokens to slots.
 - **No new power.** The best arrangement is a sequence the crew could have played live, so the pool never beats the best live play with the same contributions. It only removes the luck of being awake in the right order.
 - **Lone work stays penalized** in exactly today's amounts, and it becomes worth more the moment someone else contributes, which is what should make a lone player ask for help. Solo work becomes an investment rather than a loss.
 - **Mush angle.** More tokens never lower progress, a token that is never matched is just wasted AP, and the log still names every contributor to those present. A Mush can make the single contribution that unlocks a big jump, but the token list shows exactly what each token is worth, so it earns no extra credit. Research sabotage is in `docs/research-sabotage.md`.
@@ -68,23 +76,23 @@ PILGRED keeps its own constants (`mod` 2, so base 1, or 5 with the Engineer or P
 - `RelayStreak` (`lastBy`, `streak`) becomes `RelayPool = { banked: number; tokens: RelayToken[] }` for `state.relay.research[id]`, `state.relay.projects[id]` and PILGRED's record in `state.pilgred`. Research pools also get `pending` (`docs/research-sabotage.md`). `STATE_VERSION` bump with the migration above.
 - `relay.ts`: `makeToken(state, config, player, skills)` (the roll draws from the seeded RNG; the cheat is read here), `poolProgress(pool, config) → { progress, waiting }` (pure; `waiting` is `min(100, progress with all penalties waived) − progress`), and `arrangeTokens` exposed for tests. `relayGainRange`, `rollRelayGain` and `touchRelay` go.
 - `research.ts`, `project.ts` and `pilgred.ts` push a token and set the target's percent from `poolProgress(...)` (research: of the verified tokens, `docs/research-sabotage.md`). Nothing else about the actions changes: cost, dirt and injury rolls, the Computer and Designer points, the dirty refusal, the public line.
-- The view: `waiting` beside each progress, with the same visibility as that progress (PILGRED is room-gated). Each viewer also gets their own token count per target (their own information). A viewer in the room of a target's terminal also gets that target's token list (contributor and value). Nothing else from the pool goes in a view.
+- The view: `waiting` beside each progress, with the same visibility as that progress (all three are room-gated until complete). Each viewer also gets their own token count per target (their own information) and, in the target's room, the gain if they contribute now. A viewer in the room of a target's terminal also gets that target's token list (contributor and value). Nothing else from the pool goes in a view.
 
 ## UI
 
 - The research, project and PILGRED terminal dialogs show `waiting` under the progress bar when it is above 0: "up to N% more once others contribute". Phone and desktop layouts; en, fr, es.
+- Every relay-token button (research's Participate, projects, PILGRED) shows the gain if you contribute now.
 - The help text sentence above.
 
 ## Bots
 
-A scripted bot uses its own token count and `waiting`: it prefers a target where its count is not above everyone else's combined plus one, and one with `waiting > 0` caused by others (its token unlocks that work). A model bot sees the same numbers in its view. A bot sees a token list only while in that terminal's room, like a human (architecture rule 5: own seat's view only). This replaces the relay plans of `docs/bot-goals-plan.md` (`startRelay`): a bot that wants help with a research posts a task slot in a channel plan (`docs/on-call-plans.md`) and works on; no one has to be online with it.
+A scripted bot uses its own token count and `waiting`: it prefers a target where its count is not above everyone else's combined plus one, and one with `waiting > 0` caused by others (its token unlocks that work). A model bot sees the same numbers in its view. A bot sees a target's progress, `waiting` and token list only while in that terminal's room, like a human (architecture rule 5: own seat's view only). This replaces the relay plans of `docs/bot-goals-plan.md` (`startRelay`): a bot that wants help with a research posts a task slot in a channel plan (`docs/on-call-plans.md`) and works on; no one has to be online with it.
 
 ## Leak check
 
-- Research and project progress are public; PILGRED progress is not (living, in a room with a PILGRED terminal). `waiting` follows its target's progress visibility.
-- Room log lines are seen only in their room, so a public `waiting` does tell people elsewhere a little ("someone is working Mycoscan alone"). Research progress already moves publicly with every contribution, so this is accepted as minor.
+- Research, project and PILGRED progress are visible only in the target's room until it completes (owner, 2026-10-31); only completion is public. `waiting`, the gain and the token list follow the same rule. Only living viewers count, as PILGRED's gate already does (`rules.ts` `viewFor`).
 - The token list (contributor and value) goes only to viewers in the terminal's room; values reveal skill bonuses of absent contributors (owner accepted, 2026-10-30). Rolls and `contaminated` are never sent.
-- Tests: `waiting` for research and projects is the same for every viewer; PILGRED's is null wherever its progress is; no token list outside the terminal's room.
+- Tests: outside a target's room, or for a dead viewer, its progress, `waiting`, gain and token list are null and only completion shows; inside, `waiting` is the same for every viewer.
 
 ## Tests
 
@@ -100,6 +108,4 @@ A scripted bot uses its own token count and `waiting`: it prefers a target where
 
 ## Open questions
 
-- Lifetime pool, or a window (per day)? Lifetime proposed.
-- Show `waiting` publicly for research and projects, or only to people in the terminal's room? Public proposed.
-- Projects have no sabotage yet, so the pace concern (real play rarely alternates, so pooling finishes them sooner) is not offset there. A before/after comparison with scripted bots on the same seeds would show how much.
+None left.
