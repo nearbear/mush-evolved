@@ -246,9 +246,8 @@ li.research-item /* Rebel base icons are 70x65, not the 50x75 research cards. */
   background: repeating-linear-gradient(-45deg, #a8ea40 0 3px, transparent 3px 6px);
 }
 
-/* Relay tokens (RelayDetails.tsx): the terminal's one-line rule, the work held back for lack of other contributors, and
+/* Relay tokens (RelayDetails.tsx): the work held back for lack of other contributors, and
    each contribution as the contributor's face over its value, wrapping on a phone. */
-.relay-help,
 .relay-waiting {
   margin: 0.25rem 0;
   font-size: 0.85em;

@@ -11,12 +11,6 @@ export function withGain(t: TFunction, action: string, gain: RelayTargetView["ga
   return t("relay.withGain", { action, gain: text });
 }
 
-/** The one-line rule shown at the top of a research, project or PILGRED terminal (owner's wording, 2026-10-31). */
-export function RelayHelp() {
-  const { t } = useTranslation();
-  return <p className="relay-help">{t("relay.help")}</p>;
-}
-
 /**
  * Under a target's progress bar: the work held back only for lack of other contributors, and its tokens (who made each
  * and what it is worth now), in the order they were made. Only the view's own numbers; nothing is computed here.

@@ -34,7 +34,7 @@ import { CHECK_ICON, PILGRED_CARD, PROJECT_CARDS, RESEARCH_CARDS, skillIcon, UNC
 import { useNames } from "../i18n/names.ts";
 import { ActionLabel } from "./ActionLabel.tsx";
 import { ActionButton } from "./ActionButton.tsx";
-import { RelayDetails, RelayHelp, withGain } from "./RelayDetails.tsx";
+import { RelayDetails, withGain } from "./RelayDetails.tsx";
 import { BiosTerminal } from "./BiosTerminal.tsx";
 import { CommsCenter } from "./CommsCenter.tsx";
 import { TabOutline } from "./TabOutline.tsx";
@@ -156,11 +156,10 @@ function PilgredRepair({ terminal, view, onAction }: ListProps) {
         <span>{t("pilgred.desc")}</span>
         <progress max={PILGRED_COMPLETE} value={percent} />
         <span>{percent >= PILGRED_COMPLETE ? t("pilgred.repaired") : t("pilgred.progress", { percent })}</span>
-        <RelayHelp />
         <RelayDetails target={view.relay.pilgred ?? undefined} view={view} />
       </div>
       {option && (
-        <ActionButton view={view} option={option} onAction={onAction}>
+        <ActionButton view={view} option={option} onAction={onAction} hint={t("relay.help")}>
           <ActionLabel text={withGain(t, t("actions.repairPilgred"), view.relay.pilgred?.gain)} cost={option.cost} chance={option.chance} />
         </ActionButton>
       )}
@@ -237,7 +236,6 @@ function ProgressList({ label, ids, progress, relay, complete, cards, name, desc
   const current = shown.includes(tab) ? tab : "active";
   return (
     <Tabs.Root className="settings-tabs" value={current} onValueChange={(value) => setTab(value as ProgressTab)}>
-      <RelayHelp />
       <Tabs.List className="settings-tab-list progress-tab-list" aria-label={label}>
         {shown.map((key) => (
           <Tabs.Tab key={key} className="settings-tab" value={key}>
@@ -280,7 +278,7 @@ function ProgressList({ label, ids, progress, relay, complete, cards, name, desc
                           />
                           <span>{pendingOf(id) ? t("research.withPending", { percent, pending: pendingOf(id) }) : t("research.percent", { percent })}</span>
                           {option && (
-                            <ActionButton view={view} option={option} onAction={onAction}>
+                            <ActionButton view={view} option={option} onAction={onAction} hint={t("relay.help")}>
                               <ActionLabel text={withGain(t, t("research.work"), relay[id]?.gain)} cost={option.cost} chance={option.chance} />
                             </ActionButton>
                           )}

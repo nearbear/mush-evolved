@@ -9,22 +9,23 @@ import { ConsumeEffects } from "./ConsumeEffects.tsx";
 import { affordable, freeAp, type Action, type ActionOption, type PlayerView } from "@mush2/shared";
 
 /** A button that does the action, or the disabled one with the reason when you lack the points. */
-export function ActionButton({ view, option, onAction, children, className }: { view: PlayerView; option: ActionOption; onAction: (action: Action) => void; children: ReactNode; className?: string }) {
-  if (!affordable(option)) return <DisabledActionButton view={view} blocked={option} className={className}>{children}</DisabledActionButton>;
+export function ActionButton({ view, option, onAction, children, className, hint }: { view: PlayerView; option: ActionOption; onAction: (action: Action) => void; children: ReactNode; className?: string; hint?: string }) {
+  if (!affordable(option)) return <DisabledActionButton view={view} blocked={option} className={className} hint={hint}>{children}</DisabledActionButton>;
   const button = (
     <button type="button" className={className} onClick={() => onAction(option.action)}>
       {children}
     </button>
   );
   const type = consumedType(view, option);
-  if (type === undefined) return button;
+  if (type === undefined && hint === undefined) return button;
   return (
     <Popover.Root>
       <Popover.Trigger openOnHover delay={200} render={button} />
       <Popover.Portal>
         <Popover.Positioner sideOffset={6}>
           <Popover.Popup className="tooltip resource-card status-card">
-            <ConsumeEffects type={type} />
+            {hint}
+            {type !== undefined && <ConsumeEffects type={type} />}
           </Popover.Popup>
         </Popover.Positioner>
       </Popover.Portal>
@@ -39,7 +40,7 @@ function consumedType(view: PlayerView, option: ActionOption): string | undefine
   return [...view.inventory, ...view.roomItems].find((i) => i.id === a.item)?.type;
 }
 
-export function DisabledActionButton({ view, blocked, children, className }: { view: PlayerView; blocked: ActionOption; children: ReactNode; className?: string }) {
+export function DisabledActionButton({ view, blocked, children, className, hint }: { view: PlayerView; blocked: ActionOption; children: ReactNode; className?: string; hint?: string }) {
   const { t } = useTranslation();
   const { cost, lacks } = blocked;
   const reason =
@@ -66,6 +67,7 @@ export function DisabledActionButton({ view, blocked, children, className }: { v
         <Popover.Positioner sideOffset={6}>
           <Popover.Popup className="tooltip resource-card status-card">
             {reason}
+            {hint !== undefined && <p>{hint}</p>}
             {type !== undefined && <ConsumeEffects type={type} />}
           </Popover.Popup>
         </Popover.Positioner>
