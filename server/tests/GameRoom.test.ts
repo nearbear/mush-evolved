@@ -1134,6 +1134,32 @@ describe("GameRoom accounts (#285)", () => {
     expect(connect(room, resumed.token, "phone-again").closed).toBeNull();
   });
 
+  it("Leave ship (a cheat) frees the account, drops the seat's tokens and closes its sockets; refused without cheats", async () => {
+    const { room, store, ids, tokens, game } = await shipWithAccounts();
+    const ann = connect(room, tokens[0]!);
+    await send(room, ann, { type: "leaveShip" });
+    expect(lastMsg(ann)).toEqual({ type: "error", message: "cheats_disabled" });
+    expect(await store.currentShip(ids[0]!)).toBe("test-room");
+
+    (room as unknown as { env: Record<string, string> }).env.ALLOW_CHEATS = "true";
+    const resumed = await room.resume(ids[0]!, "session-phone");
+    if (!resumed.ok) throw new Error("not resumed");
+    const phone = connect(room, resumed.token);
+    const bob = connect(room, tokens[1]!);
+    const players = game().players.length;
+    await send(room, ann, { type: "leaveShip" });
+    expect(await store.currentShip(ids[0]!)).toBeNull();
+    expect(await store.currentShip(ids[1]!)).toBe("test-room");
+    expect(ann.closed?.code).toBe(4001);
+    expect(phone.closed?.code).toBe(4001);
+    expect(bob.closed).toBeNull();
+    expect(connect(room, tokens[0]!, "again").closed?.code).toBe(4001);
+    expect(await room.resume(ids[0]!, "s")).toEqual({ ok: false });
+    expect(room.seatAccounts()).toEqual([ids[1]]);
+    // The character stays aboard.
+    expect(game().players).toHaveLength(players);
+  });
+
   it("keeps accounts and session tokens across a restart", async () => {
     const { storage, ids } = await shipWithAccounts();
     const revived = new GameRoom({ storage } as never, { RULES_VERSION: "test", DB: migratedDatabase() } as never);

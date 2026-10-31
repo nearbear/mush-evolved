@@ -23,6 +23,7 @@ export function SettingsDialog({
   activeCheats,
   onCheat,
   onRoleCheat,
+  onLeaveShip,
   onLeave,
   open,
   onOpenChange,
@@ -33,6 +34,9 @@ export function SettingsDialog({
   activeCheats: readonly Cheat[];
   onCheat: (cheat: Cheat, on: boolean) => void;
   onRoleCheat: (role: RoleCheat) => void;
+  /** Leave ship (cheat): the server frees the account and closes the socket, which sends the client to the lobby. */
+  onLeaveShip: () => void;
+  /** Back to the lobby. The seat stays this account's: the lobby boards it back onto the same ship. */
   onLeave: () => void;
   /** Controlled mode, for opening the dialog from another control (the phone menu). */
   open?: boolean;
@@ -87,7 +91,7 @@ export function SettingsDialog({
               <option value="off">{t("settings.announce.off")}</option>
             </select>
           </label>
-              <button type="button" onClick={onLeave}>{t("topBar.leave")}</button>
+              <button type="button" onClick={onLeave}>{t("topBar.mainMenu")}</button>
               <Credits as="p" className="settings-credits" />
             </Tabs.Panel>
             {cheatsAllowed && (
@@ -113,6 +117,7 @@ export function SettingsDialog({
                   </button>
                 ))}
               </div>
+              <button type="button" onClick={onLeaveShip}>{t("settings.cheats.leaveShip")}</button>
             </fieldset>
               </Tabs.Panel>
             )}

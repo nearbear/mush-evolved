@@ -6,6 +6,12 @@ import { MUSH_SKILLS, SKILLS } from "../src/skills.ts";
 
 const parse = (msg: unknown) => parseGameMessage(JSON.stringify(msg));
 
+describe("Leave ship (a cheat)", () => {
+  it("parses with nothing else carried", () => {
+    expect(parse({ type: "leaveShip", seat: "p1" })).toEqual({ type: "leaveShip" });
+  });
+});
+
 describe("model key messages (BYOK)", () => {
   const ok = { type: "setModel", provider: "openrouter", model: "meta-llama/llama-3.3-70b-instruct:free", apiKey: "sk-or-v1-abc123" };
 

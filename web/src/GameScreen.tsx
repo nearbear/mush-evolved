@@ -201,6 +201,7 @@ export function GameScreen({ ticket, onLeave, waking = false }: { ticket: SeatTi
         cheatsAllowed={cheatsAllowed}
         onCheat={(cheat: Cheat, on: boolean) => post({ type: "cheat", cheat, on })}
         onRoleCheat={(role: RoleCheat) => post({ type: "roleCheat", role })}
+        onLeaveShip={() => post({ type: "leaveShip" })}
       />
 
       <div className="three-panel" data-panel={panel}>

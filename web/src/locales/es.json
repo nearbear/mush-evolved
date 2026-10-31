@@ -3,7 +3,7 @@
     "endCycle": "Terminar el ciclo",
     "waiting": "Esperando…",
     "waitingForOthers": "Esperando a los demás…",
-    "leave": "Salir",
+    "mainMenu": "Menú principal",
     "preselection": "Preselección",
     "preselectionAbout": "Todavía nadie es Mush. Los Mush se elegirán cuando la nave esté llena, o el día 3, ciclo 8. Hasta entonces no hay combate.",
     "botsPaused": "IA en pausa",
@@ -84,6 +84,7 @@
       "alwaysClean": "Siempre limpio",
       "easyTravel": "Viaje fácil",
       "invincible": "Nave invencible",
+      "leaveShip": "Abandonar la nave",
       "role": {
         "mush": "Convertirse en Mush",
         "human": "Convertirse en humano"

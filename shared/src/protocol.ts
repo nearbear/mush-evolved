@@ -63,7 +63,10 @@ export type GameClientMessage =
   | { type: "clearModel" }
   // Development only: the server refuses it unless cheats are enabled (cheats.ts).
   | { type: "cheat"; cheat: Cheat; on: boolean }
-  | { type: "roleCheat"; role: RoleCheat };
+  | { type: "roleCheat"; role: RoleCheat }
+  // Development only, like the cheats: frees the sender's account from this ship at once, so the lobby offers other
+  // ships. Not an input: the rules never see it, and the character stays aboard unplayed.
+  | { type: "leaveShip" };
 export type GameServerMessage =
   // `cheatsAllowed` is the server's dev flag, so the client knows whether to offer cheats. It is not game state.
   // `now` is the server's clock when sent, so the client can draw action bars (server ms) against its own clock.
@@ -130,6 +133,7 @@ export function parseGameMessage(raw: string): GameClientMessage | null {
   if (msg?.type === "clearModel") return { type: "clearModel" };
   if (msg?.type === "clearQueue") return { type: "clearQueue" };
   if (msg?.type === "acknowledgeTransfer") return { type: "acknowledgeTransfer" };
+  if (msg?.type === "leaveShip") return { type: "leaveShip" };
   if (msg?.type === "walk") {
     const { x, y, sitting, behind } = msg;
     if (!isSpotCell(x, y) || typeof sitting !== "boolean") return null;

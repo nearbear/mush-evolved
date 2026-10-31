@@ -24,6 +24,7 @@ export function TopBar({
   cheatsAllowed,
   onCheat,
   onRoleCheat,
+  onLeaveShip,
 }: {
   view: PlayerView;
   /** Phones only: on desktop the summary is the HUD over the room (SelfHud). */
@@ -43,6 +44,7 @@ export function TopBar({
   cheatsAllowed: boolean;
   onCheat: (cheat: Cheat, on: boolean) => void;
   onRoleCheat: (role: RoleCheat) => void;
+  onLeaveShip: () => void;
 }) {
   const { you } = view;
   const { t } = useTranslation();
@@ -117,6 +119,7 @@ export function TopBar({
         activeCheats={you.cheats}
         onCheat={onCheat}
         onRoleCheat={onRoleCheat}
+        onLeaveShip={onLeaveShip}
         onLeave={onLeave}
         hideTrigger={mobile}
         {...(mobile ? { open: settingsOpen, onOpenChange: setSettingsOpen } : {})}

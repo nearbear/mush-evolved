@@ -51,8 +51,9 @@ export interface RecordedInput {
  * plans) will join this union without a `by`.
  */
 export type Input =
-  // Never the model key messages (BYOK): every input is recorded, and a key must never be stored.
-  | (Exclude<GameClientMessage, { type: "action" | "setModel" | "clearModel" }> & { by: PlayerId })
+  // Never the model key messages (BYOK): every input is recorded, and a key must never be stored. Nor Leave ship, which
+  // only the server handles (it changes who plays a seat, not the game).
+  | (Exclude<GameClientMessage, { type: "action" | "setModel" | "clearModel" | "leaveShip" }> & { by: PlayerId })
   | (Extract<GameClientMessage, { type: "action" }> & { by: PlayerId; at: number })
   | { type: "tick"; at: number }
   | { type: "cycle" }

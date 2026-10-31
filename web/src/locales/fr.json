@@ -3,7 +3,7 @@
     "endCycle": "Terminer le cycle",
     "waiting": "En attente…",
     "waitingForOthers": "En attente des autres…",
-    "leave": "Quitter",
+    "mainMenu": "Menu principal",
     "preselection": "Pré-sélection",
     "preselectionAbout": "Personne n'est encore Mush. Les Mush seront choisis quand le vaisseau sera plein, ou au jour 3, cycle 8. D'ici là, aucun combat n'est possible.",
     "botsPaused": "IA en pause",
@@ -84,6 +84,7 @@
       "alwaysClean": "Toujours propre",
       "easyTravel": "Voyage facile",
       "invincible": "Vaisseau invincible",
+      "leaveShip": "Quitter le vaisseau",
       "role": {
         "mush": "Devenir Mush",
         "human": "Devenir humain"

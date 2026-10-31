@@ -321,6 +321,33 @@ export class GameRoom extends Server<Env> {
       .map((s) => this.aboard[s]!);
   }
 
+  /**
+   * Leave ship, a developer cheat (`ALLOW_CHEATS` only): frees the seat's account in D1 so the lobby offers other
+   * ships, and drops every token for the seat, closing its sockets (4001 sends the client to the lobby). The character
+   * stays aboard, unplayed; nothing goes through the rules. Not a player rule: a living player can't leave a ship.
+   */
+  private async leaveShip(seat: PlayerId): Promise<void> {
+    const accountId = this.aboard[seat];
+    if (accountId) {
+      try {
+        await accountStoreFor(this.env).leaveShip(accountId, this.name, Date.now());
+      } catch (e) {
+        console.warn(`Leaving the ship failed: ${e instanceof Error ? e.message : typeof e}`);
+        return;
+      }
+      delete this.aboard[seat];
+    }
+    const dropped = new Set(Object.keys(this.tokens).filter((t) => this.tokens[t] === seat));
+    for (const token of dropped) {
+      delete this.tokens[token];
+      delete this.tokenSessions[token];
+    }
+    await this.persist();
+    for (const conn of this.getConnections<SeatState>()) {
+      if (conn.state && dropped.has(conn.state.token)) conn.close(4001, "Left the ship");
+    }
+  }
+
   /** Logging out (or signing in as someone else) on a device: its seat tokens stop working and its sockets close. */
   async revokeSession(sessionKey: string): Promise<void> {
     const revoked = new Set(Object.keys(this.tokenSessions).filter((t) => this.tokenSessions[t] === sessionKey));
@@ -438,11 +465,15 @@ export class GameRoom extends Server<Env> {
       return;
     }
     if (
-      ((msg.type === "cheat" || msg.type === "roleCheat") ||
+      ((msg.type === "cheat" || msg.type === "roleCheat" || msg.type === "leaveShip") ||
         (msg.type === "action" && (msg.action.type === "self_disease" || msg.action.type === "self_injury" || msg.action.type === "warp_to_planet"))) &&
       !this.cheatsAllowed
     ) {
       this.send(connection, { type: "error", message: CHEATS_DISABLED });
+      return;
+    }
+    if (msg.type === "leaveShip") {
+      await this.leaveShip(playerId);
       return;
     }
     if (msg.type === "setModel" || msg.type === "clearModel") {
@@ -503,7 +534,7 @@ export class GameRoom extends Server<Env> {
   private async social(
     playerId: PlayerId,
     by: PlayerId,
-    msg: Exclude<GameClientMessage, { type: "action" | "clearQueue" | "acknowledgeTransfer" | "walk" | "cheat" | "roleCheat" | "setModel" | "clearModel" }>,
+    msg: Exclude<GameClientMessage, { type: "action" | "clearQueue" | "acknowledgeTransfer" | "walk" | "cheat" | "roleCheat" | "setModel" | "clearModel" | "leaveShip" }>,
   ): Promise<string | null> {
     if (!this.game) return "no_game";
     if (!this.chatLimiter.allow(playerId, Date.now(), this.devServer ? DEV_RATE_SCALE : 1)) {

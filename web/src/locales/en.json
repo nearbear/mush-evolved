@@ -3,7 +3,7 @@
     "endCycle": "End cycle",
     "waiting": "Waiting…",
     "waitingForOthers": "Waiting for others…",
-    "leave": "Leave",
+    "mainMenu": "Main menu",
     "preselection": "Pre-selection",
     "preselectionAbout": "Nobody is Mush yet. The Mush are chosen when the ship is full, or on day 3 cycle 8. Until then there is no combat.",
     "botsPaused": "AI paused",
@@ -84,6 +84,7 @@
       "alwaysClean": "Always clean",
       "easyTravel": "Easy travel",
       "invincible": "Invincible ship",
+      "leaveShip": "Leave ship",
       "role": {
         "mush": "Become Mush",
         "human": "Become human"
