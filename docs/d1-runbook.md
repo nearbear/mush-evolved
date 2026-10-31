@@ -31,6 +31,7 @@ Durable Object storage (every `GameRoom` and `Matchmaker`) is **not** rolled bac
 - **`account_ships`** reflects T, not the ships that exist now: accounts that boarded after T look free (and could board a second ship); accounts that died or whose ship ended after T look still aboard.
 - **Sessions** created after T are gone, so those devices are signed out. Sessions deleted after T (sign-outs) are back until they expire.
 - **Accounts** created after T are gone, and so are identities linked after T. Their seats in a `GameRoom` point at an account ID that no longer exists. Signing in again with the same provider creates a new account with a new ID, which does not match the seat.
+- **Pending sign-ups** made after T are gone; those players sign in again.
 - **Renames** after T are lost, along with their `name_history` rows; the old names are taken again.
 
 ### Repair

@@ -16,7 +16,7 @@ const child = spawn(
     `npm run dev -w server -- --port ${p.server} --inspector-port ${p.inspector}`,
     `npm run dev -w web -- --port ${p.web} --strictPort`,
   ],
-  { stdio: "inherit", cwd: resolve(import.meta.dirname, "../../.."), env: { ...process.env, VITE_PARTY_HOST: `localhost:${p.server}` } },
+  { stdio: "inherit", cwd: resolve(import.meta.dirname, "../../.."), env: { ...process.env, MUSH2_SERVER_PORT: String(p.server) } },
 );
 child.on("exit", (code) => process.exit(code ?? 1));
 for (const sig of ["SIGINT", "SIGTERM"] as const) process.on(sig, () => child.kill(sig));

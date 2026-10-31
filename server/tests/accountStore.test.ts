@@ -57,6 +57,7 @@ describe("accounts", () => {
     const account = await newAccount("Chun", "g-1");
     expect(await store.addIdentity(account.id, "discord", "d-1", 2000)).toBe("ok");
     expect(await store.addIdentity(account.id, "discord", "d-1", 3000)).toBe("identity_taken");
+    expect(await store.addIdentity(account.id, "discord", "d-2", 3000)).toBe("provider_linked");
     expect(await store.findAccountByIdentity("discord", "d-1")).toEqual(account);
     expect(await store.identities(account.id)).toEqual([
       { provider: "google", providerUserId: "g-1" },
@@ -147,7 +148,7 @@ describe("sessions", () => {
     const account = await newAccount("Chun");
     const old = await store.createSession(account.id, 100);
     const live = await store.createSession(account.id, 300);
-    expect(await store.deleteExpiredSessions(200)).toBe(1);
+    expect(await store.deleteExpired(200)).toBe(1);
     expect(await store.getSession(old, 0)).toBeNull();
     expect(await store.getSession(live, 0)).not.toBeNull();
   });

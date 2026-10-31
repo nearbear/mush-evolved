@@ -4,11 +4,12 @@
   "main": "src/index.ts",
   "compatibility_date": "2026-09-01",
   // The web client, built by `npm run build`. Asset requests are served without
-  // running the Worker; /parties/* (the WebSockets) always goes to the Worker.
+  // running the Worker; /parties/* (the WebSockets), /auth/* and /api/* (sign-in
+  // and accounts) always go to the Worker.
   "assets": {
     "directory": "../web/dist",
     "not_found_handling": "single-page-application",
-    "run_worker_first": ["/parties/*"]
+    "run_worker_first": ["/parties/*", "/auth/*", "/api/*"]
   },
   "durable_objects": {
     "bindings": [
@@ -22,6 +23,8 @@
   // Which rules build ran a game, stored in its replay record. "dev" locally;
   // The deploy:* scripts override it with the commit hash.
   "vars": { "RULES_VERSION": "dev" },
+  // Daily: deletes expired sessions and sign-ups (the scheduled handler in src/index.ts).
+  "triggers": { "crons": ["17 4 * * *"] },
   "migrations": [{ "tag": "v1", "new_sqlite_classes": ["GameRoom", "Matchmaker"] }],
   // The top level above is production. Wrangler does not inherit bindings, vars,
   // or migrations into an environment, so staging and test repeat them. Their
@@ -35,7 +38,7 @@
       "assets": {
         "directory": "../web/dist",
         "not_found_handling": "single-page-application",
-        "run_worker_first": ["/parties/*"]
+        "run_worker_first": ["/parties/*", "/auth/*", "/api/*"]
       },
       "durable_objects": {
         "bindings": [
@@ -47,6 +50,7 @@
         { "binding": "DB", "database_name": "mush2-staging", "database_id": "ec315beb-a346-4507-a0ea-ae86795f023a", "migrations_dir": "migrations" }
       ],
       "vars": { "RULES_VERSION": "dev" },
+      "triggers": { "crons": ["17 4 * * *"] },
       "migrations": [{ "tag": "v1", "new_sqlite_classes": ["GameRoom", "Matchmaker"] }]
     },
     "test": {
@@ -54,7 +58,7 @@
       "assets": {
         "directory": "../web/dist",
         "not_found_handling": "single-page-application",
-        "run_worker_first": ["/parties/*"]
+        "run_worker_first": ["/parties/*", "/auth/*", "/api/*"]
       },
       "durable_objects": {
         "bindings": [
@@ -66,6 +70,7 @@
         { "binding": "DB", "database_name": "mush2-test", "database_id": "600dcd0b-e9cf-4146-919a-0b01ef9d7568", "migrations_dir": "migrations" }
       ],
       "vars": { "RULES_VERSION": "dev", "ALLOW_CHEATS": "true" },
+      "triggers": { "crons": ["17 4 * * *"] },
       "migrations": [{ "tag": "v1", "new_sqlite_classes": ["GameRoom", "Matchmaker"] }]
     }
   }

@@ -1537,5 +1537,25 @@
     "debris_many": "{{count}} restos flotan cerca",
     "debris_other": "{{count}} restos flotan cerca",
     "noDebris": "No hay restos cerca"
+  },
+  "account": {
+    "errors": {
+      "name_empty": "Escribe un nombre.",
+      "name_too_long": "Los nombres tienen un máximo de {{max}} caracteres.",
+      "name_rejected": "Ese nombre no está permitido. Elige otro.",
+      "name_taken": "Alguien ya tiene ese nombre. Elige otro.",
+      "name_unchanged": "Ese ya es tu nombre.",
+      "too_soon": "Puedes cambiar de nombre una vez al día. Próximo cambio: {{time}}.",
+      "no_signup": "Tu inicio de sesión caducó. Vuelve a iniciar sesión.",
+      "signed_out": "Has cerrado sesión. Vuelve a iniciar sesión."
+    },
+    "outcome": {
+      "denied": "Se canceló el inicio de sesión.",
+      "failed": "No se pudo iniciar sesión. Inténtalo de nuevo.",
+      "identity_taken": "Esa cuenta ya está vinculada a otro jugador.",
+      "provider_linked": "Esta cuenta ya tiene un inicio de sesión con ese proveedor.",
+      "linked": "Método de inicio de sesión añadido."
+    },
+    "renameWarning": "En cuanto cambies de nombre, cualquiera podrá quedarse con el anterior."
   }
 }

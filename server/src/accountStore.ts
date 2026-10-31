@@ -33,6 +33,12 @@ export interface Session {
   expiresAt: number;
 }
 
+export interface PendingSignup {
+  provider: string;
+  providerUserId: string;
+  suggestedName: string | null;
+}
+
 export type CreateAccountResult =
   | { ok: true; account: Account }
   | { ok: false; reason: "name_taken" | "identity_taken" };
@@ -51,10 +57,12 @@ export function nameKey(displayName: string): string {
 const ACCOUNT_COLUMNS = "id, display_name AS displayName, created_at AS createdAt, renamed_at AS renamedAt";
 
 /** Which unique index (or primary key) an insert or update violated, if any. */
-function uniqueViolation(e: unknown): "name" | "identity" | "ship" | null {
+function uniqueViolation(e: unknown): "name" | "identity" | "provider" | "ship" | null {
   const message = e instanceof Error ? `${e.message} ${String(e.cause ?? "")}` : String(e);
   if (!message.includes("UNIQUE constraint failed")) return null;
   if (message.includes("accounts.name_key")) return "name";
+  // identities_account_provider; checked before the primary key, whose message also names identities.provider.
+  if (message.includes("identities.account_id")) return "provider";
   if (message.includes("identities.provider")) return "identity";
   if (message.includes("account_ships.account_id")) return "ship";
   return null;
@@ -66,7 +74,7 @@ async function sha256Hex(text: string): Promise<string> {
 }
 
 /** 32 random bytes, base64url. Only its hash is stored. */
-function newSessionId(): string {
+function newSecretId(): string {
   const bytes = crypto.getRandomValues(new Uint8Array(32));
   return btoa(String.fromCharCode(...bytes)).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
 }
@@ -97,15 +105,23 @@ export class AccountStore {
     return { ok: true, account: { id, displayName, createdAt: now, renamedAt: null } };
   }
 
-  /** Another sign-in method for an existing account. */
-  async addIdentity(accountId: string, provider: string, providerUserId: string, now: number): Promise<"ok" | "identity_taken"> {
+  /** Another sign-in method for an existing account. `provider_linked`: the account already has one from this provider. */
+  async addIdentity(
+    accountId: string,
+    provider: string,
+    providerUserId: string,
+    now: number,
+  ): Promise<"ok" | "identity_taken" | "provider_linked"> {
     try {
       await this.db
         .prepare("INSERT INTO identities (provider, provider_user_id, account_id, created_at) VALUES (?, ?, ?, ?)")
         .bind(provider, providerUserId, accountId, now)
         .run();
     } catch (e) {
-      if (uniqueViolation(e) === "identity") return "identity_taken";
+      const which = uniqueViolation(e);
+      if (which === "identity") return "identity_taken";
+      // SQLite names only one violated index: the same identity again breaks both, reported as this one.
+      if (which === "provider") return (await this.findAccountByIdentity(provider, providerUserId)) ? "identity_taken" : "provider_linked";
       throw e;
     }
     return "ok";
@@ -178,7 +194,7 @@ export class AccountStore {
 
   /** Returns the new session ID, for the cookie. */
   async createSession(accountId: string, expiresAt: number): Promise<string> {
-    const sessionId = newSessionId();
+    const sessionId = newSecretId();
     await this.db
       .prepare("INSERT INTO sessions (id_hash, account_id, expires_at) VALUES (?, ?, ?)")
       .bind(await sha256Hex(sessionId), accountId, expiresAt)
@@ -208,10 +224,50 @@ export class AccountStore {
     await this.db.prepare("DELETE FROM sessions WHERE id_hash = ?").bind(await sha256Hex(sessionId)).run();
   }
 
-  /** Returns how many were deleted. */
-  async deleteExpiredSessions(now: number): Promise<number> {
-    const { meta } = await this.db.prepare("DELETE FROM sessions WHERE expires_at <= ?").bind(now).run();
-    return meta.changes;
+
+  // ---- Pending sign-ups: an identity waiting for its name to be confirmed. Callers hold the ID; only its hash is stored.
+
+  /** Returns the new sign-up ID, for the cookie. */
+  async createSignup(signup: PendingSignup, expiresAt: number): Promise<string> {
+    const signupId = newSecretId();
+    await this.db
+      .prepare("INSERT INTO signups (id_hash, provider, provider_user_id, suggested_name, expires_at) VALUES (?, ?, ?, ?, ?)")
+      .bind(await sha256Hex(signupId), signup.provider, signup.providerUserId, signup.suggestedName, expiresAt)
+      .run();
+    return signupId;
+  }
+
+  /** The sign-up, if it exists and hasn't expired at `now`. */
+  async getSignup(signupId: string, now: number): Promise<PendingSignup | null> {
+    return this.db
+      .prepare(
+        `SELECT provider, provider_user_id AS providerUserId, suggested_name AS suggestedName
+         FROM signups WHERE id_hash = ? AND expires_at > ?`,
+      )
+      .bind(await sha256Hex(signupId), now)
+      .first<PendingSignup>();
+  }
+
+  async deleteSignup(signupId: string): Promise<void> {
+    await this.db.prepare("DELETE FROM signups WHERE id_hash = ?").bind(await sha256Hex(signupId)).run();
+  }
+
+  /** Whether another account holds this name, ignoring case. */
+  async nameTaken(displayName: string, exceptAccountId = ""): Promise<boolean> {
+    const row = await this.db
+      .prepare("SELECT 1 AS taken FROM accounts WHERE name_key = ? AND id != ?")
+      .bind(nameKey(displayName), exceptAccountId)
+      .first();
+    return row !== null;
+  }
+
+  /** Expired sessions and sign-ups, for the daily cron. Returns how many rows went. */
+  async deleteExpired(now: number): Promise<number> {
+    const [sessions, signups] = await this.db.batch([
+      this.db.prepare("DELETE FROM sessions WHERE expires_at <= ?").bind(now),
+      this.db.prepare("DELETE FROM signups WHERE expires_at <= ?").bind(now),
+    ]);
+    return (sessions?.meta.changes ?? 0) + (signups?.meta.changes ?? 0);
   }
 
   // ---- Ships. An account is aboard at most one multiplayer ship (#285).

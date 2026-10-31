@@ -1,10 +1,10 @@
 import PartySocket from "partysocket";
 import type { LobbyLanguage } from "@mush2/shared";
 
-// host:port of the server. Production builds are served by the same Worker as the
-// server (static assets), so they connect to their own origin unless overridden.
-export const PARTY_HOST: string =
-  import.meta.env.VITE_PARTY_HOST ?? (import.meta.env.DEV ? "localhost:8787" : location.host);
+// host:port of the server: the page's own origin unless overridden. Production
+// builds are served by the same Worker as the server (static assets), and in dev
+// Vite proxies /parties to wrangler (vite.config.ts).
+export const PARTY_HOST: string = import.meta.env.VITE_PARTY_HOST ?? location.host;
 
 export function matchmakerSocket(language: LobbyLanguage): PartySocket {
   return new PartySocket({ host: PARTY_HOST, party: "matchmaker", room: language });

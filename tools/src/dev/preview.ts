@@ -1,6 +1,6 @@
 // `npm run preview`: build the web client for production, then serve it with
-// `vite preview` beside the local wrangler server. VITE_PARTY_HOST is baked in
-// at build time, so the build points at this checkout's server port.
+// `vite preview` beside the local wrangler server, which vite preview proxies to
+// (MUSH2_SERVER_PORT, see web/vite.config.ts).
 
 import { spawn, spawnSync } from "node:child_process";
 import { resolve } from "node:path";
@@ -9,7 +9,7 @@ import { devPorts, ensureDevVars } from "./ports.ts";
 const p = devPorts();
 ensureDevVars();
 const root = resolve(import.meta.dirname, "../../..");
-const env = { ...process.env, VITE_PARTY_HOST: `localhost:${p.server}` };
+const env = { ...process.env, MUSH2_SERVER_PORT: String(p.server) };
 
 const build = spawnSync("npm", ["run", "build", "-w", "web"], { stdio: "inherit", cwd: root, env });
 if (build.status !== 0) process.exit(build.status ?? 1);

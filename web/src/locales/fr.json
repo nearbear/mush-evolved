@@ -1537,5 +1537,25 @@
     "debris_many": "{{count}} débris flottent à proximité",
     "debris_other": "{{count}} débris flottent à proximité",
     "noDebris": "Aucun débris à proximité"
+  },
+  "account": {
+    "errors": {
+      "name_empty": "Saisissez un nom.",
+      "name_too_long": "Les noms sont limités à {{max}} caractères.",
+      "name_rejected": "Ce nom n'est pas autorisé. Choisissez-en un autre.",
+      "name_taken": "Ce nom est déjà pris. Choisissez-en un autre.",
+      "name_unchanged": "C'est déjà votre nom.",
+      "too_soon": "Vous pouvez changer de nom une fois par jour. Prochain changement : {{time}}.",
+      "no_signup": "Votre connexion a expiré. Reconnectez-vous.",
+      "signed_out": "Session terminée. Reconnectez-vous."
+    },
+    "outcome": {
+      "denied": "La connexion a été annulée.",
+      "failed": "La connexion a échoué. Réessayez.",
+      "identity_taken": "Ce compte est déjà lié à un autre joueur.",
+      "provider_linked": "Ce compte a déjà une connexion avec ce fournisseur.",
+      "linked": "Méthode de connexion ajoutée."
+    },
+    "renameWarning": "Dès que vous changez de nom, n'importe qui peut prendre l'ancien."
   }
 }

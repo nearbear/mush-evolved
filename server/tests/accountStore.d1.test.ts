@@ -50,6 +50,7 @@ it("runs every store statement on D1", async () => {
   expect(await store.findAccountByIdentity("google", "g-2")).toBeNull();
   expect(await store.addIdentity(account.id, "discord", "d-1", 2000)).toBe("ok");
   expect(await store.addIdentity(account.id, "discord", "d-1", 3000)).toBe("identity_taken");
+  expect(await store.addIdentity(account.id, "discord", "d-9", 3000)).toBe("provider_linked");
   expect(await store.getAccount(account.id)).toEqual(account);
   expect(await store.findAccountByIdentity("discord", "d-1")).toEqual(account);
   expect(await store.identities(account.id)).toHaveLength(2);
@@ -63,9 +64,20 @@ it("runs every store statement on D1", async () => {
   const session = await store.createSession(account.id, 10_000);
   expect(await store.getSession(session, 9000)).toEqual({ accountId: account.id, expiresAt: 10_000 });
   expect(await store.renewSession(session, 9000, 20_000)).toBe(true);
-  expect(await store.deleteExpiredSessions(15_000)).toBe(0);
+  expect(await store.deleteExpired(15_000)).toBe(0);
   await store.deleteSession(session);
   expect(await store.getSession(session, 9000)).toBeNull();
+
+  const signup = await store.createSignup({ provider: "discord", providerUserId: "d-2", suggestedName: null }, 10_000);
+  expect(await store.getSignup(signup, 9000)).toEqual({ provider: "discord", providerUserId: "d-2", suggestedName: null });
+  expect(await store.nameTaken("PAOLA")).toBe(true);
+  expect(await store.nameTaken("paola", account.id)).toBe(false);
+  await store.createSession(account.id, 10_000);
+  expect(await store.deleteExpired(10_000)).toBe(2);
+  expect(await store.getSignup(signup, 9000)).toBeNull();
+  const signup2 = await store.createSignup({ provider: "discord", providerUserId: "d-3", suggestedName: "Raluca" }, 10_000);
+  await store.deleteSignup(signup2);
+  expect(await store.getSignup(signup2, 9000)).toBeNull();
 
   expect(await store.boardShip(account.id, "ship-1", 1)).toBe("ok");
   expect(await store.boardShip(account.id, "ship-2", 2)).toBe("already_aboard");

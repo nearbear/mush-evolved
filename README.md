@@ -20,7 +20,7 @@ This starts both halves:
 
 Pick a ship (one per language), then a crew member. You are boarded onto that language's open ship, which waits in pre-selection until it fills or its deadline passes. On a local dev server (`npm run dev`, which passes `DEV_SERVER` and `ALLOW_CHEATS` to wrangler) the first join also seats log-parrot bots (labeled "(AI)") for every other character after about 8 seconds. This is test scaffolding: a deployed multiplayer ship has no bots, and bots are meant only for a single-player mode. To test with several humans, open more tabs before the bots arrive: each tab is a separate player. `ALLOW_CHEATS` turns on the cheat panel and End cycle; the test deployment sets it too, but never `DEV_SERVER`, which also loosens rate limits and enables the dev model key. Both come from the server's `dev` script, not `server/.dev.vars`, so a fresh clone needs no setup; `--var` overrides `.dev.vars`, so to try a server without them, run `npx wrangler dev` in `server/`.
 
-Run the halves separately with `npm run dev -w server` and `npm run dev -w web`. To point the client at another server, copy `web/.env.example` to `web/.env` and set `VITE_PARTY_HOST`.
+Run the halves separately with `npm run dev -w server` and `npm run dev -w web`. The client always talks to its own origin: Vite proxies `/parties`, `/auth` and `/api` to wrangler (`MUSH2_SERVER_PORT`, default 8787), as the Worker serves both in production. To point the client at another server, copy `web/.env.example` to `web/.env` and set `VITE_PARTY_HOST`.
 
 ### Browser for tests and screenshots
 
@@ -45,6 +45,8 @@ npx playwright install --with-deps chromium
 | `npm run deploy:production` | Build the client and deploy it with the server as one Cloudflare Worker: production (needs `npx -w server wrangler login`). A bare `npm run deploy` deploys nothing; it lists the targets and exits with an error |
 | `npm run deploy:staging` | The same, to the `mush2-server-staging` Worker, with its own Durable Objects and secrets (set them with `wrangler secret put <NAME> --env staging`) |
 | `npm run deploy:test` | The same, to the `mush2-server-test` Worker, with cheats and End cycle on (`ALLOW_CHEATS`) but no bot fill, normal rate limits and no dev model key. Keep it behind Cloudflare Access |
+
+Sign-in needs Google and Discord OAuth apps and their secrets: see `docs/sign-in.md`.
 
 ## Project layout
 

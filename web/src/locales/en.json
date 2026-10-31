@@ -1520,5 +1520,25 @@
     "debris_one": "{{count}} piece of debris floating nearby",
     "debris_other": "{{count}} pieces of debris floating nearby",
     "noDebris": "No debris nearby"
+  },
+  "account": {
+    "errors": {
+      "name_empty": "Enter a name.",
+      "name_too_long": "Names are limited to {{max}} characters.",
+      "name_rejected": "That name isn't allowed. Choose another.",
+      "name_taken": "Someone already has that name. Choose another.",
+      "name_unchanged": "That's already your name.",
+      "too_soon": "You can change your name once a day. Next change: {{time}}.",
+      "no_signup": "Your sign-in expired. Sign in again.",
+      "signed_out": "You're signed out. Sign in again."
+    },
+    "outcome": {
+      "denied": "Sign-in was cancelled.",
+      "failed": "Sign-in didn't work. Try again.",
+      "identity_taken": "That account is already linked to another player.",
+      "provider_linked": "This account already has a sign-in from that provider.",
+      "linked": "Sign-in method added."
+    },
+    "renameWarning": "Once you rename, anyone can take your old name right away."
   }
 }
