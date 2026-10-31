@@ -18,8 +18,10 @@
   },
   "dependencies": {
     "@mush2/shared": "*",
+    "@scalar/hono-api-reference": "^0.12.17",
     "hono": "^4.13.14",
-    "partyserver": "^0.5.10"
+    "partyserver": "^0.5.10",
+    "zod": "^4.6.7"
   },
   "devDependencies": {
     "vitest": "^5.0.3",

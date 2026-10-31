@@ -172,6 +172,21 @@
 								]
 							}
 						}
+					},
+					"style": {
+						"noRestrictedImports": {
+							"level": "error",
+							"options": {
+								"paths": {
+									"zod": {
+										"importNames": [
+											"z"
+										],
+										"message": "Use `import * as z from \"zod\"`: the `z` export carries all of zod, every locale included, into the Worker (about 65 KB gzipped more, #324)."
+									}
+								}
+							}
+						}
 					}
 				}
 			}

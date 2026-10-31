@@ -9,6 +9,7 @@
 //   POST /api/rename  { name }             at most once a day
 //   GET  /auth/dev?name=<name>             dev sign-in for tooling (#287): `npm run dev` on localhost only
 //   GET  /api/setups, /api/setups/<id>     and POST /api/setups: posted setups (#233), in setupRoutes.ts
+//   GET  /api/openapi.json, /api/docs      the OpenAPI document and its docs page (#324), where cheats are on
 //
 // Session, OAuth-state and sign-up cookies each hold a random ID (only the
 // session and sign-up IDs' hashes are stored). They are HttpOnly and
@@ -27,8 +28,10 @@ import {
 } from "@mush2/shared";
 import { type Context, Hono } from "hono";
 import { type AccountStore, nameKey, RENAME_INTERVAL_MS, sha256Hex } from "./accountStore.ts";
+import { type NameRequest, parseNameRequest } from "./apiSchemas.ts";
 import { json, type JsonResponse, jsonBody } from "./http.ts";
 import { authorizeUrl, fetchProfile, oauthCredentials, randomToken, usesPkce } from "./oauth.ts";
+import { DOCUMENT_PATH, docsPageRoute, docsWrongMethodRoute, documentRoute } from "./openapi.ts";
 import { allowAuthRequest } from "./rateLimit.ts";
 import type { SetupStore } from "./setupStore.ts";
 import { listSetups, lookupSetup, MAX_SETUP_BODY, postSetup, type SetupRouteDeps } from "./setupRoutes.ts";
@@ -136,17 +139,6 @@ function rateLimited(path: string): Response {
 }
 
 const outcome = (result: AuthOutcome) => `/?auth=${result}`;
-
-/** The body of /api/signup and /api/rename. The name itself is checked by the route (checkDisplayName). */
-interface NameRequest {
-  name: string;
-}
-
-/** `{ name }` with a string name, or null. */
-function parseName(body: unknown): NameRequest | null {
-  const name = typeof body === "object" && body !== null ? (body as { name?: unknown }).name : undefined;
-  return typeof name === "string" ? { name } : null;
-}
 
 // ---- Sessions
 
@@ -269,7 +261,7 @@ const oauthRoute =
  * reads the routes from this value's type (`ApiType`, apiTypes.ts), and a route added in a separate statement is
  * missing from it. A route's responses reach the client through its handler's return type (`json`'s JsonResponse) and
  * its body through `jsonBody`. Each path ends with `.all(path, methodNotAllowed)`, since Hono answers a known path
- * with the wrong method 404.
+ * with the wrong method 404. Every route but the docs' own is in the OpenAPI document (openapi.ts; a test checks).
  */
 export const api = new Hono<{ Bindings: ApiBindings }>()
   // Counted before the route runs (#305). Not limited: logout, which must always work, and the OAuth callback, which
@@ -291,9 +283,9 @@ export const api = new Hono<{ Bindings: ApiBindings }>()
   .all("/auth/logout", methodNotAllowed)
   .get("/api/me", (c) => me(c.req.raw, c.env.env, c.env.deps))
   .all("/api/me", methodNotAllowed)
-  .post("/api/signup", jsonBody(MAX_BODY, parseName), (c) => signup(c.req.raw, c.env.env, c.env.deps, c.req.valid("json").body))
+  .post("/api/signup", jsonBody(MAX_BODY, parseNameRequest), (c) => signup(c.req.raw, c.env.env, c.env.deps, c.req.valid("json").body))
   .all("/api/signup", methodNotAllowed)
-  .post("/api/rename", jsonBody(MAX_BODY, parseName), (c) => rename(c.req.raw, c.env.env, c.env.deps, c.req.valid("json").body))
+  .post("/api/rename", jsonBody(MAX_BODY, parseNameRequest), (c) => rename(c.req.raw, c.env.env, c.env.deps, c.req.valid("json").body))
   .all("/api/rename", methodNotAllowed)
   .get("/api/setups", (c) => listSetups(setupDeps(c.req.raw, c.env)))
   .post("/api/setups", jsonBody(MAX_SETUP_BODY, parsePostSetup), (c) => postSetup(c.req.valid("json").body, setupDeps(c.req.raw, c.env)))
@@ -301,6 +293,11 @@ export const api = new Hono<{ Bindings: ApiBindings }>()
   // The raw segment, not c.req.param("id"): lookupSetup decodes it itself and refuses an encoded "/".
   .get("/api/setups/:id", (c) => lookupSetup(new URL(c.req.url).pathname.slice("/api/setups/".length), setupDeps(c.req.raw, c.env)))
   .all("/api/setups/:id", methodNotAllowed)
+  // The OpenAPI document and its docs page (openapi.ts): where cheats are on, else 404 like any unknown path, whatever the method.
+  .get(DOCUMENT_PATH, (c) => documentRoute(c.env.env, { name: MAX_BODY, setup: MAX_SETUP_BODY }))
+  .all(DOCUMENT_PATH, (c) => docsWrongMethodRoute(c.env.env))
+  .get("/api/docs", (c) => docsPageRoute(c.env.env, c))
+  .all("/api/docs", (c) => docsWrongMethodRoute(c.env.env))
   .notFound(() => json({ error: "not_found" }, 404));
 
 /** Handles /auth/* and /api/*; null for any other path. */

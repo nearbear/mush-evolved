@@ -1,7 +1,17 @@
-import type { MeResponse } from "@mush2/shared";
+import { type MeResponse, STANDARD_KNOBS } from "@mush2/shared";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { AccountStore, sha256Hex } from "../src/accountStore.ts";
-import { handleAuth, RENEW_BELOW_MS, SESSION_MS, SIGNUP_MS } from "../src/auth.ts";
+import {
+  LogoutResponseSchema,
+  MeResponseSchema,
+  PostSetupResponseSchema,
+  RenameResponseSchema,
+  SetupListResponseSchema,
+  SetupLookupResponseSchema,
+  SignupResponseSchema,
+} from "../src/apiSchemas.ts";
+import { api, handleAuth, RENEW_BELOW_MS, SESSION_MS, SIGNUP_MS } from "../src/auth.ts";
+import { DOCUMENT_PATH, SCALAR_SCRIPT } from "../src/openapi.ts";
 import { SetupStore } from "../src/setupStore.ts";
 import { migratedDatabase } from "./sqliteD1.ts";
 
@@ -692,5 +702,92 @@ describe("rate limits (#305)", () => {
     const broken = { limit: async () => Promise.reject(new Error("down")) };
     const browser = new Browser({ ...ENV, AUTH_LIMIT: broken } as unknown as Env);
     expect((await browser.request("/api/me")).status).toBe(200);
+  });
+});
+
+describe("OpenAPI document and docs page (#324)", () => {
+  const CHEATS = { ...ENV, ALLOW_CHEATS: "true" } as Env;
+
+  interface Document {
+    openapi: string;
+    paths: Record<string, Record<string, unknown>>;
+    components: { schemas: Record<string, unknown> };
+  }
+
+  it("answers 404 where cheats are off (production, staging)", async () => {
+    for (const path of [DOCUMENT_PATH, "/api/docs"]) {
+      const response = await new Browser().request(path);
+      expect([path, response.status]).toEqual([path, 404]);
+      expect(await response.json()).toEqual({ error: "not_found" });
+      // Any method: a 405 would say the path exists.
+      expect([path, (await new Browser().post(path)).status]).toEqual([path, 404]);
+    }
+  });
+
+  it("answers 405 to another method where cheats are on, like the other routes", async () => {
+    for (const path of [DOCUMENT_PATH, "/api/docs"]) {
+      const response = await new Browser(CHEATS).post(path);
+      expect([path, response.status]).toEqual([path, 405]);
+      expect(await response.json()).toEqual({ error: "method_not_allowed" });
+    }
+  });
+
+  it("serves the docs page, reading the document, with the pinned script", async () => {
+    const response = await new Browser(CHEATS).request("/api/docs");
+    expect(response.status).toBe(200);
+    expect(response.headers.get("Content-Type")).toContain("text/html");
+    const html = await response.text();
+    expect(html).toContain(SCALAR_SCRIPT);
+    expect(html).toContain(DOCUMENT_PATH);
+  });
+
+  it("documents exactly the routes, the docs' own aside, and every $ref resolves", async () => {
+    const response = await new Browser(CHEATS).request(DOCUMENT_PATH);
+    expect(response.status).toBe(200);
+    const doc = (await response.json()) as Document;
+    expect(doc.openapi).toBe("3.1.0");
+    const documented = Object.entries(doc.paths).flatMap(([path, methods]) => Object.keys(methods).map((m) => `${m.toUpperCase()} ${path}`));
+    const routed = api.routes
+      // The OAuth routes take every method and answer 405 to all but GET themselves (oauthRoute).
+      .map((r) => (r.method === "ALL" && r.path.startsWith("/auth/:provider") ? { ...r, method: "GET" } : r))
+      .filter((r) => r.method !== "ALL" && r.path !== DOCUMENT_PATH && r.path !== "/api/docs")
+      // `/auth/:provider{[a-z]+}/start` is `/auth/{provider}/start` in the document.
+      .map((r) => `${r.method} ${r.path.replace(/:(\w+)(\{[^}]*\})?/g, "{$1}")}`);
+    expect(documented.sort()).toEqual([...new Set(routed)].sort());
+
+    const refs = [...JSON.stringify(doc).matchAll(/"\$ref":"#\/components\/schemas\/(\w+)"/g)].map((m) => m[1] ?? "");
+    expect(refs.length).toBeGreaterThan(10);
+    for (const name of refs) expect(Object.keys(doc.components.schemas)).toContain(name);
+  });
+
+  it("describes what the routes really answer", async () => {
+    const browser = new Browser();
+    const matches = (schema: { safeParse: (v: unknown) => { success: boolean } }, body: unknown) => expect(schema.safeParse(body).success).toBe(true);
+    matches(MeResponseSchema, await browser.me());
+    await browser.signInWith("google", "g-1", "Chun");
+    matches(MeResponseSchema, await browser.me());
+    matches(SignupResponseSchema, await (await browser.post("/api/signup", { name: "" })).json());
+    matches(SignupResponseSchema, await (await browser.post("/api/signup", { name: "Chun" })).json());
+    matches(MeResponseSchema, await browser.me());
+    const posted = await (await browser.post("/api/setups", { text: { en: { name: "Quick", description: "" } }, knobs: { ...STANDARD_KNOBS, seats: 8 } })).json();
+    expect(posted.ok).toBe(true);
+    matches(PostSetupResponseSchema, posted);
+    matches(PostSetupResponseSchema, await (await browser.post("/api/setups", { text: {}, knobs: STANDARD_KNOBS })).json());
+    matches(SetupListResponseSchema, await (await browser.request("/api/setups")).json());
+    matches(SetupLookupResponseSchema, await (await browser.request(`/api/setups/${posted.setup.id}`)).json());
+    matches(RenameResponseSchema, await (await browser.post("/api/rename", { name: "Chun" })).json());
+    const renamed = await (await browser.post("/api/rename", { name: "Chun Lee" })).json();
+    expect(renamed).toEqual({ ok: true });
+    matches(RenameResponseSchema, renamed);
+    matches(LogoutResponseSchema, await (await browser.post("/auth/logout")).json());
+  });
+
+  it("reads a name body as before: other fields ignored, a non-string name is an empty name", async () => {
+    const browser = new Browser();
+    await browser.signInWith("google", "g-1", "Chun");
+    expect(await (await browser.post("/api/signup", { name: 5 })).json()).toEqual({ ok: false, reason: "name_empty" });
+    expect(await (await browser.post("/api/signup", { name: "Chun", extra: true })).json()).toEqual({ ok: true });
+    expect(await (await browser.post("/api/rename", { name: 5 })).json()).toEqual({ ok: false, reason: "name_empty" });
+    expect(await (await browser.post("/api/rename", { name: "Chun Lee", extra: true })).json()).toEqual({ ok: true });
   });
 });
