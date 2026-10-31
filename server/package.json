@@ -13,14 +13,23 @@
     "deploy:test": "wrangler d1 migrations apply DB --remote --env test && wrangler deploy --env test --var RULES_VERSION:$(git describe --always --dirty --abbrev=40)",
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
-    "model-trial": "node scripts/run-trial.mjs"
+    "model-trial": "node scripts/run-trial.mjs",
+    "api-types": "tsc -p tsconfig.api.json"
   },
   "dependencies": {
     "@mush2/shared": "*",
-    "partyserver": "^0.5.10"
+    "@scalar/hono-api-reference": "^0.12.17",
+    "hono": "^4.13.14",
+    "partyserver": "^0.5.10",
+    "zod": "^4.6.7"
   },
   "devDependencies": {
-    "wrangler": "^4.145.0",
-    "vitest": "^5.0.3"
+    "vitest": "^5.0.3",
+    "wrangler": "^4.145.0"
+  },
+  "exports": {
+    "./api": {
+      "types": "./dist/api-types/apiTypes.d.ts"
+    }
   }
 }

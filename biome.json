@@ -110,9 +110,10 @@
 									{
 										"group": [
 											"@mush2/server",
-											"@mush2/server/*"
+											"@mush2/server/**",
+											"!@mush2/server/api"
 										],
-										"message": "web talks to the server over the protocol only."
+										"message": "web talks to the server over the protocol only, except for the site API's type (@mush2/server/api, types only, #324)."
 									},
 									{
 										"group": [
@@ -143,9 +144,10 @@
 									{
 										"group": [
 											"@mush2/server",
-											"@mush2/server/*"
+											"@mush2/server/**",
+											"!@mush2/server/api"
 										],
-										"message": "web talks to the server over the protocol only."
+										"message": "web talks to the server over the protocol only, except for the site API's type (@mush2/server/api, types only, #324)."
 									}
 								]
 							}
@@ -168,6 +170,21 @@
 									"warn",
 									"error"
 								]
+							}
+						}
+					},
+					"style": {
+						"noRestrictedImports": {
+							"level": "error",
+							"options": {
+								"paths": {
+									"zod": {
+										"importNames": [
+											"z"
+										],
+										"message": "Use `import * as z from \"zod\"`: the `z` export carries all of zod, every locale included, into the Worker (about 65 KB gzipped more, #324)."
+									}
+								}
 							}
 						}
 					}
