@@ -254,8 +254,13 @@ export interface RelayTargetView {
   waiting: number;
   /** How much the target goes up if you contribute now, over your token's roll. */
   gain: { min: number; max: number };
-  /** Its tokens in the order they were made: who made each and what it is worth in the best arrangement. */
-  tokens: { by: PlayerId; value: number }[];
+  /**
+   * Its tokens in the order they were made: who made each and what it is worth in the best arrangement. A research's
+   * are samples: verified ones first, then `pending` ones waiting for the next assay (docs/research-sabotage.md).
+   */
+  tokens: { by: PlayerId; value: number; pending?: true }[];
+  /** Research only: the striped segment, how much the pending samples add above verified progress if they all pass. */
+  pending?: number;
 }
 
 export interface ActionOption {

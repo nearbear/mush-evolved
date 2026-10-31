@@ -341,7 +341,9 @@
     "land": "Aterrizar",
     "collectScrap": "Recoger restos",
     "renovate": "Renovar",
-    "openCapsule": "Abrir"
+    "openCapsule": "Abrir",
+    "spoilResearch": "Estropear una muestra",
+    "contaminate": "Contaminar"
   },
   "queue": {
     "label": "Tus acciones",
@@ -787,7 +789,7 @@
     "diedMush": "{{name}} ha muerto. Era Mush.",
     "leftThisWorld": "{{name}} ha dejado este mundo, y este chat.",
     "researched": "{{name}} trabajó en {{research}} ({{percent}} %).",
-    "researchCompleted": "{{name}} completó la investigación {{research}}.",
+    "researchCompleted": "La investigación {{research}} se completó.",
     "projectWorked": "{{name}} trabajó en el proyecto {{project}} ({{percent}} %).",
     "projectCompleted": "{{name}} completó el proyecto {{project}}.",
     "pilgredRepaired": "Hiciste avanzar la reparación de PILGRED.",
@@ -853,7 +855,15 @@
     "scrapCollected_other": "Recogiste {{count}} restos.",
     "scrapNotFound": "No lograste atrapar ningún resto.",
     "scrapUnderFire": "Recogida bajo fuego: la nave perdió {{armor}} de blindaje y tú perdiste {{hp}} PV.",
-    "capsuleOpened": "{{name}} abrió una cápsula espacial: {{item}}."
+    "capsuleOpened": "{{name}} abrió una cápsula espacial: {{item}}.",
+    "assayPassed_one": "Ensayo de {{research}}: 1 muestra analizada ({{tested}}), ninguna estropeada.",
+    "assayPassed_other": "Ensayo de {{research}}: {{count}} muestras analizadas ({{tested}}), ninguna estropeada.",
+    "assayPassed_many": "Ensayo de {{research}}: {{count}} muestras analizadas ({{tested}}), ninguna estropeada.",
+    "assaySpoiled_one": "Ensayo de {{research}}: 1 muestra analizada ({{tested}}), estropeadas: {{spoiled}} ({{spoiledBy}}).",
+    "assaySpoiled_other": "Ensayo de {{research}}: {{count}} muestras analizadas ({{tested}}), estropeadas: {{spoiled}} ({{spoiledBy}}).",
+    "assaySpoiled_many": "Ensayo de {{research}}: {{count}} muestras analizadas ({{tested}}), estropeadas: {{spoiled}} ({{spoiledBy}}).",
+    "sampleCount": "{{name}} ×{{count}}",
+    "contaminated": "{{name}} manipuló las muestras de {{research}}."
   },
   "skills": {
     "title": "Elegir una habilidad",
@@ -1237,7 +1247,10 @@
       "ANTISPORE_GAZ": "El máximo diario de esporas de los Mush se reduce en dos.",
       "SUPER_CALC": "Genera en el Nexus un equipo que permite extraer datos de las cristalitas."
     },
-    "notDone": "Sin completar"
+    "notDone": "Sin completar",
+    "spoil": "Estropear una muestra",
+    "contaminate": "Contaminar una muestra",
+    "withPending": "{{percent}} % (+{{pending}} % pendiente)"
   },
   "relay": {
     "help": "Tus contribuciones solo pierden valor cuando has hecho más que todos los demás juntos, más una.",
@@ -1247,7 +1260,9 @@
     "tokens": "Contribuciones",
     "token": "{{name}}: {{percent}} %",
     "unknown": "Alguien",
-    "withGain": "{{action}} {{gain}}"
+    "withGain": "{{action}} {{gain}}",
+    "samples": "Muestras",
+    "tokenPending": "{{name}}: {{percent}} %, pendiente"
   },
   "astro": {
     "title": "Tus planetas",

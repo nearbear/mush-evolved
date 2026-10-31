@@ -1,6 +1,6 @@
 # Plan: relay tokens (pooled contributions; written 2026-10-30)
 
-How research, NERON projects and PILGRED take contributions once players no longer have to alternate live. Replaces the "relay jobs" of `docs/action-plans.md`, whose executor is dropped (see `docs/on-call-plans.md`). "Relay tokens" is the owner's name for this system behind the scenes (code and docs). Players see research tokens as **samples**, which also go through a pending stage with assays and sabotage, `docs/research-sabotage.md`. Part A (pools for all three, no pending stage) built 2026-10-31; part B (research samples and assays) is not. **Decisions** are the owner's. Do not guess beyond them.
+How research, NERON projects and PILGRED take contributions once players no longer have to alternate live. Replaces the "relay jobs" of `docs/action-plans.md`, whose executor is dropped (see `docs/on-call-plans.md`). "Relay tokens" is the owner's name for this system behind the scenes (code and docs). Players see research tokens as **samples**, which also go through a pending stage with assays and sabotage, `docs/research-sabotage.md`. Part A (pools for all three, no pending stage) built 2026-10-31; part B (research samples and assays) built the same day. **Decisions** are the owner's. Do not guess beyond them.
 
 ## The problem
 

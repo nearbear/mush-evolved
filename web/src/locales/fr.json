@@ -341,7 +341,9 @@
     "land": "Atterrir",
     "collectScrap": "Rapatrier des débris",
     "renovate": "Rénover",
-    "openCapsule": "Ouvrir"
+    "openCapsule": "Ouvrir",
+    "spoilResearch": "Gâcher un échantillon",
+    "contaminate": "Contaminer"
   },
   "queue": {
     "label": "Vos actions",
@@ -787,7 +789,7 @@
     "diedMush": "{{name}} a perdu la vie. C'était un Mush.",
     "leftThisWorld": "{{name}} a quitté ce monde, et cette discussion.",
     "researched": "{{name}} a travaillé sur {{research}} ({{percent}} %).",
-    "researchCompleted": "{{name}} a terminé la recherche {{research}}.",
+    "researchCompleted": "La recherche {{research}} est terminée.",
     "projectWorked": "{{name}} a travaillé sur le projet {{project}} ({{percent}} %).",
     "projectCompleted": "{{name}} a terminé le projet {{project}}.",
     "pilgredRepaired": "Vous avez fait progresser la réparation de PILGRED.",
@@ -853,7 +855,15 @@
     "scrapCollected_other": "Vous avez rapatrié {{count}} débris.",
     "scrapNotFound": "Vous n'avez attrapé aucun débris.",
     "scrapUnderFire": "Collecte sous le feu : le vaisseau a perdu {{armor}} d'armure et vous avez perdu {{hp}} PV.",
-    "capsuleOpened": "{{name}} a ouvert une capsule spatiale : {{item}}."
+    "capsuleOpened": "{{name}} a ouvert une capsule spatiale : {{item}}.",
+    "assayPassed_one": "Analyse de {{research}} : 1 échantillon testé ({{tested}}), aucun gâché.",
+    "assayPassed_other": "Analyse de {{research}} : {{count}} échantillons testés ({{tested}}), aucun gâché.",
+    "assayPassed_many": "Analyse de {{research}} : {{count}} échantillons testés ({{tested}}), aucun gâché.",
+    "assaySpoiled_one": "Analyse de {{research}} : 1 échantillon testé ({{tested}}), gâché : {{spoiled}} ({{spoiledBy}}).",
+    "assaySpoiled_other": "Analyse de {{research}} : {{count}} échantillons testés ({{tested}}), gâchés : {{spoiled}} ({{spoiledBy}}).",
+    "assaySpoiled_many": "Analyse de {{research}} : {{count}} échantillons testés ({{tested}}), gâchés : {{spoiled}} ({{spoiledBy}}).",
+    "sampleCount": "{{name}} ×{{count}}",
+    "contaminated": "{{name}} a trafiqué les échantillons de {{research}}."
   },
   "skills": {
     "title": "Choisir une compétence",
@@ -1237,7 +1247,10 @@
       "ANTISPORE_GAZ": "Le maximum de spores journaliers des Mush est réduit de deux.",
       "SUPER_CALC": "Génère au Nexus un équipement qui permet d'extraire des données des cristallites."
     },
-    "notDone": "Non terminée"
+    "notDone": "Non terminée",
+    "spoil": "Gâcher un échantillon",
+    "contaminate": "Contaminer un échantillon",
+    "withPending": "{{percent}} % (+{{pending}} % en attente)"
   },
   "relay": {
     "help": "Vos contributions ne perdent de la valeur que si vous en avez fait plus que tous les autres réunis, plus une.",
@@ -1247,7 +1260,9 @@
     "tokens": "Contributions",
     "token": "{{name}} : {{percent}} %",
     "unknown": "Quelqu'un",
-    "withGain": "{{action}} {{gain}}"
+    "withGain": "{{action}} {{gain}}",
+    "samples": "Échantillons",
+    "tokenPending": "{{name}} : {{percent}} %, en attente"
   },
   "astro": {
     "title": "Vos planètes",

@@ -337,7 +337,9 @@
     "land": "Land",
     "collectScrap": "Collect scrap",
     "renovate": "Renovate",
-    "openCapsule": "Open"
+    "openCapsule": "Open",
+    "spoilResearch": "Spoil a sample",
+    "contaminate": "Contaminate"
   },
   "queue": {
     "label": "Your actions",
@@ -780,7 +782,7 @@
     "diedMush": "{{name}} has died. They were Mush.",
     "leftThisWorld": "{{name}} has left this world, and this chat.",
     "researched": "{{name}} worked on {{research}} ({{percent}}%).",
-    "researchCompleted": "{{name}} completed the research {{research}}.",
+    "researchCompleted": "Research {{research}} completed.",
     "projectWorked": "{{name}} worked on the project {{project}} ({{percent}}%).",
     "projectCompleted": "{{name}} completed the project {{project}}.",
     "pilgredRepaired": "You advanced the repair of PILGRED.",
@@ -843,7 +845,13 @@
     "scrapCollected_other": "You brought in {{count}} pieces of debris.",
     "scrapNotFound": "You couldn't catch any debris.",
     "scrapUnderFire": "Collecting under fire: the ship lost {{armor}} armor and you lost {{hp}} HP.",
-    "capsuleOpened": "{{name}} opened a space capsule: {{item}}."
+    "capsuleOpened": "{{name}} opened a space capsule: {{item}}.",
+    "assayPassed_one": "{{research}} assay: 1 sample tested ({{tested}}), none spoiled.",
+    "assayPassed_other": "{{research}} assay: {{count}} samples tested ({{tested}}), none spoiled.",
+    "assaySpoiled_one": "{{research}} assay: 1 sample tested ({{tested}}), {{spoiled}} spoiled ({{spoiledBy}}).",
+    "assaySpoiled_other": "{{research}} assay: {{count}} samples tested ({{tested}}), {{spoiled}} spoiled ({{spoiledBy}}).",
+    "sampleCount": "{{name}} ×{{count}}",
+    "contaminated": "{{name}} tampered with the {{research}} samples."
   },
   "skills": {
     "title": "Choose a skill",
@@ -1227,7 +1235,10 @@
       "ANTISPORE_GAZ": "The Mush's daily spore maximum is reduced by two.",
       "SUPER_CALC": "Produces a piece of equipment in the Nexus that extracts data from crystallites."
     },
-    "notDone": "Not complete"
+    "notDone": "Not complete",
+    "spoil": "Spoil a sample",
+    "contaminate": "Contaminate a sample",
+    "withPending": "{{percent}}% (+{{pending}}% pending)"
   },
   "relay": {
     "help": "Your contributions only lose value when you've made more than everyone else combined, plus one.",
@@ -1237,7 +1248,9 @@
     "tokens": "Contributions",
     "token": "{{name}}: {{percent}}%",
     "unknown": "Someone",
-    "withGain": "{{action}} {{gain}}"
+    "withGain": "{{action}} {{gain}}",
+    "samples": "Samples",
+    "tokenPending": "{{name}}: {{percent}}%, pending"
   },
   "astro": {
     "title": "Your planets",

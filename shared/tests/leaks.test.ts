@@ -137,7 +137,8 @@ function ship(): { state: GameState; sentinels: Sentinel[] } {
   s.projects.PLASMA_SHIELD = scaled("projectProgress", 1e4, []);
   s.pilgred.progress = scaled("pilgredProgress", 1e4, []);
   const roll = (what: string) => scaled(what, 1e7, []);
-  s.relay.research.STEROIDS = { tokens: [{ by: "p3", base: 6, roll: roll("researchRoll") }] };
+  // Pending samples' rolls and who contaminated one go to nobody (assay.ts).
+  s.relay.research.STEROIDS = { tokens: [{ by: "p3", base: 6, roll: roll("researchRoll") }], pending: [{ by: "p3", base: 6, roll: roll("pendingRoll"), contaminatedBy: str("contaminatedBy", []) }] };
   s.relay.projects.PLASMA_SHIELD = { tokens: [{ by: "p3", base: 6, roll: roll("projectRoll") }] };
   s.pilgred.pool.tokens.push({ by: "p3", base: 1, roll: roll("pilgredRoll") });
   s.items.push({ id: str("floor-here", ["p0", "p1", "p2"]), type: "wrench", at: { kind: "room", id: HERE } });

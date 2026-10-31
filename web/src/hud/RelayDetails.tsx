@@ -30,13 +30,14 @@ export function RelayDetails({ target, view }: { target: RelayTargetView | undef
     <>
       {target.waiting > 0 && <p className="relay-waiting">{t("relay.waiting", { percent: target.waiting })}</p>}
       {target.tokens.length > 0 && (
-        <ul className="relay-tokens" aria-label={t("relay.tokens")}>
+        // A research's tokens are samples, and the pending ones are marked until their assay (docs/research-sabotage.md).
+        <ul className="relay-tokens" aria-label={target.pending !== undefined ? t("relay.samples") : t("relay.tokens")}>
           {target.tokens.map((token, i) => {
             const character = characterOf(token.by);
             const who = character ? names.character(character) : t("relay.unknown");
             return (
               // Tokens are only ever appended, so the index is a stable key.
-              <li key={i} aria-label={t("relay.token", { name: who, percent: token.value })}>
+              <li key={i} className={token.pending ? "relay-token-pending" : undefined} aria-label={token.pending ? t("relay.tokenPending", { name: who, percent: token.value }) : t("relay.token", { name: who, percent: token.value })}>
                 <CrewAvatar character={character} />
                 <span aria-hidden="true">{t("research.percent", { percent: token.value })}</span>
               </li>

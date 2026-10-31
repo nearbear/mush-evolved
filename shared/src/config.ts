@@ -150,7 +150,8 @@ export const DEFAULT_CONFIG: GameConfig = {
   shrink: { lyingMorale: 1 },
   interrogate: { cost: { ap: 1 }, damage: 1, dirtyChance: 0.15, injuryChance: 0.1 },
   // Decided 2026-10-16: working on a research costs 2 AP. Owner, 2026-10-26: its progress follows the original's relay formula, 6-9% at difficulty 10.
-  research: { cost: { ap: 2 }, progress: { rate: 6, mod: 10, skillBoost: 4, relayPenalty: 2 }, dirtyChance: 0.15 },
+  // Owner, 2026-10-31 (docs/research-sabotage.md): assays at the quarter marks, 5% noise, Contaminate costs 1 AP.
+  research: { cost: { ap: 2 }, progress: { rate: 6, mod: 10, skillBoost: 4, relayPenalty: 2 }, dirtyChance: 0.15, assayMarks: [25, 50, 75, 100], spoilChance: 0.05, contaminate: { cost: { ap: 1 } } },
   // Decided 2026-10-19 (docs/astro-plan.md): scan 3 AP at 50%, x1.25 per failure in a row; analysis 2 AP; 2 planets per player.
   // Owner, 2026-10-22: planets get a direction and a distance (2 to 9 fuel, unique on the ship), and grow with the day.
   astro: {

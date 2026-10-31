@@ -178,6 +178,7 @@ li.research-item /* Rebel base icons are 70x65, not the 50x75 research cards. */
 .research-title,
 .research-progress {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 0.5rem;
 }
@@ -234,6 +235,16 @@ li.research-item /* Rebel base icons are 70x65, not the 50x75 research cards. */
   flex: 1 1 0;
   min-width: 2rem;
 }
+/* Research's pending samples (docs/research-sabotage.md): a striped segment after the solid verified fill. */
+.research-progress .kit-progress.neron::after {
+  content: "";
+  position: absolute;
+  top: 2px;
+  bottom: 2px;
+  left: calc(2px + (100% - 4px) * var(--value));
+  width: calc((100% - 4px) * var(--pending, 0));
+  background: repeating-linear-gradient(-45deg, #a8ea40 0 3px, transparent 3px 6px);
+}
 
 /* Relay tokens (RelayDetails.tsx): the terminal's one-line rule, the work held back for lack of other contributors, and
    each contribution as the contributor's face over its value, wrapping on a phone. */
@@ -258,6 +269,11 @@ li.research-item /* Rebel base icons are 70x65, not the 50x75 research cards. */
   flex-direction: column;
   align-items: center;
   font-size: 0.75em;
+}
+/* A research sample waiting for its assay: underlined in the striped bar's pattern. */
+.relay-tokens li.relay-token-pending {
+  padding-bottom: 3px;
+  background: repeating-linear-gradient(-45deg, #a8ea40 0 3px, transparent 3px 6px) bottom / 100% 3px no-repeat;
 }
 
 /* A research's requirements or a project's skills, as a wrapping checklist; met entries are ticked and dimmed. */

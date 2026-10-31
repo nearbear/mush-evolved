@@ -22,6 +22,18 @@ export type RelayToken = { by: PlayerId; base: number; roll: number; unpenalized
 /** A target's tokens, kept for the target's lifetime (owner, 2026-10-31). The rolls are never sent in a view. */
 export type RelayPool = { tokens: RelayToken[] };
 
+/**
+ * A research token, which players call a sample (docs/research-sabotage.md). `contaminatedBy` is set by a Mush's own
+ * spoil (their own id) or by Saboteur's Contaminate: the sample spoils at the next assay. Never in a view.
+ */
+export type Sample = RelayToken & { contaminatedBy?: PlayerId };
+
+/**
+ * A research's pool: `tokens` are the verified samples (they passed an assay and can never spoil), `pending` the
+ * samples made since the last assay (assay.ts).
+ */
+export type ResearchPool = { tokens: Sample[]; pending: Sample[] };
+
 /** A token's worth before the penalty: `rate * mod / 10` (rounded down), plus `skillBoost` for each matching skill. */
 export function tokenBase(config: Readonly<RelayProgressConfig>, player: Readonly<PlayerState>, skills: readonly SkillId[]): number {
   let base = Math.floor((config.rate * config.mod) / 10);

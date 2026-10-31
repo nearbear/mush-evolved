@@ -136,7 +136,7 @@ Everything the composer offers comes from the view: channel members, the room li
 
 ## Build order
 
-1. **Pooled contributions** (`docs/relay-tokens.md`): independent, and it removes the only reason for relay execution.
+1. **Pooled contributions** (`docs/relay-tokens.md`, #311; built 2026-10-31): independent, and it removes the only reason for relay execution.
 2. **Plans in `shared`:** types, `postPlan`, the five registry actions, the walk, cleanup and expiry, `viewFor`, rules and leak tests.
 3. **Protocol and server:** the `postPlan` message, `GameRoom` handling, `STATE_VERSION`.
 4. **UI:** card, composer, phone layout, en/fr/es.

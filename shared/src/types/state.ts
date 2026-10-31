@@ -2,7 +2,7 @@ import type { BiosState } from "../bios.ts";
 import type { CommsState } from "../comms.ts";
 import type { TurnSide } from "../navigation.ts";
 import type { PlanetDirection, PlanetTag } from "../planets.ts";
-import type { RelayPool } from "../relay.ts";
+import type { RelayPool, ResearchPool } from "../relay.ts";
 import type { RngState } from "../rng.ts";
 import type { TitleId } from "../titles.ts";
 import type { ItemState, LogEntry, PlayerId, RoomId } from "../types.ts";
@@ -88,12 +88,15 @@ export interface GameState {
   sporesToday: number;
   /** The cycle each Mush last extracted a spore, for the per-Mush cooldown. Hidden from everyone. */
   sporeExtractedOn: Record<PlayerId, number>;
-  /** Percent done of each research that has been started (absent = 0), by research id (research.ts): the best arrangement of its relay tokens. Only the living in the lab see it until it is complete. */
+  /** Percent done of each research that has been started (absent = 0), by research id (research.ts): the best arrangement of its verified samples (assay.ts). Only the living in the lab see it until it is complete. */
   research: Record<string, number>;
   /** Percent done of each NERON project that has been started (absent = 0), by project id (projects.ts). Only the living at NERON's core see it until it is complete. */
   projects: Record<string, number>;
-  /** Each research's and project's relay tokens (relay.ts). Only the living in the target's room see them, as contributor and value; rolls are never sent. */
-  relay: { research: Record<string, RelayPool>; projects: Record<string, RelayPool> };
+  /**
+   * Each research's and project's relay tokens (relay.ts; research's are samples, verified and pending, assay.ts). Only
+   * the living in the target's room see them, as contributor and value; rolls and contamination are never sent.
+   */
+  relay: { research: Record<string, ResearchPool>; projects: Record<string, RelayPool> };
   /**
    * PILGRED's repair (pilgred.ts): percent done and its relay tokens (relay.ts). Both go only to the living in a room
    * with the PILGRED terminal, the tokens as contributor and value; rolls are never sent.

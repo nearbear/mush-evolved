@@ -64,7 +64,7 @@ All under `web/src/`. UI rules are in `web/CLAUDE.md`.
 - `ShipResources.tsx`: the ship card (resources, hunters, titles); in the desktop top bar, and opened by `ShipOverlay.tsx` on phones. `TitleChip.tsx`: one title and its line of succession.
 - `BotsPausedTag.tsx`: the top-bar tag shown while model bots are paused (`botsPaused`, #114), with why.
 - `PreselectionTag.tsx`: the top-bar tag shown until the Mush are chosen.
-- `RelayDetails.tsx`: relay tokens in the research, project and PILGRED terminals: `RelayHelp` (the rule sentence), `RelayDetails` (waiting line and token faces), `withGain` (a work button's text with the gain).
+- `RelayDetails.tsx`: relay tokens in the research, project and PILGRED terminals: `RelayHelp` (the rule sentence), `RelayDetails` (waiting line and token faces; research samples, pending ones underlined), `withGain` (a work button's text with the gain).
 - `TerminalDialog.tsx`: the window opened by accessing a terminal; holds the research lab, NERON projects and the panels above (`CommsCenter`, `BiosTerminal`, `TurretPanel`, `ShipNavigation`, `PlanetList`).
 - `DialogHeader.tsx`: sticky title bar with a close button for scrolling dialogs. `ItemFace.tsx`: an item's square face with an optional label. `ConsumeEffects.tsx`: what eating or drinking an item does.
 - `useOverlayDismiss.ts`: closes a room-view overlay on Escape or a press elsewhere in the room view (`InventoryOverlay`, `ShipOverlay`).

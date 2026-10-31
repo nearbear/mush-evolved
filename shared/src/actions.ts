@@ -14,6 +14,8 @@ import { ExamineAction } from "./actions/examine.ts";
 import { ExtractSporeAction } from "./actions/extract_spore.ts";
 import { MoveAction } from "./actions/move.ts";
 import { ResearchAction } from "./actions/research.ts";
+import { SpoilResearchAction } from "./actions/spoil_research.ts";
+import { ContaminateAction } from "./actions/contaminate.ts";
 import { ProjectAction } from "./actions/project.ts";
 import { RepairPilgredAction } from "./actions/repair_pilgred.ts";
 import { ReturnToSolAction } from "./actions/return_to_sol.ts";
@@ -115,6 +117,8 @@ const REGISTRY = {
   dismantle: new DismantleAction(),
   access: new AccessAction(),
   research: new ResearchAction(),
+  spoil_research: new SpoilResearchAction(),
+  contaminate: new ContaminateAction(),
   project: new ProjectAction(),
   repair_pilgred: new RepairPilgredAction(),
   return_to_sol: new ReturnToSolAction(),

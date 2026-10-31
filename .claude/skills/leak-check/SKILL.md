@@ -34,6 +34,8 @@ For each, check what's sent and to whom:
 
 Also look for indirect leaks: legal actions that reveal hidden state (e.g. an action only offered when the target is Mush), timing or counts that reveal a role, and IDs or ordering that encode the RNG. A room effect (`roomActionCost` in modifiers.ts) shows up in the actor's prices, so its holder must be someone the actor can already see; an effect from a hidden source would leak through the cost.
 
+Not a leak: what Interrogate and Chitchat reveal from the action history (`shared/src/history.ts`), Mush-only actions included. They leak by design (owner, 2026-10-31; `docs/rules-design.md`). The history itself must still never reach a view any other way.
+
 ## 3. Prove it with tests
 
 Start with `shared/tests/leaks.test.ts`, which gives every hidden value in a game a unique sentinel and checks that each one appears only in the views allowed to have it (and does appear there, so the check isn't vacuous). A new field on `GameState`, `PlayerState` (or `Seat`), or `ItemState` fails the tests until it is listed in `shared/tests/leakFields.ts` with who may see it and the test that checks it (`tools/tests/leaks/fields.test.ts` reads the interfaces, so optional fields count too). If its value can be made unique, add a sentinel to `ship()` in `leaks.test.ts`; if not (a role, an enum, a player id), write a targeted test in the feature's test file and name that file in `leakFields.ts`. Targeted tests can use the same trick: serialize the view and count occurrences:

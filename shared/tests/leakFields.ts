@@ -47,7 +47,7 @@ export const GAME_STATE_FIELDS: Record<string, FieldRule> = {
   sporesToday: { reach: "never", test: "leaks.test.ts" },
   sporeExtractedOn: { reach: "never", test: "leaks.test.ts" },
   research: { reach: "room", test: "research.test.ts", note: "To the living in the lab; elsewhere only completed researches (owner, 2026-10-31)." },
-  relay: { reach: "room", test: "leaks.test.ts", note: "Each research's and project's relay tokens: contributor and value to the living in the target's room; each viewer's own token count anywhere; rolls never (relayView.ts)." },
+  relay: { reach: "room", test: "leaks.test.ts", note: "Each research's and project's relay tokens (research's samples, verified and pending): contributor and value to the living in the target's room; each viewer's own token count anywhere; rolls and contamination (contaminatedBy) never (relayView.ts, assay.ts)." },
   projects: { reach: "room", test: "projects.test.ts", note: "To the living at NERON's core; elsewhere only completed projects (owner, 2026-10-31)." },
   pilgred: { reach: "room", test: "pilgred.test.ts", note: "`progress` and the pool's contributors and values, to the living in a room with the PILGRED terminal; rolls never; each viewer's own token count anywhere. Whether it is repaired is public (`pilgredRepaired`), as the crew-wide message announces it." },
   planets: { reach: "own", test: "leaks.test.ts", note: "Without the unknown sectors' tags." },

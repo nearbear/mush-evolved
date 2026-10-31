@@ -280,6 +280,10 @@ export interface GameConfig {
     // The relay formula (relay.ts, owner 2026-10-26), the one PILGRED uses; `mod` is the difficulty, 10 for every research for now.
     progress: { rate: number; mod: number; skillBoost: number; relayPenalty: number };
     dirtyChance: number; // Chance of getting the dirty status after working on a research (owner, 2026-10-20).
+    // Assays (assay.ts; owner, 2026-10-31, first guesses): where they happen, and the chance each uncontaminated pending sample spoils anyway.
+    assayMarks: number[];
+    spoilChance: number;
+    contaminate: { cost: { ap: number } }; // Saboteur's Contaminate (owner, 2026-10-31: Sabotage's 1 AP).
   };
   project: {
     cost: { ap: number }; // AP spent to work on a NERON project (decided 2026-10-18).

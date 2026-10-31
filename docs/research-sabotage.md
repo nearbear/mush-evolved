@@ -1,6 +1,6 @@
 # Plan: research samples, assays and sabotage (written 2026-10-30)
 
-How a Mush sabotages research without being caught by bookkeeping, built on the relay token system of `docs/relay-tokens.md`. Players see a research's relay tokens as **samples**, and an **assay** tests a research's pending samples. "Relay tokens" is the name behind the scenes (code and docs); "sample" and "assay" are the words players see. Not built. **Decisions** are the owner's; **Proposed** items are Claude's and need the owner's confirmation before they are built; **Open questions** block the part they belong to. Do not guess them.
+How a Mush sabotages research without being caught by bookkeeping, built on the relay token system of `docs/relay-tokens.md`. Built 2026-10-31 (#311 part B). Players see a research's relay tokens as **samples**, and an **assay** tests a research's pending samples. "Relay tokens" is the name behind the scenes (code and docs); "sample" and "assay" are the words players see. **Decisions** are the owner's; **Proposed** items are Claude's and need the owner's confirmation before they are built; **Open questions** block the part they belong to. Do not guess them.
 
 ## The problem
 
@@ -41,13 +41,19 @@ Inspiration: Battlestar Galactica's skill checks (contributions go in face down,
 - **Which samples count toward "least":** all of the contributor's samples in that research, verified and pending, since the separator effect depends on the whole pool. A tie is broken by the seeded RNG (Claude's proposal, confirmed).
 - **No Mush bots** use own spoil or Saboteur: single player makes the human player the Mush, and multiplayer has no bots (owner, 2026-10-31). Crew bots only contribute honestly.
 
-## Proposed (Claude, 2026-10-30; confirm before building)
+## Confirmed (Claude's proposals of 2026-10-30, confirmed by the owner 2026-10-31)
 
 - **Verified and pending pools.** Research progress is the best arrangement (`docs/relay-tokens.md`) of the **verified** samples only. The striped segment is the best arrangement of verified plus pending, minus verified progress.
 - **The trigger.** An assay runs when the striped total reaches the first quarter mark above verified progress. Survivors join the verified pool and the pool is rearranged.
 - **Verified progress never falls.** Spoils only remove pending samples and adding samples never lowers the best arrangement, so `relay-tokens.md`'s "progress never falls" holds for verified progress, and completion side effects stay safe.
 - **Completion side effects** run at the assay that completes the research: the Mush sample item is consumed and the MycoAlarm drops then, not when the striped bar reaches 100.
-- **Completion lines stay public** ("MycoAlarms built", the serum on the floor): they announce things in the room, not who worked.
+- **Completion lines stay public** ("MycoAlarms built", the serum on the floor): they announce things in the room, not who worked. `researchCompleted` no longer names anyone.
+
+## Built with it (Claude, 2026-10-31; flagged to the owner, not asked)
+
+- **Contaminate with nothing left to hit.** It is offered whenever someone else has a pending sample, and does nothing (the AP is spent, the private line is the same) when all of those are already contaminated. Offering it only for uncontaminated samples would let a Saboteur learn that another player's sample was spoiled by its maker, so that player is Mush (Mush don't see each other's roles).
+- **Own spoil and Contaminate are recorded under their own names** (owner, 2026-10-31): Interrogate and Chitchat may reveal them, as with Extract spore; they leak by design (`rules-design.md`). Until the assay, own spoil looks like Participate everywhere else.
+- **Contaminate's private line** says the Saboteur tampered with the research's samples, not whose.
 
 ### Worked example
 

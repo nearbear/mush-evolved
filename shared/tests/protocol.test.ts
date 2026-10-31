@@ -41,6 +41,8 @@ describe("actions from a client", () => {
     dismantle: [{ type: "dismantle", item: "i1" }, { type: "dismantle", equipment: "e1" }],
     access: [{ type: "access", equipment: "e1" }],
     research: [{ type: "research", equipment: "e1", research: "r1" }],
+    spoil_research: [{ type: "spoil_research", equipment: "e1", research: "r1" }],
+    contaminate: [{ type: "contaminate", equipment: "e1", research: "r1" }],
     project: [{ type: "project", equipment: "e1", project: "p1" }],
     repair_pilgred: [{ type: "repair_pilgred", equipment: "e1" }],
     return_to_sol: [{ type: "return_to_sol", equipment: "e1" }],

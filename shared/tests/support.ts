@@ -110,7 +110,7 @@ export function setProgress(s: GameState, target: { research: string } | { proje
     seedPool(s.pilgred.pool, percent);
     s.pilgred.progress = percent;
   } else if ("research" in target) {
-    seedPool((s.relay.research[target.research] ??= { tokens: [] }), percent);
+    seedPool((s.relay.research[target.research] ??= { tokens: [], pending: [] }), percent);
     s.research[target.research] = percent;
   } else {
     seedPool((s.relay.projects[target.project] ??= { tokens: [] }), percent);

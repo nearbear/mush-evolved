@@ -105,6 +105,13 @@ function ResearchList({ terminal, view, onAction }: ListProps) {
         return { items: researchNeedOrder(req).map((need, i) => ({ label: label(need), met: met[i] ?? false })) };
       }}
       option={(id) => view.actions.find(({ action: a }) => a.type === "research" && a.equipment === terminal.id && a.research === id)}
+      more={(id) =>
+        // A Mush's own spoil and Saboteur's Contaminate, beside Participate when the view offers them (docs/research-sabotage.md).
+        (["spoil_research", "contaminate"] as const).flatMap((type) => {
+          const option = view.actions.find(({ action: a }) => a.type === type && a.equipment === terminal.id && a.research === id);
+          return option ? [{ option, label: type === "spoil_research" ? withGain(t, t("research.spoil"), view.relay.research[id]?.gain) : t("research.contaminate") }] : [];
+        })
+      }
       view={view}
       onAction={onAction}
     />
@@ -182,6 +189,8 @@ interface ProgressListProps {
   /** A checklist under an item: for research what must be in the lab before it can be worked on, for projects the skills that speed it up (the button itself comes from `view.actions`). */
   needs?: (id: string) => Checklist | null;
   option: (id: string) => ActionOption | undefined;
+  /** Other buttons beside the work button, from the view's offers (research: own spoil, Contaminate). */
+  more?: (id: string) => { option: ActionOption; label: string }[];
   view: PlayerView;
   onAction: (action: Action) => void;
 }
@@ -214,10 +223,11 @@ const PROGRESS_TABS: readonly ProgressTab[] = ["active", "blocked", "done"];
  * tabs: Active (in progress, then available), Blocked (not offered by the view, so for research the lab misses a need)
  * and Done. Within a tab the order is the list's own. Empty Blocked or Done tabs are left out.
  */
-function ProgressList({ label, ids, progress, relay, complete, cards, name, desc, status, needs, option: optionFor, view, onAction }: ProgressListProps) {
+function ProgressList({ label, ids, progress, relay, complete, cards, name, desc, status, needs, option: optionFor, more, view, onAction }: ProgressListProps) {
   const { t } = useTranslation();
   const [tab, setTab] = useState<ProgressTab>("active");
   const rows = ids.map((id) => ({ id, percent: progress[id] ?? 0, option: optionFor(id) }));
+  const pendingOf = (id: string) => relay[id]?.pending ?? 0;
   const groups: Record<ProgressTab, typeof rows> = {
     active: [...rows.filter((r) => r.percent > 0 && r.percent < complete && r.option), ...rows.filter((r) => r.percent === 0 && r.option)],
     blocked: rows.filter((r) => r.percent < complete && !r.option),
@@ -257,13 +267,28 @@ function ProgressList({ label, ids, progress, relay, complete, cards, name, desc
                         <span>{t("research.done")}</span>
                       ) : (
                         <div className="research-progress">
-                          <div className="kit-progress neron" role="progressbar" aria-label={name(id)} aria-valuemin={0} aria-valuemax={complete} aria-valuenow={percent} style={{ "--value": Math.min(1, percent / complete) } as CSSProperties} />
-                          <span>{t("research.percent", { percent })}</span>
+                          {/* Research: solid for verified progress, striped for pending samples not yet assayed (docs/research-sabotage.md). */}
+                          <div
+                            className="kit-progress neron"
+                            role="progressbar"
+                            aria-label={name(id)}
+                            aria-valuemin={0}
+                            aria-valuemax={complete}
+                            aria-valuenow={percent}
+                            aria-valuetext={pendingOf(id) ? t("research.withPending", { percent, pending: pendingOf(id) }) : undefined}
+                            style={{ "--value": Math.min(1, percent / complete), "--pending": Math.min(1, pendingOf(id) / complete) } as CSSProperties}
+                          />
+                          <span>{pendingOf(id) ? t("research.withPending", { percent, pending: pendingOf(id) }) : t("research.percent", { percent })}</span>
                           {option && (
                             <ActionButton view={view} option={option} onAction={onAction}>
                               <ActionLabel text={withGain(t, t("research.work"), relay[id]?.gain)} cost={option.cost} chance={option.chance} />
                             </ActionButton>
                           )}
+                          {more?.(id).map(({ option: extra, label: text }) => (
+                            <ActionButton key={extra.action.type} view={view} option={extra} onAction={onAction}>
+                              <ActionLabel text={text} cost={extra.cost} chance={extra.chance} />
+                            </ActionButton>
+                          ))}
                         </div>
                       )}
                       <RelayDetails target={relay[id]} view={view} />

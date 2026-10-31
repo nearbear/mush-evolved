@@ -72,18 +72,21 @@ describe("research", () => {
     expect(researches(s, "p0").sort()).toEqual([...RESEARCH_IDS].sort());
   });
 
-  it("costs 2 AP and adds a relay token worth the relay formula, for anyone", () => {
+  it("costs 2 AP and adds a pending sample worth the relay formula, for anyone", () => {
     const s = game();
     s.rng = CLEAN;
     const ap = s.players[1]!.ap;
     const range = viewFor(s, "p1").relay.research.STEROIDS!.gain;
     expect(range).toEqual({ min: 6, max: 9 });
     const r = mustApply(s, "p1", work("STEROIDS"));
-    const first = r.research.STEROIDS!;
+    // Below the first assay mark, it stays pending: the striped segment, not verified progress.
+    const first = viewFor(r, "p1").relay.research.STEROIDS!.pending!;
     expect(first).toBeGreaterThanOrEqual(range.min);
     expect(first).toBeLessThanOrEqual(range.max);
+    expect(r.research.STEROIDS ?? 0).toBe(0);
     expect(r.players[1]!.ap).toBe(ap - AP);
-    expect(r.relay.research.STEROIDS!.tokens).toMatchObject([{ by: "p1", base: 6 }]);
+    expect(r.relay.research.STEROIDS!.pending).toMatchObject([{ by: "p1", base: 6 }]);
+    expect(r.relay.research.STEROIDS!.tokens).toEqual([]);
   });
 
   it("completes at 100% and then is no longer offered or accepted", () => {
@@ -157,7 +160,8 @@ describe("research", () => {
     s = mustApply(s, "p0", work("STEROIDS"));
     for (const id of ["p0", "p1"]) {
       expect(viewFor(s, id).research).toEqual(s.research);
-      expect(viewFor(s, id).relay.research.STEROIDS!.tokens).toEqual([{ by: "p0", value: s.research.STEROIDS }]);
+      const pending = viewFor(s, id).relay.research.STEROIDS!.pending!;
+      expect(viewFor(s, id).relay.research.STEROIDS!.tokens).toEqual([{ by: "p0", value: pending, pending: true }]);
     }
     const away = viewFor(s, "p2");
     expect(away.research).toEqual({});
@@ -301,7 +305,7 @@ describe("computer scientist skill (computer)", () => {
     if (!r.ok) throw new Error(r.error);
     expect(r.state.players[0]!.resources.comp).toBe(cfg.pointsPerDay - 1);
     expect(r.state.players[0]!.ap).toBe(ap);
-    expect(r.state.research.STEROIDS).toBeGreaterThan(0);
+    expect(r.state.relay.research.STEROIDS!.pending).toHaveLength(1);
     // The second point makes the next one free; after that it costs AP again.
     r.state.rng = CLEAN;
     const second = applyAction(r.state, "p0", work("STEROIDS"));

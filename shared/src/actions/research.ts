@@ -4,7 +4,8 @@ import { logPrivate, logPublic } from "../log.ts";
 import { equipmentHere } from "../equipment.ts";
 import { ITEM_TYPES, newItemId, removeItem } from "../items.ts";
 import { xylophFound } from "../comms.ts";
-import { contribute } from "../relay.ts";
+import { makeToken, type ResearchPool } from "../relay.ts";
+import { assayDue, researchProgress, runAssay, type SampleCounts } from "../assay.ts";
 import { dropMycoAlarms } from "../mycoalarm.ts";
 import { ANTI_MUSH_SERUM_ITEM } from "./vaccinate.ts";
 import type { GameState, ItemState, PlayerState, RoomId } from "../types.ts";
@@ -44,10 +45,63 @@ export function researchAllowed(state: Readonly<GameState>, room: RoomId, resear
 
 export type ResearchActionData = { type: "research"; equipment: string; research: string };
 
+/** A research's pool, made on first use. */
+export function researchPool(state: GameState, research: string): ResearchPool {
+  return (state.relay.research[research] ??= { tokens: [], pending: [] });
+}
+
+/** "chun:3,paola:1": an assay line's counts, which the client turns into names (web/src/i18n/names.ts). */
+function countsParam(state: Readonly<GameState>, counts: SampleCounts): string {
+  return counts.map(([by, n]) => `${state.players.find((p) => p.id === by)?.character ?? by}:${n}`).join(",");
+}
+
+/**
+ * Adds `player`'s pending sample to a research (docs/research-sabotage.md), contaminated by themselves when `spoiled`
+ * (a Mush's own spoil), then runs an assay if one is due and completes the research if it leaves it at 100.
+ */
+export function addSample(state: GameState, player: Readonly<PlayerState>, research: ResearchId, spoiled: boolean): void {
+  const config = state.config.research;
+  const pool = researchPool(state, research);
+  pool.pending.push({ ...makeToken(state, config.progress, player, RESEARCH_SKILLS), ...(spoiled && { contaminatedBy: player.id }) });
+  const before = researchProgress(pool, config.progress, RESEARCH_COMPLETE);
+  // Owner, 2026-10-30: research is private; the sample list and the assay lines are the record of who worked.
+  logPrivate(state, player.id, "researched", { name: player.character, research, percent: before.verified + before.pending });
+  if (!assayDue(pool, config.progress, config.assayMarks, RESEARCH_COMPLETE)) return;
+  const { tested, spoiled: lost } = runAssay(state, pool, config.spoilChance);
+  const verified = researchProgress(pool, config.progress, RESEARCH_COMPLETE).verified;
+  state.research[research] = verified;
+  // Owner, 2026-10-31: the line names everyone tested and whose samples spoiled, never why.
+  const testedCount = tested.reduce((n, [, c]) => n + c, 0);
+  const spoiledCount = lost.reduce((n, [, c]) => n + c, 0);
+  if (spoiledCount === 0) logPublic(state, player.room, "assayPassed", { research, count: testedCount, tested: countsParam(state, tested) });
+  else logPublic(state, player.room, "assaySpoiled", { research, count: testedCount, tested: countsParam(state, tested), spoiled: spoiledCount, spoiledBy: countsParam(state, lost) });
+  if (verified >= RESEARCH_COMPLETE) completeResearch(state, player.room, research);
+}
+
+/** Completion's effects (owner, 2026-10-25/31), at the assay that leaves the research at 100. Its lines name nobody. */
+function completeResearch(state: GameState, room: RoomId, research: ResearchId): void {
+  logPublic(state, room, "researchCompleted", { research });
+  // `kill_sample`: completing it uses up one of these from the lab, the floor first.
+  for (const type of RESEARCH_REQUIRES[research]?.consumes ?? []) {
+    const items = labItems(state, room).filter((i) => i.type === type);
+    const used = items.find((i) => i.at.kind === "room") ?? items[0];
+    if (used) removeItem(state, used.id);
+  }
+  if (research === "MYCO_ALARM") {
+    dropMycoAlarms(state, room);
+    logPublic(state, room, "mycoAlarmsBuilt");
+  }
+  // Owner, 2026-10-25: completing it leaves one serum on the lab floor.
+  if (research === "ANTI_MUSH_SERUM") {
+    state.items.push({ id: newItemId(state), type: ANTI_MUSH_SERUM_ITEM, at: { kind: "room", id: room } });
+    logPublic(state, room, "serumBuilt");
+  }
+}
+
 /**
  * Work on a research at the laboratory's research terminal (decided 2026-10-16): 2 AP (free with a Computer point, which is spent)
- * adds a relay token to the research's pool (relay.ts: 6-9%, +4 per Biologist or Medic skill, the pool arranged for the least relay penalty; owner, 2026-10-30). Anyone alive who is not dirty can help, while the lab meets the research's
- * RESEARCH_REQUIRES. Private log line; completion goes in the room's history.
+ * adds a pending sample to the research's pool (relay.ts: 6-9%, +4 per Biologist or Medic skill, the pool arranged for the least relay penalty; owner, 2026-10-30), tested at the next assay (assay.ts). Anyone alive who is not dirty can help, while the lab meets the research's
+ * RESEARCH_REQUIRES. Private log line; assays and completion go in the room's history.
  */
 export class ResearchAction extends Action<ResearchActionData> {
   override terminal = true;
@@ -82,28 +136,6 @@ export class ResearchAction extends Action<ResearchActionData> {
   }
 
   override apply(state: GameState, player: PlayerState, target: ResearchActionData): void {
-    const pool = (state.relay.research[target.research] ??= { tokens: [] });
-    const progress = contribute(state, pool, state.config.research.progress, player, RESEARCH_SKILLS, RESEARCH_COMPLETE);
-    state.research[target.research] = progress;
-    // Owner, 2026-10-30: research is private, its token list is the evidence; only completion goes in the room's history.
-    if (progress >= RESEARCH_COMPLETE) logPublic(state, player.room, "researchCompleted", { name: player.character, research: target.research, percent: progress });
-    else logPrivate(state, player.id, "researched", { name: player.character, research: target.research, percent: progress });
-    // `kill_sample`: completing it uses up one of these from the lab, the floor first.
-    if (progress >= RESEARCH_COMPLETE) {
-      for (const type of RESEARCH_REQUIRES[target.research as ResearchId]?.consumes ?? []) {
-        const items = labItems(state, player.room).filter((i) => i.type === type);
-        const used = items.find((i) => i.at.kind === "room") ?? items[0];
-        if (used) removeItem(state, used.id);
-      }
-    }
-    if (progress >= RESEARCH_COMPLETE && target.research === "MYCO_ALARM") {
-      dropMycoAlarms(state, player.room);
-      logPublic(state, player.room, "mycoAlarmsBuilt");
-    }
-    // Owner, 2026-10-25: completing it leaves one serum on the lab floor.
-    if (progress >= RESEARCH_COMPLETE && target.research === "ANTI_MUSH_SERUM") {
-      state.items.push({ id: newItemId(state), type: ANTI_MUSH_SERUM_ITEM, at: { kind: "room", id: player.room } });
-      logPublic(state, player.room, "serumBuilt");
-    }
+    addSample(state, player, target.research as ResearchId, false);
   }
 }

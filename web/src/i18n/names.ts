@@ -14,6 +14,8 @@ const ACTION_NAME_KEYS = {
   dismantle: "actions.dismantle",
   access: "actions.access",
   research: "actions.research",
+  spoil_research: "actions.spoilResearch",
+  contaminate: "actions.contaminate",
   project: "actions.project",
   repair_pilgred: "actions.repairPilgred",
   return_to_sol: "actions.returnToSol",
@@ -88,7 +90,7 @@ const ACTION_NAME_KEYS = {
 } as const satisfies Record<Exclude<ActionType, "ready">, string>;
 
 export function useNames() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   // Dynamic keys, so the id falls back to itself when a catalog lacks it.
   const lookup = (group: "rooms" | "equipment" | "items", id: string): string => t(`${group}.${id}` as never, { defaultValue: id });
   const room = (id: RoomId) => lookup("rooms", id);
@@ -124,7 +126,15 @@ export function useNames() {
     return key ? t(key as never, { defaultValue: type }) : type;
   };
 
-  /** The text of a log entry. `room`, `item`, `research`, `project`, `equipment`, `action`, `title`, `skill`, `base` (a rebel base), `direction` (a heading) and `entry` (a Xyloph entry) params are ids and get translated; `name`, `target` and `body` are character ids. */
+  const sampleCounts = (list: string) =>
+    new Intl.ListFormat(i18n.language, { type: "unit" }).format(
+      list.split(",").map((entry) => {
+        const [character = "", count = "0"] = entry.split(":");
+        return t("logEvent.sampleCount" as never, { name: characterGivenName(character), count: Number(count) });
+      }),
+    );
+
+  /** The text of a log entry. `room`, `item`, `research`, `project`, `equipment`, `action`, `title`, `skill`, `base` (a rebel base), `direction` (a heading) and `entry` (a Xyloph entry) params are ids and get translated; `name`, `target` and `body` are character ids; `tested` and `spoiledBy` are an assay's counts by character. */
   const logLine = ({ key, params = {} }: Pick<LogEntry, "key" | "params">): string => {
     const resolved: Record<string, string | number> = { ...params };
     if (typeof params.room === "string") resolved.room = room(params.room);
@@ -139,6 +149,8 @@ export function useNames() {
     if (typeof params.direction === "string") resolved.direction = t(`astro.directions.${params.direction}` as never, { defaultValue: params.direction });
     if (typeof params.entry === "string") resolved.entry = t(`comms.xyloph.${params.entry}` as never, { defaultValue: params.entry });
     for (const who of ["name", "target", "body"] as const) if (typeof params[who] === "string") resolved[who] = characterGivenName(params[who]);
+    // An assay's "chun:3,paola:1" lists (shared/src/actions/research.ts): "Chun ×3, Paola ×1".
+    for (const list of ["tested", "spoiledBy"] as const) if (typeof params[list] === "string") resolved[list] = sampleCounts(params[list]);
     return t(`logEvent.${key}` as never, { ...resolved, defaultValue: key });
   };
 
