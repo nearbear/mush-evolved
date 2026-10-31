@@ -36,7 +36,7 @@ function goInactive(p: PlayerState, level: Inactivity): void {
 }
 
 /**
- * Called as a clock cycle begins at server time `at`, after the AP gain. A living human player not seen for
+ * Called as a clock cycle begins at server time `at`, after the AP gain. A living player (human or Mush, not a bot) not seen for
  * `inactiveAfterHours` whose AP gauge is full goes inactive; an inactive one not seen for `superAfterHours` goes super
  * inactive. A player the rules haven't seen yet starts counting now. Mutates a state the caller already cloned.
  */

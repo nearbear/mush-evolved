@@ -12,8 +12,7 @@ export type BodyTransferActionData = { type: "body_transfer"; target: string };
  * free (`bodyTransfer.cost.ap`) and instant, a Mush takes over the body of a living human in their room whose
  * contamination is at least 1 (Antique Perfume immunity doesn't stop it) and who isn't inactive (owner, 2026-10-31,
  * #145). The minds swap (`swapMinds`): the Mush player now plays the target's body, which becomes Mush; the victim
- * plays the old body, now human with no
- * contamination and no spores, at satiety 0 and counting toward hunger from this cycle. The new Mush body keeps its
+ * plays the old body, now human with no contamination and no spores, at satiety 0 and counting toward hunger from this cycle. The new Mush body keeps its
  * satiety but stops counting toward hunger, as Mush do. Bodies keep everything else (AP, HP, morale, inventory,
  * human skills, titles, channels). Private: only the Mush gets a log line; the victim gets a pop-up naming who took
  * their body (`bodyTakenBy`). Aggressive, and a `spore` action, so myco-alarms ring.

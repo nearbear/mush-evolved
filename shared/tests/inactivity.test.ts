@@ -206,6 +206,22 @@ describe("inactivity and Transfer", () => {
     s = must(seen(s, T0, "p1"));
     expect(offered(s, "p0")).toContainEqual(transfer);
   });
+
+  it("keeps each player's last connection with their mind, not the body", () => {
+    // p0 (the Mush) was seen recently; p1, the victim, 20 hours ago.
+    let s = ship();
+    s = must(seen(s, h(20), "p0"));
+    for (const p of s.players) p.role = p.id === "p0" ? "mush" : "human";
+    player(s, "p0").mushSkills.push("transfert");
+    s.contamination.p1 = 1;
+    s = mustApply(s, "p0", { type: "body_transfer", target: "p1" });
+    // The victim now plays p0's body and carries their own old time; the Mush, in p1's body, their recent one.
+    expect(player(s, "p0").lastSeenAt).toBe(T0);
+    expect(player(s, "p1").lastSeenAt).toBe(h(20));
+    // So at 24 hours the victim goes inactive in their new body, and the Mush doesn't.
+    s = cycleAt(s, h(24));
+    expect([status(s, "p0"), status(s, "p1")]).toEqual(["inactive", null]);
+  });
 });
 
 describe("inactivity's effects", () => {

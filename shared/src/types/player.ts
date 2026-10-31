@@ -64,7 +64,7 @@ export interface PlayerState extends Seat {
   outcastBy?: PlayerId;
   /**
    * When this player was last connected (server ms; inactivity.ts, reported by the server's `seen` input). Unset until
-   * the rules first hear of them. Stays with the body in a Transfer. Never sent.
+   * the rules first hear of them. Moves with the mind in a Transfer (`MIND_FIELDS`, mind.ts). Never sent.
    */
   lastSeenAt?: number;
   /**

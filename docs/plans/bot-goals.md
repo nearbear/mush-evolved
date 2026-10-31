@@ -75,7 +75,7 @@ interface GoalDef {
 
 **Priority lives on each goal definition** (Gemini, 2026-10-25), so adding a goal means adding one file with its own number, not editing a list elsewhere. Ties break with the bot's seeded RNG.
 
-**One affordability helper.** `canAfford(view, room, cost)` answers "can I get there and do this, keeping the 2 AP reserve?" for every goal: it counts travel along `shortestPath` (including the AP-to-MP conversion when MP runs out), subtracts locked AP, and counts free specialist points. Action costs for rooms the bot isn't in come from the public base config, since a view carries only the costs of actions open to it now.
+**One affordability helper.** `canAfford(view, room, cost)` answers "can I get there and do this, keeping the 2 AP reserve?" for every goal: it counts travel along `shortestPath` (including the AP-to-MP conversion when MP runs out) and counts free specialist points. Action costs for rooms the bot isn't in come from the public base config, since a view carries only the costs of actions open to it now.
 
 **Keep options few.** A goal offers one or two options, not one per bed or room: `rest` offers the nearest bedroom, `explore` the one or two nearest rooms not visited this cycle. Options are also filtered by what the bot can afford with the 2 AP reserve kept (counting free specialist points, e.g. in `research.ts`, `project.ts`, `repair_pilgred.ts`). `endCycle` is offered only when nothing else is. So a bot out of spendable AP has one option and makes no model call (`ModelBot` already skips the call when there is one choice).
 

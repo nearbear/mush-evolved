@@ -51,9 +51,8 @@ export function killPlayer(state: GameState, player: PlayerState): void {
   for (const item of state.items) if (sameContainer(item.at, mine)) item.at = { kind: "room", id: player.room };
   state.items.push({ id: newItemId(state), type: CORPSE_ITEM, at: { kind: "room", id: player.room }, of: player.id });
 
-  // Bonds and contamination are void. Action plans aren't built yet; when they
-  // are, plans targeting the dead player are cancelled and their claims and
-  // locked AP released here.
+  // Bonds and contamination are void. Plans aren't built yet; when they are,
+  // the dead player's claims are released here (docs/plans/on-call.md).
   delete state.bonds[player.id];
   for (const [id, partners] of Object.entries(state.bonds)) state.bonds[id] = partners.filter((b) => b !== player.id);
   delete state.contamination[player.id];

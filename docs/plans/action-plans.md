@@ -2,7 +2,7 @@
 
 > **Superseded (2026-10-30).** The owner dropped the generic executor (scheduled time, locked AP, knowledge sandbox, arbitrary jobs). Relaying is now pooled contributions, `docs/plans/relay-tokens.md`; coordination is channel plans with on-call summons, `docs/plans/on-call.md`, which lists which decisions below still carry over. Kept for history and for the deferred features.
 
-Implemented so far: the action registry and private channels; build steps 1 (the relay formula) and 2 (`PlayerState.lockedAp` and `freeAp` in every live affordability check, `actNow` in `queue.ts`, `shortestPath` in `paths.ts`; nothing locks AP yet). The rest is not built. **Decisions** are confirmed by the owner; **Open questions** must be answered before building the phase they block. Do not guess them.
+Implemented so far: the action registry and private channels; build steps 1 (the relay formula) and 2 (`actNow` in `queue.ts`, `shortestPath` in `paths.ts`; its `PlayerState.lockedAp` and `freeAp` were removed on 2026-10-31, #312, as `docs/plans/on-call.md` decided). The rest is not built. **Decisions** are confirmed by the owner; **Open questions** must be answered before building the phase they block. Do not guess them.
 
 On 2026-10-26 the owner narrowed the first pass to four kinds of job, with no secrets, no planning mode and no optional jobs. The design below is for that pass. Earlier decisions for later passes are under "Deferred". The design was drafted with Gemini (three rounds) and checked against the code; a feasibility review the same day (Claude) found no blocker and added the "Review findings" decisions and the UI detail below.
 

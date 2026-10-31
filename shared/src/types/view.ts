@@ -104,8 +104,11 @@ export interface PublicConfig {
   xylophAp: number;
 }
 
-/** Your own state, minus your account name (nobody's name is in a view while the game runs). */
-/** Your own state, minus your account name; the queue is plain actions (the recorded adjustments stay on the server). */
+/**
+ * Your own state, minus your account name (nobody's name is in a view while the game runs) and what is never sent to
+ * you (your mind, Transfer use, action history, when you were last seen, the raw inactivity field); the queue is plain
+ * actions (the recorded adjustments stay on the server).
+ */
 export type YouView = Omit<PlayerState, "name" | "mind" | "transferUsed" | "history" | "current" | "queue" | "lastSeenAt" | "inactivity"> & { current: ActionInProgress | null; queue: Action[] };
 
 export interface PlayerView {
