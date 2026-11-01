@@ -2,7 +2,7 @@ import { Action, peopleHere } from "./action.ts";
 import { logPublic } from "../log.ts";
 import { hasSkill } from "../skills.ts";
 import type { GameState, PlayerState } from "../types.ts";
-import { gainMorale } from "../adjustStats.ts";
+import { changeMP, gainMorale } from "../adjustStats.ts";
 
 export type FierySpeechActionData = { type: "fiery_speech" };
 export type BoringSpeechActionData = { type: "boring_speech" };
@@ -32,7 +32,6 @@ export class FierySpeechAction extends Action<FierySpeechActionData> {
   override apply(state: GameState, player: PlayerState): void {
     for (const o of peopleHere(state, player)) {
       const p = state.players.find((q) => q.id === o.id)!; // peopleHere reads the same state, so it exists
-      //p.morale = Math.min(p.maxMorale, p.morale + state.config.speech.fiery.morale);
       gainMorale(state, p, state.config.speech.fiery.morale);
     }
     logPublic(state, player.room, "fierySpeech", { name: player.character });
@@ -66,7 +65,7 @@ export class BoringSpeechAction extends Action<BoringSpeechActionData> {
     player.boringToday = true;
     for (const o of peopleHere(state, player)) {
       const p = state.players.find((q) => q.id === o.id)!;
-      p.mp = Math.min(state.config.movement.mpCap, p.mp + state.config.speech.boring.mp);
+      changeMP(state, p, state.config.speech.boring.mp);
     }
     logPublic(state, player.room, "boringSpeech", { name: player.character });
   }

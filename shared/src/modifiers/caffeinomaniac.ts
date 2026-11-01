@@ -1,3 +1,4 @@
+import { changeAP } from "../adjustStats.ts";
 import type { Modifier } from "../modifiers.ts";
 
 // Skill "caffeinomaniac", confirmed 2026-10-16: consuming a coffee gives `caffeinomaniac.ap` extra AP on top of the
@@ -5,6 +6,6 @@ import type { Modifier } from "../modifiers.ts";
 export const caffeinomaniac: Modifier = {
   onConsume(next, player, item) {
     if (item.type !== "coffee") return;
-    player.ap = Math.min(next.config.maxAp, player.ap + next.config.caffeinomaniac.ap);
+    changeAP(next, player, next.config.caffeinomaniac.ap);
   },
 };

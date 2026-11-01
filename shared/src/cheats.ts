@@ -25,8 +25,8 @@ export const isCheat = (value: unknown): value is Cheat => CHEATS.some((c) => c 
  * CHEATS and one line here (the UI lists CHEATS).
  */
 const REFILL: Record<Cheat, (p: PlayerState, state: GameState) => void> = {
-  infiniteAp: (p, { config }) => void (p.ap = config.maxAp),
-  infiniteMp: (p, { config }) => void (p.mp = config.movement.mpCap),
+  infiniteAp: (p, { config }) => void (p.ap = p.maxAp),
+  infiniteMp: (p, { config }) => void (p.mp = p.maxMp),
   infiniteMorale: (p, { config }) => void (p.morale = p.maxMorale),
   infiniteHp: (p, { config }) => void (p.hp = p.maxHp),
   infiniteSpores: (p) => void (p.role === "mush" && (p.spores = CHEAT_SPORES)),

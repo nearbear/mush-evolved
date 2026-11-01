@@ -1,3 +1,4 @@
+import { changeAP } from "../adjustStats.ts";
 import { isSuperInactive } from "../inactivity.ts";
 import { logPrivate } from "../log.ts";
 import type { Modifier } from "../modifiers.ts";
@@ -9,10 +10,10 @@ import { rollInt } from "../rng.ts";
 export const logistics: Modifier = {
   onCycle(next, player) {
     if (!player.alive) return;
-    const takers = next.players.filter((o) => o.id !== player.id && o.alive && o.room === player.room && o.ap < next.config.maxAp && !isSuperInactive(o));
+    const takers = next.players.filter((o) => o.id !== player.id && o.alive && o.room === player.room && o.ap < o.maxAp && !isSuperInactive(o));
     if (takers.length === 0) return;
     const taker = takers[rollInt(next, takers.length)]!;
-    taker.ap = Math.min(next.config.maxAp, taker.ap + next.config.logistics.ap);
+    changeAP(next, taker, next.config.logistics.ap);
     logPrivate(next, player.id, "logisticsGave", { target: taker.character });
     logPrivate(next, taker.id, "logisticsGot", { name: player.character });
   },

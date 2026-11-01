@@ -47,8 +47,8 @@ export function SelfPoints({ view }: { view: PlayerView }) {
       <StatInfo stat="ap" view={view} value={you.ap} max={view.maxAp}>
         <PipBar label={t("stat.ap")} value={you.ap} max={view.maxAp} pip={AP_PIP} vertical />
       </StatInfo>
-      <StatInfo stat="mp" view={view} value={you.mp} max={view.movement.mpCap}>
-        <PipBar label={t("stat.mp")} value={you.mp} max={view.movement.mpCap} pip={MP_PIP} vertical />
+      <StatInfo stat="mp" view={view} value={you.mp} max={view.maxMp}>
+        <PipBar label={t("stat.mp")} value={you.mp} max={view.maxMp} pip={MP_PIP} vertical />
       </StatInfo>
     </div>
   );

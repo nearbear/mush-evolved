@@ -72,6 +72,8 @@ type FoldHooks = Record<
   | "gardenPointsPerDay"
   | "heavyMpPenalty"
   | "cleanManoeuvreChance"
+  | "maxAp"
+  | "maxMp"
   | "maxMorale"
   | "maxHp",
   FoldHook
@@ -285,7 +287,7 @@ export function movementRules(
   player: Readonly<PlayerState>,
   registry: ModifierRegistry = MODIFIERS,
 ): MovementRules {
-  let rules = { ...state.config.movement };
+  let rules = { ...state.config.movement, mpCap: player.maxMp };
   for (const id of modifierIds(player)) {
     const hook = registry[id]?.movement;
     if (hook) rules = hook(rules, player, state);
@@ -323,7 +325,7 @@ export const contaminationCapacity = (
  */
 export function moveCost(
   rules: MovementRules,
-  player: Readonly<Pick<PlayerState, "ap" | "mp">>,
+  player: Readonly<Pick<PlayerState, "ap" | "mp" >>,
 ): { ap: number; mpAfter: number } | null {
   if (player.mp >= rules.mpPerMove) return { ap: 0, mpAfter: player.mp - rules.mpPerMove };
   if (player.ap < rules.apPerConversion) return null;
@@ -396,6 +398,14 @@ export const gardenPointsGain = (state: Readonly<GameState>, player: Readonly<Pl
 /** HP a punch removes: the rolled base damage folded through the puncher's modifiers. */
 export const punchDamage = (state: Readonly<GameState>, player: Readonly<PlayerState>, base: number, registry: ModifierRegistry = MODIFIERS) =>
   fold("punchDamage", base, state, player, registry);
+
+/** Max AP */
+export const maxAp = (state: Readonly<GameState>, player: Readonly<PlayerState>, base: number, registry: ModifierRegistry = MODIFIERS) =>
+  fold("maxAp", base, state, player, registry);
+
+/** Max MP */
+export const maxMp = (state: Readonly<GameState>, player: Readonly<PlayerState>, base: number, registry: ModifierRegistry = MODIFIERS) =>
+  fold("maxMp", base, state, player, registry);
 
 /** Max Morale */
 export const maxMorale = (state: Readonly<GameState>, player: Readonly<PlayerState>, base: number, registry: ModifierRegistry = MODIFIERS) =>
