@@ -1993,3 +1993,9 @@ Owner decisions (asked via the `rule` skill): manual extinguish starts at 25% (t
 ## 2026-11-01: Lethargy plan, web half
 
 Built the two-column AP gauge from `docs/plans/lethargy.md`: `PipBar` gets a `columns` prop (vertical bars only), `SelfPoints` passes 2 past 12 slots. Typecheck and build pass; no browser check yet because the Lethargy rule isn't built, so no player can reach 24 AP. Worked: the plan's column and wipe-order spec mapped straight onto the code.
+
+### 2026-11-01: Green Thumb skill
+
+- **Decision (owner):** Green Thumb gives 2 empty hydropots when picked, the original's number (`config.greenThumb.pots`), unlike Paranoid's cut from 2 cameras to 1. The graft bonus (grafts start a cycle older) waits for grafting; status "partial".
+- **What worked:** Paranoid's `onPick` + `produceItem` was an exact template, so it's one small modifier file, one config knob and one test. A skill book triggers `onPick` too, matching the wiki ("copying it gives two more pots").
+- **Needed correction:** the en effect text read "You starts with two hydropots"; all three locales now say the pots come when the skill is picked, since skills are picked mid-game here.

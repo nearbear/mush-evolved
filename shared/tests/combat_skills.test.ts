@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { DEFAULT_CONFIG } from "../src/config.ts";
+import { TREE_POT_ITEM } from "../src/items.ts";
 import { channelLimit, computerPointsCap } from "../src/modifiers.ts";
 import { SKILL_SLOTS, skillStatus } from "../src/skills.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";
@@ -176,6 +177,20 @@ describe("Paranoid", () => {
     s = pickSkill(s, "p0", "paranoid");
     expect([cameras(s, "p0"), cameras(s, "p1")]).toEqual([DEFAULT_CONFIG.paranoid.cameras, 0]);
     expect(skillStatus("paranoid")).toBe("full");
+  });
+});
+
+describe("Green Thumb", () => {
+  const pots = (s: GameState, id: string) => s.items.filter((i) => i.type === TREE_POT_ITEM && i.at.kind === "player" && i.at.id === id);
+
+  it("gives two empty hydropots when picked (owner, 2026-11-01)", () => {
+    expect(DEFAULT_CONFIG.greenThumb.pots).toBe(2);
+    let s = ship();
+    s = pickSkill(s, "p0", "green_thumb");
+    expect(pots(s, "p0")).toHaveLength(DEFAULT_CONFIG.greenThumb.pots);
+    expect(pots(s, "p0").every((i) => i.plant === undefined)).toBe(true);
+    expect(pots(s, "p1")).toHaveLength(0);
+    expect(skillStatus("green_thumb")).toBe("partial");
   });
 });
 

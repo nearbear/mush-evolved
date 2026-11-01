@@ -244,6 +244,9 @@ export interface GameConfig {
   paranoid: {
     cameras: number; // Camera items the `paranoid` skill gives when picked (owner, 2026-10-27; the original gives 2).
   };
+  greenThumb: {
+    pots: number; // Empty hydropots the `green_thumb` skill gives when picked (owner, 2026-11-01; the original's 2).
+  };
   gunner: {
     accuracyFactor: number; // The `gunner` skill multiplies the chance to hit from a turret by this (owner, 2026-10-24; the data's MulActionOdd 2.0).
     damageFactor: number; // ...and the damage of a hit (owner, 2026-10-24).

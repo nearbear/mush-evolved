@@ -1162,7 +1162,7 @@
       "apprentice": "Action: Apprenticeship- Once per game, for 1 AP, copy a skill from a crewmember in the room.",
       "premonition": "Action: Premonition- For 1 Morale, you can see another crewmate's last action.",
       "wrestler": "Your melee attacks deal 2 extra damage (Does not stack with Solid or Mutation).\nAction: Throw Out- For 2 AP, move crewmember to a random adjacent room (Costs 1 less on inactive crewmembers).",
-      "green_thumb": "You starts with two hydropots.\nPlants you graft will start at 25% of their total growth time.",
+      "green_thumb": "Gives you two extra hydropots when picked.\nPlants you graft will start at 25% of their total growth time.",
       "genius": "Action: Eureka moment- Once per game, for free, the next Research or Neron project you work on will be completed instantly.",
       "observant": "The Search action costs you 1 AP less.\nYou have a 25% chance to detect discreet actions in your room.",
       "torturer": "Action: Torture- Once per day, For 1 AP, you can deal 1 damage to a crewmember and reveal their last X actions, where X is the amount of Hp.",

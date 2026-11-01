@@ -25,6 +25,7 @@ import { sprint } from "./modifiers/sprint.ts";
 import { gunman } from "./modifiers/gunman.ts";
 import { astrophysician } from "./modifiers/astrophysician.ts";
 import { paranoid } from "./modifiers/paranoid.ts";
+import { green_thumb } from "./modifiers/green_thumb.ts";
 import { gunner } from "./modifiers/gunner.ts";
 import { persistent } from "./modifiers/persistent.ts";
 import { polymath } from "./modifiers/polymath.ts";
@@ -137,7 +138,7 @@ export interface Modifier extends Partial<FoldHooks> {
 export type ModifierRegistry = Readonly<Record<string, Modifier>>;
 
 /** Items and skills will register here too. When a skill gains rules, update its entry in SKILL_STATUS (skills.ts). */
-export const MODIFIERS: Record<string, Modifier> = { lying_down, medic, first_aid, sturdy, creative, expert, antic_perfume, logistics, caffeinomaniac, cold_disease, extreme_tinnitus_disease, fungal_infection_disease, broken_nose_injury, computer, designer, sprint, physicist, botanic, pacifist, immunity, mankind_only_hope, wheelchair, pilot, engineer, gunman, gunner, persistent, polymath, space_tactics, paranoid, astrophysician };
+export const MODIFIERS: Record<string, Modifier> = { lying_down, medic, first_aid, sturdy, creative, expert, antic_perfume, logistics, caffeinomaniac, cold_disease, extreme_tinnitus_disease, fungal_infection_disease, broken_nose_injury, computer, designer, sprint, physicist, botanic, pacifist, immunity, mankind_only_hope, wheelchair, pilot, engineer, gunman, gunner, persistent, polymath, space_tactics, paranoid, green_thumb, astrophysician };
 
 /** The ids every hook folds over: the player's skills (book slot last), then their other modifiers. */
 export function modifierIds(player: Readonly<PlayerState>): string[] {

@@ -143,6 +143,8 @@ export const DEFAULT_CONFIG: GameConfig = {
   gunman: { capPoints: 4, pointsPerDay: 2 },
   // Owner, 2026-10-27: Paranoid gives 1 extra Camera item when picked (the original gives 2).
   paranoid: { cameras: 1 },
+  // Owner, 2026-11-01: Green Thumb gives 2 empty hydropots when picked (the original's skills.json).
+  greenThumb: { pots: 2 },
   // Owner, 2026-10-27: Astrophysicist scans for 1 AP less and each remote analysis reveals 1 extra sector (the original skills.json).
   astrophysicist: { scanApDiscount: 1, extraSectors: 1 },
   gunner: { accuracyFactor: 2, damageFactor: 2 },
@@ -268,7 +270,7 @@ export const DEFAULT_CONFIG: GameConfig = {
   fire: { spreadChance: 0.3, maxSpreads: 2, breakChance: 0.3, hullChance: 0.2, hullDamage: [2, 4], damage: 2 },
   // Owner, 2026-11-01 (eMushpedia "Pompier"): a Firefighter's extinguisher never fails; their manual try starts at 25%, x1.25 per
   // miss in a row, and every Firefighter try, manual or not, has a 50% chance of the 2 HP random injury.
-  extinguish: { cost: { ap: 1 }, chance: 0.5, manual: { chance: 0.5, failureMultiplier: 1.25 }, firefighterInjuryChance: 0.5 },
+  extinguish: { cost: { ap: 1 }, chance: 0.5, manual: { chance: 0.25, failureMultiplier: 1.25 }, firefighterInjuryChance: 0.5 },
   // Owner, 2026-10-25/11-01: equipment with a repair chance on its eMushpedia page breaks; the rest never does.
   repair: {
     cost: { ap: 1 },

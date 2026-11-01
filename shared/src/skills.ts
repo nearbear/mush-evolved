@@ -236,6 +236,8 @@ export const SKILL_STATUS: Readonly<Partial<Record<SkillId | MushSkillId, SkillS
   astrophysician: "full",
   // One extra camera item when picked (owner, 2026-10-27).
   paranoid: "full",
+  // Two empty hydropots when picked (owner, 2026-11-01); the graft bonus waits for grafting.
+  green_thumb: "partial",
   // Doubled turret odds and damage (owner, 2026-10-24).
   gunner: "full",
   // Sure extinguisher use and the manual try (owner, 2026-11-01); its project bonus is in PROJECTS.
