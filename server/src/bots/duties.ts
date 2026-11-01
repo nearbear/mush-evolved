@@ -1,6 +1,6 @@
 // What a bot does because of the skills and titles it holds (#222; owner, 2026-11-01: no static per-character role).
-// DRAFT for the owner to edit: nothing reads this yet. Every `priority`, `when` and `prompt` below is Claude's guess
-// unless a comment says otherwise. Once the owner has corrected it, the goals and the model prompt are built from it.
+// Owner-approved 2026-11-01; the owner edits it directly. Nothing reads it yet: the scripted goals for its triggers and
+// the model prompt lines are the next steps (#222).
 //
 // How to edit:
 // - `priority`: where a scripted bot (no key) puts this among its goals. For reference, today's goals are
@@ -46,7 +46,7 @@ export const BOT_DUTIES: readonly Duty[] = [
   // --- Skills on the bot pick list (BOT_SKILL_RULES), in its order ---
   { skill: "logistics", when: "passive", prompt: "You're a Logistics Expert: each cycle you give 1 AP to someone in your room, so ending cycles near others helps them." },
   { skill: "pilot", when: "hunters", actions: ["takeoff", "patrol_attack", "land"], priority: 75, prompt: "You're a Pilot: when hunters attack, a patrol ship can shoot them down." },
-  { skill: "gunman", when: "hunters", actions: ["turret_attack"], priority: 74, prompt: "You're a Shooter: your Shoot points make turret and patrol ship shots free while hunters attack." },
+  { skill: "gunman", when: "hunters", actions: ["turret_attack", "patrol_attack"], priority: 74, prompt: "You're a Shooter: your Shoot points make turret and patrol ship shots free while hunters attack." },
   { skill: "astrophysician", when: "daily", actions: ["scan_planet", "analyze_planet"], priority: 52, prompt: "You're the Astrophysicist: scanning finds planets for 1 AP less, and your analyses reveal an extra sector." },
   { skill: "botanic", when: "plants", actions: ["water", "treat", "sow"], priority: 53, prompt: "You're the Botanist: you see sick plants, and garden points make garden work free." },
   // Green Thumb isn't in SKILL_STATUS, so it does nothing yet.
