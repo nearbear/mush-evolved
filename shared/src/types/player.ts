@@ -83,6 +83,8 @@ export interface PlayerState extends Seat {
   interrogatedToday?: boolean;
   /** The storage rooms this Scrapper has snooped in today (snoop.ts); cleared at day start. Sent to the owner only. */
   snoopedToday?: string[];
+  /** True once this character has checked their spores on the MycoScan today (check_spores.ts); cleared at day start; stays with the body. Sent to the owner only. */
+  mycoscannedToday?: boolean;
   /**
    * This body's recent actions, oldest first (history.ts): action types only, capped. It stays with the body in a
    * Transfer (owner, 2026-10-24). Never sent, not even to the owner; Interrogate and Chitchat reveal parts of it.

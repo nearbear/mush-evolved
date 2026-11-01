@@ -52,6 +52,7 @@ const ACTION_NAME_KEYS = {
   hide: "actions.hide",
   search: "actions.search",
   snoop: "actions.snoop",
+  check_spores: "actions.check_spores",
   cook: "actions.cook",
   express_cook: "actions.expressCook",
   build: "actions.build",

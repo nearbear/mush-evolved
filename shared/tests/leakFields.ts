@@ -108,6 +108,7 @@ export const PLAYER_STATE_FIELDS: Record<string, FieldRule> = {
   boringToday: { reach: "own", test: "speech.test.ts", note: "Only gates the Boring speech; roommates never see it." },
   chitchatToday: { reach: "own", test: "history.test.ts", note: "Only gates Chitchat; roommates never see it." },
   interrogatedToday: { reach: "own", test: "history.test.ts", note: "Only gates Interrogate; roommates never see it." },
+  mycoscannedToday: { reach: "own", test: "mycoscan.test.ts", note: "Only gates the MycoScan check; roommates never see it." },
   snoopedToday: { reach: "own", test: "snoop.test.ts", note: "Only gates Snoop; roommates never see it." },
   history: { reach: "never", test: "leaks.test.ts", note: "Revealed only as private log lines, by Interrogate and Chitchat (history.ts)." },
   immuneUntil: { reach: "own", test: "leaks.test.ts", note: "As the `immune` status." },

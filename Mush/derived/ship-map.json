@@ -1369,7 +1369,8 @@
         {"x":19,"y":11,"kind":"ground","layer":0,"slice":"GROUND_DECK","frame":2},
         {"x":18,"y":11,"kind":"ground","layer":0,"slice":"GROUND_DECK","frame":2},
         {"kind":"wall","layer":0,"slice":"BIG_WALL_R","frame":1,"x":21,"y":11},
-        {"x":20,"y":12,"kind":"entity","layer":2,"slice":"sofaReverse","frame":0}
+        {"x":20,"y":12,"kind":"entity","layer":2,"slice":"sofaReverse","frame":0},
+        {"x":20,"y":20,"kind":"entity","layer":2,"slice":"mycoscan","frame":0}
       ]
     },
     {

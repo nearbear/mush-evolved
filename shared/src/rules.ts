@@ -371,6 +371,7 @@ function advanceCycle(state: GameState, at?: number): void {
       delete p.chitchatToday;
       delete p.interrogatedToday;
       delete p.snoopedToday;
+      delete p.mycoscannedToday;
     }
     const loss = shipInvincible(state) ? 0 : dailyMoraleLoss(state);
     for (const p of state.players) if (p.alive) p.morale = Math.max(0, p.morale - loss);

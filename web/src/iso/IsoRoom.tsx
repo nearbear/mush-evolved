@@ -21,7 +21,7 @@
 import { Suspense, lazy, useCallback, useEffect, useId, useLayoutEffect, useMemo, useRef, useState, type ComponentType, type MouseEvent, type PointerEvent } from "react";
 import { useTranslation } from "react-i18next";
 import { createPortal } from "react-dom";
-import { CAMERA_EQUIPMENT, CORPSE_ITEM, type EquipmentView, type RoomId, type RoomLayout, type ShipLayout, type Spot, type Target } from "@mush2/shared";
+import { CAMERA_EQUIPMENT, CORPSE_ITEM, EQUIPMENT_TYPES, type EquipmentView, type RoomId, type RoomLayout, type ShipLayout, type Spot, type Target } from "@mush2/shared";
 import type { Bubble } from "../scene/useSpeechBubbles.ts";
 import { useNames } from "../i18n/names.ts";
 import { CAMERA_SLICES, equipmentByTileKey, roomAsBuilt } from "./equipmentTiles.ts";
@@ -205,13 +205,16 @@ export function IsoRoom({
 }) {
   const names = useNames();
   const { t } = useTranslation();
-  // Built equipment (a sofa) is drawn at the room's spot; only here, like the camera.
-  const sofaKey = equipment.find((e) => e.type === "SOFA")?.id;
-  // biome-ignore lint/correctness/useExhaustiveDependencies: sofaKey stands in for equipment: the room only changes when a sofa comes or goes.
+  // Built equipment (a sofa, the MycoScan) is drawn at the room's spot; only here, like the camera.
+  const builtKey = equipment
+    .filter((e) => EQUIPMENT_TYPES[e.type]?.builtOnly)
+    .map((e) => e.type)
+    .join(",");
+  // biome-ignore lint/correctness/useExhaustiveDependencies: builtKey stands in for equipment: the room only changes when built equipment comes or goes.
   const roomLayout = useMemo(() => {
     const r = layout.rooms.find((r) => r.id === room);
     return r && roomAsBuilt(r, equipment);
-  }, [layout, room, sofaKey]);
+  }, [layout, room, builtKey]);
   // The layout has a camera tile in every room. It is drawn only here, and only once a camera is installed
   // (other rooms' cameras are hidden information, so they are never drawn).
   const hasCamera = equipment.some((e) => e.type === CAMERA_EQUIPMENT);

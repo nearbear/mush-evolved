@@ -8,6 +8,7 @@ import { makeToken, type ResearchPool } from "../relay.ts";
 import { assayDue, researchProgress, runAssay, type SampleCounts } from "../assay.ts";
 import { dropMycoAlarms } from "../mycoalarm.ts";
 import { ANTI_MUSH_SERUM_ITEM } from "./vaccinate.ts";
+import { MYCOSCAN_EQUIPMENT } from "./check_spores.ts";
 import type { GameState, ItemState, PlayerState, RoomId } from "../types.ts";
 
 /** Items in the room, on the floor or carried by someone alive there: what counts as "in the lab" for a research's items. */
@@ -90,6 +91,13 @@ function completeResearch(state: GameState, room: RoomId, research: ResearchId):
   if (research === "MYCO_ALARM") {
     dropMycoAlarms(state, room);
     logPublic(state, room, "mycoAlarmsBuilt");
+  }
+  // Owner, 2026-11-01 (eMushpedia): completing it adds a MycoScan to the lab for good (check_spores.ts).
+  if (research === "MYCOSCAN") {
+    const id = `${room}:${MYCOSCAN_EQUIPMENT}`;
+    const equipment = (state.equipment[room] ??= []);
+    if (!equipment.some((e) => e.id === id)) equipment.push({ id, type: MYCOSCAN_EQUIPMENT });
+    logPublic(state, room, "mycoscanBuilt");
   }
   // Owner, 2026-10-25: completing it leaves one serum on the lab floor.
   if (research === "ANTI_MUSH_SERUM") {

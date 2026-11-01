@@ -60,7 +60,7 @@ const TICK_MS = 1000 / 30;
  * engine room's three reactors, PILGRED's core once it is repaired (its `_upgrade` look, `looks`),
  * and the equipment on MidFill/MidFill2 whose tiles.xml anim is `auto` (gravity simulator, surgery
  * pod, NERON's core and BIOS terminal, the tanks, the bridge's LEDs and astro console, the antenna,
- * the sick bay's human tank).
+ * the sick bay's human tank), and the lab's MycoScan once built (BigFill's third row, also `auto`).
  */
 const AMBIENT_SLICES: ReadonlySet<string> = new Set([
   "rotational_reactor",
@@ -79,6 +79,7 @@ const AMBIENT_SLICES: ReadonlySet<string> = new Set([
   "pilot_astro_left",
   "radar_trans_void",
   "human_tank",
+  "mycoscan",
 ]);
 
 /** One walk cycle: the six 32x48 frames of a crew strip, half a second in all. */

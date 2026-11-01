@@ -80,6 +80,8 @@ export const DEFAULT_CONFIG: GameConfig = {
   search: { cost: { ap: 1 } },
   // Owner, 2026-11-01 (eMushpedia "Métalo"): the Scrapper's Snoop, free, once a day per storage room, always metal
   // scraps for now (the original's other finds come later).
+  // Owner, 2026-11-01 (eMushpedia "Création du Mycoscan"): checking your spore level on the MycoScan is free, once a day.
+  checkSpores: { cost: { ap: 0 } },
   snoop: { cost: { ap: 0 }, rooms: ["STORAGE_FRONT", "STORAGE_A_0", "STORAGE_A_1", "STORAGE_B_0", "STORAGE_B_1"], item: "metal_scraps" },
   // Owner, 2026-10-25 (wiki): vaccinating with the anti-Mush serum costs 1 AP.
   vaccine: { cost: { ap: 1 } },
