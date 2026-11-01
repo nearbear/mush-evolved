@@ -9,6 +9,8 @@ import { research } from "../src/bots/goals/research.ts";
 import { shootHunters } from "../src/bots/goals/shootHunters.ts";
 import { shower } from "../src/bots/goals/shower.ts";
 import { snoop } from "../src/bots/goals/snoop.ts";
+import { BOT_EAT_AFTER_CYCLES, eat } from "../src/bots/goals/eat.ts";
+import { tendPlants } from "../src/bots/goals/tendPlants.ts";
 import type { GoalDef } from "../src/bots/goals/types.ts";
 import { chooseSkill } from "../src/bots/skillChoice.ts";
 import { seats } from "../src/testing/fakes.ts";
@@ -215,7 +217,7 @@ describe("GoalBot", () => {
       p.ap = 10;
     });
     const view = viewFor(game, id);
-    const memory = { reserve: 2, ended: new Set<string>(), visited: new Set<string>(), roll: roll0 };
+    const memory = { reserve: 2, ended: new Set<string>(), today: new Set<string>(), visited: new Set<string>(), roll: roll0 };
     const patch = { action: { type: "repair_hull" as const, item: "scrap" }, cost: { ap: 1, mp: 0 }, chance: 0.25, tags: [], lacks: [] };
     const withHull = (hull: number): PlayerView => ({ ...view, ship: { ...view.ship, hull }, actions: [...view.actions, patch] });
     expect(repairHull.options(withHull(50), memory)).toEqual([]);
@@ -349,7 +351,7 @@ describe("shootHunters", () => {
 
   it("isn't offered while no hunter attacks", () => {
     const { game: start, id } = setup();
-    expect(shootHunters.options(viewFor(start, id), { reserve: 2, ended: new Set(), visited: new Set(), roll: roll0 })).toEqual([]);
+    expect(shootHunters.options(viewFor(start, id), { reserve: 2, ended: new Set(), today: new Set(), visited: new Set(), roll: roll0 })).toEqual([]);
   });
 
   it("walks to the nearest turret and shoots the weakest hunter, down to the AP reserve", async () => {
@@ -373,11 +375,140 @@ describe("shootHunters", () => {
     });
     for (const t of game.equipment[turretRoom]!.filter((e) => e.type === "TURRET_COMMAND")) game.turrets[t.id] = 0;
     const view = viewFor(game, id);
-    const memory = { reserve: 2, ended: new Set<string>(), visited: new Set<string>(), roll: roll0 };
+    const memory = { reserve: 2, ended: new Set<string>(), today: new Set<string>(), visited: new Set<string>(), roll: roll0 };
     const [goal] = shootHunters.options(view, memory);
     expect(goal!.key).toBe(`shootHunters:${turretRoom}`);
     expect(goal!.step(view, memory)).toEqual({ kind: "failed", reason: "no_charges" });
     memory.ended.add(goal!.key);
     expect(shootHunters.options(view, memory)[0]!.key).not.toBe(goal!.key);
+  });
+});
+
+describe("eat", () => {
+  /** A human with satiety at 0 for `cycles` cycles and plenty of AP. */
+  const starving = (cycles: number, ap = 10) => {
+    const { game: start, id } = setup();
+    const game = edit(start, id, (p) => {
+      p.satiety = 0;
+      p.satietyZeroSince = start.cycle - cycles;
+      p.ap = ap;
+    });
+    return { game, id };
+  };
+  const memory = () => ({ reserve: 2, ended: new Set<string>(), today: new Set<string>(), visited: new Set<string>(), roll: roll0 });
+
+  it(`goes for food after ${BOT_EAT_AFTER_CYCLES} cycles at 0 satiety, not before`, () => {
+    const early = starving(BOT_EAT_AFTER_CYCLES - 1);
+    expect(eat.options(viewFor(early.game, early.id), memory())).toEqual([]);
+    const due = starving(BOT_EAT_AFTER_CYCLES);
+    expect(viewFor(due.game, due.id).statuses).not.toContain("hungry");
+    expect(eat.options(viewFor(due.game, due.id), memory())).toHaveLength(1);
+  });
+
+  it("walks to the refectory, cooks a ration, and eats it", async () => {
+    const { game, id } = starving(BOT_EAT_AFTER_CYCLES);
+    const { taken } = await play(game, id, new GoalBot(1, 2, [eat]), 30);
+    const cook = taken.findIndex((a) => a.type === "cook");
+    expect(cook).toBeGreaterThanOrEqual(0);
+    expect(taken[cook + 1]).toEqual({ type: "consume", item: (taken[cook] as { item: string }).item });
+  });
+
+  it("eats a ration raw when cooking would dip into the AP reserve", async () => {
+    const { game: start, id } = starving(BOT_EAT_AFTER_CYCLES, 2);
+    const game = edit(start, id, (p) => (p.room = "REFECTORY"));
+    const bot = new GoalBot(1, 2, [eat]);
+    expect((await bot.decideAction(viewFor(game, id)))?.type).toBe("consume");
+  });
+
+  it("tries the garden once the refectory has failed", () => {
+    const { game, id } = starving(BOT_EAT_AFTER_CYCLES);
+    const view = viewFor(game, id);
+    const m = memory();
+    for (const room of roomsWith(view, ["KITCHEN", "COFFEE_DISPENSER"])) m.ended.add(`eat:${room}`);
+    expect(eat.options(view, m).map((g) => g.key)).toEqual([`eat:${view.config.gardenRoom}`]);
+  });
+
+  it("eats a banana it finds in the garden", async () => {
+    const { game: start, id } = starving(BOT_EAT_AFTER_CYCLES);
+    const game = edit(start, id, (p) => (p.room = start.config.botany.gardenRoom));
+    game.items.push({ id: "test-banana", type: "fruit_banana", at: { kind: "room", id: game.config.botany.gardenRoom } });
+    expect(await new GoalBot(1, 2, [eat]).decideAction(viewFor(game, id))).toEqual({ type: "consume", item: "test-banana" });
+  });
+});
+
+/** Plays one bot until it ends its cycle (no new cycle, so no fresh plant sickness or thirst). */
+async function oneCycle(game: GameState, id: string, bot: GoalBot): Promise<{ game: GameState; taken: Action[] }> {
+  const taken: Action[] = [];
+  for (let t = 0; t < 40; t++) {
+    const action = await bot.decideAction(viewFor(game, id));
+    if (!action || action.type === "ready") break;
+    const r = applyAction(game, id, action);
+    expect(r.ok, JSON.stringify(action)).toBe(true);
+    if (r.ok) game = r.state;
+    taken.push(action);
+  }
+  return { game, taken };
+}
+
+describe("tendPlants", () => {
+  /** A bot with the given skills, plenty of AP, no garden points, and every garden plant thirsty. */
+  const gardener = (skills: string[]) => {
+    const { game: start, id } = setup();
+    const game = edit(start, id, (p) => {
+      p.skills = skills as typeof p.skills;
+      p.ap = 10;
+      p.resources.garden = 0;
+    });
+    for (const pot of game.items) if (pot.plant) pot.plant.thirst = 1;
+    return { game, id };
+  };
+  const memory = () => ({ reserve: 2, ended: new Set<string>(), today: new Set<string>(), visited: new Set<string>(), roll: roll0 });
+
+  it("is only for the Botanist role", () => {
+    const other = gardener(["pilot"]);
+    expect(tendPlants.options(viewFor(other.game, other.id), memory())).toEqual([]);
+    for (const skill of ["botanic", "skilful"]) {
+      const g = gardener([skill]);
+      expect(tendPlants.options(viewFor(g.game, g.id), memory())).toHaveLength(1);
+    }
+  });
+
+  it("walks to the garden, waters every thirsty plant, treats a sick one, and sows a banana from the floor", async () => {
+    const { game, id } = gardener(["botanic"]);
+    const garden = game.config.botany.gardenRoom;
+    const sick = game.items.find((i) => i.plant && i.at.kind === "room" && i.at.id === garden)!;
+    sick.plant!.sick = true;
+    game.items.push({ id: "test-banana", type: "fruit_banana", at: { kind: "room", id: garden } });
+    const bot = new GoalBot(1, 2, [tendPlants]);
+    const { game: after, taken } = await oneCycle(game, id, bot);
+    const pots = after.items.filter((i) => i.type === "tree_pot" && i.at.kind === "room" && i.at.id === garden);
+    expect(pots.every((p) => p.plant && p.plant.thirst === 0)).toBe(true);
+    expect(pots.some((p) => p.plant?.sick)).toBe(false);
+    expect(taken.map((a) => a.type).filter((t) => t !== "move")).toEqual(["water", "water", "treat", "take", "sow"]);
+    expect(after.items.some((i) => i.id === "test-banana")).toBe(false);
+  });
+
+  it("goes once a day: not again after tending, until the day changes", async () => {
+    const { game, id } = gardener(["botanic"]);
+    const bot = new GoalBot(1, 2, [tendPlants]);
+    const { game: g } = await oneCycle(game, id, bot);
+    // Step away from the garden: nothing more today.
+    const away = edit(g, id, (p) => (p.room = "REFECTORY"));
+    expect(await bot.decideAction(viewFor(away, id))).toEqual({ type: "ready" });
+    const tomorrow = edit(away, id, () => {});
+    tomorrow.cycle += tomorrow.config.cyclesPerDay;
+    expect((await bot.decideAction(viewFor(tomorrow, id)))?.type).toBe("move");
+  });
+
+  it("keeps the AP reserve, and garden points pay in the garden", () => {
+    const { game: start, id } = gardener(["botanic"]);
+    const garden = start.config.botany.gardenRoom;
+    const broke = edit(start, id, (p) => {
+      p.room = garden;
+      p.ap = 2;
+    });
+    expect(tendPlants.options(viewFor(broke, id), memory())).toEqual([]);
+    const points = edit(broke, id, (p) => (p.resources.garden = 2));
+    expect(tendPlants.options(viewFor(points, id), memory())).toHaveLength(1);
   });
 });

@@ -21,6 +21,8 @@ export interface BotMemory {
   readonly reserve: number;
   /** Keys of the goals that finished or failed this cycle; they aren't offered again until the next one. */
   readonly ended: Set<string>;
+  /** Keys of once-a-day jobs done today (tending the garden); cleared when the day changes. */
+  readonly today: Set<string>;
   /** Rooms the bot has stood in this cycle. */
   readonly visited: Set<RoomId>;
   /** A seeded roll in [0, n), for choices with no better reason (the bot's own RNG, never `Math.random`). */

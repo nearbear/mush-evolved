@@ -116,6 +116,11 @@ export interface PublicConfig {
   turretAp: number;
   showerAp: number;
   lieDownAp: number;
+  waterAp: number;
+  sowAp: number;
+  cookAp: number;
+  /** The garden (`botany.gardenRoom`): where garden points pay, and where bots look for plants and bananas. */
+  gardenRoom: RoomId;
 }
 
 /**

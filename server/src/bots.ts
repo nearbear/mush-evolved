@@ -69,6 +69,7 @@ export class GoalBot implements Bot {
   private goal: Goal | null = null;
   private actions = 0;
   private cycle = -1;
+  private day = -1;
   private hp: number | null = null;
   protected readonly memory: BotMemory;
 
@@ -80,6 +81,7 @@ export class GoalBot implements Bot {
     this.memory = {
       reserve,
       ended: new Set(),
+      today: new Set(),
       visited: new Set(),
       roll: (n) => {
         let i: number;
@@ -137,6 +139,10 @@ export class GoalBot implements Bot {
       this.memory.visited.clear();
       // Resting carries on across cycles; anything else is chosen afresh.
       if (!first && this.goal?.id !== "rest") this.end(false);
+    }
+    if (view.day !== this.day) {
+      this.day = view.day;
+      this.memory.today.clear();
     }
     // Attacked, or hurt any other way: think again.
     if (this.hp !== null && view.you.hp < this.hp) this.end(false);
