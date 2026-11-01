@@ -1949,3 +1949,11 @@ The owner asked Claude to pick up #184 ("nothing causes equipment to break down 
 - Desktop: the detail pane (portrait, profession, difficulty, skills, Board) moved beside the three tier rows; the lobby panel widened to 48rem for it, with the other steps kept at their old width so they don't stretch. Skills in the pane reuse the in-game skill popover, extracted from `SkillSlots.tsx` as `SkillPopover` so the two can't drift.
 - Phone: the rows became Base UI tabs (one per difficulty, pips over the label so three fit at 360px), three sprites a row at 2x; tapping a crew member opens a modal with the details and Board. Desktop and phone render different trees (`useMobile`), so the tools' `.pod-character` then `.pod-board` clicks still work on both.
 - No visual check yet (the play skill is run only on request).
+
+### 2026-11-01: Lobby character picker, tighter layout
+
+- Asked: phone tiers as one sideways-scrolling row with a half-cut last tile; desktop tier labels turned sideways on the left; the "pick your character" prompt above the details pane on desktop; `icons/ui/star.png` instead of CSS pips, grayscale when empty.
+- Done: the prompt moved from `Lobby.tsx` into `CharacterPicker` (in a new right column on desktop, above the tabs on phones). The half-cut is done with tile widths from `(100% - n gaps) / n.5` at width breakpoints (2.5 at 360px up to 5.5), not measured in JS. The stars in a sideways heading stay upright: they are stacked separately above a `writing-mode: vertical-rl` label, because rotating them with the text would turn them upside down.
+- Note: `verify` failed only on unrelated uncommitted snoop work (an English string in `server/src/bots/goals/snoop.ts`, leak-fields test).
+- Follow-up: the logo is hidden on the character step (the `h1` becomes `sr-only`, so screen readers keep the page heading); the ship list and the other steps still show it.
+- Follow-up: reverted the phone row to the three-column grid (two rows for a tier of six, no scrolling) on the owner's call; the half-cut scroll row was dropped. Dev sign-in is hidden on phones with CSS.

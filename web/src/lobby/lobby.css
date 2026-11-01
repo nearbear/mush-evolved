@@ -180,8 +180,9 @@ body:has(.pod) {
 }
 /*
  * Character picker (CharacterPicker.tsx). Desktop: three tiers by difficulty, each a row of standing sprites
- * on podiums (design/figure.png), with a pane on the right for the selected one and the Board button; six
- * columns in every tier so the tiers line up. Phone: tabs and a modal (below). Sprites at 2x (whole pixels only).
+ * on podiums (design/figure.png) and labelled sideways on its left, with the prompt and a pane on the right for
+ * the selected one and the Board button; six columns in every tier so the tiers line up. Phone: tabs and a modal
+ * (below). Sprites at 2x (whole pixels only).
  */
 .pod-picker {
   --figure-zoom: 2;
@@ -196,31 +197,47 @@ body:has(.pod) {
   flex-direction: column;
   gap: 0.35rem;
 }
-.pod-tier-heading {
-  margin: 0 0 0.15rem;
-  display: flex;
+/* A tier: its label down the left side, then its row of crew. */
+.pod-tier {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
   align-items: center;
-  gap: 0.4rem;
+  gap: 0.35rem;
+}
+/* Stars stacked upright on top, the label under them turned to read bottom to top. */
+.pod-tier-heading {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.3rem;
   font-size: 0.75rem;
   font-weight: bold;
   text-transform: uppercase;
   letter-spacing: 0.08em;
   color: #fff;
 }
-.pod-pips {
+.pod-tier-heading .pod-stars {
+  flex-direction: column;
+}
+.pod-tier-label {
+  writing-mode: vertical-rl;
+  rotate: 180deg;
+  white-space: nowrap;
+}
+/* The original's 16x16 star at 1x; an empty one is the same star in grayscale. */
+.pod-stars {
   display: inline-flex;
-  gap: 2px;
+  flex: none;
 }
-.pod-pip {
-  width: 0.45rem;
-  height: 0.45rem;
-  border-radius: 50%;
-  border: 1px solid rgb(255 255 255 / 0.6);
-  box-sizing: border-box;
+.pod-star {
+  width: 16px;
+  height: 16px;
+  image-rendering: pixelated;
 }
-.pod-pip-on {
-  background: var(--mush);
-  border-color: var(--mush);
+.pod-star-off {
+  filter: grayscale(1);
+  opacity: 0.6;
 }
 .pod-characters {
   list-style: none;
@@ -311,10 +328,19 @@ body:has(.pod) {
   color: #fff;
   white-space: nowrap;
 }
-/* The selected crew member: portrait, who they are, difficulty, skills, and the button that boards. */
-.pod-detail {
+/* Desktop's right column: the prompt over the pane. */
+.pod-side {
   flex: none;
   width: 13rem;
+  display: flex;
+  flex-direction: column;
+}
+.pod-picker .pod-prompt {
+  margin: 0 0 0.5rem;
+}
+/* The selected crew member: portrait, who they are, difficulty, skills, and the button that boards. */
+.pod-detail {
+  flex: 1;
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
@@ -410,15 +436,20 @@ button.pod-skill:focus-visible {
   width: 100%;
 }
 /*
- * Phone (PhonePicker): a tab per difficulty, three sprites a row at 2x; tapping one opens the modal
- * (portrait, who they are, the Board button).
+ * Phone (PhonePicker): the prompt, then a tab per difficulty, three sprites a row at 2x; tapping one opens the modal (portrait, who they are, the Board button).
  */
+@media (max-width: 1023px) {
+  .pod-picker {
+    flex-direction: column;
+    gap: 0;
+  }
+}
 .pod-tabs {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
 }
-/* Pips over the label, so three tabs fit across 360px in every language. */
+/* Stars over the label, so three tabs fit across 360px in every language. */
 .pod-tab {
   flex: 1 1 0;
   min-width: 0;
@@ -429,6 +460,7 @@ button.pod-skill:focus-visible {
   justify-content: center;
   gap: 2px;
 }
+/* Three sprites a row, so a tier of six is two rows and nothing scrolls. */
 .pod-tab-panel .pod-characters {
   grid-template-columns: repeat(3, minmax(0, 1fr));
   row-gap: 0.4rem;
@@ -565,4 +597,10 @@ button.pod-skill:focus-visible {
 .pod-devsignin button {
   margin: 0;
   white-space: nowrap; /* English only (dev servers), so it can't grow in translation */
+}
+/* Not on phones: there is no room for it beside the dev links. */
+@media (max-width: 1023px) {
+  .pod-devsignin {
+    display: none;
+  }
 }

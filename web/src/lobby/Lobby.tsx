@@ -204,7 +204,8 @@ export function Lobby({ onMatched }: { onMatched: (ticket: SeatTicket) => void }
       )}
       <div className="pod-window" ref={pod}>
         <section className="kit-box pod-panel">
-        <h1 className="pod-title">
+        {/* The logo gives the character step its height back; screen readers still get the heading. */}
+        <h1 className={step === "character" ? "sr-only" : "pod-title"}>
           <img className="pod-logo" src={logoUrl} alt="mush2" /> {/* i18n-ignore: product name */}
         </h1>
         {/*
@@ -222,7 +223,7 @@ export function Lobby({ onMatched }: { onMatched: (ticket: SeatTicket) => void }
             <p className="loading pod-status">{error || (queue ? t("lobby.waiting", queue) : t("common.connecting"))}</p>
           </div>
           <div className="pod-state" inert={step !== "character"}>
-            <p className="pod-subtitle">{t("lobby.pickCharacter")}</p>
+            {/* The prompt is inside the picker: above the details pane on desktop, above the tabs on phones. */}
             <CharacterPicker
               taken={taken}
               onBoard={(id) => {

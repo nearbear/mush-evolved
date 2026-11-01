@@ -3,7 +3,7 @@ import { Tabs } from "@base-ui/react/tabs";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { CHARACTERS, CHARACTER_SKILLS, DIFFICULTIES, type CharacterId, type Difficulty } from "@mush2/shared";
-import { characterImage, skillIcon, standingSprite } from "../art/assets.ts";
+import { STAR_ICON, characterImage, skillIcon, standingSprite } from "../art/assets.ts";
 import { DialogHeader } from "../hud/DialogHeader.tsx";
 import { SkillPopover } from "../hud/SkillSlots.tsx";
 import { useNames } from "../i18n/names.ts";
@@ -21,27 +21,32 @@ const TIERS = DIFFICULTIES.map((difficulty) => ({
 }));
 const ORDER = TIERS.flatMap((tier) => tier.crew);
 
-/** Filled and empty pips for a difficulty; decoration only, the text label next to it says the same. */
-function Pips({ difficulty }: { difficulty: Difficulty }) {
+/** Filled and empty (grayscale) stars for a difficulty; decoration only, the text label next to it says the same. */
+function Stars({ difficulty }: { difficulty: Difficulty }) {
   return (
-    <span className="pod-pips" aria-hidden="true">
+    <span className="pod-stars" aria-hidden="true">
       {DIFFICULTIES.map((d) => (
-        <span key={d} className={d <= difficulty ? "pod-pip pod-pip-on" : "pod-pip"} />
+        <img key={d} className={d <= difficulty ? "pod-star" : "pod-star pod-star-off"} src={STAR_ICON} alt="" />
       ))}
     </span>
   );
 }
 
 /**
- * The character step. Desktop: three rows of standing sprites on podiums, one per difficulty, with a pane
- * on the right for the selected crew member and the button that boards; selection starts on the first one
- * still free. Phone: a tab per difficulty, and tapping a crew member opens their details in a modal with
- * the button that boards.
+ * The character step. Desktop: three rows of standing sprites on podiums, one per difficulty (labelled
+ * sideways on the left), with the prompt and a pane on the right for the selected crew member and the button
+ * that boards; selection starts on the first one still free. Phone: the prompt, a tab per difficulty (three sprites
+ * a row), and tapping a crew member opens their details in a modal with the button that boards.
  */
 export function CharacterPicker({ taken, onBoard }: { taken: readonly CharacterId[]; onBoard: (character: CharacterId) => void }) {
   const mobile = useMobile();
   const free = (id: CharacterId) => !taken.includes(id);
   return mobile ? <PhonePicker free={free} onBoard={onBoard} /> : <DesktopPicker free={free} onBoard={onBoard} />;
+}
+
+function Prompt() {
+  const { t } = useTranslation();
+  return <p className="pod-subtitle pod-prompt">{t("lobby.pickCharacter")}</p>;
 }
 
 type PickerProps = { free: (id: CharacterId) => boolean; onBoard: (character: CharacterId) => void };
@@ -58,27 +63,30 @@ function DesktopPicker({ free, onBoard }: PickerProps) {
         {TIERS.map(({ difficulty, crew }) => (
           <section key={difficulty} className="pod-tier" aria-labelledby={`pod-tier-${difficulty}`}>
             <h2 className="pod-tier-heading" id={`pod-tier-${difficulty}`}>
-              <Pips difficulty={difficulty} />
-              {t(`lobby.difficulty.${LEVEL[difficulty]}`)}
+              <Stars difficulty={difficulty} />
+              <span className="pod-tier-label">{t(`lobby.difficulty.${LEVEL[difficulty]}`)}</span>
             </h2>
             <Crew crew={crew} free={free} current={current} onPick={setSelected} />
           </section>
         ))}
       </div>
-      <div className="pod-detail">
-        <img className="pod-detail-portrait" src={characterImage(current ?? undefined)} alt="" />
-        {/* Every crew member's text in one grid cell, only the selected one visible, so the pane is
-            always sized to the longest (in any language) and never changes height between selections. */}
-        <div className="pod-detail-texts">
-          {ORDER.map((c) => (
-            <div key={c.id} className="pod-detail-text" inert={c.id !== current}>
-              <CharacterText character={c} tooltips />
-            </div>
-          ))}
+      <div className="pod-side">
+        <Prompt />
+        <div className="pod-detail">
+          <img className="pod-detail-portrait" src={characterImage(current ?? undefined)} alt="" />
+          {/* Every crew member's text in one grid cell, only the selected one visible, so the pane is
+              always sized to the longest (in any language) and never changes height between selections. */}
+          <div className="pod-detail-texts">
+            {ORDER.map((c) => (
+              <div key={c.id} className="pod-detail-text" inert={c.id !== current}>
+                <CharacterText character={c} tooltips />
+              </div>
+            ))}
+          </div>
+          <button type="button" className="big pod-board" disabled={current === null} onClick={() => current && onBoard(current)}>
+            {t("lobby.board")}
+          </button>
         </div>
-        <button type="button" className="big pod-board" disabled={current === null} onClick={() => current && onBoard(current)}>
-          {t("lobby.board")}
-        </button>
       </div>
     </div>
   );
@@ -92,11 +100,12 @@ function PhonePicker({ free, onBoard }: PickerProps) {
 
   return (
     <div className="pod-picker">
+      <Prompt />
       <Tabs.Root className="pod-tabs" defaultValue={TIERS[0]?.difficulty}>
         <Tabs.List className="settings-tab-list">
           {TIERS.map(({ difficulty }) => (
             <Tabs.Tab key={difficulty} className="settings-tab pod-tab" value={difficulty}>
-              <Pips difficulty={difficulty} />
+              <Stars difficulty={difficulty} />
               {t(`lobby.difficulty.${LEVEL[difficulty]}`)}
             </Tabs.Tab>
           ))}
@@ -181,7 +190,7 @@ function CharacterText({ character: c, tooltips = false }: { character: Characte
       {tooltips && <p className="pod-detail-name">{c.name}</p>}
       <p className="pod-detail-profession">{t(`characters.profession.${c.id}`)}</p>
       <p className="pod-detail-difficulty">
-        <Pips difficulty={c.difficulty} />
+        <Stars difficulty={c.difficulty} />
         {t("lobby.difficultyLabel", { level: t(`lobby.difficulty.${LEVEL[c.difficulty]}`) })}
       </p>
       <ul className="pod-detail-skills" aria-label={t("lobby.characterSkills")}>
