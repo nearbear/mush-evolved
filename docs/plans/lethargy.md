@@ -1,6 +1,6 @@
 # Lethargy (plan)
 
-2026-11-01. Decided with the owner on 2026-11-01 (answers below); not built. Lethargy is already a pickable skill with no effect (`shared/src/skills.ts`, Chun's list; see `docs/rules/rules-design.md`, "Character skill lists"). It also shows in the bot duties (`server/src/bots/duties.ts`, "waits"), which nothing reads yet.
+2026-11-01. Decided with the owner on 2026-11-01 (answers below). The Web section is built (`PipBar` columns, `SelfPoints`); the rules (`shared`), tests, docs and the screenshot check are not. Lethargy is already a pickable skill with no effect (`shared/src/skills.ts`, Chun's list; see `docs/rules/rules-design.md`, "Character skill lists"). It also shows in the bot duties (`server/src/bots/duties.ts`, "waits"), which nothing reads yet.
 
 ## Source
 
@@ -32,7 +32,9 @@ eMushpedia, *Léthargie* (a source, not a decision):
 - **Inactivity:** in `shared/src/inactivity.ts:54`, change `p.ap < state.config.maxAp` to `p.ap < p.maxAp`.
 - **Hidden information:** `lyingSince` stays server-only. `viewFor` doesn't send it. List it in `shared/tests/leakFields.ts` (reach: nobody) with a sentinel in `leaks.test.ts`. The doubled cap already reaches its owner through `view.maxAp`. `OtherPlayerView` doesn't carry `maxAp`.
 
-## Web
+## Web (built 2026-11-01)
+
+Built, but not yet checked in a browser: nothing gives a player 24 AP until the rule exists.
 
 - **`PipBar` (`web/src/hud/PipBar.tsx`)** gets a `columns` prop, for vertical bars only. The slots split into columns of `ceil(slots / columns)`, drawn side by side, each a complete frame (start cap, slots, end cap). Filling goes bottom to top in the first column, then the second. The wipe animation follows the same order: the clip's position along the whole run maps to a column and a height. Each column fades its shades over its own length, so both look like the original gauge.
 - **`SelfPoints` (`web/src/hud/SelfHud.tsx`)** passes `columns={view.maxAp > 12 ? 2 : 1}` to the AP bar. The 12 is the single-column height (the MP gauge's) and should be a named constant, not a literal. The value under the bar stays a single number.

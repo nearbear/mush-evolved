@@ -1989,3 +1989,7 @@ Owner decisions (asked via the `rule` skill): manual extinguish starts at 25% (t
 - **Games end early whatever the model:** first the hull (hunters; bots had no way to fight them), then hunger and morale (food is only the one-coffee-a-cycle dispenser or food in the bot's room; nothing raises morale). The trial script now reports hull per cycle, the ending, each death with last stats, and stalls; `--crew N` (up to 16, every character) and `--no-incidents` are trial-only switches (owner chose trial-only over changing single player).
 - **`shootHunters` goal** (priority 60, keeps the 2 AP reserve, Shoot points make shots free; `turretAp` added to `PublicConfig`). Scripted crews then survived the hunters past cycle 35 at 9 crew, then starved; 16 crew still lost the hull around cycle 31-34. Real models chose shooting less often than scripted order, and chose `eat` rarely.
 - **What needed correction:** the harness's flat 60-calls-per-cycle loop guard cut off a normal first cycle (now 12 per bot). Another session's commit swept up half of this work (registry, tests, `rules.ts`) without the goal file, so the work moved to a worktree.
+
+## 2026-11-01: Lethargy plan, web half
+
+Built the two-column AP gauge from `docs/plans/lethargy.md`: `PipBar` gets a `columns` prop (vertical bars only), `SelfPoints` passes 2 past 12 slots. Typecheck and build pass; no browser check yet because the Lethargy rule isn't built, so no player can reach 24 AP. Worked: the plan's column and wipe-order spec mapped straight onto the code.

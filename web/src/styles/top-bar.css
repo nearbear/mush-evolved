@@ -141,9 +141,6 @@
 .pip-bar.vertical {
   flex-direction: column;
 }
-.pip-bar.vertical .pip-frame {
-  width: calc(11 * var(--s));
-}
 .pip-bar.vertical .pip-label,
 .pip-bar.vertical .sub {
   margin: 0;

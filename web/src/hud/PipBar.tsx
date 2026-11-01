@@ -59,6 +59,7 @@ export function PipBar({
   thin = false,
   vertical = false,
   iconAfter = false,
+  columns = 1,
 }: {
   label: string;
   value: number;
@@ -74,12 +75,17 @@ export function PipBar({
   vertical?: boolean;
   /** The icon after the frame instead of before it, and no value: the bar alone says how full it is (the HUD's plate). */
   iconAfter?: boolean;
+  /** Vertical bars only: split the slots into this many full frames side by side, filled bottom to top, the first column first. Every column but a short last one has `ceil(slots / columns)` slots. */
+  columns?: number;
 }) {
   const { t } = useTranslation();
   const slots = Math.max(max, value);
   const pitch = thin ? 5 : 6;
   const pipW = thin ? 3 : 5;
-  const width = CAP_START + slots * pitch + 4;
+  const cols = vertical ? Math.max(1, Math.min(columns, slots)) : 1;
+  const perCol = Math.ceil(slots / cols);
+  // The frame's length along its run: one column's worth of slots when split.
+  const width = CAP_START + perCol * pitch + 4;
   const target = CAP_START + Math.min(value, slots) * pitch;
   const clip = useWipe(target);
   const drawn = Math.min(slots, Math.ceil((Math.max(clip, target) - CAP_START) / pitch));
@@ -108,36 +114,56 @@ export function PipBar({
       )}
       <svg
         className="pip-frame"
-        viewBox={vertical ? `0 0 ${FRAME_H} ${width}` : `0 0 ${width} ${FRAME_H}`}
-        style={vertical ? { height: `calc(${width} * var(--s))` } : { width: `calc(${width} * var(--s))` }}
+        viewBox={vertical ? `0 0 ${FRAME_H * cols} ${width}` : `0 0 ${width} ${FRAME_H}`}
+        style={vertical ? { height: `calc(${width} * var(--s))`, width: `calc(${FRAME_H * cols} * var(--s))` } : { width: `calc(${width} * var(--s))` }}
         aria-hidden="true"
       >
-        {/* Vertical swaps x and y, which turns the sideways pieces back into the sprite's own pixels. */}
-        <g transform={vertical ? "matrix(0 1 1 0 0 0)" : undefined}>
-          <g dangerouslySetInnerHTML={{ __html: capStart }} />
-          {Array.from({ length: slots }, (_, i) => (
-            <g key={i} transform={`translate(${CAP_START + i * pitch} 0)`}>
-              <g dangerouslySetInnerHTML={{ __html: slotPiece(shadeFor(i, slots), thin) }} />
-              {/* The thin art is 4 wide on a 5 pitch: repeat its last column to close the gap. */}
-              {thin && <svg x={4} width={1} height={FRAME_H} viewBox={`3 0 1 ${FRAME_H}`} dangerouslySetInnerHTML={{ __html: slotPiece(shadeFor(i, slots), thin) }} />}
-            </g>
-          ))}
-          <g transform={`translate(${CAP_START + slots * pitch} 0)`} dangerouslySetInnerHTML={{ __html: capEnd }} />
-        </g>
         {vertical ? (
-          // Filled from the bottom slot up; the clip's top edge wipes up or down. Pips stay upright (outside the swap).
-          <svg x={0} y={width - 4 - (clip - CAP_START)} width={FRAME_H} height={Math.max(0, clip - CAP_START)} viewBox={`0 ${width - 4 - (clip - CAP_START)} ${FRAME_H} ${Math.max(0, clip - CAP_START)}`} overflow="hidden" aria-hidden="true">
-            {Array.from({ length: drawn }, (_, i) => (
-              <image key={i} href={pip} x={3} y={CAP_START + (slots - 1 - i) * pitch + 1} width={5} height={pipW} />
-            ))}
-          </svg>
+          Array.from({ length: cols }, (_, c) => {
+            const n = Math.min(perCol, slots - c * perCol);
+            const yOff = (perCol - n) * pitch; // a short last column sits on the same baseline
+            // Pixels of this column's run that the wipe has reached.
+            const h = Math.max(0, Math.min(n * pitch, clip - CAP_START - c * perCol * pitch));
+            const bottom = width - 4;
+            return (
+              <g key={c} transform={`translate(${c * FRAME_H} 0)`}>
+                {/* Vertical swaps x and y, which turns the sideways pieces back into the sprite's own pixels. */}
+                <g transform={`translate(0 ${yOff}) matrix(0 1 1 0 0 0)`}>
+                  <g dangerouslySetInnerHTML={{ __html: capStart }} />
+                  {Array.from({ length: n }, (_, i) => (
+                    <g key={i} transform={`translate(${CAP_START + i * pitch} 0)`} dangerouslySetInnerHTML={{ __html: slotPiece(shadeFor(i, n), thin) }} />
+                  ))}
+                  <g transform={`translate(${CAP_START + n * pitch} 0)`} dangerouslySetInnerHTML={{ __html: capEnd }} />
+                </g>
+                {/* Filled from the bottom slot up; the clip's top edge wipes up or down. Pips stay upright. */}
+                <svg x={0} y={bottom - h} width={FRAME_H} height={h} viewBox={`0 ${bottom - h} ${FRAME_H} ${h}`} overflow="hidden" aria-hidden="true">
+                  {Array.from({ length: Math.min(n, Math.max(0, drawn - c * perCol)) }, (_, i) => (
+                    <image key={i} href={pip} x={3} y={yOff + CAP_START + (n - 1 - i) * pitch + 1} width={5} height={pipW} />
+                  ))}
+                </svg>
+              </g>
+            );
+          })
         ) : (
-          // A nested svg clips its children; its width wipes the filled pips in or out from the right.
-          <svg x={0} y={0} width={clip} height={FRAME_H} overflow="hidden" aria-hidden="true">
-            {Array.from({ length: drawn }, (_, i) => (
-              <image key={i} href={pip} x={CAP_START + i * pitch + 1} y={3} width={pipW} height={5} />
-            ))}
-          </svg>
+          <>
+            <g>
+              <g dangerouslySetInnerHTML={{ __html: capStart }} />
+              {Array.from({ length: slots }, (_, i) => (
+                <g key={i} transform={`translate(${CAP_START + i * pitch} 0)`}>
+                  <g dangerouslySetInnerHTML={{ __html: slotPiece(shadeFor(i, slots), thin) }} />
+                  {/* The thin art is 4 wide on a 5 pitch: repeat its last column to close the gap. */}
+                  {thin && <svg x={4} width={1} height={FRAME_H} viewBox={`3 0 1 ${FRAME_H}`} dangerouslySetInnerHTML={{ __html: slotPiece(shadeFor(i, slots), thin) }} />}
+                </g>
+              ))}
+              <g transform={`translate(${CAP_START + slots * pitch} 0)`} dangerouslySetInnerHTML={{ __html: capEnd }} />
+            </g>
+            {/* A nested svg clips its children; its width wipes the filled pips in or out from the right. */}
+            <svg x={0} y={0} width={clip} height={FRAME_H} overflow="hidden" aria-hidden="true">
+              {Array.from({ length: drawn }, (_, i) => (
+                <image key={i} href={pip} x={CAP_START + i * pitch + 1} y={3} width={pipW} height={5} />
+              ))}
+            </svg>
+          </>
         )}
       </svg>
       {iconAfter ? <img className={bigIcon ? "pip-icon big" : "pip-icon"} src={icon} alt="" /> : <span className="sub">{value}</span>}
