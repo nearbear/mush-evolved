@@ -14,7 +14,7 @@
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { parseArgs } from "node:util";
 import { test } from "vitest";
-import { applyInput, createGame, nextDue, legalActions, resolveConfig, singlePlayerGame, viewFor, SINGLE_PLAYER_HUMAN, type GameState, type Input, type PlayerId } from "@mush2/shared";
+import { applyInput, CHARACTERS, createGame, nextDue, legalActions, resolveConfig, singlePlayerGame, viewFor, SINGLE_PLAYER_HUMAN, type GameState, type Input, type PlayerId } from "@mush2/shared";
 import { ModelBot, type Ranked } from "../src/bots.ts";
 import type { Goal } from "../src/bots/goals/index.ts";
 import { completeOpenAi, ModelGate, type Complete } from "../src/model.ts";
@@ -36,7 +36,12 @@ const { values: args } = parseArgs({
     linger: { type: "string", default: "0" },
     /** Writes the first prompt to this file. */
     "dump-prompt": { type: "string" },
-    "calls-per-cycle": { type: "string", default: "60" },
+    /** Stops a cycle after this many model calls (a loop guard). Default: 12 per bot. */
+    "calls-per-cycle": { type: "string" },
+    /** Crew size, the human included. Above single player's 9, every character may be a bot (trial only, not the game). */
+    crew: { type: "string", default: "9" },
+    /** No incidents (breakage, fires): the incident budget is zero, so the pool never fills. Trial only. */
+    "no-incidents": { type: "boolean", default: false },
   },
 });
 
@@ -121,7 +126,19 @@ const gate = new ModelGate({ baseUrl: "https://openrouter.ai/api/v1", model: arg
 
 const seed = Number(args.seed);
 const setup = singlePlayerGame("Trial", "kuanti", seed);
-let game: GameState = createGame(setup.seats, resolveConfig(setup.overrides), seed, setup.forcedRoles);
+// A bigger crew than single player's 9 (trial only): the same bot seats, then every other character in list order.
+const crew = Number(args.crew);
+if (!(crew >= 2 && crew <= CHARACTERS.length)) throw new Error(`--crew must be 2 to ${CHARACTERS.length}`);
+const [humanSeat, botSeat] = [setup.seats[0]!, setup.seats[1]!];
+const drawn = setup.seats.slice(1).map((s) => s.character);
+const others = CHARACTERS.map((c) => c.id).filter((id) => id !== humanSeat.character && !drawn.includes(id));
+const botSeats = [...drawn, ...others].slice(0, crew - 1).map((character, i) => ({ ...botSeat, id: `p${i + 1}`, name: `Bot ${i + 1} (AI)`, character }));
+let game: GameState = createGame([humanSeat, ...botSeats], resolveConfig(setup.overrides), seed, setup.forcedRoles);
+if (args["no-incidents"]) {
+  // A zero budget: the pool gets nothing at cycle changes, so the chance of an incident stays 0 (incidents.ts).
+  const never = 1_000_000;
+  game = { ...game, config: { ...game.config, incidents: { ...game.config.incidents, budget: { base: [0], tier1: { fromDay: never, bonus: 0 }, tier2: { fromDay: never, bonus: 0 } } } } };
+}
 let now = 0;
 
 let fallbacks = 0;
@@ -152,9 +169,19 @@ const idle = (id: PlayerId): boolean => {
   return p.current === null && p.queue.length === 0 && legalActions(game, id).length > 0;
 };
 
+// Deaths have no recorded cause yet (#177): print each one with the player's last seen stats, to tell hunger from injury.
+const lastSeen = new Map(game.players.map((p) => [p.id, { alive: p.alive, hp: p.hp, morale: p.morale, satiety: p.satiety, room: p.room }]));
+function noteDeaths(): void {
+  for (const p of game.players) {
+    const before = lastSeen.get(p.id)!;
+    if (before.alive && !p.alive) console.log(`  died in cycle ${game.cycle}: ${p.id} (${p.character}) last hp ${before.hp} morale ${before.morale} satiety ${before.satiety} in ${before.room}, hull ${game.ship.hull}`);
+    lastSeen.set(p.id, { alive: p.alive, hp: p.hp, morale: p.morale, satiety: p.satiety, room: p.room });
+  }
+}
+
 const perCycle: { cycle: number; calls: number; perBot: Record<PlayerId, number>; readyRepeats: number; wallMs: number }[] = [];
 const cycles = Number(args.cycles);
-const callsPerCycleLimit = Number(args["calls-per-cycle"]);
+const callsPerCycleLimit = args["calls-per-cycle"] ? Number(args["calls-per-cycle"]) : 12 * bots.size;
 const stats = { illegal: 0, nulls: 0 };
 const chosen: Record<string, number> = {};
 const started = performance.now();
@@ -212,12 +239,26 @@ for (let c = 0; c < cycles && game.phase === "playing" && spent + spentBefore < 
       backoff = Math.min(backoff * 2, 60_000);
     } else backoff = 2_000;
     now += 50;
+    noteDeaths();
   }
   row.calls = calls.length - callsAtStart;
+  noteDeaths();
   row.wallMs = performance.now() - t0;
   perCycle.push(row);
-  console.log(`cycle ${cycle}: ${row.calls} calls, ${(row.wallMs / 1000).toFixed(1)}s, ready repeats ${row.readyRepeats}, $${spent.toFixed(4)} so far`);
-  if (game.cycle === cycle) break;
+  console.log(`cycle ${cycle}: ${row.calls} calls, ${(row.wallMs / 1000).toFixed(1)}s, ready repeats ${row.readyRepeats}, hull ${game.ship.hull}, $${spent.toFixed(4)} so far`);
+  if (game.phase !== "playing") {
+    console.log(`game ended in cycle ${game.cycle}: ${game.winner} (${JSON.stringify(game.ending)}); hull ${game.ship.hull}, alive ${game.players.filter((p) => p.alive).length}/${game.players.length}`);
+    break;
+  }
+  if (game.cycle === cycle) {
+    // Why the game stopped short: the phase, and where each player stands (full state: this is a dev harness).
+    console.log(`stopped in cycle ${cycle}: phase ${game.phase}, gate pause ${gate.pause ?? "none"}`);
+    for (const p of game.players) {
+      const goal = bots.get(p.id)?.current ?? "-";
+      console.log(`  ${p.id} ${p.alive ? "" : "dead "}ready ${p.ready} current ${p.current?.action.type ?? "-"} queue ${p.queue.length} ap ${p.ap} mp ${p.mp} room ${p.room} goal ${goal} legal ${legalActions(game, p.id).length}`);
+    }
+    break;
+  }
 }
 
 // ---- Report --------------------------------------------------------------------------------------------------------
@@ -230,7 +271,7 @@ const unparsed = replies.filter((r) => !/GOAL:\s*\d+/i.test(r.reply) && !/^\d+$/
 const lengths = calls.filter((c) => c.finish === "length").length;
 const cyclesDone = perCycle.length;
 
-console.log(`\nmodel ${args.model}${args.extra ? ` extra ${args.extra}` : ""}${args["max-tokens"] ? ` max_tokens ${args["max-tokens"]}` : ""}`);
+console.log(`\nmodel ${args.model}${args.extra ? ` extra ${args.extra}` : ""}${args["max-tokens"] ? ` max_tokens ${args["max-tokens"]}` : ""}; crew ${crew}${args["no-incidents"] ? ", no incidents" : ""}`);
 console.log(`cycles ${cyclesDone}, calls ${calls.length} (${(calls.length / Math.max(1, cyclesDone) / bots.size).toFixed(1)} per bot per cycle), errors ${calls.length - ok.length}, wall ${((performance.now() - started) / 1000).toFixed(0)}s`);
 console.log(`tokens per call: prompt ${avg(ok.map((c) => c.prompt)).toFixed(0)}, completion ${avg(ok.map((c) => c.completion)).toFixed(0)} (reasoning ${avg(ok.map((c) => c.reasoning)).toFixed(0)}, max ${Math.max(0, ...ok.map((c) => c.completion))})`);
 console.log(`latency ms: p50 ${pct(ok.map((c) => c.ms), 0.5).toFixed(0)}, p90 ${pct(ok.map((c) => c.ms), 0.9).toFixed(0)}, max ${Math.max(0, ...ok.map((c) => c.ms)).toFixed(0)}`);

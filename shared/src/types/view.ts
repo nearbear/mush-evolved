@@ -113,6 +113,7 @@ export interface PublicConfig {
   projectAp: number;
   pilgredAp: number;
   hullRepairAp: number;
+  turretAp: number;
   showerAp: number;
   lieDownAp: number;
 }
