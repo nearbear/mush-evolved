@@ -10,7 +10,7 @@ export type ExtinguishManuallyActionData = { type: "extinguish_manually" };
 
 /**
  * A Firefighter puts out the fire in their room without an extinguisher (owner, 2026-11-01, eMushpedia "Pompier"): 1 AP,
- * 25% x1.25 for each miss in a row (reset by a success), and a 50% chance of the random injury on every try, even a
+ * 50% x1.25 for each miss in a row (reset by a success), and a 50% chance of the random injury on every try, even a
  * miss (the base action's `injuryChance`). A success is public, a failure private. Not offered while an extinguisher is
  * within reach, since that never fails.
  */

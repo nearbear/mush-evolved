@@ -268,9 +268,9 @@ export const DEFAULT_CONFIG: GameConfig = {
   },
   // Owner, 2026-10-25: the original's FIRE_* numbers (Gameplay.hx, eMush's DifficultyConfigData.php).
   fire: { spreadChance: 0.3, maxSpreads: 2, breakChance: 0.3, hullChance: 0.2, hullDamage: [2, 4], damage: 2 },
-  // Owner, 2026-11-01 (eMushpedia "Pompier"): a Firefighter's extinguisher never fails; their manual try starts at 25%, x1.25 per
+  // Owner, 2026-11-01 (eMushpedia "Pompier"): a Firefighter's extinguisher never fails; their manual try starts at 50%, x1.25 per
   // miss in a row, and every Firefighter try, manual or not, has a 50% chance of the 2 HP random injury.
-  extinguish: { cost: { ap: 1 }, chance: 0.5, manual: { chance: 0.25, failureMultiplier: 1.25 }, firefighterInjuryChance: 0.5 },
+  extinguish: { cost: { ap: 1 }, chance: 0.5, manual: { chance: 0.5, failureMultiplier: 1.25 }, firefighterInjuryChance: 0.5 },
   // Owner, 2026-10-25/11-01: equipment with a repair chance on its eMushpedia page breaks; the rest never does.
   repair: {
     cost: { ap: 1 },
