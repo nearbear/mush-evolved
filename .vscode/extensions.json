@@ -4,7 +4,7 @@
     "vitest.explorer",
     "DavidAnson.vscode-markdownlint",
     "ms-vscode-remote.remote-wsl",
-    "cloudflare.cloudflare-workers",
+    "cloudflare.cloudflare-workers-bindings-extension",
     "ms-playwright.playwright"
   ]
 }
