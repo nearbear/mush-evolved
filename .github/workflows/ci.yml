@@ -1,15 +1,18 @@
-# Install, typecheck, lint, test, and build on every push to main (issue #120).
+# Install, typecheck, lint, test, and build on every push to main (issue #120),
+# and, when run by hand with "Deploy to test" ticked, deploy main to the test
+# environment if they all passed (issue #121).
 name: CI
 
 on:
   push:
     branches: [main]
+  # Actions tab > CI > Run workflow, or `gh workflow run CI -f deploy_test=true`.
   workflow_dispatch:
-
-# A newer push to main makes an older, still-running check moot.
-concurrency:
-  group: ci-${{ github.ref }}
-  cancel-in-progress: true
+    inputs:
+      deploy_test:
+        description: Deploy to test if the checks pass
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -18,6 +21,13 @@ jobs:
   check:
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    # A newer push to main makes an older, still-running check moot. This is
+    # per job, not per workflow, so it never cancels a running deploy, and the
+    # group includes the event, so a push never cancels a manual run's check
+    # (which would skip the deploy it was started for).
+    concurrency:
+      group: ci-check-${{ github.ref }}-${{ github.event_name }}
+      cancel-in-progress: true
     steps:
       - uses: actions/checkout@v5
 
@@ -91,3 +101,56 @@ jobs:
             echo "$changed"
             exit 1
           fi
+
+  # Deploys to the test Worker (mush2-server-test, behind Cloudflare Access),
+  # only from a manual run with deploy_test ticked and only once every check
+  # above passed. Not on every push: a deploy restarts every game room, and a
+  # STATE_VERSION bump ends every running game, so it would cut testers off at
+  # moments nobody chose. Production and staging stay local
+  # (`npm run deploy:production` / `deploy:staging`).
+  #
+  # Needs two secrets on the `test` GitHub environment: CLOUDFLARE_API_TOKEN
+  # (Account > Workers Scripts: Edit and D1: Edit) and CLOUDFLARE_ACCOUNT_ID.
+  # See docs/ops/deploy.md.
+  deploy-test:
+    needs: check
+    # Only main in this repo: not another branch, not a fork.
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.deploy_test && github.ref == 'refs/heads/main' && github.repository == 'nearbear/mush2' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment:
+      name: test
+      url: https://mush2-server-test.nearbearnearbear.workers.dev
+    # One deploy at a time, never cancelled midway (migrations run before the
+    # Worker is uploaded). A newer deploy waiting here replaces an older
+    # waiting one.
+    concurrency:
+      group: deploy-test
+      cancel-in-progress: false
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      WRANGLER_SEND_METRICS: "false"
+    steps:
+      - name: Check secrets
+        run: |
+          if [ -z "$CLOUDFLARE_API_TOKEN" ] || [ -z "$CLOUDFLARE_ACCOUNT_ID" ]; then
+            echo "::error::Set CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID on the 'test' environment (docs/ops/deploy.md)."
+            exit 1
+          fi
+
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24.21.0
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      # The same script as a manual deploy: build web, apply the test D1
+      # migrations (no confirmation prompt without a terminal), then
+      # `wrangler deploy --env test` with RULES_VERSION set to the commit hash.
+      - name: Deploy to test
+        run: npm run deploy:test

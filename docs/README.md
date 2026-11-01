@@ -26,6 +26,7 @@ Feature designs; status table in `plans/README.md`.
 ## Operations
 
 - `ops/d1-runbook.md`: D1 migrations and restores.
+- `ops/deploy.md`: the three deployments and deploying test from CI.
 - `ops/sign-in.md`: OAuth apps, secrets and sessions.
 
 ## Process
