@@ -141,6 +141,7 @@
     "difficultyLabel": "Difficulté : {{level}}",
     "taken": "Déjà pris",
     "characterSkills": "Compétences",
+    "closeCharacter": "Fermer la fiche du membre d'équipage",
     "board": "Embarquer",
     "waiting": "Embarquement : {{waiting}}/{{seats}} à bord.",
     "awaitingCrew": "En attente d'équipage",

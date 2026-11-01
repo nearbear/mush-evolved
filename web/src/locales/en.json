@@ -139,6 +139,7 @@
     "difficultyLabel": "Difficulty: {{level}}",
     "taken": "Taken",
     "characterSkills": "Skills",
+    "closeCharacter": "Close crew member details",
     "board": "Board ship",
     "waiting": "Boarding: {{waiting}}/{{seats}} aboard.",
     "awaitingCrew": "Awaiting crew",

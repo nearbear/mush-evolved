@@ -141,6 +141,7 @@
     "difficultyLabel": "Dificultad: {{level}}",
     "taken": "Ocupado",
     "characterSkills": "Habilidades",
+    "closeCharacter": "Cerrar la ficha del tripulante",
     "board": "Embarcar",
     "waiting": "Embarcando: {{waiting}}/{{seats}} a bordo.",
     "awaitingCrew": "Esperando tripulación",

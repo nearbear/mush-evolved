@@ -67,7 +67,7 @@ body:has(.pod) {
   z-index: 3;
   align-self: center;
   box-sizing: border-box;
-  width: min(34rem, 100%);
+  width: min(48rem, 100%);
   padding: 1.25rem 1.25rem 1.5rem;
 }
 .pod-logo {
@@ -105,6 +105,11 @@ body:has(.pod) {
 }
 .pod-state[inert] {
   visibility: hidden;
+}
+/* The panel is wide enough for the character step (sprites and the pane beside them); the others keep their narrower column. */
+.pod-state:not(:has(> .pod-picker)) {
+  justify-self: center;
+  width: min(31.5rem, 100%);
 }
 .pod-subtitle {
   margin: 0.4rem 0 1rem;
@@ -174,17 +179,19 @@ body:has(.pod) {
   }
 }
 /*
- * Character picker (CharacterPicker.tsx): three tiers by difficulty, each a row of standing sprites on
- * podiums (design/figure.png), then a detail pane for the selected one with the Board button.
- * Six columns in every tier so the tiers line up; sprites at 2x on desktop, 1x on phones (whole pixels only).
+ * Character picker (CharacterPicker.tsx). Desktop: three tiers by difficulty, each a row of standing sprites
+ * on podiums (design/figure.png), with a pane on the right for the selected one and the Board button; six
+ * columns in every tier so the tiers line up. Phone: tabs and a modal (below). Sprites at 2x (whole pixels only).
  */
 .pod-picker {
   --figure-zoom: 2;
   display: flex;
-  flex-direction: column;
-  gap: 0.6rem;
+  align-items: stretch;
+  gap: 1rem;
 }
 .pod-tiers {
+  flex: 1;
+  min-width: 0;
   display: flex;
   flex-direction: column;
   gap: 0.35rem;
@@ -306,26 +313,24 @@ body:has(.pod) {
 }
 /* The selected crew member: portrait, who they are, difficulty, skills, and the button that boards. */
 .pod-detail {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
-  grid-template-areas:
-    "portrait text"
-    "portrait board";
-  column-gap: 0.75rem;
-  row-gap: 0.4rem;
+  flex: none;
+  width: 13rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
   padding: 0.5rem;
   border-radius: 0.25rem;
   background: rgb(255 255 255 / 0.05);
 }
-/* The portraits are 210x300, at a third of their size. */
+/* The portraits are 210x300, at half their size. */
 .pod-detail-portrait {
-  grid-area: portrait;
-  width: 70px;
-  height: 100px;
+  align-self: center;
+  width: 105px;
+  height: 150px;
   border-radius: 0.15rem;
 }
 .pod-detail-texts {
-  grid-area: text;
+  flex: 1;
   min-width: 0;
   display: grid;
   grid-template-columns: minmax(0, 1fr);
@@ -358,51 +363,107 @@ body:has(.pod) {
 }
 .pod-detail-skills {
   list-style: none;
-  margin: 0.15rem 0 0;
+  margin: 0.3rem 0 0;
   padding: 0;
   display: flex;
-  flex-wrap: wrap;
-  gap: 0.2rem 0.6rem;
-  font-size: 0.7rem;
-}
-.pod-detail-skills li {
-  display: flex;
-  align-items: center;
+  flex-direction: column;
   gap: 0.2rem;
+  font-size: 0.75rem;
 }
-.pod-detail-skills img {
+/* A skill: icon and name. On desktop it is a popover trigger (SkillSlots' SkillPopover), so it strips the Mush button look. */
+.pod-skill {
+  box-sizing: border-box;
+  width: auto;
+  height: auto;
+  min-height: 0;
+  margin: 0;
+  padding: 0.1rem 0.2rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  border: 0;
+  border-radius: 0.15rem;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  text-shadow: none;
+}
+button.pod-skill {
+  cursor: help;
+}
+@media (hover: hover) {
+  button.pod-skill:hover {
+    background: rgb(255 255 255 / 0.08);
+  }
+}
+button.pod-skill:focus-visible {
+  outline: 2px solid var(--mush);
+  outline-offset: 0;
+}
+.pod-skill img {
   width: 16px;
   height: 16px;
 }
 .pod-board {
-  grid-area: board;
-  justify-self: end;
-  align-self: end;
   margin: 0;
+  width: 100%;
 }
-@media (max-width: 1023px) {
-  .pod-picker {
-    --figure-zoom: 1;
-  }
-  .pod-characters {
-    gap: 0.15rem;
-  }
-  .pod-character-name {
-    font-size: 0.6rem;
-    letter-spacing: -0.02em;
-  }
-  .pod-detail-portrait {
-    display: none;
-  }
-  .pod-detail {
-    grid-template-columns: minmax(0, 1fr);
-    grid-template-areas:
-      "text"
-      "board";
-  }
-  .pod-board {
-    justify-self: stretch;
-  }
+/*
+ * Phone (PhonePicker): a tab per difficulty, three sprites a row at 2x; tapping one opens the modal
+ * (portrait, who they are, the Board button).
+ */
+.pod-tabs {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+/* Pips over the label, so three tabs fit across 360px in every language. */
+.pod-tab {
+  flex: 1 1 0;
+  min-width: 0;
+  padding: 7px 4px 4px;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+}
+.pod-tab-panel .pod-characters {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  row-gap: 0.4rem;
+}
+.pod-dialog {
+  position: fixed;
+  z-index: 21;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  box-sizing: border-box;
+  width: min(24rem, calc(100vw - 2rem));
+  max-height: calc(100dvh - 2rem);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 0 1rem 1rem;
+  color: #fff;
+  background: #1b2a4a;
+  border: 1px solid rgb(255 255 255 / 0.3);
+  border-radius: 6px;
+}
+.pod-dialog-body {
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-start;
+}
+.pod-dialog .pod-detail-portrait {
+  flex: none;
+  width: 70px;
+  height: 100px;
+}
+.pod-dialog .pod-detail-text {
+  flex: 1;
 }
 .pod-ship-crew {
   /* Stay in the last column even when the note is hidden, flush right. */

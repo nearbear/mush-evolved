@@ -1,10 +1,18 @@
+import { Dialog } from "@base-ui/react/dialog";
+import { Tabs } from "@base-ui/react/tabs";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { CHARACTERS, CHARACTER_SKILLS, DIFFICULTIES, type CharacterId, type Difficulty } from "@mush2/shared";
 import { characterImage, skillIcon, standingSprite } from "../art/assets.ts";
+import { DialogHeader } from "../hud/DialogHeader.tsx";
+import { SkillPopover } from "../hud/SkillSlots.tsx";
 import { useNames } from "../i18n/names.ts";
+import { useMobile } from "../useMobile.ts";
+import "../hud/settings.css";
 
 const LEVEL = { 1: "easy", 2: "medium", 3: "hard" } as const satisfies Record<Difficulty, string>;
+
+type Character = (typeof CHARACTERS)[number];
 
 /** The crew in tiers, easiest first, alphabetical by given name (what the cards show) within a tier. */
 const TIERS = DIFFICULTIES.map((difficulty) => ({
@@ -25,15 +33,23 @@ function Pips({ difficulty }: { difficulty: Difficulty }) {
 }
 
 /**
- * The character step: standing sprites on podiums, grouped by difficulty, and a detail pane for the
- * selected crew member with the button that boards. Selection starts on the first one still free.
+ * The character step. Desktop: three rows of standing sprites on podiums, one per difficulty, with a pane
+ * on the right for the selected crew member and the button that boards; selection starts on the first one
+ * still free. Phone: a tab per difficulty, and tapping a crew member opens their details in a modal with
+ * the button that boards.
  */
 export function CharacterPicker({ taken, onBoard }: { taken: readonly CharacterId[]; onBoard: (character: CharacterId) => void }) {
+  const mobile = useMobile();
+  const free = (id: CharacterId) => !taken.includes(id);
+  return mobile ? <PhonePicker free={free} onBoard={onBoard} /> : <DesktopPicker free={free} onBoard={onBoard} />;
+}
+
+type PickerProps = { free: (id: CharacterId) => boolean; onBoard: (character: CharacterId) => void };
+
+function DesktopPicker({ free, onBoard }: PickerProps) {
   const { t } = useTranslation();
-  const names = useNames();
   const [selected, setSelected] = useState<CharacterId | null>(null);
   // Someone may take the selected one while you look: fall back to the first free one.
-  const free = (id: CharacterId) => !taken.includes(id);
   const current = selected && free(selected) ? selected : (ORDER.find((c) => free(c.id))?.id ?? null);
 
   return (
@@ -45,26 +61,7 @@ export function CharacterPicker({ taken, onBoard }: { taken: readonly CharacterI
               <Pips difficulty={difficulty} />
               {t(`lobby.difficulty.${LEVEL[difficulty]}`)}
             </h2>
-            <ul className="pod-characters">
-              {crew.map((c) => (
-                <li key={c.id}>
-                  <button
-                    type="button"
-                    className="pod-character"
-                    aria-pressed={c.id === current}
-                    disabled={!free(c.id)}
-                    onClick={() => setSelected(c.id)}
-                  >
-                    <span className="pod-figure" aria-hidden="true">
-                      <span className="pod-podium" />
-                      <span className="pod-sprite" style={standingSprite(c.id)} />
-                    </span>
-                    <span className="pod-character-name">{c.given}</span>
-                    {!free(c.id) && <span className="pod-character-taken">{t("lobby.taken")}</span>}
-                  </button>
-                </li>
-              ))}
-            </ul>
+            <Crew crew={crew} free={free} current={current} onPick={setSelected} />
           </section>
         ))}
       </div>
@@ -75,20 +72,7 @@ export function CharacterPicker({ taken, onBoard }: { taken: readonly CharacterI
         <div className="pod-detail-texts">
           {ORDER.map((c) => (
             <div key={c.id} className="pod-detail-text" inert={c.id !== current}>
-              <p className="pod-detail-name">{c.name}</p>
-              <p className="pod-detail-profession">{t(`characters.profession.${c.id}`)}</p>
-              <p className="pod-detail-difficulty">
-                <Pips difficulty={c.difficulty} />
-                {t("lobby.difficultyLabel", { level: t(`lobby.difficulty.${LEVEL[c.difficulty]}`) })}
-              </p>
-              <ul className="pod-detail-skills" aria-label={t("lobby.characterSkills")}>
-                {CHARACTER_SKILLS[c.id].map((skill) => (
-                  <li key={skill}>
-                    <img src={skillIcon(skill)} alt="" />
-                    {names.skill(skill)}
-                  </li>
-                ))}
-              </ul>
+              <CharacterText character={c} tooltips />
             </div>
           ))}
         </div>
@@ -97,5 +81,127 @@ export function CharacterPicker({ taken, onBoard }: { taken: readonly CharacterI
         </button>
       </div>
     </div>
+  );
+}
+
+function PhonePicker({ free, onBoard }: PickerProps) {
+  const { t } = useTranslation();
+  const [open, setOpen] = useState<CharacterId | null>(null);
+  // Someone may take the one you're looking at: the modal closes.
+  const shown = open && free(open) ? CHARACTERS.find((c) => c.id === open) : undefined;
+
+  return (
+    <div className="pod-picker">
+      <Tabs.Root className="pod-tabs" defaultValue={TIERS[0]?.difficulty}>
+        <Tabs.List className="settings-tab-list">
+          {TIERS.map(({ difficulty }) => (
+            <Tabs.Tab key={difficulty} className="settings-tab pod-tab" value={difficulty}>
+              <Pips difficulty={difficulty} />
+              {t(`lobby.difficulty.${LEVEL[difficulty]}`)}
+            </Tabs.Tab>
+          ))}
+        </Tabs.List>
+        {TIERS.map(({ difficulty, crew }) => (
+          <Tabs.Panel key={difficulty} className="pod-tab-panel" value={difficulty} keepMounted>
+            <Crew crew={crew} free={free} onPick={setOpen} />
+          </Tabs.Panel>
+        ))}
+      </Tabs.Root>
+      <Dialog.Root open={shown !== undefined} onOpenChange={(o) => !o && setOpen(null)}>
+        <Dialog.Portal>
+          <Dialog.Backdrop className="settings-backdrop" />
+          <Dialog.Popup className="pod-dialog">
+            {shown && (
+              <>
+                <DialogHeader heading={shown.name} closeLabel={t("lobby.closeCharacter")} />
+                <div className="pod-dialog-body">
+                  <img className="pod-detail-portrait" src={characterImage(shown.id)} alt="" />
+                  <div className="pod-detail-text">
+                    <CharacterText character={shown} />
+                  </div>
+                </div>
+                <button type="button" className="big pod-board" onClick={() => onBoard(shown.id)}>
+                  {t("lobby.board")}
+                </button>
+              </>
+            )}
+          </Dialog.Popup>
+        </Dialog.Portal>
+      </Dialog.Root>
+    </div>
+  );
+}
+
+/**
+ * One tier's standing sprites. With `current` (desktop) a tile is a toggle showing which one is selected;
+ * without it (phone) a tile opens the details modal.
+ */
+function Crew({
+  crew,
+  free,
+  current,
+  onPick,
+}: {
+  crew: readonly Character[];
+  free: (id: CharacterId) => boolean;
+  current?: CharacterId | null;
+  onPick: (id: CharacterId) => void;
+}) {
+  const { t } = useTranslation();
+  return (
+    <ul className="pod-characters">
+      {crew.map((c) => (
+        <li key={c.id}>
+          <button
+            type="button"
+            className="pod-character"
+            {...(current === undefined ? { "aria-haspopup": "dialog" as const } : { "aria-pressed": c.id === current })}
+            disabled={!free(c.id)}
+            onClick={() => onPick(c.id)}
+          >
+            <span className="pod-figure" aria-hidden="true">
+              <span className="pod-podium" />
+              <span className="pod-sprite" style={standingSprite(c.id)} />
+            </span>
+            <span className="pod-character-name">{c.given}</span>
+            {!free(c.id) && <span className="pod-character-taken">{t("lobby.taken")}</span>}
+          </button>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+/** Who they are: name (desktop only; the modal has it as its title), profession, difficulty, skills. */
+function CharacterText({ character: c, tooltips = false }: { character: Character; tooltips?: boolean }) {
+  const { t } = useTranslation();
+  const names = useNames();
+  return (
+    <>
+      {tooltips && <p className="pod-detail-name">{c.name}</p>}
+      <p className="pod-detail-profession">{t(`characters.profession.${c.id}`)}</p>
+      <p className="pod-detail-difficulty">
+        <Pips difficulty={c.difficulty} />
+        {t("lobby.difficultyLabel", { level: t(`lobby.difficulty.${LEVEL[c.difficulty]}`) })}
+      </p>
+      <ul className="pod-detail-skills" aria-label={t("lobby.characterSkills")}>
+        {CHARACTER_SKILLS[c.id].map((skill) => (
+          <li key={skill}>
+            {/* Desktop: the same popover as the in-game skill slot. Phone: plain, the modal is details enough. */}
+            {tooltips ? (
+              <SkillPopover skill={skill} className="pod-skill">
+                <img src={skillIcon(skill)} alt="" />
+                {names.skill(skill)}
+              </SkillPopover>
+            ) : (
+              <span className="pod-skill">
+                <img src={skillIcon(skill)} alt="" />
+                {names.skill(skill)}
+              </span>
+            )}
+          </li>
+        ))}
+      </ul>
+    </>
   );
 }

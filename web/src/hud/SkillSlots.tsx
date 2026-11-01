@@ -137,6 +137,29 @@ export function SkillSlots({
 
 /** A filled slot. The name and description open in a popover on hover, focus, or tap (touch has no hover). */
 function SkillSlot({ skill }: { skill: string }) {
+  const names = useNames();
+  return (
+    <SkillPopover skill={skill} className="skill-slot" aria-label={names.skill(skill)}>
+      <img src={skillIcon(skill)} alt="" />
+    </SkillPopover>
+  );
+}
+
+/**
+ * A button whose popover shows a skill's name, description and effects, opened on hover, focus, or tap.
+ * The in-game skill slots use it, and so does the lobby's character pane, so a skill reads the same in both.
+ */
+export function SkillPopover({
+  skill,
+  className,
+  children,
+  "aria-label": ariaLabel,
+}: {
+  skill: string;
+  className: string;
+  children: React.ReactNode;
+  "aria-label"?: string;
+}) {
   const { t } = useTranslation();
   const names = useNames();
   const text = (group: "effects" | "desc"): string => t(`skills.${group}.${skill}` as never, { defaultValue: "" });
@@ -144,8 +167,8 @@ function SkillSlot({ skill }: { skill: string }) {
   const description = text("desc");
   return (
     <Popover.Root>
-      <Popover.Trigger openOnHover delay={200} className="skill-slot" aria-label={names.skill(skill)}>
-        <img src={skillIcon(skill)} alt="" />
+      <Popover.Trigger openOnHover delay={200} className={className} aria-label={ariaLabel}>
+        {children}
       </Popover.Trigger>
       <Popover.Portal>
         <Popover.Positioner sideOffset={6}>
