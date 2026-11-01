@@ -31,6 +31,8 @@ export interface Goal {
   id: string;
   /** The id plus its parameters, e.g. "rest:BEDROOM_A": what "ended this cycle" remembers. */
   key: string;
+  /** What the model's goal list shows (English, built from the bot's own view; no player-written text). */
+  label: string;
   /** One action toward the goal, or what happened. Reads only the bot's own view and the goal's own progress. */
   step(view: PlayerView, memory: BotMemory): GoalStep;
 }

@@ -15,9 +15,9 @@ import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { parseArgs } from "node:util";
 import { test } from "vitest";
 import { applyInput, createGame, nextDue, legalActions, resolveConfig, singlePlayerGame, viewFor, SINGLE_PLAYER_HUMAN, type GameState, type Input, type PlayerId } from "@mush2/shared";
-import { ModelBot, WanderBot, type Bot } from "../src/bots.ts";
+import { ModelBot, type Ranked } from "../src/bots.ts";
+import type { Goal } from "../src/bots/goals/index.ts";
 import { completeOpenAi, ModelGate, type Complete } from "../src/model.ts";
-import { choices } from "../src/prompt.ts";
 
 const { values: args } = parseArgs({
   args: JSON.parse(process.env.TRIAL_ARGS ?? "[]") as string[],
@@ -30,7 +30,7 @@ const { values: args } = parseArgs({
     cap: { type: "string", default: "3" },
     seed: { type: "string", default: "1" },
     fake: { type: "boolean", default: false },
-    /** With --fake: always pick End cycle when it is offered. */
+    /** With --fake: always pick the first goal (the registry order is roughly the priority order). */
     "fake-ready": { type: "boolean", default: false },
     /** Rounds the human waits after every bot has ended its cycle before ending theirs (a real player takes a while). */
     linger: { type: "string", default: "0" },
@@ -100,14 +100,10 @@ let fakeRng = Number(args.seed);
 const fakeComplete: Complete = async (_c, turns) => {
   const lines = turns[1]!.content.split("\n").filter((l) => /^\d+\. /.test(l));
   const n = lines.length;
-  const ready = lines.findIndex((l) => l.includes('{"type":"ready"}'));
-  if (args["fake-ready"] && ready >= 0) {
-    calls.push({ ms: 0, prompt: 0, completion: 0, reasoning: 0, cost: 0, finish: "fake" });
-    return `ACTION: ${ready + 1}`;
-  }
-  fakeRng = (fakeRng * 1103515245 + 12345) % 2 ** 31;
   calls.push({ ms: 0, prompt: 0, completion: 0, reasoning: 0, cost: 0, finish: "fake" });
-  return `ACTION: ${(fakeRng % n) + 1}`;
+  if (args["fake-ready"]) return "GOAL: 1";
+  fakeRng = (fakeRng * 1103515245 + 12345) % 2 ** 31;
+  return `GOAL: ${(fakeRng % n) + 1}`;
 };
 
 test("model trial", { timeout: 3_600_000 }, async () => {
@@ -129,14 +125,20 @@ let game: GameState = createGame(setup.seats, resolveConfig(setup.overrides), se
 let now = 0;
 
 let fallbacks = 0;
-class Counted implements Bot {
-  constructor(private bot: Bot) {}
-  decideAction: Bot["decideAction"] = (v) => {
+const goalsChosen: Record<string, number> = {};
+/** Counts the goals chosen, and the choices made by priority instead of the model (garbage reply, choice cap). */
+class Counted extends ModelBot {
+  protected override async choose(view: Parameters<ModelBot["choose"]>[0], options: readonly Ranked[]): Promise<Goal | null> {
+    const goal = await super.choose(view, options);
+    if (goal) goalsChosen[goal.id] = (goalsChosen[goal.id] ?? 0) + 1;
+    return goal;
+  }
+  protected override byPriority(options: readonly Ranked[]): Goal {
     fallbacks++;
-    return this.bot.decideAction(v);
-  };
+    return super.byPriority(options);
+  }
 }
-const bots = new Map<PlayerId, ModelBot>(game.players.filter((p) => p.isBot).map((p, i) => [p.id, new ModelBot(gate, new Counted(new WanderBot(seed + i)))]));
+const bots = new Map<PlayerId, ModelBot>(game.players.filter((p) => p.isBot).map((p, i) => [p.id, new Counted(gate, seed + i)]));
 
 function apply(input: Input): string | null {
   const r = applyInput(game, input);
@@ -224,7 +226,7 @@ const ok = calls.filter((c) => !c.error);
 const sum = (xs: number[]): number => xs.reduce((a, b) => a + b, 0);
 const avg = (xs: number[]): number => (xs.length ? sum(xs) / xs.length : 0);
 const pct = (xs: number[], p: number): number => [...xs].sort((a, b) => a - b)[Math.min(xs.length - 1, Math.floor(xs.length * p))] ?? 0;
-const unparsed = replies.filter((r) => !/ACTION:\s*\d+/i.test(r.reply) && !/^\d+$/.test(r.reply.trim())).length;
+const unparsed = replies.filter((r) => !/GOAL:\s*\d+/i.test(r.reply) && !/^\d+$/.test(r.reply.trim())).length;
 const lengths = calls.filter((c) => c.finish === "length").length;
 const cyclesDone = perCycle.length;
 
@@ -232,11 +234,12 @@ console.log(`\nmodel ${args.model}${args.extra ? ` extra ${args.extra}` : ""}${a
 console.log(`cycles ${cyclesDone}, calls ${calls.length} (${(calls.length / Math.max(1, cyclesDone) / bots.size).toFixed(1)} per bot per cycle), errors ${calls.length - ok.length}, wall ${((performance.now() - started) / 1000).toFixed(0)}s`);
 console.log(`tokens per call: prompt ${avg(ok.map((c) => c.prompt)).toFixed(0)}, completion ${avg(ok.map((c) => c.completion)).toFixed(0)} (reasoning ${avg(ok.map((c) => c.reasoning)).toFixed(0)}, max ${Math.max(0, ...ok.map((c) => c.completion))})`);
 console.log(`latency ms: p50 ${pct(ok.map((c) => c.ms), 0.5).toFixed(0)}, p90 ${pct(ok.map((c) => c.ms), 0.9).toFixed(0)}, max ${Math.max(0, ...ok.map((c) => c.ms)).toFixed(0)}`);
-console.log(`replies: ${replies.length}, without ACTION ${unparsed}, cut off by max_tokens ${lengths}; fallbacks ${fallbacks}; nulls ${stats.nulls}; illegal ${stats.illegal}`);
+console.log(`replies: ${replies.length}, without GOAL ${unparsed}, cut off by max_tokens ${lengths}; fallbacks ${fallbacks}; nulls ${stats.nulls}; illegal ${stats.illegal}`);
 console.log(`cost: $${spent.toFixed(4)} this run, $${(spent / Math.max(1, calls.length)).toFixed(6)} per call, $${((spent / Math.max(1, cyclesDone)) * 8).toFixed(4)} per game day`);
-console.log(`chosen: ${Object.entries(chosen).sort((a, b) => b[1] - a[1]).map(([k, n]) => `${k} ${n}`).join(", ")}`);
+console.log(`goals (model calls and choices by priority): ${Object.entries(goalsChosen).sort((a, b) => b[1] - a[1]).map(([k, n]) => `${k} ${n}`).join(", ")}`);
+console.log(`actions: ${Object.entries(chosen).sort((a, b) => b[1] - a[1]).map(([k, n]) => `${k} ${n}`).join(", ")}`);
 for (const e of new Set(calls.filter((c) => c.error).map((c) => c.error))) console.log(`  error: ${e}`);
-const sample = replies.filter((r) => !/ACTION:\s*\d+\s*$/i.test(r.reply.trim())).slice(0, 3);
+const sample = replies.filter((r) => !/GOAL:\s*\d+\s*$/i.test(r.reply.trim())).slice(0, 3);
 for (const r of sample) console.log(`  odd reply: ${JSON.stringify(r.reply.slice(0, 200))}`);
 
 if (ledgerPath) writeFileSync(ledgerPath, String(spentBefore + spent));

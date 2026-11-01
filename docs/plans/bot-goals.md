@@ -204,6 +204,10 @@ Suspicion, accusations and other social goals are left for later; they need thei
    - A finished rest may be chosen again the same cycle.
    - The only interrupts so far are a new cycle (not while resting) and losing HP. Being summoned needs none, since `goTo` re-paths from where the bot stands each turn.
    - The asking threshold (7) waits for step 3, where it's used.
-2. Model goal choice: the goal list in the prompt replaces the raw action list; measure with `npm run model-trial` against today's prompt (#224). Overlaps with the bot menu (#259).
+2. Model goal choice: the goal list in the prompt replaces the raw action list; measure with `npm run model-trial` against today's prompt (#224). Overlaps with the bot menu (#259). **Built 2026-11-01** (`ModelBot` extends `GoalBot`; `buildPrompt` lists goal labels; reply `GOAL: <n>`). The first prompt of a game went from about 4,700 characters to 1,400 (`--fake --dump-prompt`); a real-model run is still to do. Choices made while building, not asked:
+   - The model is offered only the solo goals, and no single actions: heal, comfort and the like come back with `help` in step 3.
+   - Goals are listed in registry order (about the scripted priority order), each with a label naming the room and how many doors away.
+   - The free-action cap became a cap on model choices per cycle (`MODEL_CHOICES_PER_CYCLE`, still 8); past it, the bot goes by priority.
+   - The exits line left the prompt, since the bot no longer chooses moves.
 3. Model chat (#223): the chat window in the prompt, the structured reply with a message, posting through moderation and the rate limit, waking every bot with the chain depth limit, and `help`.
 4. Plans for bots (#316): the plans section in the prompt, slot actions labelled in words, `doSlot`, on-call reminders and withdrawing at `endCycle`.

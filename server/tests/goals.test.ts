@@ -249,7 +249,7 @@ describe("GoalBot", () => {
   it("doesn't choose a failed goal again this cycle, and does next cycle", async () => {
     const { game, id } = setup();
     let tries = 0;
-    const always: GoalDef = { id: "stuck", priority: 1, options: () => [{ id: "stuck", key: "stuck", step: () => (tries++, { kind: "failed", reason: "test" }) }] };
+    const always: GoalDef = { id: "stuck", priority: 1, options: () => [{ id: "stuck", key: "stuck", label: "test", step: () => (tries++, { kind: "failed", reason: "test" }) }] };
     const bot = new GoalBot(1, 2, [always]);
     const view = viewFor(game, id);
     expect(await bot.decideAction(view)).toEqual({ type: "ready" });
@@ -264,7 +264,7 @@ describe("GoalBot", () => {
     const bogus: GoalDef = {
       id: "bogus",
       priority: 1,
-      options: () => [{ id: "bogus", key: "bogus", step: () => ({ kind: "act", action: { type: "move", to: "NOWHERE" } }) }],
+      options: () => [{ id: "bogus", key: "bogus", label: "test", step: () => ({ kind: "act", action: { type: "move", to: "NOWHERE" } }) }],
     };
     const bot = new GoalBot(1, 2, [bogus]);
     expect(await bot.decideAction(viewFor(game, id))).toEqual({ type: "ready" });
@@ -274,7 +274,7 @@ describe("GoalBot", () => {
     const { game, id } = setup();
     const view = viewFor(game, id);
     const move = legalIn(view).find((a) => a.type === "move")!;
-    const forever: GoalDef = { id: "forever", priority: 1, options: () => [{ id: "forever", key: "forever", step: () => ({ kind: "act", action: move }) }] };
+    const forever: GoalDef = { id: "forever", priority: 1, options: () => [{ id: "forever", key: "forever", label: "test", step: () => ({ kind: "act", action: move }) }] };
     const bot = new GoalBot(1, 2, [forever]);
     for (let i = 0; i < GOAL_MAX_ACTIONS; i++) expect(await bot.decideAction(view)).toEqual(move);
     expect(await bot.decideAction(view)).toEqual({ type: "ready" });
@@ -284,7 +284,7 @@ describe("GoalBot", () => {
     const { game, id } = setup();
     const view = viewFor(game, id);
     const move = legalIn(view).find((a) => a.type === "move")!;
-    const once: GoalDef = { id: "once", priority: 1, options: () => [{ id: "once", key: "once", step: () => ({ kind: "act", action: move }) }] };
+    const once: GoalDef = { id: "once", priority: 1, options: () => [{ id: "once", key: "once", label: "test", step: () => ({ kind: "act", action: move }) }] };
     const bot = new GoalBot(1, 2, [once]);
     expect(await bot.decideAction(view)).toEqual(move);
     bot.refused();
@@ -299,7 +299,7 @@ describe("GoalBot", () => {
     const counting: GoalDef = {
       id: "count",
       priority: 1,
-      options: () => [{ id: "count", key: `count:${++chosen}`, step: () => ({ kind: "act", action: move }) }],
+      options: () => [{ id: "count", key: `count:${++chosen}`, label: "test", step: () => ({ kind: "act", action: move }) }],
     };
     const bot = new GoalBot(1, 2, [counting]);
     await bot.decideAction(view);

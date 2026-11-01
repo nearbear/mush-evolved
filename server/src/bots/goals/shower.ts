@@ -1,4 +1,4 @@
-import { act, canAfford, failed, find, goTo, roomsWith } from "./blocks.ts";
+import { act, canAfford, failed, find, goTo, roomsWith, where } from "./blocks.ts";
 import { projectOptions } from "./project.ts";
 import { repairHull } from "./repairHull.ts";
 import { researchOptions } from "./research.ts";
@@ -23,6 +23,7 @@ export const shower: GoalDef = {
       {
         id: "shower",
         key: `shower:${room}`,
+        label: `Shower ${where(view, room)} (you are dirty, and research and projects refuse dirty players)`,
         step(v) {
           if (!v.statuses.includes("dirty")) return { kind: "done" };
           const walk = goTo(v, room);

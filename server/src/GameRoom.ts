@@ -39,7 +39,7 @@ import {
   type Setup,
 } from "@mush2/shared";
 import { accountStoreFor } from "./accountStore.ts";
-import { GoalBot, LogParrotBot, ModelBot, WanderBot, type Bot } from "./bots.ts";
+import { LogParrotBot, ModelBot, WanderBot, type Bot } from "./bots.ts";
 import { clockCycle, clockCycleStart, cycleMs, cycleOfDay } from "./cycleClock.ts";
 import { devModelCredentials, ModelGate, playerModelCredentials } from "./model.ts";
 import { RateLimiter } from "./rateLimit.ts";
@@ -708,7 +708,7 @@ export class GameRoom extends Server<Env> {
       const seed = (): number => crypto.getRandomValues(new Uint32Array(1))[0]!;
       this.bots.set(
         p.mind,
-        p.botKind === "wander" ? new WanderBot(seed()) : p.botKind === "model" ? new ModelBot(this.gate(), new GoalBot(seed())) : new LogParrotBot(),
+        p.botKind === "wander" ? new WanderBot(seed()) : p.botKind === "model" ? new ModelBot(this.gate(), seed()) : new LogParrotBot(),
       );
     }
   }

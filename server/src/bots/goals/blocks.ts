@@ -69,5 +69,14 @@ export function nearest(view: PlayerView, rooms: readonly RoomId[]): RoomId[] {
     .map((r) => r.id);
 }
 
+/** How far `room` is, for a goal's label: "(2 doors away)". */
+export function doorsAway(view: PlayerView, room: RoomId): string {
+  const doors = shortestPath(view.rooms, view.you.room, room)?.length ?? "?";
+  return `(${doors} door${doors === 1 ? "" : "s"} away)`;
+}
+
+/** Where `room` is, for a goal's label: "here", or "in LABORATORY (2 doors away)". */
+export const where = (view: PlayerView, room: RoomId): string => (room === view.you.room ? "here" : `in ${room} ${doorsAway(view, room)}`);
+
 /** The item type behind an item id, if the bot can see that item (carried or in its room). */
 export const itemType = (view: PlayerView, id: string): string | undefined => [...view.inventory, ...view.roomItems].find((i) => i.id === id)?.type;

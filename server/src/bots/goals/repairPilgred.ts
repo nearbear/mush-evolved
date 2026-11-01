@@ -1,4 +1,4 @@
-import { canAfford, roomsWith } from "./blocks.ts";
+import { canAfford, roomsWith, where } from "./blocks.ts";
 import type { GoalDef } from "./types.ts";
 import { workAt } from "./work.ts";
 
@@ -10,6 +10,6 @@ export const repairPilgred: GoalDef = {
     if (view.pilgredRepaired) return [];
     const cost = view.you.resources.pilgred > 0 ? 0 : view.config.pilgredAp;
     const room = roomsWith(view, ["PILGRED"]).find((r) => canAfford(view, r, cost, memory.reserve));
-    return room ? [workAt("repairPilgred", room, (v) => v.actions.find((o) => o.action.type === "repair_pilgred"))] : [];
+    return room ? [workAt("repairPilgred", room, `Repair PILGRED ${where(view, room)}`, (v) => v.actions.find((o) => o.action.type === "repair_pilgred"))] : [];
   },
 };

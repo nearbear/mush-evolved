@@ -21,4 +21,4 @@ export type { BotMemory, Goal, GoalDef, GoalStep } from "./types.ts";
 export const SOLO_GOALS: readonly GoalDef[] = [returnToSol, pickSkill, eat, shower, repairHull, research, project, rest, explore];
 
 /** Offered only when nothing else is: end the cycle (`ready`) when End cycle is on, otherwise wait for the clock. */
-export const END_CYCLE: Goal = { id: "endCycle", key: "endCycle", step: () => ({ kind: "wait" }) };
+export const END_CYCLE: Goal = { id: "endCycle", key: "endCycle", label: "End your cycle and wait for the next one", step: () => ({ kind: "wait" }) };

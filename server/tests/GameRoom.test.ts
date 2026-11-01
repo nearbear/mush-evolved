@@ -548,7 +548,7 @@ describe("GameRoom bots", () => {
       await room.setup(s, tokensFor(1));
       return { room, storage };
     }
-    const reply = () => new Response(JSON.stringify({ choices: [{ message: { content: "ACTION: 1" } }] }));
+    const reply = () => new Response(JSON.stringify({ choices: [{ message: { content: "GOAL: 1" } }] }));
 
     it("ask the dev model, play its choices, and keep count of the calls", async () => {
       const fetch = vi.fn(async () => reply());
@@ -708,7 +708,7 @@ describe("GameRoom single player", () => {
   describe("the player's own model key (BYOK, #216)", () => {
     const KEY = "sk-or-v1-secret-player-key";
     const setModel = { type: "setModel", provider: "openrouter", model: "some/model", apiKey: KEY };
-    const reply = () => new Response(JSON.stringify({ choices: [{ message: { content: "ACTION: 1" } }] }));
+    const reply = () => new Response(JSON.stringify({ choices: [{ message: { content: "GOAL: 1" } }] }));
     const disconnect = (room: Room, c: Conn) => {
       (room as unknown as FakeServer).connections.delete(c as never);
       room.onClose(c as never);

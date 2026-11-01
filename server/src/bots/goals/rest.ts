@@ -1,4 +1,4 @@
-import { act, canAfford, failed, find, goTo, roomsWith } from "./blocks.ts";
+import { act, canAfford, failed, find, goTo, roomsWith, where } from "./blocks.ts";
 import type { Goal, GoalDef } from "./types.ts";
 
 /**
@@ -12,16 +12,17 @@ export const rest: GoalDef = {
   priority: 40,
   options(view, memory) {
     if (view.you.ap >= view.maxAp) return [];
-    if (view.you.lyingIn !== undefined) return [restIn(view.you.room)];
+    if (view.you.lyingIn !== undefined) return [restIn(view.you.room, "Stay in bed until your AP is full")];
     const room = roomsWith(view, ["BED"]).find((r) => !memory.ended.has(`rest:${r}`) && canAfford(view, r, view.config.lieDownAp, 0));
-    return room ? [restIn(room)] : [];
+    return room ? [restIn(room, `Rest: lie down in a bed ${where(view, room)} until your AP is full`)] : [];
   },
 };
 
-function restIn(room: string): Goal {
+function restIn(room: string, label: string): Goal {
   return {
     id: "rest",
     key: `rest:${room}`,
+    label,
     step(view) {
       // Rested: it may rest here again later this cycle.
       if (view.you.ap >= view.maxAp) return { kind: "done", again: true };

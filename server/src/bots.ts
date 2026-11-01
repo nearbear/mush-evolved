@@ -3,7 +3,7 @@
 
 import { legalIn, nextInt, type Action, type PlayerView, type RngState } from "@mush2/shared";
 import { END_CYCLE, SOLO_GOALS, type BotMemory, type Goal, type GoalDef } from "./bots/goals/index.ts";
-import { buildPrompt, choices, describeLogEntry, parseChoice } from "./prompt.ts";
+import { buildPrompt, describeLogEntry, parseChoice } from "./prompt.ts";
 import type { ModelGate } from "./model.ts";
 
 /**
@@ -46,6 +46,12 @@ export class WanderBot implements Bot {
   }
 }
 
+/** A goal open to a bot, with its definition's priority. */
+export interface Ranked {
+  goal: Goal;
+  priority: number;
+}
+
 /** AP a bot keeps for emergencies: work goals stop rather than spend it (owner, 2026-10-25). */
 export const BOT_AP_RESERVE = 2;
 
@@ -64,7 +70,7 @@ export class GoalBot implements Bot {
   private actions = 0;
   private cycle = -1;
   private hp: number | null = null;
-  private readonly memory: BotMemory;
+  protected readonly memory: BotMemory;
 
   constructor(
     private rng: RngState,
@@ -95,7 +101,14 @@ export class GoalBot implements Bot {
     // A goal that ends at once makes way for the next; each one that ends is left out until the next cycle, so this
     // runs out of goals rather than looping.
     for (let i = 0; i <= this.goals.length; i++) {
-      this.goal ??= this.choose(view);
+      if (!this.goal) {
+        const options = this.options(view);
+        // One option (ending the cycle, when nothing else is open) needs no choosing.
+        const chosen = options.length === 1 ? options[0]!.goal : await this.choose(view, options);
+        // No choice yet (a model bot whose call failed): ask again later.
+        if (chosen === null) return null;
+        this.goal = chosen;
+      }
       const step = this.goal.step(view, this.memory);
       if (step.kind === "wait") {
         // Ending the cycle isn't a goal to keep: while it waits for the clock, something may open up (hunger, AP).
@@ -131,15 +144,24 @@ export class GoalBot implements Bot {
     this.memory.visited.add(view.you.room);
   }
 
-  /** The highest-priority option not ended this cycle, ties by the seeded roll; ending the cycle when there is none. */
-  private choose(view: PlayerView): Goal {
+  /** Every goal open now and not ended this cycle, in registry order; only ending the cycle when there is none. */
+  private options(view: PlayerView): Ranked[] {
     const options = this.goals.flatMap((def) =>
       def
         .options(view, this.memory)
         .filter((goal) => !this.memory.ended.has(goal.key))
         .map((goal) => ({ goal, priority: def.priority })),
     );
-    if (options.length === 0) return END_CYCLE;
+    return options.length > 0 ? options : [{ goal: END_CYCLE, priority: 0 }];
+  }
+
+  /** Which of two or more options to follow, or null to wait and be asked again. A bot without a key goes by priority. */
+  protected async choose(_view: PlayerView, options: readonly Ranked[]): Promise<Goal | null> {
+    return this.byPriority(options);
+  }
+
+  /** The highest-priority option, ties by the seeded roll. */
+  protected byPriority(options: readonly Ranked[]): Goal {
     const top = Math.max(...options.map((o) => o.priority));
     const best = options.filter((o) => o.priority === top);
     return best[best.length === 1 ? 0 : this.memory.roll(best.length)]!.goal;
@@ -154,55 +176,45 @@ export class GoalBot implements Bot {
 }
 
 /**
- * Model calls a bot may spend on free actions (no AP or MP) in one cycle. Points already limit paid actions, so free
- * ones are the only way a confused model can loop; past this, the scripted fallback plays the rest of the cycle.
+ * Goals a model may choose for one bot in one cycle. Goals that ended this cycle aren't offered again, so the list
+ * runs out by itself; this bounds the cost when goals keep ending at once (or a rest finishes and is chosen again).
+ * Past it, the bot goes by priority for the rest of the cycle.
  */
-export const MODEL_FREE_ACTIONS_PER_CYCLE = 8;
+export const MODEL_CHOICES_PER_CYCLE = 8;
 
 /**
- * Asks a model to choose from its own view's affordable actions. Its reply is untrusted: anything but a valid choice
- * and the scripted fallback (the solo goals, `GoalBot`) decides instead. With no key at all it plays scripted. With a key but no reply (the call
- * failed, the key was refused, the budget is spent) it waits instead, returning null, and the cycle waits with it
+ * A goal bot whose model chooses the goal (docs/plans/bot-goals.md, step 2): one call picks from the goals open now, and
+ * the goal then runs with no calls until it finishes, fails, or an interrupt fires. The reply is untrusted: anything
+ * but a valid number is decided by priority instead, as a bot without a key always is. With a key but no reply (the
+ * call failed, the key was refused, the budget is spent) it waits instead, returning null, and the cycle waits with it
  * (owner, 2026-10-24, #114): the room asks again later (`ModelGate.pause`).
  */
-export class ModelBot implements Bot {
-  private cycle = -1;
-  private free = 0;
-  /** Whether the last action came from the fallback, which is then the one to hear of a refusal. */
-  private fromFallback = false;
+export class ModelBot extends GoalBot {
+  private cycleSeen = -1;
+  private choices = 0;
 
   constructor(
     private gate: ModelGate,
-    private fallback: Bot,
-  ) {}
+    rng: RngState,
+    reserve = BOT_AP_RESERVE,
+    goals: readonly GoalDef[] = SOLO_GOALS,
+  ) {
+    super(rng, reserve, goals);
+  }
 
-  async decideAction(view: PlayerView): Promise<Action | null> {
-    if (view.cycle !== this.cycle) {
-      this.cycle = view.cycle;
-      this.free = 0;
+  protected override async choose(view: PlayerView, options: readonly Ranked[]): Promise<Goal | null> {
+    if (view.cycle !== this.cycleSeen) {
+      this.cycleSeen = view.cycle;
+      this.choices = 0;
     }
-    this.fromFallback = false;
-    const options = choices(view);
-    if (options.length === 0) return null;
-    // Nothing to choose between: don't spend a call on it.
-    if (options.length === 1) return options[0]!.action;
-    if (this.gate.credentials === null || this.free >= MODEL_FREE_ACTIONS_PER_CYCLE) return this.fallBack(view);
-    const reply = await this.gate.ask(buildPrompt(view));
+    if (this.gate.credentials === null || this.choices >= MODEL_CHOICES_PER_CYCLE) return this.byPriority(options);
+    const goals = options.map((o) => o.goal);
+    const reply = await this.gate.ask(buildPrompt(view, goals, this.memory.reserve));
     if (reply === null) return null;
-    const i = parseChoice(reply, options.length);
-    if (i === null) return this.fallBack(view);
-    const chosen = options[i]!;
-    if (chosen.cost.ap === 0 && chosen.cost.mp === 0 && chosen.action.type !== "ready") this.free++;
-    return chosen.action;
-  }
-
-  refused(action: Action, error: string): void {
-    if (this.fromFallback) this.fallback.refused?.(action, error);
-  }
-
-  private fallBack(view: PlayerView): Promise<Action | null> {
-    this.fromFallback = true;
-    return this.fallback.decideAction(view);
+    const i = parseChoice(reply, goals.length);
+    if (i === null) return this.byPriority(options);
+    this.choices++;
+    return goals[i]!;
   }
 }
 

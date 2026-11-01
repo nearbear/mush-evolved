@@ -1,5 +1,5 @@
 import { PROJECT_COMPLETE, PROJECT_IDS, type PlayerView } from "@mush2/shared";
-import { canAfford, roomsWith } from "./blocks.ts";
+import { canAfford, roomsWith, where } from "./blocks.ts";
 import type { BotMemory, Goal, GoalDef } from "./types.ts";
 import { mostAdvanced, workAt } from "./work.ts";
 
@@ -13,7 +13,7 @@ export function projectOptions(view: PlayerView, memory: BotMemory, assumeClean 
   const free = view.you.resources.core > 0 || view.you.resources.comp > 0;
   const cost = free ? 0 : view.config.projectAp;
   const core = roomsWith(view, ["NERON_CORE"]).find((room) => canAfford(view, room, cost, memory.reserve));
-  return core ? [workAt("project", core, (v) => mostAdvanced(v, "project", (a) => v.projects[a.project] ?? 0))] : [];
+  return core ? [workAt("project", core, `Work on NERON projects at a terminal ${where(view, core)}, the most advanced first`, (v) => mostAdvanced(v, "project", (a) => v.projects[a.project] ?? 0))] : [];
 }
 
 export const project: GoalDef = { id: "project", priority: 50, options: (view, memory) => projectOptions(view, memory) };

@@ -1,5 +1,5 @@
 import { ITEM_TYPES, type PlayerView } from "@mush2/shared";
-import { act, canAfford, failed, find, goTo, itemType, roomsWith } from "./blocks.ts";
+import { act, canAfford, failed, find, goTo, itemType, roomsWith, where } from "./blocks.ts";
 import type { Goal, GoalDef } from "./types.ts";
 
 /** Something to eat the bot can reach now: a consume option on an item that gives satiety. */
@@ -15,18 +15,19 @@ export const eat: GoalDef = {
   priority: 80,
   options(view) {
     if (!view.statuses.includes("hungry")) return [];
-    if (food(view)) return [eatAt(view.you.room)];
+    if (food(view)) return [eatAt(view.you.room, "Eat food you carry or that is here")];
     const room = roomsWith(view, ["COFFEE_DISPENSER"]).find((r) => canAfford(view, r, 0, 0));
-    return room ? [eatAt(room)] : [];
+    return room ? [eatAt(room, `Eat: get a coffee from the dispenser ${where(view, room)}`)] : [];
   },
 };
 
-function eatAt(room: string): Goal {
+function eatAt(room: string, label: string): Goal {
   let ate = false;
   let dispensed = false;
   return {
     id: "eat",
     key: `eat:${room}`,
+    label,
     step(view) {
       if (ate) return { kind: "done" };
       const meal = food(view);

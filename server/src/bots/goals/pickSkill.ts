@@ -14,6 +14,7 @@ export const pickSkill: GoalDef = {
       {
         id: "pickSkill",
         key: `pickSkill:${skill}`,
+        label: `Pick the skill ${skill}`,
         step(v) {
           if (v.you.skills.includes(skill)) return { kind: "done" };
           const pick = find(v, "pick_skill", (a) => a.skill === skill);

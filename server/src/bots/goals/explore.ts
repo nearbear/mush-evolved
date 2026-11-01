@@ -1,5 +1,5 @@
 import { SHIP_ROOMS } from "@mush2/shared";
-import { goTo, nearest, travelAp } from "./blocks.ts";
+import { doorsAway, goTo, nearest, travelAp } from "./blocks.ts";
 import type { Goal, GoalDef } from "./types.ts";
 
 /**
@@ -18,6 +18,7 @@ export const explore: GoalDef = {
         (room): Goal => ({
           id: "explore",
           key: `explore:${room}`,
+          label: `Explore: walk to ${room} ${doorsAway(view, room)}`,
           step: (v) => goTo(v, room) ?? { kind: "done" },
         }),
       );

@@ -1,4 +1,4 @@
-import { act, canAfford, failed, find, goTo, roomsWith } from "./blocks.ts";
+import { act, canAfford, failed, find, goTo, roomsWith, where } from "./blocks.ts";
 import type { GoalDef } from "./types.ts";
 
 /**
@@ -17,6 +17,7 @@ export const returnToSol: GoalDef = {
       {
         id: "returnToSol",
         key: `returnToSol:${room}`,
+        label: `Return to Sol from the pilot module ${where(view, room)}`,
         step(v) {
           const walk = goTo(v, room);
           if (walk) return walk;

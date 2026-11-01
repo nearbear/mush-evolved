@@ -17,6 +17,6 @@ export const repairHull: GoalDef = {
     if (view.ship.hull >= HULL_REPAIR_BELOW) return [];
     if (!view.actions.some((o) => o.action.type === "repair_hull")) return [];
     if (!canAfford(view, view.you.room, view.config.hullRepairAp, memory.reserve)) return [];
-    return [workAt("repairHull", view.you.room, (v) => v.actions.find((o) => o.action.type === "repair_hull"))];
+    return [workAt("repairHull", view.you.room, "Patch the hull here with metal scrap", (v) => v.actions.find((o) => o.action.type === "repair_hull"))];
   },
 };

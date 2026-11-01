@@ -10,10 +10,11 @@ import type { Goal, GoalStep } from "./types.ts";
  * until the AP reserve would be broken. It ends with `again` when the only thing in the way is being dirty, so a
  * shower can come first and the work be chosen again this cycle.
  */
-export function workAt(id: string, room: RoomId, pick: (view: PlayerView) => ActionOption | undefined): Goal {
+export function workAt(id: string, room: RoomId, label: string, pick: (view: PlayerView) => ActionOption | undefined): Goal {
   return {
     id,
     key: `${id}:${room}`,
+    label,
     step(view, memory): GoalStep {
       const walk = goTo(view, room);
       if (walk) return walk;
