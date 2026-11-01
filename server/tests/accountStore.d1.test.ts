@@ -14,6 +14,7 @@ import { getPlatformProxy } from "wrangler";
 import { afterAll, beforeAll, expect, it } from "vitest";
 import { STANDARD_KNOBS } from "@mush2/shared";
 import { AccountStore } from "../src/accountStore.ts";
+import { GameStore } from "../src/gameStore.ts";
 import { SetupStore } from "../src/setupStore.ts";
 
 const SERVER = resolve(import.meta.dirname, "..");
@@ -108,4 +109,36 @@ it("runs every setup store statement on D1", async () => {
   expect((await setups.list()).map((l) => l.setup.version)).toEqual([2]);
   expect(await setups.get(v1.setup.id)).toMatchObject({ latest: false, knobs: input.knobs });
   expect(await setups.counts(owner)).toEqual({ setups: 1, posts: 2 });
+}, 30_000);
+
+it("runs every game store statement on D1", async () => {
+  const accounts = new AccountStore(proxy.env.DB);
+  const games = new GameStore(proxy.env.DB);
+  const created = await accounts.createAccount("Finisher", "google", "g-games", 1000);
+  if (!created.ok) throw new Error(created.reason);
+  const crew = [
+    { seat: "p0", accountId: created.account.id, name: "Finisher", isBot: false, startCharacter: "chun", endCharacter: "chun", startRole: "mush", endRole: "mush", alive: true },
+    { seat: "p1", accountId: null, name: "Bot", isBot: true, startCharacter: "chao", endCharacter: "chao", startRole: "human", endRole: "human", alive: false },
+  ] as const;
+  const record = (id: string, endedAt: number) => ({
+    id,
+    language: "en" as const,
+    singlePlayer: false,
+    startedAt: 1,
+    endedAt,
+    cycles: 3,
+    winner: "mush" as const,
+    ending: "humans_dead" as const,
+    setupId: null,
+    rulesVersion: "dev",
+    crew: crew.map((c) => ({ ...c })),
+  });
+  await games.recordFinished(record("g1", 10));
+  await games.recordFinished(record("g1", 10));
+  await games.recordFinished(record("g2", 20));
+  const first = await games.listFinished({ limit: 1 });
+  expect(first.games.map((g) => g.id)).toEqual(["g2"]);
+  expect(first.games[0]!.crew).toHaveLength(2);
+  const second = await games.listFinished({ limit: 1, before: first.next! });
+  expect(second).toMatchObject({ games: [{ id: "g1" }], next: null });
 }, 30_000);

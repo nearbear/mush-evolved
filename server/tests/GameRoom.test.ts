@@ -22,6 +22,7 @@ import {
 } from "@mush2/shared";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { AccountStore } from "../src/accountStore.ts";
+import { GameStore } from "../src/gameStore.ts";
 import { FakeConnection, FakeServer, FakeStorage, seats, tokensFor } from "../src/testing/fakes.ts";
 import { migratedDatabase } from "./sqliteD1.ts";
 
@@ -1326,6 +1327,98 @@ describe("GameRoom plans", () => {
       expect(rebuildGame(json<GameSetup>(await storage.get("setup")), record)).toEqual({ ...stored, config: resolveConfig(overrides) });
     } finally {
       vi.useRealTimers();
+    }
+  });
+});
+
+describe("GameRoom finished games list (#155)", () => {
+  type Listing = { recordFinished(): Promise<void>; game: GameState; env: Record<string, unknown> };
+
+  /** Three humans, p0 an alpha Mush chosen at launch, on a room that knows its D1 (or none, with `db: null`). */
+  async function finishingRoom(db: ReturnType<typeof migratedDatabase> | null = migratedDatabase()) {
+    const storage = new FakeStorage();
+    const room = new GameRoom({ storage } as never, { RULES_VERSION: "test", ...(db && { DB: db }) } as never);
+    await room.setup(seats(3), tokensFor(3), { p0: "mush" });
+    const inner = room as unknown as Listing;
+    const end = () => {
+      inner.game.phase = "ended";
+      inner.game.winner = "humans";
+      inner.game.ending = "sol";
+    };
+    const listed = async () => (db ? (await new GameStore(db).listFinished()).games : []);
+    return { room, storage, inner, end, listed };
+  }
+
+  it("lists nothing while the game runs", async () => {
+    const { inner, listed, storage } = await finishingRoom();
+    await inner.recordFinished();
+    expect(await listed()).toEqual([]);
+    expect((storage.data.get("game") as { listed: boolean }).listed).toBe(false);
+  });
+
+  it("writes the finished game once, with the alpha Mush from launch", async () => {
+    const { inner, end, listed, storage } = await finishingRoom();
+    end();
+    await inner.recordFinished();
+    await inner.recordFinished();
+    const games = await listed();
+    expect(games).toHaveLength(1);
+    expect(games[0]!.crew.find((c) => c.seat === "p0")).toMatchObject({ startRole: "mush", endRole: "mush" });
+    expect((storage.data.get("game") as { listed: boolean }).listed).toBe(true);
+  });
+
+  it("retries a failed write from the alarm until it succeeds", async () => {
+    vi.useFakeTimers({ now: 1_000_000 });
+    try {
+      const { room, inner, end, storage } = await finishingRoom(null);
+      vi.spyOn(console, "warn").mockImplementation(() => {});
+      end();
+      // No D1: the write fails, and the alarm is set to try again.
+      await inner.recordFinished();
+      await room.onAlarm();
+      expect((storage.data.get("game") as { listed: boolean }).listed).toBe(false);
+      expect(storage.alarm).not.toBeNull();
+      const db = migratedDatabase();
+      inner.env.DB = db;
+      vi.setSystemTime(storage.alarm!);
+      await room.onAlarm();
+      expect((await new GameStore(db).listFinished()).games).toHaveLength(1);
+      expect((storage.data.get("game") as { listed: boolean }).listed).toBe(true);
+      expect(storage.alarm).toBeNull();
+    } finally {
+      vi.restoreAllMocks();
+      vi.useRealTimers();
+    }
+  });
+
+  it("never lists a game stored before the list existed", async () => {
+    const { storage, end } = await finishingRoom();
+    end();
+    const stored = storage.data.get("game") as { listed?: boolean; game: { phase: string } };
+    delete stored.listed;
+    stored.game.phase = "ended";
+    storage.data.set("game", stored);
+    const db = migratedDatabase();
+    const revived = new GameRoom({ storage } as never, { RULES_VERSION: "test", DB: db } as never);
+    await revived.onStart();
+    await (revived as unknown as Listing).recordFinished();
+    expect((await new GameStore(db).listFinished()).games).toEqual([]);
+  });
+
+  it("records a single-player game only under its player's account, and never lists it publicly", async () => {
+    for (const accountId of [undefined, "acc-1"]) {
+      const db = migratedDatabase();
+      if (accountId) await db.prepare("INSERT INTO accounts (id, display_name, name_key, created_at) VALUES (?, 'Solo', 'solo', 1)").bind(accountId).run();
+      const room = new GameRoom({ storage: new FakeStorage() } as never, { RULES_VERSION: "test", DB: db } as never);
+      await room.setupSinglePlayer("Solo", "chun", "fr", accountId);
+      const inner = room as unknown as Listing;
+      inner.game.phase = "ended";
+      inner.game.winner = "mush";
+      inner.game.ending = "humans_dead";
+      await inner.recordFinished();
+      const rows = await db.prepare("SELECT single_player AS sp, language FROM games").all<{ sp: number; language: string }>();
+      expect(rows.results).toEqual(accountId ? [{ sp: 1, language: "fr" }] : []);
+      expect((await new GameStore(db).listFinished()).games).toEqual([]);
     }
   });
 });

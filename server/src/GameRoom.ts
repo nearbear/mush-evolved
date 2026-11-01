@@ -31,6 +31,7 @@ import {
   type GameSetup,
   type GameState,
   type Input,
+  type LobbyLanguage,
   type RecordedInput,
   type PlayerId,
   type PlayerState,
@@ -40,6 +41,7 @@ import {
 } from "@mush2/shared";
 import { accountStoreFor } from "./accountStore.ts";
 import { LogParrotBot, ModelBot, WanderBot, type Bot } from "./bots.ts";
+import { finishedEntry, gameStoreFor, type SeatStart } from "./gameStore.ts";
 import { clockCycle, clockCycleStart, cycleMs, cycleOfDay } from "./cycleClock.ts";
 import { devModelCredentials, ModelGate, playerModelCredentials } from "./model.ts";
 import { RateLimiter } from "./rateLimit.ts";
@@ -75,6 +77,9 @@ const MODEL_TIMEOUT_MS = 20_000;
 /** While model calls fail in passing, paused bots are asked again after this, doubling up to the max. */
 const MODEL_RETRY_MS = 2_000;
 const MODEL_RETRY_MAX_MS = 60_000;
+/** A finished game whose entry in the list (#155) couldn't be written is tried again after this, doubling up to the max. */
+const LIST_RETRY_MS = 60_000;
+const LIST_RETRY_MAX_MS = 60 * 60_000;
 
 /**
  * Bump when GameState's shape changes, or ConfigOverrides' (or what resolveConfig derives from a key). Games stored
@@ -117,6 +122,17 @@ interface Stored {
   aboard: Record<PlayerId, string>;
   /** Seat token -> the hash of the session it was handed to, so ending that session (logout, or another account signing in) revokes them. */
   tokenSessions: Record<string, string>;
+  /** The lobby it was launched from (the matchmaker's), for the list of finished games (#155). Missing on older games and in tests. */
+  language?: LobbyLanguage;
+  /** Per seat, its role and character when the Mush were chosen (#155); missing until then. */
+  starts?: Record<PlayerId, SeatStart>;
+  /**
+   * The finished game is in the list (#155), or needs no entry. False until then; missing on games stored before the
+   * list existed, which are never listed (no backfill).
+   */
+  listed?: boolean;
+  /** When the game ended (the time of the input that ended it); missing while it runs. */
+  endedAt?: number;
 }
 
 // The game's record, beside the snapshot in this room's storage:
@@ -167,6 +183,13 @@ export class GameRoom extends Server<Env> {
   private accounts: Record<PlayerId, string> = {};
   private aboard: Record<PlayerId, string> = {};
   private tokenSessions: Record<string, string> = {};
+  private language: LobbyLanguage | null = null;
+  private starts: Record<PlayerId, SeatStart> | null = null;
+  private listed = false;
+  private endedAt: number | null = null;
+  /** When to try writing the finished game's entry again (`recordFinished`), and the wait after the next failure. */
+  private listRetryAt: number | null = null;
+  private listRetryMs = LIST_RETRY_MS;
   private inputs = 0;
   private rateLimited: Record<PlayerId, number> = {};
   private clockCycle = 0;
@@ -224,6 +247,12 @@ export class GameRoom extends Server<Env> {
     this.accounts = stored.accounts;
     this.aboard = stored.aboard;
     this.tokenSessions = stored.tokenSessions;
+    this.language = stored.language ?? null;
+    this.starts = stored.starts ?? null;
+    this.listed = stored.listed ?? true;
+    this.endedAt = stored.endedAt ?? null;
+    // A finished game whose entry wasn't written yet: try at once.
+    if (this.game.phase === "ended" && !this.listed) this.listRetryAt = Date.now();
     this.blocked = (await this.ctx.storage.list({ prefix: "blocked:" })).size;
     this.initBots();
     this.scheduleBots();
@@ -241,11 +270,15 @@ export class GameRoom extends Server<Env> {
    * no key, which is every deployment until players bring their own. Called once, over RPC, by the matchmaker.
    * Returns the player's seat token.
    */
-  async setupSinglePlayer(name: string, character: CharacterId): Promise<string> {
+  async setupSinglePlayer(name: string, character: CharacterId, language?: LobbyLanguage, accountId?: string): Promise<string> {
     if (this.game || this.retired) throw new Error("Game already set up");
     const { seats, overrides, forcedRoles } = singlePlayerGame(name, character, crypto.getRandomValues(new Uint32Array(1))[0]!);
     const token = crypto.randomUUID();
     this.singlePlayer = true;
+    this.language = language ?? null;
+    // Only so the finished game is recorded under the account (#155, #332). Single player never boards: no
+    // `account_ships` row, nothing in `aboard`, so it never keeps the account off a multiplayer ship.
+    if (accountId !== undefined) this.accounts[SINGLE_PLAYER_HUMAN] = accountId;
     await this.launch(seats, { [token]: SINGLE_PLAYER_HUMAN }, overrides, forcedRoles);
     return token;
   }
@@ -255,10 +288,12 @@ export class GameRoom extends Server<Env> {
    * pre-selection. Returns the player's seat token, how many are aboard, and when the ship stops taking crew (server
    * ms), or null once it has (full, Mush chosen). Only the first join's setup counts: it is the ship's for good.
    * `account` is the signed-in player's (the matchmaker always gives one; tests may not), and `name` their display name.
+   * `language` is the matchmaker's lobby; the first join's is the ship's.
    */
-  async join(name: string, character: CharacterId, setup: Setup = STANDARD_SETUP, account?: SeatAccount): Promise<JoinResult> {
+  async join(name: string, character: CharacterId, setup: Setup = STANDARD_SETUP, account?: SeatAccount, language?: LobbyLanguage): Promise<JoinResult> {
     // The matchmaker launches a new ship elsewhere.
     if (this.retired) return { ok: false, error: "ship_closed" };
+    if (!this.game && !this.launching) this.language = language ?? null;
     // One launch even if two joins arrive together.
     this.launching ??= this.game ? Promise.resolve() : this.launch([], {}, shipOverrides(setup));
     await this.launching;
@@ -401,6 +436,48 @@ export class GameRoom extends Server<Env> {
     }
   }
 
+  /**
+   * Remembers each seat's role and character the moment the Mush are chosen (at launch when there is no
+   * pre-selection), for the list of finished games: alpha Mush are the ones Mush then (#155). Saved with the input.
+   */
+  private noteStarts(): void {
+    const game = this.game;
+    if (this.starts !== null || !game || game.preselection) return;
+    this.starts = Object.fromEntries(game.players.map((p) => [p.mind, { role: p.role, character: p.character }]));
+  }
+
+  /**
+   * Once the game has ended, writes its entry to the list of finished games in D1 (#155), once. The write isn't
+   * atomic with the room's storage, so it is idempotent; a failure is tried again from the alarm with backoff
+   * (`listRetryAt`), since a finished game takes no more inputs.
+   */
+  private async recordFinished(): Promise<void> {
+    const game = this.game;
+    if (this.listed || game?.phase !== "ended") return;
+    const endedAt = this.endedAt ?? Date.now();
+    try {
+      const setup = await this.ctx.storage.get<GameSetup>("setup");
+      const entry = finishedEntry(game, {
+        roomId: this.name,
+        language: this.language,
+        singlePlayer: this.singlePlayer,
+        startedAt: setup?.launchedAt ?? endedAt,
+        endedAt,
+        rulesVersion: setup?.rulesVersion ?? "",
+        starts: this.starts ?? {},
+        accounts: this.accounts,
+      });
+      if (entry) await gameStoreFor(this.env).recordFinished(entry);
+      this.listed = true;
+      this.listRetryAt = null;
+      await this.persist();
+    } catch (e) {
+      console.warn(`Listing the finished game failed: ${e instanceof Error ? e.message : typeof e}`);
+      this.listRetryAt = Date.now() + this.listRetryMs;
+      this.listRetryMs = Math.min(this.listRetryMs * 2, LIST_RETRY_MAX_MS);
+    }
+  }
+
   /** How full the ship is and when it stops taking crew (null once closed): lets the matchmaker catch up with a dev fill. */
   status(): { aboard: number; seats: number; taken: CharacterId[]; closesAt: number | null } {
     const seats = this.game?.config.preselection?.seats ?? 0;
@@ -438,6 +515,8 @@ export class GameRoom extends Server<Env> {
     };
     this.game = stampEntries(startGame(setup), now);
     this.tokens = tokens;
+    this.listed = false;
+    this.noteStarts();
     await this.ctx.storage.put("setup", setup);
     await this.persist();
     this.initBots();
@@ -556,6 +635,7 @@ export class GameRoom extends Server<Env> {
         }
       }
     }
+    if (this.listRetryAt !== null && this.listRetryAt <= Date.now()) await this.recordFinished();
     await this.scheduleTick();
   }
 
@@ -642,6 +722,8 @@ export class GameRoom extends Server<Env> {
     // One time for the stamps and the record, so a rebuild stamps the same (rebuildGame).
     const now = Date.now();
     this.game = stampEntries(result.state, now);
+    this.noteStarts();
+    if (this.game.phase === "ended") this.endedAt ??= now;
     // The message the chat input posted: the only player message an input makes.
     const chatId = input.type === "chat" ? this.game.chat.find((m) => m.id >= firstChatId && m.from !== null)?.id : undefined;
     const recorded: RecordedInput = { at: now, input, ...(raw !== undefined && { raw }), ...(chatId !== undefined && { chatId }) };
@@ -652,6 +734,7 @@ export class GameRoom extends Server<Env> {
     if (room !== null) this.broadcastViews(room);
     // Saved with the next input; until then a restart only repeats an idempotent write.
     await this.releaseAccounts();
+    await this.recordFinished();
     this.scheduleBots();
     await this.scheduleTick();
     return null;
@@ -661,7 +744,7 @@ export class GameRoom extends Server<Env> {
   private async scheduleTick(): Promise<void> {
     const bar = this.game ? nextDue(this.game) : null;
     const cycle = this.game?.phase === "playing" ? this.nextCycleAt() : null;
-    const due = bar === null ? cycle : cycle === null ? bar : Math.min(bar, cycle);
+    const due = [bar, cycle, this.listRetryAt].reduce<number | null>((a, b) => (a === null ? b : b === null ? a : Math.min(a, b)), null);
     if (due === null) await this.ctx.storage.deleteAlarm();
     else if ((await this.ctx.storage.getAlarm()) !== due) await this.ctx.storage.setAlarm(due);
   }
@@ -818,6 +901,10 @@ export class GameRoom extends Server<Env> {
       accounts: this.accounts,
       aboard: this.aboard,
       tokenSessions: this.tokenSessions,
+      ...(this.language !== null && { language: this.language }),
+      ...(this.starts !== null && { starts: this.starts }),
+      listed: this.listed,
+      ...(this.endedAt !== null && { endedAt: this.endedAt }),
     };
     await this.ctx.storage.put({ ...entries, game: stored });
   }

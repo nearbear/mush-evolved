@@ -7,7 +7,7 @@
 // It also launches single-player games (`GameRoom.setupSinglePlayer`), one new room per request, outside the queue.
 
 import { getServerByName, Server, type Connection, type ConnectionContext, type WSMessage } from "partyserver";
-import { LOBBY_LANGUAGES, type CharacterId, parseMatchmakerMessage, PRESELECTION, STANDARD_SETUP, type MatchmakerClientMessage, type MatchmakerServerMessage } from "@mush2/shared";
+import { LOBBY_LANGUAGES, type CharacterId, type LobbyLanguage, parseMatchmakerMessage, PRESELECTION, STANDARD_SETUP, type MatchmakerClientMessage, type MatchmakerServerMessage } from "@mush2/shared";
 import { accountStoreFor, sha256Hex } from "./accountStore.ts";
 import { sessionCookie } from "./auth.ts";
 import { DEV_FILL_DELAY_MS, DEV_RATE_SCALE, type JoinResult, type SeatAccount } from "./GameRoom.ts";
@@ -199,7 +199,7 @@ export class Matchmaker extends Server<Env> {
       let result: JoinResult;
       try {
         // Every ship has the standard setup until the vote round picks one (#236).
-        result = await room.join(boarder.displayName, msg.character, STANDARD_SETUP, boarder);
+        result = await room.join(boarder.displayName, msg.character, STANDARD_SETUP, boarder, this.name as LobbyLanguage);
       } catch (e) {
         await store.leaveShip(boarder.accountId, roomId, Date.now());
         throw e;
@@ -230,8 +230,11 @@ export class Matchmaker extends Server<Env> {
   private async launchSinglePlayer(connection: Connection<JoinState>, msg: QueueMessage): Promise<void> {
     const roomId = crypto.randomUUID();
     try {
+      // Signed in or not: an account only means the finished game is recorded for its player (#155, #332), so a D1
+      // failure here launches the game without one rather than refusing it.
+      const boarder = await this.boarder(connection).catch(() => null);
       const room = await getServerByName(this.env.GameRoom, roomId);
-      const token = await room.setupSinglePlayer(msg.name, msg.character);
+      const token = await room.setupSinglePlayer(msg.name, msg.character, this.name as LobbyLanguage, boarder?.accountId);
       this.send(connection, { type: "matched", roomId, token });
     } catch (e) {
       console.warn(`Single-player launch failed: ${e instanceof Error ? e.message : typeof e}`);

@@ -1,0 +1,131 @@
+/* The finished games list (GamesPage.tsx). One card per game: its facts in a row (wrapping on phones), then the crew
+   in as many columns as fit, one on a phone. The crew rows match the end screen's (endScreen.css). */
+
+.games-page {
+  max-width: 64rem;
+  box-sizing: border-box;
+  padding: max(1rem, env(safe-area-inset-top)) max(1rem, env(safe-area-inset-right)) max(1rem, env(safe-area-inset-bottom))
+    max(1rem, env(safe-area-inset-left));
+  margin: 0 auto;
+}
+
+.games-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem 1rem;
+  margin-bottom: 1rem;
+}
+.games-header h1 {
+  margin: 0;
+  font-size: 1.4rem;
+}
+.games-nav {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 1rem;
+}
+
+.games-status {
+  color: var(--muted);
+}
+
+.games-list {
+  display: grid;
+  gap: 0.75rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.games-card {
+  padding: 0.75rem;
+  background: var(--panel-fill);
+  border: 1px solid var(--panel-rim);
+  border-radius: var(--panel-radius);
+  box-shadow: 0 2px 6px var(--panel-shadow);
+}
+
+.games-facts {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.25rem 1rem;
+  margin-bottom: 0.5rem;
+  color: var(--muted);
+}
+.games-verdict {
+  flex-basis: 100%;
+  font-weight: bold;
+}
+.games-verdict.mush {
+  color: var(--mush);
+}
+.games-verdict.humans {
+  color: var(--human);
+}
+
+.games-crew {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(17rem, 100%), 1fr));
+  gap: 0.125rem 1rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.games-member {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 0;
+  padding: 0.125rem 0;
+}
+.games-member[data-alive="false"] .games-bust {
+  opacity: 0.5;
+}
+
+.games-bust {
+  flex: none;
+  image-rendering: pixelated;
+}
+
+.games-names {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+}
+.games-character {
+  font-weight: bold;
+}
+.games-player {
+  overflow-wrap: anywhere;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.games-dead {
+  flex: none;
+}
+
+.games-role {
+  flex: none;
+  font-size: 0.85rem;
+  text-align: right;
+}
+.games-role.mush {
+  color: var(--mush);
+}
+.games-role.human {
+  color: var(--human);
+}
+
+.games-paging {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}

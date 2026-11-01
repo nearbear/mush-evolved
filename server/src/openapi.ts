@@ -14,6 +14,8 @@ import type { Context, Env as HonoEnv } from "hono";
 import * as z from "zod";
 import {
   apiSchemas,
+  FinishedGamesResponseSchema,
+  InvalidCursorSchema,
   LogoutResponseSchema,
   MeResponseSchema,
   NameRequestSchema,
@@ -189,6 +191,21 @@ export function apiDocument(version: string, maxBodies: { name: number; setup: n
           responses: {
             "200": jsonResponse("The setup.", SetupLookupResponseSchema),
             "404": jsonResponse("No such setup.", NotFoundSchema),
+            ...rateLimited,
+          },
+        },
+      },
+      "/api/games": {
+        get: {
+          summary: "List finished games",
+          description: "Public. Finished multiplayer games, newest first; single-player games are never listed.",
+          parameters: [
+            param("query", "before", { description: "The `next` cursor of the previous page. Absent for the newest games." }),
+            param("query", "limit", { description: "Games per page, 1 to 20 (default 20)." }),
+          ],
+          responses: {
+            "200": jsonResponse("A page of games.", FinishedGamesResponseSchema),
+            "400": jsonResponse("Not a cursor.", InvalidCursorSchema),
             ...rateLimited,
           },
         },

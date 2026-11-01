@@ -1,13 +1,14 @@
 import { getServerByName, routePartykitRequest } from "partyserver";
 import { accountStoreFor } from "./accountStore.ts";
 import { handleAuth } from "./auth.ts";
+import { gameStoreFor } from "./gameStore.ts";
 import { setupStoreFor } from "./setupStore.ts";
 import { sweepShips } from "./shipSweep.ts";
 
 export { GameRoom } from "./GameRoom.ts";
 export { Matchmaker } from "./Matchmaker.ts";
 
-// /auth/* and /api/* are sign-in, accounts and setups (auth.ts, setupRoutes.ts). /parties/game-room/:id
+// /auth/* and /api/* are sign-in, accounts, setups and finished games (auth.ts, setupRoutes.ts, gameRoutes.ts). /parties/game-room/:id
 // and /parties/matchmaker/:id go to the Durable Objects.
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
@@ -17,7 +18,7 @@ export default {
       const [newest] = await store.ships(accountId);
       if (newest) await (await getServerByName(env.GameRoom, newest.roomId)).revokeSession(sessionKey);
     };
-    const auth = await handleAuth(request, env, { store, setups: setupStoreFor(env), now: Date.now(), revokeSeats });
+    const auth = await handleAuth(request, env, { store, setups: setupStoreFor(env), games: gameStoreFor(env), now: Date.now(), revokeSeats });
     if (auth) return auth;
     return (await routePartykitRequest(request, env)) ?? new Response("Not found", { status: 404 });
   },

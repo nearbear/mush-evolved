@@ -34,7 +34,8 @@ export function EndScreen({ view, open, onOpenChange }: { view: PlayerView; open
   );
 }
 
-function verdictKey(ending: Ending, winner: Winner) {
+/** The sentence for how a game ended; also the finished games list's (games/GamesPage.tsx). */
+export function verdictKey(ending: Ending, winner: Winner) {
   if (ending === "humans_dead") return "gameOver.humansDead";
   if (ending === "ship_destroyed") return "gameOver.shipDestroyed";
   if (ending === "eden") return winner === "mush" ? "gameOver.edenMush" : "gameOver.edenHumans";

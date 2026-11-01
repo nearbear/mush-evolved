@@ -433,6 +433,21 @@
     "nameHidden": "Nombre oculto",
     "results": "Resultados"
   },
+  "games": {
+    "title": "Partidas terminadas",
+    "lobbyLink": "Partidas terminadas",
+    "back": "Volver a las naves",
+    "loading": "Cargando partidas…",
+    "empty": "Todavía no ha terminado ninguna partida.",
+    "error": "No se pudieron cargar las partidas. Inténtalo más tarde.",
+    "retry": "Reintentar",
+    "older": "Partidas anteriores",
+    "newer": "Partidas más recientes",
+    "cycles_one": "{{count}} ciclo",
+    "cycles_many": "{{count}} de ciclos",
+    "cycles_other": "{{count}} ciclos",
+    "game": "Partida terminada el {{date}}"
+  },
   "returnToSol": {
     "desc": "Después de tanto tiempo, quizá sea hora de ver qué pasa en Sol.",
     "confirm": "Esta acción tiene graves consecuencias. ¿Seguro que quieres continuar?",

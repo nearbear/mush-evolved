@@ -9,6 +9,7 @@
 //   POST /api/rename  { name }             at most once a day
 //   GET  /auth/dev?name=<name>             dev sign-in for tooling (#287): `npm run dev` on localhost only
 //   GET  /api/setups, /api/setups/<id>     and POST /api/setups: posted setups (#233), in setupRoutes.ts
+//   GET  /api/games?before=&limit=         finished multiplayer games (#155), in gameRoutes.ts
 //   GET  /api/openapi.json, /api/docs      the OpenAPI document and its docs page (#324), where cheats are on
 //
 // Session, OAuth-state and sign-up cookies each hold a random ID (only the
@@ -32,6 +33,8 @@ import { type NameRequest, parseNameRequest } from "./apiSchemas.ts";
 import { json, type JsonResponse, jsonBody } from "./http.ts";
 import { authorizeUrl, fetchProfile, oauthCredentials, randomToken, usesPkce } from "./oauth.ts";
 import { DOCUMENT_PATH, docsPageRoute, docsWrongMethodRoute, documentRoute } from "./openapi.ts";
+import { listGames } from "./gameRoutes.ts";
+import type { GameStore } from "./gameStore.ts";
 import { allowAuthRequest } from "./rateLimit.ts";
 import type { SetupStore } from "./setupStore.ts";
 import { listSetups, lookupSetup, MAX_SETUP_BODY, postSetup, type SetupRouteDeps } from "./setupRoutes.ts";
@@ -52,6 +55,8 @@ export interface AuthDeps {
   store: AccountStore;
   /** Posted setups (#233), served under /api/setups. */
   setups: SetupStore;
+  /** Finished games (#155), served under /api/games. */
+  games: GameStore;
   now: number;
   /** For the provider requests; tests replace it. */
   fetcher?: typeof fetch;
@@ -293,6 +298,8 @@ export const api = new Hono<{ Bindings: ApiBindings }>()
   // The raw segment, not c.req.param("id"): lookupSetup decodes it itself and refuses an encoded "/".
   .get("/api/setups/:id", (c) => lookupSetup(new URL(c.req.url).pathname.slice("/api/setups/".length), setupDeps(c.req.raw, c.env)))
   .all("/api/setups/:id", methodNotAllowed)
+  .get("/api/games", (c) => listGames({ before: c.req.query("before"), limit: c.req.query("limit") }, c.env.deps.games))
+  .all("/api/games", methodNotAllowed)
   // The OpenAPI document and its docs page (openapi.ts): where cheats are on, else 404 like any unknown path, whatever the method.
   .get(DOCUMENT_PATH, (c) => documentRoute(c.env.env, { name: MAX_BODY, setup: MAX_SETUP_BODY }))
   .all(DOCUMENT_PATH, (c) => docsWrongMethodRoute(c.env.env))

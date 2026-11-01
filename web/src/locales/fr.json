@@ -433,6 +433,21 @@
     "nameHidden": "Nom masqué",
     "results": "Résultats"
   },
+  "games": {
+    "title": "Parties terminées",
+    "lobbyLink": "Parties terminées",
+    "back": "Retour aux vaisseaux",
+    "loading": "Chargement des parties…",
+    "empty": "Aucune partie n'est encore terminée.",
+    "error": "Impossible de charger les parties. Réessayez plus tard.",
+    "retry": "Réessayer",
+    "older": "Parties plus anciennes",
+    "newer": "Parties plus récentes",
+    "cycles_one": "{{count}} cycle",
+    "cycles_many": "{{count}} de cycles",
+    "cycles_other": "{{count}} cycles",
+    "game": "Partie terminée le {{date}}"
+  },
   "returnToSol": {
     "desc": "Après tout ce temps, peut-être serait-il temps de voir ce qu'il se passe sur Sol.",
     "confirm": "Cette action est lourde de conséquences. Êtes-vous sûr de vouloir continuer ?",

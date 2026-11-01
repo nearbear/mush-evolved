@@ -11,7 +11,10 @@
 
 import {
   AUTH_PROVIDERS,
+  CHARACTERS,
+  type CharacterId,
   CYCLE_HOURS,
+  type FinishedGamesResponse,
   LOBBY_LANGUAGES,
   MAX_NAME_LENGTH,
   MAX_PRESELECTION_DAYS,
@@ -203,6 +206,45 @@ export const PostSetupResponseSchema = named(
   ]),
 );
 
+// ---- Finished games (shared/src/finishedGames.ts)
+
+const RoleSchema = z.enum(["human", "mush"]);
+const CharacterIdSchema = named("CharacterId", "A character.", z.enum(CHARACTERS.map((c) => c.id) as [CharacterId, ...CharacterId[]]));
+
+const FinishedGameSchema = named(
+  "FinishedGame",
+  "A finished multiplayer game. `id` is its room's. Times are Unix ms; `cycles` counts from launch.",
+  z.object({
+    id: z.string(),
+    language: LobbyLanguageSchema.nullable(),
+    startedAt: z.int(),
+    endedAt: z.int(),
+    cycles: z.int(),
+    winner: z.enum(["mush", "humans"]),
+    ending: z.enum(["sol", "eden", "humans_dead", "ship_destroyed"]),
+    crew: z.array(
+      z.object({
+        seat: z.string().meta({ description: "The player's seat; a Transfer moves a player to another character, not another seat." }),
+        name: z.string().nullable().meta({ description: "The player's name at the time of the game; null if it fails today's name moderation." }),
+        isBot: z.boolean(),
+        startCharacter: CharacterIdSchema,
+        endCharacter: CharacterIdSchema,
+        startRole: RoleSchema.meta({ description: "When the Mush were chosen: `mush` is an alpha Mush." }),
+        endRole: RoleSchema.meta({ description: "At the end: `mush` after a `human` start is a beta Mush." }),
+        alive: z.boolean(),
+      }),
+    ),
+  }),
+);
+
+export const FinishedGamesResponseSchema = named(
+  "FinishedGamesResponse",
+  "Finished multiplayer games, newest first. `next` is the cursor for the page of older games (`before`), or null on the last page.",
+  z.object({ games: z.array(FinishedGameSchema), next: z.string().nullable() }),
+);
+
+export const InvalidCursorSchema = named("InvalidCursor", "A `before` cursor that isn't one from `next`.", z.object({ error: z.literal("invalid_cursor") }));
+
 // ---- Errors any route may answer
 
 export const RateLimitedSchema = named(
@@ -228,4 +270,5 @@ export type SchemasMatchShared = [
   Expect<Same<z.infer<typeof SetupLookupResponseSchema>, SetupLookupResponse>>,
   Expect<Same<z.infer<typeof PostSetupRequestSchema>, PostSetupRequest>>,
   Expect<Same<z.infer<typeof PostSetupResponseSchema>, PostSetupResponse>>,
+  Expect<Same<z.infer<typeof FinishedGamesResponseSchema>, FinishedGamesResponse>>,
 ];

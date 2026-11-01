@@ -429,6 +429,20 @@
     "nameHidden": "Name hidden",
     "results": "Results"
   },
+  "games": {
+    "title": "Finished games",
+    "lobbyLink": "Finished games",
+    "back": "Back to the ships",
+    "loading": "Loading games…",
+    "empty": "No game has ended yet.",
+    "error": "The games couldn't be loaded. Try again later.",
+    "retry": "Try again",
+    "older": "Older games",
+    "newer": "Newer games",
+    "cycles_one": "{{count}} cycle",
+    "cycles_other": "{{count}} cycles",
+    "game": "Game that ended {{date}}"
+  },
   "returnToSol": {
     "desc": "After all this time, maybe it's time to see what's happening on Sol.",
     "confirm": "This action has heavy consequences. Are you sure you want to continue?",

@@ -536,6 +536,13 @@ button.pod-skill:focus-visible {
   gap: 0.5rem;
 }
 
+/* Under the ships: the finished games list (#155). */
+.pod-games-link {
+  display: block;
+  margin-top: 0.75rem;
+  text-align: center;
+}
+
 /* Dev servers only: links to the ship map editor and the design kit. */
 .pod-devlinks {
   position: fixed;

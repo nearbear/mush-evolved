@@ -326,6 +326,9 @@ export function Lobby({ onMatched }: { onMatched: (ticket: SeatTicket) => void }
                 </button>
               </li>
             </ul>
+            <a className="pod-games-link" href="/games">
+              {t("games.lobbyLink")}
+            </a>
           </div>
         </div>
         </section>
