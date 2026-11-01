@@ -1,0 +1,49 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Debug Current Vitest File",
+      "type": "node",
+      "request": "launch",
+      "autoAttachChildProcesses": true,
+      "skipFiles": ["<node_internals>/**"],
+      "program": "${workspaceFolder}/node_modules/vitest/vitest.mjs",
+      "args": ["run", "${relativeFile}"],
+      "smartStep": true,
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "Attach to Wrangler Server (workerd)",
+      "type": "node",
+      "request": "attach",
+      "port": 9229,
+      "address": "localhost",
+      "restart": true,
+      "sourceMaps": true,
+      "outFiles": ["${workspaceFolder}/server/dist/**/*.js"]
+    },
+    {
+      "name": "Launch Web (Desktop Chrome)",
+      "type": "chrome",
+      "request": "launch",
+      "url": "http://localhost:5173",
+      "webRoot": "${workspaceFolder}/web",
+      "sourceMaps": true
+    },
+    {
+      "name": "Launch Web (Mobile Chrome - 390x844)",
+      "type": "chrome",
+      "request": "launch",
+      "url": "http://localhost:5173",
+      "webRoot": "${workspaceFolder}/web",
+      "sourceMaps": true,
+      "runtimeArgs": ["--window-size=390,844"]
+    }
+  ],
+  "compounds": [
+    {
+      "name": "Full Stack Debug (Attach Server + Chrome)",
+      "configurations": ["Attach to Wrangler Server (workerd)", "Launch Web (Desktop Chrome)"]
+    }
+  ]
+}

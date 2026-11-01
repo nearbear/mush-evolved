@@ -1,0 +1,10 @@
+{
+  "recommendations": [
+    "biomejs.biome",
+    "vitest.explorer",
+    "DavidAnson.vscode-markdownlint",
+    "ms-vscode-remote.remote-wsl",
+    "cloudflare.cloudflare-workers",
+    "ms-playwright.playwright"
+  ]
+}

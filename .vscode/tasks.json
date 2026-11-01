@@ -1,0 +1,101 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "dev: start servers",
+      "type": "npm",
+      "script": "dev",
+      "isBackground": true,
+      "problemMatcher": {
+        "owner": "custom",
+        "pattern": {
+          "regexp": "^$"
+        },
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": "dev: web http://localhost",
+          "endsPattern": "Ready in"
+        }
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated"
+      }
+    },
+    {
+      "label": "verify (full check)",
+      "type": "npm",
+      "script": "verify",
+      "group": {
+        "kind": "test",
+        "isDefault": true
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      },
+      "detail": "Runs tools/src/dev/verify.ts (typecheck, lint, test in one pass)"
+    },
+    {
+      "label": "test: current file",
+      "type": "shell",
+      "command": "npx vitest run ${relativeFile}",
+      "group": "test",
+      "presentation": {
+        "reveal": "always"
+      }
+    },
+    {
+      "label": "typecheck",
+      "type": "npm",
+      "script": "typecheck",
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "problemMatcher": "$tsc"
+    },
+    {
+      "label": "lint",
+      "type": "npm",
+      "script": "lint",
+      "presentation": {
+        "reveal": "always"
+      }
+    },
+    {
+      "label": "lint:md",
+      "type": "npm",
+      "script": "lint:md",
+      "presentation": {
+        "reveal": "always"
+      }
+    },
+    {
+      "label": "screenshot",
+      "type": "npm",
+      "script": "screenshot",
+      "presentation": {
+        "reveal": "always"
+      },
+      "detail": "Captures desktop and 360px mobile view to .screenshots/ (requires npm run dev running)"
+    },
+    {
+      "label": "a11y check",
+      "type": "npm",
+      "script": "a11y",
+      "presentation": {
+        "reveal": "always"
+      },
+      "detail": "Runs headless accessibility check (requires npm run dev running)"
+    },
+    {
+      "label": "ship-check",
+      "type": "npm",
+      "script": "ship-check",
+      "presentation": {
+        "reveal": "always"
+      }
+    }
+  ]
+}
