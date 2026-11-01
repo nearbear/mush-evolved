@@ -12,5 +12,5 @@ Feature designs, one per file. Each plan's own header is the authority on its st
 | `research-sabotage.md` | Research samples, assays and sabotage (#311 part B) | Built 2026-10-31 |
 | `on-call.md` | Channel plans and on-call summons (epic #317) | `shared` built (#313); server, UI, bots not |
 | `expedition.md` | Expeditions | Phase 1 decided 2026-10-31; not built |
-| `bot-goals.md` | Single-player bot goals | First pass accepted 2026-10-25; not built |
+| `bot-goals.md` | Single-player bot goals and model-only coordination in chat | First pass accepted 2026-10-25, coordination revised 2026-11-01; not built |
 | `action-plans.md` | Scheduled action plans (#44) | Superseded 2026-10-30 by `relay-tokens.md` and `on-call.md`; kept for history |

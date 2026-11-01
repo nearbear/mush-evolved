@@ -1885,6 +1885,16 @@ The user asked Claude to review four days of session transcripts (165 sessions) 
 - Added i18n keys for en, fr, and es (`lobby.resume`, `lobby.resumeNote`, `lobby.notAboard`, and adjusted `errors.already_aboard`).
 - Expanded `tools/tests/lobby/lobby.test.ts` to test the aboard state and resume button transitions across desktop and phone viewports for en, fr, and es, confirming panel bounding box stability.
 
+### 2026-10-31: Fix race conditions in lobby aboard layout test (#320)
+
+- Fixed two race conditions in `tools/tests/lobby/lobby.test.ts` (`openAboardLobby`):
+  1. `openAboardLobby` waited only for `.pod-ship` to appear. Because multiplayer ship buttons are `.pod-ship` and render immediately before `/api/me` resolves, `openAboardLobby` could return before the aboard state rendered, leading to either measuring the panel with 4 ships rather than 2 or failing the `ships.count() === 2` assertion. Added a wait for `.account-button` so the signed-in aboard state is guaranteed rendered before measuring.
+  2. The fake matchmaker immediately answered `resume` with `matched`. In `Lobby.tsx`, `matched` begins a 600ms fade timer (`SLEEP_MS`) after which `Lobby` unmounts into `GameScreen`, causing `panel.boundingBox()` to evaluate to `null` if the test took >600ms. Since the test checks stability in the waiting state (`.pod-status.loading`), keeping the fake matchmaker quiet leaves the panel in the connecting state without unmounting it.
+
+## 2026-10-31: Ambient animations for MidFill/MidFill2 equipment
+
+Owner asked to use the animations in `MidFill.png`/`MidFill2.png` (e.g. the gravity simulator). The ambient-loop path (`AMBIENT_SLICES`, `scene.ts`) already played the reactors; a throwaway `readShip` script listed every MidFill slice with an `auto` anim in `tiles.xml` and which rooms place it. Added the eleven placed ones (gravity simulator, surgery console, NERON core, BIOS, four tanks, bridge LEDs and astro console, antenna, human tank); all sit at frame 0, so `frameAt` from the tile is correct. Skipped the `_upgrade` looks and `server_active` (not placed, nothing in the view to switch them on). Open: the animations play whether or not the equipment is broken; the original's behaviour there wasn't checked.
+
 ## 2026-10-31: Continuous deployment to test (#121)
 
 - Added a `deploy-test` job to `.github/workflows/ci.yml` that runs `npm run deploy:test` after `check` passes on `main` (this repo only, not forks), using a `test` GitHub environment holding `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID`. Production and staging stay manual.
@@ -1892,6 +1902,15 @@ The user asked Claude to review four days of session transcripts (165 sessions) 
 - Reused the existing deploy script instead of reusing the check job's build output, so CI and hand deploys are the same command. New doc: `docs/ops/deploy.md` (setup steps for the token and secrets).
 - Correction (same day): the owner questioned deploying every push. Checked: a changed `RULES_VERSION` doesn't touch running games (it's stamped at launch, display only), but each deploy restarts every game room and a `STATE_VERSION` bump (94 of October's ~710 commits) retires every running game, so auto-deploying would cut testers off several times a day. Changed to a manual trigger: `workflow_dispatch` with a `deploy_test` input; the deploy still waits for `check`. The check's concurrency group now includes the event name so a push can't cancel a manual run's checks and skip its deploy. Lesson: before automating deploys, check what a deploy does to live state, not just how to run it.
 
-## 2026-10-31: Ambient animations for MidFill/MidFill2 equipment
+## 2026-11-01: Bot coordination moves from plans to model chat (#316, #223)
 
-Owner asked to use the animations in `MidFill.png`/`MidFill2.png` (e.g. the gravity simulator). The ambient-loop path (`AMBIENT_SLICES`, `scene.ts`) already played the reactors; a throwaway `readShip` script listed every MidFill slice with an `auto` anim in `tiles.xml` and which rooms place it. Added the eleven placed ones (gravity simulator, surgery console, NERON core, BIOS, four tanks, bridge LEDs and astro console, antenna, human tank); all sit at frame 0, so `frameAt` from the tile is correct. Skipped the `_upgrade` looks and `server_active` (not placed, nothing in the view to switch them on). Open: the animations play whether or not the equipment is broken; the original's behaviour there wasn't checked.
+Asked to plan #316 (bots claim, walk and post in channel plans). Claude found the plan depended on the bot goal system in `bot-goals.md`, which isn't built at all: `bots.ts` has only WanderBot, ModelBot and LogParrotBot. It first proposed splitting off a goal skeleton and a scripted claim filter, plus bots posting `heal: me` plans. The owner questioned whether bots need plans at all, and the design narrowed over several rounds:
+
+- **Plans only for rosters and summons.** Asking for healing is a global chat message.
+- **Natural-language chat** replaces the keyed line catalog.
+- **No structured intents.** Claude proposed a generic intent vocabulary (ask, offer, takeOver, accept, with reasons). The owner pointed out that the reasons to take over a claim are endless, and models can just read each other.
+- **No restating or confirming** plain messages. The owner rejected Claude's restate-to-confirm idea: only ask when a message is unclear.
+- **Models only, no scripted fallback** for coordination. The owner will judge the cost.
+- **Every message wakes every bot**, with a reply-chain depth limit (3).
+
+What worked: checking the code before planning exposed the missing dependency early. Explaining the cost per message (8 bots, one call each, since views can't be shared) and the cascade risk led to the depth limit. What needed correction: Claude kept adding structure for scripted bots (keyed lines, intents, tagging buttons, a restating step) that the owner's model-first direction made unnecessary. Rewrote `bot-goals.md`, updated `on-call.md` and the plans index, rescoped #316 and commented the decisions on #223.

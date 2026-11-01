@@ -4,7 +4,7 @@ A **plan** is a private channel's shared to-do list: a room, a purpose and a set
 
 ## The problem
 
-Some actions need people in one room at once (expeditions once they exist, speeches, STT, healing, a future mealtime), so players stand in the Icarus Bay or the refectory waiting instead of lying in bed gaining AP, and move only when everyone is there. Bots have a different problem: they need shared goals and a way to split them. One structure serves both: the plan card is the protocol, and the summons removes the waiting.
+Some actions need people in one room at once (expeditions once they exist, speeches, STT, healing, a future mealtime), so players stand in the Icarus Bay or the refectory waiting instead of lying in bed gaining AP, and move only when everyone is there. For players, the plan card is the protocol and the summons removes the waiting. Bots use plans only for this kind of structured roster; they split other work in chat (owner, 2026-11-01; see Bots).
 
 The rule that keeps the executor tiny: **the person who will act summons the people they act on or with.** The expedition leader summons the crew, the chef the diners, the medic the patients, the speaker the audience, one STT partner the other. The summoner is online; the summoned need not be. The summoned never perform an action; what needs an absent player to act (bringing an item) is a promise, not an execution.
 
@@ -27,7 +27,7 @@ Carried over from `docs/plans/action-plans.md` (owner, 2026-10-13 and 2026-10-26
 - **The queue is cleared first.** A summoned holder's live timed actions (`current` and `queue`) are dropped before the walk, each with the existing `actionDropped` private line.
 - **Body ids.** Plans store `PlayerState.id`, so a Mush body transfer carries claims with the body. Private channel membership is not role-bound, so nothing else changes (the Mush-channel rule of the old design has no counterpart).
 - **No patrol craft rooms** (owner, 2026-10-27): they have no doors; `postPlan` refuses them.
-- **Bots may post plans** (owner, 2026-10-28) when they are a channel's creator.
+- ~~**Bots may post plans** (owner, 2026-10-28) when they are a channel's creator.~~ Superseded 2026-11-01: bots post no plans for now (see Bots).
 
 ## Decisions (owner, 2026-10-30, second pass: Claude's proposals confirmed)
 
@@ -41,7 +41,7 @@ Carried over from `docs/plans/action-plans.md` (owner, 2026-10-13 and 2026-10-26
 - **Tasks are promises, never executed.** Promises can be broken. Any member may claim any task, whether or not they can actually do it: the card is a promise board, and a task nobody can do just goes unclaimed. Initial task catalog: research (which), project (which), repair PILGRED, heal (whom), comfort (whom), STT (whom), fiery speech, boring speech, bring (an item type, to the plan's room). Targets are living players; the composer offers members first.
 - **Limits** (`config.plans`): slots per plan 12, finished plans kept per channel 1.
 - **Claims are untimed registry actions** (`claim_slot`, `withdraw_slot`, `mark_done`, `summon`, `cancel_plan`; 0 AP, like `ready`), so their candidates come from `candidates`, parse and legality are free, `view.actions` lists them, and scripted and model bots use them like any action. Posting stays a chat-like message, since a draft can't be enumerated.
-- **Bots post in their own channels.** A bot that needs a plan creates its own private channel (the limit is 3 per player) and invites whom it wants, exactly as a human would; no bot posts on another's behalf. `docs/plans/bot-goals.md`'s single crew channel changes accordingly in the bot step.
+- ~~**Bots post in their own channels.**~~ Superseded 2026-11-01: bots post no plans for now, so they create no channels for them (see Bots).
 - **A dead target voids only its slot.** When the target of a task (heal, comfort, STT) dies, that slot is struck out on the card as "target died" (it can't be claimed, withdrawn or ticked); the rest of the plan and its summons carry on.
 - **Slots per player:** at most one on-call slot per plan, and any number of task slots. The author may claim tasks in their own plan but no on-call slot (they walk themselves).
 - **Done ticks are visible to all members.** An undone task at expiry or cancellation stays unticked, with no extra marker.
@@ -111,11 +111,15 @@ Everything the composer offers comes from the view: channel members, the room li
 - **Card:** purpose, room, author; one line per slot with Claim, or the holder's name and, for your own, Withdraw (and Done for tasks). The author sees Cancel, and Go while standing in the room, greyed with "go to the room to call" otherwise. After Go, on-call slots show arrived or didn't; your own shows why in the room log's private line. "Expires end of day N" in the header.
 - Phone layout first, en/fr/es, no raw keys (`npm run a11y`).
 
-### Bots
+### Bots (owner, 2026-11-01)
 
-- Scripted bots claim on-call slots whose room `shortestPath` reaches from where they are with their MP plus the AP reserve, and task slots they can plausibly do (a research they can afford; heal if they have a medikit; bring if they carry or can find the item). They walk when summoned like anyone, and do their task slots as goals (`docs/plans/bot-goals.md`), ticking Done when the goal finishes.
-- A bot that created a channel may post: `askForHealing` becomes a plan with a `heal: me` task slot; `startRelay` goes away (pooled contributions make it unnecessary); an expedition goal, later, is an on-call plan the bot calls once it reaches the Icarus Bay.
-- Bots treat plan data as structured and nothing else: there is no free text in a plan to inject through. Channel names are quoted and escaped in prompts as today.
+Plans are for structured coordination: a fixed roster and a summons (an expedition crew, diners, an audience). Everything else bots coordinate in natural-language chat (`docs/plans/bot-goals.md`, "Coordination").
+
+- **Model bots only.** Claiming, withdrawing and ticking Done are done by model bots, with no scripted fallback: the model reads the plan in its prompt and picks `claim_slot`, `withdraw_slot` or `mark_done` from its actions, with no scripted claim filter. A bot without a key ignores plans. If it holds no slot, a summons never involves it.
+- **The prompt shows plans as structured data** (purpose, room, author, each slot's kind, task, target, holder, reservation, done, struck), and labels the slot actions in words. There is no free text in a plan to inject through; channel names are quoted and escaped as today.
+- **Walk when summoned like anyone.** The game walks the body; the bot notices where it now is and its goal re-paths or fails. The prompt reminds it of its on-call slots so it can keep the MP to get there.
+- **Claimed tasks become goals** (`doSlot` in bot-goals.md): go, do it, tick Done. At the end of its cycle a bot withdraws from slots it can no longer reach or do.
+- **Bots post no plans for now.** Asking for healing is a message in global chat, not a `heal: me` plan; `startRelay` is gone (pooled contributions). A bot may post again when a goal needs a roster and a summons, such as an expedition once expeditions exist.
 
 ## Mush angle
 
@@ -144,7 +148,7 @@ Everything the composer offers comes from the view: channel members, the room li
 2. **Plans in `shared`** (#313; built 2026-10-31): types, `postPlan`, the five registry actions, the walk, cleanup and expiry, `viewFor`, rules and leak tests. As built: `postPlan` is a function, not yet an `Input` (step 3 adds the message and the `applyInput` case); the walk calls `performAction` through a binding `rules.ts` sets (`bindPerformAction`), since `actions/summon.ts` can't import it without an import cycle, so a ready holder is still walked; a task slot's strike is stored (`struck`), set by `strikeSlots` after every action, cycle and death; each channel stores its open plan plus `finishedKept` finished ones (the UI decides which to show); the five actions stay out of the action history, like `ready`. After a code review: plans follow the channel's iTrackie rule (`plansView` filters by `readChannels`; posting and the slot actions need `chatChannels`), and `postPlan` refuses a reservation the claim rules would refuse to its own player (an on-call slot for the author, a second on-call slot for the same player, an STT or Comfort for its target).
 3. **Protocol and server** (#314; built 2026-10-31): the `postPlan` message, `GameRoom` handling, `STATE_VERSION`. As built: the message is `{ type: "postPlan", plan: PlanDraft }`, rebuilt by `parsePlanDraft` (in `plans.ts`, called from `protocol.ts`) with known keys only at every level (generous wire bounds: 64 slots, ids up to 64 characters; the rules check the real limits and that ids exist); `applyInput` calls `postPlan`; `GameRoom.social` takes it under the per-seat chat rate limit and, having no free text, sends it to the rules without moderation. No `STATE_VERSION` bump: step 2 already bumped it for the plan state, and a new input type changes no stored shape (old records hold no `postPlan`).
 4. **UI:** card, composer, phone layout, en/fr/es.
-5. **Bots:** claiming, task goals, bot-authored plans; update `docs/plans/bot-goals.md`, whose "plans first" and `startRelay` entries assume the old design.
+5. **Bots** (#316): model bots claim, are walked when summoned, do their claimed tasks and tick Done; no bot-authored plans (owner, 2026-11-01). Needs bot-goals.md build steps 1–3 first (goals, model goal choice, model chat). `docs/plans/bot-goals.md` was rewritten for this on 2026-11-01.
 
 ## Deferred
 
