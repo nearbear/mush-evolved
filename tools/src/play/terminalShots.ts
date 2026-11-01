@@ -65,6 +65,7 @@ async function run(phone: boolean, character: number) {
     await devSignIn(page, url, runName(phone ? "Terminals (phone)" : "Terminals"));
     await page.getByRole("button", { name: /English/ }).click();
     await page.locator(".pod-character").nth(character).click();
+    await page.locator(".pod-board").click();
     await page.locator(".three-panel").waitFor({ timeout: 45_000 });
     await waitForArt(page);
     const prefix = phone ? "m-term" : "term";

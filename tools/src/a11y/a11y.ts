@@ -75,6 +75,7 @@ async function main(): Promise<number> {
     await check("picker: license footer is last in the Tab order", () => noFooterStops(page));
 
     await tile.click();
+    await page.locator(".pod-board").click();
     await page.locator(".three-panel").waitFor({ timeout: MATCH_TIMEOUT_MS });
     await waitForArt(page);
     await page.locator(".wake").waitFor({ state: "detached" });

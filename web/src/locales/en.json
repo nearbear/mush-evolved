@@ -131,6 +131,15 @@
     "tagline": "Cryo sleep. Pick a ship to wake aboard.",
     "pickCharacter": "Pick your crew member.",
     "characterTaken": "Someone else just took that crew member. Pick another.",
+    "difficulty": {
+      "easy": "Easy",
+      "medium": "Medium",
+      "hard": "Hard"
+    },
+    "difficultyLabel": "Difficulty: {{level}}",
+    "taken": "Taken",
+    "characterSkills": "Skills",
+    "board": "Board ship",
     "waiting": "Boarding: {{waiting}}/{{seats}} aboard.",
     "awaitingCrew": "Awaiting crew",
     "nearlyFull": "Nearly full",

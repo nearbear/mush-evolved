@@ -48,7 +48,9 @@ body:has(.pod) {
   box-sizing: border-box;
   width: min(53.5rem, 100%);
   /* Never the full screen height: the sticker under the window needs room. */
-  min-height: min(41.5rem, calc(100dvh - 12rem));
+  min-height: min(41.5rem, calc(100dvh - 18rem));
+  /* Room for the sticker (4.5rem under the window) and the credits under it, also when the page scrolls. */
+  margin-bottom: 6rem;
   padding: 4.25rem 2.75rem;
   display: flex;
   flex-direction: column;
@@ -147,9 +149,13 @@ body:has(.pod) {
 @media (max-width: 1023px) {
   .pod-window {
     padding-inline: 1.25rem;
-    /* Taller than on desktop, nudged up so the sticker's room is all below the window. */
-    min-height: calc(100dvh - 10rem);
-    margin-bottom: 3rem;
+    /*
+     * Taller than on desktop, nudged up so the sticker's room is all below the window. The margin
+     * plus the pod's padding clears the sticker (4.5rem under the window) and the credits under it,
+     * even when the panel is taller than the screen and the page scrolls.
+     */
+    min-height: calc(100dvh - 14rem);
+    margin-bottom: 7rem;
   }
   .pod-panel {
     padding-inline: 0.75rem;
@@ -168,88 +174,235 @@ body:has(.pod) {
   }
 }
 /*
- * Character picker: one row of portraits, alphabetical, scrolled sideways (Base UI ScrollArea).
- * Tiles have a fixed width so the row scrolls rather than squeezing; the profession wraps.
+ * Character picker (CharacterPicker.tsx): three tiers by difficulty, each a row of standing sprites on
+ * podiums (design/figure.png), then a detail pane for the selected one with the Board button.
+ * Six columns in every tier so the tiers line up; sprites at 2x on desktop, 1x on phones (whole pixels only).
  */
-.pod-roster {
-  position: relative;
-  /* Room for the scrollbar under the row. */
-  padding-bottom: 0.6rem;
+.pod-picker {
+  --figure-zoom: 2;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
 }
-.pod-roster-viewport {
-  overscroll-behavior-x: contain;
-  scroll-snap-type: x proximity;
+.pod-tiers {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+.pod-tier-heading {
+  margin: 0 0 0.15rem;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.75rem;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #fff;
+}
+.pod-pips {
+  display: inline-flex;
+  gap: 2px;
+}
+.pod-pip {
+  width: 0.45rem;
+  height: 0.45rem;
+  border-radius: 50%;
+  border: 1px solid rgb(255 255 255 / 0.6);
+  box-sizing: border-box;
+}
+.pod-pip-on {
+  background: var(--mush);
+  border-color: var(--mush);
 }
 .pod-characters {
   list-style: none;
   margin: 0;
   padding: 0;
-  display: flex;
-  gap: 0.5rem;
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 0.25rem;
 }
-.pod-characters > li {
-  flex: none;
-  scroll-snap-align: start;
-}
+/* A tile, not a plain button, so it replaces the Mush button background (like tabs). */
 .pod-character {
+  position: relative;
   box-sizing: border-box;
-  width: 7rem;
-  height: 100%;
+  width: 100%;
+  height: auto;
   margin: 0;
-  padding: 0.3rem 0.3rem 0.4rem;
+  padding: 0.2rem 0 0.25rem;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.15rem;
-  border: 1px solid rgb(255 255 255 / 0.15);
   border-radius: 0.25rem;
-  background: rgb(255 255 255 / 0.05);
+  background: none;
   line-height: 1.15;
   text-align: center;
 }
-.pod-character:hover,
+@media (hover: hover) {
+  .pod-character:hover:not(:disabled) {
+    background: rgb(255 255 255 / 0.08);
+  }
+}
 .pod-character:focus-visible {
-  border-color: var(--mush);
-  background: rgb(255 255 255 / 0.12);
+  outline: 2px solid var(--mush);
+  outline-offset: -2px;
+}
+.pod-character[aria-pressed="true"] {
+  background: rgb(255 76 132 / 0.18);
+  box-shadow: inset 0 0 0 1px var(--mush);
 }
 /* Someone aboard already has this character. */
 .pod-character:disabled {
-  opacity: 0.35;
-  filter: grayscale(1);
   cursor: not-allowed;
 }
-.pod-character:disabled:hover {
-  border-color: rgb(255 255 255 / 0.15);
-  background: rgb(255 255 255 / 0.05);
+.pod-character:disabled .pod-figure,
+.pod-character:disabled .pod-character-name {
+  opacity: 0.35;
+  filter: grayscale(1);
 }
-/* The portraits are 210x300; shown whole, at about half size. */
-.pod-character img {
-  display: block;
-  width: 100%;
-  aspect-ratio: 7 / 10;
-  margin-bottom: 0.2rem;
+.pod-character-taken {
+  position: absolute;
+  top: 40%;
+  left: 50%;
+  translate: -50% -50%;
+  padding: 0 0.25rem;
   border-radius: 0.15rem;
+  background: rgb(0 0 0 / 0.7);
+  font-size: 0.6rem;
+  font-weight: bold;
+  text-transform: uppercase;
 }
+/* The figure at 1x: the 39x21 podium with the 32x48 standing frame's feet on its top face. */
+/* Laid out in source pixels and scaled whole with `zoom`, which scales offsets and backgrounds too. */
+.pod-figure {
+  position: relative;
+  display: block;
+  width: 39px;
+  height: 60px;
+  zoom: var(--figure-zoom);
+  image-rendering: pixelated;
+}
+.pod-podium {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 39px;
+  height: 21px;
+  background: url("../../../Mush/www/img/design/figure.png") no-repeat;
+}
+.pod-sprite {
+  position: absolute;
+  left: 4px;
+  bottom: 10px;
+}
+/* Given names are never translated, so one line is safe; the longest may spill into the gap on phones. */
 .pod-character-name {
-  font-size: 0.8rem;
+  margin-top: 0.1rem;
+  font-size: 0.75rem;
   font-weight: bold;
   color: #fff;
+  white-space: nowrap;
 }
-.pod-character-profession {
-  font-size: 0.65rem;
-  color: #fff;
+/* The selected crew member: portrait, who they are, difficulty, skills, and the button that boards. */
+.pod-detail {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-areas:
+    "portrait text"
+    "portrait board";
+  column-gap: 0.75rem;
+  row-gap: 0.4rem;
+  padding: 0.5rem;
+  border-radius: 0.25rem;
+  background: rgb(255 255 255 / 0.05);
 }
-.pod-roster-bar {
-  height: 6px;
+/* The portraits are 210x300, at a third of their size. */
+.pod-detail-portrait {
+  grid-area: portrait;
+  width: 70px;
+  height: 100px;
+  border-radius: 0.15rem;
+}
+.pod-detail-texts {
+  grid-area: text;
+  min-width: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+}
+.pod-detail-text {
+  grid-area: 1 / 1;
+  min-width: 0;
   display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
 }
-.pod-roster-thumb {
-  height: 100%;
-  border-radius: 3px;
-  background: rgb(255 255 255 / 0.3);
+.pod-detail-text[inert] {
+  visibility: hidden;
 }
-.pod-roster-thumb:hover {
-  background: rgb(255 255 255 / 0.5);
+.pod-detail-text p {
+  margin: 0;
+}
+.pod-detail-name {
+  font-weight: bold;
+}
+.pod-detail-profession {
+  font-size: 0.75rem;
+  opacity: 0.85;
+}
+.pod-detail-difficulty {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.75rem;
+}
+.pod-detail-skills {
+  list-style: none;
+  margin: 0.15rem 0 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.2rem 0.6rem;
+  font-size: 0.7rem;
+}
+.pod-detail-skills li {
+  display: flex;
+  align-items: center;
+  gap: 0.2rem;
+}
+.pod-detail-skills img {
+  width: 16px;
+  height: 16px;
+}
+.pod-board {
+  grid-area: board;
+  justify-self: end;
+  align-self: end;
+  margin: 0;
+}
+@media (max-width: 1023px) {
+  .pod-picker {
+    --figure-zoom: 1;
+  }
+  .pod-characters {
+    gap: 0.15rem;
+  }
+  .pod-character-name {
+    font-size: 0.6rem;
+    letter-spacing: -0.02em;
+  }
+  .pod-detail-portrait {
+    display: none;
+  }
+  .pod-detail {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      "text"
+      "board";
+  }
+  .pod-board {
+    justify-self: stretch;
+  }
 }
 .pod-ship-crew {
   /* Stay in the last column even when the note is hidden, flush right. */

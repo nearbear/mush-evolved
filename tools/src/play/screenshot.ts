@@ -139,6 +139,7 @@ async function join(page: Page, name: string, pickerShot: string, character: num
   await tile.waitFor();
   await page.screenshot({ path: resolve(args.out!, `${pickerShot}.png`), fullPage: true });
   await tile.click();
+  await page.locator(".pod-board").click();
   await page.locator(".three-panel").waitFor({ timeout: MATCH_TIMEOUT_MS });
   await waitForArt(page);
   // The cryo wake-up intro (up to 3 s) plays over the game on joining and would cover the early screenshots.

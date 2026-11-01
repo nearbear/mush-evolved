@@ -133,6 +133,15 @@
     "tagline": "Sueño criogénico. Elige una nave en la que despertar.",
     "pickCharacter": "Elige a tu tripulante.",
     "characterTaken": "Otra persona acaba de elegir a ese tripulante. Elige otro.",
+    "difficulty": {
+      "easy": "Fácil",
+      "medium": "Media",
+      "hard": "Difícil"
+    },
+    "difficultyLabel": "Dificultad: {{level}}",
+    "taken": "Ocupado",
+    "characterSkills": "Habilidades",
+    "board": "Embarcar",
     "waiting": "Embarcando: {{waiting}}/{{seats}} a bordo.",
     "awaitingCrew": "Esperando tripulación",
     "nearlyFull": "Casi completa",

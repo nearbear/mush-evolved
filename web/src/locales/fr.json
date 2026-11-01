@@ -133,6 +133,15 @@
     "tagline": "Sommeil cryogénique. Choisissez un vaisseau où vous réveiller.",
     "pickCharacter": "Choisissez votre membre d'équipage.",
     "characterTaken": "Quelqu'un vient de prendre ce membre d'équipage. Choisissez-en un autre.",
+    "difficulty": {
+      "easy": "Facile",
+      "medium": "Moyen",
+      "hard": "Difficile"
+    },
+    "difficultyLabel": "Difficulté : {{level}}",
+    "taken": "Déjà pris",
+    "characterSkills": "Compétences",
+    "board": "Embarquer",
     "waiting": "Embarquement : {{waiting}}/{{seats}} à bord.",
     "awaitingCrew": "En attente d'équipage",
     "nearlyFull": "Presque complet",

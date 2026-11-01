@@ -35,6 +35,14 @@ afterAll(async () => {
   await vite?.close();
 });
 
+/** The panel's box in page coordinates: on a phone the picker can be taller than the screen, and clicking scrolls. */
+function panelBox(page: Page) {
+  return page.locator(".pod-panel").evaluate((el) => {
+    const r = el.getBoundingClientRect();
+    return { x: r.x + scrollX, y: r.y + scrollY, width: r.width, height: r.height };
+  });
+}
+
 /** Opens the lobby with the matchmaker answering "queued" to every queue request. */
 async function openLobby(options: object, locale: string): Promise<Page> {
   const page = await (await browser.newContext(options)).newPage();
@@ -82,22 +90,21 @@ describe("lobby panel", () => {
     for (const locale of LOCALES) {
       it(`keeps its size through picking a ship and a character (${device}, ${locale})`, async () => {
         const page = await openLobby(options, locale);
-        const panel = page.locator(".pod-panel");
-        const before = await panel.boundingBox();
+        const before = await panelBox(page);
 
         await page.locator(".pod-ship").first().click();
         await page.locator(".pod-character").first().click();
+        await page.locator(".pod-board").click();
         // Waiting: the queue count from the fake matchmaker is on screen.
         await page.locator(".pod-status", { hasText: "1/8" }).waitFor();
 
-        expect(await panel.boundingBox()).toEqual(before);
+        expect(await panelBox(page)).toEqual(before);
         await page.context().close();
       }, 30_000);
 
       it(`keeps its size and shows resume when already aboard (${device}, ${locale})`, async () => {
         const page = await openAboardLobby(options, locale);
-        const panel = page.locator(".pod-panel");
-        const before = await panel.boundingBox();
+        const before = await panelBox(page);
 
         // Exactly two choices: Resume and Single Player
         const ships = page.locator(".pod-ship");
@@ -107,7 +114,7 @@ describe("lobby panel", () => {
         await ships.first().click();
         await page.locator(".pod-status.loading").waitFor();
 
-        expect(await panel.boundingBox()).toEqual(before);
+        expect(await panelBox(page)).toEqual(before);
         await page.context().close();
       }, 30_000);
     }

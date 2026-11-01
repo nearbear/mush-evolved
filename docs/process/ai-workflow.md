@@ -1934,3 +1934,9 @@ Owner adjusted the solo goal list while thinking about #222. PILGRED repair is o
 - The first prompt of a game dropped from ~4,700 to ~1,400 characters in `--fake --dump-prompt`; a paid `model-trial` run was left for the owner to approve.
 - Needed correction: the i18n ratchet flagged the new English goal labels as wire text. They reach only the model, so the baseline was raised rather than exempting the folder.
 - Leak check (forked skill): clean; labels come only from the bot's own view and the public ship map.
+
+### 2026-11-01: Character picker grouped by difficulty
+
+- **What:** Replaced the sideways-scrolling portrait row with three difficulty tiers (owner's lists; alphabetical by given name within a tier), standing sprites on `design/figure.png` podiums (2x desktop, 1x phone, scaled with CSS `zoom` so pixels stay whole), pips plus a text label, and select-then-confirm: a detail pane (portrait, profession, difficulty, skills) with a Board ship button, the first free character pre-selected. `difficulty` lives on `CHARACTERS` in shared as display-only data.
+- **Worked:** Proposing options before building. The owner picked pieces (sprites instead of portraits, the podium art, pre-select, pips + label, no tier explanations yet). Reusing the lobby's own trick (all states in one grid cell) for the 16 detail texts, so the pane never changes height in any language.
+- **Needed correction:** Reserving min-heights for the detail pane didn't hold for fr/es, which wrap professions to more lines; measuring all 16 x 3 languages x 2 layouts with a script caught it. The taller picker made phone and short desktop pages scroll, which exposed the pod sticker overlapping the credits (window bottom margin raised) and made the lobby size test compare viewport coordinates (now page coordinates). Tools that clicked a card to join now also click Board.

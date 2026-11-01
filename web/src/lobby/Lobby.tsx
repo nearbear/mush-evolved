@@ -1,11 +1,10 @@
-import { ScrollArea } from "@base-ui/react/scroll-area";
 import { Suspense, lazy, useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { AUTH_PROVIDERS, CHARACTERS, LOBBY_LANGUAGES, MAX_NAME_LENGTH, type CharacterId, type LobbyLanguage, type MatchmakerServerMessage } from "@mush2/shared";
+import { AUTH_PROVIDERS, LOBBY_LANGUAGES, MAX_NAME_LENGTH, type CharacterId, type LobbyLanguage, type MatchmakerServerMessage } from "@mush2/shared";
 import { AccountButton } from "../account/AccountButton.tsx";
 import { PROVIDER_NAMES, signup, startSignIn, takeAuthOutcome, logout, useMe } from "../account/api.ts";
 import { NameForm } from "../account/NameForm.tsx";
-import { characterImage } from "../art/assets.ts";
+import { CharacterPicker } from "./CharacterPicker.tsx";
 import { Credits } from "../hud/Credits.tsx";
 import { LanguageSwitcher } from "../i18n/LanguageSwitcher.tsx";
 import { matchmakerSocket, type SeatTicket } from "../net.ts";
@@ -67,9 +66,6 @@ const SLEEP_MS = 600;
 /** The cryopod drawn behind the panel, with Pixi; loaded after the panel shows. */
 const PodBackdrop = lazy(() => import("./pixi/PodBackdrop.tsx"));
 
-/** The picker's row, alphabetical by full name. */
-const ROSTER = [...CHARACTERS].sort((a, b) => a.name.localeCompare(b.name));
-
 const GUEST_KEY = "mush2.guest";
 
 /** Next "Guest N". Not random, just a counter kept per browser. */
@@ -96,7 +92,6 @@ export function Lobby({ onMatched }: { onMatched: (ticket: SeatTicket) => void }
   const pod = useRef<HTMLDivElement>(null);
   // Without WebGL2 the game can't be drawn, so there is nothing to join.
   const [webgl] = useState(hasWebGL2);
-  const roster = useRef<HTMLDivElement>(null);
   const { me, rateLimited, refresh } = useMe();
   const account = me?.status === "signed_in" ? me.account : null;
   // Aboard a multiplayer ship (#320): the lobby offers Resume instead of the ships, and resuming skips both pickers.
@@ -129,19 +124,6 @@ export function Lobby({ onMatched }: { onMatched: (ticket: SeatTicket) => void }
     [onMatched],
   );
 
-  // The roster only scrolls sideways, so a mouse wheel scrolls it sideways too. Needs a
-  // non-passive listener to stop the page scrolling as well.
-  useEffect(() => {
-    const el = roster.current;
-    if (!el) return;
-    const onWheel = (e: WheelEvent) => {
-      if (Math.abs(e.deltaY) <= Math.abs(e.deltaX)) return;
-      e.preventDefault();
-      el.scrollLeft += e.deltaY;
-    };
-    el.addEventListener("wheel", onWheel, { passive: false });
-    return () => el.removeEventListener("wheel", onWheel);
-  }, []);
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: the UI language only picks which matchmaker launches a single-player ship, read once at launch; changing it must not relaunch.
   useEffect(() => {
@@ -241,31 +223,13 @@ export function Lobby({ onMatched }: { onMatched: (ticket: SeatTicket) => void }
           </div>
           <div className="pod-state" inert={step !== "character"}>
             <p className="pod-subtitle">{t("lobby.pickCharacter")}</p>
-            <ScrollArea.Root className="pod-roster">
-              <ScrollArea.Viewport ref={roster} className="pod-roster-viewport">
-                <ul className="pod-characters">
-                  {ROSTER.map((c) => (
-                    <li key={c.id}>
-                      <button type="button"
-                        className="pod-character"
-                        disabled={taken.includes(c.id)}
-                        onClick={() => {
-                          setError("");
-                          setCharacter(c.id);
-                        }}
-                      >
-                        <img src={characterImage(c.id)} alt="" />
-                        <span className="pod-character-name">{c.name}</span>
-                        <span className="pod-character-profession">{t(`characters.profession.${c.id}`)}</span>
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              </ScrollArea.Viewport>
-              <ScrollArea.Scrollbar className="pod-roster-bar" orientation="horizontal">
-                <ScrollArea.Thumb className="pod-roster-thumb" />
-              </ScrollArea.Scrollbar>
-            </ScrollArea.Root>
+            <CharacterPicker
+              taken={taken}
+              onBoard={(id) => {
+                setError("");
+                setCharacter(id);
+              }}
+            />
             {error && <p className="pod-status">{error}</p>}
           </div>
           <div className="pod-state" inert={step !== "signup"}>

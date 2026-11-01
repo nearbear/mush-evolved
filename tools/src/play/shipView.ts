@@ -40,6 +40,7 @@ try {
   await devSignIn(page, args.url!, runName("Ship view"));
   await page.getByRole("button", { name: /English/ }).click();
   await page.locator(".pod-character").first().click(); // the character picker
+  await page.locator(".pod-board").click();
   await page.locator(".three-panel").waitFor({ timeout: 45_000 });
   await waitForArt(page);
   for (const room of args.walk?.split(",").map((r) => r.trim()) ?? []) await walkInto(page, room);
