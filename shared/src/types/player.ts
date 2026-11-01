@@ -59,6 +59,8 @@ export interface PlayerState extends Seat {
   maxAp: number;
   /** The bed (equipment id) you are lying in, while you have the `lying_down` modifier. Public to your room (`OtherPlayerView.lying`). */
   lyingIn?: string;
+  /** The cycle the player lay down in, while lying down (Lethargy counts from it). Never sent. */
+  lyingSince?: number;
   /** Who is pushing your wheelchair (accommodate.ts). Public to your room (`OtherPlayerView.pushedBy`, the `accommodated` status). */
   pushedBy?: PlayerId;
   /** The Persecutor whose Anathema made this player an Outcast (anathema.ts). Never sent; the public `outcast` status is. */

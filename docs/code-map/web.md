@@ -23,7 +23,7 @@ All under `web/src/`. UI rules are in `web/CLAUDE.md`.
 - `TopBar.tsx`: cycle and countdown, Results (once the game has ended), End cycle (only when offered), Leave, settings.
 - `CycleCountdown.tsx`: time left until the next cycle, from the view message's `nextCycleAt`.
 - `PlayerSummary.tsx`: the phone top bar's nameplate: portrait, name, faction icon (`FactionCard`, also used by `SelfHud`), AP/MP/HP/morale chips, other resources.
-- `PipBar.tsx`: the pip bar in SVG, sideways or (`vertical`) standing up as the sprite was drawn and filling from the bottom.
+- `PipBar.tsx`: the pip bar in SVG, sideways or (`vertical`) standing up as the sprite was drawn and filling from the bottom; `columns` splits a vertical bar into side-by-side columns (the AP gauge past 12 slots, Lethargy), filling the first column, then the next.
 - `SettingsDialog.tsx` + `settings.css`: settings dialog (General, Account, and Cheats when allowed).
 - `EndScreen.tsx` + `endScreen.css`: the end screen, open while the game has ended until closed (`GameScreen` holds that; the top bar's Results button reopens it): the ending's banner (`ENDING_ART`), the verdict, and `view.crew` with names, characters, roles and skulls (reuses `settings.css`).
 - `BodyTakenDialog.tsx`: the pop-up a Transfer's victim must acknowledge (`you.bodyTakenBy`); only its button closes it, sending `acknowledgeTransfer` (reuses `settings.css`).

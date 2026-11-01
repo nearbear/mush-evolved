@@ -89,6 +89,7 @@ export const PLAYER_STATE_FIELDS: Record<string, FieldRule> = {
   ap: { reach: "own", test: "leaks.test.ts" },
   maxAp: { reach: "own", test: "leaks.test.ts" },
   lyingIn: { reach: "room", test: "leaks.test.ts" },
+  lyingSince: { reach: "never", test: "leaks.test.ts", note: "Lethargy's count; only its AP reaches the owner." },
   spot: { reach: "room", test: "leaks.test.ts" },
   pushedBy: { reach: "room", test: "leaks.test.ts", note: "Also as the public `accommodated` status." },
   accommodationOffers: { reach: "own", test: "leaks.test.ts", note: "The offers themselves are public room log lines." },

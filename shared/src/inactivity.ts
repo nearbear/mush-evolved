@@ -51,7 +51,7 @@ export function inactivityCycle(state: GameState, at: number): void {
     }
     const away = at - p.lastSeenAt;
     if (p.inactivity === undefined) {
-      if (away < inactiveAfterHours * HOUR_MS || p.ap < state.config.maxAp) continue;
+      if (away < inactiveAfterHours * HOUR_MS || p.ap < p.maxAp) continue;
       goInactive(p, "inactive");
       changed = true;
     }

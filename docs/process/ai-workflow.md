@@ -1999,3 +1999,10 @@ Built the two-column AP gauge from `docs/plans/lethargy.md`: `PipBar` gets a `co
 - **Decision (owner):** Green Thumb gives 2 empty hydropots when picked, the original's number (`config.greenThumb.pots`), unlike Paranoid's cut from 2 cameras to 1. The graft bonus (grafts start a cycle older) waits for grafting; status "partial".
 - **What worked:** Paranoid's `onPick` + `produceItem` was an exact template, so it's one small modifier file, one config knob and one test. A skill book triggers `onPick` too, matching the wiki ("copying it gives two more pots").
 - **Needed correction:** the en effect text read "You starts with two hydropots"; all three locales now say the pots come when the skill is picked, since skills are picked mid-game here.
+
+## 2026-11-01: Lethargy built (rules half of docs/plans/lethargy.md)
+
+- **What:** `modifiers/lethargy.ts` (doubled AP cap on pick, +1 AP a cycle while lying down long enough), `PlayerState.lyingSince` set by `lie_down` and cleared by `getUp` (so every way out of bed resets it), `config.lethargy`, the inactivity check on each player's own `maxAp`, `SKILL_STATUS.lethargy = "full"`, `STATE_VERSION` 101 → 102, `shared/tests/lethargy.test.ts`.
+- **Correction from the owner:** mid-task the owner gave the flow C1–C3 2 AP, C4 onward 3 AP, so the bonus starts on the 4th cycle change in bed, not the 5th as recorded from the wiki. The plan had also guessed the refill reads the cycle before it advances; it reads it after, so the check is `cycle - lyingSince >= 4`. Recorded in rules-design.md and the plan.
+- **What worked:** the sentinel leak test caught that `lyingSince` reached its owner's own view: `viewFor` spreads `PlayerState` into `you` and strips a denylist, so a new server-only field leaks by default. The plan's "viewFor doesn't send it" was wrong; it is now stripped there. A plain "the field isn't in the view" assumption would have missed it.
+- **Needed correction:** beds can't break (not breakable equipment), so the plan's "broken bed" test became a dismantled sofa.

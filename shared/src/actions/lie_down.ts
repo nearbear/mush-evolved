@@ -36,9 +36,10 @@ export class LieDownAction extends Action<LieDownActionData> {
     return { ap: state.config.lieDown.cost.ap, mp: 0 };
   }
 
-  override apply(_state: GameState, player: PlayerState, target: LieDownActionData): void {
+  override apply(state: GameState, player: PlayerState, target: LieDownActionData): void {
     player.modifiers.push("lying_down");
     player.lyingIn = target.equipment;
+    player.lyingSince = state.cycle;
   }
 }
 
@@ -49,6 +50,7 @@ export class LieDownAction extends Action<LieDownActionData> {
 export function getUp(actor: PlayerState): void {
   actor.modifiers = actor.modifiers.filter((m) => m !== "lying_down");
   delete actor.lyingIn;
+  delete actor.lyingSince;
 }
 
 export class GetUpAction extends Action<GetUpActionData> {

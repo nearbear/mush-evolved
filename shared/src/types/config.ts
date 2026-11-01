@@ -368,6 +368,9 @@ export interface GameConfig {
   // N + `expiryDays` if still open; at most `slotsPerPlan` slots; each channel keeps its `finishedKept` latest finished plans.
   plans: { expiryDays: number; slotsPerPlan: number; finishedKept: number };
   lieDown: { cost: { ap: number } }; // AP spent to lie down in a bed (confirmed 2026-10-17).
+  // Skill Lethargy (owner, 2026-11-01): from the `cyclesLying`th cycle change spent lying down on, each one gives
+  // `bonusAp` more AP; the AP cap is multiplied by `maxApMultiplier`.
+  lethargy: { cyclesLying: number; bonusAp: number; maxApMultiplier: number };
   shower: {
     cost: {
       ap: number; // AP spent to shower, before the soap discount (confirmed 2026-10-14).

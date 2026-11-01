@@ -1,6 +1,6 @@
 # Lethargy (plan)
 
-2026-11-01. Decided with the owner on 2026-11-01 (answers below). The Web section is built (`PipBar` columns, `SelfPoints`); the rules (`shared`), tests, docs and the screenshot check are not. Lethargy is already a pickable skill with no effect (`shared/src/skills.ts`, Chun's list; see `docs/rules/rules-design.md`, "Character skill lists"). It also shows in the bot duties (`server/src/bots/duties.ts`, "waits"), which nothing reads yet.
+2026-11-01. Decided with the owner on 2026-11-01 (answers below). Built 2026-11-01 (rules, web, tests, docs); the desktop screenshot check is still to do. Lethargy is already a pickable skill with no effect (`shared/src/skills.ts`, Chun's list; see `docs/rules/rules-design.md`, "Character skill lists"). It also shows in the bot duties (`server/src/bots/duties.ts`, "waits"), which nothing reads yet.
 
 ## Source
 
@@ -13,7 +13,7 @@ eMushpedia, *Léthargie* (a source, not a decision):
 
 ## Decisions (owner, 2026-11-01)
 
-1. **Timing:** as on the wiki. The +1 AP applies from the 5th cycle change spent lying down. Any getting up resets the count, including getting up and lying down again in the same cycle.
+1. **Timing:** the +1 AP applies from the 4th cycle change spent lying down (owner's flow, given while building: C1 2 AP, C2 2, C3 2, C4 3, C5 3 and on until getting up; this supersedes the wiki's 5th). Any getting up resets the count, including getting up and lying down again in the same cycle.
 2. **Becoming Mush:** Lethargy is kept, like every other skill on conversion today (`infection.ts`). A general rule for losing skills on conversion would be a separate decision.
 3. **Inactivity:** the "AP full while away" check uses the player's own `maxAp`, not `config.maxAp`. A Lethargy player counts as full at 24, and a cap lowered by disease also counts correctly.
 4. **Feedback:** nothing beyond the extra AP: no log line, no new HUD field. The skill description already explains the effect.
@@ -26,11 +26,11 @@ eMushpedia, *Léthargie* (a source, not a decision):
 - **Config:** `lethargy: { cyclesLying: 4, bonusAp: 1, maxApMultiplier: 2 }` in `shared/src/config.ts` and `types/config.ts`. A config knob needs no version bump.
 - **Modifier `shared/src/modifiers/lethargy.ts`**, registered in `MODIFIERS` (`modifiers.ts`):
   - `maxAp: (base) => base * maxApMultiplier`.
-  - `apPerCycle: (gain) => gain + bonusAp` while the player is lying down and `state.cycle - lyingSince >= cyclesLying`. The refill reads the cycle before it advances; check this against the wiki example in a test and adjust the comparison if it's off by one.
+  - `apPerCycle: (gain) => gain + bonusAp` while the player is lying down and `state.cycle - lyingSince >= cyclesLying`. The refill runs after `state.cycle` advances, so the comparison is `>=` (the Nth change sees `cycle - lyingSince === N`).
   - `onPick: updateMaxValues(next, player)`, so the cap doubles as soon as the skill is picked, including when it comes from a skill book.
 - `SKILL_STATUS.lethargy = "full"` (`skills.ts`).
 - **Inactivity:** in `shared/src/inactivity.ts:54`, change `p.ap < state.config.maxAp` to `p.ap < p.maxAp`.
-- **Hidden information:** `lyingSince` stays server-only. `viewFor` doesn't send it. List it in `shared/tests/leakFields.ts` (reach: nobody) with a sentinel in `leaks.test.ts`. The doubled cap already reaches its owner through `view.maxAp`. `OtherPlayerView` doesn't carry `maxAp`.
+- **Hidden information:** `lyingSince` stays server-only. `viewFor` strips it from `you` (the own view spreads `PlayerState`, so a new field goes out unless it is stripped; the sentinel test caught this). List it in `shared/tests/leakFields.ts` (reach: nobody) with a sentinel in `leaks.test.ts`. The doubled cap already reaches its owner through `view.maxAp`. `OtherPlayerView` doesn't carry `maxAp`.
 
 ## Web (built 2026-11-01)
 
@@ -47,7 +47,7 @@ Built, but not yet checked in a browser: nothing gives a player 24 AP until the 
 `shared/tests/lethargy.test.ts`:
 
 - The config numbers, pinned once: `[cyclesLying, bonusAp, maxApMultiplier]` equals `[4, 1, 2]`.
-- The wiki's sequence: lie down at 0 AP, then 8 AP after 4 cycle changes, then +3 a cycle.
+- The owner's sequence: lie down at 0 AP, then 2, 4, 6, 9, 12, 15.
 - The cap is reached at 24, never passed, and doubles straight away when the skill is picked.
 - Getting up resets the count: through `get_up`, another action, getting up and lying down again in the same cycle, a broken bed, and a summon.
 - No bonus without the skill, and none for a Lethargy player who isn't lying down.

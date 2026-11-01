@@ -440,7 +440,7 @@ export function viewFor(state: GameState, playerId: PlayerId): PlayerView {
   const living = others.filter((o) => o.alive);
   // Nobody's account name goes out while the game runs, not even your own: people are known by character.
   // Who cursed you is never sent, even to you; nor which seat plays you, whether you used Transfer, or your action
-  // history (only Interrogate and Chitchat reveal it, history.ts).
+  // history (only Interrogate and Chitchat reveal it, history.ts), nor Lethargy's count (`lyingSince`; only its AP shows).
   const {
     name: _name,
     outcastBy: _outcastBy,
@@ -449,6 +449,7 @@ export function viewFor(state: GameState, playerId: PlayerId): PlayerView {
     history: _history,
     lastSeenAt: _lastSeenAt,
     inactivity: _inactivity,
+    lyingSince: _lyingSince,
     ...yours
   } = you;
   return {

@@ -192,6 +192,7 @@ export const SKILL_STATUS: Readonly<Partial<Record<SkillId | MushSkillId, SkillS
   // PILGRED repair bonus and doubled renovation odds (owner, 2026-10-28); no repair points or equipment repairs.
   engineer: "partial",
   creative: "full",
+  lethargy: "full",
   antic_perfume: "full",
   logistics: "full",
   caffeinomaniac: "full",
