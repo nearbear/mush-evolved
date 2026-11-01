@@ -238,6 +238,8 @@ export const SKILL_STATUS: Readonly<Partial<Record<SkillId | MushSkillId, SkillS
   paranoid: "full",
   // Doubled turret odds and damage (owner, 2026-10-24).
   gunner: "full",
+  // Sure extinguisher use and the manual try (owner, 2026-11-01); its project bonus is in PROJECTS.
+  fireman: "full",
   // Snoop: once a day per storage room, free, finds one item by the wiki's weights; 50% dirt, 10% injury (owner, 2026-11-01, actions/snoop.ts).
   metaliciste: "full",
   // A faster-growing streak on turret shots and astro scans (owner, 2026-10-25).

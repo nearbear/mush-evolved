@@ -89,6 +89,7 @@ function ship(): { state: GameState; sentinels: Sentinel[] } {
     s.scanFailures[p.id] = num(`scanFailures-${p.id}`, []);
     s.turretFailures[p.id] = num(`turretFailures-${p.id}`, []);
     s.patrolFailures[p.id] = num(`patrolFailures-${p.id}`, []);
+    s.extinguishFailures[p.id] = num(`extinguishFailures-${p.id}`, []);
     s.sharedOnDay[p.id] = num(`sharedOnDay-${p.id}`, []);
     s.planets[p.id] = [
       {

@@ -54,6 +54,7 @@ export const GAME_STATE_FIELDS: Record<string, FieldRule> = {
   pilgred: { reach: "room", test: "pilgred.test.ts", note: "`progress` and the pool's contributors and values, to the living in a room with the PILGRED terminal; rolls never; each viewer's own token count anywhere. Whether it is repaired is public (`pilgredRepaired`), as the crew-wide message announces it." },
   planets: { reach: "own", test: "leaks.test.ts", note: "Without the unknown sectors' tags." },
   scanFailures: { reach: "never", test: "leaks.test.ts" },
+  extinguishFailures: { reach: "never", test: "leaks.test.ts" },
   nextPlanetId: { reach: "never", test: "leaks.test.ts", note: "Not secret (planet ids show it), just not sent." },
   sharedPlanets: { reach: "filtered", test: "sharedPlanets.test.ts", note: "To whoever can read the Astrophysics feature, without `planet` (leaks.test.ts: never sent)." },
   nextSharedPlanetId: { reach: "never", test: "leaks.test.ts", note: "Not secret (entry ids show it), just not sent." },

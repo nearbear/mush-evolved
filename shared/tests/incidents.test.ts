@@ -47,7 +47,7 @@ describe("incident points: the budget", () => {
     });
     expect([incidents.tremor.damage, incidents.panicAttack.morale, incidents.metalPlate.damage, incidents.electricalOverload.damage]).toEqual([[1, 3], 3, [4, 6], 3]);
     expect(fire).toEqual({ spreadChance: 0.3, maxSpreads: 2, breakChance: 0.3, hullChance: 0.2, hullDamage: [2, 4], damage: 2 });
-    expect(extinguish).toEqual({ cost: { ap: 1 }, chance: 0.5 });
+    expect(extinguish).toEqual({ cost: { ap: 1 }, chance: 0.5, manual: { chance: 0.25, failureMultiplier: 1.25 }, firefighterInjuryChance: 0.5 });
     expect([repair.cost.ap, repair.wrenchFactor, repair.engineerFactor, repair.oxygenLeak]).toEqual([1, 1.5, 2, 1]);
     expect([repair.chance.COM_CENTER, repair.chance.NERON_BIOS_TERM, repair.chance.OXYGEN_TANK, repair.chance.BED, repair.chance.PILGRED]).toEqual([0.06, 0.03, 0.25, undefined, undefined]);
   });

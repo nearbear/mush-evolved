@@ -367,7 +367,8 @@
     "spoilResearch": "Gâcher un échantillon",
     "contaminate": "Contaminer",
     "repair": "Réparer",
-    "extinguish": "Éteindre"
+    "extinguish": "Éteindre",
+    "extinguishManually": "Éteindre à la main"
   },
   "queue": {
     "label": "Vos actions",

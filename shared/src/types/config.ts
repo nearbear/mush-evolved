@@ -446,7 +446,8 @@ export interface GameConfig {
   // `hullDamage` with `hullChance`, and everyone present loses `damage` HP.
   fire: { spreadChance: number; maxSpreads: number; breakChance: number; hullChance: number; hullDamage: [number, number]; damage: number };
   // Extinguish (owner, 2026-10-25, eMushpedia "Extincteur"): 1 AP, 50%, with an extinguisher you can reach.
-  extinguish: { cost: { ap: number }; chance: number };
+  // Firefighter (owner, 2026-11-01): the manual try's odds and its per-miss multiplier; `firefighterInjuryChance` is the chance of a random injury on any try.
+  extinguish: { cost: { ap: number }; chance: number; manual: { chance: number; failureMultiplier: number }; firefighterInjuryChance: number };
   // Breakage and Repair (owner, 2026-10-25): breakage.ts. `chance` is each breakable equipment type's base repair chance
   // (eMushpedia's `réparer=`); a type without one never breaks. A wrench multiplies it by `wrenchFactor`, the Technician
   // skill (`engineer`) by `engineerFactor`. A broken oxygen tank leaks `oxygenLeak` oxygen at each cycle change.

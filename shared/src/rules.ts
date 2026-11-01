@@ -143,6 +143,7 @@ export function createGame(
     fires: [],
     turretFailures: {},
     patrolFailures: {},
+    extinguishFailures: {},
     patrolShips: newPatrolShips(config),
     space: [],
     navigation: { heading: config.navigation.startHeading, orbit: null, arriving: null, lastTurn: null },

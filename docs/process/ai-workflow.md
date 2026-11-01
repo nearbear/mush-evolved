@@ -1964,6 +1964,10 @@ The owner asked Claude to pick up #184 ("nothing causes equipment to break down 
 - **What worked:** asking the four open details in one question after finding the rule on the wiki (the en/es skill descriptions in the locales already described the action). `interrogate.ts` (a once-a-day flag on `PlayerState`, cleared at day start) and `search.ts` (a no-field action, shown on yourself) were the right templates; the rule tests passed first run. The skill-rule order changed Terrence's pick order (Technician, Scrapper, then Pilot), which an existing bot test caught and was updated.
 - **Needed correction:** the i18n ratchet flagged the bot goal's English label; template literals count too (the other goal files are in the baseline). Marked it `i18n-ignore`, since goal labels are model prompt text, not player-visible.
 
+## 2026-11-01: Firefighter skill (`fireman`)
+
+Owner decisions (asked via the `rule` skill): manual extinguish starts at 25% (the wiki's body text, not its "10%" tooltip heading), ×1.25 per consecutive miss (the turret/scan failure-streak convention; Persistent does not apply), and the 50% / 2 HP self-injury applies to every Firefighter try, extinguisher included (the owner chose this over the wiki, where only the manual try hurts). The project bonus already existed in `PROJECTS`. Reused the base `Action.injuryChance` hook, which already does 2 HP on a miss and gloves blocking, instead of writing new damage code. New `extinguish_manually` action and `extinguishFailures` state (STATE_VERSION 101). Needed correction: `git stash` while comparing typecheck baselines swept up uncommitted work from the user's tree; restored with `stash pop`, but it should not be used in a shared working tree.
+
 ### 2026-11-01: MycoScan research
 
 - **Decided (owner, from eMushpedia "Création du Mycoscan" as-is):** completing MYCOSCAN adds a MycoScan to the lab for good; its free check, once a day per character, privately reports your contamination level, a Mush reads 0; nothing in room history; usable in pre-selection.

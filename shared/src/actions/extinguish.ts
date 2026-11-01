@@ -2,6 +2,7 @@ import { Action, isString } from "./action.ts";
 import { isOnFire } from "../fire.ts";
 import { canReachItem } from "../items.ts";
 import { logPrivate, logPublic } from "../log.ts";
+import { hasSkill } from "../skills.ts";
 import type { GameState, PlayerState } from "../types.ts";
 
 export type ExtinguishActionData = { type: "extinguish"; item: string };
@@ -11,7 +12,7 @@ export const EXTINGUISHER_ITEM = "extinguisher";
 /**
  * Put out the fire in your room with an extinguisher you can reach, carried or on the floor (owner, 2026-10-25,
  * eMushpedia "Extincteur"): 1 AP, 50%. The extinguisher isn't used up. A success is public in the room, a failure
- * private. The Firefighter skill waits for #264.
+ * private. A Firefighter never fails with one (owner, 2026-11-01), but risks the random injury on every try (the owner chose this over the wiki, where only the manual try hurts).
  */
 export class ExtinguishAction extends Action<ExtinguishActionData> {
   constructor() {
@@ -22,8 +23,12 @@ export class ExtinguishAction extends Action<ExtinguishActionData> {
     return { ap: state.config.extinguish.cost.ap, mp: 0 };
   }
 
-  override getSuccessChance(state: Readonly<GameState>): number {
-    return state.config.extinguish.chance;
+  override getSuccessChance(state: Readonly<GameState>, player: Readonly<PlayerState>): number {
+    return hasSkill(player, "fireman") ? 1 : state.config.extinguish.chance;
+  }
+
+  override injuryChance(state: Readonly<GameState>, player: Readonly<PlayerState>): number {
+    return hasSkill(player, "fireman") ? state.config.extinguish.firefighterInjuryChance : 0;
   }
 
   override getCandidates(state: Readonly<GameState>, player: Readonly<PlayerState>): ExtinguishActionData[] {

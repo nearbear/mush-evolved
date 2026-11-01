@@ -363,7 +363,8 @@
     "spoilResearch": "Spoil a sample",
     "contaminate": "Contaminate",
     "repair": "Repair",
-    "extinguish": "Extinguish"
+    "extinguish": "Extinguish",
+    "extinguishManually": "Extinguish manually"
   },
   "queue": {
     "label": "Your actions",
