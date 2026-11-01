@@ -688,8 +688,8 @@ describe("GameRoom single player", () => {
     const { room, storage, token } = await soloRoom();
     const c = connect(room, token);
     await send(room, c, { type: "action", action: { type: "ready" } });
-    // No key, so the bots play scripted: a few moves each, then they end their cycles.
-    await playOut(room, storage);
+    // No key, so the bots play their scripted goals (skills, a walk, some work), then end their cycles.
+    for (let i = 0; i < 20 && lastView(c).cycleOfDay === 5; i++) await playOut(room, storage);
     expect(lastView(c).cycleOfDay).toBe(6);
     vi.unstubAllGlobals();
   });

@@ -1,0 +1,35 @@
+import { act, canAfford, failed, find, goTo, roomsWith } from "./blocks.ts";
+import type { Goal, GoalDef } from "./types.ts";
+
+/**
+ * Rest in the nearest bed (a bed gives AP each cycle): lie down, then wait cycle after cycle until AP is full. A new
+ * cycle doesn't interrupt it, or the bot would get up after one cycle. Comes once the bot has no AP left it would spend
+ * on work. Whether a bed is free is learned only on arrival; a taken one fails, and the next nearest bedroom is offered.
+ * May spend the AP reserve to get there.
+ */
+export const rest: GoalDef = {
+  id: "rest",
+  priority: 40,
+  options(view, memory) {
+    if (view.you.ap >= view.maxAp) return [];
+    if (view.you.lyingIn !== undefined) return [restIn(view.you.room)];
+    const room = roomsWith(view, ["BED"]).find((r) => !memory.ended.has(`rest:${r}`) && canAfford(view, r, view.config.lieDownAp, 0));
+    return room ? [restIn(room)] : [];
+  },
+};
+
+function restIn(room: string): Goal {
+  return {
+    id: "rest",
+    key: `rest:${room}`,
+    step(view) {
+      // Rested: it may rest here again later this cycle.
+      if (view.you.ap >= view.maxAp) return { kind: "done", again: true };
+      if (view.you.lyingIn !== undefined) return { kind: "wait" };
+      const walk = goTo(view, room);
+      if (walk) return walk;
+      const bed = find(view, "lie_down");
+      return bed ? act(bed) : failed("bed_taken");
+    },
+  };
+}

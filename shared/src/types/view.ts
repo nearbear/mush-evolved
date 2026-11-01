@@ -103,6 +103,16 @@ export interface PublicConfig {
   returnToSolAp: number;
   edenAp: number;
   xylophAp: number;
+  /**
+   * Base AP prices of the actions a bot plans to walk to (server/src/bots/goals/), before modifiers and free skill points:
+   * a bot sees a real price only for actions in its own room. Never used to work out legality.
+   */
+  researchAp: number;
+  projectAp: number;
+  pilgredAp: number;
+  hullRepairAp: number;
+  showerAp: number;
+  lieDownAp: number;
 }
 
 /**

@@ -39,7 +39,7 @@ import {
   type Setup,
 } from "@mush2/shared";
 import { accountStoreFor } from "./accountStore.ts";
-import { LogParrotBot, ModelBot, WanderBot, type Bot } from "./bots.ts";
+import { GoalBot, LogParrotBot, ModelBot, WanderBot, type Bot } from "./bots.ts";
 import { clockCycle, clockCycleStart, cycleMs, cycleOfDay } from "./cycleClock.ts";
 import { devModelCredentials, ModelGate, playerModelCredentials } from "./model.ts";
 import { RateLimiter } from "./rateLimit.ts";
@@ -708,7 +708,7 @@ export class GameRoom extends Server<Env> {
       const seed = (): number => crypto.getRandomValues(new Uint32Array(1))[0]!;
       this.bots.set(
         p.mind,
-        p.botKind === "wander" ? new WanderBot(seed()) : p.botKind === "model" ? new ModelBot(this.gate(), new WanderBot(seed())) : new LogParrotBot(),
+        p.botKind === "wander" ? new WanderBot(seed()) : p.botKind === "model" ? new ModelBot(this.gate(), new GoalBot(seed())) : new LogParrotBot(),
       );
     }
   }
@@ -783,7 +783,10 @@ export class GameRoom extends Server<Env> {
           // choice made for a body the bot no longer plays (a Transfer) is dropped.
           if (!action || this.body(playerId) !== by) return;
           const error = await this.act({ type: "action", action, by, at: Date.now() });
-          if (error) console.warn(`Bot ${playerId} chose an illegal action: ${error}`);
+          if (error) {
+            console.warn(`Bot ${playerId} chose an illegal action: ${error}`);
+            bot.refused?.(action, error);
+          }
         } catch (e) {
           // A throwing bot must not take the room down (#114); it is asked again after the next change.
           console.warn(`Bot ${playerId} failed: ${e instanceof Error ? e.message : typeof e}`);

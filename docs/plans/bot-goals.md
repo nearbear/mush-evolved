@@ -37,6 +37,12 @@ Today (`server/src/bots.ts`, `server/src/prompt.ts`) a model bot gets a fresh pr
 - **A reply-chain depth limit** bounds the cascade (`botChatChainDepth`, 3 to start). A message the human writes, or a bot writes on its own turn, has depth 0; a message a bot writes because a message of depth *d* woke it has depth *d + 1*; a message at the limit wakes nobody (bots still see it on their next turn). The server can't count "takeovers", since it doesn't know what a message means, so the limit counts reply depth, which bounds takeover arguments along with any other back-and-forth.
 - **Bots post no plans** (reverses on-call.md's 2026-10-28 and 2026-10-30 bot-posting decisions). Plans are for structured rosters with a summons (an expedition crew, diners at a meal); a bot may post one again when such a goal exists. Bots do claim slots in plans others post, are walked when summoned, do their claimed tasks and tick Done.
 
+### Scripted order and skills (owner, 2026-11-01)
+
+- **Scripted priority order** (a first draft): `returnToSol`, `pickSkill`, `eat` when hungry, `shower`, the work goals down to the 2 AP reserve, `rest` once there's no AP left to spend on work, `explore`, `endCycle`. Numbers in each goal's file. Among the work goals (my order, not asked): `repairPilgred` 60, `repairHull` 55, `research` and `project` 50 (ties by the bot's RNG).
+- **Skills a bot picks** (`server/src/bots/skillChoice.ts`, to change as features land): Logistics Expert always; Pilot always, but only preferred for Frieda and Terrence; Shooter only once a pilot; Astrophysicist always, Frieda only; Botanist and Green Thumb always, Ian only; Designer preferred; IT Expert (`computer`) always, Frieda, Janice and Eleesha only; Medic, Paranoid, Physicist, Shrink, Technician (`engineer`), Tracker (`hunt`), Lethargy and Meticulous (`stickler`) always. "Always" means whenever it's on the character's own list. Otherwise a seeded random skill, never one a rule keeps from that character. This is the per-character hook #222 asks for.
+- **Costs elsewhere come from the view.** `PublicConfig` carries the base AP of the actions bots walk to (research, project, PILGRED, hull, shower, lie down), so a bot prices a trip without anything outside its view.
+
 ### Superseded
 
 - *Plans first* (2026-10-25): coordination went through the old plan system (#44, locked AP, the executor). That design was dropped on 2026-10-30; plans now exist only for rosters and summons.
@@ -190,7 +196,14 @@ Suspicion, accusations and other social goals are left for later; they need thei
 
 ## Build order
 
-1. Goal interface, building blocks, the interrupts, and the solo goals, with the scripted priority order and the 2 AP reserve. Bots without a key use it.
+1. Goal interface, building blocks, the interrupts, and the solo goals, with the scripted priority order and the 2 AP reserve. Bots without a key use it. **Built 2026-11-01** (`server/src/bots/goals/`, `GoalBot` in `bots.ts`). Choices made while building, not asked:
+   - The reserve binds work, shower and explore; eat, rest and return to Sol may spend it (it is for emergencies).
+   - Explore walks on MP only, never converting AP.
+   - A bot doesn't shower while it could repair PILGRED or the hull, which don't mind dirt.
+   - Ending the cycle isn't kept as a goal: a bot waiting for the clock looks again each turn.
+   - A finished rest may be chosen again the same cycle.
+   - The only interrupts so far are a new cycle (not while resting) and losing HP. Being summoned needs none, since `goTo` re-paths from where the bot stands each turn.
+   - The asking threshold (7) waits for step 3, where it's used.
 2. Model goal choice: the goal list in the prompt replaces the raw action list; measure with `npm run model-trial` against today's prompt (#224). Overlaps with the bot menu (#259).
 3. Model chat (#223): the chat window in the prompt, the structured reply with a message, posting through moderation and the rate limit, waking every bot with the chain depth limit, and `help`.
 4. Plans for bots (#316): the plans section in the prompt, slot actions labelled in words, `doSlot`, on-call reminders and withdrawing at `endCycle`.
