@@ -34,6 +34,7 @@ export const BOT_SKILL_RULES: readonly SkillRule[] = [
   { skill: "hunt", tier: "always" }, // Tracker
   { skill: "lethargy", tier: "always" },
   { skill: "stickler", tier: "always" }, // Meticulous
+  { skill: "radio_expert", tier: "always", only: ["paola"] },
 ];
 
 function tierOf(rule: SkillRule, character: CharacterId, have: readonly string[]): SkillRule["tier"] | null {

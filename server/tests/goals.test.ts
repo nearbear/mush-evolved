@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import { GOAL_MAX_ACTIONS, GoalBot } from "../src/bots.ts";
 import { canAfford, goTo, roomsWith, travelAp } from "../src/bots/goals/blocks.ts";
 import { SOLO_GOALS } from "../src/bots/goals/index.ts";
+import { repairHull } from "../src/bots/goals/repairHull.ts";
 import { rest } from "../src/bots/goals/rest.ts";
 import { research } from "../src/bots/goals/research.ts";
 import { shower } from "../src/bots/goals/shower.ts";
@@ -200,7 +201,11 @@ describe("GoalBot", () => {
     expect(next.state.players.find((p) => p.id === id)!.lyingIn).toBeDefined();
   });
 
-  it("doesn't shower while it could still repair PILGRED, which doesn't mind dirt", () => {
+  it("leaves PILGRED alone in single player, where the human is the Mush", () => {
+    expect(SOLO_GOALS.map((g) => g.id)).not.toContain("repairPilgred");
+  });
+
+  it("patches the hull only below 50, and doesn't shower while it could", () => {
     const { game: start, id } = setup();
     const game = edit(start, id, (p) => {
       p.statuses = [...p.statuses.filter((s) => s !== "dirty"), "dirty"];
@@ -208,9 +213,12 @@ describe("GoalBot", () => {
     });
     const view = viewFor(game, id);
     const memory = { reserve: 2, ended: new Set<string>(), visited: new Set<string>(), roll: roll0 };
-    expect(view.statuses).toContain("dirty");
-    expect(shower.options(view, memory)).toEqual([]);
-    expect(shower.options({ ...view, pilgredRepaired: true }, memory)).toHaveLength(1);
+    const patch = { action: { type: "repair_hull" as const, item: "scrap" }, cost: { ap: 1, mp: 0 }, chance: 0.25, tags: [], lacks: [] };
+    const withHull = (hull: number): PlayerView => ({ ...view, ship: { ...view.ship, hull }, actions: [...view.actions, patch] });
+    expect(repairHull.options(withHull(50), memory)).toEqual([]);
+    expect(shower.options(withHull(50), memory)).toHaveLength(1);
+    expect(repairHull.options(withHull(49), memory)).toHaveLength(1);
+    expect(shower.options(withHull(49), memory)).toEqual([]);
   });
 
   it("can rest in the same bed again later in the cycle", async () => {

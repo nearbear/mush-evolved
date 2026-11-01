@@ -39,8 +39,8 @@ Today (`server/src/bots.ts`, `server/src/prompt.ts`) a model bot gets a fresh pr
 
 ### Scripted order and skills (owner, 2026-11-01)
 
-- **Scripted priority order** (a first draft): `returnToSol`, `pickSkill`, `eat` when hungry, `shower`, the work goals down to the 2 AP reserve, `rest` once there's no AP left to spend on work, `explore`, `endCycle`. Numbers in each goal's file. Among the work goals (my order, not asked): `repairPilgred` 60, `repairHull` 55, `research` and `project` 50 (ties by the bot's RNG).
-- **Skills a bot picks** (`server/src/bots/skillChoice.ts`, to change as features land): Logistics Expert always; Pilot always, but only preferred for Frieda and Terrence; Shooter only once a pilot; Astrophysicist always, Frieda only; Botanist and Green Thumb always, Ian only; Designer preferred; IT Expert (`computer`) always, Frieda, Janice and Eleesha only; Medic, Paranoid, Physicist, Shrink, Technician (`engineer`), Tracker (`hunt`), Lethargy and Meticulous (`stickler`) always. "Always" means whenever it's on the character's own list. Otherwise a seeded random skill, never one a rule keeps from that character. This is the per-character hook #222 asks for.
+- **Scripted priority order** (a first draft): `returnToSol`, `pickSkill`, `eat` when hungry, `shower`, the work goals down to the 2 AP reserve, `rest` once there's no AP left to spend on work, `explore`, `endCycle`. Numbers in each goal's file. Among the work goals (my order, not asked): `repairHull` 55, `research` and `project` 50 (ties by the bot's RNG). `repairPilgred` (60) is left out of single player for now (owner, 2026-11-01): returning to Sol with a Mush alive is a Mush win, and the human is the Mush. It comes back once bots can tell every Mush is dead, which waits for the public dead Mush count.
+- **Skills a bot picks** (`server/src/bots/skillChoice.ts`, to change as features land): Logistics Expert always; Pilot always, but only preferred for Frieda and Terrence; Shooter only once a pilot; Astrophysicist always, Frieda only; Botanist and Green Thumb always, Ian only; Designer preferred; IT Expert (`computer`) always, Frieda, Janice and Eleesha only; Medic, Paranoid, Physicist, Shrink, Technician (`engineer`), Tracker (`hunt`), Lethargy and Meticulous (`stickler`) always. "Always" means whenever it's on the character's own list. Otherwise a seeded random skill, never one a rule keeps from that character. #222 (owner, 2026-11-01): a bot's strategy follows the skills it has picked this way and the titles it holds, not a static per-character role. What each skill and title makes a bot do is drafted in `server/src/bots/duties.ts` (`BOT_DUTIES`), for the owner to edit; nothing reads it yet.
 - **Costs elsewhere come from the view.** `PublicConfig` carries the base AP of the actions bots walk to (research, project, PILGRED, hull, shower, lie down), so a bot prices a trip without anything outside its view.
 
 ### Superseded
@@ -157,8 +157,8 @@ Solo (scripted for a bot without a key, chosen by the model for one with a key):
 | --- | --- | --- |
 | `rest` | the nearest bedroom | lies down (`lie_down`), then waits (`ready`) cycle after cycle, not interrupted by a new cycle, until AP is full or another interrupt fires; its next action gets it up |
 | `eat` | food in its room, or the dispenser | `consume` succeeded. The dispenser gives one coffee per cycle ship-wide (`dispense.ts`), so a bot that finds it empty fails and doesn't retry that cycle |
-| `repairPilgred` | when PILGRED isn't finished | AP down to the 2 AP reserve (pooled contributions, `docs/plans/relay-tokens.md`) |
-| `repairHull` | when the hull is damaged and the bot carries a metal scrap or sees one in its room (`repair_hull.ts` needs one) | AP down to the 2 AP reserve, or no scrap left |
+| `repairPilgred` | not offered in single player for now (see the priority order); later, when PILGRED isn't finished and every Mush is dead | AP down to the 2 AP reserve (pooled contributions, `docs/plans/relay-tokens.md`) |
+| `repairHull` | when the hull is below 50 (owner, 2026-11-01: above that, scrap is worth more elsewhere; `HULL_REPAIR_BELOW`) and the bot carries a metal scrap or sees one in its room (`repair_hull.ts` needs one) | AP down to the 2 AP reserve, or no scrap left |
 | `research` / `project` | each one the bot can work on, judged from the public list; research's lab requirements are checked only on arrival, since a view shows the lab's items only from inside it | AP down to the 2 AP reserve. Both refuse a dirty player (`research.ts`, `project.ts`) |
 | `explore` | the one or two nearest rooms not visited this cycle | arrived |
 | `returnToSol` | PILGRED is repaired and the bot may return (the Commander, `return_to_sol.ts`) | returned; first in the scripted order, since it wins the game |
@@ -199,7 +199,7 @@ Suspicion, accusations and other social goals are left for later; they need thei
 1. Goal interface, building blocks, the interrupts, and the solo goals, with the scripted priority order and the 2 AP reserve. Bots without a key use it. **Built 2026-11-01** (`server/src/bots/goals/`, `GoalBot` in `bots.ts`). Choices made while building, not asked:
    - The reserve binds work, shower and explore; eat, rest and return to Sol may spend it (it is for emergencies).
    - Explore walks on MP only, never converting AP.
-   - A bot doesn't shower while it could repair PILGRED or the hull, which don't mind dirt.
+   - A bot doesn't shower while it could repair the hull, which doesn't mind dirt.
    - Ending the cycle isn't kept as a goal: a bot waiting for the clock looks again each turn.
    - A finished rest may be chosen again the same cycle.
    - The only interrupts so far are a new cycle (not while resting) and losing HP. Being summoned needs none, since `goTo` re-paths from where the bot stands each turn.
