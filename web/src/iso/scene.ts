@@ -57,9 +57,29 @@ const TICK_MS = 1000 / 30;
 
 /**
  * Scenery that plays its own animation (its first tiles.xml anim, at its rhythm) all the time: the
- * engine room's three reactors, and PILGRED's core once it is repaired (its `_upgrade` look, `looks`).
+ * engine room's three reactors, PILGRED's core once it is repaired (its `_upgrade` look, `looks`),
+ * and the equipment on MidFill/MidFill2 whose tiles.xml anim is `auto` (gravity simulator, surgery
+ * pod, NERON's core and BIOS terminal, the tanks, the bridge's LEDs and astro console, the antenna,
+ * the sick bay's human tank).
  */
-const AMBIENT_SLICES: ReadonlySet<string> = new Set(["rotational_reactor", "emergency_reactor", "core_pilgred_upgrade"]);
+const AMBIENT_SLICES: ReadonlySet<string> = new Set([
+  "rotational_reactor",
+  "emergency_reactor",
+  "core_pilgred_upgrade",
+  "gravity_simulator",
+  "surgery_console",
+  "neron",
+  "bios",
+  "tank_o2_left_front",
+  "tank_o2_right_front",
+  "tank_fuel_right_front",
+  "tank_o2_right_back",
+  "tank_fuel_left_back",
+  "pilot_leds",
+  "pilot_astro_left",
+  "radar_trans_void",
+  "human_tank",
+]);
 
 /** One walk cycle: the six 32x48 frames of a crew strip, half a second in all. */
 const WALK_CYCLE = { frames: [0, 1, 2, 3, 4, 5], frameMs: 500 / 6 } as const;

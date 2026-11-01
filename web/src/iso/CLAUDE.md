@@ -92,7 +92,8 @@ Loaded when working on the isometric view. The UI rules in `web/CLAUDE.md` still
   (`useAnimFrame`): a timer in `IsoRoom` re-renders every sprite in the scene. A renderer restarts
   an animation when its `animId` changes; one with `loops: "hold"` rests on its last frame.
 - Scenery that loops on its own all the time is listed in `AMBIENT_SLICES` (`scene.ts`): the engine
-  room's three reactors, and PILGRED's core once repaired. Like ones are kept out of step
+  room's three reactors, PILGRED's core once repaired, and the placed MidFill/MidFill2 equipment with an
+  `auto` anim (gravity simulator, surgery pod, NERON, BIOS, tanks, bridge LEDs and astro console, antenna, human tank). Like ones are kept out of step
   (`spreadAmbient`: each starts at a different frame, spread evenly around the loop). Only the slices listed there move; most
   `auto` anims in tiles.xml are not played yet. Frames step along a row and wrap every `perRow`
   (the slice's `framesX`; the reactors' frames run down a column), through `frameAt`. `looks`
