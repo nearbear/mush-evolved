@@ -1,5 +1,5 @@
 {
-  "version": 97,
+  "version": 98,
   "paths": [
     "bios.actopi",
     "bios.death_announcements",
@@ -122,10 +122,12 @@
     "equipment.STORAGE_B_1[].id",
     "equipment.STORAGE_B_1[].type",
     "equipment.STORAGE_FRONT[]",
+    "fires[]",
     "hunters.list[]",
     "hunters.nextId",
     "hunters.points",
     "hunters.since",
+    "incidentPoints",
     "items[]",
     "items[].at.id",
     "items[].at.kind",

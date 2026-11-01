@@ -4,5 +4,6 @@ import type { Modifier } from "../modifiers.ts";
 // `patrol.renovate.engineerFactor` times as likely to work (eMush's x2). Its PILGRED repair bonus is in pilgred.ts and its
 // NERON project bonus in PROJECTS (projects.ts).
 export const engineer: Modifier = {
-  actionSucessRate: (chance, { action, state }) => (action.type === "renovate" ? chance * state.config.patrol.renovate.engineerFactor : chance),
+  actionSucessRate: (chance, { action, state }) =>
+    action.type === "renovate" ? chance * state.config.patrol.renovate.engineerFactor : action.type === "repair" ? chance * state.config.repair.engineerFactor : chance,
 };

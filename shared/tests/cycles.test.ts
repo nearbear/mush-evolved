@@ -4,11 +4,11 @@ import { dailyMoraleLoss } from "../src/modifiers.ts";
 import { applyInput, startGame } from "../src/replay.ts";
 import { applyAction, createGame, legalActions, newCycle, viewFor } from "../src/rules.ts";
 import type { GameState } from "../src/types.ts";
-import { clone, makeSeats, must, nextCycle, nextDay, player } from "./support.ts";
+import { clone, makeSeats, must, nextCycle, nextDay, noIncidents, player } from "./support.ts";
 
 // Cycles change on the server's UTC clock (#24, owner 2026-10-19); End cycle is kept for testing only.
 const seats = makeSeats(4);
-const config = { ...DEFAULT_CONFIG, mushCount: 1, startItems: [], startSkills: [] };
+const config = noIncidents({ ...DEFAULT_CONFIG, mushCount: 1, startItems: [], startSkills: [] });
 const ship = (startCycle?: number): GameState => createGame(seats, config, 3, {}, startCycle);
 
 describe("cycles on the clock", () => {
@@ -77,7 +77,7 @@ describe("cycle length (#230)", () => {
   // Anything counted in cycles stays in cycles; daily effects stay once per 24-hour day.
   for (const cycleHours of [1, 6]) {
     it(`with ${cycleHours}-hour cycles, costs morale once per day, after ${24 / cycleHours} cycles`, () => {
-      const c = { ...resolveConfig({ cycleHours }), mushCount: 1, startItems: [], startSkills: [] };
+      const c = noIncidents({ ...resolveConfig({ cycleHours }), mushCount: 1, startItems: [], startSkills: [] });
       let s = createGame(seats, c, 3);
       s.hunters.since = null; // An idle crew's hull would fall to hunters within 24 cycles.
       const start = player(s, "p0").morale;

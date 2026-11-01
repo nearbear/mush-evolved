@@ -197,6 +197,16 @@ export const TITLE_ICONS: Readonly<Record<TitleId, string>> = {
   comms_officer: titleIcons["title_03"]!,
 };
 
+/** A broken-equipment marker (the original's), beside "Broken" in the inspect panel. */
+export const BROKEN_ICON = urls(
+  import.meta.glob<string>("../../../Mush/www/img/icons/ui/broken.png", { eager: true, query: "?url", import: "default" }),
+)["broken"]!;
+
+/** A flame (the original's), on the notice that your room is on fire. */
+export const FIRE_ICON = urls(
+  import.meta.glob<string>("../../../Mush/www/img/icons/ui/fire.png", { eager: true, query: "?url", import: "default" }),
+)["fire"]!;
+
 /** A small trash bin, for deleting things. */
 export const BIN_ICON = urls(
   import.meta.glob<string>("../../../Mush/www/img/icons/ui/bin.png", { eager: true, query: "?url", import: "default" }),

@@ -5,11 +5,11 @@ import { joinShip, preselectionDeadline } from "../src/preselection.ts";
 import { applyInput, type Input } from "../src/replay.ts";
 import { createGame, viewFor } from "../src/rules.ts";
 import type { GameConfig, GameState, PreselectionRules } from "../src/types.ts";
-import { makeSeats, must, nextCycle, offered, player } from "./support.ts";
+import { makeSeats, must, nextCycle, noIncidents, offered, player } from "./support.ts";
 
 /** Most tests use a small ship so it fills after a few joins. */
 const SMALL: PreselectionRules = { ...PRESELECTION, seats: 4 };
-const config: GameConfig = { ...DEFAULT_CONFIG, preselection: SMALL };
+const config: GameConfig = noIncidents({ ...DEFAULT_CONFIG, preselection: SMALL });
 
 /** A ship launched empty in pre-selection (on day 1 cycle `startCycle`), then joined by the first `n` seats of makeSeats. */
 function ship(n: number, rules: PreselectionRules = SMALL, seed = 7, startCycle = 1): GameState {
@@ -60,7 +60,7 @@ describe("a ship in pre-selection", () => {
   });
 
   it("refuses joiners on a ship launched without pre-selection", () => {
-    const s = createGame(makeSeats(3), DEFAULT_CONFIG, 1);
+    const s = createGame(makeSeats(3), noIncidents(DEFAULT_CONFIG), 1);
     expect(joinShip(s, makeSeats(4)[3]!)).toEqual({ ok: false, error: "ship_closed" });
   });
 

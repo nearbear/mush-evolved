@@ -361,3 +361,13 @@
   align-self: center;
   margin: 0.25rem 0 0;
 }
+
+/* "Broken" under a piece of equipment's name (breakage.ts). */
+.inspect-broken {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+.inspect-broken img {
+  image-rendering: pixelated;
+}

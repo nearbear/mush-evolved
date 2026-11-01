@@ -38,6 +38,8 @@ const ACTION_NAME_KEYS = {
   turret_attack: "actions.turretAttack",
   patrol_attack: "actions.turretAttack",
   repair_hull: "actions.repairHull",
+  repair: "actions.repair",
+  extinguish: "actions.extinguish",
   takeoff: "actions.takeoff",
   land: "actions.land",
   collect_scrap: "actions.collectScrap",

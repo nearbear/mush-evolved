@@ -231,6 +231,43 @@ export const DEFAULT_CONFIG: GameConfig = {
   spaceCapsule: { cost: { ap: 1 }, dirtyChance: 0.25, injuryChance: 0.01, contents: ["metal_scraps", "plastic_scraps", "oxy_capsule", "fuel_capsule"] },
   hullRepair: { cost: { ap: 1 }, chance: 0.25, injuryChance: 0.05, amount: 5 },
   oscilloscope: { repairFactor: 2 },
+  // Owner, 2026-10-25 (#184), eMushpedia "Embûches": budget, roll and catalog (cost, weight). Stuck door and disease
+  // are not built, so they are not on the menu.
+  incidents: {
+    budget: { base: [1, 2, 1], tier1: { fromDay: 5, bonus: 1 }, tier2: { fromDay: 10, bonus: 2 } },
+    rollPoints: 18,
+    catalog: {
+      tremor: { cost: 2, weight: 10 },
+      fire: { cost: 4, weight: 6 },
+      panic_attack: { cost: 2, weight: 5 },
+      oxygen_leak: { cost: 3, weight: 3 },
+      electrical_overload: { cost: 8, weight: 3 },
+      metal_plate: { cost: 2, weight: 3 },
+      fuel_leak: { cost: 3, weight: 3 },
+      equipment_breakdown: { cost: 3, weight: 3 },
+    },
+    tremor: { damage: [1, 3] },
+    panicAttack: { morale: 3 },
+    metalPlate: { damage: [4, 6] },
+    electricalOverload: { damage: 3 },
+  },
+  // Owner, 2026-10-25: the original's FIRE_* numbers (Gameplay.hx, eMush's DifficultyConfigData.php).
+  fire: { spreadChance: 0.3, maxSpreads: 2, breakChance: 0.3, hullChance: 0.2, hullDamage: [2, 4], damage: 2 },
+  extinguish: { cost: { ap: 1 }, chance: 0.5 },
+  // Owner, 2026-10-25/11-01: equipment with a repair chance on its eMushpedia page breaks; the rest never does.
+  repair: {
+    cost: { ap: 1 },
+    chance: {
+      CAMERA: 0.25, OXYGEN_TANK: 0.25, FUEL_TANK: 0.25, SHOWER: 0.25,
+      ASTRO_MODULE: 0.12, PILOT_MODULE: 0.12, BEAT_BOX: 0.12, SOFA: 0.12, MYCOSCAN: 0.12, COMBUSTION_CHAMBER_ACCESS: 0.12,
+      PLANET_SCANNER: 0.12, STELLAR_ANTENNA: 0.12, SUPER_CALC: 0.12, KITCHEN: 0.12, COFFEE_DISPENSER: 0.12, TURRET_COMMAND: 0.12,
+      COM_CENTER: 0.06, RESEARCH_LAB: 0.06, GRAVITY_SIMULATOR: 0.06, EMERGENCY_REACTOR: 0.06, ROTATIONAL_REACTOR: 0.06, NERON_CORE: 0.06,
+      NERON_BIOS_TERM: 0.03,
+    },
+    wrenchFactor: 1.5,
+    engineerFactor: 2,
+    oxygenLeak: 1,
+  },
   hunger: { satietyPerCycle: 1, fullBellyAt: 3, hungryAfterCycles: 24, hpPerCycle: 1 },
   // Confirmed 2026-10-13: dismantle cost and odds.
   dismantle: { cost: { ap: 3 }, successChance: 0.12, dirtyChance: 0.25, injuryChance: 0.05, itemChance: { knife: 0.5, blaster: 0.5 } },
@@ -285,6 +322,9 @@ export const DEFAULT_CONFIG: GameConfig = {
      { type: "apron", room: "SICK_BAY" },
      { type: "protection_gloves", room: "SICK_BAY" },
     { type: "camera", room: "CORRIDOR_A" },
+    // Owner, 2026-10-25: an extinguisher in each of the front and rear corridors, for now (the original's are in storages).
+    { type: "extinguisher", room: "CORRIDOR_A" },
+    { type: "extinguisher", room: "CORRIDOR_C" },
     { type: "metal_scraps", room: "CORRIDOR_A" },
     { type: "plastic_scraps", room: "CORRIDOR_A" },
     // Decided 2026-10-16: a sofa blueprint in the front corridor. The thick tube is a stand-in so it can be built (nothing else makes one yet).

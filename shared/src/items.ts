@@ -65,6 +65,8 @@ export function rechargeMicrowaves(state: GameState): void {
 export const ITEM_TYPES: Record<string, ItemType> = {
   [ITRACKIE_ITEM]: {},
   wrench: {},
+  // Owner, 2026-10-25, eMushpedia "Extincteur": puts out a fire (actions/extinguish.ts); dismantled for metal scraps.
+  extinguisher: { dismantle: { metal: 1, plastic: 0 } },
   // Weapons (owner, 2026-10-22, from the English wiki): their combat numbers are `config.weapons`. Named after their icons.
   knife: { dismantle: { metal: 1, plastic: 0 } },
   blaster: { dismantle: { metal: 1, plastic: 0 } },

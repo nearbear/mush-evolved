@@ -25,7 +25,7 @@ import { resolveTarget } from "./hud/targets.ts";
 import { TopBar } from "./hud/TopBar.tsx";
 import { gameSocket, type SeatTicket } from "./net.ts";
 import { shipPace, type Corpse, type Occupant } from "./iso/scene.ts";
-import { orbitImage } from "./art/assets.ts";
+import { FIRE_ICON, orbitImage } from "./art/assets.ts";
 import { LeavingIsoRoom } from "./iso/LeavingRoom.tsx";
 import { recentDoorMoves } from "./iso/doorMoves.ts";
 import { useShipLayout } from "./iso/shipLayout.ts";
@@ -250,6 +250,11 @@ export function GameScreen({ ticket, onLeave, waking = false }: { ticket: SeatTi
               />
             ) : (
               <section className="iso-room loading">{t("common.loadingShip")}</section>
+            )}
+            {view.roomOnFire && (
+              <div className="room-fire" role="status">
+                <img src={FIRE_ICON} alt="" /> {t("roomList.onFire")}
+              </div>
             )}
             {you.alive && <RoomList view={view} layout={layout} reachable={reachable} onSelect={(target) => { select(target); setFocusActions((n) => n + 1); }} onMove={move} />}
             {mobile && <ShipOverlay view={view} />}

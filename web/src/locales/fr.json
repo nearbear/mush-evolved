@@ -363,7 +363,9 @@
     "renovate": "Rénover",
     "openCapsule": "Ouvrir",
     "spoilResearch": "Gâcher un échantillon",
-    "contaminate": "Contaminer"
+    "contaminate": "Contaminer",
+    "repair": "Réparer",
+    "extinguish": "Éteindre"
   },
   "queue": {
     "label": "Vos actions",
@@ -725,7 +727,8 @@
     "water_stick": "Bâtonnet aqueux",
     "super_map": "Morceau de carte stellaire",
     "protection_gloves": "Gants de protection",
-    "space_capsule": "Capsule spatiale"
+    "space_capsule": "Capsule spatiale",
+    "extinguisher": "Extincteur"
   },
   "logEvent": {
     "summonArrived": "Vous avez été convoqué(e) : {{room}}. Vous y êtes.",
@@ -906,7 +909,18 @@
     "sampleCount": "{{name}} ×{{count}}",
     "contaminated": "{{name}} a trafiqué les échantillons de {{research}}.",
     "planetShared": "{{name}} a partagé une planète.",
-    "planetShareUpdated": "{{name}} a mis à jour une planète partagée."
+    "planetShareUpdated": "{{name}} a mis à jour une planète partagée.",
+    "equipmentBroken": "NERON : panne de l'équipement « {{equipment}} ».",
+    "fireStarted": "NERON : un incendie s'est déclaré à bord !",
+    "tremor": "La pièce est violemment secouée !",
+    "panicAttack": "Vous faites une crise de panique.",
+    "metalPlate": "Une plaque de métal tombe sur {{name}} !",
+    "electricalOverload": "Une surcharge électrique grille les équipements de la pièce !",
+    "fireBurns": "Le feu brûle tous ceux qui sont dans la pièce.",
+    "repaired": "{{name}} a réparé l'équipement « {{equipment}} ».",
+    "repairFailed": "Vous n'avez pas réussi à réparer l'équipement « {{equipment}} ».",
+    "fireExtinguished": "{{name}} a éteint l'incendie !",
+    "extinguishFailed": "Vous n'avez pas réussi à éteindre l'incendie."
   },
   "skills": {
     "title": "Choisir une compétence",
@@ -1615,7 +1629,10 @@
     "equipment_count_many": "{{count}} équipements",
     "exits_count_one": "{{count}} sortie",
     "exits_count_other": "{{count}} sorties",
-    "exits_count_many": "{{count}} sorties"
+    "exits_count_many": "{{count}} sorties",
+    "brokenEquipment": "{{equipment}} (en panne)",
+    "onFire": "Cette pièce est en feu !",
+    "broken": "En panne"
   },
   "patrol": {
     "flying": "En vol à bord du {{ship}}",

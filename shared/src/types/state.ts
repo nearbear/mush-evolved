@@ -155,6 +155,10 @@ export interface GameState {
   turretFailures: Record<PlayerId, number>;
   /** Missed patrol-ship shots in a row per player, kept apart from the turrets' (owner, 2026-10-24); reset by a hit. Never sent. */
   patrolFailures: Record<PlayerId, number>;
+  /** The incident pool (incidents.ts): points earned each cycle change and spent on incidents. Never sent to anyone (#189). */
+  incidentPoints: number;
+  /** Burning rooms (fire.ts), in the order they caught fire. Only the living in a burning room see it (`PlayerView.roomOnFire`). */
+  fires: RoomId[];
   /** Who holds each title (titles.ts); null while vacant. Public: every view has the holders and the lines. */
   titles: Record<TitleId, PlayerId | null>;
   /**

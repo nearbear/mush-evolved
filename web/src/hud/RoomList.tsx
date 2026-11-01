@@ -78,7 +78,7 @@ export function RoomList({
     },
     {
       key: "equipment",
-      entries: view.roomEquipment.map((e) => ({ key: e.id, label: names.equipment(e.type), onClick: () => onSelect({ kind: "equipment", id: e.id }) })),
+      entries: view.roomEquipment.map((e) => ({ key: e.id, label: e.broken ? t("roomList.brokenEquipment", { equipment: names.equipment(e.type) }) : names.equipment(e.type), onClick: () => onSelect({ kind: "equipment", id: e.id }) })),
     },
     {
       key: "items",

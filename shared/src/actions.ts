@@ -31,6 +31,8 @@ import { WarpToPlanetAction } from "./actions/warp_to_planet.ts";
 import { PatrolAttackAction } from "./actions/patrol_attack.ts";
 import { TurretAttackAction } from "./actions/turret_attack.ts";
 import { RepairHullAction } from "./actions/repair_hull.ts";
+import { RepairAction } from "./actions/repair.ts";
+import { ExtinguishAction } from "./actions/extinguish.ts";
 import { TakeoffAction } from "./actions/takeoff.ts";
 import { LandAction } from "./actions/land.ts";
 import { CollectScrapAction } from "./actions/collect_scrap.ts";
@@ -145,6 +147,8 @@ const REGISTRY = {
   turret_attack: new TurretAttackAction(),
   patrol_attack: new PatrolAttackAction(),
   repair_hull: new RepairHullAction(),
+  repair: new RepairAction(),
+  extinguish: new ExtinguishAction(),
   takeoff: new TakeoffAction(),
   land: new LandAction(),
   collect_scrap: new CollectScrapAction(),

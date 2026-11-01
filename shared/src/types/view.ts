@@ -16,6 +16,8 @@ import type { GameState, ShipResources } from "./state.ts";
 export interface EquipmentView {
   id: string;
   type: string;
+  /** Broken (breakage.ts): it does nothing until repaired. Sent only with your room's equipment, so only to those present. */
+  broken?: true;
   /** A patrol ship's interface whose ship is in flight: shown to anyone in its bay, and the ship isn't drawn (owner, 2026-10-24). */
   out?: true;
   /** A patrol ship's interface whose ship was destroyed (it is out for good): shown to anyone in its bay. */
@@ -156,6 +158,8 @@ export interface PlayerView {
   roomItems: ItemView[];
   /** Equipment in the room you are in. */
   roomEquipment: EquipmentView[];
+  /** Whether the room you are in is on fire (fire.ts). Only the living in a burning room learn it; the crew-wide notice names no room. */
+  roomOnFire: boolean;
   /**
    * History of the room you are in (public entries) plus every entry private
    * to you. Other rooms' public history is never sent.

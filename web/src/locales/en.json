@@ -359,7 +359,9 @@
     "renovate": "Renovate",
     "openCapsule": "Open",
     "spoilResearch": "Spoil a sample",
-    "contaminate": "Contaminate"
+    "contaminate": "Contaminate",
+    "repair": "Repair",
+    "extinguish": "Extinguish"
   },
   "queue": {
     "label": "Your actions",
@@ -718,7 +720,8 @@
     "water_stick": "Water stick",
     "super_map": "Starmap fragment",
     "protection_gloves": "Protective Gloves",
-    "space_capsule": "Space capsule"
+    "space_capsule": "Space capsule",
+    "extinguisher": "Extinguisher"
   },
   "logEvent": {
     "summonArrived": "You were summoned to: {{room}}. You are there.",
@@ -894,7 +897,18 @@
     "sampleCount": "{{name}} ×{{count}}",
     "contaminated": "{{name}} tampered with the {{research}} samples.",
     "planetShared": "{{name}} shared a planet.",
-    "planetShareUpdated": "{{name}} updated a shared planet."
+    "planetShareUpdated": "{{name}} updated a shared planet.",
+    "equipmentBroken": "NERON: the {{equipment}} has broken down.",
+    "fireStarted": "NERON: a fire has broken out aboard!",
+    "tremor": "The room shakes violently!",
+    "panicAttack": "You have a panic attack.",
+    "metalPlate": "A metal plate falls on {{name}}!",
+    "electricalOverload": "An electrical overload fries the room's equipment!",
+    "fireBurns": "The fire burns everyone in the room.",
+    "repaired": "{{name}} repaired the {{equipment}}.",
+    "repairFailed": "You failed to repair the {{equipment}}.",
+    "fireExtinguished": "{{name}} put out the fire!",
+    "extinguishFailed": "You failed to put out the fire."
   },
   "skills": {
     "title": "Choose a skill",
@@ -1597,7 +1611,10 @@
     "equipment_count_one": "{{count}} piece of equipment",
     "equipment_count_other": "{{count}} pieces of equipment",
     "exits_count_one": "{{count}} exit",
-    "exits_count_other": "{{count}} exits"
+    "exits_count_other": "{{count}} exits",
+    "brokenEquipment": "{{equipment}} (broken)",
+    "onFire": "This room is on fire!",
+    "broken": "Broken"
   },
   "patrol": {
     "flying": "In flight aboard {{ship}}",

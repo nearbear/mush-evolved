@@ -63,6 +63,8 @@ export const GAME_STATE_FIELDS: Record<string, FieldRule> = {
   hunters: { reach: "room", test: "hunters.test.ts", note: "How many, to everyone; each hunter's hp and id to the living in a turret room; `points`, `since`, `nextId`, `hitChance` and `target` never (leaks.test.ts)." },
   turrets: { reach: "room", test: "hunters.test.ts", note: "Every turret's charges, to the living in a turret room." },
   turretFailures: { reach: "never", test: "leaks.test.ts" },
+  incidentPoints: { reach: "never", test: "leaks.test.ts", note: "The incident pool (#189): no one, no skill or role." },
+  fires: { reach: "room", test: "incidents.test.ts", note: "Only as `roomOnFire`, to the living in the burning room." },
   patrolShips: { reach: "room", test: "patrol.test.ts", note: "`out` to the living in the ship's bay, on its interface, with `armor` while docked (owner, 2026-10-28, so Renovate's offer reveals nothing); `armor` in flight and `charges` to its pilot only, aboard (leaks.test.ts)." },
   patrolFailures: { reach: "never", test: "leaks.test.ts" },
   space: { reach: "never", test: "leaks.test.ts", note: "Only its length, to a pilot aboard (`patrolShip.debris`); the pieces never." },

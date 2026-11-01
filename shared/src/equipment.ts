@@ -75,6 +75,10 @@ export const CAMERA_EQUIPMENT = "CAMERA";
 /** Id of the camera installed in a room (at most one per room). */
 export const cameraEquipmentId = (room: string): string => `${room}:${CAMERA_EQUIPMENT}`;
 
-/** The equipment of this type in the player's room, or none. */
+/** The working equipment of this type in the player's room, or none: broken equipment does nothing (breakage.ts). */
 export const equipmentHere = (state: Readonly<GameState>, player: Readonly<PlayerState>, type: string) =>
-  (state.equipment[player.room] ?? []).filter((equipment) => equipment.type === type);
+  (state.equipment[player.room] ?? []).filter((equipment) => equipment.type === type && !equipment.broken);
+
+/** Whether the equipment with this id in `room` is broken (breakage.ts). */
+export const isBrokenIn = (state: Readonly<GameState>, room: string, id: string): boolean =>
+  state.equipment[room]?.find((equipment) => equipment.id === id)?.broken === true;

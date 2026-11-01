@@ -139,3 +139,7 @@ button.hud-plate {
   flex-wrap: wrap;
   gap: 0.75rem;
 }
+/* The fire notice follows the room's name down. */
+.room-view:has(> .self-hud-top) .room-fire {
+  top: calc(0.5rem + var(--hud-card) + 2.45rem);
+}

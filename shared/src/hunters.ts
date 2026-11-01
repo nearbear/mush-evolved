@@ -38,7 +38,9 @@ export function allTurrets(state: Readonly<GameState>) {
   return Object.values(state.equipment).flatMap((list) => list.filter((equipment) => equipment.type === TURRET_EQUIPMENT));
 }
 
-export const turretCharges = (state: Readonly<GameState>, turret: string): number => state.turrets[turret] ?? state.config.turrets.charges;
+/** A broken turret shows 0 and keeps its own charges for when it is repaired (owner, 2026-10-25). */
+export const turretCharges = (state: Readonly<GameState>, turret: string): number =>
+  allTurrets(state).some((t) => t.id === turret && t.broken) ? 0 : state.turrets[turret] ?? state.config.turrets.charges;
 
 /**
  * Takes `amount` off a hunter's hp; at 0 it is destroyed (removed) and leaves debris in space. Returns whether it was.
@@ -81,7 +83,7 @@ export function huntersCycle(state: GameState, day: number): void {
     destroyShip(state);
     return;
   }
-  for (const turret of allTurrets(state)) {
+  for (const turret of allTurrets(state).filter((t) => !t.broken)) {
     const charges = Math.min(state.config.turrets.charges, turretCharges(state, turret.id) + state.config.turrets.rechargePerCycle);
     if (charges >= state.config.turrets.charges) delete state.turrets[turret.id];
     else state.turrets[turret.id] = charges;

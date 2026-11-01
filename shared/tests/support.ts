@@ -10,6 +10,9 @@ import type { Action, ActionOption, GameConfig, GameState, PlayerId, PlayerState
 /** `config` with no hunter waves, for tests that run many cycles with nobody at the turrets (the ship would explode). */
 export const noHunters = <C extends GameConfig>(config: C): C => ({ ...config, hunters: { ...config.hunters, waveChance: 0 } });
 
+/** `config` where incidents never happen (the pool still fills), for tests that run many cycles and count HP or morale. */
+export const noIncidents = <C extends GameConfig>(config: C): C => ({ ...config, incidents: { ...config.incidents, rollPoints: Number.MAX_SAFE_INTEGER } });
+
 /** Seats p0, p1, … with the first `n` characters. `bots` says which seats are bots. */
 export function makeSeats(n: number, bots: "none" | "others" | "all" = "none"): Seat[] {
   return Array.from({ length: n }, (_, i) => ({

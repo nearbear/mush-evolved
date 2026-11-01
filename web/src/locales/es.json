@@ -363,7 +363,9 @@
     "renovate": "Renovar",
     "openCapsule": "Abrir",
     "spoilResearch": "Estropear una muestra",
-    "contaminate": "Contaminar"
+    "contaminate": "Contaminar",
+    "repair": "Reparar",
+    "extinguish": "Extinguir"
   },
   "queue": {
     "label": "Tus acciones",
@@ -725,7 +727,8 @@
     "water_stick": "Bastoncillo acuoso",
     "super_map": "Fragmento de mapa estelar",
     "protection_gloves": "Guantes de protección",
-    "space_capsule": "Cápsula espacial"
+    "space_capsule": "Cápsula espacial",
+    "extinguisher": "Extintor"
   },
   "logEvent": {
     "summonArrived": "Te han convocado a: {{room}}. Ya estás allí.",
@@ -906,7 +909,18 @@
     "sampleCount": "{{name}} ×{{count}}",
     "contaminated": "{{name}} manipuló las muestras de {{research}}.",
     "planetShared": "{{name}} ha compartido un planeta.",
-    "planetShareUpdated": "{{name}} ha actualizado un planeta compartido."
+    "planetShareUpdated": "{{name}} ha actualizado un planeta compartido.",
+    "equipmentBroken": "NERON: el equipo «{{equipment}}» se ha averiado.",
+    "fireStarted": "NERON: ¡se ha declarado un incendio a bordo!",
+    "tremor": "¡La sala tiembla violentamente!",
+    "panicAttack": "Sufres un ataque de pánico.",
+    "metalPlate": "¡Una placa de metal cae sobre {{name}}!",
+    "electricalOverload": "¡Una sobrecarga eléctrica quema los equipos de la sala!",
+    "fireBurns": "El fuego quema a todos los que están en la sala.",
+    "repaired": "{{name}} ha reparado el equipo «{{equipment}}».",
+    "repairFailed": "No has conseguido reparar el equipo «{{equipment}}».",
+    "fireExtinguished": "¡{{name}} ha apagado el incendio!",
+    "extinguishFailed": "No has conseguido apagar el incendio."
   },
   "skills": {
     "title": "Elegir una habilidad",
@@ -1615,7 +1629,10 @@
     "equipment_count_many": "{{count}} equipos",
     "exits_count_one": "{{count}} salida",
     "exits_count_other": "{{count}} salidas",
-    "exits_count_many": "{{count}} salidas"
+    "exits_count_many": "{{count}} salidas",
+    "brokenEquipment": "{{equipment}} (averiado)",
+    "onFire": "¡Esta sala está en llamas!",
+    "broken": "Averiado"
   },
   "patrol": {
     "flying": "En vuelo a bordo de {{ship}}",

@@ -72,6 +72,8 @@ describe("actions from a client", () => {
     turret_attack: [{ type: "turret_attack", equipment: "e1", hunter: "h1" }],
     patrol_attack: [{ type: "patrol_attack", equipment: "e1", hunter: "h1" }],
     repair_hull: [{ type: "repair_hull", item: "i1" }],
+    repair: [{ type: "repair", equipment: "e1" }],
+    extinguish: [{ type: "extinguish", item: "i1" }],
     takeoff: [{ type: "takeoff", equipment: "e1" }],
     land: [{ type: "land", equipment: "e1" }],
     collect_scrap: [{ type: "collect_scrap", equipment: "e1" }],

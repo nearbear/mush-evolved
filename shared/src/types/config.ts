@@ -1,3 +1,4 @@
+import type { IncidentId } from "../incidents.ts";
 import type { PlanetDirection } from "../planets.ts";
 import type { PlantState, RoomId } from "../types.ts";
 import type { StatusId } from "../statuses.ts";
@@ -425,6 +426,29 @@ export interface GameConfig {
   spaceCapsule: { cost: { ap: number }; dirtyChance: number; injuryChance: number; contents: string[] };
   // Hull repair (owner, 2026-10-24, the wiki's Armure et Bouclier): 1 AP, 25%, +5 hull, a metal scrap used up on a success.
   hullRepair: { cost: { ap: number }; chance: number; injuryChance: number; amount: number };
+  // Incident points (owner, 2026-10-25, #184; eMushpedia "Embûches"): incidents.ts. Each cycle change adds
+  // `budget.base[min(day, base.length) - 1]`, plus `tier1.bonus + (day - tier1.fromDay)` from `tier1.fromDay`, plus
+  // `tier2.bonus + tier1's addition + (day - tier2.fromDay)` from `tier2.fromDay`. Incidents happen with chance
+  // pool / `rollPoints`. `catalog` prices and weights the built incidents.
+  incidents: {
+    budget: { base: number[]; tier1: { fromDay: number; bonus: number }; tier2: { fromDay: number; bonus: number } };
+    rollPoints: number;
+    catalog: Record<IncidentId, { cost: number; weight: number }>;
+    tremor: { damage: [number, number] };
+    panicAttack: { morale: number };
+    metalPlate: { damage: [number, number] };
+    electricalOverload: { damage: number };
+  };
+  // Fire (owner, 2026-10-25, the original's FIRE_* numbers): fire.ts. Each burning room spreads (`spreadChance`, at most
+  // `maxSpreads` a cycle) or does damage: each breakable piece of equipment breaks with `breakChance`, the hull takes
+  // `hullDamage` with `hullChance`, and everyone present loses `damage` HP.
+  fire: { spreadChance: number; maxSpreads: number; breakChance: number; hullChance: number; hullDamage: [number, number]; damage: number };
+  // Extinguish (owner, 2026-10-25, eMushpedia "Extincteur"): 1 AP, 50%, with an extinguisher you can reach.
+  extinguish: { cost: { ap: number }; chance: number };
+  // Breakage and Repair (owner, 2026-10-25): breakage.ts. `chance` is each breakable equipment type's base repair chance
+  // (eMushpedia's `réparer=`); a type without one never breaks. A wrench multiplies it by `wrenchFactor`, the Technician
+  // skill (`engineer`) by `engineerFactor`. A broken oxygen tank leaks `oxygenLeak` oxygen at each cycle change.
+  repair: { cost: { ap: number }; chance: Record<string, number>; wrenchFactor: number; engineerFactor: number; oxygenLeak: number };
   // Owner, 2026-10-28: carrying the oscilloscope (eMush's Wavoscope) multiplies the odds of a hull repair and a patrol-ship renovation.
   oscilloscope: { repairFactor: number };
   hunger: {
@@ -484,4 +508,5 @@ export interface GameConfig {
 export interface Equipment {
   id: string; // Unique across the ship, e.g. "REFECTORY:KITCHEN".
   type: string;
+  broken?: true; // Broken by an incident or a fire (breakage.ts) until repaired. Only the living in its room see it. Never set in the config.
 }

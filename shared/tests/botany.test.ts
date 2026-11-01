@@ -3,7 +3,7 @@ import { DEFAULT_CONFIG } from "../src/config.ts";
 import { parseGameMessage } from "../src/protocol.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";
 import type { GameConfig, GameState, ItemState, PlantState } from "../src/types.ts";
-import { costOf, makeSeats, must, mustApply, nextCycle, nextDay, offered, option, player, noHunters } from "./support.ts";
+import { costOf, makeSeats, must, mustApply, nextCycle, nextDay, offered, option, player, noHunters, noIncidents } from "./support.ts";
 
 const GARDEN = "HYDROPONIC_CENTER";
 const BANANA = "fruit_banana";
@@ -12,7 +12,7 @@ const adult = (over: Partial<PlantState> = {}): PlantState => ({ species: BANANA
 
 /** Three humans in the garden (p2 Mush when `mush`), the default start items, and no random sickness unless asked. */
 function ship(config: Partial<GameConfig["botany"]> = {}, mush = false): GameState {
-  const s = createGame(makeSeats(3), noHunters({ ...DEFAULT_CONFIG, mushCount: mush ? 1 : 0, botany: { ...cfg, sickChancePerCycle: 0, ...config } }), 3, mush ? { p2: "mush" } : {});
+  const s = createGame(makeSeats(3), noIncidents(noHunters({ ...DEFAULT_CONFIG, mushCount: mush ? 1 : 0, botany: { ...cfg, sickChancePerCycle: 0, ...config } })), 3, mush ? { p2: "mush" } : {});
   for (const p of s.players) p.room = GARDEN;
   return s;
 }
@@ -45,7 +45,7 @@ describe("botany: the decided numbers and the start", () => {
   });
 
   it("starts with an empty pot and two adult banana plants in the garden and two empty pots in front storage", () => {
-    const s = createGame(makeSeats(3), DEFAULT_CONFIG, 1);
+    const s = createGame(makeSeats(3), noIncidents(DEFAULT_CONFIG), 1);
     const where = (room: string) => pots(s).filter((p) => p.at.kind === "room" && p.at.id === room);
     expect(where(GARDEN).map((p) => p.plant ?? null)).toEqual([null, adult(), adult()]);
     expect(where("STORAGE_FRONT").map((p) => p.plant ?? null)).toEqual([null, null]);

@@ -1,9 +1,13 @@
 import { actionCost, actionSuccessRate, actionDirtRate, actionInjuryRate, type CostContext } from "../modifiers.ts";
+import { isBrokenIn } from "../equipment.ts";
 import type { Action as AnyAction, GameState, PlayerState, ResourceId } from "../types.ts";
 
 /** Others you could bond with, share with or hit: living, in your room, not yourself. */
 export const peopleHere = (state: Readonly<GameState>, p: Readonly<PlayerState>): PlayerState[] =>
   state.players.filter((o) => o.id !== p.id && o.alive && o.room === p.room);
+
+/** The `check` code for an action on broken equipment (breakage.ts): it does nothing until repaired. */
+export const BROKEN = "broken";
 
 /** The `validate` code for full hands: such an action is shown disabled rather than hidden (`unaffordableActions`). */
 /** Reason code: combat and spore actions wait for Mush selection (preselection.ts). */
@@ -68,6 +72,8 @@ export class Action<T extends { type: string }> {
   recorded: boolean = true;
   /** Done in a terminal's window (web TerminalDialog), so the inspect panel leaves it out. Fixed per type, like visibility. */
   terminal: boolean = false;
+  /** Allowed on broken equipment (Repair). Every other action naming broken equipment in its `equipment` field is refused. */
+  onBroken: boolean = false;
 
   constructor(type: string, ...fields: [Exclude<keyof T, "type">] extends [never] ? [] : [fields: Fields<T>]) {
     this.type = type;
@@ -160,7 +166,13 @@ export class Action<T extends { type: string }> {
    * no action can skip the cost check (a modifier can put a price on a free action).
    */
   check(state: Readonly<GameState>, player: Readonly<PlayerState>, target: T): string | null {
-    return this.validate(state, player, target) ?? this.canAfford(state, player, target);
+    return this.refusedBroken(state, player, target) ?? this.validate(state, player, target) ?? this.canAfford(state, player, target);
+  }
+
+  /** Broken equipment does nothing (owner, 2026-10-25): no action on it but those marked `onBroken`. */
+  private refusedBroken(state: Readonly<GameState>, player: Readonly<PlayerState>, target: T): string | null {
+    const equipment = (target as { equipment?: unknown }).equipment;
+    return !this.onBroken && typeof equipment === "string" && isBrokenIn(state, player.room, equipment) ? BROKEN : null;
   }
 
   /** Cycles until a `cooldown` refusal clears, for showing the action disabled with the wait. */

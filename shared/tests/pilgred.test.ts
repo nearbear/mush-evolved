@@ -6,7 +6,7 @@ import { parseGameMessage } from "../src/protocol.ts";
 import { applyAction, createGame, newCycle, viewFor } from "../src/rules.ts";
 import { addStatus } from "../src/statuses.ts";
 import type { Action, GameState } from "../src/types.ts";
-import { makeSeats, must, nextDay, offered, player, noHunters, pickSkill, setProgress } from "./support.ts";
+import { makeSeats, must, nextDay, offered, player, noHunters, noIncidents, pickSkill, setProgress } from "./support.ts";
 
 const seats = makeSeats(3, "others");
 const TERMINAL = "MOTOR_ROOM:PILGRED";
@@ -15,7 +15,7 @@ const cfg = DEFAULT_CONFIG.pilgred;
 const base = Math.floor((cfg.progress.rate * cfg.progress.mod) / 10);
 
 function game(room = "MOTOR_ROOM") {
-  const state = createGame(seats, noHunters(DEFAULT_CONFIG), 7);
+  const state = createGame(seats, noIncidents(noHunters(DEFAULT_CONFIG)), 7);
   for (const p of state.players) p.room = room;
   return state;
 }

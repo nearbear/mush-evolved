@@ -1,0 +1,58 @@
+// Fire (owner, 2026-10-25, #184; the original's FIRE_* numbers in Gameplay.hx and eMush's DifficultyConfigData.php).
+// `GameState.fires` lists the burning rooms. A new fire is always announced in global chat, without the room (owner,
+// 2026-11-01); only the living in a burning room see that it burns (`PlayerView.roomOnFire`). Fire burns no oxygen.
+// Putting one out is actions/extinguish.ts.
+
+import { breakEquipment, workingBreakable } from "./breakage.ts";
+import { shipInvincible } from "./cheats.ts";
+import { pushChat } from "./chat.ts";
+import { damage } from "./death.ts";
+import { destroyShip } from "./hunters.ts";
+import { logPublic } from "./log.ts";
+import { patrolShip } from "./patrol.ts";
+import { roll, rollFloat, rollInt } from "./rng.ts";
+import type { GameState, RoomId } from "./types.ts";
+
+/** The Daedalus's own rooms: every room but the patrol ships' (incidents and fire stay aboard). */
+export const daedalusRooms = (state: Readonly<GameState>): RoomId[] => Object.keys(state.config.rooms).filter((room) => !patrolShip(room));
+
+export const isOnFire = (state: Readonly<GameState>, room: RoomId): boolean => state.fires.includes(room);
+
+/** Sets a room on fire, if it isn't already, and NERON announces it. Mutates a state the caller already cloned. */
+export function startFire(state: GameState, room: RoomId): void {
+  if (isOnFire(state, room)) return;
+  state.fires.push(room);
+  pushChat(state, "global", { from: null, isBot: false, text: "", system: { key: "fireStarted" } });
+}
+
+/**
+ * At each cycle change, after incidents (so a fire acts in the cycle it starts): each room that was burning either
+ * spreads to a neighbour not on fire (`spreadChance`, at most `maxSpreads` a cycle; a fire it starts acts from the next
+ * cycle) or does damage: each breakable piece of equipment breaks with `breakChance`, the hull loses `hullDamage` with
+ * `hullChance`, and everyone present loses `damage` HP. Mutates a state the caller already cloned.
+ */
+export function fireCycle(state: GameState): void {
+  const config = state.config.fire;
+  let spreads = 0;
+  for (const room of [...state.fires]) {
+    if (state.phase !== "playing") return;
+    const neighbours = (state.config.rooms[room] ?? []).filter((r) => !isOnFire(state, r) && !patrolShip(r));
+    if (rollFloat(state) < config.spreadChance && spreads < config.maxSpreads && neighbours.length > 0) {
+      spreads += 1;
+      startFire(state, neighbours[rollInt(state, neighbours.length)]!);
+      continue;
+    }
+    for (const equipment of workingBreakable(state, room)) if (rollFloat(state) < config.breakChance) breakEquipment(state, equipment);
+    if (rollFloat(state) < config.hullChance) {
+      const loss = roll(state, config.hullDamage);
+      if (!shipInvincible(state)) state.ship.hull = Math.max(0, state.ship.hull - loss);
+      if (state.ship.hull === 0) {
+        destroyShip(state);
+        return;
+      }
+    }
+    const present = state.players.filter((p) => p.alive && p.room === room);
+    if (present.length > 0) logPublic(state, room, "fireBurns");
+    for (const p of present) damage(state, p, config.damage);
+  }
+}

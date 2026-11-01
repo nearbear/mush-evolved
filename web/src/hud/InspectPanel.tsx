@@ -6,7 +6,7 @@ import { useTranslation } from "react-i18next";
 import { useNames } from "../i18n/names.ts";
 import type { CSSProperties, ReactNode } from "react";
 import { actionVisibility, CHARACTERS, characterGivenName, characterName, type Action, type ActionOption, type EquipmentView, type PlayerView, type ShipLayout, type Target } from "@mush2/shared";
-import { characterImage, CONTAMINATED_ICON, portrait } from "../art/assets.ts";
+import { BROKEN_ICON, characterImage, CONTAMINATED_ICON, portrait } from "../art/assets.ts";
 import { useMobile } from "../useMobile.ts";
 import { atlasUrl } from "../iso/shipLayout.ts";
 import { equipmentByTileKey, roomAsBuilt } from "../iso/equipmentTiles.ts";
@@ -124,6 +124,11 @@ function Details({ view, layout, resolved, onAction }: { view: PlayerView; layou
           <div className="inspect-name">
             <strong>{names.equipment(resolved.equipment.type)}</strong>
             <div className="sub">Equipment in {names.room(view.you.room)}</div>
+            {resolved.equipment.broken && (
+              <div className="sub inspect-broken">
+                <img src={BROKEN_ICON} alt="" /> {t("roomList.broken")}
+              </div>
+            )}
             {resolved.equipment.out && <div className="sub">{t(resolved.equipment.destroyed ? "patrol.destroyed" : "patrol.out")}</div>}
             {resolved.equipment.armor !== undefined && <div className="sub">{t("patrol.armor", { armor: resolved.equipment.armor, max: resolved.equipment.maxArmor })}</div>}
           </div>

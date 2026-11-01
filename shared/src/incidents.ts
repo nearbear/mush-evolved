@@ -1,0 +1,137 @@
+// Incident points (owner, 2026-10-25, #184 and #185-#190; eMushpedia "Embûches"). At each cycle change the ship's
+// pool (`GameState.incidentPoints`, never sent to anyone) grows by the day's budget; then, with chance pool ÷
+// `rollPoints`, incidents are bought one after another, each picked by weight among those the pool can afford that
+// have a valid target, until none is left. Unspent points carry over. Pre-selection earns and spends like any other
+// time. Incidents hit humans and Mush alike.
+
+import { gainMorale } from "./adjustStats.ts";
+import { breakEquipment, workingBreakable } from "./breakage.ts";
+import { damage } from "./death.ts";
+import { daedalusRooms, isOnFire, startFire } from "./fire.ts";
+import { logPrivate, logPublic } from "./log.ts";
+import { roll, rollFloat, rollInt, rollWeighted } from "./rng.ts";
+import type { DeepReadonly, Equipment, GameConfig, GameState, PlayerId, PlayerState, RoomId } from "./types.ts";
+
+/** The built incidents. Not built: stuck door (doors aren't objects yet) and disease (#214). */
+export const INCIDENT_IDS = [
+  "tremor",
+  "fire",
+  "panic_attack",
+  "oxygen_leak",
+  "electrical_overload",
+  "metal_plate",
+  "fuel_leak",
+  "equipment_breakdown",
+] as const;
+export type IncidentId = (typeof INCIDENT_IDS)[number];
+
+/** Who already had a once-per-cycle incident during this cycle change's spending. */
+interface Spending {
+  panicked: Set<PlayerId>;
+  plated: Set<PlayerId>;
+}
+
+interface Incident {
+  /** Whether it has a valid target right now. */
+  possible: (state: Readonly<GameState>, spending: Spending) => boolean;
+  /** Picks a target with the seeded RNG and applies the effect. Called only when `possible`. */
+  apply: (state: GameState, spending: Spending) => void;
+}
+
+const pick = <T>(state: GameState, list: readonly T[]): T => list[rollInt(state, list.length)]!;
+
+const aboard = (state: Readonly<GameState>): PlayerState[] => {
+  const rooms = new Set(daedalusRooms(state));
+  return state.players.filter((p) => p.alive && rooms.has(p.room));
+};
+
+const occupiedRooms = (state: Readonly<GameState>): RoomId[] => daedalusRooms(state).filter((room) => state.players.some((p) => p.alive && p.room === room));
+
+const workingOf = (state: Readonly<GameState>, type?: string): Equipment[] =>
+  daedalusRooms(state).flatMap((room) => workingBreakable(state, room).filter((e) => type === undefined || e.type === type));
+
+const breakOne = (type?: string): Incident => ({
+  possible: (state) => workingOf(state, type).length > 0,
+  apply: (state) => breakEquipment(state, pick(state, workingOf(state, type))),
+});
+
+const INCIDENTS: Record<IncidentId, Incident> = {
+  // One room with crew; everyone there loses their own 1-3 HP roll (owner, 2026-11-01).
+  tremor: {
+    possible: (state) => occupiedRooms(state).length > 0,
+    apply: (state) => {
+      const room = pick(state, occupiedRooms(state));
+      logPublic(state, room, "tremor");
+      for (const p of state.players.filter((o) => o.alive && o.room === room)) damage(state, p, roll(state, state.config.incidents.tremor.damage));
+    },
+  },
+  fire: {
+    possible: (state) => daedalusRooms(state).some((room) => !isOnFire(state, room)),
+    apply: (state) => startFire(state, pick(state, daedalusRooms(state).filter((room) => !isOnFire(state, room)))),
+  },
+  // Anyone living, Mush included (#190), once per cycle each.
+  panic_attack: {
+    possible: (state, { panicked }) => state.players.some((p) => p.alive && !panicked.has(p.id)),
+    apply: (state, { panicked }) => {
+      const victim = pick(state, state.players.filter((p) => p.alive && !panicked.has(p.id)));
+      panicked.add(victim.id);
+      logPrivate(state, victim.id, "panicAttack");
+      gainMorale(state, victim, -state.config.incidents.panicAttack.morale);
+    },
+  },
+  oxygen_leak: breakOne("OXYGEN_TANK"),
+  fuel_leak: breakOne("FUEL_TANK"),
+  equipment_breakdown: breakOne(),
+  // A room with breakable equipment still working (owner, 2026-11-01): all of it breaks, and those present lose HP.
+  electrical_overload: {
+    possible: (state) => daedalusRooms(state).some((room) => workingBreakable(state, room).length > 0),
+    apply: (state) => {
+      const room = pick(state, daedalusRooms(state).filter((r) => workingBreakable(state, r).length > 0));
+      logPublic(state, room, "electricalOverload");
+      for (const equipment of workingBreakable(state, room)) breakEquipment(state, equipment);
+      for (const p of state.players.filter((o) => o.alive && o.room === room)) damage(state, p, state.config.incidents.electricalOverload.damage);
+    },
+  },
+  // One person aboard, once per cycle each.
+  metal_plate: {
+    possible: (state, { plated }) => aboard(state).some((p) => !plated.has(p.id)),
+    apply: (state, { plated }) => {
+      const victim = pick(state, aboard(state).filter((p) => !plated.has(p.id)));
+      plated.add(victim.id);
+      logPublic(state, victim.room, "metalPlate", { name: victim.character });
+      damage(state, victim, roll(state, state.config.incidents.metalPlate.damage));
+    },
+  },
+};
+
+/**
+ * Points the pool gains at a cycle change on `day` (1-based): +1 on day 1, +2 on day 2, +1 from day 3; from day 5
+ * another 1 + (day - 5); from day 10 another 2 + the day-5 addition + (day - 10). It dips from day 2 to day 3 (the
+ * wiki's numbers), then never falls.
+ */
+export function incidentPointsForDay(config: DeepReadonly<GameConfig>, day: number): number {
+  const { base, tier1, tier2 } = config.incidents.budget;
+  const first = base[Math.min(Math.max(day, 1), base.length) - 1] ?? 0;
+  const second = day >= tier1.fromDay ? tier1.bonus + (day - tier1.fromDay) : 0;
+  const third = day >= tier2.fromDay ? tier2.bonus + second + (day - tier2.fromDay) : 0;
+  return first + second + third;
+}
+
+/**
+ * At each cycle change, `day` being the new cycle's: the pool grows, then maybe incidents are bought. Mutates a state
+ * the caller already cloned.
+ */
+export function incidentsCycle(state: GameState, day: number): void {
+  if (state.phase !== "playing") return;
+  state.incidentPoints += incidentPointsForDay(state.config, day);
+  if (state.incidentPoints <= 0 || rollFloat(state) >= state.incidentPoints / state.config.incidents.rollPoints) return;
+  const spending: Spending = { panicked: new Set(), plated: new Set() };
+  const { catalog } = state.config.incidents;
+  while (state.phase === "playing") {
+    const menu = INCIDENT_IDS.filter((id) => catalog[id].weight > 0 && catalog[id].cost > 0 && catalog[id].cost <= state.incidentPoints && INCIDENTS[id].possible(state, spending));
+    if (menu.length === 0) return;
+    const id = menu[rollWeighted(state, menu.map((m) => catalog[m].weight))]!;
+    state.incidentPoints -= catalog[id].cost;
+    INCIDENTS[id].apply(state, spending);
+  }
+}

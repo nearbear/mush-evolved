@@ -14,6 +14,9 @@ import { AT_CAPACITY, COOLDOWN, DIRTY, NO_SPACE } from "./actions/action.ts";
 import { getUp } from "./actions/lie_down.ts";
 import { researchNeedsView } from "./actions/research.ts";
 import { equipmentHere } from "./equipment.ts";
+import { leakOxygen } from "./breakage.ts";
+import { fireCycle, isOnFire } from "./fire.ts";
+import { incidentsCycle } from "./incidents.ts";
 import { relayView } from "./relayView.ts";
 import { itemsIn, rechargeMicrowaves, startCharges, visibleItemsIn } from "./items.ts";
 import { actionFailed, apGain, carePointsGain, channelLimit, computerPointsCap, computerPointsGain, shootPointsGain, cycleChanged, designerPointsGain, gardenPointsGain, dailyMoraleLoss, inventorySlots, movementRules, pilgredPointsGain, satietyLoss } from "./modifiers.ts";
@@ -136,6 +139,8 @@ export function createGame(
     nextSharedPlanetId: 1,
     hunters: newHunters(),
     turrets: {},
+    incidentPoints: 0,
+    fires: [],
     turretFailures: {},
     patrolFailures: {},
     patrolShips: newPatrolShips(config),
@@ -392,6 +397,10 @@ function advanceCycle(state: GameState, at?: number): void {
     params: newDay ? { day } : { cycle: state.cycle },
     visibleTo: "all",
   });
+  // After the cycle's opening line, so incident and fire lines follow it. A fire acts in the cycle it starts.
+  incidentsCycle(state, day);
+  fireCycle(state);
+  leakOxygen(state);
   preselectionCycle(state);
   strikeSlots(state);
 }
@@ -500,6 +509,7 @@ export function viewFor(state: GameState, playerId: PlayerId): PlayerView {
     inventorySlots: inventorySlots(state, you),
     roomItems: you.alive ? visibleItemsIn(state, { kind: "room", id: you.room }, you).map((item) => itemView(item, you)) : [],
     roomEquipment: you.alive ? (state.equipment[you.room] ?? []).map((e) => equipmentView(state, e)) : [],
+    roomOnFire: you.alive && isOnFire(state, you.room),
     // The dead keep only ship-wide entries (cycles, days); every room entry, their own private ones included, goes.
     log: state.log.filter((e) =>
       !you.alive ? e.room === undefined && e.visibleTo === "all" : e.visibleTo === "all" ? e.room === undefined || e.room === you.room : e.visibleTo.includes(playerId),
@@ -591,13 +601,13 @@ function itemView({ id, type, of, builds, charges, teaches, plant, spores, hidde
   return { id, type, ...(hiddenBy === viewer.id && { hidden: true as const }), ...(spores && viewer.role === "mush" && viewer.alive && { spores }), ...(of !== undefined && { of }), ...(builds !== undefined && { builds }), ...(charges !== undefined && { charges }), ...(teaches !== undefined && { teaches }), ...(plant && { plant: plantView(plant, viewer) }) };
 }
 
-function equipmentView(state: GameState, { id, type }: Equipment): EquipmentView {
+function equipmentView(state: GameState, { id, type, broken }: Equipment): EquipmentView {
   // Out and destroyed are known in the bay, where the ship is missing (owner, 2026-10-24); a docked ship's armor too,
   // so Renovate being offered tells nothing new (owner, 2026-10-28).
   const ship = type === PATROL_INTERFACE ? PATROL_SHIPS.find((s) => interfaceId(s) === id) : undefined;
   const shipState = ship && state.patrolShips[ship.id];
   const docked = shipState && !shipState.out && { armor: shipState.armor, maxArmor: state.config.patrol.armor[ship.kind] };
-  return { id, type, ...(shipState?.out && { out: true as const }), ...(shipState?.destroyed && { destroyed: true as const }), ...docked };
+  return { id, type, ...(broken && { broken }), ...(shipState?.out && { out: true as const }), ...(shipState?.destroyed && { destroyed: true as const }), ...docked };
 }
 
 /** Your own ship's armor and charges, and how much debris is out there, while you fly it. */
