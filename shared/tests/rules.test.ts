@@ -168,15 +168,15 @@ describe("moveCost", () => {
   });
 
   it("converts AP when MP is short", () => {
-    expect(moveCost(rules, { ap: 1, mp: 0 })).toEqual({ ap: 1, mpAfter: 2 });
+    expect(moveCost(rules, { ap: 1, mp: 0  })).toEqual({ ap: 1, mpAfter: 2 });
   });
 
   it("never converts past the MP cap", () => {
-    expect(moveCost({ ...rules, mpPerMove: 2, mpCap: 2 }, { ap: 1, mp: 1 })).toEqual({ ap: 1, mpAfter: 0 });
+    expect(moveCost({ ...rules, mpPerMove: 2, mpCap: 2 }, { ap: 1, mp: 1  })).toEqual({ ap: 1, mpAfter: 0 });
   });
 
   it("is unaffordable without MP or enough AP", () => {
-    expect(moveCost(rules, { ap: 0, mp: 0 })).toBeNull();
+    expect(moveCost(rules, { ap: 0, mp: 0  })).toBeNull();
     expect(moveCost({ ...rules, mpPerMove: 5, mpPerConversion: 3 }, { ap: 4, mp: 0 })).toBeNull();
   });
 });

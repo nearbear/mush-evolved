@@ -56,6 +56,7 @@ export interface PlayerState extends Seat {
   /** Where you stand in `room` (spot.ts). Unset until you walk or move: the client spreads such people out. Public to your room (`OtherPlayerView.spot`). */
   spot?: Spot;
   ap: number;
+  maxAp: number;
   /** The bed (equipment id) you are lying in, while you have the `lying_down` modifier. Public to your room (`OtherPlayerView.lying`). */
   lyingIn?: string;
   /** Who is pushing your wheelchair (accommodate.ts). Public to your room (`OtherPlayerView.pushedBy`, the `accommodated` status). */
@@ -92,6 +93,7 @@ export interface PlayerState extends Seat {
   accommodationOffers?: { by: PlayerId; until: number }[];
   /** Movement points. Start at 0; topped up by converting AP when moving. */
   mp: number;
+  maxMp: number;
   /** Health points. Private: only in your own view. Nothing changes them yet. */
   hp: number;
   maxHp: number;

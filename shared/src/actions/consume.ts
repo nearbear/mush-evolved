@@ -6,7 +6,7 @@ import { rationApBonus } from "../comms.ts";
 import { contaminate } from "../infection.ts";
 import { isFullBelly } from "../statuses.ts";
 import type { GameState, PlayerState } from "../types.ts";
-import { gainMorale } from "../adjustStats.ts";
+import { changeAP, gainMorale } from "../adjustStats.ts";
 
 export type ConsumeActionData = { type: "consume"; item: string };
 
@@ -32,18 +32,13 @@ export class ConsumeAction extends Action<ConsumeActionData> {
 
   override apply(state: GameState, player: PlayerState, target: ConsumeActionData): void {
     const item = removeItem(state, target.item);
-    // Fungal cuisine: a human is contaminated first, one level per spore; a conversion ends the meal with no food effects.
-    if (player.role === "human" && item.spores) {
-      for (let i = 0; i < item.spores && player.role === "human"; i++) contaminate(state, player);
-      if (player.role !== "human") {
+    if (player.role !== "human") {
         logPublic(state, player.room, "consumed", { name: player.character, item: item.type });
         return;
-      }
     }
     const { ap, satiety, morale = 0, hp = 0 } = ITEM_TYPES[item.type]!.consume!;
     player.hp = Math.min(player.maxHp, player.hp + Math.max(0, hp));
-    player.ap = Math.min(state.config.maxAp, player.ap + ap + rationApBonus(state, item.type));
-    //player.morale = Math.max(0, Math.min(player.maxMorale, player.morale + morale));
+    changeAP(state, player, ap + rationApBonus(state, item.type));
     gainMorale(state, player, morale);
     if (player.role === "human") {
       player.satiety += satiety;
@@ -51,5 +46,9 @@ export class ConsumeAction extends Action<ConsumeActionData> {
     }
     consumed(state, player, item);
     logPublic(state, player.room, "consumed", { name: player.character, item: item.type });
+    // Fungal cuisine: a human is contaminated first, one level per spore; a conversion ends the meal with no food effects.
+    if (player.role === "human" && item.spores) {
+      for (let i = 0; i < item.spores && player.role === "human"; i++) contaminate(state, player);
+    }
   }
 }

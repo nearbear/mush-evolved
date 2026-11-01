@@ -61,7 +61,7 @@ import type {
   Role,
   Seat,
 } from "./types.ts";
-import { diseaseTrackerCycleChange } from "./adjustStats.ts";
+import { changeAP, diseaseTrackerCycleChange } from "./adjustStats.ts";
 
 export type { ActionResult };
 
@@ -164,7 +164,9 @@ export function newPlayer(s: Seat, config: DeepReadonly<GameConfig>, cycle: numb
     alpha: role === "mush",
     room: config.startRoom,
     ap: config.startAp,
+    maxAp: config.maxAp,
     mp: config.startMp,
+    maxMp: config.movement.mpCap,
     hp: config.startHp,
     maxHp: config.maxHp,
     morale: config.startMorale,
@@ -345,7 +347,7 @@ function chargesFor(config: DeepReadonly<GameConfig>, type: string): { charges?:
 function advanceCycle(state: GameState, at?: number): void {
   state.cycle += 1;
   for (const p of state.players) {
-    p.ap = Math.min(state.config.maxAp, p.ap + apGain(state, p));
+    changeAP(state, p, apGain(state, p));
     p.ready = false;
   }
   if (at !== undefined) inactivityCycle(state, at);
@@ -518,7 +520,8 @@ export function viewFor(state: GameState, playerId: PlayerId): PlayerView {
       from: state.players.filter((o) => state.bonds[o.id]?.includes(playerId)).map((o) => o.id),
     },
     config: { heavyMpPenalty: state.config.heavy.mpPenalty, actionQueueCap: state.config.action.queueCap, sharedSpots: state.config.sharedSpots, setupId: state.config.setupId, returnToSolAp: state.config.pilgred.returnCost.ap, edenAp: state.config.pilgred.edenCost.ap, xylophAp: state.config.comms.xyloph.cost.ap },
-    maxAp: state.config.maxAp,
+    maxAp: you.maxAp,
+    maxMp: you.maxMp,
     maxHp: you.maxHp,
     maxMorale: you.maxMorale,
     // While the BIOS has the shield off, it shows as 0 (Claude's default, 2026-10-24); its points are kept.
