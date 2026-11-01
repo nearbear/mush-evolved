@@ -1,16 +1,17 @@
 import { Action, type ActionCost, isString } from "./action.ts";
 import { equipmentHere } from "../equipment.ts";
-import { PROJECT_COMPLETE, PROJECT_IDS, projectSkills } from "../projects.ts";
+import { PROJECT_COMPLETE, PROJECT_IDS, projectSkills, type ProjectId } from "../projects.ts";
 import { contribute } from "../relay.ts";
 import { logPublic } from "../log.ts";
+import { onProjectCompleted } from "../projectEffects.ts";
 import type { GameState, PlayerState } from "../types.ts";
 
 export type ProjectActionData = { type: "project"; equipment: string; project: string };
 
 /**
  * Work on a NERON project at NERON's core, exactly like research (decided 2026-10-18): 2 AP (free with a Designer or Computer point,
- * which is spent; the Designer point goes first, since it works nowhere else, owner 2026-10-24) adds a relay token to the project's pool (relay.ts; owner, 2026-10-30), +4 for each of the project's two skills (PROJECTS; owner, 2026-10-27). Anyone alive who is not dirty can help. Nothing happens on completion
- * yet beyond a log line. Public room log.
+ * which is spent; the Designer point goes first, since it works nowhere else, owner 2026-10-24) adds a relay token to the project's pool (relay.ts; owner, 2026-10-30), +4 for each of the project's two skills (PROJECTS; owner, 2026-10-27). Anyone alive who is not dirty can help. On completion the
+ * project's effects start (projectEffects.ts). Public room log.
  */
 export class ProjectAction extends Action<ProjectActionData> {
   override terminal = true;
@@ -46,5 +47,6 @@ export class ProjectAction extends Action<ProjectActionData> {
     const progress = contribute(state, pool, state.config.project.progress, player, projectSkills(target.project), PROJECT_COMPLETE);
     state.projects[target.project] = progress;
     logPublic(state, player.room, progress >= PROJECT_COMPLETE ? "projectCompleted" : "projectWorked", { name: player.character, project: target.project, percent: progress });
+    if (progress >= PROJECT_COMPLETE) onProjectCompleted(state, target.project as ProjectId);
   }
 }

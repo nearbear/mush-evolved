@@ -59,7 +59,7 @@ export function PipBar({
   thin = false,
   vertical = false,
   iconAfter = false,
-  columns = 1,
+  height,
 }: {
   label: string;
   value: number;
@@ -75,15 +75,15 @@ export function PipBar({
   vertical?: boolean;
   /** The icon after the frame instead of before it, and no value: the bar alone says how full it is (the HUD's plate). */
   iconAfter?: boolean;
-  /** Vertical bars only: split the slots into this many full frames side by side, filled bottom to top, the first column first. Every column but a short last one has `ceil(slots / columns)` slots. */
-  columns?: number;
+  /** Vertical bars only: at most this many slots a column; past it the slots wrap into more frames side by side, filled bottom to top, the first column first. Every column but a short last one has `height` slots. Default: one column. */
+  height?: number;
 }) {
   const { t } = useTranslation();
   const slots = Math.max(max, value);
   const pitch = thin ? 5 : 6;
   const pipW = thin ? 3 : 5;
-  const cols = vertical ? Math.max(1, Math.min(columns, slots)) : 1;
-  const perCol = Math.ceil(slots / cols);
+  const perCol = vertical && height ? Math.max(1, Math.min(height, slots)) : slots;
+  const cols = Math.ceil(slots / perCol);
   // The frame's length along its run: one column's worth of slots when split.
   const width = CAP_START + perCol * pitch + 4;
   const target = CAP_START + Math.min(value, slots) * pitch;

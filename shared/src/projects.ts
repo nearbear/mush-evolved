@@ -4,6 +4,7 @@
 // fields (difficulty `mod`, the 3-at-a-time offer, effects) are not used yet.
 
 import type { SkillId } from "./skills.ts";
+import type { GameState } from "./types.ts";
 
 /**
  * Every project in the original's live list (`projets.json`, above `$EOF`), each with card art in `Mush/www/img/cards/projects/`
@@ -66,6 +67,11 @@ export function projectSkills(project: string): readonly SkillId[] {
 
 export const PROJECT_COMPLETE = 100;
 
+/** Whether a NERON project is complete. */
+export function projectDone(state: Readonly<Pick<GameState, "projects">>, project: ProjectId): boolean {
+  return (state.projects[project] ?? 0) >= PROJECT_COMPLETE;
+}
+
 /** How much of a project's effects the rules implement, like `ResearchStatus`. */
 export type ProjectStatus = "full" | "partial" | "none";
 
@@ -73,6 +79,8 @@ export type ProjectStatus = "full" | "partial" | "none";
 export const PROJECT_STATUS: Readonly<Partial<Record<ProjectId, ProjectStatus>>> = {
   // The shield absorbs 67% of a hit instead of 33% (owner, 2026-10-24; ship.ts).
   PLASMA_SHIELD: "full",
+  // Every player's AP cap +2 (owner, 2026-11-01; modifiers.ts `maxAp`, projectEffects.ts).
+  NOISE_REDUCER: "full",
 };
 
 export function projectStatus(project: string): ProjectStatus {

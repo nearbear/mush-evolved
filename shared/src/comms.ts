@@ -8,6 +8,7 @@ import { BLUEPRINT_ITEM, BLUEPRINTS } from "./blueprints.ts";
 import { pushChat } from "./chat.ts";
 import { BOOK_ITEM, newItemId } from "./items.ts";
 import { PROJECT_COMPLETE, PROJECT_IDS } from "./projects.ts";
+import { onProjectCompleted } from "./projectEffects.ts";
 import { roll, rollInt } from "./rng.ts";
 import { hasSkill, SKILLS } from "./skills.ts";
 import { hasTitleAccess } from "./titles.ts";
@@ -240,6 +241,7 @@ export function advanceNeron(state: GameState, percent: number): string | undefi
   if (unfinished.length === 0) return undefined;
   const project = randomOf(state, unfinished);
   state.projects[project] = PROJECT_COMPLETE;
+  onProjectCompleted(state, project);
   return project;
 }
 

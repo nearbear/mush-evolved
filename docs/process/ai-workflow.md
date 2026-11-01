@@ -2006,3 +2006,12 @@ Built the two-column AP gauge from `docs/plans/lethargy.md`: `PipBar` gets a `co
 - **Correction from the owner:** mid-task the owner gave the flow C1–C3 2 AP, C4 onward 3 AP, so the bonus starts on the 4th cycle change in bed, not the 5th as recorded from the wiki. The plan had also guessed the refill reads the cycle before it advances; it reads it after, so the check is `cycle - lyingSince >= 4`. Recorded in rules-design.md and the plan.
 - **What worked:** the sentinel leak test caught that `lyingSince` reached its owner's own view: `viewFor` spreads `PlayerState` into `you` and strips a denylist, so a new server-only field leaks by default. The plan's "viewFor doesn't send it" was wrong; it is now stripped there. A plain "the field isn't in the view" assumption would have missed it.
 - **Needed correction:** beds can't break (not breakable equipment), so the plan's "broken bed" test became a dismantled sofa.
+
+### 2026-11-01: Noise Reducer project and a height-based AP gauge
+
+- **Decision (owner):** the Noise Reducer NERON project raises every player's AP cap by 2 (eMushpedia *Isolateur phonique* agrees). For Lethargy players it is added after the doubling, so 26, not 28; the owner fixed this implicitly by asking for two 13-slot columns. The gauge keeps Lethargy's second column but takes a height: +2 slots for most players, +1 for Lethargy.
+- **Built:** `maxAp` adds the bonus after the modifier fold (fold order would otherwise have doubled it); `projectEffects.ts`'s `onProjectCompleted` refreshes caps from both completion paths (work at the core, and a NERON update completing a random project). `PipBar` swapped `columns` for `height`; `apColumnHeight` (one column up to 14, an even split past it) derives the height from the cap alone, so the component needs no skill or project knowledge.
+- **Worked:** the wiki lookup settled the number in one call; the second completion path (`advanceNeron`) was found by grepping writes to `state.projects` rather than assuming the project action was the only one.
+- **Assumed, flagged to the owner:** current AP doesn't rise on completion (only the cap), and Mush get it too.
+- **Follow-up (owner):** both assumptions confirmed. The owner noticed the taller AP gauge lifted the MP gauge (the HUD's flex row stretched both); `.self-points` now aligns its gauges to the bottom.
+- **Follow-up 2 (owner):** labels top-aligned too: the gauges stretch to the taller one again, and `margin-top: auto` on each frame drops the bar and value to the bottom.

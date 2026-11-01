@@ -295,6 +295,8 @@ export interface GameConfig {
   project: {
     cost: { ap: number }; // AP spent to work on a NERON project (decided 2026-10-18).
     progress: { rate: number; mod: number; skillBoost: number; relayPenalty: number }; // As research's (owner, 2026-10-26); no skill bonus for now.
+    // Noise Reducer (owner, 2026-11-01; eMushpedia *Isolateur phonique*): every player's AP cap +maxAp, added after Lethargy doubles it.
+    noiseReducer: { maxAp: number };
   };
   pilgred: {
     cost: { ap: number }; // AP spent to take part in repairing PILGRED (owner, 2026-10-21; the original's REPAIR_PILGRED, 2).

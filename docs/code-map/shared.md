@@ -38,7 +38,8 @@ Other packages import from `@mush2/shared` (`shared/src/index.ts`, the barrel). 
 - `singlePlayer.ts`: single player (#59): `singlePlayerGame` (seats, config, the human forced Mush), `NEVER_BOTS`, `SINGLE_PLAYER_SEATS`.
 - `preselection.ts`: pre-selection (`config.preselection`, `GameState.preselection`): `joinShip` (the server's `join` input), `preselectionDeadline`, `preselectionCycle` (called as each cycle begins), and `selectMush` (Mush, titles, the first rebel call, and the under-3-players stopgap).
 - `victory.ts`: the game end: `winnerOnArrival` (the decided win rule on reaching Sol or Eden), `mushWinOnDeath`, and `endGame` (`phase` "ended", `winner`, `ending`).
-- `projects.ts`: `PROJECT_IDS` (the original's 41 live NERON projects), `PROJECT_COMPLETE` and `PROJECT_STATUS`.
+- `projects.ts`: `PROJECT_IDS` (the original's 41 live NERON projects), `PROJECT_COMPLETE`, `projectDone` and `PROJECT_STATUS`.
+- `projectEffects.ts`: `onProjectCompleted`, run when a project reaches 100% by work or by a NERON update (the Noise Reducer refreshes every AP cap).
 - `mind.ts`: minds and bodies: `bodyOf` (the body a seat plays; the server resolves every token through it), `swapMinds` (a Transfer), `acknowledgeTransfer` (the victim's pop-up input).
 - `rng.ts`: the seeded RNG (its state is part of `GameState`): pair functions `nextFloat`, `nextInt`, `rollRange`, `shuffle` return `[value, next]`; the `roll`, `rollInt`, `rollFloat`, `rollShuffle` helpers advance a `HasRng` holder (a `GameState`) in place, so a draw can't drop the next state. Rule code that draws from `state.rng` uses the helpers; the pair functions are for seeded generators that take a bare seed (`planets.ts`, `createGame`'s seed, `singlePlayerGame`).
 - `helpers.ts`: `ActionResult`, `fail`, `clone`, `findPlayer`, `dayOf`.

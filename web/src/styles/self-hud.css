@@ -127,6 +127,13 @@ button.hud-plate {
   border-radius: var(--panel-radius);
   box-shadow: 0 0 6px var(--panel-shadow);
 }
+/*
+ * Both gauges stretch to the taller one's height (a taller AP gauge: Noise Reducer, Lethargy). The labels stay at the top and
+ * each bar, with its value, drops to the bottom, so the bars share a bottom line.
+ */
+.self-points .pip-bar.vertical .pip-frame {
+  margin-top: auto;
+}
 .self-points .pip-label,
 .self-points .pip-bar .sub {
   color: #fff;

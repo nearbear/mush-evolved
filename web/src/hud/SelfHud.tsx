@@ -10,9 +10,7 @@ import { PipBar } from "./PipBar.tsx";
 import { factionOf } from "./PlayerSummary.tsx";
 import { CompactResourceChips } from "./ResourceChips.tsx";
 import { StatInfo } from "./StatInfo.tsx";
-
-/** The MP gauge's height in slots: the AP gauge wraps into more columns past this, so the two stay the same height. */
-const GAUGE_SLOTS = 12;
+import { apColumnHeight } from "./apGauge.ts";
 
 export function SelfHud({ view, onInspect }: { view: PlayerView; onInspect: () => void }) {
   const { t } = useTranslation();
@@ -48,7 +46,7 @@ export function SelfPoints({ view }: { view: PlayerView }) {
   return (
     <div className="self-points">
       <StatInfo stat="ap" view={view} value={you.ap} max={view.maxAp}>
-        <PipBar label={t("stat.ap")} value={you.ap} max={view.maxAp} pip={AP_PIP} vertical columns={view.maxAp > GAUGE_SLOTS ? 2 : 1} />
+        <PipBar label={t("stat.ap")} value={you.ap} max={view.maxAp} pip={AP_PIP} vertical height={apColumnHeight(view.maxAp)} />
       </StatInfo>
       <StatInfo stat="mp" view={view} value={you.mp} max={view.maxMp}>
         <PipBar label={t("stat.mp")} value={you.mp} max={view.maxMp} pip={MP_PIP} vertical />

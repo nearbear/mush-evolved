@@ -36,6 +36,7 @@ import { first_aid } from "./modifiers/first_aid.ts";
 import { logistics } from "./modifiers/logistics.ts";
 import { immunity } from "./modifiers/immunity.ts";
 import { lethargy } from "./modifiers/lethargy.ts";
+import { projectDone } from "./projects.ts";
 import { lying_down } from "./modifiers/lying_down.ts";
 import { mankind_only_hope } from "./modifiers/mankind_only_hope.ts";
 import { medic } from "./modifiers/medic.ts";
@@ -401,9 +402,12 @@ export const gardenPointsGain = (state: Readonly<GameState>, player: Readonly<Pl
 export const punchDamage = (state: Readonly<GameState>, player: Readonly<PlayerState>, base: number, registry: ModifierRegistry = MODIFIERS) =>
   fold("punchDamage", base, state, player, registry);
 
-/** Max AP */
+/**
+ * Max AP: `base` folded through the player's modifiers, then the Noise Reducer's bonus once that project is done. The bonus
+ * comes after the fold so Lethargy doubles only the base (owner, 2026-11-01: 12 + 2 = 14, or 24 + 2 = 26 with Lethargy).
+ */
 export const maxAp = (state: Readonly<GameState>, player: Readonly<PlayerState>, base: number, registry: ModifierRegistry = MODIFIERS) =>
-  fold("maxAp", base, state, player, registry);
+  fold("maxAp", base, state, player, registry) + (projectDone(state, "NOISE_REDUCER") ? state.config.project.noiseReducer.maxAp : 0);
 
 /** Max MP */
 export const maxMp = (state: Readonly<GameState>, player: Readonly<PlayerState>, base: number, registry: ModifierRegistry = MODIFIERS) =>
