@@ -172,6 +172,7 @@ export interface PlayerView {
   channelLimit: number;
   /** Your effective movement rules, after modifiers. */
   movement: MovementRules;
+  maxMp: number;
   /**
    * Base config numbers the client may show in descriptions. Not modified per player and never used to work out legality;
    * a player does that sum in their head.

@@ -84,7 +84,7 @@ export function PlayerSummary({ view, countdown }: { view: PlayerView; countdown
         <FactionCard view={view} />
         <div className="stat-chips">
           <StatChip stat="ap" view={view} value={you.ap} max={view.maxAp} icon={AP_PIP} />
-          <StatChip stat="mp" view={view} value={you.mp} max={view.movement.mpCap} icon={MP_PIP} />
+          <StatChip stat="mp" view={view} value={you.mp} max={view.maxMp} icon={MP_PIP} />
           <StatChip stat="hp" view={view} value={you.hp} max={view.maxHp} icon={HP_ICON} big />
           <StatChip stat="morale" view={view} value={you.morale} max={view.maxMorale} icon={MORALE_ICON} big />
           <CompactResourceChips view={view} />

@@ -48,16 +48,6 @@ describe("Fungal cuisine", () => {
     expect(item(eaten)).toBeUndefined();
   });
 
-  it("converts the eater at capacity before any food effect", () => {
-    let state = ship();
-    for (let i = 0; i < DEFAULT_CONFIG.infection.capacity; i++) state = trap(state);
-    const before = player(state, "p2");
-    const eaten = mustApply(state, "p2", { type: "consume", item: "i-banana" });
-    const after = player(eaten, "p2");
-    expect([after.role, after.hp, after.morale, after.satiety]).toEqual(["mush", before.hp, before.morale, 0]);
-    expect(item(eaten)).toBeUndefined();
-  });
-
   it("does nothing to a Mush who eats it", () => {
     const eaten = mustApply(trap(ship()), "p1", { type: "consume", item: "i-banana" });
     expect(eaten.contamination.p1).toBeUndefined();

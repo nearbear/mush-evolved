@@ -12,8 +12,8 @@ export type Stat = "ap" | "mp" | "hp" | "morale";
 /** `children` is the stat's own display (a pip bar or a chip); the whole of it opens the card. */
 export function StatInfo({ stat, view, value, max, children }: { stat: Stat; view: PlayerView; value: number; max: number; children: ReactNode }) {
   const { t } = useTranslation();
-  const { mpPerMove, apPerConversion, mpPerConversion, mpCap } = view.movement;
-  const lines = t(`stat.info.${stat}`, { maxAp: view.maxAp, mpCap, mpPerMove, apPerConversion, mpPerConversion }).split("\n").filter(Boolean);
+  const { mpPerMove, apPerConversion, mpPerConversion } = view.movement;
+  const lines = t(`stat.info.${stat}`, { maxAp: view.maxAp, mpCap: view.maxMp, mpPerMove, apPerConversion, mpPerConversion }).split("\n").filter(Boolean);
   return (
     <Popover.Root>
       <Popover.Trigger

@@ -1,4 +1,5 @@
 import { logPrivate } from "../log.ts";
+import { changeAP } from "../adjustStats.ts";
 import type { Modifier } from "../modifiers.ts";
 import { rollFloat } from "../rng.ts";
 
@@ -8,7 +9,7 @@ export const creative: Modifier = {
   onActionFailed(next, player, apSpent) {
     if (apSpent <= 0) return;
     if (rollFloat(next) >= next.config.creative.refundOdds) return;
-    player.ap += 1;
+    changeAP(next, player, 1);
     logPrivate(next, player.id, "creativeRefund");
   },
 };
