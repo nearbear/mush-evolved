@@ -763,7 +763,7 @@
     "hid": "{{name}} a dissimulé : {{item}}.",
     "searchedNothing": "{{name}} a fouillé la pièce mais n'a rien découvert.",
     "snooped": "Vous avez fouiné dans le stockage et trouvé : {{item}}.",
-    "snoopedKnocked": "Vous avez fouiné dans le stockage et trouvé : {{item}}, mais vos mains sont pleines : il est tombé par terre.",
+    "snoopedKnocked": "Vous avez fouiné dans le stockage et trouvé : {{item}}, mais vos mains sont pleines : l'objet est tombé par terre.",
     "foundHidden": "{{name}} a découvert un objet caché : {{item}}.",
     "dismantleFailed": "Vous n'avez pas réussi à démonter : {{item}}.",
     "creativeRefund": "Votre créativité paie : vous récupérez 1 PA.",

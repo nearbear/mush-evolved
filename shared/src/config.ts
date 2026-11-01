@@ -78,11 +78,19 @@ export const DEFAULT_CONFIG: GameConfig = {
   // Owner, 2026-10-25 (wiki): hiding an item and searching the room each cost 1 AP.
   hide: { cost: { ap: 1 } },
   search: { cost: { ap: 1 } },
-  // Owner, 2026-11-01 (eMushpedia "Métalo"): the Scrapper's Snoop, free, once a day per storage room, always metal
-  // scraps for now (the original's other finds come later).
   // Owner, 2026-11-01 (eMushpedia "Création du Mycoscan"): checking your spore level on the MycoScan is free, once a day.
   checkSpores: { cost: { ap: 0 } },
-  snoop: { cost: { ap: 0 }, rooms: ["STORAGE_FRONT", "STORAGE_A_0", "STORAGE_A_1", "STORAGE_B_0", "STORAGE_B_1"], item: "metal_scraps" },
+  // Owner, 2026-11-01 (eMushpedia "Métalo"): the Scrapper's Snoop, free, once a day per storage room. What it finds
+  // (owner, 2026-11-01, eMushpedia "Recycleur" weights): metal scraps 4, plastic scraps 3, a standard (uncooked)
+  // ration 1, a fuel capsule 1, an oxygen capsule 1. Owner, 2026-11-01: 50% to get dirty (eMushpedia "Saleté") and a 10%
+  // chance of the 2 HP random injury.
+  snoop: {
+    cost: { ap: 0 },
+    dirtyChance: 0.5,
+    injuryChance: 0.1,
+    rooms: ["STORAGE_FRONT", "STORAGE_A_0", "STORAGE_A_1", "STORAGE_B_0", "STORAGE_B_1"],
+    items: { metal_scraps: 4, plastic_scraps: 3, uncooked_ration: 1, fuel_capsule: 1, oxy_capsule: 1 },
+  },
   // Owner, 2026-10-25 (wiki): vaccinating with the anti-Mush serum costs 1 AP.
   vaccine: { cost: { ap: 1 } },
   // Confirmed 2026-10-15: punch costs 1 AP, misses 40% of the time. Owner, 2026-10-24: damage is a uniform 1 to 2 (the wiki).

@@ -257,7 +257,8 @@ describe("GoalBot", () => {
     });
     const { game: after, taken } = await play(game, id, new GoalBot(1, 2, [snoop]), 3);
     expect(taken).toEqual([{ type: "snoop" }]);
-    expect(after.items.filter((i) => i.type === "metal_scraps" && i.at.kind === "player" && i.at.id === id)).toHaveLength(1);
+    const mine = (g: typeof game) => g.items.filter((i) => i.at.kind === "player" && i.at.id === id).length;
+    expect(mine(after)).toBe(mine(game) + 1);
     const elsewhere = edit(start, id, (p) => {
       p.skills = ["metaliciste"];
       p.room = "LABORATORY";
