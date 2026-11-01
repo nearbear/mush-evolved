@@ -426,6 +426,8 @@ async function me(request: Request, env: Env, deps: AuthDeps): Promise<JsonRespo
         displayName: account.displayName,
         providers,
         renameAllowedAt: allowedAt !== null && allowedAt > deps.now ? allowedAt : null,
+        // The player's own information; the room ID stays server-side (#320).
+        aboard: (await deps.store.currentShip(account.id)) !== null,
       },
     };
     return json(body, 200, cookies);

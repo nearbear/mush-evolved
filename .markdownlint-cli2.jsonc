@@ -23,6 +23,8 @@
     "docs/process/ai-workflow.md",
     // Third-party skills, vendored as published.
     ".claude/skills/pixijs*/**",
-    ".claude/skills/durable-objects/**"
+    ".claude/skills/durable-objects/**",
+    ".agents/skills/pixijs*/**",
+    ".agents/skills/durable-objects/**"
   ]
 }

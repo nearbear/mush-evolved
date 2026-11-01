@@ -141,6 +141,9 @@
     "singlePlayerNote": "Vous êtes le Mush, face à 8 équipiers IA.",
     "signInPrompt": "Connectez-vous pour rejoindre un vaisseau multijoueur.",
     "signInWith": "Se connecter avec {{provider}}",
+    "resume": "Reprendre",
+    "resumeNote": "De retour à bord de votre vaisseau.",
+    "notAboard": "Vous n'êtes plus à bord de ce vaisseau. Choisissez un vaisseau à rejoindre.",
     "signup": {
       "intro": "Bienvenue à bord. Choisissez le nom sous lequel les autres joueurs vous connaîtront.",
       "label": "Votre nom",
@@ -378,7 +381,7 @@
     "message_not_found": "Ce message n'est plus là.",
     "join_failed": "Impossible d'embarquer sur un vaisseau. Réessayez.",
     "sign_in_required": "Connectez-vous pour rejoindre un vaisseau multijoueur.",
-    "already_aboard": "Vous êtes déjà à bord d'un vaisseau. Rejoignez-le à nouveau pour y retourner.",
+    "already_aboard": "Vous êtes déjà à bord d'un vaisseau. Reprenez pour y retourner.",
     "nothing_to_acknowledge": "Il n'y a rien à confirmer.",
     "share_forbidden": "Il vous faut votre iTrackie devant un terminal Astro pour partager une planète.",
     "planet_not_found": "Cette planète n'est pas l'une des vôtres.",

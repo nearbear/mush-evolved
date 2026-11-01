@@ -78,6 +78,7 @@ export const MeResponseSchema = named(
         displayName: z.string(),
         providers: z.array(AuthProviderSchema).meta({ description: "Sign-in methods linked to the account, at most one per provider." }),
         renameAllowedAt: z.int().nullable().meta({ description: "When the next rename is allowed (Unix ms); null if allowed now." }),
+        aboard: z.boolean().meta({ description: "Whether the account is aboard a multiplayer ship (the ship itself isn't named). It may have ended since." }),
       }),
     }),
   ]),

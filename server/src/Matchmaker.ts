@@ -35,6 +35,9 @@ interface Boarder extends SeatAccount {
   displayName: string;
 }
 
+/** A join or single-player launch, which carries a name and a character (unlike `resume`). */
+type QueueMessage = Extract<MatchmakerClientMessage, { character: CharacterId }>;
+
 export class Matchmaker extends Server<Env> {
   private limiter = new RateLimiter(5, 1000);
   private open: OpenShip | null = null;
@@ -92,13 +95,18 @@ export class Matchmaker extends Server<Env> {
       await this.launchSinglePlayer(connection, msg);
       return;
     }
+    if (msg.type === "resume") {
+      // Not queued behind joins: resuming never touches the open ship.
+      await this.resumeOrFail(connection);
+      return;
+    }
     const done = this.joins.then(() => this.boardOrFail(connection, msg));
     this.joins = done.catch(() => {});
     await done;
   }
 
   /** `board`, but a throw (a D1 or room failure) frees the socket to try again instead of leaving it stuck joining. */
-  private async boardOrFail(connection: Connection<JoinState>, msg: MatchmakerClientMessage): Promise<void> {
+  private async boardOrFail(connection: Connection<JoinState>, msg: QueueMessage): Promise<void> {
     try {
       await this.board(connection, msg);
     } catch (e) {
@@ -106,6 +114,47 @@ export class Matchmaker extends Server<Env> {
       connection.setState({ joined: false });
       this.send(connection, { type: "error", message: "join_failed" });
     }
+  }
+
+  /**
+   * Back to the ship the account is aboard (#320), with no ship or character to pick: `matched`, or `not_aboard` when
+   * it isn't on one (any more). A throw frees the socket to try again, as in `boardOrFail`.
+   */
+  private async resumeOrFail(connection: Connection<JoinState>): Promise<void> {
+    try {
+      const boarder = await this.boarder(connection);
+      if (!boarder) {
+        connection.setState({ joined: false });
+        this.send(connection, { type: "error", message: "sign_in_required" });
+        return;
+      }
+      const resumed = await this.resumeCurrent(boarder);
+      if (resumed) {
+        this.send(connection, { type: "matched", ...resumed });
+        return;
+      }
+      connection.setState({ joined: false });
+      this.send(connection, { type: "error", message: "not_aboard" });
+    } catch (e) {
+      console.warn(`Resuming failed: ${e instanceof Error ? e.message : typeof e}`);
+      connection.setState({ joined: false });
+      this.send(connection, { type: "error", message: "join_failed" });
+    }
+  }
+
+  /**
+   * The account's seat on the ship D1 says it is aboard, with a new token; null when it has no open row, or the ship
+   * says it isn't aboard after all (the game ended, the ship was retired, it died, or a join half-failed), which closes
+   * the row so the account is free to board another.
+   */
+  private async resumeCurrent(boarder: Boarder): Promise<{ roomId: string; token: string } | null> {
+    const store = accountStoreFor(this.env);
+    const current = await store.currentShip(boarder.accountId);
+    if (!current) return null;
+    const resumed = await (await getServerByName(this.env.GameRoom, current)).resume(boarder.accountId, boarder.sessionKey);
+    if (resumed.ok) return { roomId: current, token: resumed.token };
+    await store.leaveShip(boarder.accountId, current, Date.now());
+    return null;
   }
 
   /** The socket's signed-in account, or null. Looked up when joining, so a session ended since connecting is refused. */
@@ -122,7 +171,7 @@ export class Matchmaker extends Server<Env> {
    * Boards one signed-in player: back on the ship they're aboard (from any device), else on the open ship, or a newly
    * launched one when there is none or it just closed. `msg.name` is ignored: the seat takes the account's name.
    */
-  private async board(connection: Connection<JoinState>, msg: MatchmakerClientMessage): Promise<void> {
+  private async board(connection: Connection<JoinState>, msg: QueueMessage): Promise<void> {
     const boarder = await this.boarder(connection);
     if (!boarder) {
       connection.setState({ joined: false });
@@ -130,15 +179,11 @@ export class Matchmaker extends Server<Env> {
       return;
     }
     const store = accountStoreFor(this.env);
-    const current = await store.currentShip(boarder.accountId);
-    if (current) {
-      const resumed = await (await getServerByName(this.env.GameRoom, current)).resume(boarder.accountId, boarder.sessionKey);
-      if (resumed.ok) {
-        this.send(connection, { type: "matched", roomId: current, token: resumed.token });
-        return;
-      }
-      // Not aboard after all (the game ended, the ship was retired, they died, or a join half-failed): free them.
-      await store.leaveShip(boarder.accountId, current, Date.now());
+    // The lobby sends `resume` for an account aboard (#320); this covers a lobby that didn't know yet.
+    const resumed = await this.resumeCurrent(boarder);
+    if (resumed) {
+      this.send(connection, { type: "matched", ...resumed });
+      return;
     }
     for (let attempt = 0; attempt < 2; attempt++) {
       const ship = this.openShip();
@@ -182,7 +227,7 @@ export class Matchmaker extends Server<Env> {
   }
 
   /** A new single-player game for this player alone. Nobody else can board it, so it never becomes the open ship. */
-  private async launchSinglePlayer(connection: Connection<JoinState>, msg: MatchmakerClientMessage): Promise<void> {
+  private async launchSinglePlayer(connection: Connection<JoinState>, msg: QueueMessage): Promise<void> {
     const roomId = crypto.randomUUID();
     try {
       const room = await getServerByName(this.env.GameRoom, roomId);

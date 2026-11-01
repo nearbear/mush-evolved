@@ -1,5 +1,5 @@
 import { ScrollArea } from "@base-ui/react/scroll-area";
-import { Suspense, lazy, useEffect, useRef, useState } from "react";
+import { Suspense, lazy, useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { AUTH_PROVIDERS, CHARACTERS, LOBBY_LANGUAGES, MAX_NAME_LENGTH, type CharacterId, type LobbyLanguage, type MatchmakerServerMessage } from "@mush2/shared";
 import { AccountButton } from "../account/AccountButton.tsx";
@@ -99,11 +99,35 @@ export function Lobby({ onMatched }: { onMatched: (ticket: SeatTicket) => void }
   const roster = useRef<HTMLDivElement>(null);
   const { me, rateLimited, refresh } = useMe();
   const account = me?.status === "signed_in" ? me.account : null;
+  // Aboard a multiplayer ship (#320): the lobby offers Resume instead of the ships, and resuming skips both pickers.
+  const [resuming, setResuming] = useState(false);
   // A message about signing in, kept as a key so it follows the language: back from a provider, or refused boarding.
   const [notice, setNotice] = useState<string | null>(() => {
     const outcome = takeAuthOutcome();
     return outcome && `account.outcome.${outcome}`;
   });
+
+  /** Back to the ship list with a notice, asking `/api/me` again: the session or the ship the account is on changed. */
+  const backToShips = useCallback(
+    (key: string) => {
+      setNotice(key);
+      setShip(null);
+      setName(null);
+      setCharacter(null);
+      setResuming(false);
+      void refresh();
+    },
+    [refresh],
+  );
+
+  /** Fades the pod out first, so the game's wake-up starts from dark. Returns the timer to clear on unmount. */
+  const enterShip = useCallback(
+    (ticket: SeatTicket) => {
+      setSleeping(true);
+      return setTimeout(() => onMatched(ticket), SLEEP_MS);
+    },
+    [onMatched],
+  );
 
   // The roster only scrolls sideways, so a mouse wheel scrolls it sideways too. Needs a
   // non-passive listener to stop the page scrolling as well.
@@ -130,36 +154,47 @@ export function Lobby({ onMatched }: { onMatched: (ticket: SeatTicket) => void }
     socket.addEventListener("message", (e: MessageEvent<string>) => {
       const msg = JSON.parse(e.data) as MatchmakerServerMessage;
       if (msg.type === "queued") setQueue({ waiting: msg.waiting, seats: msg.seats });
-      if (msg.type === "matched") {
-        // Fade the pod out first, so the game's wake-up starts from dark.
-        setSleeping(true);
-        const ticket = { roomId: msg.roomId, token: msg.token };
-        timer = setTimeout(() => onMatched(ticket), SLEEP_MS);
-      }
+      if (msg.type === "matched") timer = enterShip({ roomId: msg.roomId, token: msg.token });
       if (msg.type === "characterTaken") {
         // Back to the picker to choose again.
         setError(t("lobby.characterTaken"));
         setCharacter(null);
       }
-      if (msg.type === "error" && msg.message === "sign_in_required") {
-        // The session ended since the page loaded: back to the ship list, which now offers signing in.
-        setNotice("errors.sign_in_required");
-        setShip(null);
-        setName(null);
-        setCharacter(null);
-        void refresh();
-      } else if (msg.type === "error") setError(t(`errors.${msg.message}` as never, { defaultValue: msg.message }));
+      // The session ended since the page loaded: back to the ship list, which now offers signing in. Or another tab
+      // boarded meanwhile: back to the list, which now offers Resume.
+      if (msg.type === "error" && (msg.message === "sign_in_required" || msg.message === "already_aboard")) backToShips(`errors.${msg.message}`);
+      else if (msg.type === "error") setError(t(`errors.${msg.message}` as never, { defaultValue: msg.message }));
     });
     return () => {
       clearTimeout(timer);
       socket.close();
     };
-  }, [name, character, ship, onMatched, t, refresh]);
+  }, [name, character, ship, enterShip, backToShips, t]);
 
-  const shipCounts = useShipCounts(webgl && name === null);
+  // Resume (#320): straight back to the account's ship, no ship or character to pick. Any language's matchmaker can.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: the UI language is read once to pick a matchmaker; changing it must not resend.
+  useEffect(() => {
+    if (!resuming) return;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const socket = matchmakerSocket(LOBBY_LANGUAGES.find((l) => l === i18n.resolvedLanguage) ?? "en");
+    socket.addEventListener("open", () => socket.send(JSON.stringify({ type: "resume" })));
+    socket.addEventListener("message", (e: MessageEvent<string>) => {
+      const msg = JSON.parse(e.data) as MatchmakerServerMessage;
+      if (msg.type === "matched") timer = enterShip({ roomId: msg.roomId, token: msg.token });
+      // `not_aboard`: the ship ended or the character left it, so `/api/me` now says not aboard and the ships show.
+      if (msg.type === "error") backToShips(msg.message === "not_aboard" ? "lobby.notAboard" : `errors.${msg.message}`);
+    });
+    return () => {
+      clearTimeout(timer);
+      socket.close();
+    };
+  }, [resuming, enterShip, backToShips]);
+
+  const aboard = account?.aboard ?? false;
+  const shipCounts = useShipCounts(webgl && name === null && !resuming && !aboard);
   // Single player: any character, nobody else aboard.
   const taken = useTakenCharacters(ship === SINGLE_PLAYER ? undefined : ship?.language, name !== null && character === null);
-  const step = !webgl ? "noWebgl" : me?.status === "signup" ? "signup" : name === null ? "ship" : character === null ? "character" : "waiting";
+  const step = !webgl ? "noWebgl" : me?.status === "signup" ? "signup" : resuming ? "waiting" : name === null ? "ship" : character === null ? "character" : "waiting";
   // Multiplayer seats take the account's name (the server's, whatever is sent); single player doesn't need an account.
   const singlePlayerName = () => account?.displayName ?? nextGuestName();
 
@@ -199,7 +234,9 @@ export function Lobby({ onMatched }: { onMatched: (ticket: SeatTicket) => void }
             <p className="pod-status">{t("lobby.noWebgl")}</p>
           </div>
           <div className="pod-state" inert={step !== "waiting"}>
-            <p className="pod-subtitle">{`${name ?? ""} · ${ship === SINGLE_PLAYER ? t("lobby.singlePlayer") : (ship?.name ?? "")}`}</p>
+            <p className="pod-subtitle">
+              {resuming ? `${account?.displayName ?? ""} · ${t("lobby.resume")}` : `${name ?? ""} · ${ship === SINGLE_PLAYER ? t("lobby.singlePlayer") : (ship?.name ?? "")}`}
+            </p>
             <p className="loading pod-status">{error || (queue ? t("lobby.waiting", queue) : t("common.connecting"))}</p>
           </div>
           <div className="pod-state" inert={step !== "character"}>
@@ -270,6 +307,22 @@ export function Lobby({ onMatched }: { onMatched: (ticket: SeatTicket) => void }
                       {t("lobby.signInWith", { provider: PROVIDER_NAMES[provider] })}
                     </button>
                   ))}
+                </li>
+              ) : aboard ? (
+                // Aboard a multiplayer ship (#320): one way back to it, and no other ship to join. Single player stays.
+                <li>
+                  <button type="button"
+                    className="big pod-ship"
+                    onClick={() => {
+                      setNotice(null);
+                      setError("");
+                      setResuming(true);
+                    }}
+                  >
+                    <span className="pod-ship-name">{t("lobby.resume")}</span>
+                    <span className="pod-ship-note">{t("lobby.resumeNote")}</span>
+                    <span className="pod-ship-crew" />
+                  </button>
                 </li>
               ) : SHIPS.map((s) => {
                 const count = shipCounts[s.language];

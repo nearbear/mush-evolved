@@ -139,6 +139,9 @@
     "singlePlayerNote": "You are the Mush, against 8 AI crew.",
     "signInPrompt": "Sign in to join a multiplayer ship.",
     "signInWith": "Sign in with {{provider}}",
+    "resume": "Resume",
+    "resumeNote": "Back aboard your ship.",
+    "notAboard": "You're no longer aboard that ship. Pick a ship to join.",
     "signup": {
       "intro": "Welcome aboard. Choose the name other players will know you by.",
       "label": "Your name",
@@ -374,7 +377,7 @@
     "message_not_found": "That message is no longer there.",
     "join_failed": "Couldn't board a ship. Try again.",
     "sign_in_required": "Sign in to join a multiplayer ship.",
-    "already_aboard": "You're already aboard a ship. Join again to return to it.",
+    "already_aboard": "You're already aboard a ship. Resume to return to it.",
     "nothing_to_acknowledge": "There is nothing to acknowledge.",
     "share_forbidden": "You need your iTrackie at an Astro terminal to share a planet.",
     "planet_not_found": "That planet isn't one of yours.",

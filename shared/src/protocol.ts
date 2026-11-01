@@ -33,7 +33,9 @@ export type LobbyLanguage = (typeof LOBBY_LANGUAGES)[number];
 // how many are aboard the language's open ship (in pre-selection), out of `seats`, and which characters they hold (`taken`). `queue` boards that ship at once
 // (`matched`); `character` is the crew member picked in the lobby, refused if someone aboard already has it.
 // `singlePlayer` launches a new single-player game (singlePlayer.ts) instead, for this player alone (`matched`).
-export type MatchmakerClientMessage = { type: "queue" | "singlePlayer"; name: string; character: CharacterId };
+// `resume` takes the signed-in account back to the multiplayer ship it is aboard, in any language (#320): `matched`, or
+// the error `not_aboard` when it isn't on one any more (the game ended, the ship was retired, or it died).
+export type MatchmakerClientMessage = { type: "queue" | "singlePlayer"; name: string; character: CharacterId } | { type: "resume" };
 export type MatchmakerServerMessage =
   | { type: "queued"; waiting: number; seats: number; taken: CharacterId[] }
   | { type: "characterTaken" }
@@ -98,6 +100,7 @@ export type GameServerMessage =
 
 export function parseMatchmakerMessage(raw: string): MatchmakerClientMessage | null {
   const msg = parseJson(raw);
+  if (msg?.type === "resume") return { type: "resume" };
   if ((msg?.type !== "queue" && msg?.type !== "singlePlayer") || typeof msg.name !== "string" || !isCharacterId(msg.character)) return null;
   const name = msg.name.trim().slice(0, MAX_NAME_LENGTH);
   if (!name) return null;

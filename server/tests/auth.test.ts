@@ -206,9 +206,23 @@ describe("sign-up", () => {
     const me = await browser.me();
     expect(me).toEqual({
       status: "signed_in",
-      account: { id: expect.any(String), displayName: "Chun Lee", providers: ["google"], renameAllowedAt: null },
+      account: { id: expect.any(String), displayName: "Chun Lee", providers: ["google"], renameAllowedAt: null, aboard: false },
     });
     expect([...browser.cookies.keys()]).toEqual(["__Host-mush2_session"]);
+  });
+
+  it("says whether the account is aboard a ship, without naming it (#320)", async () => {
+    const browser = new Browser();
+    await browser.signInWith("google", "g-1", "Chun");
+    await browser.post("/api/signup", { name: "Chun" });
+    const id = (await store.findAccountByIdentity("google", "g-1"))!.id;
+    await store.boardShip(id, "room-1", T0);
+    const me = await browser.me();
+    expect(me.status === "signed_in" && me.account.aboard).toBe(true);
+    expect(JSON.stringify(me)).not.toContain("room-1");
+    await store.leaveShip(id, "room-1", T0);
+    const after = await browser.me();
+    expect(after.status === "signed_in" && after.account.aboard).toBe(false);
   });
 
   it("uses Discord's global name, falling back to the username", async () => {

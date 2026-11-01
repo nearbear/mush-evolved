@@ -46,6 +46,12 @@ export type MeResponse =
         providers: AuthProvider[];
         /** When the next rename is allowed (Unix ms); null if allowed now. */
         renameAllowedAt: number | null;
+        /**
+         * Whether the account has an open `account_ships` row: it is aboard a multiplayer ship, so the lobby offers
+         * Resume instead of the ships (#320). The room stays server-side. May be stale (the ship ended since), which
+         * the matchmaker's `resume` answers with `notAboard`.
+         */
+        aboard: boolean;
       };
     };
 

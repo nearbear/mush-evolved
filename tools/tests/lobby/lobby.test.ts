@@ -47,6 +47,39 @@ async function openLobby(options: object, locale: string): Promise<Page> {
   return page;
 }
 
+/** Opens the lobby with an account already aboard a ship (#320). */
+async function openAboardLobby(options: object, locale: string): Promise<Page> {
+  const page = await (await browser.newContext(options)).newPage();
+  await page.route("**/api/me", (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        status: "signed_in",
+        account: {
+          id: "acc_1",
+          displayName: "Alice",
+          providers: ["google"],
+          renameAllowedAt: null,
+          aboard: true,
+        },
+      }),
+    }),
+  );
+  await page.routeWebSocket(/\/parties\/matchmaker\//, (ws) => {
+    ws.onMessage((msg) => {
+      const parsed = JSON.parse(typeof msg === "string" ? msg : msg.toString());
+      if (parsed.type === "resume") {
+        ws.send(JSON.stringify({ type: "matched", roomId: "room-123", token: "tok-123" }));
+      }
+    });
+  });
+  await page.goto(url);
+  await page.getByTestId("language-switcher").selectOption(locale);
+  await page.locator(`html[lang="${locale}"] .pod-ship`).first().waitFor();
+  return page;
+}
+
 describe("lobby panel", () => {
   for (const [device, options] of Object.entries(VIEWPORTS)) {
     for (const locale of LOCALES) {
@@ -59,6 +92,23 @@ describe("lobby panel", () => {
         await page.locator(".pod-character").first().click();
         // Waiting: the queue count from the fake matchmaker is on screen.
         await page.locator(".pod-status", { hasText: "1/8" }).waitFor();
+
+        expect(await panel.boundingBox()).toEqual(before);
+        await page.context().close();
+      }, 30_000);
+
+      it(`keeps its size and shows resume when already aboard (${device}, ${locale})`, async () => {
+        const page = await openAboardLobby(options, locale);
+        const panel = page.locator(".pod-panel");
+        const before = await panel.boundingBox();
+
+        // Exactly two choices: Resume and Single Player
+        const ships = page.locator(".pod-ship");
+        expect(await ships.count()).toBe(2);
+
+        // Clicking resume transitions straight to waiting
+        await ships.first().click();
+        await page.locator(".pod-status.loading").waitFor();
 
         expect(await panel.boundingBox()).toEqual(before);
         await page.context().close();

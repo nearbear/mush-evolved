@@ -337,3 +337,57 @@ describe("Matchmaker accounts (#285)", () => {
     expect(msgs(a).at(-1)).not.toEqual({ type: "error", message: "already_aboard" });
   });
 });
+
+describe("Matchmaker resume (#320)", () => {
+  const resume = (c: Conn, room: InstanceType<typeof Matchmaker> = mm) => room.onMessage(c as never, JSON.stringify({ type: "resume" }));
+
+  it("takes the account back to its ship, from any language's matchmaker, with no character", async () => {
+    const [first] = await board(1);
+    const roomId = matched(first!)!.roomId;
+    const es = new Matchmaker({ storage: new FakeStorage() } as never, env as never);
+    (es as unknown as { name: string }).name = "es";
+    await es.onStart();
+    const phone = await connectAs("P0", es);
+    await resume(phone, es);
+    expect(matched(phone)).toEqual({ type: "matched", roomId, token: `${roomId}:resumed:P0` });
+    expect(ships.get(roomId)!.crew).toHaveLength(1);
+  });
+
+  it("answers not_aboard when the account has no ship, boarding nothing", async () => {
+    const a = await connectAs("Alice");
+    await resume(a);
+    expect(msgs(a).at(-1)).toEqual({ type: "error", message: "not_aboard" });
+    expect(ships.size).toBe(0);
+    // The socket may join a ship afterwards.
+    await queue(a, "x", "hua");
+    expect(matched(a)).toBeDefined();
+  });
+
+  it("answers not_aboard and closes the row when the ship says the account isn't aboard", async () => {
+    const [a] = await board(1);
+    const roomId = matched(a!)!.roomId;
+    ships.get(roomId)!.ended = true;
+    const again = await connectAs("P0");
+    await resume(again);
+    expect(msgs(again).at(-1)).toEqual({ type: "error", message: "not_aboard" });
+    const p0 = (await store.findAccountByIdentity("dev", "p0"))!;
+    expect(await store.currentShip(p0.id)).toBeNull();
+  });
+
+  it("refuses a socket without an account", async () => {
+    const guest = await connectAs(null);
+    await resume(guest);
+    expect(msgs(guest).at(-1)).toEqual({ type: "error", message: "sign_in_required" });
+  });
+
+  it("answers join_failed and lets the socket retry when D1 throws", async () => {
+    await board(1);
+    const again = await connectAs("P0");
+    vi.spyOn(AccountStore.prototype, "currentShip").mockRejectedValueOnce(new Error("D1 down"));
+    vi.spyOn(console, "warn").mockImplementationOnce(() => {});
+    await resume(again);
+    expect(msgs(again).at(-1)).toEqual({ type: "error", message: "join_failed" });
+    await resume(again);
+    expect(matched(again)).toBeDefined();
+  });
+});
