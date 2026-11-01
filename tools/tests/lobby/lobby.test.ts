@@ -66,16 +66,13 @@ async function openAboardLobby(options: object, locale: string): Promise<Page> {
       }),
     }),
   );
-  await page.routeWebSocket(/\/parties\/matchmaker\//, (ws) => {
-    ws.onMessage((msg) => {
-      const parsed = JSON.parse(typeof msg === "string" ? msg : msg.toString());
-      if (parsed.type === "resume") {
-        ws.send(JSON.stringify({ type: "matched", roomId: "room-123", token: "tok-123" }));
-      }
-    });
-  });
+  // Keep the matchmaker quiet: matching begins the fade into the game (SLEEP_MS) and unmounts
+  // the lobby, so staying in "connecting" keeps the panel around to measure.
+  await page.routeWebSocket(/\/parties\/matchmaker\//, () => {});
   await page.goto(url);
   await page.getByTestId("language-switcher").selectOption(locale);
+  // Wait for /api/me to resolve and render the signed-in aboard state (Resume + Single Player).
+  await page.locator(`html[lang="${locale}"] .account-button`).waitFor();
   await page.locator(`html[lang="${locale}"] .pod-ship`).first().waitFor();
   return page;
 }
