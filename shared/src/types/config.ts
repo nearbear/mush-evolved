@@ -158,6 +158,7 @@ export interface GameConfig {
   };
   hide: { cost: { ap: number } }; // Hiding an item (owner, 2026-10-25, from the wiki: 1 AP).
   search: { cost: { ap: number } }; // Searching the room for hidden items (owner, 2026-10-25, from the wiki: 1 AP).
+  snoop: { cost: { ap: number }; rooms: string[]; item: string }; // The Scrapper's Snoop: cost, the storage rooms it works in, the item it makes (owner, 2026-11-01).
   vaccine: {
     cost: { ap: number }; // AP the anti-Mush serum costs to use (owner, 2026-10-25, from the wiki).
   };

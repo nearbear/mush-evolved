@@ -51,6 +51,7 @@ const ACTION_NAME_KEYS = {
   consume: "actions.consume",
   hide: "actions.hide",
   search: "actions.search",
+  snoop: "actions.snoop",
   cook: "actions.cook",
   express_cook: "actions.expressCook",
   build: "actions.build",

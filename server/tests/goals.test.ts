@@ -6,7 +6,9 @@ import { SOLO_GOALS } from "../src/bots/goals/index.ts";
 import { repairHull } from "../src/bots/goals/repairHull.ts";
 import { rest } from "../src/bots/goals/rest.ts";
 import { research } from "../src/bots/goals/research.ts";
+import { shootHunters } from "../src/bots/goals/shootHunters.ts";
 import { shower } from "../src/bots/goals/shower.ts";
+import { snoop } from "../src/bots/goals/snoop.ts";
 import type { GoalDef } from "../src/bots/goals/types.ts";
 import { chooseSkill } from "../src/bots/skillChoice.ts";
 import { seats } from "../src/testing/fakes.ts";
@@ -88,8 +90,9 @@ describe("chooseSkill", () => {
 
   it("only prefers Pilot for Frieda and Terrence, after their musts", () => {
     expect(pick("terrence")).toBe("engineer");
-    expect(pick("terrence", ["engineer"])).toBe("pilot");
-    expect(pick("terrence", ["engineer", "pilot"])).toBe("gunman");
+    expect(pick("terrence", ["engineer"])).toBe("metaliciste");
+    expect(pick("terrence", ["engineer", "metaliciste"])).toBe("pilot");
+    expect(pick("terrence", ["engineer", "metaliciste", "pilot"])).toBe("gunman");
     expect(pick("frieda")).toBe("astrophysician");
     expect(pick("frieda", ["astrophysician"])).toBe("computer");
     expect(pick("frieda", ["astrophysician", "computer"])).toBe("pilot");
@@ -246,6 +249,22 @@ describe("GoalBot", () => {
     expect(taken.some((a) => a.type === "consume")).toBe(true);
   });
 
+  it("snoops once as a Scrapper in a storage room, and not elsewhere", async () => {
+    const { game: start, id } = setup();
+    const game = edit(start, id, (p) => {
+      p.skills = ["metaliciste"];
+      p.room = "STORAGE_FRONT";
+    });
+    const { game: after, taken } = await play(game, id, new GoalBot(1, 2, [snoop]), 3);
+    expect(taken).toEqual([{ type: "snoop" }]);
+    expect(after.items.filter((i) => i.type === "metal_scraps" && i.at.kind === "player" && i.at.id === id)).toHaveLength(1);
+    const elsewhere = edit(start, id, (p) => {
+      p.skills = ["metaliciste"];
+      p.room = "LABORATORY";
+    });
+    expect(await new GoalBot(1, 2, [snoop]).decideAction(viewFor(elsewhere, id))).toEqual({ type: "ready" });
+  });
+
   it("doesn't choose a failed goal again this cycle, and does next cycle", async () => {
     const { game, id } = setup();
     let tries = 0;
@@ -309,5 +328,55 @@ describe("GoalBot", () => {
     expect(chosen).toBe(2);
     await bot.decideAction({ ...view, cycle: view.cycle + 1, you: { ...view.you, hp: view.you.hp - 1 } });
     expect(chosen).toBe(3);
+  });
+});
+
+describe("shootHunters", () => {
+  /** A game where hunters attack: two weak and one strong, with the bot given plenty of AP. */
+  function attacked(): { game: GameState; id: string } {
+    const { game: start, id } = setup();
+    const game = edit(start, id, (p) => {
+      p.ap = 10;
+      p.mp = 12;
+    });
+    game.hunters.list = [
+      { id: "h1", hp: 6, hitChance: 0, target: null },
+      { id: "h2", hp: 2, hitChance: 0, target: null },
+    ];
+    return { game, id };
+  }
+
+  it("isn't offered while no hunter attacks", () => {
+    const { game: start, id } = setup();
+    expect(shootHunters.options(viewFor(start, id), { reserve: 2, ended: new Set(), visited: new Set(), roll: roll0 })).toEqual([]);
+  });
+
+  it("walks to the nearest turret and shoots the weakest hunter, down to the AP reserve", async () => {
+    const { game, id } = attacked();
+    const bot = new GoalBot(1, 2, [shootHunters]);
+    const { game: end, taken } = await play(game, id, bot, 40);
+    const shots = taken.filter((a) => a.type === "turret_attack");
+    expect(shots.length).toBeGreaterThan(0);
+    expect(shots[0]).toMatchObject({ hunter: "h2" });
+    expect(taken.slice(0, taken.indexOf(shots[0]!)).every((a) => a.type === "move")).toBe(true);
+    // Stops at the reserve (or when the hunters are gone, or the turrets are empty).
+    const me = end.players.find((p) => p.id === id)!;
+    expect(me.ap >= 2 || end.hunters.list.length === 0).toBe(true);
+  });
+
+  it("fails at a turret room with no charges left, and the next turret room is offered", () => {
+    const { game: start, id } = attacked();
+    const turretRoom = roomsWith(viewFor(start, id), ["TURRET_COMMAND"])[0]!;
+    const game = edit(start, id, (p) => {
+      p.room = turretRoom;
+    });
+    for (const t of game.equipment[turretRoom]!.filter((e) => e.type === "TURRET_COMMAND")) game.turrets[t.id] = 0;
+    const view = viewFor(game, id);
+    const memory = { reserve: 2, ended: new Set<string>(), visited: new Set<string>(), roll: roll0 };
+    const [goal] = shootHunters.options(view, memory);
+    expect(goal!.key).toBe(`shootHunters:${turretRoom}`);
+    expect(goal!.step(view, memory)).toEqual({ kind: "failed", reason: "no_charges" });
+    memory.ended.add(goal!.key);
+    expect(shootHunters.options(view, memory)[0]!.key).not.toBe(goal!.key);
   });
 });

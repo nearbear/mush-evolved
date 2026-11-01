@@ -370,6 +370,7 @@ function advanceCycle(state: GameState, at?: number): void {
       delete p.fertileToday;
       delete p.chitchatToday;
       delete p.interrogatedToday;
+      delete p.snoopedToday;
     }
     const loss = shipInvincible(state) ? 0 : dailyMoraleLoss(state);
     for (const p of state.players) if (p.alive) p.morale = Math.max(0, p.morale - loss);
@@ -531,7 +532,7 @@ export function viewFor(state: GameState, playerId: PlayerId): PlayerView {
     },
     config: { heavyMpPenalty: state.config.heavy.mpPenalty, actionQueueCap: state.config.action.queueCap, sharedSpots: state.config.sharedSpots, setupId: state.config.setupId, returnToSolAp: state.config.pilgred.returnCost.ap, edenAp: state.config.pilgred.edenCost.ap, xylophAp: state.config.comms.xyloph.cost.ap,
       researchAp: state.config.research.cost.ap, projectAp: state.config.project.cost.ap, pilgredAp: state.config.pilgred.cost.ap,
-      hullRepairAp: state.config.hullRepair.cost.ap, showerAp: state.config.shower.cost.ap, lieDownAp: state.config.lieDown.cost.ap },
+      hullRepairAp: state.config.hullRepair.cost.ap, turretAp: state.config.turrets.cost.ap, showerAp: state.config.shower.cost.ap, lieDownAp: state.config.lieDown.cost.ap },
     maxAp: you.maxAp,
     maxMp: you.maxMp,
     maxHp: you.maxHp,

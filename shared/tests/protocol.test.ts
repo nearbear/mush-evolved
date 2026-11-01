@@ -83,6 +83,7 @@ describe("actions from a client", () => {
     consume: [{ type: "consume", item: "i1" }],
     hide: [{ type: "hide", item: "i1" }],
     search: [{ type: "search" }],
+    snoop: [{ type: "snoop" }],
     cook: [{ type: "cook", item: "i1" }],
     express_cook: [{ type: "express_cook", item: "i1" }],
     water: [{ type: "water", item: "i1" }],

@@ -1957,3 +1957,9 @@ The owner asked Claude to pick up #184 ("nothing causes equipment to break down 
 - Note: `verify` failed only on unrelated uncommitted snoop work (an English string in `server/src/bots/goals/snoop.ts`, leak-fields test).
 - Follow-up: the logo is hidden on the character step (the `h1` becomes `sr-only`, so screen readers keep the page heading); the ship list and the other steps still show it.
 - Follow-up: reverted the phone row to the three-column grid (two rows for a tier of six, no scrolling) on the owner's call; the half-cut scroll row was dropped. Dev sign-in is hidden on phones with CSS.
+
+### 2026-11-01: Scrapper's Snoop, partial (metal scraps only)
+
+- **Decision (owner):** Scrapper (`metaliciste`) gets Snoop, built from eMushpedia's "Métalo" on Terrence's page: free, always succeeds, once a day per Scrapper per storage room (the five storages), and for now always metal scraps (the original's ration, plastic scraps and fuel capsule come later). Owner chose: private to the actor, inventory else floor (`produceItem`), per player per room per day, and bots pick Scrapper after Technician and snoop whenever they stand in a storage where it's offered.
+- **What worked:** asking the four open details in one question after finding the rule on the wiki (the en/es skill descriptions in the locales already described the action). `interrogate.ts` (a once-a-day flag on `PlayerState`, cleared at day start) and `search.ts` (a no-field action, shown on yourself) were the right templates; the rule tests passed first run. The skill-rule order changed Terrence's pick order (Technician, Scrapper, then Pilot), which an existing bot test caught and was updated.
+- **Needed correction:** the i18n ratchet flagged the bot goal's English label; template literals count too (the other goal files are in the baseline). Marked it `i18n-ignore`, since goal labels are model prompt text, not player-visible.

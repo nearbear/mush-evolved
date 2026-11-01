@@ -33,8 +33,10 @@ export const BOT_SKILL_RULES: readonly SkillRule[] = [
   { skill: "engineer", tier: "always" }, // Technician
   { skill: "hunt", tier: "always" }, // Tracker
   { skill: "lethargy", tier: "always" },
+  { skill: "gunner", tier: "always" },
   { skill: "stickler", tier: "always" }, // Meticulous
   { skill: "radio_expert", tier: "always", only: ["paola"] },
+  { skill: "metaliciste", tier: "always" }, // Scrapper (owner, 2026-11-01: after Technician)
 ];
 
 function tierOf(rule: SkillRule, character: CharacterId, have: readonly string[]): SkillRule["tier"] | null {

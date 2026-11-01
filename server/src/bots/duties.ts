@@ -4,7 +4,7 @@
 //
 // How to edit:
 // - `priority`: where a scripted bot (no key) puts this among its goals. For reference, today's goals are
-//   returnToSol 100, pickSkill 90, eat 80, shower 70, repairHull 55, research and project 50, rest 40, explore 30.
+//   returnToSol 100, pickSkill 90, snoop 85, eat 80, shower 70, repairHull 55, research and project 50, rest 40, explore 30.
 // - `when`: one of the triggers in `DutyTrigger`, each explained there. A new kind of trigger needs code first.
 // - `prompt`: one line a model bot is shown when it holds the skill or title. English for now (bot language: #95).
 // - Several rows may share a skill or title. Leave notes in comments freely.
