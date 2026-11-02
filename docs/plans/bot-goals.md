@@ -29,9 +29,9 @@ Today (`server/src/bots.ts`, `server/src/prompt.ts`) a model bot gets a fresh pr
 
 - **Models only.** Coordination (asking for help, offering, taking over, accepting, claiming plan slots) is done only by model bots, with no scripted fallback for it. A bot without a key plays the scripted solo goals (eat, rest, work, explore, end the cycle) and takes no part in chat or plans. The owner judges whether the cost is acceptable.
 - **Helping others is model-only for now** (owner, 2026-11-01): scripted bots without a key don't heal, comfort or give speeches. Scripted helping is possible later but deferred.
-- **The Shrink spends the night in a dorm** (owner, 2026-11-01): people lying in a bed with a Shrink in the room gain morale, so once a day a Shrink bot (scripted or model) walks to a dormitory, Alpha and Beta on alternate days, and stays until the cycle ends (`shrinkDorm`, the `dorm` trigger in `duties.ts`). Priority 45, after the work goals and before `rest` (my choice, not asked); it lies down there if its AP isn't full and a bed is free, and may spend the AP reserve to get there, as resting does.
+- **The Shrink spends the night in a dorm** (owner, 2026-11-01): people lying in a bed with a Shrink in the room gain morale, so once a day a Shrink bot (scripted or model) walks to a dormitory, Alpha and Beta on alternate days, and stays until the cycle ends (`shrinkDorm`, the `dorm` trigger in `duties.ts`). Priority 45, after the work goals and before `rest` (my choice, not asked); it lies down there if its AP isn't full and a bed is free, and may spend the AP reserve to get there, as resting does. Kept across cycles on the same day (unless a higher-priority goal opens or an interrupt fires), and marked done for the day only when waiting in the dorm (cleared if woken or hurt before the cycle ends; owner, 2026-11-01).
 - **A Shrink holds its AP for comforting** (owner, 2026-11-01): it researches and works on NERON projects only when within 4 AP of its max (`SHRINK_DESK_WORK_WITHIN`, `deskWorkReserve` in `goals/work.ts`), and stops back at that line, keeping the rest to help with. Built for scripted and model bots alike (a scripted Shrink holds it too, though it doesn't comfort yet).
-- **Asking a Shrink for morale** (owner, 2026-11-01; model bots, step 3): a bot under 7 morale contacts a Shrink through a private channel; under 5, it says so in global chat whenever it can't contact a Shrink privately for any reason (it knows of no Shrink, has no iTrackie, can't open or join a channel, ...), since that is an emergency. The asker states its morale, since morale is private: the Shrink goes by what it is told. A bot sees others' skills only when in their room, so a Shrink bot says in global chat early in the game that it is a Shrink (owner, 2026-11-01); others also learn it by meeting it.
+- **Asking a Shrink for morale** (owner, 2026-11-01; model bots, step 3): a bot under 7 morale contacts a Shrink through a private channel; under 5, it says so in global chat whenever it can't contact a Shrink privately for any reason (it knows of no Shrink, has no iTrackie, can't open or join a channel, ...), since that is an emergency. The asker states its morale, since morale is private: the Shrink goes by what it is told. A bot sees others' skills only when in their room, so a Shrink bot says in global chat early in the game that it is a Shrink (owner, 2026-11-01); others also learn it by meeting it. Each bot remembers in `BotMemory.shrinks` which players it has seen as Shrinks (in its room or announcing in global chat) and whether it has already announced itself in global chat (owner, 2026-11-01).
 - **What a Shrink spends on comforting** (owner, 2026-11-01): when the person says they are under 7 morale, it may spend its AP reserve; otherwise it spends down to the reserve, comforting until their stated morale is topped off (2 morale a Comfort, at 1 AP).
 - **Natural-language chat.** Bots write their own messages, so asks and offers are ordinary chat, not keyed catalog lines. This replaces the 2026-10-25 "fixed lines only" decision and the line catalog. It pulls model-written chat (#223) into this work.
 - **No structured intents in chat.** The server never knows what a message means; models read each other's text and the human's alike. There are no intent tags on messages and no tagging buttons for the human.
@@ -44,8 +44,8 @@ Today (`server/src/bots.ts`, `server/src/prompt.ts`) a model bot gets a fresh pr
 
 ### Scripted order and skills (owner, 2026-11-01)
 
-- **Scripted priority order** (a first draft): `returnToSol`, `pickSkill`, `eat` when hungry, `shower`, the work goals down to the 2 AP reserve, `rest` once there's no AP left to spend on work, `explore`, `endCycle`. Numbers in each goal's file. `patrolShootHunters` 75 (the Pilot duty's number in `duties.ts`) comes after `eat` (80) and before `shower` (70), and `shootHunters` 60 after `shower`, before the work goals. Among the work goals (my order, not asked): `repairHull` 55, `tendPlants` 53 (the Botanist duty's number in `duties.ts`), `research` and `project` 50 (ties by the bot's RNG), then `shrinkDorm` 45 before `rest`. `repairPilgred` (60) is left out of single player for now (owner, 2026-11-01): returning to Sol with a Mush alive is a Mush win, and the human is the Mush. It comes back once bots can tell every Mush is dead, which waits for the public dead Mush count.
-- **Skills a bot picks** (`server/src/bots/skillChoice.ts`, to change as features land): Logistics Expert always; Pilot always, but only preferred for Frieda and Terrence; Shooter only once a pilot; Astrophysicist always, Frieda only; Botanist and Green Thumb always, Ian only; Designer preferred; IT Expert (`computer`) always, Frieda, Janice and Eleesha only; Medic, Paranoid, Physicist, Shrink, Technician (`engineer`), Tracker (`hunt`), Lethargy and Meticulous (`stickler`) always. "Always" means whenever it's on the character's own list. Otherwise a seeded random skill, never one a rule keeps from that character. #222 (owner, 2026-11-01): a bot's strategy follows the skills it has picked this way and the titles it holds, not a static per-character role. What each skill and title makes a bot do is in `server/src/bots/duties.ts` (`BOT_DUTIES`; owner-approved 2026-11-01, edited directly by the owner); nothing reads it yet.
+- **Scripted priority order** (a first draft): `returnToSol` (100), `pickSkill` (90), `snoop` (85), `eat` when hungry (80), `patrolShootHunters` (75), `shower` (70), `shootHunters` (60), the work goals down to the 2 AP reserve, `rest` (40) once there's no AP left to spend on work, `explore` (30), `endCycle`. Numbers in each goal's file. `patrolShootHunters` 75 (the Pilot duty's number in `duties.ts`) comes after `eat` (80) and before `shower` (70), and `shootHunters` 60 after `shower`, before the work goals. Among the work goals (my order, not asked): `repairHull` 55, `tendPlants` 53 (the Botanist duty's number in `duties.ts`), `research` and `project` 50 (ties by the bot's RNG), then `shrinkDorm` 45 before `rest`. `repairPilgred` (60) is left out of single player for now (owner, 2026-11-01): returning to Sol with a Mush alive is a Mush win, and the human is the Mush. It comes back once bots can tell every Mush is dead, which waits for the public dead Mush count.
+- **Skills a bot picks** (`server/src/bots/skillChoice.ts`, to change as features land): Logistics Expert always; Pilot always, but only preferred for Frieda and Terrence; Shooter only once a pilot; Astrophysicist always, Frieda only; Botanist and Green Thumb always, Ian only; Designer preferred; IT Expert (`computer`) always, Frieda, Janice and Eleesha only; Medic, Paranoid, Physicist, Shrink, Technician (`engineer`), Tracker (`hunt`), Lethargy, Gunner and Meticulous (`stickler`) always; Radio Expert always, Paola only; Scrapper (`metaliciste`) always, after Technician. "Always" means whenever it's on the character's own list. Otherwise a seeded random skill, never one a rule keeps from that character. #222 (owner, 2026-11-01): a bot's strategy follows the skills it has picked this way and the titles it holds, not a static per-character role. What each skill and title makes a bot do is in `server/src/bots/duties.ts` (`BOT_DUTIES`; owner-approved 2026-11-01, edited directly by the owner); nothing reads it yet.
 - **Costs elsewhere come from the view.** `PublicConfig` carries the base AP of the actions bots walk to (research, project, PILGRED, hull, shower, lie down), so a bot prices a trip without anything outside its view.
 
 ### Superseded
@@ -84,25 +84,28 @@ The bot's reply is untrusted model output: the parser checks the shape, the goal
 
 ```ts
 interface Goal {
-  id: GoalId;                          // e.g. "rest", "help", "doSlot"
-  params: GoalParams;                  // filled from the view or the model's reply: a room, a bed, a target, a plan slot
-  key: string;                         // id plus params, e.g. "rest:BEDROOM_A": what "done or failed this cycle" remembers
+  id: string;                          // e.g. "rest", "help", "doSlot"
+  key: string;                         // id plus params, e.g. "rest:BEDROOM_A": what "ended this cycle" remembers
   label: string;                       // how the model's list shows it (no player-written text unescaped)
   /** One action toward the goal, or what happened. Reads only the bot's own view and the goal's own progress. */
-  step(view: PlayerView, progress: GoalProgress): GoalStep;
+  step(view: PlayerView, memory: BotMemory): GoalStep;
+  /** Whether to keep following this goal when a new cycle starts (default: false). */
+  keepAcrossCycle?(view: PlayerView, memory: BotMemory, newDay: boolean, goals: readonly GoalDef[]): boolean;
+  /** Called when an interrupt (a chat choice or losing HP) drops this goal before the cycle ends. */
+  onInterrupt?(memory: BotMemory): void;
 }
 type GoalStep =
   | { kind: "act"; action: Action }
   | { kind: "wait" }                    // nothing to do until the next change (ends the cycle with `ready` when that is legal)
-  | { kind: "done" }
-  | { kind: "failed"; reason: FailReason };
+  | { kind: "done"; again?: true }      // `again`: may be chosen again this cycle (e.g. rest, or work stopped because dirty)
+  | { kind: "failed"; reason: string };
 
 interface GoalDef {
-  id: GoalId;
+  id: string;
+  /** Higher goes first for a bot without a key. The scripted order is these numbers, not a central if/else ladder. */
+  priority: number;
   /** The concrete forms of this goal open to the bot now, e.g. "rest in the nearest bedroom". Empty when it doesn't apply. */
   options(view: PlayerView, memory: BotMemory): Goal[];
-  /** Higher goes first for a bot without a key. The scripted order is these numbers, not a central if/else ladder. */
-  priority(view: PlayerView, goal: Goal): number;
 }
 ```
 
@@ -120,31 +123,32 @@ Goals are pure (view and memory in, step out), so they are unit-tested without a
 
 ### Building blocks
 
-Most goals should be a few lines built from these:
+Most goals are a few lines built from `server/src/bots/goals/blocks.ts`:
 
-- `goTo(room)`: the next `move` along `shortestPath(view.rooms, here, room)` (`shared/src/paths.ts`). Fails if no path exists or a door is refused.
-- `use(action predicate)`: the matching action from `legalIn(view)`, or wait/fail.
-- `take(itemType)`, `drop(itemType)`.
+- `goTo(view, room)`: the next `move` along `shortestPath(view.rooms, here, room)` (`shared/src/paths.ts`), or `null` once there. Fails if no path exists or a door is refused.
+- `offered(view, type)` and `find(view, type, predicate)`: the offered or first affordable action of `type` in `view.actions`.
+- `travelAp(view, room)` and `canAfford(view, room, ap, reserve)`: price a walk and action while keeping `reserve` AP.
+- `roomsWith(view, types)` and `nearest(view, rooms)`: reachable rooms from the public ship map, nearest first.
 
 No goal sends `get_up`: any other action already gets a bot out of bed (`getUp` in `queue.ts`).
 
 ### How a bot runs goals
 
 1. No goal: collect `options(view)` from every goal definition. A model bot gets a short list (goal names and parameters, not raw actions) in its prompt, with the chat and plans, and replies with a goal, a message, or both. A bot without a key uses the scripted priority order over the solo goals.
-2. Each turn: `step` the current goal. `act` returns the action; `done` or `failed` clears the goal and goes back to 1; `wait` returns `ready` when legal, otherwise null.
+2. Each turn: `step` the current goal. `act` returns the action; `done` or `failed` clears the goal and goes back to 1; `wait` (and `endCycle`) holds off on sending `ready` while any living human player is not yet `ready` (or a chat wake is pending in the room), so bots stay responsive to chat and interrupts all cycle (owner, 2026-11-01).
 3. An interrupt clears the goal, so the next turn goes back to 1. A model bot woken by chat may keep its goal: its reply can say "carry on".
 4. Guards: a goal that takes more than a set number of steps, or makes no progress across a cycle, fails. The existing free-action cap (`MODEL_FREE_ACTIONS_PER_CYCLE`) still applies to model calls.
 5. **Refused inputs fail the goal.** `GameRoom` tells the bot when an input it sent was refused (by the rules, or the chat rate limit). The goal fails at once instead of being stepped again.
 6. **No loops.** Each goal (by its `key`) that finished or failed this cycle is left out of the options until the next cycle. Without this, a goal that fails without changing the view (no path) would be chosen again at once, forever, and two failing goals could alternate.
 
-The bot's memory is fields on the `ModelBot` or scripted bot object, nowhere else: the current goal, the goals done or failed this cycle, the rooms visited this cycle, and the last chat message it has seen.
+The bot's memory is fields on the `ModelBot` or scripted bot object, nowhere else: the current goal, the goals done or failed this cycle, the goals done today, the rooms visited this cycle, the Shrinks seen or announced, and the last chat message it has seen.
 
 **Interrupts:**
 
 - *Attacked, or HP below the threshold.*
 - *A new chat message* in a channel the bot reads, written by someone else, below the chain depth limit (see "Talking in chat"). Model bots only; a bot without a key ignores chat.
 - *Summoned by a plan:* the body was walked (`docs/plans/on-call.md`); the bot re-reads where it is, and its goal re-paths or fails.
-- *A new cycle:* not while `rest` is running (see its row), or a resting bot would get up after one cycle. The exception (owner, 2026-11-01): while hunters attack and a hunter goal (`shootHunters`, `patrolShootHunters`) is open to it, a resting bot chooses again, staying in bed still among its options. So a model bot is asked once per cycle while hunters attack.
+- *A new cycle:* not while `rest` is running (see its row), or a resting bot would get up after one cycle, and not while `shrinkDorm` is still the highest-priority solo goal on the same day. The exception (owner, 2026-11-01): while hunters attack and a hunter goal (`shootHunters`, `patrolShootHunters`) is open to it, a resting bot chooses again, staying in bed still among its options. So a model bot is asked once per cycle while hunters attack.
 
 ### Plans (`docs/plans/on-call.md`, model bots only)
 
@@ -171,7 +175,8 @@ Solo (scripted for a bot without a key, chosen by the model for one with a key):
 | `shrinkDorm` | a Shrink, once a day: today's dorm, `BEDROOM_A` and `BEDROOM_B` on alternate days (by day number) | stayed there until the cycle ended, lying down first if its AP isn't full and a bed is free |
 | `explore` | the one or two nearest rooms not visited this cycle | arrived |
 | `returnToSol` | PILGRED is repaired and the bot may return (the Commander, `return_to_sol.ts`) | returned; first in the scripted order, since it wins the game |
-| `pickSkill` | a skill slot is open (`pick_skill`, free) | picked; second in the scripted order. Which skill: the scripted bot prefers ones that help its work goals (Engineer, Physicist), else a seeded random one |
+| `pickSkill` | a skill slot is open (`pick_skill`, free) | picked; second in the scripted order. Which skill: `chooseSkill` (`server/src/bots/skillChoice.ts`, `BOT_SKILL_RULES`), else a seeded random human skill |
+| `snoop` | a Scrapper (`metaliciste`) where `snoop` is offered in its current room (a storage room not snooped today, free; owner, 2026-11-01); never walks to a storage for it | snooped; right after `pickSkill` in the scripted order (priority 85) |
 | `shower` | the bot is dirty and a work goal it would otherwise choose refuses dirty players | showered (`shower.ts`); just before the work goals in the scripted order |
 | `endCycle` | only when nothing else is open; a model bot first withdraws from slots it can no longer reach or do | `ready` |
 
@@ -221,7 +226,7 @@ Suspicion, accusations and other social goals are left for later; they need thei
 3. Model chat (#223): the chat window in the prompt, the structured reply with a message, posting through moderation and the rate limit, waking every bot with the chain depth limit, and `help`. **Built 2026-11-01** (`ModelBot` in `bots.ts`, `parseReply` in `prompt.ts`, `goals/help.ts`, `GameRoom.wakeBots` and `botSay`). No real-model run yet (`npm run model-trial` now posts bot chat and wakes the others too). Choices made while building, not asked:
    - The reply is lines: `GOAL: <n>` (0 carries on, offered only when woken mid-goal), `HELP: <task> <who> <room> [<times>] [reserve]`, and `SAY: <channel>: <text>` or `SAY: to <who>: <text>`. The last goal or help line wins; one message a turn. A malformed line drops the whole reply (it posts nothing, and the bot carries on or goes by priority). A reply with only a message carries on, or goes by priority.
    - `help` covers heal, comfort and Fiery speech (heal is offered to every bot: a medikit, or both in the sick bay); it repeats up to 5 times (`HELP_MAX_TIMES`), keeps the reserve unless the reply says `reserve`, may spend AP on the walk, and fails on arrival if the person isn't there or the action isn't offered.
-   - "To <who>" posts in a private channel the two share alone, opening one if needed; if the invite is refused, the bot leaves the empty channel and says nothing.
+   - `"to <who>"` posts in a private channel the two share alone, opening one if needed; if the invite is refused, the bot leaves the empty channel and says nothing.
    - The asking advice is prompt text from the bot's own stats: HP 7 or less (`ASK_HEALING_HP`), morale under 7 and under 5 (`ASK_SHRINK_MORALE`, `ASK_PUBLIC_MORALE`); a Shrink is told to announce itself if it hasn't. The prompt now also lists skills of people in the bot's room (public there), so a bot can spot a Shrink by meeting one.
    - A woken bot that is busy (an action bar) answers once its action is done. Woken calls don't count against `MODEL_CHOICES_PER_CYCLE`; the chain depth bounds them.
    - A chat message the bot couldn't post (rate limit, moderation) is only logged; it doesn't fail the goal.

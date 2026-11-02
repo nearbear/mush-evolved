@@ -759,7 +759,7 @@ export class GameRoom extends Server<Env> {
     for (const [seat, bot] of this.bots) {
       if (seat === author || !bot.wake) continue;
       const body = this.game.players.find((p) => p.id === this.body(seat));
-      if (!body || !readChannels(this.game, body).includes(channel)) continue;
+      if (!body || !body.alive || body.ready || !readChannels(this.game, body).includes(channel)) continue;
       if (bot.wake()) this.wakes.set(seat, { depth });
     }
     this.scheduleBots();
@@ -822,6 +822,7 @@ export class GameRoom extends Server<Env> {
     }
     this.modelGate.setCredentials(devModelCredentials(this.env));
     this.keyChanges++;
+    this.scheduleBots();
     this.afterBotTurn();
   }
 
@@ -967,8 +968,24 @@ export class GameRoom extends Server<Env> {
     }
   }
 
+  /** Drops chat wakes for bots that are dead, have ended their cycle, lost their key, or have no legal actions left. */
+  private pruneWakes(): void {
+    if (!this.game || this.game.phase !== "playing") {
+      this.wakes.clear();
+      return;
+    }
+    for (const seat of this.wakes.keys()) {
+      const p = this.game.players.find((pl) => pl.mind === seat);
+      const bot = this.bots.get(seat);
+      if (!p || !p.alive || p.ready || !bot?.woken || (p.current === null && p.queue.length === 0 && legalActions(this.game, p.id).length === 0)) {
+        this.wakes.delete(seat);
+      }
+    }
+  }
+
   /** Give every bot that can act a delayed turn. Bots see only their own view. */
   private scheduleBots(): void {
+    this.pruneWakes();
     for (const [playerId, bot] of this.bots) {
       if (this.pendingBots.has(playerId)) continue;
       if (!this.game) continue;
@@ -978,6 +995,7 @@ export class GameRoom extends Server<Env> {
         // Still pending while it decides: a model call takes seconds, and the bot must not be asked twice meanwhile.
         const inputs = this.inputs;
         const keyChanges = this.keyChanges;
+        const hadWake = this.wakes.has(playerId);
         try {
           if (!this.game) return;
           await this.botChat(playerId, bot);
@@ -994,6 +1012,8 @@ export class GameRoom extends Server<Env> {
           // Said before it acts: "I'll heal you", then the walk.
           if (message) await this.botSay(playerId, by, message, wake ? wake.depth + 1 : 0);
           if (!action || this.body(playerId) !== by) return;
+          this.pruneWakes();
+          if (action.type === "ready" && this.wakes.size > 0) return;
           const error = await this.act({ type: "action", action, by, at: Date.now() });
           if (error) {
             console.warn(`Bot ${playerId} chose an illegal action: ${error}`);
@@ -1004,9 +1024,10 @@ export class GameRoom extends Server<Env> {
           console.warn(`Bot ${playerId} failed: ${e instanceof Error ? e.message : typeof e}`);
         } finally {
           this.pendingBots.delete(playerId);
+          this.pruneWakes();
           // What it did (or anything else accepted meanwhile) rescheduled the others but skipped it, being pending.
-          // So did a new key, if the old one's call left it waiting.
-          if (this.inputs !== inputs || this.keyChanges !== keyChanges) this.scheduleBots();
+          // So did a new key, if the old one's call left it waiting, or the last chat wake finishing so ready bots can close the cycle.
+          if (this.inputs !== inputs || this.keyChanges !== keyChanges || (hadWake && this.wakes.size === 0)) this.scheduleBots();
           this.afterBotTurn();
         }
       }, BOT_DELAY_MS);

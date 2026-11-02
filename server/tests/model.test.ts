@@ -14,7 +14,7 @@ const gate = (complete: Complete, options: Partial<ModelGateOptions> = {}) =>
 const goal = (key: string, label = key): Goal => ({ id: key, key, label, step: () => ({ kind: "wait" }) });
 /** The prompt with every solo goal open to the seat (options from a fresh bot memory). */
 const goalsFor = (view: PlayerView): Goal[] => {
-  const memory = { reserve: 2, scripted: true, ended: new Set<string>(), today: new Set<string>(), visited: new Set<string>(), roll: () => 0 };
+  const memory = { reserve: 2, scripted: true, ended: new Set<string>(), today: new Set<string>(), visited: new Set<string>(), shrinks: new Set<string>(), roll: () => 0 };
   return SOLO_GOALS.flatMap((def) => def.options(view, memory));
 };
 const prompt = (view: PlayerView): string => buildPrompt(view, { goals: goalsFor(view), reserve: 2 }).map((t) => t.content).join("\n");
@@ -90,10 +90,13 @@ describe("parseReply", () => {
     expect(parse(`SAY: to ${other.character}: need a hand?`)).toEqual({ say: { to: other.id, text: "need a hand?" } });
   });
 
-  it("refuses a message to a channel it can't post in, an unknown person, an empty or overlong one", () => {
+  it("refuses a message to a channel it can't post in, an unknown person, an empty or overlong one, and drops only the DM when at the channel limit", () => {
     for (const reply of ["SAY: mush: hi", "SAY: pc-99: hi", "SAY: to nobody: hi", `SAY: to ${view.you.character}: hi`, "SAY: global:   ", `SAY: global: ${"x".repeat(301)}`, "SAY: no colon"]) {
       expect(parse(reply), reply).toBeNull();
     }
+    expect(parseReply(`GOAL: 2\nSAY: to ${other.character}: hi`, { ...view, chatChannels: [] }, offered)).toEqual({ goal: 1 });
+    expect(parseReply(`GOAL: 2\nSAY: to ${other.character}: hi`, { ...view, channelLimit: 0 }, offered)).toEqual({ goal: 1 });
+    expect(parseReply(`SAY: to ${other.character}: hi`, { ...view, channelLimit: 0 }, offered)).toEqual({});
   });
 
   it("reads a help line, checking the task, the person and the room against the view", () => {
@@ -102,6 +105,12 @@ describe("parseReply", () => {
     expect(parse(`HELP: comfort ${other.character.toUpperCase()} ${room.toLowerCase()} 3 reserve`)).toEqual({
       help: { task: "comfort", target: other.id, room, times: 3, spendReserve: true },
     });
+    const kuantiView = { ...view, players: view.players.map((p) => (p.id === other.id ? { ...p, character: "kuanti" as const } : p)) };
+    expect(parseReply(`HELP: heal Kuan Ti ${room} 2 reserve`, kuantiView, offered)).toEqual({
+      help: { task: "heal", target: other.id, room, times: 2, spendReserve: true },
+    });
+    expect(parseReply(`SAY: to Lai Kuan Ti: hello`, kuantiView, offered)).toEqual({ say: { to: other.id, text: "hello" } });
+    expect(parse(`HELP: heal ${other.character} ${room}`, { ended: new Set([`help:heal:${other.id}:${room}`]) })).toBeNull();
     // The last goal or help line wins.
     expect(parse(`HELP: heal ${other.character} ${room}\nGOAL: 1`)).toEqual({ goal: 0 });
     for (const reply of [
@@ -392,6 +401,57 @@ describe("buildPrompt: chat (#223)", () => {
     expect(text({ ...view, you: { ...view.you, morale: 6 } })).toContain("ask them privately");
     expect(text({ ...view, you: { ...view.you, morale: 4 } })).toContain("say so in global chat");
     expect(text({ ...view, you: { ...view.you, skills: ["shrink"] } })).toContain("You are a Shrink");
+    expect(text({ ...view, you: { ...view.you, skills: ["shrink"] } }, { shrinks: new Set([view.you.id]) })).not.toContain("tell global chat");
+    // A low-morale Shrink is never told to ask itself privately.
+    const lowShrink = text({ ...view, you: { ...view.you, skills: ["shrink"], morale: 6 } }, { shrinks: new Set([view.you.id]) });
+    expect(lowShrink).not.toContain("known Shrink");
+    expect(lowShrink).not.toContain("ask them privately");
+    const other = view.players[0]!;
+    expect(text({ ...view, you: { ...view.you, morale: 6 } }, { shrinks: new Set([other.id]) })).toContain(`(known Shrink: ${other.character})`);
+    expect(text({ ...view, channelLimit: 0 })).toContain("Private channel limit reached");
+  });
+
+  it("remembers Shrinks seen in a room or announcing in global chat across turns, and ignores asks or private messages", async () => {
+    const prompts: string[] = [];
+    const b = new ModelBot(
+      gate(async (_c, turns) => (prompts.push(turns[1]!.content), "GOAL: 1")),
+      1,
+      2,
+      [
+        { id: "a", priority: 2, options: () => [goal("a", "A")] },
+        { id: "b", priority: 1, options: () => [goal("b", "B")] },
+      ],
+    );
+    const base = viewFor(game(), "p0");
+    const other = base.players[0]!;
+    const asker = base.players[1]!;
+    // Turn 1: `other` announces in French in global chat; `asker` asks for a shrink in global chat (must NOT be marked as a Shrink); `you` announces too.
+    const turn1: PlayerView = {
+      ...base,
+      you: { ...base.you, skills: ["shrink"], morale: 6 },
+      chat: [
+        { id: "m1", channel: "global", from: other.id, text: "Je suis la psychologue du bord, écrivez-moi", cycle: 1, time: 1 },
+        { id: "m2", channel: "global", from: asker.id, text: "I'm at 4 morale and can't reach a shrink!", cycle: 1, time: 2 },
+        { id: "m3", channel: "pc-1", from: asker.id, text: "I am a shrink in secret", cycle: 1, time: 3 },
+        { id: "m4", channel: "global", from: base.you.id, text: "I'm a Shrink too", cycle: 1, time: 4 },
+      ],
+    };
+    await b.decideAction(turn1);
+    // Turn 2: 12 unrelated messages later, all earlier messages have scrolled out of the 10-message chat window.
+    const laterChat = Array.from({ length: 12 }, (_, i) => ({
+      id: `later-${i}`,
+      channel: "global" as const,
+      from: other.id,
+      text: `chat line ${i}`,
+      cycle: 1,
+      time: 10 + i,
+    }));
+    const turn2: PlayerView = { ...turn1, chat: laterChat };
+    b.wake();
+    await b.decideAction(turn2);
+    expect(prompts.at(-1)).not.toContain("tell global chat");
+    expect(prompts.at(-1)).toContain(`(known Shrink: ${other.character})`);
+    expect(prompts.at(-1)).not.toContain(asker.character + ")");
   });
 
   it("asks for messages in the ship's language", () => {
@@ -456,5 +516,19 @@ describe("ModelBot: chat (#223)", () => {
     expect(await b.decideAction(view)).toEqual(move);
     expect(b.current).toBe(`help:heal:${other.id}:${room}`);
     expect(b.takeMessage()).toMatchObject({ channel: "global" });
+  });
+
+  it("doesn't pick the same HELP goal again in the same cycle after it fails, and clears a pending wake if the key is dropped", async () => {
+    const other = view.players.find((p) => p.id !== "p0")!;
+    let calls = 0;
+    const g = gate(async () => (calls++, `HELP: heal ${other.character} ${view.you.room}`));
+    const b = new ModelBot(g, 1, 2, [walking("a"), walking("b")]);
+    expect(await b.decideAction(view)).toEqual(move);
+    expect(calls).toBe(2);
+    b.wake();
+    expect(b.woken).toBe(true);
+    g.setCredentials(null);
+    await b.decideAction(view);
+    expect(b.woken).toBe(false);
   });
 });

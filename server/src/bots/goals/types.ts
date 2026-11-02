@@ -30,6 +30,8 @@ export interface BotMemory {
   readonly today: Set<string>;
   /** Rooms the bot has stood in this cycle. */
   readonly visited: Set<RoomId>;
+  /** Players known to be a Shrink (seen in a room or announced in chat); `you.id` means this Shrink has spoken in global chat. */
+  readonly shrinks: Set<string>;
   /** A seeded roll in [0, n), for choices with no better reason (the bot's own RNG, never `Math.random`). */
   roll(n: number): number;
 }
@@ -42,6 +44,10 @@ export interface Goal {
   label: string;
   /** One action toward the goal, or what happened. Reads only the bot's own view and the goal's own progress. */
   step(view: PlayerView, memory: BotMemory): GoalStep;
+  /** Whether to keep following this goal when a new cycle starts (default: false). */
+  keepAcrossCycle?(view: PlayerView, memory: BotMemory, newDay: boolean, goals: readonly GoalDef[]): boolean;
+  /** Called when an interrupt (a chat choice or losing HP) drops this goal before the cycle ends. */
+  onInterrupt?(memory: BotMemory): void;
 }
 
 export interface GoalDef {

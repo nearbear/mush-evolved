@@ -1,6 +1,9 @@
 import { act, canAfford, failed, find, goTo, roomsWith, where } from "./blocks.ts";
 import type { Goal, GoalDef } from "./types.ts";
 
+/** Goals that interrupt a rest at the start of a cycle when hunters are outside (owner, 2026-11-01). */
+const HUNTER_GOALS = new Set(["shootHunters", "patrolShootHunters"]);
+
 /**
  * Rest in the nearest bed (a bed gives AP each cycle): lie down, then wait cycle after cycle until AP is full. A new
  * cycle doesn't interrupt it, or the bot would get up after one cycle. Comes once the bot has no AP left it would spend
@@ -31,6 +34,9 @@ function restIn(room: string, label: string): Goal {
       if (walk) return walk;
       const bed = find(view, "lie_down");
       return bed ? act(bed) : failed("bed_taken");
+    },
+    keepAcrossCycle(view, memory, _newDay, goals) {
+      return !(view.hunters.count > 0 && goals.some((def) => HUNTER_GOALS.has(def.id) && def.options(view, memory).length > 0));
     },
   };
 }

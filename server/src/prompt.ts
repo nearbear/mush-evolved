@@ -2,8 +2,8 @@
 // network. Built only from the bot's own PlayerView, which is what keeps hidden information out of the prompt.
 // Anything a player wrote (chat, channel names) goes in as quoted data, never as instructions; players will try injection.
 
-import { MAX_CHAT_LENGTH, type ChannelId, type LobbyLanguage, type LogEntry, type PlayerId, type PlayerView, type RoomId } from "@mush2/shared";
-import { HELP_MAX_TIMES, HELP_TASKS, targeted, type Goal, type HelpParams, type HelpTask } from "./bots/goals/index.ts";
+import { characterGivenName, characterName, MAX_CHAT_LENGTH, type ChannelId, type LobbyLanguage, type LogEntry, type PlayerId, type PlayerView, type RoomId } from "@mush2/shared";
+import { HELP_MAX_TIMES, HELP_TASKS, helpKey, targeted, type Goal, type HelpParams, type HelpTask } from "./bots/goals/index.ts";
 import type { ChatTurn } from "./model.ts";
 
 /** How much recent history the prompt carries. The chat window is an open question (bot-goals.md); measure with model-trial. */
@@ -63,6 +63,24 @@ export interface PromptOptions {
   tasks?: readonly HelpTask[];
   /** The ship's language (#95): what bots write in. */
   language?: LobbyLanguage;
+  /** Players remembered as Shrinks (seen in a room or announced in chat); `you.id` means this Shrink has spoken in global chat. */
+  shrinks?: ReadonlySet<string>;
+}
+
+const SHRINK_ROLE = "(?:shrink|psychologist|psychologue|psy|psic[oó]log[oa])";
+const SHRINK_CLAIM = new RegExp(
+  `\\b(?:(?:i\\s+am|i\\s*['’]m|je\\s+suis|(?:yo\\s+)?soy)\\s+(?:(?:a|an|the|your|our|ship\\s*['’]s|le|la|un|une|votre|el|una|su|tu)\\s+){0,2}${SHRINK_ROLE}|(?:i\\s+have|j\\s*['’]ai|tengo)\\s+(?:(?:the|la)\\s+)?(?:(?:skill|comp[eé]tence|habilidad)\\s+(?:de\\s+)?)?${SHRINK_ROLE}|${SHRINK_ROLE}\\s+(?:here|ici|aqu[ií]))\\b`,
+  "i",
+);
+
+/** Updates `shrinks` from what `view` shows now: roommates with the skill, or self-announcements in global chat. */
+export function observeShrinks(view: PlayerView, shrinks: Set<string>): void {
+  for (const p of view.players) if (p.skills.includes("shrink")) shrinks.add(p.id);
+  for (const m of view.chat) {
+    if (m.system || m.from === null || m.channel !== "global") continue;
+    if (m.from === view.you.id && view.you.skills.includes("shrink")) shrinks.add(view.you.id);
+    else if (m.from !== view.you.id && SHRINK_CLAIM.test(m.text)) shrinks.add(m.from);
+  }
 }
 
 /**
@@ -70,7 +88,7 @@ export interface PromptOptions {
  * built by the goals from the bot's own view and hold no player-written text.
  */
 export function buildPrompt(view: PlayerView, options: PromptOptions): ChatTurn[] {
-  const { goals, reserve, current = null, woken = false, tasks = [], language = "en" } = options;
+  const { goals, reserve, current = null, woken = false, tasks = [], language = "en", shrinks } = options;
   const you = view.you;
   const ai = (id: PlayerId): string => (view.players.find((p) => p.id === id)?.isBot ? " (AI)" : "");
   const characterOf = (id: PlayerId | null): string =>
@@ -105,10 +123,10 @@ export function buildPrompt(view: PlayerView, options: PromptOptions): ChatTurn[
     "Recent chat (oldest first):",
     ...view.chat.slice(-CHAT_LINES).map((m) => (m.system ? `[${m.channel}] system: ${m.system.key}` : `<chat>[${m.channel}] ${characterOf(m.from)}: ${quote(m.text)}</chat>`)),
     "",
-    `Channels you can post in: ${list(view.chatChannels.map(channel))}.`,
-    ...advice(view, shrink),
+    `Channels you can post in: ${list(view.chatChannels.map(channel))}.${view.privateChannels.length >= view.channelLimit ? ` Private channel limit reached (${view.privateChannels.length}/${view.channelLimit}): you cannot open a new private channel.` : ""}`,
+    ...advice(view, shrink, shrinks),
     "",
-    ...(woken ? ["A new chat message came in. Reply to it if you should; otherwise carry on.", ""] : []),
+    ...(woken ? [current ? "A new chat message came in. Reply to it if you should; otherwise carry on." : "A new chat message came in. Reply to it if you should, and choose a goal.", ""] : []),
     `Tasks you can help with: ${list(tasks.map((t) => (t === "heal" ? "heal (needs a medikit you carry, or both of you in SICK_BAY)" : t)))}.`,
     "Goals open to you now:",
     ...(current ? [`0. Carry on: ${current.label}`] : []),
@@ -121,17 +139,32 @@ export function buildPrompt(view: PlayerView, options: PromptOptions): ChatTurn[
 }
 
 /** When to ask for help (bot-goals.md: the asking threshold, and asking a Shrink for morale). */
-function advice(view: PlayerView, shrink: boolean): string[] {
+function advice(view: PlayerView, shrink: boolean, remembered?: ReadonlySet<string>): string[] {
   const you = view.you;
+  let seen = remembered;
+  if (!seen) {
+    const s = new Set<string>();
+    observeShrinks(view, s);
+    seen = s;
+  }
+  const knownShrinks = view.players.filter((p) => p.id !== you.id && p.alive && seen.has(p.id)).map((p) => p.character);
+  const who = knownShrinks.length > 0 ? ` (known Shrink: ${knownShrinks.join(", ")})` : ""; // i18n-ignore: model prompt text, not player-visible
   const out: string[] = [];
   if (you.hp <= ASK_HEALING_HP) out.push(`You are hurt. Unless someone is already coming, ask for healing in global chat and say where you are.`);
   if (you.morale < ASK_PUBLIC_MORALE)
-    out.push("Your morale is dangerously low. Ask a Shrink privately for comfort, stating your morale; if you can't reach one privately, say so in global chat.");
-  else if (you.morale < ASK_SHRINK_MORALE) out.push("Your morale is low. If you know a Shrink, ask them privately for comfort, stating your morale and where you are.");
-  if (shrink)
     out.push(
-      `You are a Shrink: if you haven't yet, tell global chat so people know whom to ask. Comfort gives 2 morale. When someone says they are under ${ASK_SHRINK_MORALE} morale you may spend your reserve on them.`,
+      !shrink || knownShrinks.length > 0
+        ? `Your morale is dangerously low. Ask a Shrink privately for comfort${who}, stating your morale; if you can't reach one privately, say so in global chat.`
+        : `Your morale is dangerously low. Say so in global chat, stating your morale and where you are.`,
     );
+  else if (you.morale < ASK_SHRINK_MORALE && (!shrink || knownShrinks.length > 0))
+    out.push(`Your morale is low. If you know a Shrink${who}, ask them privately for comfort, stating your morale and where you are.`);
+  if (shrink) {
+    const tell = seen.has(you.id) ? "" : ": if you haven't yet, tell global chat so people know whom to ask";
+    out.push(
+      `You are a Shrink${tell}. Comfort gives 2 morale. When someone says they are under ${ASK_SHRINK_MORALE} morale you may spend your reserve on them.`,
+    );
+  }
   return out;
 }
 
@@ -149,8 +182,13 @@ export interface Reply {
  * The model's reply, checked against what was offered, or null when it is malformed (no valid line at all, a goal or
  * help line that doesn't check out, an overlong message, a channel it can't post in). The last goal or help line wins.
  */
-export function parseReply(reply: string, view: PlayerView, offered: { goals: number; keep: boolean; tasks: readonly HelpTask[] }): Reply | null {
+export function parseReply(
+  reply: string,
+  view: PlayerView,
+  offered: { goals: number; keep: boolean; tasks: readonly HelpTask[]; ended?: ReadonlySet<string> },
+): Reply | null {
   const out: Reply = {};
+  let blockedSay = false;
   for (const raw of reply.split("\n")) {
     const line = raw.trim().replace(/^[*`]+|[*`]+$/g, "");
     const goal = line.match(/^GOAL:\s*(\d+)\s*$/i);
@@ -163,17 +201,20 @@ export function parseReply(reply: string, view: PlayerView, offered: { goals: nu
       else return null;
       delete out.help;
     } else if (help) {
-      const params = parseHelp(help[1]!, view, offered.tasks);
+      const params = parseHelp(help[1]!, view, offered.tasks, offered.ended);
       if (!params) return null;
       out.help = params;
       delete out.goal;
     } else if (say) {
       const message = parseSay(say[1]!, view);
       if (!message) return null;
-      out.say = message;
+      if (message === "blocked") {
+        blockedSay = true;
+        delete out.say;
+      } else out.say = message;
     }
   }
-  if (out.goal === undefined && out.help === undefined && out.say === undefined) {
+  if (out.goal === undefined && out.help === undefined && out.say === undefined && !blockedSay) {
     // A bare number, as some models answer.
     const n = Number(reply.trim().match(/^(\d+)$/)?.[1] ?? NaN);
     if (n >= 1 && n <= offered.goals) return { goal: n - 1 };
@@ -182,21 +223,40 @@ export function parseReply(reply: string, view: PlayerView, offered: { goals: nu
   return out;
 }
 
-/** A living other player, named by character id (case and spaces ignored). */
+const normName = (s: string): string => s.toLowerCase().replace(/[\s_-]/g, "");
+
+/** A living other player, named by character id, given name, or full name (case and spaces ignored). */
 function person(view: PlayerView, name: string): PlayerId | null {
-  const key = name.toLowerCase().replace(/[\s_-]/g, "");
-  return view.players.find((p) => p.id !== view.you.id && p.alive && p.character.toLowerCase() === key)?.id ?? null;
+  const key = normName(name);
+  return (
+    view.players.find(
+      (p) =>
+        p.id !== view.you.id &&
+        p.alive &&
+        (normName(p.character) === key || normName(characterGivenName(p.character)) === key || normName(characterName(p.character)) === key),
+    )?.id ?? null
+  );
 }
 
-function parseHelp(text: string, view: PlayerView, tasks: readonly HelpTask[]): HelpParams | null {
-  const [task, who, room, ...rest] = text.trim().split(/\s+/);
-  if (!task || !who || !room || rest.length > 2) return null;
+function parseHelp(text: string, view: PlayerView, tasks: readonly HelpTask[], ended?: ReadonlySet<string>): HelpParams | null {
+  const tokens = text.trim().split(/\s+/);
+  const task = tokens[0];
+  let roomIdx = -1;
+  for (let i = tokens.length - 1; i >= 2; i--) {
+    if (Object.hasOwn(view.rooms, tokens[i]!.toUpperCase())) {
+      roomIdx = i;
+      break;
+    }
+  }
+  if (!task || roomIdx < 2) return null;
+  const who = tokens.slice(1, roomIdx).join(" ");
+  const roomId = tokens[roomIdx]!.toUpperCase() as RoomId;
+  const rest = tokens.slice(roomIdx + 1);
+  if (!who || rest.length > 2) return null;
   const t = task.toLowerCase() as HelpTask;
   if (!(HELP_TASKS as readonly string[]).includes(t) || !tasks.includes(t)) return null;
   const target = targeted(t) ? person(view, who) : null;
   if (targeted(t) && target === null) return null;
-  const roomId = room.toUpperCase() as RoomId;
-  if (!Object.hasOwn(view.rooms, roomId)) return null;
   let times = 1;
   let spendReserve = false;
   for (const r of rest) {
@@ -204,10 +264,12 @@ function parseHelp(text: string, view: PlayerView, tasks: readonly HelpTask[]): 
     else if (/^\d+$/.test(r) && Number(r) >= 1 && Number(r) <= HELP_MAX_TIMES) times = Number(r);
     else return null;
   }
-  return { task: t, target, room: roomId, times, spendReserve };
+  const params: HelpParams = { task: t, target, room: roomId, times, spendReserve };
+  if (ended?.has(helpKey(params))) return null;
+  return params;
 }
 
-function parseSay(text: string, view: PlayerView): BotMessage | null {
+function parseSay(text: string, view: PlayerView): BotMessage | "blocked" | null {
   const colon = text.indexOf(":");
   if (colon < 0) return null;
   const where = text.slice(0, colon).trim();
@@ -216,7 +278,11 @@ function parseSay(text: string, view: PlayerView): BotMessage | null {
   const to = where.match(/^to\s+(.+)$/i);
   if (to) {
     const id = person(view, to[1]!);
-    return id === null ? null : { to: id, text: body };
+    if (id === null) return null;
+    if (!view.chatChannels.includes("global")) return "blocked";
+    const shared = view.privateChannels.some((c) => c.members.length === 2 && c.members.includes(id));
+    if (!shared && view.privateChannels.length >= view.channelLimit) return "blocked";
+    return { to: id, text: body };
   }
   const channel = view.chatChannels.find((c) => c.toLowerCase() === where.toLowerCase());
   return channel === undefined ? null : { channel, text: body };

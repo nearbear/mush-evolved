@@ -169,10 +169,17 @@ function apply(input: Input): string | null {
 const wakes = new Map<PlayerId, number>();
 let messages = 0;
 function say(id: PlayerId, message: BotMessage, depth: number): void {
-  let channel: ChannelId | undefined = "channel" in message ? message.channel : game.channels.find((c) => c.members.length === 2 && c.members.includes(id) && c.members.includes(message.to))?.id;
+  const pair = (c: { members: PlayerId[] }, to: PlayerId) => c.members.length === 2 && c.members.includes(id) && c.members.includes(to);
+  let channel: ChannelId | undefined = "channel" in message ? message.channel : game.channels.find((c) => pair(c, message.to))?.id;
   if (channel === undefined && "to" in message) {
     if (apply({ type: "createChannel", members: [message.to], by: id })) return;
-    channel = game.channels.filter((c) => c.createdBy === id).at(-1)!.id;
+    const opened = game.channels.filter((c) => c.createdBy === id).at(-1);
+    if (!opened) return;
+    if (!pair(opened, message.to)) {
+      apply({ type: "leaveChannel", channel: opened.id, by: id });
+      return;
+    }
+    channel = opened.id;
   }
   const moderated = moderateChat(message.text);
   if (!moderated.ok || apply({ type: "chat", channel: channel!, text: moderated.text, by: id })) return;
@@ -262,7 +269,14 @@ for (let c = 0; c < cycles && game.phase === "playing" && spent + spentBefore < 
       chosen[action.type] = (chosen[action.type] ?? 0) + 1;
       if (apply({ type: "action", action, by: id, at: now })) stats.illegal++;
     }
-    if (calls.length === before && decided.every((d) => d.action === null)) break;
+    if (calls.length === before && decided.every((d) => d.action === null)) {
+      // Bots hold off on ready while a living human is unready; once every bot is waiting and no wake or timer is pending, the passive human readies.
+      if (idle(SINGLE_PLAYER_HUMAN) && wakes.size === 0 && gate.pause === null && (lingered++ >= Number(args.linger) || nextDue(game) === null)) {
+        apply({ type: "action", action: { type: "ready" }, by: SINGLE_PLAYER_HUMAN, at: now });
+        continue;
+      }
+      break;
+    }
     // Like GameRoom.afterBotTurn: while calls fail in passing, wait before asking again, doubling up to a minute.
     if (gate.pause === "unavailable") {
       await new Promise((r) => setTimeout(r, backoff));

@@ -3,6 +3,7 @@ import { projectOptions } from "./project.ts";
 import { repairHull } from "./repairHull.ts";
 import { researchOptions } from "./research.ts";
 import type { GoalDef } from "./types.ts";
+import { deskWorkReserve } from "./work.ts";
 
 /**
  * Shower when dirty and the work the bot would otherwise choose refuses dirty players (research, projects): not while
@@ -15,9 +16,14 @@ export const shower: GoalDef = {
   options(view, memory) {
     if (!view.statuses.includes("dirty")) return [];
     if (repairHull.options(view, memory).length > 0) return [];
-    if (researchOptions(view, memory, true).length === 0 && projectOptions(view, memory, true).length === 0) return [];
-    const workAp = Math.min(view.config.researchAp, view.config.projectAp);
-    const room = roomsWith(view, ["SHOWER"]).find((r) => canAfford(view, r, view.config.showerAp + workAp, memory.reserve));
+    const wantResearch = researchOptions(view, memory, true).length > 0;
+    const wantProject = projectOptions(view, memory, true).length > 0;
+    if (!wantResearch && !wantProject) return [];
+    const researchAp = view.you.resources.comp > 0 ? 0 : view.config.researchAp;
+    const projectAp = view.you.resources.core > 0 || view.you.resources.comp > 0 ? 0 : view.config.projectAp;
+    const workAp = Math.min(wantResearch ? researchAp : Infinity, wantProject ? projectAp : Infinity);
+    const reserve = deskWorkReserve(view, memory);
+    const room = roomsWith(view, ["SHOWER"]).find((r) => !memory.ended.has(`shower:${r}`) && canAfford(view, r, view.config.showerAp + workAp, reserve));
     if (!room) return [];
     return [
       {

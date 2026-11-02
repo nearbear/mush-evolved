@@ -2,8 +2,8 @@
 // spend cap, none of which belong in the pure rules package.
 
 import { legalIn, nextInt, type Action, type LobbyLanguage, type PlayerView, type RngState } from "@mush2/shared";
-import { END_CYCLE, helpGoal, helpTasks, HUNTER_GOALS, SOLO_GOALS, type BotMemory, type Goal, type GoalDef } from "./bots/goals/index.ts";
-import { buildPrompt, describeLogEntry, parseReply, type BotMessage } from "./prompt.ts";
+import { END_CYCLE, helpGoal, helpTasks, SOLO_GOALS, type BotMemory, type Goal, type GoalDef } from "./bots/goals/index.ts";
+import { buildPrompt, describeLogEntry, observeShrinks, parseReply, type BotMessage } from "./prompt.ts";
 import type { ModelGate } from "./model.ts";
 
 /**
@@ -41,6 +41,13 @@ export const WANDER_MOVES_PER_CYCLE = 3;
 
 /** Ends its cycle where End cycle is on (testing); otherwise it waits for the clock. */
 const endCycle = (view: PlayerView): Action | null => (legalIn(view).some((a) => a.type === "ready") ? { type: "ready" } : null);
+
+/**
+ * Goal bots wait to send `ready` until every living human has, so they stay open to chat wakes, interrupts and `help`
+ * while the human is still playing their turn.
+ */
+const waitForCycle = (view: PlayerView): Action | null =>
+  legalIn(view).some((a) => a.type === "ready") && view.players.every((p) => p.isBot || !p.alive || p.ready) ? { type: "ready" } : null;
 
 /** Scripted placeholder: wanders randomly up to WANDER_MOVES_PER_CYCLE moves a cycle, then ends its cycle or waits. */
 export class WanderBot implements Bot {
@@ -106,6 +113,7 @@ export class GoalBot implements Bot {
       ended: new Set(),
       today: new Set(),
       visited: new Set(),
+      shrinks: new Set(),
       roll: (n) => {
         let i: number;
         [i, this.rng] = nextInt(this.rng, n);
@@ -131,7 +139,7 @@ export class GoalBot implements Bot {
   }
 
   get woken(): boolean {
-    return this.wokenByChat;
+    return this.listens && this.wokenByChat;
   }
 
   /** The key of the goal it is following, if any (tests). */
@@ -143,8 +151,9 @@ export class GoalBot implements Bot {
     this.observe(view);
     const legal = legalIn(view);
     if (legal.length === 0) return null;
+    if (!this.listens) this.wokenByChat = false;
     // Woken by chat: the model is asked even mid-goal or with one option, since it may want to talk; it may carry on.
-    if (this.wokenByChat && this.listens) {
+    if (this.wokenByChat) {
       this.wokenByChat = false;
       const chosen = await this.choose(view, this.options(view), this.goal, true);
       if (chosen === null) {
@@ -153,6 +162,7 @@ export class GoalBot implements Bot {
         return null;
       }
       if (chosen !== this.goal) {
+        this.goal?.onInterrupt?.(this.memory);
         this.end(false);
         this.goal = chosen;
       }
@@ -172,7 +182,7 @@ export class GoalBot implements Bot {
       if (step.kind === "wait") {
         // Ending the cycle isn't a goal to keep: while it waits for the clock, something may open up (hunger, AP).
         if (this.goal === END_CYCLE) this.goal = null;
-        return endCycle(view);
+        return waitForCycle(view);
       }
       if (step.kind === "act") {
         // A stale or wrong step is the goal's failure, never an illegal input.
@@ -180,7 +190,7 @@ export class GoalBot implements Bot {
         this.end(true);
       } else this.end(!(step.kind === "done" && step.again));
     }
-    return endCycle(view);
+    return waitForCycle(view);
   }
 
   refused(): void {
@@ -189,28 +199,26 @@ export class GoalBot implements Bot {
 
   /** Cycle bookkeeping and the interrupts. */
   private observe(view: PlayerView): void {
+    const newDay = view.day !== this.day;
+    if (newDay) {
+      this.day = view.day;
+      this.memory.today.clear();
+    }
     if (view.cycle !== this.cycle) {
       const first = this.cycle === -1;
       this.cycle = view.cycle;
       this.memory.ended.clear();
       this.memory.visited.clear();
-      // Resting carries on across cycles, unless hunters attack and the bot could fight them (owner, 2026-11-01): then it
-      // chooses again, staying in bed still among its options. Anything else is chosen afresh.
-      if (!first && (this.goal?.id !== "rest" || this.canFightHunters(view))) this.end(false);
-    }
-    if (view.day !== this.day) {
-      this.day = view.day;
-      this.memory.today.clear();
+      if (!first && !this.goal?.keepAcrossCycle?.(view, this.memory, newDay, this.goals)) this.end(false);
     }
     // Attacked, or hurt any other way: think again.
-    if (this.hp !== null && view.you.hp < this.hp) this.end(false);
+    if (this.hp !== null && view.you.hp < this.hp) {
+      this.goal?.onInterrupt?.(this.memory);
+      this.end(false);
+    }
     this.hp = view.you.hp;
     this.memory.visited.add(view.you.room);
-  }
-
-  /** Whether a hunter goal is open now; only then is a rest worth interrupting. */
-  private canFightHunters(view: PlayerView): boolean {
-    return view.hunters.count > 0 && this.goals.some((def) => HUNTER_GOALS.has(def.id) && def.options(view, this.memory).length > 0);
+    observeShrinks(view, this.memory.shrinks);
   }
 
   /**
@@ -311,13 +319,26 @@ export class ModelBot extends GoalBot {
     const offered = options.filter((o) => o.goal.key !== current?.key);
     const goals = offered.map((o) => o.goal);
     const tasks = helpTasks(view);
-    const prompt = buildPrompt(view, { goals, current, woken, tasks, reserve: this.memory.reserve, language: this.language });
+    const prompt = buildPrompt(view, {
+      goals,
+      current,
+      woken,
+      tasks,
+      reserve: this.memory.reserve,
+      language: this.language,
+      shrinks: this.memory.shrinks,
+    });
     const reply = await this.gate.ask(prompt);
     if (reply === null) return null;
-    const parsed = parseReply(reply, view, { goals: goals.length, keep: current !== null, tasks });
+    const parsed = parseReply(reply, view, { goals: goals.length, keep: current !== null, tasks, ended: this.memory.ended });
     if (parsed === null) return fallback();
     // One message a turn: a second choice in the same turn (the first goal ended at once) doesn't replace it.
-    if (parsed.say && !this.message) this.message = parsed.say;
+    if (parsed.say && !this.message) {
+      this.message = parsed.say;
+      if ("channel" in parsed.say && parsed.say.channel === "global" && view.you.skills.includes("shrink")) {
+        this.memory.shrinks.add(view.you.id);
+      }
+    }
     if (!woken) this.choices++;
     if (parsed.help) {
       const name = (id: string): string => view.players.find((p) => p.id === id)?.character ?? id;

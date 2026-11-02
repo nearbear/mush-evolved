@@ -32,12 +32,19 @@ export const shrinkDorm: GoalDef = {
         step(v, m) {
           const walk = goTo(v, dorm);
           if (walk) return walk;
-          m.today.add("shrinkDorm");
           if (v.you.lyingIn === undefined && v.you.ap < v.maxAp) {
             const bed = find(v, "lie_down");
             if (bed) return act(bed);
           }
+          m.today.add("shrinkDorm");
           return { kind: "wait" };
+        },
+        keepAcrossCycle(v, m, newDay, goals) {
+          if (newDay || v.you.room !== dorm) return false;
+          return !goals.some((def) => def.priority > shrinkDorm.priority && def.options(v, m).length > 0);
+        },
+        onInterrupt(m) {
+          m.today.delete("shrinkDorm");
         },
       },
     ];

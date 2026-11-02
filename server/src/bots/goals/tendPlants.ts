@@ -56,8 +56,10 @@ export const tendPlants: GoalDef = {
         step(v, m) {
           const walk = goTo(v, garden);
           if (walk) return walk;
+          const job = gardenJob(v, m.reserve);
+          if (job) return job;
           m.today.add(`tendPlants:${garden}`);
-          return gardenJob(v, m.reserve) ?? { kind: "done" };
+          return { kind: "done" };
         },
       },
     ];

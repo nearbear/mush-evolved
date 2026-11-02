@@ -8,10 +8,10 @@ import type { GoalDef } from "./types.ts";
 export const returnToSol: GoalDef = {
   id: "returnToSol",
   priority: 100,
-  options(view) {
+  options(view, memory) {
     if (!view.pilgredRepaired) return [];
     if (view.titles.find((t) => t.id === "commander")?.holder !== view.you.character) return [];
-    const room = roomsWith(view, ["PILOT_MODULE"]).find((r) => canAfford(view, r, view.config.returnToSolAp, 0));
+    const room = roomsWith(view, ["PILOT_MODULE"]).find((r) => !memory.ended.has(`returnToSol:${r}`) && canAfford(view, r, view.config.returnToSolAp, 0));
     if (!room) return [];
     return [
       {

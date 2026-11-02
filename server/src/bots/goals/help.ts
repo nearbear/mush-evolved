@@ -27,6 +27,8 @@ export interface HelpParams {
 /** Tasks that take a target. */
 export const targeted = (task: HelpTask): boolean => task !== "fiery_speech";
 
+export const helpKey = (params: Pick<HelpParams, "task" | "target" | "room">): string => `help:${params.task}:${params.target ?? "-"}:${params.room}`;
+
 /**
  * The tasks this bot could do at all, from its own view: heal with a medikit it carries (or in the sick bay, without
  * one), comfort as a Shrink, a Fiery speech as a Leader.
@@ -44,7 +46,7 @@ export function helpGoal(params: HelpParams, name: (id: PlayerId) => string): Go
   const who = target === null ? "" : ` ${name(target)}`;
   return {
     id: "help",
-    key: `help:${task}:${target ?? "-"}:${room}`,
+    key: helpKey(params),
     // i18n-ignore: model prompt text, not player-visible
     label: `Help: ${task}${who} in ${room}${times > 1 ? `, ${times} times` : ""}${spendReserve ? ", spending your reserve if needed" : ""}`,
     step(view, memory) {

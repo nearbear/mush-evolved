@@ -784,12 +784,33 @@ describe("GameRoom single player", () => {
     expect(lastView(c).cycleOfDay).toBe(5);
   });
 
-  it("ends the cycle once the player and every bot have ended theirs", async () => {
+  it("ends the cycle once the player and every bot have ended theirs, while bots stay unready and responsive until the human readies", async () => {
     vi.stubGlobal("fetch", vi.fn());
     const { room, storage, token } = await soloRoom();
     const c = connect(room, token);
+    // Let bots finish their solo actions while the human is still unready: no bot sends `ready` yet.
+    for (let i = 0; i < 10; i++) await playOut(room, storage);
+    expect(lastView(c).cycleOfDay).toBe(5);
+    expect(lastView(c).players.every((p) => !p.ready)).toBe(true);
     await send(room, c, { type: "action", action: { type: "ready" } });
-    // No key, so the bots play their scripted goals (skills, a walk, some work), then end their cycles.
+    for (let i = 0; i < 20 && lastView(c).cycleOfDay === 5; i++) await playOut(room, storage);
+    expect(lastView(c).cycleOfDay).toBe(6);
+    vi.unstubAllGlobals();
+  });
+
+  it("drops a chat wake when a woken bot dies before its turn, so the cycle still ends", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => new Response(JSON.stringify({ choices: [{ message: { content: "GOAL: 1" } }] }))),
+    );
+    const { room, storage, token } = await soloRoom({ ...DEV, MODEL_BASE_URL: "https://example.test/v1", MODEL_NAME: "m", MODEL_API_KEY: "dev-key" });
+    const c = connect(room, token);
+    // Wake every model bot with a chat message, then kill one before the 500ms bot timer fires.
+    await send(room, c, { type: "chat", channel: "global", text: "anyone there?" });
+    const victim = gameOf(room).players.find((p) => p.id !== "p0" && p.alive)!;
+    victim.alive = false;
+    victim.hp = 0;
+    await send(room, c, { type: "action", action: { type: "ready" } });
     for (let i = 0; i < 20 && lastView(c).cycleOfDay === 5; i++) await playOut(room, storage);
     expect(lastView(c).cycleOfDay).toBe(6);
     vi.unstubAllGlobals();

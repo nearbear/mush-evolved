@@ -65,6 +65,15 @@ async function play(game: GameState, id: string, bot: GoalBot, turns: number): P
 }
 
 const roll0 = () => 0;
+const memory = (scripted = true) => ({
+  reserve: 2,
+  scripted,
+  ended: new Set<string>(),
+  today: new Set<string>(),
+  visited: new Set<string>(),
+  shrinks: new Set<string>(),
+  roll: roll0,
+});
 
 /** Plays one bot until it ends its cycle (or 60 turns), every action legal and applied. */
 async function untilReady(game: GameState, id: string, bot: GoalBot): Promise<{ game: GameState; taken: Action[] }> {
@@ -372,7 +381,7 @@ describe("shootHunters", () => {
 
   it("isn't offered while no hunter attacks", () => {
     const { game: start, id } = setup();
-    expect(shootHunters.options(viewFor(start, id), { reserve: 2, scripted: true, ended: new Set(), today: new Set(), visited: new Set(), roll: roll0 })).toEqual([]);
+    expect(shootHunters.options(viewFor(start, id), memory())).toEqual([]);
   });
 
   it("walks to the nearest turret and shoots the weakest hunter, spending all its AP, the reserve too", async () => {
@@ -395,7 +404,6 @@ describe("shootHunters", () => {
       p.room = turretRoom;
       p.ap = 4;
     });
-    const memory = (scripted: boolean) => ({ reserve: 2, scripted, ended: new Set<string>(), today: new Set<string>(), visited: new Set<string>(), roll: roll0 });
     expect(shootHunters.options(viewFor(game, id), memory(true))).toEqual([]);
     expect(shootHunters.options(viewFor(game, id), memory(false))).toHaveLength(1);
     expect(shootHunters.options(viewFor(edit(game, id, (p) => (p.ap = 5)), id), memory(true))).toHaveLength(1);
@@ -435,12 +443,12 @@ describe("shootHunters", () => {
     });
     for (const t of game.equipment[turretRoom]!.filter((e) => e.type === "TURRET_COMMAND")) game.turrets[t.id] = 0;
     const view = viewFor(game, id);
-    const memory = { reserve: 2, scripted: true, ended: new Set<string>(), today: new Set<string>(), visited: new Set<string>(), roll: roll0 };
-    const [goal] = shootHunters.options(view, memory);
+    const m = memory();
+    const [goal] = shootHunters.options(view, m);
     expect(goal!.key).toBe(`shootHunters:${turretRoom}`);
-    expect(goal!.step(view, memory)).toEqual({ kind: "failed", reason: "no_charges" });
-    memory.ended.add(goal!.key);
-    expect(shootHunters.options(view, memory)[0]!.key).not.toBe(goal!.key);
+    expect(goal!.step(view, m)).toEqual({ kind: "failed", reason: "no_charges" });
+    m.ended.add(goal!.key);
+    expect(shootHunters.options(view, m)[0]!.key).not.toBe(goal!.key);
   });
 });
 
@@ -462,7 +470,6 @@ describe("patrolShootHunters", () => {
     ];
     return { game, id };
   }
-  const memory = (scripted = true) => ({ reserve: 2, scripted, ended: new Set<string>(), today: new Set<string>(), visited: new Set<string>(), roll: roll0 });
 
   it("is offered to a scripted Pilot at 9 AP, not at 8, and never to someone who can't fly", () => {
     expect(patrolShootHunters.options(viewFor(pilot(8).game, pilot(8).id), memory())).toEqual([]);
@@ -512,7 +519,6 @@ describe("eat", () => {
     });
     return { game, id };
   };
-  const memory = () => ({ reserve: 2, scripted: true, ended: new Set<string>(), today: new Set<string>(), visited: new Set<string>(), roll: roll0 });
 
   it(`goes for food after ${BOT_EAT_AFTER_CYCLES} cycles at 0 satiety, not before`, () => {
     const early = starving(BOT_EAT_AFTER_CYCLES - 1);
@@ -579,7 +585,6 @@ describe("tendPlants", () => {
     for (const pot of game.items) if (pot.plant) pot.plant.thirst = 1;
     return { game, id };
   };
-  const memory = () => ({ reserve: 2, scripted: true, ended: new Set<string>(), today: new Set<string>(), visited: new Set<string>(), roll: roll0 });
 
   it("is only for the Botanist role", () => {
     const other = gardener(["pilot"]);
@@ -628,6 +633,16 @@ describe("tendPlants", () => {
     const points = edit(broke, id, (p) => (p.resources.garden = 2));
     expect(tendPlants.options(viewFor(points, id), memory())).toHaveLength(1);
   });
+
+  it("marks today only once the garden jobs are done, so an interrupted Botanist comes back", () => {
+    const { game: start, id } = gardener(["botanic"]);
+    const garden = start.config.botany.gardenRoom;
+    const inGarden = edit(start, id, (p) => (p.room = garden));
+    const m = memory();
+    const [goal] = tendPlants.options(viewFor(inGarden, id), m);
+    expect(goal!.step(viewFor(inGarden, id), m).kind).toBe("act");
+    expect(m.today.has(`tendPlants:${garden}`)).toBe(false);
+  });
 });
 
 describe("shrinkDorm", () => {
@@ -642,7 +657,6 @@ describe("shrinkDorm", () => {
     game.cycle = (day - 1) * game.config.cyclesPerDay + 1;
     return { game, id };
   };
-  const memory = () => ({ reserve: 2, scripted: true, ended: new Set<string>(), today: new Set<string>(), visited: new Set<string>(), roll: roll0 });
   const room = (game: GameState, id: string) => game.players.find((p) => p.id === id)!.room;
 
   it("is only for a Shrink, and alternates between the two dorms by day", () => {
@@ -677,11 +691,32 @@ describe("shrinkDorm", () => {
     expect(taken.every((a) => a.type === "move")).toBe(true);
   });
 
-  it("goes once a day", async () => {
+  it("goes once a day, stays across cycles on the same day, and comes back if interrupted before the cycle ends", async () => {
     const { game, id } = crew(["shrink"]);
+    const m = memory();
+    const [walking] = shrinkDorm.options(viewFor(game, id), m);
+    expect(walking!.step(viewFor(game, id), m).kind).toBe("act");
+    expect(m.today.has("shrinkDorm")).toBe(false);
+
     const bot = new GoalBot(1, 2, [shrinkDorm]);
     const { game: g } = await oneCycle(game, id, bot);
-    const away = edit(g, id, (p) => {
+    expect(bot.current).toMatch(/^shrinkDorm:/);
+    // Still in the dorm on the next cycle of the same day: keeps the goal across the cycle boundary.
+    const nextCycleSameDay = edit(g, id, () => {});
+    nextCycleSameDay.cycle += 1;
+    expect(await bot.decideAction(viewFor(nextCycleSameDay, id))).toEqual({ type: "ready" });
+    expect(bot.current).toMatch(/^shrinkDorm:/);
+
+    // If hurt in the dorm before the cycle ended, today is cleared so the Shrink can return once safe.
+    const hurt = edit(nextCycleSameDay, id, (p) => {
+      p.hp -= 1;
+      p.room = "REFECTORY";
+      p.lyingIn = undefined;
+    });
+    expect((await bot.decideAction(viewFor(hurt, id)))?.type).toBe("move");
+
+    const { game: g2 } = await oneCycle(hurt, id, bot);
+    const away = edit(g2, id, (p) => {
       p.room = "REFECTORY";
       p.lyingIn = undefined;
     });
@@ -689,6 +724,19 @@ describe("shrinkDorm", () => {
     expect(await bot.decideAction(viewFor(away, id))).toEqual({ type: "ready" });
     away.cycle += away.config.cyclesPerDay;
     expect((await bot.decideAction(viewFor(away, id)))?.type).toBe("move");
+  });
+
+  it("holds off on sending ready while a living human player is not yet ready", async () => {
+    const { game: start, id } = crew(["shrink"]);
+    const human = start.players.find((p) => p.id !== id && p.alive)!;
+    const withHuman = edit(start, human.id, (p) => {
+      p.isBot = false;
+      p.ready = false;
+    });
+    const bot = new GoalBot(1, 2, []);
+    expect(await bot.decideAction(viewFor(withHuman, id))).toBeNull();
+    const humanReady = edit(withHuman, human.id, (p) => (p.ready = true));
+    expect(await bot.decideAction(viewFor(humanReady, id))).toEqual({ type: "ready" });
   });
 });
 
@@ -706,7 +754,6 @@ describe("a Shrink holds its AP", () => {
     });
     return { game, id };
   };
-  const memory = () => ({ reserve: 2, scripted: true, ended: new Set<string>(), today: new Set<string>(), visited: new Set<string>(), roll: roll0 });
   const ap = (game: GameState, id: string) => game.players.find((p) => p.id === id)!.ap;
 
   it("researches and works on projects only within 4 AP of its max", () => {
@@ -721,6 +768,10 @@ describe("a Shrink holds its AP", () => {
     }
     const full = inLab(["shrink"], max);
     expect(research.options(viewFor(full.game, full.id), memory())).toHaveLength(1);
+    const dirtyShrink = edit(inLab(["shrink"], line + cost).game, inLab(["shrink"], line + cost).id, (p) => p.statuses.push("dirty"));
+    expect(shower.options(viewFor(dirtyShrink, inLab(["shrink"], line + cost).id), memory())).toEqual([]);
+    const dirtyFull = edit(full.game, full.id, (p) => p.statuses.push("dirty"));
+    expect(shower.options(viewFor(dirtyFull, full.id), memory())).toHaveLength(1);
   });
 
   it("near the cap, works only down to the line", async () => {
@@ -734,7 +785,6 @@ describe("a Shrink holds its AP", () => {
 });
 
 describe("help", () => {
-  const memory = () => ({ reserve: 2, scripted: false, ended: new Set<string>(), today: new Set<string>(), visited: new Set<string>(), roll: roll0 });
   const name = (id: string) => id;
   /** The bot and another human, both in `room`. */
   function pair(room: string, change: (p: GameState["players"][number]) => void = () => {}) {
@@ -751,7 +801,7 @@ describe("help", () => {
   /** Steps a goal to the end, applying each action; returns the actions and how it ended. */
   function run(game: GameState, id: string, goal: ReturnType<typeof helpGoal>) {
     const taken: Action[] = [];
-    const m = memory();
+    const m = memory(false);
     for (let i = 0; i < 30; i++) {
       const view = viewFor(game, id);
       const step = goal.step(view, m);
