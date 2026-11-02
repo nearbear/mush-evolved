@@ -1,5 +1,8 @@
 // The goal registry. Adding a goal means adding its file and listing it here; its rank is its own `priority`.
 
+import { astro } from "./astro.ts";
+import { commsOfficer } from "./commsOfficer.ts";
+import { contactSol } from "./contactSol.ts";
 import { eat } from "./eat.ts";
 import { explore } from "./explore.ts";
 import { patrolShootHunters } from "./patrolShootHunters.ts";
@@ -26,7 +29,25 @@ export type { BotMemory, Goal, GoalDef, GoalStep } from "./types.ts";
  * with a Mush alive is a Mush win, and in single player the human is the Mush. It comes back once bots can tell every
  * Mush is dead, which waits for the public dead Mush count.
  */
-export const SOLO_GOALS: readonly GoalDef[] = [returnToSol, pickSkill, snoop, eat, patrolShootHunters, shower, shootHunters, repairHull, tendPlants, research, project, shrinkDorm, rest, explore];
+export const SOLO_GOALS: readonly GoalDef[] = [
+  returnToSol,
+  pickSkill,
+  snoop,
+  eat,
+  patrolShootHunters,
+  shootHunters,
+  shower,
+  repairHull,
+  contactSol,
+  tendPlants,
+  astro,
+  commsOfficer,
+  research,
+  project,
+  shrinkDorm,
+  rest,
+  explore,
+];
 
 /** Offered only when nothing else is: end the cycle (`ready`) when End cycle is on, otherwise wait for the clock. */
 export const END_CYCLE: Goal = { id: "endCycle", key: "endCycle", label: "End your cycle and wait for the next one", step: () => ({ kind: "wait" }) };

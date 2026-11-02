@@ -2126,6 +2126,17 @@ Asked Claude to summarize a third-party userscript (AstroPad) for the original g
 
 An outside security review claimed cross-site WebSocket hijacking via the Lax session cookie. Fact-checking against the code showed it was mostly wrong: `GameRoom` authenticates by `?token=` seat token, not the cookie, and browsers don't send `SameSite=Lax` cookies on cross-site WebSocket handshakes. Only same-site siblings (a future custom domain with untrusted subdomains) are exposed. Added `crossOriginUpgrade` (`server/src/origin.ts`, called first in `index.ts`) as defense in depth: a WebSocket upgrade whose `Origin` host differs from the request host gets a 403; a missing `Origin` is allowed for bots and tooling. Worked: checking the claim against the code before acting. Not tested: a real browser against a deployment, and the Vite dev proxy path (it keeps the Host header, so same-origin there should pass).
 
+## 2026-11-01: Single-player bot duties and prompt (#222)
+
+- Wired `BOT_DUTIES` (`server/src/bots/duties.ts`) into the goal definitions and `buildPrompt` (`server/src/prompt.ts`).
+- **Owner decisions (asked up front):**
+  1. `astro` (`astrophysician`, `daily`, priority 52): once a day, walks to the Astro terminal, analyzes any unanalyzed planet first (`analyze_planet`), else scans (`scan_planet`) while under `maxPlanets`, working down to the AP reserve before marking `today`.
+  2. `commsOfficer` (`comms_officer` title, `linkUp`, priority 52): while the link with Sol is up, walks to the Com center terminal and picks `decode_rebel` (open calls) → `contact_xyloph` → `update_neron`, working down to the AP reserve or until the link drops.
+  3. `contactSol` (`radio_expert`, `linkDown`, priority 54): while the link with Sol is down, walks to the Com center terminal and tries `contact_sol` down to the AP reserve or until linked.
+  4. `shootHunters` (`gunman` or `gunner`, `hunters`, priority 74): restricted to bots holding Shooter or Gunner, at priority 74 from `BOT_DUTIES`.
+  5. `dutyPrompts` in `buildPrompt`: includes non-empty `duty.prompt` lines for every held skill (`you.skills` and `you.bookSkill`) and title, replacing the duplicate hardcoded Shrink prompt line while keeping `BotMemory.shrinks` suppression of the global-chat announcement clause once announced. `commander` and `neron_admin` stay prompt-only (plus `returnToSol`).
+- Added base astro and comms AP prices (`scanAp`, `astrophysicistScanDiscount`, `analyzeAp`, `orbitAnalyzeAp`, `contactSolAp`, `rebelAp`, `neronAp`) to `PublicConfig` so bots price walks from outside the terminal room using only their own `PlayerView`, and updated `shower` to also wash before `contactSol`, `astro` and `commsOfficer`.
+
 ### 2026-11-01: Quantum Sensors and CPU Overclocking projects
 
 - **What we built:** Implemented the `QUANTUM_SENSORS` and `CHIPSET_ACCELERATION` NERON projects in `shared` (`PROJECT_STATUS` set to `"full"`).
@@ -2133,3 +2144,9 @@ An outside security review claimed cross-site WebSocket hijacking via the Lax se
   - CPU Overclocking (`CHIPSET_ACCELERATION`): Scan for planets costs 1 AP less (`config.project.chipsetAcceleration.scanApDiscount` = 1, `actionCost` in `modifiers.ts`), stacking with Astrophysicist (costs 2 AP instead of 3, or 1 AP for an Astrophysicist; floor 0 AP).
   - Quantum Sensors (`QUANTUM_SENSORS`): Reveals 1 extra sector per analysis (`config.project.quantumSensors.extraSectors` = 1, `analysisSectors` in `modifiers.ts`), stacking with Astrophysicist and deep analysis in orbit (2 sectors base, 3 for Astrophysicist or deep analysis, 4 for both), granted unconditionally once completed (even if the Motor Room planet scanner is broken).
 - **What worked:** Adding `quantumSensors` and `chipsetAcceleration` to `DEFAULT_CONFIG.project` and folding them into `actionCost` and `analysisSectors` via `projectDone` kept the logic pure, minimal, and automatically reflected in action legality, candidate costs in `PlayerView.actions`, and terminal UI labels.
+
+### Malformed bot replies choice cap fix and consecutive malformed limit (2026-11-01)
+
+- **Issue:** In `server/src/bots.ts`, a null parse returned the fallback before `this.choices++`. When a model returned garbage or empty content (such as reasoning models spending max tokens on thinking), the call was not counted toward the per-cycle choice cap (`MODEL_CHOICES_PER_CYCLE = 8`), causing repeated calls on every goal choice throughout the turn loop.
+- **Fix:** Increment `this.choices` once `this.gate.ask` returns a non-null reply (when `!woken`). Track consecutive malformed replies per cycle (`MODEL_CONSECUTIVE_MALFORMED_LIMIT = 3`), dropping to priority for the remainder of the cycle when reached, and resetting on a successful parse or cycle boundary.
+- **Tests:** Added tests in `server/tests/model.test.ts` verifying that malformed replies count toward the cycle choice cap, consecutive bad replies drop to priority for the rest of the cycle, valid replies reset the streak, and cycle roll resets the counts.

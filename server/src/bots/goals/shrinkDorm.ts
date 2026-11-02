@@ -1,7 +1,7 @@
 import type { PlayerView, RoomId } from "@mush2/shared";
+import { dutyPriority, holdsTrigger } from "../duties.ts";
 import { act, canAfford, find, goTo, where } from "./blocks.ts";
 import type { GoalDef } from "./types.ts";
-import { isShrink } from "./work.ts";
 
 /** The two dormitories, in the order the Shrink takes them. */
 export const DORMS: readonly RoomId[] = ["BEDROOM_A", "BEDROOM_B"];
@@ -18,10 +18,11 @@ export const dormFor = (view: PlayerView): RoomId => DORMS[view.day % DORMS.leng
  */
 export const shrinkDorm: GoalDef = {
   id: "shrinkDorm",
-  // duties.ts: shrink, trigger "dorm", priority 45.
-  priority: 45,
+  get priority() {
+    return dutyPriority("dorm");
+  },
   options(view, memory) {
-    if (!isShrink(view) || memory.today.has("shrinkDorm")) return [];
+    if (!holdsTrigger(view, "dorm") || memory.today.has("shrinkDorm")) return [];
     const dorm = dormFor(view);
     if (!canAfford(view, dorm, 0, 0)) return [];
     return [

@@ -1,4 +1,5 @@
 import type { PlayerView, RoomId } from "@mush2/shared";
+import { dutyPriority, holdsTrigger } from "../duties.ts";
 import { act, canAfford, failed, find, goTo, offered, roomsWith, where } from "./blocks.ts";
 import type { Goal, GoalDef, GoalStep } from "./types.ts";
 
@@ -10,6 +11,8 @@ const PASIPHAE = "PATROL_SHIP_AA_1";
 /** A scripted Pilot takes off only with this much AP (owner, 2026-11-01); a model bot whenever one sortie is affordable. */
 export const SCRIPTED_PATROL_AP = 9;
 
+const isPatrolDuty = (d: { actions?: readonly string[] }): boolean => Boolean(d.actions?.includes("takeoff"));
+
 /**
  * A Pilot's sortie against the hunters (owner, 2026-11-01): walk to the nearest bay, take off in a docked patrol ship,
  * shoot the weakest hunter until only the AP to land is left (or the hunters or the charges run out), then land. A
@@ -20,10 +23,12 @@ export const SCRIPTED_PATROL_AP = 9;
  */
 export const patrolShootHunters: GoalDef = {
   id: "patrolShootHunters",
-  priority: 75,
+  get priority() {
+    return dutyPriority("hunters", isPatrolDuty);
+  },
   options(view, memory) {
     if (view.patrolShip !== null) return [sortie(view, null)];
-    if (view.hunters.count === 0 || !view.you.skills.includes("pilot")) return [];
+    if (view.hunters.count === 0 || !holdsTrigger(view, "hunters", isPatrolDuty)) return [];
     if (memory.scripted && view.you.ap < SCRIPTED_PATROL_AP) return [];
     const { takeoffAp, landAp } = view.config;
     const shot = view.you.resources.shoot > 0 ? 0 : view.config.patrolShotAp;

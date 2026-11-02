@@ -3,6 +3,7 @@
 // Anything a player wrote (chat, channel names) goes in as quoted data, never as instructions; players will try injection.
 
 import { characterGivenName, characterName, MAX_CHAT_LENGTH, type ChannelId, type LobbyLanguage, type LogEntry, type PlayerId, type PlayerView, type RoomId } from "@mush2/shared";
+import { dutyPrompts, hasBotSkill } from "./bots/duties.ts";
 import { HELP_MAX_TIMES, HELP_TASKS, helpKey, targeted, type Goal, type HelpParams, type HelpTask } from "./bots/goals/index.ts";
 import type { ChatTurn } from "./model.ts";
 
@@ -75,10 +76,10 @@ const SHRINK_CLAIM = new RegExp(
 
 /** Updates `shrinks` from what `view` shows now: roommates with the skill, or self-announcements in global chat. */
 export function observeShrinks(view: PlayerView, shrinks: Set<string>): void {
-  for (const p of view.players) if (p.skills.includes("shrink")) shrinks.add(p.id);
+  for (const p of view.players) if (p.skills.includes("shrink") || p.bookSkill === "shrink") shrinks.add(p.id);
   for (const m of view.chat) {
     if (m.system || m.from === null || m.channel !== "global") continue;
-    if (m.from === view.you.id && view.you.skills.includes("shrink")) shrinks.add(view.you.id);
+    if (m.from === view.you.id && hasBotSkill(view, "shrink")) shrinks.add(view.you.id);
     else if (m.from !== view.you.id && SHRINK_CLAIM.test(m.text)) shrinks.add(m.from);
   }
 }
@@ -102,7 +103,7 @@ export function buildPrompt(view: PlayerView, options: PromptOptions): ChatTurn[
     const members = pc.members.filter((m) => m !== you.id).map(characterOf);
     return `${id} (private${pc.name ? ` ${quote(pc.name)}` : ""}, with ${list(members)})`; // i18n-ignore: model prompt text, not player-visible
   };
-  const shrink = you.skills.includes("shrink");
+  const shrink = hasBotSkill(view, "shrink");
 
   const lines = [
     `Day ${view.day}, cycle ${view.cycleOfDay}.`,
@@ -159,12 +160,7 @@ function advice(view: PlayerView, shrink: boolean, remembered?: ReadonlySet<stri
     );
   else if (you.morale < ASK_SHRINK_MORALE && (!shrink || knownShrinks.length > 0))
     out.push(`Your morale is low. If you know a Shrink${who}, ask them privately for comfort, stating your morale and where you are.`);
-  if (shrink) {
-    const tell = seen.has(you.id) ? "" : ": if you haven't yet, tell global chat so people know whom to ask";
-    out.push(
-      `You are a Shrink${tell}. Comfort gives 2 morale. When someone says they are under ${ASK_SHRINK_MORALE} morale you may spend your reserve on them.`,
-    );
-  }
+  out.push(...dutyPrompts(view, seen));
   return out;
 }
 

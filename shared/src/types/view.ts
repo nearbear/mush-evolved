@@ -123,6 +123,13 @@ export interface PublicConfig {
   waterAp: number;
   sowAp: number;
   cookAp: number;
+  scanAp: number;
+  astrophysicistScanDiscount: number;
+  analyzeAp: number;
+  orbitAnalyzeAp: number;
+  contactSolAp: number;
+  rebelAp: number;
+  neronAp: number;
   /** The garden (`botany.gardenRoom`): where garden points pay, and where bots look for plants and bananas. */
   gardenRoom: RoomId;
 }

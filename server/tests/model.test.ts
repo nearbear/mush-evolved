@@ -1,6 +1,6 @@
 import { DEFAULT_CONFIG, legalIn, startGame, viewFor, type Action, type PlayerView } from "@mush2/shared";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { MODEL_CHOICES_PER_CYCLE, ModelBot } from "../src/bots.ts";
+import { MODEL_CHOICES_PER_CYCLE, MODEL_CONSECUTIVE_MALFORMED_LIMIT, ModelBot } from "../src/bots.ts";
 import { SOLO_GOALS, type Goal, type GoalDef } from "../src/bots/goals/index.ts";
 import { completeOpenAi, devModelCredentials, ModelError, ModelGate, type Complete, type ModelGateOptions } from "../src/model.ts";
 import { buildPrompt, parseReply } from "../src/prompt.ts";
@@ -332,6 +332,38 @@ describe("ModelBot", () => {
     await b.decideAction({ ...view, cycle: view.cycle + 1 });
     expect(calls).toBeGreaterThan(MODEL_CHOICES_PER_CYCLE);
   });
+
+  it("counts malformed replies against the per-cycle choice cap and drops to priority after consecutive bad replies", async () => {
+    const again: GoalDef = { id: "again", priority: 2, options: () => [{ ...walking("again"), step: () => ({ kind: "done", again: true }) }] };
+    const other: GoalDef = { id: "other", priority: 1, options: () => [walking("other")] };
+    let calls = 0;
+    // Returns garbage (e.g. empty content from a reasoning model hitting token limit)
+    const b = bot(async () => (calls++, ""), [again, other]);
+    await b.decideAction(view);
+    expect(calls).toBe(MODEL_CONSECUTIVE_MALFORMED_LIMIT);
+    // Further calls in the same cycle stay on priority without calling the model
+    await b.decideAction(view);
+    expect(calls).toBe(MODEL_CONSECUTIVE_MALFORMED_LIMIT);
+    // A new cycle resets the counter and gives the model another chance
+    await b.decideAction({ ...view, cycle: view.cycle + 1 });
+    expect(calls).toBeGreaterThan(MODEL_CONSECUTIVE_MALFORMED_LIMIT);
+  });
+
+  it("resets consecutive malformed count on a valid reply", async () => {
+    const again: GoalDef = { id: "again", priority: 2, options: () => [{ ...walking("again"), step: () => ({ kind: "done", again: true }) }] };
+    const other: GoalDef = { id: "other", priority: 1, options: () => [walking("other")] };
+    let calls = 0;
+    // Alternates bad and good replies so it never hits consecutive limit, but counts against MODEL_CHOICES_PER_CYCLE
+    const b = bot(
+      async () => {
+        calls++;
+        return calls % 2 === 1 ? "" : "GOAL: 1";
+      },
+      [again, other],
+    );
+    for (let turn = 0; turn < 5; turn++) await b.decideAction(view);
+    expect(calls).toBe(MODEL_CHOICES_PER_CYCLE);
+  });
 });
 
 describe("devModelCredentials", () => {
@@ -394,14 +426,25 @@ describe("buildPrompt: chat (#223)", () => {
     expect(text(view)).not.toContain("0. Carry on");
   });
 
-  it("tells a hurt bot to ask for healing, and a Shrink to say it is one", () => {
+  it("tells a hurt bot to ask for healing, a Shrink to say it is one, and includes duty prompt lines for held skills and titles", () => {
     const view = viewFor(game(), "p0");
     expect(text(view)).not.toContain("ask for healing");
     expect(text({ ...view, you: { ...view.you, hp: 7 } })).toContain("ask for healing in global chat");
     expect(text({ ...view, you: { ...view.you, morale: 6 } })).toContain("ask them privately");
     expect(text({ ...view, you: { ...view.you, morale: 4 } })).toContain("say so in global chat");
-    expect(text({ ...view, you: { ...view.you, skills: ["shrink"] } })).toContain("You are a Shrink");
-    expect(text({ ...view, you: { ...view.you, skills: ["shrink"] } }, { shrinks: new Set([view.you.id]) })).not.toContain("tell global chat");
+    expect(text({ ...view, you: { ...view.you, skills: ["shrink"] } })).toContain("You're a Shrink: early in the game, tell everyone in global chat");
+    expect(text({ ...view, you: { ...view.you, skills: ["shrink"] } })).toContain("spend the night in a dormitory");
+    expect(text({ ...view, you: { ...view.you, skills: ["shrink"] } }, { shrinks: new Set([view.you.id]) })).not.toContain("tell everyone in global chat");
+    expect(text({ ...view, you: { ...view.you, skills: ["pilot", "medic"], bookSkill: "first_aid" } })).toContain("You're a Pilot");
+    expect(text({ ...view, you: { ...view.you, skills: ["pilot", "medic"], bookSkill: "first_aid" } })).toContain("You're a Medic");
+    expect(text({ ...view, you: { ...view.you, skills: ["pilot", "medic"], bookSkill: "first_aid" } })).toContain("You know First Aid");
+    const withTitles: PlayerView = {
+      ...view,
+      titles: view.titles.map((t) => (t.id === "commander" || t.id === "comms_officer" ? { ...t, holder: view.you.character } : { ...t, holder: null })),
+    };
+    expect(text(withTitles)).toContain("You're the Commander");
+    expect(text(withTitles)).toContain("You're the Comms Officer");
+    expect(text(withTitles)).not.toContain("You're NERON's Admin");
     // A low-morale Shrink is never told to ask itself privately.
     const lowShrink = text({ ...view, you: { ...view.you, skills: ["shrink"], morale: 6 } }, { shrinks: new Set([view.you.id]) });
     expect(lowShrink).not.toContain("known Shrink");
@@ -449,7 +492,7 @@ describe("buildPrompt: chat (#223)", () => {
     const turn2: PlayerView = { ...turn1, chat: laterChat };
     b.wake();
     await b.decideAction(turn2);
-    expect(prompts.at(-1)).not.toContain("tell global chat");
+    expect(prompts.at(-1)).not.toContain("tell everyone in global chat");
     expect(prompts.at(-1)).toContain(`(known Shrink: ${other.character})`);
     expect(prompts.at(-1)).not.toContain(asker.character + ")");
   });

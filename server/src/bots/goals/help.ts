@@ -4,6 +4,7 @@
 // fails on arrival if they aren't there.
 
 import type { PlayerId, PlayerView, RoomId } from "@mush2/shared";
+import { hasBotSkill } from "../duties.ts";
 import { act, failed, goTo, offered } from "./blocks.ts";
 import type { Goal } from "./types.ts";
 
@@ -35,8 +36,8 @@ export const helpKey = (params: Pick<HelpParams, "task" | "target" | "room">): s
  */
 export function helpTasks(view: PlayerView): HelpTask[] {
   const tasks: HelpTask[] = ["heal"];
-  if (view.you.skills.includes("shrink")) tasks.push("comfort");
-  if (view.you.skills.includes("leadership")) tasks.push("fiery_speech");
+  if (hasBotSkill(view, "shrink")) tasks.push("comfort");
+  if (hasBotSkill(view, "leadership")) tasks.push("fiery_speech");
   return tasks;
 }
 

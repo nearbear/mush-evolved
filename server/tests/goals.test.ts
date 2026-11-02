@@ -1,7 +1,10 @@
 import { DEFAULT_CONFIG, applyAction, legalIn, newCycle, startGame, viewFor, type Action, type CharacterId, type GameState, type PlayerView } from "@mush2/shared";
 import { describe, expect, it } from "vitest";
 import { GOAL_MAX_ACTIONS, GoalBot } from "../src/bots.ts";
+import { astro } from "../src/bots/goals/astro.ts";
 import { canAfford, goTo, roomsWith, travelAp } from "../src/bots/goals/blocks.ts";
+import { commsOfficer } from "../src/bots/goals/commsOfficer.ts";
+import { contactSol } from "../src/bots/goals/contactSol.ts";
 import { SOLO_GOALS } from "../src/bots/goals/index.ts";
 import { repairHull } from "../src/bots/goals/repairHull.ts";
 import { rest } from "../src/bots/goals/rest.ts";
@@ -365,12 +368,14 @@ describe("GoalBot", () => {
 });
 
 describe("shootHunters", () => {
-  /** A game where hunters attack: two weak and one strong, with the bot given plenty of AP. */
-  function attacked(): { game: GameState; id: string } {
+  /** A game where hunters attack: two weak and one strong, with a Gunner bot given plenty of AP. */
+  function attacked(skill: "gunman" | "gunner" | null = "gunner"): { game: GameState; id: string } {
     const { game: start, id } = setup();
     const game = edit(start, id, (p) => {
       p.ap = 10;
       p.mp = 12;
+      p.skills = skill ? [skill] : [];
+      p.resources.shoot = 0;
     });
     game.hunters.list = [
       { id: "h1", hp: 6, hitChance: 0, target: null },
@@ -379,9 +384,15 @@ describe("shootHunters", () => {
     return { game, id };
   }
 
-  it("isn't offered while no hunter attacks", () => {
+  it("isn't offered while no hunter attacks, or without Shooter or Gunner", () => {
     const { game: start, id } = setup();
-    expect(shootHunters.options(viewFor(start, id), memory())).toEqual([]);
+    expect(shootHunters.options(viewFor(edit(start, id, (p) => (p.skills = ["gunner"])), id), memory())).toEqual([]);
+    const noSkill = attacked(null);
+    expect(shootHunters.options(viewFor(noSkill.game, noSkill.id), memory())).toEqual([]);
+    const shooter = attacked("gunman");
+    expect(shootHunters.options(viewFor(shooter.game, shooter.id), memory())).toHaveLength(1);
+    const gunner = attacked("gunner");
+    expect(shootHunters.options(viewFor(gunner.game, gunner.id), memory())).toHaveLength(1);
   });
 
   it("walks to the nearest turret and shoots the weakest hunter, spending all its AP, the reserve too", async () => {
@@ -415,6 +426,7 @@ describe("shootHunters", () => {
     let game = edit(start, id, (p) => {
       p.room = bed;
       p.ap = 1;
+      p.skills = ["gunner"];
     });
     const bot = new GoalBot(1, 2, [shootHunters, rest]);
     const lie = await bot.decideAction(viewFor(game, id));
@@ -846,5 +858,120 @@ describe("help", () => {
     expect(run(b.game, b.id, comfort(b.other, 5, false)).taken).toHaveLength(2);
     const c = shrink(4);
     expect(run(c.game, c.id, comfort(c.other, 5, true)).taken).toHaveLength(4);
+  });
+});
+
+describe("astro (#222)", () => {
+  const stargazer = (skills: string[], ap = 6) => {
+    const { game: start, id } = setup();
+    const game = edit(start, id, (p) => {
+      p.skills = skills as typeof p.skills;
+      p.ap = ap;
+      p.mp = 12;
+    });
+    return { game, id };
+  };
+
+  it("is only for an Astrophysicist, and stops when all maxPlanets are fully analyzed", () => {
+    const other = stargazer(["pilot"]);
+    expect(astro.options(viewFor(other.game, other.id), memory())).toEqual([]);
+    const { game, id } = stargazer(["astrophysician"]);
+    expect(astro.options(viewFor(game, id), memory())).toHaveLength(1);
+    game.planets[id] = [
+      { id: "pl-1", name: "Alpha", direction: "north", distance: 3, size: 2, sectors: [{ tag: "OXYGEN", known: true }] },
+      { id: "pl-2", name: "Beta", direction: "south", distance: 4, size: 2, sectors: [{ tag: "HYDROCARBON", known: true }] },
+    ];
+    expect(astro.options(viewFor(game, id), memory())).toEqual([]);
+  });
+
+  it("analyzes an unanalyzed planet before scanning, works down to the AP reserve, and goes once a day", async () => {
+    const { game, id } = stargazer(["astrophysician"], 6);
+    game.planets[id] = [
+      {
+        id: "pl-1",
+        name: "Alpha",
+        direction: "north",
+        distance: 3,
+        size: 2,
+        sectors: [
+          { tag: "OXYGEN", known: false },
+          { tag: "HYDROCARBON", known: false },
+        ],
+      },
+    ];
+    const bot = new GoalBot(1, 2, [astro]);
+    const { game: after, taken } = await oneCycle(game, id, bot);
+    const work = taken.filter((a) => a.type !== "move");
+    // 6 AP -> 2 AP reserve = 4 AP spent: first analyze_planet (2 AP, reveals 2 sectors for Astrophysicist), then scan_planet (2 AP).
+    expect(work.map((a) => a.type)).toEqual(["analyze_planet", "scan_planet"]);
+    expect(after.players.find((p) => p.id === id)!.ap).toBe(2);
+    // Done for today, even with more AP later in the same day.
+    const refilled = edit(after, id, (p) => (p.ap = 8));
+    expect(await bot.decideAction(viewFor(refilled, id))).toEqual({ type: "ready" });
+    // Tomorrow it is offered again.
+    refilled.cycle += refilled.config.cyclesPerDay;
+    expect(await bot.decideAction(viewFor(refilled, id))).not.toEqual({ type: "ready" });
+  });
+});
+
+describe("contactSol and commsOfficer (#222)", () => {
+  it("Radio Expert tries contact_sol while the link is down, down to the AP reserve or until linked", async () => {
+    const { game: start, id } = setup();
+    expect(contactSol.options(viewFor(edit(start, id, (p) => (p.skills = ["pilot"])), id), memory())).toEqual([]);
+    const game = edit(start, id, (p) => {
+      p.skills = ["radio_expert"];
+      p.ap = 6;
+      p.mp = 12;
+    });
+    const bot = new GoalBot(1, 2, [contactSol]);
+    const { game: after, taken } = await oneCycle(game, id, bot);
+    const tries = taken.filter((a) => a.type === "contact_sol");
+    expect(tries.length).toBeGreaterThanOrEqual(1);
+    expect(after.comms.linked || after.players.find((p) => p.id === id)!.ap === 2).toBe(true);
+    after.comms.linked = true;
+    expect(contactSol.options(viewFor(after, id), memory())).toEqual([]);
+  });
+
+  it("Comms Officer decodes open rebel calls first, then contacts Xyloph, then updates NERON while linked", async () => {
+    const { game: start, id } = setup();
+    start.comms.linked = true;
+    // Not the Comms Officer -> not offered.
+    start.titles.comms_officer = start.players.find((p) => p.id !== id)!.id;
+    expect(commsOfficer.options(viewFor(start, id), memory())).toEqual([]);
+
+    start.titles.comms_officer = id;
+    start.comms.rebels = [{ base: "WOLF", calledAt: 1, expiresAt: start.cycle + 10, progress: 95 }];
+    const game = edit(start, id, (p) => {
+      p.room = "COMMAND_CENTER";
+      p.ap = 8;
+      p.resources.comp = 0;
+    });
+    const m = memory();
+    const [goal] = commsOfficer.options(viewFor(game, id), m);
+    expect(goal).toBeDefined();
+    // 1. Open rebel call -> decode_rebel
+    const step1 = goal!.step(viewFor(game, id), m);
+    expect(step1).toMatchObject({ kind: "act", action: { type: "decode_rebel", base: "WOLF" } });
+    // 2. Once rebel call is contacted, Xyloph entries remain -> contact_xyloph
+    game.comms.rebels[0]!.progress = 100;
+    const step2 = goal!.step(viewFor(game, id), m);
+    expect(step2).toMatchObject({ kind: "act", action: { type: "contact_xyloph" } });
+    // 3. Once all Xyloph entries are found -> update_neron
+    game.comms.xyloph = [
+      "NOTHING",
+      "SNOW_CRASH",
+      "WIREFLESS_INFIDELITY",
+      "MUSH_GENOME_DATA",
+      "LOST_ANALYSIS",
+      "NILS_CARLSSON_CONTACT",
+      "NERON_BOOST",
+      "KIVANC_TERZI_CONTACT",
+      "COOK_BIBLE",
+      "ZONG_CHUN_SAMPLE",
+      "SCHOOL_MANUALS",
+      "WORKSHOP_MANUALS",
+    ];
+    const step3 = goal!.step(viewFor(game, id), m);
+    expect(step3).toMatchObject({ kind: "act", action: { type: "update_neron" } });
   });
 });

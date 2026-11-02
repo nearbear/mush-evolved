@@ -1,11 +1,13 @@
-import { ITEM_TYPES, type ActionOption, type PlayerView } from "@mush2/shared";
+import { ITEM_TYPES, type ActionOption, type PlayerView, type SkillId } from "@mush2/shared";
+import { dutyPriority, hasBotSkill, holdsTrigger } from "../duties.ts";
 import { act, canAfford, goTo, where } from "./blocks.ts";
 import type { GoalDef, GoalStep } from "./types.ts";
 
 /** The skills that see plant sickness (`isBotanistRole` in shared/src/botany.ts). */
-const BOTANIST_SKILLS = ["botanic", "skilful"];
+const BOTANIST_SKILLS: readonly SkillId[] = ["botanic", "skilful"];
 
-export const isBotanist = (view: PlayerView): boolean => view.you.skills.some((s) => BOTANIST_SKILLS.includes(s));
+export const isBotanist = (view: PlayerView): boolean =>
+  holdsTrigger(view, "plants") || BOTANIST_SKILLS.some((s) => hasBotSkill(view, s));
 
 /** Whether an offered garden action can be paid while keeping the AP reserve (free with a garden point in the garden). */
 const payable = (view: PlayerView, o: ActionOption, reserve: number): boolean => o.lacks.length === 0 && view.you.ap - o.cost.ap >= reserve;
@@ -39,8 +41,9 @@ export function gardenJob(view: PlayerView, reserve: number): GoalStep | null {
  */
 export const tendPlants: GoalDef = {
   id: "tendPlants",
-  // duties.ts: botanic, trigger "plants", priority 53.
-  priority: 53,
+  get priority() {
+    return dutyPriority("plants");
+  },
   options(view, memory) {
     if (!isBotanist(view)) return [];
     const garden = view.config.gardenRoom;

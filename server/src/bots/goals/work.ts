@@ -2,13 +2,14 @@
 // keep doing the work until another round would leave the bot under its AP reserve.
 
 import type { Action, ActionOption, PlayerView, RoomId } from "@mush2/shared";
+import { hasBotSkill } from "../duties.ts";
 import { act, failed, goTo } from "./blocks.ts";
 import type { BotMemory, Goal, GoalStep } from "./types.ts";
 
 /** How close to the AP max a Shrink must be before it researches or works on projects (owner, 2026-11-01). */
 export const SHRINK_DESK_WORK_WITHIN = 4;
 
-export const isShrink = (view: PlayerView): boolean => view.you.skills.includes("shrink");
+export const isShrink = (view: PlayerView): boolean => hasBotSkill(view, "shrink");
 
 /**
  * The AP that research and NERON project work leave untouched. Usually the reserve; a Shrink holds its AP for comforting

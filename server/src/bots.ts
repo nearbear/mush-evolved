@@ -2,6 +2,7 @@
 // spend cap, none of which belong in the pure rules package.
 
 import { legalIn, nextInt, type Action, type LobbyLanguage, type PlayerView, type RngState } from "@mush2/shared";
+import { hasBotSkill } from "./bots/duties.ts";
 import { END_CYCLE, helpGoal, helpTasks, SOLO_GOALS, type BotMemory, type Goal, type GoalDef } from "./bots/goals/index.ts";
 import { buildPrompt, describeLogEntry, observeShrinks, parseReply, type BotMessage } from "./prompt.ts";
 import type { ModelGate } from "./model.ts";
@@ -267,6 +268,12 @@ export class GoalBot implements Bot {
 export const MODEL_CHOICES_PER_CYCLE = 8;
 
 /**
+ * Malformed replies in a row before giving up on the model for the rest of the cycle and playing by priority.
+ * Bounded so a model repeatedly returning empty content or garbage doesn't burn calls on every goal choice.
+ */
+export const MODEL_CONSECUTIVE_MALFORMED_LIMIT = 3;
+
+/**
  * A goal bot whose model chooses the goal (docs/plans/bot-goals.md, step 2): one call picks from the goals open now, and
  * the goal then runs with no calls until it finishes, fails, or an interrupt fires. The reply is untrusted: anything
  * but a valid number is decided by priority instead, as a bot without a key always is. With a key but no reply (the
@@ -276,6 +283,7 @@ export const MODEL_CHOICES_PER_CYCLE = 8;
 export class ModelBot extends GoalBot {
   private cycleSeen = -1;
   private choices = 0;
+  private consecutiveMalformed = 0;
   private message: BotMessage | null = null;
 
   constructor(
@@ -307,15 +315,20 @@ export class ModelBot extends GoalBot {
   /**
    * One structured reply (bot-goals.md, step 3): a goal from the list, `help` with its parameters, or carrying on, and
    * at most one message. A woken call doesn't count against the choice cap (the room's chain depth limit bounds those);
-   * a malformed reply posts nothing and goes by priority, or carries on when there was a goal.
+   * a malformed reply posts nothing and goes by priority, or carries on when there was a goal. Consecutive malformed
+   * replies drop to priority for the rest of the cycle.
    */
   protected override async choose(view: PlayerView, options: readonly Ranked[], current: Goal | null, woken: boolean): Promise<Goal | null> {
     if (view.cycle !== this.cycleSeen) {
       this.cycleSeen = view.cycle;
       this.choices = 0;
+      this.consecutiveMalformed = 0;
     }
     const fallback = (): Goal => current ?? this.byPriority(options);
-    if (this.gate.credentials === null || (!woken && this.choices >= MODEL_CHOICES_PER_CYCLE)) return fallback();
+    if (
+      this.gate.credentials === null ||
+      (!woken && (this.choices >= MODEL_CHOICES_PER_CYCLE || this.consecutiveMalformed >= MODEL_CONSECUTIVE_MALFORMED_LIMIT))
+    ) return fallback();
     const offered = options.filter((o) => o.goal.key !== current?.key);
     const goals = offered.map((o) => o.goal);
     const tasks = helpTasks(view);
@@ -330,16 +343,20 @@ export class ModelBot extends GoalBot {
     });
     const reply = await this.gate.ask(prompt);
     if (reply === null) return null;
+    if (!woken) this.choices++;
     const parsed = parseReply(reply, view, { goals: goals.length, keep: current !== null, tasks, ended: this.memory.ended });
-    if (parsed === null) return fallback();
+    if (parsed === null) {
+      this.consecutiveMalformed++;
+      return fallback();
+    }
+    this.consecutiveMalformed = 0;
     // One message a turn: a second choice in the same turn (the first goal ended at once) doesn't replace it.
     if (parsed.say && !this.message) {
       this.message = parsed.say;
-      if ("channel" in parsed.say && parsed.say.channel === "global" && view.you.skills.includes("shrink")) {
+      if ("channel" in parsed.say && parsed.say.channel === "global" && hasBotSkill(view, "shrink")) {
         this.memory.shrinks.add(view.you.id);
       }
     }
-    if (!woken) this.choices++;
     if (parsed.help) {
       const name = (id: string): string => view.players.find((p) => p.id === id)?.character ?? id;
       return helpGoal(parsed.help, name);

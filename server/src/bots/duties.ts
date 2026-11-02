@@ -1,15 +1,17 @@
 // What a bot does because of the skills and titles it holds (#222; owner, 2026-11-01: no static per-character role).
-// Owner-approved 2026-11-01; the owner edits it directly. Nothing reads it yet: the scripted goals for its triggers and
-// the model prompt lines are the next steps (#222).
+// Owner-approved 2026-11-01; the owner edits it directly. Goal definitions read their priorities and triggers from
+// `BOT_DUTIES`, and `buildPrompt` includes each held duty's `prompt` line (#222).
 //
 // How to edit:
 // - `priority`: where a scripted bot (no key) puts this among its goals. For reference, today's goals are
-//   returnToSol 100, pickSkill 90, snoop 85, eat 80, shower 70, repairHull 55, tendPlants 53 (Botanist role), research and project 50, shrinkDorm 45 (Shrink role), rest 40, explore 30.
+//   returnToSol 100, pickSkill 90, snoop 85, eat 80, patrolShootHunters 75 (Pilot), shootHunters 74 (Shooter/Gunner),
+//   shower 70, repairHull 55, contactSol 54 (Radio Expert), tendPlants 53 (Botanist role), astro 52 (Astrophysicist),
+//   commsOfficer 52 (Comms Officer), research and project 50, shrinkDorm 45 (Shrink role), rest 40, explore 30.
 // - `when`: one of the triggers in `DutyTrigger`, each explained there. A new kind of trigger needs code first.
 // - `prompt`: one line a model bot is shown when it holds the skill or title. English for now (bot language: #95).
 // - Several rows may share a skill or title. Leave notes in comments freely.
 
-import type { Action, SkillId, TitleId } from "@mush2/shared";
+import type { Action, PlayerView, SkillId, TitleId } from "@mush2/shared";
 
 export type DutyTrigger =
   /** Works by itself; no goal. The prompt line just tells a model bot it has it. */
@@ -84,3 +86,44 @@ export const BOT_DUTIES: readonly Duty[] = [
   { title: "neron_admin", when: "model", actions: ["set_bios"], prompt: "You're NERON's Admin: only you can change NERON's BIOS settings." },
   { title: "comms_officer", when: "linkUp", actions: ["decode_rebel", "update_neron", "contact_xyloph"], priority: 52, prompt: "You're the Comms Officer: while the link with Sol is up, you decode rebel signals, update NERON and contact Xyloph." },
 ];
+
+const SHRINK_ANNOUNCE = "early in the game, tell everyone in global chat that you are one. ";
+
+/** Whether the bot holds `skill` (picked or from a skill book). */
+export const hasBotSkill = (view: PlayerView, skill: SkillId): boolean =>
+  view.you.skills.includes(skill) || view.you.bookSkill === skill;
+
+/** Whether the bot currently holds `title`. */
+export const hasBotTitle = (view: PlayerView, title: TitleId): boolean =>
+  view.titles.some((t) => t.id === title && t.holder === view.you.character);
+
+/** Whether `duty` applies to this bot's held skills and titles. */
+export const holdsDuty = (view: PlayerView, duty: Duty): boolean =>
+  (duty.skill !== undefined && hasBotSkill(view, duty.skill)) ||
+  (duty.title !== undefined && hasBotTitle(view, duty.title));
+
+/** Whether the bot holds any duty with trigger `when` passing `test`. */
+export const holdsTrigger = (view: PlayerView, when: DutyTrigger, test: (duty: Duty) => boolean = () => true): boolean =>
+  BOT_DUTIES.some((d) => d.when === when && test(d) && holdsDuty(view, d));
+
+/** The priority configured in `BOT_DUTIES` for trigger `when` (matching `test`). */
+export function dutyPriority(when: DutyTrigger, test: (duty: Duty) => boolean = () => true): number {
+  const duty = BOT_DUTIES.find((d) => d.when === when && d.priority !== undefined && test(d));
+  if (!duty?.priority) throw new Error(`Missing priority for duty trigger "${when}"`);
+  return duty.priority;
+}
+
+/**
+ * The prompt lines from `BOT_DUTIES` for every skill and title the bot currently holds. Once a Shrink has announced
+ * itself in global chat (`shrinks.has(view.you.id)`), the "tell everyone in global chat" clause is dropped so it
+ * doesn't keep re-announcing.
+ */
+export function dutyPrompts(view: PlayerView, shrinks?: ReadonlySet<string>): string[] {
+  const out: string[] = [];
+  for (const duty of BOT_DUTIES) {
+    if (duty.when === "waits" || !duty.prompt || !holdsDuty(view, duty)) continue;
+    const line = duty.skill === "shrink" && shrinks?.has(view.you.id) ? duty.prompt.replace(SHRINK_ANNOUNCE, "") : duty.prompt;
+    out.push(line);
+  }
+  return out;
+}
