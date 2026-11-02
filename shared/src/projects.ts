@@ -85,6 +85,8 @@ export const PROJECT_STATUS: Readonly<Partial<Record<ProjectId, ProjectStatus>>>
   QUANTUM_SENSORS: "full",
   // Scan for planets costs 1 AP less (owner, 2026-11-01; modifiers.ts `actionCost`).
   CHIPSET_ACCELERATION: "full",
+  // Coffee machine regenerates twice a day (C1, C5; every cycle with PILGRED) (owner, 2026-11-02).
+  FISSION_COFFEE_ROASTER: "full",
 };
 
 export function projectStatus(project: string): ProjectStatus {

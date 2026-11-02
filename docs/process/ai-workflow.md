@@ -2150,3 +2150,20 @@ An outside security review claimed cross-site WebSocket hijacking via the Lax se
 - **Issue:** In `server/src/bots.ts`, a null parse returned the fallback before `this.choices++`. When a model returned garbage or empty content (such as reasoning models spending max tokens on thinking), the call was not counted toward the per-cycle choice cap (`MODEL_CHOICES_PER_CYCLE = 8`), causing repeated calls on every goal choice throughout the turn loop.
 - **Fix:** Increment `this.choices` once `this.gate.ask` returns a non-null reply (when `!woken`). Track consecutive malformed replies per cycle (`MODEL_CONSECUTIVE_MALFORMED_LIMIT = 3`), dropping to priority for the remainder of the cycle when reached, and resetting on a successful parse or cycle boundary.
 - **Tests:** Added tests in `server/tests/model.test.ts` verifying that malformed replies count toward the cycle choice cap, consecutive bad replies drop to priority for the rest of the cycle, valid replies reset the streak, and cycle roll resets the counts.
+
+### 2026-11-02: Fission Coffee Roaster project and coffee regeneration schedule
+- **Decided (user):** The coffee machine regenerates on the authentic Mush schedule (eMushpedia "Machine à café", "Torréfacteur à fission"):
+  - Base: cycle 1 of each day (`config.dispense.coffeeCycles: [1]`).
+  - Fission Coffee Roaster (`FISSION_COFFEE_ROASTER`, `config.project.fissionCoffeeRoaster.cycles: [1, 5]`): cycle 1 and cycle 5 of each day (twice a day).
+  - PILGRED repaired (`config.pilgred.coffeeCycles: [1, 3, 5, 7]`): cycles 1, 3, 5, and 7 of each day (4 times a day).
+  - Both Fission Coffee Roaster and PILGRED: every cycle (1..8).
+  - The machine holds up to 1 coffee across cycles until taken; taking it empties the machine until the next scheduled regeneration cycle.
+  - Project status for `FISSION_COFFEE_ROASTER` set to "full".
+- **Built:**
+  - `shared/src/dispense.ts`: `coffeeRegenCycles`, `lastCoffeeRegenCycle`, and `isDispenserReady`.
+  - `shared/src/actions/dispense.ts`: validate dispenser readiness through `isDispenserReady`.
+  - Config keys in `shared/src/config.ts` and `shared/src/types/config.ts` (`config.dispense.coffeeCycles`, `config.project.fissionCoffeeRoaster.cycles`, `config.pilgred.coffeeCycles`).
+  - `shared/src/projects.ts`: `FISSION_COFFEE_ROASTER: "full"` in `PROJECT_STATUS`.
+  - Locales updated in `web/src/locales/{en,fr,es}.json` to clarify the cycle 5 reload.
+  - Unit tests in `shared/tests/fissionCoffeeRoaster.test.ts` covering base, Roaster, PILGRED, and combined schedules, as well as holding uncollected coffee.
+- **What worked:** Clarifying the open rule questions early using `ask_question` pinned the authentic schedule and uncollected-coffee behavior cleanly before coding. The backwards-scan formula for `lastCoffeeRegenCycle` against `dispensedOn` avoided needing additional state fields or migrations.

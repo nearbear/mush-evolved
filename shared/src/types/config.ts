@@ -228,7 +228,10 @@ export interface GameConfig {
   consume: { dirtyChance: number }; // Chance of getting the dirty status after consuming an item.
   oxygenCapsule: { cost: { ap: number }; injuryChance: number }; // Taking an oxygen capsule from a tank and putting it back (owner, 2026-10-24: as fuel).
   fuel: { cost: { ap: number }; dirtyChance: number, injuryChance: number }; // Taking a capsule from a tank, loading it into the chamber, unloading it back.
-  dispense: { dirtyChance: number }; // Chance of getting the dirty status after dispensing an item.
+  dispense: {
+    dirtyChance: number; // Chance of getting the dirty status after dispensing an item.
+    coffeeCycles: number[]; // Base coffee regeneration cycles of each day (owner, 2026-11-02; the original's C1).
+  };
   computer: {
     capPoints: number; // Most Computer points (`resources.comp`) a player can hold (owner, 2026-10-16; the original skill's IncrMaxPA(COMP, 4)).
     pointsPerDay: number; // Computer points the `computer` skill grants at the start of each day and when picked (owner, 2026-10-16; the original +2).
@@ -301,6 +304,8 @@ export interface GameConfig {
     quantumSensors: { extraSectors: number };
     // CPU Overclocking (owner, 2026-11-01; eMushpedia *Accélération du processeur*): Scan for planets costs -scanApDiscount AP.
     chipsetAcceleration: { scanApDiscount: number };
+    // Fission Coffee Roaster (owner, 2026-11-02; eMushpedia *Torréfacteur à fission*): coffee machine regenerates at these cycles of each day (C1, C5; every cycle with PILGRED).
+    fissionCoffeeRoaster: { cycles: number[] };
   };
   pilgred: {
     cost: { ap: number }; // AP spent to take part in repairing PILGRED (owner, 2026-10-21; the original's REPAIR_PILGRED, 2).
@@ -313,6 +318,8 @@ export interface GameConfig {
     pointsPerDay: number; // PILGRED points the `physicist` skill grants at the start of each day (owner, 2026-10-21; the original +1).
     edenCost: { ap: number }; // AP shown on the Command terminal's Travel to Eden button; Eden is not reachable yet (owner, 2026-10-29: 2, as for Sol).
     returnCost: { ap: number }; // AP spent to return to Sol at the Command terminal (owner, 2026-10-21; the original's SET_PILGRED_TO_SOL, 2).
+    // Coffee regeneration cycles of each day when PILGRED is repaired (owner, 2026-11-02; the original's C1, C3, C5, C7).
+    coffeeCycles: number[];
   };
   comms: {
     sol: {

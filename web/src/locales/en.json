@@ -1458,7 +1458,7 @@
       "DISMANTLING": "Produces 5 metal scraps in the engine room.",
       "AUTO_RETURN_ICARUS": "The Icarus returns to the Daedalus by itself if the mission fails.",
       "EXTRA_DRONE": "Adds a drone in the Nexus to look after the Daedalus.",
-      "FISSION_COFFEE_ROASTER": "The coffee machine also recharges at cycle 4.",
+      "FISSION_COFFEE_ROASTER": "The coffee machine also recharges at cycle 5.",
       "TRAIL_REDUCER": "Cuts the number of attackers that follow you after a trip by 50%.",
       "TRASH_LOAD": "Produces 4 metal scraps and 4 plastic scraps.",
       "WHOS_WHO": "Shows your crewmates' identities on the tracker.",

@@ -1,4 +1,5 @@
 import { Action, isString } from "./action.ts";
+import { isDispenserReady } from "../dispense.ts";
 import { EQUIPMENT_TYPES } from "../equipment.ts";
 import { produceItem } from "../items.ts";
 import { logPublic } from "../log.ts";
@@ -18,7 +19,7 @@ export class DispenseAction extends Action<DispenseActionData> {
   override validate(state: Readonly<GameState>, player: Readonly<PlayerState>, target: DispenseActionData): string | null {
     const equip = state.equipment[player.room]?.find((eq) => eq.id === target.equipment);
     if (!equip || !EQUIPMENT_TYPES[equip.type]?.dispenses) return "cant_dispense";
-    return state.dispensedOn[target.equipment] === state.cycle ? "empty" : null;
+    return isDispenserReady(state, equip.id, EQUIPMENT_TYPES[equip.type]?.dispenses) ? null : "empty";
   }
 
   override dirtChance(state: Readonly<GameState>): number {

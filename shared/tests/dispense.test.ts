@@ -27,11 +27,13 @@ describe("coffee machine", () => {
     expect(viewFor(s, "p1").log.at(-1)).toMatchObject({ key: "tookFrom", params: { name: "chao", item: "coffee", equipment: "COFFEE_DISPENSER" } });
   });
 
-  it("works once per cycle per machine, then again next cycle", () => {
+  it("works once per regeneration cycle, then again on the next regeneration cycle", () => {
     let s = mustApply(refectory(), "p0", pull);
     expect(applyAction(s, "p1", pull).ok).toBe(false);
     expect(offered(s, "p1")).not.toContainEqual(pull);
     s = nextCycle(s);
+    expect(offered(s, "p1")).not.toContainEqual(pull);
+    while (s.cycle < DEFAULT_CONFIG.cyclesPerDay + 1) s = nextCycle(s);
     expect(offered(s, "p1")).toContainEqual(pull);
   });
 
@@ -57,7 +59,7 @@ describe("coffee machine", () => {
 
   it("gives each coffee a unique id", () => {
     let s = mustApply(refectory(), "p0", pull);
-    s = nextCycle(s);
+    while (s.cycle < DEFAULT_CONFIG.cyclesPerDay + 1) s = nextCycle(s);
     s = mustApply(s, "p1", pull);
     expect(new Set(s.items.map((i) => i.id)).size).toBe(2);
   });

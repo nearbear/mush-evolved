@@ -129,7 +129,7 @@ export const DEFAULT_CONFIG: GameConfig = {
   // Decided 2026-10-18 (owner, #36): uninstalling costs 1 AP, anyone can do it, no failure chance. Dismantling an installed camera uses `dismantle`.
   uninstall: { cost: { ap: 1 }, dirtyChance: 0.05, injuryChance: 0.05 },
   consume: { dirtyChance: 0.15 },
-  dispense: { dirtyChance: 0.05 },
+  dispense: { dirtyChance: 0.05, coffeeCycles: [1] },
   // Owner, 2026-10-23, the wiki: fuel moves by hand, tank to chamber, 0 AP each. The 25% dirt chance is a placeholder (the wiki says only "dirty-prone").
   // Owner, 2026-10-24: oxygen capsules move by hand like fuel, with the same numbers.
   oxygenCapsule: { cost: { ap: 0 }, injuryChance: 0.01 },
@@ -191,10 +191,11 @@ export const DEFAULT_CONFIG: GameConfig = {
     noiseReducer: { maxAp: 2 },
     quantumSensors: { extraSectors: 1 },
     chipsetAcceleration: { scanApDiscount: 1 },
+    fissionCoffeeRoaster: { cycles: [1, 5] },
   },
   // Owner, 2026-10-21: repairing PILGRED uses the original's numbers (DIG_RATE 6, PILGRED_MOD 2, DIG_BOOST 4, -2 per repeat),
   // 2 AP, 25% dirty; the Physicist gains 1 PILGRED point a day and holds 2.
-  pilgred: { cost: { ap: 2 }, dirtyChance: 0.25, injuryChance: 0.05, progress: { rate: 6, mod: 2, skillBoost: 4, relayPenalty: 2 }, capPoints: 2, pointsPerDay: 1, returnCost: { ap: 2 }, edenCost: { ap: 2 } },
+  pilgred: { cost: { ap: 2 }, dirtyChance: 0.25, injuryChance: 0.05, progress: { rate: 6, mod: 2, skillBoost: 4, relayPenalty: 2 }, capPoints: 2, pointsPerDay: 1, returnCost: { ap: 2 }, edenCost: { ap: 2 }, coffeeCycles: [1, 3, 5, 7] },
   // Owner, 2026-10-19 and 2026-10-21 (docs/plans/comms.md): every comms action is 2 AP. Sol: 4%, +4% per failure, floor 4%.
   // Rebels: avg of two 1..40 draws, +100% each for Rebel and Kivanç, a window of 8..16 cycles. NERON update: 25% per action.
   comms: {
