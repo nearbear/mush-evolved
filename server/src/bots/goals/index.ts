@@ -11,6 +11,7 @@ import { rest } from "./rest.ts";
 import { returnToSol } from "./returnToSol.ts";
 import { shootHunters } from "./shootHunters.ts";
 import { shower } from "./shower.ts";
+import { shrinkDorm } from "./shrinkDorm.ts";
 import { snoop } from "./snoop.ts";
 import { tendPlants } from "./tendPlants.ts";
 import type { Goal, GoalDef } from "./types.ts";
@@ -25,7 +26,7 @@ export type { BotMemory, Goal, GoalDef, GoalStep } from "./types.ts";
  * with a Mush alive is a Mush win, and in single player the human is the Mush. It comes back once bots can tell every
  * Mush is dead, which waits for the public dead Mush count.
  */
-export const SOLO_GOALS: readonly GoalDef[] = [returnToSol, pickSkill, snoop, eat, patrolShootHunters, shower, shootHunters, repairHull, tendPlants, research, project, rest, explore];
+export const SOLO_GOALS: readonly GoalDef[] = [returnToSol, pickSkill, snoop, eat, patrolShootHunters, shower, shootHunters, repairHull, tendPlants, research, project, shrinkDorm, rest, explore];
 
 /** Offered only when nothing else is: end the cycle (`ready`) when End cycle is on, otherwise wait for the clock. */
 export const END_CYCLE: Goal = { id: "endCycle", key: "endCycle", label: "End your cycle and wait for the next one", step: () => ({ kind: "wait" }) };

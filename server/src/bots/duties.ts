@@ -4,7 +4,7 @@
 //
 // How to edit:
 // - `priority`: where a scripted bot (no key) puts this among its goals. For reference, today's goals are
-//   returnToSol 100, pickSkill 90, snoop 85, eat 80, shower 70, repairHull 55, tendPlants 53 (Botanist role), research and project 50, rest 40, explore 30.
+//   returnToSol 100, pickSkill 90, snoop 85, eat 80, shower 70, repairHull 55, tendPlants 53 (Botanist role), research and project 50, shrinkDorm 45 (Shrink role), rest 40, explore 30.
 // - `when`: one of the triggers in `DutyTrigger`, each explained there. A new kind of trigger needs code first.
 // - `prompt`: one line a model bot is shown when it holds the skill or title. English for now (bot language: #95).
 // - Several rows may share a skill or title. Leave notes in comments freely.
@@ -16,8 +16,10 @@ export type DutyTrigger =
   | "passive"
   /** The mechanic isn't built yet; the row records what the bot should do once it is. No code until then. */
   | "waits"
-  /** Model bots only: acting on other people (heal, morale) happens through chat and `help` (docs/plans/bot-goals.md). Scripted bots do nothing. */
+  /** Model bots only: acting on other people (heal, morale) happens through chat and `help` (docs/plans/bot-goals.md). Scripted bots do nothing (owner, 2026-11-01: deferred). */
   | "model"
+  /** Once a day, a dormitory: Alpha and Beta on alternate days, staying until the cycle ends (`shrinkDorm`). */
+  | "dorm"
   /** Once a day, when affordable within the AP reserve. */
   | "daily"
   /** While hunters attack the ship (`view.hunters.count`, public). */
@@ -58,7 +60,9 @@ export const BOT_DUTIES: readonly Duty[] = [
   { skill: "paranoid", when: "passive", prompt: "" },
   // Its benefits are PILGRED points, and bots leave PILGRED alone in single player (owner, 2026-11-01).
   { skill: "physicist", when: "waits", prompt: "" },
-  { skill: "shrink", when: "model", actions: ["comfort"], prompt: "You're a Shrink: Comfort gives someone 2 morale, and people resting in your room gain morale. Offer when someone is low." },
+  { skill: "shrink", when: "model", actions: ["comfort"], prompt: "You're a Shrink: early in the game, tell everyone in global chat that you are one. Comfort gives someone 2 morale for 1 AP, and people resting in your room gain morale. Keep your AP for comforting: research and NERON projects only when you are within 4 AP of your max. When someone tells you their morale is under 7, comfort them even if it uses your last 2 AP; otherwise comfort them up to full while keeping 2 AP." },
+  // Owner, 2026-11-01: people lying in a bed with a Shrink in the room gain morale, so once a day it spends the night in a dorm.
+  { skill: "shrink", when: "dorm", actions: ["lie_down"], priority: 45, prompt: "People resting in your room gain morale, so spend the night in a dormitory." },
   // Owner, 2026-11-01: equipment repair is its real job, not built yet. Doubled renovation odds are built (renovate,
   // patrol ships) but compete with the hull for scrap.
   { skill: "engineer", when: "waits", prompt: "" },

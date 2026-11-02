@@ -2048,6 +2048,12 @@ Added `tendPlants` (a Botanist or Skilful bot waters, treats and sows in the gar
 - Tradeoff noted: the queue's AP cost text reads `view.actions`, so it drops in a read-only view.
 - Worked: a mechanical move; typecheck caught nothing because the props stayed structurally identical. Not yet done: the `play` visual pass (manual-only skill; left for the owner to request).
 
+## 2026-11-01: Shrink bots spend the night in a dorm
+
+- Owner deferred scripted (no-key) helping: healing and comforting stay model-only for now.
+- New `shrinkDorm` goal and `dorm` duty trigger: once a day a Shrink bot walks to Bedroom Alpha or Beta (alternating by day number, so it survives a restart with no stored state), lies down if its AP isn't full and a bed is free, and stays until the cycle ends, so people resting there get the Shrink's morale bonus. Priority 45 (after work, before rest) was Claude's choice, flagged to the owner.
+- Worked: the existing goal interface (`options`/`step`, `memory.today`) fit without changes to `GoalBot`.
+
 ## 2026-11-01: Full-state view and per-seat perspective (#334)
 
 - **Decision (owner):** the full view is the game state without the RNG, not a separate "god view" with each seat's derived parts (actions, statuses...) stored next to it. `perspective(full, seat)` runs `viewFor` on it, so it matches by construction and needs no second copy of the filtering. The cost: a replay recomputes action menus with the viewer's own build of the rules; the format version (#335) still rejects a changed state shape.
@@ -2056,9 +2062,19 @@ Added `tendPlants` (a Botanist or Skilful bot waters, treats and sows in the gar
 - **Leak check:** nothing sends a full view. For #337: raw names (run `moderateName`), only once `phase === "ended"`, and never the raw `FullView` to anyone but a moderator. Whether private channels and secret log lines are public after the game is a rule question for the owner.
 - **Follow-up (owner):** in a finished game's replay, all private channels and private, secret and covert log lines are public. Recorded in `docs/rules/rules-design.md` (Replays, "Full view").
 
+## 2026-11-01: Shrink bots hold their AP; morale asks to a Shrink
+
+- Built: a Shrink bot researches and works on projects only within 4 AP of its max, and stops back at that line (`deskWorkReserve`), holding the rest for comforting.
+- Recorded for step 3 (model chat, not built): under 7 morale a bot asks a Shrink in a private channel, under 5 publicly if no private channel with a Shrink is available; the asker states its morale (private), and the Shrink spends its reserve only for someone under 7, otherwise comforts to full while keeping the reserve.
+- Needed correction: Claude first wrote the comfort rule as if the Shrink could see the target's morale; the owner pointed out it is reported by the person asking.
+
 ## 2026-11-01: Replay history written while the game runs (#335)
 
 - **What was built:** a hand-written JSON diff in shared (`viewDiff.ts`: object key changes and deletions; arrays as removals, in-place patches and an append) and the history steps on top of it (`viewHistory.ts`). `GameRoom.act` puts each input's change to the full view inside that input's record entry, in the existing single `put`, so rows written per input don't change. A full copy at each `cycle` input; after a room start, the first input carries the view as the room loaded it (`base`) plus its change, rather than a row of its own. Tests: a room run across a restart and a cycle whose history rebuilds `fullViewFor` (of `rebuildGame` on each record prefix) at every step and every `base`; a random game's steps rebuilt through JSON; diff unit cases.
 - **Worked:** reusing the random-game driver and `rebuildGame` from #167/#334 gave the "equal at every step" test almost for free. Measuring with a throwaway Vitest file, as on 2026-10-25: ~290 B per change, ~105 KB per full copy, 0.26 MB gzipped for 2,090 inputs.
 - **Needed correcting:** the AI first assumed chat only grows at the end, but `pushChat` trims the oldest message of the channel, from the middle of the list; the array diff had to handle removals. Its first lookahead allowed only as many removals as the list shrank, which missed a trim and an append in the same input; the unit test caught it. A measurement run that forced more cycles looped on a rejected `cycle` input and had to be stopped; the 14-cycle numbers are the ones reported.
 - **Choice made without asking:** where the room-start copy goes. The decision said "no extra row", so it rides with the next input as `base` instead of being written at load.
+
+## 2026-11-01: Shrink morale asks clarified
+
+- Owner clarified: under 5 morale, any reason a bot can't contact a Shrink privately makes it an emergency, so it says its morale in global chat. A Shrink bot announces it is a Shrink early in the game. Recorded in `bot-goals.md` and the Shrink's prompt line; built with step 3.

@@ -6,9 +6,12 @@ import { SOLO_GOALS } from "../src/bots/goals/index.ts";
 import { repairHull } from "../src/bots/goals/repairHull.ts";
 import { rest } from "../src/bots/goals/rest.ts";
 import { research } from "../src/bots/goals/research.ts";
+import { project } from "../src/bots/goals/project.ts";
+import { SHRINK_DESK_WORK_WITHIN } from "../src/bots/goals/work.ts";
 import { patrolShootHunters } from "../src/bots/goals/patrolShootHunters.ts";
 import { shootHunters } from "../src/bots/goals/shootHunters.ts";
 import { shower } from "../src/bots/goals/shower.ts";
+import { DORMS, shrinkDorm } from "../src/bots/goals/shrinkDorm.ts";
 import { snoop } from "../src/bots/goals/snoop.ts";
 import { BOT_EAT_AFTER_CYCLES, eat } from "../src/bots/goals/eat.ts";
 import { tendPlants } from "../src/bots/goals/tendPlants.ts";
@@ -623,5 +626,108 @@ describe("tendPlants", () => {
     expect(tendPlants.options(viewFor(broke, id), memory())).toEqual([]);
     const points = edit(broke, id, (p) => (p.resources.garden = 2));
     expect(tendPlants.options(viewFor(points, id), memory())).toHaveLength(1);
+  });
+});
+
+describe("shrinkDorm", () => {
+  /** A bot with the given skills and AP, standing in the refectory on `day`. */
+  const crew = (skills: string[], ap = 4, day = 1) => {
+    const { game: start, id } = setup();
+    const game = edit(start, id, (p) => {
+      p.skills = skills as typeof p.skills;
+      p.ap = ap;
+      p.room = "REFECTORY";
+    });
+    game.cycle = (day - 1) * game.config.cyclesPerDay + 1;
+    return { game, id };
+  };
+  const memory = () => ({ reserve: 2, scripted: true, ended: new Set<string>(), today: new Set<string>(), visited: new Set<string>(), roll: roll0 });
+  const room = (game: GameState, id: string) => game.players.find((p) => p.id === id)!.room;
+
+  it("is only for a Shrink, and alternates between the two dorms by day", () => {
+    const other = crew(["pilot"]);
+    expect(shrinkDorm.options(viewFor(other.game, other.id), memory())).toEqual([]);
+    const keys = [1, 2, 3].map((day) => {
+      const s = crew(["shrink"], 4, day);
+      const view = viewFor(s.game, s.id);
+      expect(view.day).toBe(day);
+      return shrinkDorm.options(view, memory())[0]?.key;
+    });
+    expect(new Set(keys).size).toBe(2);
+    expect(keys[0]).toBe(keys[2]);
+    expect(keys.map((k) => k?.split(":")[1]).every((r) => DORMS.includes(r!))).toBe(true);
+  });
+
+  it("walks to today's dorm, lies down when its AP isn't full, and stays until the cycle ends", async () => {
+    const { game, id } = crew(["shrink"]);
+    const dorm = shrinkDorm.options(viewFor(game, id), memory())[0]!.key.split(":")[1];
+    const bot = new GoalBot(1, 2, [shrinkDorm]);
+    const { game: after, taken } = await oneCycle(game, id, bot);
+    expect(room(after, id)).toBe(dorm);
+    expect(taken.at(-1)?.type).toBe("lie_down");
+    expect(await bot.decideAction(viewFor(after, id))).toEqual({ type: "ready" });
+  });
+
+  it("with full AP, waits in the dorm without lying down", async () => {
+    const { game: start, id } = crew(["shrink"]);
+    const game = edit(start, id, (p) => (p.ap = viewFor(start, id).maxAp));
+    const { game: after, taken } = await oneCycle(game, id, new GoalBot(1, 2, [shrinkDorm]));
+    expect(DORMS).toContain(room(after, id));
+    expect(taken.every((a) => a.type === "move")).toBe(true);
+  });
+
+  it("goes once a day", async () => {
+    const { game, id } = crew(["shrink"]);
+    const bot = new GoalBot(1, 2, [shrinkDorm]);
+    const { game: g } = await oneCycle(game, id, bot);
+    const away = edit(g, id, (p) => {
+      p.room = "REFECTORY";
+      p.lyingIn = undefined;
+    });
+    away.cycle += 1;
+    expect(await bot.decideAction(viewFor(away, id))).toEqual({ type: "ready" });
+    away.cycle += away.config.cyclesPerDay;
+    expect((await bot.decideAction(viewFor(away, id)))?.type).toBe("move");
+  });
+});
+
+describe("a Shrink holds its AP", () => {
+  /** A bot with `skills` and `ap`, standing in the lab, clean and with no free points. */
+  const inLab = (skills: string[], ap: number) => {
+    const { game: start, id } = setup();
+    const lab = roomsWith(viewFor(start, id), ["RESEARCH_LAB"])[0]!;
+    const game = edit(start, id, (p) => {
+      p.skills = skills as typeof p.skills;
+      p.ap = ap;
+      p.room = lab;
+      p.resources.comp = 0;
+      p.resources.core = 0;
+    });
+    return { game, id };
+  };
+  const memory = () => ({ reserve: 2, scripted: true, ended: new Set<string>(), today: new Set<string>(), visited: new Set<string>(), roll: roll0 });
+  const ap = (game: GameState, id: string) => game.players.find((p) => p.id === id)!.ap;
+
+  it("researches and works on projects only within 4 AP of its max", () => {
+    const max = viewFor(setup().game, setup().id).maxAp;
+    const line = max - SHRINK_DESK_WORK_WITHIN;
+    const cost = DEFAULT_CONFIG.research.cost.ap;
+    for (const goal of [research, project]) {
+      const held = inLab(["shrink"], line + cost - 1);
+      expect(goal.options(viewFor(held.game, held.id), memory()), goal.id).toEqual([]);
+      const other = inLab(["pilot"], line + cost - 1);
+      expect(goal.options(viewFor(other.game, other.id), memory()).length, goal.id).toBeGreaterThan(0);
+    }
+    const full = inLab(["shrink"], max);
+    expect(research.options(viewFor(full.game, full.id), memory())).toHaveLength(1);
+  });
+
+  it("near the cap, works only down to the line", async () => {
+    const max = viewFor(setup().game, setup().id).maxAp;
+    const { game, id } = inLab(["shrink"], max);
+    const { game: after, taken } = await oneCycle(game, id, new GoalBot(1, 2, [research]));
+    expect(taken.some((a) => a.type === "research")).toBe(true);
+    expect(ap(after, id)).toBeGreaterThanOrEqual(max - SHRINK_DESK_WORK_WITHIN);
+    expect(ap(after, id)).toBeLessThan(max - SHRINK_DESK_WORK_WITHIN + DEFAULT_CONFIG.research.cost.ap);
   });
 });
