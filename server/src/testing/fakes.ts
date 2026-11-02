@@ -17,10 +17,13 @@ export class FakeStorage {
     if (typeof keyOrEntries === "string") this.data.set(keyOrEntries, structuredClone(value));
     else for (const [k, v] of Object.entries(keyOrEntries)) this.data.set(k, structuredClone(v));
   }
-  async list(opts: { prefix?: string } = {}): Promise<Map<string, unknown>> {
+  async list(opts: { prefix?: string; startAfter?: string; limit?: number } = {}): Promise<Map<string, unknown>> {
     const out = new Map<string, unknown>();
-    for (const [k, v] of [...this.data].sort(([a], [b]) => a.localeCompare(b))) {
-      if (!opts.prefix || k.startsWith(opts.prefix)) out.set(k, structuredClone(v));
+    for (const [k, v] of [...this.data].sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))) {
+      if (opts.limit !== undefined && out.size >= opts.limit) break;
+      if (opts.prefix && !k.startsWith(opts.prefix)) continue;
+      if (opts.startAfter !== undefined && k <= opts.startAfter) continue;
+      out.set(k, structuredClone(v));
     }
     return out;
   }
@@ -38,6 +41,30 @@ export class FakeStorage {
   }
   async deleteAlarm(): Promise<void> {
     this.alarm = null;
+  }
+}
+
+/** An R2 bucket in memory (the parts the replay copy uses). Set `failAfter` to make every put past that many fail. */
+export class FakeR2Bucket {
+  objects = new Map<string, { body: Uint8Array; httpMetadata?: { contentType?: string; contentEncoding?: string } }>();
+  puts = 0;
+  failAfter: number | null = null;
+
+  async put(key: string, value: ArrayBuffer | string, options?: { httpMetadata?: { contentType?: string; contentEncoding?: string } }): Promise<object> {
+    if (this.failAfter !== null && this.puts >= this.failAfter) throw new Error("R2 is down");
+    this.puts++;
+    const body = typeof value === "string" ? new TextEncoder().encode(value) : new Uint8Array(value.slice(0));
+    this.objects.set(key, { body, ...(options?.httpMetadata && { httpMetadata: options.httpMetadata }) });
+    return {};
+  }
+
+  /** An object's JSON, gunzipped when it was stored gzipped. */
+  async json<T>(key: string): Promise<T> {
+    const object = this.objects.get(key);
+    if (!object) throw new Error(`No object ${key}`);
+    const stream = new Blob([object.body]).stream();
+    const text = await new Response(object.httpMetadata?.contentEncoding === "gzip" ? stream.pipeThrough(new DecompressionStream("gzip")) : stream).text();
+    return JSON.parse(text) as T;
   }
 }
 

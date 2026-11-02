@@ -28,6 +28,7 @@ Feature designs; status table in `plans/README.md`.
 - `ops/d1-runbook.md`: D1 migrations and restores.
 - `ops/deploy.md`: the three deployments and deploying test from CI.
 - `ops/sign-in.md`: OAuth apps, secrets and sessions.
+- `ops/r2.md`: the replay buckets, what a finished game's copy holds, and inspecting one.
 - `ops/config.md`: every environment variable and secret, and where each is set.
 
 ## Process

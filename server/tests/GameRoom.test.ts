@@ -9,6 +9,7 @@ import {
   PRESELECTION,
   rebuildGame,
   rebuildHistory,
+  replayKeys,
   resolveConfig,
   setupOverrides,
   STANDARD_KNOBS,
@@ -18,6 +19,9 @@ import {
   type GameServerMessage,
   type GameState,
   type GameSetup,
+  type ChunkEntry,
+  type FullView,
+  type ReplayIndex,
   type PlayerView,
   type RecordedInput,
   type Role,
@@ -27,7 +31,7 @@ import {
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { AccountStore } from "../src/accountStore.ts";
 import { GameStore } from "../src/gameStore.ts";
-import { FakeConnection, FakeServer, FakeStorage, seats, tokensFor } from "../src/testing/fakes.ts";
+import { FakeConnection, FakeR2Bucket, FakeServer, FakeStorage, seats, tokensFor } from "../src/testing/fakes.ts";
 import { migratedDatabase } from "./sqliteD1.ts";
 
 vi.mock("partyserver", () => ({ Server: FakeServer }));
@@ -1341,7 +1345,7 @@ describe("GameRoom finished games list (#155)", () => {
   /** Three humans, p0 an alpha Mush chosen at launch, on a room that knows its D1 (or none, with `db: null`). */
   async function finishingRoom(db: ReturnType<typeof migratedDatabase> | null = migratedDatabase()) {
     const storage = new FakeStorage();
-    const room = new GameRoom({ storage } as never, { RULES_VERSION: "test", ...(db && { DB: db }) } as never);
+    const room = new GameRoom({ storage } as never, { RULES_VERSION: "test", REPLAYS: new FakeR2Bucket(), ...(db && { DB: db }) } as never);
     await room.setup(seats(3), tokensFor(3), { p0: "mush" });
     const inner = room as unknown as Listing;
     const end = () => {
@@ -1481,5 +1485,115 @@ describe("GameRoom replay history (#335)", () => {
     expect(step).not.toHaveProperty("base");
     expect(JSON.stringify(step).length).toBeLessThan(500);
     expect(step).toMatchObject({ diff: { k: "o", c: { chat: { k: "a", a: [expect.objectContaining({ text: "second" })] } } } });
+  });
+});
+
+describe("GameRoom replay copy to R2 (#336)", () => {
+  type Copying = { copyReplay(): Promise<void>; persist(): Promise<void>; game: GameState; starts: SeatStarts | null; env: Record<string, unknown> };
+  const json = <T>(v: unknown) => JSON.parse(JSON.stringify(v)) as T;
+  const ready = (storage: FakeStorage) => (storage.data.get("game") as { replayReady?: boolean }).replayReady;
+
+  /** A game with a few inputs and a cycle (two chunks), ended by hand; `last` is the full view after its last input. */
+  async function endedRoom(bucket = new FakeR2Bucket(), storage = new FakeStorage()) {
+    vi.setSystemTime(Date.UTC(2026, 9, 19, 14));
+    const room = asRoom(storage, CHEATS);
+    (room as unknown as Copying).env.REPLAYS = bucket;
+    await room.setup(seats(3), tokensFor(3), { p0: "mush" });
+    const c = connect(room, "tok0");
+    await send(room, c, { type: "chat", channel: CHAT_CHANNELS[0], text: "hello" });
+    vi.setSystemTime(Date.UTC(2026, 9, 19, 15));
+    await room.onAlarm();
+    await send(room, c, { type: "chat", channel: CHAT_CHANNELS[0], text: "after" });
+    const inner = room as unknown as Copying;
+    const last = json<FullView>(fullViewFor(inner.game, inner.starts));
+    inner.game.phase = "ended";
+    inner.game.winner = "humans";
+    inner.game.ending = "sol";
+    // Saved, as the input that ends a game is.
+    await inner.persist();
+    return { room, inner, storage, bucket, last };
+  }
+
+  beforeEach(() => {
+    vi.useFakeTimers();
+    return () => {
+      vi.restoreAllMocks();
+      vi.useRealTimers();
+    };
+  });
+
+  it("copies nothing while the game runs", async () => {
+    const bucket = new FakeR2Bucket();
+    const { room, storage } = await newRoom(3, new FakeStorage(), { RULES_VERSION: "test" });
+    (room as unknown as Copying).env.REPLAYS = bucket;
+    await (room as unknown as Copying).copyReplay();
+    expect(bucket.puts).toBe(0);
+    expect(ready(storage)).toBe(false);
+  });
+
+  it("copies the chunks then the index, once, and they rebuild the game's last full view", async () => {
+    const { inner, storage, bucket, last } = await endedRoom();
+    await inner.copyReplay();
+    await inner.copyReplay();
+    expect(ready(storage)).toBe(true);
+    const index = await bucket.json<ReplayIndex>(replayKeys.index("test-room"));
+    expect(index).toMatchObject({ v: HISTORY_VERSION, roomId: "test-room", rulesVersion: "test" });
+    expect(index.seats).toHaveLength(8);
+    expect(index.seats.find((s) => s.seat === "p0")).toMatchObject({ role: "mush" });
+    expect(JSON.stringify(index)).not.toContain("Human 0");
+    // Launch to the first cycle, then the cycle onward.
+    expect(index.chunks).toHaveLength(2);
+    expect(bucket.puts, "written once").toBe(index.chunks.length + 1);
+    const inputs = (await storage.list({ prefix: "input:" })).size;
+    expect(index.chunks.reduce((n, c) => n + c.inputs, 0)).toBe(inputs);
+    const chunk = bucket.objects.get(replayKeys.chunk("test-room", 1))!;
+    expect(chunk.httpMetadata).toEqual({ contentType: "application/json", contentEncoding: "gzip" });
+    const entries = await bucket.json<ChunkEntry[]>(replayKeys.chunk("test-room", 1));
+    expect(rebuildHistory(entries.map((e) => e.history)).at(-1)!.view).toEqual(last);
+    // Each entry is only its time and history: no input, raw text or chat id.
+    for (const e of entries) expect(Object.keys(e).sort()).toEqual(["at", "history"]);
+  });
+
+  it("retries a failed copy from the alarm, and isn't ready until every chunk and the index are written", async () => {
+    vi.spyOn(console, "warn").mockImplementation(() => {});
+    const bucket = new FakeR2Bucket();
+    const { room, inner, storage } = await endedRoom(bucket);
+    // The first chunk goes, the second fails: no index, not ready, a retry on the alarm.
+    bucket.failAfter = 1;
+    await inner.copyReplay();
+    expect(ready(storage)).toBe(false);
+    expect(bucket.objects.has(replayKeys.index("test-room"))).toBe(false);
+    expect(storage.alarm).not.toBeNull();
+    // Then only the index fails.
+    bucket.failAfter = bucket.puts + 2;
+    vi.setSystemTime(storage.alarm!);
+    await room.onAlarm();
+    expect(ready(storage)).toBe(false);
+    expect(bucket.objects.has(replayKeys.index("test-room"))).toBe(false);
+    bucket.failAfter = null;
+    vi.setSystemTime(storage.alarm!);
+    await room.onAlarm();
+    expect(ready(storage)).toBe(true);
+    expect(bucket.objects.has(replayKeys.index("test-room"))).toBe(true);
+    expect((storage.data.get("game") as { replayReady: boolean }).replayReady).toBe(true);
+  });
+
+  it("finishes the copy in a room revived after one failed partway, and keeps the room's record", async () => {
+    vi.spyOn(console, "warn").mockImplementation(() => {});
+    const bucket = new FakeR2Bucket();
+    const { inner, storage } = await endedRoom(bucket);
+    bucket.failAfter = 1;
+    await inner.copyReplay();
+    expect(ready(storage)).toBe(false);
+    bucket.failAfter = null;
+    const revived = asRoom(storage, CHEATS);
+    (revived as unknown as Copying).env.REPLAYS = bucket;
+    await revived.onStart();
+    vi.setSystemTime(storage.alarm!);
+    await revived.onAlarm();
+    expect(ready(storage)).toBe(true);
+    expect(bucket.objects.has(replayKeys.index("test-room"))).toBe(true);
+    expect((await storage.list({ prefix: "input:" })).size).toBeGreaterThan(0);
+    expect(storage.data.has("setup")).toBe(true);
   });
 });

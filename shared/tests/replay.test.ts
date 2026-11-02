@@ -9,6 +9,7 @@ import { fullViewFor, perspective, seatStarts, type FullView, type SeatStarts } 
 import { nextInt, type RngState } from "../src/rng.ts";
 import { applyDiff, diffView, type ViewDiff } from "../src/viewDiff.ts";
 import { HISTORY_VERSION, HistoryError, historyStep, rebuildHistory, type HistoryStep } from "../src/viewHistory.ts";
+import { ChunkBuilder, chunkHistory, replayIndex, replayKeys } from "../src/replayChunks.ts";
 import { MAX_SPOT_CELL } from "../src/spot.ts";
 import { CHAT_CHANNELS, type GameState, type Seat } from "../src/types.ts";
 
@@ -276,5 +277,76 @@ describe("view history", () => {
     const full = fullViewFor(state, null);
     expect(() => rebuildHistory([{ v: HISTORY_VERSION + 1, full }])).toThrow(HistoryError);
     expect(() => rebuildHistory([{ diff: { k: "s", v: full } }])).toThrow(HistoryError);
+  });
+});
+
+describe("replay chunks (#336)", () => {
+  /** A random game's history as the server records it: a copy at the first input, at each restart and each cycle. */
+  function recorded(steps: number, seed: number) {
+    let starts: SeatStarts | null = null;
+    let prev: FullView | null = null;
+    let before = fullViewFor(startGame(setup), null);
+    const record: { at: number; history: HistoryStep; cycle: boolean }[] = [];
+    let i = 0;
+    const { record: inputs } = play(steps, seed, setup, (s) => {
+      if (starts === null && !s.preselection) starts = seatStarts(s);
+      const next = fullViewFor(s, starts);
+      const loaded = before;
+      const cycle = i % 60 === 59;
+      record.push({ at: 0, history: JSON.parse(JSON.stringify(historyStep(i % 100 === 37 ? null : prev, () => loaded, next, cycle))) as HistoryStep, cycle });
+      prev = before = next;
+      i++;
+    });
+    inputs.forEach((r, n) => (record[n]!.at = r.at));
+    return record;
+  }
+
+  it("splits at every full copy, each chunk rebuilds by itself, and together they rebuild the whole history", () => {
+    const record = recorded(600, 3);
+    const chunks = chunkHistory(record);
+    expect(chunks).toHaveLength(1 + record.filter((r) => r.cycle).length);
+    expect(chunks.reduce((n, c) => n + c.entries.length, 0)).toBe(record.length);
+    const whole = rebuildHistory(record.map((r) => r.history));
+    let at = 0;
+    for (const chunk of chunks) {
+      expect(chunk.info.firstInput).toBe(at);
+      expect(chunk.info.inputs).toBe(chunk.entries.length);
+      expect(chunk.info.from).toBe(record[at]!.at);
+      expect(chunk.info.to).toBe(record[at + chunk.entries.length - 1]!.at);
+      const frames = rebuildHistory(JSON.parse(JSON.stringify(chunk.entries.map((e) => e.history))) as HistoryStep[]);
+      expect(chunk.info.cycle).toBe((frames[0]!.base ?? frames[0]!.view).cycle);
+      frames.forEach((f, n) => expect(f.view, `input ${at + n}`).toEqual(whole[at + n]!.view));
+      at += chunk.entries.length;
+    }
+  }, 15_000);
+
+  it("copies only the time and the history of each input", () => {
+    const record = recorded(40, 5).map((r) => ({ ...r, input: { type: "tick", at: r.at }, raw: "secret", chatId: 1 }));
+    for (const chunk of chunkHistory(record)) for (const e of chunk.entries) expect(Object.keys(e).sort()).toEqual(["at", "history"]);
+  });
+
+  it("refuses a record without history, in another format, or starting with a change", () => {
+    const { state } = play(5, 2);
+    const full = fullViewFor(state, null);
+    expect(() => chunkHistory([{ at: 0 }])).toThrow(HistoryError);
+    expect(() => chunkHistory([{ at: 0, history: { v: HISTORY_VERSION + 1, full } }])).toThrow(HistoryError);
+    expect(() => new ChunkBuilder().add(0, { at: 0, history: {} })).toThrow(HistoryError);
+  });
+
+  it("indexes seats in order without names, and keys depend only on the room", () => {
+    const index = replayIndex(
+      { roomId: "r1", rulesVersion: "abc", endedAt: 9, starts: { p10: { role: "human", character: "chun" }, p2: { role: "mush", character: "chao" } } },
+      [],
+    );
+    expect(index).toEqual({
+      v: HISTORY_VERSION,
+      roomId: "r1",
+      rulesVersion: "abc",
+      endedAt: 9,
+      seats: [{ seat: "p2", role: "mush", character: "chao" }, { seat: "p10", role: "human", character: "chun" }],
+      chunks: [],
+    });
+    expect(replayKeys.chunk("r1", 3)).toBe(`replays/r1/v${HISTORY_VERSION}/chunk-000003.json.gz`);
+    expect(replayKeys.index("r1")).toBe(`replays/r1/v${HISTORY_VERSION}/index.json`);
   });
 });

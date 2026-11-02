@@ -26,6 +26,8 @@
   "d1_databases": [
     { "binding": "DB", "database_name": "mush2-production", "database_id": "9021775b-89ea-49f6-93d4-f1d5ed218ac4", "migrations_dir": "migrations" }
   ],
+  // Finished games' history for replays (#336, docs/ops/r2.md). The bucket must exist before a deploy.
+  "r2_buckets": [{ "binding": "REPLAYS", "bucket_name": "mush2-replays-production" }],
   // Which rules build ran a game, stored in its replay record. "dev" locally;
   // The deploy:* scripts override it with the commit hash.
   "vars": { "RULES_VERSION": "dev" },
@@ -61,6 +63,8 @@
       "d1_databases": [
         { "binding": "DB", "database_name": "mush2-staging", "database_id": "ec315beb-a346-4507-a0ea-ae86795f023a", "migrations_dir": "migrations" }
       ],
+      // Finished games' history for replays (#336, docs/ops/r2.md). The bucket must exist before a deploy.
+      "r2_buckets": [{ "binding": "REPLAYS", "bucket_name": "mush2-replays-staging" }],
       "vars": { "RULES_VERSION": "dev" },
       "triggers": { "crons": ["17 4 * * *"] },
       "migrations": [{ "tag": "v1", "new_sqlite_classes": ["GameRoom", "Matchmaker"] }]
@@ -87,6 +91,8 @@
       "d1_databases": [
         { "binding": "DB", "database_name": "mush2-test", "database_id": "600dcd0b-e9cf-4146-919a-0b01ef9d7568", "migrations_dir": "migrations" }
       ],
+      // Finished games' history for replays (#336, docs/ops/r2.md). The bucket must exist before a deploy.
+      "r2_buckets": [{ "binding": "REPLAYS", "bucket_name": "mush2-replays-test" }],
       "vars": { "RULES_VERSION": "dev", "ALLOW_CHEATS": "true" },
       "triggers": { "crons": ["17 4 * * *"] },
       "migrations": [{ "tag": "v1", "new_sqlite_classes": ["GameRoom", "Matchmaker"] }]

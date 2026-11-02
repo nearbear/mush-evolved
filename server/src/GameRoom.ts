@@ -50,6 +50,7 @@ import { finishedEntry, gameStoreFor } from "./gameStore.ts";
 import { clockCycle, clockCycleStart, cycleMs, cycleOfDay } from "./cycleClock.ts";
 import { devModelCredentials, ModelGate, playerModelCredentials } from "./model.ts";
 import { RateLimiter } from "./rateLimit.ts";
+import { copyReplay } from "./replayStore.ts";
 
 declare global {
   interface Env {
@@ -85,6 +86,9 @@ const MODEL_RETRY_MAX_MS = 60_000;
 /** A finished game whose entry in the list (#155) couldn't be written is tried again after this, doubling up to the max. */
 const LIST_RETRY_MS = 60_000;
 const LIST_RETRY_MAX_MS = 60 * 60_000;
+/** The same for its history's copy to R2 (#336). */
+const REPLAY_RETRY_MS = 60_000;
+const REPLAY_RETRY_MAX_MS = 60 * 60_000;
 
 /**
  * Bump when GameState's shape changes, or ConfigOverrides' (or what resolveConfig derives from a key). Games stored
@@ -138,6 +142,8 @@ interface Stored {
   listed?: boolean;
   /** When the game ended (the time of the input that ended it); missing while it runs. */
   endedAt?: number;
+  /** The finished game's history is in R2, every chunk and the index confirmed (#336). Missing reads as false. */
+  replayReady?: boolean;
 }
 
 // The game's record, beside the snapshot in this room's storage:
@@ -201,6 +207,11 @@ export class GameRoom extends Server<Env> {
   /** When to try writing the finished game's entry again (`recordFinished`), and the wait after the next failure. */
   private listRetryAt: number | null = null;
   private listRetryMs = LIST_RETRY_MS;
+  /** The history's copy to R2 (#336): done, when to try it again, the wait after the next failure, and one at a time. */
+  private replayReady = false;
+  private replayRetryAt: number | null = null;
+  private replayRetryMs = REPLAY_RETRY_MS;
+  private copying: Promise<void> | null = null;
   private inputs = 0;
   private rateLimited: Record<PlayerId, number> = {};
   private clockCycle = 0;
@@ -264,6 +275,9 @@ export class GameRoom extends Server<Env> {
     this.endedAt = stored.endedAt ?? null;
     // A finished game whose entry wasn't written yet: try at once.
     if (this.game.phase === "ended" && !this.listed) this.listRetryAt = Date.now();
+    this.replayReady = stored.replayReady ?? false;
+    // The same for its history's copy, which may have failed partway.
+    if (this.game.phase === "ended" && !this.replayReady) this.replayRetryAt = Date.now();
     this.blocked = (await this.ctx.storage.list({ prefix: "blocked:" })).size;
     this.initBots();
     this.scheduleBots();
@@ -489,6 +503,37 @@ export class GameRoom extends Server<Env> {
     }
   }
 
+  /**
+   * Once the game has ended, copies its history to R2 (#336, replayStore.ts). `replayReady` is set only after every
+   * chunk and the index are written; a failure is tried again from the alarm with backoff (`replayRetryAt`), apart
+   * from the listing so neither outage holds up the other. Room storage is kept (retention is #132).
+   */
+  private copyReplay(): Promise<void> {
+    this.copying ??= this.tryCopyReplay().finally(() => (this.copying = null));
+    return this.copying;
+  }
+
+  private async tryCopyReplay(): Promise<void> {
+    if (this.replayReady || this.game?.phase !== "ended") return;
+    try {
+      const setup = await this.ctx.storage.get<GameSetup>("setup");
+      if (!this.env.REPLAYS) throw new Error("no REPLAYS bucket bound");
+      await copyReplay(this.ctx.storage, this.env.REPLAYS, {
+        roomId: this.name,
+        rulesVersion: setup?.rulesVersion ?? "",
+        endedAt: this.endedAt ?? Date.now(),
+        starts: this.starts ?? {},
+      });
+      this.replayReady = true;
+      this.replayRetryAt = null;
+      await this.persist();
+    } catch (e) {
+      console.warn(`Copying the replay failed: ${e instanceof Error ? e.message : typeof e}`);
+      this.replayRetryAt = Date.now() + this.replayRetryMs;
+      this.replayRetryMs = Math.min(this.replayRetryMs * 2, REPLAY_RETRY_MAX_MS);
+    }
+  }
+
   /** How full the ship is and when it stops taking crew (null once closed): lets the matchmaker catch up with a dev fill. */
   status(): { aboard: number; seats: number; taken: CharacterId[]; closesAt: number | null } {
     const seats = this.game?.config.preselection?.seats ?? 0;
@@ -647,6 +692,7 @@ export class GameRoom extends Server<Env> {
       }
     }
     if (this.listRetryAt !== null && this.listRetryAt <= Date.now()) await this.recordFinished();
+    if (this.replayRetryAt !== null && this.replayRetryAt <= Date.now()) await this.copyReplay();
     await this.scheduleTick();
   }
 
@@ -751,6 +797,7 @@ export class GameRoom extends Server<Env> {
     // Saved with the next input; until then a restart only repeats an idempotent write.
     await this.releaseAccounts();
     await this.recordFinished();
+    await this.copyReplay();
     this.scheduleBots();
     await this.scheduleTick();
     return null;
@@ -760,7 +807,7 @@ export class GameRoom extends Server<Env> {
   private async scheduleTick(): Promise<void> {
     const bar = this.game ? nextDue(this.game) : null;
     const cycle = this.game?.phase === "playing" ? this.nextCycleAt() : null;
-    const due = [bar, cycle, this.listRetryAt].reduce<number | null>((a, b) => (a === null ? b : b === null ? a : Math.min(a, b)), null);
+    const due = [bar, cycle, this.listRetryAt, this.replayRetryAt].reduce<number | null>((a, b) => (a === null ? b : b === null ? a : Math.min(a, b)), null);
     if (due === null) await this.ctx.storage.deleteAlarm();
     else if ((await this.ctx.storage.getAlarm()) !== due) await this.ctx.storage.setAlarm(due);
   }
@@ -921,6 +968,7 @@ export class GameRoom extends Server<Env> {
       ...(this.starts !== null && { starts: this.starts }),
       listed: this.listed,
       ...(this.endedAt !== null && { endedAt: this.endedAt }),
+      replayReady: this.replayReady,
     };
     await this.ctx.storage.put({ ...entries, game: stored });
   }

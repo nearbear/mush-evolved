@@ -1,6 +1,6 @@
 # Deploys
 
-Three Workers, each with the client as static assets and its own D1 database and Durable Object storage (`server/wrangler.jsonc`):
+Three Workers, each with the client as static assets and its own D1 database, R2 bucket for replays (`r2.md`; create the buckets before deploying) and Durable Object storage (`server/wrangler.jsonc`):
 
 | Target | Worker | How it deploys |
 | --- | --- | --- |
@@ -28,7 +28,7 @@ It runs only on `main` in `nearbear/mush2`, not on forks or other branches. Comp
 
 The job reads two secrets from the `test` GitHub environment. Until they are set, a deploy run fails with an error naming them; plain pushes never need them.
 
-1. In the Cloudflare dashboard, create an API token (My Profile > API Tokens > Custom token) with **Account > Workers Scripts: Edit** and **Account > D1: Edit** on this account only. Nothing else: the job never touches Access, DNS or other Workers' settings.
+1. In the Cloudflare dashboard, create an API token (My Profile > API Tokens > Custom token) with **Account > Workers Scripts: Edit**, **Account > D1: Edit** and **Account > Workers R2 Storage: Edit** (`r2.md`) on this account only. Nothing else: the job never touches Access, DNS or other Workers' settings.
 2. Create the environment and set the secrets:
 
    ```sh

@@ -2078,3 +2078,10 @@ Added `tendPlants` (a Botanist or Skilful bot waters, treats and sows in the gar
 ## 2026-11-01: Shrink morale asks clarified
 
 - Owner clarified: under 5 morale, any reason a bot can't contact a Shrink privately makes it an emergency, so it says its morale in global chat. A Shrink bot announces it is a Shrink early in the game. Recorded in `bot-goals.md` and the Shrink's prompt line; built with step 3.
+
+## 2026-11-01: Copy finished games' history to R2 (#336)
+
+- **Built:** `shared/src/replayChunks.ts` (`ChunkBuilder` splits the record at each full copy as it is read; a chunk holds only `{ at, history }` per input; `replayIndex` with seats' start roles and characters, no names; `replayKeys`), `server/src/replayStore.ts` (pages through `input:*`, gzips each chunk with `CompressionStream`, index last), `GameRoom.copyReplay` with `replayReady` and its own backoff beside the games list, the `REPLAYS` binding in all three wrangler environments, `docs/ops/r2.md`. `FakeStorage.list` now takes `startAfter` and `limit` and sorts by code unit, as DO storage does, and `FakeR2Bucket` can fail after N puts.
+- **Worked:** following the issue's written plan and the existing `recordFinished` retry pattern kept the change small; the chunk test checks each chunk rebuilds alone and matches the whole history frame by frame.
+- **Needed correction:** the first revived-room test set the game to ended only in memory, so the revived room loaded a running game and never copied; the test now persists the end, as the input that ends a game does.
+- **Open:** the buckets must be created by hand before the next deploy, and the CI token needs R2 permission; not yet run against real R2. Games ended before #335 have no history and would retry hourly forever (no legacy handling, as decided).
