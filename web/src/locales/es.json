@@ -746,7 +746,8 @@
     "super_map": "Fragmento de mapa estelar",
     "protection_gloves": "Guantes de protección",
     "space_capsule": "Cápsula espacial",
-    "extinguisher": "Extintor"
+    "extinguisher": "Extintor",
+    "steroids": "Anabolizantes"
   },
   "logEvent": {
     "summonArrived": "Te han convocado a: {{room}}. Ya estás allí.",

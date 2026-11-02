@@ -2,7 +2,7 @@ import { Action, type ActionCost, type ActionVisibility, DIRTY, isString } from 
 import { ANY_CONSUMABLE, RESEARCH_COMPLETE, RESEARCH_IDS, RESEARCH_REQUIRES, RESEARCH_SKILLS, type ResearchId, researchNeedOrder } from "../research.ts";
 import { logPrivate, logPublic } from "../log.ts";
 import { equipmentHere } from "../equipment.ts";
-import { ITEM_TYPES, newItemId, removeItem } from "../items.ts";
+import { ITEM_TYPES, newItemId, removeItem, STEROIDS_ITEM, STEROIDS_YIELD } from "../items.ts";
 import { xylophFound } from "../comms.ts";
 import { makeToken, type ResearchPool } from "../relay.ts";
 import { assayDue, researchProgress, runAssay, type SampleCounts } from "../assay.ts";
@@ -103,6 +103,12 @@ function completeResearch(state: GameState, room: RoomId, research: ResearchId):
   if (research === "ANTI_MUSH_SERUM") {
     state.items.push({ id: newItemId(state), type: ANTI_MUSH_SERUM_ITEM, at: { kind: "room", id: room } });
     logPublic(state, room, "serumBuilt");
+  }
+  // Owner, 2026-11-01: completing it spawns 4 anabolic steroids on the lab floor (no extra log line).
+  if (research === "STEROIDS") {
+    for (let i = 0; i < STEROIDS_YIELD; i++) {
+      state.items.push({ id: newItemId(state), type: STEROIDS_ITEM, at: { kind: "room", id: room } });
+    }
   }
 }
 

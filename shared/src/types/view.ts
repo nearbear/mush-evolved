@@ -250,6 +250,8 @@ export interface PlayerView {
   yourTokens: { research: Record<string, number>; projects: Record<string, number>; pilgred: number };
   /** Whether PILGRED is repaired, public to everyone: its completion is announced to the whole crew (repair_pilgred.ts). */
   pilgredRepaired: boolean;
+  /** Whether a Mush has died on the ship (public): the human_tank in Sick Bay shows a person in it. */
+  humanTankFull: boolean;
   /**
    * The communication center. `linked` (the link with Sol) is public; `terminal`, what the Com center terminal shows
    * read-only to anyone, only while you are alive in a room with one (owner, 2026-10-21), otherwise null.

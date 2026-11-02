@@ -75,6 +75,14 @@ export function killPlayer(state: GameState, player: PlayerState): void {
   if (mushWinOnDeath(state)) endGame(state, "mush", "humans_dead");
 }
 
+/**
+ * Whether a Mush has died on the ship at any point in the game.
+ * Public to everyone: the sick bay's human_tank shows a person in it.
+ */
+export function hasMushDied(state: Readonly<{ players: readonly PlayerState[] }>): boolean {
+  return state.players.some((p) => p.role === "mush" && !p.alive);
+}
+
 function systemMessage(state: GameState, channel: ChannelId, key: string, name: CharacterId): void {
   pushChat(state, channel, { from: null, isBot: false, text: "", system: { key, params: { name } } });
 }

@@ -2167,3 +2167,20 @@ An outside security review claimed cross-site WebSocket hijacking via the Lax se
   - Locales updated in `web/src/locales/{en,fr,es}.json` to clarify the cycle 5 reload.
   - Unit tests in `shared/tests/fissionCoffeeRoaster.test.ts` covering base, Roaster, PILGRED, and combined schedules, as well as holding uncollected coffee.
 - **What worked:** Clarifying the open rule questions early using `ask_question` pinned the authentic schedule and uncollected-coffee behavior cleanly before coding. The backwards-scan formula for `lastCoffeeRegenCycle` against `dispensedOn` avoided needing additional state fields or migrations.
+
+## 2026-11-02 - Anabolic steroids research (STEROIDS)
+
+- **Context & request:** The user asked to implement the Anabolic steroids research, noting that anabolics already have item sprites (`Mush/www/img/icons/items/ration_6.jpg`).
+- **Decisions confirmed with owner:**
+  - Research completion spawns 4 `steroids` items on the laboratory floor with the standard `researchCompleted` public log line (no extra announcement).
+  - Consuming an anabolic steroid (`consume`, 15% dirty chance): grants +8 MP up to `player.maxMp`, 0 satiety (resets starvation timer `satietyZeroSince`), 0 AP/morale/HP; blocked if full belly (`isFullBelly`).
+  - Mush fake-consume it with no MP or satiety benefits, matching other consumables.
+  - Item icon mapped to `ration_6` in `web/src/art/assets.ts`. Status marked `"full"` in `RESEARCH_STATUS`.
+- **Implementation:**
+  - Added `STEROIDS_ITEM = "steroids"`, `STEROIDS_YIELD = 4`, `STEROIDS_MP = 8` and item definition in `shared/src/items.ts` with optional `mp` on `consume`.
+  - Updated `ConsumeAction.apply` in `shared/src/actions/consume.ts` to call `changeMP`.
+  - Updated `completeResearch` in `shared/src/actions/research.ts` to spawn the 4 steroids in the lab.
+  - Mapped `steroids` and `anabolics` to `ration_6` in `ICON_FILE` in `web/src/art/assets.ts`.
+  - Added translations in en/fr/es locale files.
+  - Marked `STEROIDS: "full"` in `RESEARCH_STATUS` in `shared/src/research.ts`.
+  - Added test coverage in `shared/tests/research.test.ts`.

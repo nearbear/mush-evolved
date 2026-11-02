@@ -738,7 +738,8 @@
     "super_map": "Starmap fragment",
     "protection_gloves": "Protective Gloves",
     "space_capsule": "Space capsule",
-    "extinguisher": "Extinguisher"
+    "extinguisher": "Extinguisher",
+    "steroids": "Anabolic steroids"
   },
   "logEvent": {
     "summonArrived": "You were summoned to: {{room}}. You are there.",

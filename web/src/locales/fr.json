@@ -746,7 +746,8 @@
     "super_map": "Morceau de carte stellaire",
     "protection_gloves": "Gants de protection",
     "space_capsule": "Capsule spatiale",
-    "extinguisher": "Extincteur"
+    "extinguisher": "Extincteur",
+    "steroids": "Anabolisant"
   },
   "logEvent": {
     "summonArrived": "Vous avez été convoqué(e) : {{room}}. Vous y êtes.",

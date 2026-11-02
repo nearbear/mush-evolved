@@ -79,6 +79,7 @@ const AMBIENT_SLICES: ReadonlySet<string> = new Set([
   "pilot_astro_left",
   "radar_trans_void",
   "human_tank",
+  "human_tank_full",
   "mycoscan",
 ]);
 

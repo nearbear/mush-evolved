@@ -44,3 +44,4 @@ export * from "./viewDiff.ts";
 export * from "./viewHistory.ts";
 export * from "./replayChunks.ts";
 export * from "./singlePlayer.ts";
+export * from "./death.ts";

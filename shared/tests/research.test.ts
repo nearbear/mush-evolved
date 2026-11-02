@@ -2,8 +2,8 @@ import { describe, expect, it } from "vitest";
 import { DEFAULT_CONFIG } from "../src/config.ts";
 import { parseGameMessage } from "../src/protocol.ts";
 import { EQUIPMENT_TYPES } from "../src/equipment.ts";
-import { ITEM_TYPES } from "../src/items.ts";
-import { ANY_CONSUMABLE, RESEARCH_COMPLETE, RESEARCH_IDS, RESEARCH_REQUIRES, RESEARCH_SKILLS } from "../src/research.ts";
+import { ITEM_TYPES, STEROIDS_ITEM, STEROIDS_MP, STEROIDS_YIELD } from "../src/items.ts";
+import { ANY_CONSUMABLE, RESEARCH_COMPLETE, RESEARCH_IDS, RESEARCH_REQUIRES, RESEARCH_SKILLS, RESEARCH_STATUS } from "../src/research.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";
 import { addStatus } from "../src/statuses.ts";
 import type { Action } from "../src/types.ts";
@@ -277,6 +277,45 @@ describe("research", () => {
     stockLab(s2, "LABORATORY", "MYCO_ALARM");
     s2.rng = CLEAN;
     expect(mustApply(s2, "p0", work("MYCO_ALARM")).items.filter((i) => i.type === "mush_sample")).toHaveLength(s2.items.filter((i) => i.type === "mush_sample").length);
+  });
+
+  it("completing STEROIDS spawns 4 anabolic steroids on the laboratory floor and marks status full", () => {
+    expect(RESEARCH_STATUS.STEROIDS).toBe("full");
+    const s = game();
+    setProgress(s, { research: "STEROIDS" }, RESEARCH_COMPLETE - 1);
+    s.rng = CLEAN;
+    const done = mustApply(s, "p0", work("STEROIDS"));
+    const floorSteroids = done.items.filter((i) => i.type === STEROIDS_ITEM && i.at.kind === "room" && i.at.id === "LABORATORY");
+    expect(floorSteroids).toHaveLength(STEROIDS_YIELD);
+  });
+
+  it("consuming steroids gives humans 8 MP, 0 satiety, resets starvation timer, and does nothing for Mush", () => {
+    const s = game();
+    s.items.push({ id: "steroid-1", type: STEROIDS_ITEM, at: { kind: "player", id: "p0" } });
+    s.players[0]!.mp = 2;
+    s.players[0]!.satiety = 0;
+    s.players[0]!.satietyZeroSince = 0;
+    s.cycle = 5;
+
+    const consumedState = mustApply(s, "p0", { type: "consume", item: "steroid-1" });
+    expect(consumedState.players[0]!.mp).toBe(2 + STEROIDS_MP);
+    expect(consumedState.players[0]!.satiety).toBe(0);
+    expect(consumedState.players[0]!.satietyZeroSince).toBe(5);
+    expect(consumedState.items.some((i) => i.id === "steroid-1")).toBe(false);
+
+    // Full belly blocks consuming
+    consumedState.items.push({ id: "steroid-2", type: STEROIDS_ITEM, at: { kind: "player", id: "p0" } });
+    consumedState.players[0]!.satiety = consumedState.config.hunger.fullBellyAt;
+    expect(applyAction(consumedState, "p0", { type: "consume", item: "steroid-2" }).ok).toBe(false);
+
+    // Mush gets no MP and no satiety benefits
+    const mushGame = game();
+    mushGame.players[1]!.role = "mush";
+    mushGame.players[1]!.mp = 1;
+    mushGame.items.push({ id: "steroid-3", type: STEROIDS_ITEM, at: { kind: "player", id: "p1" } });
+    const mushConsumed = mustApply(mushGame, "p1", { type: "consume", item: "steroid-3" });
+    expect(mushConsumed.players[1]!.mp).toBe(1);
+    expect(mushConsumed.items.some((i) => i.id === "steroid-3")).toBe(false);
   });
 
   it("parses from the wire, and rejects a missing research", () => {

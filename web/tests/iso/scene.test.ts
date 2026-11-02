@@ -22,11 +22,13 @@ const REACTOR = { framesX: 1, anims: [{ frames: [0, 1, 2], rhythm: [2, 2, 2], au
 /** PILGRED's core: a still orb, and its animated look, elsewhere on another sheet. */
 const CORE = { sheet: "S", x: 768, y: 1656, framesX: 1, anims: [] } as unknown as SliceInfo;
 const CORE_UPGRADE = { sheet: "T", x: 0, y: 1656, width: 128, height: 110, framesX: 6, anims: [{ frames: [0, 1, 2, 3, 4, 5], rhythm: [3, 3, 3, 3, 3, 3], auto: true }] } as unknown as SliceInfo;
+const TANK = { sheet: "MidFill2", x: 0, y: 1082, width: 42, height: 62, framesX: 9, anims: [{ frames: [0, 1, 2, 3, 4, 5, 6, 7, 8], rhythm: [12, 12, 12, 12, 12, 12, 12, 12, 12], auto: true }] } as unknown as SliceInfo;
+const TANK_FULL = { sheet: "MidFill2", x: 0, y: 1145, width: 42, height: 62, framesX: 9, anims: [{ frames: [0, 1, 2, 3, 4, 5, 6, 7, 8], rhythm: [12, 12, 12, 12, 12, 12, 12, 12, 12], auto: true }] } as unknown as SliceInfo;
 
 const layout = {
   roomSize: 32,
   sheets: {},
-  slices: { camera: { anims: [{ frames: [0, 1, 2, 1] }] }, door: DOOR, rotational_reactor: REACTOR, core_pilgred: CORE, core_pilgred_upgrade: CORE_UPGRADE },
+  slices: { camera: { anims: [{ frames: [0, 1, 2, 1] }] }, door: DOOR, rotational_reactor: REACTOR, core_pilgred: CORE, core_pilgred_upgrade: CORE_UPGRADE, human_tank: TANK, human_tank_full: TANK_FULL },
   rooms: [],
   autoBind: {},
 } as unknown as ShipLayout;
@@ -144,6 +146,18 @@ describe("describeScene", () => {
     expect(frameAt(repaired.image, 4)).toEqual({ sx: 512, sy: 1656 });
     // Hit-testing reads the same look.
     expect(imageOf(core, { layout, room: HERE, people: new Map(), walkers: new Map(), seats: new Map(), corpses: [], looks: new Map([["core_pilgred", "core_pilgred_upgrade"]]) }).frame.sx).toBe(0);
+  });
+
+  it("draws the human_tank empty until a Mush has died, then as human_tank_full with a person in it", () => {
+    const tank = placed({ slice: "human_tank", width: 42, height: 62, sx: 0, sy: 1082 });
+    const empty = only(scene([tank]));
+    expect(empty.image.frame).toMatchObject({ sx: 0, sy: 1082, width: 42, height: 62 });
+    expect(empty.anim).toMatchObject({ frames: [0, 1, 2, 3, 4, 5, 6, 7, 8], loops: "forever" });
+
+    const full = only(scene([tank], { looks: new Map([["human_tank", "human_tank_full"]]) }));
+    expect(full.image.frame).toMatchObject({ sx: 0, sy: 1145, width: 42, height: 62 });
+    expect(full.anim).toMatchObject({ frames: [0, 1, 2, 3, 4, 5, 6, 7, 8], loops: "forever" });
+    expect(imageOf(tank, { layout, room: HERE, people: new Map(), walkers: new Map(), seats: new Map(), corpses: [], looks: new Map([["human_tank", "human_tank_full"]]) }).frame.sy).toBe(1145);
   });
 
   it("draws walkers with their facing and walk cycle, and an outline for each", () => {

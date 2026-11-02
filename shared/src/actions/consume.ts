@@ -6,7 +6,7 @@ import { rationApBonus } from "../comms.ts";
 import { contaminate } from "../infection.ts";
 import { isFullBelly } from "../statuses.ts";
 import type { GameState, PlayerState } from "../types.ts";
-import { changeAP, gainMorale } from "../adjustStats.ts";
+import { changeAP, changeMP, gainMorale } from "../adjustStats.ts";
 
 export type ConsumeActionData = { type: "consume"; item: string };
 
@@ -36,9 +36,10 @@ export class ConsumeAction extends Action<ConsumeActionData> {
         logPublic(state, player.room, "consumed", { name: player.character, item: item.type });
         return;
     }
-    const { ap, satiety, morale = 0, hp = 0 } = ITEM_TYPES[item.type]!.consume!;
+    const { ap, mp = 0, satiety, morale = 0, hp = 0 } = ITEM_TYPES[item.type]!.consume!;
     player.hp = Math.min(player.maxHp, player.hp + Math.max(0, hp));
     changeAP(state, player, ap + rationApBonus(state, item.type));
+    changeMP(state, player, mp);
     gainMorale(state, player, morale);
     if (player.role === "human") {
       player.satiety += satiety;

@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { createChannel, inviteToChannel, sendChat, toggleCheckbox } from "../src/chat.ts";
 import { DEFAULT_CONFIG } from "../src/config.ts";
-import { damage, killPlayer } from "../src/death.ts";
+import { damage, hasMushDied, killPlayer } from "../src/death.ts";
 import { CORPSE_ITEM, ITEM_TYPES, ITRACKIE_ITEM, itemsIn } from "../src/items.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";
 import { CHAT_CHANNELS, GRAVEYARD_CHANNEL, MUSH_CHANNEL, type Action, type GameState, type PlayerId } from "../src/types.ts";
@@ -207,6 +207,25 @@ describe("the dead player's view (#45)", () => {
     expect(viewFor(s, "p0").players.find((o) => o.id === "p1")?.room).toBeUndefined();
     s.bios.actopi = false;
     expect(viewFor(s, "p2").unidentified).toEqual(["SICK_BAY"]); // p0 only
+  });
+
+  it("humanTankFull is false until a Mush dies on the ship", () => {
+    const s = ship();
+    expect(hasMushDied(s)).toBe(false);
+    expect(viewFor(s, "p1").humanTankFull).toBe(false);
+    expect(viewFor(s, "p0").humanTankFull).toBe(false);
+
+    // Killing a human keeps it false
+    killPlayer(s, player(s, "p1"));
+    expect(hasMushDied(s)).toBe(false);
+    expect(viewFor(s, "p0").humanTankFull).toBe(false);
+    expect(viewFor(s, "p2").humanTankFull).toBe(false);
+
+    // Killing the Mush turns it true for everyone
+    killPlayer(s, player(s, "p0"));
+    expect(hasMushDied(s)).toBe(true);
+    expect(viewFor(s, "p2").humanTankFull).toBe(true);
+    expect(viewFor(s, "p3").humanTankFull).toBe(true);
   });
 });
 

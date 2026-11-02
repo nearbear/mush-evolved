@@ -98,7 +98,8 @@ Loaded when working on the isometric view. The UI rules in `web/CLAUDE.md` still
   `auto` anims in tiles.xml are not played yet. Frames step along a row and wrap every `perRow`
   (the slice's `framesX`; the reactors' frames run down a column), through `frameAt`. `looks`
   draws a tile as another slice of the same size: `core_pilgred` becomes the animated
-  `core_pilgred_upgrade` once the view's public `pilgredRepaired` is true.
+  `core_pilgred_upgrade` once the view's public `pilgredRepaired` is true, and `human_tank`
+  becomes `human_tank_full` once `humanTankFull` is true (a Mush has died on the ship).
 
 ## Where the animations are
 

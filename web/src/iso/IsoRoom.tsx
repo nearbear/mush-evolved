@@ -112,8 +112,13 @@ function chairAt(layout: ShipLayout, room: RoomLayout | undefined, cell: { x: nu
   return t ? layout.slices[t.slice]?.dir ?? "" : undefined;
 }
 
-/** PILGRED's core once it is repaired: the still pale orb becomes the animated plasma globe. */
-const PILGRED_REPAIRED_LOOKS: ReadonlyMap<string, string> = new Map([["core_pilgred", "core_pilgred_upgrade"]]);
+function roomLooks(pilgredRepaired: boolean, humanTankFull?: boolean): ReadonlyMap<string, string> | undefined {
+  if (!pilgredRepaired && !humanTankFull) return undefined;
+  const looks = new Map<string, string>();
+  if (pilgredRepaired) looks.set("core_pilgred", "core_pilgred_upgrade");
+  if (humanTankFull) looks.set("human_tank", "human_tank_full");
+  return looks;
+}
 
 /** The index of the last step in a doorway. */
 const lastInDoorway = (steps: readonly DoorStep[]) => steps.reduce((last, s, i) => (s.door ? i : last), -1);
@@ -146,6 +151,7 @@ export function IsoRoom({
   zoom,
   onZoomStep,
   pilgredRepaired,
+  humanTankFull,
   pace,
   planet,
   turn,
@@ -197,6 +203,8 @@ export function IsoRoom({
   clockOffset: number;
   /** PILGRED works (public): its core in the engine room is drawn as the animated globe. */
   pilgredRepaired: boolean;
+  /** A Mush has died on the ship (public): the sick bay's human_tank shows a person in it. */
+  humanTankFull?: boolean;
   /** How fast the ship is going: the stars behind it stream at that rate. */
   pace: ShipPace;
   /** The planet the ship orbits, as an image URL (public), or null. */
@@ -496,7 +504,7 @@ export function IsoRoom({
 
   const ringOf = new Map(neighbors.map((n) => [n.id as string, n.ring]));
   const byId = new Map([...drawnPeople, ...neighbors.flatMap((n) => n.people)].map((o) => [o.id, o]));
-  const looks = pilgredRepaired ? PILGRED_REPAIRED_LOOKS : undefined;
+  const looks = useMemo(() => roomLooks(pilgredRepaired, humanTankFull), [pilgredRepaired, humanTankFull]);
   const imageInput = { layout, room, people: byId, walkers, seats, corpses, looks };
 
   // Load every image this room hit-tests against, so masks are ready by the first click.

@@ -31,7 +31,7 @@ import { moderateName } from "./moderation.ts";
 import { clone, dayOf, fail, findPlayer, type ActionResult } from "./helpers.ts";
 
 export { dayOf };
-import { damage, healDaily } from "./death.ts";
+import { damage, healDaily, hasMushDied } from "./death.ts";
 import { activitySeen, logPrivate } from "./log.ts";
 import { recordAction } from "./history.ts";
 import { ringMycoAlarms } from "./mycoalarm.ts";
@@ -558,6 +558,7 @@ export function viewFor(state: GameState, playerId: PlayerId): PlayerView {
     ...relayView(state, you),
     researchNeeds: you.alive && equipmentHere(state, you, "RESEARCH_LAB").length > 0 ? researchNeedsView(state, you.room) : null,
     pilgredRepaired: isPilgredRepaired(state),
+    humanTankFull: hasMushDied(state),
     comms: { linked: state.comms.linked, terminal: you.alive && comTerminalsHere(state, you).length > 0 ? commsTerminalView(state) : null },
     bios: you.alive && biosTerminalsHere(state, you).length > 0 ? { ...state.bios } : null,
     // Your own planets only, and only the tags an analysis revealed (owner, 2026-10-19).

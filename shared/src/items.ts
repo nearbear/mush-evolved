@@ -14,6 +14,7 @@ export interface ItemType {
   /** Drinking or eating it removes it and does this. */
   consume?: {
     ap: number;
+    mp?: number;
     /** Satiety a human gains (confirmed 2026-10-14). */ satiety: number;
     /** Morale the eater gains (negative: loses), within 0 and `maxMorale`. */ morale?: number;
     /** HP the eater gains, up to `maxHp`. Never lowers HP: losses go through `damage`. */ hp?: number;
@@ -50,6 +51,11 @@ export const OXYGEN_CAPSULE_ITEM = "oxy_capsule";
 
 /** Debris from a destroyed hunter (owner, 2026-10-24, patrol plan answer 6): opening it turns it into a random item (actions/open_capsule.ts). */
 export const SPACE_CAPSULE_ITEM = "space_capsule";
+
+/** Produced by completing the STEROIDS research (owner, 2026-11-01); consuming gives 8 MP and resets starvation. */
+export const STEROIDS_ITEM = "steroids";
+export const STEROIDS_YIELD = 4;
+export const STEROIDS_MP = 8;
 
 /** The charges an item of this type starts with, or undefined if it has none. Charged weapons start full. */
 export function startCharges(config: DeepReadonly<GameConfig>, type: string): number | undefined {
@@ -93,6 +99,8 @@ export const ITEM_TYPES: Record<string, ItemType> = {
   soap: {},
   // Owner, 2026-10-25: the completed ANTI_MUSH_SERUM research yields one; single use (actions/vaccinate.ts). Named after its icon.
   anti_mush_serum: {},
+  // Owner, 2026-11-01: the completed STEROIDS research yields 4; single use, +8 MP, resets starvation.
+  [STEROIDS_ITEM]: { consume: { ap: 0, mp: STEROIDS_MP, satiety: 0 } },
   // Decided 2026-10-17: rings in its room when a Mush acts there (mycoalarm.ts). Dismantles for one scrap metal.
   myco_alarm: { dismantle: { metal: 1, plastic: 0 } },
   // Decided 2026-10-18: the HydroPot (TREE_POT in the original). Named after its icon. Owner, 2026-10-22: plants

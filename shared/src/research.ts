@@ -96,7 +96,7 @@ export type ResearchStatus = "full" | "partial" | "none";
  * Implementation status shown in the terminal's research list. Update it when a research gains effects. Progress
  * itself works for all of them; only researches with completion effects are listed.
  */
-export const RESEARCH_STATUS: Readonly<Partial<Record<ResearchId, ResearchStatus>>> = { ANTI_MUSH_SERUM: "full", MUSHOPHAGE_BACTERIA: "full", MYCO_ALARM: "partial", MYCOSCAN: "full" };
+export const RESEARCH_STATUS: Readonly<Partial<Record<ResearchId, ResearchStatus>>> = { ANTI_MUSH_SERUM: "full", MUSHOPHAGE_BACTERIA: "full", MYCO_ALARM: "partial", MYCOSCAN: "full", STEROIDS: "full" };
 
 export function researchStatus(research: string): ResearchStatus {
   return RESEARCH_STATUS[research as ResearchId] ?? "none";
