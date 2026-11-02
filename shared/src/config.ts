@@ -185,7 +185,13 @@ export const DEFAULT_CONFIG: GameConfig = {
   // leaving orbit burns 1 fuel and the ship starts facing north (Claude's defaults).
   navigation: { turn: { cost: { ap: 1 } }, travel: { cost: { ap: 1 } }, leaveOrbit: { cost: { ap: 1 }, fuel: 1 }, startHeading: "north" },
   // Decided 2026-10-18: NERON projects work exactly like research (2 AP; owner, 2026-10-26: the same relay formula).
-  project: { cost: { ap: 2 }, progress: { rate: 6, mod: 10, skillBoost: 4, relayPenalty: 2 }, noiseReducer: { maxAp: 2 } },
+  project: {
+    cost: { ap: 2 },
+    progress: { rate: 6, mod: 10, skillBoost: 4, relayPenalty: 2 },
+    noiseReducer: { maxAp: 2 },
+    quantumSensors: { extraSectors: 1 },
+    chipsetAcceleration: { scanApDiscount: 1 },
+  },
   // Owner, 2026-10-21: repairing PILGRED uses the original's numbers (DIG_RATE 6, PILGRED_MOD 2, DIG_BOOST 4, -2 per repeat),
   // 2 AP, 25% dirty; the Physicist gains 1 PILGRED point a day and holds 2.
   pilgred: { cost: { ap: 2 }, dirtyChance: 0.25, injuryChance: 0.05, progress: { rate: 6, mod: 2, skillBoost: 4, relayPenalty: 2 }, capPoints: 2, pointsPerDay: 1, returnCost: { ap: 2 }, edenCost: { ap: 2 } },

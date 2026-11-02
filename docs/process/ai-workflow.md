@@ -2125,3 +2125,11 @@ Asked Claude to summarize a third-party userscript (AstroPad) for the original g
 ### 2026-11-01: Origin check on WebSocket upgrades
 
 An outside security review claimed cross-site WebSocket hijacking via the Lax session cookie. Fact-checking against the code showed it was mostly wrong: `GameRoom` authenticates by `?token=` seat token, not the cookie, and browsers don't send `SameSite=Lax` cookies on cross-site WebSocket handshakes. Only same-site siblings (a future custom domain with untrusted subdomains) are exposed. Added `crossOriginUpgrade` (`server/src/origin.ts`, called first in `index.ts`) as defense in depth: a WebSocket upgrade whose `Origin` host differs from the request host gets a 403; a missing `Origin` is allowed for bots and tooling. Worked: checking the claim against the code before acting. Not tested: a real browser against a deployment, and the Vite dev proxy path (it keeps the Host header, so same-origin there should pass).
+
+### 2026-11-01: Quantum Sensors and CPU Overclocking projects
+
+- **What we built:** Implemented the `QUANTUM_SENSORS` and `CHIPSET_ACCELERATION` NERON projects in `shared` (`PROJECT_STATUS` set to `"full"`).
+- **Decided rules (owner):**
+  - CPU Overclocking (`CHIPSET_ACCELERATION`): Scan for planets costs 1 AP less (`config.project.chipsetAcceleration.scanApDiscount` = 1, `actionCost` in `modifiers.ts`), stacking with Astrophysicist (costs 2 AP instead of 3, or 1 AP for an Astrophysicist; floor 0 AP).
+  - Quantum Sensors (`QUANTUM_SENSORS`): Reveals 1 extra sector per analysis (`config.project.quantumSensors.extraSectors` = 1, `analysisSectors` in `modifiers.ts`), stacking with Astrophysicist and deep analysis in orbit (2 sectors base, 3 for Astrophysicist or deep analysis, 4 for both), granted unconditionally once completed (even if the Motor Room planet scanner is broken).
+- **What worked:** Adding `quantumSensors` and `chipsetAcceleration` to `DEFAULT_CONFIG.project` and folding them into `actionCost` and `analysisSectors` via `projectDone` kept the logic pure, minimal, and automatically reflected in action legality, candidate costs in `PlayerView.actions`, and terminal UI labels.

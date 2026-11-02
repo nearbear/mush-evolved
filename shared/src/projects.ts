@@ -81,6 +81,10 @@ export const PROJECT_STATUS: Readonly<Partial<Record<ProjectId, ProjectStatus>>>
   PLASMA_SHIELD: "full",
   // Every player's AP cap +2 (owner, 2026-11-01; modifiers.ts `maxAp`, projectEffects.ts).
   NOISE_REDUCER: "full",
+  // Each analysis reveals 1 extra sector (owner, 2026-11-01; modifiers.ts `analysisSectors`).
+  QUANTUM_SENSORS: "full",
+  // Scan for planets costs 1 AP less (owner, 2026-11-01; modifiers.ts `actionCost`).
+  CHIPSET_ACCELERATION: "full",
 };
 
 export function projectStatus(project: string): ProjectStatus {

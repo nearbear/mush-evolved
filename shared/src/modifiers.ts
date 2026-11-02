@@ -185,6 +185,9 @@ export function actionCost(base: ActionCost, ctx: CostContext, registry: Modifie
       if (hook) cost = hook(cost, { ...ctx, holder });
     }
   }
+  if (ctx.action.type === "scan_planet" && projectDone(ctx.state, "CHIPSET_ACCELERATION")) {
+    cost.ap -= ctx.state.config.project.chipsetAcceleration.scanApDiscount;
+  }
   // Hooks can't make a price negative. A move's MP is a net change and can already be negative (a conversion
   // gives more than the move spends), so the floor is 0 or the base, whichever is lower.
   return { ap: Math.max(Math.min(0, base.ap), cost.ap), mp: Math.max(Math.min(0, base.mp), cost.mp), ...(base.paidBy && { paidBy: base.paidBy }) };
@@ -377,9 +380,10 @@ export const computerPointsCap = (state: Readonly<GameState>, player: Readonly<P
 export const failureStreakMultiplier = (state: Readonly<GameState>, player: Readonly<PlayerState>, base: number, registry: ModifierRegistry = MODIFIERS) =>
   fold("failureStreakMultiplier", base, state, player, registry);
 
-/** Sectors one remote planet analysis reveals: one, plus what the astrophysician skill brings. */
+/** Sectors one remote planet analysis reveals: one, plus what the astrophysician skill brings and Quantum Sensors. */
 export const analysisSectors = (state: Readonly<GameState>, player: Readonly<PlayerState>, registry: ModifierRegistry = MODIFIERS) =>
-  fold("analysisSectors", 1, state, player, registry);
+  fold("analysisSectors", 1, state, player, registry) +
+  (projectDone(state, "QUANTUM_SENSORS") ? state.config.project.quantumSensors.extraSectors : 0);
 
 /** The chance a hunter wave comes smaller: nothing by default, plus what each living holder of Space Tactics brings (they don't stack). */
 export function waveShrinkChance(state: Readonly<GameState>, registry: ModifierRegistry = MODIFIERS): number {
