@@ -30,6 +30,7 @@ import {
 } from "@mush2/shared";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { AccountStore } from "../src/accountStore.ts";
+import { BOT_CHAT_CHAIN_DEPTH } from "../src/bots.ts";
 import { GameStore } from "../src/gameStore.ts";
 import { FakeConnection, FakeR2Bucket, FakeServer, FakeStorage, seats, tokensFor } from "../src/testing/fakes.ts";
 import { migratedDatabase } from "./sqliteD1.ts";
@@ -644,6 +645,97 @@ describe("GameRoom bots", () => {
       expect(lastMsg(human)).toMatchObject({ type: "view", botsPaused: null });
       vi.unstubAllGlobals();
       vi.useRealTimers();
+    });
+
+    describe("chat (#223)", () => {
+      /** A model that answers chat with `say` (a SAY line's text) when woken, and otherwise picks the first goal. */
+      const chatty = (say: string) =>
+        vi.fn(async (_url: string, init: RequestInit) => {
+          const prompt = (JSON.parse(init.body as string) as { messages: { content: string }[] }).messages[1]!.content;
+          const content = prompt.includes("A new chat message came in") ? `SAY: global: ${say}` : "GOAL: 1";
+          return new Response(JSON.stringify({ choices: [{ message: { content } }] }));
+        });
+      /** Lets time pass, firing alarms so action bars end and busy bots become free to answer. */
+      const pass = async (room: Room, storage: FakeStorage, ms: number) => {
+        for (let t = 0; t < ms; t += 500) {
+          await vi.advanceTimersByTimeAsync(500);
+          if (storage.alarm !== null && storage.alarm <= Date.now()) await room.onAlarm();
+        }
+      };
+      const botMessages = (room: Room) => gameOf(room).chat.filter((m) => m.from !== null && ["p1", "p2", "p3"].includes(m.from));
+
+      it("wake every model bot but the author; replies are posted as AI, and a chain stops at the depth limit", async () => {
+        const fetch = chatty("heard you");
+        vi.stubGlobal("fetch", fetch);
+        const { room, storage } = await modelRoom({ ...DEV, ...MODEL });
+        const human = connect(room, "tok0");
+        await pass(room, storage, 1500);
+        expect(botMessages(room)).toHaveLength(0);
+        await send(room, human, { type: "chat", channel: "global", text: "anyone there?" });
+        await pass(room, storage, 10_000);
+        const said = botMessages(room);
+        expect(said.length).toBeGreaterThan(0);
+        expect(said.every((m) => m.isBot && m.channel === "global" && m.text === "heard you")).toBe(true);
+        // Three bots, each answering at most once per depth 1..BOT_CHAT_CHAIN_DEPTH; then the chain is spent.
+        expect(said.length).toBeLessThanOrEqual(3 * BOT_CHAT_CHAIN_DEPTH);
+        await pass(room, storage, 10_000);
+        expect(botMessages(room)).toHaveLength(said.length);
+        vi.unstubAllGlobals();
+        vi.useRealTimers();
+      });
+
+      it("moderate a bot's message like a person's: links stripped, the raw text kept for moderators", async () => {
+        vi.stubGlobal("fetch", chatty("visit https://evil.example now"));
+        const { room, storage } = await modelRoom({ ...DEV, ...MODEL });
+        const human = connect(room, "tok0");
+        await pass(room, storage, 1500);
+        await send(room, human, { type: "chat", channel: "global", text: "hello" });
+        await pass(room, storage, 10_000);
+        // Links are stripped before anyone sees them; the raw text is kept for moderators only, as for a person.
+        expect(botMessages(room).length).toBeGreaterThan(0);
+        expect(JSON.stringify(gameOf(room).chat)).not.toContain("evil.example");
+        expect(JSON.stringify(human.sent)).not.toContain("evil.example");
+        const raw = [...storage.data].filter(([k]) => k.startsWith("input:")).map(([, v]) => v as { input: { by: string }; raw?: string });
+        expect(raw.some((r) => ["p1", "p2", "p3"].includes(r.input.by) && r.raw?.includes("evil.example"))).toBe(true);
+        vi.unstubAllGlobals();
+        vi.useRealTimers();
+      });
+
+      it("wake only the bots that can read the channel: a private message wakes no outsider (leak)", async () => {
+        // Never says anything, so no reply chain wakes anyone else.
+        const fetch = vi.fn(async () => reply());
+        vi.stubGlobal("fetch", fetch);
+        const { room, storage } = await modelRoom({ ...DEV, ...MODEL });
+        const human = connect(room, "tok0");
+        await pass(room, storage, 1500);
+        await send(room, human, { type: "createChannel", members: ["p1"] });
+        const channel = lastView(human).privateChannels.find((c) => c.members.includes("p1"))!.id;
+        await pass(room, storage, 2000);
+        const before = fetch.mock.calls.length;
+        await send(room, human, { type: "chat", channel, text: "just between us" });
+        await pass(room, storage, 10_000);
+        const woken = (fetch.mock.calls.slice(before) as unknown as [string, RequestInit][])
+          .map(([, init]) => (JSON.parse(init.body as string) as { messages: { content: string }[] }).messages[1]!.content)
+          .filter((p) => p.includes("A new chat message came in"));
+        const insider = gameOf(room).players.find((p) => p.id === "p1")!.character;
+        expect(woken.length).toBeGreaterThan(0);
+        expect(woken.every((p) => p.includes(`You are ${insider},`))).toBe(true);
+        vi.unstubAllGlobals();
+        vi.useRealTimers();
+      });
+
+      it("don't wake bots without a key", async () => {
+        const fetch = vi.fn();
+        vi.stubGlobal("fetch", fetch);
+        const { room } = await modelRoom({});
+        const human = connect(room, "tok0");
+        await send(room, human, { type: "chat", channel: "global", text: "hello" });
+        await vi.advanceTimersByTimeAsync(5000);
+        expect(fetch).not.toHaveBeenCalled();
+        expect(botMessages(room)).toHaveLength(0);
+        vi.unstubAllGlobals();
+        vi.useRealTimers();
+      });
     });
   });
 });

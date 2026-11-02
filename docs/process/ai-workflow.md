@@ -2079,9 +2079,20 @@ Added `tendPlants` (a Botanist or Skilful bot waters, treats and sows in the gar
 
 - Owner clarified: under 5 morale, any reason a bot can't contact a Shrink privately makes it an emergency, so it says its morale in global chat. A Shrink bot announces it is a Shrink early in the game. Recorded in `bot-goals.md` and the Shrink's prompt line; built with step 3.
 
+### 2026-11-01: Model bots chat (#223, bot-goals.md step 3)
+
+- **What:** model bots write natural-language chat. One structured reply a turn (`GOAL:`, `HELP:`, `SAY:` lines, parsed by `parseReply` against the bot's own view); messages go through `GameRoom.social` (rate limit, `moderateChat`, rules, `isBot`); every message wakes every listening bot but its author, bounded by `BOT_CHAT_CHAIN_DEPTH` (3), with the depth kept only in `GameRoom` memory; a woken bot is asked even mid-goal and may carry on (`GOAL: 0`). New `help` goal (heal, comfort, Fiery speech) filled from the reply. `model-trial` posts bot chat and wakes the others too.
+- **Worked:** the depth-limit room test was checked by raising the limit to 100: it fails then, so it really guards the cascade. The leak-check fork added a test that a private message wakes no outsider, and confirmed it fails without the `readChannels` check.
+- **Needed correction:** the first room tests used plain fake timers, so bots stuck in action bars never answered; alarms have to fire too. A moderation test assumed links are blocked; they are stripped, with the raw text kept for moderators. Two prompt strings needed `i18n-ignore` for the wire ratchet.
+- **Open, flagged to the owner:** a quick reply to a private or Mush-channel message can show watchers that a bot reads that channel (as it can for a human); language uses the lobby's as a stand-in for #95; no real-model run yet.
+
 ## 2026-11-01: Copy finished games' history to R2 (#336)
 
 - **Built:** `shared/src/replayChunks.ts` (`ChunkBuilder` splits the record at each full copy as it is read; a chunk holds only `{ at, history }` per input; `replayIndex` with seats' start roles and characters, no names; `replayKeys`), `server/src/replayStore.ts` (pages through `input:*`, gzips each chunk with `CompressionStream`, index last), `GameRoom.copyReplay` with `replayReady` and its own backoff beside the games list, the `REPLAYS` binding in all three wrangler environments, `docs/ops/r2.md`. `FakeStorage.list` now takes `startAfter` and `limit` and sorts by code unit, as DO storage does, and `FakeR2Bucket` can fail after N puts.
 - **Worked:** following the issue's written plan and the existing `recordFinished` retry pattern kept the change small; the chunk test checks each chunk rebuilds alone and matches the whole history frame by frame.
 - **Needed correction:** the first revived-room test set the game to ended only in memory, so the revived room loaded a running game and never copied; the test now persists the end, as the input that ends a game does.
 - **Open:** the buckets must be created by hand before the next deploy, and the CI token needs R2 permission; not yet run against real R2. Games ended before #335 have no history and would retry hourly forever (no legacy handling, as decided).
+
+## 2026-11-01: crew inventory notes plan (draft)
+
+Asked Claude to summarize a third-party userscript (AstroPad) for the original game, then to draft a plan for a shared item-notes tab. Worked: a subagent fetched the script and Claude checked its license (none, so the plan borrows ideas only, no code or data) and the item states from `ItemState`/`ItemView`. Needed care: the fetch returned only part of the file verbatim, so the plan relies on the feature list, not on details of its UI. Plan is `docs/plans/inventory-notes.md`; all rule questions are left open for the owner.

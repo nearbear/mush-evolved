@@ -30,3 +30,5 @@ export const SOLO_GOALS: readonly GoalDef[] = [returnToSol, pickSkill, snoop, ea
 
 /** Offered only when nothing else is: end the cycle (`ready`) when End cycle is on, otherwise wait for the clock. */
 export const END_CYCLE: Goal = { id: "endCycle", key: "endCycle", label: "End your cycle and wait for the next one", step: () => ({ kind: "wait" }) };
+
+export { HELP_MAX_TIMES, HELP_TASKS, helpGoal, helpTasks, targeted, type HelpParams, type HelpTask } from "./help.ts";

@@ -15,6 +15,7 @@ import { DORMS, shrinkDorm } from "../src/bots/goals/shrinkDorm.ts";
 import { snoop } from "../src/bots/goals/snoop.ts";
 import { BOT_EAT_AFTER_CYCLES, eat } from "../src/bots/goals/eat.ts";
 import { tendPlants } from "../src/bots/goals/tendPlants.ts";
+import { helpGoal, helpTasks } from "../src/bots/goals/help.ts";
 import type { GoalDef } from "../src/bots/goals/types.ts";
 import { chooseSkill } from "../src/bots/skillChoice.ts";
 import { seats } from "../src/testing/fakes.ts";
@@ -729,5 +730,71 @@ describe("a Shrink holds its AP", () => {
     expect(taken.some((a) => a.type === "research")).toBe(true);
     expect(ap(after, id)).toBeGreaterThanOrEqual(max - SHRINK_DESK_WORK_WITHIN);
     expect(ap(after, id)).toBeLessThan(max - SHRINK_DESK_WORK_WITHIN + DEFAULT_CONFIG.research.cost.ap);
+  });
+});
+
+describe("help", () => {
+  const memory = () => ({ reserve: 2, scripted: false, ended: new Set<string>(), today: new Set<string>(), visited: new Set<string>(), roll: roll0 });
+  const name = (id: string) => id;
+  /** The bot and another human, both in `room`. */
+  function pair(room: string, change: (p: GameState["players"][number]) => void = () => {}) {
+    const { game: start, id } = setup();
+    const other = start.players.find((p) => p.id !== id && p.alive)!.id;
+    let game = edit(start, id, (p) => {
+      p.room = room;
+      p.ap = 10;
+      change(p);
+    });
+    game = edit(game, other, (p) => (p.room = room));
+    return { game, id, other };
+  }
+  /** Steps a goal to the end, applying each action; returns the actions and how it ended. */
+  function run(game: GameState, id: string, goal: ReturnType<typeof helpGoal>) {
+    const taken: Action[] = [];
+    const m = memory();
+    for (let i = 0; i < 30; i++) {
+      const view = viewFor(game, id);
+      const step = goal.step(view, m);
+      if (step.kind !== "act") return { game, taken, end: step };
+      expect(isLegal(view, step.action), JSON.stringify(step.action)).toBe(true);
+      const r = applyAction(game, id, step.action);
+      expect(r.ok).toBe(true);
+      if (r.ok) game = r.state;
+      taken.push(step.action);
+    }
+    throw new Error("didn't end");
+  }
+
+  it("offers healing to anyone, comforting to a Shrink, a speech to a Leader", () => {
+    const { game, id } = setup();
+    expect(helpTasks(viewFor(game, id))).toEqual(["heal"]);
+    expect(helpTasks(viewFor(edit(game, id, (p) => (p.skills = ["shrink", "leadership"])), id))).toEqual(["heal", "comfort", "fiery_speech"]);
+  });
+
+  it("walks to the room it was told, then heals the person there", () => {
+    const { game: g, id, other } = pair("SICK_BAY");
+    const game = edit(g, id, (p) => (p.room = "REFECTORY"));
+    const { taken, end } = run(game, id, helpGoal({ task: "heal", target: other, room: "SICK_BAY", times: 1, spendReserve: false }, name));
+    expect(taken.length).toBeGreaterThan(1);
+    expect(taken.slice(0, -1).every((a) => a.type === "move")).toBe(true);
+    expect(taken.at(-1)).toEqual({ type: "heal", target: other });
+    expect(end.kind).toBe("done");
+  });
+
+  it("fails on arrival when the person isn't there", () => {
+    const { game: g, id, other } = pair("SICK_BAY");
+    const game = edit(g, other, (p) => (p.room = "BRIDGE"));
+    expect(run(game, id, helpGoal({ task: "heal", target: other, room: "SICK_BAY", times: 1, spendReserve: false }, name)).end).toEqual({ kind: "failed", reason: "not_here" });
+  });
+
+  it("comforts as many times as asked, keeping the reserve unless told it may spend it", () => {
+    const shrink = (ap: number) => pair("LABORATORY", (p) => ((p.skills = ["shrink"]), (p.ap = ap)));
+    const comfort = (other: string, times: number, spendReserve: boolean) => helpGoal({ task: "comfort", target: other, room: "LABORATORY", times, spendReserve }, name);
+    const a = shrink(10);
+    expect(run(a.game, a.id, comfort(a.other, 3, false)).taken).toHaveLength(3);
+    const b = shrink(4);
+    expect(run(b.game, b.id, comfort(b.other, 5, false)).taken).toHaveLength(2);
+    const c = shrink(4);
+    expect(run(c.game, c.id, comfort(c.other, 5, true)).taken).toHaveLength(4);
   });
 });

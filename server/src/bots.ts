@@ -1,9 +1,9 @@
 // Bots live server-side: model-backed ones need network calls, secrets, and a
 // spend cap, none of which belong in the pure rules package.
 
-import { legalIn, nextInt, type Action, type PlayerView, type RngState } from "@mush2/shared";
-import { END_CYCLE, HUNTER_GOALS, SOLO_GOALS, type BotMemory, type Goal, type GoalDef } from "./bots/goals/index.ts";
-import { buildPrompt, describeLogEntry, parseChoice } from "./prompt.ts";
+import { legalIn, nextInt, type Action, type LobbyLanguage, type PlayerView, type RngState } from "@mush2/shared";
+import { END_CYCLE, helpGoal, helpTasks, HUNTER_GOALS, SOLO_GOALS, type BotMemory, type Goal, type GoalDef } from "./bots/goals/index.ts";
+import { buildPrompt, describeLogEntry, parseReply, type BotMessage } from "./prompt.ts";
 import type { ModelGate } from "./model.ts";
 
 /**
@@ -17,7 +17,24 @@ export interface Bot {
   chatLines?(view: PlayerView): string[];
   /** Optional: the room refused the action this bot last returned (the rules said no). */
   refused?(action: Action, error: string): void;
+  /**
+   * Optional: a chat message someone else wrote reached a channel this bot reads (bot-goals.md, "Waking"). Returns
+   * whether it listens (a model bot with a key); one that does gets a turn to reply, act, or do nothing, even mid-goal.
+   */
+  wake?(): boolean;
+  /** Optional: whether a wake is still waiting for its turn. */
+  readonly woken?: boolean;
+  /** Optional: the message its last turn wants posted (at most one), taken once. The room posts it like a player's. */
+  takeMessage?(): BotMessage | null;
 }
+
+/**
+ * How deep a chain of bot replies may go (bot-goals.md, "Talking in chat"). A message a person writes, or a bot writes
+ * on its own turn, has depth 0; a bot's reply to a message of depth d has depth d + 1; a message at this depth wakes
+ * nobody (bots still read it on their next turn). Wakes merge into rounds, so a chain costs at most about
+ * bots × (depth + 1) calls.
+ */
+export const BOT_CHAT_CHAIN_DEPTH = 3;
 
 /** Most moves a WanderBot makes in one cycle, so it doesn't burn all its AP and keep dodging clicks. */
 export const WANDER_MOVES_PER_CYCLE = 3;
@@ -68,6 +85,7 @@ const sameAction = (a: Action, b: Action): boolean => JSON.stringify(a) === JSON
  */
 export class GoalBot implements Bot {
   private goal: Goal | null = null;
+  private wokenByChat = false;
   private actions = 0;
   private cycle = -1;
   private day = -1;
@@ -101,6 +119,21 @@ export class GoalBot implements Bot {
     return true;
   }
 
+  /** Whether chat wakes it: only a bot whose model can be asked (bot-goals.md: a bot without a key ignores chat). */
+  protected get listens(): boolean {
+    return false;
+  }
+
+  wake(): boolean {
+    if (!this.listens) return false;
+    this.wokenByChat = true;
+    return true;
+  }
+
+  get woken(): boolean {
+    return this.wokenByChat;
+  }
+
   /** The key of the goal it is following, if any (tests). */
   get current(): string | null {
     return this.goal?.key ?? null;
@@ -110,13 +143,27 @@ export class GoalBot implements Bot {
     this.observe(view);
     const legal = legalIn(view);
     if (legal.length === 0) return null;
+    // Woken by chat: the model is asked even mid-goal or with one option, since it may want to talk; it may carry on.
+    if (this.wokenByChat && this.listens) {
+      this.wokenByChat = false;
+      const chosen = await this.choose(view, this.options(view), this.goal, true);
+      if (chosen === null) {
+        // No reply (the call failed): still woken, asked again later.
+        this.wokenByChat = true;
+        return null;
+      }
+      if (chosen !== this.goal) {
+        this.end(false);
+        this.goal = chosen;
+      }
+    }
     // A goal that ends at once makes way for the next; each one that ends is left out until the next cycle, so this
     // runs out of goals rather than looping.
     for (let i = 0; i <= this.goals.length; i++) {
       if (!this.goal) {
         const options = this.options(view);
         // One option (ending the cycle, when nothing else is open) needs no choosing.
-        const chosen = options.length === 1 ? options[0]!.goal : await this.choose(view, options);
+        const chosen = options.length === 1 ? options[0]!.goal : await this.choose(view, options, null, false);
         // No choice yet (a model bot whose call failed): ask again later.
         if (chosen === null) return null;
         this.goal = chosen;
@@ -181,9 +228,12 @@ export class GoalBot implements Bot {
     return options.length > 0 ? options : [{ goal: END_CYCLE, priority: 0 }];
   }
 
-  /** Which of two or more options to follow, or null to wait and be asked again. A bot without a key goes by priority. */
-  protected async choose(_view: PlayerView, options: readonly Ranked[]): Promise<Goal | null> {
-    return this.byPriority(options);
+  /**
+   * Which option to follow, or null to wait and be asked again; returning `current` carries on with it. A bot without
+   * a key goes by priority. `woken`: chat woke it, and `current` is the goal it was following (or null).
+   */
+  protected async choose(_view: PlayerView, options: readonly Ranked[], current: Goal | null, _woken: boolean): Promise<Goal | null> {
+    return current ?? this.byPriority(options);
   }
 
   /** The highest-priority option, ties by the seeded roll. */
@@ -218,12 +268,15 @@ export const MODEL_CHOICES_PER_CYCLE = 8;
 export class ModelBot extends GoalBot {
   private cycleSeen = -1;
   private choices = 0;
+  private message: BotMessage | null = null;
 
   constructor(
     private gate: ModelGate,
     rng: RngState,
     reserve = BOT_AP_RESERVE,
     goals: readonly GoalDef[] = SOLO_GOALS,
+    /** The ship's language (#95), which its chat is written in. */
+    private language: LobbyLanguage = "en",
   ) {
     super(rng, reserve, goals);
   }
@@ -233,19 +286,47 @@ export class ModelBot extends GoalBot {
     return this.gate.credentials === null;
   }
 
-  protected override async choose(view: PlayerView, options: readonly Ranked[]): Promise<Goal | null> {
+  protected override get listens(): boolean {
+    return this.gate.credentials !== null;
+  }
+
+  takeMessage(): BotMessage | null {
+    const message = this.message;
+    this.message = null;
+    return message;
+  }
+
+  /**
+   * One structured reply (bot-goals.md, step 3): a goal from the list, `help` with its parameters, or carrying on, and
+   * at most one message. A woken call doesn't count against the choice cap (the room's chain depth limit bounds those);
+   * a malformed reply posts nothing and goes by priority, or carries on when there was a goal.
+   */
+  protected override async choose(view: PlayerView, options: readonly Ranked[], current: Goal | null, woken: boolean): Promise<Goal | null> {
     if (view.cycle !== this.cycleSeen) {
       this.cycleSeen = view.cycle;
       this.choices = 0;
     }
-    if (this.gate.credentials === null || this.choices >= MODEL_CHOICES_PER_CYCLE) return this.byPriority(options);
-    const goals = options.map((o) => o.goal);
-    const reply = await this.gate.ask(buildPrompt(view, goals, this.memory.reserve));
+    const fallback = (): Goal => current ?? this.byPriority(options);
+    if (this.gate.credentials === null || (!woken && this.choices >= MODEL_CHOICES_PER_CYCLE)) return fallback();
+    const offered = options.filter((o) => o.goal.key !== current?.key);
+    const goals = offered.map((o) => o.goal);
+    const tasks = helpTasks(view);
+    const prompt = buildPrompt(view, { goals, current, woken, tasks, reserve: this.memory.reserve, language: this.language });
+    const reply = await this.gate.ask(prompt);
     if (reply === null) return null;
-    const i = parseChoice(reply, goals.length);
-    if (i === null) return this.byPriority(options);
-    this.choices++;
-    return goals[i]!;
+    const parsed = parseReply(reply, view, { goals: goals.length, keep: current !== null, tasks });
+    if (parsed === null) return fallback();
+    // One message a turn: a second choice in the same turn (the first goal ended at once) doesn't replace it.
+    if (parsed.say && !this.message) this.message = parsed.say;
+    if (!woken) this.choices++;
+    if (parsed.help) {
+      const name = (id: string): string => view.players.find((p) => p.id === id)?.character ?? id;
+      return helpGoal(parsed.help, name);
+    }
+    if (parsed.goal === "keep") return current;
+    if (parsed.goal !== undefined) return goals[parsed.goal]!;
+    // Only a message: carry on, or go by priority.
+    return current ?? (offered.length > 0 ? this.byPriority(offered) : this.byPriority(options));
   }
 }
 

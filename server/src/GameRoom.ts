@@ -26,6 +26,8 @@ import {
   seatStarts,
   fullViewFor,
   historyStep,
+  readChannels,
+  type ChannelId,
   type FullView,
   type SeatStart,
   type CharacterId,
@@ -45,7 +47,8 @@ import {
   type Setup,
 } from "@mush2/shared";
 import { accountStoreFor } from "./accountStore.ts";
-import { LogParrotBot, ModelBot, WanderBot, type Bot } from "./bots.ts";
+import { BOT_CHAT_CHAIN_DEPTH, LogParrotBot, ModelBot, WanderBot, type Bot } from "./bots.ts";
+import type { BotMessage } from "./prompt.ts";
 import { finishedEntry, gameStoreFor } from "./gameStore.ts";
 import { clockCycle, clockCycleStart, cycleMs, cycleOfDay } from "./cycleClock.ts";
 import { devModelCredentials, ModelGate, playerModelCredentials } from "./model.ts";
@@ -218,6 +221,11 @@ export class GameRoom extends Server<Env> {
   private blocked = 0;
   private bots = new Map<PlayerId, Bot>();
   private pendingBots = new Set<PlayerId>();
+  /**
+   * Per bot seat woken by chat, the depth of the newest message that woke it, so its reply is stamped one deeper. Memory
+   * only: not in game state, a message, a view or the record; after a restart it starts again at 0, which is harmless.
+   */
+  private wakes = new Map<PlayerId, { depth: number }>();
   /** Made by `initBots` when the game has a model bot. */
   private modelGate: ModelGate | null = null;
   /** Restored from storage before `initBots` makes the gate. */
@@ -710,6 +718,8 @@ export class GameRoom extends Server<Env> {
     playerId: PlayerId,
     by: PlayerId,
     msg: Exclude<GameClientMessage, { type: "action" | "clearQueue" | "acknowledgeTransfer" | "walk" | "cheat" | "roleCheat" | "setModel" | "clearModel" | "leaveShip" }>,
+    /** A chat message's reply depth (`BOT_CHAT_CHAIN_DEPTH`): 0 unless a bot is replying to chat. */
+    depth = 0,
   ): Promise<string | null> {
     if (!this.game) return "no_game";
     if (!this.chatLimiter.allow(playerId, Date.now(), this.devServer ? DEV_RATE_SCALE : 1)) {
@@ -731,7 +741,52 @@ export class GameRoom extends Server<Env> {
     }
     const input: Input =
       msg.type === "chat" || msg.type === "sharePlanet" ? { ...msg, by, text: moderated.text } : { ...msg, by, name: moderated.text };
-    return this.act(input, moderated.text === raw ? undefined : raw);
+    const error = await this.act(input, moderated.text === raw ? undefined : raw);
+    if (!error && msg.type === "chat") this.wakeBots(playerId, msg.channel, depth);
+    return error;
+  }
+
+  /**
+   * A chat message was posted: every bot that reads its channel, except its author, gets a turn to reply (bot-goals.md,
+   * "Waking"), unless the message is at the chain depth limit. Only bots that listen (a model with a key) are woken.
+   */
+  private wakeBots(author: PlayerId, channel: ChannelId, depth: number): void {
+    if (!this.game || depth >= BOT_CHAT_CHAIN_DEPTH) return;
+    for (const [seat, bot] of this.bots) {
+      if (seat === author || !bot.wake) continue;
+      const body = this.game.players.find((p) => p.id === this.body(seat));
+      if (!body || !readChannels(this.game, body).includes(channel)) continue;
+      if (bot.wake()) this.wakes.set(seat, { depth });
+    }
+    this.scheduleBots();
+  }
+
+  /**
+   * Posts what a bot's turn wants to say, through the same path as a person's chat (rate limit, moderation, the rules'
+   * checks, `isBot`). "To" someone posts in a private channel the two share alone, opening one if there is none.
+   */
+  private async botSay(seat: PlayerId, by: PlayerId, message: BotMessage, depth: number): Promise<void> {
+    if (!this.game) return;
+    let channel: ChannelId | undefined;
+    if ("channel" in message) channel = message.channel;
+    else {
+      const pair = (c: { members: PlayerId[] }) => c.members.length === 2 && c.members.includes(by) && c.members.includes(message.to);
+      channel = this.game.channels.find(pair)?.id;
+      if (channel === undefined) {
+        const error = await this.social(seat, by, { type: "createChannel", members: [message.to] });
+        if (error) return console.warn(`Bot ${seat} couldn't open a channel: ${error}`);
+        const opened = this.game.channels.filter((c) => c.createdBy === by).at(-1);
+        if (!opened) return;
+        // The invite was refused (they are in too many channels): leave the empty channel rather than talk to no one.
+        if (!pair(opened)) {
+          await this.social(seat, by, { type: "leaveChannel", channel: opened.id });
+          return console.warn(`Bot ${seat} couldn't reach ${message.to} privately`);
+        }
+        channel = opened.id;
+      }
+    }
+    const error = await this.social(seat, by, { type: "chat", channel, text: message.text }, depth);
+    if (error) console.warn(`Bot ${seat} couldn't chat: ${error}`);
   }
 
   /** Rejections are counted in memory and saved with the next change, so spam doesn't cost a write each. */
@@ -854,7 +909,7 @@ export class GameRoom extends Server<Env> {
       const seed = (): number => crypto.getRandomValues(new Uint32Array(1))[0]!;
       this.bots.set(
         p.mind,
-        p.botKind === "wander" ? new WanderBot(seed()) : p.botKind === "model" ? new ModelBot(this.gate(), seed()) : new LogParrotBot(),
+        p.botKind === "wander" ? new WanderBot(seed()) : p.botKind === "model" ? new ModelBot(this.gate(), seed(), undefined, undefined, this.language ?? undefined) : new LogParrotBot(),
       );
     }
   }
@@ -924,9 +979,16 @@ export class GameRoom extends Server<Env> {
           await this.botChat(playerId, bot);
           const by = this.body(playerId);
           if (!this.game || !by || !this.botIdle(playerId)) return;
+          const wake = this.wakes.get(playerId);
           const action = await bot.decideAction(viewFor(this.game, by));
+          // The wake was answered, unless another came in during the call (it replaced the entry and woke the bot again).
+          if (this.wakes.get(playerId) === wake && !bot.woken) this.wakes.delete(playerId);
           // The game may have moved on during a slow decision; the rules reject a choice that is no longer legal. A
-          // choice made for a body the bot no longer plays (a Transfer) is dropped.
+          // choice made for a body the bot no longer plays (a Transfer) is dropped, and so is what it wanted to say.
+          const message = bot.takeMessage?.() ?? null;
+          if (this.body(playerId) !== by) return;
+          // Said before it acts: "I'll heal you", then the walk.
+          if (message) await this.botSay(playerId, by, message, wake ? wake.depth + 1 : 0);
           if (!action || this.body(playerId) !== by) return;
           const error = await this.act({ type: "action", action, by, at: Date.now() });
           if (error) {

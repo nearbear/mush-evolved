@@ -14,8 +14,9 @@
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { parseArgs } from "node:util";
 import { test } from "vitest";
-import { applyInput, CHARACTERS, createGame, nextDue, legalActions, resolveConfig, singlePlayerGame, viewFor, SINGLE_PLAYER_HUMAN, type GameState, type Input, type PlayerId } from "@mush2/shared";
-import { ModelBot, type Ranked } from "../src/bots.ts";
+import { applyInput, CHARACTERS, createGame, nextDue, legalActions, moderateChat, readChannels, resolveConfig, singlePlayerGame, viewFor, SINGLE_PLAYER_HUMAN, type ChannelId, type GameState, type Input, type PlayerId } from "@mush2/shared";
+import { BOT_CHAT_CHAIN_DEPTH, ModelBot, type Ranked } from "../src/bots.ts";
+import type { BotMessage } from "../src/prompt.ts";
 import type { Goal } from "../src/bots/goals/index.ts";
 import { completeOpenAi, ModelGate, type Complete } from "../src/model.ts";
 
@@ -145,8 +146,8 @@ let fallbacks = 0;
 const goalsChosen: Record<string, number> = {};
 /** Counts the goals chosen, and the choices made by priority instead of the model (garbage reply, choice cap). */
 class Counted extends ModelBot {
-  protected override async choose(view: Parameters<ModelBot["choose"]>[0], options: readonly Ranked[]): Promise<Goal | null> {
-    const goal = await super.choose(view, options);
+  protected override async choose(...args: Parameters<ModelBot["choose"]>): Promise<Goal | null> {
+    const goal = await super.choose(...args);
     if (goal) goalsChosen[goal.id] = (goalsChosen[goal.id] ?? 0) + 1;
     return goal;
   }
@@ -162,6 +163,26 @@ function apply(input: Input): string | null {
   if (!r.ok) return r.error;
   game = r.state;
   return null;
+}
+
+/** Like GameRoom.wakeBots and botSay, without the rate limit: per bot, the depth of the message that woke it. */
+const wakes = new Map<PlayerId, number>();
+let messages = 0;
+function say(id: PlayerId, message: BotMessage, depth: number): void {
+  let channel: ChannelId | undefined = "channel" in message ? message.channel : game.channels.find((c) => c.members.length === 2 && c.members.includes(id) && c.members.includes(message.to))?.id;
+  if (channel === undefined && "to" in message) {
+    if (apply({ type: "createChannel", members: [message.to], by: id })) return;
+    channel = game.channels.filter((c) => c.createdBy === id).at(-1)!.id;
+  }
+  const moderated = moderateChat(message.text);
+  if (!moderated.ok || apply({ type: "chat", channel: channel!, text: moderated.text, by: id })) return;
+  messages++;
+  console.log(`  ${id} (${game.players.find((p) => p.id === id)!.character}) [${channel}${"to" in message ? ` to ${message.to}` : ""}] depth ${depth}: ${moderated.text}`);
+  if (depth >= BOT_CHAT_CHAIN_DEPTH) return;
+  for (const [other, bot] of bots) {
+    const p = game.players.find((q) => q.id === other)!;
+    if (other !== id && readChannels(game, p).includes(channel!) && bot.wake()) wakes.set(other, depth);
+  }
 }
 
 const idle = (id: PlayerId): boolean => {
@@ -224,11 +245,14 @@ for (let c = 0; c < cycles && game.phase === "playing" && spent + spentBefore < 
     const decided = await Promise.all(
       ready.map(async (id) => {
         const wasReady = game.players.find((p) => p.id === id)!.ready;
+        const depth = wakes.get(id);
+        wakes.delete(id);
         const action = await bots.get(id)!.decideAction(viewFor(game, id));
-        return { id, action, wasReady };
+        return { id, action, wasReady, depth, message: bots.get(id)!.takeMessage() };
       }),
     );
-    for (const { id, action, wasReady } of decided) {
+    for (const { id, action, wasReady, depth, message } of decided) {
+      if (message) say(id, message, depth === undefined ? 0 : depth + 1);
       row.perBot[id] = (row.perBot[id] ?? 0) + 1;
       if (!action) {
         stats.nulls++;
@@ -279,7 +303,7 @@ const ok = calls.filter((c) => !c.error);
 const sum = (xs: number[]): number => xs.reduce((a, b) => a + b, 0);
 const avg = (xs: number[]): number => (xs.length ? sum(xs) / xs.length : 0);
 const pct = (xs: number[], p: number): number => [...xs].sort((a, b) => a - b)[Math.min(xs.length - 1, Math.floor(xs.length * p))] ?? 0;
-const unparsed = replies.filter((r) => !/GOAL:\s*\d+/i.test(r.reply) && !/^\d+$/.test(r.reply.trim())).length;
+const unparsed = replies.filter((r) => !/(GOAL:\s*\d+|HELP:|SAY:)/i.test(r.reply) && !/^\d+$/.test(r.reply.trim())).length;
 const lengths = calls.filter((c) => c.finish === "length").length;
 const cyclesDone = perCycle.length;
 
@@ -287,7 +311,7 @@ console.log(`\nmodel ${args.model}${args.extra ? ` extra ${args.extra}` : ""}${a
 console.log(`cycles ${cyclesDone}, calls ${calls.length} (${(calls.length / Math.max(1, cyclesDone) / bots.size).toFixed(1)} per bot per cycle), errors ${calls.length - ok.length}, wall ${((performance.now() - started) / 1000).toFixed(0)}s`);
 console.log(`tokens per call: prompt ${avg(ok.map((c) => c.prompt)).toFixed(0)}, completion ${avg(ok.map((c) => c.completion)).toFixed(0)} (reasoning ${avg(ok.map((c) => c.reasoning)).toFixed(0)}, max ${Math.max(0, ...ok.map((c) => c.completion))})`);
 console.log(`latency ms: p50 ${pct(ok.map((c) => c.ms), 0.5).toFixed(0)}, p90 ${pct(ok.map((c) => c.ms), 0.9).toFixed(0)}, max ${Math.max(0, ...ok.map((c) => c.ms)).toFixed(0)}`);
-console.log(`replies: ${replies.length}, without GOAL ${unparsed}, cut off by max_tokens ${lengths}; fallbacks ${fallbacks}; nulls ${stats.nulls}; illegal ${stats.illegal}`);
+console.log(`replies: ${replies.length}, without GOAL ${unparsed}, cut off by max_tokens ${lengths}; fallbacks ${fallbacks}; messages ${messages}; nulls ${stats.nulls}; illegal ${stats.illegal}`);
 console.log(`cost: $${spent.toFixed(4)} this run, $${(spent / Math.max(1, calls.length)).toFixed(6)} per call, $${((spent / Math.max(1, cyclesDone)) * 8).toFixed(4)} per game day`);
 console.log(`goals (model calls and choices by priority): ${Object.entries(goalsChosen).sort((a, b) => b[1] - a[1]).map(([k, n]) => `${k} ${n}`).join(", ")}`);
 console.log(`actions: ${Object.entries(chosen).sort((a, b) => b[1] - a[1]).map(([k, n]) => `${k} ${n}`).join(", ")}`);
