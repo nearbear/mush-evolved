@@ -1,0 +1,54 @@
+// The full-state view for replays (#334, docs/rules/rules-design.md "Replay history and storage"): everything in the
+// game (roles, every room, hidden stats, every channel), and each seat's own view rebuilt from it with `perspective`.
+// It shows all hidden information, so it may only leave the server for a game that has ended, through the replay
+// route (#337). Nothing sends one yet.
+//
+// Its shape is the game state without the RNG (owner, 2026-11-01): `perspective` runs `viewFor` on it, so a seat's
+// view of a replay is the view the seat had. The RNG is left out because no view may depend on it.
+
+import type { CharacterId } from "./characters.ts";
+import { clone } from "./helpers.ts";
+import { viewFor } from "./rules.ts";
+import type { GameState, PlayerId, PlayerView, Role } from "./types.ts";
+
+/** A seat as it was when the Mush were chosen: Mush then means an alpha Mush, Mush later a beta Mush. */
+export interface SeatStart {
+  role: Role;
+  character: CharacterId;
+}
+
+/** Every seat's start, by seat (the player, not the body: a Transfer moves a player to another character). */
+export type SeatStarts = Record<PlayerId, SeatStart>;
+
+/** The game as a replay shows it. */
+export interface FullView extends Omit<GameState, "rng"> {
+  /** Each seat's role and character when the Mush were chosen; null before they are (pre-selection). */
+  starts: SeatStarts | null;
+}
+
+/** Each seat's role and character now, by seat. The server keeps this from the moment the Mush are chosen. */
+export function seatStarts(state: Readonly<GameState>): SeatStarts {
+  return Object.fromEntries(state.players.map((p) => [p.mind, { role: p.role, character: p.character }]));
+}
+
+/**
+ * The full view of `state`, a copy that shares nothing with it. `starts` is what the server noted when the Mush were
+ * chosen (`seatStarts`); the state doesn't keep it.
+ */
+export function fullViewFor(state: Readonly<GameState>, starts: Readonly<SeatStarts> | null): FullView {
+  const { rng: _rng, ...rest } = state;
+  return clone({ ...rest, starts }) as FullView;
+}
+
+/** What `seat` saw: equal to `viewFor` on the state `full` came from. */
+export function perspective(full: Readonly<FullView>, seat: PlayerId): PlayerView {
+  const { starts: _starts, ...rest } = full;
+  const state = { ...rest } as GameState;
+  Object.defineProperty(state, "rng", {
+    enumerable: true,
+    get: () => {
+      throw new Error("A view read the RNG, which the full view leaves out");
+    },
+  });
+  return viewFor(state, seat);
+}

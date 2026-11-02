@@ -23,6 +23,8 @@ import {
   singlePlayerGame,
   SINGLE_PLAYER_HUMAN,
   viewFor,
+  seatStarts,
+  type SeatStart,
   type CharacterId,
   type ConfigOverrides,
   type GameClientMessage,
@@ -41,7 +43,7 @@ import {
 } from "@mush2/shared";
 import { accountStoreFor } from "./accountStore.ts";
 import { LogParrotBot, ModelBot, WanderBot, type Bot } from "./bots.ts";
-import { finishedEntry, gameStoreFor, type SeatStart } from "./gameStore.ts";
+import { finishedEntry, gameStoreFor } from "./gameStore.ts";
 import { clockCycle, clockCycleStart, cycleMs, cycleOfDay } from "./cycleClock.ts";
 import { devModelCredentials, ModelGate, playerModelCredentials } from "./model.ts";
 import { RateLimiter } from "./rateLimit.ts";
@@ -443,7 +445,7 @@ export class GameRoom extends Server<Env> {
   private noteStarts(): void {
     const game = this.game;
     if (this.starts !== null || !game || game.preselection) return;
-    this.starts = Object.fromEntries(game.players.map((p) => [p.mind, { role: p.role, character: p.character }]));
+    this.starts = seatStarts(game);
   }
 
   /**

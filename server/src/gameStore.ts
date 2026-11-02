@@ -17,17 +17,12 @@ import {
   MAX_GAMES_PAGE,
   moderateName,
   type PlayerId,
+  type SeatStart,
   type Role,
   SINGLE_PLAYER_HUMAN,
   type Winner,
 } from "@mush2/shared";
 import type { SqlDatabase } from "./accountStore.ts";
-
-/** A seat as it was when the Mush were chosen (GameRoom keeps these from that moment). */
-export interface SeatStart {
-  role: Role;
-  character: CharacterId;
-}
 
 /** A seat as it is written: the name as it was, moderated only when read (`listFinished`). */
 export interface FinishedPlayerRow extends Omit<FinishedCrewMember, "name"> {

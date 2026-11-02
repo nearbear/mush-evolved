@@ -1,9 +1,11 @@
+import { isDeepStrictEqual } from "node:util";
 import { describe, expect, it } from "vitest";
 import { CHARACTERS } from "../src/characters.ts";
 import { DEFAULT_CONFIG, PRESELECTION } from "../src/config.ts";
 import { applyInput, rebuildGame, replayGame, startGame, type GameSetup, type Input, type RecordedInput } from "../src/replay.ts";
 import { nextDue } from "../src/queue.ts";
-import { legalActions } from "../src/rules.ts";
+import { legalActions, viewFor } from "../src/rules.ts";
+import { fullViewFor, perspective, seatStarts, type FullView, type SeatStarts } from "../src/fullView.ts";
 import { nextInt, type RngState } from "../src/rng.ts";
 import { MAX_SPOT_CELL } from "../src/spot.ts";
 import { CHAT_CHANNELS, type GameState, type Seat } from "../src/types.ts";
@@ -75,7 +77,7 @@ function randomInput(state: GameState, rng: RngState, at: number): [Input, RngSt
 }
 
 /** Plays like the server does: keeps the inputs that were accepted, each with its server time. */
-function play(steps: number, rng: RngState, from = setup): { state: GameState; record: RecordedInput[] } {
+function play(steps: number, rng: RngState, from = setup, onStep?: (state: GameState) => void): { state: GameState; record: RecordedInput[] } {
   let state = startGame(from);
   const record: RecordedInput[] = [];
   let now = 0;
@@ -89,6 +91,7 @@ function play(steps: number, rng: RngState, from = setup): { state: GameState; r
     if (!result.ok) continue;
     state = result.state;
     record.push({ at: now, input });
+    onStep?.(state);
   }
   return { state, record };
 }
@@ -137,5 +140,45 @@ describe("rebuildGame", () => {
     const unstamped = JSON.parse(JSON.stringify(replayGame(launched, record.map((r) => r.input)))) as GameState;
     const strip = (s: GameState) => JSON.parse(JSON.stringify(s, (k, v) => (k === "at" && typeof v === "number" ? undefined : v))) as GameState;
     expect(strip(rebuilt)).toEqual(strip(unstamped));
+  });
+});
+
+describe("perspective", () => {
+  it("gives every seat its own view at every step of a random game, from the full view", () => {
+    // Pre-selection, its joins and the Mush pick, then a game past its first day.
+    const cycles: number[] = [];
+    for (const [from, steps, seed] of [[preselectionSetup, 300, 4], [setup, 1200, 1]] as const) {
+      let starts: SeatStarts | null = null;
+      const { state } = play(steps, seed, from, (s) => {
+        // As the server notes them: the moment the Mush are chosen.
+        if (starts === null && !s.preselection) starts = seatStarts(s);
+        // Through JSON, as history is stored.
+        const full = JSON.parse(JSON.stringify(fullViewFor(s, starts))) as FullView;
+        for (const p of s.players) {
+          const [rebuilt, real] = [perspective(full, p.id), viewFor(s, p.id)];
+          // The fast check first; expect only to show the difference.
+          if (!isDeepStrictEqual(rebuilt, real)) expect(rebuilt).toStrictEqual(real);
+        }
+      });
+      expect(state.preselection, "the Mush were chosen").toBe(false);
+      cycles.push(state.cycle);
+    }
+    expect(cycles[1], "the game got past a day").toBeGreaterThan(DEFAULT_CONFIG.cyclesPerDay);
+  }, 30_000);
+
+  it("holds everything but the RNG, in a copy", () => {
+    const { state } = play(300, 7);
+    const full = fullViewFor(state, seatStarts(state));
+    expect("rng" in full).toBe(false);
+    expect(full.players.map((p) => p.role)).toEqual(state.players.map((p) => p.role));
+    expect(full.starts?.[state.players[0]!.mind]).toEqual({ role: state.players[0]!.role, character: state.players[0]!.character });
+    full.players[0]!.hp = -99;
+    expect(state.players[0]!.hp).not.toBe(-99);
+  });
+
+  it("is null on starts before the Mush are chosen", () => {
+    const { state } = play(3, 8, preselectionSetup);
+    expect(state.preselection).toBe(true);
+    expect(fullViewFor(state, null).starts).toBeNull();
   });
 });
