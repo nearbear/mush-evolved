@@ -2,6 +2,7 @@ import { getServerByName, routePartykitRequest } from "partyserver";
 import { accountStoreFor } from "./accountStore.ts";
 import { handleAuth } from "./auth.ts";
 import { gameStoreFor } from "./gameStore.ts";
+import { crossOriginUpgrade } from "./origin.ts";
 import { setupStoreFor } from "./setupStore.ts";
 import { sweepShips } from "./shipSweep.ts";
 
@@ -12,6 +13,7 @@ export { Matchmaker } from "./Matchmaker.ts";
 // gameRoutes.ts, replayRoutes.ts). /parties/game-room/:id and /parties/matchmaker/:id go to the Durable Objects.
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
+    if (crossOriginUpgrade(request)) return new Response("Forbidden", { status: 403 });
     const store = accountStoreFor(env);
     // A session that ends leaves its newest ship, even one it died on and still watches.
     const revokeSeats = async (accountId: string, sessionKey: string) => {
