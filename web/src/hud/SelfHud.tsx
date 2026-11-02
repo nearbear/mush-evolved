@@ -39,7 +39,7 @@ export function SelfHud({ view, onInspect }: { view: PlayerView; onInspect: () =
   );
 }
 
-/** AP and MP standing up, for the room view's bottom-left corner (GameScreen puts the action queue beside it). Each opens a card on how it is spent and regained (StatInfo), as HP and morale do. */
+/** AP and MP standing up, for the room view's bottom-left corner (GameView puts the action queue beside it). Each opens a card on how it is spent and regained (StatInfo), as HP and morale do. */
 export function SelfPoints({ view }: { view: PlayerView }) {
   const { t } = useTranslation();
   const { you } = view;

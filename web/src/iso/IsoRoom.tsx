@@ -184,7 +184,8 @@ export function IsoRoom({
   doorMoves: ReadonlyMap<string, { from?: RoomId; to?: RoomId }>;
   onMove: (to: RoomId) => void;
   /** You walked to a cell (sitting if it's a chair): the server tells your roommates (spot.ts in shared). Pushing a wheelchair, the cell is where it goes and `behind` where you end up. */
-  onWalk: (cell: { x: number; y: number }, sitting: boolean, behind?: { x: number; y: number }) => void;
+  /** Absent in a read-only view (a replay): clicking the floor then walks nowhere. */
+  onWalk?: ((cell: { x: number; y: number }, sitting: boolean, behind?: { x: number; y: number }) => void) | undefined;
   onSelect: (target: Target) => void;
   /** Bare floor was tapped: drop the selection (and any peeked door). */
   onClear: () => void;
@@ -490,7 +491,7 @@ export function IsoRoom({
     }
     if (!cell) return;
     setWalk({ visit: visit.current.n, cell });
-    if (actingOn.share) onWalk(cell, false);
+    if (actingOn.share) onWalk?.(cell, false);
   }, [actingOn?.n]);
 
   const ringOf = new Map(neighbors.map((n) => [n.id as string, n.ring]));
@@ -631,6 +632,7 @@ export function IsoRoom({
    * the cell before it on its way, as useWalkers draws you following it.
    */
   const walkTo = (cell: { x: number; y: number }, seat?: Seat) => {
+    if (!onWalk) return;
     if (!myPushee) {
       setWalk({ visit: visit.current.n, cell, ...(seat && { seat }) });
       onWalk(cell, !!seat);

@@ -82,7 +82,8 @@ export function ITrackie({
   onCreateThread: (name: string, from?: number) => void;
   /** Tick or untick a checkbox in one of your own messages (`line` is 0-based). */
   onToggle: (message: number, line: number) => void;
-  channels: ChannelHandlers;
+  /** Absent in a read-only view (a replay): no leaving, inviting or creating private channels. */
+  channels?: ChannelHandlers | undefined;
 }) {
   const { t } = useTranslation();
   const names = useNames();

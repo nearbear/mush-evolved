@@ -18,7 +18,8 @@ export interface ChannelHandlers {
 /**
  * The Private tab: one row per channel slot. A slot in use picks that channel
  * (its thread fills the panel below) and has a leave button; a free slot opens
- * the create dialog (name and initial members).
+ * the create dialog (name and initial members). Without the handlers (a read-only view)
+ * there is nothing to leave, invite or create.
  */
 export function PrivateChannels({
   view,
@@ -27,7 +28,7 @@ export function PrivateChannels({
   onCreate,
   onInvite,
   onLeave,
-}: { view: PlayerView; onChat: (channel: ChannelId, text: string) => void; onToggle: (message: number, line: number) => void } & ChannelHandlers) {
+}: { view: PlayerView; onChat: (channel: ChannelId, text: string) => void; onToggle: (message: number, line: number) => void } & Partial<ChannelHandlers>) {
   const { t, i18n } = useTranslation();
   const [picked, setPicked] = useState<PrivateChannelId | "">("");
   const [inviting, setInviting] = useState(false);
@@ -63,11 +64,11 @@ export function PrivateChannels({
               <button type="button" className="channel-slot-pick" aria-pressed={c.id === current?.id} onClick={() => setPicked(c.id)}>
                 {label(c)}
               </button>
-              <IconButton icon="🚪" label={t("channels.leaveNamed", { name: label(c) })} onClick={() => onLeave(c.id)} />
+              {onLeave && <IconButton icon="🚪" label={t("channels.leaveNamed", { name: label(c) })} onClick={() => onLeave(c.id)} />}
             </li>
           ) : (
             <li key={`free-${i}`} className="channel-slot">
-              <button type="button" className="channel-slot-new" onClick={() => setCreating(true)}>
+              <button type="button" className="channel-slot-new" disabled={!onCreate} onClick={() => setCreating(true)}>
                 <img className="tab-icon" src={TAB_ICONS.newChannel} alt="" />
                 {t("channels.newSlot")}
               </button>
@@ -92,7 +93,7 @@ export function PrivateChannels({
               />
             </div>
           ))}
-          {invitable.length > 0 && (
+          {onInvite && invitable.length > 0 && (
             <button type="button" className="channel-invite" onClick={() => setInviting(true)}>
               <span aria-hidden="true">📨</span> {t("channels.invite")}
             </button>
@@ -108,7 +109,7 @@ export function PrivateChannels({
         candidates={invitable.map((p) => p.id)}
         onOpenChange={setInviting}
         onSubmit={(_, members) => {
-          if (current) for (const m of members) onInvite(current.id, m);
+          if (current) for (const m of members) onInvite?.(current.id, m);
           setInviting(false);
         }}
       />
@@ -120,7 +121,7 @@ export function PrivateChannels({
         onOpenChange={setCreating}
         onSubmit={(name, members) => {
           pendingPick.current = new Set(view.privateChannels.map((c) => c.id));
-          onCreate(name, members);
+          onCreate?.(name, members);
           setCreating(false);
         }}
       />

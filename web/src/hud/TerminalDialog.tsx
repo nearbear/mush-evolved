@@ -2,7 +2,7 @@
 // core, which lists the NERON projects in the same list, the Astro terminal, which lists your planets, PILGRED, which
 // shows its repair, the Command terminal, which shows the heading and lets the Commander steer (ShipNavigation.tsx) and go home once PILGRED works, the Com
 // center (CommsCenter.tsx), NERON's BIOS (BiosTerminal.tsx) and the turrets (TurretPanel.tsx).
-// Open/closed is UI state held by GameScreen; the server only validates the access action.
+// Open/closed is UI state held by GameView; the server only validates the access action.
 
 import { Dialog } from "@base-ui/react/dialog";
 import { Popover } from "@base-ui/react/popover";

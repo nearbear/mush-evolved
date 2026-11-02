@@ -1,4 +1,4 @@
-// Your action under way and the ones waiting behind it, top to bottom, with Clear queue always last. Shown over the
+// Your action under way and the ones waiting behind it, top to bottom, with Clear queue always last (absent in a read-only view). Shown over the
 // room view's bottom-left corner in both layouts (beside AP and MP on desktop) while you have any. The order and contents come from the view; nothing is decided here.
 
 import { useTranslation } from "react-i18next";
@@ -6,7 +6,7 @@ import type { PlayerView } from "@mush2/shared";
 import { useNames } from "../i18n/names.ts";
 import { describeAction } from "./actionText.ts";
 
-export function ActionQueue({ view, onClear }: { view: PlayerView; onClear: () => void }) {
+export function ActionQueue({ view, onClear }: { view: PlayerView; onClear?: (() => void) | undefined }) {
   const { t } = useTranslation();
   const names = useNames();
   const { current, queue } = view.you;
@@ -21,9 +21,11 @@ export function ActionQueue({ view, onClear }: { view: PlayerView; onClear: () =
           <li key={i}>{say(a)}</li>
         ))}
       </ol>
-      <button type="button" onClick={onClear}>
-        {t("queue.clear")}
-      </button>
+      {onClear && (
+        <button type="button" onClick={onClear}>
+          {t("queue.clear")}
+        </button>
+      )}
     </section>
   );
 }
