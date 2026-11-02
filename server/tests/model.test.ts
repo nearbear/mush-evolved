@@ -14,7 +14,7 @@ const gate = (complete: Complete, options: Partial<ModelGateOptions> = {}) =>
 const goal = (key: string, label = key): Goal => ({ id: key, key, label, step: () => ({ kind: "wait" }) });
 /** The prompt with every solo goal open to the seat (options from a fresh bot memory). */
 const goalsFor = (view: PlayerView): Goal[] => {
-  const memory = { reserve: 2, ended: new Set<string>(), today: new Set<string>(), visited: new Set<string>(), roll: () => 0 };
+  const memory = { reserve: 2, scripted: true, ended: new Set<string>(), today: new Set<string>(), visited: new Set<string>(), roll: () => 0 };
   return SOLO_GOALS.flatMap((def) => def.options(view, memory));
 };
 const prompt = (view: PlayerView): string => buildPrompt(view, goalsFor(view), 2).map((t) => t.content).join("\n");

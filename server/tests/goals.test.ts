@@ -6,6 +6,7 @@ import { SOLO_GOALS } from "../src/bots/goals/index.ts";
 import { repairHull } from "../src/bots/goals/repairHull.ts";
 import { rest } from "../src/bots/goals/rest.ts";
 import { research } from "../src/bots/goals/research.ts";
+import { patrolShootHunters } from "../src/bots/goals/patrolShootHunters.ts";
 import { shootHunters } from "../src/bots/goals/shootHunters.ts";
 import { shower } from "../src/bots/goals/shower.ts";
 import { snoop } from "../src/bots/goals/snoop.ts";
@@ -60,6 +61,22 @@ async function play(game: GameState, id: string, bot: GoalBot, turns: number): P
 }
 
 const roll0 = () => 0;
+
+/** Plays one bot until it ends its cycle (or 60 turns), every action legal and applied. */
+async function untilReady(game: GameState, id: string, bot: GoalBot): Promise<{ game: GameState; taken: Action[] }> {
+  const taken: Action[] = [];
+  for (let t = 0; t < 60; t++) {
+    const view = viewFor(game, id);
+    const action = await bot.decideAction(view);
+    if (action === null || action.type === "ready") break;
+    expect(isLegal(view, action), JSON.stringify(action)).toBe(true);
+    const result = applyAction(game, id, action);
+    expect(result.ok).toBe(true);
+    if (result.ok) game = result.state;
+    taken.push(action);
+  }
+  return { game, taken };
+}
 
 describe("chooseSkill", () => {
   const pick = (character: CharacterId, have: string[] = [], offered?: string[]) =>
@@ -217,7 +234,7 @@ describe("GoalBot", () => {
       p.ap = 10;
     });
     const view = viewFor(game, id);
-    const memory = { reserve: 2, ended: new Set<string>(), today: new Set<string>(), visited: new Set<string>(), roll: roll0 };
+    const memory = { reserve: 2, scripted: true, ended: new Set<string>(), today: new Set<string>(), visited: new Set<string>(), roll: roll0 };
     const patch = { action: { type: "repair_hull" as const, item: "scrap" }, cost: { ap: 1, mp: 0 }, chance: 0.25, tags: [], lacks: [] };
     const withHull = (hull: number): PlayerView => ({ ...view, ship: { ...view.ship, hull }, actions: [...view.actions, patch] });
     expect(repairHull.options(withHull(50), memory)).toEqual([]);
@@ -351,20 +368,59 @@ describe("shootHunters", () => {
 
   it("isn't offered while no hunter attacks", () => {
     const { game: start, id } = setup();
-    expect(shootHunters.options(viewFor(start, id), { reserve: 2, ended: new Set(), today: new Set(), visited: new Set(), roll: roll0 })).toEqual([]);
+    expect(shootHunters.options(viewFor(start, id), { reserve: 2, scripted: true, ended: new Set(), today: new Set(), visited: new Set(), roll: roll0 })).toEqual([]);
   });
 
-  it("walks to the nearest turret and shoots the weakest hunter, down to the AP reserve", async () => {
-    const { game, id } = attacked();
-    const bot = new GoalBot(1, 2, [shootHunters]);
-    const { game: end, taken } = await play(game, id, bot, 40);
+  it("walks to the nearest turret and shoots the weakest hunter, spending all its AP, the reserve too", async () => {
+    const { game: start, id } = attacked();
+    for (const t of Object.values(start.equipment).flat().filter((e) => e.type === "TURRET_COMMAND")) start.turrets[t.id] = 20;
+    start.hunters.list[0]!.hp = 99;
+    start.hunters.list[1]!.hp = 99;
+    start.hunters.list.push({ id: "h3", hp: 1, hitChance: 0, target: null });
+    const { game: end, taken } = await untilReady(start, id, new GoalBot(1, 2, [shootHunters]));
     const shots = taken.filter((a) => a.type === "turret_attack");
-    expect(shots.length).toBeGreaterThan(0);
-    expect(shots[0]).toMatchObject({ hunter: "h2" });
+    expect(shots[0]).toMatchObject({ hunter: "h3" });
     expect(taken.slice(0, taken.indexOf(shots[0]!)).every((a) => a.type === "move")).toBe(true);
-    // Stops at the reserve (or when the hunters are gone, or the turrets are empty).
-    const me = end.players.find((p) => p.id === id)!;
-    expect(me.ap >= 2 || end.hunters.list.length === 0).toBe(true);
+    expect(end.players.find((p) => p.id === id)!.ap).toBe(0);
+  });
+
+  it("is offered to a scripted bot only at 5 AP or more, to a model whenever it can afford a shot", () => {
+    const { game: start, id } = attacked();
+    const turretRoom = roomsWith(viewFor(start, id), ["TURRET_COMMAND"])[0]!;
+    const game = edit(start, id, (p) => {
+      p.room = turretRoom;
+      p.ap = 4;
+    });
+    const memory = (scripted: boolean) => ({ reserve: 2, scripted, ended: new Set<string>(), today: new Set<string>(), visited: new Set<string>(), roll: roll0 });
+    expect(shootHunters.options(viewFor(game, id), memory(true))).toEqual([]);
+    expect(shootHunters.options(viewFor(game, id), memory(false))).toHaveLength(1);
+    expect(shootHunters.options(viewFor(edit(game, id, (p) => (p.ap = 5)), id), memory(true))).toHaveLength(1);
+  });
+
+  it("gets a resting bot up when hunters attack and it has 5 AP, and leaves it in bed with 4", async () => {
+    const { game: start, id } = setup();
+    const bed = roomsWith(viewFor(start, id), ["BED"])[0]!;
+    let game = edit(start, id, (p) => {
+      p.room = bed;
+      p.ap = 1;
+    });
+    const bot = new GoalBot(1, 2, [shootHunters, rest]);
+    const lie = await bot.decideAction(viewFor(game, id));
+    expect(lie?.type).toBe("lie_down");
+    const r = applyAction(game, id, lie!);
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    game = r.state;
+    game.hunters.list = [{ id: "h1", hp: 6, hitChance: 0, target: null }];
+    let cycles = 0;
+    const nextCycle = (ap: number): PlayerView => {
+      const view = viewFor(edit(game, id, (p) => (p.ap = ap)), id);
+      return { ...view, cycle: view.cycle + ++cycles };
+    };
+    expect(await bot.decideAction(nextCycle(4))).toEqual({ type: "ready" });
+    expect(bot.current).toMatch(/^rest:/);
+    expect((await bot.decideAction(nextCycle(5)))?.type).not.toBe("ready");
+    expect(bot.current).toMatch(/^shootHunters:/);
   });
 
   it("fails at a turret room with no charges left, and the next turret room is offered", () => {
@@ -375,12 +431,69 @@ describe("shootHunters", () => {
     });
     for (const t of game.equipment[turretRoom]!.filter((e) => e.type === "TURRET_COMMAND")) game.turrets[t.id] = 0;
     const view = viewFor(game, id);
-    const memory = { reserve: 2, ended: new Set<string>(), today: new Set<string>(), visited: new Set<string>(), roll: roll0 };
+    const memory = { reserve: 2, scripted: true, ended: new Set<string>(), today: new Set<string>(), visited: new Set<string>(), roll: roll0 };
     const [goal] = shootHunters.options(view, memory);
     expect(goal!.key).toBe(`shootHunters:${turretRoom}`);
     expect(goal!.step(view, memory)).toEqual({ kind: "failed", reason: "no_charges" });
     memory.ended.add(goal!.key);
     expect(shootHunters.options(view, memory)[0]!.key).not.toBe(goal!.key);
+  });
+});
+
+describe("patrolShootHunters", () => {
+  const BAY = "SPACESHIP_BAY_A";
+  /** A Pilot in bay A while two tough hunters attack. */
+  function pilot(ap: number, room = BAY): { game: GameState; id: string } {
+    const { game: start, id } = setup();
+    const game = edit(start, id, (p) => {
+      p.room = room;
+      p.ap = ap;
+      p.mp = 12;
+      if (!p.skills.includes("pilot")) p.skills.push("pilot");
+      p.resources.shoot = 0;
+    });
+    game.hunters.list = [
+      { id: "h1", hp: 99, hitChance: 0, target: null },
+      { id: "h2", hp: 99, hitChance: 0, target: null },
+    ];
+    return { game, id };
+  }
+  const memory = (scripted = true) => ({ reserve: 2, scripted, ended: new Set<string>(), today: new Set<string>(), visited: new Set<string>(), roll: roll0 });
+
+  it("is offered to a scripted Pilot at 9 AP, not at 8, and never to someone who can't fly", () => {
+    expect(patrolShootHunters.options(viewFor(pilot(8).game, pilot(8).id), memory())).toEqual([]);
+    const { game, id } = pilot(9);
+    expect(patrolShootHunters.options(viewFor(game, id), memory())[0]!.key).toBe(`patrolShootHunters:${BAY}`);
+    expect(patrolShootHunters.options(viewFor(edit(game, id, (p) => (p.skills = [])), id), memory())).toEqual([]);
+    // A model may take off as soon as one sortie (takeoff, a shot, the landing) is paid for.
+    expect(patrolShootHunters.options(viewFor(pilot(5).game, pilot(5).id), memory(false))).toHaveLength(1);
+  });
+
+  it("takes off, shoots until only the AP to land is left, and lands", async () => {
+    const { game, id } = pilot(9);
+    const { game: end, taken } = await untilReady(game, id, new GoalBot(1, 2, [patrolShootHunters]));
+    // 9 AP: 2 to take off, 5 shots of 1, 2 to land.
+    expect(taken.map((a) => a.type)).toEqual(["takeoff", ...Array(5).fill("patrol_attack"), "land"]);
+    const me = end.players.find((p) => p.id === id)!;
+    expect(me.room).toBe(BAY);
+    expect(me.ap).toBe(0);
+  });
+
+  it("never takes out the Pasiphae", () => {
+    const { game, id } = pilot(9, "SPACESHIP_BAY_AA");
+    game.patrolShips["PATROL_SHIP_AA_0"]!.out = true;
+    const view = viewFor(game, id);
+    const [goal] = patrolShootHunters.options(view, memory());
+    expect(goal!.step(view, memory())).toEqual({ kind: "failed", reason: "no_ship" });
+  });
+
+  it("aboard, is the only goal offered, and lands once the hunters are gone", async () => {
+    const { game, id } = pilot(6, "PATROL_SHIP_A_0");
+    game.patrolShips["PATROL_SHIP_A_0"]!.out = true;
+    game.hunters.list = [];
+    const bot = new GoalBot(1);
+    expect(await bot.decideAction(viewFor(game, id))).toEqual({ type: "land", equipment: "PATROL_SHIP_A_0:PATROL_COMMAND" });
+    expect(bot.current).toBe("patrolShootHunters:aboard");
   });
 });
 
@@ -395,7 +508,7 @@ describe("eat", () => {
     });
     return { game, id };
   };
-  const memory = () => ({ reserve: 2, ended: new Set<string>(), today: new Set<string>(), visited: new Set<string>(), roll: roll0 });
+  const memory = () => ({ reserve: 2, scripted: true, ended: new Set<string>(), today: new Set<string>(), visited: new Set<string>(), roll: roll0 });
 
   it(`goes for food after ${BOT_EAT_AFTER_CYCLES} cycles at 0 satiety, not before`, () => {
     const early = starving(BOT_EAT_AFTER_CYCLES - 1);
@@ -462,7 +575,7 @@ describe("tendPlants", () => {
     for (const pot of game.items) if (pot.plant) pot.plant.thirst = 1;
     return { game, id };
   };
-  const memory = () => ({ reserve: 2, ended: new Set<string>(), today: new Set<string>(), visited: new Set<string>(), roll: roll0 });
+  const memory = () => ({ reserve: 2, scripted: true, ended: new Set<string>(), today: new Set<string>(), visited: new Set<string>(), roll: roll0 });
 
   it("is only for the Botanist role", () => {
     const other = gardener(["pilot"]);

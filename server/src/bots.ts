@@ -2,7 +2,7 @@
 // spend cap, none of which belong in the pure rules package.
 
 import { legalIn, nextInt, type Action, type PlayerView, type RngState } from "@mush2/shared";
-import { END_CYCLE, SOLO_GOALS, type BotMemory, type Goal, type GoalDef } from "./bots/goals/index.ts";
+import { END_CYCLE, HUNTER_GOALS, SOLO_GOALS, type BotMemory, type Goal, type GoalDef } from "./bots/goals/index.ts";
 import { buildPrompt, describeLogEntry, parseChoice } from "./prompt.ts";
 import type { ModelGate } from "./model.ts";
 
@@ -62,7 +62,8 @@ const sameAction = (a: Action, b: Action): boolean => JSON.stringify(a) === JSON
 
 /**
  * Plays the solo goals (docs/plans/bot-goals.md) by their priority: picks a goal, follows it turn after turn, and
- * chooses again only when it finishes, fails, or an interrupt fires (a new cycle, unless resting; losing HP). What it
+ * chooses again only when it finishes, fails, or an interrupt fires (a new cycle, unless resting and no hunter needs
+ * shooting; losing HP). What it
  * remembers is in this object only, and lost on a restart. A bot without a model key plays this.
  */
 export class GoalBot implements Bot {
@@ -78,8 +79,12 @@ export class GoalBot implements Bot {
     reserve = BOT_AP_RESERVE,
     private goals: readonly GoalDef[] = SOLO_GOALS,
   ) {
+    const scripted = (): boolean => this.scripted;
     this.memory = {
       reserve,
+      get scripted() {
+        return scripted();
+      },
       ended: new Set(),
       today: new Set(),
       visited: new Set(),
@@ -89,6 +94,11 @@ export class GoalBot implements Bot {
         return i;
       },
     };
+  }
+
+  /** Whether goals go by priority (`BotMemory.scripted`): always, for a bot without a model. */
+  protected get scripted(): boolean {
+    return true;
   }
 
   /** The key of the goal it is following, if any (tests). */
@@ -137,8 +147,9 @@ export class GoalBot implements Bot {
       this.cycle = view.cycle;
       this.memory.ended.clear();
       this.memory.visited.clear();
-      // Resting carries on across cycles; anything else is chosen afresh.
-      if (!first && this.goal?.id !== "rest") this.end(false);
+      // Resting carries on across cycles, unless hunters attack and the bot could fight them (owner, 2026-11-01): then it
+      // chooses again, staying in bed still among its options. Anything else is chosen afresh.
+      if (!first && (this.goal?.id !== "rest" || this.canFightHunters(view))) this.end(false);
     }
     if (view.day !== this.day) {
       this.day = view.day;
@@ -150,9 +161,18 @@ export class GoalBot implements Bot {
     this.memory.visited.add(view.you.room);
   }
 
-  /** Every goal open now and not ended this cycle, in registry order; only ending the cycle when there is none. */
+  /** Whether a hunter goal is open now; only then is a rest worth interrupting. */
+  private canFightHunters(view: PlayerView): boolean {
+    return view.hunters.count > 0 && this.goals.some((def) => HUNTER_GOALS.has(def.id) && def.options(view, this.memory).length > 0);
+  }
+
+  /**
+   * Every goal open now and not ended this cycle, in registry order; only ending the cycle when there is none. Aboard a
+   * patrol ship only the flight's own goal: a ship has no doors, so nothing else could be reached.
+   */
   private options(view: PlayerView): Ranked[] {
-    const options = this.goals.flatMap((def) =>
+    const defs = view.patrolShip !== null ? this.goals.filter((def) => def.id === "patrolShootHunters") : this.goals;
+    const options = defs.flatMap((def) =>
       def
         .options(view, this.memory)
         .filter((goal) => !this.memory.ended.has(goal.key))
@@ -206,6 +226,11 @@ export class ModelBot extends GoalBot {
     goals: readonly GoalDef[] = SOLO_GOALS,
   ) {
     super(rng, reserve, goals);
+  }
+
+  /** A bot whose model can't be asked (no key) goes by priority, so it plays with the scripted thresholds. */
+  protected override get scripted(): boolean {
+    return this.gate.credentials === null;
   }
 
   protected override async choose(view: PlayerView, options: readonly Ranked[]): Promise<Goal | null> {

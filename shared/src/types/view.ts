@@ -114,6 +114,10 @@ export interface PublicConfig {
   pilgredAp: number;
   hullRepairAp: number;
   turretAp: number;
+  /** A patrol ship's takeoff, landing and one shot (`patrol` in config.ts): a pilot bot keeps the landing's AP while it flies. */
+  takeoffAp: number;
+  landAp: number;
+  patrolShotAp: number;
   showerAp: number;
   lieDownAp: number;
   waterAp: number;

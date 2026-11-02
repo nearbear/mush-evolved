@@ -52,7 +52,7 @@ export const tendPlants: GoalDef = {
       {
         id: "tendPlants",
         key: `tendPlants:${garden}`,
-        label: `Tend the plants ${where(view, garden)}: water, treat, sow`,
+        label: `Tend the plants ${where(view, garden)}: water, treat, sow`, // i18n-ignore: model prompt text, not player-visible
         step(v, m) {
           const walk = goTo(v, garden);
           if (walk) return walk;

@@ -171,12 +171,18 @@ const idle = (id: PlayerId): boolean => {
 
 // Deaths have no recorded cause yet (#177): print each one with the player's last seen stats, to tell hunger from injury.
 const lastSeen = new Map(game.players.map((p) => [p.id, { alive: p.alive, hp: p.hp, morale: p.morale, satiety: p.satiety, room: p.room }]));
+let logSeen = 0;
 function noteDeaths(): void {
   for (const p of game.players) {
     const before = lastSeen.get(p.id)!;
+    if (p.hp < before.hp || (before.alive && !p.alive)) {
+      const mine = game.log.slice(logSeen).filter((e) => (e.visibleTo === "all" || e.visibleTo.includes(p.id)) && (e.room === before.room || Object.values(e.params ?? {}).includes(p.character)));
+      console.log(`  hp ${p.id} (${p.character}) ${before.hp} -> ${p.hp} in cycle ${game.cycle} in ${before.room}: ${mine.map((e) => e.key).join(", ") || "no log entry"}`);
+    }
     if (before.alive && !p.alive) console.log(`  died in cycle ${game.cycle}: ${p.id} (${p.character}) last hp ${before.hp} morale ${before.morale} satiety ${before.satiety} in ${before.room}, hull ${game.ship.hull}`);
     lastSeen.set(p.id, { alive: p.alive, hp: p.hp, morale: p.morale, satiety: p.satiety, room: p.room });
   }
+  logSeen = game.log.length;
 }
 
 const perCycle: { cycle: number; calls: number; perBot: Record<PlayerId, number>; readyRepeats: number; wallMs: number }[] = [];
@@ -246,6 +252,12 @@ for (let c = 0; c < cycles && game.phase === "playing" && spent + spentBefore < 
   row.wallMs = performance.now() - t0;
   perCycle.push(row);
   console.log(`cycle ${cycle}: ${row.calls} calls, ${(row.wallMs / 1000).toFixed(1)}s, ready repeats ${row.readyRepeats}, hull ${game.ship.hull}, $${spent.toFixed(4)} so far`);
+  {
+    const alive = game.players.filter((p) => p.alive);
+    const mean = (f: (p: (typeof alive)[number]) => number) => (alive.reduce((a, p) => a + f(p), 0) / Math.max(1, alive.length)).toFixed(1);
+    const turrets = Object.values(game.equipment).flat().filter((t) => t.type === "TURRET_COMMAND").map((t) => `${game.turrets[t.id] ?? game.config.turrets.charges}${t.broken ? "b" : ""}`).join("/");
+    console.log(`  hunters ${game.hunters.list.length} (hp ${game.hunters.list.reduce((a, h) => a + h.hp, 0)}, pool ${game.hunters.points}), turret charges ${turrets}; living ${alive.length}: hp ${mean((p) => p.hp)}, morale ${mean((p) => p.morale)}, satiety ${mean((p) => p.satiety)}, ap ${mean((p) => p.ap)}`);
+  }
   if (game.phase !== "playing") {
     console.log(`game ended in cycle ${game.cycle}: ${game.winner} (${JSON.stringify(game.ending)}); hull ${game.ship.hull}, alive ${game.players.filter((p) => p.alive).length}/${game.players.length}`);
     break;

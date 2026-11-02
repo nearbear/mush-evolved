@@ -19,6 +19,11 @@ export type GoalStep =
 export interface BotMemory {
   /** AP kept for emergencies: work goals stop rather than spend it (`BOT_AP_RESERVE`). */
   readonly reserve: number;
+  /**
+   * Whether goals are chosen by priority (a bot without a model key) rather than by a model. Some goals are offered to
+   * a scripted bot only with more AP to spare (owner, 2026-11-01: shooting hunters), since it can't weigh them.
+   */
+  readonly scripted: boolean;
   /** Keys of the goals that finished or failed this cycle; they aren't offered again until the next one. */
   readonly ended: Set<string>;
   /** Keys of once-a-day jobs done today (tending the garden); cleared when the day changes. */
