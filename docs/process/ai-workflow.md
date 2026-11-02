@@ -2184,3 +2184,9 @@ An outside security review claimed cross-site WebSocket hijacking via the Lax se
   - Added translations in en/fr/es locale files.
   - Marked `STEROIDS: "full"` in `RESEARCH_STATUS` in `shared/src/research.ts`.
   - Added test coverage in `shared/tests/research.test.ts`.
+
+## 2026-11-01: Sick Bay human_tank occupied graphic once a Mush has died
+
+- **Goal:** Show a person floating inside the Sick Bay `human_tank` scenery sprite, but only once a Mush has died on the ship at any point in the game.
+- **Graphic discovery:** In `Mush/clients/iso/gfx/MidFill2.png`, directly beneath `human_tank` (y=1082..1144), row 2 at y=1145 has a matching 9-frame animated strip of the tank with a person/specimen floating inside and bubbling liquid.
+- **Implementation:** Added `hasMushDied` in `shared/src/death.ts`, checking `state.players.some((p) => p.role === "mush" && !p.alive)`. Added public `humanTankFull: boolean` to `PlayerView` (computed in `viewFor`). Slices in `Mush/` are read-only, so `human_tank_full` slice definition was wired into `loadShip()` in `web/src/iso/shipLayout.ts` and added to `AMBIENT_SLICES` in `web/src/iso/scene.ts`. `IsoRoom.tsx` swaps `human_tank` -> `human_tank_full` in `looks` when `humanTankFull` is true.
