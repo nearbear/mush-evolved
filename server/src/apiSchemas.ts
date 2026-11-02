@@ -31,6 +31,7 @@ import {
   type PostSetupRequest,
   type PostSetupResponse,
   type RenameResponse,
+  type ReplayIndex,
   type SetupListResponse,
   type SetupLookupResponse,
   type SignupResponse,
@@ -243,6 +244,48 @@ export const FinishedGamesResponseSchema = named(
   z.object({ games: z.array(FinishedGameSchema), next: z.string().nullable() }),
 );
 
+// ---- Replays (shared/src/replayChunks.ts)
+
+export const ReplayIndexSchema = named(
+  "ReplayIndex",
+  "A finished game's replay index. `v` is the history format of every chunk. Times are Unix ms.",
+  z.object({
+    v: z.int(),
+    roomId: z.string(),
+    rulesVersion: z.string(),
+    endedAt: z.int(),
+    seats: z.array(
+      z.object({
+        seat: z.string(),
+        role: RoleSchema.meta({ description: "When the Mush were chosen." }),
+        character: CharacterIdSchema.meta({ description: "When the Mush were chosen." }),
+      }),
+    ),
+    chunks: z.array(
+      z.object({
+        cycle: z.int().meta({ description: "The game cycle of the full copy the chunk starts from." }),
+        firstInput: z.int(),
+        inputs: z.int(),
+        from: z.int(),
+        to: z.int(),
+      }),
+    ),
+  }),
+);
+
+/** Not held to `ChunkEntry`: a history step is the whole full view and its changes, described here only in words. */
+export const ReplayChunkSchema = named(
+  "ReplayChunk",
+  "One chunk of a replay, in record order: each input's server time and its history step. The first step carries a full copy of the view (`full` or `base`), so the chunk rebuilds by itself (shared `rebuildHistory`).",
+  z.array(z.object({ at: z.int(), history: z.record(z.string(), z.unknown()).meta({ description: "A history step (shared `HistoryStep`)." }) })),
+);
+
+export const NotReadySchema = named(
+  "NotReady",
+  "The game has ended but its replay isn't copied yet; try again later.",
+  z.object({ error: z.literal("not_ready") }),
+);
+
 export const InvalidCursorSchema = named("InvalidCursor", "A `before` cursor that isn't one from `next`.", z.object({ error: z.literal("invalid_cursor") }));
 
 // ---- Errors any route may answer
@@ -253,7 +296,7 @@ export const RateLimitedSchema = named(
   z.object({ ok: z.literal(false), error: z.literal("rate_limited"), reason: z.literal("rate_limited") }),
 );
 
-export const NotFoundSchema = named("NotFound", "No such route or setup.", z.object({ error: z.literal("not_found") }));
+export const NotFoundSchema = named("NotFound", "No such route, setup or game (a running game, or another account's single-player game, answers this too).", z.object({ error: z.literal("not_found") }));
 
 // ---- The schemas hold to shared's types
 
@@ -271,4 +314,5 @@ export type SchemasMatchShared = [
   Expect<Same<z.infer<typeof PostSetupRequestSchema>, PostSetupRequest>>,
   Expect<Same<z.infer<typeof PostSetupResponseSchema>, PostSetupResponse>>,
   Expect<Same<z.infer<typeof FinishedGamesResponseSchema>, FinishedGamesResponse>>,
+  Expect<Same<z.infer<typeof ReplayIndexSchema>, ReplayIndex>>,
 ];

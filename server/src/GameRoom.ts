@@ -138,15 +138,12 @@ interface Stored {
   language?: LobbyLanguage;
   /** Per seat, its role and character when the Mush were chosen (#155); missing until then. */
   starts?: Record<PlayerId, SeatStart>;
-  /**
-   * The finished game is in the list (#155), or needs no entry. False until then; missing on games stored before the
-   * list existed, which are never listed (no backfill).
-   */
-  listed?: boolean;
+  /** The finished game is in the list (#155), or needs no entry. */
+  listed: boolean;
   /** When the game ended (the time of the input that ended it); missing while it runs. */
   endedAt?: number;
-  /** The finished game's history is in R2, every chunk and the index confirmed (#336). Missing reads as false. */
-  replayReady?: boolean;
+  /** The finished game's history is in R2, every chunk and the index confirmed (#336). */
+  replayReady: boolean;
 }
 
 // The game's record, beside the snapshot in this room's storage:
@@ -279,11 +276,11 @@ export class GameRoom extends Server<Env> {
     this.tokenSessions = stored.tokenSessions;
     this.language = stored.language ?? null;
     this.starts = stored.starts ?? null;
-    this.listed = stored.listed ?? true;
+    this.listed = stored.listed;
     this.endedAt = stored.endedAt ?? null;
     // A finished game whose entry wasn't written yet: try at once.
     if (this.game.phase === "ended" && !this.listed) this.listRetryAt = Date.now();
-    this.replayReady = stored.replayReady ?? false;
+    this.replayReady = stored.replayReady;
     // The same for its history's copy, which may have failed partway.
     if (this.game.phase === "ended" && !this.replayReady) this.replayRetryAt = Date.now();
     this.blocked = (await this.ctx.storage.list({ prefix: "blocked:" })).size;
@@ -523,6 +520,13 @@ export class GameRoom extends Server<Env> {
 
   private async tryCopyReplay(): Promise<void> {
     if (this.replayReady || this.game?.phase !== "ended") return;
+    // A single-player game played without an account is never recorded (#155, #332), so nobody can ever read its replay.
+    if (this.singlePlayer && this.accounts[SINGLE_PLAYER_HUMAN] === undefined) {
+      this.replayReady = true;
+      this.replayRetryAt = null;
+      await this.persist();
+      return;
+    }
     try {
       const setup = await this.ctx.storage.get<GameSetup>("setup");
       if (!this.env.REPLAYS) throw new Error("no REPLAYS bucket bound");

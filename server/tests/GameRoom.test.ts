@@ -1491,20 +1491,6 @@ describe("GameRoom finished games list (#155)", () => {
     }
   });
 
-  it("never lists a game stored before the list existed", async () => {
-    const { storage, end } = await finishingRoom();
-    end();
-    const stored = storage.data.get("game") as { listed?: boolean; game: { phase: string } };
-    delete stored.listed;
-    stored.game.phase = "ended";
-    storage.data.set("game", stored);
-    const db = migratedDatabase();
-    const revived = new GameRoom({ storage } as never, { RULES_VERSION: "test", DB: db } as never);
-    await revived.onStart();
-    await (revived as unknown as Listing).recordFinished();
-    expect((await new GameStore(db).listFinished()).games).toEqual([]);
-  });
-
   it("records a single-player game only under its player's account, and never lists it publicly", async () => {
     for (const accountId of [undefined, "acc-1"]) {
       const db = migratedDatabase();
@@ -1687,5 +1673,23 @@ describe("GameRoom replay copy to R2 (#336)", () => {
     expect(bucket.objects.has(replayKeys.index("test-room"))).toBe(true);
     expect((await storage.list({ prefix: "input:" })).size).toBeGreaterThan(0);
     expect(storage.data.has("setup")).toBe(true);
+  });
+
+  it("skips the copy for a single-player game played without an account", async () => {
+    for (const accountId of [undefined, "acc-1"]) {
+      const storage = new FakeStorage();
+      const bucket = new FakeR2Bucket();
+      const room = new GameRoom({ storage } as never, { RULES_VERSION: "test", REPLAYS: bucket } as never);
+      const token = await room.setupSinglePlayer("Solo", "chun", "en", accountId);
+      const c = connect(room, token);
+      await send(room, c, { type: "chat", channel: CHAT_CHANNELS[0], text: "hi" });
+      const inner = room as unknown as Copying;
+      inner.game.phase = "ended";
+      inner.game.winner = "mush";
+      inner.game.ending = "humans_dead";
+      await inner.copyReplay();
+      expect(ready(storage)).toBe(true);
+      expect(bucket.puts > 0).toBe(accountId !== undefined);
+    }
   });
 });

@@ -8,8 +8,8 @@ import { sweepShips } from "./shipSweep.ts";
 export { GameRoom } from "./GameRoom.ts";
 export { Matchmaker } from "./Matchmaker.ts";
 
-// /auth/* and /api/* are sign-in, accounts, setups and finished games (auth.ts, setupRoutes.ts, gameRoutes.ts). /parties/game-room/:id
-// and /parties/matchmaker/:id go to the Durable Objects.
+// /auth/* and /api/* are sign-in, accounts, setups, finished games and their replays (auth.ts, setupRoutes.ts,
+// gameRoutes.ts, replayRoutes.ts). /parties/game-room/:id and /parties/matchmaker/:id go to the Durable Objects.
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     const store = accountStoreFor(env);
@@ -18,7 +18,7 @@ export default {
       const [newest] = await store.ships(accountId);
       if (newest) await (await getServerByName(env.GameRoom, newest.roomId)).revokeSession(sessionKey);
     };
-    const auth = await handleAuth(request, env, { store, setups: setupStoreFor(env), games: gameStoreFor(env), now: Date.now(), revokeSeats });
+    const auth = await handleAuth(request, env, { store, setups: setupStoreFor(env), games: gameStoreFor(env), replays: env.REPLAYS, now: Date.now(), revokeSeats });
     if (auth) return auth;
     return (await routePartykitRequest(request, env)) ?? new Response("Not found", { status: 404 });
   },

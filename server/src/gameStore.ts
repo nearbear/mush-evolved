@@ -199,6 +199,22 @@ export class GameStore {
     };
   }
 
+  /**
+   * Who may see a finished game's replay (#337): whether it is single player, and the accounts that played it. Null
+   * when the game isn't listed, which is every game that hasn't ended (`finishedEntry`). Only the route reads the
+   * accounts; it never sends them.
+   */
+  async replayAccess(roomId: string): Promise<{ singlePlayer: boolean; accounts: string[] } | null> {
+    const game = await this.db.prepare("SELECT single_player AS singlePlayer FROM games WHERE room_id = ?").bind(roomId).first<{ singlePlayer: number }>();
+    if (!game) return null;
+    if (game.singlePlayer !== 1) return { singlePlayer: false, accounts: [] };
+    const { results } = await this.db
+      .prepare("SELECT account_id AS accountId FROM game_players WHERE room_id = ? AND account_id IS NOT NULL")
+      .bind(roomId)
+      .all<{ accountId: string }>();
+    return { singlePlayer: true, accounts: results.map((r) => r.accountId) };
+  }
+
   /** The seats of these games, in seat order, without account IDs. */
   private async crews(roomIds: string[]): Promise<Map<string, FinishedCrewMember[]>> {
     const crews = new Map<string, FinishedCrewMember[]>();

@@ -9,7 +9,10 @@
 import type { FullView } from "./fullView.ts";
 import { applyDiff, diffView, type ViewDiff } from "./viewDiff.ts";
 
-/** The history's format. Bump it when `HistoryStep` or `ViewDiff` changes shape; old games keep the old number. */
+/**
+ * The history container's format: `HistoryStep` and `ViewDiff` only (never bumped for `FullView` / `GameState` field
+ * changes, which `perspective` and the viewer handle). Old games keep the old number in their index and steps.
+ */
 export const HISTORY_VERSION = 1;
 
 /** One input's part of the history, stored in its record entry (`RecordedInput.history`). */
@@ -33,10 +36,13 @@ export function historyStep(prev: FullView | null, loaded: () => FullView, next:
   return prev === null ? { v: HISTORY_VERSION, base, ...change } : { ...change };
 }
 
-/** Thrown for a history this code can't read: another format version, or a change with nothing before it. */
+/** Thrown for a history this code can't read: another format version, a change with nothing before it, or an older `FullView` shape `perspective` can't run `viewFor` on. */
 export class HistoryError extends Error {}
 
-/** One input's views: the copy it started from, if it carries one, and the view after it. */
+/**
+ * One input's views: the copy it started from, if it carries one (`frames[0].base` is the launch state before input 0,
+ * and a mid-game `base` is the state loaded on a room restart), and the view after it.
+ */
 export interface HistoryFrame {
   base?: FullView;
   view: FullView;

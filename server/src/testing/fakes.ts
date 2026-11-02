@@ -44,7 +44,7 @@ export class FakeStorage {
   }
 }
 
-/** An R2 bucket in memory (the parts the replay copy uses). Set `failAfter` to make every put past that many fail. */
+/** An R2 bucket in memory (the parts the replay copy and routes use). Set `failAfter` to make every put past that many fail. */
 export class FakeR2Bucket {
   objects = new Map<string, { body: Uint8Array; httpMetadata?: { contentType?: string; contentEncoding?: string } }>();
   puts = 0;
@@ -56,6 +56,16 @@ export class FakeR2Bucket {
     const body = typeof value === "string" ? new TextEncoder().encode(value) : new Uint8Array(value.slice(0));
     this.objects.set(key, { body, ...(options?.httpMetadata && { httpMetadata: options.httpMetadata }) });
     return {};
+  }
+
+  /** An object as `R2Bucket.get` returns it (the parts the replay routes read): its stored bytes, or null. */
+  async get(key: string): Promise<{ body: ReadableStream; json<T>(): Promise<T> } | null> {
+    const object = this.objects.get(key);
+    if (!object) return null;
+    return {
+      body: new Blob([object.body]).stream(),
+      json: async <T>() => JSON.parse(new TextDecoder().decode(object.body)) as T,
+    };
   }
 
   /** An object's JSON, gunzipped when it was stored gzipped. */

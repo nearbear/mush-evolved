@@ -20,10 +20,13 @@ import {
   MeResponseSchema,
   NameRequestSchema,
   NotFoundSchema,
+  NotReadySchema,
   PostSetupRequestSchema,
   PostSetupResponseSchema,
   RateLimitedSchema,
   RenameResponseSchema,
+  ReplayChunkSchema,
+  ReplayIndexSchema,
   SetupListResponseSchema,
   SetupLookupResponseSchema,
   SignupResponseSchema,
@@ -85,7 +88,7 @@ export function apiDocument(version: string, maxBodies: { name: number; setup: n
       title: "Site API",
       version,
       description:
-        "Accounts and posted setups. Requests carry the browser's session cookie (HttpOnly, set by signing in to the game in this browser), so try requests from a browser that is signed in. Every JSON answer is `Cache-Control: no-store`. A known path with the wrong method answers 405.",
+        "Accounts and posted setups. Requests carry the browser's session cookie (HttpOnly, set by signing in to the game in this browser), so try requests from a browser that is signed in. Every JSON answer is `Cache-Control: no-store`, except a public replay's. A known path with the wrong method answers 405.",
     },
     paths: {
       "/auth/{provider}/start": {
@@ -206,6 +209,34 @@ export function apiDocument(version: string, maxBodies: { name: number; setup: n
           responses: {
             "200": jsonResponse("A page of games.", FinishedGamesResponseSchema),
             "400": jsonResponse("Not a cursor.", InvalidCursorSchema),
+            ...rateLimited,
+          },
+        },
+      },
+      "/api/games/{id}/replay": {
+        get: {
+          summary: "A finished game's replay index",
+          description:
+            "Multiplayer replays are public; a single-player one only for the account that played it. Read from storage, never from the running room. A public answer is cacheable for an hour.",
+          parameters: [param("path", "id", { description: "The game's `id` from the list." })],
+          responses: {
+            "200": jsonResponse("The index.", ReplayIndexSchema),
+            "404": jsonResponse("No such finished game, or not yours.", NotFoundSchema),
+            "409": jsonResponse("Finished, but the replay isn't ready yet.", NotReadySchema),
+            ...rateLimited,
+          },
+        },
+      },
+      "/api/games/{id}/replay/{n}": {
+        get: {
+          summary: "One chunk of a replay",
+          description:
+            "Chunk `n` of the index's `chunks` (from 0): one cycle. Sent gzipped (`Content-Encoding: gzip`) when the request accepts it. A public chunk never changes and is cached as immutable.",
+          parameters: [param("path", "id"), param("path", "n", { description: "The chunk's position in the index, from 0." })],
+          responses: {
+            "200": jsonResponse("The chunk.", ReplayChunkSchema),
+            "404": jsonResponse("No such finished game or chunk, or not yours.", NotFoundSchema),
+            "409": jsonResponse("Finished, but the replay isn't ready yet.", NotReadySchema),
             ...rateLimited,
           },
         },

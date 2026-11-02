@@ -4,6 +4,7 @@ import { CHARACTERS } from "../src/characters.ts";
 import { DEFAULT_CONFIG, PRESELECTION } from "../src/config.ts";
 import { applyInput, rebuildGame, replayGame, startGame, type GameSetup, type Input, type RecordedInput } from "../src/replay.ts";
 import { nextDue } from "../src/queue.ts";
+import { swapMinds } from "../src/mind.ts";
 import { legalActions, viewFor } from "../src/rules.ts";
 import { fullViewFor, perspective, seatStarts, type FullView, type SeatStarts } from "../src/fullView.ts";
 import { nextInt, type RngState } from "../src/rng.ts";
@@ -158,7 +159,7 @@ describe("perspective", () => {
         // Through JSON, as history is stored.
         const full = JSON.parse(JSON.stringify(fullViewFor(s, starts))) as FullView;
         for (const p of s.players) {
-          const [rebuilt, real] = [perspective(full, p.id), viewFor(s, p.id)];
+          const [rebuilt, real] = [perspective(full, p.mind), viewFor(s, p.id)];
           // The fast check first; expect only to show the difference.
           if (!isDeepStrictEqual(rebuilt, real)) expect(rebuilt).toStrictEqual(real);
         }
@@ -168,6 +169,17 @@ describe("perspective", () => {
     }
     expect(cycles[1], "the game got past a day").toBeGreaterThan(DEFAULT_CONFIG.cyclesPerDay);
   }, 30_000);
+
+  it("follows the seat (mind) across a Transfer, not the old body", () => {
+    const { state } = play(50, 6);
+    const starts = seatStarts(state);
+    const [a, b] = [state.players[0]!, state.players[1]!];
+    swapMinds(state, a, b);
+    const full = fullViewFor(state, starts);
+    // Seat p0 now plays body p1, and seat p1 plays body p0.
+    expect(perspective(full, "p0")).toEqual(viewFor(state, "p1"));
+    expect(perspective(full, "p1")).toEqual(viewFor(state, "p0"));
+  });
 
   it("holds everything but the RNG, in a copy", () => {
     const { state } = play(300, 7);
@@ -183,6 +195,16 @@ describe("perspective", () => {
     const { state } = play(3, 8, preselectionSetup);
     expect(state.preselection).toBe(true);
     expect(fullViewFor(state, null).starts).toBeNull();
+  });
+
+  it("throws HistoryError when an older full view's shape is incompatible with viewFor", () => {
+    const { state } = play(5, 2);
+    const full = fullViewFor(state, seatStarts(state));
+    // Simulate an older FullView missing a nested config block that viewFor reads.
+    delete (full as { config?: unknown }).config;
+    expect(() => perspective(full, "p0")).toThrow(HistoryError);
+    // An unknown seat still throws the ordinary error.
+    expect(() => perspective(fullViewFor(state, seatStarts(state)), "p99")).toThrow("Unknown player p99");
   });
 });
 
@@ -346,7 +368,7 @@ describe("replay chunks (#336)", () => {
       seats: [{ seat: "p2", role: "mush", character: "chao" }, { seat: "p10", role: "human", character: "chun" }],
       chunks: [],
     });
-    expect(replayKeys.chunk("r1", 3)).toBe(`replays/r1/v${HISTORY_VERSION}/chunk-000003.json.gz`);
-    expect(replayKeys.index("r1")).toBe(`replays/r1/v${HISTORY_VERSION}/index.json`);
+    expect(replayKeys.chunk("r1", 3)).toBe("replays/r1/chunk-000003.json.gz");
+    expect(replayKeys.index("r1")).toBe("replays/r1/index.json");
   });
 });

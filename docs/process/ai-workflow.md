@@ -2096,3 +2096,19 @@ Added `tendPlants` (a Botanist or Skilful bot waters, treats and sows in the gar
 ## 2026-11-01: crew inventory notes plan (draft)
 
 Asked Claude to summarize a third-party userscript (AstroPad) for the original game, then to draft a plan for a shared item-notes tab. Worked: a subagent fetched the script and Claude checked its license (none, so the plan borrows ideas only, no code or data) and the item states from `ItemState`/`ItemView`. Needed care: the fetch returned only part of the file verbatim, so the plan relies on the feature list, not on details of its UI. Plan is `docs/plans/inventory-notes.md`; all rule questions are left open for the owner.
+
+### 2026-11-01: Replay API (#337)
+
+- Built `GET /api/games/<id>/replay` and `/replay/<n>` (`server/src/replayRoutes.ts`) on the Hono chain, behind the existing rate limit, with zod schemas and OpenAPI entries (the route-match test caught nothing missing). It reads only D1 and R2, never the room.
+- Decision made by Claude, flagged to the owner: the copy's "confirmation" server-side is the R2 index itself (written only after every chunk's put resolved), not a new D1 `replay_ready` column. That avoids a migration and an extra D1 write per game; the room's `replayReady` stays the room's own retry flag. Not-ready is 409 `not_ready`; a running game and another account's single-player game get the same 404 as a missing one.
+- Chunks pass their stored gzip straight through (`encodeBody: "manual"`), unzipped only for a client without gzip; public chunks are immutable-cached, single-player answers `no-store`.
+- Leak check (forked skill) found no hidden-information leak, but pointed out that the full views in the chunks carry players' names before `moderateName`, which the end screen and the games list apply; the API now makes that public. Left for the owner to decide (moderate at copy time, or in the viewer).
+
+### 2026-11-01: Replay review follow-ups (#153)
+
+- Reviewed the replay epic (#155, #334, #335, #336, #337) and made four follow-up fixes requested by the owner:
+  1. `perspective(full, seat)` now resolves `bodyOf(state, seat)` so per-seat replay views follow the mind across a Transfer rather than staying on the old body.
+  2. Dropped `/v${HISTORY_VERSION}` from `replayKeys` (`replays/<roomId>/`) and removed the `index.v !== HISTORY_VERSION` `not_ready` check in `openReplay` so `HISTORY_VERSION` strictly versions `HistoryStep`/`ViewDiff`, `index.json` is always reachable, and `perspective` throws `HistoryError` when an older `FullView` shape is no longer readable by `viewFor`.
+  3. `GameRoom.tryCopyReplay` skips copying guest single-player games (no account) to R2, matching `finishedEntry`.
+  4. Dropped the pre-#155 `stored.listed ?? true` backfill check from `GameRoom` since the databases are empty.
+- Owner confirmed raw player names in `FullView` should stay uncensored in R2 so moderators can inspect them (#157) while the viewer applies `moderateName` on display.

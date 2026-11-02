@@ -120,7 +120,7 @@ export function replayIndex(
 
 /** Where a game's copy lives in the bucket. Keys depend only on the game, so writing it again replaces it exactly. */
 export const replayKeys = {
-  prefix: (roomId: string) => `replays/${roomId}/v${HISTORY_VERSION}/`,
+  prefix: (roomId: string) => `replays/${roomId}/`,
   chunk: (roomId: string, n: number) => `${replayKeys.prefix(roomId)}chunk-${String(n).padStart(6, "0")}.json.gz`,
   index: (roomId: string) => `${replayKeys.prefix(roomId)}index.json`,
 };

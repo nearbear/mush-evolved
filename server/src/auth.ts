@@ -10,6 +10,7 @@
 //   GET  /auth/dev?name=<name>             dev sign-in for tooling (#287): `npm run dev` on localhost only
 //   GET  /api/setups, /api/setups/<id>     and POST /api/setups: posted setups (#233), in setupRoutes.ts
 //   GET  /api/games?before=&limit=         finished multiplayer games (#155), in gameRoutes.ts
+//   GET  /api/games/<id>/replay[/<n>]      a finished game's replay index and chunks (#337), in replayRoutes.ts
 //   GET  /api/openapi.json, /api/docs      the OpenAPI document and its docs page (#324), where cheats are on
 //
 // Session, OAuth-state and sign-up cookies each hold a random ID (only the
@@ -36,6 +37,7 @@ import { DOCUMENT_PATH, docsPageRoute, docsWrongMethodRoute, documentRoute } fro
 import { listGames } from "./gameRoutes.ts";
 import type { GameStore } from "./gameStore.ts";
 import { allowAuthRequest } from "./rateLimit.ts";
+import { replayChunkRoute, replayIndexRoute, type ReplayReader, type ReplayRouteDeps } from "./replayRoutes.ts";
 import type { SetupStore } from "./setupStore.ts";
 import { listSetups, lookupSetup, MAX_SETUP_BODY, postSetup, type SetupRouteDeps } from "./setupRoutes.ts";
 
@@ -57,6 +59,8 @@ export interface AuthDeps {
   setups: SetupStore;
   /** Finished games (#155), served under /api/games. */
   games: GameStore;
+  /** The replays' R2 bucket (#336), read under /api/games/<id>/replay (#337). */
+  replays: ReplayReader;
   now: number;
   /** For the provider requests; tests replace it. */
   fetcher?: typeof fetch;
@@ -251,6 +255,13 @@ const setupDeps = (request: Request, { env, deps }: ApiBindings): SetupRouteDeps
   session: () => currentSession(request, env, deps.store, deps.now),
 });
 
+/** The replay routes' view of a request (replayRoutes.ts). */
+const replayDeps = (request: Request, { env, deps }: ApiBindings): ReplayRouteDeps => ({
+  games: deps.games,
+  replays: deps.replays,
+  account: () => sessionAccount(request, env, deps),
+});
+
 /** OAuth routes are browser redirects only, so a wrong method is 405 and an unknown provider 404. */
 const oauthRoute =
   (handler: typeof start) =>
@@ -300,6 +311,12 @@ export const api = new Hono<{ Bindings: ApiBindings }>()
   .all("/api/setups/:id", methodNotAllowed)
   .get("/api/games", (c) => listGames({ before: c.req.query("before"), limit: c.req.query("limit") }, c.env.deps.games))
   .all("/api/games", methodNotAllowed)
+  .get("/api/games/:id/replay", (c) => replayIndexRoute(c.req.param("id"), replayDeps(c.req.raw, c.env)))
+  .all("/api/games/:id/replay", methodNotAllowed)
+  .get("/api/games/:id/replay/:n", (c) =>
+    replayChunkRoute(c.req.param("id"), c.req.param("n"), c.req.header("Accept-Encoding") ?? null, replayDeps(c.req.raw, c.env)),
+  )
+  .all("/api/games/:id/replay/:n", methodNotAllowed)
   // The OpenAPI document and its docs page (openapi.ts): where cheats are on, else 404 like any unknown path, whatever the method.
   .get(DOCUMENT_PATH, (c) => documentRoute(c.env.env, { name: MAX_BODY, setup: MAX_SETUP_BODY }))
   .all(DOCUMENT_PATH, (c) => docsWrongMethodRoute(c.env.env))
