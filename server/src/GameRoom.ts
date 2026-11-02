@@ -24,6 +24,9 @@ import {
   SINGLE_PLAYER_HUMAN,
   viewFor,
   seatStarts,
+  fullViewFor,
+  historyStep,
+  type FullView,
   type SeatStart,
   type CharacterId,
   type ConfigOverrides,
@@ -139,7 +142,8 @@ interface Stored {
 
 // The game's record, beside the snapshot in this room's storage:
 //   "setup"         GameSetup, written once
-//   "input:<seq>"   RecordedInput, one per accepted input, never rewritten
+//   "input:<seq>"   RecordedInput, one per accepted input, never rewritten, with its change to the full view for
+//                   the replay (`history`, shared/src/viewHistory.ts)
 //   "blocked:<seq>" BlockedText, text moderation refused (moderators only)
 //   "account:<seat>" the account that took the seat (#292), written with its join and never rewritten, so moderators
 //                    can tell who played a seat after a rename or once the snapshot is gone. Moderators only.
@@ -187,6 +191,11 @@ export class GameRoom extends Server<Env> {
   private tokenSessions: Record<string, string> = {};
   private language: LobbyLanguage | null = null;
   private starts: Record<PlayerId, SeatStart> | null = null;
+  /**
+   * The full view after the last input recorded since this room started, which the next input's change is taken
+   * from (#335). Null after a start, so the next input carries a full copy of the view as loaded.
+   */
+  private lastFull: FullView | null = null;
   private listed = false;
   private endedAt: number | null = null;
   /** When to try writing the finished game's entry again (`recordFinished`), and the wait after the next failure. */
@@ -719,6 +728,8 @@ export class GameRoom extends Server<Env> {
   private async act(input: Input, raw?: string, room?: string | null): Promise<string | null> {
     if (!this.game) return "no_game";
     const firstChatId = this.game.nextChatId;
+    const before = this.game;
+    const starts = this.starts;
     const result = applyInput(this.game, input);
     if (!result.ok) return result.error;
     // One time for the stamps and the record, so a rebuild stamps the same (rebuildGame).
@@ -728,7 +739,10 @@ export class GameRoom extends Server<Env> {
     if (this.game.phase === "ended") this.endedAt ??= now;
     // The message the chat input posted: the only player message an input makes.
     const chatId = input.type === "chat" ? this.game.chat.find((m) => m.id >= firstChatId && m.from !== null)?.id : undefined;
-    const recorded: RecordedInput = { at: now, input, ...(raw !== undefined && { raw }), ...(chatId !== undefined && { chatId }) };
+    const full = fullViewFor(this.game, this.starts);
+    const history = historyStep(this.lastFull, () => fullViewFor(before, starts), full, input.type === "cycle");
+    this.lastFull = full;
+    const recorded: RecordedInput = { at: now, input, ...(raw !== undefined && { raw }), ...(chatId !== undefined && { chatId }), history };
     const entries: Record<string, unknown> = { [inputKey(this.inputs++)]: recorded };
     const account = input.type === "join" ? this.accounts[input.seat.id] : undefined;
     if (input.type === "join" && account !== undefined) entries[accountKey(input.seat.id)] = account;

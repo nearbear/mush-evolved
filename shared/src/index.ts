@@ -39,4 +39,6 @@ export * from "./setups.ts";
 export * from "./finishedGames.ts";
 export * from "./mind.ts";
 export * from "./fullView.ts";
+export * from "./viewDiff.ts";
+export * from "./viewHistory.ts";
 export * from "./singlePlayer.ts";

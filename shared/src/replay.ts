@@ -14,6 +14,7 @@ import { sharePlanet } from "./sharedPlanets.ts";
 import { postPlan } from "./plans.ts";
 import { inactivate, seen } from "./inactivity.ts";
 import type { ConfigOverrides, GameConfig, GameState, PlayerId, Role, Seat } from "./types.ts";
+import type { HistoryStep } from "./viewHistory.ts";
 
 /** What createGame needed, plus which rules produced the game. */
 export interface GameSetup {
@@ -48,6 +49,8 @@ export interface RecordedInput {
    * (`CHAT_HISTORY`) or its private channel is gone (#292). Ids are never reused. Missing on older games.
    */
   chatId?: number;
+  /** The input's change to the full view, for the replay (#335, viewHistory.ts). Missing on older games. */
+  history?: HistoryStep;
 }
 
 /**

@@ -3,9 +3,12 @@ import {
   CHAT_CHANNELS,
   CYCLE_HOURS,
   DEFAULT_CONFIG,
+  fullViewFor,
+  HISTORY_VERSION,
   legalIn,
   PRESELECTION,
   rebuildGame,
+  rebuildHistory,
   resolveConfig,
   setupOverrides,
   STANDARD_KNOBS,
@@ -18,6 +21,7 @@ import {
   type PlayerView,
   type RecordedInput,
   type Role,
+  type SeatStarts,
   type Setup,
 } from "@mush2/shared";
 import { beforeEach, describe, expect, it, vi } from "vitest";
@@ -1420,5 +1424,62 @@ describe("GameRoom finished games list (#155)", () => {
       expect(rows.results).toEqual(accountId ? [{ sp: 1, language: "fr" }] : []);
       expect((await new GameStore(db).listFinished()).games).toEqual([]);
     }
+  });
+});
+
+describe("GameRoom replay history (#335)", () => {
+  it("stores each input's change to the full view, and the history rebuilds fullViewFor at every step, across a restart and a cycle", async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(Date.UTC(2026, 9, 19, 14));
+    const storage = new FakeStorage();
+    const { room } = await newRoom(3, storage, CHEATS);
+    const c = connect(room, "tok0");
+    await send(room, c, { type: "chat", channel: CHAT_CHANNELS[0], text: "hello" });
+    await send(room, c, { type: "action", action: legalIn(lastView(c)).find((x) => x.type === "move")! });
+    await vi.advanceTimersByTimeAsync(1600);
+    // Evicted: the next input carries the view as the revived room loaded it.
+    const revived = asRoom(storage, CHEATS);
+    await revived.onStart();
+    const c2 = connect(revived, "tok0");
+    await send(revived, c2, { type: "chat", channel: CHAT_CHANNELS[0], text: "back" });
+    vi.setSystemTime(Date.UTC(2026, 9, 19, 15));
+    await revived.onAlarm();
+    await send(revived, c2, { type: "action", action: { type: "ready" } });
+    await send(revived, c2, { type: "chat", channel: CHAT_CHANNELS[0], text: "after" });
+    vi.useRealTimers();
+
+    const json = <T>(v: unknown) => JSON.parse(JSON.stringify(v)) as T;
+    const record = json<RecordedInput[]>([...(await storage.list({ prefix: "input:" })).values()]);
+    const steps = record.map((r) => r.history!);
+    expect(steps.every((s) => s !== undefined)).toBe(true);
+    // A full copy at the launch's first input, at the restart's first input and at every cycle; changes otherwise.
+    const kinds = steps.map((s) => ("full" in s ? "full" : "base" in s ? "base" : "diff"));
+    expect(kinds[0]).toBe("base");
+    expect(kinds.filter((k) => k === "base")).toHaveLength(2);
+    record.forEach((r, i) => {
+      if (r.input.type === "cycle") expect(kinds[i]).toBe("full");
+    });
+    expect(record.some((r) => r.input.type === "cycle")).toBe(true);
+    for (const s of steps) if ("v" in s) expect(s.v).toBe(HISTORY_VERSION);
+
+    const setup = json<GameSetup>(await storage.get("setup"));
+    const { starts } = json<{ starts: SeatStarts }>(await storage.get("game"));
+    const frames = rebuildHistory(steps);
+    expect(frames).toHaveLength(record.length);
+    frames.forEach(({ base, view }, i) => {
+      expect(view, `after input ${i} (${record[i]!.input.type})`).toEqual(json(fullViewFor(rebuildGame(setup, record.slice(0, i + 1)), starts)));
+      if (base) expect(base, `before input ${i}`).toEqual(json(fullViewFor(rebuildGame(setup, record.slice(0, i)), starts)));
+    });
+  });
+
+  it("keeps an ordinary input's change small: a chat line is an append, not a copy of the log", async () => {
+    const { room, storage } = await newRoom(3);
+    const c = connect(room, "tok0");
+    await send(room, c, { type: "chat", channel: CHAT_CHANNELS[0], text: "first" });
+    await send(room, c, { type: "chat", channel: CHAT_CHANNELS[0], text: "second" });
+    const step = (storage.data.get("input:000000001") as RecordedInput).history!;
+    expect(step).not.toHaveProperty("base");
+    expect(JSON.stringify(step).length).toBeLessThan(500);
+    expect(step).toMatchObject({ diff: { k: "o", c: { chat: { k: "a", a: [expect.objectContaining({ text: "second" })] } } } });
   });
 });

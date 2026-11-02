@@ -7,6 +7,8 @@ import { nextDue } from "../src/queue.ts";
 import { legalActions, viewFor } from "../src/rules.ts";
 import { fullViewFor, perspective, seatStarts, type FullView, type SeatStarts } from "../src/fullView.ts";
 import { nextInt, type RngState } from "../src/rng.ts";
+import { applyDiff, diffView, type ViewDiff } from "../src/viewDiff.ts";
+import { HISTORY_VERSION, HistoryError, historyStep, rebuildHistory, type HistoryStep } from "../src/viewHistory.ts";
 import { MAX_SPOT_CELL } from "../src/spot.ts";
 import { CHAT_CHANNELS, type GameState, type Seat } from "../src/types.ts";
 
@@ -180,5 +182,99 @@ describe("perspective", () => {
     const { state } = play(3, 8, preselectionSetup);
     expect(state.preselection).toBe(true);
     expect(fullViewFor(state, null).starts).toBeNull();
+  });
+});
+
+describe("viewDiff", () => {
+  const roundTrip = (prev: unknown, next: unknown) => {
+    const diff = JSON.parse(JSON.stringify(diffView(prev, next) ?? null)) as ViewDiff | null;
+    return applyDiff(prev, diff ?? undefined);
+  };
+
+  it("finds no change between equal values, with undefined keys counting as missing", () => {
+    expect(diffView({ a: [1, { b: 2 }] }, { a: [1, { b: 2 }] })).toBeUndefined();
+    expect(diffView({ a: 1, b: undefined }, { a: 1 })).toBeUndefined();
+  });
+
+  it("stores a growing list as an append", () => {
+    const prev = { log: [{ id: 1 }, { id: 2 }] };
+    const next = { log: [{ id: 1 }, { id: 2 }, { id: 3 }] };
+    expect(diffView(prev, next)).toEqual({ k: "o", c: { log: { k: "a", a: [{ id: 3 }] } } });
+    expect(roundTrip(prev, next)).toEqual(next);
+  });
+
+  it("stores a trim from the middle (chat's per-channel cap) as a removal, plus the append", () => {
+    const prev = [{ c: "a", n: 1 }, { c: "b", n: 2 }, { c: "a", n: 3 }, { c: "b", n: 4 }];
+    const next = [{ c: "a", n: 1 }, { c: "a", n: 3 }, { c: "b", n: 4 }, { c: "b", n: 5 }];
+    expect(diffView(prev, next)).toEqual({ k: "a", r: [1], a: [{ c: "b", n: 5 }] });
+    expect(roundTrip(prev, next)).toEqual(next);
+  });
+
+  it("stores a trim from the front, an edit in place and a truncation", () => {
+    for (const [prev, next] of [
+      [[1, 2, 3, 4, 5], [3, 4, 5, 6]],
+      [[{ x: 1 }, { x: 2 }, { x: 3 }], [{ x: 1 }, { x: 9 }, { x: 3 }]],
+      [[1, 2, 3, 4], [1, 2]],
+      [[1, 2], [3, 4, 5]],
+      [[], [1]],
+      [[1], []],
+    ]) {
+      expect(roundTrip(prev, next), JSON.stringify([prev, next])).toEqual(next);
+    }
+    expect(diffView([1, 2, 3, 4, 5], [3, 4, 5, 6])).toEqual({ k: "a", r: [0, 1], a: [6] });
+  });
+
+  it("replaces values whose type changed, and removes keys", () => {
+    for (const [prev, next] of [
+      [{ a: 1, b: 2 }, { a: 1 }],
+      [{ a: [1] }, { a: { 0: 1 } }],
+      [{ a: null }, { a: { b: 1 } }],
+      [1, "1"],
+    ]) {
+      expect(roundTrip(prev, next), JSON.stringify([prev, next])).toEqual(next);
+    }
+  });
+
+  it("never changes the value it applies to", () => {
+    const prev = { list: [{ x: 1 }, { x: 2 }], o: { y: 1 } };
+    const before = structuredClone(prev);
+    applyDiff(prev, diffView(prev, { list: [{ x: 5 }], o: { z: 2 } }));
+    expect(prev).toEqual(before);
+  });
+});
+
+describe("view history", () => {
+  it("rebuilds the full view at every step of a random game from its stored steps, through JSON", () => {
+    for (const [from, steps, seed] of [[preselectionSetup, 300, 4], [setup, 1200, 1]] as const) {
+      let starts: SeatStarts | null = null;
+      let prev: FullView | null = null;
+      let before = fullViewFor(startGame(from), null);
+      const views: FullView[] = [];
+      const history: HistoryStep[] = [];
+      let i = 0;
+      play(steps, seed, from, (s) => {
+        if (starts === null && !s.preselection) starts = seatStarts(s);
+        const next = fullViewFor(s, starts);
+        // A room restart every 100 inputs, and a full copy every 50, as a cycle would.
+        const restarted = i % 100 === 37;
+        const loaded = before;
+        history.push(JSON.parse(JSON.stringify(historyStep(restarted ? null : prev, () => loaded, next, i % 50 === 0))) as HistoryStep);
+        views.push(next);
+        prev = before = next;
+        i++;
+      });
+      const frames = rebuildHistory(history);
+      expect(frames).toHaveLength(views.length);
+      frames.forEach(({ view }, n) => {
+        if (!isDeepStrictEqual(JSON.parse(JSON.stringify(view)), JSON.parse(JSON.stringify(views[n])))) expect(view, `step ${n}`).toEqual(views[n]);
+      });
+    }
+  }, 30_000);
+
+  it("refuses a history in another format version, or a change with nothing before it", () => {
+    const { state } = play(5, 2);
+    const full = fullViewFor(state, null);
+    expect(() => rebuildHistory([{ v: HISTORY_VERSION + 1, full }])).toThrow(HistoryError);
+    expect(() => rebuildHistory([{ diff: { k: "s", v: full } }])).toThrow(HistoryError);
   });
 });
