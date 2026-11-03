@@ -249,8 +249,8 @@ export const SKILL_STATUS: Readonly<Partial<Record<SkillId | MushSkillId, SkillS
   persistent: "full",
   // 50% of hunter waves come 33% smaller (owner, 2026-10-25).
   space_tactics: "full",
-  // Two more channels and Computer points; not the -10% on actions (owner, 2026-10-25).
-  polymath: "partial",
+  // Two more channels and Computer points; (owner, 2026-10-25).
+  polymath: "full",
 };
 
 export function skillStatus(skill: string): SkillStatus {
