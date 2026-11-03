@@ -6,3 +6,5 @@ dist/
 .screenshots/
 # Claude Code worktrees (short-lived; each is its own checkout)
 .claude/worktrees/
+# Upstream eMush reference (clean-room specification only)
+reference/

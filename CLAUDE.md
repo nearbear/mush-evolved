@@ -83,6 +83,7 @@ Node is on `PATH` via nvm (pinned in the user settings `env`); if `node` isn't f
 - `npm run verify`: typecheck, lint and all tests in one call, quiet unless something fails. Run it once, at the very end.
 - `npm run build`: production build of `web`, if `web` changed.
 - `npm run layout-query -- <regex>`: search `ship-art.json` and `ship-map.json` (reading them directly is denied).
+- `npm run emush -- <check|find|outline|spec>`: clean-room query/spec tool for upstream eMush in `reference/emush` (reading `reference/**` directly is denied).
 
 Everything else (deploys, `ship-layout`, `screenshot`, `a11y`, `model-trial`, `lint:md`, npm install-script approvals) is in `docs/process/commands.md`. Read it before running a command not listed here.
 
@@ -92,7 +93,7 @@ Everything else (deploys, `ship-layout`, `screenshot`, `a11y`, `model-trial`, `l
 
 `docs/process/testing.md` lists what's important to test and why, with what's covered and what's missing.
 
-Project skills in `.claude/skills/`: `play` (launch, drive, and look at the game), `rule` (adding or changing a game rule), `asset` (using art from `Mush/`), `bot` (scripted and model-backed bots), `leak-check` (review changes for hidden-information leaks), `i18n` (player-visible text and translations: en/fr/es), `wiki` (search and read eMushpedia, the French eMush wiki, with `npm run wiki`), `gemini` (ask the Gemini CLI, read-only), and `wrap-up` (verify, update docs, propose a commit).
+Project skills in `.claude/skills/`: `play` (launch, drive, and look at the game), `rule` (adding or changing a game rule), `asset` (using art from `Mush/`), `bot` (scripted and model-backed bots), `leak-check` (review changes for hidden-information leaks), `i18n` (player-visible text and translations: en/fr/es), `wiki` (search and read eMushpedia, the French eMush wiki, with `npm run wiki`), `emush` (clean-room extraction from upstream PHP via `npm run emush`), `gemini` (ask the Gemini CLI, read-only), and `wrap-up` (verify, update docs, propose a commit).
 
 ## Code map
 

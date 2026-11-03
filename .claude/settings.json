@@ -2,7 +2,8 @@
     "model": "sonnet",
     "permissions": {
         "allow": [
-            "Bash(npm run layout-query:*)"
+            "Bash(npm run layout-query:*)",
+            "Bash(npm run emush:*)"
         ],
         "ask": [
             "Read(./node_modules/**)",
@@ -12,7 +13,8 @@
         ],
         "deny": [
             "Read(./Mush/derived/ship-art.json)",
-            "Read(./Mush/derived/ship-map.json)"
+            "Read(./Mush/derived/ship-map.json)",
+            "Read(./reference/**)"
         ]
     }
 }

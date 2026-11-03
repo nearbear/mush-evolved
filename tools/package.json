@@ -12,6 +12,7 @@
     "asset-index": "node src/assetIndex/assetIndex.ts",
     "ods-data": "node src/odsData/odsData.ts",
     "wiki": "node src/wiki/wiki.ts",
+    "emush": "node src/emush/emush.ts",
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
     "dev": "node src/dev/dev.ts",
