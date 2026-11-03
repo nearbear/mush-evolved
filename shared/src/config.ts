@@ -367,10 +367,8 @@ export const DEFAULT_CONFIG: GameConfig = {
     { type: "freezer", room: "REFECTORY" },
     // Owner, 2026-10-19: the microwave spawns in the refectory at the start; heavy.
     { type: "microwave", room: "REFECTORY" },
-    // PLACEHOLDER food so satiety can be tested.
-    { type: "uncooked_ration", room: "REFECTORY" },
-    { type: "uncooked_ration", room: "REFECTORY" },
-    { type: "uncooked_ration", room: "REFECTORY" },
+    // Owner, 2026-11-03: matching eMush (eMushpedia "Réfectoire" / "Ration standard"), 32 standard rations spawn in the refectory.
+    ...Array.from({ length: 32 }, () => ({ type: "uncooked_ration", room: "REFECTORY" as RoomId })),
     // Owner, 2026-10-22 (replacing the five lab pots of 2026-10-18): the original's garden, an empty pot and two adult
     // banana plants, plus two empty pots in front storage.
     { type: "tree_pot", room: "HYDROPONIC_CENTER" },

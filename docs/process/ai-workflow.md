@@ -2190,3 +2190,16 @@ An outside security review claimed cross-site WebSocket hijacking via the Lax se
 - **Goal:** Show a person floating inside the Sick Bay `human_tank` scenery sprite, but only once a Mush has died on the ship at any point in the game.
 - **Graphic discovery:** In `Mush/clients/iso/gfx/MidFill2.png`, directly beneath `human_tank` (y=1082..1144), row 2 at y=1145 has a matching 9-frame animated strip of the tank with a person/specimen floating inside and bubbling liquid.
 - **Implementation:** Added `hasMushDied` in `shared/src/death.ts`, checking `state.players.some((p) => p.role === "mush" && !p.alive)`. Added public `humanTankFull: boolean` to `PlayerView` (computed in `viewFor`). Slices in `Mush/` are read-only, so `human_tank_full` slice definition was wired into `loadShip()` in `web/src/iso/shipLayout.ts` and added to `AMBIENT_SLICES` in `web/src/iso/scene.ts`. `IsoRoom.tsx` swaps `human_tank` -> `human_tank_full` in `looks` when `humanTankFull` is true.
+
+## Clean-room eMush query tooling
+
+- **Date:** 2026-11-03
+- **Goal:** Provide a safe, context-efficient mechanism for Claude and Antigravity to reference upstream eMush (PHP) game mechanics without violating clean-room provenance or copying AGPL code.
+- **Decision:** Built `npm run emush` in `tools/` with four modes (`check`, `find`, `outline`, `spec`). Outlining strips method bodies and keeps only class headers, docblocks, and signatures. `spec` uses headless Gemini (`agy`) to distill pure behavioral specifications (preconditions, formulas, mutations, logs) with an explicit prohibition on generating PHP code. Configured `.claude/settings.json` to deny reading `reference/**` directly and added `reference/` to `.gitignore`.
+
+## Refectory starting rations
+
+- **Date:** 2026-11-03
+- **Goal:** Match eMush's starting ration count in the refectory.
+- **Reference:** Checked eMushpedia via `npm run -s wiki -- page "Réfectoire"` and `"Ration standard"`, which both document 32 standard rations (`Ration standard ⨯ 32`) spawning in the refectory at game start.
+- **Implementation:** Replaced the 3 placeholder rations in `DEFAULT_CONFIG.startItems` ([shared/src/config.ts](file:///home/near/mush2/shared/src/config.ts)) with 32 `uncooked_ration`s, updated `shared/tests/cook.test.ts`, and updated the rules documentation in `docs/rules/implemented-rules.md` and `docs/rules/rules-design.md`.

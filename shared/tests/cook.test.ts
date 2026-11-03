@@ -21,7 +21,9 @@ function ship(): GameState {
 
 describe("cook", () => {
   it("spawns uncooked rations in the refectory by default", () => {
-    expect(DEFAULT_CONFIG.startItems.filter((i) => i.room === "REFECTORY" && i.type === "uncooked_ration").map((i) => i.type)).toEqual(["uncooked_ration", "uncooked_ration", "uncooked_ration"]);
+    const rations = DEFAULT_CONFIG.startItems.filter((i) => i.room === "REFECTORY" && i.type === "uncooked_ration");
+    expect(rations).toHaveLength(32);
+    expect(rations.every((i) => i.type === "uncooked_ration")).toBe(true);
     expect(DEFAULT_CONFIG.cook.cost.ap).toBe(1);
   });
 
