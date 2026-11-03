@@ -146,7 +146,7 @@ describe("relay and title cheats", () => {
     expect(hasTitleAccess(s, player(s, holder), "commander")).toBe(true);
     expect(hasTitleAccess(s, player(s, other), "commander")).toBe(false);
     s = cheat(s, other, "freeHacking");
-    expect(bypassesTitles(player(s, other))).toBe(true);
+    for (const title of TITLE_IDS) expect(bypassesTitles(player(s, other), title)).toBe(true);
     for (const title of TITLE_IDS) expect(hasTitleAccess(s, player(s, other), title)).toBe(true);
     s.titles.commander = null;
     expect(hasTitleAccess(s, player(s, other), "commander")).toBe(true);

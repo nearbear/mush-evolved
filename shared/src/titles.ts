@@ -8,6 +8,7 @@
 import { pushChat } from "./chat.ts";
 import type { CharacterId } from "./characters.ts";
 import type { GameState, PlayerState, PlayerId } from "./types.ts";
+import { hasSkill } from "./skills.ts";
 
 export const TITLE_IDS = ["commander", "neron_admin", "comms_officer"] as const;
 export type TitleId = (typeof TITLE_IDS)[number];
@@ -38,13 +39,19 @@ export function eligibleForTitle(p: Readonly<PlayerState>): boolean {
 }
 
 /**
- * Whether a player can use what a title locks without holding it. Today only the freeHacking cheat;
- * the Hacker Kit (not built) goes here too, so every title check picks it up. Note the decided rule for
- * returning to Sol lets the kit stand in for the Commander only while that title is vacant
- * (docs/rules/rules-design.md), so the kit may need a `title`-aware check rather than a blanket bypass.
+ * Whether a player can use what a title locks without holding it. Today only the freeHacking cheat,
+ * which bypasses every title; passing the title keeps the check ready for title-specific access such
+ * as the Hacker Kit (not built). The kit stands in for the Commander only while that title is vacant
+ * (docs/rules/rules-design.md).
  */
-export function bypassesTitles(p: Readonly<Pick<PlayerState, "cheats">>): boolean {
-  return p.cheats.includes("freeHacking");
+export function bypassesTitles(p: Readonly<Pick<PlayerState, "cheats" | "skills" | "bookSkill" | "mushSkills">>, title: TitleId): boolean {
+  if(p.cheats.includes("freeHacking")){
+    return true;
+  }
+  else if(title === "neron_admin" && hasSkill(p, "neron_access")){
+    return true;
+  }
+  return false;
 }
 
 /**
@@ -52,7 +59,7 @@ export function bypassesTitles(p: Readonly<Pick<PlayerState, "cheats">>): boolea
  * title-locked action (none are built yet; return to Sol will be the first) checks this, not `state.titles`.
  */
 export function hasTitleAccess(state: Readonly<GameState>, p: Readonly<PlayerState>, title: TitleId): boolean {
-  return state.titles[title] === p.id || bypassesTitles(p);
+  return state.titles[title] === p.id || bypassesTitles(p, title);
 }
 
 /**

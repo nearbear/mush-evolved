@@ -251,6 +251,8 @@ export const SKILL_STATUS: Readonly<Partial<Record<SkillId | MushSkillId, SkillS
   space_tactics: "full",
   // Two more channels and Computer points; (owner, 2026-10-25).
   polymath: "full",
+  //Mush skill: Allows for accessing Bios.
+  neron_access: "full",
 };
 
 export function skillStatus(skill: string): SkillStatus {
