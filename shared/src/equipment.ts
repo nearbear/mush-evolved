@@ -72,6 +72,9 @@ export const EQUIPMENT_TYPES: Record<string, EquipmentType> = {
 /** Equipment type of an installed camera. An uninstalled camera is a `camera` item, not equipment. */
 export const CAMERA_EQUIPMENT = "CAMERA";
 
+/** Equipment type the SUPER_CALC research adds to the Nexus. */
+export const SUPER_CALC_EQUIPMENT = "SUPER_CALC";
+
 /** Id of the camera installed in a room (at most one per room). */
 export const cameraEquipmentId = (room: string): string => `${room}:${CAMERA_EQUIPMENT}`;
 

@@ -81,6 +81,7 @@ const AMBIENT_SLICES: ReadonlySet<string> = new Set([
   "human_tank",
   "human_tank_full",
   "mycoscan",
+  "server_active",
 ]);
 
 /** One walk cycle: the six 32x48 frames of a crew strip, half a second in all. */
@@ -315,7 +316,7 @@ export function imageOf(s: PlacedSprite, input: Pick<SceneInput, "layout" | "roo
   if (s.kind !== "actor") {
     const look = input.looks?.get(s.slice);
     const slice = look ? input.layout.slices[look] : undefined;
-    if (slice) return { url: atlasUrl(input.layout, slice.sheet), frame: { ...frameRect(slice, 0), width: s.width, height: s.height }, keyed: false, perRow: slice.framesX };
+    if (slice) return { url: atlasUrl(input.layout, slice.sheet), frame: { ...frameRect(slice, 0), width: slice.width ?? s.width, height: slice.height ?? s.height }, keyed: false, perRow: slice.framesX };
     return { url: atlasUrl(input.layout, s.sheet), frame: s, keyed: false, perRow: input.layout.slices[s.slice]?.framesX };
   }
   const corpse = corpseOf(s, input.corpses);
@@ -382,7 +383,12 @@ export function describeScene(input: SceneInput): Scene {
   const outlines: SceneOutline[] = [];
   const ambientStarts = spreadAmbient(placed, input);
   for (const s of placed) {
-    const base = { key: s.key, x: s.left - box.minX, y: s.top - box.minY, width: s.width, height: s.height };
+    const look = looks?.get(s.slice);
+    const lookSlice = look ? layout.slices[look] : undefined;
+    const width = lookSlice ? lookSlice.width : s.width;
+    const height = lookSlice ? lookSlice.height : s.height;
+    const y = s.top - box.minY + s.height - height;
+    const base = { key: s.key, x: s.left - box.minX, y, width, height };
     // A door opens and shuts on whichever side of it you are (a neighbour's door too).
     const opening = s.door ? doorAnim(layout.slices[s.slice], doors.get(s.key)) : undefined;
     const tile = () => ({ ...base, image: imageOf(s, input), flipX: s.flipX || undefined, flipY: s.flipY || undefined, ...(opening && { anim: opening }) });

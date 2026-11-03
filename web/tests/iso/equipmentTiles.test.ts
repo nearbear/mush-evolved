@@ -45,3 +45,21 @@ describe("built sofas", () => {
     }
   });
 });
+
+describe("Super Calculator in the Nexus", () => {
+  const nexus = roomOf(layout, "NEXUS_ROOM");
+  const superCalc: EquipmentView = { id: "NEXUS_ROOM:SUPER_CALC", type: "SUPER_CALC" };
+
+  it("is not bound to the server tile before being built", () => {
+    const keys = equipmentByTileKey(nexus, []);
+    expect([...keys.values()].some((e) => e.type === "SUPER_CALC")).toBe(false);
+  });
+
+  it("is bound to the server tile once built", () => {
+    const keys = equipmentByTileKey(nexus, [superCalc]);
+    const entry = [...keys.entries()].find(([, e]) => e.type === "SUPER_CALC");
+    expect(entry).toBeDefined();
+    const serverIndex = nexus.tiles.findIndex((t) => t.slice === "server");
+    expect(entry![0]).toBe(`t${serverIndex}`);
+  });
+});

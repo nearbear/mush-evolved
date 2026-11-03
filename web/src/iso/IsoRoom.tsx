@@ -21,7 +21,7 @@
 import { Suspense, lazy, useCallback, useEffect, useId, useLayoutEffect, useMemo, useRef, useState, type ComponentType, type MouseEvent, type PointerEvent } from "react";
 import { useTranslation } from "react-i18next";
 import { createPortal } from "react-dom";
-import { CAMERA_EQUIPMENT, CORPSE_ITEM, EQUIPMENT_TYPES, type EquipmentView, type RoomId, type RoomLayout, type ShipLayout, type Spot, type Target } from "@mush2/shared";
+import { CAMERA_EQUIPMENT, CORPSE_ITEM, EQUIPMENT_TYPES, SUPER_CALC_EQUIPMENT, type EquipmentView, type RoomId, type RoomLayout, type ShipLayout, type Spot, type Target } from "@mush2/shared";
 import type { Bubble } from "../scene/useSpeechBubbles.ts";
 import { useNames } from "../i18n/names.ts";
 import { CAMERA_SLICES, equipmentByTileKey, roomAsBuilt } from "./equipmentTiles.ts";
@@ -112,11 +112,12 @@ function chairAt(layout: ShipLayout, room: RoomLayout | undefined, cell: { x: nu
   return t ? layout.slices[t.slice]?.dir ?? "" : undefined;
 }
 
-function roomLooks(pilgredRepaired: boolean, humanTankFull?: boolean): ReadonlyMap<string, string> | undefined {
-  if (!pilgredRepaired && !humanTankFull) return undefined;
+function roomLooks(pilgredRepaired: boolean, humanTankFull?: boolean, superCalcBuilt?: boolean): ReadonlyMap<string, string> | undefined {
+  if (!pilgredRepaired && !humanTankFull && !superCalcBuilt) return undefined;
   const looks = new Map<string, string>();
   if (pilgredRepaired) looks.set("core_pilgred", "core_pilgred_upgrade");
   if (humanTankFull) looks.set("human_tank", "human_tank_full");
+  if (superCalcBuilt) looks.set("server", "server_active");
   return looks;
 }
 
@@ -504,7 +505,8 @@ export function IsoRoom({
 
   const ringOf = new Map(neighbors.map((n) => [n.id as string, n.ring]));
   const byId = new Map([...drawnPeople, ...neighbors.flatMap((n) => n.people)].map((o) => [o.id, o]));
-  const looks = useMemo(() => roomLooks(pilgredRepaired, humanTankFull), [pilgredRepaired, humanTankFull]);
+  const superCalcBuilt = equipment.some((e) => e.type === SUPER_CALC_EQUIPMENT);
+  const looks = useMemo(() => roomLooks(pilgredRepaired, humanTankFull, superCalcBuilt), [pilgredRepaired, humanTankFull, superCalcBuilt]);
   const imageInput = { layout, room, people: byId, walkers, seats, corpses, looks };
 
   // Load every image this room hit-tests against, so masks are ready by the first click.

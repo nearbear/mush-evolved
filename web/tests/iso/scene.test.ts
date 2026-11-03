@@ -24,11 +24,13 @@ const CORE = { sheet: "S", x: 768, y: 1656, framesX: 1, anims: [] } as unknown a
 const CORE_UPGRADE = { sheet: "T", x: 0, y: 1656, width: 128, height: 110, framesX: 6, anims: [{ frames: [0, 1, 2, 3, 4, 5], rhythm: [3, 3, 3, 3, 3, 3], auto: true }] } as unknown as SliceInfo;
 const TANK = { sheet: "MidFill2", x: 0, y: 1082, width: 42, height: 62, framesX: 9, anims: [{ frames: [0, 1, 2, 3, 4, 5, 6, 7, 8], rhythm: [12, 12, 12, 12, 12, 12, 12, 12, 12], auto: true }] } as unknown as SliceInfo;
 const TANK_FULL = { sheet: "MidFill2", x: 0, y: 1145, width: 42, height: 62, framesX: 9, anims: [{ frames: [0, 1, 2, 3, 4, 5, 6, 7, 8], rhythm: [12, 12, 12, 12, 12, 12, 12, 12, 12], auto: true }] } as unknown as SliceInfo;
+const SERVER = { sheet: "MidFill2", x: 0, y: 858, width: 30, height: 60, framesX: 2, anims: [] } as unknown as SliceInfo;
+const SERVER_ACTIVE = { sheet: "MidFill2", x: 64, y: 858, width: 30, height: 61, framesX: 2, anims: [{ frames: [0, 1], rhythm: [10, 10], auto: true }] } as unknown as SliceInfo;
 
 const layout = {
   roomSize: 32,
   sheets: {},
-  slices: { camera: { anims: [{ frames: [0, 1, 2, 1] }] }, door: DOOR, rotational_reactor: REACTOR, core_pilgred: CORE, core_pilgred_upgrade: CORE_UPGRADE, human_tank: TANK, human_tank_full: TANK_FULL },
+  slices: { camera: { anims: [{ frames: [0, 1, 2, 1] }] }, door: DOOR, rotational_reactor: REACTOR, core_pilgred: CORE, core_pilgred_upgrade: CORE_UPGRADE, human_tank: TANK, human_tank_full: TANK_FULL, server: SERVER, server_active: SERVER_ACTIVE },
   rooms: [],
   autoBind: {},
 } as unknown as ShipLayout;
@@ -158,6 +160,18 @@ describe("describeScene", () => {
     expect(full.image.frame).toMatchObject({ sx: 0, sy: 1145, width: 42, height: 62 });
     expect(full.anim).toMatchObject({ frames: [0, 1, 2, 3, 4, 5, 6, 7, 8], loops: "forever" });
     expect(imageOf(tank, { layout, room: HERE, people: new Map(), walkers: new Map(), seats: new Map(), corpses: [], looks: new Map([["human_tank", "human_tank_full"]]) }).frame.sy).toBe(1145);
+  });
+
+  it("draws the server inactive until Super Calculator is built, then as server_active with ambient loop", () => {
+    const server = placed({ slice: "server", width: 30, height: 60, sx: 0, sy: 858 });
+    const inactive = only(scene([server]));
+    expect(inactive.image.frame).toMatchObject({ sx: 0, sy: 858, width: 30, height: 60 });
+    expect(inactive.anim).toBeUndefined();
+
+    const active = only(scene([server], { looks: new Map([["server", "server_active"]]) }));
+    expect(active.image.frame).toMatchObject({ sx: 64, sy: 858, width: 30, height: 61 });
+    expect(active.anim).toMatchObject({ frames: [0, 1], loops: "forever" });
+    expect(imageOf(server, { layout, room: HERE, people: new Map(), walkers: new Map(), seats: new Map(), corpses: [], looks: new Map([["server", "server_active"]]) }).frame.sx).toBe(64);
   });
 
   it("draws walkers with their facing and walk cycle, and an outline for each", () => {

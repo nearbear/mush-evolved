@@ -5,7 +5,7 @@ import { useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useNames } from "../i18n/names.ts";
 import type { CSSProperties, ReactNode } from "react";
-import { actionVisibility, CHARACTERS, characterGivenName, characterName, type Action, type ActionOption, type EquipmentView, type PlayerView, type ShipLayout, type Target } from "@mush2/shared";
+import { actionVisibility, CHARACTERS, characterGivenName, characterName, SUPER_CALC_EQUIPMENT, type Action, type ActionOption, type EquipmentView, type PlayerView, type ShipLayout, type Target } from "@mush2/shared";
 import { BROKEN_ICON, characterImage, CONTAMINATED_ICON, portrait } from "../art/assets.ts";
 import { useMobile } from "../useMobile.ts";
 import { atlasUrl } from "../iso/shipLayout.ts";
@@ -168,7 +168,8 @@ function EquipmentSprite({ view, layout, equipment }: { view: PlayerView; layout
   const room = mapRoom && roomAsBuilt(mapRoom, view.roomEquipment);
   const entry = [...equipmentByTileKey(room, view.roomEquipment)].find(([, e]) => e.id === equipment.id);
   const tile = room?.tiles[Number(entry?.[0].slice(1))];
-  const slice = tile && layout?.slices[tile.slice];
+  const sliceName = equipment.type === SUPER_CALC_EQUIPMENT ? "server_active" : tile?.slice;
+  const slice = sliceName ? layout?.slices[sliceName] : undefined;
   const sheet = slice && layout?.sheets[slice.sheet];
   const url = layout && slice && atlasUrl(layout, slice.sheet);
   if (!tile || !slice || !sheet || !url) return null;

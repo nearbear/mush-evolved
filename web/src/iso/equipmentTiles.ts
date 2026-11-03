@@ -1,6 +1,6 @@
 // Which room tile draws which piece of equipment. Shared by the room (clicks) and the Inspect panel (the sprite).
 
-import { CAMERA_EQUIPMENT, EQUIPMENT_TYPES, placedEquipment, type EquipmentView, type RoomLayout, type ShipLayout, type TilePlacement } from "@mush2/shared";
+import { CAMERA_EQUIPMENT, EQUIPMENT_TYPES, SUPER_CALC_EQUIPMENT, placedEquipment, type EquipmentView, type RoomLayout, type ShipLayout, type TilePlacement } from "@mush2/shared";
 
 /** Tile slices of the camera art, one tile per room in the layout. */
 export const CAMERA_SLICES: ReadonlySet<string> = new Set(["camera", "camera2"]);
@@ -58,5 +58,8 @@ export function equipmentByTileKey(roomLayout: RoomLayout | undefined, equipment
     const built = equipment.find((e) => e.type === type);
     if (index >= 0 && built) extra.push([`t${index}`, built]);
   }
+  const superCalc = equipment.find((e) => e.type === SUPER_CALC_EQUIPMENT);
+  const serverTile = roomLayout?.tiles.findIndex((t) => t.slice === "server" || t.slice === "server_active") ?? -1;
+  if (superCalc && serverTile >= 0) extra.push([`t${serverTile}`, superCalc]);
   return new Map([...placed, ...extra]);
 }

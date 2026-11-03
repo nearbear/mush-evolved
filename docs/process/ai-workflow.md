@@ -2210,3 +2210,14 @@ An outside security review claimed cross-site WebSocket hijacking via the Lax se
 - **Decided by:** User question answered regarding current room behavior before completion and caption indication.
 - **What worked:** Pure rules separation in `shared`, extending `PlayerView`, unit testing with `fireDetectors.test.ts` and `Minimap.test.tsx`, and i18n support across en/es/fr.
 - **Correction:** `tools/src/a11y/noTitleAttr.test.ts` caught an invalid `title=` HTML attribute in `Minimap.tsx` which was converted to `alt` on the `img` and SVG `<title>` elements, and Biome caught an unsupported `aria-label` on a generic `span`.
+
+## 2026-11-02: Super Calculator research and Nexus equipment
+
+User asked to implement the Super Calculator research, unlocking the conditional equipment in the Nexus without building its terminal yet.
+- Added `SUPER_CALC` research completion in `completeResearch` (`shared/src/actions/research.ts`): adds `NEXUS_ROOM:SUPER_CALC` to `NEXUS_ROOM`'s equipment without consuming `super_map`.
+- Marked `SUPER_CALC: "partial"` in `RESEARCH_STATUS` (`shared/src/research.ts`).
+- Exported `SUPER_CALC_EQUIPMENT` in `shared/src/equipment.ts`.
+- Mapped `SUPER_CALC` in `equipmentByTileKey` (`web/src/iso/equipmentTiles.ts`) to the Nexus server tile (17,13).
+- Added `server_active` to `AMBIENT_SLICES` (`web/src/iso/scene.ts`) and wired `looks.set("server", "server_active")` in `IsoRoom.tsx` when `SUPER_CALC` is built.
+- Used `server_active` slice in `EquipmentSprite` (`web/src/hud/InspectPanel.tsx`).
+- Tested research completion, access gating when broken (12% repair chance), and isometric tile binding/animation.

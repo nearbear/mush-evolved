@@ -1,7 +1,7 @@
 import { Action, type ActionCost, type ActionVisibility, DIRTY, isString } from "./action.ts";
 import { ANY_CONSUMABLE, RESEARCH_COMPLETE, RESEARCH_IDS, RESEARCH_REQUIRES, RESEARCH_SKILLS, type ResearchId, researchNeedOrder } from "../research.ts";
 import { logPrivate, logPublic } from "../log.ts";
-import { equipmentHere } from "../equipment.ts";
+import { equipmentHere, SUPER_CALC_EQUIPMENT } from "../equipment.ts";
 import { ITEM_TYPES, newItemId, removeItem, STEROIDS_ITEM, STEROIDS_YIELD } from "../items.ts";
 import { xylophFound } from "../comms.ts";
 import { makeToken, type ResearchPool } from "../relay.ts";
@@ -109,6 +109,13 @@ function completeResearch(state: GameState, room: RoomId, research: ResearchId):
     for (let i = 0; i < STEROIDS_YIELD; i++) {
       state.items.push({ id: newItemId(state), type: STEROIDS_ITEM, at: { kind: "room", id: room } });
     }
+  }
+  // Owner, 2026-11-02 (eMushpedia "Super Calculateur", Data/research.json): completing it adds the Super Calculator to the Nexus for good.
+  if (research === "SUPER_CALC") {
+    const nexus = "NEXUS_ROOM";
+    const id = `${nexus}:${SUPER_CALC_EQUIPMENT}`;
+    const equipment = (state.equipment[nexus] ??= []);
+    if (!equipment.some((e) => e.id === id)) equipment.push({ id, type: SUPER_CALC_EQUIPMENT });
   }
 }
 

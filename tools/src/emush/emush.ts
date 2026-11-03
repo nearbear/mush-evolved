@@ -37,7 +37,7 @@ export function listPhpFiles(dir: string, baseDir: string = dir): string[] {
         // Skip common large non-code directories
         if (entry.name === ".git" || entry.name === "vendor" || entry.name === "node_modules" || entry.name === "public") continue;
         results.push(...listPhpFiles(fullPath, baseDir));
-      } else if (entry.isFile() && entry.name.endsWith(".php")) {
+      } else if (entry.isFile() && (entry.name.endsWith(".php") || entry.name.endsWith(".yaml") || entry.name.endsWith(".yml") || entry.name.endsWith(".json") || entry.name.endsWith(".xlf"))) {
         results.push(relative(baseDir, fullPath));
       }
     }
@@ -135,6 +135,9 @@ export function searchEmush(emushDir: string, query: string, maxResults = 30): {
   const matches: { file: string; line: number; text: string }[] = [];
 
   for (const relFile of files) {
+    if (regex.test(relFile)) {
+      matches.push({ file: relFile, line: 1, text: `[match in path: ${relFile}]` });
+    }
     const fullPath = join(emushDir, relFile);
     try {
       const content = readFileSync(fullPath, "utf-8");
@@ -400,6 +403,42 @@ if (process.argv[1] && process.argv[1].endsWith("emush.ts")) {
         process.exit(1);
       }
       console.log(runCleanRoomSpec(emushDir, target));
+      break;
+    }
+
+    case "translations": {
+      const domain = args[1];
+      const lang = args[2] || "en";
+      if (!domain) {
+        console.error("Usage: npm run emush -- translations <domain> [lang]");
+        process.exit(1);
+      }
+      const files = listPhpFiles(emushDir);
+      const match = files.find((f) => f.includes(`translations/${lang}/${domain}`));
+      if (!match) {
+        console.error(`No translation file matching domain "${domain}" for lang "${lang}".`);
+        process.exit(1);
+      }
+      const fullPath = join(emushDir, match);
+      const xml = readFileSync(fullPath, "utf-8");
+      const unitRegex = /<unit\s+id="([^"]+)"[^>]*>([\s\S]*?)<\/unit>/g;
+      const segmentRegex = /<segment(?:\s+id="([^"]+)")?[^>]*>([\s\S]*?)<\/segment>/g;
+      const results: Record<string, string> = {};
+      let u: RegExpExecArray | null;
+      while ((u = unitRegex.exec(xml)) !== null) {
+        const unitId = u[1]!;
+        const unitBody = u[2]!;
+        let s: RegExpExecArray | null;
+        while ((s = segmentRegex.exec(unitBody)) !== null) {
+          const segId = s[1];
+          const segBody = s[2]!;
+          const targetMatch = /<target>([\s\S]*?)<\/target>/.exec(segBody);
+          const sourceMatch = /<source>([\s\S]*?)<\/source>/.exec(segBody);
+          const key = segId ? `${unitId}.${segId}` : unitId;
+          results[key] = (targetMatch?.[1] ?? sourceMatch?.[1] ?? "").trim();
+        }
+      }
+      console.log(JSON.stringify(results, null, 2));
       break;
     }
 
