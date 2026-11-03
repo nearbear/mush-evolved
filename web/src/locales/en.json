@@ -165,7 +165,8 @@
     "nobodyHere": "Nobody here",
     "selectRoom": "Point at a room",
     "unidentified": "Unidentified",
-    "unidentifiedCount": "{{count}} unidentified"
+    "unidentifiedCount": "{{count}} unidentified",
+    "onFire": "On fire"
   },
   "inspect": {
     "self": "{{character}} (you): inspect",

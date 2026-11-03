@@ -14,7 +14,7 @@ import { useNames } from "../i18n/names.ts";
 import { useEffect, useMemo, useState, type CSSProperties, type PointerEvent } from "react";
 import planJson from "@mush2/assets/derived/ship-plan.json";
 import type { OtherPlayerView, RoomId, ShipPlan } from "@mush2/shared";
-import { MUSH_ICON, bustIcon } from "../art/assets.ts";
+import { FIRE_ICON, MUSH_ICON, bustIcon } from "../art/assets.ts";
 import { cellsPath, iconSpots, runsPath } from "./plan.ts";
 
 const plan = planJson as ShipPlan;
@@ -32,6 +32,7 @@ export function Minimap({
   people,
   unidentified,
   reachable,
+  burningRooms = [],
 }: {
   /** The room you are in. */
   here: RoomId;
@@ -41,6 +42,8 @@ export function Minimap({
   /** Rooms of people you can't identify (ACTOPI off), one entry each. */
   unidentified: RoomId[];
   reachable: Set<RoomId>;
+  /** Rooms on fire revealed ship-wide by Fire Detectors. */
+  burningRooms?: readonly RoomId[];
 }) {
   const { t } = useTranslation();
   const names = useNames();
@@ -104,29 +107,34 @@ export function Minimap({
         onPointerUp={(e) => touch(e) && !expanded && setOpened(true)}
       >
         <path className="minimap-walls" d={wallsPath} />
-        {shapes.map((r) => (
-          // biome-ignore lint/a11y/noStaticElementInteractions: expanded, the shape is a role="button" Tab stop (spread below); collapsed, it is aria-hidden and pointer-only.
-          <path
-            key={r.id}
-            className={[
-              "minimap-room",
-              r.id === here && "here",
-              reachable.has(r.id) && "reachable",
-              r.id === pointed && "pointed",
-            ]
-              .filter(Boolean)
-              .join(" ")}
-            d={r.d}
-            {...(expanded
-              ? { role: "button", "aria-label": names.room(r.id), tabIndex: 0 }
-              : { "aria-hidden": true })}
-            onPointerEnter={(e) => !touch(e) && setPointed(r.id)}
-            onPointerUp={(e) => touch(e) && expanded && setPointed(r.id)}
-            onFocus={() => setPointed(r.id)}
-          >
-            {expanded && <title>{names.room(r.id)}</title>}
-          </path>
-        ))}
+        {shapes.map((r) => {
+          const burning = burningRooms.includes(r.id);
+          const roomLabel = burning ? `${names.room(r.id)} (${t("minimap.onFire")})` : names.room(r.id);
+          return (
+            // biome-ignore lint/a11y/noStaticElementInteractions: expanded, the shape is a role="button" Tab stop (spread below); collapsed, it is aria-hidden and pointer-only.
+            <path
+              key={r.id}
+              className={[
+                "minimap-room",
+                r.id === here && "here",
+                reachable.has(r.id) && "reachable",
+                r.id === pointed && "pointed",
+                burning && "burning",
+              ]
+                .filter(Boolean)
+                .join(" ")}
+              d={r.d}
+              {...(expanded
+                ? { role: "button", "aria-label": roomLabel, tabIndex: 0 }
+                : { "aria-hidden": true })}
+              onPointerEnter={(e) => !touch(e) && setPointed(r.id)}
+              onPointerUp={(e) => touch(e) && expanded && setPointed(r.id)}
+              onFocus={() => setPointed(r.id)}
+            >
+              {expanded && <title>{roomLabel}</title>}
+            </path>
+          );
+        })}
         {plan.doors.map((d) => (
           <path
             key={`${d.rooms.join()}:${d.cells[0]!.join()}`}
@@ -153,9 +161,20 @@ export function Minimap({
         <div className="minimap-caption">
           {pointed ? (
             <div className="minimap-name">
-              <strong>{names.room(pointed)}</strong>
+              <strong>
+                {names.room(pointed)}
+                {burningRooms.includes(pointed) && (
+                  <span className="minimap-fire">
+                    <img src={FIRE_ICON} alt={t("minimap.onFire")} />
+                  </span>
+                )}
+              </strong>
               <div className="sub">
-                {pointed === here ? [t("minimap.youAreHere"), ...(who ? [who] : [])].join(" · ") : who || t("minimap.nobodyHere")}
+                {[
+                  ...(pointed === here ? [t("minimap.youAreHere")] : []),
+                  ...(who ? [who] : pointed === here ? [] : [t("minimap.nobodyHere")]),
+                  ...(burningRooms.includes(pointed) ? [t("minimap.onFire")] : []),
+                ].join(" · ")}
               </div>
             </div>
           ) : (

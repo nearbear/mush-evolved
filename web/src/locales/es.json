@@ -167,7 +167,8 @@
     "nobodyHere": "No hay nadie aquí",
     "selectRoom": "Señala una sala",
     "unidentified": "Sin identificar",
-    "unidentifiedCount": "{{count}} sin identificar"
+    "unidentifiedCount": "{{count}} sin identificar",
+    "onFire": "En llamas"
   },
   "inspect": {
     "self": "{{character}} (tú): inspeccionar",

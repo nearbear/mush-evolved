@@ -15,6 +15,7 @@ import { getUp } from "./actions/lie_down.ts";
 import { researchNeedsView } from "./actions/research.ts";
 import { equipmentHere } from "./equipment.ts";
 import { leakOxygen } from "./breakage.ts";
+import { projectDone } from "./projects.ts";
 import { fireCycle, isOnFire } from "./fire.ts";
 import { incidentsCycle } from "./incidents.ts";
 import { relayView } from "./relayView.ts";
@@ -514,6 +515,7 @@ export function viewFor(state: GameState, playerId: PlayerId): PlayerView {
     roomItems: you.alive ? visibleItemsIn(state, { kind: "room", id: you.room }, you).map((item) => itemView(item, you)) : [],
     roomEquipment: you.alive ? (state.equipment[you.room] ?? []).map((e) => equipmentView(state, e)) : [],
     roomOnFire: you.alive && isOnFire(state, you.room),
+    burningRooms: you.alive && projectDone(state, "FIRE_SENSOR") ? [...state.fires] : [],
     // The dead keep only ship-wide entries (cycles, days); every room entry, their own private ones included, goes.
     log: state.log.filter((e) =>
       !you.alive ? e.room === undefined && e.visibleTo === "all" : e.visibleTo === "all" ? e.room === undefined || e.room === you.room : e.visibleTo.includes(playerId),

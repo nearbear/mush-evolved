@@ -177,6 +177,8 @@ export interface PlayerView {
   roomEquipment: EquipmentView[];
   /** Whether the room you are in is on fire (fire.ts). Only the living in a burning room learn it; the crew-wide notice names no room. */
   roomOnFire: boolean;
+  /** Burning rooms revealed ship-wide once the Fire Detectors project is complete. Only to the living. */
+  burningRooms: RoomId[];
   /**
    * History of the room you are in (public entries) plus every entry private
    * to you. Other rooms' public history is never sent.

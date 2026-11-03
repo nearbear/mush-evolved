@@ -332,7 +332,7 @@ describe("incidents: hidden information", () => {
     s.fires = [HERE];
     equipment(s, COFFEE).broken = true;
     for (const id of ["p0", "p1", "p2"]) expect(JSON.stringify(viewFor(s, id))).not.toContain("987654");
-    expect(viewFor(s, "p2")).toMatchObject({ roomOnFire: false });
+    expect(viewFor(s, "p2")).toMatchObject({ roomOnFire: false, burningRooms: [] });
     expect(JSON.stringify(viewFor(s, "p2").roomEquipment)).not.toContain("broken");
   });
 });

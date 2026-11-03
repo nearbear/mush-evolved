@@ -2203,3 +2203,10 @@ An outside security review claimed cross-site WebSocket hijacking via the Lax se
 - **Goal:** Match eMush's starting ration count in the refectory.
 - **Reference:** Checked eMushpedia via `npm run -s wiki -- page "Réfectoire"` and `"Ration standard"`, which both document 32 standard rations (`Ration standard ⨯ 32`) spawning in the refectory at game start.
 - **Implementation:** Replaced the 3 placeholder rations in `DEFAULT_CONFIG.startItems` ([shared/src/config.ts](file:///home/near/mush2/shared/src/config.ts)) with 32 `uncooked_ration`s, updated `shared/tests/cook.test.ts`, and updated the rules documentation in `docs/rules/implemented-rules.md` and `docs/rules/rules-design.md`.
+
+## 2026-11-02: Fire Detectors NERON project
+
+- **What:** Completed the `FIRE_SENSOR` NERON project ("Fire detectors", eMushpedia *Détecteur d'incendies*). When completed, `PlayerView.burningRooms` reveals all burning rooms on the Daedalus to every living player, turning burning rooms red on the minimap even if nobody is inside; inspecting a burning room on the minimap shows a flame icon and an "On fire" indicator in the caption. Before completion, fires are hidden from the minimap (even for your own room). Dead players receive no room-dependent fire info. Marked "full" in `PROJECT_STATUS`.
+- **Decided by:** User question answered regarding current room behavior before completion and caption indication.
+- **What worked:** Pure rules separation in `shared`, extending `PlayerView`, unit testing with `fireDetectors.test.ts` and `Minimap.test.tsx`, and i18n support across en/es/fr.
+- **Correction:** `tools/src/a11y/noTitleAttr.test.ts` caught an invalid `title=` HTML attribute in `Minimap.tsx` which was converted to `alt` on the `img` and SVG `<title>` elements, and Biome caught an unsupported `aria-label` on a generic `span`.

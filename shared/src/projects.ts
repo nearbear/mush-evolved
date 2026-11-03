@@ -79,6 +79,8 @@ export type ProjectStatus = "full" | "partial" | "none";
 export const PROJECT_STATUS: Readonly<Partial<Record<ProjectId, ProjectStatus>>> = {
   // The shield absorbs 67% of a hit instead of 33% (owner, 2026-10-24; ship.ts).
   PLASMA_SHIELD: "full",
+  // Fires are reported on the minimap, turning burning rooms red (owner, 2026-11-02).
+  FIRE_SENSOR: "full",
   // Every player's AP cap +2 (owner, 2026-11-01; modifiers.ts `maxAp`, projectEffects.ts).
   NOISE_REDUCER: "full",
   // Each analysis reveals 1 extra sector (owner, 2026-11-01; modifiers.ts `analysisSectors`).

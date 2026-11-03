@@ -260,7 +260,14 @@ export function GameView({ view: given, send, onLeave, waking = false, cheatsAll
               </div>
             )}
             {you.alive && <InventoryOverlay view={view} selected={target} onAction={act} onSelect={select} zoom={zoom} onZoom={setZoom} />}
-            <Minimap here={you.room} youId={you.id} people={[you, ...view.players]} unidentified={view.unidentified} reachable={reachable} />
+            <Minimap
+              here={you.room}
+              youId={you.id}
+              people={[you, ...view.players]}
+              unidentified={view.unidentified}
+              reachable={reachable}
+              burningRooms={view.burningRooms}
+            />
           </div>
         </div>
 

@@ -51,6 +51,18 @@
   fill: var(--highlight);
   opacity: 1;
 }
+.minimap-room.burning {
+  fill: #e54d2e;
+  opacity: 0.8;
+}
+.minimap-room.burning.here {
+  fill: #ff5252;
+  opacity: 1;
+}
+.minimap-room.burning.pointed,
+.minimap-room.burning:focus-visible {
+  opacity: 1;
+}
 .minimap-door {
   fill: #ffbf00;
   opacity: 0.45;
@@ -89,6 +101,17 @@
 .minimap-name .sub {
   overflow: hidden;
   text-overflow: ellipsis;
+}
+.minimap-fire {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 0.35rem;
+  vertical-align: middle;
+}
+.minimap-fire img {
+  width: 13px;
+  height: 13px;
+  image-rendering: pixelated;
 }
 .minimap-caption button {
   margin: 0;
