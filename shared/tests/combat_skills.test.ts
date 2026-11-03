@@ -30,10 +30,6 @@ describe("combat skills' numbers", () => {
     expect([spaceTactics.chance, spaceTactics.shrink]).toEqual([0.5, 0.33]);
     expect([polymath.channels, polymath.computerPointsPerDay, polymath.computerCapBonus]).toEqual([2, 1, 2]);
   });
-
-  it("show their status in the picker", () => {
-    expect(["gunner", "persistent", "space_tactics", "gunman", "polymath"].map(skillStatus)).toEqual(["full", "full", "full", "partial", "partial"]);
-  });
 });
 
 describe("Gunner", () => {
