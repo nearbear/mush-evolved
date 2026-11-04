@@ -93,8 +93,8 @@ export interface GameState {
   ship: ShipResources;
   /** Spores the Mush faction has extracted today; reset at each day boundary. Hidden from everyone. */
   sporesToday: number;
-  /** The cycle each Mush last extracted a spore, for the per-Mush cooldown. Hidden from everyone. */
-  sporeExtractedOn: Record<PlayerId, number>;
+  /** The cycle each Mush last spiked, for the per-Mush spike cooldown. Hidden from everyone. */
+  spikedOn: Record<PlayerId, number>;
   /** Percent done of each research that has been started (absent = 0), by research id (research.ts): the best arrangement of its verified samples (assay.ts). Only the living in the lab see it until it is complete. */
   research: Record<string, number>;
   /** Percent done of each NERON project that has been started (absent = 0), by project id (projects.ts). Only the living at NERON's core see it until it is complete. */
@@ -161,6 +161,8 @@ export interface GameState {
   incidentPoints: number;
   /** Burning rooms (fire.ts), in the order they caught fire. Only the living in a burning room see it (`PlayerView.roomOnFire`). */
   fires: RoomId[];
+  /** Rooms a Pyromaniac set to catch fire at the next cycle change (actions/ignite.ts). Never sent. */
+  pendingFires: RoomId[];
   /** Who holds each title (titles.ts); null while vacant. Public: every view has the holders and the lines. */
   titles: Record<TitleId, PlayerId | null>;
   /**

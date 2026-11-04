@@ -130,6 +130,7 @@ export interface GameConfig {
   };
   spike: {
     cost: { ap: number }; // Confirmed 2026-10-15.
+    cooldownCycles: number; // Cycles a Mush waits between their own spikes, on the global cycle counter (owner, 2026-11-03).
   };
   fungalCuisine: {
     cost: { ap: number }; // The Mush skill Fungal cuisine: 1 AP and 1 spore (owner, 2026-10-24).
@@ -140,7 +141,6 @@ export interface GameConfig {
   spores: {
     cost: { ap: number }; // AP spent to extract a spore (confirmed 2026-10-13).
     effect: { spores: number }; // Spores one extraction gives (confirmed 2026-10-13).
-    cooldownCycles: number; // Cycles a Mush waits between their own extractions; a cooldown on the global cycle counter, not tied to days (confirmed 2026-10-14).
     perDay: number; // Spores the whole Mush faction may extract per day, before modifiers (confirmed 2026-10-14).
   };
   heal: {
@@ -466,6 +466,7 @@ export interface GameConfig {
   fire: { spreadChance: number; maxSpreads: number; breakChance: number; hullChance: number; hullDamage: [number, number]; damage: number };
   // Extinguish (owner, 2026-10-25, eMushpedia "Extincteur"): 1 AP, 50%, with an extinguisher you can reach.
   // Firefighter (owner, 2026-11-01): the manual try's odds and its per-miss multiplier; `firefighterInjuryChance` is the chance of a random injury on any try.
+  ignite: { cost: { ap: number } };
   extinguish: { cost: { ap: number }; chance: number; manual: { chance: number; failureMultiplier: number }; firefighterInjuryChance: number };
   // Breakage and Repair (owner, 2026-10-25): breakage.ts. `chance` is each breakable equipment type's base repair chance
   // (eMushpedia's `réparer=`); a type without one never breaks. A wrench multiplies it by `wrenchFactor`, the Technician

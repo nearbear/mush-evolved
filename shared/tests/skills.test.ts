@@ -17,6 +17,7 @@ const config: GameConfig = { ...DEFAULT_CONFIG, startInventory: [], startItems: 
 function withCamera(dismantleOdds: number, creativeRefundOdds: number): GameState {
   const state = createGame(seats, { ...config, dismantle: { ...config.dismantle, successChance: dismantleOdds }, creative: { refundOdds: creativeRefundOdds } }, 42);
   state.items.push({ id: "item-camera", type: "camera", at: { kind: "player", id: "p0" } });
+  state.players[0]!.skills = ["creative", "engineer"];
   return state;
 }
 
@@ -58,7 +59,7 @@ describe("Creative", () => {
 
   it("does nothing for a player without the skill", () => {
     const before = withCamera(0, 1);
-    before.players[0]!.skills = [];
+    before.players[0]!.skills = ["engineer"];
     const next = dismantle(before);
     expect(next.players[0]!.ap).toBe(before.players[0]!.ap - config.dismantle.cost.ap);
     expect(refunds(next)).toHaveLength(0);
@@ -77,6 +78,7 @@ describe("Creative", () => {
     const outcomes = (seed: number) => {
       const state = createGame(seats, { ...config, dismantle: { ...config.dismantle, successChance: 0 } }, seed);
       state.items.push({ id: "item-camera", type: "camera", at: { kind: "player", id: "p0" } });
+      state.players[0]!.skills = ["creative", "engineer"];
       return dismantle(state).players[0]!.ap;
     };
     for (const seed of [1, 2, 3, 4, 5]) expect(outcomes(seed)).toBe(outcomes(seed));

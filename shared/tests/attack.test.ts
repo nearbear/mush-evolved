@@ -20,6 +20,7 @@ function tuned(type: string, change: Partial<WeaponStats>): GameConfig {
 /** p0, p1 and p2 share the sick bay; p3 is in the refectory. p0 carries one `weapon` (id "w"), charged full. */
 function ship(weapon: string, config: GameConfig = base, seed = 3): GameState {
   const s = createGame(seats, config, seed);
+  player(s, "p0").skills = ["engineer"];
   for (const id of ["p0", "p1", "p2"]) player(s, id).room = "SICK_BAY";
   player(s, "p3").room = "REFECTORY";
   const charges = startCharges(s.config, weapon);

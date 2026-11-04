@@ -68,7 +68,7 @@ export function cure(state: GameState, player: PlayerState): boolean {
     player.mushSkills = [];
     player.satiety = 0;
     player.satietyZeroSince = state.cycle;
-    delete state.sporeExtractedOn[player.id];
+    delete state.spikedOn[player.id];
     logPrivate(state, player.id, "cured");
     return true;
   }

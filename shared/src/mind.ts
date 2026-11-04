@@ -15,7 +15,7 @@ export function bodyOf(state: Readonly<GameState>, mind: PlayerId): PlayerId | u
 const MIND_FIELDS = ["mind", "name", "isBot", "botKind", "role", "alpha", "mushSkills", "spores", "transferUsed", "fertileToday", "bodyTakenBy", "cheats", "lastSeenAt"] as const;
 
 /**
- * Swaps the minds of bodies `a` and `b`: the fields in MIND_FIELDS, the spore cooldown, and the private history
+ * Swaps the minds of bodies `a` and `b`: the fields in MIND_FIELDS, the spike cooldown, and the private history
  * (every log entry addressed to one body is readdressed to the other, so each player keeps what they saw). Both
  * bodies' actions are cancelled and neither is ready. Leaves role-dependent body state (contamination, satiety) to
  * the caller. Mutates a state the caller already cloned.
@@ -29,11 +29,11 @@ export function swapMinds(state: GameState, a: PlayerState, b: PlayerState): voi
     if (va === undefined) delete record(b)[field];
     else record(b)[field] = va;
   }
-  const [sa, sb] = [state.sporeExtractedOn[a.id], state.sporeExtractedOn[b.id]];
-  delete state.sporeExtractedOn[a.id];
-  delete state.sporeExtractedOn[b.id];
-  if (sb !== undefined) state.sporeExtractedOn[a.id] = sb;
-  if (sa !== undefined) state.sporeExtractedOn[b.id] = sa;
+  const [sa, sb] = [state.spikedOn[a.id], state.spikedOn[b.id]];
+  delete state.spikedOn[a.id];
+  delete state.spikedOn[b.id];
+  if (sb !== undefined) state.spikedOn[a.id] = sb;
+  if (sa !== undefined) state.spikedOn[b.id] = sa;
   const other = (id: PlayerId) => (id === a.id ? b.id : id === b.id ? a.id : id);
   for (const entry of state.log) if (entry.visibleTo !== "all") entry.visibleTo = entry.visibleTo.map(other);
   for (const p of [a, b]) {

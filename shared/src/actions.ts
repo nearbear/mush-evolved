@@ -34,6 +34,7 @@ import { PatrolAttackAction } from "./actions/patrol_attack.ts";
 import { TurretAttackAction } from "./actions/turret_attack.ts";
 import { RepairHullAction } from "./actions/repair_hull.ts";
 import { RepairAction } from "./actions/repair.ts";
+import { IgniteAction } from "./actions/ignite.ts";
 import { ExtinguishAction } from "./actions/extinguish.ts";
 import { ExtinguishManuallyAction } from "./actions/extinguish_manually.ts";
 import { TakeoffAction } from "./actions/takeoff.ts";
@@ -152,6 +153,7 @@ const REGISTRY = {
   repair_hull: new RepairHullAction(),
   repair: new RepairAction(),
   extinguish: new ExtinguishAction(),
+  ignite: new IgniteAction(),
   extinguish_manually: new ExtinguishManuallyAction(),
   takeoff: new TakeoffAction(),
   land: new LandAction(),

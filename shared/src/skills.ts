@@ -225,7 +225,7 @@ export const SKILL_STATUS: Readonly<Partial<Record<SkillId | MushSkillId, SkillS
   transfert: "full",
   // Mush skill: spores into food (owner, 2026-10-24, fungal_cuisine.ts); no Hygienist or Cook-point interaction.
   fungus_cook: "partial",
-  // Mush skill: one free spore extraction a day, ignoring the cooldown (owner, 2026-10-27, actions/extract_spore.ts).
+  // Mush skill: one free spore extraction a day (owner, 2026-10-27, actions/extract_spore.ts).
   fertile: "full",
   // Mush skill: showering costs at most 1 AP and no HP (owner reading of eMushpedia, 2026-10-27, actions/shower.ts).
   water_resistant: "full",
@@ -241,6 +241,8 @@ export const SKILL_STATUS: Readonly<Partial<Record<SkillId | MushSkillId, SkillS
   green_thumb: "partial",
   // Doubled turret odds and damage (owner, 2026-10-24).
   gunner: "full",
+  // Ignite: 4 AP, a secret fire at the next cycle change (owner, 2026-11-03, actions/ignite.ts).
+  pyromane: "full",
   // Sure extinguisher use and the manual try (owner, 2026-11-01); its project bonus is in PROJECTS.
   fireman: "full",
   // Snoop: once a day per storage room, free, finds one item by the wiki's weights; 50% dirt, 10% injury (owner, 2026-11-01, actions/snoop.ts).
@@ -249,8 +251,10 @@ export const SKILL_STATUS: Readonly<Partial<Record<SkillId | MushSkillId, SkillS
   persistent: "full",
   // 50% of hunter waves come 33% smaller (owner, 2026-10-25).
   space_tactics: "full",
-  // Two more channels and Computer points; not the -10% on actions (owner, 2026-10-25).
-  polymath: "partial",
+  // Two more channels and Computer points; (owner, 2026-10-25).
+  polymath: "full",
+  //Mush skill: Allows for accessing Bios.
+  neron_access: "full",
 };
 
 export function skillStatus(skill: string): SkillStatus {

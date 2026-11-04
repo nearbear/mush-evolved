@@ -103,6 +103,7 @@ describe("myco alarm", () => {
 
   it("can be dismantled by anyone for one scrap metal at the usual cost", () => {
     const s = ship();
+    s.players[1]!.skills = ["engineer"];
     addAlarm(s, { kind: "room", id: "SICK_BAY" });
     const id = alarmsIn(s, "SICK_BAY")[0]!.id;
     const ap = s.players[1]!.ap;

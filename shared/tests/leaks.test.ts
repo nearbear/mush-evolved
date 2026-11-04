@@ -90,6 +90,7 @@ function ship(): { state: GameState; sentinels: Sentinel[] } {
     s.scanFailures[p.id] = num(`scanFailures-${p.id}`, []);
     s.turretFailures[p.id] = num(`turretFailures-${p.id}`, []);
     s.patrolFailures[p.id] = num(`patrolFailures-${p.id}`, []);
+    s.pendingFires = [str("pendingFires", [])];
     s.extinguishFailures[p.id] = num(`extinguishFailures-${p.id}`, []);
     s.sharedOnDay[p.id] = num(`sharedOnDay-${p.id}`, []);
     s.planets[p.id] = [
@@ -113,7 +114,7 @@ function ship(): { state: GameState; sentinels: Sentinel[] } {
   s.contamination.p3 = num("contamination-p3", []);
   s.rng = num("rng", []);
   s.sporesToday = num("sporesToday", []);
-  s.sporeExtractedOn.p0 = num("sporeExtractedOn-p0", []);
+  s.spikedOn.p0 = num("spikedOn-p0", []);
   s.dispensedOn.anything = num("dispensedOn", []);
   s.nextItemId = num("nextItemId", []);
   s.nextChatId = num("nextChatId", []);

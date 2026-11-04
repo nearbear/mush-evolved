@@ -47,7 +47,7 @@ function TerminalLogin({ type, view }: { type: string; view: PlayerView }) {
   const title = EQUIPMENT_TYPES[type]?.title;
   const holder = title ? view.titles.find((entry) => entry.id === title)?.holder : null;
   const mine = view.you.character;
-  const hacked = !!title && holder !== mine && holder != null && bypassesTitles(view.you);
+  const hacked = !!title && holder !== mine && holder != null && bypassesTitles(view.you, title);
   const user = terminalUsername(hacked ? holder : mine);
   const limited = !!title && holder !== mine && !hacked;
   return (
