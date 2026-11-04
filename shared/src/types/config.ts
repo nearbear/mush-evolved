@@ -139,6 +139,9 @@ export interface GameConfig {
     cost: { ap: number }; // The Mush skill Phagocytosis: 0 AP, 1 spore (owner, 2026-11-04).
     effect: { hp: number; ap: number }; // HP healed and AP gained (owner, 2026-11-04).
   };
+  tubeTransfer: {
+    cost: { ap: number }; // Sending an item down the pneumatic tube: free (owner, 2026-11-04).
+  };
   bodyTransfer: {
     cost: { ap: number }; // The Mush skill Transfer: free (owner, 2026-10-24).
   };
@@ -304,6 +307,8 @@ export interface GameConfig {
     progress: { rate: number; mod: number; skillBoost: number; relayPenalty: number }; // As research's (owner, 2026-10-26); no skill bonus for now.
     // Noise Reducer (owner, 2026-11-01; eMushpedia *Isolateur phonique*): every player's AP cap +maxAp, added after Lethargy doubles it.
     noiseReducer: { maxAp: number };
+    // Owner, 2026-11-04: completing it puts these item types on the floor of `room` (one item per list entry).
+    foodRetailer: { room: RoomId; items: readonly string[] };
     // Quantum Sensors (owner, 2026-11-01; eMushpedia *Détecteur à ondes de probabilité*): each planet analysis reveals +extraSectors sectors.
     quantumSensors: { extraSectors: number };
     // CPU Overclocking (owner, 2026-11-01; eMushpedia *Accélération du processeur*): Scan for planets costs -scanApDiscount AP.

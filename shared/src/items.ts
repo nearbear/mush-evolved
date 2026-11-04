@@ -116,6 +116,9 @@ export const ITEM_TYPES: Record<string, ItemType> = {
   metal_scraps: {},
   [SPACE_CAPSULE_ITEM]: {},
   thick_tube: {},
+  // Owner, 2026-11-04: the pneumatic tube pair (docs/plans/project-buffs.md, Fruit Mover). Plain items for now; no effect yet.
+  input_tube: {},
+  output_tube: {},
   // Decided 2026-10-16: carries a recipe in `ItemState.builds`; consumed by building.
   blueprint: {},
   plastic_scraps: {},

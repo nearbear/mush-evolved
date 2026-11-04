@@ -87,6 +87,8 @@ export const PROJECT_STATUS: Readonly<Partial<Record<ProjectId, ProjectStatus>>>
   QUANTUM_SENSORS: "full",
   // Scan for planets costs 1 AP less (owner, 2026-11-01; modifiers.ts `actionCost`).
   CHIPSET_ACCELERATION: "full",
+  // Completing it puts an output tube and two input tubes in the Nexus (owner, 2026-11-04; projectEffects.ts); the Fruit Mover tubes themselves are tube_transfer.
+  FOOD_RETAILER: "partial",
   // Coffee machine regenerates twice a day (C1, C5; every cycle with PILGRED) (owner, 2026-11-02).
   FISSION_COFFEE_ROASTER: "full",
 };

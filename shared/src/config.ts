@@ -62,6 +62,8 @@ export const DEFAULT_CONFIG: GameConfig = {
   // Confirmed 2026-10-15: spiking costs 1 AP and 1 spore, and raises a human's contamination by 1.
   spike: { cost: { ap: 1 }, cooldownCycles: 4 },
   bodyTransfer: { cost: { ap: 0 } },
+  // Owner, 2026-11-04: the pneumatic tube is free to use.
+  tubeTransfer: { cost: { ap: 0 } },
   // Owner, 2026-11-04: Phagocytosis costs 1 spore (no AP), heals 4 HP and gives 4 AP.
   consumeSpore: { cost: { ap: 0 }, effect: { hp: 4, ap: 4 } },
   // Owner, 2026-10-24: Fungal cuisine costs 1 AP and 1 spore and adds 1 contamination level to a food item.
@@ -191,6 +193,7 @@ export const DEFAULT_CONFIG: GameConfig = {
     cost: { ap: 2 },
     progress: { rate: 6, mod: 10, skillBoost: 4, relayPenalty: 2 },
     noiseReducer: { maxAp: 2 },
+    foodRetailer: { room: "NEXUS_ROOM", items: ["output_tube", "input_tube", "input_tube"] },
     quantumSensors: { extraSectors: 1 },
     chipsetAcceleration: { scanApDiscount: 1 },
     fissionCoffeeRoaster: { cycles: [1, 5] },
