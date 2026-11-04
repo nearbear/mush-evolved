@@ -34,29 +34,7 @@ describe("spore extraction", () => {
     expect(player(s, "p2").spores).toBe(0);
   });
 
-  it("has a 4-cycle cooldown per Mush that ignores the day", () => {
-    let s = mustApply(ship(), "p0", extract);
-    expect(applyAction(s, "p0", extract).ok).toBe(false);
-    for (let i = 0; i < 3; i++) {
-      s = nextCycle(s);
-      expect(offered(s, "p0")).not.toContainEqual(extract);
-    }
-    s = nextCycle(s);
-    expect(offered(s, "p0")).toContainEqual(extract);
-    expect(player(mustApply(s, "p0", extract), "p0").spores).toBe(2);
-  });
-
-  it("shows the extraction disabled with the cycles left while it cools down", () => {
-    let s = mustApply(ship(), "p0", extract);
-    const listed = () => viewFor(s, "p0").actions.find((o) => o.action.type === "extract_spore");
-    expect(listed()).toMatchObject({ lacks: ["cooldown"], cooldown: 4 });
-    s = nextCycle(nextCycle(s));
-    expect(listed()).toMatchObject({ lacks: ["cooldown"], cooldown: 2 });
-    s = nextCycle(nextCycle(s));
-    expect(listed()?.lacks).toEqual([]);
-  });
-
-  it("shows the extraction disabled at the daily cap, which outranks a cooldown", () => {
+  it("shows the extraction disabled at the daily cap", () => {
     const s = ship();
     s.config = { ...s.config, spores: { ...s.config.spores, perDay: 1 } };
     const t = mustApply(s, "p0", extract);
@@ -64,16 +42,16 @@ describe("spore extraction", () => {
     expect(viewFor(t, "p1").actions.find((o) => o.action.type === "extract_spore")).toMatchObject({ lacks: ["capacity"] });
   });
 
-  it("keeps cooldowns separate per Mush", () => {
+  it("has no cooldown: a Mush can extract again straight away", () => {
     const s = mustApply(ship(), "p0", extract);
-    expect(offered(s, "p1")).toContainEqual(extract);
+    expect(offered(s, "p0")).toContainEqual(extract);
+    expect(player(mustApply(s, "p0", extract), "p0").spores).toBe(2);
   });
 
   it("shares a daily cap across the faction, and the cap resets at the day boundary", () => {
     const s = ship();
     s.config = { ...s.config, spores: { ...s.config.spores, perDay: 2 } };
     let t = mustApply(mustApply(s, "p0", extract), "p1", extract);
-    t = nextCycle(nextCycle(nextCycle(nextCycle(t)))); // cooldowns over, same day
     expect(offered(t, "p0")).not.toContainEqual(extract);
     expect(applyAction(t, "p1", extract).ok).toBe(false);
     while (viewFor(t, "p0").day === 1) t = nextCycle(t);

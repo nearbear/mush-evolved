@@ -225,7 +225,7 @@ export const SKILL_STATUS: Readonly<Partial<Record<SkillId | MushSkillId, SkillS
   transfert: "full",
   // Mush skill: spores into food (owner, 2026-10-24, fungal_cuisine.ts); no Hygienist or Cook-point interaction.
   fungus_cook: "partial",
-  // Mush skill: one free spore extraction a day, ignoring the cooldown (owner, 2026-10-27, actions/extract_spore.ts).
+  // Mush skill: one free spore extraction a day (owner, 2026-10-27, actions/extract_spore.ts).
   fertile: "full",
   // Mush skill: showering costs at most 1 AP and no HP (owner reading of eMushpedia, 2026-10-27, actions/shower.ts).
   water_resistant: "full",

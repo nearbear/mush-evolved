@@ -33,13 +33,11 @@ describe("anti-mush serum", () => {
     expect(serums(after)).toHaveLength(0);
   });
 
-  it("turns a Mush human: spores, Mush skills and cooldown go, satiety restarts", () => {
+  it("turns a Mush human: spores and Mush skills go, satiety restarts", () => {
     const s = ship();
     Object.assign(player(s, "p1"), { spores: 3, mushSkills: ["spiker"], satiety: 0 });
-    s.sporeExtractedOn["p1"] = 1;
     const after = mustApply(s, "p0", vaccinate("p1"));
     expect(player(after, "p1")).toMatchObject({ role: "human", alpha: false, spores: 0, mushSkills: [], satietyZeroSince: after.cycle });
-    expect(after.sporeExtractedOn["p1"]).toBeUndefined();
     expect(logKeys(after, "p1")).toContain("cured");
     expect(logKeys(after, "p0")).toContain("vaccineWorked");
   });

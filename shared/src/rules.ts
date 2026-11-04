@@ -128,7 +128,7 @@ export function createGame(
     contamination: {},
     ship: startShip(config),
     sporesToday: 0,
-    sporeExtractedOn: {},
+    spikedOn: {},
     research: {},
     projects: {},
     relay: { research: {}, projects: {} },

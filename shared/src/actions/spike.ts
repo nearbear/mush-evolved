@@ -1,4 +1,4 @@
-import { Action, IN_PRESELECTION, peopleHere, type ActionTag, type ActionVisibility, isString } from "./action.ts";
+import { Action, COOLDOWN, IN_PRESELECTION, peopleHere, type ActionTag, type ActionVisibility, isString } from "./action.ts";
 import { logCovert } from "../log.ts";
 import { contaminate } from "../infection.ts";
 import type { GameState, PlayerState } from "../types.ts";
@@ -10,7 +10,7 @@ export type SpikeActionData = { type: "spike"; target: string };
  * living human in their room by 1 contamination (reaching capacity converts
  * them, see `infection.ts`). Always succeeds. Covert (decided 2026-10-17): only a
  * camera in the room reveals it, to everyone including the victim; bystanders and the
- * victim are not told otherwise. Contamination stays hidden from everyone. Aggressive (owner, 2026-10-18).
+ * victim are not told otherwise. Contamination stays hidden from everyone. Aggressive (owner, 2026-10-18). Each Mush then waits `spike.cooldownCycles` (4) cycles before spiking again (owner, 2026-11-03).
  */
 export class SpikeAction extends Action<SpikeActionData> {
   override visibility: ActionVisibility = "covert";
@@ -35,12 +35,20 @@ export class SpikeAction extends Action<SpikeActionData> {
     if (!victim) return "cant_see";
     if (victim.role !== "human") return "not_human";
     if (player.spores < 1) return "no_spores";
+    if (this.cooldownLeft(state, player, target) > 0) return COOLDOWN;
     return null;
+  }
+
+  override cooldownLeft(state: Readonly<GameState>, player: Readonly<PlayerState>, _target: SpikeActionData): number {
+    const last = state.spikedOn[player.id];
+    if (last === undefined) return 0;
+    return Math.max(0, state.config.spike.cooldownCycles - (state.cycle - last));
   }
 
   override apply(state: GameState, player: PlayerState, target: SpikeActionData): void {
     const victim = state.players.find((o) => o.id === target.target)!; // checked, so it exists
     player.spores -= 1;
+    state.spikedOn[player.id] = state.cycle;
     logCovert(state, player.id, "spiked", { name: player.character, target: victim.character });
     contaminate(state, victim);
   }

@@ -2224,3 +2224,7 @@ User asked to implement the Super Calculator research, unlocking the conditional
 
 ## 2026-11-03 — Pyromaniac skill
 Owner asked for the `pyromane` skill (secret action, 4 AP, fire in the used room on the cycle change). Asked four questions (eligibility, ignition timing, visibility, limits); owner took all recommended answers: refused in a burning or already-pending room, ignites before incidents so it acts the same cycle with the normal NERON announcement, secret log, no per-cycle limit. Added `GameState.pendingFires` (bumped STATE_VERSION to 103), `actions/ignite.ts`, `ignitePending` in `fire.ts`. Needed a Mush player in the test, since Mush skills can only be picked by Mush.
+
+## 2026-11-03: removed the spore extraction cooldown
+Owner asked for `extract_spore` to have no cooldown. Removed it entirely rather than zeroing it: `spores.cooldownCycles`, `GameState.sporeExtractedOn` (plus its mind-swap and cure handling), the validate/cooldownLeft code, and the tests that covered it. The daily faction cap and Fertile's free first extraction are unchanged.
+Same day, owner then asked for a 4-cycle cooldown on `spike` instead: added `spike.cooldownCycles` and `GameState.spikedOn` (cleared on cure, swapped in a mind transfer, never sent to clients), and a test helper that clears it between repeated spikes in the infection tests.
