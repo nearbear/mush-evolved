@@ -301,7 +301,12 @@ for (let c = 0; c < cycles && game.phase === "playing" && spent + spentBefore < 
         apply({ type: "action", action: { type: "ready" }, by: SINGLE_PLAYER_HUMAN, at: now });
         continue;
       }
-      break;
+      // A bot woken mid-action keeps its wake until the action ends; let the clock run to it, as the room's alarm does.
+      const due = nextDue(game);
+      if (due === null) break;
+      now = Math.max(now, due);
+      apply({ type: "tick", at: now });
+      continue;
     }
     // Like GameRoom.afterBotTurn: while calls fail in passing, wait before asking again, doubling up to a minute.
     if (gate.pause === "unavailable") {
