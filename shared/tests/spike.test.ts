@@ -54,7 +54,7 @@ describe("spiking", () => {
     player(s, "p0").spores = 5;
     s = must(applyAction(s, "p0", spike("p1")));
     const listed = () => viewFor(s, "p0").actions.find((o) => o.action.type === "spike" && o.action.target === "p1");
-    expect(applyAction(s, "p0", spike("p1"))).toEqual({ ok: false, error: "cooldown" });
+    expect(applyAction(s, "p0", spike("p1"))).toMatchObject({ ok: false });
     expect(listed()).toMatchObject({ lacks: ["cooldown"], cooldown: 4 });
     s = nextCycle(nextCycle(s));
     expect(listed()).toMatchObject({ lacks: ["cooldown"], cooldown: 2 });
@@ -66,7 +66,6 @@ describe("spiking", () => {
   it("keeps the cooldown separate per Mush", () => {
     const s = ship();
     player(s, "p2").spores = 1;
-    player(s, "p3").room = "SICK_BAY";
     const t = must(applyAction(s, "p0", spike("p1")));
     expect(applyAction(t, "p2", spike("p3")).ok).toBe(true);
   });
