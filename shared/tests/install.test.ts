@@ -142,6 +142,7 @@ describe("uninstall", () => {
 describe("dismantling a camera", () => {
   it("removes an installed camera from the room's equipment and leaves a metal scrap, not a camera", () => {
     const { s } = ship();
+    player(s, "p0").skills = ["engineer"];
     installCameraIn(s, "REFECTORY");
     s.items = s.items.filter((i) => i.type !== "camera");
     const dismantle = dismantleEquipment("REFECTORY");
@@ -156,6 +157,7 @@ describe("dismantling a camera", () => {
 
   it("can still fail, leaving the camera installed and the cost paid", () => {
     const { s } = ship();
+    player(s, "p0").skills = ["engineer"];
     s.config.dismantle = { ...s.config.dismantle, successChance: 0 };
     installCameraIn(s, "REFECTORY");
     const after = must(applyAction(s, "p0", dismantleEquipment("REFECTORY")));
@@ -167,6 +169,7 @@ describe("dismantling a camera", () => {
 
   it("works on a camera item that is not installed yet, carried or on the floor", () => {
     const { s, camera } = ship();
+    player(s, "p0").skills = ["engineer"];
     for (const at of [{ kind: "player" as const, id: "p0" }, { kind: "room" as const, id: "REFECTORY" }]) {
       const t = structuredClone(s);
       t.items.find((i) => i.id === camera)!.at = at;

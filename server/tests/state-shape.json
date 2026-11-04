@@ -1,5 +1,5 @@
 {
-  "version": 102,
+  "version": 103,
   "paths": [
     "bios.actopi",
     "bios.death_announcements",
@@ -200,6 +200,7 @@
     "patrolShips.PATROL_SHIP_B_2.charges",
     "patrolShips.PATROL_SHIP_B_2.destroyed",
     "patrolShips.PATROL_SHIP_B_2.out",
+    "pendingFires[]",
     "phase",
     "pilgred.pool.tokens[]",
     "pilgred.progress",

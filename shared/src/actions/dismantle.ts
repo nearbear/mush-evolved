@@ -3,6 +3,7 @@ import { EQUIPMENT_TYPES } from "../equipment.ts";
 import { ITEM_TYPES, canReachItem, newItemId, removeItem } from "../items.ts";
 import { logPrivate, logPublic } from "../log.ts";
 import { getUp } from "./lie_down.ts";
+import { hasSkill } from "../skills.ts";
 import type { GameState, PlayerState } from "../types.ts";
 
 /**
@@ -44,6 +45,7 @@ export class DismantleAction extends Action<DismantleActionData> {
   }
 
   override getCandidates(state: Readonly<GameState>, player: Readonly<PlayerState>): DismantleActionData[] {
+    if (!hasSkill(player, "engineer")) return [];
     return [
       ...state.items.filter((item) => ITEM_TYPES[item.type]?.dismantle && canReachItem(state, player, item)).map((item): DismantleActionData => ({ type: "dismantle", item: item.id })),
       ...dismantlable(state, player).map((e): DismantleActionData => ({ type: "dismantle", equipment: e.id })),
@@ -51,6 +53,7 @@ export class DismantleAction extends Action<DismantleActionData> {
   }
 
   override validate(state: Readonly<GameState>, player: Readonly<PlayerState>, target: DismantleActionData): string | null {
+    if (!hasSkill(player, "engineer")) return "no_skill";
     if ("equipment" in target) {
       if (!dismantlable(state, player).some((e) => e.id === target.equipment)) return "cant_dismantle";
       return null;

@@ -18,6 +18,13 @@ export const daedalusRooms = (state: Readonly<GameState>): RoomId[] => Object.ke
 
 export const isOnFire = (state: Readonly<GameState>, room: RoomId): boolean => state.fires.includes(room);
 
+/** At a cycle change, before incidents and fires act: lights each room a Pyromaniac set (actions/ignite.ts). */
+export function ignitePending(state: GameState): void {
+  const rooms = state.pendingFires;
+  state.pendingFires = [];
+  for (const room of rooms) startFire(state, room);
+}
+
 /** Sets a room on fire, if it isn't already, and NERON announces it. Mutates a state the caller already cloned. */
 export function startFire(state: GameState, room: RoomId): void {
   if (isOnFire(state, room)) return;
