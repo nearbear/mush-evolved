@@ -27,18 +27,7 @@ describe("fertile", () => {
     expect(player(once, "p0").ap).toBe(5);
     expect(player(once, "p0").spores).toBe(config.spores.effect.spores);
     expect(once.sporesToday).toBe(config.spores.effect.spores);
-    once.sporeExtractedOn = {};
     expect(costOf(once, "p0", extract).ap).toBe(config.spores.cost.ap);
-  });
-
-  it("ignores the cooldown, and starts it", () => {
-    const s = ship();
-    s.sporeExtractedOn = { p0: s.cycle };
-    const free = must(applyAction(s, "p0", extract));
-    expect(player(free, "p0").ap).toBe(5);
-    expect(free.sporeExtractedOn.p0).toBe(free.cycle);
-    // Used up: now the cooldown blocks the paid one.
-    expect(applyAction(free, "p0", extract).ok).toBe(false);
   });
 
   it("is blocked by the faction's daily cap", () => {

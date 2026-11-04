@@ -5,7 +5,7 @@ import { installCameraIn } from "./cameras.ts";
 import { parseGameMessage } from "../src/protocol.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";
 import type { Action, GameState, PlayerId } from "../src/types.ts";
-import { makeSeats, offered, option, player } from "./support.ts";
+import { makeSeats, must, nextCycle, offered, option, player } from "./support.ts";
 
 const seats = makeSeats(5);
 // No character traits: seat p1 is Chun, who is immune.
@@ -42,10 +42,32 @@ describe("spiking", () => {
       const r = applyAction(s, "p0", spike("p1"));
       if (!r.ok) throw new Error(r.error);
       s = r.state;
+      s.spikedOn = {};
     }
     expect(player(s, "p1").role).toBe("mush");
     expect(s.contamination).toEqual({});
     expect(applyAction(s, "p0", spike("p1")).ok).toBe(false);
+  });
+
+  it("has a 4-cycle cooldown per Mush, shown as disabled with the cycles left", () => {
+    let s = ship();
+    player(s, "p0").spores = 5;
+    s = must(applyAction(s, "p0", spike("p1")));
+    const listed = () => viewFor(s, "p0").actions.find((o) => o.action.type === "spike" && o.action.target === "p1");
+    expect(applyAction(s, "p0", spike("p1"))).toMatchObject({ ok: false });
+    expect(listed()).toMatchObject({ lacks: ["cooldown"], cooldown: 4 });
+    s = nextCycle(nextCycle(s));
+    expect(listed()).toMatchObject({ lacks: ["cooldown"], cooldown: 2 });
+    s = nextCycle(nextCycle(s));
+    expect(listed()?.lacks).toEqual([]);
+    expect(applyAction(s, "p0", spike("p1")).ok).toBe(true);
+  });
+
+  it("keeps the cooldown separate per Mush", () => {
+    const s = ship();
+    player(s, "p2").spores = 1;
+    const t = must(applyAction(s, "p0", spike("p1")));
+    expect(applyAction(t, "p2", spike("p3")).ok).toBe(true);
   });
 
   it("is offered only to Mush with a spore, for humans in their room", () => {

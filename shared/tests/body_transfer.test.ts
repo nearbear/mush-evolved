@@ -62,7 +62,6 @@ describe("Transfer (Mush skill)", () => {
     mush.spores = 2;
     mush.name = "Mush player";
     human.name = "Human player";
-    s.sporeExtractedOn.p0 = s.cycle;
     s.items.push({ id: "wrench-1", type: "wrench", at: { kind: "player", id: "p1" } });
     human.ap = 7;
     human.hp = 9;
@@ -76,7 +75,6 @@ describe("Transfer (Mush skill)", () => {
     // Mush things moved with the mind.
     expect([newBody.role, newBody.alpha, newBody.spores, newBody.mushSkills]).toEqual(["mush", true, 2, ["transfert"]]);
     expect([oldBody.role, oldBody.alpha, oldBody.spores, oldBody.mushSkills]).toEqual(["human", false, 0, []]);
-    expect(r.sporeExtractedOn).toEqual({ p1: s.cycle });
     expect(r.contamination.p0 ?? 0).toBe(0);
     expect(r.contamination.p1).toBeUndefined();
     // The body kept its own.

@@ -60,13 +60,13 @@ export const DEFAULT_CONFIG: GameConfig = {
   // Confirmed 2026-10-14: a human converts on reaching 3 contamination (items and skills will raise it).
   infection: { capacity: 3, mushophageBonus: 1 },
   // Confirmed 2026-10-15: spiking costs 1 AP and 1 spore, and raises a human's contamination by 1.
-  spike: { cost: { ap: 1 } },
+  spike: { cost: { ap: 1 }, cooldownCycles: 4 },
   bodyTransfer: { cost: { ap: 0 } },
   // Owner, 2026-10-24: Fungal cuisine costs 1 AP and 1 spore and adds 1 contamination level to a food item.
   fungalCuisine: { cost: { ap: 1 } },
   // Confirmed 2026-10-13/14: extracting costs 1 AP and gives 1 spore; each Mush waits 4 cycles between extractions
   // and the faction shares 4 per day (skills and research will raise it).
-  spores: { cost: { ap: 1 }, effect: { spores: 1 }, cooldownCycles: 4, perDay: 4 },
+  spores: { cost: { ap: 1 }, effect: { spores: 1 }, perDay: 4 },
   // Confirmed 2026-10-15: healing needs a medikit in your inventory; 2 AP on someone else, 3 on yourself, restores 3 HP.
   // Anyone can heal in the sick bay without a medikit; the medic skill adds 2 HP, the nurse 2 care points a day.
   heal: {

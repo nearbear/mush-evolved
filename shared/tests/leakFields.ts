@@ -47,7 +47,7 @@ export const GAME_STATE_FIELDS: Record<string, FieldRule> = {
   contamination: { reach: "never", test: "leaks.test.ts", note: "Except to a living Mush in the human's room (infection.test.ts)." },
   ship: { reach: "public", test: "ship.test.ts" },
   sporesToday: { reach: "never", test: "leaks.test.ts" },
-  sporeExtractedOn: { reach: "never", test: "leaks.test.ts" },
+  spikedOn: { reach: "never", test: "leaks.test.ts" },
   research: { reach: "room", test: "research.test.ts", note: "To the living in the lab; elsewhere only completed researches (owner, 2026-10-31)." },
   relay: { reach: "room", test: "leaks.test.ts", note: "Each research's and project's relay tokens (research's samples, verified and pending): contributor and value to the living in the target's room; each viewer's own token count anywhere; rolls and contamination (contaminatedBy) never (relayView.ts, assay.ts)." },
   projects: { reach: "room", test: "projects.test.ts", note: "To the living at NERON's core; elsewhere only completed projects (owner, 2026-10-31)." },

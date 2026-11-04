@@ -130,6 +130,7 @@ export interface GameConfig {
   };
   spike: {
     cost: { ap: number }; // Confirmed 2026-10-15.
+    cooldownCycles: number; // Cycles a Mush waits between their own spikes, on the global cycle counter (owner, 2026-11-03).
   };
   fungalCuisine: {
     cost: { ap: number }; // The Mush skill Fungal cuisine: 1 AP and 1 spore (owner, 2026-10-24).
@@ -140,7 +141,6 @@ export interface GameConfig {
   spores: {
     cost: { ap: number }; // AP spent to extract a spore (confirmed 2026-10-13).
     effect: { spores: number }; // Spores one extraction gives (confirmed 2026-10-13).
-    cooldownCycles: number; // Cycles a Mush waits between their own extractions; a cooldown on the global cycle counter, not tied to days (confirmed 2026-10-14).
     perDay: number; // Spores the whole Mush faction may extract per day, before modifiers (confirmed 2026-10-14).
   };
   heal: {

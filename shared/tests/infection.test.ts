@@ -23,7 +23,14 @@ function ship(): GameState {
   return s;
 }
 
-const spikes = (s: GameState, n: number) => mustApply(s, "p0", ...Array.from({ length: n }, () => spike("p1")));
+/** n spikes in a row; the spike cooldown is cleared between them, as it is not what these tests are about. */
+const spikes = (s: GameState, n: number) => {
+  for (let i = 0; i < n; i++) {
+    s = mustApply(s, "p0", spike("p1"));
+    s.spikedOn = {};
+  }
+  return s;
+};
 
 describe("conversion", () => {
   it("happens at once when contamination reaches capacity, and not before", () => {
