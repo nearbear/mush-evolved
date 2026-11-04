@@ -28,6 +28,8 @@ import {
   historyStep,
   readChannels,
   type ChannelId,
+  type ChatMessage,
+  MUSH_CHANNEL,
   type FullView,
   type SeatStart,
   type CharacterId,
@@ -47,6 +49,7 @@ import {
   type Setup,
 } from "@mush2/shared";
 import { accountStoreFor } from "./accountStore.ts";
+import { buildRouterPrompt, parseRouterReply, routerInput } from "./router.ts";
 import { BOT_CHAT_CHAIN_DEPTH, LogParrotBot, ModelBot, WanderBot, type Bot } from "./bots.ts";
 import type { BotMessage } from "./prompt.ts";
 import { finishedEntry, gameStoreFor } from "./gameStore.ts";
@@ -223,6 +226,8 @@ export class GameRoom extends Server<Env> {
    * only: not in game state, a message, a view or the record; after a restart it starts again at 0, which is harmless.
    */
   private wakes = new Map<PlayerId, { depth: number }>();
+  /** Chat router calls under way (#341): bots hold back `ready` until they say whom a message wakes. */
+  private routing = 0;
   /** Made by `initBots` when the game has a model bot. */
   private modelGate: ModelGate | null = null;
   /** Restored from storage before `initBots` makes the gate. */
@@ -751,18 +756,69 @@ export class GameRoom extends Server<Env> {
   }
 
   /**
-   * A chat message was posted: every bot that reads its channel, except its author, gets a turn to reply (bot-goals.md,
-   * "Waking"), unless the message is at the chain depth limit. Only bots that listen (a model with a key) are woken.
+   * A chat message was posted: the listening bots that read its channel, except its author, are candidates for a turn
+   * to reply (bot-goals.md, "Waking"), unless the message is at the chain depth limit. A private channel wakes its
+   * members outright; anywhere else the chat router (`router.ts`, #341) asks the model which of them, if any, it is
+   * meant for. Only bots that listen (a model with a key) are candidates.
    */
   private wakeBots(author: PlayerId, channel: ChannelId, depth: number): void {
     if (!this.game || depth >= BOT_CHAT_CHAIN_DEPTH) return;
+    /** Listening bots by what is public (alive, not ready): body to seat. */
+    const listening = new Map<PlayerId, PlayerId>();
+    /** The seats among them that really read the channel. */
+    const readers = new Set<PlayerId>();
     for (const [seat, bot] of this.bots) {
-      if (seat === author || !bot.wake) continue;
+      if (seat === author || !bot.listens) continue;
       const body = this.game.players.find((p) => p.id === this.body(seat));
-      if (!body || !body.alive || body.ready || !readChannels(this.game, body).includes(channel)) continue;
-      if (bot.wake()) this.wakes.set(seat, { depth });
+      if (!body || !body.alive || body.ready) continue;
+      listening.set(body.id, seat);
+      if (readChannels(this.game, body).includes(channel)) readers.add(seat);
     }
+    const message = this.game.chat.filter((m) => m.channel === channel && m.from === this.body(author)).at(-1);
+    if (this.game.channels.some((c) => c.id === channel) || !message || !this.modelGate) {
+      if (readers.size > 0) this.wake([...readers], depth);
+      return;
+    }
+    // The router is offered every listening bot, not only the readers, and is asked even when none of them reads the
+    // channel: who reads global chat (who carries an iTrackie) is hidden, and the router prompt goes to the player's own
+    // provider. Only the Mush channel's readers are its Mush.
+    const candidates = channel === MUSH_CHANNEL ? new Map([...listening].filter(([, seat]) => readers.has(seat))) : listening;
+    if (candidates.size === 0) return;
+    this.routing++;
+    void this.route(channel, message, candidates, readers, depth);
+  }
+
+  /** Gives `seats` a turn to reply to a message of `depth`. */
+  private wake(seats: readonly PlayerId[], depth: number): void {
+    for (const seat of seats) if (this.bots.get(seat)?.wake?.()) this.wakes.set(seat, { depth });
     this.scheduleBots();
+  }
+
+  /**
+   * One router call through the game's gate (budget, in-flight limit, timeout). No reply, or one that names nobody it
+   * may wake, wakes nobody: a missed wake only delays a reply to the bot's next choice. Woken bots re-check (pruneWakes).
+   */
+  private async route(
+    channel: ChannelId,
+    message: ChatMessage,
+    candidates: ReadonlyMap<PlayerId, PlayerId>,
+    readers: ReadonlySet<PlayerId>,
+    depth: number,
+  ): Promise<void> {
+    let seats: PlayerId[] = [];
+    try {
+      if (!this.game || !this.modelGate) return;
+      const input = routerInput(this.game, channel, message, new Set(candidates.keys()));
+      const reply = await this.modelGate.ask(buildRouterPrompt(input));
+      // A named bot that can't read the channel isn't woken: it would only see the message it was woken for missing.
+      if (reply !== null) seats = parseRouterReply(reply, input).flatMap((body) => candidates.get(body) ?? []).filter((seat) => readers.has(seat));
+    } catch (e) {
+      console.warn(`Chat router failed: ${e instanceof Error ? e.message : typeof e}`);
+    } finally {
+      this.routing--;
+      // Also when it wakes nobody: bots held their ready back while it ran.
+      this.wake(seats, depth);
+    }
   }
 
   /**
@@ -1013,7 +1069,8 @@ export class GameRoom extends Server<Env> {
           if (message) await this.botSay(playerId, by, message, wake ? wake.depth + 1 : 0);
           if (!action || this.body(playerId) !== by) return;
           this.pruneWakes();
-          if (action.type === "ready" && this.wakes.size > 0) return;
+          // Waits for pending wakes, and for the router to say whether there are any.
+          if (action.type === "ready" && (this.wakes.size > 0 || this.routing > 0)) return;
           const error = await this.act({ type: "action", action, by, at: Date.now() });
           if (error) {
             console.warn(`Bot ${playerId} chose an illegal action: ${error}`);

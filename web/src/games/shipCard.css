@@ -1,0 +1,156 @@
+/* ShipCard (ShipCard.tsx), from the ship card design (ship-card-design.html). Fixed 200x255 so cards tile. */
+
+.ship-card {
+  --ship-card-pad: 0.6em;
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  flex-direction: column;
+  gap: var(--ship-card-pad);
+  padding: var(--ship-card-pad) 0;
+  width: 200px;
+  height: 255px;
+  overflow: hidden;
+  color: #fff;
+  font-size: 16px;
+  text-align: center;
+  text-decoration: none;
+  /* Text sits on art, so the black halo is part of the card. */
+  text-shadow: 0 0 3px black, 0 0 3px black, 0 1px 2px black;
+  border: 1px solid rgba(56, 127, 255, 0.35);
+  transition: border-color 0.15s;
+}
+
+.ship-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  background: #181d52;
+  transition: background 0.15s;
+}
+
+.ship-card.link:hover,
+.ship-card.link:focus-visible {
+  border-color: #387fffcc;
+}
+
+.ship-card.link:hover::before,
+.ship-card.link:focus-visible::before {
+  background: #283076;
+}
+
+.ship-card.link:focus-visible {
+  outline: 2px solid #387fffcc;
+  outline-offset: 2px;
+}
+
+/* The ending art at its natural size, faded. */
+.ship-card-bg {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background-repeat: no-repeat;
+  opacity: 0.35;
+  filter: brightness(0.7);
+  pointer-events: none;
+}
+
+.ship-card img {
+  image-rendering: pixelated;
+}
+
+.ship-card-row {
+  display: flex;
+  align-items: center;
+  gap: var(--ship-card-pad);
+}
+
+.ship-card-col {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  min-width: 0;
+}
+
+.ship-card-padded {
+  padding: 0 var(--ship-card-pad);
+}
+
+.ship-card-name {
+  font-size: 1.3em;
+  font-weight: bold;
+}
+
+.ship-card-score {
+  display: flex;
+  align-items: center;
+  gap: 0.3em;
+  color: #01c3df;
+  white-space: nowrap;
+}
+
+.ship-card-score.mush {
+  color: #ff4259;
+}
+
+.ship-card-middle {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.ship-card-infos {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3em;
+  padding: var(--ship-card-pad);
+}
+
+.ship-card-infos::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  opacity: 0.6;
+  background-color: #292c69;
+  box-shadow: 0 0 8px #3965fb4d;
+}
+
+.ship-card-info {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+  font-size: 0.9em;
+}
+
+.ship-card-caption {
+  opacity: 0.7;
+  font-size: 0.8rem;
+}
+
+.ship-card-highlights {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.3em;
+}
+
+.ship-card-highlight {
+  position: relative;
+  line-height: 0;
+}
+
+.ship-card-count {
+  position: absolute;
+  right: -0.1em;
+  bottom: -0.3em;
+  font-size: 0.75em;
+  font-weight: bold;
+  line-height: 1;
+  color: #fff;
+  text-shadow: -1px -1px 0 black, 1px -1px 0 black, -1px 1px 0 black, 1px 1px 0 black;
+  pointer-events: none;
+}

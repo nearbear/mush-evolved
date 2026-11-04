@@ -437,3 +437,11 @@ export const HUNTER_SPRITES = {
   asteroid: [373, 330, 81, 72],
   dice: [492, 309, 84, 92],
 } as const satisfies Record<string, readonly [number, number, number, number]>;
+
+// 16px icons the ship card design shows: the score's triumph icon, the character and ship end markers, and highlights.
+export const SHIP_CARD_ICONS: Readonly<Record<string, string>> = urls(
+  import.meta.glob<string>(
+    "../../../Mush/www/img/icons/ui/{triumph,calendar,eden1,mush,projects_done,research_done,survival,plasma,pa_pilgred}.png",
+    { eager: true, query: "?url", import: "default" },
+  ),
+);

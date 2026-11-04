@@ -432,6 +432,10 @@
     "nameHidden": "Name hidden",
     "results": "Results"
   },
+  "shipCard": {
+    "triumph": "Triumph",
+    "highlightCount": "{{label}} ×{{n}}"
+  },
   "games": {
     "title": "Finished games",
     "lobbyLink": "Finished games",

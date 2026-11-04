@@ -204,7 +204,8 @@ describe("hardcoded English text", () => {
   const ui = Object.fromEntries(
     sourceFiles("web/src", [".ts", ".tsx"])
       // The ship map editor is a dev-only tool (never in a production build), in English only.
-      .filter((file) => !file.startsWith("web/src/editor/"))
+      // So is the mush2 design kit page, whose sample text never ships.
+      .filter((file) => !file.startsWith("web/src/editor/") && !file.startsWith("web/src/designKit/"))
       .map((file) => [file, findHardcodedUi(read(file), { jsx: file.endsWith(".tsx") })]),
   );
   const wire = Object.fromEntries(
