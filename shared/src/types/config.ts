@@ -135,6 +135,10 @@ export interface GameConfig {
   fungalCuisine: {
     cost: { ap: number }; // The Mush skill Fungal cuisine: 1 AP and 1 spore (owner, 2026-10-24).
   };
+  consumeSpore: {
+    cost: { ap: number }; // The Mush skill Phagocytosis: 0 AP, 1 spore (owner, 2026-11-04).
+    effect: { hp: number; ap: number }; // HP healed and AP gained (owner, 2026-11-04).
+  };
   bodyTransfer: {
     cost: { ap: number }; // The Mush skill Transfer: free (owner, 2026-10-24).
   };

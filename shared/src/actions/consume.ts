@@ -1,6 +1,7 @@
 import { Action, isString } from "./action.ts";
+import { heal as healHp } from "../death.ts";
 import { ITEM_TYPES, canReachItem, removeItem } from "../items.ts";
-import { logPublic } from "../log.ts";
+import { logSecret } from "../log.ts";
 import { consumed } from "../modifiers.ts";
 import { rationApBonus } from "../comms.ts";
 import { contaminate } from "../infection.ts";
@@ -33,11 +34,11 @@ export class ConsumeAction extends Action<ConsumeActionData> {
   override apply(state: GameState, player: PlayerState, target: ConsumeActionData): void {
     const item = removeItem(state, target.item);
     if (player.role !== "human") {
-        logPublic(state, player.room, "consumed", { name: player.character, item: item.type });
+        logSecret(state, player.id, "consumed", { name: player.character, item: item.type });
         return;
     }
     const { ap, mp = 0, satiety, morale = 0, hp = 0 } = ITEM_TYPES[item.type]!.consume!;
-    player.hp = Math.min(player.maxHp, player.hp + Math.max(0, hp));
+    healHp(state, player, hp);
     changeAP(state, player, ap + rationApBonus(state, item.type));
     changeMP(state, player, mp);
     gainMorale(state, player, morale);
@@ -46,7 +47,7 @@ export class ConsumeAction extends Action<ConsumeActionData> {
       player.satietyZeroSince = player.satiety === 0 ? state.cycle : null;
     }
     consumed(state, player, item);
-    logPublic(state, player.room, "consumed", { name: player.character, item: item.type });
+    logSecret(state, player.id, "consumed", { name: player.character, item: item.type });
     // Fungal cuisine: a human is contaminated first, one level per spore; a conversion ends the meal with no food effects.
     if (player.role === "human" && item.spores) {
       for (let i = 0; i < item.spores && player.role === "human"; i++) contaminate(state, player);

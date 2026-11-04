@@ -1,4 +1,5 @@
 import { Action, type ActionCost, peopleHere, isString } from "./action.ts";
+import { heal as healHp } from "../death.ts";
 import { itemsIn } from "../items.ts";
 import { logPublic } from "../log.ts";
 import { healAmount } from "../modifiers.ts";
@@ -40,7 +41,7 @@ export class HealAction extends Action<HealActionData> {
 
   override apply(state: GameState, player: PlayerState, target: HealActionData): void {
     const patient = state.players.find((o) => o.id === target.target)!; // checked, so it exists
-    patient.hp = Math.min(patient.maxHp, patient.hp + healAmount(state, player));
+    healHp(state, patient, healAmount(state, player));
     logPublic(state, player.room, patient.id === player.id ? "healedSelf" : "healed", { name: player.character, target: patient.character });
   }
 }

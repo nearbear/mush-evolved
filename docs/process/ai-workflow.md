@@ -2228,3 +2228,7 @@ Owner asked for the `pyromane` skill (secret action, 4 AP, fire in the used room
 ## 2026-11-03: removed the spore extraction cooldown
 Owner asked for `extract_spore` to have no cooldown. Removed it entirely rather than zeroing it: `spores.cooldownCycles`, `GameState.sporeExtractedOn` (plus its mind-swap and cure handling), the validate/cooldownLeft code, and the tests that covered it. The daily faction cap and Fertile's free first extraction are unchanged.
 Same day, owner then asked for a 4-cycle cooldown on `spike` instead: added `spike.cooldownCycles` and `GameState.spikedOn` (cleared on cure, swapped in a mind transfer, never sent to clients), and a test helper that clears it between repeated spikes in the infection tests.
+
+## 2026-11-04: heal function, secret consumed log, Phagocytosis
+- Added `heal` in death.ts as the single HP-gain path (heal action, consume, daily heal route through it); left the infiniteHp cheat and max-HP clamp alone. Changed the `consumed` log to secret and its text to "their little snack" (fr/es matched by me, unreviewed).
+- Phagocytosis (`consume_spore`): used the `rule` skill; asked 4 questions (AP cost 0, AP capped, always offered, no myco-alarm tag), owner took all recommended defaults. Reused `heal`, `changeAP`, `logSecret`. Full-suite timeouts on slow machine (replay/GameRoom/goals tests) were load, not failures of these changes, though not confirmed on a clean checkout.
