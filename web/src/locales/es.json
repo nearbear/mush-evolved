@@ -435,6 +435,10 @@
     "nameHidden": "Nombre oculto",
     "results": "Resultados"
   },
+  "shipCard": {
+    "triumph": "Triunfo",
+    "highlightCount": "{{label}} ×{{n}}"
+  },
   "games": {
     "title": "Partidas terminadas",
     "lobbyLink": "Partidas terminadas",

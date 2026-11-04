@@ -2247,3 +2247,9 @@ Owner asked for the `pyromane` skill (secret action, 4 AP, fire in the used room
 ## 2026-11-03: removed the spore extraction cooldown
 Owner asked for `extract_spore` to have no cooldown. Removed it entirely rather than zeroing it: `spores.cooldownCycles`, `GameState.sporeExtractedOn` (plus its mind-swap and cure handling), the validate/cooldownLeft code, and the tests that covered it. The daily faction cap and Fertile's free first extraction are unchanged.
 Same day, owner then asked for a 4-cycle cooldown on `spike` instead: added `spike.cooldownCycles` and `GameState.spikedOn` (cleared on cure, swapped in a mind transfer, never sent to clients), and a test helper that clears it between repeated spikes in the infection tests.
+
+## 2026-11-03: Ship card component and the mush2 design kit page
+
+- Asked to "add `ship-card-design.html` to a new page called design kit (mush2)" as a reusable component. I first read it as a claude.ai design-system artifact and built one there; the owner meant the repo. The artifact was deleted. Lesson: in this project "page" means a page of the web app unless the owner says otherwise; the existing `web/design-kit.html` was the clue.
+- The HTML embedded its art as base64. Hashes and then a pixel compare (sharp) matched 12 of 14 images to `Mush/` files; the background is `art/eden.jpg` cropped with a vignette, so the card uses the existing `ENDING_ART` at natural size. Two highlight icons aren't in `Mush/` and were left out. The design's fonts (Days One, Kanit) aren't in the repo; adding them waits for the owner.
+- `games/ShipCard.tsx` takes everything as props (no `title` attribute; highlight labels use `Hint` tooltips plus alt text). Shown on a new dev-only page `/design-kit-mush2`. A first version declared a second `ENDING_ART`, clashing with `EndScreen`'s; the owner caught the parse error, and the fix was to reuse the existing one.
