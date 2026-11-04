@@ -65,6 +65,7 @@ export const GAME_STATE_FIELDS: Record<string, FieldRule> = {
   turrets: { reach: "room", test: "hunters.test.ts", note: "Every turret's charges, to the living in a turret room." },
   turretFailures: { reach: "never", test: "leaks.test.ts" },
   incidentPoints: { reach: "never", test: "leaks.test.ts", note: "The incident pool (#189): no one, no skill or role." },
+  pendingFires: { reach: "never", test: "leaks.test.ts", note: "Rooms a Pyromaniac set to ignite at the next cycle change (2026-11-03)." },
   fires: { reach: "room", test: "incidents.test.ts", note: "Only as `roomOnFire` to the living in the room, or `burningRooms` to the living when Fire Detectors is complete (owner, 2026-11-02)." },
   patrolShips: { reach: "room", test: "patrol.test.ts", note: "`out` to the living in the ship's bay, on its interface, with `armor` while docked (owner, 2026-10-28, so Renovate's offer reveals nothing); `armor` in flight and `charges` to its pilot only, aboard (leaks.test.ts)." },
   patrolFailures: { reach: "never", test: "leaks.test.ts" },

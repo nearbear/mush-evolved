@@ -369,7 +369,8 @@
     "contaminate": "Contaminar",
     "repair": "Reparar",
     "extinguish": "Extinguir",
-    "extinguishManually": "Apagar a mano"
+    "extinguishManually": "Apagar a mano",
+    "ignite": "Provocar un incendio"
   },
   "queue": {
     "label": "Tus acciones",
@@ -848,6 +849,7 @@
     "shareDid": "Hiciste {{label}} con {{name}}.",
     "shareDidToYou": "{{name}} hizo {{label}} contigo.",
     "sporeExtracted": "{{name}} extrajo una espora.",
+    "ignited": "{{name}} roció una pared con microesporas.",
     "showered": "Te duchaste.",
     "showeredMush": "Te duchaste. El agua quema.",
     "died": "{{name}} ha muerto.",

@@ -40,6 +40,7 @@ const ACTION_NAME_KEYS = {
   repair_hull: "actions.repairHull",
   repair: "actions.repair",
   extinguish: "actions.extinguish",
+  ignite: "actions.ignite",
   extinguish_manually: "actions.extinguishManually",
   takeoff: "actions.takeoff",
   land: "actions.land",

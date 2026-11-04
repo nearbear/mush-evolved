@@ -74,6 +74,7 @@ describe("actions from a client", () => {
     repair_hull: [{ type: "repair_hull", item: "i1" }],
     repair: [{ type: "repair", equipment: "e1" }],
     extinguish: [{ type: "extinguish", item: "i1" }],
+    ignite: [{ type: "ignite" }],
     extinguish_manually: [{ type: "extinguish_manually" }],
     takeoff: [{ type: "takeoff", equipment: "e1" }],
     land: [{ type: "land", equipment: "e1" }],

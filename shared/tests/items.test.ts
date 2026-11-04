@@ -72,6 +72,7 @@ describe("inventory", () => {
 
   it("dismantles inventory items into scrap in the room", () => {
     const state = mustApply(newGame(), "p0", take("item-1"));
+    state.players[0]!.skills = ["engineer"];
     state.items.push({ id: "item-camera", type: "camera", at: { kind: "player", id: "p0" } });
     state.config.dismantle.successChance = 1;
     const result = applyAction(state, "p0", { type: "dismantle", item: "item-camera" });
@@ -82,8 +83,16 @@ describe("inventory", () => {
     expect(next.items.filter((i: { at: { kind: string; id: string }; type: string }) => i.at.kind === "room" && i.at.id === "LABORATORY" && i.type === "plastic_scraps")).toHaveLength(0);
   });
 
+  it("refuses a dismantle without the engineer skill", () => {
+    const state = newGame();
+    state.items.push({ id: "item-camera", type: "camera", at: { kind: "player", id: "p0" } });
+    expect(offered(state, "p0").some((a) => a.type === "dismantle")).toBe(false);
+    expect(applyAction(state, "p0", { type: "dismantle", item: "item-camera" }).ok).toBe(false);
+  });
+
   it("fails a dismantle when the roll misses", () => {
     const state = mustApply(newGame(), "p0", take("item-1"));
+    state.players[0]!.skills = ["engineer"];
     state.items.push({ id: "item-camera", type: "camera", at: { kind: "player", id: "p0" } });
     state.config.dismantle.successChance = 0;
     const result = applyAction(state, "p0", { type: "dismantle", item: "item-camera" });

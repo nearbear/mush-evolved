@@ -16,7 +16,7 @@ import { researchNeedsView } from "./actions/research.ts";
 import { equipmentHere } from "./equipment.ts";
 import { leakOxygen } from "./breakage.ts";
 import { projectDone } from "./projects.ts";
-import { fireCycle, isOnFire } from "./fire.ts";
+import { fireCycle, ignitePending, isOnFire } from "./fire.ts";
 import { incidentsCycle } from "./incidents.ts";
 import { relayView } from "./relayView.ts";
 import { itemsIn, rechargeMicrowaves, startCharges, visibleItemsIn } from "./items.ts";
@@ -142,6 +142,7 @@ export function createGame(
     turrets: {},
     incidentPoints: 0,
     fires: [],
+    pendingFires: [],
     turretFailures: {},
     patrolFailures: {},
     extinguishFailures: {},
@@ -402,6 +403,7 @@ function advanceCycle(state: GameState, at?: number): void {
     visibleTo: "all",
   });
   // After the cycle's opening line, so incident and fire lines follow it. A fire acts in the cycle it starts.
+  ignitePending(state);
   incidentsCycle(state, day);
   fireCycle(state);
   leakOxygen(state);

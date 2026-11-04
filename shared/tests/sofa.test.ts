@@ -27,7 +27,9 @@ function ship(n = 1): GameState {
 
 /** The ship with `n` sofas built in the front corridor. */
 function withSofas(n = 1): GameState {
-  return mustApply(ship(n), "p0", ...Array.from({ length: n }, (_, i): Action => ({ type: "build", item: `bp${i}` })));
+  const s = ship(n);
+  player(s, "p0").skills = ["engineer"];
+  return mustApply(s, "p0", ...Array.from({ length: n }, (_, i): Action => ({ type: "build", item: `bp${i}` })));
 }
 
 describe("sofa", () => {

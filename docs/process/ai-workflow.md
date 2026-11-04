@@ -2221,3 +2221,6 @@ User asked to implement the Super Calculator research, unlocking the conditional
 - Added `server_active` to `AMBIENT_SLICES` (`web/src/iso/scene.ts`) and wired `looks.set("server", "server_active")` in `IsoRoom.tsx` when `SUPER_CALC` is built.
 - Used `server_active` slice in `EquipmentSprite` (`web/src/hud/InspectPanel.tsx`).
 - Tested research completion, access gating when broken (12% repair chance), and isometric tile binding/animation.
+
+## 2026-11-03 — Pyromaniac skill
+Owner asked for the `pyromane` skill (secret action, 4 AP, fire in the used room on the cycle change). Asked four questions (eligibility, ignition timing, visibility, limits); owner took all recommended answers: refused in a burning or already-pending room, ignites before incidents so it acts the same cycle with the normal NERON announcement, secret log, no per-cycle limit. Added `GameState.pendingFires` (bumped STATE_VERSION to 103), `actions/ignite.ts`, `ignitePending` in `fire.ts`. Needed a Mush player in the test, since Mush skills can only be picked by Mush.

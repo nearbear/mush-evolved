@@ -91,6 +91,7 @@ describe("lethargy", () => {
 
     it("through the bed going away (a dismantled sofa)", () => {
       let s = ship();
+      player(s, "p0").skills = ["engineer"];
       s.equipment.BEDROOM_A!.push({ id: "sofa", type: "SOFA" });
       s = mustApply(s, "p1", { type: "lie_down", equipment: "sofa" });
       player(s, "p1").ap = 0;
