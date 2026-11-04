@@ -23,6 +23,8 @@ export interface Bot {
    * whether it listens (a model bot with a key); one that does gets a turn to reply, act, or do nothing, even mid-goal.
    */
   wake?(): boolean;
+  /** Optional: whether `wake` would take a wake now, without waking it (the chat router's candidates, #341). */
+  readonly listens?: boolean;
   /** Optional: whether a wake is still waiting for its turn. */
   readonly woken?: boolean;
   /** Optional: the message its last turn wants posted (at most one), taken once. The room posts it like a player's. */
@@ -32,8 +34,9 @@ export interface Bot {
 /**
  * How deep a chain of bot replies may go (bot-goals.md, "Talking in chat"). A message a person writes, or a bot writes
  * on its own turn, has depth 0; a bot's reply to a message of depth d has depth d + 1; a message at this depth wakes
- * nobody (bots still read it on their next turn). Wakes merge into rounds, so a chain costs at most about
- * bots × (depth + 1) calls.
+ * nobody (bots still read it on their next turn). Below it, the chat router (`router.ts`, #341) picks at most
+ * `ROUTER_MAX_WAKES` bots per message: each message costs one router call and at most that many woken calls, and wakes
+ * still merge into rounds (one call per bot per round).
  */
 export const BOT_CHAT_CHAIN_DEPTH = 3;
 
@@ -129,7 +132,7 @@ export class GoalBot implements Bot {
   }
 
   /** Whether chat wakes it: only a bot whose model can be asked (bot-goals.md: a bot without a key ignores chat). */
-  protected get listens(): boolean {
+  get listens(): boolean {
     return false;
   }
 
@@ -302,7 +305,7 @@ export class ModelBot extends GoalBot {
     return this.gate.credentials === null;
   }
 
-  protected override get listens(): boolean {
+  override get listens(): boolean {
     return this.gate.credentials !== null;
   }
 

@@ -19,6 +19,7 @@ import { BOT_CHAT_CHAIN_DEPTH, ModelBot, type Ranked } from "../src/bots.ts";
 import type { BotMessage } from "../src/prompt.ts";
 import type { Goal } from "../src/bots/goals/index.ts";
 import { completeOpenAi, ModelGate, type Complete } from "../src/model.ts";
+import { buildRouterPrompt, parseRouterReply, routerInput } from "../src/router.ts";
 
 const { values: args } = parseArgs({
   args: JSON.parse(process.env.TRIAL_ARGS ?? "[]") as string[],
@@ -104,6 +105,13 @@ globalThis.fetch = async (input, init) => {
 
 let fakeRng = Number(args.seed);
 const fakeComplete: Complete = async (_c, turns) => {
+  if (turns[0]!.content.startsWith("You route chat")) {
+    // The chat router: one bot it may wake, at random, or nobody.
+    calls.push({ ms: 0, prompt: 0, completion: 0, reasoning: 0, cost: 0, finish: "fake" });
+    const names = turns[1]!.content.split("\n").flatMap((l) => l.match(/^- (.+?)(?: \(.*\))?: AI, can wake$/)?.[1] ?? []);
+    fakeRng = (fakeRng * 1103515245 + 12345) % 2 ** 31;
+    return `WAKE: ${names[fakeRng % (names.length + 1)] ?? "nobody"}`;
+  }
   const lines = turns[1]!.content.split("\n").filter((l) => /^\d+\. /.test(l));
   const n = lines.length;
   calls.push({ ms: 0, prompt: 0, completion: 0, reasoning: 0, cost: 0, finish: "fake" });
@@ -119,6 +127,8 @@ const replies: { reply: string; options: number }[] = [];
 const complete: Complete = async (credentials, turns, signal) => {
   if (args["dump-prompt"] && replies.length === 0) writeFileSync(args["dump-prompt"], turns.map((t) => `### ${t.role}\n${t.content}`).join("\n\n"));
   const reply = await (args.fake ? fakeComplete : completeOpenAi)(credentials, turns, signal);
+  // The router's replies are counted apart (routed).
+  if (turns[0]!.content.startsWith("You route chat")) return reply;
   replies.push({ reply, options: turns[1]!.content.split("\n").filter((l) => /^\d+\. /.test(l)).length });
   return reply;
 };
@@ -168,7 +178,9 @@ function apply(input: Input): string | null {
 /** Like GameRoom.wakeBots and botSay, without the rate limit: per bot, the depth of the message that woke it. */
 const wakes = new Map<PlayerId, number>();
 let messages = 0;
-function say(id: PlayerId, message: BotMessage, depth: number): void {
+/** The chat router's calls (#341), counted apart from the bots' own, and what they decided. */
+const routed = { calls: [] as Call[], woke: 0, nobody: 0 };
+async function say(id: PlayerId, message: BotMessage, depth: number): void {
   const pair = (c: { members: PlayerId[] }, to: PlayerId) => c.members.length === 2 && c.members.includes(id) && c.members.includes(to);
   let channel: ChannelId | undefined = "channel" in message ? message.channel : game.channels.find((c) => pair(c, message.to))?.id;
   if (channel === undefined && "to" in message) {
@@ -186,10 +198,24 @@ function say(id: PlayerId, message: BotMessage, depth: number): void {
   messages++;
   console.log(`  ${id} (${game.players.find((p) => p.id === id)!.character}) [${channel}${"to" in message ? ` to ${message.to}` : ""}] depth ${depth}: ${moderated.text}`);
   if (depth >= BOT_CHAT_CHAIN_DEPTH) return;
-  for (const [other, bot] of bots) {
+  const candidates = [...bots].filter(([other, bot]) => {
     const p = game.players.find((q) => q.id === other)!;
-    if (other !== id && readChannels(game, p).includes(channel!) && bot.wake()) wakes.set(other, depth);
+    return other !== id && bot.listens && p.alive && !p.ready && readChannels(game, p).includes(channel!);
+  });
+  if (candidates.length === 0) return;
+  let chosen = candidates.map(([other]) => other);
+  // A private channel wakes its members; anywhere else the router decides, as in GameRoom.wakeBots.
+  if (!game.channels.some((c) => c.id === channel)) {
+    const input = routerInput(game, channel!, game.chat.filter((m) => m.channel === channel && m.from === id).at(-1)!, new Set(chosen));
+    const before = calls.length;
+    const reply = await gate.ask(buildRouterPrompt(input));
+    routed.calls.push(...calls.splice(before));
+    chosen = reply === null ? [] : parseRouterReply(reply, input);
+    console.log(`    router: ${chosen.length ? chosen.join(", ") : "nobody"}`);
+    if (chosen.length) routed.woke++;
+    else routed.nobody++;
   }
+  for (const other of chosen) if (bots.get(other)!.wake()) wakes.set(other, depth);
 }
 
 const idle = (id: PlayerId): boolean => {
@@ -259,7 +285,7 @@ for (let c = 0; c < cycles && game.phase === "playing" && spent + spentBefore < 
       }),
     );
     for (const { id, action, wasReady, depth, message } of decided) {
-      if (message) say(id, message, depth === undefined ? 0 : depth + 1);
+      if (message) await say(id, message, depth === undefined ? 0 : depth + 1);
       row.perBot[id] = (row.perBot[id] ?? 0) + 1;
       if (!action) {
         stats.nulls++;
@@ -326,6 +352,10 @@ console.log(`cycles ${cyclesDone}, calls ${calls.length} (${(calls.length / Math
 console.log(`tokens per call: prompt ${avg(ok.map((c) => c.prompt)).toFixed(0)}, completion ${avg(ok.map((c) => c.completion)).toFixed(0)} (reasoning ${avg(ok.map((c) => c.reasoning)).toFixed(0)}, max ${Math.max(0, ...ok.map((c) => c.completion))})`);
 console.log(`latency ms: p50 ${pct(ok.map((c) => c.ms), 0.5).toFixed(0)}, p90 ${pct(ok.map((c) => c.ms), 0.9).toFixed(0)}, max ${Math.max(0, ...ok.map((c) => c.ms)).toFixed(0)}`);
 console.log(`replies: ${replies.length}, without GOAL ${unparsed}, cut off by max_tokens ${lengths}; fallbacks ${fallbacks}; messages ${messages}; nulls ${stats.nulls}; illegal ${stats.illegal}`);
+{
+  const r = routed.calls;
+  console.log(`router (counted apart, not in the calls above): ${r.length} calls (woke someone ${routed.woke}, nobody ${routed.nobody}), prompt ${avg(r.map((c) => c.prompt)).toFixed(0)} tokens, p50 ${pct(r.map((c) => c.ms), 0.5).toFixed(0)}ms, $${sum(r.map((c) => c.cost)).toFixed(4)}`);
+}
 console.log(`cost: $${spent.toFixed(4)} this run, $${(spent / Math.max(1, calls.length)).toFixed(6)} per call, $${((spent / Math.max(1, cyclesDone)) * 8).toFixed(4)} per game day`);
 console.log(`goals (model calls and choices by priority): ${Object.entries(goalsChosen).sort((a, b) => b[1] - a[1]).map(([k, n]) => `${k} ${n}`).join(", ")}`);
 console.log(`actions: ${Object.entries(chosen).sort((a, b) => b[1] - a[1]).map(([k, n]) => `${k} ${n}`).join(", ")}`);

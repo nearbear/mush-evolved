@@ -1,4 +1,5 @@
 import {
+  characterName,
   CHARACTERS,
   CHAT_CHANNELS,
   CYCLE_HOURS,
@@ -67,6 +68,12 @@ const DEV = { ...CHEATS, DEV_SERVER: "true" };
 const HOUR = 60 * 60 * 1000;
 /** When the next 3-hour cycle begins after `at`. */
 const nextCycleAt = (at: number) => (Math.floor(at / (3 * HOUR)) + 1) * 3 * HOUR;
+
+/** A chat router reply (#341) naming every bot the router prompt says it may wake. */
+const wakeAll = (prompt: string): string => {
+  const names = prompt.split("\n").flatMap((l) => l.match(/^- (.+?)(?: \(.*\))?: AI, can wake$/)?.[1] ?? []);
+  return `WAKE: ${names.join(", ") || "nobody"}`;
+};
 
 const send = (room: Room, conn: Conn, msg: unknown) => room.onMessage(conn as never, typeof msg === "string" ? msg : JSON.stringify(msg));
 const lastMsg = (c: Conn) => c.messages<GameServerMessage>().at(-1)!;
@@ -648,13 +655,15 @@ describe("GameRoom bots", () => {
     });
 
     describe("chat (#223)", () => {
-      /** A model that answers chat with `say` (a SAY line's text) when woken, and otherwise picks the first goal. */
-      const chatty = (say: string) =>
+      /** A model that answers chat with `say` (a SAY line's text) when woken, routes every message to `route`, and otherwise picks the first goal. */
+      const chatty = (say: string, route: (prompt: string) => string = wakeAll) =>
         vi.fn(async (_url: string, init: RequestInit) => {
-          const prompt = (JSON.parse(init.body as string) as { messages: { content: string }[] }).messages[1]!.content;
-          const content = prompt.includes("A new chat message came in") ? `SAY: global: ${say}` : "GOAL: 1";
+          const [system, user] = (JSON.parse(init.body as string) as { messages: { content: string }[] }).messages.map((m) => m.content);
+          const content = system!.startsWith("You route chat") ? route(user!) : user!.includes("A new chat message came in") ? `SAY: global: ${say}` : "GOAL: 1";
           return new Response(JSON.stringify({ choices: [{ message: { content } }] }));
         });
+      const promptsOf = (fetch: ReturnType<typeof vi.fn>, from = 0) =>
+        (fetch.mock.calls.slice(from) as unknown as [string, RequestInit][]).map(([, init]) => (JSON.parse(init.body as string) as { messages: { content: string }[] }).messages);
       /** Lets time pass, firing alarms so action bars end and busy bots become free to answer. */
       const pass = async (room: Room, storage: FakeStorage, ms: number) => {
         for (let t = 0; t < ms; t += 500) {
@@ -714,12 +723,45 @@ describe("GameRoom bots", () => {
         const before = fetch.mock.calls.length;
         await send(room, human, { type: "chat", channel, text: "just between us" });
         await pass(room, storage, 10_000);
-        const woken = (fetch.mock.calls.slice(before) as unknown as [string, RequestInit][])
-          .map(([, init]) => (JSON.parse(init.body as string) as { messages: { content: string }[] }).messages[1]!.content)
-          .filter((p) => p.includes("A new chat message came in"));
+        const all = promptsOf(fetch, before);
+        // Members of a private channel are woken outright: no router call.
+        expect(all.some((m) => m[0]!.content.startsWith("You route chat"))).toBe(false);
+        const woken = all.map((m) => m[1]!.content).filter((p) => p.includes("A new chat message came in"));
         const insider = gameOf(room).players.find((p) => p.id === "p1")!.character;
         expect(woken.length).toBeGreaterThan(0);
         expect(woken.every((p) => p.includes(`You are ${insider},`))).toBe(true);
+        vi.unstubAllGlobals();
+        vi.useRealTimers();
+      });
+
+      it("wake only the bots the router names, and nobody when it says nobody or fails (#341)", async () => {
+        let route: (prompt: string) => string = () => `WAKE: ${characterName(gameOf(room).players.find((p) => p.id === "p2")!.character)}`;
+        const fetch = chatty("heard you", (prompt) => route(prompt));
+        vi.stubGlobal("fetch", fetch);
+        const { room, storage } = await modelRoom({ ...DEV, ...MODEL });
+        const human = connect(room, "tok0");
+        await pass(room, storage, 1500);
+        const before = fetch.mock.calls.length;
+        await send(room, human, { type: "chat", channel: "global", text: "hey you" });
+        await pass(room, storage, 1500);
+        // The human's message is routed once, then only p2 answers (its own reply is routed too, and wakes p2 nobody else).
+        const routed = promptsOf(fetch, before).filter((m) => m[0]!.content.startsWith("You route chat"));
+        expect(routed.length).toBeGreaterThanOrEqual(1);
+        expect(routed[0]![1]!.content).toContain('"hey you"');
+        expect(botMessages(room).map((m) => m.from)).toEqual(["p2"]);
+
+        route = () => "WAKE: nobody";
+        await send(room, human, { type: "chat", channel: "global", text: "nice weather" });
+        await pass(room, storage, 5000);
+        expect(botMessages(room)).toHaveLength(1);
+
+        // A failed router call wakes nobody, never everybody.
+        route = () => {
+          throw new Error("down");
+        };
+        await send(room, human, { type: "chat", channel: "global", text: "everyone answer" });
+        await pass(room, storage, 5000);
+        expect(botMessages(room)).toHaveLength(1);
         vi.unstubAllGlobals();
         vi.useRealTimers();
       });
@@ -801,7 +843,11 @@ describe("GameRoom single player", () => {
   it("drops a chat wake when a woken bot dies before its turn, so the cycle still ends", async () => {
     vi.stubGlobal(
       "fetch",
-      vi.fn(async () => new Response(JSON.stringify({ choices: [{ message: { content: "GOAL: 1" } }] }))),
+      vi.fn(async (_url: string, init: RequestInit) => {
+        const [system, user] = (JSON.parse(init.body as string) as { messages: { content: string }[] }).messages.map((m) => m.content);
+        const content = system!.startsWith("You route chat") ? wakeAll(user!) : "GOAL: 1";
+        return new Response(JSON.stringify({ choices: [{ message: { content } }] }));
+      }),
     );
     const { room, storage, token } = await soloRoom({ ...DEV, MODEL_BASE_URL: "https://example.test/v1", MODEL_NAME: "m", MODEL_API_KEY: "dev-key" });
     const c = connect(room, token);
