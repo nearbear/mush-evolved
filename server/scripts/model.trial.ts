@@ -40,8 +40,8 @@ const { values: args } = parseArgs({
     "dump-prompt": { type: "string" },
     /** Stops a cycle after this many model calls (a loop guard). Default: 12 per bot. */
     "calls-per-cycle": { type: "string" },
-    /** Crew size, the human included. Above single player's 9, every character may be a bot (trial only, not the game). */
-    crew: { type: "string", default: "9" },
+    /** Crew size, the human included (default 16, a full ship). Above single player's 9, every character may be a bot (trial only, not the game). */
+    crew: { type: "string", default: "16" },
     /** No incidents (breakage, fires): the incident budget is zero, so the pool never fills. Trial only. */
     "no-incidents": { type: "boolean", default: false },
   },
@@ -137,7 +137,8 @@ const gate = new ModelGate({ baseUrl: "https://openrouter.ai/api/v1", model: arg
 
 const seed = Number(args.seed);
 const setup = singlePlayerGame("Trial", "kuanti", seed);
-// A bigger crew than single player's 9 (trial only): the same bot seats, then every other character in list order.
+// A bigger crew than single player's 9 (trial only; 16 by default, a full ship): the same bot seats, then every other
+// character in list order. Still one Mush, the passive human: bots only play crew.
 const crew = Number(args.crew);
 if (!(crew >= 2 && crew <= CHARACTERS.length)) throw new Error(`--crew must be 2 to ${CHARACTERS.length}`);
 const [humanSeat, botSeat] = [setup.seats[0]!, setup.seats[1]!];
@@ -320,7 +321,7 @@ for (let c = 0; c < cycles && game.phase === "playing" && spent + spentBefore < 
   noteDeaths();
   row.wallMs = performance.now() - t0;
   perCycle.push(row);
-  console.log(`cycle ${cycle}: ${row.calls} calls, ${(row.wallMs / 1000).toFixed(1)}s, ready repeats ${row.readyRepeats}, hull ${game.ship.hull}, $${spent.toFixed(4)} so far`);
+  console.log(`cycle ${cycle}: ${row.calls} calls, ${(row.wallMs / 1000).toFixed(1)}s, ready repeats ${row.readyRepeats}, hull ${game.ship.hull}, oxygen ${game.ship.oxygen}, $${spent.toFixed(4)} so far`);
   {
     const alive = game.players.filter((p) => p.alive);
     const mean = (f: (p: (typeof alive)[number]) => number) => (alive.reduce((a, p) => a + f(p), 0) / Math.max(1, alive.length)).toFixed(1);
