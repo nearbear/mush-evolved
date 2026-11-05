@@ -3,6 +3,7 @@ import { equipmentHere } from "../equipment.ts";
 import { PROJECT_COMPLETE, PROJECT_IDS, projectSkills, type ProjectId } from "../projects.ts";
 import { contribute } from "../relay.ts";
 import { logPublic } from "../log.ts";
+import { removeStatus } from "../statuses.ts";
 import { onProjectCompleted } from "../projectEffects.ts";
 import type { GameState, PlayerState } from "../types.ts";
 
@@ -44,7 +45,10 @@ export class ProjectAction extends Action<ProjectActionData> {
 
   override apply(state: GameState, player: PlayerState, target: ProjectActionData): void {
     const pool = (state.relay.projects[target.project] ??= { tokens: [] });
-    const progress = contribute(state, pool, state.config.project.progress, player, projectSkills(target.project), PROJECT_COMPLETE);
+    // Genius (owner, 2026-11-05): the next project finishes at once, and the status is used up.
+    const genius = player.statuses.includes("genius");
+    if (genius) removeStatus(player, "genius");
+    const progress = genius ? PROJECT_COMPLETE : contribute(state, pool, state.config.project.progress, player, projectSkills(target.project), PROJECT_COMPLETE);
     state.projects[target.project] = progress;
     logPublic(state, player.room, progress >= PROJECT_COMPLETE ? "projectCompleted" : "projectWorked", { name: player.character, project: target.project, percent: progress });
     if (progress >= PROJECT_COMPLETE) onProjectCompleted(state, target.project as ProjectId);

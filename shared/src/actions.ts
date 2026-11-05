@@ -64,6 +64,7 @@ import { UninstallAction } from "./actions/uninstall.ts";
 import { JettisonAction } from "./actions/jettison.ts";
 import { PickSkillAction } from "./actions/pick_skill.ts";
 import { ApprenticeshipAction } from "./actions/apprenticeship.ts";
+import { BecomeGeniusAction } from "./actions/become_genius.ts";
 import { ReadBookAction } from "./actions/read_book.ts";
 import { AnathemaAction } from "./actions/anathema.ts";
 import { BoringSpeechAction, FierySpeechAction } from "./actions/speech.ts";
@@ -206,6 +207,7 @@ const REGISTRY = {
   attack: new AttackAction(),
   pick_skill: new PickSkillAction(),
   apprenticeship: new ApprenticeshipAction(),
+  become_genius: new BecomeGeniusAction(),
   read_book: new ReadBookAction(),
   self_disease: new SelfDiseaseAction(),
   self_injury: new SelfInjuryAction(),

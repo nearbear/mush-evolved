@@ -89,6 +89,7 @@ const ACTION_NAME_KEYS = {
   attack: "actions.attack",
   pick_skill: "actions.pickSkill",
   apprenticeship: "actions.apprenticeship",
+  become_genius: "actions.becomeGenius",
   read_book: "actions.readBook",
   self_disease: "actions.selfDisease",
   warp_to_planet: "actions.warpToPlanet",
