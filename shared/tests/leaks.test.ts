@@ -87,11 +87,8 @@ function ship(): { state: GameState; sentinels: Sentinel[] } {
     };
     p.queue = [{ action: { type: "take", item: str(`queue-${p.id}`, own) }, adjustment: { ap: 0, mp: 0 } }];
     s.items.push({ id: str(`inventory-${p.id}`, own), type: "wrench", at: { kind: "player", id: p.id } });
-    s.scanFailures[p.id] = num(`scanFailures-${p.id}`, []);
-    s.turretFailures[p.id] = num(`turretFailures-${p.id}`, []);
-    s.patrolFailures[p.id] = num(`patrolFailures-${p.id}`, []);
+    s.failureStreaks[p.id] = { scan_planet: num(`failureStreaks-${p.id}`, []) };
     s.pendingFires = [str("pendingFires", [])];
-    s.extinguishFailures[p.id] = num(`extinguishFailures-${p.id}`, []);
     s.sharedOnDay[p.id] = num(`sharedOnDay-${p.id}`, []);
     s.planets[p.id] = [
       {

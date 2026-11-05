@@ -2,7 +2,7 @@ import { Action, IN_PRESELECTION, type ActionCost, type ActionTag, type ActionVi
 import { damageHunter, turretCharges, turretsHere } from "../hunters.ts";
 import { roll } from "../rng.ts";
 import { logPrivate, logPublic } from "../log.ts";
-import { failureStreakMultiplier, turretDamage } from "../modifiers.ts";
+import { turretDamage } from "../modifiers.ts";
 import type { GameState, PlayerState } from "../types.ts";
 
 export type TurretAttackActionData = { type: "turret_attack"; equipment: string; hunter: string };
@@ -28,9 +28,12 @@ export class TurretAttackAction extends Action<TurretAttackActionData> {
     return player.resources.shoot > 0 ? { ap: 0, mp: 0, paidBy: "shoot" } : { ap: state.config.turrets.cost.ap, mp: 0 };
   }
 
-  override getSuccessChance(state: Readonly<GameState>, player: Readonly<PlayerState>): number {
-    const { chance, failureMultiplier } = state.config.turrets;
-    return Math.min(1, chance * failureStreakMultiplier(state, player, failureMultiplier) ** (state.turretFailures[player.id] ?? 0));
+  override getSuccessChance(state: Readonly<GameState>): number {
+    return state.config.turrets.chance;
+  }
+
+  override getFailureMultiplier(state: Readonly<GameState>): number {
+    return state.config.turrets.failureMultiplier;
   }
 
   override getCandidates(state: Readonly<GameState>, player: Readonly<PlayerState>): TurretAttackActionData[] {
@@ -49,7 +52,6 @@ export class TurretAttackAction extends Action<TurretAttackActionData> {
 
   override apply(state: GameState, player: PlayerState, target: TurretAttackActionData): void {
     spendCharge(state, target.equipment);
-    delete state.turretFailures[player.id];
     const amount = turretDamage(state, player, roll(state, state.config.turrets.damage));
     if (damageHunter(state, target.hunter, amount)) logPublic(state, player.room, "hunterDestroyed", { name: player.character });
     else logPrivate(state, player.id, "turretHit", { damage: amount });
@@ -57,7 +59,6 @@ export class TurretAttackAction extends Action<TurretAttackActionData> {
 
   override fail(state: GameState, player: PlayerState, target: TurretAttackActionData): void {
     spendCharge(state, target.equipment);
-    state.turretFailures[player.id] = (state.turretFailures[player.id] ?? 0) + 1;
     logPrivate(state, player.id, "turretMiss");
   }
 }

@@ -16,6 +16,7 @@ export const DEFAULT_CONFIG: GameConfig = {
   preselection: null,
   // Confirmed 2026-10-11: start with 8 AP, gain 1 per cycle (2 while lying in a bed, via the
   // "lying_down" modifier), never above 12.
+  failureMultiplier: 1.25,
   startAp: 8,
   // Owner, 2026-10-24: each player starts with 12 MP (was 0). Same cap as `movement.mpCap`.
   startMp: 12,

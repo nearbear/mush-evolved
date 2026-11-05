@@ -23,9 +23,12 @@ export class ExtinguishManuallyAction extends Action<ExtinguishManuallyActionDat
     return { ap: state.config.extinguish.cost.ap, mp: 0 };
   }
 
-  override getSuccessChance(state: Readonly<GameState>, player: Readonly<PlayerState>): number {
-    const { chance, failureMultiplier } = state.config.extinguish.manual;
-    return Math.min(1, chance * failureMultiplier ** (state.extinguishFailures[player.id] ?? 0));
+  override getSuccessChance(state: Readonly<GameState>): number {
+    return state.config.extinguish.manual.chance;
+  }
+
+  override getFailureMultiplier(state: Readonly<GameState>): number {
+    return state.config.extinguish.manual.failureMultiplier;
   }
 
   override injuryChance(state: Readonly<GameState>): number {
@@ -46,12 +49,10 @@ export class ExtinguishManuallyAction extends Action<ExtinguishManuallyActionDat
 
   override apply(state: GameState, player: PlayerState): void {
     state.fires = state.fires.filter((room) => room !== player.room);
-    delete state.extinguishFailures[player.id];
     logPublic(state, player.room, "fireExtinguished", { name: player.character });
   }
 
   override fail(state: GameState, player: PlayerState): void {
-    state.extinguishFailures[player.id] = (state.extinguishFailures[player.id] ?? 0) + 1;
     logPrivate(state, player.id, "extinguishFailed");
   }
 }
