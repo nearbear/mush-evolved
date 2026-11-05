@@ -6,6 +6,7 @@
 import { crewRoleLabel, type FinishedCrewMember, type FinishedGame, type FinishedGamesResponse, type LobbyLanguage, MAX_GAMES_PAGE } from "@mush2/shared";
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { Link } from "react-router";
 import { api } from "../account/api.ts";
 import { DEAD_ICON, bustIcon } from "../art/assets.ts";
 import { verdictKey } from "../hud/EndScreen.tsx";
@@ -55,7 +56,7 @@ export default function GamesPage() {
       <header className="games-header">
         <h1>{t("games.title")}</h1>
         <nav className="games-nav">
-          <a href="/">{t("games.back")}</a>
+          <Link to="/">{t("games.back")}</Link>
           <LanguageSwitcher inline />
         </nav>
       </header>

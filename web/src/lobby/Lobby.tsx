@@ -1,5 +1,6 @@
 import { Suspense, lazy, useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { Link } from "react-router";
 import { AUTH_PROVIDERS, LOBBY_LANGUAGES, MAX_NAME_LENGTH, type CharacterId, type LobbyLanguage, type MatchmakerServerMessage } from "@mush2/shared";
 import { AccountButton } from "../account/AccountButton.tsx";
 import { PROVIDER_NAMES, signup, startSignIn, takeAuthOutcome, logout, useMe } from "../account/api.ts";
@@ -185,9 +186,9 @@ export function Lobby({ onMatched }: { onMatched: (ticket: SeatTicket) => void }
     <main className={sleeping ? "pod pod-sleeping" : "pod"}>
       {import.meta.env.DEV && (
         <nav className="pod-devlinks">
-          <a href="/editor">Ship Editor</a> {/* i18n-ignore: dev servers only */}
+          <Link to="/editor">Ship Editor</Link> {/* i18n-ignore: dev servers only */}
           <a href="/design-kit.html">Design kit</a> {/* i18n-ignore: dev servers only */}
-          <a href="/design-kit-mush2">Design kit (mush2)</a> {/* i18n-ignore: dev servers only */}
+          <Link to="/design-kit-mush2">Design kit (mush2)</Link> {/* i18n-ignore: dev servers only */}
           {/* Dev sign-in (#287): a plain GET form to /auth/dev, which signs in as that name and redirects back here. */}
           <form className="pod-devsignin" method="get" action="/auth/dev">
             <input name="name" required maxLength={MAX_NAME_LENGTH} defaultValue={__DEV_SIGN_IN_NAME__.slice(0, MAX_NAME_LENGTH)} placeholder="Name" aria-label="Dev sign-in name" /> {/* i18n-ignore: dev servers only */}
@@ -328,9 +329,9 @@ export function Lobby({ onMatched }: { onMatched: (ticket: SeatTicket) => void }
                 </button>
               </li>
             </ul>
-            <a className="pod-games-link" href="/games">
+            <Link className="pod-games-link" to="/games">
               {t("games.lobbyLink")}
-            </a>
+            </Link>
           </div>
         </div>
         </section>

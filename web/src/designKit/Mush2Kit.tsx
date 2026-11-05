@@ -34,12 +34,12 @@ export default function Mush2Kit() {
           <h2>Ship card</h2>
           <p>
             <code>games/ShipCard.tsx</code>: one character's finished ship. Every image and sentence is a prop. With{" "}
-            <code>href</code> the card is a link with hover and focus states; without it, a plain box.
+            <code>to</code> the card is a link with hover and focus states; without it, a plain box.
           </p>
           <div className="m2k-row">
             <figure>
               <ShipCard
-                href="#ship-card"
+                to="#ship-card"
                 name="Jin Su"
                 portrait={bustIcon("jinsu")}
                 score={289}
@@ -63,7 +63,7 @@ export default function Mush2Kit() {
                 highlights={highlights.slice(0, 3)}
               />
               <figcaption>
-                <code>mush</code>, no <code>href</code>, one event
+                <code>mush</code>, no <code>to</code>, one event
               </figcaption>
             </figure>
           </div>

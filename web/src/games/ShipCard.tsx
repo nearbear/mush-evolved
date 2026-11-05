@@ -1,10 +1,11 @@
 // A 200x255 card summing up one character's finished ship: who they played, their triumph score, how they and the
 // ship ended, and the highlights they collected. A pure view: every image URL and every sentence comes in as props
-// (from a finished game's record, never computed here), so it works for any character and any ending. With `href`
-// the whole card is a link; without it, a plain box. Shown on the dev design kit page (/design-kit-mush2).
+// (from a finished game's record, never computed here), so it works for any character and any ending. With `to`
+// the whole card is an in-app link (React Router); without it, a plain box. Shown on the dev design kit page (/design-kit-mush2).
 
 import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
+import { Link } from "react-router";
 import { SHIP_CARD_ICONS } from "../art/assets.ts";
 import { Hint } from "../hud/IconButton.tsx";
 import "./shipCard.css";
@@ -41,10 +42,11 @@ export interface ShipCardProps {
   background?: { src: string; x?: number; y?: number };
   events: readonly ShipCardEvent[];
   highlights: readonly ShipCardHighlight[];
-  href?: string;
+  /** An in-app path: the whole card becomes a client-side link to it. */
+  to?: string;
 }
 
-export function ShipCard({ name, portrait, score, mush = false, background, events, highlights, href }: ShipCardProps) {
+export function ShipCard({ name, portrait, score, mush = false, background, events, highlights, to }: ShipCardProps) {
   const { t } = useTranslation();
   const body = (
     <>
@@ -103,10 +105,10 @@ export function ShipCard({ name, portrait, score, mush = false, background, even
       )}
     </>
   );
-  return href ? (
-    <a className="ship-card link" href={href}>
+  return to ? (
+    <Link className="ship-card link" to={to}>
       {body}
-    </a>
+    </Link>
   ) : (
     <div className="ship-card">{body}</div>
   );
