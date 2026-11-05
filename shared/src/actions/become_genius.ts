@@ -6,7 +6,7 @@ export type BecomeGeniusActionData = { type: "become_genius" };
 
 /**
  * Eureka moment, granted by the Genius skill (owner, 2026-11-05): free, once per game. Gives the private `genius` status,
- * which makes the next Research or Project the holder works on finish at once (research.ts, project.ts consume it). The
+ * which makes the next Research or Project the holder works on finish at once, and the next repair (repair.ts, repair_hull.ts; not PILGRED's) certain (they consume it). The
  * status lasts until used. Private: no room log line.
  */
 export class BecomeGeniusAction extends Action<BecomeGeniusActionData> {

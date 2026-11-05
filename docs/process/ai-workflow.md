@@ -2292,3 +2292,5 @@ Follow-up 2026-11-05: owner noted Apprentice must not be pickable again once use
 ## 2026-11-05: Genius skill (become_genius action)
 
 Owner decided via one question round: Eureka moment is free, once per game, private; the `genius` status lasts until used; the next Research or Project completes at once at its normal price; requirements still apply. Implemented as `actions/become_genius.ts`, a private `genius` status, `geniusUsed` flag (STATE_VERSION 108), and consume hooks in `research.ts` (skips the assay) and `project.ts`. Repairs excluded per the request, though the skill text in the original also lists them. The server GoalBot "legal actions" test times out at 5s, but it also does on a clean tree, so it is not caused by this change.
+
+Follow-up 2026-11-05: owner extended Genius to repairs (not PILGRED). Implemented as success chance 1 on the next `repair` / `repair_hull`, consuming the status; I read "all repairs" as including the hull patch, which the owner can correct.

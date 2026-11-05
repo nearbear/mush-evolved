@@ -50,6 +50,31 @@ describe("Genius skill", () => {
     expect(next.projects.MAGNETIC_NET).toBeLessThan(PROJECT_COMPLETE);
   });
 
+  it("makes the next repair certain, and is used up by it", () => {
+    const never = { ...DEFAULT_CONFIG, startSkills: [], repair: { ...DEFAULT_CONFIG.repair, chance: { ...DEFAULT_CONFIG.repair.chance, COFFEE_DISPENSER: 0.0001 } } };
+    const s = createGame(makeSeats(3, "others"), never, 7);
+    for (const p of s.players) p.room = "REFECTORY";
+    player(s, "p0").skills = ["genius"];
+    const coffee = s.equipment.REFECTORY!.find((e) => e.type === "COFFEE_DISPENSER")!;
+    coffee.broken = true;
+    const repair: Action = { type: "repair", equipment: coffee.id };
+    const ready = must(applyAction(s, "p0", eureka));
+    expect(offered(ready, "p0").find((a) => a.type === "repair")).toBeDefined();
+    const fixed = must(applyAction(ready, "p0", repair));
+    expect(fixed.equipment.REFECTORY!.find((e) => e.id === coffee.id)!.broken).toBeUndefined();
+    expect(player(fixed, "p0").statuses).not.toContain("genius");
+  });
+
+  it("makes the next hull patch certain", () => {
+    const s = createGame(makeSeats(3, "others"), { ...DEFAULT_CONFIG, startSkills: [], hullRepair: { ...DEFAULT_CONFIG.hullRepair, chance: 0.0001 } }, 7);
+    player(s, "p0").skills = ["genius"];
+    s.ship.hull = 1;
+    s.items.push({ id: "scrap", type: "metal_scraps", at: { kind: "player", id: "p0" } });
+    const done = must(applyAction(must(applyAction(s, "p0", eureka)), "p0", { type: "repair_hull", item: "scrap" }));
+    expect(done.ship.hull).toBeGreaterThan(1);
+    expect(player(done, "p0").statuses).not.toContain("genius");
+  });
+
   it("stays until used, and is private to its holder", () => {
     const s = must(applyAction(ship("LABORATORY"), "p0", eureka));
     expect(viewFor(s, "p0").statuses).toContain("genius");

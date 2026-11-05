@@ -2,6 +2,7 @@ import { Action, isString } from "./action.ts";
 import { isBreakable } from "../breakage.ts";
 import { itemsIn } from "../items.ts";
 import { logPrivate, logPublic } from "../log.ts";
+import { removeStatus } from "../statuses.ts";
 import type { GameState, PlayerState } from "../types.ts";
 
 export type RepairActionData = { type: "repair"; equipment: string };
@@ -26,6 +27,7 @@ export class RepairAction extends Action<RepairActionData> {
   }
 
   override getSuccessChance(state: Readonly<GameState>, player: Readonly<PlayerState>, target: RepairActionData): number {
+    if (player.statuses.includes("genius")) return 1; // Owner, 2026-11-05: Genius makes the next repair certain.
     const type = brokenHere(state, player).find((e) => e.id === target.equipment)?.type;
     const base = (type !== undefined ? state.config.repair.chance[type] : undefined) ?? 0;
     const wrench = itemsIn(state, { kind: "player", id: player.id }).some((item) => item.type === WRENCH_ITEM);
@@ -43,6 +45,7 @@ export class RepairAction extends Action<RepairActionData> {
   override apply(state: GameState, player: PlayerState, target: RepairActionData): void {
     const equipment = state.equipment[player.room]!.find((e) => e.id === target.equipment)!; // checked, so it exists
     delete equipment.broken;
+    removeStatus(player, "genius");
     logPublic(state, player.room, "repaired", { name: player.character, equipment: equipment.type });
   }
 

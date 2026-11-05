@@ -166,7 +166,7 @@ export class ResearchAction extends Action<ResearchActionData> {
   }
 
   override apply(state: GameState, player: PlayerState, target: ResearchActionData): void {
-    if (player.statuses.includes("genius")) return finishAtOnce(state, player, target.research as ResearchId);
-    addSample(state, player, target.research as ResearchId, false);
+    if (player.statuses.includes("genius")) finishAtOnce(state, player, target.research as ResearchId);
+    else addSample(state, player, target.research as ResearchId, false);
   }
 }

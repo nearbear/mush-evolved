@@ -259,6 +259,8 @@ export const SKILL_STATUS: Readonly<Partial<Record<SkillId | MushSkillId, SkillS
   polymath: "full",
   //Mush skill: Allows for accessing Bios.
   neron_access: "full",
+  //Insantly complete a research, project, or repair (owner, 2026-10-25, actions/instant_research.ts).
+  genius: "full",
 };
 
 export function skillStatus(skill: string): SkillStatus {
