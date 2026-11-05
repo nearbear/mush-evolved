@@ -2284,3 +2284,7 @@ Same day, owner then asked for a 4-cycle cooldown on `spike` instead: added `spi
 
 ## 2026-11-04: FOOD_RETAILER creates the tubes
 - Owner: completing FOOD_RETAILER creates an output tube and two input tubes. Asked where; recommended the refectory and garden (from the ship art), owner chose the Nexus for all three ("nexus" meant `NEXUS_ROOM`, the NERON core's room). Spawn list is config (`project.foodRetailer`), applied in `onProjectCompleted`. Test gotcha: `setProgress` seeds a relay pool that a later lower value does not clear, so the "not complete" test needs a fresh game.
+
+## 2026-11-05: Apprentice skill (apprenticeship action)
+Owner gave 1 AP and "any skill a roommate selected"; the open questions (use limit, slot, Mush skills, visibility) were asked in one batch and answered with the recommended options. Once-per-game needed no new state: the copy replaces Apprentice, so the action disappears. Corrected my first design: a `{skill}`-only action had no target, so no panel would show it; it became `{target, skill}` aimed at the teacher, with a skill-named label in InspectPanel and PeekBar.
+Follow-up 2026-11-05: owner noted Apprentice must not be pickable again once used. I had assumed "the copy replaces Apprentice" was enough, but it frees the slot and pick_skill would offer it again; added `apprenticeUsed` (own-view flag, STATE_VERSION 107).

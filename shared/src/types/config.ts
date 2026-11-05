@@ -142,6 +142,9 @@ export interface GameConfig {
   tubeTransfer: {
     cost: { ap: number }; // Sending an item down the pneumatic tube: free (owner, 2026-11-04).
   };
+  apprenticeship: {
+    cost: { ap: number }; // The Apprentice skill: 1 AP (owner, 2026-11-05).
+  };
   bodyTransfer: {
     cost: { ap: number }; // The Mush skill Transfer: free (owner, 2026-10-24).
   };

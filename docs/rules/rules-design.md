@@ -253,3 +253,5 @@ Each phase ends with typecheck and tests passing and a small commit. Phase headi
 
 - **Daily healing** (owner, 2026-10-28): every living player, Mush included, heals 1 HP (`config.dailyHeal`) at each day change, up to their max HP. The HP bar tooltip says so.
 - **Travel takes a cycle** (2026-10-29, owner): a travel or leave orbit puts the ship in a traveling state until the next cycle change, when it arrives. The jump's effects (fuel, planets lost, hunters following, patrol ships lost) happen at departure; only the orbit waits. Leave orbit travels too and arrives in empty space. While traveling the Command terminal does nothing (no turn either), scanning and patrol takeoff are refused. The star field streams at the fast pace.
+
+- **Apprentice (owner, 2026-11-05):** apprenticeship costs 1 AP; copies a human skill a roommate has selected; once per game, the copy replaces Apprentice (no free slot); Mush skills excluded; private.
