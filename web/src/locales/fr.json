@@ -103,6 +103,10 @@
       "all": "Tout",
       "mentions": "Urgent, privé et mentions",
       "off": "Désactivées"
+    },
+    "tips": {
+      "show": "Afficher les astuces",
+      "reset": "Réafficher toutes les astuces"
     }
   },
   "announce": {
@@ -1714,5 +1718,45 @@
     "logoutInGame": "Vous déconnecter vous ramène au menu principal. Votre personnage reste à bord : reconnectez-vous, sur cet appareil ou un autre, pour reprendre votre vaisseau.",
     "signedOutInGame": "Vous n'êtes pas connecté.",
     "loading": "Chargement…"
+  },
+  "tips": {
+    "label": "Astuce",
+    "dismiss": "Fermer l'astuce",
+    "mute": "Ne plus afficher cette astuce",
+    "where": {
+      "here": "C'est dans cette salle.",
+      "there_one": "Le plus proche : {{room}}, à {{count}} porte.",
+      "there_many": "Le plus proche : {{room}}, à {{count}} portes.",
+      "there_other": "Le plus proche : {{room}}, à {{count}} portes."
+    },
+    "hunters": {
+      "title": "Des hunters attaquent",
+      "body": "Les hunters endommagent la coque. Abattez-les depuis le poste de tir."
+    },
+    "hurt": {
+      "title": "Vous êtes mal en point",
+      "body": "Salle {{room}} : tout le monde peut y soigner, sans médikit. Vous pouvez aussi demander de l'aide à l'équipage."
+    },
+    "eat": {
+      "title": "Vous devez manger",
+      "body": "La faim coûte des PV à chaque cycle. Trouvez de quoi manger."
+    },
+    "dirty": {
+      "title": "Vous êtes sale",
+      "body": "Certaines actions sont refusées à l'équipage sale. Une douche vous rend propre."
+    },
+    "rest": {
+      "title": "Peu de PA",
+      "body": "Être allongé dans un lit donne 1 PA de plus par cycle. Toute autre action vous relève."
+    },
+    "noMp": {
+      "title": "Plus de PM",
+      "body": "Sans PM, chaque déplacement convertit {{ap}} PA en {{mp}} PM."
+    },
+    "welcome": {
+      "title": "Bienvenue à bord",
+      "bodyEndCycle": "Vous gagnez des PA à chaque cycle, et les PA non dépensés sont conservés. Dépensez-les en actions, puis appuyez sur Terminer le cycle quand vous avez fini.",
+      "bodyClock": "Vous gagnez des PA à chaque cycle, et les PA non dépensés sont conservés. Un nouveau cycle commence à la fin du compte à rebours du prochain cycle."
+    }
   }
 }

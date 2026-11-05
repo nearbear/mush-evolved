@@ -19,6 +19,7 @@ import { TerminalDialog } from "./hud/TerminalDialog.tsx";
 import { EndScreen } from "./hud/EndScreen.tsx";
 import { BodyTakenDialog } from "./hud/BodyTakenDialog.tsx";
 import { SelfHud, SelfPoints } from "./hud/SelfHud.tsx";
+import { TipCard } from "./hud/TipCard.tsx";
 import { resolveTarget } from "./hud/targets.ts";
 import { TopBar } from "./hud/TopBar.tsx";
 import { shipPace, type Corpse, type Occupant } from "./iso/scene.ts";
@@ -259,6 +260,7 @@ export function GameView({ view: given, send, onLeave, waking = false, cheatsAll
                 <ActionQueue view={view} onClear={readOnly ? undefined : () => post({ type: "clearQueue" })} />
               </div>
             )}
+            {you.alive && !readOnly && <TipCard view={view} />}
             {you.alive && <InventoryOverlay view={view} selected={target} onAction={act} onSelect={select} zoom={zoom} onZoom={setZoom} />}
             <Minimap
               here={you.room}

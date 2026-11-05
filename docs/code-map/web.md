@@ -18,6 +18,7 @@ All under `web/src/`. UI rules are in `web/CLAUDE.md`.
 - `Toasts.tsx`: transient messages.
 - `useMobile.ts`: the phone-layout media query.
 - `fogDepth.ts`: the fog depth preference, in localStorage.
+- `tips.ts`: the viewer's tip choices in localStorage (on/off, snoozed, muted) and which tip to show (`shownTip`, `forgetEnded`, `dismissed`).
 - `rendererChoice.ts`: which renderer draws the room (`ROOM_RENDERER`, Pixi by default; set it to `"dom"` to use the DOM one). No setting or storage.
 - `styles.css`: only `@import`s of `styles/*.css`; `responsive.css` must stay last.
 - `@mush2/assets/derived/kit.css` (imported by `styles.css`, lives in `Mush/derived/` since it adapts CC BY-NC-SA art): image-free CSS versions of `Mush/www/img/design` pieces (`.kit-progress`, `.kit-tab`, `.kit-minitab`, `.kit-slot`, `.kit-tooltip`, `.kit-popup`, `.kit-box`, `.kit-panel`), any size. The game uses `.kit-slot.big` for empty inventory slots (`hud/InventoryPanel.tsx`); the rest are shown beside the PNG originals on the dev-only design kit page (`web/design-kit.html`, `src/designKit/`).
@@ -33,6 +34,7 @@ All under `web/src/`. UI rules are in `web/CLAUDE.md`.
 - `EndScreen.tsx` + `endScreen.css`: the end screen, open while the game has ended until closed (`GameView` holds that; the top bar's Results button reopens it): the ending's banner (`ENDING_ART`), the verdict, and `view.crew` with names, characters, roles and skulls (reuses `settings.css`).
 - `BodyTakenDialog.tsx`: the pop-up a Transfer's victim must acknowledge (`you.bodyTakenBy`); only its button closes it, sending `acknowledgeTransfer` (reuses `settings.css`).
 - `StatInfo.tsx`: the popover over a stat (HP/morale/AP/MP pip bar on desktop, chip on phones) saying how it is commonly spent and regained; the text is `stat.info.*` in the locales.
+- `TipCard.tsx` + `tips.css`: one tip at a time, centred above the room view's bottom row on both layouts: ✕ snoozes it until its situation ends, "Don't show this tip again" mutes it; a new tip is announced when announcements are on Everything. The settings dialog has Show tips and Show all tips again.
 - `SelfHud.tsx` + `styles/self-hud.css`: your HUD over the room view (desktop only; phones show `PlayerSummary` in the top bar): portrait, HP/morale, faction and other resources in the top-left corner, with the room's name moved under the portrait; AP/MP standing in the bottom-left corner. Clicking the portrait shows you in Inspect.
 - `Credits.tsx`: the asset attribution and the non-commercial line: a footer at the bottom of the lobby, and in the game at the top of the settings dialog, under its header (both layouts).
 - `CommsCenter.tsx`: the Com center terminal window: link status and Sol chance, rebel calls with progress and expiry, Xyloph entries left, NERON version and update, each with its button when the view offers it.

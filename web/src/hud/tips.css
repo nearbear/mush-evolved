@@ -1,0 +1,39 @@
+/* The tip card (#351): centred above the room view's bottom row (AP/MP, the queue, the inventory button), under the
+   inventory popup (3), which may cover it. Same panel look as the AP/MP card. */
+.tip-card {
+  position: absolute;
+  left: 50%;
+  bottom: calc(1rem + var(--hud-card));
+  transform: translateX(-50%);
+  z-index: 2;
+  box-sizing: border-box;
+  width: min(22rem, calc(100% - 1rem));
+  padding: 0.4rem 0.6rem 0.5rem;
+  background: var(--panel-fill);
+  border: 1px solid var(--panel-rim);
+  border-radius: var(--panel-radius);
+  box-shadow: 0 0 6px var(--panel-shadow);
+  font-size: 0.9rem;
+}
+.tip-card p {
+  margin: 0.25rem 0 0;
+}
+.tip-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+.tip-where {
+  color: var(--muted);
+}
+/* Finger-sized, as every button in the room view. */
+button.tip-close {
+  flex: none;
+  min-width: 32px;
+  min-height: 32px;
+  padding: 0;
+}
+button.tip-mute {
+  margin-top: 0.4rem;
+}

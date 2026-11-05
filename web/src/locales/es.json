@@ -103,6 +103,10 @@
       "all": "Todo",
       "mentions": "Urgente, privado y menciones",
       "off": "Desactivados"
+    },
+    "tips": {
+      "show": "Mostrar consejos",
+      "reset": "Volver a mostrar todos los consejos"
     }
   },
   "announce": {
@@ -1714,5 +1718,45 @@
     "logoutInGame": "Cerrar sesión te devuelve al menú principal. Tu personaje se queda a bordo: vuelve a iniciar sesión, en este dispositivo o en otro, para retomar tu nave.",
     "signedOutInGame": "No has iniciado sesión.",
     "loading": "Cargando…"
+  },
+  "tips": {
+    "label": "Consejo",
+    "dismiss": "Cerrar el consejo",
+    "mute": "No volver a mostrar este consejo",
+    "where": {
+      "here": "Está en esta sala.",
+      "there_one": "Lo más cercano: {{room}}, a {{count}} puerta.",
+      "there_many": "Lo más cercano: {{room}}, a {{count}} puertas.",
+      "there_other": "Lo más cercano: {{room}}, a {{count}} puertas."
+    },
+    "hunters": {
+      "title": "Los hunters atacan",
+      "body": "Los hunters dañan el casco. Derríbalos desde los controles de torreta."
+    },
+    "hurt": {
+      "title": "Estás muy herido",
+      "body": "En la sala {{room}} cualquiera puede curar, sin botiquín. También puedes pedir ayuda a la tripulación."
+    },
+    "eat": {
+      "title": "Necesitas comer",
+      "body": "Tener hambre cuesta PV cada ciclo. Busca algo de comer."
+    },
+    "dirty": {
+      "title": "Estás sucio",
+      "body": "Algunas acciones se niegan a la tripulación sucia. Una ducha te deja limpio."
+    },
+    "rest": {
+      "title": "Pocos PA",
+      "body": "Estar acostado en una cama da 1 PA más por ciclo. Cualquier otra acción te levanta."
+    },
+    "noMp": {
+      "title": "Sin PM",
+      "body": "Sin PM, cada desplazamiento convierte {{ap}} PA en {{mp}} PM."
+    },
+    "welcome": {
+      "title": "Bienvenido a bordo",
+      "bodyEndCycle": "Ganas PA cada ciclo, y los PA no gastados se conservan. Gástalos en acciones y pulsa Terminar el ciclo cuando acabes.",
+      "bodyClock": "Ganas PA cada ciclo, y los PA no gastados se conservan. Un nuevo ciclo empieza cuando termina la cuenta atrás del próximo ciclo."
+    }
   }
 }

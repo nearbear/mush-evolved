@@ -103,6 +103,10 @@
       "all": "Everything",
       "mentions": "Urgent, private and mentions",
       "off": "Off"
+    },
+    "tips": {
+      "show": "Show tips",
+      "reset": "Show all tips again"
     }
   },
   "announce": {
@@ -1694,5 +1698,44 @@
     "logoutInGame": "Logging out takes you back to the main menu. Your character stays aboard: sign in again, on this device or another, to resume your ship.",
     "signedOutInGame": "You're not signed in.",
     "loading": "Loading…"
+  },
+  "tips": {
+    "label": "Tip",
+    "dismiss": "Dismiss tip",
+    "mute": "Don't show this tip again",
+    "where": {
+      "here": "It's in this room.",
+      "there_one": "Nearest: {{room}}, {{count}} door away.",
+      "there_other": "Nearest: {{room}}, {{count}} doors away."
+    },
+    "hunters": {
+      "title": "Hunters are attacking",
+      "body": "Hunters damage the hull. Shoot them down from the turret controls."
+    },
+    "hurt": {
+      "title": "You're badly hurt",
+      "body": "Anyone can heal in the {{room}}, no medikit needed. You can also ask the crew for help."
+    },
+    "eat": {
+      "title": "You need to eat",
+      "body": "Being hungry costs HP every cycle. Find something to eat."
+    },
+    "dirty": {
+      "title": "You're dirty",
+      "body": "Some actions refuse dirty crew. A shower gets you clean."
+    },
+    "rest": {
+      "title": "Low on AP",
+      "body": "Lying in a bed gives 1 more AP each cycle. Any other action gets you up."
+    },
+    "noMp": {
+      "title": "Out of MP",
+      "body": "Without MP, each move converts {{ap}} AP into {{mp}} MP."
+    },
+    "welcome": {
+      "title": "Welcome aboard",
+      "bodyEndCycle": "You gain AP every cycle, and unspent AP is kept. Spend it on actions, then press End cycle when you're done.",
+      "bodyClock": "You gain AP every cycle, and unspent AP is kept. A new cycle starts when the countdown to the next cycle runs out."
+    }
   }
 }

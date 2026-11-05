@@ -14,6 +14,7 @@ import { SETTINGS_ICON } from "../art/assets.ts";
 import { parseVerbosity, setVerbosity, useVerbosity } from "../announce.ts";
 import { parseFogDepth, setFogDepth, useFogDepth } from "../fogDepth.ts";
 import { LanguageSwitcher } from "../i18n/LanguageSwitcher.tsx";
+import { resetTips, setTipsOn, useTipPrefs } from "../tips.ts";
 import "./settings.css";
 import "./terminal.css";
 
@@ -48,6 +49,7 @@ export function SettingsDialog({
   const { t } = useTranslation();
   const fogDepth = useFogDepth();
   const verbosity = useVerbosity();
+  const tips = useTipPrefs();
   const allOn = CHEATS.every((c) => activeCheats.includes(c));
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
@@ -93,6 +95,14 @@ export function SettingsDialog({
               <option value="off">{t("settings.announce.off")}</option>
             </select>
           </label>
+          <div className="settings-row">
+            <label>
+              <input type="checkbox" checked={tips.on} onChange={(e) => setTipsOn(e.target.checked)} /> {t("settings.tips.show")}
+            </label>
+            <button type="button" onClick={resetTips} disabled={tips.muted.length === 0 && tips.snoozed.length === 0}>
+              {t("settings.tips.reset")}
+            </button>
+          </div>
               <button type="button" onClick={onLeave}>{t("topBar.mainMenu")}</button>
               <Credits as="p" className="settings-credits" />
             </Tabs.Panel>
