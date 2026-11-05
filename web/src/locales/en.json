@@ -320,6 +320,8 @@
     "scanPlanet": "Scan for planets",
     "analyzePlanet": "Analyse a planet",
     "deletePlanet": "Delete a planet",
+    "apprenticeshipOf": "Learn {{skill}}",
+    "apprenticeship": "Apprenticeship",
     "pickSkill": "Pick a skill",
     "selfDisease": "Self Disease",
     "selfInjury": "Self Injury",

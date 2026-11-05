@@ -26,7 +26,7 @@ export class PickSkillAction extends Action<PickSkillActionData> {
 
   override getCandidates(_state: Readonly<GameState>, player: Readonly<PlayerState>): PickSkillActionData[] {
     const mush = player.role === "mush" ? MUSH_SKILLS : [];
-    return [...pickable(player), ...mush].filter((s) => !hasSkill(player, s)).map((skill) => ({ type: "pick_skill", skill }));
+    return [...pickable(player), ...mush].filter((s) => !hasSkill(player, s) && !spent(player, s)).map((skill) => ({ type: "pick_skill", skill }));
   }
 
   override validate(_state: Readonly<GameState>, player: Readonly<PlayerState>, target: PickSkillActionData): string | null {
@@ -37,6 +37,7 @@ export class PickSkillAction extends Action<PickSkillActionData> {
     }
     if (!isSkill(target.skill)) return "no_such_skill";
     if (hasSkill(player, target.skill)) return "have_skill";
+    if (spent(player, target.skill)) return "already_used";
     if (!pickable(player).includes(target.skill)) return "not_your_skill";
     return player.skills.length < SKILL_SLOTS ? null : "no_free_slot";
   }
@@ -52,3 +53,6 @@ export class PickSkillAction extends Action<PickSkillActionData> {
 function pickable(player: Readonly<PlayerState>): readonly SkillId[] {
   return player.cheats.includes("anySkill") ? SKILLS : CHARACTER_SKILLS[player.character];
 }
+
+/** Apprentice gives way to the skill it copied (apprenticeship.ts), and can't be picked again. */
+const spent = (player: Readonly<PlayerState>, skill: string): boolean => skill === "apprentice" && !!player.apprenticeUsed;

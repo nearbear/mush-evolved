@@ -323,6 +323,8 @@
     "scanPlanet": "Buscar planetas",
     "analyzePlanet": "Analizar un planeta",
     "deletePlanet": "Borrar un planeta",
+    "apprenticeshipOf": "Aprender {{skill}}",
+    "apprenticeship": "Aprendizaje",
     "pickSkill": "Elegir una habilidad",
     "selfDisease": "Provocarse la enfermedad",
     "selfInjury": "Provocarse una lesión",
