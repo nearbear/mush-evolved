@@ -23,6 +23,7 @@
     "react-dom": "^19.3.0",
     "react-i18next": "^17.0.16",
     "react-markdown": "^10.1.0",
+    "react-router": "8.5.1",
     "remark-gfm": "^4.0.1"
   },
   "devDependencies": {
