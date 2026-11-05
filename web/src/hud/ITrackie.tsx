@@ -22,6 +22,7 @@ import { Tracker } from "./Tracker.tsx";
 import { SharedPlanets } from "./SharedPlanets.tsx";
 import { ResearchTracker } from "./ResearchTracker.tsx";
 import { Scroller } from "./Scroller.tsx";
+import { ExpeditionReportDialog } from "./ExpeditionReportDialog.tsx";
 import { TAB_ICONS } from "../art/assets.ts";
 
 export type { ChannelHandlers };
@@ -124,6 +125,8 @@ export function ITrackie({
   // entries no longer applicable (client-only, off by default). A hidden entry falls back to the general thread.
   const [sharedPlanet, setSharedPlanet] = useState<SharedPlanetId | null>(null);
   const [showStale, setShowStale] = useState(false);
+  // The expedition report open from the room log, by id (`view.expeditions`).
+  const [report, setReport] = useState<string | null>(null);
   const shownSharedPlanet = view.sharedPlanets.find((e) => e.id === sharedPlanet && (showStale || !e.stale))?.id ?? null;
   const threadLinks: ThreadLinks = {
     open: (id) => {
@@ -145,6 +148,7 @@ export function ITrackie({
 
   return (
     <div className="kit-panel itrackie">
+      <ExpeditionReportDialog report={view.expeditions.find((r) => r.id === report)} onClose={() => setReport(null)} />
       <Tabs.Root className="itrackie-tabs-root" value={activeTab} onValueChange={(v) => setTab(v as TabId)}>
         <Tabs.List className="itrackie-tabs">
           {alive && <IconTab value="room" src={TAB_ICONS.roomLog} label={t("itrackie.tabs.room")} />}
@@ -181,6 +185,11 @@ export function ITrackie({
                       className={e.level === "warning" ? "warning" : e.visibleTo === "all" ? undefined : "private"}
                     >
                       {names.logLine(e)}
+                      {e.key === "expeditionReturned" && view.expeditions.some((r) => r.id === e.params?.report) && (
+                        <button type="button" className="expedition-read" onClick={() => setReport(String(e.params?.report))}>
+                          {t("expedition.read")}
+                        </button>
+                      )}
                     </FeedEntry>
                   </Fragment>
                 ))}

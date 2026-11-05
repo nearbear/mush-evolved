@@ -58,6 +58,8 @@ export const GAME_STATE_FIELDS: Record<string, FieldRule> = {
   nextPlanetId: { reach: "never", test: "leaks.test.ts", note: "Not secret (planet ids show it), just not sent." },
   sharedPlanets: { reach: "filtered", test: "sharedPlanets.test.ts", note: "To whoever can read the Astrophysics feature, without `planet` (leaks.test.ts: never sent)." },
   nextSharedPlanetId: { reach: "never", test: "leaks.test.ts", note: "Not secret (entry ids show it), just not sent." },
+  expeditions: { reach: "filtered", test: "leaks.test.ts", note: "Each report to its living members only, without `members` (expeditions.test.ts too)." },
+  nextExpeditionId: { reach: "never", test: "leaks.test.ts", note: "Not secret (report ids show it), just not sent." },
   navigation: { reach: "room", test: "navigation.test.ts", note: "`heading` to the living at a Command terminal; `orbit` only as a public in-orbit flag, the planet id to its finder alone (as `orbited` on their planet); `lastTurn` public to everyone (owner, 2026-10-29)." },
   comms: { reach: "room", test: "comms.test.ts", note: "`linked` to everyone; the terminal screen to the living at a Com center terminal, with the Xyloph entries drawn so far (in database order)." },
   titles: { reach: "public", test: "titles.test.ts", note: "Holders and lines, by character (owner, 2026-10-20)." },

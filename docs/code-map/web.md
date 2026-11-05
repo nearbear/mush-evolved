@@ -65,6 +65,7 @@ All under `web/src/`. UI rules are in `web/CLAUDE.md`.
 - `Thread.tsx`, `Threads.tsx`: a chat channel with its input, and the Threads tab (threads under global chat, newest first, with a form to start one).
 - `PrivateChannels.tsx`: the Private tab, one row per channel slot, with a create dialog.
 - `SharedPlanets.tsx`: the Astrophysics feature: its general thread, then one row per shared planet (newest first; entries no longer applicable hidden unless shown), each opening its text above its own thread.
+- `ExpeditionReportDialog.tsx`: an expedition's report (`view.expeditions`), opened from the member's `expeditionReturned` line in the room log (`ITrackie.tsx`).
 - `SharePlanetDialog.tsx`: the Astro window's Share dialog, an editable text version of one of your planets posted as `sharePlanet`.
 - `FeedEntry.tsx`, `CycleDivider.tsx`, `RecencyStamp.tsx` + `recency.ts` (pure): an iTrackie feed row, the "Cycle N" rule between cycles, and the "47min ago" caption with the exact time in a popover.
 - `Scroller.tsx`: a scroll area that sticks to the bottom as items arrive.

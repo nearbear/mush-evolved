@@ -1,4 +1,5 @@
 import type { BiosState } from "../bios.ts";
+import type { CharacterId } from "../characters.ts";
 import type { CommsState } from "../comms.ts";
 import type { TurnSide } from "../navigation.ts";
 import type { PlanetDirection, PlanetTag } from "../planets.ts";
@@ -7,7 +8,7 @@ import type { RngState } from "../rng.ts";
 import type { TitleId } from "../titles.ts";
 import type { ItemState, LogEntry, PlayerId, RoomId } from "../types.ts";
 import type { ChatMessage, ChatThread, PrivateChannel, SharedPlanet } from "./chat.ts";
-import type { DeepReadonly, Equipment, GameConfig } from "./config.ts";
+import type { DeepReadonly, Equipment, ExpeditionEventKind, GameConfig } from "./config.ts";
 import type { Plan } from "./plan.ts";
 import type { PlayerState } from "./player.ts";
 
@@ -123,6 +124,12 @@ export interface GameState {
   sharedPlanets: SharedPlanetState[];
   nextSharedPlanetId: number;
   /**
+   * Expedition reports (expeditions.ts), oldest first: who went (by body), the planet's name, and what happened. Each
+   * goes only to its members' views (owner, 2026-10-31).
+   */
+  expeditions: ExpeditionReport[];
+  nextExpeditionId: number;
+  /**
    * The ship's heading and the planet it orbits, by id, if any (navigation.ts). `orbit` is public as "in orbit or
    * not" and the planet's name (`orbitName`, owner 2026-10-31); its sectors stay its finder's. `heading` goes only to the living at a Command terminal. `arriving` is the
    * jump in progress (owner, 2026-10-29): set when the Commander travels or leaves orbit, it lasts until the next cycle
@@ -191,6 +198,31 @@ export interface SharedPlanetState extends SharedPlanet {
   planet: string;
 }
 
+/** One sector's event in an expedition report. `sector` is a planet tag, or LANDING. */
+export interface ExpeditionEvent {
+  sector: string;
+  kind: ExpeditionEventKind;
+  /** Oxygen or fuel the ship gained, items found (on the Icarus Bay's floor), or the creature's strength. */
+  amount?: number;
+  /** The item type found (harvest, provision, artifact). */
+  item?: string;
+  /** A fight: the crew's strength, grenades included, how many grenades were used up, and whether the crew won. */
+  fight?: { strength: number; grenades: number; won: boolean };
+  /** HP each member lost, after Survival, by character. */
+  hurt?: { name: CharacterId; hp: number }[];
+  /** Members who died here, by character. */
+  died?: CharacterId[];
+}
+
+/** An expedition's report (expeditions.ts). `members` are body ids; `crew` the same members by character, for display. */
+export interface ExpeditionReport {
+  id: string;
+  members: PlayerId[];
+  crew: CharacterId[];
+  planet: string;
+  events: ExpeditionEvent[];
+}
+
 /** A planet a player found. Its size is the number of sectors. */
 export interface Planet {
   id: string;
@@ -199,6 +231,9 @@ export interface Planet {
   /** Where it lies: no two planets on the ship share a direction and distance (in fuel). */
   direction: PlanetDirection;
   distance: number;
-  /** In a fixed shuffled order; `known` once an analysis revealed the sector. */
-  sectors: { tag: PlanetTag; known: boolean }[];
+  /**
+   * In a fixed shuffled order; `known` once an analysis revealed the sector. `explored` once an expedition explored it
+   * (expeditions.ts): each sector is explored once. Never sent, not even to the finder (owner, 2026-10-31).
+   */
+  sectors: { tag: PlanetTag; known: boolean; explored?: true }[];
 }

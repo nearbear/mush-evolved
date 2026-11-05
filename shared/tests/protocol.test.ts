@@ -77,6 +77,7 @@ describe("actions from a client", () => {
     ignite: [{ type: "ignite" }],
     extinguish_manually: [{ type: "extinguish_manually" }],
     takeoff: [{ type: "takeoff", equipment: "e1" }],
+    icarus_takeoff: [{ type: "icarus_takeoff", equipment: "e1" }],
     land: [{ type: "land", equipment: "e1" }],
     collect_scrap: [{ type: "collect_scrap", equipment: "e1" }],
     renovate: [{ type: "renovate", equipment: "e1" }],

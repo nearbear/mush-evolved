@@ -61,6 +61,7 @@ import type {
   PlayerId,
   PlayerState,
   PlayerView,
+  ExpeditionReportView,
   RoomId,
   Role,
   Seat,
@@ -138,6 +139,8 @@ export function createGame(
     nextPlanetId: 1,
     sharedPlanets: [],
     nextSharedPlanetId: 1,
+    expeditions: [],
+    nextExpeditionId: 1,
     hunters: newHunters(),
     turrets: {},
     incidentPoints: 0,
@@ -565,6 +568,10 @@ export function viewFor(state: GameState, playerId: PlayerId): PlayerView {
     humanTankFull: hasMushDied(state),
     comms: { linked: state.comms.linked, terminal: you.alive && comTerminalsHere(state, you).length > 0 ? commsTerminalView(state) : null },
     bios: you.alive && biosTerminalsHere(state, you).length > 0 ? { ...state.bios } : null,
+    // Only the crew sees a report (owner, 2026-10-31), and only while alive, like their private log lines.
+    expeditions: you.alive
+      ? state.expeditions.filter((r) => r.members.includes(you.id)).map(({ members: _members, ...report }): ExpeditionReportView => clone(report))
+      : [],
     // Your own planets only, and only the tags an analysis revealed (owner, 2026-10-19).
     maxPlanets: state.config.astro.maxPlanets,
     canSharePlanets: canSharePlanets(state, you),

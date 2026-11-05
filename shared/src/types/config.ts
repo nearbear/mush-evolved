@@ -41,12 +41,25 @@ export interface WeaponStats {
   damage: [min: number, max: number]; // HP a hit removes, rolled uniformly, both ends included.
   mushDamage?: [min: number, max: number]; // Replaces `damage` when the target is a Mush (Natamy rifle).
   accuracy: number; // Chance to hit, 0 to 1.
-  expoStrength: number; // Strength on expeditions. Recorded for later; nothing reads it yet.
+  expoStrength: number; // Strength in an expedition fight (expeditions.ts).
   charges?: number; // Charges it holds and starts with; each use spends one, and it can't be used at 0. Absent: unlimited.
   area?: { selfDamage: [min: number, max: number] }; // Hits everyone in the room instead of one target; the attacker takes `selfDamage`.
   consumed?: boolean; // Used up by using it (grenade).
   dirtyChance: number; // Chance of getting dirty from using it.
   repairChance: number | null; // Breakable, with this repair chance; null: it can't break. Breaking and repair aren't built.
+}
+
+/** What can happen in one expedition sector (expeditions.ts, owner 2026-10-31). */
+export type ExpeditionEventKind = "nothing" | "fatigue" | "accident" | "catastrophe" | "oxygen" | "fuel" | "harvest" | "provision" | "artifact" | "fight";
+
+/**
+ * One line of a sector's event table: drawn by `weight`. `amount` is the oxygen or fuel gained, the fruits or rations
+ * found, or the creature's strength in a fight.
+ */
+export interface ExpeditionEventRule {
+  kind: ExpeditionEventKind;
+  weight: number;
+  amount?: number;
 }
 
 /**
@@ -495,6 +508,23 @@ export interface GameConfig {
     dirtyChance: number; // Chance of getting the dirty status after dismantling an item (confirmed 2026-10-13).
     injuryChance: number; // Chance of getting injured after dismantling an item.
     itemChance: Record<string, number>; // Per item type odds that replace `successChance` (owner, 2026-10-22: knife and blaster 50%).
+  };
+  // Expeditions, phase 1 (owner, 2026-10-31, docs/plans/expedition.md): expeditions.ts and actions/icarus_takeoff.ts.
+  expedition: {
+    cost: { ap: number }; // AP the launcher pays (the original's ICARUS_TAKEOFF, 4); the rest of the crew pays nothing.
+    room: RoomId; // Where the Icarus is: launchers stand here, the crew is everyone living here, and the loot lands here.
+    maxCrew: number; // Most people aboard; the launcher always goes, the others are picked at random.
+    sectors: number; // Most sectors explored after the landing, each one unexplored, drawn by its tag's `explo` weight.
+    deadKeepItems: boolean; // Whether a member who dies brings their items back with the body (owner, 2026-10-31; the original: false).
+    fatigue: number; // HP every living member loses.
+    accident: [min: number, max: number]; // HP one random living member loses, uniform.
+    catastrophe: [min: number, max: number]; // HP every living member loses, rolled for each.
+    survivalReduction: number; // Taken off each damage a member with the Survival skill takes.
+    botanistBonus: number; // Extra fruit per harvest with a living Botanist in the crew.
+    loot: { harvest: string; provision: string; artifact: string }; // Item types found (placeholders: bananas, uncooked rations, a starmap).
+    // Event tables by sector tag, plus LANDING (drawn first). A tag with no table explores with nothing happening. A
+    // Pilot in the crew avoids `catastrophe` (its weight drops out).
+    events: Record<string, ExpeditionEventRule[]>;
   };
   // Weapons (owner, 2026-10-22, from the English wiki). Using one is the `attack` action.
   weapons: {

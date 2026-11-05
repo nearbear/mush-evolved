@@ -10,7 +10,7 @@ import type { ChannelId, ChatMessage, ChatThread, PrivateChannel, SharedPlanet }
 import type { Plan } from "./plan.ts";
 import type { MovementRules } from "./config.ts";
 import type { ActionInProgress, PlayerState, Spot } from "./player.ts";
-import type { GameState, ShipResources } from "./state.ts";
+import type { ExpeditionReport, GameState, ShipResources } from "./state.ts";
 
 /** Room equipment as a client sees it. */
 export interface EquipmentView {
@@ -267,6 +267,11 @@ export interface PlayerView {
    * you are alive in a turret room. Otherwise null.
    */
   hunters: { count: number; list: { id: string; hp: number }[] | null; turrets: Record<string, number> | null };
+  /**
+   * Reports of the expeditions you went on, oldest first, while you are alive (owner, 2026-10-31): nobody else's, and
+   * without the members' seat ids (the crew is by character).
+   */
+  expeditions: ExpeditionReportView[];
   /** Your own planets (private, owner 2026-10-19). Unknown sectors are null: their tags are never sent. */
   planets: PlanetView[];
   /** Whether you may share your planets in the Astrophysics feature now (sharedPlanets.ts): alive at an Astro terminal with an iTrackie. */
@@ -359,3 +364,6 @@ export interface CommsTerminalView {
   xylophFound: XylophEntryId[];
   neron: { version: number; progress: number };
 }
+
+/** An expedition report as its members see it (expeditions.ts). */
+export type ExpeditionReportView = Omit<ExpeditionReport, "members">;

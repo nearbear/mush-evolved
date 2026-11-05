@@ -124,6 +124,15 @@ function ship(): { state: GameState; sentinels: Sentinel[] } {
   // A shared planet's entry goes to every reader of the Astrophysics feature, but never the planet it came from.
   s.sharedPlanets.push({ id: "sp-1", planet: str("sharedPlanetSource", []), text: "Shared", by: "p0", day: 1, cycleOfDay: 1, stale: false });
   s.now = num("now", []);
+  // An expedition report goes to its living members only (p1 here), never its seat ids.
+  s.nextExpeditionId = num("nextExpeditionId", []);
+  s.expeditions.push({
+    id: str("expeditionId", ["p1"]),
+    members: ["p1", str("expeditionMember", []) as PlayerId],
+    crew: [],
+    planet: str("expeditionPlanet", ["p1"]),
+    events: [{ sector: "OXYGEN", kind: "oxygen", amount: num("expeditionOxygen", ["p1"]) }],
+  });
   // Nobody is in a turret room, so no one sees a hunter's hp or id, or a turret's charges; only the count is public.
   s.hunters = { points: num("hunterPoints", []), since: num("huntersSince", []), nextId: num("hunterNextId", []), list: [{ id: str("hunterId", []), hp: num("hunterHp", []), hitChance: num("hunterHitChance", []), target: { kind: "ship" } }] };
   s.turrets["LASER_TURRET_A_0:TURRET_COMMAND"] = num("turretCharges", []);

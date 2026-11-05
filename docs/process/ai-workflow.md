@@ -2284,3 +2284,10 @@ Same day, owner then asked for a 4-cycle cooldown on `spike` instead: added `spi
 
 ## 2026-11-04: FOOD_RETAILER creates the tubes
 - Owner: completing FOOD_RETAILER creates an output tube and two input tubes. Asked where; recommended the refectory and garden (from the ship art), owner chose the Nexus for all three ("nexus" meant `NEXUS_ROOM`, the NERON core's room). Spawn list is config (`project.foodRetailer`), applied in `onProjectCompleted`. Test gotcha: `setProgress` seeds a relay pool that a later lower value does not clear, so the "not complete" test needs a fresh game.
+
+## 2026-11-04: Expeditions, phase 1 built (#319)
+
+- **Decision (owner, 2026-10-31):** the phase 1 rules in `docs/plans/expedition.md`; built as planned with Claude's readings recorded there (no takeoff while leaving orbit; grenades used one at a time while the crew is weaker, as eMush's Fight, found with the clean-room `npm run emush -- spec`; fight damage point by point, Survival once per member's total; exploring stops when the whole crew is dead; reports to living members only).
+- **Built:** `shared/src/expeditions.ts`, `actions/icarus_takeoff.ts`, `config.expedition` (event tables tunable), `explo` weights on `PLANET_TAGS`, `GameState.expeditions` (STATE_VERSION 107), `PlayerView.expeditions`, `ExpeditionReportDialog.tsx` opened from each member's private return line; en/fr/es strings (fr/es drafts).
+- **What worked:** the plan had every rule answered, so no questions were needed; the upstream spec settled the grenade and damage-split details instead of guessing. The leak-check fork flagged three design-level side channels (fight strength hints at crewmates' weapons, per-member HP loss bounds their HP, report ids count expeditions ship-wide), left to the owner.
+- **Needed correction:** first test draft asserted specific refusal codes, but `applyAction` returns `illegal_action` for any action not among the candidates; loot item types moved into the report so the client doesn't hard-code `super_map`.

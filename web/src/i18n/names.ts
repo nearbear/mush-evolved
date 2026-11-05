@@ -43,6 +43,7 @@ const ACTION_NAME_KEYS = {
   ignite: "actions.ignite",
   extinguish_manually: "actions.extinguishManually",
   takeoff: "actions.takeoff",
+  icarus_takeoff: "actions.icarus_takeoff",
   land: "actions.land",
   collect_scrap: "actions.collectScrap",
   renovate: "actions.renovate",

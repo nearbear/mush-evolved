@@ -5,33 +5,34 @@ import type { GameState, Planet } from "./types.ts";
 
 /**
  * The tags a planet can generate, from the original's `planetTags` sheet (`Mush/derived/data/DataExplore/planetTags.json`):
- * `we` is the draw weight, `seek` how easy the tag is to spot by analysis, `max` how many one planet can have. LANDING and
+ * `we` is the draw weight, `seek` how easy the tag is to spot by analysis, `max` how many one planet can have, `explo` how
+ * likely an expedition is to explore it (expeditions.ts). LANDING and
  * LOST have weight 0 there (they only matter to exploration), so they are left out. The client names each tag by its id.
  */
 export const PLANET_TAGS = {
-  FOREST: { we: 8, seek: 12, max: 4 },
-  MOUNTAIN: { we: 8, seek: 8, max: 4 },
-  SWAMP: { we: 8, seek: 8, max: 4 },
-  DESERT: { we: 12, seek: 12, max: 4 },
-  OCEAN: { we: 8, seek: 12, max: 4 },
-  CAVE: { we: 4, seek: 2, max: 4 },
-  RUMINANT: { we: 8, seek: 4, max: 4 },
-  PREDATOR: { we: 8, seek: 2, max: 4 },
-  INTELLIGENT: { we: 8, seek: 4, max: 4 },
-  INSECT: { we: 10, seek: 2, max: 4 },
-  MANKAROG: { we: 2, seek: 4, max: 1 },
-  HYDROCARBON: { we: 5, seek: 2, max: 2 },
-  OXYGEN: { we: 8, seek: 12, max: 1 },
-  COLD: { we: 8, seek: 8, max: 4 },
-  HOT: { we: 8, seek: 8, max: 4 },
-  STRONG_WIND: { we: 8, seek: 8, max: 4 },
-  SISMIC_ACTIVITY: { we: 3, seek: 8, max: 4 },
-  VOLCANIC_ACTIVITY: { we: 3, seek: 8, max: 4 },
-  RUINS: { we: 2, seek: 2, max: 4 },
-  WRECK: { we: 2, seek: 1, max: 4 },
-  FRUIT_TREES: { we: 3, seek: 1, max: 4 },
-  CRISTAL_FIELD: { we: 2, seek: 4, max: 1 },
-} as const satisfies Record<string, { we: number; seek: number; max: number }>;
+  FOREST: { we: 8, seek: 12, max: 4, explo: 8 },
+  MOUNTAIN: { we: 8, seek: 8, max: 4, explo: 8 },
+  SWAMP: { we: 8, seek: 8, max: 4, explo: 8 },
+  DESERT: { we: 12, seek: 12, max: 4, explo: 8 },
+  OCEAN: { we: 8, seek: 12, max: 4, explo: 8 },
+  CAVE: { we: 4, seek: 2, max: 4, explo: 8 },
+  RUMINANT: { we: 8, seek: 4, max: 4, explo: 8 },
+  PREDATOR: { we: 8, seek: 2, max: 4, explo: 6 },
+  INTELLIGENT: { we: 8, seek: 4, max: 4, explo: 8 },
+  INSECT: { we: 10, seek: 2, max: 4, explo: 8 },
+  MANKAROG: { we: 2, seek: 4, max: 1, explo: 6 },
+  HYDROCARBON: { we: 5, seek: 2, max: 2, explo: 8 },
+  OXYGEN: { we: 8, seek: 12, max: 1, explo: 8 },
+  COLD: { we: 8, seek: 8, max: 4, explo: 8 },
+  HOT: { we: 8, seek: 8, max: 4, explo: 8 },
+  STRONG_WIND: { we: 8, seek: 8, max: 4, explo: 8 },
+  SISMIC_ACTIVITY: { we: 3, seek: 8, max: 4, explo: 8 },
+  VOLCANIC_ACTIVITY: { we: 3, seek: 8, max: 4, explo: 6 },
+  RUINS: { we: 2, seek: 2, max: 4, explo: 8 },
+  WRECK: { we: 2, seek: 1, max: 4, explo: 8 },
+  FRUIT_TREES: { we: 3, seek: 1, max: 4, explo: 8 },
+  CRISTAL_FIELD: { we: 2, seek: 4, max: 1, explo: 10 },
+} as const satisfies Record<string, { we: number; seek: number; max: number; explo: number }>;
 
 export type PlanetTag = keyof typeof PLANET_TAGS;
 export const PLANET_TAG_IDS = Object.keys(PLANET_TAGS) as PlanetTag[];

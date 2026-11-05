@@ -612,3 +612,15 @@ li.research-item-blocked .research-progress {
   letter-spacing: normal;
   color: inherit;
 }
+
+/* Expedition report (ExpeditionReportDialog.tsx): one block per sector, lines under its name. */
+.expedition-events {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 8px;
+}
+.expedition-events p {
+  margin: 2px 0 0;
+}

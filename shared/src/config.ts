@@ -304,6 +304,63 @@ export const DEFAULT_CONFIG: GameConfig = {
   hunger: { satietyPerCycle: 1, fullBellyAt: 3, hungryAfterCycles: 24, hpPerCycle: 1 },
   // Confirmed 2026-10-13: dismantle cost and odds.
   dismantle: { cost: { ap: 3 }, successChance: 0.12, dirtyChance: 0.25, injuryChance: 0.05, itemChance: { knife: 0.5, blaster: 0.5 } },
+  // Owner, 2026-10-31 (docs/plans/expedition.md): phase 1, everything at takeoff. Event weights 4/3/2/1 as on the wiki.
+  expedition: {
+    cost: { ap: 4 },
+    room: "ICARUS",
+    maxCrew: 4,
+    sectors: 9,
+    deadKeepItems: true,
+    fatigue: 2,
+    accident: [3, 5],
+    catastrophe: [3, 5],
+    survivalReduction: 1,
+    botanistBonus: 1,
+    loot: { harvest: "fruit_banana", provision: "uncooked_ration", artifact: "super_map" },
+    events: {
+      LANDING: [
+        { kind: "nothing", weight: 4 },
+        { kind: "fatigue", weight: 3 },
+        { kind: "accident", weight: 2 },
+        { kind: "catastrophe", weight: 1 },
+      ],
+      OXYGEN: [
+        { kind: "oxygen", weight: 4, amount: 24 },
+        { kind: "oxygen", weight: 3, amount: 16 },
+        { kind: "oxygen", weight: 2, amount: 8 },
+        { kind: "nothing", weight: 1 },
+      ],
+      HYDROCARBON: [
+        { kind: "fuel", weight: 4, amount: 3 },
+        { kind: "fuel", weight: 3, amount: 4 },
+        { kind: "fuel", weight: 2, amount: 5 },
+        { kind: "fuel", weight: 1, amount: 6 },
+      ],
+      FRUIT_TREES: [
+        { kind: "harvest", weight: 4, amount: 3 },
+        { kind: "harvest", weight: 3, amount: 1 },
+        { kind: "nothing", weight: 3 },
+      ],
+      PREDATOR: [
+        { kind: "fight", weight: 4, amount: 12 },
+        { kind: "accident", weight: 3 },
+        { kind: "nothing", weight: 2 },
+        { kind: "provision", weight: 1, amount: 3 },
+      ],
+      RUINS: [
+        { kind: "artifact", weight: 4, amount: 1 },
+        { kind: "nothing", weight: 3 },
+        { kind: "fight", weight: 2, amount: 15 },
+        { kind: "accident", weight: 1 },
+      ],
+      HOT: [
+        { kind: "fatigue", weight: 4 },
+        { kind: "nothing", weight: 3 },
+        { kind: "harvest", weight: 2, amount: 2 },
+        { kind: "accident", weight: 1 },
+      ],
+    },
+  },
   // Owner, 2026-10-22, from the English wiki: 1 AP to use any weapon, carried. Repair and dismantle chances the wiki
   // gives as "??" are 12%. Blaster 2-3 as listed; the rocket's "?-8" is 1-8 and its self-damage 1-4 (Claude's guess,
   // accepted). Charged weapons start full. Not built: crits, injuries, a dropped knife, breaking equipment, NERON's Core Peace.

@@ -392,3 +392,9 @@
 .message-menu-positioner {
   z-index: 50;
 }
+
+/* "Read the report" under an expedition member's return line (ITrackie.tsx). */
+.entry-body .expedition-read {
+  display: block;
+  margin-top: 4px;
+}

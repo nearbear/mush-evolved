@@ -41,7 +41,10 @@
 
 Nothing for phase 1.
 
-## Planned implementation (phase 1)
+## Implementation (phase 1, built 2026-11-04)
+
+Built as planned, with these readings (Claude, 2026-11-04): takeoff is refused while the ship is leaving orbit; grenades follow eMush's Fight (used one at a time while the crew is weaker, so all of them on a loss); a lost fight's damage goes point by point to random living members, and Survival takes 1 off each member's total; exploring stops once the whole crew is dead; the report goes to living members only, like private log lines; it is opened from each member's private return line in the bay.
+
 
 - `shared/src/expeditions.ts`: the event tables (from the table above, in config so they are tunable), `runExpedition(state, launcher)` (pure, seeded RNG), the fight and damage helpers.
 - `actions/icarus_takeoff.ts`: one action, Pilot only through a hook so the NERON setting can widen it later.
