@@ -55,6 +55,8 @@ Built as planned, with these readings (Claude, 2026-11-04): takeoff is refused w
 
 ## Later phases (outline, not decided)
 
+Each is a GitHub story with its open questions: phase 2 #356, phase 3 #357, phase 4 #358, phase 5 #359.
+
 - **Phase 2, time away:** the crew is gone over time (until the next cycle, or one sector per cycle), can't act, and dies stranded if the ship travels or leaves orbit; the Magnetic return project; reports shareable to the crew; dirty chance on return.
 - **Phase 3, the rest of the sectors and events:** the other 18 tags; Lost, Again (wandering), Lost item, Disease, Kill, Mush trap; random artifacts; real alien fruits and steaks.
 - **Phase 4, gear and skills:** spacesuits and oxygen-less planets, compass, rope, drill, echolocator, thermosensor, Babel module, white flag; Diplomat, Sprinter, Polymath, Gunman, Traitor (Mush), U-turn.
