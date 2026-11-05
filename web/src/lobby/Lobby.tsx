@@ -90,6 +90,7 @@ export function Lobby({ onMatched }: { onMatched: (ticket: SeatTicket) => void }
   const [error, setError] = useState("");
   const [sleeping, setSleeping] = useState(false);
   const pod = useRef<HTMLDivElement>(null);
+  const sticker = useRef<HTMLDivElement>(null);
   // Without WebGL2 the game can't be drawn, so there is nothing to join.
   const [webgl] = useState(hasWebGL2);
   const { me, rateLimited, refresh } = useMe();
@@ -200,7 +201,7 @@ export function Lobby({ onMatched }: { onMatched: (ticket: SeatTicket) => void }
       </div>
       {webgl && (
         <Suspense fallback={null}>
-          <PodBackdrop pod={pod} />
+          <PodBackdrop pod={pod} sticker={sticker} />
         </Suspense>
       )}
       <div className="pod-window" ref={pod}>
@@ -334,7 +335,11 @@ export function Lobby({ onMatched }: { onMatched: (ticket: SeatTicket) => void }
         </div>
         </section>
       </div>
-      <Credits className="pod-credits" />
+      <div className="pod-footer">
+        <Credits className="pod-credits" />
+        {/* Empty: the pod's canvas draws the maker's sticker over it, bent with the wall (desktop only). */}
+        <div className="pod-sticker-slot" ref={sticker} />
+      </div>
     </main>
   );
 }

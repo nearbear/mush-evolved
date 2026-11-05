@@ -66,6 +66,19 @@ export function unroll(c: Cylinder, dx: number, dy: number): { s: number; y: num
   return { s: c.r * phi, y: (dy * (c.p - c.r * (1 - Math.cos(phi)))) / c.p };
 }
 
+/**
+ * Where to draw a rectangle in the flat drawing so the bend puts it on a box seen at screen offset
+ * (dx, dy) from the window's centre (the box's centre), `width` by `height`: its centre unrolled, its
+ * height shrunk by the bend's vertical stretch there. Null past the wall's edge.
+ */
+export function flatRectAt(c: Cylinder, dx: number, dy: number, width: number, height: number): Rect | null {
+  const at = unroll(c, dx, dy);
+  if (!at) return null;
+  const k = c.p / (c.p - c.r * (1 - Math.cos(at.s / c.r)));
+  const h = height / k;
+  return { x: c.width / 2 + at.s - width / 2, y: c.height / 2 + at.y - h / 2, width, height: h };
+}
+
 export interface Rect {
   x: number;
   y: number;
@@ -118,8 +131,8 @@ export interface PodLayout {
   /** The stasis light on the bezel above the glass, and the glow around it. */
   stasis: Rect;
   stasisGlow: number;
-  /** The maker's sticker on the wall below the window. */
-  sticker: Rect;
+  /** The maker's sticker, placed on the wall where the page's footer leaves room for it (desktop); null without one. */
+  sticker: Rect | null;
   /** Wall seams: the horizontal grooves above and below the window, and the panel width between vertical ones. */
   seamTop: number;
   seamBottom: number;
@@ -130,9 +143,9 @@ export interface PodLayout {
 
 /**
  * The layout the CSS version had. `rem` is the root font size; `mobile` is the phone layout
- * (MOBILE_QUERY), which has a thinner bezel and moves the sticker to the centre panel.
+ * (MOBILE_QUERY), which has a thinner bezel.
  */
-export function podLayout(width: number, height: number, rem: number, mobile: boolean): PodLayout {
+export function podLayout(width: number, height: number, rem: number, mobile: boolean, sticker: Rect | null = null): PodLayout {
   const frame = { x: 0, y: 0, width, height };
   const glass = inset(frame, (mobile ? 0.5 : 0.75) * rem);
   const inner = inset(glass, 1);
@@ -146,15 +159,6 @@ export function podLayout(width: number, height: number, rem: number, mobile: bo
   const fan = inset(vent, ventBorder + 0.4 * rem);
   const stasisGlow = 0.6 * rem;
   const stasis = { x: width / 2 - 1.25 * rem, y: 0.2 * rem, width: 2.5 * rem, height: 0.25 * rem };
-  const stickerWidth = 11 * rem;
-  const stickerHeight = 3.75 * rem;
-  const stickerBottom = height + 4.5 * rem;
-  const sticker = {
-    x: width / 2 + (mobile ? -5.5 : 7.5) * rem,
-    y: stickerBottom - stickerHeight,
-    width: stickerWidth,
-    height: stickerHeight,
-  };
   return {
     frame,
     glass,
@@ -186,8 +190,9 @@ export function flatBounds(layout: PodLayout, c: Cylinder, top: number, bottom: 
   const half = c.width * (0.5 + WALL_SIDE);
   const x0 = Math.max(cx - half, cx - layout.vignette.rx);
   const x1 = Math.min(cx + half, cx + layout.vignette.rx);
+  // The sticker sits by the screen's bottom edge, which can be past the vignette's reach.
   const y0 = Math.max(cy - layout.vignette.ry, top);
-  const y1 = Math.min(cy + layout.vignette.ry, bottom);
+  const y1 = Math.min(Math.max(cy + layout.vignette.ry, layout.sticker ? layout.sticker.y + layout.sticker.height + 2 : 0), bottom);
   return { x: Math.floor(x0), y: Math.floor(y0), width: Math.ceil(x1 - x0), height: Math.ceil(Math.max(1, y1 - y0)) };
 }
 

@@ -12,7 +12,7 @@
 
 import { Application, CanvasSource, Container, Geometry, GlProgram, Mesh, Rectangle, RenderTexture, Shader, Sprite, Texture, UniformGroup } from "pixi.js";
 import { bakePod, loadFrost, type PodArt } from "../podArt.ts";
-import { bakeScale, cylinder, DARK, fanAngle, flatBounds, LIGHT, podLayout, type Rect, stasisAlpha } from "../podGeometry.ts";
+import { bakeScale, cylinder, DARK, fanAngle, flatBounds, flatRectAt, LIGHT, podLayout, type Rect, stasisAlpha } from "../podGeometry.ts";
 
 /** Keep in sync with MOBILE_QUERY in useMobile.ts: the phone layout has a thinner bezel. */
 const MOBILE_QUERY = "(max-width: 1023px)";
@@ -125,10 +125,14 @@ export class PodRenderer {
   private readonly mobile = window.matchMedia(MOBILE_QUERY);
   private readonly reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
 
-  /** `host` is filled with the canvas; `pod` is the window the panel sits in, which places the pod. */
+  /**
+   * `host` is filled with the canvas; `pod` is the window the panel sits in, which places the pod;
+   * `sticker` is the empty box in the page's footer the maker's sticker is drawn over (hidden on phones).
+   */
   constructor(
     private readonly host: HTMLElement,
     private readonly pod: HTMLElement,
+    private readonly sticker: HTMLElement | null,
   ) {
     this.init().catch((e: unknown) => console.error("Lobby backdrop failed to start", e));
   }
@@ -174,11 +178,18 @@ export class PodRenderer {
     const box = this.pod.getBoundingClientRect();
     if (!hostBox.width || !hostBox.height || !box.width || !box.height) return;
     const rem = Number.parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
-    const key = [hostBox.width, hostBox.height, box.left - hostBox.left, box.top - hostBox.top, box.width, box.height, rem, this.mobile.matches, window.devicePixelRatio, window.innerHeight].join();
+    const slot = this.sticker?.getBoundingClientRect();
+    const slotAt = slot?.width ? [slot.left - box.left, slot.top - box.top, slot.width, slot.height] : [];
+    const key = [hostBox.width, hostBox.height, box.left - hostBox.left, box.top - hostBox.top, box.width, box.height, rem, this.mobile.matches, window.devicePixelRatio, window.innerHeight, ...slotAt].join();
     if (key === this.bakedFor) return;
     this.bakedFor = key;
-    const layout = podLayout(box.width, box.height, rem, this.mobile.matches);
     const c = cylinder(box.width, box.height);
+    // The sticker goes on the wall where the footer left its box, unrolled so the bend puts it back there.
+    const sticker =
+      slot?.width && slot.height
+        ? flatRectAt(c, slot.left + slot.width / 2 - (box.left + box.width / 2), slot.top + slot.height / 2 - (box.top + box.height / 2), slot.width, slot.height)
+        : null;
+    const layout = podLayout(box.width, box.height, rem, this.mobile.matches, sticker);
     const bounds = flatBounds(layout, c, hostBox.top - box.top, hostBox.bottom - box.top);
     const scale = bakeScale(bounds, window.devicePixelRatio || 1, MAX_TEXTURE);
     const art = bakePod({ layout, bounds, scale, rem, viewportHeight: window.innerHeight, frost: this.frost });

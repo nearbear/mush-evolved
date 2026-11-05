@@ -421,7 +421,7 @@ function drawDroplets(ctx: Ctx, r: Rect, rem: number) {
 function drawOutside(ctx: Ctx, input: BakeInput) {
   const { layout, rem } = input;
   drawWall(ctx, input);
-  drawSticker(ctx, layout.sticker, rem);
+  if (layout.sticker) drawSticker(ctx, layout.sticker, rem);
 
   // Window light spilling onto the wall around it.
   const { frame, glass, inner } = layout;

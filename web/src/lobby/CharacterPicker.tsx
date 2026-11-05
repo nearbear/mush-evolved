@@ -73,13 +73,23 @@ function DesktopPicker({ free, onBoard }: PickerProps) {
       <div className="pod-side">
         <Prompt />
         <div className="pod-detail">
-          <img className="pod-detail-portrait" src={characterImage(current ?? undefined)} alt="" />
-          {/* Every crew member's text in one grid cell, only the selected one visible, so the pane is
-              always sized to the longest (in any language) and never changes height between selections. */}
-          <div className="pod-detail-texts">
+          {/* The portrait with the selected crew member's skills beside it. */}
+          <div className="pod-detail-top">
+            <img className="pod-detail-portrait" src={characterImage(current ?? undefined)} alt="" />
+            {/* Every crew member's skills and text in one grid cell each, only the selected one visible, so the pane
+                is always sized to the longest (in any language) and never changes height between selections. */}
+            <div className="pod-detail-stack">
+              {ORDER.map((c) => (
+                <div key={c.id} className="pod-detail-stacked" inert={c.id !== current}>
+                  <CharacterSkills character={c} tooltips />
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className="pod-detail-stack pod-detail-texts">
             {ORDER.map((c) => (
-              <div key={c.id} className="pod-detail-text" inert={c.id !== current}>
-                <CharacterText character={c} tooltips />
+              <div key={c.id} className="pod-detail-stacked pod-detail-text" inert={c.id !== current}>
+                <CharacterText character={c} tooltips skills={false} />
               </div>
             ))}
           </div>
@@ -181,10 +191,12 @@ function Crew({
   );
 }
 
-/** Who they are: name (desktop only; the modal has it as its title), profession, difficulty, skills. */
-function CharacterText({ character: c, tooltips = false }: { character: Character; tooltips?: boolean }) {
+/**
+ * Who they are: name (desktop only; the modal has it as its title), profession, difficulty, and skills
+ * unless `skills` is false (desktop shows them beside the portrait instead).
+ */
+function CharacterText({ character: c, tooltips = false, skills = true }: { character: Character; tooltips?: boolean; skills?: boolean }) {
   const { t } = useTranslation();
-  const names = useNames();
   return (
     <>
       {tooltips && <p className="pod-detail-name">{c.name}</p>}
@@ -193,6 +205,16 @@ function CharacterText({ character: c, tooltips = false }: { character: Characte
         <Stars difficulty={c.difficulty} />
         {t("lobby.difficultyLabel", { level: t(`lobby.difficulty.${LEVEL[c.difficulty]}`) })}
       </p>
+      {skills && <CharacterSkills character={c} tooltips={tooltips} />}
+    </>
+  );
+}
+
+/** A crew member's starting skills, icon and name each. */
+function CharacterSkills({ character: c, tooltips = false }: { character: Character; tooltips?: boolean }) {
+  const { t } = useTranslation();
+  const names = useNames();
+  return (
       <ul className="pod-detail-skills" aria-label={t("lobby.characterSkills")}>
         {CHARACTER_SKILLS[c.id].map((skill) => (
           <li key={skill}>
@@ -211,6 +233,5 @@ function CharacterText({ character: c, tooltips = false }: { character: Characte
           </li>
         ))}
       </ul>
-    </>
   );
 }

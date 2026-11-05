@@ -12,9 +12,11 @@ body:has(.pod) {
   box-sizing: border-box;
   max-width: none;
   margin: 0;
-  min-height: 100vh;
-  min-height: 100dvh;
-  padding: 2rem 1rem;
+  /* Exactly one screen tall: the landing page never scrolls; a tall panel scrolls inside the glass instead. */
+  height: 100vh;
+  height: 100dvh;
+  /* The bottom clears the footer (credits, and the sticker on desktop) pinned under the window. */
+  padding: 2rem 1rem 6rem;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -46,12 +48,13 @@ body:has(.pod) {
   position: relative;
   z-index: 1;
   box-sizing: border-box;
-  width: min(53.5rem, 100%);
-  /* Never the full screen height: the sticker under the window needs room. */
-  min-height: min(41.5rem, calc(100dvh - 18rem));
-  /* Room for the sticker (4.5rem under the window) and the credits under it, also when the page scrolls. */
-  margin-bottom: 6rem;
-  padding: 4.25rem 2.75rem;
+  width: min(58rem, 100%);
+  /*
+   * A fixed height that depends only on the screen, never on the step showing: anything taller than the
+   * panel scrolls inside it. Short screens get the screen less the pod's padding.
+   */
+  height: min(30rem, calc(100dvh - 8rem));
+  padding: 2.5rem 2.75rem;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -67,7 +70,13 @@ body:has(.pod) {
   z-index: 3;
   align-self: center;
   box-sizing: border-box;
-  width: min(48rem, 100%);
+  width: 100%;
+  /* Fills the window, so its size never changes; the logo stays on top and the step under it scrolls. */
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
   padding: 1.25rem 1.25rem 1.5rem;
 }
 .pod-logo {
@@ -87,21 +96,31 @@ body:has(.pod) {
   text-shadow: 0 1px 1px rgb(0 0 30 / 0.6);
 }
 /*
- * The panel never changes size between picking a ship and waiting in the queue: all
- * states share one grid cell, so the cell is as big as the largest, and the inactive
- * ones are only made invisible (they are also inert, so they can't be focused or clicked).
+ * All states share one grid cell that fills the rest of the panel; none of them sizes it, so a tall one
+ * (the character picker) leaves no empty space on the others. Each scrolls on its own when it doesn't
+ * fit. The inactive ones are only made invisible (they are also inert, so they can't be focused or clicked).
  */
 .pod-states {
+  flex: 1;
+  min-height: 0;
   display: grid;
-  /* Never wider than the panel: the character row scrolls inside it instead. */
   grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr);
 }
 .pod-state {
   grid-area: 1 / 1;
   min-width: 0;
+  min-height: 0;
+  overflow-y: auto;
+  scrollbar-width: thin;
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  /* Centred while it fits; `safe` starts it at the top once it scrolls, so nothing is cut off above. */
+  justify-content: safe center;
+}
+/* The picker scrolls only its crew list, so the prompt and the selected character's pane stay put. */
+.pod-state:has(> .pod-picker) {
+  overflow: hidden;
 }
 .pod-state[inert] {
   visibility: hidden;
@@ -154,13 +173,6 @@ body:has(.pod) {
 @media (max-width: 1023px) {
   .pod-window {
     padding-inline: 1.25rem;
-    /*
-     * Taller than on desktop, nudged up so the sticker's room is all below the window. The margin
-     * plus the pod's padding clears the sticker (4.5rem under the window) and the credits under it,
-     * even when the panel is taller than the screen and the page scrolls.
-     */
-    min-height: calc(100dvh - 14rem);
-    margin-bottom: 7rem;
   }
   .pod-panel {
     padding-inline: 0.75rem;
@@ -186,13 +198,20 @@ body:has(.pod) {
  */
 .pod-picker {
   --figure-zoom: 2;
+  flex: 1;
+  min-height: 0;
   display: flex;
   align-items: stretch;
   gap: 1rem;
 }
+/* Only the crew scrolls; the pane beside it stays put. */
 .pod-tiers {
   flex: 1;
   min-width: 0;
+  overflow-y: auto;
+  /* Never sideways: a rounding pixel from the fixed-size figures must not add a horizontal scrollbar. */
+  overflow-x: hidden;
+  scrollbar-width: thin;
   display: flex;
   flex-direction: column;
   gap: 0.35rem;
@@ -331,16 +350,19 @@ body:has(.pod) {
 /* Desktop's right column: the prompt over the pane. */
 .pod-side {
   flex: none;
-  width: 13rem;
+  /* Room for the skills beside the portrait; the tiers keep enough for six 78px figures and a scrollbar. */
+  width: 15rem;
+  min-height: 0;
   display: flex;
   flex-direction: column;
 }
 .pod-picker .pod-prompt {
   margin: 0 0 0.5rem;
 }
-/* The selected crew member: portrait, who they are, difficulty, skills, and the button that boards. */
+/* The selected crew member: portrait and skills, who they are, difficulty, and the button that boards. */
 .pod-detail {
   flex: 1;
+  min-height: 0;
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
@@ -348,28 +370,43 @@ body:has(.pod) {
   border-radius: 0.25rem;
   background: rgb(255 255 255 / 0.05);
 }
+.pod-detail-top {
+  flex: none;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
 /* The portraits are 210x300, at half their size. */
 .pod-detail-portrait {
-  align-self: center;
+  flex: none;
   width: 105px;
   height: 150px;
   border-radius: 0.15rem;
 }
-.pod-detail-texts {
+.pod-detail-stack {
   flex: 1;
   min-width: 0;
   display: grid;
   grid-template-columns: minmax(0, 1fr);
 }
-.pod-detail-text {
+.pod-detail-stacked {
   grid-area: 1 / 1;
+  min-width: 0;
+}
+.pod-detail-stacked[inert] {
+  visibility: hidden;
+}
+/* On a short screen the texts scroll between the portrait and the Board button, which stay put. */
+.pod-detail-texts {
+  min-height: 0;
+  overflow-y: auto;
+  scrollbar-width: thin;
+}
+.pod-detail-text {
   min-width: 0;
   display: flex;
   flex-direction: column;
   gap: 0.15rem;
-}
-.pod-detail-text[inert] {
-  visibility: hidden;
 }
 .pod-detail-text p {
   margin: 0;
@@ -389,7 +426,7 @@ body:has(.pod) {
 }
 .pod-detail-skills {
   list-style: none;
-  margin: 0.3rem 0 0;
+  margin: 0;
   padding: 0;
   display: flex;
   flex-direction: column;
@@ -445,9 +482,18 @@ button.pod-skill:focus-visible {
   }
 }
 .pod-tabs {
+  flex: 1;
+  min-height: 0;
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+}
+/* The prompt and the tabs stay put; only the open tab's crew scrolls. */
+.pod-tab-panel {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  scrollbar-width: thin;
 }
 /* Stars over the label, so three tabs fit across 360px in every language. */
 .pod-tab {
@@ -483,6 +529,9 @@ button.pod-skill:focus-visible {
   background: #1b2a4a;
   border: 1px solid rgb(255 255 255 / 0.3);
   border-radius: 6px;
+}
+.pod-dialog .pod-detail-skills {
+  margin-top: 0.3rem;
 }
 .pod-dialog-body {
   display: flex;
@@ -558,13 +607,27 @@ button.pod-skill:focus-visible {
   font-size: 0.8rem;
 }
 
-/* The asset attribution (CC BY-NC-SA), required wherever the art shows. Below the sticker, over the backdrop. */
-.pod-credits {
+/* Under the window, over the backdrop: the credits, and on desktop the maker's sticker to their right. */
+.pod-footer {
   position: absolute;
-  bottom: max(0.5rem, env(safe-area-inset-bottom));
+  /* Clear of the screen's edge: the wall's bend stretches the sticker's far end downward. */
+  bottom: max(1.25rem, env(safe-area-inset-bottom));
   left: 1rem;
   right: 1rem;
   z-index: 2;
+  /*
+   * Three columns: an empty one the sticker's width, the credits, the sticker. The equal outer columns keep
+   * the credits centred on the screen, and the credits wrap within what's left between them.
+   */
+  display: grid;
+  grid-template-columns: 11rem minmax(0, 40rem) 11rem;
+  justify-content: center;
+  align-items: center;
+  gap: 1.5rem;
+}
+/* The asset attribution (CC BY-NC-SA), required wherever the art shows. Wraps to leave the sticker room. */
+.pod-credits {
+  grid-column: 2;
   text-align: center;
   font-size: 0.7rem;
   line-height: 1.3;
@@ -609,5 +672,31 @@ button.pod-skill:focus-visible {
 @media (max-width: 1023px) {
   .pod-devsignin {
     display: none;
+  }
+}
+
+/* Room in the footer for the maker's sticker, which the pod's canvas draws over it (podArt.ts). */
+.pod-sticker-slot {
+  grid-column: 3;
+  width: 11rem;
+  height: 3.75rem;
+}
+/* No sticker on phones: the credits get the footer to themselves. */
+@media (max-width: 1023px) {
+  .pod-sticker-slot {
+    display: none;
+  }
+}
+/* Phones: the credits alone, low on the screen. */
+@media (max-width: 1023px) {
+  .pod {
+    padding-bottom: 5rem;
+  }
+  .pod-window {
+    height: min(30rem, calc(100dvh - 7rem));
+  }
+  .pod-footer {
+    bottom: max(0.5rem, env(safe-area-inset-bottom));
+    display: block;
   }
 }

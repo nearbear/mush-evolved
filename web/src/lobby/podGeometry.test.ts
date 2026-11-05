@@ -1,9 +1,20 @@
 import { describe, expect, it } from "vitest";
-import { bakeScale, cylinder, flatBounds, podLayout, roll, unroll } from "./podGeometry.ts";
+import { bakeScale, cylinder, flatBounds, flatRectAt, podLayout, roll, unroll } from "./podGeometry.ts";
 
 describe("the pod's bend", () => {
   const desktop = cylinder(856, 664);
   const phone = cylinder(320, 560);
+
+  it("places a flat rectangle so the bend draws it over the given box", () => {
+    const r = flatRectAt(desktop, 330, 420, 176, 60)!;
+    const centre = roll(desktop, r.x + r.width / 2 - desktop.width / 2, r.y + r.height / 2 - desktop.height / 2);
+    expect(centre.x).toBeCloseTo(330, 6);
+    expect(centre.y).toBeCloseTo(420, 6);
+    const top = roll(desktop, r.x + r.width / 2 - desktop.width / 2, r.y - desktop.height / 2);
+    const bottom = roll(desktop, r.x + r.width / 2 - desktop.width / 2, r.y + r.height - desktop.height / 2);
+    expect(bottom.y - top.y).toBeCloseTo(60, 6);
+    expect(flatRectAt(desktop, 10 * desktop.width, 0, 176, 60)).toBeNull();
+  });
 
   it("leaves the window's centre where it is", () => {
     expect(unroll(desktop, 0, 0)).toEqual({ s: 0, y: 0 });
