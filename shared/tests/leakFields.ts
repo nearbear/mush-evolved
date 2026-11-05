@@ -107,6 +107,7 @@ export const PLAYER_STATE_FIELDS: Record<string, FieldRule> = {
   lastSeenAt: { reach: "never", test: "leaks.test.ts", note: "Only the public `inactive` and `super_inactive` statuses it leads to go out." },
   inactivity: { reach: "never", test: "inactivity.test.ts", note: "The field itself; the public `inactive` and `super_inactive` statuses go out instead." },
   outcastBy: { reach: "never", test: "anathema.test.ts", note: "Who cursed them is never sent; only the public `outcast` status is." },
+  geniusUsed: { reach: "own", test: "genius.test.ts", note: "Only stops Eureka moment being used again; roommates never see it." },
   apprenticeUsed: { reach: "own", test: "apprenticeship.test.ts", note: "Only stops Apprentice being picked again; roommates never see it." },
   fertileToday: { reach: "own", test: "fertile.test.ts", note: "Only gates the free extraction; roommates never see it." },
   boringToday: { reach: "own", test: "speech.test.ts", note: "Only gates the Boring speech; roommates never see it." },

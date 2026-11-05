@@ -2288,3 +2288,9 @@ Same day, owner then asked for a 4-cycle cooldown on `spike` instead: added `spi
 ## 2026-11-05: Apprentice skill (apprenticeship action)
 Owner gave 1 AP and "any skill a roommate selected"; the open questions (use limit, slot, Mush skills, visibility) were asked in one batch and answered with the recommended options. Once-per-game needed no new state: the copy replaces Apprentice, so the action disappears. Corrected my first design: a `{skill}`-only action had no target, so no panel would show it; it became `{target, skill}` aimed at the teacher, with a skill-named label in InspectPanel and PeekBar.
 Follow-up 2026-11-05: owner noted Apprentice must not be pickable again once used. I had assumed "the copy replaces Apprentice" was enough, but it frees the slot and pick_skill would offer it again; added `apprenticeUsed` (own-view flag, STATE_VERSION 107).
+
+## 2026-11-05: Genius skill (become_genius action)
+
+Owner decided via one question round: Eureka moment is free, once per game, private; the `genius` status lasts until used; the next Research or Project completes at once at its normal price; requirements still apply. Implemented as `actions/become_genius.ts`, a private `genius` status, `geniusUsed` flag (STATE_VERSION 108), and consume hooks in `research.ts` (skips the assay) and `project.ts`. Repairs excluded per the request, though the skill text in the original also lists them. The server GoalBot "legal actions" test times out at 5s, but it also does on a clean tree, so it is not caused by this change.
+
+Follow-up 2026-11-05: owner extended Genius to repairs (not PILGRED). Implemented as success chance 1 on the next `repair` / `repair_hull`, consuming the status; I read "all repairs" as including the hull patch, which the owner can correct.

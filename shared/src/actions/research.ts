@@ -6,6 +6,7 @@ import { ITEM_TYPES, newItemId, removeItem, STEROIDS_ITEM, STEROIDS_YIELD } from
 import { xylophFound } from "../comms.ts";
 import { makeToken, type ResearchPool } from "../relay.ts";
 import { assayDue, researchProgress, runAssay, type SampleCounts } from "../assay.ts";
+import { removeStatus } from "../statuses.ts";
 import { dropMycoAlarms } from "../mycoalarm.ts";
 import { ANTI_MUSH_SERUM_ITEM } from "./vaccinate.ts";
 import { MYCOSCAN_EQUIPMENT } from "./check_spores.ts";
@@ -77,6 +78,14 @@ export function addSample(state: GameState, player: Readonly<PlayerState>, resea
   if (spoiledCount === 0) logPublic(state, player.room, "assayPassed", { research, count: testedCount, tested: countsParam(state, tested) });
   else logPublic(state, player.room, "assaySpoiled", { research, count: testedCount, tested: countsParam(state, tested), spoiled: spoiledCount, spoiledBy: countsParam(state, lost) });
   if (verified >= RESEARCH_COMPLETE) completeResearch(state, player.room, research);
+}
+
+/** Genius (owner, 2026-11-05): uses up the status and completes the research now, skipping the assay. Requirements were already checked. */
+function finishAtOnce(state: GameState, player: PlayerState, research: ResearchId): void {
+  removeStatus(player, "genius");
+  logPrivate(state, player.id, "researched", { name: player.character, research, percent: RESEARCH_COMPLETE });
+  state.research[research] = RESEARCH_COMPLETE;
+  completeResearch(state, player.room, research);
 }
 
 /** Completion's effects (owner, 2026-10-25/31), at the assay that leaves the research at 100. Its lines name nobody. */
@@ -157,6 +166,7 @@ export class ResearchAction extends Action<ResearchActionData> {
   }
 
   override apply(state: GameState, player: PlayerState, target: ResearchActionData): void {
-    addSample(state, player, target.research as ResearchId, false);
+    if (player.statuses.includes("genius")) finishAtOnce(state, player, target.research as ResearchId);
+    else addSample(state, player, target.research as ResearchId, false);
   }
 }
