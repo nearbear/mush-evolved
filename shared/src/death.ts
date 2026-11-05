@@ -1,7 +1,7 @@
 // ---- Damage and death -------------------------------------------------------
 // Death rules (decided 2026-10-16, see Death in docs/rules/rules-design.md): reaching
 // 0 HP from any source kills at once, death is permanent, and the body becomes a
-// corpse item in the room. Every HP loss goes through `damage` so no source can
+// corpse item in the room. Every HP loss goes through `damage` and every HP gain through `heal`, so no source can
 // leave someone alive at 0 HP (a test enforces it).
 
 import { endAccommodationOnDeath } from "./accommodation.ts";
@@ -29,9 +29,18 @@ export function damage(state: GameState, player: PlayerState, amount: number): v
   if (player.hp === 0) killPlayer(state, player);
 }
 
-/** Day-start healing: a living player regains `dailyHeal` HP, up to their max. Only raises HP. */
+/**
+ * The one way HP goes up. Only raises HP: a negative amount does nothing, the dead stay dead, and HP caps at the
+ * player's max. Mutates a state the caller already cloned.
+ */
+export function heal(_state: GameState, player: PlayerState, amount: number): void {
+  if (!player.alive) return;
+  player.hp = Math.min(player.maxHp, player.hp + Math.max(0, amount));
+}
+
+/** Day-start healing: a living player regains `dailyHeal` HP, up to their max. */
 export function healDaily(state: GameState, player: PlayerState): void {
-  if (player.alive) player.hp = Math.min(player.maxHp, player.hp + state.config.dailyHeal);
+  heal(state, player, state.config.dailyHeal);
 }
 
 /**

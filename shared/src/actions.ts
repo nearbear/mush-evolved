@@ -13,6 +13,8 @@ import { AccessAction } from "./actions/access.ts";
 import type { ActionCost, ActionTag, ActionVisibility } from "./actions/action.ts";
 import { DispenseAction } from "./actions/dispense.ts";
 import { ExamineAction } from "./actions/examine.ts";
+import { ConsumeSporeAction } from "./actions/consume_spore.ts";
+import { TubeTransferAction } from "./actions/tube_transfer.ts";
 import { ExtractSporeAction } from "./actions/extract_spore.ts";
 import { MoveAction } from "./actions/move.ts";
 import { CancelPlanAction, ClaimSlotAction, MarkDoneAction, WithdrawSlotAction } from "./actions/plan_slots.ts";
@@ -180,6 +182,8 @@ const REGISTRY = {
   dtt: new ShareAction("dtt"),
   stt: new ShareAction("stt"),
   extract_spore: new ExtractSporeAction(),
+  consume_spore: new ConsumeSporeAction(),
+  tube_transfer: new TubeTransferAction(),
   spike: new SpikeAction(),
   fungal_cuisine: new FungalCuisineAction(),
   body_transfer: new BodyTransferAction(),

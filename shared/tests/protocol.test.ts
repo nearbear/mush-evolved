@@ -102,6 +102,8 @@ describe("actions from a client", () => {
     stt: [{ type: "stt", target: "p1" }],
     extract_spore: [{ type: "extract_spore" }],
     spike: [{ type: "spike", target: "p1" }],
+    tube_transfer: [{ type: "tube_transfer", item: "i1" }],
+    consume_spore: [{ type: "consume_spore" }],
     fungal_cuisine: [{ type: "fungal_cuisine", item: "i1" }],
     body_transfer: [{ type: "body_transfer", target: "p1" }],
     lie_down: [{ type: "lie_down", equipment: "e1" }],
