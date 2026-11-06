@@ -388,10 +388,11 @@ function advanceCycle(state: GameState, at?: number): void {
     expirePlans(state);
   }
   for (const p of state.players) {
-    if (!p.alive || p.role !== "human") continue;
+    if (!p.alive) continue;
     if (p.satiety > 0) {
       p.satiety = Math.max(0, p.satiety - satietyLoss(state, p));
-      if (p.satiety === 0) p.satietyZeroSince = state.cycle;
+      // Mush never count toward hunger.
+      if (p.satiety === 0 && p.role === "human") p.satietyZeroSince = state.cycle;
     }
     if (isHungry(state, p)) damage(state, p, state.config.hunger.hpPerCycle);
   }

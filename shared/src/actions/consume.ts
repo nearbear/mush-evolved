@@ -34,8 +34,10 @@ export class ConsumeAction extends Action<ConsumeActionData> {
   override apply(state: GameState, player: PlayerState, target: ConsumeActionData): void {
     const item = removeItem(state, target.item);
     if (player.role !== "human") {
-        logSecret(state, player.id, "consumed", { name: player.character, item: item.type });
-        return;
+      // Mush get no food effects, but the meal still fills them (owner, 2026-11-05).
+      player.satiety += ITEM_TYPES[item.type]!.consume!.satiety;
+      logSecret(state, player.id, "consumed", { name: player.character, item: item.type });
+      return;
     }
     const { ap, mp = 0, satiety, morale = 0, hp = 0 } = ITEM_TYPES[item.type]!.consume!;
     healHp(state, player, hp);

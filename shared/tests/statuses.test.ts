@@ -97,13 +97,20 @@ describe("satiety", () => {
     }
   });
 
-  it("gives Mush no satiety, no hunger, and lets them eat", () => {
-    let s = eat(ship(), "p0", "cooked_ration");
-    expect(player(s, "p0").satiety).toBe(0);
-    s = eat(s, "p0", "cooked_ration");
+  it("lets Mush eat for no food effects, never get hungry, and fill up", () => {
+    let s = eat(ship(), "p0", "coffee");
+    expect(player(s, "p0").satiety).toBe(1);
+    expect(player(s, "p0").hp).toBe(config.startHp);
     for (let i = 0; i < 30; i++) s = nextCycle(s);
     expect(viewFor(s, "p0").statuses).toEqual([]);
     expect(player(s, "p0").hp).toBe(config.startHp);
+  });
+
+  it("gives a Mush full belly after enough food, blocking eating", () => {
+    let s = eat(ship(), "p0", "cooked_ration");
+    expect(viewFor(s, "p0").statuses).toContain("full_belly");
+    const id = give(s, "p0", "coffee");
+    expect(applyAction(s, "p0", { type: "consume", item: id }).ok).toBe(false);
   });
 });
 
@@ -120,6 +127,10 @@ describe("full belly", () => {
     s = nextCycle(s); // 2: eating allowed again
     expect(viewFor(s, "p1").statuses).not.toContain("full_belly");
     expect(applyAction(s, "p1", { type: "consume", item: id }).ok).toBe(true);
+  });
+
+  it("is never floated over the head", () => {
+    expect(overheadStatuses(["full_belly", "dirty"])).toEqual(["dirty"]);
   });
 });
 

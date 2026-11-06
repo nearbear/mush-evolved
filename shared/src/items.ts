@@ -15,7 +15,7 @@ export interface ItemType {
   consume?: {
     ap: number;
     mp?: number;
-    /** Satiety a human gains (confirmed 2026-10-14). */ satiety: number;
+    /** Satiety the eater gains (confirmed 2026-10-14; Mush too, owner 2026-11-05). */ satiety: number;
     /** Morale the eater gains (negative: loses), within 0 and `maxMorale`. */ morale?: number;
     /** HP the eater gains, up to `maxHp`. Never lowers HP: losses go through `damage`. */ hp?: number;
   };

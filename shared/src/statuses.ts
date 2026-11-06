@@ -42,14 +42,17 @@ export const STATUS_PUBLIC: Readonly<Record<string, boolean>> = FIXED_STATUS_PUB
 /** Statuses that are character traits (permanent, innate): public, but shown on Inspect only, never over the head. */
 export const TRAIT_STATUS_IDS: readonly StatusId[] = ["immunity", "pacifist", "mankind_only_hope", "wheelchair"];
 
+/** Statuses never floated over the head, whatever their visibility (owner, 2026-11-05: full belly is Inspect-only). */
+const NO_OVERHEAD_STATUS_IDS: readonly StatusId[] = ["full_belly"];
+
 /** The statuses worth floating over a character's head: everything but traits. */
 export function overheadStatuses(statuses: readonly string[]): string[] {
-  return statuses.filter((id) => !(TRAIT_STATUS_IDS as readonly string[]).includes(id));
+  return statuses.filter((id) => !TRAIT_STATUS_IDS.includes(id) && !NO_OVERHEAD_STATUS_IDS.includes(id));
 }
 
-/** Humans at or above `fullBellyAt` satiety can't eat. */
+/** Anyone (Mush too, who gain satiety from fake meals) at or above `fullBellyAt` satiety can't eat. */
 export function isFullBelly(state: Readonly<Pick<GameState, "config">>, p: Readonly<PlayerState>): boolean {
-  return p.role === "human" && p.satiety >= state.config.hunger.fullBellyAt;
+  return p.satiety >= state.config.hunger.fullBellyAt;
 }
 
 /** Hungry once satiety has stayed at 0 for `hungryAfterCycles` cycles; the count restarts whenever satiety reaches 0 again. */
