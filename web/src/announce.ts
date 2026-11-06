@@ -118,8 +118,10 @@ export function useVerbosity(): Verbosity {
 
 // --- what is new in a view ---
 
-/** How far the announcer has read: the log's length, the newest chat id and the latest cycle heard. */
+/** How far the announcer has read: whose view, its `logSeen`, the newest chat id and the latest cycle heard. */
 export interface Seen {
+  /** The body the view was for (`you.id`); a Transfer changes it, and the other body's count means nothing here. */
+  body: string;
   log: number;
   chat: number;
   cycle: number;
@@ -161,11 +163,13 @@ export interface Fresh {
 export function freshIn(seen: Seen | null, view: PlayerView): Fresh {
   const newest = view.chat.reduce((n, m) => Math.max(n, m.id), 0);
   const latestCycle = view.log.reduce((n, e) => Math.max(n, e.cycle), 0);
-  const next: Seen = { log: view.log.length, chat: newest, cycle: Math.max(seen?.cycle ?? 0, latestCycle) };
-  if (!seen) return { log: [], chat: [], cycle: undefined, seen: next };
+  const next: Seen = { body: view.you.id, log: view.logSeen, chat: newest, cycle: Math.max(seen?.cycle ?? 0, latestCycle) };
+  if (!seen || seen.body !== view.you.id) return { log: [], chat: [], cycle: undefined, seen: next };
   const here = view.you.room;
-  // A log that got shorter was trimmed; there is no telling what is new.
-  const log = view.log.length >= seen.log ? view.log.slice(seen.log).filter((e) => e.room === undefined || e.room === here) : [];
+  // The log's length says nothing once the window drops old lines (#365): `logSeen` counts every line this seat has
+  // seen, so the newest `added` lines of the log are the new ones.
+  const added = view.logSeen - seen.log;
+  const log = added > 0 ? view.log.slice(-added).filter((e) => e.room === undefined || e.room === here) : [];
   return {
     log,
     chat: view.chat.filter((m) => m.id > seen.chat),

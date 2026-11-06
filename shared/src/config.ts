@@ -52,6 +52,8 @@ export const DEFAULT_CONFIG: GameConfig = {
   inventorySlots: 3,
   // Confirmed 2026-10-13: three private channels per player by default (skills and research will raise it).
   channelLimit: 3,
+  // Owner, 2026-11-05 (#365; eMushpedia Traqueur): 8 cycles of room log, 16 with Tracker.
+  logWindow: { cycles: 8, tracker: 16 },
 
   //Actions
 

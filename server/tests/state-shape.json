@@ -1,5 +1,5 @@
 {
-  "version": 110,
+  "version": 111,
   "paths": [
     "bios.actopi",
     "bios.death_announcements",
@@ -221,6 +221,7 @@
     "players[].hp",
     "players[].id",
     "players[].isBot",
+    "players[].logSeen",
     "players[].maxAp",
     "players[].maxHp",
     "players[].maxMorale",

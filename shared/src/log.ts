@@ -13,11 +13,57 @@
 
 import type { ActionVisibility } from "./actions/action.ts";
 import { CAMERA_EQUIPMENT } from "./equipment.ts";
+import { hasSkill } from "./skills.ts";
 import type { GameState, LogEntry, LogParams, PlayerId, PlayerState, RoomId } from "./types.ts";
 
 /** Appends `entry` with the next id and the current cycle. Every log line goes through here. Mutates a state the caller already cloned. */
 export function pushLog(state: GameState, entry: Omit<LogEntry, "id" | "cycle">): void {
-  state.log.push({ id: state.nextLogId++, cycle: state.cycle, ...entry });
+  const line: LogEntry = { id: state.nextLogId++, cycle: state.cycle, ...entry };
+  state.log.push(line);
+  for (const p of state.players) if (seesLine(line, p)) p.logSeen += 1;
+}
+
+/**
+ * Whether `you` see `e` at all, window aside: the room's public history while you are in it, every line private to
+ * you, and the ship-wide lines. The dead keep only ship-wide public lines (decided 2026-10-16, #45); every room line,
+ * their own private ones included, goes.
+ */
+export function seesLine(e: Readonly<LogEntry>, you: Readonly<Pick<PlayerState, "id" | "alive" | "room">>): boolean {
+  if (!you.alive) return e.room === undefined && e.visibleTo === "all";
+  return e.visibleTo === "all" ? e.room === undefined || e.room === you.room : e.visibleTo.includes(you.id);
+}
+
+/**
+ * How many cycles of room log `you` see (#365): `logWindow.tracker` with the Tracker skill (`hunt`, picked or from a
+ * book), else `logWindow.cycles`. A room line shows while its cycle is within the window (`inLogWindow`).
+ */
+export function logWindowOf(state: Readonly<GameState>, you: Readonly<PlayerState>): number {
+  return hasSkill(you, "hunt") ? state.config.logWindow.tracker : state.config.logWindow.cycles;
+}
+
+/** Whether `e` is inside a window of `cycles`: the current cycle and the `cycles - 1` before it. Ship-wide lines always are. */
+export function inLogWindow(state: Readonly<GameState>, e: Readonly<LogEntry>, cycles: number): boolean {
+  return e.room === undefined || e.cycle > state.cycle - cycles;
+}
+
+/**
+ * Drops room lines no window can show any more (owner, 2026-11-05, #365), so the state and every view stop growing
+ * with the game. Ship-wide lines stay. The record keeps every line: each input's step in the history has it. Called as
+ * each cycle begins. Mutates a state the caller already cloned.
+ */
+export function pruneLog(state: GameState): void {
+  const longest = Math.max(state.config.logWindow.cycles, state.config.logWindow.tracker);
+  state.log = state.log.filter((e) => inLogWindow(state, e, longest));
+}
+
+/**
+ * Starts `p`'s `logSeen` at the lines their view shows now: at launch, on boarding in pre-selection, and for both
+ * bodies in a Transfer, so a new occupant never learns how many lines the body saw before (lines that left the window
+ * included). The client starts over when its body changes, so nothing is announced.
+ */
+export function startLogSeen(state: Readonly<GameState>, p: PlayerState): void {
+  const window = logWindowOf(state, p);
+  p.logSeen = state.log.filter((e) => seesLine(e, p) && inLogWindow(state, e, window)).length;
 }
 
 /** Mutates a state that the caller already cloned. */

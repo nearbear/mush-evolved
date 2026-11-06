@@ -185,6 +185,11 @@ export interface PlayerView {
    * would show that a line you can't see was written (for example a witness's view skipping a conversion).
    */
   log: LogLine[];
+  /**
+   * How many log lines you have ever been able to see, those that have left the window since included (#365). The
+   * client compares it with the last one to find the new lines at the end of `log`. It counts only lines you saw.
+   */
+  logSeen: number;
   /** Messages in `readChannels`. */
   chat: ChatMessage[];
   /** Channels you may post to right now. */

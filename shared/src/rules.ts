@@ -33,7 +33,7 @@ import { clone, dayOf, fail, findPlayer, type ActionResult } from "./helpers.ts"
 
 export { dayOf };
 import { damage, healDaily, hasMushDied } from "./death.ts";
-import { activitySeen, logPrivate, pushLog } from "./log.ts";
+import { activitySeen, inLogWindow, logPrivate, logWindowOf, pruneLog, pushLog, seesLine, startLogSeen } from "./log.ts";
 import { recordAction } from "./history.ts";
 import { ringMycoAlarms } from "./mycoalarm.ts";
 import { planetsOf } from "./planets.ts";
@@ -163,6 +163,7 @@ export function createGame(
     startHunters(state);
   }
   grantCarePoints(state); // day 1 begins now
+  for (const p of state.players) startLogSeen(state, p);
   return state;
 }
 
@@ -197,6 +198,7 @@ export function newPlayer(s: Seat, config: DeepReadonly<GameConfig>, cycle: numb
     current: null,
     queue: [],
     history: [],
+    logSeen: 0,
     cheats: [],
   };
 }
@@ -360,6 +362,7 @@ function chargesFor(config: DeepReadonly<GameConfig>, type: string): { charges?:
  */
 function advanceCycle(state: GameState, at?: number): void {
   state.cycle += 1;
+  pruneLog(state);
   for (const p of state.players) {
     changeAP(state, p, apGain(state, p));
     p.ready = false;
@@ -468,6 +471,7 @@ export function seatViewFor(state: GameState, playerId: PlayerId): SeatView {
   const located = (room: RoomId) => you.alive && (actopi || room === you.room);
   // A dead body is a corpse item, not a person in a room: nobody gets a dead player's room.
   const living = others.filter((o) => o.alive);
+  const logWindow = logWindowOf(state, you);
   // Nobody's account name goes out while the game runs, not even your own: people are known by character.
   // Who cursed you is never sent, even to you; nor which seat plays you, whether you used Transfer, or your action
   // history (only Interrogate and Chitchat reveal it, history.ts), nor Lethargy's count (`lyingSince`; only its AP shows).
@@ -545,11 +549,12 @@ export function seatViewFor(state: GameState, playerId: PlayerId): SeatView {
     roomEquipment: you.alive ? (state.equipment[you.room] ?? []).map((e) => equipmentView(state, e)) : [],
     roomOnFire: you.alive && isOnFire(state, you.room),
     burningRooms: you.alive && projectDone(state, "FIRE_SENSOR") ? [...state.fires] : [],
-    // The dead keep only ship-wide entries (cycles, days); every room entry, their own private ones included, goes.
+    // `seesLine` (log.ts) says which lines are yours; room lines, private ones included, only within your window (#365).
     // A private line names only you in the view: no one learns who else saw it (`level` marks a leaked secret line).
     log: state.log
-      .filter((e) => (!you.alive ? e.room === undefined && e.visibleTo === "all" : e.visibleTo === "all" ? e.room === undefined || e.room === you.room : e.visibleTo.includes(playerId)))
+      .filter((e) => seesLine(e, you) && inLogWindow(state, e, logWindow))
       .map((e) => (e.visibleTo === "all" ? e : { ...e, visibleTo: [you.id] })),
+    logSeen: you.logSeen,
     chat: state.chat.filter((m) => channels.includes(m.channel)).map(messageView),
     chatChannels: chatChannels(state, you),
     readChannels: channels,

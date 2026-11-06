@@ -179,6 +179,8 @@ export type SkillStatus = "full" | "partial" | "none";
 export const SKILL_STATUS: Readonly<Partial<Record<SkillId | MushSkillId, SkillStatus>>> = {
   // Heal bonus only; no operations, medicine properties, or research bonus.
   medic: "partial",
+  // 16 cycles of room log (owner, 2026-11-05, #365, log.ts); no movement sources, ship logs, List or expedition effect.
+  hunt: "partial",
   // Apprenticeship (owner, 2026-11-05, actions/apprenticeship.ts).
   apprentice: "full",
   // Flying patrol ships, with clean takeoffs and landings (owner, 2026-10-24, patrol.ts); no shooting bonus yet.

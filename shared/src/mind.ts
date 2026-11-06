@@ -4,6 +4,7 @@
 // Body ids stay put, so other players see no id change; the server resolves each seat to its body with `bodyOf`.
 
 import { clone, fail, findPlayer, type ActionResult } from "./helpers.ts";
+import { startLogSeen } from "./log.ts";
 import type { GameState, PlayerId, PlayerState } from "./types.ts";
 
 /** The body a seat (`PlayerState.mind`) plays now: the one it started in until a Transfer moves it. */
@@ -16,7 +17,7 @@ const MIND_FIELDS = ["mind", "name", "isBot", "botKind", "role", "alpha", "mushS
 
 /**
  * Swaps the minds of bodies `a` and `b`: the fields in MIND_FIELDS, the spike cooldown. Private log lines are
- * addressed to bodies and stay with them (owner, 2026-11-05, #281), so the log is not touched. Both
+ * addressed to bodies and stay with them (owner, 2026-11-05, #281), so the log is not touched; each body's `logSeen` starts over. Both
  * bodies' actions are cancelled and neither is ready. Leaves role-dependent body state (contamination, satiety) to
  * the caller. Mutates a state the caller already cloned.
  */
@@ -38,6 +39,7 @@ export function swapMinds(state: GameState, a: PlayerState, b: PlayerState): voi
     p.current = null;
     p.queue = [];
     p.ready = false;
+    startLogSeen(state, p); // the count of what the body saw before is not the new mind's (#365)
   }
 }
 
