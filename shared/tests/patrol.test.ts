@@ -199,26 +199,26 @@ describe("shooting from a patrol ship", () => {
 
   it("a hit costs a charge, does 3-6 damage, resets the ship's miss streak, and only the shooter is told", () => {
     let s = flying(shot({ chance: 1 }));
-    s.patrolFailures.p0 = 2;
+    s.failureStreaks.p0 = { patrol_attack: 2 };
     s.hunters.list[0]!.hp = 10; // above the 6-damage maximum, so the hit can't kill it
     s = mustApply(s, "p0", shoot("h1"));
     expect(s.patrolShips[LONGANE.id]!.charges).toBe(s.config.patrol.charges - 1);
     const hp = s.hunters.list[0]!.hp;
     expect(10 - hp).toBeGreaterThanOrEqual(3);
-    expect(s.patrolFailures.p0).toBeUndefined();
+    expect(s.failureStreaks.p0).toBeUndefined();
     expect(s.log.at(-1)).toMatchObject({ key: "turretHit", visibleTo: ["p0"], params: { damage: 10 - hp } });
   });
 
   it("a miss costs a charge too; its streak (x1.25 a miss) is its own, apart from the turrets'", () => {
     let s = flying(shot({ chance: 0 }));
     s = mustApply(s, "p0", shoot("h1"));
-    expect([s.patrolShips[LONGANE.id]!.charges, s.patrolFailures.p0, s.turretFailures.p0, s.hunters.list[0]!.hp]).toEqual([s.config.patrol.charges - 1, 1, undefined, 6]);
+    expect([s.patrolShips[LONGANE.id]!.charges, s.failureStreaks.p0?.patrol_attack, s.failureStreaks.p0?.turret_attack, s.hunters.list[0]!.hp]).toEqual([s.config.patrol.charges - 1, 1, undefined, 6]);
     expect(s.log.at(-1)).toMatchObject({ key: "turretMiss", visibleTo: ["p0"] });
     const odds = flying();
     player(odds, "p0").skills = [];
-    odds.turretFailures.p0 = 3;
+    odds.failureStreaks.p0 = { turret_attack: 3 };
     expect(chanceOf(odds, "p0")).toBeCloseTo(0.4);
-    odds.patrolFailures.p0 = 2;
+    odds.failureStreaks.p0 = { turret_attack: 3, patrol_attack: 2 };
     expect(chanceOf(odds, "p0")).toBeCloseTo(0.4 * 1.25 ** 2);
   });
 
@@ -241,7 +241,7 @@ describe("shooting from a patrol ship", () => {
     player(s, "p0").resources.shoot = 1;
     expect(costOf(s, "p0", shoot("h1"))).toMatchObject({ ap: 0, paidBy: "shoot" });
     player(s, "p0").skills = ["persistent"];
-    s.patrolFailures.p0 = 2;
+    s.failureStreaks.p0 = { patrol_attack: 2 };
     expect(chanceOf(s, "p0")).toBeCloseTo(0.4 * s.config.persistent.failureMultiplier ** 2);
   });
 

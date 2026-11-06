@@ -158,22 +158,22 @@ describe("shooting from a turret", () => {
 
   it("a hit costs a charge, does 2-4 damage, resets the miss streak, and only the shooter is told", () => {
     let s = ship(turrets({ chance: 1 }));
-    s.turretFailures.p0 = 2;
+    s.failureStreaks.p0 = { turret_attack: 2 };
     s = must(applyAction(s, "p0", shoot("h1")));
     expect(s.turrets[TURRET]).toBe(3);
     expect(s.hunters.list[0]!.hp).toBeGreaterThanOrEqual(2);
     expect(s.hunters.list[0]!.hp).toBeLessThanOrEqual(4);
-    expect(s.turretFailures.p0).toBeUndefined();
+    expect(s.failureStreaks.p0).toBeUndefined();
     expect(s.log.at(-1)).toMatchObject({ key: "turretHit", visibleTo: ["p0"], params: { damage: 6 - s.hunters.list[0]!.hp } });
   });
 
   it("a miss costs a charge too, and each miss in a row multiplies the next chance by 1.25", () => {
     let s = ship(turrets({ chance: 0 }));
     s = must(applyAction(s, "p0", shoot("h1")));
-    expect([s.turrets[TURRET], s.turretFailures.p0, s.hunters.list[0]!.hp]).toEqual([3, 1, 6]);
+    expect([s.turrets[TURRET], s.failureStreaks.p0?.turret_attack, s.hunters.list[0]!.hp]).toEqual([3, 1, 6]);
     expect(s.log.at(-1)).toMatchObject({ key: "turretMiss", visibleTo: ["p0"] });
     const odds = ship();
-    odds.turretFailures.p0 = 2;
+    odds.failureStreaks.p0 = { turret_attack: 2 };
     expect(viewFor(odds, "p0").actions.find((a) => a.action.type === "turret_attack")!.chance).toBeCloseTo(0.3 * 1.25 ** 2);
   });
 

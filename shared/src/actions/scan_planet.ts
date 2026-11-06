@@ -1,7 +1,6 @@
 import { Action, isString } from "./action.ts";
 import { dayOf } from "../helpers.ts";
 import { logPrivate, logPublic } from "../log.ts";
-import { failureStreakMultiplier } from "../modifiers.ts";
 import { isTraveling } from "../navigation.ts";
 import { astroTerminalsHere, freePositions, generatePlanet, pickPosition, planetsOf, sizeRangeOn } from "../planets.ts";
 import type { GameState, PlayerState } from "../types.ts";
@@ -26,9 +25,12 @@ export class ScanPlanetAction extends Action<ScanPlanetActionData> {
     return { ap: state.config.astro.scan.cost.ap, mp: 0 };
   }
 
-  override getSuccessChance(state: Readonly<GameState>, player: Readonly<PlayerState>): number {
-    const { chance, failureMultiplier } = state.config.astro.scan;
-    return Math.min(1, chance * failureStreakMultiplier(state, player, failureMultiplier) ** (state.scanFailures[player.id] ?? 0));
+  override getSuccessChance(state: Readonly<GameState>): number {
+    return state.config.astro.scan.chance;
+  }
+
+  override getFailureMultiplier(state: Readonly<GameState>): number {
+    return state.config.astro.scan.failureMultiplier;
   }
 
   override getCandidates(state: Readonly<GameState>, player: Readonly<PlayerState>): ScanPlanetActionData[] {
@@ -51,13 +53,11 @@ export class ScanPlanetAction extends Action<ScanPlanetActionData> {
     const [planet, next] = generatePlanet(rng, `planet-${state.nextPlanetId++}`, position!, sizeRangeOn(state.config.astro, dayOf(state).day));
     state.rng = next;
     state.planets[player.id] = [...planetsOf(state, player.id), planet];
-    delete state.scanFailures[player.id];
     logPublic(state, player.room, "scannedPlanets", { name: player.character });
     logPrivate(state, player.id, "planetFound", { planet: planet.name });
   }
 
   override fail(state: GameState, player: PlayerState, target: ScanPlanetActionData): void {
-    state.scanFailures[player.id] = (state.scanFailures[player.id] ?? 0) + 1;
     logPublic(state, player.room, "scannedPlanets", { name: player.character });
     logPrivate(state, player.id, "planetNotFound");
   }

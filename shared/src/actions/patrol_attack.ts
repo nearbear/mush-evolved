@@ -1,7 +1,6 @@
 import { Action, IN_PRESELECTION, type ActionCost, type ActionVisibility, isString } from "./action.ts";
 import { damageHunter } from "../hunters.ts";
 import { logPrivate } from "../log.ts";
-import { failureStreakMultiplier } from "../modifiers.ts";
 import { commandId, shipAboard, type PatrolShip } from "../patrol.ts";
 import { roll } from "../rng.ts";
 import type { GameState, PlayerState } from "../types.ts";
@@ -29,9 +28,12 @@ export class PatrolAttackAction extends Action<PatrolAttackActionData> {
     return player.resources.shoot > 0 ? { ap: 0, mp: 0, paidBy: "shoot" } : { ap: state.config.patrol.shot.cost.ap, mp: 0 };
   }
 
-  override getSuccessChance(state: Readonly<GameState>, player: Readonly<PlayerState>): number {
-    const { chance, failureMultiplier } = state.config.patrol.shot;
-    return Math.min(1, chance * failureStreakMultiplier(state, player, failureMultiplier) ** (state.patrolFailures[player.id] ?? 0));
+  override getSuccessChance(state: Readonly<GameState>): number {
+    return state.config.patrol.shot.chance;
+  }
+
+  override getFailureMultiplier(state: Readonly<GameState>): number {
+    return state.config.patrol.shot.failureMultiplier;
   }
 
   override getCandidates(state: Readonly<GameState>, player: Readonly<PlayerState>): PatrolAttackActionData[] {
@@ -51,7 +53,6 @@ export class PatrolAttackAction extends Action<PatrolAttackActionData> {
 
   override apply(state: GameState, player: PlayerState, target: PatrolAttackActionData): void {
     spendCharge(state, player);
-    delete state.patrolFailures[player.id];
     const amount = roll(state, state.config.patrol.shot.damage);
     if (damageHunter(state, target.hunter, amount)) logPrivate(state, player.id, "patrolKill");
     else logPrivate(state, player.id, "turretHit", { damage: amount });
@@ -59,7 +60,6 @@ export class PatrolAttackAction extends Action<PatrolAttackActionData> {
 
   override fail(state: GameState, player: PlayerState): void {
     spendCharge(state, player);
-    state.patrolFailures[player.id] = (state.patrolFailures[player.id] ?? 0) + 1;
     logPrivate(state, player.id, "turretMiss");
   }
 }

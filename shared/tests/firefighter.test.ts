@@ -22,14 +22,14 @@ describe("Firefighter", () => {
     const s = burning();
     expect(option(s, "p0", MANUAL)).toMatchObject({ cost: { ap: 1 }, chance: 0.5 });
     const missed = mustApply(withExtinguish(s, { manual: { chance: 0.0001, failureMultiplier: 2 } }), "p0", MANUAL);
-    expect(missed.extinguishFailures.p0).toBe(1);
+    expect(missed.failureStreaks.p0?.extinguish_manually).toBe(1);
     expect(missed.fires).toEqual([HERE]);
     expect(missed.log.find((e) => e.key === "extinguishFailed")).toMatchObject({ visibleTo: ["p0"] });
-    const streak = { ...s, extinguishFailures: { p0: 2 } };
+    const streak = { ...s, failureStreaks: { p0: { extinguish_manually: 2 } } };
     expect(option(streak, "p0", MANUAL)?.chance).toBeCloseTo(0.5 * 1.25 ** 2);
     const done = mustApply(withExtinguish(streak, { manual: { chance: 1, failureMultiplier: 1.25 } }), "p0", MANUAL);
     expect(done.fires).toEqual([]);
-    expect(done.extinguishFailures.p0).toBeUndefined();
+    expect(done.failureStreaks.p0).toBeUndefined();
     expect(done.log.find((e) => e.key === "fireExtinguished")).toMatchObject({ key: "fireExtinguished", room: HERE, visibleTo: "all" });
   });
 

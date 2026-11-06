@@ -174,7 +174,7 @@ describe("Astro terminal planets", () => {
     expect(chance(s, "p1")).toBe(astro.scan.chance);
     expect(viewFor(s, "p0").planets).toEqual([]);
     expect(s.log.filter((e) => e.key === "planetNotFound" && e.visibleTo.includes("p0"))).toHaveLength(2);
-    s.scanFailures.p0 = 10;
+    s.failureStreaks.p0 = { scan_planet: 10 };
     expect(chance(s, "p0")).toBe(1);
     s.players[0]!.ap = 12;
     s = forcedScan(s, "p0", true);
@@ -283,9 +283,9 @@ describe("Astro terminal planets", () => {
       const view = viewFor(s, id);
       expect(view.planets).toEqual([]);
       expect(JSON.stringify(view)).not.toContain(planet.id);
-      expect(JSON.stringify(view)).not.toContain("scanFailures");
+      expect(JSON.stringify(view)).not.toContain("failureStreaks");
     }
-    expect(JSON.stringify(viewFor(s, "p0"))).not.toContain("scanFailures");
+    expect(JSON.stringify(viewFor(s, "p0"))).not.toContain("failureStreaks");
   });
 
   it("parses from the wire, and rejects malformed ones", () => {
