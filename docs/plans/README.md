@@ -15,4 +15,5 @@ Feature designs, one per file. Each plan's own header is the authority on its st
 | `bot-goals.md` | Single-player bot goals and model-only coordination in chat | First pass accepted 2026-10-25, coordination revised 2026-11-01; not built |
 | `inventory-notes.md` | Shared manual item notes for the whole crew | Draft 2026-11-01; not decided, not built |
 | `balance.md` | Balance goals, targets, AP economy and tuning method | Draft 2026-11-04; not decided |
+| `replay-viewer.md` | Replay viewer page, split into stories (#156) | Reviewed with the owner 2026-11-05; not built |
 | `action-plans.md` | Scheduled action plans (#44) | Superseded 2026-10-30 by `relay-tokens.md` and `on-call.md`; kept for history |
