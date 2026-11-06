@@ -1,6 +1,6 @@
 # Balance and tuning
 
-**Status:** draft, 2026-11-04, corrected 2026-11-05. The goals are the owner's own words. The directions below are the owner's (recorded in `docs/rules/rules-design.md`); the targets and remaining levers are still proposals. The open questions are listed at the end.
+**Status:** draft, 2026-11-04, corrected 2026-11-05, design pillars added 2026-11-05. The goals are the owner's own words. The directions below are the owner's (recorded in `docs/rules/rules-design.md`); the targets and remaining levers are still proposals. The open questions are listed at the end.
 
 ## Goals (owner, 2026-11-04)
 
@@ -9,6 +9,27 @@
 - **No mechanical testing.** Humans should not be able to unmask a Mush by a cheap, repeatable check (eMush's "who doesn't eat" is the example to avoid). A few scarce, deliberate methods are fine (the List).
 - **No Mush snowball** from too much AP.
 - **No human lockout** from rushing research: the Mush must keep meaningful moves until late in the game.
+
+## Design pillars (owner, 2026-11-05)
+
+From a design Q&A on social deduction failure modes (Among Us is the cautionary example).
+
+- **The feel.** Humans: paranoid detective work with a few big reveals. Mush: a tense double life with a few big swings.
+- **Close beats even.** An even win rate matters less than both sides always having something meaningful to do. This covers "no lockout" and "no Mush snowball": the main measure is whether the losing side still had a real path to winning late in the game.
+- **No incidental proof of humanity.** Only mechanics designed for it may prove someone human: Chun (who can't be Mush), and a serum injection, after which the target is human. Any other mechanic that happens to prove humanity is a bug in the design (eMush's example: becoming visibly sick proves you human). The same goes for proving someone Mush: the only proofs are designed ones such as the List, a death message, or real detective work (below).
+- **Deduction comes from detective work.** Proof is allowed when it comes from collecting clues about a hostile act and narrowing the suspects. Getting those clues should involve some luck, and the Mush should have counterplay (example: a Mush sets off a myco alarm, then uses the Defacer skill, eMushpedia "Dialoguiste", to muddy the record).
+- **A quiet setup.** Day 1 doesn't need to give humans anything to deduce from. The Mush work unseen to build up an advantage they cash in one of two ways:
+  - **Explosive rampage**, which should push the humans to **return to Sol** fast;
+  - **Gradual sabotage**, which keeps them from getting home and makes **Eden** the natural goal while the crew slowly collects starmap fragments.
+  So the two Mush strategies should each point the crew at a different ending, and each ending should be a real answer to one of them.
+- **A hunted Mush is fun to play.** An outed Mush is forced into a rampage, and that should be a satisfying, dangerous state of play, not a loss with extra steps.
+- **Converts are fully Mush.** A converted player wins when the Mush win, gets full Mush credit on the end screen and in stats, and should want the Mush to win.
+- **Time of day is part of the game.** A Mush rampage while the crew is offline is fair. Characters marked easy should need less of their player's time than the others.
+- **The dead spectate.** A dead player never interacts or communicates with the living in any way and may leave at any time.
+- **Mistaken kills will cost something** through the mental health system (not designed yet).
+- **NERON majority rule:** NERON kills everyone the moment living Mush strictly outnumber living humans (3 of 4 triggers it, 2 of 4 doesn't). It counts as a Mush win, and cuts a long cleanup short.
+- **Inactive players** will eventually be tradable to merchant ships ([#143](https://github.com/nearbear/mush2/issues/143)), with the trade making up for the AFK penalty somehow (details open).
+- **Out-of-game coordination is against the rules**, no exceptions. It can't be fully solved; mitigations are welcome (see open questions).
 
 ## Directions chosen (owner, 2026-11-04 and 2026-11-05)
 
@@ -24,7 +45,8 @@ The numbers are placeholders to argue about; what matters is that each goal has 
 
 | Goal | Metric | Placeholder target |
 |---|---|---|
-| Fair game | Mush win rate | 40–50% |
+| Close games (primary) | Share of games where the eventual loser still had a real path to winning on the final day | High; definition to decide |
+| Fair game (secondary) | Mush win rate | 40–50%, loosely |
 | Information clock | Median day of the first confirmed Mush (cured, killed by a crew that knew, or proven by a scarce test) | Day 3–5 |
 | Stealth has a price | Share of Mush wins where the Mush took no hostile action (no spike, contaminate, sabotage, spore food or Transfer) | Near 0% |
 | No lockout | Share of games where the Mush have no useful hostile action left before day X | Under 10% |
@@ -118,6 +140,9 @@ Other scarce tests can follow the same pattern: one use, a cost, and accuracy th
 
 ## Open questions
 
+- **The sneaky PILGRED win (owner, 2026-11-05: "not a fun way to lose").** Two Mush can repair PILGRED quietly, using Phagocytosis for the AP, and don't even need the Commander on their side: they can Transfer into the Commander. The owner is not resolving this yet. Candidate fixes raised: a public, abortable countdown once PILGRED is repaired; NERON announcing progress milestones; requiring several crew to go home; or barring Phagocytosis AP from PILGRED.
+- Ways to blunt out-of-game coordination.
+- An audit of built mechanics for incidental proof of humanity (public statuses, refusals, prices, log lines that only one faction can produce).
 - The target numbers in the table, and exact definitions of "confirmed" and "hostile action".
 - Whether the Return to Sol counterweight stays once real games show how PILGRED rushes play out.
 - When the List gets built (it needs the Tabulator and the Tracker skill).
