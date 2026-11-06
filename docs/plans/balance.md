@@ -35,6 +35,8 @@ From a design Q&A on social deduction failure modes (Among Us is the cautionary 
 
 - **Food: Mush gain no AP from any consumable, no exceptions** (rations, coffee, bananas). This is already how `consume` works: a Mush's meal has no effect at all. Rations give humans **4 AP**, 5 once Sirius is contacted.
 - **Eating must not be a test.** Mush get the same full belly as humans, so they are refused food at the same point (being fixed in a separate change).
+- **Rations running out is intended (owner, 2026-11-05):** it is a late-game clock on the humans only (Mush never get hungry). Expeditions will later bring food, and plants will mostly offset it.
+- **Food is social evidence by design (owner, 2026-11-05):** someone who never takes food ought to raise suspicion, and a Mush may eat rations to blend in (for no effect, draining the crew's supply). This is soft information, not a mechanical test.
 - **Phagocytosis stays as built** (0 AP and 1 spore for +4 AP, +4 HP, as on eMushpedia). It is the Mush's food-sized AP refill, paid for in spores.
 - **Return to Sol stays as decided** (a living Mush at arrival is a Mush win). This is the counterweight to a PILGRED rush: anyone repairing PILGRED while Mush may be alive becomes kill on sight, and it is the investigators' job to make sure it isn't repaired too early. The owner isn't sure they love this mechanic but keeps it for now.
 - **The List is built as in eMush** (below).
@@ -48,7 +50,7 @@ The numbers are placeholders to argue about; what matters is that each goal has 
 | Close games (primary) | Share of games where the eventual loser still had a real path to winning on the final day | High; definition to decide |
 | Fair game (secondary) | Mush win rate | 40–50%, loosely |
 | Information clock | Median day of the first confirmed Mush (cured, killed by a crew that knew, or proven by a scarce test) | Day 3–5 |
-| Stealth has a price | Share of Mush wins where the Mush took no hostile action (no spike, contaminate, sabotage, spore food or Transfer) | Near 0% |
+| Stealth has a price | Win rate of passive Mush (no spike, contaminate, sabotage, spore food or Transfer) against active Mush | Passive Mush win clearly less often than active Mush (owner, 2026-11-05) |
 | No lockout | Share of games where the Mush have no useful hostile action left before day X | Under 10% |
 | No snowball | Mush win rate given a Mush lead at day 2 (2+ conversions) | Not above ~75% |
 | Pacing | Median game length | To decide |
@@ -140,7 +142,9 @@ Other scarce tests can follow the same pattern: one use, a cost, and accuracy th
 
 ## Open questions
 
-- **The sneaky PILGRED win (owner, 2026-11-05: "not a fun way to lose").** Two Mush can repair PILGRED quietly, using Phagocytosis for the AP, and don't even need the Commander on their side: they can Transfer into the Commander. The owner is not resolving this yet. Candidate fixes raised: a public, abortable countdown once PILGRED is repaired; NERON announcing progress milestones; requiring several crew to go home; or barring Phagocytosis AP from PILGRED.
+- **The sneaky PILGRED win (owner, 2026-11-05: "not a fun way to lose").** Two Mush can repair PILGRED quietly, using Phagocytosis for the AP, and don't even need the Commander on their side: they can Transfer into the Commander. The owner is not resolving this yet. Candidate fixes raised: a public, abortable countdown once PILGRED is repaired (the owner likes it but isn't sure how it would play, so it's parked); NERON announcing progress milestones; requiring several crew to go home. Barring Phagocytosis AP from PILGRED is dropped (owner, 2026-11-05: never; the refusal would itself prove someone Mush).
+- **Eden as a human win even with Mush alive (owner's proposal, 2026-11-05, not decided).** It would replace the current rule (Eden decided like Sol). Intent: short, explosive games end at Sol, where a crew that has lost too many people killing the Mush calls it early; slow-burn games, where quiet Mush make Sol unsafe, end at Eden, which pressures the Mush to act before it is reached and gives Eden a purpose beyond PvE. The Mush's slow-game win would be a NERON majority before arrival. Risks: if Eden is reachable with active Mush free, detection stops mattering (so Eden progress must be the Mush's main sabotage target); Sol must stay clearly faster and cheaper than Eden; an outed Mush then only needs containing. Lore not decided.
+- **Pacing (owner, 2026-11-05: not decided yet).** The direction is two game shapes: short and explosive ending at Sol, and a slow burn ending at Eden. The target may be a pair (Sol games end around day X; Eden can't be reached before day Y) rather than one median.
 - Ways to blunt out-of-game coordination.
 - An audit of built mechanics for incidental proof of humanity (public statuses, refusals, prices, log lines that only one faction can produce).
 - The target numbers in the table, and exact definitions of "confirmed" and "hostile action".
