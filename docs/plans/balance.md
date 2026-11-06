@@ -143,7 +143,16 @@ Other scarce tests can follow the same pattern: one use, a cost, and accuracy th
 ## Open questions
 
 - **The sneaky PILGRED win (owner, 2026-11-05: "not a fun way to lose").** Two Mush can repair PILGRED quietly, using Phagocytosis for the AP, and don't even need the Commander on their side: they can Transfer into the Commander. The owner is not resolving this yet. Candidate fixes raised: a public, abortable countdown once PILGRED is repaired (the owner likes it but isn't sure how it would play, so it's parked); NERON announcing progress milestones; requiring several crew to go home. Barring Phagocytosis AP from PILGRED is dropped (owner, 2026-11-05: never; the refusal would itself prove someone Mush).
-- **Eden as a human win even with Mush alive (owner's proposal, 2026-11-05, not decided).** It would replace the current rule (Eden decided like Sol). Intent: short, explosive games end at Sol, where a crew that has lost too many people killing the Mush calls it early; slow-burn games, where quiet Mush make Sol unsafe, end at Eden, which pressures the Mush to act before it is reached and gives Eden a purpose beyond PvE. The Mush's slow-game win would be a NERON majority before arrival. Risks: if Eden is reachable with active Mush free, detection stops mattering (so Eden progress must be the Mush's main sabotage target); Sol must stay clearly faster and cheaper than Eden; an outed Mush then only needs containing. Lore not decided.
+- **Eden as a human win even with Mush alive (owner's proposal, 2026-11-05, not decided).** It would replace the current rule, under which Eden is decided like Sol. The idea is two kinds of game:
+  - **Short and explosive, ending at Sol.** The Mush rampage. The crew kills them but loses many people doing it, and with too few left to reach Eden, they go home early.
+  - **Slow burn, ending at Eden.** The Mush stay quiet. Going home is too risky while they might be alive, so the crew heads for Eden instead. Since reaching Eden would be a human win, the Mush have to act before the ship gets there. Their way to win the slow game would be a NERON majority before arrival.
+
+  This also gives Eden a purpose beyond PvE. Risks:
+  - If the crew can reach Eden while active Mush roam free, finding the Mush stops mattering. So Eden progress has to be the main thing the Mush sabotage.
+  - Sol has to stay clearly faster and cheaper than Eden, or every crew just goes to Eden.
+  - An outed Mush would only need to be contained, not killed.
+
+  The lore isn't decided.
 - **Pacing (owner, 2026-11-05: not decided yet).** The direction is two game shapes: short and explosive ending at Sol, and a slow burn ending at Eden. The target may be a pair (Sol games end around day X; Eden can't be reached before day Y) rather than one median.
 - Ways to blunt out-of-game coordination.
 - An audit of built mechanics for incidental proof of humanity (public statuses, refusals, prices, log lines that only one faction can produce).
