@@ -307,7 +307,7 @@ export const ENDING_ART: Readonly<Record<Ending, string>> = {
 
 // Status effect icons (16x16 pixel art), keyed by status id (shared/src/statuses.ts).
 const statusIconFiles = urls(
-  import.meta.glob<string>("../../../Mush/www/img/icons/ui/status/{dirty,belly_full,hungry,immune,pacifist,disabled,paria,disease,hurt,sleepy,genius_idea}.png", { eager: true, query: "?url", import: "default" }),
+  import.meta.glob<string>("../../../Mush/www/img/icons/ui/status/{dirty,belly_full,hungry,immune,pacifist,guardian,disabled,paria,disease,hurt,sleepy,genius_idea}.png", { eager: true, query: "?url", import: "default" }),
 );
 const diseaseStatusIcons = Object.fromEntries(DEFAULT_CONFIG.diseases.allDiseases.map((id) => [id, statusIconFiles["disease"]!]));
 // Mankind's Only Hope has no status icon in the original (it was a skill there), so its skill icon stands in.
@@ -327,6 +327,7 @@ export const STATUS_ICONS: Readonly<Record<string, string>> = {
   wheelchair: statusIconFiles["disabled"]!,
   accommodated: statusIconFiles["disabled"]!,
   outcast: statusIconFiles["paria"]!,
+  guardian: statusIconFiles["guardian"]!,
   genius: statusIconFiles["genius_idea"]!,
   broken_nose_injury: statusIconFiles["hurt"]!,
   // The original's own inactivity icon (#145); super inactive is the same art turned red (STATUS_ICON_CLASSES).

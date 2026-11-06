@@ -105,6 +105,8 @@ export const DEFAULT_CONFIG: GameConfig = {
   punch: { cost: { ap: 1 }, effect: { damage: [1, 2], sturdyBonusDamage: 1 }, crit: { chance: 0.2, damage: [2, 3] }, successChance: 0.6, inactiveTargetSuccessChance: 0.9, dirtyChance: 0.25 },
   // Owner, 2026-10-18: Ian's Pacifist makes aggressive actions in his room cost 2 more AP, his own included.
   pacifist: { aggressiveApSurcharge: 2 },
+  // Owner, 2026-11-06: the Escape skill takes a quarter off (relative) the success chance of punches and melee weapon attacks aimed at its holder.
+  escape: { meleeSuccessFactor: 0.75 },
   // Owner, 2026-10-22 (docs/scratchpad/botany-plan.md, Pass 1): water 1 AP, treat 2, sow 2, the original's 15% dirt.
   // Bananas take 36 cycles (the original's genTreeList). Sickness odds are a placeholder. +1 oxygen per producing
   // plant per day (eMush). The Botanist gains 2 garden points a day, holds 4, spent only on a plant in the garden.
@@ -216,6 +218,8 @@ export const DEFAULT_CONFIG: GameConfig = {
   accommodate: { cost: { ap: 0 }, offerMs: 5 * 60_000 },
   plans: { expiryDays: 1, slotsPerPlan: 12, finishedKept: 1 },
   lieDown: { cost: { ap: 0 } },
+  // Owner, 2026-11-06: guarding costs 1 AP; stopping is free.
+  guard: { cost: { ap: 1 } },
   // Lethargy (owner, 2026-11-01): +1 AP a cycle from the 4th cycle change spent lying down, AP cap doubled.
   lethargy: { cyclesLying: 4, bonusAp: 1, maxApMultiplier: 2 },
   // Confirmed 2026-10-14: showering costs 2 AP, 1 less with soap in your inventory; a Mush takes 4 damage.
@@ -370,7 +374,7 @@ export const DEFAULT_CONFIG: GameConfig = {
   weapons: {
     cost: { ap: 1 },
     types: {
-      knife: { damage: [1, 5], accuracy: 0.6, expoStrength: 1, dirtyChance: 0.25, repairChance: 0.12 },
+      knife: { melee: true, damage: [1, 5], accuracy: 0.6, expoStrength: 1, dirtyChance: 0.25, repairChance: 0.12 },
       blaster: { damage: [2, 3], accuracy: 0.5, expoStrength: 1, charges: 3, dirtyChance: 0, repairChance: 0.12 },
       natamy_riffle: { damage: [2, 4], mushDamage: [6, 13], accuracy: 0.5, expoStrength: 1, charges: 3, dirtyChance: 0, repairChance: 0.12 },
       // Lizaro Jungle.

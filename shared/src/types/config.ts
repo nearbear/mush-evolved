@@ -44,6 +44,7 @@ export interface WeaponStats {
   expoStrength: number; // Strength in an expedition fight (expeditions.ts).
   charges?: number; // Charges it holds and starts with; each use spends one, and it can't be used at 0. Absent: unlimited.
   area?: { selfDamage: [min: number, max: number] }; // Hits everyone in the room instead of one target; the attacker takes `selfDamage`.
+  melee?: boolean; // Used in person, so the attack is tagged `melee` (knife).
   consumed?: boolean; // Used up by using it (grenade).
   dirtyChance: number; // Chance of getting dirty from using it.
   repairChance: number | null; // Breakable, with this repair chance; null: it can't break. Breaking and repair aren't built.
@@ -200,6 +201,9 @@ export interface GameConfig {
   };
   pacifist: {
     aggressiveApSurcharge: number; // Extra AP for each aggressive action in a Pacifist's room, theirs too (owner, 2026-10-18).
+  };
+  escape: {
+    meleeSuccessFactor: number; // Multiplies the success chance of a punch or melee weapon attack aimed at an Escape holder (owner, 2026-11-06: 0.75).
   };
   botany: {
     // Owner, 2026-10-22 (docs/scratchpad/botany-plan.md, Pass 1).
@@ -406,6 +410,7 @@ export interface GameConfig {
   // Channel plans (docs/plans/on-call.md, owner 2026-10-30). A plan posted on day N expires at the end of day
   // N + `expiryDays` if still open; at most `slotsPerPlan` slots; each channel keeps its `finishedKept` latest finished plans.
   plans: { expiryDays: number; slotsPerPlan: number; finishedKept: number };
+  guard: { cost: { ap: number } }; // AP spent to guard (owner, 2026-11-06).
   lieDown: { cost: { ap: number } }; // AP spent to lie down in a bed (confirmed 2026-10-17).
   // Skill Lethargy (owner, 2026-11-01): from the `cyclesLying`th cycle change spent lying down on, each one gives
   // `bonusAp` more AP; the AP cap is multiplied by `maxApMultiplier`.

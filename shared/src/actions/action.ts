@@ -34,9 +34,10 @@ export type ActionVisibility = "public" | "private" | "secret" | "covert";
  * Kinds of action that other rules react to, so those rules never list action types (issue 30, owner 2026-10-18).
  * - `aggressive`: an attack on someone. No effects yet; later ones include Pacifist's surcharge in its room.
  * - `spore`: a Mush ability that rings a myco alarm on the floor of the room where it resolves (mycoalarm.ts).
+ * - `melee`: a blow in person: a punch, or an attack with a melee weapon (a knife). No effects yet.
  * - `shoot`: a shot at a hunter from a turret. No effects yet; later ones include Gunner's accuracy and Gunman's pool.
  */
-export type ActionTag = "aggressive" | "spore" | "shoot";
+export type ActionTag = "aggressive" | "spore" | "shoot" | "melee";
 
 /**
  * What an action costs. `paidBy` names a skill resource (a Computer point, a care point...) that pays for it in place of
@@ -66,6 +67,10 @@ export class Action<T extends { type: string }> {
   visibility: ActionVisibility = "public";
   /** Fixed per type, like visibility, so safe for the client to show. */
   tags: readonly ActionTag[] = [];
+  /** The tags of this one action: `tags`, plus any that depend on what it names (an attack with a knife is melee). */
+  tagsFor(_state: Readonly<GameState>, _action: T): readonly ActionTag[] {
+    return this.tags;
+  }
   /** Takes `config.action.durationMs` and waits its turn in the queue (queue.ts). False only for only a few actions. */
   timed: boolean = true;
   /** Kept in the actor's action history (history.ts), which Interrogate and Chitchat reveal. False for the few eMush leaves out, and for moving. */
@@ -116,7 +121,7 @@ export class Action<T extends { type: string }> {
   /** What modifiers see of this action (modifiers.ts). */
   private context(state: Readonly<GameState>, player: Readonly<PlayerState>, target: T): CostContext {
     // Every T is a member of the Action union; share.ts and transfer.ts are generic over the type name, so TS can't see it.
-    return { state, actor: player, action: target as unknown as AnyAction, tags: this.tags };
+    return { state, actor: player, action: target as unknown as AnyAction, tags: this.tagsFor(state, target) };
   }
 
   /** How far modifiers move the price from `getCost` (can be negative). Queued actions compare it (queue.ts). */

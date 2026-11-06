@@ -7,6 +7,7 @@
 // stand at `behind`, the cell the client puts you in behind them (it draws you following their trail there).
 
 import type { ActionDef } from "./actions.ts";
+import { removeStatus } from "./statuses.ts";
 import { clone, fail, findPlayer, type ActionResult } from "./helpers.ts";
 import type { Action, GameState, PlayerId, PlayerState, RoomId, Spot } from "./types.ts";
 
@@ -49,4 +50,6 @@ export function standUp(p: PlayerState, action: Pick<ActionDef<Action>, "visibil
 /** You came into your room through the door from `from`: you stand in front of it until you walk off. Mutates a cloned state. */
 export function arrive(p: PlayerState, from: RoomId): void {
   p.spot = { door: from } satisfies Spot;
+  p.enteredFrom = from;
+  removeStatus(p, "guardian"); // changing room ends guarding (guard.ts)
 }

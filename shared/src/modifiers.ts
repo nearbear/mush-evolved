@@ -40,6 +40,7 @@ import { projectDone } from "./projects.ts";
 import { lying_down } from "./modifiers/lying_down.ts";
 import { mankind_only_hope } from "./modifiers/mankind_only_hope.ts";
 import { medic } from "./modifiers/medic.ts";
+import { escape } from "./modifiers/escape.ts";
 import { pacifist } from "./modifiers/pacifist.ts";
 import { wheelchair } from "./modifiers/wheelchair.ts";
 import { sturdy } from "./modifiers/sturdy.ts";
@@ -95,6 +96,11 @@ export interface Modifier extends Partial<FoldHooks> {
   actionCost?: (cost: ActionCost, ctx: CostContext) => ActionCost;
   /** Adjusts what one of the holder's own actions success rates. Must be pure. */
   actionSucessRate?: (successRate: number, ctx: CostContext) => number;
+  /**
+   * Adjusts the success rate of an action aimed at the holder (Escape), after the actor's own hooks. `ctx.actor` is the
+   * one acting; the hook sees only actions whose `target` names the holder. Must be pure.
+   */
+  targetedSuccessRate?: (successRate: number, ctx: CostContext & { holder: Readonly<PlayerState> }) => number;
   /** Adjusts what one of the holder's own actions injury rates. Must be pure. */
   actionInjuryRate?: (cost: number, ctx: CostContext) => number;
   /** Adjusts what one of the holder's own actions dirtiness chance. Must be pure. */
@@ -140,7 +146,7 @@ export interface Modifier extends Partial<FoldHooks> {
 export type ModifierRegistry = Readonly<Record<string, Modifier>>;
 
 /** Items and skills will register here too. When a skill gains rules, update its entry in SKILL_STATUS (skills.ts). */
-export const MODIFIERS: Record<string, Modifier> = { lying_down, medic, first_aid, sturdy, creative, expert, antic_perfume, logistics, caffeinomaniac, cold_disease, extreme_tinnitus_disease, fungal_infection_disease, broken_nose_injury, computer, designer, sprint, physicist, botanic, pacifist, immunity, mankind_only_hope, wheelchair, pilot, engineer, gunman, gunner, persistent, polymath, space_tactics, paranoid, green_thumb, astrophysician, lethargy };
+export const MODIFIERS: Record<string, Modifier> = { lying_down, medic, first_aid, sturdy, creative, expert, antic_perfume, logistics, caffeinomaniac, cold_disease, extreme_tinnitus_disease, fungal_infection_disease, broken_nose_injury, computer, designer, sprint, physicist, botanic, pacifist, immunity, mankind_only_hope, wheelchair, pilot, engineer, gunman, gunner, persistent, polymath, space_tactics, paranoid, green_thumb, astrophysician, lethargy, escape };
 
 /** The ids every hook folds over: the player's skills (book slot last), then their other modifiers. */
 export function modifierIds(player: Readonly<PlayerState>): string[] {
@@ -206,6 +212,15 @@ export function actionSuccessRate(base: number, ctx: CostContext, registry: Modi
   for (const id of modifierIds(ctx.actor)) {
     const hook = registry[id]?.actionSucessRate;
     if (hook) chance = hook(chance, ctx);
+  }
+  // Whoever the action is aimed at gets a say too (Escape).
+  const aimed = (ctx.action as { target?: unknown }).target;
+  const holder = typeof aimed === "string" ? ctx.state.players.find((o) => o.id === aimed) : undefined;
+  if (holder) {
+    for (const id of modifierIds(holder)) {
+      const hook = registry[id]?.targetedSuccessRate;
+      if (hook) chance = hook(chance, { ...ctx, holder });
+    }
   }
   // Carrying the oscilloscope multiplies the odds of the repairing actions (owner, 2026-10-28). Once however many are carried.
   if ((ctx.action.type === "repair_hull" || ctx.action.type === "renovate") && ctx.state.items.some((i) => i.type === "oscilloscope" && i.at.kind === "player" && i.at.id === ctx.actor.id)) {

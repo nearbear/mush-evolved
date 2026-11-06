@@ -195,6 +195,8 @@ export const SKILL_STATUS: Readonly<Partial<Record<SkillId | MushSkillId, SkillS
   engineer: "partial",
   creative: "full",
   lethargy: "full",
+  // Only the lower melee odds against its holder; its other listed effects are not built.
+  escape: "partial",
   antic_perfume: "full",
   logistics: "full",
   caffeinomaniac: "full",

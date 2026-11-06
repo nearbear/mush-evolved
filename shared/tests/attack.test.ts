@@ -190,6 +190,13 @@ describe("attack rules", () => {
     expect(ACTIONS.attack.tags).toEqual(["aggressive"]);
   });
 
+  it("is melee with a knife, and only then; a punch is melee too", () => {
+    const tagsOf = (weapon: string) => option(ship(weapon), "p0", (a) => a.type === "attack").tags;
+    expect(tagsOf("knife")).toEqual(["aggressive", "melee"]);
+    expect(tagsOf("blaster")).toEqual(["aggressive"]);
+    expect(ACTIONS.punch.tags).toEqual(["aggressive", "melee"]);
+  });
+
   it("the knife may make you dirty; guns don't", () => {
     const dirtyAfter = (weapon: string) => {
       let n = 0;
