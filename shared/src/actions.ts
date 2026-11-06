@@ -75,6 +75,7 @@ import { ChitchatAction } from "./actions/chitchat.ts";
 import { ComfortAction } from "./actions/comfort.ts";
 import { AttackAction } from "./actions/attack.ts";
 import { ShareAction } from "./actions/share.ts";
+import { GuardAction, StopGuardingAction } from "./actions/guard.ts";
 import { GetUpAction, LieDownAction } from "./actions/lie_down.ts";
 import { ShowerAction } from "./actions/shower.ts";
 import { SpikeAction } from "./actions/spike.ts";
@@ -98,6 +99,8 @@ export interface ActionDef<A extends Action> {
   readonly visibility: ActionVisibility;
   /** What kind of action it is, for rules that react to kinds (see `ActionTag`); the same for every candidate of a type. */
   readonly tags: readonly ActionTag[];
+  /** `tags` plus those that depend on the action itself (a knife attack is melee). Use this for a given action. */
+  tagsFor(state: Readonly<GameState>, action: A): readonly ActionTag[];
   /** Whether it takes time and goes through the queue (queue.ts), or happens at once. */
   readonly timed: boolean;
   /** Whether it goes in the actor's action history (history.ts). */
@@ -195,6 +198,8 @@ const REGISTRY = {
   body_transfer: new BodyTransferAction(),
   lie_down: new LieDownAction(),
   get_up: new GetUpAction(),
+  guard: new GuardAction(),
+  stop_guarding: new StopGuardingAction(),
   accommodate: new AccommodateAction(),
   accept_accommodation: new AcceptAccommodationAction(),
   stop_accommodation: new StopAccommodationAction(),

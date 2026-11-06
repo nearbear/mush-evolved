@@ -64,7 +64,9 @@ export function randomInput(state: GameState, rng: RngState, at: number): [Input
     [pick, rng] = nextInt(rng, 5);
     if (pick === 0) return [{ type: "inactivate", player: by }, rng];
   }
-  const actions = legalActions(state, by);
+  // Not "guard": a guardian pins everyone else to the door they came in by, so random play would keep the crew in a few
+  // rooms (guard.test.ts covers it, and a guard step isn't special to the replay).
+  const actions = legalActions(state, by).filter((a) => a.type !== "guard");
   // Lean on "ready" so cycles (and days) actually pass; now and then the clock passes a cycle boundary too.
   if (actions.length === 0 || pick === 5) {
     [pick, rng] = nextInt(rng, 20);

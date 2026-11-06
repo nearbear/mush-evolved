@@ -109,6 +109,8 @@ describe("actions from a client", () => {
     body_transfer: [{ type: "body_transfer", target: "p1" }],
     lie_down: [{ type: "lie_down", equipment: "e1" }],
     get_up: [{ type: "get_up" }],
+    guard: [{ type: "guard" }],
+    stop_guarding: [{ type: "stop_guarding" }],
     accommodate: [{ type: "accommodate", target: "p1" }],
     accept_accommodation: [{ type: "accept_accommodation", target: "p1" }],
     stop_accommodation: [{ type: "stop_accommodation", target: "p1" }],

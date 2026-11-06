@@ -7,6 +7,7 @@ import { isTraveling } from "../navigation.ts";
 import { cleanManoeuvreChance } from "../modifiers.ts";
 import { canFly, dockedHere, interfaceId, PATROL_SHIPS, type PatrolShip } from "../patrol.ts";
 import { roll, rollFloat } from "../rng.ts";
+import { removeStatus } from "../statuses.ts";
 import type { GameState, PlayerState, RoomId } from "../types.ts";
 
 export type TakeoffActionData = { type: "takeoff"; equipment: string };
@@ -57,6 +58,8 @@ export class TakeoffAction extends Action<TakeoffActionData> {
 export function board(player: PlayerState, room: RoomId): void {
   player.room = room;
   delete player.spot;
+  delete player.enteredFrom;
+  removeStatus(player, "guardian"); // changing room ends guarding (guard.ts)
 }
 
 /**

@@ -74,6 +74,8 @@ const ACTION_NAME_KEYS = {
   fungal_cuisine: "actions.fungalCuisine",
   lie_down: "actions.lieDown",
   get_up: "actions.getUp",
+  guard: "actions.guard",
+  stop_guarding: "actions.stopGuarding",
   accommodate: "actions.accommodate",
   accept_accommodation: "actions.acceptAccommodation",
   stop_accommodation: "actions.stopAccommodation",
