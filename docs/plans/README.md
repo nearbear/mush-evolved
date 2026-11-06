@@ -14,4 +14,5 @@ Feature designs, one per file. Each plan's own header is the authority on its st
 | `expedition.md` | Expeditions | Phase 1 decided 2026-10-31; not built |
 | `bot-goals.md` | Single-player bot goals and model-only coordination in chat | First pass accepted 2026-10-25, coordination revised 2026-11-01; not built |
 | `inventory-notes.md` | Shared manual item notes for the whole crew | Draft 2026-11-01; not decided, not built |
+| `balance.md` | Balance goals, targets, AP economy and tuning method | Draft 2026-11-04; not decided |
 | `action-plans.md` | Scheduled action plans (#44) | Superseded 2026-10-30 by `relay-tokens.md` and `on-call.md`; kept for history |

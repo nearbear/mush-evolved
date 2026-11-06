@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { actionVisibility } from "../src/actions.ts";
 import { applyXyloph, advanceNeron, drawXyloph, GENOME_DISK_ITEM, MUSH_SAMPLE_ITEM, REBEL_BASES, rollRebelGain, solChance, XYLOPH_ENTRIES, XYLOPH_IDS } from "../src/comms.ts";
 import { DEFAULT_CONFIG } from "../src/config.ts";
+import { ITEM_TYPES } from "../src/items.ts";
 import { PROJECT_COMPLETE, PROJECT_IDS } from "../src/projects.ts";
 import { parseGameMessage } from "../src/protocol.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";
@@ -183,7 +184,7 @@ describe("communication center", () => {
       const s = reach(ship(true), "SIRIUS");
       s.items.push({ id: "ration", type: "cooked_ration", at: { kind: "player", id: "p1" } });
       player(s, "p1").ap = 3;
-      expect(player(must(applyAction(s, "p1", { type: "consume", item: "ration" })), "p1").ap).toBe(3 + cfg.rebel.siriusRationAp);
+      expect(player(must(applyAction(s, "p1", { type: "consume", item: "ration" })), "p1").ap).toBe(3 + ITEM_TYPES.cooked_ration!.consume!.ap + cfg.rebel.siriusRationAp);
     });
 
     it("Luyten-Ceti opens global chat without an iTrackie", () => {

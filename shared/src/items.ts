@@ -89,11 +89,11 @@ export const ITEM_TYPES: Record<string, ItemType> = {
   medikit: {},
   // Confirmed 2026-10-13: +2 AP. Satiety +1 is a placeholder (2026-10-14).
   coffee: { consume: { ap: 2, satiety: 1 } },
-  // PLACEHOLDER food (2026-10-14): +4 satiety, no AP.
+  // Owner, 2026-11-05 (eMushpedia "Ration standard"): +4 AP and +4 satiety, cooked or not; Sirius adds 1 AP (comms.ts).
   // Confirmed 2026-10-16: cook it in the refectory for 1 AP.
   // Owner, 2026-10-19: edible raw, like a cooked one but for 1 morale.
-  uncooked_ration: { cook: { into: "cooked_ration" }, consume: { ap: 0, satiety: 4, morale: -1 } },
-  cooked_ration: { consume: { ap: 0, satiety: 4 } },
+  uncooked_ration: { cook: { into: "cooked_ration" }, consume: { ap: 4, satiety: 4, morale: -1 } },
+  cooked_ration: { consume: { ap: 4, satiety: 4 } },
   camera: { canDrop: false, dismantle: { metal: 1, plastic: 0 }  },
   // Showering with soap in your inventory costs 1 less AP (confirmed 2026-10-14). Reusable.
   soap: {},
