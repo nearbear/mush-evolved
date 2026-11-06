@@ -2285,13 +2285,6 @@ Same day, owner then asked for a 4-cycle cooldown on `spike` instead: added `spi
 ## 2026-11-04: FOOD_RETAILER creates the tubes
 - Owner: completing FOOD_RETAILER creates an output tube and two input tubes. Asked where; recommended the refectory and garden (from the ship art), owner chose the Nexus for all three ("nexus" meant `NEXUS_ROOM`, the NERON core's room). Spawn list is config (`project.foodRetailer`), applied in `onProjectCompleted`. Test gotcha: `setProgress` seeds a relay pool that a later lower value does not clear, so the "not complete" test needs a fresh game.
 
-## 2026-11-04: Expeditions, phase 1 built (#319)
-
-- **Decision (owner, 2026-10-31):** the phase 1 rules in `docs/plans/expedition.md`; built as planned with Claude's readings recorded there (no takeoff while leaving orbit; grenades used one at a time while the crew is weaker, as eMush's Fight, found with the clean-room `npm run emush -- spec`; fight damage point by point, Survival once per member's total; exploring stops when the whole crew is dead; reports to living members only).
-- **Built:** `shared/src/expeditions.ts`, `actions/icarus_takeoff.ts`, `config.expedition` (event tables tunable), `explo` weights on `PLANET_TAGS`, `GameState.expeditions` (STATE_VERSION 107), `PlayerView.expeditions`, `ExpeditionReportDialog.tsx` opened from each member's private return line; en/fr/es strings (fr/es drafts).
-- **What worked:** the plan had every rule answered, so no questions were needed; the upstream spec settled the grenade and damage-split details instead of guessing. The leak-check fork flagged three design-level side channels (fight strength hints at crewmates' weapons, per-member HP loss bounds their HP, report ids count expeditions ship-wide), left to the owner.
-- **Needed correction:** first test draft asserted specific refusal codes, but `applyAction` returns `illegal_action` for any action not among the candidates; loot item types moved into the report so the client doesn't hard-code `super_map`.
-
 ### 2026-11-04: Client-side routing with React Router (step 2: routes)
 
 - Diagnosis: every internal link was a plain `<a href>` and `main.tsx` picked the page from `location.pathname` once at startup, so each navigation reloaded the page. The Worker already had SPA fallback (`not_found_handling`), so the fix is client-only.
@@ -2299,6 +2292,27 @@ Same day, owner then asked for a 4-cycle cooldown on `spike` instead: added `spi
 - `main.tsx` now uses `BrowserRouter` + `Routes`: `/games` (lazy), dev-only `/editor` and `/design-kit-mush2` (lazy behind `import.meta.env.DEV`, confirmed absent from the production build), `*` for the lobby/game. `ToastProvider` moved up to wrap every route. Links (`<Link>`) come in later steps; the lobby's links wait for a parallel session's lobby work.
 - Step 3 (links outside the lobby): `GamesPage`'s back link is a `<Link to="/">`; `ShipCard`'s `href` prop became `to` and renders a `<Link>` (its only user is the dev design kit). Plain `<a>` stays for `/design-kit.html` (a separate Vite page) and in-page `#` anchors. Lobby links still wait for the parallel lobby session.
 - Step 4 (lobby links): the lobby's "games" link and the dev `/editor` and `/design-kit-mush2` links are `<Link>`s; `/design-kit.html` stays a plain `<a>`. Checked that the lazily loaded pages' CSS (which now stays in the document after navigating back) has no unscoped selectors that could restyle the lobby or game.
+
+## 2026-11-04: Expeditions, phase 1 built (#319)
+
+- **Decision (owner, 2026-10-31):** the phase 1 rules in `docs/plans/expedition.md`; built as planned with Claude's readings recorded there (no takeoff while leaving orbit; grenades used one at a time while the crew is weaker, as eMush's Fight, found with the clean-room `npm run emush -- spec`; fight damage point by point, Survival once per member's total; exploring stops when the whole crew is dead; reports to living members only).
+- **Built:** `shared/src/expeditions.ts`, `actions/icarus_takeoff.ts`, `config.expedition` (event tables tunable), `explo` weights on `PLANET_TAGS`, `GameState.expeditions` (STATE_VERSION 107), `PlayerView.expeditions`, `ExpeditionReportDialog.tsx` opened from each member's private return line; en/fr/es strings (fr/es drafts).
+- **What worked:** the plan had every rule answered, so no questions were needed; the upstream spec settled the grenade and damage-split details instead of guessing. The leak-check fork flagged three design-level side channels (fight strength hints at crewmates' weapons, per-member HP loss bounds their HP, report ids count expeditions ship-wide), left to the owner.
+- **Needed correction:** first test draft asserted specific refusal codes, but `applyAction` returns `illegal_action` for any action not among the candidates; loot item types moved into the report so the client doesn't hard-code `super_map`.
+
+## 2026-11-04: Chat pagination plan (#355)
+
+- Asked for a plan to paginate every channel and thread. The AI checked the premise first: chat was already capped at 200 per channel (`CHAT_HISTORY`), so the real problems were lost history and an uncapped number of threads, which together made total chat grow without limit. That corrected #338, which assumed chat was bounded.
+- Proposed fixed per-channel pages with an outbox the server drains to storage, so the rules stay pure. The owner chose 50 per page, dropped the 200 trim, and kept checkboxes editable and threads startable from any message. Those last two make full pages editable, and the issue leaves that part of the design open.
+- Recorded in `rules-design.md` (committed on its own), filed as #355, and commented on #338.
+
+## 2026-11-04: Balance doc (`docs/plans/balance.md`)
+
+Asked how to approach balance (Mush AP snowball, research rushes locking Mush out, stealth that costs something, no mechanical tests). Claude read the config and implemented rules before answering and found things the owner hadn't flagged: rations give 0 AP (placeholder), Mush have no full belly and keep all food AP (the opposite of eMush), Phagocytosis nets +3 AP per spore (up to +12 a day), and a living Mush at Return to Sol wins, so a fully passive Mush wins today. It wrote a draft doc with target metrics, a feedback-loop map, levers and a sim/telemetry method, then asked four questions. Owner chose: keep the Sol rule and pace detection around it; food gives Mush no AP but eating looks the same (pretend full belly); retune Phagocytosis with it; the original's LA Liste (8 names shrinking by one a day) as the model for scarce tests. Recorded in `rules-design.md`. What worked: grounding advice in actual config numbers. Needed care: the clean-room `emush spec` tool found nothing for a free-text query; the wiki answered the food question instead.
+
+## 2026-11-04: Glory epic (#354)
+
+Wrote the glory epic from three sources: the original's `glory_event` sheet (85 rows in use, with research categories in `research.json`), upstream eMush's Triumph module through the clean-room `npm run emush` (late-Mush formula, inactive humans, diminishing returns), and eMushpedia, which has no glory page, so the numbers had to be collected from the pages for each source. What worked: the derived JSON gave the whole table in one query. What needed correction: the first draft miscounted the live rows (it included rows after `$EOF`) and called "diminishing returns" an open question without saying what it was; the owner asked, and upstream showed it applies to only three character rows. Owner decisions recorded in rules-design: the English name is "glory", it is cosmetic only, a player sees their own glory in game, and single player gives none.
 
 ### 2026-11-04: Client-side routing, the game at `/play`
 
@@ -2318,10 +2332,6 @@ Owner asked that every action with a chance to fail get a failure streak, handle
 
 ## 2026-11-05: Mush full belly, no overhead icon
 Asked the owner how a Mush reaches full belly (they have no satiety); answer: same satiety as humans. Mush fake meals now add satiety (no other effects), satiety decays for them too, and `isFullBelly` applies to any role. Full belly is excluded from `overheadStatuses`. Updated the old "Mush get no satiety" test. Nothing needed correcting.
-
-## 2026-11-04: Balance doc (`docs/plans/balance.md`)
-
-Asked how to approach balance (Mush AP snowball, research rushes locking Mush out, stealth that costs something, no mechanical tests). Claude read the config and implemented rules before answering and found things the owner hadn't flagged: rations give 0 AP (placeholder), Mush have no full belly and keep all food AP (the opposite of eMush), Phagocytosis nets +3 AP per spore (up to +12 a day), and a living Mush at Return to Sol wins, so a fully passive Mush wins today. It wrote a draft doc with target metrics, a feedback-loop map, levers and a sim/telemetry method, then asked four questions. Owner chose: keep the Sol rule and pace detection around it; food gives Mush no AP but eating looks the same (pretend full belly); retune Phagocytosis with it; the original's LA Liste (8 names shrinking by one a day) as the model for scarce tests. Recorded in `rules-design.md`. What worked: grounding advice in actual config numbers. Needed care: the clean-room `emush spec` tool found nothing for a free-text query; the wiki answered the food question instead.
 
 ## 2026-11-05: Balance doc corrected; rations give 4 AP
 
