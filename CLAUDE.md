@@ -39,7 +39,7 @@ These are non-negotiable unless I say otherwise.
 2. **Rules are pure code.** Game rules live in the shared package as deterministic, side-effect-free TypeScript (seeded RNG, no I/O, no network), with unit tests. The rules must run headless.
 3. **Thin view layer.** Components render a `PlayerView` and emit player intents; no game logic in components, and the renderer must stay swappable. Details in `web/CLAUDE.md`.
 4. **Matchmaker is a separate coordinator.** Game rooms don't know about each other. One matchmaker room per language boards each joiner onto that language's open ship, which is in pre-selection (`shared/src/preselection.ts`), and launches a new one when needed. Multiplayer has no bots.
-5. **Bots sit behind one interface**, roughly `decideAction(view): Promise<Action>`:
+5. **Bots sit behind one interface**, `Bot` in `server/src/bots.ts` (details in the `bot` skill):
    - A bot only ever receives the view its own seat would legitimately have.
    - Bots are clearly labeled as AI to players. Deliberate response delay is fine and is a pacing choice.
    - Model calls happen server-side only. Credentials come from env/config (a dev key only; there is no hosted default), or in single player from the player's own key (BYOK, #216): sent over the game socket, held only in memory while that player is connected, never in game state, the record, a view or a log, and only for a provider on the server's allowlist (no client-supplied URLs). Start with a hosted, token-billed API (not Claude, since this is just the in-game AI); keep the interface compatible so I can later swap to a self-hosted model on NVIDIA Triton for learning.

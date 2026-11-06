@@ -211,6 +211,7 @@ Suspicion, accusations and other social goals are left for later; they need thei
 
 - Which language the ship uses, and so which language bots write in: #95.
 - The chat window: how many messages, and how far back, go in the prompt. Start small and measure with `npm run model-trial` (#224).
+- **Memory lost on a restart needs addressing** (found 2026-11-05). `BotMemory` lives only in the bot object, so a deploy or any room restart wipes it, and a Shrink bot forgets it already announced itself, so it says so in global chat again after every restart. The Shrinks it had seen, the goals done today (`shrinkDorm`, `astro`, `tendPlants` once a day) and the rooms visited are lost too, so daily goals may repeat. The fix needs a choice: rebuild what can be rebuilt from the bot's own view (its own past chat shows whether it announced), or keep bot memory in room storage, outside game state and the record.
 
 ## Build order
 
