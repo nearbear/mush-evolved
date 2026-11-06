@@ -84,7 +84,6 @@ export function revealFor(full: Readonly<FullView>, followSeat: PlayerId, stream
   const own = perspective(full, followSeat);
   const body = full.players.find((p) => p.mind === followSeat)!;
   const shown = new Set(own.log.map((e) => e.id));
-  // visibleTo holds body ids today (a Transfer readdresses them, mind.ts); #281 makes it the seat.
   const log = streams.log.filter(
     (e) => shown.has(e.id) || (e.room !== undefined && e.room === body.room) || (e.visibleTo !== "all" && e.visibleTo.includes(body.id)) || (e.room === undefined && e.visibleTo === "all"),
   );

@@ -546,9 +546,10 @@ export function seatViewFor(state: GameState, playerId: PlayerId): SeatView {
     roomOnFire: you.alive && isOnFire(state, you.room),
     burningRooms: you.alive && projectDone(state, "FIRE_SENSOR") ? [...state.fires] : [],
     // The dead keep only ship-wide entries (cycles, days); every room entry, their own private ones included, goes.
-    log: state.log.filter((e) =>
-      !you.alive ? e.room === undefined && e.visibleTo === "all" : e.visibleTo === "all" ? e.room === undefined || e.room === you.room : e.visibleTo.includes(playerId),
-    ),
+    // A private line names only you in the view: no one learns who else saw it (`level` marks a leaked secret line).
+    log: state.log
+      .filter((e) => (!you.alive ? e.room === undefined && e.visibleTo === "all" : e.visibleTo === "all" ? e.room === undefined || e.room === you.room : e.visibleTo.includes(playerId)))
+      .map((e) => (e.visibleTo === "all" ? e : { ...e, visibleTo: [you.id] })),
     chat: state.chat.filter((m) => channels.includes(m.channel)).map(messageView),
     chatChannels: chatChannels(state, you),
     readChannels: channels,

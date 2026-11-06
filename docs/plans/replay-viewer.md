@@ -20,7 +20,7 @@
 
 ## Prerequisites (not in these stories)
 
-The history the replay reads is the full view, so it inherits how the state keeps log and chat. Today the state deletes old chat (200 per channel) and rewrites past `visibleTo` on a Transfer; neither is append-only. These land first, or the stories below have to follow them later:
+The history the replay reads is the full view, so it inherits how the state keeps log and chat. Today the state deletes old chat (200 per channel), so it isn't append-only. (A Transfer no longer rewrites past `visibleTo`: private lines stay with the body since #281 step 1.) These land first, or the stories below have to follow them later:
 
 - **Log entry ids** (built 2026-11-05, with #367): `LogEntry.id`, increasing per game like `ChatMessage.id` (`GameState.nextLogId`, written only by `pushLog` in `log.ts`). Once the log is windowed or trimmed, positions and lengths stop identifying entries (`web/src/announce.ts:164` has the same problem live). Every replay lookup below keys log lines and messages by id. Live views never carry log ids (owner, 2026-11-05): the counter is per game, so a gap would show a witness that a hidden line was written, such as a conversion. `viewFor` strips them; `seatViewFor` and `perspective` keep them as a `SeatView`, which only the replay uses (Biome forbids both in `server/src`). Chat ids have the same flaw, fixed under #355 with a per-channel `seq`.
 - **Private lines addressed by seat** (#281 step 1): `mind.ts` stops rewriting old entries on a Transfer, so the log only grows at the end.

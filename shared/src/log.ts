@@ -8,6 +8,8 @@
 //            was in the room; otherwise only the actor sees it.
 // A camera is `CAMERA` room equipment, put there by `install` (#35). A `camera`
 // item, lying in a room or carried, is not a camera yet.
+// A private list names bodies, which never change, so a private line stays with
+// the body across a Transfer (owner, 2026-11-05, #281) and the log only grows.
 
 import type { ActionVisibility } from "./actions/action.ts";
 import { CAMERA_EQUIPMENT } from "./equipment.ts";

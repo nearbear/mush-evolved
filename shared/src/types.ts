@@ -27,7 +27,8 @@ export interface Seat {
 /**
  * One line of history. `room` is where it happened (absent = ship-wide, e.g. a
  * new cycle). `visibleTo: "all"` entries are part of that room's history and
- * shown to whoever is in the room; a player list is private to those players.
+ * shown to whoever is in the room; a player list is private to those players,
+ * named by body id, so it stays with the body across a Transfer. A view names only its viewer.
  */
 export interface LogEntry {
   /** Increasing per game, like `ChatMessage.id`; never reused. Identifies a line once the log is windowed or trimmed. */
