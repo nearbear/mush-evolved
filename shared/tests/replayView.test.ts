@@ -127,7 +127,7 @@ describe("pruned log lines (#365)", () => {
     let streams = streamsOf(long.launch);
     for (const chunk of long.chunks) for (const { view } of rebuildHistory(chunk.entries.map((e) => e.history))) streams = mergeStreams(streams, view);
     expect(streams.log.map((e) => e.id)).toEqual(Array.from({ length: written }, (_, i) => i + 1));
-  });
+  }, 30_000); // records a 4000-step game; a loaded CI runner needs more than the 5s default
 });
 
 describe("lineStep", () => {
