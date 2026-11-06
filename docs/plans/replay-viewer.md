@@ -20,11 +20,11 @@
 
 ## Prerequisites (not in these stories)
 
-The history the replay reads is the full view, so it inherits how the state keeps log and chat. Today the state deletes old chat (200 per channel) and rewrites past `visibleTo` on a Transfer; neither is append-only. These land first, or the stories below have to follow them later:
+The history the replay reads is the full view, so it inherits how the state keeps log and chat. Today the state deletes old chat (200 per channel), so it isn't append-only. (A Transfer no longer rewrites past `visibleTo`: private lines stay with the body since #281 step 1.) These land first, or the stories below have to follow them later:
 
-- **Log entry ids:** `LogEntry.id`, increasing per game like `ChatMessage.id`. Once the log is windowed or trimmed, positions and lengths stop identifying entries (`web/src/announce.ts:164` has the same problem live). Every replay lookup below keys log lines and messages by id.
+- **Log entry ids** (built 2026-11-05, with #367): `LogEntry.id`, increasing per game like `ChatMessage.id` (`GameState.nextLogId`, written only by `pushLog` in `log.ts`). Once the log is windowed or trimmed, positions and lengths stop identifying entries (live, `web/src/announce.ts` now uses `PlayerView.logSeen` instead, #365). Every replay lookup below keys log lines and messages by id. Live views never carry log ids (owner, 2026-11-05): the counter is per game, so a gap would show a witness that a hidden line was written, such as a conversion. `viewFor` strips them; `seatViewFor` and `perspective` keep them as a `SeatView`, which only the replay uses (Biome forbids both in `server/src`). Chat ids have the same flaw, fixed under #355 with a per-channel `seq`.
 - **Private lines addressed by seat** (#281 step 1): `mind.ts` stops rewriting old entries on a Transfer, so the log only grows at the end.
-- **The room-log window** (#365): `viewFor` filters to 8 or 16 cycles. Proposed: the rules also drop room lines older than the longest window any rule needs (16 cycles; ship-wide lines are never windowed, so they stay), so the live state, snapshot and per-cycle full copies stop growing with the game (most of #338 for the log). The record keeps every entry, so nothing is lost to replays.
+- **The room-log window** (#365, built 2026-11-05): `viewFor` filters to 8 or 16 cycles (`config.logWindow`). The rules also drop room lines older than the longest window any rule needs (16 cycles; ship-wide lines are never windowed, so they stay), so the live state, snapshot and per-cycle full copies stop growing with the game (most of #338 for the log). The record keeps every entry, so nothing is lost to replays.
 - **Chat pages** (#355): sealed pages leave `GameState.chat`, which, like the log trim, shows up in the history as removals.
 
 So in the history, entries leave the front of both lists while new ones append at the end. The replay treats log and chat as **streams**: an entry is new at the step whose change appends it, and all-seeing collects every entry seen from chunk 0 up to the step, by id.
@@ -33,7 +33,7 @@ So in the history, entries leave the front of both lists while new ones append a
 
 The order is the build order. Stories 1 and 2 don't depend on each other. Story 3 needs nothing but the existing API (story 2 adds only its summary call). Story 4 needs 1 and 3. Stories 5 and 6 need 4.
 
-### 1. (#367) Replay helpers in shared (pure, tested). Size M. Label `leak-risk`.
+### 1. (#367) Replay helpers in shared (pure, tested). Size M. Label `leak-risk`. **Built 2026-11-05** (`shared/src/replayView.ts`).
 
 The logic the page needs, kept out of components (architecture rule 3).
 
@@ -46,6 +46,7 @@ The logic the page needs, kept out of components (architecture rule 3).
 - **`seatsAt(full, index)`**: each seat (a mind) with the character it is in at that frame, its starting character, and whether a Transfer moved it. The perspective switcher reads it.
 - **Tests:** `revealFor(...).view` contains `perspective` (the extra lines are the only difference); a hidden line from another room is not added; `stepMarks` on a recorded random game (the `#335` measurement harness: 2,090 inputs, 14 cycles), with no mark for an empty step; a Transfer across a frame in `seatsAt`.
 - **Leak-check:** this module shows every hidden thing by design. The check is that only the replay page reaches it, and that `revealFor` runs only on data the server already serves as public (`fullView.ts` header).
+- **As built:** `revealFor` takes the streams as an optional third argument (`mergeStreams` over the frames so far; without it, what the full view still holds). `Reveal.seats` is by body id and holds each body's own `you`, statuses and inventory (as its player saw them, for story 5 to reuse the self panels) plus contamination. `seenBy` is filled only for non-public lines and for messages in private channels (members at the frame) and the Mush channel. `stepMarks` takes the chunk before's last view as an optional `before`; without it, a chunk's first step (a cycle's full copy) counts everything of its new cycle as added, which gives the same marks. Kind priority: death, conversion, fire (a fire starting or going out: `ignited`, `fireStarted`, `fireExtinguished`, `extinguishFailed`; not `fireBurns`, which is written every cycle a fire burns with people present, owner 2026-11-05), cycle, chat (a player's message), other (order confirmed by the owner, 2026-11-05). `lineStep` takes the chunk's `firstInput` and returns record positions, `-1` for a line the launch state holds. `seatsAt(full, index)` takes the index's seats for order and starting character.
 
 ### 2. (#368) One game's summary: `GET /api/games/<id>`. Size S. Label `leak-risk`.
 

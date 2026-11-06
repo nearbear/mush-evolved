@@ -8,20 +8,73 @@
 //            was in the room; otherwise only the actor sees it.
 // A camera is `CAMERA` room equipment, put there by `install` (#35). A `camera`
 // item, lying in a room or carried, is not a camera yet.
+// A private list names bodies, which never change, so a private line stays with
+// the body across a Transfer (owner, 2026-11-05, #281) and the log only grows.
 
 import type { ActionVisibility } from "./actions/action.ts";
 import { CAMERA_EQUIPMENT } from "./equipment.ts";
+import { hasSkill } from "./skills.ts";
 import type { GameState, LogEntry, LogParams, PlayerId, PlayerState, RoomId } from "./types.ts";
+
+/** Appends `entry` with the next id and the current cycle. Every log line goes through here. Mutates a state the caller already cloned. */
+export function pushLog(state: GameState, entry: Omit<LogEntry, "id" | "cycle">): void {
+  const line: LogEntry = { id: state.nextLogId++, cycle: state.cycle, ...entry };
+  state.log.push(line);
+  for (const p of state.players) if (seesLine(line, p)) p.logSeen += 1;
+}
+
+/**
+ * Whether `you` see `e` at all, window aside: the room's public history while you are in it, every line private to
+ * you, and the ship-wide lines. The dead keep only ship-wide public lines (decided 2026-10-16, #45); every room line,
+ * their own private ones included, goes.
+ */
+export function seesLine(e: Readonly<LogEntry>, you: Readonly<Pick<PlayerState, "id" | "alive" | "room">>): boolean {
+  if (!you.alive) return e.room === undefined && e.visibleTo === "all";
+  return e.visibleTo === "all" ? e.room === undefined || e.room === you.room : e.visibleTo.includes(you.id);
+}
+
+/**
+ * How many cycles of room log `you` see (#365): `logWindow.tracker` with the Tracker skill (`hunt`, picked or from a
+ * book), else `logWindow.cycles`. A room line shows while its cycle is within the window (`inLogWindow`).
+ */
+export function logWindowOf(state: Readonly<GameState>, you: Readonly<PlayerState>): number {
+  return hasSkill(you, "hunt") ? state.config.logWindow.tracker : state.config.logWindow.cycles;
+}
+
+/** Whether `e` is inside a window of `cycles`: the current cycle and the `cycles - 1` before it. Ship-wide lines always are. */
+export function inLogWindow(state: Readonly<GameState>, e: Readonly<LogEntry>, cycles: number): boolean {
+  return e.room === undefined || e.cycle > state.cycle - cycles;
+}
+
+/**
+ * Drops room lines no window can show any more (owner, 2026-11-05, #365), so the state and every view stop growing
+ * with the game. Ship-wide lines stay. The record keeps every line: each input's step in the history has it. Called as
+ * each cycle begins. Mutates a state the caller already cloned.
+ */
+export function pruneLog(state: GameState): void {
+  const longest = Math.max(state.config.logWindow.cycles, state.config.logWindow.tracker);
+  state.log = state.log.filter((e) => inLogWindow(state, e, longest));
+}
+
+/**
+ * Starts `p`'s `logSeen` at the lines their view shows now: at launch, on boarding in pre-selection, and for both
+ * bodies in a Transfer, so a new occupant never learns how many lines the body saw before (lines that left the window
+ * included). The client starts over when its body changes, so nothing is announced.
+ */
+export function startLogSeen(state: Readonly<GameState>, p: PlayerState): void {
+  const window = logWindowOf(state, p);
+  p.logSeen = state.log.filter((e) => seesLine(e, p) && inLogWindow(state, e, window)).length;
+}
 
 /** Mutates a state that the caller already cloned. */
 export function logPublic(state: GameState, room: RoomId | undefined, key: string, params?: LogParams, level?: "warning"): void {
-  state.log.push({ cycle: state.cycle, key, ...(params && { params }), ...(room !== undefined && { room }), visibleTo: "all", ...(level && { level }) });
+  pushLog(state, { key, ...(params && { params }), ...(room !== undefined && { room }), visibleTo: "all", ...(level && { level }) });
 }
 
 /** Mutates a state that the caller already cloned. */
 export function logPrivate(state: GameState, actor: PlayerId, key: string, params?: LogParams): void {
   const p = state.players.find((pl) => pl.id === actor);
-  state.log.push({ cycle: state.cycle, key, ...(params && { params }), ...(p && { room: p.room }), visibleTo: [actor] });
+  pushLog(state, { key, ...(params && { params }), ...(p && { room: p.room }), visibleTo: [actor] });
 }
 
 /**
@@ -40,8 +93,7 @@ export function logSecret(state: GameState, actor: PlayerId, key: string, params
   const witnesses = state.players.filter((o) => o.id !== actor && o.alive && o.room === p.room && o.id !== hideFrom);
   const witnessed = hideFrom === undefined ? state.players.some((o) => o.id !== actor && o.alive && o.room === p.room) : witnesses.length > 0;
   const visibleTo = hasCamera(state, p.room) ? "all" : !witnessed ? [actor] : hideFrom === undefined ? "all" : [actor, ...witnesses.map((o) => o.id)];
-  const entry: LogEntry = { cycle: state.cycle, key, ...(params && { params }), room: p.room, visibleTo, ...spilled(visibleTo) };
-  state.log.push(entry);
+  pushLog(state, { key, ...(params && { params }), room: p.room, visibleTo, ...spilled(visibleTo) });
 }
 
 /** Mutates a state that the caller already cloned. Room history only if a camera saw it. */
@@ -53,7 +105,7 @@ export function logCovert(state: GameState, actor: PlayerId, key: string, params
     return;
   }
   const visibleTo = hasCamera(state, p.room) ? "all" : [actor];
-  state.log.push({ cycle: state.cycle, key, ...(params && { params }), room: p.room, visibleTo, ...spilled(visibleTo) });
+  pushLog(state, { key, ...(params && { params }), room: p.room, visibleTo, ...spilled(visibleTo) });
 }
 
 /** A secret or covert entry that reached anyone besides the actor is a warning. One only the actor sees is not. */

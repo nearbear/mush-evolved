@@ -2,7 +2,7 @@ import type { PlayerView, RelayTargetView } from "@mush2/shared";
 import type { TFunction } from "i18next";
 import { useTranslation } from "react-i18next";
 import { useNames } from "../i18n/names.ts";
-import { CrewAvatar } from "./FeedEntry.tsx";
+import { bustIcon } from "../art/assets.ts";
 
 /** A work button's text with the gain if you contribute now (relay tokens, docs/plans/relay-tokens.md): "Progress +6-9%". */
 export function withGain(t: TFunction, action: string, gain: RelayTargetView["gain"] | undefined): string {
@@ -13,7 +13,7 @@ export function withGain(t: TFunction, action: string, gain: RelayTargetView["ga
 
 /**
  * Under a target's progress bar: the work held back only for lack of other contributors, and its tokens (who made each
- * and what it is worth now), in the order they were made. Only the view's own numbers; nothing is computed here.
+ * and what it is worth now, as a floppy-disk chip with their bust), in the order they were made. Only the view's own numbers; nothing is computed here.
  */
 export function RelayDetails({ target, view }: { target: RelayTargetView | undefined; view: PlayerView }) {
   const { t } = useTranslation();
@@ -32,7 +32,7 @@ export function RelayDetails({ target, view }: { target: RelayTargetView | undef
             return (
               // Tokens are only ever appended, so the index is a stable key.
               <li key={i} className={token.pending ? "relay-token-pending" : undefined} aria-label={token.pending ? t("relay.tokenPending", { name: who, percent: token.value }) : t("relay.token", { name: who, percent: token.value })}>
-                <CrewAvatar character={character} />
+                <img src={bustIcon(character)} alt="" />
                 <span aria-hidden="true">{t("research.percent", { percent: token.value })}</span>
               </li>
             );

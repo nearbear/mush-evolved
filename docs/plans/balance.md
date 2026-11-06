@@ -41,6 +41,20 @@ From a design Q&A on social deduction failure modes (Among Us is the cautionary 
 - **Return to Sol stays as decided** (a living Mush at arrival is a Mush win). This is the counterweight to a PILGRED rush: anyone repairing PILGRED while Mush may be alive becomes kill on sight, and it is the investigators' job to make sure it isn't repaired too early. The owner isn't sure they love this mechanic but keeps it for now.
 - **The List is built as in eMush** (below).
 
+## Preferred direction (owner, 2026-11-05)
+
+The owner's preferred way forward, from a discussion with other players. These are directions, not decided rules; each still needs its own rule decisions.
+
+The problem it answers: today the Mush have three outcomes, "build the biggest boom they can, sneakily return to Sol with a Transfer into the Commander, or die pathetically" (owner).
+
+- **Eden as the final clock.** Reaching Eden is a human win even with Mush alive (details under open questions). The Eden pipeline (star map fragments, the calculation, PILGRED) needs **non-combat sabotage points**, so Mush who can't rampage (an AP-dump character such as Paola or Finola) still have a way to fight it.
+- **Space boarders** (PvE enemies who board the ship and must be fought), so the crew has a reason to bring weapons out. Weapons become a contested resource, Mush can hold one with a legitimate excuse, and rampages aren't limited to whoever holds a weapon. A new system, later; keep in mind that it also speeds up the ship falling apart.
+- **Anti-passive research** for the middle of the game: research that punishes Mush who do nothing, chosen and timed by the crew and open to sabotage through the assays. Most detection research today punishes active Mush. Example raised: if no spore is pulled in a day, every Mush takes damage at day change (a weak form, since pulling a spore is profitable with Phagocytosis; counting spores spent on hostile acts is stronger).
+- **The sneaky Sol** is answered by the open PILGRED question below.
+- **Caution: don't make PvE harder to fix passive Mush.** A destroyed ship is a Mush win (`destroyShip` in `shared/src/hunters.ts`), so a ship that falls apart late rewards Mush who wait.
+
+Later problem (owner, 2026-11-05): Mush who work at the front of the ship (Paola, Frieda, Finola) have no easy access to a shower, and no reason to be dirty there, so a trip to the shower gets them killed. Not addressed yet.
+
 ## Targets (proposed)
 
 The numbers are placeholders to argue about; what matters is that each goal has a measurement.
@@ -152,7 +166,7 @@ Other scarce tests can follow the same pattern: one use, a cost, and accuracy th
   - Sol has to stay clearly faster and cheaper than Eden, or every crew just goes to Eden.
   - An outed Mush would only need to be contained, not killed.
 
-  The lore isn't decided.
+  Lore (owner's idea, 2026-11-05, not decided): Eden's air uniquely kills the fungus, which is why the Mush can't take it and why the star maps are needed to find it.
 - **Pacing (owner, 2026-11-05: not decided yet).** The direction is two game shapes: short and explosive ending at Sol, and a slow burn ending at Eden. The target may be a pair (Sol games end around day X; Eden can't be reached before day Y) rather than one median.
 - Ways to blunt out-of-game coordination.
 - An audit of built mechanics for incidental proof of humanity (public statuses, refusals, prices, log lines that only one faction can produce).

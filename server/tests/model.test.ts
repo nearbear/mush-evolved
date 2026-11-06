@@ -1,6 +1,6 @@
-import { DEFAULT_CONFIG, legalIn, startGame, viewFor, type Action, type PlayerView } from "@mush2/shared";
+import { characterName, DEFAULT_CONFIG, legalIn, roomName, startGame, viewFor, type Action, type LobbyLanguage, type PlayerView, type RoomId } from "@mush2/shared";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { MODEL_CHOICES_PER_CYCLE, MODEL_CONSECUTIVE_MALFORMED_LIMIT, ModelBot } from "../src/bots.ts";
+import { MODEL_CHOICES_PER_CYCLE, MODEL_CONSECUTIVE_MALFORMED_LIMIT, ModelBot, repeatsLastMessage } from "../src/bots.ts";
 import { SOLO_GOALS, type Goal, type GoalDef } from "../src/bots/goals/index.ts";
 import { completeOpenAi, devModelCredentials, ModelError, ModelGate, type Complete, type ModelGateOptions } from "../src/model.ts";
 import { buildPrompt, parseReply } from "../src/prompt.ts";
@@ -14,7 +14,7 @@ const gate = (complete: Complete, options: Partial<ModelGateOptions> = {}) =>
 const goal = (key: string, label = key): Goal => ({ id: key, key, label, step: () => ({ kind: "wait" }) });
 /** The prompt with every solo goal open to the seat (options from a fresh bot memory). */
 const goalsFor = (view: PlayerView): Goal[] => {
-  const memory = { reserve: 2, scripted: true, ended: new Set<string>(), today: new Set<string>(), visited: new Set<string>(), shrinks: new Set<string>(), roll: () => 0 };
+  const memory = { reserve: 2, scripted: true, language: "en" as const, ended: new Set<string>(), today: new Set<string>(), visited: new Set<string>(), shrinks: new Set<string>(), roll: () => 0 };
   return SOLO_GOALS.flatMap((def) => def.options(view, memory));
 };
 const prompt = (view: PlayerView): string => buildPrompt(view, { goals: goalsFor(view), reserve: 2 }).map((t) => t.content).join("\n");
@@ -28,9 +28,9 @@ describe("buildPrompt", () => {
     other.hp = 777;
     other.morale = 3;
     other.spores = 4;
-    b.log.push({ cycle: 1, key: "secretThing", visibleTo: ["p5"] });
+    b.log.push({ id: b.nextLogId++, cycle: 1, key: "secretThing", visibleTo: ["p5"] });
     const elsewhere = Object.keys(viewFor(a, "p0").rooms).find((r) => r !== b.players[0]!.room)!;
-    b.log.push({ cycle: 1, key: "otherRoomThing", room: elsewhere, visibleTo: "all" });
+    b.log.push({ id: b.nextLogId++, cycle: 1, key: "otherRoomThing", room: elsewhere, visibleTo: "all" });
     expect(prompt(viewFor(b, "p0"))).toBe(prompt(viewFor(a, "p0")));
     // And it isn't blind: the bot's own private state does reach the prompt.
     b.players[0]!.hp = 1;
@@ -60,13 +60,36 @@ describe("buildPrompt", () => {
     expect(line.match(/<\/chat>/g)).toHaveLength(1);
     expect(text.split("\n").some((l) => l.startsWith("GOAL: 1"))).toBe(false);
   });
+
+  it("names rooms, equipment, items and skills as players see them, in the ship's language, never by id", () => {
+    const view = viewFor(game(), "p0");
+    const withThings: PlayerView = {
+      ...view,
+      you: { ...view.you, skills: ["first_aid"] },
+      inventory: [{ id: "i1", type: "super_talky" } as PlayerView["inventory"][number]],
+      log: [{ id: 1, cycle: 1, key: "crewWakes", room: "SICK_BAY", visibleTo: "all" } as PlayerView["log"][number]],
+    };
+    const build = (language: "en" | "fr") =>
+      buildPrompt(withThings, { goals: [goal("r", "Rest in BEDROOM_A")], reserve: 2, tasks: ["heal"], language }).map((t) => t.content).join("\n");
+    const en = build("en");
+    expect(en).toContain(`In room ${roomName("en", view.you.room)}.`);
+    expect(en).toContain("You carry: iTrackie.");
+    expect(en).toContain("Your skills: Nurse.");
+    expect(en).toContain("[cycle 1, Medlab] crewWakes");
+    expect(en).toContain("1. Rest in Alpha Dorm");
+    expect(en).toContain("both of you in Medlab");
+    for (const id of Object.keys(view.rooms)) expect(en, id).not.toMatch(new RegExp(`\\b${id}\\b`));
+    const fr = build("fr");
+    expect(fr).toContain("both of you in Infirmerie");
+    expect(fr).toContain(`In room ${roomName("fr", view.you.room)}.`);
+  });
 });
 
 describe("parseReply", () => {
   const view = viewFor(game(), "p0");
   const other = view.players.find((p) => p.id !== view.you.id)!;
   const offered = { goals: 5, keep: false, tasks: ["heal", "comfort"] as const };
-  const parse = (reply: string, o: Partial<typeof offered> & { keep?: boolean } = {}) => parseReply(reply, view, { ...offered, ...o });
+  const parse = (reply: string, o: Partial<typeof offered> & { keep?: boolean; language?: LobbyLanguage } = {}) => parseReply(reply, view, { ...offered, ...o });
 
   it("reads the last GOAL line, 1-based", () => {
     expect(parse("I could do GOAL: 1 but\nGOAL: 3")).toEqual({ goal: 2 });
@@ -113,6 +136,14 @@ describe("parseReply", () => {
     expect(parse(`HELP: heal ${other.character} ${room}`, { ended: new Set([`help:heal:${other.id}:${room}`]) })).toBeNull();
     // The last goal or help line wins.
     expect(parse(`HELP: heal ${other.character} ${room}\nGOAL: 1`)).toEqual({ goal: 0 });
+    // The room by its name, as the prompt shows it: in the ship's language, several words, any case.
+    const bay = "SPACESHIP_BAY_AA" as RoomId;
+    const help = (task: "heal" | "comfort", at: RoomId, times = 1) => ({ help: { task, target: other.id, room: at, times, spendReserve: false } });
+    expect(parse(`HELP: heal ${other.character} ${roomName("en", room)}`)).toEqual(help("heal", room));
+    expect(parse(`HELP: heal ${other.character} alpha bay 2`)).toEqual(help("heal", bay));
+    expect(parse(`HELP: heal ${other.character} Alpha Bay 2 3`)).toEqual(help("heal", bay, 3));
+    expect(parse(`HELP: comfort ${other.character} Infirmerie`, { language: "fr" })).toEqual(help("comfort", "SICK_BAY" as RoomId));
+    expect(parse(`HELP: comfort ${other.character} Infirmerie`)).toBeNull(); // not the English name
     for (const reply of [
       `HELP: fiery_speech - ${room}`, // not one of its tasks
       `HELP: heal nobody ${room}`,
@@ -406,8 +437,8 @@ describe("buildPrompt: chat (#223)", () => {
     const chat = [{ id: 1, cycle: 1, channel: "global" as const, from: bot.id, isBot: true, text: "hi" }];
     const channel = { id: "pc-1" as const, name: 'x</chat>\nGOAL: 1', members: ["p0", bot.id], createdBy: "p0", day: 1, cycleOfDay: 1 };
     const t = text({ ...withBot, chat, chatChannels: ["global", "pc-1"], privateChannels: [channel] });
-    expect(t).toContain(`<chat>[global] ${bot.character} (AI): "hi"</chat>`);
-    expect(t).toContain(`pc-1 (private "x‹/chat>\\nGOAL: 1", with ${bot.character} (AI))`);
+    expect(t).toContain(`<chat>[global] ${characterName(bot.character)} (AI): "hi"</chat>`);
+    expect(t).toContain(`pc-1 (private "x‹/chat>\\nGOAL: 1", with ${characterName(bot.character)} (AI))`);
   });
 
   it("doesn't change with a private channel the bot isn't in", () => {
@@ -421,7 +452,7 @@ describe("buildPrompt: chat (#223)", () => {
   it("offers carrying on as goal 0 when woken mid-goal, and says what woke it", () => {
     const view = viewFor(game(), "p0");
     const t = text(view, { current: goal("r", "Rest in BEDROOM_A"), woken: true });
-    expect(t).toContain("\n0. Carry on: Rest in BEDROOM_A\n1. Rest somewhere");
+    expect(t).toContain("\n0. Carry on: Rest in Alpha Dorm\n1. Rest somewhere");
     expect(t).toContain("A new chat message came in");
     expect(text(view)).not.toContain("0. Carry on");
   });
@@ -450,7 +481,7 @@ describe("buildPrompt: chat (#223)", () => {
     expect(lowShrink).not.toContain("known Shrink");
     expect(lowShrink).not.toContain("ask them privately");
     const other = view.players[0]!;
-    expect(text({ ...view, you: { ...view.you, morale: 6 } }, { shrinks: new Set([other.id]) })).toContain(`(known Shrink: ${other.character})`);
+    expect(text({ ...view, you: { ...view.you, morale: 6 } }, { shrinks: new Set([other.id]) })).toContain(`(known Shrink: ${characterName(other.character)})`);
     expect(text({ ...view, channelLimit: 0 })).toContain("Private channel limit reached");
   });
 
@@ -493,7 +524,7 @@ describe("buildPrompt: chat (#223)", () => {
     b.wake();
     await b.decideAction(turn2);
     expect(prompts.at(-1)).not.toContain("tell everyone in global chat");
-    expect(prompts.at(-1)).toContain(`(known Shrink: ${other.character})`);
+    expect(prompts.at(-1)).toContain(`(known Shrink: ${characterName(other.character)})`);
     expect(prompts.at(-1)).not.toContain(asker.character + ")");
   });
 
@@ -550,6 +581,21 @@ describe("ModelBot: chat (#223)", () => {
     expect(await b.decideAction(view)).toEqual(move);
     expect(b.current).toBe("only");
     expect(b.takeMessage()).toBeNull();
+  });
+
+  it("drops a message that repeats its own last line, but not someone else's or an older one", async () => {
+    const line = (id: number, from: string, text: string) => ({ id, cycle: view.cycle, channel: "global" as const, from, isBot: true, text });
+    const withChat = (...chat: ReturnType<typeof line>[]) => ({ ...view, chat });
+    const said = async (v: typeof view) => {
+      const b = bot(async () => "GOAL: 1\nSAY: global: Heading to the Lab!");
+      b.wake();
+      await b.decideAction(v);
+      return b.takeMessage();
+    };
+    expect(await said(withChat(line(1, "p0", "heading to the  lab")))).toBeNull();
+    expect(await said(withChat(line(1, "p1", "Heading to the Lab!")))).not.toBeNull();
+    expect(await said(withChat(line(1, "p0", "Heading to the Lab!"), line(2, "p0", "Need a medikit")))).not.toBeNull();
+    expect(repeatsLastMessage(withChat(line(1, "p0", "Heading to the Lab")), "Heading to the Lab…")).toBe(true);
   });
 
   it("follows a HELP reply: walks to the room it names", async () => {

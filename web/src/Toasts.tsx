@@ -7,15 +7,18 @@ const toastManager = Toast.createToastManager();
 
 /** Latest wins: a repeated message replaces the one on screen instead of stacking. */
 let lastId: string | undefined;
-export function showError(message: string): void {
+function show(message: string, type: "error" | "warning" | "success"): void {
   if (lastId) toastManager.close(lastId);
-  lastId = toastManager.add({ description: message, type: "error", timeout: 4000 });
+  lastId = toastManager.add({ description: message, type, timeout: 4000 });
 }
+export const showError = (message: string): void => show(message, "error");
+export const showSuccess = (message: string): void => show(message, "success");
+export const showWarning = (message: string): void => show(message, "warning");
 
 function ToastList() {
   const { toasts } = Toast.useToastManager();
   return toasts.map((toast) => (
-    <Toast.Root key={toast.id} toast={toast} className="toast">
+    <Toast.Root key={toast.id} toast={toast} className="toast" data-type={toast.type}>
       <Toast.Description className="toast-text" />
     </Toast.Root>
   ));

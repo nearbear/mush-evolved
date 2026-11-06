@@ -127,6 +127,10 @@ export interface GameConfig {
   startRoom: RoomId;
   inventorySlots: number; // Private inventory slots per player, before modifiers.
   channelLimit: number; // Private channels a player may belong to, before modifiers.
+  // How many cycles of room log a seat sees (#365): the current cycle plus the ones before it, whole cycles, so a
+  // number of cycles, never hours. `tracker` is the window with the Tracker skill (`hunt`). Ship-wide lines and chat
+  // have no window. The rules drop room lines older than the longer of the two (`pruneLog`).
+  logWindow: { cycles: number; tracker: number };
   /**
    * Per-feature tuning. Actions group their numbers into `cost` (what the player pays) and `effect` (what happens),
    * so a cost in morale or MP can sit next to an effect without being confused with it. Conditions (rooms, odds,

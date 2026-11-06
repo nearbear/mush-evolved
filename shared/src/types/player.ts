@@ -99,6 +99,13 @@ export interface PlayerState extends Seat {
    */
   history: string[];
   /**
+   * How many log lines this body has ever been able to see (log.ts `seesLine`), counted as each is written, aged-out
+   * and pruned ones included (#365). A Transfer starts it over for both bodies (`swapMinds`), so a new occupant learns
+   * nothing about what the body saw before. Sent in
+   * your own view as `PlayerView.logSeen`, so the client can tell new lines once the window drops old ones.
+   */
+  logSeen: number;
+  /**
    * Who has offered to push your wheelchair, for you to accept, and the server time (ms) each offer expires. Your
    * own view only (the offers themselves are in the room log).
    */

@@ -1,4 +1,4 @@
-import { DEFAULT_CONFIG, legalIn, startGame, viewFor, type LogEntry } from "@mush2/shared";
+import { DEFAULT_CONFIG, legalIn, startGame, viewFor, type LogLine } from "@mush2/shared";
 import { describe, expect, it } from "vitest";
 import { LogParrotBot, WanderBot } from "../src/bots.ts";
 import { seats } from "../src/testing/fakes.ts";
@@ -43,8 +43,8 @@ describe("WanderBot", () => {
 describe("LogParrotBot", () => {
   const game = startGame({ seats: seats(0), config, seed: 1, rulesVersion: "test" });
   const base = viewFor(game, "p0");
-  const priv: LogEntry = { cycle: 2, key: "healed", params: { name: "Ann" }, visibleTo: ["p0"] };
-  const pub: LogEntry = { cycle: 2, key: "cycleBegins", visibleTo: "all" };
+  const priv: LogLine = { cycle: 2, key: "healed", params: { name: "Ann" }, visibleTo: ["p0"] };
+  const pub: LogLine = { cycle: 2, key: "cycleBegins", visibleTo: "all" };
 
   it("never moves", async () => {
     expect(await new LogParrotBot().decideAction(base)).toEqual({ type: "ready" });

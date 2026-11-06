@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { createChannel, sendChat } from "../src/chat.ts";
 import { DEFAULT_CONFIG } from "../src/config.ts";
-import { logPrivate } from "../src/log.ts";
+import { logPrivate, logSecret } from "../src/log.ts";
 import { acknowledgeTransfer, bodyOf } from "../src/mind.ts";
 import { ITRACKIE_ITEM } from "../src/items.ts";
 import { dropMycoAlarms } from "../src/mycoalarm.ts";
@@ -126,20 +126,44 @@ describe("Transfer (Mush skill)", () => {
     for (const id of ["p0", "p1"]) expect([player(r, id).current, player(r, id).queue, player(r, id).ready]).toEqual([null, [], false]);
   });
 
-  it("history follows the mind: each player keeps their own private lines", () => {
+  it("private log lines stay with the body (owner, 2026-11-05, #281)", () => {
     const s = ship();
     logPrivate(s, "p0", "chosenMush");
     logPrivate(s, "p1", "converted");
     const r = swapped(s);
-    // The Mush player, now in body p1, sees their old line and the transfer line; not the victim's.
+    // The Mush player, now in body p1, reads the victim's old line and the transfer line; not their own old one.
     const mushLog = viewFor(r, "p1").log.map((e) => e.key);
-    expect(mushLog).toContain("chosenMush");
+    expect(mushLog).toContain("converted");
     expect(mushLog).toContain("bodyTransferred");
-    expect(mushLog).not.toContain("converted");
+    expect(mushLog).not.toContain("chosenMush");
+    // The victim, now in the Mush's old body, reads that body's past.
     const victimLog = viewFor(r, "p0").log.map((e) => e.key);
-    expect(victimLog).toContain("converted");
-    expect(victimLog).not.toContain("chosenMush");
+    expect(victimLog).toContain("chosenMush");
+    expect(victimLog).not.toContain("converted");
     expect(victimLog).not.toContain("bodyTransferred");
+  });
+
+  it("never rewrites the log, and later lines are addressed to the body", () => {
+    const s = ship();
+    logPrivate(s, "p0", "chosenMush");
+    const before = structuredClone(s.log);
+    const r = swapped(s);
+    expect(r.log.slice(0, before.length)).toEqual(before);
+    logSecret(r, "p1", "hid", undefined, "p0");
+    expect(r.log.at(-1)!.visibleTo).toEqual(["p1", "p2"]);
+    expect(viewFor(r, "p1").log.map((e) => e.key)).toContain("hid");
+    expect(viewFor(r, "p0").log.map((e) => e.key)).not.toContain("hid");
+    // A view names only its viewer: a witness never learns who else saw a line.
+    expect(viewFor(r, "p2").log.find((e) => e.key === "hid")!.visibleTo).toEqual(["p2"]);
+  });
+
+  it("a witness's view of a line from before the Transfer doesn't change (it would show who moved)", () => {
+    const s = ship();
+    logSecret(s, "p0", "hid", undefined, "p1");
+    const before = viewFor(s, "p2").log;
+    const r = swapped(s);
+    const after = viewFor(r, "p2").log;
+    expect(after.slice(0, before.length)).toEqual(before);
   });
 
   it("leaves no sign for bystanders, and only the victim sees the pop-up", () => {

@@ -250,7 +250,7 @@ describe("GoalBot", () => {
       p.ap = 10;
     });
     const view = viewFor(game, id);
-    const memory = { reserve: 2, scripted: true, ended: new Set<string>(), today: new Set<string>(), visited: new Set<string>(), roll: roll0 };
+    const memory = { reserve: 2, scripted: true, language: "en" as const, ended: new Set<string>(), today: new Set<string>(), visited: new Set<string>(), roll: roll0 };
     const patch = { action: { type: "repair_hull" as const, item: "scrap" }, cost: { ap: 1, mp: 0 }, chance: 0.25, tags: [], lacks: [] };
     const withHull = (hull: number): PlayerView => ({ ...view, ship: { ...view.ship, hull }, actions: [...view.actions, patch] });
     expect(repairHull.options(withHull(50), memory)).toEqual([]);

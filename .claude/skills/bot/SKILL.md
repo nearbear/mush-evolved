@@ -11,7 +11,10 @@ Bots are players. Every rule that keeps hidden information off clients applies t
 
 ## The rules
 
-1. **One interface.** Every bot implements `Bot.decideAction(view: PlayerView): Promise<Action>` in `server/src/bots.ts`. Don't widen the input: no `GameState`, no other seats' views, no server internals.
+1. **One interface.** Every bot, scripted or model-backed, implements `Bot` in `server/src/bots.ts`: `decideAction(view)` returns an action or null, and the optional hooks take chat wakes (`wake`), refusals (`refused`) and the bot's outgoing message (`takeMessage`). Don't widen the input: no `GameState`, no other seats' views, no server internals.
+   - **Goals, not single actions** (`docs/plans/bot-goals.md`): a bot pursues a goal from a fixed, code-defined list, and code carries it out. A model is asked only to choose a goal, when one finishes, fails or is interrupted.
+   - **Coordination only through what players use:** chat, channels and plans, never a backchannel between bots. The chat router (`router.ts`, #341) is the one model call outside any seat: it gets only a channel's recent lines and public facts about who may read it.
+   - **Memory stays in the bot object:** its goal, what it has seen, never game state, the record or a view (lost on a restart; open in `docs/plans/bot-goals.md`).
 2. **Own-seat view only.** The server calls `viewFor(game, botSeatId)` and passes that. A bot never sees more than a human in its seat would.
 3. **Only legal actions.** Pick from `legalIn(view)` (the view's affordable `actions`). A model's output is untrusted: parse it, then check it's in that list, and fall back to a safe action (`ready`) if it isn't. Never let model text become an action unchecked.
 4. **Labeled as AI.** `Seat.isBot` stays true, and the UI shows the AI tag wherever a name appears (iso tags, inspect, chat). If a bot can chat, its messages carry `isBot`.

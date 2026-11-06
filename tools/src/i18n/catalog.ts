@@ -1,4 +1,4 @@
-// Checks on translation catalogs (web/src/locales/<lang>.json, i18next JSON v4).
+// Checks on translation catalogs (web/src/locales/<lang>.json merged with shared/src/locales/names.<lang>.json, i18next JSON v4).
 // English is the reference; every other language must have the same keys, the
 // same placeholders, and every plural form its language needs.
 

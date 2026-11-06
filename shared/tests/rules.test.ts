@@ -480,7 +480,7 @@ describe("viewFor (hidden information)", () => {
 
   it("filters private log entries", () => {
     const state = newGame();
-    state.log.push({ cycle: 1, key: "secret", visibleTo: ["p1"] });
+    state.log.push({ id: state.nextLogId++, cycle: 1, key: "secret", visibleTo: ["p1"] });
     expect(viewFor(state, "p1").log.some((e) => e.key === "secret")).toBe(true);
     expect(viewFor(state, "p2").log.some((e) => e.key === "secret")).toBe(false);
   });

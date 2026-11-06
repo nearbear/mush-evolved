@@ -9,7 +9,7 @@ The UI language is a **per-player, client-side choice** (`web/src/i18n/`), indep
 
 ## Rules
 
-1. **No player-facing English in code.** In the client, use `const { t } = useTranslation()` and `t("area.key")`. Add the key to `web/src/locales/en.json` first, then `fr.json` and `es.json` in the same change. Keys are typed from `en.json`, so a typo fails typecheck.
+1. **No player-facing English in code.** In the client, use `const { t } = useTranslation()` and `t("area.key")`. Add the key to `web/src/locales/en.json` first, then `fr.json` and `es.json` in the same change. Keys are typed from `en.json`, so a typo fails typecheck. Room, equipment, item and skill names (`rooms.*`, `equipment.*`, `items.*`, `skills.names.*`) are the exception: they live in `shared/src/locales/names.{en,fr,es}.json`, so the server's bot prompts use the same names, and web merges them in.
 2. **Whole sentences, never fragments.** One key per sentence with `{{placeholders}}` (`"Move to {{room}}"`). Never concatenate translated pieces, build a sentence from parts, or add "s" for plurals; word order and plural rules differ between languages.
 3. **Plurals** use i18next suffixes and a `count` argument: `crew_one` / `crew_other` in English, plus `crew_many` in French and Spanish (the tests check this).
 4. **Rules and server code emit ids and params, not sentences.** `shared` and `server` must not add new English text: use a structured log event, an error code, or an id the client turns into text. Existing English there is recorded debt in `tools/src/i18n/baseline.json`; don't add to it. Log-event params are data a player sees, so run the `leak-check` skill on them.

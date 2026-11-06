@@ -9,8 +9,8 @@
 import type { CharacterId } from "./characters.ts";
 import { clone } from "./helpers.ts";
 import { bodyOf } from "./mind.ts";
-import { viewFor } from "./rules.ts";
-import type { GameState, PlayerId, PlayerView, Role } from "./types.ts";
+import { seatViewFor } from "./rules.ts";
+import type { GameState, PlayerId, Role, SeatView } from "./types.ts";
 import { HistoryError } from "./viewHistory.ts";
 
 /** A seat as it was when the Mush were chosen: Mush then means an alpha Mush, Mush later a beta Mush. */
@@ -43,10 +43,11 @@ export function fullViewFor(state: Readonly<GameState>, starts: Readonly<SeatSta
 }
 
 /**
- * What `seat` (the mind, across a Transfer) saw: equal to `viewFor` on the body `seat` played in `full`. Throws
+ * What `seat` (the mind, across a Transfer) saw: equal to `viewFor` on the body `seat` played in `full`, plus each log
+ * line's id (`SeatView`). Throws
  * `HistoryError` when `full` is from an older rules build whose state shape `viewFor` can no longer read.
  */
-export function perspective(full: Readonly<FullView>, seat: PlayerId): PlayerView {
+export function perspective(full: Readonly<FullView>, seat: PlayerId): SeatView {
   const { starts: _starts, ...rest } = full;
   const state = { ...rest } as GameState;
   const by = Array.isArray(state.players) ? bodyOf(state, seat) : undefined;
@@ -60,7 +61,7 @@ export function perspective(full: Readonly<FullView>, seat: PlayerId): PlayerVie
     },
   });
   try {
-    return viewFor(state, by ?? seat);
+    return seatViewFor(state, by ?? seat);
   } catch (e) {
     if (rngRead) throw e;
     throw new HistoryError(`Full view cannot be read by current rules: ${e instanceof Error ? e.message : String(e)}`);

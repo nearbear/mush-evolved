@@ -1,7 +1,7 @@
 // Bots live server-side: model-backed ones need network calls, secrets, and a
 // spend cap, none of which belong in the pure rules package.
 
-import { legalIn, nextInt, type Action, type LobbyLanguage, type PlayerView, type RngState } from "@mush2/shared";
+import { characterName, legalIn, nextInt, type Action, type LobbyLanguage, type PlayerView, type RngState } from "@mush2/shared";
 import { hasBotSkill } from "./bots/duties.ts";
 import { END_CYCLE, helpGoal, helpTasks, SOLO_GOALS, type BotMemory, type Goal, type GoalDef } from "./bots/goals/index.ts";
 import { buildPrompt, describeLogEntry, observeShrinks, parseReply, type BotMessage } from "./prompt.ts";
@@ -109,10 +109,14 @@ export class GoalBot implements Bot {
     private goals: readonly GoalDef[] = SOLO_GOALS,
   ) {
     const scripted = (): boolean => this.scripted;
+    const language = (): LobbyLanguage => this.language;
     this.memory = {
       reserve,
       get scripted() {
         return scripted();
+      },
+      get language() {
+        return language();
       },
       ended: new Set(),
       today: new Set(),
@@ -124,6 +128,11 @@ export class GoalBot implements Bot {
         return i;
       },
     };
+  }
+
+  /** The ship's language (`BotMemory.language`). A scripted bot writes nothing, so English. */
+  protected get language(): LobbyLanguage {
+    return "en";
   }
 
   /** Whether goals go by priority (`BotMemory.scripted`): always, for a bot without a model. */
@@ -283,6 +292,19 @@ export const MODEL_CONSECUTIVE_MALFORMED_LIMIT = 3;
  * call failed, the key was refused, the budget is spent) it waits instead, returning null, and the cycle waits with it
  * (owner, 2026-10-24, #114): the room asks again later (`ModelGate.pause`).
  */
+/** Loose form of a chat line, for spotting a repeat: case, spacing and trailing punctuation don't count. */
+const chatKey = (text: string): string => text.toLowerCase().replace(/\s+/g, " ").replace(/[\s.!?…]+$/u, "").trim();
+
+/**
+ * True when `text` is the bot's own last chat line again (#224: flash-lite posted the same line six turns running).
+ * Read from the view, so it holds after a restart; only the last line, so asking again later after saying something
+ * else still goes through.
+ */
+export function repeatsLastMessage(view: PlayerView, text: string): boolean {
+  const last = [...view.chat].reverse().find((m) => !m.system && m.from === view.you.id);
+  return last !== undefined && chatKey(last.text) === chatKey(text);
+}
+
 export class ModelBot extends GoalBot {
   private cycleSeen = -1;
   private choices = 0;
@@ -295,9 +317,13 @@ export class ModelBot extends GoalBot {
     reserve = BOT_AP_RESERVE,
     goals: readonly GoalDef[] = SOLO_GOALS,
     /** The ship's language (#95), which its chat is written in. */
-    private language: LobbyLanguage = "en",
+    private shipLanguage: LobbyLanguage = "en",
   ) {
     super(rng, reserve, goals);
+  }
+
+  protected override get language(): LobbyLanguage {
+    return this.shipLanguage;
   }
 
   /** A bot whose model can't be asked (no key) goes by priority, so it plays with the scripted thresholds. */
@@ -347,21 +373,21 @@ export class ModelBot extends GoalBot {
     const reply = await this.gate.ask(prompt);
     if (reply === null) return null;
     if (!woken) this.choices++;
-    const parsed = parseReply(reply, view, { goals: goals.length, keep: current !== null, tasks, ended: this.memory.ended });
+    const parsed = parseReply(reply, view, { goals: goals.length, keep: current !== null, tasks, ended: this.memory.ended, language: this.language });
     if (parsed === null) {
       this.consecutiveMalformed++;
       return fallback();
     }
     this.consecutiveMalformed = 0;
     // One message a turn: a second choice in the same turn (the first goal ended at once) doesn't replace it.
-    if (parsed.say && !this.message) {
+    if (parsed.say && !this.message && !repeatsLastMessage(view, parsed.say.text)) {
       this.message = parsed.say;
       if ("channel" in parsed.say && parsed.say.channel === "global" && hasBotSkill(view, "shrink")) {
         this.memory.shrinks.add(view.you.id);
       }
     }
     if (parsed.help) {
-      const name = (id: string): string => view.players.find((p) => p.id === id)?.character ?? id;
+      const name = (id: string): string => characterName(view.players.find((p) => p.id === id)?.character ?? id);
       return helpGoal(parsed.help, name);
     }
     if (parsed.goal === "keep") return current;
@@ -390,6 +416,6 @@ export class LogParrotBot implements Bot {
     this.repeated ??= view.chat.filter((m) => m.channel === "global" && m.from === view.you.id && !m.system).length;
     const fresh = priv.slice(this.repeated);
     this.repeated = priv.length;
-    return fresh.map(describeLogEntry);
+    return fresh.map((e) => describeLogEntry(e));
   }
 }

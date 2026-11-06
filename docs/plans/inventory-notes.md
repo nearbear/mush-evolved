@@ -9,8 +9,9 @@ A tab where the whole crew keeps shared, manual notes about the ship's items: wh
 Decided by the owner (2026-11-01):
 
 - **Manual notes.** Players type in what they have seen. Nothing is filled in automatically.
-- **Whole crew.** One shared pad per ship, readable and editable by every living seat.
+- **Whole crew.** One shared pad per ship, readable and editable by every living seat with an iTrackie.
 - **Item states:** every item state that exists in the slice today (list below).
+- **Needs an iTrackie** (owner, 2026-11-05). Reading and editing the pad needs an iTrackie, like chat and plans (`readChannels`, `chatChannels`). So the pad isn't the same for every living seat: `viewFor` sends it only to those carrying one, and the server refuses a write from anyone else.
 
 ## What AstroPad does that is worth borrowing
 
@@ -46,7 +47,7 @@ Manual notes mean a player can write anything, and Mush have reason to. The plan
 Proposed starting point (to confirm):
 
 - A note is a **claim by a named author**, shown with who wrote it and when (cycle). It is never presented as fact.
-- The server stores notes in game state and sends the same pad to every living seat. The pad holds only what players typed, so it leaks nothing the server did not already allow; a note is information the author chose to share.
+- The server stores notes in game state and sends the same pad to every living seat with an iTrackie. The pad holds only what players typed, so it leaks nothing the server did not already allow; a note is information the author chose to share.
 - Players pick from item types and states the game defines, so a note cannot carry free text through a side door. Whether to allow a free-text comment is open (moderation needs it if so; see Open questions).
 - The client never decides whether a note is true. Optionally the room view could mark a note "stale" when its author sees the item has moved; this is a convenience, not a rule, and is open.
 
@@ -61,7 +62,7 @@ These follow the architecture rules in CLAUDE.md and need a leak check (`leak-ch
 
 ## Data sketch
 
-Server-only game state, sent whole to every living seat (no per-seat filtering needed, because every note is crew-wide):
+Server-only game state, sent whole to every living seat with an iTrackie (no other per-seat filtering needed, because every note is crew-wide):
 
 ```text
 InventoryNote {
@@ -82,7 +83,7 @@ Per-room view groups the notes by room and orders rooms in the fixed map order. 
 
 1. Types and one config block in `shared`, with the note shape and limits (notes per ship, per player, per room).
 2. Pure rules in `shared`: add, edit, remove a note, who may do each, per-player rate limit, tests (including that a dead seat cannot edit and the limits hold).
-3. `viewFor`: include the pad for living seats; test that it is identical for every seat and that no private state is added.
+3. `viewFor`: include the pad for living seats with an iTrackie; test that it is identical for every such seat, absent without an iTrackie, that a write without one is refused, and that no private state is added.
 4. Server: a note action through the existing intent path; abuse limits like chat.
 5. Web: the tab, a room-grouped list, the item picker and state form, a text export. Phone layout first, then desktop. All text through the i18n seam (en/fr/es).
 6. Optional later: share message, links from chat, stale marks.

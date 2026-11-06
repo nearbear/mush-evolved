@@ -216,6 +216,38 @@ function EntryTip({ name, desc, trigger, children }: { name: string; desc?: stri
   );
 }
 
+/**
+ * A research or project's progress bar. With samples pending their assay, the bar is the trigger for a tooltip saying how
+ * much is pending (hover, focus or tap), so the percent beside it stays short and never wraps.
+ */
+function ProgressBar({ label, percent, complete, pending, style }: { label: string; percent: number; complete: number; pending: string | undefined; style: CSSProperties }) {
+  if (!pending) return <div className="kit-progress neron" role="progressbar" aria-label={label} aria-valuemin={0} aria-valuemax={complete} aria-valuenow={percent} style={style} />;
+  return (
+    <Popover.Root>
+      {/* Base UI makes a non-native trigger focusable itself, so keyboard users can open it too. */}
+      <Popover.Trigger
+        openOnHover
+        delay={200}
+        nativeButton={false}
+        render={<div />}
+        className="kit-progress neron has-pending"
+        role="progressbar"
+        aria-label={label}
+        aria-valuemin={0}
+        aria-valuemax={complete}
+        aria-valuenow={percent}
+        aria-valuetext={pending}
+        style={style}
+      />
+      <Popover.Portal>
+        <Popover.Positioner sideOffset={6}>
+          <Popover.Popup className="tooltip">{pending}</Popover.Popup>
+        </Popover.Positioner>
+      </Popover.Portal>
+    </Popover.Root>
+  );
+}
+
 type ProgressTab = "active" | "blocked" | "done";
 const PROGRESS_TABS: readonly ProgressTab[] = ["active", "blocked", "done"];
 
@@ -268,17 +300,14 @@ function ProgressList({ label, ids, progress, relay, complete, cards, name, desc
                       ) : (
                         <div className="research-progress">
                           {/* Research: solid for verified progress, striped for pending samples not yet assayed (docs/plans/research-sabotage.md). */}
-                          <div
-                            className="kit-progress neron"
-                            role="progressbar"
-                            aria-label={name(id)}
-                            aria-valuemin={0}
-                            aria-valuemax={complete}
-                            aria-valuenow={percent}
-                            aria-valuetext={pendingOf(id) ? t("research.withPending", { percent, pending: pendingOf(id) }) : undefined}
+                          <ProgressBar
+                            label={name(id)}
+                            percent={percent}
+                            complete={complete}
+                            pending={pendingOf(id) ? t("research.withPending", { percent, pending: pendingOf(id) }) : undefined}
                             style={{ "--value": Math.min(1, percent / complete), "--pending": Math.min(1, pendingOf(id) / complete) } as CSSProperties}
                           />
-                          <span>{pendingOf(id) ? t("research.withPending", { percent, pending: pendingOf(id) }) : t("research.percent", { percent })}</span>
+                          <span>{t("research.percent", { percent })}</span>
                           {option && (
                             <ActionButton view={view} option={option} onAction={onAction} hint={t("relay.help")}>
                               <ActionLabel text={withGain(t, t("research.work"), relay[id]?.gain)} cost={option.cost} chance={option.chance} />

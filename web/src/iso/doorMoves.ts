@@ -2,7 +2,7 @@
 // "entered" and "left" entries (shared/src/actions/move.ts). The iso view walks them through that
 // door. Nothing here that the log doesn't already show the player.
 
-import type { LogEntry, RoomId } from "@mush2/shared";
+import type { LogLine, RoomId } from "@mush2/shared";
 
 /** How recent a move must be to be walked: older ones are history, not someone at the door now. */
 const RECENT_MS = 15_000;
@@ -12,7 +12,7 @@ const RECENT_MS = 15_000;
  * one they went out to. `now` is the server's clock; entries without a time are left out.
  */
 export function recentDoorMoves(
-  log: readonly LogEntry[],
+  log: readonly LogLine[],
   players: readonly { id: string; character: string }[],
   now: number,
 ): Map<string, { from?: RoomId; to?: RoomId }> {

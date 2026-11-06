@@ -56,6 +56,8 @@ export interface GameState {
   /** Cycle in which each dispenser (equipment id) last gave something out. One use per cycle per machine. */
   dispensedOn: Record<string, number>;
   log: LogEntry[];
+  /** The next `LogEntry.id`. */
+  nextLogId: number;
   chat: ChatMessage[];
   nextChatId: number;
   channels: PrivateChannel[];

@@ -33,7 +33,7 @@ import { clone, dayOf, fail, findPlayer, type ActionResult } from "./helpers.ts"
 
 export { dayOf };
 import { damage, healDaily, hasMushDied } from "./death.ts";
-import { activitySeen, logPrivate } from "./log.ts";
+import { activitySeen, inLogWindow, logPrivate, logWindowOf, pruneLog, pushLog, seesLine, startLogSeen } from "./log.ts";
 import { recordAction } from "./history.ts";
 import { ringMycoAlarms } from "./mycoalarm.ts";
 import { planetsOf } from "./planets.ts";
@@ -61,6 +61,8 @@ import type {
   PlayerId,
   PlayerState,
   PlayerView,
+  SeatView,
+  ChatMessage,
   ExpeditionReportView,
   RoomId,
   Role,
@@ -114,7 +116,8 @@ export function createGame(
     nextItemId: items.length + 1,
     equipment: clone(config.equipment),
     dispensedOn: {},
-    log: [{ cycle: startCycle, key: "crewWakes", visibleTo: "all" }],
+    log: [{ id: 1, cycle: startCycle, key: "crewWakes", visibleTo: "all" }],
+    nextLogId: 2,
     chat: [],
     nextChatId: 1,
     channels: [],
@@ -160,6 +163,7 @@ export function createGame(
     startHunters(state);
   }
   grantCarePoints(state); // day 1 begins now
+  for (const p of state.players) startLogSeen(state, p);
   return state;
 }
 
@@ -194,6 +198,7 @@ export function newPlayer(s: Seat, config: DeepReadonly<GameConfig>, cycle: numb
     current: null,
     queue: [],
     history: [],
+    logSeen: 0,
     cheats: [],
   };
 }
@@ -357,6 +362,7 @@ function chargesFor(config: DeepReadonly<GameConfig>, type: string): { charges?:
  */
 function advanceCycle(state: GameState, at?: number): void {
   state.cycle += 1;
+  pruneLog(state);
   for (const p of state.players) {
     changeAP(state, p, apGain(state, p));
     p.ready = false;
@@ -400,12 +406,7 @@ function advanceCycle(state: GameState, at?: number): void {
   const { day } = dayOf(state);
   arriveShip(state);
   huntersCycle(state, day);
-  state.log.push({
-    cycle: state.cycle,
-    key: newDay ? "dayBegins" : "cycleBegins",
-    params: newDay ? { day } : { cycle: state.cycle },
-    visibleTo: "all",
-  });
+  pushLog(state, { key: newDay ? "dayBegins" : "cycleBegins", params: newDay ? { day } : { cycle: state.cycle }, visibleTo: "all" });
   // After the cycle's opening line, so incident and fire lines follow it. A fire acts in the cycle it starts.
   ignitePending(state);
   incidentsCycle(state, day);
@@ -427,11 +428,36 @@ function grantCarePoints(state: GameState): void {
   }
 }
 
+/** A chat message as a view carries it: field by field, so a name stored by an older build never goes out. */
+export function messageView({ id, cycle, at, channel, from, isBot, text, system }: Readonly<ChatMessage>): ChatMessage {
+  return { id, cycle, ...(at !== undefined && { at }), channel, from, isBot, text, ...(system && { system }) };
+}
+
+/** Every thread, as a view carries it (for readers of global chat). */
+export function threadsView(state: Readonly<Pick<GameState, "threads">>): PlayerView["threads"] {
+  return state.threads.map(({ id, name, from, createdBy, cycle }) => ({ id, name, ...(from !== undefined && { from }), createdBy, cycle }));
+}
+
+/** Every shared planet, as a view carries it (for readers of the Astrophysics feature). Never `planet`: which planet an entry came from stays its finder's. */
+export function sharedPlanetsView(state: Readonly<Pick<GameState, "sharedPlanets">>): PlayerView["sharedPlanets"] {
+  return state.sharedPlanets.map(({ id, text, by, day, cycleOfDay, stale }) => ({ id, text, by, day, cycleOfDay, stale }));
+}
+
 /**
  * The only way game data leaves the server. Everything hidden (other players'
- * roles, private log entries, RNG state) must be stripped here.
+ * roles, private log entries, RNG state) must be stripped here. It is
+ * `seatViewFor` without log ids (`PlayerView.log` says why).
  */
 export function viewFor(state: GameState, playerId: PlayerId): PlayerView {
+  const view = seatViewFor(state, playerId);
+  return { ...view, log: view.log.map(({ id: _id, ...line }) => line) };
+}
+
+/**
+ * `viewFor` with each log line's id, for the replay (`perspective`). Never send one to a live player: Biome forbids it
+ * in `server/src`.
+ */
+export function seatViewFor(state: GameState, playerId: PlayerId): SeatView {
   const you = findPlayer(state, playerId);
   if (!you) throw new Error(`Unknown player ${playerId}`);
   const others = state.players.filter((p) => p.id !== playerId);
@@ -445,6 +471,7 @@ export function viewFor(state: GameState, playerId: PlayerId): PlayerView {
   const located = (room: RoomId) => you.alive && (actopi || room === you.room);
   // A dead body is a corpse item, not a person in a room: nobody gets a dead player's room.
   const living = others.filter((o) => o.alive);
+  const logWindow = logWindowOf(state, you);
   // Nobody's account name goes out while the game runs, not even your own: people are known by character.
   // Who cursed you is never sent, even to you; nor which seat plays you, whether you used Transfer, or your action
   // history (only Interrogate and Chitchat reveal it, history.ts), nor Lethargy's count (`lyingSince`; only its AP shows).
@@ -523,19 +550,19 @@ export function viewFor(state: GameState, playerId: PlayerId): PlayerView {
     roomEquipment: you.alive ? (state.equipment[you.room] ?? []).map((e) => equipmentView(state, e)) : [],
     roomOnFire: you.alive && isOnFire(state, you.room),
     burningRooms: you.alive && projectDone(state, "FIRE_SENSOR") ? [...state.fires] : [],
-    // The dead keep only ship-wide entries (cycles, days); every room entry, their own private ones included, goes.
-    log: state.log.filter((e) =>
-      !you.alive ? e.room === undefined && e.visibleTo === "all" : e.visibleTo === "all" ? e.room === undefined || e.room === you.room : e.visibleTo.includes(playerId),
-    ),
-    // Field by field, so a name stored by an older build never goes out.
-    chat: state.chat.filter((m) => channels.includes(m.channel)).map(({ id, cycle, at, channel, from, isBot, text, system }) => ({ id, cycle, ...(at !== undefined && { at }), channel, from, isBot, text, ...(system && { system }) })),
+    // `seesLine` (log.ts) says which lines are yours; room lines, private ones included, only within your window (#365).
+    // A private line names only you in the view: no one learns who else saw it (`level` marks a leaked secret line).
+    log: state.log
+      .filter((e) => seesLine(e, you) && inLogWindow(state, e, logWindow))
+      .map((e) => (e.visibleTo === "all" ? e : { ...e, visibleTo: [you.id] })),
+    logSeen: you.logSeen,
+    chat: state.chat.filter((m) => channels.includes(m.channel)).map(messageView),
     chatChannels: chatChannels(state, you),
     readChannels: channels,
     privateChannels: state.channels.filter((c) => c.members.includes(playerId)).map((c) => ({ ...c, members: [...c.members] })),
     plans: plansView(state, channels),
-    threads: channels.includes("global") ? state.threads.map(({ id, name, from, createdBy, cycle }) => ({ id, name, ...(from !== undefined && { from }), createdBy, cycle })) : [],
-    // Never `planet`: which planet an entry came from stays its finder's.
-    sharedPlanets: channels.includes("astrophysics") ? state.sharedPlanets.map(({ id, text, by, day, cycleOfDay, stale }) => ({ id, text, by, day, cycleOfDay, stale })) : [],
+    threads: channels.includes("global") ? threadsView(state) : [],
+    sharedPlanets: channels.includes("astrophysics") ? sharedPlanetsView(state) : [],
     channelLimit: channelLimit(state, you),
     movement: movementRules(state, you),
     bonds: {

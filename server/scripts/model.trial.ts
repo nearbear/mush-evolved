@@ -179,6 +179,8 @@ function apply(input: Input): string | null {
 /** Like GameRoom.wakeBots and botSay, without the rate limit: per bot, the depth of the message that woke it. */
 const wakes = new Map<PlayerId, number>();
 let messages = 0;
+/** Messages a bot wrote unprompted (not woken by chat), the chatter #224 measures. */
+let unprompted = 0;
 /** The chat router's calls (#341), counted apart from the bots' own, and what they decided. */
 const routed = { calls: [] as Call[], woke: 0, nobody: 0 };
 async function say(id: PlayerId, message: BotMessage, depth: number): void {
@@ -197,6 +199,7 @@ async function say(id: PlayerId, message: BotMessage, depth: number): void {
   const moderated = moderateChat(message.text);
   if (!moderated.ok || apply({ type: "chat", channel: channel!, text: moderated.text, by: id })) return;
   messages++;
+  if (depth === 0) unprompted++;
   console.log(`  ${id} (${game.players.find((p) => p.id === id)!.character}) [${channel}${"to" in message ? ` to ${message.to}` : ""}] depth ${depth}: ${moderated.text}`);
   if (depth >= BOT_CHAT_CHAIN_DEPTH) return;
   const candidates = [...bots].filter(([other, bot]) => {
@@ -349,7 +352,14 @@ const ok = calls.filter((c) => !c.error);
 const sum = (xs: number[]): number => xs.reduce((a, b) => a + b, 0);
 const avg = (xs: number[]): number => (xs.length ? sum(xs) / xs.length : 0);
 const pct = (xs: number[], p: number): number => [...xs].sort((a, b) => a - b)[Math.min(xs.length - 1, Math.floor(xs.length * p))] ?? 0;
-const unparsed = replies.filter((r) => !/(GOAL:\s*\d+|HELP:|SAY:)/i.test(r.reply) && !/^\d+$/.test(r.reply.trim())).length;
+/** A reply with a line that isn't GOAL, HELP or SAY (the shapes parseReply reads), and isn't a bare number. */
+const odd = (reply: string): boolean =>
+  !/^\d+$/.test(reply.trim()) &&
+  reply.split("\n").some((raw) => {
+    const line = raw.trim().replace(/^[*`]+|[*`]+$/g, "");
+    return line !== "" && !/^(GOAL:\s*\d+\s*|HELP:\s*\S.*|SAY:\s*\S.*)$/i.test(line);
+  });
+const unparsed = replies.filter((r) => odd(r.reply)).length;
 const lengths = calls.filter((c) => c.finish === "length").length;
 const cyclesDone = perCycle.length;
 
@@ -357,7 +367,7 @@ console.log(`\nmodel ${args.model}${args.extra ? ` extra ${args.extra}` : ""}${a
 console.log(`cycles ${cyclesDone}, calls ${calls.length} (${(calls.length / Math.max(1, cyclesDone) / bots.size).toFixed(1)} per bot per cycle), errors ${calls.length - ok.length}, wall ${((performance.now() - started) / 1000).toFixed(0)}s`);
 console.log(`tokens per call: prompt ${avg(ok.map((c) => c.prompt)).toFixed(0)}, completion ${avg(ok.map((c) => c.completion)).toFixed(0)} (reasoning ${avg(ok.map((c) => c.reasoning)).toFixed(0)}, max ${Math.max(0, ...ok.map((c) => c.completion))})`);
 console.log(`latency ms: p50 ${pct(ok.map((c) => c.ms), 0.5).toFixed(0)}, p90 ${pct(ok.map((c) => c.ms), 0.9).toFixed(0)}, max ${Math.max(0, ...ok.map((c) => c.ms)).toFixed(0)}`);
-console.log(`replies: ${replies.length}, without GOAL ${unparsed}, cut off by max_tokens ${lengths}; fallbacks ${fallbacks}; messages ${messages}; nulls ${stats.nulls}; illegal ${stats.illegal}`);
+console.log(`replies: ${replies.length}, with a line that is no reply line ${unparsed}, cut off by max_tokens ${lengths}; fallbacks ${fallbacks}; messages ${messages} (unprompted ${unprompted}); nulls ${stats.nulls}; illegal ${stats.illegal}`);
 {
   const r = routed.calls;
   console.log(`router (counted apart, not in the calls above): ${r.length} calls (woke someone ${routed.woke}, nobody ${routed.nobody}), prompt ${avg(r.map((c) => c.prompt)).toFixed(0)} tokens, p50 ${pct(r.map((c) => c.ms), 0.5).toFixed(0)}ms, $${sum(r.map((c) => c.cost)).toFixed(4)}`);
@@ -366,7 +376,7 @@ console.log(`cost: $${spent.toFixed(4)} this run, $${(spent / Math.max(1, calls.
 console.log(`goals (model calls and choices by priority): ${Object.entries(goalsChosen).sort((a, b) => b[1] - a[1]).map(([k, n]) => `${k} ${n}`).join(", ")}`);
 console.log(`actions: ${Object.entries(chosen).sort((a, b) => b[1] - a[1]).map(([k, n]) => `${k} ${n}`).join(", ")}`);
 for (const e of new Set(calls.filter((c) => c.error).map((c) => c.error))) console.log(`  error: ${e}`);
-const sample = replies.filter((r) => !/GOAL:\s*\d+\s*$/i.test(r.reply.trim())).slice(0, 3);
+const sample = replies.filter((r) => odd(r.reply)).slice(0, 3);
 for (const r of sample) console.log(`  odd reply: ${JSON.stringify(r.reply.slice(0, 200))}`);
 
 if (ledgerPath) writeFileSync(ledgerPath, String(spentBefore + spent));

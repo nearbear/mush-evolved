@@ -103,7 +103,7 @@ function ship(): { state: GameState; sentinels: Sentinel[] } {
         ],
       },
     ];
-    s.log.push({ cycle: s.cycle, key: "test", params: { x: str(`privateLog-${p.id}`, own) }, room: p.room, visibleTo: [p.id] });
+    s.log.push({ id: 10_000 + s.log.length, cycle: s.cycle, key: "test", params: { x: str(`privateLog-${p.id}`, own) }, room: p.room, visibleTo: [p.id] });
   }
 
   // Contamination is hidden from its owner; only a living Mush in their room sees it (p1 here, not p3 elsewhere).
@@ -114,6 +114,7 @@ function ship(): { state: GameState; sentinels: Sentinel[] } {
   s.spikedOn.p0 = num("spikedOn-p0", []);
   s.dispensedOn.anything = num("dispensedOn", []);
   s.nextItemId = num("nextItemId", []);
+  s.nextLogId = num("nextLogId", []);
   s.nextChatId = num("nextChatId", []);
   s.nextThreadId = num("nextThreadId", []);
   s.nextPlanetId = num("nextPlanetId", []);
@@ -156,7 +157,7 @@ function ship(): { state: GameState; sentinels: Sentinel[] } {
   s.pilgred.pool.tokens.push({ by: "p3", base: 1, roll: roll("pilgredRoll") });
   s.items.push({ id: str("floor-here", ["p0", "p1", "p2"]), type: "wrench", at: { kind: "room", id: HERE } });
   s.items.push({ id: str("floor-elsewhere", ["p3"]), type: "wrench", at: { kind: "room", id: ELSEWHERE } });
-  s.log.push({ cycle: s.cycle, key: "test", params: { x: str("roomLog-elsewhere", ["p3"]) }, room: ELSEWHERE, visibleTo: "all" });
+  s.log.push({ id: 10_000 + s.log.length, cycle: s.cycle, key: "test", params: { x: str("roomLog-elsewhere", ["p3"]) }, room: ELSEWHERE, visibleTo: "all" });
   s.chat.push({ id: 1, cycle: s.cycle, channel: MUSH_CHANNEL, from: "p0", isBot: false, text: str("mushChat", ["p0"]) });
   s.bonds.p1 = ["p2"];
   s.channels.push({ id: "pc-1", name: str("channelName", ["p1", "p3"]), members: ["p1", "p3"], createdBy: "p1", day: 1, cycleOfDay: 1 });
@@ -192,6 +193,12 @@ describe("hidden information in views", () => {
     expect(bonds("p1")).toEqual({ to: ["p2"], from: [] });
     expect(bonds("p2")).toEqual({ to: [], from: ["p1"] });
     for (const id of ["p0", "p3"]) expect(bonds(id)).toEqual({ to: [], from: [] });
+  });
+
+  it("no view's log carries ids: one counter per game, so a gap would show that a hidden line was written", () => {
+    const hidden = state.log.filter((e) => e.visibleTo !== "all");
+    expect(hidden.length, "the ship has hidden lines to leave gaps").toBeGreaterThan(0);
+    for (const id of SEATS) expect(viewFor(state, id).log.filter((e) => "id" in e)).toEqual([]);
   });
 
   it("no human's view mentions the Mush role, and the Mush's does", () => {

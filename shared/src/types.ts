@@ -27,9 +27,12 @@ export interface Seat {
 /**
  * One line of history. `room` is where it happened (absent = ship-wide, e.g. a
  * new cycle). `visibleTo: "all"` entries are part of that room's history and
- * shown to whoever is in the room; a player list is private to those players.
+ * shown to whoever is in the room; a player list is private to those players,
+ * named by body id, so it stays with the body across a Transfer. A view names only its viewer.
  */
 export interface LogEntry {
+  /** Increasing per game, like `ChatMessage.id`; never reused. Identifies a line once the log is windowed or trimmed. */
+  id: number;
   cycle: number;
   /** Wall-clock ms when the server recorded it. The rules have no clock; GameRoom stamps it. Missing on older games. */
   at?: number;
@@ -42,6 +45,9 @@ export interface LogEntry {
   /** Set on entries the crew should take notice of: a secret or covert action that leaked into the room log, or an alarm. */
   level?: "warning";
 }
+
+/** A log line as a live view sends it: no `id` (`PlayerView.log` says why). */
+export type LogLine = Omit<LogEntry, "id">;
 
 /** Values a log message can interpolate. */
 export type LogParams = Record<string, string | number>;
