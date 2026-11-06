@@ -44,6 +44,10 @@ export interface PlayerState extends Seat {
   mind: PlayerId;
   /** The Mush in this mind has used Transfer (one use per game); moves with the mind. Never sent. */
   transferUsed?: true;
+  /** This body used Apprenticeship (the copy replaced Apprentice), so Apprentice can't be picked again. Your own view only; stays with the body. */
+  apprenticeUsed?: true;
+  /** This body used Eureka moment (become_genius), once per game. Your own view only; stays with the body. */
+  geniusUsed?: true;
   /**
    * Set on a Transfer's victim, in their new body: the character who took their old body, for the pop-up they must
    * acknowledge (`acknowledgeTransfer`). Your own view only.

@@ -99,6 +99,7 @@ export interface GameConfig {
   // Null: everyone is seated at launch and Mush are picked then (tests, single player later).
   preselection: PreselectionRules | null;
   startAp: number;
+  failureMultiplier: number; // Each failed try in a row at an action with a chance to fail multiplies its next chance by this, until a success (owner, 2026-11-05; the original's fail_coef 1.25). An action may set its own (scan, turrets, patrol shot, manual extinguish).
   startMp: number; // MP each player wakes up with. Capped by `movement.mpCap` like any other gain.
   apPerCycle: number; // AP gained at the start of each cycle, before modifiers. Unspent AP carries over.
   // Hours per cycle on the server's UTC clock (#230). The rules never read it; the server clock and the record do.
@@ -154,6 +155,9 @@ export interface GameConfig {
   };
   tubeTransfer: {
     cost: { ap: number }; // Sending an item down the pneumatic tube: free (owner, 2026-11-04).
+  };
+  apprenticeship: {
+    cost: { ap: number }; // The Apprentice skill: 1 AP (owner, 2026-11-05).
   };
   bodyTransfer: {
     cost: { ap: number }; // The Mush skill Transfer: free (owner, 2026-10-24).

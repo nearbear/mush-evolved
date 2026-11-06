@@ -2,6 +2,7 @@ import { Action, isString } from "./action.ts";
 import { canReachItem, removeItem } from "../items.ts";
 import { logPrivate, logPublic } from "../log.ts";
 import { hullRepairAmount } from "../modifiers.ts";
+import { removeStatus } from "../statuses.ts";
 import type { GameState, PlayerState } from "../types.ts";
 
 export type RepairHullActionData = { type: "repair_hull"; item: string };
@@ -22,7 +23,8 @@ export class RepairHullAction extends Action<RepairHullActionData> {
     return { ap: state.config.hullRepair.cost.ap, mp: 0 };
   }
 
-  override getSuccessChance(state: Readonly<GameState>): number {
+  override getSuccessChance(state: Readonly<GameState>, player: Readonly<PlayerState>): number {
+    if (player.statuses.includes("genius")) return 1; // Owner, 2026-11-05: Genius makes the next repair certain.
     return state.config.hullRepair.chance;
   }
 
@@ -43,6 +45,7 @@ export class RepairHullAction extends Action<RepairHullActionData> {
 
   override apply(state: GameState, player: PlayerState, target: RepairHullActionData): void {
     removeItem(state, target.item);
+    removeStatus(player, "genius");
     const amount = hullRepairAmount(state, player, state.config.hullRepair.amount);
     state.ship.hull = Math.min(state.config.ship.hull.max, state.ship.hull + amount);
     logPublic(state, player.room, "hullRepaired", { name: player.character });

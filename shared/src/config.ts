@@ -16,6 +16,7 @@ export const DEFAULT_CONFIG: GameConfig = {
   preselection: null,
   // Confirmed 2026-10-11: start with 8 AP, gain 1 per cycle (2 while lying in a bed, via the
   // "lying_down" modifier), never above 12.
+  failureMultiplier: 1.25,
   startAp: 8,
   // Owner, 2026-10-24: each player starts with 12 MP (was 0). Same cap as `movement.mpCap`.
   startMp: 12,
@@ -62,6 +63,8 @@ export const DEFAULT_CONFIG: GameConfig = {
   // Confirmed 2026-10-15: spiking costs 1 AP and 1 spore, and raises a human's contamination by 1.
   spike: { cost: { ap: 1 }, cooldownCycles: 4 },
   bodyTransfer: { cost: { ap: 0 } },
+  // Owner, 2026-11-05: the Apprentice skill's apprenticeship action costs 1 AP.
+  apprenticeship: { cost: { ap: 1 } },
   // Owner, 2026-11-04: the pneumatic tube is free to use.
   tubeTransfer: { cost: { ap: 0 } },
   // Owner, 2026-11-04: Phagocytosis costs 1 spore (no AP), heals 4 HP and gives 4 AP.

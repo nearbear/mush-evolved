@@ -135,7 +135,6 @@ export function createGame(
     relay: { research: {}, projects: {} },
     pilgred: { progress: 0, pool: { tokens: [] } },
     planets: {},
-    scanFailures: {},
     nextPlanetId: 1,
     sharedPlanets: [],
     nextSharedPlanetId: 1,
@@ -146,9 +145,7 @@ export function createGame(
     incidentPoints: 0,
     fires: [],
     pendingFires: [],
-    turretFailures: {},
-    patrolFailures: {},
-    extinguishFailures: {},
+    failureStreaks: {},
     patrolShips: newPatrolShips(config),
     space: [],
     navigation: { heading: config.navigation.startHeading, orbit: null, arriving: null, lastTurn: null },
@@ -263,12 +260,15 @@ export function performAction(next: GameState, actor: PlayerState, action: Actio
   if (cost.paidBy) actor.resources[cost.paidBy] -= 1;
   const room = actor.room;
   if (chance < 1) {
-    if (rollFloat(next) < chance) def.apply(next, actor, action);
+    const succeeded = rollFloat(next) < chance;
+    def.recordOutcome(next, actor, succeeded);
+    if (succeeded) def.apply(next, actor, action);
     else {
       def.fail(next, actor, action);
       actionFailed(next, actor, cost.ap);
     }
   } else {
+    def.recordOutcome(next, actor, true);
     def.apply(next, actor, action);
   }
   // After apply, so an action that reveals your own history (Chitchat) doesn't show itself.

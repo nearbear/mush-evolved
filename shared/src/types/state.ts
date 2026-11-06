@@ -117,8 +117,6 @@ export interface GameState {
   comms: CommsState;
   /** Each player's planets, found at the Astro terminal (planets.ts). Private: only the finder's own view has them, without the unknown sectors' tags. */
   planets: Record<PlayerId, Planet[]>;
-  /** Failed scans in a row per player, raising their next scan's odds; reset by a success (owner, 2026-10-19). Never sent. */
-  scanFailures: Record<PlayerId, number>;
   nextPlanetId: number;
   /** Planets shared in the Astrophysics feature (chat.ts, `sharePlanet`), oldest first. `planet` is never sent. */
   sharedPlanets: SharedPlanetState[];
@@ -158,12 +156,8 @@ export interface GameState {
    * there are, to whoever flies a patrol ship (owner, 2026-10-28).
    */
   space: SpaceDebris[];
-  /** Missed turret shots in a row per player, raising their next shot's odds; reset by a hit (owner, 2026-10-24). Never sent. */
-  turretFailures: Record<PlayerId, number>;
-  /** Missed patrol-ship shots in a row per player, kept apart from the turrets' (owner, 2026-10-24); reset by a hit. Never sent. */
-  patrolFailures: Record<PlayerId, number>;
-  /** Missed manual extinguish tries in a row per player (the Firefighter skill), raising their next try's odds; reset by a success. Never sent. */
-  extinguishFailures: Record<PlayerId, number>;
+  /** Failures in a row per player and action type, raising that action's next chance by its failure multiplier; reset by a success (action.ts; owner, 2026-11-05). Never sent. */
+  failureStreaks: Record<PlayerId, Record<string, number>>;
   /** The incident pool (incidents.ts): points earned each cycle change and spent on incidents. Never sent to anyone (#189). */
   incidentPoints: number;
   /** Burning rooms (fire.ts), in the order they caught fire. Only the living in a burning room see it (`PlayerView.roomOnFire`). */

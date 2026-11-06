@@ -64,6 +64,8 @@ import { InstallAction } from "./actions/install.ts";
 import { UninstallAction } from "./actions/uninstall.ts";
 import { JettisonAction } from "./actions/jettison.ts";
 import { PickSkillAction } from "./actions/pick_skill.ts";
+import { ApprenticeshipAction } from "./actions/apprenticeship.ts";
+import { BecomeGeniusAction } from "./actions/become_genius.ts";
 import { ReadBookAction } from "./actions/read_book.ts";
 import { AnathemaAction } from "./actions/anathema.ts";
 import { BoringSpeechAction, FierySpeechAction } from "./actions/speech.ts";
@@ -116,6 +118,8 @@ export interface ActionDef<A extends Action> {
   cooldownLeft(state: Readonly<GameState>, player: Readonly<PlayerState>, action: A): number;
   dirtChanceMods(state: Readonly<GameState>, player: Readonly<PlayerState>, action: A): number;
   injuryChanceMods(state: Readonly<GameState>, player: Readonly<PlayerState>, action: A): number;
+  /** Counts the roll toward the player's failure streak at this action type (performAction): a miss adds one, a success clears it. */
+  recordOutcome(next: GameState, player: PlayerState, succeeded: boolean): void;
   /** The effect on failure (the cost stays paid). Mutates a state the caller already cloned. */
   fail(next: GameState, player: PlayerState, action: A): void;
 }
@@ -206,6 +210,8 @@ const REGISTRY = {
   boring_speech: new BoringSpeechAction(),
   attack: new AttackAction(),
   pick_skill: new PickSkillAction(),
+  apprenticeship: new ApprenticeshipAction(),
+  become_genius: new BecomeGeniusAction(),
   read_book: new ReadBookAction(),
   self_disease: new SelfDiseaseAction(),
   self_injury: new SelfInjuryAction(),

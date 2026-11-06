@@ -23,12 +23,14 @@ const FIXED_STATUS_PUBLIC = {
   // Owner, 2026-10-24: the Outcast status is public to the room (who cursed them is not).
   outcast: true,
   broken_nose_injury: false,
+  // Owner, 2026-11-05: Genius is private to its holder.
+  genius: false,
   // Owner, 2026-10-31 (#145): both are public to everyone and float over the head.
   inactive: true,
   super_inactive: true,
 } as const;
 
-export const STATUS_IDS = ["dirty", "full_belly", "hungry", "immune", "immunity", "pacifist", "mankind_only_hope", "wheelchair", "accommodated", "outcast", "broken_nose_injury", "inactive", "super_inactive"] as const;
+export const STATUS_IDS = ["dirty", "full_belly", "hungry", "immune", "immunity", "pacifist", "mankind_only_hope", "wheelchair", "accommodated", "outcast", "broken_nose_injury", "genius", "inactive", "super_inactive"] as const;
 export type StatusId = string;
 export function statusIdsFor(diseases: readonly string[]): string[] {
   return [...new Set([...STATUS_IDS, ...diseases])];

@@ -92,11 +92,11 @@ describe("Gunman", () => {
 describe("Persistent", () => {
   it("grows the odds 1.5x a miss at turrets instead of 1.25x, and only for its holder", () => {
     const s = ship();
-    s.turretFailures.p0 = 2;
+    s.failureStreaks.p0 = { turret_attack: 2 };
     expect(shotChance(s)).toBeCloseTo(0.3 * 1.25 ** 2);
     give(s, "p0", "persistent");
     expect(shotChance(s)).toBeCloseTo(0.3 * 1.5 ** 2);
-    s.turretFailures.p0 = 0;
+    s.failureStreaks.p0 = { turret_attack: 0 };
     expect(shotChance(s)).toBeCloseTo(0.3);
   });
 
@@ -105,7 +105,8 @@ describe("Persistent", () => {
     for (const p of s.players) p.room = "COMMAND_CENTER";
     const scan = { type: "scan_planet", equipment: "COMMAND_CENTER:ASTRO_MODULE" } as const;
     const { chance, failureMultiplier } = s.config.astro.scan;
-    s.scanFailures.p0 = s.scanFailures.p1 = 1;
+    s.failureStreaks.p0 = { scan_planet: 1 };
+    s.failureStreaks.p1 = { scan_planet: 1 };
     give(s, "p0", "persistent");
     expect(option(s, "p0", scan)!.chance).toBeCloseTo(chance * 1.5);
     expect(option(s, "p1", scan)!.chance).toBeCloseTo(chance * failureMultiplier);

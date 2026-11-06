@@ -1,4 +1,4 @@
-import { actionCost, actionSuccessRate, actionDirtRate, actionInjuryRate, type CostContext } from "../modifiers.ts";
+import { actionCost, actionSuccessRate, actionDirtRate, actionInjuryRate, failureStreakMultiplier, type CostContext } from "../modifiers.ts";
 import { isBrokenIn } from "../equipment.ts";
 import type { Action as AnyAction, GameState, PlayerState, ResourceId } from "../types.ts";
 
@@ -141,8 +141,37 @@ export class Action<T extends { type: string }> {
     return 1;
   }
 
+  /**
+   * The per-miss multiplier on this action's failure streak, before modifiers (Persistent raises it). Defaults to
+   * `config.failureMultiplier`; an action with its own number in the config overrides this.
+   */
+  getFailureMultiplier(state: Readonly<GameState>, player: Readonly<PlayerState>, target: T): number {
+    return state.config.failureMultiplier;
+  }
+
+  /** This player's failures in a row at this type of action. */
+  failureStreak(state: Readonly<GameState>, player: Readonly<PlayerState>): number {
+    return state.failureStreaks[player.id]?.[this.type] ?? 0;
+  }
+
+  /**
+   * The odds the player sees and rolls: `getSuccessChance` raised by the failure streak (every try missed in a row
+   * multiplies it by the failure multiplier, capped at certain), then adjusted by modifiers. Done here once, so no
+   * action repeats it.
+   */
   chance(state: Readonly<GameState>, player: Readonly<PlayerState>, target: T): number {
-    return actionSuccessRate(this.getSuccessChance(state, player, target), this.context(state, player, target));
+    const base = this.getSuccessChance(state, player, target);
+    const streak = this.failureStreak(state, player);
+    const streaked = streak === 0 ? base : Math.min(1, base * failureStreakMultiplier(state, player, this.getFailureMultiplier(state, player, target)) ** streak);
+    return actionSuccessRate(streaked, this.context(state, player, target));
+  }
+
+  /** Extends or clears the player's streak after the roll (performAction): a success resets it, a miss adds one. */
+  recordOutcome(state: GameState, player: PlayerState, succeeded: boolean): void {
+    const streaks = (state.failureStreaks[player.id] ??= {});
+    if (succeeded) delete streaks[this.type];
+    else streaks[this.type] = (streaks[this.type] ?? 0) + 1;
+    if (Object.keys(streaks).length === 0) delete state.failureStreaks[player.id];
   }
 
   dirtChance(state: Readonly<GameState>, player: Readonly<PlayerState>, target: T): number {

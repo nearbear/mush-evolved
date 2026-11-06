@@ -33,7 +33,11 @@ export function PeekBar({
   const names = useNames();
   const labelFor = ({ action, cost, chance }: ActionOption): ReactNode => {
     const weapon = attackWeapon(view, action);
-    const text = weapon ? t("actions.attackWith", { weapon: names.itemOf(weapon) }) : names.action(action.type);
+    const text = weapon
+      ? t("actions.attackWith", { weapon: names.itemOf(weapon) })
+      : action.type === "apprenticeship"
+        ? t("actions.apprenticeshipOf", { skill: names.skill(action.skill) })
+        : names.action(action.type);
     return <ActionLabel text={text} cost={cost} chance={chance} visibility={actionVisibility(action.type)} />;
   };
   if (door) {
