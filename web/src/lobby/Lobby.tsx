@@ -12,6 +12,7 @@ import { matchmakerSocket, type SeatTicket } from "../net.ts";
 import logoUrl from "../../../Mush/www/img/design/logo_welcome.png?url";
 import "./lobby.css";
 import { hasWebGL2 } from "./webgl.ts";
+import { showSuccess, showWarning } from "../Toasts.tsx";
 
 /** One row per language, each its own matchmaker queue. Ship names are the language's own name and are not translated. */
 const SHIPS: readonly { name: string; language: LobbyLanguage }[] = [
@@ -98,23 +99,26 @@ export function Lobby({ onMatched }: { onMatched: (ticket: SeatTicket) => void }
   const account = me?.status === "signed_in" ? me.account : null;
   // Aboard a multiplayer ship (#320): the lobby offers Resume instead of the ships, and resuming skips both pickers.
   const [resuming, setResuming] = useState(false);
-  // A message about signing in, kept as a key so it follows the language: back from a provider, or refused boarding.
-  const [notice, setNotice] = useState<string | null>(() => {
-    const outcome = takeAuthOutcome();
-    return outcome && `account.outcome.${outcome}`;
-  });
+  // Notices about signing in or boarding show as warning toasts. First, the outcome of coming back from a provider.
+  const [authOutcome] = useState(takeAuthOutcome);
+  useEffect(() => {
+    if (authOutcome) (authOutcome === "linked" ? showSuccess : showWarning)(t(`account.outcome.${authOutcome}` as never));
+  }, [authOutcome, t]);
+  useEffect(() => {
+    if (rateLimited) showWarning(t("account.errors.rate_limited" as never));
+  }, [rateLimited, t]);
 
   /** Back to the ship list with a notice, asking `/api/me` again: the session or the ship the account is on changed. */
   const backToShips = useCallback(
-    (key: string) => {
-      setNotice(key);
+    (key: string | null) => {
+      if (key) showWarning(t(key as never));
       setShip(null);
       setName(null);
       setCharacter(null);
       setResuming(false);
       void refresh();
     },
-    [refresh],
+    [refresh, t],
   );
 
   /** Fades the pod out first, so the game's wake-up starts from dark. Returns the timer to clear on unmount. */
@@ -166,13 +170,15 @@ export function Lobby({ onMatched }: { onMatched: (ticket: SeatTicket) => void }
       const msg = JSON.parse(e.data) as MatchmakerServerMessage;
       if (msg.type === "matched") timer = enterShip({ roomId: msg.roomId, token: msg.token });
       // `not_aboard`: the ship ended or the character left it, so `/api/me` now says not aboard and the ships show.
-      if (msg.type === "error") backToShips(msg.message === "not_aboard" ? "lobby.notAboard" : `errors.${msg.message}`);
+      if (msg.type === "error" && msg.message === "not_aboard") {
+        backToShips("lobby.notAboard");
+      } else if (msg.type === "error") backToShips(`errors.${msg.message}`);
     });
     return () => {
       clearTimeout(timer);
       socket.close();
     };
-  }, [resuming, enterShip, backToShips]);
+  }, [resuming, enterShip, backToShips, t]);
 
   const aboard = account?.aboard ?? false;
   const shipCounts = useShipCounts(webgl && name === null && !resuming && !aboard);
@@ -261,11 +267,6 @@ export function Lobby({ onMatched }: { onMatched: (ticket: SeatTicket) => void }
           </div>
           <div className="pod-state" inert={step !== "ship"}>
             <p className="pod-subtitle">{t("lobby.tagline")}</p>
-            {(notice || rateLimited) && (
-              <p className="pod-status pod-notice" role="status">
-                {t((notice ?? "account.errors.rate_limited") as never)}
-              </p>
-            )}
             <ul className="pod-ships">
               {me?.status === "signed_out" ? (
                 <li className="pod-signin">
@@ -282,7 +283,6 @@ export function Lobby({ onMatched }: { onMatched: (ticket: SeatTicket) => void }
                   <button type="button"
                     className="big pod-ship"
                     onClick={() => {
-                      setNotice(null);
                       setError("");
                       setResuming(true);
                     }}
@@ -302,7 +302,6 @@ export function Lobby({ onMatched }: { onMatched: (ticket: SeatTicket) => void }
                     disabled={!account}
                     onClick={() => {
                       if (!account) return;
-                      setNotice(null);
                       setShip(s);
                       setName(account.displayName);
                     }}
@@ -318,7 +317,6 @@ export function Lobby({ onMatched }: { onMatched: (ticket: SeatTicket) => void }
                 <button type="button"
                   className="big pod-ship"
                   onClick={() => {
-                    setNotice(null);
                     setShip(SINGLE_PLAYER);
                     setName(singlePlayerName());
                   }}

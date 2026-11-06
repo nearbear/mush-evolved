@@ -647,9 +647,6 @@ button.pod-skill:focus-visible {
   padding: 0 1.5rem;
   font-size: 0.95rem;
 }
-.pod-notice {
-  margin-bottom: 0.75rem;
-}
 /* The sign-up name step: buttons centered under the centered text. */
 .pod-state .name-form-buttons {
   justify-content: center;

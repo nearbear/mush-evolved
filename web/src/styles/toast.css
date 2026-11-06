@@ -18,6 +18,14 @@
   text-align: center;
   transition: opacity 0.2s, transform 0.2s;
 }
+.toast[data-type="warning"] {
+  border-color: var(--warning, #d9a441);
+  color: var(--warning, #d9a441);
+}
+.toast[data-type="success"] {
+  border-color: var(--success, #5fb878);
+  color: var(--success, #5fb878);
+}
 .toast[data-starting-style],
 .toast[data-ending-style] {
   opacity: 0;
