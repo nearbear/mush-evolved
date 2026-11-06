@@ -13,15 +13,20 @@ import type { ActionVisibility } from "./actions/action.ts";
 import { CAMERA_EQUIPMENT } from "./equipment.ts";
 import type { GameState, LogEntry, LogParams, PlayerId, PlayerState, RoomId } from "./types.ts";
 
+/** Appends `entry` with the next id and the current cycle. Every log line goes through here. Mutates a state the caller already cloned. */
+export function pushLog(state: GameState, entry: Omit<LogEntry, "id" | "cycle">): void {
+  state.log.push({ id: state.nextLogId++, cycle: state.cycle, ...entry });
+}
+
 /** Mutates a state that the caller already cloned. */
 export function logPublic(state: GameState, room: RoomId | undefined, key: string, params?: LogParams, level?: "warning"): void {
-  state.log.push({ cycle: state.cycle, key, ...(params && { params }), ...(room !== undefined && { room }), visibleTo: "all", ...(level && { level }) });
+  pushLog(state, { key, ...(params && { params }), ...(room !== undefined && { room }), visibleTo: "all", ...(level && { level }) });
 }
 
 /** Mutates a state that the caller already cloned. */
 export function logPrivate(state: GameState, actor: PlayerId, key: string, params?: LogParams): void {
   const p = state.players.find((pl) => pl.id === actor);
-  state.log.push({ cycle: state.cycle, key, ...(params && { params }), ...(p && { room: p.room }), visibleTo: [actor] });
+  pushLog(state, { key, ...(params && { params }), ...(p && { room: p.room }), visibleTo: [actor] });
 }
 
 /**
@@ -40,8 +45,7 @@ export function logSecret(state: GameState, actor: PlayerId, key: string, params
   const witnesses = state.players.filter((o) => o.id !== actor && o.alive && o.room === p.room && o.id !== hideFrom);
   const witnessed = hideFrom === undefined ? state.players.some((o) => o.id !== actor && o.alive && o.room === p.room) : witnesses.length > 0;
   const visibleTo = hasCamera(state, p.room) ? "all" : !witnessed ? [actor] : hideFrom === undefined ? "all" : [actor, ...witnesses.map((o) => o.id)];
-  const entry: LogEntry = { cycle: state.cycle, key, ...(params && { params }), room: p.room, visibleTo, ...spilled(visibleTo) };
-  state.log.push(entry);
+  pushLog(state, { key, ...(params && { params }), room: p.room, visibleTo, ...spilled(visibleTo) });
 }
 
 /** Mutates a state that the caller already cloned. Room history only if a camera saw it. */
@@ -53,7 +57,7 @@ export function logCovert(state: GameState, actor: PlayerId, key: string, params
     return;
   }
   const visibleTo = hasCamera(state, p.room) ? "all" : [actor];
-  state.log.push({ cycle: state.cycle, key, ...(params && { params }), room: p.room, visibleTo, ...spilled(visibleTo) });
+  pushLog(state, { key, ...(params && { params }), room: p.room, visibleTo, ...spilled(visibleTo) });
 }
 
 /** A secret or covert entry that reached anyone besides the actor is a warning. One only the actor sees is not. */

@@ -4,7 +4,7 @@
 // per-viewer preference kept in localStorage, like `fogDepth.ts`.
 
 import { useSyncExternalStore } from "react";
-import type { ChatMessage, LogEntry, PlayerView } from "@mush2/shared";
+import type { ChatMessage, LogLine, PlayerView } from "@mush2/shared";
 
 export type Urgency = "polite" | "assertive";
 /** all: everything; mentions: urgent events, private entries and messages that name you or come on private channels; off: none (your own send confirmations and errors still speak). */
@@ -143,13 +143,13 @@ export const URGENT_LOG_KEYS: ReadonlySet<string> = new Set([
   "hunterHitPatrol",
 ]);
 
-export function isUrgent(e: Pick<LogEntry, "key" | "level">): boolean {
+export function isUrgent(e: Pick<LogLine, "key" | "level">): boolean {
   return e.level === "warning" || URGENT_LOG_KEYS.has(e.key);
 }
 
 export interface Fresh {
   /** New log entries from the room you are in, or private to you. */
-  log: LogEntry[];
+  log: LogLine[];
   /** New chat messages (including your own and the game's). */
   chat: ChatMessage[];
   /** The newest cycle among `log`, if it is later than the last one heard. */

@@ -1,5 +1,5 @@
 {
-  "version": 108,
+  "version": 109,
   "paths": [
     "bios.actopi",
     "bios.death_announcements",
@@ -144,6 +144,7 @@
     "log[]",
     "log[].at",
     "log[].cycle",
+    "log[].id",
     "log[].key",
     "log[].visibleTo",
     "navigation.arriving",
@@ -154,6 +155,7 @@
     "nextChatId",
     "nextExpeditionId",
     "nextItemId",
+    "nextLogId",
     "nextPlanId",
     "nextPlanetId",
     "nextSharedPlanetId",

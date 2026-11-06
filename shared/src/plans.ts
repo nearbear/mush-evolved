@@ -196,7 +196,7 @@ export function expirePlans(state: GameState): void {
  * The plans of the channels the viewer can read (`readChannels`), for their view: a plan is part of its channel, so a
  * member without an iTrackie sees it no more than the channel's messages. Nothing in a plan is secret from its members.
  */
-export function plansView(state: Readonly<GameState>, readable: readonly ChannelId[]): Plan[] {
+export function plansView(state: Readonly<Pick<GameState, "plans">>, readable: readonly ChannelId[]): Plan[] {
   return state.plans.filter((p) => readable.includes(p.channel)).map((p) => clone(p));
 }
 

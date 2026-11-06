@@ -183,8 +183,28 @@
 											"z"
 										],
 										"message": "Use `import * as z from \"zod\"`: the `z` export carries all of zod, every locale included, into the Worker (about 65 KB gzipped more, #324)."
+									},
+									"@mush2/shared": {
+										"importNames": [
+											"revealFor",
+											"Reveal",
+											"SeatReveal",
+											"seatViewFor",
+											"SeatView",
+											"perspective"
+										],
+										"message": "Replay only: all-seeing shows every hidden thing, and a seat view carries log ids, whose gaps leak hidden lines (shared/src/replayView.ts, #367)."
 									}
-								}
+								},
+								"patterns": [
+									{
+										"group": [
+											"@mush2/shared/src/replayView*",
+											"**/replayView*"
+										],
+										"message": "All-seeing shows every hidden thing; only the replay page may build it (shared/src/replayView.ts, #367)."
+									}
+								]
 							}
 						}
 					}

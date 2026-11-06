@@ -5,7 +5,7 @@ import type { RebelBaseId, XylophEntryId } from "../comms.ts";
 import type { TurnSide } from "../navigation.ts";
 import type { PlanetDirection } from "../planets.ts";
 import type { TitleId } from "../titles.ts";
-import type { Action, BotKind, ItemId, LogEntry, PlayerId, Role, RoomId } from "../types.ts";
+import type { Action, BotKind, ItemId, LogEntry, LogLine, PlayerId, Role, RoomId } from "../types.ts";
 import type { ChannelId, ChatMessage, ChatThread, PrivateChannel, SharedPlanet } from "./chat.ts";
 import type { Plan } from "./plan.ts";
 import type { MovementRules } from "./config.ts";
@@ -181,9 +181,10 @@ export interface PlayerView {
   burningRooms: RoomId[];
   /**
    * History of the room you are in (public entries) plus every entry private
-   * to you. Other rooms' public history is never sent.
+   * to you. Other rooms' public history is never sent. Without ids: they come from one counter per game, so a gap
+   * would show that a line you can't see was written (for example a witness's view skipping a conversion).
    */
-  log: LogEntry[];
+  log: LogLine[];
   /** Messages in `readChannels`. */
   chat: ChatMessage[];
   /** Channels you may post to right now. */
@@ -367,3 +368,12 @@ export interface CommsTerminalView {
 
 /** An expedition report as its members see it (expeditions.ts). */
 export type ExpeditionReportView = Omit<ExpeditionReport, "members">;
+
+/**
+ * A seat's view with its log lines' ids, for the replay only (`perspective`, `seatViewFor`): click-to-jump and paging
+ * key lines by id. A live view never carries them (see `PlayerView.log`). Its own type rather than an optional `id` on
+ * the live one, so a live view can't be filled with ids by mistake.
+ */
+export interface SeatView extends Omit<PlayerView, "log"> {
+  log: LogEntry[];
+}

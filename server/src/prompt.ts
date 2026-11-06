@@ -2,7 +2,7 @@
 // network. Built only from the bot's own PlayerView, which is what keeps hidden information out of the prompt.
 // Anything a player wrote (chat, channel names) goes in as quoted data, never as instructions; players will try injection.
 
-import { characterGivenName, characterName, MAX_CHAT_LENGTH, type ChannelId, type LobbyLanguage, type LogEntry, type PlayerId, type PlayerView, type RoomId } from "@mush2/shared";
+import { characterGivenName, characterName, MAX_CHAT_LENGTH, type ChannelId, type LobbyLanguage, type LogLine, type PlayerId, type PlayerView, type RoomId } from "@mush2/shared";
 import { dutyPrompts, hasBotSkill } from "./bots/duties.ts";
 import { HELP_MAX_TIMES, HELP_TASKS, helpKey, targeted, type Goal, type HelpParams, type HelpTask } from "./bots/goals/index.ts";
 import type { ChatTurn } from "./model.ts";
@@ -44,7 +44,7 @@ messages short, write them in ${LANGUAGE_NAMES[language]}, and speak as your cha
 If you have nothing to say, reply with just the goal line.`;
 
 /** A log entry as plain text: the server has no locale catalogs, so this is the message id plus its data. */
-export function describeLogEntry(e: LogEntry): string {
+export function describeLogEntry(e: LogLine): string {
   const params = Object.entries(e.params ?? {}).map(([k, v]) => `${k}=${v}`);
   const text = `[cycle ${e.cycle}${e.room ? `, ${e.room}` : ""}] ${e.key}${params.length ? ` (${params.join(", ")})` : ""}`;
   return text.length > MAX_CHAT_LENGTH ? `${text.slice(0, MAX_CHAT_LENGTH - 1)}…` : text;

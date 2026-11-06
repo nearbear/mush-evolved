@@ -28,9 +28,9 @@ describe("buildPrompt", () => {
     other.hp = 777;
     other.morale = 3;
     other.spores = 4;
-    b.log.push({ cycle: 1, key: "secretThing", visibleTo: ["p5"] });
+    b.log.push({ id: b.nextLogId++, cycle: 1, key: "secretThing", visibleTo: ["p5"] });
     const elsewhere = Object.keys(viewFor(a, "p0").rooms).find((r) => r !== b.players[0]!.room)!;
-    b.log.push({ cycle: 1, key: "otherRoomThing", room: elsewhere, visibleTo: "all" });
+    b.log.push({ id: b.nextLogId++, cycle: 1, key: "otherRoomThing", room: elsewhere, visibleTo: "all" });
     expect(prompt(viewFor(b, "p0"))).toBe(prompt(viewFor(a, "p0")));
     // And it isn't blind: the bot's own private state does reach the prompt.
     b.players[0]!.hp = 1;

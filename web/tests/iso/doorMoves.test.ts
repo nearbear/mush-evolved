@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
-import type { LogEntry } from "@mush2/shared";
+import type { LogLine } from "@mush2/shared";
 import { recentDoorMoves } from "../../src/iso/doorMoves.ts";
 
-const entry = (key: string, name: string, room: string, at?: number): LogEntry => ({ cycle: 1, key, params: { name, room }, visibleTo: "all", ...(at !== undefined && { at }) });
+const entry = (key: string, name: string, room: string, at?: number): LogLine => ({ cycle: 1, key, params: { name, room }, visibleTo: "all", ...(at !== undefined && { at }) });
 const players = [{ id: "p1", character: "kuanti" }, { id: "p2", character: "chun" }];
 
 describe("recentDoorMoves", () => {

@@ -34,6 +34,7 @@ export const GAME_STATE_FIELDS: Record<string, FieldRule> = {
   dispensedOn: { reach: "never", test: "leaks.test.ts" },
   log: { reach: "filtered", test: "leaks.test.ts", note: "Your room's public entries, ship-wide ones, and your private ones." },
   chat: { reach: "filtered", test: "leaks.test.ts", note: "Messages in your read channels." },
+  nextLogId: { reach: "never", test: "leaks.test.ts", note: "Secret: it counts every line written, hidden ones included, so its jumps would show a hidden line (a conversion, say). That is why live views carry no log ids either; only the replay's SeatView has them." },
   nextChatId: { reach: "never", test: "leaks.test.ts", note: "Not secret (message ids show it), just not sent." },
   channels: { reach: "filtered", test: "leaks.test.ts", note: "Private channels you are a member of." },
   nextChannelId: { reach: "never", test: "leaks.test.ts", note: "Not secret (channel ids show it), just not sent." },

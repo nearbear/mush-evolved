@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest";
-import type { ChatMessage, LogEntry, PlayerView } from "@mush2/shared";
+import type { ChatMessage, LogLine, PlayerView } from "@mush2/shared";
 import { batchText, freshIn, isUrgent } from "./announce.ts";
 
-const entry = (over: Partial<LogEntry>): LogEntry => ({ cycle: 1, key: "x", visibleTo: "all", ...over });
+const entry = (over: Partial<LogLine>): LogLine => ({ cycle: 1, key: "x", visibleTo: "all", ...over });
 const msg = (id: number, over: Partial<ChatMessage> = {}): ChatMessage => ({ id, cycle: 1, channel: "global", from: "p2", isBot: false, text: "hi", ...over });
-const view = (log: LogEntry[], chat: ChatMessage[], room = "A"): PlayerView => ({ log, chat, you: { room } }) as unknown as PlayerView;
+const view = (log: LogLine[], chat: ChatMessage[], room = "A"): PlayerView => ({ log, chat, you: { room } }) as unknown as PlayerView;
 
 describe("freshIn", () => {
   it("announces nothing for the history of the first view", () => {
