@@ -33,7 +33,7 @@ So in the history, entries leave the front of both lists while new ones append a
 
 The order is the build order. Stories 1 and 2 don't depend on each other. Story 3 needs nothing but the existing API (story 2 adds only its summary call). Story 4 needs 1 and 3. Stories 5 and 6 need 4.
 
-### 1. Replay helpers in shared (pure, tested). Size M. Label `leak-risk`.
+### 1. (#367) Replay helpers in shared (pure, tested). Size M. Label `leak-risk`.
 
 The logic the page needs, kept out of components (architecture rule 3).
 
@@ -47,13 +47,13 @@ The logic the page needs, kept out of components (architecture rule 3).
 - **Tests:** `revealFor(...).view` contains `perspective` (the extra lines are the only difference); a hidden line from another room is not added; `stepMarks` on a recorded random game (the `#335` measurement harness: 2,090 inputs, 14 cycles), with no mark for an empty step; a Transfer across a frame in `seatsAt`.
 - **Leak-check:** this module shows every hidden thing by design. The check is that only the replay page reaches it, and that `revealFor` runs only on data the server already serves as public (`fullView.ts` header).
 
-### 2. One game's summary: `GET /api/games/<id>`. Size S. Label `leak-risk`.
+### 2. (#368) One game's summary: `GET /api/games/<id>`. Size S. Label `leak-risk`.
 
 - Returns the game's `FinishedGame` entry from D1 (`gameStore.ts`), the same object `/api/games` lists. Single-player games go only to the account that played them; anyone else, and any game not in the list, gets a `404`. This reuses `replayAccess` and the `mayView` check in `replayRoutes.ts`, so share links later are still one change in one place.
 - Cached like the replay index for a public game, `no-store` for a single-player one. Added to `openapi.ts` and `apiSchemas.ts`, with route tests next to the replay route tests.
 - The replay page also uses it for its header (who won, how it ended, who was who), so the header doesn't wait for the last chunk.
 
-### 3. Loading a replay (`web/src/replay/useReplay.ts`). Size M.
+### 3. (#369) Loading a replay (`web/src/replay/useReplay.ts`). Size M.
 
 - Fetches the index. The cycle bar draws from `index.chunks` alone.
 - Fetches a chunk when it is first needed and the next one in the background. `rebuildHistory` runs once per chunk.
@@ -66,7 +66,7 @@ The logic the page needs, kept out of components (architecture rule 3).
 - **Not found:** the same screen for a game that doesn't exist, one that hasn't ended, and a private one, matching the server's `404`, which doesn't reveal which of those it is.
 - **Tests:** the hook's reducer, as a pure function, under Vitest: chunk bookkeeping, the backoff schedule, the version check.
 
-### 4. The replay page and transport (`/replay/:id`). Size L.
+### 4. (#370) The replay page and transport (`/replay/:id`). Size L.
 
 - **Route:** lazy-loaded from `main.tsx`, like `/games`.
 - **`ReplayPage`** renders `GameView` with no `send`, the step's `PlayerView`, and the frame's time:
@@ -85,7 +85,7 @@ The logic the page needs, kept out of components (architecture rule 3).
 - **Default on open:** all-seeing, following the first seat, at step 0: the launch state before the first input (`frames[0].base` of chunk 0), a step you can land on like any other (owner, 2026-11-05).
 - **i18n:** every new string in en/fr/es.
 
-### 5. All-seeing details in the HUD. Size M. Label `leak-risk`.
+### 5. (#371) All-seeing details in the HUD. Size M. Label `leak-risk`.
 
 The overlays from the suggestions, shown only when the page passes a `reveal`, which only the replay page does.
 
@@ -97,7 +97,7 @@ The overlays from the suggestions, shown only when the page passes a `reveal`, w
 - **Click to jump:** a log line or message jumps to the step that wrote it (`lineStep`).
 - **Leak-check:** the component props: `reveal` is optional everywhere and `GameScreen` never passes it.
 
-### 6. Links to replays. Size S.
+### 6. (#372) Links to replays. Size S.
 
 - `/games`: each entry links to `/replay/<id>` (`GamesPage.tsx` already plans for it).
 - The end screen: a "Watch the replay" link. `GameScreen` passes `ticket.roomId` to `GameView`, and `GameView` hands it to `EndScreen`. Story 3's "Preparing replay…" handles a copy that isn't confirmed yet, so the end screen doesn't need to know whether it is.
