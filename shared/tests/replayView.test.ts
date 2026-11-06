@@ -9,6 +9,7 @@ import { lineStep, mergeStreams, revealFor, seatsAt, stepMarks, streamsOf, type 
 import { historyStep, rebuildHistory, type HistoryFrame, type HistoryStep } from "../src/viewHistory.ts";
 import type { GameState, LogEntry, PlayerView } from "../src/types.ts";
 import { play, seat } from "./randomGame.ts";
+import { noHunters, noIncidents } from "./support.ts";
 
 /** 16 seats, as the #335 measurement played (2,090 inputs over 14 cycles); this seed plays 1,958 inputs until the ship is destroyed. */
 const big: GameSetup = {
@@ -19,9 +20,9 @@ const big: GameSetup = {
 };
 
 /** A random game recorded as the server records it, chunked as R2 holds it, with every view and state along the way. */
-function recordedGame(steps: number, seed: number) {
-  const { record } = play(steps, seed, big);
-  let state = startGame(big);
+function recordedGame(steps: number, seed: number, from: GameSetup = big) {
+  const { record } = play(steps, seed, from);
+  let state = startGame(from);
   let starts: SeatStarts | null = seatStarts(state);
   const launch = fullViewFor(state, starts);
   let prev: FullView | null = null;
@@ -109,6 +110,23 @@ describe("stepMarks", () => {
     const loadedLater = withLog([entry(1, "a"), entry(2, "converted")]);
     const frames: HistoryFrame[] = [{ view: a }, { base: loadedLater, view: loadedLater }, { view: withLog([...loadedLater.log, entry(3, "x")]) }];
     expect(stepMarks(frames, 0).filter((m) => m.step > 0)).toEqual([{ step: 2, kind: "other" }]);
+  });
+});
+
+/** Four seats with no hunters or incidents, so the ship outlives the 16-cycle log window. */
+const quiet: GameSetup = { ...big, seats: big.seats.slice(0, 4), config: noIncidents(noHunters({ ...DEFAULT_CONFIG, manualCycles: true })) };
+
+describe("pruned log lines (#365)", () => {
+  it("are all still in the replay's streams after the rules dropped them from the state", () => {
+    const long = recordedGame(4000, 3, quiet);
+    const final = long.states.at(-1)!;
+    const written = final.nextLogId - 1;
+    // Not vacuous: the game ran long enough for pruning to drop room lines.
+    expect(final.cycle).toBeGreaterThan(final.config.logWindow.tracker + 1);
+    expect(final.log.length).toBeLessThan(written);
+    let streams = streamsOf(long.launch);
+    for (const chunk of long.chunks) for (const { view } of rebuildHistory(chunk.entries.map((e) => e.history))) streams = mergeStreams(streams, view);
+    expect(streams.log.map((e) => e.id)).toEqual(Array.from({ length: written }, (_, i) => i + 1));
   });
 });
 
