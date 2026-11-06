@@ -168,9 +168,14 @@ function sourceFiles(dir: string, extensions: string[]): string[] {
 }
 
 const read = (file: string) => readFileSync(join(ROOT, file), "utf8");
-const loadCatalog = (locale: string) => JSON.parse(read(`web/src/locales/${locale}.json`)) as Catalog;
+/** Web's UI catalog with shared's names merged in, as web/src/i18n/index.ts does. */
+const loadCatalog = (locale: string): Catalog => {
+  const ui = JSON.parse(read(`web/src/locales/${locale}.json`)) as Catalog & { skills: Catalog };
+  const names = JSON.parse(read(`shared/src/locales/names.${locale}.json`)) as Catalog & { skills: Catalog };
+  return { ...ui, ...names, skills: { ...ui.skills, ...names.skills } };
+};
 
-describe("catalogs in web/src/locales", () => {
+describe("catalogs in web/src/locales and shared/src/locales", () => {
   const en = loadCatalog("en");
 
   it("English is internally consistent", () => {

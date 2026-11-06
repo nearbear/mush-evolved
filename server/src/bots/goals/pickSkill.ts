@@ -1,3 +1,4 @@
+import { skillName } from "@mush2/shared";
 import { chooseSkill } from "../skillChoice.ts";
 import { act, failed, find, offered } from "./blocks.ts";
 import type { GoalDef } from "./types.ts";
@@ -14,7 +15,7 @@ export const pickSkill: GoalDef = {
       {
         id: "pickSkill",
         key: `pickSkill:${skill}`,
-        label: `Pick the skill ${skill}`,
+        label: `Pick the skill ${skillName(memory.language, skill)}`,
         step(v) {
           if (v.you.skills.includes(skill)) return { kind: "done" };
           const pick = find(v, "pick_skill", (a) => a.skill === skill);

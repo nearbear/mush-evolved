@@ -2,6 +2,7 @@ export * from "./types.ts";
 export * from "./rng.ts";
 export * from "./config.ts";
 export * from "./characters.ts";
+export * from "./names.ts";
 export * from "./shipLayout.ts";
 export * from "./blueprints.ts";
 export * from "./equipment.ts";

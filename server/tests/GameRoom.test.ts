@@ -727,7 +727,7 @@ describe("GameRoom bots", () => {
         // Members of a private channel are woken outright: no router call.
         expect(all.some((m) => m[0]!.content.startsWith("You route chat"))).toBe(false);
         const woken = all.map((m) => m[1]!.content).filter((p) => p.includes("A new chat message came in"));
-        const insider = gameOf(room).players.find((p) => p.id === "p1")!.character;
+        const insider = characterName(gameOf(room).players.find((p) => p.id === "p1")!.character);
         expect(woken.length).toBeGreaterThan(0);
         expect(woken.every((p) => p.includes(`You are ${insider},`))).toBe(true);
         vi.unstubAllGlobals();

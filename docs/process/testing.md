@@ -82,7 +82,7 @@ The client renders a view and sends intents, so there's little logic to unit tes
 
 ## 7. Internationalization (English, French, Spanish)
 
-Checks live in `tools/tests/i18n/` (scanners in `tools/src/i18n/`) and run with `npm test`. Catalogs are `web/src/locales/{en,fr,es}.json` (i18next JSON v4; English is the reference).
+Checks live in `tools/tests/i18n/` (scanners in `tools/src/i18n/`) and run with `npm test`. Catalogs are `web/src/locales/{en,fr,es}.json` merged with `shared/src/locales/names.{en,fr,es}.json` (rooms, equipment, items, skill names; i18next JSON v4; English is the reference).
 
 - **Catalog parity:** every language has the same keys, no empty values, the same `{{placeholders}}` and Trans tags, and every plural form its language needs (French and Spanish need `_many` as well as `_one`/`_other`; English doesn't). *Covered* by fixtures and the real catalogs (most of the client and the game text are translated; what isn't is in the baseline below).
 - **Runtime language switching** (`web/tests/i18n/i18n.test.ts`): saved choice beats browser language, startup is synchronous, switching changes `t()` output, persists, and updates `<html lang>`. *Covered.* The picker itself (`LanguageSwitcher`, in the lobby and the settings dialog) has not been checked visually.

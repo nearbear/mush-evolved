@@ -2,7 +2,7 @@
 // to a bed and rest, walk to the lab and research) instead of choosing one action at a time. Goals are pure: the bot's
 // own view and memory in, one step out, so they are tested without a server or a model.
 
-import type { Action, PlayerView, RoomId } from "@mush2/shared";
+import type { Action, LobbyLanguage, PlayerView, RoomId } from "@mush2/shared";
 
 export type GoalStep =
   | { kind: "act"; action: Action }
@@ -24,6 +24,8 @@ export interface BotMemory {
    * a scripted bot only with more AP to spare (owner, 2026-11-01: shooting hunters), since it can't weigh them.
    */
   readonly scripted: boolean;
+  /** The ship's language (#95): what names in goal labels are written in. Rooms stay ids in labels; the prompt names them. */
+  readonly language: LobbyLanguage;
   /** Keys of the goals that finished or failed this cycle; they aren't offered again until the next one. */
   readonly ended: Set<string>;
   /** Keys of once-a-day jobs done today (tending the garden); cleared when the day changes. */
@@ -40,7 +42,10 @@ export interface Goal {
   id: string;
   /** The id plus its parameters, e.g. "rest:BEDROOM_A": what "ended this cycle" remembers. */
   key: string;
-  /** What the model's goal list shows (English, built from the bot's own view; no player-written text). */
+  /**
+   * What the model's goal list shows (English, built from the bot's own view; no player-written text). Rooms are named
+   * by id here (`where`), and `buildPrompt` shows them by name; anything else is named in `BotMemory.language`.
+   */
   label: string;
   /** One action toward the goal, or what happened. Reads only the bot's own view and the goal's own progress. */
   step(view: PlayerView, memory: BotMemory): GoalStep;

@@ -120,6 +120,6 @@ All under `web/src/`. UI rules are in `web/CLAUDE.md`.
 
 **i18n/** (see the `i18n` skill)
 
-- `index.ts`, `locale.ts`: i18next setup and language choice. Catalogs are `web/src/locales/{en,fr,es}.json`.
+- `index.ts`, `locale.ts`: i18next setup and language choice. Catalogs are `web/src/locales/{en,fr,es}.json`, with shared's room, equipment, item and skill names (`NAME_CATALOGS`) merged in under the same keys.
 - `names.ts`: `useNames()`, display names for server ids.
 - `LanguageSwitcher.tsx` + `languageSwitcher.css`: the lobby language picker.

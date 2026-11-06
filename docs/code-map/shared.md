@@ -88,6 +88,7 @@ Other packages import from `@mush2/shared` (`shared/src/index.ts`, the barrel). 
 - `protocol.ts`: wire message types and `parse*` validators for untrusted client input; actions go through `ACTIONS[type].parse`.
 - `moderation.ts`: `moderateChat`, called by the server, not the rules; `moderateName`, called by `viewFor` for the end screen's names.
 - `characters.ts`: cosmetic crew identities, no rules effect.
+- `names.ts`: room, equipment, item and skill display names per ship language (`NAME_CATALOGS`, from `locales/names.{en,fr,es}.json`; `roomName`, `itemName`, ...). Web merges them into its i18next catalogs; the server's bot prompts use them so bots say what players see.
 - `shipLayout.ts`: types for `Mush/derived/ship-art.json` and `ship-map.json` (`ShipLayout` is the two together) and `placedEquipment`.
 - `actions/speech.ts`: the Leader's Fiery speech and the Motivator's Boring speech (room-wide morale and MP gifts; `PlayerState.boringToday`).
 - `actions/interrogate.ts`: the Torturer's Interrogate (1 damage, reveals the target's last actions, one per missing HP; `interrogatedToday`).
