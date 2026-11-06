@@ -246,19 +246,18 @@ li.research-item /* Rebel base icons are 70x65, not the 50x75 research cards. */
   background: repeating-linear-gradient(-45deg, #a8ea40 0 3px, transparent 3px 6px);
 }
 
-/* Relay tokens (RelayDetails.tsx): the work held back for lack of other contributors, and
-   each contribution as the contributor's face over its value, wrapping on a phone. */
+/* Relay tokens (RelayDetails.tsx): the work held back for lack of other contributors, and each contribution as a chip
+   with the contributor's 16x16 bust (at exactly 2x, so its pixels stay crisp) over its value, wrapping on a phone. A chip is a floppy disk: the terminal
+   tabs' idle blue and text colour (.settings-tab, tab-idle.svg), with only its top-right corner cut. */
 .relay-waiting {
   margin: 0.25rem 0;
   font-size: 0.85em;
-}
-.relay-waiting {
   font-style: italic;
 }
 .relay-tokens {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.25rem;
+  gap: 4px;
   margin: 0.25rem 0;
   padding: 0;
   list-style: none;
@@ -267,12 +266,31 @@ li.research-item /* Rebel base icons are 70x65, not the 50x75 research cards. */
   display: flex;
   flex-direction: column;
   align-items: center;
+  gap: 2px;
+  min-width: 42px;
+  padding: 6px 5px 4px;
+  color: #c2f3fc;
   font-size: 0.75em;
+  line-height: 1;
+  background: #213578;
+  clip-path: polygon(0 0, calc(100% - 9px) 0, 100% 9px, 100% 100%, 0 100%);
 }
-/* A research sample waiting for its assay: underlined in the striped bar's pattern. */
+.relay-tokens li img {
+  display: block;
+  width: 32px;
+  height: 32px;
+  image-rendering: pixelated;
+}
+/* A research sample waiting for its assay: a strip down the disk's left edge in the striped bar's pattern. It sits in
+   the 5px side padding, so a pending chip is the same size as a verified one. */
 .relay-tokens li.relay-token-pending {
-  padding-bottom: 3px;
-  background: repeating-linear-gradient(-45deg, #a8ea40 0 3px, transparent 3px 6px) bottom / 100% 3px no-repeat;
+  background:
+    repeating-linear-gradient(-45deg, #a8ea40 0 3px, transparent 3px 6px) left / 3px 100% no-repeat,
+    #213578;
+}
+/* A bar with pending samples opens a tooltip saying how much is pending. */
+.research-progress .kit-progress.has-pending {
+  cursor: help;
 }
 
 /* A research's requirements or a project's skills, as a wrapping checklist; met entries are ticked and dimmed. */
