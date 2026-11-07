@@ -249,6 +249,8 @@ export const SKILL_STATUS: Readonly<Partial<Record<SkillId | MushSkillId, SkillS
   green_thumb: "partial",
   // Doubled turret odds and damage (owner, 2026-10-24).
   gunner: "full",
+  // Saboteur: triples the odds of Sabotage (owner, 2026-11-07, modifiers/sapper.ts) and adds Contaminate to research (actions/contaminate.ts).
+  sapper: "full",
   // Ignite: 4 AP, a secret fire at the next cycle change (owner, 2026-11-03, actions/ignite.ts).
   pyromane: "full",
   // Sure extinguisher use and the manual try (owner, 2026-11-01); its project bonus is in PROJECTS.
