@@ -1,6 +1,6 @@
 import { Action } from "./action.ts";
 import { isOnFire } from "../fire.ts";
-import { canReachItem } from "../items.ts";
+import { canReachItem, isWorking } from "../items.ts";
 import { logPrivate, logPublic } from "../log.ts";
 import { hasSkill } from "../skills.ts";
 import type { GameState, PlayerState } from "../types.ts";
@@ -43,7 +43,7 @@ export class ExtinguishManuallyAction extends Action<ExtinguishManuallyActionDat
   override validate(state: Readonly<GameState>, player: Readonly<PlayerState>, _target?: ExtinguishManuallyActionData): string | null {
     if (!hasSkill(player, "fireman")) return "cant_extinguish";
     if (!isOnFire(state, player.room)) return "no_fire";
-    if (state.items.some((item) => item.type === EXTINGUISHER_ITEM && canReachItem(state, player, item))) return "has_extinguisher";
+    if (state.items.some((item) => item.type === EXTINGUISHER_ITEM && isWorking(item) && canReachItem(state, player, item))) return "has_extinguisher";
     return null;
   }
 

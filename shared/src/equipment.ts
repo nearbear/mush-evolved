@@ -18,6 +18,8 @@ export interface EquipmentType {
   title?: TitleId;
   /** Can be dismantled, leaving this much scrap in the room. */
   dismantle?: { metal: number; plastic: number; chance?: number; extra?: string[] };
+  /** A Mush can sabotage it (actions/sabotage.ts), if it can also break. */
+  canBeSabotaged?: boolean;
   /** Only ever built from a blueprint: left out of the map's starting equipment even where the map draws one. */
   builtOnly?: boolean;
 }
@@ -27,45 +29,45 @@ export interface EquipmentType {
  * (`objects` sheet) on 2026-10-11. PLANT_CONTROLLER has no entry there.
  */
 export const EQUIPMENT_TYPES: Record<string, EquipmentType> = {
-  ASTRO_MODULE: { terminal: true },
-  BEAT_BOX: {},
+  ASTRO_MODULE: { terminal: true, canBeSabotaged: true },
+  BEAT_BOX: { canBeSabotaged: true },
   BED: { bed: true },
   // Installed from a carried `camera` item (actions/install.ts); never part of the map. Dismantling it leaves the
   // camera item's scrap (#35, owner 2026-10-17).
-  CAMERA: { dismantle: { metal: 1, plastic: 0, chance: 0.25 } },
-  COFFEE_DISPENSER: { dispenses: "coffee" },
-  COMBUSTION_CHAMBER_ACCESS: {},
-  COM_CENTER: { terminal: true, title: "comms_officer" },
+  CAMERA: { dismantle: { metal: 1, plastic: 0, chance: 0.25 }, canBeSabotaged: true },
+  COFFEE_DISPENSER: { dispenses: "coffee", canBeSabotaged: true },
+  COMBUSTION_CHAMBER_ACCESS: {canBeSabotaged: true},
+  COM_CENTER: { terminal: true, title: "comms_officer", canBeSabotaged: true },
   CRYO_MODULE: {},
-  DRUG_DISP: { builtOnly: true },
-  DYNARCADE: {},
-  EMERGENCY_REACTOR: {},
-  FUEL_TANK: {},
-  GRAVITY_SIMULATOR: {},
+  DRUG_DISP: { builtOnly: true, dismantle: { metal: 2, plastic: 1, chance: 0.25 }, },
+  DYNARCADE: { canBeSabotaged: true },
+  EMERGENCY_REACTOR: {canBeSabotaged: true },
+  FUEL_TANK: {canBeSabotaged: true},
+  GRAVITY_SIMULATOR: {canBeSabotaged: true },
   ICARUS_COMMAND: {},
   KITCHEN: {},
-  MYCOSCAN: { builtOnly: true },
-  NERON_BIOS_TERM: { terminal: true, title: "neron_admin" },
-  NERON_CORE: { terminal: true },
-  OXYGEN_TANK: {},
+  MYCOSCAN: { builtOnly: true, canBeSabotaged: true },
+  NERON_BIOS_TERM: { terminal: true, title: "neron_admin", canBeSabotaged: true },
+  NERON_CORE: { terminal: true, canBeSabotaged: true },
+  OXYGEN_TANK: { canBeSabotaged: true },
   PATROL_INTERFACE: {},
   // A patrol ship's and the Pasiphae's command, the only equipment in their rooms (patrol.ts).
   PATROL_COMMAND: {},
   PASIPHAE_COMMAND: {},
   PILGRED: { terminal: true },
-  PILOT_MODULE: { terminal: true, title: "commander" },
-  PLANET_SCANNER: {},
+  PILOT_MODULE: { terminal: true, title: "commander", canBeSabotaged: true },
+  PLANET_SCANNER: {canBeSabotaged: true},
   PLANT_CONTROLLER: {},
-  RESEARCH_LAB: { terminal: true },
-  ROTATIONAL_REACTOR: {},
-  SHOWER: { shower: true },
+  RESEARCH_LAB: { terminal: true, canBeSabotaged: true },
+  ROTATIONAL_REACTOR: {canBeSabotaged: true},
+  SHOWER: { shower: true, canBeSabotaged: true },
   // Owner, 2026-10-18, from the French wiki: a bed that can be built in any room (more than one per room), never
   // there at the start; dismantling it leaves 1 plastic scrap.
-  SOFA: { bed: true, builtOnly: true, dismantle: { metal: 0, plastic: 1, chance: 0.25 } },
-  STELLAR_ANTENNA: {},
-  SUPER_CALC: { terminal: true, builtOnly: true },
-  SURGERY_POD: {},
-  TURRET_COMMAND: { terminal: true },
+  SOFA: { bed: true, builtOnly: true, dismantle: { metal: 0, plastic: 1, chance: 0.25 }, canBeSabotaged: true },
+  STELLAR_ANTENNA: {canBeSabotaged: true},
+  SUPER_CALC: { terminal: true, builtOnly: true, canBeSabotaged: true },
+  SURGERY_POD: {canBeSabotaged: true},
+  TURRET_COMMAND: { terminal: true, canBeSabotaged: true },
 };
 
 

@@ -5,7 +5,7 @@
 // Pure: every draw goes through the seeded RNG in state. The action is actions/icarus_takeoff.ts.
 
 import { damage } from "./death.ts";
-import { itemsIn, newItemId, removeItem } from "./items.ts";
+import { isWorking, itemsIn, newItemId, removeItem } from "./items.ts";
 import { logPrivate, logPublic } from "./log.ts";
 import { isTraveling } from "./navigation.ts";
 import { canFly } from "./patrol.ts";
@@ -165,7 +165,7 @@ function fight(ctx: Ctx, event: ExpeditionEvent, strength: number): void {
   const { state } = ctx;
   const weapons = state.config.weapons.types;
   const members = ctx.crew.filter((p) => p.alive);
-  const gear = members.flatMap((p) => itemsIn(state, { kind: "player", id: p.id })).filter((i) => weapons[i.type] !== undefined);
+  const gear = members.flatMap((p) => itemsIn(state, { kind: "player", id: p.id })).filter((i) => weapons[i.type] !== undefined && isWorking(i));
   const grenades = gear.filter((i) => weapons[i.type]!.consumed);
   let crew = members.length;
   for (const item of gear) if (!weapons[item.type]!.consumed && usable(state, item)) crew += weapons[item.type]!.expoStrength;

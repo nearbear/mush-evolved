@@ -1,6 +1,6 @@
 import { Action, isString } from "./action.ts";
 import { cookable, cookItem } from "./cook.ts";
-import { MICROWAVE_ITEM, canReachItem } from "../items.ts";
+import { MICROWAVE_ITEM, canReachItem, isWorking } from "../items.ts";
 import { logPublic } from "../log.ts";
 import type { GameState, ItemState, PlayerState } from "../types.ts";
 
@@ -8,7 +8,7 @@ export type ExpressCookActionData = { type: "express_cook"; item: string };
 
 /** The first microwave with a charge left that the player can reach (carried or on the floor). */
 function chargedMicrowave(state: Readonly<GameState>, player: Readonly<PlayerState>): ItemState | undefined {
-  return state.items.find((i) => i.type === MICROWAVE_ITEM && (i.charges ?? 0) > 0 && canReachItem(state, player, i));
+  return state.items.find((i) => i.type === MICROWAVE_ITEM && isWorking(i) && (i.charges ?? 0) > 0 && canReachItem(state, player, i));
 }
 
 /**

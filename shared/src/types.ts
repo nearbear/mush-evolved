@@ -76,6 +76,8 @@ export interface ItemState {
   hiddenBy?: PlayerId;
   /** For a hydropot with something growing in it (botany.ts). An empty pot has none. */
   plant?: PlantState;
+  /** Broken (breakage.ts `breakItem`): it can't be used until repaired. It can still be carried, dropped, given, examined and dismantled. */
+  broken?: true;
 }
 
 /** A plant in a hydropot (owner, 2026-10-22; docs/scratchpad/botany-plan.md, Pass 1). */

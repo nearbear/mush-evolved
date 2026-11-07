@@ -4,7 +4,7 @@
 // entry with no actor in it, so the crew learns that a Mush acted, not who.
 
 import { logPublic } from "./log.ts";
-import { newItemId } from "./items.ts";
+import { newItemId, isWorking } from "./items.ts";
 import type { GameState, RoomId } from "./types.ts";
 
 export const MYCO_ALARM_ITEM = "myco_alarm";
@@ -18,7 +18,7 @@ export const MYCO_ALARM_YIELD = 3;
 
 /** Rings once if any alarm is on the floor of `room`, however many there are. Mutates a state the caller already cloned. */
 export function ringMycoAlarms(state: GameState, room: RoomId): void {
-  if (state.items.some((i) => i.type === MYCO_ALARM_ITEM && i.at.kind === "room" && i.at.id === room)) logPublic(state, room, "mycoAlarmRang", undefined, "warning");
+  if (state.items.some((i) => i.type === MYCO_ALARM_ITEM && isWorking(i) && i.at.kind === "room" && i.at.id === room)) logPublic(state, room, "mycoAlarmRang", undefined, "warning");
 }
 
 /** Mutates a state the caller already cloned. */

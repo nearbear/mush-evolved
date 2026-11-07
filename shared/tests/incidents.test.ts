@@ -280,6 +280,36 @@ describe("fire", () => {
     expect(after.fires).toEqual([HERE]);
   });
 
+  it("also breaks the breakable items on the floor, destroys the consumable ones, and spares carried and unbreakable ones", () => {
+    const s = burning({ spreadChance: 0, breakChance: 1, hullChance: 0 });
+    const floor = { kind: "room" as const, id: HERE };
+    s.items.push(
+      { id: "knife-floor", type: "knife", at: floor },
+      { id: "soap-floor", type: "soap", at: floor },
+      { id: "grenade-floor", type: "grenade", at: floor },
+      { id: "knife-carried", type: "knife", at: { kind: "player", id: "p0" } },
+      { id: "knife-elsewhere", type: "knife", at: { kind: "room", id: ELSEWHERE } },
+    );
+    const after = nextCycle(s);
+    const item = (id: string) => after.items.find((i) => i.id === id);
+    expect(item("knife-floor")?.broken).toBe(true);
+    expect(item("soap-floor")).toBeUndefined();
+    expect(item("grenade-floor")?.broken).toBeUndefined();
+    expect(item("knife-carried")?.broken).toBeUndefined();
+    expect(item("knife-elsewhere")?.broken).toBeUndefined();
+    // A public line in the room for each: p0 is there, p2 isn't.
+    const lines = (who: string, key: string) => viewFor(after, who).log.filter((e) => e.key === key);
+    expect(lines("p0", "fireBrokeItem")).toEqual([expect.objectContaining({ params: { item: "knife" } })]);
+    expect(lines("p0", "fireDestroyedItem")).toEqual([expect.objectContaining({ params: { item: "soap" } })]);
+    expect(lines("p2", "fireBrokeItem")).toEqual([]);
+  });
+
+  it("leaves floor items alone when the break roll misses", () => {
+    const s = burning({ spreadChance: 0, breakChance: 0, hullChance: 0 });
+    s.items.push({ id: "knife-floor", type: "knife", at: { kind: "room", id: HERE } });
+    expect(nextCycle(s).items.find((i) => i.id === "knife-floor")?.broken).toBeUndefined();
+  });
+
   it("spreads instead of doing damage, at most 2 rooms a cycle, and new fires act from the next cycle", () => {
     const s = burning({ spreadChance: 1 });
     s.fires = [HERE, ELSEWHERE, "CORRIDOR_A"];

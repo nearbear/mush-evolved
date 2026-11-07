@@ -382,7 +382,8 @@
     "repair": "Reparar",
     "extinguish": "Extinguir",
     "extinguishManually": "Apagar a mano",
-    "ignite": "Provocar un incendio"
+    "ignite": "Provocar un incendio",
+    "sabotage": "Sabotear"
   },
   "queue": {
     "label": "Tus acciones",
@@ -758,6 +759,10 @@
     "shareDidToYou": "{{name}} hizo {{label}} contigo.",
     "sporeExtracted": "{{name}} extrajo una espora.",
     "ignited": "{{name}} roció una pared con microesporas.",
+    "sabotaged": "{{name}} ha saboteado el equipo «{{equipment}}».",
+    "sabotageFailed": "{{name}} no ha conseguido sabotear el equipo «{{equipment}}».",
+    "sabotagedItem": "{{name}} ha saboteado el objeto: {{item}}.",
+    "sabotageFailedItem": "{{name}} no ha conseguido sabotear el objeto: {{item}}.",
     "showered": "Te duchaste.",
     "showeredMush": "Te duchaste. El agua quema.",
     "died": "{{name}} ha muerto.",
@@ -853,8 +858,12 @@
     "metalPlate": "¡Una placa de metal cae sobre {{name}}!",
     "electricalOverload": "¡Una sobrecarga eléctrica quema los equipos de la sala!",
     "fireBurns": "El fuego quema a todos los que están en la sala.",
+    "fireBrokeItem": "El fuego ha dañado: {{item}}.",
+    "fireDestroyedItem": "El fuego ha destruido: {{item}}.",
     "repaired": "{{name}} ha reparado el equipo «{{equipment}}».",
     "repairFailed": "No has conseguido reparar el equipo «{{equipment}}».",
+    "itemRepaired": "{{name}} ha reparado el objeto: {{item}}.",
+    "itemRepairFailed": "No has conseguido reparar el objeto: {{item}}.",
     "fireExtinguished": "¡{{name}} ha apagado el incendio!",
     "extinguishFailed": "No has conseguido apagar el incendio."
   },

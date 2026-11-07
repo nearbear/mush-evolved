@@ -28,6 +28,14 @@ export interface ItemType {
   canDrop?: boolean;
   /** What dismantling it leaves in the room: scraps, plus `extra` item types (the Lizaro Jungle's thick tube). `chance` replaces `config.dismantle.successChance` for this type. */
   dismantle?: { metal: number; plastic: number; extra?: string[]; chance?: number };
+  /** Can break (`breakItem`). A broken item can't be used; carrying, dropping, giving, examining and dismantling it still work. */
+  canBreak?: boolean;
+  /** Breaking it destroys it instead of leaving it broken. Only read for `canBreak` types. */
+  isDestroyedWhenBroken?: boolean;
+  /** Chance that Repair fixes it (before the wrench and Technician factors). Without one, a broken item can't be repaired. */
+  repairChance?: number;
+  /** A Mush can sabotage it (actions/sabotage.ts), if it can also break (`canBreak`). */
+  canBeSabotaged?: boolean;
 }
 
 /**
@@ -72,37 +80,37 @@ export const ITEM_TYPES: Record<string, ItemType> = {
   [ITRACKIE_ITEM]: {},
   wrench: {},
   // Owner, 2026-10-25, eMushpedia "Extincteur": puts out a fire (actions/extinguish.ts); dismantled for metal scraps.
-  extinguisher: { dismantle: { metal: 1, plastic: 0, chance: 0.25 } },
+  extinguisher: { dismantle: { metal: 1, plastic: 0, chance: 0.25 }, canBreak: true, canBeSabotaged: true, repairChance: 0.25 },
   // Weapons (owner, 2026-10-22, from the English wiki): their combat numbers are `config.weapons`. Named after their icons.
-  knife: { dismantle: { metal: 1, plastic: 0, chance: 0.5 } },
-  blaster: { dismantle: { metal: 1, plastic: 0, chance: 0.25 } },
-  natamy_riffle: { dismantle: { metal: 1, plastic: 0, chance: 0.12 } },
+  knife: { dismantle: { metal: 1, plastic: 0, chance: 0.5 }, canBreak: true, canBeSabotaged: true, repairChance: 0.25 },
+  blaster: { dismantle: { metal: 1, plastic: 0, chance: 0.25 }, canBreak: true, canBeSabotaged: true, repairChance: 0.25 },
+  natamy_riffle: { dismantle: { metal: 1, plastic: 0, chance: 0.12 }, canBreak: true, canBeSabotaged: true, repairChance: 0.12 },
   // Lizaro Jungle.
-  sniper_riffle: { dismantle: { metal: 1, plastic: 0, extra: ["thick_tube"], chance: 0.12 } },
+  sniper_riffle: { dismantle: { metal: 1, plastic: 0, extra: ["thick_tube"], chance: 0.12 }, canBreak: true, canBeSabotaged: true, repairChance: 0.12 },
   // Old Faithful.
-  machine_gun: { heavy: true, dismantle: { metal: 1, plastic: 0, chance: 0.12 } },
+  machine_gun: { heavy: true, dismantle: { metal: 1, plastic: 0, chance: 0.12 }, canBreak: true, canBeSabotaged: true, repairChance: 0.12 },
   // The wiki lists no scrap for the rocket launcher; the owner chose 1 metal like the other guns.
-  missile_launcher: { dismantle: { metal: 1, plastic: 0, chance: 0.12 } },
+  missile_launcher: { dismantle: { metal: 1, plastic: 0, chance: 0.12 }, canBreak: true, canBeSabotaged: true, repairChance: 0.12 },
   // Can't be dismantled.
   grenade: {},
   // Healing (confirmed 2026-10-15): hold one to heal. Reusable.
   medikit: {},
   // Confirmed 2026-10-13: +2 AP. Satiety +1 is a placeholder (2026-10-14).
-  coffee: { consume: { ap: 2, satiety: 1 } },
+  coffee: { consume: { ap: 2, satiety: 1 }, canBreak: true, isDestroyedWhenBroken: true },
   // Owner, 2026-11-05 (eMushpedia "Ration standard"): +4 AP and +4 satiety, cooked or not; Sirius adds 1 AP (comms.ts).
   // Confirmed 2026-10-16: cook it in the refectory for 1 AP.
   // Owner, 2026-10-19: edible raw, like a cooked one but for 1 morale.
-  uncooked_ration: { cook: { into: "cooked_ration" }, consume: { ap: 4, satiety: 4, morale: -1 } },
-  cooked_ration: { consume: { ap: 4, satiety: 4 } },
-  camera: { canDrop: false, dismantle: { metal: 1, plastic: 0, chance: 0.25 }  },
+  uncooked_ration: { cook: { into: "cooked_ration" }, consume: { ap: 4, satiety: 4, morale: -1 }, canBreak: true, isDestroyedWhenBroken: true  },
+  cooked_ration: { consume: { ap: 4, satiety: 4 }, canBreak: true, isDestroyedWhenBroken: true  },
+  camera: { canDrop: false, dismantle: { metal: 1, plastic: 0, chance: 0.25 }, canBreak: true, canBeSabotaged: true, repairChance: 0.25 },
   // Showering with soap in your inventory costs 1 less AP (confirmed 2026-10-14). Reusable.
-  soap: {},
+  soap: {canBreak: true, isDestroyedWhenBroken: true},
   // Owner, 2026-10-25: the completed ANTI_MUSH_SERUM research yields one; single use (actions/vaccinate.ts). Named after its icon.
   anti_mush_serum: {},
   // Owner, 2026-11-01: the completed STEROIDS research yields 4; single use, +8 MP, resets starvation.
-  [STEROIDS_ITEM]: { consume: { ap: 0, mp: STEROIDS_MP, satiety: 0 } },
+  [STEROIDS_ITEM]: { consume: { ap: 0, mp: STEROIDS_MP, satiety: 0 }, canBreak: true, isDestroyedWhenBroken: true },
   // Decided 2026-10-17: rings in its room when a Mush acts there (mycoalarm.ts). Dismantles for one scrap metal.
-  myco_alarm: { dismantle: { metal: 1, plastic: 0, chance: 0.25 } },
+  myco_alarm: { dismantle: { metal: 1, plastic: 0, chance: 0.25 }, canBreak: true },
   // Decided 2026-10-18: the HydroPot (TREE_POT in the original). Named after its icon. Owner, 2026-10-22: plants
   // grow in it (botany.ts), anywhere, carried too.
   [TREE_POT_ITEM]: {},
@@ -123,17 +131,17 @@ export const ITEM_TYPES: Record<string, ItemType> = {
   blueprint: {},
   plastic_scraps: {},
   // Confirmed 2026-10-16: spawns in the refectory at the start; heavy.
-  freezer: { heavy: true, dismantle: { metal: 2, plastic: 0, chance: 0.25 } },
+  freezer: { heavy: true, dismantle: { metal: 2, plastic: 0, chance: 0.25 }, canBreak: true, canBeSabotaged: true, repairChance: 0.25 },
   // Owner, 2026-10-19: spawns in the refectory; heavy. Express cook spends its charges (`ItemState.charges`).
-  [MICROWAVE_ITEM]: { heavy: true, dismantle: { metal: 2, plastic: 0, chance: 0.25 } },
+  [MICROWAVE_ITEM]: { heavy: true, dismantle: { metal: 2, plastic: 0, chance: 0.25 }, canBreak: true, canBeSabotaged: true, repairChance: 0.25 },
   // Decided 2026-10-16: a dead player's body (death.ts). Takes one slot like any item; heavy.
   [CORPSE_ITEM]: { heavy: true },
 
   // Owner, 2026-10-28: eMush's Wavoscope. Carried, it doubles the odds of hull repair and renovation (modifiers.ts, actionSuccessRate); heavy.
   // Icon wavoscope (web/src/art/assets.ts).
-  oscilloscope: { heavy: true, dismantle: { metal: 2, plastic: 0, chance: 0.06 } },
-  apron: {},
-  protection_gloves: {},
+  oscilloscope: { heavy: true, dismantle: { metal: 2, plastic: 0, chance: 0.06 }, canBreak: true, canBeSabotaged: true, repairChance: 0.06 },
+  apron: { canBreak: true, canBeSabotaged: true, repairChance: 0.25 },
+  protection_gloves: { canBreak: true, canBeSabotaged: true, repairChance: 0.25 },
   // Owner, 2026-10-21: a skill book (the original's Apprentron) carries its skill in `ItemState.teaches`; destroyed by reading.
   [BOOK_ITEM]: {},
   // Owner, 2026-10-21: Xyloph rewards (comms.ts), dropped on the bridge. No effect yet. Named after their icons.
@@ -148,10 +156,10 @@ export const ITEM_TYPES: Record<string, ItemType> = {
   //Items added for documenting the dismantle action (owner, 2026-10-22). Named after their icons.
   drill: { dismantle: { metal: 1, plastic: 0, chance: 0.5 } },
   thermosensor: { dismantle: { metal: 0, plastic: 1, chance: 0.5 } },
-  plastenite_armor: { dismantle: { metal: 0, plastic: 1, chance: 0.12 } },
-  sniper_helmet: { dismantle: { metal: 1, plastic: 1, chance: 0.12 } },
-  scooter: { dismantle: { metal: 2, plastic: 1, chance: 0.25 } },
-  space_suit: { dismantle: { metal: 1, plastic: 1, chance: 0.12 } },
+  plastenite_armor: { dismantle: { metal: 0, plastic: 1, chance: 0.12 }, canBreak: true, canBeSabotaged: true, repairChance: 0.12 },
+  sniper_helmet: { dismantle: { metal: 1, plastic: 1, chance: 0.12 }, canBreak: true, canBeSabotaged: true, repairChance: 0.25 },
+  scooter: { dismantle: { metal: 2, plastic: 1, chance: 0.25 }, canBreak: true, canBeSabotaged: true, repairChance: 0.25 },
+  space_suit: { dismantle: { metal: 1, plastic: 1, chance: 0.12 }, canBreak: true, canBeSabotaged: true, repairChance: 0.06 },
 };
 
 /** Whether the player carries at least one heavy item. */
@@ -168,6 +176,9 @@ export function capacity(state: Readonly<GameState>, container: Container): numb
 }
 
 /** Items in a container, in a stable order. */
+/** Whether the item works: broken items can't be used (breakage.ts). */
+export const isWorking = (item: Readonly<ItemState>): boolean => !item.broken;
+
 export function itemsIn(state: Readonly<GameState>, container: Container): ItemState[] {
   return state.items.filter((i) => sameContainer(i.at, container));
 }

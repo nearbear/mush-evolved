@@ -1,7 +1,7 @@
 import { Action, type ActionVisibility, isString } from "./action.ts";
 import { damage } from "../death.ts";
 import { EQUIPMENT_TYPES } from "../equipment.ts";
-import { itemsIn } from "../items.ts";
+import { itemsIn, isWorking } from "../items.ts";
 import { logPrivate } from "../log.ts";
 import { showered } from "../modifiers.ts";
 import { hasSkill } from "../skills.ts";
@@ -44,7 +44,7 @@ export class ShowerAction extends Action<ShowerActionData> {
   }
 
   showerCost(state: Readonly<GameState>, player: Readonly<PlayerState>): number {
-  const soap = itemsIn(state, { kind: "player", id: player.id }).some((item) => item.type === "soap");
+  const soap = itemsIn(state, { kind: "player", id: player.id }).some((item) => item.type === "soap" && isWorking(item));
   const cost = Math.max(0, state.config.shower.cost.ap - (soap ? state.config.shower.cost.soapDiscountAp : 0));
   return hasSkill(player, "water_resistant") ? Math.min(cost, state.config.shower.cost.waterResistantAp) : cost;
 }

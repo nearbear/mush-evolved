@@ -1,6 +1,6 @@
 import { Action, type ActionCost, peopleHere, isString } from "./action.ts";
 import { heal as healHp } from "../death.ts";
-import { itemsIn } from "../items.ts";
+import { itemsIn, isWorking } from "../items.ts";
 import { logPublic } from "../log.ts";
 import { healAmount } from "../modifiers.ts";
 import type { GameState, PlayerState } from "../types.ts";
@@ -47,4 +47,4 @@ export class HealAction extends Action<HealActionData> {
 }
 
 const canHeal = (state: Readonly<GameState>, p: Readonly<PlayerState>): boolean =>
-  state.config.heal.rooms.includes(p.room) || itemsIn(state, { kind: "player", id: p.id }).some((i) => i.type === "medikit");
+  state.config.heal.rooms.includes(p.room) || itemsIn(state, { kind: "player", id: p.id }).some((i) => i.type === "medikit" && isWorking(i));

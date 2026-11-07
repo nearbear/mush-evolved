@@ -2432,3 +2432,12 @@ Follow-up (2026-11-05, #224 steps 2–3): tightening the prompt on when to talk 
 - One choice not in the plan: the rate limit uses chat's numbers but a limiter of its own, so paging back never uses up a player's chat allowance.
 - Needed correction: the first edit put the new limiter field inside the `Env` interface (the anchor comment matched there before it matched in the class), and `Input` (derived from `GameClientMessage`) picked up `chatPage` until it was excluded. Typecheck caught the second; the first was a parse error in the first test run.
 - The leak-check subagent found no leaks. It asked whether people added to a private channel should see its earlier history; `rules-design.md` already says yes (#355).
+
+## 2026-11-07: broken items
+Asked for a `broken` status on items (unusable, destroyed when `isDestroyedWhenBroken`). It is a rule, so I asked first: no trigger (helper only), carry/drop/give/examine/dismantle still allowed, Repair extended to items, flag visible with the item. Mirrored the equipment design: one central refusal in `Action.check` (now also `item`/`fruit`/`weapon` fields) plus an `isWorking` filter at each place a carried item gives a passive effect. Needed correction: the earlier per-type dismantle `chance` change had already broken tests that forced odds through config, so tests use a `forceDismantleOdds` helper. Nothing sets `repairChance` or calls `breakItem` yet; that is left for rule decisions.
+
+## 2026-11-07: sabotage
+Asked for a Mush `sabotage` action on `canBeSabotaged` equipment and items, secret, at the repair chance, breaking its target. I asked about the gaps (1 AP, any Mush with no skill, fully silent, 12% fallback for an item with no repair chance) rather than inventing them. Built on the broken-item work: `breakItem` and `breakEquipment` (new `announce` flag so it stays silent), logs via `logSecret`. Equipment must also be breakable, since only the repair table makes it repairable. The flags are on no type yet, so the action is inert until they are set; I did not guess which types.
+
+## 2026-11-07: fire breaks items
+Fires now also break the `canBreak` items lying on the floor of a burning room (same 30% `fire.breakChance`; carried items spared; consumables destroyed, as the owner chose after I asked). A mid-task message added a public room log line for each, so `fireBrokeItem` and `fireDestroyedItem` in fr/es/en. Loop order in `fireCycle` changes the RNG draw sequence, which is fine since replays re-run the same code.

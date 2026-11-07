@@ -79,6 +79,8 @@ export class Action<T extends { type: string }> {
   terminal: boolean = false;
   /** Allowed on broken equipment (Repair). Every other action naming broken equipment in its `equipment` field is refused. */
   onBroken: boolean = false;
+  /** Allowed on a broken item (carrying it about, dismantling it); every other action naming one in `item`, `fruit` or `weapon` is refused. Repair is `onBroken`. */
+  onBrokenItem: boolean = false;
 
   constructor(type: string, ...fields: [Exclude<keyof T, "type">] extends [never] ? [] : [fields: Fields<T>]) {
     this.type = type;
@@ -203,10 +205,13 @@ export class Action<T extends { type: string }> {
     return this.refusedBroken(state, player, target) ?? this.validate(state, player, target) ?? this.canAfford(state, player, target);
   }
 
-  /** Broken equipment does nothing (owner, 2026-10-25): no action on it but those marked `onBroken`. */
+  /** Broken equipment does nothing (owner, 2026-10-25): no action on it but those marked `onBroken`. Nor does a broken item (owner, 2026-11-07), but `onBrokenItem` ones can still move or dismantle it. */
   private refusedBroken(state: Readonly<GameState>, player: Readonly<PlayerState>, target: T): string | null {
-    const equipment = (target as { equipment?: unknown }).equipment;
-    return !this.onBroken && typeof equipment === "string" && isBrokenIn(state, player.room, equipment) ? BROKEN : null;
+    if (this.onBroken) return null;
+    const named = target as { equipment?: unknown; item?: unknown; fruit?: unknown; weapon?: unknown };
+    if (typeof named.equipment === "string" && isBrokenIn(state, player.room, named.equipment)) return BROKEN;
+    if (this.onBrokenItem) return null;
+    return [named.item, named.fruit, named.weapon].some((id) => typeof id === "string" && state.items.find((i) => i.id === id)?.broken) ? BROKEN : null;
   }
 
   /** Cycles until a `cooldown` refusal clears, for showing the action disabled with the wait. */

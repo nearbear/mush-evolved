@@ -4,7 +4,7 @@
 // Action: free text can't be enumerated in legalActions. Moderation (filtering,
 // rate limits) is the server's job before these run.
 
-import { ITRACKIE_ITEM, itemsIn } from "./items.ts";
+import { ITRACKIE_ITEM, itemsIn, isWorking } from "./items.ts";
 import { channelLimit } from "./modifiers.ts";
 import { noITrackieNeeded } from "./comms.ts";
 import { clone, fail, dayOf, findPlayer, type ActionResult } from "./helpers.ts";
@@ -119,7 +119,7 @@ export function chatChannels(state: Readonly<GameState>, player: Readonly<Player
   if (!player.alive) return [GRAVEYARD_CHANNEL];
   // The Mush channel is a link between the Mush, not a device: no iTrackie needed (decided 2026-10-16).
   const mush: ChannelId[] = player.role === "mush" ? [MUSH_CHANNEL] : [];
-  const hasITrackie = itemsIn(state, { kind: "player", id: player.id }).some((i) => i.type === ITRACKIE_ITEM);
+  const hasITrackie = itemsIn(state, { kind: "player", id: player.id }).some((i) => i.type === ITRACKIE_ITEM && isWorking(i));
   // Luyten-Ceti's brain probes stand in for the iTrackie once that rebel base is reached (owner, 2026-10-21).
   if (!hasITrackie && !noITrackieNeeded(state)) return mush;
   return [...CHAT_CHANNELS, ...threadIds(state), ...mush, ...state.channels.filter((c) => c.members.includes(player.id)).map((c) => c.id)];

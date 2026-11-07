@@ -1,5 +1,5 @@
 import { Action, isString } from "./action.ts";
-import { ITEM_TYPES, canReachItem } from "../items.ts";
+import { ITEM_TYPES, canReachItem, isWorking } from "../items.ts";
 import { logPublic } from "../log.ts";
 import { rollInt } from "../rng.ts";
 import type { GameState, ItemState, PlayerState } from "../types.ts";
@@ -11,7 +11,7 @@ export const OUTPUT_TUBE_ITEM = "output_tube";
 
 /** Whether an input tube lies on the floor of this room. A carried tube does nothing. */
 const hasInputTube = (state: Readonly<GameState>, room: string): boolean =>
-  state.items.some((i) => i.type === INPUT_TUBE_ITEM && i.at.kind === "room" && i.at.id === room);
+  state.items.some((i) => i.type === INPUT_TUBE_ITEM && isWorking(i) && i.at.kind === "room" && i.at.id === room);
 
 /** What the tube accepts: anything the player can reach (floor or own inventory) except the tubes, and except what can't be dropped. */
 function sendable(state: Readonly<GameState>, player: Readonly<PlayerState>, item: Readonly<ItemState>): boolean {
