@@ -19,7 +19,7 @@
   pointer-events: none;
   background: left top no-repeat;
 }
-/* A terminal (TerminalShell), or the settings window: the title bar and login banner (or credits) stay put above the tab
+/* A terminal (TerminalFrame), or the settings window: the title bar and login banner (or credits) stay put above the tab
    line, and the body under it scrolls. */
 .terminal-top,
 .terminal-body {
@@ -193,7 +193,7 @@
   font-size: 0.9em;
 }
 
-/* The shared title bar (TerminalShell, and the settings window). The settings window: title on the left, close on the right. */
+/* The shared title bar (TerminalFrame, and the settings window). The settings window: title on the left, close on the right. */
 .terminal-header {
   flex-wrap: wrap;
   /* A slightly deeper cyan than the card (as is the rest of .terminal-top), instead of the dialog's dark bar. */

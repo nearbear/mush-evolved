@@ -17,4 +17,5 @@ Feature designs, one per file. Each plan's own header is the authority on its st
 | `balance.md` | Balance goals, targets, AP economy and tuning method | Draft 2026-11-04; not decided |
 | `replay-viewer.md` | Replay viewer page, split into stories (#156) | Reviewed with the owner 2026-11-05; not built |
 | `chat-pages.md` | Fixed 50-message chat pages (#355) | Phases 1–4 built 2026-11-06; wrap-up (rules-design, flat-view sim) left |
+| `design-kit.md` | Components to add to the dev design kit, and the `PlayerView` fixture they need | Handoff 2026-11-07; terminal frame added |
 | `action-plans.md` | Scheduled action plans (#44) | Superseded 2026-10-30 by `relay-tokens.md` and `on-call.md`; kept for history |

@@ -2512,3 +2512,9 @@ The owner asked for an honest, ranked verdict on the #384 plan settled earlier t
 
 - **What:** `hunters.test.ts` "an ignored battle" runs a seeded 3-player game with nobody acting (oxygen loss and incidents switched off so the crew outlives the hull) until it ends, checking each cycle that the hull never rises, the shield rises by at most its regen and takes its share of every hit, and that the game ends `ship_destroyed` / `mush` within 500 cycles. Numbers come from `state.config`, none pinned.
 - **Needed correction:** the first draft expected the shield to fall before the hull. With absorption, every hit lowers both, and +5 regen hides the shield's loss in its net value (and fully at max). The check became "below what regen alone would give", skipped when regen would cap at max.
+
+## 2026-11-07: Pure terminal frame for the design kit, and a kit handoff
+
+- Split `TerminalShell` into a pure `TerminalFrame` (props only: name, type, login, onClose, titleId) so the dev design kit can render terminals without a `PlayerView` or a Base UI dialog. It uses a plain `<h2>`/`<button>`; `TerminalDialog` passes `aria-labelledby` to its popup (Base UI merges element props last, checked in its source). The access logic became `terminalLogin(type, view)` with tests.
+- Wrote `docs/plans/design-kit.md`: what's in the kit, what's ready now on plain props, and what needs a `PlayerView` fixture (recommended: build it with `createGame` + `viewFor` instead of by hand, so it can't drift).
+- What needed correction: a screenshot review caught the kit's terminal title rendering larger than in-game. The kit page's `.m2k h2` chrome rule outranked `.terminal-title`; scoped it to `section > h2`. The reviewer also reported the phone frames as flush to the edges, but measuring showed 16px margins: check visual-review claims with measurements.

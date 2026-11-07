@@ -11,7 +11,7 @@ One line per document. Paths in docs and code are written from the repo root (`d
 
 Feature designs; status table in `plans/README.md`.
 
-- `plans/astro.md`, `comms.md`, `space-combat.md`, `patrol.md`, `relay-tokens.md`, `research-sabotage.md`, `on-call.md`, `expedition.md`, `bot-goals.md`, `inventory-notes.md`, `balance.md`, `chat-pages.md`, `action-plans.md`.
+- `plans/astro.md`, `comms.md`, `space-combat.md`, `patrol.md`, `relay-tokens.md`, `research-sabotage.md`, `on-call.md`, `expedition.md`, `bot-goals.md`, `inventory-notes.md`, `balance.md`, `chat-pages.md`, `design-kit.md`, `action-plans.md`.
 
 ## Code map
 

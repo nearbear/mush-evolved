@@ -7,7 +7,7 @@
 import { Dialog } from "@base-ui/react/dialog";
 import { Popover } from "@base-ui/react/popover";
 import { Tabs } from "@base-ui/react/tabs";
-import React, { useState, type CSSProperties } from "react";
+import React, { useId, useState, type CSSProperties } from "react";
 import {
   hasSkill,
   PILGRED_COMPLETE,
@@ -37,8 +37,8 @@ import { ActionButton } from "./ActionButton.tsx";
 import { RelayDetails, withGain } from "./RelayDetails.tsx";
 import { BiosTerminal } from "./BiosTerminal.tsx";
 import { CommsCenter } from "./CommsCenter.tsx";
-import { TabOutline } from "./TabOutline.tsx";
-import { TerminalShell } from "./TerminalShell.tsx";
+import { TerminalFrame } from "./TerminalFrame.tsx";
+import { terminalLogin } from "./terminalUsername.ts";
 import { PlanetList } from "./PlanetList.tsx";
 import { CommandTerminal } from "./CommandTerminal.tsx";
 import { TurretPanel } from "./TurretPanel.tsx";
@@ -56,26 +56,31 @@ interface Props {
 
 export function TerminalDialog({ terminal, view, onAction, onClose, onSharePlanet }: Props) {
   const names = useNames();
+  const titleId = useId();
   return (
     <Dialog.Root open={terminal !== null} onOpenChange={(open) => !open && onClose()}>
       <Dialog.Portal>
         <Dialog.Backdrop className="settings-backdrop" />
-        <Dialog.Popup className={`settings-popup terminal-popup kit-panel`}>
+        <Dialog.Popup className="settings-popup terminal-popup kit-panel" aria-labelledby={titleId}>
           {terminal && (
-            <div className={`cut-card cut-top terminal-card terminal-outlined terminal-${terminal.type.toLowerCase()}`}>
-            <TerminalShell name={names.equipment(terminal.type)} type={terminal.type} view={view}>
-            {terminal?.type === "RESEARCH_LAB" && <ResearchList terminal={terminal} view={view} onAction={onAction} />}
-              {terminal?.type === "NERON_CORE" && <ProjectList terminal={terminal} view={view} onAction={onAction} />}
-              {terminal?.type === "ASTRO_MODULE" && <PlanetList terminal={terminal} view={view} onAction={onAction} onShare={onSharePlanet} />}
-              {terminal?.type === "PILGRED" && <PilgredRepair terminal={terminal} view={view} onAction={onAction} />}
-              {terminal?.type === "COM_CENTER" && <CommsCenter terminal={terminal} view={view} onAction={onAction} />}
-              {terminal?.type === "NERON_BIOS_TERM" && <BiosTerminal terminal={terminal} view={view} onAction={onAction} />}
-              {terminal?.type === "TURRET_COMMAND" && <TurretPanel terminal={terminal} view={view} onAction={onAction} />}
-              {terminal?.type === "PILOT_MODULE" && <CommandTerminal key={terminal.id} terminal={terminal} view={view} onAction={onAction} />}
-            </TerminalShell>
-            </div>
+            <TerminalFrame
+              key={terminal.id}
+              name={names.equipment(terminal.type)}
+              type={terminal.type}
+              login={terminalLogin(terminal.type, view)}
+              onClose={onClose}
+              titleId={titleId}
+            >
+              {terminal.type === "RESEARCH_LAB" && <ResearchList terminal={terminal} view={view} onAction={onAction} />}
+              {terminal.type === "NERON_CORE" && <ProjectList terminal={terminal} view={view} onAction={onAction} />}
+              {terminal.type === "ASTRO_MODULE" && <PlanetList terminal={terminal} view={view} onAction={onAction} onShare={onSharePlanet} />}
+              {terminal.type === "PILGRED" && <PilgredRepair terminal={terminal} view={view} onAction={onAction} />}
+              {terminal.type === "COM_CENTER" && <CommsCenter terminal={terminal} view={view} onAction={onAction} />}
+              {terminal.type === "NERON_BIOS_TERM" && <BiosTerminal terminal={terminal} view={view} onAction={onAction} />}
+              {terminal.type === "TURRET_COMMAND" && <TurretPanel terminal={terminal} view={view} onAction={onAction} />}
+              {terminal.type === "PILOT_MODULE" && <CommandTerminal key={terminal.id} terminal={terminal} view={view} onAction={onAction} />}
+            </TerminalFrame>
           )}
-          {terminal && <TabOutline key={terminal.id} shape="cut" line=".terminal-body" />}
         </Dialog.Popup>
       </Dialog.Portal>
     </Dialog.Root>

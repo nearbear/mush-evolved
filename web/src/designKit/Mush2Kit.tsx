@@ -4,6 +4,8 @@
 
 import { bustIcon, ENDING_ART, SHIP_CARD_ICONS } from "../art/assets.ts";
 import { ShipCard, type ShipCardHighlight } from "../games/ShipCard.tsx";
+import { Tabs } from "@base-ui/react/tabs";
+import { TerminalFrame } from "../hud/TerminalFrame.tsx";
 import "./mush2Kit.css";
 
 const icon = (name: string) => SHIP_CARD_ICONS[name]!;
@@ -19,6 +21,8 @@ const highlights: ShipCardHighlight[] = [
   { icon: icon("pa_pilgred"), label: "Highlight 6" },
 ];
 
+const noop = () => {};
+
 export default function Mush2Kit() {
   return (
     <div className="m2k">
@@ -26,6 +30,7 @@ export default function Mush2Kit() {
         <h1>Design kit (mush2)</h1>
         <nav aria-label="Sections">
           <a href="#ship-card">Ship card</a>
+          <a href="#terminal">Terminal</a>
           <a href="/design-kit.html">Mush art kit</a>
         </nav>
       </header>
@@ -65,6 +70,52 @@ export default function Mush2Kit() {
               <figcaption>
                 <code>mush</code>, no <code>to</code>, one event
               </figcaption>
+            </figure>
+          </div>
+        </section>
+        <section id="terminal">
+          <h2>Terminal</h2>
+          <p>
+            <code>hud/TerminalFrame.tsx</code>: the frame every terminal shares (title bar, cosmetic login, close, icon,
+            gold outline). The game puts it in <code>TerminalDialog</code>&apos;s popup; here it sits in a stand-in{" "}
+            <code>.terminal-popup.kit-panel</code>. <code>type</code> picks the icon and corner art.
+          </p>
+          <div className="m2k-row">
+            <figure>
+              <div className="terminal-popup kit-panel m2k-terminal">
+                <TerminalFrame name="PILGRED" type="PILGRED" login={{ user: "jkim", access: "granted" }} onClose={noop}>
+                  <p>A terminal without tabs: a flat rim under the title bar, and the body scrolls.</p>
+                  <p>Body text uses the card&apos;s dark text tokens.</p>
+                </TerminalFrame>
+              </div>
+              <figcaption>No tabs, access granted</figcaption>
+            </figure>
+            <figure>
+              <div className="terminal-popup kit-panel m2k-terminal">
+                <TerminalFrame name="Com center" type="COM_CENTER" login={{ user: "cwang", access: "limited" }} onClose={noop}>
+                  <Tabs.Root className="settings-tabs" defaultValue="one">
+                    <Tabs.List className="settings-tab-list" aria-label="Sample tabs">
+                      <Tabs.Tab className="settings-tab" value="one">Overview</Tabs.Tab>
+                      <Tabs.Tab className="settings-tab" value="two">Second tab</Tabs.Tab>
+                    </Tabs.List>
+                    <Tabs.Panel value="one">
+                      <p>The selected tab rises out of the outline; only the open panel scrolls.</p>
+                    </Tabs.Panel>
+                    <Tabs.Panel value="two">
+                      <p>Second panel.</p>
+                    </Tabs.Panel>
+                  </Tabs.Root>
+                </TerminalFrame>
+              </div>
+              <figcaption>Tabbed, access limited (no title)</figcaption>
+            </figure>
+            <figure>
+              <div className="terminal-popup kit-panel m2k-terminal">
+                <TerminalFrame name="Command" type="PILOT_MODULE" login={{ user: "klai", access: "hacked" }} onClose={noop}>
+                  <p>Logged in as the title holder with the hacker kit.</p>
+                </TerminalFrame>
+              </div>
+              <figcaption>Hacked login</figcaption>
             </figure>
           </div>
         </section>
