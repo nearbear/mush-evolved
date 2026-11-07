@@ -39,13 +39,14 @@ export function Threads({
   onCancelStarter: () => void;
   onCreate: (name: string, from?: number) => void;
   onChat: (channel: ChannelId, text: string) => void;
-  onToggle: (message: number, line: number) => void;
+  onToggle: (channel: ChannelId, seq: number, line: number) => void;
 }) {
   const { t } = useTranslation();
   const readable = view.readChannels.includes("global");
   const canStart = view.chatChannels.includes("global");
   const counts = messageCounts(view);
-  const globalMessage = (id: number | null | undefined) => (id == null ? undefined : view.chat.find((m) => m.channel === "global" && m.id === id));
+  // By `seq`: a message older than the view's two pages isn't here yet (paging, #355).
+  const globalMessage = (seq: number | null | undefined) => (seq == null ? undefined : view.chat.find((m) => m.channel === "global" && m.seq === seq));
   const starterMessage = globalMessage(starter);
   const threads = [...view.threads].reverse();
 
@@ -96,7 +97,7 @@ export function Threads({
               e.preventDefault();
               if (!name.trim()) return;
               setAwaiting(new Set(view.threads.map((th) => th.id)));
-              onCreate(name, starterMessage?.id);
+              onCreate(name, starterMessage?.seq);
             }}
           >
             <input

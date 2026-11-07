@@ -143,7 +143,7 @@ describe("the dead player's view (#45)", () => {
     expect(v.chat.some((m) => m.system?.key === "diedHuman")).toBe(true);
     for (const channel of CHAT_CHANNELS) expect(sendChat(s, "p1", channel, "boo").ok).toBe(false);
     const mine = s.chat.find((m) => m.from === "p1")!;
-    expect(toggleCheckbox(s, "p1", mine.id, 0).ok).toBe(false);
+    expect(toggleCheckbox(s, "p1", mine.channel, mine.seq, 0).ok).toBe(false);
   });
 
   it("the graveyard is for the dead alone: they talk in it, the living neither read nor post", () => {

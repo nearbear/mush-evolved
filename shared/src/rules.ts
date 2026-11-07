@@ -27,7 +27,7 @@ import { inactivityCycle } from "./inactivity.ts";
 import { emptyResources } from "./resources.ts";
 import { hasSkill } from "./skills.ts";
 import { rollFloat, shuffle } from "./rng.ts";
-import { chatChannels, readChannels } from "./chat.ts";
+import { chatChannels, chatMarkKey, chatPageOf, markedText, readChannels } from "./chat.ts";
 import { moderateName } from "./moderation.ts";
 import { clone, dayOf, fail, findPlayer, type ActionResult } from "./helpers.ts";
 
@@ -62,6 +62,8 @@ import type {
   PlayerState,
   PlayerView,
   SeatView,
+  ChannelId,
+  ChatLine,
   ChatMessage,
   ExpeditionReportView,
   RoomId,
@@ -120,6 +122,9 @@ export function createGame(
     nextLogId: 2,
     chat: [],
     nextChatId: 1,
+    chatSeq: {},
+    chatOutbox: { sealed: [], dropped: [] },
+    chatMarks: {},
     channels: [],
     nextChannelId: 1,
     plans: [],
@@ -428,9 +433,43 @@ function grantCarePoints(state: GameState): void {
   }
 }
 
-/** A chat message as a view carries it: field by field, so a name stored by an older build never goes out. */
-export function messageView({ id, cycle, at, channel, from, isBot, text, system }: Readonly<ChatMessage>): ChatMessage {
-  return { id, cycle, ...(at !== undefined && { at }), channel, from, isBot, text, ...(system && { system }) };
+/**
+ * A chat message as a view carries it: field by field, so a name stored by an older build never goes out, with its
+ * ticks from `marks` (`GameState.chatMarks`) drawn into the text (`markedText`).
+ */
+export function messageView({ id, seq, cycle, at, channel, from, isBot, text, system }: Readonly<ChatMessage>, marks: Readonly<GameState["chatMarks"]>): ChatMessage {
+  const key = chatMarkKey(channel, seq);
+  const shown = markedText(text, Object.hasOwn(marks, key) ? marks[key] : undefined);
+  return { id, seq, cycle, ...(at !== undefined && { at }), channel, from, isBot, text: shown, ...(system && { system }) };
+}
+
+/**
+ * Where page `page` of `channel` is for a player asking for it (#355): in the state (the open page or the tail), in
+ * storage, or null when they may not have it: a channel they can't read now (`readChannels`: left, no iTrackie, dead,
+ * a human asking for the Mush channel) or a page not begun. One null for every refusal, so asking says nothing about a
+ * channel you can't read. The server reads storage only after this says "stored".
+ */
+export function chatPageSource(state: Readonly<GameState>, playerId: PlayerId, channel: ChannelId, page: number): "state" | "stored" | null {
+  const you = findPlayer(state, playerId);
+  const count = state.chatSeq[channel] ?? 0;
+  if (!you || count === 0 || !Number.isSafeInteger(page) || page < 0 || !readChannels(state, you).includes(channel)) return null;
+  const last = chatPageOf(count - 1);
+  return page > last ? null : page >= last - 1 ? "state" : "stored";
+}
+
+/**
+ * Page `page` of `channel` as `playerId` may read it (#355), projected like a live view's chat (`messageView`, ticks
+ * drawn in, no `id`), or null for every refusal (`chatPageSource`). `stored` is the page as the server stored it, read
+ * only for a "stored" page; the access check runs again here, so a read that waited on storage can't outlast it.
+ */
+export function chatPageView(state: Readonly<GameState>, playerId: PlayerId, channel: ChannelId, page: number, stored?: readonly ChatMessage[]): ChatLine[] | null {
+  const source = chatPageSource(state, playerId, channel, page);
+  const messages = source === "state" ? state.chat : source === "stored" ? stored : undefined;
+  if (!messages) return null;
+  return messages.filter((m) => m.channel === channel && chatPageOf(m.seq) === page).map((m) => {
+    const { id: _id, ...line } = messageView(m, state.chatMarks);
+    return line;
+  });
 }
 
 /** Every thread, as a view carries it (for readers of global chat). */
@@ -450,7 +489,7 @@ export function sharedPlanetsView(state: Readonly<Pick<GameState, "sharedPlanets
  */
 export function viewFor(state: GameState, playerId: PlayerId): PlayerView {
   const view = seatViewFor(state, playerId);
-  return { ...view, log: view.log.map(({ id: _id, ...line }) => line) };
+  return { ...view, log: view.log.map(({ id: _id, ...line }) => line), chat: view.chat.map(({ id: _id, ...line }) => line) };
 }
 
 /**
@@ -556,7 +595,8 @@ export function seatViewFor(state: GameState, playerId: PlayerId): SeatView {
       .filter((e) => seesLine(e, you) && inLogWindow(state, e, logWindow))
       .map((e) => (e.visibleTo === "all" ? e : { ...e, visibleTo: [you.id] })),
     logSeen: you.logSeen,
-    chat: state.chat.filter((m) => channels.includes(m.channel)).map(messageView),
+    chat: state.chat.filter((m) => channels.includes(m.channel)).map((m) => messageView(m, state.chatMarks)),
+    chatCounts: Object.fromEntries(channels.flatMap((c) => (state.chatSeq[c] ? [[c, state.chatSeq[c]]] : []))),
     chatChannels: chatChannels(state, you),
     readChannels: channels,
     privateChannels: state.channels.filter((c) => c.members.includes(playerId)).map((c) => ({ ...c, members: [...c.members] })),

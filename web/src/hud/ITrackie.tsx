@@ -9,6 +9,7 @@ import { useTranslation } from "react-i18next";
 import { useNames } from "../i18n/names.ts";
 import { Tabs } from "@base-ui/react/tabs";
 import { FEATURE_CHANNELS, ITRACKIE_ITEM, GRAVEYARD_CHANNEL, MUSH_CHANNEL, type ChannelId, type FeatureChannel, type PlayerView, type SharedPlanetId, type ThreadId } from "@mush2/shared";
+import { chatSeenIn, isNewer, type ChatSeen } from "../chatSeen.ts";
 import { useAnnouncements } from "./useAnnouncements.ts";
 import { FeatureSelect } from "./FeatureSelect.tsx";
 import { IconTab } from "./IconButton.tsx";
@@ -53,16 +54,26 @@ function tabOf(channel: ChannelId): TabId {
 
 /** Messages from others on each tab that arrived since you last had it open (or since this panel mounted). */
 function useUnread(view: PlayerView, active: TabId): Record<TabId, number> {
-  const [seen, setSeen] = useState<Partial<Record<TabId, number>>>({});
-  const [baseline] = useState(() => view.chat.reduce((n, m) => Math.max(n, m.id), 0));
-  const newestHere = view.chat.reduce((n, m) => (tabOf(m.channel) === active ? Math.max(n, m.id) : n), 0);
+  // Per channel, the count you had when you last had its tab open, when this panel mounted, or when the channel became
+  // readable (so a picked-up iTrackie's history isn't unread, but a new thread's first message is).
+  const [seen, setSeen] = useState<ChatSeen>(() => chatSeenIn(view));
+  const now = chatSeenIn(view);
+  const nowKey = JSON.stringify(now);
   useEffect(() => {
-    setSeen((s) => ((s[active] ?? 0) >= newestHere ? s : { ...s, [active]: newestHere }));
-  }, [active, newestHere]);
+    const counts = JSON.parse(nowKey) as ChatSeen;
+    setSeen((s) => {
+      let next = s;
+      for (const [channel, count] of Object.entries(counts) as [ChannelId, number][]) {
+        const had = s[channel];
+        if (had === undefined || (tabOf(channel) === active && had < count)) next = { ...next, [channel]: count };
+      }
+      return next;
+    });
+  }, [active, nowKey]);
   const counts: Record<TabId, number> = { room: 0, global: 0, threads: 0, features: 0, private: 0, mush: 0, graveyard: 0 };
   for (const m of view.chat) {
     const tab = tabOf(m.channel);
-    if (tab !== active && m.from !== view.you.id && m.id > Math.max(baseline, seen[tab] ?? 0)) counts[tab]++;
+    if (tab !== active && m.from !== view.you.id && isNewer(seen, m)) counts[tab]++;
   }
   return counts;
 }
@@ -82,7 +93,7 @@ export function ITrackie({
   /** Start a thread under global chat, from global message `from` or on its own. */
   onCreateThread: (name: string, from?: number) => void;
   /** Tick or untick a checkbox in one of your own messages (`line` is 0-based). */
-  onToggle: (message: number, line: number) => void;
+  onToggle: (channel: ChannelId, seq: number, line: number) => void;
   /** Absent in a read-only view (a replay): no leaving, inviting or creating private channels. */
   channels?: ChannelHandlers | undefined;
 }) {
@@ -102,7 +113,7 @@ export function ITrackie({
   const [notes, setNotes] = useState<Notes>(NO_NOTES);
   // The Mush tab exists only for Mush (the server sends the channel to no one else) and pulses until its newest message is read.
   const mush = view.readChannels.includes(MUSH_CHANNEL);
-  const newestMush = view.chat.reduce((n, m) => (m.channel === MUSH_CHANNEL ? Math.max(n, m.id) : n), 0);
+  const newestMush = view.chatCounts[MUSH_CHANNEL] ?? 0;
   const [mushSeen, setMushSeen] = useState(0);
   useEffect(() => {
     if (mush && tab === "mush") setMushSeen(newestMush);
@@ -134,7 +145,7 @@ export function ITrackie({
       setTab("threads");
     },
     start: (m) => {
-      setStarter(m.id);
+      setStarter(m.seq);
       setThreadName(threadNameFrom(m.text));
       setOpenThread(null);
       setTab("threads");

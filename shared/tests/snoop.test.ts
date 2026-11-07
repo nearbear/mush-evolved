@@ -76,7 +76,8 @@ describe("Scrapper's Snoop", () => {
       expect(counts[rare]! / runs).toBeGreaterThan(0.06);
       expect(counts[rare]! / runs).toBeLessThan(0.14);
     }
-  });
+    // 2000 games: about 3s alone, past 5s when the whole suite runs in parallel.
+  }, 30_000);
 
   it("makes metal scraps in the Scrapper's inventory, for free", () => {
     const s = ship();

@@ -28,7 +28,7 @@ export function PrivateChannels({
   onCreate,
   onInvite,
   onLeave,
-}: { view: PlayerView; onChat: (channel: ChannelId, text: string) => void; onToggle: (message: number, line: number) => void } & Partial<ChannelHandlers>) {
+}: { view: PlayerView; onChat: (channel: ChannelId, text: string) => void; onToggle: (channel: ChannelId, seq: number, line: number) => void } & Partial<ChannelHandlers>) {
   const { t, i18n } = useTranslation();
   const [picked, setPicked] = useState<PrivateChannelId | "">("");
   const [inviting, setInviting] = useState(false);

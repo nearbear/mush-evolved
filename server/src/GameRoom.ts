@@ -11,6 +11,11 @@ import {
   parseGameMessage,
   startGame,
   stampEntries,
+  takeChatOutbox,
+  chatPageKey,
+  chatMarkKey,
+  chatPageSource,
+  chatPageView,
   bodyOf,
   legalActions,
   nextDue,
@@ -69,6 +74,8 @@ declare global {
 
 /** Error code (not text) for a cheat input on a server that doesn't allow them. */
 const CHEATS_DISABLED = "cheats_disabled";
+/** The one refusal for a `chatPage` request (#355), whatever the reason. */
+const CHAT_PAGE_UNAVAILABLE = "chat_page_unavailable";
 
 /** Deliberate pacing so bots don't act instantly. */
 const BOT_DELAY_MS = 50;
@@ -100,7 +107,7 @@ const REPLAY_RETRY_MAX_MS = 60 * 60_000;
  * Bump when GameState's shape changes, or ConfigOverrides' (or what resolveConfig derives from a key). Games stored
  * under another version are discarded on load (there is no migration; games are short-lived).
  */
-export const STATE_VERSION = 111;
+export const STATE_VERSION = 113;
 
 /**
  * A ship's overrides from its setup (#232): the knobs, plus the setup's id for the record and the view. The setup is
@@ -249,6 +256,8 @@ export class GameRoom extends Server<Env> {
   private limiter = new RateLimiter(10, 1000);
   /** Per seat, not per connection, so reconnecting doesn't reset it. */
   private chatLimiter = new RateLimiter(5, 10_000);
+  /** Per seat, chat pages asked for (#355): chat's numbers, but apart from it, so reading back never stops you posting. */
+  private pageLimiter = new RateLimiter(5, 10_000);
 
   /** Cheats and End cycle (`ALLOW_CHEATS`): `npm run dev` and the test deployment, never staging or production. */
   private get cheatsAllowed(): boolean {
@@ -660,6 +669,10 @@ export class GameRoom extends Server<Env> {
       await this.leaveShip(playerId);
       return;
     }
+    if (msg.type === "chatPage") {
+      await this.sendChatPage(connection, playerId, by, msg.channel, msg.page);
+      return;
+    }
     if (msg.type === "setModel" || msg.type === "clearModel") {
       const error = this.setModel(playerId, msg);
       if (error) this.send(connection, { type: "error", message: error });
@@ -726,7 +739,7 @@ export class GameRoom extends Server<Env> {
   private async social(
     playerId: PlayerId,
     by: PlayerId,
-    msg: Exclude<GameClientMessage, { type: "action" | "clearQueue" | "acknowledgeTransfer" | "walk" | "cheat" | "roleCheat" | "setModel" | "clearModel" | "leaveShip" }>,
+    msg: Exclude<GameClientMessage, { type: "action" | "clearQueue" | "acknowledgeTransfer" | "walk" | "cheat" | "roleCheat" | "setModel" | "clearModel" | "leaveShip" | "chatPage" }>,
     /** A chat message's reply depth (`BOT_CHAT_CHAIN_DEPTH`): 0 unless a bot is replying to chat. */
     depth = 0,
   ): Promise<string | null> {
@@ -897,6 +910,8 @@ export class GameRoom extends Server<Env> {
     // One time for the stamps and the record, so a rebuild stamps the same (rebuildGame).
     const now = Date.now();
     this.game = stampEntries(result.state, now);
+    // Sealed chat pages are stored beside the snapshot, in the same write (#355, chat.ts `pushChat`).
+    const outbox = takeChatOutbox(this.game);
     this.noteStarts();
     if (this.game.phase === "ended") this.endedAt ??= now;
     // The message the chat input posted: the only player message an input makes.
@@ -908,8 +923,10 @@ export class GameRoom extends Server<Env> {
     const entries: Record<string, unknown> = { [inputKey(this.inputs++)]: recorded };
     const account = input.type === "join" ? this.accounts[input.seat.id] : undefined;
     if (input.type === "join" && account !== undefined) entries[accountKey(input.seat.id)] = account;
-    await this.persist(entries);
+    for (const { channel, page, messages } of outbox.sealed) entries[chatPageKey(channel, page)] = messages;
+    await this.persist(entries, outbox.dropped.flatMap(({ channel, pages }) => Array.from({ length: pages }, (_, page) => chatPageKey(channel, page))));
     if (room !== null) this.broadcastViews(room);
+    if (input.type === "toggleCheckbox") this.sendChatEdit(input.channel, input.seq);
     // Saved with the next input; until then a restart only repeats an idempotent write.
     await this.releaseAccounts();
     await this.recordFinished();
@@ -941,6 +958,43 @@ export class GameRoom extends Server<Env> {
       const by = this.body(playerId);
       if (room === undefined || this.game?.players.find((p) => p.id === by)?.room === room) this.sendView(conn, playerId);
     }
+  }
+
+  /**
+   * A checklist ticked on a message no view carries any more (two or more pages back, #355): its ticks go to every
+   * connection whose body reads the channel, for a copy the client fetched. A message still in the state is in the
+   * views just sent.
+   */
+  private sendChatEdit(channel: ChannelId, seq: number): void {
+    const game = this.game;
+    const mark = game?.chatMarks[chatMarkKey(channel, seq)];
+    if (!game || !mark || game.chat.some((m) => m.channel === channel && m.seq === seq)) return;
+    const msg: GameServerMessage = { type: "chatEdit", channel, seq, mark: { tasks: [...mark.tasks], checked: [...mark.checked] } };
+    for (const conn of this.getConnections<SeatState>()) {
+      const seat = conn.state?.playerId;
+      const body = seat && game.players.find((p) => p.id === this.body(seat));
+      if (body && readChannels(game, body).includes(channel)) this.send(conn, msg);
+    }
+  }
+
+  /**
+   * Answers a `chatPage` (#355): the access check (`chatPageSource`, for the body the seat plays now) comes before any
+   * storage read, and `chatPageView` checks again after it. Every refusal is the same error. Not an input: nothing is
+   * recorded and no view changes.
+   */
+  private async sendChatPage(conn: Connection, seat: PlayerId, by: PlayerId, channel: ChannelId, page: number): Promise<void> {
+    if (!this.pageLimiter.allow(seat, Date.now(), this.devServer ? DEV_RATE_SCALE : 1)) {
+      this.countRateLimited(seat);
+      this.send(conn, { type: "error", message: "too_many_messages" });
+      return;
+    }
+    const source = this.game ? chatPageSource(this.game, by, channel, page) : null;
+    const stored = source === "stored" ? await this.ctx.storage.get<ChatMessage[]>(chatPageKey(channel, page)) : undefined;
+    if (source === "stored" && !stored) console.warn(`Chat page ${chatPageKey(channel, page)} is missing from storage`);
+    // The body again: a Transfer may have moved the seat while storage was read.
+    const body = this.body(seat);
+    const messages = this.game && body ? chatPageView(this.game, body, channel, page, stored) : null;
+    this.send(conn, messages ? { type: "chatPage", channel, page, messages } : { type: "error", message: CHAT_PAGE_UNAVAILABLE });
   }
 
   /** `playerId` is the seat; it gets its current body's view. */
@@ -1091,8 +1145,12 @@ export class GameRoom extends Server<Env> {
     }
   }
 
-  /** Saves the snapshot, plus any record entries, in one atomic write so they can't disagree. */
-  private async persist(entries: Record<string, unknown> = {}): Promise<void> {
+  /**
+   * Saves the snapshot, plus any record entries and chat pages, in one atomic write so they can't disagree. `deletes`
+   * (a deleted private channel's pages) are issued in the same turn with no await between, so storage commits them
+   * with it.
+   */
+  private async persist(entries: Record<string, unknown> = {}, deletes: readonly string[] = []): Promise<void> {
     if (!this.game) return;
     const { config: _, ...game } = this.game;
     const stored: Stored = {
@@ -1114,7 +1172,11 @@ export class GameRoom extends Server<Env> {
       ...(this.endedAt !== null && { endedAt: this.endedAt }),
       replayReady: this.replayReady,
     };
-    await this.ctx.storage.put({ ...entries, game: stored });
+    const writes: Promise<unknown>[] = [];
+    // Storage deletes at most 128 keys a call.
+    for (let i = 0; i < deletes.length; i += 128) writes.push(this.ctx.storage.delete(deletes.slice(i, i + 128)));
+    writes.push(this.ctx.storage.put({ ...entries, game: stored }));
+    await Promise.all(writes);
   }
 
   private send(connection: Connection, msg: GameServerMessage): void {

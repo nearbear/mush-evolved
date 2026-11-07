@@ -158,10 +158,17 @@ function ship(): { state: GameState; sentinels: Sentinel[] } {
   s.items.push({ id: str("floor-here", ["p0", "p1", "p2"]), type: "wrench", at: { kind: "room", id: HERE } });
   s.items.push({ id: str("floor-elsewhere", ["p3"]), type: "wrench", at: { kind: "room", id: ELSEWHERE } });
   s.log.push({ id: 10_000 + s.log.length, cycle: s.cycle, key: "test", params: { x: str("roomLog-elsewhere", ["p3"]) }, room: ELSEWHERE, visibleTo: "all" });
-  s.chat.push({ id: 1, cycle: s.cycle, channel: MUSH_CHANNEL, from: "p0", isBot: false, text: str("mushChat", ["p0"]) });
+  // A message's game-wide id never goes out (a gap in it would show posts you can't read, #355); its `seq` does.
+  s.chat.push({ id: num("chatId-mush", []), seq: 0, cycle: s.cycle, channel: MUSH_CHANNEL, from: "p0", isBot: false, text: str("mushChat", ["p0"]) });
+  s.chatSeq[MUSH_CHANNEL] = num("chatSeq-mush", ["p0"]);
   s.bonds.p1 = ["p2"];
   s.channels.push({ id: "pc-1", name: str("channelName", ["p1", "p3"]), members: ["p1", "p3"], createdBy: "p1", day: 1, cycleOfDay: 1 });
-  s.chat.push({ id: 2, cycle: s.cycle, channel: "pc-1", from: "p1", isBot: false, text: str("privateChat", ["p1", "p3"]) });
+  s.chat.push({ id: num("chatId-private", []), seq: 0, cycle: s.cycle, channel: "pc-1", from: "p1", isBot: false, text: str("privateChat", ["p1", "p3"]) });
+  s.chatSeq["pc-1"] = num("chatSeq-private", ["p1", "p3"]);
+  // Pages on their way to storage go to no one.
+  s.chatOutbox.sealed.push({ channel: "global", page: 0, messages: [{ id: 3, seq: 0, cycle: s.cycle, channel: "global", from: "p0", isBot: false, text: str("sealedChat", []) }] });
+  // Ticks go out only drawn into the text of a message you can read, never as the entries themselves.
+  s.chatMarks["pc-1:0"] = { from: "p1", tasks: [num("chatMarkTask", [])], checked: [num("chatMarkChecked", [])] };
   // A plan goes to its channel's members only (plans.ts).
   s.plans.push({ id: "plan-1", channel: "pc-1", author: "p1", room: str("planRoom", ["p1", "p3"]), purpose: "meal", slots: [{ kind: "onCall", holder: "p3" }], status: "open", postedDay: 1 });
   s.nextPlanId = num("nextPlanId", []);

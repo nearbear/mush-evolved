@@ -2,6 +2,10 @@ import {
   characterName,
   CHARACTERS,
   CHAT_CHANNELS,
+  CHAT_PAGE,
+  chatPageKey,
+  type ChannelId,
+  type ChatMessage,
   CYCLE_HOURS,
   DEFAULT_CONFIG,
   fullViewFor,
@@ -486,13 +490,131 @@ describe("GameRoom persistence", () => {
     await send(room, c, { type: "chat", channel: CHAT_CHANNELS[0], text: "again" });
     const record = [...(await storage.list({ prefix: "input:" })).values()] as RecordedInput[];
     const ids = record.filter((r) => r.input.type === "chat").map((r) => r.chatId);
-    const shown = lastView(c).chat.filter((m) => m.from !== null);
-    expect(shown.map((m) => m.text)).toEqual(["hello", "again"]);
-    expect(ids).toEqual(shown.map((m) => m.id));
+    const kept = (storage.data.get("game") as { game: GameState }).game.chat.filter((m) => m.from !== null);
+    expect(kept.map((m) => m.text)).toEqual(["hello", "again"]);
+    expect(ids).toEqual(kept.map((m) => m.id));
+    // The live view names them by seq, never by the id (#355).
+    expect(lastView(c).chat.some((m) => "id" in m)).toBe(false);
     // Other inputs carry none.
     await send(room, c, { type: "action", action: legalIn(lastView(c)).find((x) => x.type === "move")! });
     expect(storage.data.get("input:000000002")).toMatchObject({ input: { type: "action" } });
     expect(storage.data.get("input:000000002")).not.toHaveProperty("chatId");
+  });
+
+  it("sends a checklist's ticks from a page two back to its channel's readers only, and the record's id finds it on its stored page (#355, #292)", async () => {
+    vi.useFakeTimers({ now: 1_000_000 });
+    try {
+      const { room, storage } = await newRoom(3);
+      const [c0, c1, c2] = ["tok0", "tok1", "tok2"].map((t) => connect(room, t));
+      await send(room, c0, { type: "createChannel", name: "crew", members: [lastView(c1!).you.id] });
+      const channel = lastView(c0!).privateChannels[0]!.id;
+      // Each past the chat rate limit, well short of a cycle.
+      const social = async (msg: unknown) => {
+        vi.setSystemTime(Date.now() + 2_001);
+        await send(room, c0!, msg);
+      };
+      const say = (text: string) => social({ type: "chat", channel, text });
+      const edits = (c: Conn) => c.messages<GameServerMessage>().filter((m) => m.type === "chatEdit");
+      await say("- [ ] hull\n- [ ] oxygen");
+      // On the open page, the views carry the tick.
+      await social({ type: "toggleCheckbox", channel, seq: 0, line: 0 });
+      expect(lastView(c1!).chat.find((m) => m.channel === channel && m.seq === 0)!.text).toBe("- [x] hull\n- [ ] oxygen");
+      expect(edits(c1!)).toEqual([]);
+      for (let i = 1; i <= 2 * CHAT_PAGE; i++) await say(`line ${i}`);
+      expect(lastView(c1!).chatCounts[channel]).toBe(2 * CHAT_PAGE + 1);
+      expect(lastView(c1!).chat.some((m) => m.channel === channel && m.seq === 0)).toBe(false);
+      await social({ type: "toggleCheckbox", channel, seq: 0, line: 1 });
+      const edit = { type: "chatEdit", channel, seq: 0, mark: { tasks: [0, 1], checked: [0, 1] } };
+      expect(edits(c0!)).toEqual([edit]);
+      expect(edits(c1!)).toEqual([edit]);
+      expect(edits(c2!)).toEqual([]);
+      // The stored page keeps the text as typed, and the recorded id names the message on it.
+      const page = storage.data.get(chatPageKey(channel, 0)) as ChatMessage[];
+      expect(page[0]!.text).toBe("- [ ] hull\n- [ ] oxygen");
+      const record = [...(await storage.list({ prefix: "input:" })).values()] as RecordedInput[];
+      expect(record.find((r) => r.input.type === "chat")!.chatId).toBe(page[0]!.id);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("answers chatPage from storage or the state for a reader, and refuses everyone else alike without reading storage (#355)", async () => {
+    vi.useFakeTimers({ now: 1_000_000 });
+    try {
+      const { room, storage } = await newRoom(3);
+      const [c0, c1, c2] = ["tok0", "tok1", "tok2"].map((t) => connect(room, t));
+      await send(room, c0, { type: "createChannel", name: "crew", members: [lastView(c1!).you.id] });
+      const channel = lastView(c0!).privateChannels[0]!.id;
+      const say = async (text: string) => {
+        vi.setSystemTime(Date.now() + 2_001);
+        await send(room, c0!, { type: "chat", channel, text });
+      };
+      await say("- [ ] hull");
+      for (let i = 1; i <= 2 * CHAT_PAGE; i++) await say(`line ${i}`);
+      await say("- [ ] hull");
+      vi.setSystemTime(Date.now() + 2_001);
+      await send(room, c0!, { type: "toggleCheckbox", channel, seq: 0, line: 0 });
+      const ask = async (c: Conn, page: number, on: string = channel) => {
+        vi.setSystemTime(Date.now() + 2_001);
+        await send(room, c, { type: "chatPage", channel: on, page });
+        return c.messages<GameServerMessage>().at(-1)!;
+      };
+      const page0 = await ask(c1!, 0);
+      expect(page0.type).toBe("chatPage");
+      const lines = (page0 as Extract<GameServerMessage, { type: "chatPage" }>).messages;
+      expect(lines.map((m) => m.seq)).toEqual(Array.from({ length: CHAT_PAGE }, (_, i) => i));
+      expect(lines[0]!.text).toBe("- [x] hull");
+      for (const m of lines) expect(m).not.toHaveProperty("id");
+      const page2 = (await ask(c1!, 2)) as Extract<GameServerMessage, { type: "chatPage" }>;
+      expect(page2.messages.map((m) => m.seq)).toEqual([2 * CHAT_PAGE, 2 * CHAT_PAGE + 1]);
+      // Not a member, a page not begun, a channel with no messages: one error, and storage is never read.
+      const get = vi.spyOn(storage, "get");
+      const refused = { type: "error", message: "chat_page_unavailable" };
+      expect(await ask(c2!, 0)).toEqual(refused);
+      expect(await ask(c1!, 3)).toEqual(refused);
+      expect(await ask(c1!, 0, "mush")).toEqual(refused);
+      expect(await ask(c1!, 0, "pc-999")).toEqual(refused);
+      expect(get).not.toHaveBeenCalled();
+      // Not an input: nothing recorded.
+      const record = [...(await storage.list({ prefix: "input:" })).values()] as RecordedInput[];
+      expect(record.some((r) => (r.input.type as string) === "chatPage")).toBe(false);
+      // Rate-limited apart from chat, at chat's numbers.
+      for (let i = 0; i < 5; i++) await send(room, c1!, { type: "chatPage", channel, page: 2 });
+      expect(c1!.messages<GameServerMessage>().at(-1)).toEqual({ type: "error", message: "too_many_messages" });
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("stores each sealed chat page beside the snapshot, and deletes a private channel's pages with it (#355)", async () => {
+    vi.useFakeTimers({ now: 1_000_000 });
+    try {
+      const { room, storage } = await newRoom(3);
+      const c = connect(room, "tok0");
+      await send(room, c, { type: "createChannel", name: "crew" });
+      const channel = lastView(c).privateChannels[0]!.id;
+      const say = async (target: ChannelId, n: number) => {
+        for (let i = 0; i < n; i++) {
+          // Past the chat rate limit, well short of a cycle.
+          vi.setSystemTime(Date.now() + 2_001);
+          await send(room, c, { type: "chat", channel: target, text: `${target} ${i}` });
+        }
+      };
+      await say(channel, CHAT_PAGE + 1);
+      await say(CHAT_CHANNELS[0], CHAT_PAGE + 1);
+      const page = storage.data.get(chatPageKey(channel, 0)) as ChatMessage[];
+      expect(page.map((m) => m.text)).toEqual(Array.from({ length: CHAT_PAGE }, (_, i) => `${channel} ${i}`));
+      expect(page.every((m) => m.at !== undefined)).toBe(true);
+      expect(storage.data.has(chatPageKey(CHAT_CHANNELS[0], 0))).toBe(true);
+      const stored = (storage.data.get("game") as { game: GameState }).game;
+      expect(stored.chatOutbox).toEqual({ sealed: [], dropped: [] });
+      expect(lastView(c).chatCounts[channel]).toBe(CHAT_PAGE + 1);
+      await send(room, c, { type: "leaveChannel", channel });
+      expect(storage.data.has(chatPageKey(channel, 0))).toBe(false);
+      expect(storage.data.has(chatPageKey(CHAT_CHANNELS[0], 0))).toBe(true);
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it("drops a snapshot stored under another state version, but keeps the record and launches nothing over it", async () => {

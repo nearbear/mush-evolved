@@ -1,10 +1,13 @@
 {
-  "version": 111,
+  "version": 113,
   "paths": [
     "bios.actopi",
     "bios.death_announcements",
     "bios.plasma_shield",
     "channels[]",
+    "chatOutbox.dropped[]",
+    "chatOutbox.sealed[]",
+    "chatSeq.global",
     "chat[]",
     "chat[].at",
     "chat[].channel",
@@ -12,6 +15,7 @@
     "chat[].from",
     "chat[].id",
     "chat[].isBot",
+    "chat[].seq",
     "chat[].text",
     "comms.linked",
     "comms.neron.progress",

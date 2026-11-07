@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { CHAT_HISTORY, MAX_CHAT_LENGTH, sendChat } from "../src/chat.ts";
+import { CHAT_PAGE, MAX_CHAT_LENGTH, sendChat } from "../src/chat.ts";
 import { DEFAULT_CONFIG, SHIP_ROOMS } from "../src/config.ts";
 import { ITRACKIE_ITEM } from "../src/items.ts";
 import { logCovert, logPrivate, logSecret } from "../src/log.ts";
@@ -278,7 +278,7 @@ describe("chat", () => {
     const state = mustChat(newGame(), "p1", "  hello  ");
     for (const s of seats) {
       expect(viewFor(state, s.id).chat).toEqual([
-        { id: 1, cycle: 1, channel: "global", from: "p1", isBot: true, text: "hello" },
+        { seq: 0, cycle: 1, channel: "global", from: "p1", isBot: true, text: "hello" },
       ]);
     }
   });
@@ -290,15 +290,15 @@ describe("chat", () => {
     expect(state.chat).toEqual([]);
   });
 
-  it("keeps only the most recent history, per channel", () => {
+  it("keeps each channel's open page and the one before it, without touching other channels", () => {
     const r = sendChat(newGame(), "p0", "botany", "water the plants");
     if (!r.ok) throw new Error(r.error);
     let state = r.state;
-    for (let i = 0; i < CHAT_HISTORY + 5; i++) state = mustChat(state, "p0", `m${i}`);
+    for (let i = 0; i < 3 * CHAT_PAGE + 5; i++) state = mustChat(state, "p0", `m${i}`);
     const global = state.chat.filter((m) => m.channel === "global");
-    expect(global).toHaveLength(CHAT_HISTORY);
-    expect(global[0]!.text).toBe("m5");
+    expect(global.map((m) => m.seq)).toEqual(Array.from({ length: CHAT_PAGE + 5 }, (_, i) => 2 * CHAT_PAGE + i));
     expect(state.chat.some((m) => m.channel === "botany")).toBe(true);
+    expect(viewFor(state, "p1").chatCounts).toEqual({ global: 3 * CHAT_PAGE + 5, botany: 1 });
   });
 
   it("is closed to dead players", () => {
@@ -331,7 +331,7 @@ describe("iTrackie and feature threads", () => {
     const state = mustChat(newGame(), "p1", "pilgred", "need a wrench");
     for (const s of seats) {
       expect(viewFor(state, s.id).chat).toEqual([
-        { id: 1, cycle: 1, channel: "pilgred", from: "p1", isBot: true, text: "need a wrench" },
+        { seq: 0, cycle: 1, channel: "pilgred", from: "p1", isBot: true, text: "need a wrench" },
       ]);
     }
   });

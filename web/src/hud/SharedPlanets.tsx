@@ -27,7 +27,7 @@ export function SharedPlanets({
   showStale: boolean;
   onShowStale: (show: boolean) => void;
   onChat: (channel: ChannelId, text: string) => void;
-  onToggle: (message: number, line: number) => void;
+  onToggle: (channel: ChannelId, seq: number, line: number) => void;
 }) {
   const { t } = useTranslation();
   const names = useNames();

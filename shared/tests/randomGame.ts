@@ -2,6 +2,7 @@
 
 import { CHARACTERS } from "../src/characters.ts";
 import { DEFAULT_CONFIG, PRESELECTION } from "../src/config.ts";
+import { takeChatOutbox } from "../src/chat.ts";
 import { applyInput, startGame, type GameSetup, type Input, type RecordedInput } from "../src/replay.ts";
 import { nextDue } from "../src/queue.ts";
 import { legalActions } from "../src/rules.ts";
@@ -56,7 +57,7 @@ export function randomInput(state: GameState, rng: RngState, at: number): [Input
     return [{ by, type: "walk", x: x - MAX_SPOT_CELL, y: y - MAX_SPOT_CELL, sitting: x % 2 === 0 }, rng];
   }
   const mine = state.chat.findLast((m) => m.from === by);
-  if (pick === 8 && mine) return [{ by, type: "toggleCheckbox", message: mine.id, line: 1 }, rng];
+  if (pick === 8 && mine) return [{ by, type: "toggleCheckbox", channel: mine.channel, seq: mine.seq, line: 1 }, rng];
   if (pick === 9) return [{ by, type: "acknowledgeTransfer" }, rng];
   // The server reports who is connected; now and then a seat goes inactive at once (a ban).
   if (pick === 10) return [{ type: "seen", players: [by], at }, rng];
@@ -91,6 +92,8 @@ export function play(steps: number, rng: RngState, from = setup, onStep?: (state
     const result = applyInput(state, input);
     if (!result.ok) continue;
     state = result.state;
+    // As the server does: sealed chat pages go to storage, not the state.
+    takeChatOutbox(state);
     record.push({ at: now, input });
     onStep?.(state);
   }
