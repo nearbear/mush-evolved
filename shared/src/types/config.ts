@@ -189,6 +189,10 @@ export interface GameConfig {
   search: { cost: { ap: number } }; // Searching the room for hidden items (owner, 2026-10-25, from the wiki: 1 AP).
   checkSpores: { cost: { ap: number } }; // The MycoScan's spore check (owner, 2026-11-01).
   snoop: { cost: { ap: number }; dirtyChance: number; injuryChance: number; rooms: string[]; items: Record<string, number> }; // The Scrapper's Snoop: cost, its dirt and injury odds, the storage rooms it works in, the items it makes by weight (owner, 2026-11-01).
+  bandage: {
+    cost: { ap: number }; // AP using a bandage costs, on anyone (owner, 2026-11-07, #397).
+    effect: { hp: number }; // HP a bandage restores before `healAmount` modifiers (owner, 2026-11-07).
+  };
   vaccine: {
     cost: { ap: number }; // AP the anti-Mush serum costs to use (owner, 2026-10-25, from the wiki).
   };

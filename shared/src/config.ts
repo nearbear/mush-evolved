@@ -102,6 +102,8 @@ export const DEFAULT_CONFIG: GameConfig = {
   },
   // Owner, 2026-10-25 (wiki): vaccinating with the anti-Mush serum costs 1 AP.
   vaccine: { cost: { ap: 1 } },
+  // Owner, 2026-11-07 (#397): a bandage heals yourself or a living person in your room 2 HP for 1 AP, and is used up.
+  bandage: { cost: { ap: 1 }, effect: { hp: 2 } },
   // Confirmed 2026-10-15: punch costs 1 AP, misses 40% of the time. Owner, 2026-10-24: damage is a uniform 1 to 2 (the wiki).
   // Confirmed 2026-10-16: the sturdy (Solid) skill adds 1 to punch damage.
   punch: { cost: { ap: 1 }, effect: { damage: [1, 2], sturdyBonusDamage: 1 }, crit: { chance: 0.2, damage: [2, 3] }, successChance: 0.6, inactiveTargetSuccessChance: 0.9, dirtyChance: 0.25 },
@@ -424,6 +426,9 @@ export const DEFAULT_CONFIG: GameConfig = {
     { type: "super_map", room: "CORRIDOR_B" },
     { type: "super_map", room: "CORRIDOR_B" },
     { type: "medikit", room: "SICK_BAY" },
+    // Owner, 2026-11-07 (#397): two bandages in the medlab.
+    { type: "bandage", room: "SICK_BAY" },
+    { type: "bandage", room: "SICK_BAY" },
      { type: "apron", room: "SICK_BAY" },
      { type: "protection_gloves", room: "SICK_BAY" },
     { type: "camera", room: "CORRIDOR_A" },

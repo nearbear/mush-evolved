@@ -61,6 +61,7 @@ import { TurnShipAction } from "./actions/turn_ship.ts";
 import { ReadyAction } from "./actions/ready.ts";
 import { HealAction } from "./actions/heal.ts";
 import { VaccinateAction } from "./actions/vaccinate.ts";
+import { UseBandageAction } from "./actions/use_bandage.ts";
 import { InstallAction } from "./actions/install.ts";
 import { UninstallAction } from "./actions/uninstall.ts";
 import { JettisonAction } from "./actions/jettison.ts";
@@ -208,6 +209,7 @@ const REGISTRY = {
   shower: new ShowerAction(),
   heal: new HealAction(),
   vaccinate: new VaccinateAction(),
+  use_bandage: new UseBandageAction(),
   punch: new PunchAction(),
   interrogate: new InterrogateAction(),
   chitchat: new ChitchatAction(),

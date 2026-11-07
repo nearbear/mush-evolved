@@ -95,6 +95,8 @@ export const ITEM_TYPES: Record<string, ItemType> = {
   grenade: {},
   // Healing (confirmed 2026-10-15): hold one to heal. Reusable.
   medikit: {},
+  // Owner, 2026-11-07 (#397): heals 2 HP, single use (actions/use_bandage.ts).
+  bandage: {},
   // Confirmed 2026-10-13: +2 AP. Satiety +1 is a placeholder (2026-10-14).
   coffee: { consume: { ap: 2, satiety: 1 }, canBreak: true, isDestroyedWhenBroken: true },
   // Owner, 2026-11-05 (eMushpedia "Ration standard"): +4 AP and +4 satiety, cooked or not; Sirius adds 1 AP (comms.ts).

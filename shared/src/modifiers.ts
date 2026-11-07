@@ -363,6 +363,10 @@ export const sporesPerDay = (state: Readonly<GameState>, player: Readonly<Player
 export const healAmount = (state: Readonly<GameState>, player: Readonly<PlayerState>, registry: ModifierRegistry = MODIFIERS) =>
   fold("healAmount", state.config.heal.effect.hp, state, player, registry);
 
+/** HP a bandage restores (owner, 2026-11-07, #397): the configured amount folded through the same `healAmount` hook. */
+export const bandageHealAmount = (state: Readonly<GameState>, player: Readonly<PlayerState>, registry: ModifierRegistry = MODIFIERS) =>
+  fold("healAmount", state.config.bandage.effect.hp, state, player, registry);
+
 /** Satiety a human loses each cycle: the configured loss folded through the player's modifiers. */
 export const satietyLoss = (state: Readonly<GameState>, player: Readonly<PlayerState>, registry: ModifierRegistry = MODIFIERS) =>
   fold("satietyPerCycle", state.config.hunger.satietyPerCycle, state, player, registry);
