@@ -14,7 +14,7 @@ export type PunchActionData = { type: "punch"; target: string };
  * are public room history.
  */
 export class PunchAction extends Action<PunchActionData> {
-  override tags: readonly ActionTag[] = ["aggressive"];
+  override tags: readonly ActionTag[] = ["aggressive", "melee"];
 
   constructor() {
     super("punch", { target: isString });

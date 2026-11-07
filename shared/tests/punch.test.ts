@@ -147,8 +147,8 @@ describe("chances in the view", () => {
 });
 
 describe("punch tags", () => {
-  it("is aggressive, and the view says so", () => {
-    expect(ACTIONS.punch.tags).toEqual(["aggressive"]);
-    expect(option(ship(), "p0", { type: "punch" })?.tags).toEqual(["aggressive"]);
+  it("is aggressive and melee, and the view says so", () => {
+    expect(ACTIONS.punch.tags).toEqual(["aggressive", "melee"]);
+    expect(option(ship(), "p0", { type: "punch" })?.tags).toEqual(["aggressive", "melee"]);
   });
 });

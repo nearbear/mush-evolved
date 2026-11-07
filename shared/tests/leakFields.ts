@@ -93,6 +93,7 @@ export const PLAYER_STATE_FIELDS: Record<string, FieldRule> = {
   maxAp: { reach: "own", test: "leaks.test.ts" },
   lyingIn: { reach: "room", test: "leaks.test.ts" },
   lyingSince: { reach: "never", test: "leaks.test.ts", note: "Lethargy's count; only its AP reaches the owner." },
+  enteredFrom: { reach: "never", test: "guard.test.ts", note: "Only the server reads it, to block doors while a guardian is in the room; the allowed moves already reflect it." },
   spot: { reach: "room", test: "leaks.test.ts" },
   pushedBy: { reach: "room", test: "leaks.test.ts", note: "Also as the public `accommodated` status." },
   accommodationOffers: { reach: "own", test: "leaks.test.ts", note: "The offers themselves are public room log lines." },

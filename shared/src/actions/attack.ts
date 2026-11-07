@@ -19,6 +19,11 @@ export type AttackActionData = { type: "attack"; weapon: string; target: string 
 export class AttackAction extends Action<AttackActionData> {
   override tags: readonly ActionTag[] = ["aggressive"];
 
+  /** A melee weapon (the knife) makes it a blow in person; a gun does not. */
+  override tagsFor(state: Readonly<GameState>, action: AttackActionData): readonly ActionTag[] {
+    return statsOf(state, action)?.melee ? [...this.tags, "melee"] : this.tags;
+  }
+
   constructor() {
     super("attack", { weapon: isString });
   }

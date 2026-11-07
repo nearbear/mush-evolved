@@ -2,6 +2,7 @@ import { Action, isString } from "./action.ts";
 import { leaveAccommodation } from "../accommodation.ts";
 import { wheelAlong } from "./accommodate.ts";
 import { logPublic } from "../log.ts";
+import { isBlocked } from "./guard.ts";
 import { arrive } from "../spot.ts";
 import { moveCost, movementRules } from "../modifiers.ts";
 import type { GameState, PlayerState } from "../types.ts";
@@ -19,12 +20,13 @@ export class MoveAction extends Action<MoveActionData> {
   override getCandidates(state: Readonly<GameState>, player: Readonly<PlayerState>): MoveActionData[] {
     // Someone being pushed goes where their pusher goes (accommodate.ts).
     if (player.pushedBy !== undefined) return [];
-    return (state.config.rooms[player.room] ?? []).map((to) => ({ type: "move", to }));
+    return (state.config.rooms[player.room] ?? []).filter((to) => !blockedDoor(state, player, to)).map((to) => ({ type: "move", to }));
   }
 
   override validate(state: Readonly<GameState>, player: Readonly<PlayerState>, target: MoveActionData): string | null {
     if (!(state.config.rooms[player.room] ?? []).includes(target.to)) return "not_adjacent";
     if (player.pushedBy !== undefined) return "being_pushed";
+    if (blockedDoor(state, player, target.to)) return "guarded";
     // The price itself, not just the base check: a move can have a negative MP price (converting AP gives MP), so a
     // modifier lowering the AP could let a player with no AP move and gain MP; and a cap below one move's MP makes it
     // impossible, not unaffordable.
@@ -48,4 +50,9 @@ export class MoveAction extends Action<MoveActionData> {
     leaveAccommodation(state, player);
     wheelAlong(state, player, from);
   }
+}
+
+/** A guardian in the room (guard.ts) leaves a door to whoever came in by it; anyone who came another way has none. */
+function blockedDoor(state: Readonly<GameState>, player: Readonly<PlayerState>, to: string): boolean {
+  return isBlocked(state, player) && player.enteredFrom !== to;
 }

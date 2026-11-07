@@ -55,6 +55,8 @@ describe("action registry", () => {
       ...mine.map((i): Action => ({ type: "drop", item: i.id })),
       ...mine.map((i): Action => ({ type: "hide", item: i.id })),
       { type: "search" },
+      // Anyone can guard (1 AP); stop_guarding only follows once they do.
+      { type: "guard" },
       ...seats.map((s): Action => ({ type: "examine", target: { kind: "player", id: s.id } })),
       // Everyone starts in the Laboratory, so p0 can bond with the other three (DTT and STT need a bond first).
       ...seats.filter((s) => s.id !== "p0").map((s): Action => ({ type: "bond", target: s.id })),

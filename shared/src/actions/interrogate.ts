@@ -15,7 +15,7 @@ export type InterrogateActionData = { type: "interrogate"; target: string };
  * public room history; what it reveals only the torturer sees. Aggressive, and it waits for Mush selection like Punch.
  */
 export class InterrogateAction extends Action<InterrogateActionData> {
-  override tags: readonly ActionTag[] = ["aggressive"];
+  override tags: readonly ActionTag[] = ["aggressive", "melee"];
 
   constructor() {
     super("interrogate", { target: isString });

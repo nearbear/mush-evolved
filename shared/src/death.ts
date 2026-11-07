@@ -10,6 +10,7 @@ import type { CharacterId } from "./characters.ts";
 import { removeFromChannel, pushChat } from "./chat.ts";
 import { CORPSE_ITEM, ITRACKIE_ITEM, sameContainer, newItemId } from "./items.ts";
 import { logPublic } from "./log.ts";
+import { removeStatus } from "./statuses.ts";
 import { strikeSlots } from "./plans.ts";
 import { refreshTitles } from "./titles.ts";
 import { endGame, mushWinOnDeath } from "./victory.ts";
@@ -50,6 +51,7 @@ export function healDaily(state: GameState, player: PlayerState): void {
 export function killPlayer(state: GameState, player: PlayerState): void {
   if (!player.alive) return;
   player.alive = false;
+  removeStatus(player, "guardian");
   player.hp = 0;
   player.ready = false;
   player.current = null;
