@@ -13,7 +13,8 @@ All under `web/src/`. UI rules are in `web/CLAUDE.md`.
 - `games/ShipCard.tsx` + `shipCard.css`: a reusable 200x255 card for one character's finished ship (portrait, triumph score, Mush colour, faded `ENDING_ART` background, end events, highlight icons with counts and tooltips, optional in-app `<Link>` via `to`). Pure props; not used by the game yet, shown on the dev design kit page below. Icons come from `SHIP_CARD_ICONS` in `art/assets.ts`.
 - `designKit/Mush2Kit.tsx` + `mush2Kit.css`: the dev-only "Design kit (mush2)" page at `/design-kit-mush2` (lazy-loaded in `main.tsx` like `/editor`), showing our own components with sample props. Linked from the lobby's dev links and the Mush art kit's header; skipped by the hardcoded-text i18n test.
 - `WakeUp.tsx` + `wakeUp.css`: the wake-up overlay.
-- `GameScreen.tsx`: the live game's socket container: holds the seat's socket and the newest view (plus `cheatsAllowed`, clock offset, next cycle, bot pause) and renders `GameView` with `send`.
+- `GameScreen.tsx`: the live game's socket container: holds the seat's socket and the newest view (plus `cheatsAllowed`, clock offset, next cycle, bot pause) and renders `GameView` with `send`, inside the chat page cache.
+- `chatPages.tsx`: the chat page cache (#355): sealed pages fetched with `chatPage`, kept for the game, ticks redrawn from `chatEdit`; `useChatPages` (null without a socket) and `pageItems` for the page bar.
 - `GameView.tsx`: the view-only game screen (#333): three panels on desktop, tabbed on phones; renders a `PlayerView` and emits intents through an optional `send`. Without `send` (a replay, #156) it is read-only: it blanks `actions` and `chatChannels` so no action button, Ready, Go or chat input appears, hides Clear queue, private-channel controls, cheats and the body-taken dialog, and floor clicks don't walk. A dead player gets `DeathNotice` instead of the room and no peek bar. Renders the minimap (`scene/Minimap.tsx`) in the room view's top-right corner.
 - `Toasts.tsx`: transient messages.
 - `chatSeen.ts`: which chat messages are new, per channel by `seq` (views carry no message id, #355): `chatSeenIn`, `isNewer` (a channel that just became readable brings history, not news), `messageKey`. Used by `announce.ts` and the iTrackie's unread counts.
@@ -63,7 +64,7 @@ All under `web/src/`. UI rules are in `web/CLAUDE.md`.
 - `useKeepFocus.ts`: keeps focus in a panel (Inspect, peek bar, inventory) when the focused button is replaced by a new view.
 - `ActionButton.tsx`: the button for an offered action; when you only lack AP or MP it stays focusable (`aria-disabled`) and a card says why.
 - `ChatInput.tsx`: the chat text area (grows upward, send beside it; the markdown preview toggle is off, `TODO(preview)`).
-- `Thread.tsx`, `Threads.tsx`: a chat channel with its input, and the Threads tab (threads under global chat, newest first, with a form to start one).
+- `Thread.tsx`, `Threads.tsx`: a chat channel with its page bar (`« ‹ 1 2 … 6 7 › »`, `« ‹ 6 / 7 › »` on the phone; the latest page follows new messages, an older page stays put) and input, and the Threads tab (threads under global chat, newest first, with a form to start one).
 - `PrivateChannels.tsx`: the Private tab, one row per channel slot, with a create dialog.
 - `SharedPlanets.tsx`: the Astrophysics feature: its general thread, then one row per shared planet (newest first; entries no longer applicable hidden unless shown), each opening its text above its own thread.
 - `ExpeditionReportDialog.tsx`: an expedition's report (`view.expeditions`), opened from the member's `expeditionReturned` line in the room log (`ITrackie.tsx`).

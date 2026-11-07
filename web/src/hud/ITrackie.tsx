@@ -12,7 +12,7 @@ import { FEATURE_CHANNELS, ITRACKIE_ITEM, GRAVEYARD_CHANNEL, MUSH_CHANNEL, type 
 import { chatSeenIn, isNewer, type ChatSeen } from "../chatSeen.ts";
 import { useAnnouncements } from "./useAnnouncements.ts";
 import { FeatureSelect } from "./FeatureSelect.tsx";
-import { IconTab } from "./IconButton.tsx";
+import { Hint, IconTab } from "./IconButton.tsx";
 import { TabOutline } from "./TabOutline.tsx";
 import { CycleDivider } from "./CycleDivider.tsx";
 import { FeedEntry, InfoMarker, WarningMarker } from "./FeedEntry.tsx";
@@ -179,7 +179,20 @@ export function ITrackie({
           {graveyard && <IconTab value="graveyard" src={TAB_ICONS.graveyard} label={tabLabel("graveyard", t("itrackie.tabs.graveyard"))} badge={unread.graveyard} />}
         </Tabs.List>
         <div className="cut-card itrackie-card">
-          <h2 className="itrackie-title">{t(TAB_TITLES[activeTab])}{activeTab === "room" && ` – ${names.room(here)}`}{activeTab === "threads" && shownThread && ` – ${shownThread.name}`}</h2>
+          {/* An open thread is titled by its own name (the tab already says Threads), with the way back to the list beside it. */}
+          <div className="itrackie-title-row">
+            <h2 className="itrackie-title">
+              {activeTab === "threads" && shownThread ? shownThread.name : t(TAB_TITLES[activeTab])}
+              {activeTab === "room" && ` – ${names.room(here)}`}
+            </h2>
+            {activeTab === "threads" && shownThread && (
+              <Hint label={t("itrackie.threads.back")}>
+                <button type="button" className="thread-back" aria-label={t("itrackie.threads.back")} onClick={() => setOpenThread(null)}>
+                  ←
+                </button>
+              </Hint>
+            )}
+          </div>
 
           {/* keepMounted: hidden with CSS, so chat drafts survive switching tabs. */}
           <Tabs.Panel className="itrackie-panel" value="room" aria-label={t(TAB_TITLES.room)} keepMounted>
