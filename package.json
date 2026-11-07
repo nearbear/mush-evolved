@@ -15,6 +15,7 @@
     "preview": "npm run preview -w tools",
     "ports": "node tools/src/dev/ports.ts",
     "test": "npm run test -w shared -w tools -w web -w server",
+    "test:browser": "npm run test:browser -w tools",
     "typecheck": "npm run typecheck --workspaces --if-present",
     "lint": "biome lint .",
     "lint:md": "markdownlint-cli2",

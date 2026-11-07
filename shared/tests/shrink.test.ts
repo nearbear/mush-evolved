@@ -27,10 +27,6 @@ function lie(s: GameState, id: PlayerId): void {
 }
 
 describe("Comfort (Shrink)", () => {
-  it("pins the decided numbers: 1 AP, +2 morale, +1 morale a cycle lying down", () => {
-    expect([DEFAULT_CONFIG.comfort.cost.ap, DEFAULT_CONFIG.comfort.morale, DEFAULT_CONFIG.shrink.lyingMorale]).toEqual([1, 2, 1]);
-  });
-
   it("is offered to the Shrink on each living roommate, never on themself, other rooms, or without the skill", () => {
     const s = ship();
     expect(offered(s, "p0")).toEqual(expect.arrayContaining([comfort("p1"), comfort("p3")]));

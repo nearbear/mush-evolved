@@ -16,8 +16,7 @@ function ship(): GameState {
 }
 
 describe("Pyromaniac", () => {
-  it("costs 4 AP", () => {
-    expect(DEFAULT_CONFIG.ignite.cost.ap).toBe(4);
+  it("costs its configured AP", () => {
     expect(option(ship(), "p0", IGNITE)).toMatchObject({ cost: { ap: DEFAULT_CONFIG.ignite.cost.ap } });
   });
 

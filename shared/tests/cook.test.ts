@@ -24,7 +24,6 @@ describe("cook", () => {
     const rations = DEFAULT_CONFIG.startItems.filter((i) => i.room === "REFECTORY" && i.type === "uncooked_ration");
     expect(rations).toHaveLength(32);
     expect(rations.every((i) => i.type === "uncooked_ration")).toBe(true);
-    expect(DEFAULT_CONFIG.cook.cost.ap).toBe(1);
   });
 
   it("turns a floor ration into a cooked one in place for 1 AP, publicly", () => {

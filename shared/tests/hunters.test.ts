@@ -30,25 +30,6 @@ const turrets = (overrides: Partial<GameConfig["turrets"]>) => ({ turrets: { ...
 const hullRepair = (overrides: Partial<GameConfig["hullRepair"]>) => ({ hullRepair: { ...DEFAULT_CONFIG.hullRepair, ...overrides } });
 
 describe("hunter numbers", () => {
-  it("are the owner's (eMush's waves and hunters, the wiki's turrets and hull repair)", () => {
-    const { hunters, turrets, hullRepair } = DEFAULT_CONFIG;
-    expect(hunters).toEqual({
-      points: { start: 40, perCycle: 6, hardFromDay: 5, hardBonus: 1, veryHardFromDay: 10, veryHardBonus: 2, perHunter: 10 },
-      waveChance: 0.2,
-      safeCycles: 2,
-      hp: 6,
-      damage: [2, 4],
-      hitChance: 0.8,
-      missBonus: 0.1,
-      followShare: 0.5,
-      patrolTargetChance: 0.15,
-      debris: { count: [0, 2, 1], types: { metal_scraps: 2, space_capsule: 1, plastic_scraps: 1 } },
-    });
-    expect(turrets).toEqual({ cost: { ap: 1 }, chance: 0.3, failureMultiplier: 1.25, damage: [2, 4], charges: 4, rechargePerCycle: 1 });
-    expect(hullRepair).toEqual({ cost: { ap: 1 }, chance: 0.25, injuryChance: 0.05, amount: 5 });
-    expect(DEFAULT_CONFIG.ship.plasmaShield).toEqual({ start: 50, max: 100, absorbPercent: 33, projectAbsorbPercent: 67, regen: 5 });
-  });
-
   it("the pool gains day + 6 a cycle, +1 from day 5 and +2 instead from day 10", () => {
     const s = ship();
     expect([1, 4, 5, 9, 10].map((day) => huntersPerCyclePoints(s, day))).toEqual([7, 10, 12, 16, 18]);

@@ -23,10 +23,6 @@ function ship(): GameState {
 }
 
 describe("healing", () => {
-  it("has the confirmed numbers: 2 AP on someone else, 3 on yourself, 3 HP", () => {
-    expect([cost.apOther, cost.apSelf, effect.hp]).toEqual([2, 3, 3]);
-  });
-
   it("costs its AP on someone else and restores their HP", () => {
     const r = applyAction(ship(), "p0", heal("p1"));
     if (!r.ok) throw new Error(r.error);

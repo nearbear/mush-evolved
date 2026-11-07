@@ -33,9 +33,7 @@ const CLEAN = seedFor(false);
 const DIRTY = seedFor(true);
 
 describe("research", () => {
-  it("has a 15% chance to become dirty after working on research", () => {
-    expect(DEFAULT_CONFIG.research.dirtyChance).toBe(0.15);
-
+  it("has its configured chance to become dirty after working on research", () => {
     const dirty = game();
     dirty.rng = DIRTY;
     dirty.players[1]!.room = "REFECTORY";

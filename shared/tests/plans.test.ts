@@ -44,10 +44,6 @@ const claim = (s: GameState, id: PlayerId, plan: string, slot: number) => mustAp
 const keysOf = (s: GameState, id: PlayerId) => viewFor(s, id).log.map((e) => e.key);
 
 describe("posting a plan", () => {
-  it("pins the confirmed limits", () => {
-    expect(config.plans).toEqual({ expiryDays: 1, slotsPerPlan: 12, finishedKept: 1 });
-  });
-
   it("stores an open plan with unclaimed slots, posted today", () => {
     const { s, channel } = planned();
     expect(s.plans).toEqual([

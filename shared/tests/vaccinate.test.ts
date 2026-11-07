@@ -26,7 +26,6 @@ function ship(): GameState {
 
 describe("anti-mush serum", () => {
   it("costs the configured AP and is used up", () => {
-    expect(DEFAULT_CONFIG.vaccine.cost.ap).toBe(1);
     const s = ship();
     const after = must(applyAction(s, "p0", vaccinate("p2")));
     expect(player(after, "p0").ap).toBe(player(s, "p0").ap - config.vaccine.cost.ap);

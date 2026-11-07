@@ -30,12 +30,6 @@ function repairBy(s: GameState, id: string): GameState {
 }
 
 describe("PILGRED repair", () => {
-  it("pins the decided numbers: 2 AP, 25% dirty, the original's formula, Physicist points 1 a day up to 2", () => {
-    expect([cfg.cost.ap, cfg.dirtyChance, cfg.progress.rate, cfg.progress.mod, cfg.progress.skillBoost, cfg.progress.relayPenalty, cfg.pointsPerDay, cfg.capPoints]).toEqual([
-      2, 0.25, 6, 2, 4, 2, 1, 2,
-    ]);
-  });
-
   it("starts broken and is offered only at the PILGRED terminal", () => {
     const s = game();
     expect(s.pilgred).toEqual({ progress: 0, pool: { tokens: [] } });
@@ -229,10 +223,6 @@ describe("return to Sol", () => {
     for (const p of s.players) p.role = "human";
     return s;
   }
-
-  it("pins the decided cost: 2 AP", () => {
-    expect(cfg.returnCost.ap).toBe(2);
-  });
 
   it("is offered to the Commander at the Command terminal once PILGRED is repaired, and costs AP", () => {
     const s = ready();

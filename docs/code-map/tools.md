@@ -9,11 +9,9 @@ All under `tools/src/`.
 - `assetIndex/assetIndex.ts`: `npm run asset-index`.
 - `pipBar/pipBar.ts`: `npm run pip-bar`, regenerates `Mush/derived/pip-bar/*.svg` from the original pip bar sprite (a test fails if they are stale).
 - `wiki/wiki.ts`: `npm run wiki`, reads eMushpedia (see the `wiki` skill).
-- `a11y/noTitleAttr.test.ts`: fails on any `title=` in the client (`web/CLAUDE.md`).
 - `odsData/`: `npm run ods-data` (`odsData.ts`; `ods.ts` reads the spreadsheets).
 - `dev/`: `npm run dev` (`dev.ts`), `npm run preview` (`preview.ts`) per-worktree ports (`ports.ts`) and `npm run verify` (`verify.ts`: typecheck, lint and tests, quiet unless something fails).
 - `i18n/`: catalog checks (`catalog.ts`) and the hardcoded-text ratchet (`hardcoded.ts`, `baseline.json`).
-- `death/hpWrites.test.ts`: fails if any file outside its allowlist (`death.ts`, `cheats.ts`, `actions/heal.ts`, `actions/consume.ts`, `hunters.ts`) writes `.hp`.
 - `editor/vitePlugin.ts`: the ship map editor's save, a Vite dev-server plugin (`web/vite.config.ts`): `PUT /__editor/map` checks the map, writes `ship-map.json` and `ship-rooms.json`, and keeps its own writes from reloading pages (the editor would lose its undo history).
 
-Tests not tied to a tool: `tools/tests/docs/docPaths.test.ts` fails if any `docs/<path>.md` named in a tracked file (CLAUDE.md files, skills, code comments, docs) or any relative Markdown link between docs points at a missing file. It skips `docs/scratchpad/` and the append-only `docs/process/ai-workflow.md`.
+Tests not tied to a tool: `tools/tests/docs/docPaths.test.ts` fails if any `docs/<path>.md` named in a tracked file (CLAUDE.md files, skills, code comments, docs) or any relative Markdown link between docs points at a missing file. It skips `docs/scratchpad/` and the append-only `docs/process/ai-workflow.md`. `tools/tests/a11y/noTitleAttr.test.ts` fails on any `title=` in the client (`web/CLAUDE.md`). `tools/tests/death/hpWrites.test.ts` fails if any file outside its allowlist (`death.ts`, `cheats.ts`, `actions/heal.ts`, `actions/consume.ts`, `hunters.ts`) writes `.hp`. They live in tools because shared and web tests don't read source files.

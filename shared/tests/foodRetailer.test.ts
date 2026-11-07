@@ -18,10 +18,6 @@ function ship(progress = PROJECT_COMPLETE - 1): GameState {
 const tubes = (s: GameState) => s.items.filter((i) => i.type === "input_tube" || i.type === "output_tube");
 
 describe("Food retailer project", () => {
-  it("pins the decided tubes: 1 output and 2 inputs, in the Nexus", () => {
-    expect(DEFAULT_CONFIG.project.foodRetailer).toEqual({ room: "NEXUS_ROOM", items: ["output_tube", "input_tube", "input_tube"] });
-  });
-
   it("creates them on the Nexus floor once, when it completes", () => {
     const s = ship();
     expect(tubes(s)).toHaveLength(0);

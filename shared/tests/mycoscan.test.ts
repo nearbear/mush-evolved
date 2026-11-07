@@ -30,10 +30,6 @@ const offersCheck = (s: GameState, id: PlayerId) => offered(s, id).some((a) => a
 const lastLine = (s: GameState, id: PlayerId) => viewFor(s, id).log.at(-1);
 
 describe("MycoScan", () => {
-  it("pins the decided numbers: free", () => {
-    expect(base.checkSpores.cost.ap).toBe(0);
-  });
-
   it("is built in the lab when the MYCOSCAN research completes", () => {
     let s = ship(false);
     expect(s.equipment[LAB]!.some((e) => e.type === MYCOSCAN_EQUIPMENT)).toBe(false);

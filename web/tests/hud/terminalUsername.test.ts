@@ -1,6 +1,6 @@
 import { CHARACTERS } from "@mush2/shared";
 import { expect, test } from "vitest";
-import { terminalUsername } from "./terminalUsername.ts";
+import { terminalUsername } from "../../src/hud/terminalUsername.ts";
 
 test("first initial of the given name plus the surname, lowercase, no spaces", () => {
   expect(terminalUsername("chao")).toBe("cwang");

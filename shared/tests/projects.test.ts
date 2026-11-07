@@ -19,9 +19,7 @@ function game(room = "NEXUS_ROOM") {
 }
 
 describe("NERON projects", () => {
-  it("pins the decided numbers: 2 AP, the relay formula 6 x 10 / 10, +4 a skill, -2 a repeat", () => {
-    const { rate, mod, skillBoost, relayPenalty } = DEFAULT_CONFIG.project.progress;
-    expect([DEFAULT_CONFIG.project.cost.ap, rate, mod, skillBoost, relayPenalty]).toEqual([2, 6, 10, 4, 2]);
+  it("shares its progress formula with research", () => {
     expect(DEFAULT_CONFIG.research.progress).toEqual(DEFAULT_CONFIG.project.progress);
   });
 

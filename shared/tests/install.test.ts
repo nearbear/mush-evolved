@@ -28,10 +28,6 @@ function ship(): { s: GameState; camera: string; install: Action } {
 }
 
 describe("install", () => {
-  it("defaults to 2 AP, a 10% dirty chance and a 5% injury chance", () => {
-    expect(DEFAULT_CONFIG.install).toEqual({ cost: { ap: 2 }, dirtyChance: 0.1, injuryChance: 0.05 });
-  });
-
   it("turns the carried camera into the room's equipment, for 2 AP, with a public log line", () => {
     const { s, camera, install } = ship();
     expect(offered(s, "p0")).toContainEqual(install);

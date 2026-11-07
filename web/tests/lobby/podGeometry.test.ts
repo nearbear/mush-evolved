@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { bakeScale, cylinder, flatBounds, flatRectAt, podLayout, roll, unroll } from "./podGeometry.ts";
+import { bakeScale, cylinder, flatBounds, flatRectAt, podLayout, roll, unroll } from "../../src/lobby/podGeometry.ts";
 
 describe("the pod's bend", () => {
   const desktop = cylinder(856, 664);

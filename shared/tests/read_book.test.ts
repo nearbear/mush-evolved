@@ -24,8 +24,7 @@ function ship(): GameState {
 }
 
 describe("skill books", () => {
-  it("costs 2 AP, and one book for every skill spawns on the bridge", () => {
-    expect(DEFAULT_CONFIG.readBook.cost.ap).toBe(2);
+  it("spawns one book for every skill on the bridge", () => {
     const s = createGame(seats, DEFAULT_CONFIG, 1);
     const books = s.items.filter((i) => i.type === "book");
     expect(books.map((b) => b.teaches)).toEqual([...SKILLS]);

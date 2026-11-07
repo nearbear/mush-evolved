@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { pageItems } from "./chatPages.tsx";
+import { pageItems } from "../src/chatPages.tsx";
 
 describe("pageItems", () => {
   it("lists every page when there are few", () => {

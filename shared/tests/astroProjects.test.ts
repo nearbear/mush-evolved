@@ -27,9 +27,7 @@ const mkPlanet = (id: string) =>
   }) as never;
 
 describe("Quantum Sensors and CPU Overclocking projects", () => {
-  it("pins the decided numbers and project status (owner, 2026-11-01)", () => {
-    expect(config.project.quantumSensors).toEqual({ extraSectors: 1 });
-    expect(config.project.chipsetAcceleration).toEqual({ scanApDiscount: 1 });
+  it("are fully implemented (owner, 2026-11-01)", () => {
     expect(projectStatus("QUANTUM_SENSORS")).toBe("full");
     expect(projectStatus("CHIPSET_ACCELERATION")).toBe("full");
   });

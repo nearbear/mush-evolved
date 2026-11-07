@@ -20,7 +20,6 @@ import {
   walkPath,
 } from "../../src/iso/placement.ts";
 import { facingFor } from "../../src/iso/useWalkers.ts";
-import { KNOWN_WALL_ENDS, wallEnds } from "../../src/editor/checks.ts";
 
 const slice = (over: Partial<SliceInfo>): SliceInfo => ({
   sheet: "S",
@@ -238,17 +237,6 @@ describe("the real ship", () => {
     const x = gardenWall[0]!.x + garden.dx, y = Math.max(...gardenWall.map((t) => t.y)) + garden.dy;
     expect(scene.filter((s) => s.cell.x === x && s.cell.y === y && s.kind === "wall").map((s) => s.slice).sort()).toEqual(["BIG_WALL_L", "COLUMN"]);
     expect(scene.some((s) => s.kind === "wall" && s.slice === "BIG_WALL_R" && s.cell.x === x + 1 && s.cell.y === y)).toBe(true);
-  });
-
-  // Skipped 2026-10-24 with the editor's wall checks (WALL_CHECKS in web/src/editor/checks.ts).
-  it.skip("leaves no wall stopping just short of another room's, whichever room you are in and however far you see", () => {
-    // The ends left on purpose are KNOWN_WALL_ENDS in web/src/editor/checks.ts, each with why. Positions
-    // are on the ship plan, so moving rooms changes them (look at each with `npm run ship-view` before
-    // pinning it); the editor lists them all.
-    const gaps = wallEnds(ship)
-      .filter((w) => !KNOWN_WALL_ENDS[`${w.room} ${w.end[0]},${w.end[1]}`])
-      .map((w) => `${w.room} ${w.end[0]},${w.end[1]}: stops ${w.short} short of ${w.others.join("/")}'s wall (from ${w.from}, depth ${w.depth})`);
-    expect([...new Set(gaps)]).toEqual([]);
   });
 
   it("leaves out front-edge doors once the room behind them is drawn", () => {

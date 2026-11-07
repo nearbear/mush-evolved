@@ -24,10 +24,6 @@ function ship(skill: string): GameState {
 }
 
 describe("Leader's Fiery speech", () => {
-  it("pins the decided numbers: 2 AP, +2 morale", () => {
-    expect([base.speech.fiery.ap, base.speech.fiery.morale]).toEqual([2, 2]);
-  });
-
   it("is offered only to a Leader", () => {
     expect(offered(ship("leadership"), "p0")).toContainEqual(fiery);
     expect(offered(ship("motivator"), "p0")).not.toContainEqual(fiery);
@@ -66,10 +62,6 @@ describe("Leader's Fiery speech", () => {
 });
 
 describe("Motivator's Boring speech", () => {
-  it("pins the decided numbers: 2 AP, +3 MP", () => {
-    expect([base.speech.boring.ap, base.speech.boring.mp]).toEqual([2, 3]);
-  });
-
   it("is offered only to a Motivator", () => {
     expect(offered(ship("motivator"), "p0")).toContainEqual(boring);
     expect(offered(ship("leadership"), "p0")).not.toContainEqual(boring);

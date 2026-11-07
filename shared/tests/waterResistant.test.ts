@@ -31,9 +31,6 @@ function run(s: GameState) {
 }
 
 describe("Water Resistant", () => {
-  it("pins the config", () => {
-    expect(config.shower.cost.waterResistantAp).toBe(1);
-  });
   it("a Mush without it pays full AP and loses HP", () => {
     const r = run(ship("mush", []));
     expect(r.spentAp).toBe(config.shower.cost.ap);

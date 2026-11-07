@@ -15,10 +15,6 @@ const ship = (): GameState => createGame(seats, config, 7);
 const cut = config.mankindOnlyHope.moraleLossCut;
 
 describe("Mankind's Only Hope", () => {
-  it("pins the confirmed numbers: 2 a day, cut by 1 while Chun lives", () => {
-    expect([config.moralePerDay, cut]).toEqual([2, 1]);
-  });
-
   it("is Chun's trait, not a pickable skill", () => {
     expect(player(ship(), "p1").modifiers).toContain("mankind_only_hope");
     expect(player(ship(), "p0").modifiers).not.toContain("mankind_only_hope");

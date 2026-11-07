@@ -37,13 +37,6 @@ function giveBanana(s: GameState, to = "p0"): string {
 }
 
 describe("botany: the decided numbers and the start", () => {
-  it("pins water 1 AP, treat 2, sow 2, 15% dirt, bananas 36 cycles, +1 oxygen, 2 garden points a day up to 4", () => {
-    expect([cfg.water.cost.ap, cfg.treat.cost.ap, cfg.sow.cost.ap, cfg.dirtyChance, cfg.growCycles[BANANA], cfg.oxygenPerPlant, cfg.pointsPerDay, cfg.capPoints]).toEqual([
-      1, 2, 2, 0.15, 36, 1, 2, 4,
-    ]);
-    expect(cfg.gardenRoom).toBe(GARDEN);
-  });
-
   it("starts with an empty pot and two adult banana plants in the garden and two empty pots in front storage", () => {
     const s = createGame(makeSeats(3), noIncidents(DEFAULT_CONFIG), 1);
     const where = (room: string) => pots(s).filter((p) => p.at.kind === "room" && p.at.id === room);

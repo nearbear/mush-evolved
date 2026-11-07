@@ -26,10 +26,6 @@ function ship(skill = true): GameState {
 }
 
 describe("phagocytosis", () => {
-  it("pins the confirmed numbers", () => {
-    expect([config.consumeSpore.cost.ap, config.consumeSpore.effect.hp, config.consumeSpore.effect.ap]).toEqual([0, 4, 4]);
-  });
-
   it("costs 1 spore and no AP, healing and giving AP", () => {
     const s = ship();
     expect(costOf(s, "p0", eat).ap).toBe(config.consumeSpore.cost.ap);

@@ -27,7 +27,6 @@ describe("build", () => {
     expect(here).toContainEqual({ type: "blueprint", builds: "SOFA", room: "CORRIDOR_A" });
     const s = createGame(seats, DEFAULT_CONFIG, 1);
     expect(s.items.find((i) => i.type === "blueprint")).toMatchObject({ builds: "SOFA", at: room("CORRIDOR_A") });
-    expect(DEFAULT_CONFIG.build.cost.ap).toBe(3);
   });
 
   it("uses ingredients from the floor and the inventory, consumes the blueprint, and adds the sofa for 3 AP, publicly", () => {

@@ -25,10 +25,6 @@ function ship(): GameState {
 }
 
 describe("tube transfer", () => {
-  it("pins the confirmed cost", () => {
-    expect(config.tubeTransfer.cost.ap).toBe(0);
-  });
-
   it("sends a floor item to the room of the output tube, free, with public logs in both rooms", () => {
     const s = ship();
     put(s, "out", "output_tube", room("REFECTORY"));

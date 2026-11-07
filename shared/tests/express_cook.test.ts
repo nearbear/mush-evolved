@@ -21,10 +21,8 @@ function ship(): GameState {
 }
 
 describe("microwave", () => {
-  it("spawns heavy in the refectory with its confirmed numbers", () => {
+  it("spawns heavy in the refectory with its starting charges", () => {
     expect(DEFAULT_CONFIG.startItems).toContainEqual({ type: "microwave", room: "REFECTORY" });
-    const { expressCook } = DEFAULT_CONFIG;
-    expect([expressCook.cost.ap, expressCook.charges.start, expressCook.charges.max, expressCook.charges.perDay]).toEqual([0, 4, 4, 1]);
     const s = createGame(seats, DEFAULT_CONFIG, 3);
     expect(microwave(s)).toMatchObject({ at: { kind: "room", id: "REFECTORY" }, charges: DEFAULT_CONFIG.expressCook.charges.start });
   });

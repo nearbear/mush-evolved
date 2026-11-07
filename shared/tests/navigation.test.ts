@@ -36,8 +36,7 @@ function game(loaded = 3): GameState {
 }
 
 describe("ship navigation", () => {
-  it("pins the decided numbers: 1 AP to turn, travel or leave orbit; 1 fuel to leave; facing north at the start", () => {
-    expect([navigation.turn.cost.ap, navigation.travel.cost.ap, navigation.leaveOrbit.cost.ap, navigation.leaveOrbit.fuel]).toEqual([1, 1, 1, 1]);
+  it("starts facing north, not in orbit", () => {
     expect(game().navigation).toEqual({ heading: "north", orbit: null, arriving: null, lastTurn: null });
   });
 

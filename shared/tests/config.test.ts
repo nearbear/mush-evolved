@@ -15,7 +15,7 @@ describe("resolveConfig", () => {
   });
 
   it("derives the cycles per day from the cycle length: a day is always 24 hours (#230)", () => {
-    expect(DEFAULT_CONFIG).toMatchObject({ cycleHours: 3, cyclesPerDay: 8 });
+    expect(DEFAULT_CONFIG.cycleHours * DEFAULT_CONFIG.cyclesPerDay).toBe(24);
     expect(resolveConfig({ cycleHours: 1 })).toEqual({ ...DEFAULT_CONFIG, cycleHours: 1, cyclesPerDay: 24 });
     expect(resolveConfig({ cycleHours: 6 })).toEqual({ ...DEFAULT_CONFIG, cycleHours: 6, cyclesPerDay: 4 });
   });

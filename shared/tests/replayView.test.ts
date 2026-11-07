@@ -113,21 +113,28 @@ describe("stepMarks", () => {
   });
 });
 
-/** Four seats with no hunters or incidents, so the ship outlives the 16-cycle log window. */
-const quiet: GameSetup = { ...big, seats: big.seats.slice(0, 4), config: noIncidents(noHunters({ ...DEFAULT_CONFIG, manualCycles: true })) };
+/**
+ * Four seats with no hunters or incidents, so the ship lives on, and a log window of 1 cycle (2 with Tracker), so a short
+ * game outlives it: pruning works the same at any window, and the default 16 cycles took a 4000-step game (7s).
+ */
+const quiet: GameSetup = {
+  ...big,
+  seats: big.seats.slice(0, 4),
+  config: { ...noIncidents(noHunters({ ...DEFAULT_CONFIG, manualCycles: true })), logWindow: { cycles: 1, tracker: 2 } },
+};
 
 describe("pruned log lines (#365)", () => {
   it("are all still in the replay's streams after the rules dropped them from the state", () => {
-    const long = recordedGame(4000, 3, quiet);
-    const final = long.states.at(-1)!;
+    const short = recordedGame(1000, 3, quiet);
+    const final = short.states.at(-1)!;
     const written = final.nextLogId - 1;
-    // Not vacuous: the game ran long enough for pruning to drop room lines.
+    // Not vacuous: the game outlived even Tracker's window, so pruning dropped lines.
     expect(final.cycle).toBeGreaterThan(final.config.logWindow.tracker + 1);
     expect(final.log.length).toBeLessThan(written);
-    let streams = streamsOf(long.launch);
-    for (const chunk of long.chunks) for (const { view } of rebuildHistory(chunk.entries.map((e) => e.history))) streams = mergeStreams(streams, view);
+    let streams = streamsOf(short.launch);
+    for (const chunk of short.chunks) for (const { view } of rebuildHistory(chunk.entries.map((e) => e.history))) streams = mergeStreams(streams, view);
     expect(streams.log.map((e) => e.id)).toEqual(Array.from({ length: written }, (_, i) => i + 1));
-  }, 30_000); // records a 4000-step game; a loaded CI runner needs more than the 5s default
+  });
 });
 
 describe("lineStep", () => {

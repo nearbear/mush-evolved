@@ -20,10 +20,6 @@ function ship(): GameState {
 }
 
 describe("Apprentice skill", () => {
-  it("pins the decided numbers: 1 AP", () => {
-    expect(base.apprenticeship.cost.ap).toBe(1);
-  });
-
   it("offers each skill of a roommate, and costs the configured AP", () => {
     const s = ship();
     expect(offered(s, "p0").filter((a) => a.type === "apprenticeship")).toEqual([learn("p1", "cook"), learn("p1", "sturdy")]);

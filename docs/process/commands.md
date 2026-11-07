@@ -6,6 +6,7 @@ Node is installed via nvm and is already on `PATH` in Claude Code shells (the us
 
 - `npm install`: install all workspaces (npm workspaces: `shared`, `server`, `web`, `tools`, plus `Mush` as `@mush2/assets`).
 - `npm run dev`: wrangler on :8787 plus Vite on :5173, via concurrently. Vite proxies `/parties`, `/auth` and `/api` to wrangler, so the client uses one origin as in production (sign-in setup: `docs/ops/sign-in.md`). It applies D1 migrations to the local database first. In a git worktree the ports are offset per worktree (`npm run ports` prints them) so it can run beside the main checkout's servers.
+- `npm run test:browser`: the real-browser tests in `tools/tests/browser/` (Playwright and Vite in-process, about 50s), kept out of `npm test` and `verify` for their cost. Run it after changing the lobby's layout.
 - `npm test`: Vitest in `shared`, `tools`, `web`, and `server`. Single file or test: `npm test -w shared -- rules.test.ts -t "advances the cycle"`.
 - `npm run typecheck`: `tsc --noEmit` in every package (TypeScript 7). `web`'s first emits the server's API type (`npm run api-types -w server`, #324) for its typed client.
 - `npm run build`: production build of `web`.

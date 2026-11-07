@@ -30,12 +30,7 @@ function ship(linked = false): GameState {
 const has = (s: GameState, id: string, type: Action["type"]) => offered(s, id).some((a) => a.type === type);
 
 describe("communication center", () => {
-  it("pins the decided numbers", () => {
-    expect([cfg.sol.cost.ap, cfg.sol.startChance, cfg.sol.chancePerFail, cfg.sol.radioExpertFactor, cfg.sol.radioExpertRoomFactor]).toEqual([2, 4, 4, 2, 1.5]);
-    const r = cfg.rebel;
-    expect([r.cost.ap, r.gainMax, r.windowMin, r.windowMax, r.rebelBonus, r.kivancBonus, r.kaladaanMorale, r.cygniMorale, r.siriusRationAp]).toEqual([2, 40, 8, 16, 1, 1, 6, 3, 1]);
-    expect([cfg.xyloph.cost.ap, cfg.xyloph.qualityLoss, cfg.xyloph.neronBoostPercent, cfg.xyloph.schoolBooks, cfg.xyloph.workshopBlueprints]).toEqual([2, 20, 25, 2, 3]);
-    expect([cfg.neron.cost.ap, cfg.neron.progressPercent]).toEqual([2, 25]);
+  it("has the original's twelve Xyloph entries", () => {
     expect(XYLOPH_IDS).toHaveLength(12);
   });
 

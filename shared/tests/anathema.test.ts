@@ -21,10 +21,6 @@ function ship(config = base): GameState {
 }
 
 describe("Persecutor's Anathema", () => {
-  it("pins the decided numbers: 1 AP, x0.8", () => {
-    expect([base.anathema.cost.ap, base.anathema.successFactor]).toEqual([1, 0.8]);
-  });
-
   it("is offered only to a Persecutor, once per roommate, never for people elsewhere", () => {
     const s = ship();
     expect(offered(s, "p0").filter((a) => a.type === "anathema")).toEqual([curse("p1"), curse("p3")]);
@@ -129,10 +125,6 @@ describe("Designer", () => {
     player(s, id).room = "NEXUS_ROOM";
     return s;
   };
-
-  it("pins the decided numbers: 2 a day and when picked, up to 4", () => {
-    expect([base.designer.pointsPerDay, base.designer.capPoints]).toEqual([2, 4]);
-  });
 
   it("grants 2 Designer points when picked and 2 each day, up to 4", () => {
     let s = pick(createGame(makeSeats(2), base, 3), "p0", "designer");

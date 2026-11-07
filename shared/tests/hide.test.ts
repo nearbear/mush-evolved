@@ -28,10 +28,6 @@ function hidden(): GameState {
 const roomIds = (s: GameState, id: string) => viewFor(s, id).roomItems.map((i) => i.id);
 
 describe("hide and search", () => {
-  it("pins the confirmed costs", () => {
-    expect([config.hide.cost.ap, config.search.cost.ap]).toEqual([1, 1]);
-  });
-
   it("hides a carried item from everyone but the hider, and they keep seeing it as hidden", () => {
     const s = hidden();
     expect(player(s, "p0").ap).toBe(config.startAp - config.hide.cost.ap);

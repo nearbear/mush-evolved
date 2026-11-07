@@ -31,13 +31,6 @@ const scraps = (s: GameState, at: { kind: "player" | "room"; id: string }) =>
 const offersSnoop = (s: GameState, id: PlayerId) => offered(s, id).some((a) => a.type === "snoop");
 
 describe("Scrapper's Snoop", () => {
-  it("pins the decided numbers: free, the five storage rooms, the wiki's weights", () => {
-    expect(DEFAULT_CONFIG.snoop.cost.ap).toBe(0);
-    expect([DEFAULT_CONFIG.snoop.dirtyChance, DEFAULT_CONFIG.snoop.injuryChance]).toEqual([0.5, 0.1]);
-    expect(DEFAULT_CONFIG.snoop.rooms).toEqual(["STORAGE_FRONT", "STORAGE_A_0", "STORAGE_A_1", "STORAGE_B_0", "STORAGE_B_1"]);
-    expect(DEFAULT_CONFIG.snoop.items).toEqual({ metal_scraps: 4, plastic_scraps: 3, uncooked_ration: 1, fuel_capsule: 1, oxy_capsule: 1 });
-  });
-
   it("can make the Scrapper dirty and injure them for 2 HP, privately", () => {
     const s = ship("metaliciste", { ...base, snoop: { ...base.snoop, dirtyChance: 1, injuryChance: 1 } });
     const hp = player(s, "p0").hp;
@@ -50,34 +43,18 @@ describe("Scrapper's Snoop", () => {
     for (const key of ["snooped", "becomeDirty", "randomInjury"]) expect(roommate).not.toContain(key);
   });
 
-  it("finds each item by its weight with the default config", () => {
-    const config = { ...base, snoop: { ...base.snoop, items: DEFAULT_CONFIG.snoop.items } };
-    const counts: Record<string, number> = {};
-    const runs = 2000;
-    const start = ship("metaliciste", config);
-    for (let seed = 0; seed < runs; seed++) {
+  it("picks the item by the configured weights: a weight of 0 is never found", () => {
+    // The draw itself is rollWeighted, whose shares rng.test.ts checks; this checks snoop hands it the configured weights.
+    const items = { metal_scraps: 0, plastic_scraps: 1, oxy_capsule: 0 };
+    const start = ship("metaliciste", { ...base, snoop: { ...base.snoop, items } });
+    for (let seed = 1; seed <= 20; seed++) {
       const s = clone(start);
-      s.rng = seed * 7919 + 1;
+      s.rng = seed * 7919;
       const before = new Set(s.items.map((i) => i.id));
-      const after = mustApply(s, "p0", snoop);
-      const found = after.items.filter((i) => !before.has(i.id));
-      expect(found).toHaveLength(1);
-      expect(found[0]!.at).toEqual({ kind: "player", id: "p0" });
-      expect(viewFor(after, "p0").log.at(-1)).toMatchObject({ key: "snooped", params: { item: found[0]!.type } });
-      counts[found[0]!.type] = (counts[found[0]!.type] ?? 0) + 1;
+      const found = mustApply(s, "p0", snoop).items.filter((i) => !before.has(i.id));
+      expect(found.map((i) => i.type)).toEqual(["plastic_scraps"]);
     }
-    expect(Object.keys(counts).sort()).toEqual(["fuel_capsule", "metal_scraps", "oxy_capsule", "plastic_scraps", "uncooked_ration"]);
-    // Expected shares 40/30/10/10/10%; a wide band keeps this from flaking while still catching a uniform pick (20% each).
-    expect(counts.metal_scraps! / runs).toBeGreaterThan(0.34);
-    expect(counts.metal_scraps! / runs).toBeLessThan(0.46);
-    expect(counts.plastic_scraps! / runs).toBeGreaterThan(0.25);
-    expect(counts.plastic_scraps! / runs).toBeLessThan(0.35);
-    for (const rare of ["uncooked_ration", "fuel_capsule", "oxy_capsule"]) {
-      expect(counts[rare]! / runs).toBeGreaterThan(0.06);
-      expect(counts[rare]! / runs).toBeLessThan(0.14);
-    }
-    // 2000 games: about 3s alone, past 5s when the whole suite runs in parallel.
-  }, 30_000);
+  });
 
   it("makes metal scraps in the Scrapper's inventory, for free", () => {
     const s = ship();

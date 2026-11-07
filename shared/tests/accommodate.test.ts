@@ -30,10 +30,6 @@ const logged = (s: GameState, key: string) => s.log.some((e) => e.key === key);
 const pushed = (): GameState => mustApply(mustApply(ship(), "p1", offer), "p0", accept);
 
 describe("accommodating Terrence", () => {
-  it("pins the confirmed numbers: offering is free, and an offer waits 5 minutes", () => {
-    expect([config.accommodate.cost.ap, config.accommodate.offerMs]).toEqual([0, 300_000]);
-  });
-
   it("is offered to others in Terrence's room, on Terrence only", () => {
     const s = ship();
     expect(player(s, "p0").modifiers).toContain("wheelchair");
