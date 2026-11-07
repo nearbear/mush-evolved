@@ -142,6 +142,17 @@ describe("incidents", () => {
     expect(DEFAULT_CONFIG.repair.chance[broken[0]!.type]).toBeDefined();
   });
 
+  it("equipment breakdown can pick an item whose type breaks on cycle change, announcing only its name", () => {
+    const s = ship(only("equipment_breakdown"));
+    for (const list of Object.values(s.equipment)) for (const e of list) e.broken = true;
+    s.items.push({ id: "alarm", type: "myco_alarm", at: { kind: "room", id: HERE } }, { id: "knife", type: "knife", at: { kind: "room", id: HERE } });
+    s.incidentPoints = 2;
+    const after = nextCycle(s);
+    expect(after.items.find((i) => i.id === "alarm")?.broken).toBe(true);
+    expect(after.items.find((i) => i.id === "knife")?.broken).toBeUndefined();
+    expect(globalSystem(after)).toContainEqual({ key: "itemBroken", params: { item: "myco_alarm" } });
+  });
+
   it("electrical overload breaks every breakable piece of equipment in a room and costs those present 3 HP", () => {
     const config = only("electrical_overload");
     const s = ship(config);

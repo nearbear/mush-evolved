@@ -36,6 +36,7 @@ export interface ItemType {
   repairChance?: number;
   /** A Mush can sabotage it (actions/sabotage.ts), if it can also break (`canBreak`). */
   canBeSabotaged?: boolean;
+  canBreakOnCycleChange?: boolean;
 }
 
 /**
@@ -112,7 +113,7 @@ export const ITEM_TYPES: Record<string, ItemType> = {
   // Owner, 2026-11-01: the completed STEROIDS research yields 4; single use, +8 MP, resets starvation.
   [STEROIDS_ITEM]: { consume: { ap: 0, mp: STEROIDS_MP, satiety: 0 }, canBreak: true, isDestroyedWhenBroken: true },
   // Decided 2026-10-17: rings in its room when a Mush acts there (mycoalarm.ts). Dismantles for one scrap metal.
-  myco_alarm: { dismantle: { metal: 1, plastic: 0, chance: 0.25 }, canBreak: true },
+  myco_alarm: { dismantle: { metal: 1, plastic: 0, chance: 0.25 }, canBreak: true, canBreakOnCycleChange: true, canBeSabotaged: true, repairChance: 0.25 },
   // Decided 2026-10-18: the HydroPot (TREE_POT in the original). Named after its icon. Owner, 2026-10-22: plants
   // grow in it (botany.ts), anywhere, carried too.
   [TREE_POT_ITEM]: {},

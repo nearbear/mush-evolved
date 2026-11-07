@@ -92,7 +92,7 @@ export function logSecret(state: GameState, actor: PlayerId, key: string, params
   }
   const witnesses = state.players.filter((o) => o.id !== actor && o.alive && o.room === p.room && o.id !== hideFrom);
   const witnessed = hideFrom === undefined ? state.players.some((o) => o.id !== actor && o.alive && o.room === p.room) : witnesses.length > 0;
-  const visibleTo = hasCamera(state, p.room) ? "all" : !witnessed ? [actor] : hideFrom === undefined ? "all" : [actor, ...witnesses.map((o) => o.id)];
+  const visibleTo = cameraSees(state, p.room, params) ? "all" : !witnessed ? [actor] : hideFrom === undefined ? "all" : [actor, ...witnesses.map((o) => o.id)];
   pushLog(state, { key, ...(params && { params }), room: p.room, visibleTo, ...spilled(visibleTo) });
 }
 
@@ -104,8 +104,16 @@ export function logCovert(state: GameState, actor: PlayerId, key: string, params
     logPublic(state, p.room, key, params);
     return;
   }
-  const visibleTo = hasCamera(state, p.room) ? "all" : [actor];
+  const visibleTo = cameraSees(state, p.room, params) ? "all" : [actor];
   pushLog(state, { key, ...(params && { params }), room: p.room, visibleTo, ...spilled(visibleTo) });
+}
+
+/**
+ * Whether a camera in the room shows this secret or covert entry. Not when the entry's `equipment` is an installed
+ * camera: a camera can't reveal an action aimed at itself (owner, 2026-11-07), e.g. sabotaging or jellying it.
+ */
+function cameraSees(state: Readonly<GameState>, room: RoomId, params?: LogParams): boolean {
+  return hasCamera(state, room) && params?.equipment !== CAMERA_EQUIPMENT;
 }
 
 /** A secret or covert entry that reached anyone besides the actor is a warning. One only the actor sees is not. */
