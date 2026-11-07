@@ -12,17 +12,23 @@ const config = { ...DEFAULT_CONFIG, mushCount: 1, startInventory: [], startItems
 const real = { shower: EQUIPMENT_TYPES.SHOWER, knife: ITEM_TYPES.knife, wrench: ITEM_TYPES.wrench, soap: ITEM_TYPES.soap };
 const SHOWER = "SICK_BAY:SHOWER";
 
+// The real data flags many types; start from none, so each test says exactly what can be sabotaged.
+const snapshot = { equipment: { ...EQUIPMENT_TYPES }, items: { ...ITEM_TYPES } };
+const unflag = <T extends { canBeSabotaged?: boolean }>(table: Record<string, T>) => {
+  for (const [key, type] of Object.entries(table)) table[key] = { ...type, canBeSabotaged: false };
+};
+
 beforeEach(() => {
+  unflag(EQUIPMENT_TYPES);
+  unflag(ITEM_TYPES);
   EQUIPMENT_TYPES.SHOWER = { ...real.shower!, canBeSabotaged: true };
   ITEM_TYPES.knife = { ...real.knife!, canBreak: true, canBeSabotaged: true, repairChance: 0.5 };
   ITEM_TYPES.wrench = { ...real.wrench!, canBreak: true, canBeSabotaged: true };
   ITEM_TYPES.soap = { ...real.soap!, canBreak: true, isDestroyedWhenBroken: true, canBeSabotaged: true };
 });
 afterEach(() => {
-  EQUIPMENT_TYPES.SHOWER = real.shower!;
-  ITEM_TYPES.knife = real.knife!;
-  ITEM_TYPES.wrench = real.wrench!;
-  ITEM_TYPES.soap = real.soap!;
+  Object.assign(EQUIPMENT_TYPES, snapshot.equipment);
+  Object.assign(ITEM_TYPES, snapshot.items);
 });
 
 /** p0 (Mush), p1 and p2 in the sick bay, p3 in the lab; the sick bay has a shower; p0 reaches a knife, a wrench and soap. */
@@ -49,7 +55,7 @@ describe("sabotage", () => {
     const options = offered(s, "p0").filter((a) => a.type === "sabotage");
     expect(options).toEqual(expect.arrayContaining([sabotage({ equipment: SHOWER }), sabotage({ item: "knife" }), sabotage({ item: "wrench" })]));
     ITEM_TYPES.wrench = { ...real.wrench!, canBreak: true };
-    EQUIPMENT_TYPES.SHOWER = real.shower!;
+    EQUIPMENT_TYPES.SHOWER = { ...real.shower!, canBeSabotaged: false };
     ITEM_TYPES.knife = { ...real.knife!, canBreak: false, canBeSabotaged: true }; // flagged but it can't break
     expect(offered(s, "p0").filter((a) => a.type === "sabotage")).toEqual([sabotage({ item: "soap" })]);
   });

@@ -35,8 +35,8 @@ function withSofas(n = 1): GameState {
 
 describe("sofa", () => {
   it("is a bed that is only ever built, and dismantles into 1 plastic scrap", () => {
-    const { chance, ...scraps } = EQUIPMENT_TYPES.SOFA!.dismantle!; // the file forces the odds to 1
-    expect({ ...EQUIPMENT_TYPES.SOFA, dismantle: scraps }).toEqual({ bed: true, builtOnly: true, dismantle: { metal: 0, plastic: 1 } });
+    const { dismantle, bed, builtOnly } = EQUIPMENT_TYPES.SOFA!; // not the odds (this file forces them to 1) or the flags
+    expect({ bed, builtOnly, scraps: [dismantle!.metal, dismantle!.plastic] }).toEqual({ bed: true, builtOnly: true, scraps: [0, 1] });
   });
 
   it("is not on the ship at the start, not even in the turret room the map draws one in", () => {
