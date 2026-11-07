@@ -13,18 +13,30 @@ import {
   applyAction,
   CHARACTERS,
   createGame,
+  createThread,
   DEFAULT_CONFIG,
+  endGame,
+  killPlayer,
+  PRESELECTION,
+  queueAction,
+  sharePlanet,
+  sendChat,
   produceItem,
   viewFor,
   type Action,
+  type ActionResult,
+  type ChannelId,
   type CharacterId,
+  type Ending,
   type GameState,
+  type Planet,
   type PlayerId,
   type PlayerState,
   type PlayerView,
   type Role,
   type Seat,
   type TitleId,
+  type Winner,
 } from "@mush2/shared";
 
 /** The seat the kit looks through. */
@@ -44,10 +56,13 @@ export interface SampleOptions {
   role?: Role;
   /** The kit seat's character (Jin Su by default). */
   character?: CharacterId;
+  /** A ship still in pre-selection (`PRESELECTION`): nobody is Mush yet, so `role` is ignored. */
+  preselection?: boolean;
 }
 
-/** A freshly launched ship (day 1, cycle 1, not in pre-selection), 16 seats with 2 Mush. */
-export function sampleState({ role = "human", character = "jinsu" }: SampleOptions = {}): GameState {
+/** A freshly launched ship (day 1, cycle 1, not in pre-selection unless asked), 16 seats with 2 Mush. */
+export function sampleState({ role = "human", character = "jinsu", preselection = false }: SampleOptions = {}): GameState {
+  if (preselection) return createGame(sampleSeats(character), { ...DEFAULT_CONFIG, preselection: PRESELECTION }, SEED);
   return createGame(sampleSeats(character), DEFAULT_CONFIG, SEED, { [SAMPLE_SEAT]: role });
 }
 
@@ -62,6 +77,11 @@ export function act(state: GameState, action: Action, id: PlayerId = SAMPLE_SEAT
   const result = applyAction(state, id, action);
   if (!result.ok) throw new Error(`Sample action ${action.type} refused: ${result.error}`);
   return result.state;
+}
+
+/** `id` asks for each action in turn through the queue: the first starts, the rest wait behind it (timed actions). */
+export function queue(state: GameState, actions: readonly Action[], id: PlayerId = SAMPLE_SEAT): GameState {
+  return actions.reduce((s, action) => must(queueAction(s, id, action, s.now ?? 0), `queued ${action.type}`), state);
 }
 
 /** `id` picks each skill in turn with `pick_skill`; each must be on their character's list. */
@@ -89,6 +109,68 @@ export function spend(state: GameState, { ap = 0, mp = 0 }: { ap?: number; mp?: 
 export function giveTitle(state: GameState, title: TitleId, id: PlayerId = SAMPLE_SEAT): GameState {
   const next = structuredClone(state);
   next.titles[title] = id;
+  return next;
+}
+
+/** `id` stands in `room` (a direct move: no path, no MP). */
+export function moveTo(state: GameState, room: string, id: PlayerId = SAMPLE_SEAT): GameState {
+  const next = structuredClone(state);
+  seat(next, id).room = room;
+  return next;
+}
+
+/** `id` stands in the room with the first equipment of `type` (a terminal, say). Throws if the ship has none. */
+export function moveToEquipment(state: GameState, type: string, id: PlayerId = SAMPLE_SEAT): GameState {
+  const room = Object.keys(state.equipment).find((r) => state.equipment[r]?.some((e) => e.type === type));
+  if (!room) throw new Error(`No ${type} on the ship`);
+  return moveTo(state, room, id);
+}
+
+/** `id` has found `planet` at the Astro terminal (a direct edit, as the planet tests do). */
+export function givePlanet(state: GameState, planet: Planet, id: PlayerId = SAMPLE_SEAT): GameState {
+  const next = structuredClone(state);
+  (next.planets[id] ??= []).push(planet);
+  return next;
+}
+
+function must(result: ActionResult, what: string): GameState {
+  if (!result.ok) throw new Error(`Sample ${what} refused: ${result.error}`);
+  return result.state;
+}
+
+/** `id` posts `text` on `channel` through the chat rules (an iTrackie is needed for anything but the Mush channel). */
+export function say(state: GameState, channel: ChannelId, text: string, id: PlayerId = SAMPLE_SEAT): GameState {
+  return must(sendChat(state, id, channel, text), "chat");
+}
+
+/** `id` starts a thread under global chat, from global message `from` or on its own. */
+export function thread(state: GameState, name: string, from?: number, id: PlayerId = SAMPLE_SEAT): GameState {
+  return must(createThread(state, id, name, from), "thread");
+}
+
+/** `id` dies (the rules' own `killPlayer`, on a copy). */
+export function kill(state: GameState, id: PlayerId = SAMPLE_SEAT): GameState {
+  const next = structuredClone(state);
+  killPlayer(next, seat(next, id));
+  return next;
+}
+
+/** A Mush took `id`'s body with Transfer, leaving them `taker`'s character to play (only the flag; no swap). */
+export function bodyTaken(state: GameState, taker: CharacterId, id: PlayerId = SAMPLE_SEAT): GameState {
+  const next = structuredClone(state);
+  seat(next, id).bodyTakenBy = taker;
+  return next;
+}
+
+/** `id` shares one of their planets in the Astrophysics feature (they must stand at an Astro terminal). */
+export function share(state: GameState, planet: string, text: string, id: PlayerId = SAMPLE_SEAT): GameState {
+  return must(sharePlanet(state, id, planet, text), "planet share");
+}
+
+/** The game is over: `winner` won by `ending` (the rules' own `endGame`, on a copy). */
+export function ended(state: GameState, winner: Winner, ending: Ending): GameState {
+  const next = structuredClone(state);
+  endGame(next, winner, ending);
   return next;
 }
 

@@ -28,4 +28,20 @@ describe("design kit sample view", () => {
     expect(view.titles.find((t) => t.id === "commander")?.holder).toBe("jinsu");
     expect(view.inventory.map((i) => i.type)).toContain("coffee");
   });
+
+  it("builds every kit sample in the state its section shows", async () => {
+    const S = await import("../../src/designKit/samples.ts");
+    expect(S.terminalSamples.map((t) => t.terminal.type)).toEqual([...S.TERMINAL_TYPES]);
+    expect(S.queueView.you.current?.action.type).toBe("search");
+    expect(S.queueView.you.queue).toHaveLength(2);
+    expect(S.patrolView.patrolShip?.id).toBe("PATROL_SHIP_A_0");
+    expect(S.chatView.expeditions).toHaveLength(1);
+    expect(S.chatView.sharedPlanets).toHaveLength(1);
+    expect(S.chatView.threads).toHaveLength(1);
+    expect(S.deadView.you.alive).toBe(false);
+    expect(S.bodyTakenView.you.bodyTakenBy).toBe("kuanti");
+    expect([S.edenView.ending, S.mushWinView.ending]).toEqual(["eden", "humans_dead"]);
+    expect(S.preselectionView.preselection).toBe(true);
+    expect(S.itemsView.inventory.map((i) => i.type)).toContain("blaster");
+  });
 });

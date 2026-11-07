@@ -1,6 +1,6 @@
-# Design kit: what to add next
+# Design kit
 
-Status: handoff, 2026-11-07. Not a rules plan; nothing here changes the game.
+Status: done, 2026-11-07 (every component in the plan is in the kit). Not a rules plan; nothing here changes the game.
 
 The dev-only page `/design-kit-mush2` (`web/src/designKit/Mush2Kit.tsx`, `mush2Kit.css`) shows our own components with
 sample props, so each one can be checked in isolation (desktop and the 360px phone width) without playing to the state
@@ -9,72 +9,51 @@ the page never ships and the i18n hardcoded-text test skips it.
 
 ## In the kit now
 
-| Section | Component | Notes |
+Every component the plan listed is in the kit, either with its own section or inside a bigger one (2026-11-07). A piece
+that already shows inside a composite gets no section of its own (the pip bar is in AP and MP and the Self HUD), so each
+look is checked once, in the context it has in the game. Sections live in `Mush2Kit.tsx` (the first four),
+`HudSections.tsx`, `GameSections.tsx` and `LobbySections.tsx`; `KitSection.tsx` has the frames, `samples.ts` the views.
+
+| Section | Component | Also shows |
 |---|---|---|
-| Ship card | `games/ShipCard.tsx` | Link and plain variants. |
-| Terminal | `hud/TerminalFrame.tsx` | Added 2026-11-07. No tabs / tabbed / hacked login. Sits in a stand-in `.m2k-terminal.terminal-popup.kit-panel`, since the real popup (`.settings-popup`) is `position: fixed`. |
-| Self HUD | `hud/SelfHud.tsx` (`SelfHud`) | Added 2026-11-07, the first section on the `PlayerView` fixture. Human (commander, a skill) and Mush. Sits in a stand-in `.room-view.m2k-room`, since the card is positioned over the room. |
-| AP and MP | `hud/SelfHud.tsx` (`SelfPoints`) | Added 2026-11-07, its own section (in a shared room stand-in it overlapped the card). Full, partly spent, out of AP, and Lethargy's 24 AP wrapped into two columns. |
+| Ship card | `games/ShipCard.tsx` | |
+| Terminal frame | `hud/TerminalFrame.tsx` | `TabOutline` (`"cut"`) |
+| Terminals | `TerminalBody` (exported from `hud/TerminalDialog.tsx` for this), one per terminal | research/project lists, PILGRED, `PlanetList` → `SharePlanetDialog`, `CommandTerminal` (`ShipNavigation`, `UnavailableButton`, `ConfirmPanel`), `CommsCenter`, `BiosTerminal`, `TurretPanel` (`HunterList`), `RelayDetails`, `ActionButton`, `ActionLabel` |
+| Top bar | `hud/TopBar.tsx` | `CycleCountdown`, `ShipResources`, `TitleChip`, `PreselectionTag`, `BotsPausedTag`, `PlayerSummary` (phone), `SettingsDialog` (gear; `DialogHeader`, `TabOutline` `"round"`, `IconButton`, account settings, `Credits`) |
+| Self HUD | `hud/SelfHud.tsx` (`SelfHud`) | `PlayerSummary`, `ResourceChips`, `StatInfo` |
+| AP and MP | `SelfPoints` | `PipBar` (horizontal and vertical, partial, empty, wrapped) |
+| Ship card (phone) | `hud/ShipOverlay.tsx` | `ShipResources`, `Hint` |
+| Inspect | `hud/InspectPanel.tsx`: you (human, Mush), someone else, equipment, an item | `SkillSlots`/`SkillPopover`/`ConfirmPanel`, `StatusIcons`, `ItemFace`, `ActionButton` (enabled and unaffordable) |
+| Inventory | `hud/InventoryOverlay.tsx` | `InventoryPanel`, `ItemIcon`, `ConsumeEffects`, heavy items |
+| Queue and tips | `hud/ActionQueue.tsx`, `hud/TipCard.tsx` | |
+| Peek bar | `hud/PeekBar.tsx` (phone CSS only: visible below 1024px) | |
+| Status icons | `hud/StatusIcons.tsx`: every status plus contamination, a catalog for spotting missing art | `StatusIcon` |
+| Patrol | `hud/PatrolCockpit.tsx` | `HunterList` |
+| iTrackie | `hud/ITrackie.tsx` | `FeedEntry` and markers, `CycleDivider`, `RecencyStamp`, `ExpeditionReportDialog` (from the room log), `Thread`/`MessageEntry`, `Markdown` checklists, `ChatInput`, `Threads`, `SharedPlanets`, `ResearchTracker`, `PrivateChannels`, `IconTab` badges, `TabOutline` |
+| Death and end | `hud/DeathNotice.tsx`, `hud/BodyTakenDialog.tsx`, `hud/EndScreen.tsx` (dialogs behind buttons) | `DialogHeader` |
+| Character picker | `lobby/CharacterPicker.tsx` | `SkillPopover` |
+| Account | `account/AccountButton.tsx` | `AccountDetails`, `NameForm` (its buttons call the real API) |
 
-The terminal frame was split out of the old `TerminalShell` to make it pure: it takes `name`, `type` (icon and corner
-art), `login` (`{ user, access }`), `onClose`, an optional `titleId`, and the body. It renders a plain `<h2>` and close
-`<button>` instead of Base UI's `Dialog.Title`/`Dialog.Close`, so it needs no dialog context; `TerminalDialog` passes
-`aria-labelledby={titleId}` to its popup (Base UI lets an explicit prop win). The login logic moved to
-`terminalLogin(type, view)` in `hud/terminalUsername.ts`, with tests. The frame also owns its `TabOutline` and imports
-`terminal.css`/`settings.css` itself.
+Skipped: `Announcer`, `Credits` (standalone), `Scroller`, `Tracker`, `BottomNav`, `RoomList` (visually hidden),
+`FeatureSelect` (in the iTrackie), `TabOutline`'s `outlinePath` (a function, already tested), and `ItemAttrIcons`,
+which nothing in `web/src` uses. Not reached yet: a planted hydropot (`PlantStates`), a hacked or broken item, chat in
+the Mush channel and private channels with messages, hunters in sight.
 
-## Ready now (plain props, no `PlayerView`)
+Found while building it (not fixed here): a Base UI console warning that `EntryTip`'s popover trigger in
+`TerminalDialog.tsx` is not a native `<button>`, and the Astro terminal's `.planet-title` overflows its frame at 360px.
 
-Each can be added with sample props alone. Suggested order: the first three are the game's look; the rest are quick.
+## The PlayerView fixture
 
-| Priority | Component | What to show |
-|---|---|---|
-| 1 | `hud/PipBar.tsx` | AP/MP/health/morale: horizontal and `vertical`, `thin`, `bigIcon`, empty/partial/full, a value change (the wipe animation). |
-| 1 | `hud/TabOutline.tsx` + `styles/cut-card.css` | The iTrackie's shape: `shape="round"` with a Base UI tab list over a `.cut-card` (the terminal already covers `"cut"`). Needs a `.kit-panel` parent with `--pad`, like the terminal stand-in. |
-| 1 | `hud/IconButton.tsx` | `IconButton`, `IconTab` with and without `badge`, `Hint` tooltip. |
-| 2 | `hud/DialogHeader.tsx`, `hud/ConfirmPanel.tsx` | Dialog chrome. `ConfirmPanel` takes `open`; show it open inline or behind a button. |
-| 2 | `hud/FeedEntry.tsx` (`FeedEntry`, `InfoMarker`, `WarningMarker`, `CrewAvatar`), `hud/CycleDivider.tsx` | Log and chat line building blocks; one row per marker. |
-| 2 | `hud/StatusIcons.tsx` (`StatusIcons`, `StatusIcon`) | Every status in one row, plus contamination; a quick way to spot missing art. |
-| 2 | `hud/TitleChip.tsx`, `hud/BotsPausedTag.tsx`, `hud/PreselectionTag.tsx` | Tags and chips. `TitleChip` takes a `TitleView`, a small plain object. |
-| 3 | `hud/ItemAttrIcons.tsx`, `hud/PlantStates.tsx`, `hud/ItemFace.tsx`, `hud/ConsumeEffects.tsx` | Item details. `PlantStates` takes `ItemView["plant"]`, a small object. |
-| 3 | `hud/RecencyStamp.tsx`, `hud/CycleCountdown.tsx` | Time displays. Both read the clock: pass timestamps relative to `Date.now()`; the countdown ticks. |
-| 3 | `hud/ChatInput.tsx`, `hud/Markdown.tsx` | Enabled and disabled input; markdown with checkboxes. |
-| 3 | `hud/ActionLabel.tsx` | Has its own test; check its props before adding. |
-| 3 | `hud/ExpeditionReportDialog.tsx`, `hud/SharePlanetDialog.tsx`, `hud/SettingsDialog.tsx` | Whole dialogs on plain props. They render in a portal over the page; open them from a button in the section. |
-| 3 | `lobby/CharacterPicker.tsx` | `taken` and `onBoard` only. |
-| 3 | `account/AccountButton.tsx`, `account/NameForm.tsx`, `account/AccountDetails.tsx` | Account UI. Check none of them fetch on mount before adding. |
-
-Skip: `Announcer`, `Credits`, `Scroller`, `Tracker`, `BottomNav` (no look of their own, or layout plumbing), and
-`TabOutline`'s `outlinePath` (a function, already tested).
-
-## Needs a `PlayerView` fixture
-
-These take the whole view (or `PlayerView` parts) and are what a player sees most, so they are worth the fixture.
-
-**Fixture (built 2026-11-07):** `web/src/designKit/sampleView.ts`, tested in `web/tests/designKit/sampleView.test.ts`.
+`web/src/designKit/sampleView.ts`, tested in `web/tests/designKit/sampleView.test.ts`.
 `sampleState({ role, character })` is a launched 16-seat ship (fixed seed, 2 Mush, the kit seat `p0` forced to `role`,
 Jin Su by default); helpers return a new state: `act` (any action through `applyAction`), `pickSkills`, `giveItems`
 (`produceItem`), `spend` (AP/MP) and `giveTitle` (the last two edit the state directly, as the rules tests do);
 `sampleView(state)` is `viewFor` for `p0`. It does not use the cheats. Build views once at module level, not per render.
 
-The original recommendation: build it from the real rules, not by hand: `createGame(...)` then `viewFor(state, id)` from
-`@mush2/shared`, which is pure and runs in the browser. A hand-written `PlayerView` would drift every time the type
-changes; this one cannot. Put it in `web/src/designKit/sampleView.ts`, with small helpers that apply a state change
-through the rules (spend AP, give a title, add an item) before taking the view. Open question: whether the kit may use
-the `cheats` helpers to reach states quickly; they are test-deployment only in the game, but the kit never ships.
-
-| Component | Notes |
-|---|---|
-| `hud/TopBar.tsx`, `hud/SelfHud.tsx` (`SelfHud`, `SelfPoints`), `hud/PlayerSummary.tsx` | The HUD. Show human and Mush. |
-| `hud/ShipResources.tsx` | Already narrowed: takes `ship`, `hunters`, `titles`, `orbit`. Could go in now with a hand-made `ship` slice. |
-| `hud/ResourceChips.tsx` (`CompactResourceChips`), `hud/StatInfo.tsx` | Stat chips and their popovers. |
-| `hud/SkillSlots.tsx` (`SkillSlots`, `SkillPopover`) | Empty, partial and full slots. |
-| `hud/InventoryPanel.tsx`, `hud/InventoryOverlay.tsx`, `hud/ItemIcon.tsx` | Inventory: empty slots (`.kit-slot.big`), heavy items, plants. |
-| `hud/ActionButton.tsx` (`ActionButton`, `DisabledActionButton`), `hud/CommandTerminal.tsx`'s `UnavailableButton` | Enabled, blocked, unaffordable. `UnavailableButton` is plain props already. |
-| `hud/ActionQueue.tsx`, `hud/PeekBar.tsx`, `hud/TipCard.tsx`, `hud/DeathNotice.tsx`, `hud/BodyTakenDialog.tsx`, `hud/EndScreen.tsx` | Smaller pieces and end states. |
-| Terminal bodies: `ResearchList`/`ProjectList`/`PilgredRepair` (in `TerminalDialog.tsx`), `PlanetList`, `CommsCenter`, `BiosTerminal`, `TurretPanel`, `CommandTerminal`, `ShipNavigation`, `HunterList`, `PatrolCockpit`, `RelayDetails`, `ResearchTracker` | Each inside a `TerminalFrame` with a real `EquipmentView` from the fixture. |
-| `hud/ITrackie.tsx`, `hud/Thread.tsx` (`Thread`, `MessageEntry`), `hud/Threads.tsx`, `hud/PrivateChannels.tsx`, `hud/SharedPlanets.tsx` | Chat. Needs a fixture with chat lines; the heaviest to set up, so last. |
-| `hud/InspectPanel.tsx`, `hud/RoomList.tsx`, `hud/ShipOverlay.tsx` | Room and ship panels. |
+Later helpers (2026-11-07): `queue` (through `queueAction`), `moveTo`/`moveToEquipment`, `givePlanet`, `say` and
+`thread` (the chat rules), `share` (`sharePlanet`), `kill` (`killPlayer`), `bodyTaken` (the flag only), `ended`
+(`endGame`), and `sampleState({ preselection: true })`. The kit's views are built in `samples.ts`; its test checks each
+reaches the state its section shows.
 
 Narrowing a component's props (as `ShipResources` does) instead of passing the whole view is an alternative to the
 fixture for the small ones; it also helps re-render cost. Do it only where it reads naturally, not just for the kit.

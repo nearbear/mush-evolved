@@ -7,7 +7,11 @@ import { ShipCard, type ShipCardHighlight } from "../games/ShipCard.tsx";
 import { Tabs } from "@base-ui/react/tabs";
 import { SelfHud, SelfPoints } from "../hud/SelfHud.tsx";
 import { TerminalFrame } from "../hud/TerminalFrame.tsx";
-import { giveTitle, pickSkills, sampleState, sampleView, spend } from "./sampleView.ts";
+import { AccountSection, CharacterPickerSection } from "./LobbySections.tsx";
+import { EndingsSection, ITrackieSection, PatrolSection, TerminalBodiesSection } from "./GameSections.tsx";
+import { InspectSection, InventorySection, PeekBarSection, RoomCornerSection, ShipOverlaySection, StatusIconsSection, TopBarSection } from "./HudSections.tsx";
+import { noop } from "./KitSection.tsx";
+import { freshView, humanView, lethargyView, mushView } from "./samples.ts";
 import "./mush2Kit.css";
 
 const icon = (name: string) => SHIP_CARD_ICONS[name]!;
@@ -23,14 +27,26 @@ const highlights: ShipCardHighlight[] = [
   { icon: icon("pa_pilgred"), label: "Highlight 6" },
 ];
 
-const noop = () => {};
-
-// PlayerView samples, built through the real rules once at load (sampleView.ts).
-const humanView = sampleView(spend(giveTitle(pickSkills(sampleState(), ["pilot"]), "commander"), { ap: 3, mp: 1 }));
-const mushView = sampleView(spend(sampleState({ role: "mush", character: "kuanti" }), { ap: 8 }));
-const freshView = sampleView();
-// Lethargy doubles max AP to 24, which wraps the gauge into two columns of 12 (apGauge.ts).
-const lethargyView = sampleView(spend(pickSkills(sampleState({ character: "chun" }), ["lethargy"]), { ap: 3 }));
+/** The header nav, in page order. */
+const NAV: [id: string, label: string][] = [
+  ["ship-card", "Ship card"],
+  ["terminal", "Terminal frame"],
+  ["terminal-bodies", "Terminals"],
+  ["top-bar", "Top bar"],
+  ["self-hud", "Self HUD"],
+  ["self-points", "AP and MP"],
+  ["ship-overlay", "Ship card (phone)"],
+  ["inspect", "Inspect"],
+  ["inventory", "Inventory"],
+  ["room-corners", "Queue and tips"],
+  ["peek-bar", "Peek bar"],
+  ["status-icons", "Status icons"],
+  ["patrol", "Patrol"],
+  ["itrackie", "iTrackie"],
+  ["endings", "Death and end"],
+  ["character-picker", "Character picker"],
+  ["account", "Account"],
+];
 
 export default function Mush2Kit() {
   return (
@@ -38,10 +54,11 @@ export default function Mush2Kit() {
       <header className="m2k-header">
         <h1>Design kit (mush2)</h1>
         <nav aria-label="Sections">
-          <a href="#ship-card">Ship card</a>
-          <a href="#terminal">Terminal</a>
-          <a href="#self-hud">Self HUD</a>
-          <a href="#self-points">AP and MP</a>
+          {NAV.map(([id, label]) => (
+            <a key={id} href={`#${id}`}>
+              {label}
+            </a>
+          ))}
           <a href="/design-kit.html">Mush art kit</a>
         </nav>
       </header>
@@ -85,7 +102,7 @@ export default function Mush2Kit() {
           </div>
         </section>
         <section id="terminal">
-          <h2>Terminal</h2>
+          <h2>Terminal frame</h2>
           <p>
             <code>hud/TerminalFrame.tsx</code>: the frame every terminal shares (title bar, cosmetic login, close, icon,
             gold outline). The game puts it in <code>TerminalDialog</code>&apos;s popup; here it sits in a stand-in{" "}
@@ -130,6 +147,8 @@ export default function Mush2Kit() {
             </figure>
           </div>
         </section>
+        <TerminalBodiesSection />
+        <TopBarSection />
         <section id="self-hud">
           <h2>Self HUD</h2>
           <p>
@@ -178,6 +197,17 @@ export default function Mush2Kit() {
             </figure>
           </div>
         </section>
+        <ShipOverlaySection />
+        <InspectSection />
+        <InventorySection />
+        <RoomCornerSection />
+        <PeekBarSection />
+        <StatusIconsSection />
+        <PatrolSection />
+        <ITrackieSection />
+        <EndingsSection />
+        <CharacterPickerSection />
+        <AccountSection />
       </main>
     </div>
   );

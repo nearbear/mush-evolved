@@ -25,7 +25,7 @@ Feature designs in `plans/`, one per file. Each plan's own header is the authori
 | `plans/on-call.md` | Channel plans and on-call summons | Partly | `shared` and server built ([#313](https://github.com/nearbear/mush2/issues/313), [#314](https://github.com/nearbear/mush2/issues/314)). UI: [#315](https://github.com/nearbear/mush2/issues/315); bots: [#316](https://github.com/nearbear/mush2/issues/316). |
 | `plans/bot-goals.md` | Single-player bot goals and chat coordination | Partly | Steps 1–3 built 2026-11-01. Plans for bots ([#316](https://github.com/nearbear/mush2/issues/316)) and the open questions remain. |
 | `plans/chat-pages.md` | Fixed 50-message chat pages ([#355](https://github.com/nearbear/mush2/issues/355)) | Partly | Phases 1–4 built 2026-11-06. The wrap-up (rules-design, flat-view sim) is left. |
-| `plans/design-kit.md` | Components for the dev design kit and their `PlayerView` fixture | Partly | Handoff 2026-11-07; the fixture and terminal frame are built. Not a rules plan. |
+| `plans/design-kit.md` | Components for the dev design kit and their `PlayerView` fixture | Done | 2026-11-07: every listed component is in the kit, alone or inside a composite. Not a rules plan. |
 | `plans/replay-viewer.md` | Replay viewer page, split into stories | Not built | Reviewed with the owner 2026-11-05 ([#156](https://github.com/nearbear/mush2/issues/156)). |
 | `plans/normalize-state.md` | Normalizing stored state on load, phase 2 ([#384](https://github.com/nearbear/mush2/issues/384)) | Partly | Planned 2026-11-07; decisions 1–3 are the owner's. Step 1 (types) built. Not a rules plan. |
 | `plans/inventory-notes.md` | Shared manual item notes for the crew | Draft | 2026-11-01; not decided. |

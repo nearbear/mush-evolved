@@ -2563,3 +2563,10 @@ The owner asked for an honest, ranked verdict on the #384 plan settled earlier t
 - Decision 3 (owner): a throw while normalizing is not caught in phase 2, since phase 3 (keep the snapshot, refuse connections) follows straight after. The proposed temporary catch-and-discard was dropped.
 - Needed correction: `tools/tests/leaks/fields.test.ts` finds state fields by regex over the `GameState` interface body, so after the split it saw only three fields. Typecheck passed; `npm run verify` caught it. It now reads both bodies. Source-parsing tests are a blind spot for type refactors that the compiler can't see.
 - The `config.ts` pointer to `STATE_VERSION`'s new home waits for step 4, when it actually moves.
+
+### 2026-11-07: Design kit, every planned component
+
+- The user asked to add every component in `docs/plans/design-kit.md` to the kit without duplicating pieces already shown inside the player-view HUD (like the pip bar). The assistant mapped which components nest in which and gave each composite one section (Terminals, Top bar, Inspect, Inventory, iTrackie, Death and end, and so on), with the smaller pieces shown inside them; the plan doc now has a table of what shows where.
+- The samples all go through the rules: new fixture helpers queue actions (`queueAction`), chat, start threads, share a planet, kill, and end the game, and the iTrackie sample flies a real Icarus expedition so its "Read the report" line works. One game change: `TerminalBody` is exported from `TerminalDialog.tsx` so the kit can show each terminal's body in its frame.
+- What worked: a small Playwright script checked for console errors and sideways overflow at desktop and 360px before looking at any screenshots. It found a Base UI warning from `EntryTip` (its popover trigger isn't a native button) and the Astro terminal's planet title overflowing at 360px; neither is fixed here. `ItemAttrIcons` turned out to be unused.
+- Needed correction: the user stopped the session for a long run without check-ins and asked for a stopping point; verify and the docs were finished afterwards in /wrap-up.

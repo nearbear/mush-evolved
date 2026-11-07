@@ -98,3 +98,45 @@
 .m2k-bottom figure {
   align-items: flex-start;
 }
+
+/* A taller room stand-in, for overlays that open inside the room (inventory, ship card, tips). */
+.m2k .m2k-room-tall {
+  height: 22rem;
+}
+/* A room stand-in that grows with what replaces the room (death notice, patrol cockpit). */
+.m2k .m2k-room-auto {
+  height: auto;
+  min-height: 5rem;
+}
+
+/* Full-width figures, one under another (bars and the picker). */
+.m2k-stack {
+  flex-direction: column;
+}
+.m2k-stack > figure {
+  width: 100%;
+}
+
+/* Terminal bodies need more height than the frame-only samples. */
+.m2k .m2k-terminal-tall {
+  height: 30rem;
+}
+
+/* The game's column widths: Inspect is the 15rem left column, the iTrackie the 20rem right one (layout.css). */
+.m2k-inspect {
+  width: 15rem;
+}
+.m2k-itrackie {
+  width: min(20rem, calc(100vw - 32px));
+}
+
+.m2k-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.m2k-picker {
+  position: relative;
+  max-width: 100%;
+}

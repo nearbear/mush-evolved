@@ -71,14 +71,7 @@ export function TerminalDialog({ terminal, view, onAction, onClose, onSharePlane
               onClose={onClose}
               titleId={titleId}
             >
-              {terminal.type === "RESEARCH_LAB" && <ResearchList terminal={terminal} view={view} onAction={onAction} />}
-              {terminal.type === "NERON_CORE" && <ProjectList terminal={terminal} view={view} onAction={onAction} />}
-              {terminal.type === "ASTRO_MODULE" && <PlanetList terminal={terminal} view={view} onAction={onAction} onShare={onSharePlanet} />}
-              {terminal.type === "PILGRED" && <PilgredRepair terminal={terminal} view={view} onAction={onAction} />}
-              {terminal.type === "COM_CENTER" && <CommsCenter terminal={terminal} view={view} onAction={onAction} />}
-              {terminal.type === "NERON_BIOS_TERM" && <BiosTerminal terminal={terminal} view={view} onAction={onAction} />}
-              {terminal.type === "TURRET_COMMAND" && <TurretPanel terminal={terminal} view={view} onAction={onAction} />}
-              {terminal.type === "PILOT_MODULE" && <CommandTerminal key={terminal.id} terminal={terminal} view={view} onAction={onAction} />}
+              <TerminalBody terminal={terminal} view={view} onAction={onAction} onSharePlanet={onSharePlanet} />
             </TerminalFrame>
           )}
         </Dialog.Popup>
@@ -88,6 +81,22 @@ export function TerminalDialog({ terminal, view, onAction, onClose, onSharePlane
 }
 
 type ListProps = Omit<Props, "onClose"> & { terminal: EquipmentView };
+
+/** What a terminal shows inside its frame, by type (blank for the rest). Exported for the design kit. */
+export function TerminalBody({ terminal, view, onAction, onSharePlanet }: ListProps) {
+  return (
+    <>
+      {terminal.type === "RESEARCH_LAB" && <ResearchList terminal={terminal} view={view} onAction={onAction} />}
+      {terminal.type === "NERON_CORE" && <ProjectList terminal={terminal} view={view} onAction={onAction} />}
+      {terminal.type === "ASTRO_MODULE" && <PlanetList terminal={terminal} view={view} onAction={onAction} onShare={onSharePlanet} />}
+      {terminal.type === "PILGRED" && <PilgredRepair terminal={terminal} view={view} onAction={onAction} />}
+      {terminal.type === "COM_CENTER" && <CommsCenter terminal={terminal} view={view} onAction={onAction} />}
+      {terminal.type === "NERON_BIOS_TERM" && <BiosTerminal terminal={terminal} view={view} onAction={onAction} />}
+      {terminal.type === "TURRET_COMMAND" && <TurretPanel terminal={terminal} view={view} onAction={onAction} />}
+      {terminal.type === "PILOT_MODULE" && <CommandTerminal key={terminal.id} terminal={terminal} view={view} onAction={onAction} />}
+    </>
+  );
+}
 
 function ResearchList({ terminal, view, onAction }: ListProps) {
   const { t } = useTranslation();
@@ -206,7 +215,7 @@ function EntryTip({ name, desc, trigger, children }: { name: string; desc?: stri
   if (!desc) return React.cloneElement(trigger, undefined, children);
   return (
     <Popover.Root>
-      <Popover.Trigger openOnHover delay={200} render={trigger} className="has-tip">
+      <Popover.Trigger openOnHover delay={200} nativeButton={false} render={trigger} className="has-tip">
         {children}
       </Popover.Trigger>
       <Popover.Portal>
