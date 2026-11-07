@@ -13,6 +13,8 @@ the page never ships and the i18n hardcoded-text test skips it.
 |---|---|---|
 | Ship card | `games/ShipCard.tsx` | Link and plain variants. |
 | Terminal | `hud/TerminalFrame.tsx` | Added 2026-11-07. No tabs / tabbed / hacked login. Sits in a stand-in `.m2k-terminal.terminal-popup.kit-panel`, since the real popup (`.settings-popup`) is `position: fixed`. |
+| Self HUD | `hud/SelfHud.tsx` (`SelfHud`) | Added 2026-11-07, the first section on the `PlayerView` fixture. Human (commander, a skill) and Mush. Sits in a stand-in `.room-view.m2k-room`, since the card is positioned over the room. |
+| AP and MP | `hud/SelfHud.tsx` (`SelfPoints`) | Added 2026-11-07, its own section (in a shared room stand-in it overlapped the card). Full, partly spent, out of AP, and Lethargy's 24 AP wrapped into two columns. |
 
 The terminal frame was split out of the old `TerminalShell` to make it pure: it takes `name`, `type` (icon and corner
 art), `login` (`{ user, access }`), `onClose`, an optional `titleId`, and the body. It renders a plain `<h2>` and close
@@ -49,7 +51,13 @@ Skip: `Announcer`, `Credits`, `Scroller`, `Tracker`, `BottomNav` (no look of the
 
 These take the whole view (or `PlayerView` parts) and are what a player sees most, so they are worth the fixture.
 
-**Fixture recommendation:** build it from the real rules, not by hand: `createGame(...)` then `viewFor(state, id)` from
+**Fixture (built 2026-11-07):** `web/src/designKit/sampleView.ts`, tested in `web/tests/designKit/sampleView.test.ts`.
+`sampleState({ role, character })` is a launched 16-seat ship (fixed seed, 2 Mush, the kit seat `p0` forced to `role`,
+Jin Su by default); helpers return a new state: `act` (any action through `applyAction`), `pickSkills`, `giveItems`
+(`produceItem`), `spend` (AP/MP) and `giveTitle` (the last two edit the state directly, as the rules tests do);
+`sampleView(state)` is `viewFor` for `p0`. It does not use the cheats. Build views once at module level, not per render.
+
+The original recommendation: build it from the real rules, not by hand: `createGame(...)` then `viewFor(state, id)` from
 `@mush2/shared`, which is pure and runs in the browser. A hand-written `PlayerView` would drift every time the type
 changes; this one cannot. Put it in `web/src/designKit/sampleView.ts`, with small helpers that apply a state change
 through the rules (spend AP, give a title, add an item) before taking the view. Open question: whether the kit may use

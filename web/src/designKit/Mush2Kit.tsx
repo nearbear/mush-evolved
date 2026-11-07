@@ -5,7 +5,9 @@
 import { bustIcon, ENDING_ART, SHIP_CARD_ICONS } from "../art/assets.ts";
 import { ShipCard, type ShipCardHighlight } from "../games/ShipCard.tsx";
 import { Tabs } from "@base-ui/react/tabs";
+import { SelfHud, SelfPoints } from "../hud/SelfHud.tsx";
 import { TerminalFrame } from "../hud/TerminalFrame.tsx";
+import { giveTitle, pickSkills, sampleState, sampleView, spend } from "./sampleView.ts";
 import "./mush2Kit.css";
 
 const icon = (name: string) => SHIP_CARD_ICONS[name]!;
@@ -23,6 +25,13 @@ const highlights: ShipCardHighlight[] = [
 
 const noop = () => {};
 
+// PlayerView samples, built through the real rules once at load (sampleView.ts).
+const humanView = sampleView(spend(giveTitle(pickSkills(sampleState(), ["pilot"]), "commander"), { ap: 3, mp: 1 }));
+const mushView = sampleView(spend(sampleState({ role: "mush", character: "kuanti" }), { ap: 8 }));
+const freshView = sampleView();
+// Lethargy doubles max AP to 24, which wraps the gauge into two columns of 12 (apGauge.ts).
+const lethargyView = sampleView(spend(pickSkills(sampleState({ character: "chun" }), ["lethargy"]), { ap: 3 }));
+
 export default function Mush2Kit() {
   return (
     <div className="m2k">
@@ -31,6 +40,8 @@ export default function Mush2Kit() {
         <nav aria-label="Sections">
           <a href="#ship-card">Ship card</a>
           <a href="#terminal">Terminal</a>
+          <a href="#self-hud">Self HUD</a>
+          <a href="#self-points">AP and MP</a>
           <a href="/design-kit.html">Mush art kit</a>
         </nav>
       </header>
@@ -116,6 +127,54 @@ export default function Mush2Kit() {
                 </TerminalFrame>
               </div>
               <figcaption>Hacked login</figcaption>
+            </figure>
+          </div>
+        </section>
+        <section id="self-hud">
+          <h2>Self HUD</h2>
+          <p>
+            <code>hud/SelfHud.tsx</code>: the desktop HUD card over the room view&apos;s top left (you, HP, morale,
+            resources). It takes a real <code>PlayerView</code> from <code>designKit/sampleView.ts</code>; here it sits in
+            a stand-in <code>.room-view</code>, since it is positioned over the room.
+          </p>
+          <div className="m2k-row">
+            <figure>
+              <div className="room-view m2k-room">
+                <SelfHud view={humanView} onInspect={noop} />
+              </div>
+              <figcaption>Human, commander with a skill</figcaption>
+            </figure>
+            <figure>
+              <div className="room-view m2k-room">
+                <SelfHud view={mushView} onInspect={noop} />
+              </div>
+              <figcaption>Mush (spores in the resources)</figcaption>
+            </figure>
+          </div>
+        </section>
+        <section id="self-points">
+          <h2>AP and MP</h2>
+          <p>
+            <code>hud/SelfHud.tsx</code>&apos;s <code>SelfPoints</code>: AP and MP standing up, from the room view&apos;s
+            bottom left. Past 14 slots the AP gauge wraps into even columns (<code>hud/apGauge.ts</code>); Lethargy&apos;s
+            24 AP makes two of 12.
+          </p>
+          <div className="m2k-row m2k-bottom">
+            <figure>
+              <SelfPoints view={freshView} />
+              <figcaption>Full</figcaption>
+            </figure>
+            <figure>
+              <SelfPoints view={humanView} />
+              <figcaption>3 AP and 1 MP spent</figcaption>
+            </figure>
+            <figure>
+              <SelfPoints view={mushView} />
+              <figcaption>Out of AP</figcaption>
+            </figure>
+            <figure>
+              <SelfPoints view={lethargyView} />
+              <figcaption>Lethargy: two AP columns, partly spent</figcaption>
             </figure>
           </div>
         </section>

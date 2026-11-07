@@ -80,3 +80,21 @@
   padding: var(--pad);
   color: #fff;
 }
+
+/* A stand-in for the room view (the HUD is absolutely positioned over it), in the page flow; just tall enough for the card. */
+.m2k .m2k-room {
+  flex: none; /* the phone layout (responsive.css) makes every .room-view flex: 1, which collapsed this box */
+  position: relative;
+  width: min(28rem, calc(100vw - 32px));
+  height: 5rem;
+  background: #10142c;
+  border: 1px solid #2c3e66;
+}
+
+/* Gauges of different heights share a baseline, as they would on the room's bottom edge. */
+.m2k-bottom {
+  align-items: flex-end;
+}
+.m2k-bottom figure {
+  align-items: flex-start;
+}
