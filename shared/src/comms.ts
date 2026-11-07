@@ -192,8 +192,9 @@ function randomOf<T>(state: GameState, list: readonly T[]): T {
 }
 
 /**
- * An entry's effect (owner, 2026-10-21). Items appear on the bridge floor. Lost analysis, Zong Chun's ghost and
- * Kivanç (besides the decoding bonus) are only recorded. Mutates a state the caller already cloned.
+ * An entry's effect (owner, 2026-10-21). Items appear on the bridge floor. Lost analysis (#394), Zong Chun's ghost
+ * (read through `xylophFound` by the researches) and Kivanç (besides the decoding bonus) are only recorded here.
+ * Mutates a state the caller already cloned.
  */
 export function applyXyloph(state: GameState, entry: XylophEntryId): void {
   const { xyloph } = state.config.comms;

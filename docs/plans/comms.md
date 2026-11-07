@@ -1,6 +1,6 @@
 # Communication center (plan)
 
-Status: **built 2026-10-21** (see `docs/rules/implemented-rules.md`, "Communication center"). The 2026-10-21 answers below settle the open questions and supersede decisions 2, 4 and 5 where they differ.
+Status: **done.** Built 2026-10-21. `docs/rules/implemented-rules.md` ("Communication center") is the authority on what the code does. The 2026-10-21 answers below supersede decisions 2, 4 and 5 where they differ. What is left is in GitHub issues (see the end).
 
 ## What the original gives us
 
@@ -36,28 +36,19 @@ The snapshot has the data but no server logic for these actions.
 - NERON update: 2 AP, 25% per action, and it repeats. At 100% the version goes up and a random unfinished NERON project completes.
 - Only the buildable rebel effects are built. Radio Expert is built.
 
-## Open questions (all answered above)
+## Built as
 
-1. **Can the link be lost?** Decision 3 says the chance never decreases, but not whether the link itself can drop. If it can, SNOW_CRASH and WIREFLESS_INFIDELITY drop it, and WIREFLESS's "signal quality −20" clashes with decision 3.
-2. **Is the chance tracked per player or ship-wide?** And does "never decreases" mean it keeps growing after a success, or stays where it was?
-3. **Rebel decoding cost**, and whether the Rebel skill's +50% is built now or only gets a modifier hook.
-4. **Is rebel progress private?** Decision 4 makes decoding private, but progress on a base accumulates. Can another player see (or add to) a base someone else started? If progress is shared but hidden, players can advance a base without knowing it.
-5. **Xyloph:** cost, whether it always succeeds, whether entries can repeat or are drawn without replacement, and what happens when the table runs out.
-6. **NERON update:** cost, progress per action (25%, like research?), whether it repeats (versions), and what "lets a project finish" means here, since projects have no completion effects yet.
-7. **Do the actions require the link?** In the original, decode, Xyloph and NERON update need an established link with Sol.
-8. **Which rewards count as buildable.** A proposal to confirm, not a decision:
-   - Rebels: Sirius (+1 AP from rations), Kaladaan (+6 morale to everyone), Luyten-Ceti (chat without an iTrackie), Cygni's +3 morale part. Wolf, Centauri and Cygni's patrol ship part are recorded only.
-   - Xyloph: NOTHING, NERON_BOOST, WORKSHOP_MANUALS (blueprints exist), KIVANC_TERZI_CONTACT (affects decoding), and the link loss entries if the answer to 1 allows it. LOST_ANALYSIS reveals infection levels, so it needs its own visibility decision and a leak check. Genome disk, apprentrons, Nils and Zong Chun are recorded only.
-9. **Who can act:** living and not dirty, Mush included (as for research and scanning)?
-10. **Radio Expert:** build the skill's effect now, or only add the modifier hook (as was done for the Astro terminal)?
+Where the build differs from the first draft of this plan (which is no longer kept here):
 
-## Planned implementation (draft, pending the open questions)
+- All four actions are private, the Sol link included: only the actor gets a log line. The only public signal is the link status (`PlayerView.comms.linked`) and NERON's rebel call announcement in global chat while the link is up.
+- Nothing per-player is stored. Rebel progress, the Sol chance, Xyloph entries left and NERON progress are ship-wide, in `GameState.comms`, and go read-only to anyone alive in the room with the terminal (`comms.terminal`). Which Xyloph entries were drawn is never sent.
+- The Xyloph items now work through other systems: skill books (`read_book`), blueprints (`build`), and the genome disk and Mush sample as research ingredients. Zong Chun's ghost stands in for Chun at the researches that need her.
 
-- `shared/src/comms.ts`: rebel base and Xyloph tables (ids, weights, difficulty), copied into typed tables as `planets.ts` does, plus reward application for the buildable effects.
-- State, in `GameState.comms` (not `PlayerState`, so `viewFor` can't copy private parts into views by accident): link established, Sol contact chance, per-base rebel progress, Xyloph entries unlocked, NERON update progress. Bump `STATE_VERSION`.
-- Actions, one file each in `shared/src/actions/`: `contact_sol.ts` (`getSuccessChance` from `config.comms`, `fail` raises the chance), `decode_rebel.ts` (target a base), `contact_xyloph.ts` (weighted draw with the seeded RNG), `update_neron.ts`. Costs and odds in `config.comms`. Odds and progress go through modifier hooks, so Radio Expert, Rebel and Kivanç Terzi can attach.
-- Logs: `logPublic` for the link (attempt or success, per decision 4), `logPrivate` for the rest. Strings through i18n (en/fr/es).
-- `viewFor`: `PlayerView.comms` with the public link status, plus only what the viewer learned privately. Run `leak-check`.
-- Web: the Com center's `TerminalDialog` gets the link status, the rebel base list with the actor's known progress, and the Xyloph and NERON buttons, from `view.actions` only. Works at 360px.
-- Tests in `shared/tests/comms.test.ts`: pinned config numbers, chance growth, rebel progress and reward at 100%, the weighted Xyloph draw for a seed, each live reward, illegal actions leave state unchanged, and `viewFor` leak tests (another player's decode or Xyloph results never appear in your view).
-- Record it in `docs/rules/implemented-rules.md`, `docs/rules/rules-design.md` ("Decisions received"), `docs/code-map/shared.md`, and `docs/process/ai-workflow.md` (append).
+## Left, in issues
+
+- General announcement, the Comms Officer's broadcast: [#393](https://github.com/nearbear/mush2/issues/393).
+- Finola's lost analysis printout: [#394](https://github.com/nearbear/mush2/issues/394).
+- Merchant trades: [#143](https://github.com/nearbear/mush2/issues/143).
+- Comms triumphs (Kivanç for Paola, Wolf, Eleesha's rebel bases): [#354](https://github.com/nearbear/mush2/issues/354).
+- Cygni's patrol ship damage +1 has no issue; [#173](https://github.com/nearbear/mush2/issues/173) proposes a blaster blueprint in its place. Patrol ships fight now, so it could be built.
+- Centauri's blaster bonus on expeditions: [#358](https://github.com/nearbear/mush2/issues/358).

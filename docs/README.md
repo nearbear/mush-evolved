@@ -16,7 +16,7 @@ Feature designs in `plans/`, one per file. Each plan's own header is the authori
 | Plan | What | Done? | Status and what's left |
 |---|---|---|---|
 | `plans/astro.md` | Astro terminal, planet discovery | Done | Built 2026-10-19. The PLANET_SCANNER bonus is in [#331](https://github.com/nearbear/mush2/issues/331). |
-| `plans/comms.md` | Communication center | Done | Built 2026-10-21. |
+| `plans/comms.md` | Communication center | Done | Built 2026-10-21. Leftovers: [#393](https://github.com/nearbear/mush2/issues/393), [#394](https://github.com/nearbear/mush2/issues/394), [#143](https://github.com/nearbear/mush2/issues/143), [#173](https://github.com/nearbear/mush2/issues/173). |
 | `plans/relay-tokens.md` | Pooled contributions for research, projects and PILGRED | Done | Built 2026-10-31 ([#311](https://github.com/nearbear/mush2/issues/311)). |
 | `plans/research-sabotage.md` | Research samples, assays and sabotage | Done | Built 2026-10-31 ([#311](https://github.com/nearbear/mush2/issues/311) part B). |
 | `plans/patrol.md` | Patrol ships and the Pasiphae | Done | Every phase built, Pasiphae scrapping included ([#147](https://github.com/nearbear/mush2/issues/147)). |
