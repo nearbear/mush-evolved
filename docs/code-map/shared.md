@@ -59,7 +59,7 @@ Other packages import from `@mush2/shared` (`shared/src/index.ts`, the barrel). 
 
 ## Rule areas
 
-- `chat.ts`: chat storage in fixed pages (`CHAT_PAGE`, `pushChat` seals a full page into `chatOutbox` for the server to store as `chatPageKey`, #355), checklist ticks kept beside the chat (`chatMarks`, `taskLines`, `markedText`; `messageView` in `rules.ts` draws them into the text), channels (`chatChannels` to post, `readChannels` to read), `sendChat`, threads under global chat (`createThread`), private channels, limits.
+- `chat.ts`: chat storage in fixed pages (`CHAT_PAGE`, `pushChat` seals a full page into `chatOutbox` for the server to store as `chatPageKey`, #355), checklist ticks kept beside the chat (`chatMarks`, `taskLines`, `markedText`; `messageView` in `rules.ts` draws them into the text; `chatPageSource`/`chatPageView` there answer a `chatPage` request), channels (`chatChannels` to post, `readChannels` to read), `sendChat`, threads under global chat (`createThread`), private channels, limits.
 - `death.ts`: `damage` (the one way HP goes down) and `killPlayer`.
 - `infection.ts`: `contaminate` (the one way contamination rises), conversion, `contaminationSeenBy`.
 - `items.ts`: item types, containers, capacity and reach helpers, `produceItem`, `removeItem`, `newItemId`.

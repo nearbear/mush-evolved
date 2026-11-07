@@ -15,6 +15,7 @@ import {
   MUSH_CHANNEL,
   type Action,
   type ChannelId,
+  type ChatLine,
   type ChatMark,
   type PlanDraft,
   type PlayerId,
@@ -70,6 +71,8 @@ export type GameClientMessage =
   | { type: "chat"; channel: ChannelId; text: string }
   // A message is named by its channel and `seq`, never its game-wide id (ChatMessage.id says why).
   | { type: "toggleCheckbox"; channel: ChannelId; seq: number; line: number }
+  // One page of a channel (#355), answered with `chatPage`. Read-only: not an input, never recorded.
+  | { type: "chatPage"; channel: ChannelId; page: number }
   | { type: "createChannel"; name?: string; members?: PlayerId[] }
   // A thread under global chat, started from the global message whose `seq` is `from`, or on its own.
   | { type: "createThread"; name: string; from?: number }
@@ -101,6 +104,9 @@ export type GameServerMessage =
   // A checklist's ticks changed on a message two or more pages back, which no view carries (#355): the reader redraws a
   // copy it fetched (`markedText`). Only to connections whose body reads the channel; never an `id`.
   | { type: "chatEdit"; channel: ChannelId; seq: number; mark: Pick<ChatMark, "tasks" | "checked"> }
+  // The page a `chatPage` asked for, as a view carries chat (ticks drawn in, no `id`). Every refusal is the one error
+  // `chat_page_unavailable`, so it can't tell a channel you can't read from a page not begun.
+  | { type: "chatPage"; channel: ChannelId; page: number; messages: ChatLine[] }
   | { type: "error"; message: string };
 
 export function parseMatchmakerMessage(raw: string): MatchmakerClientMessage | null {
@@ -131,6 +137,10 @@ export function parseGameMessage(raw: string): GameClientMessage | null {
     return channel && Number.isSafeInteger(seq) && (seq as number) >= 0 && Number.isSafeInteger(line) && (line as number) >= 0
       ? { type: "toggleCheckbox", channel, seq: seq as number, line: line as number }
       : null;
+  }
+  if (msg?.type === "chatPage") {
+    const channel = channelId(msg.channel);
+    return channel && Number.isSafeInteger(msg.page) && (msg.page as number) >= 0 ? { type: "chatPage", channel, page: msg.page as number } : null;
   }
   if (msg?.type === "createChannel") {
     if (msg.name !== undefined && (typeof msg.name !== "string" || msg.name.length > MAX_NAME_LENGTH * 4)) return null;

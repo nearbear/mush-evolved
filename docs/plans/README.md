@@ -16,5 +16,5 @@ Feature designs, one per file. Each plan's own header is the authority on its st
 | `inventory-notes.md` | Shared manual item notes for the whole crew | Draft 2026-11-01; not decided, not built |
 | `balance.md` | Balance goals, targets, AP economy and tuning method | Draft 2026-11-04; not decided |
 | `replay-viewer.md` | Replay viewer page, split into stories (#156) | Reviewed with the owner 2026-11-05; not built |
-| `chat-pages.md` | Fixed 50-message chat pages (#355) | Phases 1–2 built 2026-11-06; phases 3–4 not built |
+| `chat-pages.md` | Fixed 50-message chat pages (#355) | Phases 1–3 built 2026-11-06; phase 4 (client UI) not built |
 | `action-plans.md` | Scheduled action plans (#44) | Superseded 2026-10-30 by `relay-tokens.md` and `on-call.md`; kept for history |

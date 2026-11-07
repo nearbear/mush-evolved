@@ -14,6 +14,8 @@ import {
   takeChatOutbox,
   chatPageKey,
   chatMarkKey,
+  chatPageSource,
+  chatPageView,
   bodyOf,
   legalActions,
   nextDue,
@@ -72,6 +74,8 @@ declare global {
 
 /** Error code (not text) for a cheat input on a server that doesn't allow them. */
 const CHEATS_DISABLED = "cheats_disabled";
+/** The one refusal for a `chatPage` request (#355), whatever the reason. */
+const CHAT_PAGE_UNAVAILABLE = "chat_page_unavailable";
 
 /** Deliberate pacing so bots don't act instantly. */
 const BOT_DELAY_MS = 50;
@@ -252,6 +256,8 @@ export class GameRoom extends Server<Env> {
   private limiter = new RateLimiter(10, 1000);
   /** Per seat, not per connection, so reconnecting doesn't reset it. */
   private chatLimiter = new RateLimiter(5, 10_000);
+  /** Per seat, chat pages asked for (#355): chat's numbers, but apart from it, so reading back never stops you posting. */
+  private pageLimiter = new RateLimiter(5, 10_000);
 
   /** Cheats and End cycle (`ALLOW_CHEATS`): `npm run dev` and the test deployment, never staging or production. */
   private get cheatsAllowed(): boolean {
@@ -663,6 +669,10 @@ export class GameRoom extends Server<Env> {
       await this.leaveShip(playerId);
       return;
     }
+    if (msg.type === "chatPage") {
+      await this.sendChatPage(connection, playerId, by, msg.channel, msg.page);
+      return;
+    }
     if (msg.type === "setModel" || msg.type === "clearModel") {
       const error = this.setModel(playerId, msg);
       if (error) this.send(connection, { type: "error", message: error });
@@ -729,7 +739,7 @@ export class GameRoom extends Server<Env> {
   private async social(
     playerId: PlayerId,
     by: PlayerId,
-    msg: Exclude<GameClientMessage, { type: "action" | "clearQueue" | "acknowledgeTransfer" | "walk" | "cheat" | "roleCheat" | "setModel" | "clearModel" | "leaveShip" }>,
+    msg: Exclude<GameClientMessage, { type: "action" | "clearQueue" | "acknowledgeTransfer" | "walk" | "cheat" | "roleCheat" | "setModel" | "clearModel" | "leaveShip" | "chatPage" }>,
     /** A chat message's reply depth (`BOT_CHAT_CHAIN_DEPTH`): 0 unless a bot is replying to chat. */
     depth = 0,
   ): Promise<string | null> {
@@ -965,6 +975,26 @@ export class GameRoom extends Server<Env> {
       const body = seat && game.players.find((p) => p.id === this.body(seat));
       if (body && readChannels(game, body).includes(channel)) this.send(conn, msg);
     }
+  }
+
+  /**
+   * Answers a `chatPage` (#355): the access check (`chatPageSource`, for the body the seat plays now) comes before any
+   * storage read, and `chatPageView` checks again after it. Every refusal is the same error. Not an input: nothing is
+   * recorded and no view changes.
+   */
+  private async sendChatPage(conn: Connection, seat: PlayerId, by: PlayerId, channel: ChannelId, page: number): Promise<void> {
+    if (!this.pageLimiter.allow(seat, Date.now(), this.devServer ? DEV_RATE_SCALE : 1)) {
+      this.countRateLimited(seat);
+      this.send(conn, { type: "error", message: "too_many_messages" });
+      return;
+    }
+    const source = this.game ? chatPageSource(this.game, by, channel, page) : null;
+    const stored = source === "stored" ? await this.ctx.storage.get<ChatMessage[]>(chatPageKey(channel, page)) : undefined;
+    if (source === "stored" && !stored) console.warn(`Chat page ${chatPageKey(channel, page)} is missing from storage`);
+    // The body again: a Transfer may have moved the seat while storage was read.
+    const body = this.body(seat);
+    const messages = this.game && body ? chatPageView(this.game, body, channel, page, stored) : null;
+    this.send(conn, messages ? { type: "chatPage", channel, page, messages } : { type: "error", message: CHAT_PAGE_UNAVAILABLE });
   }
 
   /** `playerId` is the seat; it gets its current body's view. */

@@ -1,6 +1,6 @@
 # Chat pages (#355)
 
-Status: planned 2026-11-06; phase 1 built 2026-11-06 (leak-checked); phase 2 redesigned and built 2026-11-06 (checkbox marks, below); phases 3–4 not built. The decisions in the issue (page size 50, no history limit, editable checkboxes on sealed pages, threads from any global message, views carry `seq` not `id`) are the owner's, 2026-11-04 and 2026-11-05. The two choices below under "Design" are proposals; the tail in the view was taken as the default when the owner said to start (2026-11-06).
+Status: planned 2026-11-06; phase 1 built 2026-11-06 (leak-checked); phase 2 redesigned and built 2026-11-06 (checkbox marks, below); phase 3 built 2026-11-06 (`chatPageSource`/`chatPageView` in `rules.ts`, `GameRoom.sendChatPage`); phase 4 not built. The decisions in the issue (page size 50, no history limit, editable checkboxes on sealed pages, threads from any global message, views carry `seq` not `id`) are the owner's, 2026-11-04 and 2026-11-05. The two choices below under "Design" are proposals; the tail in the view was taken as the default when the owner said to start (2026-11-06).
 
 Replaces the 200-messages-per-channel trim (`CHAT_HISTORY`) with fixed pages of 50 messages for every channel and thread. Page n of a channel holds `seq` n·50 to n·50+49 and never changes once sealed: what can change about a message (its checkboxes) is kept beside it in the state, not in its page.
 
@@ -40,6 +40,8 @@ A first version that edited sealed pages in place (an outbox of edits, the serve
 - **Tests.** A toggle on the open page, the tail and a page two back, all without storage; author only; refused once you can no longer post to the channel (dropped iTrackie, dead); a message typed with `[x]` starts ticked; ticks applied in `viewFor`, invisible to non-readers, and absent from the raw view; entries gone with a deleted private channel; `chatEdit` only to readers and only for messages outside the view, with no `id`; a replay of a toggle on an old page. Run `leak-check`.
 
 ## Phase 3: protocol and leak tests
+
+Built as planned. The rate limit is chat's numbers (5 per 10 s per seat) in a limiter of its own, so paging back never stops you posting. The open page and the tail can be asked for too (answered from the state); only older pages read storage, and only after the access check passes, which runs again after the read.
 
 - `chatPage {channel, page}` → `{channel, page, messages}`: `readChannels` checked at request time, projected by `messageView`, one error for every refusal, rate-limited like chat.
 - Refused the same way: a private channel you left, after dropping your iTrackie, the dead outside `readChannels`, a human for the Mush channel, a page past the end. Run `leak-check`.

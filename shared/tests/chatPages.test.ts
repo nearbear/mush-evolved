@@ -7,10 +7,10 @@ import { contaminate } from "../src/infection.ts";
 import { ITRACKIE_ITEM } from "../src/items.ts";
 import { mergeStreams, revealFor, streamsOf } from "../src/replayView.ts";
 import { stampEntries } from "../src/replay.ts";
-import { createGame, viewFor } from "../src/rules.ts";
+import { chatPageSource, chatPageView, createGame, viewFor } from "../src/rules.ts";
 import { fullViewFor } from "../src/fullView.ts";
 import { applyDiff, diffView } from "../src/viewDiff.ts";
-import { MUSH_CHANNEL, type GameState } from "../src/types.ts";
+import { MUSH_CHANNEL, type ChatMessage, type GameState } from "../src/types.ts";
 import { clone, makeSeats, must, player } from "./support.ts";
 
 const error = (r: { ok: boolean; error?: string }): string | undefined => (r.ok ? undefined : r.error);
@@ -171,5 +171,71 @@ describe("checklist ticks (phase 2)", () => {
     const text = (full: typeof a) => revealFor(full, follow, streams).view.chat.find((m) => m.channel === "global" && m.seq === 0)!.text;
     expect(text(a)).toBe(LIST);
     expect(text(b)).toBe("plan\n- [x] hull\n- [x] oxygen");
+  });
+});
+
+describe("asking for a page (phase 3)", () => {
+  /** `n` global messages from p0, with each sealed page kept as the server would store it. */
+  const withStore = (n: number) => {
+    let state = createGame(seats, DEFAULT_CONFIG, 1);
+    const store = new Map<string, ChatMessage[]>();
+    for (let i = 0; i < n; i++) {
+      state = must(sendChat(state, "p0", "global", i === 0 ? "- [ ] first" : `global ${i}`));
+      for (const { channel, page, messages } of takeChatOutbox(state).sealed) store.set(`${channel}:${page}`, messages);
+    }
+    return { state, store };
+  };
+
+  it("come from the state for the open page and the tail, from storage before them, and never past the end", () => {
+    const { state, store } = withStore(3 * CHAT_PAGE + 2);
+    expect([0, 1, 2, 3, 4].map((page) => chatPageSource(state, "p1", "global", page))).toEqual(["stored", "stored", "state", "state", null]);
+    expect(chatPageSource(state, "p1", "botany", 0)).toBeNull();
+    expect(chatPageSource(state, "p1", "global", -1)).toBeNull();
+    for (const page of [0, 1, 2, 3]) {
+      const lines = chatPageView(state, "p1", "global", page, store.get(`global:${page}`))!;
+      expect(lines.map((m) => m.seq)).toEqual(Array.from({ length: page === 3 ? 2 : CHAT_PAGE }, (_, i) => page * CHAT_PAGE + i));
+      for (const m of lines) expect(m).not.toHaveProperty("id");
+    }
+    // A stored page needs the stored copy; the state's pages ignore one.
+    expect(chatPageView(state, "p1", "global", 0)).toBeNull();
+    expect(chatPageView(state, "p1", "global", 3, store.get("global:0"))!.map((m) => m.seq)).toEqual([3 * CHAT_PAGE, 3 * CHAT_PAGE + 1]);
+  });
+
+  it("show a stored page's ticks as they are now, though the stored text is as typed", () => {
+    const { state, store } = withStore(2 * CHAT_PAGE + 1);
+    const ticked = must(toggleCheckbox(state, "p0", "global", 0, 0));
+    expect(store.get("global:0")![0]!.text).toBe("- [ ] first");
+    expect(chatPageView(ticked, "p1", "global", 0, store.get("global:0"))![0]!.text).toBe("- [x] first");
+  });
+
+  it("are refused alike for a channel you can't read: no iTrackie, a private channel you left, the Mush channel for a human, the dead", () => {
+    const { state, store } = withStore(2 * CHAT_PAGE + 1);
+    const page0 = store.get("global:0");
+    const bare = clone(state);
+    bare.items = bare.items.filter((i) => !(i.type === ITRACKIE_ITEM && i.at.kind === "player" && i.at.id === "p1"));
+    expect(chatPageView(bare, "p1", "global", 0, page0)).toBeNull();
+    expect(chatPageView(bare, "p1", "global", 2)).toBeNull();
+    // The dead read global chat without an iTrackie (readChannels).
+    const dead = clone(bare);
+    player(dead, "p1").alive = false;
+    expect(chatPageView(dead, "p1", "global", 0, page0)).not.toBeNull();
+
+    let chan = must(createChannel(state, "p0", "", ["p1"]));
+    const channel = chan.channels[0]!.id;
+    chan = must(sendChat(chan, "p0", channel, "secret"));
+    expect(chatPageView(chan, "p1", channel, 0)).toHaveLength(1);
+    chan = must(leaveChannel(chan, "p1", channel));
+    expect(chatPageView(chan, "p1", channel, 0)).toBeNull();
+    expect(chatPageView(chan, "p2", channel, 0)).toBeNull();
+    // The dead read no private channel, even one they never left.
+    const dead2 = clone(chan);
+    player(dead2, "p0").alive = false;
+    expect(chatPageSource(dead2, "p0", channel, 0)).toBeNull();
+
+    const mush = state.players.find((p) => p.role === "mush")!;
+    const human = state.players.find((p) => p.role !== "mush")!;
+    const mushChat = must(sendChat(state, mush.id, MUSH_CHANNEL, "hello"));
+    expect(chatPageView(mushChat, mush.id, MUSH_CHANNEL, 0)).toHaveLength(1);
+    expect(chatPageView(mushChat, human.id, MUSH_CHANNEL, 0)).toBeNull();
   });
 });

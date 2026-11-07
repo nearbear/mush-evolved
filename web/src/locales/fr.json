@@ -408,6 +408,7 @@
     "thread_name_invalid": "Un fil doit avoir un nom de 40 caractères au plus.",
     "thread_exists": "Ce message a déjà un fil.",
     "message_not_found": "Ce message n'est plus là.",
+    "chat_page_unavailable": "Cette page du chat n'est pas disponible.",
     "join_failed": "Impossible d'embarquer sur un vaisseau. Réessayez.",
     "sign_in_required": "Connectez-vous pour rejoindre un vaisseau multijoueur.",
     "already_aboard": "Vous êtes déjà à bord d'un vaisseau. Reprenez pour y retourner.",

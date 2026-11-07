@@ -538,6 +538,54 @@ describe("GameRoom persistence", () => {
     }
   });
 
+  it("answers chatPage from storage or the state for a reader, and refuses everyone else alike without reading storage (#355)", async () => {
+    vi.useFakeTimers({ now: 1_000_000 });
+    try {
+      const { room, storage } = await newRoom(3);
+      const [c0, c1, c2] = ["tok0", "tok1", "tok2"].map((t) => connect(room, t));
+      await send(room, c0, { type: "createChannel", name: "crew", members: [lastView(c1!).you.id] });
+      const channel = lastView(c0!).privateChannels[0]!.id;
+      const say = async (text: string) => {
+        vi.setSystemTime(Date.now() + 2_001);
+        await send(room, c0!, { type: "chat", channel, text });
+      };
+      await say("- [ ] hull");
+      for (let i = 1; i <= 2 * CHAT_PAGE; i++) await say(`line ${i}`);
+      await say("- [ ] hull");
+      vi.setSystemTime(Date.now() + 2_001);
+      await send(room, c0!, { type: "toggleCheckbox", channel, seq: 0, line: 0 });
+      const ask = async (c: Conn, page: number, on: string = channel) => {
+        vi.setSystemTime(Date.now() + 2_001);
+        await send(room, c, { type: "chatPage", channel: on, page });
+        return c.messages<GameServerMessage>().at(-1)!;
+      };
+      const page0 = await ask(c1!, 0);
+      expect(page0.type).toBe("chatPage");
+      const lines = (page0 as Extract<GameServerMessage, { type: "chatPage" }>).messages;
+      expect(lines.map((m) => m.seq)).toEqual(Array.from({ length: CHAT_PAGE }, (_, i) => i));
+      expect(lines[0]!.text).toBe("- [x] hull");
+      for (const m of lines) expect(m).not.toHaveProperty("id");
+      const page2 = (await ask(c1!, 2)) as Extract<GameServerMessage, { type: "chatPage" }>;
+      expect(page2.messages.map((m) => m.seq)).toEqual([2 * CHAT_PAGE, 2 * CHAT_PAGE + 1]);
+      // Not a member, a page not begun, a channel with no messages: one error, and storage is never read.
+      const get = vi.spyOn(storage, "get");
+      const refused = { type: "error", message: "chat_page_unavailable" };
+      expect(await ask(c2!, 0)).toEqual(refused);
+      expect(await ask(c1!, 3)).toEqual(refused);
+      expect(await ask(c1!, 0, "mush")).toEqual(refused);
+      expect(await ask(c1!, 0, "pc-999")).toEqual(refused);
+      expect(get).not.toHaveBeenCalled();
+      // Not an input: nothing recorded.
+      const record = [...(await storage.list({ prefix: "input:" })).values()] as RecordedInput[];
+      expect(record.some((r) => (r.input.type as string) === "chatPage")).toBe(false);
+      // Rate-limited apart from chat, at chat's numbers.
+      for (let i = 0; i < 5; i++) await send(room, c1!, { type: "chatPage", channel, page: 2 });
+      expect(c1!.messages<GameServerMessage>().at(-1)).toEqual({ type: "error", message: "too_many_messages" });
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
   it("stores each sealed chat page beside the snapshot, and deletes a private channel's pages with it (#355)", async () => {
     vi.useFakeTimers({ now: 1_000_000 });
     try {
