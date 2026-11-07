@@ -3,9 +3,10 @@ import { DEFAULT_CONFIG } from "../src/config.ts";
 import { EQUIPMENT_TYPES } from "../src/equipment.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";
 import type { Action, GameState } from "../src/types.ts";
-import { makeSeats, must, mustApply, nextCycle, offered, player } from "./support.ts";
+import { forceDismantleOdds, makeSeats, must, mustApply, nextCycle, offered, player } from "./support.ts";
 
 const seats = makeSeats(3);
+forceDismantleOdds(1); // items and equipment have their own odds; these tests need the dismantle to succeed
 const config = { ...DEFAULT_CONFIG, mushCount: 1, startInventory: [], startItems: [], startSkills: [], maxAp: 99, startAp: 10, dismantle: { ...DEFAULT_CONFIG.dismantle, successChance: 1 } };
 const room = (id: string) => ({ kind: "room" as const, id });
 const sofas = (s: GameState, r = "CORRIDOR_A") => (s.equipment[r] ?? []).filter((e) => e.type === "SOFA");
@@ -34,7 +35,8 @@ function withSofas(n = 1): GameState {
 
 describe("sofa", () => {
   it("is a bed that is only ever built, and dismantles into 1 plastic scrap", () => {
-    expect(EQUIPMENT_TYPES.SOFA).toEqual({ bed: true, builtOnly: true, dismantle: { metal: 0, plastic: 1 } });
+    const { chance, ...scraps } = EQUIPMENT_TYPES.SOFA!.dismantle!; // the file forces the odds to 1
+    expect({ ...EQUIPMENT_TYPES.SOFA, dismantle: scraps }).toEqual({ bed: true, builtOnly: true, dismantle: { metal: 0, plastic: 1 } });
   });
 
   it("is not on the ship at the start, not even in the turret room the map draws one in", () => {
@@ -80,10 +82,11 @@ describe("sofa", () => {
 
   it("can fail, leaving the sofa and its occupant, with a private line", () => {
     const s = withSofas();
-    s.config.dismantle = { ...s.config.dismantle, successChance: 0 };
     const [sofa] = sofas(s);
     const lying = mustApply(s, "p1", { type: "lie_down", equipment: sofa!.id });
+    const restore = forceDismantleOdds(0);
     const after = must(applyAction(lying, "p0", dismantle(sofa!.id)));
+    restore();
     expect(sofas(after)).toHaveLength(1);
     expect(player(after, "p1").lyingIn).toBe(sofa!.id);
     expect(viewFor(after, "p0").log.some((e) => e.key === "dismantleEquipmentFailed")).toBe(true);

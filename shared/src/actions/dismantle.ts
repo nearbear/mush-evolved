@@ -29,11 +29,12 @@ export class DismantleAction extends Action<DismantleActionData> {
     return { ap: state.config.dismantle.cost.ap, mp: 0 };
   }
 
-  /** The usual odds, unless the item's type has its own in `dismantle.itemChance` (knife and blaster, owner 2026-10-22). */
+  /** The usual odds, unless the item or equipment type has its own in `ItemType.dismantle.chance` (knife and blaster, owner 2026-10-22). */
   override getSuccessChance(state: Readonly<GameState>, player: Readonly<PlayerState>, target: DismantleActionData): number {
-    const { successChance, itemChance } = state.config.dismantle;
-    const type = "item" in target ? state.items.find((i) => i.id === target.item)?.type : undefined;
-    return (type !== undefined ? itemChance[type] : undefined) ?? successChance;
+    const own = "item" in target
+      ? ITEM_TYPES[state.items.find((i) => i.id === target.item)?.type ?? ""]?.dismantle?.chance
+      : EQUIPMENT_TYPES[state.equipment[player.room]?.find((e) => e.id === target.equipment)?.type ?? ""]?.dismantle?.chance;
+    return own ?? state.config.dismantle.successChance;
   }
 
   override dirtChance(state: Readonly<GameState>, player: Readonly<PlayerState>, target: DismantleActionData): number {

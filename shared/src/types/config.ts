@@ -517,10 +517,9 @@ export interface GameConfig {
   };
   dismantle: {
     cost: { ap: number }; // AP spent to dismantle an item (confirmed 2026-10-13).
-    successChance: number; // Chance of successfully dismantling an item (confirmed 2026-10-13).
+    successChance: number; // Chance of successfully dismantling an item, unless its type sets `dismantle.chance` (confirmed 2026-10-13).
     dirtyChance: number; // Chance of getting the dirty status after dismantling an item (confirmed 2026-10-13).
     injuryChance: number; // Chance of getting injured after dismantling an item.
-    itemChance: Record<string, number>; // Per item type odds that replace `successChance` (owner, 2026-10-22: knife and blaster 50%).
   };
   // Expeditions, phase 1 (owner, 2026-10-31, docs/plans/expedition.md): expeditions.ts and actions/icarus_takeoff.ts.
   expedition: {

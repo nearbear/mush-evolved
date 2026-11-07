@@ -4,9 +4,10 @@ import { DEFAULT_CONFIG } from "../src/config.ts";
 import { MYCO_ALARM_ITEM, MYCO_ALARM_YIELD } from "../src/mycoalarm.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";
 import type { Action, GameState, PlayerId } from "../src/types.ts";
-import { makeSeats, must, stockLab, setProgress } from "./support.ts";
+import { forceDismantleOdds, makeSeats, must, stockLab, setProgress } from "./support.ts";
 
 const seats = makeSeats(4);
+forceDismantleOdds(1); // items and equipment have their own odds; these tests need the dismantle to succeed
 const config = { ...DEFAULT_CONFIG, mushCount: 1, startInventory: [], startItems: [], maxAp: 99, startAp: 50, dismantle: { ...DEFAULT_CONFIG.dismantle, successChance: 1 } };
 const spike = (target: PlayerId): Action => ({ type: "spike", target });
 const alarmsIn = (s: GameState, room: string) => s.items.filter((i) => i.type === MYCO_ALARM_ITEM && i.at.kind === "room" && i.at.id === room);
