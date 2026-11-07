@@ -574,7 +574,6 @@
       "messagePlaceholder": "Mensaje en {{name}}…",
       "startingFrom": "Nuevo hilo a partir de este mensaje:",
       "cancel": "Cancelar",
-      "starterGone": "El mensaje que inició este hilo ya no está en el chat global.",
       "needITrackie": "Necesitas un iTrackie en tu inventario para leer los hilos."
     },
     "sharedPlanets": {
@@ -584,6 +583,19 @@
       "stale": "Ya no es aplicable",
       "showStale": "Mostrar los planetas que ya no son aplicables",
       "placeholder": "Habla sobre este planeta…"
+    },
+    "pages": {
+      "label": "Páginas del chat",
+      "earliest": "Primera página",
+      "previous": "Página anterior",
+      "next": "Página siguiente",
+      "page": "Página {{page}}",
+      "of": "{{page}} / {{pages}}",
+      "latest": "Última página",
+      "latestNew_one": "Última página ({{count}} nuevo)",
+      "latestNew_other": "Última página ({{count}} nuevos)",
+      "loading": "Cargando…",
+      "latestNew_many": "Última página ({{count}} nuevos)"
     }
   },
   "bond": {

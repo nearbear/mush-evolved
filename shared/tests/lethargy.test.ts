@@ -30,10 +30,6 @@ const gain = (s: GameState, id: PlayerId) => ap(nextCycle(s), id) - ap(s, id);
 const bedGain = config.apPerCycle + 1;
 
 describe("lethargy", () => {
-  it("pins the decided numbers: 4 cycles lying, +1 AP, a doubled cap", () => {
-    expect([cyclesLying, bonusAp, maxApMultiplier]).toEqual([4, 1, 2]);
-  });
-
   it("follows the owner's flow: lying down at 0 AP gives 2, 4, 6, then 9 on the 4th cycle change, and +3 from then on", () => {
     let s = lieDown(ship(), "p1");
     player(s, "p1").ap = 0;

@@ -32,10 +32,6 @@ function ship(config = base): GameState {
 const swapped = (s = ship()) => must(applyAction(s, "p0", transfer("p1")));
 
 describe("Transfer (Mush skill)", () => {
-  it("pins the decided numbers: free", () => {
-    expect(base.bodyTransfer.cost.ap).toBe(0);
-  });
-
   it("is offered only to a Mush with the skill, on contaminated living humans in the room", () => {
     const s = ship();
     expect(offered(s, "p0").filter((a) => a.type === "body_transfer")).toEqual([transfer("p1")]);

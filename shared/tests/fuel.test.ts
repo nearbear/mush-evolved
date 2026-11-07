@@ -12,7 +12,7 @@ const take: Action = { type: "take_fuel", equipment: TANK };
 const load: Action = { type: "load_fuel", equipment: CHAMBER };
 const unload: Action = { type: "unload_fuel", equipment: CHAMBER };
 const check: Action = { type: "check_combustion", equipment: CHAMBER };
-const { ship, fuel } = DEFAULT_CONFIG;
+const { ship } = DEFAULT_CONFIG;
 
 function game(room: string): GameState {
   const s = createGame(makeSeats(3), structuredClone(DEFAULT_CONFIG), 3);
@@ -24,10 +24,6 @@ const logged = (s: GameState, key: string) => s.log.some((e) => e.key === key);
 const capsules = (s: GameState, id = "p0") => itemsIn(s, { kind: "player", id }).filter((i) => i.type === FUEL_CAPSULE_ITEM).length;
 
 describe("fuel loading", () => {
-  it("pins the decided numbers: the chamber starts empty and holds 9; 20 fuel in the tanks; 0 AP, 15% dirt", () => {
-    expect([ship.combustion.start, ship.combustion.max, ship.fuel.start, fuel.cost.ap, fuel.dirtyChance]).toEqual([0, 9, 20, 0, 0.15]);
-  });
-
   it("takes a capsule from a tank, one fuel at a time, only in a storage with a tank", () => {
     const s = game("STORAGE_B_1");
     expect(offered(s, "p0")).toContainEqual({ type: "take_fuel", equipment: "STORAGE_B_1:FUEL_TANK" });

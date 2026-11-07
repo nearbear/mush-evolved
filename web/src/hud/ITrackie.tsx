@@ -4,15 +4,15 @@
 // renderer (CLAUDE.md).
 
 
-import { Fragment, useEffect, useState } from "react";
+import { Fragment, memo, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNames } from "../i18n/names.ts";
 import { Tabs } from "@base-ui/react/tabs";
-import { FEATURE_CHANNELS, ITRACKIE_ITEM, GRAVEYARD_CHANNEL, MUSH_CHANNEL, type ChannelId, type FeatureChannel, type PlayerView, type SharedPlanetId, type ThreadId } from "@mush2/shared";
+import { FEATURE_CHANNELS, ITRACKIE_ITEM, GRAVEYARD_CHANNEL, MUSH_CHANNEL, jsonEqual, type ChannelId, type LogLine, type FeatureChannel, type PlayerView, type SharedPlanetId, type ThreadId } from "@mush2/shared";
 import { chatSeenIn, isNewer, type ChatSeen } from "../chatSeen.ts";
 import { useAnnouncements } from "./useAnnouncements.ts";
 import { FeatureSelect } from "./FeatureSelect.tsx";
-import { IconTab } from "./IconButton.tsx";
+import { Hint, IconTab } from "./IconButton.tsx";
 import { TabOutline } from "./TabOutline.tsx";
 import { CycleDivider } from "./CycleDivider.tsx";
 import { FeedEntry, InfoMarker, WarningMarker } from "./FeedEntry.tsx";
@@ -77,6 +77,32 @@ function useUnread(view: PlayerView, active: TabId): Record<TabId, number> {
   }
   return counts;
 }
+
+/**
+ * One room log line, memoized by content: the log tab stays mounted, so every new view would otherwise redraw each
+ * line and its time popover (web/CLAUDE.md "Render cost"). `onRead` must be stable (a state setter).
+ */
+const LogRow = memo(
+  function LogRow({ entry: e, canRead, onRead }: { entry: LogLine; canRead: boolean; onRead: (report: string) => void }) {
+    const { t } = useTranslation();
+    const names = useNames();
+    return (
+      <FeedEntry
+        marker={e.level === "warning" ? <WarningMarker /> : <InfoMarker />}
+        at={e.at}
+        className={e.level === "warning" ? "warning" : e.visibleTo === "all" ? undefined : "private"}
+      >
+        {names.logLine(e)}
+        {canRead && (
+          <button type="button" className="expedition-read" onClick={() => onRead(String(e.params?.report))}>
+            {t("expedition.read")}
+          </button>
+        )}
+      </FeedEntry>
+    );
+  },
+  (a, b) => a.canRead === b.canRead && a.onRead === b.onRead && jsonEqual(a.entry, b.entry),
+);
 
 export function ITrackie({
   view,
@@ -179,7 +205,20 @@ export function ITrackie({
           {graveyard && <IconTab value="graveyard" src={TAB_ICONS.graveyard} label={tabLabel("graveyard", t("itrackie.tabs.graveyard"))} badge={unread.graveyard} />}
         </Tabs.List>
         <div className="cut-card itrackie-card">
-          <h2 className="itrackie-title">{t(TAB_TITLES[activeTab])}{activeTab === "room" && ` – ${names.room(here)}`}{activeTab === "threads" && shownThread && ` – ${shownThread.name}`}</h2>
+          {/* An open thread is titled by its own name (the tab already says Threads), with the way back to the list beside it. */}
+          <div className="itrackie-title-row">
+            <h2 className="itrackie-title">
+              {activeTab === "threads" && shownThread ? shownThread.name : t(TAB_TITLES[activeTab])}
+              {activeTab === "room" && ` – ${names.room(here)}`}
+            </h2>
+            {activeTab === "threads" && shownThread && (
+              <Hint label={t("itrackie.threads.back")}>
+                <button type="button" className="thread-back" aria-label={t("itrackie.threads.back")} onClick={() => setOpenThread(null)}>
+                  ←
+                </button>
+              </Hint>
+            )}
+          </div>
 
           {/* keepMounted: hidden with CSS, so chat drafts survive switching tabs. */}
           <Tabs.Panel className="itrackie-panel" value="room" aria-label={t(TAB_TITLES.room)} keepMounted>
@@ -190,18 +229,7 @@ export function ITrackie({
                 {roomLog.map((e, i) => (
                   <Fragment key={i}>
                     {roomLog[i - 1]?.cycle !== e.cycle && <CycleDivider cycle={e.cycle} />}
-                    <FeedEntry
-                      marker={e.level === "warning" ? <WarningMarker /> : <InfoMarker />}
-                      at={e.at}
-                      className={e.level === "warning" ? "warning" : e.visibleTo === "all" ? undefined : "private"}
-                    >
-                      {names.logLine(e)}
-                      {e.key === "expeditionReturned" && view.expeditions.some((r) => r.id === e.params?.report) && (
-                        <button type="button" className="expedition-read" onClick={() => setReport(String(e.params?.report))}>
-                          {t("expedition.read")}
-                        </button>
-                      )}
-                    </FeedEntry>
+                    <LogRow entry={e} canRead={e.key === "expeditionReturned" && view.expeditions.some((r) => r.id === e.params?.report)} onRead={setReport} />
                   </Fragment>
                 ))}
               </ol>

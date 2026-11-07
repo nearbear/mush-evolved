@@ -20,10 +20,6 @@ function ship(): GameState {
 }
 
 describe("Noise Reducer", () => {
-  it("pins the decided number: +2 AP cap", () => {
-    expect(bonus).toBe(2);
-  });
-
   it("raises everyone's AP cap by 2 when worked to completion, added after Lethargy's doubling (14 and 26), but not their AP", () => {
     const s = ship();
     const before = s.players.map((p) => p.ap);

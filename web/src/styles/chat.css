@@ -398,3 +398,25 @@
   display: block;
   margin-top: 4px;
 }
+
+/* A channel's page bar (#355): « ‹ 1 2 … 6 7 › » on desktop, « ‹ 6 / 7 › » on the phone layout. */
+.chat-pages {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  margin: 0 0 0.4rem;
+  font-size: 0.8rem;
+}
+.chat-pages button {
+  min-width: 28px;
+  padding: 0 0.4rem;
+}
+.chat-pages .chat-page[aria-current="page"] {
+  font-weight: bold;
+  text-decoration: underline;
+}
+.chat-page-gap,
+.chat-page-of {
+  color: var(--muted);
+  padding: 0 0.2rem;
+}

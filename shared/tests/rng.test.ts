@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { nextFloat, nextInt, roll, rollFloat, rollInt, rollRange, rollShuffle, shuffle } from "../src/rng.ts";
+import { nextFloat, nextInt, roll, rollFloat, rollInt, rollRange, rollShuffle, rollWeighted, shuffle } from "../src/rng.ts";
 
 describe("roll helpers", () => {
   it("draw what the pair functions draw and leave the holder on the next state", () => {
@@ -24,5 +24,19 @@ describe("roll helpers", () => {
     const holder = { rng: 7 };
     const draws = Array.from({ length: 20 }, () => rollFloat(holder));
     expect(new Set(draws).size).toBe(20);
+  });
+});
+
+describe("rollWeighted", () => {
+  it("draws each index in proportion to its weight, and never a zero weight", () => {
+    const weights = [4, 3, 0, 1, 1, 1];
+    const holder = { rng: 1 };
+    const runs = 20_000;
+    const counts = weights.map(() => 0);
+    for (let i = 0; i < runs; i++) counts[rollWeighted(holder, weights)]!++;
+    expect(counts[2]).toBe(0);
+    const total = weights.reduce((a, b) => a + b, 0);
+    // About 1% at 20,000 draws; a 3% band never flakes and still catches a uniform pick (20% each).
+    weights.forEach((w, i) => expect(Math.abs(counts[i]! / runs - w / total), `index ${i}`).toBeLessThan(0.03));
   });
 });

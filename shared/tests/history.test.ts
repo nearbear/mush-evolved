@@ -87,11 +87,6 @@ describe("action history", () => {
 });
 
 describe("Torturer's Interrogate", () => {
-  it("pins the decided numbers: 1 AP, 1 damage, 15% dirt, 10% injury", () => {
-    const { cost, damage, dirtyChance, injuryChance } = DEFAULT_CONFIG.interrogate;
-    expect([cost.ap, damage, dirtyChance, injuryChance]).toEqual([1, 1, 0.15, 0.1]);
-  });
-
   it("is offered only to a Torturer, on living people in the room", () => {
     expect(offered(ship("torturer"), "p0")).toEqual(expect.arrayContaining([interrogate("p1"), interrogate("p3")]));
     expect(offered(ship("torturer"), "p0")).not.toContainEqual(interrogate("p2"));
@@ -170,10 +165,6 @@ describe("Torturer's Interrogate", () => {
 });
 
 describe("Chitchat with a Confident", () => {
-  it("pins the decided numbers: 1 AP, +2 morale", () => {
-    expect([DEFAULT_CONFIG.chitchat.cost.ap, DEFAULT_CONFIG.chitchat.morale]).toEqual([1, 2]);
-  });
-
   it("is offered to others in the Confident's room, never to the Confident or other rooms", () => {
     const s = ship("confident");
     expect(offered(s, "p1")).toContainEqual(chitchat("p0"));

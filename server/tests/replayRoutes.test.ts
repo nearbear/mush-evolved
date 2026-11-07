@@ -4,7 +4,7 @@
 import { CHARACTERS, createGame, DEFAULT_CONFIG, endGame, type ChunkEntry, HISTORY_VERSION, type ReplayIndex, replayKeys, type Seat } from "@mush2/shared";
 import { beforeEach, describe, expect, it } from "vitest";
 import { AccountStore } from "../src/accountStore.ts";
-import { NotFoundSchema, NotReadySchema, ReplayChunkSchema, ReplayIndexSchema } from "../src/apiSchemas.ts";
+import { FinishedGameSchema, NotFoundSchema, NotReadySchema, ReplayChunkSchema, ReplayIndexSchema } from "../src/apiSchemas.ts";
 import { handleAuth } from "../src/auth.ts";
 import { finishedEntry, GameStore } from "../src/gameStore.ts";
 import { FakeR2Bucket } from "../src/testing/fakes.ts";
@@ -156,5 +156,53 @@ describe("GET /api/games/<id>/replay (#337)", () => {
     expect((await get(`/api/games/${"a".repeat(65)}/replay`)).status).toBe(404);
     expect((await get("/api/games/room-1/replay", { method: "POST" })).status).toBe(405);
     expect((await get("/api/games/room-1/replay/0", { method: "DELETE" })).status).toBe(405);
+  });
+});
+
+describe("GET /api/games/<id> (#368)", () => {
+  it("serves a listed multiplayer game's entry to anyone, the same as the list's, cacheable", async () => {
+    await list("room-1");
+    const response = await get("/api/games/room-1");
+    expect(response.status).toBe(200);
+    expect(response.headers.get("Cache-Control")).toBe("public, max-age=3600");
+    const body = await response.json();
+    expect(FinishedGameSchema.safeParse(body).success).toBe(true);
+    expect(body).toEqual((await get("/api/games").then((r) => r.json())).games[0]);
+  });
+
+  it("answers whether or not the replay's copy is confirmed", async () => {
+    await copy("room-1", false);
+    await list("room-1");
+    expect((await get("/api/games/room-1")).status).toBe(200);
+  });
+
+  it("answers 404 for a running game, even one with objects in the bucket", async () => {
+    await copy("running");
+    const response = await get("/api/games/running");
+    expect(response.status).toBe(404);
+    expect(NotFoundSchema.parse(await response.json())).toEqual({ error: "not_found" });
+  });
+
+  it("serves a single-player game only to the account that played it, never stored, without account IDs", async () => {
+    const ann = await signedIn("Ann");
+    const bob = await signedIn("Bob");
+    await list("solo", true, { p0: ann.id });
+    expect((await get("/api/games/solo")).status).toBe(404);
+    const other = await get("/api/games/solo", { session: bob.session });
+    expect(other.status).toBe(404);
+    expect(await other.json()).toEqual({ error: "not_found" });
+    const own = await get("/api/games/solo", { session: ann.session });
+    expect(own.status).toBe(200);
+    expect(own.headers.get("Cache-Control")).toBe("no-store");
+    const text = await own.text();
+    expect(text).not.toContain(ann.id);
+    expect(JSON.parse(text)).toMatchObject({ id: "solo", winner: "humans", ending: "sol" });
+  });
+
+  it("refuses a malformed room ID and other methods", async () => {
+    expect((await get("/api/games/a%20b")).status).toBe(404);
+    expect((await get(`/api/games/${"a".repeat(65)}`)).status).toBe(404);
+    await list("room-1");
+    expect((await get("/api/games/room-1", { method: "POST" })).status).toBe(405);
   });
 });

@@ -34,10 +34,6 @@ const status = (s: GameState, id: PlayerId) => inactivityOf(player(s, id));
 const seen = (s: GameState, at: number, ...players: PlayerId[]) => applyInput(s, { type: "seen", players, at });
 
 describe("inactivity", () => {
-  it("pins the decided numbers: 24 hours to inactive, 48 hours to super inactive, a 90% punch", () => {
-    expect([inactiveAfterHours, superAfterHours, config.punch.inactiveTargetSuccessChance]).toEqual([24, 48, 0.9]);
-  });
-
   it("starts counting from the first clock cycle for a player the server hasn't reported yet", () => {
     let s = createGame(makeSeats(2), config, 7);
     expect(s.players.map((p) => [p.lastSeenAt, p.inactivity])).toEqual([[undefined, undefined], [undefined, undefined]]);

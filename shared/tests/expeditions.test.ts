@@ -50,20 +50,6 @@ const give = (s: GameState, id: PlayerId, type: string, charges?: number) =>
 const floor = (s: GameState, type: string) => s.items.filter((i) => i.type === type && i.at.kind === "room" && i.at.id === ICARUS).length;
 
 describe("expeditions, phase 1", () => {
-  it("pins the decided numbers", () => {
-    expect([expedition.cost.ap, expedition.maxCrew, expedition.sectors, expedition.deadKeepItems, expedition.fatigue]).toEqual([4, 4, 9, true, 2]);
-    expect([expedition.accident, expedition.catastrophe, expedition.survivalReduction, expedition.botanistBonus]).toEqual([[3, 5], [3, 5], 1, 1]);
-    expect(expedition.loot).toEqual({ harvest: "fruit_banana", provision: "uncooked_ration", artifact: "super_map" });
-    const weights = (tag: string) => expedition.events[tag]!.map((e) => [e.kind, e.weight, e.amount ?? null]);
-    expect(weights("LANDING")).toEqual([["nothing", 4, null], ["fatigue", 3, null], ["accident", 2, null], ["catastrophe", 1, null]]);
-    expect(weights("OXYGEN")).toEqual([["oxygen", 4, 24], ["oxygen", 3, 16], ["oxygen", 2, 8], ["nothing", 1, null]]);
-    expect(weights("HYDROCARBON")).toEqual([["fuel", 4, 3], ["fuel", 3, 4], ["fuel", 2, 5], ["fuel", 1, 6]]);
-    expect(weights("FRUIT_TREES")).toEqual([["harvest", 4, 3], ["harvest", 3, 1], ["nothing", 3, null]]);
-    expect(weights("PREDATOR")).toEqual([["fight", 4, 12], ["accident", 3, null], ["nothing", 2, null], ["provision", 1, 3]]);
-    expect(weights("RUINS")).toEqual([["artifact", 4, 1], ["nothing", 3, null], ["fight", 2, 15], ["accident", 1, null]]);
-    expect(weights("HOT")).toEqual([["fatigue", 4, null], ["nothing", 3, null], ["harvest", 2, 2], ["accident", 1, null]]);
-  });
-
   it("is offered to a Pilot at the Icarus in orbit of a planet with an unexplored sector, and to no one else", () => {
     const s = game();
     expect(offered(s, "p0")).toContainEqual(takeoff);

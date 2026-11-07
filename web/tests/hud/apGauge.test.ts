@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { apColumnHeight } from "./apGauge.ts";
+import { apColumnHeight } from "../../src/hud/apGauge.ts";
 
 describe("apColumnHeight", () => {
   it("keeps one column up to 14 and shares a larger cap out evenly over two", () => {

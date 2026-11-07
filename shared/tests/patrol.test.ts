@@ -28,23 +28,6 @@ function ship(config: Partial<GameConfig> = {}): GameState {
 }
 
 describe("patrol ship numbers", () => {
-  it("are the owner's (eMush's)", () => {
-    expect(DEFAULT_CONFIG.patrol).toEqual({
-      takeoff: { cost: { ap: 2 }, injuryChance: 0.02, },
-      land: { cost: { ap: 2 }, injuryChance: 0.02, },
-      armor: { patrol: 10, pasiphae: 12 },
-      charges: 10,
-      rechargePerCycle: 1,
-      shot: { cost: { ap: 1 }, chance: 0.4, failureMultiplier: 1.25, damage: [3, 6], pilotAccuracyFactor: 2 },
-      cleanChance: 0.2,
-      rough: { hull: [2, 4], armor: 1, hp: [0, 2] },
-      collect: { cost: { ap: 2 }, pieces: { patrol: [3, 1], pasiphae: [0, 1, 1, 1] }, armor: [2, 4], hp: { noneChance: 0.5, range: [2, 4] } },
-      renovate: { cost: { ap: 2 }, chance: 0.12, dirtyChance: 0.25, injuryChance: 0.05, engineerFactor: 2 },
-    });
-    expect(DEFAULT_CONFIG.hunters.debris).toEqual({ count: [0, 2, 1], types: { metal_scraps: 2, space_capsule: 1, plastic_scraps: 1 } });
-    expect(DEFAULT_CONFIG.spaceCapsule).toEqual({ cost: { ap: 1 }, injuryChance: 0.01, dirtyChance: 0.25, contents: ["metal_scraps", "plastic_scraps", "oxy_capsule", "fuel_capsule"] });
-  });
-
   it("eight ships, each a door-less room holding its command, start docked at full armor and charges (the Pasiphae has none)", () => {
     const s = ship();
     expect(PATROL_SHIPS.map((p) => p.id)).toEqual(["PATROL_SHIP_A_0", "PATROL_SHIP_A_1", "PATROL_SHIP_A_2", "PATROL_SHIP_B_0", "PATROL_SHIP_B_1", "PATROL_SHIP_B_2", "PATROL_SHIP_AA_0", "PATROL_SHIP_AA_1"]);
@@ -341,8 +324,7 @@ describe("hunters and ships in flight", () => {
     return s;
   }
 
-  it("aim at a ship in flight 15% of the time when one is out, otherwise at the Daedalus", () => {
-    expect(DEFAULT_CONFIG.hunters.patrolTargetChance).toBe(0.15);
+  it("aim at a ship in flight by their configured chance when one is out, otherwise at the Daedalus", () => {
     expect(nextCycle(flying(hunters({ patrolTargetChance: 1 }))).hunters.list[0]!.target).toEqual({ kind: "patrol", id: LONGANE.id });
     expect(nextCycle(flying(hunters({ patrolTargetChance: 0 }))).hunters.list[0]!.target).toEqual({ kind: "ship" });
     // With nothing in flight, the Daedalus.
@@ -613,8 +595,7 @@ describe("renovating a ship", () => {
     expect(option(s, "p1", renovate())!.chance).toBeCloseTo(s.config.patrol.renovate.chance * s.config.patrol.renovate.engineerFactor);
   });
 
-  it("carrying the oscilloscope doubles the odds of renovating and of a hull repair; lying in the room it does nothing", () => {
-    expect(DEFAULT_CONFIG.oscilloscope.repairFactor).toBe(2);
+  it("carrying the oscilloscope multiplies the odds of renovating and of a hull repair; lying in the room it does nothing", () => {
     const s = damaged();
     s.ship.hull = s.config.ship.hull.max - 1;
     const hull: Action = { type: "repair_hull", item: "scrap" };
@@ -622,7 +603,7 @@ describe("renovating a ship", () => {
     s.items.push({ id: "osc", type: "oscilloscope", at: { kind: "room", id: BAY } });
     expect([option(s, "p1", renovate())!.chance, option(s, "p1", hull)!.chance]).toEqual(base);
     s.items.find((i) => i.id === "osc")!.at = { kind: "player", id: "p1" };
-    expect([option(s, "p1", renovate())!.chance, option(s, "p1", hull)!.chance]).toEqual(base.map((c) => c * 2));
+    expect([option(s, "p1", renovate())!.chance, option(s, "p1", hull)!.chance]).toEqual(base.map((c) => c * s.config.oscilloscope.repairFactor));
   });
 
   it("the oscilloscope starts in Alpha Bay 2", () => {

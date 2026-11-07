@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { MAX_THREAD_NAME_LENGTH, type ChannelId, type PlayerView, type ThreadId } from "@mush2/shared";
+import { MAX_THREAD_NAME_LENGTH, chatPageOf, type ChannelId, type PlayerView, type ThreadId } from "@mush2/shared";
 import { IconButton } from "./IconButton.tsx";
-import { MessageEntry, Thread, messageCounts } from "./Thread.tsx";
+import { MessageEntry, Thread, messageCounts, senderOf } from "./Thread.tsx";
 import { Scroller } from "./Scroller.tsx";
 import { TAB_ICONS } from "../art/assets.ts";
+import { useChatPages } from "../chatPages.tsx";
 
 /** A thread name suggested from a message: its first line, without markdown marks, cut to the limit. */
 export function threadNameFrom(text: string): string {
@@ -45,9 +46,20 @@ export function Threads({
   const readable = view.readChannels.includes("global");
   const canStart = view.chatChannels.includes("global");
   const counts = messageCounts(view);
-  // By `seq`: a message older than the view's two pages isn't here yet (paging, #355).
-  const globalMessage = (seq: number | null | undefined) => (seq == null ? undefined : view.chat.find((m) => m.channel === "global" && m.seq === seq));
+  // By `seq`: in the view, or on an older page fetched for it (#355). Global messages are never deleted, so a starter
+  // not found here is one whose page hasn't arrived yet.
+  const pages = useChatPages();
+  const globalMessage = (seq: number | null | undefined) =>
+    seq == null ? undefined : (view.chat.find((m) => m.channel === "global" && m.seq === seq) ?? pages?.get("global", chatPageOf(seq))?.find((m) => m.seq === seq));
   const starterMessage = globalMessage(starter);
+  // The open thread's starter (and the one a new thread will start from) can sit two or more pages back: fetch its page.
+  const openFrom = view.threads.find((th) => th.id === open)?.from;
+  const missing = [openFrom, starter].filter((seq): seq is number => seq != null && !globalMessage(seq));
+  const missingPages = [...new Set(missing.map(chatPageOf))].join(",");
+  useEffect(() => {
+    if (!readable || !missingPages) return;
+    for (const page of missingPages.split(",")) pages?.request("global", Number(page));
+  }, [missingPages, readable, pages]);
   const threads = [...view.threads].reverse();
 
   // Open the thread we just asked for once the server's view has it: the first
@@ -86,7 +98,7 @@ export function Threads({
           <div className="thread-starter">
             <p className="sub">{t("itrackie.threads.startingFrom")}</p>
             <ol className="feed">
-              <MessageEntry view={view} message={starterMessage} />
+              <MessageEntry character={senderOf(view, starterMessage)} mine={starterMessage.from === view.you.id} message={starterMessage} />
             </ol>
           </div>
         )}
@@ -116,13 +128,6 @@ export function Threads({
           </form>
         )}
       </div>
-      {open !== null && (
-        <div className="channel-bar">
-          <button type="button" className="thread-back" onClick={() => onOpen(null)}>
-            ← {t("itrackie.threads.back")}
-          </button>
-        </div>
-      )}
       {view.threads.map((th) => {
         const from = globalMessage(th.from);
         return (
@@ -133,11 +138,13 @@ export function Threads({
               placeholder={t("itrackie.threads.messagePlaceholder", { name: th.name })}
               onSend={(text) => onChat(th.id, text)}
               onToggle={onToggle}
+              headKey={from ?? "loading"}
               head={
-                th.from === undefined ? undefined : from ? (
-                  <MessageEntry view={view} message={from} className="thread-head" />
+                th.from === undefined || !(from || pages) ? undefined : from ? (
+                  <MessageEntry character={senderOf(view, from)} mine={from.from === view.you.id} message={from} className="thread-head" />
                 ) : (
-                  <li className="sub thread-head">{t("itrackie.threads.starterGone")}</li>
+                  // Global messages are never deleted: a starter not here is on a page still on its way.
+                  <li className="sub thread-head">{t("itrackie.pages.loading")}</li>
                 )
               }
             />

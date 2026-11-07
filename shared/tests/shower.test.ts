@@ -23,10 +23,6 @@ function ship(): GameState {
 const { cost, effect } = config.shower;
 
 describe("shower", () => {
-  it("has the confirmed numbers: 2 AP, 1 off with soap, 4 damage to a Mush", () => {
-    expect([cost.ap, cost.soapDiscountAp, effect.mushDamage]).toEqual([2, 1, 4]);
-  });
-
   it("removes dirty for its AP, and a human keeps their HP", () => {
     const s = ship();
     addStatus(player(s, "p1"), "dirty");

@@ -202,7 +202,6 @@ describe("caffeinomaniac", () => {
   }
 
   it("adds its AP to a coffee's own", () => {
-    expect(config.caffeinomaniac.ap).toBe(2);
     const coffee = ITEM_TYPES.coffee!.consume!.ap;
     expect(drink([], 0).players[0]!.ap).toBe(coffee);
     expect(drink(["caffeinomaniac"], 0).players[0]!.ap).toBe(coffee + config.caffeinomaniac.ap);

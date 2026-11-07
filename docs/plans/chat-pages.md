@@ -1,6 +1,6 @@
 # Chat pages (#355)
 
-Status: planned 2026-11-06; phase 1 built 2026-11-06 (leak-checked); phase 2 redesigned and built 2026-11-06 (checkbox marks, below); phase 3 built 2026-11-06 (`chatPageSource`/`chatPageView` in `rules.ts`, `GameRoom.sendChatPage`); phase 4 not built. The decisions in the issue (page size 50, no history limit, editable checkboxes on sealed pages, threads from any global message, views carry `seq` not `id`) are the owner's, 2026-11-04 and 2026-11-05. The two choices below under "Design" are proposals; the tail in the view was taken as the default when the owner said to start (2026-11-06).
+Status: planned 2026-11-06; phase 1 built 2026-11-06 (leak-checked); phase 2 redesigned and built 2026-11-06 (checkbox marks, below); phase 3 built 2026-11-06 (`chatPageSource`/`chatPageView` in `rules.ts`, `GameRoom.sendChatPage`); phase 4 built 2026-11-06 (`web/src/chatPages.tsx`, the page bar in `Thread.tsx`; screenshots not taken yet); the wrap-up is not done. The decisions in the issue (page size 50, no history limit, editable checkboxes on sealed pages, threads from any global message, views carry `seq` not `id`) are the owner's, 2026-11-04 and 2026-11-05. The two choices below under "Design" are proposals; the tail in the view was taken as the default when the owner said to start (2026-11-06).
 
 Replaces the 200-messages-per-channel trim (`CHAT_HISTORY`) with fixed pages of 50 messages for every channel and thread. Page n of a channel holds `seq` n·50 to n·50+49 and never changes once sealed: what can change about a message (its checkboxes) is kept beside it in the state, not in its page.
 
@@ -50,6 +50,8 @@ Built as planned. The rate limit is chat's numbers (5 per 10 s per seat) in a li
 
 - Page bar in `Thread.tsx`: `‹ 1 2 … 6 7 ›` on desktop, `‹ 6 / 7 ›` below 1024px; opens on the last page; "Latest (N new)" chip on an older page; new messages never move the reader.
 - Sealed pages cached for the game; `chatEdit` updates a cached message's ticks. Thread "N messages" from `chatCounts`. Strings via `i18n` (en/fr/es). Screenshots on phone and desktop.
+
+As built: the cache is a context (`web/src/chatPages.tsx`) owned by `GameScreen`, which has the socket; a view without one (a replay) gets no cache and pages only through what its view carries. The bar is `« ‹ 1 2 … 6 7 › »` (`« ‹ 6 / 7 › »` on the phone), « for the earliest page and » for the latest, whose screen-reader name carries the "N new" count. The latest page (the default) is the newest page alone, nearly empty right after a seal (owner, 2026-11-06), and follows new messages; any other page is fixed until the reader moves, including the tail, which is fetched once a later seal pushes it out of the view. A thread's starter on an older page is fetched for it (`Threads.tsx`); the "starter gone" text is gone, since global messages are never deleted. An open thread is titled by its own name in the iTrackie title row, with a `←` back button at its right (owner).
 
 ## Wrap-up
 

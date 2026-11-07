@@ -9,4 +9,4 @@ Where each file lives, one line per file, split by package. Read only the part y
 
 What the rules do is in `docs/rules/implemented-rules.md`; what is tested is in `docs/process/testing.md`; how the isometric view works is in `web/src/iso/CLAUDE.md`.
 
-Tests live in a `tests/` folder next to `src/` in each package, mirroring the `src/` layout. The one exception is `tools/src/death/hpWrites.test.ts`, which sits with the tool that scans the source.
+Tests live in a `tests/` folder next to `src/` in each package, mirroring the `src/` layout.

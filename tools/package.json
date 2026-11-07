@@ -13,7 +13,8 @@
     "ods-data": "node src/odsData/odsData.ts",
     "wiki": "node src/wiki/wiki.ts",
     "emush": "node src/emush/emush.ts",
-    "test": "vitest run",
+    "test": "vitest run --exclude 'tests/browser/**'",
+    "test:browser": "vitest run tests/browser",
     "typecheck": "tsc --noEmit",
     "dev": "node src/dev/dev.ts",
     "preview": "node src/dev/preview.ts",
@@ -22,7 +23,8 @@
     "ship-view": "node src/play/shipView.ts",
     "ship-render": "node src/play/shipRender.ts",
     "ship-top": "node src/play/shipTop.ts",
-    "contact-sheet": "node src/contactSheet/contactSheet.ts"
+    "contact-sheet": "node src/contactSheet/contactSheet.ts",
+    "sim-readings": "node src/sims/readings.ts"
   },
   "dependencies": {
     "@mush2/shared": "*"

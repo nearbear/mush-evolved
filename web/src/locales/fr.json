@@ -574,7 +574,6 @@
       "messagePlaceholder": "Écrire dans {{name}}…",
       "startingFrom": "Nouveau fil à partir de ce message :",
       "cancel": "Annuler",
-      "starterGone": "Le message à l'origine de ce fil n'est plus dans le chat général.",
       "needITrackie": "Il vous faut un iTrackie dans votre inventaire pour lire les fils."
     },
     "sharedPlanets": {
@@ -584,6 +583,19 @@
       "stale": "N'est plus d'actualité",
       "showStale": "Afficher les planètes qui ne sont plus d'actualité",
       "placeholder": "Discuter de cette planète…"
+    },
+    "pages": {
+      "label": "Pages du chat",
+      "earliest": "Première page",
+      "previous": "Page précédente",
+      "next": "Page suivante",
+      "page": "Page {{page}}",
+      "of": "{{page}} / {{pages}}",
+      "latest": "Dernière page",
+      "latestNew_one": "Dernière page ({{count}} nouveau)",
+      "latestNew_other": "Dernière page ({{count}} nouveaux)",
+      "loading": "Chargement…",
+      "latestNew_many": "Dernière page ({{count}} nouveaux)"
     }
   },
   "bond": {

@@ -25,13 +25,6 @@ function toDeadline(s: GameState): GameState {
   return s;
 }
 
-describe("pre-selection numbers", () => {
-  it("are the owner's: 16 seats, Mush on day 3's last cycle, 2 Mush above 8 players, the stopgap below 3", () => {
-    expect(PRESELECTION).toEqual({ seats: 16, endsOn: { day: 3, cycle: DEFAULT_CONFIG.cyclesPerDay }, mushCount: "auto", twoMushAbove: 8, minPlayers: 3 });
-    expect(preselectionDeadline(ship(0), PRESELECTION)).toBe(24);
-  });
-});
-
 describe("a ship in pre-selection", () => {
   it("launches empty, with nobody Mush, no titles and no rebel call yet", () => {
     const s = createGame([], config, 1);

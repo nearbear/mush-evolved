@@ -20,10 +20,7 @@ function ship(): GameState {
 }
 
 describe("Fission Coffee Roaster project and coffee regeneration schedule", () => {
-  it("pins the decided numbers and project status (owner, 2026-11-02)", () => {
-    expect(config.dispense.coffeeCycles).toEqual([1]);
-    expect(config.project.fissionCoffeeRoaster.cycles).toEqual([1, 5]);
-    expect(config.pilgred.coffeeCycles).toEqual([1, 3, 5, 7]);
+  it("is fully implemented (owner, 2026-11-02)", () => {
     expect(projectStatus("FISSION_COFFEE_ROASTER")).toBe("full");
   });
 

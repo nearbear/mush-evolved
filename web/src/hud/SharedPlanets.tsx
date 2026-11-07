@@ -81,6 +81,7 @@ export function SharedPlanets({
             placeholder={t("itrackie.sharedPlanets.placeholder")}
             onSend={(text) => onChat(e.id, text)}
             onToggle={onToggle}
+            headKey={[e, byLine(e)]}
             head={
               // Plain text, never markdown: it is shown as the player wrote it.
               <li className="thread-head shared-planet-text">

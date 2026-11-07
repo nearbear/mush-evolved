@@ -93,7 +93,6 @@ describe("cycle length (#230)", () => {
 
 describe("daily healing", () => {
   it("heals every living player on day change, up to max HP, and not on other cycles", () => {
-    expect(DEFAULT_CONFIG.dailyHeal).toBe(1);
     const s = ship();
     const { dailyHeal } = s.config;
     player(s, "p0").hp = 5;

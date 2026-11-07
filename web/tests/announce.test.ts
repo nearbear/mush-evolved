@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { ChatLine, LogLine, PlayerView } from "@mush2/shared";
-import { batchText, freshIn, isUrgent } from "./announce.ts";
+import { batchText, freshIn, isUrgent } from "../src/announce.ts";
 
 const entry = (over: Partial<LogLine>): LogLine => ({ cycle: 1, key: "x", visibleTo: "all", ...over });
 const msg = (seq: number, over: Partial<ChatLine> = {}): ChatLine => ({ seq, cycle: 1, channel: "global", from: "p2", isBot: false, text: "hi", ...over });

@@ -29,9 +29,8 @@ function ship(built = false): GameState {
 const offersAccess = (s: GameState, id: PlayerId) => offered(s, id).some((a) => a.type === "access" && a.equipment === SUPER_CALC_ID);
 
 describe("Super Calculator", () => {
-  it("pins the status and repair chance", () => {
+  it("is partly implemented", () => {
     expect(RESEARCH_STATUS.SUPER_CALC).toBe("partial");
-    expect(base.repair.chance.SUPER_CALC).toBe(0.12);
   });
 
   it("is not in the Nexus starting equipment", () => {

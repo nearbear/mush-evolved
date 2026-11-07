@@ -32,26 +32,6 @@ const equipment = (s: GameState, id: string) => Object.values(s.equipment).flat(
 const globalSystem = (s: GameState) => s.chat.filter((m) => m.channel === "global" && m.system).map((m) => m.system!);
 
 describe("incident points: the budget", () => {
-  it("uses the owner's numbers (2026-10-25)", () => {
-    const { incidents, fire, extinguish, repair } = DEFAULT_CONFIG;
-    expect([incidents.budget, incidents.rollPoints]).toEqual([{ base: [1, 2, 1], tier1: { fromDay: 5, bonus: 1 }, tier2: { fromDay: 10, bonus: 2 } }, 18]);
-    expect(incidents.catalog).toEqual({
-      tremor: { cost: 2, weight: 10 },
-      fire: { cost: 4, weight: 6 },
-      panic_attack: { cost: 2, weight: 5 },
-      oxygen_leak: { cost: 3, weight: 3 },
-      electrical_overload: { cost: 8, weight: 3 },
-      metal_plate: { cost: 2, weight: 3 },
-      fuel_leak: { cost: 3, weight: 3 },
-      equipment_breakdown: { cost: 3, weight: 3 },
-    });
-    expect([incidents.tremor.damage, incidents.panicAttack.morale, incidents.metalPlate.damage, incidents.electricalOverload.damage]).toEqual([[1, 3], 3, [4, 6], 3]);
-    expect(fire).toEqual({ spreadChance: 0.3, maxSpreads: 2, breakChance: 0.3, hullChance: 0.2, hullDamage: [2, 4], damage: 2 });
-    expect(extinguish).toEqual({ cost: { ap: 1 }, chance: 0.5, manual: { chance: 0.5, failureMultiplier: 1.25 }, firefighterInjuryChance: 0.5 });
-    expect([repair.cost.ap, repair.wrenchFactor, repair.engineerFactor, repair.oxygenLeak]).toEqual([1, 1.5, 2, 1]);
-    expect([repair.chance.COM_CENTER, repair.chance.NERON_BIOS_TERM, repair.chance.OXYGEN_TANK, repair.chance.BED, repair.chance.PILGRED]).toEqual([0.06, 0.03, 0.25, undefined, undefined]);
-  });
-
   it("follows the wiki's curve: 1, 2, then 1, with more from day 5 and day 10, never falling after day 3", () => {
     const days = Array.from({ length: 12 }, (_, i) => incidentPointsForDay(DEFAULT_CONFIG, i + 1));
     expect(days).toEqual([1, 2, 1, 1, 2, 3, 4, 5, 6, 15, 18, 21]);

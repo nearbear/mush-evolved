@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { recency } from "./recency.ts";
+import { recency } from "../../src/hud/recency.ts";
 
 const S = 1000;
 const MIN = 60 * S;

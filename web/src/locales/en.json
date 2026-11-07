@@ -567,7 +567,6 @@
       "messagePlaceholder": "Message {{name}}…",
       "startingFrom": "Starting a thread from this message:",
       "cancel": "Cancel",
-      "starterGone": "The message this thread started from is no longer in global chat.",
       "needITrackie": "You need an iTrackie in your inventory to read threads."
     },
     "sharedPlanets": {
@@ -577,6 +576,18 @@
       "stale": "No longer applicable",
       "showStale": "Show planets no longer applicable",
       "placeholder": "Discuss this planet…"
+    },
+    "pages": {
+      "label": "Chat pages",
+      "earliest": "Earliest page",
+      "previous": "Previous page",
+      "next": "Next page",
+      "page": "Page {{page}}",
+      "of": "{{page}} / {{pages}}",
+      "latest": "Latest page",
+      "latestNew_one": "Latest page ({{count}} new)",
+      "latestNew_other": "Latest page ({{count}} new)",
+      "loading": "Loading…"
     }
   },
   "bond": {

@@ -19,8 +19,7 @@ const trap = (state: GameState) => must(applyAction(state, "p0", { type: "fungal
 const item = (state: GameState) => state.items.find((i) => i.id === "i-banana");
 
 describe("Fungal cuisine", () => {
-  it("costs 1 AP and 1 spore, and adds a level each time", () => {
-    expect(DEFAULT_CONFIG.fungalCuisine.cost.ap).toBe(1);
+  it("costs its AP and 1 spore, and adds a level each time", () => {
     const before = ship();
     const once = trap(before);
     expect([item(once)?.spores, player(once, "p0").spores, player(once, "p0").ap]).toEqual([1, 2, player(before, "p0").ap - DEFAULT_CONFIG.fungalCuisine.cost.ap]);

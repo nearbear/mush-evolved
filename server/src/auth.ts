@@ -10,6 +10,7 @@
 //   GET  /auth/dev?name=<name>             dev sign-in for tooling (#287): `npm run dev` on localhost only
 //   GET  /api/setups, /api/setups/<id>     and POST /api/setups: posted setups (#233), in setupRoutes.ts
 //   GET  /api/games?before=&limit=         finished multiplayer games (#155), in gameRoutes.ts
+//   GET  /api/games/<id>                   one finished game's summary (#368), in replayRoutes.ts
 //   GET  /api/games/<id>/replay[/<n>]      a finished game's replay index and chunks (#337), in replayRoutes.ts
 //   GET  /api/openapi.json, /api/docs      the OpenAPI document and its docs page (#324), where cheats are on
 //
@@ -37,7 +38,7 @@ import { DOCUMENT_PATH, docsPageRoute, docsWrongMethodRoute, documentRoute } fro
 import { listGames } from "./gameRoutes.ts";
 import type { GameStore } from "./gameStore.ts";
 import { allowAuthRequest } from "./rateLimit.ts";
-import { replayChunkRoute, replayIndexRoute, type ReplayReader, type ReplayRouteDeps } from "./replayRoutes.ts";
+import { gameSummaryRoute, replayChunkRoute, replayIndexRoute, type ReplayReader, type ReplayRouteDeps } from "./replayRoutes.ts";
 import type { SetupStore } from "./setupStore.ts";
 import { listSetups, lookupSetup, MAX_SETUP_BODY, postSetup, type SetupRouteDeps } from "./setupRoutes.ts";
 
@@ -311,6 +312,8 @@ export const api = new Hono<{ Bindings: ApiBindings }>()
   .all("/api/setups/:id", methodNotAllowed)
   .get("/api/games", (c) => listGames({ before: c.req.query("before"), limit: c.req.query("limit") }, c.env.deps.games))
   .all("/api/games", methodNotAllowed)
+  .get("/api/games/:id", (c) => gameSummaryRoute(c.req.param("id"), replayDeps(c.req.raw, c.env)))
+  .all("/api/games/:id", methodNotAllowed)
   .get("/api/games/:id/replay", (c) => replayIndexRoute(c.req.param("id"), replayDeps(c.req.raw, c.env)))
   .all("/api/games/:id/replay", methodNotAllowed)
   .get("/api/games/:id/replay/:n", (c) =>

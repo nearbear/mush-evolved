@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { type Spin, shiftTile, stepTurn, tilePosition } from "./skyTurn.ts";
+import { type Spin, shiftTile, stepTurn, tilePosition } from "../../src/iso/skyTurn.ts";
 
 /** Where tile point `t` lands on screen: the tile's transform, position plus rotation. */
 const onScreen = (t: { x: number; y: number }, at: { x: number; y: number }, angle: number, center: { x: number; y: number }) => {

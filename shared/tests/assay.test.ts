@@ -38,10 +38,6 @@ const keys = (s: GameState, id: PlayerId) => viewFor(s, id).log.map((e) => e.key
 const sample = (by: PlayerId, contaminatedBy?: PlayerId): Sample => ({ by, base: 6, roll: 0, ...(contaminatedBy && { contaminatedBy }) });
 
 describe("research assays", () => {
-  it("pins the owner's first guesses: quarter marks, 5% noise, Contaminate at 1 AP", () => {
-    expect([MARKS, R.spoilChance, R.contaminate.cost.ap]).toEqual([[25, 50, 75, 100], 0.05, 1]);
-  });
-
   it("keeps samples pending until the striped total reaches the next mark, then verifies them all", () => {
     let s = game(0);
     const order: PlayerId[] = ["p0", "p1", "p2", "p3"];

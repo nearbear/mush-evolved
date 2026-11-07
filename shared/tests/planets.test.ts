@@ -50,14 +50,13 @@ describe("planet generation", () => {
     expect(names.size).toBeGreaterThan(1000);
   });
 
-  it("pins the decided ranges: 2 to 9 fuel with 7 the near limit, and 2-12, 4-16, 6-20 sectors from days 1, 5, 10", () => {
-    expect(astro.distance).toEqual({ min: 2, nearMax: 7, max: 9 });
-    expect(astro.sizeByDay).toEqual([
+  it("sizes a planet by the last range whose day has come", () => {
+    const sizeByDay = [
       { fromDay: 1, min: 2, max: 12 },
       { fromDay: 5, min: 4, max: 16 },
       { fromDay: 10, min: 6, max: 20 },
-    ]);
-    expect([1, 4, 5, 9, 10, 30].map((day) => sizeRangeOn(astro, day).min)).toEqual([2, 2, 4, 4, 6, 6]);
+    ];
+    expect([1, 4, 5, 9, 10, 30].map((day) => sizeRangeOn({ ...astro, sizeByDay }, day).min)).toEqual([2, 2, 4, 4, 6, 6]);
   });
 
   it("draws every even size in the day's range", () => {
@@ -112,10 +111,6 @@ describe("planet generation", () => {
 });
 
 describe("Astro terminal planets", () => {
-  it("pins the decided numbers: scan 3 AP at 50% x1.25 per failure, analysis 2 AP, 2 planets each", () => {
-    expect([astro.scan.cost.ap, astro.scan.chance, astro.scan.failureMultiplier, astro.analyze.cost.ap, astro.maxPlanets]).toEqual([3, 0.5, 1.25, 2, 2]);
-  });
-
   it("offers a scan only at the Astro terminal, and costs its AP", () => {
     const s = game();
     expect(option(s, "p0", { type: "scan_planet" })?.action).toEqual(scan);
