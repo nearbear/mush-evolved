@@ -9,7 +9,7 @@ import { SelfHud, SelfPoints } from "../hud/SelfHud.tsx";
 import { TerminalFrame } from "../hud/TerminalFrame.tsx";
 import { AccountSection, CharacterPickerSection } from "./LobbySections.tsx";
 import { EndingsSection, ITrackieSection, PatrolSection, TerminalBodiesSection } from "./GameSections.tsx";
-import { InspectSection, InventorySection, PeekBarSection, RoomCornerSection, ShipOverlaySection, StatusIconsSection, TopBarSection } from "./HudSections.tsx";
+import { InspectSection, InventorySection, ItemAttrIconsSection, PeekBarSection, RoomCornerSection, ShipOverlaySection, StatusIconsSection, TopBarSection } from "./HudSections.tsx";
 import { noop } from "./KitSection.tsx";
 import { freshView, humanView, lethargyView, mushView } from "./samples.ts";
 import "./mush2Kit.css";
@@ -41,6 +41,7 @@ const NAV: [id: string, label: string][] = [
   ["room-corners", "Queue and tips"],
   ["peek-bar", "Peek bar"],
   ["status-icons", "Status icons"],
+  ["item-attr-icons", "Item icons"],
   ["patrol", "Patrol"],
   ["itrackie", "iTrackie"],
   ["endings", "Death and end"],
@@ -203,6 +204,7 @@ export default function Mush2Kit() {
         <RoomCornerSection />
         <PeekBarSection />
         <StatusIconsSection />
+        <ItemAttrIconsSection />
         <PatrolSection />
         <ITrackieSection />
         <EndingsSection />

@@ -1,12 +1,14 @@
 // The kit's in-game HUD sections: top bar, ship card (phone), Inspect, inventory, action queue, tip, peek bar and the
-// status icon catalog. Each renders the real component on a sample view (samples.ts). Dev-only.
+// status and item attribute icon catalogs. Each renders the real component on a sample view (samples.ts). Dev-only.
 
 import { DEFAULT_CONFIG, statusIdsFor, type PlayerView, type RoomId, type Target } from "@mush2/shared";
 import { useState } from "react";
 import { ActionQueue } from "../hud/ActionQueue.tsx";
 import { InspectPanel } from "../hud/InspectPanel.tsx";
+import { ItemAttrIcons } from "../hud/ItemAttrIcons.tsx";
 import { InventoryOverlay } from "../hud/InventoryOverlay.tsx";
 import { PeekBar } from "../hud/PeekBar.tsx";
+import { PlantStates } from "../hud/PlantStates.tsx";
 import { ShipOverlay } from "../hud/ShipOverlay.tsx";
 import { StatusIcons } from "../hud/StatusIcons.tsx";
 import { TipCard } from "../hud/TipCard.tsx";
@@ -103,6 +105,7 @@ export function InspectSection() {
   const neighbour = humanView.players.find((p) => p.room === humanView.you.room);
   const equipment = humanView.roomEquipment[0];
   const item = itemsView.inventory.find((i) => i.type === "blaster");
+  const heavy = itemsView.inventory.find((i) => i.type === "machine_gun");
   return (
     <Section
       id="inspect"
@@ -112,7 +115,7 @@ export function InspectSection() {
           <code>hud/InspectPanel.tsx</code>: the left panel, whatever is selected, with the legal actions as{" "}
           <code>ActionButton</code>s (<code>ActionLabel</code> costs and odds). For a person it shows{" "}
           <code>SkillSlots</code> (click a free slot for the picker and its <code>ConfirmPanel</code>) and{" "}
-          <code>StatusIcons</code>; for an item, <code>ItemFace</code>.
+          <code>StatusIcons</code>; for an item, <code>ItemFace</code> and <code>ItemAttrIcons</code>.
         </>
       }
     >
@@ -135,6 +138,11 @@ export function InspectSection() {
       {item && (
         <Figure caption="A blaster you carry">
           <SampleInspect view={itemsView} target={{ kind: "item", id: item.id }} />
+        </Figure>
+      )}
+      {heavy && (
+        <Figure caption="A heavy item (ItemAttrIcons: hover the weight for its MP penalty)">
+          <SampleInspect view={itemsView} target={{ kind: "item", id: heavy.id }} />
         </Figure>
       )}
     </Section>
@@ -251,6 +259,32 @@ export function StatusIconsSection() {
     >
       <Figure caption={`All ${ALL_STATUSES.length} statuses, then contamination 3`}>
         <StatusIcons statuses={ALL_STATUSES} contamination={3} />
+      </Figure>
+    </Section>
+  );
+}
+
+export function ItemAttrIconsSection() {
+  return (
+    <Section
+      id="item-attr-icons"
+      heading="Item attribute icons"
+      about={
+        <>
+          The icon rows the Inspect panel shows under an item&apos;s name, styled like a player&apos;s statuses:{" "}
+          <code>hud/ItemAttrIcons.tsx</code> (heavy, with the MP penalty in its card) and <code>hud/PlantStates.tsx</code>{" "}
+          (a planted hydropot; sickness shows only to the Botanist). Hover, focus or tap one for its card.
+        </>
+      }
+    >
+      <Figure caption={`Heavy (${DEFAULT_CONFIG.heavy.mpPenalty} MP per move)`}>
+        <ItemAttrIcons heavy mpPenalty={DEFAULT_CONFIG.heavy.mpPenalty} />
+      </Figure>
+      <Figure caption="Plant: young and thirsty">
+        <PlantStates plant={{ species: "fruit_banana", age: 1, thirst: 1 }} />
+      </Figure>
+      <Figure caption="Plant: dried and sick (as the Botanist sees it)">
+        <PlantStates plant={{ species: "fruit_banana", age: null, thirst: 2, sick: true }} />
       </Figure>
     </Section>
   );

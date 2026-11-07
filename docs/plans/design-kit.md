@@ -28,6 +28,7 @@ look is checked once, in the context it has in the game. Sections live in `Mush2
 | Queue and tips | `hud/ActionQueue.tsx`, `hud/TipCard.tsx` | |
 | Peek bar | `hud/PeekBar.tsx` (phone CSS only: visible below 1024px) | |
 | Status icons | `hud/StatusIcons.tsx`: every status plus contamination, a catalog for spotting missing art | `StatusIcon` |
+| Item attribute icons | `hud/ItemAttrIcons.tsx` (heavy) and `hud/PlantStates.tsx` (young, thirsty, dried, sick) | `StatusIcon` |
 | Patrol | `hud/PatrolCockpit.tsx` | `HunterList` |
 | iTrackie | `hud/ITrackie.tsx` | `FeedEntry` and markers, `CycleDivider`, `RecencyStamp`, `ExpeditionReportDialog` (from the room log), `Thread`/`MessageEntry`, `Markdown` checklists, `ChatInput`, `Threads`, `SharedPlanets`, `ResearchTracker`, `PrivateChannels`, `IconTab` badges, `TabOutline` |
 | Death and end | `hud/DeathNotice.tsx`, `hud/BodyTakenDialog.tsx`, `hud/EndScreen.tsx` (dialogs behind buttons) | `DialogHeader` |
@@ -35,8 +36,8 @@ look is checked once, in the context it has in the game. Sections live in `Mush2
 | Account | `account/AccountButton.tsx` | `AccountDetails`, `NameForm` (its buttons call the real API) |
 
 Skipped: `Announcer`, `Credits` (standalone), `Scroller`, `Tracker`, `BottomNav`, `RoomList` (visually hidden),
-`FeatureSelect` (in the iTrackie), `TabOutline`'s `outlinePath` (a function, already tested), and `ItemAttrIcons`,
-which nothing in `web/src` uses. Not reached yet: a planted hydropot (`PlantStates`), a hacked or broken item, chat in
+`FeatureSelect` (in the iTrackie), `TabOutline`'s `outlinePath` (a function, already tested). `ItemAttrIcons` was unused when the kit was built; #396
+put it back in the Inspect panel; the kit shows it there and in its own section. Not reached yet: a hacked or broken item, chat in
 the Mush channel and private channels with messages, hunters in sight.
 
 Found while building it (not fixed here): a Base UI console warning that `EntryTip`'s popover trigger in
