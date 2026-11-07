@@ -1,4 +1,5 @@
 import { Action, isString } from "./action.ts";
+import { endRebelCalls } from "../comms.ts";
 import { huntersFollow, loseShipsInFlight } from "../hunters.ts";
 import { logPublic } from "../log.ts";
 import { canSteer } from "../navigation.ts";
@@ -12,7 +13,7 @@ export type LeaveOrbitActionData = { type: "leave_orbit"; equipment: string };
 /**
  * Leave the orbited planet from the Command terminal (owner, 2026-10-22, the wiki; it takes Travel's place while in orbit):
  * 1 AP and `navigation.leaveOrbit.fuel` fuel from the combustion chamber (owner, 2026-10-23), Commander only (Mush included, dirty or not). Short of loaded fuel, the AP is
- * spent and the ship stays. The `easyTravel` cheat (cheats.ts) makes leaving cost no fuel. Otherwise the planet is lost, scanning works again, and half the hunters follow (hunters.ts). The ship then travels until the next cycle change and arrives in empty space (owner, 2026-10-29). Everyone aboard learns of it.
+ * spent and the ship stays. The `easyTravel` cheat (cheats.ts) makes leaving cost no fuel. Otherwise the planet is lost, scanning works again, and half the hunters follow (hunters.ts), and every open rebel call is lost (comms.ts). The ship then travels until the next cycle change and arrives in empty space (owner, 2026-10-29). Everyone aboard learns of it.
  */
 export class LeaveOrbitAction extends Action<LeaveOrbitActionData> {
   override terminal = true;
@@ -46,6 +47,7 @@ export class LeaveOrbitAction extends Action<LeaveOrbitActionData> {
     state.ship.combustion -= fuel;
     shipMoved(state);
     huntersFollow(state);
+    endRebelCalls(state);
     const orbit = state.navigation.orbit;
     for (const owner of Object.keys(state.planets)) state.planets[owner] = state.planets[owner]!.filter((p) => p.id !== orbit);
     // Every shared planet's entry no longer applies, the planet just left included (owner, 2026-10-31).

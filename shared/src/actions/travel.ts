@@ -1,4 +1,5 @@
 import { Action, isString } from "./action.ts";
+import { endRebelCalls } from "../comms.ts";
 import { huntersFollow, loseShipsInFlight } from "../hunters.ts";
 import { logPublic } from "../log.ts";
 import { canSteer, isTraveling, planetAt } from "../navigation.ts";
@@ -61,6 +62,7 @@ export class TravelAction extends Action<TravelActionData> {
 export function jump(state: GameState, player: Readonly<PlayerState>, distance: number): Planet | null {
   shipMoved(state);
   huntersFollow(state);
+  endRebelCalls(state);
   const found = planetAt(state, state.navigation.heading, distance);
   for (const owner of Object.keys(state.planets)) {
     state.planets[owner] = owner === found?.[0] ? [found[1]] : [];

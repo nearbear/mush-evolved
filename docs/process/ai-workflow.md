@@ -2537,6 +2537,12 @@ The owner asked for an honest, ranked verdict on the #384 plan settled earlier t
 - The owner asked for the plan table in `docs/README.md`, so it moved there with a "Done?" column (Done / Partly / Not built / Draft / Superseded) and issue links, and `docs/plans/README.md` was deleted so there is one table. Re-checking each row against issues found several stale statuses (expeditions phase 1, on-call server, bot-goals steps 1–3, hunters following travel) and an unlisted plan (`project-buffs.md`).
 - Follow-up: the owner saw SelfPoints overlapping the SelfHud card in the shared room stand-in, so AP/MP got its own kit section (full, spent, out of AP, and Lethargy's 24 AP as two columns, reached through `pick_skill` on Chun). A screenshot pass then caught that the phone layout's `.room-view { flex: 1; min-height: 0 }` collapsed the stand-in box at 360px; `flex: none` in the kit fixes it. Lesson: a kit stand-in that borrows a game class gets that class's phone rules too, so check it at 360px.
 
+## 2026-11-07: Rebel calls end on travel
+
+- **Decision (owner):** travel ends every open rebel call. Claude checked upstream eMush with the clean-room tool: both Travel and Leave orbit fire its travel-launched event, which ends all contacting bases. The owner chose to match that (Leave orbit counts too).
+- **Built:** `endRebelCalls` in `comms.ts` closes each open call's window at the current cycle (no state shape change, so no version bump; the terminal shows it as lost). Called from `jump` (travel and the warp cheat) and `leave_orbit`. A travel short of fuel does nothing, so it ends nothing (Claude's reading, recorded in rules-design). One test in `navigation.test.ts`.
+- **What worked:** reusing `expiresAt` instead of adding a "lost" flag kept the change to a few lines. The `emush find` route (finding `KillAllRebelBaseContactsService`, then which actions dispatch the event) answered the question faster than `spec`, which matched nothing on a free-text topic.
+
 ## 2026-11-07: Comms plan audit, leftovers into issues
 
 - Checked `docs/plans/comms.md` against the code and issues. The feature was built, but the plan still had its answered questions and a pre-build draft that contradicted the build (it planned a public Sol link log line and per-player private views). Replaced both with "Built as" and "Left, in issues" sections.
