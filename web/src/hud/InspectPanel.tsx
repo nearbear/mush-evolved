@@ -149,6 +149,11 @@ function Details({ view, layout, resolved, onAction }: { view: PlayerView; layou
           <div className="inspect-name inspect-item-name">
             <strong>{names.itemOf(resolved.item)}</strong>
           </div>
+          {resolved.item.broken && (
+            <div className="sub inspect-broken">
+              <img src={BROKEN_ICON} alt="" /> {t("roomList.broken")}
+            </div>
+          )}
           {resolved.item.plant && <PlantStates plant={resolved.item.plant} />}
           {resolved.item.spores !== undefined && (
             <ul className="status-icons" aria-label={t("itemAttr.label")}>

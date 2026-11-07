@@ -3,7 +3,8 @@
 // 2026-11-01); only the living in a burning room see that it burns (`PlayerView.roomOnFire`). Fire burns no oxygen.
 // Putting one out is actions/extinguish.ts.
 
-import { breakEquipment, workingBreakable } from "./breakage.ts";
+import { breakEquipment, breakItem, workingBreakable } from "./breakage.ts";
+import { ITEM_TYPES, isWorking, itemsIn } from "./items.ts";
 import { shipInvincible } from "./cheats.ts";
 import { pushChat } from "./chat.ts";
 import { damage } from "./death.ts";
@@ -35,7 +36,7 @@ export function startFire(state: GameState, room: RoomId): void {
 /**
  * At each cycle change, after incidents (so a fire acts in the cycle it starts): each room that was burning either
  * spreads to a neighbour not on fire (`spreadChance`, at most `maxSpreads` a cycle; a fire it starts acts from the next
- * cycle) or does damage: each breakable piece of equipment breaks with `breakChance`, the hull loses `hullDamage` with
+ * cycle) or does damage: each breakable piece of equipment and each breakable item on the floor (with a room log line) breaks with `breakChance`, the hull loses `hullDamage` with
  * `hullChance`, and everyone present loses `damage` HP. Mutates a state the caller already cloned.
  */
 export function fireCycle(state: GameState): void {
@@ -50,6 +51,13 @@ export function fireCycle(state: GameState): void {
       continue;
     }
     for (const equipment of workingBreakable(state, room)) if (rollFloat(state) < config.breakChance) breakEquipment(state, equipment);
+    // Owner, 2026-11-07: the same chance for each working item that can break and lies on the floor (not what people
+    // carry); public room line `fireBrokeItem`, or `fireDestroyedItem` for one that is destroyed when broken.
+    for (const item of itemsIn(state, { kind: "room", id: room }).filter((i) => isWorking(i) && ITEM_TYPES[i.type]?.canBreak)) {
+      if (rollFloat(state) >= config.breakChance) continue;
+      breakItem(state, item);
+      logPublic(state, room, ITEM_TYPES[item.type]!.isDestroyedWhenBroken ? "fireDestroyedItem" : "fireBrokeItem", { item: item.type });
+    }
     if (rollFloat(state) < config.hullChance) {
       const loss = roll(state, config.hullDamage);
       if (!shipInvincible(state)) state.ship.hull = Math.max(0, state.ship.hull - loss);

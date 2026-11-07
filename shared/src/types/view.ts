@@ -39,6 +39,8 @@ export interface ItemView {
   charges?: number;
   /** For a skill book: the skill it teaches (public to whoever can see the item). */
   teaches?: string;
+  /** Broken: it can't be used until repaired. Public to whoever can see the item, like its type. */
+  broken?: true;
   /** In your room's storage: you hid it, and nobody else can see it (actions/hide.ts). */
   hidden?: true;
   /** For a food item trapped with Fungal cuisine: its contamination level. Sent to living Mush only. */

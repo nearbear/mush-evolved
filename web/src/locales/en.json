@@ -378,7 +378,8 @@
     "repair": "Repair",
     "extinguish": "Extinguish",
     "extinguishManually": "Extinguish manually",
-    "ignite": "Start a fire"
+    "ignite": "Start a fire",
+    "sabotage": "Sabotage"
   },
   "queue": {
     "label": "Your actions",
@@ -761,6 +762,10 @@
     "shareDidToYou": "{{name}} did {{label}} with you.",
     "sporeExtracted": "{{name}} extracted a spore.",
     "ignited": "{{name}} sprayed microspores on a wall.",
+    "sabotaged": "{{name}} sabotaged the {{equipment}}.",
+    "sabotageFailed": "{{name}} failed to sabotage the {{equipment}}.",
+    "sabotagedItem": "{{name}} sabotaged the {{item}}.",
+    "sabotageFailedItem": "{{name}} failed to sabotage the {{item}}.",
     "showered": "You showered.",
     "showeredMush": "You showered. The water burns.",
     "died": "{{name}} has died.",
@@ -851,8 +856,12 @@
     "metalPlate": "A metal plate falls on {{name}}!",
     "electricalOverload": "An electrical overload fries the room's equipment!",
     "fireBurns": "The fire burns everyone in the room.",
+    "fireBrokeItem": "The fire broke the {{item}}.",
+    "fireDestroyedItem": "The fire destroyed the {{item}}.",
     "repaired": "{{name}} repaired the {{equipment}}.",
     "repairFailed": "You failed to repair the {{equipment}}.",
+    "itemRepaired": "{{name}} repaired the {{item}}.",
+    "itemRepairFailed": "You failed to repair the {{item}}.",
     "fireExtinguished": "{{name}} put out the fire!",
     "extinguishFailed": "You failed to put out the fire."
   },

@@ -1,5 +1,5 @@
 import { Action, isString } from "./action.ts";
-import { removeItem, itemsIn } from "../items.ts";
+import { removeItem, itemsIn, isWorking } from "../items.ts";
 import { CAMERA_EQUIPMENT, cameraEquipmentId } from "../equipment.ts";
 import { hasCamera, logPublic } from "../log.ts";
 import { shipAboard } from "../patrol.ts";
@@ -50,5 +50,5 @@ export class InstallAction extends Action<InstallActionData> {
 }
 
 function carriedCameras(state: Readonly<GameState>, player: Readonly<PlayerState>): ItemState[] {
-  return itemsIn(state, { kind: "player", id: player.id }).filter((i) => i.type === "camera");
+  return itemsIn(state, { kind: "player", id: player.id }).filter((i) => i.type === "camera" && isWorking(i));
 }

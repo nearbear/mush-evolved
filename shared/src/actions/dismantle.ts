@@ -14,6 +14,7 @@ import type { GameState, PlayerState } from "../types.ts";
 export type DismantleActionData = { type: "dismantle"; item: string } | { type: "dismantle"; equipment: string };
 
 export class DismantleAction extends Action<DismantleActionData> {
+  override onBrokenItem = true;
   constructor() {
     super("dismantle");
   }

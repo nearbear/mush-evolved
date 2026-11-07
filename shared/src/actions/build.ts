@@ -1,6 +1,6 @@
 import { Action, isString } from "./action.ts";
 import { BLUEPRINTS, BLUEPRINT_ITEM } from "../blueprints.ts";
-import { canReachItem, itemsIn, produceItem, visibleItemsIn } from "../items.ts";
+import { canReachItem, itemsIn, produceItem, visibleItemsIn, isWorking } from "../items.ts";
 import { logPublic } from "../log.ts";
 import { shipAboard } from "../patrol.ts";
 import type { GameState, ItemState, PlayerState } from "../types.ts";
@@ -15,7 +15,7 @@ export type BuildActionData = { type: "build"; item: string };
 function ingredients(state: Readonly<GameState>, player: Readonly<PlayerState>, blueprint: Readonly<ItemState>): ItemState[] | null {
   const recipe = blueprint.builds === undefined ? undefined : BLUEPRINTS[blueprint.builds];
   if (!recipe) return null;
-  const pool = [...visibleItemsIn(state, { kind: "room", id: player.room }, player), ...itemsIn(state, { kind: "player", id: player.id })].filter((i) => i.id !== blueprint.id);
+  const pool = [...visibleItemsIn(state, { kind: "room", id: player.room }, player), ...itemsIn(state, { kind: "player", id: player.id })].filter((i) => i.id !== blueprint.id && isWorking(i));
   const used: ItemState[] = [];
   for (const type of recipe.needs) {
     const found = pool.find((i) => i.type === type && !used.includes(i));

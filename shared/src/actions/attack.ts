@@ -1,6 +1,6 @@
 import { Action, IN_PRESELECTION, peopleHere, type ActionTag, isString } from "./action.ts";
 import { damage } from "../death.ts";
-import { itemsIn, removeItem } from "../items.ts";
+import { itemsIn, removeItem, isWorking } from "../items.ts";
 import { logPublic } from "../log.ts";
 import { roll } from "../rng.ts";
 import type { DeepReadonly, WeaponStats } from "../types/config.ts";
@@ -92,7 +92,7 @@ export class AttackAction extends Action<AttackActionData> {
 function usableWeapons(state: Readonly<GameState>, player: Readonly<PlayerState>): ItemState[] {
   return itemsIn(state, { kind: "player", id: player.id }).filter((i) => {
     const stats = state.config.weapons.types[i.type];
-    return stats && (stats.charges === undefined || (i.charges ?? 0) > 0);
+    return stats && isWorking(i) && (stats.charges === undefined || (i.charges ?? 0) > 0);
   });
 }
 

@@ -382,7 +382,8 @@
     "repair": "Réparer",
     "extinguish": "Éteindre",
     "extinguishManually": "Éteindre à la main",
-    "ignite": "Allumer un feu"
+    "ignite": "Allumer un feu",
+    "sabotage": "Saboter"
   },
   "queue": {
     "label": "Vos actions",
@@ -770,6 +771,10 @@
     "shareDidToYou": "{{name}} a fait {{label}} avec vous.",
     "sporeExtracted": "{{name}} a extrait une spore.",
     "ignited": "{{name}} a aspergé un mur de microspores.",
+    "sabotaged": "{{name}} a saboté l'équipement « {{equipment}} ».",
+    "sabotageFailed": "{{name}} n'a pas réussi à saboter l'équipement « {{equipment}} ».",
+    "sabotagedItem": "{{name}} a saboté l'objet : {{item}}.",
+    "sabotageFailedItem": "{{name}} n'a pas réussi à saboter l'objet : {{item}}.",
     "showered": "Vous avez pris une douche.",
     "showeredMush": "Vous avez pris une douche. L'eau vous brûle.",
     "died": "{{name}} a perdu la vie.",
@@ -865,8 +870,12 @@
     "metalPlate": "Une plaque de métal tombe sur {{name}} !",
     "electricalOverload": "Une surcharge électrique grille les équipements de la pièce !",
     "fireBurns": "Le feu brûle tous ceux qui sont dans la pièce.",
+    "fireBrokeItem": "Le feu a endommagé : {{item}}.",
+    "fireDestroyedItem": "Le feu a détruit : {{item}}.",
     "repaired": "{{name}} a réparé l'équipement « {{equipment}} ».",
     "repairFailed": "Vous n'avez pas réussi à réparer l'équipement « {{equipment}} ».",
+    "itemRepaired": "{{name}} a réparé l'objet : {{item}}.",
+    "itemRepairFailed": "Vous n'avez pas réussi à réparer l'objet : {{item}}.",
     "fireExtinguished": "{{name}} a éteint l'incendie !",
     "extinguishFailed": "Vous n'avez pas réussi à éteindre l'incendie."
   },

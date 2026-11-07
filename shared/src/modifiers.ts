@@ -8,7 +8,7 @@
 // `skills` instead. A new numeric hook is one line in `FoldHooks` plus a one-line
 // accessor below; `fold` does the looping.
 
-import { carriesHeavy } from "./items.ts";
+import { carriesHeavy, isWorking } from "./items.ts";
 import { RESEARCH_COMPLETE } from "./research.ts";
 import { skillsOf } from "./skills.ts";
 import { antic_perfume } from "./modifiers/antic_perfume.ts";
@@ -223,7 +223,7 @@ export function actionSuccessRate(base: number, ctx: CostContext, registry: Modi
     }
   }
   // Carrying the oscilloscope multiplies the odds of the repairing actions (owner, 2026-10-28). Once however many are carried.
-  if ((ctx.action.type === "repair_hull" || ctx.action.type === "renovate") && ctx.state.items.some((i) => i.type === "oscilloscope" && i.at.kind === "player" && i.at.id === ctx.actor.id)) {
+  if ((ctx.action.type === "repair_hull" || ctx.action.type === "renovate") && ctx.state.items.some((i) => i.type === "oscilloscope" && isWorking(i) && i.at.kind === "player" && i.at.id === ctx.actor.id)) {
     chance *= ctx.state.config.oscilloscope.repairFactor;
   }
   // Hooks can't make a price negative. A move's MP is a net change and can already be negative (a conversion

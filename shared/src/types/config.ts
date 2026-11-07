@@ -502,6 +502,8 @@ export interface GameConfig {
   // Extinguish (owner, 2026-10-25, eMushpedia "Extincteur"): 1 AP, 50%, with an extinguisher you can reach.
   // Firefighter (owner, 2026-11-01): the manual try's odds and its per-miss multiplier; `firefighterInjuryChance` is the chance of a random injury on any try.
   ignite: { cost: { ap: number } };
+  // Owner, 2026-11-07: a Mush breaks equipment or an item (actions/sabotage.ts), at the target's repair chance or `defaultChance` for an item without one.
+  sabotage: { cost: { ap: number }; defaultChance: number };
   extinguish: { cost: { ap: number }; chance: number; manual: { chance: number; failureMultiplier: number }; firefighterInjuryChance: number };
   // Breakage and Repair (owner, 2026-10-25): breakage.ts. `chance` is each breakable equipment type's base repair chance
   // (eMushpedia's `réparer=`); a type without one never breaks. A wrench multiplies it by `wrenchFactor`, the Technician

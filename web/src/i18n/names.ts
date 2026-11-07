@@ -41,6 +41,7 @@ const ACTION_NAME_KEYS = {
   repair: "actions.repair",
   extinguish: "actions.extinguish",
   ignite: "actions.ignite",
+  sabotage: "actions.sabotage",
   extinguish_manually: "actions.extinguishManually",
   takeoff: "actions.takeoff",
   icarus_takeoff: "actions.icarus_takeoff",

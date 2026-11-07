@@ -1,6 +1,6 @@
 import { Action, peopleHere, isString } from "./action.ts";
 import { cure } from "../infection.ts";
-import { itemsIn, removeItem } from "../items.ts";
+import { itemsIn, removeItem, isWorking } from "../items.ts";
 import { logPrivate, logPublic } from "../log.ts";
 import type { GameState, ItemState, PlayerState } from "../types.ts";
 
@@ -42,4 +42,4 @@ export class VaccinateAction extends Action<VaccinateActionData> {
 }
 
 const serumOf = (state: Readonly<GameState>, p: Readonly<PlayerState>): ItemState | undefined =>
-  itemsIn(state, { kind: "player", id: p.id }).find((i) => i.type === ANTI_MUSH_SERUM_ITEM);
+  itemsIn(state, { kind: "player", id: p.id }).find((i) => i.type === ANTI_MUSH_SERUM_ITEM && isWorking(i));
