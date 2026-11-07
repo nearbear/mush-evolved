@@ -7,7 +7,7 @@ import { joinShip } from "../src/preselection.ts";
 import { parseGameMessage } from "../src/protocol.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";
 import type { Action, GameConfig, GameState } from "../src/types.ts";
-import { clone, costOf, makeSeats, must, nextCycle, noHunters, offered, player } from "./support.ts";
+import { clone, costOf, makeSeats, must, nextCycle, noHunters, noIncidents, offered, player } from "./support.ts";
 
 const TURRET_ROOM = "LASER_TURRET_A_0";
 const TURRET = "LASER_TURRET_A_0:TURRET_COMMAND";
@@ -317,5 +317,37 @@ describe("hunters following a jump", () => {
     expect(followingHuntersShare(2, s, {})).toBe(1);
     player(s, "p1").alive = false;
     expect(followingHuntersShare(0.5, s, registry)).toBe(0.5);
+  });
+});
+
+describe("an ignored battle", () => {
+  it("waves arrive and shoot unopposed through the shield until the hull gives out and the Daedalus explodes", () => {
+    // Nobody acts. Oxygen and incidents are switched off so the crew lives long enough for the hunters to finish the job.
+    const base = noIncidents(DEFAULT_CONFIG);
+    let s = createGame(makeSeats(3), { ...base, ship: { ...base.ship, oxygen: { ...base.ship.oxygen, perCycle: 0 } } }, 3);
+    const { plasmaShield, hull } = s.config.ship;
+    expect([s.ship.plasmaShield, s.ship.hull]).toEqual([plasmaShield.start, hull.start]);
+    let sawHunters = false;
+    let hullHits = 0;
+    let cycles = 0;
+    while (s.phase === "playing") {
+      expect(++cycles).toBeLessThan(500);
+      const before = s.ship;
+      s = nextCycle(s);
+      sawHunters ||= s.hunters.list.length > 0;
+      // Only the shield regenerates on its own: the hull never goes up, the shield by at most its regen.
+      const regenerated = Math.min(plasmaShield.max, before.plasmaShield + plasmaShield.regen);
+      expect(s.ship.hull).toBeLessThanOrEqual(before.hull);
+      expect(s.ship.plasmaShield).toBeLessThanOrEqual(regenerated);
+      if (s.ship.hull < before.hull) {
+        hullHits++;
+        // The shield takes its share of every hit while it has any left (visible unless regen tops it back up to max).
+        if (before.plasmaShield > 0 && before.plasmaShield + plasmaShield.regen <= plasmaShield.max) expect(s.ship.plasmaShield).toBeLessThan(regenerated);
+      }
+    }
+    expect(sawHunters).toBe(true);
+    expect(hullHits).toBeGreaterThan(1);
+    expect(s.ship.hull).toBe(0);
+    expect([s.phase, s.winner, s.ending]).toEqual(["ended", "mush", "ship_destroyed"]);
   });
 });
