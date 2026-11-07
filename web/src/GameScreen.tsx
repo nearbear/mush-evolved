@@ -31,6 +31,8 @@ export function GameScreen({ ticket, onLeave, waking = false }: { ticket: SeatTi
         setClockOffset(msg.now - Date.now());
         setNextCycleAt(msg.nextCycleAt);
         setBotsPaused(msg.botsPaused);
+      } else if (msg.type === "chatEdit") {
+        // Ticks on a page the client fetched; the page cache that uses them is phase 4 of docs/plans/chat-pages.md.
       } else showError(i18n.t(`errors.${msg.message}` as never, { defaultValue: msg.message, max: MAX_CHAT_LENGTH, lines: MAX_CHAT_LINES }));
     });
     // 4001 = invalid seat token (e.g. the local server was restarted).

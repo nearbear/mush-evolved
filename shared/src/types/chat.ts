@@ -98,6 +98,20 @@ export interface ChatMessage {
 /** A chat message as a live view carries it: no game-wide `id` (see `ChatMessage.id`). Named by `channel` and `seq`. */
 export type ChatLine = Omit<ChatMessage, "id">;
 
+/**
+ * Which task lines of a checklist message are ticked (#355, docs/plans/chat-pages.md phase 2). Kept in the state beside
+ * the chat (`GameState.chatMarks`), so a message's text stays as typed and a sealed page is never written again. Every
+ * view applies it to the text (`markedText`).
+ */
+export interface ChatMark {
+  /** The author: only they may tick. */
+  from: PlayerId;
+  /** The 0-based lines that are task items outside code fences (`taskLines`, chat.ts), ascending. */
+  tasks: number[];
+  /** The task lines ticked now, ascending. */
+  checked: number[];
+}
+
 /** A full page that left the state, for the server to store (`chatPageKey`). */
 export interface SealedChatPage {
   channel: ChannelId;

@@ -27,7 +27,7 @@ import { inactivityCycle } from "./inactivity.ts";
 import { emptyResources } from "./resources.ts";
 import { hasSkill } from "./skills.ts";
 import { rollFloat, shuffle } from "./rng.ts";
-import { chatChannels, readChannels } from "./chat.ts";
+import { chatChannels, chatMarkKey, markedText, readChannels } from "./chat.ts";
 import { moderateName } from "./moderation.ts";
 import { clone, dayOf, fail, findPlayer, type ActionResult } from "./helpers.ts";
 
@@ -62,7 +62,6 @@ import type {
   PlayerState,
   PlayerView,
   SeatView,
-  ChatLine,
   ChatMessage,
   ExpeditionReportView,
   RoomId,
@@ -123,6 +122,7 @@ export function createGame(
     nextChatId: 1,
     chatSeq: {},
     chatOutbox: { sealed: [], dropped: [] },
+    chatMarks: {},
     channels: [],
     nextChannelId: 1,
     plans: [],
@@ -431,15 +431,14 @@ function grantCarePoints(state: GameState): void {
   }
 }
 
-/** A chat message as a view carries it: field by field, so a name stored by an older build never goes out. */
-export function messageView({ id, seq, cycle, at, channel, from, isBot, text, system }: Readonly<ChatMessage>): ChatMessage {
-  return { id, seq, cycle, ...(at !== undefined && { at }), channel, from, isBot, text, ...(system && { system }) };
-}
-
-/** `messageView` without the game-wide `id`, as a live view carries it (`ChatMessage.id` says why). */
-export function chatLine(message: Readonly<ChatMessage>): ChatLine {
-  const { id: _id, ...line } = messageView(message);
-  return line;
+/**
+ * A chat message as a view carries it: field by field, so a name stored by an older build never goes out, with its
+ * ticks from `marks` (`GameState.chatMarks`) drawn into the text (`markedText`).
+ */
+export function messageView({ id, seq, cycle, at, channel, from, isBot, text, system }: Readonly<ChatMessage>, marks: Readonly<GameState["chatMarks"]>): ChatMessage {
+  const key = chatMarkKey(channel, seq);
+  const shown = markedText(text, Object.hasOwn(marks, key) ? marks[key] : undefined);
+  return { id, seq, cycle, ...(at !== undefined && { at }), channel, from, isBot, text: shown, ...(system && { system }) };
 }
 
 /** Every thread, as a view carries it (for readers of global chat). */
@@ -459,7 +458,7 @@ export function sharedPlanetsView(state: Readonly<Pick<GameState, "sharedPlanets
  */
 export function viewFor(state: GameState, playerId: PlayerId): PlayerView {
   const view = seatViewFor(state, playerId);
-  return { ...view, log: view.log.map(({ id: _id, ...line }) => line), chat: view.chat.map(chatLine) };
+  return { ...view, log: view.log.map(({ id: _id, ...line }) => line), chat: view.chat.map(({ id: _id, ...line }) => line) };
 }
 
 /**
@@ -565,7 +564,7 @@ export function seatViewFor(state: GameState, playerId: PlayerId): SeatView {
       .filter((e) => seesLine(e, you) && inLogWindow(state, e, logWindow))
       .map((e) => (e.visibleTo === "all" ? e : { ...e, visibleTo: [you.id] })),
     logSeen: you.logSeen,
-    chat: state.chat.filter((m) => channels.includes(m.channel)).map(messageView),
+    chat: state.chat.filter((m) => channels.includes(m.channel)).map((m) => messageView(m, state.chatMarks)),
     chatCounts: Object.fromEntries(channels.flatMap((c) => (state.chatSeq[c] ? [[c, state.chatSeq[c]]] : []))),
     chatChannels: chatChannels(state, you),
     readChannels: channels,

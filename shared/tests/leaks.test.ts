@@ -167,6 +167,8 @@ function ship(): { state: GameState; sentinels: Sentinel[] } {
   s.chatSeq["pc-1"] = num("chatSeq-private", ["p1", "p3"]);
   // Pages on their way to storage go to no one.
   s.chatOutbox.sealed.push({ channel: "global", page: 0, messages: [{ id: 3, seq: 0, cycle: s.cycle, channel: "global", from: "p0", isBot: false, text: str("sealedChat", []) }] });
+  // Ticks go out only drawn into the text of a message you can read, never as the entries themselves.
+  s.chatMarks["pc-1:0"] = { from: "p1", tasks: [num("chatMarkTask", [])], checked: [num("chatMarkChecked", [])] };
   // A plan goes to its channel's members only (plans.ts).
   s.plans.push({ id: "plan-1", channel: "pc-1", author: "p1", room: str("planRoom", ["p1", "p3"]), purpose: "meal", slots: [{ kind: "onCall", holder: "p3" }], status: "open", postedDay: 1 });
   s.nextPlanId = num("nextPlanId", []);

@@ -99,7 +99,7 @@ describe("threads", () => {
     const { state: base, id } = withThread();
     const state = must(sendChat(base, "p0", id, "- [ ] fix the hull"));
     const message = state.chat.at(-1)!;
-    expect(must(toggleCheckbox(state, "p0", id, message.seq, 0)).chat.at(-1)!.text).toBe("- [x] fix the hull");
+    expect(viewFor(must(toggleCheckbox(state, "p0", id, message.seq, 0)), "p1").chat.at(-1)!.text).toBe("- [x] fix the hull");
   });
 
   it("are replayed from the createThread input", () => {

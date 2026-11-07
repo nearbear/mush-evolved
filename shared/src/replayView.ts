@@ -34,7 +34,7 @@ export function streamsOf(full: Readonly<FullView>): Streams {
 
 /**
  * `earlier` plus what `full` holds, by id: entries `full` dropped are kept, and where both hold an entry, `full`'s
- * wins (an entry can change in place, such as a ticked checkbox). Give it the frames in order.
+ * wins. Chat keeps its text as typed; `revealFor` draws the frame's ticks (`chatMarks`). Give it the frames in order.
  */
 export function mergeStreams(earlier: Readonly<Streams>, full: Readonly<FullView>): Streams {
   return { log: mergeById(earlier.log, full.log), chat: mergeById(earlier.chat, full.chat) };
@@ -98,7 +98,8 @@ export function revealFor(full: Readonly<FullView>, followSeat: PlayerId, stream
   const view: SeatView = {
     ...own,
     log,
-    chat: streams.chat.map(messageView),
+    // The text as typed, with the ticks of this frame (chatMarks).
+    chat: streams.chat.map((m) => messageView(m, full.chatMarks)),
     readChannels: readable,
     privateChannels: full.channels.map((c) => ({ ...c, members: [...c.members] })),
     plans: plansView(full, readable),

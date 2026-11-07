@@ -7,7 +7,7 @@ import type { RelayPool, ResearchPool } from "../relay.ts";
 import type { RngState } from "../rng.ts";
 import type { TitleId } from "../titles.ts";
 import type { ItemState, LogEntry, PlayerId, RoomId } from "../types.ts";
-import type { ChannelId, ChatMessage, ChatOutbox, ChatThread, PrivateChannel, SharedPlanet } from "./chat.ts";
+import type { ChannelId, ChatMark, ChatMessage, ChatOutbox, ChatThread, PrivateChannel, SharedPlanet } from "./chat.ts";
 import type { DeepReadonly, Equipment, ExpeditionEventKind, GameConfig } from "./config.ts";
 import type { Plan } from "./plan.ts";
 import type { PlayerState } from "./player.ts";
@@ -68,6 +68,8 @@ export interface GameState {
   chatSeq: Partial<Record<ChannelId, number>>;
   /** Pages to store and delete, which the server takes after every input. Not in the full view. */
   chatOutbox: ChatOutbox;
+  /** Each checklist message's ticks, by `chatMarkKey` (chat.ts). Never sent as is: views apply them to the text. */
+  chatMarks: Record<string, ChatMark>;
   channels: PrivateChannel[];
   nextChannelId: number;
   /**

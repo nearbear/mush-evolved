@@ -1,15 +1,19 @@
 // Chat pages (#355, docs/plans/chat-pages.md): fixed pages of CHAT_PAGE messages per channel, sealed into an outbox the
 // server stores, with views naming messages by channel and seq, never the game-wide id.
 import { describe, expect, it } from "vitest";
-import { CHAT_PAGE, chatPageOf, sendChat, takeChatOutbox } from "../src/chat.ts";
+import { CHAT_PAGE, chatPageOf, createChannel, leaveChannel, sendChat, takeChatOutbox, toggleCheckbox } from "../src/chat.ts";
 import { DEFAULT_CONFIG } from "../src/config.ts";
 import { contaminate } from "../src/infection.ts";
+import { ITRACKIE_ITEM } from "../src/items.ts";
+import { mergeStreams, revealFor, streamsOf } from "../src/replayView.ts";
 import { stampEntries } from "../src/replay.ts";
 import { createGame, viewFor } from "../src/rules.ts";
 import { fullViewFor } from "../src/fullView.ts";
 import { applyDiff, diffView } from "../src/viewDiff.ts";
 import { MUSH_CHANNEL, type GameState } from "../src/types.ts";
 import { clone, makeSeats, must, player } from "./support.ts";
+
+const error = (r: { ok: boolean; error?: string }): string | undefined => (r.ok ? undefined : r.error);
 
 const seats = makeSeats(4, "others");
 const post = (state: GameState, n: number, channel: "global" | "botany" = "global"): GameState => {
@@ -83,5 +87,89 @@ describe("chat pages", () => {
     expect(view.chatCounts).toEqual({ global: 2 });
     expect(view.readChannels).not.toContain(MUSH_CHANNEL);
     expect(viewFor(state, mush.id).chatCounts[MUSH_CHANNEL]).toBe(1);
+  });
+});
+
+describe("checklist ticks (phase 2)", () => {
+  const LIST = "plan\n- [ ] hull\n- [x] oxygen";
+  /** p0's checklist at `seq` 0 of global chat, then `after` more messages. */
+  const listThen = (after: number): GameState => post(must(sendChat(createGame(seats, DEFAULT_CONFIG, 1), "p0", "global", LIST)), after);
+  const shown = (state: GameState, by = "p1", seq = 0) => viewFor(state, by).chat.find((m) => m.channel === "global" && m.seq === seq)?.text;
+
+  it("start from the boxes as typed, and are kept beside the message, not in it", () => {
+    const state = listThen(0);
+    expect(state.chatMarks).toEqual({ "global:0": { from: "p0", tasks: [1, 2], checked: [2] } });
+    const ticked = must(toggleCheckbox(state, "p0", "global", 0, 1));
+    expect(ticked.chatMarks["global:0"]!.checked).toEqual([1, 2]);
+    expect(ticked.chat[0]!.text).toBe(LIST);
+    expect(ticked.chat).toEqual(state.chat);
+    expect(shown(ticked)).toBe("plan\n- [x] hull\n- [x] oxygen");
+    expect(shown(must(toggleCheckbox(ticked, "p0", "global", 0, 2)))).toBe("plan\n- [x] hull\n- [ ] oxygen");
+  });
+
+  it("are only made for a player's message with a task line", () => {
+    let state = post(createGame(seats, DEFAULT_CONFIG, 1), 1);
+    state = must(sendChat(state, "p0", "global", "```\n- [ ] in code\n```"));
+    expect(state.chatMarks).toEqual({});
+    expect(error(toggleCheckbox(state, "p0", "global", 0, 0))).toBe("message_not_found");
+    expect(error(toggleCheckbox(state, "p0", "global", 1, 1))).toBe("message_not_found");
+  });
+
+  it("toggle the same on the open page, the tail and a page two back, with nothing read from storage", () => {
+    for (const after of [1, CHAT_PAGE, 2 * CHAT_PAGE + 5]) {
+      const state = listThen(after);
+      takeChatOutbox(state);
+      const ticked = must(toggleCheckbox(state, "p0", "global", 0, 1));
+      expect(ticked.chatOutbox).toEqual({ sealed: [], dropped: [] });
+      expect(ticked.chat).toEqual(state.chat);
+      expect(ticked.chatMarks["global:0"]!.checked).toEqual([1, 2]);
+    }
+    // Two pages back, the message is in no view; the tail still carries it ticked.
+    expect(shown(must(toggleCheckbox(listThen(2 * CHAT_PAGE + 5), "p0", "global", 0, 1)))).toBeUndefined();
+    expect(shown(must(toggleCheckbox(listThen(CHAT_PAGE + 5), "p0", "global", 0, 1)))).toBe("plan\n- [x] hull\n- [x] oxygen");
+  });
+
+  it("are the author's alone, while they can still post to the channel", () => {
+    const state = listThen(0);
+    expect(error(toggleCheckbox(state, "p1", "global", 0, 1))).toBe("message_not_yours");
+    expect(error(toggleCheckbox(state, "p0", "global", 0, 0))).toBe("checkbox_not_found");
+    expect(error(toggleCheckbox(state, "p0", "global", 0, 1.5))).toBe("checkbox_not_found");
+    expect(error(toggleCheckbox(state, "p0", "botany", 0, 1))).toBe("message_not_found");
+    const bare = clone(state);
+    bare.items = bare.items.filter((i) => !(i.type === ITRACKIE_ITEM && i.at.kind === "player" && i.at.id === "p0"));
+    expect(error(toggleCheckbox(bare, "p0", "global", 0, 1))).toBe("message_not_found");
+  });
+
+  it("never reach a view as entries, nor anyone who can't read the channel", () => {
+    let state = must(createChannel(createGame(seats, DEFAULT_CONFIG, 1), "p0", "", ["p1"]));
+    const channel = state.channels[0]!.id;
+    state = must(sendChat(state, "p0", channel, "- [ ] secret task"));
+    state = must(toggleCheckbox(state, "p0", channel, 0, 0));
+    expect(viewFor(state, "p1").chat.find((m) => m.channel === channel)!.text).toBe("- [x] secret task");
+    for (const p of ["p0", "p1", "p2", "p3"]) expect(JSON.stringify(viewFor(state, p))).not.toContain("chatMarks");
+    expect(JSON.stringify(viewFor(state, "p2"))).not.toContain("secret task");
+  });
+
+  it("go with a private channel when its last member leaves", () => {
+    let state = must(createChannel(createGame(seats, DEFAULT_CONFIG, 1), "p0"));
+    const channel = state.channels[0]!.id;
+    state = must(sendChat(state, "p0", channel, "- [ ] a"));
+    state = must(sendChat(state, "p0", "global", "- [ ] b"));
+    expect(Object.keys(state.chatMarks)).toEqual([`${channel}:0`, "global:0"]);
+    expect(Object.keys(must(leaveChannel(state, "p0", channel)).chatMarks)).toEqual(["global:0"]);
+  });
+
+  it("replay: a toggle on a page two back shows in the frame after it, the text as typed in the streams", () => {
+    const before = listThen(2 * CHAT_PAGE + 5);
+    const after = must(toggleCheckbox(before, "p0", "global", 0, 1));
+    const [a, b] = [fullViewFor(before, null), fullViewFor(after, null)];
+    expect(applyDiff(a, diffView(a, b))).toEqual(b);
+    // The streams still hold the first message from an earlier frame.
+    const streams = mergeStreams(mergeStreams(streamsOf(fullViewFor(listThen(0), null)), a), b);
+    expect(streams.chat[0]!.text).toBe(LIST);
+    const follow = after.players[0]!.mind;
+    const text = (full: typeof a) => revealFor(full, follow, streams).view.chat.find((m) => m.channel === "global" && m.seq === 0)!.text;
+    expect(text(a)).toBe(LIST);
+    expect(text(b)).toBe("plan\n- [x] hull\n- [x] oxygen");
   });
 });

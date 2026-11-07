@@ -37,6 +37,7 @@ export const GAME_STATE_FIELDS: Record<string, FieldRule> = {
   nextLogId: { reach: "never", test: "leaks.test.ts", note: "Secret: it counts every line written, hidden ones included, so its jumps would show a hidden line (a conversion, say). That is why live views carry no log ids either; only the replay's SeatView has them." },
   nextChatId: { reach: "never", test: "leaks.test.ts", note: "Game-wide, like message ids, which never go out: a gap would show posts you can't read (#355)." },
   chatSeq: { reach: "filtered", test: "leaks.test.ts", note: "As `chatCounts`, for your read channels only." },
+  chatMarks: { reach: "never", test: "chatPages.test.ts", note: "Checklist ticks: drawn into the text of the messages each view carries, never sent as entries (#355, leaks.test.ts too)." },
   chatOutbox: { reach: "never", test: "leaks.test.ts", note: "Sealed pages on their way to storage; read through `chatPage` (#355)." },
   channels: { reach: "filtered", test: "leaks.test.ts", note: "Private channels you are a member of." },
   nextChannelId: { reach: "never", test: "leaks.test.ts", note: "Not secret (channel ids show it), just not sent." },

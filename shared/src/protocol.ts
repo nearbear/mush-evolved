@@ -15,6 +15,7 @@ import {
   MUSH_CHANNEL,
   type Action,
   type ChannelId,
+  type ChatMark,
   type PlanDraft,
   type PlayerId,
   type PlayerView,
@@ -97,6 +98,9 @@ export type GameServerMessage =
   // single player, where cycles end only by End cycle. `botsPaused` says why model bots are waiting instead of
   // playing, or null (see BotPause).
   | { type: "view"; view: PlayerView; cheatsAllowed: boolean; now: number; nextCycleAt: number | null; botsPaused: BotPause | null }
+  // A checklist's ticks changed on a message two or more pages back, which no view carries (#355): the reader redraws a
+  // copy it fetched (`markedText`). Only to connections whose body reads the channel; never an `id`.
+  | { type: "chatEdit"; channel: ChannelId; seq: number; mark: Pick<ChatMark, "tasks" | "checked"> }
   | { type: "error"; message: string };
 
 export function parseMatchmakerMessage(raw: string): MatchmakerClientMessage | null {

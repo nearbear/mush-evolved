@@ -501,6 +501,43 @@ describe("GameRoom persistence", () => {
     expect(storage.data.get("input:000000002")).not.toHaveProperty("chatId");
   });
 
+  it("sends a checklist's ticks from a page two back to its channel's readers only, and the record's id finds it on its stored page (#355, #292)", async () => {
+    vi.useFakeTimers({ now: 1_000_000 });
+    try {
+      const { room, storage } = await newRoom(3);
+      const [c0, c1, c2] = ["tok0", "tok1", "tok2"].map((t) => connect(room, t));
+      await send(room, c0, { type: "createChannel", name: "crew", members: [lastView(c1!).you.id] });
+      const channel = lastView(c0!).privateChannels[0]!.id;
+      // Each past the chat rate limit, well short of a cycle.
+      const social = async (msg: unknown) => {
+        vi.setSystemTime(Date.now() + 2_001);
+        await send(room, c0!, msg);
+      };
+      const say = (text: string) => social({ type: "chat", channel, text });
+      const edits = (c: Conn) => c.messages<GameServerMessage>().filter((m) => m.type === "chatEdit");
+      await say("- [ ] hull\n- [ ] oxygen");
+      // On the open page, the views carry the tick.
+      await social({ type: "toggleCheckbox", channel, seq: 0, line: 0 });
+      expect(lastView(c1!).chat.find((m) => m.channel === channel && m.seq === 0)!.text).toBe("- [x] hull\n- [ ] oxygen");
+      expect(edits(c1!)).toEqual([]);
+      for (let i = 1; i <= 2 * CHAT_PAGE; i++) await say(`line ${i}`);
+      expect(lastView(c1!).chatCounts[channel]).toBe(2 * CHAT_PAGE + 1);
+      expect(lastView(c1!).chat.some((m) => m.channel === channel && m.seq === 0)).toBe(false);
+      await social({ type: "toggleCheckbox", channel, seq: 0, line: 1 });
+      const edit = { type: "chatEdit", channel, seq: 0, mark: { tasks: [0, 1], checked: [0, 1] } };
+      expect(edits(c0!)).toEqual([edit]);
+      expect(edits(c1!)).toEqual([edit]);
+      expect(edits(c2!)).toEqual([]);
+      // The stored page keeps the text as typed, and the recorded id names the message on it.
+      const page = storage.data.get(chatPageKey(channel, 0)) as ChatMessage[];
+      expect(page[0]!.text).toBe("- [ ] hull\n- [ ] oxygen");
+      const record = [...(await storage.list({ prefix: "input:" })).values()] as RecordedInput[];
+      expect(record.find((r) => r.input.type === "chat")!.chatId).toBe(page[0]!.id);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
   it("stores each sealed chat page beside the snapshot, and deletes a private channel's pages with it (#355)", async () => {
     vi.useFakeTimers({ now: 1_000_000 });
     try {

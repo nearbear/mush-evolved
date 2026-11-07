@@ -13,6 +13,7 @@ import {
   stampEntries,
   takeChatOutbox,
   chatPageKey,
+  chatMarkKey,
   bodyOf,
   legalActions,
   nextDue,
@@ -102,7 +103,7 @@ const REPLAY_RETRY_MAX_MS = 60 * 60_000;
  * Bump when GameState's shape changes, or ConfigOverrides' (or what resolveConfig derives from a key). Games stored
  * under another version are discarded on load (there is no migration; games are short-lived).
  */
-export const STATE_VERSION = 112;
+export const STATE_VERSION = 113;
 
 /**
  * A ship's overrides from its setup (#232): the knobs, plus the setup's id for the record and the view. The setup is
@@ -915,6 +916,7 @@ export class GameRoom extends Server<Env> {
     for (const { channel, page, messages } of outbox.sealed) entries[chatPageKey(channel, page)] = messages;
     await this.persist(entries, outbox.dropped.flatMap(({ channel, pages }) => Array.from({ length: pages }, (_, page) => chatPageKey(channel, page))));
     if (room !== null) this.broadcastViews(room);
+    if (input.type === "toggleCheckbox") this.sendChatEdit(input.channel, input.seq);
     // Saved with the next input; until then a restart only repeats an idempotent write.
     await this.releaseAccounts();
     await this.recordFinished();
@@ -945,6 +947,23 @@ export class GameRoom extends Server<Env> {
       if (!playerId) continue;
       const by = this.body(playerId);
       if (room === undefined || this.game?.players.find((p) => p.id === by)?.room === room) this.sendView(conn, playerId);
+    }
+  }
+
+  /**
+   * A checklist ticked on a message no view carries any more (two or more pages back, #355): its ticks go to every
+   * connection whose body reads the channel, for a copy the client fetched. A message still in the state is in the
+   * views just sent.
+   */
+  private sendChatEdit(channel: ChannelId, seq: number): void {
+    const game = this.game;
+    const mark = game?.chatMarks[chatMarkKey(channel, seq)];
+    if (!game || !mark || game.chat.some((m) => m.channel === channel && m.seq === seq)) return;
+    const msg: GameServerMessage = { type: "chatEdit", channel, seq, mark: { tasks: [...mark.tasks], checked: [...mark.checked] } };
+    for (const conn of this.getConnections<SeatState>()) {
+      const seat = conn.state?.playerId;
+      const body = seat && game.players.find((p) => p.id === this.body(seat));
+      if (body && readChannels(game, body).includes(channel)) this.send(conn, msg);
     }
   }
 

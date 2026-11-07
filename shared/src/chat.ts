@@ -10,7 +10,7 @@ import { noITrackieNeeded } from "./comms.ts";
 import { clone, fail, dayOf, findPlayer, type ActionResult } from "./helpers.ts";
 import { dropChannelPlans, leavePlans } from "./plans.ts";
 import { CHAT_CHANNELS, GRAVEYARD_CHANNEL, MUSH_CHANNEL } from "./types.ts";
-import type { ChannelId, ChatMessage, ChatOutbox, GameState, PlayerId, PlayerState, PrivateChannelId, SharedPlanetId, ThreadId } from "./types.ts";
+import type { ChannelId, ChatMark, ChatMessage, ChatOutbox, GameState, PlayerId, PlayerState, PrivateChannelId, SharedPlanetId, ThreadId } from "./types.ts";
 
 /** Longest chat message the rules accept. Moderation trims before this. */
 /** A private channel's id from untrusted input, or null. */
@@ -48,7 +48,16 @@ export function pushChat(state: GameState, channel: ChannelId, message: Omit<Cha
   }
   state.chatSeq[channel] = seq + 1;
   state.chat.push({ id: state.nextChatId++, seq, cycle: state.cycle, channel, ...message });
+  // A checklist keeps its ticks beside the chat, starting from the boxes as typed (phase 2 of the plan).
+  if (message.from === null) return;
+  const tasks = taskLines(message.text);
+  if (tasks.length > 0) {
+    state.chatMarks[chatMarkKey(channel, seq)] = { from: message.from, tasks: tasks.map((t) => t.line), checked: tasks.filter((t) => t.ticked).map((t) => t.line) };
+  }
 }
+
+/** Where `GameState.chatMarks` keeps a message's ticks. Channel ids never contain a colon. */
+export const chatMarkKey = (channel: ChannelId, seq: number): string => `${channel}:${seq}`;
 
 /** Empties the state's outbox and returns what was in it. The server stores it after every input; a replay keeps it. */
 export function takeChatOutbox(state: GameState): ChatOutbox {
@@ -70,6 +79,7 @@ export function removeFromChannel(state: GameState, channelId: PrivateChannelId,
   if (channel.members.length > 0) return true;
   state.channels = state.channels.filter((c) => c.id !== channelId);
   state.chat = state.chat.filter((m) => m.channel !== channelId);
+  for (const key of Object.keys(state.chatMarks)) if (key.startsWith(`${channelId}:`)) delete state.chatMarks[key];
   // Its stored pages go too, and any that sealed in this same input are never stored.
   const count = state.chatSeq[channelId] ?? 0;
   delete state.chatSeq[channelId];
@@ -131,36 +141,54 @@ export function sendChat(state: GameState, playerId: PlayerId, channel: ChannelI
 /** A markdown task-list line: optional quote marks and indent, a list marker, then `[ ]` or `[x]`. */
 const TASK_LINE = /^(\s*(?:>\s*)*(?:[-*+]|\d{1,9}[.)])\s+\[)([ xX])(\])/;
 
-/** Whether line `line` (0-based) of `text` is a task-list item outside a fenced code block. */
-export function isTaskLine(text: string, line: number): boolean {
+/** The task-list items of `text` outside fenced code blocks: each one's 0-based line and whether it was typed ticked. */
+export function taskLines(text: string): { line: number; ticked: boolean }[] {
+  const tasks: { line: number; ticked: boolean }[] = [];
   let fence: string | null = null;
-  const lines = text.split("\n");
-  for (let i = 0; i <= line && i < lines.length; i++) {
-    const marker = /^\s*(`{3,}|~{3,})/.exec(lines[i]!)?.[1];
-    if (marker) fence = fence === null ? marker[0]! : lines[i]!.trimStart().startsWith(fence) ? null : fence;
-    else if (i === line) return fence === null && TASK_LINE.test(lines[i]!);
-  }
-  return false;
+  text.split("\n").forEach((source, line) => {
+    const marker = /^\s*(`{3,}|~{3,})/.exec(source)?.[1];
+    if (marker) fence = fence === null ? marker[0]! : source.trimStart().startsWith(fence) ? null : fence;
+    else if (fence === null) {
+      const box = TASK_LINE.exec(source)?.[2];
+      if (box !== undefined) tasks.push({ line, ticked: box !== " " });
+    }
+  });
+  return tasks;
 }
 
 /**
- * Tick or untick a markdown checkbox in a message. Only the author may, and
- * only while they can still read the channel. The text itself changes (so
- * replays and late joiners agree), and `line` is the 0-based line of the item.
+ * `text` with each task line's box drawn from the ticks: `[x]` for a line in `checked`, `[ ]` for the others. Without
+ * ticks (no entry: not a checklist, or a private channel since deleted), the text as typed. Every view uses it; the
+ * state and the stored pages keep the text as typed.
+ */
+export function markedText(text: string, mark: Readonly<Pick<ChatMark, "tasks" | "checked">> | undefined): string {
+  if (!mark) return text;
+  const lines = text.split("\n");
+  for (const line of mark.tasks) {
+    if (lines[line] === undefined) continue;
+    const box = mark.checked.includes(line) ? "x" : " ";
+    lines[line] = lines[line].replace(TASK_LINE, (_, head: string, _mark: string, tail: string) => `${head}${box}${tail}`);
+  }
+  return lines.join("\n");
+}
+
+/**
+ * Tick or untick a markdown checkbox in a message (`line` is the 0-based line of the item). Only the author may, and
+ * only while they can still post to the channel. The ticks live in `chatMarks`, not the text (owner, 2026-11-06), so
+ * this needs only the state and works the same on a message in any page, sealed or not.
  */
 export function toggleCheckbox(state: GameState, playerId: PlayerId, channel: ChannelId, seq: number, line: number): ActionResult {
   const p = findPlayer(state, playerId);
   if (!p) return fail("unknown_player");
-  const message = state.chat.find((m) => m.channel === channel && m.seq === seq);
-  if (!message || !chatChannels(state, p).includes(message.channel)) return fail("message_not_found");
-  if (message.from !== p.id) return fail("message_not_yours");
-  if (!Number.isInteger(line) || !isTaskLine(message.text, line)) return fail("checkbox_not_found");
+  const key = chatMarkKey(channel, seq);
+  const mark = Object.hasOwn(state.chatMarks, key) ? state.chatMarks[key] : undefined;
+  if (!mark || !chatChannels(state, p).includes(channel)) return fail("message_not_found");
+  if (mark.from !== p.id) return fail("message_not_yours");
+  if (!mark.tasks.includes(line)) return fail("checkbox_not_found");
 
   const next = clone(state);
-  const target = next.chat.find((m) => m.id === message.id)!;
-  const lines = target.text.split("\n");
-  lines[line] = lines[line]!.replace(TASK_LINE, (_, head: string, mark: string, tail: string) => `${head}${mark === " " ? "x" : " "}${tail}`);
-  target.text = lines.join("\n");
+  const target = next.chatMarks[key]!;
+  target.checked = target.checked.includes(line) ? target.checked.filter((l) => l !== line) : [...target.checked, line].sort((a, b) => a - b);
   return { ok: true, state: next };
 }
 

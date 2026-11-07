@@ -198,13 +198,15 @@ describe("checkbox messages", () => {
   const text = "todo\n- [ ] a\n- [x] b\n```\n- [ ] code\n```\n> 1. [ ] quoted";
   const posted = must(sendChat(base, "p1", "global", text));
   const seq = posted.chat[0]!.seq;
-  const textOf = (s: GameState) => s.chat.find((m) => m.channel === "global" && m.seq === seq)!.text;
+  // Ticks are kept beside the message (chatMarks) and drawn into its text in each view.
+  const textOf = (s: GameState) => viewFor(s, "p2").chat.find((m) => m.channel === "global" && m.seq === seq)!.text;
   const toggle = (s: GameState, by: string, line: number, at = seq) => toggleCheckbox(s, by, "global", at, line);
 
   it("lets the author tick and untick, by line", () => {
     const ticked = must(toggle(posted, "p1", 1));
     expect(textOf(ticked)).toBe(text.replace("- [ ] a", "- [x] a"));
-    expect(textOf(must(toggle(ticked, "p1", 2)))).toBe(ticked.chat[0]!.text.replace("- [x] b", "- [ ] b"));
+    expect(textOf(must(toggle(ticked, "p1", 2)))).toBe(textOf(ticked).replace("- [x] b", "- [ ] b"));
+    expect(ticked.chat[0]!.text).toBe(text);
     expect(textOf(must(toggle(posted, "p1", 6)))).toContain("> 1. [x] quoted");
   });
 
