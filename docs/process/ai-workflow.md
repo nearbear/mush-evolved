@@ -2556,3 +2556,10 @@ The owner asked for an honest, ranked verdict on the #384 plan settled earlier t
 - **What worked:** the clean-room `emush spec` on upstream's patrol shooting test gave the formula directly (base roll + blaster gun + Cygni, independent +1s). Following the Sirius pattern (a ship-wide function in `comms.ts`, `patrolDamageBonus`, and a `config.comms.rebel.cygniPatrolDamage` knob) beat the per-player modifier registry, since the bonus belongs to the ship, not a player. Config only, so no `STATE_VERSION` bump.
 - **Needed correction:** `emush spec` with a free-text topic found nothing; it needs a file path.
 - **Correction (owner):** the Cygni effect does not replace #173; that blueprint issue stays open. Claude had written it as settled in the docs and asked to close it.
+
+### 2026-11-07: Normalizing stored state, phase 2 step 1: the types (#384)
+
+- Built step 1 of `docs/plans/normalize-state.md`: `GameCore` (every `GameState` field but `config`, `rng`, `chatOutbox`), `GameState extends GameCore`, `FullView extends GameCore` plus `config` and `starts` (was `Omit<GameState, …>`), and the server's `Stored` renamed `StoredRoom`. Type-only; the stored shape and `STATE_VERSION` (114) are unchanged.
+- Decision 3 (owner): a throw while normalizing is not caught in phase 2, since phase 3 (keep the snapshot, refuse connections) follows straight after. The proposed temporary catch-and-discard was dropped.
+- Needed correction: `tools/tests/leaks/fields.test.ts` finds state fields by regex over the `GameState` interface body, so after the split it saw only three fields. Typecheck passed; `npm run verify` caught it. It now reads both bodies. Source-parsing tests are a blind spot for type refactors that the compiler can't see.
+- The `config.ts` pointer to `STATE_VERSION`'s new home waits for step 4, when it actually moves.

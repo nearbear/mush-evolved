@@ -121,7 +121,8 @@ export function shipOverrides(setup: unknown): ConfigOverrides {
   return { ...setupOverrides(used.knobs), setupId: used.id };
 }
 
-interface Stored {
+/** The room's snapshot in Durable Object storage, under "game". */
+interface StoredRoom {
   version?: number;
   /** Without its config, which is resolved from `overrides` on each load, so live games pick up balance changes. */
   game: Omit<GameState, "config">;
@@ -270,7 +271,7 @@ export class GameRoom extends Server<Env> {
   }
 
   override async onStart(): Promise<void> {
-    const stored = await this.ctx.storage.get<Stored>("game");
+    const stored = await this.ctx.storage.get<StoredRoom>("game");
     if (stored?.version !== STATE_VERSION) {
       // Only the snapshot goes; the record ("setup", "input:*", "blocked:*", "account:*") is kept for the replay (#167).
       if (stored) await this.ctx.storage.delete("game");
@@ -1153,7 +1154,7 @@ export class GameRoom extends Server<Env> {
   private async persist(entries: Record<string, unknown> = {}, deletes: readonly string[] = []): Promise<void> {
     if (!this.game) return;
     const { config: _, ...game } = this.game;
-    const stored: Stored = {
+    const stored: StoredRoom = {
       version: STATE_VERSION,
       game,
       overrides: this.overrides,

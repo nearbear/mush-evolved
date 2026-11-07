@@ -22,7 +22,8 @@ const unlisted = (fields: string[], listed: Record<string, FieldRule>) => fields
 const gone = (fields: string[], listed: Record<string, FieldRule>) => Object.keys(listed).filter((f) => !fields.includes(f));
 
 describe("leakFields.ts matches the state interfaces", () => {
-  const game = interfaceFields("types/state.ts", "GameState");
+  // GameState extends GameCore (#384), so its fields are both bodies.
+  const game = [...interfaceFields("types/state.ts", "GameCore"), ...interfaceFields("types/state.ts", "GameState")];
   const player = [...interfaceFields("types.ts", "Seat"), ...interfaceFields("types/player.ts", "PlayerState")];
   const item = interfaceFields("types.ts", "ItemState");
 

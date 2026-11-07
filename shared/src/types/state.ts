@@ -31,11 +31,12 @@ export interface ShipResources {
   plasmaShield: number;
 }
 
-/** Full authoritative state. Server-only: never send this to a client. */
-export interface GameState {
-  /** Read-only: the stored game keeps only its overrides and resolves this again on each load, so a write here is lost. */
-  readonly config: DeepReadonly<GameConfig>;
-  rng: RngState;
+/**
+ * The game's own data: every `GameState` field except the config (resolved from the overrides on each load), the RNG and
+ * the chat outbox. Both the live game (`GameState`) and a replay frame (`FullView`) extend it, and its normalizer
+ * (#384) covers it once for both.
+ */
+export interface GameCore {
   cycle: number;
   phase: "playing" | "ended";
   /** True from launch until Mush are chosen (preselection.ts): nobody is Mush yet and players may still join. */
@@ -66,8 +67,6 @@ export interface GameState {
   nextChatId: number;
   /** Messages ever posted in each channel, so the next `seq`. Missing means none. */
   chatSeq: Partial<Record<ChannelId, number>>;
-  /** Pages to store and delete, which the server takes after every input. Not in the full view. */
-  chatOutbox: ChatOutbox;
   /** Each checklist message's ticks, by `chatMarkKey` (chat.ts). Never sent as is: views apply them to the text. */
   chatMarks: Record<string, ChatMark>;
   channels: PrivateChannel[];
@@ -183,6 +182,15 @@ export interface GameState {
    * deadlines such as accommodation offers. Never sent.
    */
   now: number;
+}
+
+/** Full authoritative state. Server-only: never send this to a client. */
+export interface GameState extends GameCore {
+  /** Read-only: the stored game keeps only its overrides and resolves this again on each load, so a write here is lost. */
+  readonly config: DeepReadonly<GameConfig>;
+  rng: RngState;
+  /** Pages to store and delete, which the server takes after every input. Not in the full view. */
+  chatOutbox: ChatOutbox;
 }
 
 /**

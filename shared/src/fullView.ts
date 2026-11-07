@@ -10,7 +10,7 @@ import type { CharacterId } from "./characters.ts";
 import { clone } from "./helpers.ts";
 import { bodyOf } from "./mind.ts";
 import { seatViewFor } from "./rules.ts";
-import type { GameState, PlayerId, Role, SeatView } from "./types.ts";
+import type { DeepReadonly, GameConfig, GameCore, GameState, PlayerId, Role, SeatView } from "./types.ts";
 import { HistoryError } from "./viewHistory.ts";
 
 /** A seat as it was when the Mush were chosen: Mush then means an alpha Mush, Mush later a beta Mush. */
@@ -23,7 +23,9 @@ export interface SeatStart {
 export type SeatStarts = Record<PlayerId, SeatStart>;
 
 /** The game as a replay shows it. */
-export interface FullView extends Omit<GameState, "rng" | "chatOutbox"> {
+export interface FullView extends GameCore {
+  /** The game's whole resolved config as it was at this step, not just its overrides. */
+  readonly config: DeepReadonly<GameConfig>;
   /** Each seat's role and character when the Mush were chosen; null before they are (pre-selection). */
   starts: SeatStarts | null;
 }
