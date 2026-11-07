@@ -6,7 +6,7 @@ import type { TurnSide } from "../navigation.ts";
 import type { PlanetDirection } from "../planets.ts";
 import type { TitleId } from "../titles.ts";
 import type { Action, BotKind, ItemId, LogEntry, LogLine, PlayerId, Role, RoomId } from "../types.ts";
-import type { ChannelId, ChatMessage, ChatThread, PrivateChannel, SharedPlanet } from "./chat.ts";
+import type { ChannelId, ChatLine, ChatMessage, ChatThread, PrivateChannel, SharedPlanet } from "./chat.ts";
 import type { Plan } from "./plan.ts";
 import type { MovementRules } from "./config.ts";
 import type { ActionInProgress, PlayerState, Spot } from "./player.ts";
@@ -190,8 +190,13 @@ export interface PlayerView {
    * client compares it with the last one to find the new lines at the end of `log`. It counts only lines you saw.
    */
   logSeen: number;
-  /** Messages in `readChannels`. */
-  chat: ChatMessage[];
+  /**
+   * Messages in `readChannels`: each one's open page and the page before it (#355). Older pages come by request. No
+   * `id` (`ChatLine`).
+   */
+  chat: ChatLine[];
+  /** Messages ever posted in each of `readChannels`, so its pages and its newest `seq`. Missing means none. */
+  chatCounts: Partial<Record<ChannelId, number>>;
   /** Channels you may post to right now. */
   chatChannels: ChannelId[];
   /** Channels you may read: `chatChannels`, or for the dead the public ones (and the Mush channel for a dead Mush). */
@@ -375,10 +380,11 @@ export interface CommsTerminalView {
 export type ExpeditionReportView = Omit<ExpeditionReport, "members">;
 
 /**
- * A seat's view with its log lines' ids, for the replay only (`perspective`, `seatViewFor`): click-to-jump and paging
- * key lines by id. A live view never carries them (see `PlayerView.log`). Its own type rather than an optional `id` on
+ * A seat's view with its log lines' and chat messages' ids, for the replay only (`perspective`, `seatViewFor`):
+ * click-to-jump and paging key lines by id. A live view never carries them (see `PlayerView.log`, `ChatMessage.id`). Its own type rather than an optional `id` on
  * the live one, so a live view can't be filled with ids by mistake.
  */
-export interface SeatView extends Omit<PlayerView, "log"> {
+export interface SeatView extends Omit<PlayerView, "log" | "chat"> {
   log: LogEntry[];
+  chat: ChatMessage[];
 }

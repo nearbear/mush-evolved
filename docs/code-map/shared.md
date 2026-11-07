@@ -59,7 +59,7 @@ Other packages import from `@mush2/shared` (`shared/src/index.ts`, the barrel). 
 
 ## Rule areas
 
-- `chat.ts`: chat storage, channels (`chatChannels` to post, `readChannels` to read), `sendChat`, threads under global chat (`createThread`), private channels, limits.
+- `chat.ts`: chat storage in fixed pages (`CHAT_PAGE`, `pushChat` seals a full page into `chatOutbox` for the server to store as `chatPageKey`, #355), checklist ticks kept beside the chat (`chatMarks`, `taskLines`, `markedText`; `messageView` in `rules.ts` draws them into the text; `chatPageSource`/`chatPageView` there answer a `chatPage` request), channels (`chatChannels` to post, `readChannels` to read), `sendChat`, threads under global chat (`createThread`), private channels, limits.
 - `death.ts`: `damage` (the one way HP goes down) and `killPlayer`.
 - `infection.ts`: `contaminate` (the one way contamination rises), conversion, `contaminationSeenBy`.
 - `items.ts`: item types, containers, capacity and reach helpers, `produceItem`, `removeItem`, `newItemId`.
@@ -80,7 +80,7 @@ Other packages import from `@mush2/shared` (`shared/src/index.ts`, the barrel). 
 - `types.ts`: the small shared vocabulary; re-exports `types/`.
 - `types/config.ts`: `GameConfig`, `MovementRules`, `Equipment`. Tuning is nested by feature (`config.punch.cost.ap`, `config.punch.effect.damage`, a [min, max] range).
 - `types/player.ts`: `PlayerState`, `ResourceId`.
-- `types/chat.ts`: channel and message types.
+- `types/chat.ts`: channel and message types (`ChatLine` is a message as a live view carries it: `seq`, never the game-wide `id`).
 - `types/plan.ts`: `Plan`, `PlanSlot`, `PlanTask`, `PlanDraft`, `PLAN_PURPOSES`.
 - `types/state.ts`: `GameState` (server-only).
 - `types/view.ts`: `PlayerView`, `OtherPlayerView`, `ItemView`: the only game data a client or bot receives.

@@ -1,10 +1,11 @@
 // A small JSON diff for the replay history (#335, docs/rules/rules-design.md "Replay history and storage"): each
 // input's change to the full view. Hand-written so shared keeps no dependency.
 //
-// Arrays are the reason it isn't a plain recursive object diff. The log and chat only grow, so their change is an
-// append; chat also drops one old message per channel past `CHAT_HISTORY` (from the middle of the list), and a body's
-// action history drops from the front, so an array change may also remove a few items. Anything else in an array is
-// patched in place by position.
+// Arrays are the reason it isn't a plain recursive object diff. The log and chat grow at the end, so their change is
+// an append; both also lose runs of old entries from the middle of the list (a log line leaving the window, a chat
+// channel's page leaving the state when the next one seals, #355), and a body's action history drops from the front.
+// Items with a numeric `id` (log lines, chat messages) are in id order, so one whose id is below the item it meets
+// has left; for others a removal is found by looking a few items ahead. Anything else is patched in place by position.
 //
 // Values are plain JSON. A key holding `undefined` counts as missing, as it does once stored as JSON.
 
@@ -24,6 +25,9 @@ export type ViewDiff =
 const REMOVAL_LOOKAHEAD = 8;
 
 type Json = Record<string, unknown>;
+
+/** An item's numeric `id`, if it has one. */
+const idOf = (value: unknown): number | undefined => (isObject(value) && typeof value.id === "number" ? value.id : undefined);
 
 const isObject = (value: unknown): value is Json => typeof value === "object" && value !== null && !Array.isArray(value);
 
@@ -73,6 +77,12 @@ function diffArray(prev: readonly unknown[], next: readonly unknown[]): ViewDiff
     if (jsonEqual(prev[i], next[j])) {
       i++;
       j++;
+      continue;
+    }
+    // In id order, an item whose id is below the one it meets was removed.
+    const [was, now] = [idOf(prev[i]), idOf(next[j])];
+    if (was !== undefined && now !== undefined && was < now) {
+      r.push(i++);
       continue;
     }
     // Some were removed (maybe with others appended in the same input): skip to the first one that lines up, if it's

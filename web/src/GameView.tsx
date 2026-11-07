@@ -278,7 +278,7 @@ export function GameView({ view: given, send, onLeave, waking = false, cheatsAll
           roomLogRequest={roomLogRequest}
           onChat={(channel, text) => post({ type: "chat", channel, text })}
           onCreateThread={(name, from) => post(from === undefined ? { type: "createThread", name } : { type: "createThread", name, from })}
-          onToggle={(message, line) => post({ type: "toggleCheckbox", message, line })}
+          onToggle={(channel, seq, line) => post({ type: "toggleCheckbox", channel, seq, line })}
           channels={
             readOnly
               ? undefined

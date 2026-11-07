@@ -4,7 +4,7 @@
 
 import { useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
-import { FEATURE_CHANNELS, MUSH_CHANNEL, GRAVEYARD_CHANNEL, type ChannelId, type ChatMessage, type FeatureChannel, type PlayerView } from "@mush2/shared";
+import { FEATURE_CHANNELS, MUSH_CHANNEL, GRAVEYARD_CHANNEL, type ChannelId, type ChatLine, type FeatureChannel, type PlayerView } from "@mush2/shared";
 import { announce, freshIn, getVerbosity, isUrgent, type Seen } from "../announce.ts";
 import { useNames } from "../i18n/names.ts";
 
@@ -65,7 +65,7 @@ export function useAnnouncements(view: PlayerView, reading: ChannelId | null): v
 }
 
 /** "Mira: hello", or "Mira in Botany: hello" when the channel is not the one on screen. */
-function spoken(m: ChatMessage, view: PlayerView, names: ReturnType<typeof useNames>, label: (c: ChannelId) => string, named: boolean): string {
+function spoken(m: ChatLine, view: PlayerView, names: ReturnType<typeof useNames>, label: (c: ChannelId) => string, named: boolean): string {
   if (m.system) return names.logLine(m.system);
   const character = view.players.find((p) => p.id === m.from)?.character;
   const who = names.character(character ?? "");

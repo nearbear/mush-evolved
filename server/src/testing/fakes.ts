@@ -27,8 +27,11 @@ export class FakeStorage {
     }
     return out;
   }
-  async delete(key: string): Promise<boolean> {
-    return this.data.delete(key);
+  async delete(key: string): Promise<boolean>;
+  async delete(keys: string[]): Promise<number>;
+  async delete(keys: string | string[]): Promise<boolean | number> {
+    if (typeof keys === "string") return this.data.delete(keys);
+    return keys.filter((k) => this.data.delete(k)).length;
   }
   async deleteAll(): Promise<void> {
     this.data.clear();

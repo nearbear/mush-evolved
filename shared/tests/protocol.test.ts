@@ -12,6 +12,19 @@ describe("Leave ship (a cheat)", () => {
   });
 });
 
+describe("chatPage (#355)", () => {
+  it("parses a channel and a page, dropping anything extra", () => {
+    expect(parse({ type: "chatPage", channel: "global", page: 3, seat: "p1" })).toEqual({ type: "chatPage", channel: "global", page: 3 });
+    expect(parse({ type: "chatPage", channel: "pc-2", page: 0 })).toEqual({ type: "chatPage", channel: "pc-2", page: 0 });
+  });
+
+  it("refuses unknown channels and pages that aren't whole numbers from 0", () => {
+    for (const bad of [{ channel: "nope", page: 0 }, { channel: "global", page: -1 }, { channel: "global", page: 1.5 }, { channel: "global", page: "1" }, { channel: "global" }]) {
+      expect(parse({ type: "chatPage", ...bad })).toBeNull();
+    }
+  });
+});
+
 describe("model key messages (BYOK)", () => {
   const ok = { type: "setModel", provider: "openrouter", model: "meta-llama/llama-3.3-70b-instruct:free", apiKey: "sk-or-v1-abc123" };
 

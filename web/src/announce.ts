@@ -4,7 +4,8 @@
 // per-viewer preference kept in localStorage, like `fogDepth.ts`.
 
 import { useSyncExternalStore } from "react";
-import type { ChatMessage, LogLine, PlayerView } from "@mush2/shared";
+import type { ChatLine, LogLine, PlayerView } from "@mush2/shared";
+import { chatSeenIn, isNewer, type ChatSeen } from "./chatSeen.ts";
 
 export type Urgency = "polite" | "assertive";
 /** all: everything; mentions: urgent events, private entries and messages that name you or come on private channels; off: none (your own send confirmations and errors still speak). */
@@ -123,7 +124,7 @@ export interface Seen {
   /** The body the view was for (`you.id`); a Transfer changes it, and the other body's count means nothing here. */
   body: string;
   log: number;
-  chat: number;
+  chat: ChatSeen;
   cycle: number;
 }
 
@@ -153,7 +154,7 @@ export interface Fresh {
   /** New log entries from the room you are in, or private to you. */
   log: LogLine[];
   /** New chat messages (including your own and the game's). */
-  chat: ChatMessage[];
+  chat: ChatLine[];
   /** The newest cycle among `log`, if it is later than the last one heard. */
   cycle: number | undefined;
   seen: Seen;
@@ -161,9 +162,8 @@ export interface Fresh {
 
 /** What `view` holds that `seen` has not covered. `seen` null means the first view: nothing is announced for history. */
 export function freshIn(seen: Seen | null, view: PlayerView): Fresh {
-  const newest = view.chat.reduce((n, m) => Math.max(n, m.id), 0);
   const latestCycle = view.log.reduce((n, e) => Math.max(n, e.cycle), 0);
-  const next: Seen = { body: view.you.id, log: view.logSeen, chat: newest, cycle: Math.max(seen?.cycle ?? 0, latestCycle) };
+  const next: Seen = { body: view.you.id, log: view.logSeen, chat: chatSeenIn(view), cycle: Math.max(seen?.cycle ?? 0, latestCycle) };
   if (!seen || seen.body !== view.you.id) return { log: [], chat: [], cycle: undefined, seen: next };
   const here = view.you.room;
   // The log's length says nothing once the window drops old lines (#365): `logSeen` counts every line this seat has
@@ -172,7 +172,7 @@ export function freshIn(seen: Seen | null, view: PlayerView): Fresh {
   const log = added > 0 ? view.log.slice(-added).filter((e) => e.room === undefined || e.room === here) : [];
   return {
     log,
-    chat: view.chat.filter((m) => m.id > seen.chat),
+    chat: view.chat.filter((m) => isNewer(seen.chat, m)),
     cycle: latestCycle > seen.cycle ? latestCycle : undefined,
     seen: next,
   };

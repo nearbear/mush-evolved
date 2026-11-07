@@ -2409,3 +2409,26 @@ Ran `npm run model-trial` in a worktree (other sessions were editing `main`), fa
 - Not done yet: the chatter (step 2 of the plan: prompt first, a code limit only with the owner's say), and a rerun on flash-lite plus one mid-size model.
 
 Follow-up (2026-11-05, #224 steps 2–3): tightening the prompt on when to talk ("never announce your own goal", plus a closing reminder when not woken) barely moved gemini-2.5-flash-lite (114 → 76 → 65 messages per game day): it copies the chat window, not the instruction. A repeat filter (`repeatsLastMessage`) drops a bot's own last line posted again. gemini-2.5-flash with the same prompt wrote 4 sensible messages in a day ($0.039), so the behaviour problem is the small model, and the proposed hard limit on unprompted talk was not built. Status, project and research ids still in the prompt moved to #374.
+
+### 2026-11-06: Chat pages, plan and phase 1 (#355)
+
+- Wrote `docs/plans/chat-pages.md` (four phases) from the issue, then built phase 1: `ChatMessage.seq` per channel, `state.chatSeq`, pages of 50 sealed into `state.chatOutbox` that `GameRoom.persist` stores as `chat:<channel>:<page>` in the snapshot's write (a deleted private channel's pages deleted in the same turn), live views carry `ChatLine` (no game-wide id) plus `chatCounts`, `toggleCheckbox`/`createThread` name messages by `(channel, seq)`. State version 112.
+- Two design calls by the AI, accepted when the owner said to start: seal on overflow (message 51), not on fill, because `stampEntries`, the report `chatId` and the bot router look for the just-posted message in `state.chat`; and keep the last sealed page as a tail in the state and the view (up to 100 messages a channel), so bots and the router keep context after a seal.
+- Found while building: the replay diff only looked 8 items ahead for removals, so a seal (50 messages leaving the middle of `chat`) would have been patched position by position. Added an id-order check to `viewDiff` (items with numeric ids are in id order), which also helps the log window's pruning (#365). `HISTORY_VERSION` didn't need a bump: it only covers the diff container.
+- `createThread` from a sealed message needed no storage: global messages are never deleted, so `seq < chatSeq.global` is a pure existence check.
+- What needed correction: the random-play test driver didn't drain the outbox as the server does, so replays disagreed; and `snoop.test.ts` (2000 games, ~3s alone) timed out under the full parallel run, unrelated to the change, so it got a 30s timeout.
+- Known gap until phase 2: checkboxes on pages two or more back can't be ticked, and a thread whose starter is that old shows "starter gone".
+
+### 2026-11-06: Chat pages, phase 2: checklist ticks beside the chat (#355)
+
+- The owner reversed an earlier decision: a tick no longer edits the message text. A first AI-built version that rewrote sealed pages in place (an edit outbox, the server reading the page before the rules, an in-memory page store for replays, edits in the replay history) was dropped for this simpler one before landing.
+- Built: `GameState.chatMarks` (`"<channel>:<seq>"` → author, task lines, ticked lines), made by `pushChat` from the boxes as typed, deleted with a private channel; `toggleCheckbox` checks only the state and works on any page; `messageView` draws the ticks into the text (`markedText`) for live views, bots and the replay's `revealFor`. Stored pages and `state.chat` keep the text as typed. State version 113; `chatMarks` listed as `never` in `leakFields.ts`.
+- One change from the plan, made by the AI: `chatEdit` (for a message two or more pages back) carries `{channel, seq, mark: {tasks, checked}}` rather than a whole `ChatLine`, because the text of such a message is only in storage and the plan said no storage reads; the client redraws its fetched copy with `markedText` (phase 4).
+- The leak-check skill found no leaks. A server test caught that toggles share the chat rate limit, so the test needed time between them.
+
+### 2026-11-06: Chat pages phase 3, the `chatPage` request (#355)
+
+- Built `chatPage {channel, page}` as the plan said. The access check is pure, in `shared` (`chatPageSource`: state, stored or refused; `chatPageView` projects through `messageView` without `id`). The server reads storage only after the check passes, and checks again after the read, because a Transfer can move the seat to another body while the read is pending. Every refusal is one error, `chat_page_unavailable`. Asking is not an input, so nothing is recorded.
+- One choice not in the plan: the rate limit uses chat's numbers but a limiter of its own, so paging back never uses up a player's chat allowance.
+- Needed correction: the first edit put the new limiter field inside the `Env` interface (the anchor comment matched there before it matched in the class), and `Input` (derived from `GameClientMessage`) picked up `chatPage` until it was excluded. Typecheck caught the second; the first was a parse error in the first test run.
+- The leak-check subagent found no leaks. It asked whether people added to a private channel should see its earlier history; `rules-design.md` already says yes (#355).

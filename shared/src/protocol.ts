@@ -15,6 +15,8 @@ import {
   MUSH_CHANNEL,
   type Action,
   type ChannelId,
+  type ChatLine,
+  type ChatMark,
   type PlanDraft,
   type PlayerId,
   type PlayerView,
@@ -67,9 +69,12 @@ export type GameClientMessage =
   // cell is where it goes, and `behind` where you end up behind it.
   | { type: "walk"; x: number; y: number; sitting: boolean; behind?: { x: number; y: number } }
   | { type: "chat"; channel: ChannelId; text: string }
-  | { type: "toggleCheckbox"; message: number; line: number }
+  // A message is named by its channel and `seq`, never its game-wide id (ChatMessage.id says why).
+  | { type: "toggleCheckbox"; channel: ChannelId; seq: number; line: number }
+  // One page of a channel (#355), answered with `chatPage`. Read-only: not an input, never recorded.
+  | { type: "chatPage"; channel: ChannelId; page: number }
   | { type: "createChannel"; name?: string; members?: PlayerId[] }
-  // A thread under global chat, started from global message `from` or on its own.
+  // A thread under global chat, started from the global message whose `seq` is `from`, or on its own.
   | { type: "createThread"; name: string; from?: number }
   // Shares one of your planets in the Astrophysics feature, as free text (sharedPlanets.ts).
   | { type: "sharePlanet"; planet: string; text: string }
@@ -96,6 +101,12 @@ export type GameServerMessage =
   // single player, where cycles end only by End cycle. `botsPaused` says why model bots are waiting instead of
   // playing, or null (see BotPause).
   | { type: "view"; view: PlayerView; cheatsAllowed: boolean; now: number; nextCycleAt: number | null; botsPaused: BotPause | null }
+  // A checklist's ticks changed on a message two or more pages back, which no view carries (#355): the reader redraws a
+  // copy it fetched (`markedText`). Only to connections whose body reads the channel; never an `id`.
+  | { type: "chatEdit"; channel: ChannelId; seq: number; mark: Pick<ChatMark, "tasks" | "checked"> }
+  // The page a `chatPage` asked for, as a view carries chat (ticks drawn in, no `id`). Every refusal is the one error
+  // `chat_page_unavailable`, so it can't tell a channel you can't read from a page not begun.
+  | { type: "chatPage"; channel: ChannelId; page: number; messages: ChatLine[] }
   | { type: "error"; message: string };
 
 export function parseMatchmakerMessage(raw: string): MatchmakerClientMessage | null {
@@ -107,19 +118,29 @@ export function parseMatchmakerMessage(raw: string): MatchmakerClientMessage | n
   return { type: msg.type, name, character: msg.character };
 }
 
+/** A chat channel's id from untrusted input, or null. */
+function channelId(value: unknown): ChannelId | null {
+  return (value === MUSH_CHANNEL ? MUSH_CHANNEL : value === GRAVEYARD_CHANNEL ? GRAVEYARD_CHANNEL : undefined) ?? CHAT_CHANNELS.find((c) => c === value) ?? privateChannelId(value) ?? threadId(value) ?? sharedPlanetId(value);
+}
+
 export function parseGameMessage(raw: string): GameClientMessage | null {
   const msg = parseJson(raw);
   if (msg?.type === "chat") {
     // Generous bound here; moderation and the rules enforce the real limit.
-    const channel = (msg.channel === MUSH_CHANNEL ? MUSH_CHANNEL : msg.channel === GRAVEYARD_CHANNEL ? GRAVEYARD_CHANNEL : undefined) ?? CHAT_CHANNELS.find((c) => c === msg.channel) ?? privateChannelId(msg.channel) ?? threadId(msg.channel) ?? sharedPlanetId(msg.channel);
+    const channel = channelId(msg.channel);
     if (!channel || typeof msg.text !== "string" || msg.text.length > MAX_CHAT_LENGTH * 4) return null;
     return { type: "chat", channel, text: msg.text };
   }
   if (msg?.type === "toggleCheckbox") {
-    const { message, line } = msg;
-    return Number.isSafeInteger(message) && Number.isSafeInteger(line) && (line as number) >= 0
-      ? { type: "toggleCheckbox", message: message as number, line: line as number }
+    const { seq, line } = msg;
+    const channel = channelId(msg.channel);
+    return channel && Number.isSafeInteger(seq) && (seq as number) >= 0 && Number.isSafeInteger(line) && (line as number) >= 0
+      ? { type: "toggleCheckbox", channel, seq: seq as number, line: line as number }
       : null;
+  }
+  if (msg?.type === "chatPage") {
+    const channel = channelId(msg.channel);
+    return channel && Number.isSafeInteger(msg.page) && (msg.page as number) >= 0 ? { type: "chatPage", channel, page: msg.page as number } : null;
   }
   if (msg?.type === "createChannel") {
     if (msg.name !== undefined && (typeof msg.name !== "string" || msg.name.length > MAX_NAME_LENGTH * 4)) return null;
@@ -133,7 +154,7 @@ export function parseGameMessage(raw: string): GameClientMessage | null {
   if (msg?.type === "createThread") {
     if (typeof msg.name !== "string" || msg.name.length > MAX_NAME_LENGTH * 4) return null;
     if (msg.from === undefined) return { type: "createThread", name: msg.name };
-    return Number.isSafeInteger(msg.from) ? { type: "createThread", name: msg.name, from: msg.from as number } : null;
+    return Number.isSafeInteger(msg.from) && (msg.from as number) >= 0 ? { type: "createThread", name: msg.name, from: msg.from as number } : null;
   }
   if (msg?.type === "sharePlanet") {
     // Generous bound here, as for chat; moderation and the rules enforce the real limit.
