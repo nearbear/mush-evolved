@@ -383,7 +383,8 @@
     "extinguish": "Extinguir",
     "extinguishManually": "Apagar a mano",
     "ignite": "Provocar un incendio",
-    "sabotage": "Sabotear"
+    "sabotage": "Sabotear",
+    "greenJelly": "Gelatina verde"
   },
   "queue": {
     "label": "Tus acciones",
@@ -651,6 +652,10 @@
   "itemAttr": {
     "contaminated": "Contagio: {{level}}",
     "contaminatedDesc": "Comida fúngica: un humano que la coma se contagia de este número de niveles. Solo los Mush lo ven.",
+    "jelly_one": "Gelatina verde: avería en {{count}} ciclo",
+    "jelly_many": "Gelatina verde: avería en {{count}} ciclos",
+    "jelly_other": "Gelatina verde: avería en {{count}} ciclos",
+    "jellyDesc": "Solo los Mush pueden verlo.",
     "satiety": "Saciedad",
     "plantOf": "Planta: {{item}}",
     "young": "Planta joven",
@@ -772,6 +777,8 @@
     "sporeExtracted": "{{name}} extrajo una espora.",
     "ignited": "{{name}} roció una pared con microesporas.",
     "sabotaged": "{{name}} ha saboteado el equipo «{{equipment}}».",
+    "greenJelly": "{{name}} ha untado gelatina verde en el equipo «{{equipment}}». Se averiará en {{cycles}} ciclo(s).",
+    "greenJellyItem": "{{name}} ha untado gelatina verde en el objeto «{{item}}». Se averiará en {{cycles}} ciclo(s).",
     "sabotageFailed": "{{name}} no ha conseguido sabotear el equipo «{{equipment}}».",
     "sabotagedItem": "{{name}} ha saboteado el objeto: {{item}}.",
     "sabotageFailedItem": "{{name}} no ha conseguido sabotear el objeto: {{item}}.",
@@ -864,6 +871,7 @@
     "planetShared": "{{name}} ha compartido un planeta.",
     "planetShareUpdated": "{{name}} ha actualizado un planeta compartido.",
     "equipmentBroken": "NERON: el equipo «{{equipment}}» se ha averiado.",
+    "itemBroken": "NERON: el objeto «{{item}}» se ha averiado.",
     "fireStarted": "NERON: ¡se ha declarado un incendio a bordo!",
     "tremor": "¡La sala tiembla violentamente!",
     "panicAttack": "Sufres un ataque de pánico.",

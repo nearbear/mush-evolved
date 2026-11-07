@@ -379,7 +379,8 @@
     "extinguish": "Extinguish",
     "extinguishManually": "Extinguish manually",
     "ignite": "Start a fire",
-    "sabotage": "Sabotage"
+    "sabotage": "Sabotage",
+    "greenJelly": "Green Jelly"
   },
   "queue": {
     "label": "Your actions",
@@ -643,6 +644,9 @@
   "itemAttr": {
     "contaminated": "Contamination: {{level}}",
     "contaminatedDesc": "Mush food: a human who eats it is contaminated by this many levels. Only Mush can see this.",
+    "jelly_one": "Green jelly: breaks in {{count}} cycle",
+    "jelly_other": "Green jelly: breaks in {{count}} cycles",
+    "jellyDesc": "Only Mush can see this.",
     "satiety": "Satiety",
     "plantOf": "{{item}} plant",
     "young": "Young plant",
@@ -763,6 +767,8 @@
     "sporeExtracted": "{{name}} extracted a spore.",
     "ignited": "{{name}} sprayed microspores on a wall.",
     "sabotaged": "{{name}} sabotaged the {{equipment}}.",
+    "greenJelly": "{{name}} smeared green jelly on the {{equipment}}. It will break in {{cycles}} cycle(s).",
+    "greenJellyItem": "{{name}} smeared green jelly on the {{item}}. It will break in {{cycles}} cycle(s).",
     "sabotageFailed": "{{name}} failed to sabotage the {{equipment}}.",
     "sabotagedItem": "{{name}} sabotaged the {{item}}.",
     "sabotageFailedItem": "{{name}} failed to sabotage the {{item}}.",
@@ -850,6 +856,7 @@
     "planetShared": "{{name}} shared a planet.",
     "planetShareUpdated": "{{name}} updated a shared planet.",
     "equipmentBroken": "NERON: the {{equipment}} has broken down.",
+    "itemBroken": "NERON: the {{item}} has broken down.",
     "fireStarted": "NERON: a fire has broken out aboard!",
     "tremor": "The room shakes violently!",
     "panicAttack": "You have a panic attack.",

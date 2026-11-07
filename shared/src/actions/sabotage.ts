@@ -74,8 +74,8 @@ export class SabotageAction extends Action<SabotageActionData> {
   }
 }
 
-const sabotageableEquipment = (state: Readonly<GameState>, player: Readonly<PlayerState>) =>
+export const sabotageableEquipment = (state: Readonly<GameState>, player: Readonly<PlayerState>) =>
   (state.equipment[player.room] ?? []).filter((e) => !e.broken && EQUIPMENT_TYPES[e.type]?.canBeSabotaged && isBreakable(state, e.type));
 
-const sabotageableItems = (state: Readonly<GameState>, player: Readonly<PlayerState>) =>
+export const sabotageableItems = (state: Readonly<GameState>, player: Readonly<PlayerState>) =>
   state.items.filter((i) => isWorking(i) && ITEM_TYPES[i.type]?.canBeSabotaged && ITEM_TYPES[i.type]?.canBreak && canReachItem(state, player, i));

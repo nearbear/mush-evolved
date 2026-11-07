@@ -297,6 +297,8 @@ export const DEFAULT_CONFIG: GameConfig = {
   ignite: { cost: { ap: 4 } },
   // Owner, 2026-11-07: the Mush sabotage action (actions/sabotage.ts).
   sabotage: { cost: { ap: 1 }, defaultChance: 0.12, sapperFactor: 3 },
+  // Owner, 2026-11-07: Green Jelly (actions/green_jelly.ts) breaks its target after 1 to `maxCycles` cycle changes.
+  greenJelly: { cost: { ap: 1 }, maxCycles: 4 },
   extinguish: { cost: { ap: 1 }, chance: 0.5, manual: { chance: 0.5, failureMultiplier: 1.25 }, firefighterInjuryChance: 0.5 },
   // Owner, 2026-10-25/11-01: equipment with a repair chance on its eMushpedia page breaks; the rest never does.
   repair: {

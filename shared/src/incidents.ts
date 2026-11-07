@@ -5,12 +5,13 @@
 // time. Incidents hit humans and Mush alike.
 
 import { gainMorale } from "./adjustStats.ts";
-import { breakEquipment, workingBreakable } from "./breakage.ts";
+import { breakEquipment, breakItem, workingBreakable } from "./breakage.ts";
 import { damage } from "./death.ts";
 import { daedalusRooms, isOnFire, startFire } from "./fire.ts";
+import { ITEM_TYPES, isWorking } from "./items.ts";
 import { logPrivate, logPublic } from "./log.ts";
 import { roll, rollFloat, rollInt, rollWeighted } from "./rng.ts";
-import type { DeepReadonly, Equipment, GameConfig, GameState, PlayerId, PlayerState, RoomId } from "./types.ts";
+import type { DeepReadonly, Equipment, GameConfig, GameState, ItemState, PlayerId, PlayerState, RoomId } from "./types.ts";
 
 /** The built incidents. Not built: stuck door (doors aren't objects yet) and disease (#214). */
 export const INCIDENT_IDS = [
@@ -50,10 +51,31 @@ const occupiedRooms = (state: Readonly<GameState>): RoomId[] => daedalusRooms(st
 const workingOf = (state: Readonly<GameState>, type?: string): Equipment[] =>
   daedalusRooms(state).flatMap((room) => workingBreakable(state, room).filter((e) => type === undefined || e.type === type));
 
-const breakOne = (type?: string): Incident => ({
-  possible: (state) => workingOf(state, type).length > 0,
-  apply: (state) => breakEquipment(state, pick(state, workingOf(state, type))),
-});
+/** Working items of types with `canBreakOnCycleChange`, on the Daedalus floor or carried by someone living aboard. */
+const breakableItems = (state: Readonly<GameState>): ItemState[] => {
+  const rooms = new Set(daedalusRooms(state));
+  const holders = new Set(aboard(state).map((p) => p.id));
+  return state.items.filter((i) => {
+    const type = ITEM_TYPES[i.type];
+    if (!type?.canBreak || !type.canBreakOnCycleChange || !isWorking(i)) return false;
+    return i.at.kind === "room" ? rooms.has(i.at.id) : holders.has(i.at.id);
+  });
+};
+
+/** One working piece of equipment, picked at random; with no `type` (a general breakdown) an eligible item may be picked instead. */
+const breakOne = (type?: string): Incident => {
+  const equipment = (state: Readonly<GameState>) => workingOf(state, type);
+  const items = (state: Readonly<GameState>) => (type === undefined ? breakableItems(state) : []);
+  return {
+    possible: (state) => equipment(state).length + items(state).length > 0,
+    apply: (state) => {
+      const pool = [...equipment(state).map((e) => ({ e })), ...items(state).map((i) => ({ i }))];
+      const target = pick(state, pool);
+      if ("i" in target) breakItem(state, target.i, true);
+      else breakEquipment(state, target.e);
+    },
+  };
+};
 
 const INCIDENTS: Record<IncidentId, Incident> = {
   // One room with crew; everyone there loses their own 1-3 HP roll (owner, 2026-11-01).

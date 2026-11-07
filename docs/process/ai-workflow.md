@@ -2487,3 +2487,12 @@ Correction: the root `package.json` shortcut was dropped at the owner's request 
 
 ## 2026-11-07: sapper skill
 Asked to add the sapper skill (triples Sabotage odds). It already existed as the Saboteur Mush skill with its Contaminate action, so the change was a `sapper` modifier on `sabotage` plus `config.sabotage.sapperFactor` = 3, the skill's status, and the locale text ("doubled" was the old wording). Correction: I first wrote a test expecting a cap of 1, but the engine caps chances at 0.99. The Mush-skill status test lists which skills are implemented, so it needed `sapper` added.
+
+### 2026-11-07: Electro-slime skill and the green_jelly action
+Added `green_jelly` (secret, 1 AP, Mush with `electro_slime`) on sabotageable equipment/items: it puts a 1-4 cycle `jelly` countdown on the target, ticked by `jellyCycle` at the cycle change, and NERON announces the break like any breakdown (`itemBroken` for items). Views show the countdown to living Mush only. The user left cost, failure chance and double-jelly open; I chose 1 AP (from the skill text), never fails, one jelly per target, and said so. Worked: reusing Sabotage's candidate helpers and the leak-field registry caught the new `ItemState.jelly` field.
+
+### 2026-11-07: cameras can't reveal actions aimed at themselves
+`logSecret` / `logCovert` now skip the camera reveal when the entry's `equipment` param is an installed camera (`cameraSees` in log.ts). Covers Sabotage and Green Jelly on a camera; the user's wording was short, so I read "targeting them" as the equipment param, not the uninstalled camera item.
+
+### 2026-11-07: items in the equipment breakdown incident
+`breakOne` (incidents.ts) now pools eligible items (`canBreak` + `canBreakOnCycleChange`, aboard on the floor or carried by the living) with working equipment, but only for the untyped equipment_breakdown; oxygen/fuel leaks still pick their tank. `breakItem` gained an `announce` flag, shared with the green jelly. Location of eligible items and the uniform pick were my choices.

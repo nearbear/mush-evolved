@@ -14,7 +14,7 @@ import { AT_CAPACITY, COOLDOWN, DIRTY, NO_SPACE } from "./actions/action.ts";
 import { getUp } from "./actions/lie_down.ts";
 import { researchNeedsView } from "./actions/research.ts";
 import { equipmentHere } from "./equipment.ts";
-import { leakOxygen } from "./breakage.ts";
+import { jellyCycle, leakOxygen } from "./breakage.ts";
 import { projectDone } from "./projects.ts";
 import { fireCycle, ignitePending, isOnFire } from "./fire.ts";
 import { incidentsCycle } from "./incidents.ts";
@@ -417,6 +417,7 @@ function advanceCycle(state: GameState, at?: number): void {
   incidentsCycle(state, day);
   fireCycle(state);
   leakOxygen(state);
+  jellyCycle(state);
   preselectionCycle(state);
   strikeSlots(state);
 }
@@ -586,7 +587,7 @@ export function seatViewFor(state: GameState, playerId: PlayerId): SeatView {
     inventory: itemsIn(state, { kind: "player", id: you.id }).map((item) => itemView(item, you)),
     inventorySlots: inventorySlots(state, you),
     roomItems: you.alive ? visibleItemsIn(state, { kind: "room", id: you.room }, you).map((item) => itemView(item, you)) : [],
-    roomEquipment: you.alive ? (state.equipment[you.room] ?? []).map((e) => equipmentView(state, e)) : [],
+    roomEquipment: you.alive ? (state.equipment[you.room] ?? []).map((e) => equipmentView(state, e, you)) : [],
     roomOnFire: you.alive && isOnFire(state, you.room),
     burningRooms: you.alive && projectDone(state, "FIRE_SENSOR") ? [...state.fires] : [],
     // `seesLine` (log.ts) says which lines are yours; room lines, private ones included, only within your window (#365).
@@ -688,17 +689,17 @@ export const affordable = (option: Readonly<ActionOption>): boolean => option.la
 export const legalIn = (view: Pick<PlayerView, "actions">): Action[] => view.actions.filter(affordable).map((o) => o.action);
 
 /** An item as `viewer` sees it; a plant's sickness only for the Botanist role (`plantView`). */
-function itemView({ id, type, of, builds, charges, teaches, plant, spores, hiddenBy, broken }: ItemState, viewer: Readonly<PlayerState>): ItemView {
-  return { id, type, ...(broken && { broken }), ...(hiddenBy === viewer.id && { hidden: true as const }), ...(spores && viewer.role === "mush" && viewer.alive && { spores }), ...(of !== undefined && { of }), ...(builds !== undefined && { builds }), ...(charges !== undefined && { charges }), ...(teaches !== undefined && { teaches }), ...(plant && { plant: plantView(plant, viewer) }) };
+function itemView({ id, type, of, builds, charges, teaches, plant, spores, hiddenBy, broken, jelly }: ItemState, viewer: Readonly<PlayerState>): ItemView {
+  return { id, type, ...(broken && { broken }), ...(jelly !== undefined && viewer.role === "mush" && viewer.alive && { jelly }), ...(hiddenBy === viewer.id && { hidden: true as const }), ...(spores && viewer.role === "mush" && viewer.alive && { spores }), ...(of !== undefined && { of }), ...(builds !== undefined && { builds }), ...(charges !== undefined && { charges }), ...(teaches !== undefined && { teaches }), ...(plant && { plant: plantView(plant, viewer) }) };
 }
 
-function equipmentView(state: GameState, { id, type, broken }: Equipment): EquipmentView {
+function equipmentView(state: GameState, { id, type, broken, jelly }: Equipment, viewer: Readonly<PlayerState>): EquipmentView {
   // Out and destroyed are known in the bay, where the ship is missing (owner, 2026-10-24); a docked ship's armor too,
   // so Renovate being offered tells nothing new (owner, 2026-10-28).
   const ship = type === PATROL_INTERFACE ? PATROL_SHIPS.find((s) => interfaceId(s) === id) : undefined;
   const shipState = ship && state.patrolShips[ship.id];
   const docked = shipState && !shipState.out && { armor: shipState.armor, maxArmor: state.config.patrol.armor[ship.kind] };
-  return { id, type, ...(broken && { broken }), ...(shipState?.out && { out: true as const }), ...(shipState?.destroyed && { destroyed: true as const }), ...docked };
+  return { id, type, ...(broken && { broken }), ...(jelly !== undefined && viewer.role === "mush" && viewer.alive && { jelly }), ...(shipState?.out && { out: true as const }), ...(shipState?.destroyed && { destroyed: true as const }), ...docked };
 }
 
 /** Your own ship's armor and charges, and how much debris is out there, while you fly it. */
