@@ -372,6 +372,7 @@ export interface GameConfig {
       kivancBonus: number; // Having contacted Kivanç Terzi adds this many times the base gain (owner, 2026-10-21: +100%).
       kaladaanMorale: number; // Morale every living player gains when Kaladaan is reached (the original, 6).
       cygniMorale: number; // Morale every living player gains when Cygni is reached (the original, 3).
+      cygniPatrolDamage: number; // Extra damage on every patrol ship hit once Cygni is reached (the original, 1; owner, 2026-11-07).
       siriusRationAp: number; // Extra AP from a ration once Sirius is reached (the original, 1).
     };
     xyloph: {

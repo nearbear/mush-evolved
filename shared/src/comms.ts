@@ -16,7 +16,7 @@ import type { CommsTerminalView, DeepReadonly, GameConfig, GameState, ItemState,
 
 /**
  * The rebel bases, in the order they call (owner, 2026-10-21: the original's `rebel_center.json` order). Wolf and
- * Centauri can be decoded but have no effect yet; Cygni's patrol ship damage isn't built, only its morale.
+ * Centauri can be decoded but have no effect yet.
  */
 export const REBEL_BASES = ["WOLF", "SIRIUS", "CENTAURI", "KALADAAN", "LUYTEN_CETI", "CYGNI"] as const;
 export type RebelBaseId = (typeof REBEL_BASES)[number];
@@ -170,6 +170,9 @@ export function rationApBonus(state: Readonly<GameState>, itemType: string): num
   const ration = itemType === "uncooked_ration" || itemType === "cooked_ration";
   return ration && rebelContacted(state, "SIRIUS") ? state.config.comms.rebel.siriusRationAp : 0;
 }
+
+/** Cygni's extra damage on every patrol ship hit once it has been reached (owner, 2026-11-07). */
+export const patrolDamageBonus = (state: Readonly<GameState>) => (rebelContacted(state, "CYGNI") ? state.config.comms.rebel.cygniPatrolDamage : 0);
 
 /** Luyten-Ceti's brain probes: once reached, nobody needs an iTrackie for global chat. */
 export const noITrackieNeeded = (state: Readonly<GameState>) => rebelContacted(state, "LUYTEN_CETI");

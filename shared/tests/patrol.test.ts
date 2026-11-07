@@ -192,6 +192,22 @@ describe("shooting from a patrol ship", () => {
     expect(s.log.at(-1)).toMatchObject({ key: "turretHit", visibleTo: ["p0"], params: { damage: 10 - hp } });
   });
 
+  it("does 1 more damage once Cygni is reached, and Cygni only", () => {
+    expect(DEFAULT_CONFIG.comms.rebel.cygniPatrolDamage).toBe(1);
+    const hit = (base: string | null) => {
+      const s = flying(shot({ chance: 1, damage: [4, 4] }));
+      s.hunters.list[0]!.hp = 10;
+      if (base) s.comms.rebels.push({ base: base as never, calledAt: s.cycle, expiresAt: s.cycle + 10, progress: 100 });
+      return 10 - mustApply(s, "p0", shoot("h1")).hunters.list[0]!.hp;
+    };
+    expect([hit(null), hit("CYGNI"), hit("SIRIUS")]).toEqual([4, 4 + DEFAULT_CONFIG.comms.rebel.cygniPatrolDamage, 4]);
+    // A call still being decoded gives nothing yet.
+    const partial = flying(shot({ chance: 1, damage: [4, 4] }));
+    partial.hunters.list[0]!.hp = 10;
+    partial.comms.rebels.push({ base: "CYGNI", calledAt: partial.cycle, expiresAt: partial.cycle + 10, progress: 99 });
+    expect(10 - mustApply(partial, "p0", shoot("h1")).hunters.list[0]!.hp).toBe(4);
+  });
+
   it("a miss costs a charge too; its streak (x1.25 a miss) is its own, apart from the turrets'", () => {
     let s = flying(shot({ chance: 0 }));
     s = mustApply(s, "p0", shoot("h1"));

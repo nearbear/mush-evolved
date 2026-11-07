@@ -2549,3 +2549,10 @@ The owner asked for an honest, ranked verdict on the #384 plan settled earlier t
 - Several "not built" notes in `implemented-rules.md` had gone stale as other systems landed: skill books, blueprints and research now give the Xyloph items effects, and Zong Chun's ghost is read by research. Fixed them and the `applyXyloph` comment.
 - New issues in Private beta: #393 (Comms Officer's general announcement) and #394 (Finola's lost analysis printout, leak-risk). Wolf's triumph-only reward went into #354 as a line. The draft rule notes in both issues come from the original data and eMushpedia, and are listed as open decisions, not rules.
 - What needed correction: the docs index had moved from `docs/plans/README.md` into `docs/README.md` mid-session, and a parallel session was building "travel ends rebel calls" in the same checkout, so edits had to land on top of its uncommitted changes.
+
+### 2026-11-07: Cygni's +1 patrol ship damage
+
+- **Decision (owner):** build the Cygni rebel base's patrol ship effect: once Cygni is reached, every patrol ship hit does +1 damage. Its +3 morale was already built. This replaces #173's blaster blueprint proposal.
+- **What worked:** the clean-room `emush spec` on upstream's patrol shooting test gave the formula directly (base roll + blaster gun + Cygni, independent +1s). Following the Sirius pattern (a ship-wide function in `comms.ts`, `patrolDamageBonus`, and a `config.comms.rebel.cygniPatrolDamage` knob) beat the per-player modifier registry, since the bonus belongs to the ship, not a player. Config only, so no `STATE_VERSION` bump.
+- **Needed correction:** `emush spec` with a free-text topic found nothing; it needs a file path.
+- **Correction (owner):** the Cygni effect does not replace #173; that blueprint issue stays open. Claude had written it as settled in the docs and asked to close it.

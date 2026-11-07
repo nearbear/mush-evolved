@@ -210,9 +210,10 @@ export const DEFAULT_CONFIG: GameConfig = {
   pilgred: { cost: { ap: 2 }, dirtyChance: 0.25, injuryChance: 0.05, progress: { rate: 6, mod: 2, skillBoost: 4, relayPenalty: 2 }, capPoints: 2, pointsPerDay: 1, returnCost: { ap: 2 }, edenCost: { ap: 2 }, coffeeCycles: [1, 3, 5, 7] },
   // Owner, 2026-10-19 and 2026-10-21 (docs/plans/comms.md): every comms action is 2 AP. Sol: 4%, +4% per failure, floor 4%.
   // Rebels: avg of two 1..40 draws, +100% each for Rebel and Kivanç, a window of 8..16 cycles. NERON update: 25% per action.
+  // Cygni: +1 damage on every patrol ship hit once reached (owner, 2026-11-07; eMush stacks it with the blaster gun).
   comms: {
     sol: { cost: { ap: 2 }, startChance: 4, chancePerFail: 4, radioExpertFactor: 2, radioExpertRoomFactor: 1.5 },
-    rebel: { cost: { ap: 2 }, gainMax: 40, windowMin: 8, windowMax: 16, rebelBonus: 1, kivancBonus: 1, kaladaanMorale: 6, cygniMorale: 3, siriusRationAp: 1 },
+    rebel: { cost: { ap: 2 }, gainMax: 40, windowMin: 8, windowMax: 16, rebelBonus: 1, kivancBonus: 1, kaladaanMorale: 6, cygniMorale: 3, cygniPatrolDamage: 1, siriusRationAp: 1 },
     xyloph: { cost: { ap: 2 }, qualityLoss: 20, neronBoostPercent: 25, schoolBooks: 2, workshopBlueprints: 3 },
     neron: { cost: { ap: 2 }, progressPercent: 25 },
   },

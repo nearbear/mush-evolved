@@ -50,5 +50,5 @@ Where the build differs from the first draft of this plan (which is no longer ke
 - Finola's lost analysis printout: [#394](https://github.com/nearbear/mush2/issues/394).
 - Merchant trades: [#143](https://github.com/nearbear/mush2/issues/143).
 - Comms triumphs (Kivanç for Paola, Wolf, Eleesha's rebel bases): [#354](https://github.com/nearbear/mush2/issues/354).
-- Cygni's patrol ship damage +1 has no issue; [#173](https://github.com/nearbear/mush2/issues/173) proposes a blaster blueprint in its place. Patrol ships fight now, so it could be built.
+- Cygni's patrol ship damage +1 is built (owner, 2026-11-07). [#173](https://github.com/nearbear/mush2/issues/173) (a blaster blueprint for Cygni) stays open.
 - Centauri's blaster bonus on expeditions: [#358](https://github.com/nearbear/mush2/issues/358).

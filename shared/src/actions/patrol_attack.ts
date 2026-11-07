@@ -1,4 +1,5 @@
 import { Action, IN_PRESELECTION, type ActionCost, type ActionVisibility, isString } from "./action.ts";
+import { patrolDamageBonus } from "../comms.ts";
 import { damageHunter } from "../hunters.ts";
 import { logPrivate } from "../log.ts";
 import { commandId, shipAboard, type PatrolShip } from "../patrol.ts";
@@ -10,7 +11,7 @@ export type PatrolAttackActionData = { type: "patrol_attack"; equipment: string;
 /**
  * Shoot a hunter from a patrol ship in flight, at its command (owner, 2026-10-24 and 2026-10-28, docs/plans/patrol.md
  * phase 3): 1 AP and one of the ship's charges, hit or miss. 40% to hit, x1.25 for each miss in a row (its own streak,
- * not the turrets'), a Pilot x2 (modifiers/pilot.ts); 3 to 6 damage. The Pasiphae can't shoot. A Shoot point pays for
+ * not the turrets'), a Pilot x2 (modifiers/pilot.ts); 3 to 6 damage, +1 once Cygni is reached (comms.ts). The Pasiphae can't shoot. A Shoot point pays for
  * it and Persistent speeds up the streak, as at a turret; Gunner doesn't apply, so it has no `shoot` tag. Everything is
  * private to the shooter, the kill too (owner, 2026-10-28): the crew sees only the hunter count drop. Done from the
  * cockpit's hunter list (PatrolCockpit.tsx), so it is a terminal action and the inspect panel leaves it out.
@@ -53,7 +54,7 @@ export class PatrolAttackAction extends Action<PatrolAttackActionData> {
 
   override apply(state: GameState, player: PlayerState, target: PatrolAttackActionData): void {
     spendCharge(state, player);
-    const amount = roll(state, state.config.patrol.shot.damage);
+    const amount = roll(state, state.config.patrol.shot.damage) + patrolDamageBonus(state);
     if (damageHunter(state, target.hunter, amount)) logPrivate(state, player.id, "patrolKill");
     else logPrivate(state, player.id, "turretHit", { damage: amount });
   }

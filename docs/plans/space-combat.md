@@ -101,7 +101,7 @@ Live rows only, unless marked.
 - **Projects**: `PATROL_SHIP_LAUNCHER` (takeoff −1 AP), `PATROLSHIP_BLASTER_GUN` (+1 patrol damage; in notes only), `BAY_DOOR_XXL` (takeoff and landing ×1.5), `PATROLSHIP_EXTRA_AMMO` (+6 charges), `TURRET_EXTRA_FIRERATE` (×2 turret recharge), `ARMOUR_CORRIDOR`, `PLASMA_SHIELD`, `MAGNETIC_NET` (patrol ships pulled aboard when the Daedalus travels), `DISMANTLING` (5 metal scraps in the motor room), `NERON_TARGETING_ASSIST` (×1.25 to both shooting actions; restricted to some characters), `BRIC_BROC` (15% per cycle that the Daedalus "doesn't fall apart"; unclear). Dead rows: `PATROLSHIP_AFTER_BURNER` (first 2 patrol actions free), `PATROLSHIP_MORE_FUEL` (patrol autonomy ×2).
 - **Research**: `FUNGUS_SCRAMBLER` (each hunter shot has 20% to target another hunter), `TESLA_SUP2X` (turret max charges ×2).
 - **Items**: `NCC_LENS` (`ToHit(10)`), `INSECTOID_SHELL` (×2 turret damage in its room; fire if destroyed), `WAVOSCOPE` (×2 on hull and patrol repairs), `METAL_SCRAPS` (hull repair), `MISSILE_SP2SP_230` (dead row: "doubles patrol shots", notes "25% to destroy two hunters"; Cygni's reward is its plans).
-- **Rebel base** Cygni: patrol ship damage +1 (the comms plan records it as not buildable yet).
+- **Rebel base** Cygni: patrol ship damage +1 (built 2026-11-07, `patrolDamageBonus` in `comms.ts`).
 
 ### Deaths, triumph, logs
 

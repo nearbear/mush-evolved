@@ -1498,7 +1498,7 @@
       },
       "CYGNI": {
         "name": "Auroras of Cygni",
-        "effect": "+3 morale for the whole crew."
+        "effect": "+3 morale for the whole crew. Patrol ship shots do 1 extra damage."
       }
     },
     "xyloph": {

@@ -1419,7 +1419,7 @@
       },
       "CYGNI": {
         "name": "Auroras de Cygni",
-        "effect": "+3 de moral para toda la tripulación."
+        "effect": "+3 de moral para toda la tripulación. Los disparos de las naves patrulla hacen 1 de daño más."
       }
     },
     "xyloph": {
