@@ -311,8 +311,8 @@ export const DEFAULT_CONFIG: GameConfig = {
     oxygenLeak: 1,
   },
   hunger: { satietyPerCycle: 1, fullBellyAt: 3, hungryAfterCycles: 24, hpPerCycle: 1 },
-  // Confirmed 2026-10-13: dismantle cost and odds.
-  dismantle: { cost: { ap: 3 }, successChance: 0.12, dirtyChance: 0.25, injuryChance: 0.05, itemChance: { knife: 0.5, blaster: 0.5 } },
+  // Confirmed 2026-10-13: dismantle cost and default odds; a type's own odds are `ItemType.dismantle.chance` (knife and blaster 50%, owner 2026-10-22).
+  dismantle: { cost: { ap: 3 }, successChance: 0.12, dirtyChance: 0.25, injuryChance: 0.05 },
   // Owner, 2026-10-31 (docs/plans/expedition.md): phase 1, everything at takeoff. Event weights 4/3/2/1 as on the wiki.
   expedition: {
     cost: { ap: 4 },

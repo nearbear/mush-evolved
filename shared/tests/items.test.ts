@@ -5,7 +5,7 @@ import { MODIFIERS } from "../src/modifiers.ts";
 import { parseGameMessage } from "../src/protocol.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";
 import type { Action, GameConfig } from "../src/types.ts";
-import { makeSeats, mustApply, offered } from "./support.ts";
+import { forceDismantleOdds, makeSeats, mustApply, offered } from "./support.ts";
 
 const seats = makeSeats(4, "others");
 
@@ -74,8 +74,9 @@ describe("inventory", () => {
     const state = mustApply(newGame(), "p0", take("item-1"));
     state.players[0]!.skills = ["engineer"];
     state.items.push({ id: "item-camera", type: "camera", at: { kind: "player", id: "p0" } });
-    state.config.dismantle.successChance = 1;
+    const restore = forceDismantleOdds(1);
     const result = applyAction(state, "p0", { type: "dismantle", item: "item-camera" });
+    restore();
     if (!result.ok) throw new Error(result.error);
     const next = result.state;
     expect(next.items.find((i: { id: string }) => i.id === "item-camera")).toBeUndefined();
@@ -94,8 +95,9 @@ describe("inventory", () => {
     const state = mustApply(newGame(), "p0", take("item-1"));
     state.players[0]!.skills = ["engineer"];
     state.items.push({ id: "item-camera", type: "camera", at: { kind: "player", id: "p0" } });
-    state.config.dismantle.successChance = 0;
+    const restore = forceDismantleOdds(0);
     const result = applyAction(state, "p0", { type: "dismantle", item: "item-camera" });
+    restore();
     if (!result.ok) throw new Error(result.error);
     const next = result.state;
     expect(next.items.find((i: { id: string }) => i.id === "item-camera")).toBeDefined();

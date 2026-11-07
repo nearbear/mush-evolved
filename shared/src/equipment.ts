@@ -17,7 +17,7 @@ export interface EquipmentType {
   /** A terminal only the holder of this title uses fully (see `hasTitleAccess`); anyone else gets limited access. */
   title?: TitleId;
   /** Can be dismantled, leaving this much scrap in the room. */
-  dismantle?: { metal: number; plastic: number };
+  dismantle?: { metal: number; plastic: number; chance?: number; extra?: string[] };
   /** Only ever built from a blueprint: left out of the map's starting equipment even where the map draws one. */
   builtOnly?: boolean;
 }
@@ -32,7 +32,7 @@ export const EQUIPMENT_TYPES: Record<string, EquipmentType> = {
   BED: { bed: true },
   // Installed from a carried `camera` item (actions/install.ts); never part of the map. Dismantling it leaves the
   // camera item's scrap (#35, owner 2026-10-17).
-  CAMERA: { dismantle: { metal: 1, plastic: 0 } },
+  CAMERA: { dismantle: { metal: 1, plastic: 0, chance: 0.25 } },
   COFFEE_DISPENSER: { dispenses: "coffee" },
   COMBUSTION_CHAMBER_ACCESS: {},
   COM_CENTER: { terminal: true, title: "comms_officer" },
@@ -61,7 +61,7 @@ export const EQUIPMENT_TYPES: Record<string, EquipmentType> = {
   SHOWER: { shower: true },
   // Owner, 2026-10-18, from the French wiki: a bed that can be built in any room (more than one per room), never
   // there at the start; dismantling it leaves 1 plastic scrap.
-  SOFA: { bed: true, builtOnly: true, dismantle: { metal: 0, plastic: 1 } },
+  SOFA: { bed: true, builtOnly: true, dismantle: { metal: 0, plastic: 1, chance: 0.25 } },
   STELLAR_ANTENNA: {},
   SUPER_CALC: { terminal: true, builtOnly: true },
   SURGERY_POD: {},

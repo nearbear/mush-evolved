@@ -7,7 +7,7 @@ import { applyAction, createGame, legalActions, viewFor } from "../src/rules.ts"
 import { CHARACTER_SKILLS, isSkill, SKILLS, SKILL_SLOTS } from "../src/skills.ts";
 import { CHARACTERS } from "../src/characters.ts";
 import type { GameConfig, GameState } from "../src/types.ts";
-import { makeSeats, nextCycle } from "./support.ts";
+import { forceDismantleOdds, makeSeats, nextCycle } from "./support.ts";
 
 const seats = makeSeats(4, "others");
 
@@ -15,6 +15,7 @@ const config: GameConfig = { ...DEFAULT_CONFIG, startInventory: [], startItems: 
 
 /** Everyone starts in the same room; p0 carries a camera to dismantle (3 AP). */
 function withCamera(dismantleOdds: number, creativeRefundOdds: number): GameState {
+  forceDismantleOdds(dismantleOdds); // file-wide; each test calls this right before it dismantles
   const state = createGame(seats, { ...config, dismantle: { ...config.dismantle, successChance: dismantleOdds }, creative: { refundOdds: creativeRefundOdds } }, 42);
   state.items.push({ id: "item-camera", type: "camera", at: { kind: "player", id: "p0" } });
   state.players[0]!.skills = ["creative", "engineer"];
@@ -76,7 +77,8 @@ describe("Creative", () => {
 
   it("rolls with the seeded RNG, so the same seed gives the same outcome", () => {
     const outcomes = (seed: number) => {
-      const state = createGame(seats, { ...config, dismantle: { ...config.dismantle, successChance: 0 } }, seed);
+      forceDismantleOdds(0);
+      const state = createGame(seats, config, seed);
       state.items.push({ id: "item-camera", type: "camera", at: { kind: "player", id: "p0" } });
       state.players[0]!.skills = ["creative", "engineer"];
       return dismantle(state).players[0]!.ap;

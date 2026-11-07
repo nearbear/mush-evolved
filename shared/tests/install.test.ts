@@ -7,9 +7,10 @@ import { parseGameMessage } from "../src/protocol.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";
 import type { Action, GameState } from "../src/types.ts";
 import { installCameraIn } from "./cameras.ts";
-import { makeSeats, player, must, offered } from "./support.ts";
+import { forceDismantleOdds, makeSeats, player, must, offered } from "./support.ts";
 
 const seats = makeSeats(3);
+forceDismantleOdds(1);
 const config = { ...DEFAULT_CONFIG, mushCount: 1, startItems: [], startSkills: [], dismantle: { ...DEFAULT_CONFIG.dismantle, successChance: 1 } };
 const equipmentIn = (s: GameState, room: string) => s.equipment[room]?.filter((e) => e.type === CAMERA_EQUIPMENT) ?? [];
 const dismantleEquipment = (room: string): Action => ({ type: "dismantle", equipment: cameraEquipmentId(room) });
@@ -158,9 +159,10 @@ describe("dismantling a camera", () => {
   it("can still fail, leaving the camera installed and the cost paid", () => {
     const { s } = ship();
     player(s, "p0").skills = ["engineer"];
-    s.config.dismantle = { ...s.config.dismantle, successChance: 0 };
     installCameraIn(s, "REFECTORY");
+    const restore = forceDismantleOdds(0);
     const after = must(applyAction(s, "p0", dismantleEquipment("REFECTORY")));
+    restore();
     expect(hasCamera(after, "REFECTORY")).toBe(true);
     expect(player(after, "p0").ap).toBe(player(s, "p0").ap - s.config.dismantle.cost.ap);
     expect(viewFor(after, "p0").log.some((e) => e.key === "dismantleEquipmentFailed")).toBe(true);

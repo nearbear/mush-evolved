@@ -26,8 +26,8 @@ export interface ItemType {
   /** Carrying one makes every room-to-room move cost `heavyMpPenalty` more MP, once however many you carry (confirmed 2026-10-16). Skills may cancel it. */
   heavy?: boolean;
   canDrop?: boolean;
-  /** What dismantling it leaves in the room: scraps, plus `extra` item types (the Lizaro Jungle's thick tube). */
-  dismantle?: { metal: number; plastic: number; extra?: string[] };
+  /** What dismantling it leaves in the room: scraps, plus `extra` item types (the Lizaro Jungle's thick tube). `chance` replaces `config.dismantle.successChance` for this type. */
+  dismantle?: { metal: number; plastic: number; extra?: string[]; chance?: number };
 }
 
 /**
@@ -72,17 +72,17 @@ export const ITEM_TYPES: Record<string, ItemType> = {
   [ITRACKIE_ITEM]: {},
   wrench: {},
   // Owner, 2026-10-25, eMushpedia "Extincteur": puts out a fire (actions/extinguish.ts); dismantled for metal scraps.
-  extinguisher: { dismantle: { metal: 1, plastic: 0 } },
+  extinguisher: { dismantle: { metal: 1, plastic: 0, chance: 0.25 } },
   // Weapons (owner, 2026-10-22, from the English wiki): their combat numbers are `config.weapons`. Named after their icons.
-  knife: { dismantle: { metal: 1, plastic: 0 } },
-  blaster: { dismantle: { metal: 1, plastic: 0 } },
-  natamy_riffle: { dismantle: { metal: 1, plastic: 0 } },
+  knife: { dismantle: { metal: 1, plastic: 0, chance: 0.5 } },
+  blaster: { dismantle: { metal: 1, plastic: 0, chance: 0.25 } },
+  natamy_riffle: { dismantle: { metal: 1, plastic: 0, chance: 0.12 } },
   // Lizaro Jungle.
-  sniper_riffle: { dismantle: { metal: 1, plastic: 0, extra: ["thick_tube"] } },
+  sniper_riffle: { dismantle: { metal: 1, plastic: 0, extra: ["thick_tube"], chance: 0.12 } },
   // Old Faithful.
-  machine_gun: { heavy: true, dismantle: { metal: 1, plastic: 0 } },
+  machine_gun: { heavy: true, dismantle: { metal: 1, plastic: 0, chance: 0.12 } },
   // The wiki lists no scrap for the rocket launcher; the owner chose 1 metal like the other guns.
-  missile_launcher: { dismantle: { metal: 1, plastic: 0 } },
+  missile_launcher: { dismantle: { metal: 1, plastic: 0, chance: 0.12 } },
   // Can't be dismantled.
   grenade: {},
   // Healing (confirmed 2026-10-15): hold one to heal. Reusable.
@@ -94,7 +94,7 @@ export const ITEM_TYPES: Record<string, ItemType> = {
   // Owner, 2026-10-19: edible raw, like a cooked one but for 1 morale.
   uncooked_ration: { cook: { into: "cooked_ration" }, consume: { ap: 4, satiety: 4, morale: -1 } },
   cooked_ration: { consume: { ap: 4, satiety: 4 } },
-  camera: { canDrop: false, dismantle: { metal: 1, plastic: 0 }  },
+  camera: { canDrop: false, dismantle: { metal: 1, plastic: 0, chance: 0.25 }  },
   // Showering with soap in your inventory costs 1 less AP (confirmed 2026-10-14). Reusable.
   soap: {},
   // Owner, 2026-10-25: the completed ANTI_MUSH_SERUM research yields one; single use (actions/vaccinate.ts). Named after its icon.
@@ -102,7 +102,7 @@ export const ITEM_TYPES: Record<string, ItemType> = {
   // Owner, 2026-11-01: the completed STEROIDS research yields 4; single use, +8 MP, resets starvation.
   [STEROIDS_ITEM]: { consume: { ap: 0, mp: STEROIDS_MP, satiety: 0 } },
   // Decided 2026-10-17: rings in its room when a Mush acts there (mycoalarm.ts). Dismantles for one scrap metal.
-  myco_alarm: { dismantle: { metal: 1, plastic: 0 } },
+  myco_alarm: { dismantle: { metal: 1, plastic: 0, chance: 0.25 } },
   // Decided 2026-10-18: the HydroPot (TREE_POT in the original). Named after its icon. Owner, 2026-10-22: plants
   // grow in it (botany.ts), anywhere, carried too.
   [TREE_POT_ITEM]: {},
@@ -115,23 +115,23 @@ export const ITEM_TYPES: Record<string, ItemType> = {
   [OXYGEN_CAPSULE_ITEM]: { canDrop: false },
   metal_scraps: {},
   [SPACE_CAPSULE_ITEM]: {},
-  thick_tube: {},
+  thick_tube: {dismantle: { metal: 1, plastic: 0, chance: 0.5 }},
   // Owner, 2026-11-04: the pneumatic tube pair (docs/plans/project-buffs.md, Fruit Mover). Plain items for now; no effect yet.
-  input_tube: {},
-  output_tube: {},
+  input_tube: {dismantle: { metal: 1, plastic: 0, chance: 0.5 }},
+  output_tube: {dismantle: { metal: 1, plastic: 0, chance: 0.5 }},
   // Decided 2026-10-16: carries a recipe in `ItemState.builds`; consumed by building.
   blueprint: {},
   plastic_scraps: {},
   // Confirmed 2026-10-16: spawns in the refectory at the start; heavy.
-  freezer: { heavy: true },
+  freezer: { heavy: true, dismantle: { metal: 2, plastic: 0, chance: 0.25 } },
   // Owner, 2026-10-19: spawns in the refectory; heavy. Express cook spends its charges (`ItemState.charges`).
-  [MICROWAVE_ITEM]: { heavy: true },
+  [MICROWAVE_ITEM]: { heavy: true, dismantle: { metal: 2, plastic: 0, chance: 0.25 } },
   // Decided 2026-10-16: a dead player's body (death.ts). Takes one slot like any item; heavy.
   [CORPSE_ITEM]: { heavy: true },
 
   // Owner, 2026-10-28: eMush's Wavoscope. Carried, it doubles the odds of hull repair and renovation (modifiers.ts, actionSuccessRate); heavy.
   // Icon wavoscope (web/src/art/assets.ts).
-  oscilloscope: { heavy: true, dismantle: { metal: 2, plastic: 0 } },
+  oscilloscope: { heavy: true, dismantle: { metal: 2, plastic: 0, chance: 0.06 } },
   apron: {},
   protection_gloves: {},
   // Owner, 2026-10-21: a skill book (the original's Apprentron) carries its skill in `ItemState.teaches`; destroyed by reading.
@@ -145,6 +145,13 @@ export const ITEM_TYPES: Record<string, ItemType> = {
   water_stick: {},
   // A starmap fragment.
   super_map: {},
+  //Items added for documenting the dismantle action (owner, 2026-10-22). Named after their icons.
+  drill: { dismantle: { metal: 1, plastic: 0, chance: 0.5 } },
+  thermosensor: { dismantle: { metal: 0, plastic: 1, chance: 0.5 } },
+  plastenite_armor: { dismantle: { metal: 0, plastic: 1, chance: 0.12 } },
+  sniper_helmet: { dismantle: { metal: 1, plastic: 1, chance: 0.12 } },
+  scooter: { dismantle: { metal: 2, plastic: 1, chance: 0.25 } },
+  space_suit: { dismantle: { metal: 1, plastic: 1, chance: 0.12 } },
 };
 
 /** Whether the player carries at least one heavy item. */
