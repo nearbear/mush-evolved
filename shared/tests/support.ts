@@ -2,6 +2,8 @@
 // shape (a renamed view field, a new Seat field) is fixed here once instead of in every test file. Setting up a
 // scenario (who is where, holding what) stays in each test file, next to the tests that depend on it.
 import { CHARACTERS } from "../src/characters.ts";
+import { EQUIPMENT_TYPES } from "../src/equipment.ts";
+import { ITEM_TYPES } from "../src/items.ts";
 import { ANY_CONSUMABLE, RESEARCH_REQUIRES, type ResearchId } from "../src/research.ts";
 import { type ActionResult, applyAction, legalIn, newCycle, viewFor } from "../src/rules.ts";
 import type { RelayPool } from "../src/relay.ts";
@@ -12,6 +14,18 @@ export const noHunters = <C extends GameConfig>(config: C): C => ({ ...config, h
 
 /** `config` where incidents never happen (the pool still fills), for tests that run many cycles and count HP or morale. */
 export const noIncidents = <C extends GameConfig>(config: C): C => ({ ...config, incidents: { ...config.incidents, rollPoints: Number.MAX_SAFE_INTEGER } });
+
+/**
+ * Sets every dismantlable type's own `chance` (they override `config.dismantle.successChance`), to force a success
+ * (1) or a miss (0). Returns a function that puts the real odds back; test files run isolated, so a file that never
+ * restores only affects itself.
+ */
+export function forceDismantleOdds(odds: number): () => void {
+  const types = [...Object.values(ITEM_TYPES), ...Object.values(EQUIPMENT_TYPES)].filter((t) => t.dismantle?.chance !== undefined);
+  const before = types.map((t) => t.dismantle!.chance!);
+  for (const t of types) t.dismantle!.chance = odds;
+  return () => types.forEach((t, i) => (t.dismantle!.chance = before[i]!));
+}
 
 /** Seats p0, p1, … with the first `n` characters. `bots` says which seats are bots. */
 export function makeSeats(n: number, bots: "none" | "others" | "all" = "none"): Seat[] {

@@ -5,8 +5,9 @@ import { DEFAULT_CONFIG } from "../src/config.ts";
 import { applyInput } from "../src/replay.ts";
 import { createGame } from "../src/rules.ts";
 import type { GameState, PlayerId } from "../src/types.ts";
-import { clone, makeSeats, must, mustApply, nextCycle, noHunters, noIncidents, pickSkill, player } from "./support.ts";
+import { forceDismantleOdds, clone, makeSeats, must, mustApply, nextCycle, noHunters, noIncidents, pickSkill, player } from "./support.ts";
 
+forceDismantleOdds(1); // items and equipment have their own odds; these tests need the dismantle to succeed
 const config = noIncidents(noHunters({ ...DEFAULT_CONFIG, mushCount: 1, startInventory: [], startItems: [], startSkills: [], dismantle: { ...DEFAULT_CONFIG.dismantle, successChance: 1, injuryChance: 0, dirtyChance: 0 } }));
 const { cyclesLying, bonusAp, maxApMultiplier } = config.lethargy;
 

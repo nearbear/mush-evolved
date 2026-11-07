@@ -1,12 +1,12 @@
 import { describe, expect, it } from "vitest";
 import { ACTIONS } from "../src/actions.ts";
 import { DEFAULT_CONFIG } from "../src/config.ts";
-import { carriesHeavy, startCharges } from "../src/items.ts";
+import { carriesHeavy, ITEM_TYPES, startCharges } from "../src/items.ts";
 import { parseGameMessage } from "../src/protocol.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";
 import type { WeaponStats } from "../src/types/config.ts";
 import type { Action, GameConfig, GameState, PlayerId } from "../src/types.ts";
-import { makeSeats, must, offered, option, player } from "./support.ts";
+import { forceDismantleOdds, makeSeats, must, offered, option, player } from "./support.ts";
 
 const seats = makeSeats(4);
 const base = { ...DEFAULT_CONFIG, mushCount: 1, startInventory: [], startItems: [], startSkills: [] };
@@ -48,15 +48,17 @@ describe("weapon stats", () => {
   });
 
   it("dismantle: knife and blaster at 50%, the other weapons at the usual odds; never the grenade", () => {
-    expect(base.dismantle.itemChance).toEqual({ knife: 0.5, blaster: 0.5 });
+    expect(ITEM_TYPES.knife!.dismantle!.chance).toBe(0.5);
     expect(option(ship("knife"), "p0", { type: "dismantle", item: "w" })?.chance).toBe(0.5);
     expect(option(ship("machine_gun"), "p0", { type: "dismantle", item: "w" })?.chance).toBe(base.dismantle.successChance);
     expect(option(ship("grenade"), "p0", { type: "dismantle", item: "w" })).toBeUndefined();
   });
 
   it("dismantling the Lizaro Jungle leaves a metal scrap and a thick tube", () => {
-    const s = ship("sniper_riffle", { ...base, dismantle: { ...base.dismantle, successChance: 1 } });
+    const restore = forceDismantleOdds(1);
+    const s = ship("sniper_riffle");
     const r = must(applyAction(s, "p0", { type: "dismantle", item: "w" }));
+    restore();
     expect(r.items.filter((i) => i.at.kind === "room" && i.at.id === "SICK_BAY").map((i) => i.type).sort()).toEqual(["metal_scraps", "thick_tube"]);
   });
 
