@@ -1,6 +1,6 @@
 # Normalizing stored state, phase 2 (#384)
 
-Status: planned 2026-11-07, not built. The approach, phases and amendments are in [#384](https://github.com/nearbear/mush2/issues/384) (body and the 2026-11-07 review comment), which this plan doesn't repeat. Phase 1 (`Spot.kind`) is built (`a93db37`). Decisions 1, 2 and 3 below are the owner's (2026-11-07). Step 1 of the order of work (the types) is built.
+Status: planned 2026-11-07, not built. The approach, phases and amendments are in [#384](https://github.com/nearbear/mush2/issues/384) (body and the 2026-11-07 review comment), which this plan doesn't repeat. Phase 1 (`Spot.kind`) is built (`a93db37`). Decisions 1, 2 and 3 below are the owner's (2026-11-07). Steps 1 (the types) and 2 (helpers and normalizers, `normalizeCore` and `normalizeGame`) of the order of work are built. Notes from step 2: the exhaustiveness check is `raw.kind satisfies undefined` (under `Partial`, what is left once every variant has a case is `undefined`; the plan's `satisfies never` doesn't compile there); `normalizePlayer` always drops the queue until step 3 adds the mode; the section 8 tests that cover step 2 (round trip, idempotent, unions, `null`, undefined keys, no nullish-coalescing) are written, plus a hand-filled round trip for the collections the random game leaves empty.
 
 ## Scope
 

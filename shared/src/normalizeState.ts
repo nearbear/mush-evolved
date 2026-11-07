@@ -1,0 +1,703 @@
+// Normalizing stored state on load (#384, docs/plans/normalize-state.md): a snapshot read from storage goes through
+// these before the game continues from it, the way `resolveConfig` treats `ConfigOverrides`. One function per stored
+// type, each returning an object literal that names every field, so only listed keys survive and a type's new field
+// doesn't compile until its normalizer handles it.
+//
+// Rules for this file:
+//
+// - Every return literal is `AllKeys<T>` (through `stripUndefined<T>`): it lists every key, optional ones included.
+// - A field that has always existed uses `need()`: corrupt data throws `NormalizeError` instead of being papered over.
+//   Never `raw.x!`, which would turn a missing required field into one `stripUndefined` silently deletes.
+// - A field added later uses `added(raw, key, default)`, with a default that is right for a game in progress, taken
+//   from the game's own data or its config (`ctx.config`), never from a separate fresh game. A `next*` counter added
+//   later is rebuilt from its data (the highest id plus one), not defaulted.
+// - The nullish-coalescing operator never appears here: it would turn a stored `null` (`winner`, `orbit`,
+//   `satietyZeroSince`, ...) into the default. `added()` defaults only `undefined`. A test greps this file for it.
+// - Every union in the stored state has a discriminant (`kind` or `type`), and its normalizer is a `switch` on it whose
+//   `default` checks `raw.kind satisfies undefined`: under `Partial`, the discriminant left over once every variant is
+//   handled is `undefined`, so a new variant fails to compile until it has a case. At run time an unknown or missing
+//   discriminant throws.
+// - A nested struct calls its own normalizer. Dictionaries and arrays of primitives are copied as they are (`dict`,
+//   `[...x]`); values are not type-checked, since this server wrote them and the only drift is between versions.
+// - The result shares nothing with its input.
+//
+// Input is `Partial<T>`: the shape it was written as, with any field possibly missing.
+
+import { resolveConfig } from "./config.ts";
+import { clone } from "./helpers.ts";
+import type { SeatStart, SeatStarts } from "./fullView.ts";
+import type { RebelCall } from "./comms.ts";
+import type { RelayPool, RelayToken, ResearchPool, Sample } from "./relay.ts";
+import type { DiseaseTracker } from "./adjustStats.ts";
+import type {
+  ChatMark,
+  ChatMessage,
+  ChatOutbox,
+  ChatThread,
+  ConfigOverrides,
+  Container,
+  DeepReadonly,
+  Equipment,
+  ExpeditionEvent,
+  ExpeditionReport,
+  GameConfig,
+  GameCore,
+  GameState,
+  Hunter,
+  HunterTarget,
+  ItemState,
+  LogEntry,
+  Plan,
+  PlanSlot,
+  PlanTask,
+  Planet,
+  PlantState,
+  PlayerState,
+  PreselectionRules,
+  PrivateChannel,
+  SealedChatPage,
+  SharedPlanetState,
+  ShipResources,
+  SpaceDebris,
+  Spot,
+} from "./types.ts";
+
+/** Every key of `T`, optional ones included, each with its own type (`undefined` allowed where it is optional). */
+export type AllKeys<T> = { [K in keyof Required<T>]: T[K] };
+
+/** A stored snapshot this build can't read: a required field is missing, or a union's discriminant is unknown. */
+export class NormalizeError extends Error {
+  override name = "NormalizeError";
+}
+
+/** What every normalizer can read: the game's resolved config, for defaults of fields added later. */
+export interface NormalizeContext {
+  config: DeepReadonly<GameConfig>;
+}
+
+/** A field that has always existed: throws when it is `undefined`. A `null` passes through. */
+export function need<T extends object, K extends keyof T>(raw: T, key: K, type: string): Exclude<T[K], undefined> {
+  const value = raw[key];
+  if (value === undefined) throw new NormalizeError(`${type}.${String(key)} missing`);
+  return value as Exclude<T[K], undefined>;
+}
+
+/** A field added after some snapshots were stored: `fallback` when it is `undefined`, never when it is `null`. */
+export function added<T extends object, K extends keyof T>(raw: T, key: K, fallback: Exclude<T[K], undefined>): Exclude<T[K], undefined> {
+  const value = raw[key];
+  return value === undefined ? fallback : (value as Exclude<T[K], undefined>);
+}
+
+/**
+ * Drops the keys whose value is `undefined` (absent optional fields, and the `undefined`-valued keys Durable Object
+ * storage keeps through structured clone). Takes the literal as `AllKeys<T>`, so it must name every key of `T`.
+ */
+export function stripUndefined<T extends object>(obj: AllKeys<T>): T {
+  const out = obj as Record<string, unknown>;
+  for (const key of Object.keys(out)) if (out[key] === undefined) delete out[key];
+  return obj as T;
+}
+
+/** A dictionary (or array) of primitives, copied deep so the result shares nothing with the input. */
+export function dict<T>(raw: T): T {
+  return clone(raw);
+}
+
+/** A dictionary of structs, each value through its normalizer. */
+export function mapValues<K extends string, A, B>(raw: Partial<Record<K, A>>, fn: (value: A) => B): Record<K, B> {
+  return Object.fromEntries(Object.entries(raw).map(([key, value]) => [key, fn(value as A)])) as Record<K, B>;
+}
+
+/** An unknown or missing discriminant, for a union normalizer's `default`. */
+function unknownVariant(type: string, key: string, value: unknown): NormalizeError {
+  return new NormalizeError(value === undefined ? `${type}.${key} missing` : `${type}.${key} unknown: ${JSON.stringify(value)}`);
+}
+
+const opt = <A, B>(value: A | undefined, fn: (value: A) => B): B | undefined => (value === undefined ? undefined : fn(value));
+const orNull = <A, B>(value: A | null, fn: (value: A) => B): B | null => (value === null ? null : fn(value));
+const copy = <T>(list: readonly T[]): T[] => [...list];
+
+// Items.
+
+export function normalizeContainer(raw: Partial<Container>): Container {
+  const t = "Container";
+  switch (raw.kind) {
+    case "player":
+      return stripUndefined<Container>({ kind: "player", id: need(raw, "id", t) });
+    case "room":
+      return stripUndefined<Container>({ kind: "room", id: need(raw, "id", t) });
+    default:
+      throw unknownVariant(t, "kind", raw.kind satisfies undefined);
+  }
+}
+
+export function normalizePlant(raw: Partial<PlantState>): PlantState {
+  const t = "PlantState";
+  return stripUndefined<PlantState>({ species: need(raw, "species", t), age: need(raw, "age", t), thirst: need(raw, "thirst", t), sick: need(raw, "sick", t) });
+}
+
+/** The fields an item has wherever it is, in a container or in space. */
+function itemFields(raw: Partial<SpaceDebris>, t: string): AllKeys<SpaceDebris> {
+  return {
+    id: need(raw, "id", t),
+    type: need(raw, "type", t),
+    of: raw.of,
+    builds: raw.builds,
+    charges: raw.charges,
+    teaches: raw.teaches,
+    spores: raw.spores,
+    plant: opt(raw.plant, normalizePlant),
+    broken: raw.broken,
+  };
+}
+
+export function normalizeItem(raw: Partial<ItemState>): ItemState {
+  const t = "ItemState";
+  return stripUndefined<ItemState>({ ...itemFields(raw, t), at: normalizeContainer(need(raw, "at", t)), hiddenBy: raw.hiddenBy });
+}
+
+export function normalizeDebris(raw: Partial<SpaceDebris>): SpaceDebris {
+  return stripUndefined<SpaceDebris>(itemFields(raw, "SpaceDebris"));
+}
+
+export function normalizeEquipment(raw: Partial<Equipment>): Equipment {
+  const t = "Equipment";
+  return stripUndefined<Equipment>({ id: need(raw, "id", t), type: need(raw, "type", t), broken: raw.broken });
+}
+
+// Players.
+
+export function normalizeSpot(raw: Partial<Spot>): Spot {
+  const t = "Spot";
+  switch (raw.kind) {
+    case "cell":
+      return stripUndefined<Spot>({ kind: "cell", x: need(raw, "x", t), y: need(raw, "y", t), sitting: raw.sitting });
+    case "door":
+      return stripUndefined<Spot>({ kind: "door", door: need(raw, "door", t) });
+    default:
+      throw unknownVariant(t, "kind", raw.kind satisfies undefined);
+  }
+}
+
+export function normalizeDiseaseTracker(raw: Partial<DiseaseTracker>): DiseaseTracker {
+  const t = "DiseaseTracker";
+  return stripUndefined<DiseaseTracker>({
+    name: need(raw, "name", t),
+    duration: need(raw, "duration", t),
+    resistance: need(raw, "resistance", t),
+    complete: need(raw, "complete", t),
+    forever: need(raw, "forever", t),
+  });
+}
+
+type AccommodationOffer = NonNullable<PlayerState["accommodationOffers"]>[number];
+
+export function normalizeAccommodationOffer(raw: Partial<AccommodationOffer>): AccommodationOffer {
+  const t = "AccommodationOffer";
+  return stripUndefined<AccommodationOffer>({ by: need(raw, "by", t), until: need(raw, "until", t) });
+}
+
+/**
+ * A player, with their `Seat` fields. The action under way and the queue are dropped (#384, amendment 5): nothing has
+ * been paid for them, and the player presses again. That keeps `Action` out of the shape this file covers.
+ */
+export function normalizePlayer(raw: Partial<PlayerState>): PlayerState {
+  const t = "PlayerState";
+  const resources = need(raw, "resources", t);
+  const r = "PlayerState.resources";
+  return stripUndefined<PlayerState>({
+    id: need(raw, "id", t),
+    name: need(raw, "name", t),
+    isBot: need(raw, "isBot", t),
+    botKind: raw.botKind,
+    character: need(raw, "character", t),
+    mind: need(raw, "mind", t),
+    transferUsed: raw.transferUsed,
+    apprenticeUsed: raw.apprenticeUsed,
+    geniusUsed: raw.geniusUsed,
+    bodyTakenBy: raw.bodyTakenBy,
+    role: need(raw, "role", t),
+    alpha: need(raw, "alpha", t),
+    room: need(raw, "room", t),
+    spot: opt(raw.spot, normalizeSpot),
+    enteredFrom: raw.enteredFrom,
+    ap: need(raw, "ap", t),
+    maxAp: need(raw, "maxAp", t),
+    lyingIn: raw.lyingIn,
+    lyingSince: raw.lyingSince,
+    pushedBy: raw.pushedBy,
+    outcastBy: raw.outcastBy,
+    lastSeenAt: raw.lastSeenAt,
+    inactivity: raw.inactivity,
+    boringToday: raw.boringToday,
+    fertileToday: raw.fertileToday,
+    chitchatToday: raw.chitchatToday,
+    interrogatedToday: raw.interrogatedToday,
+    snoopedToday: opt(raw.snoopedToday, copy),
+    mycoscannedToday: raw.mycoscannedToday,
+    history: copy(need(raw, "history", t)),
+    logSeen: need(raw, "logSeen", t),
+    accommodationOffers: opt(raw.accommodationOffers, (offers) => offers.map(normalizeAccommodationOffer)),
+    mp: need(raw, "mp", t),
+    maxMp: need(raw, "maxMp", t),
+    hp: need(raw, "hp", t),
+    maxHp: need(raw, "maxHp", t),
+    morale: need(raw, "morale", t),
+    maxMorale: need(raw, "maxMorale", t),
+    satiety: need(raw, "satiety", t),
+    satietyZeroSince: need(raw, "satietyZeroSince", t),
+    statuses: copy(need(raw, "statuses", t)),
+    diseaseTrackers: need(raw, "diseaseTrackers", t).map(normalizeDiseaseTracker),
+    immuneUntil: raw.immuneUntil,
+    spores: need(raw, "spores", t),
+    // Fixed keys: a new resource doesn't compile until it has a default here.
+    resources: {
+      eng: need(resources, "eng", r),
+      exp: need(resources, "exp", r),
+      comp: need(resources, "comp", r),
+      garden: need(resources, "garden", r),
+      core: need(resources, "core", r),
+      shoot: need(resources, "shoot", r),
+      cook: need(resources, "cook", r),
+      heal: need(resources, "heal", r),
+      pilgred: need(resources, "pilgred", r),
+    } satisfies AllKeys<PlayerState["resources"]>,
+    modifiers: copy(need(raw, "modifiers", t)),
+    skills: copy(need(raw, "skills", t)),
+    bookSkill: raw.bookSkill,
+    mushSkills: copy(need(raw, "mushSkills", t)),
+    alive: need(raw, "alive", t),
+    ready: need(raw, "ready", t),
+    current: null,
+    queue: [],
+    cheats: copy(need(raw, "cheats", t)),
+  });
+}
+
+// Log and chat.
+
+export function normalizeLogEntry(raw: Partial<LogEntry>): LogEntry {
+  const t = "LogEntry";
+  const visibleTo = need(raw, "visibleTo", t);
+  return stripUndefined<LogEntry>({
+    id: need(raw, "id", t),
+    cycle: need(raw, "cycle", t),
+    at: raw.at,
+    key: need(raw, "key", t),
+    params: opt(raw.params, dict),
+    room: raw.room,
+    visibleTo: visibleTo === "all" ? "all" : copy(visibleTo),
+    level: raw.level,
+  });
+}
+
+type SystemMessage = NonNullable<ChatMessage["system"]>;
+
+export function normalizeSystemMessage(raw: Partial<SystemMessage>): SystemMessage {
+  return stripUndefined<SystemMessage>({ key: need(raw, "key", "ChatMessage.system"), params: opt(raw.params, dict) });
+}
+
+export function normalizeChatMessage(raw: Partial<ChatMessage>): ChatMessage {
+  const t = "ChatMessage";
+  return stripUndefined<ChatMessage>({
+    id: need(raw, "id", t),
+    seq: need(raw, "seq", t),
+    cycle: need(raw, "cycle", t),
+    at: raw.at,
+    channel: need(raw, "channel", t),
+    from: need(raw, "from", t),
+    isBot: need(raw, "isBot", t),
+    text: need(raw, "text", t),
+    system: opt(raw.system, normalizeSystemMessage),
+  });
+}
+
+export function normalizeChatMark(raw: Partial<ChatMark>): ChatMark {
+  const t = "ChatMark";
+  return stripUndefined<ChatMark>({ from: need(raw, "from", t), tasks: copy(need(raw, "tasks", t)), checked: copy(need(raw, "checked", t)) });
+}
+
+export function normalizePrivateChannel(raw: Partial<PrivateChannel>): PrivateChannel {
+  const t = "PrivateChannel";
+  return stripUndefined<PrivateChannel>({
+    id: need(raw, "id", t),
+    name: need(raw, "name", t),
+    members: copy(need(raw, "members", t)),
+    createdBy: need(raw, "createdBy", t),
+    planningClosed: raw.planningClosed,
+    day: need(raw, "day", t),
+    cycleOfDay: need(raw, "cycleOfDay", t),
+  });
+}
+
+export function normalizeThread(raw: Partial<ChatThread>): ChatThread {
+  const t = "ChatThread";
+  return stripUndefined<ChatThread>({ id: need(raw, "id", t), name: need(raw, "name", t), from: raw.from, createdBy: need(raw, "createdBy", t), cycle: need(raw, "cycle", t) });
+}
+
+export function normalizeSharedPlanet(raw: Partial<SharedPlanetState>): SharedPlanetState {
+  const t = "SharedPlanetState";
+  return stripUndefined<SharedPlanetState>({
+    id: need(raw, "id", t),
+    text: need(raw, "text", t),
+    by: need(raw, "by", t),
+    day: need(raw, "day", t),
+    cycleOfDay: need(raw, "cycleOfDay", t),
+    stale: need(raw, "stale", t),
+    planet: need(raw, "planet", t),
+  });
+}
+
+export function normalizeSealedChatPage(raw: Partial<SealedChatPage>): SealedChatPage {
+  const t = "SealedChatPage";
+  return stripUndefined<SealedChatPage>({ channel: need(raw, "channel", t), page: need(raw, "page", t), messages: need(raw, "messages", t).map(normalizeChatMessage) });
+}
+
+type DroppedChannel = ChatOutbox["dropped"][number];
+
+export function normalizeOutbox(raw: Partial<ChatOutbox>): ChatOutbox {
+  const t = "ChatOutbox";
+  const dropped = (d: Partial<DroppedChannel>) => stripUndefined<DroppedChannel>({ channel: need(d, "channel", t), pages: need(d, "pages", t) });
+  return stripUndefined<ChatOutbox>({ sealed: need(raw, "sealed", t).map(normalizeSealedChatPage), dropped: need(raw, "dropped", t).map(dropped) });
+}
+
+// Plans.
+
+export function normalizePlanTask(raw: Partial<PlanTask>): PlanTask {
+  const t = "PlanTask";
+  switch (raw.type) {
+    case "research":
+      return stripUndefined<PlanTask>({ type: "research", research: need(raw, "research", t) });
+    case "project":
+      return stripUndefined<PlanTask>({ type: "project", project: need(raw, "project", t) });
+    case "repair_pilgred":
+      return stripUndefined<PlanTask>({ type: "repair_pilgred" });
+    case "heal":
+      return stripUndefined<PlanTask>({ type: "heal", target: need(raw, "target", t) });
+    case "comfort":
+      return stripUndefined<PlanTask>({ type: "comfort", target: need(raw, "target", t) });
+    case "stt":
+      return stripUndefined<PlanTask>({ type: "stt", target: need(raw, "target", t) });
+    case "fiery_speech":
+      return stripUndefined<PlanTask>({ type: "fiery_speech" });
+    case "boring_speech":
+      return stripUndefined<PlanTask>({ type: "boring_speech" });
+    case "bring":
+      return stripUndefined<PlanTask>({ type: "bring", itemType: need(raw, "itemType", t) });
+    default:
+      throw unknownVariant(t, "type", raw.type satisfies undefined);
+  }
+}
+
+export function normalizePlanSlot(raw: Partial<PlanSlot>): PlanSlot {
+  const t = "PlanSlot";
+  switch (raw.kind) {
+    case "onCall":
+      return stripUndefined<PlanSlot>({ kind: "onCall", holder: need(raw, "holder", t), reservedFor: raw.reservedFor, outcome: raw.outcome });
+    case "task":
+      return stripUndefined<PlanSlot>({
+        kind: "task",
+        task: normalizePlanTask(need(raw, "task", t)),
+        holder: need(raw, "holder", t),
+        reservedFor: raw.reservedFor,
+        done: need(raw, "done", t),
+        struck: raw.struck,
+      });
+    default:
+      throw unknownVariant(t, "kind", raw.kind satisfies undefined);
+  }
+}
+
+export function normalizePlan(raw: Partial<Plan>): Plan {
+  const t = "Plan";
+  return stripUndefined<Plan>({
+    id: need(raw, "id", t),
+    channel: need(raw, "channel", t),
+    author: need(raw, "author", t),
+    room: need(raw, "room", t),
+    purpose: need(raw, "purpose", t),
+    slots: need(raw, "slots", t).map(normalizePlanSlot),
+    status: need(raw, "status", t),
+    postedDay: need(raw, "postedDay", t),
+  });
+}
+
+// Ship systems.
+
+export function normalizeShip(raw: Partial<ShipResources>): ShipResources {
+  const t = "ShipResources";
+  return stripUndefined<ShipResources>({
+    oxygen: need(raw, "oxygen", t),
+    fuel: need(raw, "fuel", t),
+    combustion: need(raw, "combustion", t),
+    hull: need(raw, "hull", t),
+    plasmaShield: need(raw, "plasmaShield", t),
+  });
+}
+
+export function normalizeRebelCall(raw: Partial<RebelCall>): RebelCall {
+  const t = "RebelCall";
+  return stripUndefined<RebelCall>({ base: need(raw, "base", t), calledAt: need(raw, "calledAt", t), expiresAt: need(raw, "expiresAt", t), progress: need(raw, "progress", t) });
+}
+
+type Comms = GameCore["comms"];
+
+export function normalizeComms(raw: Partial<Comms>): Comms {
+  const t = "CommsState";
+  const neron = need(raw, "neron", t);
+  return stripUndefined<Comms>({
+    linked: need(raw, "linked", t),
+    solChance: need(raw, "solChance", t),
+    rebels: need(raw, "rebels", t).map(normalizeRebelCall),
+    xyloph: copy(need(raw, "xyloph", t)),
+    neron: stripUndefined<Comms["neron"]>({ version: need(neron, "version", "CommsState.neron"), progress: need(neron, "progress", "CommsState.neron") }),
+  });
+}
+
+type Navigation = GameCore["navigation"];
+type Arriving = NonNullable<Navigation["arriving"]>;
+type LastTurn = NonNullable<Navigation["lastTurn"]>;
+
+export function normalizeNavigation(raw: Partial<Navigation>): Navigation {
+  const t = "Navigation";
+  const arriving = (a: Partial<Arriving>) => stripUndefined<Arriving>({ planet: need(a, "planet", "Navigation.arriving") });
+  const lastTurn = (l: Partial<LastTurn>) => stripUndefined<LastTurn>({ n: need(l, "n", "Navigation.lastTurn"), side: need(l, "side", "Navigation.lastTurn") });
+  return stripUndefined<Navigation>({
+    heading: need(raw, "heading", t),
+    orbit: need(raw, "orbit", t),
+    arriving: orNull(need(raw, "arriving", t), arriving),
+    lastTurn: orNull(need(raw, "lastTurn", t), lastTurn),
+  });
+}
+
+export function normalizeHunterTarget(raw: Partial<HunterTarget>): HunterTarget {
+  const t = "HunterTarget";
+  switch (raw.kind) {
+    case "ship":
+      return stripUndefined<HunterTarget>({ kind: "ship" });
+    case "patrol":
+      return stripUndefined<HunterTarget>({ kind: "patrol", id: need(raw, "id", t) });
+    default:
+      throw unknownVariant(t, "kind", raw.kind satisfies undefined);
+  }
+}
+
+export function normalizeHunter(raw: Partial<Hunter>): Hunter {
+  const t = "Hunter";
+  return stripUndefined<Hunter>({ id: need(raw, "id", t), hp: need(raw, "hp", t), hitChance: need(raw, "hitChance", t), target: orNull(need(raw, "target", t), normalizeHunterTarget) });
+}
+
+type Hunters = GameCore["hunters"];
+
+export function normalizeHunters(raw: Partial<Hunters>): Hunters {
+  const t = "Hunters";
+  return stripUndefined<Hunters>({ points: need(raw, "points", t), since: need(raw, "since", t), list: need(raw, "list", t).map(normalizeHunter), nextId: need(raw, "nextId", t) });
+}
+
+type PatrolShip = GameCore["patrolShips"][string];
+
+export function normalizePatrolShip(raw: Partial<PatrolShip>): PatrolShip {
+  const t = "PatrolShip";
+  return stripUndefined<PatrolShip>({ armor: need(raw, "armor", t), charges: need(raw, "charges", t), out: need(raw, "out", t), destroyed: need(raw, "destroyed", t) });
+}
+
+export function normalizeRelayToken(raw: Partial<RelayToken>): RelayToken {
+  const t = "RelayToken";
+  return stripUndefined<RelayToken>({ by: need(raw, "by", t), base: need(raw, "base", t), roll: need(raw, "roll", t), unpenalized: raw.unpenalized });
+}
+
+export function normalizeSample(raw: Partial<Sample>): Sample {
+  return stripUndefined<Sample>({ ...normalizeRelayToken(raw), unpenalized: raw.unpenalized, contaminatedBy: raw.contaminatedBy });
+}
+
+export function normalizeRelayPool(raw: Partial<RelayPool>): RelayPool {
+  return stripUndefined<RelayPool>({ tokens: need(raw, "tokens", "RelayPool").map(normalizeRelayToken) });
+}
+
+export function normalizeResearchPool(raw: Partial<ResearchPool>): ResearchPool {
+  const t = "ResearchPool";
+  return stripUndefined<ResearchPool>({ tokens: need(raw, "tokens", t).map(normalizeSample), pending: need(raw, "pending", t).map(normalizeSample) });
+}
+
+type Relay = GameCore["relay"];
+
+export function normalizeRelay(raw: Partial<Relay>): Relay {
+  const t = "Relay";
+  return stripUndefined<Relay>({ research: mapValues(need(raw, "research", t), normalizeResearchPool), projects: mapValues(need(raw, "projects", t), normalizeRelayPool) });
+}
+
+type Pilgred = GameCore["pilgred"];
+
+export function normalizePilgred(raw: Partial<Pilgred>): Pilgred {
+  const t = "Pilgred";
+  return stripUndefined<Pilgred>({ progress: need(raw, "progress", t), pool: normalizeRelayPool(need(raw, "pool", t)) });
+}
+
+// Planets and expeditions.
+
+type Sector = Planet["sectors"][number];
+
+export function normalizeSector(raw: Partial<Sector>): Sector {
+  const t = "Planet.sectors";
+  return stripUndefined<Sector>({ tag: need(raw, "tag", t), known: need(raw, "known", t), explored: raw.explored });
+}
+
+export function normalizePlanet(raw: Partial<Planet>): Planet {
+  const t = "Planet";
+  return stripUndefined<Planet>({
+    id: need(raw, "id", t),
+    name: need(raw, "name", t),
+    direction: need(raw, "direction", t),
+    distance: need(raw, "distance", t),
+    sectors: need(raw, "sectors", t).map(normalizeSector),
+  });
+}
+
+type Fight = NonNullable<ExpeditionEvent["fight"]>;
+type Hurt = NonNullable<ExpeditionEvent["hurt"]>[number];
+
+export function normalizeExpeditionEvent(raw: Partial<ExpeditionEvent>): ExpeditionEvent {
+  const t = "ExpeditionEvent";
+  const fight = (f: Partial<Fight>) =>
+    stripUndefined<Fight>({ strength: need(f, "strength", `${t}.fight`), grenades: need(f, "grenades", `${t}.fight`), won: need(f, "won", `${t}.fight`) });
+  const hurt = (h: Partial<Hurt>) => stripUndefined<Hurt>({ name: need(h, "name", `${t}.hurt`), hp: need(h, "hp", `${t}.hurt`) });
+  return stripUndefined<ExpeditionEvent>({
+    sector: need(raw, "sector", t),
+    kind: need(raw, "kind", t),
+    amount: raw.amount,
+    item: raw.item,
+    fight: opt(raw.fight, fight),
+    hurt: opt(raw.hurt, (list) => list.map(hurt)),
+    died: opt(raw.died, copy),
+  });
+}
+
+export function normalizeExpedition(raw: Partial<ExpeditionReport>): ExpeditionReport {
+  const t = "ExpeditionReport";
+  return stripUndefined<ExpeditionReport>({
+    id: need(raw, "id", t),
+    members: copy(need(raw, "members", t)),
+    crew: copy(need(raw, "crew", t)),
+    planet: need(raw, "planet", t),
+    events: need(raw, "events", t).map(normalizeExpeditionEvent),
+  });
+}
+
+// Config overrides and seat starts (the server's `StoredRoom`, and `FullView.starts`).
+
+export function normalizePreselection(raw: Partial<PreselectionRules>): PreselectionRules {
+  const t = "PreselectionRules";
+  const endsOn = need(raw, "endsOn", t);
+  return stripUndefined<PreselectionRules>({
+    seats: need(raw, "seats", t),
+    endsOn: stripUndefined<PreselectionRules["endsOn"]>({ day: need(endsOn, "day", `${t}.endsOn`), cycle: need(endsOn, "cycle", `${t}.endsOn`) }),
+    mushCount: need(raw, "mushCount", t),
+    twoMushAbove: need(raw, "twoMushAbove", t),
+    minPlayers: need(raw, "minPlayers", t),
+  });
+}
+
+export function normalizeOverrides(raw: Partial<ConfigOverrides>): ConfigOverrides {
+  return stripUndefined<ConfigOverrides>({
+    mushCount: raw.mushCount,
+    manualCycles: raw.manualCycles,
+    cycleHours: raw.cycleHours,
+    sharedSpots: raw.sharedSpots,
+    setupId: raw.setupId,
+    preselection: opt(raw.preselection, normalizePreselection),
+  });
+}
+
+export function normalizeSeatStart(raw: Partial<SeatStart>): SeatStart {
+  return stripUndefined<SeatStart>({ role: need(raw, "role", "SeatStart"), character: need(raw, "character", "SeatStart") });
+}
+
+export function normalizeSeatStarts(raw: Partial<SeatStarts>): SeatStarts {
+  return mapValues(raw, normalizeSeatStart);
+}
+
+// The game.
+
+/** The game's own data, shared by the live game and a replay frame. */
+export function normalizeCore(raw: Partial<GameCore>, _ctx: NormalizeContext): GameCore {
+  const t = "GameCore";
+  const bios = need(raw, "bios", t);
+  const titles = need(raw, "titles", t);
+  return stripUndefined<GameCore>({
+    cycle: need(raw, "cycle", t),
+    phase: need(raw, "phase", t),
+    preselection: need(raw, "preselection", t),
+    winner: need(raw, "winner", t),
+    ending: need(raw, "ending", t),
+    players: need(raw, "players", t).map(normalizePlayer),
+    items: need(raw, "items", t).map(normalizeItem),
+    nextItemId: need(raw, "nextItemId", t),
+    equipment: mapValues(need(raw, "equipment", t), (list) => list.map(normalizeEquipment)),
+    dispensedOn: dict(need(raw, "dispensedOn", t)),
+    log: need(raw, "log", t).map(normalizeLogEntry),
+    nextLogId: need(raw, "nextLogId", t),
+    chat: need(raw, "chat", t).map(normalizeChatMessage),
+    nextChatId: need(raw, "nextChatId", t),
+    chatSeq: dict(need(raw, "chatSeq", t)),
+    chatMarks: mapValues(need(raw, "chatMarks", t), normalizeChatMark),
+    channels: need(raw, "channels", t).map(normalizePrivateChannel),
+    nextChannelId: need(raw, "nextChannelId", t),
+    plans: need(raw, "plans", t).map(normalizePlan),
+    nextPlanId: need(raw, "nextPlanId", t),
+    threads: need(raw, "threads", t).map(normalizeThread),
+    nextThreadId: need(raw, "nextThreadId", t),
+    // Fixed keys, like `titles` and `PlayerState.resources`: a new BIOS option doesn't compile until it has a default.
+    bios: {
+      actopi: need(bios, "actopi", `${t}.bios`),
+      death_announcements: need(bios, "death_announcements", `${t}.bios`),
+      plasma_shield: need(bios, "plasma_shield", `${t}.bios`),
+    } satisfies AllKeys<GameCore["bios"]>,
+    bonds: dict(need(raw, "bonds", t)),
+    sharedOnDay: dict(need(raw, "sharedOnDay", t)),
+    contamination: dict(need(raw, "contamination", t)),
+    ship: normalizeShip(need(raw, "ship", t)),
+    sporesToday: need(raw, "sporesToday", t),
+    spikedOn: dict(need(raw, "spikedOn", t)),
+    research: dict(need(raw, "research", t)),
+    projects: dict(need(raw, "projects", t)),
+    relay: normalizeRelay(need(raw, "relay", t)),
+    pilgred: normalizePilgred(need(raw, "pilgred", t)),
+    comms: normalizeComms(need(raw, "comms", t)),
+    planets: mapValues(need(raw, "planets", t), (list) => list.map(normalizePlanet)),
+    nextPlanetId: need(raw, "nextPlanetId", t),
+    sharedPlanets: need(raw, "sharedPlanets", t).map(normalizeSharedPlanet),
+    nextSharedPlanetId: need(raw, "nextSharedPlanetId", t),
+    expeditions: need(raw, "expeditions", t).map(normalizeExpedition),
+    nextExpeditionId: need(raw, "nextExpeditionId", t),
+    navigation: normalizeNavigation(need(raw, "navigation", t)),
+    hunters: normalizeHunters(need(raw, "hunters", t)),
+    turrets: dict(need(raw, "turrets", t)),
+    patrolShips: mapValues(need(raw, "patrolShips", t), normalizePatrolShip),
+    space: need(raw, "space", t).map(normalizeDebris),
+    failureStreaks: dict(need(raw, "failureStreaks", t)),
+    incidentPoints: need(raw, "incidentPoints", t),
+    fires: copy(need(raw, "fires", t)),
+    pendingFires: copy(need(raw, "pendingFires", t)),
+    titles: {
+      commander: need(titles, "commander", `${t}.titles`),
+      neron_admin: need(titles, "neron_admin", `${t}.titles`),
+      comms_officer: need(titles, "comms_officer", `${t}.titles`),
+    } satisfies AllKeys<GameCore["titles"]>,
+    now: need(raw, "now", t),
+  });
+}
+
+/**
+ * A live game as stored (without its config) back to a whole `GameState`: the config is resolved from `overrides`
+ * (already normalized), so it picks up this build's balance numbers.
+ */
+export function normalizeGame(raw: Partial<Omit<GameState, "config">>, overrides: ConfigOverrides): GameState {
+  const t = "GameState";
+  const config = resolveConfig(overrides);
+  return stripUndefined<GameState>({
+    ...normalizeCore(raw, { config }),
+    config,
+    rng: need(raw, "rng", t),
+    chatOutbox: normalizeOutbox(need(raw, "chatOutbox", t)),
+  });
+}
