@@ -23,7 +23,7 @@ export interface SeatStart {
 export type SeatStarts = Record<PlayerId, SeatStart>;
 
 /** The game as a replay shows it. */
-export interface FullView extends Omit<GameState, "rng"> {
+export interface FullView extends Omit<GameState, "rng" | "chatOutbox"> {
   /** Each seat's role and character when the Mush were chosen; null before they are (pre-selection). */
   starts: SeatStarts | null;
 }
@@ -38,7 +38,8 @@ export function seatStarts(state: Readonly<GameState>): SeatStarts {
  * chosen (`seatStarts`); the state doesn't keep it.
  */
 export function fullViewFor(state: Readonly<GameState>, starts: Readonly<SeatStarts> | null): FullView {
-  const { rng: _rng, ...rest } = state;
+  // The outbox only carries copies of pages already in the history, on their way to storage.
+  const { rng: _rng, chatOutbox: _outbox, ...rest } = state;
   return clone({ ...rest, starts }) as FullView;
 }
 

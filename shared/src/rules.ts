@@ -62,6 +62,7 @@ import type {
   PlayerState,
   PlayerView,
   SeatView,
+  ChatLine,
   ChatMessage,
   ExpeditionReportView,
   RoomId,
@@ -120,6 +121,8 @@ export function createGame(
     nextLogId: 2,
     chat: [],
     nextChatId: 1,
+    chatSeq: {},
+    chatOutbox: { sealed: [], dropped: [] },
     channels: [],
     nextChannelId: 1,
     plans: [],
@@ -429,8 +432,14 @@ function grantCarePoints(state: GameState): void {
 }
 
 /** A chat message as a view carries it: field by field, so a name stored by an older build never goes out. */
-export function messageView({ id, cycle, at, channel, from, isBot, text, system }: Readonly<ChatMessage>): ChatMessage {
-  return { id, cycle, ...(at !== undefined && { at }), channel, from, isBot, text, ...(system && { system }) };
+export function messageView({ id, seq, cycle, at, channel, from, isBot, text, system }: Readonly<ChatMessage>): ChatMessage {
+  return { id, seq, cycle, ...(at !== undefined && { at }), channel, from, isBot, text, ...(system && { system }) };
+}
+
+/** `messageView` without the game-wide `id`, as a live view carries it (`ChatMessage.id` says why). */
+export function chatLine(message: Readonly<ChatMessage>): ChatLine {
+  const { id: _id, ...line } = messageView(message);
+  return line;
 }
 
 /** Every thread, as a view carries it (for readers of global chat). */
@@ -450,7 +459,7 @@ export function sharedPlanetsView(state: Readonly<Pick<GameState, "sharedPlanets
  */
 export function viewFor(state: GameState, playerId: PlayerId): PlayerView {
   const view = seatViewFor(state, playerId);
-  return { ...view, log: view.log.map(({ id: _id, ...line }) => line) };
+  return { ...view, log: view.log.map(({ id: _id, ...line }) => line), chat: view.chat.map(chatLine) };
 }
 
 /**
@@ -556,6 +565,7 @@ export function seatViewFor(state: GameState, playerId: PlayerId): SeatView {
       .map((e) => (e.visibleTo === "all" ? e : { ...e, visibleTo: [you.id] })),
     logSeen: you.logSeen,
     chat: state.chat.filter((m) => channels.includes(m.channel)).map(messageView),
+    chatCounts: Object.fromEntries(channels.flatMap((c) => (state.chatSeq[c] ? [[c, state.chatSeq[c]]] : []))),
     chatChannels: chatChannels(state, you),
     readChannels: channels,
     privateChannels: state.channels.filter((c) => c.members.includes(playerId)).map((c) => ({ ...c, members: [...c.members] })),

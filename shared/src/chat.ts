@@ -10,7 +10,7 @@ import { noITrackieNeeded } from "./comms.ts";
 import { clone, fail, dayOf, findPlayer, type ActionResult } from "./helpers.ts";
 import { dropChannelPlans, leavePlans } from "./plans.ts";
 import { CHAT_CHANNELS, GRAVEYARD_CHANNEL, MUSH_CHANNEL } from "./types.ts";
-import type { ChannelId, ChatMessage, GameState, PlayerId, PlayerState, PrivateChannelId, SharedPlanetId, ThreadId } from "./types.ts";
+import type { ChannelId, ChatMessage, ChatOutbox, GameState, PlayerId, PlayerState, PrivateChannelId, SharedPlanetId, ThreadId } from "./types.ts";
 
 /** Longest chat message the rules accept. Moderation trims before this. */
 /** A private channel's id from untrusted input, or null. */
@@ -23,16 +23,38 @@ export const MAX_CHAT_LENGTH = 300;
 /** Longest chat message in lines (moderation enforces it; messages are markdown and may span lines). */
 export const MAX_CHAT_LINES = 12;
 
-/** Per channel, older chat is dropped so stored state stays bounded. */
-export const CHAT_HISTORY = 200;
+/** Messages in a chat page (owner, 2026-11-04, #355). A full page is sealed: nothing is added to it or removed again. */
+export const CHAT_PAGE = 50;
 
-/** Mutates a state that the caller already cloned. Assigns the id and cycle. */
-export function pushChat(state: GameState, channel: ChannelId, message: Omit<ChatMessage, "id" | "cycle" | "channel">): void {
-  state.chat.push({ id: state.nextChatId++, cycle: state.cycle, channel, ...message });
-  // Trim per channel, so a busy global chat can't push the feature threads out.
-  if (state.chat.filter((m) => m.channel === channel).length > CHAT_HISTORY) {
-    state.chat.splice(state.chat.findIndex((m) => m.channel === channel), 1);
+/** The page a message with this `seq` is on. */
+export const chatPageOf = (seq: number): number => Math.floor(seq / CHAT_PAGE);
+
+/** Where the server stores a sealed page. */
+export const chatPageKey = (channel: ChannelId, page: number): string => `chat:${channel}:${page}`;
+
+/**
+ * Mutates a state that the caller already cloned. Assigns the id, `seq` and cycle. The first message of a new page
+ * seals the full page before it: that page becomes the tail and goes to the outbox to be stored, and the old tail
+ * leaves the state (it was stored when it sealed). Sealing on overflow, not when the page fills, keeps the message an
+ * input just posted in `state.chat`, where the server stamps and finds it.
+ */
+export function pushChat(state: GameState, channel: ChannelId, message: Omit<ChatMessage, "id" | "seq" | "cycle" | "channel">): void {
+  const seq = state.chatSeq[channel] ?? 0;
+  if (seq > 0 && seq % CHAT_PAGE === 0) {
+    const page = chatPageOf(seq) - 1;
+    const messages = state.chat.filter((m) => m.channel === channel && chatPageOf(m.seq) === page).map((m) => ({ ...m }));
+    state.chatOutbox.sealed.push({ channel, page, messages });
+    state.chat = state.chat.filter((m) => m.channel !== channel || chatPageOf(m.seq) >= page);
   }
+  state.chatSeq[channel] = seq + 1;
+  state.chat.push({ id: state.nextChatId++, seq, cycle: state.cycle, channel, ...message });
+}
+
+/** Empties the state's outbox and returns what was in it. The server stores it after every input; a replay keeps it. */
+export function takeChatOutbox(state: GameState): ChatOutbox {
+  const outbox = state.chatOutbox;
+  state.chatOutbox = { sealed: [], dropped: [] };
+  return outbox;
 }
 
 /**
@@ -48,6 +70,11 @@ export function removeFromChannel(state: GameState, channelId: PrivateChannelId,
   if (channel.members.length > 0) return true;
   state.channels = state.channels.filter((c) => c.id !== channelId);
   state.chat = state.chat.filter((m) => m.channel !== channelId);
+  // Its stored pages go too, and any that sealed in this same input are never stored.
+  const count = state.chatSeq[channelId] ?? 0;
+  delete state.chatSeq[channelId];
+  state.chatOutbox.sealed = state.chatOutbox.sealed.filter((p) => p.channel !== channelId);
+  if (count > CHAT_PAGE) state.chatOutbox.dropped.push({ channel: channelId, pages: chatPageOf(count - 1) });
   dropChannelPlans(state, channelId);
   return false;
 }
@@ -121,16 +148,16 @@ export function isTaskLine(text: string, line: number): boolean {
  * only while they can still read the channel. The text itself changes (so
  * replays and late joiners agree), and `line` is the 0-based line of the item.
  */
-export function toggleCheckbox(state: GameState, playerId: PlayerId, messageId: number, line: number): ActionResult {
+export function toggleCheckbox(state: GameState, playerId: PlayerId, channel: ChannelId, seq: number, line: number): ActionResult {
   const p = findPlayer(state, playerId);
   if (!p) return fail("unknown_player");
-  const message = state.chat.find((m) => m.id === messageId);
+  const message = state.chat.find((m) => m.channel === channel && m.seq === seq);
   if (!message || !chatChannels(state, p).includes(message.channel)) return fail("message_not_found");
   if (message.from !== p.id) return fail("message_not_yours");
   if (!Number.isInteger(line) || !isTaskLine(message.text, line)) return fail("checkbox_not_found");
 
   const next = clone(state);
-  const target = next.chat.find((m) => m.id === messageId)!;
+  const target = next.chat.find((m) => m.id === message.id)!;
   const lines = target.text.split("\n");
   lines[line] = lines[line]!.replace(TASK_LINE, (_, head: string, mark: string, tail: string) => `${head}${mark === " " ? "x" : " "}${tail}`);
   target.text = lines.join("\n");
@@ -144,6 +171,7 @@ export function toggleCheckbox(state: GameState, playerId: PlayerId, messageId: 
 
 export const MAX_THREAD_NAME_LENGTH = 40;
 
+/** `fromMessage` is a global message's `seq`. Global messages are never deleted, so any `seq` below the count exists. */
 export function createThread(state: GameState, playerId: PlayerId, rawName: string, fromMessage?: number): ActionResult {
   const p = findPlayer(state, playerId);
   if (!p || !chatChannels(state, p).includes("global")) return fail("thread_forbidden");
@@ -151,7 +179,7 @@ export function createThread(state: GameState, playerId: PlayerId, rawName: stri
   const name = rawName.replace(/\s+/g, " ").trim();
   if (!name || name.length > MAX_THREAD_NAME_LENGTH) return fail("thread_name_invalid");
   if (fromMessage !== undefined) {
-    if (!state.chat.some((m) => m.id === fromMessage && m.channel === "global")) return fail("message_not_found");
+    if (!Number.isSafeInteger(fromMessage) || fromMessage < 0 || fromMessage >= (state.chatSeq.global ?? 0)) return fail("message_not_found");
     if (state.threads.some((t) => t.from === fromMessage)) return fail("thread_exists");
   }
 

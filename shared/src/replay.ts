@@ -9,7 +9,7 @@ import { acknowledgeTransfer } from "./mind.ts";
 import { createGame, newCycle, setCheat, setRoleCheat, type ActionResult } from "./rules.ts";
 import { clearQueue, queueAction, tick } from "./queue.ts";
 import { walk } from "./spot.ts";
-import { createChannel, createThread, inviteToChannel, leaveChannel, sendChat, toggleCheckbox } from "./chat.ts";
+import { createChannel, createThread, inviteToChannel, leaveChannel, sendChat, takeChatOutbox, toggleCheckbox } from "./chat.ts";
 import { sharePlanet } from "./sharedPlanets.ts";
 import { postPlan } from "./plans.ts";
 import { inactivate, seen } from "./inactivity.ts";
@@ -45,8 +45,8 @@ export interface RecordedInput {
   /** The text as typed, when moderation changed it. Moderators only. */
   raw?: string;
   /**
-   * A `chat` input's message id (`ChatMessage.id`), so a report can cite it after the message is trimmed from the state
-   * (`CHAT_HISTORY`) or its private channel is gone (#292). Ids are never reused. Missing on older games.
+   * A `chat` input's message id (`ChatMessage.id`), so a report can cite it after the message's page has left the
+   * state (#355) or its private channel is gone (#292). Ids are never reused. Missing on older games.
    */
   chatId?: number;
   /** The input's change to the full view, for the replay (#335, viewHistory.ts). Missing on older games. */
@@ -100,7 +100,7 @@ export function applyInput(state: GameState, input: Input): ActionResult {
     case "chat":
       return sendChat(state, input.by, input.channel, input.text);
     case "toggleCheckbox":
-      return toggleCheckbox(state, input.by, input.message, input.line);
+      return toggleCheckbox(state, input.by, input.channel, input.seq, input.line);
     case "createChannel":
       return createChannel(state, input.by, input.name, input.members);
     case "createThread":
@@ -133,6 +133,8 @@ export function replayGame(setup: GameSetup, inputs: readonly Input[]): GameStat
     const result = applyInput(state, input);
     if (!result.ok) throw new Error(`Replay diverged at input ${i} (${input.type}): ${result.error}`);
     state = result.state;
+    // The server stores sealed pages and empties the outbox after every input; a replay does the same.
+    takeChatOutbox(state);
   }
   return state;
 }
@@ -147,6 +149,8 @@ export function stampEntries(state: GameState, at: number): GameState {
   for (const list of [state.log, state.chat]) {
     for (let i = list.length - 1; i >= 0 && list[i]!.at === undefined; i--) list[i]!.at = at;
   }
+  // A page sealed by the input that filled it (a burst of system messages) holds copies the walk above didn't reach.
+  for (const page of state.chatOutbox.sealed) for (const m of page.messages) m.at ??= at;
   return state;
 }
 
@@ -160,6 +164,7 @@ export function rebuildGame(setup: GameSetup, record: readonly RecordedInput[]):
     const result = applyInput(state, input);
     if (!result.ok) throw new Error(`Rebuild diverged at input ${i} (${input.type}): ${result.error}`);
     state = stampEntries(result.state, at);
+    takeChatOutbox(state);
   }
   return state;
 }

@@ -59,7 +59,7 @@ describe("rebuildGame", () => {
 });
 
 /** A seat view as the live game sends it: the same, without log ids. */
-const live = (v: SeatView): PlayerView => ({ ...v, log: v.log.map(({ id: _id, ...line }) => line) });
+const live = (v: SeatView): PlayerView => ({ ...v, log: v.log.map(({ id: _id, ...line }) => line), chat: v.chat.map(({ id: _id, ...line }) => line) });
 
 describe("perspective", () => {
   it("gives every seat its own view at every step of a random game, from the full view", () => {
@@ -79,6 +79,9 @@ describe("perspective", () => {
           // The replay keys lines by id; the live view must never carry one (a gap would show a hidden line).
           if (rebuilt.log.some((e) => typeof e.id !== "number")) expect(rebuilt.log).toEqual([]);
           if (real.log.some((e) => "id" in e)) expect(real.log).toEqual([]);
+          // Chat the same way: by channel and seq (#355).
+          if (rebuilt.chat.some((m) => typeof m.id !== "number")) expect(rebuilt.chat).toEqual([]);
+          if (real.chat.some((m) => "id" in m)) expect(real.chat).toEqual([]);
         }
       });
       expect(state.preselection, "the Mush were chosen").toBe(false);

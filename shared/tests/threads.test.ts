@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { createThread, MAX_THREAD_NAME_LENGTH, sendChat, toggleCheckbox } from "../src/chat.ts";
+import { CHAT_PAGE, createThread, MAX_THREAD_NAME_LENGTH, sendChat, toggleCheckbox } from "../src/chat.ts";
 import { DEFAULT_CONFIG } from "../src/config.ts";
 import { ITRACKIE_ITEM } from "../src/items.ts";
 import { parseGameMessage } from "../src/protocol.ts";
@@ -19,7 +19,7 @@ const error = (r: ActionResult): string => {
 function withThread(): { state: GameState; id: ThreadId; message: number } {
   let state = createGame(seats, DEFAULT_CONFIG, 42);
   state = must(sendChat(state, "p0", "global", "who has the wrench?"));
-  const message = state.chat[0]!.id;
+  const message = state.chat[0]!.seq;
   state = must(createThread(state, "p1", "Plans", message));
   return { state, id: state.threads[0]!.id, message };
 }
@@ -43,12 +43,21 @@ describe("threads", () => {
     expect(must(createThread(state, "p1", "Food")).threads.map((t) => t.id)).toEqual(["th-1", "th-2"]);
   });
 
-  it("allow one thread per message, and only on global messages", () => {
+  it("allow one thread per message, named by its global seq, which must exist", () => {
     const { state, message } = withThread();
     expect(error(createThread(state, "p2", "Again", message))).toBe("thread_exists");
-    expect(error(createThread(state, "p2", "Nowhere", 999))).toBe("message_not_found");
+    // Only one global message so far: seq 1 is not posted yet, whatever other channels hold.
     const botany = must(sendChat(state, "p0", "botany", "plant"));
-    expect(error(createThread(botany, "p2", "Plants", botany.chat.at(-1)!.id))).toBe("message_not_found");
+    for (const seq of [1, 999, -1, 0.5]) expect(error(createThread(botany, "p2", "Nowhere", seq))).toBe("message_not_found");
+  });
+
+  it("can start from a global message whose page has left the state", () => {
+    let state = createGame(seats, DEFAULT_CONFIG, 42);
+    for (let i = 0; i < 2 * CHAT_PAGE + 1; i++) state = must(sendChat(state, "p0", "global", `m${i}`));
+    expect(state.chat.some((m) => m.channel === "global" && m.seq === 0)).toBe(false);
+    state = must(createThread(state, "p1", "Old times", 0));
+    expect(state.threads[0]!.from).toBe(0);
+    expect(error(createThread(state, "p2", "Again", 0))).toBe("thread_exists");
   });
 
   it("need a one-line name of at most the limit", () => {
@@ -89,8 +98,8 @@ describe("threads", () => {
   it("let authors tick checkboxes in their thread messages", () => {
     const { state: base, id } = withThread();
     const state = must(sendChat(base, "p0", id, "- [ ] fix the hull"));
-    const message = state.chat.at(-1)!.id;
-    expect(must(toggleCheckbox(state, "p0", message, 0)).chat.at(-1)!.text).toBe("- [x] fix the hull");
+    const message = state.chat.at(-1)!;
+    expect(must(toggleCheckbox(state, "p0", id, message.seq, 0)).chat.at(-1)!.text).toBe("- [x] fix the hull");
   });
 
   it("are replayed from the createThread input", () => {

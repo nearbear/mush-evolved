@@ -11,6 +11,8 @@ import {
   parseGameMessage,
   startGame,
   stampEntries,
+  takeChatOutbox,
+  chatPageKey,
   bodyOf,
   legalActions,
   nextDue,
@@ -100,7 +102,7 @@ const REPLAY_RETRY_MAX_MS = 60 * 60_000;
  * Bump when GameState's shape changes, or ConfigOverrides' (or what resolveConfig derives from a key). Games stored
  * under another version are discarded on load (there is no migration; games are short-lived).
  */
-export const STATE_VERSION = 111;
+export const STATE_VERSION = 112;
 
 /**
  * A ship's overrides from its setup (#232): the knobs, plus the setup's id for the record and the view. The setup is
@@ -897,6 +899,8 @@ export class GameRoom extends Server<Env> {
     // One time for the stamps and the record, so a rebuild stamps the same (rebuildGame).
     const now = Date.now();
     this.game = stampEntries(result.state, now);
+    // Sealed chat pages are stored beside the snapshot, in the same write (#355, chat.ts `pushChat`).
+    const outbox = takeChatOutbox(this.game);
     this.noteStarts();
     if (this.game.phase === "ended") this.endedAt ??= now;
     // The message the chat input posted: the only player message an input makes.
@@ -908,7 +912,8 @@ export class GameRoom extends Server<Env> {
     const entries: Record<string, unknown> = { [inputKey(this.inputs++)]: recorded };
     const account = input.type === "join" ? this.accounts[input.seat.id] : undefined;
     if (input.type === "join" && account !== undefined) entries[accountKey(input.seat.id)] = account;
-    await this.persist(entries);
+    for (const { channel, page, messages } of outbox.sealed) entries[chatPageKey(channel, page)] = messages;
+    await this.persist(entries, outbox.dropped.flatMap(({ channel, pages }) => Array.from({ length: pages }, (_, page) => chatPageKey(channel, page))));
     if (room !== null) this.broadcastViews(room);
     // Saved with the next input; until then a restart only repeats an idempotent write.
     await this.releaseAccounts();
@@ -1091,8 +1096,12 @@ export class GameRoom extends Server<Env> {
     }
   }
 
-  /** Saves the snapshot, plus any record entries, in one atomic write so they can't disagree. */
-  private async persist(entries: Record<string, unknown> = {}): Promise<void> {
+  /**
+   * Saves the snapshot, plus any record entries and chat pages, in one atomic write so they can't disagree. `deletes`
+   * (a deleted private channel's pages) are issued in the same turn with no await between, so storage commits them
+   * with it.
+   */
+  private async persist(entries: Record<string, unknown> = {}, deletes: readonly string[] = []): Promise<void> {
     if (!this.game) return;
     const { config: _, ...game } = this.game;
     const stored: Stored = {
@@ -1114,7 +1123,11 @@ export class GameRoom extends Server<Env> {
       ...(this.endedAt !== null && { endedAt: this.endedAt }),
       replayReady: this.replayReady,
     };
-    await this.ctx.storage.put({ ...entries, game: stored });
+    const writes: Promise<unknown>[] = [];
+    // Storage deletes at most 128 keys a call.
+    for (let i = 0; i < deletes.length; i += 128) writes.push(this.ctx.storage.delete(deletes.slice(i, i + 128)));
+    writes.push(this.ctx.storage.put({ ...entries, game: stored }));
+    await Promise.all(writes);
   }
 
   private send(connection: Connection, msg: GameServerMessage): void {

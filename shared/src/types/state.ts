@@ -7,7 +7,7 @@ import type { RelayPool, ResearchPool } from "../relay.ts";
 import type { RngState } from "../rng.ts";
 import type { TitleId } from "../titles.ts";
 import type { ItemState, LogEntry, PlayerId, RoomId } from "../types.ts";
-import type { ChatMessage, ChatThread, PrivateChannel, SharedPlanet } from "./chat.ts";
+import type { ChannelId, ChatMessage, ChatOutbox, ChatThread, PrivateChannel, SharedPlanet } from "./chat.ts";
 import type { DeepReadonly, Equipment, ExpeditionEventKind, GameConfig } from "./config.ts";
 import type { Plan } from "./plan.ts";
 import type { PlayerState } from "./player.ts";
@@ -58,8 +58,16 @@ export interface GameState {
   log: LogEntry[];
   /** The next `LogEntry.id`. */
   nextLogId: number;
+  /**
+   * Each channel's open page and the page before it (the tail), in `id` order (#355, `pushChat`). Older pages are in
+   * the server's storage.
+   */
   chat: ChatMessage[];
   nextChatId: number;
+  /** Messages ever posted in each channel, so the next `seq`. Missing means none. */
+  chatSeq: Partial<Record<ChannelId, number>>;
+  /** Pages to store and delete, which the server takes after every input. Not in the full view. */
+  chatOutbox: ChatOutbox;
   channels: PrivateChannel[];
   nextChannelId: number;
   /**

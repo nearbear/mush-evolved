@@ -2,6 +2,10 @@ import {
   characterName,
   CHARACTERS,
   CHAT_CHANNELS,
+  CHAT_PAGE,
+  chatPageKey,
+  type ChannelId,
+  type ChatMessage,
   CYCLE_HOURS,
   DEFAULT_CONFIG,
   fullViewFor,
@@ -486,13 +490,46 @@ describe("GameRoom persistence", () => {
     await send(room, c, { type: "chat", channel: CHAT_CHANNELS[0], text: "again" });
     const record = [...(await storage.list({ prefix: "input:" })).values()] as RecordedInput[];
     const ids = record.filter((r) => r.input.type === "chat").map((r) => r.chatId);
-    const shown = lastView(c).chat.filter((m) => m.from !== null);
-    expect(shown.map((m) => m.text)).toEqual(["hello", "again"]);
-    expect(ids).toEqual(shown.map((m) => m.id));
+    const kept = (storage.data.get("game") as { game: GameState }).game.chat.filter((m) => m.from !== null);
+    expect(kept.map((m) => m.text)).toEqual(["hello", "again"]);
+    expect(ids).toEqual(kept.map((m) => m.id));
+    // The live view names them by seq, never by the id (#355).
+    expect(lastView(c).chat.some((m) => "id" in m)).toBe(false);
     // Other inputs carry none.
     await send(room, c, { type: "action", action: legalIn(lastView(c)).find((x) => x.type === "move")! });
     expect(storage.data.get("input:000000002")).toMatchObject({ input: { type: "action" } });
     expect(storage.data.get("input:000000002")).not.toHaveProperty("chatId");
+  });
+
+  it("stores each sealed chat page beside the snapshot, and deletes a private channel's pages with it (#355)", async () => {
+    vi.useFakeTimers({ now: 1_000_000 });
+    try {
+      const { room, storage } = await newRoom(3);
+      const c = connect(room, "tok0");
+      await send(room, c, { type: "createChannel", name: "crew" });
+      const channel = lastView(c).privateChannels[0]!.id;
+      const say = async (target: ChannelId, n: number) => {
+        for (let i = 0; i < n; i++) {
+          // Past the chat rate limit, well short of a cycle.
+          vi.setSystemTime(Date.now() + 2_001);
+          await send(room, c, { type: "chat", channel: target, text: `${target} ${i}` });
+        }
+      };
+      await say(channel, CHAT_PAGE + 1);
+      await say(CHAT_CHANNELS[0], CHAT_PAGE + 1);
+      const page = storage.data.get(chatPageKey(channel, 0)) as ChatMessage[];
+      expect(page.map((m) => m.text)).toEqual(Array.from({ length: CHAT_PAGE }, (_, i) => `${channel} ${i}`));
+      expect(page.every((m) => m.at !== undefined)).toBe(true);
+      expect(storage.data.has(chatPageKey(CHAT_CHANNELS[0], 0))).toBe(true);
+      const stored = (storage.data.get("game") as { game: GameState }).game;
+      expect(stored.chatOutbox).toEqual({ sealed: [], dropped: [] });
+      expect(lastView(c).chatCounts[channel]).toBe(CHAT_PAGE + 1);
+      await send(room, c, { type: "leaveChannel", channel });
+      expect(storage.data.has(chatPageKey(channel, 0))).toBe(false);
+      expect(storage.data.has(chatPageKey(CHAT_CHANNELS[0], 0))).toBe(true);
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it("drops a snapshot stored under another state version, but keeps the record and launches nothing over it", async () => {

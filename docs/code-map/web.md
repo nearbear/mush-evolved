@@ -16,6 +16,7 @@ All under `web/src/`. UI rules are in `web/CLAUDE.md`.
 - `GameScreen.tsx`: the live game's socket container: holds the seat's socket and the newest view (plus `cheatsAllowed`, clock offset, next cycle, bot pause) and renders `GameView` with `send`.
 - `GameView.tsx`: the view-only game screen (#333): three panels on desktop, tabbed on phones; renders a `PlayerView` and emits intents through an optional `send`. Without `send` (a replay, #156) it is read-only: it blanks `actions` and `chatChannels` so no action button, Ready, Go or chat input appears, hides Clear queue, private-channel controls, cheats and the body-taken dialog, and floor clicks don't walk. A dead player gets `DeathNotice` instead of the room and no peek bar. Renders the minimap (`scene/Minimap.tsx`) in the room view's top-right corner.
 - `Toasts.tsx`: transient messages.
+- `chatSeen.ts`: which chat messages are new, per channel by `seq` (views carry no message id, #355): `chatSeenIn`, `isNewer` (a channel that just became readable brings history, not news), `messageKey`. Used by `announce.ts` and the iTrackie's unread counts.
 - `useMobile.ts`: the phone-layout media query.
 - `fogDepth.ts`: the fog depth preference, in localStorage.
 - `tips.ts`: the viewer's tip choices in localStorage (on/off, snoozed, muted) and which tip to show (`shownTip`, `forgetEnded`, `dismissed`).

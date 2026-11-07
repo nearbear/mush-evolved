@@ -2,7 +2,8 @@ import { Fragment } from "react";
 import { useTranslation } from "react-i18next";
 import { useNames } from "../i18n/names.ts";
 import { Menu } from "@base-ui/react/menu";
-import type { ChannelId, ChatMessage, PlayerView, ThreadId } from "@mush2/shared";
+import type { ChannelId, ChatLine, PlayerView, ThreadId } from "@mush2/shared";
+import { messageKey } from "../chatSeen.ts";
 import { Markdown } from "./Markdown.tsx";
 import { CycleDivider } from "./CycleDivider.tsx";
 import { FeedEntry, CrewAvatar, InfoMarker } from "./FeedEntry.tsx";
@@ -14,7 +15,7 @@ import type { ReactNode } from "react";
 /** What global chat's messages link to: the thread started from one, or the form to start one. */
 export interface ThreadLinks {
   open: (id: ThreadId) => void;
-  start: (message: ChatMessage) => void;
+  start: (message: ChatLine) => void;
 }
 
 /** A chat channel: its messages, then an input. Read and post access come from the server. */
@@ -31,7 +32,7 @@ export function Thread({
   channel: ChannelId;
   placeholder: string;
   onSend: (text: string) => void;
-  onToggle: (message: number, line: number) => void;
+  onToggle: (channel: ChannelId, seq: number, line: number) => void;
   /** Global chat only: each message links to its thread, or offers to start one. */
   threadLinks?: ThreadLinks;
   /** Shown above the messages (a thread's starter message). */
@@ -51,14 +52,14 @@ export function Thread({
           {!readable && <li className="sub">{t("itrackie.needITrackieRead")}</li>}
           {readable && messages.length === 0 && <li className="sub">{t("itrackie.noMessages")}</li>}
           {messages.map((m, i) => {
-            const thread = threadLinks && !m.system ? view.threads.find((th) => th.from === m.id) : undefined;
+            const thread = threadLinks && !m.system ? view.threads.find((th) => th.from === m.seq) : undefined;
             return (
-              <Fragment key={m.id}>
+              <Fragment key={messageKey(m)}>
                 {messages[i - 1]?.cycle !== m.cycle && <CycleDivider cycle={m.cycle} />}
                 <MessageEntry
                   view={view}
                   message={m}
-                  onToggle={m.from === view.you.id && enabled ? (line) => onToggle(m.id, line) : undefined}
+                  onToggle={m.from === view.you.id && enabled ? (line) => onToggle(m.channel, m.seq, line) : undefined}
                   tools={
                     <MessageMenu
                       onStartThread={threadLinks && !thread && enabled ? () => threadLinks.start(m) : undefined}
@@ -98,7 +99,7 @@ export function MessageEntry({
   children,
 }: {
   view: PlayerView;
-  message: ChatMessage;
+  message: ChatLine;
   onToggle?: ((line: number) => void) | undefined;
   tools?: ReactNode;
   className?: string;
@@ -170,9 +171,7 @@ function MessageMenu({ onStartThread, report }: { onStartThread: (() => void) | 
   );
 }
 
-/** Messages per thread, for the "3 messages" counts. */
+/** Messages per thread, for the "3 messages" counts: every message ever posted, older pages included. */
 export function messageCounts(view: PlayerView): Map<ChannelId, number> {
-  const counts = new Map<ChannelId, number>();
-  for (const m of view.chat) counts.set(m.channel, (counts.get(m.channel) ?? 0) + 1);
-  return counts;
+  return new Map(Object.entries(view.chatCounts) as [ChannelId, number][]);
 }

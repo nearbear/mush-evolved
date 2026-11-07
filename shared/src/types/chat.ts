@@ -68,15 +68,20 @@ export interface PrivateChannel {
 export interface ChatThread {
   id: ThreadId;
   name: string;
-  /** The global message it was started from. At most one thread per message. */
+  /** The `seq` of the global message it was started from. At most one thread per message. */
   from?: number;
   createdBy: PlayerId;
   cycle: number;
 }
 
 export interface ChatMessage {
-  /** Increasing per game; stable React key and ordering. */
+  /**
+   * Increasing per game, across channels; never reused. The server, the record and the replay use it. A live view
+   * never carries it (`ChatLine`): a gap in it would show that someone posted where you can't read.
+   */
   id: number;
+  /** Position in its channel, 0, 1, 2… with no gaps (#355). Page n holds `seq` n·50 to n·50+49 (`CHAT_PAGE`). */
+  seq: number;
   cycle: number;
   /** Wall-clock ms when the server recorded it (stamped by GameRoom; the rules have no clock). Missing on older games. */
   at?: number;
@@ -88,4 +93,23 @@ export interface ChatMessage {
   text: string;
   /** A system message: the client translates `key` with `params`, like a log entry. */
   system?: { key: string; params?: LogParams };
+}
+
+/** A chat message as a live view carries it: no game-wide `id` (see `ChatMessage.id`). Named by `channel` and `seq`. */
+export type ChatLine = Omit<ChatMessage, "id">;
+
+/** A full page that left the state, for the server to store (`chatPageKey`). */
+export interface SealedChatPage {
+  channel: ChannelId;
+  page: number;
+  messages: ChatMessage[];
+}
+
+/**
+ * What the rules hand the server to store (#355): pages that sealed, and private channels deleted with how many pages
+ * they had stored. The server empties it after every input (`takeChatOutbox`); the rules never read storage.
+ */
+export interface ChatOutbox {
+  sealed: SealedChatPage[];
+  dropped: { channel: ChannelId; pages: number }[];
 }
