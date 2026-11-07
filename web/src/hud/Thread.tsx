@@ -1,8 +1,8 @@
-import { Fragment, useEffect, useState } from "react";
+import { Fragment, memo, useLayoutEffect, useRef, useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useNames } from "../i18n/names.ts";
 import { Menu } from "@base-ui/react/menu";
-import { chatPageOf, type ChannelId, type ChatLine, type PlayerView, type ThreadId } from "@mush2/shared";
+import { chatPageOf, jsonEqual, type CharacterId, type ChannelId, type ChatLine, type PlayerView, type ThreadId } from "@mush2/shared";
 import { pageItems, useChatPages } from "../chatPages.tsx";
 import { useMobile } from "../useMobile.ts";
 import { messageKey } from "../chatSeen.ts";
@@ -20,16 +20,7 @@ export interface ThreadLinks {
   start: (message: ChatLine) => void;
 }
 
-/** A chat channel: its messages, then an input. Read and post access come from the server. */
-export function Thread({
-  view,
-  channel,
-  placeholder,
-  onSend,
-  onToggle,
-  threadLinks,
-  head,
-}: {
+interface ThreadProps {
   view: PlayerView;
   channel: ChannelId;
   placeholder: string;
@@ -37,9 +28,39 @@ export function Thread({
   onToggle: (channel: ChannelId, seq: number, line: number) => void;
   /** Global chat only: each message links to its thread, or offers to start one. */
   threadLinks?: ThreadLinks;
-  /** Shown above the messages (a thread's starter message). */
+  /** Shown above the messages (a thread's starter message). Re-rendered only when `headKey` changes. */
   head?: ReactNode;
-}) {
+  /** Everything `head` shows, as plain data: the memo compares this, never the `head` element itself. */
+  headKey?: unknown;
+}
+
+/**
+ * Whether a `Thread` would render the same. Every chat tab stays mounted, so each new view would otherwise re-render
+ * every channel and thread. This reads only the parts of the view a thread uses, which keep their identity across
+ * updates that didn't touch them (`shareUnchanged`, shareView.ts). Callbacks are not compared: the thread calls the
+ * latest ones through a ref (`useHandlers`).
+ */
+function sameThread(a: ThreadProps, b: ThreadProps): boolean {
+  const [v, w] = [a.view, b.view];
+  return (
+    a.channel === b.channel &&
+    a.placeholder === b.placeholder &&
+    !a.threadLinks === !b.threadLinks &&
+    !a.head === !b.head &&
+    jsonEqual(a.headKey, b.headKey) &&
+    v.chat === w.chat &&
+    v.chatCounts === w.chatCounts &&
+    v.readChannels === w.readChannels &&
+    v.chatChannels === w.chatChannels &&
+    v.threads === w.threads &&
+    v.players === w.players &&
+    v.you.id === w.you.id &&
+    v.you.character === w.you.character
+  );
+}
+
+/** A chat channel: its messages, then an input. Read and post access come from the server. */
+export const Thread = memo(function Thread({ view, channel, placeholder, onSend, onToggle, threadLinks, head }: ThreadProps) {
   const { t } = useTranslation();
   // The dead can read some channels but post in none.
   const readable = view.readChannels.includes(channel);
@@ -48,6 +69,7 @@ export function Thread({
   const counts = threadLinks && messageCounts(view);
   const paging = usePaging(view, channel);
   const messages = paging.messages ?? live;
+  const actions = useHandlers(onSend, onToggle, threadLinks);
   return (
     <div className="thread">
       {readable && <PageBar paging={paging} />}
@@ -59,28 +81,22 @@ export function Thread({
           {readable && !paging.loading && messages.length === 0 && <li className="sub">{t("itrackie.noMessages")}</li>}
           {messages.map((m, i) => {
             const thread = threadLinks && !m.system ? view.threads.find((th) => th.from === m.seq) : undefined;
+            const mine = m.from === view.you.id;
             return (
               <Fragment key={messageKey(m)}>
                 {messages[i - 1]?.cycle !== m.cycle && <CycleDivider cycle={m.cycle} />}
-                <MessageEntry
-                  view={view}
+                <ChatRow
                   message={m}
-                  onToggle={m.from === view.you.id && enabled ? (line) => onToggle(m.channel, m.seq, line) : undefined}
-                  tools={
-                    <MessageMenu
-                      onStartThread={threadLinks && !thread && enabled ? () => threadLinks.start(m) : undefined}
-                      report={m.from !== view.you.id}
-                    />
-                  }
-                >
-                  {thread && threadLinks && (
-                    <button type="button" className="thread-link" onClick={() => threadLinks.open(thread.id)}>
-                      <img className="tab-icon" src={TAB_ICONS.threads} alt="" />
-                      <span className="thread-name">{thread.name}</span>
-                      <span className="thread-count">{t("itrackie.threads.messages", { count: counts?.get(thread.id) ?? 0 })}</span>
-                    </button>
-                  )}
-                </MessageEntry>
+                  character={senderOf(view, m)}
+                  mine={mine}
+                  canToggle={mine && enabled}
+                  canStartThread={!!threadLinks && !thread && enabled}
+                  report={!mine}
+                  threadId={thread?.id}
+                  threadName={thread?.name}
+                  threadCount={thread ? (counts?.get(thread.id) ?? 0) : undefined}
+                  actions={actions}
+                />
               </Fragment>
             );
           })}
@@ -89,11 +105,11 @@ export function Thread({
       {readable && !enabled ? (
         <p className="sub chat-read-only">{t("itrackie.readOnly")}</p>
       ) : (
-        <ChatInput enabled={enabled} placeholder={placeholder} onSend={onSend} />
+        <ChatInput enabled={enabled} placeholder={placeholder} onSend={actions.send} />
       )}
     </div>
   );
-}
+}, sameThread);
 
 /**
  * Which page of a channel the reader is on (#355). Page n holds `seq` n·50 to n·50+49. Null, the default, is the
@@ -182,14 +198,18 @@ function PageBar({ paging }: { paging: Paging }) {
 
 /** One message: a player's (crew sprite, name, markdown) or the game's (info icon, translated line). `children` go under the text. */
 export function MessageEntry({
-  view,
+  character,
+  mine,
   message: m,
   onToggle,
   tools,
   className,
   children,
 }: {
-  view: PlayerView;
+  /** The sender's character (`senderOf`); unused for the game's own messages. */
+  character: CharacterId | undefined;
+  /** Sent by the reader. */
+  mine: boolean;
   message: ChatLine;
   onToggle?: ((line: number) => void) | undefined;
   tools?: ReactNode;
@@ -205,14 +225,12 @@ export function MessageEntry({
       </FeedEntry>
     );
   }
-  // Senders are named by their character; account names never reach the client.
-  const character = m.from === view.you.id ? view.you.character : view.players.find((p) => p.id === m.from)?.character;
   return (
     <FeedEntry
       marker={<CrewAvatar character={character} />}
       name={
         <>
-          <strong className={m.from === view.you.id ? "me" : undefined}>{names.character(character ?? "")}</strong>
+          <strong className={mine ? "me" : undefined}>{names.character(character ?? "")}</strong>
           {m.isBot && <span className="tag">{t("common.ai")}</span>}
         </>
       }
@@ -225,6 +243,82 @@ export function MessageEntry({
     </FeedEntry>
   );
 }
+
+/** A message's sender as a character: senders are named by their character; account names never reach the client. */
+export function senderOf(view: PlayerView, m: ChatLine): CharacterId | undefined {
+  return m.from === view.you.id ? view.you.character : view.players.find((p) => p.id === m.from)?.character;
+}
+
+/** What a thread and its rows do on input. Stable for the life of the `Thread`, so it and its rows can skip re-rendering. */
+interface RowActions {
+  send: (text: string) => void;
+  toggle: (m: ChatLine, line: number) => void;
+  start: (m: ChatLine) => void;
+  open: (id: ThreadId) => void;
+}
+
+/**
+ * Callbacks that never change identity but always call the latest handlers (the parents pass new closures on every
+ * render).
+ */
+function useHandlers(
+  onSend: (text: string) => void,
+  onToggle: (channel: ChannelId, seq: number, line: number) => void,
+  threadLinks: ThreadLinks | undefined,
+): RowActions {
+  const latest = useRef({ onSend, onToggle, threadLinks });
+  useLayoutEffect(() => {
+    latest.current = { onSend, onToggle, threadLinks };
+  });
+  const [actions] = useState<RowActions>(() => ({
+    send: (text) => latest.current.onSend(text),
+    toggle: (m, line) => latest.current.onToggle(m.channel, m.seq, line),
+    start: (m) => latest.current.threadLinks?.start(m),
+    open: (id) => latest.current.threadLinks?.open(id),
+  }));
+  return actions;
+}
+
+interface ChatRowProps {
+  message: ChatLine;
+  character: CharacterId | undefined;
+  mine: boolean;
+  canToggle: boolean;
+  canStartThread: boolean;
+  report: boolean;
+  threadId: ThreadId | undefined;
+  threadName: string | undefined;
+  threadCount: number | undefined;
+  actions: RowActions;
+}
+
+/**
+ * One message in a `Thread`, memoized. Every keepMounted chat tab renders its whole page on each new view, and the
+ * view arrives as fresh JSON, so messages are compared by content: a move re-renders only rows that changed.
+ */
+const ChatRow = memo(
+  function ChatRow({ message: m, character, mine, canToggle, canStartThread, report, threadId, threadName, threadCount, actions }: ChatRowProps) {
+    const { t } = useTranslation();
+    return (
+      <MessageEntry
+        character={character}
+        mine={mine}
+        message={m}
+        onToggle={canToggle ? (line) => actions.toggle(m, line) : undefined}
+        tools={<MessageMenu onStartThread={canStartThread ? () => actions.start(m) : undefined} report={report} />}
+      >
+        {threadId !== undefined && (
+          <button type="button" className="thread-link" onClick={() => actions.open(threadId)}>
+            <img className="tab-icon" src={TAB_ICONS.threads} alt="" />
+            <span className="thread-name">{threadName}</span>
+            <span className="thread-count">{t("itrackie.threads.messages", { count: threadCount ?? 0 })}</span>
+          </button>
+        )}
+      </MessageEntry>
+    );
+  },
+  (a, b) => (Object.keys(a) as (keyof ChatRowProps)[]).every((k) => (k === "message" ? jsonEqual(a.message, b.message) : a[k] === b[k])),
+);
 
 /**
  * A message's "⋯" menu: start a thread (global chat), report. Shown on hover or

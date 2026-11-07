@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { MAX_THREAD_NAME_LENGTH, chatPageOf, type ChannelId, type PlayerView, type ThreadId } from "@mush2/shared";
 import { IconButton } from "./IconButton.tsx";
-import { MessageEntry, Thread, messageCounts } from "./Thread.tsx";
+import { MessageEntry, Thread, messageCounts, senderOf } from "./Thread.tsx";
 import { Scroller } from "./Scroller.tsx";
 import { TAB_ICONS } from "../art/assets.ts";
 import { useChatPages } from "../chatPages.tsx";
@@ -98,7 +98,7 @@ export function Threads({
           <div className="thread-starter">
             <p className="sub">{t("itrackie.threads.startingFrom")}</p>
             <ol className="feed">
-              <MessageEntry view={view} message={starterMessage} />
+              <MessageEntry character={senderOf(view, starterMessage)} mine={starterMessage.from === view.you.id} message={starterMessage} />
             </ol>
           </div>
         )}
@@ -138,9 +138,10 @@ export function Threads({
               placeholder={t("itrackie.threads.messagePlaceholder", { name: th.name })}
               onSend={(text) => onChat(th.id, text)}
               onToggle={onToggle}
+              headKey={from ?? "loading"}
               head={
                 th.from === undefined || !(from || pages) ? undefined : from ? (
-                  <MessageEntry view={view} message={from} className="thread-head" />
+                  <MessageEntry character={senderOf(view, from)} mine={from.from === view.you.id} message={from} className="thread-head" />
                 ) : (
                   // Global messages are never deleted: a starter not here is on a page still on its way.
                   <li className="sub thread-head">{t("itrackie.pages.loading")}</li>

@@ -4,11 +4,11 @@
 // renderer (CLAUDE.md).
 
 
-import { Fragment, useEffect, useState } from "react";
+import { Fragment, memo, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNames } from "../i18n/names.ts";
 import { Tabs } from "@base-ui/react/tabs";
-import { FEATURE_CHANNELS, ITRACKIE_ITEM, GRAVEYARD_CHANNEL, MUSH_CHANNEL, type ChannelId, type FeatureChannel, type PlayerView, type SharedPlanetId, type ThreadId } from "@mush2/shared";
+import { FEATURE_CHANNELS, ITRACKIE_ITEM, GRAVEYARD_CHANNEL, MUSH_CHANNEL, jsonEqual, type ChannelId, type LogLine, type FeatureChannel, type PlayerView, type SharedPlanetId, type ThreadId } from "@mush2/shared";
 import { chatSeenIn, isNewer, type ChatSeen } from "../chatSeen.ts";
 import { useAnnouncements } from "./useAnnouncements.ts";
 import { FeatureSelect } from "./FeatureSelect.tsx";
@@ -77,6 +77,32 @@ function useUnread(view: PlayerView, active: TabId): Record<TabId, number> {
   }
   return counts;
 }
+
+/**
+ * One room log line, memoized by content: the log tab stays mounted, so every new view would otherwise redraw each
+ * line and its time popover (web/CLAUDE.md "Render cost"). `onRead` must be stable (a state setter).
+ */
+const LogRow = memo(
+  function LogRow({ entry: e, canRead, onRead }: { entry: LogLine; canRead: boolean; onRead: (report: string) => void }) {
+    const { t } = useTranslation();
+    const names = useNames();
+    return (
+      <FeedEntry
+        marker={e.level === "warning" ? <WarningMarker /> : <InfoMarker />}
+        at={e.at}
+        className={e.level === "warning" ? "warning" : e.visibleTo === "all" ? undefined : "private"}
+      >
+        {names.logLine(e)}
+        {canRead && (
+          <button type="button" className="expedition-read" onClick={() => onRead(String(e.params?.report))}>
+            {t("expedition.read")}
+          </button>
+        )}
+      </FeedEntry>
+    );
+  },
+  (a, b) => a.canRead === b.canRead && a.onRead === b.onRead && jsonEqual(a.entry, b.entry),
+);
 
 export function ITrackie({
   view,
@@ -203,18 +229,7 @@ export function ITrackie({
                 {roomLog.map((e, i) => (
                   <Fragment key={i}>
                     {roomLog[i - 1]?.cycle !== e.cycle && <CycleDivider cycle={e.cycle} />}
-                    <FeedEntry
-                      marker={e.level === "warning" ? <WarningMarker /> : <InfoMarker />}
-                      at={e.at}
-                      className={e.level === "warning" ? "warning" : e.visibleTo === "all" ? undefined : "private"}
-                    >
-                      {names.logLine(e)}
-                      {e.key === "expeditionReturned" && view.expeditions.some((r) => r.id === e.params?.report) && (
-                        <button type="button" className="expedition-read" onClick={() => setReport(String(e.params?.report))}>
-                          {t("expedition.read")}
-                        </button>
-                      )}
-                    </FeedEntry>
+                    <LogRow entry={e} canRead={e.key === "expeditionReturned" && view.expeditions.some((r) => r.id === e.params?.report)} onRead={setReport} />
                   </Fragment>
                 ))}
               </ol>

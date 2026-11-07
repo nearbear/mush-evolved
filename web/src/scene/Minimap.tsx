@@ -24,6 +24,21 @@ const wallsPath = runsPath(plan.walls);
 /** Biggest a person's icon gets, in map cells. It shrinks in rooms too narrow for it, so it never crosses a wall. */
 const ICON = 3.2;
 
+/**
+ * `iconSpots` for a room holding `count` icons. The plan never changes, so each answer is computed once: the map
+ * re-renders on every view, and scanning all 27 rooms each time was most of its cost.
+ */
+const spotCache = new Map<string, ReturnType<typeof iconSpots>>();
+function spotsFor(room: (typeof shapes)[number], count: number): ReturnType<typeof iconSpots> {
+  const key = `${room.id}:${count}`;
+  let found = spotCache.get(key);
+  if (!found) {
+    found = iconSpots(room.runs, count, ICON);
+    spotCache.set(key, found);
+  }
+  return found;
+}
+
 type Person = Pick<OtherPlayerView, "id" | "isBot" | "character" | "room">;
 
 export function Minimap({
@@ -71,7 +86,7 @@ export function Minimap({
           .filter((p) => p.room === room.id)
           .sort((a, b) => a.id.localeCompare(b.id));
         for (const r of unidentified) if (r === room.id) inside.push(undefined);
-        const { size, spots } = iconSpots(room.runs, inside.length, ICON);
+        const { size, spots } = spotsFor(room, inside.length);
         return spots.map((at, i) => ({ ...at, size, key: `${room.id}:${i}`, person: inside[i] }));
       }),
     [people, unidentified],

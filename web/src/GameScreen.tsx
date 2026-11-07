@@ -7,9 +7,14 @@ import { MAX_CHAT_LENGTH, MAX_CHAT_LINES, type BotPause, type GameClientMessage,
 import i18n from "i18next";
 import { useTranslation } from "react-i18next";
 import { GameView } from "./GameView.tsx";
+import { RenderWatch } from "./RenderWatch.tsx";
+import { shareUnchanged } from "./shareView.ts";
 import { gameSocket, type SeatTicket } from "./net.ts";
 import { showError } from "./Toasts.tsx";
 import { ChatPagesProvider, useChatPageCache } from "./chatPages.tsx";
+
+/** How slow-render warnings name this screen (dev console only). */
+const WATCH_ID = "GameView"; // i18n-ignore: dev console only
 
 export function GameScreen({ ticket, onLeave, waking = false }: { ticket: SeatTicket; onLeave: () => void; waking?: boolean }) {
   const { t } = useTranslation();
@@ -31,7 +36,8 @@ export function GameScreen({ ticket, onLeave, waking = false }: { ticket: SeatTi
     socket.addEventListener("message", (e: MessageEvent<string>) => {
       const msg = JSON.parse(e.data) as GameServerMessage;
       if (msg.type === "view") {
-        setView(msg.view);
+        // Unchanged parts keep their identity, so memoized components skip them (shareView.ts).
+        setView((prev) => shareUnchanged(prev, msg.view));
         setCheatsAllowed(msg.cheatsAllowed);
         setClockOffset(msg.now - Date.now());
         setNextCycleAt(msg.nextCycleAt);
@@ -50,6 +56,7 @@ export function GameScreen({ ticket, onLeave, waking = false }: { ticket: SeatTi
   if (!view) return <main className="connecting loading">{t("common.connecting")}</main>;
   return (
     <ChatPagesProvider value={chatPages.value}>
+    <RenderWatch id={WATCH_ID}>
     <GameView
       view={view}
       send={send}
@@ -60,6 +67,7 @@ export function GameScreen({ ticket, onLeave, waking = false }: { ticket: SeatTi
       nextCycleAt={nextCycleAt}
       botsPaused={botsPaused}
     />
+    </RenderWatch>
     </ChatPagesProvider>
   );
 }
