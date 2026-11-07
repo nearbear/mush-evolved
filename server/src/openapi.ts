@@ -14,6 +14,7 @@ import type { Context, Env as HonoEnv } from "hono";
 import * as z from "zod";
 import {
   apiSchemas,
+  FinishedGameSchema,
   FinishedGamesResponseSchema,
   InvalidCursorSchema,
   LogoutResponseSchema,
@@ -209,6 +210,19 @@ export function apiDocument(version: string, maxBodies: { name: number; setup: n
           responses: {
             "200": jsonResponse("A page of games.", FinishedGamesResponseSchema),
             "400": jsonResponse("Not a cursor.", InvalidCursorSchema),
+            ...rateLimited,
+          },
+        },
+      },
+      "/api/games/{id}": {
+        get: {
+          summary: "One finished game",
+          description:
+            "The game's entry, as the list shows it: who won, how it ended, the cycles and the crew. Answers whether or not the replay is ready. Same privacy as the replay: a multiplayer game is public (cacheable for an hour), a single-player one only for the account that played it.",
+          parameters: [param("path", "id", { description: "The game's `id` from the list." })],
+          responses: {
+            "200": jsonResponse("The game.", FinishedGameSchema),
+            "404": jsonResponse("No such finished game, or not yours.", NotFoundSchema),
             ...rateLimited,
           },
         },

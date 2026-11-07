@@ -1,6 +1,7 @@
 // The replay routes (#337), routed by auth.ts after its rate limits. They read the copy in R2 (#336, replayStore.ts),
 // never the room, so showing a replay never wakes it.
 //
+//   GET /api/games/<id>              FinishedGame: the game's summary (#368), from D1 only
 //   GET /api/games/<id>/replay       ReplayIndex: the game's index
 //   GET /api/games/<id>/replay/<n>   ChunkEntry[]: chunk n, as gzipped JSON
 //
@@ -12,6 +13,8 @@
 //   room. A listed game without its index answers 409 `not_ready`, and no chunk of it is served, even one already
 //   written.
 //
+// The summary has the same privacy as the replay (`openGame`), but needs only the first condition.
+//
 // Multiplayer replays are public. A single-player one is only for the account that played it (#332); anyone else gets
 // the same 404 as a game that doesn't exist, so it doesn't reveal that the game exists. `mayView` is where a share
 // link would be accepted later.
@@ -20,7 +23,7 @@
 // immutable. A single-player answer is never stored (`no-store`), so another account on the same browser can't read it
 // from the cache.
 
-import { type ChunkEntry, type ReplayIndex, replayKeys } from "@mush2/shared";
+import { type ChunkEntry, type FinishedGame, type ReplayIndex, replayKeys } from "@mush2/shared";
 import type { GameStore } from "./gameStore.ts";
 import { json, type JsonResponse } from "./http.ts";
 
@@ -49,7 +52,7 @@ const CHUNK_NUMBER = /^\d{1,6}$/;
 
 /** A public chunk never changes. */
 const IMMUTABLE = "public, max-age=31536000, immutable";
-/** A public index: it doesn't change either, but a shorter life leaves room for retention (#132) to remove a copy. */
+/** A public index (and summary): it doesn't change either, but a shorter life leaves room for retention (#132) to remove a copy. */
 const INDEX_CACHE = "public, max-age=3600";
 
 type NotFound = JsonResponse<{ error: "not_found" }, 404>;
@@ -65,17 +68,42 @@ async function mayView(access: { singlePlayer: boolean; accounts: string[] }, de
   return account !== null && access.accounts.includes(account);
 }
 
-/** The game's confirmed index and whether its replay is public (cacheable), or the refusal. */
-async function openReplay(roomId: string, deps: ReplayRouteDeps): Promise<{ index: ReplayIndex; isPublic: boolean } | NotFound | NotReady> {
+/**
+ * Whether this request may see the listed game, and if so whether it is public (cacheable), or 404. Every route here
+ * starts with it, so the summary and the replay always agree on who sees a game.
+ */
+async function openGame(roomId: string, deps: ReplayRouteDeps): Promise<{ isPublic: boolean } | NotFound> {
   if (!ROOM_ID.test(roomId)) return notFound();
   const access = await deps.games.replayAccess(roomId);
   if (!access || !(await mayView(access, deps))) return notFound();
+  return { isPublic: !access.singlePlayer };
+}
+
+/** The game's confirmed index and whether its replay is public (cacheable), or the refusal. */
+async function openReplay(roomId: string, deps: ReplayRouteDeps): Promise<{ index: ReplayIndex; isPublic: boolean } | NotFound | NotReady> {
+  const opened = await openGame(roomId, deps);
+  if (opened instanceof Response) return opened;
   const object = await deps.replays.get(replayKeys.index(roomId));
   if (!object) return notReady();
   const index = await object.json<ReplayIndex>();
   // The index carries `v` for the viewer to check; only a mismatched roomId (put there by hand) is refused here.
   if (index.roomId !== roomId) return notReady();
-  return { index, isPublic: !access.singlePlayer };
+  return { index, isPublic: opened.isPublic };
+}
+
+/**
+ * `GET /api/games/<id>`: the game's entry, the same object `/api/games` lists (#368). It reads only D1, so it answers
+ * whether or not the replay's copy is confirmed, and for a replay too old to read.
+ */
+export async function gameSummaryRoute(roomId: string, deps: ReplayRouteDeps): Promise<JsonResponse<FinishedGame> | NotFound> {
+  const opened = await openGame(roomId, deps);
+  if (opened instanceof Response) return opened;
+  const game = await deps.games.finished(roomId);
+  // Listed a moment ago; only a row removed in between (by hand, or by retention later) gets here.
+  if (!game) return notFound();
+  const response = json(game);
+  if (opened.isPublic) response.headers.set("Cache-Control", INDEX_CACHE);
+  return response;
 }
 
 /** `GET /api/games/<id>/replay`. */

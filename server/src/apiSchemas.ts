@@ -14,6 +14,7 @@ import {
   CHARACTERS,
   type CharacterId,
   CYCLE_HOURS,
+  type FinishedGame,
   type FinishedGamesResponse,
   LOBBY_LANGUAGES,
   MAX_NAME_LENGTH,
@@ -212,9 +213,9 @@ export const PostSetupResponseSchema = named(
 const RoleSchema = z.enum(["human", "mush"]);
 const CharacterIdSchema = named("CharacterId", "A character.", z.enum(CHARACTERS.map((c) => c.id) as [CharacterId, ...CharacterId[]]));
 
-const FinishedGameSchema = named(
+export const FinishedGameSchema = named(
   "FinishedGame",
-  "A finished multiplayer game. `id` is its room's. Times are Unix ms; `cycles` counts from launch.",
+  "A finished game (only multiplayer ones in the list). `id` is its room's. Times are Unix ms; `cycles` counts from launch.",
   z.object({
     id: z.string(),
     language: LobbyLanguageSchema.nullable(),
@@ -313,6 +314,7 @@ export type SchemasMatchShared = [
   Expect<Same<z.infer<typeof SetupLookupResponseSchema>, SetupLookupResponse>>,
   Expect<Same<z.infer<typeof PostSetupRequestSchema>, PostSetupRequest>>,
   Expect<Same<z.infer<typeof PostSetupResponseSchema>, PostSetupResponse>>,
+  Expect<Same<z.infer<typeof FinishedGameSchema>, FinishedGame>>,
   Expect<Same<z.infer<typeof FinishedGamesResponseSchema>, FinishedGamesResponse>>,
   Expect<Same<z.infer<typeof ReplayIndexSchema>, ReplayIndex>>,
 ];

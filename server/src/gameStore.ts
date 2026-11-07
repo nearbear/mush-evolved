@@ -1,4 +1,5 @@
-// Finished games in D1 (#155). The schema is server/migrations/0004_games.sql; the route is `GET /api/games` (auth.ts).
+// Finished games in D1 (#155). The schema is server/migrations/0004_games.sql; the routes are `GET /api/games` (auth.ts)
+// and `GET /api/games/<id>` (one game, replayRoutes.ts).
 //
 // A room writes its game once it has ended (GameRoom's `recordFinished`). The write isn't atomic with the room's own
 // storage, so it is idempotent (INSERT OR IGNORE on the primary keys) and the room retries it until it succeeds.
@@ -129,6 +130,20 @@ interface PlayerRow {
   alive: number;
 }
 
+/** A game row and its crew as the API sends them. */
+function finishedGame(g: GameRow, crew: FinishedCrewMember[]): FinishedGame {
+  return {
+    id: g.id,
+    language: (LOBBY_LANGUAGES as readonly string[]).includes(g.language ?? "") ? (g.language as LobbyLanguage) : null,
+    startedAt: g.startedAt,
+    endedAt: g.endedAt,
+    cycles: g.cycles,
+    winner: g.winner as Winner,
+    ending: g.ending as Ending,
+    crew,
+  };
+}
+
 /** "p12" sorts after "p2". */
 const seatNumber = (seat: string) => Number(seat.slice(1));
 
@@ -185,18 +200,23 @@ export class GameStore {
     const crews = await this.crews(page.map((g) => g.id));
     const last = page.at(-1);
     return {
-      games: page.map((g) => ({
-        id: g.id,
-        language: (LOBBY_LANGUAGES as readonly string[]).includes(g.language ?? "") ? (g.language as LobbyLanguage) : null,
-        startedAt: g.startedAt,
-        endedAt: g.endedAt,
-        cycles: g.cycles,
-        winner: g.winner as Winner,
-        ending: g.ending as Ending,
-        crew: crews.get(g.id) ?? [],
-      })),
+      games: page.map((g) => finishedGame(g, crews.get(g.id) ?? [])),
       next: results.length > limit && last ? { endedAt: last.endedAt, roomId: last.id } : null,
     };
+  }
+
+  /**
+   * One finished game's entry, single player or not (`GET /api/games/<id>`, #368), or null when it isn't listed. The
+   * route decides who may see it (`replayAccess`); this only reads it.
+   */
+  async finished(roomId: string): Promise<FinishedGame | null> {
+    const game = await this.db
+      .prepare(`SELECT room_id AS id, language, started_at AS startedAt, ended_at AS endedAt, cycles, winner, ending FROM games WHERE room_id = ?`)
+      .bind(roomId)
+      .first<GameRow>();
+    if (!game) return null;
+    const crews = await this.crews([roomId]);
+    return finishedGame(game, crews.get(roomId) ?? []);
   }
 
   /**
