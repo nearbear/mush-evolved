@@ -91,7 +91,7 @@ Turrets hold 4 charges, patrol ships 10 (+6 with `PATROLSHIP_EXTRA_AMMO`); each 
 - Ours already has the six `LASER_TURRET_*` rooms with a `TURRET_COMMAND` each, and the bays with `PATROL_INTERFACE`s: Bay Alpha 3 (Longane, Jujube, Tamarin), Bay Beta 3 (Socrate, Epicure, Platon), Bay Alpha 2 (Wallis, and the Pasiphae).
 - In the original each patrol ship is a **room** (`PATROL_SHIP_A_0`…, capacity 1, status `DETACHED` while out, `INDESTRUCTIBLE`) holding a `PATROL_COMMAND`, plus an `OUTER_SPACE` room. Our 27-room graph has none of them.
 - Repairing a broken `PATROL_COMMAND` repairs its `PATROL_INTERFACE` and the other way round (`Utils.repairObject`).
-- NERON BIOS settings (`DataExt2/neronAdmin.json`): `ENABLE_NERON_SELF_DEFENSE` (auto-turrets fire each cycle; default index 1, "No"), `ACL_PILOTS` (patrol ships for everyone or pilots only; default "restricted"), `MAGNET` (`MAGNETIC_NET` project), `ENABLE_PLASMA_SHIELD`. The auto-turret report is `NERON_TURRET_REPORT`: "::a:: hits, ::b:: destroyed, ::c:: missed".
+- NERON BIOS settings (`DataExt2/neronAdmin.json`): `ACL_PILOTS` (patrol ships for everyone or pilots only; default "restricted"), `MAGNET` (`MAGNETIC_NET` project), `ENABLE_PLASMA_SHIELD`.
 
 ### Modifiers that touch combat
 
@@ -157,4 +157,4 @@ Phase 1, assuming the proposed scope in question 1:
 - Tests in `shared/tests/hunters.test.ts`: pinned config numbers, spawning, attacks hitting the shield then the hull for a seed, a kill removing the hunter, charges running out and recharging, the repeat bonus, illegal shots (no charge, not in a turret, dead target) leave the state unchanged, and a headless run where an ignored wave wears the hull down.
 - Record it in `docs/rules/implemented-rules.md`, `docs/rules/rules-design.md` ("Decisions received"), `docs/code-map/shared.md`, and `docs/process/ai-workflow.md` (append).
 
-Later phases, each its own plan when it comes up: patrol ships (takeoff, attack, stances, land, eject, repair, patrol-ship deaths), the other hunter types (Arack blocking travel, asteroids on a countdown, D1000 attacking three times, Trax), NERON's auto-turrets and pilot lock, the combat projects and research, and the triumph for kills.
+Later phases, each its own plan when it comes up: patrol ships (takeoff, attack, stances, land, eject, repair, patrol-ship deaths), the other hunter types (Arack blocking travel, asteroids on a countdown, D1000 attacking three times, Trax), NERON's pilot lock, the combat projects and research, and the triumph for kills.
