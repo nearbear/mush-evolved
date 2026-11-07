@@ -159,9 +159,10 @@ describe("dismantling a camera", () => {
   it("can still fail, leaving the camera installed and the cost paid", () => {
     const { s } = ship();
     player(s, "p0").skills = ["engineer"];
-    s.config.dismantle = { ...s.config.dismantle, successChance: 0 };
     installCameraIn(s, "REFECTORY");
+    const restore = forceDismantleOdds(0);
     const after = must(applyAction(s, "p0", dismantleEquipment("REFECTORY")));
+    restore();
     expect(hasCamera(after, "REFECTORY")).toBe(true);
     expect(player(after, "p0").ap).toBe(player(s, "p0").ap - s.config.dismantle.cost.ap);
     expect(viewFor(after, "p0").log.some((e) => e.key === "dismantleEquipmentFailed")).toBe(true);
