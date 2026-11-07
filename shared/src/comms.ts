@@ -132,6 +132,14 @@ export function callNextRebel(state: GameState): void {
   if (state.comms.linked) pushChat(state, "global", { from: null, isBot: false, text: "", system: { key: "rebelCalling", params: { base } } });
 }
 
+/**
+ * The ship travels or leaves orbit: every open call ends at once and is lost, partly decoded or not (owner, 2026-11-07,
+ * as upstream, where both fire the travel event). Its window closes now, so `isOpen` is false from this cycle on.
+ */
+export function endRebelCalls(state: GameState): void {
+  for (const call of state.comms.rebels) if (isOpen(state, call)) call.expiresAt = state.cycle;
+}
+
 /** At a cycle change: the next base calls a day after the last one. Mutates a state the caller already cloned. */
 export function commsCycle(state: GameState): void {
   const last = state.comms.rebels.at(-1);
