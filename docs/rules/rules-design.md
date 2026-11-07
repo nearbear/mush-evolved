@@ -8,6 +8,7 @@ The record of answered rule decisions and the design for the rules that are not 
 
 ## Decisions received
 
+- **Focused at a terminal** (2026-11-07, owner; [#192](https://github.com/nearbear/mush2/issues/192), not built). Sitting at a terminal shows a public status, **Focused** (a glasses icon). It is purely cosmetic: it tells roommates the person is looking at a screen, with no rule effect. The terminal position is a new `Spot` variant, `{ kind: "occupancy", equipment, chair? }`, set by the server; the owner ruled out the name "seat" (it already means a player's seat). Still open: whether standing at a terminal with no free chair also shows Focused.
 - **Guard and Guardian** (2026-11-06, owner). `guard` costs 1 AP, is aggressive, and grants the public `guardian` status. A guardian blocks everyone else in the room: they may only leave by the door they came in by; anyone who arrived another way (landing a patrol ship, waking from cryo) can use no door. The guardian leaves freely, and leaving, being moved or dying ends the status. `stop_guarding` is free. Several guardians in one room: owner said not applicable (each blocked person simply follows their own entry door).
 
 

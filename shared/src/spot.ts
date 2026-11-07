@@ -32,9 +32,9 @@ export function walk(state: GameState, playerId: PlayerId, x: number, y: number,
   const me = findPlayer(next, playerId)!;
   const pushed = next.players.find((o) => o.pushedBy === me.id);
   if (pushed) {
-    pushed.spot = { x, y };
-    if (behind) me.spot = { x: behind.x, y: behind.y };
-  } else me.spot = { x, y, ...(sitting && { sitting: true }) };
+    pushed.spot = { kind: "cell", x, y };
+    if (behind) me.spot = { kind: "cell", x: behind.x, y: behind.y };
+  } else me.spot = { kind: "cell", x, y, ...(sitting && { sitting: true }) };
   return { ok: true, state: next };
 }
 
@@ -44,12 +44,12 @@ export function walk(state: GameState, playerId: PlayerId, x: number, y: number,
  * you up for any action. Mutates a cloned state.
  */
 export function standUp(p: PlayerState, action: Pick<ActionDef<Action>, "visibility">): void {
-  if (action.visibility === "public" && p.spot && "sitting" in p.spot) delete p.spot.sitting;
+  if (action.visibility === "public" && p.spot?.kind === "cell") delete p.spot.sitting;
 }
 
 /** You came into your room through the door from `from`: you stand in front of it until you walk off. Mutates a cloned state. */
 export function arrive(p: PlayerState, from: RoomId): void {
-  p.spot = { door: from } satisfies Spot;
+  p.spot = { kind: "door", door: from } satisfies Spot;
   p.enteredFrom = from;
   removeStatus(p, "guardian"); // changing room ends guarding (guard.ts)
 }

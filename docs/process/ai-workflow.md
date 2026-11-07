@@ -2508,6 +2508,12 @@ The owner asked for an honest, ranked verdict on the #384 plan settled earlier t
 - **Where the owner was right and the assistant adjusted:** dropping the action queue on load is the lower-maintenance choice (`resolveAt: "end"`, 1.5 s actions, no hibernation: nothing paid, only a deploy restart observes it), and it removes a rule rather than adding lines; the `Stored` name collision is a naming cost only. The owner also asked for the discriminant rule to be folded in with `Spot` as its own phase.
 - **What worked:** checking the type trick with a throwaway `tsc` run settled the union question in one step; reading `config.action` settled the queue question. Rollback came up as a real workflow (a badly broken rule deploy), which produced the ops rule "only roll back to a build with the same `STATE_VERSION`; land a step in a deploy of its own".
 
+### 2026-11-07: `Spot` gets a discriminant (#384 phase 1)
+
+- **What:** `Spot` became `{ kind: "cell", x, y, sitting? } | { kind: "door", door }`, so every union in the stored state has a discriminant before the normalizers land (#384 review, point 6). Readers in `spot.ts` and `IsoRoom.tsx` switched from `"door" in` / `"x" in` checks to `kind`; `STATE_VERSION` 113 → 114, one last old-style bump.
+- **Worked:** small and mechanical; typecheck found no reader beyond the two the grep did. Correction: a regex rewrite of the test expectations also changed a `walk` message literal (not a spot); reading the diff before running tests caught it.
+- **Follow-up, same day:** asked whether the shape fits future terminal chairs, the assistant pointed out that the rules don't know cells, so a server-authoritative chair (#192) must name its equipment, like `door` names a room. The owner decided: the variant is `occupancy` (not `seat`, which already means a player's seat), and sitting at a terminal shows a public, purely cosmetic **Focused** status (glasses icon). Recorded on #192 and in `rules-design.md`.
+
 ### 2026-11-07: headless test of an ignored hunter battle (#392)
 
 - **What:** `hunters.test.ts` "an ignored battle" runs a seeded 3-player game with nobody acting (oxygen loss and incidents switched off so the crew outlives the hull) until it ends, checking each cycle that the hull never rises, the shield rises by at most its regen and takes its share of every hit, and that the game ends `ship_destroyed` / `mush` within 500 cycles. Numbers come from `state.config`, none pinned.
