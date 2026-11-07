@@ -35,12 +35,18 @@
   color: #4fc3f7;
 }
 
+/* Clear the sticky header when a nav link jumps to a section. */
+.m2k section {
+  scroll-margin-top: 56px;
+}
+
 .m2k main {
   max-width: 960px;
   padding: 16px;
 }
 
-.m2k h2 {
+/* Section headings only: a bare `.m2k h2` would restyle components' own headings (the terminal title). */
+.m2k section > h2 {
   font-size: 15px;
   margin: 8px 0;
 }
@@ -61,4 +67,34 @@
 .m2k figcaption {
   color: #8796b8;
   font-size: 12px;
+}
+
+/* A stand-in for TerminalDialog's popup (settings.css's .settings-popup.terminal-popup), in the page flow instead of fixed. */
+.m2k-terminal {
+  --pad: 12px;
+  box-sizing: border-box;
+  width: min(28rem, calc(100vw - 32px));
+  height: 22rem;
+  display: flex;
+  flex-direction: column;
+  padding: var(--pad);
+  color: #fff;
+}
+
+/* A stand-in for the room view (the HUD is absolutely positioned over it), in the page flow; just tall enough for the card. */
+.m2k .m2k-room {
+  flex: none; /* the phone layout (responsive.css) makes every .room-view flex: 1, which collapsed this box */
+  position: relative;
+  width: min(28rem, calc(100vw - 32px));
+  height: 5rem;
+  background: #10142c;
+  border: 1px solid #2c3e66;
+}
+
+/* Gauges of different heights share a baseline, as they would on the room's bottom edge. */
+.m2k-bottom {
+  align-items: flex-end;
+}
+.m2k-bottom figure {
+  align-items: flex-start;
 }

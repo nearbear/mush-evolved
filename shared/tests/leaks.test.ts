@@ -76,7 +76,7 @@ function ship(): { state: GameState; sentinels: Sentinel[] } {
     p.mushSkills.push(str(`mushSkill-${p.id}`, own));
     p.lyingIn = str(`lyingIn-${p.id}`, room);
     p.lyingSince = num(`lyingSince-${p.id}`, []);
-    p.spot = { door: str(`spot-${p.id}`, room) };
+    p.spot = { kind: "door", door: str(`spot-${p.id}`, room) };
     p.pushedBy = str(`pushedBy-${p.id}`, room);
     p.accommodationOffers = [{ by: str(`accommodationOffers-${p.id}`, own), until: num(`accommodationOfferUntil-${p.id}`, own) }];
     p.current = {

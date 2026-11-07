@@ -25,8 +25,8 @@ describe("where you stand", () => {
 
   it("walking sets your cell, and sitting if it's a chair", () => {
     const s = must(walk(ship(), "p1", 3, -4, false));
-    expect(player(s, "p1").spot).toEqual({ x: 3, y: -4 });
-    expect(player(must(walk(s, "p1", 5, 6, true)), "p1").spot).toEqual({ x: 5, y: 6, sitting: true });
+    expect(player(s, "p1").spot).toEqual({ kind: "cell", x: 3, y: -4 });
+    expect(player(must(walk(s, "p1", 5, 6, true)), "p1").spot).toEqual({ kind: "cell", x: 5, y: 6, sitting: true });
   });
 
   it("is free and touches nothing else", () => {
@@ -39,8 +39,8 @@ describe("where you stand", () => {
 
   it("roommates see it; people elsewhere don't", () => {
     const s = must(walk(ship(), "p1", 3, 4, true));
-    expect(viewFor(s, "p0").players.find((o) => o.id === "p1")?.spot).toEqual({ x: 3, y: 4, sitting: true });
-    expect(viewFor(s, "p1").you.spot).toEqual({ x: 3, y: 4, sitting: true });
+    expect(viewFor(s, "p0").players.find((o) => o.id === "p1")?.spot).toEqual({ kind: "cell", x: 3, y: 4, sitting: true });
+    expect(viewFor(s, "p1").you.spot).toEqual({ kind: "cell", x: 3, y: 4, sitting: true });
     expect(viewFor(s, "p3").players.find((o) => o.id === "p1")?.spot).toBeUndefined();
   });
 
@@ -68,7 +68,7 @@ describe("where you stand", () => {
     const s = must(walk(ship(), "p1", 3, 4, true));
     const to = s.config.rooms.LABORATORY![0]!;
     const moved = must(applyAction(s, "p1", { type: "move", to }));
-    expect(player(moved, "p1").spot).toEqual({ door: "LABORATORY" });
+    expect(player(moved, "p1").spot).toEqual({ kind: "door", door: "LABORATORY" });
   });
 
   it("someone pushed in a wheelchair arrives at the same door as the pusher", () => {
@@ -76,16 +76,16 @@ describe("where you stand", () => {
     player(s, "p2").pushedBy = "p1";
     const to = s.config.rooms.LABORATORY![0]!;
     const moved = must(applyAction(s, "p1", { type: "move", to }));
-    expect(player(moved, "p2").spot).toEqual({ door: "LABORATORY" });
+    expect(player(moved, "p2").spot).toEqual({ kind: "door", door: "LABORATORY" });
   });
 
   it("pushing a wheelchair, your walk steers it: they go to the cell and you to the one behind, and nobody sits", () => {
     const s = ship();
     player(s, "p2").pushedBy = "p1";
     const steered = must(walk(s, "p1", 3, 4, true, { x: 2, y: 4 }));
-    expect(player(steered, "p2").spot).toEqual({ x: 3, y: 4 });
-    expect(player(steered, "p1").spot).toEqual({ x: 2, y: 4 });
-    expect(viewFor(steered, "p0").players.find((o) => o.id === "p2")?.spot).toEqual({ x: 3, y: 4 });
+    expect(player(steered, "p2").spot).toEqual({ kind: "cell", x: 3, y: 4 });
+    expect(player(steered, "p1").spot).toEqual({ kind: "cell", x: 2, y: 4 });
+    expect(viewFor(steered, "p0").players.find((o) => o.id === "p2")?.spot).toEqual({ kind: "cell", x: 3, y: 4 });
     // Without a cell behind, you stay where you were.
     expect(player(must(walk(s, "p1", 3, 4, false)), "p1").spot).toBeUndefined();
     expect(walk(s, "p1", 3, 4, false, { x: MAX_SPOT_CELL + 1, y: 0 })).toEqual({ ok: false, error: "cant_walk" });
@@ -95,16 +95,16 @@ describe("where you stand", () => {
     const s = must(walk(ship(), "p1", 3, 4, true));
     const to = s.config.rooms.LABORATORY![0]!;
     const timed = must(queueAction(s, "p1", { type: "move", to }, 1000));
-    expect(player(timed, "p1").spot).toEqual({ x: 3, y: 4 });
+    expect(player(timed, "p1").spot).toEqual({ kind: "cell", x: 3, y: 4 });
     const untimed = must(queueAction(s, "p1", { type: "ready" }, 1000));
-    expect(player(untimed, "p1").spot).toEqual({ x: 3, y: 4 });
+    expect(player(untimed, "p1").spot).toEqual({ kind: "cell", x: 3, y: 4 });
   });
 
   it("a private, secret or covert action leaves you seated as your roommates see it", () => {
     const s = must(walk(ship(), "p1", 3, 4, true));
     const examined = must(queueAction(s, "p1", { type: "examine", target: { kind: "player", id: "p0" } }, 1000));
-    expect(player(examined, "p1").spot).toEqual({ x: 3, y: 4, sitting: true });
-    expect(viewFor(examined, "p0").players.find((o) => o.id === "p1")?.spot).toEqual({ x: 3, y: 4, sitting: true });
+    expect(player(examined, "p1").spot).toEqual({ kind: "cell", x: 3, y: 4, sitting: true });
+    expect(viewFor(examined, "p0").players.find((o) => o.id === "p1")?.spot).toEqual({ kind: "cell", x: 3, y: 4, sitting: true });
   });
 
   it("can be switched off: walks are refused and nobody's spot is sent", () => {
@@ -120,7 +120,7 @@ describe("where you stand", () => {
     const s = createGame(makeSeats(4, "others"), { ...config, sharedSpots: off.sharedSpots }, 3);
     s.players.forEach((p, i) => {
       p.room = "LABORATORY";
-      p.spot = { x: i, y: i, sitting: i % 2 === 0 };
+      p.spot = { kind: "cell", x: i, y: i, sitting: i % 2 === 0 };
     });
     player(s, "p3").alive = false;
     expect(walk(s, "p1", 5, 6, false)).toEqual({ ok: false, error: "cant_walk" });
@@ -134,7 +134,7 @@ describe("where you stand", () => {
 
   it("goes through applyInput, so replays have it", () => {
     const s = must(applyInput(ship(), { type: "walk", x: 2, y: 3, sitting: false, by: "p1" }));
-    expect(player(s, "p1").spot).toEqual({ x: 2, y: 3 });
+    expect(player(s, "p1").spot).toEqual({ kind: "cell", x: 2, y: 3 });
   });
 
   it("parses only whole cells in range with a sitting flag", () => {

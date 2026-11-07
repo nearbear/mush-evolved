@@ -132,6 +132,14 @@ export function callNextRebel(state: GameState): void {
   if (state.comms.linked) pushChat(state, "global", { from: null, isBot: false, text: "", system: { key: "rebelCalling", params: { base } } });
 }
 
+/**
+ * The ship travels or leaves orbit: every open call ends at once and is lost, partly decoded or not (owner, 2026-11-07,
+ * as upstream, where both fire the travel event). Its window closes now, so `isOpen` is false from this cycle on.
+ */
+export function endRebelCalls(state: GameState): void {
+  for (const call of state.comms.rebels) if (isOpen(state, call)) call.expiresAt = state.cycle;
+}
+
 /** At a cycle change: the next base calls a day after the last one. Mutates a state the caller already cloned. */
 export function commsCycle(state: GameState): void {
   const last = state.comms.rebels.at(-1);
@@ -192,8 +200,9 @@ function randomOf<T>(state: GameState, list: readonly T[]): T {
 }
 
 /**
- * An entry's effect (owner, 2026-10-21). Items appear on the bridge floor. Lost analysis, Zong Chun's ghost and
- * Kivanç (besides the decoding bonus) are only recorded. Mutates a state the caller already cloned.
+ * An entry's effect (owner, 2026-10-21). Items appear on the bridge floor. Lost analysis (#394), Zong Chun's ghost
+ * (read through `xylophFound` by the researches) and Kivanç (besides the decoding bonus) are only recorded here.
+ * Mutates a state the caller already cloned.
  */
 export function applyXyloph(state: GameState, entry: XylophEntryId): void {
   const { xyloph } = state.config.comms;

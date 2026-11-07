@@ -2510,3 +2510,52 @@ Added `green_jelly` (secret, 1 AP, Mush with `electro_slime`) on sabotageable eq
 
 ### 2026-11-07: items in the equipment breakdown incident
 `breakOne` (incidents.ts) now pools eligible items (`canBreak` + `canBreakOnCycleChange`, aboard on the floor or carried by the living) with working equipment, but only for the untyped equipment_breakdown; oxygen/fuel leaks still pick their tank. `breakItem` gained an `announce` flag, shared with the green jelly. Location of eligible items and the uniform pick were my choices.
+### 2026-11-07: #384 plan reviewed a second time; amendments posted as an issue comment
+
+The owner asked for an honest, ranked verdict on the #384 plan settled earlier the same day. The assistant read the load path, the history writer, the stored types and the earlier critique's log entry, verified the plan's claims against the repo (110 commits touched `STATE_VERSION`; `AllKeys<T>` checked with `tsc`, including that it distributes over unions and that adding a variant does not break it), and ranked eight problems. The owner questioned each in turn; the answers were posted as a comment on the issue. No code changed.
+
+- **What the review caught:** refreshing fixtures when a step lands would delete the only test of the step (fixtures are now never refreshed, with a generated current-shape game beside them); the fallback deleted a recoverable snapshot (kept now, room unavailable, fix forward); upgrade steps can't run on replay frames stamped only with a commit hash (`STATE_VERSION` moves to `shared` and is stamped on `base` steps and the index); `??` defaults overwrite stored `null`; the probe test can't see structs added after the fixtures; `Action` is a 100-variant union no normalizer will list; the "no migrations" decision is recorded in `rules-design.md` and must be reversed there.
+- **Where the owner was right and the assistant adjusted:** dropping the action queue on load is the lower-maintenance choice (`resolveAt: "end"`, 1.5 s actions, no hibernation: nothing paid, only a deploy restart observes it), and it removes a rule rather than adding lines; the `Stored` name collision is a naming cost only. The owner also asked for the discriminant rule to be folded in with `Spot` as its own phase.
+- **What worked:** checking the type trick with a throwaway `tsc` run settled the union question in one step; reading `config.action` settled the queue question. Rollback came up as a real workflow (a badly broken rule deploy), which produced the ops rule "only roll back to a build with the same `STATE_VERSION`; land a step in a deploy of its own".
+
+### 2026-11-07: `Spot` gets a discriminant (#384 phase 1)
+
+- **What:** `Spot` became `{ kind: "cell", x, y, sitting? } | { kind: "door", door }`, so every union in the stored state has a discriminant before the normalizers land (#384 review, point 6). Readers in `spot.ts` and `IsoRoom.tsx` switched from `"door" in` / `"x" in` checks to `kind`; `STATE_VERSION` 113 → 114, one last old-style bump.
+- **Worked:** small and mechanical; typecheck found no reader beyond the two the grep did. Correction: a regex rewrite of the test expectations also changed a `walk` message literal (not a spot); reading the diff before running tests caught it.
+- **Follow-up, same day:** asked whether the shape fits future terminal chairs, the assistant pointed out that the rules don't know cells, so a server-authoritative chair (#192) must name its equipment, like `door` names a room. The owner decided: the variant is `occupancy` (not `seat`, which already means a player's seat), and sitting at a terminal shows a public, purely cosmetic **Focused** status (glasses icon). Recorded on #192 and in `rules-design.md`.
+
+### 2026-11-07: headless test of an ignored hunter battle (#392)
+
+- **What:** `hunters.test.ts` "an ignored battle" runs a seeded 3-player game with nobody acting (oxygen loss and incidents switched off so the crew outlives the hull) until it ends, checking each cycle that the hull never rises, the shield rises by at most its regen and takes its share of every hit, and that the game ends `ship_destroyed` / `mush` within 500 cycles. Numbers come from `state.config`, none pinned.
+- **Needed correction:** the first draft expected the shield to fall before the hull. With absorption, every hit lowers both, and +5 regen hides the shield's loss in its net value (and fully at max). The check became "below what regen alone would give", skipped when regen would cap at max.
+
+## 2026-11-07: Pure terminal frame for the design kit, and a kit handoff
+
+- Split `TerminalShell` into a pure `TerminalFrame` (props only: name, type, login, onClose, titleId) so the dev design kit can render terminals without a `PlayerView` or a Base UI dialog. It uses a plain `<h2>`/`<button>`; `TerminalDialog` passes `aria-labelledby` to its popup (Base UI merges element props last, checked in its source). The access logic became `terminalLogin(type, view)` with tests.
+- Wrote `docs/plans/design-kit.md`: what's in the kit, what's ready now on plain props, and what needs a `PlayerView` fixture (recommended: build it with `createGame` + `viewFor` instead of by hand, so it can't drift).
+- What needed correction: a screenshot review caught the kit's terminal title rendering larger than in-game. The kit page's `.m2k h2` chrome rule outranked `.terminal-title`; scoped it to `section > h2`. The reviewer also reported the phone frames as flush to the edges, but measuring showed 16px margins: check visual-review claims with measurements.
+
+## 2026-11-07: Design kit PlayerView fixture
+
+- Built the fixture the design-kit handoff asked for: `web/src/designKit/sampleView.ts` makes a launched 16-seat ship with `createGame` (fixed seed, kit seat's role forced the way single player forces it) and takes `viewFor`, so it cannot drift from `PlayerView`. Helpers return new states: `act`/`pickSkills` through `applyAction`, `giveItems` through `produceItem`, `spend` and `giveTitle` as direct edits like the rules tests.
+- Answered the handoff's open question by not needing it: no cheats, since the helpers reach the needed states directly.
+- First consumer: a Self HUD section (`SelfHud`, `SelfPoints`, human and Mush) in a `.room-view` stand-in. A web test pins the fixture so a rules change breaks the test before the kit page. Not checked visually (no screenshots run).
+
+## 2026-11-07: Plan status table moved into the docs index
+
+- Asked whether `docs/plans/astro.md` was stale. It was: decision 10 ("no modifiers yet"), the planned-implementation section and the open questions all predated Astrophysicist, CPU Overclocking, Quantum Sensors, deep analysis and expeditions. Every leftover was already tracked (PLANET_SCANNER's bonus in #331, exploration in #356–#359), so no new issue. Rewrote the plan as a record: decisions kept, then "As built", "Since the plan" and "Not built" with pointers. Also fixed a stale "Not built: deep analysis, exploration" in the Ship travel bullet of `implemented-rules.md`.
+- The owner asked for the plan table in `docs/README.md`, so it moved there with a "Done?" column (Done / Partly / Not built / Draft / Superseded) and issue links, and `docs/plans/README.md` was deleted so there is one table. Re-checking each row against issues found several stale statuses (expeditions phase 1, on-call server, bot-goals steps 1–3, hunters following travel) and an unlisted plan (`project-buffs.md`).
+- Follow-up: the owner saw SelfPoints overlapping the SelfHud card in the shared room stand-in, so AP/MP got its own kit section (full, spent, out of AP, and Lethargy's 24 AP as two columns, reached through `pick_skill` on Chun). A screenshot pass then caught that the phone layout's `.room-view { flex: 1; min-height: 0 }` collapsed the stand-in box at 360px; `flex: none` in the kit fixes it. Lesson: a kit stand-in that borrows a game class gets that class's phone rules too, so check it at 360px.
+
+## 2026-11-07: Rebel calls end on travel
+
+- **Decision (owner):** travel ends every open rebel call. Claude checked upstream eMush with the clean-room tool: both Travel and Leave orbit fire its travel-launched event, which ends all contacting bases. The owner chose to match that (Leave orbit counts too).
+- **Built:** `endRebelCalls` in `comms.ts` closes each open call's window at the current cycle (no state shape change, so no version bump; the terminal shows it as lost). Called from `jump` (travel and the warp cheat) and `leave_orbit`. A travel short of fuel does nothing, so it ends nothing (Claude's reading, recorded in rules-design). One test in `navigation.test.ts`.
+- **What worked:** reusing `expiresAt` instead of adding a "lost" flag kept the change to a few lines. The `emush find` route (finding `KillAllRebelBaseContactsService`, then which actions dispatch the event) answered the question faster than `spec`, which matched nothing on a free-text topic.
+
+## 2026-11-07: Comms plan audit, leftovers into issues
+
+- Checked `docs/plans/comms.md` against the code and issues. The feature was built, but the plan still had its answered questions and a pre-build draft that contradicted the build (it planned a public Sol link log line and per-player private views). Replaced both with "Built as" and "Left, in issues" sections.
+- Several "not built" notes in `implemented-rules.md` had gone stale as other systems landed: skill books, blueprints and research now give the Xyloph items effects, and Zong Chun's ghost is read by research. Fixed them and the `applyXyloph` comment.
+- New issues in Private beta: #393 (Comms Officer's general announcement) and #394 (Finola's lost analysis printout, leak-risk). Wolf's triumph-only reward went into #354 as a line. The draft rule notes in both issues come from the original data and eMushpedia, and are listed as open decisions, not rules.
+- What needed correction: the docs index had moved from `docs/plans/README.md` into `docs/README.md` mid-session, and a parallel session was building "travel ends rebel calls" in the same checkout, so edits had to land on top of its uncommitted changes.

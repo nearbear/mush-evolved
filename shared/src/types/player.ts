@@ -31,9 +31,10 @@ export interface QueuedAction {
 
 /**
  * Where someone stands in their room (spot.ts): a floor cell of the room's layout (sitting on the chair there, if
- * `sitting`), or in front of the door from the room `door` (they came in by it and haven't walked off).
+ * `sitting`), or in front of the door from the room `door` (they came in by it and haven't walked off). `kind` tells
+ * them apart, as every union in the stored state has a discriminant (#384).
  */
-export type Spot = { x: number; y: number; sitting?: true } | { door: RoomId };
+export type Spot = { kind: "cell"; x: number; y: number; sitting?: true } | { kind: "door"; door: RoomId };
 
 export interface PlayerState extends Seat {
   /**

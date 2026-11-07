@@ -325,7 +325,7 @@ export function IsoRoom({
   // that isn't this room's floor (an old or tampered spot) counts as no spot.
   const floorKeys = useMemo(() => new Set(cells.map((c) => `${c.x},${c.y}`)), [cells]);
   const spotCell = (spot: Spot | undefined) =>
-    !spot || !roomLayout ? undefined : "door" in spot ? doorSpot(layout, roomLayout, spot.door, cells) : floorKeys.has(`${spot.x},${spot.y}`) ? { x: spot.x, y: spot.y } : undefined;
+    !spot || !roomLayout ? undefined : spot.kind === "door" ? doorSpot(layout, roomLayout, spot.door, cells) : floorKeys.has(`${spot.x},${spot.y}`) ? { x: spot.x, y: spot.y } : undefined;
   const targets = new Map<string, Goal>(
     occupants.map((o, i) => {
       const bed = beds.get(o.id)?.cell;
@@ -381,7 +381,7 @@ export function IsoRoom({
       if (arrived && here.seat) seats.set(o.id, here.seat);
       continue;
     }
-    const spot = o.spot && "x" in o.spot && o.spot.sitting ? o.spot : undefined;
+    const spot = o.spot?.kind === "cell" && o.spot.sitting ? o.spot : undefined;
     const dir = spot && w.cell.x === spot.x && w.cell.y === spot.y ? chairAt(layout, roomLayout, spot) : undefined;
     if (dir !== undefined) seats.set(o.id, seatFor(dir || undefined));
   }
