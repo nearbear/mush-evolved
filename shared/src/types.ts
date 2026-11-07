@@ -78,6 +78,8 @@ export interface ItemState {
   plant?: PlantState;
   /** Broken (breakage.ts `breakItem`): it can't be used until repaired. It can still be carried, dropped, given, examined and dismantled. */
   broken?: true;
+  /** Green jelly (actions/green_jelly.ts): cycle changes left before it breaks. Mush-only in views. */
+  jelly?: number;
 }
 
 /** A plant in a hydropot (owner, 2026-10-22; docs/scratchpad/botany-plan.md, Pass 1). */

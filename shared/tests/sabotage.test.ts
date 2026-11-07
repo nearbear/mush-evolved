@@ -83,7 +83,7 @@ describe("sabotage", () => {
     expect(option(s, "p0", sabotage({ equipment: SHOWER }))).toMatchObject({ chance: s.config.repair.chance.SHOWER, cost: { ap: 1 } });
     expect(option(s, "p0", sabotage({ item: "knife" }))?.chance).toBe(0.5);
     expect(option(s, "p0", sabotage({ item: "wrench" }))?.chance).toBe(s.config.sabotage.defaultChance);
-    expect(s.config.sabotage).toEqual({ cost: { ap: 1 }, defaultChance: 0.12 });
+    expect(s.config.sabotage).toEqual({ cost: { ap: 1 }, defaultChance: 0.12, sapperFactor: 3 });
   });
 
   it("breaks equipment, and spends the AP", () => {
@@ -125,6 +125,19 @@ describe("sabotage", () => {
     const unseen = must(applyAction(alone, "p0", sabotage({ equipment: SHOWER })));
     expect(viewFor(unseen, "p0").log.some((e) => e.key === "sabotaged")).toBe(true);
     expect(viewFor(unseen, "p1").log.some((e) => e.key === "sabotaged")).toBe(false);
+  });
+
+  it("is tripled for a Saboteur (sapper), equipment and items alike, capped at 99%", () => {
+    const s = ship();
+    player(s, "p0").mushSkills = ["sapper"];
+    expect(option(s, "p0", sabotage({ equipment: SHOWER }))?.chance).toBeCloseTo(s.config.repair.chance.SHOWER! * 3);
+    expect(option(s, "p0", sabotage({ item: "wrench" }))?.chance).toBeCloseTo(s.config.sabotage.defaultChance * 3);
+    expect(option(s, "p0", sabotage({ item: "knife" }))?.chance).toBe(0.99); // 0.5 x 3, capped like every chance
+  });
+
+  it("is untouched by other skills: a Mush without sapper keeps the base chance", () => {
+    const s = ship();
+    expect(option(s, "p0", sabotage({ item: "wrench" }))?.chance).toBe(s.config.sabotage.defaultChance);
   });
 
   it("is accepted from the wire", () => {

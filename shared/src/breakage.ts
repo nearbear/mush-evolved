@@ -31,13 +31,34 @@ export function breakEquipment(state: GameState, equipment: Equipment, announce 
 
 /**
  * Breaks an item, if its type can break and it isn't broken yet: it is destroyed when its type says so
- * (`isDestroyedWhenBroken`), else flagged `broken`. Nothing calls it yet. Mutates a state the caller already cloned.
+ * (`isDestroyedWhenBroken`), else flagged `broken`. `announce` posts NERON's `itemBroken` in global chat. Mutates a state the caller already cloned.
  */
-export function breakItem(state: GameState, item: ItemState): void {
+export function breakItem(state: GameState, item: ItemState, announce = false): void {
   const type = ITEM_TYPES[item.type];
   if (item.broken || !type?.canBreak) return;
   if (type.isDestroyedWhenBroken) removeItem(state, item.id);
   else item.broken = true;
+  // NERON names the item, not where it was or why, like an equipment breakdown.
+  if (announce) pushChat(state, "global", { from: null, isBot: false, text: "", system: { key: "itemBroken", params: { item: item.type } } });
+}
+
+/**
+ * At each cycle change, after the fire: every green jelly (actions/green_jelly.ts) loses a cycle, and one at 0 breaks
+ * its target. NERON announces only that it broke, as for any breakdown (owner, 2026-11-07). A target already broken
+ * (or no longer breakable) just loses its jelly. Mutates a state the caller already cloned.
+ */
+export function jellyCycle(state: GameState): void {
+  for (const equipment of Object.values(state.equipment).flat()) {
+    if (equipment.jelly === undefined || --equipment.jelly > 0) continue;
+    delete equipment.jelly;
+    breakEquipment(state, equipment);
+  }
+  for (const item of [...state.items]) {
+    if (item.jelly === undefined || --item.jelly > 0) continue;
+    delete item.jelly;
+    if (item.broken || !ITEM_TYPES[item.type]?.canBreak) continue;
+    breakItem(state, item, true);
+  }
 }
 
 /** At each cycle change: every broken oxygen tank leaks `config.repair.oxygenLeak` oxygen. */

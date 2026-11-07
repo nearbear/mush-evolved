@@ -133,6 +133,7 @@ function Details({ view, layout, resolved, onAction }: { view: PlayerView; layou
                 <img src={BROKEN_ICON} alt="" /> {t("roomList.broken")}
               </div>
             )}
+            {resolved.equipment.jelly !== undefined && <JellyLine cycles={resolved.equipment.jelly} />}
             {resolved.equipment.out && <div className="sub">{t(resolved.equipment.destroyed ? "patrol.destroyed" : "patrol.out")}</div>}
             {resolved.equipment.armor !== undefined && <div className="sub">{t("patrol.armor", { armor: resolved.equipment.armor, max: resolved.equipment.maxArmor })}</div>}
           </div>
@@ -154,6 +155,7 @@ function Details({ view, layout, resolved, onAction }: { view: PlayerView; layou
               <img src={BROKEN_ICON} alt="" /> {t("roomList.broken")}
             </div>
           )}
+          {resolved.item.jelly !== undefined && <JellyLine cycles={resolved.item.jelly} />}
           {resolved.item.plant && <PlantStates plant={resolved.item.plant} />}
           {resolved.item.spores !== undefined && (
             <ul className="status-icons" aria-label={t("itemAttr.label")}>
@@ -171,6 +173,16 @@ function Details({ view, layout, resolved, onAction }: { view: PlayerView; layou
 }
 
 /** The sprite the room draws for this equipment, scaled to the column width (like the item face, sized off `--tile`). */
+/** Mush-only: the green jelly on this thing and the cycles left before it breaks. */
+function JellyLine({ cycles }: { cycles: number }) {
+  const { t } = useTranslation();
+  return (
+    <div className="sub inspect-jelly">
+      {t("itemAttr.jelly", { count: cycles })} <span className="sub">({t("itemAttr.jellyDesc")})</span>
+    </div>
+  );
+}
+
 function EquipmentSprite({ view, layout, equipment }: { view: PlayerView; layout?: ShipLayout; equipment: EquipmentView }) {
   const names = useNames();
   const mapRoom = layout?.rooms.find((r) => r.id === view.you.room);
