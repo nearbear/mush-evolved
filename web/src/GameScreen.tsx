@@ -7,6 +7,7 @@ import { MAX_CHAT_LENGTH, MAX_CHAT_LINES, type BotPause, type GameClientMessage,
 import i18n from "i18next";
 import { useTranslation } from "react-i18next";
 import { GameView } from "./GameView.tsx";
+import type { ServerClock } from "./hud/serverClock.ts";
 import { RenderWatch } from "./RenderWatch.tsx";
 import { shareUnchanged } from "./shareView.ts";
 import { gameSocket, type SeatTicket } from "./net.ts";
@@ -21,7 +22,7 @@ export function GameScreen({ ticket, onLeave, waking = false }: { ticket: SeatTi
   const [view, setView] = useState<PlayerView | null>(null);
   const [cheatsAllowed, setCheatsAllowed] = useState(false);
   /** Server clock minus ours, from each view message, so action bars (server ms) drain at the right moment. */
-  const [clockOffset, setClockOffset] = useState(0);
+  const [clock, setClock] = useState<ServerClock>({ offset: 0 });
   const [nextCycleAt, setNextCycleAt] = useState<number | null>(null);
   const [botsPaused, setBotsPaused] = useState<BotPause | null>(null);
   const socketRef = useRef<PartySocket | null>(null);
@@ -39,7 +40,7 @@ export function GameScreen({ ticket, onLeave, waking = false }: { ticket: SeatTi
         // Unchanged parts keep their identity, so memoized components skip them (shareView.ts).
         setView((prev) => shareUnchanged(prev, msg.view));
         setCheatsAllowed(msg.cheatsAllowed);
-        setClockOffset(msg.now - Date.now());
+        setClock({ offset: msg.now - Date.now() });
         setNextCycleAt(msg.nextCycleAt);
         setBotsPaused(msg.botsPaused);
       } else if (handleChatPages(msg)) {
@@ -64,7 +65,7 @@ export function GameScreen({ ticket, onLeave, waking = false }: { ticket: SeatTi
       onLeave={onLeave}
       waking={waking}
       cheatsAllowed={cheatsAllowed}
-      clockOffset={clockOffset}
+      clock={clock}
       nextCycleAt={nextCycleAt}
       botsPaused={botsPaused}
     />

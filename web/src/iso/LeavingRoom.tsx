@@ -1,7 +1,7 @@
 // Leaving a room, you first walk to its door. The move has already happened (the view says you're
 // in the new room), so this is display only: the room view keeps showing the room you left, as you
 // last saw it, until you reach the door to where you went, then switches. Nothing waits for it.
-// With the instant actions cheat (`teleport`) it switches at once.
+// With the instant actions cheat (`teleport`), or `snap` (a replay's jump), it switches at once.
 
 import { useLayoutEffect, useRef, useState, type ComponentProps } from "react";
 import type { RoomId } from "@mush2/shared";
@@ -18,10 +18,10 @@ export function LeavingIsoRoom(props: Omit<Props, "leavingTo" | "onLeft">) {
   // The room as last drawn live, and the one being walked out of, if any.
   const last = useRef(live);
   const [leaving, setLeaving] = useState<Scene | null>(null);
-  // With the instant actions cheat you teleport, so there's no walk out to show.
-  if (!leaving && !props.teleport && live.room !== last.current.room) setLeaving(last.current);
-  // Back in the room being left before reaching its door: just stay.
-  if (leaving && leaving.room === live.room) setLeaving(null);
+  // With the instant actions cheat you teleport, so there's no walk out to show; nor when snapping (a replay's jump).
+  if (!leaving && !props.teleport && !props.snap && live.room !== last.current.room) setLeaving(last.current);
+  // Back in the room being left before reaching its door, or snapping mid-walk: just stay.
+  if (leaving && (leaving.room === live.room || props.snap)) setLeaving(null);
   useLayoutEffect(() => {
     if (!leaving) last.current = live;
   });

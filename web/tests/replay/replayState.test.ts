@@ -46,6 +46,10 @@ describe("positions", () => {
   it("reads the launch state from chunk 0's base, and an input's frame and time", () => {
     const chunks = { 0: makeChunk(0), 1: makeChunk(1) };
     expect(stepAt(index, chunks, -1)).toMatchObject({ seq: -1, chunk: 0, at: 0, view: fake("launch") });
+    // A record that starts with a full copy (a new ship's first join) has no earlier state: -1 shows its first frame.
+    const { base: _launch, ...first } = chunks[0]!.frames[0]!;
+    const fresh = { 0: { ...chunks[0]!, frames: [first, ...chunks[0]!.frames.slice(1)] } };
+    expect(stepAt(index, fresh, -1)).toMatchObject({ seq: -1, chunk: 0, at: 0, view: fake("0:0") });
     expect(stepAt(index, chunks, 13)).toMatchObject({ seq: 13, chunk: 1, at: 1300, view: fake("1:3"), build: BUILD });
     expect(stepAt(index, chunks, 25)).toBeNull();
   });

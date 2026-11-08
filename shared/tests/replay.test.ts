@@ -336,6 +336,8 @@ describe("replay chunks (#336)", () => {
       seats: [{ seat: "p2", role: "mush", character: "chao" }, { seat: "p10", role: "human", character: "chun" }],
       chunks: [],
     });
+    expect(replayIndex({ roomId: "r1", rulesVersion: "abc", endedAt: 9, realTime: false, starts: {} }, []).realTime).toBe(false);
+    expect(replayIndex({ roomId: "r1", rulesVersion: "abc", endedAt: 9, realTime: true, starts: {} }, []).realTime).toBe(true);
     expect(replayKeys.chunk("r1", 3)).toBe("replays/r1/chunk-000003.json.gz");
     expect(replayKeys.index("r1")).toBe("replays/r1/index.json");
   });

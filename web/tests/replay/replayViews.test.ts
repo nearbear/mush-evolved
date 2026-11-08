@@ -70,6 +70,14 @@ describe("readableChunk", () => {
     expect(readableChunk(chunks[0]!, follower)).toBe(true);
   });
 
+  it("reads a frame with nobody aboard yet, or without the seat (a new ship's first join)", () => {
+    const { chunks, follower } = game();
+    const frame = chunks[0]!.frames[0]!;
+    const empty = { ...frame.view, players: [] };
+    expect(readableChunk({ frames: [{ view: empty, build: frame.build }], at: [0] }, follower)).toBe(true);
+    expect(readableChunk(chunks[0]!, "nobody")).toBe(true);
+  });
+
   it("refuses a frame from a newer build", () => {
     const { chunks, follower } = game();
     const frames = chunks[0]!.frames.map((f) => ({ ...f, build: { stateVersion: STATE_VERSION + 1, rulesVersion: "next" } }));

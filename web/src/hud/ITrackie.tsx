@@ -125,7 +125,10 @@ export function ITrackie({
   onShareReport,
   channels,
   roomLogRequest,
+  quiet = false,
 }: {
+  /** Nothing new is read out (a replay: stepping through frames isn't news). */
+  quiet?: boolean;
   view: PlayerView;
   /** Bumped each time the player acts; switches to the Room tab to show the result. */
   roomLogRequest: number;
@@ -200,7 +203,7 @@ export function ITrackie({
   // The channel on screen, whose messages are announced in full.
   const reading: ChannelId | null =
     activeTab === "global" || activeTab === "mush" || activeTab === "graveyard" ? activeTab : activeTab === "features" ? (feature === "astrophysics" && shownSharedPlanet) || (feature === "expeditions" && shownSharedReport) || feature : activeTab === "threads" ? shownThread?.id ?? null : null;
-  useAnnouncements(view, reading);
+  useAnnouncements(view, reading, quiet);
 
   return (
     <div className="kit-panel itrackie">

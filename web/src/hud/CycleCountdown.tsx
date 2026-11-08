@@ -2,9 +2,9 @@ import { useTranslation } from "react-i18next";
 import { useCountdown } from "./useCountdown.ts";
 
 /** Time left in the cycle as h:mm:ss, ticking each second. */
-export function CycleCountdown({ nextCycleAt, clockOffset }: { nextCycleAt: number; clockOffset: number }) {
+export function CycleCountdown({ nextCycleAt }: { nextCycleAt: number }) {
   const { t } = useTranslation();
-  const time = useCountdown(nextCycleAt, clockOffset);
+  const time = useCountdown(nextCycleAt);
   return (
     <>
       {" · "}

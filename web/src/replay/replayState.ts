@@ -160,10 +160,11 @@ export function stepAt(index: Pick<ReplayIndex, "chunks">, chunks: Readonly<Reco
   const info = index.chunks[n];
   if (!chunk || !info) return null;
   if (seq < info.firstInput) {
-    // Only the launch state is before chunk 0's first input.
-    const base = chunk.frames[0]?.base;
-    if (!base) return null;
-    return { seq, chunk: n, at: chunk.at[0] ?? info.from, view: base, build: chunk.frames[0]!.build };
+    // Only the launch state is before chunk 0's first input: the state the room loaded (`base`). A record that starts
+    // with a full copy (a new ship's first join) has nothing earlier, so the launch state shows its first frame.
+    const first = chunk.frames[0];
+    if (!first) return null;
+    return { seq, chunk: n, at: chunk.at[0] ?? info.from, view: first.base ?? first.view, build: first.build };
   }
   const i = seq - info.firstInput;
   const frame = chunk.frames[i];

@@ -256,6 +256,10 @@ export const ReplayIndexSchema = named(
     rulesVersion: z.string(),
     stateVersion: z.int().optional().meta({ description: "The stored-state version of the build that wrote the index. Missing on older indexes." }),
     endedAt: z.int(),
+    realTime: z
+      .boolean()
+      .optional()
+      .meta({ description: "The game's cycles ran on a clock (multiplayer): the replay shows the countdown. Missing on older indexes, read as false." }),
     seats: z.array(
       z.object({
         seat: z.string(),

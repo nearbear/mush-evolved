@@ -15,6 +15,8 @@ const ShipEditor = import.meta.env.DEV ? lazy(() => import("./editor/ShipEditor.
 const Mush2Kit = import.meta.env.DEV ? lazy(() => import("./designKit/Mush2Kit.tsx")) : null;
 // The finished games list (#155), at /games: loaded only when first visited.
 const GamesPage = lazy(() => import("./games/GamesPage.tsx"));
+// A finished game's replay (#370), at /replay/<id>: also loaded only when first visited.
+const ReplayPage = lazy(() => import("./replay/ReplayPage.tsx"));
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
@@ -23,6 +25,7 @@ createRoot(document.getElementById("root")!).render(
         <Suspense fallback={null}>
           <Routes>
             <Route path="/games" element={<GamesPage />} />
+            <Route path="/replay/:id" element={<ReplayPage />} />
             {ShipEditor && <Route path="/editor" element={<ShipEditor />} />}
             {Mush2Kit && <Route path="/design-kit-mush2" element={<Mush2Kit />} />}
             {/* Everything else: the lobby at / and the game at /play (App has its own routes), and unknown paths. */}
