@@ -40,7 +40,7 @@ export function singlePlayerGame(name: string, character: CharacterId, rng: RngS
   );
   return {
     seats: [{ id: SINGLE_PLAYER_HUMAN, name, isBot: false, character }, ...bots],
-    overrides: { mushCount: 1, manualCycles: true },
+    overrides: { mushCount: 1, manualCycles: true, instantExpeditions: true },
     forcedRoles: { [SINGLE_PLAYER_HUMAN]: "mush" },
   };
 }

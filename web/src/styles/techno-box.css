@@ -1,0 +1,19 @@
+/*
+ * TechnoBox (hud/TechnoBox.tsx): the techno frame, 9-sliced from Mush/derived/techno-box.png (128x35).
+ *
+ * Slices are 14px top and bottom, 21px left and right. Rows 14-20 of the art are pixel-identical down the whole
+ * width, and the centre is one flat colour, so `repeat` tiles the middle at exactly 1x with no seams in either
+ * direction; the top and bottom rails repeat their 86px run of plates. The art is never scaled.
+ *
+ * The frame is drawn with border-image-width alone (border-width stays 0), so it doesn't push the content in; the
+ * padding does that, just inside the rim and the side caps, letting content sit over the inner shadow. The whole
+ * box needs at least 28x42px or the corners overlap: the mins below are that less the padding (content-box).
+ */
+.techno-box {
+  min-width: 6px;
+  min-height: 18px;
+  padding: 5px 18px;
+  border: 0 solid transparent;
+  border-image: url("../../../Mush/derived/techno-box.png") 14 21 fill / 14px 21px repeat;
+  image-rendering: pixelated;
+}

@@ -34,7 +34,8 @@
     "PATROL_SHIP_B_1": "Patrouilleur Epicure",
     "PATROL_SHIP_B_2": "Patrouilleur Platon",
     "PATROL_SHIP_AA_0": "Patrouilleur Wallis",
-    "PATROL_SHIP_AA_1": "Pasiphae"
+    "PATROL_SHIP_AA_1": "Pasiphae",
+    "ICARUS_CRAFT": "Icarus"
   },
   "equipment": {
     "ASTRO_MODULE": "Terminal Astro",

@@ -22,10 +22,11 @@ import { relayView } from "./relayView.ts";
 import { itemsIn, rechargeMicrowaves, startCharges, visibleItemsIn } from "./items.ts";
 import { actionFailed, apGain, mpGain, carePointsGain, channelLimit, computerPointsCap, computerPointsGain, shootPointsGain, cycleChanged, designerPointsGain, gardenPointsGain, dailyMoraleLoss, inventorySlots, movementRules, pilgredPointsGain, satietyLoss } from "./modifiers.ts";
 import { contaminationSeenBy, convert } from "./infection.ts";
-import { addStatus, isHungry, publicStatusesOf, statusesOf } from "./statuses.ts";
+import { isHungry, publicStatusesOf, statusesOf } from "./statuses.ts";
 import { inactivityCycle } from "./inactivity.ts";
 import { emptyResources } from "./resources.ts";
 import { hasSkill } from "./skills.ts";
+import { soil } from "./dirt.ts";
 import { rollFloat, shuffle } from "./rng.ts";
 import { chatChannels, chatMarkKey, chatPageOf, markedText, readChannels } from "./chat.ts";
 import { moderateName } from "./moderation.ts";
@@ -45,6 +46,8 @@ import { callNextRebel, commsCycle, commsTerminalView, comTerminalsHere, newComm
 import { botanyCycle, botanyDay, plantView } from "./botany.ts";
 import { burnOxygen, shipView, startShip } from "./ship.ts";
 import { allTurrets, huntersCycle, newHunters, startHunters, turretCharges, turretsHere } from "./hunters.ts";
+import { expeditionReturnAt } from "./expeditions.ts";
+import { ICARUS_EQUIPMENT } from "./actions/icarus_takeoff.ts";
 import { interfaceId, newPatrolShips, PATROL_INTERFACE, PATROL_SHIPS, shipAboard } from "./patrol.ts";
 import { preselectionCycle } from "./preselection.ts";
 import { SUCCESSION, TITLE_IDS, assignTitles, noTitles } from "./titles.ts";
@@ -148,6 +151,7 @@ export function createGame(
     nextSharedPlanetId: 1,
     expeditions: [],
     nextExpeditionId: 1,
+    expedition: null,
     hunters: newHunters(),
     turrets: {},
     incidentPoints: 0,
@@ -284,18 +288,7 @@ export function performAction(next: GameState, actor: PlayerState, action: Actio
   // After apply, so an action that reveals your own history (Chitchat) doesn't show itself.
   if (def.recorded) recordAction(next, actor, action.type);
   if (dirtyChance > 0) {
-    if (rollFloat(next) < dirtyChance && !actor.statuses.includes("dirty")) {
-      if (itemsIn(next, { kind: "player", id: actor.id }).some((i) => i.type === "apron")){
-        logPrivate(next, actor.id, "apronBlockedDirty", { name: actor.character });
-      }
-      else if (hasSkill(actor, "stickler")) {
-        logPrivate(next, actor.id, "sticklerBlockedDirty", { name: actor.character });
-      }
-      else{
-      addStatus(actor, "dirty");
-      logPrivate(next, actor.id, "becomeDirty", { name: actor.character });
-      }
-    }
+    if (rollFloat(next) < dirtyChance && !actor.statuses.includes("dirty")) soil(next, actor);
   }
   if (injuryChance > 0) {
     if (rollFloat(next) < injuryChance) {
@@ -641,8 +634,11 @@ export function seatViewFor(state: GameState, playerId: PlayerId): SeatView {
     bios: you.alive && biosTerminalsHere(state, you).length > 0 ? { ...state.bios } : null,
     // Only the crew sees a report (owner, 2026-10-31), and only while alive, like their private log lines.
     expeditions: you.alive
-      ? state.expeditions.filter((r) => r.members.includes(you.id)).map(({ members: _members, ...report }): ExpeditionReportView => clone(report))
+      ? state.expeditions
+          .filter((r) => r.members.includes(you.id))
+          .map(({ members: _members, ...report }): ExpeditionReportView => ({ ...clone(report), ...(state.expedition?.report === report.id && { away: true as const }) }))
       : [],
+    expedition: expeditionView(state, you),
     // Your own planets only, and only the tags an analysis revealed (owner, 2026-10-19).
     maxPlanets: state.config.astro.maxPlanets,
     canSharePlanets: canSharePlanets(state, you),
@@ -703,7 +699,25 @@ function equipmentView(state: GameState, { id, type, broken, jelly, shield }: Eq
   const ship = type === PATROL_INTERFACE ? PATROL_SHIPS.find((s) => interfaceId(s) === id) : undefined;
   const shipState = ship && state.patrolShips[ship.id];
   const docked = shipState && !shipState.out && { armor: shipState.armor, maxArmor: state.config.patrol.armor[ship.kind] };
-  return { id, type, ...(broken && { broken }), ...(jelly !== undefined && viewer.role === "mush" && viewer.alive && { jelly }), ...(shield !== undefined && seesShield(viewer) && { shield }), ...(shipState?.out && { out: true as const }), ...(shipState?.destroyed && { destroyed: true as const }), ...docked };
+  // The Icarus is missing from its bay while away (owner, 2026-11-07); that it is out is public anyway.
+  const out = shipState?.out || (type === ICARUS_EQUIPMENT && state.expedition !== null);
+  return { id, type, ...(broken && { broken }), ...(jelly !== undefined && viewer.role === "mush" && viewer.alive && { jelly }), ...(shield !== undefined && seesShield(viewer) && { shield }), ...(out && { out: true as const }), ...(shipState?.destroyed && { destroyed: true as const }), ...docked };
+}
+
+/**
+ * The expedition under way, to everyone (owner, 2026-11-07): who is out, the planet, when they are back; the report's
+ * id only to a living member, who already has the report.
+ */
+function expeditionView(state: GameState, you: PlayerState): PlayerView["expedition"] {
+  const away = state.expedition;
+  if (!away) return null;
+  const report = state.expeditions.find((r) => r.id === away.report)!;
+  return {
+    crew: [...report.crew],
+    planet: report.planet,
+    returnAt: expeditionReturnAt(state)!,
+    ...(you.alive && report.members.includes(you.id) && { report: report.id }),
+  };
 }
 
 /** Your own ship's armor and charges, and how much debris is out there, while you fly it. */

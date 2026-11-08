@@ -394,7 +394,7 @@ const LAUNCHES: { name: string; env: Record<string, string>; launch: (room: Room
     launch: (r) => r.join("Ann", "chao").then((j) => (j.ok ? j.token : "")),
     overrides: { ...setupOverrides(STANDARD_KNOBS), setupId: "standard", manualCycles: true },
   },
-  { name: "single player", env: {}, launch: (r) => r.setupSinglePlayer("Guest 1", "chun"), overrides: { mushCount: 1, manualCycles: true } },
+  { name: "single player", env: {}, launch: (r) => r.setupSinglePlayer("Guest 1", "chun"), overrides: { mushCount: 1, manualCycles: true, instantExpeditions: true } },
 ];
 /** The room's in-memory game, config included. */
 const gameOf = (room: Room) => (room as unknown as { game: GameState }).game;

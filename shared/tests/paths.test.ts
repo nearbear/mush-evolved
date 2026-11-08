@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { DEFAULT_CONFIG } from "../src/config.ts";
 import { shortestPath } from "../src/paths.ts";
-import { PATROL_SHIPS } from "../src/patrol.ts";
+import { ICARUS_CRAFT, PATROL_SHIPS } from "../src/patrol.ts";
 
 describe("shortestPath", () => {
   // A - B - D and A - C - D: two routes of the same length; E is cut off.
@@ -21,9 +21,9 @@ describe("shortestPath", () => {
     expect(shortestPath(graph, "A", "NOWHERE")).toBeNull();
   });
 
-  it("reaches every Daedalus room from the start room, one door at a time, but no patrol craft (no doors)", () => {
+  it("reaches every Daedalus room from the start room, one door at a time, but no craft: patrol ships or the Icarus (no doors)", () => {
     const { rooms, startRoom } = DEFAULT_CONFIG;
-    const craft = new Set(PATROL_SHIPS.map((ship) => ship.id));
+    const craft = new Set([...PATROL_SHIPS.map((ship) => ship.id), ICARUS_CRAFT]);
     for (const id of craft) expect(shortestPath(rooms, startRoom, id), id).toBeNull();
     for (const to of Object.keys(rooms).filter((id) => !craft.has(id))) {
       const path = shortestPath(rooms, startRoom, to);

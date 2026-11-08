@@ -135,7 +135,7 @@ function Details({ view, layout, resolved, onAction }: { view: PlayerView; layou
               </div>
             )}
             <ThingMarks jelly={resolved.equipment.jelly} shield={resolved.equipment.shield} />
-            {resolved.equipment.out && <div className="sub">{t(resolved.equipment.destroyed ? "patrol.destroyed" : "patrol.out")}</div>}
+            {resolved.equipment.out && <div className="sub">{t(resolved.equipment.type === "ICARUS_COMMAND" ? "expedition.icarusAway" : resolved.equipment.destroyed ? "patrol.destroyed" : "patrol.out")}</div>}
             {resolved.equipment.armor !== undefined && <div className="sub">{t("patrol.armor", { armor: resolved.equipment.armor, max: resolved.equipment.maxArmor })}</div>}
           </div>
         </>

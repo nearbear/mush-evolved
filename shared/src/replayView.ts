@@ -35,8 +35,9 @@ export function streamsOf(full: Readonly<FullView>): Streams {
 /**
  * `earlier` plus what `full` holds, by id: entries `full` dropped are kept, and where both hold an entry, `full`'s
  * wins. Chat keeps its text as typed; `revealFor` draws the frame's ticks (`chatMarks`). Give it the frames in order.
+ * `full` may also be another `Streams`, to join two runs of frames.
  */
-export function mergeStreams(earlier: Readonly<Streams>, full: Readonly<FullView>): Streams {
+export function mergeStreams(earlier: Readonly<Streams>, full: Readonly<Pick<FullView, "log" | "chat">>): Streams {
   return { log: mergeById(earlier.log, full.log), chat: mergeById(earlier.chat, full.chat) };
 }
 

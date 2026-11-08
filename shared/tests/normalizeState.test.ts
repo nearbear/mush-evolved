@@ -294,6 +294,7 @@ describe("overridesOf", () => {
     const overrides: ConfigOverrides = {
       mushCount: 1,
       manualCycles: true,
+      instantExpeditions: true,
       cycleHours: 3,
       sharedSpots: false,
       setupId: "classic",
@@ -306,7 +307,7 @@ describe("overridesOf", () => {
   it("leaves out a null setup and pre-selection, and the keys an old config lacks", () => {
     expect(DEFAULT_CONFIG.setupId).toBeNull();
     expect(DEFAULT_CONFIG.preselection).toBeNull();
-    expect(Object.keys(overridesOf(DEFAULT_CONFIG)).sort()).toEqual(["cycleHours", "manualCycles", "mushCount", "sharedSpots"]);
+    expect(Object.keys(overridesOf(DEFAULT_CONFIG)).sort()).toEqual(["cycleHours", "instantExpeditions", "manualCycles", "mushCount", "sharedSpots"]);
     expect(overridesOf({ mushCount: 2 })).toStrictEqual({ mushCount: 2 });
   });
 });

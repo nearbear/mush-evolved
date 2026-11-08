@@ -2,7 +2,7 @@ import { Action, isString } from "./action.ts";
 import { removeItem, itemsIn, isWorking } from "../items.ts";
 import { CAMERA_EQUIPMENT, cameraEquipmentId } from "../equipment.ts";
 import { hasCamera, logPublic } from "../log.ts";
-import { shipAboard } from "../patrol.ts";
+import { inCraft } from "../patrol.ts";
 import type { GameState, ItemState, PlayerState } from "../types.ts";
 
 export type InstallActionData = { type: "install"; item: string };
@@ -23,12 +23,12 @@ export class InstallAction extends Action<InstallActionData> {
   }
 
   override getCandidates(state: Readonly<GameState>, player: Readonly<PlayerState>): InstallActionData[] {
-    if (hasCamera(state, player.room) || shipAboard(player)) return [];
+    if (hasCamera(state, player.room) || inCraft(player.room)) return [];
     return carriedCameras(state, player).map((item) => ({ type: "install", item: item.id }));
   }
 
   override validate(state: Readonly<GameState>, player: Readonly<PlayerState>, target: InstallActionData): string | null {
-    if (shipAboard(player)) return "in_patrol_ship";
+    if (inCraft(player.room)) return "in_patrol_ship";
     if (!carriedCameras(state, player).some((i) => i.id === target.item)) return "cant_install";
     if (hasCamera(state, player.room)) return "camera_already_installed";
     return null;
