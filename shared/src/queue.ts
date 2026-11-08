@@ -73,6 +73,18 @@ export function clearQueue(state: GameState, playerId: PlayerId, notify = false)
 }
 
 
+/**
+ * The server restarted and dropped every action under way and queued (#384, `normalizeGame`): the same here, so the
+ * record rebuilds the state the server holds. Not `clearQueue` for each, which keeps an action already happened under
+ * `resolveAt: "start"`; this matches the normalizer whatever the config. Nobody is told.
+ */
+export function dropQueues(state: GameState): ActionResult {
+  if (!state.players.some((p) => p.current !== null || p.queue.length > 0)) return fail("nothing_queued");
+  const next = clone(state);
+  for (const p of next.players) Object.assign(p, { current: null, queue: [] });
+  return { ok: true, state: next };
+}
+
 /** Server time (ms) the earliest bar runs out or accommodation offer expires, or null when nothing is waiting. */
 export function nextDue(state: Readonly<GameState>): number | null {
   const due = state.players.flatMap((p) => [...(p.current ? [p.current.until] : []), ...(p.accommodationOffers ?? []).map((o) => o.until)]);

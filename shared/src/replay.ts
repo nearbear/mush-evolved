@@ -7,7 +7,7 @@ import type { GameClientMessage } from "./protocol.ts";
 import { joinShip } from "./preselection.ts";
 import { acknowledgeTransfer } from "./mind.ts";
 import { createGame, newCycle, setCheat, setRoleCheat, type ActionResult } from "./rules.ts";
-import { clearQueue, queueAction, tick } from "./queue.ts";
+import { clearQueue, dropQueues, queueAction, tick } from "./queue.ts";
 import { walk } from "./spot.ts";
 import { createChannel, createThread, inviteToChannel, leaveChannel, sendChat, takeChatOutbox, toggleCheckbox } from "./chat.ts";
 import { sharePlanet } from "./sharedPlanets.ts";
@@ -72,7 +72,9 @@ export type Input =
   // The server: these bodies are connected now (inactivity.ts, #145).
   | { type: "seen"; players: PlayerId[]; at: number }
   // The server: this body's player goes inactive at once (a banned account, #23). Nothing sends it until bans exist.
-  | { type: "inactivate"; player: PlayerId };
+  | { type: "inactivate"; player: PlayerId }
+  // The server: a restart dropped every action under way and queued (#384), as the load did.
+  | { type: "dropQueues" };
 
 export function startGame(setup: GameSetup): GameState {
   return createGame(setup.seats, setup.config, setup.seed, setup.forcedRoles, setup.startCycle);
@@ -97,6 +99,8 @@ export function applyInput(state: GameState, input: Input): ActionResult {
       return seen(state, input.players, input.at);
     case "inactivate":
       return inactivate(state, input.player);
+    case "dropQueues":
+      return dropQueues(state);
     case "chat":
       return sendChat(state, input.by, input.channel, input.text);
     case "toggleCheckbox":

@@ -81,7 +81,7 @@ export interface PreselectionRules {
  * The only ways a game may differ from `DEFAULT_CONFIG` (`resolveConfig`). A stored game keeps these instead of its
  * config, so it picks up balance changes on its next load. Anything per game that must survive a reload lives here,
  * and config fields derived from it are recomputed by `resolveConfig`. Changing this shape, or what `resolveConfig`
- * derives from a key, bumps `STATE_VERSION` (server/src/GameRoom.ts): a renamed key would silently fall back to the
+ * derives from a key, bumps `STATE_VERSION` (shared/src/normalizeState.ts): a renamed key would silently fall back to the
  * default in live games.
  */
 export interface ConfigOverrides {

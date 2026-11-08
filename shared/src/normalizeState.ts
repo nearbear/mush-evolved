@@ -62,6 +62,44 @@ import type {
   Spot,
 } from "./types.ts";
 
+// Upgrade steps (docs/plans/normalize-state.md, section 5).
+
+/**
+ * The stored shape's version, written with every snapshot. Bump it, and add a step below, when `GameState`'s shape
+ * changes, or `ConfigOverrides'` (or what `resolveConfig` derives from a key). A field that only needs a default takes
+ * `added()` in its normalizer instead; a step is for what a default can't express (a rename, a move, a split).
+ */
+export const STATE_VERSION = 114;
+
+/** A snapshot stored by a newer build than this one. */
+export class TooNewError extends Error {
+  override name = "TooNewError";
+}
+
+/**
+ * One upgrade: brings a snapshot stored at version `to - 1` to version `to`. It works on loose JSON, since it reads a
+ * shape no type describes any more, and mutates what it is given.
+ */
+export interface UpgradeStep {
+  to: number;
+  run(game: Record<string, unknown>, overrides: Record<string, unknown>): void;
+}
+
+/** Every step, in order of `to`: `upgradeTo115`, ... */
+export const UPGRADE_STEPS: readonly UpgradeStep[] = [];
+
+/**
+ * Brings a stored snapshot from version `from` to `STATE_VERSION`, before it is normalized: runs every step with
+ * `from < to <= STATE_VERSION`, in order, mutating `raw` (a copy as storage hands it back). Throws `TooNewError` for a
+ * `from` above `STATE_VERSION`. `steps` is for tests.
+ */
+export function upgrade(raw: { game: unknown; overrides: unknown }, from: number, steps: readonly UpgradeStep[] = UPGRADE_STEPS): void {
+  if (from > STATE_VERSION) throw new TooNewError(`stored at version ${from}, this build reads up to ${STATE_VERSION}`);
+  for (const step of steps) {
+    if (step.to > from && step.to <= STATE_VERSION) step.run(raw.game as Record<string, unknown>, raw.overrides as Record<string, unknown>);
+  }
+}
+
 /** Every key of `T`, optional ones included, each with its own type (`undefined` allowed where it is optional). */
 export type AllKeys<T> = { [K in keyof Required<T>]: T[K] };
 
@@ -707,6 +745,15 @@ export function normalizeGame(raw: Partial<Omit<GameState, "config">>, overrides
     rng: need(raw, "rng", t),
     chatOutbox: normalizeOutbox(need(raw, "chatOutbox", t)),
   });
+}
+
+/**
+ * Whether the stored snapshot has an action under way or queued, which `normalizeGame` drops. The server then records
+ * a `dropQueues` input (decision 2), which does the same, so the record still rebuilds the state it stores.
+ */
+export function hasQueues(raw: Partial<Omit<GameState, "config">>): boolean {
+  const players = need(raw, "players", "GameState");
+  return players.some((p) => (p.current !== null && p.current !== undefined) || (p.queue !== undefined && p.queue.length > 0));
 }
 
 /**

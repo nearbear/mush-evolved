@@ -52,6 +52,11 @@ import {
   type Role,
   type Seat,
   type Setup,
+  normalizeGame,
+  normalizeOverrides,
+  normalizeSeatStarts,
+  hasQueues,
+  STATE_VERSION,
 } from "@mush2/shared";
 import { accountStoreFor } from "./accountStore.ts";
 import { buildRouterPrompt, parseRouterReply, routerInput } from "./router.ts";
@@ -102,12 +107,6 @@ const LIST_RETRY_MAX_MS = 60 * 60_000;
 /** The same for its history's copy to R2 (#336). */
 const REPLAY_RETRY_MS = 60_000;
 const REPLAY_RETRY_MAX_MS = 60 * 60_000;
-
-/**
- * Bump when GameState's shape changes, or ConfigOverrides' (or what resolveConfig derives from a key). Games stored
- * under another version are discarded on load (there is no migration; games are short-lived).
- */
-export const STATE_VERSION = 114;
 
 /**
  * A ship's overrides from its setup (#232): the knobs, plus the setup's id for the record and the view. The setup is
@@ -278,8 +277,11 @@ export class GameRoom extends Server<Env> {
       this.retired = (await this.ctx.storage.get("setup")) !== undefined;
       return;
     }
-    this.overrides = stored.overrides;
-    this.game = { ...stored.game, config: resolveConfig(stored.overrides) };
+    // Normalized on load (#384): only known fields survive, and every action under way or queued is dropped. A throw
+    // here isn't caught yet and leaves the room unusable (decision 3; phase 3 replaces it).
+    const dropped = hasQueues(stored.game);
+    this.overrides = normalizeOverrides(stored.overrides);
+    this.game = normalizeGame(stored.game, this.overrides);
     this.tokens = stored.tokens;
     this.inputs = stored.inputs;
     this.rateLimited = stored.rateLimited;
@@ -290,7 +292,7 @@ export class GameRoom extends Server<Env> {
     this.aboard = stored.aboard;
     this.tokenSessions = stored.tokenSessions;
     this.language = stored.language ?? null;
-    this.starts = stored.starts ?? null;
+    this.starts = stored.starts ? normalizeSeatStarts(stored.starts) : null;
     this.listed = stored.listed;
     this.endedAt = stored.endedAt ?? null;
     // A finished game whose entry wasn't written yet: try at once.
@@ -299,6 +301,7 @@ export class GameRoom extends Server<Env> {
     // The same for its history's copy, which may have failed partway.
     if (this.game.phase === "ended" && !this.replayReady) this.replayRetryAt = Date.now();
     this.blocked = (await this.ctx.storage.list({ prefix: "blocked:" })).size;
+    if (dropped) await this.recordDropped();
     this.initBots();
     this.scheduleBots();
     await this.scheduleTick();
@@ -936,6 +939,21 @@ export class GameRoom extends Server<Env> {
     await this.scheduleTick();
     return null;
   }
+
+  /**
+   * Records a `dropQueues` input for the actions the load dropped (#384, decision 2), so the record still rebuilds the
+   * stored state. It isn't applied: `normalizeGame` has already done the same thing. It carries the view as loaded,
+   * with no change, and is saved with the snapshot in one write. Nobody is told; they press again.
+   */
+  private async recordDropped(): Promise<void> {
+    if (!this.game) return;
+    const full = fullViewFor(this.game, this.starts);
+    const history = historyStep(this.lastFull, () => full, full, false);
+    this.lastFull = full;
+    const recorded: RecordedInput = { at: Date.now(), input: { type: "dropQueues" }, history };
+    await this.persist({ [inputKey(this.inputs++)]: recorded });
+  }
+
 
   /** One alarm, for the earliest action bar to run out or the next cycle. An alarm survives the room being evicted from memory. */
   private async scheduleTick(): Promise<void> {

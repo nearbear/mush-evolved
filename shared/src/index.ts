@@ -49,3 +49,4 @@ export * from "./replayView.ts";
 export * from "./singlePlayer.ts";
 export * from "./death.ts";
 export * from "./tips.ts";
+export * from "./normalizeState.ts";

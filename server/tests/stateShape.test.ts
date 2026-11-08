@@ -1,10 +1,10 @@
-import { CHAT_CHANNELS, type ConfigOverrides } from "@mush2/shared";
+import { CHAT_CHANNELS, STATE_VERSION, type ConfigOverrides } from "@mush2/shared";
 import { readFileSync, writeFileSync } from "node:fs";
 import { describe, expect, it, vi } from "vitest";
 import { FakeConnection, FakeServer, FakeStorage, seats, tokensFor } from "../src/testing/fakes.ts";
 
 vi.mock("partyserver", () => ({ Server: FakeServer }));
-const { GameRoom, STATE_VERSION } = await import("../src/GameRoom.ts");
+const { GameRoom } = await import("../src/GameRoom.ts");
 
 const SNAPSHOT = new URL("./state-shape.json", import.meta.url);
 interface Snapshot {
@@ -56,7 +56,7 @@ describe("stored GameState and ConfigOverrides shape", () => {
 
     if (process.env.UPDATE_STATE_SHAPE) {
       if (changed && committed.version === STATE_VERSION) {
-        throw new Error(`The stored shape changed: bump STATE_VERSION in server/src/GameRoom.ts (now ${STATE_VERSION}), then rerun.`);
+        throw new Error(`The stored shape changed: bump STATE_VERSION in shared/src/normalizeState.ts (now ${STATE_VERSION}), then rerun.`);
       }
       writeFileSync(SNAPSHOT, `${JSON.stringify({ version: STATE_VERSION, paths }, null, 2)}\n`);
       return;
@@ -66,7 +66,7 @@ describe("stored GameState and ConfigOverrides shape", () => {
     const removed = committed.paths.filter((p) => !paths.includes(p));
     expect(
       { added, removed },
-      "The stored GameState or ConfigOverrides shape changed. Bump STATE_VERSION in server/src/GameRoom.ts (live games are discarded), then run `UPDATE_STATE_SHAPE=1 npm test -w server -- stateShape.test.ts`.",
+      "The stored GameState or ConfigOverrides shape changed. Bump STATE_VERSION in shared/src/normalizeState.ts (live games are discarded), then run `UPDATE_STATE_SHAPE=1 npm test -w server -- stateShape.test.ts`.",
     ).toEqual({ added: [], removed: [] });
     expect(committed.version, "STATE_VERSION changed without refreshing server/tests/state-shape.json: run `UPDATE_STATE_SHAPE=1 npm test -w server -- stateShape.test.ts`.").toBe(STATE_VERSION);
     // `it` needs no extra assertion: both checks above passed.

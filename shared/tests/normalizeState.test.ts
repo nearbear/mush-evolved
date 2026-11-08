@@ -2,6 +2,7 @@ import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { DEFAULT_CONFIG, resolveConfig } from "../src/config.ts";
 import { createGame } from "../src/rules.ts";
+import { dropQueues } from "../src/queue.ts";
 import { fullViewFor, seatStarts } from "../src/fullView.ts";
 import {
   added,
@@ -15,6 +16,12 @@ import {
   normalizePlanTask,
   normalizeSpot,
   overridesOf,
+  hasQueues,
+  STATE_VERSION,
+  TooNewError,
+  upgrade,
+  UPGRADE_STEPS,
+  type UpgradeStep,
 } from "../src/normalizeState.ts";
 import type { ConfigOverrides, GameState, PlayerState } from "../src/types.ts";
 import { play } from "./randomGame.ts";
@@ -335,4 +342,57 @@ describe("added", () => {
 it("normalizeState.ts never uses ??, which would replace a stored null", () => {
   const source = readFileSync(new URL("../src/normalizeState.ts", import.meta.url), "utf8");
   expect(source.includes("??")).toBe(false);
+});
+
+describe("upgrade", () => {
+  /** Steps that note their own version in the order they run, plus `upgradeTo999`, beyond this build. */
+  const fakeSteps = (): { steps: UpgradeStep[]; ran: number[] } => {
+    const ran: number[] = [];
+    const step = (to: number): UpgradeStep => ({ to, run: (game) => { ran.push(to); game[`at${to}`] = true; } });
+    return { steps: [step(STATE_VERSION - 2), step(STATE_VERSION - 1), step(STATE_VERSION), step(999)], ran };
+  };
+
+  it("runs the steps after the stored version up to this build's, in order, on the snapshot it is given", () => {
+    const { steps, ran } = fakeSteps();
+    const raw = { game: {} as Raw, overrides: {} };
+    upgrade(raw, STATE_VERSION - 2, steps);
+    expect(ran).toEqual([STATE_VERSION - 1, STATE_VERSION]);
+    expect(raw.game).toEqual({ [`at${STATE_VERSION - 1}`]: true, [`at${STATE_VERSION}`]: true });
+  });
+
+  it("runs nothing for a snapshot at this build's version", () => {
+    const { steps, ran } = fakeSteps();
+    upgrade({ game: {}, overrides: {} }, STATE_VERSION, steps);
+    expect(ran).toEqual([]);
+  });
+
+  it("refuses a snapshot from a newer build", () => {
+    const { steps, ran } = fakeSteps();
+    expect(() => upgrade({ game: {}, overrides: {} }, STATE_VERSION + 1, steps)).toThrow(TooNewError);
+    expect(ran).toEqual([]);
+  });
+
+  it("lists the real steps in order, none beyond this build's version", () => {
+    const tos = UPGRADE_STEPS.map((step) => step.to);
+    expect(tos).toEqual([...tos].sort((a, b) => a - b));
+    expect(new Set(tos).size).toBe(tos.length);
+    expect(tos.every((to) => to <= STATE_VERSION)).toBe(true);
+  });
+});
+
+describe("hasQueues", () => {
+  it("is false for a fresh game", () => {
+    expect(hasQueues(stored(fresh().game))).toBe(false);
+    expect(dropQueues(fresh().game)).toEqual({ ok: false, error: "nothing_queued" });
+  });
+
+  it("is true with an action under way or queued, and dropQueues then gives what normalizeGame gives (decision 2)", () => {
+    const { game, overrides } = played();
+    expect(game.players.some((p) => p.current !== null || p.queue.length > 0)).toBe(true);
+    expect(hasQueues(stored(game))).toBe(true);
+    const result = dropQueues(game);
+    if (!result.ok) throw new Error(result.error);
+    // The equivalence the server's record relies on.
+    expect(stored(result.state)).toStrictEqual(stored(normalizeGame(stored(game), overrides)));
+  });
 });

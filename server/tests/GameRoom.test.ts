@@ -70,6 +70,22 @@ const CHEATS = { ALLOW_CHEATS: "true" };
 /** A local dev server: bot fill, looser rate limits and the dev model key. */
 const DEV = { ...CHEATS, DEV_SERVER: "true" };
 const HOUR = 60 * 60 * 1000;
+
+/**
+ * The record's history rebuilds the `fullViewFor` of the record's own rebuild after every input, and before each that
+ * carries a copy. A restart's `dropQueues` (#384) carries the view as loaded, its actions already dropped: the view
+ * after it.
+ */
+function expectHistory(setup: GameSetup, record: readonly RecordedInput[], starts: SeatStarts): void {
+  const json = <T>(v: unknown) => JSON.parse(JSON.stringify(v)) as T;
+  const frames = rebuildHistory(record.map((r) => r.history!));
+  expect(frames).toHaveLength(record.length);
+  frames.forEach(({ base, view }, i) => {
+    expect(view, `after input ${i} (${record[i]!.input.type})`).toEqual(json(fullViewFor(rebuildGame(setup, record.slice(0, i + 1)), starts)));
+    const loaded = record[i]!.input.type === "dropQueues" ? i + 1 : i;
+    if (base) expect(base, `before input ${i}`).toEqual(json(fullViewFor(rebuildGame(setup, record.slice(0, loaded)), starts)));
+  });
+}
 /** When the next 3-hour cycle begins after `at`. */
 const nextCycleAt = (at: number) => (Math.floor(at / (3 * HOUR)) + 1) * 3 * HOUR;
 
@@ -466,21 +482,63 @@ describe("GameRoom persistence", () => {
     expect([...storage.data.keys()].filter((k) => k.startsWith("input:"))).toEqual(["input:000000000", "input:000000001"]);
   });
 
-  it("restores the game, tokens and input count after a restart", async () => {
+  it("restores the game, tokens and input count after a restart, dropping the action under way (#384)", async () => {
     const { room, storage } = await newRoom(3, new FakeStorage(), CHEATS);
     const c = connect(room, "tok0");
+    const start = lastView(c).you.room;
     const move = legalIn(lastView(c)).find((x) => x.type === "move")! as { to: string };
     await send(room, c, { type: "action", action: move });
+    const bar = storage.alarm;
+    expect(lastView(c).you.current).not.toBeNull();
 
-    // Evicted with the move under way: the stored alarm brings it back and finishes it.
+    // Evicted with the move under way: the load drops it, and the record says so with a dropQueues input.
     const revived = asRoom(storage, CHEATS);
     await revived.onStart();
-    expect(storage.alarm).not.toBeNull();
-    await revived.onAlarm();
+    expect(storage.alarm).not.toBe(bar);
+    expect(storage.data.get("input:000000001")).toEqual(expect.objectContaining({ input: { type: "dropQueues" } }));
     const c2 = connect(revived, "tok0");
-    expect(lastView(c2).you.room).toBe(move.to);
-    await send(revived, c2, { type: "action", action: { type: "ready" } });
-    expect(storage.data.has("input:000000002")).toBe(true); // continued after the move and its tick, didn't overwrite them
+    expect(lastView(c2).you.room).toBe(start);
+    expect(lastView(c2).you.current).toBeNull();
+    // The player presses again.
+    await send(revived, c2, { type: "action", action: move });
+    expect(storage.data.get("input:000000002")).toMatchObject({ input: { type: "action" } }); // continued the record, didn't overwrite it
+  });
+
+  it("records the actions a restart dropped, so the record still rebuilds the stored state and the history every view (#384)", async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(Date.UTC(2026, 9, 19, 14));
+    const storage = new FakeStorage();
+    const { room } = await newRoom(3, storage, CHEATS);
+    const c0 = connect(room, "tok0");
+    const c1 = connect(room, "tok1");
+    await send(room, c0, { type: "chat", channel: CHAT_CHANNELS[0], text: "hello" });
+    // Two players mid-action, the first with more queued behind it.
+    const moves = legalIn(lastView(c0)).filter((x) => x.type === "move");
+    await send(room, c0, { type: "action", action: moves[0]! });
+    await send(room, c0, { type: "action", action: moves.at(-1)! });
+    await send(room, c1, { type: "action", action: legalIn(lastView(c1)).find((x) => x.type === "move")! });
+    const json = <T>(v: unknown) => JSON.parse(JSON.stringify(v)) as T;
+    const before = json<{ game: GameState }>(await storage.get("game")).game;
+    expect(before.players.find((p) => p.id === "p0")!.queue.length).toBeGreaterThan(0);
+    expect(before.players.find((p) => p.id === "p1")!.current).not.toBeNull();
+
+    const revived = asRoom(storage, CHEATS);
+    await revived.onStart();
+    const c2 = connect(revived, "tok0");
+    await send(revived, c2, { type: "chat", channel: CHAT_CHANNELS[0], text: "back" });
+    vi.useRealTimers();
+
+    const record = json<RecordedInput[]>([...(await storage.list({ prefix: "input:" })).values()]);
+    // One input for both players, carrying the view as loaded and no change.
+    const dropped = record.filter((r) => r.input.type === "dropQueues");
+    expect(dropped).toHaveLength(1);
+    expect(dropped[0]!.history).toHaveProperty("base");
+    expect(dropped[0]!.history).not.toHaveProperty("diff");
+
+    const setup = json<GameSetup>(await storage.get("setup"));
+    const { game: stored, overrides, starts } = json<{ game: object; overrides: ConfigOverrides; starts: SeatStarts }>(await storage.get("game"));
+    expect(rebuildGame(setup, record)).toEqual({ ...stored, config: resolveConfig(overrides) });
+    expectHistory(setup, record, starts);
   });
 
   it("records each chat message's id, so a report can cite it after the state drops it (#292)", async () => {
@@ -1735,12 +1793,7 @@ describe("GameRoom replay history (#335)", () => {
 
     const setup = json<GameSetup>(await storage.get("setup"));
     const { starts } = json<{ starts: SeatStarts }>(await storage.get("game"));
-    const frames = rebuildHistory(steps);
-    expect(frames).toHaveLength(record.length);
-    frames.forEach(({ base, view }, i) => {
-      expect(view, `after input ${i} (${record[i]!.input.type})`).toEqual(json(fullViewFor(rebuildGame(setup, record.slice(0, i + 1)), starts)));
-      if (base) expect(base, `before input ${i}`).toEqual(json(fullViewFor(rebuildGame(setup, record.slice(0, i)), starts)));
-    });
+    expectHistory(setup, record, starts);
   });
 
   it("keeps an ordinary input's change small: a chat line is an append, not a copy of the log", async () => {
