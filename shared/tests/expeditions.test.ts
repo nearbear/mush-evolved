@@ -419,6 +419,85 @@ describe("expeditions, phase 2: time away", () => {
     for (const id of crewIds) expect(player(never, id).statuses).not.toContain("dirty");
   });
 
+  describe("stranded when the ship jumps", () => {
+    const TERMINAL = "COMMAND_CENTER:PILOT_MODULE";
+    const leave: Action = { type: "leave_orbit", equipment: TERMINAL };
+    const travel: Action = { type: "travel", equipment: TERMINAL };
+    /** Out and landed, with loot in the Icarus and a starmap on p1; p4 is Commander at the Command terminal with fuel loaded. */
+    function out(magnetic = false): GameState {
+      const s = timed({ tags: ["FRUIT_TREES", "FRUIT_TREES", "FRUIT_TREES"], events: only({ kind: "harvest", weight: 1, amount: 2 }) });
+      give(s, "p1", "starmap");
+      if (magnetic) s.projects.AUTO_RETURN_ICARUS = 100;
+      player(s, "p4").room = "COMMAND_CENTER";
+      s.titles.commander = "p4";
+      s.ship.combustion = 3;
+      return tickAt(go(s), T0 + 2 * step); // the landing and one sector
+    }
+    const inCraft = (s: GameState) => s.items.filter((i) => i.at.kind === "room" && i.at.id === CRAFT);
+
+    it("without Magnetic return: the crew dies, the Icarus is lost with everything in it, and never takes off again", () => {
+      for (const action of [leave, travel]) {
+        const before = out();
+        if (action === travel) before.navigation.orbit = null; // travel is offered out of orbit only
+        expect(inCraft(before).length).toBeGreaterThan(0);
+        const t = must(applyAction(before, "p4", action));
+        for (const id of crewIds) expect(player(t, id).alive).toBe(false);
+        expect(t.expedition).toBeNull();
+        expect(t.icarusLost).toBe(true);
+        expect(inCraft(t)).toEqual([]);
+        // Nothing came back: no bodies, loot or the members' items anywhere.
+        expect(t.items.some((i) => i.type === "corpse" || i.type === "starmap" || i.type === expedition.loot.harvest)).toBe(false);
+        const line = t.log.find((e) => e.key === "icarusLost")!;
+        expect(line).toMatchObject({ visibleTo: "all", params: { planet: "Fugunys" }, level: "warning" });
+        expect(t.log.some((e) => e.key === "expeditionReturned")).toBe(false);
+        expect(viewFor(t, "p5").expedition).toBeNull();
+      }
+    });
+
+    it("once lost, the bay shows no Icarus and nobody can take off, even in orbit of a new planet", () => {
+      const t = must(applyAction(out(), "p4", leave));
+      t.navigation = { ...t.navigation, orbit: "planet-2", arriving: null };
+      t.planets.p5 = [{ ...planet(["FOREST"]), id: "planet-2" }];
+      const pilot = player(t, "p5");
+      pilot.room = ICARUS;
+      pilot.skills.push("pilot");
+      expect(offered(t, "p5")).not.toContainEqual(takeoff);
+      expect(applyAction(t, "p5", takeoff).ok).toBe(false);
+      // The loss alone stops it: the same ship with its Icarus offers the takeoff.
+      const control = clone(t);
+      control.icarusLost = false;
+      expect(offered(control, "p5")).toContainEqual(takeoff);
+      expect(viewFor(t, "p5").roomEquipment.find((e) => e.type === "ICARUS_COMMAND")!.out).toBe(true);
+    });
+
+    it("with Magnetic return: the crew is back at once, the sectors left skipped, the loot in the bay", () => {
+      const before = out(true);
+      const loot = inCraft(before).length;
+      const t = must(applyAction(before, "p4", leave));
+      expect(t.expedition).toBeNull();
+      expect(t.icarusLost).toBe(false);
+      for (const id of crewIds) {
+        expect(player(t, id).alive).toBe(true);
+        expect(player(t, id).room).toBe(ICARUS);
+      }
+      expect(t.expeditions[0]!.events).toHaveLength(2);
+      expect(floor(t, expedition.loot.harvest)).toBe(loot);
+      expect(t.items.find((i) => i.type === "starmap")!.at).toEqual({ kind: "player", id: "p1" });
+      expect(t.log.find((e) => e.key === "icarusRecalled")).toMatchObject({ visibleTo: "all", params: { planet: "Fugunys" } });
+      expect(t.log.filter((e) => e.key === "expeditionReturned")).toHaveLength(crewIds.length);
+    });
+
+    it("a jump with no crew out changes nothing for the Icarus", () => {
+      const s = timed();
+      player(s, "p4").room = "COMMAND_CENTER";
+      s.titles.commander = "p4";
+      s.ship.combustion = 3;
+      const t = must(applyAction(s, "p4", leave));
+      expect(t.icarusLost).toBe(false);
+      expect(t.log.some((e) => e.key === "icarusLost" || e.key === "icarusRecalled")).toBe(false);
+    });
+  });
+
   it("a step due before a bar ends happens first, in the same tick", () => {
     const s = timed({ tags: ["FOREST"], events: only({ kind: "nothing", weight: 1 }) });
     const t = go(s);

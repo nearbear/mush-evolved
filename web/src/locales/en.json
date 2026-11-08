@@ -864,6 +864,8 @@
     "hunterHitPatrol": "A hunter hit {{room}}: {{armor}} armor lost.",
     "patrolDestroyed": "NERON: {{room}} was shot down by hunters.",
     "patrolLost": "NERON: {{room}} was left behind when the Daedalus jumped, and is lost.",
+    "icarusLost": "NERON: the Icarus was left behind on {{planet}} when the Daedalus jumped, with its whole crew. It is lost.",
+    "icarusRecalled": "NERON: Magnetic return brought the Icarus back from {{planet}} when the Daedalus jumped.",
     "patrolUnloaded_one": "{{name}} unloaded {{count}} item from the ship.",
     "patrolUnloaded_other": "{{name}} unloaded {{count}} items from the ship.",
     "scrapCollected_one": "You brought in {{count}} piece of debris.",
@@ -1571,6 +1573,8 @@
     "right": "Turn right",
     "travel": "Travel",
     "leaveOrbit": "Leave orbit",
+    "strandConfirm": "An expedition is still out on {{planet}}. Jumping now strands its crew: without Magnetic return, they die and the Icarus is lost.",
+    "strandBack": "Back",
     "warning": "Travel burns all the fuel in the combustion chamber, and the ship goes that far. With none loaded the AP is wasted. Every planet not lying exactly ahead at that distance is lost."
   },
   "turret": {

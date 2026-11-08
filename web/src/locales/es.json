@@ -875,6 +875,8 @@
     "hunterHitPatrol": "Disparo de hunter contra {{room}}: {{armor}} puntos de armadura perdidos.",
     "patrolDestroyed": "NERON: nave derribada por los hunters ({{room}}).",
     "patrolLost": "NERON: nave perdida en el salto del Daedalus ({{room}}).",
+    "icarusLost": "NERON: el Icarus se quedó en {{planet}} durante el salto del Daedalus, con toda su tripulación. Se ha perdido.",
+    "icarusRecalled": "NERON: la repatriación magnética trajo de vuelta el Icarus desde {{planet}} durante el salto del Daedalus.",
     "patrolUnloaded_one": "{{name}} descargó {{count}} objeto de la nave.",
     "patrolUnloaded_many": "{{name}} descargó {{count}} objetos de la nave.",
     "patrolUnloaded_other": "{{name}} descargó {{count}} objetos de la nave.",
@@ -1493,6 +1495,8 @@
     "right": "Girar a la derecha",
     "travel": "Viajar",
     "leaveOrbit": "Salir de la órbita",
+    "strandConfirm": "Una expedición sigue en {{planet}}. Saltar ahora abandona a su tripulación: sin repatriación magnética, muere y el Icarus se pierde.",
+    "strandBack": "Volver",
     "warning": "Viajar quema todo el combustible de la cámara de combustión, y la nave avanza esa distancia. Sin combustible cargado se pierden los PA. Todo planeta que no esté justo delante a esa distancia se pierde."
   },
   "turret": {

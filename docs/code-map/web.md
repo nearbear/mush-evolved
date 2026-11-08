@@ -48,7 +48,7 @@ All under `web/src/`. UI rules are in `web/CLAUDE.md`.
 - `TurretPanel.tsx`: a turret's window: its charges and each hunter in range (`HunterList`).
 - `PatrolCockpit.tsx`: what the room view shows while you fly a patrol ship (`view.patrolShip`): the ship, its armor, and its cockpit as a button that selects it, so Land is in Inspect and the peek bar; below it the hunters and the ship's charges with Shoot buttons (`HunterList`). `IsoRoom` hides a ship whose interface is `out`.
 - `IcarusPanel.tsx`: the room view while away on an expedition (`view.expedition.report` set): the planet, the countdown to the return, the live report, and the crewmates aboard as buttons that select them. `IsoRoom` hides the Icarus in its bay while it is `out`.
-- `ShipNavigation.tsx`: the Command terminal window's steering: heading, in-orbit flag, combustion chamber fuel, and the Commander's turn, travel (no distance: it burns the chamber) and leave orbit buttons.
+- `ShipNavigation.tsx`: the Command terminal window's steering: heading, in-orbit flag, combustion chamber fuel, and the Commander's turn, travel (no distance: it burns the chamber) and leave orbit buttons; the last two ask to confirm (`ConfirmPanel`) while an expedition is out.
 - `PlanetList.tsx`: your planets with their sector tags (unknown ones as `tag_unknown`) and a bin button to delete; in the Astro terminal window it adds the scan and analyse buttons.
 - `InventoryOverlay.tsx` + `styles/inventory.css`: the sack button in the room view's lower right (badge = items in the room) that opens `InventoryPanel` over the room; closes on the button, Escape, or a press elsewhere in the room view. Both layouts; hidden when dead.
 - `InventoryPanel.tsx`: item zones; drag to take/drop, tap fallback.

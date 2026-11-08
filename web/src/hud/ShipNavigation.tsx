@@ -1,10 +1,14 @@
 // The Command terminal's steering (owner, 2026-10-22): the heading and whether the ship is in orbit, then, for the
 // Commander, turn left or right, and travel as far as the fuel loaded in the combustion chamber (or leave orbit). Every button comes from view.actions.
+// While an expedition is out (public, `view.expedition`), travel and leave orbit ask first, since the jump strands its
+// crew (owner, 2026-11-07, #356). Cosmetic only: confirming always goes through.
 
 import { PLANET_DIRECTIONS, type Action, type EquipmentView, type PlayerView } from "@mush2/shared";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ActionButton } from "./ActionButton.tsx";
 import { ActionLabel } from "./ActionLabel.tsx";
+import { ConfirmPanel } from "./ConfirmPanel.tsx";
 import "./terminal.css";
 
 interface Props {
@@ -15,7 +19,10 @@ interface Props {
 
 export function ShipNavigation({ terminal, view, onAction }: Props) {
   const { t } = useTranslation();
+  const [confirming, setConfirming] = useState<Action | null>(null);
   const { heading, orbiting, traveling } = view.navigation;
+  /** A jump goes at once, or asks first while a crew is out. */
+  const jump = (action: Action) => (view.expedition ? setConfirming(action) : onAction(action));
   const here = view.actions.filter(({ action: a }) => "equipment" in a && a.equipment === terminal.id);
   const turns = here.filter(({ action: a }) => a.type === "turn_ship");
   const travel = here.find(({ action: a }) => a.type === "travel");
@@ -52,19 +59,30 @@ export function ShipNavigation({ terminal, view, onAction }: Props) {
       )}
       {travel && (
         <div className="ship-navigation-row">
-          <ActionButton view={view} option={travel} onAction={onAction}>
+          <ActionButton view={view} option={travel} onAction={jump}>
             <ActionLabel text={t("navigation.travel")} cost={travel.cost} chance={travel.chance} />
           </ActionButton>
         </div>
       )}
       {leave && (
         <div className="ship-navigation-row">
-          <ActionButton view={view} option={leave} onAction={onAction}>
+          <ActionButton view={view} option={leave} onAction={jump}>
             <ActionLabel text={t("navigation.leaveOrbit")} cost={leave.cost} chance={leave.chance} />
           </ActionButton>
         </div>
       )}
       {(travel || leave) && <p className="ship-navigation-warning">{t("navigation.warning")}</p>}
+      <ConfirmPanel
+        open={confirming !== null}
+        onOpenChange={(open) => !open && setConfirming(null)}
+        message={t("navigation.strandConfirm", { planet: view.expedition?.planet ?? "" })}
+        yesLabel={confirming?.type === "leave_orbit" ? t("navigation.leaveOrbit") : t("navigation.travel")}
+        backLabel={t("navigation.strandBack")}
+        onYes={() => {
+          if (confirming) onAction(confirming);
+          setConfirming(null);
+        }}
+      />
     </section>
   );
 }

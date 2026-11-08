@@ -1,6 +1,7 @@
 import { Action, isString } from "./action.ts";
 import { endRebelCalls } from "../comms.ts";
 import { huntersFollow, loseShipsInFlight } from "../hunters.ts";
+import { strandExpedition } from "../expeditions.ts";
 import { logPublic } from "../log.ts";
 import { canSteer, canTravel, isTraveling, planetAt } from "../navigation.ts";
 import { commandTerminalsHere } from "../pilgred.ts";
@@ -72,6 +73,7 @@ export function jump(state: GameState, player: Readonly<PlayerState>, distance: 
   markSharedPlanetsStale(state, found ? found[1].id : null);
   logPublic(state, undefined, "shipTraveled", { name: player.character });
   loseShipsInFlight(state);
+  strandExpedition(state);
   state.navigation.orbit = null;
   state.navigation.arriving = { planet: found ? found[1].id : null };
   return found ? found[1] : null;

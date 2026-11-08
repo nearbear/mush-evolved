@@ -875,6 +875,8 @@
     "hunterHitPatrol": "Tir de hunter sur {{room}} : {{armor}} points d'armure perdus.",
     "patrolDestroyed": "NERON : appareil abattu par les hunters ({{room}}).",
     "patrolLost": "NERON : appareil perdu lors du saut du Daedalus ({{room}}).",
+    "icarusLost": "NERON : l'Icarus est resté sur {{planet}} lors du saut du Daedalus, avec tout son équipage. Il est perdu.",
+    "icarusRecalled": "NERON : le rapatriement magnétique a ramené l'Icarus de {{planet}} lors du saut du Daedalus.",
     "patrolUnloaded_one": "{{name}} a déchargé {{count}} objet du vaisseau.",
     "patrolUnloaded_many": "{{name}} a déchargé {{count}} objets du vaisseau.",
     "patrolUnloaded_other": "{{name}} a déchargé {{count}} objets du vaisseau.",
@@ -1493,6 +1495,8 @@
     "right": "Orienter à droite",
     "travel": "Voyager",
     "leaveOrbit": "Quitter l'orbite",
+    "strandConfirm": "Une expédition est encore sur {{planet}}. Sauter maintenant abandonne son équipage : sans rapatriement magnétique, il meurt et l'Icarus est perdu.",
+    "strandBack": "Retour",
     "warning": "Voyager brûle tout le fuel de la chambre de combustion, et le vaisseau avance d'autant. Sans fuel chargé, les PA sont perdus. Toute planète qui ne se trouve pas droit devant à cette distance est perdue."
   },
   "turret": {

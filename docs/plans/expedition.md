@@ -1,6 +1,6 @@
 # Expeditions (plan)
 
-2026-10-31. Phase 1 is decided by the owner (2026-10-31) and built; phase 2 is decided (2026-11-07, #356), not built; the later phases are an outline, not decisions: each one gets its own rule pass (the `rule` skill) before it is built. Builds on planets and analysis (`docs/plans/astro.md`), ship travel and orbit (`navigation.ts`), and patrol ships (`docs/plans/patrol.md`).
+2026-10-31. Phase 1 is decided by the owner (2026-10-31) and built; phase 2 is decided (2026-11-07, #356), slices A and B built; the later phases are an outline, not decisions: each one gets its own rule pass (the `rule` skill) before it is built. Builds on planets and analysis (`docs/plans/astro.md`), ship travel and orbit (`navigation.ts`), and patrol ships (`docs/plans/patrol.md`).
 
 ## Sources
 
@@ -78,6 +78,8 @@ Supersedes phase 1's item 4 (timing) and item 13's "comes back on the Icarus" ti
 **Leaks accepted (owner, 2026-11-07):** the public time left shows how many sectors remain, and so a sector bonus such as Sprinter (someone forging a shared planet should keep its true sector count; advice, not a rule). Getting lost (phase 3) will be a public alert. Inside the crew, fight strength hints at crewmates' weapons, HP loss bounds members' HP, and Survival's reduction shows who has it. Report ids (`expedition-N`) are moot since expeditions are public.
 
 **Slice A built (2026-11-07):** timed steps through the server's `tick`, the Icarus room (`ICARUS_CRAFT`), the public status, the live report, deaths and dirt (`docs/rules/implemented-rules.md`). Claude's readings: single player is marked by a new `instantExpeditions` override rather than manual cycles, so the dev server's End cycle games stay timed; loot lands in the Icarus while away and is unloaded on return; dirt on return respects the apron and Stickler like any dirt; the dead see the public status like everyone (it is public).
+
+**Slice B built (2026-11-08):** stranding through `strandExpedition` (expeditions.ts) on every jump (travel, leave orbit, the warp cheat), `GameState.icarusLost`, and the client's confirm in `ShipNavigation.tsx`. Claude's readings: Magnetic return also posts a public NERON line (`icarusRecalled`), as the crew reappears in the bay anyway; on a loss the bodies go with the Icarus (they are in it); the lost Icarus shows as `out`, like an Icarus away; the confirm names the planet and says Magnetic return saves the crew, without checking whether it is done.
 
 **Build order (Claude's proposal):** (a) timed steps, the Icarus room, the public status, the live report, deaths and dirt; (b) stranding, Magnetic return, the lost Icarus, the confirm dialog; (c) shared reports. Touches `expeditions.ts` (split `runExpedition` into a landing step and per-sector steps), a new timed replay input, `GameState` (an expedition in progress, a lost Icarus, each with a normalizer default), `travel` and `leave_orbit`, `viewFor` and the leak tests, `projects.ts`.
 

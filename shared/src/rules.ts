@@ -152,6 +152,7 @@ export function createGame(
     expeditions: [],
     nextExpeditionId: 1,
     expedition: null,
+    icarusLost: false,
     hunters: newHunters(),
     turrets: {},
     incidentPoints: 0,
@@ -699,8 +700,8 @@ function equipmentView(state: GameState, { id, type, broken, jelly, shield }: Eq
   const ship = type === PATROL_INTERFACE ? PATROL_SHIPS.find((s) => interfaceId(s) === id) : undefined;
   const shipState = ship && state.patrolShips[ship.id];
   const docked = shipState && !shipState.out && { armor: shipState.armor, maxArmor: state.config.patrol.armor[ship.kind] };
-  // The Icarus is missing from its bay while away (owner, 2026-11-07); that it is out is public anyway.
-  const out = shipState?.out || (type === ICARUS_EQUIPMENT && state.expedition !== null);
+  // The Icarus is missing from its bay while away or once lost (owner, 2026-11-07); both are public anyway.
+  const out = shipState?.out || (type === ICARUS_EQUIPMENT && (state.expedition !== null || state.icarusLost));
   return { id, type, ...(broken && { broken }), ...(jelly !== undefined && viewer.role === "mush" && viewer.alive && { jelly }), ...(shield !== undefined && seesShield(viewer) && { shield }), ...(out && { out: true as const }), ...(shipState?.destroyed && { destroyed: true as const }), ...docked };
 }
 

@@ -145,6 +145,11 @@ export interface GameCore {
    */
   expedition: ActiveExpedition | null;
   /**
+   * The Icarus was left behind on a planet when the ship jumped without Magnetic return (`strandExpedition`, owner,
+   * 2026-11-07): no more expeditions this game. Public, as the Icarus Bay is drawn empty (`out` on the Icarus).
+   */
+  icarusLost: boolean;
+  /**
    * The ship's heading and the planet it orbits, by id, if any (navigation.ts). `orbit` is public as "in orbit or
    * not" and the planet's name (`orbitName`, owner 2026-10-31); its sectors stay its finder's. `heading` goes only to the living at a Command terminal. `arriving` is the
    * jump in progress (owner, 2026-10-29): set when the Commander travels or leaves orbit, it lasts until the next cycle

@@ -1,6 +1,7 @@
 import { Action, isString } from "./action.ts";
 import { endRebelCalls } from "../comms.ts";
 import { huntersFollow, loseShipsInFlight } from "../hunters.ts";
+import { strandExpedition } from "../expeditions.ts";
 import { logPublic } from "../log.ts";
 import { canSteer } from "../navigation.ts";
 import { commandTerminalsHere } from "../pilgred.ts";
@@ -56,5 +57,6 @@ export class LeaveOrbitAction extends Action<LeaveOrbitActionData> {
     state.navigation.arriving = { planet: null };
     logPublic(state, undefined, "leftOrbit", { name: player.character });
     loseShipsInFlight(state);
+  strandExpedition(state);
   }
 }

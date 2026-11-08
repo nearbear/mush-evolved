@@ -750,6 +750,8 @@ export function normalizeCore(raw: Partial<GameCore>, _ctx: NormalizeContext, mo
     nextExpeditionId: need(raw, "nextExpeditionId", t),
     // Phase 2 (#356): none under way in a game stored before it, where every expedition was over at takeoff.
     expedition: orNull(added(raw, "expedition", null), normalizeActiveExpedition),
+    // Stranding (#356): no game stored before it could lose the Icarus.
+    icarusLost: added(raw, "icarusLost", false),
     navigation: normalizeNavigation(need(raw, "navigation", t)),
     hunters: normalizeHunters(need(raw, "hunters", t)),
     turrets: dict(need(raw, "turrets", t)),
