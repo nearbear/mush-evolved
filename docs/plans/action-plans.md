@@ -126,18 +126,18 @@ type Plan = {
 
 ### Research and project relay formula (owner, 2026-10-26; its own rule change, before plans; built 2026-10-27)
 
-Research and NERON projects drop the flat 25% per action for the original's formula, the one PILGRED already uses (`getBaseProgress` in `Mush/src/common/Solver.hx`): base = `floor(rate × difficulty / 10)`, plus `skillBoost` for each matching skill, minus `relayPenalty` for each contribution in a row by the same player, never below 0; the gain is rolled in [base, base + base/2]. `pilgredGainRange` becomes a shared helper (`relayGainRange` in `shared/src/relay.ts`). Streaks live in `state.relay.research` / `state.relay.projects` (sibling records, `STATE_VERSION` 79).
+Research and NERON projects drop the flat 25% per action for the original's formula, the one PILGRED already uses (`getBaseProgress` in `Mush/src/common/Solver.hx`): base = `floor(rate × difficulty / 10)`, plus `skillBoost` for each matching skill, minus `relayPenalty` for each contribution in a row by the same player, never below 0; the gain is rolled in [base, base + base/2]. `pilgredGainRange` becomes a shared helper (`relayGainRange` in `shared/src/relay.ts`). Streaks live in `state.relay.research` / `state.relay.projects` (sibling records).
 
 - **Difficulty:** every research and project uses the MycoAlarm's, 10 (`MYCO_ALARM` in `Mush/data/Data.ods`; also the most common value), for now.
 - **Constants:** PILGRED's `rate` 6, `skillBoost` 4 and `relayPenalty` 2. At difficulty 10 that is 6–9% per action, or 10–15% with one matching skill.
 - **Skills:** research uses Biologist and Medic, as in the original. Projects use the original's per-project tags, two skills each (owner, 2026-10-27; built, `PROJECTS` in `projects.ts`).
-- **Repeat count:** per research and per project id, as in the original (`researchList.get(id).touch`), reset when someone else contributes to that one. Never sent in a view. `state.research` and `state.projects` are plain number records today; each entry gains `lastBy` and `streak` (or a sibling record), with a `STATE_VERSION` bump.
+- **Repeat count:** per research and per project id, as in the original (`researchList.get(id).touch`), reset when someone else contributes to that one. Never sent in a view. `state.research` and `state.projects` are plain number records today; each entry gains `lastBy` and `streak` (or a sibling record), each new field with a default in its normalizer (`shared/src/normalizeState.ts`).
 - Not now: the original's NERON CPU-priority bonus and computer jelly.
 
 ### Timing and server
 
 - One Durable Object alarm for the earliest of the next cycle, the next queued action (`nextDue`) and the next plan (`nextPlanDue`, including unfilled `runWhenFilled` plans). On a tie: cycle first, then queued actions, then plans. `onAlarm` and `scheduleTick` gain the third due source; the due plan run is sent as the `runPlans` input, stamped `max(now, time)` like a tick.
-- Protocol: `postPlan` and `cancelPlan` as chat-like messages, validated in `protocol.ts` and rebuilt with known keys only; claim and withdraw arrive as ordinary `action` messages. The server stamps `at`, records replay inputs, applies the per-seat rate limit, and bumps `STATE_VERSION`.
+- Protocol: `postPlan` and `cancelPlan` as chat-like messages, validated in `protocol.ts` and rebuilt with known keys only; claim and withdraw arrive as ordinary `action` messages. The server stamps `at`, records replay inputs, and applies the per-seat rate limit; new state fields get defaults in their normalizers.
 
 ### UI
 
@@ -170,7 +170,7 @@ Scripted bots never post; they claim relay and meet jobs they can afford (`claim
 1. **Relay formula** for research and projects (rule skill). Independent of plans.
 2. **Locked AP, `actNow` and pathfinding:** `PlayerState.lockedAp`, `ap - lockedAp` everywhere live, the `actNow` extraction, `shortestPath`. No behavior change while nothing locks.
 3. **Plans in `shared`:** types, post, cancel, the `claim_job` and `withdraw_job` actions, the sandbox, the executor and `runPlans` input, the cleanup hooks, `viewFor` filtering, with rules and leak tests. `comfort` jobs once the Shrink work (in the tree, uncommitted on 2026-10-26) is committed.
-4. **Protocol and server:** the post and cancel messages, `GameRoom` handlers, replay, the alarm, `STATE_VERSION`.
+4. **Protocol and server:** the post and cancel messages, `GameRoom` handlers, replay, the alarm, the normalizers.
 5. **UI:** plan cards, the composer, locked pips, phone layout, en/fr/es. The composer and the sandbox hints are the two largest pieces; if bots are wanted first, phases 1 to 4 and 6 can land with a card and the "Plan this" prefill only.
 6. **Bots.**
 

@@ -21,7 +21,7 @@ npm run build          # if web/ changed
 - Rules, views, protocol, server, or bot change: run the `leak-check` skill, unless it already ran on these changes (see above).
 - `ship-layout` inputs changed: `npm run ship-layout` (a test fails if the derived file is stale).
 - `wrangler.jsonc` or Durable Object exports changed: `npm run types -w server`.
-- `GameState` shape changed: confirm `STATE_VERSION` in `server/src/GameRoom.ts` was bumped.
+- Stored shape changed (`GameState`, a struct in it, or `ConfigOverrides`): confirm each new field has a default in its normalizer (`shared/src/normalizeState.ts`) that is right for a game in progress, with no `STATE_VERSION` change. A removal, rename, changed type or renamed registry id needs an `upgradeTo<N>` step and a bump; if one landed, tell the user it must deploy on its own (`docs/ops/deploy.md`).
 
 Report failures with their output. Don't say done if anything failed or was skipped; say what was skipped.
 

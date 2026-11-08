@@ -48,7 +48,7 @@ Built as planned, with these readings (Claude, 2026-11-04): takeoff is refused w
 
 - `shared/src/expeditions.ts`: the event tables (from the table above, in config so they are tunable), `runExpedition(state, launcher)` (pure, seeded RNG), the fight and damage helpers.
 - `actions/icarus_takeoff.ts`: one action, Pilot only through a hook so the NERON setting can widen it later.
-- State: `Planet.sectors[i].explored` (never sent to anyone in phase 1); `GameState.expeditionReports` (members, planet name, per-event lines). Bump `STATE_VERSION`.
+- State: `Planet.sectors[i].explored` (never sent to anyone in phase 1); `GameState.expeditionReports` (members, planet name, per-event lines), each with a default in its normalizer (`shared/src/normalizeState.ts`).
 - `viewFor`: a report appears only in its members' views. Leak tests: a non-member never sees a report, the events or the sectors; `leakFields.ts` entries.
 - Client: a report window opened from the room log line or the Icarus Bay; the takeoff button through `optionsOn`.
 - Tests per the `rule` skill, plus the replay test's random inputs.

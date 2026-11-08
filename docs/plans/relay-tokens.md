@@ -31,14 +31,14 @@ The relay formula (`shared/src/relay.ts`, owner 2026-10-26) cuts a contribution'
 - **Waiting work is shown** (players could work it out anyway, so the game does the sum). The terminal shows how much progress is held back only by the lack of another contributor, to those who see the target's progress (in its room, above).
 - **Projects and PILGRED** are a plain token pool for now: no pending stage, and they keep their room log lines as today, and their token lists are shown at their own terminals the same way, to people in that room, as for research (owner, 2026-10-31).
 - **The `noRelayPenalty` cheat** is fixed when the token is made: each such token counts as if from a distinct player, whatever the cheat's state later.
-- **No migration.** No games are in progress, so the `STATE_VERSION` bump simply retires old snapshots (`GameRoom.onStart` already does this). There is no `banked`. The NERON update still sets a project to 100 directly (`comms.ts`); a target's percent is stored and only rewritten from `poolProgress(...)` by a contribution, which is illegal once it is complete, so that direct completion holds.
+- **Old snapshots.** Replacing `RelayStreak` with `RelayPool` is a changed type: today it would take an upgrade step and a `STATE_VERSION` bump (#384); when this was built no games were in progress, so the bump simply retired old snapshots. There is no `banked`. The NERON update still sets a project to 100 directly (`comms.ts`); a target's percent is stored and only rewritten from `poolProgress(...)` by a contribution, which is illegal once it is complete, so that direct completion holds.
 
 ## The formula
 
 A token is `{ by: PlayerId, base: number, roll: number }`:
 
 - `base` is what the live formula computes before the penalty: `floor(rate × mod / 10)` plus `skillBoost` for each matching skill the player has when the token is made (`relayGainRange` today). Stored, so a later skill pick or body change never rewrites old tokens.
-- `roll` is a unit roll in [0, 1) from the seeded RNG, drawn when the token is made (today no draw is made when the range is a single value, so the RNG stream changes; `STATE_VERSION` bump).
+- `roll` is a unit roll in [0, 1) from the seeded RNG, drawn when the token is made (today no draw is made when the range is a single value, so the RNG stream changes; the token's new `roll` field gets a default in its normalizer).
 
 A token in a position with penalty `p` is worth `g = max(0, base − p)`, rolled in [g, g + g/2] as today: `g + floor(roll × (floor(g / 2) + 1))`, where `roll` is the pool's roll for that slot (rolls sorted high to low against the `g`s sorted high to low; see Decisions).
 
@@ -73,7 +73,7 @@ PILGRED keeps its own constants (`mod` 2, so base 1, or 5 with the Engineer or P
 
 ## State and code
 
-- `RelayStreak` (`lastBy`, `streak`) becomes `RelayPool = { tokens: RelayToken[] }` for `state.relay.research[id]`, `state.relay.projects[id]` and PILGRED's record in `state.pilgred`. Research pools also get `pending` (`docs/plans/research-sabotage.md`). `STATE_VERSION` bump, no migration.
+- `RelayStreak` (`lastBy`, `streak`) becomes `RelayPool = { tokens: RelayToken[] }` for `state.relay.research[id]`, `state.relay.projects[id]` and PILGRED's record in `state.pilgred`. Research pools also get `pending` (`docs/plans/research-sabotage.md`). A changed type, so an upgrade step and a `STATE_VERSION` bump (#384).
 - `relay.ts`: `makeToken(state, config, player, skills)` (the roll draws from the seeded RNG; the cheat is read here), `poolProgress(pool, config) → { progress, waiting }` (pure; `waiting` is `min(100, progress with all penalties waived) − progress`), and `arrangeTokens` exposed for tests. `relayGainRange`, `rollRelayGain` and `touchRelay` go.
 - `research.ts`, `project.ts` and `pilgred.ts` push a token and set the target's percent from `poolProgress(...)` (research: of the verified tokens, `docs/plans/research-sabotage.md`). Nothing else about the actions changes: cost, dirt and injury rolls, the Computer and Designer points, the dirty refusal, the public line.
 - The view: `waiting` beside each progress, with the same visibility as that progress (all three are room-gated until complete). Each viewer also gets their own token count per target (their own information) and, in the target's room, the gain if they contribute now. A viewer in the room of a target's terminal also gets that target's token list (contributor and value). Nothing else from the pool goes in a view.

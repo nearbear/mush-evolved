@@ -65,9 +65,10 @@ import type {
 // Upgrade steps (docs/plans/normalize-state.md, section 5).
 
 /**
- * The stored shape's version, written with every snapshot. Bump it, and add a step below, when `GameState`'s shape
- * changes, or `ConfigOverrides'` (or what `resolveConfig` derives from a key). A field that only needs a default takes
- * `added()` in its normalizer instead; a step is for what a default can't express (a rename, a move, a split).
+ * The stored shape's version, written with every snapshot. A new field never bumps it: it takes `added()` in its
+ * normalizer. Bump it, and add a step below, only for what a default can't express: a removed, renamed or moved field,
+ * a changed type or meaning, a renamed or removed registry id, or a change to what `resolveConfig` derives from an
+ * override key. A step lands in a deploy of its own (docs/ops/deploy.md: roll back only to the same version).
  */
 export const STATE_VERSION = 114;
 

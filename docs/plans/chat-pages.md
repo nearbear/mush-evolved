@@ -17,7 +17,7 @@ Replaces the 200-messages-per-channel trim (`CHAT_HISTORY`) with fixed pages of 
 - `viewFor`: `messageView` sends `seq`, never `id` (a view message type without `id`); `chatCounts` for readable channels.
 - Threads: `Thread.from` is a global `seq`; `createThread` checks `seq < chatSeq.global` (global messages are never deleted, so this is pure and works for sealed messages).
 - `removeFromChannel` puts the channel in `chatOutbox.dropped`.
-- `server`: `persist()` drains the outbox into the snapshot's `put`; `STATE_VERSION` bump.
+- `server`: `persist()` drains the outbox into the snapshot's `put`; new state fields get defaults in their normalizers (`shared/src/normalizeState.ts`).
 - `web`: `(channel, seq)` for keys, thread links, new-message detection (`announce.ts`, `useSpeechBubbles`, `ITrackie.tsx`), Threads, the checkbox. Protocol `toggleCheckbox` and `createThread` take `channel` + `seq`.
 - Replay: the `viewDiff.ts` comment; check `replayView.ts` merging; replay format version bump.
 - Tests: sealing at 51, `seq` per channel, the outbox, private-channel deletion, a thread from a sealed message, no `id` gap around a Mush-channel system message in a human's view.
@@ -36,7 +36,7 @@ A first version that edited sealed pages in place (an outbox of edits, the serve
 - **Old pages a client holds (phase 4).** A toggle on a message the view no longer carries (two or more pages back) sends `chatEdit {channel, seq, mark: {tasks, checked}}` to connections whose body can read the channel (`readChannels`); the client redraws its fetched copy with `markedText`. No storage involved: as built, it carries the ticks rather than the whole message (a `ChatLine` would need the text, which only the stored page holds). The view does not carry marks for old pages, so its size stays flat.
 - **Replays.** `replayGame` and `rebuildGame` stay as phase 1 left them: marks are in the state, so they replay by themselves. `mergeStreams` keeps the text as typed; `revealFor` applies the marks of the frame shown.
 - **Reports (#292).** The report message lookup (`chatId`) works for a message on a sealed page (the stored page holds it); add a server test.
-- **Version bumps.** `STATE_VERSION` and `server/tests/state-shape.json`.
+- **Stored shape.** A default in the normalizer for each new field (#384); no `STATE_VERSION` change.
 - **Tests.** A toggle on the open page, the tail and a page two back, all without storage; author only; refused once you can no longer post to the channel (dropped iTrackie, dead); a message typed with `[x]` starts ticked; ticks applied in `viewFor`, invisible to non-readers, and absent from the raw view; entries gone with a deleted private channel; `chatEdit` only to readers and only for messages outside the view, with no `id`; a replay of a toggle on an old page. Run `leak-check`.
 
 ## Phase 3: protocol and leak tests

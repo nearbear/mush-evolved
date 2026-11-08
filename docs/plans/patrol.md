@@ -50,7 +50,7 @@ Alternative: a `PlayerState.flying` field with the player still "in" the bay. Ch
 
 Cost of rooms: anything that walks every room has to tolerate door-less rooms off the map (the minimap and ship map, ACTOPI room counts, `unidentified`, room pickers in cheats and tools, `ship-layout` tests); the client needs an interior view for a ship room.
 
-### State (plain JSON; bump `STATE_VERSION`)
+### State (plain JSON; defaults in the normalizers, `shared/src/normalizeState.ts`)
 
 - `GameState.patrolShips: Record<ShipId, { armor: number; charges: number; out: boolean; destroyed: boolean }>` (or a missing entry = docked, full). Static data (name, room, interface id, bay, kind `patrol`/`pasiphae`) in a `PATROL_SHIPS` table in a new `shared/src/patrol.ts`, numbers in `config.patrol`.
 - `GameState.space: string[]`: debris item types floating around the ship. Server-only; what flyers learn about it is still open.

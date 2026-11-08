@@ -80,9 +80,9 @@ export interface PreselectionRules {
 /**
  * The only ways a game may differ from `DEFAULT_CONFIG` (`resolveConfig`). A stored game keeps these instead of its
  * config, so it picks up balance changes on its next load. Anything per game that must survive a reload lives here,
- * and config fields derived from it are recomputed by `resolveConfig`. Changing this shape, or what `resolveConfig`
- * derives from a key, bumps `STATE_VERSION` (shared/src/normalizeState.ts): a renamed key would silently fall back to the
- * default in live games.
+ * and config fields derived from it are recomputed by `resolveConfig`. A new key is listed in `normalizeOverrides` (the compiler asks);
+ * renaming or removing one, or changing what `resolveConfig` derives from a key, needs an upgrade step and a
+ * `STATE_VERSION` bump (shared/src/normalizeState.ts): a renamed key would silently fall back to the default in live games.
  */
 export interface ConfigOverrides {
   mushCount?: number; // Single player: 1.

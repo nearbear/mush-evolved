@@ -149,7 +149,7 @@ Shown only while you're in a `LASER_TURRET` or a `PATROL_SHIP` room. On the left
 Phase 1, assuming the proposed scope in question 1:
 
 - `shared/src/hunters.ts`: the hunter type table copied from `ships.json` into a typed table (as `planets.ts` does), plus pure functions: `spawnHunters(state, n)`, `huntersAttack(state)` (one roll per hunter, damage through `damageShip`), and `shoot(state, actor, hunterId)`. Numbers in `config.hunters` and `config.turrets`, pinned in tests.
-- State: `GameState.hunters: { id, type, hp }[]` (public), turret charges per turret room, and the per-player repeat bonus beside the scan's. Bump `STATE_VERSION`.
+- State: `GameState.hunters: { id, type, hp }[]` (public), turret charges per turret room, and the per-player repeat bonus beside the scan's, each with a default in its normalizer (`shared/src/normalizeState.ts`).
 - Cycle: in `newCycle`, after oxygen: spawn (through #184's spender, or its own rule), hunters attack, turrets recharge, shield regenerates if decided. Logs through `logPublic`.
 - Actions in `shared/src/actions/`: `turret_attack.ts` (at `TURRET_COMMAND`, target a hunter, uses a charge) and `repair_hull.ts` (holding a metal scrap). Odds go through modifier hooks so `GUNNER`, `NCC_LENS`, `EXPERT` and the rest can attach.
 - `viewFor`: `PlayerView.hunters` (type and hp of each), turret charges, both public if question 7 says so. Run `leak-check` anyway, since the pool or schedule (if any) is server-only.
