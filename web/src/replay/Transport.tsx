@@ -241,7 +241,7 @@ function Summary({ summary }: { summary: Replay["summary"] }) {
 function MoreMenu({ replay, targets, speed, onSpeed, skip, onSkip }: TransportProps) {
   const { t } = useTranslation();
   const item = (key: "eventBack" | "eventForward" | "cycleBack" | "cycleForward") => (
-    <Menu.Item render={<button type="button" />} disabled={targets[key] === null} onClick={() => targets[key] !== null && replay.seek(targets[key])}>
+    <Menu.Item render={<button type="button" />} nativeButton disabled={targets[key] === null} onClick={() => targets[key] !== null && replay.seek(targets[key])}>
       {t(`replay.${key}`)}
     </Menu.Item>
   );
@@ -257,7 +257,7 @@ function MoreMenu({ replay, targets, speed, onSpeed, skip, onSkip }: TransportPr
             {item("eventForward")}
             {item("cycleBack")}
             {item("cycleForward")}
-            <Menu.CheckboxItem render={<button type="button" />} checked={skip} onCheckedChange={onSkip} closeOnClick={false}>
+            <Menu.CheckboxItem render={<button type="button" />} nativeButton checked={skip} onCheckedChange={onSkip} closeOnClick={false}>
               <Menu.CheckboxItemIndicator keepMounted className="replay-check">
                 {skip ? "☑" : "☐"}
               </Menu.CheckboxItemIndicator>
@@ -267,7 +267,7 @@ function MoreMenu({ replay, targets, speed, onSpeed, skip, onSkip }: TransportPr
               <Menu.GroupLabel className="replay-menu-label">{t("replay.speed")}</Menu.GroupLabel>
               <Menu.RadioGroup value={speed} onValueChange={(v) => onSpeed(v as Speed)} className="replay-speeds">
                 {SPEEDS.map((s) => (
-                  <Menu.RadioItem key={s} value={s} render={<button type="button" />} closeOnClick={false}>
+                  <Menu.RadioItem key={s} value={s} render={<button type="button" />} nativeButton closeOnClick={false}>
                     {t("replay.speedValue", { speed: s })}
                   </Menu.RadioItem>
                 ))}

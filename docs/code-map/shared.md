@@ -75,7 +75,7 @@ Other packages import from `@mush2/shared` (`shared/src/index.ts`, the barrel). 
 - `statuses.ts`: stored and derived statuses.
 - `inactivity.ts`: inactive and super inactive (#145): `isInactive`, `isSuperInactive`, `inactivityOf`, `inactivityCycle` (from `advanceCycle`, given the clock cycle's server time), `markSeen`, and the server's `seen` and `inactivate` inputs.
 - `adjustStats.ts`: capped morale changes and disease application; `addDisease` updates both the modifier and private status.
-- `cheats.ts`: development cheats (issue #148), gated by `ALLOW_CHEATS`. Flag-only cheats are read where they apply: `instantActions` in `queue.ts`, `noRelayPenalty` in `relay.ts` (`makeToken`, fixed on the token), `freeHacking` in `titles.ts` (`bypassesTitles`), `anySkill` in `actions/pick_skill.ts`, `easyTravel` in `actions/warp_to_planet.ts` and `actions/leave_orbit.ts`. `alwaysClean` strips `dirty` in `applyCheats`.
+- `cheats.ts`: development cheats (issue #148), gated by `ALLOW_CHEATS`. Flag-only cheats are read where they apply: `instantActions` in `queue.ts`, `noRelayPenalty` in `relay.ts` (`makeToken`, fixed on the token), `freeHacking` in `titles.ts` (`bypassesTitles`), `anySkill` in `actions/pick_skill.ts`, `easyTravel` in `actions/warp_to_planet.ts` and `actions/leave_orbit.ts`. `alwaysClean` strips `dirty` in `applyCheats`. Two cheats are calls rather than flags: `setRoleCheat` and `solCheat` (in `rules.ts`; the ship returns to Sol now, a dev route to a finished game).
 
 ## Types, config, and data
 

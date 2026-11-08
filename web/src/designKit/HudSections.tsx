@@ -36,6 +36,7 @@ function SampleTopBar({ view, ...rest }: { view: PlayerView } & Partial<Paramete
       cheatsAllowed={false}
       onCheat={noop}
       onRoleCheat={noop}
+      onSolCheat={noop}
       onLeaveShip={noop}
       {...rest}
     />

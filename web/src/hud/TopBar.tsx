@@ -23,6 +23,7 @@ export function TopBar({
   cheatsAllowed,
   onCheat,
   onRoleCheat,
+  onSolCheat,
   onLeaveShip,
 }: {
   view: PlayerView;
@@ -41,6 +42,7 @@ export function TopBar({
   cheatsAllowed: boolean;
   onCheat: (cheat: Cheat, on: boolean) => void;
   onRoleCheat: (role: RoleCheat) => void;
+  onSolCheat: () => void;
   onLeaveShip: () => void;
 }) {
   const { you } = view;
@@ -116,6 +118,7 @@ export function TopBar({
         activeCheats={you.cheats}
         onCheat={onCheat}
         onRoleCheat={onRoleCheat}
+        onSolCheat={onSolCheat}
         onLeaveShip={onLeaveShip}
         onLeave={onLeave}
         hideTrigger={mobile}

@@ -207,6 +207,7 @@ export function GameView({ view: given, send, onLeave, waking = false, cheatsAll
         cheatsAllowed={cheatsAllowed && !readOnly}
         onCheat={(cheat: Cheat, on: boolean) => post({ type: "cheat", cheat, on })}
         onRoleCheat={(role: RoleCheat) => post({ type: "roleCheat", role })}
+        onSolCheat={() => post({ type: "solCheat" })}
         onLeaveShip={() => post({ type: "leaveShip" })}
       />
       {!mobile && transport && <div className="game-transport">{transport}</div>}

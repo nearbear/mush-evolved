@@ -29,11 +29,12 @@ const EMPTY: Streams = { log: [], chat: [] };
 /** Each frame's streams within its chunk, from the chunk's first copy: built as far as asked, kept with the chunk. */
 const prefixes = new WeakMap<LoadedChunk, Streams[]>();
 
-/** The streams of chunk `chunk` up to frame `i` (-1: its launch `base` only). */
+/** The streams of chunk `chunk` up to frame `i` (-1: its launch `base` only, or its first frame without one, as `stepAt`). */
 function chunkStreams(chunk: LoadedChunk, i: number): Streams {
   const first = chunk.frames[0]?.base;
   const start = first ? mergeStreams(EMPTY, first) : EMPTY;
-  if (i < 0) return start;
+  if (i < 0 && first) return start;
+  if (i < 0) return chunk.frames.length ? chunkStreams(chunk, 0) : EMPTY;
   let list = prefixes.get(chunk);
   if (!list) prefixes.set(chunk, (list = []));
   for (let k = list.length; k <= i && k < chunk.frames.length; k++) {
@@ -115,7 +116,10 @@ export function readableChunk(chunk: LoadedChunk, seat: PlayerId): boolean {
   const first = chunk.frames[0];
   if (!first) return true;
   try {
-    perspective(readFrame({ view: first.base ?? first.view, build: first.build }), seat);
+    const full = readFrame({ view: first.base ?? first.view, build: first.build });
+    // A new ship's first frame may have nobody aboard yet, or not this seat: read it through someone who is.
+    const mind = full.players.some((p) => p.mind === seat) ? seat : full.players[0]?.mind;
+    if (mind !== undefined) perspective(full, mind);
     return true;
   } catch (e) {
     if (e instanceof HistoryError) return false;
