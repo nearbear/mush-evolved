@@ -30,7 +30,8 @@
     "plasmaShield": "Bouclier plasma",
     "alerts": "Alertes",
     "hunters": "Hunters",
-    "orbit": "En orbite autour de {{name}}"
+    "orbit": "En orbite autour de {{name}}",
+    "expedition": "Expédition sur {{planet}} : {{names}}, retour dans {{time}}"
   },
   "peek": {
     "doorTo": "Porte vers {{room}}",
@@ -1534,7 +1535,12 @@
       "hurt_many": "{{name}} perd {{count}} PV.",
       "hurt_other": "{{name}} perd {{count}} PV.",
       "died": "{{name}} meurt."
-    }
+    },
+    "aboard": "Dans l'Icarus, en exploration sur {{planet}}",
+    "back": "Retour dans {{time}}",
+    "underWay": "L'expédition est toujours en cours.",
+    "lootAboard": "Tout ce qui a été trouvé jusqu'ici est par terre dans l'Icarus.",
+    "icarusAway": "L'Icarus est parti en expédition."
   },
   "roomList": {
     "region": "Salle",

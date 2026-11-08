@@ -2,15 +2,18 @@ import { Popover } from "@base-ui/react/popover";
 import { useTranslation } from "react-i18next";
 import type { PlayerView } from "@mush2/shared";
 import { SHIP_RESOURCE_ICONS } from "../art/assets.ts";
+import { useNames } from "../i18n/names.ts";
 import { TitleChip } from "./TitleChip.tsx";
+import { useCountdown } from "./useCountdown.ts";
 
 const RESOURCES = ["oxygen", "fuel", "hull", "plasmaShield", "hunters", "alerts"] as const;
 
 /**
  * The ship card (in the desktop top bar, and ShipOverlay on phones) with the ship's resource counters, how many hunters
- * are attacking, the ship titles, and the orbited planet's name while in orbit (owner, 2026-10-31), all public. TODO(ship-resources): alerts have no backend yet, so they show a placeholder dash.
+ * are attacking, the ship titles, the orbited planet's name while in orbit (owner, 2026-10-31), and the expedition
+ * away: who, where and when they are back (owner, 2026-11-07), all public. TODO(ship-resources): alerts have no backend yet, so they show a placeholder dash.
  */
-export function ShipResources({ ship, hunters, titles, orbit }: { ship: PlayerView["ship"]; hunters: number; titles: PlayerView["titles"]; orbit: string | null }) {
+export function ShipResources({ ship, hunters, titles, orbit, expedition, clockOffset }: { ship: PlayerView["ship"]; hunters: number; titles: PlayerView["titles"]; orbit: string | null; expedition: PlayerView["expedition"]; clockOffset: number }) {
   const { t } = useTranslation();
   return (
     <ul className="ship-resources" aria-label={t("shipResources.title")}>
@@ -42,6 +45,7 @@ export function ShipResources({ ship, hunters, titles, orbit }: { ship: PlayerVi
         );
       })}
       {orbit !== null && <li className="ship-orbit">{t("shipResources.orbit", { name: orbit })}</li>}
+      {expedition && <ExpeditionAway expedition={expedition} clockOffset={clockOffset} />}
       {titles.map((title) => (
         <li key={title.id} className="ship-title">
           <TitleChip entry={title} />
@@ -49,4 +53,13 @@ export function ShipResources({ ship, hunters, titles, orbit }: { ship: PlayerVi
       ))}
     </ul>
   );
+}
+
+/** Who is out on the expedition, on which planet, and the time left. */
+function ExpeditionAway({ expedition, clockOffset }: { expedition: NonNullable<PlayerView["expedition"]>; clockOffset: number }) {
+  const { t, i18n } = useTranslation();
+  const names = useNames();
+  const time = useCountdown(expedition.returnAt, clockOffset);
+  const crew = new Intl.ListFormat(i18n.language, { type: "conjunction" }).format(expedition.crew.map((c) => names.characterGiven(c)));
+  return <li className="ship-orbit">{t("shipResources.expedition", { planet: expedition.planet, names: crew, time })}</li>;
 }

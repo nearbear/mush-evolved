@@ -30,7 +30,8 @@
     "plasmaShield": "Plasma shield",
     "alerts": "Alerts",
     "hunters": "Hunters",
-    "orbit": "Orbiting {{name}}"
+    "orbit": "Orbiting {{name}}",
+    "expedition": "Expedition to {{planet}}: {{names}}, back in {{time}}"
   },
   "peek": {
     "doorTo": "Door to {{room}}",
@@ -1607,7 +1608,12 @@
       "hurt_one": "{{name}} loses {{count}} HP.",
       "hurt_other": "{{name}} loses {{count}} HP.",
       "died": "{{name}} dies."
-    }
+    },
+    "aboard": "In the Icarus, exploring {{planet}}",
+    "back": "Back in {{time}}",
+    "underWay": "The expedition is still under way.",
+    "lootAboard": "Everything found so far is on the Icarus's floor.",
+    "icarusAway": "The Icarus is away on an expedition."
   },
   "roomList": {
     "region": "Room",

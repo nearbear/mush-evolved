@@ -2699,3 +2699,21 @@ Follow-up the same day: the "N% repaired" text became a bare percent (the shared
 - The owner hand-made `techno-box.png` (xp_counter.png closed into a full box); it went into `Mush/derived/` with an ATTRIBUTION note and a row in `docs/assets/mush-assets.md`.
 - Built `TechnoBox` (`web/src/hud/TechnoBox.tsx` + `styles/techno-box.css`) as CSS `border-image`, not SVG: it keeps the pixel texture and stays at 1x. Dumping the pixels picked the slices (14/21): rows 14-20 are identical and the centre is one colour, so `repeat` tiles seamlessly without scaling; a first guess of 12 would have repeated a shading gradient.
 - The frame uses `border-image-width` with `border-width: 0`, so padding (not the 21px caps) sets the content inset. Checked in a scratch Chromium render before wiring it in; the expanded minimap's `box-shadow` became `drop-shadow` to follow the cut corners.
+
+## 2026-11-07: Expeditions phase 2 rule pass (#356)
+
+- Docs-only rule pass: the owner's #356 answers recorded in `docs/rules/rules-design.md` and `docs/plans/expedition.md` ("Phase 2 decisions").
+- The issue said "nothing open", but a build-oriented read found four gaps, asked in one question round (owner): the Landing is itself the first 10-minute step; members see events live per sector; if every member dies the Icarus returns at once; hunters never target the Icarus. Claude's readings, flagged in the plan: the crew returns as the last sector resolves (100 min for 9 sectors), and the Icarus Bay is drawn without the Icarus while it is out.
+- What worked: checking the decided list against what the code will need (timer phase, report visibility, early end, hunter targeting) before writing anything down.
+
+## 2026-11-07: Room view in the techno frame, minimap joined to its corner
+
+- `.iso-room` now draws the TechnoBox art in place of the glow rim, padded exactly to its rim (4px) and side caps (15px) so the scene covers the inner shadow; its background moved to `.iso-scroll` so it can't show through the frame's cut corners. `--frame-x/y` and `--inset-x/y` on `.room-view` replace the room overlays' hard-coded `0.5rem` offsets.
+- The minimap sits just inside the rim and right cap with `border-image-width: 0 0 14px 21px`, dropping its top and right edges: plain butt joints into the room frame, no join art (owner chose to judge them first). Checked on a scratch mock; the `play` skill is owner-invoked only, so no in-game screenshots yet.
+- Reverted the same day: the owner judged the room frame a bust. Only the minimap keeps the TechnoBox (as committed in `a4ca236`); the room view and its overlays are back as they were.
+
+## 2026-11-07: Expeditions phase 2, slice A: the timed Icarus trip (#356)
+
+- Built: Landing 10 min after takeoff, then one sector every 10 min on the server's existing tick (no new replay input); return after the last sector or at once if all members die. Members ride `ICARUS_CRAFT`, a door-less room with patrol-ship limits; loot and bodies unload in the bay; 10% dirt per living member on return. Public status (who, planet, time left) for all; the growing report for members only. New `IcarusPanel` replaces the room view aboard. Phase 1's tests run in instant mode.
+- Claude's calls, flagged to the owner: single player is marked by a new `instantExpeditions` override rather than reusing `manualCycles` (dev cheat games also set manual cycles and would have lost the 10-minute pace); pre-change single-player saves lack the flag (databases are empty, left alone); apron/Stickler block return dirt like any dirt, so that rule moved to `shared/src/dirt.ts`.
+- Needed correction: the session was stopped before verify finished. Remaining failures were tests written for patrol craft only (`paths.test.ts`, `install.test.ts` now use `inCraft` / include the Icarus), an unused import left in `rules.ts`, and the persistence test's single-player overrides. Lesson: adding a new room kind breaks every "all rooms but craft" test; grep for `PATROL_SHIPS`/`patrolShip` filters in tests when adding one.

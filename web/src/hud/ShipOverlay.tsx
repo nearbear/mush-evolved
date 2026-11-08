@@ -9,7 +9,7 @@ import { Hint } from "./IconButton.tsx";
 import { ShipResources } from "./ShipResources.tsx";
 import { useOverlayDismiss } from "./useOverlayDismiss.ts";
 
-export function ShipOverlay({ view }: { view: PlayerView }) {
+export function ShipOverlay({ view, clockOffset = 0 }: { view: PlayerView; clockOffset?: number }) {
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
@@ -22,7 +22,7 @@ export function ShipOverlay({ view }: { view: PlayerView }) {
     <div className="ship-overlay" ref={rootRef}>
       {open && (
         <section id={panelId} role="dialog" tabIndex={-1} className="ship-popup" aria-label={label}>
-          <ShipResources ship={view.ship} hunters={view.hunters.count} titles={view.titles} orbit={view.navigation.orbitName} />
+          <ShipResources ship={view.ship} hunters={view.hunters.count} titles={view.titles} orbit={view.navigation.orbitName} expedition={view.expedition} clockOffset={clockOffset} />
         </section>
       )}
       <Hint label={label}>

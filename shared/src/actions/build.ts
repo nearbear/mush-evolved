@@ -2,7 +2,7 @@ import { Action, isString } from "./action.ts";
 import { BLUEPRINTS, BLUEPRINT_ITEM } from "../blueprints.ts";
 import { canReachItem, itemsIn, produceItem, visibleItemsIn, isWorking } from "../items.ts";
 import { logPublic } from "../log.ts";
-import { shipAboard } from "../patrol.ts";
+import { inCraft } from "../patrol.ts";
 import type { GameState, ItemState, PlayerState } from "../types.ts";
 
 export type BuildActionData = { type: "build"; item: string };
@@ -39,12 +39,12 @@ export class BuildAction extends Action<BuildActionData> {
   }
 
   override getCandidates(state: Readonly<GameState>, player: Readonly<PlayerState>): BuildActionData[] {
-    if (shipAboard(player)) return [];
+    if (inCraft(player.room)) return [];
     return state.items.filter((i) => i.type === BLUEPRINT_ITEM && canReachItem(state, player, i) && ingredients(state, player, i)).map((i) => ({ type: "build", item: i.id }));
   }
 
   override validate(state: Readonly<GameState>, player: Readonly<PlayerState>, target: BuildActionData): string | null {
-    if (shipAboard(player)) return "in_patrol_ship";
+    if (inCraft(player.room)) return "in_patrol_ship";
     const item = state.items.find((i) => i.id === target.item);
     if (!item) return "no_such_item";
     if (item.type !== BLUEPRINT_ITEM || !canReachItem(state, player, item)) return "cant_build";

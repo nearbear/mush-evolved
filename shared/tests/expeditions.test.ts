@@ -1,9 +1,11 @@
 import { describe, expect, it } from "vitest";
 import { DEFAULT_CONFIG } from "../src/config.ts";
 import { pickSectors, runExpedition } from "../src/expeditions.ts";
+import { nextDue } from "../src/queue.ts";
+import { applyInput } from "../src/replay.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";
 import type { Action, ExpeditionEventRule, GameConfig, GameState, Planet, PlayerId } from "../src/types.ts";
-import { makeSeats, must, noHunters, noIncidents, offered, option, player } from "./support.ts";
+import { clone, makeSeats, must, noHunters, noIncidents, offered, option, player } from "./support.ts";
 
 const ICARUS = "ICARUS";
 const takeoff: Action = { type: "icarus_takeoff", equipment: "ICARUS:ICARUS_COMMAND" };
@@ -21,9 +23,11 @@ const planet = (tags: Planet["sectors"][number]["tag"][]): Planet => ({
  * Six seats: p0 (a Pilot), p1, p2 and p3 in the Icarus Bay, p4 and p5 in the laboratory. p5 found the planet the ship
  * orbits. `events` replaces the event tables (so a test draws the event it needs), `tags` the planet's sectors.
  */
-function game(opts: { events?: Record<string, ExpeditionEventRule[]>; tags?: Planet["sectors"][number]["tag"][]; config?: Partial<GameConfig["expedition"]> } = {}): GameState {
+function game(opts: { events?: Record<string, ExpeditionEventRule[]>; tags?: Planet["sectors"][number]["tag"][]; config?: Partial<GameConfig["expedition"]>; timed?: boolean } = {}): GameState {
   const config = noIncidents(noHunters(structuredClone(DEFAULT_CONFIG)));
   config.startItems = [];
+  // Phase 1's tests resolve at takeoff, as single player does; phase 2's are timed.
+  config.instantExpeditions = !opts.timed;
   config.expedition = { ...config.expedition, ...opts.config, events: { ...config.expedition.events, ...opts.events } };
   const s = createGame(makeSeats(6), config, 11);
   for (const p of s.players) p.room = ["p0", "p1", "p2", "p3"].includes(p.id) ? ICARUS : "LABORATORY";
@@ -49,7 +53,7 @@ const give = (s: GameState, id: PlayerId, type: string, charges?: number) =>
   s.items.push({ id: `item-test-${s.items.length}`, type, at: { kind: "player", id }, ...(charges !== undefined && { charges }) });
 const floor = (s: GameState, type: string) => s.items.filter((i) => i.type === type && i.at.kind === "room" && i.at.id === ICARUS).length;
 
-describe("expeditions, phase 1", () => {
+describe("expeditions, phase 1 (instant, as in single player)", () => {
   it("is offered to a Pilot at the Icarus in orbit of a planet with an unexplored sector, and to no one else", () => {
     const s = game();
     expect(offered(s, "p0")).toContainEqual(takeoff);
@@ -271,5 +275,157 @@ describe("expeditions, phase 1", () => {
     }
     expect(viewFor(next, "p5").planets).toEqual(finderBefore);
     expect(JSON.stringify(viewFor(next, "p5"))).not.toContain("explored");
+  });
+});
+
+describe("expeditions, phase 2: time away", () => {
+  const CRAFT = expedition.craft;
+  const T0 = 1_000_000;
+  const step = expedition.stepMs;
+  const crewIds = ["p0", "p1", "p2", "p3"];
+
+  /** A timed game at server time T0. */
+  function timed(opts: Parameters<typeof game>[0] = {}): GameState {
+    const s = game({ ...opts, timed: true });
+    s.now = T0;
+    return s;
+  }
+  const tickAt = (s: GameState, at: number) => must(applyInput(s, { type: "tick", at }));
+  /** Every step, one tick each, until the crew is back. */
+  function runOut(s: GameState): GameState {
+    while (s.expedition) s = tickAt(s, s.expedition.nextAt);
+    return s;
+  }
+
+  it("pins the confirmed numbers", () => {
+    expect([expedition.stepMs, expedition.dirtyChance, expedition.sectors]).toEqual([10 * 60 * 1000, 0.1, 9]);
+  });
+
+  it("takes the crew into the Icarus, a room of its own, until the landing a step later", () => {
+    const s = timed({ events: only({ kind: "nothing", weight: 1 }) });
+    const next = go(s);
+    for (const id of crewIds) expect(player(next, id).room).toBe(CRAFT);
+    expect(next.config.rooms[CRAFT]).toEqual([]);
+    expect(next.expeditions[0]!.events).toEqual([]);
+    expect(next.expedition).toMatchObject({ landed: false, nextAt: T0 + step });
+    expect(nextDue(next)).toBe(T0 + step);
+    // Nothing is due before then.
+    expect(applyInput(next, { type: "tick", at: T0 + step - 1 }).ok).toBe(false);
+    const landed = tickAt(next, T0 + step);
+    expect(landed.expeditions[0]!.events.map((e) => e.sector)).toEqual(["LANDING"]);
+    expect(landed.expedition!.nextAt).toBe(T0 + 2 * step);
+  });
+
+  it("explores one sector per step and is back as the last one resolves, with the loot unloaded in the bay", () => {
+    const s = timed({ tags: ["FRUIT_TREES", "FRUIT_TREES", "FRUIT_TREES"], events: only({ kind: "harvest", weight: 1, amount: 2 }) });
+    let t = go(s);
+    const returnAt = viewFor(t, "p4").expedition!.returnAt;
+    expect(returnAt).toBe(T0 + 4 * step);
+    t = tickAt(t, T0 + 2 * step); // landing and sector 1, caught up in one tick
+    expect(t.expeditions[0]!.events).toHaveLength(2);
+    expect(t.planets.p5![0]!.sectors.filter((x) => x.explored)).toHaveLength(1);
+    // The loot is in the Icarus while away; members can take it.
+    expect(t.items.filter((i) => i.type === expedition.loot.harvest && i.at.kind === "room" && i.at.id === CRAFT).length).toBeGreaterThan(0);
+    expect(viewFor(t, "p4").expedition!.returnAt).toBe(returnAt);
+    t = tickAt(t, T0 + 3 * step);
+    expect(t.expedition).not.toBeNull();
+    t = tickAt(t, returnAt);
+    expect(t.expedition).toBeNull();
+    for (const id of crewIds) expect(player(t, id).room).toBe(ICARUS);
+    expect(t.items.some((i) => i.at.kind === "room" && i.at.id === CRAFT)).toBe(false);
+    expect(floor(t, expedition.loot.harvest)).toBe(t.expeditions[0]!.events.reduce((n, e) => n + (e.kind === "harvest" ? e.amount! : 0), 0));
+    expect(t.log.filter((e) => e.key === "expeditionReturned").map((e) => e.visibleTo)).toEqual(t.expeditions[0]!.members.map((id) => [id]));
+  });
+
+  it("everyone sees who is out, where and until when; members see the report live; nobody sees more", () => {
+    const s = timed({ tags: ["OXYGEN", "PREDATOR"] });
+    const t = tickAt(go(s), T0 + step);
+    const report = t.expeditions[0]!;
+    const status = { crew: report.crew, planet: "Fugunys", returnAt: T0 + 3 * step };
+    for (const id of ["p4", "p5"]) {
+      const view = viewFor(t, id);
+      expect(view.expedition).toEqual(status);
+      expect(view.expeditions).toEqual([]);
+      const json = JSON.stringify(view);
+      expect(json).not.toContain(report.id);
+      expect(json).not.toContain("explored");
+      for (const field of ["landed", "nextAt", "carried"]) expect(json).not.toContain(field);
+    }
+    // The planet goes by name; its id stays its finder's (p5).
+    expect(JSON.stringify(viewFor(t, "p4"))).not.toContain(t.expedition!.planet);
+    for (const id of report.members) {
+      const view = viewFor(t, id);
+      expect(view.expedition).toEqual({ ...status, report: report.id });
+      expect(view.expeditions).toEqual([{ id: report.id, crew: report.crew, planet: report.planet, events: report.events, away: true }]);
+    }
+    // The dead get the public status, never the report.
+    const dead = clone(t);
+    player(dead, "p1").alive = false;
+    expect(viewFor(dead, "p1").expedition).toEqual(status);
+    expect(viewFor(dead, "p1").expeditions).toEqual([]);
+  });
+
+  it("the Icarus is missing from its bay and can't take off again while away", () => {
+    const s = timed();
+    const t = go(s);
+    // A Pilot walks into the bay after the takeoff.
+    for (const state of [s, t]) {
+      player(state, "p4").room = ICARUS;
+      player(state, "p4").skills.push("pilot");
+    }
+    const icarus = viewFor(t, "p4").roomEquipment.find((e) => e.type === "ICARUS_COMMAND")!;
+    expect(icarus.out).toBe(true);
+    expect(offered(t, "p4")).not.toContainEqual(takeoff);
+    expect(applyAction(t, "p4", takeoff).ok).toBe(false);
+    expect(viewFor(s, "p4").roomEquipment.find((e) => e.type === "ICARUS_COMMAND")!.out).toBeUndefined();
+  });
+
+  it("aboard, members can act on items and each other but not leave or use the ship", () => {
+    const s = timed();
+    give(s, "p1", "bandage");
+    player(s, "p2").hp -= 3;
+    const t = go(s);
+    const actions = offered(t, "p1");
+    expect(actions.some((a) => a.type === "move")).toBe(false);
+    expect(actions.some((a) => a.type === "install" || a.type === "build" || a.type === "ignite")).toBe(false);
+    expect(actions).toContainEqual(expect.objectContaining({ type: "use_bandage" }));
+    expect(actions).toContainEqual(expect.objectContaining({ type: "drop" }));
+  });
+
+  it("a member who dies leaves a body in the Icarus, which comes back with it", () => {
+    const s = timed({ tags: ["HOT", "HOT"], events: only({ kind: "fatigue", weight: 1 }) });
+    player(s, "p1").hp = expedition.fatigue;
+    const t = tickAt(go(s), T0 + 2 * step); // the landing, then the first sector
+    expect(player(t, "p1").alive).toBe(false);
+    expect(t.items.some((i) => i.of === "p1" && i.at.kind === "room" && i.at.id === CRAFT)).toBe(true);
+    const back = runOut(t);
+    expect(back.items.some((i) => i.of === "p1" && i.at.kind === "room" && i.at.id === ICARUS)).toBe(true);
+  });
+
+  it("comes back at once when every member is dead", () => {
+    const s = timed({ tags: ["HOT", "HOT", "HOT"], events: only({ kind: "fatigue", weight: 1 }, { kind: "fatigue", weight: 1 }) });
+    for (const id of crewIds) player(s, id).hp = expedition.fatigue;
+    const t = tickAt(go(s), T0 + step);
+    expect(t.expedition).toBeNull();
+    expect(t.expeditions[0]!.events).toHaveLength(1);
+    expect(t.items.filter((i) => i.type === "corpse" && i.at.kind === "room" && i.at.id === ICARUS)).toHaveLength(4);
+    expect(viewFor(t, "p4").expedition).toBeNull();
+  });
+
+  it("living members may come back dirty", () => {
+    const always = runOut(go(timed({ tags: ["FOREST"], config: { dirtyChance: 1 } })));
+    for (const id of crewIds) expect(player(always, id).statuses).toContain("dirty");
+    const never = runOut(go(timed({ tags: ["FOREST"], config: { dirtyChance: 0 } })));
+    for (const id of crewIds) expect(player(never, id).statuses).not.toContain("dirty");
+  });
+
+  it("a step due before a bar ends happens first, in the same tick", () => {
+    const s = timed({ tags: ["FOREST"], events: only({ kind: "nothing", weight: 1 }) });
+    const t = go(s);
+    // p4 starts a timed action that ends after the landing is due.
+    player(t, "p4").current = { action: { type: "ready" }, adjustment: { ap: 0, mp: 0 }, since: T0, until: T0 + step + 5 };
+    const after = tickAt(t, T0 + step + 5);
+    expect(after.expeditions[0]!.events).toHaveLength(1);
+    expect(player(after, "p4").current).toBeNull();
   });
 });

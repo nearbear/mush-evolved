@@ -1,6 +1,7 @@
 // An expedition's report (owner, 2026-10-31, docs/plans/expedition.md): what happened in each sector, from the
 // member's own view (`view.expeditions`). Opened from the member's private "back from the expedition" line in the
-// Icarus Bay's room log. Renders the report only; the rules wrote everything in it.
+// Icarus Bay's room log, or from the Icarus while away (IcarusPanel.tsx), where it grows as each step happens (phase 2).
+// Renders the report only; the rules wrote everything in it.
 
 import { Dialog } from "@base-ui/react/dialog";
 import type { ExpeditionEvent, ExpeditionReportView } from "@mush2/shared";
@@ -25,7 +26,8 @@ export function ExpeditionReportDialog({ report, onClose }: { report: Expedition
                   <Event key={i} event={event} />
                 ))}
               </ol>
-              {report.events.some((e) => e.item !== undefined && (e.amount ?? 0) > 0) && <p className="sub">{t("expedition.lootOnFloor")}</p>}
+              {report.events.some((e) => e.item !== undefined && (e.amount ?? 0) > 0) && <p className="sub">{t(report.away ? "expedition.lootAboard" : "expedition.lootOnFloor")}</p>}
+              {report.away && <p className="sub">{t("expedition.underWay")}</p>}
             </>
           )}
         </Dialog.Popup>

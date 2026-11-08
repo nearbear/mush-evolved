@@ -30,7 +30,8 @@
     "plasmaShield": "Escudo de plasma",
     "alerts": "Alertas",
     "hunters": "Hunters",
-    "orbit": "En órbita alrededor de {{name}}"
+    "orbit": "En órbita alrededor de {{name}}",
+    "expedition": "Expedición a {{planet}}: {{names}}, de vuelta en {{time}}"
   },
   "peek": {
     "doorTo": "Puerta a {{room}}",
@@ -1534,7 +1535,12 @@
       "hurt_many": "{{name}} pierde {{count}} PV.",
       "hurt_other": "{{name}} pierde {{count}} PV.",
       "died": "{{name}} muere."
-    }
+    },
+    "aboard": "En el Ícaro, explorando {{planet}}",
+    "back": "De vuelta en {{time}}",
+    "underWay": "La expedición sigue en curso.",
+    "lootAboard": "Todo lo encontrado hasta ahora está en el suelo del Ícaro.",
+    "icarusAway": "El Ícaro ha salido de expedición."
   },
   "roomList": {
     "region": "Sala",

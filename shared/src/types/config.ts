@@ -87,6 +87,7 @@ export interface PreselectionRules {
 export interface ConfigOverrides {
   mushCount?: number; // Single player: 1.
   manualCycles?: boolean; // Single player, and wherever the server allows cheats.
+  instantExpeditions?: boolean; // Single player: an expedition resolves at takeoff (owner, 2026-11-07, #356).
   cycleHours?: number; // A setup's cycle length (#230): one of `CYCLE_HOURS` (setups.ts). Also sets `cyclesPerDay`.
   sharedSpots?: boolean; // A setup's shared positions (#231).
   setupId?: string; // The setup the ship launched with (#232). Its knobs are already in the keys above.
@@ -109,6 +110,8 @@ export interface GameConfig {
   // Cycles change on the server's UTC clock (#24). With this on, `ready` is offered too and the cycle also ends once
   // every living player is ready: the dev server's manual End cycle, and later single player.
   manualCycles: boolean;
+  // An expedition resolves at takeoff instead of one step every `expedition.stepMs` (single player; owner, 2026-11-07, #356).
+  instantExpeditions: boolean;
 
   // Roommates see where you stand and sit (spot.ts). Off: `walk` is refused and nobody's spot is sent. A setup knob (#231).
   sharedSpots: boolean;
@@ -531,10 +534,13 @@ export interface GameConfig {
     dirtyChance: number; // Chance of getting the dirty status after dismantling an item (confirmed 2026-10-13).
     injuryChance: number; // Chance of getting injured after dismantling an item.
   };
-  // Expeditions, phase 1 (owner, 2026-10-31, docs/plans/expedition.md): expeditions.ts and actions/icarus_takeoff.ts.
+  // Expeditions, phases 1 and 2 (owner, 2026-10-31 and 2026-11-07, docs/plans/expedition.md): expeditions.ts and actions/icarus_takeoff.ts.
   expedition: {
     cost: { ap: number }; // AP the launcher pays (the original's ICARUS_TAKEOFF, 4); the rest of the crew pays nothing.
-    room: RoomId; // Where the Icarus is: launchers stand here, the crew is everyone living here, and the loot lands here.
+    room: RoomId; // Where the Icarus docks: launchers stand here, the crew is everyone living here, and the Icarus unloads here.
+    craft: RoomId; // The Icarus itself while away: a door-less room off the map, like a patrol ship's (phase 2).
+    stepMs: number; // Server time between steps: the landing, then each sector (owner, 2026-11-07: 10 real minutes in every game).
+    dirtyChance: number; // Chance each living member comes back dirty (owner, 2026-11-07: 10%, a placeholder).
     maxCrew: number; // Most people aboard; the launcher always goes, the others are picked at random.
     sectors: number; // Most sectors explored after the landing, each one unexplored, drawn by its tag's `explo` weight.
     deadKeepItems: boolean; // Whether a member who dies brings their items back with the body (owner, 2026-10-31; the original: false).

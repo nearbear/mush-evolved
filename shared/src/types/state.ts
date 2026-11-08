@@ -139,6 +139,12 @@ export interface GameCore {
   expeditions: ExpeditionReport[];
   nextExpeditionId: number;
   /**
+   * The expedition under way, if any (expeditions.ts, phase 2; owner, 2026-11-07): the crew is in the Icarus
+   * (`config.expedition.craft`) until its last step. Who is out, the planet and when they are back are public; the
+   * sectors left and the members' items are never sent.
+   */
+  expedition: ActiveExpedition | null;
+  /**
    * The ship's heading and the planet it orbits, by id, if any (navigation.ts). `orbit` is public as "in orbit or
    * not" and the planet's name (`orbitName`, owner 2026-10-31); its sectors stay its finder's. `heading` goes only to the living at a Command terminal. `arriving` is the
    * jump in progress (owner, 2026-10-29): set when the Commander travels or leaves orbit, it lasts until the next cycle
@@ -235,6 +241,20 @@ export interface ExpeditionReport {
   crew: CharacterId[];
   planet: string;
   events: ExpeditionEvent[];
+}
+
+/**
+ * An expedition away (expeditions.ts): its report (`ExpeditionReport.id`), the planet (by id), whether it has landed,
+ * the sectors still to explore (indices, in order, drawn at takeoff), and when the next step happens (server ms).
+ * `carried` is what each member set out with, by item id, for `deadKeepItems: false`.
+ */
+export interface ActiveExpedition {
+  report: string;
+  planet: string;
+  landed: boolean;
+  sectors: number[];
+  nextAt: number;
+  carried: Record<PlayerId, string[]>;
 }
 
 /** A planet a player found. Its size is the number of sectors. */
