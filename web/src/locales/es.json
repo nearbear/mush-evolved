@@ -30,7 +30,8 @@
     "plasmaShield": "Escudo de plasma",
     "alerts": "Alertas",
     "hunters": "Hunters",
-    "orbit": "En órbita alrededor de {{name}}"
+    "orbit": "En órbita alrededor de {{name}}",
+    "expedition": "Expedición a {{planet}}: {{names}}, de vuelta en {{time}}"
   },
   "peek": {
     "doorTo": "Puerta a {{room}}",
@@ -469,6 +470,18 @@
     "cycles_many": "{{count}} de ciclos",
     "cycles_other": "{{count}} ciclos",
     "game": "Partida terminada el {{date}}"
+  },
+  "replay": {
+    "loading": "Cargando la repetición…",
+    "preparing": "Preparando la repetición…",
+    "notReady": "La repetición aún no está lista.",
+    "retry": "Reintentar",
+    "notFound": "No hay ninguna repetición que mostrar aquí: la partida no existe, no ha terminado o no es pública.",
+    "failed": "No se pudo cargar la repetición.",
+    "rateLimited": "Demasiadas solicitudes, reintentando…",
+    "tooOld": "Esta repetición se grabó con una versión anterior del juego y ya no se puede mostrar. Así terminó la partida.",
+    "olderBuild": "Grabado en una versión anterior",
+    "olderBuildHint": "Este momento se grabó con una versión anterior del juego, así que algunos detalles pueden verse distintos de como fueron."
   },
   "returnToSol": {
     "desc": "Después de tanto tiempo, quizá sea hora de ver qué pasa en Sol.",
@@ -1524,7 +1537,12 @@
       "hurt_many": "{{name}} pierde {{count}} PV.",
       "hurt_other": "{{name}} pierde {{count}} PV.",
       "died": "{{name}} muere."
-    }
+    },
+    "aboard": "En el Ícaro, explorando {{planet}}",
+    "back": "De vuelta en {{time}}",
+    "underWay": "La expedición sigue en curso.",
+    "lootAboard": "Todo lo encontrado hasta ahora está en el suelo del Ícaro.",
+    "icarusAway": "El Ícaro ha salido de expedición."
   },
   "roomList": {
     "region": "Sala",

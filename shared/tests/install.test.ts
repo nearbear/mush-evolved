@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { DEFAULT_CONFIG } from "../src/config.ts";
 import { CAMERA_EQUIPMENT, cameraEquipmentId } from "../src/equipment.ts";
 import { hasCamera, logCovert } from "../src/log.ts";
-import { patrolShip } from "../src/patrol.ts";
+import { inCraft } from "../src/patrol.ts";
 import { parseGameMessage } from "../src/protocol.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";
 import type { Action, GameState } from "../src/types.ts";
@@ -56,9 +56,9 @@ describe("install", () => {
     expect(after.log.at(-1)!.visibleTo).toBe("all");
   });
 
-  it("works in every room of the ship, but not aboard a patrol ship (patrol.test.ts)", () => {
+  it("works in every room of the ship, but not aboard a patrol ship or the Icarus (patrol.test.ts)", () => {
     const { s, install } = ship();
-    for (const room of Object.keys(s.config.rooms).filter((r) => !patrolShip(r))) {
+    for (const room of Object.keys(s.config.rooms).filter((r) => !inCraft(r))) {
       const t = structuredClone(s);
       player(t, "p0").room = room;
       expect(hasCamera(t, room)).toBe(false);

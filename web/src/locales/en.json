@@ -30,7 +30,8 @@
     "plasmaShield": "Plasma shield",
     "alerts": "Alerts",
     "hunters": "Hunters",
-    "orbit": "Orbiting {{name}}"
+    "orbit": "Orbiting {{name}}",
+    "expedition": "Expedition to {{planet}}: {{names}}, back in {{time}}"
   },
   "peek": {
     "doorTo": "Door to {{room}}",
@@ -464,6 +465,18 @@
     "cycles_one": "{{count}} cycle",
     "cycles_other": "{{count}} cycles",
     "game": "Game that ended {{date}}"
+  },
+  "replay": {
+    "loading": "Loading replay…",
+    "preparing": "Preparing replay…",
+    "notReady": "The replay isn't ready yet.",
+    "retry": "Try again",
+    "notFound": "There is no replay to show here: the game doesn't exist, hasn't ended, or isn't public.",
+    "failed": "The replay couldn't be loaded.",
+    "rateLimited": "Too many requests, retrying…",
+    "tooOld": "This replay was recorded by an older version of the game and can no longer be shown. Here is how it ended.",
+    "olderBuild": "Recorded on an older version",
+    "olderBuildHint": "This moment was recorded by an earlier version of the game, so some details may show differently than they did."
   },
   "returnToSol": {
     "desc": "After all this time, maybe it's time to see what's happening on Sol.",
@@ -1597,7 +1610,12 @@
       "hurt_one": "{{name}} loses {{count}} HP.",
       "hurt_other": "{{name}} loses {{count}} HP.",
       "died": "{{name}} dies."
-    }
+    },
+    "aboard": "In the Icarus, exploring {{planet}}",
+    "back": "Back in {{time}}",
+    "underWay": "The expedition is still under way.",
+    "lootAboard": "Everything found so far is on the Icarus's floor.",
+    "icarusAway": "The Icarus is away on an expedition."
   },
   "roomList": {
     "region": "Room",

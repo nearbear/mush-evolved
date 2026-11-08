@@ -1,7 +1,7 @@
 import { Action, type ActionVisibility } from "./action.ts";
 import { isOnFire } from "../fire.ts";
 import { logSecret } from "../log.ts";
-import { patrolShip } from "../patrol.ts";
+import { inCraft } from "../patrol.ts";
 import { hasSkill } from "../skills.ts";
 import type { GameState, PlayerState } from "../types.ts";
 
@@ -29,7 +29,7 @@ export class IgniteAction extends Action<IgniteActionData> {
 
   override validate(state: Readonly<GameState>, player: Readonly<PlayerState>): string | null {
     if (!hasSkill(player, "pyromane")) return "no_skill";
-    if (patrolShip(player.room)) return "cant_burn";
+    if (inCraft(player.room)) return "cant_burn";
     if (isOnFire(state, player.room) || state.pendingFires.includes(player.room)) return "already_burning";
     return null;
   }

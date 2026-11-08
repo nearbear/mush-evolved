@@ -20,6 +20,11 @@
     min-height: 0;
     align-items: stretch;
     margin: 0.5rem 0;
+    /* One row capped at the panel's height; an auto row would grow to fit a long action list and push the page past the viewport. */
+    grid-template-rows: minmax(0, 1fr);
+  }
+  .three-panel > * {
+    min-height: 0;
   }
   .left-column > .inspect {
     flex: 1;

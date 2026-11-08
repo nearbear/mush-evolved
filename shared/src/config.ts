@@ -1,6 +1,6 @@
 import shipRooms from "@mush2/assets/derived/ship-rooms.json";
 import { BOOK_ITEM, ITRACKIE_ITEM } from "./itemIds.ts";
-import { patrolEquipment, patrolRooms } from "./patrol.ts";
+import { ICARUS_CRAFT, patrolEquipment, patrolRooms } from "./patrol.ts";
 import { SKILLS } from "./skills.ts";
 import type { ShipRoom } from "./shipLayout.ts";
 import type { ConfigOverrides, GameConfig, PreselectionRules, RoomId } from "./types.ts";
@@ -29,6 +29,7 @@ export const DEFAULT_CONFIG: GameConfig = {
   cycleHours: 3,
   // Owner, 2026-10-19 (#24): cycles follow the UTC clock; End cycle stays for testing, on only where the server allows cheats.
   manualCycles: false,
+  instantExpeditions: false,
   // Owner, 2026-10-20 (#17, #21): on by default; a setup can turn it off (#231).
   sharedSpots: true,
   setupId: null,
@@ -328,10 +329,14 @@ export const DEFAULT_CONFIG: GameConfig = {
   hunger: { satietyPerCycle: 1, fullBellyAt: 3, hungryAfterCycles: 24, hpPerCycle: 1 },
   // Confirmed 2026-10-13: dismantle cost and default odds; a type's own odds are `ItemType.dismantle.chance` (knife and blaster 50%, owner 2026-10-22).
   dismantle: { cost: { ap: 3 }, successChance: 0.12, dirtyChance: 0.25, injuryChance: 0.05 },
-  // Owner, 2026-10-31 (docs/plans/expedition.md): phase 1, everything at takeoff. Event weights 4/3/2/1 as on the wiki.
+  // Owner, 2026-10-31 (docs/plans/expedition.md): phase 1. Event weights 4/3/2/1 as on the wiki. Phase 2 (2026-11-07,
+  // #356): one step every 10 real minutes, the Icarus a room while away, 10% dirt on return (placeholder).
   expedition: {
     cost: { ap: 4 },
     room: "ICARUS",
+    craft: ICARUS_CRAFT,
+    stepMs: 10 * 60 * 1000,
+    dirtyChance: 0.1,
     maxCrew: 4,
     sectors: 9,
     deadKeepItems: true,
@@ -476,7 +481,8 @@ export const DEFAULT_CONFIG: GameConfig = {
   // Confirmed 2026-10-13: every player starts with an iTrackie.
   startInventory: [ITRACKIE_ITEM],
   // The patrol ships' rooms have no doors and sit off the map (patrol.ts, docs/plans/patrol.md answer 1).
-  rooms: { ...(Object.fromEntries(SHIP_ROOMS.map((r) => [r.id, r.doors])) as Record<RoomId, RoomId[]>), ...patrolRooms() },
+  // So does the Icarus while away (expeditions.ts, docs/plans/expedition.md phase 2).
+  rooms: { ...(Object.fromEntries(SHIP_ROOMS.map((r) => [r.id, r.doors])) as Record<RoomId, RoomId[]>), ...patrolRooms(), [ICARUS_CRAFT]: [] },
   // Confirmed 2026-10-11: the equipment drawn in each room of the original map; each patrol ship holds its command.
   equipment: { ...Object.fromEntries(SHIP_ROOMS.map((r) => [r.id, r.equipment])), ...patrolEquipment() },
   diseases:  {
@@ -510,6 +516,7 @@ export function resolveConfig(o: ConfigOverrides = {}): GameConfig {
     ...DEFAULT_CONFIG,
     ...(o.mushCount !== undefined && { mushCount: o.mushCount }),
     ...(o.manualCycles !== undefined && { manualCycles: o.manualCycles }),
+    ...(o.instantExpeditions !== undefined && { instantExpeditions: o.instantExpeditions }),
     ...(o.cycleHours !== undefined && { cycleHours: o.cycleHours, cyclesPerDay: 24 / o.cycleHours }),
     ...(o.sharedSpots !== undefined && { sharedSpots: o.sharedSpots }),
     ...(o.setupId !== undefined && { setupId: o.setupId }),

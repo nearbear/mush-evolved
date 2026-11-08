@@ -30,7 +30,8 @@
     "plasmaShield": "Bouclier plasma",
     "alerts": "Alertes",
     "hunters": "Hunters",
-    "orbit": "En orbite autour de {{name}}"
+    "orbit": "En orbite autour de {{name}}",
+    "expedition": "Expédition sur {{planet}} : {{names}}, retour dans {{time}}"
   },
   "peek": {
     "doorTo": "Porte vers {{room}}",
@@ -469,6 +470,18 @@
     "cycles_many": "{{count}} de cycles",
     "cycles_other": "{{count}} cycles",
     "game": "Partie terminée le {{date}}"
+  },
+  "replay": {
+    "loading": "Chargement du replay…",
+    "preparing": "Préparation du replay…",
+    "notReady": "Le replay n'est pas encore prêt.",
+    "retry": "Réessayer",
+    "notFound": "Aucun replay à afficher ici : la partie n'existe pas, n'est pas terminée, ou n'est pas publique.",
+    "failed": "Le replay n'a pas pu être chargé.",
+    "rateLimited": "Trop de requêtes, nouvel essai…",
+    "tooOld": "Ce replay a été enregistré par une ancienne version du jeu et ne peut plus être affiché. Voici comment la partie s'est terminée.",
+    "olderBuild": "Enregistré sur une ancienne version",
+    "olderBuildHint": "Ce moment a été enregistré par une version antérieure du jeu : certains détails peuvent s'afficher autrement qu'à l'époque."
   },
   "returnToSol": {
     "desc": "Après tout ce temps, peut-être serait-il temps de voir ce qu'il se passe sur Sol.",
@@ -1524,7 +1537,12 @@
       "hurt_many": "{{name}} perd {{count}} PV.",
       "hurt_other": "{{name}} perd {{count}} PV.",
       "died": "{{name}} meurt."
-    }
+    },
+    "aboard": "Dans l'Icarus, en exploration sur {{planet}}",
+    "back": "Retour dans {{time}}",
+    "underWay": "L'expédition est toujours en cours.",
+    "lootAboard": "Tout ce qui a été trouvé jusqu'ici est par terre dans l'Icarus.",
+    "icarusAway": "L'Icarus est parti en expédition."
   },
   "roomList": {
     "region": "Salle",

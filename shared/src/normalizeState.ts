@@ -38,6 +38,7 @@ import type {
   Container,
   DeepReadonly,
   Equipment,
+  ActiveExpedition,
   ExpeditionEvent,
   ExpeditionReport,
   GameConfig,
@@ -648,6 +649,18 @@ export function normalizeExpedition(raw: Partial<ExpeditionReport>): ExpeditionR
   });
 }
 
+export function normalizeActiveExpedition(raw: Partial<ActiveExpedition>): ActiveExpedition {
+  const t = "ActiveExpedition";
+  return stripUndefined<ActiveExpedition>({
+    report: need(raw, "report", t),
+    planet: need(raw, "planet", t),
+    landed: need(raw, "landed", t),
+    sectors: copy(need(raw, "sectors", t)),
+    nextAt: need(raw, "nextAt", t),
+    carried: mapValues(need(raw, "carried", t), copy),
+  });
+}
+
 // Config overrides and seat starts (the server's `StoredRoom`, and `FullView.starts`).
 
 export function normalizePreselection(raw: Partial<PreselectionRules>): PreselectionRules {
@@ -666,6 +679,7 @@ export function normalizeOverrides(raw: Partial<ConfigOverrides>): ConfigOverrid
   return stripUndefined<ConfigOverrides>({
     mushCount: raw.mushCount,
     manualCycles: raw.manualCycles,
+    instantExpeditions: raw.instantExpeditions,
     cycleHours: raw.cycleHours,
     sharedSpots: raw.sharedSpots,
     setupId: raw.setupId,
@@ -734,6 +748,8 @@ export function normalizeCore(raw: Partial<GameCore>, _ctx: NormalizeContext, mo
     nextSharedPlanetId: need(raw, "nextSharedPlanetId", t),
     expeditions: need(raw, "expeditions", t).map(normalizeExpedition),
     nextExpeditionId: need(raw, "nextExpeditionId", t),
+    // Phase 2 (#356): none under way in a game stored before it, where every expedition was over at takeoff.
+    expedition: orNull(added(raw, "expedition", null), normalizeActiveExpedition),
     navigation: normalizeNavigation(need(raw, "navigation", t)),
     hunters: normalizeHunters(need(raw, "hunters", t)),
     turrets: dict(need(raw, "turrets", t)),
@@ -786,6 +802,7 @@ export function overridesOf(config: Partial<DeepReadonly<GameConfig>>): ConfigOv
   return stripUndefined<ConfigOverrides>({
     mushCount: config.mushCount,
     manualCycles: config.manualCycles,
+    instantExpeditions: config.instantExpeditions,
     cycleHours: config.cycleHours,
     sharedSpots: config.sharedSpots,
     // Null in the config means no setup or no pre-selection, which the overrides say by leaving the key out.

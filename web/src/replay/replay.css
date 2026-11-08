@@ -1,0 +1,24 @@
+/* The replay's notices (ReplayNotice.tsx, #369). The summary card reuses games.css. */
+
+.replay-notice {
+  color: var(--muted);
+  margin: 1rem;
+  overflow-wrap: anywhere;
+}
+
+.replay-too-old {
+  max-width: 48rem;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+.replay-too-old .replay-notice {
+  margin: 1rem 0;
+}
+
+/* A small button: the global button style, only its size set here. */
+.replay-older-build {
+  font-size: 0.75rem;
+  padding: 0 0.5rem;
+  white-space: nowrap;
+}

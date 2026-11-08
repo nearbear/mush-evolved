@@ -14,6 +14,7 @@ import { ShipOverlay } from "./hud/ShipOverlay.tsx";
 import { Announcer } from "./hud/Announcer.tsx";
 import { ITrackie } from "./hud/ITrackie.tsx";
 import { PatrolCockpit } from "./hud/PatrolCockpit.tsx";
+import { IcarusPanel } from "./hud/IcarusPanel.tsx";
 import { PeekBar } from "./hud/PeekBar.tsx";
 import { TerminalDialog } from "./hud/TerminalDialog.tsx";
 import { EndScreen } from "./hud/EndScreen.tsx";
@@ -208,6 +209,8 @@ export function GameView({ view: given, send, onLeave, waking = false, cheatsAll
               <DeathNotice view={view} />
             ) : view.patrolShip ? (
               <PatrolCockpit view={view} ship={view.patrolShip} selected={target} onSelect={select} onAction={act} />
+            ) : view.expedition?.report !== undefined ? (
+              <IcarusPanel view={view} expedition={view.expedition} clockOffset={clockOffset} selected={target} onSelect={select} />
             ) : layout ? (
               <LeavingIsoRoom
                 layout={layout}
@@ -251,7 +254,7 @@ export function GameView({ view: given, send, onLeave, waking = false, cheatsAll
               </div>
             )}
             {you.alive && <RoomList view={view} layout={layout} reachable={reachable} onSelect={(target) => { select(target); setFocusActions((n) => n + 1); }} onMove={move} />}
-            {mobile && <ShipOverlay view={view} />}
+            {mobile && <ShipOverlay view={view} clockOffset={clockOffset} />}
             {!mobile && you.alive && <SelfHud view={view} onInspect={() => select({ kind: "player", id: you.id })} />}
             {/* Bottom-left: AP and MP (desktop), then the action queue beside them. */}
             {you.alive && (

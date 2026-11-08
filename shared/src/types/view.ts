@@ -22,7 +22,10 @@ export interface EquipmentView {
   jelly?: number;
   /** Shielding (actions/reinforce.ts). Sent to living Engineers and Mush only. */
   shield?: number;
-  /** A patrol ship's interface whose ship is in flight: shown to anyone in its bay, and the ship isn't drawn (owner, 2026-10-24). */
+  /**
+   * A patrol ship's interface whose ship is in flight, or the Icarus while away on an expedition: shown to anyone in its
+   * bay, and the ship isn't drawn (owner, 2026-10-24 and 2026-11-07).
+   */
   out?: true;
   /** A patrol ship's interface whose ship was destroyed (it is out for good): shown to anyone in its bay. */
   destroyed?: true;
@@ -293,6 +296,12 @@ export interface PlayerView {
    * without the members' seat ids (the crew is by character).
    */
   expeditions: ExpeditionReportView[];
+  /**
+   * The expedition under way, public to everyone (owner, 2026-11-07): who is out, by character, the planet's name, and
+   * when they are back (server ms; if every member dies the crew is back at once and this is null). `report` is its report's id, only for a
+   * living member, whose view holds it in `expeditions`.
+   */
+  expedition: { crew: CharacterId[]; planet: string; returnAt: number; report?: string } | null;
   /** Your own planets (private, owner 2026-10-19). Unknown sectors are null: their tags are never sent. */
   planets: PlanetView[];
   /** Whether you may share your planets in the Astrophysics feature now (sharedPlanets.ts): alive at an Astro terminal with an iTrackie. */
@@ -387,7 +396,10 @@ export interface CommsTerminalView {
 }
 
 /** An expedition report as its members see it (expeditions.ts). */
-export type ExpeditionReportView = Omit<ExpeditionReport, "members">;
+export type ExpeditionReportView = Omit<ExpeditionReport, "members"> & {
+  /** Still under way: more steps to come (phase 2). */
+  away?: true;
+};
 
 /**
  * A seat's view with its log lines' and chat messages' ids, for the replay only (`perspective`, `seatViewFor`):

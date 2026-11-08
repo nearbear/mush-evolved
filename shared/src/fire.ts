@@ -10,12 +10,12 @@ import { pushChat } from "./chat.ts";
 import { damage } from "./death.ts";
 import { destroyShip } from "./hunters.ts";
 import { logPublic } from "./log.ts";
-import { patrolShip } from "./patrol.ts";
+import { inCraft } from "./patrol.ts";
 import { roll, rollFloat, rollInt } from "./rng.ts";
 import type { GameState, RoomId } from "./types.ts";
 
 /** The Daedalus's own rooms: every room but the patrol ships' (incidents and fire stay aboard). */
-export const daedalusRooms = (state: Readonly<GameState>): RoomId[] => Object.keys(state.config.rooms).filter((room) => !patrolShip(room));
+export const daedalusRooms = (state: Readonly<GameState>): RoomId[] => Object.keys(state.config.rooms).filter((room) => !inCraft(room));
 
 export const isOnFire = (state: Readonly<GameState>, room: RoomId): boolean => state.fires.includes(room);
 
@@ -44,7 +44,7 @@ export function fireCycle(state: GameState): void {
   let spreads = 0;
   for (const room of [...state.fires]) {
     if (state.phase !== "playing") return;
-    const neighbours = (state.config.rooms[room] ?? []).filter((r) => !isOnFire(state, r) && !patrolShip(r));
+    const neighbours = (state.config.rooms[room] ?? []).filter((r) => !isOnFire(state, r) && !inCraft(r));
     if (rollFloat(state) < config.spreadChance && spreads < config.maxSpreads && neighbours.length > 0) {
       spreads += 1;
       startFire(state, neighbours[rollInt(state, neighbours.length)]!);

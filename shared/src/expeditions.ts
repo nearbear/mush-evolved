@@ -1,16 +1,23 @@
-// Expeditions, phase 1 (owner, 2026-10-31; docs/plans/expedition.md). A Pilot in the Icarus Bay takes off while the ship
-// orbits a planet with unexplored sectors; everyone living in the bay goes, up to `maxCrew`. Everything resolves at
-// takeoff: a landing event, then up to `sectors` unexplored sectors drawn by their tag's `explo` weight, each with an
-// event from its table. The crew is back in the bay at once, with the loot on its floor and a report only they see.
-// Pure: every draw goes through the seeded RNG in state. The action is actions/icarus_takeoff.ts.
+// Expeditions (docs/plans/expedition.md). Phase 1 (owner, 2026-10-31): a Pilot in the Icarus Bay takes off while the
+// ship orbits a planet with unexplored sectors; everyone living in the bay goes, up to `maxCrew`. A landing event, then
+// up to `sectors` unexplored sectors drawn by their tag's `explo` weight, each with an event from its table.
+// Phase 2 (owner, 2026-11-07, #356): the crew is away over time, in the Icarus (`config.expedition.craft`, a room with
+// no doors). The landing is the first step, `stepMs` after takeoff, then one sector per `stepMs`; the server's `tick`
+// runs them (`nextDue`, queue.ts). Members see each event in their report as it happens. The crew is back in the bay
+// as the last sector resolves, or at once when every member is dead, with whatever is in the Icarus (loot, bodies).
+// Single player resolves it all at takeoff (`instantExpeditions`). Pure: every draw goes through the seeded RNG.
+// The action is actions/icarus_takeoff.ts.
 
+import { endPushToLeave } from "./actions/accommodate.ts";
+import { board } from "./actions/takeoff.ts";
 import { damage } from "./death.ts";
-import { isWorking, itemsIn, newItemId, removeItem } from "./items.ts";
+import { soil } from "./dirt.ts";
+import { isWorking, itemsIn, newItemId, removeItem, sameContainer } from "./items.ts";
 import { logPrivate, logPublic } from "./log.ts";
 import { isTraveling } from "./navigation.ts";
 import { canFly } from "./patrol.ts";
 import { PLANET_TAGS, type PlanetTag } from "./planets.ts";
-import { roll, rollInt, rollShuffle, rollWeighted } from "./rng.ts";
+import { roll, rollFloat, rollInt, rollShuffle, rollWeighted } from "./rng.ts";
 import { shipMax } from "./ship.ts";
 import { hasSkill } from "./skills.ts";
 import type { ExpeditionEvent, ExpeditionEventRule, ExpeditionReport, GameState, ItemState, Planet, PlayerState } from "./types.ts";
@@ -28,10 +35,13 @@ export const canLaunchExpedition = (_state: Readonly<GameState>, player: Readonl
 export function orbitedPlanet(state: Readonly<GameState>): Planet | undefined {
   const id = state.navigation.orbit;
   if (id === null || isTraveling(state)) return undefined;
-  return Object.values(state.planets)
+  return planetById(state, id);
+}
+
+const planetById = (state: Readonly<GameState>, id: string): Planet | undefined =>
+  Object.values(state.planets)
     .flat()
     .find((p) => p.id === id);
-}
 
 /** Whether the planet still has a sector no expedition explored. */
 export const hasUnexplored = (planet: Readonly<Planet>): boolean => planet.sectors.some((s) => !s.explored);
@@ -57,9 +67,10 @@ export function pickSectors(state: GameState, planet: Readonly<Planet>): number[
 }
 
 /**
- * Runs an expedition to the orbited planet from `launcher`'s room. The caller (the takeoff action) checked that it may
- * go. Mutates a cloned state: damage, deaths, the ship's oxygen and fuel, the loot, grenades used up, explored sectors,
- * the public takeoff line, the report, and each member's private line pointing at it.
+ * Launches an expedition to the orbited planet from `launcher`'s room. The caller (the takeoff action) checked that it
+ * may go. Mutates a cloned state: the public takeoff line, the crew into the Icarus, an empty report, and the
+ * expedition under way, its sectors drawn now so the time it takes is known. With `instantExpeditions` it runs to the
+ * end at once. Returns the report.
  */
 export function runExpedition(state: GameState, launcher: PlayerState): ExpeditionReport {
   const planet = orbitedPlanet(state)!;
@@ -74,30 +85,86 @@ export function runExpedition(state: GameState, launcher: PlayerState): Expediti
     planet: planet.name,
     events: [],
   };
-  // Items each member carried when they set out, for `deadKeepItems: false`.
-  const carried = new Map(crew.map((p) => [p.id, itemsIn(state, { kind: "player", id: p.id }).map((i) => i.id)]));
-  const ctx: Ctx = { state, crew, carried };
+  state.expeditions.push(report);
+  for (const p of crew) {
+    endPushToLeave(state, p);
+    board(p, rules.craft);
+  }
+  state.expedition = {
+    report: report.id,
+    planet: planet.id,
+    landed: false,
+    sectors: pickSectors(state, planet),
+    nextAt: state.now + rules.stepMs,
+    // Items each member carried when they set out, for `deadKeepItems: false`.
+    carried: Object.fromEntries(crew.map((p) => [p.id, itemsIn(state, { kind: "player", id: p.id }).map((i) => i.id)])),
+  };
+  if (state.config.instantExpeditions) while (state.expedition) expeditionStep(state);
+  return report;
+}
 
-  const pilotAboard = crew.some((p) => canFly(p));
-  const landing = rules.events[LANDING]!.filter((e) => !(pilotAboard && e.kind === "catastrophe"));
-  report.events.push(resolve(ctx, LANDING, landing));
-
-  for (const index of pickSectors(state, planet)) {
-    if (!crew.some((p) => p.alive)) break;
-    const sector = planet.sectors[index]!;
+/**
+ * The next step of the expedition under way: the landing, or the next sector (marked explored). Then the crew comes
+ * back if that was the last one or nobody is left alive; otherwise the next step is `stepMs` later. Mutates a cloned
+ * state; the caller checked there is one.
+ */
+export function expeditionStep(state: GameState): void {
+  const away = state.expedition!;
+  const rules = state.config.expedition;
+  const report = state.expeditions.find((r) => r.id === away.report)!;
+  const crew = report.members.map((id) => state.players.find((p) => p.id === id)!);
+  const ctx: Ctx = { state, crew, carried: away.carried };
+  const planet = planetById(state, away.planet);
+  if (!away.landed) {
+    away.landed = true;
+    const pilotAboard = crew.some((p) => p.alive && canFly(p));
+    const landing = rules.events[LANDING]!.filter((e) => !(pilotAboard && e.kind === "catastrophe"));
+    report.events.push(resolve(ctx, LANDING, landing));
+  } else if (planet) {
+    const sector = planet.sectors[away.sectors.shift()!]!;
     sector.explored = true;
     report.events.push(resolve(ctx, sector.tag, rules.events[sector.tag] ?? []));
+  } else {
+    // The planet is gone (only possible once the ship has left it): nothing left to explore.
+    away.sectors = [];
   }
+  if (away.sectors.length === 0 || !crew.some((p) => p.alive)) returnExpedition(state);
+  else away.nextAt += rules.stepMs;
+}
 
-  state.expeditions.push(report);
-  for (const p of crew) logPrivate(state, p.id, "expeditionReturned", { planet: planet.name, report: report.id });
-  return report;
+/**
+ * The crew is back: the living into the bay, and everything in the Icarus (loot, bodies, what members dropped) onto
+ * the bay's floor. Each living member may come back dirty (`dirtyChance`). Each member gets a private line pointing at
+ * the report; nothing public (owner, 2026-10-31). Mutates a cloned state.
+ */
+function returnExpedition(state: GameState): void {
+  const away = state.expedition!;
+  const rules = state.config.expedition;
+  const report = state.expeditions.find((r) => r.id === away.report)!;
+  state.expedition = null;
+  for (const item of state.items) if (sameContainer(item.at, { kind: "room", id: rules.craft })) item.at = { kind: "room", id: rules.room };
+  for (const id of report.members) {
+    const p = state.players.find((q) => q.id === id)!;
+    if (p.alive && p.room === rules.craft) {
+      board(p, rules.room);
+      if (rollFloat(state) < rules.dirtyChance) soil(state, p);
+    }
+    logPrivate(state, p.id, "expeditionReturned", { planet: report.planet, report: report.id });
+  }
+}
+
+/** When the expedition under way is back, if nothing ends it early: one `stepMs` per step left after the next. */
+export function expeditionReturnAt(state: Readonly<GameState>): number | null {
+  const away = state.expedition;
+  if (!away) return null;
+  const steps = (away.landed ? 0 : 1) + away.sectors.length;
+  return away.nextAt + (steps - 1) * state.config.expedition.stepMs;
 }
 
 interface Ctx {
   state: GameState;
   crew: PlayerState[];
-  carried: Map<string, string[]>;
+  carried: Readonly<Record<string, string[]>>;
 }
 
 /** Draws and applies one sector's event. An empty table is a sector where nothing happens. */
@@ -194,8 +261,8 @@ const usable = (state: Readonly<GameState>, item: Readonly<ItemState>): boolean 
 
 /**
  * Damage to members, each taking theirs as one hit, less `survivalReduction` with the Survival skill. Notes it on the
- * event. A member who dies comes back as a body in the bay (death.ts); without `deadKeepItems`, what they set out with
- * is lost (the items `killPlayer` dropped on the floor are taken away).
+ * event. A member who dies leaves a body in the Icarus, which comes back with it (death.ts); without `deadKeepItems`,
+ * what they set out with is lost (the items `killPlayer` dropped on the floor are taken away).
  */
 function hurt(ctx: Ctx, event: ExpeditionEvent, amounts: Map<PlayerState, number>): void {
   const { state } = ctx;
@@ -207,14 +274,14 @@ function hurt(ctx: Ctx, event: ExpeditionEvent, amounts: Map<PlayerState, number
     if (p.alive) continue;
     (event.died ??= []).push(p.character);
     if (!rules.deadKeepItems) {
-      const lost = new Set(ctx.carried.get(p.id) ?? []);
+      const lost = new Set(ctx.carried[p.id] ?? []);
       state.items = state.items.filter((i) => !lost.has(i.id));
     }
   }
 }
 
-/** `count` items of `type` on the floor of the Icarus Bay. Returns how many. */
+/** `count` items of `type` on the floor of the Icarus, which unloads them in the bay on its return. Returns how many. */
 function drop(state: GameState, type: string, count: number): number {
-  for (let i = 0; i < count; i++) state.items.push({ id: newItemId(state), type, at: { kind: "room", id: state.config.expedition.room } });
+  for (let i = 0; i < count; i++) state.items.push({ id: newItemId(state), type, at: { kind: "room", id: state.config.expedition.craft } });
   return count;
 }

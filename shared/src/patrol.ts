@@ -31,6 +31,15 @@ export const PATROL_SHIPS: readonly PatrolShip[] = [
 ];
 
 export const PATROL_INTERFACE = "PATROL_INTERFACE";
+
+/**
+ * The Icarus while away on an expedition (docs/plans/expedition.md, phase 2; owner, 2026-11-07): a room with no doors
+ * and no equipment, like a patrol ship's. A permanent room id. Here so config.ts can import it.
+ */
+export const ICARUS_CRAFT = "ICARUS_CRAFT";
+
+/** A craft's room: a patrol ship's or the Icarus's, where the ship's rooms and equipment are out of reach. */
+export const inCraft = (room: RoomId): boolean => room === ICARUS_CRAFT || patrolShip(room) !== undefined;
 /** The equipment type in each ship's room, as in the original (`objects` in its `rooms` sheet). */
 export const PATROL_COMMANDS: Record<PatrolKind, string> = { patrol: "PATROL_COMMAND", pasiphae: "PASIPHAE_COMMAND" };
 

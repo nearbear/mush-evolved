@@ -34,7 +34,8 @@
     "PATROL_SHIP_B_1": "Nave de patrulla Epicure",
     "PATROL_SHIP_B_2": "Nave de patrulla Platon",
     "PATROL_SHIP_AA_0": "Nave de patrulla Wallis",
-    "PATROL_SHIP_AA_1": "Pasiphae"
+    "PATROL_SHIP_AA_1": "Pasiphae",
+    "ICARUS_CRAFT": "Ícaro"
   },
   "equipment": {
     "ASTRO_MODULE": "Terminal astro",

@@ -96,7 +96,8 @@ function languageName(language: LobbyLanguage): string {
   return new Intl.DisplayNames([language], { type: "language" }).of(language) ?? language;
 }
 
-function GameCard({ game }: { game: FinishedGame }) {
+/** One finished game: its facts and crew. Also the summary of a replay too old to read (`replay/ReplayNotice.tsx`). */
+export function GameCard({ game }: { game: FinishedGame }) {
   const { t, i18n } = useTranslation();
   const date = new Intl.DateTimeFormat(i18n.resolvedLanguage, { dateStyle: "medium", timeStyle: "short" }).format(game.endedAt);
   return (
