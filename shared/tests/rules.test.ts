@@ -91,7 +91,7 @@ describe("applyAction", () => {
       expect([v.day, v.cycleOfDay]).toEqual([1, 1]);
     });
 
-    it("costs every living player 1 morale only when a day ends", () => {
+    it("costs every living player the daily morale loss only when a day ends", () => {
       let state = newGame();
       const start = morale(state, "p0");
       for (let i = 0; i < DEFAULT_CONFIG.cyclesPerDay - 1; i++) state = endCycle(state);
@@ -100,7 +100,7 @@ describe("applyAction", () => {
       state = endCycle(state);
       const v = viewFor(state, "p0");
       expect([v.day, v.cycleOfDay]).toEqual([2, 1]);
-      expect(state.players.every((p) => p.morale === start - 1)).toBe(true);
+      expect(state.players.every((p) => p.morale === start - DEFAULT_CONFIG.moralePerDay)).toBe(true);
       expect(state.log.some((e) => e.key === "dayBegins" && e.params?.day === 2 && e.visibleTo === "all")).toBe(true);
     });
 

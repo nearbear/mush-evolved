@@ -97,8 +97,8 @@ describe("Persistent", () => {
     s.failureStreaks.p0 = { scan_planet: 1 };
     s.failureStreaks.p1 = { scan_planet: 1 };
     give(s, "p0", "persistent");
-    expect(option(s, "p0", scan)!.chance).toBeCloseTo(chance * 1.5);
-    expect(option(s, "p1", scan)!.chance).toBeCloseTo(chance * failureMultiplier);
+    expect(option(s, "p0", scan)!.chance).toBeCloseTo(Math.min(1, chance * 1.5));
+    expect(option(s, "p1", scan)!.chance).toBeCloseTo(Math.min(1, chance * failureMultiplier));
   });
 });
 
