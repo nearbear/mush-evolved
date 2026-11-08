@@ -54,7 +54,7 @@ The logic the page needs, kept out of components (architecture rule 3).
 - Cached like the replay index for a public game, `no-store` for a single-player one. Added to `openapi.ts` and `apiSchemas.ts`, with route tests next to the replay route tests.
 - The replay page also uses it for its header (who won, how it ended, who was who), so the header doesn't wait for the last chunk.
 
-### 3. (#369) Loading a replay (`web/src/replay/useReplay.ts`). Size M.
+### 3. (#369) Loading a replay (`web/src/replay/useReplay.ts`). Size M. **Built 2026-11-07** (`web/src/replay/`).
 
 - Fetches the index. The cycle bar draws from `index.chunks` alone.
 - Fetches a chunk when it is first needed and the next one in the background. `rebuildHistory` runs once per chunk.
@@ -64,10 +64,11 @@ The logic the page needs, kept out of components (architecture rule 3).
   - **Request budget:** a 14-cycle game is about 16 requests (index, summary, 14 chunks), well under 60 a minute. Public chunks are cached as immutable, so a revisit costs only the index.
 - **`409 not_ready`:** shows "Preparing replay…" and retries the index after 1, 2, 4, 8 and 15 s, then offers Retry. The usual case is someone clicking through from the end screen before the copy is confirmed.
 - **Frames are normalized** (#384, reversing 2026-11-01's "no migrations"): the hook passes the frame on screen through `readFrame` (`viewHistory.ts`: the upgrade steps the frame's `build.stateVersion` still needs, then `normalizeFullView`, memoized) before `perspective` or `revealFor`. So an older additive shape reads.
-- **Too old to read:** if `index.v !== HISTORY_VERSION`, or `readFrame` or `perspective` throws `HistoryError` (a frame newer than this build, one the normalizers reject, or an old action shape in a queue that `viewFor` can't read), it shows the notice and the story 2 summary: winner, ending, cycles, and each seat's starting role (from the index) and ending role (from the summary). Proposed (not yet confirmed): the hook reads the first frame of the first chunk it loads, so an unreadable game is caught at load rather than mid-playback.
+- **Too old to read:** if `index.v !== HISTORY_VERSION`, or `readFrame` or `perspective` throws `HistoryError` (a frame newer than this build, one the normalizers reject, or an old action shape in a queue that `viewFor` can't read), it shows the notice and the story 2 summary: winner, ending, cycles, and each seat's starting role (from the index) and ending role (from the summary). Decided (owner, 2026-11-06): the hook reads the first frame of the first chunk it loads, so an unreadable game is caught at load rather than mid-playback.
 - **Recorded on an older build:** a frame whose `build.rulesVersion` isn't the current build's carries a small badge, read per frame (a game spans deploys), since an old state `viewFor` reads without throwing could still be shown wrong. A frame with no `build` (recorded before the stamps) counts as older.
 - **Not found:** the same screen for a game that doesn't exist, one that hasn't ended, and a private one, matching the server's `404`, which doesn't reveal which of those it is.
 - **Tests:** the hook's reducer, as a pure function, under Vitest: chunk bookkeeping, the backoff schedule, the version check.
+- **As built:** the reducer is `replayState.ts`, the step's view `replayViews.ts`, the notices `ReplayNotice.tsx` (with `OlderBuildBadge`; the page places them). The hook takes the seat to follow and the mode, and returns the shown step, whether it is `stale` (an older position kept while the position's chunk loads), the view, and `olderBuild`. Any `seek` to a chunk not loaded waits the 200 ms, not only a drag; a loaded chunk shows at once. All-seeing's streams come from the run of loaded chunks ending at the step (at least 2 cycles back with the cache), so older lines wait for story 5's paging. "The current build" is the client's own `RULES_VERSION`, stamped into the bundle by `vite.config.ts` (`git describe`, as the server's deploy scripts do; "dev" on the dev server). A `429` without `Retry-After` uses the `not_ready` backoff and keeps its last wait rather than giving up. The summary is fetched with the index, for story 4's header.
 
 ### 4. (#370) The replay page and transport (`/replay/:id`). Size L.
 

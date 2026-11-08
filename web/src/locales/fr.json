@@ -470,6 +470,18 @@
     "cycles_other": "{{count}} cycles",
     "game": "Partie terminée le {{date}}"
   },
+  "replay": {
+    "loading": "Chargement du replay…",
+    "preparing": "Préparation du replay…",
+    "notReady": "Le replay n'est pas encore prêt.",
+    "retry": "Réessayer",
+    "notFound": "Aucun replay à afficher ici : la partie n'existe pas, n'est pas terminée, ou n'est pas publique.",
+    "failed": "Le replay n'a pas pu être chargé.",
+    "rateLimited": "Trop de requêtes, nouvel essai…",
+    "tooOld": "Ce replay a été enregistré par une ancienne version du jeu et ne peut plus être affiché. Voici comment la partie s'est terminée.",
+    "olderBuild": "Enregistré sur une ancienne version",
+    "olderBuildHint": "Ce moment a été enregistré par une version antérieure du jeu : certains détails peuvent s'afficher autrement qu'à l'époque."
+  },
   "returnToSol": {
     "desc": "Après tout ce temps, peut-être serait-il temps de voir ce qu'il se passe sur Sol.",
     "confirm": "Cette action est lourde de conséquences. Êtes-vous sûr de vouloir continuer ?",

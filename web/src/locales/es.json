@@ -470,6 +470,18 @@
     "cycles_other": "{{count}} ciclos",
     "game": "Partida terminada el {{date}}"
   },
+  "replay": {
+    "loading": "Cargando la repetición…",
+    "preparing": "Preparando la repetición…",
+    "notReady": "La repetición aún no está lista.",
+    "retry": "Reintentar",
+    "notFound": "No hay ninguna repetición que mostrar aquí: la partida no existe, no ha terminado o no es pública.",
+    "failed": "No se pudo cargar la repetición.",
+    "rateLimited": "Demasiadas solicitudes, reintentando…",
+    "tooOld": "Esta repetición se grabó con una versión anterior del juego y ya no se puede mostrar. Así terminó la partida.",
+    "olderBuild": "Grabado en una versión anterior",
+    "olderBuildHint": "Este momento se grabó con una versión anterior del juego, así que algunos detalles pueden verse distintos de como fueron."
+  },
   "returnToSol": {
     "desc": "Después de tanto tiempo, quizá sea hora de ver qué pasa en Sol.",
     "confirm": "Esta acción tiene graves consecuencias. ¿Seguro que quieres continuar?",

@@ -2686,3 +2686,10 @@ Follow-up the same day: the "N% repaired" text became a bare percent (the shared
 - Merged `sawjester/skills` (Reinforce, two commits) into `main` in a worktree. Conflicts came from #384: the fork bumped `STATE_VERSION` to 115 in `GameRoom.ts`, but it now lives in `normalizeState.ts` and a new optional field needs no bump, so the bump was dropped and `shield` passes through `itemFields` and `normalizeEquipment` like `jelly` (absent means none, so no `added()` default). `state-shape.json`, deleted on main, stayed deleted. The fork's log entry above still says "bumped to 115"; that no longer holds.
 - Needed correction: resolving `normalizeState.ts` with `checkout --theirs` took the fork's whole file and lost main's later changes (`STATE_VERSION`, `upgrade`, `normalizeFrame`); `verify` caught it, and the file was redone from main plus the two `shield` lines.
 - **Checks:** `npm run verify` passed (2463 tests), `npm run build` passed.
+
+## 2026-11-07: Replay loading, useReplay (#369)
+
+- Built story 3 of the replay viewer as a pure reducer (`web/src/replay/replayState.ts`: positions, which chunks to fetch and keep, the settle debounce, the 409/429 retries, the format check), the step's view (`replayViews.ts`), the hook (`useReplay.ts`), and the notices (`ReplayNotice.tsx`, en/fr/es). Tested the reducer and view helpers under Vitest; the hook's fetching and timers have no test.
+- Needed a decision the plan didn't spell out: what "the current build" is for the older-version badge. The client didn't know any `RULES_VERSION`, so `vite.config.ts` now stamps one into the bundle (`git describe`, the same command the server's deploy scripts use; "dev" on the dev server). Flagged to the owner.
+- All-seeing's streams come only from loaded chunks (at least 2 cycles back); older lines wait for story 5's paging. `mergeStreams` was widened to join two `Streams`.
+- Correction: a first draft kept a `chunksToken` to restart chunk fetches after a retry; it was redundant (the wanted list empties while a retry waits), and Biome's exhaustive-deps rule flagged it, so it was removed.
