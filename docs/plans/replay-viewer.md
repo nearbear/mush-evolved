@@ -70,7 +70,7 @@ The logic the page needs, kept out of components (architecture rule 3).
 - **Tests:** the hook's reducer, as a pure function, under Vitest: chunk bookkeeping, the backoff schedule, the version check.
 - **As built:** the reducer is `replayState.ts`, the step's view `replayViews.ts`, the notices `ReplayNotice.tsx` (with `OlderBuildBadge`; the page places them). The hook takes the seat to follow and the mode, and returns the shown step, whether it is `stale` (an older position kept while the position's chunk loads), the view, and `olderBuild`. Any `seek` to a chunk not loaded waits the 200 ms, not only a drag; a loaded chunk shows at once. All-seeing's streams come from the run of loaded chunks ending at the step (at least 2 cycles back with the cache), so older lines wait for story 5's paging. "The current build" is the client's own `RULES_VERSION`, stamped into the bundle by `vite.config.ts` (`git describe`, as the server's deploy scripts do; "dev" on the dev server). A `429` without `Retry-After` uses the `not_ready` backoff and keeps its last wait rather than giving up. The summary is fetched with the index, for story 4's header.
 
-### 4. (#370) The replay page and transport (`/replay/:id`). Size L.
+### 4. (#370) The replay page and transport (`/replay/:id`). Size L. **Built 2026-11-08** (`web/src/replay/ReplayPage.tsx`, `Transport.tsx`, `transport.ts`).
 
 - **Route:** lazy-loaded from `main.tsx`, like `/games`.
 - **`ReplayPage`** renders `GameView` with no `send`, the step's `PlayerView`, and the frame's time:
@@ -93,6 +93,13 @@ The logic the page needs, kept out of components (architecture rule 3).
   - **Cycle countdown.** Shown in a replay of a game whose cycles ran on a clock, frozen at the step's time and counting to when the next cycle actually started (the next chunk's `from`); hidden otherwise (today, single player). The index says which with a `realTime` flag the server writes (`replayIndex` in `shared/src/replayChunks.ts`, from `server/src/replayStore.ts`): about the clock, not the mode, since that's all it's for. Optional, so `HISTORY_VERSION` stays; an index without it hides the countdown.
   - **The frozen clock is a React context** (`ServerClock`: an offset live, a fixed time in a replay) read through one hook, replacing the `clockOffset` prop passed down through the HUD.
   - **Built in three commits**, each passing `verify` on its own: the clock and the transport slot in `GameView`, the pure transport logic, then the page and its UI.
+- **As built:**
+  - Step buttons and ←/→ follow the skip toggle (skip on: every mark; off: every input). Event buttons stop on `EVENT_KINDS` only. When the chunk ahead (or behind) isn't loaded, both stop at its start, a stop known from the index alone, which loads it; when the position's own chunk isn't loaded, they wait. The game's last input is the last stop.
+  - PageUp goes to the start of the current cycle first, then the one before. Chunk 0's start is the launch state (-1).
+  - URL: a missing `seat` means the default (all-seeing, the first seat); a `seat` without `reveal=1` is that seat's own view. Junk values are dropped.
+  - Seats board during pre-selection, so the followed seat may not be aboard at a step: the view then follows the first seat aboard, and an empty ship's launch state shows the transport with "nobody has boarded yet" instead of the game screen.
+  - Walks animate only on one step forward with the same seat; anything else snaps, decided once per frame shown so a re-render doesn't cut a walk short.
+  - The scrubber is over cycles (chunks), not steps; the step pips are story 5.
 
 ### 5. (#371) All-seeing details in the HUD. Size M. Label `leak-risk`.
 

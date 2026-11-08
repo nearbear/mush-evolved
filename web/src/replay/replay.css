@@ -22,3 +22,183 @@
   padding: 0 0.5rem;
   white-space: nowrap;
 }
+
+/* ---- The replay page (ReplayPage.tsx, #370) ---- */
+
+.replay-back {
+  margin: 1rem;
+}
+
+/* An empty ship's launch state: the transport over a notice, no game screen yet. */
+.replay-empty {
+  max-width: none;
+  margin: 0;
+  padding: 0;
+}
+
+/* The stage dims while the frame shown is older than the position asked for (its chunk is loading). */
+.game:has(.replay-transport[data-stale]) .three-panel {
+  opacity: 0.55;
+  transition: opacity 120ms;
+}
+
+/* ---- The transport (Transport.tsx): a bar under the top bar on desktop, a strip above the nav on a phone ---- */
+
+.replay-transport {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  padding: 0.3rem 0.6rem;
+  background: var(--panel-fill);
+  border-block: 1px solid var(--panel-rim);
+}
+
+.replay-transport[data-mobile] {
+  flex-direction: row;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.25rem 0.4rem;
+}
+
+.replay-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+  min-width: 0;
+}
+
+/* Buttons keep the global Mush style: only their size here. */
+.replay-icon-button {
+  margin: 0;
+  min-width: 2.25rem;
+  min-height: 2rem;
+  padding: 0 0.5rem;
+}
+
+.replay-select {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin: 0;
+  min-height: 2rem;
+  max-width: 100%;
+  font: inherit;
+}
+
+.replay-select-popup {
+  max-height: min(60vh, 24rem);
+  overflow-y: auto;
+}
+
+.replay-cycle-label {
+  flex: 1;
+  min-width: 0;
+  font-size: 0.85rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.replay-skip {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.replay-perspective {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  min-width: 0;
+}
+
+.replay-all-seeing {
+  margin: 0;
+  min-height: 2rem;
+  padding: 0 0.5rem;
+}
+
+.replay-all-seeing[aria-pressed="true"] {
+  outline: 2px solid var(--highlight);
+  outline-offset: -2px;
+}
+
+.replay-seat {
+  min-width: 0;
+}
+
+.replay-transport[data-mobile] .replay-seat {
+  max-width: 7rem;
+  overflow: hidden;
+}
+
+.replay-summary {
+  margin: 0 0 0 auto;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+/* The cycle scrubber: a track with a thumb, one notch per cycle. */
+.replay-scrubber {
+  flex: 1;
+  min-width: 8rem;
+}
+
+.replay-scrubber-control {
+  display: flex;
+  align-items: center;
+  height: 1.5rem;
+  touch-action: none;
+}
+
+.replay-scrubber-track {
+  position: relative;
+  width: 100%;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--edge);
+}
+
+.replay-scrubber-fill {
+  border-radius: 2px;
+  background: var(--glow-rim);
+}
+
+.replay-scrubber-thumb {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--text);
+  outline: none;
+}
+
+.replay-scrubber-thumb:focus-visible {
+  box-shadow: 0 0 0 3px var(--highlight);
+}
+
+/* The phone strip's menu. */
+.replay-menu .replay-summary {
+  margin: 0.3rem 0 0;
+  max-width: 16rem;
+}
+
+.replay-menu-label {
+  color: var(--muted);
+  font-size: 0.8rem;
+  padding: 0.2rem 0;
+}
+
+.replay-speeds {
+  display: flex;
+  gap: 0.3rem;
+}
+
+.replay-menu [data-checked] {
+  outline: 2px solid var(--highlight);
+  outline-offset: -2px;
+}
+
+.replay-check {
+  width: 1.2em;
+}
