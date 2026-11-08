@@ -75,7 +75,7 @@ Other packages import from `@mush2/shared` (`shared/src/index.ts`, the barrel). 
 - `statuses.ts`: stored and derived statuses.
 - `inactivity.ts`: inactive and super inactive (#145): `isInactive`, `isSuperInactive`, `inactivityOf`, `inactivityCycle` (from `advanceCycle`, given the clock cycle's server time), `markSeen`, and the server's `seen` and `inactivate` inputs.
 - `adjustStats.ts`: capped morale changes and disease application; `addDisease` updates both the modifier and private status.
-- `cheats.ts`: development cheats (issue #148), gated by `ALLOW_CHEATS`. Flag-only cheats are read where they apply: `instantActions` in `queue.ts`, `noRelayPenalty` in `relay.ts` (`makeToken`, fixed on the token), `freeHacking` in `titles.ts` (`bypassesTitles`), `anySkill` in `actions/pick_skill.ts`, `easyTravel` in `actions/warp_to_planet.ts` and `actions/leave_orbit.ts`. `alwaysClean` strips `dirty` in `applyCheats`.
+- `cheats.ts`: development cheats (issue #148), gated by `ALLOW_CHEATS`. Flag-only cheats are read where they apply: `instantActions` in `queue.ts`, `noRelayPenalty` in `relay.ts` (`makeToken`, fixed on the token), `freeHacking` in `titles.ts` (`bypassesTitles`), `anySkill` in `actions/pick_skill.ts`, `easyTravel` in `actions/warp_to_planet.ts` and `actions/leave_orbit.ts`. `alwaysClean` strips `dirty` in `applyCheats`. `fastExpeditions` is ship-wide (anyone with it on): `expeditions.ts` steps every 2 s (`FAST_EXPEDITION_STEP_MS`), and switching it on mid-expedition pulls the next step in.
 
 ## Types, config, and data
 

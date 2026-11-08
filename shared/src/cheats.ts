@@ -6,7 +6,7 @@ import { startCharges } from "./items.ts";
 import { removeStatus } from "./statuses.ts";
 import type { GameState, PlayerState } from "./types.ts";
 
-export const CHEATS = ["infiniteAp", "infiniteMp", "infiniteMorale", "infiniteHp", "infiniteSpores", "infiniteCharges", "instantActions", "noRelayPenalty", "freeHacking", "selfDisease", "anySkill", "alwaysClean", "easyTravel", "invincible"] as const;
+export const CHEATS = ["infiniteAp", "infiniteMp", "infiniteMorale", "infiniteHp", "infiniteSpores", "infiniteCharges", "instantActions", "noRelayPenalty", "freeHacking", "selfDisease", "anySkill", "alwaysClean", "easyTravel", "invincible", "fastExpeditions"] as const;
 export type Cheat = (typeof CHEATS)[number];
 
 /** Instant role switches (one-shot buttons, not toggles). */
@@ -45,7 +45,17 @@ const REFILL: Record<Cheat, (p: PlayerState, state: GameState) => void> = {
   alwaysClean: (p) => removeStatus(p, "dirty"), // dirt is added mid-action; this runs after it
   easyTravel: () => {}, // actions/warp_to_planet.ts and leave_orbit.ts read the flag
   invincible: () => {}, // see shipInvincible: death.ts, adjustStats.ts, ship.ts and rules.ts read the flag
+  // Switched on mid-expedition: the next step comes FAST_EXPEDITION_STEP_MS from now, not up to 10 minutes later.
+  fastExpeditions: (_p, state) => {
+    if (state.expedition) state.expedition.nextAt = Math.min(state.expedition.nextAt, state.now + FAST_EXPEDITION_STEP_MS);
+  },
 };
+
+/** The time between expedition steps while anyone has fastExpeditions on. */
+export const FAST_EXPEDITION_STEP_MS = 2000;
+
+/** True while anyone has the fastExpeditions cheat on. Ship-wide, like invincible: expeditions.ts reads it. */
+export const fastExpeditions = (state: Readonly<GameState>): boolean => state.players.some((p) => p.cheats.includes("fastExpeditions"));
 
 /**
  * True while anyone has the invincible cheat on. It is ship-wide: the hull, plasma shield and oxygen never drop, and

@@ -3,7 +3,8 @@ import { DEFAULT_CONFIG } from "../src/config.ts";
 import { pickSectors, runExpedition } from "../src/expeditions.ts";
 import { nextDue } from "../src/queue.ts";
 import { applyInput } from "../src/replay.ts";
-import { applyAction, createGame, viewFor } from "../src/rules.ts";
+import { FAST_EXPEDITION_STEP_MS } from "../src/cheats.ts";
+import { applyAction, createGame, setCheat, viewFor } from "../src/rules.ts";
 import type { Action, ExpeditionEventRule, GameConfig, GameState, Planet, PlayerId } from "../src/types.ts";
 import { clone, makeSeats, must, noHunters, noIncidents, offered, option, player } from "./support.ts";
 
@@ -314,6 +315,21 @@ describe("expeditions, phase 2: time away", () => {
     const landed = tickAt(next, T0 + step);
     expect(landed.expeditions[0]!.events.map((e) => e.sector)).toEqual(["LANDING"]);
     expect(landed.expedition!.nextAt).toBe(T0 + 2 * step);
+  });
+
+  it("fastExpeditions (dev cheat): 2 seconds a step, also when switched on mid-expedition", () => {
+    const s = timed({ events: only({ kind: "nothing", weight: 1 }) });
+    const fast = must(setCheat(s, "p4", "fastExpeditions", true));
+    let t = go(fast);
+    expect(t.expedition!.nextAt).toBe(T0 + FAST_EXPEDITION_STEP_MS);
+    expect(viewFor(t, "p4").expedition!.returnAt).toBe(T0 + 4 * FAST_EXPEDITION_STEP_MS);
+    t = runOut(t);
+    expect(t.expeditions[0]!.events).toHaveLength(4);
+    // Normal speed, then the cheat: the next step comes 2 seconds after the latest input, not 10 minutes after takeoff.
+    let slow = go(s);
+    slow = tickAt(slow, T0 + step); // landed
+    slow = must(setCheat(slow, "p4", "fastExpeditions", true));
+    expect(slow.expedition!.nextAt).toBe(T0 + step + FAST_EXPEDITION_STEP_MS);
   });
 
   it("explores one sector per step and is back as the last one resolves, with the loot unloaded in the bay", () => {

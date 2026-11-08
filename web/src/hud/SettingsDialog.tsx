@@ -18,6 +18,11 @@ import { resetTips, setTipsOn, useTipPrefs } from "../tips.ts";
 import "./settings.css";
 import "./terminal.css";
 
+/** Cheats that explain themselves in a tooltip on their label. */
+const CHEAT_HINTS: Partial<Record<Cheat, "settings.cheatHints.fastExpeditions">> = {
+  fastExpeditions: "settings.cheatHints.fastExpeditions",
+};
+
 const ROLE_BUTTON_ORDER: readonly RoleCheat[] = ["human", "mush"];
 
 export function SettingsDialog({
@@ -113,12 +118,16 @@ export function SettingsDialog({
               <Tabs.Panel className="settings-panel" value="cheats">
             <fieldset className="settings-cheats">
               <div className="settings-cheat-grid">
-              {CHEATS.map((cheat) => (
-                <label key={cheat} className="settings-cheat">
-                  <input type="checkbox" checked={activeCheats.includes(cheat)} onChange={(e) => onCheat(cheat, e.target.checked)} />
-                  {t(`settings.cheats.${cheat}`)}
-                </label>
-              ))}
+              {CHEATS.map((cheat) => {
+                const box = (
+                  <label key={cheat} className="settings-cheat">
+                    <input type="checkbox" checked={activeCheats.includes(cheat)} onChange={(e) => onCheat(cheat, e.target.checked)} />
+                    {t(`settings.cheats.${cheat}`)}
+                  </label>
+                );
+                const hint = CHEAT_HINTS[cheat];
+                return hint ? <Hint key={cheat} label={t(hint)}>{box}</Hint> : box;
+              })}
               </div>
               <button type="button" onClick={() => {
                   for (const c of CHEATS) if (activeCheats.includes(c) === allOn) onCheat(c, !allOn);

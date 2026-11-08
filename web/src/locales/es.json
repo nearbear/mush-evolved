@@ -69,6 +69,9 @@
       "account": "Cuenta",
       "cheats": "Trampas"
     },
+    "cheatHints": {
+      "fastExpeditions": "2 segundos por sector"
+    },
     "cheats": {
       "title": "Trucos (desarrollo)",
       "infiniteAp": "Puntos de acción infinitos",
@@ -87,6 +90,7 @@
       "alwaysClean": "Siempre limpio",
       "easyTravel": "Viaje fácil",
       "invincible": "Nave invencible",
+      "fastExpeditions": "Expediciones rápidas",
       "leaveShip": "Abandonar la nave",
       "role": {
         "mush": "Convertirse en Mush",

@@ -13,6 +13,7 @@
 import { endPushToLeave } from "./actions/accommodate.ts";
 import { board } from "./actions/takeoff.ts";
 import { damage, killPlayer } from "./death.ts";
+import { FAST_EXPEDITION_STEP_MS, fastExpeditions } from "./cheats.ts";
 import { soil } from "./dirt.ts";
 import { isWorking, itemsIn, newItemId, removeItem, sameContainer } from "./items.ts";
 import { logPrivate, logPublic } from "./log.ts";
@@ -98,7 +99,7 @@ export function runExpedition(state: GameState, launcher: PlayerState): Expediti
     planet: planet.id,
     landed: false,
     sectors: pickSectors(state, planet),
-    nextAt: state.now + rules.stepMs,
+    nextAt: state.now + stepMs(state),
     // Items each member carried when they set out, for `deadKeepItems: false`.
     carried: Object.fromEntries(crew.map((p) => [p.id, itemsIn(state, { kind: "player", id: p.id }).map((i) => i.id)])),
   };
@@ -132,7 +133,8 @@ export function expeditionStep(state: GameState): void {
     away.sectors = [];
   }
   if (away.sectors.length === 0 || !crew.some((p) => p.alive)) returnExpedition(state);
-  else away.nextAt += rules.stepMs;
+  // The fast cheat counts from now, so a step that was due long ago doesn't set off a burst of overdue ones.
+  else away.nextAt = fastExpeditions(state) ? Math.max(away.nextAt, state.now) + FAST_EXPEDITION_STEP_MS : away.nextAt + rules.stepMs;
 }
 
 /**
@@ -187,8 +189,11 @@ export function expeditionReturnAt(state: Readonly<GameState>): number | null {
   const away = state.expedition;
   if (!away) return null;
   const steps = (away.landed ? 0 : 1) + away.sectors.length;
-  return away.nextAt + (steps - 1) * state.config.expedition.stepMs;
+  return away.nextAt + (steps - 1) * stepMs(state);
 }
+
+/** Time between steps: the config's, or 2 seconds under the fastExpeditions development cheat. */
+const stepMs = (state: Readonly<GameState>): number => (fastExpeditions(state) ? FAST_EXPEDITION_STEP_MS : state.config.expedition.stepMs);
 
 interface Ctx {
   state: GameState;

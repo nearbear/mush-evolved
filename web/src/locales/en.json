@@ -69,6 +69,9 @@
       "account": "Account",
       "cheats": "Cheats"
     },
+    "cheatHints": {
+      "fastExpeditions": "2 seconds per sector"
+    },
     "cheats": {
       "title": "Cheats (development)",
       "infiniteAp": "Infinite action points",
@@ -87,6 +90,7 @@
       "alwaysClean": "Always clean",
       "easyTravel": "Easy travel",
       "invincible": "Invincible ship",
+      "fastExpeditions": "Fast expeditions",
       "leaveShip": "Leave ship",
       "role": {
         "mush": "Become Mush",

@@ -2743,3 +2743,9 @@ Follow-up the same day: the "N% repaired" text became a bare percent (the shared
 - Built the iTrackie's half of #366: `web/src/hud/VisibilityBadge.tsx` puts the action buttons' icon (padlock, hushing hand, camera) on every Room-tab line with a `kind`, in a popover (hover, focus or tap) that says what the kind means and whether a secret or covert line leaked. A leaked covert line is red (`.warning.danger`, a dark `--danger` on the light card) rather than the warning amber; Outcast lines, which have no warning level, keep the plain look but still get the badge. The replay's story 5 (#371) can reuse the badge.
 - Choices made without asking: a popover rather than a tooltip so touch can open it (same pattern as `RecencyStamp`); the badge sits beside the recency caption, not in place of the warning marker, so alarms and leaks still read the same at a glance; the popover's text doesn't call covert actions malicious, so the game doesn't editorialize.
 - `verify` failed on things outside this change: a type error in `web/src/hud/SettingsDialog.tsx`, which another session was editing at the same time, and `server/tests/goals.test.ts`, which passed when run on its own (it looks flaky under load).
+## 2026-11-08: fastExpeditions cheat
+
+- Added a dev cheat that makes expedition steps 2 s apart instead of 10 minutes. Chose a fixed short step over scaling the countdown: it is one helper (`stepMs`) in `expeditions.ts`, plus a `REFILL` hook that pulls `nextAt` in when the cheat is switched on mid-expedition. Ship-wide like `invincible`, since an expedition belongs to the ship, not a seat.
+- Subtlety caught while writing it: `state.now` only moves on action inputs and ticks, so a step under the cheat counts from `max(nextAt, now)` to avoid a burst of overdue steps in one tick.
+- `npm run verify` hit a 5 s timeout in the unrelated `server/tests/goals.test.ts` under full-suite load; it passed alone.
+
