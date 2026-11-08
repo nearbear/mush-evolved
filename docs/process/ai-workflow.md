@@ -2693,3 +2693,9 @@ Follow-up the same day: the "N% repaired" text became a bare percent (the shared
 - Needed a decision the plan didn't spell out: what "the current build" is for the older-version badge. The client didn't know any `RULES_VERSION`, so `vite.config.ts` now stamps one into the bundle (`git describe`, the same command the server's deploy scripts use; "dev" on the dev server). Flagged to the owner.
 - All-seeing's streams come only from loaded chunks (at least 2 cycles back); older lines wait for story 5's paging. `mergeStreams` was widened to join two `Streams`.
 - Correction: a first draft kept a `chunksToken` to restart chunk fetches after a retry; it was redundant (the wanted list empties while a retry waits), and Biome's exhaustive-deps rule flagged it, so it was removed.
+
+## 2026-11-07: TechnoBox 9-slice frame, applied to the minimap
+
+- The owner hand-made `techno-box.png` (xp_counter.png closed into a full box); it went into `Mush/derived/` with an ATTRIBUTION note and a row in `docs/assets/mush-assets.md`.
+- Built `TechnoBox` (`web/src/hud/TechnoBox.tsx` + `styles/techno-box.css`) as CSS `border-image`, not SVG: it keeps the pixel texture and stays at 1x. Dumping the pixels picked the slices (14/21): rows 14-20 are identical and the centre is one colour, so `repeat` tiles seamlessly without scaling; a first guess of 12 would have repeated a shading gradient.
+- The frame uses `border-image-width` with `border-width: 0`, so padding (not the 21px caps) sets the content inset. Checked in a scratch Chromium render before wiring it in; the expanded minimap's `box-shadow` became `drop-shadow` to follow the cut corners.
