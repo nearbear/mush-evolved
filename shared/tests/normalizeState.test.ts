@@ -1,8 +1,21 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
-import { DEFAULT_CONFIG } from "../src/config.ts";
+import { DEFAULT_CONFIG, resolveConfig } from "../src/config.ts";
 import { createGame } from "../src/rules.ts";
-import { added, NormalizeError, normalizeContainer, normalizeGame, normalizeHunterTarget, normalizeOverrides, normalizePlanSlot, normalizePlanTask, normalizeSpot } from "../src/normalizeState.ts";
+import { fullViewFor, seatStarts } from "../src/fullView.ts";
+import {
+  added,
+  NormalizeError,
+  normalizeContainer,
+  normalizeFullView,
+  normalizeGame,
+  normalizeHunterTarget,
+  normalizeOverrides,
+  normalizePlanSlot,
+  normalizePlanTask,
+  normalizeSpot,
+  overridesOf,
+} from "../src/normalizeState.ts";
 import type { ConfigOverrides, GameState, PlayerState } from "../src/types.ts";
 import { play } from "./randomGame.ts";
 import { makeSeats } from "./support.ts";
@@ -94,9 +107,9 @@ describe("normalizeGame", () => {
       bookSkill: "cook",
     } satisfies Partial<PlayerState>);
     game.items[0]!.hiddenBy = a.id;
-    Object.assign(game.items[1]!, { of: b.id, builds: "x", charges: 2, teaches: "y", spores: 1, broken: true, plant: { species: "fruit_banana", age: null, thirst: 2, sick: true } });
+    Object.assign(game.items[1]!, { of: b.id, builds: "x", charges: 2, teaches: "y", spores: 1, broken: true, jelly: 3, plant: { species: "fruit_banana", age: null, thirst: 2, sick: true } });
     game.space = [{ id: "d1", type: "metal_scraps", plant: { species: "fruit_banana", age: 1, thirst: 0, sick: false } }];
-    game.equipment.BRIDGE = [{ id: "BRIDGE:X", type: "X", broken: true }];
+    game.equipment.BRIDGE = [{ id: "BRIDGE:X", type: "X", broken: true, jelly: 2 }];
     game.log.push({ id: 77, cycle: 1, at: 5, key: "k", params: { n: 1, s: "t" }, room: "BRIDGE", visibleTo: [a.id], level: "warning" });
     game.chat.push({ id: 78, seq: 0, cycle: 1, at: 6, channel: "mush", from: null, isBot: false, text: "", system: { key: "s", params: { n: 2 } } });
     game.channels.push({ id: "pc-1", name: "", members: [a.id, b.id], createdBy: a.id, planningClosed: true, day: 1, cycleOfDay: 2 });
@@ -197,6 +210,81 @@ describe("normalizeGame", () => {
     expect(missing((raw) => delete raw.rng)).toThrow(new NormalizeError("GameState.rng missing"));
     // An undefined-valued key is as missing as an absent one.
     expect(missing((raw) => (raw.ship.hull = undefined))).toThrow(new NormalizeError("ShipResources.hull missing"));
+  });
+});
+
+describe("normalizeFullView", () => {
+  /** A frame as storage hands it back: plain JSON. */
+  const frame = (game: GameState, starts = true): Raw => JSON.parse(JSON.stringify(fullViewFor(game, starts ? seatStarts(game) : null)));
+
+  for (const [name, make] of [
+    ["a fresh 3-seat game", fresh],
+    ["a random game a few cycles in", played],
+  ] as const) {
+    it(`gives back a frame of ${name} as it was, queues included`, () => {
+      const { game } = make();
+      const raw = frame(game);
+      expect(normalizeFullView(raw)).toStrictEqual(frame(game));
+    });
+
+    it(`is idempotent on a frame of ${name}`, () => {
+      const once = normalizeFullView(frame(make().game));
+      expect(normalizeFullView(JSON.parse(JSON.stringify(once)))).toStrictEqual(once);
+    });
+
+    it(`shares nothing with its input, for a frame of ${name}`, () => {
+      const raw = frame(make().game);
+      const input = objectsIn(raw);
+      for (const object of objectsIn(normalizeFullView(raw))) expect(input.has(object)).toBe(false);
+    });
+  }
+
+  it("keeps the action under way and the queue", () => {
+    const raw = frame(fresh().game);
+    const current = { action: { type: "ready" }, adjustment: { ap: 0, mp: 0 }, since: 1, until: 2 };
+    const queue = [{ action: { type: "ready" }, adjustment: { ap: 0, mp: 0 } }];
+    Object.assign(raw.players[0], { current, queue });
+    const player = normalizeFullView(raw).players[0]!;
+    expect(player.current).toEqual(current);
+    expect(player.queue).toEqual(queue);
+  });
+
+  it("keeps a null starts (pre-selection) and throws on a missing one", () => {
+    const raw = frame(fresh().game, false);
+    expect(normalizeFullView(raw).starts).toBeNull();
+    delete raw.starts;
+    expect(() => normalizeFullView(raw)).toThrow("FullView.starts missing");
+  });
+
+  it("rebuilds the config from its overrides: this build's numbers, and defaults for fields an old config lacks", () => {
+    const raw = frame(fresh().game);
+    raw.config.startAp = DEFAULT_CONFIG.startAp + 5; // a balance number changed since the frame was stored
+    delete raw.config.dailyHeal; // a field added since
+    raw.config.cycleHours = 2; // an override, kept
+    raw.config.cyclesPerDay = 12;
+    expect(normalizeFullView(raw).config).toStrictEqual(resolveConfig({ ...overridesOf(DEFAULT_CONFIG), cycleHours: 2 }));
+  });
+});
+
+describe("overridesOf", () => {
+  it("reads back the overrides a config was resolved from", () => {
+    const overrides: ConfigOverrides = {
+      mushCount: 1,
+      manualCycles: true,
+      cycleHours: 3,
+      sharedSpots: false,
+      setupId: "classic",
+      preselection: { seats: 8, endsOn: { day: 1, cycle: 4 }, mushCount: "auto", twoMushAbove: 8, minPlayers: 4 },
+    };
+    expect(overridesOf(resolveConfig(overrides))).toStrictEqual(overrides);
+    expect(resolveConfig(overridesOf(resolveConfig(overrides)))).toStrictEqual(resolveConfig(overrides));
+  });
+
+  it("leaves out a null setup and pre-selection, and the keys an old config lacks", () => {
+    expect(DEFAULT_CONFIG.setupId).toBeNull();
+    expect(DEFAULT_CONFIG.preselection).toBeNull();
+    expect(Object.keys(overridesOf(DEFAULT_CONFIG)).sort()).toEqual(["cycleHours", "manualCycles", "mushCount", "sharedSpots"]);
+    expect(overridesOf({ mushCount: 2 })).toStrictEqual({ mushCount: 2 });
   });
 });
 

@@ -25,7 +25,7 @@
 
 import { resolveConfig } from "./config.ts";
 import { clone } from "./helpers.ts";
-import type { SeatStart, SeatStarts } from "./fullView.ts";
+import type { FullView, SeatStart, SeatStarts } from "./fullView.ts";
 import type { RebelCall } from "./comms.ts";
 import type { RelayPool, RelayToken, ResearchPool, Sample } from "./relay.ts";
 import type { DiseaseTracker } from "./adjustStats.ts";
@@ -148,6 +148,7 @@ function itemFields(raw: Partial<SpaceDebris>, t: string): AllKeys<SpaceDebris> 
     spores: raw.spores,
     plant: opt(raw.plant, normalizePlant),
     broken: raw.broken,
+    jelly: raw.jelly,
   };
 }
 
@@ -162,7 +163,7 @@ export function normalizeDebris(raw: Partial<SpaceDebris>): SpaceDebris {
 
 export function normalizeEquipment(raw: Partial<Equipment>): Equipment {
   const t = "Equipment";
-  return stripUndefined<Equipment>({ id: need(raw, "id", t), type: need(raw, "type", t), broken: raw.broken });
+  return stripUndefined<Equipment>({ id: need(raw, "id", t), type: need(raw, "type", t), broken: raw.broken, jelly: raw.jelly });
 }
 
 // Players.
@@ -198,10 +199,16 @@ export function normalizeAccommodationOffer(raw: Partial<AccommodationOffer>): A
 }
 
 /**
- * A player, with their `Seat` fields. The action under way and the queue are dropped (#384, amendment 5): nothing has
- * been paid for them, and the player presses again. That keeps `Action` out of the shape this file covers.
+ * What happens to a player's action under way and queue (#384, decisions 1 and 2 in docs/plans/normalize-state.md).
+ * `drop`, for a live game: both are emptied (amendment 5). Nothing has been paid for them, and the player presses
+ * again. That keeps `Action` out of the shape this file covers. `keep`, for a replay frame: both are copied through
+ * as stored, unchecked, so a replay still shows action bars. They are display only: if an older `Action` shape breaks
+ * `viewFor`, `perspective` throws a `HistoryError`.
  */
-export function normalizePlayer(raw: Partial<PlayerState>): PlayerState {
+export type QueueMode = { queue: "drop" | "keep" };
+
+/** A player, with their `Seat` fields. */
+export function normalizePlayer(raw: Partial<PlayerState>, mode: QueueMode): PlayerState {
   const t = "PlayerState";
   const resources = need(raw, "resources", t);
   const r = "PlayerState.resources";
@@ -268,8 +275,8 @@ export function normalizePlayer(raw: Partial<PlayerState>): PlayerState {
     mushSkills: copy(need(raw, "mushSkills", t)),
     alive: need(raw, "alive", t),
     ready: need(raw, "ready", t),
-    current: null,
-    queue: [],
+    current: mode.queue === "drop" ? null : clone(need(raw, "current", t)),
+    queue: mode.queue === "drop" ? [] : clone(need(raw, "queue", t)),
     cheats: copy(need(raw, "cheats", t)),
   });
 }
@@ -619,7 +626,7 @@ export function normalizeSeatStarts(raw: Partial<SeatStarts>): SeatStarts {
 // The game.
 
 /** The game's own data, shared by the live game and a replay frame. */
-export function normalizeCore(raw: Partial<GameCore>, _ctx: NormalizeContext): GameCore {
+export function normalizeCore(raw: Partial<GameCore>, _ctx: NormalizeContext, mode: QueueMode): GameCore {
   const t = "GameCore";
   const bios = need(raw, "bios", t);
   const titles = need(raw, "titles", t);
@@ -629,7 +636,7 @@ export function normalizeCore(raw: Partial<GameCore>, _ctx: NormalizeContext): G
     preselection: need(raw, "preselection", t),
     winner: need(raw, "winner", t),
     ending: need(raw, "ending", t),
-    players: need(raw, "players", t).map(normalizePlayer),
+    players: need(raw, "players", t).map((p) => normalizePlayer(p, mode)),
     items: need(raw, "items", t).map(normalizeItem),
     nextItemId: need(raw, "nextItemId", t),
     equipment: mapValues(need(raw, "equipment", t), (list) => list.map(normalizeEquipment)),
@@ -695,9 +702,42 @@ export function normalizeGame(raw: Partial<Omit<GameState, "config">>, overrides
   const t = "GameState";
   const config = resolveConfig(overrides);
   return stripUndefined<GameState>({
-    ...normalizeCore(raw, { config }),
+    ...normalizeCore(raw, { config }, { queue: "drop" }),
     config,
     rng: need(raw, "rng", t),
     chatOutbox: normalizeOutbox(need(raw, "chatOutbox", t)),
+  });
+}
+
+/**
+ * The overrides a frame's resolved config was built from, read back out of it. Every override key is named, so a new
+ * one doesn't compile until it is read back here. A key missing from an older config stays unset, so it takes this
+ * build's default.
+ */
+export function overridesOf(config: Partial<DeepReadonly<GameConfig>>): ConfigOverrides {
+  const { preselection, setupId } = config;
+  return stripUndefined<ConfigOverrides>({
+    mushCount: config.mushCount,
+    manualCycles: config.manualCycles,
+    cycleHours: config.cycleHours,
+    sharedSpots: config.sharedSpots,
+    // Null in the config means no setup or no pre-selection, which the overrides say by leaving the key out.
+    setupId: setupId === null ? undefined : setupId,
+    preselection: preselection === null || preselection === undefined ? undefined : normalizePreselection(preselection),
+  });
+}
+
+/**
+ * A replay frame (docs/plans/normalize-state.md, section 4). Its config is stored whole, but may predate newer config
+ * fields, so it is rebuilt from its overrides (`overridesOf`, then `resolveConfig`): the frame shows this build's
+ * balance numbers, as a live game does on every reload, `view.actions` costs included. The action queues are kept.
+ */
+export function normalizeFullView(raw: Partial<FullView>): FullView {
+  const t = "FullView";
+  const config = resolveConfig(overridesOf(need(raw, "config", t)));
+  return stripUndefined<FullView>({
+    ...normalizeCore(raw, { config }, { queue: "keep" }),
+    config,
+    starts: orNull(need(raw, "starts", t), normalizeSeatStarts),
   });
 }
