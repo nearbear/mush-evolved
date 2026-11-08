@@ -12,6 +12,7 @@
   "scripts": {
     "test": "vitest run",
     "test:watch": "vitest",
+    "test:slow": "REPLAY_SEEDS=5 vitest run tests/replay.test.ts",
     "typecheck": "tsc --noEmit"
   },
   "devDependencies": {

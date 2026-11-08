@@ -2724,3 +2724,9 @@ Follow-up the same day: the "N% repaired" text became a bare percent (the shared
 - **Decision (owner, 2026-11-07, already recorded):** a jump (travel or leave orbit) with a crew out kills it and loses the Icarus for good, unless Magnetic return is done, which brings the crew back at once; a client-only confirm warns first.
 - **What worked:** no rule questions were needed, since the slice A rule pass had answered everything. Putting `strandExpedition` next to `loseShipsInFlight` in the shared `jump` meant the warp cheat strands crews too without extra code. The rejected-takeoff test compares against a control state where `icarusLost` is false, because refusal reasons reach the caller only as `illegal_action`.
 - **Claude's readings, flagged to the owner:** Magnetic return also posts a public NERON line (`icarusRecalled`); the bodies are lost along with the Icarus; the confirm text names Magnetic return without checking whether it is done.
+
+## 2026-11-08: Replay tests on one seed in verify, five in a slow run (#382)
+
+- `REPLAY_SEEDS` (read in `shared/tests/randomGame.ts`) sets how many seeds the long random-game checks in `replay.test.ts` play: unset in `npm test`/`verify` (one seed), 5 in the new `npm run test:slow`, which CI runs after `npm test`. The file went from about 32s to 14s locally; the slow run takes about 107s.
+- What needed correction: the issue framed it as "fewer seeds", but profiling showed the perspective test already played one game per setup, and 88% of its time was the per-seat `viewFor`/`perspective` checks. So a normal run now checks one seat per step, in turn (every step and every seat still sampled); the slow run checks every seat at every step.
+- The slow run caught that seed 5's 1,200-step game stops at cycle 6, so "got past a day" is now required of at least one game, not each.

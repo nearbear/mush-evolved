@@ -81,6 +81,12 @@ jobs:
         if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: npm test
 
+      # The long random-game replay checks on five seeds, every seat at every
+      # step (#382); `npm test` above runs them on one seed. About 2 minutes.
+      - name: Slow tests
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: npm run test:slow
+
       - name: Build
         if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: npm run build
