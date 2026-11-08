@@ -88,6 +88,11 @@ The logic the page needs, kept out of components (architecture rule 3).
 - **Layout:** `GameView` gets a `transport?: ReactNode` slot. On desktop it is a bar above the stage. Below 1024px it is a compact strip docked above `BottomNav`, outside the panels, so Room, Log, Chat and Crew all keep it. The phone strip holds step back, play, step forward, the cycle and the switcher; the speed and skip toggle go in an overflow menu.
 - **Default on open:** all-seeing, following the first seat, at step 0: the launch state before the first input (`frames[0].base` of chunk 0), a step you can land on like any other (owner, 2026-11-05).
 - **i18n:** every new string in en/fr/es.
+- **Decided (owner, 2026-11-08):**
+  - **Step vs event.** With skipping on, Next stops on every mark (decision 3); next and previous *event* stop only on marks of kind `death`, `conversion`, `fire` and `chat`, never `cycle` or `other`.
+  - **Cycle countdown.** Shown in a replay of a game whose cycles ran on a clock, frozen at the step's time and counting to when the next cycle actually started (the next chunk's `from`); hidden otherwise (today, single player). The index says which with a `realTime` flag the server writes (`replayIndex` in `shared/src/replayChunks.ts`, from `server/src/replayStore.ts`): about the clock, not the mode, since that's all it's for. Optional, so `HISTORY_VERSION` stays; an index without it hides the countdown.
+  - **The frozen clock is a React context** (`ServerClock`: an offset live, a fixed time in a replay) read through one hook, replacing the `clockOffset` prop passed down through the HUD.
+  - **Built in three commits**, each passing `verify` on its own: the clock and the transport slot in `GameView`, the pure transport logic, then the page and its UI.
 
 ### 5. (#371) All-seeing details in the HUD. Size M. Label `leak-risk`.
 
