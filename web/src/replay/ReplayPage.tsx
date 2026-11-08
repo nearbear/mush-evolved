@@ -118,7 +118,9 @@ export default function ReplayPage() {
     setSeat(s);
     setAllSeeing(all);
   }, []);
-  const leave = useCallback(() => navigate("/games"), [navigate]);
+  // Back to where the game is listed: the finished games, or the lobby for a single-player game (never in the list).
+  const home = replay.summary?.singlePlayer ? "/" : "/games";
+  const leave = useCallback(() => navigate(home), [navigate, home]);
   const frozenAt = step?.at ?? 0;
   const clock = useMemo(() => ({ frozen: frozenAt }), [frozenAt]);
 
@@ -128,7 +130,7 @@ export default function ReplayPage() {
         <ReplayNotice replay={replay} />
         {status !== "loading" && status !== "preparing" && status !== "ready" && (
           <p className="replay-back">
-            <Link to="/games">{t("replay.back")}</Link>
+            <Link to={home}>{t(home === "/" ? "replay.backLobby" : "replay.back")}</Link>
           </p>
         )}
       </main>

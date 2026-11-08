@@ -163,7 +163,7 @@ export function roomGraph(map: ShipMap): ShipRoom[] {
   return map.rooms.flatMap((r) => {
     const doors = [...new Set(r.tiles.flatMap((t) => (t.door ? [t.door.target] : [])))].sort();
     // Built-only equipment (the turret room's sofa) is drawn by the map but isn't there until someone builds it.
-    const equipment = placedEquipment(r).filter(({ type }) => !EQUIPMENT_TYPES[type]?.builtOnly).map(({ id, type }) => ({ id, type }));
+    const equipment = placedEquipment(r).filter(({ type }) => !EQUIPMENT_TYPES[type]?.builtOnly).map(({ id, type, chairs }) => ({ id, type, ...(chairs && { chairs }) }));
     return doors.length > 0 ? [{ id: r.id, label: r.label, doors, equipment }] : [];
   });
 }

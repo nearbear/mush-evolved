@@ -168,6 +168,7 @@ describe("GET /api/games/<id> (#368)", () => {
     const body = await response.json();
     expect(FinishedGameSchema.safeParse(body).success).toBe(true);
     expect(body).toEqual((await get("/api/games").then((r) => r.json())).games[0]);
+    expect(body).not.toHaveProperty("singlePlayer");
   });
 
   it("answers whether or not the replay's copy is confirmed", async () => {
@@ -196,7 +197,9 @@ describe("GET /api/games/<id> (#368)", () => {
     expect(own.headers.get("Cache-Control")).toBe("no-store");
     const text = await own.text();
     expect(text).not.toContain(ann.id);
-    expect(JSON.parse(text)).toMatchObject({ id: "solo", winner: "humans", ending: "sol" });
+    const body = JSON.parse(text);
+    expect(body).toMatchObject({ id: "solo", winner: "humans", ending: "sol", singlePlayer: true });
+    expect(FinishedGameSchema.safeParse(body).success).toBe(true);
   });
 
   it("refuses a malformed room ID and other methods", async () => {

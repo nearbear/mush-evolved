@@ -457,7 +457,8 @@
     "dead": "Muerto",
     "you": "Tú",
     "nameHidden": "Nombre oculto",
-    "results": "Resultados"
+    "results": "Resultados",
+    "watchReplay": "Ver la repetición"
   },
   "shipCard": {
     "triumph": "Triunfo",
@@ -476,7 +477,8 @@
     "cycles_one": "{{count}} ciclo",
     "cycles_many": "{{count}} de ciclos",
     "cycles_other": "{{count}} ciclos",
-    "game": "Partida terminada el {{date}}"
+    "game": "Partida terminada el {{date}}",
+    "watchReplay": "Ver la repetición"
   },
   "replay": {
     "loading": "Cargando la repetición…",
@@ -490,6 +492,7 @@
     "olderBuild": "Grabado en una versión anterior",
     "olderBuildHint": "Este momento se grabó con una versión anterior del juego, así que algunos detalles pueden verse distintos de como fueron.",
     "back": "Volver a las partidas terminadas",
+    "backLobby": "Volver a las naves",
     "nobodyAboard": "La nave espera a su tripulación: todavía no ha subido nadie a bordo.",
     "transport": "Controles de la repetición",
     "dayCycle": "Día {{day}} · ciclo {{cycle}}",

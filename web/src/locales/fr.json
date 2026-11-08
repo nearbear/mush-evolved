@@ -457,7 +457,8 @@
     "dead": "Mort",
     "you": "Vous",
     "nameHidden": "Nom masqué",
-    "results": "Résultats"
+    "results": "Résultats",
+    "watchReplay": "Voir le replay"
   },
   "shipCard": {
     "triumph": "Triomphe",
@@ -476,7 +477,8 @@
     "cycles_one": "{{count}} cycle",
     "cycles_many": "{{count}} de cycles",
     "cycles_other": "{{count}} cycles",
-    "game": "Partie terminée le {{date}}"
+    "game": "Partie terminée le {{date}}",
+    "watchReplay": "Voir le replay"
   },
   "replay": {
     "loading": "Chargement du replay…",
@@ -490,6 +492,7 @@
     "olderBuild": "Enregistré sur une ancienne version",
     "olderBuildHint": "Ce moment a été enregistré par une version antérieure du jeu : certains détails peuvent s'afficher autrement qu'à l'époque.",
     "back": "Retour aux parties terminées",
+    "backLobby": "Retour aux vaisseaux",
     "nobodyAboard": "Le vaisseau attend son équipage : personne n'est encore monté à bord.",
     "transport": "Commandes du replay",
     "dayCycle": "Jour {{day}} · cycle {{cycle}}",

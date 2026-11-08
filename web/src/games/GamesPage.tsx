@@ -1,7 +1,7 @@
 // The public list of finished games (#155), at /games: newest first, a page at a time (`GET /api/games`). Each game
 // shows when it ended, how long it ran, its lobby's language, how it ended, and its crew: the character each player
 // ended in, their name at the time, alpha Mush, beta Mush or Human, and whether they survived. Single-player games
-// are never here. Entries will link to their replay once it exists (#156).
+// are never here. Each entry links to its replay (#372).
 
 import { crewRoleLabel, type FinishedCrewMember, type FinishedGame, type FinishedGamesResponse, type LobbyLanguage, MAX_GAMES_PAGE } from "@mush2/shared";
 import { useCallback, useEffect, useState } from "react";
@@ -73,7 +73,7 @@ export default function GamesPage() {
       {load.status === "ok" && load.page.games.length > 0 && (
         <ol className="games-list">
           {load.page.games.map((game) => (
-            <GameCard key={game.id} game={game} />
+            <GameCard key={game.id} game={game} replay />
           ))}
         </ol>
       )}
@@ -96,8 +96,11 @@ function languageName(language: LobbyLanguage): string {
   return new Intl.DisplayNames([language], { type: "language" }).of(language) ?? language;
 }
 
-/** One finished game: its facts and crew. Also the summary of a replay too old to read (`replay/ReplayNotice.tsx`). */
-export function GameCard({ game }: { game: FinishedGame }) {
+/**
+ * One finished game: its facts and crew, and with `replay` a link to watch it. Also the summary of a replay too old to
+ * read (`replay/ReplayNotice.tsx`), without the link.
+ */
+export function GameCard({ game, replay = false }: { game: FinishedGame; replay?: boolean }) {
   const { t, i18n } = useTranslation();
   const date = new Intl.DateTimeFormat(i18n.resolvedLanguage, { dateStyle: "medium", timeStyle: "short" }).format(game.endedAt);
   return (
@@ -107,6 +110,11 @@ export function GameCard({ game }: { game: FinishedGame }) {
           <time dateTime={new Date(game.endedAt).toISOString()}>{date}</time>
           <span>{t("games.cycles", { count: game.cycles })}</span>
           {game.language && <span lang={game.language}>{languageName(game.language)}</span>}
+          {replay && (
+            <Link className="games-replay" to={`/replay/${encodeURIComponent(game.id)}`}>
+              {t("games.watchReplay")}
+            </Link>
+          )}
           <span className={`games-verdict ${game.winner}`}>{t(verdictKey(game.ending, game.winner))}</span>
         </div>
         <ul className="games-crew">

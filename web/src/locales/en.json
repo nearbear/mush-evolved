@@ -453,7 +453,8 @@
     "dead": "Dead",
     "you": "You",
     "nameHidden": "Name hidden",
-    "results": "Results"
+    "results": "Results",
+    "watchReplay": "Watch the replay"
   },
   "shipCard": {
     "triumph": "Triumph",
@@ -471,7 +472,8 @@
     "newer": "Newer games",
     "cycles_one": "{{count}} cycle",
     "cycles_other": "{{count}} cycles",
-    "game": "Game that ended {{date}}"
+    "game": "Game that ended {{date}}",
+    "watchReplay": "Watch the replay"
   },
   "replay": {
     "loading": "Loading replay…",
@@ -485,6 +487,7 @@
     "olderBuild": "Recorded on an older version",
     "olderBuildHint": "This moment was recorded by an earlier version of the game, so some details may show differently than they did.",
     "back": "Back to finished games",
+    "backLobby": "Back to the ships",
     "nobodyAboard": "The ship is waiting for its crew: nobody has boarded yet.",
     "transport": "Replay controls",
     "dayCycle": "Day {{day}} · cycle {{cycle}}",

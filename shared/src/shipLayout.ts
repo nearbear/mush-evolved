@@ -53,6 +53,11 @@ export interface EquipmentBinding {
   key?: string;
   /** Raw extra data, e.g. "flipped;ofsx_-18;ofsy_-2". */
   data?: string;
+  /**
+   * The cells of the chairs someone at this terminal sits on (#192, owner 2026-11-08), in order: its chair 0, 1, ...
+   * Each holds a chair tile of the room. Ours, not the original's.
+   */
+  chairs?: { x: number; y: number }[];
 }
 
 export interface SheetInfo {
@@ -115,8 +120,8 @@ export interface ShipRoom {
   label: string;
   /** Rooms reachable through this room's doors, sorted. */
   doors: string[];
-  /** Equipment drawn in this room (see `placedEquipment`). */
-  equipment: { id: string; type: string }[];
+  /** Equipment drawn in this room (see `placedEquipment`), with the cells of a terminal's chairs (`EquipmentBinding.chairs`). */
+  equipment: { id: string; type: string; chairs?: { x: number; y: number }[] }[];
 }
 
 /** Mush/derived/ship-art.json: the sprites, generated from tiles.xml. */
@@ -146,6 +151,8 @@ export interface PlacedEquipment {
   type: string;
   /** Index into the room's `tiles`. */
   tile: number;
+  /** A terminal's chairs (`EquipmentBinding.chairs`). */
+  chairs?: { x: number; y: number }[];
 }
 
 /**
@@ -163,7 +170,7 @@ export function placedEquipment(room: RoomLayout): PlacedEquipment[] {
     const id = `${room.id}:${b.key ?? b.id}`;
     if (tile < 0 || result.some((e) => e.id === id)) continue;
     claimed.add(tile);
-    result.push({ id, type: b.id, tile });
+    result.push({ id, type: b.id, tile, ...(b.chairs && { chairs: b.chairs }) });
   }
   return result;
 }

@@ -113,12 +113,13 @@ The overlays from the suggestions, shown only when the page passes a `reveal`, w
 - **Click to jump:** a log line or message jumps to the step that wrote it (`lineStep`).
 - **Leak-check:** the component props: `reveal` is optional everywhere and `GameScreen` never passes it.
 
-### 6. (#372) Links to replays. Size S.
+### 6. (#372) Links to replays. Size S. **Built 2026-11-08.**
 
 - `/games`: each entry links to `/replay/<id>` (`GamesPage.tsx` already plans for it).
 - The end screen: a "Watch the replay" link. `GameScreen` passes `ticket.roomId` to `GameView`, and `GameView` hands it to `EndScreen`. Story 3's "Preparing replay…" handles a copy that isn't confirmed yet, so the end screen doesn't need to know whether it is.
 - The replay page links back to `/games`, and to `/` for a single-player game.
 - In-game the end screen stays as it is. In a replay, at the last step, it shows with its close button, as it does live.
+- **As built:** the replay page learns a game is single player from `GET /api/games/<id>`, which adds `singlePlayer: true` for one (the list never has any); without the summary it goes back to `/games`. Stepping back from the end in a replay reopens the end screen for the next time the end comes. The end screen's link shows only live.
 
 ## Risks and later
 

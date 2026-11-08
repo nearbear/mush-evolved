@@ -5,9 +5,9 @@
       "label": "Command center",
       "at": {"x":-49,"y":6},
       "equipment": [
-        {"id":"ASTRO_MODULE","tile":"pilot_astro_right","mask":"pilot_astro_mask","dir":"up","module":true},
-        {"id":"COM_CENTER","tile":"com_center_right","mask":"com_center_mask","dir":"down","module":true},
-        {"id":"PILOT_MODULE","tile":"pilot_module","mask":"pilot_module_mask","dir":"left","module":true},
+        {"id":"ASTRO_MODULE","tile":"pilot_astro_right","mask":"pilot_astro_mask","dir":"up","module":true,"chairs":[{"x":11,"y":22}]},
+        {"id":"COM_CENTER","tile":"com_center_right","mask":"com_center_mask","dir":"down","module":true,"chairs":[{"x":11,"y":15}]},
+        {"id":"PILOT_MODULE","tile":"pilot_module","mask":"pilot_module_mask","dir":"left","module":true,"chairs":[{"x":8,"y":18}]},
         {"id":"SOFA","tile":"sofaReverse"}
       ],
       "tiles": [
@@ -1228,7 +1228,7 @@
       "label": "Laboratory",
       "at": {"x":-34,"y":16},
       "equipment": [
-        {"id":"RESEARCH_LAB","tile":"table_computer","dir":"left","module":true},
+        {"id":"RESEARCH_LAB","tile":"table_computer","dir":"left","module":true,"chairs":[{"x":12,"y":18}]},
         {"id":"CRYO_MODULE","tile":"cryo","dir":"left","module":true},
         {"id":"MYCOSCAN","tile":"mycoscan","dir":"left","module":true},
         {"id":"GRAVITY_SIMULATOR","tile":"gravity_simulator","dir":"right","module":true},
@@ -2247,7 +2247,7 @@
       "label": "Laser turret Alpha front",
       "at": {"x":-46,"y":-3},
       "equipment": [
-        {"id":"TURRET_COMMAND","tile":"turret_alpha","dir":"left","module":true},
+        {"id":"TURRET_COMMAND","tile":"turret_alpha","dir":"left","module":true,"chairs":[{"x":11,"y":15}]},
         {"id":"SOFA","tile":"sofaReverse"}
       ],
       "tiles": [
@@ -2302,7 +2302,7 @@
       "label": "Laser turret Alpha centre",
       "at": {"x":-18,"y":-8},
       "equipment": [
-        {"id":"TURRET_COMMAND","tile":"turret_alpha","dir":"up","module":true},
+        {"id":"TURRET_COMMAND","tile":"turret_alpha","dir":"up","module":true,"chairs":[{"x":11,"y":13}]},
         {"id":"SOFA","tile":"sofa"}
       ],
       "tiles": [
@@ -2354,7 +2354,7 @@
       "label": "Laser turret Alpha back",
       "at": {"x":30,"y":-5},
       "equipment": [
-        {"id":"TURRET_COMMAND","tile":"turret_alpha","dir":"up","module":true},
+        {"id":"TURRET_COMMAND","tile":"turret_alpha","dir":"up","module":true,"chairs":[{"x":11,"y":11}]},
         {"id":"SOFA","tile":"sofaReverse"}
       ],
       "tiles": [
@@ -2407,7 +2407,7 @@
       "label": "Laser turret Beta front",
       "at": {"x":-46,"y":20},
       "equipment": [
-        {"id":"TURRET_COMMAND","tile":"turret_beta","dir":"down","module":true},
+        {"id":"TURRET_COMMAND","tile":"turret_beta","dir":"down","module":true,"chairs":[{"x":17,"y":17}]},
         {"id":"SOFA","tile":"sofa","dir":"left","module":false}
       ],
       "tiles": [
@@ -2462,7 +2462,7 @@
       "label": "Laser turret Beta centre",
       "at": {"x":-21,"y":25},
       "equipment": [
-        {"id":"TURRET_COMMAND","tile":"turret_beta","dir":"down","module":true},
+        {"id":"TURRET_COMMAND","tile":"turret_beta","dir":"down","module":true,"chairs":[{"x":17,"y":19}]},
         {"id":"SOFA","tile":"sofa"}
       ],
       "tiles": [
@@ -2534,7 +2534,7 @@
       "label": "Laser turret Beta back",
       "at": {"x":32,"y":25},
       "equipment": [
-        {"id":"TURRET_COMMAND","tile":"turret_beta","dir":"right","module":true},
+        {"id":"TURRET_COMMAND","tile":"turret_beta","dir":"right","module":true,"chairs":[{"x":17,"y":18}]},
         {"id":"SOFA","tile":"sofaReverse"}
       ],
       "tiles": [

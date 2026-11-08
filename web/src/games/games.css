@@ -56,6 +56,9 @@
   margin-bottom: 0.5rem;
   color: var(--muted);
 }
+.games-replay {
+  margin-left: auto;
+}
 .games-verdict {
   flex-basis: 100%;
   font-weight: bold;

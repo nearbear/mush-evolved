@@ -2763,3 +2763,10 @@ Follow-up the same day: the "N% repaired" text became a bare percent (the shared
 - What needed correction: story 3 assumed input -1 (the launch state) always has a `base` frame. A new ship's record starts with a full copy instead, and its first frame has nobody aboard, so the page failed to load. Only the browser found it; unit tests had built records the old way. Now -1 shows the record's first frame when there is no earlier state, the readability check reads that frame through whoever is aboard, and the page shows a "nobody aboard" notice with the transport.
 - An end-to-end check needed a finished game, which dev had no quick route to, so the owner approved a "Return to Sol now" cheat (`solCheat`, an input like the role cheat, so replays reproduce it).
 - Worked: keeping transport logic pure and separate from the page made most of the story testable without a browser, and a handoff note carried the work across sessions. Lost in the handoff: the scratch browser-check scripts lived in a session scratchpad that was cleared.
+
+## 2026-11-08: Links to replays (#372)
+
+- Finished games link to `/replay/<id>`, the live end screen has "Watch the replay", and the replay page goes back to `/` for a single-player game and to `/games` otherwise.
+- The client had no way to tell a single-player replay apart: the index's `realTime` flag is about the clock, not the mode, on purpose. Claude added an optional `singlePlayer: true` to the one-game summary instead (the route already knew it from `replayAccess`), not inferred from bots or the clock.
+- `verify` hit a timeout in an unrelated bot test (`goals.test.ts`) under full-suite load; it passed alone and on a rerun.
+- The owner approved the `singlePlayer` summary flag after the fact. The leak check found nothing: the flag reaches only the account that played the game.

@@ -59,6 +59,8 @@ export interface GameViewProps {
    * A replay sets it on any move that isn't a single step forward (a step back, a cycle jump, a seek).
    */
   snapWalks?: boolean;
+  /** The game's room, for the end screen's "Watch the replay" link (live only). */
+  replayId?: string | undefined;
 }
 
 const LIVE: ServerClock = { offset: 0 };
@@ -68,7 +70,7 @@ const NO_DOOR_MOVES: ReadonlyMap<string, { from?: RoomId; to?: RoomId }> = new M
  * The game screen without a socket: renders a `PlayerView` and turns clicks into intents through `send`. GameScreen
  * feeds it a live game; a replay can feed it recorded views with no `send`.
  */
-export function GameView({ view: given, send, onLeave, waking = false, cheatsAllowed = false, clock = LIVE, nextCycleAt = null, botsPaused = null, transport, snapWalks = false }: GameViewProps) {
+export function GameView({ view: given, send, onLeave, waking = false, cheatsAllowed = false, clock = LIVE, nextCycleAt = null, botsPaused = null, transport, snapWalks = false, replayId }: GameViewProps) {
   const { t } = useTranslation();
   // Read-only, the view grants nothing: no actions (so no action buttons, Ready or Go) and no channel to post in
   // (so every thread shows as read-only, as it does for the dead). Taking things away is not deciding legality.
@@ -88,7 +90,9 @@ export function GameView({ view: given, send, onLeave, waking = false, cheatsAll
   /** Equipment id of the terminal window that is open, if any. UI-only. */
   const [terminalId, setTerminalId] = useState<string | null>(null);
   // The end screen opens by itself when the game ends (and after a reload); closing it lets you look around.
+  // A replay stepping back from the end reopens it for the next time the end comes (the derived-state pattern).
   const [endClosed, setEndClosed] = useState(false);
+  if (endClosed && view.phase !== "ended") setEndClosed(false);
   const [peekDoor, setPeekDoor] = useState<RoomId | null>(null);
   // Bumped when the room list selects something, to move focus to where its actions are (a screen reader's next step).
   const [focusActions, setFocusActions] = useState(0);
@@ -192,7 +196,7 @@ export function GameView({ view: given, send, onLeave, waking = false, cheatsAll
       <Announcer />
       <WakeUpAnnouncement waking={waking} text={t("wake.ready", { day: view.day, cycle: view.cycleOfDay, room: names.room(you.room) })} />
       <TerminalDialog terminal={terminal} view={view} onAction={act} onClose={() => setTerminalId(null)} onSharePlanet={(planet, text) => post({ type: "sharePlanet", planet, text })} />
-      <EndScreen view={view} open={view.phase === "ended" && !endClosed} onOpenChange={(open) => setEndClosed(!open)} />
+      <EndScreen view={view} open={view.phase === "ended" && !endClosed} onOpenChange={(open) => setEndClosed(!open)} replayId={replayId} />
       {!readOnly && <BodyTakenDialog view={view} onAcknowledge={() => post({ type: "acknowledgeTransfer" })} />}
       <TopBar
         view={view}

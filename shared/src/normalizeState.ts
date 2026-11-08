@@ -235,6 +235,8 @@ export function normalizeSpot(raw: Partial<Spot>): Spot {
       return stripUndefined<Spot>({ kind: "cell", x: need(raw, "x", t), y: need(raw, "y", t), sitting: raw.sitting });
     case "door":
       return stripUndefined<Spot>({ kind: "door", door: need(raw, "door", t) });
+    case "occupancy":
+      return stripUndefined<Spot>({ kind: "occupancy", equipment: need(raw, "equipment", t), chair: raw.chair });
     default:
       throw unknownVariant(t, "kind", raw.kind satisfies undefined);
   }

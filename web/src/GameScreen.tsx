@@ -68,6 +68,7 @@ export function GameScreen({ ticket, onLeave, waking = false }: { ticket: SeatTi
       clock={clock}
       nextCycleAt={nextCycleAt}
       botsPaused={botsPaused}
+      replayId={ticket.roomId}
     />
     </RenderWatch>
     </ChatPagesProvider>

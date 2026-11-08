@@ -44,6 +44,8 @@ export interface FinishedGame {
   winner: Winner;
   ending: Ending;
   crew: FinishedCrewMember[];
+  /** A single-player game: set only by `GET /api/games/<id>`, since the list never has one. Its replay page leads back to the lobby, not the list. */
+  singlePlayer?: true;
 }
 
 /**
