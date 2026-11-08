@@ -19,7 +19,7 @@
 
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, type RefObject } from "react";
 import type { RoomId } from "@mush2/shared";
-import { gridToPx, walkPath, type DoorStep } from "./placement.ts";
+import { gridToPx, offFloorStep, stepsOnto, walkPath, type DoorStep } from "./placement.ts";
 import type { DoorState } from "./scene.ts";
 
 type Cell = { x: number; y: number };
@@ -300,7 +300,8 @@ export function useWalkers(
         const start = from?.[0];
         const inside = from?.at(-1);
         const route = from && inside ? [...from.slice(1), ...(walkPath(cells, inside, goal.cell)?.slice(1) ?? []), ...(goal.then ?? [])] : [];
-        const motion: Motion = { pos: start ? { x: start.x, y: start.y } : goal.cell, route, facing: STANDING, arriving: arrivals && !start, inDoor: start?.door, waiting: false };
+        // Appearing with nowhere to come in from, they are already where they're going (on a chair off the floor, say).
+        const motion: Motion = { pos: start ? { x: start.x, y: start.y } : dest, route, facing: STANDING, arriving: arrivals && !start, inDoor: start?.door, waiting: false };
         motions.current.set(id, motion);
         // Starting in a doorway, the door is already open (they came through it from the room you left).
         if (start?.door) doors.current.set(start.door, { state: "open", since: 0 });
@@ -314,8 +315,10 @@ export function useWalkers(
       // Someone still in a doorway steps out of it onto the floor first.
       const here = cellOf(m.pos);
       const i = walkable.has(key(here)) ? -1 : m.route.findIndex((p) => walkable.has(key(p)));
-      const path = jumps(id) ? null : walkPath(cells, i < 0 ? here : m.route[i]!, goal.cell);
-      if (path) m.route = [...(i < 0 ? path.slice(1) : [...m.route.slice(0, i), ...path]), ...(goal.then ?? [])];
+      // Someone on a chair off the floor (#192) steps down onto the nearest floor first.
+      const off = i < 0 && !walkable.has(key(here)) && !m.route.length ? offFloorStep(cells, here) : undefined;
+      const path = jumps(id) ? null : walkPath(cells, off ?? (i < 0 ? here : m.route[i]!), goal.cell);
+      if (path) m.route = [...(off ? [...stepsOnto(here, off), ...path.slice(1)] : i < 0 ? path.slice(1) : [...m.route.slice(0, i), ...path]), ...(goal.then ?? [])];
       else {
         m.pos = { x: dest.x, y: dest.y };
         m.route = [];

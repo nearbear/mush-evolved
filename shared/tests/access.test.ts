@@ -22,11 +22,12 @@ describe("accessing a terminal", () => {
     expect(costOf(s, "p0", ASTRO)).toEqual({ ap: 0, mp: 0 });
   });
 
-  it("changes nothing, and is left out of the action history (history.ts)", () => {
+  it("changes nothing but where you are (you sit at it, spot.ts), and is left out of the action history (history.ts)", () => {
     const s = game("COMMAND_CENTER");
     const r = applyAction(s, "p0", ASTRO);
     expect(r.ok).toBe(true);
     if (!r.ok) return;
+    r.state.players[0]!.spot = s.players[0]!.spot;
     expect(r.state).toEqual(s);
   });
 

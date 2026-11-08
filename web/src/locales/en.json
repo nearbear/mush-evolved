@@ -680,6 +680,7 @@
     "broken_nose_injury": "Broken Nose",
     "inactive": "Inactive",
     "super_inactive": "Super Inactive",
+    "focused": "Focused",
     "contaminated": "Contamination: {{level}}",
     "desc": {
       "dirty": "Can't research. Taking a shower removes it.",
@@ -701,6 +702,7 @@
       "broken_nose_injury": "-2 Max HP.\n-2 Max Morale.",
       "inactive": "Hasn't connected for 24 hours. Holds no title, can't be taken over by a Transfer, and a punch lands on them 90% of the time. Ends as soon as they connect.",
       "super_inactive": "Hasn't connected for 48 hours. Also skipped by the Logistics Expert. Ends as soon as they connect.",
+      "focused": "At a terminal, looking at its screen. Ends when they close it, walk off or leave the room.",
       "contaminated": "A human you have contaminated. At their capacity they turn Mush."
     }
   },

@@ -253,6 +253,7 @@ export function GameView({ view: given, send, onLeave, waking = false, cheatsAll
                 selectedDoor={peekDoor}
                 actingOn={actingOn}
                 sentCount={sentCount}
+                atTerminal={terminalId !== null}
                 teleport={you.cheats.includes("instantActions")}
                 snap={snapWalks}
                 doorMoves={doorMoves}

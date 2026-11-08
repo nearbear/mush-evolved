@@ -1,5 +1,5 @@
 // Status effects. `dirty` is stored in `PlayerState.statuses`; `full_belly`, `hungry`,
-// `immune`, `immunity`, `pacifist`, `hyperactive`, `mankind_only_hope`, `wheelchair`, `accommodated`, `inactive` and `super_inactive` are derived each time they are asked for (from satiety, skills
+// `immune`, `immunity`, `pacifist`, `hyperactive`, `mankind_only_hope`, `wheelchair`, `accommodated`, `inactive`, `super_inactive` and `focused` are derived each time they are asked for (from satiety, skills
 // and traits), so they can't drift out of step with it. Public statuses show on the Inspect panel for
 // everyone in the room; private ones appear only in your own view.
 // Names and icons live in the client (i18n keys `status.<id>`).
@@ -32,9 +32,11 @@ const FIXED_STATUS_PUBLIC = {
   // Owner, 2026-10-31 (#145): both are public to everyone and float over the head.
   inactive: true,
   super_inactive: true,
+  // Owner, 2026-11-07 (#192): at a terminal, sitting or standing, shown to the room. Cosmetic: no rule reads it.
+  focused: true,
 } as const;
 
-export const STATUS_IDS = ["dirty", "full_belly", "hungry", "immune", "immunity", "pacifist", "hyperactive", "mankind_only_hope", "wheelchair", "accommodated", "outcast", "guardian", "broken_nose_injury", "genius", "inactive", "super_inactive"] as const;
+export const STATUS_IDS = ["dirty", "full_belly", "hungry", "immune", "immunity", "pacifist", "hyperactive", "mankind_only_hope", "wheelchair", "accommodated", "outcast", "guardian", "broken_nose_injury", "genius", "inactive", "super_inactive", "focused"] as const;
 export type StatusId = string;
 export function statusIdsFor(diseases: readonly string[]): string[] {
   return [...new Set([...STATUS_IDS, ...diseases])];
@@ -99,6 +101,8 @@ export function statusesOf(state: Readonly<Pick<GameState, "config" | "cycle">>,
     ...(p.pushedBy !== undefined ? ["accommodated"] : []),
     ...(p.outcastBy !== undefined ? ["outcast"] : []),
     ...(inactivity !== null ? [inactivity] : []),
+    // At a terminal with its window open (spot.ts, #192).
+    ...(p.spot?.kind === "occupancy" ? ["focused"] : []),
   ];
 }
 

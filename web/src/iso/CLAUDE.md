@@ -53,6 +53,11 @@ Loaded when working on the isometric view. The UI rules in `web/CLAUDE.md` still
   floor begins, you walk to the equipment's standing spot or the cell before the person or body; a
   move walks you to the door (a move takes `durationMs` like any action, and the room changes at its end).
   The walk is sent to the server (`ActingOn.share`) only for public actions (owner, 2026-10-20).
+  Opening a terminal (`access`, `ActingOn.seats`) walks you there without sending it: the server seats you
+  (an `occupancy` spot, #192), and you go to that chair (`terminalSpot`). Closing the terminal's window
+  (`atTerminal` off) walks you to its standing spot, and that walk is sent, which ends the spot. A chair off
+  the floor (the pilot's, the turrets') is climbed into from the nearest floor cell (`offFloorStep`, `stepsOnto`,
+  as a `Goal.then`), and stepped down from the same way.
   "Begins" is read from the view's queue: at once if you were idle, otherwise when it shows up as
   `current` (timed) or leaves the queue with nothing under way (instant). Clearing the queue walks
   nowhere; a click on the floor afterwards still overrides.

@@ -2,7 +2,7 @@
 // can be unit tested and run headless. Reproduces the original Flash client
 // (clients/iso/src: V2DIso.grid2px, Data.setup, Grid.sort/sortFunc).
 
-import type { RoomLayout, ShipLayout, SliceInfo, TileKind, TilePlacement } from "@mush2/shared";
+import { placedEquipment, type RoomLayout, type ShipLayout, type SliceInfo, type TileKind, type TilePlacement } from "@mush2/shared";
 
 /** Half the width of one cell's diamond, in pixels (V2DIso.R). */
 const R = 16;
@@ -706,6 +706,47 @@ export function standSpot(
   if (found) return found;
   const cx = (x0 + t.x) / 2, cy = (y0 + t.y) / 2;
   return [...cells].sort((a, b) => Math.hypot(a.x - cx, a.y - cy) - Math.hypot(b.x - cx, b.y - cy))[0];
+}
+
+/**
+ * Where someone at the terminal `equipment` (an `occupancy` spot, #192) is drawn: on its chair number `chair` if
+ * the map has that chair (`chairs` on its binding), with the chair's direction ("" for a stool), or else at its
+ * standing spot. A chair's cell may be off the floor, under the console or turret it belongs to (`offFloorStep`
+ * gets you onto it). Undefined if the room doesn't draw that equipment. Display only.
+ */
+export function terminalSpot(
+  layout: ShipLayout,
+  room: RoomLayout,
+  equipment: string,
+  chair: number | undefined,
+  cells: readonly { x: number; y: number }[],
+): { cell: { x: number; y: number }; chair?: string } | undefined {
+  const placed = placedEquipment(room).find((e) => e.id === equipment);
+  if (!placed) return undefined;
+  const seat = chair === undefined ? undefined : placed.chairs?.[chair];
+  const t = seat && room.tiles.find((t) => t.kind === "entity" && t.x === seat.x && t.y === seat.y && layout.slices[t.slice]?.flags.includes("chair"));
+  if (seat && t && cells.length > 0) return { cell: { x: seat.x, y: seat.y }, chair: layout.slices[t.slice]?.dir ?? "" };
+  const cell = standSpot(layout, room, placed.tile, cells);
+  return cell && { cell };
+}
+
+/**
+ * Getting to a cell off the floor (a seat inside a turret, under its footprint, #192): the floor cell nearest it, to
+ * walk to, from which you climb in (`stepsOnto`). Undefined for a cell on the floor, or a room with none.
+ */
+export function offFloorStep(cells: readonly { x: number; y: number }[], cell: { x: number; y: number }): { x: number; y: number } | undefined {
+  if (cells.some((c) => c.x === cell.x && c.y === cell.y)) return undefined;
+  const dist = (c: { x: number; y: number }) => Math.abs(c.x - cell.x) + Math.abs(c.y - cell.y);
+  return [...cells].sort((a, b) => dist(a) - dist(b) || a.x - b.x || a.y - b.y)[0];
+}
+
+/** The cells from `from` (left out) to `to`, a step at a time along x and then y: a way across what isn't floor. */
+export function stepsOnto(from: { x: number; y: number }, to: { x: number; y: number }): { x: number; y: number }[] {
+  const steps: { x: number; y: number }[] = [];
+  let { x, y } = from;
+  while (x !== to.x) steps.push({ x: (x += Math.sign(to.x - x)), y });
+  while (y !== to.y) steps.push({ x, y: (y += Math.sign(to.y - y)) });
+  return steps;
 }
 
 /**

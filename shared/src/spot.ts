@@ -5,8 +5,12 @@
 // cells, so a cell is only checked for size; the client stands someone on a cell it can't walk to in the usual spot.
 // Pushing a wheelchair (owner, 2026-10-24), your walks steer it: the cell is where the person you push goes, and you
 // stand at `behind`, the cell the client puts you in behind them (it draws you following their trail there).
+// Opening a terminal's window (`access`) sits you on a free chair at it, or stands you there (#192, owner 2026-11-08):
+// an `occupancy` spot, set here so "free" is the server's to say. Closing the window gets you up: the client sends a
+// walk, as it does for any walk, and moving rooms does too. Roommates see it as the Focused status.
 
 import type { ActionDef } from "./actions.ts";
+import { SHIP_ROOMS } from "./config.ts";
 import { removeStatus } from "./statuses.ts";
 import { clone, fail, findPlayer, type ActionResult } from "./helpers.ts";
 import type { Action, GameState, PlayerId, PlayerState, RoomId, Spot } from "./types.ts";
@@ -52,4 +56,34 @@ export function arrive(p: PlayerState, from: RoomId): void {
   p.spot = { kind: "door", door: from } satisfies Spot;
   p.enteredFrom = from;
   removeStatus(p, "guardian"); // changing room ends guarding (guard.ts)
+}
+
+/** The cells of the chairs at a terminal, from the map (`ShipRoom` equipment's `chairs`); none for most equipment. */
+export function terminalChairs(room: RoomId, equipment: string): readonly { x: number; y: number }[] {
+  return SHIP_ROOMS.find((r) => r.id === room)?.equipment.find((e) => e.id === equipment)?.chairs ?? [];
+}
+
+/**
+ * Sit at the terminal `equipment` in your room (its window opened): on the first of its chairs nobody else in the room
+ * has, by a terminal or by sitting down on it, or standing at it if they're all taken or it has none. Staying where
+ * you are if you're already at it. Not while you can't walk (in bed, in or pushing a wheelchair). Mutates a cloned state.
+ */
+export function occupy(state: GameState, p: PlayerState, equipment: string): void {
+  if (!state.config.sharedSpots || !p.alive || p.lyingIn !== undefined || p.pushedBy !== undefined) return;
+  if (state.players.some((o) => o.pushedBy === p.id)) return;
+  if (p.spot?.kind === "occupancy" && p.spot.equipment === equipment) return;
+  const others = state.players.filter((o) => o.id !== p.id && o.alive && o.room === p.room);
+  const taken = (cell: { x: number; y: number }, chair: number) =>
+    others.some(({ spot }) =>
+      spot?.kind === "occupancy"
+        ? spot.equipment === equipment && spot.chair === chair
+        : spot?.kind === "cell" && spot.sitting === true && spot.x === cell.x && spot.y === cell.y,
+    );
+  const chair = terminalChairs(p.room, equipment).findIndex((cell, i) => !taken(cell, i));
+  p.spot = { kind: "occupancy", equipment, ...(chair >= 0 && { chair }) };
+}
+
+/** Lying down or a wheelchair push takes you away from a terminal (its window can't stay open): no spot, as before you walked. Mutates a cloned state. */
+export function leaveTerminal(p: PlayerState): void {
+  if (p.spot?.kind === "occupancy") delete p.spot;
 }

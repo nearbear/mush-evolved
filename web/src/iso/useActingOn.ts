@@ -19,6 +19,8 @@ export interface ActingOn {
   share: boolean;
   /** The action ends a wheelchair push you're part of (`endsAccommodation`), so you walk up to it even if you were pushing or pushed. */
   endsPush: boolean;
+  /** Opening a terminal (`access`): the server seats you there (#192), so the walk up to it isn't sent. */
+  seats?: boolean;
 }
 
 type Queue = Pick<PlayerView["you"], "current" | "queue">;
@@ -43,7 +45,7 @@ export function useActingOn(you: PlayerView["you"] | undefined): { actingOn: Act
     if (!action || !target) return;
     const visibility = actionVisibility(action.type);
     const endsPush = !!you && endsAccommodation(action, you.id, visibility);
-    setActingOn((a) => ({ target, n: (a?.n ?? 0) + 1, share: visibility === "public", endsPush }));
+    setActingOn((a) => ({ target, n: (a?.n ?? 0) + 1, share: visibility === "public", endsPush, ...(action.type === "access" && { seats: true }) }));
   };
 
   const before = useRef(you);

@@ -1,3 +1,4 @@
+import { leaveTerminal } from "../spot.ts";
 import { Action, peopleHere, isString } from "./action.ts";
 import { getUp } from "./lie_down.ts";
 import { endsAccommodation } from "../actionTarget.ts";
@@ -120,6 +121,8 @@ export class AcceptAccommodationAction extends Action<AcceptAccommodationActionD
     const pusher = state.players.find((o) => o.id === target.target)!;
     player.pushedBy = pusher.id;
     delete player.accommodationOffers;
+    leaveTerminal(player);
+    leaveTerminal(pusher);
     logPublic(state, player.room, "accommodated", { name: pusher.character, target: player.character });
   }
 }

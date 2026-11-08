@@ -688,6 +688,7 @@
     "broken_nose_injury": "Nariz rota",
     "inactive": "Inactivo",
     "super_inactive": "Gran inactivo",
+    "focused": "Concentrado",
     "contaminated": "Contaminación: {{level}}",
     "desc": {
       "dirty": "No puedes investigar. Darte una ducha lo elimina.",
@@ -709,6 +710,7 @@
       "broken_nose_injury": "-2 PV máximos.\n-2 de moral máxima.",
       "inactive": "No se ha conectado en 24 horas. No puede tener ningún título, no puede sufrir una Transferencia, y un puñetazo le acierta el 90 % de las veces. Termina en cuanto se conecta.",
       "super_inactive": "No se ha conectado en 48 horas. Logística también lo ignora. Termina en cuanto se conecta.",
+      "focused": "Está en un terminal, mirando su pantalla. Termina cuando lo cierra, se aleja o sale de la sala.",
       "contaminated": "Un humano que has contaminado. Al llegar a su capacidad se vuelve Mush."
     }
   },
