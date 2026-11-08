@@ -385,7 +385,8 @@
     "extinguishManually": "Éteindre à la main",
     "ignite": "Allumer un feu",
     "sabotage": "Saboter",
-    "greenJelly": "Gelée verte"
+    "greenJelly": "Gelée verte",
+    "reinforce": "Renforcer"
   },
   "queue": {
     "label": "Vos actions",
@@ -655,7 +656,9 @@
     "jelly_one": "Gélée verte : panne dans {{count}} cycle",
     "jelly_many": "Gélée verte : panne dans {{count}} cycles",
     "jelly_other": "Gélée verte : panne dans {{count}} cycles",
-    "jellyDesc": "Seuls les Mush peuvent le voir.",
+    "jellyDesc": "Il tombe en panne quand les cycles sont écoulés.",
+    "shield": "Blindage : {{shield}}",
+    "shieldDesc": "Donne une chance sur 100 d'échapper à une panne. À 25 ou plus, il ne peut être ni saboté ni démonté.",
     "satiety": "Satiété",
     "plantOf": "Plant : {{item}}",
     "young": "Jeune plant",
@@ -781,6 +784,10 @@
     "sabotaged": "{{name}} a saboté l'équipement « {{equipment}} ».",
     "greenJelly": "{{name}} a étalé de la gélée verte sur l'équipement « {{equipment}} ». Il tombera en panne dans {{cycles}} cycle(s).",
     "greenJellyItem": "{{name}} a étalé de la gélée verte sur l'objet « {{item}} ». Il tombera en panne dans {{cycles}} cycle(s).",
+    "reinforced": "Vous avez renforcé l'équipement « {{equipment}} ». Blindage : {{shield}}.",
+    "reinforcedItem": "Vous avez renforcé : {{item}}. Blindage : {{shield}}.",
+    "reinforceFailed": "Vous n'avez pas réussi à renforcer l'équipement « {{equipment}} ».",
+    "reinforceFailedItem": "Vous n'avez pas réussi à renforcer : {{item}}.",
     "sabotageFailed": "{{name}} n'a pas réussi à saboter l'équipement « {{equipment}} ».",
     "sabotagedItem": "{{name}} a saboté l'objet : {{item}}.",
     "sabotageFailedItem": "{{name}} n'a pas réussi à saboter l'objet : {{item}}.",
@@ -1008,7 +1015,7 @@
       "defacer": "Votre ADN vous permets de modifier certaines séquences de données périphériques.Plein de potentiel !"
     },
     "effects": {
-      "engineer": "+1 PA (point d'action Réparation) par jour.\nChances de réussites doublées pour les Réparations.\nChances de réussites doublées pour les Rénovations.\nBonus pour développer certains Projets NERON.",
+      "engineer": "+1 PA (point d'action Réparation) par jour.\nAction : Démonter - Pour 3 PA, transforme certains objets en débris.\nAction : Renforcer - Pour 1 PA, utilise des débris pour ajouter un blindage aux objets et aux équipements, les protégeant des pannes.\nChances de réussites doublées pour les Réparations.\nChances de réussites doublées pour les Rénovations.\nBonus pour développer certains Projets NERON.",
       "astrophysician": "L'action Scanner Une Planète coûte 1 PA de moins.\n+1 secteur découvert par analyse de planète.",
       "pilot": "Utilise des Tactiques De Pilotage.\nNe rate jamais les atterrissages et décollages.\nBonus pour développer certains Projets NERON.",
       "gunman": "+2 Tirs gratuits PA par jour.\nVos tirs ratés provoquent 2 fois moins de maladresses.\nVos tirs réussis provoquent 2 fois plus de coups critiques.\nBonus pour développer certains Projets NERON.",

@@ -510,6 +510,8 @@ export interface GameConfig {
   // Owner, 2026-11-07: a Mush breaks equipment or an item (actions/sabotage.ts), at the target's repair chance or `defaultChance` for an item without one.
   sabotage: { cost: { ap: number }; defaultChance: number; sapperFactor: number };
   greenJelly: { cost: { ap: number }; maxCycles: number };
+  // Owner, 2026-11-07: an Engineer reinforces equipment or an item (actions/reinforce.ts) with one scrap, `gain` by scrap type, up to `max`.
+  reinforce: { cost: { ap: number }; chance: number; max: number; fortifiedAt: number; gain: Record<string, number> };
   extinguish: { cost: { ap: number }; chance: number; manual: { chance: number; failureMultiplier: number }; firefighterInjuryChance: number };
   // Breakage and Repair (owner, 2026-10-25): breakage.ts. `chance` is each breakable equipment type's base repair chance
   // (eMushpedia's `réparer=`); a type without one never breaks. A wrench multiplies it by `wrenchFactor`, the Technician
@@ -590,6 +592,7 @@ export interface GameConfig {
 export interface Equipment {
   id: string; // Unique across the ship, e.g. "REFECTORY:KITCHEN".
   type: string;
+  shield?: number; // Reinforce (actions/reinforce.ts): shielding points, up to `config.reinforce.max`. Engineers and Mush see it in views. No effect yet. Never set in the config.
   jelly?: number; // Green jelly (actions/green_jelly.ts): cycle changes left before it breaks. Mush-only in views.
   broken?: true; // Broken by an incident or a fire (breakage.ts) until repaired. Only the living in its room see it. Never set in the config.
 }

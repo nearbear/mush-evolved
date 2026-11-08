@@ -206,6 +206,7 @@ function itemFields(raw: Partial<SpaceDebris>, t: string): AllKeys<SpaceDebris> 
     plant: opt(raw.plant, normalizePlant),
     broken: raw.broken,
     jelly: raw.jelly,
+    shield: raw.shield,
   };
 }
 
@@ -220,7 +221,7 @@ export function normalizeDebris(raw: Partial<SpaceDebris>): SpaceDebris {
 
 export function normalizeEquipment(raw: Partial<Equipment>): Equipment {
   const t = "Equipment";
-  return stripUndefined<Equipment>({ id: need(raw, "id", t), type: need(raw, "type", t), broken: raw.broken, jelly: raw.jelly });
+  return stripUndefined<Equipment>({ id: need(raw, "id", t), type: need(raw, "type", t), broken: raw.broken, jelly: raw.jelly, shield: raw.shield });
 }
 
 // Players.

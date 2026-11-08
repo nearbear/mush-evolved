@@ -49,20 +49,20 @@ const aboard = (state: Readonly<GameState>): PlayerState[] => {
 const occupiedRooms = (state: Readonly<GameState>): RoomId[] => daedalusRooms(state).filter((room) => state.players.some((p) => p.alive && p.room === room));
 
 const workingOf = (state: Readonly<GameState>, type?: string): Equipment[] =>
-  daedalusRooms(state).flatMap((room) => workingBreakable(state, room).filter((e) => type === undefined || e.type === type));
+  daedalusRooms(state).flatMap((room) => workingBreakable(state, room).filter((e) => e.jelly === undefined && (type === undefined || e.type === type)));
 
-/** Working items of types with `canBreakOnCycleChange`, on the Daedalus floor or carried by someone living aboard. */
+/** Working items without green jelly of types with `canBreakOnCycleChange`, on the Daedalus floor or carried by someone living aboard. */
 const breakableItems = (state: Readonly<GameState>): ItemState[] => {
   const rooms = new Set(daedalusRooms(state));
   const holders = new Set(aboard(state).map((p) => p.id));
   return state.items.filter((i) => {
     const type = ITEM_TYPES[i.type];
-    if (!type?.canBreak || !type.canBreakOnCycleChange || !isWorking(i)) return false;
+    if (!type?.canBreak || !type.canBreakOnCycleChange || !isWorking(i) || i.jelly !== undefined) return false;
     return i.at.kind === "room" ? rooms.has(i.at.id) : holders.has(i.at.id);
   });
 };
 
-/** One working piece of equipment, picked at random; with no `type` (a general breakdown) an eligible item may be picked instead. */
+/** One working piece of equipment, picked at random, never one with green jelly on it (owner, 2026-11-07: it breaks on its own timer, and being passed over cancels nothing, another is picked); with no `type` (a general breakdown) an eligible item may be picked instead. */
 const breakOne = (type?: string): Incident => {
   const equipment = (state: Readonly<GameState>) => workingOf(state, type);
   const items = (state: Readonly<GameState>) => (type === undefined ? breakableItems(state) : []);
@@ -71,6 +71,9 @@ const breakOne = (type?: string): Incident => {
     apply: (state) => {
       const pool = [...equipment(state).map((e) => ({ e })), ...items(state).map((i) => ({ i }))];
       const target = pick(state, pool);
+      // Reinforce (owner, 2026-11-07): shielding points out of 100 are the chance it holds. The roll is only made for shielded targets.
+      const shield = "i" in target ? target.i.shield : target.e.shield;
+      if (shield && rollFloat(state) < shield / 100) return;
       if ("i" in target) breakItem(state, target.i, true);
       else breakEquipment(state, target.e);
     },

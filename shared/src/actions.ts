@@ -38,6 +38,7 @@ import { RepairHullAction } from "./actions/repair_hull.ts";
 import { RepairAction } from "./actions/repair.ts";
 import { IgniteAction } from "./actions/ignite.ts";
 import { GreenJellyAction } from "./actions/green_jelly.ts";
+import { ReinforceAction } from "./actions/reinforce.ts";
 import { SabotageAction } from "./actions/sabotage.ts";
 import { ExtinguishAction } from "./actions/extinguish.ts";
 import { ExtinguishManuallyAction } from "./actions/extinguish_manually.ts";
@@ -168,6 +169,7 @@ const REGISTRY = {
   extinguish: new ExtinguishAction(),
   ignite: new IgniteAction(),
   sabotage: new SabotageAction(),
+  reinforce: new ReinforceAction(),
   green_jelly: new GreenJellyAction(),
   extinguish_manually: new ExtinguishManuallyAction(),
   takeoff: new TakeoffAction(),

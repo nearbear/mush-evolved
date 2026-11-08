@@ -2665,3 +2665,24 @@ Follow-up the same day: the "N% repaired" text became a bare percent (the shared
 - `docs/plans/normalize-state.md` was cut from a plan full of phase-by-phase notes down to what was built; code comments that pointed at its numbered sections and decisions now point at its headings. The `MIN_STATE_VERSION` comment no longer claims 114 was first written by the normalizers (phase 1 wrote it).
 - Needed correction: the review flagged pre-stamp replays as unreadable, but the databases are empty, so there are none. It also flagged that players on an unavailable ship can't board elsewhere, which is intended (owner).
 - **Checks:** `npm run verify` passed (2445 tests).
+
+## 2026-11-07: Reinforce action (Engineer)
+
+- Owner specified cost, chance, scrap values, cap and visibility. Open points settled by questions: targets are the union of dismantlable or sabotageable, scrap taken from the inventory first then the room (one option per scrap type), scrap kept on a failed roll, clamp to 50 and don't offer a target already at 50.
+- Built as `actions/reinforce.ts` with `shield` on `ItemState` and `Equipment`, views filtered to living Engineers and Mush, `STATE_VERSION` bumped to 115. Modelled on green jelly. Log params had to be named `item`/`equipment` for the client to translate them.
+
+- Same day, follow-up: shielding gives shield/100 chance an incident's single pick (`breakOne`) holds. I read "the cycle change incident" as the single-pick incidents only, not electrical overload or fire; the shield isn't consumed. Flagged to the owner.
+
+- Same day, second follow-up: shielding of 25+ blocks Dismantle and Sabotage (`isFortified`, `config.reinforce.fortifiedAt`). I kept the check out of the shared sabotageable helpers so Green Jelly stays unaffected, as the owner said earlier.
+
+- Same day, UI follow-up: green jelly and shielding in the Inspect panel are now icon-with-count buttons with a popover, in one `ThingMarks` row beside the spores badge (`StatusIcon`). Icons are existing Motion Twin art (the shield UI icon, the Electro-slime skill icon); nothing generated.
+
+- Same day, Reinforce is one action per target (no `scrap` field); `findScrap` picks metal in the inventory, plastic in the inventory, metal in the room, plastic in the room (owner's order).
+
+- Same day, equipment and items with green jelly are left out of `breakOne`'s pool, so a breakdown picks something else instead of being cancelled.
+
+### 2026-11-07: merging SawJester's Reinforce branch onto the normalized-state main
+
+- Merged `sawjester/skills` (Reinforce, two commits) into `main` in a worktree. Conflicts came from #384: the fork bumped `STATE_VERSION` to 115 in `GameRoom.ts`, but it now lives in `normalizeState.ts` and a new optional field needs no bump, so the bump was dropped and `shield` passes through `itemFields` and `normalizeEquipment` like `jelly` (absent means none, so no `added()` default). `state-shape.json`, deleted on main, stayed deleted. The fork's log entry above still says "bumped to 115"; that no longer holds.
+- Needed correction: resolving `normalizeState.ts` with `checkout --theirs` took the fork's whole file and lost main's later changes (`STATE_VERSION`, `upgrade`, `normalizeFrame`); `verify` caught it, and the file was redone from main plus the two `shield` lines.
+- **Checks:** `npm run verify` passed (2463 tests), `npm run build` passed.
