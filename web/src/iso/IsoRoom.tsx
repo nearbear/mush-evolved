@@ -511,6 +511,8 @@ export function IsoRoom({
   useEffect(() => {
     // Pushing a wheelchair or pushed in one, you stay with it, unless what you do ends the push (shared `endsAccommodation`).
     if (!actingOn || !roomLayout || !myWalker || leavingTo || ((myPushee || me?.pushedBy !== undefined) && !actingOn.endsPush)) return;
+    // Seated at a terminal with its window open (#192), what you do there keeps you in your chair: a walk would end it.
+    if (atTerminal && mySpot?.kind === "occupancy") return;
     const { target } = actingOn;
     let cell: { x: number; y: number } | undefined;
     if (target.kind === "door") cell = doorSpot(layout, roomLayout, target.to, cells);
