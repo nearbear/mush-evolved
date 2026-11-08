@@ -67,7 +67,7 @@ Other packages import from `@mush2/shared` (`shared/src/index.ts`, the barrel). 
 - `items.ts`: item types, containers, capacity and reach helpers, `produceItem`, `removeItem`, `newItemId`.
 - `itemIds.ts`: dependency-light IDs used by item definitions and the default config.
 - `equipment.ts`: room equipment types, `SUPER_CALC_EQUIPMENT`, and `equipmentHere` (equipment of a type in the player's room).
-- `log.ts`: room log helpers (`pushLog`, the one writer, which gives each line its `LogEntry.id` from `nextLogId`; `logPublic`, `logPrivate`, `logSecret`, `logCovert`, `hasCamera`; the room-log window `seesLine`, `logWindowOf`, `inLogWindow`, `pruneLog`, and `logSeen` counting, #365).
+- `log.ts`: room log helpers (`pushLog`, the one writer, which gives each line its `LogEntry.id` from `nextLogId`; `logPublic`, `logPrivate`, `logSecret`, `logCovert`, `hasCamera`; the room-log window `seesLine`, `logWindowOf`, `inLogWindow`, `pruneLog`, and `logSeen` counting, #365; each writer sets `LogEntry.kind` and `leaked`, #366, tested in `logKind.test.ts`).
 - `history.ts`: each body's action history (`recordAction`, called from `performAction`) and `revealHistory`, the private reveal lines Interrogate and Chitchat write.
 - `resources.ts`: per-player skill point pools.
 - `skills.ts`: the human skills, each character's pickable list (`CHARACTER_SKILLS`), `SKILL_SLOTS`, the Mush skills (`MUSH_SKILLS`, `MUSH_SKILL_SLOTS`), and `skillsOf`/`hasSkill` (picked skills, the book slot, and Mush skills).

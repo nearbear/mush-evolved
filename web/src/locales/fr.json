@@ -515,6 +515,13 @@
     "bodyMush": "Vous pouvez encore lire le chat général, les fils des fonctions et le canal Mush, mais vous ne pouvez plus y écrire. Vous pouvez parler avec les autres morts dans le Cimetière."
   },
   "itrackie": {
+    "visibility": {
+      "private": "Action privée : personne d'autre ne voit cette ligne.",
+      "secret": "Action secrète : personne d'autre ne l'a vue.",
+      "secretLeaked": "Action secrète, mais quelqu'un d'autre l'a vue.",
+      "covert": "Action discrète : personne d'autre ne l'a vue.",
+      "covertLeaked": "Action discrète, mais elle a été révélée."
+    },
     "unreadTab_one": "{{name}}, {{count}} non lu",
     "unreadTab_other": "{{name}}, {{count}} non lus",
     "unreadTab_many": "{{name}}, {{count}} non lus",

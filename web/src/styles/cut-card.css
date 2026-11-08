@@ -23,6 +23,7 @@
   --muted: #4a5a8f;
   --accent: #0b5a9e;
   --warning: #a14a00;
+  --danger: #b0002a;
   --edge: #8fb9cc;
   background:
     linear-gradient(45deg, var(--corner)) left bottom / calc(var(--c) + 4px) calc(var(--c) + 4px) no-repeat border-box,

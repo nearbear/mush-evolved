@@ -515,6 +515,13 @@
     "bodyMush": "Todavía puedes leer el chat global, los hilos de funciones y el canal Mush, pero ya no puedes escribir allí. Puedes hablar con los demás muertos en el Cementerio."
   },
   "itrackie": {
+    "visibility": {
+      "private": "Acción privada: nadie más ve esta línea.",
+      "secret": "Acción secreta: nadie más la vio.",
+      "secretLeaked": "Acción secreta, pero alguien más la vio.",
+      "covert": "Acción discreta: nadie más la vio.",
+      "covertLeaked": "Acción discreta, pero fue revelada."
+    },
     "unreadTab_one": "{{name}}, {{count}} sin leer",
     "unreadTab_other": "{{name}}, {{count}} sin leer",
     "unreadTab_many": "{{name}}, {{count}} sin leer",

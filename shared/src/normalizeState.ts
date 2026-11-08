@@ -354,6 +354,8 @@ export function normalizeLogEntry(raw: Partial<LogEntry>): LogEntry {
     room: raw.room,
     visibleTo: visibleTo === "all" ? "all" : copy(visibleTo),
     level: raw.level,
+    kind: raw.kind,
+    leaked: raw.leaked,
   });
 }
 

@@ -73,7 +73,7 @@ All under `web/src/`. UI rules are in `web/CLAUDE.md`.
 - `SharedPlanets.tsx`: the Astrophysics feature: its general thread, then one row per shared planet (newest first; entries no longer applicable hidden unless shown), each opening its text above its own thread.
 - `ExpeditionReportDialog.tsx`: an expedition's report (`view.expeditions`), opened from the member's `expeditionReturned` line in the room log (`ITrackie.tsx`), or from `IcarusPanel` while away.
 - `SharePlanetDialog.tsx`: the Astro window's Share dialog, an editable text version of one of your planets posted as `sharePlanet`.
-- `FeedEntry.tsx`, `CycleDivider.tsx`, `RecencyStamp.tsx` + `recency.ts` (pure): an iTrackie feed row, the "Cycle N" rule between cycles, and the "47min ago" caption with the exact time in a popover.
+- `FeedEntry.tsx`, `CycleDivider.tsx`, `RecencyStamp.tsx` + `recency.ts` (pure), `VisibilityBadge.tsx`: an iTrackie feed row, the "Cycle N" rule between cycles, the "47min ago" caption with the exact time in a popover, and a log line's kind badge (private, secret, covert; leaked or not) in a popover (#366, reused by the replay's story 5).
 - `Scroller.tsx`: a scroll area that sticks to the bottom as items arrive.
 - `ResearchTracker.tsx`, `Tracker.tsx`: the Research feature's strip of research cards, and a notes list the player types in.
 - `ResourceChips.tsx`: your other resources as chips (the first two, or as many as fit on a phone, then "…" for the rest).

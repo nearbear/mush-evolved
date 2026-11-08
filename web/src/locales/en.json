@@ -510,6 +510,13 @@
     "bodyMush": "You can still read global chat, the feature threads and the Mush channel, but you can no longer post there. You can talk with the other dead in the Graveyard."
   },
   "itrackie": {
+    "visibility": {
+      "private": "Private action: no one else sees this line.",
+      "secret": "Secret action: no one else saw it.",
+      "secretLeaked": "Secret action, but someone else saw it.",
+      "covert": "Covert action: no one else saw it.",
+      "covertLeaked": "Covert action, but it was revealed."
+    },
     "unreadTab_one": "{{name}}, {{count}} unread",
     "unreadTab_other": "{{name}}, {{count}} unread",
     "needITrackieRead": "You need an iTrackie in your inventory to read this.",

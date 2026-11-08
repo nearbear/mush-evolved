@@ -586,7 +586,8 @@ export function seatViewFor(state: GameState, playerId: PlayerId): SeatView {
     roomOnFire: you.alive && isOnFire(state, you.room),
     burningRooms: you.alive && projectDone(state, "FIRE_SENSOR") ? [...state.fires] : [],
     // `seesLine` (log.ts) says which lines are yours; room lines, private ones included, only within your window (#365).
-    // A private line names only you in the view: no one learns who else saw it (`level` marks a leaked secret line).
+    // A private line names only you in the view: no one learns who else saw it (`leaked` marks a secret line others saw).
+    // `kind` and `leaked` go with every line you see (#366).
     log: state.log
       .filter((e) => seesLine(e, you) && inLogWindow(state, e, logWindow))
       .map((e) => (e.visibleTo === "all" ? e : { ...e, visibleTo: [you.id] })),

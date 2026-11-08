@@ -16,6 +16,7 @@ import { Hint, IconTab } from "./IconButton.tsx";
 import { TabOutline } from "./TabOutline.tsx";
 import { CycleDivider } from "./CycleDivider.tsx";
 import { FeedEntry, InfoMarker, WarningMarker } from "./FeedEntry.tsx";
+import { VisibilityBadge } from "./VisibilityBadge.tsx";
 import { PrivateChannels, type ChannelHandlers } from "./PrivateChannels.tsx";
 import { Thread, type ThreadLinks } from "./Thread.tsx";
 import { Threads, threadNameFrom } from "./Threads.tsx";
@@ -79,6 +80,16 @@ function useUnread(view: PlayerView, active: TabId): Record<TabId, number> {
 }
 
 /**
+ * A log line's look: a warning (an alarm, or a secret line that leaked) in amber, a covert line that leaked in red
+ * (covert actions are usually malicious; owner, 2026-11-05), and a line others didn't see muted. An Outcast's leaked
+ * line has no warning level and keeps the plain look (owner, 2026-11-08); its badge still shows.
+ */
+function logRowClass(e: LogLine): string | undefined {
+  if (e.level === "warning") return e.leaked && e.kind === "covert" ? "warning danger" : "warning";
+  return e.visibleTo === "all" ? undefined : "private";
+}
+
+/**
  * One room log line, memoized by content: the log tab stays mounted, so every new view would otherwise redraw each
  * line and its time popover (web/CLAUDE.md "Render cost"). `onRead` must be stable (a state setter).
  */
@@ -90,7 +101,8 @@ const LogRow = memo(
       <FeedEntry
         marker={e.level === "warning" ? <WarningMarker /> : <InfoMarker />}
         at={e.at}
-        className={e.level === "warning" ? "warning" : e.visibleTo === "all" ? undefined : "private"}
+        badge={e.kind && <VisibilityBadge kind={e.kind} leaked={e.leaked === true} />}
+        className={logRowClass(e)}
       >
         {names.logLine(e)}
         {canRead && (

@@ -15,6 +15,7 @@ export function FeedEntry({
   name,
   at,
   tools,
+  badge,
   className,
   children,
 }: {
@@ -23,6 +24,8 @@ export function FeedEntry({
   at: number | undefined;
   /** Small buttons at the right of the name row (entries with a name only). */
   tools?: ReactNode;
+  /** A small badge beside the recency caption (entries without a name only): a log line's visibility. */
+  badge?: ReactNode;
   className?: string | undefined;
   children: ReactNode;
 }) {
@@ -40,7 +43,12 @@ export function FeedEntry({
       )}
       <div className="entry-body">{children}</div>
       {/* No sender to put on top: the caption shares the body's row. */}
-      {name === undefined && <RecencyStamp at={at} />}
+      {name === undefined && (
+        <span className="entry-stamp">
+          {badge}
+          <RecencyStamp at={at} />
+        </span>
+      )}
     </li>
   );
 }
