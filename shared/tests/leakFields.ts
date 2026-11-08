@@ -61,6 +61,8 @@ export const GAME_STATE_FIELDS: Record<string, FieldRule> = {
   nextPlanetId: { reach: "never", test: "leaks.test.ts", note: "Not secret (planet ids show it), just not sent." },
   sharedPlanets: { reach: "filtered", test: "sharedPlanets.test.ts", note: "To whoever can read the Astrophysics feature, without `planet` (leaks.test.ts: never sent)." },
   nextSharedPlanetId: { reach: "never", test: "leaks.test.ts", note: "Not secret (entry ids show it), just not sent." },
+  sharedReports: { reach: "filtered", test: "sharedReports.test.ts", note: "To whoever can read the Expeditions feature, without `report` (leaks.test.ts: never sent); a member's own report carries its entry's id as `shared`." },
+  nextSharedReportId: { reach: "never", test: "leaks.test.ts", note: "Not secret (entry ids show it), just not sent." },
   expeditions: { reach: "filtered", test: "leaks.test.ts", note: "Each report to its living members only, without `members` (expeditions.test.ts too)." },
   nextExpeditionId: { reach: "never", test: "leaks.test.ts", note: "Not secret (report ids show it), just not sent." },
   expedition: { reach: "filtered", test: "expeditions.test.ts", note: "Public as who is out, the planet's name and when they are back (owner, 2026-11-07, #356); the report id to living members; `planet` (id), `sectors`, `landed` and `carried` never." },

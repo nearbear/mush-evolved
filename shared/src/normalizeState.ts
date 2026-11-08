@@ -58,6 +58,7 @@ import type {
   PrivateChannel,
   SealedChatPage,
   SharedPlanetState,
+  SharedReportState,
   ShipResources,
   SpaceDebris,
   Spot,
@@ -395,6 +396,18 @@ export function normalizePrivateChannel(raw: Partial<PrivateChannel>): PrivateCh
     planningClosed: raw.planningClosed,
     day: need(raw, "day", t),
     cycleOfDay: need(raw, "cycleOfDay", t),
+  });
+}
+
+export function normalizeSharedReport(raw: Partial<SharedReportState>): SharedReportState {
+  const t = "SharedReportState";
+  return stripUndefined<SharedReportState>({
+    id: need(raw, "id", t),
+    text: need(raw, "text", t),
+    by: need(raw, "by", t),
+    day: need(raw, "day", t),
+    cycleOfDay: need(raw, "cycleOfDay", t),
+    report: need(raw, "report", t),
   });
 }
 
@@ -750,6 +763,9 @@ export function normalizeCore(raw: Partial<GameCore>, _ctx: NormalizeContext, mo
     nextSharedPlanetId: need(raw, "nextSharedPlanetId", t),
     expeditions: need(raw, "expeditions", t).map(normalizeExpedition),
     nextExpeditionId: need(raw, "nextExpeditionId", t),
+    // Shared reports (#356): none in a game stored before them.
+    sharedReports: added(raw, "sharedReports", []).map(normalizeSharedReport),
+    nextSharedReportId: added(raw, "nextSharedReportId", 1),
     // Phase 2 (#356): none under way in a game stored before it, where every expedition was over at takeoff.
     expedition: orNull(added(raw, "expedition", null), normalizeActiveExpedition),
     // Stranding (#356): no game stored before it could lose the Icarus.

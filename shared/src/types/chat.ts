@@ -4,7 +4,7 @@ import type { LogParams, PlayerId } from "../types.ts";
  * Crew-wide threads, one per ship feature, with the same permissions as global
  * chat (decided 2026-10-13). Order is the order the client lists them in.
  */
-export const FEATURE_CHANNELS = ["botany", "research", "inventory", "space_battle", "comms", "pilgred", "neron", "astrophysics"] as const;
+export const FEATURE_CHANNELS = ["botany", "research", "inventory", "space_battle", "comms", "pilgred", "neron", "astrophysics", "expeditions"] as const;
 export type FeatureChannel = (typeof FEATURE_CHANNELS)[number];
 export type ChatChannel = "global" | FeatureChannel;
 export const CHAT_CHANNELS: readonly ChatChannel[] = ["global", ...FEATURE_CHANNELS];
@@ -24,8 +24,10 @@ export type PrivateChannelId = `pc-${number}`;
 export type ThreadId = `th-${number}`;
 /** Id of a shared planet's entry in the Astrophysics feature, which is also its discussion thread (`sp-1`, ...). */
 export type SharedPlanetId = `sp-${number}`;
+/** Id of a shared expedition report's entry in the Expeditions feature, which is also its discussion thread (`sr-1`, ...). */
+export type SharedReportId = `sr-${number}`;
 /** Anything a chat message can be posted to. */
-export type ChannelId = ChatChannel | typeof MUSH_CHANNEL | typeof GRAVEYARD_CHANNEL | PrivateChannelId | ThreadId | SharedPlanetId;
+export type ChannelId = ChatChannel | typeof MUSH_CHANNEL | typeof GRAVEYARD_CHANNEL | PrivateChannelId | ThreadId | SharedPlanetId | SharedReportId;
 
 /**
  * A planet a player shared from the Astro terminal (owner, 2026-10-31): their own free text about it, never parsed,
@@ -41,6 +43,21 @@ export interface SharedPlanet {
   cycleOfDay: number;
   /** "No longer applicable": the planet was lost (a travel, leaving orbit). Entries are never removed. */
   stale: boolean;
+}
+
+/**
+ * An expedition report a member shared (owner, 2026-11-07, #356): the first share's free text, never parsed, listed in
+ * the Expeditions feature with its own discussion thread (the entry's id is the thread's channel). Later shares are
+ * messages in that thread. Never marked no longer applicable. Sent to whoever can read the Expeditions feature,
+ * without the report it came from (see `SharedReportState`).
+ */
+export interface SharedReport {
+  id: SharedReportId;
+  text: string;
+  by: PlayerId;
+  /** Day and cycle of that day of the first share. */
+  day: number;
+  cycleOfDay: number;
 }
 
 /** Chat among the members only. Anyone in it may invite others; it ends when the last member leaves. */

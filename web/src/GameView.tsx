@@ -210,7 +210,14 @@ export function GameView({ view: given, send, onLeave, waking = false, cheatsAll
             ) : view.patrolShip ? (
               <PatrolCockpit view={view} ship={view.patrolShip} selected={target} onSelect={select} onAction={act} />
             ) : view.expedition?.report !== undefined ? (
-              <IcarusPanel view={view} expedition={view.expedition} clockOffset={clockOffset} selected={target} onSelect={select} />
+              <IcarusPanel
+                view={view}
+                expedition={view.expedition}
+                clockOffset={clockOffset}
+                selected={target}
+                onSelect={select}
+                onShareReport={readOnly ? undefined : (report, text) => post({ type: "shareReport", report, text })}
+              />
             ) : layout ? (
               <LeavingIsoRoom
                 layout={layout}
@@ -282,6 +289,7 @@ export function GameView({ view: given, send, onLeave, waking = false, cheatsAll
           onChat={(channel, text) => post({ type: "chat", channel, text })}
           onCreateThread={(name, from) => post(from === undefined ? { type: "createThread", name } : { type: "createThread", name, from })}
           onToggle={(channel, seq, line) => post({ type: "toggleCheckbox", channel, seq, line })}
+          onShareReport={readOnly ? undefined : (report, text) => post({ type: "shareReport", report, text })}
           channels={
             readOnly
               ? undefined

@@ -17,9 +17,11 @@ interface Props {
   clockOffset: number;
   selected: Target;
   onSelect: (target: Target) => void;
+  /** Absent in a read-only view (a replay). */
+  onShareReport?: ((report: string, text: string) => void) | undefined;
 }
 
-export function IcarusPanel({ view, expedition, clockOffset, selected, onSelect }: Props) {
+export function IcarusPanel({ view, expedition, clockOffset, selected, onSelect, onShareReport }: Props) {
   const { t } = useTranslation();
   const names = useNames();
   const time = useCountdown(expedition.returnAt, clockOffset);
@@ -41,7 +43,7 @@ export function IcarusPanel({ view, expedition, clockOffset, selected, onSelect 
           </button>
         );
       })}
-      <ExpeditionReportDialog report={reading ? report : undefined} onClose={() => setReading(false)} />
+      <ExpeditionReportDialog report={reading ? report : undefined} onClose={() => setReading(false)} canShare={view.canShareReports} onShare={onShareReport} />
     </section>
   );
 }

@@ -2731,6 +2731,13 @@ Follow-up the same day: the "N% repaired" text became a bare percent (the shared
 - What needed correction: the issue framed it as "fewer seeds", but profiling showed the perspective test already played one game per setup, and 88% of its time was the per-seat `viewFor`/`perspective` checks. So a normal run now checks one seat per step, in turn (every step and every seat still sampled); the slow run checks every seat at every step.
 - The slow run caught that seed 5's 1,200-step game stops at cycle 6, so "got past a day" is now required of at least one game, not each.
 
+## 2026-11-08: Expeditions phase 2, slice C: shared reports (#356)
+
+- **Decided by the owner (2026-11-07):** reports are shared in their own feature, one entry per expedition, by any member from anywhere with an iTrackie, free, as editable text; sharing again appends to the entry's thread; never stale.
+- **Built:** `sharedReports.ts` (`shareReport`, `canShareReports`), a new `expeditions` feature channel, `sr-N` entries that are chat threads with the feature's access (modeled on `sharedPlanets.ts`), the `shareReport` client message and replay input, moderation in `GameRoom`, normalizer defaults, leak-field entries and sentinels. Client: a Share form in `ExpeditionReportDialog` (prefilled with the report as text) and `SharedReports.tsx` listing your own reports and the shared entries.
+- **Claude's readings, not asked:** the shared planets' limits (500 characters, 20 lines); the first share heads the entry and later shares are the sharer's messages in its thread, each announced by a system line naming the planet; sharing allowed while still away; your reports listed in the feature so "from anywhere" has a place to start. A distinct `report_share_forbidden` error, since the planets' one names the Astro terminal; `share_text_invalid`'s text made generic.
+- **What worked:** copying the shared-planets shape end to end meant typecheck and tests passed on the first run. **Needed correction:** an `expeditions` tab icon already existed in `TAB_ICONS`; adding a second key broke the web typecheck until removed.
+
 ## 2026-11-08: Log line kind and leak flag (#366)
 
 - Planned first, then built after the owner answered three questions: the kind comes from the writer that wrote the line, not the action type (a private research's completion line is public; repair failures are private); an Outcast's secret or covert line is `leaked` and nothing else (no new `warning`, so no new interruptions); the UI is left for a separate session.
@@ -2738,14 +2745,14 @@ Follow-up the same day: the "N% repaired" text became a bare percent (the shared
 - What needed correction: `return outcastLine(...)` in a void function failed lint. The first `verify` had a test failure that reran clean; the leak-check agent was running tests at the same time.
 - The leak-check skill found no leaks: a witness already got `level: "warning"` on exactly the lines now `leaked`, so the only new information is secret vs covert, which the owner chose to reveal.
 
-## 2026-11-08: Live UI for log line kinds (#366)
-
-- Built the iTrackie's half of #366: `web/src/hud/VisibilityBadge.tsx` puts the action buttons' icon (padlock, hushing hand, camera) on every Room-tab line with a `kind`, in a popover (hover, focus or tap) that says what the kind means and whether a secret or covert line leaked. A leaked covert line is red (`.warning.danger`, a dark `--danger` on the light card) rather than the warning amber; Outcast lines, which have no warning level, keep the plain look but still get the badge. The replay's story 5 (#371) can reuse the badge.
-- Choices made without asking: a popover rather than a tooltip so touch can open it (same pattern as `RecencyStamp`); the badge sits beside the recency caption, not in place of the warning marker, so alarms and leaks still read the same at a glance; the popover's text doesn't call covert actions malicious, so the game doesn't editorialize.
-- `verify` failed on things outside this change: a type error in `web/src/hud/SettingsDialog.tsx`, which another session was editing at the same time, and `server/tests/goals.test.ts`, which passed when run on its own (it looks flaky under load).
 ## 2026-11-08: fastExpeditions cheat
 
 - Added a dev cheat that makes expedition steps 2 s apart instead of 10 minutes. Chose a fixed short step over scaling the countdown: it is one helper (`stepMs`) in `expeditions.ts`, plus a `REFILL` hook that pulls `nextAt` in when the cheat is switched on mid-expedition. Ship-wide like `invincible`, since an expedition belongs to the ship, not a seat.
 - Subtlety caught while writing it: `state.now` only moves on action inputs and ticks, so a step under the cheat counts from `max(nextAt, now)` to avoid a burst of overdue steps in one tick.
 - `npm run verify` hit a 5 s timeout in the unrelated `server/tests/goals.test.ts` under full-suite load; it passed alone.
 
+## 2026-11-08: Live UI for log line kinds (#366)
+
+- Built the iTrackie's half of #366: `web/src/hud/VisibilityBadge.tsx` puts the action buttons' icon (padlock, hushing hand, camera) on every Room-tab line with a `kind`, in a popover (hover, focus or tap) that says what the kind means and whether a secret or covert line leaked. A leaked covert line is red (`.warning.danger`, a dark `--danger` on the light card) rather than the warning amber; Outcast lines, which have no warning level, keep the plain look but still get the badge. The replay's story 5 (#371) can reuse the badge.
+- Choices made without asking: a popover rather than a tooltip so touch can open it (same pattern as `RecencyStamp`); the badge sits beside the recency caption, not in place of the warning marker, so alarms and leaks still read the same at a glance; the popover's text doesn't call covert actions malicious, so the game doesn't editorialize.
+- `verify` failed on things outside this change: a type error in `web/src/hud/SettingsDialog.tsx`, which another session was editing at the same time, and `server/tests/goals.test.ts`, which passed when run on its own (it looks flaky under load).

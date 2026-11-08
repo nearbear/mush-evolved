@@ -421,7 +421,9 @@
     "nothing_to_acknowledge": "There is nothing to acknowledge.",
     "share_forbidden": "You need your iTrackie at an Astro terminal to share a planet.",
     "planet_not_found": "That planet isn't one of yours.",
-    "share_text_invalid": "A shared planet needs some text, up to 500 characters and 20 lines."
+    "share_text_invalid": "Shared text needs to be up to 500 characters and 20 lines, and not empty.",
+    "report_share_forbidden": "You need your iTrackie to share a report.",
+    "report_not_found": "You weren't on that expedition."
   },
   "terminal": {
     "close": "Close",
@@ -573,7 +575,8 @@
       "comms": "Comms center",
       "pilgred": "PILGRED repair",
       "neron": "NERON projects",
-      "astrophysics": "Astrophysics"
+      "astrophysics": "Astrophysics",
+      "expeditions": "Expeditions"
     },
     "messageMenu": {
       "open": "Message options",
@@ -614,6 +617,12 @@
       "latestNew_one": "Latest page ({{count}} new)",
       "latestNew_other": "Latest page ({{count}} new)",
       "loading": "Loading…"
+    },
+    "sharedReports": {
+      "mine": "Your expeditions",
+      "isShared": "Shared",
+      "list": "Expedition threads",
+      "placeholder": "Discuss this expedition…"
     }
   },
   "bond": {
@@ -907,7 +916,9 @@
     "itemRepaired": "{{name}} repaired the {{item}}.",
     "itemRepairFailed": "You failed to repair the {{item}}.",
     "fireExtinguished": "{{name}} put out the fire!",
-    "extinguishFailed": "You failed to put out the fire."
+    "extinguishFailed": "You failed to put out the fire.",
+    "reportShared": "{{name}} shared the report of the expedition to {{planet}}.",
+    "reportShareAppended": "{{name}} added to the shared report of the expedition to {{planet}}."
   },
   "skills": {
     "title": "Choose a skill",
@@ -1630,7 +1641,14 @@
     "back": "Back in {{time}}",
     "underWay": "The expedition is still under way.",
     "lootAboard": "Everything found so far is on the Icarus's floor.",
-    "icarusAway": "The Icarus is away on an expedition."
+    "icarusAway": "The Icarus is away on an expedition.",
+    "share": "Share the report",
+    "shareAgain": "Add to the shared report",
+    "shareHint": "This text goes to the Expeditions feature for the whole crew. Change it as you like.",
+    "shareAgainHint": "This report is already shared: this text is added to its thread. Change it as you like.",
+    "shareLabel": "Text to share",
+    "sharePost": "Share",
+    "shared": "Shared in the Expeditions feature."
   },
   "roomList": {
     "region": "Room",

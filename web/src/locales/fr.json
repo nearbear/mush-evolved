@@ -425,7 +425,9 @@
     "nothing_to_acknowledge": "Il n'y a rien à confirmer.",
     "share_forbidden": "Il vous faut votre iTrackie devant un terminal Astro pour partager une planète.",
     "planet_not_found": "Cette planète n'est pas l'une des vôtres.",
-    "share_text_invalid": "Une planète partagée a besoin d'un texte, jusqu'à 500 caractères et 20 lignes."
+    "share_text_invalid": "Un texte partagé doit faire au plus 500 caractères et 20 lignes, et ne pas être vide.",
+    "report_share_forbidden": "Il vous faut votre iTrackie pour partager un rapport.",
+    "report_not_found": "Vous n'étiez pas de cette expédition."
   },
   "terminal": {
     "close": "Fermer",
@@ -579,7 +581,8 @@
       "comms": "Centre de communications",
       "pilgred": "Réparation du PILGRED",
       "neron": "Projets NERON",
-      "astrophysics": "Astrophysique"
+      "astrophysics": "Astrophysique",
+      "expeditions": "Expéditions"
     },
     "messageMenu": {
       "open": "Options du message",
@@ -622,6 +625,12 @@
       "latestNew_other": "Dernière page ({{count}} nouveaux)",
       "loading": "Chargement…",
       "latestNew_many": "Dernière page ({{count}} nouveaux)"
+    },
+    "sharedReports": {
+      "mine": "Vos expéditions",
+      "isShared": "Partagé",
+      "list": "Fils des expéditions",
+      "placeholder": "Discuter de cette expédition…"
     }
   },
   "bond": {
@@ -922,7 +931,9 @@
     "itemRepaired": "{{name}} a réparé l'objet : {{item}}.",
     "itemRepairFailed": "Vous n'avez pas réussi à réparer l'objet : {{item}}.",
     "fireExtinguished": "{{name}} a éteint l'incendie !",
-    "extinguishFailed": "Vous n'avez pas réussi à éteindre l'incendie."
+    "extinguishFailed": "Vous n'avez pas réussi à éteindre l'incendie.",
+    "reportShared": "{{name}} a partagé le rapport de l'expédition sur {{planet}}.",
+    "reportShareAppended": "{{name}} a complété le rapport partagé de l'expédition sur {{planet}}."
   },
   "skills": {
     "title": "Choisir une compétence",
@@ -1557,7 +1568,14 @@
     "back": "Retour dans {{time}}",
     "underWay": "L'expédition est toujours en cours.",
     "lootAboard": "Tout ce qui a été trouvé jusqu'ici est par terre dans l'Icarus.",
-    "icarusAway": "L'Icarus est parti en expédition."
+    "icarusAway": "L'Icarus est parti en expédition.",
+    "share": "Partager le rapport",
+    "shareAgain": "Compléter le rapport partagé",
+    "shareHint": "Ce texte part dans la rubrique Expéditions pour tout l'équipage. Modifiez-le comme vous voulez.",
+    "shareAgainHint": "Ce rapport est déjà partagé : ce texte est ajouté à son fil. Modifiez-le comme vous voulez.",
+    "shareLabel": "Texte à partager",
+    "sharePost": "Partager",
+    "shared": "Partagé dans la rubrique Expéditions."
   },
   "roomList": {
     "region": "Salle",

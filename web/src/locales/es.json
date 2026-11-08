@@ -425,7 +425,9 @@
     "nothing_to_acknowledge": "No hay nada que confirmar.",
     "share_forbidden": "Necesitas tu iTrackie en una terminal Astro para compartir un planeta.",
     "planet_not_found": "Ese planeta no es uno de los tuyos.",
-    "share_text_invalid": "Un planeta compartido necesita un texto, de hasta 500 caracteres y 20 líneas."
+    "share_text_invalid": "Un texto compartido debe tener como máximo 500 caracteres y 20 líneas, y no estar vacío.",
+    "report_share_forbidden": "Necesitas tu iTrackie para compartir un informe.",
+    "report_not_found": "No estabas en esa expedición."
   },
   "terminal": {
     "close": "Cerrar",
@@ -579,7 +581,8 @@
       "comms": "Centro de comunicaciones",
       "pilgred": "Reparación del PILGRED",
       "neron": "Proyectos de NERON",
-      "astrophysics": "Astrofísica"
+      "astrophysics": "Astrofísica",
+      "expeditions": "Expediciones"
     },
     "messageMenu": {
       "open": "Opciones del mensaje",
@@ -622,6 +625,12 @@
       "latestNew_other": "Última página ({{count}} nuevos)",
       "loading": "Cargando…",
       "latestNew_many": "Última página ({{count}} nuevos)"
+    },
+    "sharedReports": {
+      "mine": "Tus expediciones",
+      "isShared": "Compartido",
+      "list": "Hilos de las expediciones",
+      "placeholder": "Comentar esta expedición…"
     }
   },
   "bond": {
@@ -922,7 +931,9 @@
     "itemRepaired": "{{name}} ha reparado el objeto: {{item}}.",
     "itemRepairFailed": "No has conseguido reparar el objeto: {{item}}.",
     "fireExtinguished": "¡{{name}} ha apagado el incendio!",
-    "extinguishFailed": "No has conseguido apagar el incendio."
+    "extinguishFailed": "No has conseguido apagar el incendio.",
+    "reportShared": "{{name}} ha compartido el informe de la expedición a {{planet}}.",
+    "reportShareAppended": "{{name}} ha completado el informe compartido de la expedición a {{planet}}."
   },
   "skills": {
     "title": "Elegir una habilidad",
@@ -1557,7 +1568,14 @@
     "back": "De vuelta en {{time}}",
     "underWay": "La expedición sigue en curso.",
     "lootAboard": "Todo lo encontrado hasta ahora está en el suelo del Ícaro.",
-    "icarusAway": "El Ícaro ha salido de expedición."
+    "icarusAway": "El Ícaro ha salido de expedición.",
+    "share": "Compartir el informe",
+    "shareAgain": "Completar el informe compartido",
+    "shareHint": "Este texto va a la sección Expediciones para toda la tripulación. Cámbialo como quieras.",
+    "shareAgainHint": "Este informe ya está compartido: este texto se añade a su hilo. Cámbialo como quieras.",
+    "shareLabel": "Texto que compartir",
+    "sharePost": "Compartir",
+    "shared": "Compartido en la sección Expediciones."
   },
   "roomList": {
     "region": "Sala",

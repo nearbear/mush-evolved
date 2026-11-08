@@ -15,6 +15,7 @@ const FEATURE_ICONS: Record<FeatureChannel, string> = {
   pilgred: TAB_ICONS.pilgred,
   neron: TAB_ICONS.neronProjects,
   astrophysics: TAB_ICONS.astrophysics,
+  expeditions: TAB_ICONS.expeditions,
 };
 
 export function FeatureSelect({

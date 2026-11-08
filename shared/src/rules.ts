@@ -39,6 +39,7 @@ import { recordAction } from "./history.ts";
 import { ringMycoAlarms } from "./mycoalarm.ts";
 import { planetsOf } from "./planets.ts";
 import { canSharePlanets } from "./sharedPlanets.ts";
+import { canShareReports } from "./sharedReports.ts";
 import { arriveShip, orbitName, orbitPicture } from "./navigation.ts";
 import { commandTerminalsHere, isPilgredRepaired } from "./pilgred.ts";
 import { biosTerminalsHere, newBios } from "./bios.ts";
@@ -149,6 +150,8 @@ export function createGame(
     nextPlanetId: 1,
     sharedPlanets: [],
     nextSharedPlanetId: 1,
+    sharedReports: [],
+    nextSharedReportId: 1,
     expeditions: [],
     nextExpeditionId: 1,
     expedition: null,
@@ -473,6 +476,11 @@ export function threadsView(state: Readonly<Pick<GameState, "threads">>): Player
   return state.threads.map(({ id, name, from, createdBy, cycle }) => ({ id, name, ...(from !== undefined && { from }), createdBy, cycle }));
 }
 
+/** Every shared report, as a view carries it (for readers of the Expeditions feature). Never `report`: which report an entry came from stays its members'. */
+export function sharedReportsView(state: Readonly<Pick<GameState, "sharedReports">>): PlayerView["sharedReports"] {
+  return state.sharedReports.map(({ id, text, by, day, cycleOfDay }) => ({ id, text, by, day, cycleOfDay }));
+}
+
 /** Every shared planet, as a view carries it (for readers of the Astrophysics feature). Never `planet`: which planet an entry came from stays its finder's. */
 export function sharedPlanetsView(state: Readonly<Pick<GameState, "sharedPlanets">>): PlayerView["sharedPlanets"] {
   return state.sharedPlanets.map(({ id, text, by, day, cycleOfDay, stale }) => ({ id, text, by, day, cycleOfDay, stale }));
@@ -600,6 +608,7 @@ export function seatViewFor(state: GameState, playerId: PlayerId): SeatView {
     plans: plansView(state, channels),
     threads: channels.includes("global") ? threadsView(state) : [],
     sharedPlanets: channels.includes("astrophysics") ? sharedPlanetsView(state) : [],
+    sharedReports: channels.includes("expeditions") ? sharedReportsView(state) : [],
     channelLimit: channelLimit(state, you),
     movement: movementRules(state, you),
     bonds: {
@@ -638,12 +647,16 @@ export function seatViewFor(state: GameState, playerId: PlayerId): SeatView {
     expeditions: you.alive
       ? state.expeditions
           .filter((r) => r.members.includes(you.id))
-          .map(({ members: _members, ...report }): ExpeditionReportView => ({ ...clone(report), ...(state.expedition?.report === report.id && { away: true as const }) }))
+          .map(({ members: _members, ...report }): ExpeditionReportView => {
+            const shared = state.sharedReports.find((s) => s.report === report.id)?.id;
+            return { ...clone(report), ...(state.expedition?.report === report.id && { away: true as const }), ...(shared && { shared }) };
+          })
       : [],
     expedition: expeditionView(state, you),
     // Your own planets only, and only the tags an analysis revealed (owner, 2026-10-19).
     maxPlanets: state.config.astro.maxPlanets,
     canSharePlanets: canSharePlanets(state, you),
+    canShareReports: canShareReports(state, you),
     planets: planetsOf(state, playerId).map((p) => ({
       id: p.id,
       name: p.name,
