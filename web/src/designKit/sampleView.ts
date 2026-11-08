@@ -12,9 +12,11 @@
 import {
   applyAction,
   CHARACTERS,
+  createChannel,
   createGame,
   createThread,
   DEFAULT_CONFIG,
+  ITEM_TYPES,
   endGame,
   killPlayer,
   PRESELECTION,
@@ -33,6 +35,7 @@ import {
   type PlayerId,
   type PlayerState,
   type PlayerView,
+  type PrivateChannelId,
   type Role,
   type Seat,
   type TitleId,
@@ -146,6 +149,40 @@ export function say(state: GameState, channel: ChannelId, text: string, id: Play
 /** `id` starts a thread under global chat, from global message `from` or on its own. */
 export function thread(state: GameState, name: string, from?: number, id: PlayerId = SAMPLE_SEAT): GameState {
   return must(createThread(state, id, name, from), "thread");
+}
+
+/** `id` opens a private channel named `name` and invites `members` (the chat rules; refused invites are skipped). */
+export function channel(state: GameState, name: string, members: readonly PlayerId[], id: PlayerId = SAMPLE_SEAT): GameState {
+  return must(createChannel(state, id, name, members), "channel");
+}
+
+/** The id of the newest private channel. */
+export function lastChannel(state: GameState): PrivateChannelId {
+  const c = state.channels.at(-1);
+  if (!c) throw new Error("No private channel");
+  return c.id;
+}
+
+/**
+ * Every item and piece of equipment of `types` on the ship is broken: only the flag, as `breakItem`/`breakEquipment`
+ * leave it on a type that can break (no NERON line, no side effects). Throws on a type that can't break.
+ */
+export function breakAll(state: GameState, types: readonly string[]): GameState {
+  const next = structuredClone(state);
+  for (const type of types) {
+    if (!ITEM_TYPES[type]?.canBreak && next.config.repair.chance[type] === undefined) throw new Error(`${type} can't break`);
+  }
+  for (const item of next.items) if (types.includes(item.type)) item.broken = true;
+  for (const list of Object.values(next.equipment)) for (const e of list ?? []) if (types.includes(e.type)) e.broken = true;
+  return next;
+}
+
+/** `n` hunters attack the ship with the config's aim, some a hit or two down so the hp differ (as the hunter tests add them; no wave roll). */
+export function addHunters(state: GameState, n: number): GameState {
+  const next = structuredClone(state);
+  const { hp, hitChance } = next.config.hunters;
+  for (let i = 0; i < n; i++) next.hunters.list.push({ id: `hunter-${next.hunters.nextId++}`, hp: Math.max(1, hp - (i % 3)), hitChance, target: null });
+  return next;
 }
 
 /** `id` dies (the rules' own `killPlayer`, on a copy). */

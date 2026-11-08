@@ -10,12 +10,25 @@ import { TerminalBody } from "../hud/TerminalDialog.tsx";
 import { TerminalFrame } from "../hud/TerminalFrame.tsx";
 import { terminalLogin } from "../hud/terminalUsername.ts";
 import { useNames } from "../i18n/names.ts";
-import type { PlayerView } from "@mush2/shared";
+import type { EquipmentView, PlayerView } from "@mush2/shared";
 import { Figure, noop, Section } from "./KitSection.tsx";
-import { bodyTakenView, chatView, deadMushView, deadView, edenView, mushWinView, patrolView, terminalSamples } from "./samples.ts";
+import { bodyTakenView, chatView, deadMushView, deadView, edenView, mushChatView, mushWinView, patrolHuntersView, patrolView, terminalSamples, turretHuntersSample } from "./samples.ts";
+
+function TerminalFigure({ view, terminal, note }: { view: PlayerView; terminal: EquipmentView; note?: string }) {
+  const names = useNames();
+  const name = names.equipment(terminal.type);
+  return (
+    <Figure caption={note ? `${name}, ${note}` : name}>
+      <div className="terminal-popup kit-panel m2k-terminal m2k-terminal-tall">
+        <TerminalFrame name={name} type={terminal.type} login={terminalLogin(terminal.type, view)} onClose={noop}>
+          <TerminalBody terminal={terminal} view={view} onAction={noop} onSharePlanet={noop} />
+        </TerminalFrame>
+      </div>
+    </Figure>
+  );
+}
 
 export function TerminalBodiesSection() {
-  const names = useNames();
   return (
     <Section
       id="terminal-bodies"
@@ -27,25 +40,21 @@ export function TerminalBodiesSection() {
           the research and project lists, PILGRED, <code>PlanetList</code> (its Share button opens{" "}
           <code>SharePlanetDialog</code>), <code>CommandTerminal</code> (<code>ShipNavigation</code>,{" "}
           <code>UnavailableButton</code>), <code>CommsCenter</code>, <code>BiosTerminal</code> and <code>TurretPanel</code>{" "}
-          (<code>HunterList</code>).
+          (<code>HunterList</code>), the turret once more with hunters in sight.
         </>
       }
     >
-      {terminalSamples.map(({ view, terminal }) => (
-        <Figure key={terminal.id} caption={names.equipment(terminal.type)}>
-          <div className="terminal-popup kit-panel m2k-terminal m2k-terminal-tall">
-            <TerminalFrame name={names.equipment(terminal.type)} type={terminal.type} login={terminalLogin(terminal.type, view)} onClose={noop}>
-              <TerminalBody terminal={terminal} view={view} onAction={noop} onSharePlanet={noop} />
-            </TerminalFrame>
-          </div>
-        </Figure>
+      {terminalSamples.map((sample) => (
+        <TerminalFigure key={sample.terminal.id} {...sample} />
       ))}
+      <TerminalFigure {...turretHuntersSample} note="with hunters attacking" />
     </Section>
   );
 }
 
 export function PatrolSection() {
   const ship = patrolView.patrolShip;
+  const huntedShip = patrolHuntersView.patrolShip;
   return (
     <Section
       id="patrol"
@@ -61,6 +70,13 @@ export function PatrolSection() {
         <Figure caption="Just took off from bay A, no hunters">
           <div className="room-view m2k-room m2k-room-auto">
             <PatrolCockpit view={patrolView} ship={ship} selected={{ kind: "player", id: patrolView.you.id }} onSelect={noop} onAction={noop} />
+          </div>
+        </Figure>
+      )}
+      {huntedShip && (
+        <Figure caption="Hunters in sight (Shoot on each)">
+          <div className="room-view m2k-room m2k-room-auto">
+            <PatrolCockpit view={patrolHuntersView} ship={huntedShip} selected={{ kind: "player", id: patrolHuntersView.you.id }} onSelect={noop} onAction={noop} />
           </div>
         </Figure>
       )}
@@ -81,13 +97,19 @@ export function ITrackieSection() {
           <code>ExpeditionReportDialog</code>), global chat (<code>Thread</code>: <code>MessageEntry</code>,{" "}
           <code>Markdown</code> checklists, <code>ChatInput</code>), <code>Threads</code>, the features (
           <code>SharedPlanets</code> under Astrophysics, <code>ResearchTracker</code>) and <code>PrivateChannels</code>. Hua
-          shared a planet, flew the Icarus to it, and the crew talked a little. Posting does nothing here.
+          shared a planet, flew the Icarus to it, and the crew talked a little. Kuan Ti, Mush, has the Mush tab with the
+          other Mush and a private channel with two crewmates. Posting does nothing here.
         </>
       }
     >
       <Figure caption="After an expedition">
         <div className="m2k-itrackie">
           <ITrackie view={chatView} roomLogRequest={0} onChat={noop} onCreateThread={noop} onToggle={noop} channels={CHANNELS} />
+        </div>
+      </Figure>
+      <Figure caption="Mush: the Mush channel and a private channel">
+        <div className="m2k-itrackie">
+          <ITrackie view={mushChatView} roomLogRequest={0} onChat={noop} onCreateThread={noop} onToggle={noop} channels={CHANNELS} />
         </div>
       </Figure>
     </Section>

@@ -2595,3 +2595,13 @@ Built `shared/src/normalizeState.ts`: the helpers and one normalizer per stored 
 - **Decision (owner):** `use_bandage` heals 2 HP for 1 AP and uses the bandage up. The target is yourself or any living person in your room. Two bandages spawn in the medlab. It's a public log line, it's offered at full HP, Mush and humans use it the same way, and the `healAmount` modifier hook applies.
 - **What worked:** `vaccinate.ts` (a single-use item aimed at a person) plus `heal.ts` (offered to yourself, the HP cap and the hook) together covered it. The only new seam was `bandageHealAmount`, which folds the same hook from a different base, so the medic's bonus works without touching `medic.ts`.
 - **Claude's defaults, flagged rather than asked:** care points don't pay for a bandage, it has no chance to make you dirty, and it must be in your inventory. There is no expedition action allowlist yet (#356 phase 2), so "usable on expeditions" has nothing to plug into.
+
+### 2026-11-07: Design kit, the last listed states
+
+Added the four states the design kit plan listed as "not reached yet": a broken item and broken equipment (Inspect),
+the Mush channel and a private channel with messages (a second iTrackie, as Kuan Ti), and hunters in sight (the patrol
+cockpit and the turret terminal). New fixture helpers `channel`, `breakAll` and `addHunters`. `breakAll` and
+`addHunters` set state directly, as the rules tests do, because the rules only reach those states through random
+incidents and waves. The plan also listed a "hacked" item, but hacking isn't in the game, so there is no sample for it.
+What needed correction: the first version of the Terminals section used an `in` check on a spread object to caption
+the extra turret figure, which was hard to read, so it became a small `TerminalFigure` component.

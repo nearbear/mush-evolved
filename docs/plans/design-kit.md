@@ -18,27 +18,27 @@ look is checked once, in the context it has in the game. Sections live in `Mush2
 |---|---|---|
 | Ship card | `games/ShipCard.tsx` | |
 | Terminal frame | `hud/TerminalFrame.tsx` | `TabOutline` (`"cut"`) |
-| Terminals | `TerminalBody` (exported from `hud/TerminalDialog.tsx` for this), one per terminal | research/project lists, PILGRED, `PlanetList` → `SharePlanetDialog`, `CommandTerminal` (`ShipNavigation`, `UnavailableButton`, `ConfirmPanel`), `CommsCenter`, `BiosTerminal`, `TurretPanel` (`HunterList`), `RelayDetails`, `ActionButton`, `ActionLabel` |
+| Terminals | `TerminalBody` (exported from `hud/TerminalDialog.tsx` for this), one per terminal, and the turret again with hunters | research/project lists, PILGRED, `PlanetList` → `SharePlanetDialog`, `CommandTerminal` (`ShipNavigation`, `UnavailableButton`, `ConfirmPanel`), `CommsCenter`, `BiosTerminal`, `TurretPanel` (`HunterList`), `RelayDetails`, `ActionButton`, `ActionLabel` |
 | Top bar | `hud/TopBar.tsx` | `CycleCountdown`, `ShipResources`, `TitleChip`, `PreselectionTag`, `BotsPausedTag`, `PlayerSummary` (phone), `SettingsDialog` (gear; `DialogHeader`, `TabOutline` `"round"`, `IconButton`, account settings, `Credits`) |
 | Self HUD | `hud/SelfHud.tsx` (`SelfHud`) | `PlayerSummary`, `ResourceChips`, `StatInfo` |
 | AP and MP | `SelfPoints` | `PipBar` (horizontal and vertical, partial, empty, wrapped) |
 | Ship card (phone) | `hud/ShipOverlay.tsx` | `ShipResources`, `Hint` |
-| Inspect | `hud/InspectPanel.tsx`: you (human, Mush), someone else, equipment, an item | `SkillSlots`/`SkillPopover`/`ConfirmPanel`, `StatusIcons`, `ItemFace`, `ActionButton` (enabled and unaffordable) |
+| Inspect | `hud/InspectPanel.tsx`: you (human, Mush), someone else, equipment, an item, a broken item and broken equipment | `SkillSlots`/`SkillPopover`/`ConfirmPanel`, `StatusIcons`, `ItemFace`, `ActionButton` (enabled and unaffordable) |
 | Inventory | `hud/InventoryOverlay.tsx` | `InventoryPanel`, `ItemIcon`, `ConsumeEffects`, heavy items |
 | Queue and tips | `hud/ActionQueue.tsx`, `hud/TipCard.tsx` | |
 | Peek bar | `hud/PeekBar.tsx` (phone CSS only: visible below 1024px) | |
 | Status icons | `hud/StatusIcons.tsx`: every status plus contamination, a catalog for spotting missing art | `StatusIcon` |
 | Item attribute icons | `hud/ItemAttrIcons.tsx` (heavy) and `hud/PlantStates.tsx` (young, thirsty, dried, sick) | `StatusIcon` |
-| Patrol | `hud/PatrolCockpit.tsx` | `HunterList` |
-| iTrackie | `hud/ITrackie.tsx` | `FeedEntry` and markers, `CycleDivider`, `RecencyStamp`, `ExpeditionReportDialog` (from the room log), `Thread`/`MessageEntry`, `Markdown` checklists, `ChatInput`, `Threads`, `SharedPlanets`, `ResearchTracker`, `PrivateChannels`, `IconTab` badges, `TabOutline` |
+| Patrol | `hud/PatrolCockpit.tsx`, alone and with hunters in sight | `HunterList` |
+| iTrackie | `hud/ITrackie.tsx` | `FeedEntry` and markers, `CycleDivider`, `RecencyStamp`, `ExpeditionReportDialog` (from the room log), `Thread`/`MessageEntry`, `Markdown` checklists, `ChatInput`, `Threads`, the Mush channel, `SharedPlanets`, `ResearchTracker`, `PrivateChannels` (one with messages), `IconTab` badges, `TabOutline` |
 | Death and end | `hud/DeathNotice.tsx`, `hud/BodyTakenDialog.tsx`, `hud/EndScreen.tsx` (dialogs behind buttons) | `DialogHeader` |
 | Character picker | `lobby/CharacterPicker.tsx` | `SkillPopover` |
 | Account | `account/AccountButton.tsx` | `AccountDetails`, `NameForm` (its buttons call the real API) |
 
 Skipped: `Announcer`, `Credits` (standalone), `Scroller`, `Tracker`, `BottomNav`, `RoomList` (visually hidden),
 `FeatureSelect` (in the iTrackie), `TabOutline`'s `outlinePath` (a function, already tested). `ItemAttrIcons` was unused when the kit was built; #396
-put it back in the Inspect panel; the kit shows it there and in its own section. Not reached yet: a hacked or broken item, chat in
-the Mush channel and private channels with messages, hunters in sight.
+put it back in the Inspect panel; the kit shows it there and in its own section. The last states the plan listed (a broken item and broken equipment, chat in the Mush channel, a private channel
+with messages, hunters in sight) went in on 2026-11-07. There is no hacked sample: hacking is not in the game.
 
 Found while building it (not fixed here): a Base UI console warning that `EntryTip`'s popover trigger in
 `TerminalDialog.tsx` is not a native `<button>`, and the Astro terminal's `.planet-title` overflows its frame at 360px.
@@ -53,7 +53,9 @@ Jin Su by default); helpers return a new state: `act` (any action through `apply
 
 Later helpers (2026-11-07): `queue` (through `queueAction`), `moveTo`/`moveToEquipment`, `givePlanet`, `say` and
 `thread` (the chat rules), `share` (`sharePlanet`), `kill` (`killPlayer`), `bodyTaken` (the flag only), `ended`
-(`endGame`), and `sampleState({ preselection: true })`. The kit's views are built in `samples.ts`; its test checks each
+(`endGame`), and `sampleState({ preselection: true })`; then `channel`/`lastChannel` (`createChannel`), `breakAll` (the `broken`
+flag on every item and equipment of the given types, which must be breakable) and `addHunters` (as the hunter tests
+add them). The kit's views are built in `samples.ts`; its test checks each
 reaches the state its section shows.
 
 Narrowing a component's props (as `ShipResources` does) instead of passing the whole view is an alternative to the

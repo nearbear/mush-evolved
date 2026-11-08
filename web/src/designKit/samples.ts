@@ -4,12 +4,16 @@
 import type { EquipmentView, PlayerView } from "@mush2/shared";
 import {
   act,
+  addHunters,
+  breakAll,
+  channel,
   bodyTaken,
   ended,
   giveItems,
   givePlanet,
   giveTitle,
   kill,
+  lastChannel,
   moveTo,
   moveToEquipment,
   pickSkills,
@@ -31,6 +35,9 @@ export const preselectionView = sampleView(sampleState({ preselection: true }));
 
 /** Carrying a weapon, a ration and a heavy machine gun (heavy items show their MP penalty). */
 export const itemsView = sampleView(giveItems(sampleState(), ["blaster", "cooked_ration", "machine_gun"]));
+
+/** A broken blaster in your hands and a broken coffee machine in your room (breakable types, flag only). */
+export const brokenView = sampleView(breakAll(moveToEquipment(giveItems(sampleState(), ["blaster"]), "COFFEE_DISPENSER"), ["blaster", "COFFEE_DISPENSER"]));
 
 /** An action under way and two waiting behind it: three searches queued through the rules. */
 export const queueView = (() => {
@@ -60,11 +67,24 @@ export const terminalSamples: { view: PlayerView; terminal: EquipmentView }[] = 
   return { view, terminal };
 });
 
-/** Hua flying a patrol ship out of bay A (a Pilot's takeoff through the rules). */
-export const patrolView = (() => {
-  const s = moveTo(pickSkills(sampleState({ character: "hua" }), ["pilot"]), "SPACESHIP_BAY_A");
-  return sampleView(act(s, { type: "takeoff", equipment: "SPACESHIP_BAY_A:PATROL_SHIP_A_0" }));
+/** Hunters attacking: four, at full hp and a little less. */
+const HUNTERS = 4;
+
+/** The turret terminal while hunters attack (each hunter's hp and every turret's charges are in the view there). */
+export const turretHuntersSample = (() => {
+  const view = sampleView(addHunters(moveToEquipment(atTerminals, "TURRET_COMMAND"), HUNTERS));
+  const terminal = view.roomEquipment.find((e) => e.type === "TURRET_COMMAND");
+  if (!terminal) throw new Error("No TURRET_COMMAND in the sample room");
+  return { view, terminal };
 })();
+
+/** Hua flying a patrol ship out of bay A (a Pilot's takeoff through the rules), alone and with hunters in sight. */
+const inFlight = (() => {
+  const s = moveTo(pickSkills(sampleState({ character: "hua" }), ["pilot"]), "SPACESHIP_BAY_A");
+  return act(s, { type: "takeoff", equipment: "SPACESHIP_BAY_A:PATROL_SHIP_A_0" });
+})();
+export const patrolView = sampleView(inFlight);
+export const patrolHuntersView = sampleView(addHunters(inFlight, HUNTERS));
 
 /**
  * The iTrackie's sample: Hua, a Pilot, shares a planet from the Astro terminal, then flies the Icarus to it (so the
@@ -82,6 +102,25 @@ export const chatView = (() => {
   s = structuredClone(moveTo(s, "ICARUS"));
   s.navigation.orbit = FUGUNYS.id;
   s = act(s, { type: "icarus_takeoff", equipment: "ICARUS:ICARUS_COMMAND" });
+  return sampleView(s);
+})();
+
+/**
+ * Kuan Ti, Mush, talks with the other Mush seat on the Mush channel, and has a private channel with two crewmates
+ * (Mush players have private channels like anyone).
+ */
+export const mushChatView = (() => {
+  let s = sampleState({ role: "mush", character: "kuanti" });
+  const other = s.players.find((p) => p.role === "mush" && p.id !== "p0");
+  if (!other) throw new Error("No second Mush seat");
+  s = say(s, "mush", "I'll take the lab tonight. Keep them busy in the kitchen.");
+  s = say(s, "mush", "Fine. Who do we spore first?", other.id);
+  s = say(s, "mush", "Whoever is still awake at the cycle change.");
+  s = channel(s, "Night shift", ["p1", "p2"]);
+  const pc = lastChannel(s);
+  s = say(s, pc, "Anyone seen who keeps leaving the lab open?");
+  s = say(s, pc, "No, but the fuel went down again.", "p1");
+  s = say(s, pc, "I'll watch the engine room after dinner.", "p2");
   return sampleView(s);
 })();
 

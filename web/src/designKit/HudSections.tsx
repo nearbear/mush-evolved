@@ -15,7 +15,7 @@ import { TipCard } from "../hud/TipCard.tsx";
 import { TopBar } from "../hud/TopBar.tsx";
 import { useShipLayout } from "../iso/shipLayout.ts";
 import { Figure, noop, Section } from "./KitSection.tsx";
-import { freshView, humanView, itemsView, mushView, preselectionView, queueView } from "./samples.ts";
+import { brokenView, freshView, humanView, itemsView, mushView, preselectionView, queueView } from "./samples.ts";
 
 const self = (view: PlayerView): Target => ({ kind: "player", id: view.you.id });
 
@@ -106,6 +106,8 @@ export function InspectSection() {
   const equipment = humanView.roomEquipment[0];
   const item = itemsView.inventory.find((i) => i.type === "blaster");
   const heavy = itemsView.inventory.find((i) => i.type === "machine_gun");
+  const brokenItem = brokenView.inventory.find((i) => i.broken);
+  const brokenEquipment = brokenView.roomEquipment.find((e) => e.broken);
   return (
     <Section
       id="inspect"
@@ -115,7 +117,7 @@ export function InspectSection() {
           <code>hud/InspectPanel.tsx</code>: the left panel, whatever is selected, with the legal actions as{" "}
           <code>ActionButton</code>s (<code>ActionLabel</code> costs and odds). For a person it shows{" "}
           <code>SkillSlots</code> (click a free slot for the picker and its <code>ConfirmPanel</code>) and{" "}
-          <code>StatusIcons</code>; for an item, <code>ItemFace</code> and <code>ItemAttrIcons</code>.
+          <code>StatusIcons</code>; for an item, <code>ItemFace</code> and <code>ItemAttrIcons</code>. Broken items and equipment offer a repair. Hacking isn&apos;t in the game, so there is no hacked sample.
         </>
       }
     >
@@ -143,6 +145,16 @@ export function InspectSection() {
       {heavy && (
         <Figure caption="A heavy item (ItemAttrIcons: hover the weight for its MP penalty)">
           <SampleInspect view={itemsView} target={{ kind: "item", id: heavy.id }} />
+        </Figure>
+      )}
+      {brokenItem && (
+        <Figure caption="A broken blaster (repair instead of use)">
+          <SampleInspect view={brokenView} target={{ kind: "item", id: brokenItem.id }} />
+        </Figure>
+      )}
+      {brokenEquipment && (
+        <Figure caption="Broken equipment: the coffee machine">
+          <SampleInspect view={brokenView} target={{ kind: "equipment", id: brokenEquipment.id }} />
         </Figure>
       )}
     </Section>
