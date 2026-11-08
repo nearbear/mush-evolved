@@ -1,19 +1,24 @@
 ---
 name: wiki
-description: Look up the original game's rules on eMushpedia, the French eMush wiki (emushpedia.miraheze.org). Use when asked what the wiki says about an item, action, skill, character, disease, project or mechanic, when a rule question needs the original's numbers, or when the owner says "the French wiki" or "eMushpedia". Wiki text is a source to quote, never a decided rule.
+description: Look up the original game's rules on eMushpedia, the eMush wiki (French at fr.emushpedia.com, English at en.emushpedia.com, Spanish at es.emushpedia.com). Use when asked what the wiki says about an item, action, skill, character, disease, project or mechanic, when a rule question needs the original's numbers, when translating game terms between French, English and Spanish, or when the owner says "the French wiki", "the English wiki", "the Spanish wiki" or "eMushpedia". Wiki text is a source to quote, never a decided rule.
 ---
 
 # Look up a rule on eMushpedia
 
-eMushpedia (<https://emushpedia.miraheze.org>) is the French community wiki for eMush, about 400 articles. `npm run wiki` reads it through its MediaWiki API; no browser or web-fetch agent is needed.
+eMushpedia is the community wiki for eMush, in French (<https://fr.emushpedia.com/wiki>, the default and most complete) English (<https://en.emushpedia.com/wiki>) and Spanish (<https://es.emushpedia.com/wiki>). `npm run wiki` reads either through its MediaWiki API; no browser or web-fetch agent is needed. Add `--lang en` or `--lang es` to any command for the English or Spanish wiki.
 
 ## Commands
 
 - `npm run -s wiki -- search <words>`: page titles containing `<words>` (case- and accent-insensitive substring, so `search canap` or `search equipement` work), then the wiki's own full-text hits. The full-text search matches **whole words only** and is accent-sensitive: `arme` finds nothing where `armes` does.
 - `npm run -s wiki -- page <title>`: the page's wikitext, following redirects, with icon templates flattened (`{{PA}}` becomes `PA`, `{{Objet|Couteau|16}}` becomes `Couteau`) and links and bold removed. Infobox templates such as `{{Tooltip Objet |réparer=25% de chance ...}}` are kept as they are, since their named fields hold the numbers.
+- `page` also lists the same article's title on the other-language wikis (`en: Daedalus`, `es: Saboteador`) when the wiki links them. Not every page is linked; if none is listed, search the other wiki for that language's word.
 - `--section <heading>` prints one section (substring match; on a miss it lists the sections). `--raw` prints the stored wikitext untouched, for when flattening hides something.
 
 The `-s` keeps npm's banner out of the output. Page titles are French and case-sensitive after the first letter; search first if a `page` call says `missingtitle`.
+
+## Translating
+
+For en/fr/es wording (see the `i18n` skill), the two wikis are the community's own names for things: read the French page, take its English counterpart from the language links (or `search ... --lang en` / `--lang es`), and compare. They are player-written, so treat them as a reference for established terms, not as authoritative translations, and still don't copy long passages.
 
 ## Finding things
 
