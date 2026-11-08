@@ -80,6 +80,8 @@ export interface ItemState {
   broken?: true;
   /** Green jelly (actions/green_jelly.ts): cycle changes left before it breaks. Mush-only in views. */
   jelly?: number;
+  /** Shielding from an Engineer's Reinforce (actions/reinforce.ts), up to `config.reinforce.max`. Engineers and Mush see it in views. No effect yet. */
+  shield?: number;
 }
 
 /** A plant in a hydropot (owner, 2026-10-22; docs/scratchpad/botany-plan.md, Pass 1). */

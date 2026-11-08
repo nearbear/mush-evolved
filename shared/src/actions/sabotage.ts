@@ -3,6 +3,7 @@ import { breakEquipment, breakItem, isBreakable } from "../breakage.ts";
 import { EQUIPMENT_TYPES } from "../equipment.ts";
 import { ITEM_TYPES, canReachItem, isWorking } from "../items.ts";
 import { logSecret } from "../log.ts";
+import { isFortified } from "./reinforce.ts";
 import type { GameState, PlayerState } from "../types.ts";
 
 export type SabotageActionData = { type: "sabotage"; equipment: string } | { type: "sabotage"; item: string };
@@ -43,16 +44,16 @@ export class SabotageAction extends Action<SabotageActionData> {
   override getCandidates(state: Readonly<GameState>, player: Readonly<PlayerState>): SabotageActionData[] {
     if (player.role !== "mush") return [];
     return [
-      ...sabotageableEquipment(state, player).map((e): SabotageActionData => ({ type: "sabotage", equipment: e.id })),
-      ...sabotageableItems(state, player).map((i): SabotageActionData => ({ type: "sabotage", item: i.id })),
+      ...sabotageableEquipment(state, player).filter((e) => !isFortified(state, e)).map((e): SabotageActionData => ({ type: "sabotage", equipment: e.id })),
+      ...sabotageableItems(state, player).filter((i) => !isFortified(state, i)).map((i): SabotageActionData => ({ type: "sabotage", item: i.id })),
     ];
   }
 
   override validate(state: Readonly<GameState>, player: Readonly<PlayerState>, target: SabotageActionData): string | null {
     if (player.role !== "mush") return "not_mush";
     const found = "item" in target
-      ? sabotageableItems(state, player).some((i) => i.id === target.item)
-      : sabotageableEquipment(state, player).some((e) => e.id === target.equipment);
+      ? sabotageableItems(state, player).some((i) => i.id === target.item && !isFortified(state, i))
+      : sabotageableEquipment(state, player).some((e) => e.id === target.equipment && !isFortified(state, e));
     return found ? null : "cant_sabotage";
   }
 

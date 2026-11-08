@@ -385,7 +385,8 @@
     "extinguishManually": "Apagar a mano",
     "ignite": "Provocar un incendio",
     "sabotage": "Sabotear",
-    "greenJelly": "Gelatina verde"
+    "greenJelly": "Gelatina verde",
+    "reinforce": "Reforzar"
   },
   "queue": {
     "label": "Tus acciones",
@@ -656,7 +657,9 @@
     "jelly_one": "Gelatina verde: avería en {{count}} ciclo",
     "jelly_many": "Gelatina verde: avería en {{count}} ciclos",
     "jelly_other": "Gelatina verde: avería en {{count}} ciclos",
-    "jellyDesc": "Solo los Mush pueden verlo.",
+    "jellyDesc": "Se avería cuando se acaban los ciclos.",
+    "shield": "Blindaje: {{shield}}",
+    "shieldDesc": "Da una probabilidad sobre 100 de librarse de una avería. Con 25 o más no se puede sabotear ni desmontar.",
     "satiety": "Saciedad",
     "plantOf": "Planta: {{item}}",
     "young": "Planta joven",
@@ -782,6 +785,10 @@
     "sabotaged": "{{name}} ha saboteado el equipo «{{equipment}}».",
     "greenJelly": "{{name}} ha untado gelatina verde en el equipo «{{equipment}}». Se averiará en {{cycles}} ciclo(s).",
     "greenJellyItem": "{{name}} ha untado gelatina verde en el objeto «{{item}}». Se averiará en {{cycles}} ciclo(s).",
+    "reinforced": "Has reforzado el equipo «{{equipment}}». Blindaje: {{shield}}.",
+    "reinforcedItem": "Has reforzado: {{item}}. Blindaje: {{shield}}.",
+    "reinforceFailed": "No has conseguido reforzar el equipo «{{equipment}}».",
+    "reinforceFailedItem": "No has conseguido reforzar: {{item}}.",
     "sabotageFailed": "{{name}} no ha conseguido sabotear el equipo «{{equipment}}».",
     "sabotagedItem": "{{name}} ha saboteado el objeto: {{item}}.",
     "sabotageFailedItem": "{{name}} no ha conseguido sabotear el objeto: {{item}}.",

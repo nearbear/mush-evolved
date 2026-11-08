@@ -381,7 +381,8 @@
     "extinguishManually": "Extinguish manually",
     "ignite": "Start a fire",
     "sabotage": "Sabotage",
-    "greenJelly": "Green Jelly"
+    "greenJelly": "Green Jelly",
+    "reinforce": "Reinforce"
   },
   "queue": {
     "label": "Your actions",
@@ -647,7 +648,9 @@
     "contaminatedDesc": "Mush food: a human who eats it is contaminated by this many levels. Only Mush can see this.",
     "jelly_one": "Green jelly: breaks in {{count}} cycle",
     "jelly_other": "Green jelly: breaks in {{count}} cycles",
-    "jellyDesc": "Only Mush can see this.",
+    "jellyDesc": "It breaks when the cycles run out.",
+    "shield": "Shielding: {{shield}}",
+    "shieldDesc": "Gives a chance out of 100 that a breakdown spares it. At 25 or more it can't be sabotaged or dismantled.",
     "satiety": "Satiety",
     "plantOf": "{{item}} plant",
     "young": "Young plant",
@@ -772,6 +775,10 @@
     "sabotaged": "{{name}} sabotaged the {{equipment}}.",
     "greenJelly": "{{name}} smeared green jelly on the {{equipment}}. It will break in {{cycles}} cycle(s).",
     "greenJellyItem": "{{name}} smeared green jelly on the {{item}}. It will break in {{cycles}} cycle(s).",
+    "reinforced": "You reinforced the {{equipment}}. Shielding: {{shield}}.",
+    "reinforcedItem": "You reinforced the {{item}}. Shielding: {{shield}}.",
+    "reinforceFailed": "You failed to reinforce the {{equipment}}.",
+    "reinforceFailedItem": "You failed to reinforce the {{item}}.",
     "sabotageFailed": "{{name}} failed to sabotage the {{equipment}}.",
     "sabotagedItem": "{{name}} sabotaged the {{item}}.",
     "sabotageFailedItem": "{{name}} failed to sabotage the {{item}}.",

@@ -56,6 +56,7 @@ describe("actions from a client", () => {
     move: [{ type: "move", to: "bridge" }],
     take: [{ type: "take", item: "i1" }],
     drop: [{ type: "drop", item: "i1" }],
+    reinforce: [{ type: "reinforce", item: "i1" }, { type: "reinforce", equipment: "e1" }],
     dismantle: [{ type: "dismantle", item: "i1" }, { type: "dismantle", equipment: "e1" }],
     access: [{ type: "access", equipment: "e1" }],
     research: [{ type: "research", equipment: "e1", research: "r1" }],
@@ -167,8 +168,8 @@ describe("actions from a client", () => {
     expect(asAction(["ready"])).toBeNull();
     for (const action of all) {
       for (const key of Object.keys(action).filter((k) => k !== "type")) {
-        // Dismantle takes either field, so it still parses with one of them gone.
-        if (action.type === "dismantle") continue;
+        // Dismantle and reinforce take either field, so it still parses with one of them gone.
+        if (action.type === "dismantle" || action.type === "reinforce") continue;
         const { [key]: _dropped, ...missing } = action as Record<string, unknown>;
         if (!(action.type === "attack" && key === "target")) expect(asAction(missing), `${action.type} without ${key}`).toBeNull();
         // A plan's slot is an index: a number is its right type, so it gets a wrong one.
@@ -177,6 +178,7 @@ describe("actions from a client", () => {
       }
     }
     expect(asAction({ type: "dismantle" })).toBeNull();
+    expect(asAction({ type: "reinforce" })).toBeNull();
     expect(asAction({ type: "turn_ship", equipment: "e1", side: "up" })).toBeNull();
     expect(asAction({ type: "set_bios", equipment: "e1", option: "nope", value: true })).toBeNull();
     expect(asAction({ type: "set_bios", equipment: "e1", option: BIOS_OPTIONS[0], value: "true" })).toBeNull();

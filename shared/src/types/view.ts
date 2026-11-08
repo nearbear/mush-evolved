@@ -20,6 +20,8 @@ export interface EquipmentView {
   broken?: true;
   /** Green jelly on it: cycle changes left before it breaks. Sent to living Mush only. */
   jelly?: number;
+  /** Shielding (actions/reinforce.ts). Sent to living Engineers and Mush only. */
+  shield?: number;
   /** A patrol ship's interface whose ship is in flight: shown to anyone in its bay, and the ship isn't drawn (owner, 2026-10-24). */
   out?: true;
   /** A patrol ship's interface whose ship was destroyed (it is out for good): shown to anyone in its bay. */
@@ -45,6 +47,8 @@ export interface ItemView {
   broken?: true;
   /** Green jelly on it: cycle changes left before it breaks. Sent to living Mush only. */
   jelly?: number;
+  /** Shielding (actions/reinforce.ts). Sent to living Engineers and Mush only. */
+  shield?: number;
   /** In your room's storage: you hid it, and nobody else can see it (actions/hide.ts). */
   hidden?: true;
   /** For a food item trapped with Fungal cuisine: its contamination level. Sent to living Mush only. */

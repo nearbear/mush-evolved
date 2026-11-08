@@ -358,12 +358,16 @@ export const PLANT_ICONS: Readonly<Record<"young" | "thirsty" | "dried" | "sick"
 };
 /** Contamination, as only Mush see it on humans (the original spore icon). */
 export const CONTAMINATED_ICON = uiIcons["spore"]!;
+/** Shielding on an item or equipment (Reinforce), as Engineers and Mush see it: the original shield icon. */
+export const SHIELD_ICON = uiIcons["shield"]!;
 
 // Skill icons (one per skill id, see shared/src/skills.ts).
 const skillIcons = urls(import.meta.glob<string>("../../../Mush/www/img/icons/skills/*.png", { eager: true, query: "?url", import: "default" }));
 // The designer skill was the original's conceptor, whose icon file keeps that name.
 skillIcons["designer"] = skillIcons["conceptor"]!;
 export const skillIcon = (id: string): string => skillIcons[id] ?? EMPTY_SLOT_ICON;
+/** Green jelly on an item or equipment, as Mush see it: the Electro-slime skill's icon. */
+export const JELLY_ICON = skillIcons["electro_slime"]!;
 
 /** The gold plus on an empty skill slot. */
 export const GOLD_PLUS_ICON = uiIcons["goldplus"]!;

@@ -43,6 +43,7 @@ const ACTION_NAME_KEYS = {
   ignite: "actions.ignite",
   sabotage: "actions.sabotage",
   green_jelly: "actions.greenJelly",
+  reinforce: "actions.reinforce",
   extinguish_manually: "actions.extinguishManually",
   takeoff: "actions.takeoff",
   icarus_takeoff: "actions.icarus_takeoff",

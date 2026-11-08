@@ -302,6 +302,8 @@ export const DEFAULT_CONFIG: GameConfig = {
   sabotage: { cost: { ap: 1 }, defaultChance: 0.12, sapperFactor: 3 },
   // Owner, 2026-11-07: Green Jelly (actions/green_jelly.ts) breaks its target after 1 to `maxCycles` cycle changes.
   greenJelly: { cost: { ap: 1 }, maxCycles: 4 },
+  // Owner, 2026-11-07: Reinforce (actions/reinforce.ts): 1 AP, 35%, one scrap for 10 (metal) or 5 (plastic) shielding, at most 50; at 25 or more it can't be sabotaged or dismantled.
+  reinforce: { cost: { ap: 1 }, chance: 0.35, max: 50, fortifiedAt: 25, gain: { metal_scraps: 10, plastic_scraps: 5 } },
   extinguish: { cost: { ap: 1 }, chance: 0.5, manual: { chance: 0.5, failureMultiplier: 1.25 }, firefighterInjuryChance: 0.5 },
   // Owner, 2026-10-25/11-01: equipment with a repair chance on its eMushpedia page breaks; the rest never does.
   repair: {

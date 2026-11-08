@@ -3,6 +3,7 @@ import { EQUIPMENT_TYPES } from "../equipment.ts";
 import { ITEM_TYPES, canReachItem, newItemId, removeItem } from "../items.ts";
 import { logPrivate, logPublic } from "../log.ts";
 import { getUp } from "./lie_down.ts";
+import { isFortified } from "./reinforce.ts";
 import { hasSkill } from "../skills.ts";
 import type { GameState, PlayerState } from "../types.ts";
 
@@ -49,7 +50,7 @@ export class DismantleAction extends Action<DismantleActionData> {
   override getCandidates(state: Readonly<GameState>, player: Readonly<PlayerState>): DismantleActionData[] {
     if (!hasSkill(player, "engineer")) return [];
     return [
-      ...state.items.filter((item) => ITEM_TYPES[item.type]?.dismantle && canReachItem(state, player, item)).map((item): DismantleActionData => ({ type: "dismantle", item: item.id })),
+      ...state.items.filter((item) => ITEM_TYPES[item.type]?.dismantle && canReachItem(state, player, item) && !isFortified(state, item)).map((item): DismantleActionData => ({ type: "dismantle", item: item.id })),
       ...dismantlable(state, player).map((e): DismantleActionData => ({ type: "dismantle", equipment: e.id })),
     ];
   }
@@ -62,7 +63,7 @@ export class DismantleAction extends Action<DismantleActionData> {
     }
     const item = state.items.find((i) => i.id === target.item);
     if (!item) return "no_such_item";
-    if (!ITEM_TYPES[item.type]?.dismantle || !canReachItem(state, player, item)) return "cant_dismantle";
+    if (!ITEM_TYPES[item.type]?.dismantle || !canReachItem(state, player, item) || isFortified(state, item)) return "cant_dismantle";
     return null;
   }
 
@@ -92,4 +93,4 @@ export class DismantleAction extends Action<DismantleActionData> {
 }
 
 const dismantlable = (state: Readonly<GameState>, player: Readonly<PlayerState>) =>
-  (state.equipment[player.room] ?? []).filter((e) => EQUIPMENT_TYPES[e.type]?.dismantle);
+  (state.equipment[player.room] ?? []).filter((e) => EQUIPMENT_TYPES[e.type]?.dismantle && !isFortified(state, e));

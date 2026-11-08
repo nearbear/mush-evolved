@@ -142,6 +142,61 @@ describe("incidents", () => {
     expect(DEFAULT_CONFIG.repair.chance[broken[0]!.type]).toBeDefined();
   });
 
+  it("shielding is the chance out of 100 that a breakdown's pick holds (Reinforce, owner 2026-11-07)", () => {
+    const lone = (shield: number, seed: number): GameState => {
+      const s = ship(only("equipment_breakdown"), seed);
+      for (const e of Object.values(s.equipment).flat()) if (e.id !== COFFEE) e.broken = true;
+      s.equipment[HERE]!.find((e) => e.id === COFFEE)!.shield = shield;
+      s.items = [];
+      s.incidentPoints = 2;
+      return nextCycle(s);
+    };
+    const broke = (s: GameState) => !!Object.values(s.equipment).flat().find((e) => e.id === COFFEE)!.broken;
+    for (let seed = 1; seed <= 10; seed++) {
+      expect(broke(lone(100, seed))).toBe(false);
+      expect(broke(lone(0, seed))).toBe(true);
+    }
+    const outcomes = new Set(Array.from({ length: 30 }, (_, i) => broke(lone(50, i + 1))));
+    expect(outcomes).toEqual(new Set([true, false]));
+  });
+
+  it("a breakdown never picks equipment or an item with green jelly, and picks another instead", () => {
+    for (let seed = 1; seed <= 10; seed++) {
+      const s = ship(only("equipment_breakdown"), seed);
+      for (const e of Object.values(s.equipment).flat()) e.broken = true;
+      const coffee = s.equipment[HERE]!.find((e) => e.id === COFFEE)!;
+      const kitchen = s.equipment[HERE]!.find((e) => e.type === "KITCHEN")!;
+      delete coffee.broken;
+      delete kitchen.broken;
+      coffee.jelly = 3;
+      s.items = [{ id: "alarm", type: "myco_alarm", at: { kind: "room", id: HERE }, jelly: 2 }];
+      s.incidentPoints = 2;
+      const after = nextCycle(s);
+      expect(after.equipment[HERE]!.find((e) => e.id === COFFEE)!.broken).toBeUndefined();
+      expect(after.equipment[HERE]!.find((e) => e.type === "KITCHEN")!.broken).toBe(true);
+      expect(after.items.find((i) => i.id === "alarm")!.broken).toBeUndefined();
+    }
+  });
+
+  it("a breakdown with only jellied targets left does nothing", () => {
+    const s = ship(only("equipment_breakdown"));
+    for (const e of Object.values(s.equipment).flat()) e.broken = true;
+    const coffee = s.equipment[HERE]!.find((e) => e.id === COFFEE)!;
+    delete coffee.broken;
+    coffee.jelly = 3;
+    s.items = [];
+    s.incidentPoints = 2;
+    expect(nextCycle(s).equipment[HERE]!.find((e) => e.id === COFFEE)!.broken).toBeUndefined();
+  });
+
+  it("shielding also protects an item picked by a breakdown", () => {
+    const s = ship(only("equipment_breakdown"));
+    for (const e of Object.values(s.equipment).flat()) e.broken = true;
+    s.items.push({ id: "alarm", type: "myco_alarm", at: { kind: "room", id: HERE }, shield: 100 });
+    s.incidentPoints = 2;
+    expect(nextCycle(s).items.find((i) => i.id === "alarm")?.broken).toBeUndefined();
+  });
+
   it("equipment breakdown can pick an item whose type breaks on cycle change, announcing only its name", () => {
     const s = ship(only("equipment_breakdown"));
     for (const list of Object.values(s.equipment)) for (const e of list) e.broken = true;

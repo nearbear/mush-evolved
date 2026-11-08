@@ -6,7 +6,7 @@ import { useTranslation } from "react-i18next";
 import { useNames } from "../i18n/names.ts";
 import type { CSSProperties, ReactNode } from "react";
 import { actionVisibility, CHARACTERS, ITEM_TYPES, characterGivenName, characterName, SUPER_CALC_EQUIPMENT, type Action, type ActionOption, type EquipmentView, type PlayerView, type ShipLayout, type Target } from "@mush2/shared";
-import { BROKEN_ICON, characterImage, CONTAMINATED_ICON, portrait } from "../art/assets.ts";
+import { BROKEN_ICON, characterImage, CONTAMINATED_ICON, JELLY_ICON, portrait, SHIELD_ICON } from "../art/assets.ts";
 import { useMobile } from "../useMobile.ts";
 import { atlasUrl } from "../iso/shipLayout.ts";
 import { equipmentByTileKey, roomAsBuilt } from "../iso/equipmentTiles.ts";
@@ -134,7 +134,7 @@ function Details({ view, layout, resolved, onAction }: { view: PlayerView; layou
                 <img src={BROKEN_ICON} alt="" /> {t("roomList.broken")}
               </div>
             )}
-            {resolved.equipment.jelly !== undefined && <JellyLine cycles={resolved.equipment.jelly} />}
+            <ThingMarks jelly={resolved.equipment.jelly} shield={resolved.equipment.shield} />
             {resolved.equipment.out && <div className="sub">{t(resolved.equipment.destroyed ? "patrol.destroyed" : "patrol.out")}</div>}
             {resolved.equipment.armor !== undefined && <div className="sub">{t("patrol.armor", { armor: resolved.equipment.armor, max: resolved.equipment.maxArmor })}</div>}
           </div>
@@ -157,17 +157,8 @@ function Details({ view, layout, resolved, onAction }: { view: PlayerView; layou
               <img src={BROKEN_ICON} alt="" /> {t("roomList.broken")}
             </div>
           )}
-          {resolved.item.jelly !== undefined && <JellyLine cycles={resolved.item.jelly} />}
           {resolved.item.plant && <PlantStates plant={resolved.item.plant} />}
-          {resolved.item.spores !== undefined && (
-            <ul className="status-icons" aria-label={t("itemAttr.label")}>
-              <li className="status-count">
-                <StatusIcon icon={CONTAMINATED_ICON} name={t("itemAttr.contaminated", { level: resolved.item.spores })} description={t("itemAttr.contaminatedDesc")} visibility="private">
-                  <span aria-hidden="true">{resolved.item.spores}</span>
-                </StatusIcon>
-              </li>
-            </ul>
-          )}
+          <ThingMarks jelly={resolved.item.jelly} shield={resolved.item.shield} spores={resolved.item.spores} />
           {resolved.item.charges !== undefined && <div className="sub inspect-charges">{t("itemAttr.charges", { count: resolved.item.charges })}</div>}
         </>
       );
@@ -175,13 +166,37 @@ function Details({ view, layout, resolved, onAction }: { view: PlayerView; layou
 }
 
 /** The sprite the room draws for this equipment, scaled to the column width (like the item face, sized off `--tile`). */
-/** Mush-only: the green jelly on this thing and the cycles left before it breaks. */
-function JellyLine({ cycles }: { cycles: number }) {
+/**
+ * Icons with a count badge and a popover for what only some players see on an item or equipment (the server sends each
+ * field only to them): spores on food and green jelly (Mush), shielding (Engineers and Mush). Like the status icons.
+ */
+function ThingMarks({ jelly, shield, spores }: { jelly?: number | undefined; shield?: number | undefined; spores?: number | undefined }) {
   const { t } = useTranslation();
+  if (jelly === undefined && shield === undefined && spores === undefined) return null;
   return (
-    <div className="sub inspect-jelly">
-      {t("itemAttr.jelly", { count: cycles })} <span className="sub">({t("itemAttr.jellyDesc")})</span>
-    </div>
+    <ul className="status-icons" aria-label={t("itemAttr.label")}>
+      {spores !== undefined && (
+        <li className="status-count">
+          <StatusIcon icon={CONTAMINATED_ICON} name={t("itemAttr.contaminated", { level: spores })} description={t("itemAttr.contaminatedDesc")} visibility="private">
+            <span aria-hidden="true">{spores}</span>
+          </StatusIcon>
+        </li>
+      )}
+      {jelly !== undefined && (
+        <li className="status-count">
+          <StatusIcon icon={JELLY_ICON} name={t("itemAttr.jelly", { count: jelly })} description={t("itemAttr.jellyDesc")} visibility="private">
+            <span aria-hidden="true">{jelly}</span>
+          </StatusIcon>
+        </li>
+      )}
+      {shield !== undefined && (
+        <li className="status-count">
+          <StatusIcon icon={SHIELD_ICON} name={t("itemAttr.shield", { shield })} description={t("itemAttr.shieldDesc")} visibility="private">
+            <span aria-hidden="true">{shield}</span>
+          </StatusIcon>
+        </li>
+      )}
+    </ul>
   );
 }
 

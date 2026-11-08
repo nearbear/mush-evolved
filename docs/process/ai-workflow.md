@@ -2595,3 +2595,18 @@ Built `shared/src/normalizeState.ts`: the helpers and one normalizer per stored 
 - **Decision (owner):** `use_bandage` heals 2 HP for 1 AP and uses the bandage up. The target is yourself or any living person in your room. Two bandages spawn in the medlab. It's a public log line, it's offered at full HP, Mush and humans use it the same way, and the `healAmount` modifier hook applies.
 - **What worked:** `vaccinate.ts` (a single-use item aimed at a person) plus `heal.ts` (offered to yourself, the HP cap and the hook) together covered it. The only new seam was `bandageHealAmount`, which folds the same hook from a different base, so the medic's bonus works without touching `medic.ts`.
 - **Claude's defaults, flagged rather than asked:** care points don't pay for a bandage, it has no chance to make you dirty, and it must be in your inventory. There is no expedition action allowlist yet (#356 phase 2), so "usable on expeditions" has nothing to plug into.
+
+## 2026-11-07: Reinforce action (Engineer)
+
+- Owner specified cost, chance, scrap values, cap and visibility. Open points settled by questions: targets are the union of dismantlable or sabotageable, scrap taken from the inventory first then the room (one option per scrap type), scrap kept on a failed roll, clamp to 50 and don't offer a target already at 50.
+- Built as `actions/reinforce.ts` with `shield` on `ItemState` and `Equipment`, views filtered to living Engineers and Mush, `STATE_VERSION` bumped to 115. Modelled on green jelly. Log params had to be named `item`/`equipment` for the client to translate them.
+
+- Same day, follow-up: shielding gives shield/100 chance an incident's single pick (`breakOne`) holds. I read "the cycle change incident" as the single-pick incidents only, not electrical overload or fire; the shield isn't consumed. Flagged to the owner.
+
+- Same day, second follow-up: shielding of 25+ blocks Dismantle and Sabotage (`isFortified`, `config.reinforce.fortifiedAt`). I kept the check out of the shared sabotageable helpers so Green Jelly stays unaffected, as the owner said earlier.
+
+- Same day, UI follow-up: green jelly and shielding in the Inspect panel are now icon-with-count buttons with a popover, in one `ThingMarks` row beside the spores badge (`StatusIcon`). Icons are existing Motion Twin art (the shield UI icon, the Electro-slime skill icon); nothing generated.
+
+- Same day, Reinforce is one action per target (no `scrap` field); `findScrap` picks metal in the inventory, plastic in the inventory, metal in the room, plastic in the room (owner's order).
+
+- Same day, equipment and items with green jelly are left out of `breakOne`'s pool, so a breakdown picks something else instead of being cancelled.
