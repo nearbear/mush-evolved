@@ -160,25 +160,37 @@ function ProjectList({ terminal, view, onAction }: ListProps) {
   );
 }
 
-/** PILGRED's repair: its progress (sent only to people at the terminal) and, when the view offers it, the repair button. */
+/**
+ * PILGRED's repair: its card on the left (hover, focus or tap for the description), and beside it the progress bar (sent only
+ * to people at the terminal) over, when the view offers it, the repair as one big button (as Return to Sol). Relay tokens below.
+ */
 function PilgredRepair({ terminal, view, onAction }: ListProps) {
   const { t } = useTranslation();
   const percent = view.pilgred ?? 0;
   const option = view.actions.find(({ action: a }) => a.type === "repair_pilgred" && a.equipment === terminal.id);
   return (
-    <div className="research-item" role="group" aria-label={t("pilgred.label")}>
-      <img className="research-card" src={PILGRED_CARD} alt="" />
-      <div className="research-body">
-        <span>{t("pilgred.desc")}</span>
-        <progress max={PILGRED_COMPLETE} value={percent} />
-        <span>{percent >= PILGRED_COMPLETE ? t("pilgred.repaired") : t("pilgred.progress", { percent })}</span>
+    <div className="pilgred-repair" role="group" aria-label={t("pilgred.label")}>
+      <EntryTip name={t("pilgred.label")} desc={t("pilgred.desc")} trigger={<img className="research-card" src={PILGRED_CARD} alt={t("pilgred.label")} />} />
+      <div className="pilgred-controls">
+        <div className="research-progress">
+          <ProgressBar
+            label={t("pilgred.label")}
+            percent={percent}
+            complete={PILGRED_COMPLETE}
+            pending={undefined}
+            style={{ "--value": Math.min(1, percent / PILGRED_COMPLETE) } as CSSProperties}
+          />
+          <span>{t("research.percent", { percent })}</span>
+        </div>
+        {option && (
+          <ActionButton className="big" view={view} option={option} onAction={onAction} hint={t("relay.help")}>
+            <ActionLabel text={withGain(t, t("actions.repairPilgred"), view.relay.pilgred?.gain)} cost={option.cost} chance={option.chance} />
+          </ActionButton>
+        )}
+      </div>
+      <div className="pilgred-relay">
         <RelayDetails target={view.relay.pilgred ?? undefined} view={view} />
       </div>
-      {option && (
-        <ActionButton view={view} option={option} onAction={onAction} hint={t("relay.help")}>
-          <ActionLabel text={withGain(t, t("actions.repairPilgred"), view.relay.pilgred?.gain)} cost={option.cost} chance={option.chance} />
-        </ActionButton>
-      )}
     </div>
   );
 }

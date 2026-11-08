@@ -432,9 +432,7 @@
   },
   "pilgred": {
     "label": "Réparation de PILGRED",
-    "desc": "Le réacteur PILGRED. La seule façon de voyager plus vite que la lumière connue au moment du départ du Daedalus. Sa remise en état vous permettra peut-être de retourner sur Sol.",
-    "progress": "Réparé à {{percent}} %",
-    "repaired": "Réparé"
+    "desc": "Le réacteur PILGRED. La seule façon de voyager plus vite que la lumière connue au moment du départ du Daedalus. Sa remise en état vous permettra peut-être de retourner sur Sol."
   },
   "gameOver": {
     "title": "La partie est terminée",

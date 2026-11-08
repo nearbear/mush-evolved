@@ -428,9 +428,7 @@
   },
   "pilgred": {
     "label": "PILGRED repair",
-    "desc": "The PILGRED reactor. The only known way to travel faster than light when the Daedalus left. Repairing it may let you return to Sol.",
-    "progress": "{{percent}}% repaired",
-    "repaired": "Repaired"
+    "desc": "The PILGRED reactor. The only known way to travel faster than light when the Daedalus left. Repairing it may let you return to Sol."
   },
   "gameOver": {
     "title": "The game is over",

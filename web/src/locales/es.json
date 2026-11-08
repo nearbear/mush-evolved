@@ -432,9 +432,7 @@
   },
   "pilgred": {
     "label": "Reparación de PILGRED",
-    "desc": "El reactor PILGRED. La única forma conocida de viajar más rápido que la luz cuando partió el Daedalus. Repararlo quizá os permita volver a Sol.",
-    "progress": "Reparado al {{percent}} %",
-    "repaired": "Reparado"
+    "desc": "El reactor PILGRED. La única forma conocida de viajar más rápido que la luz cuando partió el Daedalus. Repararlo quizá os permita volver a Sol."
   },
   "gameOver": {
     "title": "La partida ha terminado",

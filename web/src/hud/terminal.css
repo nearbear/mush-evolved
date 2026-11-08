@@ -259,3 +259,28 @@
 .command-destinations button.big {
   width: 100%;
 }
+
+/* PILGRED's terminal: the card on the left (its description in the card's tooltip); beside it the progress bar over the
+   repair as one big button across the rest of the row (as the Command terminal's destinations); relay tokens below. */
+.pilgred-repair {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  column-gap: 0.75rem;
+  row-gap: 0.5rem;
+  align-items: center;
+}
+.pilgred-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  min-width: 0;
+}
+.pilgred-controls button.big {
+  width: 100%;
+}
+.pilgred-relay {
+  grid-column: 1 / -1;
+}
+.pilgred-relay:empty {
+  display: none;
+}
