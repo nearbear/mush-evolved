@@ -23,7 +23,7 @@ import {
   UPGRADE_STEPS,
   type UpgradeStep,
 } from "../src/normalizeState.ts";
-import type { ConfigOverrides, GameState, PlayerState } from "../src/types.ts";
+import type { ConfigOverrides, Container, GameState, HunterTarget, PlanSlot, PlanTask, PlayerState, Spot } from "../src/types.ts";
 import { play } from "./randomGame.ts";
 import { makeSeats } from "./support.ts";
 
@@ -309,6 +309,48 @@ describe("union normalizers", () => {
       expect(normalize(valid)).toStrictEqual(valid);
       expect(() => normalize({ ...valid, [key]: "teleporter" })).toThrow(new NormalizeError(`${type}.${key} unknown: "teleporter"`));
       expect(() => normalize({ ...valid, [key]: undefined })).toThrow(new NormalizeError(`${type}.${key} missing`));
+    });
+  }
+
+  // One sample per variant, keyed by its discriminant, so a new variant doesn't compile until it has one here.
+  const containers: { [K in Container["kind"]]: Extract<Container, { kind: K }> } = {
+    player: { kind: "player", id: "p1" },
+    room: { kind: "room", id: "BRIDGE" },
+  };
+  const spots: { [K in Spot["kind"]]: Extract<Spot, { kind: K }>[] } = {
+    cell: [{ kind: "cell", x: 1, y: 2 }, { kind: "cell", x: 0, y: 0, sitting: false }],
+    door: [{ kind: "door", door: "BRIDGE" }],
+  };
+  const targets: { [K in HunterTarget["kind"]]: Extract<HunterTarget, { kind: K }> } = {
+    ship: { kind: "ship" },
+    patrol: { kind: "patrol", id: "PATROL_SHIP_ALPHA_TAMARIN" },
+  };
+  const tasks: { [K in PlanTask["type"]]: Extract<PlanTask, { type: K }> } = {
+    research: { type: "research", research: "r" },
+    project: { type: "project", project: "p" },
+    repair_pilgred: { type: "repair_pilgred" },
+    heal: { type: "heal", target: "p1" },
+    comfort: { type: "comfort", target: "p2" },
+    stt: { type: "stt", target: "p3" },
+    fiery_speech: { type: "fiery_speech" },
+    boring_speech: { type: "boring_speech" },
+    bring: { type: "bring", itemType: "medikit" },
+  };
+  const slots: { [K in PlanSlot["kind"]]: Extract<PlanSlot, { kind: K }>[] } = {
+    onCall: [{ kind: "onCall", holder: null }, { kind: "onCall", holder: "p1", reservedFor: "p1", outcome: "arrived" }],
+    task: Object.values(tasks).map((task, i) => ({ kind: "task", task, holder: i % 2 ? "p1" : null, done: i % 3 === 0, ...(i === 1 ? { reservedFor: "p2", struck: "already_done" } : {}) }) as const),
+  };
+  const variants: [string, (raw: any) => unknown, readonly unknown[]][] = [
+    ["Container", normalizeContainer, Object.values(containers)],
+    ["Spot", normalizeSpot, Object.values(spots).flat()],
+    ["HunterTarget", normalizeHunterTarget, Object.values(targets)],
+    ["PlanTask", normalizePlanTask, Object.values(tasks)],
+    ["PlanSlot", normalizePlanSlot, Object.values(slots).flat()],
+  ];
+
+  for (const [type, normalize, samples] of variants) {
+    it(`${type}: gives back every variant as it was`, () => {
+      for (const sample of samples) expect(normalize(JSON.parse(JSON.stringify(sample)))).toStrictEqual(sample);
     });
   }
 
