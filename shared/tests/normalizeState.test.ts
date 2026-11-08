@@ -27,6 +27,7 @@ import {
 } from "../src/normalizeState.ts";
 import type { ConfigOverrides, Container, GameState, HunterTarget, PlanSlot, PlanTask, PlayerState, Spot } from "../src/types.ts";
 import { play } from "./randomGame.ts";
+import { addProbes, probesIn } from "./storedShape.ts";
 import { makeSeats } from "./support.ts";
 
 /** A game as storage hands it back: plain JSON, without its config. */
@@ -46,6 +47,77 @@ const withoutQueues = (game: GameState): GameState => {
 const fresh = () => ({ game: createGame(makeSeats(3), DEFAULT_CONFIG, 7), overrides: {} as ConfigOverrides });
 // A seeded random game some way in (#335): chat, channels, items moved, cycles passed, actions under way.
 const played = () => ({ game: play(600, 11).state, overrides: { manualCycles: true } as ConfigOverrides });
+
+/** A fresh game with every optional field and every collection a random game leaves empty filled in by hand. */
+function handFilled() {
+  const { game, overrides } = fresh();
+  const [a, b] = game.players as [PlayerState, PlayerState];
+  // Every optional field set, so a field copied from the wrong key shows.
+  Object.assign(a, {
+    transferUsed: true,
+    apprenticeUsed: true,
+    geniusUsed: true,
+    bodyTakenBy: b.character,
+    spot: { kind: "door", door: "BRIDGE" },
+    enteredFrom: "BRIDGE",
+    lyingIn: "BED",
+    lyingSince: 2,
+    pushedBy: b.id,
+    outcastBy: b.id,
+    lastSeenAt: 99,
+    inactivity: "inactive",
+    boringToday: true,
+    fertileToday: true,
+    chitchatToday: true,
+    interrogatedToday: true,
+    snoopedToday: ["FRONT_STORAGE"],
+    mycoscannedToday: true,
+    accommodationOffers: [{ by: b.id, until: 500 }],
+    diseaseTrackers: [{ name: "cold", duration: 3, resistance: 1, complete: false, forever: true }],
+    immuneUntil: 9,
+    bookSkill: "cook",
+  } satisfies Partial<PlayerState>);
+  game.items[0]!.hiddenBy = a.id;
+  Object.assign(game.items[1]!, { of: b.id, builds: "x", charges: 2, teaches: "y", spores: 1, broken: true, jelly: 3, plant: { species: "fruit_banana", age: null, thirst: 2, sick: true } });
+  game.space = [{ id: "d1", type: "metal_scraps", plant: { species: "fruit_banana", age: 1, thirst: 0, sick: false } }];
+  game.equipment.BRIDGE = [{ id: "BRIDGE:X", type: "X", broken: true, jelly: 2 }];
+  game.log.push({ id: 77, cycle: 1, at: 5, key: "k", params: { n: 1, s: "t" }, room: "BRIDGE", visibleTo: [a.id], level: "warning" });
+  game.chat.push({ id: 78, seq: 0, cycle: 1, at: 6, channel: "mush", from: null, isBot: false, text: "", system: { key: "s", params: { n: 2 } } });
+  game.channels.push({ id: "pc-1", name: "", members: [a.id, b.id], createdBy: a.id, planningClosed: true, day: 1, cycleOfDay: 2 });
+  game.threads.push({ id: "th-1", name: "t", from: 3, createdBy: b.id, cycle: 4 });
+  game.plans.push({
+    id: "plan-1",
+    channel: "pc-1",
+    author: a.id,
+    room: "BRIDGE",
+    purpose: "meal",
+    status: "called",
+    postedDay: 1,
+    slots: [
+      { kind: "onCall", holder: b.id, reservedFor: b.id, outcome: "arrived" },
+      { kind: "task", task: { type: "research", research: "r" }, holder: null, reservedFor: a.id, done: true, struck: "already_done" },
+      { kind: "task", task: { type: "repair_pilgred" }, holder: a.id, done: false },
+    ],
+  });
+  game.planets[a.id] = [{ id: "pl-1", name: "Zed", direction: game.navigation.heading, distance: 3, sectors: [{ tag: "FOREST" as never, known: true, explored: true }] }];
+  game.sharedPlanets.push({ id: "sp-1", text: "nice", by: a.id, day: 1, cycleOfDay: 3, stale: true, planet: "pl-1" });
+  game.expeditions.push({
+    id: "ex-1",
+    members: [a.id, b.id],
+    crew: [a.character, b.character],
+    planet: "Zed",
+    events: [
+      { sector: "LANDING", kind: "fight", amount: 4, item: "i", fight: { strength: 3, grenades: 1, won: true }, hurt: [{ name: a.character, hp: 2 }], died: [b.character] },
+      { sector: "FOREST", kind: "nothing" },
+    ],
+  });
+  game.navigation = { heading: game.navigation.heading, orbit: "pl-1", arriving: { planet: "pl-1" }, lastTurn: { n: 3, side: "left" } };
+  game.hunters.list.push({ id: "h1", hp: 2, hitChance: 0.4, target: { kind: "ship" } });
+  game.relay.projects.p = { tokens: [{ by: a.id, base: 3, roll: 0.5, unpenalized: true }] };
+  game.relay.research.r = { tokens: [{ by: a.id, base: 3, roll: 0.5 }], pending: [{ by: b.id, base: 2, roll: 0.1, contaminatedBy: b.id }] };
+  game.chatOutbox = { sealed: [{ channel: "global", page: 0, messages: [game.chat.at(-1)!] }], dropped: [{ channel: "pc-2", pages: 1 }] };
+  return { game, overrides };
+}
 
 /** Every object and array reachable from `value`. */
 function objectsIn(value: unknown, into = new Set<object>()): Set<object> {
@@ -88,73 +160,15 @@ describe("normalizeGame", () => {
   });
 
   it("gives back, as they were, the collections a random game leaves empty", () => {
-    const { game, overrides } = fresh();
-    const [a, b] = game.players as [PlayerState, PlayerState];
-    // Every optional field set, so a field copied from the wrong key shows.
-    Object.assign(a, {
-      transferUsed: true,
-      apprenticeUsed: true,
-      geniusUsed: true,
-      bodyTakenBy: b.character,
-      spot: { kind: "door", door: "BRIDGE" },
-      enteredFrom: "BRIDGE",
-      lyingIn: "BED",
-      lyingSince: 2,
-      pushedBy: b.id,
-      outcastBy: b.id,
-      lastSeenAt: 99,
-      inactivity: "inactive",
-      boringToday: true,
-      fertileToday: true,
-      chitchatToday: true,
-      interrogatedToday: true,
-      snoopedToday: ["FRONT_STORAGE"],
-      mycoscannedToday: true,
-      accommodationOffers: [{ by: b.id, until: 500 }],
-      diseaseTrackers: [{ name: "cold", duration: 3, resistance: 1, complete: false, forever: true }],
-      immuneUntil: 9,
-      bookSkill: "cook",
-    } satisfies Partial<PlayerState>);
-    game.items[0]!.hiddenBy = a.id;
-    Object.assign(game.items[1]!, { of: b.id, builds: "x", charges: 2, teaches: "y", spores: 1, broken: true, jelly: 3, plant: { species: "fruit_banana", age: null, thirst: 2, sick: true } });
-    game.space = [{ id: "d1", type: "metal_scraps", plant: { species: "fruit_banana", age: 1, thirst: 0, sick: false } }];
-    game.equipment.BRIDGE = [{ id: "BRIDGE:X", type: "X", broken: true, jelly: 2 }];
-    game.log.push({ id: 77, cycle: 1, at: 5, key: "k", params: { n: 1, s: "t" }, room: "BRIDGE", visibleTo: [a.id], level: "warning" });
-    game.chat.push({ id: 78, seq: 0, cycle: 1, at: 6, channel: "mush", from: null, isBot: false, text: "", system: { key: "s", params: { n: 2 } } });
-    game.channels.push({ id: "pc-1", name: "", members: [a.id, b.id], createdBy: a.id, planningClosed: true, day: 1, cycleOfDay: 2 });
-    game.threads.push({ id: "th-1", name: "t", from: 3, createdBy: b.id, cycle: 4 });
-    game.plans.push({
-      id: "plan-1",
-      channel: "pc-1",
-      author: a.id,
-      room: "BRIDGE",
-      purpose: "meal",
-      status: "called",
-      postedDay: 1,
-      slots: [
-        { kind: "onCall", holder: b.id, reservedFor: b.id, outcome: "arrived" },
-        { kind: "task", task: { type: "research", research: "r" }, holder: null, reservedFor: a.id, done: true, struck: "already_done" },
-        { kind: "task", task: { type: "repair_pilgred" }, holder: a.id, done: false },
-      ],
-    });
-    game.planets[a.id] = [{ id: "pl-1", name: "Zed", direction: game.navigation.heading, distance: 3, sectors: [{ tag: "FOREST" as never, known: true, explored: true }] }];
-    game.sharedPlanets.push({ id: "sp-1", text: "nice", by: a.id, day: 1, cycleOfDay: 3, stale: true, planet: "pl-1" });
-    game.expeditions.push({
-      id: "ex-1",
-      members: [a.id, b.id],
-      crew: [a.character, b.character],
-      planet: "Zed",
-      events: [
-        { sector: "LANDING", kind: "fight", amount: 4, item: "i", fight: { strength: 3, grenades: 1, won: true }, hurt: [{ name: a.character, hp: 2 }], died: [b.character] },
-        { sector: "FOREST", kind: "nothing" },
-      ],
-    });
-    game.navigation = { heading: game.navigation.heading, orbit: "pl-1", arriving: { planet: "pl-1" }, lastTurn: { n: 3, side: "left" } };
-    game.hunters.list.push({ id: "h1", hp: 2, hitChance: 0.4, target: { kind: "ship" } });
-    game.relay.projects.p = { tokens: [{ by: a.id, base: 3, roll: 0.5, unpenalized: true }] };
-    game.relay.research.r = { tokens: [{ by: a.id, base: 3, roll: 0.5 }], pending: [{ by: b.id, base: 2, roll: 0.1, contaminatedBy: b.id }] };
-    game.chatOutbox = { sealed: [{ channel: "global", page: 0, messages: [game.chat.at(-1)!] }], dropped: [{ channel: "pc-2", pages: 1 }] };
+    const { game, overrides } = handFilled();
     expect(normalizeGame(stored(game), overrides)).toStrictEqual(withoutQueues(game));
+  });
+
+  it("drops a key added to any struct of a game with every collection filled, so each goes through its normalizer", () => {
+    const { game, overrides } = handFilled();
+    const raw = { game: stored(game) };
+    expect(addProbes(raw)).toBeGreaterThan(50);
+    expect(probesIn({ game: normalizeGame(raw.game, overrides) })).toEqual([]);
   });
 
   it("drops the action under way and the queue", () => {

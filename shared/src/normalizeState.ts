@@ -89,6 +89,14 @@ export class TooNewError extends Error {
  */
 export interface UpgradeStep {
   to: number;
+  /**
+   * The stored paths this step removes, renames or changes the value of, so the fixture test (server/tests/
+   * storedRooms.test.ts) expects them to differ: `game.players[].foo`, `overrides.bar`, `game.equipment.*[].baz` (an
+   * array element is `[]`, a dictionary key `*`; a path covers everything below it).
+   */
+  paths?: readonly string[];
+  /** The registry ids this step renames or removes, as `<registry>.<id>` (`ITEM_TYPES.old_kit`): the registry snapshot test then expects them gone. */
+  ids?: readonly string[];
   run(game: Record<string, unknown>, overrides: Record<string, unknown>): void;
 }
 
