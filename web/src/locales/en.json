@@ -1460,7 +1460,13 @@
   "comms": {
     "linked": "Link with Sol established.",
     "unlinked": "No link with Sol.",
-    "solChance": "Signal quality: {{percent}}%",
+    "solSignal": "Signal: {{db}} dB ({{strength}})",
+    "strength": {
+      "faint": "faint",
+      "weak": "weak",
+      "fair": "fair",
+      "strong": "strong"
+    },
     "linkNeeded": "Decoding, contacting Xyloph and updating NERON need the link with Sol.",
     "officerOnly": "Only the Comms Officer can decode signals, contact Xyloph and update NERON.",
     "overviewTitle": "Overview",

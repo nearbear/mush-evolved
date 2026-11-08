@@ -140,3 +140,11 @@
   position: relative;
   max-width: 100%;
 }
+
+/* Sol signal samples: the Com center's spectrum and its text line, at about a terminal's width. */
+.m2k-signal {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  width: min(22rem, 100%);
+}

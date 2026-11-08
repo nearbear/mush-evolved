@@ -1379,7 +1379,13 @@
   "comms": {
     "linked": "Contacto con Sol establecido.",
     "unlinked": "Sin contacto con Sol.",
-    "solChance": "Calidad de la señal: {{percent}} %",
+    "solSignal": "Señal: {{db}} dB ({{strength}})",
+    "strength": {
+      "faint": "apenas perceptible",
+      "weak": "débil",
+      "fair": "aceptable",
+      "strong": "fuerte"
+    },
     "linkNeeded": "Decodificar, contactar con Xyloph y actualizar NERON requieren contacto con Sol.",
     "officerOnly": "Solo el Oficial de Comunicaciones puede decodificar señales, contactar con Xyloph y actualizar NERON.",
     "overviewTitle": "Resumen",

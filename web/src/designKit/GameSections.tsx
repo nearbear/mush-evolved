@@ -1,11 +1,13 @@
 // The kit's terminal, patrol, iTrackie and end-of-life sections, on sample views (samples.ts). Dev-only.
 
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { BodyTakenDialog } from "../hud/BodyTakenDialog.tsx";
 import { DeathNotice } from "../hud/DeathNotice.tsx";
 import { EndScreen } from "../hud/EndScreen.tsx";
 import { ITrackie } from "../hud/ITrackie.tsx";
 import { PatrolCockpit } from "../hud/PatrolCockpit.tsx";
+import { signalStrength, solDb, Spectrogram } from "../hud/Spectrogram.tsx";
 import { TerminalBody } from "../hud/TerminalDialog.tsx";
 import { TerminalFrame } from "../hud/TerminalFrame.tsx";
 import { terminalLogin } from "../hud/terminalUsername.ts";
@@ -48,6 +50,44 @@ export function TerminalBodiesSection() {
         <TerminalFigure key={sample.terminal.id} {...sample} />
       ))}
       <TerminalFigure {...turretHuntersSample} note="with hunters attacking" />
+    </Section>
+  );
+}
+
+/** The ship's chance of reaching Sol (percent) for each sample, from a fresh ship to a sure link. */
+const SIGNAL_SAMPLES: { chance: number; linked: boolean; note: string }[] = [
+  { chance: 4, linked: false, note: "fresh ship (4%)" },
+  { chance: 40, linked: false, note: "after a few failed attempts (40%)" },
+  { chance: 80, linked: false, note: "strong (80%)" },
+  { chance: 100, linked: true, note: "linked, sure link (100%)" },
+];
+
+export function SignalSection() {
+  const { t } = useTranslation();
+  return (
+    <Section
+      id="sol-signal"
+      heading="Sol signal"
+      about={
+        <>
+          <code>hud/Spectrogram.tsx</code>: the Com center Overview&apos;s live spectrum. The carrier peaks at the
+          ship&apos;s chance of reaching Sol minus 100 dB (<code>solDb</code>), so 0 dB is a sure link. The carrier is a
+          wide modulated band with a fixed centre, a filter roll-off over a falling skirt, and sideband harmonics
+          at -18 and -30 dB; unlinked it fades by up to 3 dB, linked it holds its level.
+        </>
+      }
+    >
+      {SIGNAL_SAMPLES.map(({ chance, linked, note }) => {
+        const db = solDb(chance);
+        return (
+          <Figure key={note} caption={note}>
+            <div className="m2k-signal">
+              <Spectrogram db={db} linked={linked} status={t(linked ? "comms.linked" : "comms.unlinked")} />
+              <span>{t("comms.solSignal", { db, strength: t(`comms.strength.${signalStrength(db)}`) })}</span>
+            </div>
+          </Figure>
+        );
+      })}
     </Section>
   );
 }

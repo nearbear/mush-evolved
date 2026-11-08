@@ -1379,7 +1379,13 @@
   "comms": {
     "linked": "Contact avec Sol établi.",
     "unlinked": "Aucun contact avec Sol.",
-    "solChance": "Qualité du signal : {{percent}} %",
+    "solSignal": "Signal : {{db}} dB ({{strength}})",
+    "strength": {
+      "faint": "à peine perceptible",
+      "weak": "faible",
+      "fair": "correct",
+      "strong": "fort"
+    },
     "linkNeeded": "Décoder, contacter Xyloph et mettre à jour NERON demandent le contact avec Sol.",
     "officerOnly": "Seul le Responsable Communications peut décoder les signaux, contacter Xyloph et mettre à jour NERON.",
     "overviewTitle": "Vue d'ensemble",

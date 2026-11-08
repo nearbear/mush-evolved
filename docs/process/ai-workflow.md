@@ -2634,12 +2634,21 @@ The owner asked (by voice, "pale grid") for the PILGRED terminal to match the Co
 
 Follow-up the same day: the "N% repaired" text became a bare percent (the shared `research.percent`, the unused `pilgred.progress`/`pilgred.repaired` keys removed in en/fr/es), the card moved to the left of the bar and button in a two-column grid, and the description moved into the card's hover/tap card (`EntryTip`, as the research list's cards).
 
+## 2026-11-07: Com center spectrogram
+
+- The owner asked for the Com center Overview's "signal quality %" to read like a sigplot spectrogram without sigplot. Built `web/src/hud/Spectrogram.tsx`: a 2D canvas trace over a scrolling waterfall with a sigplot-like ramp colormap. The carrier peaks at `chance - 100` dB (linear, so the 4% start reads -96 dB and 100% is 0 dB, a sure link; the owner accepted -96 over rescaling to -100), from the ship's chance, not the viewer's Radio Expert chance. A plain-language strength word sits beside the dB value. Noise, drift and fading are client-only decoration.
+- Chose Canvas 2D over PixiJS: one 160-pixel row per frame is trivial, and a second WebGL context risks the browser dropping the iso view's context on phones. Rejected a true log scale (4% would read -14 dB and look strong).
+- Needed correction: the first draft tripped `noUncheckedIndexedAccess`, Biome's forEach-return rule and the hardcoded-text i18n test (the "dB" unit, now `i18n-ignore`).
+
 ## 2026-11-07: Stored-room fixtures and the five load tests (#384, phase 4)
 
 - Three committed `StoredRoom` fixtures at version 114 (arriving, in orbit, two players mid-action; about 45 KB each) plus a registry snapshot, in `server/tests/stored/`, never refreshed. The generator (`server/tests/storedRooms.ts`) reuses shared's seeded random game across packages and steers it through the rules (scan, turn, travel, a cycle), setting only position, AP and fuel by hand; the wrapper is the one a real `GameRoom` writes. `storedRooms.test.ts` runs the issue's five tests (values preserved, registry ids, probes, idempotent, still plays) on the fixtures and on the same moments generated at test time. `state-shape.json` and its test are gone.
 - Chose to declare expected differences on `UpgradeStep` itself (`paths`, `ids`), so a breaking change and its excuse land in one place. The probe walker's dictionary list is self-correcting: a missed dictionary of primitives keeps its probe and fails the test, which is how the sealed chat pages' `system.params` was found.
 - Checked the tests bite by mutating the normalizers by hand (a changed `hp`, `lastTurn`, `Spot` and an expedition's `fight` copied raw): each failed. The random game has no plans or expeditions, so the probe also runs on the hand-filled game in `normalizeState.test.ts`.
 - Needed noting, not correcting: `goals.test.ts`'s "only ever returns legal actions" times out at 5 s when the server suite runs in parallel, with or without the new file; and the untracked Spectrogram work broke `web`'s typecheck during this task's verify.
+- Follow-up (owner): the waterfall was too small, so it was dropped for one live spectrum plot drawn at device resolution (yellow trace, dim grid, 10rem tall), and the design kit gained a "Sol signal" section with 4%, 40%, 80% and linked samples.
+- Follow-up (owner): the wandering centre frequency looked wrong, so the carrier is now a wide flat-topped band (20% of the plot plus raised-cosine edges) with a fixed centre, a 2 dB data ripple, and the 3 dB fade kept while unlinked.
+- Follow-up (owner): the band's edges now drop off like filtered modulation (a steep raised-cosine shoulder over a skirt starting 26 dB down that keeps falling), and sideband harmonics are back as smaller copies of the band at -18 and -30 dB either side. Checked the shape as an ASCII plot from a throwaway test before showing it.
 
 ### 2026-11-07: #384 phase 5, docs and skills for normalized stored state
 
@@ -2648,3 +2657,4 @@ Follow-up the same day: the "N% repaired" text became a bare percent (the shared
 - **What worked:** grepping for `STATE_VERSION`, "phase 5" and "migration" found every pointer, including two code comments. The leak check over phases 2-4 (with a Gemini second pass) found no leaks.
 - **Needed correction:** nothing notable; markdownlint's remaining errors in the edited files were already there.
 - **Follow-up (owner):** the owner asked for the stale "bump `STATE_VERSION`" lines in the built plans to be fixed after all (now "a default in its normalizer" or "an upgrade step and a bump"), along with `implemented-rules.md` and the games-list decision. The `cyclesPerDay` caveat was dropped: the owner will never change the default.
+- Follow-up (owner): the Sol section is now a column across the whole terminal row (spectrum, signal text, then Contact Sol as a full-width `big` button like Xyloph's), and the linked/unlinked status sits centred at the top of the plot on a dark backing (kept out of the plot's `aria-hidden`).

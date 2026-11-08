@@ -1,4 +1,4 @@
-// The Com center terminal's window, in three tabs: Overview (the link with Sol and NERON's update), Xyloph, and the
+// The Com center terminal's window, in three tabs: Overview (the link with Sol, drawn as a spectrogram, and NERON's update), Xyloph, and the
 // rebel bases that called. The screen (`view.comms.terminal`) is read-only for anyone at the terminal; every button comes from view.actions.
 
 import { Tabs } from "@base-ui/react/tabs";
@@ -11,6 +11,7 @@ import { useNames } from "../i18n/names.ts";
 import { ActionButton } from "./ActionButton.tsx";
 import { ActionLabel } from "./ActionLabel.tsx";
 import { UnavailableButton } from "./CommandTerminal.tsx";
+import { signalStrength, solDb, Spectrogram } from "./Spectrogram.tsx";
 import "./settings.css";
 
 interface Props {
@@ -33,6 +34,7 @@ export function CommsCenter({ terminal, view, onAction }: Props) {
   const neron = find("update_neron");
   const officer = view.titles.find((title) => title.id === "comms_officer")?.holder === view.you.character;
   if (!screen) return null;
+  const db = solDb(screen.solChance);
   return (
     <Tabs.Root className="settings-tabs" value={tab} onValueChange={(value) => setTab(value as CommsTab)}>
       <Tabs.List className="settings-tab-list progress-tab-list" aria-label={names.equipment(terminal.type)}>
@@ -42,14 +44,12 @@ export function CommsCenter({ terminal, view, onAction }: Props) {
       </Tabs.List>
       <Tabs.Panel value="overview">
         <div className="research-list">
-          <section className="research-item" aria-label={t("actions.contactSol")}>
-            <div className="research-body">
-              <strong>{view.comms.linked ? t("comms.linked") : t("comms.unlinked")}</strong>
-              <span>{t("comms.solChance", { percent: screen.solChance })}</span>
-              {!view.comms.linked ? <span>{t("comms.linkNeeded")}</span> : !officer && <span>{t("comms.officerOnly")}</span>}
-            </div>
+          <section className="research-item comms-sol" aria-label={t("actions.contactSol")}>
+            <Spectrogram db={db} linked={view.comms.linked} status={view.comms.linked ? t("comms.linked") : t("comms.unlinked")} />
+            <span>{t("comms.solSignal", { db, strength: t(`comms.strength.${signalStrength(db)}`) })}</span>
+            {!view.comms.linked ? <span>{t("comms.linkNeeded")}</span> : !officer && <span>{t("comms.officerOnly")}</span>}
             {contactSol && (
-              <ActionButton view={view} option={contactSol} onAction={onAction}>
+              <ActionButton className="big comms-sol-contact" view={view} option={contactSol} onAction={onAction}>
                 <ActionLabel text={t("actions.contactSol")} cost={contactSol.cost} chance={contactSol.chance} />
               </ActionButton>
             )}
