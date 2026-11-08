@@ -27,7 +27,7 @@ Feature designs in `plans/`, one per file. Each plan's own header is the authori
 | `plans/chat-pages.md` | Fixed 50-message chat pages ([#355](https://github.com/nearbear/mush2/issues/355)) | Partly | Phases 1–4 built 2026-11-06. The wrap-up (rules-design, flat-view sim) is left. |
 | `plans/design-kit.md` | Components for the dev design kit and their `PlayerView` fixture | Done | 2026-11-07: every listed component is in the kit, alone or inside a composite. Not a rules plan. |
 | `plans/replay-viewer.md` | Replay viewer page, split into stories | Not built | Reviewed with the owner 2026-11-05 ([#156](https://github.com/nearbear/mush2/issues/156)). |
-| `plans/normalize-state.md` | Normalizing stored state on load, phase 2 ([#384](https://github.com/nearbear/mush2/issues/384)) | Partly | Planned 2026-11-07; decisions 1–3 are the owner's. Step 1 (types) built. Not a rules plan. |
+| `plans/normalize-state.md` | Normalizing stored state on load ([#384](https://github.com/nearbear/mush2/issues/384)), as built | Done | Built 2026-11-07. The replay viewer's use of `readFrame` is [#369](https://github.com/nearbear/mush2/issues/369). Not a rules plan. |
 | `plans/inventory-notes.md` | Shared manual item notes for the crew | Draft | 2026-11-01; not decided. |
 | `plans/balance.md` | Balance goals, targets, AP economy and tuning | Draft | 2026-11-04; not decided. |
 | `plans/project-buffs.md` | Ideas for reworked and new NERON projects | Draft | Ideas only; not decided. |

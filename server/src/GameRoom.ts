@@ -483,6 +483,7 @@ export class GameRoom extends Server<Env> {
 
   /** Logging out (or signing in as someone else) on a device: its seat tokens stop working and its sockets close. The account stays aboard. */
   async revokeSession(sessionKey: string): Promise<void> {
+    if (this.unavailable) return this.revokeInKept(sessionKey);
     const revoked = new Set(Object.keys(this.tokenSessions).filter((t) => this.tokenSessions[t] === sessionKey));
     if (revoked.size === 0) return;
     for (const token of revoked) {
@@ -493,6 +494,23 @@ export class GameRoom extends Server<Env> {
     for (const conn of this.getConnections<SeatState>()) {
       if (conn.state && revoked.has(conn.state.token)) conn.close(4001, "Invalid seat token");
     }
+  }
+
+  /**
+   * Logging out while this build can't read the snapshot (#384): the session's tokens go from the kept snapshot
+   * itself, so they don't work again once a build that reads it is deployed. `tokens` and `tokenSessions` are plain
+   * fields of the wrapper, outside what the normalizers read, so this needs no reading of the game. No socket is open.
+   */
+  private async revokeInKept(sessionKey: string): Promise<void> {
+    const stored = await this.ctx.storage.get<StoredRoom>("game");
+    if (!stored) return;
+    const revoked = Object.keys(stored.tokenSessions).filter((t) => stored.tokenSessions[t] === sessionKey);
+    if (revoked.length === 0) return;
+    for (const token of revoked) {
+      delete stored.tokens[token];
+      delete stored.tokenSessions[token];
+    }
+    await this.ctx.storage.put("game", stored);
   }
 
   /** A seat whose account is still on this ship: the game runs and the seat's body is alive. */
@@ -987,7 +1005,7 @@ export class GameRoom extends Server<Env> {
   }
 
   /**
-   * Records a `dropQueues` input for the actions the load dropped (#384, decision 2), so the record still rebuilds the
+   * Records a `dropQueues` input for the actions the load dropped (#384, docs/plans/normalize-state.md "The action queue"), so the record still rebuilds the
    * stored state. It isn't applied: `normalizeGame` has already done the same thing. It carries the view as loaded,
    * with no change, and is saved with the snapshot in one write. Nobody is told; they press again.
    */

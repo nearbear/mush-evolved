@@ -1616,6 +1616,23 @@ describe("GameRoom accounts (#285)", () => {
     }
   });
 
+  it("revokes a signed-out session's tokens in a snapshot it can't read, so they stay revoked once it can (#384)", async () => {
+    const { storage, tokens } = await shipWithAccounts();
+    const stored = storage.data.get("game") as { version: number };
+    stored.version = STATE_VERSION + 1;
+    const error = vi.spyOn(console, "error").mockImplementation(() => {});
+    const unreadable = new GameRoom({ storage } as never, { RULES_VERSION: "test", DB: migratedDatabase() } as never);
+    await unreadable.onStart();
+    await unreadable.revokeSession("session-Ann");
+    error.mockRestore();
+    // A later build reads it.
+    (storage.data.get("game") as { version: number }).version = STATE_VERSION;
+    const revived = new GameRoom({ storage } as never, { RULES_VERSION: "test", DB: migratedDatabase() } as never);
+    await revived.onStart();
+    expect(connect(revived, tokens[0]!).closed?.code).toBe(4001);
+    expect(connect(revived, tokens[1]!, "bob").closed).toBeNull();
+  });
+
   it("loads a readable snapshot as it was, and stamps this build on the history it records next (#384)", async () => {
     const { room, storage, ids } = await shipWithAccounts();
     const loaded = (room as unknown as { game: GameState }).game;

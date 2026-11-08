@@ -2658,3 +2658,10 @@ Follow-up the same day: the "N% repaired" text became a bare percent (the shared
 - **Needed correction:** nothing notable; markdownlint's remaining errors in the edited files were already there.
 - **Follow-up (owner):** the owner asked for the stale "bump `STATE_VERSION`" lines in the built plans to be fixed after all (now "a default in its normalizer" or "an upgrade step and a bump"), along with `implemented-rules.md` and the games-list decision. The `cyclesPerDay` caveat was dropped: the owner will never change the default.
 - Follow-up (owner): the Sol section is now a column across the whole terminal row (spectrum, signal text, then Contact Sol as a full-width `big` button like Xyloph's), and the linked/unlinked status sits centred at the top of the plot on a dark backing (kept out of the plot's `aria-hidden`).
+
+### 2026-11-07: review of #384, a revocation fix and the plan as built
+
+- Reviewed phases 1–5 of #384 inline. One bug: `revokeSession` on an `unavailable` room was a silent no-op, because the room never loads `tokenSessions`. A logout while a ship was unreadable would have let that device's seat token work again once a later build could read the ship. Fixed by `revokeInKept`, which removes the session's tokens from the kept snapshot directly; `tokens` and `tokenSessions` are flat wrapper fields the normalizers don't read, so this needs no reading of the game. New `GameRoom` test, checked to fail without the fix.
+- `docs/plans/normalize-state.md` was cut from a plan full of phase-by-phase notes down to what was built; code comments that pointed at its numbered sections and decisions now point at its headings. The `MIN_STATE_VERSION` comment no longer claims 114 was first written by the normalizers (phase 1 wrote it).
+- Needed correction: the review flagged pre-stamp replays as unreadable, but the databases are empty, so there are none. It also flagged that players on an unavailable ship can't board elsewhere, which is intended (owner).
+- **Checks:** `npm run verify` passed (2445 tests).

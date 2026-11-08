@@ -62,7 +62,7 @@ import type {
   Spot,
 } from "./types.ts";
 
-// Upgrade steps (docs/plans/normalize-state.md, section 5).
+// Upgrade steps (docs/plans/normalize-state.md, "Versions and upgrade steps").
 
 /**
  * The stored shape's version, written with every snapshot. A new field never bumps it: it takes `added()` in its
@@ -73,7 +73,7 @@ import type {
 export const STATE_VERSION = 114;
 
 /**
- * The oldest stored version this build reads: 114, the first written once the normalizers existed. A snapshot below it
+ * The oldest stored version this build reads: 114, the shape the normalizers were written against. A snapshot below it
  * is dropped on load (the record is kept), as every version change did before them. Raise it only to end every live
  * game on purpose, and never above `STATE_VERSION`.
  */
@@ -256,7 +256,7 @@ export function normalizeAccommodationOffer(raw: Partial<AccommodationOffer>): A
 }
 
 /**
- * What happens to a player's action under way and queue (#384, decisions 1 and 2 in docs/plans/normalize-state.md).
+ * What happens to a player's action under way and queue (#384, "The action queue" in docs/plans/normalize-state.md).
  * `drop`, for a live game: both are emptied (amendment 5). Nothing has been paid for them, and the player presses
  * again. That keeps `Action` out of the shape this file covers. `keep`, for a replay frame: both are copied through
  * as stored, unchecked, so a replay still shows action bars. They are display only: if an older `Action` shape breaks
@@ -768,7 +768,7 @@ export function normalizeGame(raw: Partial<Omit<GameState, "config">>, overrides
 
 /**
  * Whether the stored snapshot has an action under way or queued, which `normalizeGame` drops. The server then records
- * a `dropQueues` input (decision 2), which does the same, so the record still rebuilds the state it stores.
+ * a `dropQueues` input (docs/plans/normalize-state.md, "The action queue"), which does the same, so the record still rebuilds the state it stores.
  */
 export function hasQueues(raw: Partial<Omit<GameState, "config">>): boolean {
   const players = need(raw, "players", "GameState");
@@ -794,7 +794,7 @@ export function overridesOf(config: Partial<DeepReadonly<GameConfig>>): ConfigOv
 }
 
 /**
- * A replay frame (docs/plans/normalize-state.md, section 4). Its config is stored whole, but may predate newer config
+ * A replay frame (docs/plans/normalize-state.md, "Normalizers"). Its config is stored whole, but may predate newer config
  * fields, so it is rebuilt from its overrides (`overridesOf`, then `resolveConfig`): the frame shows this build's
  * balance numbers, as a live game does on every reload, `view.actions` costs included. The action queues are kept.
  */
