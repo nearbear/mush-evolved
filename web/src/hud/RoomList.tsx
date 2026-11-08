@@ -14,7 +14,10 @@ export function RoomList({
   reachable,
   onSelect,
   onMove,
+  quiet = false,
 }: {
+  /** Arriving somewhere says nothing and leaves focus alone (a replay: focus stays on the playback controls). */
+  quiet?: boolean;
   view: PlayerView;
   layout: ShipLayout | undefined;
   /** Rooms a move is legal to (from `legalIn`). */
@@ -49,9 +52,12 @@ export function RoomList({
   const latest = useRef(summary);
   latest.current = summary;
   const lastRoom = useRef(here);
+  const quietRef = useRef(quiet);
+  quietRef.current = quiet;
   useEffect(() => {
     if (lastRoom.current === here) return;
     lastRoom.current = here;
+    if (quietRef.current) return;
     announce(latest.current());
     const active = document.activeElement;
     if (!active || active === document.body || region.current?.contains(active)) region.current?.focus({ preventScroll: true });

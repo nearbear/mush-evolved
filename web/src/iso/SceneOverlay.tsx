@@ -27,14 +27,12 @@ export function SceneOverlay({
   width,
   height,
   bubbles,
-  clockOffset,
   ref,
 }: {
   anchors: readonly Anchor[];
   width: number;
   height: number;
   bubbles: ReadonlyMap<string, Bubble[]>;
-  clockOffset: number;
   ref?: Ref<FrameTarget>;
 }) {
   const { t } = useTranslation();
@@ -46,7 +44,7 @@ export function SceneOverlay({
         {anchors.map(({ key, x, y, width, height, person: o }) => (
           <div key={key} className={`iso-badge-anchor${o.busy ? " busy" : ""}`} style={{ left: x, top: y, width, height }} data-walker={o.id}>
             {o.busy && (
-              <ActionBar bar={o.busy.bar} clockOffset={clockOffset} label={o.busy.label ? t("queue.underWay", { action: o.busy.label }) : t("queue.busy")} />
+              <ActionBar bar={o.busy.bar} label={o.busy.label ? t("queue.underWay", { action: o.busy.label }) : t("queue.busy")} />
             )}
             <StatusBadges statuses={o.statuses} />
             {bubbles.get(o.id) && (

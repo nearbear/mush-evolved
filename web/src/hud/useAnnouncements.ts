@@ -22,19 +22,23 @@ export function useChannelLabel(view: PlayerView): (channel: ChannelId) => strin
   };
 }
 
-/** `reading` is the channel on screen in the iTrackie, if any: its messages are read out in full, other channels only counted. */
-export function useAnnouncements(view: PlayerView, reading: ChannelId | null): void {
+/**
+ * `reading` is the channel on screen in the iTrackie, if any: its messages are read out in full, other channels only
+ * counted. `quiet` reads nothing out (a replay), while still keeping track of what has been seen.
+ */
+export function useAnnouncements(view: PlayerView, reading: ChannelId | null, quiet = false): void {
   const { t } = useTranslation();
   const names = useNames();
   const label = useChannelLabel(view);
   const seen = useRef<Seen | null>(null);
   // The effect runs per view; the helpers are read through a ref so it needn't re-run when they change identity.
-  const latest = useRef({ t, names, label, reading });
-  latest.current = { t, names, label, reading };
+  const latest = useRef({ t, names, label, reading, quiet });
+  latest.current = { t, names, label, reading, quiet };
 
   useEffect(() => {
     const fresh = freshIn(seen.current, view);
     seen.current = fresh.seen;
+    if (latest.current.quiet) return;
     const { t, names, label, reading } = latest.current;
     const verbosity = getVerbosity();
 

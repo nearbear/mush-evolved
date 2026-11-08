@@ -139,6 +139,7 @@ export function IsoRoom({
   actingOn,
   sentCount,
   teleport,
+  snap = false,
   leavingTo,
   onLeft,
   doorMoves,
@@ -148,7 +149,6 @@ export function IsoRoom({
   onClear,
   onDoorTap,
   bubbles,
-  clockOffset,
   zoom,
   onZoomStep,
   pilgredRepaired,
@@ -184,6 +184,8 @@ export function IsoRoom({
   sentCount: number;
   /** The instant actions cheat is on: you jump wherever you'd walk (others still walk), except with a wheelchair, which walks for you both. */
   teleport: boolean;
+  /** Everyone jumps to where they should be this render, nobody walks (a replay's jump back or across cycles). */
+  snap?: boolean;
   /** You've already moved there: walk to the door to it, then `onLeft` (LeavingIsoRoom shows the next room). */
   leavingTo: RoomId | null;
   onLeft: () => void;
@@ -200,8 +202,6 @@ export function IsoRoom({
   onDoorTap: (to: RoomId) => void;
   /** Recent global chat per sender, oldest first, shown as speech bubbles over their heads. */
   bubbles: ReadonlyMap<string, Bubble[]>;
-  /** Server clock minus this browser's, for drawing action bars. */
-  clockOffset: number;
   /** PILGRED works (public): its core in the engine room is drawn as the animated globe. */
   pilgredRepaired: boolean;
   /** A Mush has died on the ship (public): the sick bay's human_tank shows a person in it. */
@@ -350,7 +350,7 @@ export function IsoRoom({
   }
   // Each animation frame while anyone walks: the camera and the walkers' pixel shifts, to the renderer and the overlay.
   const paint = useRef<((offsetOf: (id: string) => { x: number; y: number }) => void) | null>(null);
-  const { at: walkers, doors, apply: applyWalkers, offsetOf } = useWalkers(room, cells, targets, openMs, paint, teleport && !myPushee && me?.pushedBy === undefined ? me?.id : undefined);
+  const { at: walkers, doors, apply: applyWalkers, offsetOf } = useWalkers(room, cells, targets, openMs, paint, teleport && !myPushee && me?.pushedBy === undefined ? me?.id : undefined, snap);
   const myWalker = me && walkers.get(me.id);
   const standsAt = (w: { cell: { x: number; y: number }; moving: boolean } | undefined, c: { x: number; y: number }) => !!w && !w.moving && w.cell.x === c.x && w.cell.y === c.y;
   // Walking out: done once you stand in the doorway (straight away if there's no door to go through).
@@ -733,7 +733,7 @@ export function IsoRoom({
             <Renderer scene={drawn} ref={attachRenderer} />
           </Suspense>
           {/* Status badges and speech bubbles above the scene, so no sprite or wall can ever cover them. */}
-          <SceneOverlay anchors={anchors} width={drawn.width} height={drawn.height} bubbles={bubbles} clockOffset={clockOffset} ref={overlayRef} />
+          <SceneOverlay anchors={anchors} width={drawn.width} height={drawn.height} bubbles={bubbles} ref={overlayRef} />
           </div>
         </div>
       </div>

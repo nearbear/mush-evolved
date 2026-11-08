@@ -31,7 +31,6 @@ function SampleTopBar({ view, ...rest }: { view: PlayerView } & Partial<Paramete
       onReady={noop}
       nextCycleAt={NEXT_CYCLE}
       botsPaused={null}
-      clockOffset={0}
       onLeave={noop}
       onResults={noop}
       cheatsAllowed={false}

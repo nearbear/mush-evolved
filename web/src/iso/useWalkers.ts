@@ -195,6 +195,7 @@ export function followTrail(cells: readonly Cell[], m: Motion, leader: Motion, j
  * Walkers in `room`, by id: everyone in `targets` moves to their goal; anyone new is drawn at its
  * cell straight away, or at the start of its way in. A goal that can't be reached on foot is jumped
  * to, and so is every goal of `teleport` (the instant actions cheat: you jump, as before walking).
+ * With `snap`, everyone jumps (a replay seeking back or across cycles: there is no walk to show).
  * `openMs` is how long a door (by sprite key) takes to open. `paint` is called with `offsetOf` on
  * every animation frame while anyone walks; call `apply` after every render too, so the pixel
  * shifts are put back on whatever React rewrote. `doors` are the doors open or moving, by key.
@@ -206,7 +207,9 @@ export function useWalkers(
   openMs: (door: string) => number,
   paint: RefObject<((offsetOf: (id: string) => { x: number; y: number }) => void) | null>,
   teleport?: string,
+  snap = false,
 ) {
+  const jumps = (id: string) => snap || id === teleport;
   const motions = useRef(new Map<string, Motion>());
   const doors = useRef(new Map<string, Door>());
   const motionRoom = useRef(room);
@@ -226,7 +229,7 @@ export function useWalkers(
   const at = new Map<string, Walker>();
   for (const [id, goal] of targets) {
     const m = motions.current.get(id);
-    const start = (id !== teleport && goal.from?.[0]) || goal.cell;
+    const start = (!jumps(id) && goal.from?.[0]) || goal.cell;
     at.set(id, m ? { cell: cellOf(m.pos), facing: m.facing, moving: m.route.length > 0 && !m.waiting, arriving: m.arriving } : { cell: { x: start.x, y: start.y }, facing: STANDING, moving: false, arriving: false });
   }
   const doorStates: ReadonlyMap<string, DoorState> = new Map([...doors.current].map(([k, d]) => [k, d.state]));
@@ -278,7 +281,7 @@ export function useWalkers(
   // biome-ignore lint/correctness/useExhaustiveDependencies: targetsKey stands in for targets.
   useEffect(() => {
     for (const id of motions.current.keys()) if (!targets.has(id)) motions.current.delete(id);
-    const arrivals = seeded.current;
+    const arrivals = seeded.current && !snap;
     if (targets.size) seeded.current = true;
     const walkable = new Set(cells.map(key));
     // Leaders first, so a follower's route is planned along the leader's new one.
@@ -287,13 +290,13 @@ export function useWalkers(
       const m = motions.current.get(id);
       const leader = m && goal.behind !== undefined ? motions.current.get(goal.behind) : undefined;
       if (m && leader) {
-        followTrail(cells, m, leader, id === teleport);
+        followTrail(cells, m, leader, jumps(id));
         continue;
       }
       const dest = destination(goal);
       if (!m) {
         // In through a door: from the doorway (or beyond it) to the cell in front of it, then on.
-        const from = id === teleport ? undefined : goal.from;
+        const from = jumps(id) ? undefined : goal.from;
         const start = from?.[0];
         const inside = from?.at(-1);
         const route = from && inside ? [...from.slice(1), ...(walkPath(cells, inside, goal.cell)?.slice(1) ?? []), ...(goal.then ?? [])] : [];
@@ -306,11 +309,12 @@ export function useWalkers(
         continue;
       }
       const end = m.route.at(-1) ?? m.pos;
-      if (same(end, dest)) continue;
+      // Snapping, someone still on their way there is put there too.
+      if (same(end, dest) && !(snap && m.route.length)) continue;
       // Someone still in a doorway steps out of it onto the floor first.
       const here = cellOf(m.pos);
       const i = walkable.has(key(here)) ? -1 : m.route.findIndex((p) => walkable.has(key(p)));
-      const path = id === teleport ? null : walkPath(cells, i < 0 ? here : m.route[i]!, goal.cell);
+      const path = jumps(id) ? null : walkPath(cells, i < 0 ? here : m.route[i]!, goal.cell);
       if (path) m.route = [...(i < 0 ? path.slice(1) : [...m.route.slice(0, i), ...path]), ...(goal.then ?? [])];
       else {
         m.pos = { x: dest.x, y: dest.y };
@@ -320,7 +324,7 @@ export function useWalkers(
     }
     rerender((n) => n + 1);
     loop();
-  }, [room, cells, targetsKey, loop, teleport]);
+  }, [room, cells, targetsKey, loop, teleport, snap]);
 
   return { at, doors: doorStates, apply, offsetOf };
 }

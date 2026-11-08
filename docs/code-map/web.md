@@ -18,7 +18,7 @@ All under `web/src/`. UI rules are in `web/CLAUDE.md`.
 - `shareView.ts`: `shareUnchanged`, structural sharing for incoming views: every part equal to the previous view keeps the previous object, so memoized components can skip (web/CLAUDE.md "Render cost").
 - `RenderWatch.tsx`: dev builds only, a React `<Profiler>` around `GameView` that warns when one update passes `SLOW_RENDER_MS` and keeps recent update times in `window.__mush2Renders`; production renders the children alone.
 - `chatPages.tsx`: the chat page cache (#355): sealed pages fetched with `chatPage`, kept for the game, ticks redrawn from `chatEdit`; `useChatPages` (null without a socket) and `pageItems` for the page bar.
-- `GameView.tsx`: the view-only game screen (#333): three panels on desktop, tabbed on phones; renders a `PlayerView` and emits intents through an optional `send`. Without `send` (a replay, #156) it is read-only: it blanks `actions` and `chatChannels` so no action button, Ready, Go or chat input appears, hides Clear queue, private-channel controls, cheats and the body-taken dialog, and floor clicks don't walk. A dead player gets `DeathNotice` instead of the room and no peek bar. Renders the minimap (`scene/Minimap.tsx`) in the room view's top-right corner.
+- `GameView.tsx`: the view-only game screen (#333): three panels on desktop, tabbed on phones; renders a `PlayerView` and emits intents through an optional `send`. Without `send` (a replay, #156) it is read-only: it blanks `actions` and `chatChannels` so no action button, Ready, Go or chat input appears, hides Clear queue, private-channel controls, cheats and the body-taken dialog, and floor clicks don't walk; the room list and the iTrackie stay `quiet` (no screen-reader announcements, no focus moves). Replay extras: `clock` (frozen), `transport` (a slot under the top bar on desktop, above the bottom nav on a phone, `.game-transport`), and `snapWalks` (everyone jumps into place, no door walks; `useWalkers`' `snap`). A dead player gets `DeathNotice` instead of the room and no peek bar. Renders the minimap (`scene/Minimap.tsx`) in the room view's top-right corner.
 - `Toasts.tsx`: transient messages.
 - `chatSeen.ts`: which chat messages are new, per channel by `seq` (views carry no message id, #355): `chatSeenIn`, `isNewer` (a channel that just became readable brings history, not news), `messageKey`. Used by `announce.ts` and the iTrackie's unread counts.
 - `useMobile.ts`: the phone-layout media query.
@@ -31,7 +31,7 @@ All under `web/src/`. UI rules are in `web/CLAUDE.md`.
 ## hud/
 
 - `TopBar.tsx`: cycle and countdown, Results (once the game has ended), End cycle (only when offered), Leave, settings.
-- `CycleCountdown.tsx`: time left until the next cycle, from the view message's `nextCycleAt`. `useCountdown.ts`: the ticking h:mm:ss behind it and the expedition countdowns.
+- `CycleCountdown.tsx`: time left until the next cycle, from the view message's `nextCycleAt`. `useCountdown.ts`: the ticking h:mm:ss behind it and the expedition countdowns. `serverClock.ts`: the server clock as a context (`ServerClock`: live, an offset from ours; in a replay, frozen at the step) and `useServerNow`, read by the countdowns and action bars; `GameView` provides it from its `clock` prop.
 - `PlayerSummary.tsx`: the phone top bar's nameplate: portrait, name, faction icon (`FactionCard`, also used by `SelfHud`), AP/MP/HP/morale chips, other resources.
 - `PipBar.tsx`: the pip bar in SVG, sideways or (`vertical`) standing up as the sprite was drawn and filling from the bottom; `height` caps a vertical bar's column in slots, wrapping the rest into side-by-side columns, filling the first column, then the next.
 - `apGauge.ts`: `apColumnHeight`, the AP gauge's column height: one column up to 14 slots (Noise Reducer), an even split past it (Lethargy: 2 of 12, or 2 of 13).
@@ -116,7 +116,7 @@ All under `web/src/`. UI rules are in `web/CLAUDE.md`.
 
 - `Minimap.tsx` (not rendered now) and `plan.ts` (its pure helpers).
 - `StatusBadges.tsx`: status icons over a character's head.
-- `ActionBar.tsx`: the draining bar over a busy character's head (CSS animation, server times shifted by the view message's `now`).
+- `ActionBar.tsx`: the draining bar over a busy character's head (CSS animation in server time from `serverClock.ts`; paused at the step when the clock is frozen).
 - `useSpeechBubbles.ts`: chat messages as speech bubbles.
 
 ## art/

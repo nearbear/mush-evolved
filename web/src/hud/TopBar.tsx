@@ -18,7 +18,6 @@ export function TopBar({
   onReady,
   nextCycleAt,
   botsPaused,
-  clockOffset,
   onLeave,
   onResults,
   cheatsAllowed,
@@ -36,8 +35,6 @@ export function TopBar({
   nextCycleAt: number | null;
   /** Why the AI crew is waiting on its model, pausing the cycle; null when it isn't. */
   botsPaused: BotPause | null;
-  /** Server clock minus this one. */
-  clockOffset: number;
   onLeave: () => void;
   /** Reopens the end screen; shown once the game has ended. */
   onResults: () => void;
@@ -62,15 +59,15 @@ export function TopBar({
   const ended = view.phase === "ended";
   return (
     <header className="top-bar">
-      {showSummary && <PlayerSummary view={view} countdown={nextCycleAt !== null && <CycleCountdown nextCycleAt={nextCycleAt} clockOffset={clockOffset} />} />}
+      {showSummary && <PlayerSummary view={view} countdown={nextCycleAt !== null && <CycleCountdown nextCycleAt={nextCycleAt} />} />}
       <span className="cycle">
         Day {view.day} · Cycle {view.cycleOfDay}
-        {nextCycleAt !== null && <CycleCountdown nextCycleAt={nextCycleAt} clockOffset={clockOffset} />}
+        {nextCycleAt !== null && <CycleCountdown nextCycleAt={nextCycleAt} />}
         {view.preselection && <PreselectionTag />}
         {botsPaused && <BotsPausedTag pause={botsPaused} />}
       </span>
       <span className="spacer" />
-      {!mobile && <ShipResources ship={view.ship} hunters={view.hunters.count} titles={view.titles} orbit={view.navigation.orbitName} expedition={view.expedition} clockOffset={clockOffset} />}
+      {!mobile && <ShipResources ship={view.ship} hunters={view.hunters.count} titles={view.titles} orbit={view.navigation.orbitName} expedition={view.expedition} />}
       {mobile ? (
         // Phones: the actions live in a hamburger menu to save top bar space.
         <Menu.Root>

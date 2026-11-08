@@ -48,6 +48,12 @@
   }
 }
 
+/* A replay's playback controls (GameView's `transport`): a fixed-height row of the game's flex column on both
+ * layouts, so its height comes out of the panel area instead of covering it. */
+.game-transport {
+  flex: none;
+}
+
 /* Phone layout bits that exist in the DOM on desktop too. */
 .bottom-nav,
 .peek-bar {

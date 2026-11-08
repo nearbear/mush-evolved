@@ -14,15 +14,14 @@ import { useCountdown } from "./useCountdown.ts";
 interface Props {
   view: PlayerView;
   expedition: NonNullable<PlayerView["expedition"]>;
-  clockOffset: number;
   selected: Target;
   onSelect: (target: Target) => void;
 }
 
-export function IcarusPanel({ view, expedition, clockOffset, selected, onSelect }: Props) {
+export function IcarusPanel({ view, expedition, selected, onSelect }: Props) {
   const { t } = useTranslation();
   const names = useNames();
-  const time = useCountdown(expedition.returnAt, clockOffset);
+  const time = useCountdown(expedition.returnAt);
   const [reading, setReading] = useState(false);
   const report = view.expeditions.find((r) => r.id === expedition.report);
   const aboard = view.players.filter((p) => p.alive && p.room === view.you.room);
