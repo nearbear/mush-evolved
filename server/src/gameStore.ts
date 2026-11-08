@@ -33,7 +33,6 @@ export interface FinishedPlayerRow extends Omit<FinishedCrewMember, "name"> {
 
 /** One finished game, as it is written. */
 export interface FinishedRecord extends Omit<FinishedGame, "crew"> {
-  singlePlayer: boolean;
   setupId: string | null;
   rulesVersion: string;
   crew: FinishedPlayerRow[];
@@ -111,12 +110,16 @@ export function decodeCursor(raw: string): GamesCursor | null {
 interface GameRow {
   id: string;
   language: string | null;
+  singlePlayer: number;
   startedAt: number;
   endedAt: number;
   cycles: number;
   winner: string;
   ending: string;
 }
+
+/** The `games` columns a `GameRow` reads. */
+const GAME_COLUMNS = "room_id AS id, language, single_player AS singlePlayer, started_at AS startedAt, ended_at AS endedAt, cycles, winner, ending";
 
 interface PlayerRow {
   roomId: string;
@@ -135,6 +138,7 @@ function finishedGame(g: GameRow, crew: FinishedCrewMember[]): FinishedGame {
   return {
     id: g.id,
     language: (LOBBY_LANGUAGES as readonly string[]).includes(g.language ?? "") ? (g.language as LobbyLanguage) : null,
+    singlePlayer: g.singlePlayer === 1,
     startedAt: g.startedAt,
     endedAt: g.endedAt,
     cycles: g.cycles,
@@ -188,8 +192,7 @@ export class GameStore {
   async listFinished(options: { before?: GamesCursor; limit?: number } = {}): Promise<{ games: FinishedGame[]; next: GamesCursor | null }> {
     const limit = Math.max(1, Math.min(MAX_GAMES_PAGE, Math.floor(options.limit ?? MAX_GAMES_PAGE)));
     const { before } = options;
-    const select = `SELECT room_id AS id, language, started_at AS startedAt, ended_at AS endedAt, cycles, winner, ending
-      FROM games WHERE single_player = 0`;
+    const select = `SELECT ${GAME_COLUMNS} FROM games WHERE single_player = 0`;
     const order = "ORDER BY ended_at DESC, room_id DESC LIMIT ?";
     // One more than a page, to know whether there is a next one.
     const statement = before
@@ -211,7 +214,7 @@ export class GameStore {
    */
   async finished(roomId: string): Promise<FinishedGame | null> {
     const game = await this.db
-      .prepare(`SELECT room_id AS id, language, started_at AS startedAt, ended_at AS endedAt, cycles, winner, ending FROM games WHERE room_id = ?`)
+      .prepare(`SELECT ${GAME_COLUMNS} FROM games WHERE room_id = ?`)
       .bind(roomId)
       .first<GameRow>();
     if (!game) return null;

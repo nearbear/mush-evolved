@@ -236,7 +236,7 @@ export const FinishedGameSchema = named(
         alive: z.boolean(),
       }),
     ),
-    singlePlayer: z.literal(true).optional().meta({ description: "A single-player game; only in `GET /api/games/<id>`, never in the list." }),
+    singlePlayer: z.boolean().meta({ description: "A single-player game. Only `GET /api/games/<id>` can return one (to its player); the list never does." }),
   }),
 );
 

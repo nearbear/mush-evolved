@@ -2794,3 +2794,9 @@ Follow-up the same day: the "N% repaired" text became a bare percent (the shared
 ### 2026-11-08: terminal actions no longer stand you up (#192 follow-up)
 
 - Bug: with a terminal's window open, its actions went through the client's "walk up to what you act on" effect, which dropped the seat and, for public actions, sent a walk that ended the server's `occupancy` spot (and Focused). Fix in `IsoRoom.tsx`: that effect does nothing while `atTerminal` and you hold an occupancy spot. The window is modal, so every action then is the terminal's own. The `sentCount` stand-up was already guarded; the walk-up effect was missed in the first pass.
+
+## 2026-11-08: `FinishedGame.singlePlayer` becomes a required boolean
+
+- **What broke:** `verify` failed at typecheck, not in a test. `FinishedRecord` extended `FinishedGame` but widened `singlePlayer` from the optional literal `true` to `boolean`, which `extends` doesn't allow.
+- **Decision:** make `FinishedGame.singlePlayer` a required `boolean`, read from `games.single_player` in both `GameStore` queries. `FinishedRecord`'s redeclaration and the route's `{ ...game, singlePlayer: true }` spread are gone, and the API schema is now `z.boolean()`. The list sends `false` on every game, a few bytes.
+- **What needed correction:** the AI first proposed the narrowest fix (`Omit` the field in `FinishedRecord`) and suggested the optional shape might be hiding single-player status from public viewers. Reading `openGame` showed it wasn't: `isPublic` is just `!singlePlayer`, and only the game's owner can open a single-player game. The owner's "why not a plain required boolean?" was the better fix. Reading the code before raising that concern would have saved a round trip.

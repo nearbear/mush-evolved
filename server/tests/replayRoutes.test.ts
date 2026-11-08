@@ -168,7 +168,7 @@ describe("GET /api/games/<id> (#368)", () => {
     const body = await response.json();
     expect(FinishedGameSchema.safeParse(body).success).toBe(true);
     expect(body).toEqual((await get("/api/games").then((r) => r.json())).games[0]);
-    expect(body).not.toHaveProperty("singlePlayer");
+    expect(body.singlePlayer).toBe(false);
   });
 
   it("answers whether or not the replay's copy is confirmed", async () => {
