@@ -11,6 +11,8 @@ interface FakeShip {
   closed: boolean;
   /** The game is over (or the ship retired): nobody is aboard any more. */
   ended?: boolean;
+  /** Its snapshot can't be read by this build (#384): it is kept, and its crew stays aboard. */
+  unavailable?: boolean;
   /** Resume tokens handed out, by session key. */
   resumed?: string[];
 }
@@ -39,6 +41,7 @@ vi.mock("partyserver", () => ({
     },
     resume: async (accountId: string, sessionKey: string) => {
       const ship = ships.get(roomId);
+      if (ship?.unavailable) return { ok: false, unavailable: true };
       const seat = ship && !ship.ended && ship.crew.find((c) => c.accountId === accountId && !c.dead);
       if (!seat) return { ok: false };
       ship.resumed = [...(ship.resumed ?? []), sessionKey];
@@ -372,6 +375,25 @@ describe("Matchmaker resume (#320)", () => {
     expect(msgs(again).at(-1)).toEqual({ type: "error", message: "not_aboard" });
     const p0 = (await store.findAccountByIdentity("dev", "p0"))!;
     expect(await store.currentShip(p0.id)).toBeNull();
+  });
+
+  it("answers ship_unavailable and keeps the row, on resume and on queue, when the ship can't be read (#384)", async () => {
+    const [a] = await board(1);
+    const roomId = matched(a!)!.roomId;
+    ships.get(roomId)!.unavailable = true;
+    const p0 = (await store.findAccountByIdentity("dev", "p0"))!;
+    const again = await connectAs("P0");
+    await resume(again);
+    expect(msgs(again).at(-1)).toEqual({ type: "error", message: "ship_unavailable" });
+    const other = await connectAs("P0");
+    await queue(other, "x", "hua");
+    expect(msgs(other).at(-1)).toEqual({ type: "error", message: "ship_unavailable" });
+    expect(await store.currentShip(p0.id)).toBe(roomId);
+    expect(ships.size).toBe(1);
+    // Once a build reads it again, the account resumes.
+    ships.get(roomId)!.unavailable = false;
+    await resume(again);
+    expect(matched(again)).toEqual({ type: "matched", roomId, token: `${roomId}:resumed:P0` });
   });
 
   it("refuses a socket without an account", async () => {

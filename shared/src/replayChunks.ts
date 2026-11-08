@@ -12,6 +12,7 @@
 import type { PlayerId } from "./types.ts";
 import type { RecordedInput } from "./replay.ts";
 import type { SeatStart } from "./fullView.ts";
+import { STATE_VERSION } from "./normalizeState.ts";
 import { HISTORY_VERSION, HistoryError, type HistoryStep } from "./viewHistory.ts";
 
 /** One input in a chunk: its server time (ms) and its history step. */
@@ -49,6 +50,8 @@ export interface ReplayIndex {
   v: number;
   roomId: string;
   rulesVersion: string;
+  /** `STATE_VERSION` of the build that wrote the index (#384); each frame's own is its copy's `BuildStamp`. Missing on older indexes. */
+  stateVersion?: number;
   endedAt: number;
   seats: IndexSeat[];
   chunks: ChunkInfo[];
@@ -115,7 +118,7 @@ export function replayIndex(
   const seats = Object.entries(meta.starts)
     .sort(([a], [b]) => a.localeCompare(b, "en", { numeric: true }))
     .map(([seat, { role, character }]) => ({ seat, role, character }));
-  return { v: HISTORY_VERSION, roomId: meta.roomId, rulesVersion: meta.rulesVersion, endedAt: meta.endedAt, seats, chunks: [...chunks] };
+  return { v: HISTORY_VERSION, roomId: meta.roomId, rulesVersion: meta.rulesVersion, stateVersion: STATE_VERSION, endedAt: meta.endedAt, seats, chunks: [...chunks] };
 }
 
 /** Where a game's copy lives in the bucket. Keys depend only on the game, so writing it again replaces it exactly. */

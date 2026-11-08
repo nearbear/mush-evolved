@@ -6,10 +6,14 @@ import { swapMinds } from "../src/mind.ts";
 import { viewFor } from "../src/rules.ts";
 import { fullViewFor, perspective, seatStarts, type FullView, type SeatStarts } from "../src/fullView.ts";
 import { applyDiff, diffView, type ViewDiff } from "../src/viewDiff.ts";
-import { HISTORY_VERSION, HistoryError, historyStep, rebuildHistory, type HistoryStep } from "../src/viewHistory.ts";
+import { HISTORY_VERSION, HistoryError, historyStep, readFrame, rebuildHistory, type BuildStamp, type HistoryStep } from "../src/viewHistory.ts";
+import { MIN_STATE_VERSION, normalizeFullView, STATE_VERSION } from "../src/normalizeState.ts";
 import { ChunkBuilder, chunkHistory, replayIndex, replayKeys } from "../src/replayChunks.ts";
 import type { GameState, PlayerView, SeatView } from "../src/types.ts";
 import { play, preselectionSetup, setup } from "./randomGame.ts";
+
+/** The build the tests record history as. */
+const BUILD: BuildStamp = { stateVersion: STATE_VERSION, rulesVersion: "test" };
 
 describe("replay", () => {
   it("rebuilds the same game from the setup and the stored inputs", () => {
@@ -201,7 +205,7 @@ describe("view history", () => {
         // A room restart every 100 inputs, and a full copy every 50, as a cycle would.
         const restarted = i % 100 === 37;
         const loaded = before;
-        history.push(JSON.parse(JSON.stringify(historyStep(restarted ? null : prev, () => loaded, next, i % 50 === 0))) as HistoryStep);
+        history.push(JSON.parse(JSON.stringify(historyStep(restarted ? null : prev, () => loaded, next, i % 50 === 0, BUILD))) as HistoryStep);
         views.push(next);
         prev = before = next;
         i++;
@@ -213,6 +217,43 @@ describe("view history", () => {
       });
     }
   }, 30_000);
+
+  it("stamps the build on every copy, and each frame carries the stamp of the copy it continues from (#384)", () => {
+    const [a, b, c] = [play(5, 2).state, play(10, 2).state, play(15, 2).state].map((s) => fullViewFor(s, null)) as [FullView, FullView, FullView];
+    const older: BuildStamp = { stateVersion: STATE_VERSION, rulesVersion: "old" };
+    const full = historyStep(null, () => a, a, true, older);
+    const change = historyStep(a, () => a, b, false, older);
+    const base = historyStep(null, () => b, c, false, BUILD);
+    expect(full).toMatchObject({ full: a, build: older });
+    expect(change).not.toHaveProperty("build");
+    expect(base).toMatchObject({ base: b, build: BUILD });
+    expect(rebuildHistory([full, change, base]).map((f) => f.build)).toEqual([older, older, BUILD]);
+    // Copies recorded before stamps existed.
+    const { build: _f, ...unstampedFull } = full as { v: number; full: FullView; build?: BuildStamp };
+    const { build: _b, ...unstampedBase } = base as { v: number; base: FullView; build?: BuildStamp };
+    expect(rebuildHistory([unstampedFull, change, unstampedBase]).map((f) => f.build)).toEqual([null, null, null]);
+  });
+
+  it("reads a frame in this build's shape, once, without changing it (#384)", () => {
+    const view = JSON.parse(JSON.stringify(fullViewFor(play(40, 3).state, null))) as FullView;
+    const before = JSON.parse(JSON.stringify(view)) as FullView;
+    const read = readFrame({ view, build: BUILD });
+    expect(read).toEqual(normalizeFullView(view));
+    expect(readFrame({ view, build: BUILD })).toBe(read);
+    expect(view).toEqual(before);
+    // A frame recorded before stamps is read as the oldest version this build reads.
+    const unstamped = JSON.parse(JSON.stringify(view)) as FullView;
+    expect(readFrame({ view: unstamped, build: null })).toEqual(read);
+    expect(MIN_STATE_VERSION).toBeLessThanOrEqual(STATE_VERSION);
+  });
+
+  it("turns a frame this build can't read into a HistoryError: too new, or a shape the normalizers reject (#384)", () => {
+    const view = fullViewFor(play(5, 2).state, null);
+    expect(() => readFrame({ view, build: { stateVersion: STATE_VERSION + 1, rulesVersion: "next" } })).toThrow(HistoryError);
+    const { players: _players, ...broken } = view;
+    expect(() => readFrame({ view: broken as FullView, build: BUILD })).toThrow(/FullView|GameState|players/);
+    expect(() => readFrame({ view: broken as FullView, build: BUILD })).toThrow(HistoryError);
+  });
 
   it("refuses a history in another format version, or a change with nothing before it", () => {
     const { state } = play(5, 2);
@@ -235,7 +276,7 @@ describe("replay chunks (#336)", () => {
       const next = fullViewFor(s, starts);
       const loaded = before;
       const cycle = i % 60 === 59;
-      record.push({ at: 0, history: JSON.parse(JSON.stringify(historyStep(i % 100 === 37 ? null : prev, () => loaded, next, cycle))) as HistoryStep, cycle });
+      record.push({ at: 0, history: JSON.parse(JSON.stringify(historyStep(i % 100 === 37 ? null : prev, () => loaded, next, cycle, BUILD))) as HistoryStep, cycle });
       prev = before = next;
       i++;
     });
@@ -284,6 +325,7 @@ describe("replay chunks (#336)", () => {
       v: HISTORY_VERSION,
       roomId: "r1",
       rulesVersion: "abc",
+      stateVersion: STATE_VERSION,
       endedAt: 9,
       seats: [{ seat: "p2", role: "mush", character: "chao" }, { seat: "p10", role: "human", character: "chun" }],
       chunks: [],

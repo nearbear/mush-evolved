@@ -56,7 +56,10 @@ import {
   normalizeOverrides,
   normalizeSeatStarts,
   hasQueues,
+  MIN_STATE_VERSION,
   STATE_VERSION,
+  upgrade,
+  type BuildStamp,
 } from "@mush2/shared";
 import { accountStoreFor } from "./accountStore.ts";
 import { buildRouterPrompt, parseRouterReply, routerInput } from "./router.ts";
@@ -172,6 +175,9 @@ interface BlockedText {
   reason: string;
 }
 
+/** Close code for a ship whose snapshot this build can't read (#384): kept for a later build, distinct from 4001. */
+const UNAVAILABLE_CLOSE = 4002;
+
 /** Zero-padded so keys list in order. */
 const inputKey = (seq: number) => `input:${String(seq).padStart(9, "0")}`;
 
@@ -199,8 +205,14 @@ interface SeatState {
 
 export class GameRoom extends Server<Env> {
   private game: GameState | null = null;
-  /** A record with no live game (its snapshot was dropped for another state version): never launch over it. */
+  /** A record with no live game (its snapshot was dropped as older than `MIN_STATE_VERSION`): never launch over it. */
   private retired = false;
+  /**
+   * The snapshot is kept but this build can't read it (#384): stored by a newer build (a rollback across an upgrade
+   * step), or rejected by the normalizers. No game runs; connections are refused as unavailable, and the accounts
+   * aboard stay aboard, so a later build that reads it lets them resume.
+   */
+  private unavailable = false;
   private tokens: Record<string, PlayerId> = {};
   private accounts: Record<PlayerId, string> = {};
   private aboard: Record<PlayerId, string> = {};
@@ -259,6 +271,11 @@ export class GameRoom extends Server<Env> {
   /** Per seat, chat pages asked for (#355): chat's numbers, but apart from it, so reading back never stops you posting. */
   private pageLimiter = new RateLimiter(5, 10_000);
 
+  /** This build, stamped on every copy of the view in the history (#384). */
+  private get build(): BuildStamp {
+    return { stateVersion: STATE_VERSION, rulesVersion: this.env.RULES_VERSION ?? "dev" };
+  }
+
   /** Cheats and End cycle (`ALLOW_CHEATS`): `npm run dev` and the test deployment, never staging or production. */
   private get cheatsAllowed(): boolean {
     return this.env.ALLOW_CHEATS === "true";
@@ -271,17 +288,36 @@ export class GameRoom extends Server<Env> {
 
   override async onStart(): Promise<void> {
     const stored = await this.ctx.storage.get<StoredRoom>("game");
-    if (stored?.version !== STATE_VERSION) {
+    const version = stored?.version ?? 0;
+    if (!stored || version < MIN_STATE_VERSION) {
       // Only the snapshot goes; the record ("setup", "input:*", "blocked:*", "account:*") is kept for the replay (#167).
       if (stored) await this.ctx.storage.delete("game");
       this.retired = (await this.ctx.storage.get("setup")) !== undefined;
       return;
     }
-    // Normalized on load (#384): only known fields survive, and every action under way or queued is dropped. A throw
-    // here isn't caught yet and leaves the room unusable (decision 3; phase 3 replaces it).
-    const dropped = hasQueues(stored.game);
-    this.overrides = normalizeOverrides(stored.overrides);
-    this.game = normalizeGame(stored.game, this.overrides);
+    // Upgraded and normalized on load (#384): only known fields survive, and every action under way or queued is
+    // dropped. What this build can't read is kept, never deleted: the fix is a later build that can.
+    let loaded: { dropped: boolean; overrides: ConfigOverrides; game: GameState; starts: Record<PlayerId, SeatStart> | null };
+    try {
+      upgrade(stored, version);
+      const overrides = normalizeOverrides(stored.overrides);
+      loaded = {
+        dropped: hasQueues(stored.game),
+        overrides,
+        game: normalizeGame(stored.game, overrides),
+        starts: stored.starts ? normalizeSeatStarts(stored.starts) : null,
+      };
+    } catch (e) {
+      this.unavailable = true;
+      console.error(
+        `UNAVAILABLE: ship ${this.name}'s snapshot (state version ${version}) can't be read by this build (state version ${STATE_VERSION}). ` +
+          `Kept; connections refused until a build that reads it is deployed. ${e instanceof Error ? `${e.name}: ${e.message}` : String(e)}`,
+      );
+      return;
+    }
+    const { dropped } = loaded;
+    this.overrides = loaded.overrides;
+    this.game = loaded.game;
     this.tokens = stored.tokens;
     this.inputs = stored.inputs;
     this.rateLimited = stored.rateLimited;
@@ -292,7 +328,7 @@ export class GameRoom extends Server<Env> {
     this.aboard = stored.aboard;
     this.tokenSessions = stored.tokenSessions;
     this.language = stored.language ?? null;
-    this.starts = stored.starts ? normalizeSeatStarts(stored.starts) : null;
+    this.starts = loaded.starts;
     this.listed = stored.listed;
     this.endedAt = stored.endedAt ?? null;
     // A finished game whose entry wasn't written yet: try at once.
@@ -309,7 +345,7 @@ export class GameRoom extends Server<Env> {
 
   /** Seats everyone at launch, with Mush picked at once (tests). Called once, over RPC. */
   async setup(seats: Seat[], tokens: Record<string, PlayerId>, forcedRoles?: Record<PlayerId, Role>): Promise<void> {
-    if (this.game || this.retired) throw new Error("Game already set up");
+    if (this.game || this.retired || this.unavailable) throw new Error("Game already set up");
     await this.launch(seats, tokens, {}, forcedRoles);
   }
 
@@ -319,7 +355,7 @@ export class GameRoom extends Server<Env> {
    * Returns the player's seat token.
    */
   async setupSinglePlayer(name: string, character: CharacterId, language?: LobbyLanguage, accountId?: string): Promise<string> {
-    if (this.game || this.retired) throw new Error("Game already set up");
+    if (this.game || this.retired || this.unavailable) throw new Error("Game already set up");
     const { seats, overrides, forcedRoles } = singlePlayerGame(name, character, crypto.getRandomValues(new Uint32Array(1))[0]!);
     const token = crypto.randomUUID();
     this.singlePlayer = true;
@@ -340,7 +376,7 @@ export class GameRoom extends Server<Env> {
    */
   async join(name: string, character: CharacterId, setup: Setup = STANDARD_SETUP, account?: SeatAccount, language?: LobbyLanguage): Promise<JoinResult> {
     // The matchmaker launches a new ship elsewhere.
-    if (this.retired) return { ok: false, error: "ship_closed" };
+    if (this.retired || this.unavailable) return { ok: false, error: "ship_closed" };
     if (!this.game && !this.launching) this.language = language ?? null;
     // One launch even if two joins arrive together.
     this.launching ??= this.game ? Promise.resolve() : this.launch([], {}, shipOverrides(setup));
@@ -393,9 +429,11 @@ export class GameRoom extends Server<Env> {
   /**
    * Resume from another device (#285): a new seat token for the account's seat, if it is still aboard (the game runs
    * and the body is alive). Otherwise `ok: false`, and the matchmaker closes its `account_ships` row: the ship ended,
-   * was retired, or the player died (dying frees the account), or the row was stale.
+   * was retired, or the player died (dying frees the account), or the row was stale. `unavailable` when this build
+   * can't read the ship's snapshot (#384): the account stays aboard, and the matchmaker keeps its row.
    */
-  async resume(accountId: string, sessionKey: string): Promise<{ ok: true; token: string } | { ok: false }> {
+  async resume(accountId: string, sessionKey: string): Promise<{ ok: true; token: string } | { ok: false; unavailable?: true }> {
+    if (this.unavailable) return { ok: false, unavailable: true };
     const seat = Object.keys(this.aboard).find((s) => this.aboard[s] === accountId && this.stillAboard(s));
     if (!seat) return { ok: false };
     const token = crypto.randomUUID();
@@ -405,8 +443,12 @@ export class GameRoom extends Server<Env> {
     return { ok: true, token };
   }
 
-  /** The accounts still aboard, for the sweep of stale `account_ships` rows (shipSweep.ts). */
+  /**
+   * The accounts still aboard, for the sweep of stale `account_ships` rows (shipSweep.ts). Throws for a ship this
+   * build can't read (#384), so the sweep leaves its rows alone.
+   */
   seatAccounts(): string[] {
+    if (this.unavailable) throw new Error("Ship unavailable: its snapshot can't be read by this build");
     return Object.keys(this.aboard)
       .filter((s) => this.stillAboard(s))
       .map((s) => this.aboard[s]!);
@@ -612,6 +654,10 @@ export class GameRoom extends Server<Env> {
 
   override async onConnect(connection: Connection<SeatState>, ctx: ConnectionContext): Promise<void> {
     const token = new URL(ctx.request.url).searchParams.get("token");
+    if (this.unavailable) {
+      connection.close(UNAVAILABLE_CLOSE, "Ship unavailable");
+      return;
+    }
     const playerId = token ? this.tokens[token] : undefined;
     if (!this.game || !playerId) {
       // Expect a harmless "Network connection lost" in the wrangler log here:
@@ -921,7 +967,7 @@ export class GameRoom extends Server<Env> {
     // The message the chat input posted: the only player message an input makes.
     const chatId = input.type === "chat" ? this.game.chat.find((m) => m.id >= firstChatId && m.from !== null)?.id : undefined;
     const full = fullViewFor(this.game, this.starts);
-    const history = historyStep(this.lastFull, () => fullViewFor(before, starts), full, input.type === "cycle");
+    const history = historyStep(this.lastFull, () => fullViewFor(before, starts), full, input.type === "cycle", this.build);
     this.lastFull = full;
     const recorded: RecordedInput = { at: now, input, ...(raw !== undefined && { raw }), ...(chatId !== undefined && { chatId }), history };
     const entries: Record<string, unknown> = { [inputKey(this.inputs++)]: recorded };
@@ -948,7 +994,7 @@ export class GameRoom extends Server<Env> {
   private async recordDropped(): Promise<void> {
     if (!this.game) return;
     const full = fullViewFor(this.game, this.starts);
-    const history = historyStep(this.lastFull, () => full, full, false);
+    const history = historyStep(this.lastFull, () => full, full, false, this.build);
     this.lastFull = full;
     const recorded: RecordedInput = { at: Date.now(), input: { type: "dropQueues" }, history };
     await this.persist({ [inputKey(this.inputs++)]: recorded });

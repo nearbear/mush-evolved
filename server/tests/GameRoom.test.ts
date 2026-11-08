@@ -2,6 +2,7 @@ import {
   characterName,
   CHARACTERS,
   CHAT_CHANNELS,
+  STATE_VERSION,
   CHAT_PAGE,
   chatPageKey,
   type ChannelId,
@@ -675,7 +676,7 @@ describe("GameRoom persistence", () => {
     }
   });
 
-  it("drops a snapshot stored under another state version, but keeps the record and launches nothing over it", async () => {
+  it("drops a snapshot stored before MIN_STATE_VERSION, but keeps the record and launches nothing over it", async () => {
     const { room, storage } = await newRoom(3, new FakeStorage(), CHEATS);
     const c = connect(room, "tok0");
     await send(room, c, { type: "chat", channel: CHAT_CHANNELS[0], text: "hello" });
@@ -1586,6 +1587,46 @@ describe("GameRoom accounts (#285)", () => {
     const room = asRoom(storage);
     expect(await room.join("Ann", "chao")).toMatchObject({ ok: true });
     expect([...storage.data.keys()].filter((k) => k.startsWith("account:"))).toEqual([]);
+  });
+
+  it("keeps a snapshot it can't read: refuses connections as unavailable and keeps its accounts aboard (#384)", async () => {
+    for (const spoil of [
+      (stored: { version: number }) => void (stored.version = STATE_VERSION + 1),
+      (stored: { game: { players?: unknown } }) => void delete stored.game.players,
+    ]) {
+      const { storage, ids, tokens } = await shipWithAccounts();
+      spoil(storage.data.get("game") as never);
+      const before = structuredClone(storage.data);
+      const error = vi.spyOn(console, "error").mockImplementation(() => {});
+      for (const restart of [1, 2]) {
+        const revived = new GameRoom({ storage } as never, { RULES_VERSION: "test", DB: migratedDatabase() } as never);
+        await revived.onStart();
+        expect(error).toHaveBeenCalledTimes(restart);
+        expect(error.mock.lastCall?.[0]).toContain("UNAVAILABLE");
+        // Nothing is deleted or rewritten.
+        expect(storage.data, `restart ${restart}`).toEqual(before);
+        expect(connect(revived, tokens[0]!).closed).toEqual({ code: 4002, reason: "Ship unavailable" });
+        expect(await revived.resume(ids[0]!, "session-phone")).toEqual({ ok: false, unavailable: true });
+        expect(() => revived.seatAccounts()).toThrow("unavailable");
+        expect(await revived.join("Cy", "frieda")).toEqual({ ok: false, error: "ship_closed" });
+        await expect(revived.setup(seats(3), tokensFor(3))).rejects.toThrow("already set up");
+        expect(storage.data).toEqual(before);
+      }
+      error.mockRestore();
+    }
+  });
+
+  it("loads a readable snapshot as it was, and stamps this build on the history it records next (#384)", async () => {
+    const { room, storage, ids } = await shipWithAccounts();
+    const loaded = (room as unknown as { game: GameState }).game;
+    const revived = new GameRoom({ storage } as never, { RULES_VERSION: "abc123", DB: migratedDatabase() } as never);
+    await revived.onStart();
+    expect((revived as unknown as { game: GameState }).game).toEqual(loaded);
+    const resumed = await revived.resume(ids[0]!, "s");
+    if (!resumed.ok) throw new Error("not resumed");
+    await send(revived, connect(revived, resumed.token), { type: "chat", channel: CHAT_CHANNELS[0], text: "back" });
+    const last = ([...(await storage.list({ prefix: "input:" })).values()] as RecordedInput[]).at(-1)!;
+    expect(last.history).toMatchObject({ base: {}, build: { stateVersion: STATE_VERSION, rulesVersion: "abc123" } });
   });
 
   it("keeps accounts and session tokens across a restart", async () => {

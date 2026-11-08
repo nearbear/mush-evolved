@@ -36,7 +36,9 @@ export type LobbyLanguage = (typeof LOBBY_LANGUAGES)[number];
 // (`matched`); `character` is the crew member picked in the lobby, refused if someone aboard already has it.
 // `singlePlayer` launches a new single-player game (singlePlayer.ts) instead, for this player alone (`matched`).
 // `resume` takes the signed-in account back to the multiplayer ship it is aboard, in any language (#320): `matched`, or
-// the error `not_aboard` when it isn't on one any more (the game ended, the ship was retired, or it died).
+// the error `not_aboard` when it isn't on one any more (the game ended, the ship was retired, or it died), or
+// `ship_unavailable` when it is aboard a ship this build can't read (#384; also sent for `queue`, and the game socket
+// closes with code 4002).
 export type MatchmakerClientMessage = { type: "queue" | "singlePlayer"; name: string; character: CharacterId } | { type: "resume" };
 export type MatchmakerServerMessage =
   | { type: "queued"; waiting: number; seats: number; taken: CharacterId[] }

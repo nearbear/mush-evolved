@@ -71,6 +71,13 @@ import type {
  */
 export const STATE_VERSION = 114;
 
+/**
+ * The oldest stored version this build reads: 114, the first written once the normalizers existed. A snapshot below it
+ * is dropped on load (the record is kept), as every version change did before them. Raise it only to end every live
+ * game on purpose, and never above `STATE_VERSION`.
+ */
+export const MIN_STATE_VERSION = 114;
+
 /** A snapshot stored by a newer build than this one. */
 export class TooNewError extends Error {
   override name = "TooNewError";
@@ -94,10 +101,13 @@ export const UPGRADE_STEPS: readonly UpgradeStep[] = [];
  * `from` above `STATE_VERSION`. `steps` is for tests.
  */
 export function upgrade(raw: { game: unknown; overrides: unknown }, from: number, steps: readonly UpgradeStep[] = UPGRADE_STEPS): void {
+  for (const step of stepsFrom(from, steps)) step.run(raw.game as Record<string, unknown>, raw.overrides as Record<string, unknown>);
+}
+
+/** The steps a snapshot stored at `from` still needs, in order. Throws `TooNewError` for a `from` above `STATE_VERSION`. */
+function stepsFrom(from: number, steps: readonly UpgradeStep[]): UpgradeStep[] {
   if (from > STATE_VERSION) throw new TooNewError(`stored at version ${from}, this build reads up to ${STATE_VERSION}`);
-  for (const step of steps) {
-    if (step.to > from && step.to <= STATE_VERSION) step.run(raw.game as Record<string, unknown>, raw.overrides as Record<string, unknown>);
-  }
+  return steps.filter((step) => step.to > from && step.to <= STATE_VERSION);
 }
 
 /** Every key of `T`, optional ones included, each with its own type (`undefined` allowed where it is optional). */
@@ -779,12 +789,27 @@ export function overridesOf(config: Partial<DeepReadonly<GameConfig>>): ConfigOv
  * fields, so it is rebuilt from its overrides (`overridesOf`, then `resolveConfig`): the frame shows this build's
  * balance numbers, as a live game does on every reload, `view.actions` costs included. The action queues are kept.
  */
-export function normalizeFullView(raw: Partial<FullView>): FullView {
+export function normalizeFullView(raw: Partial<FullView>, overrides: ConfigOverrides = overridesOf(need(raw, "config", "FullView"))): FullView {
   const t = "FullView";
-  const config = resolveConfig(overridesOf(need(raw, "config", t)));
+  const config = resolveConfig(overrides);
   return stripUndefined<FullView>({
     ...normalizeCore(raw, { config }, { queue: "keep" }),
     config,
     starts: orNull(need(raw, "starts", t), normalizeSeatStarts),
   });
+}
+
+/**
+ * A replay frame recorded at stored version `from` (its copy's `BuildStamp`), brought to this build: the upgrade steps
+ * it still needs, then `normalizeFullView`. A step sees the frame as its `game` and the overrides read back from its
+ * config (`overridesOf`) as its `overrides`. The frame itself is never changed: rebuilt frames share their parts.
+ * Throws `TooNewError` or `NormalizeError`; `readFrame` (viewHistory.ts) turns either into a `HistoryError`.
+ */
+export function normalizeFrame(raw: Partial<FullView>, from: number, steps: readonly UpgradeStep[] = UPGRADE_STEPS): FullView {
+  const due = stepsFrom(from, steps);
+  if (due.length === 0) return normalizeFullView(raw);
+  const game = clone(raw) as Record<string, unknown>;
+  const overrides = { ...overridesOf(need(raw, "config", "FullView")) };
+  for (const step of due) step.run(game, overrides);
+  return normalizeFullView(game as Partial<FullView>, normalizeOverrides(overrides));
 }

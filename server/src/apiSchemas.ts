@@ -254,6 +254,7 @@ export const ReplayIndexSchema = named(
     v: z.int(),
     roomId: z.string(),
     rulesVersion: z.string(),
+    stateVersion: z.int().optional().meta({ description: "The stored-state version of the build that wrote the index. Missing on older indexes." }),
     endedAt: z.int(),
     seats: z.array(
       z.object({

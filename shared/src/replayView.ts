@@ -154,8 +154,10 @@ const maxId = (list: readonly { id: number }[]): number => list.reduce((m, e) =>
  * itself, owner, 2026-11-05), else the frame before it, else `before` (the last frame of the chunk before). It
  * compares the highest id, never lengths, since a trim can drop entries in the step that adds one. A chunk's first
  * step without `base` or `before` is a cycle's full copy: everything of its new cycle counts as added.
+ * Reads frames as recorded, not through `readFrame`: only log and chat ids and keys, so a whole chunk costs no
+ * normalizing.
  */
-export function stepMarks(frames: readonly HistoryFrame[], firstStep: number, before?: Readonly<FullView>): Mark[] {
+export function stepMarks(frames: readonly Pick<HistoryFrame, "base" | "view">[], firstStep: number, before?: Readonly<FullView>): Mark[] {
   const marks: Mark[] = [];
   frames.forEach((frame, i) => {
     const prev = frame.base ?? frames[i - 1]?.view ?? before;
@@ -188,7 +190,7 @@ export function stepMarks(frames: readonly HistoryFrame[], firstStep: number, be
  * `firstStep` when the chunk's starting copy (`frames[0].base`, the launch state for chunk 0) already holds it, null
  * when these frames never do. Ids only grow, so the first frame whose highest id reaches `id` holds it.
  */
-export function lineStep(frames: readonly HistoryFrame[], kind: "log" | "chat", id: number, firstStep = 0): number | null {
+export function lineStep(frames: readonly Pick<HistoryFrame, "base" | "view">[], kind: "log" | "chat", id: number, firstStep = 0): number | null {
   const reaches = (v: Readonly<FullView> | undefined) => v !== undefined && maxId(v[kind]) >= id;
   if (reaches(frames[0]?.base)) return firstStep - 1;
   const i = frames.findIndex((f) => reaches(f.view));

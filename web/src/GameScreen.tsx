@@ -46,9 +46,10 @@ export function GameScreen({ ticket, onLeave, waking = false }: { ticket: SeatTi
         // A fetched page, or ticks on one (chatPages.tsx).
       } else if (msg.type === "error") showError(i18n.t(`errors.${msg.message}` as never, { defaultValue: msg.message, max: MAX_CHAT_LENGTH, lines: MAX_CHAT_LINES }));
     });
-    // 4001 = invalid seat token (e.g. the local server was restarted).
+    // 4001 = invalid seat token (e.g. the local server was restarted). 4002 = the ship can't be loaded by this build
+    // (#384); the lobby's Resume then says so.
     socket.addEventListener("close", (e: CloseEvent) => {
-      if (e.code === 4001) onLeave();
+      if (e.code === 4001 || e.code === 4002) onLeave();
     });
     return () => socket.close();
   }, [ticket, onLeave, handleChatPages]);

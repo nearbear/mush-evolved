@@ -6,10 +6,14 @@ import { swapMinds } from "../src/mind.ts";
 import { applyInput, startGame, type GameSetup } from "../src/replay.ts";
 import { chunkHistory, type ReplayIndex } from "../src/replayChunks.ts";
 import { lineStep, mergeStreams, revealFor, seatsAt, stepMarks, streamsOf, type Mark } from "../src/replayView.ts";
-import { historyStep, rebuildHistory, type HistoryFrame, type HistoryStep } from "../src/viewHistory.ts";
+import { historyStep, rebuildHistory, type BuildStamp, type HistoryFrame, type HistoryStep } from "../src/viewHistory.ts";
+import { STATE_VERSION } from "../src/normalizeState.ts";
 import type { GameState, LogEntry, PlayerView } from "../src/types.ts";
 import { play, seat } from "./randomGame.ts";
 import { noHunters, noIncidents } from "./support.ts";
+
+/** The build the tests record history as. */
+const BUILD: BuildStamp = { stateVersion: STATE_VERSION, rulesVersion: "test" };
 
 /** 16 seats, as the #335 measurement played (2,090 inputs over 14 cycles); this seed plays 1,958 inputs until the ship is destroyed. */
 const big: GameSetup = {
@@ -37,7 +41,7 @@ function recordedGame(steps: number, seed: number, from: GameSetup = big) {
     const next = fullViewFor(state, starts);
     // A room restart now and then, as a deploy would cause.
     const loaded = before;
-    const step = JSON.parse(JSON.stringify(historyStep(i % 400 === 211 ? null : prev, () => loaded, next, input.type === "cycle"))) as HistoryStep;
+    const step = JSON.parse(JSON.stringify(historyStep(i % 400 === 211 ? null : prev, () => loaded, next, input.type === "cycle", BUILD))) as HistoryStep;
     views.push(next);
     states.push(state);
     prev = before = next;

@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import { DEFAULT_CONFIG, resolveConfig } from "../src/config.ts";
 import { createGame } from "../src/rules.ts";
 import { dropQueues } from "../src/queue.ts";
-import { fullViewFor, seatStarts } from "../src/fullView.ts";
+import { fullViewFor, seatStarts, type FullView } from "../src/fullView.ts";
 import {
   added,
   NormalizeError,
@@ -21,6 +21,8 @@ import {
   TooNewError,
   upgrade,
   UPGRADE_STEPS,
+  MIN_STATE_VERSION,
+  normalizeFrame,
   type UpgradeStep,
 } from "../src/normalizeState.ts";
 import type { ConfigOverrides, Container, GameState, HunterTarget, PlanSlot, PlanTask, PlayerState, Spot } from "../src/types.ts";
@@ -419,6 +421,36 @@ describe("upgrade", () => {
     expect(tos).toEqual([...tos].sort((a, b) => a - b));
     expect(new Set(tos).size).toBe(tos.length);
     expect(tos.every((to) => to <= STATE_VERSION)).toBe(true);
+    expect(tos.every((to) => to > MIN_STATE_VERSION)).toBe(true);
+    expect(MIN_STATE_VERSION).toBeLessThanOrEqual(STATE_VERSION);
+  });
+});
+
+describe("normalizeFrame (#384)", () => {
+  const frame = () => JSON.parse(JSON.stringify(fullViewFor(play(100, 5).state, null))) as FullView;
+  /** A step at this build's version that moves the cycle and the Mush count, so its effect shows after normalizing. */
+  const moving: UpgradeStep = {
+    to: STATE_VERSION,
+    run: (game, overrides) => {
+      game.cycle = 99;
+      overrides.mushCount = 1;
+    },
+  };
+
+  it("runs the steps the frame still needs on a copy, then normalizes it with the overrides they left", () => {
+    const raw = frame();
+    const before = JSON.parse(JSON.stringify(raw)) as FullView;
+    const read = normalizeFrame(raw, STATE_VERSION - 1, [moving]);
+    expect(read.cycle).toBe(99);
+    expect(read.config.mushCount).toBe(1);
+    expect(raw).toEqual(before);
+    expect({ ...read, cycle: raw.cycle, config: raw.config }).toEqual(normalizeFullView(raw));
+  });
+
+  it("only normalizes a frame at this build's version, and refuses one from a newer build", () => {
+    const raw = frame();
+    expect(normalizeFrame(raw, STATE_VERSION, [moving])).toEqual(normalizeFullView(raw));
+    expect(() => normalizeFrame(raw, STATE_VERSION + 1)).toThrow(TooNewError);
   });
 });
 

@@ -129,12 +129,12 @@ export class Matchmaker extends Server<Env> {
         return;
       }
       const resumed = await this.resumeCurrent(boarder);
-      if (resumed) {
+      if (resumed && resumed !== "unavailable") {
         this.send(connection, { type: "matched", ...resumed });
         return;
       }
       connection.setState({ joined: false });
-      this.send(connection, { type: "error", message: "not_aboard" });
+      this.send(connection, { type: "error", message: resumed === "unavailable" ? "ship_unavailable" : "not_aboard" });
     } catch (e) {
       console.warn(`Resuming failed: ${e instanceof Error ? e.message : typeof e}`);
       connection.setState({ joined: false });
@@ -145,14 +145,16 @@ export class Matchmaker extends Server<Env> {
   /**
    * The account's seat on the ship D1 says it is aboard, with a new token; null when it has no open row, or the ship
    * says it isn't aboard after all (the game ended, the ship was retired, it died, or a join half-failed), which closes
-   * the row so the account is free to board another.
+   * the row so the account is free to board another. `"unavailable"` when the ship's snapshot can't be read by this
+   * build (#384): the row stays, so the account resumes once a build that reads it is deployed.
    */
-  private async resumeCurrent(boarder: Boarder): Promise<{ roomId: string; token: string } | null> {
+  private async resumeCurrent(boarder: Boarder): Promise<{ roomId: string; token: string } | "unavailable" | null> {
     const store = accountStoreFor(this.env);
     const current = await store.currentShip(boarder.accountId);
     if (!current) return null;
     const resumed = await (await getServerByName(this.env.GameRoom, current)).resume(boarder.accountId, boarder.sessionKey);
     if (resumed.ok) return { roomId: current, token: resumed.token };
+    if (resumed.unavailable) return "unavailable";
     await store.leaveShip(boarder.accountId, current, Date.now());
     return null;
   }
@@ -181,6 +183,11 @@ export class Matchmaker extends Server<Env> {
     const store = accountStoreFor(this.env);
     // The lobby sends `resume` for an account aboard (#320); this covers a lobby that didn't know yet.
     const resumed = await this.resumeCurrent(boarder);
+    if (resumed === "unavailable") {
+      connection.setState({ joined: false });
+      this.send(connection, { type: "error", message: "ship_unavailable" });
+      return;
+    }
     if (resumed) {
       this.send(connection, { type: "matched", ...resumed });
       return;

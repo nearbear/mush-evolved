@@ -47,8 +47,8 @@ export function fullViewFor(state: Readonly<GameState>, starts: Readonly<SeatSta
 
 /**
  * What `seat` (the mind, across a Transfer) saw: equal to `viewFor` on the body `seat` played in `full`, plus each log
- * line's id (`SeatView`). Throws
- * `HistoryError` when `full` is from an older rules build whose state shape `viewFor` can no longer read.
+ * line's id (`SeatView`). Give it a frame through `readFrame` (viewHistory.ts, #384), which brings a frame recorded by
+ * an older build to this one's shape. Throws `HistoryError` when `viewFor` still can't read it.
  */
 export function perspective(full: Readonly<FullView>, seat: PlayerId): SeatView {
   const { starts: _starts, ...rest } = full;

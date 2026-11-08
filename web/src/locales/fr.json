@@ -415,6 +415,7 @@
     "join_failed": "Impossible d'embarquer sur un vaisseau. Réessayez.",
     "sign_in_required": "Connectez-vous pour rejoindre un vaisseau multijoueur.",
     "already_aboard": "Vous êtes déjà à bord d'un vaisseau. Reprenez pour y retourner.",
+    "ship_unavailable": "Votre vaisseau ne peut pas être chargé pour le moment. Il est conservé ; réessayez plus tard.",
     "nothing_to_acknowledge": "Il n'y a rien à confirmer.",
     "share_forbidden": "Il vous faut votre iTrackie devant un terminal Astro pour partager une planète.",
     "planet_not_found": "Cette planète n'est pas l'une des vôtres.",

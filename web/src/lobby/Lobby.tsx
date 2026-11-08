@@ -149,8 +149,8 @@ export function Lobby({ onMatched }: { onMatched: (ticket: SeatTicket) => void }
         setCharacter(null);
       }
       // The session ended since the page loaded: back to the ship list, which now offers signing in. Or another tab
-      // boarded meanwhile: back to the list, which now offers Resume.
-      if (msg.type === "error" && (msg.message === "sign_in_required" || msg.message === "already_aboard")) backToShips(`errors.${msg.message}`);
+      // boarded meanwhile: back to the list, which now offers Resume. Or the ship it is aboard can't be loaded (#384).
+      if (msg.type === "error" && (msg.message === "sign_in_required" || msg.message === "already_aboard" || msg.message === "ship_unavailable")) backToShips(`errors.${msg.message}`);
       else if (msg.type === "error") setError(t(`errors.${msg.message}` as never, { defaultValue: msg.message }));
     });
     return () => {
