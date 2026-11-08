@@ -163,9 +163,9 @@ describe("Astro terminal planets", () => {
     const chance = (st: GameState, id: string) => option(st, id, { type: "scan_planet" })?.chance;
     expect(chance(s, "p0")).toBe(astro.scan.chance);
     s = forcedScan(s, "p0", false);
-    expect(chance(s, "p0")).toBe(astro.scan.chance * astro.scan.failureMultiplier);
+    expect(chance(s, "p0")).toBeCloseTo(Math.min(1, astro.scan.chance * astro.scan.failureMultiplier));
     s = forcedScan(s, "p0", false);
-    expect(chance(s, "p0")).toBe(astro.scan.chance * astro.scan.failureMultiplier ** 2);
+    expect(chance(s, "p0")).toBeCloseTo(Math.min(1, astro.scan.chance * astro.scan.failureMultiplier ** 2));
     expect(chance(s, "p1")).toBe(astro.scan.chance);
     expect(viewFor(s, "p0").planets).toEqual([]);
     expect(s.log.filter((e) => e.key === "planetNotFound" && e.visibleTo.includes("p0"))).toHaveLength(2);
@@ -174,6 +174,14 @@ describe("Astro terminal planets", () => {
     s.players[0]!.ap = 12;
     s = forcedScan(s, "p0", true);
     expect(chance(s, "p0")).toBe(astro.scan.chance);
+  });
+
+  it("scans at 80%, or 50% while the Planet scanner is broken", () => {
+    const s = game();
+    const chance = (st: GameState) => option(st, "p0", { type: "scan_planet" })?.chance;
+    expect(chance(s)).toBeCloseTo(0.8);
+    s.equipment.MOTOR_ROOM!.find((e) => e.id === "MOTOR_ROOM:PLANET_SCANNER")!.broken = true;
+    expect(chance(s)).toBeCloseTo(0.5);
   });
 
   it("caps each player at 2 planets; deleting one frees a slot", () => {

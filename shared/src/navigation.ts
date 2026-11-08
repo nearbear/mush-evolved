@@ -2,6 +2,7 @@
 // one of the planets' four directions, the Commander turns it and sends it some distance that way, and arriving where a
 // known planet lies puts it in orbit. `GameState.navigation`; the actions are actions/turn_ship.ts, travel.ts and
 // leave_orbit.ts.
+import { isBrokenIn } from "./equipment.ts";
 import { logPrivate, logPublic } from "./log.ts";
 import { PLANET_DIRECTIONS, planetPicture, type PlanetDirection } from "./planets.ts";
 import { hasTitleAccess } from "./titles.ts";
@@ -17,6 +18,18 @@ export function turned(heading: PlanetDirection, side: TurnSide): PlanetDirectio
   const n = PLANET_DIRECTIONS.length;
   return PLANET_DIRECTIONS[(i + (side === "left" ? 1 : n - 1)) % n]!;
 }
+
+/** The lateral reactor (ROTATIONAL_REACTOR, Motor Room) that makes each turn (owner, 2026-11-08): reac_a turns left, reac_b right. */
+export const TURN_REACTORS: Readonly<Record<TurnSide, string>> = { left: "MOTOR_ROOM:reac_a", right: "MOTOR_ROOM:reac_b" };
+
+/** Whether the ship can turn this way: its lateral reactor is not broken (owner, 2026-11-08). */
+export const canTurn = (state: Readonly<GameState>, side: TurnSide): boolean => !isBrokenIn(state, "MOTOR_ROOM", TURN_REACTORS[side]);
+
+/** The Emergency reactor (Motor Room) the ship needs to travel (owner, 2026-11-08). */
+export const TRAVEL_REACTOR = "MOTOR_ROOM:EMERGENCY_REACTOR";
+
+/** Whether the ship can travel: its Emergency reactor is not broken (owner, 2026-11-08). Turning and leaving orbit are unaffected. */
+export const canTravel = (state: Readonly<GameState>): boolean => !isBrokenIn(state, "MOTOR_ROOM", TRAVEL_REACTOR);
 
 /** Whether this player may steer: the Commander (Mush included), or whoever `hasTitleAccess` lets through. */
 export const canSteer = (state: Readonly<GameState>, player: Readonly<PlayerState>): boolean => hasTitleAccess(state, player, "commander");

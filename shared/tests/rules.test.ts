@@ -3,7 +3,7 @@ import { CHAT_PAGE, MAX_CHAT_LENGTH, sendChat } from "../src/chat.ts";
 import { DEFAULT_CONFIG, SHIP_ROOMS } from "../src/config.ts";
 import { ITRACKIE_ITEM } from "../src/items.ts";
 import { logCovert, logPrivate, logSecret } from "../src/log.ts";
-import { apGain, moveCost, movementRules, MODIFIERS } from "../src/modifiers.ts";
+import { apGain, mpGain, moveCost, movementRules, MODIFIERS } from "../src/modifiers.ts";
 import { parseGameMessage } from "../src/protocol.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";
 import { installCameraIn } from "./cameras.ts";
@@ -14,7 +14,7 @@ const seats = makeSeats(8, "others");
 // End cycle (`ready`) on, so these tests can also pass a cycle the testing way.
 // MP starts empty here, so these tests see a move convert AP (the start MP is checked in "createGame").
 const newGame = (seed = 42) =>
-  createGame(seats, noIncidents({ ...DEFAULT_CONFIG, manualCycles: true, startMp: 0 }), seed);
+  createGame(seats, noIncidents({ ...DEFAULT_CONFIG, characterModifiers: {}, manualCycles: true, startMp: 0 }), seed);
 
 const move = (to: string): Action => ({ type: "move", to });
 
@@ -115,10 +115,23 @@ describe("applyAction", () => {
     });
   });
 
-  it("keeps MP across cycles", () => {
+  it("keeps MP across cycles and gains mpPerCycle, up to the cap", () => {
     let state = mustApply(newGame(), "p0", move("CORRIDOR_A"));
+    const mp = player(state, "p0").mp;
     for (const s of seats) state = mustApply(state, s.id, { type: "ready" });
-    expect(player(state, "p0").mp).toBe(2);
+    expect(player(state, "p0").mp).toBe(Math.min(player(state, "p0").maxMp, mp + state.config.mpPerCycle));
+  });
+
+  it("a broken Gravity Simulator takes 1 MP off each cycle change and each conversion, never below 0", () => {
+    const base = newGame();
+    const broken = structuredClone(base);
+    const sim = Object.values(broken.equipment).flat().find((e) => e.type === "GRAVITY_SIMULATOR")!;
+    sim.broken = true;
+    const p = player(base, "p0");
+    expect(movementRules(broken, p).mpPerConversion).toBe(movementRules(base, p).mpPerConversion - 1);
+    expect(mpGain(broken, p)).toBe(mpGain(base, p) - 1);
+    broken.config = { ...broken.config, mpPerCycle: 0 };
+    expect(mpGain(broken, p)).toBe(0);
   });
 
   it("rejects moves to non-adjacent rooms without changing state", () => {

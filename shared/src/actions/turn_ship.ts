@@ -1,6 +1,6 @@
 import { Action, isString } from "./action.ts";
 import { logPublic } from "../log.ts";
-import { canSteer, isTraveling, isTurnSide, TURN_SIDES, turned, type TurnSide } from "../navigation.ts";
+import { canSteer, canTurn, isTraveling, isTurnSide, TURN_SIDES, turned, type TurnSide } from "../navigation.ts";
 import { commandTerminalsHere } from "../pilgred.ts";
 import type { GameState, PlayerState } from "../types.ts";
 
@@ -8,7 +8,7 @@ export type TurnShipActionData = { type: "turn_ship"; equipment: string; side: T
 
 /**
  * Turn the Daedalus a quarter left or right at the Command terminal (owner, 2026-10-22, the wiki): 1 AP, Commander only
- * (Mush included, dirty or not), in orbit too. No fuel. The room log says who turned it and which way it now faces;
+ * (Mush included, dirty or not), in orbit too. No fuel. A broken lateral reactor takes away its turn (owner, 2026-11-08: reac_a left, reac_b right; navigation.ts). The room log says who turned it and which way it now faces;
  * everyone aboard sees that it turned, and which side (`navigation.lastTurn`, owner, 2026-10-29: the stars turn).
  */
 export class TurnShipAction extends Action<TurnShipActionData> {
@@ -24,13 +24,14 @@ export class TurnShipAction extends Action<TurnShipActionData> {
 
   override getCandidates(state: Readonly<GameState>, player: Readonly<PlayerState>): TurnShipActionData[] {
     if (!canSteer(state, player) || isTraveling(state)) return [];
-    return commandTerminalsHere(state, player).flatMap((terminal) => TURN_SIDES.map((side): TurnShipActionData => ({ type: "turn_ship", equipment: terminal.id, side })));
+    return commandTerminalsHere(state, player).flatMap((terminal) => TURN_SIDES.filter((side) => canTurn(state, side)).map((side): TurnShipActionData => ({ type: "turn_ship", equipment: terminal.id, side })));
   }
 
   override validate(state: Readonly<GameState>, player: Readonly<PlayerState>, target: TurnShipActionData): string | null {
     if (!commandTerminalsHere(state, player).some((terminal) => terminal.id === target.equipment)) return "cant_steer";
     if (!canSteer(state, player)) return "not_commander";
     if (isTraveling(state)) return "traveling";
+    if (!canTurn(state, target.side)) return "reactor_broken";
     return null;
   }
 

@@ -20,7 +20,7 @@ import { fireCycle, ignitePending, isOnFire } from "./fire.ts";
 import { incidentsCycle } from "./incidents.ts";
 import { relayView } from "./relayView.ts";
 import { itemsIn, rechargeMicrowaves, startCharges, visibleItemsIn } from "./items.ts";
-import { actionFailed, apGain, carePointsGain, channelLimit, computerPointsCap, computerPointsGain, shootPointsGain, cycleChanged, designerPointsGain, gardenPointsGain, dailyMoraleLoss, inventorySlots, movementRules, pilgredPointsGain, satietyLoss } from "./modifiers.ts";
+import { actionFailed, apGain, mpGain, carePointsGain, channelLimit, computerPointsCap, computerPointsGain, shootPointsGain, cycleChanged, designerPointsGain, gardenPointsGain, dailyMoraleLoss, inventorySlots, movementRules, pilgredPointsGain, satietyLoss } from "./modifiers.ts";
 import { contaminationSeenBy, convert } from "./infection.ts";
 import { addStatus, isHungry, publicStatusesOf, statusesOf } from "./statuses.ts";
 import { inactivityCycle } from "./inactivity.ts";
@@ -70,7 +70,7 @@ import type {
   Role,
   Seat,
 } from "./types.ts";
-import { changeAP, diseaseTrackerCycleChange } from "./adjustStats.ts";
+import { changeAP, changeMP, diseaseTrackerCycleChange } from "./adjustStats.ts";
 
 export type { ActionResult };
 
@@ -370,6 +370,7 @@ function advanceCycle(state: GameState, at?: number): void {
   pruneLog(state);
   for (const p of state.players) {
     changeAP(state, p, apGain(state, p));
+    changeMP(state, p, mpGain(state, p));
     p.ready = false;
   }
   if (at !== undefined) inactivityCycle(state, at);

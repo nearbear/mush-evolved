@@ -9,7 +9,8 @@ import { hasSkill } from "../skills.ts";
 // Shrink other than yourself is in your room; several Shrinks don't stack. A private morale line
 // for the recipient (gainMorale), nothing public (owner, 2026-10-27).
 export const lying_down: Modifier = {
-  apPerCycle: (gain) => gain + 1,
+  // Hyperactive (Chao, owner 2026-11-08) can't rest: the bed gives them nothing.
+  apPerCycle: (gain, player) => (player.modifiers.includes("hyperactive") ? gain : gain + 1),
   onCycle(next, player) {
     if (peopleHere(next, player).some((o) => hasSkill(o, "shrink"))) gainMorale(next, player, next.config.shrink.lyingMorale);
   },

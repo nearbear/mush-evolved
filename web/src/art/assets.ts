@@ -307,7 +307,7 @@ export const ENDING_ART: Readonly<Record<Ending, string>> = {
 
 // Status effect icons (16x16 pixel art), keyed by status id (shared/src/statuses.ts).
 const statusIconFiles = urls(
-  import.meta.glob<string>("../../../Mush/www/img/icons/ui/status/{dirty,belly_full,hungry,immune,pacifist,guardian,disabled,paria,disease,hurt,sleepy,genius_idea}.png", { eager: true, query: "?url", import: "default" }),
+  import.meta.glob<string>("../../../Mush/www/img/icons/ui/status/{dirty,belly_full,hungry,immune,pacifist,hyperactive,guardian,disabled,paria,disease,hurt,sleepy,genius_idea}.png", { eager: true, query: "?url", import: "default" }),
 );
 const diseaseStatusIcons = Object.fromEntries(DEFAULT_CONFIG.diseases.allDiseases.map((id) => [id, statusIconFiles["disease"]!]));
 // Mankind's Only Hope has no status icon in the original (it was a skill there), so its skill icon stands in.
@@ -322,6 +322,7 @@ export const STATUS_ICONS: Readonly<Record<string, string>> = {
   immune: statusIconFiles["immune"]!,
   immunity: statusIconFiles["immune"]!,
   pacifist: statusIconFiles["pacifist"]!,
+  hyperactive: statusIconFiles["hyperactive"]!,
   mankind_only_hope: traitSkillIcons["mankind_only_hope"]!,
   // The original's wheelchair icon (its `disabled` status), for the trait and for being pushed.
   wheelchair: statusIconFiles["disabled"]!,

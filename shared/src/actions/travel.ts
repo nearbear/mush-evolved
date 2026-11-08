@@ -2,7 +2,7 @@ import { Action, isString } from "./action.ts";
 import { endRebelCalls } from "../comms.ts";
 import { huntersFollow, loseShipsInFlight } from "../hunters.ts";
 import { logPublic } from "../log.ts";
-import { canSteer, isTraveling, planetAt } from "../navigation.ts";
+import { canSteer, canTravel, isTraveling, planetAt } from "../navigation.ts";
 import { commandTerminalsHere } from "../pilgred.ts";
 import type { GameState, PlayerState, Planet } from "../types.ts";
 import { shipMoved } from "../modifiers.ts";
@@ -12,7 +12,7 @@ export type TravelActionData = { type: "travel"; equipment: string };
 
 /**
  * Send the Daedalus the way it faces, from the Command terminal (owner, 2026-10-22, the wiki): 1 AP, Commander only
- * (Mush included, dirty or not), not while in orbit (leave_orbit.ts first). It goes as far as the fuel loaded in the
+ * (Mush included, dirty or not), not while in orbit (leave_orbit.ts first), nor while the Emergency reactor is broken (owner, 2026-11-08). It goes as far as the fuel loaded in the
  * combustion chamber, all of which burns (owner, 2026-10-23: the crew loads it by hand, take_fuel.ts; no distance is
  * chosen). With the chamber empty, the AP is spent and nothing happens. Otherwise the fuel is spent, and every
  * planet on the ship except one lying exactly there is lost; that one, if any, puts the ship in its orbit and stays its
@@ -32,7 +32,7 @@ export class TravelAction extends Action<TravelActionData> {
   }
 
   override getCandidates(state: Readonly<GameState>, player: Readonly<PlayerState>): TravelActionData[] {
-    if (!canSteer(state, player) || state.navigation.orbit !== null || isTraveling(state)) return [];
+    if (!canSteer(state, player) || state.navigation.orbit !== null || isTraveling(state) || !canTravel(state)) return [];
     return commandTerminalsHere(state, player).map((terminal): TravelActionData => ({ type: "travel", equipment: terminal.id }));
   }
 
@@ -41,6 +41,7 @@ export class TravelAction extends Action<TravelActionData> {
     if (!canSteer(state, player)) return "not_commander";
     if (state.navigation.orbit !== null) return "in_orbit";
     if (isTraveling(state)) return "traveling";
+    if (!canTravel(state)) return "reactor_broken";
     return null;
   }
 
