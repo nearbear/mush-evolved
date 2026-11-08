@@ -612,6 +612,8 @@ export class GameRoom extends Server<Env> {
         roomId: this.name,
         rulesVersion: setup?.rulesVersion ?? "",
         endedAt: this.endedAt ?? Date.now(),
+        // Multiplayer cycles run on a clock (`nextCycleAt`); single player's end by End cycle. Not hidden information.
+        realTime: !this.singlePlayer,
         starts: this.starts ?? {},
       });
       this.replayReady = true;

@@ -17,6 +17,7 @@ import { shareUnchanged } from "../shareView.ts";
 import {
   cycleAt,
   type Failure,
+  type LoadedChunk,
   initialReplayState,
   loadChunk,
   olderBuild,
@@ -71,6 +72,8 @@ export interface Replay {
   stale: boolean;
   /** The step's view for the chosen seat and mode. */
   view: StepView | null;
+  /** The chunks loaded now, by number (the marks, the perspective switcher). Don't mutate them. */
+  chunks: Readonly<Record<number, LoadedChunk>>;
   /** The step was recorded by another build than this one: it may be shown wrong. */
   olderBuild: boolean;
   seek: (seq: number) => void;
@@ -218,6 +221,7 @@ export function useReplay(roomId: string, { start, seat, allSeeing }: ReplayOpti
     step,
     stale: step !== null && step.seq !== state.position,
     view,
+    chunks: state.chunks,
     olderBuild: step !== null && olderBuild(step.build, CURRENT_BUILD),
     seek,
     retry,
