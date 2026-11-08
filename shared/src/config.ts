@@ -21,6 +21,7 @@ export const DEFAULT_CONFIG: GameConfig = {
   // Owner, 2026-10-24: each player starts with 12 MP (was 0). Same cap as `movement.mpCap`.
   startMp: 12,
   apPerCycle: 1,
+  mpPerCycle: 1,
   // Confirmed 2026-10-13: 8 cycles per day. Confirmed 2026-10-14: each living player loses 1 morale at day end.
   // Owner, 2026-10-18: that 1 is 2 cut by 1 while Chun (Mankind's Only Hope) lives, so it is 2 once she dies or with no Chun.
   // Owner, 2026-10-25 (#230): a day is always 24 hours from 00:00 GMT, so `resolveConfig` sets this to 24 / `cycleHours`.
@@ -110,6 +111,10 @@ export const DEFAULT_CONFIG: GameConfig = {
   punch: { cost: { ap: 1 }, effect: { damage: [1, 2], sturdyBonusDamage: 1 }, crit: { chance: 0.2, damage: [2, 3] }, successChance: 0.6, inactiveTargetSuccessChance: 0.9, dirtyChance: 0.25 },
   // Owner, 2026-10-18: Ian's Pacifist makes aggressive actions in his room cost 2 more AP, his own included.
   pacifist: { aggressiveApSurcharge: 2 },
+  // Owner, 2026-11-08: while the Stellar antenna is broken, contacting Sol, decoding a rebel base, contacting Xyloph and updating NERON cost this much more AP.
+  antenna: { brokenApSurcharge: 1 },
+  // Owner, 2026-11-08: while any Gravity Simulator is broken, every crew member gains this much less MP at each cycle change and from each AP-to-MP conversion.
+  gravitySimulator: { brokenMpPenalty: 1 },
   // Owner, 2026-11-06: the Escape skill takes a quarter off (relative) the success chance of punches and melee weapon attacks aimed at its holder.
   escape: { meleeSuccessFactor: 0.75 },
   // Owner, 2026-10-22 (docs/scratchpad/botany-plan.md, Pass 1): water 1 AP, treat 2, sow 2, the original's 15% dirt.
@@ -181,10 +186,11 @@ export const DEFAULT_CONFIG: GameConfig = {
   // Decided 2026-10-16: working on a research costs 2 AP. Owner, 2026-10-26: its progress follows the original's relay formula, 6-9% at difficulty 10.
   // Owner, 2026-10-31 (docs/plans/research-sabotage.md): assays at the quarter marks, 5% noise, Contaminate costs 1 AP.
   research: { cost: { ap: 2 }, progress: { rate: 6, mod: 10, skillBoost: 4, relayPenalty: 2 }, dirtyChance: 0.15, assayMarks: [25, 50, 75, 100], spoilChance: 0.05, contaminate: { cost: { ap: 1 } } },
-  // Decided 2026-10-19 (docs/plans/astro.md): scan 3 AP at 50%, x1.25 per failure in a row; analysis 2 AP; 2 planets per player.
+  // Owner, 2026-11-08: a scan succeeds 80% of the time, 50% while the Planet scanner (Motor Room) is broken.
+  // Decided 2026-10-19 (docs/plans/astro.md): scan 3 AP, x1.25 per failure in a row (the 50% was the original's); x1.25 per failure in a row; analysis 2 AP; 2 planets per player.
   // Owner, 2026-10-22: planets get a direction and a distance (2 to 9 fuel, unique on the ship), and grow with the day.
   astro: {
-    scan: { cost: { ap: 3 }, chance: 0.5, failureMultiplier: 1.25 },
+    scan: { cost: { ap: 3 }, chance: 0.8, brokenScannerChance: 0.5, failureMultiplier: 1.25 },
     // Owner, 2026-10-27 (the wiki): analysing the planet the ship orbits is a deep analysis, 1 AP and 1 extra sector.
     analyze: { cost: { ap: 2 }, orbitCost: { ap: 1 }, orbitExtraSectors: 1 },
     maxPlanets: 2,
@@ -404,7 +410,7 @@ export const DEFAULT_CONFIG: GameConfig = {
   // Confirmed 2026-10-15: nobody starts with a skill; players pick up to three
   // (SKILL_SLOTS) with the free, permanent pick_skill action.
   startSkills: [],
-  characterModifiers: { ian: ["pacifist"], chun: ["immunity", "mankind_only_hope"], terrence: ["wheelchair"] },
+  characterModifiers: { ian: ["pacifist"], chun: ["immunity", "mankind_only_hope"], terrence: ["wheelchair"], chao: ["hyperactive"] },
   mankindOnlyHope: { moraleLossCut: 1 },
   creative: { refundOdds: 0.5 },
   anticPerfume: { immuneCycles: 2 },

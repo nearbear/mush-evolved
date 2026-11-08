@@ -104,6 +104,7 @@ export interface GameConfig {
   failureMultiplier: number; // Each failed try in a row at an action with a chance to fail multiplies its next chance by this, until a success (owner, 2026-11-05; the original's fail_coef 1.25). An action may set its own (scan, turrets, patrol shot, manual extinguish).
   startMp: number; // MP each player wakes up with. Capped by `movement.mpCap` like any other gain.
   apPerCycle: number; // AP gained at the start of each cycle, before modifiers. Unspent AP carries over.
+  mpPerCycle: number; // MP gained at the start of each cycle, capped by `movement.mpCap`. Unspent MP carries over.
   // Hours per cycle on the server's UTC clock (#230). The rules never read it; the server clock and the record do.
   cycleHours: number;
   cyclesPerDay: number; // 24 / `cycleHours`: a day is always 24 hours from 00:00 GMT. Cycles in one day. The day ends with the last cycle; every living player then loses `dailyMoraleLoss` (modifiers.ts) morale.
@@ -212,6 +213,12 @@ export interface GameConfig {
   };
   pacifist: {
     aggressiveApSurcharge: number; // Extra AP for each aggressive action in a Pacifist's room, theirs too (owner, 2026-10-18).
+  };
+  antenna: {
+    brokenApSurcharge: number; // Extra AP for contacting Sol, decoding a rebel base, contacting Xyloph and updating NERON while the Stellar antenna (Motor Room) is broken (owner, 2026-11-08).
+  };
+  gravitySimulator: {
+    brokenMpPenalty: number; // MP lost per cycle change and per AP-to-MP conversion for everyone while a Gravity Simulator is broken (owner, 2026-11-08). Never takes either below 0.
   };
   escape: {
     meleeSuccessFactor: number; // Multiplies the success chance of a punch or melee weapon attack aimed at an Escape holder (owner, 2026-11-06: 0.75).
@@ -397,7 +404,8 @@ export interface GameConfig {
   astro: {
     scan: {
       cost: { ap: number }; // AP spent to scan for a planet at the Astro terminal (owner, 2026-10-19; the original's 3).
-      chance: number; // Base success chance of a scan, 0 to 1 (owner, 2026-10-19; the original's 50%).
+      chance: number; // Base success chance of a scan, 0 to 1 (owner, 2026-11-08: 80%; the original's was 50%).
+      brokenScannerChance: number; // The base chance while the Planet scanner in the Motor Room is broken (owner, 2026-11-08: 50%).
       failureMultiplier: number; // Each failed scan in a row multiplies the player's next chance by this (owner, 2026-10-19; the original's fail_coef 1.25).
     };
     analyze: { cost: { ap: number }; orbitCost: { ap: number }; orbitExtraSectors: number }; // AP spent to reveal one sector of one of your planets (owner, 2026-10-19; the original's remote analysis, 2). In orbit of that planet (deep analysis, owner 2026-10-27, the wiki) it costs `orbitCost` and reveals `orbitExtraSectors` more.
@@ -586,7 +594,7 @@ export interface GameConfig {
     mpPenalty: number; // MP added to each move while carrying a heavy item, however many (confirmed 2026-10-16).
   };
   startSkills: string[]; // Skills every player starts with (none since 2026-10-15; players pick their own).
-  characterModifiers: Record<string, string[]>; // Modifiers a character starts with, by character id (traits: Ian pacifist, owner 2026-10-18; Chun immunity and mankind_only_hope, owner 2026-10-18; Terrence wheelchair, owner 2026-10-19).
+  characterModifiers: Record<string, string[]>; // Modifiers a character starts with, by character id (traits: Ian pacifist, owner 2026-10-18; Chun immunity and mankind_only_hope, owner 2026-10-18; Terrence wheelchair, owner 2026-10-19; Chao hyperactive, owner 2026-11-08).
   mankindOnlyHope: { moraleLossCut: number }; // How much less morale the crew loses each day while a holder (Chun) is alive (owner, 2026-10-18).
   startItems: { type: string; room: RoomId; builds?: string; teaches?: string; plant?: PlantState }[]; // Items placed in rooms at the start of the game. Types come from ITEM_TYPES in items.ts.
   startInventory: string[]; // Item types every player starts carrying (one of each).

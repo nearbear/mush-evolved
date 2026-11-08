@@ -8,6 +8,7 @@
 // `skills` instead. A new numeric hook is one line in `FoldHooks` plus a one-line
 // accessor below; `fold` does the looping.
 
+import { isBrokenIn } from "./equipment.ts";
 import { carriesHeavy, isWorking } from "./items.ts";
 import { RESEARCH_COMPLETE } from "./research.ts";
 import { skillsOf } from "./skills.ts";
@@ -43,6 +44,7 @@ import { mankind_only_hope } from "./modifiers/mankind_only_hope.ts";
 import { medic } from "./modifiers/medic.ts";
 import { escape } from "./modifiers/escape.ts";
 import { pacifist } from "./modifiers/pacifist.ts";
+import { hyperactive } from "./modifiers/hyperactive.ts";
 import { wheelchair } from "./modifiers/wheelchair.ts";
 import { sturdy } from "./modifiers/sturdy.ts";
 import { pilot } from "./modifiers/pilot.ts";
@@ -57,6 +59,7 @@ type FoldHook = (value: number, player: Readonly<PlayerState>, state: Readonly<G
 /** The numeric hooks `fold` can run, each documented by the accessor that folds it. */
 type FoldHooks = Record<
   | "apPerCycle"
+  | "mpPerCycle"
   | "inventorySlots"
   | "channelLimit"
   | "contaminationCapacity"
@@ -83,6 +86,9 @@ type FoldHooks = Record<
   | "maxHp",
   FoldHook
 >;
+
+/** The actions a broken Stellar antenna makes dearer: contacting Sol, decoding a rebel base, contacting Xyloph and updating NERON. */
+const COMMS_ACTIONS: readonly string[] = ["contact_sol", "decode_rebel", "contact_xyloph", "update_neron"];
 
 /** What is being priced, for cost hooks. */
 export interface CostContext {
@@ -147,7 +153,7 @@ export interface Modifier extends Partial<FoldHooks> {
 export type ModifierRegistry = Readonly<Record<string, Modifier>>;
 
 /** Items and skills will register here too. When a skill gains rules, update its entry in SKILL_STATUS (skills.ts). */
-export const MODIFIERS: Record<string, Modifier> = { lying_down, medic, first_aid, sturdy, creative, expert, antic_perfume, logistics, caffeinomaniac, cold_disease, extreme_tinnitus_disease, fungal_infection_disease, broken_nose_injury, computer, designer, sprint, physicist, botanic, pacifist, immunity, mankind_only_hope, wheelchair, pilot, engineer, gunman, gunner, persistent, polymath, space_tactics, paranoid, green_thumb, astrophysician, lethargy, escape, sapper };
+export const MODIFIERS: Record<string, Modifier> = { lying_down, medic, first_aid, sturdy, creative, expert, antic_perfume, logistics, caffeinomaniac, cold_disease, extreme_tinnitus_disease, fungal_infection_disease, broken_nose_injury, computer, designer, sprint, physicist, botanic, pacifist, immunity, mankind_only_hope, wheelchair, hyperactive, pilot, engineer, gunman, gunner, persistent, polymath, space_tactics, paranoid, green_thumb, astrophysician, lethargy, escape, sapper };
 
 /** The ids every hook folds over: the player's skills (book slot last), then their other modifiers. */
 export function modifierIds(player: Readonly<PlayerState>): string[] {
@@ -194,6 +200,10 @@ export function actionCost(base: ActionCost, ctx: CostContext, registry: Modifie
   }
   if (ctx.action.type === "scan_planet" && projectDone(ctx.state, "CHIPSET_ACCELERATION")) {
     cost.ap -= ctx.state.config.project.chipsetAcceleration.scanApDiscount;
+  }
+  // A broken Stellar antenna makes the four Comms terminal actions cost more (owner, 2026-11-08); other actions at the terminal don't.
+  if (COMMS_ACTIONS.includes(ctx.action.type) && isBrokenIn(ctx.state, "MOTOR_ROOM", "MOTOR_ROOM:STELLAR_ANTENNA")) {
+    cost.ap += ctx.state.config.antenna.brokenApSurcharge;
   }
   // Hooks can't make a price negative. A move's MP is a net change and can already be negative (a conversion
   // gives more than the move spends), so the floor is 0 or the base, whichever is lower.
@@ -314,6 +324,7 @@ export function movementRules(
     const hook = registry[id]?.movement;
     if (hook) rules = hook(rules, player, state);
   }
+  if (gravityBroken(state)) rules.mpPerConversion = Math.max(0, rules.mpPerConversion - state.config.gravitySimulator.brokenMpPenalty);
   if (carriesHeavy(state, player)) rules.mpPerMove += fold("heavyMpPenalty", state.config.heavy.mpPenalty, state, player, registry);
   return rules;
 }
@@ -321,6 +332,14 @@ export function movementRules(
 /** AP gained at the start of a cycle: the base gain folded through the player's modifiers. */
 export const apGain = (state: Readonly<GameState>, player: Readonly<PlayerState>, registry: ModifierRegistry = MODIFIERS) =>
   fold("apPerCycle", state.config.apPerCycle, state, player, registry);
+
+/** Whether any Gravity Simulator is broken (owner, 2026-11-08): it costs everyone MP, see `mpGain` and `movementRules`. */
+export const gravityBroken = (state: Readonly<GameState>): boolean =>
+  Object.values(state.equipment).some((list) => list.some((e) => e.type === "GRAVITY_SIMULATOR" && e.broken));
+
+/** MP gained at the start of a cycle: the base gain folded through the player's modifiers, less the broken-gravity penalty; never below 0. */
+export const mpGain = (state: Readonly<GameState>, player: Readonly<PlayerState>, registry: ModifierRegistry = MODIFIERS) =>
+  Math.max(0, fold("mpPerCycle", state.config.mpPerCycle, state, player, registry) - (gravityBroken(state) ? state.config.gravitySimulator.brokenMpPenalty : 0));
 
 /** Inventory slots: the configured count folded through the player's modifiers. */
 export const inventorySlots = (state: Readonly<GameState>, player: Readonly<PlayerState>, registry: ModifierRegistry = MODIFIERS) =>

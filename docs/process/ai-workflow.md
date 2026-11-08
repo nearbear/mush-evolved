@@ -2687,6 +2687,7 @@ Follow-up the same day: the "N% repaired" text became a bare percent (the shared
 - Needed correction: resolving `normalizeState.ts` with `checkout --theirs` took the fork's whole file and lost main's later changes (`STATE_VERSION`, `upgrade`, `normalizeFrame`); `verify` caught it, and the file was redone from main plus the two `shield` lines.
 - **Checks:** `npm run verify` passed (2463 tests), `npm run build` passed.
 
+- Players now gain MP at each cycle change like AP: new `config.mpPerCycle` (1), applied in `advanceCycle` through `changeMP` (capped by `maxMp`). No modifier hook yet, unlike `apPerCycle`. The old "keeps MP across cycles" test hard-coded 2 and was updated to expect `mp + mpPerCycle`. Verify showed only timeouts in the replay, normalizeState, goals and GameRoom tests (the replay ones fail the same way without the change; the machine was slow).
 ## 2026-11-07: Replay loading, useReplay (#369)
 
 - Built story 3 of the replay viewer as a pure reducer (`web/src/replay/replayState.ts`: positions, which chunks to fetch and keep, the settle debounce, the 409/429 retries, the format check), the step's view (`replayViews.ts`), the hook (`useReplay.ts`), and the notices (`ReplayNotice.tsx`, en/fr/es). Tested the reducer and view helpers under Vitest; the hook's fetching and timers have no test.

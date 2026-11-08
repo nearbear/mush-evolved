@@ -8,7 +8,7 @@ import type { GameState, PlayerId } from "../src/types.ts";
 import { forceDismantleOdds, clone, makeSeats, must, mustApply, nextCycle, noHunters, noIncidents, pickSkill, player } from "./support.ts";
 
 forceDismantleOdds(1); // items and equipment have their own odds; these tests need the dismantle to succeed
-const config = noIncidents(noHunters({ ...DEFAULT_CONFIG, mushCount: 1, startInventory: [], startItems: [], startSkills: [], dismantle: { ...DEFAULT_CONFIG.dismantle, successChance: 1, injuryChance: 0, dirtyChance: 0 } }));
+const config = noIncidents(noHunters({ ...DEFAULT_CONFIG, characterModifiers: {}, mushCount: 1, startInventory: [], startItems: [], startSkills: [], dismantle: { ...DEFAULT_CONFIG.dismantle, successChance: 1, injuryChance: 0, dirtyChance: 0 } }));
 const { cyclesLying, bonusAp, maxApMultiplier } = config.lethargy;
 
 /** p0 to p3 in Bedroom A; p1 has Lethargy. */
@@ -127,5 +127,21 @@ describe("lethargy", () => {
     const p = clone(s).players[1]!;
     getUp(p);
     expect(p.lyingSince).toBeUndefined();
+  });
+});
+
+describe("hyperactive (Chao)", () => {
+  it("gains 1 extra MP per cycle and no AP from lying down", () => {
+    const s = ship();
+    player(s, "p0").modifiers.push("hyperactive");
+    player(s, "p0").mp = 0;
+    for (const p of s.players) p.room = "BEDROOM_A";
+    player(s, "p2").mp = 0;
+    const second = s.equipment.BEDROOM_A!.filter((e) => e.type === "BED")[1]?.id ?? bed(s);
+    const lying = mustApply(lieDown(s, "p0"), "p2", { type: "lie_down", equipment: second });
+    const next = nextCycle(lying);
+    expect(player(next, "p0").mp).toBe(player(next, "p2").mp + 1);
+    expect(gain(lying, "p0")).toBe(config.apPerCycle);
+    expect(gain(lying, "p2")).toBe(bedGain);
   });
 });

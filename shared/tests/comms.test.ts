@@ -34,6 +34,17 @@ describe("communication center", () => {
     expect(XYLOPH_IDS).toHaveLength(12);
   });
 
+  it("a broken Stellar antenna makes contacting Sol, decoding, Xyloph and NERON updates cost 1 more AP", () => {
+    // Sol is offered only while the link is down, decoding only while it is up.
+    for (const [linked, action] of [[false, contactSol], [true, decode("WOLF")]] as const) {
+      const s = ship(linked);
+      const before = costOf(s, "p0", action)?.ap;
+      expect(before).toBeDefined();
+      s.equipment.MOTOR_ROOM!.find((e) => e.id === "MOTOR_ROOM:STELLAR_ANTENNA")!.broken = true;
+      expect(costOf(s, "p0", action)?.ap).toBe(before! + DEFAULT_CONFIG.antenna.brokenApSurcharge);
+    }
+  });
+
   it("every comms action is private", () => {
     for (const type of ["contact_sol", "decode_rebel", "contact_xyloph", "update_neron"] as const) expect(actionVisibility(type)).toBe("private");
   });

@@ -36,6 +36,28 @@ function game(loaded = 3): GameState {
 }
 
 describe("ship navigation", () => {
+  it("a broken Emergency reactor makes travel impossible, but not turning", () => {
+    const s = game();
+    s.equipment.MOTOR_ROOM!.find((e) => e.id === "MOTOR_ROOM:EMERGENCY_REACTOR")!.broken = true;
+    expect(applyAction(s, "p0", travel).ok).toBe(false);
+    expect(offered(s, "p0").some((a) => a.type === "travel")).toBe(false);
+    expect(must(applyAction(s, "p0", turn("left"))).navigation.heading).toBe("west");
+  });
+
+  it("a broken lateral reactor takes away its turn (reac_a left, reac_b right)", () => {
+    const s = game();
+    const reactor = (id: string) => s.equipment.MOTOR_ROOM!.find((e) => e.id === id)!;
+    reactor("MOTOR_ROOM:reac_a").broken = true;
+    expect(applyAction(s, "p0", turn("left")).ok).toBe(false);
+    expect(must(applyAction(s, "p0", turn("right"))).navigation.heading).toBe("east");
+    reactor("MOTOR_ROOM:reac_a").broken = false;
+    reactor("MOTOR_ROOM:reac_b").broken = true;
+    expect(must(applyAction(s, "p0", turn("left"))).navigation.heading).toBe("west");
+    expect(applyAction(s, "p0", turn("right")).ok).toBe(false);
+    reactor("MOTOR_ROOM:reac_a").broken = true;
+    expect(offered(s, "p0").filter((a) => a.type === "turn_ship")).toEqual([]);
+  });
+
   it("starts facing north, not in orbit", () => {
     expect(game().navigation).toEqual({ heading: "north", orbit: null, arriving: null, lastTurn: null });
   });

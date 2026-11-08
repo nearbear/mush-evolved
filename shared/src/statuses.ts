@@ -1,5 +1,5 @@
 // Status effects. `dirty` is stored in `PlayerState.statuses`; `full_belly`, `hungry`,
-// `immune`, `immunity`, `pacifist`, `mankind_only_hope`, `wheelchair`, `accommodated`, `inactive` and `super_inactive` are derived each time they are asked for (from satiety, skills
+// `immune`, `immunity`, `pacifist`, `hyperactive`, `mankind_only_hope`, `wheelchair`, `accommodated`, `inactive` and `super_inactive` are derived each time they are asked for (from satiety, skills
 // and traits), so they can't drift out of step with it. Public statuses show on the Inspect panel for
 // everyone in the room; private ones appear only in your own view.
 // Names and icons live in the client (i18n keys `status.<id>`).
@@ -16,6 +16,8 @@ const FIXED_STATUS_PUBLIC = {
   immunity: true,
   // Owner, 2026-10-18: roommates see Ian's Pacifist as a status icon.
   pacifist: true,
+  // Owner, 2026-11-08: Chao's Hyperactive is shown like Pacifist.
+  hyperactive: true,
   mankind_only_hope: true,
   wheelchair: true,
   // Owner, 2026-10-19: roommates see that Terrence's wheelchair is being pushed.
@@ -32,7 +34,7 @@ const FIXED_STATUS_PUBLIC = {
   super_inactive: true,
 } as const;
 
-export const STATUS_IDS = ["dirty", "full_belly", "hungry", "immune", "immunity", "pacifist", "mankind_only_hope", "wheelchair", "accommodated", "outcast", "guardian", "broken_nose_injury", "genius", "inactive", "super_inactive"] as const;
+export const STATUS_IDS = ["dirty", "full_belly", "hungry", "immune", "immunity", "pacifist", "hyperactive", "mankind_only_hope", "wheelchair", "accommodated", "outcast", "guardian", "broken_nose_injury", "genius", "inactive", "super_inactive"] as const;
 export type StatusId = string;
 export function statusIdsFor(diseases: readonly string[]): string[] {
   return [...new Set([...STATUS_IDS, ...diseases])];
@@ -42,7 +44,7 @@ export function statusIdsFor(diseases: readonly string[]): string[] {
 export const STATUS_PUBLIC: Readonly<Record<string, boolean>> = FIXED_STATUS_PUBLIC;
 
 /** Statuses that are character traits (permanent, innate): public, but shown on Inspect only, never over the head. */
-export const TRAIT_STATUS_IDS: readonly StatusId[] = ["immunity", "pacifist", "mankind_only_hope", "wheelchair"];
+export const TRAIT_STATUS_IDS: readonly StatusId[] = ["immunity", "pacifist", "hyperactive", "mankind_only_hope", "wheelchair"];
 
 /** Statuses never floated over the head, whatever their visibility (owner, 2026-11-05: full belly is Inspect-only). */
 const NO_OVERHEAD_STATUS_IDS: readonly StatusId[] = ["full_belly"];
@@ -91,6 +93,7 @@ export function statusesOf(state: Readonly<Pick<GameState, "config" | "cycle">>,
     ...(isHungry(state, p) ? ["hungry"] : []),
     ...(hasImmunityTrait(p) ? ["immunity"] : isImmune(state, p) ? ["immune"] : []),
     ...(isPacifist(p) ? ["pacifist"] : []),
+    ...(p.modifiers.includes("hyperactive") ? ["hyperactive"] : []),
     ...(p.modifiers.includes("mankind_only_hope") ? ["mankind_only_hope"] : []),
     ...(p.modifiers.includes("wheelchair") ? ["wheelchair"] : []),
     ...(p.pushedBy !== undefined ? ["accommodated"] : []),
