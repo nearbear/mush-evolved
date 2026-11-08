@@ -239,3 +239,31 @@ describe("asking for a page (phase 3)", () => {
     expect(chatPageView(mushChat, human.id, MUSH_CHANNEL, 0)).toBeNull();
   });
 });
+
+// Done-when for #355 (and the chat half of #338): a channel's history no longer grows the state or a view. The state
+// keeps each channel's open page and its tail, and the server drains the outbox after every input, as done here.
+describe("chat volume", () => {
+  it("leaves the view and the state the same size at 1,100 messages as at 600, with every page still reachable", () => {
+    let state = createGame(seats, DEFAULT_CONFIG, 1);
+    const stored = new Map<string, ChatMessage[]>();
+    const sizes = new Map<number, { view: number; state: number }>();
+    for (let i = 1; i <= 22 * CHAT_PAGE + 1; i++) {
+      state = must(sendChat(state, "p0", "global", "x".repeat(40)));
+      if (i % 10 === 0) state = must(sendChat(state, "p1", "botany", "y".repeat(40)));
+      for (const p of takeChatOutbox(state).sealed) stored.set(`${p.channel}:${p.page}`, p.messages);
+      if (i === 12 * CHAT_PAGE + 1 || i === 22 * CHAT_PAGE + 1) {
+        sizes.set(i, { view: JSON.stringify(viewFor(state, "p2")).length, state: JSON.stringify(state).length });
+      }
+    }
+    const [small, large] = [sizes.get(12 * CHAT_PAGE + 1)!, sizes.get(22 * CHAT_PAGE + 1)!];
+    // At both points each channel has an open page and a tail at the same place in a page (60 and 110 botany
+    // messages), so only longer seq and id numbers set them apart.
+    expect(large.view - small.view).toBeLessThan(1000);
+    expect(large.state - small.state).toBeLessThan(2000);
+    expect(viewFor(state, "p2").chatCounts.global).toBe(22 * CHAT_PAGE + 1);
+    // Page n of the stored pages and the state together hold seq n·50 to n·50+49, none missing.
+    const all = [...[...stored.entries()].filter(([k]) => k.startsWith("global:")).flatMap(([, m]) => m), ...state.chat.filter((m) => m.channel === "global")];
+    expect(new Set(all.map((m) => m.seq)).size).toBe(22 * CHAT_PAGE + 1);
+    expect(stored.get("global:3")!.map((m) => m.seq)).toEqual(Array.from({ length: CHAT_PAGE }, (_, i) => 3 * CHAT_PAGE + i));
+  });
+});
