@@ -1016,7 +1016,7 @@
       "defacer": "Tu ADN te permite modificar algunas secuencias de datos periféricas. ¡Mucho potencial!"
     },
     "effects": {
-      "engineer": "+1 PA de Reparación por día.\nProbabilidades de éxito duplicadas en las Reparaciones.\nProbabilidades de éxito duplicadas en las Renovaciones.\nBonificación para desarrollar ciertos Proyectos de NERON.",
+      "engineer": "+1 PA de Reparación por día.\nAcción: Desmontar - Por 3 PA, convierte algunos objetos en chatarra.\nAcción: Reforzar - Por 1 PA, usa chatarra para añadir blindaje a objetos y equipos, protegiéndolos de las averías.\nProbabilidades de éxito duplicadas en las Reparaciones.\nProbabilidades de éxito duplicadas en las Renovaciones.\nBonificación para desarrollar ciertos Proyectos de NERON.",
       "astrophysician": "La acción Escanear un planeta cuesta 1 PA menos.\n+1 sector descubierto por análisis de planeta.",
       "pilot": "Usa Tácticas de pilotaje.\nNunca falla los aterrizajes ni los despegues.\nBonificación para desarrollar ciertos Proyectos de NERON.",
       "gunman": "+2 disparos gratuitos por día.\nTus disparos fallidos provocan la mitad de torpezas.\nTus disparos certeros provocan el doble de golpes críticos.\nBonificación para desarrollar ciertos Proyectos de NERON.",

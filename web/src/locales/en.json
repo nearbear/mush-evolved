@@ -1097,7 +1097,7 @@
       "defacer": "Your DNA lets you change some peripheral data sequences. Lots of potential!"
     },
     "effects": {
-      "engineer": "You get +1 Repair action point per day.\nAction: Dismantle - For 3 AP, turn some items into scrap.\nYou have double the odds of success for Repairs.\nYou have double the odds of success for Renovations.\nYou get a bonus for developing certain NERON Projects.",
+      "engineer": "You get +1 Repair action point per day.\nAction: Dismantle - For 3 AP, turn some items into scrap.\nAction: Reinforce - For 1 AP, use scraps to add shielding to items and equipment, protecting them from breaking.\nYou have double the odds of success for Repairs.\nYou have double the odds of success for Renovations.\nYou get a bonus for developing certain NERON Projects.",
       "astrophysician": "The Scan a Planet action costs 1 AP less for you.\nYou discover one additional per planet analysis.",
       "pilot": "Allows you to pilot patrol ships and the Pasiphae.\nYou will never fails landings and takeoffs.\nYou get a bonus for developing certain NERON Projects.",
       "gunman": "You get +2 Shooter action points per day.\nYou have half the odds of critical failure when using a firearm.\nYou have double double the odds of critical hits when shooting.\nExpedition: If you are holding a firearm, you team gets +1 combat power. \nYou get a bonus for developing certain NERON Projects.",

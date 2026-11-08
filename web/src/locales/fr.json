@@ -1016,7 +1016,7 @@
       "defacer": "Votre ADN vous permets de modifier certaines séquences de données périphériques.Plein de potentiel !"
     },
     "effects": {
-      "engineer": "+1 PA (point d'action Réparation) par jour.\nChances de réussites doublées pour les Réparations.\nChances de réussites doublées pour les Rénovations.\nBonus pour développer certains Projets NERON.",
+      "engineer": "+1 PA (point d'action Réparation) par jour.\nAction : Démonter - Pour 3 PA, transforme certains objets en débris.\nAction : Renforcer - Pour 1 PA, utilise des débris pour ajouter un blindage aux objets et aux équipements, les protégeant des pannes.\nChances de réussites doublées pour les Réparations.\nChances de réussites doublées pour les Rénovations.\nBonus pour développer certains Projets NERON.",
       "astrophysician": "L'action Scanner Une Planète coûte 1 PA de moins.\n+1 secteur découvert par analyse de planète.",
       "pilot": "Utilise des Tactiques De Pilotage.\nNe rate jamais les atterrissages et décollages.\nBonus pour développer certains Projets NERON.",
       "gunman": "+2 Tirs gratuits PA par jour.\nVos tirs ratés provoquent 2 fois moins de maladresses.\nVos tirs réussis provoquent 2 fois plus de coups critiques.\nBonus pour développer certains Projets NERON.",
