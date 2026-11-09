@@ -2807,6 +2807,8 @@ Follow-up the same day: the "N% repaired" text became a bare percent (the shared
 - Translated the French *Évènements* page to English wikitext for the owner, taking every name from eMush's own strings (`npm run emush -- translations <domain> <lang>`, a command the emush skill didn't document). What needed correction: I first used the French wiki's `{{Zone|…}}`; the English wiki uses `{{Sector|…}}`, and its accepted values aren't the game's names (`Caves`, not `Caverns`). Checking every template value against the template's own `#switch` list caught nine mismatches that would have rendered silently wrong.
 - Settled with the owner: wiki pages keep the in-game names; better names go to eMush's translators on Crowdin rather than onto the wiki. The workflow is now the `wiki-translate` skill.
 
+## 2026-11-08: Bric-a-brac project effect
+Implemented `BRIC_BROC`: one 15% roll per cycle change once incidents are due; on success the incident loop still buys and spends points but skips `apply`. Config in `config.project.bricBroc`, two tests added. Worked: the rule was fully specified by the owner, so no questions needed.
 ## 2026-11-08: Muted tips came back with several tabs open (#351 follow-up)
 
 - **Symptom (owner):** tips marked "Don't show this tip again" kept showing up. The owner had many tabs open.

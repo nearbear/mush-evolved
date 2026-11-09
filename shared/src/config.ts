@@ -216,6 +216,8 @@ export const DEFAULT_CONFIG: GameConfig = {
     cost: { ap: 2 },
     progress: { rate: 6, mod: 10, skillBoost: 4, relayPenalty: 2 },
     noiseReducer: { maxAp: 2 },
+    // Owner, 2026-11-08: the chance that a cycle change's incidents are all prevented (the points are still spent).
+    bricBroc: { preventChance: 0.15 },
     foodRetailer: { room: "NEXUS_ROOM", items: ["output_tube", "input_tube", "input_tube"] },
     quantumSensors: { extraSectors: 1 },
     chipsetAcceleration: { scanApDiscount: 1 },

@@ -91,6 +91,8 @@ export const PROJECT_STATUS: Readonly<Partial<Record<ProjectId, ProjectStatus>>>
   FOOD_RETAILER: "full",
   // Coffee machine regenerates twice a day (C1, C5; every cycle with PILGRED) (owner, 2026-11-02).
   FISSION_COFFEE_ROASTER: "full",
+  // Each cycle change, 15% that all its incidents are prevented; the points are still spent (owner, 2026-11-08; incidents.ts).
+  BRIC_BROC: "full",
 };
 
 export function projectStatus(project: string): ProjectStatus {

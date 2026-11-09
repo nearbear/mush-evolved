@@ -7,9 +7,11 @@
 import { gainMorale } from "./adjustStats.ts";
 import { breakEquipment, breakItem, workingBreakable } from "./breakage.ts";
 import { damage } from "./death.ts";
+import { pushChat } from "./chat.ts";
 import { daedalusRooms, isOnFire, startFire } from "./fire.ts";
 import { ITEM_TYPES, isWorking } from "./items.ts";
 import { logPrivate, logPublic } from "./log.ts";
+import { projectDone } from "./projects.ts";
 import { roll, rollFloat, rollInt, rollWeighted } from "./rng.ts";
 import type { DeepReadonly, Equipment, GameConfig, GameState, ItemState, PlayerId, PlayerState, RoomId } from "./types.ts";
 
@@ -150,13 +152,20 @@ export function incidentsCycle(state: GameState, day: number): void {
   if (state.phase !== "playing") return;
   state.incidentPoints += incidentPointsForDay(state.config, day);
   if (state.incidentPoints <= 0 || rollFloat(state) >= state.incidentPoints / state.config.incidents.rollPoints) return;
+  // Bric-a-brac (owner, 2026-11-08): one roll per cycle change, made only once incidents are due; if it succeeds they are bought as usual but none happens.
+  const prevented = projectDone(state, "BRIC_BROC") && rollFloat(state) < state.config.project.bricBroc.preventChance;
   const spending: Spending = { panicked: new Set(), plated: new Set() };
   const { catalog } = state.config.incidents;
+  let announced = false;
   while (state.phase === "playing") {
     const menu = INCIDENT_IDS.filter((id) => catalog[id].weight > 0 && catalog[id].cost > 0 && catalog[id].cost <= state.incidentPoints && INCIDENTS[id].possible(state, spending));
     if (menu.length === 0) return;
     const id = menu[rollWeighted(state, menu.map((m) => catalog[m].weight))]!;
     state.incidentPoints -= catalog[id].cost;
-    INCIDENTS[id].apply(state, spending);
+    if (!prevented) INCIDENTS[id].apply(state, spending);
+    else if (!announced) {
+      announced = true;
+      pushChat(state, "global", { from: null, isBot: false, text: "", system: { key: "bricBrocPrevented" } });
+    }
   }
 }
