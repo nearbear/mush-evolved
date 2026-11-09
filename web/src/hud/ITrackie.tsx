@@ -9,8 +9,8 @@ import { useTranslation } from "react-i18next";
 import { useNames } from "../i18n/names.ts";
 import { Tabs } from "@base-ui/react/tabs";
 import { FEATURE_CHANNELS, ITRACKIE_ITEM, GRAVEYARD_CHANNEL, MUSH_CHANNEL, jsonEqual, type ChannelId, type LogLine, type FeatureChannel, type PlayerView, type SharedPlanetId, type SharedReportId, type ThreadId } from "@mush2/shared";
-import { useReadSnapshot } from "../chatRead.ts";
-import { unreadByTab, type TabId } from "./chatTabs.ts";
+import { useChatReadStore, useReadSnapshot } from "../chatRead.ts";
+import { readAllOn, unreadByTab, type TabId } from "./chatTabs.ts";
 import { useAnnouncements } from "./useAnnouncements.ts";
 import { FeatureSelect } from "./FeatureSelect.tsx";
 import { Hint, IconTab } from "./IconButton.tsx";
@@ -139,6 +139,10 @@ export function ITrackie({
   const alive = view.you.alive;
   const activeTab: TabId = !alive && (tab === "room" || tab === "private") ? "global" : (tab === "mush" && !mush) || (tab === "graveyard" && !graveyard) ? "room" : tab;
   const unread = useUnread(view);
+  const readStore = useChatReadStore();
+  // Mark all read (#400): every channel read on the active tab, so a grouped tab (threads, features with their shared
+  // planets and reports, private channels) marks them all. The Room tab has no chat.
+  const markAllRead = () => readStore?.markAll(readAllOn(view, activeTab));
   const tabLabel = (tab: TabId, name: string) => (unread[tab] ? t("itrackie.unreadTab", { name, count: unread[tab] }) : name);
   const carrying = view.inventory.some((i) => i.type === ITRACKIE_ITEM);
   // Threads tab: the open thread (null for the list), and the new-thread form's
@@ -209,6 +213,11 @@ export function ITrackie({
                   ←
                 </button>
               </Hint>
+            )}
+            {readStore && unread[activeTab] > 0 && (
+              <button type="button" className="mark-read" aria-label={t("itrackie.markReadIn", { name: t(TAB_TITLES[activeTab]) })} onClick={markAllRead}>
+                {t("itrackie.markRead")}
+              </button>
             )}
           </div>
 

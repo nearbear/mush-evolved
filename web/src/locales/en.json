@@ -555,6 +555,8 @@
     "unreadTab_other": "{{name}}, {{count}} unread",
     "needITrackieRead": "You need an iTrackie in your inventory to read this.",
     "noMessages": "No messages yet.",
+    "markRead": "Mark read",
+    "markReadIn": "Mark all read in {{name}}",
     "chatNeedsITrackie": "Needs an iTrackie",
     "chatMessage": "Chat message",
     "send": "Send",

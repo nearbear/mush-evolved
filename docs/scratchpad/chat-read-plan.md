@@ -249,3 +249,10 @@ One entry for all of #400, written at the end (CLAUDE.md). Gathered so far:
   latest page (it is disabled on it). Known flash: after posting, the view arrives a moment before the server's
   `chatRead`, so the active tab can show "1" briefly. Mid-task, another session's `git stash` took this commit's edits
   to three files; restored them from the stash with `git checkout stash@{0} -- <files>`.
+- **Commit 4 (focus marking, Mark all read).** "Arriving in view" reads the feed's visibility from the DOM
+  (`getClientRects()` empty under any CSS-hidden ancestor) instead of an `active` prop: that also covers the phone layout's
+  hidden iTrackie panel, which ITrackie can't see, with no prop drilling. Commit 6 still needs an `active` prop for the
+  divider snapshot (DOM visibility doesn't trigger a render). `web` has no DOM test environment (jsdom would be a new
+  dependency), so the pure parts were pulled out and tested (`hud/feedKeys.ts`, `readAllOn` in `chatTabs.ts`); focus,
+  click and arrival marking are untested. A click also marks, since Safari doesn't focus buttons on click. Verified in a
+  detached worktree again (another session's uncommitted work in the checkout).

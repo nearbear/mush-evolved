@@ -456,3 +456,12 @@
   font-weight: bold;
   line-height: 14px;
 }
+/* A message focused from the keyboard (#400: focusing marks it read). A click focuses it too, without the ring. */
+.feed > li[data-seq]:focus {
+  outline: none;
+}
+.feed:focus-visible,
+.feed > li[data-seq]:focus-visible {
+  outline: 2px solid var(--highlight);
+  outline-offset: -2px;
+}

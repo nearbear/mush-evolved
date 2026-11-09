@@ -561,6 +561,8 @@
     "unreadTab_many": "{{name}}, {{count}} sin leer",
     "needITrackieRead": "Necesitas un iTrackie en tu inventario para leer esto.",
     "noMessages": "Aún no hay mensajes.",
+    "markRead": "Marcar leído",
+    "markReadIn": "Marcar todo como leído en {{name}}",
     "chatNeedsITrackie": "Requiere un iTrackie",
     "chatMessage": "Mensaje",
     "send": "Enviar",

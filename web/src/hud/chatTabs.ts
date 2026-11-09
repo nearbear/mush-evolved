@@ -20,3 +20,8 @@ export function unreadByTab(view: Pick<PlayerView, "readChannels" | "chatCounts"
   for (const channel of view.readChannels) counts[tabOf(channel)] += unreadCount(view.chatCounts, read, channel);
   return counts;
 }
+
+/** What Mark all read raises on `tab`: each channel read there, at its message count (#400). */
+export function readAllOn(view: Pick<PlayerView, "readChannels" | "chatCounts">, tab: TabId): ChatRead {
+  return Object.fromEntries(view.readChannels.filter((c) => tabOf(c) === tab).map((c) => [c, view.chatCounts[c] ?? 0]));
+}

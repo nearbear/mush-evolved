@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { GameClientMessage } from "@mush2/shared";
 import { KEEP_MS, SEND_EVERY_MS, chatReadKey, createChatReadStore } from "../src/chatRead.ts";
-import { unreadByTab } from "../src/hud/chatTabs.ts";
+import { readAllOn, unreadByTab } from "../src/hud/chatTabs.ts";
 
 /** An in-memory localStorage. */
 function memoryStorage(entries: Record<string, string> = {}) {
@@ -195,5 +195,20 @@ describe("unreadByTab", () => {
       mush: 0,
       graveyard: 0,
     });
+  });
+});
+
+describe("readAllOn", () => {
+  const view = {
+    readChannels: ["global", "th-1", "th-2", "botany", "astrophysics", "pc-1"] as const,
+    chatCounts: { global: 10, "th-1": 3, botany: 2, astrophysics: 4, "pc-1": 1, "pc-2": 6 },
+  };
+  it("raises every channel read on a grouped tab to its count", () => {
+    expect(readAllOn(view as never, "threads")).toEqual({ "th-1": 3, "th-2": 0 });
+    expect(readAllOn(view as never, "features")).toEqual({ botany: 2, astrophysics: 4 });
+  });
+  it("leaves channels the reader can't read, and has nothing for the Room tab", () => {
+    expect(readAllOn(view as never, "private")).toEqual({ "pc-1": 1 });
+    expect(readAllOn(view as never, "room")).toEqual({});
   });
 });
