@@ -243,3 +243,9 @@ One entry for all of #400, written at the end (CLAUDE.md). Gathered so far:
   after later messages and 9 existing room tests failed. Loading every seat's counts in `onStart` instead made the path
   synchronous and simpler (no reload race, no body re-check). Four older tests needed adjusting: three read the last
   message after connecting expecting the view, and one counted storage keys after a chat (posting now writes a count).
+- **Commit 3 (client store).** `web/src/chatRead.ts` is a `.ts` with `ChatReadProvider = Context.Provider` (no JSX).
+  `dispose` only flushes, because StrictMode reruns effects on the same `useMemo` store. Tab sums moved to
+  `hud/chatTabs.ts` (`tabOf`, `unreadByTab`) so they test without importing ITrackie. » shows the count only off the
+  latest page (it is disabled on it). Known flash: after posting, the view arrives a moment before the server's
+  `chatRead`, so the active tab can show "1" briefly. Mid-task, another session's `git stash` took this commit's edits
+  to three files; restored them from the stash with `git checkout stash@{0} -- <files>`.

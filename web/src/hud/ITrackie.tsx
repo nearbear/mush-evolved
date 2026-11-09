@@ -9,7 +9,8 @@ import { useTranslation } from "react-i18next";
 import { useNames } from "../i18n/names.ts";
 import { Tabs } from "@base-ui/react/tabs";
 import { FEATURE_CHANNELS, ITRACKIE_ITEM, GRAVEYARD_CHANNEL, MUSH_CHANNEL, jsonEqual, type ChannelId, type LogLine, type FeatureChannel, type PlayerView, type SharedPlanetId, type SharedReportId, type ThreadId } from "@mush2/shared";
-import { chatSeenIn, isNewer, type ChatSeen } from "../chatSeen.ts";
+import { useReadSnapshot } from "../chatRead.ts";
+import { unreadByTab, type TabId } from "./chatTabs.ts";
 import { useAnnouncements } from "./useAnnouncements.ts";
 import { FeatureSelect } from "./FeatureSelect.tsx";
 import { Hint, IconTab } from "./IconButton.tsx";
@@ -33,7 +34,8 @@ export type { ChannelHandlers };
 type Notes = Record<FeatureChannel, string[]>;
 const NO_NOTES = Object.fromEntries(FEATURE_CHANNELS.map((f) => [f, []])) as unknown as Notes;
 
-type TabId = "room" | "global" | "threads" | "features" | "private" | "mush" | "graveyard";
+const NO_UNREAD: Record<TabId, number> = { room: 0, global: 0, threads: 0, features: 0, private: 0, mush: 0, graveyard: 0 };
+
 const TAB_TITLES = {
   room: "itrackie.tabs.room",
   global: "itrackie.tabs.global",
@@ -44,40 +46,13 @@ const TAB_TITLES = {
   graveyard: "itrackie.tabs.graveyard",
 } as const;
 
-/** Which tab a channel's messages are read in. */
-function tabOf(channel: ChannelId): TabId {
-  if (channel === "global") return "global";
-  if (channel === MUSH_CHANNEL) return "mush";
-  if (channel === GRAVEYARD_CHANNEL) return "graveyard";
-  if (channel.startsWith("pc-")) return "private";
-  if (channel.startsWith("th-")) return "threads";
-  return "features";
-}
-
-/** Messages from others on each tab that arrived since you last had it open (or since this panel mounted). */
-function useUnread(view: PlayerView, active: TabId): Record<TabId, number> {
-  // Per channel, the count you had when you last had its tab open, when this panel mounted, or when the channel became
-  // readable (so a picked-up iTrackie's history isn't unread, but a new thread's first message is).
-  const [seen, setSeen] = useState<ChatSeen>(() => chatSeenIn(view));
-  const now = chatSeenIn(view);
-  const nowKey = JSON.stringify(now);
-  useEffect(() => {
-    const counts = JSON.parse(nowKey) as ChatSeen;
-    setSeen((s) => {
-      let next = s;
-      for (const [channel, count] of Object.entries(counts) as [ChannelId, number][]) {
-        const had = s[channel];
-        if (had === undefined || (tabOf(channel) === active && had < count)) next = { ...next, [channel]: count };
-      }
-      return next;
-    });
-  }, [active, nowKey]);
-  const counts: Record<TabId, number> = { room: 0, global: 0, threads: 0, features: 0, private: 0, mush: 0, graveyard: 0 };
-  for (const m of view.chat) {
-    const tab = tabOf(m.channel);
-    if (tab !== active && m.from !== view.you.id && isNewer(seen, m)) counts[tab]++;
-  }
-  return counts;
+/**
+ * Unread messages on each tab (#400): each readable channel's count less the count read, summed by tab. The active tab
+ * counts too (owner, 2026-11-08). With no read store (a replay, the design kit), nothing is unread.
+ */
+function useUnread(view: Pick<PlayerView, "readChannels" | "chatCounts">): Record<TabId, number> {
+  const read = useReadSnapshot();
+  return read ? unreadByTab(view, read) : NO_UNREAD;
 }
 
 /**
@@ -156,19 +131,14 @@ export function ITrackie({
   // UI-only for now: lives in this tab and is lost on reload. Will become
   // private server-side state tied to the iTrackie.
   const [notes, setNotes] = useState<Notes>(NO_NOTES);
-  // The Mush tab exists only for Mush (the server sends the channel to no one else) and pulses until its newest message is read.
+  // The Mush tab exists only for Mush (the server sends the channel to no one else) and pulses while it has unread.
   const mush = view.readChannels.includes(MUSH_CHANNEL);
-  const newestMush = view.chatCounts[MUSH_CHANNEL] ?? 0;
-  const [mushSeen, setMushSeen] = useState(0);
-  useEffect(() => {
-    if (mush && tab === "mush") setMushSeen(newestMush);
-  }, [mush, tab, newestMush]);
   // The Graveyard tab is for the dead alone; the server sends the channel to no one else.
   const graveyard = view.readChannels.includes(GRAVEYARD_CHANNEL);
   // The dead have no room log and no private channels (#45): those tabs go, and they land on global chat.
   const alive = view.you.alive;
   const activeTab: TabId = !alive && (tab === "room" || tab === "private") ? "global" : (tab === "mush" && !mush) || (tab === "graveyard" && !graveyard) ? "room" : tab;
-  const unread = useUnread(view, activeTab);
+  const unread = useUnread(view);
   const tabLabel = (tab: TabId, name: string) => (unread[tab] ? t("itrackie.unreadTab", { name, count: unread[tab] }) : name);
   const carrying = view.inventory.some((i) => i.type === ITRACKIE_ITEM);
   // Threads tab: the open thread (null for the list), and the new-thread form's
@@ -221,7 +191,7 @@ export function ITrackie({
               src={TAB_ICONS.mushChat}
               label={tabLabel("mush", t("itrackie.tabs.mush"))}
               badge={unread.mush}
-              className={`mush-tab${newestMush > mushSeen ? " unread" : ""}`}
+              className={`mush-tab${unread.mush > 0 ? " unread" : ""}`}
             />
           )}
           {graveyard && <IconTab value="graveyard" src={TAB_ICONS.graveyard} label={tabLabel("graveyard", t("itrackie.tabs.graveyard"))} badge={unread.graveyard} />}

@@ -444,3 +444,15 @@
   color: var(--muted);
   padding: 0 0.2rem;
 }
+
+/* Unread in the channel, on » while off the latest page (#400); the count is in the button's accessible name too. */
+.chat-page-new {
+  margin-left: 0.25rem;
+  padding: 0 3px;
+  border-radius: 7px;
+  background: #d8332f;
+  color: #fff;
+  font-size: 10px;
+  font-weight: bold;
+  line-height: 14px;
+}

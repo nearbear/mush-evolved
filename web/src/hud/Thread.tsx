@@ -5,7 +5,7 @@ import { Menu } from "@base-ui/react/menu";
 import { chatPageOf, jsonEqual, type CharacterId, type ChannelId, type ChatLine, type PlayerView, type ThreadId } from "@mush2/shared";
 import { pageItems, useChatPages } from "../chatPages.tsx";
 import { useMobile } from "../useMobile.ts";
-import { messageKey } from "../chatSeen.ts";
+import { messageKey, useReadCount } from "../chatRead.ts";
 import { Markdown } from "./Markdown.tsx";
 import { CycleDivider } from "./CycleDivider.tsx";
 import { FeedEntry, CrewAvatar, InfoMarker } from "./FeedEntry.tsx";
@@ -114,8 +114,8 @@ export const Thread = memo(function Thread({ view, channel, placeholder, onSend,
 /**
  * Which page of a channel the reader is on (#355). Page n holds `seq` n·50 to n·50+49. Null, the default, is the
  * latest: the newest page alone (nearly empty right after a seal, owner 2026-11-06), and it follows new messages. Any
- * other page is fixed: sealed pages never change, so new messages never move the reader. `seen` is the message count
- * when the reader left the latest, for the "N new" chip.
+ * other page is fixed: sealed pages never change, so new messages never move the reader. `newCount` is the channel's
+ * unread (#400), shown on » while the reader is off the latest page.
  */
 function usePaging(view: PlayerView, channel: ChannelId) {
   const pages = useChatPages();
@@ -123,8 +123,9 @@ function usePaging(view: PlayerView, channel: ChannelId) {
   const last = total > 0 ? chatPageOf(total - 1) : 0;
   // The view carries the open page and the tail; without a page cache (no socket) nothing older can be shown.
   const first = pages ? 0 : Math.max(0, last - 1);
-  const [picked, setPicked] = useState<{ page: number; seen: number } | null>(null);
-  const page = picked && picked.page < last ? picked.page : null;
+  const read = useReadCount(channel, total);
+  const [picked, setPicked] = useState<number | null>(null);
+  const page = picked !== null && picked < last ? picked : null;
   // The view carries the open page and the tail; anything older comes from the cache.
   const older = page !== null && page < last - 1;
   const fetched = older ? pages?.get(channel, page) : undefined;
@@ -133,9 +134,8 @@ function usePaging(view: PlayerView, channel: ChannelId) {
   }, [older, page, channel, pages]);
   const shown = page ?? last;
   const messages = older ? (fetched ?? []) : view.chat.filter((m) => m.channel === channel && chatPageOf(m.seq) === shown);
-  const go = (to: number | null) =>
-    setPicked(to === null || to >= last ? null : { page: Math.max(first, to), seen: page === null ? total : (picked?.seen ?? total) });
-  return { page: shown, latest: page === null, first, last, newCount: page === null ? 0 : total - (picked?.seen ?? total), messages, loading: older && !fetched, go };
+  const go = (to: number | null) => setPicked(to === null || to >= last ? null : Math.max(first, to));
+  return { page: shown, latest: page === null, first, last, newCount: page === null ? 0 : Math.max(0, total - read), messages, loading: older && !fetched, go };
 }
 
 type Paging = ReturnType<typeof usePaging>;
@@ -191,6 +191,11 @@ function PageBar({ paging }: { paging: Paging }) {
         aria-label={newCount > 0 ? t("itrackie.pages.latestNew", { count: newCount }) : t("itrackie.pages.latest")}
       >
         »
+        {newCount > 0 && (
+          <span className="chat-page-new" aria-hidden="true">
+            {newCount > 99 ? "99+" : newCount}
+          </span>
+        )}
       </button>
     </nav>
   );

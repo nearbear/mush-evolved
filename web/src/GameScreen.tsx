@@ -1,7 +1,7 @@
 // The live game: owns the seat's socket, keeps the newest view and the server's extras from it, and sends the
 // view-only GameView's intents back. Everything on screen is GameView's.
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type PartySocket from "partysocket";
 import { MAX_CHAT_LENGTH, MAX_CHAT_LINES, type BotPause, type GameClientMessage, type GameServerMessage, type PlayerView } from "@mush2/shared";
 import i18n from "i18next";
@@ -13,6 +13,7 @@ import { shareUnchanged } from "./shareView.ts";
 import { gameSocket, type SeatTicket } from "./net.ts";
 import { showError } from "./Toasts.tsx";
 import { ChatPagesProvider, useChatPageCache } from "./chatPages.tsx";
+import { ChatReadProvider, chatReadKey, createChatReadStore } from "./chatRead.ts";
 
 /** How slow-render warnings name this screen (dev console only). */
 const WATCH_ID = "GameView"; // i18n-ignore: dev console only
@@ -30,6 +31,8 @@ export function GameScreen({ ticket, onLeave, waking = false }: { ticket: SeatTi
   const send = useCallback((msg: GameClientMessage) => socketRef.current?.send(JSON.stringify(msg)), []);
   const chatPages = useChatPageCache(send);
   const handleChatPages = chatPages.handle;
+  // How far this seat has read each channel (#400): one store per seat ticket.
+  const chatRead = useMemo(() => createChatReadStore({ key: chatReadKey(ticket.roomId, ticket.token), send }), [ticket, send]);
 
   useEffect(() => {
     const socket = gameSocket(ticket.roomId, ticket.token);
@@ -43,6 +46,8 @@ export function GameScreen({ ticket, onLeave, waking = false }: { ticket: SeatTi
         setClock({ offset: msg.now - Date.now() });
         setNextCycleAt(msg.nextCycleAt);
         setBotsPaused(msg.botsPaused);
+      } else if (msg.type === "chatRead") {
+        chatRead.fromServer(msg.read);
       } else if (handleChatPages(msg)) {
         // A fetched page, or ticks on one (chatPages.tsx).
       } else if (msg.type === "error") showError(i18n.t(`errors.${msg.message}` as never, { defaultValue: msg.message, max: MAX_CHAT_LENGTH, lines: MAX_CHAT_LINES }));
@@ -52,12 +57,27 @@ export function GameScreen({ ticket, onLeave, waking = false }: { ticket: SeatTi
     socket.addEventListener("close", (e: CloseEvent) => {
       if (e.code === 4001 || e.code === 4002) onLeave();
     });
-    return () => socket.close();
-  }, [ticket, onLeave, handleChatPages]);
+    // Counts read go to the server at most every few seconds; send what's pending when the socket (re)opens and before
+    // the page is hidden or closed, so little reading is lost.
+    const flush = () => chatRead.flush();
+    const onVisibility = () => {
+      if (document.visibilityState === "hidden") flush();
+    };
+    socket.addEventListener("open", flush);
+    document.addEventListener("visibilitychange", onVisibility);
+    window.addEventListener("pagehide", flush);
+    return () => {
+      document.removeEventListener("visibilitychange", onVisibility);
+      window.removeEventListener("pagehide", flush);
+      chatRead.dispose();
+      socket.close();
+    };
+  }, [ticket, onLeave, handleChatPages, chatRead]);
 
   if (!view) return <main className="connecting loading">{t("common.connecting")}</main>;
   return (
     <ChatPagesProvider value={chatPages.value}>
+    <ChatReadProvider value={chatRead}>
     <RenderWatch id={WATCH_ID}>
     <GameView
       view={view}
@@ -71,6 +91,7 @@ export function GameScreen({ ticket, onLeave, waking = false }: { ticket: SeatTi
       replayId={ticket.roomId}
     />
     </RenderWatch>
+    </ChatReadProvider>
     </ChatPagesProvider>
   );
 }
