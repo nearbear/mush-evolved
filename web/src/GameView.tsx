@@ -2,7 +2,7 @@
 // the server decides what is legal and sends it in view.actions. No socket either: see GameScreen.
 
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
-import { CORPSE_ITEM, legalIn, type Action, type BotPause, type CharacterId, type Cheat, type GameClientMessage, type PlayerView, type RoleCheat, type RoomId, type Spot, type Target } from "@mush2/shared";
+import { CORPSE_ITEM, isLostPlace, legalIn, type Action, type BotPause, type CharacterId, type Cheat, type GameClientMessage, type PlayerView, type RoleCheat, type RoomId, type Spot, type Target } from "@mush2/shared";
 import { useTranslation } from "react-i18next";
 import { ActionQueue } from "./hud/ActionQueue.tsx";
 import { BottomNav, type MobilePanel } from "./hud/BottomNav.tsx";
@@ -15,6 +15,7 @@ import { Announcer } from "./hud/Announcer.tsx";
 import { ITrackie } from "./hud/ITrackie.tsx";
 import { PatrolCockpit } from "./hud/PatrolCockpit.tsx";
 import { IcarusPanel } from "./hud/IcarusPanel.tsx";
+import { LostPanel } from "./hud/LostPanel.tsx";
 import { PeekBar } from "./hud/PeekBar.tsx";
 import { TerminalDialog } from "./hud/TerminalDialog.tsx";
 import { EndScreen } from "./hud/EndScreen.tsx";
@@ -226,6 +227,8 @@ export function GameView({ view: given, send, onLeave, waking = false, cheatsAll
               <DeathNotice view={view} />
             ) : view.patrolShip ? (
               <PatrolCockpit view={view} ship={view.patrolShip} selected={target} onSelect={select} onAction={act} />
+            ) : isLostPlace(you.room) ? (
+              <LostPanel view={view} onShareReport={readOnly ? undefined : (report, text) => post({ type: "shareReport", report, text })} />
             ) : view.expedition?.report !== undefined ? (
               <IcarusPanel
                 view={view}

@@ -10,7 +10,9 @@
 // Phases 3 and 4, slice A (owner, 2026-11-08, #357): every tag's table, Again (the sector stays unexplored), Back,
 // Lost item, Kill and Kill all, the Mush trap, starmaps, named creatures with a win roll and loot, random artifacts,
 // Survival's extra steak, and a safe landing with a Pilot or the Antigrav propeller. Disease reads as Nothing until
-// #214; Lost reads as Nothing until slice B.
+// #214. Slice B: getting lost (the member stays on the planet, in a place of their own, and the planet gains a Lost
+// sector), finding them again, and their death when the ship leaves; a Tracker cancels Found dead. A member "with the
+// crew" is alive and in the Icarus (`withCrew`): the lost and the dead take no part in events.
 // Pure: every draw goes through the seeded RNG.
 // The action is actions/icarus_takeoff.ts.
 
@@ -20,10 +22,10 @@ import { damage, killPlayer } from "./death.ts";
 import { FAST_EXPEDITION_STEP_MS, fastExpeditions } from "./cheats.ts";
 import { soil } from "./dirt.ts";
 import { contaminate } from "./infection.ts";
-import { isWorking, itemsIn, newItemId, removeItem, sameContainer } from "./items.ts";
+import { CORPSE_ITEM, isWorking, itemsIn, newItemId, removeItem, sameContainer } from "./items.ts";
 import { logPrivate, logPublic } from "./log.ts";
 import { isTraveling } from "./navigation.ts";
-import { canFly } from "./patrol.ts";
+import { canFly, isLostPlace, lostPlace } from "./patrol.ts";
 import { PLANET_TAGS, type PlanetTag } from "./planets.ts";
 import { projectDone } from "./projects.ts";
 import { roll, rollFloat, rollInt, rollShuffle, rollWeighted } from "./rng.ts";
@@ -61,11 +63,14 @@ export function pickCrew(state: GameState, launcher: PlayerState): PlayerState[]
   return [launcher, ...rollShuffle(state, others)].slice(0, state.config.expedition.maxCrew);
 }
 
-/** The sectors explored this time, by index, in order: unexplored ones drawn by their tag's `explo` weight, without repeats. */
-export function pickSectors(state: GameState, planet: Readonly<Planet>): number[] {
+/**
+ * The sectors explored this time, by index, in order: up to `count` unexplored ones drawn by their tag's `explo`
+ * weight, without repeats.
+ */
+export function pickSectors(state: GameState, planet: Readonly<Planet>, count = state.config.expedition.sectors): number[] {
   const left = planet.sectors.flatMap((s, i) => (s.explored ? [] : [i]));
   const picked: number[] = [];
-  while (picked.length < state.config.expedition.sectors && left.length > 0) {
+  while (picked.length < count && left.length > 0) {
     const i = rollWeighted(
       state,
       left.map((index) => PLANET_TAGS[planet.sectors[index]!.tag].explo),
@@ -121,13 +126,13 @@ export function expeditionStep(state: GameState): void {
   const away = state.expedition!;
   const rules = state.config.expedition;
   const report = state.expeditions.find((r) => r.id === away.report)!;
-  const crew = report.members.map((id) => state.players.find((p) => p.id === id)!);
-  const ctx: Ctx = { state, crew, carried: away.carried };
+  const members = () => report.members.map((id) => state.players.find((p) => p.id === id)!);
   const planet = planetById(state, away.planet);
+  const ctx: Ctx = { state, crew: members(), carried: away.carried, report, planet, redraw: false };
   if (!away.landed) {
     away.landed = true;
     // A safe landing (owner, 2026-11-08): a living Pilot aboard or the Antigrav propeller.
-    const safe = crew.some((p) => p.alive && canFly(p)) || projectDone(state, "ICARUS_ANTIGRAV_PROPELLER");
+    const safe = ctx.crew.some((p) => withCrew(state, p) && canFly(p)) || projectDone(state, "ICARUS_ANTIGRAV_PROPELLER");
     report.events.push(resolve(ctx, LANDING, safe ? [] : rules.events[LANDING]!));
   } else if (planet) {
     const sector = planet.sectors[away.sectors.shift()!]!;
@@ -137,11 +142,15 @@ export function expeditionStep(state: GameState): void {
     if (event.kind !== "again") sector.explored = true;
     // Back: the crew heads home at once with what it found.
     if (event.kind === "back") away.sectors = [];
+    // Someone got lost: the planet has a new Lost sector, so the steps left are drawn again with it in the running
+    // (drawing in turn without repeats, as at takeoff, so the odds are those of a draw at each step).
+    else if (ctx.redraw) away.sectors = pickSectors(state, planet, away.sectors.length);
   } else {
     // The planet is gone (only possible once the ship has left it): nothing left to explore.
     away.sectors = [];
   }
-  if (away.sectors.length === 0 || !crew.some((p) => p.alive)) returnExpedition(state);
+  // Back when the sectors are done, or nobody is left with the crew (all dead or lost).
+  if (away.sectors.length === 0 || !members().some((p) => withCrew(state, p))) returnExpedition(state);
   // The fast cheat counts from now, so a step that was due long ago doesn't set off a burst of overdue ones.
   else away.nextAt = fastExpeditions(state) ? Math.max(away.nextAt, state.now) + FAST_EXPEDITION_STEP_MS : away.nextAt + rules.stepMs;
 }
@@ -163,7 +172,8 @@ function returnExpedition(state: GameState): void {
       board(p, rules.room);
       if (rollFloat(state) < rules.dirtyChance) soil(state, p);
     }
-    logPrivate(state, p.id, "expeditionReturned", { planet: report.planet, report: report.id });
+    // A lost member isn't back: they stay on the planet (owner, 2026-11-08).
+    if (!(p.alive && isLostPlace(p.room))) logPrivate(state, p.id, "expeditionReturned", { planet: report.planet, report: report.id });
   }
 }
 
@@ -174,6 +184,11 @@ function returnExpedition(state: GameState): void {
  * expedition can take off again (`icarusLost`); NERON tells everyone. Mutates a cloned state; nothing if none is out.
  */
 export function strandExpedition(state: GameState): void {
+  strandCrew(state);
+  abandonLost(state);
+}
+
+function strandCrew(state: GameState): void {
   const away = state.expedition;
   if (!away) return;
   const report = state.expeditions.find((r) => r.id === away.report)!;
@@ -193,6 +208,21 @@ export function strandExpedition(state: GameState): void {
   state.items = state.items.filter((i) => !sameContainer(i.at, { kind: "room", id: craft }));
 }
 
+/**
+ * The ship left the planet: everyone lost on it dies there, Magnetic return or not (owner, 2026-11-08, #357), and
+ * whatever is in their places (their items, their bodies) is gone with the planet. Mutates a cloned state.
+ */
+function abandonLost(state: GameState): void {
+  for (const p of lostPlayers(state)) killPlayer(state, p);
+  state.items = state.items.filter((i) => !(i.at.kind === "room" && isLostPlace(i.at.id)));
+}
+
+/** Everyone alive and lost on a planet, in seat order. They are all on the planet the ship orbits: leaving it kills them. */
+export const lostPlayers = (state: Readonly<GameState>): PlayerState[] => state.players.filter((p) => p.alive && isLostPlace(p.room));
+
+/** Whether a member is still with the crew: alive and in the Icarus, not lost on the planet. */
+export const withCrew = (state: Readonly<GameState>, p: Readonly<PlayerState>): boolean => p.alive && p.room === state.config.expedition.craft;
+
 /** When the expedition under way is back, if nothing ends it early: one `stepMs` per step left after the next. */
 export function expeditionReturnAt(state: Readonly<GameState>): number | null {
   const away = state.expedition;
@@ -206,20 +236,27 @@ const stepMs = (state: Readonly<GameState>): number => (fastExpeditions(state) ?
 
 interface Ctx {
   state: GameState;
+  /** Every member, as the step began (the dead and the lost included: filter with `withCrew`). */
   crew: PlayerState[];
-  carried: Readonly<Record<string, string[]>>;
+  carried: Record<string, string[]>;
+  report: ExpeditionReport;
+  planet: Planet | undefined;
+  /** Set when the planet gained a sector, so the steps left are drawn again once this one is explored. */
+  redraw: boolean;
 }
 
 /** Draws and applies one sector's event. An empty table is a sector where nothing happens. */
 function resolve(ctx: Ctx, sector: PlanetTag | typeof LANDING, table: readonly ExpeditionEventRule[]): ExpeditionEvent {
   const { state } = ctx;
-  if (table.length === 0) return { sector, kind: "nothing" };
-  const rule = table[rollWeighted(state, table.map((e) => e.weight))]!;
-  // Not built yet: Disease (#214) and getting lost (slice B) read as Nothing.
-  const kind = rule.kind === "disease" || rule.kind === "lost" ? "nothing" : rule.kind;
+  // A cancelled event can't be drawn: the sector rolls among its others, or is Nothing if none is left (owner, 2026-11-08).
+  const weights = table.map((e) => (cancelled(ctx, e) ? 0 : e.weight));
+  if (weights.every((w) => w === 0)) return { sector, kind: "nothing" };
+  const rule = table[rollWeighted(state, weights)]!;
+  // Not built yet: Disease (#214) reads as Nothing.
+  const kind = rule.kind === "disease" ? "nothing" : rule.kind;
   const event: ExpeditionEvent = { sector, kind };
   const rules = state.config.expedition;
-  const living = () => ctx.crew.filter((p) => p.alive);
+  const living = () => ctx.crew.filter((p) => withCrew(state, p));
   const amount = rule.amount ?? 0;
   switch (kind) {
     case "nothing":
@@ -300,8 +337,71 @@ function resolve(ctx: Ctx, sector: PlanetTag | typeof LANDING, table: readonly E
       // Each human member, independently, may gain a spore. Secret: the report only says the crew walked into a trap.
       for (const p of living()) if (p.role === "human" && rollFloat(state) < rules.mushTrapChance) contaminate(state, p);
       break;
+    case "lost":
+      getLost(ctx, event, living());
+      break;
+    case "found":
+    case "foundDead":
+      find(ctx, event);
+      break;
   }
   return event;
+}
+
+/** Whether an event is cancelled for this crew. A Tracker with the crew cancels Found dead (owner, 2026-11-08). */
+const cancelled = (ctx: Ctx, rule: ExpeditionEventRule): boolean =>
+  rule.kind === "foundDead" && ctx.crew.some((p) => withCrew(ctx.state, p) && hasSkill(p, "hunt"));
+
+/**
+ * Lost (owner, 2026-11-08, #357): one member still with the crew, picked at random, stays on the planet in a place of
+ * their own (`lostPlace`), and the planet gains a revealed Lost sector. Their report stops at this line. NERON names
+ * them and the planet to everyone (an accepted leak, phase 2). With nobody to lose, Nothing.
+ */
+function getLost(ctx: Ctx, event: ExpeditionEvent, pool: PlayerState[]): void {
+  const { state, report, planet } = ctx;
+  if (pool.length === 0 || !planet) {
+    event.kind = "nothing";
+    return;
+  }
+  const p = pool[rollInt(state, pool.length)]!;
+  event.who = p.character;
+  board(p, lostPlace(p.id));
+  (report.lostAt ??= {})[p.id] = report.events.length + 1;
+  planet.sectors.push({ tag: "LOST", known: true });
+  ctx.redraw = true;
+  logPublic(state, undefined, "crewLost", { name: p.character, planet: planet.name }, "warning");
+}
+
+/**
+ * Found and Found dead (owner, 2026-11-08, #357): one of those lost on the planet, at random. Found, they join this
+ * crew (over `maxCrew` if need be) with whatever they left on the ground, and come back with it; a member found by
+ * their own expedition sees its whole report again. Found dead, they die where they are and the crew brings back the
+ * body (and their things, unless `deadKeepItems` is off). Nobody lost: Nothing.
+ */
+function find(ctx: Ctx, event: ExpeditionEvent): void {
+  const { state, report } = ctx;
+  const craft = state.config.expedition.craft;
+  const lost = lostPlayers(state);
+  if (lost.length === 0) {
+    event.kind = "nothing";
+    return;
+  }
+  const p = lost[rollInt(state, lost.length)]!;
+  const place = p.room;
+  event.who = p.character;
+  // Through `damage`, as Kill, so the dev infiniteHp cheat survives it (and is then found alive).
+  if (event.kind === "foundDead") damage(state, p, p.hp);
+  const left = (i: ItemState) => i.at.kind === "room" && i.at.id === place;
+  if (!p.alive && !state.config.expedition.deadKeepItems) state.items = state.items.filter((i) => !left(i) || i.type === CORPSE_ITEM);
+  for (const item of state.items) if (left(item)) item.at = { kind: "room", id: craft };
+  if (!p.alive) return;
+  board(p, craft);
+  if (!report.members.includes(p.id)) {
+    report.members.push(p.id);
+    report.crew.push(p.character);
+  }
+  if (report.lostAt) delete report.lostAt[p.id];
+  ctx.carried[p.id] = itemsIn(state, { kind: "player", id: p.id }).map((i) => i.id);
 }
 
 /** The spacesuit's item type: a Lost item never takes one (owner, 2026-11-08). */
@@ -326,7 +426,7 @@ function fight(ctx: Ctx, event: ExpeditionEvent, creature: string): void {
   const foe = state.config.expedition.creatures[creature]!;
   const strength = foe.strength.length === 1 ? foe.strength[0]! : foe.strength[rollInt(state, foe.strength.length)]!;
   const weapons = state.config.weapons.types;
-  const members = ctx.crew.filter((p) => p.alive);
+  const members = ctx.crew.filter((p) => withCrew(state, p));
   const gear = members.flatMap((p) => itemsIn(state, { kind: "player", id: p.id })).filter((i) => weapons[i.type] !== undefined && isWorking(i));
   const grenades = gear.filter((i) => weapons[i.type]!.consumed);
   let crew = members.length;

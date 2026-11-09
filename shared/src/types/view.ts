@@ -162,7 +162,8 @@ export interface PlayerView {
   /**
    * One entry per person outside your room whose identity you can't tell
    * (ACTOPI off): the room they are in, sorted by room so the order says
-   * nothing about who they are. Empty while ACTOPI is on.
+   * nothing about who they are. Empty while ACTOPI is on. Never the lost
+   * (their place names them): `lost` lists them.
    */
   unidentified: RoomId[];
   /** Global cycle counter (never resets). */
@@ -301,9 +302,14 @@ export interface PlayerView {
   /**
    * The expedition under way, public to everyone (owner, 2026-11-07): who is out, by character, the planet's name, and
    * when they are back (server ms; if every member dies the crew is back at once and this is null). `report` is its report's id, only for a
-   * living member, whose view holds it in `expeditions`.
+   * member still with the crew (alive and not lost), whose view holds it in `expeditions`.
    */
   expedition: { crew: CharacterId[]; planet: string; returnAt: number; report?: string } | null;
+  /**
+   * Who is lost on a planet, and its name, public to everyone (owner, 2026-11-08, #357): a crew-wide alert while they
+   * are alive and lost. Seat order. You are in it yourself while lost.
+   */
+  lost: { name: CharacterId; planet: string }[];
   /** Your own planets (private, owner 2026-10-19). Unknown sectors are null: their tags are never sent. */
   planets: PlanetView[];
   /** Whether you may share your planets in the Astrophysics feature now (sharedPlanets.ts): alive at an Astro terminal with an iTrackie. */

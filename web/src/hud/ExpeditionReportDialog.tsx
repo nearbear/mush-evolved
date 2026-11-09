@@ -166,10 +166,14 @@ function useEventLines(): (event: ExpeditionEvent) => { sector: string; lines: s
       case "lostItem":
         lines.push(t("expedition.events.lostItem", { item: names.item(event.item ?? "") }));
         break;
-      // Not built yet: the rules record them as Nothing (Disease #214, Lost in phase 3's slice B).
+      // Not built yet: the rules record it as Nothing (#214).
       case "disease":
-      case "lost":
         lines.push(t("expedition.events.nothing"));
+        break;
+      case "lost":
+      case "found":
+      case "foundDead":
+        lines.push(t(`expedition.events.${event.kind}`, { name: event.who ? names.characterGiven(event.who) : "" }));
         break;
       default:
         lines.push(t(`expedition.events.${event.kind}`));

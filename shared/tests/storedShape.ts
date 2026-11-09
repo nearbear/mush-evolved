@@ -26,6 +26,7 @@ export const DICTS: ReadonlySet<string> = new Set([
   "game.patrolShips",
   "game.failureStreaks",
   "game.failureStreaks.*",
+  "game.expeditions[].lostAt",
   "game.log[].params",
   "game.chat[].system.params",
   "game.chatOutbox.sealed[].messages[].system.params",

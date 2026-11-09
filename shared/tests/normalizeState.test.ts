@@ -110,8 +110,9 @@ function handFilled() {
     planet: "Zed",
     events: [
       { sector: "LANDING", kind: "fight", amount: 4, item: "i", fight: { strength: 3, grenades: 1, won: true }, hurt: [{ name: a.character, hp: 2 }], died: [b.character] },
-      { sector: "FOREST", kind: "nothing" },
+      { sector: "FOREST", kind: "lost", who: a.character },
     ],
+    lostAt: { [a.id]: 2 },
   });
   game.navigation = { heading: game.navigation.heading, orbit: "pl-1", arriving: { planet: "pl-1" }, lastTurn: { n: 3, side: "left" } };
   game.hunters.list.push({ id: "h1", hp: 2, hitChance: 0.4, target: { kind: "ship" } });

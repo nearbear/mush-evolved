@@ -396,6 +396,8 @@ export const DEFAULT_CONFIG: GameConfig = {
       RUINS: [ev("artifact", 4), ev("nothing", 3), fight("ZOMBI", 2), ev("accident", 1)],
       WRECK: [ev("artifact", 4), ev("fuel", 3, 3), ev("nothing", 2), fight("WRECK", 1)],
       CRISTAL_FIELD: [ev("mushTrap", 4), ev("starmap", 3), fight("MINDBENDER", 2), ev("lost", 1)],
+      // Slice B (owner, 2026-11-08): added to a planet when someone gets lost there.
+      LOST: [ev("found", 4), ev("found", 3), ev("again", 2), ev("foundDead", 1)],
     },
   },
   // Owner, 2026-10-22, from the English wiki: 1 AP to use any weapon, carried. Repair and dismantle chances the wiki

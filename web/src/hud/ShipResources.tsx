@@ -13,7 +13,7 @@ const RESOURCES = ["oxygen", "fuel", "hull", "plasmaShield", "hunters", "alerts"
  * are attacking, the ship titles, the orbited planet's name while in orbit (owner, 2026-10-31), and the expedition
  * away: who, where and when they are back (owner, 2026-11-07), all public. TODO(ship-resources): alerts have no backend yet, so they show a placeholder dash.
  */
-export function ShipResources({ ship, hunters, titles, orbit, expedition }: { ship: PlayerView["ship"]; hunters: number; titles: PlayerView["titles"]; orbit: string | null; expedition: PlayerView["expedition"] }) {
+export function ShipResources({ ship, hunters, titles, orbit, expedition, lost }: { ship: PlayerView["ship"]; hunters: number; titles: PlayerView["titles"]; orbit: string | null; expedition: PlayerView["expedition"]; lost: PlayerView["lost"] }) {
   const { t } = useTranslation();
   return (
     <ul className="ship-resources" aria-label={t("shipResources.title")}>
@@ -46,6 +46,9 @@ export function ShipResources({ ship, hunters, titles, orbit, expedition }: { sh
       })}
       {orbit !== null && <li className="ship-orbit">{t("shipResources.orbit", { name: orbit })}</li>}
       {expedition && <ExpeditionAway expedition={expedition} />}
+      {lost.map((l) => (
+        <LostAlert key={l.name} entry={l} />
+      ))}
       {titles.map((title) => (
         <li key={title.id} className="ship-title">
           <TitleChip entry={title} />
@@ -53,6 +56,13 @@ export function ShipResources({ ship, hunters, titles, orbit, expedition }: { sh
       ))}
     </ul>
   );
+}
+
+/** A crewmate lost on a planet: a public alert (owner, 2026-11-08, #357). */
+function LostAlert({ entry }: { entry: PlayerView["lost"][number] }) {
+  const { t } = useTranslation();
+  const names = useNames();
+  return <li className="ship-orbit">{t("shipResources.lost", { name: names.characterGiven(entry.name), planet: entry.planet })}</li>;
 }
 
 /** Who is out on the expedition, on which planet, and the time left. */

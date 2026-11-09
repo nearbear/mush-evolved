@@ -31,7 +31,8 @@
     "alerts": "Alertes",
     "hunters": "Hunters",
     "orbit": "En orbite autour de {{name}}",
-    "expedition": "Expédition sur {{planet}} : {{names}}, retour dans {{time}}"
+    "expedition": "Expédition sur {{planet}} : {{names}}, retour dans {{time}}",
+    "lost": "{{name}} a disparu sur {{planet}}"
   },
   "peek": {
     "doorTo": "Porte vers {{room}}",
@@ -925,6 +926,7 @@
     "patrolDestroyed": "NERON : appareil abattu par les hunters ({{room}}).",
     "patrolLost": "NERON : appareil perdu lors du saut du Daedalus ({{room}}).",
     "icarusLost": "NERON : l'Icarus est resté sur {{planet}} lors du saut du Daedalus, avec tout son équipage. Il est perdu.",
+    "crewLost": "NERON : {{name}} a disparu sur {{planet}}.",
     "icarusRecalled": "NERON : le rapatriement magnétique a ramené l'Icarus de {{planet}} lors du saut du Daedalus.",
     "patrolUnloaded_one": "{{name}} a déchargé {{count}} objet du vaisseau.",
     "patrolUnloaded_many": "{{name}} a déchargé {{count}} objets du vaisseau.",
@@ -1308,7 +1310,8 @@
       "RUINS": "Ruine",
       "WRECK": "Épave",
       "FRUIT_TREES": "Verger",
-      "CRISTAL_FIELD": "Cristalite"
+      "CRISTAL_FIELD": "Cristalite",
+      "LOST": "Personne perdue"
     },
     "orbited": "En orbite",
     "share": "Partager",
@@ -1597,7 +1600,10 @@
       "lostItem": "Perdu : {{item}}.",
       "kill": "Un danger mortel frappe l'équipe.",
       "killAll": "Personne ne survit.",
-      "mushTrap": "L'équipe tombe dans un piège Mush : un nuage de spores l'enveloppe."
+      "mushTrap": "L'équipe tombe dans un piège Mush : un nuage de spores l'enveloppe.",
+      "lost": "{{name}} se sépare de l'équipe et se perd.",
+      "found": "L'équipe retrouve {{name}}, qui la rejoint.",
+      "foundDead": "L'équipe retrouve le corps de {{name}}."
     },
     "creatures": {
       "CHAB_CHAB": "Chab Chab",
@@ -1615,6 +1621,7 @@
     "underWay": "L'expédition est toujours en cours.",
     "lootAboard": "Tout ce qui a été trouvé jusqu'ici est par terre dans l'Icarus.",
     "icarusAway": "L'Icarus est parti en expédition.",
+    "lost": { "heading": "Disparition sur {{planet}}", "text": "Vous avez perdu l'équipe. Une expédition sur cette planète peut vous retrouver ; si le Daedalus la quitte, vous mourez ici." },
     "share": "Partager le rapport",
     "shareAgain": "Compléter le rapport partagé",
     "shareHint": "Ce texte part dans la rubrique Expéditions pour tout l'équipage. Modifiez-le comme vous voulez.",

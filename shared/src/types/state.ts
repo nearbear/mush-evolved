@@ -249,6 +249,8 @@ export interface ExpeditionEvent {
   hurt?: { name: CharacterId; hp: number }[];
   /** Members who died here, by character. */
   died?: CharacterId[];
+  /** Who got lost (lost), or who was found alive (found) or dead (foundDead), by character. */
+  who?: CharacterId;
 }
 
 /** An expedition's report (expeditions.ts). `members` are body ids; `crew` the same members by character, for display. */
@@ -258,6 +260,11 @@ export interface ExpeditionReport {
   crew: CharacterId[];
   planet: string;
   events: ExpeditionEvent[];
+  /**
+   * Members who got lost on the planet, by body id: how many of `events` each still sees, up to the line where they got
+   * lost (owner, 2026-11-08, #357). A member found again by the same expedition sees it all.
+   */
+  lostAt?: Record<PlayerId, number>;
 }
 
 /**

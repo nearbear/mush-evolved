@@ -6,6 +6,7 @@ import { PLANET_TAG_IDS } from "../src/planets.ts";
 import { applyInput } from "../src/replay.ts";
 import { FAST_EXPEDITION_STEP_MS } from "../src/cheats.ts";
 import { applyAction, createGame, setCheat, viewFor } from "../src/rules.ts";
+import { lostPlace } from "../src/patrol.ts";
 import type { Action, ExpeditionEventRule, GameConfig, GameState, Planet, PlayerId } from "../src/types.ts";
 import { clone, makeSeats, must, noHunters, noIncidents, offered, option, player } from "./support.ts";
 
@@ -435,8 +436,8 @@ describe("expeditions, phases 3 and 4, slice A: events and fights", () => {
     expect(dead.items.filter((i) => i.type === "corpse" && i.at.kind === "room" && i.at.id === ICARUS)).toHaveLength(4);
   });
 
-  it("Disease and Lost read as Nothing for now, and the sector is explored", () => {
-    for (const kind of ["disease", "lost"] as const) {
+  it("Disease reads as Nothing for now, and the sector is explored", () => {
+    for (const kind of ["disease"] as const) {
       const next = go(game({ tags: ["FOREST"], events: only({ kind, weight: 1 }) }));
       expect(event(next).kind).toBe("nothing");
       expect(next.planets.p5![0]!.sectors[0]!.explored).toBe(true);
@@ -719,5 +720,177 @@ describe("expeditions, phase 2: time away", () => {
     const after = tickAt(t, T0 + step + 5);
     expect(after.expeditions[0]!.events).toHaveLength(1);
     expect(player(after, "p4").current).toBeNull();
+  });
+});
+
+describe("expeditions, phase 3, slice B: getting lost", () => {
+  const T0 = 1_000_000;
+  const crewIds = ["p0", "p1", "p2", "p3"];
+  const lostRule: ExpeditionEventRule = { kind: "lost", weight: 1 };
+  const event = (s: GameState, i = 1) => s.expeditions[0]!.events[i]!;
+  const rule = (kind: ExpeditionEventRule["kind"]): ExpeditionEventRule[] => [{ kind, weight: 1 }];
+  const tickAt = (s: GameState, at: number) => must(applyInput(s, { type: "tick", at }));
+  const lostIn = (s: GameState) => s.players.filter((p) => p.alive && p.room.startsWith("LOST:")).map((p) => p.id);
+  const TERMINAL = "COMMAND_CENTER:PILOT_MODULE";
+  const leave: Action = { type: "leave_orbit", equipment: TERMINAL };
+
+  /** p3 already lost on the planet (with a knife on the ground), which has a Lost sector; p0, p1 and p2 in the bay. */
+  function withLost(lostEvents: ExpeditionEventRule[], opts: Parameters<typeof game>[0] = {}): GameState {
+    const s = game({ tags: ["LOST"], ...opts, events: { LOST: lostEvents, ...opts.events } });
+    player(s, "p3").room = lostPlace("p3");
+    s.planets.p5![0]!.sectors[0]!.known = true;
+    s.items.push({ id: "item-dropped", type: "knife", at: { kind: "room", id: lostPlace("p3") } });
+    return s;
+  }
+
+  it("pins the Lost sector's table and weight", () => {
+    expect(expedition.events.LOST).toEqual([
+      { kind: "found", weight: 4 },
+      { kind: "found", weight: 3 },
+      { kind: "again", weight: 2 },
+      { kind: "foundDead", weight: 1 },
+    ]);
+    expect(PLANET_TAG_IDS).toContain("LOST");
+  });
+
+  it("one member stays on the planet in a place of their own; the planet gains a revealed Lost sector; NERON tells everyone", () => {
+    const next = go(game({ tags: ["COLD"], events: { ...only(lostRule), LOST: rule("again") } }));
+    const lost = lostIn(next);
+    expect(lost).toHaveLength(1);
+    const p = player(next, lost[0]!);
+    expect(p.room).toBe(lostPlace(p.id));
+    for (const id of crewIds.filter((id) => id !== p.id)) expect(player(next, id).room).toBe(ICARUS);
+    expect(event(next)).toEqual({ sector: "COLD", kind: "lost", who: p.character });
+    expect(next.planets.p5![0]!.sectors).toContainEqual({ tag: "LOST", known: true });
+    expect(viewFor(next, "p5").planets[0]!.sectors).toContain("LOST");
+    expect(next.log.find((e) => e.key === "crewLost")).toMatchObject({ visibleTo: "all", params: { name: p.character, planet: "Fugunys" }, level: "warning" });
+    // A public alert while they are lost, to everyone; they are not back, so no return line for them.
+    for (const id of ["p0", "p4", "p5"]) expect(viewFor(next, id).lost).toEqual([{ name: p.character, planet: "Fugunys" }]);
+    const returned = next.log.filter((e) => e.key === "expeditionReturned").map((e) => e.visibleTo);
+    expect(returned).toHaveLength(3);
+    expect(returned.flat()).not.toContain(p.id);
+  });
+
+  it("a lost member's report stops at the line where they got lost; lostAt never goes out", () => {
+    const s = timedGame({ tags: ["COLD", "DESERT"], events: { ...only({ kind: "nothing", weight: 1 }), COLD: [lostRule], LOST: rule("again") } });
+    const launched = go(s);
+    launched.expedition!.sectors = [0, 1];
+    let t = tickAt(launched, launched.expedition!.nextAt); // landing
+    t = tickAt(t, t.expedition!.nextAt); // COLD: someone gets lost
+    const lost = lostIn(t)[0]!;
+    // Away still, with the rest of the crew; the lost member has no report id and their report isn't "under way".
+    expect(t.expedition).not.toBeNull();
+    expect(viewFor(t, lost).expedition!.report).toBeUndefined();
+    expect(viewFor(t, lost).expeditions[0]!.away).toBeUndefined();
+    t = tickAt(t, t.expedition!.nextAt);
+    expect(t.expedition).toBeNull();
+    expect(t.expeditions[0]!.events).toHaveLength(3);
+    expect(viewFor(t, lost).expeditions[0]!.events).toHaveLength(2);
+    expect(viewFor(t, lost).expeditions[0]!.events[1]!.kind).toBe("lost");
+    for (const id of crewIds.filter((id) => id !== lost)) expect(viewFor(t, id).expeditions[0]!.events).toHaveLength(3);
+    for (const p of t.players) expect(JSON.stringify(viewFor(t, p.id))).not.toContain("lostAt");
+    // Nor their place, which names them, in anyone's `unidentified`.
+    for (const p of t.players) expect(viewFor(t, p.id).unidentified.filter((r) => r.startsWith("LOST"))).toEqual([]);
+  });
+
+  it("the lost can act on their own items only: no doors, nothing aboard the ship", () => {
+    const next = go(game({ tags: ["COLD"], events: { ...only(lostRule), LOST: rule("again") } }));
+    const id = lostIn(next)[0]!;
+    const types = new Set(offered(next, id).map((a) => a.type));
+    for (const type of ["move", "icarus_takeoff", "ignite", "build", "install"]) expect(types.has(type as Action["type"])).toBe(false);
+    expect(viewFor(next, id).roomEquipment).toEqual([]);
+    // Nobody else is there, so their room speech and room log reach nobody.
+    expect(viewFor(next, id).players.filter((p) => p.room === player(next, id).room)).toEqual([]);
+  });
+
+  it("the last member to get lost ends the expedition: the Icarus comes back with the loot", () => {
+    const s = timedGame({ tags: ["COLD", "COLD"], events: { ...only(lostRule), LOST: rule("again") } });
+    for (const id of ["p1", "p2", "p3"]) player(s, id).room = "LABORATORY";
+    const launched = go(s);
+    let t = tickAt(launched, launched.expedition!.nextAt);
+    t = tickAt(t, t.expedition!.nextAt);
+    expect(t.expedition).toBeNull();
+    expect(lostIn(t)).toEqual(["p0"]);
+    expect(t.expeditions[0]!.events).toHaveLength(2);
+  });
+
+  it("Found: the lost member joins the crew, over the cap, with what they left on the ground, and comes back", () => {
+    const s = withLost(rule("found"));
+    player(s, "p4").room = ICARUS; // a full crew of 4 without p3
+    const next = go(s);
+    const p3 = player(next, "p3");
+    expect(event(next)).toEqual({ sector: "LOST", kind: "found", who: p3.character });
+    expect(p3.alive).toBe(true);
+    expect(p3.room).toBe(ICARUS);
+    expect(next.expeditions[0]!.members).toHaveLength(5);
+    expect(next.expeditions[0]!.members.at(-1)).toBe("p3");
+    expect(next.expeditions[0]!.crew).toContain(p3.character);
+    expect(next.items.find((i) => i.id === "item-dropped")!.at).toEqual({ kind: "room", id: ICARUS });
+    expect(viewFor(next, "p5").lost).toEqual([]);
+    // They are now a member, so they see this report (whole) and get the return line.
+    expect(viewFor(next, "p3").expeditions.at(-1)!.events).toEqual(next.expeditions[0]!.events);
+    expect(next.planets.p5![0]!.sectors[0]!.explored).toBe(true);
+  });
+
+  it("Found dead: they die there, and the crew brings back the body; a Tracker cancels it", () => {
+    const next = go(withLost(rule("foundDead")));
+    expect(event(next)).toMatchObject({ kind: "foundDead", who: player(next, "p3").character });
+    expect(player(next, "p3").alive).toBe(false);
+    expect(next.items.find((i) => i.type === "corpse" && i.of === "p3")!.at).toEqual({ kind: "room", id: ICARUS });
+    expect(next.items.find((i) => i.id === "item-dropped")!.at).toEqual({ kind: "room", id: ICARUS });
+    expect(next.expeditions[0]!.members).not.toContain("p3");
+    // Without deadKeepItems only the body comes back.
+    const bare = go(withLost(rule("foundDead"), { config: { deadKeepItems: false } }));
+    expect(bare.items.some((i) => i.id === "item-dropped")).toBe(false);
+    expect(bare.items.some((i) => i.type === "corpse" && i.of === "p3")).toBe(true);
+    // A Tracker with the crew: Found dead can't be drawn, so the sector rolls among the others, or is Nothing.
+    const tracked = withLost([{ kind: "foundDead", weight: 100 }, { kind: "found", weight: 1 }]);
+    player(tracked, "p1").skills.push("hunt");
+    expect(event(go(tracked)).kind).toBe("found");
+    const onlyDead = withLost(rule("foundDead"));
+    player(onlyDead, "p1").skills.push("hunt");
+    const safe = go(onlyDead);
+    expect(event(safe).kind).toBe("nothing");
+    expect(player(safe, "p3").alive).toBe(true);
+  });
+
+  it("a Lost sector with nobody lost is Nothing", () => {
+    const s = withLost(rule("found"));
+    player(s, "p3").alive = false;
+    expect(event(go(s)).kind).toBe("nothing");
+  });
+
+  it("a later step of the same expedition can find them: the steps left are drawn again with the Lost sector", () => {
+    const s = timedGame({ tags: ["COLD", "DESERT"], events: { ...only({ kind: "nothing", weight: 1 }), COLD: [lostRule], LOST: rule("found") } });
+    const launched = go(s);
+    launched.planets.p5![0]!.sectors[1]!.explored = true;
+    launched.expedition!.sectors = [0, 1]; // two steps; DESERT is already explored, so the second is drawn again
+    let t = tickAt(launched, launched.expedition!.nextAt);
+    t = tickAt(t, t.expedition!.nextAt);
+    const lost = lostIn(t)[0]!;
+    expect(t.expedition!.sectors).toEqual([2]); // the new Lost sector
+    t = tickAt(t, t.expedition!.nextAt);
+    expect(t.expedition).toBeNull();
+    expect(t.expeditions[0]!.events.map((e) => e.kind)).toEqual(["nothing", "lost", "found"]);
+    expect(player(t, lost).room).toBe(ICARUS);
+    // Found by their own expedition: they see the whole report again.
+    expect(viewFor(t, lost).expeditions[0]!.events).toHaveLength(3);
+    expect(t.expeditions[0]!.lostAt).toEqual({});
+  });
+
+  it("when the ship leaves orbit the lost die there, Magnetic return or not, and nothing of theirs comes back", () => {
+    for (const magnetic of [false, true]) {
+      const s = withLost(rule("again"));
+      if (magnetic) s.projects.AUTO_RETURN_ICARUS = 100;
+      player(s, "p4").room = "COMMAND_CENTER";
+      s.titles.commander = "p4";
+      s.ship.combustion = 3;
+      give(s, "p3", "blaster", 3);
+      const t = must(applyAction(s, "p4", leave));
+      expect(player(t, "p3").alive).toBe(false);
+      expect(t.items.some((i) => i.id === "item-dropped" || i.type === "blaster" || (i.type === "corpse" && i.of === "p3"))).toBe(false);
+      expect(viewFor(t, "p5").lost).toEqual([]);
+      expect(t.icarusLost).toBe(false); // the Icarus wasn't out
+    }
   });
 });

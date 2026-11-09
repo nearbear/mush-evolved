@@ -71,7 +71,10 @@ export type ExpeditionEventKind =
   | "disease"
   | "mushTrap"
   | "starmap"
-  | "lost";
+  | "lost"
+  // Phase 3, slice B (owner, 2026-11-08, #357): the Lost sector's events.
+  | "found"
+  | "foundDead";
 
 /**
  * One line of a sector's event table: drawn by `weight`. `amount` is the oxygen or fuel gained, or the fruits or

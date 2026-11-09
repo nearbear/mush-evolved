@@ -3,7 +3,7 @@
 // helpers turn ids into the player's language. Call `useNames()` in a
 // component so it re-renders when the language changes.
 
-import { BLUEPRINTS, characterGivenName, characterName, type ActionType, type ItemView, type LogEntry, type RoomId } from "@mush2/shared";
+import { BLUEPRINTS, LOST_PLACE_NAME, characterGivenName, characterName, type ActionType, isLostPlace, type ItemView, type LogEntry, type RoomId } from "@mush2/shared";
 import { useTranslation } from "react-i18next";
 
 /** The name of each kind of action, for the action queue and log lines that mention one. Ready never waits in a queue. */
@@ -115,7 +115,8 @@ export function useNames() {
   const { t, i18n } = useTranslation();
   // Dynamic keys, so the id falls back to itself when a catalog lacks it.
   const lookup = (group: "rooms" | "equipment" | "items", id: string): string => t(`${group}.${id}` as never, { defaultValue: id });
-  const room = (id: RoomId) => lookup("rooms", id);
+  // A member lost on a planet is in a place of their own (`lostPlace`), all named alike.
+  const room = (id: RoomId) => lookup("rooms", isLostPlace(id) ? LOST_PLACE_NAME : id);
   const skill = (id: string) => t(`skills.names.${id}` as never, { defaultValue: id });
   const equipment = (type: string) => lookup("equipment", type);
   /** What a blueprint builds. */

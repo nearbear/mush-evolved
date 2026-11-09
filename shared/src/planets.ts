@@ -6,8 +6,9 @@ import type { GameState, Planet } from "./types.ts";
 /**
  * The tags a planet can generate, from the original's `planetTags` sheet (`Mush/derived/data/DataExplore/planetTags.json`):
  * `we` is the draw weight, `seek` how easy the tag is to spot by analysis, `max` how many one planet can have, `explo` how
- * likely an expedition is to explore it (expeditions.ts). LANDING and
- * LOST have weight 0 there (they only matter to exploration), so they are left out. The client names each tag by its id.
+ * likely an expedition is to explore it (expeditions.ts). LANDING has weight 0 there (it only matters to exploration), so
+ * it is left out. LOST is never generated (`max` 0): an expedition adds one, revealed, for each member who gets lost
+ * (owner, 2026-11-08, #357); its `explo` is eMush's. The client names each tag by its id.
  */
 export const PLANET_TAGS = {
   FOREST: { we: 8, seek: 12, max: 4, explo: 8 },
@@ -32,6 +33,7 @@ export const PLANET_TAGS = {
   WRECK: { we: 2, seek: 1, max: 4, explo: 8 },
   FRUIT_TREES: { we: 3, seek: 1, max: 4, explo: 8 },
   CRISTAL_FIELD: { we: 2, seek: 4, max: 1, explo: 10 },
+  LOST: { we: 0, seek: 0, max: 0, explo: 8 },
 } as const satisfies Record<string, { we: number; seek: number; max: number; explo: number }>;
 
 export type PlanetTag = keyof typeof PLANET_TAGS;

@@ -69,7 +69,7 @@ export function TopBar({
         {botsPaused && <BotsPausedTag pause={botsPaused} />}
       </span>
       <span className="spacer" />
-      {!mobile && <ShipResources ship={view.ship} hunters={view.hunters.count} titles={view.titles} orbit={view.navigation.orbitName} expedition={view.expedition} />}
+      {!mobile && <ShipResources ship={view.ship} hunters={view.hunters.count} titles={view.titles} orbit={view.navigation.orbitName} expedition={view.expedition} lost={view.lost} />}
       {mobile ? (
         // Phones: the actions live in a hamburger menu to save top bar space.
         <Menu.Root>

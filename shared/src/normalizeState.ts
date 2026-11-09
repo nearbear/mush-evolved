@@ -656,6 +656,7 @@ export function normalizeExpeditionEvent(raw: Partial<ExpeditionEvent>): Expedit
     fight: opt(raw.fight, fight),
     hurt: opt(raw.hurt, (list) => list.map(hurt)),
     died: opt(raw.died, copy),
+    who: raw.who,
   });
 }
 
@@ -667,6 +668,7 @@ export function normalizeExpedition(raw: Partial<ExpeditionReport>): ExpeditionR
     crew: copy(need(raw, "crew", t)),
     planet: need(raw, "planet", t),
     events: need(raw, "events", t).map(normalizeExpeditionEvent),
+    lostAt: opt(raw.lostAt, (m) => ({ ...m })),
   });
 }
 

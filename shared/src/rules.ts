@@ -48,9 +48,9 @@ import { callNextRebel, commsCycle, commsTerminalView, comTerminalsHere, newComm
 import { botanyCycle, botanyDay, plantView } from "./botany.ts";
 import { burnOxygen, shipView, startShip } from "./ship.ts";
 import { allTurrets, huntersCycle, newHunters, startHunters, turretCharges, turretsHere } from "./hunters.ts";
-import { expeditionReturnAt } from "./expeditions.ts";
+import { expeditionReturnAt, lostPlayers, withCrew } from "./expeditions.ts";
 import { ICARUS_EQUIPMENT } from "./actions/icarus_takeoff.ts";
-import { interfaceId, newPatrolShips, PATROL_INTERFACE, PATROL_SHIPS, shipAboard } from "./patrol.ts";
+import { interfaceId, isLostPlace, newPatrolShips, PATROL_INTERFACE, PATROL_SHIPS, shipAboard } from "./patrol.ts";
 import { preselectionCycle } from "./preselection.ts";
 import { SUCCESSION, TITLE_IDS, assignTitles, noTitles } from "./titles.ts";
 import type {
@@ -588,7 +588,8 @@ export function seatViewFor(state: GameState, playerId: PlayerId): SeatView {
       };
     }),
     unidentified: living
-      .filter((p) => you.alive && !located(p.room))
+      // The lost are left out: their place names them (`LOST:<id>`), and `lost` already says who and where.
+      .filter((p) => you.alive && !located(p.room) && !isLostPlace(p.room))
       .map((p) => p.room)
       .sort(),
     cycle: state.cycle,
@@ -663,12 +664,18 @@ export function seatViewFor(state: GameState, playerId: PlayerId): SeatView {
     expeditions: you.alive
       ? state.expeditions
           .filter((r) => r.members.includes(you.id))
-          .map(({ members: _members, ...report }): ExpeditionReportView => {
+          .map(({ members: _members, lostAt, ...report }): ExpeditionReportView => {
             const shared = state.sharedReports.find((s) => s.report === report.id)?.id;
-            return { ...clone(report), ...(state.expedition?.report === report.id && { away: true as const }), ...(shared && { shared }) };
+            // A member who got lost sees the report up to that line (owner, 2026-11-08, #357), and no more of it.
+            const cut = lostAt?.[you.id];
+            const events = cut === undefined ? report.events : report.events.slice(0, cut);
+            const away = state.expedition?.report === report.id && cut === undefined;
+            return { ...clone({ ...report, events }), ...(away && { away: true as const }), ...(shared && { shared }) };
           })
       : [],
     expedition: expeditionView(state, you),
+    // Who is lost, and where: a public alert (owner, 2026-11-08, #357; phase 2 accepted it).
+    lost: lostPlayers(state).map((p) => ({ name: p.character, planet: orbitName(state) ?? "" })),
     // Your own planets only, and only the tags an analysis revealed (owner, 2026-10-19).
     maxPlanets: state.config.astro.maxPlanets,
     canSharePlanets: canSharePlanets(state, you),
@@ -747,7 +754,7 @@ function expeditionView(state: GameState, you: PlayerState): PlayerView["expedit
     crew: [...report.crew],
     planet: report.planet,
     returnAt: expeditionReturnAt(state)!,
-    ...(you.alive && report.members.includes(you.id) && { report: report.id }),
+    ...(withCrew(state, you) && report.members.includes(you.id) && { report: report.id }),
   };
 }
 

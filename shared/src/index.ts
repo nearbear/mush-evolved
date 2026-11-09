@@ -28,6 +28,7 @@ export * from "./projects.ts";
 export * from "./pilgred.ts";
 export * from "./dispense.ts";
 export * from "./planets.ts";
+export { isLostPlace, lostPlace } from "./patrol.ts";
 export * from "./sharedPlanets.ts";
 export * from "./sharedReports.ts";
 export * from "./navigation.ts";

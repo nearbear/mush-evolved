@@ -48,6 +48,7 @@ All under `web/src/`. UI rules are in `web/CLAUDE.md`.
 - `TurretPanel.tsx`: a turret's window: its charges and each hunter in range (`HunterList`).
 - `PatrolCockpit.tsx`: what the room view shows while you fly a patrol ship (`view.patrolShip`): the ship, its armor, and its cockpit as a button that selects it, so Land is in Inspect and the peek bar; below it the hunters and the ship's charges with Shoot buttons (`HunterList`). `IsoRoom` hides a ship whose interface is `out`.
 - `IcarusPanel.tsx`: the room view while away on an expedition (`view.expedition.report` set): the planet, the countdown to the return, the live report, and the crewmates aboard as buttons that select them. `IsoRoom` hides the Icarus in its bay while it is `out`.
+- `LostPanel.tsx`: the room view while lost on a planet (slice B of expedition phase 3): names the planet and opens the report you got lost on.
 - `ShipNavigation.tsx`: the Command terminal window's steering: heading, in-orbit flag, combustion chamber fuel, and the Commander's turn, travel (no distance: it burns the chamber) and leave orbit buttons; the last two ask to confirm (`ConfirmPanel`) while an expedition is out.
 - `PlanetList.tsx`: your planets with their sector tags (unknown ones as `tag_unknown`) and a bin button to delete; in the Astro terminal window it adds the scan and analyse buttons.
 - `InventoryOverlay.tsx` + `styles/inventory.css`: the sack button in the room view's lower right (badge = items in the room) that opens `InventoryPanel` over the room; closes on the button, Escape, or a press elsewhere in the room view. Both layouts; hidden when dead.
@@ -78,7 +79,7 @@ All under `web/src/`. UI rules are in `web/CLAUDE.md`.
 - `Scroller.tsx`: a scroll area that sticks to the bottom as items arrive.
 - `ResearchTracker.tsx`, `Tracker.tsx`: the Research feature's strip of research cards, and a notes list the player types in.
 - `ResourceChips.tsx`: your other resources as chips (the first two, or as many as fit on a phone, then "…" for the rest).
-- `ShipResources.tsx`: the ship card (resources, hunters, titles, the orbit and the expedition away); in the desktop top bar, and opened by `ShipOverlay.tsx` on phones. `TitleChip.tsx`: one title and its line of succession.
+- `ShipResources.tsx`: the ship card (resources, hunters, titles, the orbit, the expedition away and the crew lost on planets, `view.lost`); in the desktop top bar, and opened by `ShipOverlay.tsx` on phones. `TitleChip.tsx`: one title and its line of succession.
 - `BotsPausedTag.tsx`: the top-bar tag shown while model bots are paused (`botsPaused`, #114), with why.
 - `PreselectionTag.tsx`: the top-bar tag shown until the Mush are chosen.
 - `RelayDetails.tsx`: relay tokens in the research, project and PILGRED terminals: `RelayHelp` (the rule sentence), `RelayDetails` (waiting line and token faces; research samples, pending ones underlined), `withGain` (a work button's text with the gain).
