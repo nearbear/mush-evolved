@@ -32,7 +32,11 @@ import {
   fullViewFor,
   historyStep,
   readChannels,
+  chatReadFor,
+  mergeChatRead,
+  pruneChatRead,
   type ChannelId,
+  type ChatRead,
   type ChatMessage,
   MUSH_CHANNEL,
   type FullView,
@@ -84,6 +88,10 @@ declare global {
 const CHEATS_DISABLED = "cheats_disabled";
 /** The one refusal for a `chatPage` request (#355), whatever the reason. */
 const CHAT_PAGE_UNAVAILABLE = "chat_page_unavailable";
+
+/** Where a seat's chat read counts are kept (#400): Durable Object storage, outside the snapshot and the record. */
+const CHAT_READ_PREFIX = "chatRead:";
+const chatReadKey = (seat: PlayerId) => `${CHAT_READ_PREFIX}${seat}`;
 
 /** Deliberate pacing so bots don't act instantly. */
 const BOT_DELAY_MS = 50;
@@ -270,6 +278,13 @@ export class GameRoom extends Server<Env> {
   private chatLimiter = new RateLimiter(5, 10_000);
   /** Per seat, chat pages asked for (#355): chat's numbers, but apart from it, so reading back never stops you posting. */
   private pageLimiter = new RateLimiter(5, 10_000);
+  /** Per seat, read count updates (#400). The client sends at most one every 5 s per tab, so this is room for a few tabs. */
+  private readLimiter = new RateLimiter(6, 10_000);
+  /**
+   * Each seat's chat read counts (#400), all loaded in `onStart` and saved under `chatReadKey` as they rise. Keyed by
+   * seat (the mind), so they follow a Transfer. Not game state: never in the snapshot, the record or a view.
+   */
+  private chatRead = new Map<PlayerId, ChatRead>();
 
   /** This build, stamped on every copy of the view in the history (#384). */
   private get build(): BuildStamp {
@@ -289,6 +304,8 @@ export class GameRoom extends Server<Env> {
   override async onStart(): Promise<void> {
     const stored = await this.ctx.storage.get<StoredRoom>("game");
     const version = stored?.version ?? 0;
+    // Every seat's read counts (#400): at most one small entry per seat, so loaded whole, and kept in step after.
+    for (const [key, read] of await this.ctx.storage.list<ChatRead>({ prefix: CHAT_READ_PREFIX })) this.chatRead.set(key.slice(CHAT_READ_PREFIX.length), read);
     if (!stored || version < MIN_STATE_VERSION) {
       // Only the snapshot goes; the record ("setup", "input:*", "blocked:*", "account:*") is kept for the replay (#167).
       if (stored) await this.ctx.storage.delete("game");
@@ -475,6 +492,8 @@ export class GameRoom extends Server<Env> {
       delete this.tokens[token];
       delete this.tokenSessions[token];
     }
+    this.chatRead.delete(seat);
+    await this.ctx.storage.delete(chatReadKey(seat));
     await this.persist();
     for (const conn of this.getConnections<SeatState>()) {
       if (conn.state && dropped.has(conn.state.token)) conn.close(4001, "Left the ship");
@@ -687,6 +706,7 @@ export class GameRoom extends Server<Env> {
     }
     connection.setState({ playerId, token: token! });
     this.sendView(connection, playerId);
+    this.sendChatRead(connection, playerId);
     // Connecting is what counts as activity (inactivity.ts, #145).
     await this.markSeen([playerId], true);
   }
@@ -743,8 +763,13 @@ export class GameRoom extends Server<Env> {
       await this.sendChatPage(connection, playerId, by, msg.channel, msg.page);
       return;
     }
-    // Read state (#400): stored per seat, never an input, and never answered. Not kept yet.
-    if (msg.type === "chatRead") return;
+    // Read state (#400): stored per seat, never an input, and never answered, so a refusal, a rate limit and a count
+    // that is no news look the same. Bot seats keep none.
+    if (msg.type === "chatRead") {
+      if (!this.readLimiter.allow(playerId, Date.now(), this.devServer ? DEV_RATE_SCALE : 1)) this.countRateLimited(playerId);
+      else if (!this.isBotSeat(playerId)) await this.raiseChatRead(playerId, msg.read, connection);
+      return;
+    }
     if (msg.type === "setModel" || msg.type === "clearModel") {
       const error = this.setModel(playerId, msg);
       if (error) this.send(connection, { type: "error", message: error });
@@ -836,7 +861,11 @@ export class GameRoom extends Server<Env> {
     const input: Input =
       msg.type === "chat" || msg.type === "sharePlanet" || msg.type === "shareReport" ? { ...msg, by, text: moderated.text } : { ...msg, by, name: moderated.text };
     const error = await this.act(input, moderated.text === raw ? undefined : raw);
-    if (!error && msg.type === "chat") this.wakeBots(playerId, msg.channel, depth);
+    if (!error && msg.type === "chat") {
+      this.wakeBots(playerId, msg.channel, depth);
+      // Posting reads the channel (#400): your own message is never unread, nor anything before it.
+      if (!this.isBotSeat(playerId)) await this.raiseChatRead(playerId, { [msg.channel]: this.game.chatSeq[msg.channel] ?? 0 });
+    }
     return error;
   }
 
@@ -1082,6 +1111,42 @@ export class GameRoom extends Server<Env> {
     const body = this.body(seat);
     const messages = this.game && body ? chatPageView(this.game, body, channel, page, stored) : null;
     this.send(conn, messages ? { type: "chatPage", channel, page, messages } : { type: "error", message: CHAT_PAGE_UNAVAILABLE });
+  }
+
+  /** A seat played by a bot (`isBot` is the mind's, so it follows a Transfer). */
+  private isBotSeat(seat: PlayerId): boolean {
+    return !!this.game?.players.find((p) => p.mind === seat)?.isBot;
+  }
+
+  /** The body a seat plays now. */
+  private bodyState(seat: PlayerId): PlayerState | undefined {
+    const by = this.body(seat);
+    return by === undefined ? undefined : this.game?.players.find((p) => p.id === by);
+  }
+
+  /** Sends a seat's read counts (#400) for the channels its body reads now, to one connection: on connect, after the view. */
+  private sendChatRead(conn: Connection, seat: PlayerId): void {
+    const body = this.bodyState(seat);
+    if (this.game && body && !this.isBotSeat(seat)) this.send(conn, { type: "chatRead", read: chatReadFor(this.game, body, this.chatRead.get(seat) ?? {}) });
+  }
+
+  /**
+   * Raises a seat's read counts (#400) by `incoming` (`mergeChatRead`: only channels its body reads now, clamped, only
+   * up), dropping deleted channels (`pruneChatRead`). When any rose, they are saved and sent to the seat's connections,
+   * except `except` (the sender, which is never answered). Never to another seat. Synchronous up to the write, so the
+   * body can't change in between.
+   */
+  private async raiseChatRead(seat: PlayerId, incoming: ChatRead, except?: Connection): Promise<void> {
+    const body = this.bodyState(seat);
+    if (!this.game || !body) return;
+    const { read, raised } = mergeChatRead(this.game, body, pruneChatRead(this.game, this.chatRead.get(seat) ?? {}), incoming);
+    if (Object.keys(raised).length === 0) return;
+    this.chatRead.set(seat, read);
+    const msg: GameServerMessage = { type: "chatRead", read: chatReadFor(this.game, body, read) };
+    for (const conn of this.getConnections<SeatState>()) {
+      if (conn.state?.playerId === seat && conn.id !== except?.id) this.send(conn, msg);
+    }
+    await this.ctx.storage.put(chatReadKey(seat), read);
   }
 
   /** `playerId` is the seat; it gets its current body's view. */

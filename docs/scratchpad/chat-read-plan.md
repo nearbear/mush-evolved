@@ -53,9 +53,10 @@ unreadCount(counts, read, channel): number
 
 ## 2. Server: `server/src/GameRoom.ts`
 
-- **Cache.** `private chatRead = new Map<PlayerId, ChatRead>()`, loaded lazily from `chatRead:<seat>` through
-  `pruneChatRead`. After the `await`, check the map again in case another message loaded it first. Merge into memory
-  synchronously, then `ctx.storage.put` directly (not `persist()`: it isn't part of the snapshot).
+- **Cache.** `private chatRead = new Map<PlayerId, ChatRead>()`, every `chatRead:*` key loaded in `onStart` (at most
+  one small entry per seat). Built that way in commit 2 instead of a lazy load: sending and merging stay synchronous,
+  so a connect's `view` and `chatRead` arrive together and no Transfer can move the seat mid-merge. `pruneChatRead`
+  runs at merge time. Merge into memory, then `ctx.storage.put` directly (not `persist()`: not part of the snapshot).
 - **`onMessage` "chatRead"** (handled like `chatPage`, before `social`):
   - `readLimiter = new RateLimiter(6, 10_000)`.
   - Bot seats are skipped.
@@ -238,3 +239,7 @@ One entry for all of #400, written at the end (CLAUDE.md). Gathered so far:
 - **Open points answered by the owner (2026-11-08).** Answers 1–4 took the assistant's recommendations. Answer 5
   ("arriving in view") was a question the assistant raised after the plan: showing the active tab's badge (answer 3)
   would make the open chat's badge grow as people talk. The assistant recommended Discord's behaviour; the owner chose it.
+- **Commit 2 (server).** The planned lazy load put an `await` in `onConnect` before `markSeen`, so `chatRead` landed
+  after later messages and 9 existing room tests failed. Loading every seat's counts in `onStart` instead made the path
+  synchronous and simpler (no reload race, no body re-check). Four older tests needed adjusting: three read the last
+  message after connecting expecting the view, and one counted storage keys after a chat (posting now writes a count).
