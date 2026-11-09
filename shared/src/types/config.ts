@@ -51,16 +51,44 @@ export interface WeaponStats {
 }
 
 /** What can happen in one expedition sector (expeditions.ts, owner 2026-10-31). */
-export type ExpeditionEventKind = "nothing" | "fatigue" | "accident" | "catastrophe" | "oxygen" | "fuel" | "harvest" | "provision" | "artifact" | "fight";
+export type ExpeditionEventKind =
+  | "nothing"
+  | "fatigue"
+  | "accident"
+  | "catastrophe"
+  | "oxygen"
+  | "fuel"
+  | "harvest"
+  | "provision"
+  | "artifact"
+  | "fight"
+  // Phases 3 and 4 (owner, 2026-11-08, #357).
+  | "again"
+  | "back"
+  | "lostItem"
+  | "kill"
+  | "killAll"
+  | "disease"
+  | "mushTrap"
+  | "starmap"
+  | "lost";
 
 /**
- * One line of a sector's event table: drawn by `weight`. `amount` is the oxygen or fuel gained, the fruits or rations
- * found, or the creature's strength in a fight.
+ * One line of a sector's event table: drawn by `weight`. `amount` is the oxygen or fuel gained, or the fruits or
+ * rations found; `creature` is a fight's opponent (`expedition.creatures`).
  */
 export interface ExpeditionEventRule {
   kind: ExpeditionEventKind;
   weight: number;
   amount?: number;
+  creature?: string;
+}
+
+/** What a won fight brings back: rations (steaks), random artifacts, starmap fragments. */
+export interface CreatureLoot {
+  provision?: number;
+  artifact?: number;
+  starmap?: number;
 }
 
 /**
@@ -557,9 +585,14 @@ export interface GameConfig {
     catastrophe: [min: number, max: number]; // HP every living member loses, rolled for each.
     survivalReduction: number; // Taken off each damage a member with the Survival skill takes.
     botanistBonus: number; // Extra fruit per harvest with a living Botanist in the crew.
-    loot: { harvest: string; provision: string; artifact: string }; // Item types found (placeholders: bananas, uncooked rations, a starmap).
+    // Item types found: fruits and steaks (placeholders: bananas, uncooked rations), a starmap fragment, and the
+    // artifacts an Artifact event or a fight's loot picks among, uniformly.
+    loot: { harvest: string; provision: string; starmap: string; artifacts: string[] };
+    survivalProvision: number; // Extra steaks per Provision for each living Survival holder in the crew.
+    mushTrapChance: number; // Chance each human member gains a spore in a Mush trap.
+    creatures: Record<string, { strength: number[]; loot: CreatureLoot }>; // Fight opponents: a strength drawn uniformly from the list.
     // Event tables by sector tag, plus LANDING (drawn first). A tag with no table explores with nothing happening. A
-    // Pilot in the crew avoids `catastrophe` (its weight drops out).
+    // living Pilot in the crew or the Antigrav propeller makes the landing Nothing.
     events: Record<string, ExpeditionEventRule[]>;
   };
   // Weapons (owner, 2026-10-22, from the English wiki). Using one is the `attack` action.

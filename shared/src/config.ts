@@ -3,7 +3,12 @@ import { BOOK_ITEM, ITRACKIE_ITEM } from "./itemIds.ts";
 import { ICARUS_CRAFT, patrolEquipment, patrolRooms } from "./patrol.ts";
 import { SKILLS } from "./skills.ts";
 import type { ShipRoom } from "./shipLayout.ts";
-import type { ConfigOverrides, GameConfig, PreselectionRules, RoomId } from "./types.ts";
+import type { ConfigOverrides, ExpeditionEventKind, ExpeditionEventRule, GameConfig, PreselectionRules, RoomId } from "./types.ts";
+
+/** One line of an expedition sector's table: its kind, weight and amount (oxygen, fuel, fruits or rations). */
+const ev = (kind: Exclude<ExpeditionEventKind, "fight">, weight: number, amount?: number): ExpeditionEventRule => ({ kind, weight, ...(amount !== undefined && { amount }) });
+/** A fight line: the creature, from `expedition.creatures`. */
+const fight = (creature: string, weight: number): ExpeditionEventRule => ({ kind: "fight", weight, creature });
 
 /**
  * The original Daedalus: every room with a door, connected as in Motion
@@ -345,49 +350,52 @@ export const DEFAULT_CONFIG: GameConfig = {
     catastrophe: [3, 5],
     survivalReduction: 1,
     botanistBonus: 1,
-    loot: { harvest: "fruit_banana", provision: "uncooked_ration", artifact: "super_map" },
+    loot: {
+      harvest: "fruit_banana",
+      provision: "uncooked_ration",
+      starmap: "super_map",
+      // Phases 3 and 4 (owner, 2026-11-08, #357): one picked uniformly, the original's 9. Only their names and icons so far.
+      artifacts: ["magellan_liquid_map", "rolling_boulder", "alien_oil", "water_stick", "computer_jelly", "alien_holographic_tv", "insectoid_shell", "alien_can_opener", "super_map"],
+    },
+    // Phases 3 and 4 (owner, 2026-11-08, #357): +1 steak per living Survival holder on Provision; 50% a spore per human in a Mush trap.
+    survivalProvision: 1,
+    mushTrapChance: 0.5,
+    // The original's monsters (`monster.json`); loot is the owner's choice (2026-11-08). The Wreck's creature has a random strength.
+    creatures: {
+      CHAB_CHAB: { strength: [8], loot: { provision: 2 } },
+      BEETLETHUG: { strength: [10], loot: { provision: 1 } },
+      SKINNER: { strength: [12], loot: { provision: 2 } },
+      CORTIC: { strength: [12], loot: { artifact: 1 } },
+      ZOMBI: { strength: [15], loot: { artifact: 1 } },
+      MINDBENDER: { strength: [18], loot: { starmap: 1 } },
+      WRECK: { strength: [8, 10, 12, 15, 18, 32], loot: { artifact: 1 } },
+      MANKAROG: { strength: [32], loot: { provision: 4, artifact: 1 } },
+    },
+    // Phases 1, 3 and 4 (owner, 2026-10-31 and 2026-11-08): the original's 4 events per tag, weighted 4/3/2/1.
     events: {
-      LANDING: [
-        { kind: "nothing", weight: 4 },
-        { kind: "fatigue", weight: 3 },
-        { kind: "accident", weight: 2 },
-        { kind: "catastrophe", weight: 1 },
-      ],
-      OXYGEN: [
-        { kind: "oxygen", weight: 4, amount: 24 },
-        { kind: "oxygen", weight: 3, amount: 16 },
-        { kind: "oxygen", weight: 2, amount: 8 },
-        { kind: "nothing", weight: 1 },
-      ],
-      HYDROCARBON: [
-        { kind: "fuel", weight: 4, amount: 3 },
-        { kind: "fuel", weight: 3, amount: 4 },
-        { kind: "fuel", weight: 2, amount: 5 },
-        { kind: "fuel", weight: 1, amount: 6 },
-      ],
-      FRUIT_TREES: [
-        { kind: "harvest", weight: 4, amount: 3 },
-        { kind: "harvest", weight: 3, amount: 1 },
-        { kind: "nothing", weight: 3 },
-      ],
-      PREDATOR: [
-        { kind: "fight", weight: 4, amount: 12 },
-        { kind: "accident", weight: 3 },
-        { kind: "nothing", weight: 2 },
-        { kind: "provision", weight: 1, amount: 3 },
-      ],
-      RUINS: [
-        { kind: "artifact", weight: 4, amount: 1 },
-        { kind: "nothing", weight: 3 },
-        { kind: "fight", weight: 2, amount: 15 },
-        { kind: "accident", weight: 1 },
-      ],
-      HOT: [
-        { kind: "fatigue", weight: 4 },
-        { kind: "nothing", weight: 3 },
-        { kind: "harvest", weight: 2, amount: 2 },
-        { kind: "accident", weight: 1 },
-      ],
+      LANDING: [ev("nothing", 4), ev("fatigue", 3), ev("accident", 2), ev("catastrophe", 1)],
+      OXYGEN: [ev("oxygen", 4, 24), ev("oxygen", 3, 16), ev("oxygen", 2, 8), ev("nothing", 1)],
+      HYDROCARBON: [ev("fuel", 4, 3), ev("fuel", 3, 4), ev("fuel", 2, 5), ev("fuel", 1, 6)],
+      FRUIT_TREES: [ev("harvest", 4, 3), ev("harvest", 3, 1), ev("nothing", 3)],
+      HOT: [ev("fatigue", 4), ev("nothing", 3), ev("harvest", 2, 2), ev("accident", 1)],
+      FOREST: [ev("harvest", 4, 2), ev("again", 3), ev("disease", 2), ev("lost", 1)],
+      MOUNTAIN: [ev("accident", 4), ev("fuel", 3, 1), ev("fatigue", 2), ev("harvest", 1, 1)],
+      SWAMP: [ev("disease", 4), ev("harvest", 3, 2), ev("fatigue", 2), ev("nothing", 1)],
+      DESERT: [ev("again", 4), ev("fatigue", 3), ev("nothing", 2), ev("nothing", 1)],
+      OCEAN: [ev("nothing", 4), ev("provision", 3, 3), ev("nothing", 2), ev("lost", 1)],
+      CAVE: [ev("fuel", 4, 2), ev("accident", 3), ev("again", 2), ev("artifact", 1)],
+      RUMINANT: [ev("provision", 4, 4), ev("provision", 3, 2), ev("accident", 2), fight("CHAB_CHAB", 1)],
+      PREDATOR: [fight("SKINNER", 4), ev("accident", 3), ev("nothing", 2), ev("provision", 1, 3)],
+      INTELLIGENT: [fight("CORTIC", 4), ev("provision", 3, 2), ev("artifact", 2), ev("lostItem", 1)],
+      INSECT: [ev("accident", 4), ev("disease", 3), ev("provision", 2, 1), fight("BEETLETHUG", 1)],
+      MANKAROG: [ev("kill", 4), fight("MANKAROG", 3), ev("back", 2), ev("artifact", 1)],
+      COLD: [ev("nothing", 4), ev("fatigue", 3), ev("lost", 2), ev("accident", 1)],
+      STRONG_WIND: [ev("nothing", 4), ev("fatigue", 3), ev("nothing", 2), ev("lostItem", 1)],
+      SISMIC_ACTIVITY: [ev("nothing", 4), ev("back", 3), ev("accident", 2), ev("kill", 1)],
+      VOLCANIC_ACTIVITY: [ev("nothing", 4), ev("nothing", 3), ev("back", 2), ev("killAll", 1)],
+      RUINS: [ev("artifact", 4), ev("nothing", 3), fight("ZOMBI", 2), ev("accident", 1)],
+      WRECK: [ev("artifact", 4), ev("fuel", 3, 3), ev("nothing", 2), fight("WRECK", 1)],
+      CRISTAL_FIELD: [ev("mushTrap", 4), ev("starmap", 3), fight("MINDBENDER", 2), ev("lost", 1)],
     },
   },
   // Owner, 2026-10-22, from the English wiki: 1 AP to use any weapon, carried. Repair and dismantle chances the wiki

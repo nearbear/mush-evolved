@@ -7,6 +7,10 @@
 // as the last sector resolves, or at once when every member is dead, with whatever is in the Icarus (loot, bodies).
 // Single player resolves it all at takeoff (`instantExpeditions`). If the ship jumps while the crew is out, they are
 // stranded (`strandExpedition`): Magnetic return brings them back, or they die and the Icarus is lost for good.
+// Phases 3 and 4, slice A (owner, 2026-11-08, #357): every tag's table, Again (the sector stays unexplored), Back,
+// Lost item, Kill and Kill all, the Mush trap, starmaps, named creatures with a win roll and loot, random artifacts,
+// Survival's extra steak, and a safe landing with a Pilot or the Antigrav propeller. Disease reads as Nothing until
+// #214; Lost reads as Nothing until slice B.
 // Pure: every draw goes through the seeded RNG.
 // The action is actions/icarus_takeoff.ts.
 
@@ -15,6 +19,7 @@ import { board } from "./actions/takeoff.ts";
 import { damage, killPlayer } from "./death.ts";
 import { FAST_EXPEDITION_STEP_MS, fastExpeditions } from "./cheats.ts";
 import { soil } from "./dirt.ts";
+import { contaminate } from "./infection.ts";
 import { isWorking, itemsIn, newItemId, removeItem, sameContainer } from "./items.ts";
 import { logPrivate, logPublic } from "./log.ts";
 import { isTraveling } from "./navigation.ts";
@@ -24,7 +29,7 @@ import { projectDone } from "./projects.ts";
 import { roll, rollFloat, rollInt, rollShuffle, rollWeighted } from "./rng.ts";
 import { shipMax } from "./ship.ts";
 import { hasSkill } from "./skills.ts";
-import type { ExpeditionEvent, ExpeditionEventRule, ExpeditionReport, GameState, ItemState, Planet, PlayerState } from "./types.ts";
+import type { CreatureLoot, ExpeditionEvent, ExpeditionEventRule, ExpeditionReport, GameState, ItemState, Planet, PlayerState } from "./types.ts";
 
 /** The landing's event table key: drawn before any sector. */
 export const LANDING = "LANDING";
@@ -121,13 +126,17 @@ export function expeditionStep(state: GameState): void {
   const planet = planetById(state, away.planet);
   if (!away.landed) {
     away.landed = true;
-    const pilotAboard = crew.some((p) => p.alive && canFly(p));
-    const landing = rules.events[LANDING]!.filter((e) => !(pilotAboard && e.kind === "catastrophe"));
-    report.events.push(resolve(ctx, LANDING, landing));
+    // A safe landing (owner, 2026-11-08): a living Pilot aboard or the Antigrav propeller.
+    const safe = crew.some((p) => p.alive && canFly(p)) || projectDone(state, "ICARUS_ANTIGRAV_PROPELLER");
+    report.events.push(resolve(ctx, LANDING, safe ? [] : rules.events[LANDING]!));
   } else if (planet) {
     const sector = planet.sectors[away.sectors.shift()!]!;
-    sector.explored = true;
-    report.events.push(resolve(ctx, sector.tag, rules.events[sector.tag] ?? []));
+    const event = resolve(ctx, sector.tag, rules.events[sector.tag] ?? []);
+    report.events.push(event);
+    // Again: the step is used but the sector isn't explored, so a later expedition can draw it.
+    if (event.kind !== "again") sector.explored = true;
+    // Back: the crew heads home at once with what it found.
+    if (event.kind === "back") away.sectors = [];
   } else {
     // The planet is gone (only possible once the ship has left it): nothing left to explore.
     away.sectors = [];
@@ -206,12 +215,16 @@ function resolve(ctx: Ctx, sector: PlanetTag | typeof LANDING, table: readonly E
   const { state } = ctx;
   if (table.length === 0) return { sector, kind: "nothing" };
   const rule = table[rollWeighted(state, table.map((e) => e.weight))]!;
-  const event: ExpeditionEvent = { sector, kind: rule.kind };
+  // Not built yet: Disease (#214) and getting lost (slice B) read as Nothing.
+  const kind = rule.kind === "disease" || rule.kind === "lost" ? "nothing" : rule.kind;
+  const event: ExpeditionEvent = { sector, kind };
   const rules = state.config.expedition;
   const living = () => ctx.crew.filter((p) => p.alive);
   const amount = rule.amount ?? 0;
-  switch (rule.kind) {
+  switch (kind) {
     case "nothing":
+    case "again":
+    case "back":
       break;
     case "fatigue":
       hurt(ctx, event, new Map(living().map((p) => [p, rules.fatigue])));
@@ -242,34 +255,83 @@ function resolve(ctx: Ctx, sector: PlanetTag | typeof LANDING, table: readonly E
       event.amount = drop(state, event.item, amount + bonus);
       break;
     }
-    case "provision":
+    case "provision": {
+      // Survival: one more steak per living holder (owner, 2026-11-08).
+      const bonus = living().filter((p) => hasSkill(p, "survival")).length * rules.survivalProvision;
       event.item = rules.loot.provision;
-      event.amount = drop(state, event.item, amount);
+      event.amount = drop(state, event.item, amount + bonus);
       break;
+    }
     case "artifact":
-      event.item = rules.loot.artifact;
-      event.amount = drop(state, event.item, amount);
+      event.item = artifact(state);
+      event.amount = drop(state, event.item, 1);
+      break;
+    case "starmap":
+      event.item = rules.loot.starmap;
+      event.amount = drop(state, event.item, 1);
       break;
     case "fight":
-      fight(ctx, event, amount);
+      fight(ctx, event, rule.creature!);
+      break;
+    case "lostItem": {
+      // One item carried by a member still with the crew, never a spacesuit, is destroyed.
+      const carried = living()
+        .flatMap((p) => itemsIn(state, { kind: "player", id: p.id }))
+        .filter((i) => i.type !== SPACESUIT);
+      if (carried.length === 0) {
+        event.kind = "nothing";
+        break;
+      }
+      event.item = removeItem(state, carried[rollInt(state, carried.length)]!.id).type;
+      break;
+    }
+    case "kill": {
+      // One member dies; Survival holders are picked last.
+      const all = living();
+      const exposed = all.filter((p) => !hasSkill(p, "survival"));
+      const pool = exposed.length > 0 ? exposed : all;
+      kill(ctx, event, [pool[rollInt(state, pool.length)]!]);
+      break;
+    }
+    case "killAll":
+      kill(ctx, event, living());
+      break;
+    case "mushTrap":
+      // Each human member, independently, may gain a spore. Secret: the report only says the crew walked into a trap.
+      for (const p of living()) if (p.role === "human" && rollFloat(state) < rules.mushTrapChance) contaminate(state, p);
       break;
   }
   return event;
 }
 
+/** The spacesuit's item type: a Lost item never takes one (owner, 2026-11-08). */
+const SPACESUIT = "space_suit";
+
+/** An artifact picked uniformly among the original's 9. */
+const artifact = (state: GameState): string => {
+  const list = state.config.expedition.loot.artifacts;
+  return list[rollInt(state, list.length)]!;
+};
+
 /**
- * A fight against a creature of `strength`. The crew's strength is 1 per living member plus each carried weapon's
- * `expoStrength`; a gun counts only with a charge left. Grenades (`consumed` weapons) are used up one at a time while
- * the crew is still weaker (eMush's Fight). A loss deals the difference as HP, each point to a random living member.
+ * A fight against a creature (owner, 2026-11-08, #357). The crew's strength is 1 per living member plus each carried
+ * weapon's `expoStrength`; a gun counts only with a charge left. Grenades (`consumed` weapons) are used up one at a
+ * time while the crew is still weaker (eMush's Fight). The crew wins with a chance of 0 below half the creature's
+ * strength (rounded down), then (crew − half + 1) / (creature − half + 1), capped at 1; a win brings the creature's
+ * loot. Win or lose, the shortfall against the crew's strength with every grenade counted, spent or not, is dealt as
+ * HP, each point to a random living member.
  */
-function fight(ctx: Ctx, event: ExpeditionEvent, strength: number): void {
+function fight(ctx: Ctx, event: ExpeditionEvent, creature: string): void {
   const { state } = ctx;
+  const foe = state.config.expedition.creatures[creature]!;
+  const strength = foe.strength.length === 1 ? foe.strength[0]! : foe.strength[rollInt(state, foe.strength.length)]!;
   const weapons = state.config.weapons.types;
   const members = ctx.crew.filter((p) => p.alive);
   const gear = members.flatMap((p) => itemsIn(state, { kind: "player", id: p.id })).filter((i) => weapons[i.type] !== undefined && isWorking(i));
   const grenades = gear.filter((i) => weapons[i.type]!.consumed);
   let crew = members.length;
   for (const item of gear) if (!weapons[item.type]!.consumed && usable(state, item)) crew += weapons[item.type]!.expoStrength;
+  const withAllGrenades = crew + grenades.reduce((sum, g) => sum + weapons[g.type]!.expoStrength, 0);
   let used = 0;
   for (const grenade of grenades) {
     if (crew >= strength) break;
@@ -277,16 +339,44 @@ function fight(ctx: Ctx, event: ExpeditionEvent, strength: number): void {
     removeItem(state, grenade.id);
     used++;
   }
-  const won = crew >= strength;
+  const chance = winChance(crew, strength);
+  const won = chance >= 1 || (chance > 0 && rollFloat(state) < chance);
+  event.creature = creature;
   event.amount = strength;
   event.fight = { strength: crew, grenades: used, won };
-  if (won) return;
+  if (won) event.found = fightLoot(state, foe.loot);
   const hits = new Map<PlayerState, number>();
-  for (let i = 0; i < strength - crew; i++) {
+  for (let i = 0; i < strength - withAllGrenades; i++) {
     const p = members[rollInt(state, members.length)]!;
     hits.set(p, (hits.get(p) ?? 0) + 1);
   }
-  hurt(ctx, event, new Map([...hits].sort(([a], [b]) => members.indexOf(a) - members.indexOf(b))));
+  if (hits.size > 0) hurt(ctx, event, new Map([...hits].sort(([a], [b]) => members.indexOf(a) - members.indexOf(b))));
+}
+
+/** The chance a crew of `crew` strength beats a creature of `strength` (owner, 2026-11-08; eMushpedia's `Combat`). */
+export function winChance(crew: number, strength: number): number {
+  const half = Math.floor(strength / 2);
+  if (crew < half) return 0;
+  return Math.min(1, (crew - half + 1) / (strength - half + 1));
+}
+
+/** A won fight's loot onto the Icarus's floor, grouped by item type. */
+function fightLoot(state: GameState, loot: Readonly<CreatureLoot>): { item: string; count: number }[] {
+  const rules = state.config.expedition;
+  const found = new Map<string, number>();
+  const add = (item: string) => found.set(item, (found.get(item) ?? 0) + drop(state, item, 1));
+  for (let i = 0; i < (loot.provision ?? 0); i++) add(rules.loot.provision);
+  for (let i = 0; i < (loot.artifact ?? 0); i++) add(artifact(state));
+  for (let i = 0; i < (loot.starmap ?? 0); i++) add(rules.loot.starmap);
+  return [...found].map(([item, count]) => ({ item, count }));
+}
+
+/** Kill and Kill all: these members die outright (Survival doesn't help), under the expedition's death rules. */
+function kill(ctx: Ctx, event: ExpeditionEvent, members: PlayerState[]): void {
+  for (const p of members) {
+    damage(ctx.state, p, p.hp);
+    if (!p.alive) died(ctx, event, p);
+  }
 }
 
 /** A weapon counts in a fight when it needs no charges or has one left. */
@@ -305,13 +395,16 @@ function hurt(ctx: Ctx, event: ExpeditionEvent, amounts: Map<PlayerState, number
     const hp = Math.max(0, amount - (hasSkill(p, "survival") ? rules.survivalReduction : 0));
     (event.hurt ??= []).push({ name: p.character, hp });
     damage(state, p, hp);
-    if (p.alive) continue;
-    (event.died ??= []).push(p.character);
-    if (!rules.deadKeepItems) {
-      const lost = new Set(ctx.carried[p.id] ?? []);
-      state.items = state.items.filter((i) => !lost.has(i.id));
-    }
+    if (!p.alive) died(ctx, event, p);
   }
+}
+
+/** Notes a death on the event; without `deadKeepItems`, what they set out with is lost (dropped by `killPlayer`, then taken away). */
+function died(ctx: Ctx, event: ExpeditionEvent, p: PlayerState): void {
+  (event.died ??= []).push(p.character);
+  if (ctx.state.config.expedition.deadKeepItems) return;
+  const lost = new Set(ctx.carried[p.id] ?? []);
+  ctx.state.items = ctx.state.items.filter((i) => !lost.has(i.id));
 }
 
 /** `count` items of `type` on the floor of the Icarus, which unloads them in the bay on its return. Returns how many. */

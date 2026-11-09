@@ -1,7 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { DEFAULT_CONFIG } from "../src/config.ts";
-import { pickSectors, runExpedition } from "../src/expeditions.ts";
+import { pickSectors, runExpedition, winChance } from "../src/expeditions.ts";
 import { nextDue } from "../src/queue.ts";
+import { PLANET_TAG_IDS } from "../src/planets.ts";
 import { applyInput } from "../src/replay.ts";
 import { FAST_EXPEDITION_STEP_MS } from "../src/cheats.ts";
 import { applyAction, createGame, setCheat, viewFor } from "../src/rules.ts";
@@ -41,13 +42,19 @@ function game(opts: { events?: Record<string, ExpeditionEventRule[]>; tags?: Pla
 /** Only the given event, for the landing and every sector tag. */
 const only = (rule: ExpeditionEventRule, landing: ExpeditionEventRule = { kind: "nothing", weight: 1 }): Record<string, ExpeditionEventRule[]> => ({
   LANDING: [landing],
-  OXYGEN: [rule],
-  HYDROCARBON: [rule],
-  FRUIT_TREES: [rule],
-  PREDATOR: [rule],
-  RUINS: [rule],
-  HOT: [rule],
+  ...Object.fromEntries(PLANET_TAG_IDS.map((tag) => [tag, [rule]])),
 });
+
+/** A crew fighting a test creature of `strength` in every sector. */
+const fightGame = (strength: number, loot: GameConfig["expedition"]["creatures"][string]["loot"] = {}) =>
+  game({ tags: ["PREDATOR"], events: only({ kind: "fight", weight: 1, creature: "TEST" }), config: { creatures: { ...expedition.creatures, TEST: { strength: [strength], loot } } } });
+
+/** A timed game (phase 2) at server time 1,000,000. */
+const timedGame = (opts: Parameters<typeof game>[0] = {}): GameState => {
+  const s = game({ ...opts, timed: true });
+  s.now = 1_000_000;
+  return s;
+};
 
 const go = (s: GameState, by: PlayerId = "p0") => must(applyAction(s, by, takeoff));
 const give = (s: GameState, id: PlayerId, type: string, charges?: number) =>
@@ -123,7 +130,7 @@ describe("expeditions, phase 1 (instant, as in single player)", () => {
 
   it("lands first, then explores each unexplored sector once, at most `sectors`, marking them explored", () => {
     const tags = Array.from({ length: 12 }, (_, i) => (i % 2 ? "FOREST" : "DESERT") as const);
-    const s = game({ tags });
+    const s = game({ tags, events: only({ kind: "nothing", weight: 1 }) });
     const first = go(s);
     const report = first.expeditions[0]!;
     expect(report.events[0]!.sector).toBe("LANDING");
@@ -165,11 +172,13 @@ describe("expeditions, phase 1 (instant, as in single player)", () => {
     player(withBotanist, "p2").skills.push("botanic");
     expect(floor(go(withBotanist), expedition.loot.harvest)).toBe(3 + expedition.botanistBonus);
     expect(floor(go(game({ tags: ["PREDATOR"], events: only({ kind: "provision", weight: 1, amount: 3 }) })), expedition.loot.provision)).toBe(3);
-    expect(floor(go(game({ tags: ["RUINS"], events: only({ kind: "artifact", weight: 1, amount: 1 }) })), expedition.loot.artifact)).toBe(1);
+    const artifact = go(game({ tags: ["RUINS"], events: only({ kind: "artifact", weight: 1 }) }));
+    expect(expedition.loot.artifacts).toContain(artifact.expeditions[0]!.events[1]!.item);
+    expect(floor(artifact, artifact.expeditions[0]!.events[1]!.item!)).toBe(1);
   });
 
-  it("tags without a table are explored with nothing happening", () => {
-    const next = go(game({ tags: ["FOREST", "DESERT"], events: { LANDING: [{ kind: "nothing", weight: 1 }] } }));
+  it("tags with an empty table are explored with nothing happening", () => {
+    const next = go(game({ tags: ["FOREST", "DESERT"], events: { LANDING: [{ kind: "nothing", weight: 1 }], FOREST: [], DESERT: [] } }));
     expect(next.expeditions[0]!.events.slice(1).map((e) => e.kind)).toEqual(["nothing", "nothing"]);
   });
 
@@ -201,9 +210,8 @@ describe("expeditions, phase 1 (instant, as in single player)", () => {
   });
 
   it("wins a fight when the crew is strong enough, using a grenade only if it is needed", () => {
-    const fight = (strength: number) => game({ tags: ["PREDATOR"], events: only({ kind: "fight", weight: 1, amount: strength }) });
     // 4 members + a knife (1) + a loaded blaster (1) + an empty blaster (0) = 6.
-    const s = fight(6);
+    const s = fightGame(6);
     give(s, "p1", "knife");
     give(s, "p2", "blaster", 3);
     give(s, "p3", "blaster", 0);
@@ -212,7 +220,7 @@ describe("expeditions, phase 1 (instant, as in single player)", () => {
     expect(won.expeditions[0]!.events[1]!.fight).toEqual({ strength: 6, grenades: 0, won: true });
     expect(won.items.some((i) => i.type === "grenade")).toBe(true);
 
-    const harder = fight(8);
+    const harder = fightGame(8);
     give(harder, "p1", "knife");
     give(harder, "p2", "blaster", 3);
     give(harder, "p3", "grenade");
@@ -222,14 +230,72 @@ describe("expeditions, phase 1 (instant, as in single player)", () => {
     for (const id of ["p0", "p1", "p2", "p3"]) expect(player(next, id).hp).toBe(player(harder, id).hp);
   });
 
-  it("loses a fight when weaker: the difference is dealt as HP among the members", () => {
-    const s = game({ tags: ["PREDATOR"], events: only({ kind: "fight", weight: 1, amount: 12 }) });
+  it("win chance: 0 below half the creature's strength, then linear to 1 at its full strength", () => {
+    // eMushpedia's tables: against 10, 5 wins 1 in 6; against 32, 16 wins 1 in 17.
+    expect([winChance(4, 10), winChance(5, 10), winChance(9, 10), winChance(10, 10), winChance(12, 10)]).toEqual([0, 1 / 6, 5 / 6, 1, 1]);
+    expect([winChance(15, 32), winChance(16, 32), winChance(31, 32)]).toEqual([0, 1 / 17, 16 / 17]);
+    // Odd strengths round half down.
+    expect([winChance(6, 15), winChance(7, 15)]).toEqual([0, 1 / 9]);
+    // A crew below half always loses: no roll.
+    const s = fightGame(12);
+    const lost = go(s);
+    expect(lost.expeditions[0]!.events[1]!.fight).toEqual({ strength: 4, grenades: 0, won: false });
+    expect(lost.expeditions[0]!.events[1]!.found).toBeUndefined();
+  });
+
+  it("deals the shortfall as HP, win or lose, counting every grenade carried, spent or not", () => {
+    const s = fightGame(12);
     const next = go(s);
     const event = next.expeditions[0]!.events[1]!;
-    expect(event.fight).toEqual({ strength: 4, grenades: 0, won: false });
     const lost = ["p0", "p1", "p2", "p3"].reduce((sum, id) => sum + player(s, id).hp - player(next, id).hp, 0);
     expect(lost).toBe(12 - 4);
     expect(event.hurt!.reduce((sum, h) => sum + h.hp, 0)).toBe(8);
+
+    // 4 members + 2 grenades (6) = 10 against 11: both grenades go; the shortfall counts them, 1 HP.
+    const close = fightGame(11);
+    give(close, "p1", "grenade");
+    give(close, "p2", "grenade");
+    const after = go(close);
+    expect(after.expeditions[0]!.events[1]!.fight).toMatchObject({ strength: 10, grenades: 2 });
+    expect(after.expeditions[0]!.events[1]!.hurt!.reduce((sum, h) => sum + h.hp, 0)).toBe(1);
+
+    // 4 members + 2 grenades against 7: one grenade is enough, but the unspent one still counts: no damage.
+    const easy = fightGame(7);
+    give(easy, "p1", "grenade");
+    give(easy, "p2", "grenade");
+    const won = go(easy);
+    expect(won.expeditions[0]!.events[1]!.fight).toEqual({ strength: 7, grenades: 1, won: true });
+    expect(won.expeditions[0]!.events[1]!.hurt).toBeUndefined();
+  });
+
+  it("names the creature, and a win brings its loot: steaks, artifacts, starmap fragments", () => {
+    const s = fightGame(4, { provision: 2, artifact: 1, starmap: 1 });
+    const next = go(s);
+    const event = next.expeditions[0]!.events[1]!;
+    expect(event.creature).toBe("TEST");
+    expect(event.fight!.won).toBe(true);
+    expect(floor(next, expedition.loot.provision)).toBe(2);
+    const artifacts = next.items.filter((i) => expedition.loot.artifacts.includes(i.type) && i.at.kind === "room" && i.at.id === ICARUS);
+    // The starmap fragment is one of the artifacts too.
+    expect(artifacts).toHaveLength(2);
+    expect(event.found!.reduce((sum, f) => sum + f.count, 0)).toBe(4);
+  });
+
+  it("the Wreck's creature has one of its random strengths; the confirmed creatures and loot", () => {
+    const { creatures } = expedition;
+    expect(creatures.WRECK!.strength).toEqual([8, 10, 12, 15, 18, 32]);
+    expect(Object.fromEntries(Object.entries(creatures).map(([id, c]) => [id, [c.strength, c.loot]]))).toEqual({
+      CHAB_CHAB: [[8], { provision: 2 }],
+      BEETLETHUG: [[10], { provision: 1 }],
+      SKINNER: [[12], { provision: 2 }],
+      CORTIC: [[12], { artifact: 1 }],
+      ZOMBI: [[15], { artifact: 1 }],
+      MINDBENDER: [[18], { starmap: 1 }],
+      WRECK: [[8, 10, 12, 15, 18, 32], { artifact: 1 }],
+      MANKAROG: [[32], { provision: 4, artifact: 1 }],
+    });
+    const wreck = game({ tags: ["WRECK"], events: only({ kind: "fight", weight: 1, creature: "WRECK" }) });
+    expect(creatures.WRECK!.strength).toContain(go(wreck).expeditions[0]!.events[1]!.amount);
   });
 
   it("a member who dies comes back as a body in the bay, with their items by default", () => {
@@ -276,6 +342,137 @@ describe("expeditions, phase 1 (instant, as in single player)", () => {
     }
     expect(viewFor(next, "p5").planets).toEqual(finderBefore);
     expect(JSON.stringify(viewFor(next, "p5"))).not.toContain("explored");
+  });
+});
+
+describe("expeditions, phases 3 and 4, slice A: events and fights", () => {
+  const event = (s: GameState, i = 1) => s.expeditions[0]!.events[i]!;
+  const crewIds = ["p0", "p1", "p2", "p3"];
+
+  it("pins the confirmed tables and numbers", () => {
+    const tables = Object.fromEntries(
+      Object.entries(expedition.events).map(([tag, table]) => [tag, table.map((e) => [e.kind, e.weight, e.amount ?? e.creature ?? null])]),
+    );
+    expect(tables).toMatchObject({
+      FOREST: [["harvest", 4, 2], ["again", 3, null], ["disease", 2, null], ["lost", 1, null]],
+      MOUNTAIN: [["accident", 4, null], ["fuel", 3, 1], ["fatigue", 2, null], ["harvest", 1, 1]],
+      SWAMP: [["disease", 4, null], ["harvest", 3, 2], ["fatigue", 2, null], ["nothing", 1, null]],
+      DESERT: [["again", 4, null], ["fatigue", 3, null], ["nothing", 2, null], ["nothing", 1, null]],
+      OCEAN: [["nothing", 4, null], ["provision", 3, 3], ["nothing", 2, null], ["lost", 1, null]],
+      CAVE: [["fuel", 4, 2], ["accident", 3, null], ["again", 2, null], ["artifact", 1, null]],
+      RUMINANT: [["provision", 4, 4], ["provision", 3, 2], ["accident", 2, null], ["fight", 1, "CHAB_CHAB"]],
+      PREDATOR: [["fight", 4, "SKINNER"], ["accident", 3, null], ["nothing", 2, null], ["provision", 1, 3]],
+      INTELLIGENT: [["fight", 4, "CORTIC"], ["provision", 3, 2], ["artifact", 2, null], ["lostItem", 1, null]],
+      INSECT: [["accident", 4, null], ["disease", 3, null], ["provision", 2, 1], ["fight", 1, "BEETLETHUG"]],
+      MANKAROG: [["kill", 4, null], ["fight", 3, "MANKAROG"], ["back", 2, null], ["artifact", 1, null]],
+      COLD: [["nothing", 4, null], ["fatigue", 3, null], ["lost", 2, null], ["accident", 1, null]],
+      STRONG_WIND: [["nothing", 4, null], ["fatigue", 3, null], ["nothing", 2, null], ["lostItem", 1, null]],
+      SISMIC_ACTIVITY: [["nothing", 4, null], ["back", 3, null], ["accident", 2, null], ["kill", 1, null]],
+      VOLCANIC_ACTIVITY: [["nothing", 4, null], ["nothing", 3, null], ["back", 2, null], ["killAll", 1, null]],
+      RUINS: [["artifact", 4, null], ["nothing", 3, null], ["fight", 2, "ZOMBI"], ["accident", 1, null]],
+      WRECK: [["artifact", 4, null], ["fuel", 3, 3], ["nothing", 2, null], ["fight", 1, "WRECK"]],
+      CRISTAL_FIELD: [["mushTrap", 4, null], ["starmap", 3, null], ["fight", 2, "MINDBENDER"], ["lost", 1, null]],
+    });
+    // Every tag has a table now.
+    for (const tag of PLANET_TAG_IDS) expect(expedition.events[tag]).toHaveLength(tag === "FRUIT_TREES" ? 3 : 4);
+    expect([expedition.survivalProvision, expedition.mushTrapChance, expedition.loot.artifacts.length]).toEqual([1, 0.5, 9]);
+  });
+
+  it("a living Pilot or the Antigrav propeller makes the landing Nothing", () => {
+    const crash = only({ kind: "nothing", weight: 1 }, { kind: "catastrophe", weight: 1 });
+    expect(event(go(game({ tags: ["FOREST"], events: crash })), 0).kind).toBe("nothing");
+    const noPilot = game({ tags: ["FOREST"], events: crash });
+    player(noPilot, "p0").skills = [];
+    expect(runExpedition(structuredClone(noPilot), player(noPilot, "p0")).events[0]!.kind).toBe("catastrophe");
+    noPilot.projects.ICARUS_ANTIGRAV_PROPELLER = 100;
+    const s = structuredClone(noPilot);
+    expect(runExpedition(s, player(s, "p0")).events[0]!.kind).toBe("nothing");
+  });
+
+  it("Again uses the step but leaves the sector unexplored", () => {
+    const next = go(game({ tags: ["DESERT", "DESERT"], events: only({ kind: "again", weight: 1 }) }));
+    expect(next.expeditions[0]!.events.map((e) => e.kind)).toEqual(["nothing", "again", "again"]);
+    expect(next.planets.p5![0]!.sectors.some((x) => x.explored)).toBe(false);
+  });
+
+  it("Back ends the expedition at once, with what it found", () => {
+    const s = timedGame({ tags: ["SISMIC_ACTIVITY", "SISMIC_ACTIVITY", "SISMIC_ACTIVITY"], events: only({ kind: "back", weight: 1 }) });
+    const launched = go(s);
+    const t = must(applyInput(launched, { type: "tick", at: launched.expedition!.nextAt }));
+    const back = must(applyInput(t, { type: "tick", at: t.expedition!.nextAt }));
+    expect(back.expedition).toBeNull();
+    expect(back.expeditions[0]!.events.map((e) => e.kind)).toEqual(["nothing", "back"]);
+    for (const id of crewIds) expect(player(back, id).room).toBe(ICARUS);
+    expect(back.planets.p5![0]!.sectors.filter((x) => x.explored)).toHaveLength(1);
+  });
+
+  it("Lost item destroys one item carried by the crew, never a spacesuit; with nothing carried it is Nothing", () => {
+    const s = game({ tags: ["STRONG_WIND"], events: only({ kind: "lostItem", weight: 1 }) });
+    s.items = s.items.filter((i) => i.at.kind !== "player");
+    give(s, "p1", "space_suit");
+    give(s, "p2", "knife");
+    const next = go(s);
+    expect(event(next)).toMatchObject({ kind: "lostItem", item: "knife" });
+    expect(next.items.some((i) => i.type === "knife")).toBe(false);
+    expect(next.items.some((i) => i.type === "space_suit")).toBe(true);
+    // A member who stayed aboard keeps theirs.
+    const empty = game({ tags: ["STRONG_WIND"], events: only({ kind: "lostItem", weight: 1 }) });
+    empty.items = empty.items.filter((i) => i.at.kind !== "player");
+    give(empty, "p4", "knife");
+    expect(event(go(empty)).kind).toBe("nothing");
+  });
+
+  it("Kill takes one member, Survival holders last; Kill all takes everyone", () => {
+    const s = game({ tags: ["MANKAROG"], events: only({ kind: "kill", weight: 1 }) });
+    for (const id of ["p0", "p1", "p2"]) player(s, id).skills.push("survival");
+    const next = go(s);
+    expect(crewIds.filter((id) => !player(next, id).alive)).toEqual(["p3"]);
+    expect(event(next).died).toEqual([player(s, "p3").character]);
+    const all = game({ tags: ["VOLCANIC_ACTIVITY"], events: only({ kind: "killAll", weight: 1 }) });
+    for (const id of crewIds) player(all, id).skills.push("survival");
+    const dead = go(all);
+    expect(crewIds.every((id) => !player(dead, id).alive)).toBe(true);
+    expect(dead.items.filter((i) => i.type === "corpse" && i.at.kind === "room" && i.at.id === ICARUS)).toHaveLength(4);
+  });
+
+  it("Disease and Lost read as Nothing for now, and the sector is explored", () => {
+    for (const kind of ["disease", "lost"] as const) {
+      const next = go(game({ tags: ["FOREST"], events: only({ kind, weight: 1 }) }));
+      expect(event(next).kind).toBe("nothing");
+      expect(next.planets.p5![0]!.sectors[0]!.explored).toBe(true);
+    }
+  });
+
+  it("a starmap fragment in a Crystal field; an Artifact is one of the 9; Provision gives Survival holders a steak each", () => {
+    const map = go(game({ tags: ["CRISTAL_FIELD"], events: only({ kind: "starmap", weight: 1 }) }));
+    expect(floor(map, expedition.loot.starmap)).toBe(1);
+    const s = game({ tags: ["OCEAN"], events: only({ kind: "provision", weight: 1, amount: 3 }) });
+    player(s, "p1").skills.push("survival");
+    player(s, "p2").skills.push("survival");
+    player(s, "p4").skills.push("survival"); // not on the expedition
+    expect(floor(go(s), expedition.loot.provision)).toBe(3 + 2 * expedition.survivalProvision);
+  });
+
+  it("a Mush trap gives human members a spore each at its chance, secretly; Mush and the immune are untouched", () => {
+    const s = game({ tags: ["CRISTAL_FIELD"], events: only({ kind: "mushTrap", weight: 1 }), config: { mushTrapChance: 1 } });
+    for (const id of crewIds) Object.assign(player(s, id), { modifiers: [], role: "human" });
+    player(s, "p1").role = "mush";
+    player(s, "p2").immuneUntil = s.cycle + 2;
+    for (const p of s.players) delete s.contamination[p.id];
+    const next = go(s);
+    expect(event(next)).toEqual({ sector: "CRISTAL_FIELD", kind: "mushTrap" });
+    const spores = (id: PlayerId) => next.contamination[id] ?? 0;
+    expect([spores("p0"), spores("p2"), spores("p3")]).toEqual([1, 0, 1]);
+    expect(player(next, "p1").role).toBe("mush");
+    // Nobody's view shows who caught a spore: not the report, not the victims' own.
+    for (const id of crewIds) {
+      const view = viewFor(next, id);
+      expect(JSON.stringify(view.expeditions)).not.toMatch(/spore|contamin/i);
+      if (player(next, id).role === "human") expect(view.you).not.toHaveProperty("contamination");
+    }
+    const never = game({ tags: ["CRISTAL_FIELD"], events: only({ kind: "mushTrap", weight: 1 }), config: { mushTrapChance: 0 } });
+    for (const p of never.players) delete never.contamination[p.id];
+    expect(Object.values(go(never).contamination).filter((n) => n > 0)).toHaveLength(0);
   });
 });
 
@@ -419,11 +616,11 @@ describe("expeditions, phase 2: time away", () => {
   });
 
   it("comes back at once when every member is dead", () => {
-    const s = timed({ tags: ["HOT", "HOT", "HOT"], events: only({ kind: "fatigue", weight: 1 }, { kind: "fatigue", weight: 1 }) });
+    const s = timed({ tags: ["HOT", "HOT", "HOT"], events: only({ kind: "fatigue", weight: 1 }) });
     for (const id of crewIds) player(s, id).hp = expedition.fatigue;
-    const t = tickAt(go(s), T0 + step);
+    const t = tickAt(go(s), T0 + 2 * step);
     expect(t.expedition).toBeNull();
-    expect(t.expeditions[0]!.events).toHaveLength(1);
+    expect(t.expeditions[0]!.events).toHaveLength(2);
     expect(t.items.filter((i) => i.type === "corpse" && i.at.kind === "room" && i.at.id === ICARUS)).toHaveLength(4);
     expect(viewFor(t, "p4").expedition).toBeNull();
   });

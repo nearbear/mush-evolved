@@ -153,7 +153,15 @@ export const ITEM_TYPES: Record<string, ItemType> = {
   // Owner, 2026-10-25: items researches need in the lab (research.ts, RESEARCH_REQUIRES). No effect yet. Named after their icons.
   // Schrödinger, the cat.
   body_cat: {},
+  // Alien artifacts, found on expeditions (owner, 2026-11-08, #357). Inert for now: their effects are later stories. Named after their icons.
   water_stick: {},
+  magellan_liquid_map: {},
+  rolling_boulder: {},
+  alien_oil: {},
+  computer_jelly: {},
+  alien_holographic_tv: {},
+  insectoid_shell: {},
+  alien_can_opener: {},
   // A starmap fragment.
   super_map: {},
   //Items added for documenting the dismantle action (owner, 2026-10-22). Named after their icons.

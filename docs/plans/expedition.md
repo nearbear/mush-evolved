@@ -1,6 +1,6 @@
 # Expeditions (plan)
 
-2026-10-31. Phase 1 is decided by the owner (2026-10-31) and built; phase 2 is decided (2026-11-07, #356) and built (slices A, B and C); phases 3 and 4 are decided (2026-11-08, #357, #358) and not built; phase 5 is an outline, not decisions: each one gets its own rule pass (the `rule` skill) before it is built. Builds on planets and analysis (`docs/plans/astro.md`), ship travel and orbit (`navigation.ts`), and patrol ships (`docs/plans/patrol.md`).
+2026-10-31. Phase 1 is decided by the owner (2026-10-31) and built; phase 2 is decided (2026-11-07, #356) and built (slices A, B and C); phases 3 and 4 are decided (2026-11-08, #357, #358), slice A built; phase 5 is an outline, not decisions: each one gets its own rule pass (the `rule` skill) before it is built. Builds on planets and analysis (`docs/plans/astro.md`), ship travel and orbit (`navigation.ts`), and patrol ships (`docs/plans/patrol.md`).
 
 ## Sources
 
@@ -85,7 +85,7 @@ Supersedes phase 1's item 4 (timing) and item 13's "comes back on the Icarus" ti
 
 **Build order (Claude's proposal):** (a) timed steps, the Icarus room, the public status, the live report, deaths and dirt; (b) stranding, Magnetic return, the lost Icarus, the confirm dialog; (c) shared reports. Touches `expeditions.ts` (split `runExpedition` into a landing step and per-sector steps), a new timed replay input, `GameState` (an expedition in progress, a lost Icarus, each with a normalizer default), `travel` and `leave_orbit`, `viewFor` and the leak tests, `projects.ts`.
 
-## Phases 3 and 4 decisions: events, gear and skills (owner, 2026-11-08, #357, #358; not built)
+## Phases 3 and 4 decisions: events, gear and skills (owner, 2026-11-08, #357, #358; slice A built)
 
 One rule pass for both phases. Everything in phases 1 and 2 stands except where a point below says it replaces something. Sources: the original's `planetTags.json`, `explo.json`, `monster.json`, `objects.json`, `blueprints.json`; eMushpedia's `Expéditions`, `Évènements` and sector pages; eMush through `npm run emush`.
 
@@ -170,6 +170,8 @@ All eMushpedia's effects. One working, unbroken copy carried by a member still w
 7. **Traitor (Mush):** a Traitor on the expedition has a free, secret Sabotage action, once per expedition. From the next step on, every sector rolls only its negative events (Nothing if it has none), and a Crystal field is always a Mush trap. Nothing records it anywhere. Negative, per eMushpedia's `Évènements`: Fatigue, Accident, Catastrophe, Fight (not in Ruins), Disease, Lost item, Lost, Found dead, Mush trap, Kill, Kill all, Nothing in an Oxygen sector, Oxygen 8, and Fuel 3 in a Hydrocarbon sector. Not negative: Again, Back, every other Nothing, and all other gains.
 
 **Build order:** (A) tables, the new kinds, fights and their loot, creatures, the inert artifacts, Survival's steak, landing safety; (B) Lost: the Lost sector, the lost member's place, the alert, finding them, dying when the ship leaves, Tracker; (C) gear and spacesuits: items, placement, every gear effect; (D) skills: Diplomat and Polymath, Shooter, Sprinter, Centauri, U-turn, Traitor. One commit per slice.
+
+**Slice A built (2026-11-08):** the tables, the new kinds, fights with creatures, the win roll and loot, random artifacts (7 new inert items), Survival's steak, the safe landing. Claude's readings: "half" a creature's strength rounds down (only 15 is odd; eMushpedia's tables for 10 and 32 match); the Wreck's creature is the vessel's pilot (eMush's line), its strength uniform among the six; Lost reads as Nothing until slice B, like Disease; Lost item can take any carried item, iTrackie included; Kill goes through `damage` (so the dev `infiniteHp` cheat survives it); the Mush trap goes through `contaminate`, so the Mush channel's usual "contaminated" line names the human, as for any spore.
 
 ## Later phases (outline, not decided)
 

@@ -237,8 +237,12 @@ export interface ExpeditionEvent {
   kind: ExpeditionEventKind;
   /** Oxygen or fuel the ship gained, items found (on the Icarus Bay's floor), or the creature's strength. */
   amount?: number;
-  /** The item type found (harvest, provision, artifact). */
+  /** The item type found (harvest, provision, artifact, starmap) or destroyed (lostItem). */
   item?: string;
+  /** A fight's creature (`expedition.creatures`). */
+  creature?: string;
+  /** What a won fight brought back, by item type. */
+  found?: { item: string; count: number }[];
   /** A fight: the crew's strength, grenades included, how many grenades were used up, and whether the crew won. */
   fight?: { strength: number; grenades: number; won: boolean };
   /** HP each member lost, after Survival, by character. */
