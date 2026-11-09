@@ -194,7 +194,7 @@ export const SKILL_STATUS: Readonly<Partial<Record<SkillId | MushSkillId, SkillS
   // PILGRED points and the PILGRED repair bonus (owner, 2026-10-21).
   physicist: "full",
   // PILGRED repair bonus and doubled renovation odds (owner, 2026-10-28); no repair points or equipment repairs.
-  engineer: "partial",
+  engineer: "full",
   creative: "full",
   lethargy: "full",
   // Only the lower melee odds against its holder; its other listed effects are not built.
