@@ -121,6 +121,9 @@ function ship(): { state: GameState; sentinels: Sentinel[] } {
   s.nextSharedPlanetId = num("nextSharedPlanetId", []);
   // A shared planet's entry goes to every reader of the Astrophysics feature, but never the planet it came from.
   s.sharedPlanets.push({ id: "sp-1", planet: str("sharedPlanetSource", []), text: "Shared", by: "p0", day: 1, cycleOfDay: 1, stale: false });
+  // A shared report's entry goes to every reader of the Expeditions feature, but never the report it came from.
+  s.nextSharedReportId = num("nextSharedReportId", []);
+  s.sharedReports.push({ id: "sr-1", report: str("sharedReportSource", []), text: "Report", by: "p0", day: 1, cycleOfDay: 1 });
   s.now = num("now", []);
   // An expedition report goes to its living members only (p1 here), never its seat ids.
   s.nextExpeditionId = num("nextExpeditionId", []);

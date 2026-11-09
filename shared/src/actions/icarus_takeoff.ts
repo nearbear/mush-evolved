@@ -11,7 +11,8 @@ export const ICARUS_EQUIPMENT = "ICARUS_COMMAND";
  * Take off in the Icarus for an expedition (owner, 2026-10-31, docs/plans/expedition.md): `expedition.cost` AP, paid by
  * the launcher alone, at the Icarus while the ship orbits a planet with an unexplored sector. Pilots only for now
  * (`canLaunchExpedition`). Not while the Icarus is away (phase 2). The crew leaves in the Icarus and comes back after
- * its last step (expeditions.ts): the takeoff line is public in the bay, the report goes to the crew only.
+ * its last step (expeditions.ts): the takeoff line is public in the bay, the report goes to the crew only. Never again
+ * once the Icarus is lost (`strandExpedition`).
  */
 export class IcarusTakeoffAction extends Action<IcarusTakeoffActionData> {
   constructor() {
@@ -35,6 +36,7 @@ export class IcarusTakeoffAction extends Action<IcarusTakeoffActionData> {
   /** Why this player can't launch now, apart from the Icarus being here. */
   private refused(state: Readonly<GameState>, player: Readonly<PlayerState>): string | null {
     if (!canLaunchExpedition(state, player)) return "cant_fly";
+    if (state.icarusLost) return "icarus_lost";
     if (state.expedition) return "icarus_away";
     const planet = orbitedPlanet(state);
     if (!planet) return "not_in_orbit";

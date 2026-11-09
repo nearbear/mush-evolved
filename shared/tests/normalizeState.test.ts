@@ -101,6 +101,8 @@ function handFilled() {
   });
   game.planets[a.id] = [{ id: "pl-1", name: "Zed", direction: game.navigation.heading, distance: 3, sectors: [{ tag: "FOREST" as never, known: true, explored: true }] }];
   game.sharedPlanets.push({ id: "sp-1", text: "nice", by: a.id, day: 1, cycleOfDay: 3, stale: true, planet: "pl-1" });
+  game.sharedReports.push({ id: "sr-1", text: "we won", by: a.id, day: 1, cycleOfDay: 4, report: "ex-1" });
+  game.nextSharedReportId = 2;
   game.expeditions.push({
     id: "ex-1",
     members: [a.id, b.id],

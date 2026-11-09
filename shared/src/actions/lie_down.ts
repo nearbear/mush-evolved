@@ -1,3 +1,4 @@
+import { leaveTerminal } from "../spot.ts";
 import { Action, isString } from "./action.ts";
 import { EQUIPMENT_TYPES } from "../equipment.ts";
 import type { GameState, PlayerState } from "../types.ts";
@@ -40,6 +41,7 @@ export class LieDownAction extends Action<LieDownActionData> {
     player.modifiers.push("lying_down");
     player.lyingIn = target.equipment;
     player.lyingSince = state.cycle;
+    leaveTerminal(player);
   }
 }
 

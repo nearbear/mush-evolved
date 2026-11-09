@@ -28,6 +28,7 @@ export * from "./pilgred.ts";
 export * from "./dispense.ts";
 export * from "./planets.ts";
 export * from "./sharedPlanets.ts";
+export * from "./sharedReports.ts";
 export * from "./navigation.ts";
 export * from "./ship.ts";
 export * from "./paths.ts";

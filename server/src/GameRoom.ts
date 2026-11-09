@@ -170,7 +170,7 @@ interface StoredRoom {
 interface BlockedText {
   at: number;
   by: PlayerId;
-  type: "chat" | "createChannel" | "createThread" | "sharePlanet";
+  type: "chat" | "createChannel" | "createThread" | "sharePlanet" | "shareReport";
   raw: string;
   reason: string;
 }
@@ -612,6 +612,8 @@ export class GameRoom extends Server<Env> {
         roomId: this.name,
         rulesVersion: setup?.rulesVersion ?? "",
         endedAt: this.endedAt ?? Date.now(),
+        // Multiplayer cycles run on a clock (`nextCycleAt`); single player's end by End cycle. Not hidden information.
+        realTime: !this.singlePlayer,
         starts: this.starts ?? {},
       });
       this.replayReady = true;
@@ -726,7 +728,7 @@ export class GameRoom extends Server<Env> {
       return;
     }
     if (
-      ((msg.type === "cheat" || msg.type === "roleCheat" || msg.type === "leaveShip") ||
+      ((msg.type === "cheat" || msg.type === "roleCheat" || msg.type === "solCheat" || msg.type === "leaveShip") ||
         (msg.type === "action" && (msg.action.type === "self_disease" || msg.action.type === "self_injury" || msg.action.type === "warp_to_planet"))) &&
       !this.cheatsAllowed
     ) {
@@ -751,7 +753,7 @@ export class GameRoom extends Server<Env> {
         ? await this.act({ ...msg, by, at: Date.now() })
         : msg.type === "walk"
           ? await this.act({ ...msg, by }, undefined, this.game.players.find((p) => p.id === by)?.room)
-          : msg.type === "clearQueue" || msg.type === "acknowledgeTransfer" || msg.type === "cheat" || msg.type === "roleCheat"
+          : msg.type === "clearQueue" || msg.type === "acknowledgeTransfer" || msg.type === "cheat" || msg.type === "roleCheat" || msg.type === "solCheat"
             ? await this.act({ ...msg, by })
             : await this.social(playerId, by, msg);
     if (error) this.send(connection, { type: "error", message: error });
@@ -807,7 +809,7 @@ export class GameRoom extends Server<Env> {
   private async social(
     playerId: PlayerId,
     by: PlayerId,
-    msg: Exclude<GameClientMessage, { type: "action" | "clearQueue" | "acknowledgeTransfer" | "walk" | "cheat" | "roleCheat" | "setModel" | "clearModel" | "leaveShip" | "chatPage" }>,
+    msg: Exclude<GameClientMessage, { type: "action" | "clearQueue" | "acknowledgeTransfer" | "walk" | "cheat" | "roleCheat" | "solCheat" | "setModel" | "clearModel" | "leaveShip" | "chatPage" }>,
     /** A chat message's reply depth (`BOT_CHAT_CHAIN_DEPTH`): 0 unless a bot is replying to chat. */
     depth = 0,
   ): Promise<string | null> {
@@ -816,12 +818,12 @@ export class GameRoom extends Server<Env> {
       this.countRateLimited(playerId);
       return "too_many_messages";
     }
-    if (msg.type !== "chat" && msg.type !== "createChannel" && msg.type !== "createThread" && msg.type !== "sharePlanet") return this.act({ ...msg, by });
-    const raw = msg.type === "chat" || msg.type === "sharePlanet" ? msg.text : (msg.name ?? "");
+    if (msg.type !== "chat" && msg.type !== "createChannel" && msg.type !== "createThread" && msg.type !== "sharePlanet" && msg.type !== "shareReport") return this.act({ ...msg, by });
+    const raw = msg.type === "chat" || msg.type === "sharePlanet" || msg.type === "shareReport" ? msg.text : (msg.name ?? "");
     // A private channel may be created without a name (it shows its day and cycle instead).
     if (msg.type === "createChannel" && !raw.trim()) return this.act({ ...msg, by, name: "" });
-    // A shared planet's text is longer than a chat message (owner, 2026-10-31).
-    const sharing = msg.type === "sharePlanet";
+    // A shared planet's text is longer than a chat message (owner, 2026-10-31); a shared report's takes the same limits.
+    const sharing = msg.type === "sharePlanet" || msg.type === "shareReport";
     const moderated = sharing ? moderateChat(raw, undefined, { length: MAX_SHARED_PLANET_LENGTH, lines: MAX_SHARED_PLANET_LINES }) : moderateChat(raw);
     if (!moderated.ok) {
       const blocked: BlockedText = { at: Date.now(), by: playerId, type: msg.type, raw, reason: moderated.reason };
@@ -830,7 +832,7 @@ export class GameRoom extends Server<Env> {
       return sharing ? "share_text_invalid" : moderated.reason;
     }
     const input: Input =
-      msg.type === "chat" || msg.type === "sharePlanet" ? { ...msg, by, text: moderated.text } : { ...msg, by, name: moderated.text };
+      msg.type === "chat" || msg.type === "sharePlanet" || msg.type === "shareReport" ? { ...msg, by, text: moderated.text } : { ...msg, by, name: moderated.text };
     const error = await this.act(input, moderated.text === raw ? undefined : raw);
     if (!error && msg.type === "chat") this.wakeBots(playerId, msg.channel, depth);
     return error;

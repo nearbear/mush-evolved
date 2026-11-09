@@ -8,6 +8,8 @@
 //            was in the room; otherwise only the actor sees it.
 // A camera is `CAMERA` room equipment, put there by `install` (#35). A `camera`
 // item, lying in a room or carried, is not a camera yet.
+// Each entry records its kind (`LogEntry.kind`, from the writer, not the action type: a private research's completion
+// line is public) and, for secret and covert, whether it leaked (owner, 2026-11-05, #366).
 // A private list names bodies, which never change, so a private line stays with
 // the body across a Transfer (owner, 2026-11-05, #281) and the log only grows.
 
@@ -74,7 +76,7 @@ export function logPublic(state: GameState, room: RoomId | undefined, key: strin
 /** Mutates a state that the caller already cloned. */
 export function logPrivate(state: GameState, actor: PlayerId, key: string, params?: LogParams): void {
   const p = state.players.find((pl) => pl.id === actor);
-  pushLog(state, { key, ...(params && { params }), ...(p && { room: p.room }), visibleTo: [actor] });
+  pushLog(state, { key, ...(params && { params }), ...(p && { room: p.room }), visibleTo: [actor], kind: "private" });
 }
 
 /**
@@ -87,13 +89,13 @@ export function logSecret(state: GameState, actor: PlayerId, key: string, params
   const p = state.players.find((pl) => pl.id === actor);
   if (!p) return;
   if (p.outcastBy !== undefined) {
-    logPublic(state, p.room, key, params);
+    outcastLine(state, p.room, "secret", key, params);
     return;
   }
   const witnesses = state.players.filter((o) => o.id !== actor && o.alive && o.room === p.room && o.id !== hideFrom);
   const witnessed = hideFrom === undefined ? state.players.some((o) => o.id !== actor && o.alive && o.room === p.room) : witnesses.length > 0;
   const visibleTo = cameraSees(state, p.room, params) ? "all" : !witnessed ? [actor] : hideFrom === undefined ? "all" : [actor, ...witnesses.map((o) => o.id)];
-  pushLog(state, { key, ...(params && { params }), room: p.room, visibleTo, ...spilled(visibleTo) });
+  pushLog(state, { key, ...(params && { params }), room: p.room, visibleTo, kind: "secret", ...spilled(visibleTo) });
 }
 
 /** Mutates a state that the caller already cloned. Room history only if a camera saw it. */
@@ -101,11 +103,11 @@ export function logCovert(state: GameState, actor: PlayerId, key: string, params
   const p = state.players.find((pl) => pl.id === actor);
   if (!p) return;
   if (p.outcastBy !== undefined) {
-    logPublic(state, p.room, key, params);
+    outcastLine(state, p.room, "covert", key, params);
     return;
   }
   const visibleTo = cameraSees(state, p.room, params) ? "all" : [actor];
-  pushLog(state, { key, ...(params && { params }), room: p.room, visibleTo, ...spilled(visibleTo) });
+  pushLog(state, { key, ...(params && { params }), room: p.room, visibleTo, kind: "covert", ...spilled(visibleTo) });
 }
 
 /**
@@ -116,9 +118,17 @@ function cameraSees(state: Readonly<GameState>, room: RoomId, params?: LogParams
   return hasCamera(state, room) && params?.equipment !== CAMERA_EQUIPMENT;
 }
 
-/** A secret or covert entry that reached anyone besides the actor is a warning. One only the actor sees is not. */
-function spilled(visibleTo: LogEntry["visibleTo"]): { level?: "warning" } {
-  return visibleTo === "all" || visibleTo.length > 1 ? { level: "warning" } : {};
+/** A secret or covert entry that reached anyone besides the actor is leaked, and a warning. One only the actor sees is neither. */
+function spilled(visibleTo: LogEntry["visibleTo"]): { leaked?: true; level?: "warning" } {
+  return visibleTo === "all" || visibleTo.length > 1 ? { leaked: true, level: "warning" } : {};
+}
+
+/**
+ * An Outcast's secret or covert entry: their stealth is gone (anathema.ts), so it is public room history, leaked but
+ * not a warning (owner, 2026-11-08, #366: "leaks and nothing else").
+ */
+function outcastLine(state: GameState, room: RoomId, kind: "secret" | "covert", key: string, params?: LogParams): void {
+  pushLog(state, { key, ...(params && { params }), room, visibleTo: "all", kind, leaked: true });
 }
 
 /**

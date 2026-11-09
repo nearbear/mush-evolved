@@ -101,7 +101,7 @@ export async function gameSummaryRoute(roomId: string, deps: ReplayRouteDeps): P
   const game = await deps.games.finished(roomId);
   // Listed a moment ago; only a row removed in between (by hand, or by retention later) gets here.
   if (!game) return notFound();
-  const response = json(game);
+  const response = json<FinishedGame>(game);
   if (opened.isPublic) response.headers.set("Cache-Control", INDEX_CACHE);
   return response;
 }

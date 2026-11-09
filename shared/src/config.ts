@@ -486,7 +486,8 @@ export const DEFAULT_CONFIG: GameConfig = {
   // So does the Icarus while away (expeditions.ts, docs/plans/expedition.md phase 2).
   rooms: { ...(Object.fromEntries(SHIP_ROOMS.map((r) => [r.id, r.doors])) as Record<RoomId, RoomId[]>), ...patrolRooms(), [ICARUS_CRAFT]: [] },
   // Confirmed 2026-10-11: the equipment drawn in each room of the original map; each patrol ship holds its command.
-  equipment: { ...Object.fromEntries(SHIP_ROOMS.map((r) => [r.id, r.equipment])), ...patrolEquipment() },
+  // Terminals' chairs stay out: they are map data the rules read from the map (`terminalChairs`, spot.ts), not game state.
+  equipment: { ...Object.fromEntries(SHIP_ROOMS.map((r) => [r.id, r.equipment.map(({ id, type }) => ({ id, type }))])), ...patrolEquipment() },
   diseases:  {
     allDiseases: ["cold_disease", "extreme_tinnitus_disease", "fungal_infection_disease"],
     allDisorders: ["depression_disorder"],

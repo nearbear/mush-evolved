@@ -5,7 +5,7 @@
 // progress to store. Each chunk is written as soon as the next one starts, while paging through the record, so the
 // whole record is never in memory at once. The index goes last: a copy without one is incomplete.
 
-import { ChunkBuilder, replayIndex, replayKeys, type ReplayChunk, type ReplayIndex, type RecordedInput, type PlayerId, type SeatStart } from "@mush2/shared";
+import { ChunkBuilder, replayIndex, replayKeys, type ReplayChunk, type ReplayIndex, type RecordedInput, type ReplayMeta } from "@mush2/shared";
 
 /** The part of R2 the copy uses. */
 export type ReplayBucket = Pick<R2Bucket, "put">;
@@ -39,7 +39,7 @@ async function putChunk(bucket: ReplayBucket, roomId: string, n: number, chunk: 
 export async function copyReplay(
   storage: RecordSource,
   bucket: ReplayBucket,
-  meta: { roomId: string; rulesVersion: string; endedAt: number; starts: Record<PlayerId, SeatStart> },
+  meta: ReplayMeta,
 ): Promise<ReplayIndex> {
   const builder = new ChunkBuilder();
   const infos: ReplayChunk["info"][] = [];

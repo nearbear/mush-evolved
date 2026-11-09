@@ -1,7 +1,7 @@
 // Thin view layer: renders a PlayerView and emits intents. No game logic here;
 // the server decides what is legal and sends it in view.actions. No socket either: see GameScreen.
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { CORPSE_ITEM, legalIn, type Action, type BotPause, type CharacterId, type Cheat, type GameClientMessage, type PlayerView, type RoleCheat, type RoomId, type Spot, type Target } from "@mush2/shared";
 import { useTranslation } from "react-i18next";
 import { ActionQueue } from "./hud/ActionQueue.tsx";
@@ -23,6 +23,7 @@ import { SelfHud, SelfPoints } from "./hud/SelfHud.tsx";
 import { TipCard } from "./hud/TipCard.tsx";
 import { resolveTarget } from "./hud/targets.ts";
 import { TopBar } from "./hud/TopBar.tsx";
+import { ServerClockContext, serverTime, type ServerClock } from "./hud/serverClock.ts";
 import { shipPace, type Corpse, type Occupant } from "./iso/scene.ts";
 import { FIRE_ICON, orbitImage } from "./art/assets.ts";
 import { LeavingIsoRoom } from "./iso/LeavingRoom.tsx";
@@ -47,17 +48,29 @@ export interface GameViewProps {
   /** Plays the screen-reader wake-up line (a fresh join from the lobby). */
   waking?: boolean;
   cheatsAllowed?: boolean;
-  /** Server clock minus ours, so action bars (server ms) drain at the right moment. */
-  clockOffset?: number;
+  /** The server's clock for countdowns and action bars: live, an offset from ours; in a replay, frozen at the step. */
+  clock?: ServerClock;
   nextCycleAt?: number | null;
   botsPaused?: BotPause | null;
+  /** Playback controls (a replay): under the top bar on desktop, above the bottom nav on a phone, on every tab. */
+  transport?: ReactNode;
+  /**
+   * Nobody walks into place this render: everyone, you included, jumps there, and leaving a room switches at once.
+   * A replay sets it on any move that isn't a single step forward (a step back, a cycle jump, a seek).
+   */
+  snapWalks?: boolean;
+  /** The game's room, for the end screen's "Watch the replay" link (live only). */
+  replayId?: string | undefined;
 }
+
+const LIVE: ServerClock = { offset: 0 };
+const NO_DOOR_MOVES: ReadonlyMap<string, { from?: RoomId; to?: RoomId }> = new Map();
 
 /**
  * The game screen without a socket: renders a `PlayerView` and turns clicks into intents through `send`. GameScreen
  * feeds it a live game; a replay can feed it recorded views with no `send`.
  */
-export function GameView({ view: given, send, onLeave, waking = false, cheatsAllowed = false, clockOffset = 0, nextCycleAt = null, botsPaused = null }: GameViewProps) {
+export function GameView({ view: given, send, onLeave, waking = false, cheatsAllowed = false, clock = LIVE, nextCycleAt = null, botsPaused = null, transport, snapWalks = false, replayId }: GameViewProps) {
   const { t } = useTranslation();
   // Read-only, the view grants nothing: no actions (so no action buttons, Ready or Go) and no channel to post in
   // (so every thread shows as read-only, as it does for the dead). Taking things away is not deciding legality.
@@ -77,7 +90,9 @@ export function GameView({ view: given, send, onLeave, waking = false, cheatsAll
   /** Equipment id of the terminal window that is open, if any. UI-only. */
   const [terminalId, setTerminalId] = useState<string | null>(null);
   // The end screen opens by itself when the game ends (and after a reload); closing it lets you look around.
+  // A replay stepping back from the end reopens it for the next time the end comes (the derived-state pattern).
   const [endClosed, setEndClosed] = useState(false);
+  if (endClosed && view.phase !== "ended") setEndClosed(false);
   const [peekDoor, setPeekDoor] = useState<RoomId | null>(null);
   // Bumped when the room list selects something, to move focus to where its actions are (a screen reader's next step).
   const [focusActions, setFocusActions] = useState(0);
@@ -153,8 +168,8 @@ export function GameView({ view: given, send, onLeave, waking = false, cheatsAll
   // Where the view places other people outside your room (everyone with ACTOPI on, nobody with it off).
   const nearby: Partial<Record<RoomId, Occupant[]>> = {};
   for (const p of view.players) if (p.room !== undefined && p.room !== you.room) (nearby[p.room] ??= []).push(occupant(p));
-  // Who just came in or went out, and through which door (they walk through it).
-  const doorMoves = recentDoorMoves(view.log, view.players, Date.now() + clockOffset);
+  // Who just came in or went out, and through which door (they walk through it). Nobody, when snapping.
+  const doorMoves = snapWalks ? NO_DOOR_MOVES : recentDoorMoves(view.log, view.players, serverTime(clock, Date.now()));
   // Corpses on the floor here, drawn lying down. Whose body each is comes from the view (`ItemView.of`).
   const corpses: Corpse[] = view.roomItems
     .filter((i) => i.type === CORPSE_ITEM)
@@ -176,11 +191,12 @@ export function GameView({ view: given, send, onLeave, waking = false, cheatsAll
   const terminal = terminalId ? view.roomEquipment.find((e) => e.id === terminalId) ?? null : null;
 
   return (
+    <ServerClockContext.Provider value={clock}>
     <main className="game">
       <Announcer />
       <WakeUpAnnouncement waking={waking} text={t("wake.ready", { day: view.day, cycle: view.cycleOfDay, room: names.room(you.room) })} />
       <TerminalDialog terminal={terminal} view={view} onAction={act} onClose={() => setTerminalId(null)} onSharePlanet={(planet, text) => post({ type: "sharePlanet", planet, text })} />
-      <EndScreen view={view} open={view.phase === "ended" && !endClosed} onOpenChange={(open) => setEndClosed(!open)} />
+      <EndScreen view={view} open={view.phase === "ended" && !endClosed} onOpenChange={(open) => setEndClosed(!open)} replayId={replayId} />
       {!readOnly && <BodyTakenDialog view={view} onAcknowledge={() => post({ type: "acknowledgeTransfer" })} />}
       <TopBar
         view={view}
@@ -188,15 +204,16 @@ export function GameView({ view: given, send, onLeave, waking = false, cheatsAll
         canReady={legalIn(view).some((a) => a.type === "ready")}
         nextCycleAt={nextCycleAt}
         botsPaused={botsPaused}
-        clockOffset={clockOffset}
         onReady={() => act({ type: "ready" })}
         onLeave={onLeave}
         onResults={() => setEndClosed(false)}
         cheatsAllowed={cheatsAllowed && !readOnly}
         onCheat={(cheat: Cheat, on: boolean) => post({ type: "cheat", cheat, on })}
         onRoleCheat={(role: RoleCheat) => post({ type: "roleCheat", role })}
+        onSolCheat={() => post({ type: "solCheat" })}
         onLeaveShip={() => post({ type: "leaveShip" })}
       />
+      {!mobile && transport && <div className="game-transport">{transport}</div>}
 
       <div className="three-panel" data-panel={panel}>
         <div className="left-column">
@@ -210,7 +227,13 @@ export function GameView({ view: given, send, onLeave, waking = false, cheatsAll
             ) : view.patrolShip ? (
               <PatrolCockpit view={view} ship={view.patrolShip} selected={target} onSelect={select} onAction={act} />
             ) : view.expedition?.report !== undefined ? (
-              <IcarusPanel view={view} expedition={view.expedition} clockOffset={clockOffset} selected={target} onSelect={select} />
+              <IcarusPanel
+                view={view}
+                expedition={view.expedition}
+                  selected={target}
+                onSelect={select}
+                onShareReport={readOnly ? undefined : (report, text) => post({ type: "shareReport", report, text })}
+              />
             ) : layout ? (
               <LeavingIsoRoom
                 layout={layout}
@@ -230,7 +253,9 @@ export function GameView({ view: given, send, onLeave, waking = false, cheatsAll
                 selectedDoor={peekDoor}
                 actingOn={actingOn}
                 sentCount={sentCount}
+                atTerminal={terminalId !== null}
                 teleport={you.cheats.includes("instantActions")}
+                snap={snapWalks}
                 doorMoves={doorMoves}
                 onMove={move}
                 onWalk={readOnly ? undefined : (cell, sitting, behind) => view.config.sharedSpots && post({ type: "walk", x: cell.x, y: cell.y, sitting, ...(behind && { behind }) })}
@@ -238,7 +263,6 @@ export function GameView({ view: given, send, onLeave, waking = false, cheatsAll
                 onClear={() => select(null)}
                 onDoorTap={tapDoor}
                 bubbles={bubbles}
-                clockOffset={clockOffset}
                 pilgredRepaired={view.pilgredRepaired}
                 humanTankFull={view.humanTankFull}
                 pace={shipPace(view.navigation)}
@@ -253,8 +277,8 @@ export function GameView({ view: given, send, onLeave, waking = false, cheatsAll
                 <img src={FIRE_ICON} alt="" /> {t("roomList.onFire")}
               </div>
             )}
-            {you.alive && <RoomList view={view} layout={layout} reachable={reachable} onSelect={(target) => { select(target); setFocusActions((n) => n + 1); }} onMove={move} />}
-            {mobile && <ShipOverlay view={view} clockOffset={clockOffset} />}
+            {you.alive && <RoomList view={view} layout={layout} reachable={reachable} onSelect={(target) => { select(target); setFocusActions((n) => n + 1); }} onMove={move} quiet={readOnly} />}
+            {mobile && <ShipOverlay view={view} />}
             {!mobile && you.alive && <SelfHud view={view} onInspect={() => select({ kind: "player", id: you.id })} />}
             {/* Bottom-left: AP and MP (desktop), then the action queue beside them. */}
             {you.alive && (
@@ -279,9 +303,11 @@ export function GameView({ view: given, send, onLeave, waking = false, cheatsAll
         <ITrackie
           view={view}
           roomLogRequest={roomLogRequest}
+          quiet={readOnly}
           onChat={(channel, text) => post({ type: "chat", channel, text })}
           onCreateThread={(name, from) => post(from === undefined ? { type: "createThread", name } : { type: "createThread", name, from })}
           onToggle={(channel, seq, line) => post({ type: "toggleCheckbox", channel, seq, line })}
+          onShareReport={readOnly ? undefined : (report, text) => post({ type: "shareReport", report, text })}
           channels={
             readOnly
               ? undefined
@@ -305,7 +331,9 @@ export function GameView({ view: given, send, onLeave, waking = false, cheatsAll
           onMore={() => setPanel("inspect")}
         />
       )}
+      {mobile && transport && <div className="game-transport">{transport}</div>}
       {mobile && <BottomNav panel={panel} onChange={setPanel} />}
     </main>
+    </ServerClockContext.Provider>
   );
 }

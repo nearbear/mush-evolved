@@ -53,6 +53,11 @@ export interface ReplayIndex {
   /** `STATE_VERSION` of the build that wrote the index (#384); each frame's own is its copy's `BuildStamp`. Missing on older indexes. */
   stateVersion?: number;
   endedAt: number;
+  /**
+   * The game's cycles ran on a clock (multiplayer), so the replay shows the countdown to the next cycle; a
+   * single-player game's cycles end by End cycle, so it has none. Missing on older indexes: no countdown.
+   */
+  realTime?: boolean;
   seats: IndexSeat[];
   chunks: ChunkInfo[];
 }
@@ -110,15 +115,34 @@ export function chunkHistory(record: readonly Pick<RecordedInput, "at" | "histor
   return chunks;
 }
 
+/** What the index says about a game besides its chunks. */
+export interface ReplayMeta {
+  roomId: string;
+  rulesVersion: string;
+  endedAt: number;
+  /** `ReplayIndex.realTime`. */
+  realTime?: boolean;
+  starts: Record<PlayerId, SeatStart>;
+}
+
 /** The index for a game's chunks. Seats are listed in seat order. */
 export function replayIndex(
-  meta: { roomId: string; rulesVersion: string; endedAt: number; starts: Record<PlayerId, SeatStart> },
+  meta: ReplayMeta,
   chunks: readonly ChunkInfo[],
 ): ReplayIndex {
   const seats = Object.entries(meta.starts)
     .sort(([a], [b]) => a.localeCompare(b, "en", { numeric: true }))
     .map(([seat, { role, character }]) => ({ seat, role, character }));
-  return { v: HISTORY_VERSION, roomId: meta.roomId, rulesVersion: meta.rulesVersion, stateVersion: STATE_VERSION, endedAt: meta.endedAt, seats, chunks: [...chunks] };
+  return {
+    v: HISTORY_VERSION,
+    roomId: meta.roomId,
+    rulesVersion: meta.rulesVersion,
+    stateVersion: STATE_VERSION,
+    endedAt: meta.endedAt,
+    ...(meta.realTime !== undefined && { realTime: meta.realTime }),
+    seats,
+    chunks: [...chunks],
+  };
 }
 
 /** Where a game's copy lives in the bucket. Keys depend only on the game, so writing it again replaces it exactly. */

@@ -20,6 +20,18 @@ export const setup: GameSetup = {
   rulesVersion: "test",
 };
 
+/**
+ * How hard the long random-game checks in replay.test.ts work (#382). `npm test` and `verify` leave REPLAY_SEEDS unset: one
+ * seed per check, and the perspective check looks at one seat per step, in turn. `npm run test:slow` sets it to a seed count,
+ * and every seat is checked at every step. A bug these catch usually shows on any seed; more seeds catch rarer paths.
+ */
+const seedsEnv = process.env.REPLAY_SEEDS;
+export const slowRun = seedsEnv !== undefined && seedsEnv !== "";
+const seedCount = slowRun ? Number(seedsEnv) : 1;
+if (!Number.isInteger(seedCount) || seedCount < 1) throw new Error(`REPLAY_SEEDS must be a positive whole number, not ${seedsEnv}`);
+/** The seeds a long check plays: `first` alone in a normal run, `first` and the next ones in a slow run. */
+export const seedsFrom = (first: number): number[] => Array.from({ length: seedCount }, (_, i) => first + i);
+
 /** Launched empty in pre-selection, as the matchmaker's ships are; it fills (and picks the Mush) at 8 joins. */
 export const preselectionSetup: GameSetup = {
   ...setup,

@@ -7,7 +7,7 @@ import type { RelayPool, ResearchPool } from "../relay.ts";
 import type { RngState } from "../rng.ts";
 import type { TitleId } from "../titles.ts";
 import type { ItemState, LogEntry, PlayerId, RoomId } from "../types.ts";
-import type { ChannelId, ChatMark, ChatMessage, ChatOutbox, ChatThread, PrivateChannel, SharedPlanet } from "./chat.ts";
+import type { ChannelId, ChatMark, ChatMessage, ChatOutbox, ChatThread, PrivateChannel, SharedPlanet, SharedReport } from "./chat.ts";
 import type { DeepReadonly, Equipment, ExpeditionEventKind, GameConfig } from "./config.ts";
 import type { Plan } from "./plan.ts";
 import type { PlayerState } from "./player.ts";
@@ -138,12 +138,20 @@ export interface GameCore {
    */
   expeditions: ExpeditionReport[];
   nextExpeditionId: number;
+  /** Expedition reports shared in the Expeditions feature (sharedReports.ts), oldest first. `report` is never sent. */
+  sharedReports: SharedReportState[];
+  nextSharedReportId: number;
   /**
    * The expedition under way, if any (expeditions.ts, phase 2; owner, 2026-11-07): the crew is in the Icarus
    * (`config.expedition.craft`) until its last step. Who is out, the planet and when they are back are public; the
    * sectors left and the members' items are never sent.
    */
   expedition: ActiveExpedition | null;
+  /**
+   * The Icarus was left behind on a planet when the ship jumped without Magnetic return (`strandExpedition`, owner,
+   * 2026-11-07): no more expeditions this game. Public, as the Icarus Bay is drawn empty (`out` on the Icarus).
+   */
+  icarusLost: boolean;
   /**
    * The ship's heading and the planet it orbits, by id, if any (navigation.ts). `orbit` is public as "in orbit or
    * not" and the planet's name (`orbitName`, owner 2026-10-31); its sectors stay its finder's. `heading` goes only to the living at a Command terminal. `arriving` is the
@@ -216,6 +224,11 @@ export interface Hunter {
 /** A shared planet's entry, with the id of the finder's planet it came from (never sent: it ties entries to planets). */
 export interface SharedPlanetState extends SharedPlanet {
   planet: string;
+}
+
+/** A shared report's entry, with the id of the report it came from (never sent: only its members know which it is). */
+export interface SharedReportState extends SharedReport {
+  report: string;
 }
 
 /** One sector's event in an expedition report. `sector` is a planet tag, or LANDING. */

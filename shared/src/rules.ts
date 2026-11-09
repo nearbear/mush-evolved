@@ -31,14 +31,16 @@ import { rollFloat, shuffle } from "./rng.ts";
 import { chatChannels, chatMarkKey, chatPageOf, markedText, readChannels } from "./chat.ts";
 import { moderateName } from "./moderation.ts";
 import { clone, dayOf, fail, findPlayer, type ActionResult } from "./helpers.ts";
+import { endGame, winnerOnArrival } from "./victory.ts";
 
 export { dayOf };
 import { damage, healDaily, hasMushDied } from "./death.ts";
-import { activitySeen, inLogWindow, logPrivate, logWindowOf, pruneLog, pushLog, seesLine, startLogSeen } from "./log.ts";
+import { activitySeen, inLogWindow, logPrivate, logPublic, logWindowOf, pruneLog, pushLog, seesLine, startLogSeen } from "./log.ts";
 import { recordAction } from "./history.ts";
 import { ringMycoAlarms } from "./mycoalarm.ts";
 import { planetsOf } from "./planets.ts";
 import { canSharePlanets } from "./sharedPlanets.ts";
+import { canShareReports } from "./sharedReports.ts";
 import { arriveShip, orbitName, orbitPicture } from "./navigation.ts";
 import { commandTerminalsHere, isPilgredRepaired } from "./pilgred.ts";
 import { biosTerminalsHere, newBios } from "./bios.ts";
@@ -149,9 +151,12 @@ export function createGame(
     nextPlanetId: 1,
     sharedPlanets: [],
     nextSharedPlanetId: 1,
+    sharedReports: [],
+    nextSharedReportId: 1,
     expeditions: [],
     nextExpeditionId: 1,
     expedition: null,
+    icarusLost: false,
     hunters: newHunters(),
     turrets: {},
     incidentPoints: 0,
@@ -339,6 +344,21 @@ export function setRoleCheat(state: GameState, playerId: PlayerId, role: RoleChe
 }
 
 /**
+ * Returns the ship to Sol now (development cheat, gated by the server like setCheat): the game ends as Return to Sol
+ * ends it (actions/return_to_sol.ts), with the decided winner, without PILGRED or the Commander. A quick way to a
+ * finished game in dev, for its listing and replay (`docs/process/commands.md`).
+ */
+export function solCheat(state: GameState, playerId: PlayerId): ActionResult {
+  const p = findPlayer(state, playerId);
+  if (!p) return fail("unknown_player");
+  if (state.phase !== "playing") return fail("game_over");
+  const next = clone(state);
+  logPublic(next, undefined, "returnedToSol", { name: p.character });
+  endGame(next, winnerOnArrival(next), "sol");
+  return { ok: true, state: next };
+}
+
+/**
  * The server's clock passed a cycle boundary (00:00, 03:00, … GMT) at server time `at`: the cycle ends for everyone,
  * ready or not. Without `at` (tests) the inactivity check is skipped.
  */
@@ -472,6 +492,11 @@ export function threadsView(state: Readonly<Pick<GameState, "threads">>): Player
   return state.threads.map(({ id, name, from, createdBy, cycle }) => ({ id, name, ...(from !== undefined && { from }), createdBy, cycle }));
 }
 
+/** Every shared report, as a view carries it (for readers of the Expeditions feature). Never `report`: which report an entry came from stays its members'. */
+export function sharedReportsView(state: Readonly<Pick<GameState, "sharedReports">>): PlayerView["sharedReports"] {
+  return state.sharedReports.map(({ id, text, by, day, cycleOfDay }) => ({ id, text, by, day, cycleOfDay }));
+}
+
 /** Every shared planet, as a view carries it (for readers of the Astrophysics feature). Never `planet`: which planet an entry came from stays its finder's. */
 export function sharedPlanetsView(state: Readonly<Pick<GameState, "sharedPlanets">>): PlayerView["sharedPlanets"] {
   return state.sharedPlanets.map(({ id, text, by, day, cycleOfDay, stale }) => ({ id, text, by, day, cycleOfDay, stale }));
@@ -585,7 +610,8 @@ export function seatViewFor(state: GameState, playerId: PlayerId): SeatView {
     roomOnFire: you.alive && isOnFire(state, you.room),
     burningRooms: you.alive && projectDone(state, "FIRE_SENSOR") ? [...state.fires] : [],
     // `seesLine` (log.ts) says which lines are yours; room lines, private ones included, only within your window (#365).
-    // A private line names only you in the view: no one learns who else saw it (`level` marks a leaked secret line).
+    // A private line names only you in the view: no one learns who else saw it (`leaked` marks a secret line others saw).
+    // `kind` and `leaked` go with every line you see (#366).
     log: state.log
       .filter((e) => seesLine(e, you) && inLogWindow(state, e, logWindow))
       .map((e) => (e.visibleTo === "all" ? e : { ...e, visibleTo: [you.id] })),
@@ -598,6 +624,7 @@ export function seatViewFor(state: GameState, playerId: PlayerId): SeatView {
     plans: plansView(state, channels),
     threads: channels.includes("global") ? threadsView(state) : [],
     sharedPlanets: channels.includes("astrophysics") ? sharedPlanetsView(state) : [],
+    sharedReports: channels.includes("expeditions") ? sharedReportsView(state) : [],
     channelLimit: channelLimit(state, you),
     movement: movementRules(state, you),
     bonds: {
@@ -636,12 +663,16 @@ export function seatViewFor(state: GameState, playerId: PlayerId): SeatView {
     expeditions: you.alive
       ? state.expeditions
           .filter((r) => r.members.includes(you.id))
-          .map(({ members: _members, ...report }): ExpeditionReportView => ({ ...clone(report), ...(state.expedition?.report === report.id && { away: true as const }) }))
+          .map(({ members: _members, ...report }): ExpeditionReportView => {
+            const shared = state.sharedReports.find((s) => s.report === report.id)?.id;
+            return { ...clone(report), ...(state.expedition?.report === report.id && { away: true as const }), ...(shared && { shared }) };
+          })
       : [],
     expedition: expeditionView(state, you),
     // Your own planets only, and only the tags an analysis revealed (owner, 2026-10-19).
     maxPlanets: state.config.astro.maxPlanets,
     canSharePlanets: canSharePlanets(state, you),
+    canShareReports: canShareReports(state, you),
     planets: planetsOf(state, playerId).map((p) => ({
       id: p.id,
       name: p.name,
@@ -699,8 +730,8 @@ function equipmentView(state: GameState, { id, type, broken, jelly, shield }: Eq
   const ship = type === PATROL_INTERFACE ? PATROL_SHIPS.find((s) => interfaceId(s) === id) : undefined;
   const shipState = ship && state.patrolShips[ship.id];
   const docked = shipState && !shipState.out && { armor: shipState.armor, maxArmor: state.config.patrol.armor[ship.kind] };
-  // The Icarus is missing from its bay while away (owner, 2026-11-07); that it is out is public anyway.
-  const out = shipState?.out || (type === ICARUS_EQUIPMENT && state.expedition !== null);
+  // The Icarus is missing from its bay while away or once lost (owner, 2026-11-07); both are public anyway.
+  const out = shipState?.out || (type === ICARUS_EQUIPMENT && (state.expedition !== null || state.icarusLost));
   return { id, type, ...(broken && { broken }), ...(jelly !== undefined && viewer.role === "mush" && viewer.alive && { jelly }), ...(shield !== undefined && seesShield(viewer) && { shield }), ...(out && { out: true as const }), ...(shipState?.destroyed && { destroyed: true as const }), ...docked };
 }
 

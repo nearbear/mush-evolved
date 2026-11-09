@@ -27,6 +27,11 @@
   color: var(--human);
 }
 
+.end-replay {
+  margin: 0.75rem 0 0;
+  text-align: center;
+}
+
 .end-crew {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(18rem, 1fr));

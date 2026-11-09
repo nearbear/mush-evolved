@@ -73,7 +73,7 @@ export const Thread = memo(function Thread({ view, channel, placeholder, onSend,
   return (
     <div className="thread">
       {readable && <PageBar paging={paging} />}
-      <Scroller items={messages.length} scrollKey={paging.page}>
+      <Scroller items={messages.length} scrollKey={paging.page} top={!paging.latest}>
         <ol className="feed">
           {readable && head}
           {!readable && <li className="sub">{t("itrackie.needITrackieRead")}</li>}

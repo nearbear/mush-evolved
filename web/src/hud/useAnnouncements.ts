@@ -16,25 +16,29 @@ export function useChannelLabel(view: PlayerView): (channel: ChannelId) => strin
     if (channel === MUSH_CHANNEL) return t("itrackie.tabs.mush");
     if (channel === GRAVEYARD_CHANNEL) return t("itrackie.tabs.graveyard");
     if ((FEATURE_CHANNELS as readonly string[]).includes(channel)) return t(`itrackie.features.${channel as FeatureChannel}`);
-    // A shared planet's thread goes by its text's first line, as in the Astrophysics list.
-    const shared = view.sharedPlanets.find((e) => e.id === channel)?.text.split("\n", 1)[0];
+    // A shared planet's or report's thread goes by its text's first line, as in the feature's list.
+    const shared = [...view.sharedPlanets, ...view.sharedReports].find((e) => e.id === channel)?.text.split("\n", 1)[0];
     return view.threads.find((th) => th.id === channel)?.name ?? view.privateChannels.find((c) => c.id === channel)?.name ?? shared ?? channel;
   };
 }
 
-/** `reading` is the channel on screen in the iTrackie, if any: its messages are read out in full, other channels only counted. */
-export function useAnnouncements(view: PlayerView, reading: ChannelId | null): void {
+/**
+ * `reading` is the channel on screen in the iTrackie, if any: its messages are read out in full, other channels only
+ * counted. `quiet` reads nothing out (a replay), while still keeping track of what has been seen.
+ */
+export function useAnnouncements(view: PlayerView, reading: ChannelId | null, quiet = false): void {
   const { t } = useTranslation();
   const names = useNames();
   const label = useChannelLabel(view);
   const seen = useRef<Seen | null>(null);
   // The effect runs per view; the helpers are read through a ref so it needn't re-run when they change identity.
-  const latest = useRef({ t, names, label, reading });
-  latest.current = { t, names, label, reading };
+  const latest = useRef({ t, names, label, reading, quiet });
+  latest.current = { t, names, label, reading, quiet };
 
   useEffect(() => {
     const fresh = freshIn(seen.current, view);
     seen.current = fresh.seen;
+    if (latest.current.quiet) return;
     const { t, names, label, reading } = latest.current;
     const verbosity = getVerbosity();
 

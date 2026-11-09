@@ -93,7 +93,7 @@ Everything else (deploys, `ship-layout`, `screenshot`, `a11y`, `model-trial`, `l
 
 `docs/process/testing.md` lists what's important to test and why, with what's covered and what's missing.
 
-Project skills in `.claude/skills/`: `play` (launch, drive, and look at the game), `rule` (adding or changing a game rule), `asset` (using art from `Mush/`), `bot` (scripted and model-backed bots), `leak-check` (review changes for hidden-information leaks), `i18n` (player-visible text and translations: en/fr/es), `wiki` (search and read eMushpedia, the French eMush wiki, with `npm run wiki`), `emush` (clean-room extraction from upstream PHP via `npm run emush`), `gemini` (ask the Gemini CLI, read-only), and `wrap-up` (verify, update docs, propose a commit).
+Project skills in `.claude/skills/`: `play` (launch, drive, and look at the game), `rule` (adding or changing a game rule), `asset` (using art from `Mush/`), `bot` (scripted and model-backed bots), `leak-check` (review changes for hidden-information leaks), `i18n` (player-visible text and translations: en/fr/es), `wiki` (search and read eMushpedia, the eMush wiki in fr/en/es, with `npm run wiki`), `wiki-translate` (translate an eMushpedia page into another of its languages), `emush` (clean-room extraction from upstream PHP via `npm run emush`), `gemini` (ask the Gemini CLI, read-only), and `wrap-up` (verify, update docs, propose a commit).
 
 ## Code map
 

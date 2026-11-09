@@ -13,7 +13,7 @@ const RESOURCES = ["oxygen", "fuel", "hull", "plasmaShield", "hunters", "alerts"
  * are attacking, the ship titles, the orbited planet's name while in orbit (owner, 2026-10-31), and the expedition
  * away: who, where and when they are back (owner, 2026-11-07), all public. TODO(ship-resources): alerts have no backend yet, so they show a placeholder dash.
  */
-export function ShipResources({ ship, hunters, titles, orbit, expedition, clockOffset }: { ship: PlayerView["ship"]; hunters: number; titles: PlayerView["titles"]; orbit: string | null; expedition: PlayerView["expedition"]; clockOffset: number }) {
+export function ShipResources({ ship, hunters, titles, orbit, expedition }: { ship: PlayerView["ship"]; hunters: number; titles: PlayerView["titles"]; orbit: string | null; expedition: PlayerView["expedition"] }) {
   const { t } = useTranslation();
   return (
     <ul className="ship-resources" aria-label={t("shipResources.title")}>
@@ -45,7 +45,7 @@ export function ShipResources({ ship, hunters, titles, orbit, expedition, clockO
         );
       })}
       {orbit !== null && <li className="ship-orbit">{t("shipResources.orbit", { name: orbit })}</li>}
-      {expedition && <ExpeditionAway expedition={expedition} clockOffset={clockOffset} />}
+      {expedition && <ExpeditionAway expedition={expedition} />}
       {titles.map((title) => (
         <li key={title.id} className="ship-title">
           <TitleChip entry={title} />
@@ -56,10 +56,10 @@ export function ShipResources({ ship, hunters, titles, orbit, expedition, clockO
 }
 
 /** Who is out on the expedition, on which planet, and the time left. */
-function ExpeditionAway({ expedition, clockOffset }: { expedition: NonNullable<PlayerView["expedition"]>; clockOffset: number }) {
+function ExpeditionAway({ expedition }: { expedition: NonNullable<PlayerView["expedition"]> }) {
   const { t, i18n } = useTranslation();
   const names = useNames();
-  const time = useCountdown(expedition.returnAt, clockOffset);
+  const time = useCountdown(expedition.returnAt);
   const crew = new Intl.ListFormat(i18n.language, { type: "conjunction" }).format(expedition.crew.map((c) => names.characterGiven(c)));
   return <li className="ship-orbit">{t("shipResources.expedition", { planet: expedition.planet, names: crew, time })}</li>;
 }

@@ -69,6 +69,9 @@
       "account": "Account",
       "cheats": "Cheats"
     },
+    "cheatHints": {
+      "fastExpeditions": "2 seconds per sector"
+    },
     "cheats": {
       "title": "Cheats (development)",
       "infiniteAp": "Infinite action points",
@@ -87,6 +90,8 @@
       "alwaysClean": "Always clean",
       "easyTravel": "Easy travel",
       "invincible": "Invincible ship",
+      "fastExpeditions": "Fast expeditions",
+      "returnToSol": "Return to Sol now",
       "leaveShip": "Leave ship",
       "role": {
         "mush": "Become Mush",
@@ -417,7 +422,9 @@
     "nothing_to_acknowledge": "There is nothing to acknowledge.",
     "share_forbidden": "You need your iTrackie at an Astro terminal to share a planet.",
     "planet_not_found": "That planet isn't one of yours.",
-    "share_text_invalid": "A shared planet needs some text, up to 500 characters and 20 lines."
+    "share_text_invalid": "Shared text needs to be up to 500 characters and 20 lines, and not empty.",
+    "report_share_forbidden": "You need your iTrackie to share a report.",
+    "report_not_found": "You weren't on that expedition."
   },
   "terminal": {
     "close": "Close",
@@ -446,7 +453,8 @@
     "dead": "Dead",
     "you": "You",
     "nameHidden": "Name hidden",
-    "results": "Results"
+    "results": "Results",
+    "watchReplay": "Watch the replay"
   },
   "shipCard": {
     "triumph": "Triumph",
@@ -464,7 +472,8 @@
     "newer": "Newer games",
     "cycles_one": "{{count}} cycle",
     "cycles_other": "{{count}} cycles",
-    "game": "Game that ended {{date}}"
+    "game": "Game that ended {{date}}",
+    "watchReplay": "Watch the replay"
   },
   "replay": {
     "loading": "Loading replay…",
@@ -476,7 +485,31 @@
     "rateLimited": "Too many requests, retrying…",
     "tooOld": "This replay was recorded by an older version of the game and can no longer be shown. Here is how it ended.",
     "olderBuild": "Recorded on an older version",
-    "olderBuildHint": "This moment was recorded by an earlier version of the game, so some details may show differently than they did."
+    "olderBuildHint": "This moment was recorded by an earlier version of the game, so some details may show differently than they did.",
+    "back": "Back to finished games",
+    "backLobby": "Back to the ships",
+    "nobodyAboard": "The ship is waiting for its crew: nobody has boarded yet.",
+    "transport": "Replay controls",
+    "dayCycle": "Day {{day}} · cycle {{cycle}}",
+    "cycleSelect": "Go to cycle",
+    "cycleScrubber": "Cycle",
+    "stepBack": "Step back",
+    "stepForward": "Step forward",
+    "eventBack": "Previous event",
+    "eventForward": "Next event",
+    "cycleBack": "Previous cycle",
+    "cycleForward": "Next cycle",
+    "play": "Play",
+    "pause": "Pause",
+    "speed": "Speed",
+    "speedValue": "{{speed}}×",
+    "skip": "Skip quiet steps",
+    "more": "More controls",
+    "allSeeing": "All-seeing",
+    "perspective": "Point of view",
+    "seatMoved": "Now in {{character}} (started as {{start}})",
+    "followingAll": "All-seeing · following {{character}}",
+    "seenBy": "Seen by {{character}}"
   },
   "returnToSol": {
     "desc": "After all this time, maybe it's time to see what's happening on Sol.",
@@ -510,6 +543,13 @@
     "bodyMush": "You can still read global chat, the feature threads and the Mush channel, but you can no longer post there. You can talk with the other dead in the Graveyard."
   },
   "itrackie": {
+    "visibility": {
+      "private": "Private action: no one else sees this line.",
+      "secret": "Secret action: no one else saw it.",
+      "secretLeaked": "Secret action, but someone else saw it.",
+      "covert": "Covert action: no one else saw it.",
+      "covertLeaked": "Covert action, but it was revealed."
+    },
     "unreadTab_one": "{{name}}, {{count}} unread",
     "unreadTab_other": "{{name}}, {{count}} unread",
     "needITrackieRead": "You need an iTrackie in your inventory to read this.",
@@ -562,7 +602,8 @@
       "comms": "Comms center",
       "pilgred": "PILGRED repair",
       "neron": "NERON projects",
-      "astrophysics": "Astrophysics"
+      "astrophysics": "Astrophysics",
+      "expeditions": "Expeditions"
     },
     "messageMenu": {
       "open": "Message options",
@@ -603,6 +644,12 @@
       "latestNew_one": "Latest page ({{count}} new)",
       "latestNew_other": "Latest page ({{count}} new)",
       "loading": "Loading…"
+    },
+    "sharedReports": {
+      "mine": "Your expeditions",
+      "isShared": "Shared",
+      "list": "Expedition threads",
+      "placeholder": "Discuss this expedition…"
     }
   },
   "bond": {
@@ -633,6 +680,7 @@
     "broken_nose_injury": "Broken Nose",
     "inactive": "Inactive",
     "super_inactive": "Super Inactive",
+    "focused": "Focused",
     "contaminated": "Contamination: {{level}}",
     "desc": {
       "dirty": "Can't research. Taking a shower removes it.",
@@ -654,6 +702,7 @@
       "broken_nose_injury": "-2 Max HP.\n-2 Max Morale.",
       "inactive": "Hasn't connected for 24 hours. Holds no title, can't be taken over by a Transfer, and a punch lands on them 90% of the time. Ends as soon as they connect.",
       "super_inactive": "Hasn't connected for 48 hours. Also skipped by the Logistics Expert. Ends as soon as they connect.",
+      "focused": "At a terminal, looking at its screen. Ends when they close it, walk off or leave the room.",
       "contaminated": "A human you have contaminated. At their capacity they turn Mush."
     }
   },
@@ -864,6 +913,8 @@
     "hunterHitPatrol": "A hunter hit {{room}}: {{armor}} armor lost.",
     "patrolDestroyed": "NERON: {{room}} was shot down by hunters.",
     "patrolLost": "NERON: {{room}} was left behind when the Daedalus jumped, and is lost.",
+    "icarusLost": "NERON: the Icarus was left behind on {{planet}} when the Daedalus jumped, with its whole crew. It is lost.",
+    "icarusRecalled": "NERON: Magnetic return brought the Icarus back from {{planet}} when the Daedalus jumped.",
     "patrolUnloaded_one": "{{name}} unloaded {{count}} item from the ship.",
     "patrolUnloaded_other": "{{name}} unloaded {{count}} items from the ship.",
     "scrapCollected_one": "You brought in {{count}} piece of debris.",
@@ -895,7 +946,9 @@
     "itemRepaired": "{{name}} repaired the {{item}}.",
     "itemRepairFailed": "You failed to repair the {{item}}.",
     "fireExtinguished": "{{name}} put out the fire!",
-    "extinguishFailed": "You failed to put out the fire."
+    "extinguishFailed": "You failed to put out the fire.",
+    "reportShared": "{{name}} shared the report of the expedition to {{planet}}.",
+    "reportShareAppended": "{{name}} added to the shared report of the expedition to {{planet}}."
   },
   "skills": {
     "title": "Choose a skill",
@@ -1572,6 +1625,8 @@
     "right": "Turn right",
     "travel": "Travel",
     "leaveOrbit": "Leave orbit",
+    "strandConfirm": "An expedition is still out on {{planet}}. Jumping now strands its crew: without Magnetic return, they die and the Icarus is lost.",
+    "strandBack": "Back",
     "warning": "Travel burns all the fuel in the combustion chamber, and the ship goes that far. With none loaded the AP is wasted. Every planet not lying exactly ahead at that distance is lost."
   },
   "turret": {
@@ -1616,7 +1671,14 @@
     "back": "Back in {{time}}",
     "underWay": "The expedition is still under way.",
     "lootAboard": "Everything found so far is on the Icarus's floor.",
-    "icarusAway": "The Icarus is away on an expedition."
+    "icarusAway": "The Icarus is away on an expedition.",
+    "share": "Share the report",
+    "shareAgain": "Add to the shared report",
+    "shareHint": "This text goes to the Expeditions feature for the whole crew. Change it as you like.",
+    "shareAgainHint": "This report is already shared: this text is added to its thread. Change it as you like.",
+    "shareLabel": "Text to share",
+    "sharePost": "Share",
+    "shared": "Shared in the Expeditions feature."
   },
   "roomList": {
     "region": "Room",

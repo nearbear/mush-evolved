@@ -44,7 +44,17 @@ export interface LogEntry {
   visibleTo: "all" | PlayerId[];
   /** Set on entries the crew should take notice of: a secret or covert action that leaked into the room log, or an alarm. */
   level?: "warning";
+  /**
+   * Which writer wrote it (owner, 2026-11-05, #366): `logPrivate`, `logSecret` or `logCovert`; missing for a public
+   * line. Sent with every line a seat sees, so a witness learns a line was secret or covert.
+   */
+  kind?: LogKind;
+  /** On a secret or covert line that reached anyone besides the actor: a witness, a camera, or an Outcast's room. */
+  leaked?: true;
 }
+
+/** A log line's kind besides public; the same names as `ActionVisibility`'s. */
+export type LogKind = "private" | "secret" | "covert";
 
 /** A log line as a live view sends it: no `id` (`PlayerView.log` says why). */
 export type LogLine = Omit<LogEntry, "id">;

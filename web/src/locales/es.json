@@ -69,6 +69,9 @@
       "account": "Cuenta",
       "cheats": "Trampas"
     },
+    "cheatHints": {
+      "fastExpeditions": "2 segundos por sector"
+    },
     "cheats": {
       "title": "Trucos (desarrollo)",
       "infiniteAp": "Puntos de acción infinitos",
@@ -87,6 +90,8 @@
       "alwaysClean": "Siempre limpio",
       "easyTravel": "Viaje fácil",
       "invincible": "Nave invencible",
+      "fastExpeditions": "Expediciones rápidas",
+      "returnToSol": "Volver a Sol ahora",
       "leaveShip": "Abandonar la nave",
       "role": {
         "mush": "Convertirse en Mush",
@@ -421,7 +426,9 @@
     "nothing_to_acknowledge": "No hay nada que confirmar.",
     "share_forbidden": "Necesitas tu iTrackie en una terminal Astro para compartir un planeta.",
     "planet_not_found": "Ese planeta no es uno de los tuyos.",
-    "share_text_invalid": "Un planeta compartido necesita un texto, de hasta 500 caracteres y 20 líneas."
+    "share_text_invalid": "Un texto compartido debe tener como máximo 500 caracteres y 20 líneas, y no estar vacío.",
+    "report_share_forbidden": "Necesitas tu iTrackie para compartir un informe.",
+    "report_not_found": "No estabas en esa expedición."
   },
   "terminal": {
     "close": "Cerrar",
@@ -450,7 +457,8 @@
     "dead": "Muerto",
     "you": "Tú",
     "nameHidden": "Nombre oculto",
-    "results": "Resultados"
+    "results": "Resultados",
+    "watchReplay": "Ver la repetición"
   },
   "shipCard": {
     "triumph": "Triunfo",
@@ -469,7 +477,8 @@
     "cycles_one": "{{count}} ciclo",
     "cycles_many": "{{count}} de ciclos",
     "cycles_other": "{{count}} ciclos",
-    "game": "Partida terminada el {{date}}"
+    "game": "Partida terminada el {{date}}",
+    "watchReplay": "Ver la repetición"
   },
   "replay": {
     "loading": "Cargando la repetición…",
@@ -481,7 +490,31 @@
     "rateLimited": "Demasiadas solicitudes, reintentando…",
     "tooOld": "Esta repetición se grabó con una versión anterior del juego y ya no se puede mostrar. Así terminó la partida.",
     "olderBuild": "Grabado en una versión anterior",
-    "olderBuildHint": "Este momento se grabó con una versión anterior del juego, así que algunos detalles pueden verse distintos de como fueron."
+    "olderBuildHint": "Este momento se grabó con una versión anterior del juego, así que algunos detalles pueden verse distintos de como fueron.",
+    "back": "Volver a las partidas terminadas",
+    "backLobby": "Volver a las naves",
+    "nobodyAboard": "La nave espera a su tripulación: todavía no ha subido nadie a bordo.",
+    "transport": "Controles de la repetición",
+    "dayCycle": "Día {{day}} · ciclo {{cycle}}",
+    "cycleSelect": "Ir al ciclo",
+    "cycleScrubber": "Ciclo",
+    "stepBack": "Paso atrás",
+    "stepForward": "Paso adelante",
+    "eventBack": "Evento anterior",
+    "eventForward": "Evento siguiente",
+    "cycleBack": "Ciclo anterior",
+    "cycleForward": "Ciclo siguiente",
+    "play": "Reproducir",
+    "pause": "Pausa",
+    "speed": "Velocidad",
+    "speedValue": "{{speed}}×",
+    "skip": "Saltar los pasos sin novedades",
+    "more": "Más controles",
+    "allSeeing": "Omnisciente",
+    "perspective": "Punto de vista",
+    "seatMoved": "Ahora en {{character}} (empezó como {{start}})",
+    "followingAll": "Omnisciente · siguiendo a {{character}}",
+    "seenBy": "Visto por {{character}}"
   },
   "returnToSol": {
     "desc": "Después de tanto tiempo, quizá sea hora de ver qué pasa en Sol.",
@@ -515,6 +548,13 @@
     "bodyMush": "Todavía puedes leer el chat global, los hilos de funciones y el canal Mush, pero ya no puedes escribir allí. Puedes hablar con los demás muertos en el Cementerio."
   },
   "itrackie": {
+    "visibility": {
+      "private": "Acción privada: nadie más ve esta línea.",
+      "secret": "Acción secreta: nadie más la vio.",
+      "secretLeaked": "Acción secreta, pero alguien más la vio.",
+      "covert": "Acción discreta: nadie más la vio.",
+      "covertLeaked": "Acción discreta, pero fue revelada."
+    },
     "unreadTab_one": "{{name}}, {{count}} sin leer",
     "unreadTab_other": "{{name}}, {{count}} sin leer",
     "unreadTab_many": "{{name}}, {{count}} sin leer",
@@ -568,7 +608,8 @@
       "comms": "Centro de comunicaciones",
       "pilgred": "Reparación del PILGRED",
       "neron": "Proyectos de NERON",
-      "astrophysics": "Astrofísica"
+      "astrophysics": "Astrofísica",
+      "expeditions": "Expediciones"
     },
     "messageMenu": {
       "open": "Opciones del mensaje",
@@ -611,6 +652,12 @@
       "latestNew_other": "Última página ({{count}} nuevos)",
       "loading": "Cargando…",
       "latestNew_many": "Última página ({{count}} nuevos)"
+    },
+    "sharedReports": {
+      "mine": "Tus expediciones",
+      "isShared": "Compartido",
+      "list": "Hilos de las expediciones",
+      "placeholder": "Comentar esta expedición…"
     }
   },
   "bond": {
@@ -641,6 +688,7 @@
     "broken_nose_injury": "Nariz rota",
     "inactive": "Inactivo",
     "super_inactive": "Gran inactivo",
+    "focused": "Concentrado",
     "contaminated": "Contaminación: {{level}}",
     "desc": {
       "dirty": "No puedes investigar. Darte una ducha lo elimina.",
@@ -662,6 +710,7 @@
       "broken_nose_injury": "-2 PV máximos.\n-2 de moral máxima.",
       "inactive": "No se ha conectado en 24 horas. No puede tener ningún título, no puede sufrir una Transferencia, y un puñetazo le acierta el 90 % de las veces. Termina en cuanto se conecta.",
       "super_inactive": "No se ha conectado en 48 horas. Logística también lo ignora. Termina en cuanto se conecta.",
+      "focused": "Está en un terminal, mirando su pantalla. Termina cuando lo cierra, se aleja o sale de la sala.",
       "contaminated": "Un humano que has contaminado. Al llegar a su capacidad se vuelve Mush."
     }
   },
@@ -875,6 +924,8 @@
     "hunterHitPatrol": "Disparo de hunter contra {{room}}: {{armor}} puntos de armadura perdidos.",
     "patrolDestroyed": "NERON: nave derribada por los hunters ({{room}}).",
     "patrolLost": "NERON: nave perdida en el salto del Daedalus ({{room}}).",
+    "icarusLost": "NERON: el Icarus se quedó en {{planet}} durante el salto del Daedalus, con toda su tripulación. Se ha perdido.",
+    "icarusRecalled": "NERON: la repatriación magnética trajo de vuelta el Icarus desde {{planet}} durante el salto del Daedalus.",
     "patrolUnloaded_one": "{{name}} descargó {{count}} objeto de la nave.",
     "patrolUnloaded_many": "{{name}} descargó {{count}} objetos de la nave.",
     "patrolUnloaded_other": "{{name}} descargó {{count}} objetos de la nave.",
@@ -910,7 +961,9 @@
     "itemRepaired": "{{name}} ha reparado el objeto: {{item}}.",
     "itemRepairFailed": "No has conseguido reparar el objeto: {{item}}.",
     "fireExtinguished": "¡{{name}} ha apagado el incendio!",
-    "extinguishFailed": "No has conseguido apagar el incendio."
+    "extinguishFailed": "No has conseguido apagar el incendio.",
+    "reportShared": "{{name}} ha compartido el informe de la expedición a {{planet}}.",
+    "reportShareAppended": "{{name}} ha completado el informe compartido de la expedición a {{planet}}."
   },
   "skills": {
     "title": "Elegir una habilidad",
@@ -1494,6 +1547,8 @@
     "right": "Girar a la derecha",
     "travel": "Viajar",
     "leaveOrbit": "Salir de la órbita",
+    "strandConfirm": "Una expedición sigue en {{planet}}. Saltar ahora abandona a su tripulación: sin repatriación magnética, muere y el Icarus se pierde.",
+    "strandBack": "Volver",
     "warning": "Viajar quema todo el combustible de la cámara de combustión, y la nave avanza esa distancia. Sin combustible cargado se pierden los PA. Todo planeta que no esté justo delante a esa distancia se pierde."
   },
   "turret": {
@@ -1543,7 +1598,14 @@
     "back": "De vuelta en {{time}}",
     "underWay": "La expedición sigue en curso.",
     "lootAboard": "Todo lo encontrado hasta ahora está en el suelo del Ícaro.",
-    "icarusAway": "El Ícaro ha salido de expedición."
+    "icarusAway": "El Ícaro ha salido de expedición.",
+    "share": "Compartir el informe",
+    "shareAgain": "Completar el informe compartido",
+    "shareHint": "Este texto va a la sección Expediciones para toda la tripulación. Cámbialo como quieras.",
+    "shareAgainHint": "Este informe ya está compartido: este texto se añade a su hilo. Cámbialo como quieras.",
+    "shareLabel": "Texto que compartir",
+    "sharePost": "Compartir",
+    "shared": "Compartido en la sección Expediciones."
   },
   "roomList": {
     "region": "Sala",

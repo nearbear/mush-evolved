@@ -56,7 +56,10 @@ import {
   placeActors,
   prepareScene,
   spreadActors,
+  offFloorStep,
   standSpot,
+  stepsOnto,
+  terminalSpot,
   walkableCells,
   walkPath,
   type DoorStep,
@@ -138,7 +141,9 @@ export function IsoRoom({
   selectedDoor,
   actingOn,
   sentCount,
+  atTerminal = false,
   teleport,
+  snap = false,
   leavingTo,
   onLeft,
   doorMoves,
@@ -148,7 +153,6 @@ export function IsoRoom({
   onClear,
   onDoorTap,
   bubbles,
-  clockOffset,
   zoom,
   onZoomStep,
   pilgredRepaired,
@@ -182,8 +186,12 @@ export function IsoRoom({
   actingOn: ActingOn | null;
   /** Changes whenever you send an action: you get up from your chair. */
   sentCount: number;
+  /** A terminal's window is open: you stay at it (the server's `occupancy` spot, #192); once it closes, you get up. */
+  atTerminal?: boolean;
   /** The instant actions cheat is on: you jump wherever you'd walk (others still walk), except with a wheelchair, which walks for you both. */
   teleport: boolean;
+  /** Everyone jumps to where they should be this render, nobody walks (a replay's jump back or across cycles). */
+  snap?: boolean;
   /** You've already moved there: walk to the door to it, then `onLeft` (LeavingIsoRoom shows the next room). */
   leavingTo: RoomId | null;
   onLeft: () => void;
@@ -200,8 +208,6 @@ export function IsoRoom({
   onDoorTap: (to: RoomId) => void;
   /** Recent global chat per sender, oldest first, shown as speech bubbles over their heads. */
   bubbles: ReadonlyMap<string, Bubble[]>;
-  /** Server clock minus this browser's, for drawing action bars. */
-  clockOffset: number;
   /** PILGRED works (public): its core in the engine room is drawn as the animated globe. */
   pilgredRepaired: boolean;
   /** A Mush has died on the ship (public): the sick bay's human_tank shows a person in it. */
@@ -239,9 +245,12 @@ export function IsoRoom({
   // to one visit; the view's spot says where you came in). Sitting on a chair is the walk's end point plus the seat taken there.
   // Pushing a wheelchair, `steer` is where you clicked, where the wheelchair goes, and `cell` the one you end up in behind it.
   const [walk, setWalk] = useState<{ visit: number; cell: { x: number; y: number }; seat?: Seat; steer?: { x: number; y: number } } | null>(null);
-  // biome-ignore lint/correctness/useExhaustiveDependencies: only sending an action gets you up.
-  useEffect(() => setWalk((w) => (w?.seat ? { ...w, seat: undefined } : w)), [sentCount]);
   const cells = useMemo(() => (roomLayout ? walkableCells(layout, roomLayout) : []), [layout, roomLayout]);
+  const mySpot = occupants.find((o) => o.you)?.spot;
+  // biome-ignore lint/correctness/useExhaustiveDependencies: only sending an action gets you up; at a terminal, its own actions keep you there.
+  useEffect(() => {
+    if (mySpot?.kind !== "occupancy") setWalk((w) => (w?.seat ? { ...w, seat: undefined } : w));
+  }, [sentCount]);
   const spots = useMemo(() => spreadActors(cells, occupants.length + corpses.length), [cells, occupants.length, corpses.length]);
 
   // The tiles of this room and the rooms behind its doors, sorted once; people walking only re-place the people.
@@ -324,8 +333,23 @@ export function IsoRoom({
   // Where the view says someone stands: a cell of this floor, or in front of the door they came in by. A cell
   // that isn't this room's floor (an old or tampered spot) counts as no spot.
   const floorKeys = useMemo(() => new Set(cells.map((c) => `${c.x},${c.y}`)), [cells]);
+  // At a terminal (#192): its chair, or its standing spot.
+  const atTerminalOf = (spot: Spot | undefined) => (spot?.kind === "occupancy" && roomLayout ? terminalSpot(layout, roomLayout, spot.equipment, spot.chair, cells) : undefined);
   const spotCell = (spot: Spot | undefined) =>
-    !spot || !roomLayout ? undefined : spot.kind === "door" ? doorSpot(layout, roomLayout, spot.door, cells) : floorKeys.has(`${spot.x},${spot.y}`) ? { x: spot.x, y: spot.y } : undefined;
+    !spot || !roomLayout
+      ? undefined
+      : spot.kind === "door"
+        ? doorSpot(layout, roomLayout, spot.door, cells)
+        : spot.kind === "occupancy"
+          ? atTerminalOf(spot)?.cell
+          : floorKeys.has(`${spot.x},${spot.y}`)
+            ? { x: spot.x, y: spot.y }
+            : undefined;
+  /** Going to `cell`: a seat off the floor (inside a turret, #192) is climbed into from the floor cell nearest it. */
+  const onto = (cell: { x: number; y: number }): Goal => {
+    const step = offFloorStep(cells, cell);
+    return step ? { cell: step, then: stepsOnto(step, cell) } : { cell };
+  };
   const targets = new Map<string, Goal>(
     occupants.map((o, i) => {
       const bed = beds.get(o.id)?.cell;
@@ -335,12 +359,12 @@ export function IsoRoom({
       if (o.you) {
         // Pushed in a wheelchair, you go where your pusher steers you (your spot), not where you came in.
         const cell = exitCell ?? (o.pushedBy !== undefined ? spotCell(o.spot) : undefined) ?? here?.cell ?? entryCell ?? spotCell(o.spot) ?? spots[i] ?? { x: 0, y: 0 };
-        return [o.id, { cell, ...(myExit && { then: myExit }), ...(visit.current.from && { from: wayIn(visit.current.from, true) }), ...(behind && !myExit && { behind }) }];
+        return [o.id, { ...(myExit ? { cell, then: myExit } : onto(cell)), ...(visit.current.from && { from: wayIn(visit.current.from, true) }), ...(behind && !myExit && { behind }) }];
       }
       // Someone who just came in walks in through the door they came by. The wheelchair you push goes where you steered it, at once.
       const from = seen && !seen.ids.has(o.id) ? doorMoves.get(o.id)?.from : undefined;
       const steered = o.pushedBy === me?.id ? here?.steer : undefined;
-      return [o.id, { cell: steered ?? spotCell(o.spot) ?? spots[i] ?? { x: 0, y: 0 }, ...(from && { from: wayIn(from, false) }), ...(behind && { behind }) }];
+      return [o.id, { ...onto(steered ?? spotCell(o.spot) ?? spots[i] ?? { x: 0, y: 0 }), ...(from && { from: wayIn(from, false) }), ...(behind && { behind }) }];
     }),
   );
   for (const l of walkingOut) {
@@ -350,7 +374,7 @@ export function IsoRoom({
   }
   // Each animation frame while anyone walks: the camera and the walkers' pixel shifts, to the renderer and the overlay.
   const paint = useRef<((offsetOf: (id: string) => { x: number; y: number }) => void) | null>(null);
-  const { at: walkers, doors, apply: applyWalkers, offsetOf } = useWalkers(room, cells, targets, openMs, paint, teleport && !myPushee && me?.pushedBy === undefined ? me?.id : undefined);
+  const { at: walkers, doors, apply: applyWalkers, offsetOf } = useWalkers(room, cells, targets, openMs, paint, teleport && !myPushee && me?.pushedBy === undefined ? me?.id : undefined, snap);
   const myWalker = me && walkers.get(me.id);
   const standsAt = (w: { cell: { x: number; y: number }; moving: boolean } | undefined, c: { x: number; y: number }) => !!w && !w.moving && w.cell.x === c.x && w.cell.y === c.y;
   // Walking out: done once you stand in the doorway (straight away if there's no door to go through).
@@ -381,8 +405,9 @@ export function IsoRoom({
       if (arrived && here.seat) seats.set(o.id, here.seat);
       continue;
     }
-    const spot = o.spot?.kind === "cell" && o.spot.sitting ? o.spot : undefined;
-    const dir = spot && w.cell.x === spot.x && w.cell.y === spot.y ? chairAt(layout, roomLayout, spot) : undefined;
+    const terminal = atTerminalOf(o.spot);
+    const spot = terminal?.chair !== undefined ? terminal.cell : o.spot?.kind === "cell" && o.spot.sitting ? o.spot : undefined;
+    const dir = spot && w.cell.x === spot.x && w.cell.y === spot.y ? (terminal?.chair ?? chairAt(layout, roomLayout, spot)) : undefined;
     if (dir !== undefined) seats.set(o.id, seatFor(dir || undefined));
   }
   const seatsKey = [...seats].map(([id, s]) => `${id}:${s.facing}${s.flip ? "f" : ""}`).join(";");
@@ -486,6 +511,8 @@ export function IsoRoom({
   useEffect(() => {
     // Pushing a wheelchair or pushed in one, you stay with it, unless what you do ends the push (shared `endsAccommodation`).
     if (!actingOn || !roomLayout || !myWalker || leavingTo || ((myPushee || me?.pushedBy !== undefined) && !actingOn.endsPush)) return;
+    // Seated at a terminal with its window open (#192), what you do there keeps you in your chair: a walk would end it.
+    if (atTerminal && mySpot?.kind === "occupancy") return;
     const { target } = actingOn;
     let cell: { x: number; y: number } | undefined;
     if (target.kind === "door") cell = doorSpot(layout, roomLayout, target.to, cells);
@@ -500,8 +527,25 @@ export function IsoRoom({
     }
     if (!cell) return;
     setWalk({ visit: visit.current.n, cell });
-    if (actingOn.share) onWalk?.(cell, false);
+    // Opening a terminal: the server seats you (an `occupancy` spot), and a walk would undo it.
+    if (actingOn.share && !actingOn.seats) onWalk?.(cell, false);
   }, [actingOn?.n]);
+
+  // At a terminal (#192): you go to the chair the server gave you, or stand at it. Once its window is closed (or was
+  // never open here, after a reload), you get up and step to its standing spot, which ends it for your roommates too.
+  const occupancyKey = mySpot?.kind === "occupancy" ? `${mySpot.equipment}:${mySpot.chair ?? ""}` : "";
+  // biome-ignore lint/correctness/useExhaustiveDependencies: only a new seat, or the window closing, moves you.
+  useEffect(() => {
+    const at = atTerminalOf(mySpot);
+    if (!at || !roomLayout || leavingTo) return;
+    if (atTerminal) {
+      setWalk({ visit: visit.current.n, cell: at.cell, ...(at.chair !== undefined && { seat: seatFor(at.chair || undefined) }) });
+      return;
+    }
+    const key = mySpot?.kind === "occupancy" ? [...equipmentByKey].find(([, e]) => e.id === mySpot.equipment)?.[0] : undefined;
+    const stand = key ? standSpot(layout, roomLayout, Number(key.slice(1)), cells) : undefined;
+    walkTo(stand ?? at.cell);
+  }, [occupancyKey, atTerminal]);
 
   const ringOf = new Map(neighbors.map((n) => [n.id as string, n.ring]));
   const byId = new Map([...drawnPeople, ...neighbors.flatMap((n) => n.people)].map((o) => [o.id, o]));
@@ -733,7 +777,7 @@ export function IsoRoom({
             <Renderer scene={drawn} ref={attachRenderer} />
           </Suspense>
           {/* Status badges and speech bubbles above the scene, so no sprite or wall can ever cover them. */}
-          <SceneOverlay anchors={anchors} width={drawn.width} height={drawn.height} bubbles={bubbles} clockOffset={clockOffset} ref={overlayRef} />
+          <SceneOverlay anchors={anchors} width={drawn.width} height={drawn.height} bubbles={bubbles} ref={overlayRef} />
           </div>
         </div>
       </div>

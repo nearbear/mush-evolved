@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { RoomLayout, ShipLayout, SliceInfo } from "@mush2/shared";
+import { placedEquipment, type RoomLayout, type ShipLayout, type SliceInfo } from "@mush2/shared";
 import shipArtJson from "../../../Mush/derived/ship-art.json?raw";
 import shipMapJson from "../../../Mush/derived/ship-map.json?raw";
 import { withoutBuiltOnly } from "../../src/iso/equipmentTiles.ts";
@@ -16,6 +16,9 @@ import {
   prepareScene,
   spreadActors,
   standSpot,
+  offFloorStep,
+  stepsOnto,
+  terminalSpot,
   walkableCells,
   walkPath,
 } from "../../src/iso/placement.ts";
@@ -476,5 +479,48 @@ describe("doorPassage on the real ship", () => {
       if (cross.x + at.x !== other.x + to.at!.x || cross.y + at.y !== other.y + to.at!.y) problems.push(`${from.id} -> ${to.id}: doorways differ`);
     }
     expect(problems).toEqual([]);
+  });
+});
+
+describe("terminalSpot (#192)", () => {
+  const ship = withoutBuiltOnly({ ...JSON.parse(shipArtJson), ...JSON.parse(shipMapJson) } as ShipLayout);
+
+  it("every terminal chair in the map is a chair someone can sit on, on the floor or climbed into from it", () => {
+    const chairs: string[] = [];
+    const notSeated: string[] = [];
+    for (const room of ship.rooms) {
+      const cells = walkableCells(ship, room);
+      for (const e of placedEquipment(room)) {
+        (e.chairs ?? []).forEach((c, i) => {
+          chairs.push(e.id);
+          const at = terminalSpot(ship, room, e.id, i, cells);
+          const step = offFloorStep(cells, c);
+          // Climbed into across the turret's base: five cells at most (turret beta's).
+          const near = !step || Math.abs(step.x - c.x) + Math.abs(step.y - c.y) <= 5;
+          if (at?.chair === undefined || at.cell.x !== c.x || at.cell.y !== c.y || !near) notSeated.push(`${e.id} chair ${i} at ${c.x},${c.y} (step ${JSON.stringify(step)})`);
+        });
+      }
+    }
+    expect(chairs).toHaveLength(10);
+    expect(notSeated).toEqual([]);
+  });
+
+  it("stands you at the terminal without a chair, or with a chair number it doesn't have", () => {
+    const room = ship.rooms.find((r) => r.id === "LABORATORY")!;
+    const cells = walkableCells(ship, room);
+    const lab = placedEquipment(room).find((e) => e.id === "LABORATORY:RESEARCH_LAB")!;
+    const stand = standSpot(ship, room, lab.tile, cells);
+    expect(terminalSpot(ship, room, lab.id, undefined, cells)).toEqual({ cell: stand });
+    expect(terminalSpot(ship, room, lab.id, 5, cells)).toEqual({ cell: stand });
+    expect(terminalSpot(ship, room, "LABORATORY:NOTHING", 0, cells)).toBeUndefined();
+  });
+
+  it("offFloorStep: the nearest floor cell to one off the floor, nothing for one on it", () => {
+    const cells = [{ x: 0, y: 0 }, { x: 1, y: 0 }, { x: 3, y: 0 }];
+    expect(offFloorStep(cells, { x: 1, y: 0 })).toBeUndefined();
+    expect(offFloorStep(cells, { x: 2, y: 0 })).toEqual({ x: 1, y: 0 });
+    expect(offFloorStep(cells, { x: 3, y: 2 })).toEqual({ x: 3, y: 0 });
+    expect(offFloorStep([], { x: 3, y: 2 })).toBeUndefined();
+    expect(stepsOnto({ x: 3, y: 0 }, { x: 1, y: 2 })).toEqual([{ x: 2, y: 0 }, { x: 1, y: 0 }, { x: 1, y: 1 }, { x: 1, y: 2 }]);
   });
 });

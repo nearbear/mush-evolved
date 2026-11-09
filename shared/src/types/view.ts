@@ -6,7 +6,7 @@ import type { TurnSide } from "../navigation.ts";
 import type { PlanetDirection } from "../planets.ts";
 import type { TitleId } from "../titles.ts";
 import type { Action, BotKind, ItemId, LogEntry, LogLine, PlayerId, Role, RoomId } from "../types.ts";
-import type { ChannelId, ChatLine, ChatMessage, ChatThread, PrivateChannel, SharedPlanet } from "./chat.ts";
+import type { ChannelId, ChatLine, ChatMessage, ChatThread, PrivateChannel, SharedPlanet, SharedReport, SharedReportId } from "./chat.ts";
 import type { Plan } from "./plan.ts";
 import type { MovementRules } from "./config.ts";
 import type { ActionInProgress, PlayerState, Spot } from "./player.ts";
@@ -225,6 +225,8 @@ export interface PlayerView {
   threads: ChatThread[];
   /** Planets shared in the Astrophysics feature, oldest first, when you can read it. Never which planet each came from. */
   sharedPlanets: SharedPlanet[];
+  /** Expedition reports shared in the Expeditions feature (sharedReports.ts), to whoever can read that feature. */
+  sharedReports: SharedReport[];
   /** How many private channels you may belong to, after modifiers. */
   channelLimit: number;
   /** Your effective movement rules, after modifiers. */
@@ -306,6 +308,8 @@ export interface PlayerView {
   planets: PlanetView[];
   /** Whether you may share your planets in the Astrophysics feature now (sharedPlanets.ts): alive at an Astro terminal with an iTrackie. */
   canSharePlanets: boolean;
+  /** Whether you may share the reports in `expeditions` now (sharedReports.ts): alive with an iTrackie. */
+  canShareReports: boolean;
   /** How many planets one player can hold (a config constant, public). */
   maxPlanets: number;
   /**
@@ -399,6 +403,8 @@ export interface CommsTerminalView {
 export type ExpeditionReportView = Omit<ExpeditionReport, "members"> & {
   /** Still under way: more steps to come (phase 2). */
   away?: true;
+  /** Its entry in the Expeditions feature once a member shared it: sharing again appends to that entry's thread. */
+  shared?: SharedReportId;
 };
 
 /**

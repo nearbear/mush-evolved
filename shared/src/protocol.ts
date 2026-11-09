@@ -22,6 +22,7 @@ import {
   type PlayerView,
   type PrivateChannelId,
   type SharedPlanetId,
+  type SharedReportId,
   type ThreadId,
 } from "./types.ts";
 
@@ -80,6 +81,8 @@ export type GameClientMessage =
   | { type: "createThread"; name: string; from?: number }
   // Shares one of your planets in the Astrophysics feature, as free text (sharedPlanets.ts).
   | { type: "sharePlanet"; planet: string; text: string }
+  // Shares the report of an expedition you went on in the Expeditions feature, as free text (sharedReports.ts).
+  | { type: "shareReport"; report: string; text: string }
   | { type: "invite"; channel: PrivateChannelId; player: PlayerId }
   | { type: "leaveChannel"; channel: PrivateChannelId }
   // The channel's creator posts its plan (plans.ts, docs/plans/on-call.md). Chat-like, since a draft can't be
@@ -93,6 +96,8 @@ export type GameClientMessage =
   // Development only: the server refuses it unless cheats are enabled (cheats.ts).
   | { type: "cheat"; cheat: Cheat; on: boolean }
   | { type: "roleCheat"; role: RoleCheat }
+  // Development only: the ship returns to Sol now, ending the game (a dev route to a finished game and its replay).
+  | { type: "solCheat" }
   // Development only, like the cheats: frees the sender's account from this ship at once, so the lobby offers other
   // ships. Not an input: the rules never see it, and the character stays aboard unplayed.
   | { type: "leaveShip" };
@@ -122,7 +127,7 @@ export function parseMatchmakerMessage(raw: string): MatchmakerClientMessage | n
 
 /** A chat channel's id from untrusted input, or null. */
 function channelId(value: unknown): ChannelId | null {
-  return (value === MUSH_CHANNEL ? MUSH_CHANNEL : value === GRAVEYARD_CHANNEL ? GRAVEYARD_CHANNEL : undefined) ?? CHAT_CHANNELS.find((c) => c === value) ?? privateChannelId(value) ?? threadId(value) ?? sharedPlanetId(value);
+  return (value === MUSH_CHANNEL ? MUSH_CHANNEL : value === GRAVEYARD_CHANNEL ? GRAVEYARD_CHANNEL : undefined) ?? CHAT_CHANNELS.find((c) => c === value) ?? privateChannelId(value) ?? threadId(value) ?? sharedPlanetId(value) ?? sharedReportId(value);
 }
 
 export function parseGameMessage(raw: string): GameClientMessage | null {
@@ -163,6 +168,11 @@ export function parseGameMessage(raw: string): GameClientMessage | null {
     if (typeof msg.planet !== "string" || msg.planet.length > 64 || typeof msg.text !== "string" || msg.text.length > MAX_SHARED_PLANET_LENGTH * 4) return null;
     return { type: "sharePlanet", planet: msg.planet, text: msg.text };
   }
+  if (msg?.type === "shareReport") {
+    // Generous bound here, as for chat; moderation and the rules enforce the real limit.
+    if (typeof msg.report !== "string" || msg.report.length > 64 || typeof msg.text !== "string" || msg.text.length > MAX_SHARED_PLANET_LENGTH * 4) return null;
+    return { type: "shareReport", report: msg.report, text: msg.text };
+  }
   if (msg?.type === "invite") {
     const channel = privateChannelId(msg.channel);
     return channel && typeof msg.player === "string" ? { type: "invite", channel, player: msg.player } : null;
@@ -198,6 +208,7 @@ export function parseGameMessage(raw: string): GameClientMessage | null {
       : null;
   }
   if (msg?.type === "roleCheat") return isRoleCheat(msg.role) ? { type: "roleCheat", role: msg.role } : null;
+  if (msg?.type === "solCheat") return { type: "solCheat" };
   if (msg?.type !== "action" || !isRecord(msg.action)) return null;
   const a = msg.action;
   // `hasOwn`, not `in` or a lookup: those would find "constructor" and the like on the prototype.
@@ -212,6 +223,10 @@ function threadId(value: unknown): ThreadId | null {
 
 function sharedPlanetId(value: unknown): SharedPlanetId | null {
   return typeof value === "string" && /^sp-\d{1,9}$/.test(value) ? (value as SharedPlanetId) : null;
+}
+
+function sharedReportId(value: unknown): SharedReportId | null {
+  return typeof value === "string" && /^sr-\d{1,9}$/.test(value) ? (value as SharedReportId) : null;
 }
 
 function parseJson(raw: string): Record<string, unknown> | null {

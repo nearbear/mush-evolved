@@ -8,7 +8,7 @@ import { Fragment, memo, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNames } from "../i18n/names.ts";
 import { Tabs } from "@base-ui/react/tabs";
-import { FEATURE_CHANNELS, ITRACKIE_ITEM, GRAVEYARD_CHANNEL, MUSH_CHANNEL, jsonEqual, type ChannelId, type LogLine, type FeatureChannel, type PlayerView, type SharedPlanetId, type ThreadId } from "@mush2/shared";
+import { FEATURE_CHANNELS, ITRACKIE_ITEM, GRAVEYARD_CHANNEL, MUSH_CHANNEL, jsonEqual, type ChannelId, type LogLine, type FeatureChannel, type PlayerView, type SharedPlanetId, type SharedReportId, type ThreadId } from "@mush2/shared";
 import { chatSeenIn, isNewer, type ChatSeen } from "../chatSeen.ts";
 import { useAnnouncements } from "./useAnnouncements.ts";
 import { FeatureSelect } from "./FeatureSelect.tsx";
@@ -16,11 +16,13 @@ import { Hint, IconTab } from "./IconButton.tsx";
 import { TabOutline } from "./TabOutline.tsx";
 import { CycleDivider } from "./CycleDivider.tsx";
 import { FeedEntry, InfoMarker, WarningMarker } from "./FeedEntry.tsx";
+import { VisibilityBadge } from "./VisibilityBadge.tsx";
 import { PrivateChannels, type ChannelHandlers } from "./PrivateChannels.tsx";
 import { Thread, type ThreadLinks } from "./Thread.tsx";
 import { Threads, threadNameFrom } from "./Threads.tsx";
 import { Tracker } from "./Tracker.tsx";
 import { SharedPlanets } from "./SharedPlanets.tsx";
+import { SharedReports } from "./SharedReports.tsx";
 import { ResearchTracker } from "./ResearchTracker.tsx";
 import { Scroller } from "./Scroller.tsx";
 import { ExpeditionReportDialog } from "./ExpeditionReportDialog.tsx";
@@ -79,6 +81,16 @@ function useUnread(view: PlayerView, active: TabId): Record<TabId, number> {
 }
 
 /**
+ * A log line's look: a warning (an alarm, or a secret line that leaked) in amber, a covert line that leaked in red
+ * (covert actions are usually malicious; owner, 2026-11-05), and a line others didn't see muted. An Outcast's leaked
+ * line has no warning level and keeps the plain look (owner, 2026-11-08); its badge still shows.
+ */
+function logRowClass(e: LogLine): string | undefined {
+  if (e.level === "warning") return e.leaked && e.kind === "covert" ? "warning danger" : "warning";
+  return e.visibleTo === "all" ? undefined : "private";
+}
+
+/**
  * One room log line, memoized by content: the log tab stays mounted, so every new view would otherwise redraw each
  * line and its time popover (web/CLAUDE.md "Render cost"). `onRead` must be stable (a state setter).
  */
@@ -90,7 +102,8 @@ const LogRow = memo(
       <FeedEntry
         marker={e.level === "warning" ? <WarningMarker /> : <InfoMarker />}
         at={e.at}
-        className={e.level === "warning" ? "warning" : e.visibleTo === "all" ? undefined : "private"}
+        badge={e.kind && <VisibilityBadge kind={e.kind} leaked={e.leaked === true} />}
+        className={logRowClass(e)}
       >
         {names.logLine(e)}
         {canRead && (
@@ -109,9 +122,13 @@ export function ITrackie({
   onChat,
   onCreateThread,
   onToggle,
+  onShareReport,
   channels,
   roomLogRequest,
+  quiet = false,
 }: {
+  /** Nothing new is read out (a replay: stepping through frames isn't news). */
+  quiet?: boolean;
   view: PlayerView;
   /** Bumped each time the player acts; switches to the Room tab to show the result. */
   roomLogRequest: number;
@@ -120,6 +137,8 @@ export function ITrackie({
   onCreateThread: (name: string, from?: number) => void;
   /** Tick or untick a checkbox in one of your own messages (`line` is 0-based). */
   onToggle: (channel: ChannelId, seq: number, line: number) => void;
+  /** Share one of your expedition reports in the Expeditions feature. Absent in a read-only view (a replay). */
+  onShareReport?: ((report: string, text: string) => void) | undefined;
   /** Absent in a read-only view (a replay): no leaving, inviting or creating private channels. */
   channels?: ChannelHandlers | undefined;
 }) {
@@ -162,7 +181,10 @@ export function ITrackie({
   // entries no longer applicable (client-only, off by default). A hidden entry falls back to the general thread.
   const [sharedPlanet, setSharedPlanet] = useState<SharedPlanetId | null>(null);
   const [showStale, setShowStale] = useState(false);
-  // The expedition report open from the room log, by id (`view.expeditions`).
+  // Expeditions: the shared report picked (null for the feature's general thread).
+  const [sharedReport, setSharedReport] = useState<SharedReportId | null>(null);
+  const shownSharedReport = view.sharedReports.find((e) => e.id === sharedReport)?.id ?? null;
+  // The expedition report open from the room log or the Expeditions feature, by id (`view.expeditions`).
   const [report, setReport] = useState<string | null>(null);
   const shownSharedPlanet = view.sharedPlanets.find((e) => e.id === sharedPlanet && (showStale || !e.stale))?.id ?? null;
   const threadLinks: ThreadLinks = {
@@ -180,12 +202,12 @@ export function ITrackie({
 
   // The channel on screen, whose messages are announced in full.
   const reading: ChannelId | null =
-    activeTab === "global" || activeTab === "mush" || activeTab === "graveyard" ? activeTab : activeTab === "features" ? (feature === "astrophysics" && shownSharedPlanet) || feature : activeTab === "threads" ? shownThread?.id ?? null : null;
-  useAnnouncements(view, reading);
+    activeTab === "global" || activeTab === "mush" || activeTab === "graveyard" ? activeTab : activeTab === "features" ? (feature === "astrophysics" && shownSharedPlanet) || (feature === "expeditions" && shownSharedReport) || feature : activeTab === "threads" ? shownThread?.id ?? null : null;
+  useAnnouncements(view, reading, quiet);
 
   return (
     <div className="kit-panel itrackie">
-      <ExpeditionReportDialog report={view.expeditions.find((r) => r.id === report)} onClose={() => setReport(null)} />
+      <ExpeditionReportDialog report={view.expeditions.find((r) => r.id === report)} onClose={() => setReport(null)} canShare={view.canShareReports} onShare={onShareReport} />
       <Tabs.Root className="itrackie-tabs-root" value={activeTab} onValueChange={(v) => setTab(v as TabId)}>
         <Tabs.List className="itrackie-tabs">
           {alive && <IconTab value="room" src={TAB_ICONS.roomLog} label={t("itrackie.tabs.room")} />}
@@ -273,6 +295,14 @@ export function ITrackie({
                 return (
                   <div key={f} className="feature" hidden={f !== feature}>
                     <SharedPlanets view={view} picked={shownSharedPlanet} onPick={setSharedPlanet} showStale={showStale} onShowStale={setShowStale} onChat={onChat} onToggle={onToggle} />
+                  </div>
+                );
+              }
+              // Expeditions lists your reports and the shared ones, each with its own thread (owner, 2026-11-07, #356).
+              if (f === "expeditions") {
+                return (
+                  <div key={f} className="feature" hidden={f !== feature}>
+                    <SharedReports view={view} picked={shownSharedReport} onPick={setSharedReport} onRead={setReport} onChat={onChat} onToggle={onToggle} />
                   </div>
                 );
               }

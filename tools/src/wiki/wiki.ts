@@ -1,18 +1,23 @@
-// Reads eMushpedia, the French eMush wiki (https://emushpedia.miraheze.org), through its MediaWiki API.
+// Reads eMushpedia, the eMush wiki (French at https://fr.emushpedia.com, English at https://en.emushpedia.com, Spanish
+// at https://es.emushpedia.com), through its MediaWiki API. French is the default; add `--lang en` or `--lang es` for the others.
 // `npm run wiki -- search <words>` lists matching titles (accent- and case-insensitive substrings, which the
 // wiki's own search can't do) and then the wiki's full-text hits (whole words only). `npm run wiki -- page
 // <title>` prints a page's wikitext, following redirects, with inline icon templates flattened to text; add
-// `--section <heading>` for one section, or `--raw` for the wikitext as stored. Wiki text is CC BY-SA content
+// `--section <heading>` for one section, or `--raw` for the wikitext as stored. `page` also lists the same
+// article's title in the other languages, for translation. Wiki text is CC BY-SA content
 // from other people: quote it as a source for the owner, never as a decided rule.
 
-const API = "https://emushpedia.miraheze.org/w/api.php";
-const PAGE_URL = "https://emushpedia.miraheze.org/wiki/";
+const LANGS = ["fr", "en", "es"] as const;
+type Lang = (typeof LANGS)[number];
+let lang: Lang = "fr";
+const site = (l: string) => `https://${l}.emushpedia.com`;
+const pageUrl = (l: string, title: string) => `${site(l)}/wiki/${encodeURIComponent(title.replace(/ /g, "_"))}`;
 
 // biome-ignore lint/suspicious/noExplicitAny: untyped MediaWiki API responses, only read for printing.
 type Json = Record<string, any>;
 
 async function api(params: Record<string, string>): Promise<Json> {
-  const url = new URL(API);
+  const url = new URL(`${site(lang)}/api.php`);
   for (const [k, v] of Object.entries({ ...params, format: "json", formatversion: "2" })) url.searchParams.set(k, v);
   const res = await fetch(url, { headers: { "User-Agent": "mush2-dev-tools (rules reference)" } });
   if (!res.ok) throw new Error(`${res.status} ${res.statusText} from ${url}`);
@@ -111,10 +116,11 @@ function section(wikitext: string, heading: string): string | undefined {
 }
 
 async function page(title: string, opts: { raw: boolean; section?: string }): Promise<void> {
-  const body = await api({ action: "parse", page: title, prop: "wikitext|sections", redirects: "1" });
+  const body = await api({ action: "parse", page: title, prop: "wikitext|sections|langlinks", redirects: "1" });
   const p = body.parse;
   let text: string = p.wikitext;
-  console.log(`# ${p.title}  (${PAGE_URL}${encodeURIComponent(p.title.replace(/ /g, "_"))})`);
+  console.log(`# ${p.title}  (${pageUrl(lang, p.title)})`);
+  for (const ll of (p.langlinks ?? []) as Json[]) console.log(`  ${ll.lang}: ${ll.title}  (${pageUrl(ll.lang, ll.title)})`);
   if (opts.section) {
     const s = section(text, opts.section);
     if (s === undefined) {
@@ -129,10 +135,22 @@ async function page(title: string, opts: { raw: boolean; section?: string }): Pr
 export {};
 
 const USAGE = `Usage:
-  npm run wiki -- search <words>                      titles containing <words>, then full-text hits
-  npm run wiki -- page <title> [--section <heading>] [--raw]`;
+  npm run wiki -- search <words> [--lang en|es]       titles containing <words>, then full-text hits
+  npm run wiki -- page <title> [--section <heading>] [--raw] [--lang en|es]
+--lang picks the wiki: fr (default), en or es.`;
 
-const [command, ...rest] = process.argv.slice(2);
+const args = process.argv.slice(2);
+const langAt = args.indexOf("--lang");
+if (langAt >= 0) {
+  const want = args[langAt + 1];
+  if (!LANGS.includes(want as Lang)) {
+    console.error(`--lang must be one of: ${LANGS.join(", ")}`);
+    process.exit(1);
+  }
+  lang = want as Lang;
+  args.splice(langAt, 2);
+}
+const [command, ...rest] = args;
 const raw = rest.includes("--raw");
 const sectionAt = rest.indexOf("--section");
 const sectionName = sectionAt >= 0 ? rest[sectionAt + 1] : undefined;

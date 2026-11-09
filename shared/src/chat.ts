@@ -10,7 +10,7 @@ import { noITrackieNeeded } from "./comms.ts";
 import { clone, fail, dayOf, findPlayer, type ActionResult } from "./helpers.ts";
 import { dropChannelPlans, leavePlans } from "./plans.ts";
 import { CHAT_CHANNELS, GRAVEYARD_CHANNEL, MUSH_CHANNEL } from "./types.ts";
-import type { ChannelId, ChatMark, ChatMessage, ChatOutbox, GameState, PlayerId, PlayerState, PrivateChannelId, SharedPlanetId, ThreadId } from "./types.ts";
+import type { ChannelId, ChatMark, ChatMessage, ChatOutbox, GameState, PlayerId, PlayerState, PrivateChannelId, SharedPlanetId, SharedReportId, ThreadId } from "./types.ts";
 
 /** Longest chat message the rules accept. Moderation trims before this. */
 /** A private channel's id from untrusted input, or null. */
@@ -103,10 +103,14 @@ export function readChannels(state: Readonly<GameState>, player: Readonly<Player
 }
 
 /**
- * Threads go wherever global chat goes, and so do shared planets' threads: they have the Astrophysics feature's
- * access (owner, 2026-10-31), which is global chat's.
+ * Threads go wherever global chat goes, and so do shared planets' and shared reports' threads: they have their
+ * feature's access (owner, 2026-10-31 and 2026-11-07), which is global chat's.
  */
-const threadIds = (state: Readonly<GameState>): (ThreadId | SharedPlanetId)[] => [...state.threads.map((t) => t.id), ...state.sharedPlanets.map((s) => s.id)];
+const threadIds = (state: Readonly<GameState>): (ThreadId | SharedPlanetId | SharedReportId)[] => [
+  ...state.threads.map((t) => t.id),
+  ...state.sharedPlanets.map((s) => s.id),
+  ...state.sharedReports.map((s) => s.id),
+];
 
 /**
  * Channels a player may post to (and so read). The dead post only in the graveyard. Global chat and every feature thread

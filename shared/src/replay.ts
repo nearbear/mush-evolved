@@ -6,11 +6,12 @@
 import type { GameClientMessage } from "./protocol.ts";
 import { joinShip } from "./preselection.ts";
 import { acknowledgeTransfer } from "./mind.ts";
-import { createGame, newCycle, setCheat, setRoleCheat, type ActionResult } from "./rules.ts";
+import { createGame, newCycle, setCheat, setRoleCheat, solCheat, type ActionResult } from "./rules.ts";
 import { clearQueue, dropQueues, queueAction, tick } from "./queue.ts";
 import { walk } from "./spot.ts";
 import { createChannel, createThread, inviteToChannel, leaveChannel, sendChat, takeChatOutbox, toggleCheckbox } from "./chat.ts";
 import { sharePlanet } from "./sharedPlanets.ts";
+import { shareReport } from "./sharedReports.ts";
 import { postPlan } from "./plans.ts";
 import { inactivate, seen } from "./inactivity.ts";
 import type { ConfigOverrides, GameConfig, GameState, PlayerId, Role, Seat } from "./types.ts";
@@ -111,6 +112,8 @@ export function applyInput(state: GameState, input: Input): ActionResult {
       return createThread(state, input.by, input.name, input.from);
     case "sharePlanet":
       return sharePlanet(state, input.by, input.planet, input.text);
+    case "shareReport":
+      return shareReport(state, input.by, input.report, input.text);
     case "invite":
       return inviteToChannel(state, input.by, input.channel, input.player);
     case "leaveChannel":
@@ -123,6 +126,8 @@ export function applyInput(state: GameState, input: Input): ActionResult {
       return walk(state, input.by, input.x, input.y, input.sitting, input.behind);
     case "roleCheat":
       return setRoleCheat(state, input.by, input.role);
+    case "solCheat":
+      return solCheat(state, input.by);
   }
 }
 

@@ -5,18 +5,22 @@
 // no doors). The landing is the first step, `stepMs` after takeoff, then one sector per `stepMs`; the server's `tick`
 // runs them (`nextDue`, queue.ts). Members see each event in their report as it happens. The crew is back in the bay
 // as the last sector resolves, or at once when every member is dead, with whatever is in the Icarus (loot, bodies).
-// Single player resolves it all at takeoff (`instantExpeditions`). Pure: every draw goes through the seeded RNG.
+// Single player resolves it all at takeoff (`instantExpeditions`). If the ship jumps while the crew is out, they are
+// stranded (`strandExpedition`): Magnetic return brings them back, or they die and the Icarus is lost for good.
+// Pure: every draw goes through the seeded RNG.
 // The action is actions/icarus_takeoff.ts.
 
 import { endPushToLeave } from "./actions/accommodate.ts";
 import { board } from "./actions/takeoff.ts";
-import { damage } from "./death.ts";
+import { damage, killPlayer } from "./death.ts";
+import { FAST_EXPEDITION_STEP_MS, fastExpeditions } from "./cheats.ts";
 import { soil } from "./dirt.ts";
 import { isWorking, itemsIn, newItemId, removeItem, sameContainer } from "./items.ts";
 import { logPrivate, logPublic } from "./log.ts";
 import { isTraveling } from "./navigation.ts";
 import { canFly } from "./patrol.ts";
 import { PLANET_TAGS, type PlanetTag } from "./planets.ts";
+import { projectDone } from "./projects.ts";
 import { roll, rollFloat, rollInt, rollShuffle, rollWeighted } from "./rng.ts";
 import { shipMax } from "./ship.ts";
 import { hasSkill } from "./skills.ts";
@@ -95,7 +99,7 @@ export function runExpedition(state: GameState, launcher: PlayerState): Expediti
     planet: planet.id,
     landed: false,
     sectors: pickSectors(state, planet),
-    nextAt: state.now + rules.stepMs,
+    nextAt: state.now + stepMs(state),
     // Items each member carried when they set out, for `deadKeepItems: false`.
     carried: Object.fromEntries(crew.map((p) => [p.id, itemsIn(state, { kind: "player", id: p.id }).map((i) => i.id)])),
   };
@@ -129,7 +133,8 @@ export function expeditionStep(state: GameState): void {
     away.sectors = [];
   }
   if (away.sectors.length === 0 || !crew.some((p) => p.alive)) returnExpedition(state);
-  else away.nextAt += rules.stepMs;
+  // The fast cheat counts from now, so a step that was due long ago doesn't set off a burst of overdue ones.
+  else away.nextAt = fastExpeditions(state) ? Math.max(away.nextAt, state.now) + FAST_EXPEDITION_STEP_MS : away.nextAt + rules.stepMs;
 }
 
 /**
@@ -153,13 +158,42 @@ function returnExpedition(state: GameState): void {
   }
 }
 
+/**
+ * The Daedalus jumped (travel or leaving orbit) while a crew is out (owner, 2026-11-07, #356). With Magnetic return
+ * (`AUTO_RETURN_ICARUS`) the crew is back at once, the sectors left skipped, as on a normal return; NERON says so to
+ * everyone. Without it the living members die, the Icarus is lost with everything in it (items, loot, bodies), and no
+ * expedition can take off again (`icarusLost`); NERON tells everyone. Mutates a cloned state; nothing if none is out.
+ */
+export function strandExpedition(state: GameState): void {
+  const away = state.expedition;
+  if (!away) return;
+  const report = state.expeditions.find((r) => r.id === away.report)!;
+  if (projectDone(state, "AUTO_RETURN_ICARUS")) {
+    logPublic(state, undefined, "icarusRecalled", { planet: report.planet }, "warning");
+    returnExpedition(state);
+    return;
+  }
+  const craft = state.config.expedition.craft;
+  state.expedition = null;
+  state.icarusLost = true;
+  logPublic(state, undefined, "icarusLost", { planet: report.planet }, "warning");
+  for (const id of report.members) {
+    const p = state.players.find((q) => q.id === id)!;
+    if (p.alive && p.room === craft) killPlayer(state, p);
+  }
+  state.items = state.items.filter((i) => !sameContainer(i.at, { kind: "room", id: craft }));
+}
+
 /** When the expedition under way is back, if nothing ends it early: one `stepMs` per step left after the next. */
 export function expeditionReturnAt(state: Readonly<GameState>): number | null {
   const away = state.expedition;
   if (!away) return null;
   const steps = (away.landed ? 0 : 1) + away.sectors.length;
-  return away.nextAt + (steps - 1) * state.config.expedition.stepMs;
+  return away.nextAt + (steps - 1) * stepMs(state);
 }
+
+/** Time between steps: the config's, or 2 seconds under the fastExpeditions development cheat. */
+const stepMs = (state: Readonly<GameState>): number => (fastExpeditions(state) ? FAST_EXPEDITION_STEP_MS : state.config.expedition.stepMs);
 
 interface Ctx {
   state: GameState;

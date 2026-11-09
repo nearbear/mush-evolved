@@ -1915,7 +1915,7 @@ describe("GameRoom replay copy to R2 (#336)", () => {
     await inner.copyReplay();
     expect(ready(storage)).toBe(true);
     const index = await bucket.json<ReplayIndex>(replayKeys.index("test-room"));
-    expect(index).toMatchObject({ v: HISTORY_VERSION, roomId: "test-room", rulesVersion: "test" });
+    expect(index).toMatchObject({ v: HISTORY_VERSION, roomId: "test-room", rulesVersion: "test", realTime: true });
     expect(index.seats).toHaveLength(8);
     expect(index.seats.find((s) => s.seat === "p0")).toMatchObject({ role: "mush" });
     expect(JSON.stringify(index)).not.toContain("Human 0");
@@ -1990,6 +1990,8 @@ describe("GameRoom replay copy to R2 (#336)", () => {
       await inner.copyReplay();
       expect(ready(storage)).toBe(true);
       expect(bucket.puts > 0).toBe(accountId !== undefined);
+      // Single-player cycles end by End cycle, not a clock: the replay shows no countdown.
+      if (accountId !== undefined) expect((await bucket.json<ReplayIndex>(replayKeys.index("test-room"))).realTime).toBe(false);
     }
   });
 });

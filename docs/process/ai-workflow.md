@@ -2719,5 +2719,93 @@ Follow-up the same day: the "N% repaired" text became a bare percent (the shared
 - Claude's calls, flagged to the owner: single player is marked by a new `instantExpeditions` override rather than reusing `manualCycles` (dev cheat games also set manual cycles and would have lost the 10-minute pace); pre-change single-player saves lack the flag (databases are empty, left alone); apron/Stickler block return dirt like any dirt, so that rule moved to `shared/src/dirt.ts`.
 - Needed correction: the session was stopped before verify finished. Remaining failures were tests written for patrol craft only (`paths.test.ts`, `install.test.ts` now use `inCraft` / include the Icarus), an unused import left in `rules.ts`, and the persistence test's single-player overrides. Lesson: adding a new room kind breaks every "all rooms but craft" test; grep for `PATROL_SHIPS`/`patrolShip` filters in tests when adding one.
 
+## 2026-11-08: Expeditions phase 2, slice B: stranding (#356)
+
+- **Decision (owner, 2026-11-07, already recorded):** a jump (travel or leave orbit) with a crew out kills it and loses the Icarus for good, unless Magnetic return is done, which brings the crew back at once; a client-only confirm warns first.
+- **What worked:** no rule questions were needed, since the slice A rule pass had answered everything. Putting `strandExpedition` next to `loseShipsInFlight` in the shared `jump` meant the warp cheat strands crews too without extra code. The rejected-takeoff test compares against a control state where `icarusLost` is false, because refusal reasons reach the caller only as `illegal_action`.
+- **Claude's readings, flagged to the owner:** Magnetic return also posts a public NERON line (`icarusRecalled`); the bodies are lost along with the Icarus; the confirm text names Magnetic return without checking whether it is done.
+
+## 2026-11-08: Replay tests on one seed in verify, five in a slow run (#382)
+
+- `REPLAY_SEEDS` (read in `shared/tests/randomGame.ts`) sets how many seeds the long random-game checks in `replay.test.ts` play: unset in `npm test`/`verify` (one seed), 5 in the new `npm run test:slow`, which CI runs after `npm test`. The file went from about 32s to 14s locally; the slow run takes about 107s.
+- What needed correction: the issue framed it as "fewer seeds", but profiling showed the perspective test already played one game per setup, and 88% of its time was the per-seat `viewFor`/`perspective` checks. So a normal run now checks one seat per step, in turn (every step and every seat still sampled); the slow run checks every seat at every step.
+- The slow run caught that seed 5's 1,200-step game stops at cycle 6, so "got past a day" is now required of at least one game, not each.
+
+## 2026-11-08: Expeditions phase 2, slice C: shared reports (#356)
+
+- **Decided by the owner (2026-11-07):** reports are shared in their own feature, one entry per expedition, by any member from anywhere with an iTrackie, free, as editable text; sharing again appends to the entry's thread; never stale.
+- **Built:** `sharedReports.ts` (`shareReport`, `canShareReports`), a new `expeditions` feature channel, `sr-N` entries that are chat threads with the feature's access (modeled on `sharedPlanets.ts`), the `shareReport` client message and replay input, moderation in `GameRoom`, normalizer defaults, leak-field entries and sentinels. Client: a Share form in `ExpeditionReportDialog` (prefilled with the report as text) and `SharedReports.tsx` listing your own reports and the shared entries.
+- **Claude's readings, not asked:** the shared planets' limits (500 characters, 20 lines); the first share heads the entry and later shares are the sharer's messages in its thread, each announced by a system line naming the planet; sharing allowed while still away; your reports listed in the feature so "from anywhere" has a place to start. A distinct `report_share_forbidden` error, since the planets' one names the Astro terminal; `share_text_invalid`'s text made generic.
+- **What worked:** copying the shared-planets shape end to end meant typecheck and tests passed on the first run. **Needed correction:** an `expeditions` tab icon already existed in `TAB_ICONS`; adding a second key broke the web typecheck until removed.
+
+## 2026-11-08: Log line kind and leak flag (#366)
+
+- Planned first, then built after the owner answered three questions: the kind comes from the writer that wrote the line, not the action type (a private research's completion line is public; repair failures are private); an Outcast's secret or covert line is `leaked` and nothing else (no new `warning`, so no new interruptions); the UI is left for a separate session.
+- `LogEntry.kind` (`private`/`secret`/`covert`, missing for public, like `level`) and `leaked?: true`, set in the four writers in `log.ts`; `viewFor` passes them through unchanged, so the tests (`logKind.test.ts`) check every kind against every seat, including the dead, `hideFrom`, a camera aimed at itself, the Outcast and the replay's seat view. Optional fields kept public lines and old records unchanged.
+- What needed correction: `return outcastLine(...)` in a void function failed lint. The first `verify` had a test failure that reran clean; the leak-check agent was running tests at the same time.
+- The leak-check skill found no leaks: a witness already got `level: "warning"` on exactly the lines now `leaked`, so the only new information is secret vs covert, which the owner chose to reveal.
+
+## 2026-11-08: fastExpeditions cheat
+
+- Added a dev cheat that makes expedition steps 2 s apart instead of 10 minutes. Chose a fixed short step over scaling the countdown: it is one helper (`stepMs`) in `expeditions.ts`, plus a `REFILL` hook that pulls `nextAt` in when the cheat is switched on mid-expedition. Ship-wide like `invincible`, since an expedition belongs to the ship, not a seat.
+- Subtlety caught while writing it: `state.now` only moves on action inputs and ticks, so a step under the cheat counts from `max(nextAt, now)` to avoid a burst of overdue steps in one tick.
+- `npm run verify` hit a 5 s timeout in the unrelated `server/tests/goals.test.ts` under full-suite load; it passed alone.
+
+## 2026-11-08: Live UI for log line kinds (#366)
+
+- Built the iTrackie's half of #366: `web/src/hud/VisibilityBadge.tsx` puts the action buttons' icon (padlock, hushing hand, camera) on every Room-tab line with a `kind`, in a popover (hover, focus or tap) that says what the kind means and whether a secret or covert line leaked. A leaked covert line is red (`.warning.danger`, a dark `--danger` on the light card) rather than the warning amber; Outcast lines, which have no warning level, keep the plain look but still get the badge. The replay's story 5 (#371) can reuse the badge.
+- Choices made without asking: a popover rather than a tooltip so touch can open it (same pattern as `RecencyStamp`); the badge sits beside the recency caption, not in place of the warning marker, so alarms and leaks still read the same at a glance; the popover's text doesn't call covert actions malicious, so the game doesn't editorialize.
+- `verify` failed on things outside this change: a type error in `web/src/hud/SettingsDialog.tsx`, which another session was editing at the same time, and `server/tests/goals.test.ts`, which passed when run on its own (it looks flaky under load).
+
+## 2026-11-08: Replay page (#370)
+
+- Built in four commits on a worktree from a handoff plan (`docs/plans/replay-viewer.md`, story 4): a frozen `ServerClock` and a transport slot in `GameView`; pure transport logic (`web/src/replay/transport.ts`: stops, cycle jumps, URL params, keys) with tests plus `ReplayIndex.realTime`; the `/replay/:id` page with a desktop transport bar and a phone strip; then launch-state fixes and a dev cheat.
+- What needed correction: story 3 assumed input -1 (the launch state) always has a `base` frame. A new ship's record starts with a full copy instead, and its first frame has nobody aboard, so the page failed to load. Only the browser found it; unit tests had built records the old way. Now -1 shows the record's first frame when there is no earlier state, the readability check reads that frame through whoever is aboard, and the page shows a "nobody aboard" notice with the transport.
+- An end-to-end check needed a finished game, which dev had no quick route to, so the owner approved a "Return to Sol now" cheat (`solCheat`, an input like the role cheat, so replays reproduce it).
+- Worked: keeping transport logic pure and separate from the page made most of the story testable without a browser, and a handoff note carried the work across sessions. Lost in the handoff: the scratch browser-check scripts lived in a session scratchpad that was cleared.
+
+## 2026-11-08: Links to replays (#372)
+
+- Finished games link to `/replay/<id>`, the live end screen has "Watch the replay", and the replay page goes back to `/` for a single-player game and to `/games` otherwise.
+- The client had no way to tell a single-player replay apart: the index's `realTime` flag is about the clock, not the mode, on purpose. Claude added an optional `singlePlayer: true` to the one-game summary instead (the route already knew it from `replayAccess`), not inferred from bots or the clock.
+- `verify` hit a timeout in an unrelated bot test (`goals.test.ts`) under full-suite load; it passed alone and on a rerun.
+- The owner approved the `singlePlayer` summary flag after the fact. The leak check found nothing: the flag reaches only the account that played the game.
+
+## 2026-11-08: Sitting at a terminal, Focused status (#192)
+
+- **What:** `access` now gives a new `Spot` variant, `{ kind: "occupancy", equipment, chair? }` (`occupy` in `spot.ts`), on the first of the terminal's chairs no living roommate holds, or standing at it. Any walk ends it, as do a move, lying down and a wheelchair push. A derived public `focused` status (the original's `moduling` glasses, French "Concentré" from `heros_status`) shows while it lasts. Chairs per terminal are `chairs` cells on `ship-map.json` bindings, carried to `ship-rooms.json` and read by the rules from the map (kept out of `config.equipment`, so out of stored state). Client: `terminalSpot`/`offFloorStep`/`stepsOnto` in `placement.ts`, an `atTerminal` prop on `IsoRoom`; an editor check flags a terminal chair cell with no chair tile.
+- **Owner decisions mid-task:** closing the terminal window ends occupancy (this replaced my question about private actions elsewhere freeing the chair, and removes that leak path entirely); chair clicks stay a cosmetic `walk`, but a clicked terminal chair counts as taken; Focused shows standing too; sick bay chairs are not terminal chairs; the pilot and turret seats, which sit under their consoles' footprints, are made sittable now.
+- **What worked:** reading the existing seating code first showed `cell.sitting` was already server state, so the issue's "seating is client-only" premise was out of date. The close-to-end rule needed no new input: the client sends an ordinary `walk` to the terminal's standing spot. A committed map test (every terminal chair resolves to a chair) found that 7 of 10 chairs weren't on walkable floor.
+- **What needed correction:** making chair cells walkable (first attempt) broke the "floor stays connected" sofa test, because turret seats are boxed in or have no floor. Reverted, and walkers now climb in from the nearest floor along `Goal.then`. A test mutated the shared test config (`s.config.sharedSpots = false`) and broke later tests; fixed by copying the config. Chairs leaking into `config.equipment` broke the snapshot round-trip tests (the normalizer drops unknown keys). The model's attempt to dump the map through a throwaway test was blocked by the permission classifier, so the chair data was checked in a committed test instead.
+- **Not done:** a visual check (the `play` skill is user-invoked only); paint order around the turret seats is unverified. Bots that open a terminal hold the spot until they walk or move.
+
+## 2026-11-08: Chat pages wrap-up (#355)
+
+- Added the flat-view test (`chatPages.test.ts`, "chat volume"): 1,101 global messages and 110 in a feature channel, with the outbox drained as the server does. The view and the state are the same size at 601 and 1,101 messages, and every `seq` is in either a stored page or the state.
+- Needed correction: the first version compared 101 with 1,001 messages and failed by about 5.8 KB. The cause was the tail page: at 101 messages the feature channel had nothing sealed yet, so it had no tail to send. A fair comparison needs both points at the same place in a page *and* every channel already past its first seal.
+- Phone and desktop screenshots from a throwaway Playwright script that posts 128 messages. Paging and "stays on the older page" work. Raised with the owner: the "N new" count on » exists only for screen readers (the issue asked for a visible chip), and an older page opens scrolled to its bottom.
+
+### 2026-11-08: Expeditions phases 3 and 4, one rule pass (#357, #358)
+
+- **Decided by the owner** in seven rounds of questions; recorded in `docs/plans/expedition.md` ("Phases 3 and 4 decisions") and `docs/rules/rules-design.md`. Not built. Highlights: the original's 4/3/2/1 tables for every tag plus a Lost sector; eMush's win-chance fights (damage is the shortfall either way, the roll decides loot) with per-creature win loot the owner took from Claude's proposal (eMush gives loot on only two fights); cancelled = reroll, avoided = no effect; Disease waits for #214; Mush trap 50%; Pilot or Antigrav makes landing safe (replaces phase 1's Pilot rule); inert artifact set from the original's 9; lost members stay on the planet, named in a public alert, die if the ship leaves; all eMushpedia gear (spacesuits, compass, rope, drill in the start list; echolocator, thermosensor, Babel module, white flag as blueprints); Diplomat and Polymath narrowed by the owner to Intelligent life only; Shooter, Sprinter, Tracker, Centauri +1 per blaster, U-turn 2 AP, Traitor's secret sabotage. Build order A-D (tables and fights, Lost, gear, skills).
+- **What worked:** the original's `planetTags.json` and eMushpedia's sector pages agree row for row, so the tables were one question. `npm run emush -- spec` on single handler files (PlayerLost, Fight, ItemLost, MushTrap, SabotageExploration) gave the mechanics the wiki leaves vague (lost players, the win formula, grenade accounting, sabotage). Offering a concrete proposal when the owner chose "every win gives loot" kept that to one more question.
+- **What needed correction:** the first `emush spec` calls passed sentences instead of files and returned nothing; several parallel calls also came back empty (likely rate limits), and the big `PlanetSectorEventConfigData.php` never distilled, so the Mush trap's rate and Centauri's bonus weren't found and became owner picks. Asking where gear comes from before checking eMush's placement meant a follow-up question once it turned out four items are blueprints there. The `ai-workflow.md` entry waited until the owner's unfinished merge was resolved. Markdown lint caught bold pseudo-headings and continuous list numbering across sections in the new plan section.
+
+### 2026-11-08: terminal actions no longer stand you up (#192 follow-up)
+
+- Bug: with a terminal's window open, its actions went through the client's "walk up to what you act on" effect, which dropped the seat and, for public actions, sent a walk that ended the server's `occupancy` spot (and Focused). Fix in `IsoRoom.tsx`: that effect does nothing while `atTerminal` and you hold an occupancy spot. The window is modal, so every action then is the terminal's own. The `sentCount` stand-up was already guarded; the walk-up effect was missed in the first pass.
+
+## 2026-11-08: `FinishedGame.singlePlayer` becomes a required boolean
+
+- **What broke:** `verify` failed at typecheck, not in a test. `FinishedRecord` extended `FinishedGame` but widened `singlePlayer` from the optional literal `true` to `boolean`, which `extends` doesn't allow.
+- **Decision:** make `FinishedGame.singlePlayer` a required `boolean`, read from `games.single_player` in both `GameStore` queries. `FinishedRecord`'s redeclaration and the route's `{ ...game, singlePlayer: true }` spread are gone, and the API schema is now `z.boolean()`. The list sends `false` on every game, a few bytes.
+- **What needed correction:** the AI first proposed the narrowest fix (`Omit` the field in `FinishedRecord`) and suggested the optional shape might be hiding single-player status from public viewers. Reading `openGame` showed it wasn't: `isPublic` is just `!singlePlayer`, and only the game's owner can open a single-player game. The owner's "why not a plain required boolean?" was the better fix. Reading the code before raising that concern would have saved a round trip.
+
+## 2026-11-08: eMushpedia moved; wiki tool reads fr/en/es; wiki-translate skill
+
+- The wiki left `emushpedia.miraheze.org` for one site per language (`fr.`, `en.`, `es.emushpedia.com`, API at `/api.php`, not `/w/api.php`). `npm run wiki` now takes `--lang en|es` (French stays the default), and `page` lists the article's titles in the other languages from its interlanguage links.
+- Translated the French *Évènements* page to English wikitext for the owner, taking every name from eMush's own strings (`npm run emush -- translations <domain> <lang>`, a command the emush skill didn't document). What needed correction: I first used the French wiki's `{{Zone|…}}`; the English wiki uses `{{Sector|…}}`, and its accepted values aren't the game's names (`Caves`, not `Caverns`). Checking every template value against the template's own `#switch` list caught nine mismatches that would have rendered silently wrong.
+- Settled with the owner: wiki pages keep the in-game names; better names go to eMush's translators on Crowdin rather than onto the wiki. The workflow is now the `wiki-translate` skill.
+
 ## 2026-11-08: Bric-a-brac project effect
 Implemented `BRIC_BROC`: one 15% roll per cycle change once incidents are due; on success the incident loop still buys and spends points but skips `apply`. Config in `config.project.bricBroc`, two tests added. Worked: the rule was fully specified by the owner, so no questions needed.

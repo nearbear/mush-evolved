@@ -344,6 +344,20 @@ export function problems(ship: ShipLayout): Problem[] {
         room: r.id,
       });
     }
+    // A terminal's chairs (#192) are cells: moving or deleting the chair tile leaves the terminal pointing at nothing.
+    for (const b of r.equipment) {
+      for (const c of b.chairs ?? []) {
+        if (r.tiles.some((t) => t.kind === "entity" && t.x === c.x && t.y === c.y && ship.slices[t.slice]?.flags.includes("chair"))) continue;
+        out.push({
+          id: `chair:${r.id}:${b.key ?? b.id}:${c.x},${c.y}`,
+          severity: "error",
+          title: `${r.id} ${b.key ?? b.id} has no chair at ${c.x},${c.y}`,
+          detail: "its \"chairs\" in ship-map.json name a cell with no chair tile",
+          cells: r.at ? [[c.x + r.at.x, c.y + r.at.y]] : [],
+          room: r.id,
+        });
+      }
+    }
   }
 
   for (const d of report.doors) {

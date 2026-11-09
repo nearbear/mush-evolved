@@ -10,14 +10,14 @@ import { HISTORY_VERSION, HistoryError, historyStep, readFrame, rebuildHistory, 
 import { MIN_STATE_VERSION, normalizeFullView, STATE_VERSION } from "../src/normalizeState.ts";
 import { ChunkBuilder, chunkHistory, replayIndex, replayKeys } from "../src/replayChunks.ts";
 import type { GameState, PlayerView, SeatView } from "../src/types.ts";
-import { play, preselectionSetup, setup } from "./randomGame.ts";
+import { play, preselectionSetup, seedsFrom, setup, slowRun } from "./randomGame.ts";
 
 /** The build the tests record history as. */
 const BUILD: BuildStamp = { stateVersion: STATE_VERSION, rulesVersion: "test" };
 
 describe("replay", () => {
   it("rebuilds the same game from the setup and the stored inputs", () => {
-    for (const seed of [1, 2, 3]) {
+    for (const seed of seedsFrom(1)) {
       const { state, record } = play(2000, seed);
       const inputs = record.map((r) => r.input);
       expect(state.cycle, "the game got past a day").toBeGreaterThan(DEFAULT_CONFIG.cyclesPerDay);
@@ -30,7 +30,7 @@ describe("replay", () => {
       const stored = JSON.parse(JSON.stringify(inputs)) as Input[];
       expect(replayGame(setup, stored)).toEqual(state);
     }
-  }, 15_000);
+  }, 5_000 * seedsFrom(1).length);
 
   it("rebuilds a ship launched empty in pre-selection, through every join and the Mush pick", () => {
     const { state, record } = play(1500, 4, preselectionSetup);
@@ -62,21 +62,26 @@ describe("rebuildGame", () => {
   });
 });
 
+/** The random games the step-by-step checks play: pre-selection (its joins and the Mush pick), then a game past its first day. */
+const games = () => [...seedsFrom(4).map((seed) => [preselectionSetup, 300, seed] as const), ...seedsFrom(1).map((seed) => [setup, 1200, seed] as const)];
+
 /** A seat view as the live game sends it: the same, without log ids. */
 const live = (v: SeatView): PlayerView => ({ ...v, log: v.log.map(({ id: _id, ...line }) => line), chat: v.chat.map(({ id: _id, ...line }) => line) });
 
 describe("perspective", () => {
   it("gives every seat its own view at every step of a random game, from the full view", () => {
-    // Pre-selection, its joins and the Mush pick, then a game past its first day.
     const cycles: number[] = [];
-    for (const [from, steps, seed] of [[preselectionSetup, 300, 4], [setup, 1200, 1]] as const) {
+    for (const [from, steps, seed] of games()) {
       let starts: SeatStarts | null = null;
+      let step = 0;
       const { state } = play(steps, seed, from, (s) => {
         // As the server notes them: the moment the Mush are chosen.
         if (starts === null && !s.preselection) starts = seatStarts(s);
         // Through JSON, as history is stored.
         const full = JSON.parse(JSON.stringify(fullViewFor(s, starts))) as FullView;
-        for (const p of s.players) {
+        // The views are most of the cost: a normal run checks one seat per step, in turn; a slow run every seat (#382).
+        const seats = slowRun ? s.players : [s.players[step++ % s.players.length]!];
+        for (const p of seats) {
           const [rebuilt, real] = [perspective(full, p.mind), viewFor(s, p.id)];
           // The fast check first; expect only to show the difference.
           if (!isDeepStrictEqual(live(rebuilt), real)) expect(live(rebuilt)).toStrictEqual(real);
@@ -89,10 +94,11 @@ describe("perspective", () => {
         }
       });
       expect(state.preselection, "the Mush were chosen").toBe(false);
-      cycles.push(state.cycle);
+      if (from === setup) cycles.push(state.cycle);
     }
-    expect(cycles[1], "the game got past a day").toBeGreaterThan(DEFAULT_CONFIG.cyclesPerDay);
-  }, 30_000);
+    // The first seed always does; a slow run's extra seeds may stop short of it.
+    expect(Math.max(...cycles), "a game got past a day").toBeGreaterThan(DEFAULT_CONFIG.cyclesPerDay);
+  }, 30_000 * seedsFrom(1).length);
 
   it("follows the seat (mind) across a Transfer, not the old body", () => {
     const { state } = play(50, 6);
@@ -192,7 +198,7 @@ describe("viewDiff", () => {
 
 describe("view history", () => {
   it("rebuilds the full view at every step of a random game from its stored steps, through JSON", () => {
-    for (const [from, steps, seed] of [[preselectionSetup, 300, 4], [setup, 1200, 1]] as const) {
+    for (const [from, steps, seed] of games()) {
       let starts: SeatStarts | null = null;
       let prev: FullView | null = null;
       let before = fullViewFor(startGame(from), null);
@@ -216,7 +222,7 @@ describe("view history", () => {
         if (!isDeepStrictEqual(JSON.parse(JSON.stringify(view)), JSON.parse(JSON.stringify(views[n])))) expect(view, `step ${n}`).toEqual(views[n]);
       });
     }
-  }, 30_000);
+  }, 10_000 * seedsFrom(1).length);
 
   it("stamps the build on every copy, and each frame carries the stamp of the copy it continues from (#384)", () => {
     const [a, b, c] = [play(5, 2).state, play(10, 2).state, play(15, 2).state].map((s) => fullViewFor(s, null)) as [FullView, FullView, FullView];
@@ -330,6 +336,8 @@ describe("replay chunks (#336)", () => {
       seats: [{ seat: "p2", role: "mush", character: "chao" }, { seat: "p10", role: "human", character: "chun" }],
       chunks: [],
     });
+    expect(replayIndex({ roomId: "r1", rulesVersion: "abc", endedAt: 9, realTime: false, starts: {} }, []).realTime).toBe(false);
+    expect(replayIndex({ roomId: "r1", rulesVersion: "abc", endedAt: 9, realTime: true, starts: {} }, []).realTime).toBe(true);
     expect(replayKeys.chunk("r1", 3)).toBe("replays/r1/chunk-000003.json.gz");
     expect(replayKeys.index("r1")).toBe("replays/r1/index.json");
   });

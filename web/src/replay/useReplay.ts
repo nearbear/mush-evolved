@@ -10,13 +10,14 @@
 // - `409 not_ready` retries the index after 1, 2, 4, 8 and 15 s, then offers Retry; `429` retries after `Retry-After`.
 // - The view is computed only for the step on screen, memoized, and shares unchanged parts with the last one.
 
-import { type ChunkEntry, type FinishedGame, HistoryError, type PlayerId, type ReplayIndex, rebuildHistory } from "@mush2/shared";
+import { type ChunkEntry, type FinishedGame, HistoryError, type PlayerId, type ReplayIndex, readFrame, rebuildHistory, type SeatAt, seatsAt } from "@mush2/shared";
 import { useCallback, useEffect, useMemo, useReducer, useRef } from "react";
 import { api } from "../account/api.ts";
 import { shareUnchanged } from "../shareView.ts";
 import {
   cycleAt,
   type Failure,
+  type LoadedChunk,
   initialReplayState,
   loadChunk,
   olderBuild,
@@ -69,8 +70,16 @@ export interface Replay {
   /** The frame on screen, and whether it is an older position kept while the position's chunk loads (dim it). */
   step: Step | null;
   stale: boolean;
-  /** The step's view for the chosen seat and mode. */
+  /** The step's view for the chosen seat and mode; null while nobody is aboard (a ship's launch state). */
   view: StepView | null;
+  /** Who plays whom at the step (the perspective switcher). Empty before the first frame, or while nobody is aboard. */
+  seats: SeatAt[];
+  /** The seat the view follows: the one asked for when it is aboard at the step, else the first aboard. */
+  followed: PlayerId | null;
+  /** The game's cycles per day, for day labels (fixed for a game); null before the first frame. */
+  cyclesPerDay: number | null;
+  /** The chunks loaded now, by number (the marks, the perspective switcher). Don't mutate them. */
+  chunks: Readonly<Record<number, LoadedChunk>>;
   /** The step was recorded by another build than this one: it may be shown wrong. */
   olderBuild: boolean;
   seek: (seq: number) => void;
@@ -180,7 +189,19 @@ export function useReplay(roomId: string, { start, seat, allSeeing }: ReplayOpti
 
   // The view of the step on screen only, memoized; unchanged parts keep the last view's objects.
   const step = state.shown;
-  const followed = seat ?? firstSeat ?? null;
+  // Seats board during pre-selection, so the one asked for may not be aboard yet: follow the first that is.
+  const full = useMemo(() => {
+    if (!step || status !== "ready") return null;
+    try {
+      return readFrame(step);
+    } catch (e) {
+      if (e instanceof HistoryError) return null;
+      throw e;
+    }
+  }, [step, status]);
+  const seats = useMemo(() => (full && index ? seatsAt(full, index) : []), [full, index]);
+  // An unreadable frame still goes to `stepView`, whose `HistoryError` shows the summary.
+  const followed = full ? (seats.find((s) => s.seat === seat)?.seat ?? seats[0]?.seat ?? null) : (seat ?? firstSeat ?? null);
   const firstInputs = useMemo(() => index?.chunks.map((c) => c.firstInput) ?? [], [index]);
   // All-seeing reads the loaded chunks (its streams); a seat's own view doesn't, so prefetches don't recompute it.
   const streamChunks = allSeeing ? state.chunks : null;
@@ -218,6 +239,10 @@ export function useReplay(roomId: string, { start, seat, allSeeing }: ReplayOpti
     step,
     stale: step !== null && step.seq !== state.position,
     view,
+    seats,
+    followed,
+    cyclesPerDay: full?.config.cyclesPerDay ?? null,
+    chunks: state.chunks,
     olderBuild: step !== null && olderBuild(step.build, CURRENT_BUILD),
     seek,
     retry,

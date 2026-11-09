@@ -70,7 +70,7 @@ The logic the page needs, kept out of components (architecture rule 3).
 - **Tests:** the hook's reducer, as a pure function, under Vitest: chunk bookkeeping, the backoff schedule, the version check.
 - **As built:** the reducer is `replayState.ts`, the step's view `replayViews.ts`, the notices `ReplayNotice.tsx` (with `OlderBuildBadge`; the page places them). The hook takes the seat to follow and the mode, and returns the shown step, whether it is `stale` (an older position kept while the position's chunk loads), the view, and `olderBuild`. Any `seek` to a chunk not loaded waits the 200 ms, not only a drag; a loaded chunk shows at once. All-seeing's streams come from the run of loaded chunks ending at the step (at least 2 cycles back with the cache), so older lines wait for story 5's paging. "The current build" is the client's own `RULES_VERSION`, stamped into the bundle by `vite.config.ts` (`git describe`, as the server's deploy scripts do; "dev" on the dev server). A `429` without `Retry-After` uses the `not_ready` backoff and keeps its last wait rather than giving up. The summary is fetched with the index, for story 4's header.
 
-### 4. (#370) The replay page and transport (`/replay/:id`). Size L.
+### 4. (#370) The replay page and transport (`/replay/:id`). Size L. **Built 2026-11-08** (`web/src/replay/ReplayPage.tsx`, `Transport.tsx`, `transport.ts`).
 
 - **Route:** lazy-loaded from `main.tsx`, like `/games`.
 - **`ReplayPage`** renders `GameView` with no `send`, the step's `PlayerView`, and the frame's time:
@@ -88,6 +88,18 @@ The logic the page needs, kept out of components (architecture rule 3).
 - **Layout:** `GameView` gets a `transport?: ReactNode` slot. On desktop it is a bar above the stage. Below 1024px it is a compact strip docked above `BottomNav`, outside the panels, so Room, Log, Chat and Crew all keep it. The phone strip holds step back, play, step forward, the cycle and the switcher; the speed and skip toggle go in an overflow menu.
 - **Default on open:** all-seeing, following the first seat, at step 0: the launch state before the first input (`frames[0].base` of chunk 0), a step you can land on like any other (owner, 2026-11-05).
 - **i18n:** every new string in en/fr/es.
+- **Decided (owner, 2026-11-08):**
+  - **Step vs event.** With skipping on, Next stops on every mark (decision 3); next and previous *event* stop only on marks of kind `death`, `conversion`, `fire` and `chat`, never `cycle` or `other`.
+  - **Cycle countdown.** Shown in a replay of a game whose cycles ran on a clock, frozen at the step's time and counting to when the next cycle actually started (the next chunk's `from`); hidden otherwise (today, single player). The index says which with a `realTime` flag the server writes (`replayIndex` in `shared/src/replayChunks.ts`, from `server/src/replayStore.ts`): about the clock, not the mode, since that's all it's for. Optional, so `HISTORY_VERSION` stays; an index without it hides the countdown.
+  - **The frozen clock is a React context** (`ServerClock`: an offset live, a fixed time in a replay) read through one hook, replacing the `clockOffset` prop passed down through the HUD.
+  - **Built in three commits**, each passing `verify` on its own: the clock and the transport slot in `GameView`, the pure transport logic, then the page and its UI.
+- **As built:**
+  - Step buttons and ←/→ follow the skip toggle (skip on: every mark; off: every input). Event buttons stop on `EVENT_KINDS` only. When the chunk ahead (or behind) isn't loaded, both stop at its start, a stop known from the index alone, which loads it; when the position's own chunk isn't loaded, they wait. The game's last input is the last stop.
+  - PageUp goes to the start of the current cycle first, then the one before. Chunk 0's start is the launch state (-1).
+  - URL: a missing `seat` means the default (all-seeing, the first seat); a `seat` without `reveal=1` is that seat's own view. Junk values are dropped.
+  - Seats board during pre-selection, so the followed seat may not be aboard at a step: the view then follows the first seat aboard, and an empty ship's launch state shows the transport with "nobody has boarded yet" instead of the game screen.
+  - Walks animate only on one step forward with the same seat; anything else snaps, decided once per frame shown so a re-render doesn't cut a walk short.
+  - The scrubber is over cycles (chunks), not steps; the step pips are story 5.
 
 ### 5. (#371) All-seeing details in the HUD. Size M. Label `leak-risk`.
 
@@ -96,17 +108,18 @@ The overlays from the suggestions, shown only when the page passes a `reveal`, w
 - **Crew:** a role badge (human, alpha Mush, beta Mush) on portraits and in the room list. The inspect panel for anyone shows spores or contamination, HP, morale, AP, MP, private statuses and inventory, reusing the panels a player sees for themselves.
 - **Account names** may show in a replay (owner, 2026-11-05): hiding them matters only while a game runs. The full view holds them (`Seat.name`); they are always shown through `moderateName`, the end screen's filter. A moderator's uncensored view is later, not in this epic.
 - **Visibility badges:** a small badge on every log line and message that wasn't public: private (padlock), secret (hushing hand), covert (camera), each its own badge, the same icons the action buttons use (`VISIBILITY_ICONS`; owner, 2026-11-05), and the same badge the live log will show once lines carry their kind, showing whether a secret or covert line leaked (reached anyone besides the actor), with a tooltip naming who saw it (for example "Seen by: Kuan Ti, Paola"). A private channel's messages carry the channel's name.
-  - **Needs a prerequisite:** a log line doesn't record its kind today, only `visibleTo` and `level` (and `level: "warning"` marks both a leaked secret or covert line and an alarm). The owner will add the kind and whether it leaked to the log entry and the view (2026-11-05; #366, with a live UI later). Story 5 reads those fields.
+  - **Needs a prerequisite:** a log line doesn't record its kind today, only `visibleTo` and `level` (and `level: "warning"` marks both a leaked secret or covert line and an alarm). The owner will add the kind and whether it leaked to the log entry and the view (2026-11-05; #366, with a live UI later). Story 5 reads those fields. **Done** 2026-11-08: `LogEntry.kind` and `leaked`.
 - **Pips:** story 1's marks drawn on the step scrubber for the loaded cycle, coloured by kind, each with a label for screen readers.
 - **Click to jump:** a log line or message jumps to the step that wrote it (`lineStep`).
 - **Leak-check:** the component props: `reveal` is optional everywhere and `GameScreen` never passes it.
 
-### 6. (#372) Links to replays. Size S.
+### 6. (#372) Links to replays. Size S. **Built 2026-11-08.**
 
 - `/games`: each entry links to `/replay/<id>` (`GamesPage.tsx` already plans for it).
 - The end screen: a "Watch the replay" link. `GameScreen` passes `ticket.roomId` to `GameView`, and `GameView` hands it to `EndScreen`. Story 3's "Preparing replay…" handles a copy that isn't confirmed yet, so the end screen doesn't need to know whether it is.
 - The replay page links back to `/games`, and to `/` for a single-player game.
 - In-game the end screen stays as it is. In a replay, at the last step, it shows with its close button, as it does live.
+- **As built:** the replay page learns a game is single player from `GET /api/games/<id>`, which adds `singlePlayer: true` for one (the list never has any); without the summary it goes back to `/games`. Stepping back from the end in a replay reopens the end screen for the next time the end comes. The end screen's link shows only live.
 
 ## Risks and later
 

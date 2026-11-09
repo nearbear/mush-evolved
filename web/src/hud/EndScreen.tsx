@@ -1,17 +1,30 @@
 // The end screen: once the game has ended, the ending's art, who won, and every seat with its player's name, character
 // and role (`view.crew`, revealed by viewFor only then). It opens by itself, again after a reload or reconnect, and can
-// be closed to look around; the top bar's Results button reopens it.
+// be closed to look around; the top bar's Results button reopens it. Live, it links to the game's replay (`replayId`);
+// a replay shows it at its last step without the link.
 
 import { Dialog } from "@base-ui/react/dialog";
 import type { CrewReveal, Ending, PlayerView, Winner } from "@mush2/shared";
 import { useTranslation } from "react-i18next";
+import { Link } from "react-router";
 import { DEAD_ICON, ENDING_ART, bustIcon } from "../art/assets.ts";
 import { useNames } from "../i18n/names.ts";
 import { DialogHeader } from "./DialogHeader.tsx";
 import "./settings.css";
 import "./endScreen.css";
 
-export function EndScreen({ view, open, onOpenChange }: { view: PlayerView; open: boolean; onOpenChange: (open: boolean) => void }) {
+export function EndScreen({
+  view,
+  open,
+  onOpenChange,
+  replayId,
+}: {
+  view: PlayerView;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  /** The game's room, for the "Watch the replay" link; the replay page passes none. */
+  replayId?: string | undefined;
+}) {
   const { t } = useTranslation();
   const { winner, ending, crew } = view;
   if (!winner || !ending || !crew) return null;
@@ -28,6 +41,12 @@ export function EndScreen({ view, open, onOpenChange }: { view: PlayerView; open
               <CrewRow key={c.id} member={c} you={c.id === view.you.id} />
             ))}
           </ul>
+          {replayId && (
+            <p className="end-replay">
+              {/* A copy not yet confirmed shows the replay page's "Preparing replay…" until it is. */}
+              <Link to={`/replay/${encodeURIComponent(replayId)}`}>{t("gameOver.watchReplay")}</Link>
+            </p>
+          )}
         </Dialog.Popup>
       </Dialog.Portal>
     </Dialog.Root>
