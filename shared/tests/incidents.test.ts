@@ -5,7 +5,7 @@ import { hasCamera } from "../src/log.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";
 import { turretCharges } from "../src/hunters.ts";
 import type { GameConfig, GameState } from "../src/types.ts";
-import { makeSeats, mustApply, nextCycle, noHunters, noIncidents, offered, option, pickSkill, player } from "./support.ts";
+import { clone, makeSeats, mustApply, nextCycle, nextDay, noHunters, noIncidents, offered, option, pickSkill, player } from "./support.ts";
 
 const HERE = "REFECTORY";
 const ELSEWHERE = "LABORATORY";
@@ -265,6 +265,24 @@ describe("broken equipment", () => {
     expect(viewFor(s, "p0").roomEquipment.find((e) => e.id === COFFEE)).toMatchObject({ broken: true });
     expect(JSON.stringify(viewFor(s, "p2"))).not.toContain(COFFEE);
     expect(applyAction(s, "p0", { type: "dispense", equipment: COFFEE })).toEqual({ ok: false, error: "illegal_action" });
+  });
+
+  it("an Engineer point pays for a repair", () => {
+    const s = broke(ship(), COFFEE);
+    player(s, "p0").resources.eng = 1;
+    expect(option(s, "p0", { type: "repair" })).toMatchObject({ cost: { ap: 0, mp: 0, paidBy: "eng" } });
+    const ap = player(s, "p0").ap;
+    const after = mustApply(s, "p0", { type: "repair", equipment: COFFEE });
+    expect([player(after, "p0").ap, player(after, "p0").resources.eng]).toEqual([ap, 0]);
+  });
+
+  it("the Engineer skill grants 2 Engineer points when picked, 1 a day, up to 2", () => {
+    const s = pickSkill(ship(), "p0", "engineer");
+    expect(player(s, "p0").resources.eng).toBe(2);
+    expect(player(nextDay(s), "p0").resources.eng).toBe(2);
+    const spent = clone(s);
+    player(spent, "p0").resources.eng = 0;
+    expect(player(nextDay(spent), "p0").resources.eng).toBe(1);
   });
 
   it("repair: the type's base chance, x1.5 with a wrench, x2 for a Technician; a success is public, a failure private", () => {

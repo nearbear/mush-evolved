@@ -201,6 +201,18 @@ describe("communication center", () => {
     });
   });
 
+  it("a Computer point pays for contacting Sol, Xyloph and NERON updates", () => {
+    const s = ship(true);
+    player(s, "p0").resources.comp = 1;
+    for (const a of [xyloph, updateNeron]) expect(costOf(s, "p0", a)).toEqual({ ap: 0, mp: 0, paidBy: "comp" });
+    const down = ship(false); // contacting Sol is offered only while the link is down
+    player(down, "p0").resources.comp = 1;
+    expect(costOf(down, "p0", contactSol)).toEqual({ ap: 0, mp: 0, paidBy: "comp" });
+    const ap = player(s, "p0").ap;
+    const next = must(applyAction(s, "p0", xyloph));
+    expect([player(next, "p0").ap, player(next, "p0").resources.comp]).toEqual([ap, 0]);
+  });
+
   describe("Xyloph", () => {
     it("only the Comms Officer, with the link up; never repeats; gone once the table runs out", () => {
       let s = ship(true);

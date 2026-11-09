@@ -1,4 +1,4 @@
-import { Action, isString } from "./action.ts";
+import { Action, type ActionCost, isString } from "./action.ts";
 import { isBreakable } from "../breakage.ts";
 import { ITEM_TYPES, canReachItem, isWorking, itemsIn } from "../items.ts";
 import { logPrivate, logPublic } from "../log.ts";
@@ -31,8 +31,9 @@ export class RepairAction extends Action<RepairActionData> {
     return null;
   }
 
-  override getCost(state: Readonly<GameState>): { ap: number; mp: number } {
-    return { ap: state.config.repair.cost.ap, mp: 0 };
+  /** An Engineer point (`resources.eng`) makes one use free (owner, 2026-11-09). */
+  override getCost(state: Readonly<GameState>, player: Readonly<PlayerState>): ActionCost {
+    return player.resources.eng > 0 ? { ap: 0, mp: 0, paidBy: "eng" } : { ap: state.config.repair.cost.ap, mp: 0 };
   }
 
   override getSuccessChance(state: Readonly<GameState>, player: Readonly<PlayerState>, target: RepairActionData): number {

@@ -72,6 +72,7 @@ type FoldHooks = Record<
   | "carePointsPerDay"
   | "computerPointsPerDay"
   | "designerPointsPerDay"
+  | "engineerPointsPerDay"
   | "shootPointsPerDay"
   | "computerPointsCap"
   | "failureStreakMultiplier"
@@ -402,6 +403,10 @@ export const computerPointsGain = (state: Readonly<GameState>, player: Readonly<
 /** Designer points a player gains at the start of a day: nothing by default, plus what the designer skill grants. */
 export const designerPointsGain = (state: Readonly<GameState>, player: Readonly<PlayerState>, registry: ModifierRegistry = MODIFIERS) =>
   fold("designerPointsPerDay", 0, state, player, registry);
+
+/** Engineer points a player gains at the start of a day: nothing by default, plus what the engineer skill grants. */
+export const engineerPointsGain = (state: Readonly<GameState>, player: Readonly<PlayerState>, registry: ModifierRegistry = MODIFIERS) =>
+  fold("engineerPointsPerDay", 0, state, player, registry);
 
 /** PILGRED points a player gains at the start of a day: nothing by default, plus what the physicist skill grants. */
 export const pilgredPointsGain = (state: Readonly<GameState>, player: Readonly<PlayerState>, registry: ModifierRegistry = MODIFIERS) =>

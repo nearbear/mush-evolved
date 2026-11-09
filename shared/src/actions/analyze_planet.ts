@@ -1,4 +1,4 @@
-import { Action, isString } from "./action.ts";
+import { Action, type ActionCost, isString } from "./action.ts";
 import { analysisSectors } from "../modifiers.ts";
 import { logPublic } from "../log.ts";
 import { astroTerminalsHere, pickSeekSector, planetsOf } from "../planets.ts";
@@ -19,7 +19,9 @@ export class AnalyzePlanetAction extends Action<AnalyzePlanetActionData> {
     super("analyze_planet", { equipment: isString, planet: isString });
   }
 
-  override getCost(state: Readonly<GameState>, _player: Readonly<PlayerState>, target: AnalyzePlanetActionData): { ap: number; mp: number } {
+  /** A Computer point (`resources.comp`) makes one analysis free (owner, 2026-11-09). */
+  override getCost(state: Readonly<GameState>, player: Readonly<PlayerState>, target: AnalyzePlanetActionData): ActionCost {
+    if (player.resources.comp > 0) return { ap: 0, mp: 0, paidBy: "comp" };
     const { cost, orbitCost } = state.config.astro.analyze;
     return { ap: state.navigation.orbit === target.planet ? orbitCost.ap : cost.ap, mp: 0 };
   }

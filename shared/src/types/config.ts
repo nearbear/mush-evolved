@@ -356,6 +356,11 @@ export interface GameConfig {
     capPoints: number; // Most Designer points (`resources.core`) a player can hold (owner, 2026-10-24; the original skill's IncrMaxPA(CORE, 4)).
     pointsPerDay: number; // Designer points the `designer` skill grants at the start of each day and when picked (owner, 2026-10-24; the original +2).
   };
+  engineer: {
+    capPoints: number; // Most Engineer points (`resources.eng`) a player can hold (owner, 2026-11-09).
+    pointsPerDay: number; // Engineer points the `engineer` skill grants at the start of each day.
+    pointsOnPick: number; // Engineer points it grants when picked.
+  };
   sprinter: {
     extraMpPerConversion: number; // Extra MP the `sprint` skill gets from each AP-to-MP conversion (owner, 2026-10-24; eMushpedia).
   };
