@@ -10,6 +10,7 @@ describe("resourceAvailable", () => {
   it("shows a resource the player's skill grants, even at zero", () => {
     expect(resourceAvailable("core", 0, ["designer"])).toBe(true);
     expect(resourceAvailable("garden", 0, ["botanic"])).toBe(true);
+    expect(resourceAvailable("eng", 0, ["engineer"])).toBe(true);
   });
 
   it("counts the book skill", () => {
@@ -21,6 +22,6 @@ describe("resourceAvailable", () => {
   });
 
   it("hides resources nothing grants yet", () => {
-    expect(resourceAvailable("eng", 0, ["engineer", "designer"])).toBe(false);
+    expect(resourceAvailable("exp", 0, ["engineer", "designer"])).toBe(false);
   });
 });
