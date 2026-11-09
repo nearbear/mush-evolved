@@ -16,7 +16,9 @@ import { play, preselectionSetup, seedsFrom, setup, slowRun } from "./randomGame
 const BUILD: BuildStamp = { stateVersion: STATE_VERSION, rulesVersion: "test" };
 
 describe("replay", () => {
-  it("rebuilds the same game from the setup and the stored inputs", () => {
+  // CI only (npm run test:slow): it plays a 2,000-input game and replays it, about 3s a seed alone, and timed out under
+  // verify's full-suite load. The cheaper replay checks below still run everywhere.
+  it.runIf(slowRun)("rebuilds the same game from the setup and the stored inputs", () => {
     for (const seed of seedsFrom(1)) {
       const { state, record } = play(2000, seed);
       const inputs = record.map((r) => r.input);
@@ -30,7 +32,7 @@ describe("replay", () => {
       const stored = JSON.parse(JSON.stringify(inputs)) as Input[];
       expect(replayGame(setup, stored)).toEqual(state);
     }
-  }, 5_000 * seedsFrom(1).length);
+  }, 15_000 * seedsFrom(1).length);
 
   it("rebuilds a ship launched empty in pre-selection, through every join and the Mush pick", () => {
     const { state, record } = play(1500, 4, preselectionSetup);
