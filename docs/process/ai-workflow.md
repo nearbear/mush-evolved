@@ -2846,6 +2846,13 @@ Follow-up the same day: the "N% repaired" text became a bare percent (the shared
 - **Worked:** adding one `explores` predicate (with the crew and not suitless) and switching the event code to it covered "events can't touch them and their items don't count" in one place. Giving every seat a spacesuit in the test helper kept the 53 existing expedition tests passing (most use oxygen-less planets); only the Lost item test, which cleared inventories, needed a tweak.
 - **Open:** the owner said items can't be dropped on an expedition, but phase 2 (item 4) allowed taking and dropping aboard the Icarus and the code still does. This is noted in the plan as pending, not changed.
 
+### 2026-11-08: DOM tests for chat read marking (#403)
+
+- **What:** the first `web` DOM tests. `jsdom` 30.1.3 and Testing Library (`react`, `dom`, `user-event`) added as `web` dev dependencies (owner approved; 31.0.0 skipped as only 3 days old). `web/tests/hud/readMarking.test.tsx` opts into jsdom per file and renders the real `Thread` and `ITrackie` inside a `ChatReadProvider` with a real store, on views built by the design kit's `sampleView` (real rules, no hand-written views). 18 tests, about 1 s for the file.
+- **Worked:** using the design kit fixture for views kept the tests short and typed. Stubs needed beyond the issue's list: `Element.prototype.getAnimations` (Base UI's scroll area calls it on a timer, and jsdom has no Web Animations). jsdom's `:focus-visible` matched on a programmatic focus, so Tab-into-feed needed no stub.
+- **Checked the tests bite:** 14 hand mutations of `useReadMarking` and Mark all read; 11 fail a test. The 3 survivors are defensive guards that don't change behaviour today: the feed `contains` check (a portalled item already has no `[data-seq]` ancestor), the `seq` safe-integer check, and the store check on Mark all read (with no store every tab already reads as read).
+- **Found:** Base UI warned that the "⋯" menu's `Menu.Item render={<button />}` needs `nativeButton` (a dev console warning in the app too). Fixed in `Thread.tsx` at the owner's request.
+
 ## 2026-11-08: Expeditions slice D, skills (#358)
 
 - **Decision (owner, 2026-11-08, already in the plan):** Diplomat and Polymath cancel Fight in Intelligent life; Polymath +1 fruit; Shooter +1 with a working gun; Sprinter +1 sector; Centauri +1 per blaster; U-turn 2 AP to come back; Traitor a free, secret, once-per-expedition Sabotage leaving only negative events.

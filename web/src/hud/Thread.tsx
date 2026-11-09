@@ -415,14 +415,14 @@ function MessageMenu({ onStartThread, report }: { onStartThread: (() => void) | 
         <Menu.Positioner sideOffset={4} align="end" className="message-menu-positioner">
           <Menu.Popup className="menu-popup">
             {onStartThread && (
-              <Menu.Item render={<button type="button" />} onClick={onStartThread}>
+              <Menu.Item nativeButton render={<button type="button" />} onClick={onStartThread}>
                 <img className="menu-item-icon" src={TAB_ICONS.threads} alt="" />
                 {t("itrackie.threads.start")}
               </Menu.Item>
             )}
             {/* TODO(report): a placeholder; reporting isn't built yet, so it does nothing. */}
             {report && (
-              <Menu.Item render={<button type="button" />}>
+              <Menu.Item nativeButton render={<button type="button" />}>
                 <img className="menu-item-icon" src={SHIP_RESOURCE_ICONS.alerts} alt="" />
                 {t("itrackie.messageMenu.report")}
               </Menu.Item>
