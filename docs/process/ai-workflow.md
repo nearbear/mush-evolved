@@ -2806,3 +2806,10 @@ Follow-up the same day: the "N% repaired" text became a bare percent (the shared
 - The wiki left `emushpedia.miraheze.org` for one site per language (`fr.`, `en.`, `es.emushpedia.com`, API at `/api.php`, not `/w/api.php`). `npm run wiki` now takes `--lang en|es` (French stays the default), and `page` lists the article's titles in the other languages from its interlanguage links.
 - Translated the French *Évènements* page to English wikitext for the owner, taking every name from eMush's own strings (`npm run emush -- translations <domain> <lang>`, a command the emush skill didn't document). What needed correction: I first used the French wiki's `{{Zone|…}}`; the English wiki uses `{{Sector|…}}`, and its accepted values aren't the game's names (`Caves`, not `Caverns`). Checking every template value against the template's own `#switch` list caught nine mismatches that would have rendered silently wrong.
 - Settled with the owner: wiki pages keep the in-game names; better names go to eMush's translators on Crowdin rather than onto the wiki. The workflow is now the `wiki-translate` skill.
+
+## 2026-11-08: Muted tips came back with several tabs open (#351 follow-up)
+
+- **Symptom (owner):** tips marked "Don't show this tip again" kept showing up. The owner had many tabs open.
+- **Cause:** `web/src/tips.ts` read localStorage once, at page load, and wrote its whole copy back on every change, including the automatic `syncTips` when a snoozed tip's situation ended. A tab with an older copy silently overwrote a mute made in another tab, and open tabs never saw each other's mutes.
+- **Fix:** every change re-reads storage before writing (`update`), and a `storage` listener refreshes the open card when another tab writes. New `tipPrefs()` getter for the hook and tests. `web/src/tips.test.ts` simulates two tabs (two module copies, one stubbed localStorage); both tests fail on the old code.
+- **What worked:** asking first which of three causes matched (multiple tabs, one origin per dev port, one mute per tip) before coding.
