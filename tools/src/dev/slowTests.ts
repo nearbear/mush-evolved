@@ -15,7 +15,7 @@ export const FILE_BUDGET_MS = 3000;
  * gets faster.
  */
 export const SLOW_ALLOWED: Record<string, { file?: number; test?: number; why: string }> = {
-  "shared/tests/replay.test.ts": { file: 20_000, test: 6_000, why: "replays whole random games step by step, on one seed (more in npm run test:slow, #382)" },
+  "shared/tests/replay.test.ts": { file: 18_000, test: 8_000, why: "replays whole random games step by step, on one seed (the rebuild and perspective checks only in npm run test:slow, #382)" },
   "server/tests/GameRoom.test.ts": { file: 15_000, test: 2_000, why: "many tests drive a real room with storage and bots" },
   "shared/tests/replayView.test.ts": { file: 7_000, test: 5_000, why: "one shared 4,000-step recorded 16-seat game" },
   "server/tests/goals.test.ts": { file: 5_000, test: 4_500, why: "long seeded GoalBot runs for every character" },

@@ -82,7 +82,8 @@ jobs:
         run: npm test
 
       # The long random-game replay checks on five seeds, every seat at every
-      # step (#382); `npm test` above runs them on one seed. About 2 minutes.
+      # step (#382); `npm test` above skips the rebuild and perspective checks and
+      # runs the rest on one seed. About 2 minutes.
       - name: Slow tests
         if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: npm run test:slow

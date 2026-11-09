@@ -22,8 +22,8 @@ export const setup: GameSetup = {
 
 /**
  * How hard the long random-game checks in replay.test.ts work (#382). `npm test` and `verify` leave REPLAY_SEEDS unset: one
- * seed per check, and the perspective check looks at one seat per step, in turn. `npm run test:slow` sets it to a seed count,
- * and every seat is checked at every step. A bug these catch usually shows on any seed; more seeds catch rarer paths.
+ * seed per check, and the rebuild and perspective checks are skipped (`slowRun`). `npm run test:slow` sets it to a seed
+ * count. A bug these catch usually shows on any seed; more seeds catch rarer paths.
  */
 const seedsEnv = process.env.REPLAY_SEEDS;
 export const slowRun = seedsEnv !== undefined && seedsEnv !== "";
