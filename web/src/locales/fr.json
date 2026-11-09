@@ -894,6 +894,7 @@
     "contaminated": "{{name}} a trafiqué les échantillons de {{research}}.",
     "planetShared": "{{name}} a partagé une planète.",
     "planetShareUpdated": "{{name}} a mis à jour une planète partagée.",
+    "bricBrocPrevented": "NERON : le rafistolage général a tenu le Daedalus ensemble ; aucun incident n'a frappé ce cycle.",
     "equipmentBroken": "NERON : panne de l'équipement « {{equipment}} ».",
     "itemBroken": "NERON : panne de l'objet « {{item}} ».",
     "fireStarted": "NERON : un incendie s'est déclaré à bord !",

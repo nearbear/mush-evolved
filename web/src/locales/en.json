@@ -879,6 +879,7 @@
     "contaminated": "{{name}} tampered with the {{research}} samples.",
     "planetShared": "{{name}} shared a planet.",
     "planetShareUpdated": "{{name}} updated a shared planet.",
+    "bricBrocPrevented": "NERON: general patching up has held the Daedalus together; no incident struck this cycle.",
     "equipmentBroken": "NERON: the {{equipment}} has broken down.",
     "itemBroken": "NERON: the {{item}} has broken down.",
     "fireStarted": "NERON: a fire has broken out aboard!",

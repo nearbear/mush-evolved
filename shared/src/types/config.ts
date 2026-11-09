@@ -346,6 +346,7 @@ export interface GameConfig {
     progress: { rate: number; mod: number; skillBoost: number; relayPenalty: number }; // As research's (owner, 2026-10-26); no skill bonus for now.
     // Noise Reducer (owner, 2026-11-01; eMushpedia *Isolateur phonique*): every player's AP cap +maxAp, added after Lethargy doubles it.
     noiseReducer: { maxAp: number };
+    bricBroc: { preventChance: number };
     // Owner, 2026-11-04: completing it puts these item types on the floor of `room` (one item per list entry).
     foodRetailer: { room: RoomId; items: readonly string[] };
     // Quantum Sensors (owner, 2026-11-01; eMushpedia *Détecteur à ondes de probabilité*): each planet analysis reveals +extraSectors sectors.

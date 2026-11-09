@@ -57,6 +57,25 @@ describe("incident points: spending", () => {
     expect(after.log.filter((e) => e.key === "tremor")).toHaveLength(2);
   });
 
+  it("Bric-a-brac: when the prevention roll succeeds the points are spent but no incident happens", () => {
+    const config = only("tremor");
+    const s = ship({ ...config, project: { ...config.project, bricBroc: { preventChance: 1 } } });
+    s.projects.BRIC_BROC = 100;
+    s.incidentPoints = 4;
+    const after = nextCycle(s);
+    expect(after.incidentPoints).toBe(1);
+    expect(after.log.filter((e) => e.key === "tremor")).toHaveLength(0);
+    expect(globalSystem(after).filter((m) => m.key === "bricBrocPrevented")).toHaveLength(1);
+  });
+
+  it("Bric-a-brac: does nothing until the project is complete", () => {
+    const config = only("tremor");
+    const s = ship({ ...config, project: { ...config.project, bricBroc: { preventChance: 1 } } });
+    s.projects.BRIC_BROC = 99;
+    s.incidentPoints = 4;
+    expect(nextCycle(s).log.filter((e) => e.key === "tremor")).toHaveLength(2);
+  });
+
   it("spends nothing when the roll fails (chance pool ÷ rollPoints)", () => {
     const config = only("tremor");
     const s = ship({ ...config, incidents: { ...config.incidents, rollPoints: Number.MAX_SAFE_INTEGER } });
