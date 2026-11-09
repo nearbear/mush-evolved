@@ -19,6 +19,8 @@
 // and draws once it is back, since nothing else would ask for a frame.
 
 import { Application, Container, type Filter, Rectangle, RendererType, Sprite, Texture, TextureStyle, TilingSprite } from "pixi.js";
+// Pixi's shader code without `new Function`, which the CSP forbids (web/public/_headers).
+import "pixi.js/unsafe-eval";
 import { keyedUrl } from "../../art/keyedSprite.ts";
 import { animId, animStep, frameAt, PACE_SPEED, type FrameUpdate, type Scene, type SceneImage, type SceneOutline, type ScenePicture, type SceneSprite, type ShipTurn } from "../scene.ts";
 import { shiftTile, stepTurn, tilePosition, type TurnLimits } from "../skyTurn.ts";

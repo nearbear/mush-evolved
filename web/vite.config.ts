@@ -1,4 +1,5 @@
 import { execSync } from "node:child_process";
+import { readFileSync } from "node:fs";
 import { userInfo } from "node:os";
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
@@ -28,6 +29,25 @@ function rulesVersion(command: string): string {
   }
 }
 
+/**
+ * The `/*` block of public/_headers (the CSP and other security headers a deployment sends), so `vite preview` sends
+ * them too and a CSP break shows locally. Not the dev server: React's refresh preamble is an inline script.
+ */
+function securityHeaders(): Record<string, string> {
+  const lines = readFileSync(new URL("public/_headers", import.meta.url), "utf8").split("\n");
+  const headers: Record<string, string> = {};
+  let inBlock = false;
+  for (const line of lines) {
+    if (!line.trim() || line.startsWith("#")) continue;
+    if (!/^\s/.test(line)) inBlock = line.trim() === "/*";
+    else if (inBlock) {
+      const colon = line.indexOf(":");
+      headers[line.slice(0, colon).trim()] = line.slice(colon + 1).trim();
+    }
+  }
+  return headers;
+}
+
 export default defineConfig(({ command }) => ({
   // shipMapEditor: the ship map editor's save (dev server only; web/src/editor/).
   plugins: [react(), shipMapEditor()],
@@ -37,7 +57,7 @@ export default defineConfig(({ command }) => ({
     __RULES_VERSION__: JSON.stringify(rulesVersion(command)),
   },
   server: { proxy },
-  preview: { proxy },
+  preview: { proxy, headers: securityHeaders() },
   build: {
     // Never inline Mush/ art as base64: 152 small item icons alone doubled the JS bundle.
     // Everything else keeps Vite's default (inline under 4 KB).

@@ -1,0 +1,15 @@
+# Security headers for every static response (Cloudflare Workers static assets, copied to web/dist by Vite).
+# /auth/*, /api/* and /parties/* run the Worker first and don't get these. `vite preview` serves the same block
+# (web/vite.config.ts), so `npm run preview` shows a CSP break before a deploy does.
+#
+# The CSP allows only this origin. The exceptions, each for something the client does:
+# - blob: and data: images and fetches: keyed sprites (web/src/art/keyedSprite.ts), inlined small assets, Pixi's loader.
+# - blob: workers: Pixi decodes images in a worker made from a blob URL.
+# No 'unsafe-eval' (Pixi runs its no-eval polyfill, `pixi.js/unsafe-eval`) and no 'unsafe-inline' (Base UI's
+# style elements are off, CSPProvider in web/src/main.tsx).
+/*
+  Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' data: blob:; worker-src 'self' blob:; object-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'
+  X-Frame-Options: DENY
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=()

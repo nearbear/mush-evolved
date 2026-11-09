@@ -11,7 +11,7 @@ Node is installed via nvm and is already on `PATH` in Claude Code shells (the us
 - `npm test`: Vitest in `shared`, `tools`, `web`, and `server`. Single file or test: `npm test -w shared -- rules.test.ts -t "advances the cycle"`.
 - `npm run typecheck`: `tsc --noEmit` in every package (TypeScript 7). `web`'s first emits the server's API type (`npm run api-types -w server`, #324) for its typed client.
 - `npm run build`: production build of `web`.
-- `npm run preview`: build `web` for production, then serve it with `vite preview` beside wrangler (same ports as `npm run dev`, so stop that first).
+- `npm run preview`: build `web` for production, then serve it with `vite preview` beside wrangler (same ports as `npm run dev`, so stop that first). Unlike the dev server, it sends the security headers from `web/public/_headers` (CSP and friends; `securityHeaders()` in `web/vite.config.ts`), so a CSP break shows up here before a deploy.
 - `npm run ship-layout`: regenerate `Mush/derived/ship-art.json` and `ship-rooms.json` from `ship-map.json` (see `web/src/iso/CLAUDE.md`, "The ship map"). A test fails if either is stale.
 - `npm run ship-check`: report-only checks on `ship-map.json` (overlaps, misaligned doors, gaps).
 - `npm run layout-query -- <regex>`: search `ship-art.json` and `ship-map.json` (reading them directly is denied), capped at 60 lines.

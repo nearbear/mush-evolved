@@ -13,6 +13,15 @@ body:has(.lobby) {
   background-image: url("../../../Mush/www/img/design/bg_start.jpg");
 }
 
+/* Base UI's hidden scrollbars (scroll areas, select lists). Base UI would add these as a style element, which the CSP
+   blocks, so its style elements are off (CSPProvider in main.tsx) and the rules live here. */
+.base-ui-disable-scrollbar {
+  scrollbar-width: none;
+}
+.base-ui-disable-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
 main {
   max-width: 96rem;
   margin: 1rem auto;
