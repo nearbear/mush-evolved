@@ -3,7 +3,7 @@
 Handoff for [#400](https://github.com/nearbear/mush2/issues/400). The owner's decisions are in the issue comment of
 2026-11-08 ("Plan (owner decisions)"); this file turns them into code steps. Read the issue first.
 
-**Before starting, get answers to the four open points at the end.** Each has a recommendation.
+The open points at the end were answered by the owner on 2026-11-08 (see "Answered"). Commit 1 is `ad9f7e0`.
 
 ## Shape
 
@@ -62,6 +62,9 @@ unreadCount(counts, read, channel): number
   - Then `mergeChatRead`.
   - If anything rose: save it, and push `chatReadFor` to the seat's *other* connections.
   - **Never reply** to the sender. Refused, rate-limited and nothing-new then look identical.
+- **Body after await** (leak check of commit 1). Resolve the seat's body (`this.body(playerId)`) after every `await`,
+  as `sendChatPage` does: a Transfer can move the seat during the storage read. Run `chatReadFor` on the state as it
+  is when sending.
 - **`onConnect`.** After `sendView`, send `{ type: "chatRead", read: chatReadFor(...) }`.
 - **Posting.** In `social()`, after a successful `chat` from a human seat, raise that seat's count for the channel to
   `game.chatSeq[channel]` and push to all of the seat's connections. This replaces the client's
@@ -121,6 +124,10 @@ unreadCount(counts, read, channel): number
   are plain values, so the row memo keeps skipping. One `onFocus` on the feed `<ol>` (React's bubbles like `focusin`)
   finds `closest("[data-seq]")` and calls `mark(channel, seq + 1)`. A click or tap focuses the row, or a button inside
   it, and the event bubbles to the same listener. Hover and being on screen don't count (owner).
+- **Arriving in view** (owner, 2026-11-08, answer 5). A message that arrives while its channel is the active one
+  (`active`), on its latest page, with the document visible (`visibilityState`) and focused (`document.hasFocus()`),
+  counts as read: mark `(channel, count)` when such a message arrives. Being on screen still doesn't mark history:
+  older messages, scrolling and hover never count. The divider keeps its snapshot from when the channel opened.
 - **Keyboard** (open point 2). The `<ol>` is the one tab stop. ArrowUp/Down, Home and End move focus between rows by
   DOM query, with no React state. Focusing the `<ol>` itself moves focus to the first unread row on the page, else the
   last row.
@@ -207,18 +214,27 @@ One adjustment will likely come with #401: a room channel with no count should s
 first becomes readable, or walking into a busy room shows its whole history as unread. That's a rule decision on #401;
 don't build it here.
 
-## Open points (ask the owner before coding)
+## Answered (owner, 2026-11-08)
 
-1. **The localStorage key barely helps.**
-   - The seat ticket is in sessionStorage, and `resume()` issues a new token per tab or device. So a token-hash key
-     survives only a reload in the same tab; elsewhere the server copy does the work.
-   - At most ~5 s of reading can be lost when a tab closes.
-   - *Recommend:* accept it.
-   - *Alternative:* the server sends the seat a stable opaque id for the key. More protocol, and it needs its own leak
-     review.
-2. **Keyboard.**
-   - *Recommend:* one tab stop per feed, with arrow keys (section 4).
-   - *Alternative:* every message in the tab order, which is 50 tab stops per page.
-3. **The active tab's own badge.** Today it's hidden because opening the tab marked everything read. Under the new
-   model it doesn't, so *recommend* showing it.
-4. **Clearing the divider.** Should posting or Mark all read clear it, as Discord does? *Recommend* yes.
+1. **localStorage key:** accepted as planned (a token-hash key, which survives a reload in the same tab; the server
+   copy covers the rest; up to ~5 s of reading may be lost when a tab closes).
+2. **Keyboard:** one tab stop per feed, with arrow keys (section 4).
+3. **The active tab's own badge:** shown.
+4. **Clearing the divider:** posting and Mark all read clear it.
+5. **Messages arriving while you watch** count as read (Discord's behaviour): see "Arriving in view" in section 4.
+   Without it, the open tab's badge (answer 3) would grow as people talk.
+
+## Notes for the final ai-workflow.md entry
+
+One entry for all of #400, written at the end (CLAUDE.md). Gathered so far:
+
+- **Commit 1 (`ad9f7e0`, 2026-11-08).**
+  - Adding `chatRead` to `GameClientMessage` silently made it an `Input` (`replay.ts` derives `Input` by excluding the
+    read-only messages) and routed it to `GameRoom.social()`. Typecheck caught the non-exhaustive switch. The plan had
+    missed this; fixed by adding `chatRead` to both exclusions, with the server ignoring it until commit 2.
+  - Another session was editing the same checkout (expeditions, #357), and its half-finished `config.ts` broke the
+    server tests. Verified in a detached temporary worktree holding only this commit's files, and committed only those.
+    One of three runs there failed on an uncaptured test (most likely a timeout under the other session's load).
+- **Open points answered by the owner (2026-11-08).** Answers 1–4 took the assistant's recommendations. Answer 5
+  ("arriving in view") was a question the assistant raised after the plan: showing the active tab's badge (answer 3)
+  would make the open chat's badge grow as people talk. The assistant recommended Discord's behaviour; the owner chose it.
