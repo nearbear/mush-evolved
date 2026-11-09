@@ -32,7 +32,7 @@
  * AP and MP standing up, with the action queue beside them. The scene around them stays usable.
  */
 .room-view {
-  --hud-card: 56px; /* the card's height: the 40px button, padding and border (the two 13px bar rows fit easily) */
+  --hud-card: 56px; /* the card's height: two 22px bars, their gap, padding and border; the 40px button fits inside */
 }
 .self-hud-top {
   position: absolute;
@@ -87,7 +87,6 @@ button.hud-plate {
   gap: 2px;
 }
 .hud-bars .pip-bar {
-  --s: 1px; /* the sprite's own pixels: 3x5 pips in an 11px frame, as the original drew them */
   gap: 3px;
 }
 .pip-icon {

@@ -1,12 +1,13 @@
-import { Fragment, memo, useLayoutEffect, useRef, useState, useEffect } from "react";
+import { Fragment, memo, useLayoutEffect, useRef, useState, useEffect, type FocusEvent, type KeyboardEvent, type MouseEvent } from "react";
 import { useTranslation } from "react-i18next";
 import { useNames } from "../i18n/names.ts";
 import { Menu } from "@base-ui/react/menu";
 import { chatPageOf, jsonEqual, type CharacterId, type ChannelId, type ChatLine, type PlayerView, type ThreadId } from "@mush2/shared";
 import { pageItems, useChatPages } from "../chatPages.tsx";
 import { useMobile } from "../useMobile.ts";
-import { messageKey } from "../chatSeen.ts";
+import { messageKey, useChatReadStore, useReadCount } from "../chatRead.ts";
 import { Markdown } from "./Markdown.tsx";
+import { firstUnreadRow, rowAfterKey } from "./feedKeys.ts";
 import { CycleDivider } from "./CycleDivider.tsx";
 import { FeedEntry, CrewAvatar, InfoMarker } from "./FeedEntry.tsx";
 import { ChatInput } from "./ChatInput.tsx";
@@ -70,11 +71,21 @@ export const Thread = memo(function Thread({ view, channel, placeholder, onSend,
   const paging = usePaging(view, channel);
   const messages = paging.messages ?? live;
   const actions = useHandlers(onSend, onToggle, threadLinks);
+  const marking = useReadMarking(channel, view.chatCounts[channel] ?? 0, paging.latest, readable);
+  const rows = readable && messages.length > 0;
   return (
     <div className="thread">
       {readable && <PageBar paging={paging} />}
       <Scroller items={messages.length} scrollKey={paging.page} top={!paging.latest}>
-        <ol className="feed">
+        {/* One tab stop per feed; arrow keys move between messages (owner, 2026-11-08). The rows' own controls stay tabbable. */}
+        <ol
+          ref={marking.feed}
+          className="feed"
+          tabIndex={rows ? 0 : undefined}
+          onFocus={marking.onFocus}
+          onClick={marking.onClick}
+          onKeyDown={rows ? marking.onKeyDown : undefined}
+        >
           {readable && head}
           {!readable && <li className="sub">{t("itrackie.needITrackieRead")}</li>}
           {readable && paging.loading && <li className="sub">{t("itrackie.pages.loading")}</li>}
@@ -114,8 +125,8 @@ export const Thread = memo(function Thread({ view, channel, placeholder, onSend,
 /**
  * Which page of a channel the reader is on (#355). Page n holds `seq` n·50 to n·50+49. Null, the default, is the
  * latest: the newest page alone (nearly empty right after a seal, owner 2026-11-06), and it follows new messages. Any
- * other page is fixed: sealed pages never change, so new messages never move the reader. `seen` is the message count
- * when the reader left the latest, for the "N new" chip.
+ * other page is fixed: sealed pages never change, so new messages never move the reader. `newCount` is the channel's
+ * unread (#400), shown on » while the reader is off the latest page.
  */
 function usePaging(view: PlayerView, channel: ChannelId) {
   const pages = useChatPages();
@@ -123,8 +134,9 @@ function usePaging(view: PlayerView, channel: ChannelId) {
   const last = total > 0 ? chatPageOf(total - 1) : 0;
   // The view carries the open page and the tail; without a page cache (no socket) nothing older can be shown.
   const first = pages ? 0 : Math.max(0, last - 1);
-  const [picked, setPicked] = useState<{ page: number; seen: number } | null>(null);
-  const page = picked && picked.page < last ? picked.page : null;
+  const read = useReadCount(channel, total);
+  const [picked, setPicked] = useState<number | null>(null);
+  const page = picked !== null && picked < last ? picked : null;
   // The view carries the open page and the tail; anything older comes from the cache.
   const older = page !== null && page < last - 1;
   const fetched = older ? pages?.get(channel, page) : undefined;
@@ -133,12 +145,68 @@ function usePaging(view: PlayerView, channel: ChannelId) {
   }, [older, page, channel, pages]);
   const shown = page ?? last;
   const messages = older ? (fetched ?? []) : view.chat.filter((m) => m.channel === channel && chatPageOf(m.seq) === shown);
-  const go = (to: number | null) =>
-    setPicked(to === null || to >= last ? null : { page: Math.max(first, to), seen: page === null ? total : (picked?.seen ?? total) });
-  return { page: shown, latest: page === null, first, last, newCount: page === null ? 0 : total - (picked?.seen ?? total), messages, loading: older && !fetched, go };
+  const go = (to: number | null) => setPicked(to === null || to >= last ? null : Math.max(first, to));
+  return { page: shown, latest: page === null, first, last, newCount: page === null ? 0 : Math.max(0, total - read), messages, loading: older && !fetched, go };
 }
 
 type Paging = ReturnType<typeof usePaging>;
+
+/**
+ * Marking a channel read (#400; owner, 2026-11-08). Focusing or clicking a message marks it and everything before it;
+ * hover and merely being on screen don't. A message that arrives while the feed is on screen, on the latest page, in a
+ * visible and focused window, counts as read (Discord's behaviour), so the open channel's badge doesn't grow as people
+ * talk. "On screen" is read from the DOM: every hidden tab, feature, private channel and phone panel is hidden with CSS,
+ * so a feed with no layout boxes isn't being watched.
+ *
+ * Keyboard: the feed is one tab stop. Tabbing in moves focus to the first unread message on the page (else the last);
+ * ArrowUp/Down, Home and End move between messages.
+ */
+function useReadMarking(channel: ChannelId, total: number, latest: boolean, readable: boolean) {
+  const store = useChatReadStore();
+  const feed = useRef<HTMLOListElement>(null);
+  // The count last rendered while readable: history that becomes readable (an iTrackie picked up) didn't arrive.
+  const seen = useRef<{ channel: ChannelId; total: number } | null>(null);
+  useEffect(() => {
+    const before = seen.current?.channel === channel ? seen.current.total : null;
+    seen.current = readable ? { channel, total } : null;
+    if (!store || !readable || !latest || before === null || total <= before) return;
+    const el = feed.current;
+    if (el && el.getClientRects().length > 0 && document.visibilityState === "visible" && document.hasFocus()) store.mark(channel, total);
+  }, [store, channel, total, latest, readable]);
+
+  const rowsOf = (ol: HTMLOListElement) => Array.from(ol.querySelectorAll<HTMLElement>(":scope > [data-seq]"));
+  const seqOf = (row: HTMLElement) => Number(row.dataset.seq);
+  const markRow = (target: EventTarget) => {
+    const row = target instanceof Element ? target.closest<HTMLElement>("[data-seq]") : null;
+    // Menus are portalled: their events bubble here through React but sit outside the feed in the DOM.
+    if (!row || !feed.current?.contains(row)) return;
+    const seq = seqOf(row);
+    if (Number.isSafeInteger(seq)) store?.mark(channel, seq + 1);
+  };
+  return {
+    feed,
+    onFocus: (e: FocusEvent<HTMLOListElement>) => {
+      if (e.target !== e.currentTarget) return markRow(e.target);
+      // Only from the keyboard: a click on the feed's blank space isn't reading anything.
+      if (!e.currentTarget.matches(":focus-visible")) return;
+      const rows = rowsOf(e.currentTarget);
+      rows[firstUnreadRow(rows.map(seqOf), store?.read(channel))]?.focus();
+    },
+    // Safari doesn't focus a button on click, so a click marks too.
+    onClick: (e: MouseEvent<HTMLOListElement>) => markRow(e.target),
+    onKeyDown: (e: KeyboardEvent<HTMLOListElement>) => {
+      const ol = e.currentTarget;
+      const target = e.target as HTMLElement;
+      // Keys inside a message's own controls (a checkbox, a menu) are theirs.
+      if (target !== ol && !(target.parentElement === ol && target.dataset.seq !== undefined)) return;
+      const rows = rowsOf(ol);
+      const to = rowAfterKey(e.key, rows.indexOf(target), rows.length);
+      if (to === null) return;
+      e.preventDefault();
+      rows[to]?.focus();
+    },
+  };
+}
 
 /**
  * `« ‹ 1 2 … 6 7 › »` on desktop, `« ‹ 6 / 7 › »` on the phone layout: « the earliest page, » the latest. Shown once a
@@ -191,6 +259,11 @@ function PageBar({ paging }: { paging: Paging }) {
         aria-label={newCount > 0 ? t("itrackie.pages.latestNew", { count: newCount }) : t("itrackie.pages.latest")}
       >
         »
+        {newCount > 0 && (
+          <span className="chat-page-new" aria-hidden="true">
+            {newCount > 99 ? "99+" : newCount}
+          </span>
+        )}
       </button>
     </nav>
   );
@@ -204,6 +277,7 @@ export function MessageEntry({
   onToggle,
   tools,
   className,
+  seq,
   children,
 }: {
   /** The sender's character (`senderOf`); unused for the game's own messages. */
@@ -214,13 +288,15 @@ export function MessageEntry({
   onToggle?: ((line: number) => void) | undefined;
   tools?: ReactNode;
   className?: string;
+  /** Set on a feed's rows: focusing or clicking the row marks it read (`useReadMarking`). */
+  seq?: number | undefined;
   children?: ReactNode;
 }) {
   const { t } = useTranslation();
   const names = useNames();
   if (m.system) {
     return (
-      <FeedEntry marker={<InfoMarker />} at={m.at} className={className ? `sub ${className}` : "sub"}>
+      <FeedEntry marker={<InfoMarker />} at={m.at} className={className ? `sub ${className}` : "sub"} seq={seq}>
         {names.logLine(m.system)}
       </FeedEntry>
     );
@@ -237,6 +313,7 @@ export function MessageEntry({
       at={m.at}
       tools={tools}
       className={className}
+      seq={seq}
     >
       <Markdown text={m.text} onToggle={onToggle} />
       {children}
@@ -304,6 +381,7 @@ const ChatRow = memo(
         character={character}
         mine={mine}
         message={m}
+        seq={m.seq}
         onToggle={canToggle ? (line) => actions.toggle(m, line) : undefined}
         tools={<MessageMenu onStartThread={canStartThread ? () => actions.start(m) : undefined} report={report} />}
       >

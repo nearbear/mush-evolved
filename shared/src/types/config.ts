@@ -51,16 +51,55 @@ export interface WeaponStats {
 }
 
 /** What can happen in one expedition sector (expeditions.ts, owner 2026-10-31). */
-export type ExpeditionEventKind = "nothing" | "fatigue" | "accident" | "catastrophe" | "oxygen" | "fuel" | "harvest" | "provision" | "artifact" | "fight";
+export type ExpeditionEventKind =
+  | "nothing"
+  | "fatigue"
+  | "accident"
+  | "catastrophe"
+  | "oxygen"
+  | "fuel"
+  | "harvest"
+  | "provision"
+  | "artifact"
+  | "fight"
+  // Phases 3 and 4 (owner, 2026-11-08, #357).
+  | "again"
+  | "back"
+  | "lostItem"
+  | "kill"
+  | "killAll"
+  | "disease"
+  | "mushTrap"
+  | "starmap"
+  | "lost"
+  // Phase 3, slice B (owner, 2026-11-08, #357): the Lost sector's events.
+  | "found"
+  | "foundDead"
+  // Phase 3, slice C (owner, 2026-11-08, #357): never drawn. A member without a needed spacesuit stays in the Icarus
+  // (`noSpacesuit`); nobody has one, so the expedition ends at takeoff (`grounded`).
+  | "noSpacesuit"
+  | "grounded"
+  // Phase 4, slice D (owner, 2026-11-08, #358): never drawn. A U-turn holder ended the expedition (`who`).
+  | "uTurn";
 
 /**
- * One line of a sector's event table: drawn by `weight`. `amount` is the oxygen or fuel gained, the fruits or rations
- * found, or the creature's strength in a fight.
+ * One line of a sector's event table: drawn by `weight`. `amount` is the oxygen or fuel gained, or the fruits or
+ * rations found; `creature` is a fight's opponent (`expedition.creatures`). `negative` marks the lines a Traitor's
+ * sabotage keeps (owner, 2026-11-08, #358): a sabotaged expedition draws only those.
  */
 export interface ExpeditionEventRule {
   kind: ExpeditionEventKind;
   weight: number;
   amount?: number;
+  creature?: string;
+  negative?: boolean;
+}
+
+/** What a won fight brings back: rations (steaks), random artifacts, starmap fragments. */
+export interface CreatureLoot {
+  provision?: number;
+  artifact?: number;
+  starmap?: number;
 }
 
 /**
@@ -558,10 +597,31 @@ export interface GameConfig {
     catastrophe: [min: number, max: number]; // HP every living member loses, rolled for each.
     survivalReduction: number; // Taken off each damage a member with the Survival skill takes.
     botanistBonus: number; // Extra fruit per harvest with a living Botanist in the crew.
-    loot: { harvest: string; provision: string; artifact: string }; // Item types found (placeholders: bananas, uncooked rations, a starmap).
+    // Item types found: fruits and steaks (placeholders: bananas, uncooked rations), a starmap fragment, and the
+    // artifacts an Artifact event or a fight's loot picks among, uniformly.
+    loot: { harvest: string; provision: string; starmap: string; artifacts: string[] };
+    survivalProvision: number; // Extra steaks per Provision for each living Survival holder in the crew.
+    mushTrapChance: number; // Chance each human member gains a spore in a Mush trap.
+    creatures: Record<string, { strength: number[]; loot: CreatureLoot }>; // Fight opponents: a strength drawn uniformly from the list.
     // Event tables by sector tag, plus LANDING (drawn first). A tag with no table explores with nothing happening. A
-    // Pilot in the crew avoids `catastrophe` (its weight drops out).
+    // living Pilot in the crew or the Antigrav propeller makes the landing Nothing.
     events: Record<string, ExpeditionEventRule[]>;
+    // Gear (owner, 2026-11-08, #357), by item type. One working copy carried by a member who explores counts; copies
+    // don't stack; nothing is used up.
+    gear: {
+      spacesuit: string; // Needed to explore a planet with no Oxygen sector; never taken by Lost item.
+      compass: string; // Cancels Again; its bearer can't get lost (Lost is cancelled when everyone has one).
+      rope: { item: string; tags: string[] }; // Its bearer is spared an Accident in these sectors.
+      drill: { item: string; fuelFactor: number }; // Multiplies the fuel from fuel events.
+      finders: { item: string; tags: string[]; factor: number }[]; // Sectors with these tags are `factor` times as likely to be picked.
+      babel: { item: string; tag: string; artifactFactor: number }; // Artifact is `artifactFactor` times as likely in this sector.
+      whiteFlag: { item: string; tag: string }; // Cancels Fight in this sector.
+    };
+    // Skills (owner, 2026-11-08, #358). Diplomat and Polymath cancel Fight in `gear.whiteFlag.tag`, as the white flag.
+    shooterBonus: number; // Strength each Shooter carrying a working gun adds, once each.
+    sprinterSectors: number; // Extra sectors per Sprinter who explores, counted at takeoff.
+    centauri: { item: string; bonus: number }; // With the Centauri rebel base contacted, each working copy adds `bonus` strength.
+    uTurn: { cost: { ap: number } }; // The U-turn skill's action: end the expedition at once.
   };
   // Weapons (owner, 2026-10-22, from the English wiki). Using one is the `attack` action.
   weapons: {

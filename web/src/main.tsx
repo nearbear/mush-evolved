@@ -1,3 +1,4 @@
+import { CSPProvider } from "@base-ui/react/csp-provider";
 import { lazy, StrictMode, Suspense } from "react";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter, Route, Routes } from "react-router";
@@ -20,19 +21,22 @@ const ReplayPage = lazy(() => import("./replay/ReplayPage.tsx"));
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <BrowserRouter>
-      <ToastProvider>
-        <Suspense fallback={null}>
-          <Routes>
-            <Route path="/games" element={<GamesPage />} />
-            <Route path="/replay/:id" element={<ReplayPage />} />
-            {ShipEditor && <Route path="/editor" element={<ShipEditor />} />}
-            {Mush2Kit && <Route path="/design-kit-mush2" element={<Mush2Kit />} />}
-            {/* Everything else: the lobby at / and the game at /play (App has its own routes), and unknown paths. */}
-            <Route path="*" element={<App />} />
-          </Routes>
-        </Suspense>
-      </ToastProvider>
-    </BrowserRouter>
+    {/* No style elements from Base UI: the CSP allows no inline styles (web/public/_headers). Their rules are in base.css. */}
+    <CSPProvider disableStyleElements>
+      <BrowserRouter>
+        <ToastProvider>
+          <Suspense fallback={null}>
+            <Routes>
+              <Route path="/games" element={<GamesPage />} />
+              <Route path="/replay/:id" element={<ReplayPage />} />
+              {ShipEditor && <Route path="/editor" element={<ShipEditor />} />}
+              {Mush2Kit && <Route path="/design-kit-mush2" element={<Mush2Kit />} />}
+              {/* Everything else: the lobby at / and the game at /play (App has its own routes), and unknown paths. */}
+              <Route path="*" element={<App />} />
+            </Routes>
+          </Suspense>
+        </ToastProvider>
+      </BrowserRouter>
+    </CSPProvider>
   </StrictMode>,
 );

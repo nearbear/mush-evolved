@@ -3,6 +3,7 @@
 // into its i18next catalogs (web/src/i18n/index.ts), so there is one copy. Pure lookups: an unknown id names itself.
 
 import { BLUEPRINTS } from "./blueprints.ts";
+import { isLostPlace } from "./patrol.ts";
 import en from "./locales/names.en.json";
 import es from "./locales/names.es.json";
 import fr from "./locales/names.fr.json";
@@ -18,7 +19,9 @@ type Group = "rooms" | "equipment" | "items";
 const lookup = (language: LobbyLanguage, group: Group, id: string): string =>
   (NAME_CATALOGS[language][group] as Record<string, string | undefined>)[id] ?? id;
 
-export const roomName = (language: LobbyLanguage, id: string): string => lookup(language, "rooms", id);
+/** The name every lost member's place (`lostPlace`) goes by. */
+export const LOST_PLACE_NAME = "LOST";
+export const roomName = (language: LobbyLanguage, id: string): string => lookup(language, "rooms", isLostPlace(id) ? LOST_PLACE_NAME : id);
 export const equipmentName = (language: LobbyLanguage, type: string): string => lookup(language, "equipment", type);
 export const skillName = (language: LobbyLanguage, id: string): string =>
   (NAME_CATALOGS[language].skills.names as Record<string, string | undefined>)[id] ?? id;

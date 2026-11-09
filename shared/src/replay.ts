@@ -65,7 +65,7 @@ export interface RecordedInput {
 export type Input =
   // Never the model key messages (BYOK): every input is recorded, and a key must never be stored. Nor Leave ship, which
   // only the server handles (it changes who plays a seat, not the game), nor a chat page request (read-only).
-  | (Exclude<GameClientMessage, { type: "action" | "setModel" | "clearModel" | "leaveShip" | "chatPage" }> & { by: PlayerId })
+  | (Exclude<GameClientMessage, { type: "action" | "setModel" | "clearModel" | "leaveShip" | "chatPage" | "chatRead" }> & { by: PlayerId })
   | (Extract<GameClientMessage, { type: "action" }> & { by: PlayerId; at: number })
   | { type: "tick"; at: number }
   | { type: "cycle"; at: number }

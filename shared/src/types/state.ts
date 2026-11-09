@@ -237,14 +237,22 @@ export interface ExpeditionEvent {
   kind: ExpeditionEventKind;
   /** Oxygen or fuel the ship gained, items found (on the Icarus Bay's floor), or the creature's strength. */
   amount?: number;
-  /** The item type found (harvest, provision, artifact). */
+  /** The item type found (harvest, provision, artifact, starmap) or destroyed (lostItem). */
   item?: string;
+  /** A fight's creature (`expedition.creatures`). */
+  creature?: string;
+  /** What a won fight brought back, by item type. */
+  found?: { item: string; count: number }[];
   /** A fight: the crew's strength, grenades included, how many grenades were used up, and whether the crew won. */
   fight?: { strength: number; grenades: number; won: boolean };
   /** HP each member lost, after Survival, by character. */
   hurt?: { name: CharacterId; hp: number }[];
   /** Members who died here, by character. */
   died?: CharacterId[];
+  /** Who got lost (lost), was found alive (found) or dead (foundDead), stays in the Icarus without a spacesuit (noSpacesuit), or turned back (uTurn), by character. */
+  who?: CharacterId;
+  /** An Accident the victim was spared by an item they carry (a rope), by character and item type. */
+  avoided?: { name: CharacterId; item: string };
 }
 
 /** An expedition's report (expeditions.ts). `members` are body ids; `crew` the same members by character, for display. */
@@ -254,12 +262,19 @@ export interface ExpeditionReport {
   crew: CharacterId[];
   planet: string;
   events: ExpeditionEvent[];
+  /**
+   * Members who got lost on the planet, by body id: how many of `events` each still sees, up to the line where they got
+   * lost (owner, 2026-11-08, #357). A member found again by the same expedition sees it all.
+   */
+  lostAt?: Record<PlayerId, number>;
 }
 
 /**
  * An expedition away (expeditions.ts): its report (`ExpeditionReport.id`), the planet (by id), whether it has landed,
  * the sectors still to explore (indices, in order, drawn at takeoff), and when the next step happens (server ms).
- * `carried` is what each member set out with, by item id, for `deadKeepItems: false`.
+ * `carried` is what each member set out with, by item id, for `deadKeepItems: false`. `suitless` are the members who
+ * stay in the Icarus for want of a spacesuit on a planet with no Oxygen sector, fixed at takeoff: they don't explore.
+ * `sabotaged` once a Traitor aboard used their Sabotage.
  */
 export interface ActiveExpedition {
   report: string;
@@ -268,6 +283,9 @@ export interface ActiveExpedition {
   sectors: number[];
   nextAt: number;
   carried: Record<PlayerId, string[]>;
+  suitless: PlayerId[];
+  /** A Traitor sabotaged it (owner, 2026-11-08, #358): from the next step on, only negative events. Never sent. */
+  sabotaged: boolean;
 }
 
 /** A planet a player found. Its size is the number of sectors. */

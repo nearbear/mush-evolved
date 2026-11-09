@@ -638,20 +638,26 @@ export function normalizePlanet(raw: Partial<Planet>): Planet {
 
 type Fight = NonNullable<ExpeditionEvent["fight"]>;
 type Hurt = NonNullable<ExpeditionEvent["hurt"]>[number];
+type Found = NonNullable<ExpeditionEvent["found"]>[number];
 
 export function normalizeExpeditionEvent(raw: Partial<ExpeditionEvent>): ExpeditionEvent {
   const t = "ExpeditionEvent";
   const fight = (f: Partial<Fight>) =>
     stripUndefined<Fight>({ strength: need(f, "strength", `${t}.fight`), grenades: need(f, "grenades", `${t}.fight`), won: need(f, "won", `${t}.fight`) });
   const hurt = (h: Partial<Hurt>) => stripUndefined<Hurt>({ name: need(h, "name", `${t}.hurt`), hp: need(h, "hp", `${t}.hurt`) });
+  const found = (f: Partial<Found>) => stripUndefined<Found>({ item: need(f, "item", `${t}.found`), count: need(f, "count", `${t}.found`) });
   return stripUndefined<ExpeditionEvent>({
     sector: need(raw, "sector", t),
     kind: need(raw, "kind", t),
     amount: raw.amount,
     item: raw.item,
+    creature: raw.creature,
+    found: opt(raw.found, (list) => list.map(found)),
     fight: opt(raw.fight, fight),
     hurt: opt(raw.hurt, (list) => list.map(hurt)),
     died: opt(raw.died, copy),
+    who: raw.who,
+    avoided: opt(raw.avoided, (a) => ({ name: need(a, "name", `${t}.avoided`), item: need(a, "item", `${t}.avoided`) })),
   });
 }
 
@@ -663,6 +669,7 @@ export function normalizeExpedition(raw: Partial<ExpeditionReport>): ExpeditionR
     crew: copy(need(raw, "crew", t)),
     planet: need(raw, "planet", t),
     events: need(raw, "events", t).map(normalizeExpeditionEvent),
+    lostAt: opt(raw.lostAt, (m) => ({ ...m })),
   });
 }
 
@@ -675,6 +682,10 @@ export function normalizeActiveExpedition(raw: Partial<ActiveExpedition>): Activ
     sectors: copy(need(raw, "sectors", t)),
     nextAt: need(raw, "nextAt", t),
     carried: mapValues(need(raw, "carried", t), copy),
+    // Slice C (#357): spacesuits weren't needed before it, so everyone under way explores.
+    suitless: copy(added(raw, "suitless", [])),
+    // Slice D (#358): nobody could sabotage before it.
+    sabotaged: added(raw, "sabotaged", false),
   });
 }
 

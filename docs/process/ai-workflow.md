@@ -2809,3 +2809,52 @@ Follow-up the same day: the "N% repaired" text became a bare percent (the shared
 
 ## 2026-11-08: Bric-a-brac project effect
 Implemented `BRIC_BROC`: one 15% roll per cycle change once incidents are due; on success the incident loop still buys and spends points but skips `apply`. Config in `config.project.bricBroc`, two tests added. Worked: the rule was fully specified by the owner, so no questions needed.
+## 2026-11-08: Muted tips came back with several tabs open (#351 follow-up)
+
+- **Symptom (owner):** tips marked "Don't show this tip again" kept showing up. The owner had many tabs open.
+- **Cause:** `web/src/tips.ts` read localStorage once, at page load, and wrote its whole copy back on every change, including the automatic `syncTips` when a snoozed tip's situation ended. A tab with an older copy silently overwrote a mute made in another tab, and open tabs never saw each other's mutes.
+- **Fix:** every change re-reads storage before writing (`update`), and a `storage` listener refreshes the open card when another tab writes. New `tipPrefs()` getter for the hook and tests. `web/src/tips.test.ts` simulates two tabs (two module copies, one stubbed localStorage); both tests fail on the old code.
+- **What worked:** asking first which of three causes matched (multiple tabs, one origin per dev port, one mute per tip) before coding.
+
+## 2026-11-08: Expeditions phases 3 and 4, slice A (events and fights, #357)
+
+- Built slice A from the owner's decisions in `docs/plans/expedition.md`: every tag's 4/3/2/1 table, Again, Back, Lost item, Kill and Kill all, the Mush trap, starmaps, named creatures with a win roll and loot, random artifacts (7 new inert items, icons already matched their ids), Survival's extra steak, the safe landing. No new rule questions: the decisions covered everything except small readings, recorded in the plan ("half" of 15 rounds down; Lost reads as Nothing until slice B; Lost item can take an iTrackie).
+- What worked: eMushpedia's Spanish Combat tables (5 vs 10 wins 1 in 6; 16 vs 32, 1 in 17) confirmed the win formula exactly, and pinned it in a test. Moving the fight tables to named creatures in config kept the old tests' scenarios with one helper (`fightGame`).
+- What needed correction: I first took artifact and creature names from the wikis and guessed two (es "Mapa líquido de Magallanes", en "Beetle-thug", fr "Cartouche invertébré"); `npm run emush -- translations items|planet_sector_event <lang>` (found in this log, not in the emush skill) gave eMush's own strings, which fixed the French shell, the English Beetlethug and Mindblender, and the Wreck's pilot in each language. That command belongs in the emush skill.
+- Another session was editing the same checkout meanwhile (chat pages, tips); a transient typecheck error in `replay.ts` was theirs. I left their files alone.
+
+## 2026-11-08: Expeditions phase 3, slice B: Lost (#357)
+
+- Built getting lost, finding the lost and death when the ship leaves from the owner's "Lost" decisions. Claude's readings are recorded in `docs/plans/expedition.md` ("Slice B built"). The main one: a lost member gets a per-player place, `LOST:<playerId>`, outside the room config, instead of a flag on the player. That way "no doors, nobody to talk to, actions only on your own items" falls out of the existing room code, and only build, install and ignite needed an `offShip` guard. Redrawing the remaining steps once the Lost sector appears keeps the state shape (no version bump), at the cost of a sector that rolled Again possibly coming back up in the same trip.
+- Split across two sessions with a handoff. A concurrent session (chat read state, #400) stashed both sessions' files together. Slice B was recovered from the stash by hand and committed by explicit path list, leaving out the other session's files (and a third set that showed up mid-task).
+- The full suite timed out once, on `replay.test.ts`'s rebuild test (5 s limit). Timing it alone in a worktree at HEAD and in the slice B tree gave the same 2.3 to 3.6 s, so the timeout comes from full-suite load, not from this change. It is a flaky test worth a longer timeout.
+
+## 2026-11-08: replay rebuild test moved to CI only
+
+- `replay.test.ts`'s "rebuilds the same game" (a 2,000-input random game, about 3 s alone) kept hitting its 5 s limit under `verify`'s parallel load in WSL. The owner chose to raise the limit (15 s a seed) and run it only in `npm run test:slow`, which CI runs after `npm test`, gated on the existing `slowRun` flag. Timing it at HEAD and with the change under test first ruled out a regression.
+- Follow-up: the perspective check (every seat's view rebuilt from the full view, about 7 s under load) moved to `test:slow` too. Its one-seat-per-step mode for normal runs became dead code and was removed. The slow-test allowlist ceiling for `replay.test.ts` went from 20 s to 18 s (file) and from 6 s to 8 s (single test). The first ceilings, set from timings taken alone, were too tight: under `verify` the same tests run about 1.75 times slower, so ceilings should come from `verify`'s own `slow` lines.
+
+## 2026-11-08: Content Security Policy (e51b4ba)
+
+- A strict CSP in `web/public/_headers` (self only, no `unsafe-eval` or `unsafe-inline`) plus clickjacking and nosniff headers. Pixi runs its no-eval polyfill (`pixi.js/unsafe-eval`) and Base UI's style elements are off (`CSPProvider`), so the policy needed no loosening. `vite preview` serves the same headers.
+- Judged defense in depth rather than a fix: React escapes output and chat Markdown never uses innerHTML. It matters most before #218 stores a player's API key in the browser, where an injected script could steal it.
+- Deployed to test from a detached worktree at the commit, so the uncommitted expedition work in the main checkout stayed out. Headless check on test: headers served, matchmaker WebSockets connect over wss, no CSP violations. OAuth sign-in needs a manual check (form-action doesn't apply, since sign-in starts with location.assign).
+- Worked: checking the plan against the code (no form posts to OAuth) before trusting `form-action 'self'`. Correction: I expected Cloudflare Access to block curl on test (docs/ops/deploy.md says it's behind Access), but the static page answered directly.
+
+## 2026-11-08: Expeditions phase 3, slice C (gear and spacesuits, #357)
+
+- **Decided by the owner, at the start of the slice:** gear rooms (6 suits in the Icarus Bay; compass, 4 ropes and the drill in front storage), the four blueprints in the front corridor with stand-in scraps and an old T-shirt by the soap, the thermosensor's recipe (1 metal + 1 plastic, the original's weighted list), and the spacesuit check once at takeoff.
+- **Correction to the plan:** the plan said the thermosensor's recipe wasn't in the original's `blueprints.json`. It is, as `HEAT_SEEKER` (the original's id for the thermosensor). Checking the data before asking turned an open question into a choice between two listed recipes.
+- **Worked:** adding one `explores` predicate (with the crew and not suitless) and switching the event code to it covered "events can't touch them and their items don't count" in one place. Giving every seat a spacesuit in the test helper kept the 53 existing expedition tests passing (most use oxygen-less planets); only the Lost item test, which cleared inventories, needed a tweak.
+- **Open:** the owner said items can't be dropped on an expedition, but phase 2 (item 4) allowed taking and dropping aboard the Icarus and the code still does. This is noted in the plan as pending, not changed.
+
+## 2026-11-08: Expeditions slice D, skills (#358)
+
+- **Decision (owner, 2026-11-08, already in the plan):** Diplomat and Polymath cancel Fight in Intelligent life; Polymath +1 fruit; Shooter +1 with a working gun; Sprinter +1 sector; Centauri +1 per blaster; U-turn 2 AP to come back; Traitor a free, secret, once-per-expedition Sabotage leaving only negative events.
+- **Built by Claude:** the negative events as a `negative` flag on the config's table lines (so they are tunable and pinned in one test) rather than a hard-coded list in code; the Crystal field's "always a Mush trap" falls out of marking only its trap. Two new self-actions, `u_turn` and `sabotage_expedition`; the Sabotage is `private` and `recorded = false`, and a test checks that the state after it differs from before only by the never-sent flag.
+- **Claude's readings, flagged for the owner:** skills count only for members who explore (a suitless Sprinter adds nothing); "gun" means a non-melee, non-thrown weapon that counts in the fight; Sabotage is once per expedition in all and also applies to the landing; a U-turn before the landing rolls no dirt.
+- **What needed correction:** two existing tests enumerate unrecorded actions and implemented Mush skills, and failed only in the final verify; worth grepping for such registries when adding an action or a skill status.
+
+## 2026-11-08: HUD bars back to full size; own name shows given name only
+
+Owner asked to undo the HP/morale bar shrink and show only the given name on their own nameplate. The shrink came from 948a690 (Icarus slice), which set `--s: 1px` on `.hud-bars .pip-bar`; reverted it and its comment. The phone top-bar nameplate (`PlayerSummary`) and the desktop HUD card (`SelfHud`) now use the existing `characterGivenName`; the inspect button's aria-label and the inspect panel keep the full name. Worked: git history pinpointed the unrelated size change quickly.

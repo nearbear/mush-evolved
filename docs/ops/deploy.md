@@ -4,7 +4,7 @@ Three Workers, each with the client as static assets and its own D1 database, R2
 
 | Target | Worker | How it deploys |
 | --- | --- | --- |
-| Test | `mush2-server-test`, behind Cloudflare Access, cheats on | From CI, by a manual trigger (#121), or by hand: `npm run deploy:test` |
+| Test | `mush2-server-test`, cheats on, public (not behind Cloudflare Access, by choice, 2026-11-08) | From CI, by a manual trigger (#121), or by hand: `npm run deploy:test` |
 | Staging | `mush2-server-staging` | By hand: `npm run deploy:staging` |
 | Production | `mush2-server` | By hand: `npm run deploy:production` |
 

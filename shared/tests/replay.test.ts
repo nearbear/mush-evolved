@@ -16,7 +16,9 @@ import { play, preselectionSetup, seedsFrom, setup, slowRun } from "./randomGame
 const BUILD: BuildStamp = { stateVersion: STATE_VERSION, rulesVersion: "test" };
 
 describe("replay", () => {
-  it("rebuilds the same game from the setup and the stored inputs", () => {
+  // CI only (npm run test:slow): it plays a 2,000-input game and replays it, about 3s a seed alone, and timed out under
+  // verify's full-suite load. The cheaper replay checks below still run everywhere.
+  it.runIf(slowRun)("rebuilds the same game from the setup and the stored inputs", () => {
     for (const seed of seedsFrom(1)) {
       const { state, record } = play(2000, seed);
       const inputs = record.map((r) => r.input);
@@ -30,7 +32,7 @@ describe("replay", () => {
       const stored = JSON.parse(JSON.stringify(inputs)) as Input[];
       expect(replayGame(setup, stored)).toEqual(state);
     }
-  }, 5_000 * seedsFrom(1).length);
+  }, 15_000 * seedsFrom(1).length);
 
   it("rebuilds a ship launched empty in pre-selection, through every join and the Mush pick", () => {
     const { state, record } = play(1500, 4, preselectionSetup);
@@ -69,19 +71,18 @@ const games = () => [...seedsFrom(4).map((seed) => [preselectionSetup, 300, seed
 const live = (v: SeatView): PlayerView => ({ ...v, log: v.log.map(({ id: _id, ...line }) => line), chat: v.chat.map(({ id: _id, ...line }) => line) });
 
 describe("perspective", () => {
-  it("gives every seat its own view at every step of a random game, from the full view", () => {
+  // CI only (npm run test:slow), like the rebuild test above: about 7s a seed, over verify's budget.
+  it.runIf(slowRun)("gives every seat its own view at every step of a random game, from the full view", () => {
     const cycles: number[] = [];
     for (const [from, steps, seed] of games()) {
       let starts: SeatStarts | null = null;
-      let step = 0;
       const { state } = play(steps, seed, from, (s) => {
         // As the server notes them: the moment the Mush are chosen.
         if (starts === null && !s.preselection) starts = seatStarts(s);
         // Through JSON, as history is stored.
         const full = JSON.parse(JSON.stringify(fullViewFor(s, starts))) as FullView;
-        // The views are most of the cost: a normal run checks one seat per step, in turn; a slow run every seat (#382).
-        const seats = slowRun ? s.players : [s.players[step++ % s.players.length]!];
-        for (const p of seats) {
+        // Every seat at every step (#382).
+        for (const p of s.players) {
           const [rebuilt, real] = [perspective(full, p.mind), viewFor(s, p.id)];
           // The fast check first; expect only to show the difference.
           if (!isDeepStrictEqual(live(rebuilt), real)) expect(live(rebuilt)).toStrictEqual(real);

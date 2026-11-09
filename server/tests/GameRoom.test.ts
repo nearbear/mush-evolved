@@ -2,6 +2,7 @@ import {
   characterName,
   CHARACTERS,
   CHAT_CHANNELS,
+  MUSH_CHANNEL,
   STATE_VERSION,
   CHAT_PAGE,
   chatPageKey,
@@ -98,6 +99,8 @@ const wakeAll = (prompt: string): string => {
 
 const send = (room: Room, conn: Conn, msg: unknown) => room.onMessage(conn as never, typeof msg === "string" ? msg : JSON.stringify(msg));
 const lastMsg = (c: Conn) => c.messages<GameServerMessage>().at(-1)!;
+/** The last view message, which a `chatRead` may follow (#400). */
+const lastViewMsg = (c: Conn) => c.messages<GameServerMessage>().filter((m) => m.type === "view").at(-1)!;
 const lastView = (c: Conn): PlayerView => {
   const views = c.messages<GameServerMessage>().filter((m) => m.type === "view");
   return (views.at(-1) as { view: PlayerView }).view;
@@ -425,7 +428,8 @@ describe("GameRoom persistence", () => {
       // Saved again after the reload, still with the same overrides.
       const inputs = storage.data.size;
       await send(revived, connect(revived, token), { type: "chat", channel: CHAT_CHANNELS[0], text: "hello" });
-      expect(storage.data.size).toBe(inputs + 1);
+      // The input, and the poster's read count (#400).
+      expect(storage.data.size).toBe(inputs + 2);
       expect(stored().overrides).toEqual(overrides);
     } finally {
       vi.useRealTimers();
@@ -998,7 +1002,7 @@ describe("GameRoom single player", () => {
   it("has no cycle clock: no countdown, no alarm, and End cycle on without cheats", async () => {
     const { room, storage, token } = await soloRoom();
     const c = connect(room, token);
-    expect(lastMsg(c)).toMatchObject({ type: "view", nextCycleAt: null });
+    expect(lastViewMsg(c)).toMatchObject({ type: "view", nextCycleAt: null });
     expect(storage.alarm).toBeNull();
     expect(legalIn(lastView(c))).toContainEqual({ type: "ready" });
     // Hours pass on the clock; the cycle doesn't change.
@@ -1156,7 +1160,7 @@ describe("GameRoom single player", () => {
     const { storage, token } = await soloRoom();
     const revived = asRoom(storage);
     await revived.onStart();
-    expect(lastMsg(connect(revived, token))).toMatchObject({ type: "view", nextCycleAt: null });
+    expect(lastViewMsg(connect(revived, token))).toMatchObject({ type: "view", nextCycleAt: null });
   });
 });
 
@@ -1174,7 +1178,7 @@ describe("GameRoom cycle clock", () => {
     const c = connect(room, "tok0");
     expect(lastView(c)).toMatchObject({ day: 1, cycleOfDay: 5 });
     expect(storage.alarm).toBe(Date.UTC(2026, 9, 19, 15));
-    expect(lastMsg(c)).toMatchObject({ type: "view", nextCycleAt: Date.UTC(2026, 9, 19, 15) });
+    expect(lastViewMsg(c)).toMatchObject({ type: "view", nextCycleAt: Date.UTC(2026, 9, 19, 15) });
     expect(legalIn(lastView(c)).some((a) => a.type === "ready")).toBe(false);
   });
 
@@ -1993,5 +1997,118 @@ describe("GameRoom replay copy to R2 (#336)", () => {
       // Single-player cycles end by End cycle, not a clock: the replay shows no countdown.
       if (accountId !== undefined) expect((await bucket.json<ReplayIndex>(replayKeys.index("test-room"))).realTime).toBe(false);
     }
+  });
+});
+
+describe("GameRoom chat read state (#400)", () => {
+  const global = CHAT_CHANNELS[0]!;
+  const reads = (c: Conn) => c.messages<GameServerMessage>().filter((m) => m.type === "chatRead");
+  const say = (room: Room, c: Conn, channel: ChannelId, text = "hi") => send(room, c, { type: "chat", channel, text });
+
+  it("sends a connecting seat its counts after the view, as loaded on a restart and clamped to the channel", async () => {
+    const { room, storage } = await newRoom();
+    const a = connect(room, "tok0");
+    expect(a.messages<GameServerMessage>().map((m) => m.type)).toEqual(["view", "chatRead"]);
+    expect(reads(a)).toEqual([{ type: "chatRead", read: {} }]);
+    await say(room, a, global);
+    await storage.put("chatRead:p0", { [global]: 5 });
+    const revived = asRoom(storage);
+    await revived.onStart();
+    expect(reads(connect(revived, "tok0"))).toEqual([{ type: "chatRead", read: { [global]: 1 } }]);
+  });
+
+  it("saves an update and sends it to the seat's other connections only, never answering the sender", async () => {
+    const { room, storage } = await newRoom();
+    const [a, a2, b] = [connect(room, "tok0", "a"), connect(room, "tok0", "a2"), connect(room, "tok1", "b")];
+    for (let i = 0; i < 3; i++) await say(room, b, global);
+    const [sentA, sentB] = [a.sent.length, reads(b).length];
+    await send(room, a, { type: "chatRead", read: { [global]: 2 } });
+    expect(storage.data.get("chatRead:p0")).toEqual({ [global]: 2 });
+    expect(reads(a2).at(-1)).toEqual({ type: "chatRead", read: { [global]: 2 } });
+    expect(a.sent.length).toBe(sentA);
+    // No other seat ever hears of it.
+    expect(reads(b)).toHaveLength(sentB);
+    expect(JSON.stringify(b.sent)).not.toContain('"chatRead","read":{"global":2}');
+  });
+
+  it("answers an unreadable channel, an over-count and a rate-limited update alike: nothing sent, nothing stored", async () => {
+    const { room, storage } = await newRoom(3, new FakeStorage(), {}, { p0: "human", p1: "mush" });
+    const [a, b] = [connect(room, "tok0"), connect(room, "tok1")];
+    await say(room, b, global);
+    await say(room, b, MUSH_CHANNEL);
+    await send(room, a, { type: "chatRead", read: { [global]: 1 } });
+    const [stored, sent] = [storage.data.get("chatRead:p0"), a.sent.length];
+    await send(room, a, { type: "chatRead", read: { [MUSH_CHANNEL]: 1 } });
+    await send(room, a, { type: "chatRead", read: { [global]: 99 } });
+    expect(storage.data.get("chatRead:p0")).toEqual(stored);
+    // Six updates per 10 s: this one is the seventh, and would have raised the count.
+    await say(room, b, global);
+    for (let i = 0; i < 3; i++) await send(room, a, { type: "chatRead", read: {} });
+    await send(room, a, { type: "chatRead", read: { [global]: 2 } });
+    expect(storage.data.get("chatRead:p0")).toEqual(stored);
+    expect(a.messages<GameServerMessage>().slice(sent).some((m) => m.type !== "view")).toBe(false);
+  });
+
+  it("posting raises the poster's count to the channel's count, on every connection the seat has", async () => {
+    const { room, storage } = await newRoom();
+    const [a, b] = [connect(room, "tok0"), connect(room, "tok1")];
+    await say(room, b, global);
+    await say(room, a, global);
+    expect(storage.data.get("chatRead:p0")).toEqual({ [global]: 2 });
+    expect(reads(a).at(-1)).toEqual({ type: "chatRead", read: { [global]: 2 } });
+    expect(storage.data.get("chatRead:p1")).toEqual({ [global]: 1 });
+  });
+
+  it("keeps nothing for a bot seat", async () => {
+    const { room, storage } = await newRoom();
+    gameOf(room).players[1]!.isBot = true;
+    const b = connect(room, "tok1");
+    await say(room, b, global);
+    await send(room, b, { type: "chatRead", read: { [global]: 1 } });
+    expect(storage.data.has("chatRead:p1")).toBe(false);
+    expect(reads(b)).toEqual([]);
+  });
+
+  it("follows the mind through a Transfer, sent filtered by the new body; the victim gets none of it", async () => {
+    const { room, storage } = await newRoom(3, new FakeStorage(), {}, { p0: "mush", p1: "human" });
+    const game = gameOf(room);
+    const [mush, victim] = [game.players[0]!, game.players[1]!];
+    mush.mushSkills.push("transfert");
+    mush.room = victim.room = "LABORATORY";
+    for (const o of game.players.slice(2)) o.room = "REFECTORY";
+    game.contamination[victim.id] = 1;
+    const mushConn = connect(room, "tok0");
+    await send(room, mushConn, { type: "createChannel", name: "crew" });
+    const crew = lastView(mushConn).privateChannels[0]!.id;
+    await say(room, mushConn, crew);
+    await say(room, mushConn, global);
+    expect(storage.data.get("chatRead:p0")).toEqual({ [crew]: 1, [global]: 1 });
+    await send(room, mushConn, { type: "action", action: { type: "body_transfer", target: victim.id } });
+    const [again, victimConn] = [connect(room, "tok0", "again"), connect(room, "tok1", "victim")];
+    // The crew channel stayed with the old body; the count is kept, but not sent.
+    expect(reads(again)).toEqual([{ type: "chatRead", read: { [global]: 1 } }]);
+    expect(reads(victimConn)).toEqual([{ type: "chatRead", read: {} }]);
+    expect(storage.data.get("chatRead:p0")).toEqual({ [crew]: 1, [global]: 1 });
+  });
+
+  it("Leave ship deletes the seat's counts", async () => {
+    const { room, storage } = await newRoom(3, new FakeStorage(), CHEATS);
+    const a = connect(room, "tok0");
+    await say(room, a, global);
+    expect(storage.data.has("chatRead:p0")).toBe(true);
+    await send(room, a, { type: "leaveShip" });
+    expect(storage.data.has("chatRead:p0")).toBe(false);
+  });
+
+  it("drops a deleted private channel's count with the next write", async () => {
+    const { room, storage } = await newRoom();
+    const a = connect(room, "tok0");
+    await send(room, a, { type: "createChannel", name: "crew" });
+    const crew = lastView(a).privateChannels[0]!.id;
+    await say(room, a, crew);
+    await send(room, a, { type: "leaveChannel", channel: crew });
+    expect(storage.data.get("chatRead:p0")).toEqual({ [crew]: 1 });
+    await say(room, a, global);
+    expect(storage.data.get("chatRead:p0")).toEqual({ [global]: 1 });
   });
 });

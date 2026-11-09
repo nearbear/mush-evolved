@@ -153,12 +153,29 @@ export const ITEM_TYPES: Record<string, ItemType> = {
   // Owner, 2026-10-25: items researches need in the lab (research.ts, RESEARCH_REQUIRES). No effect yet. Named after their icons.
   // Schrödinger, the cat.
   body_cat: {},
+  // Alien artifacts, found on expeditions (owner, 2026-11-08, #357). Inert for now: their effects are later stories. Named after their icons.
   water_stick: {},
+  magellan_liquid_map: {},
+  rolling_boulder: {},
+  alien_oil: {},
+  computer_jelly: {},
+  alien_holographic_tv: {},
+  insectoid_shell: {},
+  alien_can_opener: {},
   // A starmap fragment.
   super_map: {},
   //Items added for documenting the dismantle action (owner, 2026-10-22). Named after their icons.
+  // Expedition gear (owner, 2026-11-08, #357; effects in expeditions.ts, `config.expedition.gear`). The drill (icon
+  // driller) and the thermosensor (icon heat_seeker) predate it, so keep their ids.
   drill: { dismantle: { metal: 1, plastic: 0, chance: 0.5 } },
   thermosensor: { dismantle: { metal: 0, plastic: 1, chance: 0.5 } },
+  quad_compass: {},
+  rope: {},
+  echo_sounder: {},
+  trad_module: {},
+  white_flag: {},
+  // The white flag's ingredient, with the soap (owner, 2026-11-08). No effect.
+  old_shirt: {},
   plastenite_armor: { dismantle: { metal: 0, plastic: 1, chance: 0.12 }, canBreak: true, canBeSabotaged: true, repairChance: 0.12 },
   sniper_helmet: { dismantle: { metal: 1, plastic: 1, chance: 0.12 }, canBreak: true, canBeSabotaged: true, repairChance: 0.25 },
   scooter: { dismantle: { metal: 2, plastic: 1, chance: 0.25 }, canBreak: true, canBeSabotaged: true, repairChance: 0.25 },

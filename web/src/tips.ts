@@ -18,7 +18,7 @@ export interface TipPrefs {
 const KEY = "mush2.tips";
 const DEFAULT: TipPrefs = { on: true, muted: [], snoozed: [] };
 const listeners = new Set<() => void>();
-let current: TipPrefs = load();
+let current: TipPrefs = load() ?? DEFAULT;
 
 const isTipId = (v: unknown): v is TipId => (TIP_IDS as readonly unknown[]).includes(v);
 
@@ -36,22 +36,52 @@ export function parseTipPrefs(raw: string | null): TipPrefs {
   }
 }
 
-function load(): TipPrefs {
+/** The stored prefs, or undefined when storage is blocked. */
+function load(): TipPrefs | undefined {
   try {
     return parseTipPrefs(localStorage.getItem(KEY));
   } catch {
-    return DEFAULT; // storage blocked: the default
+    return undefined;
   }
 }
 
-function save(next: TipPrefs): void {
+function notify(): void {
+  for (const l of listeners) l();
+}
+
+/**
+ * Applies `change` to the stored prefs, re-read first so a change made in another tab isn't overwritten with this
+ * tab's older copy. With storage blocked it applies to this tab's copy and lasts until the page reloads.
+ */
+function update(change: (prefs: TipPrefs) => TipPrefs): void {
+  const base = load() ?? current;
+  const next = change(base);
+  if (next === base) {
+    // Nothing to write, but another tab may have changed what this one shows.
+    if (JSON.stringify(base) !== JSON.stringify(current)) {
+      current = base;
+      notify();
+    }
+    return;
+  }
   current = next;
   try {
     localStorage.setItem(KEY, JSON.stringify(next));
   } catch {
     // storage blocked: the choice lasts until the page reloads
   }
-  for (const l of listeners) l();
+  notify();
+}
+
+// Another tab changed the prefs (or cleared storage): pick that up, so a tip muted there disappears here too.
+try {
+  window.addEventListener("storage", (e) => {
+    if (e.key !== KEY && e.key !== null) return;
+    current = load() ?? DEFAULT;
+    notify();
+  });
+} catch {
+  // no window (tests, workers): nothing to listen to
 }
 
 /** The tip to show: the first that applies, isn't muted and isn't snoozed. None when tips are off. */
@@ -73,15 +103,15 @@ export function dismissed(prefs: TipPrefs, id: TipId): TipPrefs {
 
 export const muted = (prefs: TipPrefs, id: TipId): TipPrefs => ({ ...prefs, muted: [...new Set([...prefs.muted, id])] });
 
-export const syncTips = (applying: readonly TipId[]): void => {
-  const next = forgetEnded(current, applying);
-  if (next !== current) save(next);
-};
-export const dismissTip = (id: TipId): void => save(dismissed(current, id));
-export const muteTip = (id: TipId): void => save(muted(current, id));
-export const setTipsOn = (on: boolean): void => save({ ...current, on });
+export const syncTips = (applying: readonly TipId[]): void => update((prefs) => forgetEnded(prefs, applying));
+export const dismissTip = (id: TipId): void => update((prefs) => dismissed(prefs, id));
+export const muteTip = (id: TipId): void => update((prefs) => muted(prefs, id));
+export const setTipsOn = (on: boolean): void => update((prefs) => ({ ...prefs, on }));
 /** Every tip can show again, including the muted ones. Leaves tips on or off as they are. */
-export const resetTips = (): void => save({ ...DEFAULT, on: current.on });
+export const resetTips = (): void => update((prefs) => ({ ...DEFAULT, on: prefs.on }));
+
+/** This tab's prefs now. */
+export const tipPrefs = (): TipPrefs => current;
 
 export function useTipPrefs(): TipPrefs {
   return useSyncExternalStore(
@@ -89,6 +119,6 @@ export function useTipPrefs(): TipPrefs {
       listeners.add(cb);
       return () => listeners.delete(cb);
     },
-    () => current,
+    tipPrefs,
   );
 }

@@ -13,7 +13,7 @@ Create one Google OAuth client (type "Web application", scopes `openid` and `pro
 | Staging | `https://mush2-server-staging.nearbearnearbear.workers.dev/auth/<provider>/callback` |
 | Test | `https://mush2-server-test.nearbearnearbear.workers.dev/auth/<provider>/callback` |
 
-The redirect URI is the page's origin plus `/auth/<provider>/callback`. Locally that is Vite's port, not wrangler's: Vite proxies `/auth`, `/api` and `/parties` to wrangler and keeps the Host header, so the client is on one origin as in production. Worktrees run on other ports, which aren't registered: they use dev sign-in (#287). Test is behind Cloudflare Access; the callbacks pass because the browser already has the Access cookie.
+The redirect URI is the page's origin plus `/auth/<provider>/callback`. Locally that is Vite's port, not wrangler's: Vite proxies `/auth`, `/api` and `/parties` to wrangler and keeps the Host header, so the client is on one origin as in production. Worktrees run on other ports, which aren't registered: they use dev sign-in (#287).
 
 Secrets: `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `DISCORD_CLIENT_ID`, `DISCORD_CLIENT_SECRET`. Locally in `server/.dev.vars`; on a deployment `npx wrangler secret put <NAME>` in `server/` (add `--env staging` or `--env test`). A provider without both is answered with 503 at `/auth/<provider>/start`. They never go in the repo.
 

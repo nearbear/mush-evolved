@@ -15,8 +15,8 @@ import { hasTitleAccess } from "./titles.ts";
 import type { CommsTerminalView, DeepReadonly, GameConfig, GameState, ItemState, PlayerState, RoomId } from "./types.ts";
 
 /**
- * The rebel bases, in the order they call (owner, 2026-10-21: the original's `rebel_center.json` order). Wolf and
- * Centauri can be decoded but have no effect yet.
+ * The rebel bases, in the order they call (owner, 2026-10-21: the original's `rebel_center.json` order). Centauri
+ * adds strength to expedition fights (expeditions.ts); Wolf can be decoded but has no effect yet.
  */
 export const REBEL_BASES = ["WOLF", "SIRIUS", "CENTAURI", "KALADAAN", "LUYTEN_CETI", "CYGNI"] as const;
 export type RebelBaseId = (typeof REBEL_BASES)[number];

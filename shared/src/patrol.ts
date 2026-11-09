@@ -7,7 +7,7 @@
 // Data and lookups only, so config.ts can import it; the manoeuvre itself is in actions/takeoff.ts.
 
 import { hasSkill } from "./skills.ts";
-import type { Equipment, GameConfig, GameState, PlayerState, RoomId } from "./types.ts";
+import type { Equipment, GameConfig, GameState, PlayerId, PlayerState, RoomId } from "./types.ts";
 
 export type PatrolKind = "patrol" | "pasiphae";
 
@@ -40,6 +40,17 @@ export const ICARUS_CRAFT = "ICARUS_CRAFT";
 
 /** A craft's room: a patrol ship's or the Icarus's, where the ship's rooms and equipment are out of reach. */
 export const inCraft = (room: RoomId): boolean => room === ICARUS_CRAFT || patrolShip(room) !== undefined;
+
+/**
+ * Where a member lost on a planet is (docs/plans/expedition.md, phase 3, slice B; owner, 2026-11-08, #357): a place of
+ * their own, off the map, with no doors or equipment, so their speech reaches nobody. Not in `config.rooms`.
+ */
+export const lostPlace = (player: PlayerId): RoomId => `${LOST_PREFIX}${player}`;
+export const isLostPlace = (room: RoomId): boolean => room.startsWith(LOST_PREFIX);
+const LOST_PREFIX = "LOST:";
+
+/** Off the Daedalus: in a craft, or lost on a planet. Nothing aboard the ship can be built, installed or set on fire there. */
+export const offShip = (room: RoomId): boolean => inCraft(room) || isLostPlace(room);
 /** The equipment type in each ship's room, as in the original (`objects` in its `rooms` sheet). */
 export const PATROL_COMMANDS: Record<PatrolKind, string> = { patrol: "PATROL_COMMAND", pasiphae: "PASIPHAE_COMMAND" };
 

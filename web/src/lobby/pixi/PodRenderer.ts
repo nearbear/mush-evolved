@@ -11,6 +11,8 @@
 // StrictMode remount (a renderer destroyed before it started cleans up after itself).
 
 import { Application, CanvasSource, Container, Geometry, GlProgram, Mesh, Rectangle, RenderTexture, Shader, Sprite, Texture, UniformGroup } from "pixi.js";
+// Pixi's shader code without `new Function`, which the CSP forbids (web/public/_headers).
+import "pixi.js/unsafe-eval";
 import { bakePod, loadFrost, type PodArt } from "../podArt.ts";
 import { bakeScale, cylinder, DARK, fanAngle, flatBounds, flatRectAt, LIGHT, podLayout, type Rect, stasisAlpha } from "../podGeometry.ts";
 

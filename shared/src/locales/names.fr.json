@@ -35,7 +35,8 @@
     "PATROL_SHIP_B_2": "Patrouilleur Platon",
     "PATROL_SHIP_AA_0": "Patrouilleur Wallis",
     "PATROL_SHIP_AA_1": "Pasiphae",
-    "ICARUS_CRAFT": "Icarus"
+    "ICARUS_CRAFT": "Icarus",
+    "LOST": "Planète"
   },
   "equipment": {
     "ASTRO_MODULE": "Terminal Astro",
@@ -114,11 +115,27 @@
     "mush_sample": "Souche de test Mush",
     "body_cat": "Schrödinger",
     "water_stick": "Bâtonnet aqueux",
+    "magellan_liquid_map": "Carte liquide de Magellan",
+    "rolling_boulder": "Monture rocheuse",
+    "alien_oil": "Lubrifiant alien",
+    "computer_jelly": "Gelée à circuits imprimés",
+    "alien_holographic_tv": "Télé holographique alien",
+    "insectoid_shell": "Cartouche invertébrée",
+    "alien_can_opener": "Décapsuleur alien",
     "super_map": "Morceau de carte stellaire",
     "protection_gloves": "Gants de protection",
     "space_capsule": "Capsule spatiale",
     "extinguisher": "Extincteur",
-    "steroids": "Anabolisant"
+    "steroids": "Anabolisant",
+    "space_suit": "Combinaison",
+    "quad_compass": "Boussole quadrimétrique",
+    "rope": "Corde",
+    "drill": "Foreuse",
+    "echo_sounder": "Écholocateur",
+    "thermosensor": "Thermosenseur",
+    "trad_module": "Module Babel",
+    "white_flag": "Drapeau blanc",
+    "old_shirt": "Vieux t-shirt"
   },
   "skills": {
     "names": {

@@ -17,6 +17,7 @@ export function FeedEntry({
   tools,
   badge,
   className,
+  seq,
   children,
 }: {
   marker: ReactNode;
@@ -27,10 +28,19 @@ export function FeedEntry({
   /** A small badge beside the recency caption (entries without a name only): a log line's visibility. */
   badge?: ReactNode;
   className?: string | undefined;
+  /**
+   * A chat message's `seq`: the row becomes focusable (not a tab stop) and its feed marks it read on focus or click
+   * (`useReadMarking` in Thread.tsx, #400).
+   */
+  seq?: number | undefined;
   children: ReactNode;
 }) {
   return (
-    <li className={["entry", name === undefined && "entry-inline", className].filter(Boolean).join(" ")}>
+    <li
+      className={["entry", name === undefined && "entry-inline", className].filter(Boolean).join(" ")}
+      data-seq={seq}
+      tabIndex={seq === undefined ? undefined : -1}
+    >
       <div className="entry-marker">{marker}</div>
       {name !== undefined && (
         <div className="entry-head">

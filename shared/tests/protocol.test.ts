@@ -25,6 +25,44 @@ describe("chatPage (#355)", () => {
   });
 });
 
+describe("chatRead (#400)", () => {
+  it("parses counts per channel, dropping anything extra", () => {
+    expect(parse({ type: "chatRead", read: { global: 12, "pc-2": 0, mush: 3, "th-1": 4, "sp-0": 1, "sr-7": 2 }, seat: "p1" })).toEqual({
+      type: "chatRead",
+      read: { global: 12, "pc-2": 0, mush: 3, "th-1": 4, "sp-0": 1, "sr-7": 2 },
+    });
+    expect(parse({ type: "chatRead", read: {} })).toEqual({ type: "chatRead", read: {} });
+  });
+
+  it("refuses unknown channels, bad counts and anything but a plain object", () => {
+    for (const read of [
+      { nope: 1 },
+      { global: -1 },
+      { global: 1.5 },
+      { global: "3" },
+      { global: null },
+      { global: Number.MAX_SAFE_INTEGER + 1 },
+      [3],
+      null,
+      "global",
+      undefined,
+    ]) {
+      expect(parse({ type: "chatRead", read })).toBeNull();
+    }
+  });
+
+  it("refuses __proto__ and other prototype names", () => {
+    expect(parseGameMessage('{"type":"chatRead","read":{"__proto__":1}}')).toBeNull();
+    expect(parseGameMessage('{"type":"chatRead","read":{"global":1,"constructor":2}}')).toBeNull();
+  });
+
+  it("caps the entries at 256", () => {
+    const read = (n: number) => Object.fromEntries(Array.from({ length: n }, (_, i) => [`pc-${i}`, i]));
+    expect(parse({ type: "chatRead", read: read(256) })).toEqual({ type: "chatRead", read: read(256) });
+    expect(parse({ type: "chatRead", read: read(257) })).toBeNull();
+  });
+});
+
 describe("model key messages (BYOK)", () => {
   const ok = { type: "setModel", provider: "openrouter", model: "meta-llama/llama-3.3-70b-instruct:free", apiKey: "sk-or-v1-abc123" };
 
@@ -89,6 +127,8 @@ describe("actions from a client", () => {
     repair: [{ type: "repair", equipment: "e1" }],
     extinguish: [{ type: "extinguish", item: "i1" }],
     ignite: [{ type: "ignite" }],
+    u_turn: [{ type: "u_turn" }],
+    sabotage_expedition: [{ type: "sabotage_expedition" }],
     extinguish_manually: [{ type: "extinguish_manually" }],
     takeoff: [{ type: "takeoff", equipment: "e1" }],
     icarus_takeoff: [{ type: "icarus_takeoff", equipment: "e1" }],

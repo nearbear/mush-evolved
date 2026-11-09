@@ -65,7 +65,7 @@ function ReportBody({ report, share }: { report: ExpeditionReportView; share: ((
               <Event key={i} event={event} />
             ))}
           </ol>
-          {report.events.some((e) => e.item !== undefined && (e.amount ?? 0) > 0) && <p className="sub">{t(report.away ? "expedition.lootAboard" : "expedition.lootOnFloor")}</p>}
+          {report.events.some((e) => (e.item !== undefined && e.kind !== "lostItem" && (e.amount ?? 0) > 0) || (e.found?.length ?? 0) > 0) && <p className="sub">{t(report.away ? "expedition.lootAboard" : "expedition.lootOnFloor")}</p>}
           {report.away && <p className="sub">{t("expedition.underWay")}</p>}
           {posted && <p className="sub" role="status">{t("expedition.shared")}</p>}
           {share && (
@@ -139,15 +139,19 @@ function useEventLines(): (event: ExpeditionEvent) => { sector: string; lines: s
   const { t } = useTranslation();
   const names = useNames();
   return (event) => {
-    const sector = event.sector === "LANDING" ? t("expedition.landing") : t(`astro.tags.${event.sector}` as never, { defaultValue: event.sector });
+    const sector =
+      event.sector === "LANDING" ? t("expedition.landing") : event.sector === "U_TURN" ? t("expedition.uTurnHeading") : t(`astro.tags.${event.sector}` as never, { defaultValue: event.sector });
     const count = event.amount ?? 0;
     const lines: string[] = [];
     switch (event.kind) {
       case "fight":
         if (event.fight) {
-          const params = { enemy: count, strength: event.fight.strength };
+          // Phase 1's reports name no creature.
+          const creature = t(`expedition.creatures.${event.creature ?? "unknown"}` as never, { defaultValue: t("expedition.creatures.unknown") });
+          const params = { creature, enemy: count, strength: event.fight.strength };
           lines.push(event.fight.won ? t("expedition.events.fightWon", params) : t("expedition.events.fightLost", params));
           if (event.fight.grenades > 0) lines.push(t("expedition.events.grenades", { count: event.fight.grenades }));
+          for (const f of event.found ?? []) lines.push(t("expedition.events.found", { count: f.count, item: names.item(f.item) }));
         }
         break;
       case "oxygen":
@@ -157,11 +161,27 @@ function useEventLines(): (event: ExpeditionEvent) => { sector: string; lines: s
       case "harvest":
       case "provision":
       case "artifact":
+      case "starmap":
         lines.push(t("expedition.events.found", { count, item: names.item(event.item ?? "") }));
+        break;
+      case "lostItem":
+        lines.push(t("expedition.events.lostItem", { item: names.item(event.item ?? "") }));
+        break;
+      // Not built yet: the rules record it as Nothing (#214).
+      case "disease":
+        lines.push(t("expedition.events.nothing"));
+        break;
+      case "lost":
+      case "found":
+      case "foundDead":
+      case "noSpacesuit":
+      case "uTurn":
+        lines.push(t(`expedition.events.${event.kind}`, { name: event.who ? names.characterGiven(event.who) : "" }));
         break;
       default:
         lines.push(t(`expedition.events.${event.kind}`));
     }
+    if (event.avoided) lines.push(t("expedition.events.avoided", { name: names.characterGiven(event.avoided.name), item: names.item(event.avoided.item) }));
     for (const h of event.hurt ?? []) if (h.hp > 0) lines.push(t("expedition.events.hurt", { name: names.characterGiven(h.name), count: h.hp }));
     for (const name of event.died ?? []) lines.push(t("expedition.events.died", { name: names.characterGiven(name) }));
     return { sector, lines };

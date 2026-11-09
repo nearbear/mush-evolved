@@ -35,7 +35,8 @@
     "PATROL_SHIP_B_2": "Nave de patrulla Platon",
     "PATROL_SHIP_AA_0": "Nave de patrulla Wallis",
     "PATROL_SHIP_AA_1": "Pasiphae",
-    "ICARUS_CRAFT": "Ícaro"
+    "ICARUS_CRAFT": "Ícaro",
+    "LOST": "Planeta"
   },
   "equipment": {
     "ASTRO_MODULE": "Terminal astro",
@@ -114,11 +115,27 @@
     "mush_sample": "Cepa de prueba Mush",
     "body_cat": "Schrödinger",
     "water_stick": "Bastoncillo acuoso",
+    "magellan_liquid_map": "Mapa líquido de Magallanes",
+    "rolling_boulder": "Montura rocosa",
+    "alien_oil": "Lubricante alien",
+    "computer_jelly": "Gelatina con circuitos impresos",
+    "alien_holographic_tv": "TV holográfica alien",
+    "insectoid_shell": "Proyectil invertebrado",
+    "alien_can_opener": "Abrebotellas alien",
     "super_map": "Fragmento de mapa estelar",
     "protection_gloves": "Guantes de protección",
     "space_capsule": "Cápsula espacial",
     "extinguisher": "Extintor",
-    "steroids": "Anabolizantes"
+    "steroids": "Anabolizantes",
+    "space_suit": "Traje espacial",
+    "quad_compass": "Brújula Cuadrimétrica",
+    "rope": "Cuerda",
+    "drill": "Taladro",
+    "echo_sounder": "Ecolocalizador",
+    "thermosensor": "Termosensor",
+    "trad_module": "Módulo Babel",
+    "white_flag": "Bandera blanca",
+    "old_shirt": "Vieja camiseta"
   },
   "skills": {
     "names": {

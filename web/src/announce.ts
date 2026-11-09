@@ -5,7 +5,7 @@
 
 import { useSyncExternalStore } from "react";
 import type { ChatLine, LogLine, PlayerView } from "@mush2/shared";
-import { chatSeenIn, isNewer, type ChatSeen } from "./chatSeen.ts";
+import { arrivedIn, isArrived, type Arrived } from "./chatRead.ts";
 
 export type Urgency = "polite" | "assertive";
 /** all: everything; mentions: urgent events, private entries and messages that name you or come on private channels; off: none (your own send confirmations and errors still speak). */
@@ -124,7 +124,7 @@ export interface Seen {
   /** The body the view was for (`you.id`); a Transfer changes it, and the other body's count means nothing here. */
   body: string;
   log: number;
-  chat: ChatSeen;
+  chat: Arrived;
   cycle: number;
 }
 
@@ -163,7 +163,7 @@ export interface Fresh {
 /** What `view` holds that `seen` has not covered. `seen` null means the first view: nothing is announced for history. */
 export function freshIn(seen: Seen | null, view: PlayerView): Fresh {
   const latestCycle = view.log.reduce((n, e) => Math.max(n, e.cycle), 0);
-  const next: Seen = { body: view.you.id, log: view.logSeen, chat: chatSeenIn(view), cycle: Math.max(seen?.cycle ?? 0, latestCycle) };
+  const next: Seen = { body: view.you.id, log: view.logSeen, chat: arrivedIn(view), cycle: Math.max(seen?.cycle ?? 0, latestCycle) };
   if (!seen || seen.body !== view.you.id) return { log: [], chat: [], cycle: undefined, seen: next };
   const here = view.you.room;
   // The log's length says nothing once the window drops old lines (#365): `logSeen` counts every line this seat has
@@ -172,7 +172,7 @@ export function freshIn(seen: Seen | null, view: PlayerView): Fresh {
   const log = added > 0 ? view.log.slice(-added).filter((e) => e.room === undefined || e.room === here) : [];
   return {
     log,
-    chat: view.chat.filter((m) => isNewer(seen.chat, m)),
+    chat: view.chat.filter((m) => isArrived(seen.chat, m)),
     cycle: latestCycle > seen.cycle ? latestCycle : undefined,
     seen: next,
   };
