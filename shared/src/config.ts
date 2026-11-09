@@ -431,13 +431,13 @@ export const DEFAULT_CONFIG: GameConfig = {
     cost: { ap: 1 },
     types: {
       knife: { melee: true, damage: [1, 5], accuracy: 0.6, expoStrength: 1, dirtyChance: 0.25, repairChance: 0.12 },
-      blaster: { damage: [2, 3], accuracy: 0.5, expoStrength: 1, charges: 3, dirtyChance: 0, repairChance: 0.12 },
-      natamy_riffle: { damage: [2, 4], mushDamage: [6, 13], accuracy: 0.5, expoStrength: 1, charges: 3, dirtyChance: 0, repairChance: 0.12 },
+      blaster: { gun: true, damage: [2, 3], accuracy: 0.5, expoStrength: 1, charges: 3, dirtyChance: 0, repairChance: 0.12 },
+      natamy_riffle: { gun: true, damage: [2, 4], mushDamage: [6, 13], accuracy: 0.5, expoStrength: 1, charges: 3, dirtyChance: 0, repairChance: 0.12 },
       // Lizaro Jungle.
-      sniper_riffle: { damage: [3, 5], accuracy: 0.99, expoStrength: 1, charges: 1, dirtyChance: 0, repairChance: 0.12 },
+      sniper_riffle: { gun: true, damage: [3, 5], accuracy: 0.99, expoStrength: 1, charges: 1, dirtyChance: 0, repairChance: 0.12 },
       // Old Faithful.
-      machine_gun: { damage: [2, 3], accuracy: 0.5, expoStrength: 2, charges: 12, dirtyChance: 0, repairChance: 0.12 },
-      missile_launcher: { damage: [1, 8], accuracy: 0.5, expoStrength: 3, charges: 1, area: { selfDamage: [1, 4] }, dirtyChance: 0, repairChance: 0.12 },
+      machine_gun: { gun: true, damage: [2, 3], accuracy: 0.5, expoStrength: 2, charges: 12, dirtyChance: 0, repairChance: 0.12 },
+      missile_launcher: { gun: true, damage: [1, 8], accuracy: 0.5, expoStrength: 3, charges: 1, area: { selfDamage: [1, 4] }, dirtyChance: 0, repairChance: 0.12 },
       grenade: { damage: [0, 10], accuracy: 1, expoStrength: 3, area: { selfDamage: [0, 3] }, consumed: true, dirtyChance: 0, repairChance: null },
     },
   },

@@ -45,6 +45,7 @@ export interface WeaponStats {
   charges?: number; // Charges it holds and starts with; each use spends one, and it can't be used at 0. Absent: unlimited.
   area?: { selfDamage: [min: number, max: number] }; // Hits everyone in the room instead of one target; the attacker takes `selfDamage`.
   melee?: boolean; // Used in person, so the attack is tagged `melee` (knife).
+  gun?: boolean; // A gun: neither melee nor thrown (not the knife or grenade). Counts for Shooter in expeditions.
   consumed?: boolean; // Used up by using it (grenade).
   dirtyChance: number; // Chance of getting dirty from using it.
   repairChance: number | null; // Breakable, with this repair chance; null: it can't break. Breaking and repair aren't built.

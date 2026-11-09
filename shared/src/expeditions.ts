@@ -546,8 +546,7 @@ function fight(ctx: Ctx, event: ExpeditionEvent, creature: string): void {
   const rules = state.config.expedition;
   const counted = gear.filter((i) => !weapons[i.type]!.consumed && usable(state, i));
   for (const item of counted) crew += weapons[item.type]!.expoStrength;
-  // A gun: a weapon that isn't melee or thrown.
-  const isGun = (i: ItemState) => !weapons[i.type]!.melee;
+  const isGun = (i: ItemState) => weapons[i.type]!.gun === true;
   const shooters = members.filter((p) => hasSkill(p, "gunman") && counted.some((i) => isGun(i) && i.at.kind === "player" && i.at.id === p.id));
   crew += shooters.length * rules.shooterBonus;
   if (rebelContacted(state, "CENTAURI")) crew += counted.filter((i) => i.type === rules.centauri.item).length * rules.centauri.bonus;

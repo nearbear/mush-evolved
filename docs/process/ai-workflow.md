@@ -2863,3 +2863,7 @@ Follow-up the same day: the "N% repaired" text became a bare percent (the shared
 ## 2026-11-08: HUD bars back to full size; own name shows given name only
 
 Owner asked to undo the HP/morale bar shrink and show only the given name on their own nameplate. The shrink came from 948a690 (Icarus slice), which set `--s: 1px` on `.hud-bars .pip-bar`; reverted it and its comment. The phone top-bar nameplate (`PlayerSummary`) and the desktop HUD card (`SelfHud`) now use the existing `characterGivenName`; the inspect button's aria-label and the inspect panel keep the full name. Worked: git history pinpointed the unrelated size change quickly.
+
+## 2026-11-08: explicit `gun` flag on weapons
+
+Owner asked to formalize "gun" the way `melee` already is. Added `gun?: boolean` to `WeaponStats`, set `gun: true` on the blaster, Natamy rifle, sniper rifle, machine gun and missile launcher, and Shooter's expedition bonus now checks `gun` instead of "not melee" (the grenade was already excluded there as consumed, so behavior is unchanged). A test pins the list of guns. Worked first try; the earlier inferred rule ("not melee or thrown") is now data instead of a negation.

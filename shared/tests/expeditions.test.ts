@@ -1145,6 +1145,11 @@ describe("expeditions, phase 4, slice D: skills", () => {
     expect(strengthIn(pair)).toBe(4 + 2 + 2 + 2 * expedition.shooterBonus);
   });
 
+  it("the guns are every weapon but the knife (melee) and the grenade (thrown)", () => {
+    const guns = Object.entries(DEFAULT_CONFIG.weapons.types).filter(([, w]) => w.gun).map(([type]) => type);
+    expect(guns.sort()).toEqual(["blaster", "machine_gun", "missile_launcher", "natamy_riffle", "sniper_riffle"]);
+  });
+
   it("with the Centauri base contacted, each working blaster adds 1", () => {
     const s = fightGame(30);
     give(s, "p1", "blaster", 3);
