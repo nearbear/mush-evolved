@@ -1,9 +1,9 @@
 // Everything about you on desktop, as a HUD over the room view. Top-left: one card with a big button (it opens you in
-// the inspect panel: your portrait, full name and faction), then HP, morale and your other resources; the room's name
+// the inspect panel: your portrait, full name and faction) showing your given name, then HP, morale and your other resources; the room's name
 // is pushed down under it (self-hud.css). Bottom-left: AP and MP standing up (SelfPoints), beside the action queue.
 // On phones the summary lives in the top bar instead (PlayerSummary). Items are in the room view's InventoryOverlay.
 
-import { characterName, type PlayerView } from "@mush2/shared";
+import { characterGivenName, characterName, type PlayerView } from "@mush2/shared";
 import { useTranslation } from "react-i18next";
 import { AP_PIP, HP_ICON, HP_PIP, MORALE_ICON, MORALE_PIP, MP_PIP, bustIcon } from "../art/assets.ts";
 import { PipBar } from "./PipBar.tsx";
@@ -21,7 +21,7 @@ export function SelfHud({ view, onInspect }: { view: PlayerView; onInspect: () =
       <button type="button" className="big hud-plate" aria-label={t("inspect.self", { character: name })} onClick={onInspect}>
         <img className="avatar" src={bustIcon(you.character)} alt="" />
         <span className="hud-who">
-          <strong>{name}</strong>
+          <strong>{characterGivenName(you.character)}</strong>
           <span className="hud-faction">{t(`faction.${factionOf(view)}.name`)}</span>
         </span>
       </button>

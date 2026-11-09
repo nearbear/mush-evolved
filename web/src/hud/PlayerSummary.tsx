@@ -1,7 +1,7 @@
 // Who you are and your stats on phones, in the top bar: portrait, name, role, AP/MP/HP/morale as chips, other
 // resources. The desktop equivalent is SelfHud, over the room view.
 
-import { characterName, type PlayerView } from "@mush2/shared";
+import { characterGivenName, type PlayerView } from "@mush2/shared";
 import type { ReactNode } from "react";
 import { Popover } from "@base-ui/react/popover";
 import { useTranslation } from "react-i18next";
@@ -69,7 +69,7 @@ export function PlayerSummary({ view, countdown }: { view: PlayerView; countdown
       <div className={`nameplate ${you.role}`}>
         <img className="avatar" src={bustIcon(you.character)} alt="" />
         <div className="who">
-          <strong>{characterName(you.character)}</strong>
+          <strong>{characterGivenName(you.character)}</strong>
           {/* The phone layout shows the cycle here instead of on its own, abbreviated. */}
           <span className="sub cycle-under-name" role="img" aria-label={t("stat.dayCycle", { day: view.day, cycle: view.cycleOfDay })}>
             D{view.day}C{view.cycleOfDay}
