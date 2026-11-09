@@ -1,4 +1,4 @@
-import { Action, isString } from "./action.ts";
+import { Action, type ActionCost, isString } from "./action.ts";
 import { EQUIPMENT_TYPES } from "../equipment.ts";
 import { ITEM_TYPES, canReachItem, newItemId, removeItem } from "../items.ts";
 import { logPrivate, logPublic } from "../log.ts";
@@ -27,8 +27,9 @@ export class DismantleAction extends Action<DismantleActionData> {
     return null;
   }
 
-  override getCost(state: Readonly<GameState>): { ap: number; mp: number } {
-    return { ap: state.config.dismantle.cost.ap, mp: 0 };
+  /** An Engineer point (`resources.eng`) makes one use free (owner, 2026-11-09). */
+  override getCost(state: Readonly<GameState>, player: Readonly<PlayerState>): ActionCost {
+    return player.resources.eng > 0 ? { ap: 0, mp: 0, paidBy: "eng" } : { ap: state.config.dismantle.cost.ap, mp: 0 };
   }
 
   /** The usual odds, unless the item or equipment type has its own in `ItemType.dismantle.chance` (knife and blaster, owner 2026-10-22). */

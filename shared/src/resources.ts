@@ -13,6 +13,7 @@ export function emptyResources(): Record<ResourceId, number> {
 /** The skill whose daily grant is the only way to gain each resource (the other resources have no source yet). */
 const RESOURCE_SKILLS: Partial<Record<ResourceId, readonly string[]>> = {
   heal: ["first_aid"],
+  eng: ["engineer"],
   comp: ["computer", "polymath"],
   shoot: ["gunman"],
   core: ["designer"],

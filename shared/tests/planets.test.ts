@@ -313,5 +313,8 @@ describe("Deep analysis", () => {
     const after = must(applyAction(s, "p0", analyse("near")));
     expect(after.planets.p0![1]!.sectors.filter((x) => x.known).length).toBe(2);
     expect(after.planets.p0![0]!.sectors.filter((x) => x.known).length).toBe(0);
+    // A Computer point pays for either.
+    player(s, "p0").resources.comp = 1;
+    expect(option(s, "p0", analyse("far"))!.cost).toMatchObject({ ap: 0, paidBy: "comp" });
   });
 });

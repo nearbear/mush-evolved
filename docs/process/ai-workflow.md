@@ -2869,3 +2869,12 @@ Owner asked to undo the HP/morale bar shrink and show only the given name on the
 ## 2026-11-08: explicit `gun` flag on weapons
 
 Owner asked to formalize "gun" the way `melee` already is. Added `gun?: boolean` to `WeaponStats`, set `gun: true` on the blaster, Natamy rifle, sniper rifle, machine gun and missile launcher, and Shooter's expedition bonus now checks `gun` instead of "not melee" (the grenade was already excluded there as consumed, so behavior is unchanged). A test pins the list of guns. Worked first try; the earlier inferred rule ("not melee or thrown") is now data instead of a negation.
+
+## 2026-11-09: Computer points pay for comms and analysis
+`update_neron`, `contact_xyloph`, `contact_sol` and `analyze_planet` now return `paidBy: "comp"` (0 AP) while the player holds a Computer point, copying `decode_rebel`'s pattern. Tests added. Worked: an existing pattern to copy; first test run failed only because Sol contact isn't offered while the link is up.
+
+## 2026-11-09: Engineer points pay for repair, dismantle, reinforce, hull repair, install, uninstall, renovate
+Seven actions return `paidBy: "eng"` (0 AP) while `resources.eng > 0`, same pattern as the Computer-point change. Found while doing it that nothing grants `eng` yet (`RESOURCE_SKILLS` has no entry), so the points are never earned in play; I did not invent a source.
+
+## 2026-11-09: Engineer skill grants Engineer points
+Added `config.engineer` (cap 2, 1 a day, 2 on pick), an `engineerPointsPerDay` hook, the day-start grant and `RESOURCE_SKILLS` entry. Followed the designer skill's shape, adding a separate `pointsOnPick` since pick and daily amounts differ here. Test added.

@@ -20,7 +20,7 @@ import { fireCycle, ignitePending, isOnFire } from "./fire.ts";
 import { incidentsCycle } from "./incidents.ts";
 import { relayView } from "./relayView.ts";
 import { itemsIn, rechargeMicrowaves, startCharges, visibleItemsIn } from "./items.ts";
-import { actionFailed, apGain, mpGain, carePointsGain, channelLimit, computerPointsCap, computerPointsGain, shootPointsGain, cycleChanged, designerPointsGain, gardenPointsGain, dailyMoraleLoss, inventorySlots, movementRules, pilgredPointsGain, satietyLoss } from "./modifiers.ts";
+import { actionFailed, apGain, mpGain, carePointsGain, channelLimit, computerPointsCap, computerPointsGain, shootPointsGain, cycleChanged, designerPointsGain, engineerPointsGain, gardenPointsGain, dailyMoraleLoss, inventorySlots, movementRules, pilgredPointsGain, satietyLoss } from "./modifiers.ts";
 import { contaminationSeenBy, convert } from "./infection.ts";
 import { isHungry, publicStatusesOf, statusesOf } from "./statuses.ts";
 import { inactivityCycle } from "./inactivity.ts";
@@ -443,6 +443,7 @@ function grantCarePoints(state: GameState): void {
     p.resources.comp = Math.min(computerPointsCap(state, p), p.resources.comp + computerPointsGain(state, p));
     p.resources.shoot = Math.min(state.config.gunman.capPoints, p.resources.shoot + shootPointsGain(state, p));
     p.resources.core = Math.min(state.config.designer.capPoints, p.resources.core + designerPointsGain(state, p));
+    p.resources.eng = Math.min(state.config.engineer.capPoints, p.resources.eng + engineerPointsGain(state, p));
     p.resources.pilgred = Math.min(state.config.pilgred.capPoints, p.resources.pilgred + pilgredPointsGain(state, p));
     p.resources.garden = Math.min(state.config.botany.capPoints, p.resources.garden + gardenPointsGain(state, p));
   }

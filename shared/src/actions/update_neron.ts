@@ -1,4 +1,4 @@
-import { Action, type ActionVisibility, isString } from "./action.ts";
+import { Action, type ActionCost, type ActionVisibility, isString } from "./action.ts";
 import { advanceNeron, canUseComms, comTerminalsHere } from "../comms.ts";
 import { logPrivate } from "../log.ts";
 import type { GameState, PlayerState } from "../types.ts";
@@ -19,8 +19,9 @@ export class UpdateNeronAction extends Action<UpdateNeronActionData> {
     super("update_neron", { equipment: isString });
   }
 
-  override getCost(state: Readonly<GameState>): { ap: number; mp: number } {
-    return { ap: state.config.comms.neron.cost.ap, mp: 0 };
+  /** A Computer point (`resources.comp`) makes one use free (owner, 2026-11-09). */
+  override getCost(state: Readonly<GameState>, player: Readonly<PlayerState>): ActionCost {
+    return player.resources.comp > 0 ? { ap: 0, mp: 0, paidBy: "comp" } : { ap: state.config.comms.neron.cost.ap, mp: 0 };
   }
 
   override getCandidates(state: Readonly<GameState>, player: Readonly<PlayerState>): UpdateNeronActionData[] {

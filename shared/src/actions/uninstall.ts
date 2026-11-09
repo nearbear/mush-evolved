@@ -1,4 +1,4 @@
-import { Action, isString } from "./action.ts";
+import { Action, type ActionCost, isString } from "./action.ts";
 import { CAMERA_EQUIPMENT } from "../equipment.ts";
 import { produceItem } from "../items.ts";
 import { logPublic } from "../log.ts";
@@ -16,8 +16,9 @@ export class UninstallAction extends Action<UninstallActionData> {
     super("uninstall", { equipment: isString });
   }
 
-  override getCost(state: Readonly<GameState>): { ap: number; mp: number } {
-    return { ap: state.config.uninstall.cost.ap, mp: 0 };
+  /** An Engineer point (`resources.eng`) makes one use free (owner, 2026-11-09). */
+  override getCost(state: Readonly<GameState>, player: Readonly<PlayerState>): ActionCost {
+    return player.resources.eng > 0 ? { ap: 0, mp: 0, paidBy: "eng" } : { ap: state.config.uninstall.cost.ap, mp: 0 };
   }
 
   override getCandidates(state: Readonly<GameState>, player: Readonly<PlayerState>): UninstallActionData[] {
