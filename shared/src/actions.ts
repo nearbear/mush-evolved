@@ -44,6 +44,8 @@ import { ExtinguishAction } from "./actions/extinguish.ts";
 import { ExtinguishManuallyAction } from "./actions/extinguish_manually.ts";
 import { TakeoffAction } from "./actions/takeoff.ts";
 import { IcarusTakeoffAction } from "./actions/icarus_takeoff.ts";
+import { UTurnAction } from "./actions/u_turn.ts";
+import { SabotageExpeditionAction } from "./actions/sabotage_expedition.ts";
 import { LandAction } from "./actions/land.ts";
 import { CollectScrapAction } from "./actions/collect_scrap.ts";
 import { RenovateAction } from "./actions/renovate.ts";
@@ -174,6 +176,8 @@ const REGISTRY = {
   extinguish_manually: new ExtinguishManuallyAction(),
   takeoff: new TakeoffAction(),
   icarus_takeoff: new IcarusTakeoffAction(),
+  u_turn: new UTurnAction(),
+  sabotage_expedition: new SabotageExpeditionAction(),
   land: new LandAction(),
   collect_scrap: new CollectScrapAction(),
   renovate: new RenovateAction(),

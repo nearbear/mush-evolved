@@ -15,7 +15,10 @@
 // crew" is alive and in the Icarus (`withCrew`): the lost and the dead take no part in events. Slice C: gear. A
 // planet with no Oxygen sector needs a spacesuit, checked at takeoff: members without one stay in the Icarus and don't
 // explore (`explores`), and with nobody suited the expedition ends at once. The other gear changes which sectors are
-// picked (`pickSectors`), which events can happen (`cancelled`, `eventWeight`) or what they do.
+// picked (`pickSectors`), which events can happen (`cancelled`, `eventWeight`) or what they do. Phase 4, slice D
+// (#358): skills. Diplomat and Polymath cancel Fight in Intelligent life; Polymath also harvests as a Botanist; Shooter
+// and Centauri add strength (`fight`); each Sprinter adds a sector; a U-turn holder ends the expedition (`turnBack`);
+// a Traitor's secret Sabotage (`sabotage`) leaves only negative events from the next step on.
 // Pure: every draw goes through the seeded RNG.
 // The action is actions/icarus_takeoff.ts.
 
@@ -24,6 +27,7 @@ import { board } from "./actions/takeoff.ts";
 import { damage, killPlayer } from "./death.ts";
 import { FAST_EXPEDITION_STEP_MS, fastExpeditions } from "./cheats.ts";
 import { soil } from "./dirt.ts";
+import { rebelContacted } from "./comms.ts";
 import { contaminate } from "./infection.ts";
 import { CORPSE_ITEM, isWorking, itemsIn, newItemId, removeItem, sameContainer } from "./items.ts";
 import { logPrivate, logPublic } from "./log.ts";
@@ -122,6 +126,7 @@ export function runExpedition(state: GameState, launcher: PlayerState): Expediti
     // Items each member carried when they set out, for `deadKeepItems: false`.
     carried: Object.fromEntries(crew.map((p) => [p.id, itemsIn(state, { kind: "player", id: p.id }).map((i) => i.id)])),
     suitless: suitless.map((p) => p.id),
+    sabotaged: false,
   };
   for (const p of suitless) report.events.push({ sector: LANDING, kind: "noSpacesuit", who: p.character });
   // Nobody can go out: the expedition ends at once, the AP spent (owner, 2026-11-08).
@@ -130,8 +135,9 @@ export function runExpedition(state: GameState, launcher: PlayerState): Expediti
     returnExpedition(state, false);
     return report;
   }
-  // Drawn once the explorers are known, as their gear changes the odds.
-  state.expedition.sectors = pickSectors(state, planet);
+  // Drawn once the explorers are known, as their gear changes the odds. Each Sprinter who explores adds a sector (owner, 2026-11-08, #358).
+  const sprinters = crew.filter((p) => explores(state, p) && hasSkill(p, "sprint")).length;
+  state.expedition.sectors = pickSectors(state, planet, rules.sectors + sprinters * rules.sprinterSectors);
   if (state.config.instantExpeditions) while (state.expedition) expeditionStep(state);
   return report;
 }
@@ -199,6 +205,33 @@ function returnExpedition(state: GameState, landed = true): void {
     // A lost member isn't back: they stay on the planet (owner, 2026-11-08).
     if (!(p.alive && isLostPlace(p.room))) logPrivate(state, p.id, "expeditionReturned", { planet: report.planet, report: report.id });
   }
+}
+
+/**
+ * U-turn (owner, 2026-11-08, #358): a holder still with the crew ends the expedition at once; the crew comes back with
+ * what it found, the sectors left skipped, and anyone lost stays lost. A report line names who turned back; nothing
+ * public but the timer ending. The action (actions/u_turn.ts) checked it may. Mutates a cloned state.
+ */
+export function turnBack(state: GameState, player: Readonly<PlayerState>): void {
+  const report = state.expeditions.find((r) => r.id === state.expedition!.report)!;
+  report.events.push({ sector: U_TURN, kind: "uTurn", who: player.character });
+  // Turned back before the landing, the crew never set foot outside, so nobody comes back dirty.
+  returnExpedition(state, state.expedition!.landed);
+}
+
+/** The U-turn's report line's sector key: not a planet tag. */
+export const U_TURN = "U_TURN";
+
+/** Whether this player is aboard the expedition under way: alive and with its crew in the Icarus (not lost). */
+export const onExpedition = (state: Readonly<GameState>, p: Readonly<PlayerState>): boolean => state.expedition !== null && withCrew(state, p);
+
+/**
+ * The Traitor's Sabotage (owner, 2026-11-08, #358): free, secret, once per expedition. From the next step on, each
+ * sector draws only its `negative` events (Nothing if none is left). Nothing records it anywhere but the flag, which
+ * no view carries. The action (actions/sabotage_expedition.ts) checked it may. Mutates a cloned state.
+ */
+export function sabotage(state: GameState): void {
+  state.expedition!.sabotaged = true;
 }
 
 /**
@@ -295,7 +328,9 @@ interface Ctx {
 function resolve(ctx: Ctx, sector: PlanetTag | typeof LANDING, table: readonly ExpeditionEventRule[]): ExpeditionEvent {
   const { state } = ctx;
   // A cancelled event can't be drawn: the sector rolls among its others, or is Nothing if none is left (owner, 2026-11-08).
-  const weights = table.map((e) => (cancelled(ctx, sector, e) ? 0 : eventWeight(ctx, sector, e)));
+  // Sabotaged by a Traitor: only the negative events can be drawn (owner, 2026-11-08, #358).
+  const sabotaged = state.expedition?.sabotaged ?? false;
+  const weights = table.map((e) => (cancelled(ctx, sector, e) || (sabotaged && !e.negative) ? 0 : eventWeight(ctx, sector, e)));
   if (weights.every((w) => w === 0)) return { sector, kind: "nothing" };
   const rule = table[rollWeighted(state, weights)]!;
   // Not built yet: Disease (#214) reads as Nothing.
@@ -340,7 +375,8 @@ function resolve(ctx: Ctx, sector: PlanetTag | typeof LANDING, table: readonly E
       break;
     }
     case "harvest": {
-      const bonus = living().some((p) => hasSkill(p, "botanic")) ? rules.botanistBonus : 0;
+      // Polymath counts as a Botanist here (owner, 2026-11-08, #358).
+      const bonus = living().some((p) => hasSkill(p, "botanic") || hasSkill(p, "polymath")) ? rules.botanistBonus : 0;
       event.item = rules.loot.harvest;
       event.amount = drop(state, event.item, amount + bonus);
       break;
@@ -403,8 +439,9 @@ function resolve(ctx: Ctx, sector: PlanetTag | typeof LANDING, table: readonly E
 }
 
 /**
- * Whether an event is cancelled for this crew (owner, 2026-11-08, #357): a Tracker cancels Found dead; a compass
- * cancels Again, and Lost when every member who explores carries one; a white flag cancels Fight in its sector.
+ * Whether an event is cancelled for this crew (owner, 2026-11-08, #357, #358): a Tracker cancels Found dead; a compass
+ * cancels Again, and Lost when every member who explores carries one; a white flag, a Diplomat or a Polymath cancels
+ * Fight in the white flag's sector (Intelligent life) only.
  */
 function cancelled(ctx: Ctx, sector: string, rule: ExpeditionEventRule): boolean {
   const { state } = ctx;
@@ -418,7 +455,7 @@ function cancelled(ctx: Ctx, sector: string, rule: ExpeditionEventRule): boolean
     case "lost":
       return explorers.length > 0 && explorers.every((p) => carries(state, p, gear.compass));
     case "fight":
-      return sector === gear.whiteFlag.tag && crewCarries(state, gear.whiteFlag.item);
+      return sector === gear.whiteFlag.tag && (crewCarries(state, gear.whiteFlag.item) || explorers.some((p) => hasSkill(p, "diplomacy") || hasSkill(p, "polymath")));
     default:
       return false;
   }
@@ -493,7 +530,8 @@ const artifact = (state: GameState): string => {
  * weapon's `expoStrength`; a gun counts only with a charge left. Grenades (`consumed` weapons) are used up one at a
  * time while the crew is still weaker (eMush's Fight). The crew wins with a chance of 0 below half the creature's
  * strength (rounded down), then (crew − half + 1) / (creature − half + 1), capped at 1; a win brings the creature's
- * loot. Win or lose, the shortfall against the crew's strength with every grenade counted, spent or not, is dealt as
+ * loot. Slice D (#358): each Shooter carrying a gun that counts adds `shooterBonus`, once each; with the Centauri
+ * rebel base contacted, each blaster that counts adds `centauri.bonus`. Win or lose, the shortfall against the crew's strength with every grenade counted, spent or not, is dealt as
  * HP, each point to a random living member.
  */
 function fight(ctx: Ctx, event: ExpeditionEvent, creature: string): void {
@@ -505,7 +543,14 @@ function fight(ctx: Ctx, event: ExpeditionEvent, creature: string): void {
   const gear = members.flatMap((p) => itemsIn(state, { kind: "player", id: p.id })).filter((i) => weapons[i.type] !== undefined && isWorking(i));
   const grenades = gear.filter((i) => weapons[i.type]!.consumed);
   let crew = members.length;
-  for (const item of gear) if (!weapons[item.type]!.consumed && usable(state, item)) crew += weapons[item.type]!.expoStrength;
+  const rules = state.config.expedition;
+  const counted = gear.filter((i) => !weapons[i.type]!.consumed && usable(state, i));
+  for (const item of counted) crew += weapons[item.type]!.expoStrength;
+  // A gun: a weapon that isn't melee or thrown.
+  const isGun = (i: ItemState) => !weapons[i.type]!.melee;
+  const shooters = members.filter((p) => hasSkill(p, "gunman") && counted.some((i) => isGun(i) && i.at.kind === "player" && i.at.id === p.id));
+  crew += shooters.length * rules.shooterBonus;
+  if (rebelContacted(state, "CENTAURI")) crew += counted.filter((i) => i.type === rules.centauri.item).length * rules.centauri.bonus;
   const withAllGrenades = crew + grenades.reduce((sum, g) => sum + weapons[g.type]!.expoStrength, 0);
   let used = 0;
   for (const grenade of grenades) {

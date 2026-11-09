@@ -127,6 +127,8 @@ describe("actions from a client", () => {
     repair: [{ type: "repair", equipment: "e1" }],
     extinguish: [{ type: "extinguish", item: "i1" }],
     ignite: [{ type: "ignite" }],
+    u_turn: [{ type: "u_turn" }],
+    sabotage_expedition: [{ type: "sabotage_expedition" }],
     extinguish_manually: [{ type: "extinguish_manually" }],
     takeoff: [{ type: "takeoff", equipment: "e1" }],
     icarus_takeoff: [{ type: "icarus_takeoff", equipment: "e1" }],

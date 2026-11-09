@@ -381,6 +381,8 @@
     "fungalCuisine": "Cocina fúngica",
     "takeoff": "Despegar",
     "icarus_takeoff": "Partir de expedición",
+    "u_turn": "Volver al Daedalus",
+    "sabotage_expedition": "Sabotear la expedición",
     "land": "Aterrizar",
     "collectScrap": "Recoger restos",
     "renovate": "Renovar",
@@ -1573,6 +1575,7 @@
     "read": "Leer el informe",
     "crew": "Tripulación: {{names}}",
     "landing": "Aterrizaje",
+    "uTurnHeading": "Media vuelta",
     "lootOnFloor": "Todo lo que encontraste está en el suelo de la Bahía Ícaro.",
     "events": {
       "nothing": "Nada que señalar.",
@@ -1608,7 +1611,8 @@
       "foundDead": "La tripulación encuentra el cuerpo de {{name}}.",
       "noSpacesuit": "{{name}} no tiene traje espacial y se queda en el Icarus.",
       "grounded": "Nadie tiene traje espacial: la expedición termina antes de empezar.",
-      "avoided": "{{item}}: {{name}} sale indemne."
+      "avoided": "{{item}}: {{name}} sale indemne.",
+      "uTurn": "{{name}} hace dar media vuelta al equipo: el Icarus regresa."
     },
     "creatures": {
       "CHAB_CHAB": "Chab Chab",

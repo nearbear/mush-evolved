@@ -78,17 +78,21 @@ export type ExpeditionEventKind =
   // Phase 3, slice C (owner, 2026-11-08, #357): never drawn. A member without a needed spacesuit stays in the Icarus
   // (`noSpacesuit`); nobody has one, so the expedition ends at takeoff (`grounded`).
   | "noSpacesuit"
-  | "grounded";
+  | "grounded"
+  // Phase 4, slice D (owner, 2026-11-08, #358): never drawn. A U-turn holder ended the expedition (`who`).
+  | "uTurn";
 
 /**
  * One line of a sector's event table: drawn by `weight`. `amount` is the oxygen or fuel gained, or the fruits or
- * rations found; `creature` is a fight's opponent (`expedition.creatures`).
+ * rations found; `creature` is a fight's opponent (`expedition.creatures`). `negative` marks the lines a Traitor's
+ * sabotage keeps (owner, 2026-11-08, #358): a sabotaged expedition draws only those.
  */
 export interface ExpeditionEventRule {
   kind: ExpeditionEventKind;
   weight: number;
   amount?: number;
   creature?: string;
+  negative?: boolean;
 }
 
 /** What a won fight brings back: rations (steaks), random artifacts, starmap fragments. */
@@ -612,6 +616,11 @@ export interface GameConfig {
       babel: { item: string; tag: string; artifactFactor: number }; // Artifact is `artifactFactor` times as likely in this sector.
       whiteFlag: { item: string; tag: string }; // Cancels Fight in this sector.
     };
+    // Skills (owner, 2026-11-08, #358). Diplomat and Polymath cancel Fight in `gear.whiteFlag.tag`, as the white flag.
+    shooterBonus: number; // Strength each Shooter carrying a working gun adds, once each.
+    sprinterSectors: number; // Extra sectors per Sprinter who explores, counted at takeoff.
+    centauri: { item: string; bonus: number }; // With the Centauri rebel base contacted, each working copy adds `bonus` strength.
+    uTurn: { cost: { ap: number } }; // The U-turn skill's action: end the expedition at once.
   };
   // Weapons (owner, 2026-10-22, from the English wiki). Using one is the `attack` action.
   weapons: {

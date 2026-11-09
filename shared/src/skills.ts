@@ -205,8 +205,8 @@ export const SKILL_STATUS: Readonly<Partial<Record<SkillId | MushSkillId, SkillS
   stickler: "full",
   // Designer points, spent on NERON projects only (owner, 2026-10-24); its project bonus is in PROJECTS.
   designer: "full",
-  // +2 MP per AP-to-MP conversion (owner, 2026-10-24); no expedition bonus yet, there are no expeditions.
-  sprint: "partial",
+  // +2 MP per AP-to-MP conversion (owner, 2026-10-24) and +1 expedition sector (owner, 2026-11-08, #358).
+  sprint: "full",
   // Anathema and the Outcast status (owner, 2026-10-24, anathema.ts); it also ends when the Outcast goes inactive (#145).
   juge: "full",
   // Fiery speech (owner, 2026-10-24, speech.ts).
@@ -239,7 +239,8 @@ export const SKILL_STATUS: Readonly<Partial<Record<SkillId | MushSkillId, SkillS
   water_resistant: "full",
   //Increases success rate, injury chance, and dirty chance by 20%
   expert: "full",
-  // Free turret shots from Shoot points (owner, 2026-10-25); no fewer clumsy misses or more critical hits on shots.
+  // Free turret shots from Shoot points (owner, 2026-10-25) and +1 expedition strength with a working gun (owner,
+  // 2026-11-08, #358); no fewer clumsy misses or more critical hits on shots.
   gunman: "partial",
   // Scan for planets costs 1 AP less; remote analyses reveal 1 extra sector; +4 on its two NERON projects (owner, 2026-10-27).
   astrophysician: "full",
@@ -262,8 +263,14 @@ export const SKILL_STATUS: Readonly<Partial<Record<SkillId | MushSkillId, SkillS
   persistent: "full",
   // 50% of hunter waves come 33% smaller (owner, 2026-10-25).
   space_tactics: "full",
-  // Two more channels and Computer points; (owner, 2026-10-25).
+  // Two more channels and Computer points (owner, 2026-10-25); the Diplomat's and Botanist's expedition effects (owner, 2026-11-08, #358).
   polymath: "full",
+  // Cancels Fight in Intelligent life on expeditions (owner, 2026-11-08, #358); no ceasefire or trade.
+  diplomacy: "partial",
+  // End an expedition for 2 AP (owner, 2026-11-08, #358, actions/u_turn.ts); not seeing the next sector.
+  fast_backward: "partial",
+  // Mush skill: a free, secret expedition Sabotage (owner, 2026-11-08, #358, actions/sabotage_expedition.ts); not seeing the next sector.
+  traitor: "partial",
   //Mush skill: Allows for accessing Bios.
   neron_access: "full",
   //Insantly complete a research, project, or repair (owner, 2026-10-25, actions/instant_research.ts).

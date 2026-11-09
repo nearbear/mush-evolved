@@ -381,6 +381,8 @@
     "fungalCuisine": "Cuisine fongique",
     "takeoff": "Décoller",
     "icarus_takeoff": "Partir en expédition",
+    "u_turn": "Faire demi-tour vers le Daedalus",
+    "sabotage_expedition": "Saboter l'expédition",
     "land": "Atterrir",
     "collectScrap": "Rapatrier des débris",
     "renovate": "Rénover",
@@ -1573,6 +1575,7 @@
     "read": "Lire le rapport",
     "crew": "Équipage : {{names}}",
     "landing": "Atterrissage",
+    "uTurnHeading": "Demi-tour",
     "lootOnFloor": "Tout ce que vous avez trouvé est au sol de la Baie Icarus.",
     "events": {
       "nothing": "Rien à signaler.",
@@ -1608,7 +1611,8 @@
       "foundDead": "L'équipe retrouve le corps de {{name}}.",
       "noSpacesuit": "{{name}} n'a pas de combinaison et reste dans l'Icarus.",
       "grounded": "Personne n'a de combinaison : l'expédition s'arrête avant d'avoir commencé.",
-      "avoided": "{{item}} : {{name}} s'en sort indemne."
+      "avoided": "{{item}} : {{name}} s'en sort indemne.",
+      "uTurn": "{{name}} fait faire demi-tour à l'équipe : l'Icarus rentre."
     },
     "creatures": {
       "CHAB_CHAB": "Chab Chab",

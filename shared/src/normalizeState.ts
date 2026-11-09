@@ -684,6 +684,8 @@ export function normalizeActiveExpedition(raw: Partial<ActiveExpedition>): Activ
     carried: mapValues(need(raw, "carried", t), copy),
     // Slice C (#357): spacesuits weren't needed before it, so everyone under way explores.
     suitless: copy(added(raw, "suitless", [])),
+    // Slice D (#358): nobody could sabotage before it.
+    sabotaged: added(raw, "sabotaged", false),
   });
 }
 

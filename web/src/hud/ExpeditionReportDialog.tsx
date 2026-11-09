@@ -139,7 +139,8 @@ function useEventLines(): (event: ExpeditionEvent) => { sector: string; lines: s
   const { t } = useTranslation();
   const names = useNames();
   return (event) => {
-    const sector = event.sector === "LANDING" ? t("expedition.landing") : t(`astro.tags.${event.sector}` as never, { defaultValue: event.sector });
+    const sector =
+      event.sector === "LANDING" ? t("expedition.landing") : event.sector === "U_TURN" ? t("expedition.uTurnHeading") : t(`astro.tags.${event.sector}` as never, { defaultValue: event.sector });
     const count = event.amount ?? 0;
     const lines: string[] = [];
     switch (event.kind) {
@@ -174,6 +175,7 @@ function useEventLines(): (event: ExpeditionEvent) => { sector: string; lines: s
       case "found":
       case "foundDead":
       case "noSpacesuit":
+      case "uTurn":
         lines.push(t(`expedition.events.${event.kind}`, { name: event.who ? names.characterGiven(event.who) : "" }));
         break;
       default:

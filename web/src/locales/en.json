@@ -377,6 +377,8 @@
     "fungalCuisine": "Fungal cuisine",
     "takeoff": "Take off",
     "icarus_takeoff": "Launch an expedition",
+    "u_turn": "Turn back to the Daedalus",
+    "sabotage_expedition": "Sabotage the expedition",
     "land": "Land",
     "collectScrap": "Collect scrap",
     "renovate": "Renovate",
@@ -1651,6 +1653,7 @@
     "read": "Read the report",
     "crew": "Crew: {{names}}",
     "landing": "Landing",
+    "uTurnHeading": "Turned back",
     "lootOnFloor": "Everything you found is on the floor of the Icarus Bay.",
     "events": {
       "nothing": "Nothing to report.",
@@ -1681,7 +1684,8 @@
       "foundDead": "The crew finds {{name}}'s body.",
       "noSpacesuit": "{{name}} has no spacesuit and stays in the Icarus.",
       "grounded": "Nobody has a spacesuit: the expedition is over before it begins.",
-      "avoided": "{{item}}: {{name}} comes out unharmed."
+      "avoided": "{{item}}: {{name}} comes out unharmed.",
+      "uTurn": "{{name}} turns the crew back: the Icarus heads home."
     },
     "creatures": {
       "CHAB_CHAB": "Chab Chab",

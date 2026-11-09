@@ -751,7 +751,7 @@ describe("expeditions, phase 3, slice B: getting lost", () => {
       { kind: "found", weight: 4 },
       { kind: "found", weight: 3 },
       { kind: "again", weight: 2 },
-      { kind: "foundDead", weight: 1 },
+      { kind: "foundDead", weight: 1, negative: true },
     ]);
     expect(PLANET_TAG_IDS).toContain("LOST");
   });
@@ -1056,5 +1056,195 @@ describe("expeditions, phase 3, slice C: gear and spacesuits", () => {
     const next = go(s);
     expect([...next.expedition!.suitless].sort()).toEqual(["p1", "p2", "p3"]);
     for (const p of next.players) expect(JSON.stringify(viewFor(next, p.id))).not.toContain("suitless");
+  });
+});
+
+describe("expeditions, phase 4, slice D: skills", () => {
+  const T0 = 1_000_000;
+  const crewIds = ["p0", "p1", "p2", "p3"];
+  const event = (s: GameState, i = 1) => s.expeditions[0]!.events[i]!;
+  const rule = (kind: ExpeditionEventRule["kind"], extra: Partial<ExpeditionEventRule> = {}): ExpeditionEventRule => ({ kind, weight: 1, ...extra });
+  const tickAt = (s: GameState, at: number) => must(applyInput(s, { type: "tick", at }));
+  const strengthIn = (s: GameState) => go(s).expeditions[0]!.events.find((e) => e.kind === "fight")!.fight!.strength;
+  const uTurn: Action = { type: "u_turn" };
+  const sabotage: Action = { type: "sabotage_expedition" };
+  const contactCentauri = (s: GameState) => s.comms.rebels.push({ base: "CENTAURI", calledAt: s.cycle, expiresAt: s.cycle + 10, progress: 100 });
+
+  it("pins the confirmed numbers and the negative events", () => {
+    expect([expedition.shooterBonus, expedition.sprinterSectors, expedition.centauri, expedition.uTurn.cost.ap]).toEqual([1, 1, { item: "blaster", bonus: 1 }, 2]);
+    const negative = Object.fromEntries(Object.entries(expedition.events).map(([tag, table]) => [tag, table.filter((e) => e.negative).map((e) => [e.kind, e.amount ?? e.creature ?? null])]));
+    expect(negative).toEqual({
+      LANDING: [["fatigue", null], ["accident", null], ["catastrophe", null]],
+      OXYGEN: [["oxygen", 8], ["nothing", null]],
+      HYDROCARBON: [["fuel", 3]],
+      FRUIT_TREES: [],
+      HOT: [["fatigue", null], ["accident", null]],
+      FOREST: [["disease", null], ["lost", null]],
+      MOUNTAIN: [["accident", null], ["fatigue", null]],
+      SWAMP: [["disease", null], ["fatigue", null]],
+      DESERT: [["fatigue", null]],
+      OCEAN: [["lost", null]],
+      CAVE: [["accident", null]],
+      RUMINANT: [["accident", null], ["fight", "CHAB_CHAB"]],
+      PREDATOR: [["fight", "SKINNER"], ["accident", null]],
+      INTELLIGENT: [["fight", "CORTIC"], ["lostItem", null]],
+      INSECT: [["accident", null], ["disease", null], ["fight", "BEETLETHUG"]],
+      MANKAROG: [["kill", null], ["fight", "MANKAROG"]],
+      COLD: [["fatigue", null], ["lost", null], ["accident", null]],
+      STRONG_WIND: [["fatigue", null], ["lostItem", null]],
+      SISMIC_ACTIVITY: [["accident", null], ["kill", null]],
+      VOLCANIC_ACTIVITY: [["killAll", null]],
+      RUINS: [["accident", null]],
+      WRECK: [["fight", "WRECK"]],
+      CRISTAL_FIELD: [["mushTrap", null]],
+      LOST: [["foundDead", null]],
+    });
+  });
+
+  it("a Diplomat or a Polymath cancels Fight in Intelligent life only", () => {
+    const fight = rule("fight", { creature: "CORTIC" });
+    for (const skill of ["diplomacy", "polymath"] as const) {
+      const s = game({ tags: ["INTELLIGENT", "PREDATOR"], events: { INTELLIGENT: [fight], PREDATOR: [fight] } });
+      player(s, "p2").skills.push(skill);
+      const events = go(s).expeditions[0]!.events;
+      expect(events.find((e) => e.sector === "INTELLIGENT")!.kind).toBe("nothing");
+      expect(events.find((e) => e.sector === "PREDATOR")!.kind).toBe("fight");
+    }
+  });
+
+  it("a Polymath harvests as a Botanist: one more fruit, not stacking", () => {
+    const harvest = (skills: ("botanic" | "polymath")[]) => {
+      const s = game({ tags: ["FRUIT_TREES"], events: { FRUIT_TREES: [rule("harvest", { amount: 2 })] } });
+      skills.forEach((skill, i) => player(s, `p${i + 1}`).skills.push(skill));
+      return event(go(s)).amount;
+    };
+    expect([harvest([]), harvest(["polymath"]), harvest(["botanic", "polymath"])]).toEqual([2, 2 + expedition.botanistBonus, 2 + expedition.botanistBonus]);
+  });
+
+  it("each Shooter carrying a working gun adds 1, once each; not with a knife, an empty gun or a gun someone else carries", () => {
+    // Four members: strength 4 before weapons.
+    const s = fightGame(30);
+    player(s, "p1").skills.push("gunman");
+    expect(strengthIn(clone(s))).toBe(4);
+    const knife = clone(s);
+    give(knife, "p1", "knife");
+    expect(strengthIn(knife)).toBe(5);
+    const empty = clone(s);
+    give(empty, "p1", "blaster", 0);
+    expect(strengthIn(empty)).toBe(4);
+    const other = clone(s);
+    give(other, "p2", "blaster", 3);
+    expect(strengthIn(other)).toBe(5);
+    const two = clone(s);
+    give(two, "p1", "blaster", 3);
+    give(two, "p1", "blaster", 3);
+    expect(strengthIn(two)).toBe(4 + 2 + expedition.shooterBonus);
+    const pair = clone(two);
+    player(pair, "p2").skills.push("gunman");
+    give(pair, "p2", "machine_gun", 12);
+    expect(strengthIn(pair)).toBe(4 + 2 + 2 + 2 * expedition.shooterBonus);
+  });
+
+  it("with the Centauri base contacted, each working blaster adds 1", () => {
+    const s = fightGame(30);
+    give(s, "p1", "blaster", 3);
+    give(s, "p2", "blaster", 3);
+    give(s, "p3", "blaster", 0);
+    expect(strengthIn(clone(s))).toBe(6);
+    contactCentauri(s);
+    expect(strengthIn(clone(s))).toBe(6 + 2 * expedition.centauri.bonus);
+    // A call not decoded to the end does nothing.
+    const partial = fightGame(30);
+    give(partial, "p1", "blaster", 3);
+    partial.comms.rebels.push({ base: "CENTAURI", calledAt: partial.cycle, expiresAt: partial.cycle + 10, progress: 99 });
+    expect(strengthIn(partial)).toBe(5);
+  });
+
+  it("each Sprinter who explores adds a sector; one left in the Icarus without a spacesuit doesn't", () => {
+    const tags = Array.from({ length: 14 }, () => "HOT" as const);
+    const sectors = (s: GameState) => go(s).expeditions[0]!.events.filter((e) => e.sector === "HOT").length;
+    const s = game({ tags, events: only(rule("nothing")) });
+    expect(sectors(clone(s))).toBe(expedition.sectors);
+    player(s, "p1").skills.push("sprint");
+    player(s, "p2").skills.push("sprint");
+    expect(sectors(clone(s))).toBe(expedition.sectors + 2 * expedition.sprinterSectors);
+    s.items = s.items.filter((i) => i.id !== "item-suit-p2");
+    expect(sectors(s)).toBe(expedition.sectors + expedition.sprinterSectors);
+  });
+
+  it("U-turn: a holder with the crew ends the expedition for 2 AP; the crew comes back with what it found; a report line, nothing public", () => {
+    const s = timedGame({ tags: ["OXYGEN", "FRUIT_TREES", "HOT"], events: only(rule("harvest", { amount: 1 })) });
+    player(s, "p1").skills.push("fast_backward");
+    const out = go(s);
+    // Only the holder, only while away.
+    expect(offered(s, "p1")).not.toContainEqual(uTurn);
+    expect(offered(out, "p2")).not.toContainEqual(uTurn);
+    expect(applyAction(out, "p2", uTurn).ok).toBe(false);
+    expect(option(out, "p1", uTurn)?.cost.ap).toBe(expedition.uTurn.cost.ap);
+    const landed = tickAt(tickAt(out, T0 + expedition.stepMs), T0 + 2 * expedition.stepMs);
+    const back = must(applyAction(landed, "p1", uTurn));
+    expect(back.expedition).toBeNull();
+    expect(player(back, "p1").ap).toBe(player(landed, "p1").ap - expedition.uTurn.cost.ap);
+    for (const id of crewIds) expect(player(back, id).room).toBe(ICARUS);
+    expect(floor(back, expedition.loot.harvest)).toBe(1);
+    expect(back.planets.p5![0]!.sectors.filter((x) => x.explored)).toHaveLength(1);
+    expect(back.expeditions[0]!.events.at(-1)).toEqual({ sector: "U_TURN", kind: "uTurn", who: player(s, "p1").character });
+    expect(back.log.slice(landed.log.length).filter((e) => e.visibleTo === "all")).toEqual([]);
+    expect(offered(back, "p1")).not.toContainEqual(uTurn);
+  });
+
+  it("U-turn: anyone lost stays lost, and the lost holder can't turn the crew back", () => {
+    const s = timedGame({ tags: ["COLD", "HOT", "HOT"], events: { ...only(rule("nothing")), COLD: [rule("lost")] } });
+    for (const id of crewIds) player(s, id).skills.push("fast_backward");
+    let t = tickAt(tickAt(go(s), T0 + expedition.stepMs), T0 + 2 * expedition.stepMs);
+    while (!t.players.some((p) => p.room.startsWith("LOST:"))) t = tickAt(t, t.expedition!.nextAt);
+    const lost = t.players.find((p) => p.room.startsWith("LOST:"))!;
+    expect(offered(t, lost.id)).not.toContainEqual(uTurn);
+    const by = crewIds.find((id) => id !== lost.id)!;
+    const back = must(applyAction(t, by, uTurn));
+    expect(player(back, lost.id).room).toBe(lostPlace(lost.id));
+  });
+
+  it("Traitor: a free, secret Sabotage once per expedition; from the next step on, only negative events", () => {
+    const s = timedGame({ tags: ["HOT", "HOT"], events: { ...only(rule("nothing")), HOT: [rule("harvest", { amount: 1 }), rule("fatigue", { negative: true })] } });
+    for (const p of s.players) p.role = "human";
+    player(s, "p1").role = "mush";
+    player(s, "p1").skills.push("traitor");
+    expect(offered(s, "p1")).not.toContainEqual(sabotage);
+    const out = go(s);
+    expect(offered(out, "p2")).not.toContainEqual(sabotage);
+    expect(option(out, "p1", sabotage)?.cost).toEqual({ ap: 0, mp: 0 });
+    const done = must(applyAction(out, "p1", sabotage));
+    // Nothing records it anywhere but the flag: no log line, no AP, no action history.
+    expect(done.expedition!.sabotaged).toBe(true);
+    const unflagged = clone(done);
+    unflagged.expedition!.sabotaged = false;
+    expect(unflagged).toEqual(out);
+    for (const p of done.players) expect(JSON.stringify(viewFor(done, p.id))).not.toContain("sabotaged");
+    // Once per expedition.
+    expect(offered(done, "p1")).not.toContainEqual(sabotage);
+    expect(applyAction(done, "p1", sabotage).ok).toBe(false);
+    let t = done;
+    while (t.expedition) t = tickAt(t, t.expedition.nextAt);
+    expect(t.expeditions[0]!.events.filter((e) => e.sector === "HOT").map((e) => e.kind)).toEqual(["fatigue", "fatigue"]);
+  });
+
+  it("sabotaged: a sector with no negative event is Nothing; a Crystal field is always a Mush trap; cancelled events stay cancelled", () => {
+    const sabotaged = (tags: Planet["sectors"][number]["tag"][], events?: Record<string, ExpeditionEventRule[]>) => {
+      const s = timedGame({ tags, ...(events && { events }) });
+      player(s, "p1").skills.push("traitor");
+      let t = must(applyAction(go(s), "p1", sabotage));
+      while (t.expedition) t = tickAt(t, t.expedition.nextAt);
+      return t.expeditions[0]!.events;
+    };
+    expect(sabotaged(["FRUIT_TREES"]).map((e) => e.kind)).toEqual(["nothing", "nothing"]);
+    expect(sabotaged(["CRISTAL_FIELD", "CRISTAL_FIELD"]).filter((e) => e.sector === "CRISTAL_FIELD").map((e) => e.kind)).toEqual(["mushTrap", "mushTrap"]);
+    // The Lost sector's only negative event is Found dead, which a Tracker cancels.
+    const s = timedGame({ tags: ["LOST"] });
+    player(s, "p1").skills.push("traitor");
+    player(s, "p2").skills.push("hunt");
+    let t = must(applyAction(go(s), "p1", sabotage));
+    while (t.expedition) t = tickAt(t, t.expedition.nextAt);
+    expect(t.expeditions[0]!.events.at(-1)!.kind).toBe("nothing");
   });
 });
