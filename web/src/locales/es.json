@@ -1605,7 +1605,10 @@
       "mushTrap": "La tripulación cae en una trampa Mush: una nube de esporas la envuelve.",
       "lost": "{{name}} se separa de la tripulación y se pierde.",
       "found": "La tripulación encuentra a {{name}}, que se une a ella.",
-      "foundDead": "La tripulación encuentra el cuerpo de {{name}}."
+      "foundDead": "La tripulación encuentra el cuerpo de {{name}}.",
+      "noSpacesuit": "{{name}} no tiene traje espacial y se queda en el Icarus.",
+      "grounded": "Nadie tiene traje espacial: la expedición termina antes de empezar.",
+      "avoided": "{{item}}: {{name}} sale indemne."
     },
     "creatures": {
       "CHAB_CHAB": "Chab Chab",

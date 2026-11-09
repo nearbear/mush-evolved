@@ -249,8 +249,10 @@ export interface ExpeditionEvent {
   hurt?: { name: CharacterId; hp: number }[];
   /** Members who died here, by character. */
   died?: CharacterId[];
-  /** Who got lost (lost), or who was found alive (found) or dead (foundDead), by character. */
+  /** Who got lost (lost), was found alive (found) or dead (foundDead), or stays in the Icarus without a spacesuit (noSpacesuit), by character. */
   who?: CharacterId;
+  /** An Accident the victim was spared by an item they carry (a rope), by character and item type. */
+  avoided?: { name: CharacterId; item: string };
 }
 
 /** An expedition's report (expeditions.ts). `members` are body ids; `crew` the same members by character, for display. */
@@ -270,7 +272,8 @@ export interface ExpeditionReport {
 /**
  * An expedition away (expeditions.ts): its report (`ExpeditionReport.id`), the planet (by id), whether it has landed,
  * the sectors still to explore (indices, in order, drawn at takeoff), and when the next step happens (server ms).
- * `carried` is what each member set out with, by item id, for `deadKeepItems: false`.
+ * `carried` is what each member set out with, by item id, for `deadKeepItems: false`. `suitless` are the members who
+ * stay in the Icarus for want of a spacesuit on a planet with no Oxygen sector, fixed at takeoff: they don't explore.
  */
 export interface ActiveExpedition {
   report: string;
@@ -279,6 +282,7 @@ export interface ActiveExpedition {
   sectors: number[];
   nextAt: number;
   carried: Record<PlayerId, string[]>;
+  suitless: PlayerId[];
 }
 
 /** A planet a player found. Its size is the number of sectors. */

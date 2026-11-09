@@ -126,7 +126,16 @@
     "protection_gloves": "Gants de protection",
     "space_capsule": "Capsule spatiale",
     "extinguisher": "Extincteur",
-    "steroids": "Anabolisant"
+    "steroids": "Anabolisant",
+    "space_suit": "Combinaison",
+    "quad_compass": "Boussole quadrimétrique",
+    "rope": "Corde",
+    "drill": "Foreuse",
+    "echo_sounder": "Écholocateur",
+    "thermosensor": "Thermosenseur",
+    "trad_module": "Module Babel",
+    "white_flag": "Drapeau blanc",
+    "old_shirt": "Vieux t-shirt"
   },
   "skills": {
     "names": {

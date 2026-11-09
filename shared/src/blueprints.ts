@@ -19,6 +19,11 @@ export const BLUEPRINTS: Record<string, Blueprint> = {
   SOFA: { needs: ["metal_scraps", "thick_tube"], makes: { equipment: "SOFA" } },
   // Decided 2026-10-16: the original's first (weighted) recipe. The item has no effect yet.
   MISSILE_LAUNCHER: { needs: ["thick_tube", "metal_scraps", "plastic_scraps"], makes: { item: "missile_launcher" } },
+  // Expedition gear (owner, 2026-11-08, #357): the original's recipes (blueprints.json's weighted list).
+  ECHO_SOUNDER: { needs: ["metal_scraps", "plastic_scraps"], makes: { item: "echo_sounder" } },
+  HEAT_SEEKER: { needs: ["metal_scraps", "plastic_scraps"], makes: { item: "thermosensor" } },
+  TRAD_MODULE: { needs: ["metal_scraps", "plastic_scraps"], makes: { item: "trad_module" } },
+  WHITE_FLAG: { needs: ["old_shirt", "soap"], makes: { item: "white_flag" } },
 };
 
 /** The item type that carries a recipe. Named after its icon, blueprint.jpg. */

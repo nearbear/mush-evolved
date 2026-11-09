@@ -74,7 +74,11 @@ export type ExpeditionEventKind =
   | "lost"
   // Phase 3, slice B (owner, 2026-11-08, #357): the Lost sector's events.
   | "found"
-  | "foundDead";
+  | "foundDead"
+  // Phase 3, slice C (owner, 2026-11-08, #357): never drawn. A member without a needed spacesuit stays in the Icarus
+  // (`noSpacesuit`); nobody has one, so the expedition ends at takeoff (`grounded`).
+  | "noSpacesuit"
+  | "grounded";
 
 /**
  * One line of a sector's event table: drawn by `weight`. `amount` is the oxygen or fuel gained, or the fruits or
@@ -597,6 +601,17 @@ export interface GameConfig {
     // Event tables by sector tag, plus LANDING (drawn first). A tag with no table explores with nothing happening. A
     // living Pilot in the crew or the Antigrav propeller makes the landing Nothing.
     events: Record<string, ExpeditionEventRule[]>;
+    // Gear (owner, 2026-11-08, #357), by item type. One working copy carried by a member who explores counts; copies
+    // don't stack; nothing is used up.
+    gear: {
+      spacesuit: string; // Needed to explore a planet with no Oxygen sector; never taken by Lost item.
+      compass: string; // Cancels Again; its bearer can't get lost (Lost is cancelled when everyone has one).
+      rope: { item: string; tags: string[] }; // Its bearer is spared an Accident in these sectors.
+      drill: { item: string; fuelFactor: number }; // Multiplies the fuel from fuel events.
+      finders: { item: string; tags: string[]; factor: number }[]; // Sectors with these tags are `factor` times as likely to be picked.
+      babel: { item: string; tag: string; artifactFactor: number }; // Artifact is `artifactFactor` times as likely in this sector.
+      whiteFlag: { item: string; tag: string }; // Cancels Fight in this sector.
+    };
   };
   // Weapons (owner, 2026-10-22, from the English wiki). Using one is the `attack` action.
   weapons: {

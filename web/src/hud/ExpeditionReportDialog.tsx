@@ -173,11 +173,13 @@ function useEventLines(): (event: ExpeditionEvent) => { sector: string; lines: s
       case "lost":
       case "found":
       case "foundDead":
+      case "noSpacesuit":
         lines.push(t(`expedition.events.${event.kind}`, { name: event.who ? names.characterGiven(event.who) : "" }));
         break;
       default:
         lines.push(t(`expedition.events.${event.kind}`));
     }
+    if (event.avoided) lines.push(t("expedition.events.avoided", { name: names.characterGiven(event.avoided.name), item: names.item(event.avoided.item) }));
     for (const h of event.hurt ?? []) if (h.hp > 0) lines.push(t("expedition.events.hurt", { name: names.characterGiven(h.name), count: h.hp }));
     for (const name of event.died ?? []) lines.push(t("expedition.events.died", { name: names.characterGiven(name) }));
     return { sector, lines };

@@ -2831,3 +2831,17 @@ Follow-up the same day: the "N% repaired" text became a bare percent (the shared
 
 - `replay.test.ts`'s "rebuilds the same game" (a 2,000-input random game, about 3 s alone) kept hitting its 5 s limit under `verify`'s parallel load in WSL. The owner chose to raise the limit (15 s a seed) and run it only in `npm run test:slow`, which CI runs after `npm test`, gated on the existing `slowRun` flag. Timing it at HEAD and with the change under test first ruled out a regression.
 - Follow-up: the perspective check (every seat's view rebuilt from the full view, about 7 s under load) moved to `test:slow` too. Its one-seat-per-step mode for normal runs became dead code and was removed. The slow-test allowlist ceiling for `replay.test.ts` went from 20 s to 18 s (file) and from 6 s to 8 s (single test). The first ceilings, set from timings taken alone, were too tight: under `verify` the same tests run about 1.75 times slower, so ceilings should come from `verify`'s own `slow` lines.
+
+## 2026-11-08: Content Security Policy (e51b4ba)
+
+- A strict CSP in `web/public/_headers` (self only, no `unsafe-eval` or `unsafe-inline`) plus clickjacking and nosniff headers. Pixi runs its no-eval polyfill (`pixi.js/unsafe-eval`) and Base UI's style elements are off (`CSPProvider`), so the policy needed no loosening. `vite preview` serves the same headers.
+- Judged defense in depth rather than a fix: React escapes output and chat Markdown never uses innerHTML. It matters most before #218 stores a player's API key in the browser, where an injected script could steal it.
+- Deployed to test from a detached worktree at the commit, so the uncommitted expedition work in the main checkout stayed out. Headless check on test: headers served, matchmaker WebSockets connect over wss, no CSP violations. OAuth sign-in needs a manual check (form-action doesn't apply, since sign-in starts with location.assign).
+- Worked: checking the plan against the code (no form posts to OAuth) before trusting `form-action 'self'`. Correction: I expected Cloudflare Access to block curl on test (docs/ops/deploy.md says it's behind Access), but the static page answered directly.
+
+## 2026-11-08: Expeditions phase 3, slice C (gear and spacesuits, #357)
+
+- **Decided by the owner, at the start of the slice:** gear rooms (6 suits in the Icarus Bay; compass, 4 ropes and the drill in front storage), the four blueprints in the front corridor with stand-in scraps and an old T-shirt by the soap, the thermosensor's recipe (1 metal + 1 plastic, the original's weighted list), and the spacesuit check once at takeoff.
+- **Correction to the plan:** the plan said the thermosensor's recipe wasn't in the original's `blueprints.json`. It is, as `HEAT_SEEKER` (the original's id for the thermosensor). Checking the data before asking turned an open question into a choice between two listed recipes.
+- **Worked:** adding one `explores` predicate (with the crew and not suitless) and switching the event code to it covered "events can't touch them and their items don't count" in one place. Giving every seat a spacesuit in the test helper kept the 53 existing expedition tests passing (most use oxygen-less planets); only the Lost item test, which cleared inventories, needed a tweak.
+- **Open:** the owner said items can't be dropped on an expedition, but phase 2 (item 4) allowed taking and dropping aboard the Icarus and the code still does. This is noted in the plan as pending, not changed.

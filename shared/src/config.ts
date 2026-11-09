@@ -399,6 +399,20 @@ export const DEFAULT_CONFIG: GameConfig = {
       // Slice B (owner, 2026-11-08): added to a planet when someone gets lost there.
       LOST: [ev("found", 4), ev("found", 3), ev("again", 2), ev("foundDead", 1)],
     },
+    // Gear (owner, 2026-11-08, #357, eMushpedia): one working copy carried by a member who explores is enough; copies
+    // don't stack and nothing is used up. A planet with no Oxygen sector needs a spacesuit to explore.
+    gear: {
+      spacesuit: "space_suit",
+      compass: "quad_compass",
+      rope: { item: "rope", tags: ["CAVE", "MOUNTAIN", "SISMIC_ACTIVITY"] },
+      drill: { item: "drill", fuelFactor: 2 },
+      finders: [
+        { item: "echo_sounder", tags: ["HYDROCARBON"], factor: 5 },
+        { item: "thermosensor", tags: ["INSECT", "MANKAROG", "LOST", "PREDATOR", "RUMINANT", "INTELLIGENT"], factor: 5 },
+      ],
+      babel: { item: "trad_module", tag: "INTELLIGENT", artifactFactor: 2 },
+      whiteFlag: { item: "white_flag", tag: "INTELLIGENT" },
+    },
   },
   // Owner, 2026-10-22, from the English wiki: 1 AP to use any weapon, carried. Repair and dismantle chances the wiki
   // gives as "??" are 12%. Blaster 2-3 as listed; the rocket's "?-8" is 1-8 and its self-damage 1-4 (Claude's guess,
@@ -469,6 +483,20 @@ export const DEFAULT_CONFIG: GameConfig = {
     { type: "blueprint", builds: "MISSILE_LAUNCHER", room: "CORRIDOR_A" },
     { type: "thick_tube", room: "CORRIDOR_A" },
     { type: "metal_scraps", room: "CORRIDOR_A" },
+    // Expedition gear (owner, 2026-11-08, #357): 6 spacesuits in the Icarus Bay; the compass, 4 ropes and the drill in
+    // front storage; blueprints for the other four in the front corridor, with stand-in scraps for the three gadgets and
+    // an old T-shirt next to the soap for the white flag.
+    ...Array.from({ length: 6 }, () => ({ type: "space_suit", room: "ICARUS" as RoomId })),
+    { type: "quad_compass", room: "STORAGE_FRONT" },
+    ...Array.from({ length: 4 }, () => ({ type: "rope", room: "STORAGE_FRONT" as RoomId })),
+    { type: "drill", room: "STORAGE_FRONT" },
+    { type: "blueprint", builds: "ECHO_SOUNDER", room: "CORRIDOR_A" },
+    { type: "blueprint", builds: "HEAT_SEEKER", room: "CORRIDOR_A" },
+    { type: "blueprint", builds: "TRAD_MODULE", room: "CORRIDOR_A" },
+    { type: "blueprint", builds: "WHITE_FLAG", room: "CORRIDOR_A" },
+    ...Array.from({ length: 3 }, () => ({ type: "metal_scraps", room: "CORRIDOR_A" as RoomId })),
+    ...Array.from({ length: 3 }, () => ({ type: "plastic_scraps", room: "CORRIDOR_A" as RoomId })),
+    { type: "old_shirt", room: "BEDROOM_A" },
     // Owner, 2026-10-28: the oscilloscope spawns in Alpha Bay 2 at the start (SPACESHIP_BAY_AA).
     { type: "oscilloscope", room: "SPACESHIP_BAY_AA" },
     // Confirmed 2026-10-14: the soap always spawns in the Alpha dorm (for now).

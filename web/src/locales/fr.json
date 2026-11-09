@@ -1605,7 +1605,10 @@
       "mushTrap": "L'équipe tombe dans un piège Mush : un nuage de spores l'enveloppe.",
       "lost": "{{name}} se sépare de l'équipe et se perd.",
       "found": "L'équipe retrouve {{name}}, qui la rejoint.",
-      "foundDead": "L'équipe retrouve le corps de {{name}}."
+      "foundDead": "L'équipe retrouve le corps de {{name}}.",
+      "noSpacesuit": "{{name}} n'a pas de combinaison et reste dans l'Icarus.",
+      "grounded": "Personne n'a de combinaison : l'expédition s'arrête avant d'avoir commencé.",
+      "avoided": "{{item}} : {{name}} s'en sort indemne."
     },
     "creatures": {
       "CHAB_CHAB": "Chab Chab",

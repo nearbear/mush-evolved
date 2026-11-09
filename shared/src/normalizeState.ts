@@ -657,6 +657,7 @@ export function normalizeExpeditionEvent(raw: Partial<ExpeditionEvent>): Expedit
     hurt: opt(raw.hurt, (list) => list.map(hurt)),
     died: opt(raw.died, copy),
     who: raw.who,
+    avoided: opt(raw.avoided, (a) => ({ name: need(a, "name", `${t}.avoided`), item: need(a, "item", `${t}.avoided`) })),
   });
 }
 
@@ -681,6 +682,8 @@ export function normalizeActiveExpedition(raw: Partial<ActiveExpedition>): Activ
     sectors: copy(need(raw, "sectors", t)),
     nextAt: need(raw, "nextAt", t),
     carried: mapValues(need(raw, "carried", t), copy),
+    // Slice C (#357): spacesuits weren't needed before it, so everyone under way explores.
+    suitless: copy(added(raw, "suitless", [])),
   });
 }
 

@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { BLUEPRINTS } from "../src/blueprints.ts";
 import { DEFAULT_CONFIG } from "../src/config.ts";
 import { pickSectors, runExpedition, winChance } from "../src/expeditions.ts";
 import { nextDue } from "../src/queue.ts";
@@ -26,7 +27,7 @@ const planet = (tags: Planet["sectors"][number]["tag"][]): Planet => ({
  * Six seats: p0 (a Pilot), p1, p2 and p3 in the Icarus Bay, p4 and p5 in the laboratory. p5 found the planet the ship
  * orbits. `events` replaces the event tables (so a test draws the event it needs), `tags` the planet's sectors.
  */
-function game(opts: { events?: Record<string, ExpeditionEventRule[]>; tags?: Planet["sectors"][number]["tag"][]; config?: Partial<GameConfig["expedition"]>; timed?: boolean } = {}): GameState {
+function game(opts: { events?: Record<string, ExpeditionEventRule[]>; tags?: Planet["sectors"][number]["tag"][]; config?: Partial<GameConfig["expedition"]>; timed?: boolean; suits?: boolean } = {}): GameState {
   const config = noIncidents(noHunters(structuredClone(DEFAULT_CONFIG)));
   config.startItems = [];
   // Phase 1's tests resolve at takeoff, as single player does; phase 2's are timed.
@@ -37,6 +38,8 @@ function game(opts: { events?: Record<string, ExpeditionEventRule[]>; tags?: Pla
   player(s, "p0").skills.push("pilot");
   s.planets.p5 = [planet(opts.tags ?? ["OXYGEN", "FOREST", "DESERT"])];
   s.navigation.orbit = "planet-1";
+  // Slice C: a planet with no Oxygen sector needs spacesuits, so everyone carries one unless a test says otherwise.
+  if (opts.suits !== false) for (const p of s.players) s.items.push({ id: `item-suit-${p.id}`, type: "space_suit", at: { kind: "player", id: p.id } });
   return s;
 }
 
@@ -409,8 +412,8 @@ describe("expeditions, phases 3 and 4, slice A: events and fights", () => {
 
   it("Lost item destroys one item carried by the crew, never a spacesuit; with nothing carried it is Nothing", () => {
     const s = game({ tags: ["STRONG_WIND"], events: only({ kind: "lostItem", weight: 1 }) });
-    s.items = s.items.filter((i) => i.at.kind !== "player");
-    give(s, "p1", "space_suit");
+    // Only the spacesuits everyone carries, and a knife.
+    s.items = s.items.filter((i) => i.at.kind !== "player" || i.type === "space_suit");
     give(s, "p2", "knife");
     const next = go(s);
     expect(event(next)).toMatchObject({ kind: "lostItem", item: "knife" });
@@ -418,7 +421,7 @@ describe("expeditions, phases 3 and 4, slice A: events and fights", () => {
     expect(next.items.some((i) => i.type === "space_suit")).toBe(true);
     // A member who stayed aboard keeps theirs.
     const empty = game({ tags: ["STRONG_WIND"], events: only({ kind: "lostItem", weight: 1 }) });
-    empty.items = empty.items.filter((i) => i.at.kind !== "player");
+    empty.items = empty.items.filter((i) => i.at.kind !== "player" || i.type === "space_suit");
     give(empty, "p4", "knife");
     expect(event(go(empty)).kind).toBe("nothing");
   });
@@ -892,5 +895,166 @@ describe("expeditions, phase 3, slice B: getting lost", () => {
       expect(viewFor(t, "p5").lost).toEqual([]);
       expect(t.icarusLost).toBe(false); // the Icarus wasn't out
     }
+  });
+});
+
+describe("expeditions, phase 3, slice C: gear and spacesuits", () => {
+  const event = (s: GameState, i = 1) => s.expeditions[0]!.events[i]!;
+  const rule = (kind: ExpeditionEventRule["kind"], amount?: number): ExpeditionEventRule => ({ kind, weight: 1, ...(amount !== undefined && { amount }) });
+  const strip = (s: GameState, type: string) => (s.items = s.items.filter((i) => !(i.type === type && i.at.kind === "player")));
+  const { gear } = expedition;
+  /** How often, over `runs` fixed seeds (so deterministic), `hit` holds on the state after a takeoff. */
+  function rate(s: GameState, hit: (next: GameState) => boolean, runs: number): number {
+    let hits = 0;
+    for (let seed = 1; seed <= runs; seed++) {
+      const t = clone(s);
+      t.rng = seed * 7919;
+      if (hit(go(t))) hits++;
+    }
+    return hits / runs;
+  }
+
+  it("pins the confirmed gear, its numbers, the start list and the recipes", () => {
+    expect(gear).toEqual({
+      spacesuit: "space_suit",
+      compass: "quad_compass",
+      rope: { item: "rope", tags: ["CAVE", "MOUNTAIN", "SISMIC_ACTIVITY"] },
+      drill: { item: "drill", fuelFactor: 2 },
+      finders: [
+        { item: "echo_sounder", tags: ["HYDROCARBON"], factor: 5 },
+        { item: "thermosensor", tags: ["INSECT", "MANKAROG", "LOST", "PREDATOR", "RUMINANT", "INTELLIGENT"], factor: 5 },
+      ],
+      babel: { item: "trad_module", tag: "INTELLIGENT", artifactFactor: 2 },
+      whiteFlag: { item: "white_flag", tag: "INTELLIGENT" },
+    });
+    const count = (type: string, room: string, builds?: string) =>
+      DEFAULT_CONFIG.startItems.filter((i) => i.type === type && i.room === room && i.builds === builds).length;
+    expect(count("space_suit", "ICARUS")).toBe(6);
+    expect([count("quad_compass", "STORAGE_FRONT"), count("rope", "STORAGE_FRONT"), count("drill", "STORAGE_FRONT")]).toEqual([1, 4, 1]);
+    for (const b of ["ECHO_SOUNDER", "HEAT_SEEKER", "TRAD_MODULE", "WHITE_FLAG"]) expect(count("blueprint", "CORRIDOR_A", b)).toBe(1);
+    expect(count("old_shirt", "BEDROOM_A")).toBe(1);
+    expect(BLUEPRINTS.ECHO_SOUNDER).toEqual({ needs: ["metal_scraps", "plastic_scraps"], makes: { item: "echo_sounder" } });
+    expect(BLUEPRINTS.HEAT_SEEKER).toEqual({ needs: ["metal_scraps", "plastic_scraps"], makes: { item: "thermosensor" } });
+    expect(BLUEPRINTS.TRAD_MODULE).toEqual({ needs: ["metal_scraps", "plastic_scraps"], makes: { item: "trad_module" } });
+    expect(BLUEPRINTS.WHITE_FLAG).toEqual({ needs: ["old_shirt", "soap"], makes: { item: "white_flag" } });
+  });
+
+  it("with no Oxygen sector, a member without a working spacesuit stays in the Icarus: untouched, their items not counted", () => {
+    const s = game({ tags: ["HOT"], events: only(rule("fatigue")) });
+    strip(s, "space_suit");
+    for (const id of ["p0", "p1"]) give(s, id, "space_suit");
+    give(s, "p2", "space_suit");
+    s.items.at(-1)!.broken = true;
+    const next = go(s);
+    const report = next.expeditions[0]!;
+    const names = (ids: string[]) => ids.map((id) => player(s, id).character);
+    // The crew's order is random.
+    expect(report.events.filter((e) => e.kind === "noSpacesuit").map((e) => e.who).sort()).toEqual(names(["p2", "p3"]).sort());
+    const fatigue = report.events.find((e) => e.sector === "HOT")!;
+    expect(fatigue.hurt!.map((h) => h.name).sort()).toEqual(names(["p0", "p1"]).sort());
+    expect(player(next, "p3").hp).toBe(player(s, "p3").hp);
+    // They come back with the crew.
+    expect(player(next, "p3").room).toBe(ICARUS);
+    // An Oxygen sector anywhere on the planet, revealed or not: no spacesuit needed.
+    const air = game({ tags: ["OXYGEN", "HOT"], suits: false });
+    expect(go(air).expeditions[0]!.events.some((e) => e.kind === "noSpacesuit")).toBe(false);
+  });
+
+  it("a fight counts only the weapons of members who explore", () => {
+    const s = fightGame(6);
+    strip(s, "space_suit");
+    give(s, "p0", "space_suit");
+    give(s, "p1", "knife");
+    expect(go(s).expeditions[0]!.events.find((e) => e.kind === "fight")!.fight!.strength).toBe(1);
+  });
+
+  it("with nobody suited, the expedition ends at takeoff: AP spent, nothing explored, nobody dirty", () => {
+    const s = game({ tags: ["HOT", "FOREST"], suits: false, config: { dirtyChance: 1 } });
+    const next = go(s);
+    expect(next.expedition).toBeNull();
+    expect(next.expeditions[0]!.events.map((e) => e.kind)).toEqual(["noSpacesuit", "noSpacesuit", "noSpacesuit", "noSpacesuit", "grounded"]);
+    expect(next.planets.p5![0]!.sectors.every((x) => !x.explored)).toBe(true);
+    expect(player(next, "p0").ap).toBe(player(s, "p0").ap - expedition.cost.ap);
+    expect(next.players.filter((p) => ["p0", "p1", "p2", "p3"].includes(p.id)).every((p) => p.room === ICARUS && !p.statuses.includes("dirty"))).toBe(true);
+    // Timed games too: back at once.
+    const timed = timedGame({ tags: ["HOT"], suits: false });
+    expect(go(timed).expedition).toBeNull();
+  });
+
+  it("a compass cancels Again; its bearer can't get lost, and Lost is cancelled when everyone has one", () => {
+    const again = game({ tags: ["DESERT"], events: { DESERT: [rule("again"), rule("fatigue")] } });
+    give(again, "p2", "quad_compass");
+    expect(event(go(again)).kind).toBe("fatigue");
+    const alone = game({ tags: ["DESERT"], events: { DESERT: [rule("again")] } });
+    give(alone, "p2", "quad_compass");
+    const next = go(alone);
+    expect(event(next).kind).toBe("nothing");
+    expect(next.planets.p5![0]!.sectors[0]!.explored).toBe(true);
+
+    const lost = game({ tags: ["COLD"], events: { COLD: [rule("lost")], LOST: [rule("nothing")] } });
+    for (const id of ["p0", "p1", "p2"]) give(lost, id, "quad_compass");
+    expect(event(go(lost)).who).toBe(player(lost, "p3").character);
+    give(lost, "p3", "quad_compass");
+    expect(event(go(lost)).kind).toBe("nothing");
+  });
+
+  it("a rope spares its bearer an Accident in a Cave, Mountain or Seismic sector, and nowhere else", () => {
+    const s = game({ tags: ["CAVE"], events: only(rule("accident")) });
+    for (const id of ["p0", "p1", "p2", "p3"]) give(s, id, "rope");
+    const next = go(s);
+    expect(event(next).avoided).toMatchObject({ item: "rope" });
+    expect(event(next).hurt).toBeUndefined();
+    expect(next.players.every((p) => p.hp === player(s, p.id).hp)).toBe(true);
+    const ruins = game({ tags: ["RUINS"], events: only(rule("accident")) });
+    for (const id of ["p0", "p1", "p2", "p3"]) give(ruins, id, "rope");
+    expect(event(go(ruins)).hurt).toHaveLength(1);
+  });
+
+  it("a drill doubles the fuel found; copies don't stack", () => {
+    const s = game({ tags: ["HYDROCARBON"], events: { HYDROCARBON: [rule("fuel", 3)] } });
+    s.ship.fuel = 0;
+    give(s, "p1", "drill");
+    give(s, "p2", "drill");
+    expect(go(s).ship.fuel).toBe(3 * gear.drill.fuelFactor);
+  });
+
+  it("an echolocator or thermosensor makes its sectors 5x as likely to be picked", () => {
+    const pick = (tags: Planet["sectors"][number]["tag"][], item?: string) => {
+      const s = game({ tags, config: { sectors: 1 } });
+      if (item) give(s, "p1", item);
+      return rate(s, (n) => n.planets.p5![0]!.sectors[0]!.explored === true, 200);
+    };
+    // Equal explo weights: 1/2 without, 5/6 with.
+    expect(pick(["HYDROCARBON", "FOREST"])).toBeLessThan(0.6);
+    expect(pick(["HYDROCARBON", "FOREST"], "echo_sounder")).toBeGreaterThan(0.75);
+    expect(pick(["INSECT", "FOREST"], "thermosensor")).toBeGreaterThan(0.75);
+    expect(pick(["INSECT", "FOREST"], "echo_sounder")).toBeLessThan(0.6);
+  });
+
+  it("a Babel module doubles Artifact's odds in Intelligent life; a white flag cancels Fight there only", () => {
+    const babel = (item?: string) => {
+      const s = game({ tags: ["INTELLIGENT"], events: { INTELLIGENT: [rule("artifact"), rule("nothing")] } });
+      if (item) give(s, "p1", item);
+      return rate(s, (n) => event(n).kind === "artifact", 400);
+    };
+    // 1/2 without, 2/3 with.
+    expect(babel()).toBeLessThan(0.58);
+    expect(babel("trad_module")).toBeGreaterThan(0.6);
+
+    const fight: ExpeditionEventRule = { kind: "fight", weight: 1, creature: "CORTIC" };
+    const flag = game({ tags: ["INTELLIGENT", "PREDATOR"], events: { INTELLIGENT: [fight], PREDATOR: [fight] } });
+    give(flag, "p1", "white_flag");
+    const events = go(flag).expeditions[0]!.events;
+    expect(events.find((e) => e.sector === "INTELLIGENT")!.kind).toBe("nothing");
+    expect(events.find((e) => e.sector === "PREDATOR")!.kind).toBe("fight");
+  });
+
+  it("the suitless list never reaches a view", () => {
+    const s = timedGame({ tags: ["HOT"] });
+    strip(s, "space_suit");
+    give(s, "p0", "space_suit");
+    const next = go(s);
+    expect([...next.expedition!.suitless].sort()).toEqual(["p1", "p2", "p3"]);
+    for (const p of next.players) expect(JSON.stringify(viewFor(next, p.id))).not.toContain("suitless");
   });
 });
