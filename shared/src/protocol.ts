@@ -5,6 +5,7 @@ import { ACTIONS, type ActionType } from "./actions.ts";
 import { isCheat, isRoleCheat, type Cheat, type RoleCheat } from "./cheats.ts";
 import { isCharacterId, type CharacterId } from "./characters.ts";
 import { MAX_CHAT_LENGTH, privateChannelId } from "./chat.ts";
+import { MAX_CHAT_READ_ENTRIES, type ChatRead } from "./chatRead.ts";
 import { isRecord } from "./helpers.ts";
 import { parsePlanDraft } from "./plans.ts";
 import { MAX_SHARED_PLANET_LENGTH } from "./sharedPlanets.ts";
@@ -76,6 +77,9 @@ export type GameClientMessage =
   | { type: "toggleCheckbox"; channel: ChannelId; seq: number; line: number }
   // One page of a channel (#355), answered with `chatPage`. Read-only: not an input, never recorded.
   | { type: "chatPage"; channel: ChannelId; page: number }
+  // How far the seat has read each channel (#400, chatRead.ts). Never answered: a refusal, a rate limit and a count
+  // that is no news all look the same. Not an input, never recorded.
+  | { type: "chatRead"; read: ChatRead }
   | { type: "createChannel"; name?: string; members?: PlayerId[] }
   // A thread under global chat, started from the global message whose `seq` is `from`, or on its own.
   | { type: "createThread"; name: string; from?: number }
@@ -114,6 +118,9 @@ export type GameServerMessage =
   // The page a `chatPage` asked for, as a view carries chat (ticks drawn in, no `id`). Every refusal is the one error
   // `chat_page_unavailable`, so it can't tell a channel you can't read from a page not begun.
   | { type: "chatPage"; channel: ChannelId; page: number; messages: ChatLine[] }
+  // The seat's read counts for the channels its body reads now (#400, `chatReadFor`): on connect after the view, and to
+  // the seat's other connections when they rise. Only ever to that seat.
+  | { type: "chatRead"; read: ChatRead }
   | { type: "error"; message: string };
 
 export function parseMatchmakerMessage(raw: string): MatchmakerClientMessage | null {
@@ -148,6 +155,10 @@ export function parseGameMessage(raw: string): GameClientMessage | null {
   if (msg?.type === "chatPage") {
     const channel = channelId(msg.channel);
     return channel && Number.isSafeInteger(msg.page) && (msg.page as number) >= 0 ? { type: "chatPage", channel, page: msg.page as number } : null;
+  }
+  if (msg?.type === "chatRead") {
+    const read = parseChatRead(msg.read);
+    return read && { type: "chatRead", read };
   }
   if (msg?.type === "createChannel") {
     if (msg.name !== undefined && (typeof msg.name !== "string" || msg.name.length > MAX_NAME_LENGTH * 4)) return null;
@@ -215,6 +226,22 @@ export function parseGameMessage(raw: string): GameClientMessage | null {
   if (typeof a.type !== "string" || !Object.hasOwn(ACTIONS, a.type)) return null;
   const action = ACTIONS[a.type as ActionType].parse(a);
   return action && { type: "action", action };
+}
+
+/** A `chatRead` body from untrusted input: valid channel ids to safe non-negative counts, at most MAX_CHAT_READ_ENTRIES. */
+function parseChatRead(value: unknown): ChatRead | null {
+  if (!isRecord(value)) return null;
+  const keys = Object.keys(value);
+  if (keys.length > MAX_CHAT_READ_ENTRIES) return null;
+  const read: ChatRead = {};
+  // Own keys only, each a valid channel id, so "__proto__" and the like never reach `read`.
+  for (const key of keys) {
+    const channel = channelId(key);
+    const count = value[key];
+    if (!channel || !Number.isSafeInteger(count) || (count as number) < 0) return null;
+    read[channel] = count as number;
+  }
+  return read;
 }
 
 function threadId(value: unknown): ThreadId | null {

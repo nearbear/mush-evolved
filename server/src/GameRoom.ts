@@ -743,6 +743,8 @@ export class GameRoom extends Server<Env> {
       await this.sendChatPage(connection, playerId, by, msg.channel, msg.page);
       return;
     }
+    // Read state (#400): stored per seat, never an input, and never answered. Not kept yet.
+    if (msg.type === "chatRead") return;
     if (msg.type === "setModel" || msg.type === "clearModel") {
       const error = this.setModel(playerId, msg);
       if (error) this.send(connection, { type: "error", message: error });
@@ -809,7 +811,7 @@ export class GameRoom extends Server<Env> {
   private async social(
     playerId: PlayerId,
     by: PlayerId,
-    msg: Exclude<GameClientMessage, { type: "action" | "clearQueue" | "acknowledgeTransfer" | "walk" | "cheat" | "roleCheat" | "solCheat" | "setModel" | "clearModel" | "leaveShip" | "chatPage" }>,
+    msg: Exclude<GameClientMessage, { type: "action" | "clearQueue" | "acknowledgeTransfer" | "walk" | "cheat" | "roleCheat" | "solCheat" | "setModel" | "clearModel" | "leaveShip" | "chatPage" | "chatRead" }>,
     /** A chat message's reply depth (`BOT_CHAT_CHAIN_DEPTH`): 0 unless a bot is replying to chat. */
     depth = 0,
   ): Promise<string | null> {

@@ -8,6 +8,7 @@ export * from "./blueprints.ts";
 export * from "./equipment.ts";
 export * from "./rules.ts";
 export * from "./chat.ts";
+export * from "./chatRead.ts";
 export * from "./actions.ts";
 export * from "./actionTarget.ts";
 export * from "./log.ts";
