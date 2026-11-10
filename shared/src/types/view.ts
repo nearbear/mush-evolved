@@ -1,6 +1,7 @@
 import type { ActionCost, ActionTag } from "../actions.ts";
 import type { CharacterId } from "../characters.ts";
 import type { BiosState } from "../bios.ts";
+import type { DrugEffect } from "../drugs.ts";
 import type { RebelBaseId, XylophEntryId } from "../comms.ts";
 import type { TurnSide } from "../navigation.ts";
 import type { PlanetDirection } from "../planets.ts";
@@ -183,6 +184,8 @@ export interface PlayerView {
   rooms: Readonly<Record<RoomId, readonly RoomId[]>>;
   /** What you carry. Other players' inventories are never sent. */
   inventory: ItemView[];
+  /** What each drug does in this ship (drugs.ts); null unless you are a living Biologist, Medic, Nurse or Mush. */
+  drugEffects: Record<string, DrugEffect> | null;
   /** Your inventory size, after modifiers. */
   inventorySlots: number;
   /** Items stored in the room you are in. Other rooms' items are never sent. */

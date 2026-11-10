@@ -5,7 +5,7 @@ import { damage, hasMushDied, killPlayer } from "../src/death.ts";
 import { CORPSE_ITEM, ITEM_TYPES, ITRACKIE_ITEM, itemsIn } from "../src/items.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";
 import { CHAT_CHANNELS, GRAVEYARD_CHANNEL, MUSH_CHANNEL, type Action, type GameState, type PlayerId } from "../src/types.ts";
-import { makeSeats, player, must, offered } from "./support.ts";
+import { makeSeats, player, must, offered, withoutDrugs } from "./support.ts";
 
 const seats = makeSeats(4);
 // Punches always land, so the deaths here don't hang on a lucky seed.
@@ -14,7 +14,7 @@ const punch = (target: PlayerId): Action => ({ type: "punch", target });
 
 /** p0 (Mush) and p1 (human) share the sick bay; p2 and p3 (humans) are in the refectory. Everyone has an iTrackie. */
 function ship(): GameState {
-  const s = createGame(seats, config, 3);
+  const s = withoutDrugs(createGame(seats, config, 3));
   s.players.forEach((p, i) => {
     p.role = i === 0 ? "mush" : "human";
     p.room = i < 2 ? "SICK_BAY" : "REFECTORY";

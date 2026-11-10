@@ -2,14 +2,14 @@ import { describe, expect, it } from "vitest";
 import { DEFAULT_CONFIG } from "../src/config.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";
 import type { GameState } from "../src/types.ts";
-import { makeSeats, player, offered } from "./support.ts";
+import { makeSeats, player, offered, withoutDrugs } from "./support.ts";
 
 const seats = makeSeats(3);
 const base = { ...DEFAULT_CONFIG, mushCount: 1, startInventory: [], startItems: [], startSkills: [] };
 
 /** p0 in the refectory with 10 MP; `carry` heavy freezers in their inventory. */
 function ship(carry: number, skills: string[] = []): GameState {
-  const s = createGame(seats, base, 3);
+  const s = withoutDrugs(createGame(seats, base, 3));
   const p = player(s, "p0");
   p.room = "REFECTORY";
   p.mp = 10;

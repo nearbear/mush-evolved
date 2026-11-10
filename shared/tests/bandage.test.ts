@@ -3,7 +3,7 @@ import { DEFAULT_CONFIG } from "../src/config.ts";
 import { MODIFIERS } from "../src/modifiers.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";
 import type { Action, GameState, PlayerId } from "../src/types.ts";
-import { makeSeats, player, offered, mustApply } from "./support.ts";
+import { makeSeats, player, offered, mustApply, withoutDrugs } from "./support.ts";
 
 const seats = makeSeats(3);
 const config = { ...DEFAULT_CONFIG, mushCount: 1, startInventory: [], startItems: [] };
@@ -12,7 +12,7 @@ const { cost, effect } = config.bandage;
 
 /** Three people in one room, hurt to 5 HP; p0 holds one bandage. */
 function ship(): GameState {
-  const s = createGame(seats, config, 3);
+  const s = withoutDrugs(createGame(seats, config, 3));
   s.players.forEach((p) => {
     p.room = "LABORATORY";
     p.hp = 5;

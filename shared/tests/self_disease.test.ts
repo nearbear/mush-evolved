@@ -35,7 +35,7 @@ describe("Self Disease", () => {
     expect(player(result.state, "p0").statuses).toContain(selectedDisease);
     expect(viewFor(result.state, "p0").statuses).toContain(selectedDisease);
     expect(viewFor(result.state, "p1").players.find((p) => p.id === "p0")?.statuses).not.toContain(selectedDisease);
-    expect(JSON.stringify(viewFor(result.state, "p1"))).not.toContain(selectedDisease);
+    expect(JSON.stringify({ ...viewFor(result.state, "p1"), drugEffects: null })).not.toContain(selectedDisease);
     expect(player(result.state, "p0").current).toBeNull();
   });
 
