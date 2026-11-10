@@ -9,11 +9,11 @@
             "Read(./node_modules/**)",
             "Read(./Mush/www/**)",
             "Read(./Mush/clients/**)",
-            "Read(./docs/process/ai-workflow.md)"
+            "Read(./docs/process/ai-workflow.md)",
+            "Read(./Mush/derived/ship-art.json)",
+            "Read(./Mush/derived/ship-map.json)"
         ],
         "deny": [
-            "Read(./Mush/derived/ship-art.json)",
-            "Read(./Mush/derived/ship-map.json)",
             "Read(./reference/**)"
         ]
     }
