@@ -75,6 +75,8 @@ const castSheet = Object.values(
 )[0]!;
 const CAST_SHEET_SIZE = { w: 953, h: 2315 };
 const LYING = { x: 554, w: 50, h: 48 };
+/** The original iso client's frame for the lying pose (Data.hx `_LAID`): wider than `LYING`, and centred 3px further left. The beds' `ofsx`/`ofsy` were set for this frame, and `_LAID_FLIPPED` mirrors it. */
+const LAID = { x: 544, w: 64 };
 /** Row of each character on the cast sheet (found by pixel-matching the walk strips). */
 const CAST_ROW: Record<CharacterId, number> = {
   jinsu: 0, frieda: 1, kuanti: 2, janice: 3, roland: 4, hua: 5, paola: 6, chao: 7,
@@ -96,7 +98,7 @@ export function lyingSprite(character: CharacterId | undefined) {
 /** The lying pose as a pixel frame of the cast sheet, for drawing at 1x in the iso view and hit-testing it. */
 export function lyingFrame(character: CharacterId | undefined) {
   if (!character) return undefined;
-  return { url: castSheet, sx: LYING.x, sy: CAST_ROW[character] * LYING.h, width: LYING.w, height: LYING.h };
+  return { url: castSheet, sx: LAID.x, sy: CAST_ROW[character] * LYING.h, width: LAID.w, height: LYING.h };
 }
 
 /**

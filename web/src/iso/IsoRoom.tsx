@@ -56,6 +56,7 @@ import {
   placeActors,
   prepareScene,
   spreadActors,
+  lyingPose,
   offFloorStep,
   standSpot,
   stepsOnto,
@@ -316,18 +317,16 @@ export function IsoRoom({
     if (gone.length) setLeavers((ls) => [...ls.filter((l) => l.visit === visit.current.n && !gone.some((g) => g.person.id === l.person.id)), ...gone]);
   }, [occupantKey, visitN]);
   const drawnPeople = [...occupants, ...walkingOut.map((l) => l.person)];
-  // Someone in bed lies in the middle of the bed's footprint, mirrored to run along the bed.
-  const beds = new Map<string, { cell: { x: number; y: number }; flip: boolean }>();
+  // Someone in bed lies where the original put them (`lyingPose`), mirrored to run along the bed.
+  const beds = new Map<string, NonNullable<ReturnType<typeof lyingPose>>>();
   const equipmentByKey = useMemo(() => equipmentByTileKey(roomLayout, equipment), [roomLayout, equipment]);
   // A patrol ship in flight isn't drawn in its bay (owner, 2026-10-24); the view marks its interface out.
   const flownKey = [...equipmentByKey].filter(([, e]) => e.out).map(([key]) => key).join(",");
   const tileOf = new Map([...equipmentByKey].map(([key, e]) => [e.id, Number(key.slice(1))]));
   for (const o of occupants) {
     const tile = o.lying ? tileOf.get(o.lying) : undefined;
-    const t = tile === undefined ? undefined : roomLayout?.tiles[tile];
-    if (!t) continue;
-    const [w, h] = layout.slices[t.slice]?.footprint ?? [1, 1];
-    beds.set(o.id, { cell: { x: t.x - Math.floor((w - 1) / 2), y: t.y - Math.floor((h - 1) / 2) }, flip: w > h });
+    const pose = tile === undefined || !roomLayout ? undefined : lyingPose(layout, roomLayout, tile);
+    if (pose) beds.set(o.id, pose);
   }
   const myExit = leavingTo ? wayOut(leavingTo, true) : undefined;
   // Where the view says someone stands: a cell of this floor, or in front of the door they came in by. A cell
@@ -427,7 +426,7 @@ export function IsoRoom({
       ...drawnPeople.map((o, i) => ({
         id: o.id,
         cell: walkers.get(o.id)?.cell ?? spots[i] ?? { x: 0, y: 0 },
-        ...(o.lying ? { ...LYING_SIZE, onTop: true } : { width: 32, height: 48 }),
+        ...(o.lying ? { ...LYING_SIZE, onTop: true, shift: beds.get(o.id)?.shift } : { width: 32, height: 48 }),
       })),
       // A corpse is placed like a person (so paint order and walls treat it the same) but drawn lying down.
       ...corpses.map((c, i) => ({ id: `${CORPSE_PREFIX}${c.id}`, cell: spots[occupants.length + i] ?? { x: 0, y: 0 }, ...LYING_SIZE })),

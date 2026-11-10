@@ -1,10 +1,11 @@
 // The editor's inspector: what is selected (a tile, its room, or a room on its own from the hierarchy),
 // with the edits that apply to it. Every edit here also has a key (ShipEditor) and a menu item.
 
-import type { PlacedEquipment, RoomLayout, ShipMap, TilePlacement } from "@mush2/shared";
-import { ARROWS, type TileAt } from "./edits.ts";
+import { EQUIPMENT_TYPES, type PlacedEquipment, type RoomLayout, type ShipMap, type TilePlacement } from "@mush2/shared";
+import { ARROWS, sleeperData, sleeperStep, type TileAt } from "./edits.ts";
 
 const PAD = { ArrowLeft: "↖", ArrowUp: "↗", ArrowDown: "↙", ArrowRight: "↘" } as const;
+const FINE = { ArrowLeft: "←", ArrowUp: "↑", ArrowDown: "↓", ArrowRight: "→" } as const;
 
 export interface InspectorEdits {
   move: (dx: number, dy: number) => void;
@@ -15,6 +16,7 @@ export interface InspectorEdits {
   toRoom: (room: string) => void;
   doorTo: (room: string) => void;
   moveRoom: (dx: number, dy: number) => void;
+  nudgeSleeper: (dx: number, dy: number) => void;
 }
 
 export const isSofa = (t: TilePlacement) => t.slice === "sofa" || t.slice === "sofaReverse";
@@ -31,12 +33,31 @@ function Pad({ label, onMove }: { label: string; onMove: (dx: number, dy: number
   );
 }
 
+/** Nudges for a bed's sleeper: half a cell along the grid axes (`PAD`), or a pixel on screen (`FINE`). */
+function SleeperPad({ fine, onNudge }: { fine: boolean; onNudge: (dx: number, dy: number) => void }) {
+  const glyphs = fine ? FINE : PAD;
+  const label = fine ? "Move the sleeper 1px" : "Move the sleeper half a cell";
+  return (
+    <div className="editor-pad" role="group" aria-label={label}>
+      {(Object.keys(glyphs) as (keyof typeof glyphs)[]).map((k) => {
+        const step = sleeperStep(k, fine)!;
+        return (
+          <button key={k} type="button" aria-label={`${label}: ${step.x} across, ${step.y} down`} onClick={() => onNudge(step.x, step.y)}>
+            {glyphs[k]}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
 export function Inspector({
   map,
   sel,
   tile,
   room,
   equipment,
+  sleeper,
   stack,
   focusRoom,
   planRooms,
@@ -47,6 +68,8 @@ export function Inspector({
   tile: TilePlacement | null;
   room: RoomLayout | null;
   equipment: PlacedEquipment | undefined;
+  /** The selected bed's sleeper offsets (`sleeperData`), when it has them. */
+  sleeper: ReturnType<typeof sleeperData>;
   /** Where the selection is in what was under the last click, when that was more than one thing. */
   stack: { at: number; of: number } | null;
   focusRoom: RoomLayout | undefined;
@@ -138,6 +161,30 @@ export function Inspector({
                 Delete
               </button>
             </div>
+          </section>
+        )}
+        {sel && equipment && EQUIPMENT_TYPES[equipment.type]?.bed && (
+          <section className="editor-component">
+            <h3>Sleeper</h3>
+            {sleeper ? (
+              <>
+                <dl>
+                  <dt>Data</dt>
+                  <dd>
+                    <code>{sleeper.data}</code>
+                  </dd>
+                  <dt>Offset</dt>
+                  <dd>
+                    {sleeper.x}, {sleeper.y} px
+                  </dd>
+                </dl>
+                <SleeperPad fine={false} onNudge={edit.nudgeSleeper} />
+                <SleeperPad fine onNudge={edit.nudgeSleeper} />
+                <p className="muted">Alt+arrows, Alt+Shift+arrows. Show › Sleepers in beds draws them.</p>
+              </>
+            ) : (
+              <p className="muted">No offsets: the game lays the sleeper in the middle of the footprint.</p>
+            )}
           </section>
         )}
         {focusRoom && (

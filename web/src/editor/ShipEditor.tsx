@@ -17,8 +17,9 @@ import { Menubar } from "@base-ui/react/menubar";
 import { lazy, type PointerEvent, Suspense, useCallback, useEffect, useMemo, useRef, useState, type WheelEvent } from "react";
 import { placedEquipment, type RoomId, type ShipArt, type ShipLayout, type ShipMap } from "@mush2/shared";
 import { opaqueAt, preloadImage } from "../iso/hitMask.ts";
-import { bounds, gridToPx, type PlacedSprite } from "../iso/placement.ts";
-import { describeScene, type FrameTarget, type FrameUpdate, imageOf, type Scene } from "../iso/scene.ts";
+import { lyingFrame } from "../art/assets.ts";
+import { bounds, gridToPx, lyingPose, type PlacedSprite } from "../iso/placement.ts";
+import { describeScene, type FrameTarget, type FrameUpdate, imageOf, LYING_SIZE, type Scene, type SceneImage } from "../iso/scene.ts";
 import { loadShip } from "../iso/shipLayout.ts";
 import {
   ARROWS,
@@ -28,10 +29,13 @@ import {
   moveRoom,
   moveTile,
   moveToRoom,
+  nudgeSleeper,
   placeTile,
   roomForCell,
   setDoorTarget,
   rotateSofa,
+  sleeperData,
+  sleeperStep,
   stepFrame,
   type TileAt,
   tileAt,
@@ -56,6 +60,7 @@ import {
   type ShipView,
   shipCells,
   shipScene,
+  sleeperOf,
   tileOf,
 } from "./shipScene.ts";
 import "./editor.css";
@@ -69,6 +74,9 @@ const HISTORY = 300;
 const NOUN = { error: "error", warning: "warning", info: "note" } as const;
 const STILL = () => ({ x: 0, y: 0 });
 const NOBODY = { people: new Map(), walkers: new Map(), seats: new Map(), corpses: [] };
+/** Who lies in every bed when the editor shows sleepers. */
+const SLEEPER_FRAME = lyingFrame("frieda")!;
+const SLEEPER_IMAGE: SceneImage = { url: SLEEPER_FRAME.url, frame: SLEEPER_FRAME, keyed: false };
 
 export default function ShipEditor() {
   const [ship, setShip] = useState<{ art: ShipArt; map: ShipMap }>();
@@ -161,7 +169,16 @@ function Editor({ art, initial }: { art: ShipArt; initial: ShipMap }) {
 
   const layout: ShipLayout = useMemo(() => ({ ...art, ...map }), [art, map]);
   const [view, setView] = useState<ShipView>({ from: null });
-  const placed = useMemo(() => shipScene(layout, view), [layout, view]);
+  // Sleepers lie mirrored where their bed says so, as in the game (IsoRoom); hit-testing mirrors with them.
+  const placed = useMemo(
+    () =>
+      shipScene(layout, view, LYING_SIZE).map((s) => {
+        const bed = sleeperOf(s.key);
+        const room = bed && layout.rooms.find((r) => r.id === bed.room);
+        return room && lyingPose(layout, room, bed.index)?.flip ? { ...s, flipX: true } : s;
+      }),
+    [layout, view],
+  );
   const box = useMemo(() => bounds(shipScene({ ...art, ...initial })), [art, initial]);
   const outlines = useMemo(() => roomOutlines(layout), [layout]);
   const cells = useMemo(() => shipCells(layout), [layout]);
@@ -173,15 +190,17 @@ function Editor({ art, initial }: { art: ShipArt; initial: ShipMap }) {
   const [hidden, setHidden] = useState<ReadonlySet<Layer>>(new Set());
   const [showGrid, setShowGrid] = useState(true);
   const [showRooms, setShowRooms] = useState(true);
+  const [showSleepers, setShowSleepers] = useState(true);
   // Rooms and rooms' layers hidden from the hierarchy (hideKey), on top of the layers hidden for all.
   const [hiddenIn, setHiddenIn] = useState<ReadonlySet<string>>(new Set());
   const visible = useMemo(
     () =>
       placed.filter((s) => {
+        if (s.kind === "actor") return showSleepers && !hiddenIn.has(s.room);
         const l = layerOf(s.kind)!;
         return !hidden.has(l) && !hiddenIn.has(s.room) && !hiddenIn.has(hideKey(s.room, l));
       }),
-    [placed, hidden, hiddenIn],
+    [placed, hidden, hiddenIn, showSleepers],
   );
   const toggleIn = (key: string) => {
     const next = new Set(hiddenIn);
@@ -204,6 +223,12 @@ function Editor({ art, initial }: { art: ShipArt; initial: ShipMap }) {
     const tileOfKey = new Map<string, TileAt>();
     const keyOfTile = new Map<string, string>();
     for (const s of placed) {
+      // Clicking a sleeper picks their bed.
+      const bed = sleeperOf(s.key);
+      if (bed) {
+        tileOfKey.set(s.key, bed);
+        continue;
+      }
       const ref = tileOf(layout, s);
       if (!ref) continue;
       tileOfKey.set(s.key, { room: ref.room.id, index: ref.index });
@@ -228,16 +253,22 @@ function Editor({ art, initial }: { art: ShipArt; initial: ShipMap }) {
       hoverKey: null,
       ownCells: new Set(),
     });
-    return { ...d, sprites: d.sprites.map(({ effect: _, ...s }) => s) };
+    // Sleepers are nobody in particular: drawn in the lying frame, mirrored with their bed, as tiles.
+    const sprites = d.sprites.map(({ effect: _, ...s }) => {
+      const p = sleeperOf(s.key) && visible.find((v) => v.key === s.key);
+      return p ? { ...s, image: SLEEPER_IMAGE, flipX: p.flipX || undefined, role: "tile" as const, shadow: "lying" as const } : s;
+    });
+    return { ...d, sprites, outlines: d.outlines.filter((o) => !sleeperOf(o.key)) };
   }, [imageInput, visible, box]);
+  const imageFor = useCallback((s: PlacedSprite) => (sleeperOf(s.key) ? SLEEPER_IMAGE : imageOf(s, imageInput)), [imageInput]);
 
   // Load every atlas, so hit-testing reads drawn pixels from the first hover.
   useEffect(() => {
     for (const s of placed) {
-      const url = imageOf(s, imageInput).url;
+      const url = imageFor(s).url;
       if (url) preloadImage(url);
     }
-  }, [placed, imageInput]);
+  }, [placed, imageFor]);
 
   const [hover, setHover] = useState<{ key: string | undefined; cell: { x: number; y: number } }>();
   const scene: Scene = useMemo(() => {
@@ -279,7 +310,7 @@ function Editor({ art, initial }: { art: ShipArt; initial: ShipMap }) {
     return { x: (clientX - rect.left) / zoom - camera.x + box.minX, y: (clientY - rect.top) / zoom - camera.y + box.minY };
   };
   const opaque = (s: PlacedSprite, px: number, py: number) => {
-    const { url, frame, keyed } = imageOf(s, imageInput);
+    const { url, frame, keyed } = imageFor(s);
     return !url || opaqueAt(url, frame, px, py, keyed);
   };
   const hoverAt = (clientX: number, clientY: number) => {
@@ -358,6 +389,7 @@ function Editor({ art, initial }: { art: ShipArt; initial: ShipMap }) {
     },
     doorTo: (room: string) => sel && commit(setDoorTarget(map, sel, room)),
     moveRoom: (dx: number, dy: number) => roomSel && commit(moveRoom(map, roomSel, dx, dy)),
+    nudgeSleeper: (dx: number, dy: number) => sel && sleeperData(map, sel) && commit(nudgeSleeper(map, sel, dx, dy)),
   };
   const cycle = (step: number) => {
     const { keys, at } = stack.current;
@@ -411,6 +443,10 @@ function Editor({ art, initial }: { art: ShipArt; initial: ShipMap }) {
     else if (mod && k.toLowerCase() === "z") e.shiftKey ? redo() : undo();
     else if (mod && k.toLowerCase() === "y") redo();
     else if (mod && k.toLowerCase() === "d") edit.duplicate();
+    else if (arrow && e.altKey && sel) {
+      const step = sleeperStep(k, e.shiftKey)!;
+      edit.nudgeSleeper(step.x, step.y);
+    }
     else if (arrow && e.shiftKey && roomSel) edit.moveRoom(arrow.dx, arrow.dy);
     else if (arrow && sel) edit.move(arrow.dx, arrow.dy);
     else if ((k === "Delete" || k === "Backspace") && sel) edit.remove();
@@ -550,6 +586,10 @@ function Editor({ art, initial }: { art: ShipArt; initial: ShipMap }) {
             <dd>move the selection a cell: ↑ up-right, → down-right, ↓ down-left, ← up-left</dd>
             <dt>Shift+arrows</dt>
             <dd>move the selected tile's room (or the room picked in the hierarchy) a cell</dd>
+            <dt>Alt+arrows</dt>
+            <dd>move the selected bed's sleeper half a cell the arrow's way (2px across, 1px down or up)</dd>
+            <dt>Alt+Shift+arrows</dt>
+            <dd>move the selected bed's sleeper 1px up, right, down or left</dd>
             <dt>Tab, Shift+Tab</dt>
             <dd>the next or previous thing under the last click</dd>
             <dt>F</dt>
@@ -593,6 +633,7 @@ function Editor({ art, initial }: { art: ShipArt; initial: ShipMap }) {
               tile={selTile}
               room={selRoom}
               equipment={selEquipment || undefined}
+              sleeper={sel ? sleeperData(map, sel) : undefined}
               stack={stack.current.keys.length > 1 ? { at: stack.current.at, of: stack.current.keys.length } : null}
               focusRoom={focusRoom}
               planRooms={planRooms}
@@ -639,6 +680,9 @@ function Editor({ art, initial }: { art: ShipArt; initial: ShipMap }) {
               </Check>
               <Check checked={showRooms} onChange={setShowRooms}>
                 Room outlines
+              </Check>
+              <Check checked={showSleepers} onChange={setShowSleepers}>
+                Sleepers in beds
               </Check>
               {hiddenIn.size > 0 && (
                 <>

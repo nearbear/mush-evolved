@@ -1078,7 +1078,7 @@
       "equipment": [
         {"id":"SURGERY_POD","tile":"surgery_console","dir":"left","module":true},
         {"id":"DRUG_DISP","tile":"drug_dispenser","dir":"right","module":true},
-        {"id":"BED","tile":"sick_couch","dir":"down","module":true,"key":"sick_couch","data":"flipped;ofsx_-18;ofsy_-2"},
+        {"id":"BED","tile":"sick_couch","dir":"down","module":true,"key":"sick_couch","data":"flipped;ofsx_-18;ofsy_2"},
         {"id":"NERON_CORE","tile":"auxiliary_terminal_neron","dir":"down","module":true,"key":"neron_sick"},
         {"id":"SOFA","tile":"sofaReverse"}
       ],

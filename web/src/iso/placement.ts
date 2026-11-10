@@ -54,6 +54,8 @@ export interface Actor {
   height: number;
   /** Lies on the furniture it overlaps (a bed), so it is drawn over it. */
   onTop?: boolean;
+  /** Extra screen offset in pixels, past the cell's (a bed's `ofsx`/`ofsy`, `lyingPose`). */
+  shift?: { x: number; y: number };
 }
 
 /** Draw offset the original client used for 32x48 crew sprites (Data.hx regChar). */
@@ -299,8 +301,8 @@ function actorSortables(layout: ShipLayout, { room, dx, dy }: SceneRooms[number]
       room: room.id,
       kind: "actor",
       cell: { x, y },
-      left: anchor.x + ACTOR_OFFSET.x - a.width / 2,
-      top: anchor.y + ACTOR_OFFSET.y - a.height / 2 - lift,
+      left: anchor.x + ACTOR_OFFSET.x - a.width / 2 + (a.shift?.x ?? 0),
+      top: anchor.y + ACTOR_OFFSET.y - a.height / 2 - lift + (a.shift?.y ?? 0),
       width: a.width,
       height: a.height,
       slice: "",
@@ -728,6 +730,25 @@ export function terminalSpot(
   if (seat && t && cells.length > 0) return { cell: { x: seat.x, y: seat.y }, chair: layout.slices[t.slice]?.dir ?? "" };
   const cell = standSpot(layout, room, placed.tile, cells);
   return cell && { cell };
+}
+
+/**
+ * Where someone lying in the bed drawn by tile `tile` goes, as the original did (HumanNPC.layDown): on the bed tile's
+ * cell, shifted by its binding's `ofsx`/`ofsy` pixels, mirrored when the binding says `flipped`. A bed with no such data
+ * (a built sofa) has them in the middle of its footprint, mirrored to run along it. Display only.
+ */
+export function lyingPose(layout: ShipLayout, room: RoomLayout, tile: number): { cell: { x: number; y: number }; shift?: { x: number; y: number }; flip: boolean } | undefined {
+  const t = room.tiles[tile];
+  if (!t) return undefined;
+  const placed = placedEquipment(room).find((e) => e.tile === tile);
+  const data = placed && room.equipment.find((b) => `${room.id}:${b.key ?? b.id}` === placed.id)?.data;
+  if (data) {
+    const parts = data.split(";");
+    const num = (name: string) => Number(parts.find((p) => p.startsWith(`${name}_`))?.split("_")[1] ?? 0) || 0;
+    return { cell: { x: t.x, y: t.y }, shift: { x: num("ofsx"), y: num("ofsy") }, flip: parts.includes("flipped") };
+  }
+  const [w, h] = layout.slices[t.slice]?.footprint ?? [1, 1];
+  return { cell: { x: t.x - Math.floor((w - 1) / 2), y: t.y - Math.floor((h - 1) / 2) }, flip: w > h };
 }
 
 /**
