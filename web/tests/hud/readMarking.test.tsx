@@ -37,7 +37,7 @@ import "../../src/i18n/index.ts";
 import { ChatReadProvider, createChatReadStore, type ChatReadStore } from "../../src/chatRead.ts";
 import { MessageEntry, Thread } from "../../src/hud/Thread.tsx";
 import { ITrackie } from "../../src/hud/ITrackie.tsx";
-import { sampleState, sampleView, say } from "../../src/designKit/sampleView.ts";
+import { ended, sampleState, sampleView, say } from "../../src/designKit/sampleView.ts";
 
 /** An in-memory localStorage. */
 function memoryStorage() {
@@ -291,5 +291,32 @@ describe("Mark all read", () => {
     renderITrackie(sampleView(say(sampleState(), "global", "hello", "p1")), false);
     await user.click(screen.getByRole("tab", { name: /global/i }));
     expect(markRead()).toBeNull();
+  });
+});
+
+describe("no unread badges in a replay or an ended game (#400)", () => {
+  const badges = () => document.querySelectorAll(".tab-badge, .unread-chip");
+  const unreadView = () => {
+    let state = sampleState();
+    state = say(say(state, "global", "hello", "p1"), "botany", "seeds", "p1");
+    return state;
+  };
+  const renderITrackie = (view: PlayerView, provider: boolean) =>
+    render(withStore(<ITrackie view={view} roomLogRequest={0} onChat={() => {}} onCreateThread={() => {}} onToggle={() => {}} quiet />, provider));
+
+  it("shows badges for unread in a running game (the control)", () => {
+    renderITrackie(sampleView(unreadView()), true);
+    expect(badges().length).toBeGreaterThan(0);
+  });
+
+  it("shows none in a replay (no read store)", () => {
+    renderITrackie(sampleView(unreadView()), false);
+    expect(badges()).toHaveLength(0);
+  });
+
+  it("shows none once the game has ended, with nothing read", () => {
+    renderITrackie(sampleView(ended(unreadView(), "humans", "eden")), true);
+    expect(badges()).toHaveLength(0);
+    expect(document.querySelector("button.mark-read")).toBeNull();
   });
 });

@@ -670,9 +670,9 @@
       "chip_one": "{{count}} non lu",
       "chip_other": "{{count}} non lus",
       "chip_many": "{{count}} non lus",
-      "featureLabel_one": "{{name}}, {{count}} non lu dans les autres fonctionnalités",
-      "featureLabel_other": "{{name}}, {{count}} non lus dans les autres fonctionnalités",
-      "featureLabel_many": "{{name}}, {{count}} non lus dans les autres fonctionnalités"
+      "featureLabel_one": "{{name}}, {{count}} non lu dans les autres fonctions",
+      "featureLabel_other": "{{name}}, {{count}} non lus dans les autres fonctions",
+      "featureLabel_many": "{{name}}, {{count}} non lus dans les autres fonctions"
     },
     "sharedReports": {
       "mine": "Vos expéditions",

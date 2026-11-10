@@ -57,7 +57,33 @@ As built: the cache is a context (`web/src/chatPages.tsx`) owned by `GameScreen`
 
 Decisions into `docs/rules/rules-design.md` and the code map; a headless sim showing the view's size stays flat as chat grows (#281/#338); one `ai-workflow.md` entry.
 
-## Read state: divider, unread bar and chips (#400)
+## Read state (#400)
+
+Decided with the owner on 2026-11-08 (no game rule is involved, so they live here, not in `rules-design.md`):
+
+- **Model.** One read count per channel, a high-water mark: reading a message reads everything before it in that
+  channel. Unread = `chatCounts[c] − read[c]`, right past the ~100 messages a view carries.
+- **Where it lives.** Both: the client writes `localStorage` at once (keyed by room and a hash of the seat token,
+  never the token) and sends batches at most every 5 s and on hide, close and reconnect; on load it takes the higher of
+  local and server counts. The server keeps it in Durable Object storage under `chatRead:<seat>`, not in `GameState`:
+  not an input, never recorded or replayed, no view changes. It is sent only to that seat's connections, filtered to
+  the body's current `readChannels`; refused, rate-limited and nothing-new updates get no reply, alike.
+- **What counts as read.** A message getting focus (keyboard, click or tap), Mark all read (per tab, in the iTrackie
+  title row), and posting (which replaces the old "own messages are never new" check). A message arriving while its
+  channel is on screen on its latest page, in a visible focused window, counts as read (Discord's behaviour). Hover,
+  scrolling and being on screen never mark history.
+- **Keyboard.** One tab stop per feed, with ArrowUp/Down, Home and End between messages.
+- **History that becomes readable** (an iTrackie picked up, an invite, becoming Mush, dying, a Transfer) is unread: a
+  channel with no count starts at 0.
+- **Who.** Bots have no read state; the dead do, over their `readChannels`. Read state follows the mind (the seat)
+  through a Transfer, which is also the leak-safe choice (following the body would reveal how far its previous
+  occupant had read).
+- **Read vs arrived.** "Read" drives the tab badges (the active tab shows its own), the Mush tab, the page bar's »,
+  the divider, the chips and the count in the announcer's "N new messages in …". "Arrived since this client
+  connected" still drives speech bubbles and when the announcer speaks, so a reload doesn't replay old bubbles.
+- **Replay and ended games** show no unread: a replay has no read store, and an ended game has no readable channels.
+
+### Divider, unread bar and chips
 
 Decided with the owner on 2026-11-09:
 
