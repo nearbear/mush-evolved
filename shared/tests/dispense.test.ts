@@ -4,7 +4,7 @@ import { ITEM_TYPES } from "../src/items.ts";
 import { parseGameMessage } from "../src/protocol.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";
 import type { Action, GameState, PlayerId } from "../src/types.ts";
-import { makeSeats, mustApply, nextCycle, offered } from "./support.ts";
+import { makeSeats, mustApply, nextCycle, offered, withoutDrugs } from "./support.ts";
 
 const seats = makeSeats(3, "others");
 const MACHINE = "REFECTORY:COFFEE_DISPENSER";
@@ -12,7 +12,7 @@ const pull: Action = { type: "dispense", equipment: MACHINE };
 
 /** Everyone in the refectory with an empty inventory. */
 function refectory(): GameState {
-  const state = createGame(seats, { ...DEFAULT_CONFIG, startInventory: [], startItems: [] }, 7);
+  const state = withoutDrugs(createGame(seats, { ...DEFAULT_CONFIG, startInventory: [], startItems: [] }, 7));
   for (const p of state.players) p.room = "REFECTORY";
   return state;
 }

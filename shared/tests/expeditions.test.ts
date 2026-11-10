@@ -28,13 +28,13 @@ const planet = (tags: Planet["sectors"][number]["tag"][]): Planet => ({
  * Six seats: p0 (a Pilot), p1, p2 and p3 in the Icarus Bay, p4 and p5 in the laboratory. p5 found the planet the ship
  * orbits. `events` replaces the event tables (so a test draws the event it needs), `tags` the planet's sectors.
  */
-function game(opts: { events?: Record<string, ExpeditionEventRule[]>; tags?: Planet["sectors"][number]["tag"][]; config?: Partial<GameConfig["expedition"]>; timed?: boolean; suits?: boolean } = {}): GameState {
+function game(opts: { events?: Record<string, ExpeditionEventRule[]>; tags?: Planet["sectors"][number]["tag"][]; config?: Partial<GameConfig["expedition"]>; timed?: boolean; suits?: boolean; seed?: number } = {}): GameState {
   const config = noIncidents(noHunters(structuredClone(DEFAULT_CONFIG)));
   config.startItems = [];
   // Phase 1's tests resolve at takeoff, as single player does; phase 2's are timed.
   config.instantExpeditions = !opts.timed;
   config.expedition = { ...config.expedition, ...opts.config, events: { ...config.expedition.events, ...opts.events } };
-  const s = createGame(makeSeats(6), config, 11);
+  const s = createGame(makeSeats(6), config, opts.seed ?? 11);
   for (const p of s.players) p.room = ["p0", "p1", "p2", "p3"].includes(p.id) ? ICARUS : "LABORATORY";
   player(s, "p0").skills.push("pilot");
   s.planets.p5 = [planet(opts.tags ?? ["OXYGEN", "FOREST", "DESERT"])];
@@ -1387,7 +1387,7 @@ describe("expeditions, phase 5: hold extension, patrol-ship landings, no droppin
   describe("a lost pilot", () => {
     /** The pilot got lost on the first sector: the expedition is over and the Longane waits on the planet. */
     function lostPilot(): GameState {
-      const s = flying({ tags: ["COLD", "COLD"], events: { ...only({ kind: "lost", weight: 1 }), LOST: [{ kind: "found", weight: 1 }] } });
+      const s = flying({ tags: ["COLD", "COLD"], events: { ...only({ kind: "lost", weight: 1 }), LOST: [{ kind: "found", weight: 1 }] }, seed: 17 });
       return runOut(must(applyAction(s, "p0", landOn)));
     }
 
