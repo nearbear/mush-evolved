@@ -2,8 +2,8 @@
 // it is unit tested. Cells are on the ship plan (`RoomLayout.at`), as ship-check and the tests print
 // them; pixels are placement's (`gridToPx`), before the scene box is taken off.
 
-import type { RoomLayout, ShipLayout, TileKind, TilePlacement } from "@mush2/shared";
-import { gridToPx, neighborRooms, type PlacedSprite, placeScene } from "../iso/placement.ts";
+import { EQUIPMENT_TYPES, placedEquipment, type RoomLayout, type ShipLayout, type TileKind, type TilePlacement } from "@mush2/shared";
+import { type Actor, gridToPx, lyingPose, neighborRooms, type PlacedSprite, placeScene } from "../iso/placement.ts";
 
 /** What the layer toggles show or hide, by tile kind. */
 export const LAYERS = ["ground", "wall", "door", "prop", "entity"] as const satisfies readonly TileKind[];
@@ -20,13 +20,34 @@ export type ShipView = { from: null } | { from: string; depth: 1 | 2 };
  * out the same. A view from a room draws that room and its neighbours out to the depth, as the game
  * does there (without the fog). Rooms off the plan (the patrol ships, the planet) aren't on it.
  */
-export function shipScene(layout: ShipLayout, view: ShipView = { from: null }): PlacedSprite[] {
+export function shipScene(layout: ShipLayout, view: ShipView = { from: null }, sleeperSize?: { width: number; height: number }): PlacedSprite[] {
   const placed = layout.rooms.filter((r): r is RoomLayout & { at: { x: number; y: number } } => !!r.at);
   const root = placed.find((r) => r.id === (view.from ?? "CORRIDOR_A")) ?? placed[0];
   if (!root) return [];
   const order: RoomLayout[] = [root, ...neighborRooms(layout, root, view.from ? view.depth : "all").map((n) => n.room)];
   if (!view.from) for (const r of placed) if (!order.includes(r)) order.push(r);
-  return placeScene(layout, order.map((room) => ({ room, dx: room.at!.x, dy: room.at!.y, actors: [] })));
+  return placeScene(layout, order.map((room) => ({ room, dx: room.at!.x, dy: room.at!.y, actors: sleeperSize ? sleepers(layout, room, sleeperSize) : [] })));
+}
+
+const SLEEPER = "bed:";
+
+/**
+ * Someone lying in each of the room's beds, placed as the game places them (`lyingPose`), so the editor
+ * shows where a sleeper goes. `sleeperSize` is the lying frame's (`LYING_SIZE`); the sprite key names the
+ * bed's tile (`sleeperOf`).
+ */
+export function sleepers(layout: ShipLayout, room: RoomLayout, size: { width: number; height: number }): Actor[] {
+  return placedEquipment(room).flatMap((e) => {
+    const pose = EQUIPMENT_TYPES[e.type]?.bed ? lyingPose(layout, room, e.tile) : undefined;
+    return pose ? [{ id: `${SLEEPER}${room.id}#${e.tile}`, cell: pose.cell, ...size, onTop: true, ...(pose.shift && { shift: pose.shift }) }] : [];
+  });
+}
+
+/** The bed a sleeper's sprite lies in, from its key; undefined for any other sprite. */
+export function sleeperOf(key: string): { room: string; index: number } | undefined {
+  if (!key.startsWith(`a:${SLEEPER}`)) return undefined;
+  const [room, index] = key.slice(2 + SLEEPER.length).split("#");
+  return room && index ? { room, index: Number(index) } : undefined;
 }
 
 /** Every sprite with an opaque pixel at (x, y), front first: what Tab cycles through. */

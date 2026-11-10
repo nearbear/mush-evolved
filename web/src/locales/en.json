@@ -32,6 +32,7 @@
     "hunters": "Hunters",
     "orbit": "Orbiting {{name}}",
     "expedition": "Expedition to {{planet}}: {{names}}, back in {{time}}",
+    "expeditionShip": "Expedition to {{planet}} in {{ship}}: {{names}}, back in {{time}}",
     "lost": "{{name}} is lost on {{planet}}"
   },
   "peek": {
@@ -59,6 +60,14 @@
       "mp": "Each move to another room costs {{mpPerMove}} MP. Walking about the room is free.\nMP is kept from cycle to cycle, up to {{mpCap}}.\nWith no MP left, a move converts {{apPerConversion}} AP into {{mpPerConversion}} MP.",
       "hp": "Everyone heals 1 HP at the start of each day. At 0 HP you die.\nHeal restores 3 HP: carry a Medikit, or use the Medlab without one (2 AP on someone else, 3 AP on yourself).\nCombat actions deplete the target's HP.\nInjuries while building, dismantling or repairing cost HP.\nA hungry human (24 cycles after their last meal wears off) loses 1 HP each cycle until they eat.\nA Mush loses 4 HP each time they shower.",
       "morale": "Everyone loses 2 morale at the start of each day (1 while Chun is alive).\nA Shrink's Comfort gives 2 morale. Lying down in a room with a Shrink gives 1 morale each cycle.\nA Leader's Fiery speech gives everyone else in the room 2 morale.\nEating an Uncooked ration costs 1 morale."
+    },
+    "satiety": "Satiety",
+    "satietyValue": "Satiety: {{value}}",
+    "satietyInfo": {
+      "emptyFor_one": "Your stomach has been empty for {{count}} cycle.",
+      "emptyFor_other": "Your stomach has been empty for {{count}} cycles.",
+      "fed": "You ate recently. Satiety drops each cycle.",
+      "mush": "Mush never get hungry."
     }
   },
   "settings": {
@@ -377,6 +386,7 @@
     "fungalCuisine": "Fungal cuisine",
     "takeoff": "Take off",
     "icarus_takeoff": "Launch an expedition",
+    "land_on_planet": "Land on the planet",
     "u_turn": "Turn back to the Daedalus",
     "sabotage_expedition": "Sabotage the expedition",
     "land": "Land",
@@ -650,6 +660,17 @@
       "latestNew_other": "Latest page ({{count}} new)",
       "loading": "Loading…"
     },
+    "unread": {
+      "divider": "New messages",
+      "bar_one": "{{count}} new message",
+      "bar_other": "{{count}} new messages",
+      "jump": "Jump",
+      "jumpLabel": "Jump to the first new message",
+      "chip_one": "{{count}} unread",
+      "chip_other": "{{count}} unread",
+      "featureLabel_one": "{{name}}, {{count}} unread in other features",
+      "featureLabel_other": "{{name}}, {{count}} unread in other features"
+    },
     "sharedReports": {
       "mine": "Your expeditions",
       "isShared": "Shared",
@@ -915,13 +936,18 @@
     "patrolLanded": "{{name}} landed {{room}}.",
     "patrolRenovated": "{{name}} renovated {{room}}.",
     "patrolRenovateFailed": "You failed to renovate the ship.",
-    "patrolRough": "Rough manoeuvre: the hull took {{hull}} damage, the ship lost {{armor}} armor and you lost {{hp}} HP.",
+    "patrolRough": "Rough maneuver: the hull took {{hull}} damage, the ship lost {{armor}} armor and you lost {{hp}} HP.",
     "patrolKill": "You shot down a hunter.",
     "hunterHitPatrol": "A hunter hit {{room}}: {{armor}} armor lost.",
     "patrolDestroyed": "NERON: {{room}} was shot down by hunters.",
     "patrolLost": "NERON: {{room}} was left behind when the Daedalus jumped, and is lost.",
     "icarusLost": "NERON: the Icarus was left behind on {{planet}} when the Daedalus jumped, with its whole crew. It is lost.",
     "crewLost": "NERON: {{name}} is lost on {{planet}}.",
+    "patrolPlanetLanding": "{{name}} landed {{room}} on {{planet}}.",
+    "patrolNoSpacesuit": "You have no spacesuit, and {{planet}} has no oxygen: you can't land. {{room}} heads back to its bay.",
+    "patrolRecalled": "NERON: Magnetic return brought {{room}} back from {{planet}} when the Daedalus jumped.",
+    "patrolLeftOnPlanet": "NERON: {{room}} was left on the planet without its pilot, and is lost.",
+    "patrolRecovered": "{{room}} is back in its bay.",
     "icarusRecalled": "NERON: Magnetic return brought the Icarus back from {{planet}} when the Daedalus jumped.",
     "patrolUnloaded_one": "{{name}} unloaded {{count}} item from the ship.",
     "patrolUnloaded_other": "{{name}} unloaded {{count}} items from the ship.",
@@ -1459,9 +1485,9 @@
       "APERO_KITCHEN": "SNC kitchen"
     },
     "desc": {
-      "PATROL_SHIP_LAUNCHER": "Takeoff manoeuvres cost less action points.",
+      "PATROL_SHIP_LAUNCHER": "Takeoff maneuvers cost less action points.",
       "PATROLSHIP_BLASTER_GUN": "Raises the firepower of patrol ships by one point.",
-      "BAY_DOOR_XXL": "Takeoff and landing manoeuvres are much easier.",
+      "BAY_DOOR_XXL": "Takeoff and landing maneuvers are much easier.",
       "PATROLSHIP_EXTRA_AMMO": "Patrol ships have 6 extra charges.",
       "TURRET_EXTRA_FIRERATE": "Turrets recharge twice as fast.",
       "FIRE_SENSOR": "Fires are reported on your personal modules.",
@@ -1658,6 +1684,7 @@
     "landing": "Landing",
     "uTurnHeading": "Turned back",
     "lootOnFloor": "Everything you found is on the floor of the Icarus Bay.",
+    "lootOnFloorShip": "Everything you found is on the floor of {{bay}}.",
     "events": {
       "nothing": "Nothing to report.",
       "fatigue": "The going is hard: the crew is worn out.",
@@ -1702,11 +1729,16 @@
       "unknown": "a creature"
     },
     "aboard": "In the Icarus, exploring {{planet}}",
+    "aboardShip": "In {{ship}}, exploring {{planet}}",
     "back": "Back in {{time}}",
     "underWay": "The expedition is still under way.",
     "lootAboard": "Everything found so far is on the Icarus's floor.",
+    "lootAboardShip": "Everything found so far is on the floor of {{ship}}.",
     "icarusAway": "The Icarus is away on an expedition.",
-    "lost": { "heading": "Lost on {{planet}}", "text": "You lost the crew. An expedition to this planet may find you; if the Daedalus leaves it, you die here." },
+    "lost": {
+      "heading": "Lost on {{planet}}",
+      "text": "You lost the crew. An expedition to this planet may find you; if the Daedalus leaves it, you die here."
+    },
     "share": "Share the report",
     "shareAgain": "Add to the shared report",
     "shareHint": "This text goes to the Expeditions feature for the whole crew. Change it as you like.",

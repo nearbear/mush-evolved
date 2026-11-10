@@ -6,9 +6,11 @@ import { useTranslation } from "react-i18next";
 import type { ChannelId, PlayerView, SharedPlanet, SharedPlanetId } from "@mush2/shared";
 import { useNames } from "../i18n/names.ts";
 import { Thread } from "./Thread.tsx";
+import { UnreadChip } from "./UnreadChip.tsx";
 
 export function SharedPlanets({
   view,
+  active = true,
   picked,
   onPick,
   showStale,
@@ -17,6 +19,8 @@ export function SharedPlanets({
   onToggle,
 }: {
   view: PlayerView;
+  /** This feature is on screen: the thread picked places its "New messages" divider (#400). */
+  active?: boolean;
   /**
    * The shared planet on screen (never a hidden one), or null for the general thread. Kept by the iTrackie, with
    * `showStale`, because it announces the thread on screen.
@@ -49,6 +53,7 @@ export function SharedPlanets({
             <li className="channel-slot">
               <button type="button" className="channel-slot-pick" aria-pressed={current === null} onClick={() => onPick(null)}>
                 {general}
+                <UnreadChip channel="astrophysics" total={view.chatCounts.astrophysics ?? 0} />
               </button>
             </li>
             {listed.map((e) => (
@@ -57,6 +62,7 @@ export function SharedPlanets({
                   {/* The first line only, to fit a row; who shared it and when head its thread. */}
                   <span className="shared-planet-name">{firstLine(e)}</span>
                   {e.stale && <span className="shared-planet-stale">{t("itrackie.sharedPlanets.stale")}</span>}
+                  <UnreadChip channel={e.id} total={view.chatCounts[e.id] ?? 0} />
                 </button>
               </li>
             ))}
@@ -71,7 +77,7 @@ export function SharedPlanets({
       )}
       {/* One block per thread, hidden with CSS, so each keeps its own draft. */}
       <div className="feature" hidden={current !== null}>
-        <Thread view={view} channel="astrophysics" placeholder={t("itrackie.featurePlaceholder", { name })} onSend={(text) => onChat("astrophysics", text)} onToggle={onToggle} />
+        <Thread view={view} channel="astrophysics" placeholder={t("itrackie.featurePlaceholder", { name })} onSend={(text) => onChat("astrophysics", text)} onToggle={onToggle} active={active && current === null} />
       </div>
       {view.sharedPlanets.map((e) => (
         <div key={e.id} className="feature" hidden={e.id !== current}>
@@ -81,6 +87,7 @@ export function SharedPlanets({
             placeholder={t("itrackie.sharedPlanets.placeholder")}
             onSend={(text) => onChat(e.id, text)}
             onToggle={onToggle}
+            active={active && e.id === current}
             headKey={[e, byLine(e)]}
             head={
               // Plain text, never markdown: it is shown as the player wrote it.

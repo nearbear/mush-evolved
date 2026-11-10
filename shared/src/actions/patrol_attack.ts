@@ -2,7 +2,7 @@ import { Action, IN_PRESELECTION, type ActionCost, type ActionVisibility, isStri
 import { patrolDamageBonus } from "../comms.ts";
 import { damageHunter } from "../hunters.ts";
 import { logPrivate } from "../log.ts";
-import { commandId, shipAboard, type PatrolShip } from "../patrol.ts";
+import { commandId, onPlanet, shipAboard, type PatrolShip } from "../patrol.ts";
 import { roll } from "../rng.ts";
 import type { GameState, PlayerState } from "../types.ts";
 
@@ -47,6 +47,7 @@ export class PatrolAttackAction extends Action<PatrolAttackActionData> {
     if (state.preselection) return IN_PRESELECTION;
     const ship = shipAboard(player);
     if (!ship || ship.kind === "pasiphae" || commandId(ship) !== target.equipment) return "cant_shoot";
+    if (onPlanet(state, ship)) return "on_planet";
     if (!state.hunters.list.some((hunter) => hunter.id === target.hunter)) return "no_such_hunter";
     if (state.patrolShips[ship.id]!.charges === 0) return "no_charges";
     return null;
@@ -68,7 +69,7 @@ export class PatrolAttackAction extends Action<PatrolAttackActionData> {
 /** The ship the player flies, if it can shoot and has a charge left. */
 function armedShip(state: Readonly<GameState>, player: Readonly<PlayerState>): PatrolShip | undefined {
   const ship = shipAboard(player);
-  return ship && ship.kind !== "pasiphae" && state.patrolShips[ship.id]!.charges > 0 ? ship : undefined;
+  return ship && ship.kind !== "pasiphae" && !onPlanet(state, ship) && state.patrolShips[ship.id]!.charges > 0 ? ship : undefined;
 }
 
 function spendCharge(state: GameState, player: PlayerState): void {

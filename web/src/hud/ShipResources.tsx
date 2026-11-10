@@ -71,5 +71,9 @@ function ExpeditionAway({ expedition }: { expedition: NonNullable<PlayerView["ex
   const names = useNames();
   const time = useCountdown(expedition.returnAt);
   const crew = new Intl.ListFormat(i18n.language, { type: "conjunction" }).format(expedition.crew.map((c) => names.characterGiven(c)));
-  return <li className="ship-orbit">{t("shipResources.expedition", { planet: expedition.planet, names: crew, time })}</li>;
+  const text =
+    expedition.ship !== undefined
+      ? t("shipResources.expeditionShip", { planet: expedition.planet, ship: names.room(expedition.ship), names: crew, time })
+      : t("shipResources.expedition", { planet: expedition.planet, names: crew, time });
+  return <li className="ship-orbit">{text}</li>;
 }

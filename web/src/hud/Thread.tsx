@@ -1,4 +1,4 @@
-import { Fragment, memo, useLayoutEffect, useRef, useState, useEffect, type FocusEvent, type KeyboardEvent, type MouseEvent } from "react";
+import { Fragment, memo, useCallback, useContext, useLayoutEffect, useRef, useState, useEffect, type FocusEvent, type KeyboardEvent, type MouseEvent, type RefObject } from "react";
 import { useTranslation } from "react-i18next";
 import { useNames } from "../i18n/names.ts";
 import { Menu } from "@base-ui/react/menu";
@@ -8,6 +8,7 @@ import { useMobile } from "../useMobile.ts";
 import { messageKey, useChatReadStore, useReadCount } from "../chatRead.ts";
 import { Markdown } from "./Markdown.tsx";
 import { firstUnreadRow, rowAfterKey } from "./feedKeys.ts";
+import { MarkAllContext, dividerAt, dividerPlacement } from "./unreadDivider.ts";
 import { CycleDivider } from "./CycleDivider.tsx";
 import { FeedEntry, CrewAvatar, InfoMarker } from "./FeedEntry.tsx";
 import { ChatInput } from "./ChatInput.tsx";
@@ -33,6 +34,11 @@ interface ThreadProps {
   head?: ReactNode;
   /** Everything `head` shows, as plain data: the memo compares this, never the `head` element itself. */
   headKey?: unknown;
+  /**
+   * The channel on screen: its tab, thread, feature or entry is the one picked. Opening it places the "New messages"
+   * divider (#400). Defaults to true for a thread shown on its own.
+   */
+  active?: boolean;
 }
 
 /**
@@ -46,6 +52,7 @@ function sameThread(a: ThreadProps, b: ThreadProps): boolean {
   return (
     a.channel === b.channel &&
     a.placeholder === b.placeholder &&
+    a.active === b.active &&
     !a.threadLinks === !b.threadLinks &&
     !a.head === !b.head &&
     jsonEqual(a.headKey, b.headKey) &&
@@ -61,7 +68,7 @@ function sameThread(a: ThreadProps, b: ThreadProps): boolean {
 }
 
 /** A chat channel: its messages, then an input. Read and post access come from the server. */
-export const Thread = memo(function Thread({ view, channel, placeholder, onSend, onToggle, threadLinks, head }: ThreadProps) {
+export const Thread = memo(function Thread({ view, channel, placeholder, onSend, onToggle, threadLinks, head, active = true }: ThreadProps) {
   const { t } = useTranslation();
   // The dead can read some channels but post in none.
   const readable = view.readChannels.includes(channel);
@@ -71,11 +78,18 @@ export const Thread = memo(function Thread({ view, channel, placeholder, onSend,
   const paging = usePaging(view, channel);
   const messages = paging.messages ?? live;
   const actions = useHandlers(onSend, onToggle, threadLinks);
-  const marking = useReadMarking(channel, view.chatCounts[channel] ?? 0, paging.latest, readable);
+  const total = view.chatCounts[channel] ?? 0;
+  // A click or arrow key on a message moves the divider past it; the divider hook is below, so the call goes through a ref.
+  const advance = useRef<(read: number) => void>(() => {});
+  const marking = useReadMarking(channel, total, paging.latest, readable, advance);
+  // After `useReadMarking`: its effect marks arrivals in view first, so this one sees them as read.
+  const divider = useUnreadDivider(channel, total, active && readable, live, view.you.id, paging);
+  advance.current = divider.advance;
   const rows = readable && messages.length > 0;
   return (
     <div className="thread">
       {readable && <PageBar paging={paging} />}
+      {divider.bar && <UnreadBar count={divider.count} onJump={divider.jump} />}
       <Scroller items={messages.length} scrollKey={paging.page} top={!paging.latest}>
         {/* One tab stop per feed; arrow keys move between messages (owner, 2026-11-08). The rows' own controls stay tabbable. */}
         <ol
@@ -96,6 +110,11 @@ export const Thread = memo(function Thread({ view, channel, placeholder, onSend,
             return (
               <Fragment key={messageKey(m)}>
                 {messages[i - 1]?.cycle !== m.cycle && <CycleDivider cycle={m.cycle} />}
+                {m.seq === divider.beforeSeq && (
+                  <li ref={divider.ref} className="unread-divider">
+                    {t("itrackie.unread.divider")}
+                  </li>
+                )}
                 <ChatRow
                   message={m}
                   character={senderOf(view, m)}
@@ -116,7 +135,14 @@ export const Thread = memo(function Thread({ view, channel, placeholder, onSend,
       {readable && !enabled ? (
         <p className="sub chat-read-only">{t("itrackie.readOnly")}</p>
       ) : (
-        <ChatInput enabled={enabled} placeholder={placeholder} onSend={actions.send} />
+        <ChatInput
+          enabled={enabled}
+          placeholder={placeholder}
+          onSend={(text) => {
+            divider.clear();
+            actions.send(text);
+          }}
+        />
       )}
     </div>
   );
@@ -161,7 +187,7 @@ type Paging = ReturnType<typeof usePaging>;
  * Keyboard: the feed is one tab stop. Tabbing in moves focus to the first unread message on the page (else the last);
  * ArrowUp/Down, Home and End move between messages.
  */
-function useReadMarking(channel: ChannelId, total: number, latest: boolean, readable: boolean) {
+function useReadMarking(channel: ChannelId, total: number, latest: boolean, readable: boolean, advance: RefObject<(read: number) => void>) {
   const store = useChatReadStore();
   const feed = useRef<HTMLOListElement>(null);
   // The count last rendered while readable: history that becomes readable (an iTrackie picked up) didn't arrive.
@@ -176,24 +202,34 @@ function useReadMarking(channel: ChannelId, total: number, latest: boolean, read
 
   const rowsOf = (ol: HTMLOListElement) => Array.from(ol.querySelectorAll<HTMLElement>(":scope > [data-seq]"));
   const seqOf = (row: HTMLElement) => Number(row.dataset.seq);
+  /** Marks the message `target` is in read up to it; returns the count read, or null when it isn't in a message. */
   const markRow = (target: EventTarget) => {
     const row = target instanceof Element ? target.closest<HTMLElement>("[data-seq]") : null;
     // Menus are portalled: their events bubble here through React but sit outside the feed in the DOM.
-    if (!row || !feed.current?.contains(row)) return;
+    if (!row || !feed.current?.contains(row)) return null;
     const seq = seqOf(row);
-    if (Number.isSafeInteger(seq)) store?.mark(channel, seq + 1);
+    if (!Number.isSafeInteger(seq)) return null;
+    store?.mark(channel, seq + 1);
+    return seq + 1;
   };
   return {
     feed,
     onFocus: (e: FocusEvent<HTMLOListElement>) => {
-      if (e.target !== e.currentTarget) return markRow(e.target);
+      if (e.target !== e.currentTarget) {
+        markRow(e.target);
+        return;
+      }
       // Only from the keyboard: a click on the feed's blank space isn't reading anything.
       if (!e.currentTarget.matches(":focus-visible")) return;
       const rows = rowsOf(e.currentTarget);
       rows[firstUnreadRow(rows.map(seqOf), store?.read(channel))]?.focus();
     },
-    // Safari doesn't focus a button on click, so a click marks too.
-    onClick: (e: MouseEvent<HTMLOListElement>) => markRow(e.target),
+    // Safari doesn't focus a button on click, so a click marks too. A click (or a key below) is the reader saying "read
+    // to here", so it also moves the divider; focus alone (tabbing in, Jump) leaves it put.
+    onClick: (e: MouseEvent<HTMLOListElement>) => {
+      const read = markRow(e.target);
+      if (read !== null) advance.current(read);
+    },
     onKeyDown: (e: KeyboardEvent<HTMLOListElement>) => {
       const ol = e.currentTarget;
       const target = e.target as HTMLElement;
@@ -203,9 +239,117 @@ function useReadMarking(channel: ChannelId, total: number, latest: boolean, read
       const to = rowAfterKey(e.key, rows.indexOf(target), rows.length);
       if (to === null) return;
       e.preventDefault();
-      rows[to]?.focus();
+      const row = rows[to];
+      if (!row) return;
+      row.focus();
+      const seq = seqOf(row);
+      if (Number.isSafeInteger(seq)) advance.current(seq + 1);
     },
   };
+}
+
+/**
+ * The "New messages" divider and the unread bar (#400; owner, 2026-11-09). Opening the channel (`active` turning true)
+ * places the divider at the count read then, and it stays put as the reader reads, except that clicking a message
+ * below it, or moving to one with the arrow keys, Home or End, moves it to after that message (gone if that was the
+ * last). With none placed, unread that
+ * arrives and isn't marked (the window wasn't focused) places one. Posting and Mark all read drop it; posting also
+ * marks the channel read locally, as the server does, so the divider doesn't come straight back. The bar shows while
+ * the divider is out of sight: on an earlier page, or scrolled above the feed. With no read store nothing is placed.
+ */
+function useUnreadDivider(channel: ChannelId, total: number, active: boolean, live: readonly ChatLine[], me: string, paging: Paging) {
+  const store = useChatReadStore();
+  const on = !!store && active;
+  const [at, setAt] = useState<number | null>(null);
+  const place = () => (store ? dividerAt(store.read(channel), total, live, me) : null);
+  // biome-ignore lint/correctness/useExhaustiveDependencies: placed when the channel opens, never moved as it is read.
+  useEffect(() => {
+    setAt(on ? place() : null);
+  }, [on, channel]);
+  // biome-ignore lint/correctness/useExhaustiveDependencies: only a new message can need one.
+  useEffect(() => {
+    if (on) setAt((prev) => prev ?? place());
+  }, [on, total]);
+  const markAll = useContext(MarkAllContext);
+  const seenMarkAll = useRef(markAll);
+  useEffect(() => {
+    if (seenMarkAll.current === markAll) return;
+    seenMarkAll.current = markAll;
+    setAt(null);
+  }, [markAll]);
+
+  const placement = dividerPlacement(at, total, paging.page);
+  // Whether the divider is on screen. True until an observer says otherwise (jsdom has none).
+  const [inView, setInView] = useState(true);
+  const el = useRef<HTMLLIElement | null>(null);
+  const ref = useCallback((li: HTMLLIElement) => {
+    el.current = li;
+    if (typeof IntersectionObserver === "undefined") return;
+    // Root null still clips to the scroll area, and a CSS-hidden feed never intersects.
+    const observer = new IntersectionObserver((entries) => {
+      const last = entries[entries.length - 1];
+      if (last) setInView(last.isIntersecting);
+    });
+    observer.observe(li);
+    return () => {
+      observer.disconnect();
+      el.current = null;
+      setInView(true);
+    };
+  }, []);
+
+  // A jump to an earlier page scrolls once the page is shown (and fetched). This runs after `Scroller`'s own scroll to
+  // the page's top: a child's effects run first.
+  const pending = useRef<{ focus: boolean } | null>(null);
+  useEffect(() => {
+    if (!pending.current || paging.loading) return;
+    const { focus } = pending.current;
+    pending.current = null;
+    if (el.current) reveal(el.current, focus);
+  });
+
+  return {
+    ref,
+    beforeSeq: placement.beforeSeq,
+    count: placement.count,
+    bar: placement.jumpPage !== null || (placement.beforeSeq !== null && !inView),
+    /** `focus`: from the keyboard, so focus follows to the first new message (the bar is about to go). */
+    jump: (focus: boolean) => {
+      if (placement.jumpPage !== null) {
+        pending.current = { focus };
+        paging.go(placement.jumpPage);
+      } else if (el.current) reveal(el.current, focus);
+    },
+    clear: () => {
+      store?.mark(channel, total);
+      setAt(null);
+    },
+    /** A click or key marked the channel read to `read`: a divider above that moves down to it, and goes at the end. */
+    advance: (read: number) => setAt((prev) => (prev === null || read <= prev ? prev : read < total ? read : null)),
+  };
+}
+
+/**
+ * Scrolls the feed so the divider is at its top, without scrolling anything outside the feed. With `focus`, the
+ * message after it takes focus, which marks it read like any focus.
+ */
+function reveal(divider: HTMLElement, focus: boolean) {
+  const viewport = divider.closest<HTMLElement>(".scroll-viewport");
+  if (viewport) viewport.scrollTop += divider.getBoundingClientRect().top - viewport.getBoundingClientRect().top;
+  if (focus && divider.nextElementSibling instanceof HTMLElement) divider.nextElementSibling.focus({ preventScroll: true });
+}
+
+/** "12 new messages · Jump", above the feed while its divider is out of sight. Jump only (owner, 2026-11-09). */
+function UnreadBar({ count, onJump }: { count: number; onJump: (focus: boolean) => void }) {
+  const { t } = useTranslation();
+  return (
+    <div className="unread-bar">
+      <span className="unread-bar-text">{t("itrackie.unread.bar", { count })}</span>
+      <button type="button" className="unread-bar-jump" aria-label={t("itrackie.unread.jumpLabel")} onClick={(e) => onJump(e.currentTarget.matches(":focus-visible"))}>
+        {t("itrackie.unread.jump")}
+      </button>
+    </div>
+  );
 }
 
 /**

@@ -5,7 +5,8 @@
 import { useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { FEATURE_CHANNELS, MUSH_CHANNEL, GRAVEYARD_CHANNEL, type ChannelId, type ChatLine, type FeatureChannel, type PlayerView } from "@mush2/shared";
-import { announce, freshIn, getVerbosity, isUrgent, type Seen } from "../announce.ts";
+import { announce, freshIn, getVerbosity, isUrgent, unreadToAnnounce, type Seen } from "../announce.ts";
+import { useChatReadStore } from "../chatRead.ts";
 import { useNames } from "../i18n/names.ts";
 
 /** The channel's name for a reader: "Global chat", "Botany", the thread's or private channel's own name. */
@@ -24,22 +25,24 @@ export function useChannelLabel(view: PlayerView): (channel: ChannelId) => strin
 
 /**
  * `reading` is the channel on screen in the iTrackie, if any: its messages are read out in full, other channels only
- * counted. `quiet` reads nothing out (a replay), while still keeping track of what has been seen.
+ * counted. "Arrived" (`freshIn`) decides when to speak; the count spoken is the channel's unread from the read store
+ * (#400), the same number as its badge. `quiet` reads nothing out (a replay), while still keeping track of what has been seen.
  */
 export function useAnnouncements(view: PlayerView, reading: ChannelId | null, quiet = false): void {
   const { t } = useTranslation();
   const names = useNames();
   const label = useChannelLabel(view);
+  const store = useChatReadStore();
   const seen = useRef<Seen | null>(null);
   // The effect runs per view; the helpers are read through a ref so it needn't re-run when they change identity.
-  const latest = useRef({ t, names, label, reading, quiet });
-  latest.current = { t, names, label, reading, quiet };
+  const latest = useRef({ t, names, label, reading, quiet, store });
+  latest.current = { t, names, label, reading, quiet, store };
 
   useEffect(() => {
     const fresh = freshIn(seen.current, view);
     seen.current = fresh.seen;
     if (latest.current.quiet) return;
-    const { t, names, label, reading } = latest.current;
+    const { t, names, label, reading, store } = latest.current;
     const verbosity = getVerbosity();
 
     if (verbosity === "all" && fresh.cycle !== undefined) announce(t("announce.cycle", { cycle: fresh.cycle }));
@@ -64,7 +67,7 @@ export function useAnnouncements(view: PlayerView, reading: ChannelId | null, qu
       if (m.channel === reading || mention) announce(spoken(m, view, names, label, m.channel !== reading));
       else counts.set(m.channel, (counts.get(m.channel) ?? 0) + 1);
     }
-    for (const [channel, count] of counts) announce(t("announce.unreadIn", { count, channel: label(channel) }));
+    for (const [channel, count] of unreadToAnnounce(counts, view.chatCounts, store?.snapshot() ?? null)) announce(t("announce.unreadIn", { count, channel: label(channel) }));
   }, [view]);
 }
 

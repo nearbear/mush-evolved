@@ -1,5 +1,7 @@
 import { Action, isString } from "./action.ts";
+import { onExpedition } from "../expeditions.ts";
 import { ITEM_TYPES, canTransfer } from "../items.ts";
+import { isLostPlace } from "../patrol.ts";
 import { logPublic } from "../log.ts";
 import type { Container, GameState, ItemState, PlayerState } from "../types.ts";
 
@@ -22,6 +24,8 @@ export class TransferAction<T extends "take" | "drop" = "take" | "drop"> extends
     const item = state.items.find((i) => i.id === target.item);
     if (!item) return "no_such_item";
     if (this.type === "drop" && ITEM_TYPES[item.type]?.canDrop === false) return "cant_transfer";
+    // Nothing can be dropped on an expedition (owner, 2026-11-08 and 2026-11-09, #359): aboard its craft or lost on the planet.
+    if (this.type === "drop" && (onExpedition(state, player) || isLostPlace(player.room))) return "on_expedition";
     const destination: Container = this.type === "take" ? { kind: "player", id: player.id } : { kind: "room", id: player.room };
     return canTransfer(state, player, item, destination) ? null : "cant_transfer";
   }

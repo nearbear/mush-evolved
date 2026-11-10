@@ -9,10 +9,13 @@ import {
   moveRoom,
   moveTile,
   moveToRoom,
+  nudgeSleeper,
   placeTile,
   rotateSofa,
   roomForCell,
   setDoorTarget,
+  sleeperData,
+  sleeperStep,
   stepFrame,
   tileAt,
 } from "../../src/editor/edits.ts";
@@ -108,5 +111,42 @@ describe("roomForCell", () => {
     expect(turned.rooms[0]!.equipment).toEqual([{ id: "SOFA", tile: "sofaReverse" }]);
     expect(rotateSofa(turned, { room: "A", index: 1 })).toEqual(sofaMap);
     expect(rotateSofa(sofaMap, { room: "A", index: 0 })).toBe(sofaMap);
+  });
+});
+
+describe("sleeper nudges", () => {
+  const bedMap: ShipMap = {
+    rooms: [
+      { ...room("BEDS", { x: 0, y: 0 }, [tile(2, 2, "bed", "entity"), tile(4, 2, "bed", "entity"), tile(6, 2, "chair", "entity")]),
+        equipment: [{ id: "BED", tile: "bed", key: "one", data: "flipped;ofsx_-12;ofsy_1" }, { id: "BED", tile: "bed", key: "two" }, { id: "CHAIR", tile: "chair", data: "ofsx_3" }] },
+    ],
+  };
+
+  it("reads a bed's offsets, and nothing for a bed without data or something that isn't a bed", () => {
+    expect(sleeperData(bedMap, { room: "BEDS", index: 0 })).toMatchObject({ data: "flipped;ofsx_-12;ofsy_1", x: -12, y: 1 });
+    expect(sleeperData(bedMap, { room: "BEDS", index: 1 })).toBeUndefined();
+    expect(sleeperData(bedMap, { room: "BEDS", index: 2 })).toBeUndefined();
+  });
+
+  it("changes only the offsets, keeping the rest of the data and every other binding", () => {
+    const next = nudgeSleeper(bedMap, { room: "BEDS", index: 0 }, -2, 1);
+    expect(next.rooms[0]!.equipment[0]!.data).toBe("flipped;ofsx_-14;ofsy_2");
+    expect(next.rooms[0]!.equipment[1]).toBe(bedMap.rooms[0]!.equipment[1]);
+    expect(nudgeSleeper(bedMap, { room: "BEDS", index: 1 }, 1, 1)).toBe(bedMap);
+  });
+
+  it("adds an offset the data doesn't have yet", () => {
+    const m: ShipMap = { rooms: [{ ...bedMap.rooms[0]!, equipment: [{ id: "BED", tile: "bed", data: "flipped" }] }] };
+    expect(nudgeSleeper(m, { room: "BEDS", index: 0 }, 2, 1).rooms[0]!.equipment[0]!.data).toBe("flipped;ofsx_2;ofsy_1");
+  });
+
+  it("steps half a cell along each arrow's grid axis, straight along gridToPx, or a pixel when fine", () => {
+    for (const [key, a] of Object.entries(ARROWS)) {
+      const cell = gridToPx(a.dx, a.dy);
+      expect(sleeperStep(key, false)).toEqual({ x: cell.x / 8, y: cell.y / 8 });
+    }
+    expect(sleeperStep("ArrowUp", true)).toEqual({ x: 0, y: -1 });
+    expect(sleeperStep("ArrowLeft", true)).toEqual({ x: -1, y: 0 });
+    expect(sleeperStep("Enter", false)).toBeUndefined();
   });
 });

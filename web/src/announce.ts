@@ -4,7 +4,7 @@
 // per-viewer preference kept in localStorage, like `fogDepth.ts`.
 
 import { useSyncExternalStore } from "react";
-import type { ChatLine, LogLine, PlayerView } from "@mush2/shared";
+import { unreadCount, type ChannelId, type ChatLine, type ChatRead, type LogLine, type PlayerView } from "@mush2/shared";
 import { arrivedIn, isArrived, type Arrived } from "./chatRead.ts";
 
 export type Urgency = "polite" | "assertive";
@@ -176,4 +176,17 @@ export function freshIn(seen: Seen | null, view: PlayerView): Fresh {
     cycle: latestCycle > seen.cycle ? latestCycle : undefined,
     seen: next,
   };
+}
+
+/**
+ * The "N unread in …" counts to speak, for channels where messages arrived but weren't read out (#400). With a read
+ * store, N is the channel's unread (`chatCounts − read`), the number its badge shows; a channel with none left (read
+ * elsewhere meanwhile) says nothing. With no store (a replay), N is what arrived.
+ */
+export function unreadToAnnounce(arrived: ReadonlyMap<ChannelId, number>, counts: PlayerView["chatCounts"], read: Readonly<ChatRead> | null): [ChannelId, number][] {
+  if (!read) return [...arrived];
+  return [...arrived.keys()].flatMap((c): [ChannelId, number][] => {
+    const n = unreadCount(counts, read, c);
+    return n > 0 ? [[c, n]] : [];
+  });
 }

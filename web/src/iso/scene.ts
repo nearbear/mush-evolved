@@ -47,7 +47,7 @@ export interface Seat {
 }
 
 /** The lying pose's cell on the cast sheet (art/assets.ts). */
-export const LYING_SIZE = { width: 50, height: 48 };
+export const LYING_SIZE = { width: 64, height: 48 };
 
 /** Actor ids for corpses get this prefix, so they can't collide with player ids. */
 export const CORPSE_PREFIX = "corpse:";

@@ -2,8 +2,8 @@ import { describe, expect, it } from "vitest";
 import type { ShipLayout } from "@mush2/shared";
 import shipArtJson from "../../../Mush/derived/ship-art.json?raw";
 import shipMapJson from "../../../Mush/derived/ship-map.json?raw";
-import { gridToPx, neighborRooms, placeScene } from "../../src/iso/placement.ts";
-import { cellAt, footprint, layerOf, roomOutlines, shipCells, shipScene, tileOf } from "../../src/editor/shipScene.ts";
+import { gridToPx, lyingPose, neighborRooms, placeScene } from "../../src/iso/placement.ts";
+import { cellAt, footprint, layerOf, roomOutlines, shipCells, shipScene, sleeperOf, tileOf } from "../../src/editor/shipScene.ts";
 
 const ship = { ...JSON.parse(shipArtJson), ...JSON.parse(shipMapJson) } as ShipLayout;
 
@@ -69,5 +69,32 @@ describe("overlays", () => {
 
   it("gives doors their own layer toggle, and people in none", () => {
     expect([layerOf("door"), layerOf("wall"), layerOf("ground"), layerOf("actor")]).toEqual(["door", "wall", "ground", undefined]);
+  });
+});
+
+describe("sleepers", () => {
+  const size = { width: 64, height: 48 };
+  const withSleepers = shipScene(ship, { from: null }, size);
+
+  it("adds sleepers to the beds and leaves every other sprite where it was", () => {
+    const sleepers = withSleepers.filter((s) => sleeperOf(s.key));
+    expect(sleepers.length).toBeGreaterThan(2);
+    // Paint order changes (sleepers sort in among the tiles); where everything is drawn doesn't.
+    const at = (scene: typeof withSleepers) => scene.map((s) => `${s.key} ${s.left},${s.top}`).sort();
+    expect(at(withSleepers.filter((s) => !sleeperOf(s.key)))).toEqual(at(shipScene(ship)));
+  });
+
+  it("lays the sick bay couch's sleeper where the game does: its cell plus the binding's offset", () => {
+    const room = ship.rooms.find((r) => r.id === "SICK_BAY")!;
+    const s = withSleepers.find((x) => sleeperOf(x.key)?.room === "SICK_BAY" && room.tiles[sleeperOf(x.key)!.index]!.slice === "sick_couch")!;
+    const pose = lyingPose(ship, room, sleeperOf(s.key)!.index)!;
+    const game = placeScene(ship, [{ room, dx: room.at!.x, dy: room.at!.y, actors: [{ id: "x", cell: pose.cell, ...size, onTop: true, shift: pose.shift }] }]).find((x) => x.kind === "actor")!;
+    expect({ left: s.left, top: s.top }).toEqual({ left: game.left, top: game.top });
+  });
+
+  it("names no bed for a sprite that isn't a sleeper", () => {
+    expect(sleeperOf("t3")).toBeUndefined();
+    expect(sleeperOf("a:someone")).toBeUndefined();
+    expect(sleeperOf("a:bed:SICK_BAY#12")).toEqual({ room: "SICK_BAY", index: 12 });
   });
 });

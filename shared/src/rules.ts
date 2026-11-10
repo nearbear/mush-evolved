@@ -744,7 +744,7 @@ function equipmentView(state: GameState, { id, type, broken, jelly, shield }: Eq
   const shipState = ship && state.patrolShips[ship.id];
   const docked = shipState && !shipState.out && { armor: shipState.armor, maxArmor: state.config.patrol.armor[ship.kind] };
   // The Icarus is missing from its bay while away or once lost (owner, 2026-11-07); both are public anyway.
-  const out = shipState?.out || (type === ICARUS_EQUIPMENT && (state.expedition !== null || state.icarusLost));
+  const out = shipState?.out || (type === ICARUS_EQUIPMENT && ((state.expedition !== null && state.expedition.ship === null) || state.icarusLost));
   return { id, type, ...(broken && { broken }), ...(jelly !== undefined && viewer.role === "mush" && viewer.alive && { jelly }), ...(shield !== undefined && seesShield(viewer) && { shield }), ...(out && { out: true as const }), ...(shipState?.destroyed && { destroyed: true as const }), ...docked };
 }
 
@@ -760,6 +760,8 @@ function expeditionView(state: GameState, you: PlayerState): PlayerView["expedit
     crew: [...report.crew],
     planet: report.planet,
     returnAt: expeditionReturnAt(state)!,
+    // The patrol ship that landed (owner, 2026-11-09, #359): public, as its bay shows it out and the crew is named.
+    ...(report.ship !== undefined && { ship: report.ship }),
     ...(withCrew(state, you) && report.members.includes(you.id) && { report: report.id }),
   };
 }

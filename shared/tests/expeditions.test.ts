@@ -7,9 +7,10 @@ import { PLANET_TAG_IDS } from "../src/planets.ts";
 import { applyInput } from "../src/replay.ts";
 import { FAST_EXPEDITION_STEP_MS } from "../src/cheats.ts";
 import { applyAction, createGame, setCheat, viewFor } from "../src/rules.ts";
-import { lostPlace } from "../src/patrol.ts";
+import { ACTIONS } from "../src/actions.ts";
+import { commandId, lostPlace, patrolShip, shipsInFlight } from "../src/patrol.ts";
 import type { Action, ExpeditionEventRule, GameConfig, GameState, Planet, PlayerId } from "../src/types.ts";
-import { clone, makeSeats, must, noHunters, noIncidents, offered, option, player } from "./support.ts";
+import { clone, costOf, makeSeats, must, noHunters, noIncidents, offered, option, player } from "./support.ts";
 
 const ICARUS = "ICARUS";
 const takeoff: Action = { type: "icarus_takeoff", equipment: "ICARUS:ICARUS_COMMAND" };
@@ -597,7 +598,7 @@ describe("expeditions, phase 2: time away", () => {
     expect(viewFor(s, "p4").roomEquipment.find((e) => e.type === "ICARUS_COMMAND")!.out).toBeUndefined();
   });
 
-  it("aboard, members can act on items and each other but not leave or use the ship", () => {
+  it("aboard, members can act on items and each other but not leave, drop things or use the ship", () => {
     const s = timed();
     give(s, "p1", "bandage");
     player(s, "p2").hp -= 3;
@@ -606,7 +607,8 @@ describe("expeditions, phase 2: time away", () => {
     expect(actions.some((a) => a.type === "move")).toBe(false);
     expect(actions.some((a) => a.type === "install" || a.type === "build" || a.type === "ignite")).toBe(false);
     expect(actions).toContainEqual(expect.objectContaining({ type: "use_bandage" }));
-    expect(actions).toContainEqual(expect.objectContaining({ type: "drop" }));
+    // Phase 5 (owner, #359): nothing can be dropped on an expedition.
+    expect(actions.some((a) => a.type === "drop")).toBe(false);
   });
 
   it("a member who dies leaves a body in the Icarus, which comes back with it", () => {
@@ -1251,5 +1253,210 @@ describe("expeditions, phase 4, slice D: skills", () => {
     let t = must(applyAction(go(s), "p1", sabotage));
     while (t.expedition) t = tickAt(t, t.expedition.nextAt);
     expect(t.expeditions[0]!.events.at(-1)!.kind).toBe("nothing");
+  });
+});
+
+describe("expeditions, phase 5: hold extension, patrol-ship landings, no dropping", () => {
+  const T0 = 1_000_000;
+  const LONGANE = patrolShip("PATROL_SHIP_A_0")!;
+  const landOn: Action = { type: "land_on_planet", equipment: commandId(LONGANE) };
+  const NINE: Planet["sectors"][number]["tag"][] = ["FOREST", "DESERT", "COLD", "HOT", "OCEAN", "SWAMP", "CAVE", "MOUNTAIN", "RUINS"];
+  const tickAt = (s: GameState, at: number) => must(applyInput(s, { type: "tick", at }));
+  const runOut = (s: GameState): GameState => {
+    while (s.expedition) s = tickAt(s, s.expedition.nextAt);
+    return s;
+  };
+  const refusal = (s: GameState, id: PlayerId, action: Action) => ACTIONS[action.type]!.check(s, player(s, id), action);
+  const inShip = (s: GameState) => s.items.filter((i) => i.at.kind === "room" && i.at.id === LONGANE.id);
+
+  /** p0, a Pilot, flies the Longane over the planet; the others are in the Icarus Bay or the laboratory as in `game`. */
+  function flying(opts: Parameters<typeof game>[0] = {}): GameState {
+    const s = game({ tags: NINE, ...opts, timed: true });
+    s.now = T0;
+    player(s, "p0").room = LONGANE.id;
+    s.patrolShips[LONGANE.id]!.out = true;
+    return s;
+  }
+
+  it("pins the confirmed numbers", () => {
+    expect([expedition.maxCrew, expedition.largerBayCrew, expedition.patrol.cost.ap, expedition.patrol.sectorDivisor, DEFAULT_CONFIG.patrol.takeoff.cost.ap]).toEqual([4, 6, 2, 2, 2]);
+  });
+
+  it("the hold extension takes up to six aboard the Icarus", () => {
+    const s = game({ events: only({ kind: "nothing", weight: 1 }) });
+    for (const p of s.players) p.room = ICARUS;
+    expect(go(s).expeditions[0]!.members).toHaveLength(expedition.maxCrew);
+    s.projects.ICARUS_LARGER_BAY = 100;
+    expect(go(s).expeditions[0]!.members).toHaveLength(expedition.largerBayCrew);
+  });
+
+  it("a pilot lands their patrol ship alone for 2 AP, exploring half the Icarus's sectors, rounded down", () => {
+    const s = flying({ events: only({ kind: "nothing", weight: 1 }) });
+    expect(offered(s, "p0")).toContainEqual(landOn);
+    expect(costOf(s, "p0", landOn)).toMatchObject({ ap: expedition.patrol.cost.ap });
+    const next = must(applyAction(s, "p0", landOn));
+    expect(player(next, "p0").ap).toBe(player(s, "p0").ap - expedition.patrol.cost.ap);
+    expect(player(next, "p0").room).toBe(LONGANE.id);
+    expect(next.patrolShips[LONGANE.id]!.onPlanet).toBe("p0");
+    expect(next.expedition).toMatchObject({ ship: LONGANE.id, sectors: expect.any(Array) });
+    expect(next.expedition!.sectors).toHaveLength(Math.floor(expedition.sectors / expedition.patrol.sectorDivisor));
+    expect(next.expeditions[0]).toMatchObject({ members: ["p0"], ship: LONGANE.id });
+    // Public: who is out, in which ship; the Icarus is still in its bay, but can't take off meanwhile.
+    expect(viewFor(next, "p5").expedition).toMatchObject({ crew: [player(s, "p0").character], ship: LONGANE.id });
+    expect(viewFor(next, "p1").roomEquipment.find((e) => e.id === "ICARUS:ICARUS_COMMAND")!.out).toBeUndefined();
+    const pilot1 = clone(next);
+    player(pilot1, "p1").skills.push("pilot");
+    expect(refusal(pilot1, "p1", takeoff)).toBe("expedition_away");
+    // The ship's own actions wait until it docks.
+    for (const type of ["land", "patrol_attack", "collect_scrap", "land_on_planet"]) expect(offered(next, "p0").some((a) => a.type === type)).toBe(false);
+    expect(refusal(next, "p0", { type: "land", equipment: commandId(LONGANE) })).toBe("on_planet");
+  });
+
+  it("never sends who landed a ship on the planet as such, the pilot included", () => {
+    const s = flying({ events: only({ kind: "nothing", weight: 1 }) });
+    const next = must(applyAction(s, "p0", landOn));
+    for (const p of next.players) expect(JSON.stringify(viewFor(next, p.id))).not.toContain("onPlanet");
+  });
+
+  it("a Sprinter pilot's extra sector counts before halving", () => {
+    const s = flying({ events: only({ kind: "nothing", weight: 1 }) });
+    player(s, "p0").skills.push("sprint");
+    const next = must(applyAction(s, "p0", landOn));
+    expect(next.expedition!.sectors).toHaveLength(Math.floor((expedition.sectors + expedition.sprinterSectors) / expedition.patrol.sectorDivisor));
+  });
+
+  it("is refused while another expedition is out, and the Icarus can't land a second one", () => {
+    const s = flying({ events: only({ kind: "nothing", weight: 1 }) });
+    const t = clone(s);
+    player(t, "p1").skills.push("pilot");
+    const away = must(applyAction(t, "p1", takeoff));
+    expect(refusal(away, "p0", landOn)).toBe("expedition_away");
+    expect(offered(away, "p0")).not.toContainEqual(landOn);
+  });
+
+  it("hunters aiming at the ship pick another target at once, and can't aim at it on the planet", () => {
+    const s = flying({ events: only({ kind: "nothing", weight: 1 }) });
+    s.hunters.list.push({ id: "h1", hp: 6, hitChance: 0.8, target: { kind: "patrol", id: LONGANE.id } });
+    const next = must(applyAction(s, "p0", landOn));
+    expect(next.hunters.list[0]!.target).toEqual({ kind: "ship" });
+    expect(shipsInFlight(next)).toEqual([]);
+  });
+
+  it("docks in its bay at the end, with the pilot and the loot", () => {
+    const s = flying({ events: only({ kind: "harvest", weight: 1, amount: 2 }) });
+    const t = runOut(must(applyAction(s, "p0", landOn)));
+    expect(t.expedition).toBeNull();
+    expect(player(t, "p0").room).toBe(LONGANE.bay);
+    expect(t.patrolShips[LONGANE.id]).toMatchObject({ out: false, onPlanet: null, destroyed: false });
+    expect(t.items.filter((i) => i.type === expedition.loot.harvest && i.at.kind === "room" && i.at.id === LONGANE.bay).length).toBeGreaterThan(0);
+    expect(inShip(t)).toEqual([]);
+    expect(viewFor(t, "p0").log.some((e) => e.key === "expeditionReturned")).toBe(true);
+  });
+
+  it("without a spacesuit the pilot never sets down: the ship docks in its bay and the pilot is told why", () => {
+    const s = flying({ tags: ["FOREST", "DESERT"], suits: false, events: only({ kind: "nothing", weight: 1 }) });
+    const t = must(applyAction(s, "p0", landOn));
+    expect(t.expedition).toBeNull();
+    expect(t.expeditions).toEqual([]);
+    expect(player(t, "p0").room).toBe(LONGANE.bay);
+    expect(t.patrolShips[LONGANE.id]).toMatchObject({ out: false, onPlanet: null });
+    expect(shipsInFlight(t)).toEqual([]);
+    expect(t.log.find((e) => e.key === "patrolNoSpacesuit")).toMatchObject({ visibleTo: ["p0"], params: { room: LONGANE.id } });
+    expect(t.log.some((e) => e.key === "patrolPlanetLanding")).toBe(false);
+  });
+
+  it("is lost for good, with everything in it, if the pilot dies", () => {
+    const s = flying({ events: only({ kind: "kill", weight: 1 }) });
+    give(s, "p0", "blaster", 3);
+    const t = runOut(must(applyAction(s, "p0", landOn)));
+    expect(player(t, "p0").alive).toBe(false);
+    expect(t.patrolShips[LONGANE.id]).toMatchObject({ destroyed: true, onPlanet: null });
+    expect(inShip(t)).toEqual([]);
+    expect(t.items.some((i) => i.type === "blaster" || (i.type === "corpse" && i.of === "p0"))).toBe(false);
+    expect(t.log.find((e) => e.key === "patrolLeftOnPlanet")).toMatchObject({ visibleTo: "all", params: { room: LONGANE.id }, level: "warning" });
+  });
+
+  it("says nothing of the lost ship when the BIOS has death announcements off", () => {
+    const s = flying({ events: only({ kind: "kill", weight: 1 }) });
+    s.bios.death_announcements = false;
+    const t = runOut(must(applyAction(s, "p0", landOn)));
+    expect(t.patrolShips[LONGANE.id]).toMatchObject({ destroyed: true });
+    expect(t.log.some((e) => e.key === "patrolLeftOnPlanet")).toBe(false);
+  });
+
+  describe("a lost pilot", () => {
+    /** The pilot got lost on the first sector: the expedition is over and the Longane waits on the planet. */
+    function lostPilot(): GameState {
+      const s = flying({ tags: ["COLD", "COLD"], events: { ...only({ kind: "lost", weight: 1 }), LOST: [{ kind: "found", weight: 1 }] } });
+      return runOut(must(applyAction(s, "p0", landOn)));
+    }
+
+    it("leaves the ship on the planet, out of the hunters' reach", () => {
+      const t = lostPilot();
+      expect(player(t, "p0").room).toBe(lostPlace("p0"));
+      expect(t.expedition).toBeNull();
+      expect(t.patrolShips[LONGANE.id]).toMatchObject({ out: true, onPlanet: "p0", destroyed: false });
+      expect(shipsInFlight(t)).toEqual([]);
+    });
+
+    it("found by a later expedition: the ship is back in its bay, and the pilot comes home with that crew", () => {
+      const t = lostPilot();
+      player(t, "p1").skills.push("pilot");
+      const back = runOut(must(applyAction(t, "p1", takeoff)));
+      expect(player(back, "p0").room).toBe(ICARUS);
+      expect(back.patrolShips[LONGANE.id]).toMatchObject({ out: false, onPlanet: null, destroyed: false });
+      expect(back.log.some((e) => e.key === "patrolRecovered" && e.room === LONGANE.bay)).toBe(true);
+    });
+
+    it("dies with the ship when the Daedalus leaves orbit", () => {
+      const t = lostPilot();
+      player(t, "p4").room = "COMMAND_CENTER";
+      t.titles.commander = "p4";
+      t.ship.combustion = 3;
+      const left = must(applyAction(t, "p4", { type: "leave_orbit", equipment: "COMMAND_CENTER:PILOT_MODULE" }));
+      expect(player(left, "p0").alive).toBe(false);
+      expect(left.patrolShips[LONGANE.id]).toMatchObject({ destroyed: true, onPlanet: null });
+    });
+  });
+
+  it("stranded by a jump: Magnetic return docks it; otherwise the pilot dies and the ship is lost, not the Icarus", () => {
+    for (const magnetic of [false, true]) {
+      const s = flying({ events: only({ kind: "harvest", weight: 1, amount: 2 }) });
+      if (magnetic) s.projects.AUTO_RETURN_ICARUS = 100;
+      player(s, "p4").room = "COMMAND_CENTER";
+      s.titles.commander = "p4";
+      s.ship.combustion = 3;
+      const out = tickAt(must(applyAction(s, "p0", landOn)), T0 + 2 * expedition.stepMs);
+      const t = must(applyAction(out, "p4", { type: "leave_orbit", equipment: "COMMAND_CENTER:PILOT_MODULE" }));
+      expect(t.expedition).toBeNull();
+      expect(t.icarusLost).toBe(false);
+      if (magnetic) {
+        expect(player(t, "p0")).toMatchObject({ alive: true, room: LONGANE.bay });
+        expect(t.patrolShips[LONGANE.id]).toMatchObject({ out: false, onPlanet: null, destroyed: false });
+        expect(t.log.some((e) => e.key === "patrolRecalled")).toBe(true);
+      } else {
+        expect(player(t, "p0").alive).toBe(false);
+        expect(t.patrolShips[LONGANE.id]).toMatchObject({ destroyed: true });
+        expect(inShip(t)).toEqual([]);
+        expect(t.log.some((e) => e.key === "icarusLost")).toBe(false);
+      }
+    }
+  });
+
+  it("nothing can be dropped on an expedition, aboard its craft or lost on the planet", () => {
+    const s = timedGame({ events: only({ kind: "nothing", weight: 1 }) });
+    give(s, "p1", "knife");
+    const knife = s.items.at(-1)!.id;
+    const drop: Action = { type: "drop", item: knife };
+    expect(offered(s, "p1")).toContainEqual(drop);
+    const away = go(s);
+    expect(offered(away, "p1")).not.toContainEqual(drop);
+    expect(refusal(away, "p1", drop)).toBe("on_expedition");
+    const lost = clone(s);
+    player(lost, "p1").room = lostPlace("p1");
+    expect(refusal(lost, "p1", drop)).toBe("on_expedition");
+    // Back aboard, dropping works again.
+    const back = runOut(away);
+    expect(offered(back, "p1")).toContainEqual(drop);
   });
 });

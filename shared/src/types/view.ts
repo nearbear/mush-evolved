@@ -307,7 +307,7 @@ export interface PlayerView {
    * when they are back (server ms; if every member dies the crew is back at once and this is null). `report` is its report's id, only for a
    * member still with the crew (alive and not lost), whose view holds it in `expeditions`.
    */
-  expedition: { crew: CharacterId[]; planet: string; returnAt: number; report?: string } | null;
+  expedition: { crew: CharacterId[]; planet: string; returnAt: number; report?: string; ship?: RoomId } | null;
   /**
    * Who is lost on a planet, and its name, public to everyone (owner, 2026-11-08, #357): a crew-wide alert while they
    * are alive and lost. Seat order. You are in it yourself while lost.

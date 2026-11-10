@@ -6,6 +6,7 @@ import { MessageEntry, Thread, messageCounts, senderOf } from "./Thread.tsx";
 import { Scroller } from "./Scroller.tsx";
 import { TAB_ICONS } from "../art/assets.ts";
 import { useChatPages } from "../chatPages.tsx";
+import { UnreadChip } from "./UnreadChip.tsx";
 
 /** A thread name suggested from a message: its first line, without markdown marks, cut to the limit. */
 export function threadNameFrom(text: string): string {
@@ -20,6 +21,7 @@ export function threadNameFrom(text: string): string {
  */
 export function Threads({
   view,
+  active = true,
   open,
   onOpen,
   name,
@@ -31,6 +33,8 @@ export function Threads({
   onToggle,
 }: {
   view: PlayerView;
+  /** The Threads tab is on screen: the open thread places its "New messages" divider (#400). */
+  active?: boolean;
   open: ThreadId | null;
   onOpen: (id: ThreadId | null) => void;
   name: string;
@@ -88,6 +92,7 @@ export function Threads({
                     <img className="tab-icon" src={TAB_ICONS.threads} alt="" />
                     <span className="thread-name">{th.name}</span>
                     <span className="thread-count">{t("itrackie.threads.messages", { count: counts.get(th.id) ?? 0 })}</span>
+                    <UnreadChip channel={th.id} total={view.chatCounts[th.id] ?? 0} />
                   </button>
                 </li>
               ))}
@@ -138,6 +143,7 @@ export function Threads({
               placeholder={t("itrackie.threads.messagePlaceholder", { name: th.name })}
               onSend={(text) => onChat(th.id, text)}
               onToggle={onToggle}
+              active={active && th.id === open}
               headKey={from ?? "loading"}
               head={
                 th.from === undefined || !(from || pages) ? undefined : from ? (

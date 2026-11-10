@@ -10,6 +10,7 @@ import type { CharacterId } from "./characters.ts";
 import { removeFromChannel, pushChat } from "./chat.ts";
 import { CORPSE_ITEM, ITRACKIE_ITEM, sameContainer, newItemId } from "./items.ts";
 import { logPublic } from "./log.ts";
+import { PATROL_SHIPS } from "./patrol.ts";
 import { removeStatus } from "./statuses.ts";
 import { strikeSlots } from "./plans.ts";
 import { refreshTitles } from "./titles.ts";
@@ -80,10 +81,28 @@ export function killPlayer(state: GameState, player: PlayerState): void {
 
   // The room always gets a line, without the role; NERON's crew-wide announcement reveals it, unless the BIOS has
   // death announcements off (bios.ts).
+  loseShipOnPlanet(state, player);
   logPublic(state, player.room, "died", { name: player.character });
   if (state.bios.death_announcements) systemMessage(state, "global", player.role === "mush" ? "diedMush" : "diedHuman", player.character);
   refreshTitles(state);
   if (mushWinOnDeath(state)) endGame(state, "mush", "humans_dead");
+}
+
+/**
+ * A patrol ship its pilot landed on a planet is lost for good when they die before it docks (owner, 2026-11-09, #359),
+ * with everything in it (their body too, if they died aboard). NERON tells everyone, unless the BIOS has death
+ * announcements off (owner, 2026-11-09): the line would only echo the death.
+ */
+function loseShipOnPlanet(state: GameState, player: Readonly<PlayerState>): void {
+  for (const ship of PATROL_SHIPS) {
+    const shipState = state.patrolShips[ship.id]!;
+    if (shipState.onPlanet !== player.id) continue;
+    shipState.onPlanet = null;
+    shipState.destroyed = true;
+    shipState.armor = 0;
+    state.items = state.items.filter((i) => !sameContainer(i.at, { kind: "room", id: ship.id }));
+    if (state.bios.death_announcements) logPublic(state, undefined, "patrolLeftOnPlanet", { room: ship.id }, "warning");
+  }
 }
 
 /**

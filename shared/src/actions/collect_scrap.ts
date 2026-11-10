@@ -2,7 +2,7 @@ import { Action, type ActionVisibility, isString } from "./action.ts";
 import { damage } from "../death.ts";
 import { destroyPatrolShip } from "../hunters.ts";
 import { logPrivate } from "../log.ts";
-import { commandId, shipAboard } from "../patrol.ts";
+import { commandId, onPlanet, shipAboard } from "../patrol.ts";
 import { roll, rollFloat, rollShuffle, rollWeighted } from "../rng.ts";
 import type { GameState, PlayerState } from "../types.ts";
 
@@ -28,12 +28,13 @@ export class CollectScrapAction extends Action<CollectScrapActionData> {
 
   override getCandidates(state: Readonly<GameState>, player: Readonly<PlayerState>): CollectScrapActionData[] {
     const ship = shipAboard(player);
-    return ship && state.space.length > 0 ? [{ type: "collect_scrap", equipment: commandId(ship) }] : [];
+    return ship && !onPlanet(state, ship) && state.space.length > 0 ? [{ type: "collect_scrap", equipment: commandId(ship) }] : [];
   }
 
   override validate(state: Readonly<GameState>, player: Readonly<PlayerState>, target: CollectScrapActionData): string | null {
     const ship = shipAboard(player);
     if (!ship || commandId(ship) !== target.equipment) return "not_flying";
+    if (onPlanet(state, ship)) return "on_planet";
     return state.space.length > 0 ? null : "no_debris";
   }
 

@@ -65,7 +65,7 @@ export const GAME_STATE_FIELDS: Record<string, FieldRule> = {
   nextSharedReportId: { reach: "never", test: "leaks.test.ts", note: "Not secret (entry ids show it), just not sent." },
   expeditions: { reach: "filtered", test: "leaks.test.ts", note: "Each report to its living members only, without `members` or `lostAt`; a lost member sees it only up to the line where they got lost (expeditions.test.ts too)." },
   nextExpeditionId: { reach: "never", test: "leaks.test.ts", note: "Not secret (report ids show it), just not sent." },
-  expedition: { reach: "filtered", test: "expeditions.test.ts", note: "Public as who is out, the planet's name and when they are back (owner, 2026-11-07, #356); the report id to living members still with the crew (not lost); `planet` (id), `sectors`, `landed`, `carried`, `suitless` and `sabotaged` never (a Traitor's Sabotage leaves no trace, expeditions.test.ts)." },
+  expedition: { reach: "filtered", test: "expeditions.test.ts", note: "Public as who is out, the planet's name and when they are back (owner, 2026-11-07, #356); the report id to living members still with the crew (not lost); `planet` (id), `sectors`, `landed`, `carried`, `suitless` and `sabotaged` never (a Traitor's Sabotage leaves no trace, expeditions.test.ts); `ship`, the patrol ship that landed, public (phase 5, #359)." },
   icarusLost: { reach: "public", test: "expeditions.test.ts", note: "Only as `out` on the Icarus, which the bay shows empty; NERON announces the loss to everyone (owner, 2026-11-07, #356)." },
   navigation: { reach: "room", test: "navigation.test.ts", note: "`heading` to the living at a Command terminal; `orbit` only as a public in-orbit flag, the planet id to its finder alone (as `orbited` on their planet); `lastTurn` public to everyone (owner, 2026-10-29)." },
   comms: { reach: "room", test: "comms.test.ts", note: "`linked` to everyone; the terminal screen to the living at a Com center terminal, with the Xyloph entries drawn so far (in database order)." },
@@ -75,7 +75,7 @@ export const GAME_STATE_FIELDS: Record<string, FieldRule> = {
   incidentPoints: { reach: "never", test: "leaks.test.ts", note: "The incident pool (#189): no one, no skill or role." },
   pendingFires: { reach: "never", test: "leaks.test.ts", note: "Rooms a Pyromaniac set to ignite at the next cycle change (2026-11-03)." },
   fires: { reach: "room", test: "incidents.test.ts", note: "Only as `roomOnFire` to the living in the room, or `burningRooms` to the living when Fire Detectors is complete (owner, 2026-11-02)." },
-  patrolShips: { reach: "room", test: "patrol.test.ts", note: "`out` to the living in the ship's bay, on its interface, with `armor` while docked (owner, 2026-10-28, so Renovate's offer reveals nothing); `armor` in flight and `charges` to its pilot only, aboard (leaks.test.ts)." },
+  patrolShips: { reach: "room", test: "patrol.test.ts", note: "`out` to the living in the ship's bay, on its interface, with `armor` while docked (owner, 2026-10-28, so Renovate's offer reveals nothing); `armor` in flight and `charges` to its pilot only, aboard (leaks.test.ts); `onPlanet` never as such (phase 5, #359: the public expedition status names the ship and its pilot; expeditions.test.ts)." },
   space: { reach: "never", test: "leaks.test.ts", note: "Only its length, to a pilot aboard (`patrolShip.debris`); the pieces never." },
   now: { reach: "never", test: "leaks.test.ts", note: "The rules' clock; offers' expiry times reach their owner only." },
 };

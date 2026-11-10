@@ -1,21 +1,25 @@
-// Your other resources (spores, free IT points, ...) as icon and count chips, showing the first two (desktop) or as many as fit (phone) and "…", which opens
+// Your other resources (spores, free IT points, ...; on phones satiety first) as icon and count chips, showing the first two (desktop) or as many as fit (phone) and "…", which opens
 // them all: one chip in the phone nameplate's chip row (beside AP/MP/HP/morale), or a card stacking them on desktop.
 
 import { Popover } from "@base-ui/react/popover";
 import { useTranslation } from "react-i18next";
 import { RESOURCE_IDS, resourceAvailable, type PlayerView } from "@mush2/shared";
-import { RESOURCE_ICONS, SPORE_ICON } from "../art/assets.ts";
+import { RESOURCE_ICONS, SATIETY_ICON, SPORE_ICON } from "../art/assets.ts";
+import { useSatietyLines } from "./SatietyInfo.tsx";
 
 /** How many resources show before the "…" (the desktop card fits two rows beside the stat cards). */
 const COMPACT_COUNT = 2;
 
 type Chip = { key: string; icon: string; name: string; description?: string; count: number };
 
-function useChips(view: PlayerView): Chip[] {
+/** `withSatiety`: satiety leads the list (phones, where it has no place of its own; desktop shows it under your name). */
+function useChips(view: PlayerView, withSatiety: boolean): Chip[] {
   const { t } = useTranslation();
-  const { spores, resources, skills, bookSkill, role } = view.you;
+  const { spores, resources, skills, bookSkill, role, satiety } = view.you;
+  const satietyLines = useSatietyLines(view);
   // Only resources this player could use: held, or granted by one of their skills (spores: Mush only).
   return [
+    ...(withSatiety ? [{ key: "satiety", icon: SATIETY_ICON, name: t("stat.satiety"), description: satietyLines.join(" "), count: satiety }] : []),
     ...(spores > 0 || role === "mush" ? [{ key: "spores", icon: SPORE_ICON, name: t("resources.spores"), count: spores }] : []),
     ...RESOURCE_IDS.filter((id) => resourceAvailable(id, resources[id], skills, bookSkill)).map((id) => ({
       key: id,
@@ -33,7 +37,7 @@ function useChips(view: PlayerView): Chip[] {
  */
 export function CompactResourceChips({ view, stacked = false }: { view: PlayerView; stacked?: boolean }) {
   const { t, i18n } = useTranslation();
-  const chips = useChips(view);
+  const chips = useChips(view, !stacked);
   if (chips.length === 0) return null;
   // The phone chip lists every resource and lets CSS cut it off with a "…" where the nameplate's width runs out.
   const shown = stacked ? chips.slice(0, COMPACT_COUNT) : chips;

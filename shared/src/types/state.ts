@@ -175,9 +175,11 @@ export interface GameCore {
   /**
    * Each patrol ship by its room id (patrol.ts): its armor, its charges (always 0 for the Pasiphae, which can't shoot),
    * whether it is out (in flight), and whether it was destroyed (for good; a destroyed ship stays out). Out and destroyed
-   * are known to anyone in its bay (owner, 2026-10-24); armor and charges go to its pilot only, for now.
+   * are known to anyone in its bay (owner, 2026-10-24); armor and charges go to its pilot only, for now. `onPlanet` is
+   * the pilot who landed it on the orbited planet (owner, 2026-11-09, #359), null otherwise: it stays out, hunters can't
+   * aim at it, and it is lost for good if that pilot dies before it docks. Never sent as such.
    */
-  patrolShips: Record<RoomId, { armor: number; charges: number; out: boolean; destroyed: boolean }>;
+  patrolShips: Record<RoomId, { armor: number; charges: number; out: boolean; destroyed: boolean; onPlanet: PlayerId | null }>;
   /**
    * Debris floating around the Daedalus (docs/plans/patrol.md, phase 5): what destroyed hunters drop and what floats off
    * a destroyed patrol ship, as items with no container. Lost when the ship jumps. Never sent, except how many pieces
@@ -270,6 +272,8 @@ export interface ExpeditionReport {
    * lost (owner, 2026-11-08, #357). A member found again by the same expedition sees it all.
    */
   lostAt?: Record<PlayerId, number>;
+  /** The patrol ship that landed, by its room id, for a pilot's solo landing (owner, 2026-11-09, #359); absent for the Icarus. */
+  ship?: RoomId;
 }
 
 /**
@@ -289,6 +293,11 @@ export interface ActiveExpedition {
   suitless: PlayerId[];
   /** A Traitor sabotaged it (owner, 2026-11-08, #358): from the next step on, only negative events. Never sent. */
   sabotaged: boolean;
+  /**
+   * The patrol ship that landed, by its room id, for a pilot's solo landing (owner, 2026-11-09, #359); null for the
+   * Icarus. Its room is the craft the crew is in while away (`expeditionCraft`).
+   */
+  ship: RoomId | null;
 }
 
 /** A planet a player found. Its size is the number of sectors. */

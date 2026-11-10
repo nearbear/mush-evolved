@@ -519,6 +519,22 @@
   text-align: center;
 }
 
+/* Unread in one channel, at the end of its row: a thread, a private channel, a feature or a shared entry (#400). The
+   count is in the row's accessible name too (UnreadChip.tsx). */
+.unread-chip {
+  flex: none;
+  margin-left: auto;
+  min-width: 14px;
+  padding: 0 3px;
+  border-radius: 7px;
+  background: #d8332f;
+  color: #fff;
+  font-size: 10px;
+  font-weight: bold;
+  line-height: 14px;
+  text-align: center;
+}
+
 /* Astrophysics: the shared planets (SharedPlanets.tsx), a list like the private channels' that scrolls past a few rows. */
 .shared-planets {
   flex: none;

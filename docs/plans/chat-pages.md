@@ -56,3 +56,48 @@ As built: the cache is a context (`web/src/chatPages.tsx`) owned by `GameScreen`
 ## Wrap-up
 
 Decisions into `docs/rules/rules-design.md` and the code map; a headless sim showing the view's size stays flat as chat grows (#281/#338); one `ai-workflow.md` entry.
+
+## Read state (#400)
+
+Decided with the owner on 2026-11-08 (no game rule is involved, so they live here, not in `rules-design.md`):
+
+- **Model.** One read count per channel, a high-water mark: reading a message reads everything before it in that
+  channel. Unread = `chatCounts[c] − read[c]`, right past the ~100 messages a view carries.
+- **Where it lives.** Both: the client writes `localStorage` at once (keyed by room and a hash of the seat token,
+  never the token) and sends batches at most every 5 s and on hide, close and reconnect; on load it takes the higher of
+  local and server counts. The server keeps it in Durable Object storage under `chatRead:<seat>`, not in `GameState`:
+  not an input, never recorded or replayed, no view changes. It is sent only to that seat's connections, filtered to
+  the body's current `readChannels`; refused, rate-limited and nothing-new updates get no reply, alike.
+- **What counts as read.** A message getting focus (keyboard, click or tap), Mark all read (per tab, in the iTrackie
+  title row), and posting (which replaces the old "own messages are never new" check). A message arriving while its
+  channel is on screen on its latest page, in a visible focused window, counts as read (Discord's behaviour). Hover,
+  scrolling and being on screen never mark history.
+- **Keyboard.** One tab stop per feed, with ArrowUp/Down, Home and End between messages.
+- **History that becomes readable** (an iTrackie picked up, an invite, becoming Mush, dying, a Transfer) is unread: a
+  channel with no count starts at 0.
+- **Who.** Bots have no read state; the dead do, over their `readChannels`. Read state follows the mind (the seat)
+  through a Transfer, which is also the leak-safe choice (following the body would reveal how far its previous
+  occupant had read).
+- **Read vs arrived.** "Read" drives the tab badges (the active tab shows its own), the Mush tab, the page bar's »,
+  the divider, the chips and the count in the announcer's "N new messages in …". "Arrived since this client
+  connected" still drives speech bubbles and when the announcer speaks, so a reload doesn't replay old bubbles.
+- **Replay and ended games** show no unread: a replay has no read store, and an ended game has no readable channels.
+
+### Divider, unread bar and chips
+
+Decided with the owner on 2026-11-09:
+
+- **Divider.** "New messages" goes before the first message unread when the channel was opened (its tab, thread,
+  feature or entry picked), and stays put as you read; clicking a message below it moves it past that message (2026-11-09). Each opening places it afresh. With none placed, unread that
+  arrives and isn't marked (the window wasn't focused) places one. Never above only your own messages. Posting and
+  Mark all read drop it; posting also marks the channel read on the client, as the server does.
+- **Opening a channel** still lands at the bottom of its latest page, not at the divider.
+- **Unread bar.** While the divider is out of sight (on an earlier page, or scrolled above the feed), a bar between
+  the page bar and the feed says how many are new and offers **Jump** only. Jump goes to the divider's page and
+  scrolls it to the top; from the keyboard, focus moves to the first new message (which marks it read). A divider on a
+  later page has no bar: » shows the count there.
+- **Chips.** One channel's unread at the end of its row: each thread, private channel, shared planet or report, the
+  general row of Astrophysics and Expeditions, and each feature in the drop-down (its shared entries included). The
+  drop-down's trigger counts the *other* features, since the one picked is on screen.
+- **Known limitation:** on the latest page, a new message scrolls the feed back to the bottom (`Scroller`), even after
+  a jump up to the divider. It affects all chat; not changed here.

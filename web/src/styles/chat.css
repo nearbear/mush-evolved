@@ -456,6 +456,46 @@
   font-weight: bold;
   line-height: 14px;
 }
+/* "New messages" (#400): before the first message unread when the channel was opened; it stays put as you read. */
+.feed > li.unread-divider {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.25rem 0;
+  border-bottom: 0;
+  color: #d8332f;
+  font-size: 0.7rem;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+.feed > li.unread-divider::before {
+  content: "";
+  flex: 1;
+  border-top: 1px solid #d8332f;
+}
+/* "12 new messages · Jump", between the page bar and the feed while the divider is out of sight. At 360px the text
+   may wrap; Jump never shrinks. */
+.unread-bar {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0 0 0.4rem;
+  padding-left: 0.5rem;
+  border-left: 3px solid #d8332f;
+  font-size: 0.8rem;
+}
+.unread-bar-text {
+  flex: 1;
+  min-width: 0;
+  font-weight: bold;
+}
+.unread-bar-jump {
+  flex: none;
+  margin: 0;
+  padding: 0 0.6rem;
+}
 /* A message focused from the keyboard (#400: focusing marks it read). A click focuses it too, without the ring. */
 .feed > li[data-seq]:focus {
   outline: none;

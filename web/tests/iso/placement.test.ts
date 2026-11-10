@@ -7,6 +7,7 @@ import {
   cellAtPoint,
   doorPassage,
   doorSpot,
+  lyingPose,
   gridToPx,
   hitTest,
   neighborRooms,
@@ -479,6 +480,29 @@ describe("doorPassage on the real ship", () => {
       if (cross.x + at.x !== other.x + to.at!.x || cross.y + at.y !== other.y + to.at!.y) problems.push(`${from.id} -> ${to.id}: doorways differ`);
     }
     expect(problems).toEqual([]);
+  });
+});
+
+describe("lyingPose", () => {
+  const ship = withoutBuiltOnly({ ...JSON.parse(shipArtJson), ...JSON.parse(shipMapJson) } as ShipLayout);
+  const bedTile = (roomId: string) => {
+    const room = ship.rooms.find((r) => r.id === roomId)!;
+    return { room, tile: placedEquipment(room).find((e) => e.type === "BED")!.tile };
+  };
+
+  it("puts the sleeper on the bed tile's cell, shifted and mirrored as the original's binding data says", () => {
+    const { room, tile } = bedTile("SICK_BAY");
+    const t = room.tiles[tile]!;
+    // The sick bay couch: "flipped;ofsx_-14;ofsy_7" (the original's -18, -2, retuned for our cast sheet's frame).
+    expect(lyingPose(ship, room, tile)).toEqual({ cell: { x: t.x, y: t.y }, shift: { x: -18, y: 2 }, flip: true });
+    // Bedroom B's beds: "ofsx_12;ofsy_1", not flipped.
+    const b = bedTile("BEDROOM_B");
+    expect(lyingPose(ship, b.room, b.tile)).toMatchObject({ shift: { x: 12, y: 1 }, flip: false });
+  });
+
+  it("puts someone on a bed with no binding data in the middle of its footprint", () => {
+    const room: RoomLayout = { id: "R", label: "R", tiles: [{ x: 5, y: 5, kind: "entity", layer: 2, slice: "sofa", frame: 0 }], equipment: [{ id: "SOFA", tile: "sofa" }] } as RoomLayout;
+    expect(lyingPose(ship, room, 0)).toEqual({ cell: { x: 5, y: 4 }, flip: false });
   });
 });
 

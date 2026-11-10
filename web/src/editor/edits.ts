@@ -3,7 +3,7 @@
 // tiles; deleting one shifts the indices after it, and new tiles go at the end (equipment bindings
 // claim the first tile with their sprite, `placedEquipment`, so appending never takes one over).
 
-import type { RoomLayout, ShipArt, ShipMap, TileKind, TilePlacement } from "@mush2/shared";
+import { EQUIPMENT_TYPES, placedEquipment, type RoomLayout, type ShipArt, type ShipMap, type TileKind, type TilePlacement } from "@mush2/shared";
 
 export interface TileAt {
   room: string;
@@ -17,6 +17,49 @@ export const ARROWS: Readonly<Record<string, { dx: number; dy: number; label: st
   ArrowDown: { dx: 0, dy: 1, label: "down-left (+y)" },
   ArrowLeft: { dx: -1, dy: 0, label: "up-left (−x)" },
 };
+
+/**
+ * One step of a sleeper nudge, in screen pixels, by arrow key: half a cell along that arrow's grid axis
+ * (2 across, 1 down: the smallest move that stays straight along or across a bed), or one pixel up, down,
+ * left or right for `fine`.
+ */
+export function sleeperStep(key: string, fine: boolean): { x: number; y: number } | undefined {
+  const a = ARROWS[key];
+  if (!a) return undefined;
+  if (fine) return { ArrowUp: { x: 0, y: -1 }, ArrowRight: { x: 1, y: 0 }, ArrowDown: { x: 0, y: 1 }, ArrowLeft: { x: -1, y: 0 } }[key];
+  // `gridToPx`: a cell along +x is (16, 8) on screen, along +y (-16, 8).
+  return { x: 2 * (a.dx - a.dy), y: a.dx + a.dy };
+}
+
+/**
+ * The bed drawn by tile `at` and its binding's data, when the binding has some (the original's
+ * `flipped;ofsx_N;ofsy_N`, which `lyingPose` reads). A bed without data (a built sofa) is undefined:
+ * the game puts its sleeper in the middle of the footprint, and giving it data would change that.
+ */
+export function sleeperData(map: ShipMap, at: TileAt): { binding: number; data: string; x: number; y: number } | undefined {
+  const room = map.rooms.find((r) => r.id === at.room);
+  const placed = room && placedEquipment(room).find((e) => e.tile === at.index);
+  if (!room || !placed || !EQUIPMENT_TYPES[placed.type]?.bed) return undefined;
+  const binding = room.equipment.findIndex((b) => `${room.id}:${b.key ?? b.id}` === placed.id);
+  const data = room.equipment[binding]?.data;
+  if (!data) return undefined;
+  const num = (name: string) => Number(data.split(";").find((p) => p.startsWith(`${name}_`))?.split("_")[1] ?? 0) || 0;
+  return { binding, data, x: num("ofsx"), y: num("ofsy") };
+}
+
+/** The sleeper in the bed at `at` moved (dx, dy) screen pixels: only its `ofsx`/`ofsy` change, the rest of the data stays. */
+export function nudgeSleeper(map: ShipMap, at: TileAt, dx: number, dy: number): ShipMap {
+  const now = sleeperData(map, at);
+  if (!now) return map;
+  const set = { ofsx: now.x + dx, ofsy: now.y + dy };
+  const parts = now.data.split(";").map((p) => {
+    const name = p.split("_")[0] as keyof typeof set;
+    return name in set && p.startsWith(`${name}_`) ? `${name}_${set[name]}` : p;
+  });
+  for (const name of ["ofsx", "ofsy"] as const) if (!parts.some((p) => p.startsWith(`${name}_`))) parts.push(`${name}_${set[name]}`);
+  const data = parts.join(";");
+  return withRoom(map, at.room, (r) => ({ ...r, equipment: r.equipment.map((b, i) => (i === now.binding ? { ...b, data } : b)) }));
+}
 
 export const tileAt = (map: ShipMap, at: TileAt): TilePlacement | undefined => map.rooms.find((r) => r.id === at.room)?.tiles[at.index];
 

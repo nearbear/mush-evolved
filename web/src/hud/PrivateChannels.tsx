@@ -6,6 +6,7 @@ import type { ChannelId, PlayerId, PlayerView, PrivateChannelId } from "@mush2/s
 import { DialogHeader } from "./DialogHeader.tsx";
 import { IconButton } from "./IconButton.tsx";
 import { Thread } from "./Thread.tsx";
+import { UnreadChip } from "./UnreadChip.tsx";
 import { TAB_ICONS, standingSprite } from "../art/assets.ts";
 import "./settings.css";
 
@@ -23,12 +24,17 @@ export interface ChannelHandlers {
  */
 export function PrivateChannels({
   view,
+  active = true,
   onChat,
   onToggle,
   onCreate,
   onInvite,
   onLeave,
-}: { view: PlayerView; onChat: (channel: ChannelId, text: string) => void; onToggle: (channel: ChannelId, seq: number, line: number) => void } & Partial<ChannelHandlers>) {
+}: {
+  view: PlayerView;
+  /** The Private tab is on screen: the picked channel places its "New messages" divider (#400). */
+  active?: boolean;
+  onChat: (channel: ChannelId, text: string) => void; onToggle: (channel: ChannelId, seq: number, line: number) => void } & Partial<ChannelHandlers>) {
   const { t, i18n } = useTranslation();
   const [picked, setPicked] = useState<PrivateChannelId | "">("");
   const [inviting, setInviting] = useState(false);
@@ -63,6 +69,7 @@ export function PrivateChannels({
             <li key={c.id} className="channel-slot">
               <button type="button" className="channel-slot-pick" aria-pressed={c.id === current?.id} onClick={() => setPicked(c.id)}>
                 {label(c)}
+                <UnreadChip channel={c.id} total={view.chatCounts[c.id] ?? 0} />
               </button>
               {onLeave && <IconButton icon="🚪" label={t("channels.leaveNamed", { name: label(c) })} onClick={() => onLeave(c.id)} />}
             </li>
@@ -90,6 +97,7 @@ export function PrivateChannels({
                 placeholder={t("channels.messagePlaceholder", { name: label(c) })}
                 onSend={(text) => onChat(c.id, text)}
                 onToggle={onToggle}
+                active={active && c.id === current.id}
               />
             </div>
           ))}

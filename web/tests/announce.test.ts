@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { ChatLine, LogLine, PlayerView } from "@mush2/shared";
-import { batchText, freshIn, isUrgent } from "../src/announce.ts";
+import { batchText, freshIn, isUrgent, unreadToAnnounce } from "../src/announce.ts";
 
 const entry = (over: Partial<LogLine>): LogLine => ({ cycle: 1, key: "x", visibleTo: "all", ...over });
 const msg = (seq: number, over: Partial<ChatLine> = {}): ChatLine => ({ seq, cycle: 1, channel: "global", from: "p2", isBot: false, text: "hi", ...over });
@@ -65,5 +65,22 @@ describe("batchText", () => {
   it("joins a short batch and cuts a long one to a count", () => {
     expect(batchText(["a", "b"], () => "more")).toBe("a b");
     expect(batchText(["a", "b", "c", "d", "e", "f"], (n) => `+${n}`)).toBe("a b c d +2");
+  });
+});
+
+describe("unreadToAnnounce", () => {
+  const arrived = new Map([["global", 1], ["botany", 2]] as const);
+  const counts = { global: 30, botany: 5 };
+
+  it("speaks each channel's unread from the read store, the badge's number", () => {
+    expect(unreadToAnnounce(arrived, counts, { global: 10, botany: 3 })).toEqual([["global", 20], ["botany", 2]]);
+  });
+
+  it("says nothing for a channel already read (elsewhere, meanwhile)", () => {
+    expect(unreadToAnnounce(arrived, counts, { global: 30 })).toEqual([["botany", 5]]);
+  });
+
+  it("falls back to what arrived without a store (a replay)", () => {
+    expect(unreadToAnnounce(arrived, counts, null)).toEqual([["global", 1], ["botany", 2]]);
   });
 });

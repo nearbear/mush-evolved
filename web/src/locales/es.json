@@ -32,6 +32,7 @@
     "hunters": "Hunters",
     "orbit": "En órbita alrededor de {{name}}",
     "expedition": "Expedición a {{planet}}: {{names}}, de vuelta en {{time}}",
+    "expeditionShip": "Expedición a {{planet}} en {{ship}}: {{names}}, de vuelta en {{time}}",
     "lost": "{{name}} se ha perdido en {{planet}}"
   },
   "peek": {
@@ -59,6 +60,15 @@
       "mp": "Cada desplazamiento a otra sala cuesta {{mpPerMove}} PM. Caminar por la sala es gratis.\nLos PM se conservan de un ciclo a otro, hasta {{mpCap}}.\nSin PM, un desplazamiento convierte {{apPerConversion}} PA en {{mpPerConversion}} PM.",
       "hp": "Cada quien recupera 1 PV al inicio de cada día. Con 0 PV mueres.\nCurar devuelve 3 PV: lleva un Botiquín, o usa la Enfermería sin él (2 PA sobre otra persona, 3 PA sobre ti).\nLas acciones de combate quitan PV a su objetivo.\nLas heridas al construir, desmontar o reparar quitan PV.\nUn humano hambriento (24 ciclos después de que se le pase la última comida) pierde 1 PV por ciclo hasta que coma.\nUn Mush pierde 4 PV cada vez que se ducha.",
       "morale": "Todos pierden 2 puntos de moral al comienzo de cada día (1 mientras Chun siga con vida).\nConsolar, la acción del Psicólogo, da 2 puntos de moral. Estar acostado en una sala con un Psicólogo da 1 punto de moral por ciclo.\nEl Discurso enardecido de un Líder da 2 puntos de moral a todos los demás en la sala.\nComer una Ración cruda cuesta 1 punto de moral."
+    },
+    "satiety": "Saciedad",
+    "satietyValue": "Saciedad: {{value}}",
+    "satietyInfo": {
+      "emptyFor_one": "Tu estómago lleva {{count}} ciclo vacío.",
+      "emptyFor_many": "Tu estómago lleva {{count}} ciclos vacío.",
+      "emptyFor_other": "Tu estómago lleva {{count}} ciclos vacío.",
+      "fed": "Has comido hace poco. La saciedad baja cada ciclo.",
+      "mush": "Los Mush nunca tienen hambre."
     }
   },
   "settings": {
@@ -381,6 +391,7 @@
     "fungalCuisine": "Cocina fúngica",
     "takeoff": "Despegar",
     "icarus_takeoff": "Partir de expedición",
+    "land_on_planet": "Aterrizar en el planeta",
     "u_turn": "Volver al Daedalus",
     "sabotage_expedition": "Sabotear la expedición",
     "land": "Aterrizar",
@@ -658,6 +669,20 @@
       "loading": "Cargando…",
       "latestNew_many": "Última página ({{count}} nuevos)"
     },
+    "unread": {
+      "divider": "Mensajes nuevos",
+      "bar_one": "{{count}} mensaje nuevo",
+      "bar_other": "{{count}} mensajes nuevos",
+      "bar_many": "{{count}} mensajes nuevos",
+      "jump": "Ir",
+      "jumpLabel": "Ir al primer mensaje nuevo",
+      "chip_one": "{{count}} sin leer",
+      "chip_other": "{{count}} sin leer",
+      "chip_many": "{{count}} sin leer",
+      "featureLabel_one": "{{name}}, {{count}} sin leer en otras funciones",
+      "featureLabel_other": "{{name}}, {{count}} sin leer en otras funciones",
+      "featureLabel_many": "{{name}}, {{count}} sin leer en otras funciones"
+    },
     "sharedReports": {
       "mine": "Tus expediciones",
       "isShared": "Compartido",
@@ -933,6 +958,11 @@
     "patrolLost": "NERON: nave perdida en el salto del Daedalus ({{room}}).",
     "icarusLost": "NERON: el Icarus se quedó en {{planet}} durante el salto del Daedalus, con toda su tripulación. Se ha perdido.",
     "crewLost": "NERON: {{name}} se ha perdido en {{planet}}.",
+    "patrolPlanetLanding": "{{name}} aterrizó con {{room}} en {{planet}}.",
+    "patrolNoSpacesuit": "No tienes traje espacial y {{planet}} no tiene oxígeno: no puedes aterrizar. {{room}} vuelve a su bahía.",
+    "patrolRecalled": "NERON: la repatriación magnética trajo de vuelta {{room}} desde {{planet}} durante el salto del Daedalus.",
+    "patrolLeftOnPlanet": "NERON: {{room}} se quedó en el planeta sin su piloto. Se ha perdido.",
+    "patrolRecovered": "{{room}} ha vuelto a su bahía.",
     "icarusRecalled": "NERON: la repatriación magnética trajo de vuelta el Icarus desde {{planet}} durante el salto del Daedalus.",
     "patrolUnloaded_one": "{{name}} descargó {{count}} objeto de la nave.",
     "patrolUnloaded_many": "{{name}} descargó {{count}} objetos de la nave.",
@@ -1580,6 +1610,7 @@
     "landing": "Aterrizaje",
     "uTurnHeading": "Media vuelta",
     "lootOnFloor": "Todo lo que encontraste está en el suelo de la Bahía Ícaro.",
+    "lootOnFloorShip": "Todo lo que encontraste está en el suelo de {{bay}}.",
     "events": {
       "nothing": "Nada que señalar.",
       "fatigue": "La exploración es dura: la tripulación está agotada.",
@@ -1629,11 +1660,16 @@
       "unknown": "una criatura"
     },
     "aboard": "En el Ícaro, explorando {{planet}}",
+    "aboardShip": "En {{ship}}, explorando {{planet}}",
     "back": "De vuelta en {{time}}",
     "underWay": "La expedición sigue en curso.",
     "lootAboard": "Todo lo encontrado hasta ahora está en el suelo del Ícaro.",
+    "lootAboardShip": "Todo lo encontrado hasta ahora está en el suelo de {{ship}}.",
     "icarusAway": "El Ícaro ha salido de expedición.",
-    "lost": { "heading": "Te has perdido en {{planet}}", "text": "Has perdido a la tripulación. Una expedición a este planeta puede encontrarte; si el Daedalus se va, mueres aquí." },
+    "lost": {
+      "heading": "Te has perdido en {{planet}}",
+      "text": "Has perdido a la tripulación. Una expedición a este planeta puede encontrarte; si el Daedalus se va, mueres aquí."
+    },
     "share": "Compartir el informe",
     "shareAgain": "Completar el informe compartido",
     "shareHint": "Este texto va a la sección Expediciones para toda la tripulación. Cámbialo como quieras.",

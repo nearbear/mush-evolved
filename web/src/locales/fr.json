@@ -32,6 +32,7 @@
     "hunters": "Hunters",
     "orbit": "En orbite autour de {{name}}",
     "expedition": "Expédition sur {{planet}} : {{names}}, retour dans {{time}}",
+    "expeditionShip": "Expédition sur {{planet}} à bord du {{ship}} : {{names}}, retour dans {{time}}",
     "lost": "{{name}} a disparu sur {{planet}}"
   },
   "peek": {
@@ -59,6 +60,15 @@
       "mp": "Chaque déplacement vers une autre pièce coûte {{mpPerMove}} PM. Marcher dans la pièce est gratuit.\nLes PM sont conservés d'un cycle à l'autre, jusqu'à {{mpCap}}.\nSans PM, un déplacement convertit {{apPerConversion}} PA en {{mpPerConversion}} PM.",
       "hp": "Chacun récupère 1 PV au début de chaque jour. À 0 PV, vous mourez.\nSoigner rend 3 PV : avec un Médikit sur vous, ou à l'Infirmerie sans Médikit (2 PA sur quelqu'un d'autre, 3 PA sur vous-même).\nLes actions de combat font perdre des PV à leur cible.\nLes blessures en construisant, en démontant ou en réparant font perdre des PV.\nUn humain affamé (24 cycles après la fin de son dernier repas) perd 1 PV par cycle jusqu'à ce qu'il mange.\nUn Mush perd 4 PV à chaque douche.",
       "morale": "Tout le monde perd 2 points de moral au début de chaque jour (1 tant que Chun est en vie).\nRéconforter, l'action du Psy, donne 2 points de moral. Être allongé dans une pièce où se trouve un Psy donne 1 point de moral par cycle.\nLe Discours enflammé d'un Leader donne 2 points de moral à tous les autres occupants de la pièce.\nManger une Ration crue coûte 1 point de moral."
+    },
+    "satiety": "Satiété",
+    "satietyValue": "Satiété : {{value}}",
+    "satietyInfo": {
+      "emptyFor_one": "Votre estomac est vide depuis {{count}} cycle.",
+      "emptyFor_many": "Votre estomac est vide depuis {{count}} cycles.",
+      "emptyFor_other": "Votre estomac est vide depuis {{count}} cycles.",
+      "fed": "Vous avez mangé récemment. La satiété baisse à chaque cycle.",
+      "mush": "Les Mush n'ont jamais faim."
     }
   },
   "settings": {
@@ -381,6 +391,7 @@
     "fungalCuisine": "Cuisine fongique",
     "takeoff": "Décoller",
     "icarus_takeoff": "Partir en expédition",
+    "land_on_planet": "Atterrir sur la planète",
     "u_turn": "Faire demi-tour vers le Daedalus",
     "sabotage_expedition": "Saboter l'expédition",
     "land": "Atterrir",
@@ -658,6 +669,20 @@
       "loading": "Chargement…",
       "latestNew_many": "Dernière page ({{count}} nouveaux)"
     },
+    "unread": {
+      "divider": "Nouveaux messages",
+      "bar_one": "{{count}} nouveau message",
+      "bar_other": "{{count}} nouveaux messages",
+      "bar_many": "{{count}} nouveaux messages",
+      "jump": "Aller",
+      "jumpLabel": "Aller au premier nouveau message",
+      "chip_one": "{{count}} non lu",
+      "chip_other": "{{count}} non lus",
+      "chip_many": "{{count}} non lus",
+      "featureLabel_one": "{{name}}, {{count}} non lu dans les autres fonctions",
+      "featureLabel_other": "{{name}}, {{count}} non lus dans les autres fonctions",
+      "featureLabel_many": "{{name}}, {{count}} non lus dans les autres fonctions"
+    },
     "sharedReports": {
       "mine": "Vos expéditions",
       "isShared": "Partagé",
@@ -933,6 +958,11 @@
     "patrolLost": "NERON : appareil perdu lors du saut du Daedalus ({{room}}).",
     "icarusLost": "NERON : l'Icarus est resté sur {{planet}} lors du saut du Daedalus, avec tout son équipage. Il est perdu.",
     "crewLost": "NERON : {{name}} a disparu sur {{planet}}.",
+    "patrolPlanetLanding": "{{name}} a posé le {{room}} sur {{planet}}.",
+    "patrolNoSpacesuit": "Vous n'avez pas de combinaison spatiale et {{planet}} n'a pas d'oxygène : impossible d'atterrir. Le {{room}} regagne sa baie.",
+    "patrolRecalled": "NERON : le rapatriement magnétique a ramené le {{room}} de {{planet}} lors du saut du Daedalus.",
+    "patrolLeftOnPlanet": "NERON : le {{room}} est resté sur la planète sans son pilote. Il est perdu.",
+    "patrolRecovered": "Le {{room}} est de retour dans sa baie.",
     "icarusRecalled": "NERON : le rapatriement magnétique a ramené l'Icarus de {{planet}} lors du saut du Daedalus.",
     "patrolUnloaded_one": "{{name}} a déchargé {{count}} objet du vaisseau.",
     "patrolUnloaded_many": "{{name}} a déchargé {{count}} objets du vaisseau.",
@@ -1580,6 +1610,7 @@
     "landing": "Atterrissage",
     "uTurnHeading": "Demi-tour",
     "lootOnFloor": "Tout ce que vous avez trouvé est au sol de la Baie Icarus.",
+    "lootOnFloorShip": "Tout ce que vous avez trouvé est au sol de la {{bay}}.",
     "events": {
       "nothing": "Rien à signaler.",
       "fatigue": "L'exploration est difficile : l'équipe est épuisée.",
@@ -1629,11 +1660,16 @@
       "unknown": "une créature"
     },
     "aboard": "Dans l'Icarus, en exploration sur {{planet}}",
+    "aboardShip": "Dans le {{ship}}, en exploration sur {{planet}}",
     "back": "Retour dans {{time}}",
     "underWay": "L'expédition est toujours en cours.",
     "lootAboard": "Tout ce qui a été trouvé jusqu'ici est par terre dans l'Icarus.",
+    "lootAboardShip": "Tout ce qui a été trouvé jusqu'ici est par terre dans le {{ship}}.",
     "icarusAway": "L'Icarus est parti en expédition.",
-    "lost": { "heading": "Disparition sur {{planet}}", "text": "Vous avez perdu l'équipe. Une expédition sur cette planète peut vous retrouver ; si le Daedalus la quitte, vous mourez ici." },
+    "lost": {
+      "heading": "Disparition sur {{planet}}",
+      "text": "Vous avez perdu l'équipe. Une expédition sur cette planète peut vous retrouver ; si le Daedalus la quitte, vous mourez ici."
+    },
     "share": "Partager le rapport",
     "shareAgain": "Compléter le rapport partagé",
     "shareHint": "Ce texte part dans la rubrique Expéditions pour tout l'équipage. Modifiez-le comme vous voulez.",
