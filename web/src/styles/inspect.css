@@ -327,6 +327,11 @@
   align-items: center;
   gap: 2px 6px;
 }
+.consume-unknown,
+.consume-treats {
+  margin: 4px 0 0;
+  max-width: 28ch;
+}
 .consume-effects li {
   display: contents;
 }

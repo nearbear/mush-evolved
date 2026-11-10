@@ -75,6 +75,7 @@ import type {
   Role,
   Seat,
 } from "./types.ts";
+import { drawDrugs, drugEffectsSeenBy, stockMedlab } from "./drugs.ts";
 import { changeAP, changeMP, diseaseTrackerCycleChange } from "./adjustStats.ts";
 
 export type { ActionResult };
@@ -123,6 +124,7 @@ export function createGame(
     nextItemId: items.length + 1,
     equipment: clone(config.equipment),
     dispensedOn: {},
+    drugs: {},
     log: [{ id: 1, cycle: startCycle, key: "crewWakes", visibleTo: "all" }],
     nextLogId: 2,
     chat: [],
@@ -176,6 +178,8 @@ export function createGame(
     callNextRebel(state);
     startHunters(state);
   }
+  state.drugs = drawDrugs(state);
+  stockMedlab(state);
   grantCarePoints(state); // day 1 begins now
   for (const p of state.players) startLogSeen(state, p);
   return state;
@@ -556,6 +560,7 @@ export function seatViewFor(state: GameState, playerId: PlayerId): SeatView {
       queue: you.queue.map((q) => q.action),
     },
     statuses: statusesOf(state, you),
+    drugEffects: drugEffectsSeenBy(state, you),
     // TODO(rules): should Mush see each other's roles? Hidden for now.
     players: others.map((o) => {
       const { id, isBot, botKind, character, room, alive, ready } = o;

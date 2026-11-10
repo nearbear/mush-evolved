@@ -729,6 +729,8 @@
     "shield": "Blindaje: {{shield}}",
     "shieldDesc": "Da una probabilidad sobre 100 de librarse de una avería. Con 25 o más no se puede sabotear ni desmontar.",
     "satiety": "Saciedad",
+    "drugUnknown": "Los efectos son desconocidos: ¡consulta a un profesional o consúmelo para averiguarlo!",
+    "drugTreats": "Trata: {{diseases}}",
     "plantOf": "Planta: {{item}}",
     "young": "Planta joven",
     "youngDesc": "Esta planta es joven. No producirá ni oxígeno ni frutos hasta madurar.",

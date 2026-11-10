@@ -1,6 +1,7 @@
 import type { BiosState } from "../bios.ts";
 import type { CharacterId } from "../characters.ts";
 import type { CommsState } from "../comms.ts";
+import type { DrugEffect } from "../drugs.ts";
 import type { TurnSide } from "../navigation.ts";
 import type { PlanetDirection, PlanetTag } from "../planets.ts";
 import type { RelayPool, ResearchPool } from "../relay.ts";
@@ -56,6 +57,8 @@ export interface GameCore {
   equipment: Record<RoomId, Equipment[]>;
   /** Cycle in which each dispenser (equipment id) last gave something out. One use per cycle per machine. */
   dispensedOn: Record<string, number>;
+  /** What each drug item type does in this ship, drawn at launch (drugs.ts). Never sent to players. */
+  drugs: Record<string, DrugEffect>;
   log: LogEntry[];
   /** The next `LogEntry.id`. */
   nextLogId: number;

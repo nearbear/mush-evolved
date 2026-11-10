@@ -96,7 +96,7 @@ export function InventoryPanel({
           label={
             <>
               {names.itemOf(item)}
-              <ConsumeEffects type={item.type} />
+              <ConsumeEffects type={item.type} view={view} />
             </>
           }
         >

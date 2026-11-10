@@ -25,7 +25,7 @@ export function ActionButton({ view, option, onAction, children, className, hint
         <Popover.Positioner sideOffset={6}>
           <Popover.Popup className="tooltip resource-card status-card">
             {hint}
-            {type !== undefined && <ConsumeEffects type={type} />}
+            {type !== undefined && <ConsumeEffects type={type} view={view} />}
           </Popover.Popup>
         </Popover.Positioner>
       </Popover.Portal>
@@ -68,7 +68,7 @@ export function DisabledActionButton({ view, blocked, children, className, hint 
           <Popover.Popup className="tooltip resource-card status-card">
             {reason}
             {hint !== undefined && <p>{hint}</p>}
-            {type !== undefined && <ConsumeEffects type={type} />}
+            {type !== undefined && <ConsumeEffects type={type} view={view} />}
           </Popover.Popup>
         </Popover.Positioner>
       </Popover.Portal>
