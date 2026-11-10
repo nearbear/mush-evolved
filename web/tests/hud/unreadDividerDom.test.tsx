@@ -107,6 +107,29 @@ describe("placing the divider", () => {
     expect(dividerBefore()).toBe("0");
   });
 
+  it("moves past a message the reader clicks, never back, and goes after the last", () => {
+    renderThread(sampleView(sayMany(sampleState(), 4)));
+    expect(dividerBefore()).toBe("0");
+    act(() => fireEvent.click(rows()[1] as HTMLElement));
+    expect(read()).toBe(2);
+    expect(dividerBefore()).toBe("2");
+    act(() => fireEvent.click(rows()[0] as HTMLElement));
+    expect(dividerBefore()).toBe("2");
+    act(() => fireEvent.click(rows()[3] as HTMLElement));
+    expect(divider()).toBeNull();
+  });
+
+  it("moves past a message the reader reaches with the arrow keys, but not on tabbing in", () => {
+    renderThread(sampleView(sayMany(sampleState(), 4)));
+    act(() => rows()[0]?.focus());
+    expect(dividerBefore()).toBe("0");
+    act(() => fireEvent.keyDown(rows()[0] as HTMLElement, { key: "ArrowDown" }));
+    expect(document.activeElement).toBe(rows()[1]);
+    expect(dividerBefore()).toBe("2");
+    act(() => fireEvent.keyDown(rows()[1] as HTMLElement, { key: "End" }));
+    expect(divider()).toBeNull();
+  });
+
   it("isn't placed while the channel isn't the one on screen, and is placed fresh each time it opens", () => {
     const view = sampleView(sayMany(sampleState(), 4));
     const { update } = renderThread(view, false);

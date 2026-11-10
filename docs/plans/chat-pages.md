@@ -88,7 +88,7 @@ Decided with the owner on 2026-11-08 (no game rule is involved, so they live her
 Decided with the owner on 2026-11-09:
 
 - **Divider.** "New messages" goes before the first message unread when the channel was opened (its tab, thread,
-  feature or entry picked), and stays put as you read. Each opening places it afresh. With none placed, unread that
+  feature or entry picked), and stays put as you read; clicking a message below it moves it past that message (2026-11-09). Each opening places it afresh. With none placed, unread that
   arrives and isn't marked (the window wasn't focused) places one. Never above only your own messages. Posting and
   Mark all read drop it; posting also marks the channel read on the client, as the server does.
 - **Opening a channel** still lands at the bottom of its latest page, not at the divider.

@@ -1,4 +1,4 @@
-import { Fragment, memo, useCallback, useContext, useLayoutEffect, useRef, useState, useEffect, type FocusEvent, type KeyboardEvent, type MouseEvent } from "react";
+import { Fragment, memo, useCallback, useContext, useLayoutEffect, useRef, useState, useEffect, type FocusEvent, type KeyboardEvent, type MouseEvent, type RefObject } from "react";
 import { useTranslation } from "react-i18next";
 import { useNames } from "../i18n/names.ts";
 import { Menu } from "@base-ui/react/menu";
@@ -79,9 +79,12 @@ export const Thread = memo(function Thread({ view, channel, placeholder, onSend,
   const messages = paging.messages ?? live;
   const actions = useHandlers(onSend, onToggle, threadLinks);
   const total = view.chatCounts[channel] ?? 0;
-  const marking = useReadMarking(channel, total, paging.latest, readable);
+  // A click or arrow key on a message moves the divider past it; the divider hook is below, so the call goes through a ref.
+  const advance = useRef<(read: number) => void>(() => {});
+  const marking = useReadMarking(channel, total, paging.latest, readable, advance);
   // After `useReadMarking`: its effect marks arrivals in view first, so this one sees them as read.
   const divider = useUnreadDivider(channel, total, active && readable, live, view.you.id, paging);
+  advance.current = divider.advance;
   const rows = readable && messages.length > 0;
   return (
     <div className="thread">
@@ -184,7 +187,7 @@ type Paging = ReturnType<typeof usePaging>;
  * Keyboard: the feed is one tab stop. Tabbing in moves focus to the first unread message on the page (else the last);
  * ArrowUp/Down, Home and End move between messages.
  */
-function useReadMarking(channel: ChannelId, total: number, latest: boolean, readable: boolean) {
+function useReadMarking(channel: ChannelId, total: number, latest: boolean, readable: boolean, advance: RefObject<(read: number) => void>) {
   const store = useChatReadStore();
   const feed = useRef<HTMLOListElement>(null);
   // The count last rendered while readable: history that becomes readable (an iTrackie picked up) didn't arrive.
@@ -199,24 +202,34 @@ function useReadMarking(channel: ChannelId, total: number, latest: boolean, read
 
   const rowsOf = (ol: HTMLOListElement) => Array.from(ol.querySelectorAll<HTMLElement>(":scope > [data-seq]"));
   const seqOf = (row: HTMLElement) => Number(row.dataset.seq);
+  /** Marks the message `target` is in read up to it; returns the count read, or null when it isn't in a message. */
   const markRow = (target: EventTarget) => {
     const row = target instanceof Element ? target.closest<HTMLElement>("[data-seq]") : null;
     // Menus are portalled: their events bubble here through React but sit outside the feed in the DOM.
-    if (!row || !feed.current?.contains(row)) return;
+    if (!row || !feed.current?.contains(row)) return null;
     const seq = seqOf(row);
-    if (Number.isSafeInteger(seq)) store?.mark(channel, seq + 1);
+    if (!Number.isSafeInteger(seq)) return null;
+    store?.mark(channel, seq + 1);
+    return seq + 1;
   };
   return {
     feed,
     onFocus: (e: FocusEvent<HTMLOListElement>) => {
-      if (e.target !== e.currentTarget) return markRow(e.target);
+      if (e.target !== e.currentTarget) {
+        markRow(e.target);
+        return;
+      }
       // Only from the keyboard: a click on the feed's blank space isn't reading anything.
       if (!e.currentTarget.matches(":focus-visible")) return;
       const rows = rowsOf(e.currentTarget);
       rows[firstUnreadRow(rows.map(seqOf), store?.read(channel))]?.focus();
     },
-    // Safari doesn't focus a button on click, so a click marks too.
-    onClick: (e: MouseEvent<HTMLOListElement>) => markRow(e.target),
+    // Safari doesn't focus a button on click, so a click marks too. A click (or a key below) is the reader saying "read
+    // to here", so it also moves the divider; focus alone (tabbing in, Jump) leaves it put.
+    onClick: (e: MouseEvent<HTMLOListElement>) => {
+      const read = markRow(e.target);
+      if (read !== null) advance.current(read);
+    },
     onKeyDown: (e: KeyboardEvent<HTMLOListElement>) => {
       const ol = e.currentTarget;
       const target = e.target as HTMLElement;
@@ -226,14 +239,20 @@ function useReadMarking(channel: ChannelId, total: number, latest: boolean, read
       const to = rowAfterKey(e.key, rows.indexOf(target), rows.length);
       if (to === null) return;
       e.preventDefault();
-      rows[to]?.focus();
+      const row = rows[to];
+      if (!row) return;
+      row.focus();
+      const seq = seqOf(row);
+      if (Number.isSafeInteger(seq)) advance.current(seq + 1);
     },
   };
 }
 
 /**
  * The "New messages" divider and the unread bar (#400; owner, 2026-11-09). Opening the channel (`active` turning true)
- * places the divider at the count read then, and it stays put as the reader reads. With none placed, unread that
+ * places the divider at the count read then, and it stays put as the reader reads, except that clicking a message
+ * below it, or moving to one with the arrow keys, Home or End, moves it to after that message (gone if that was the
+ * last). With none placed, unread that
  * arrives and isn't marked (the window wasn't focused) places one. Posting and Mark all read drop it; posting also
  * marks the channel read locally, as the server does, so the divider doesn't come straight back. The bar shows while
  * the divider is out of sight: on an earlier page, or scrolled above the feed. With no read store nothing is placed.
@@ -305,6 +324,8 @@ function useUnreadDivider(channel: ChannelId, total: number, active: boolean, li
       store?.mark(channel, total);
       setAt(null);
     },
+    /** A click or key marked the channel read to `read`: a divider above that moves down to it, and goes at the end. */
+    advance: (read: number) => setAt((prev) => (prev === null || read <= prev ? prev : read < total ? read : null)),
   };
 }
 

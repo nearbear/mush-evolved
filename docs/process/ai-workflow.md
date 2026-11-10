@@ -2911,3 +2911,9 @@ Added `config.engineer` (cap 2, 1 a day, 2 on pick), an `engineerPointsPerDay` h
 - **Leak check** (forked skill): no leaks; counts only reach the owning seat, are filtered by the current body's `readChannels` and clamped to `chatSeq`, which the view already sends as `chatCounts`.
 - **Decisions recorded** in `docs/plans/chat-pages.md` ("Read state (#400)"), not `rules-design.md`, since no game rule is involved.
 - **Verify.** Typecheck and lint pass (one pre-existing lint warning in `Thread.tsx`). One test failed under the full run, `shared/tests/replay.test.ts` "launched empty in pre-selection", at 6.3 s against a timeout; it passes alone and this task didn't touch `shared`. Another session's uncommitted iso work sat in the same checkout throughout.
+
+## 2026-11-09: clicking a message moves the "New messages" divider (#400 follow-up)
+
+- Owner reported the divider didn't move when clicking a message to mark it read. Cause: by design the divider is frozen when the channel opens; a click updated the read store but nothing told the divider.
+- Fix: a click on a message advances the divider past it (never backwards; gone after the last message). Focus alone (tabbing in, arrow keys, Jump) still leaves it put, so the earlier "stays put as you read" decision holds for passive reading. The divider hook comes after the read-marking hook (effect order matters), so the click reaches it through a ref. One jsdom test.
+- Then, per the owner: the arrow keys, Home and End move the divider too, as a click does; tabbing in and Jump still don't. Second jsdom test.
