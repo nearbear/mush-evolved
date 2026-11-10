@@ -915,7 +915,7 @@
     "patrolLanded": "{{name}} landed {{room}}.",
     "patrolRenovated": "{{name}} renovated {{room}}.",
     "patrolRenovateFailed": "You failed to renovate the ship.",
-    "patrolRough": "Rough manoeuvre: the hull took {{hull}} damage, the ship lost {{armor}} armor and you lost {{hp}} HP.",
+    "patrolRough": "Rough maneuver: the hull took {{hull}} damage, the ship lost {{armor}} armor and you lost {{hp}} HP.",
     "patrolKill": "You shot down a hunter.",
     "hunterHitPatrol": "A hunter hit {{room}}: {{armor}} armor lost.",
     "patrolDestroyed": "NERON: {{room}} was shot down by hunters.",
@@ -1464,9 +1464,9 @@
       "APERO_KITCHEN": "SNC kitchen"
     },
     "desc": {
-      "PATROL_SHIP_LAUNCHER": "Takeoff manoeuvres cost less action points.",
+      "PATROL_SHIP_LAUNCHER": "Takeoff maneuvers cost less action points.",
       "PATROLSHIP_BLASTER_GUN": "Raises the firepower of patrol ships by one point.",
-      "BAY_DOOR_XXL": "Takeoff and landing manoeuvres are much easier.",
+      "BAY_DOOR_XXL": "Takeoff and landing maneuvers are much easier.",
       "PATROLSHIP_EXTRA_AMMO": "Patrol ships have 6 extra charges.",
       "TURRET_EXTRA_FIRERATE": "Turrets recharge twice as fast.",
       "FIRE_SENSOR": "Fires are reported on your personal modules.",
