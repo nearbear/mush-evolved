@@ -58,7 +58,7 @@ export function PipBar({
   bigIcon = false,
   thin = false,
   vertical = false,
-  iconAfter = false,
+  plainIcon = false,
   height,
 }: {
   label: string;
@@ -73,8 +73,8 @@ export function PipBar({
   thin?: boolean;
   /** Standing up, with the label above and the value below. For the 5x5 AP/MP pips only (the thin pips aren't square). */
   vertical?: boolean;
-  /** The icon after the frame instead of before it, and no value: the bar alone says how full it is (the HUD's plate). */
-  iconAfter?: boolean;
+  /** The icon as a plain image, without its own tooltip: for a bar whose wrapper already explains the stat (StatInfo, in the HUD's plate). */
+  plainIcon?: boolean;
   /** Vertical bars only: at most this many slots a column; past it the slots wrap into more frames side by side, filled bottom to top, the first column first. Every column but a short last one has `height` slots. Default: one column. */
   height?: number;
 }) {
@@ -91,7 +91,9 @@ export function PipBar({
   const drawn = Math.min(slots, Math.ceil((Math.max(clip, target) - CAP_START) / pitch));
   return (
     <span className={`pip-bar${thin ? " thin" : ""}${vertical ? " vertical" : ""}`} role="group" aria-label={t("stat.chip", { label, value, max })}>
-      {iconAfter ? null : icon === undefined ? (
+      {icon !== undefined && plainIcon ? (
+        <img className={bigIcon ? "pip-icon big" : "pip-icon"} src={icon} alt="" />
+      ) : icon === undefined ? (
         <span className="pip-label">{label}</span>
       ) : (
       <Popover.Root>
@@ -166,7 +168,7 @@ export function PipBar({
           </>
         )}
       </svg>
-      {iconAfter ? <img className={bigIcon ? "pip-icon big" : "pip-icon"} src={icon} alt="" /> : <span className="sub">{value}</span>}
+      <span className="sub">{value}</span>
     </span>
   );
 }

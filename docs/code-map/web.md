@@ -32,7 +32,7 @@ All under `web/src/`. UI rules are in `web/CLAUDE.md`.
 
 - `TopBar.tsx`: cycle and countdown, Results (once the game has ended), End cycle (only when offered), Leave, settings.
 - `CycleCountdown.tsx`: time left until the next cycle, from the view message's `nextCycleAt`. `useCountdown.ts`: the ticking h:mm:ss behind it and the expedition countdowns. `serverClock.ts`: the server clock as a context (`ServerClock`: live, an offset from ours; in a replay, frozen at the step) and `useServerNow`, read by the countdowns and action bars; `GameView` provides it from its `clock` prop.
-- `PlayerSummary.tsx`: the phone top bar's nameplate: portrait, name, faction icon (`FactionCard`, also used by `SelfHud`), AP/MP/HP/morale chips, other resources.
+- `PlayerSummary.tsx`: the phone top bar's nameplate: portrait, name, faction icon (`FactionCard`, also used by `SelfHud`), AP/MP/HP/morale chips, other resources (satiety first).
 - `PipBar.tsx`: the pip bar in SVG, sideways or (`vertical`) standing up as the sprite was drawn and filling from the bottom; `height` caps a vertical bar's column in slots, wrapping the rest into side-by-side columns, filling the first column, then the next.
 - `apGauge.ts`: `apColumnHeight`, the AP gauge's column height: one column up to 14 slots (Noise Reducer), an even split past it (Lethargy: 2 of 12, or 2 of 13).
 - `SettingsDialog.tsx` + `settings.css`: settings dialog (General, Account, and Cheats when allowed).
@@ -40,7 +40,8 @@ All under `web/src/`. UI rules are in `web/CLAUDE.md`.
 - `BodyTakenDialog.tsx`: the pop-up a Transfer's victim must acknowledge (`you.bodyTakenBy`); only its button closes it, sending `acknowledgeTransfer` (reuses `settings.css`).
 - `StatInfo.tsx`: the popover over a stat (HP/morale/AP/MP pip bar on desktop, chip on phones) saying how it is commonly spent and regained; the text is `stat.info.*` in the locales.
 - `TipCard.tsx` + `tips.css`: one tip at a time, centred above the room view's bottom row on both layouts: ✕ snoozes it until its situation ends, "Don't show this tip again" mutes it; a new tip is announced when announcements are on Everything. The settings dialog has Show tips and Show all tips again.
-- `SelfHud.tsx` + `styles/self-hud.css`: your HUD over the room view (desktop only; phones show `PlayerSummary` in the top bar): portrait, HP/morale, faction and other resources in the top-left corner, with the room's name moved under the portrait; AP/MP standing in the bottom-left corner. Clicking the portrait shows you in Inspect.
+- `SelfHud.tsx` + `styles/self-hud.css`: your HUD over the room view (desktop only; phones show `PlayerSummary` in the top bar): an ID badge (framed portrait with the faction icon on its corner, name, satiety under it) and HP/morale in the top-left card, with the room's name moved under it; AP/MP standing in the bottom-left card, other resources at its foot. Both are `.hud-card`s: square, with bevelled corners drawn as clipped layers. Clicking the badge shows you in Inspect.
+- `SatietyInfo.tsx`: your satiety and its card (cycles with an empty stomach from `satietyZeroSince`, full belly, hungry); `useSatietyLines` also feeds the phone's resource list.
 - `Credits.tsx`: the asset attribution and the non-commercial line: a footer at the bottom of the lobby, and in the game at the top of the settings dialog, under its header (both layouts).
 - `CommsCenter.tsx`: the Com center terminal window: link status and Sol chance, rebel calls with progress and expiry, Xyloph entries left, NERON version and update, each with its button when the view offers it.
 - `BiosTerminal.tsx`: the BIOS terminal window: each BIOS option with its current value and, for the NERON Admin, a switch button.
@@ -78,7 +79,7 @@ All under `web/src/`. UI rules are in `web/CLAUDE.md`.
 - `FeedEntry.tsx`, `CycleDivider.tsx`, `RecencyStamp.tsx` + `recency.ts` (pure), `VisibilityBadge.tsx`: an iTrackie feed row, the "Cycle N" rule between cycles, the "47min ago" caption with the exact time in a popover, and a log line's kind badge (private, secret, covert; leaked or not) in a popover (#366, reused by the replay's story 5).
 - `Scroller.tsx`: a scroll area that sticks to the bottom as items arrive.
 - `ResearchTracker.tsx`, `Tracker.tsx`: the Research feature's strip of research cards, and a notes list the player types in.
-- `ResourceChips.tsx`: your other resources as chips (the first two, or as many as fit on a phone, then "…" for the rest).
+- `ResourceChips.tsx`: your other resources as chips (the first two, or as many as fit on a phone, then "…" for the rest); on phones satiety leads the list.
 - `ShipResources.tsx`: the ship card (resources, hunters, titles, the orbit, the expedition away and the crew lost on planets, `view.lost`); in the desktop top bar, and opened by `ShipOverlay.tsx` on phones. `TitleChip.tsx`: one title and its line of succession.
 - `BotsPausedTag.tsx`: the top-bar tag shown while model bots are paused (`botsPaused`, #114), with why.
 - `PreselectionTag.tsx`: the top-bar tag shown until the Mush are chosen.
