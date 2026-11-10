@@ -32,6 +32,7 @@
     "hunters": "Hunters",
     "orbit": "En orbite autour de {{name}}",
     "expedition": "Expédition sur {{planet}} : {{names}}, retour dans {{time}}",
+    "expeditionShip": "Expédition sur {{planet}} à bord du {{ship}} : {{names}}, retour dans {{time}}",
     "lost": "{{name}} a disparu sur {{planet}}"
   },
   "peek": {
@@ -381,6 +382,7 @@
     "fungalCuisine": "Cuisine fongique",
     "takeoff": "Décoller",
     "icarus_takeoff": "Partir en expédition",
+    "land_on_planet": "Atterrir sur la planète",
     "u_turn": "Faire demi-tour vers le Daedalus",
     "sabotage_expedition": "Saboter l'expédition",
     "land": "Atterrir",
@@ -931,6 +933,11 @@
     "patrolLost": "NERON : appareil perdu lors du saut du Daedalus ({{room}}).",
     "icarusLost": "NERON : l'Icarus est resté sur {{planet}} lors du saut du Daedalus, avec tout son équipage. Il est perdu.",
     "crewLost": "NERON : {{name}} a disparu sur {{planet}}.",
+    "patrolPlanetLanding": "{{name}} a posé le {{room}} sur {{planet}}.",
+    "patrolNoSpacesuit": "Vous n'avez pas de combinaison spatiale et {{planet}} n'a pas d'oxygène : impossible d'atterrir. Le {{room}} regagne sa baie.",
+    "patrolRecalled": "NERON : le rapatriement magnétique a ramené le {{room}} de {{planet}} lors du saut du Daedalus.",
+    "patrolLeftOnPlanet": "NERON : le {{room}} est resté sur la planète sans son pilote. Il est perdu.",
+    "patrolRecovered": "Le {{room}} est de retour dans sa baie.",
     "icarusRecalled": "NERON : le rapatriement magnétique a ramené l'Icarus de {{planet}} lors du saut du Daedalus.",
     "patrolUnloaded_one": "{{name}} a déchargé {{count}} objet du vaisseau.",
     "patrolUnloaded_many": "{{name}} a déchargé {{count}} objets du vaisseau.",
@@ -1578,6 +1585,7 @@
     "landing": "Atterrissage",
     "uTurnHeading": "Demi-tour",
     "lootOnFloor": "Tout ce que vous avez trouvé est au sol de la Baie Icarus.",
+    "lootOnFloorShip": "Tout ce que vous avez trouvé est au sol de la {{bay}}.",
     "events": {
       "nothing": "Rien à signaler.",
       "fatigue": "L'exploration est difficile : l'équipe est épuisée.",
@@ -1627,9 +1635,11 @@
       "unknown": "une créature"
     },
     "aboard": "Dans l'Icarus, en exploration sur {{planet}}",
+    "aboardShip": "Dans le {{ship}}, en exploration sur {{planet}}",
     "back": "Retour dans {{time}}",
     "underWay": "L'expédition est toujours en cours.",
     "lootAboard": "Tout ce qui a été trouvé jusqu'ici est par terre dans l'Icarus.",
+    "lootAboardShip": "Tout ce qui a été trouvé jusqu'ici est par terre dans le {{ship}}.",
     "icarusAway": "L'Icarus est parti en expédition.",
     "lost": { "heading": "Disparition sur {{planet}}", "text": "Vous avez perdu l'équipe. Une expédition sur cette planète peut vous retrouver ; si le Daedalus la quitte, vous mourez ici." },
     "share": "Partager le rapport",

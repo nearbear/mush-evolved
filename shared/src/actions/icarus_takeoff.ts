@@ -37,7 +37,7 @@ export class IcarusTakeoffAction extends Action<IcarusTakeoffActionData> {
   private refused(state: Readonly<GameState>, player: Readonly<PlayerState>): string | null {
     if (!canLaunchExpedition(state, player)) return "cant_fly";
     if (state.icarusLost) return "icarus_lost";
-    if (state.expedition) return "icarus_away";
+    if (state.expedition) return state.expedition.ship === null ? "icarus_away" : "expedition_away";
     const planet = orbitedPlanet(state);
     if (!planet) return "not_in_orbit";
     if (!hasUnexplored(planet)) return "explored";

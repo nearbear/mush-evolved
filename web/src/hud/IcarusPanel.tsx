@@ -29,7 +29,7 @@ export function IcarusPanel({ view, expedition, selected, onSelect, onShareRepor
   const aboard = view.players.filter((p) => p.alive && p.room === view.you.room);
   return (
     <section className="iso-room patrol-cockpit" aria-label={names.room(view.you.room)}>
-      <h2>{t("expedition.aboard", { planet: expedition.planet })}</h2>
+      <h2>{expedition.ship !== undefined ? t("expedition.aboardShip", { ship: names.room(expedition.ship), planet: expedition.planet }) : t("expedition.aboard", { planet: expedition.planet })}</h2>
       <p>{t("expedition.back", { time })}</p>
       <button type="button" className="big" disabled={!report} onClick={() => setReading(true)}>
         {t("expedition.read")}

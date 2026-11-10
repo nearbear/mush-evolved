@@ -6,7 +6,7 @@
 // to the Expeditions feature (owner, 2026-11-07, #356) as editable text; sharing again appends to its entry's thread.
 
 import { Dialog } from "@base-ui/react/dialog";
-import { MAX_SHARED_PLANET_LENGTH, type ExpeditionEvent, type ExpeditionReportView } from "@mush2/shared";
+import { MAX_SHARED_PLANET_LENGTH, patrolShip, type ExpeditionEvent, type ExpeditionReportView } from "@mush2/shared";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNames } from "../i18n/names.ts";
@@ -44,6 +44,15 @@ function ReportBody({ report, share }: { report: ExpeditionReportView; share: ((
   const [sharing, setSharing] = useState(false);
   const [posted, setPosted] = useState(false);
   const toText = useReportText();
+  const names = useNames();
+  // A patrol ship's loot is in the ship while away and in its bay once back (#359); the Icarus's likewise.
+  const ship = report.ship !== undefined ? patrolShip(report.ship) : undefined;
+  const lootLine = () =>
+    ship
+      ? report.away
+        ? t("expedition.lootAboardShip", { ship: names.room(ship.id) })
+        : t("expedition.lootOnFloorShip", { bay: names.room(ship.bay) })
+      : t(report.away ? "expedition.lootAboard" : "expedition.lootOnFloor");
   return (
     <>
       <DialogHeader heading={t("expedition.title", { planet: report.planet })} closeLabel={t("expedition.close")} />
@@ -65,7 +74,7 @@ function ReportBody({ report, share }: { report: ExpeditionReportView; share: ((
               <Event key={i} event={event} />
             ))}
           </ol>
-          {report.events.some((e) => (e.item !== undefined && e.kind !== "lostItem" && (e.amount ?? 0) > 0) || (e.found?.length ?? 0) > 0) && <p className="sub">{t(report.away ? "expedition.lootAboard" : "expedition.lootOnFloor")}</p>}
+          {report.events.some((e) => (e.item !== undefined && e.kind !== "lostItem" && (e.amount ?? 0) > 0) || (e.found?.length ?? 0) > 0) && <p className="sub">{lootLine()}</p>}
           {report.away && <p className="sub">{t("expedition.underWay")}</p>}
           {posted && <p className="sub" role="status">{t("expedition.shared")}</p>}
           {share && (

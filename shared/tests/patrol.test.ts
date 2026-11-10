@@ -36,7 +36,7 @@ describe("patrol ship numbers", () => {
       expect(s.equipment[p.id]).toEqual([{ id: commandId(p), type: p.kind === "pasiphae" ? "PASIPHAE_COMMAND" : "PATROL_COMMAND" }]);
       // Its interface is the bay equipment the map already has.
       expect(s.equipment[p.bay]!.some((e) => e.id === interfaceId(p) && e.type === "PATROL_INTERFACE")).toBe(true);
-      expect(s.patrolShips[p.id]).toEqual(p.kind === "pasiphae" ? { armor: 12, charges: 0, out: false, destroyed: false } : { armor: 10, charges: 10, out: false, destroyed: false });
+      expect(s.patrolShips[p.id]).toEqual(p.kind === "pasiphae" ? { armor: 12, charges: 0, out: false, destroyed: false, onPlanet: null } : { armor: 10, charges: 10, out: false, destroyed: false, onPlanet: null });
     }
   });
 });
@@ -58,7 +58,7 @@ describe("taking off", () => {
     expect(player(next, "p0")).toMatchObject({ room: LONGANE.id, ap: player(s, "p0").ap - s.config.patrol.takeoff.cost.ap });
     expect(player(next, "p0").spot).toBeUndefined();
     expect(player(next, "p1").room).toBe(BAY);
-    expect(next.patrolShips[LONGANE.id]).toEqual({ armor: 10, charges: 10, out: true, destroyed: false });
+    expect(next.patrolShips[LONGANE.id]).toEqual({ armor: 10, charges: 10, out: true, destroyed: false, onPlanet: null });
     // A Pilot always manoeuvres cleanly: the hull is untouched.
     expect(next.ship).toEqual(s.ship);
   });

@@ -349,6 +349,9 @@ export const DEFAULT_CONFIG: GameConfig = {
     stepMs: 10 * 60 * 1000,
     dirtyChance: 0.1,
     maxCrew: 4,
+    // Phase 5 (owner, 2026-11-09, #359): the hold extension holds 6; a patrol ship lands for 2 AP and explores half as far.
+    largerBayCrew: 6,
+    patrol: { cost: { ap: 2 }, sectorDivisor: 2 },
     sectors: 9,
     deadKeepItems: true,
     fatigue: 2,

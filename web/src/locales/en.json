@@ -32,6 +32,7 @@
     "hunters": "Hunters",
     "orbit": "Orbiting {{name}}",
     "expedition": "Expedition to {{planet}}: {{names}}, back in {{time}}",
+    "expeditionShip": "Expedition to {{planet}} in {{ship}}: {{names}}, back in {{time}}",
     "lost": "{{name}} is lost on {{planet}}"
   },
   "peek": {
@@ -377,6 +378,7 @@
     "fungalCuisine": "Fungal cuisine",
     "takeoff": "Take off",
     "icarus_takeoff": "Launch an expedition",
+    "land_on_planet": "Land on the planet",
     "u_turn": "Turn back to the Daedalus",
     "sabotage_expedition": "Sabotage the expedition",
     "land": "Land",
@@ -920,6 +922,11 @@
     "patrolLost": "NERON: {{room}} was left behind when the Daedalus jumped, and is lost.",
     "icarusLost": "NERON: the Icarus was left behind on {{planet}} when the Daedalus jumped, with its whole crew. It is lost.",
     "crewLost": "NERON: {{name}} is lost on {{planet}}.",
+    "patrolPlanetLanding": "{{name}} landed {{room}} on {{planet}}.",
+    "patrolNoSpacesuit": "You have no spacesuit, and {{planet}} has no oxygen: you can't land. {{room}} heads back to its bay.",
+    "patrolRecalled": "NERON: Magnetic return brought {{room}} back from {{planet}} when the Daedalus jumped.",
+    "patrolLeftOnPlanet": "NERON: {{room}} was left on the planet without its pilot, and is lost.",
+    "patrolRecovered": "{{room}} is back in its bay.",
     "icarusRecalled": "NERON: Magnetic return brought the Icarus back from {{planet}} when the Daedalus jumped.",
     "patrolUnloaded_one": "{{name}} unloaded {{count}} item from the ship.",
     "patrolUnloaded_other": "{{name}} unloaded {{count}} items from the ship.",
@@ -1656,6 +1663,7 @@
     "landing": "Landing",
     "uTurnHeading": "Turned back",
     "lootOnFloor": "Everything you found is on the floor of the Icarus Bay.",
+    "lootOnFloorShip": "Everything you found is on the floor of {{bay}}.",
     "events": {
       "nothing": "Nothing to report.",
       "fatigue": "The going is hard: the crew is worn out.",
@@ -1700,9 +1708,11 @@
       "unknown": "a creature"
     },
     "aboard": "In the Icarus, exploring {{planet}}",
+    "aboardShip": "In {{ship}}, exploring {{planet}}",
     "back": "Back in {{time}}",
     "underWay": "The expedition is still under way.",
     "lootAboard": "Everything found so far is on the Icarus's floor.",
+    "lootAboardShip": "Everything found so far is on the floor of {{ship}}.",
     "icarusAway": "The Icarus is away on an expedition.",
     "lost": { "heading": "Lost on {{planet}}", "text": "You lost the crew. An expedition to this planet may find you; if the Daedalus leaves it, you die here." },
     "share": "Share the report",

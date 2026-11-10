@@ -70,11 +70,17 @@ export const maxCharges = (charges: number, ship: PatrolShip): number => (ship.k
 
 /** Every ship docked, at full armor and charges. */
 export const newPatrolShips = (config: GameConfig): GameState["patrolShips"] =>
-  Object.fromEntries(PATROL_SHIPS.map((s) => [s.id, { armor: config.patrol.armor[s.kind], charges: maxCharges(config.patrol.charges, s), out: false, destroyed: false }]));
+  Object.fromEntries(PATROL_SHIPS.map((s) => [s.id, { armor: config.patrol.armor[s.kind], charges: maxCharges(config.patrol.charges, s), out: false, destroyed: false, onPlanet: null }]));
 
-/** Ships out and not destroyed: the ones hunters can aim at. */
+/** Ships out, not destroyed and not on a planet: the ones hunters can aim at. */
 export const shipsInFlight = (state: Readonly<GameState>): PatrolShip[] =>
-  PATROL_SHIPS.filter((s) => state.patrolShips[s.id]!.out && !state.patrolShips[s.id]!.destroyed);
+  PATROL_SHIPS.filter((s) => {
+    const ship = state.patrolShips[s.id]!;
+    return ship.out && !ship.destroyed && ship.onPlanet === null;
+  });
+
+/** Whether this ship sits on the orbited planet (owner, 2026-11-09, #359): nothing flies it until it docks. */
+export const onPlanet = (state: Readonly<GameState>, ship: Readonly<PatrolShip>): boolean => state.patrolShips[ship.id]!.onPlanet !== null;
 
 /** At a cycle change: each docked ship regains charges up to full (owner, 2026-10-24: only while docked). */
 export function rechargePatrolShips(state: GameState): void {

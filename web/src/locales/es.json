@@ -32,6 +32,7 @@
     "hunters": "Hunters",
     "orbit": "En órbita alrededor de {{name}}",
     "expedition": "Expedición a {{planet}}: {{names}}, de vuelta en {{time}}",
+    "expeditionShip": "Expedición a {{planet}} en {{ship}}: {{names}}, de vuelta en {{time}}",
     "lost": "{{name}} se ha perdido en {{planet}}"
   },
   "peek": {
@@ -381,6 +382,7 @@
     "fungalCuisine": "Cocina fúngica",
     "takeoff": "Despegar",
     "icarus_takeoff": "Partir de expedición",
+    "land_on_planet": "Aterrizar en el planeta",
     "u_turn": "Volver al Daedalus",
     "sabotage_expedition": "Sabotear la expedición",
     "land": "Aterrizar",
@@ -931,6 +933,11 @@
     "patrolLost": "NERON: nave perdida en el salto del Daedalus ({{room}}).",
     "icarusLost": "NERON: el Icarus se quedó en {{planet}} durante el salto del Daedalus, con toda su tripulación. Se ha perdido.",
     "crewLost": "NERON: {{name}} se ha perdido en {{planet}}.",
+    "patrolPlanetLanding": "{{name}} aterrizó con {{room}} en {{planet}}.",
+    "patrolNoSpacesuit": "No tienes traje espacial y {{planet}} no tiene oxígeno: no puedes aterrizar. {{room}} vuelve a su bahía.",
+    "patrolRecalled": "NERON: la repatriación magnética trajo de vuelta {{room}} desde {{planet}} durante el salto del Daedalus.",
+    "patrolLeftOnPlanet": "NERON: {{room}} se quedó en el planeta sin su piloto. Se ha perdido.",
+    "patrolRecovered": "{{room}} ha vuelto a su bahía.",
     "icarusRecalled": "NERON: la repatriación magnética trajo de vuelta el Icarus desde {{planet}} durante el salto del Daedalus.",
     "patrolUnloaded_one": "{{name}} descargó {{count}} objeto de la nave.",
     "patrolUnloaded_many": "{{name}} descargó {{count}} objetos de la nave.",
@@ -1578,6 +1585,7 @@
     "landing": "Aterrizaje",
     "uTurnHeading": "Media vuelta",
     "lootOnFloor": "Todo lo que encontraste está en el suelo de la Bahía Ícaro.",
+    "lootOnFloorShip": "Todo lo que encontraste está en el suelo de {{bay}}.",
     "events": {
       "nothing": "Nada que señalar.",
       "fatigue": "La exploración es dura: la tripulación está agotada.",
@@ -1627,9 +1635,11 @@
       "unknown": "una criatura"
     },
     "aboard": "En el Ícaro, explorando {{planet}}",
+    "aboardShip": "En {{ship}}, explorando {{planet}}",
     "back": "De vuelta en {{time}}",
     "underWay": "La expedición sigue en curso.",
     "lootAboard": "Todo lo encontrado hasta ahora está en el suelo del Ícaro.",
+    "lootAboardShip": "Todo lo encontrado hasta ahora está en el suelo de {{ship}}.",
     "icarusAway": "El Ícaro ha salido de expedición.",
     "lost": { "heading": "Te has perdido en {{planet}}", "text": "Has perdido a la tripulación. Una expedición a este planeta puede encontrarte; si el Daedalus se va, mueres aquí." },
     "share": "Compartir el informe",

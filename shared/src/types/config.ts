@@ -596,6 +596,10 @@ export interface GameConfig {
     stepMs: number; // Server time between steps: the landing, then each sector (owner, 2026-11-07: 10 real minutes in every game).
     dirtyChance: number; // Chance each living member comes back dirty (owner, 2026-11-07: 10%, a placeholder).
     maxCrew: number; // Most people aboard; the launcher always goes, the others are picked at random.
+    largerBayCrew: number; // `maxCrew` once the Icarus hold extension (ICARUS_LARGER_BAY) is done (owner, 2026-11-09, #359).
+    // A pilot's solo landing in a patrol ship (owner, 2026-11-09, #359): AP to land from flight, and the Icarus's sector
+    // count (Sprinters included) is divided by `sectorDivisor`, rounded down.
+    patrol: { cost: { ap: number }; sectorDivisor: number };
     sectors: number; // Most sectors explored after the landing, each one unexplored, drawn by its tag's `explo` weight.
     deadKeepItems: boolean; // Whether a member who dies brings their items back with the body (owner, 2026-10-31; the original: false).
     fatigue: number; // HP every living member loses.

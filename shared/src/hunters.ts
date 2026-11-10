@@ -139,6 +139,14 @@ export function retargetHunters(state: GameState, ship: PatrolShip, to: HunterTa
 }
 
 /**
+ * Hunters aiming at `ship` pick another target at once (owner, 2026-11-09, #359): it landed on a planet, out of their
+ * reach (`shipsInFlight` leaves it out). Mutates a cloned state.
+ */
+export function retargetNow(state: GameState, ship: PatrolShip): void {
+  for (const hunter of state.hunters.list) if (hunter.target?.kind === "patrol" && hunter.target.id === ship.id) hunter.target = pickTarget(state);
+}
+
+/**
  * A patrol ship is destroyed for good (owner, 2026-10-28): NERON tells the whole crew (`key` says how: shot down, or left
  * behind by a jump), and everyone aboard dies, since there are no spacesuits yet. Everything in the wreck, their bodies
  * and belongings too, floats off as debris (phase 5). Mutates a state the caller already cloned.

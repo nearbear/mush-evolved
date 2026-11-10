@@ -581,7 +581,10 @@ type PatrolShip = GameCore["patrolShips"][string];
 
 export function normalizePatrolShip(raw: Partial<PatrolShip>): PatrolShip {
   const t = "PatrolShip";
-  return stripUndefined<PatrolShip>({ armor: need(raw, "armor", t), charges: need(raw, "charges", t), out: need(raw, "out", t), destroyed: need(raw, "destroyed", t) });
+  return stripUndefined<PatrolShip>({ armor: need(raw, "armor", t), charges: need(raw, "charges", t), out: need(raw, "out", t), destroyed: need(raw, "destroyed", t),
+    // Phase 5 (#359): no ship could land on a planet before it.
+    onPlanet: added(raw, "onPlanet", null),
+  });
 }
 
 export function normalizeRelayToken(raw: Partial<RelayToken>): RelayToken {
@@ -670,6 +673,7 @@ export function normalizeExpedition(raw: Partial<ExpeditionReport>): ExpeditionR
     planet: need(raw, "planet", t),
     events: need(raw, "events", t).map(normalizeExpeditionEvent),
     lostAt: opt(raw.lostAt, (m) => ({ ...m })),
+    ship: raw.ship,
   });
 }
 
@@ -686,6 +690,8 @@ export function normalizeActiveExpedition(raw: Partial<ActiveExpedition>): Activ
     suitless: copy(added(raw, "suitless", [])),
     // Slice D (#358): nobody could sabotage before it.
     sabotaged: added(raw, "sabotaged", false),
+    // Phase 5 (#359): only the Icarus went before it.
+    ship: added(raw, "ship", null),
   });
 }
 

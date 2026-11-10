@@ -3,7 +3,7 @@ import { board, manoeuvre } from "./takeoff.ts";
 import { retargetHunters } from "../hunters.ts";
 import { sameContainer } from "../items.ts";
 import { logSecret } from "../log.ts";
-import { commandId, shipAboard } from "../patrol.ts";
+import { commandId, onPlanet, type PatrolShip, shipAboard } from "../patrol.ts";
 import type { GameState, PlayerState } from "../types.ts";
 
 export type LandActionData = { type: "land"; equipment: string };
@@ -26,14 +26,16 @@ export class LandAction extends Action<LandActionData> {
     return { ap: state.config.patrol.land.cost.ap, mp: 0 };
   }
 
-  override getCandidates(_state: Readonly<GameState>, player: Readonly<PlayerState>): LandActionData[] {
+  override getCandidates(state: Readonly<GameState>, player: Readonly<PlayerState>): LandActionData[] {
     const ship = shipAboard(player);
-    return ship ? [{ type: "land", equipment: commandId(ship) }] : [];
+    return ship && !onPlanet(state, ship) ? [{ type: "land", equipment: commandId(ship) }] : [];
   }
 
-  override validate(_state: Readonly<GameState>, player: Readonly<PlayerState>, target: LandActionData): string | null {
+  override validate(state: Readonly<GameState>, player: Readonly<PlayerState>, target: LandActionData): string | null {
     const ship = shipAboard(player);
-    return ship && commandId(ship) === target.equipment ? null : "not_flying";
+    if (!ship || commandId(ship) !== target.equipment) return "not_flying";
+    // On a planet, the ship docks when its expedition ends (owner, 2026-11-09, #359).
+    return onPlanet(state, ship) ? "on_planet" : null;
   }
 
   override injuryChance(state: Readonly<GameState>): number {
@@ -42,14 +44,24 @@ export class LandAction extends Action<LandActionData> {
 
   override apply(state: GameState, player: PlayerState): void {
     const ship = shipAboard(player)!; // checked, so it exists
-    board(player, ship.bay);
-    state.patrolShips[ship.id]!.out = false;
-    retargetHunters(state, ship, { kind: "ship" });
-    logSecret(state, player.id, "patrolLanded", { name: player.character, room: ship.id });
-    const cargo = state.items.filter((item) => sameContainer(item.at, { kind: "room", id: ship.id }));
-    for (const item of cargo) item.at = { kind: "room", id: ship.bay };
-    const count = cargo.filter((item) => item.hiddenBy === undefined).length;
-    if (count > 0) logSecret(state, player.id, "patrolUnloaded", { name: player.character, count });
+    dock(state, player, ship);
     manoeuvre(state, player, ship);
   }
+}
+
+/**
+ * The ship back in its bay with its pilot, without the maneuver: a landing, or the end of a patrol ship's expedition
+ * on a planet (expeditions.ts, owner, 2026-11-09, #359). Mutates a cloned state.
+ */
+export function dock(state: GameState, player: PlayerState, ship: PatrolShip): void {
+  board(player, ship.bay);
+  const shipState = state.patrolShips[ship.id]!;
+  shipState.out = false;
+  shipState.onPlanet = null;
+  retargetHunters(state, ship, { kind: "ship" });
+  logSecret(state, player.id, "patrolLanded", { name: player.character, room: ship.id });
+  const cargo = state.items.filter((item) => sameContainer(item.at, { kind: "room", id: ship.id }));
+  for (const item of cargo) item.at = { kind: "room", id: ship.bay };
+  const count = cargo.filter((item) => item.hiddenBy === undefined).length;
+  if (count > 0) logSecret(state, player.id, "patrolUnloaded", { name: player.character, count });
 }

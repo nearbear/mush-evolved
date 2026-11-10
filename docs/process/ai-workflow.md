@@ -2878,3 +2878,18 @@ Seven actions return `paidBy: "eng"` (0 AP) while `resources.eng > 0`, same patt
 
 ## 2026-11-09: Engineer skill grants Engineer points
 Added `config.engineer` (cap 2, 1 a day, 2 on pick), an `engineerPointsPerDay` hook, the day-start grant and `RESOURCE_SKILLS` entry. Followed the designer skill's shape, adding a separate `pointsOnPick` since pick and daily amounts differ here. Test added.
+
+### 2026-11-09: Expeditions phase 5 (#359): larger Icarus bay, patrol-ship landings, no dropping on expeditions
+
+- Built the owner's phase 5 decisions: `ICARUS_LARGER_BAY` (6 crew), solo patrol-ship landings (`land_on_planet`, 2 AP after the patrol takeoff, floor((9 + Sprinters) / 2) sectors, one expedition at a time, the ship docks itself, untargetable on the planet, lost with its pilot), and no dropping items aboard a craft or while lost. NERON piloting lock deferred; phases 3/4 leftovers deferred (#357 closed).
+- Reused the Icarus machinery (`expeditionCraft`, `maxCrew`, a shared `dock()` helper) rather than a parallel patrol path; new state fields got `normalizeState` defaults, so no version bump.
+- Readings flagged for the owner where the answers were silent: a ship that never touched down returns to flight, a found pilot's ship docks at once, a Sprinter's extra sector counts before halving.
+- Needed correction: a `git stash -u` used for a baseline verify swallowed the whole uncommitted change when the run was interrupted; it was restored. Baseline comparisons now use a throwaway worktree. That comparison showed the GoalBot "only legal actions" timeout (5s) is pre-existing on `main`, not from this change.
+- Leak check found no leaks; it added a test that `PatrolShip.onPlanet` never reaches any view.
+
+## 2026-11-09: Sleepers centred on their beds
+
+- **Bug:** someone lying in a bed was drawn off-centre (hanging off the sick bay couch, floating above the bedroom beds). We put them on the middle cell of the bed's footprint and ignored the map's binding data.
+- **Fix:** the original client (`HumanNPC.layDown`) puts the sleeper on the bed tile's cell plus the binding's `ofsx`/`ofsy` pixels, mirrored when `flipped`. `lyingPose` in `web/src/iso/placement.ts` does the same (falling back to the footprint middle for a bed with no data, a built sofa); actors take a pixel `shift`.
+- **What worked:** reading the original client before tuning numbers, since the offsets were already in `ship-map.json`. With no dev server and no easy way to put someone in bed, a throwaway offline composite (`placeScene` plus the cast sheet's lying frame, old vs new) checked by the visual-check agent confirmed all 7 beds.
+- Owner review of the readings: a suitless pilot now can't land at all and the ship docks with a private message (Claude's "back in flight" reading was overruled; deliberately unlike the Icarus); the other two readings confirmed. The leak check's note became a rule: the "ship lost on the planet" line follows the BIOS death announcements. The pre-existing GoalBot test got a 20s timeout.
