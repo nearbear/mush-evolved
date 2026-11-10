@@ -539,10 +539,16 @@ export const DEFAULT_CONFIG: GameConfig = {
   // Terminals' chairs stay out: they are map data the rules read from the map (`terminalChairs`, spot.ts), not game state.
   equipment: { ...Object.fromEntries(SHIP_ROOMS.map((r) => [r.id, r.equipment.map(({ id, type }) => ({ id, type }))])), ...patrolEquipment() },
   diseases:  {
-    allDiseases: ["cold_disease", "extreme_tinnitus_disease", "fungal_infection_disease"],
+    allDiseases: [
+      "cold_disease",
+      "extreme_tinnitus_disease",
+      "fungal_infection_disease"],
     allDisorders: ["depression_disorder"],
     allInjuries: ["broken_nose_injury"],
-    allDiseaseStats: [{type: "disease", durationMin: 8, durationMax: 12, roomSpread: 0.02}, {type: "disease", durationMin: 12, durationMax: 20}],
+    allDiseaseStats: [
+      {type: "disease", durationMin: 8, durationMax: 12, roomSpread: 0.02}, 
+      {type: "disease", durationMin: 12, durationMax: 20}, 
+      {type: "disease", durationMin: 8, durationMax: 12}],
     allDisorderStats: [{type: "disorder", resistance: 8}],
     allInjuryStats: [{type: "injury"}],
     },
