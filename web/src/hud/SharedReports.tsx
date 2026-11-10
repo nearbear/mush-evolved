@@ -6,9 +6,11 @@ import { useTranslation } from "react-i18next";
 import type { ChannelId, PlayerView, SharedReport, SharedReportId } from "@mush2/shared";
 import { useNames } from "../i18n/names.ts";
 import { Thread } from "./Thread.tsx";
+import { UnreadChip } from "./UnreadChip.tsx";
 
 export function SharedReports({
   view,
+  active = true,
   picked,
   onPick,
   onRead,
@@ -16,6 +18,8 @@ export function SharedReports({
   onToggle,
 }: {
   view: PlayerView;
+  /** This feature is on screen: the thread picked places its "New messages" divider (#400). */
+  active?: boolean;
   /** The shared report on screen, or null for the general thread. Kept by the iTrackie, which announces it. */
   picked: SharedReportId | null;
   onPick: (id: SharedReportId | null) => void;
@@ -58,6 +62,7 @@ export function SharedReports({
             <li className="channel-slot">
               <button type="button" className="channel-slot-pick" aria-pressed={picked === null} onClick={() => onPick(null)}>
                 {general}
+                <UnreadChip channel="expeditions" total={view.chatCounts.expeditions ?? 0} />
               </button>
             </li>
             {listed.map((e) => (
@@ -65,6 +70,7 @@ export function SharedReports({
                 <button type="button" className="channel-slot-pick shared-planet-pick" aria-pressed={e.id === picked} onClick={() => onPick(e.id)}>
                   {/* The first line only, to fit a row; who shared it and when head its thread. */}
                   <span className="shared-planet-name">{firstLine(e)}</span>
+                  <UnreadChip channel={e.id} total={view.chatCounts[e.id] ?? 0} />
                 </button>
               </li>
             ))}
@@ -73,7 +79,7 @@ export function SharedReports({
       )}
       {/* One block per thread, hidden with CSS, so each keeps its own draft. */}
       <div className="feature" hidden={picked !== null}>
-        <Thread view={view} channel="expeditions" placeholder={t("itrackie.featurePlaceholder", { name })} onSend={(text) => onChat("expeditions", text)} onToggle={onToggle} />
+        <Thread view={view} channel="expeditions" placeholder={t("itrackie.featurePlaceholder", { name })} onSend={(text) => onChat("expeditions", text)} onToggle={onToggle} active={active && picked === null} />
       </div>
       {view.sharedReports.map((e) => (
         <div key={e.id} className="feature" hidden={e.id !== picked}>
@@ -83,6 +89,7 @@ export function SharedReports({
             placeholder={t("itrackie.sharedReports.placeholder")}
             onSend={(text) => onChat(e.id, text)}
             onToggle={onToggle}
+            active={active && e.id === picked}
             headKey={[e, byLine(e)]}
             head={
               // Plain text, never markdown: it is shown as the player wrote it.

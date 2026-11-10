@@ -660,6 +660,20 @@
       "loading": "Cargando…",
       "latestNew_many": "Última página ({{count}} nuevos)"
     },
+    "unread": {
+      "divider": "Mensajes nuevos",
+      "bar_one": "{{count}} mensaje nuevo",
+      "bar_other": "{{count}} mensajes nuevos",
+      "bar_many": "{{count}} mensajes nuevos",
+      "jump": "Ir",
+      "jumpLabel": "Ir al primer mensaje nuevo",
+      "chip_one": "{{count}} sin leer",
+      "chip_other": "{{count}} sin leer",
+      "chip_many": "{{count}} sin leer",
+      "featureLabel_one": "{{name}}, {{count}} sin leer en otras funciones",
+      "featureLabel_other": "{{name}}, {{count}} sin leer en otras funciones",
+      "featureLabel_many": "{{name}}, {{count}} sin leer en otras funciones"
+    },
     "sharedReports": {
       "mine": "Tus expediciones",
       "isShared": "Compartido",

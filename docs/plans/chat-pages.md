@@ -56,3 +56,22 @@ As built: the cache is a context (`web/src/chatPages.tsx`) owned by `GameScreen`
 ## Wrap-up
 
 Decisions into `docs/rules/rules-design.md` and the code map; a headless sim showing the view's size stays flat as chat grows (#281/#338); one `ai-workflow.md` entry.
+
+## Read state: divider, unread bar and chips (#400)
+
+Decided with the owner on 2026-11-09:
+
+- **Divider.** "New messages" goes before the first message unread when the channel was opened (its tab, thread,
+  feature or entry picked), and stays put as you read. Each opening places it afresh. With none placed, unread that
+  arrives and isn't marked (the window wasn't focused) places one. Never above only your own messages. Posting and
+  Mark all read drop it; posting also marks the channel read on the client, as the server does.
+- **Opening a channel** still lands at the bottom of its latest page, not at the divider.
+- **Unread bar.** While the divider is out of sight (on an earlier page, or scrolled above the feed), a bar between
+  the page bar and the feed says how many are new and offers **Jump** only. Jump goes to the divider's page and
+  scrolls it to the top; from the keyboard, focus moves to the first new message (which marks it read). A divider on a
+  later page has no bar: » shows the count there.
+- **Chips.** One channel's unread at the end of its row: each thread, private channel, shared planet or report, the
+  general row of Astrophysics and Expeditions, and each feature in the drop-down (its shared entries included). The
+  drop-down's trigger counts the *other* features, since the one picked is on screen.
+- **Known limitation:** on the latest page, a new message scrolls the feed back to the bottom (`Scroller`), even after
+  a jump up to the divider. It affects all chat; not changed here.

@@ -660,6 +660,20 @@
       "loading": "Chargement…",
       "latestNew_many": "Dernière page ({{count}} nouveaux)"
     },
+    "unread": {
+      "divider": "Nouveaux messages",
+      "bar_one": "{{count}} nouveau message",
+      "bar_other": "{{count}} nouveaux messages",
+      "bar_many": "{{count}} nouveaux messages",
+      "jump": "Aller",
+      "jumpLabel": "Aller au premier nouveau message",
+      "chip_one": "{{count}} non lu",
+      "chip_other": "{{count}} non lus",
+      "chip_many": "{{count}} non lus",
+      "featureLabel_one": "{{name}}, {{count}} non lu dans les autres fonctionnalités",
+      "featureLabel_other": "{{name}}, {{count}} non lus dans les autres fonctionnalités",
+      "featureLabel_many": "{{name}}, {{count}} non lus dans les autres fonctionnalités"
+    },
     "sharedReports": {
       "mine": "Vos expéditions",
       "isShared": "Partagé",

@@ -652,6 +652,17 @@
       "latestNew_other": "Latest page ({{count}} new)",
       "loading": "Loading…"
     },
+    "unread": {
+      "divider": "New messages",
+      "bar_one": "{{count}} new message",
+      "bar_other": "{{count}} new messages",
+      "jump": "Jump",
+      "jumpLabel": "Jump to the first new message",
+      "chip_one": "{{count}} unread",
+      "chip_other": "{{count}} unread",
+      "featureLabel_one": "{{name}}, {{count}} unread in other features",
+      "featureLabel_other": "{{name}}, {{count}} unread in other features"
+    },
     "sharedReports": {
       "mine": "Your expeditions",
       "isShared": "Shared",

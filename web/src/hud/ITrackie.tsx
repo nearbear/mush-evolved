@@ -10,7 +10,8 @@ import { useNames } from "../i18n/names.ts";
 import { Tabs } from "@base-ui/react/tabs";
 import { FEATURE_CHANNELS, ITRACKIE_ITEM, GRAVEYARD_CHANNEL, MUSH_CHANNEL, jsonEqual, type ChannelId, type LogLine, type FeatureChannel, type PlayerView, type SharedPlanetId, type SharedReportId, type ThreadId } from "@mush2/shared";
 import { useChatReadStore, useReadSnapshot } from "../chatRead.ts";
-import { readAllOn, unreadByTab, type TabId } from "./chatTabs.ts";
+import { readAllOn, unreadByFeature, unreadByTab, type TabId } from "./chatTabs.ts";
+import { MarkAllContext } from "./unreadDivider.ts";
 import { useAnnouncements } from "./useAnnouncements.ts";
 import { FeatureSelect } from "./FeatureSelect.tsx";
 import { Hint, IconTab } from "./IconButton.tsx";
@@ -50,9 +51,9 @@ const TAB_TITLES = {
  * Unread messages on each tab (#400): each readable channel's count less the count read, summed by tab. The active tab
  * counts too (owner, 2026-11-08). With no read store (a replay, the design kit), nothing is unread.
  */
-function useUnread(view: Pick<PlayerView, "readChannels" | "chatCounts">): Record<TabId, number> {
+function useUnread(view: Pick<PlayerView, "readChannels" | "chatCounts">): { tabs: Record<TabId, number>; features: Partial<Record<FeatureChannel, number>> } {
   const read = useReadSnapshot();
-  return read ? unreadByTab(view, read) : NO_UNREAD;
+  return read ? { tabs: unreadByTab(view, read), features: unreadByFeature(view, read) } : { tabs: NO_UNREAD, features: {} };
 }
 
 /**
@@ -138,11 +139,16 @@ export function ITrackie({
   // The dead have no room log and no private channels (#45): those tabs go, and they land on global chat.
   const alive = view.you.alive;
   const activeTab: TabId = !alive && (tab === "room" || tab === "private") ? "global" : (tab === "mush" && !mush) || (tab === "graveyard" && !graveyard) ? "room" : tab;
-  const unread = useUnread(view);
+  const { tabs: unread, features: featureUnread } = useUnread(view);
   const readStore = useChatReadStore();
   // Mark all read (#400): every channel read on the active tab, so a grouped tab (threads, features with their shared
-  // planets and reports, private channels) marks them all. The Room tab has no chat.
-  const markAllRead = () => readStore?.markAll(readAllOn(view, activeTab));
+  // planets and reports, private channels) marks them all. The Room tab has no chat. Each bump drops every feed's
+  // "New messages" divider (`MarkAllContext`).
+  const [markedAll, setMarkedAll] = useState(0);
+  const markAllRead = () => {
+    readStore?.markAll(readAllOn(view, activeTab));
+    setMarkedAll((n) => n + 1);
+  };
   const tabLabel = (tab: TabId, name: string) => (unread[tab] ? t("itrackie.unreadTab", { name, count: unread[tab] }) : name);
   const carrying = view.inventory.some((i) => i.type === ITRACKIE_ITEM);
   // Threads tab: the open thread (null for the list), and the new-thread form's
@@ -180,6 +186,7 @@ export function ITrackie({
   useAnnouncements(view, reading, quiet);
 
   return (
+    <MarkAllContext.Provider value={markedAll}>
     <div className="kit-panel itrackie">
       <ExpeditionReportDialog report={view.expeditions.find((r) => r.id === report)} onClose={() => setReport(null)} canShare={view.canShareReports} onShare={onShareReport} />
       <Tabs.Root className="itrackie-tabs-root" value={activeTab} onValueChange={(v) => setTab(v as TabId)}>
@@ -239,12 +246,13 @@ export function ITrackie({
           </Tabs.Panel>
 
           <Tabs.Panel className="itrackie-panel" value="global" aria-label={t(TAB_TITLES.global)} keepMounted>
-            <Thread view={view} channel="global" placeholder={t("itrackie.globalPlaceholder")} onSend={(text) => onChat("global", text)} onToggle={onToggle} threadLinks={threadLinks} />
+            <Thread view={view} channel="global" placeholder={t("itrackie.globalPlaceholder")} onSend={(text) => onChat("global", text)} onToggle={onToggle} threadLinks={threadLinks} active={activeTab === "global"} />
           </Tabs.Panel>
 
           <Tabs.Panel className="itrackie-panel" value="threads" aria-label={t(TAB_TITLES.threads)} keepMounted>
             <Threads
               view={view}
+              active={activeTab === "threads"}
               open={shownThread?.id ?? null}
               onOpen={setOpenThread}
               name={threadName}
@@ -265,7 +273,7 @@ export function ITrackie({
           </Tabs.Panel>
 
           <Tabs.Panel className="itrackie-panel" value="features" aria-label={t(TAB_TITLES.features)} keepMounted>
-            <FeatureSelect value={feature} onChange={setFeature} />
+            <FeatureSelect value={feature} onChange={setFeature} unread={featureUnread} />
             {/* One block per feature, hidden with CSS, so each keeps its own draft. */}
             {FEATURE_CHANNELS.map((f) => {
               const name = t(`itrackie.features.${f}`);
@@ -273,7 +281,7 @@ export function ITrackie({
               if (f === "astrophysics") {
                 return (
                   <div key={f} className="feature" hidden={f !== feature}>
-                    <SharedPlanets view={view} picked={shownSharedPlanet} onPick={setSharedPlanet} showStale={showStale} onShowStale={setShowStale} onChat={onChat} onToggle={onToggle} />
+                    <SharedPlanets view={view} active={activeTab === "features" && feature === f} picked={shownSharedPlanet} onPick={setSharedPlanet} showStale={showStale} onShowStale={setShowStale} onChat={onChat} onToggle={onToggle} />
                   </div>
                 );
               }
@@ -281,7 +289,7 @@ export function ITrackie({
               if (f === "expeditions") {
                 return (
                   <div key={f} className="feature" hidden={f !== feature}>
-                    <SharedReports view={view} picked={shownSharedReport} onPick={setSharedReport} onRead={setReport} onChat={onChat} onToggle={onToggle} />
+                    <SharedReports view={view} active={activeTab === "features" && feature === f} picked={shownSharedReport} onPick={setSharedReport} onRead={setReport} onChat={onChat} onToggle={onToggle} />
                   </div>
                 );
               }
@@ -300,6 +308,7 @@ export function ITrackie({
                   placeholder={t("itrackie.featurePlaceholder", { name })}
                   onSend={(text) => onChat(f, text)}
                   onToggle={onToggle}
+                  active={activeTab === "features" && feature === f}
                 />
               </div>
               );
@@ -308,23 +317,24 @@ export function ITrackie({
 
           {mush && (
             <Tabs.Panel className="itrackie-panel" value="mush" aria-label={t(TAB_TITLES.mush)} keepMounted>
-              <Thread view={view} channel={MUSH_CHANNEL} placeholder={t("itrackie.mushPlaceholder")} onSend={(text) => onChat(MUSH_CHANNEL, text)} onToggle={onToggle} />
+              <Thread view={view} channel={MUSH_CHANNEL} placeholder={t("itrackie.mushPlaceholder")} onSend={(text) => onChat(MUSH_CHANNEL, text)} onToggle={onToggle} active={activeTab === "mush"} />
             </Tabs.Panel>
           )}
 
           {graveyard && (
             <Tabs.Panel className="itrackie-panel" value="graveyard" aria-label={t(TAB_TITLES.graveyard)} keepMounted>
-              <Thread view={view} channel={GRAVEYARD_CHANNEL} placeholder={t("itrackie.graveyardPlaceholder")} onSend={(text) => onChat(GRAVEYARD_CHANNEL, text)} onToggle={onToggle} />
+              <Thread view={view} channel={GRAVEYARD_CHANNEL} placeholder={t("itrackie.graveyardPlaceholder")} onSend={(text) => onChat(GRAVEYARD_CHANNEL, text)} onToggle={onToggle} active={activeTab === "graveyard"} />
             </Tabs.Panel>
           )}
 
           <Tabs.Panel className="itrackie-panel" value="private" aria-label={t(TAB_TITLES.private)} keepMounted>
-            <PrivateChannels view={view} onChat={onChat} onToggle={onToggle} {...channels} />
+            <PrivateChannels view={view} active={activeTab === "private"} onChat={onChat} onToggle={onToggle} {...channels} />
           </Tabs.Panel>
         </div>
         <TabOutline />
       </Tabs.Root>
     </div>
+    </MarkAllContext.Provider>
   );
 }
 

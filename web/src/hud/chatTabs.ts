@@ -1,6 +1,6 @@
 // Which iTrackie tab each chat channel is read in, and the unread on each tab (#400).
 
-import { GRAVEYARD_CHANNEL, MUSH_CHANNEL, unreadCount, type ChannelId, type ChatRead, type PlayerView } from "@mush2/shared";
+import { FEATURE_CHANNELS, GRAVEYARD_CHANNEL, MUSH_CHANNEL, unreadCount, type ChannelId, type ChatRead, type FeatureChannel, type PlayerView } from "@mush2/shared";
 
 export type TabId = "room" | "global" | "threads" | "features" | "private" | "mush" | "graveyard";
 
@@ -24,4 +24,22 @@ export function unreadByTab(view: Pick<PlayerView, "readChannels" | "chatCounts"
 /** What Mark all read raises on `tab`: each channel read there, at its message count (#400). */
 export function readAllOn(view: Pick<PlayerView, "readChannels" | "chatCounts">, tab: TabId): ChatRead {
   return Object.fromEntries(view.readChannels.filter((c) => tabOf(c) === tab).map((c) => [c, view.chatCounts[c] ?? 0]));
+}
+
+/** Which feature a Features-tab channel belongs to: shared planets to Astrophysics, shared reports to Expeditions. */
+export function featureOf(channel: ChannelId): FeatureChannel | null {
+  if (channel.startsWith("sp-")) return "astrophysics";
+  if (channel.startsWith("sr-")) return "expeditions";
+  return (FEATURE_CHANNELS as readonly string[]).includes(channel) ? (channel as FeatureChannel) : null;
+}
+
+/** Unread per feature, for the feature drop-down: each feature's own channel plus its shared entries (#400). */
+export function unreadByFeature(view: Pick<PlayerView, "readChannels" | "chatCounts">, read: Readonly<ChatRead>): Partial<Record<FeatureChannel, number>> {
+  const counts: Partial<Record<FeatureChannel, number>> = {};
+  for (const channel of view.readChannels) {
+    const feature = featureOf(channel);
+    const n = feature ? unreadCount(view.chatCounts, read, channel) : 0;
+    if (feature && n > 0) counts[feature] = (counts[feature] ?? 0) + n;
+  }
+  return counts;
 }
