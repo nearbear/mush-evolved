@@ -9,12 +9,12 @@ import { IsoRoom } from "./IsoRoom.tsx";
 
 type Props = ComponentProps<typeof IsoRoom>;
 /** The part of the props that describes the room itself, frozen while walking out of it. */
-type Scene = Pick<Props, "room" | "occupants" | "nearby" | "corpses" | "equipment">;
+type Scene = Pick<Props, "room" | "occupants" | "nearby" | "corpses" | "equipment" | "onFire">;
 
 const NOTHING_REACHABLE = new Set<RoomId>();
 
 export function LeavingIsoRoom(props: Omit<Props, "leavingTo" | "onLeft">) {
-  const live: Scene = { room: props.room, occupants: props.occupants, nearby: props.nearby, corpses: props.corpses, equipment: props.equipment };
+  const live: Scene = { room: props.room, occupants: props.occupants, nearby: props.nearby, corpses: props.corpses, equipment: props.equipment, onFire: props.onFire };
   // The room as last drawn live, and the one being walked out of, if any.
   const last = useRef(live);
   const [leaving, setLeaving] = useState<Scene | null>(null);

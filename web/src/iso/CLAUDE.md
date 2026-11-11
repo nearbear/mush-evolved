@@ -106,6 +106,10 @@ Loaded when working on the isometric view. The UI rules in `web/CLAUDE.md` still
   draws a tile as another slice of the same size: `core_pilgred` becomes the animated
   `core_pilgred_upgrade` once the view's public `pilgredRepaired` is true, and `human_tank`
   becomes `human_tank_full` once `humanTankFull` is true (a Mush has died on the ship).
+- Room fire particles (`CellFire`, `pixi/fire.ts`): when a room is on fire (`PlayerView.roomOnFire`),
+  the Pixi renderer attaches dynamic particle emitters to random ground tiles of the room (at least 8,
+  or ~20%, up to 30, from `Grid.hx`) using slices `FX_FIRE_X` and `FX_FIRE_X2` from `fx.png`, aging
+  particles through four stages: yellow, orange, red, and smoke.
 
 ## Where the animations are
 

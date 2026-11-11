@@ -21,12 +21,14 @@
 import { Application, Container, type Filter, Rectangle, RendererType, Sprite, Texture, TextureStyle, TilingSprite } from "pixi.js";
 // Pixi's shader code without `new Function`, which the CSP forbids (web/public/_headers).
 import "pixi.js/unsafe-eval";
+import { FX_SHEET } from "../../art/assets.ts";
 import { keyedUrl } from "../../art/keyedSprite.ts";
 import { animId, animStep, frameAt, PACE_SPEED, type FrameUpdate, type Scene, type SceneImage, type SceneOutline, type ScenePicture, type SceneSprite, type ShipTurn } from "../scene.ts";
 import { shiftTile, stepTurn, tilePosition, type TurnLimits } from "../skyTurn.ts";
 import { starfield, starLayer } from "../starfield.ts";
 import { ESP, espPulse, filterKey, lookOf } from "./effects.ts";
 import { EspFilters, lookFilter } from "./filters.ts";
+import { RoomFire } from "./fire.ts";
 
 TextureStyle.defaultOptions.scaleMode = "nearest";
 
@@ -153,9 +155,12 @@ export class PixiRenderer {
   private lastTick = 0;
   private camera = { x: 0, y: 0 };
   private readonly world = new Container();
+  private readonly ground = new Container();
   private readonly sprites = new Container();
   private readonly outlines = new Container();
+  private readonly fire = new RoomFire();
   private readonly drawn = new Map<string, Drawn>();
+  private groundOrder: Drawn[] = [];
   private order: Drawn[] = [];
   private outlineOrder: Drawn[] = [];
   private walkers: Drawn[] = [];
@@ -199,7 +204,13 @@ export class PixiRenderer {
     }
     // Pixi's own input handling is unused: IsoRoom hit-tests against the art itself.
     this.app.stage.eventMode = "none";
-    this.world.addChild(this.sprites, this.outlines);
+    this.world.addChild(this.ground, this.fire.container, this.sprites, this.outlines);
+    void imageTexture(FX_SHEET, false).then((base) => {
+      if (this.destroyed) return;
+      const fireTextures = Array.from({ length: 6 }, (_, i) => frameTexture(base, `fx_fire_${i}`, 5 + i * 3, 0, 3, 3));
+      this.fire.setTextures(fireTextures);
+      if (this.fire.active) this.requestRender();
+    });
     const layer = (texture: Texture, size: number, parallax: number, rate: number): SkyLayer => ({
       sprite: new TilingSprite({ texture, width: this.app.screen.width, height: this.app.screen.height }),
       parallax,
@@ -254,16 +265,25 @@ export class PixiRenderer {
     this.noteTurn(scene.turn);
     this.setPlanet(scene.planet);
     const seen = new Set<string>();
-    const sprites = this.sync(scene.sprites, "", this.sprites, this.order, seen, (d, s) => this.paintSprite(d, s));
+    const groundPics = scene.sprites.filter((s) => s.kind === "ground");
+    const spritePics = scene.sprites.filter((s) => s.kind !== "ground");
+    const ground = this.sync(groundPics, "", this.ground, this.groundOrder, seen, (d, s) => this.paintSprite(d, s));
+    const sprites = this.sync(spritePics, "", this.sprites, this.order, seen, (d, s) => this.paintSprite(d, s));
     const outlines = this.sync(scene.outlines, OUTLINE, this.outlines, this.outlineOrder, seen, (d, o) => this.paintOutline(d, o));
+    if (scene.onFire && scene.groundTiles?.length) {
+      this.fire.setFire(scene.room, scene.groundTiles, this.reducedMotion.matches);
+    } else {
+      this.fire.unsetFire();
+    }
     for (const [key, d] of this.drawn) {
       if (seen.has(key)) continue;
       d.sprite.destroy();
       this.drawn.delete(key);
     }
+    this.groundOrder = ground;
     this.order = sprites;
     this.outlineOrder = outlines;
-    const all = [...sprites, ...outlines];
+    const all = [...ground, ...sprites, ...outlines];
     this.walkers = all.filter((d) => d.pic.walker);
     this.animated = all.filter((d) => d.pic.anim);
     this.pulsing = scene.outlines.some((o) => o.occluded && !o.faint);
@@ -409,6 +429,7 @@ export class PixiRenderer {
     for (const f of this.looks.values()) f.destroy();
     this.esp?.pulsing.destroy();
     this.esp?.faint.destroy();
+    this.fire.destroy();
   }
 
   /** A color token from styles/tokens.css, as the page has it. */
@@ -533,13 +554,17 @@ export class PixiRenderer {
       this.dirty = true;
     }
     const streams = this.speed !== 0 || this.speed !== this.cruise || this.turning();
-    if (!streams) this.lastTick = 0;
+    if (dt > 0 && this.fire.active) {
+      this.fire.update(dt, this.reducedMotion.matches);
+      this.dirty = true;
+    }
+    if (!streams && !this.fire.active) this.lastTick = 0;
     const pulse = this.pulsing && !this.reducedMotion.matches;
     if (this.esp) {
       this.esp.pulsing.alpha = espPulse(now, this.reducedMotion.matches);
       if (pulse) this.dirty = true;
     }
     if (this.dirty) this.renderNow();
-    if (playing || pulse || streams) this.raf = requestAnimationFrame(this.tick);
+    if (playing || pulse || streams || this.fire.active) this.raf = requestAnimationFrame(this.tick);
   };
 }
