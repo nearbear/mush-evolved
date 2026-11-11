@@ -1,5 +1,5 @@
 // How long ago something happened, as the short caption beside iTrackie
-// entries: "<1min ago", "47min ago", "1h ago", "1d2h ago". Pure, so it is tested alone.
+// entries: "<1m", "47m", "1h", "1d2h". Pure, so it is tested alone.
 
 export type Recency =
   | { key: "lessThanMinute" }

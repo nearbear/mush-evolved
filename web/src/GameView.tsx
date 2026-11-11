@@ -241,6 +241,7 @@ export function GameView({ view: given, send, onLeave, waking = false, cheatsAll
               <LeavingIsoRoom
                 layout={layout}
                 room={you.room}
+                onFire={view.roomOnFire}
                 occupants={[you, ...view.players.filter((p) => p.room === you.room)]
                   .sort((a, b) => a.id.localeCompare(b.id))
                   .map(occupant)}

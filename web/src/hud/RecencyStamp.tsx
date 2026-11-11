@@ -1,4 +1,4 @@
-// The small "47min ago" caption on iTrackie log lines and chat messages.
+// The small "47m" caption on iTrackie log lines and chat messages.
 // Hovering, focusing or tapping it shows the exact time in the player's own
 // time zone (a popover rather than a tooltip, so touch can open it too).
 

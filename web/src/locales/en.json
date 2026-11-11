@@ -582,11 +582,11 @@
     "featurePlaceholder": "Message the {{name}} thread…",
     "needITrackieTrack": "You need an iTrackie in your inventory to track anything.",
     "ago": {
-      "lessThanMinute": "<1min ago",
-      "minutes": "{{count}}min ago",
-      "hours": "{{count}}h ago",
-      "days": "{{days}}d ago",
-      "daysHours": "{{days}}d{{hours}}h ago"
+      "lessThanMinute": "<1m",
+      "minutes": "{{count}}m",
+      "hours": "{{count}}h",
+      "days": "{{days}}d",
+      "daysHours": "{{days}}d{{hours}}h"
     },
     "warning": "Warning",
     "shipMessage": "Ship message",

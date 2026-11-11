@@ -589,11 +589,11 @@
     "featurePlaceholder": "Escribe en el hilo {{name}}…",
     "needITrackieTrack": "Necesitas un iTrackie en tu inventario para rastrear algo.",
     "ago": {
-      "lessThanMinute": "hace <1min",
-      "minutes": "hace {{count}}min",
-      "hours": "hace {{count}}h",
-      "days": "hace {{days}}d",
-      "daysHours": "hace {{days}}d{{hours}}h"
+      "lessThanMinute": "<1m",
+      "minutes": "{{count}}m",
+      "hours": "{{count}}h",
+      "days": "{{days}}d",
+      "daysHours": "{{days}}d{{hours}}h"
     },
     "warning": "Advertencia",
     "shipMessage": "Mensaje de la nave",
