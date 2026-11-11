@@ -74,6 +74,8 @@ export const EQUIPMENT_TYPES: Record<string, EquipmentType> = {
 /** Equipment type of an installed camera. An uninstalled camera is a `camera` item, not equipment. */
 export const CAMERA_EQUIPMENT = "CAMERA";
 
+/** Equipment type the DRUG_DISPENSER research adds to the Medlab. */
+export const DRUG_DISPENSER_EQUIPMENT = "DRUG_DISP";
 /** Equipment type the SUPER_CALC research adds to the Nexus. */
 export const SUPER_CALC_EQUIPMENT = "SUPER_CALC";
 

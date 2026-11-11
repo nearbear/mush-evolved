@@ -73,7 +73,7 @@ import type {
  * a changed type or meaning, a renamed or removed registry id, or a change to what `resolveConfig` derives from an
  * override key. A step lands in a deploy of its own (docs/ops/deploy.md: roll back only to the same version).
  */
-export const STATE_VERSION = 114;
+export const STATE_VERSION = 115;
 
 /**
  * The oldest stored version this build reads: 114, the shape the normalizers were written against. A snapshot below it
@@ -105,7 +105,19 @@ export interface UpgradeStep {
 }
 
 /** Every step, in order of `to`: `upgradeTo115`, ... */
-export const UPGRADE_STEPS: readonly UpgradeStep[] = [];
+export const UPGRADE_STEPS: readonly UpgradeStep[] = [
+  // Owner, 2026-11-11: the thirteenth drug type, `drug_12`, is removed (12 remain): its drawn effects and every item of it go.
+  {
+    to: 115,
+    paths: ["game.drugs.*", "game.items[]"],
+    ids: ["ITEM_TYPES.drug_12"],
+    run(game) {
+      const drugs = game.drugs as Record<string, unknown> | undefined;
+      if (drugs) delete drugs.drug_12;
+      if (Array.isArray(game.items)) game.items = game.items.filter((i) => (i as { type?: unknown }).type !== "drug_12");
+    },
+  },
+];
 
 /**
  * Brings a stored snapshot from version `from` to `STATE_VERSION`, before it is normalized: runs every step with

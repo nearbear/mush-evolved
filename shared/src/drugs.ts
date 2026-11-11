@@ -1,4 +1,4 @@
-// Drugs: 13 item types whose effects are drawn once per ship, at launch (`createGame`), and never change after.
+// Drugs: 12 item types whose effects are drawn once per ship, at launch (`createGame`), and never change after.
 // Every disease in `config.diseases.allDiseases` is treated by at least one drug.
 
 import { DRUG_ITEMS, newItemId } from "./items.ts";
@@ -31,7 +31,7 @@ export const MAX_TREATED = 4;
 /** Draws every drug's effects: 0-1 morale effect, 0-1 AP or MP effect, and 1-4 treated diseases. Advances `state.rng`. */
 export function drawDrugs(state: Pick<GameState, "rng"> & { config: Pick<GameState["config"], "diseases"> }): Record<string, DrugEffect> {
   const diseases = state.config.diseases.allDiseases;
-  // Deal the diseases out in turn so each is treated by at least one drug (up to 13 * 4 of them fit).
+  // Deal the diseases out in turn so each is treated by at least one drug (up to 12 * 4 of them fit).
   const treats: string[][] = DRUG_ITEMS.map(() => []);
   for (const [i, disease] of rollShuffle(state, diseases).entries()) treats[i % DRUG_ITEMS.length]!.push(disease);
   const out: Record<string, DrugEffect> = {};

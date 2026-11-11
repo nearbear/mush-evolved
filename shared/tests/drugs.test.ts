@@ -6,9 +6,9 @@ import { DRUG_ITEMS } from "../src/items.ts";
 import { DEFAULT_CONFIG } from "../src/config.ts";
 
 describe("drawDrugs", () => {
-  it("draws 13 drugs, each treating 1-4 diseases, and every disease is treated", () => {
+  it("draws 12 drugs, each treating 1-4 diseases, and every disease is treated", () => {
     for (let seed = 1; seed <= 50; seed++) {
-      const diseases = Array.from({ length: 13 * MAX_TREATED }, (_, i) => `d${i}`);
+      const diseases = Array.from({ length: 12 * MAX_TREATED }, (_, i) => `d${i}`);
       const config = { diseases: { ...DEFAULT_CONFIG.diseases, allDiseases: diseases } };
       for (const diseaseList of [DEFAULT_CONFIG.diseases.allDiseases, diseases]) {
         const drugs = drawDrugs({ rng: seed, config: { diseases: { ...config.diseases, allDiseases: diseaseList } } });
