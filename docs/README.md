@@ -30,6 +30,7 @@ Feature designs in `plans/`, one per file. Each plan's own header is the authori
 | `plans/normalize-state.md` | Normalizing stored state on load ([#384](https://github.com/nearbear/mush2/issues/384)), as built | Done | Built 2026-11-07. The replay viewer's use of `readFrame` is [#369](https://github.com/nearbear/mush2/issues/369). Not a rules plan. |
 | `plans/inventory-notes.md` | Shared manual item notes for the crew | Draft | 2026-11-01; not decided. |
 | `plans/balance.md` | Balance goals, targets, AP economy and tuning | Draft | 2026-11-04; not decided. |
+| `plans/balance-review.md` | Claude's review of the balance plan: diagnosis, design tests, the order to decide things in | Review | 2026-11-10; recommendations only. |
 | `plans/project-buffs.md` | Ideas for reworked and new NERON projects | Draft | Ideas only; not decided. |
 | `plans/action-plans.md` | Scheduled action plans ([#44](https://github.com/nearbear/mush2/issues/44)) | Superseded | Replaced 2026-10-30 by `relay-tokens.md` and `on-call.md`. |
 
