@@ -1,7 +1,9 @@
-// One row of an iTrackie feed: a marker on the left (the info icon for ship
-// messages, the sender's crew sprite for chat), the sender's name with the
-// recency caption right after it on top, and the body below it. Entries with no
-// sender (ship messages) have no top row: the caption sits beside the body.
+// One row of an iTrackie feed:
+// - Chat messages (with a sender name): the sender's crew sprite on the left,
+//   the name and recency caption on top, and the body below.
+// - Ship and room log messages (no sender): marker (info/warning icon, or visibility
+//   badge for secret/covert actions) with the recency caption beside it on the left,
+//   and the body beside it.
 
 import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
@@ -15,7 +17,6 @@ export function FeedEntry({
   name,
   at,
   tools,
-  badge,
   className,
   seq,
   children,
@@ -25,8 +26,6 @@ export function FeedEntry({
   at: number | undefined;
   /** Small buttons at the right of the name row (entries with a name only). */
   tools?: ReactNode;
-  /** A small badge beside the recency caption (entries without a name only): a log line's visibility. */
-  badge?: ReactNode;
   className?: string | undefined;
   /**
    * A chat message's `seq`: the row becomes focusable (not a tab stop) and its feed marks it read on focus or click
@@ -41,7 +40,10 @@ export function FeedEntry({
       data-seq={seq}
       tabIndex={seq === undefined ? undefined : -1}
     >
-      <div className="entry-marker">{marker}</div>
+      <div className="entry-marker">
+        {marker}
+        {name === undefined && <RecencyStamp at={at} />}
+      </div>
       {name !== undefined && (
         <div className="entry-head">
           <span className="entry-name">
@@ -52,13 +54,6 @@ export function FeedEntry({
         </div>
       )}
       <div className="entry-body">{children}</div>
-      {/* No sender to put on top: the caption shares the body's row. */}
-      {name === undefined && (
-        <span className="entry-stamp">
-          {badge}
-          <RecencyStamp at={at} />
-        </span>
-      )}
     </li>
   );
 }

@@ -161,6 +161,7 @@ export function IsoRoom({
   pace,
   planet,
   turn,
+  onFire,
 }: {
   layout: ShipLayout;
   room: RoomId;
@@ -183,6 +184,8 @@ export function IsoRoom({
   selected: Target | null;
   /** The door whose target is shown in the peek bar, if any. */
   selectedDoor: RoomId | null;
+  /** Whether the room is currently on fire (PlayerView.roomOnFire). */
+  onFire?: boolean;
   /** What your latest action is on: you walk up to it when this changes (useActingOn). */
   actingOn: ActingOn | null;
   /** Changes whenever you send an action: you get up from your chair. */
@@ -583,8 +586,9 @@ export function IsoRoom({
         pace,
         planet,
         turn,
+        onFire,
       }),
-    [scene, box, walkersKey, walkersLook, doorsKey, seatsKey, occupants, nearby, corpses, equipmentByKey, reachable, selected, selectedDoor, hoverKey, ownCells, looks, pace, planet, turn],
+    [scene, box, walkersKey, walkersLook, doorsKey, seatsKey, occupants, nearby, corpses, equipmentByKey, reachable, selected, selectedDoor, hoverKey, ownCells, looks, pace, planet, turn, onFire],
   );
   // Badges and bubbles go over the people in this room.
   const anchors = drawn.sprites.flatMap((s): Anchor[] => {

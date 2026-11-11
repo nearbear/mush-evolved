@@ -7,13 +7,13 @@
 // they are drawn (CSS filters, tints, shaders): each renderer maps them to its own means.
 
 import type { Ref } from "react";
-import type { CharacterId, EquipmentView, ItemId, RoomId, ShipLayout, SliceInfo, Spot, Target } from "@mush2/shared";
+import type { CharacterId, EquipmentView, ItemId, RoomId, ShipLayout, SliceInfo, Spot, Target, TileKind } from "@mush2/shared";
 import { sameTarget } from "../hud/targets.ts";
 import { lyingFrame, sittingFrame, spriteStrip } from "../art/assets.ts";
 import type { Bar } from "../scene/ActionBar.tsx";
 import { atlasUrl } from "./shipLayout.ts";
 import { CAMERA_SLICES } from "./equipmentTiles.ts";
-import { frameRect, type PlacedSprite } from "./placement.ts";
+import { frameRect, gridToPx, type PlacedSprite } from "./placement.ts";
 import type { Walker } from "./useWalkers.ts";
 
 export interface Occupant {
@@ -197,6 +197,8 @@ export interface ScenePicture {
 
 export interface SceneSprite extends ScenePicture {
   role: SceneRole;
+  kind?: TileKind | "actor";
+  slice?: string;
   effect?: SceneEffect;
   /** People and bodies cast a soft shadow below them: standing (or seated), or lying. */
   shadow?: "standing" | "lying";
@@ -244,6 +246,12 @@ export interface Scene {
   planet: string | null;
   /** The ship's latest turn (public), so the stars turn the other way; null before the first. */
   turn: ShipTurn | null;
+  /** The room being viewed. */
+  room: RoomId;
+  /** Whether the room is currently on fire. */
+  onFire: boolean;
+  /** Center of each ground tile in this room in scene coordinates, for fire emitters. */
+  groundTiles: readonly { x: number; y: number }[];
 }
 
 /** Per animation frame, between renders: where the camera puts the world, and how far each walker is from where the scene placed them. */
@@ -301,6 +309,8 @@ export interface SceneInput {
   planet?: string | null;
   /** The ship's latest turn (`Scene.turn`); none when not given. */
   turn?: ShipTurn | null;
+  /** Whether the room is currently on fire. */
+  onFire?: boolean;
 }
 
 /** The corpse an actor sprite draws, if it is one. */
@@ -403,18 +413,18 @@ export function describeScene(input: SceneInput): Scene {
       const lit = s.kind !== "actor" && (s.door?.target === room || (s.kind === "wall" && ownCells.has(`${s.cell.x},${s.cell.y}`)));
       const lifted = n === selectedDoor || (reachable.has(n) && hoverKey === `n:${n}`);
       const effect = lit ? undefined : lifted ? "foggedLifted" : "fogged";
-      sprites.push(s.kind === "actor" ? { ...personPicture(s, input, base), role: "person", effect, shadow: "standing" } : { ...tile(), role: "tile", effect });
+      sprites.push(s.kind === "actor" ? { ...personPicture(s, input, base), role: "person", effect, shadow: "standing", kind: s.kind, slice: s.slice } : { ...tile(), role: "tile", effect, kind: s.kind, slice: s.slice });
       continue;
     }
     const hover = s.key === hoverKey;
     if (corpse) {
       const effect = isSelected("item", corpse.id) ? "selected" : hover ? "hover" : undefined;
-      sprites.push({ ...base, image: imageOf(s, input), role: "corpse", effect, shadow: "lying" });
+      sprites.push({ ...base, image: imageOf(s, input), role: "corpse", effect, shadow: "lying", kind: s.kind, slice: s.slice });
       continue;
     }
     if (s.kind === "actor") {
       const o = people.get(s.key.slice(2));
-      sprites.push({ ...personPicture(s, input, base), role: "person", shadow: shadowOf(s, input), you: o?.you, effect: o && isSelected("player", o.id) ? "selected" : undefined });
+      sprites.push({ ...personPicture(s, input, base), role: "person", shadow: shadowOf(s, input), you: o?.you, effect: o && isSelected("player", o.id) ? "selected" : undefined, kind: s.kind, slice: s.slice });
       continue;
     }
     const swivel = CAMERA_SLICES.has(s.slice) ? layout.slices[s.slice]?.anims[0]?.frames : undefined;
@@ -430,17 +440,43 @@ export function describeScene(input: SceneInput): Scene {
       const canGo = reachable.has(s.door.target as RoomId);
       // Hovering a door you can go through outshines its selection.
       const effect = canGo && hover ? "doorHover" : s.door.target === selectedDoor ? "selected" : undefined;
-      sprites.push({ ...tile(), role: "door", reachable: canGo, effect });
+      sprites.push({ ...tile(), role: "door", reachable: canGo, effect, kind: s.kind, slice: s.slice });
       continue;
     }
     const eq = equipment.get(s.key);
     if (eq) {
       // Selected equipment keeps its glow while hovered.
       const effect = isSelected("equipment", eq.id) ? "selected" : hover ? "hover" : undefined;
-      sprites.push({ ...tile(), anim, role: "equipment", effect });
+      sprites.push({ ...tile(), anim, role: "equipment", effect, kind: s.kind, slice: s.slice });
       continue;
     }
-    sprites.push({ ...tile(), anim, role: "tile" });
+    sprites.push({ ...tile(), anim, role: "tile", kind: s.kind, slice: s.slice });
   }
-  return { width: box.width, height: box.height, sprites, outlines, pace: input.pace ?? "cruising", planet: input.planet ?? null, turn: input.turn ?? null };
+  const groundTiles: { x: number; y: number }[] = [];
+  const seenCells = new Set<string>();
+  for (const s of placed) {
+    if (s.room === room && s.kind === "ground") {
+      const cellKey = `${s.cell.x},${s.cell.y}`;
+      if (!seenCells.has(cellKey)) {
+        seenCells.add(cellKey);
+        const anchor = gridToPx(s.cell.x, s.cell.y);
+        groundTiles.push({
+          x: anchor.x - box.minX,
+          y: anchor.y - box.minY + 8,
+        });
+      }
+    }
+  }
+  return {
+    width: box.width,
+    height: box.height,
+    sprites,
+    outlines,
+    pace: input.pace ?? "cruising",
+    planet: input.planet ?? null,
+    turn: input.turn ?? null,
+    room,
+    onFire: !!input.onFire,
+    groundTiles,
+  };
 }

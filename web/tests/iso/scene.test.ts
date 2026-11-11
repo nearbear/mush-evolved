@@ -88,6 +88,21 @@ describe("describeScene", () => {
     expect([s.width, s.height]).toEqual([400, 300]);
   });
 
+  it("includes room onFire and extracts unique ground tile centers", () => {
+    const g1 = placed({ room: HERE, kind: "ground", cell: { x: 0, y: 0 } });
+    const g2 = placed({ room: HERE, kind: "ground", cell: { x: 1, y: 0 } });
+    const g3 = placed({ room: HERE, kind: "ground", cell: { x: 0, y: 0 } });
+    const g4 = placed({ room: NEXT, kind: "ground", cell: { x: 2, y: 0 } });
+
+    const s = scene([g1, g2, g3, g4], { onFire: true });
+    expect(s.onFire).toBe(true);
+    expect(s.room).toBe(HERE);
+    expect(s.groundTiles.length).toBe(2);
+    expect(s.groundTiles[0]).toEqual({ x: 100, y: 58 });
+    expect(s.sprites[0]?.kind).toBe("ground");
+    expect(s.sprites[0]?.slice).toBe("floor");
+  });
+
   it("fogs other rooms, lifting a selected or hovered reachable room", () => {
     const tile = placed({ room: NEXT });
     expect(only(scene([tile])).effect).toBe("fogged");

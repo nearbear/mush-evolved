@@ -590,11 +590,11 @@
     "featurePlaceholder": "Écrire dans le fil {{name}}…",
     "needITrackieTrack": "Il vous faut un iTrackie dans votre inventaire pour suivre quoi que ce soit.",
     "ago": {
-      "lessThanMinute": "il y a <1min",
-      "minutes": "il y a {{count}}min",
-      "hours": "il y a {{count}}h",
-      "days": "il y a {{days}}j",
-      "daysHours": "il y a {{days}}j{{hours}}h"
+      "lessThanMinute": "<1m",
+      "minutes": "{{count}}m",
+      "hours": "{{count}}h",
+      "days": "{{days}}j",
+      "daysHours": "{{days}}j{{hours}}h"
     },
     "warning": "Avertissement",
     "shipMessage": "Message du vaisseau",

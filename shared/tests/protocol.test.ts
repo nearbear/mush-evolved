@@ -1,10 +1,567 @@
 import { describe, expect, it } from "vitest";
 import type { ActionOf, ActionType } from "../src/actions.ts";
 import { BIOS_OPTIONS } from "../src/bios.ts";
-import { parseGameMessage } from "../src/protocol.ts";
+import { MAX_CHAT_LENGTH } from "../src/chat.ts";
+import { CHEATS, ROLE_CHEATS } from "../src/cheats.ts";
+import { MAX_NAME_LENGTH, parseGameMessage, parseMatchmakerMessage } from "../src/protocol.ts";
+import { MAX_SHARED_PLANET_LENGTH } from "../src/sharedPlanets.ts";
 import { MUSH_SKILLS, SKILLS } from "../src/skills.ts";
+import { MAX_SPOT_CELL } from "../src/spot.ts";
 
 const parse = (msg: unknown) => parseGameMessage(JSON.stringify(msg));
+const parseMatchmaker = (msg: unknown) => parseMatchmakerMessage(JSON.stringify(msg));
+
+describe("Wire parsers: raw input boundary (#107)", () => {
+  const BAD_RAW = [
+    "",
+    "   ",
+    "\n\t",
+    "{",
+    "}",
+    '{"type":',
+    "{type: 'resume'}",
+    "undefined",
+    "NaN",
+    "<xml></xml>",
+    "null",
+    "true",
+    "false",
+    "123",
+    "-1",
+    '"resume"',
+    '"queue"',
+    "[]",
+    "[1, 2]",
+    '[{"type":"resume"}]',
+  ];
+
+  it.each(BAD_RAW)("parseGameMessage rejects malformed or non-object raw JSON: %j", (raw) => {
+    expect(parseGameMessage(raw)).toBeNull();
+  });
+
+  it.each(BAD_RAW)("parseMatchmakerMessage rejects malformed or non-object raw JSON: %j", (raw) => {
+    expect(parseMatchmakerMessage(raw)).toBeNull();
+  });
+});
+
+describe("parseMatchmakerMessage (#107)", () => {
+  it("parses resume, queue, and singlePlayer", () => {
+    expect(parseMatchmaker({ type: "resume" })).toEqual({ type: "resume" });
+    expect(parseMatchmakerMessage('{"type":"resume"}')).toEqual({ type: "resume" });
+    expect(parseMatchmaker({ type: "queue", name: "Alice", character: "jinsu" })).toEqual({
+      type: "queue",
+      name: "Alice",
+      character: "jinsu",
+    });
+    expect(parseMatchmaker({ type: "singlePlayer", name: "Bob", character: "chun" })).toEqual({
+      type: "singlePlayer",
+      name: "Bob",
+      character: "chun",
+    });
+  });
+
+  it("strips fields not part of the message shape", () => {
+    expect(parseMatchmaker({ type: "resume", extra: 1, name: "Alice", __proto__: { evil: 1 } })).toEqual({
+      type: "resume",
+    });
+    expect(parseMatchmaker({ type: "queue", name: "Alice", character: "jinsu", extra: 1, role: "mush" })).toEqual({
+      type: "queue",
+      name: "Alice",
+      character: "jinsu",
+    });
+    expect(parseMatchmaker({ type: "singlePlayer", name: "Bob", character: "chun", extra: 1 })).toEqual({
+      type: "singlePlayer",
+      name: "Bob",
+      character: "chun",
+    });
+  });
+
+  it("trims whitespace and caps player names at MAX_NAME_LENGTH (24 chars)", () => {
+    expect(parseMatchmaker({ type: "queue", name: "  Alice  ", character: "jinsu" })).toEqual({
+      type: "queue",
+      name: "Alice",
+      character: "jinsu",
+    });
+    expect(parseMatchmaker({ type: "singlePlayer", name: " \t\n Bob \n\t ", character: "chun" })).toEqual({
+      type: "singlePlayer",
+      name: "Bob",
+      character: "chun",
+    });
+
+    const exact = "A".repeat(MAX_NAME_LENGTH);
+    expect(parseMatchmaker({ type: "queue", name: exact, character: "jinsu" })).toEqual({
+      type: "queue",
+      name: exact,
+      character: "jinsu",
+    });
+
+    const oversized = "B".repeat(MAX_NAME_LENGTH + 10);
+    expect(parseMatchmaker({ type: "queue", name: oversized, character: "jinsu" })).toEqual({
+      type: "queue",
+      name: "B".repeat(MAX_NAME_LENGTH),
+      character: "jinsu",
+    });
+
+    const paddedOversized = "   " + "C".repeat(MAX_NAME_LENGTH + 5) + "   ";
+    expect(parseMatchmaker({ type: "queue", name: paddedOversized, character: "jinsu" })).toEqual({
+      type: "queue",
+      name: "C".repeat(MAX_NAME_LENGTH),
+      character: "jinsu",
+    });
+  });
+
+  const BAD_MATCHMAKER_INPUTS: Array<[label: string, msg: unknown]> = [
+    ["empty object", {}],
+    ["unknown message type", { type: "unknown" }],
+    ["empty string type", { type: "" }],
+    ["numeric type", { type: 123 }],
+    ["null type", { type: null }],
+    ["boolean type", { type: true }],
+    ["array type", { type: ["queue"] }],
+    ["game message type chat", { type: "chat", channel: "global", text: "hi" }],
+    ["game message type action", { type: "action", action: { type: "ready" } }],
+    ["prototype type constructor", { type: "constructor" }],
+    ["prototype type __proto__", { type: "__proto__" }],
+    ["prototype type toString", { type: "toString" }],
+    ["empty name", { type: "queue", name: "", character: "jinsu" }],
+    ["whitespace-only name (spaces)", { type: "queue", name: "   ", character: "jinsu" }],
+    ["whitespace-only name (tabs/newlines)", { type: "singlePlayer", name: " \t\n ", character: "chun" }],
+    ["missing name on queue", { type: "queue", character: "jinsu" }],
+    ["number name", { type: "queue", name: 123, character: "jinsu" }],
+    ["null name", { type: "queue", name: null, character: "jinsu" }],
+    ["boolean name", { type: "queue", name: true, character: "jinsu" }],
+    ["array name", { type: "queue", name: ["Alice"], character: "jinsu" }],
+    ["object name", { type: "queue", name: { name: "Alice" }, character: "jinsu" }],
+    ["missing character on queue", { type: "queue", name: "Alice" }],
+    ["unknown character id", { type: "queue", name: "Alice", character: "nobody" }],
+    ["character role instead of id", { type: "queue", name: "Alice", character: "mush" }],
+    ["character with underscore", { type: "queue", name: "Alice", character: "jin_su" }],
+    ["empty character", { type: "queue", name: "Alice", character: "" }],
+    ["number character", { type: "queue", name: "Alice", character: 123 }],
+    ["null character", { type: "queue", name: "Alice", character: null }],
+    ["boolean character", { type: "queue", name: "Alice", character: true }],
+    ["array character", { type: "queue", name: "Alice", character: ["jinsu"] }],
+    ["object character", { type: "queue", name: "Alice", character: { id: "jinsu" } }],
+    ["prototype character constructor", { type: "queue", name: "Alice", character: "constructor" }],
+    ["prototype character __proto__", { type: "queue", name: "Alice", character: "__proto__" }],
+    ["singlePlayer missing name", { type: "singlePlayer", character: "chun" }],
+    ["singlePlayer missing character", { type: "singlePlayer", name: "Bob" }],
+    ["singlePlayer unknown character", { type: "singlePlayer", name: "Bob", character: "unknown" }],
+    ["singlePlayer wrong name type", { type: "singlePlayer", name: 456, character: "chun" }],
+    ["singlePlayer wrong character type", { type: "singlePlayer", name: "Bob", character: 123 }],
+  ];
+
+  it.each(BAD_MATCHMAKER_INPUTS)("refuses bad matchmaker input: %s", (_label, msg) => {
+    expect(parseMatchmaker(msg)).toBeNull();
+  });
+});
+
+describe("parseGameMessage: message-level wire table (#107)", () => {
+  const BAD_TOP_LEVEL_GAME_INPUTS: Array<[label: string, msg: unknown]> = [
+    ["empty object", {}],
+    ["unknown message type", { type: "unknown" }],
+    ["empty string type", { type: "" }],
+    ["numeric type", { type: 123 }],
+    ["null type", { type: null }],
+    ["boolean type", { type: true }],
+    ["array type", { type: ["chat"] }],
+    ["object type", { type: {} }],
+    ["prototype type constructor", { type: "constructor" }],
+    ["prototype type __proto__", { type: "__proto__" }],
+    ["prototype type toString", { type: "toString" }],
+    ["matchmaker queue message", { type: "queue", name: "Alice", character: "jinsu" }],
+    ["matchmaker singlePlayer message", { type: "singlePlayer", name: "Bob", character: "chun" }],
+    ["matchmaker resume message", { type: "resume" }],
+  ];
+
+  it.each(BAD_TOP_LEVEL_GAME_INPUTS)("refuses bad top-level game message: %s", (_label, msg) => {
+    expect(parse(msg)).toBeNull();
+  });
+});
+
+describe("chat wire parser (#107)", () => {
+  it("parses valid chat messages across all channel kinds, dropping extra fields", () => {
+    for (const channel of ["global", "mush", "graveyard", "pc-1", "th-1", "sp-1", "sr-1"]) {
+      expect(parse({ type: "chat", channel, text: "hello", extra: 1, author: "p1" })).toEqual({
+        type: "chat",
+        channel,
+        text: "hello",
+      });
+    }
+  });
+
+  it("enforces generous string length cap (MAX_CHAT_LENGTH * 4)", () => {
+    const maxText = "a".repeat(MAX_CHAT_LENGTH * 4);
+    expect(parse({ type: "chat", channel: "global", text: maxText })).toEqual({
+      type: "chat",
+      channel: "global",
+      text: maxText,
+    });
+    const oversized = "a".repeat(MAX_CHAT_LENGTH * 4 + 1);
+    expect(parse({ type: "chat", channel: "global", text: oversized })).toBeNull();
+  });
+
+  const BAD_CHAT_INPUTS: Array<[label: string, msg: unknown]> = [
+    ["missing channel", { type: "chat", text: "hello" }],
+    ["missing text", { type: "chat", channel: "global" }],
+    ["unknown channel string", { type: "chat", channel: "nope", text: "hello" }],
+    ["unsupported channel general", { type: "chat", channel: "general", text: "hello" }],
+    ["incomplete private channel prefix pc-", { type: "chat", channel: "pc-", text: "hello" }],
+    ["incomplete thread prefix th-", { type: "chat", channel: "th-", text: "hello" }],
+    ["incomplete shared planet prefix sp-", { type: "chat", channel: "sp-", text: "hello" }],
+    ["incomplete shared report prefix sr-", { type: "chat", channel: "sr-", text: "hello" }],
+    ["non-numeric thread id", { type: "chat", channel: "th-abc", text: "hello" }],
+    ["non-numeric private channel id", { type: "chat", channel: "pc-abc", text: "hello" }],
+    ["prototype channel constructor", { type: "chat", channel: "constructor", text: "hello" }],
+    ["prototype channel __proto__", { type: "chat", channel: "__proto__", text: "hello" }],
+    ["number channel", { type: "chat", channel: 1, text: "hello" }],
+    ["null channel", { type: "chat", channel: null, text: "hello" }],
+    ["boolean channel", { type: "chat", channel: true, text: "hello" }],
+    ["array channel", { type: "chat", channel: ["global"], text: "hello" }],
+    ["object channel", { type: "chat", channel: { id: "global" }, text: "hello" }],
+    ["number text", { type: "chat", channel: "global", text: 123 }],
+    ["null text", { type: "chat", channel: "global", text: null }],
+    ["boolean text", { type: "chat", channel: "global", text: true }],
+    ["array text", { type: "chat", channel: "global", text: ["hello"] }],
+    ["object text", { type: "chat", channel: "global", text: { text: "hello" } }],
+  ];
+
+  it.each(BAD_CHAT_INPUTS)("refuses bad chat input: %s", (_label, msg) => {
+    expect(parse(msg)).toBeNull();
+  });
+});
+
+describe("walk wire parser (#107)", () => {
+  it("parses valid walk messages, dropping extra fields", () => {
+    expect(parse({ type: "walk", x: 1, y: 2, sitting: true, extra: 1 })).toEqual({
+      type: "walk",
+      x: 1,
+      y: 2,
+      sitting: true,
+    });
+    expect(
+      parse({
+        type: "walk",
+        x: -5,
+        y: 0,
+        sitting: false,
+        behind: { x: -5, y: -1, extra: 2 },
+        extra: 1,
+      })
+    ).toEqual({
+      type: "walk",
+      x: -5,
+      y: 0,
+      sitting: false,
+      behind: { x: -5, y: -1 },
+    });
+  });
+
+  const BAD_WALK_INPUTS: Array<[label: string, msg: unknown]> = [
+    ["missing x", { type: "walk", y: 2, sitting: true }],
+    ["missing y", { type: "walk", x: 1, sitting: true }],
+    ["missing sitting", { type: "walk", x: 1, y: 2 }],
+    ["float x", { type: "walk", x: 1.5, y: 2, sitting: true }],
+    ["float y", { type: "walk", x: 1, y: 2.5, sitting: true }],
+    ["string x", { type: "walk", x: "1", y: 2, sitting: true }],
+    ["string y", { type: "walk", x: 1, y: "2", sitting: true }],
+    ["NaN x", { type: "walk", x: Number.NaN, y: 2, sitting: true }],
+    ["Infinity y", { type: "walk", x: 1, y: Number.POSITIVE_INFINITY, sitting: true }],
+    ["x exceeds MAX_SPOT_CELL", { type: "walk", x: MAX_SPOT_CELL + 1, y: 0, sitting: false }],
+    ["x below -MAX_SPOT_CELL", { type: "walk", x: -MAX_SPOT_CELL - 1, y: 0, sitting: false }],
+    ["y exceeds MAX_SPOT_CELL", { type: "walk", x: 0, y: MAX_SPOT_CELL + 1, sitting: false }],
+    ["string sitting", { type: "walk", x: 1, y: 2, sitting: "true" }],
+    ["number sitting", { type: "walk", x: 1, y: 2, sitting: 1 }],
+    ["null sitting", { type: "walk", x: 1, y: 2, sitting: null }],
+    ["behind is string", { type: "walk", x: 1, y: 2, sitting: false, behind: "chair" }],
+    ["behind is null", { type: "walk", x: 1, y: 2, sitting: false, behind: null }],
+    ["behind is array", { type: "walk", x: 1, y: 2, sitting: false, behind: [0, 2] }],
+    ["behind float coordinate", { type: "walk", x: 1, y: 2, sitting: false, behind: { x: 0.5, y: 2 } }],
+    ["behind missing y", { type: "walk", x: 1, y: 2, sitting: false, behind: { x: 0 } }],
+    ["behind x exceeds MAX_SPOT_CELL", { type: "walk", x: 1, y: 2, sitting: false, behind: { x: MAX_SPOT_CELL + 1, y: 2 } }],
+  ];
+
+  it.each(BAD_WALK_INPUTS)("refuses bad walk input: %s", (_label, msg) => {
+    expect(parse(msg)).toBeNull();
+  });
+});
+
+describe("toggleCheckbox wire parser (#107)", () => {
+  it("parses valid toggleCheckbox, dropping extra fields", () => {
+    expect(parse({ type: "toggleCheckbox", channel: "global", seq: 5, line: 1, extra: 1 })).toEqual({
+      type: "toggleCheckbox",
+      channel: "global",
+      seq: 5,
+      line: 1,
+    });
+    expect(parse({ type: "toggleCheckbox", channel: "pc-1", seq: 0, line: 0 })).toEqual({
+      type: "toggleCheckbox",
+      channel: "pc-1",
+      seq: 0,
+      line: 0,
+    });
+  });
+
+  const BAD_TOGGLE_INPUTS: Array<[label: string, msg: unknown]> = [
+    ["missing channel", { type: "toggleCheckbox", seq: 1, line: 0 }],
+    ["missing seq", { type: "toggleCheckbox", channel: "global", line: 0 }],
+    ["missing line", { type: "toggleCheckbox", channel: "global", seq: 1 }],
+    ["unknown channel", { type: "toggleCheckbox", channel: "nope", seq: 1, line: 0 }],
+    ["negative seq", { type: "toggleCheckbox", channel: "global", seq: -1, line: 0 }],
+    ["negative line", { type: "toggleCheckbox", channel: "global", seq: 1, line: -1 }],
+    ["float seq", { type: "toggleCheckbox", channel: "global", seq: 1.5, line: 0 }],
+    ["float line", { type: "toggleCheckbox", channel: "global", seq: 1, line: 0.5 }],
+    ["string seq", { type: "toggleCheckbox", channel: "global", seq: "1", line: 0 }],
+    ["string line", { type: "toggleCheckbox", channel: "global", seq: 1, line: "0" }],
+    ["NaN seq", { type: "toggleCheckbox", channel: "global", seq: Number.NaN, line: 0 }],
+    ["Infinity seq", { type: "toggleCheckbox", channel: "global", seq: Number.POSITIVE_INFINITY, line: 0 }],
+  ];
+
+  it.each(BAD_TOGGLE_INPUTS)("refuses bad toggleCheckbox input: %s", (_label, msg) => {
+    expect(parse(msg)).toBeNull();
+  });
+});
+
+describe("createChannel wire parser (#107)", () => {
+  it("parses valid createChannel, dropping extra fields", () => {
+    expect(parse({ type: "createChannel", extra: 1 })).toEqual({ type: "createChannel" });
+    expect(parse({ type: "createChannel", name: "Bridge Crew", extra: 1 })).toEqual({
+      type: "createChannel",
+      name: "Bridge Crew",
+    });
+    expect(parse({ type: "createChannel", members: ["p1", "p2"], extra: 1 })).toEqual({
+      type: "createChannel",
+      members: ["p1", "p2"],
+    });
+    expect(parse({ type: "createChannel", name: "Bridge Crew", members: ["p1"], extra: 1 })).toEqual({
+      type: "createChannel",
+      name: "Bridge Crew",
+      members: ["p1"],
+    });
+  });
+
+  it("enforces bounds on name and members", () => {
+    const maxName = "n".repeat(MAX_NAME_LENGTH * 4);
+    expect(parse({ type: "createChannel", name: maxName })).toEqual({ type: "createChannel", name: maxName });
+    expect(parse({ type: "createChannel", name: maxName + "x" })).toBeNull();
+
+    const maxMembers = Array.from({ length: 16 }, (_, i) => `p${i}`);
+    expect(parse({ type: "createChannel", members: maxMembers })).toEqual({
+      type: "createChannel",
+      members: maxMembers,
+    });
+    const tooManyMembers = Array.from({ length: 17 }, (_, i) => `p${i}`);
+    expect(parse({ type: "createChannel", members: tooManyMembers })).toBeNull();
+
+    const maxMemberId = "a".repeat(64);
+    expect(parse({ type: "createChannel", members: [maxMemberId] })).toEqual({
+      type: "createChannel",
+      members: [maxMemberId],
+    });
+    expect(parse({ type: "createChannel", members: [maxMemberId + "x"] })).toBeNull();
+  });
+
+  const BAD_CREATE_CHANNEL_INPUTS: Array<[label: string, msg: unknown]> = [
+    ["numeric name", { type: "createChannel", name: 123 }],
+    ["null name", { type: "createChannel", name: null }],
+    ["boolean name", { type: "createChannel", name: true }],
+    ["string members", { type: "createChannel", members: "p1" }],
+    ["numeric members", { type: "createChannel", members: 123 }],
+    ["null members", { type: "createChannel", members: null }],
+    ["member item is number", { type: "createChannel", members: [123] }],
+    ["member item is null", { type: "createChannel", members: [null] }],
+  ];
+
+  it.each(BAD_CREATE_CHANNEL_INPUTS)("refuses bad createChannel input: %s", (_label, msg) => {
+    expect(parse(msg)).toBeNull();
+  });
+});
+
+describe("createThread wire parser (#107)", () => {
+  it("parses valid createThread, dropping extra fields", () => {
+    expect(parse({ type: "createThread", name: "Discussion", extra: 1 })).toEqual({
+      type: "createThread",
+      name: "Discussion",
+    });
+    expect(parse({ type: "createThread", name: "Discussion", from: 4, extra: 1 })).toEqual({
+      type: "createThread",
+      name: "Discussion",
+      from: 4,
+    });
+  });
+
+  it("enforces name length bound", () => {
+    const maxName = "t".repeat(MAX_NAME_LENGTH * 4);
+    expect(parse({ type: "createThread", name: maxName })).toEqual({ type: "createThread", name: maxName });
+    expect(parse({ type: "createThread", name: maxName + "x" })).toBeNull();
+  });
+
+  const BAD_CREATE_THREAD_INPUTS: Array<[label: string, msg: unknown]> = [
+    ["missing name", { type: "createThread" }],
+    ["numeric name", { type: "createThread", name: 123 }],
+    ["null name", { type: "createThread", name: null }],
+    ["negative from", { type: "createThread", name: "Plan", from: -1 }],
+    ["float from", { type: "createThread", name: "Plan", from: 1.5 }],
+    ["string from", { type: "createThread", name: "Plan", from: "1" }],
+    ["NaN from", { type: "createThread", name: "Plan", from: Number.NaN }],
+  ];
+
+  it.each(BAD_CREATE_THREAD_INPUTS)("refuses bad createThread input: %s", (_label, msg) => {
+    expect(parse(msg)).toBeNull();
+  });
+});
+
+describe("sharePlanet and shareReport wire parser (#107)", () => {
+  it("parses valid sharePlanet and shareReport, dropping extra fields", () => {
+    expect(parse({ type: "sharePlanet", planet: "pl1", text: "info", extra: 1 })).toEqual({
+      type: "sharePlanet",
+      planet: "pl1",
+      text: "info",
+    });
+    expect(parse({ type: "shareReport", report: "rep1", text: "info", extra: 1 })).toEqual({
+      type: "shareReport",
+      report: "rep1",
+      text: "info",
+    });
+  });
+
+  it("enforces identifier and text length bounds", () => {
+    const maxId = "x".repeat(64);
+    const maxText = "t".repeat(MAX_SHARED_PLANET_LENGTH * 4);
+    expect(parse({ type: "sharePlanet", planet: maxId, text: maxText })).toEqual({
+      type: "sharePlanet",
+      planet: maxId,
+      text: maxText,
+    });
+    expect(parse({ type: "sharePlanet", planet: maxId + "x", text: "t" })).toBeNull();
+    expect(parse({ type: "sharePlanet", planet: "pl1", text: maxText + "x" })).toBeNull();
+
+    expect(parse({ type: "shareReport", report: maxId, text: maxText })).toEqual({
+      type: "shareReport",
+      report: maxId,
+      text: maxText,
+    });
+    expect(parse({ type: "shareReport", report: maxId + "x", text: "t" })).toBeNull();
+    expect(parse({ type: "shareReport", report: "rep1", text: maxText + "x" })).toBeNull();
+  });
+
+  const BAD_SHARE_INPUTS: Array<[label: string, msg: unknown]> = [
+    ["sharePlanet missing planet", { type: "sharePlanet", text: "text" }],
+    ["sharePlanet missing text", { type: "sharePlanet", planet: "pl1" }],
+    ["sharePlanet numeric planet", { type: "sharePlanet", planet: 123, text: "text" }],
+    ["sharePlanet numeric text", { type: "sharePlanet", planet: "pl1", text: 123 }],
+    ["shareReport missing report", { type: "shareReport", text: "text" }],
+    ["shareReport missing text", { type: "shareReport", report: "rep1" }],
+    ["shareReport numeric report", { type: "shareReport", report: 123, text: "text" }],
+    ["shareReport numeric text", { type: "shareReport", report: "rep1", text: 123 }],
+  ];
+
+  it.each(BAD_SHARE_INPUTS)("refuses bad share input: %s", (_label, msg) => {
+    expect(parse(msg)).toBeNull();
+  });
+});
+
+describe("invite and leaveChannel wire parser (#107)", () => {
+  it("parses valid invite and leaveChannel, dropping extra fields", () => {
+    expect(parse({ type: "invite", channel: "pc-1", player: "p2", extra: 1 })).toEqual({
+      type: "invite",
+      channel: "pc-1",
+      player: "p2",
+    });
+    expect(parse({ type: "leaveChannel", channel: "pc-1", extra: 1 })).toEqual({
+      type: "leaveChannel",
+      channel: "pc-1",
+    });
+  });
+
+  const BAD_CHANNEL_MEMBERSHIP_INPUTS: Array<[label: string, msg: unknown]> = [
+    ["invite missing channel", { type: "invite", player: "p1" }],
+    ["invite non-private channel global", { type: "invite", channel: "global", player: "p1" }],
+    ["invite non-private channel thread", { type: "invite", channel: "th-1", player: "p1" }],
+    ["invite invalid private channel format", { type: "invite", channel: "pc-", player: "p1" }],
+    ["invite numeric channel", { type: "invite", channel: 123, player: "p1" }],
+    ["invite missing player", { type: "invite", channel: "pc-1" }],
+    ["invite numeric player", { type: "invite", channel: "pc-1", player: 123 }],
+    ["invite null player", { type: "invite", channel: "pc-1", player: null }],
+    ["leaveChannel missing channel", { type: "leaveChannel" }],
+    ["leaveChannel non-private channel global", { type: "leaveChannel", channel: "global" }],
+    ["leaveChannel non-private channel thread", { type: "leaveChannel", channel: "th-1" }],
+    ["leaveChannel invalid private channel format", { type: "leaveChannel", channel: "pc-abc" }],
+  ];
+
+  it.each(BAD_CHANNEL_MEMBERSHIP_INPUTS)("refuses bad channel membership input: %s", (_label, msg) => {
+    expect(parse(msg)).toBeNull();
+  });
+});
+
+describe("cheats and lifecycle wire parser (#107)", () => {
+  it("parses cheats, roleCheat, solCheat, clearQueue, and acknowledgeTransfer, dropping extra fields", () => {
+    for (const cheat of CHEATS) {
+      expect(parse({ type: "cheat", cheat, on: true, extra: 1 })).toEqual({ type: "cheat", cheat, on: true });
+      expect(parse({ type: "cheat", cheat, on: false, extra: 1 })).toEqual({ type: "cheat", cheat, on: false });
+    }
+    for (const role of ROLE_CHEATS) {
+      expect(parse({ type: "roleCheat", role, extra: 1 })).toEqual({ type: "roleCheat", role });
+    }
+    expect(parse({ type: "solCheat", extra: 1 })).toEqual({ type: "solCheat" });
+    expect(parse({ type: "clearQueue", extra: 1 })).toEqual({ type: "clearQueue" });
+    expect(parse({ type: "acknowledgeTransfer", extra: 1 })).toEqual({ type: "acknowledgeTransfer" });
+  });
+
+  const BAD_CHEAT_INPUTS: Array<[label: string, msg: unknown]> = [
+    ["cheat unknown cheat name", { type: "cheat", cheat: "godMode", on: true }],
+    ["cheat prototype constructor", { type: "cheat", cheat: "constructor", on: true }],
+    ["cheat prototype __proto__", { type: "cheat", cheat: "__proto__", on: true }],
+    ["cheat string on", { type: "cheat", cheat: "infiniteAp", on: "true" }],
+    ["cheat numeric on", { type: "cheat", cheat: "infiniteAp", on: 1 }],
+    ["cheat null on", { type: "cheat", cheat: "infiniteAp", on: null }],
+    ["roleCheat unknown role", { type: "roleCheat", role: "alien" }],
+    ["roleCheat numeric role", { type: "roleCheat", role: 123 }],
+    ["roleCheat prototype constructor", { type: "roleCheat", role: "constructor" }],
+    ["roleCheat prototype __proto__", { type: "roleCheat", role: "__proto__" }],
+  ];
+
+  it.each(BAD_CHEAT_INPUTS)("refuses bad cheat input: %s", (_label, msg) => {
+    expect(parse(msg)).toBeNull();
+  });
+});
+
+describe("actions: move and ready wire parser (#107)", () => {
+  it("parses move and ready actions, dropping extra fields", () => {
+    expect(parse({ type: "action", action: { type: "move", to: "bridge", extra: 1, seat: "p1" } })).toEqual({
+      type: "action",
+      action: { type: "move", to: "bridge" },
+    });
+    expect(parse({ type: "action", action: { type: "ready", extra: 1, target: "p1" } })).toEqual({
+      type: "action",
+      action: { type: "ready" },
+    });
+  });
+
+  const BAD_ACTION_INPUTS: Array<[label: string, msg: unknown]> = [
+    ["missing action object", { type: "action" }],
+    ["null action", { type: "action", action: null }],
+    ["string action", { type: "action", action: "move" }],
+    ["array action", { type: "action", action: ["ready"] }],
+    ["number action", { type: "action", action: 123 }],
+    ["empty action object", { type: "action", action: {} }],
+    ["unknown action type", { type: "action", action: { type: "dance" } }],
+    ["prototype action type constructor", { type: "action", action: { type: "constructor" } }],
+    ["prototype action type __proto__", { type: "action", action: { type: "__proto__" } }],
+    ["prototype action type toString", { type: "action", action: { type: "toString" } }],
+    ["numeric action type", { type: "action", action: { type: 123 } }],
+    ["null action type", { type: "action", action: { type: null } }],
+    ["move missing to", { type: "action", action: { type: "move" } }],
+    ["move numeric to", { type: "action", action: { type: "move", to: 123 } }],
+    ["move null to", { type: "action", action: { type: "move", to: null } }],
+    ["move boolean to", { type: "action", action: { type: "move", to: true } }],
+    ["move object to", { type: "action", action: { type: "move", to: { room: "bridge" } } }],
+  ];
+
+  it.each(BAD_ACTION_INPUTS)("refuses bad action wire input: %s", (_label, msg) => {
+    expect(parse(msg)).toBeNull();
+  });
+});
 
 describe("Leave ship (a cheat)", () => {
   it("parses with nothing else carried", () => {
