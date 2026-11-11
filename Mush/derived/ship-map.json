@@ -1220,7 +1220,8 @@
         {"x":10,"y":12,"kind":"ground","layer":0,"slice":"GROUND","frame":1},
         {"x":21,"y":20,"kind":"ground","layer":0,"slice":"GROUND","frame":0},
         {"x":12,"y":10,"kind":"ground","layer":0,"slice":"GROUND_DECK","frame":0},
-        {"x":16,"y":11,"kind":"entity","layer":2,"slice":"sofaReverse","frame":0}
+        {"x":18,"y":14,"kind":"entity","layer":2,"slice":"sofaReverse","frame":0},
+        {"x":16,"y":11,"kind":"entity","layer":2,"slice":"drug_dispenser","frame":0}
       ]
     },
     {

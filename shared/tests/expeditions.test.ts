@@ -1387,7 +1387,7 @@ describe("expeditions, phase 5: hold extension, patrol-ship landings, no droppin
   describe("a lost pilot", () => {
     /** The pilot got lost on the first sector: the expedition is over and the Longane waits on the planet. */
     function lostPilot(): GameState {
-      const s = flying({ tags: ["COLD", "COLD"], events: { ...only({ kind: "lost", weight: 1 }), LOST: [{ kind: "found", weight: 1 }] }, seed: 17 });
+      const s = flying({ tags: ["COLD", "COLD"], events: { ...only({ kind: "lost", weight: 1 }), LOST: [{ kind: "found", weight: 1 }] }, seed: 21 });
       return runOut(must(applyAction(s, "p0", landOn)));
     }
 

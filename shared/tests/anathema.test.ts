@@ -127,7 +127,7 @@ describe("Designer", () => {
   };
 
   it("grants 2 Designer points when picked and 2 each day, up to 4", () => {
-    let s = pick(createGame(makeSeats(2), base, 3), "p0", "designer");
+    let s = pick(createGame(makeSeats(2), base, 4), "p0", "designer");
     expect(player(s, "p0").resources.core).toBe(2);
     s = nextDay(s);
     expect(player(s, "p0").resources.core).toBe(4);
@@ -137,7 +137,7 @@ describe("Designer", () => {
   });
 
   it("makes a NERON project free and is spent before a Computer point", () => {
-    let s = nexus(pick(createGame(makeSeats(2), base, 3), "p0", "designer"), "p0");
+    let s = nexus(pick(createGame(makeSeats(2), base, 4), "p0", "designer"), "p0");
     player(s, "p0").resources.comp = 1;
     const ap = player(s, "p0").ap;
     const r = applyAction(s, "p0", work("PLASMA_SHIELD"));

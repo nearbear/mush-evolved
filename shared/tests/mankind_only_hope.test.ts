@@ -11,7 +11,7 @@ import { makeSeats, nextDay, player } from "./support.ts";
 // Seat p1 is Chun.
 const seats = makeSeats(3);
 const config = { ...DEFAULT_CONFIG, mushCount: 1, startInventory: [], startItems: [] };
-const ship = (): GameState => createGame(seats, config, 10);
+const ship = (): GameState => createGame(seats, config, 13);
 const cut = config.mankindOnlyHope.moraleLossCut;
 
 describe("Mankind's Only Hope", () => {
@@ -48,7 +48,7 @@ describe("Mankind's Only Hope", () => {
   });
 
   it("is absent when Chun is not in the game", () => {
-    const s = createGame(seats.filter((x) => x.character !== "chun"), config, 10);
+    const s = createGame(seats.filter((x) => x.character !== "chun"), config, 13);
     expect(dailyMoraleLoss(s)).toBe(config.moralePerDay);
   });
 

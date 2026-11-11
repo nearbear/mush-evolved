@@ -298,6 +298,7 @@
     "search": "Registrar",
     "snoop": "Hurgar",
     "check_spores": "Comprobar esporas",
+    "dispense_drug": "Dispensar una droga",
     "cook": "Cocinar",
     "water": "Regar",
     "treat": "Tratar",
@@ -1127,10 +1128,10 @@
       "gunman": "+2 disparos gratuitos por día.\nTus disparos fallidos provocan la mitad de torpezas.\nTus disparos certeros provocan el doble de golpes críticos.\nBonificación para desarrollar ciertos Proyectos de NERON.",
       "cook": "Puede leer las propiedades de los alimentos.\nPuede leer las propiedades de las frutas.\n+4 PA de Cocina por día.\nBonificación para desarrollar ciertos Proyectos de NERON.",
       "botanic": "Puede leer las propiedades de las frutas.\nPuede leer las propiedades de las plantas.\nPuede hacer injertos.\n+2 PA de Jardinería por día.\nExpedición: el evento Cosecha da una fruta más.\nBonificación para desarrollar ciertos Proyectos de NERON.",
-      "biologist": "Puede leer las propiedades de los medicamentos.\n+4 % de bonificación en cada Investigación del Laboratorio.\nBonificación para desarrollar ciertos Proyectos de NERON.",
+      "biologist": "Puede leer las propiedades de los medicamentos.\nTienes 2 opciones adicionales al dispensar drogas.\n+4 % de bonificación en cada Investigación del Laboratorio.\nBonificación para desarrollar ciertos Proyectos de NERON.",
       "designer": "+2 PA de Proyectos de NERON por día.\nBonificación para desarrollar ciertos Proyectos de NERON.",
       "medic": "Las acciones de Curar restauran 2 PV más.\nPuede realizar Operaciones.\nPuede leer las propiedades de los medicamentos.\n+4 % de bonificación en cada Investigación del Laboratorio.",
-      "first_aid": "+2 PA de Curar gratuitos cada día.\nPuede leer las propiedades de los medicamentos.",
+      "first_aid": "+2 PA de Curar gratuitos cada día.\nPuede leer las propiedades de los medicamentos.\nTienes 1 opción adicional al dispensar drogas.",
       "leadership": "Otorga la acción Discurso enardecido, que aumenta la moral de los compañeros.",
       "sturdy": "Tus ataques cuerpo a cuerpo infligen 1 punto de daño adicional.\nSin penalizaciones por objetos pesados.\nPuede Echar a un compañero.",
       "sprint": "Ganas 2 PM más en cada conversión PA-PM (no se acumula con el Patinete).\n+1 etapa en las exploraciones.",
@@ -1216,6 +1217,7 @@
       "defacer": "Una vez al día. Por 2 PA puedes borrar todos los registros de una sala. Se volverán a registrar a partir del próximo ciclo."
     }
   },
+  "drugDispenser": { "label": "Dispensador de drogas", "none": "Nada que tomar ahora: el dispensador ya se usó y se reinicia en los ciclos 1 y 4.", "take": "Tomar {{item}}" },
   "research": {
     "title": "Investigación",
     "tabs": {

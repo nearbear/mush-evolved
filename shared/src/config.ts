@@ -97,6 +97,7 @@ export const DEFAULT_CONFIG: GameConfig = {
   hide: { cost: { ap: 1 } },
   search: { cost: { ap: 1 } },
   // Owner, 2026-11-01 (eMushpedia "Création du Mycoscan"): checking your spore level on the MycoScan is free, once a day.
+  drugDispenser: { cost: { ap: 0 }, resetCycles: [1, 4] },
   checkSpores: { cost: { ap: 0 } },
   // Owner, 2026-11-01 (eMushpedia "Métalo"): the Scrapper's Snoop, free, once a day per storage room. What it finds
   // (owner, 2026-11-01, eMushpedia "Recycleur" weights): metal scraps 4, plastic scraps 3, a standard (uncooked)

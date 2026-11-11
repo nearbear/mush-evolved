@@ -756,7 +756,7 @@ describe("shrinkDorm", () => {
 describe("a Shrink holds its AP", () => {
   /** A bot with `skills` and `ap`, standing in the lab, clean and with no free points. */
   const inLab = (skills: string[], ap: number) => {
-    const { game: start, id } = setup();
+    const { game: start, id } = setup(3);
     const lab = roomsWith(viewFor(start, id), ["RESEARCH_LAB"])[0]!;
     const game = edit(start, id, (p) => {
       p.skills = skills as typeof p.skills;

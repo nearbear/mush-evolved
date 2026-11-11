@@ -6,6 +6,7 @@ import { HideAction } from "./actions/hide.ts";
 import { SearchAction } from "./actions/search.ts";
 import { SnoopAction } from "./actions/snoop.ts";
 import { CheckSporesAction } from "./actions/check_spores.ts";
+import { DispenseDrugAction } from "./actions/dispense_drug.ts";
 import { CookAction } from "./actions/cook.ts";
 import { ExpressCookAction } from "./actions/express_cook.ts";
 import { DismantleAction } from "./actions/dismantle.ts";
@@ -190,6 +191,7 @@ const REGISTRY = {
   search: new SearchAction(),
   snoop: new SnoopAction(),
   check_spores: new CheckSporesAction(),
+  dispense_drug: new DispenseDrugAction(),
   cook: new CookAction(),
   express_cook: new ExpressCookAction(),
   water: new WaterAction(),

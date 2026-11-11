@@ -69,7 +69,7 @@ export const STEROIDS_YIELD = 4;
 export const STEROIDS_MP = 8;
 
 /** The drugs (drugs.ts): their effects are drawn per ship, so each is only a consumable here. */
-export const DRUG_ITEMS: readonly string[] = Array.from({ length: 13 }, (_, i) => `drug_${i}`);
+export const DRUG_ITEMS: readonly string[] = Array.from({ length: 12 }, (_, i) => `drug_${i}`);
 
 /** The charges an item of this type starts with, or undefined if it has none. Charged weapons start full. */
 export function startCharges(config: DeepReadonly<GameConfig>, type: string): number | undefined {
