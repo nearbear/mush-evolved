@@ -2979,3 +2979,6 @@ Owner stated the rule in one line; I copied the SUPER_CALC completion pattern (`
 
 ## 2026-11-11: remove drug 12
 "Remove drug 12" was ambiguous (starting stock vs the 12th type); I asked, the owner said the drug type. I removed `drug_12` (13 to 12 types; ids stay contiguous), its names, and added `upgradeTo115` (drops its drawn effects and items; STATE_VERSION 115, a deploy of its own). Fewer draws shifted the seeded RNG, so five seed-pinned tests (expeditions, mankind_only_hope, pilgred, anathema, goals) needed new seeds. `verify` still shows the slow replay-history tests and some server timeouts, which also fail without this change.
+
+## 2026-11-11: Drug Dispenser terminal and `dispense_drug`
+Owner gave the rule in one line; I asked four questions (which drugs are offered, cost/limit, supply, structure) and the owner answered: one shared random list per reset (cycles 1 and 4), first N shown with N = 1 + Nurse + 2 x Biologist, one drug per reset from nothing, access plus a terminal action. The AP cost was left open, so it is a config placeholder of 0 AP. New state `drugDispenser` (added with a default, no version bump), `dispense_drug` action, a terminal panel in the client, en/fr/es text, tests in `shared/tests/drugDispenser.test.ts`.

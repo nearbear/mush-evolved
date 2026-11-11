@@ -25,7 +25,7 @@
 
 import { resolveConfig } from "./config.ts";
 import { clone } from "./helpers.ts";
-import type { DrugEffect } from "./drugs.ts";
+import type { DrugDispenserState, DrugEffect } from "./drugs.ts";
 import type { FullView, SeatStart, SeatStarts } from "./fullView.ts";
 import type { RebelCall } from "./comms.ts";
 import type { RelayPool, RelayToken, ResearchPool, Sample } from "./relay.ts";
@@ -239,6 +239,11 @@ export function normalizeItem(raw: Partial<ItemState>): ItemState {
 export function normalizeDrug(raw: Partial<DrugEffect>): DrugEffect {
   const t = "DrugEffect";
   return stripUndefined<DrugEffect>({ morale: need(raw, "morale", t), ap: need(raw, "ap", t), mp: need(raw, "mp", t), treats: [...need(raw, "treats", t)] });
+}
+
+export function normalizeDrugDispenser(raw: Partial<DrugDispenserState>): DrugDispenserState {
+  const t = "DrugDispenserState";
+  return { list: [...need(raw, "list", t)], used: need(raw, "used", t) };
 }
 
 export function normalizeDebris(raw: Partial<SpaceDebris>): SpaceDebris {
@@ -772,6 +777,7 @@ export function normalizeCore(raw: Partial<GameCore>, _ctx: NormalizeContext, mo
     equipment: mapValues(need(raw, "equipment", t), (list) => list.map(normalizeEquipment)),
     dispensedOn: dict(need(raw, "dispensedOn", t)),
     drugs: mapValues(added(raw, "drugs", {}), normalizeDrug),
+    drugDispenser: normalizeDrugDispenser(added(raw, "drugDispenser", { list: [], used: false })),
     log: need(raw, "log", t).map(normalizeLogEntry),
     nextLogId: need(raw, "nextLogId", t),
     chat: need(raw, "chat", t).map(normalizeChatMessage),

@@ -1,6 +1,7 @@
 import { Action, type ActionCost, type ActionVisibility, DIRTY, isString } from "./action.ts";
 import { ANY_CONSUMABLE, RESEARCH_COMPLETE, RESEARCH_IDS, RESEARCH_REQUIRES, RESEARCH_SKILLS, type ResearchId, researchNeedOrder } from "../research.ts";
 import { logPrivate, logPublic } from "../log.ts";
+import { resetDrugDispenser } from "../drugs.ts";
 import { DRUG_DISPENSER_EQUIPMENT, equipmentHere, SUPER_CALC_EQUIPMENT } from "../equipment.ts";
 import { ITEM_TYPES, newItemId, removeItem, STEROIDS_ITEM, STEROIDS_YIELD } from "../items.ts";
 import { xylophFound } from "../comms.ts";
@@ -125,6 +126,7 @@ function completeResearch(state: GameState, room: RoomId, research: ResearchId):
     const id = `${medlab}:${DRUG_DISPENSER_EQUIPMENT}`;
     const equipment = (state.equipment[medlab] ??= []);
     if (!equipment.some((e) => e.id === id)) equipment.push({ id, type: DRUG_DISPENSER_EQUIPMENT });
+    resetDrugDispenser(state);
   }
   // Owner, 2026-11-02 (eMushpedia "Super Calculateur", Data/research.json): completing it adds the Super Calculator to the Nexus for good.
   if (research === "SUPER_CALC") {

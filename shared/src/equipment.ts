@@ -39,7 +39,7 @@ export const EQUIPMENT_TYPES: Record<string, EquipmentType> = {
   COMBUSTION_CHAMBER_ACCESS: {canBeSabotaged: true},
   COM_CENTER: { terminal: true, title: "comms_officer", canBeSabotaged: true },
   CRYO_MODULE: {},
-  DRUG_DISP: { builtOnly: true, dismantle: { metal: 2, plastic: 1, chance: 0.25 }, },
+  DRUG_DISP: { terminal: true, builtOnly: true, dismantle: { metal: 2, plastic: 1, chance: 0.25 }, },
   DYNARCADE: { canBeSabotaged: true },
   EMERGENCY_REACTOR: {canBeSabotaged: true },
   FUEL_TANK: {canBeSabotaged: true},

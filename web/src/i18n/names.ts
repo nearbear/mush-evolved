@@ -62,6 +62,7 @@ const ACTION_NAME_KEYS = {
   search: "actions.search",
   snoop: "actions.snoop",
   check_spores: "actions.check_spores",
+  dispense_drug: "actions.dispense_drug",
   cook: "actions.cook",
   express_cook: "actions.expressCook",
   build: "actions.build",

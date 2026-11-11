@@ -75,7 +75,7 @@ import type {
   Role,
   Seat,
 } from "./types.ts";
-import { drawDrugs, drugEffectsSeenBy, stockMedlab } from "./drugs.ts";
+import { drawDrugs, drugEffectsSeenBy, hasDrugDispenser, resetDrugDispenser, stockMedlab } from "./drugs.ts";
 import { changeAP, changeMP, diseaseTrackerCycleChange } from "./adjustStats.ts";
 
 export type { ActionResult };
@@ -125,6 +125,7 @@ export function createGame(
     equipment: clone(config.equipment),
     dispensedOn: {},
     drugs: {},
+    drugDispenser: { list: [], used: false },
     log: [{ id: 1, cycle: startCycle, key: "crewWakes", visibleTo: "all" }],
     nextLogId: 2,
     chat: [],
@@ -398,6 +399,7 @@ function advanceCycle(state: GameState, at?: number): void {
   botanyCycle(state);
   const { cyclesPerDay } = state.config;
   const newDay = (state.cycle - 1) % cyclesPerDay === 0;
+  if (state.config.drugDispenser.resetCycles.includes(((state.cycle - 1) % cyclesPerDay) + 1) && hasDrugDispenser(state)) resetDrugDispenser(state);
   if (newDay) {
     state.sporesToday = 0;
     for (const p of state.players) {

@@ -30,10 +30,11 @@ import {
   type RelayTargetView,
 } from "@mush2/shared";
 import { useTranslation } from "react-i18next";
-import { CHECK_ICON, PILGRED_CARD, PROJECT_CARDS, RESEARCH_CARDS, skillIcon, UNCHECK_ICON } from "../art/assets.ts";
+import { CHECK_ICON, itemIcon, PILGRED_CARD, PROJECT_CARDS, RESEARCH_CARDS, skillIcon, UNCHECK_ICON } from "../art/assets.ts";
 import { useNames } from "../i18n/names.ts";
 import { ActionLabel } from "./ActionLabel.tsx";
 import { ActionButton } from "./ActionButton.tsx";
+import { ConsumeEffects } from "./ConsumeEffects.tsx";
 import { RelayDetails, withGain } from "./RelayDetails.tsx";
 import { BiosTerminal } from "./BiosTerminal.tsx";
 import { CommsCenter } from "./CommsCenter.tsx";
@@ -89,6 +90,7 @@ export function TerminalBody({ terminal, view, onAction, onSharePlanet }: ListPr
       {terminal.type === "RESEARCH_LAB" && <ResearchList terminal={terminal} view={view} onAction={onAction} />}
       {terminal.type === "NERON_CORE" && <ProjectList terminal={terminal} view={view} onAction={onAction} />}
       {terminal.type === "ASTRO_MODULE" && <PlanetList terminal={terminal} view={view} onAction={onAction} onShare={onSharePlanet} />}
+      {terminal.type === "DRUG_DISP" && <DrugDispenser terminal={terminal} view={view} onAction={onAction} />}
       {terminal.type === "PILGRED" && <PilgredRepair terminal={terminal} view={view} onAction={onAction} />}
       {terminal.type === "COM_CENTER" && <CommsCenter terminal={terminal} view={view} onAction={onAction} />}
       {terminal.type === "NERON_BIOS_TERM" && <BiosTerminal terminal={terminal} view={view} onAction={onAction} />}
@@ -191,6 +193,40 @@ function PilgredRepair({ terminal, view, onAction }: ListProps) {
       <div className="pilgred-relay">
         <RelayDetails target={view.relay.pilgred ?? undefined} view={view} />
       </div>
+    </div>
+  );
+}
+
+/** The Drug Dispenser: the drugs the view offers you (the first N of its list; the server picks them), as a list like the projects, each with its icon and what consuming it does (or why you can't tell). */
+function DrugDispenser({ terminal, view, onAction }: ListProps) {
+  const { t } = useTranslation();
+  const names = useNames();
+  const options = view.actions.flatMap((option) => (option.action.type === "dispense_drug" && option.action.equipment === terminal.id ? [{ drug: option.action.drug, option }] : []));
+  return (
+    <div className="drug-dispenser" role="group" aria-label={t("drugDispenser.label")}>
+      {options.length === 0 ? (
+        <p>{t("drugDispenser.none")}</p>
+      ) : (
+        <ul className="research-list" aria-label={t("drugDispenser.label")}>
+          {options.map(({ drug, option }) => {
+            const icon = itemIcon(drug);
+            return (
+              <li key={drug} className="research-item research-item-active">
+                {icon && <img className="research-card" src={icon} alt="" />}
+                <div className="research-title">
+                  <strong>{names.item(drug)}</strong>
+                </div>
+                <div className="research-body">
+                  <ConsumeEffects type={drug} view={view} />
+                  <ActionButton view={view} option={option} onAction={onAction}>
+                    <ActionLabel text={t("drugDispenser.take", { item: names.item(drug) })} cost={option.cost} chance={option.chance} />
+                  </ActionButton>
+                </div>
+              </li>
+            );
+          })}
+        </ul>
+      )}
     </div>
   );
 }

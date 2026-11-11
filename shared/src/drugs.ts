@@ -80,3 +80,30 @@ export function applyDrug(state: GameState, player: PlayerState, type: string): 
   gainMorale(state, player, drug.morale);
   for (const disease of drug.treats) treatDisease(state, player, disease);
 }
+
+/** The Drug Dispenser's list for this reset (all drug types in a random order) and whether its one drug is taken. */
+export interface DrugDispenserState {
+  list: string[];
+  used: boolean;
+}
+
+/** Drug options an alive player is shown: 1, +1 with Nurse (`first_aid`), +2 with Biologist, stacking (owner, 2026-11-11). */
+export function drugOptionCount(player: Readonly<PlayerState>): number {
+  const skills = skillsOf(player);
+  return 1 + (skills.includes("first_aid") ? 1 : 0) + (skills.includes("biologist") ? 2 : 0);
+}
+
+/** The first `drugOptionCount` drugs of the dispenser's list: what this player may choose from. */
+export function drugOptions(state: Readonly<GameState>, player: Readonly<PlayerState>): string[] {
+  return state.drugDispenser.list.slice(0, drugOptionCount(player));
+}
+
+/** A new random list of every drug type, the same for all players, and the dispenser unused. Mutates a state the caller cloned. */
+export function resetDrugDispenser(state: GameState): void {
+  state.drugDispenser = { list: rollShuffle(state, DRUG_ITEMS), used: false };
+}
+
+/** Whether the Drug Dispenser has been built (the research is done). */
+export function hasDrugDispenser(state: Readonly<GameState>): boolean {
+  return Object.values(state.equipment).some((list) => list.some((e) => e.type === "DRUG_DISP"));
+}

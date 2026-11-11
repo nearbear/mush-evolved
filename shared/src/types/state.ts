@@ -1,7 +1,7 @@
 import type { BiosState } from "../bios.ts";
 import type { CharacterId } from "../characters.ts";
 import type { CommsState } from "../comms.ts";
-import type { DrugEffect } from "../drugs.ts";
+import type { DrugDispenserState, DrugEffect } from "../drugs.ts";
 import type { TurnSide } from "../navigation.ts";
 import type { PlanetDirection, PlanetTag } from "../planets.ts";
 import type { RelayPool, ResearchPool } from "../relay.ts";
@@ -59,6 +59,8 @@ export interface GameCore {
   dispensedOn: Record<string, number>;
   /** What each drug item type does in this ship, drawn at launch (drugs.ts). Never sent to players. */
   drugs: Record<string, DrugEffect>;
+  /** The Drug Dispenser's current list and whether it has been used (drugs.ts). Never sent; `view.actions` offers the viewer's own options. */
+  drugDispenser: DrugDispenserState;
   log: LogEntry[];
   /** The next `LogEntry.id`. */
   nextLogId: number;
