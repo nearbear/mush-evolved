@@ -2929,6 +2929,51 @@ Added `config.engineer` (cap 2, 1 a day, 2 on pick), an `engineerPointsPerDay` h
 - **Worked:** offering four directions with a pick first, then building one in a worktree for the owner to see live; reusing `Hint` for the faction name and the existing satiety fields (no rules or view change).
 - **Needed correction:** I first used a `title` attribute (banned in `web/CLAUDE.md`, which loaded only once I worked in `web/`); swapped for `Hint`. The bevels didn't show at first: the `.hud-card` zero-cut defaults came later in the file with equal specificity and overrode each card's `--cut-*`; found by rendering the CSS alone in Playwright and reading the computed `clip-path`, fixed with `:where(.hud-card)`. The badge deliberately breaks the "buttons use the Mush 3-slice art" rule, as tabs do.
 
+## 2026-11-10: balance review (docs only)
+
+- **Asked:** a senior-designer review of `docs/plans/balance.md`, then a guiding report after the owner shared eight community threads.
+- **Result:** `docs/plans/balance-review.md` (recommendations only, no rules decided). Main findings: the passive Mush wins by default under today's win conditions, so Eden as a human win is load-bearing; Sol has no answer to converts; killing is the cheap test until morale costs exist; False Eden's lie is also its tell.
+- **Worked:** reading the decided and implemented rules before judging the plan; checking the original on eMushpedia (triumph decay, morale on death, Eden) rather than recalling it.
+- **Needed correction:** the first pass called the food AP gap negligible. The community threads showed it is a front-loaded burst that drives the research rush; the report says so.
+- **Later the same day:** the report was expanded at the owner's request so the session isn't lost: per-decision evidence, a Chun section (the docs disagree on whether she can start as Mush), the facts checked on eMushpedia, a digest of each shared thread, and a list of questions for the owner.
+
+### 2026-11-10: Spore holding limit
+
+Owner decided a Mush holds at most 2 spores (balance review decision 8, the burst ceiling). Built as `config.spores.max` checked in `extract_spore`'s `validate`, reusing the `at_capacity` reason so the UI shows it disabled with no new text. Extraction is the only way a Mush gains spores, so one check covers it. One existing myco-alarm test seeded a Mush with 3 spores before extracting and needed its count lowered. Recorded in `balance-review.md`, `rules-design.md` and `implemented-rules.md`.
+
+### 2026-11-10: Bot plan review, a direction for reaching Eden
+
+The owner asked for a review of `docs/plans/bot-goals.md` against a new goal: a bot crew with no Mush reaches Eden. Claude's finding: the plan fits cheap model bots facing a human Mush, not a long cooperative run (nobody owns the ship, no upkeep goals for repairs, fires, oxygen or fuel, no memory across days). Written into the plan as "Direction: reaching Eden": a no-Mush survival harness first, upkeep as scripted goals, typed bot memory in room storage, roster plans and NERON's priority as coordination scripted bots can read, one model "day plan" a day, and code-prepared options with a chooser for travel and expeditions. Superseded there: memory lost on restart, coordination and helping as model-only, bots posting no plans.
+
+- **Corrected by the owner:** Claude first suggested astronavigation might need no model. The owner's examples (planet choice by ship needs, Tracker and compass, combat team or Diplomat, saving grenades, NERON's daily priority) showed the daily intent is real judgment; the result is a split, with code computing constraints and expected outcomes and a model (or tuned weights, compared on the harness) choosing.
+- **Owner decisions recorded:** NERON's priority will be public (`rules-design.md`); the Commander can't see whether a pilot is out but can see rebel bases from the bridge.
+- Nothing built. Open questions are listed in the plan.
+
+## 2026-11-10: Patrol cockpit as a space scene
+
+- **Asked:** the owner disliked the cockpit's list of hunters with a Shoot button each, and wanted sprites plotted in space, one target at a time and one Shoot button.
+- **Decided with the owner:** the patrol ship (its docked sprite, nose to the lower left) in the upper right chasing the hunters in the lower left; the star field streams up and to the right instead of the original's ship shake; hp as a number on every hunter, with a wrapping row of shield icons for the target only; Land and Collect scrap as buttons under Shoot on desktop and phone (the Cockpit button is gone); the turret window keeps its list; no marker for hunters aiming at you.
+- **Built:** `PatrolCockpit.tsx` rewritten in the DOM (not PixiJS: every hunter is a real button), `styles/space.css`, `hunterSlots.ts` (the view's own stable places and hit counts, pure, tested), `spaceSky.ts` (the iso sky as two tiling CSS backgrounds moved with a transform), `FxSprite.tsx`. The shield and charge icons are the original battle view's `FX_SPC_SHIELD` and `FX_SPC_CHARGE`. The minimap and zoom buttons are hidden in flight. No rule or view change.
+- **Worked:** asking before building caught a misread (who chases whom, which decides the sprites' facing).
+- **Not done:** a miss or a kill has no animation (only a hit flash); bigger hunter kinds would need their own spacing; not looked at in a browser by Claude (the `play` skill is manual).
+- **Owner's answers, same day:** the no-Mush game is test tooling only and the Eden run is only a benchmark (single player stays a human Mush against bots); bots don't walk rounds and report only a damaged oxygen tank unasked; the Commander decides the day plan and says it in chat, with plans as a supplement, on a second, stronger BYOK model; scripted healing reads a plan slot; the build order for combat strength blocks nothing yet. Still open: how a keyless bot reports the tank and reads the day plan.
+
+- **Browser follow-up (same day):** the owner checked the space scene in the browser and asked for five fixes: `.patrol-cockpit` was still padded by `.iso-room` and `.space-sky` lived inside `.space-scene` above `.space-bar`, so the starfield stopped short of the edges and the bottom band; the desktop AP/MP card covered `.space-pack` in the lower left; the metal scrap button at the bottom of the screen was dropped for now; both the targeted hunter and the player's ship now show their name, overlapping shield stack (`IconStack`) and HP directly under their sprite (`CraftReadout`); and `.space-bar` now puts the stacked charge icons (`IconStack`) at the top with the `◀` / `▶` target buttons flanking `Shoot`. Also added the missing `many` plural forms for `patrol.others` in `fr.json` and `es.json` and `role="group"` on `.space-fire` so `npm run verify` passes.
+
+### 2026-11-10: Remove Dreamer skill and move icon to Maintenance Agent
+
+- **Task:** Remove the human skill Dreamer (`oisif`) and assign its icon to Maintenance Agent (`maintenance_agent`).
+- **Built:**
+  - `shared/src/skills.ts`: Removed `oisif` from `SKILLS` (now 66 human skills). Updated comments noting Maintenance Agent uses the removed Dreamer icon.
+  - `shared/src/locales/names.{en,es,fr}.json`: Removed `oisif` entry from skill name catalogs.
+  - `web/src/locales/{en,es,fr}.json`: Removed `oisif` entries from `skills.names`, `skills.shortDesc`, and `skills.desc`.
+  - `web/src/art/assets.ts`: Mapped `skillIcons["maintenance_agent"] = skillIcons["oisif"]!` and removed `oisif`.
+  - `shared/src/normalizeState.ts`: Bumped `STATE_VERSION` from 114 to 115, and added `upgradeTo115` step in `UPGRADE_STEPS` declaring `ids: ["SKILLS.oisif"]` and clearing any stored occurrences on players.
+  - `docs/rules/implemented-rules.md`: Updated skill counts and descriptions to reflect 66 human skills and the removal of Dreamer.
+  - Added unit test in `web/tests/assets.test.ts` checking `skillIcon("maintenance_agent")` and `skillIcon("oisif")`.
+  - Added unit test in `shared/tests/skills.test.ts` verifying `oisif` is no longer a valid skill.
+- **Verified:** `npm run build` and `npm run verify` (typecheck, lint, and all 2,750 tests pass).
+
 ## 2026-11-10: DRUG_DISPENSER research builds DRUG_DISP in the Medlab
 Owner stated the rule in one line; I copied the SUPER_CALC completion pattern (`completeResearch`, `DRUG_DISPENSER_EQUIPMENT` constant, room `SICK_BAY`), with a test. No questions needed; dispensing itself is not built.
 

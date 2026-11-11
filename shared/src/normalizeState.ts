@@ -104,20 +104,26 @@ export interface UpgradeStep {
   run(game: Record<string, unknown>, overrides: Record<string, unknown>): void;
 }
 
-/** Every step, in order of `to`: `upgradeTo115`, ... */
-export const UPGRADE_STEPS: readonly UpgradeStep[] = [
-  // Owner, 2026-11-11: the thirteenth drug type, `drug_12`, is removed (12 remain): its drawn effects and every item of it go.
-  {
-    to: 115,
-    paths: ["game.drugs.*", "game.items[]"],
-    ids: ["ITEM_TYPES.drug_12"],
-    run(game) {
-      const drugs = game.drugs as Record<string, unknown> | undefined;
-      if (drugs) delete drugs.drug_12;
-      if (Array.isArray(game.items)) game.items = game.items.filter((i) => (i as { type?: unknown }).type !== "drug_12");
-    },
+const upgradeTo115: UpgradeStep = {
+  to: 115,
+  ids: ["SKILLS.oisif"],
+  run(game) {
+    const players = game.players as Array<Record<string, unknown>> | undefined;
+    if (players) {
+      for (const p of players) {
+        if (Array.isArray(p.skills)) {
+          p.skills = p.skills.filter((s) => s !== "oisif");
+        }
+        if (p.bookSkill === "oisif") {
+          delete p.bookSkill;
+        }
+      }
+    }
   },
-];
+};
+
+/** Every step, in order of `to`: `upgradeTo115`, ... */
+export const UPGRADE_STEPS: readonly UpgradeStep[] = [upgradeTo115];
 
 /**
  * Brings a stored snapshot from version `from` to `STATE_VERSION`, before it is normalized: runs every step with

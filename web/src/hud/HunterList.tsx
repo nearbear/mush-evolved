@@ -1,16 +1,17 @@
 // The battle panel's hunter list (owner, 2026-10-24 and 2026-10-28): every hunter in range with its hp (`view.hunters.list`,
 // sent only to the living at a turret or flying a ship), each with a Shoot button when the view offers `offer(hunter)`.
-// Shared by the turret window (TurretPanel.tsx) and the patrol-ship cockpit (PatrolCockpit.tsx). You always pick the target.
+// Used by the turret window (TurretPanel.tsx); the patrol-ship cockpit plots its hunters in space instead (PatrolCockpit.tsx).
+// You always pick the target.
 // Each row shows the hunter's battle sprite from the original's fx sheet (`HUNTER_SPRITES`), drawn at 1x; the rows scroll
 // in their own area so a big wave doesn't push the cockpit's other controls off the panel.
 
 import { ScrollArea } from "@base-ui/react/scroll-area";
 import type { Action, ActionOption, PlayerView } from "@mush2/shared";
-import type { CSSProperties } from "react";
 import { useTranslation } from "react-i18next";
 import { ActionButton } from "./ActionButton.tsx";
 import { ActionLabel } from "./ActionLabel.tsx";
-import { FX_SHEET, HUNTER_SPRITES } from "../art/assets.ts";
+import { HUNTER_SPRITES } from "../art/assets.ts";
+import { FxSprite } from "./FxSprite.tsx";
 import "./settings.css";
 
 interface Props {
@@ -38,7 +39,7 @@ export function HunterList({ view, charges, offer, onAction }: Props) {
                 const name = t("turret.hunter", { index: i + 1 });
                 return (
                   <section key={hunter.id} className="research-item hunter-item" aria-label={name}>
-                    <HunterSprite />
+                    <FxSprite slice={HUNTER_SPRITES.hunter} className="hunter-sprite" />
                     <div className="research-body">
                       <strong>{name}</strong>
                       <span>{t("turret.hp", { hp: hunter.hp })}</span>
@@ -60,11 +61,4 @@ export function HunterList({ view, charges, offer, onAction }: Props) {
       )}
     </div>
   );
-}
-
-/** One hunter's sprite, cut from the fx sheet with a background offset (decorative: the row's text names it). */
-function HunterSprite() {
-  const [x, y, w, h] = HUNTER_SPRITES.hunter;
-  const style: CSSProperties = { width: w, height: h, backgroundImage: `url(${FX_SHEET})`, backgroundPosition: `-${x}px -${y}px` };
-  return <span className="hunter-sprite" style={style} aria-hidden="true" />;
 }

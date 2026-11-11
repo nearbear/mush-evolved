@@ -245,4 +245,12 @@ describe("character skill lists", () => {
   it("leaves no character without a full set of slots to fill", () => {
     for (const list of Object.values(CHARACTER_SKILLS)) expect(list.length).toBeGreaterThanOrEqual(SKILL_SLOTS);
   });
+
+  it("does not include the removed Dreamer (oisif) skill, and includes maintenance_agent", () => {
+    expect(SKILLS as readonly string[]).not.toContain("oisif");
+    expect(isSkill("oisif")).toBe(false);
+    expect(SKILLS as readonly string[]).toContain("maintenance_agent");
+    expect(isSkill("maintenance_agent")).toBe(true);
+    expect(SKILLS.length).toBe(66);
+  });
 });

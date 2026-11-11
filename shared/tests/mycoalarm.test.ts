@@ -51,6 +51,7 @@ describe("myco alarm", () => {
     expect(e.log.filter((l) => l.key === "mycoAlarmRang")).toHaveLength(0);
     const extract = ship();
     addAlarm(extract, { kind: "room", id: "SICK_BAY" });
+    extract.players.find((p) => p.id === "p0")!.spores = 0; // below the holding limit, so extraction is legal
     expect(rings(must(applyAction(extract, "p0", { type: "extract_spore" })), "SICK_BAY")).toHaveLength(0);
   });
 

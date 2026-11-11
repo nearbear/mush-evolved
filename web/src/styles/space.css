@@ -1,0 +1,290 @@
+/* The patrol cockpit's space scene (hud/PatrolCockpit.tsx): a streaming star field, your ship in the upper right, the
+   hunter you aim at ahead of its nose, the rest of the pack in the lower left, and the controls in a bar under it. Art
+   at 1x, but for the aimed hunter at 2x. */
+.iso-room.patrol-cockpit {
+  padding: 0;
+  overflow: hidden;
+  background: #09092d; /* starfield.ts's SKY, before the sky tiles are ready */
+}
+.patrol-cockpit p {
+  margin: 0;
+}
+/* The ship's rooms are out of reach in flight, and nothing here zooms. */
+.room-view:has(> .patrol-cockpit) .minimap,
+.room-view:has(> .patrol-cockpit) .zoom-controls {
+  display: none;
+}
+/* Phones: the ship button stands on the sack (where the zoom buttons were) instead of beside it, so the bar keeps the
+   width. */
+.room-view:has(> .patrol-cockpit) .ship-overlay {
+  right: 0.5rem;
+  bottom: calc(0.5rem + 36px + 0.5rem);
+  max-width: calc(100% - 1rem);
+}
+.fx-sprite {
+  display: block;
+  flex: none;
+  background-repeat: no-repeat;
+  image-rendering: pixelated;
+}
+
+.space-scene {
+  position: relative;
+  flex: 1;
+  min-height: 15rem;
+  overflow: hidden;
+}
+/* The sky tiles every 512px (spaceSky.ts). Each layer overhangs the scene by the distance it travels, up and to the
+   right (away from the ship's nose), and that distance is whole tiles both ways, so the loop has no seam. */
+.space-sky {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: -512px;
+  left: -1024px;
+  background: var(--sky) repeat;
+  image-rendering: pixelated;
+  animation: space-drift 12s linear infinite;
+  will-change: transform;
+}
+.space-stars {
+  background-image: var(--stars);
+  animation-duration: 3.5s;
+}
+@keyframes space-drift {
+  to {
+    transform: translate(1024px, -512px);
+  }
+}
+
+/* Your ship, its name and shield readout under it. On desktop the nameplate is in the other top corner. */
+.space-ship {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.15rem;
+  font-size: 0.85rem;
+  text-shadow: 0 1px 2px #000;
+}
+/* The shield stack and hp number under a craft (CraftReadout). */
+.space-stat {
+  max-width: 12rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  white-space: nowrap;
+}
+/* One icon a point, each laid over most of the one before (IconStack), so a high count still fits on the line. */
+.space-stack {
+  min-width: 0;
+  display: inline-flex;
+  overflow: hidden;
+}
+.space-stack .fx-sprite + .fx-sprite {
+  margin-left: var(--overlap, -8px);
+}
+
+/* The chase: each craft weaves on two beats of different lengths, so the path takes over a minute to repeat. The ship
+   flies the same path as the hunter it aims at, a moment later and not as far, which reads as it following. */
+.space-sway {
+  --reach: 10px;
+  display: block;
+  animation:
+    space-sway-x 7s ease-in-out infinite,
+    space-sway-y 11s ease-in-out infinite;
+  animation-delay: var(--lag, 0s);
+}
+.space-ship .space-sway {
+  --reach: 7px;
+  --lag: 0.9s;
+}
+.space-pack.space-sway {
+  --reach: 5px;
+  --lag: -4s;
+}
+@keyframes space-sway-x {
+  0%,
+  100% {
+    translate: calc(var(--reach) * -1) 0;
+  }
+  35% {
+    translate: calc(var(--reach) * 0.7) 0;
+  }
+  60% {
+    translate: calc(var(--reach) * -0.2) 0;
+  }
+  80% {
+    translate: var(--reach) 0;
+  }
+}
+@keyframes space-sway-y {
+  0%,
+  100% {
+    transform: translateY(calc(var(--reach) * 0.8));
+  }
+  45% {
+    transform: translateY(calc(var(--reach) * -0.8));
+  }
+  70% {
+    transform: translateY(calc(var(--reach) * 0.1));
+  }
+}
+
+/* The hunter you aim at: centred in the scene (aligned over the Shoot button), at twice its size inside the reticle's
+   four corner brackets, with its name and shields underneath. */
+.space-aim {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.15rem;
+  font-size: 0.85rem;
+  text-shadow: 0 1px 2px #000;
+  pointer-events: none;
+}
+.space-reticle {
+  --mark: linear-gradient(#ffd75e, #ffd75e) no-repeat;
+  padding: 10px;
+  background:
+    var(--mark) 0 0 / 12px 2px,
+    var(--mark) 0 0 / 2px 12px,
+    var(--mark) 100% 0 / 12px 2px,
+    var(--mark) 100% 0 / 2px 12px,
+    var(--mark) 0 100% / 12px 2px,
+    var(--mark) 0 100% / 2px 12px,
+    var(--mark) 100% 100% / 12px 2px,
+    var(--mark) 100% 100% / 2px 12px;
+}
+.space-reticle .fx-sprite {
+  transform: scale(2);
+  transform-origin: 0 0;
+}
+/* A hit: the sprite flashes white. Replayed by remounting the sprite (its key has the hit count). */
+.space-reticle .hit {
+  animation: space-hit 0.45s steps(3, end);
+}
+@keyframes space-hit {
+  from {
+    filter: brightness(0) invert(1);
+  }
+  to {
+    filter: none;
+  }
+}
+
+/* The hunters you are not aiming at, in the bottom-left corner: one sprite a kind with how many, however big the wave.
+   On desktop the AP and MP bars stand in that corner of .room-view, so the pack steps right to clear them. */
+.space-pack {
+  position: absolute;
+  left: 0.5rem;
+  bottom: 0.5rem;
+  display: flex;
+  gap: 0.5rem;
+}
+.room-view:has(.self-points) .space-pack {
+  left: 6rem;
+}
+/* Not a plain button: the sprite is the control, so it drops the Mush button art (as tabs do). */
+button.space-hunter {
+  width: auto;
+  min-width: 64px;
+  height: 44px;
+  margin: 0;
+  padding: 2px 4px 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  background: none;
+  font-size: 0.8rem;
+  line-height: 1;
+  text-shadow: 0 1px 2px #000;
+}
+button.space-hunter:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 1px;
+}
+
+/* The controls: the charges at the top, Shoot flanked by the target-cycling arrows, then the ship's other actions
+   side by side. On desktop it is centred, clear of the AP and MP bars (bottom left) and the sack (bottom right). */
+.space-bar {
+  position: relative;
+  align-self: center;
+  box-sizing: border-box;
+  width: min(26rem, 100% - 13rem);
+  margin-bottom: 0.5rem;
+  padding: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.4rem;
+  text-align: center;
+  font-size: 0.85rem;
+  background: rgb(9 9 45 / 0.85);
+  border: 1px solid var(--glow-rim);
+  border-radius: 6px;
+}
+.space-bar button {
+  margin: 0;
+}
+/* The charges left: stacked charge icons and the number, centred at the top of the bar. */
+.space-charges {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.35rem;
+  font-weight: bold;
+}
+.space-fire {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5rem;
+}
+.space-fire > button:not(.space-shoot) {
+  flex: none;
+  width: 2.5rem;
+  height: 2.5rem;
+  padding: 0;
+}
+.space-bar button.space-shoot {
+  flex: 1;
+  min-width: 0;
+  padding: 0 1rem;
+}
+.space-actions {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(7.5rem, 1fr));
+  gap: 0.4rem;
+}
+.space-actions button {
+  height: 2rem;
+  padding: 0 0.4rem;
+}
+
+/* Phones (useMobile.ts's MOBILE_QUERY): no AP bars in the corner, so the bar takes the width, less the corner column:
+   the sack and the ship button on it (each 36px tall, 0.5rem apart). The aimed hunter shifts by the same half-column
+   so its centre stays over Shoot's. */
+@media (max-width: 1023px) {
+  .space-aim {
+    left: calc(50% - 1.5rem);
+  }
+  .space-bar {
+    align-self: stretch;
+    width: auto;
+    margin: 0 3.5rem 0.5rem 0.5rem;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .space-sky,
+  .space-sway,
+  .space-reticle .hit {
+    animation: none;
+  }
+}

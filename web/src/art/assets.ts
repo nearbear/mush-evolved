@@ -370,6 +370,9 @@ export const SHIELD_ICON = uiIcons["shield"]!;
 const skillIcons = urls(import.meta.glob<string>("../../../Mush/www/img/icons/skills/*.png", { eager: true, query: "?url", import: "default" }));
 // The designer skill was the original's conceptor, whose icon file keeps that name.
 skillIcons["designer"] = skillIcons["conceptor"]!;
+// Maintenance Agent takes the icon from the removed Dreamer (oisif) skill.
+skillIcons["maintenance_agent"] = skillIcons["oisif"]!;
+delete skillIcons["oisif"];
 export const skillIcon = (id: string): string => skillIcons[id] ?? EMPTY_SLOT_ICON;
 /** Green jelly on an item or equipment, as Mush see it: the Electro-slime skill's icon. */
 export const JELLY_ICON = skillIcons["electro_slime"]!;
@@ -448,6 +451,9 @@ export const HUNTER_SPRITES = {
   asteroid: [373, 330, 81, 72],
   dice: [492, 309, 84, 92],
 } as const satisfies Record<string, readonly [number, number, number, number]>;
+/** The battle view's hp and charge icons in `FX_SHEET` (`FX_SPC_SHIELD`, `FX_SPC_CHARGE`). */
+export const FX_SHIELD = [432, 80, 13, 13] as const;
+export const FX_CHARGE = [433, 96, 10, 13] as const;
 
 // 16px icons the ship card design shows: the score's triumph icon, the character and ship end markers, and highlights.
 export const SHIP_CARD_ICONS: Readonly<Record<string, string>> = urls(

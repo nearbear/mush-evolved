@@ -1076,7 +1076,6 @@
       "space_tactics": "A cierto grado de megalomanía, se puede llamar talento. Eres experto en batalla espacial, pero todo el mundo te toma por loco.",
       "devoted": "En el fragor de la acción, se puede contar contigo.",
       "skilful": "Tienes conocimientos... siempre pueden servir.",
-      "oisif": "Los objetos materiales son una distracción.",
       "expert": "Tus habilidades son increíbles, pero trabajas sin preocuparte demasiado por ciertas consecuencias...",
       "confident": "Discreto y fiel, atraes la simpatía y cargas con un poco de la miseria del mundo...",
       "strong_skin": "Será un bruto, pero obsesionado con la limpieza. ¡No me toques, me ensucias!",
@@ -1172,7 +1171,6 @@
       "space_tactics": "50 % de probabilidad de reducir cada oleada de cazas en un 33 %.",
       "devoted": "Ganas 3 PA más cuando aceptas una misión.",
       "skilful": "Se te considera Botánico, Diplomático y Biólogo, pero no dispones de sus acciones ni recursos.",
-      "oisif": "Si no tienes nada en el inventario al final del ciclo, ganas 1 PA adicional.",
       "expert": "Tus éxitos en las acciones mejoran un 20 %, pero también las heridas y la suciedad.",
       "confident": "Una vez al día, los otros jugadores pueden confiarse a ti; al hacerlo, te revelan sus últimas X acciones, donde X es tu cantidad de moral, y ganan 2 de moral.",
       "strong_skin": "Tienes un 50 % de probabilidad de ser insensible a la contaminación por el Mush.\nTienes un 50 % de resistencia a las enfermedades físicas.",
@@ -1705,6 +1703,11 @@
     "broken": "Averiado"
   },
   "patrol": {
+    "prevTarget": "Objetivo anterior",
+    "nextTarget": "Objetivo siguiente",
+    "others_one": "{{count}} Hunter más: apuntar al siguiente",
+    "others_many": "{{count}} Hunters más: apuntar al siguiente",
+    "others_other": "{{count}} Hunters más: apuntar al siguiente",
     "flying": "En vuelo a bordo de {{ship}}",
     "armor": "Blindaje: {{armor}}/{{max}}",
     "out": "La nave ha salido de patrulla.",

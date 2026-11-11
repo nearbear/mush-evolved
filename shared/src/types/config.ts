@@ -215,6 +215,7 @@ export interface GameConfig {
     cost: { ap: number }; // AP spent to extract a spore (confirmed 2026-10-13).
     effect: { spores: number }; // Spores one extraction gives (confirmed 2026-10-13).
     perDay: number; // Spores the whole Mush faction may extract per day, before modifiers (confirmed 2026-10-14).
+    max: number; // Spores one Mush may hold; extraction is refused at it (owner, 2026-11-10, balance review decision 8).
   };
   heal: {
     cost: {

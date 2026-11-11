@@ -12,6 +12,7 @@ import { TerminalBody } from "../hud/TerminalDialog.tsx";
 import { TerminalFrame } from "../hud/TerminalFrame.tsx";
 import { terminalLogin } from "../hud/terminalUsername.ts";
 import { useNames } from "../i18n/names.ts";
+import { useShipLayout } from "../iso/shipLayout.ts";
 import type { EquipmentView, PlayerView } from "@mush2/shared";
 import { Figure, noop, Section } from "./KitSection.tsx";
 import { bodyTakenView, chatView, deadMushView, deadView, edenView, mushChatView, mushWinView, patrolHuntersView, patrolView, terminalSamples, turretHuntersSample } from "./samples.ts";
@@ -95,28 +96,29 @@ export function SignalSection() {
 export function PatrolSection() {
   const ship = patrolView.patrolShip;
   const huntedShip = patrolHuntersView.patrolShip;
+  const layout = useShipLayout();
   return (
     <Section
       id="patrol"
       heading="Patrol cockpit"
       about={
         <>
-          <code>hud/PatrolCockpit.tsx</code>: what the room view shows while you fly a patrol ship (armor, debris, the
-          cockpit to select, and the battle&apos;s <code>HunterList</code>).
+          <code>hud/PatrolCockpit.tsx</code>: what the room view shows while you fly a patrol ship (the space scene: the ship,
+          the hunters to aim at, one Shoot button, and the ship&apos;s other actions).
         </>
       }
     >
       {ship && (
         <Figure caption="Just took off from bay A, no hunters">
           <div className="room-view m2k-room m2k-room-auto">
-            <PatrolCockpit view={patrolView} ship={ship} selected={{ kind: "player", id: patrolView.you.id }} onSelect={noop} onAction={noop} />
+            <PatrolCockpit view={patrolView} ship={ship} layout={layout} onAction={noop} />
           </div>
         </Figure>
       )}
       {huntedShip && (
-        <Figure caption="Hunters in sight (Shoot on each)">
+        <Figure caption="Hunters in sight (aim at one, one Shoot button)">
           <div className="room-view m2k-room m2k-room-auto">
-            <PatrolCockpit view={patrolHuntersView} ship={huntedShip} selected={{ kind: "player", id: patrolHuntersView.you.id }} onSelect={noop} onAction={noop} />
+            <PatrolCockpit view={patrolHuntersView} ship={huntedShip} layout={layout} onAction={noop} />
           </div>
         </Figure>
       )}

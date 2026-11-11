@@ -9,7 +9,7 @@ import type { PlayerState } from "./types.ts";
  * Ids are the lowercase ids from the original design table (`Mush/derived/data/Data/skills.json`, human, not
  * beta), which are also the icon file names under `Mush/www/img/icons/skills`. The last ten are on a character's
  * list on eMushpedia but not retained in the original (the first seven) or new in eMush (the last three, which
- * have no icon). Mankind's Only Hope is left out: it is Chun's trait here (owner, 2026-10-18;
+ * have no icon, though Maintenance Agent uses the removed Dreamer icon). Mankind's Only Hope is left out: it is Chun's trait here (owner, 2026-10-18;
  * `modifiers/mankind_only_hope.ts`).
  */
 export const SKILLS = [
@@ -62,7 +62,6 @@ export const SKILLS = [
   "space_tactics",
   "devoted",
   "skilful",
-  "oisif",
   "expert",
   "confident",
   "strong_skin",

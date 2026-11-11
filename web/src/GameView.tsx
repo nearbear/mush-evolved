@@ -226,7 +226,7 @@ export function GameView({ view: given, send, onLeave, waking = false, cheatsAll
             {!you.alive ? (
               <DeathNotice view={view} />
             ) : view.patrolShip && view.expedition?.report === undefined ? (
-              <PatrolCockpit view={view} ship={view.patrolShip} selected={target} onSelect={select} onAction={act} />
+              <PatrolCockpit view={view} ship={view.patrolShip} layout={layout} onAction={act} />
             ) : isLostPlace(you.room) ? (
               <LostPanel view={view} onShareReport={readOnly ? undefined : (report, text) => post({ type: "shareReport", report, text })} />
             ) : view.expedition?.report !== undefined ? (
