@@ -1705,6 +1705,11 @@
     "broken": "Averiado"
   },
   "patrol": {
+    "prevTarget": "Objetivo anterior",
+    "nextTarget": "Objetivo siguiente",
+    "others_one": "{{count}} Hunter más: apuntar al siguiente",
+    "others_many": "{{count}} Hunters más: apuntar al siguiente",
+    "others_other": "{{count}} Hunters más: apuntar al siguiente",
     "flying": "En vuelo a bordo de {{ship}}",
     "armor": "Blindaje: {{armor}}/{{max}}",
     "out": "La nave ha salido de patrulla.",

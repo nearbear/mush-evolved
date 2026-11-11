@@ -1705,6 +1705,11 @@
     "broken": "En panne"
   },
   "patrol": {
+    "prevTarget": "Cible précédente",
+    "nextTarget": "Cible suivante",
+    "others_one": "{{count}} autre Hunter : viser le suivant",
+    "others_many": "{{count}} autres Hunters : viser le suivant",
+    "others_other": "{{count}} autres Hunters : viser le suivant",
     "flying": "En vol à bord du {{ship}}",
     "armor": "Armure : {{armor}}/{{max}}",
     "out": "Le vaisseau est sorti en patrouille.",

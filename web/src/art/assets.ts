@@ -448,6 +448,9 @@ export const HUNTER_SPRITES = {
   asteroid: [373, 330, 81, 72],
   dice: [492, 309, 84, 92],
 } as const satisfies Record<string, readonly [number, number, number, number]>;
+/** The battle view's hp and charge icons in `FX_SHEET` (`FX_SPC_SHIELD`, `FX_SPC_CHARGE`). */
+export const FX_SHIELD = [432, 80, 13, 13] as const;
+export const FX_CHARGE = [433, 96, 10, 13] as const;
 
 // 16px icons the ship card design shows: the score's triumph icon, the character and ship end markers, and highlights.
 export const SHIP_CARD_ICONS: Readonly<Record<string, string>> = urls(

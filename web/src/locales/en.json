@@ -1771,6 +1771,10 @@
     "broken": "Broken"
   },
   "patrol": {
+    "prevTarget": "Previous target",
+    "nextTarget": "Next target",
+    "others_one": "{{count}} more hunter: aim at the next",
+    "others_other": "{{count}} more hunters: aim at the next",
     "flying": "In flight aboard {{ship}}",
     "armor": "Armor: {{armor}}/{{max}}",
     "out": "The ship is out on patrol.",
