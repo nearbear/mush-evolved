@@ -3047,3 +3047,20 @@ The owner asked for a review of `docs/plans/bot-goals.md` against a new goal: a 
   - `web/src/iso/pixi/PixiRenderer.ts`: Layered `world` children as `this.ground` -> `this.fire.container` -> `this.sprites` -> `this.outlines`. Ground floor tiles render in `this.ground` beneath fire, while walls, doors, equipment (including patrol ships `spaceship` and `pasiphae`), props, and actors render in `this.sprites` on top of fire particles.
   - `web/tests/iso/fire.test.ts` & `web/tests/iso/scene.test.ts`: Added unit tests for particle aging, object pool reuse, 30Hz spawn cadence, reduced motion half-rate, and `SceneSprite` kind/slice retention.
 - **Verified:** `npm test -w web -- fire.test.ts`, `npm test -w web -- scene.test.ts`, `npm run build`, and `npm run verify` (3,033 tests in 191 files pass).
+
+### 2026-11-10: UI coherence step 1: compact recency stamps and inline room log markers
+
+- **Task:** Step 1 from `ui-coherence-plan.md` with revised layout per owner direction:
+  - In room log rows (`LogRow`), `info.png` is shown by default for public actions; the visibility badge (`VisibilityBadge` for secret, covert, or private actions) replaces it rather than sitting as a second badge.
+  - The recency timestamp sits right next to the marker icon, vertically centered with it (`display: flex; align-items: center; gap: 0.3rem`).
+  - Shorter recency captions (`<1m`, `{{count}}m`, `{{count}}h`, `{{days}}d`/`{{days}}j`, `{{days}}d{{hours}}h`/`{{days}}j{{hours}}h`) in English, French, and Spanish without prepositions.
+  - Player chat messages remain untouched.
+  - Room log and ship announcement messages are no longer dimmed (`color: var(--muted)` removed from `li.private`, `sub` class removed from `m.system` in `Thread.tsx`), keeping body text fully visible like player messages.
+- **Built:**
+  - `web/src/hud/FeedEntry.tsx`: For entries without a sender (`name === undefined`), `.entry-marker` holds the icon (`marker`) and `<RecencyStamp at={at} />` side-by-side, with the message body in `.entry-body`. Removed separate `badge` prop.
+  - `web/src/hud/ITrackie.tsx`: `LogRow` computes `marker` as `e.kind ? <VisibilityBadge ... /> : e.level === "warning" ? <WarningMarker /> : <InfoMarker />`.
+  - `web/src/hud/Thread.tsx`: Removed `sub` styling from ship announcements (`m.system`).
+  - `web/src/styles/chat.css`: Styled `.entry-inline` with `grid-template-columns: auto minmax(0, 1fr)`, `.entry-marker` with flex centering and a 22px slot for badges, and removed `color: var(--muted)` from `.feed li.private`.
+  - `web/src/locales/{en,es,fr}.json`: Concise unit timestamp strings.
+  - `web/src/hud/recency.ts` & `RecencyStamp.tsx`: Updated comments.
+- **Verified:** `npm test -w web -- recency`, `npm test -w web -- hud`, `npm run build`, and `npm run verify` (all tests pass).
