@@ -21,6 +21,8 @@ export interface ItemType {
   };
   /** A fruit: sowing it in an empty hydropot grows a plant of this species (its own type), which produces more of it (botany.ts). */
   fruit?: boolean;
+  /** A drug (drugs.ts): consuming it applies the effects drawn for this ship, and full belly does not stop it. */
+  drug?: boolean;
   /** Cooking it (in a cook room) turns it into this item type. */
   cook?: { into: string };
   /** Carrying one makes every room-to-room move cost `heavyMpPenalty` more MP, once however many you carry (confirmed 2026-10-16). Skills may cancel it. */
@@ -66,6 +68,9 @@ export const STEROIDS_ITEM = "steroids";
 export const STEROIDS_YIELD = 4;
 export const STEROIDS_MP = 8;
 
+/** The drugs (drugs.ts): their effects are drawn per ship, so each is only a consumable here. */
+export const DRUG_ITEMS: readonly string[] = Array.from({ length: 13 }, (_, i) => `drug_${i}`);
+
 /** The charges an item of this type starts with, or undefined if it has none. Charged weapons start full. */
 export function startCharges(config: DeepReadonly<GameConfig>, type: string): number | undefined {
   return type === MICROWAVE_ITEM ? config.expressCook.charges.start : config.weapons.types[type]?.charges;
@@ -78,6 +83,7 @@ export function rechargeMicrowaves(state: GameState): void {
 }
 
 export const ITEM_TYPES: Record<string, ItemType> = {
+  ...Object.fromEntries(DRUG_ITEMS.map((id) => [id, { consume: { ap: 0, satiety: 0 }, drug: true, canBreak: true, isDestroyedWhenBroken: true }])),
   [ITRACKIE_ITEM]: {},
   wrench: {},
   // Owner, 2026-10-25, eMushpedia "Extincteur": puts out a fire (actions/extinguish.ts); dismantled for metal scraps.

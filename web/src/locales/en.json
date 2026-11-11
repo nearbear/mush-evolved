@@ -741,6 +741,8 @@
     "shield": "Shielding: {{shield}}",
     "shieldDesc": "Gives a chance out of 100 that a breakdown spares it. At 25 or more it can't be sabotaged or dismantled.",
     "satiety": "Satiety",
+    "drugUnknown": "Effects are unknown, consult a professional or consume it to find out!",
+    "drugTreats": "Treats: {{diseases}}",
     "plantOf": "{{item}} plant",
     "young": "Young plant",
     "youngDesc": "This plant is young: it makes neither oxygen nor fruit until it grows up.",

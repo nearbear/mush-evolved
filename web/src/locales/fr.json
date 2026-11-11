@@ -754,6 +754,8 @@
     "shield": "Blindage : {{shield}}",
     "shieldDesc": "Donne une chance sur 100 d'échapper à une panne. À 25 ou plus, il ne peut être ni saboté ni démonté.",
     "satiety": "Satiété",
+    "drugUnknown": "Les effets sont inconnus : consultez un professionnel ou consommez-le pour le découvrir !",
+    "drugTreats": "Soigne : {{diseases}}",
     "plantOf": "Plant : {{item}}",
     "young": "Jeune plant",
     "youngDesc": "Cette plante est jeune. Elle ne produira ni oxygène ni fruits jusqu'à maturation.",

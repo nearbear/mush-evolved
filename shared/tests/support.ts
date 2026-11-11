@@ -3,11 +3,17 @@
 // scenario (who is where, holding what) stays in each test file, next to the tests that depend on it.
 import { CHARACTERS } from "../src/characters.ts";
 import { EQUIPMENT_TYPES } from "../src/equipment.ts";
-import { ITEM_TYPES } from "../src/items.ts";
+import { DRUG_ITEMS, ITEM_TYPES } from "../src/items.ts";
 import { ANY_CONSUMABLE, RESEARCH_REQUIRES, type ResearchId } from "../src/research.ts";
 import { type ActionResult, applyAction, legalIn, newCycle, viewFor } from "../src/rules.ts";
 import type { RelayPool } from "../src/relay.ts";
 import type { Action, ActionOption, GameConfig, GameState, PlayerId, PlayerState, Seat } from "../src/types.ts";
+
+/** `state` without the drugs a new ship stocks in its Medlab, for tests that count or index the items on the floor. */
+export function withoutDrugs(state: GameState): GameState {
+  state.items = state.items.filter((i) => !DRUG_ITEMS.includes(i.type));
+  return state;
+}
 
 /** `config` with no hunter waves, for tests that run many cycles with nobody at the turrets (the ship would explode). */
 export const noHunters = <C extends GameConfig>(config: C): C => ({ ...config, hunters: { ...config.hunters, waveChance: 0 } });

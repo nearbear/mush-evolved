@@ -5,7 +5,7 @@ import { MODIFIERS } from "../src/modifiers.ts";
 import { parseGameMessage } from "../src/protocol.ts";
 import { applyAction, createGame, viewFor } from "../src/rules.ts";
 import type { Action, GameConfig } from "../src/types.ts";
-import { forceDismantleOdds, makeSeats, mustApply, offered } from "./support.ts";
+import { forceDismantleOdds, makeSeats, mustApply, offered, withoutDrugs } from "./support.ts";
 
 const seats = makeSeats(4, "others");
 
@@ -19,7 +19,7 @@ const config: GameConfig = {
   ],
   startMp: 0, // the move below converts AP
 };
-const newGame = () => createGame(seats, config, 42);
+const newGame = () => withoutDrugs(createGame(seats, config, 42));
 
 const take = (item: string): Action => ({ type: "take", item });
 const drop = (item: string): Action => ({ type: "drop", item });

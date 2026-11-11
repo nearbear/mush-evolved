@@ -4,6 +4,7 @@ import { ITEM_TYPES, canReachItem, removeItem } from "../items.ts";
 import { logSecret } from "../log.ts";
 import { consumed } from "../modifiers.ts";
 import { rationApBonus } from "../comms.ts";
+import { applyDrug } from "../drugs.ts";
 import { contaminate } from "../infection.ts";
 import { isFullBelly } from "../statuses.ts";
 import type { GameState, PlayerState } from "../types.ts";
@@ -24,7 +25,7 @@ export class ConsumeAction extends Action<ConsumeActionData> {
     const item = state.items.find((i) => i.id === target.item);
     if (!item) return "no_such_item";
     if (!ITEM_TYPES[item.type]?.consume || !canReachItem(state, player, item)) return "cant_consume";
-    return isFullBelly(state, player) ? "full_belly" : null;
+    return isFullBelly(state, player) && !ITEM_TYPES[item.type]!.drug ? "full_belly" : null;
   }
 
   override dirtChance(state: Readonly<GameState>): number {
@@ -48,6 +49,7 @@ export class ConsumeAction extends Action<ConsumeActionData> {
       player.satiety += satiety;
       player.satietyZeroSince = player.satiety === 0 ? state.cycle : null;
     }
+    applyDrug(state, player, item.type);
     consumed(state, player, item);
     logSecret(state, player.id, "consumed", { name: player.character, item: item.type });
     // Fungal cuisine: a human is contaminated first, one level per spore; a conversion ends the meal with no food effects.

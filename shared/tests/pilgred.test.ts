@@ -15,7 +15,7 @@ const cfg = DEFAULT_CONFIG.pilgred;
 const base = Math.floor((cfg.progress.rate * cfg.progress.mod) / 10);
 
 function game(room = "MOTOR_ROOM") {
-  const state = createGame(seats, noIncidents(noHunters(DEFAULT_CONFIG)), 7);
+  const state = createGame(seats, noIncidents(noHunters(DEFAULT_CONFIG)), 10);
   for (const p of state.players) p.room = room;
   return state;
 }
