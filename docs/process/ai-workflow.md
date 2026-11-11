@@ -2960,6 +2960,16 @@ The owner asked for a review of `docs/plans/bot-goals.md` against a new goal: a 
 
 - **Browser follow-up (same day):** the owner checked the space scene in the browser and asked for five fixes: `.patrol-cockpit` was still padded by `.iso-room` and `.space-sky` lived inside `.space-scene` above `.space-bar`, so the starfield stopped short of the edges and the bottom band; the desktop AP/MP card covered `.space-pack` in the lower left; the metal scrap button at the bottom of the screen was dropped for now; both the targeted hunter and the player's ship now show their name, overlapping shield stack (`IconStack`) and HP directly under their sprite (`CraftReadout`); and `.space-bar` now puts the stacked charge icons (`IconStack`) at the top with the `◀` / `▶` target buttons flanking `Shoot`. Also added the missing `many` plural forms for `patrol.others` in `fr.json` and `es.json` and `role="group"` on `.space-fire` so `npm run verify` passes.
 
+### 2026-11-10: UI coherence step 1: log line width and compact recency stamps
+
+- **Task:** Step 1 from `ui-coherence-plan.md`. Move the timestamp and visibility badge out of the message body row in `.feed > li.entry-inline` into its own row so ship log lines wrap across full width rather than truncating early in the 20rem panel. Shorter time captions ("<1m", "47m", "1h") agreed with the owner.
+- **Built:**
+  - `web/src/styles/chat.css`: `.feed > li.entry-inline` updated to two columns (`22px minmax(0, 1fr)`) and two rows (`"marker body"`, `"marker stamp"`), with `.entry-stamp` muted, small (`0.75rem`), and `font-style: normal`.
+  - `web/src/hud/FeedEntry.tsx`: stamp row conditionally rendered when `badge` or `at` exists; updated comments.
+  - `web/src/locales/en.json`, `fr.json`, `es.json`: updated `itrackie.ago.*` to concise units (`<1m`, `{{count}}m`, `{{count}}h`, `{{days}}d`/`{{days}}j`, `{{days}}d{{hours}}h`/`{{days}}j{{hours}}h`), dropping prepositions (`ago`, `il y a`, `hace`).
+  - Updated comments in `recency.ts` and `RecencyStamp.tsx`.
+- **Verified:** `npm test -w tools -- i18n`, `npm test -w web -- recency`, `npm test -w web -- hud`, `npm run build`, and `npm run verify`.
+
 ### 2026-11-10: Remove Dreamer skill and move icon to Maintenance Agent
 
 - **Task:** Remove the human skill Dreamer (`oisif`) and assign its icon to Maintenance Agent (`maintenance_agent`).
@@ -2973,3 +2983,67 @@ The owner asked for a review of `docs/plans/bot-goals.md` against a new goal: a 
   - Added unit test in `web/tests/assets.test.ts` checking `skillIcon("maintenance_agent")` and `skillIcon("oisif")`.
   - Added unit test in `shared/tests/skills.test.ts` verifying `oisif` is no longer a valid skill.
 - **Verified:** `npm run build` and `npm run verify` (typecheck, lint, and all 2,750 tests pass).
+
+### 2026-11-10: Isometric room particle effect (CellFire) in PixiJS
+
+- Ported the Flash/Haxe isometric client's dynamic room fire particle system (`Mush/clients/iso/src/fx/CellFire.hx` and `Mush/clients/iso/src/Grid.hx:940-975`) to the PixiJS renderer (`web/src/iso/pixi/fire.ts`).
+- When a room is on fire (`PlayerView.roomOnFire`), `PixiRenderer` attaches `CellFire` emitters to randomly selected ground tiles without replacement: at least 8 (or all tiles if fewer), ~20% of the room's ground tiles, capped at 30.
+- Flame particles spawn from an object pool (`PartPool`) at a 30Hz tick rate to match the Flash original's density regardless of display refresh rate, with a 50% spawn rate under reduced motion.
+- Sprites use 3x3 pixel slices from `fx.png` (`FX_FIRE_X` and `FX_FIRE_X2` with 45° rotation).
+- Particles drift upward along the isometric z-axis and progress through 4 temperature stages: yellow (frame 0) -> orange (frame 1) -> red (frame 2) -> smoke (frames 3–5), with smoke doubling vertical speed before recycling upon expiration. 50% of spawned particles act as stationary yellow base embers.
+
+### 2026-11-10: Tests for targets.ts (#116)
+
+- **Task:** Implement unit tests for `web/src/hud/targets.ts` ([#116](https://github.com/nearbear/mush2/issues/116)), covering finding the selection in a view, target equality, actions aimed at targets, and carried attack weapons, along with action text description.
+- **Built:**
+  - `web/tests/hud/targets.test.ts`: comprehensive tests for `sameTarget`, `resolveTarget` (player, equipment, item carried vs room), `optionsOn` (terminal action exclusion, inventory/ready action exclusion, self single-property actions, person/equipment/item-aimed actions, weapon actions, push accommodation, cost independence), `attackWeapon`, and integration with `sampleView`.
+  - `web/tests/hud/actionText.test.ts`: unit tests for `describeAction` covering item, equipment, player, and room movement actions, with and without AP costs.
+  - Updated `docs/process/testing.md` to record [#116](https://github.com/nearbear/mush2/issues/116) as covered.
+- **Verified:** `npm test -w web -- targets`, `npm test -w web -- actionText`, `npm run build`, and `npm run verify` (all 2,800 tests pass).
+
+### 2026-11-10: UI coherence step 1 (revision): inline marker & timestamp for room logs
+
+- **Feedback & Decision:** The owner preferred not moving timestamps onto a second row under the body. Instead:
+  - In room log rows (`LogRow`), `info.png` is shown by default for public actions; the visibility badge (`VisibilityBadge` for secret, covert, or private actions) replaces it rather than sitting as a second badge.
+  - The recency timestamp sits right next to the marker icon, vertically centered with it (`display: flex; align-items: center; gap: 0.3rem`).
+  - Player chat messages remain untouched.
+  - Room log and ship announcement messages are no longer dimmed (`color: var(--muted)` removed from `li.private`, `sub` class removed from `m.system` in `Thread.tsx`), keeping body text fully visible like player messages.
+- **Built:**
+  - `web/src/hud/FeedEntry.tsx`: For entries without a sender (`name === undefined`), `.entry-marker` holds the icon (`marker`) and `<RecencyStamp at={at} />` side-by-side, with the message body in `.entry-body`. Removed separate `badge` prop.
+  - `web/src/hud/ITrackie.tsx`: `LogRow` computes `marker` as `e.kind ? <VisibilityBadge ... /> : e.level === "warning" ? <WarningMarker /> : <InfoMarker />`.
+  - `web/src/hud/Thread.tsx`: Removed `sub` styling from ship announcements (`m.system`).
+  - `web/src/styles/chat.css`: Styled `.entry-inline` with `grid-template-columns: auto minmax(0, 1fr)`, `.entry-marker` with flex centering and a 22px slot for badges, and removed `color: var(--muted)` from `.feed li.private`.
+- **Verified:** `npm test -w web -- recency`, `npm test -w web -- hud`, `npm run build`, and `npm run verify` (all 2,800 tests pass).
+
+### 2026-11-10: Wire parser table for parseGameMessage and parseMatchmakerMessage (#107)
+
+- **Task:** Implement test tables of bad inputs for `parseGameMessage` and `parseMatchmakerMessage` ([#107](https://github.com/nearbear/mush2/issues/107)): malformed JSON, wrong types, unknown action kinds, oversized strings, and extra fields; ensure move, ready, chat, and the matchmaker parser are thoroughly tested.
+- **Built in `shared/tests/protocol.test.ts`:**
+  - `Wire parsers: raw input boundary`: checks malformed JSON strings (syntax errors, empty, whitespace, truncated JSON) and non-object JSON values (primitives, arrays) for both parsers.
+  - `parseMatchmakerMessage`: checks parsing of `resume`, `queue`, and `singlePlayer`; extra field stripping; whitespace trimming; `MAX_NAME_LENGTH` (24 chars) name capping; and a table of bad inputs (missing/wrong type `name`, empty or whitespace-only name, missing/wrong type or unknown `character`, prototype keys).
+  - `parseGameMessage`:
+    - Top-level wire table: unknown types, non-string types, prototype keys, and matchmaker messages.
+    - `chat`: valid channels across all kinds (`global`, `mush`, `graveyard`, `pc-*`, `th-*`, `sp-*`, `sr-*`), extra field stripping, `MAX_CHAT_LENGTH * 4` (1200 chars) capping, and bad inputs table.
+    - `walk`: valid coordinates with and without `behind`, extra field stripping, and bad inputs table (float coordinates, out of bounds `MAX_SPOT_CELL`, non-boolean sitting, malformed behind).
+    - `toggleCheckbox`: valid seq and line, extra field stripping, and bad inputs table (negative/float seq and line, unknown channel).
+    - `createChannel`: valid variants, extra field stripping, `MAX_NAME_LENGTH * 4` name cap, 16 members cap, 64-char member ID cap, and bad inputs table.
+    - `createThread`: valid variants, extra field stripping, name length cap, and bad inputs table (missing name, negative/float from).
+    - `sharePlanet` & `shareReport`: valid variants, extra field stripping, 64-char ID cap, `MAX_SHARED_PLANET_LENGTH * 4` text cap, and bad inputs table.
+    - `invite` & `leaveChannel`: valid variants, extra field stripping, and bad inputs table (refusing non-private channels, missing/invalid player).
+    - `cheat`, `roleCheat`, & `solCheat`: valid variants, extra field stripping, and bad inputs table (unknown cheat/role, non-boolean on, prototype keys).
+    - `clearQueue` & `acknowledgeTransfer`: valid variants and extra field stripping.
+    - Actions: `move` and `ready` valid parsing and extra field stripping; table of bad action inputs (move missing `to`, move with non-string `to`, missing action object, non-object action, unknown action types, prototype keys).
+  - Updated `docs/process/testing.md` to record wire parsers as covered.
+- **Verified:** `npm test -w shared -- protocol.test.ts`, `npm run build`, and `npm run verify` (3,033 tests pass).
+
+- **Update:** Added expanded tests to `web/tests/hud/ActionLabel.test.tsx` (chance formatting, visibility badges, free action rendering) and `web/tests/hud/targets.test.ts` (structured Target objects e.g. examine, non-target actions e.g. move, attack actions without weapons).
+
+### 2026-11-10: Isometric Room Particle Effect (CellFire) & Layering behind walls and patrol ships
+
+- **Task:** Implement the dynamic isometric room fire particle effect (`CellFire`) for the PixiJS renderer matching original Flash/Haxe logic (`Mush/clients/iso/src/fx/CellFire.hx` and `Mush/clients/iso/src/Grid.hx:940-975`), and ensure fire renders behind walls and behind patrol ships.
+- **Built:**
+  - `web/src/iso/pixi/fire.ts`: Emitter and particle system (`Part`, `PartPool`, `CellFireEmitter`, `RoomFire`). Attached to random ground tiles (~20%, 8-30 max) when in FIRE state (`roomOnFire`). 4 temperature stages (yellow -> orange -> red -> smoke) using 3x3 pixel slices `FX_FIRE_X` and `FX_FIRE_X2` from `fx.png`. 50% base stationary ember, 50% rising flame with doubling speed on smoke stage before dissipating. Object pool recycling prevents GC churn.
+  - `web/src/iso/scene.ts`: Preserved `kind` and `slice` on `SceneSprite` (`ScenePicture`), and exposed `onFire` and `groundTiles` on `Scene` via `describeScene`.
+  - `web/src/iso/pixi/PixiRenderer.ts`: Layered `world` children as `this.ground` -> `this.fire.container` -> `this.sprites` -> `this.outlines`. Ground floor tiles render in `this.ground` beneath fire, while walls, doors, equipment (including patrol ships `spaceship` and `pasiphae`), props, and actors render in `this.sprites` on top of fire particles.
+  - `web/tests/iso/fire.test.ts` & `web/tests/iso/scene.test.ts`: Added unit tests for particle aging, object pool reuse, 30Hz spawn cadence, reduced motion half-rate, and `SceneSprite` kind/slice retention.
+- **Verified:** `npm test -w web -- fire.test.ts`, `npm test -w web -- scene.test.ts`, `npm run build`, and `npm run verify` (3,033 tests in 191 files pass).
