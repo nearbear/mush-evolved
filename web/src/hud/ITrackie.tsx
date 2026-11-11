@@ -74,11 +74,17 @@ const LogRow = memo(
   function LogRow({ entry: e, canRead, onRead }: { entry: LogLine; canRead: boolean; onRead: (report: string) => void }) {
     const { t } = useTranslation();
     const names = useNames();
+    const marker = e.kind ? (
+      <VisibilityBadge kind={e.kind} leaked={e.leaked === true} />
+    ) : e.level === "warning" ? (
+      <WarningMarker />
+    ) : (
+      <InfoMarker />
+    );
     return (
       <FeedEntry
-        marker={e.level === "warning" ? <WarningMarker /> : <InfoMarker />}
+        marker={marker}
         at={e.at}
-        badge={e.kind && <VisibilityBadge kind={e.kind} leaked={e.leaked === true} />}
         className={logRowClass(e)}
       >
         {names.logLine(e)}

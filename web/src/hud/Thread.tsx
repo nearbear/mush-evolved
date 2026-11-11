@@ -374,7 +374,6 @@ function PageBar({ paging }: { paging: Paging }) {
       ) : (
         pageItems(first, last, page).map((p, i) =>
           p === "gap" ? (
-            // biome-ignore lint/suspicious/noArrayIndexKey: a gap has no identity but its place.
             <span key={`gap${i}`} className="chat-page-gap" aria-hidden="true">
               …
             </span>
@@ -440,7 +439,7 @@ export function MessageEntry({
   const names = useNames();
   if (m.system) {
     return (
-      <FeedEntry marker={<InfoMarker />} at={m.at} className={className ? `sub ${className}` : "sub"} seq={seq}>
+      <FeedEntry marker={<InfoMarker />} at={m.at} className={className} seq={seq}>
         {names.logLine(m.system)}
       </FeedEntry>
     );

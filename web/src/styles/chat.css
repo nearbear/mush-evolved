@@ -37,7 +37,6 @@
 }
 .feed li.private {
   font-style: italic;
-  color: var(--muted);
 }
 .feed li.warning {
   color: var(--warning);
@@ -295,7 +294,7 @@
   border-top: 1px solid rgb(255 255 255 / 0.2);
 }
 
-/* The "47min ago" caption is a popover trigger; strip the global Mush button look. */
+/* The "47m" caption is a popover trigger; strip the global Mush button look. */
 .recency {
   display: inline;
   width: auto;
@@ -325,17 +324,28 @@
   column-gap: 0.5rem;
   align-items: start;
 }
-/* Ship messages: no head row; the body and the caption share one row. */
+/* Ship and room log messages: marker (info icon or visibility badge) and recency stamp on the left, body on the right. */
 .feed > li.entry-inline {
-  grid-template-columns: 22px minmax(0, 1fr) auto;
-  grid-template-areas: "marker body stamp";
-  column-gap: 0.35rem;
+  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-areas: "marker body";
+  column-gap: 0.4rem;
+  align-items: start;
 }
-.entry-inline > .entry-stamp {
-  grid-area: stamp;
+.entry-inline > .entry-marker {
+  grid-area: marker;
   display: flex;
   align-items: center;
   gap: 0.3rem;
+  min-height: 1.25rem;
+  white-space: nowrap;
+}
+.entry-inline .visibility-badge {
+  display: inline-flex;
+  min-width: 22px;
+  justify-content: center;
+}
+.entry-inline .entry-info:not(.info) {
+  margin: 0 3px;
 }
 /* A log line's visibility badge (VisibilityBadge.tsx): the action buttons' 16px icon, a popover trigger without the
    global Mush button look. */
