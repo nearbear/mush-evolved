@@ -58,6 +58,21 @@ describe("spore extraction", () => {
     expect(offered(t, "p0")).toContainEqual(extract);
   });
 
+  it("caps the spores one Mush holds at 2, shown disabled; spending one frees a slot", () => {
+    expect(DEFAULT_CONFIG.spores.max).toBe(2);
+    let s = ship();
+    for (let i = 0; i < config.spores.max; i++) s = mustApply(s, "p0", extract);
+    expect(player(s, "p0").spores).toBe(config.spores.max);
+    expect(viewFor(s, "p0").actions.find((o) => o.action.type === "extract_spore")).toMatchObject({ lacks: ["capacity"] });
+    const before = JSON.stringify(s);
+    expect(applyAction(s, "p0", extract).ok).toBe(false);
+    expect(JSON.stringify(s)).toBe(before);
+    // The cap is per Mush: the other Mush still extracts.
+    expect(offered(s, "p1")).toContainEqual(extract);
+    player(s, "p0").spores -= 1;
+    expect(offered(s, "p0")).toContainEqual(extract);
+  });
+
   it("lets a modifier raise the daily cap", () => {
     MODIFIERS["test_spore_cap"] = { sporesPerDay: (c) => c + 1 };
     try {

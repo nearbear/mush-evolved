@@ -2936,3 +2936,7 @@ Added `config.engineer` (cap 2, 1 a day, 2 on pick), an `engineerPointsPerDay` h
 - **Worked:** reading the decided and implemented rules before judging the plan; checking the original on eMushpedia (triumph decay, morale on death, Eden) rather than recalling it.
 - **Needed correction:** the first pass called the food AP gap negligible. The community threads showed it is a front-loaded burst that drives the research rush; the report says so.
 - **Later the same day:** the report was expanded at the owner's request so the session isn't lost: per-decision evidence, a Chun section (the docs disagree on whether she can start as Mush), the facts checked on eMushpedia, a digest of each shared thread, and a list of questions for the owner.
+
+### 2026-11-10: Spore holding limit
+
+Owner decided a Mush holds at most 2 spores (balance review decision 8, the burst ceiling). Built as `config.spores.max` checked in `extract_spore`'s `validate`, reusing the `at_capacity` reason so the UI shows it disabled with no new text. Extraction is the only way a Mush gains spores, so one check covers it. One existing myco-alarm test seeded a Mush with 3 spores before extracting and needed its count lowered. Recorded in `balance-review.md`, `rules-design.md` and `implemented-rules.md`.

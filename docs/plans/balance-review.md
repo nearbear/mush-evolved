@@ -153,7 +153,9 @@ Settle these before tuning any number. Each one changes what the numbers mean.
 
 **Problem.** The spore cap (4 a day for the faction) limits the rate, not the stockpile, and a Mush can hold any number. Phagocytosis turns each spore into 4 AP for 0 AP. Three quiet days bank 12 spores: 48 AP on top of a full bar of 12, about 60 AP in one sitting at 1.5 seconds an action. A knife costs 1 AP, hits 60% of the time for 1 to 5, and has no charges, so on paper that is around 8 AP per kill.
 
-**Recommendation.** Pick a holding limit and write down the intended size of a "cash in". Keep the weapon requirement: the lead developer noted that rampages became far less hated once they needed weapons and a plan, not one skill and a fist. Keep the existing tension that every spore eaten is a spike not made.
+**Decided (owner, 2026-11-10; built).** A Mush holds at most 2 spores (`config.spores.max`): extraction is refused at the limit, and spending a spore frees the slot. With Phagocytosis the bank is worth at most 8 AP and 8 HP, so a cash in is a full bar plus 8 AP, not 48.
+
+**Recommendation.** Write down the intended size of a "cash in". Keep the weapon requirement: the lead developer noted that rampages became far less hated once they needed weapons and a plan, not one skill and a fist. Keep the existing tension that every spore eaten is a spike not made.
 
 **The hunted Mush.** "A hunted Mush is fun to play" has no mechanism yet. An outed Mush needs stored potential to trigger (traps, primed victims, a mould) and somewhere to go. Decision 5 supplies the first.
 
@@ -190,7 +192,7 @@ Settle these before tuning any number. Each one changes what the numbers mean.
 | Starting rations | 32 | Trial 24 | See "Food" below |
 | AP per ration | 4 (5 with Sirius) | Keep | Cutting it was argued down upstream: the walk costs about 1 AP, so people hoard and eat more |
 | Rations eaten in pre-selection | Unlimited | Decide a limit | Late joiners inherit an emptied refectory |
-| Spores a Mush can hold | No limit | Set one | Burst ceiling |
+| Spores a Mush can hold | 2 (decided 2026-11-10) | Done | Burst ceiling |
 | Earliest Eden arrival | Undecided | Pick the day first | Every other clock is tuned against it |
 | Detection research | Flat pace | Pace back from a target day | Already a lever in `balance.md` |
 | Two Mush from how many players | 9 or more | Consider 10 or more, counted on active players | A 9-seat ship with two inactives played as 5 against 2 |
@@ -316,5 +318,5 @@ Upstream, a Transfer needs the same room and one spore, leaves no log, and reset
 5. Which delayed infection comes first?
 6. What changes on MycoScan and the alarms?
 7. Can Chun start as Mush, and can she be on the List?
-8. How many spores can a Mush hold?
+8. ~~How many spores can a Mush hold?~~ Two (owner, 2026-11-10).
 9. Starting rations: 32 or 24?

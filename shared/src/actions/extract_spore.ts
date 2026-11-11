@@ -32,6 +32,7 @@ export class ExtractSporeAction extends Action<ExtractSporeActionData> {
     if (state.preselection) return IN_PRESELECTION;
     if (player.role !== "mush") return "not_mush";
     if (state.sporesToday >= sporesPerDay(state, player)) return AT_CAPACITY;
+    if (player.spores >= state.config.spores.max) return AT_CAPACITY; // holding limit (owner, 2026-11-10)
     return null;
   }
 
