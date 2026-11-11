@@ -2940,3 +2940,20 @@ Added `config.engineer` (cap 2, 1 a day, 2 on pick), an `engineerPointsPerDay` h
 ### 2026-11-10: Spore holding limit
 
 Owner decided a Mush holds at most 2 spores (balance review decision 8, the burst ceiling). Built as `config.spores.max` checked in `extract_spore`'s `validate`, reusing the `at_capacity` reason so the UI shows it disabled with no new text. Extraction is the only way a Mush gains spores, so one check covers it. One existing myco-alarm test seeded a Mush with 3 spores before extracting and needed its count lowered. Recorded in `balance-review.md`, `rules-design.md` and `implemented-rules.md`.
+
+### 2026-11-10: Bot plan review, a direction for reaching Eden
+
+The owner asked for a review of `docs/plans/bot-goals.md` against a new goal: a bot crew with no Mush reaches Eden. Claude's finding: the plan fits cheap model bots facing a human Mush, not a long cooperative run (nobody owns the ship, no upkeep goals for repairs, fires, oxygen or fuel, no memory across days). Written into the plan as "Direction: reaching Eden": a no-Mush survival harness first, upkeep as scripted goals, typed bot memory in room storage, roster plans and NERON's priority as coordination scripted bots can read, one model "day plan" a day, and code-prepared options with a chooser for travel and expeditions. Superseded there: memory lost on restart, coordination and helping as model-only, bots posting no plans.
+
+- **Corrected by the owner:** Claude first suggested astronavigation might need no model. The owner's examples (planet choice by ship needs, Tracker and compass, combat team or Diplomat, saving grenades, NERON's daily priority) showed the daily intent is real judgment; the result is a split, with code computing constraints and expected outcomes and a model (or tuned weights, compared on the harness) choosing.
+- **Owner decisions recorded:** NERON's priority will be public (`rules-design.md`); the Commander can't see whether a pilot is out but can see rebel bases from the bridge.
+- Nothing built. Open questions are listed in the plan.
+
+## 2026-11-10: Patrol cockpit as a space scene
+
+- **Asked:** the owner disliked the cockpit's list of hunters with a Shoot button each, and wanted sprites plotted in space, one target at a time and one Shoot button.
+- **Decided with the owner:** the patrol ship (its docked sprite, nose to the lower left) in the upper right chasing the hunters in the lower left; the star field streams up and to the right instead of the original's ship shake; hp as a number on every hunter, with a wrapping row of shield icons for the target only; Land and Collect scrap as buttons under Shoot on desktop and phone (the Cockpit button is gone); the turret window keeps its list; no marker for hunters aiming at you.
+- **Built:** `PatrolCockpit.tsx` rewritten in the DOM (not PixiJS: every hunter is a real button), `styles/space.css`, `hunterSlots.ts` (the view's own stable places and hit counts, pure, tested), `spaceSky.ts` (the iso sky as two tiling CSS backgrounds moved with a transform), `FxSprite.tsx`. The shield and charge icons are the original battle view's `FX_SPC_SHIELD` and `FX_SPC_CHARGE`. The minimap and zoom buttons are hidden in flight. No rule or view change.
+- **Worked:** asking before building caught a misread (who chases whom, which decides the sprites' facing).
+- **Not done:** a miss or a kill has no animation (only a hit flash); bigger hunter kinds would need their own spacing; not looked at in a browser by Claude (the `play` skill is manual).
+- **Owner's answers, same day:** the no-Mush game is test tooling only and the Eden run is only a benchmark (single player stays a human Mush against bots); bots don't walk rounds and report only a damaged oxygen tank unasked; the Commander decides the day plan and says it in chat, with plans as a supplement, on a second, stronger BYOK model; scripted healing reads a plan slot; the build order for combat strength blocks nothing yet. Still open: how a keyless bot reports the tank and reads the day plan.

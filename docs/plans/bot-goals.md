@@ -1,6 +1,6 @@
 # Bot goals (plan)
 
-2026-10-25, revised 2026-11-01. How single-player bots act on purpose (walk to a bed to rest, answer a call for help, do the task they claimed in a plan) instead of choosing one action at a time from what is in front of them. The owner accepted the first design on 2026-10-25 and changed how bots coordinate on 2026-11-01: **coordination is model-only and happens in natural-language chat**, and plans (`docs/plans/on-call.md`) are only for structured rosters. **Open questions** still need the owner's answer before the part they block is built.
+2026-10-25, revised 2026-11-01. How single-player bots act on purpose (walk to a bed to rest, answer a call for help, do the task they claimed in a plan) instead of choosing one action at a time from what is in front of them. The owner accepted the first design on 2026-10-25 and changed how bots coordinate on 2026-11-01: **coordination is model-only and happens in natural-language chat**, and plans (`docs/plans/on-call.md`) are only for structured rosters. On 2026-11-10 the goal widened: **a crew of bots with no Mush aboard should reach Eden** ("Direction: reaching Eden" below, written in at the owner's request after a review); that section replaces the points listed under Superseded. **Open questions** still need the owner's answer before the part they block is built.
 
 ## The problem
 
@@ -10,15 +10,76 @@ Today (`server/src/bots.ts`, `server/src/prompt.ts`) a model bot gets a fresh pr
 - **No route.** The prompt lists only the current room's exits, though `view.rooms` already holds the whole (public) room graph. Planning a walk across 27 rooms, one model call per door, is unreliable and costs the player money (BYOK).
 - **No coordination.** Some goals need another player: a hurt bot needs a healer, a low-morale one a Leader, and several healers answering one ask need to settle who goes. (PILGRED relays no longer need coordination: pooled contributions, `docs/plans/relay-tokens.md`.) Terrence needs someone to push his wheelchair (`accommodate`).
 
+## Direction: reaching Eden (2026-11-10)
+
+From a review with the owner on 2026-11-10, written in at the owner's request. **Goal (owner):** a crew of bots, with no Mush aboard, reaches Eden. That means keeping the ship together for many days (the key part) and running many expeditions as starmap fragments drop. Eden's own rules aren't decided (`docs/plans/balance.md`), so the strategy parts here are a direction, not a design. Nothing in this section is built. Points marked *open* are in "Open questions".
+
+### Why the rest of this plan isn't enough
+
+The plan below was designed for eight cheap model bots that feel like crew while a human Mush plays against them. For a long cooperative run it falls short in three ways:
+
+- **Nobody owns the ship.** Each bot picks the best goal for itself from what it sees in its own room. Nothing tracks oxygen, fuel, fires, broken equipment or food across days, and there is no shared intention for the day.
+- **Upkeep goals are missing.** There are goals for the hull, plants, research, projects, comms and hunters; none for `repair`, `extinguish`, oxygen and fuel capsules, cooking, ship travel or expeditions. The one long trial (22 cycles, 2026-11-03, #224) ended with the ship destroyed in cycle 23.
+- **No memory across days**, and what there is dies with a restart.
+
+### 1. Measure first: a survival harness
+
+A headless run of scripted bots only, with no Mush, over many seeds, that prints how many days each ship lasted and what ended it (and, once Eden exists, how often it was reached). `npm run model-trial -w server -- --fake` is most of it. The rules are pure and seeded, so this is free and fast. It is the measure for everything below: a change to the bots is good if ships last longer on the same seeds. It needs a setup with no Mush, which is test tooling only and never a mode players can start (owner, 2026-11-10). This benchmark is the owner's test of whether the bots are good enough; it is not a game mode. Single player stays what it is: a human Mush sabotaging a crew of bots.
+
+### 2. Upkeep is code
+
+Keeping the ship alive is triage, and code does it better than a model: free, deterministic, testable. Work from the harness: fix what kills the most ships, run again, repeat. Expected new scripted goals: repair broken equipment, put out fires, oxygen and fuel capsules, cooking, and mechanical help (healing first). A bot sees only its own room. It deals with trouble where it finds it and doesn't walk rounds; the one thing it reports to the crew unasked is a damaged oxygen tank (owner, 2026-11-10). How a scripted bot reports it is *open*.
+
+### 3. Typed memory, kept in room storage
+
+A multi-day run needs a bot to remember what it saw. `BotMemory` grows typed facts the bot observed itself (for example a fire seen in a room, with the day and cycle), never free text, so the reason for "No free-text notes" still holds. It is kept in the room's storage, per seat, outside game state, the record and every view, so a restart no longer wipes it. A replay still never needs it (bot rule 9).
+
+### 4. Structured coordination, open to scripted bots
+
+Conversation stays model-only. But a scripted bot can read anything structured that a human can also read, and neither of these is a backchannel:
+
+- **Channel plans** (`docs/plans/on-call.md`). Bots post plans again where a roster is needed: an expedition crew, and a way for the Commander to know no pilot is out before moving the ship (the Commander's view doesn't show it; owner, 2026-11-10). The shape of that plan (a sortie slot a pilot holds until landing, or a departure roster pilots tick) is to design. #316 is on the critical path.
+- **NERON's priority** (not built). Once a day the NERON admin sets the ship's priority, which makes research and projects or astronavigation easier. **The current priority is public** (owner, 2026-11-10; `docs/rules/rules-design.md`), so it doubles as a ship-wide signal of the day's intent: every bot, scripted ones included, reads it from its own view and leans toward that work.
+
+### 5. The day plan: one model decision a day
+
+The judgment a competent crew makes once a day: stay or travel and where, research or astronavigation, whether to run an expedition and with what kind of team. One call a day on a capable model, not one per bot per cycle. Code carries it out, including the admin setting NERON's priority to match. The Commander and the NERON admin are different seats, so the day plan travels between them through chat or a plan, like everything else. **The Commander decides it and says it in chat; plans supplement it** (owner, 2026-11-10). It runs on a **second, stronger model set in the BYOK panel** (owner, 2026-11-10; with #218), apart from the model the bots use for goal choice and chat. A scripted bot can't read chat, so whatever a scripted admin or crew member must act on has to be in a plan or in NERON's priority; which parts, and the plan's shape, are *open*. A crew with no key has no day plan, so the harness needs either a paid call a day or a scripted stand-in to compare against. Rebel bases awaiting contact are visible to the Commander (the comms terminal is on the bridge; owner, 2026-11-10).
+
+### 6. Travel and expeditions: code prepares, a chooser picks
+
+The owner's examples (2026-11-10) of why a priority ladder can't do astronavigation, and where each belongs:
+
+| Decision | Kind | Done by |
+| --- | --- | --- |
+| Don't move while a rebel base awaits contact or a pilot is out | Hard precondition | Code |
+| A Tracker with the compass when many sectors can lose someone | Probability from the sector tables in config | Code |
+| A combat team or a Diplomat on a given planet (a Diplomat is safe but yields less; crystal fields are best with a combat team) | Expected value: team strength against the creature, loot either way | Code computes both |
+| Which planet, given oxygen, fuel and what the ship is short of | Weighing competing needs | The chooser |
+| Saving grenades for later zones; building combat strength through projects and the Centauri rebel base | Investing now for a payoff days later | The chooser, or a fixed build order |
+
+Three layers, the same shape as goals (the model chooses from a short list code defines):
+
+1. **Facts and constraints** (code): whether the ship may move, what each analyzed planet holds, what the ship is short of. Only from the deciding bot's own view and memory.
+2. **Options with consequences** (code): three to five candidate plans, each with what it is expected to yield, risk and cost.
+3. **The choice:** a model picks from that briefing, or tuned weights do. The harness scores both on the same seeds; the model stays only if it reaches Eden more often.
+
+The long-horizon part (grenades, the projects-then-Centauri path) starts as a build order written by the owner, corrected where the harness shows it breaking. It is data, not code, so it grows as projects are added; it blocks nothing before this point (the Centauri base is built, projects are still being added).
+
+### 7. Tuning and review
+
+- **Tune numbers by search.** Goal priorities and thresholds are plain numbers; a script tries variations on the harness and keeps what survives longest.
+- **The overseer (#225) looks at survival too:** after a batch of runs a strong model reads the reports and proposes goal changes for the owner to approve. Offline, at development cost; nothing reaches a live game's bots.
+- **No trained model.** Reinforcement learning or fine-tuning would go stale each time a rule changes.
+
 ## Decided
 
 ### Goals (owner, 2026-10-25, still valid)
 
 - **A fixed list of goals.** The model chooses among goals the code defines; it never invents one. Code carries out the chosen goal.
 - **Re-choose only on finish, failure or interrupt.** One model call picks a goal; the goal then runs with no model calls until it finishes, fails, or an interrupt fires. This keeps the cost per cycle low.
-- **Goal memory is lost on restart.** A bot's current goal lives in the `Bot` object's memory. If the Durable Object restarts, the bot just chooses again. Nothing about goals goes in game state, the record, storage, or a view.
+- **Bot memory is never game state.** A bot's current goal and what it has seen live with the bot, never in game state, the record or a view. Where they are kept changed on 2026-11-10: room storage, per seat ("Direction", point 3), not only the `Bot` object.
 - **AP reserve: 2.** Work goals stop when spending more would leave the bot under 2 AP, keeping it for emergencies. A config value.
-- **No free-text notes.** The model writes nothing for itself; chat could inject text into a note that then stays in every later prompt. A bot's memory is its current goal and its last failure. Richer memory is a later design. (Its own chat messages are in the chat it reads, like anyone's; that isn't a note.)
+- **No free-text notes.** The model writes nothing for itself; chat could inject text into a note that then stays in every later prompt. A bot's memory is its current goal, its last failure, and typed facts it observed itself ("Direction", point 3). (Its own chat messages are in the chat it reads, like anyone's; that isn't a note.)
 - **Asking threshold.** A bot is prompted to consider asking for help when HP is 7 or less (a config value, a default for now). Morale asks have their own thresholds (owner, 2026-11-01: under 7 privately to a Shrink, under 5 publicly; below).
 - **Always ask for healing** (after Gemini's review). No self-healing goal: a hurt bot without a medikit asks, even though the sick bay heals without one.
 - **No wheelchair goals in the first pass.** A pusher can't know where Terrence wants to go. With natural-language chat bots can now say where they're headed, so this can be revisited.
@@ -27,8 +88,8 @@ Today (`server/src/bots.ts`, `server/src/prompt.ts`) a model bot gets a fresh pr
 
 ### Coordination (owner, 2026-11-01)
 
-- **Models only.** Coordination (asking for help, offering, taking over, accepting, claiming plan slots) is done only by model bots, with no scripted fallback for it. A bot without a key plays the scripted solo goals (eat, rest, work, explore, end the cycle) and takes no part in chat or plans. The owner judges whether the cost is acceptable.
-- **Helping others is model-only for now** (owner, 2026-11-01): scripted bots without a key don't heal, comfort or give speeches. Scripted helping is possible later but deferred.
+- **Conversation is models only.** Asking, offering, taking over and accepting in chat are done only by model bots; a bot without a key takes no part in chat. Structured coordination (plan slots, NERON's priority) is open to scripted bots too (2026-11-10, "Direction", point 4).
+- **Scripted bots help mechanically** (2026-11-10, replacing "model-only for now"): healing first. A scripted bot can't see that someone needs help (HP and morale are private), so it reads a plan slot (owner, 2026-11-10); the slot's shape is to design with #316.
 - **The Shrink spends the night in a dorm** (owner, 2026-11-01): people lying in a bed with a Shrink in the room gain morale, so once a day a Shrink bot (scripted or model) walks to a dormitory, Alpha and Beta on alternate days, and stays until the cycle ends (`shrinkDorm`, the `dorm` trigger in `duties.ts`). Priority 45, after the work goals and before `rest` (my choice, not asked); it lies down there if its AP isn't full and a bed is free, and may spend the AP reserve to get there, as resting does. Kept across cycles on the same day (unless a higher-priority goal opens or an interrupt fires), and marked done for the day only when waiting in the dorm (cleared if woken or hurt before the cycle ends; owner, 2026-11-01).
 - **A Shrink holds its AP for comforting** (owner, 2026-11-01): it researches and works on NERON projects only when within 4 AP of its max (`SHRINK_DESK_WORK_WITHIN`, `deskWorkReserve` in `goals/work.ts`), and stops back at that line, keeping the rest to help with. Built for scripted and model bots alike (a scripted Shrink holds it too, though it doesn't comfort yet).
 - **Asking a Shrink for morale** (owner, 2026-11-01; model bots, step 3): a bot under 7 morale contacts a Shrink through a private channel; under 5, it says so in global chat whenever it can't contact a Shrink privately for any reason (it knows of no Shrink, has no iTrackie, can't open or join a channel, ...), since that is an emergency. The asker states its morale, since morale is private: the Shrink goes by what it is told. A bot sees others' skills only when in their room, so a Shrink bot says in global chat early in the game that it is a Shrink (owner, 2026-11-01); others also learn it by meeting it. Each bot remembers in `BotMemory.shrinks` which players it has seen as Shrinks (in its room or announcing in global chat) and whether it has already announced itself in global chat (owner, 2026-11-01).
@@ -40,7 +101,7 @@ Today (`server/src/bots.ts`, `server/src/prompt.ts`) a model bot gets a fresh pr
 - **Healing asks go in global chat.** Private channels are too complicated for this for now (morale asks to a Shrink do use one; above). The Mush hearing who is hurt and where is as in the original.
 - **A router decides whom a message wakes** (#341, 2026-11-03; replaces "every message wakes every bot"). Each chat message in a channel bots read (the human's or another bot's) gets one small model call, through the game's gate, that names which listening readers, other than its author, it is meant for: at most `ROUTER_MAX_WAKES` (3), or nobody. Each one woken gets a turn to reply, act, or do nothing. A private channel skips the router and wakes its members. A failed or unparseable router reply wakes nobody: a missed wake only delays a reply until the bot's next choice.
 - **A reply-chain depth limit** bounds the cascade (`botChatChainDepth`, 3 to start). A message the human writes, or a bot writes on its own turn, has depth 0; a message a bot writes because a message of depth *d* woke it has depth *d + 1*; a message at the limit wakes nobody (bots still see it on their next turn). The server can't count "takeovers", since it doesn't know what a message means, so the limit counts reply depth, which bounds takeover arguments along with any other back-and-forth.
-- **Bots post no plans** (reverses on-call.md's 2026-10-28 and 2026-10-30 bot-posting decisions). Plans are for structured rosters with a summons (an expedition crew, diners at a meal); a bot may post one again when such a goal exists. Bots do claim slots in plans others post, are walked when summoned, do their claimed tasks and tick Done.
+- **Bots post plans only for rosters** (2026-11-10; on 2026-11-01 they posted none). Plans are for structured rosters with a summons: an expedition crew, a departure check before the ship moves ("Direction", point 4), diners at a meal. Asking for help in conversation is still chat, not a plan. Bots claim slots in plans others post, are walked when summoned, do their claimed tasks and tick Done.
 
 ### Scripted order and skills (owner, 2026-11-01)
 
@@ -57,6 +118,10 @@ Today (`server/src/bots.ts`, `server/src/prompt.ts`) a model bot gets a fresh pr
 - *Every message wakes every bot* (2026-11-01): one human line cost about bots × (depth + 1) prompts and drew a chorus of replies; the router (#341) wakes only those a message is meant for.
 - *Scripted asks and answers* (`askForHealing` posting a plan; `healSomeone` and `raiseMorale` reading keyed lines): asking and answering are conversation between model bots.
 - *`startRelay`*: pooled contributions make relays unnecessary.
+- *Goal memory is lost on restart* (2026-10-25) and the open question about it (2026-11-05): bot memory is kept in room storage (2026-11-10).
+- *Coordination is models only, with no scripted part* and *helping others is model-only for now* (2026-11-01): scripted bots read plans and NERON's priority, and help mechanically (2026-11-10).
+- *Bots post no plans* (2026-11-01): they post roster plans (2026-11-10).
+- *A model call per bot for every choice as the only place judgment lives*: ship-level judgment moves to one day plan a day (2026-11-10); per-bot goal choice by a model stays for single player against a human.
 
 ## Design
 
@@ -143,7 +208,7 @@ No goal sends `get_up`: any other action already gets a bot out of bed (`getUp` 
 5. **Refused inputs fail the goal.** `GameRoom` tells the bot when an input it sent was refused (by the rules, or the chat rate limit). The goal fails at once instead of being stepped again.
 6. **No loops.** Each goal (by its `key`) that finished or failed this cycle is left out of the options until the next cycle. Without this, a goal that fails without changing the view (no path) would be chosen again at once, forever, and two failing goals could alternate.
 
-The bot's memory is fields on the `ModelBot` or scripted bot object, nowhere else: the current goal, the goals done or failed this cycle, the goals done today, the rooms visited this cycle, the Shrinks seen or announced, and the last chat message it has seen.
+The bot's memory is fields on the `ModelBot` or scripted bot object today (to move to room storage, "Direction", point 3): the current goal, the goals done or failed this cycle, the goals done today, the rooms visited this cycle, the Shrinks seen or announced, and the last chat message it has seen.
 
 **Interrupts:**
 
@@ -158,7 +223,7 @@ The bot's memory is fields on the `ModelBot` or scripted bot object, nowhere els
 - **Claiming is an action.** `claim_slot`, `withdraw_slot` and `mark_done` are in `view.actions`, and the prompt labels each with the slot it names in words. The model decides whether to claim, using the plan, the chat and what it knows of its own position and points; no scripted claim filter.
 - **A claimed task becomes a goal** (`doSlot`): walk to where the task is done and do it, then `mark_done`. A struck slot (target died, already done) fails the goal. Ticking Done is the bot's word, like a human's.
 - **An on-call claim is a promise to be reachable.** The prompt reminds the bot of its on-call slots, so it can keep the MP to get there. When the author calls, the game walks the body; the bot does nothing but notice where it now is.
-- **Bots post no plans** for now (Decided).
+- **Bots post plans only for rosters** (Decided).
 
 ### First goal list
 
@@ -212,7 +277,10 @@ Suspicion, accusations and other social goals are left for later; they need thei
 
 - Which language the ship uses, and so which language bots write in: #95.
 - The chat window: how many messages, and how far back, go in the prompt. Start small and measure with `npm run model-trial` (#224).
-- **Memory lost on a restart needs addressing** (found 2026-11-05). `BotMemory` lives only in the bot object, so a deploy or any room restart wipes it, and a Shrink bot forgets it already announced itself, so it says so in global chat again after every restart. The Shrinks it had seen, the goals done today (`shrinkDorm`, `astro`, `tendPlants` once a day) and the rooms visited are lost too, so daily goals may repeat. The fix needs a choice: rebuild what can be rebuilt from the bot's own view (its own past chat shows whether it announced), or keep bot memory in room storage, outside game state and the record.
+- **Bot memory in room storage** (direction set 2026-11-10; replaces the 2026-11-05 question). Found 2026-11-05: a restart wipes `BotMemory`, so a Shrink bot announces itself again and once-a-day goals repeat. To design: the stored shape and how it changes across deploys.
+- **Reporting a damaged oxygen tank** when the bot has no key: chat is model-only, so a scripted bot needs something structured. A plan with a repair slot is Claude's suggestion, not asked.
+- **The day plan for scripted readers:** which parts go in a plan or the priority so a scripted NERON admin and crew can act on it, and what the harness uses when no model is called.
+- **Eden's rules** (`docs/plans/balance.md`): the options and briefing in "Direction", point 6, can't be finished until they exist. NERON's priority needs its own rule pass too.
 
 ## Build order
 
@@ -239,3 +307,4 @@ Suspicion, accusations and other social goals are left for later; they need thei
    - Language: the ship's lobby language (`GameRoom.language`, English when there is none) is what the prompt asks for, a stand-in until #95 decides how a ship's language is chosen.
    - The chat window stays the last 10 messages (still open).
 4. Plans for bots (#316): the plans section in the prompt, slot actions labelled in words, `doSlot`, on-call reminders and withdrawing at `endCycle`.
+5. Reaching Eden ("Direction", 2026-11-10), in order: the survival harness with no Mush; upkeep goals, worst killer first; typed memory in room storage; roster plans posted by bots (expedition crew, departure check) and NERON's priority as a signal once it exists; the day plan; travel and expedition options with a chooser, once Eden's rules exist; tuning by search.
