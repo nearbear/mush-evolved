@@ -73,7 +73,7 @@ import type {
  * a changed type or meaning, a renamed or removed registry id, or a change to what `resolveConfig` derives from an
  * override key. A step lands in a deploy of its own (docs/ops/deploy.md: roll back only to the same version).
  */
-export const STATE_VERSION = 114;
+export const STATE_VERSION = 115;
 
 /**
  * The oldest stored version this build reads: 114, the shape the normalizers were written against. A snapshot below it
@@ -104,8 +104,26 @@ export interface UpgradeStep {
   run(game: Record<string, unknown>, overrides: Record<string, unknown>): void;
 }
 
+const upgradeTo115: UpgradeStep = {
+  to: 115,
+  ids: ["SKILLS.oisif"],
+  run(game) {
+    const players = game.players as Array<Record<string, unknown>> | undefined;
+    if (players) {
+      for (const p of players) {
+        if (Array.isArray(p.skills)) {
+          p.skills = p.skills.filter((s) => s !== "oisif");
+        }
+        if (p.bookSkill === "oisif") {
+          delete p.bookSkill;
+        }
+      }
+    }
+  },
+};
+
 /** Every step, in order of `to`: `upgradeTo115`, ... */
-export const UPGRADE_STEPS: readonly UpgradeStep[] = [];
+export const UPGRADE_STEPS: readonly UpgradeStep[] = [upgradeTo115];
 
 /**
  * Brings a stored snapshot from version `from` to `STATE_VERSION`, before it is normalized: runs every step with

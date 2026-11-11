@@ -370,6 +370,9 @@ export const SHIELD_ICON = uiIcons["shield"]!;
 const skillIcons = urls(import.meta.glob<string>("../../../Mush/www/img/icons/skills/*.png", { eager: true, query: "?url", import: "default" }));
 // The designer skill was the original's conceptor, whose icon file keeps that name.
 skillIcons["designer"] = skillIcons["conceptor"]!;
+// Maintenance Agent takes the icon from the removed Dreamer (oisif) skill.
+skillIcons["maintenance_agent"] = skillIcons["oisif"]!;
+delete skillIcons["oisif"];
 export const skillIcon = (id: string): string => skillIcons[id] ?? EMPTY_SLOT_ICON;
 /** Green jelly on an item or equipment, as Mush see it: the Electro-slime skill's icon. */
 export const JELLY_ICON = skillIcons["electro_slime"]!;

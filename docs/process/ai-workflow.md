@@ -2959,3 +2959,17 @@ The owner asked for a review of `docs/plans/bot-goals.md` against a new goal: a 
 - **Owner's answers, same day:** the no-Mush game is test tooling only and the Eden run is only a benchmark (single player stays a human Mush against bots); bots don't walk rounds and report only a damaged oxygen tank unasked; the Commander decides the day plan and says it in chat, with plans as a supplement, on a second, stronger BYOK model; scripted healing reads a plan slot; the build order for combat strength blocks nothing yet. Still open: how a keyless bot reports the tank and reads the day plan.
 
 - **Browser follow-up (same day):** the owner checked the space scene in the browser and asked for five fixes: `.patrol-cockpit` was still padded by `.iso-room` and `.space-sky` lived inside `.space-scene` above `.space-bar`, so the starfield stopped short of the edges and the bottom band; the desktop AP/MP card covered `.space-pack` in the lower left; the metal scrap button at the bottom of the screen was dropped for now; both the targeted hunter and the player's ship now show their name, overlapping shield stack (`IconStack`) and HP directly under their sprite (`CraftReadout`); and `.space-bar` now puts the stacked charge icons (`IconStack`) at the top with the `◀` / `▶` target buttons flanking `Shoot`. Also added the missing `many` plural forms for `patrol.others` in `fr.json` and `es.json` and `role="group"` on `.space-fire` so `npm run verify` passes.
+
+### 2026-11-10: Remove Dreamer skill and move icon to Maintenance Agent
+
+- **Task:** Remove the human skill Dreamer (`oisif`) and assign its icon to Maintenance Agent (`maintenance_agent`).
+- **Built:**
+  - `shared/src/skills.ts`: Removed `oisif` from `SKILLS` (now 66 human skills). Updated comments noting Maintenance Agent uses the removed Dreamer icon.
+  - `shared/src/locales/names.{en,es,fr}.json`: Removed `oisif` entry from skill name catalogs.
+  - `web/src/locales/{en,es,fr}.json`: Removed `oisif` entries from `skills.names`, `skills.shortDesc`, and `skills.desc`.
+  - `web/src/art/assets.ts`: Mapped `skillIcons["maintenance_agent"] = skillIcons["oisif"]!` and removed `oisif`.
+  - `shared/src/normalizeState.ts`: Bumped `STATE_VERSION` from 114 to 115, and added `upgradeTo115` step in `UPGRADE_STEPS` declaring `ids: ["SKILLS.oisif"]` and clearing any stored occurrences on players.
+  - `docs/rules/implemented-rules.md`: Updated skill counts and descriptions to reflect 66 human skills and the removal of Dreamer.
+  - Added unit test in `web/tests/assets.test.ts` checking `skillIcon("maintenance_agent")` and `skillIcon("oisif")`.
+  - Added unit test in `shared/tests/skills.test.ts` verifying `oisif` is no longer a valid skill.
+- **Verified:** `npm run build` and `npm run verify` (typecheck, lint, and all 2,750 tests pass).
