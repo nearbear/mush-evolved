@@ -81,3 +81,33 @@ export function rollShuffle<T>(holder: HasRng, items: readonly T[]): T[] {
   holder.rng = next;
   return result;
 }
+
+/** murmur3's 32-bit finalizer: every input bit flips each output bit with about even odds. */
+function fmix32(h: number): number {
+  h ^= h >>> 16;
+  h = Math.imul(h, 0x85ebca6b);
+  h ^= h >>> 13;
+  h = Math.imul(h, 0xc2b2ae35);
+  h ^= h >>> 16;
+  return h | 0;
+}
+
+/**
+ * The starting state of a named stream of its own, derived from the game seed: a setup draw (such as the drugs) rolls
+ * on it instead of `state.rng`, so adding or changing that draw doesn't shift every later roll. The name and seed are
+ * hashed (FNV-1a, then `fmix32`) rather than added: mulberry32 steps its state by a fixed constant, so states that
+ * differ by a multiple of that step replay the same sequence offset, and `seed + k` streams would overlap.
+ */
+export function streamFor(seed: number, name: string): RngState {
+  let h = 0x811c9dc5;
+  const mix = (byte: number) => {
+    h = Math.imul(h ^ byte, 0x01000193);
+  };
+  for (let i = 0; i < name.length; i++) {
+    const c = name.charCodeAt(i);
+    mix(c & 0xff);
+    mix(c >>> 8);
+  }
+  for (let i = 0; i < 4; i++) mix((seed >>> (8 * i)) & 0xff);
+  return fmix32(h);
+}

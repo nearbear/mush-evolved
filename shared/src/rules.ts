@@ -28,7 +28,7 @@ import { inactivityCycle } from "./inactivity.ts";
 import { emptyResources } from "./resources.ts";
 import { hasSkill } from "./skills.ts";
 import { soil } from "./dirt.ts";
-import { rollFloat, shuffle } from "./rng.ts";
+import { rollFloat, shuffle, streamFor } from "./rng.ts";
 import { chatChannels, chatMarkKey, chatPageOf, markedText, readChannels } from "./chat.ts";
 import { moderateName } from "./moderation.ts";
 import { clone, dayOf, fail, findPlayer, type ActionResult } from "./helpers.ts";
@@ -180,8 +180,9 @@ export function createGame(
     callNextRebel(state);
     startHunters(state);
   }
-  state.drugs = drawDrugs(state);
-  stockMedlab(state);
+  // Setup draws on streams of their own, so changing them doesn't move any roll on `state.rng`.
+  state.drugs = drawDrugs({ rng: streamFor(seed, "drugs"), config });
+  stockMedlab(state, { rng: streamFor(seed, "medlab-stock") });
   grantCarePoints(state); // day 1 begins now
   for (const p of state.players) startLogSeen(state, p);
   return state;

@@ -4,7 +4,7 @@
 import { DRUG_ITEMS, newItemId } from "./items.ts";
 import { changeAP, changeMP, gainMorale, treatDisease } from "./adjustStats.ts";
 import { skillsOf } from "./skills.ts";
-import { rollInt, rollShuffle } from "./rng.ts";
+import { type HasRng, rollInt, rollShuffle } from "./rng.ts";
 import type { GameState, PlayerState } from "./types.ts";
 
 export interface DrugEffect {
@@ -28,7 +28,10 @@ export const BOOST_EFFECTS: readonly { ap: number; mp: number }[] = [
 ];
 export const MAX_TREATED = 4;
 
-/** Draws every drug's effects: 0-1 morale effect, 0-1 AP or MP effect, and 1-4 treated diseases. Advances `state.rng`. */
+/**
+ * Draws every drug's effects: 0-1 morale effect, 0-1 AP or MP effect, and 1-4 treated diseases. Advances `state.rng`;
+ * `createGame` passes its own `"drugs"` stream (`streamFor`), not the game's.
+ */
 export function drawDrugs(state: Pick<GameState, "rng"> & { config: Pick<GameState["config"], "diseases"> }): Record<string, DrugEffect> {
   const diseases = state.config.diseases.allDiseases;
   // Deal the diseases out in turn so each is treated by at least one drug (up to 12 * 4 of them fit).
@@ -54,10 +57,13 @@ export function drawDrugs(state: Pick<GameState, "rng"> & { config: Pick<GameSta
 /** How many random drugs each ship starts with, in the Medlab (owner, 2026-11-10). */
 export const START_DRUGS = 12;
 
-/** Puts `START_DRUGS` drugs, each of a random type, on the Medlab's floor. Mutates a state the caller already cloned. */
-export function stockMedlab(state: GameState): void {
+/**
+ * Puts `START_DRUGS` drugs, each of a random type, on the Medlab's floor, rolling on `rng` (`createGame` passes its own
+ * `"medlab-stock"` stream, so `state.rng` doesn't move). Mutates a state the caller already cloned.
+ */
+export function stockMedlab(state: GameState, rng: HasRng): void {
   for (let i = 0; i < START_DRUGS; i++) {
-    state.items.push({ id: newItemId(state), type: DRUG_ITEMS[rollInt(state, DRUG_ITEMS.length)]!, at: { kind: "room", id: "SICK_BAY" } });
+    state.items.push({ id: newItemId(state), type: DRUG_ITEMS[rollInt(rng, DRUG_ITEMS.length)]!, at: { kind: "room", id: "SICK_BAY" } });
   }
 }
 
