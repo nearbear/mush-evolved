@@ -3180,3 +3180,5 @@ Owner asked for an honest verdict on the scratchpad mental-health plan (stressor
 - Owner asked for the space combat UI's bottom cockpit panel (`.space-bar` in `web/src/hud/PatrolCockpit.tsx` and `web/src/styles/space.css`) to use the chamfered card style and background colour of the minimap (`TechnoBox`).
 - Needed correction: I first asked about `.hud-card` (`self-hud.css`) before the owner clarified that "chamfered card style (same bg color)" referred to what the minimap uses (`TechnoBox`, `Mush/derived/techno-box.png`).
 - Switched `.space-bar` to `<TechnoBox className="space-bar">` and dropped its own padding, background, border, and border-radius so `.techno-box` provides the 9-sliced frame, fill, and inset padding.
+
+- 2026-11-11, patrol cockpit charges: the charge icons no longer overlap; the count sits centred in a `1fr auto 1fr` grid with the charges split alternately left and right of it (odd one out on the left), 2px apart. The shields keep the overlapping `IconStack`. Worked first time; not checked in a browser (no screenshot recipe reaches the patrol cockpit).

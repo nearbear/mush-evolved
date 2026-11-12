@@ -4,7 +4,7 @@
 // the rest wait in the lower left as one sprite per kind with a count (so 99 hunters take the room of one), and pressing
 // that sprite aims at the next. Both your ship and the targeted hunter show their name, a stack of shield icons and
 // their hp underneath the sprite. The ship and the hunters each weave on their own beat, the ship a moment behind, so it
-// reads as a chase. The bar under the scene has the ship's charges at the top (stacked like the shields), Shoot flanked
+// reads as a chase. The bar under the scene (a chamfered card, styles/card.css) has the ship's charges at the top (the number centred, the charges alternating left and right of it), Shoot flanked
 // by the two target-cycling arrow buttons (a patrol ship only; the Pasiphae can't shoot), and the ship's other actions
 // (Land, Collect scrap: whatever the view offers on its command, less Examine). Collect scrap's tooltip says how much
 // debris floats nearby (the view leaves the count out while a patrol ship can't collect); when the rules refuse it (no debris, or a patrol ship while the Pasiphae exists) it shows disabled with why.
@@ -21,7 +21,6 @@ import { FxSprite } from "./FxSprite.tsx";
 import { NO_FORMATION, aimedSlot, hunterIn, stepAim, track } from "./hunterSlots.ts";
 import { spaceSky } from "./spaceSky.ts";
 import { optionsOn } from "./targets.ts";
-import { TechnoBox } from "./TechnoBox.tsx";
 
 interface Props {
   view: PlayerView;
@@ -111,11 +110,12 @@ export function PatrolCockpit({ view, ship, layout, onAction }: Props) {
         )}
       </div>
 
-      <TechnoBox className="space-bar">
+      <div className="space-bar hud-card">
         {ship.charges !== null && (
           <div className="space-charges">
-            <IconStack slice={FX_CHARGE} count={ship.charges} />
+            <ChargeRow count={Math.ceil(ship.charges / 2)} />
             <span aria-hidden="true">{ship.charges}</span>
+            <ChargeRow count={Math.floor(ship.charges / 2)} />
             <span className="sr-only">{t("turret.charges", { charges: ship.charges })}</span>
           </div>
         )}
@@ -151,7 +151,7 @@ export function PatrolCockpit({ view, ship, layout, onAction }: Props) {
             ))}
           </div>
         )}
-      </TechnoBox>
+      </div>
     </section>
   );
 }
@@ -178,6 +178,18 @@ function IconStack({ slice, count }: { slice: readonly [number, number, number, 
     <span className="space-stack" style={style} aria-hidden="true">
       {Array.from({ length: count }, (_, i) => (
         <FxSprite key={i} slice={slice} />
+      ))}
+    </span>
+  );
+}
+
+/** One side of the charges around the centred number: the charges alternate left and right (the odd ones left), side by
+ *  side without overlapping (decorative: the number says it). */
+function ChargeRow({ count }: { count: number }) {
+  return (
+    <span className="space-charge-row" aria-hidden="true">
+      {Array.from({ length: count }, (_, i) => (
+        <FxSprite key={i} slice={FX_CHARGE} />
       ))}
     </span>
   );

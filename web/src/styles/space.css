@@ -211,14 +211,18 @@ button.space-hunter:focus-visible {
   outline-offset: 1px;
 }
 
-/* The controls (TechnoBox): the charges at the top, Shoot flanked by the target-cycling arrows, then the ship's other
-   actions side by side. On desktop it is centred, clear of the AP and MP bars (bottom left) and the sack (bottom right). */
+/* The controls, on the chamfered card (card.css) with its top corners cut, like the AP and MP card beside it: the
+   charges at the top, Shoot flanked by the target-cycling arrows, then the ship's other actions side by side. On desktop
+   it is centred, clear of the AP and MP bars (bottom left) and the sack (bottom right). */
 .space-bar {
   position: relative;
   align-self: center;
   box-sizing: border-box;
   width: min(26rem, 100% - 13rem);
   margin-bottom: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  --cut-tl: 10px;
+  --cut-tr: 10px;
   display: flex;
   flex-direction: column;
   align-items: stretch;
@@ -229,13 +233,21 @@ button.space-hunter:focus-visible {
 .space-bar button {
   margin: 0;
 }
-/* The charges left: stacked charge icons and the number, centred at the top of the bar. */
+/* The charges left, at the top of the bar: the number centred, the charge icons split evenly on either side of it (the
+   odd one out on the left), side by side with a small gap. Equal side columns keep the number on the bar's centre line. */
 .space-charges {
-  display: flex;
-  justify-content: center;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
   align-items: center;
   gap: var(--space-2);
   font-weight: bold;
+}
+.space-charge-row {
+  display: flex;
+  gap: 2px;
+}
+.space-charge-row:first-child {
+  justify-content: flex-end;
 }
 .space-fire {
   display: flex;

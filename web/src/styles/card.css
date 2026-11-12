@@ -1,0 +1,44 @@
+/*
+ * The shared chamfered card (UI coherence step 3): square corners, bevelled where --cut-* says. Used by the nameplate and
+ * AP/MP (self-hud.css) and the patrol cockpit's control bar (space.css). Needs a positioned element. clip-path would cut
+ * a border and a box-shadow off at the bevels, so the card is drawn in two clipped layers: ::before is the rim (with the
+ * faction stripe, --stripe wide, down the left), ::after the fill 1px inside it, and the shadow is a drop-shadow, which
+ * follows the clipped shape.
+ */
+/* Defaults at zero specificity, so each card's own --cut-* wins wherever it is declared. */
+:where(.hud-card) {
+  --cut-tl: 0px;
+  --cut-tr: 0px;
+  --cut-br: 0px;
+  --cut-bl: 0px;
+}
+.hud-card {
+  isolation: isolate;
+  filter: drop-shadow(0 0 3px var(--panel-shadow));
+}
+.hud-card::before,
+.hud-card::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  --k: 0px;
+  clip-path: polygon(
+    max(0px, var(--cut-tl) - var(--k)) 0,
+    calc(100% - max(0px, var(--cut-tr) - var(--k))) 0,
+    100% max(0px, var(--cut-tr) - var(--k)),
+    100% calc(100% - max(0px, var(--cut-br) - var(--k))),
+    calc(100% - max(0px, var(--cut-br) - var(--k))) 100%,
+    max(0px, var(--cut-bl) - var(--k)) 100%,
+    0 calc(100% - max(0px, var(--cut-bl) - var(--k))),
+    0 max(0px, var(--cut-tl) - var(--k))
+  );
+}
+.hud-card::before {
+  inset: 0;
+  background: linear-gradient(90deg, var(--faction, var(--panel-rim)) var(--stripe, 1px), var(--panel-rim) 0);
+}
+.hud-card::after {
+  inset: 1px 1px 1px var(--stripe, 1px);
+  --k: 0.4px; /* keeps the rim about 1px thick across the bevels */
+  background: var(--panel-fill);
+}
