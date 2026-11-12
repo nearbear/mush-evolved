@@ -1,0 +1,2 @@
+# The AI log is append-only: when both sides of a merge add sections at its end, keep both instead of conflicting.
+docs/process/ai-workflow.md merge=union

@@ -71,7 +71,8 @@ import type {
  * The stored shape's version, written with every snapshot. A new field never bumps it: it takes `added()` in its
  * normalizer. Bump it, and add a step below, only for what a default can't express: a removed, renamed or moved field,
  * a changed type or meaning, a renamed or removed registry id, or a change to what `resolveConfig` derives from an
- * override key. A step lands in a deploy of its own (docs/ops/deploy.md: roll back only to the same version).
+ * override key. A step lands in a deploy of its own (docs/ops/deploy.md: roll back only to the same version). Something
+ * that never reached a deploy (test or production) is in no stored snapshot, so changing or removing it needs no step.
  */
 export const STATE_VERSION = 115;
 
