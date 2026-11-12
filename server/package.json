@@ -14,6 +14,7 @@
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
     "model-trial": "node scripts/run-trial.mjs",
+    "survival": "node scripts/run-trial.mjs --trial survival",
     "api-types": "tsc -p tsconfig.api.json"
   },
   "dependencies": {

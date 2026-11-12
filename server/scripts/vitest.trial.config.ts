@@ -1,4 +1,5 @@
-// Only for the model trial (model.trial.ts, #224): `npm test` never runs it, since it calls a paid API.
+// Only for the dev trials (model.trial.ts, #224, which calls a paid API; survival.trial.ts): `npm test` never runs them.
+// TRIAL_FILE (run-trial.mjs) picks one.
 import { defineConfig } from "vitest/config";
 
-export default defineConfig({ test: { include: ["scripts/*.trial.ts"], reporters: ["verbose"] } });
+export default defineConfig({ test: { include: [`scripts/${process.env.TRIAL_FILE ?? "model"}.trial.ts`], reporters: ["verbose"] } });
