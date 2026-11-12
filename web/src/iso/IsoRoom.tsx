@@ -21,7 +21,7 @@
 import { Suspense, lazy, useCallback, useEffect, useId, useLayoutEffect, useMemo, useRef, useState, type ComponentType, type MouseEvent, type PointerEvent } from "react";
 import { useTranslation } from "react-i18next";
 import { createPortal } from "react-dom";
-import { CAMERA_EQUIPMENT, CORPSE_ITEM, EQUIPMENT_TYPES, SUPER_CALC_EQUIPMENT, type EquipmentView, type RoomId, type RoomLayout, type ShipLayout, type Spot, type Target } from "@mush2/shared";
+import { CAMERA_EQUIPMENT, CORPSE_ITEM, EQUIPMENT_TYPES, SUPPORT_DRONE_ITEM, SUPER_CALC_EQUIPMENT, type EquipmentView, type RoomId, type RoomLayout, type ShipLayout, type Spot, type Target } from "@mush2/shared";
 import type { Bubble } from "../scene/useSpeechBubbles.ts";
 import { useNames } from "../i18n/names.ts";
 import { CAMERA_SLICES, equipmentByTileKey, roomAsBuilt } from "./equipmentTiles.ts";
@@ -33,12 +33,17 @@ import { DomScene } from "./dom/DomScene.tsx";
 import { SceneOverlay, type Anchor } from "./SceneOverlay.tsx";
 import {
   CORPSE_PREFIX,
+  DRONE_PREFIX,
+  DRONE_SHIFT,
+  DRONE_SIZE,
   LYING_SIZE,
   corpseOf,
+  droneOf,
   describeScene,
   doorOpenMs,
   imageOf,
   type Corpse,
+  type Drone,
   type FrameTarget,
   type Occupant,
   type SceneRendererProps,
@@ -136,6 +141,7 @@ export function IsoRoom({
   fogDepth,
   renderer,
   corpses,
+  drones,
   equipment,
   reachable,
   selected,
@@ -178,6 +184,8 @@ export function IsoRoom({
   onZoomStep: (dir: 1 | -1) => void;
   /** Corpses on this room's floor (items, drawn lying down). A carried corpse isn't on the floor, so isn't here. */
   corpses: Corpse[];
+  /** Support drones on this room's floor (items, #411). A carried one isn't on the floor, so isn't here. */
+  drones: Drone[];
   /** Equipment in this room, from the view. Only these sprites are clickable. */
   equipment: EquipmentView[];
   reachable: Set<RoomId>;
@@ -240,6 +248,7 @@ export function IsoRoom({
   const hasCamera = equipment.some((e) => e.type === CAMERA_EQUIPMENT);
   const occupantKey = occupants.map((o) => `${o.id}${o.lying ?? ""}`).join(",");
   const corpseKey = corpses.map((c) => c.id).join(",");
+  const droneKey = drones.map((d) => d.id).join(",");
   const viewportRef = useRef<HTMLDivElement>(null);
   const titleId = useId();
   const rendererRef = useRef<FrameTarget | null>(null);
@@ -255,7 +264,9 @@ export function IsoRoom({
   useEffect(() => {
     if (mySpot?.kind !== "occupancy") setWalk((w) => (w?.seat ? { ...w, seat: undefined } : w));
   }, [sentCount]);
-  const spots = useMemo(() => spreadActors(cells, occupants.length + corpses.length), [cells, occupants.length, corpses.length]);
+  const spots = useMemo(() => spreadActors(cells, occupants.length + corpses.length + drones.length), [cells, occupants.length, corpses.length, drones.length]);
+  /** Where the `i`th drone sits: the spots after the people's and the bodies'. */
+  const droneSpot = (i: number) => spots[occupants.length + corpses.length + i];
 
   // The tiles of this room and the rooms behind its doors, sorted once; people walking only re-place the people.
   const prepared = useMemo(() => {
@@ -421,7 +432,7 @@ export function IsoRoom({
   // This room and the rooms behind its doors, each with its people, drawn as one scene so that
   // whichever is in front covers the other. Display only: where people stand isn't game state.
   const nearbyKey = JSON.stringify(Object.entries(nearby).map(([r, os]) => [r, os?.map((o) => o.id)]));
-  // biome-ignore lint/correctness/useExhaustiveDependencies: occupantKey, corpseKey, nearbyKey, walkersKey, flownKey and leavers stand in for occupants, corpses, nearby, walkers, flown ships and those walking out: positions only change when who or what is where changes.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: occupantKey, corpseKey, droneKey, nearbyKey, walkersKey, flownKey and leavers stand in for occupants, corpses, drones, nearby, walkers, flown ships and those walking out: positions only change when who or what is where changes.
   const { scene, sprites, neighborSprites, neighbors, box, ownCells, fireSlots } = useMemo(() => {
     if (!roomLayout || !prepared) return { scene: [], sprites: [], neighborSprites: [], neighbors: [], box: bounds([]), ownCells: new Set<string>(), fireSlots: undefined };
     const flown = new Set(flownKey.split(","));
@@ -433,6 +444,8 @@ export function IsoRoom({
       })),
       // A corpse is placed like a person (so paint order and walls treat it the same) but drawn lying down.
       ...corpses.map((c, i) => ({ id: `${CORPSE_PREFIX}${c.id}`, cell: spots[occupants.length + i] ?? { x: 0, y: 0 }, ...LYING_SIZE })),
+      // So is a drone, its shadow on the cell's centre.
+      ...drones.map((d, i) => ({ id: `${DRONE_PREFIX}${d.id}`, cell: droneSpot(i) ?? { x: 0, y: 0 }, ...DRONE_SIZE, shift: DRONE_SHIFT })),
     ];
     const neighbors = prepared.rooms.map(({ room: n, ring, cells }) => {
       // Someone still walking out of this room isn't drawn where they went yet.
@@ -464,7 +477,7 @@ export function IsoRoom({
       for (const [ax, ay] of [[x + 1, y], [x - 1, y], [x, y + 1], [x, y - 1]] as const) ownCells.add(`${ax},${ay}`);
     }
     return { scene, sprites, neighborSprites, neighbors, box: bounds(sprites), ownCells, fireSlots: onFire ? placed.slots : undefined };
-  }, [prepared, spots, walkersKey, occupantKey, corpseKey, nearbyKey, hasCamera, flownKey, leavers, onFire]);
+  }, [prepared, spots, walkersKey, occupantKey, corpseKey, droneKey, nearbyKey, hasCamera, flownKey, leavers, onFire]);
 
   // Sprites draw at exactly one screen pixel per source pixel, so art stays crisp.
   // The camera always keeps you centred, even near a room's edges (the neighbours fill the space
@@ -526,7 +539,9 @@ export function IsoRoom({
       cell = key ? standSpot(layout, roomLayout, Number(key.slice(1)), cells) : undefined;
     } else {
       const i = corpses.findIndex((c) => c.id === target.id);
-      const at = target.kind === "player" ? (target.id === me?.id ? undefined : walkers.get(target.id)?.cell) : i >= 0 ? spots[occupants.length + i] : undefined;
+      const d = drones.findIndex((c) => c.id === target.id);
+      const onFloor = i >= 0 ? spots[occupants.length + i] : d >= 0 ? droneSpot(d) : undefined;
+      const at = target.kind === "player" ? (target.id === me?.id ? undefined : walkers.get(target.id)?.cell) : onFloor;
       const path = at && walkPath(cells, myWalker.cell, at);
       cell = path && path.length > 1 ? path[path.length - 2] : undefined;
     }
@@ -556,7 +571,7 @@ export function IsoRoom({
   const byId = new Map([...drawnPeople, ...neighbors.flatMap((n) => n.people)].map((o) => [o.id, o]));
   const superCalcBuilt = equipment.some((e) => e.type === SUPER_CALC_EQUIPMENT);
   const looks = useMemo(() => roomLooks(pilgredRepaired, humanTankFull, superCalcBuilt), [pilgredRepaired, humanTankFull, superCalcBuilt]);
-  const imageInput = { layout, room, people: byId, walkers, seats, corpses, looks };
+  const imageInput = { layout, room, people: byId, walkers, seats, corpses, drones, looks };
 
   // Load every image this room hit-tests against, so masks are ready by the first click.
   // biome-ignore lint/correctness/useExhaustiveDependencies: re-preload only when the sprite set changes; the image input is rebuilt every render.
@@ -571,7 +586,7 @@ export function IsoRoom({
   const [hoverAt, setHoverAt] = useState({ x: 0, y: 0 });
 
   // What the renderer draws. Rebuilt when the placed scene, the people, or what's selected, hovered or reachable changes.
-  // biome-ignore lint/correctness/useExhaustiveDependencies: walkersKey and walkersLook stand in for walkers, doorsKey for doors; occupants, nearby and corpses for the image input and beds built from them.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: walkersKey and walkersLook stand in for walkers, doorsKey for doors; occupants, nearby, corpses and drones for the image input and beds built from them.
   const drawn = useMemo(
     () =>
       describeScene({
@@ -591,7 +606,7 @@ export function IsoRoom({
         turn,
         fireSlots,
       }),
-    [scene, box, walkersKey, walkersLook, doorsKey, seatsKey, occupants, nearby, corpses, equipmentByKey, reachable, selected, selectedDoor, hoverKey, ownCells, looks, pace, planet, turn, fireSlots],
+    [scene, box, walkersKey, walkersLook, doorsKey, seatsKey, occupants, nearby, corpses, drones, equipmentByKey, reachable, selected, selectedDoor, hoverKey, ownCells, looks, pace, planet, turn, fireSlots],
   );
   // Badges and bubbles go over the people in this room.
   const anchors = drawn.sprites.flatMap((s): Anchor[] => {
@@ -639,6 +654,8 @@ export function IsoRoom({
   const interaction = (s: PlacedSprite) => {
     const corpse = corpseOf(s, corpses);
     if (corpse) return { kind: "item" as const, item: corpse.id, title: names.item(CORPSE_ITEM) };
+    const drone = droneOf(s, drones);
+    if (drone) return { kind: "item" as const, item: drone.id, title: names.item(SUPPORT_DRONE_ITEM) };
     if (s.kind === "actor") {
       const o = byId.get(s.key.slice(2));
       return o ? { kind: "person" as const, person: o, title: o.name } : null;

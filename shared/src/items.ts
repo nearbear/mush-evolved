@@ -48,6 +48,12 @@ export interface ItemType {
 /** A dead player's body (death.ts); `ItemState.of` says whose. */
 export const CORPSE_ITEM = "corpse";
 
+/**
+ * A support drone (#411). Only its starting place and its look exist so far: the iso view draws one on the floor.
+ * What it does (repairs, moving, breaking) is the rest of #411, so for now it is an inert item.
+ */
+export const SUPPORT_DRONE_ITEM = "support_drone";
+
 /** Express cooks rations (actions/express_cook.ts) while it has charges. */
 export const MICROWAVE_ITEM = "microwave";
 
@@ -145,6 +151,8 @@ export const ITEM_TYPES: Record<string, ItemType> = {
   [MICROWAVE_ITEM]: { heavy: true, dismantle: { metal: 2, plastic: 0, chance: 0.25 }, canBreak: true, canBeSabotaged: true, repairChance: 0.25 },
   // Decided 2026-10-16: a dead player's body (death.ts). Takes one slot like any item; heavy.
   [CORPSE_ITEM]: { heavy: true },
+  // #411, iso view only for now: no rules yet (no repairs, moves or breaking). Icon help_drone (web/src/art/assets.ts).
+  [SUPPORT_DRONE_ITEM]: {},
 
   // Owner, 2026-10-28: eMush's Wavoscope. Carried, it doubles the odds of hull repair and renovation (modifiers.ts, actionSuccessRate); heavy.
   // Icon wavoscope (web/src/art/assets.ts).

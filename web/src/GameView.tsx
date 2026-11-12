@@ -2,7 +2,7 @@
 // the server decides what is legal and sends it in view.actions. No socket either: see GameScreen.
 
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
-import { CORPSE_ITEM, isLostPlace, legalIn, type Action, type BotPause, type CharacterId, type Cheat, type GameClientMessage, type PlayerView, type RoleCheat, type RoomId, type Spot, type Target } from "@mush2/shared";
+import { CORPSE_ITEM, SUPPORT_DRONE_ITEM, isLostPlace, legalIn, type Action, type BotPause, type CharacterId, type Cheat, type GameClientMessage, type PlayerView, type RoleCheat, type RoomId, type Spot, type Target } from "@mush2/shared";
 import { useTranslation } from "react-i18next";
 import { ActionQueue } from "./hud/ActionQueue.tsx";
 import { BottomNav, type MobilePanel } from "./hud/BottomNav.tsx";
@@ -25,7 +25,7 @@ import { TipCard } from "./hud/TipCard.tsx";
 import { resolveTarget } from "./hud/targets.ts";
 import { TopBar } from "./hud/TopBar.tsx";
 import { ServerClockContext, serverTime, type ServerClock } from "./hud/serverClock.ts";
-import { shipPace, type Corpse, type Occupant } from "./iso/scene.ts";
+import { shipPace, type Corpse, type Drone, type Occupant } from "./iso/scene.ts";
 import { FIRE_ICON, orbitImage } from "./art/assets.ts";
 import { LeavingIsoRoom } from "./iso/LeavingRoom.tsx";
 import { recentDoorMoves } from "./iso/doorMoves.ts";
@@ -175,6 +175,8 @@ export function GameView({ view: given, send, onLeave, waking = false, cheatsAll
   const corpses: Corpse[] = view.roomItems
     .filter((i) => i.type === CORPSE_ITEM)
     .map((i) => ({ id: i.id, character: [you, ...view.players].find((p) => p.id === i.of)?.character }));
+  // Support drones on the floor here (#411), floating over their shadows.
+  const drones: Drone[] = view.roomItems.filter((i) => i.type === SUPPORT_DRONE_ITEM).map((i) => ({ id: i.id }));
   const move = (to: string) => act({ type: "move", to });
   const select = (t: Target | null) => {
     markSelected();
@@ -247,6 +249,7 @@ export function GameView({ view: given, send, onLeave, waking = false, cheatsAll
                   .map(occupant)}
                 nearby={nearby}
                 corpses={corpses}
+                drones={drones}
                 fogDepth={fogDepth}
                 renderer={ROOM_RENDERER}
                 zoom={zoom}

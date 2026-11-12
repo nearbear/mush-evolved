@@ -40,6 +40,11 @@ export interface Corpse {
   character: CharacterId | undefined;
 }
 
+/** A support drone on the floor (#411). */
+export interface Drone {
+  id: ItemId;
+}
+
 /** How someone sits on a chair: which sitting frame, and whether it is mirrored. */
 export interface Seat {
   facing: "face" | "back";
@@ -51,6 +56,18 @@ export const LYING_SIZE = { width: 64, height: 48 };
 
 /** Actor ids for corpses get this prefix, so they can't collide with player ids. */
 export const CORPSE_PREFIX = "corpse:";
+
+/** Actor ids for drones get this prefix, so they can't collide with player ids. */
+export const DRONE_PREFIX = "drone:";
+
+/** The drone's slice: frame 0 of `base_drone` in fx.png, the drone above its own shadow (tiles.xml). */
+const DRONE_SLICE = "base_drone";
+/** `base_drone`'s frame size. */
+export const DRONE_SIZE = { width: 32, height: 56 };
+/** Where the drone's frame splits: the drone in the rows above, its shadow below (measured in fx.png: drone 5-31, shadow 35-45). */
+const DRONE_BODY_ROWS = 34;
+/** Moves the frame so the shadow's centre sits on the cell's centre (placed like a 32x48 person, it would sit 5px right and 8px high). */
+export const DRONE_SHIFT = { x: -5, y: 8 };
 
 /** The original Flash client ran at 30 ticks a second; animation rhythms are counted in ticks. */
 const TICK_MS = 1000 / 30;
@@ -178,7 +195,7 @@ export function doorAnim(slice: SliceInfo | undefined, state: DoorState | undefi
 export type SceneEffect = "fogged" | "foggedLifted" | "hover" | "doorHover" | "selected";
 
 /** What a sprite is, for renderers that label their output (the DOM one keeps the class names the screenshot tools look for). */
-export type SceneRole = "tile" | "door" | "equipment" | "person" | "corpse";
+export type SceneRole = "tile" | "door" | "equipment" | "person" | "corpse" | "drone";
 
 /** Something drawn at (x, y) in world pixels (the scene's own box, top-left at 0,0), the size of its image frame. */
 export interface ScenePicture {
@@ -202,6 +219,8 @@ export interface SceneSprite extends ScenePicture {
   effect?: SceneEffect;
   /** People and bodies cast a soft shadow below them: standing (or seated), or lying. */
   shadow?: "standing" | "lying";
+  /** Floats: bobs gently up and down on its own clock (a drone, not its shadow). A renderer may draw it still. */
+  bob?: boolean;
   /** Only for labelling: you, and a door you can go through. */
   you?: boolean;
   reachable?: boolean;
@@ -303,6 +322,8 @@ export interface SceneInput {
   /** People sitting on a chair in this room (you as soon as you reach it, others by their view spot), by person id. */
   seats: ReadonlyMap<string, Seat>;
   corpses: readonly Corpse[];
+  /** Support drones on this room's floor; none when not given. */
+  drones?: readonly Drone[];
   /** Sprite key -> the equipment it draws (this room only). */
   equipment: ReadonlyMap<string, EquipmentView>;
   reachable: ReadonlySet<RoomId>;
@@ -329,11 +350,16 @@ export function corpseOf(s: PlacedSprite, corpses: readonly Corpse[]): Corpse | 
   return s.kind === "actor" && s.key.startsWith(`a:${CORPSE_PREFIX}`) ? corpses.find((c) => `a:${CORPSE_PREFIX}${c.id}` === s.key) : undefined;
 }
 
+/** The drone an actor sprite draws, if it is one. */
+export function droneOf(s: PlacedSprite, drones: readonly Drone[] | undefined): Drone | undefined {
+  return s.kind === "actor" && s.key.startsWith(`a:${DRONE_PREFIX}`) ? drones?.find((d) => `a:${DRONE_PREFIX}${d.id}` === s.key) : undefined;
+}
+
 /**
  * The image a placed sprite's pixels come from: its unflipped, unanimated frame (what hit-testing
  * reads; `hitTest` mirrors with `flipX`).
  */
-export function imageOf(s: PlacedSprite, input: Pick<SceneInput, "layout" | "room" | "people" | "walkers" | "seats" | "corpses" | "looks">): SceneImage {
+export function imageOf(s: PlacedSprite, input: Pick<SceneInput, "layout" | "room" | "people" | "walkers" | "seats" | "corpses" | "drones" | "looks">): SceneImage {
   if (s.kind !== "actor") {
     const look = input.looks?.get(s.slice);
     const slice = look ? input.layout.slices[look] : undefined;
@@ -344,6 +370,10 @@ export function imageOf(s: PlacedSprite, input: Pick<SceneInput, "layout" | "roo
   if (corpse) {
     const lying = lyingFrame(corpse.character);
     return { url: lying?.url, frame: lying ?? { sx: 0, sy: 0, ...LYING_SIZE }, keyed: false };
+  }
+  if (droneOf(s, input.drones)) {
+    const slice = input.layout.slices[DRONE_SLICE];
+    return { url: slice && atlasUrl(input.layout, slice.sheet), frame: { ...(slice ? frameRect(slice, 0) : { sx: 0, sy: 0 }), ...DRONE_SIZE }, keyed: false };
   }
   const o = input.people.get(s.key.slice(2));
   const lying = o?.lying ? lyingFrame(o.character) : undefined;
@@ -398,12 +428,15 @@ function ambientAnim(frames: readonly number[], frameMs: readonly number[], star
 
 /** The scene to draw, from the placed sprites and what is selected, hovered, reachable and lit. */
 export function describeScene(input: SceneInput): Scene {
-  const { layout, room, placed, box, people, corpses, equipment, reachable, selected, selectedDoor, hoverKey, ownCells, doors, looks } = input;
+  const { layout, room, placed, box, people, corpses, drones, equipment, reachable, selected, selectedDoor, hoverKey, ownCells, doors, looks } = input;
   const isSelected = (kind: Target["kind"], id: string) => sameTarget(selected, { kind, id } as Target);
   const sprites: SceneSprite[] = [];
   const outlines: SceneOutline[] = [];
   const ambientStarts = spreadAmbient(placed, input);
+  // Where each placed sprite's pictures start in `sprites` (a drone is two), for the fire's places in the paint order.
+  const firstSprite: number[] = [];
   for (const s of placed) {
+    firstSprite.push(sprites.length);
     const look = looks?.get(s.slice);
     const lookSlice = look ? layout.slices[look] : undefined;
     const width = lookSlice ? lookSlice.width : s.width;
@@ -414,7 +447,8 @@ export function describeScene(input: SceneInput): Scene {
     const opening = s.door ? doorAnim(layout.slices[s.slice], doors.get(s.key)) : undefined;
     const tile = () => ({ ...base, image: imageOf(s, input), flipX: s.flipX || undefined, flipY: s.flipY || undefined, ...(opening && { anim: opening }) });
     const corpse = corpseOf(s, corpses);
-    if (s.kind === "actor" && !corpse) {
+    const drone = droneOf(s, drones);
+    if (s.kind === "actor" && !corpse && !drone) {
       outlines.push({ ...personPicture(s, input, base), occluded: !!s.occluded, faint: s.room !== room });
     }
     if (s.room !== room) {
@@ -431,6 +465,15 @@ export function describeScene(input: SceneInput): Scene {
     if (corpse) {
       const effect = isSelected("item", corpse.id) ? "selected" : hover ? "hover" : undefined;
       sprites.push({ ...base, image: imageOf(s, input), role: "corpse", effect, shadow: "lying", kind: s.kind, slice: s.slice });
+      continue;
+    }
+    if (drone) {
+      // Two pictures from the one frame: the shadow stays on the floor while the drone above it floats. Only the drone glows.
+      const image = imageOf(s, input);
+      const effect = isSelected("item", drone.id) ? "selected" : hover ? "hover" : undefined;
+      const part = (top: number, rows: number) => ({ y: base.y + top, height: rows, image: { ...image, frame: { ...image.frame, sy: image.frame.sy + top, height: rows } } });
+      sprites.push({ ...base, key: `${s.key}|shadow`, ...part(DRONE_BODY_ROWS, height - DRONE_BODY_ROWS), role: "drone", kind: s.kind, slice: s.slice });
+      sprites.push({ ...base, ...part(0, DRONE_BODY_ROWS), role: "drone", effect, bob: true, kind: s.kind, slice: s.slice });
       continue;
     }
     if (s.kind === "actor") {
@@ -472,7 +515,7 @@ export function describeScene(input: SceneInput): Scene {
       if (placed[mid]!.order < order) at = mid + 1;
       else hi = mid;
     }
-    return { cell, x: anchor.x - box.minX, y: anchor.y - box.minY + CELL_CENTER_Y, at };
+    return { cell, x: anchor.x - box.minX, y: anchor.y - box.minY + CELL_CENTER_Y, at: firstSprite[at] ?? sprites.length };
   });
   return {
     width: box.width,

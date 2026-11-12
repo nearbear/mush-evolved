@@ -93,6 +93,12 @@ Loaded when working on the isometric view. The UI rules in `web/CLAUDE.md` still
   filter in the DOM renderer) in a layer above the scene, so nobody can hide behind a wall: fixed scenery only, plus whoever the view
   places there. The client adds no ACTOPI check of its own.
 
+- Items drawn on the floor are actors placed on floor spots after the people: bodies (`corpses`, lying down) and support
+  drones (`drones`, #411). A drone is two pictures from `base_drone`'s frame 0 (`fx.png`): its shadow, still, and the
+  drone above it with `bob`, which the Pixi renderer floats up and down (the DOM one draws it still). `DRONE_SHIFT`
+  puts the shadow's centre on the cell's centre. Both count as one placed sprite, so `describeScene` maps fire slots
+  through `firstSprite`.
+
 - Anything animated on its own clock (the walk cycle, the camera's swivel, a door) is a `SceneAnim`
   the renderer plays; in the DOM renderer each keeps its timer in its own small component
   (`useAnimFrame`): a timer in `IsoRoom` re-renders every sprite in the scene. A renderer restarts

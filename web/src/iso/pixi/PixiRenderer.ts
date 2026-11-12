@@ -12,7 +12,8 @@
 //
 // Effects (effects.ts): fog is a tint; hover, selection and shadows are shared filters (filters.ts);
 // the see-through outlines are a second layer over every sprite, each outline shown only while a wall
-// covers its person. The pulse of those outlines keeps it rendering every frame while one shows.
+// covers its person. The pulse of those outlines keeps it rendering every frame while one shows, and so
+// does a floating sprite (a drone's bob, `SceneSprite.bob`), though it only redraws when one moves a pixel.
 //
 // WebGL context loss (a phone backgrounding the tab, a GPU reset): Pixi keeps the context restorable
 // and rebuilds its textures and programs when it comes back. This only stops drawing while it is lost
@@ -31,6 +32,17 @@ import { EspFilters, lookFilter } from "./filters.ts";
 import { RoomFire } from "./fire.ts";
 
 TextureStyle.defaultOptions.scaleMode = "nearest";
+
+/** A floating sprite (`SceneSprite.bob`, a drone) rises and falls this many pixels either way, once every `BOB_MS`. */
+const BOB_PX = 2;
+const BOB_MS = 2400;
+
+/** Where in its bob a floating sprite is at `now`: whole pixels, so it stays crisp, and out of step with others by key. */
+function bobAt(key: string, now: number): number {
+  let phase = 0;
+  for (let i = 0; i < key.length; i++) phase = (phase * 31 + key.charCodeAt(i)) >>> 0;
+  return Math.round(BOB_PX * Math.sin(((now / BOB_MS) + (phase % 1000) / 1000) * 2 * Math.PI));
+}
 
 // Textures are shared by every renderer instance (a remount, the room you left): images load once.
 const images = new Map<string, Promise<Texture>>();
@@ -111,6 +123,8 @@ interface Drawn {
   animStart: number;
   /** The texture this sprite should show, so a late load doesn't overwrite a newer one. */
   textureKey: string;
+  /** A floating sprite's current lift off where the scene placed it, in pixels. */
+  bobY?: number;
 }
 
 /**
@@ -165,6 +179,7 @@ export class PixiRenderer {
   private outlineOrder: Drawn[] = [];
   private walkers: Drawn[] = [];
   private animated: Drawn[] = [];
+  private bobbing: Drawn[] = [];
   private scene: Scene | null = null;
   private lastFrame: FrameUpdate | null = null;
   private ready = false;
@@ -284,6 +299,7 @@ export class PixiRenderer {
     const all = [...ground, ...sprites, ...outlines];
     this.walkers = all.filter((d) => d.pic.walker);
     this.animated = all.filter((d) => d.pic.anim);
+    this.bobbing = sprites.filter((d) => (d.pic as SceneSprite).bob);
     this.pulsing = scene.outlines.some((o) => o.occluded && !o.faint);
     this.requestRender();
   }
@@ -307,6 +323,7 @@ export class PixiRenderer {
       paint(d, pic);
       this.setTexture(d, pic.image, d.frame);
       this.place(d, { x: 0, y: 0 });
+      d.bobY = 0;
       next.push(d);
     }
     if (layer !== this.sprites) this.arrange(layer, next.map((d) => d.sprite));
@@ -564,6 +581,15 @@ export class PixiRenderer {
       this.setTexture(d, d.pic.image, f);
       this.dirty = true;
     }
+    // Floating sprites drift up and down, still for reduced motion.
+    const bobs = this.bobbing.length > 0 && !this.reducedMotion.matches;
+    for (const d of bobs ? this.bobbing : []) {
+      const y = bobAt(d.pic.key, now);
+      if (y === d.bobY) continue;
+      d.bobY = y;
+      this.place(d, { x: 0, y });
+      this.dirty = true;
+    }
     const dt = this.lastTick ? Math.min(0.1, (now - this.lastTick) / 1000) : 0;
     this.lastTick = now;
     const turning = this.turning();
@@ -592,6 +618,6 @@ export class PixiRenderer {
       if (pulse) this.dirty = true;
     }
     if (this.dirty) this.renderNow();
-    if (playing || pulse || streams || this.fire.active) this.raf = requestAnimationFrame(this.tick);
+    if (playing || pulse || streams || bobs || this.fire.active) this.raf = requestAnimationFrame(this.tick);
   };
 }

@@ -55,7 +55,7 @@ const EFFECT_CLASS = { fogged: "fx-fogged", foggedLifted: "fx-fogged-lifted", ho
 function classOf(s: SceneSprite): string {
   const person = s.role === "person" || s.role === "corpse";
   const names = [person ? "iso-actor" : "iso-sprite"];
-  if (s.role === "door" || s.role === "equipment" || s.role === "corpse") names.push(s.role);
+  if (s.role === "door" || s.role === "equipment" || s.role === "corpse" || s.role === "drone") names.push(s.role);
   if (s.reachable) names.push("reachable");
   if (s.you) names.push("you");
   if (s.effect === "fogged" || s.effect === "foggedLifted") names.push("neighbor");

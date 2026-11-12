@@ -492,6 +492,8 @@ export const DEFAULT_CONFIG: GameConfig = {
      { type: "apron", room: "SICK_BAY" },
      { type: "protection_gloves", room: "SICK_BAY" },
     { type: "camera", room: "CORRIDOR_A" },
+    // #411: a support drone starts in the front corridor.
+    { type: "support_drone", room: "CORRIDOR_A" },
     // Owner, 2026-10-25: an extinguisher in each of the front and rear corridors, for now (the original's are in storages).
     { type: "extinguisher", room: "CORRIDOR_A" },
     { type: "extinguisher", room: "CORRIDOR_C" },

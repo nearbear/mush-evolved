@@ -26,11 +26,13 @@ const TANK = { sheet: "MidFill2", x: 0, y: 1082, width: 42, height: 62, framesX:
 const TANK_FULL = { sheet: "MidFill2", x: 0, y: 1145, width: 42, height: 62, framesX: 9, anims: [{ frames: [0, 1, 2, 3, 4, 5, 6, 7, 8], rhythm: [12, 12, 12, 12, 12, 12, 12, 12, 12], auto: true }] } as unknown as SliceInfo;
 const SERVER = { sheet: "MidFill2", x: 0, y: 858, width: 30, height: 60, framesX: 2, anims: [] } as unknown as SliceInfo;
 const SERVER_ACTIVE = { sheet: "MidFill2", x: 64, y: 858, width: 30, height: 61, framesX: 2, anims: [{ frames: [0, 1], rhythm: [10, 10], auto: true }] } as unknown as SliceInfo;
+/** The support drone: frame 0 of `base_drone` in fx.png, the drone over its shadow. */
+const DRONE = { sheet: "F", x: 0, y: 120, width: 32, height: 56, framesX: 2, anims: [] } as unknown as SliceInfo;
 
 const layout = {
   roomSize: 32,
   sheets: {},
-  slices: { camera: { anims: [{ frames: [0, 1, 2, 1] }] }, door: DOOR, rotational_reactor: REACTOR, core_pilgred: CORE, core_pilgred_upgrade: CORE_UPGRADE, human_tank: TANK, human_tank_full: TANK_FULL, server: SERVER, server_active: SERVER_ACTIVE },
+  slices: { camera: { anims: [{ frames: [0, 1, 2, 1] }] }, door: DOOR, rotational_reactor: REACTOR, core_pilgred: CORE, core_pilgred_upgrade: CORE_UPGRADE, human_tank: TANK, human_tank_full: TANK_FULL, server: SERVER, server_active: SERVER_ACTIVE, base_drone: DRONE },
   rooms: [],
   autoBind: {},
 } as unknown as ShipLayout;
@@ -232,6 +234,30 @@ describe("describeScene", () => {
     expect(only(s)).toMatchObject({ role: "corpse", shadow: "lying", effect: "hover" });
     expect(s.outlines).toEqual([]);
     expect(only(scene([body], { corpses, hoverKey: "a:corpse:c1", selected: { kind: "item", id: "c1" } as never })).effect).toBe("selected");
+  });
+
+  it("draws a drone as a still shadow under a floating drone, only the drone glowing", () => {
+    const drones = [{ id: "d1" as never }];
+    const drone = actor("drone:d1", { width: 32, height: 56, left: 10, top: 20 });
+    const s = scene([drone], { drones, hoverKey: "a:drone:d1" });
+    expect(s.sprites).toMatchObject([
+      { key: "a:drone:d1|shadow", role: "drone", y: 70 + 34, height: 22, image: { frame: { sx: 0, sy: 120 + 34, width: 32, height: 22 } } },
+      { key: "a:drone:d1", role: "drone", y: 70, height: 34, bob: true, effect: "hover", image: { frame: { sx: 0, sy: 120, width: 32, height: 34 } } },
+    ]);
+    expect(s.sprites[0]!.effect).toBeUndefined();
+    expect(s.sprites[0]!.bob).toBeUndefined();
+    expect(s.outlines).toEqual([]);
+    expect(scene([drone], { drones, selected: { kind: "item", id: "d1" } as never }).sprites[1]!.effect).toBe("selected");
+  });
+
+  it("counts both of a drone's pictures when placing fire after it", () => {
+    const drone = actor("drone:d1", { width: 32, height: 56, order: 1 });
+    const s = scene([placed({ order: 0 }), drone, placed({ key: "t2", kind: "entity", order: 2 })], {
+      drones: [{ id: "d1" as never }],
+      fireSlots: [{ cell: { x: 0, y: 0 }, order: 2 }],
+    });
+    expect(s.sprites.map((p) => p.key)).toEqual(["t0", "a:drone:d1|shadow", "a:drone:d1", "t2"]);
+    expect(s.fire[0]!.at).toBe(3);
   });
 });
 

@@ -3157,3 +3157,9 @@ Owner asked for an honest verdict on the scratchpad mental-health plan (stressor
 - Worked: the table made five parallel workers consistent; the mechanical diff check was cheaper and stricter than reading 400 lines. Needed care: subagents differed on borderline 4px values (one converted two, another left all nine), so "clearly generic" was too loose a rule for parallel work. Comment-arithmetic dependents (`--hud-card: 56px`, the top-bar chip overhang) had to be checked by hand.
 - Values off the scale were left in place and listed for the owner rather than forced.
 
+### 2026-11-11: Support drone in the iso view (#411, iso part only)
+
+- Asked for only the isometric part of #411: one inert `support_drone` item starts in the front corridor, and the iso view draws it like a body (an actor on a floor spot) from `base_drone` frame 0 in `fx.png`. No drone rules yet.
+- Looking at the sprite (cropped with the repo's own PNG decoder, since PIL isn't installed) showed it carries its own shadow. A sine bob of the whole frame would have bobbed the shadow too, so `describeScene` splits the frame into two pictures: a still shadow and a floating body (`SceneSprite.bob`, which Pixi animates, 2px in whole pixels, off with reduced motion). The split broke the 1:1 placed-to-sprite indexing that fire slots relied on; caught while writing it and fixed with a `firstSprite` map plus a test.
+- `verify` couldn't go green: another session was editing Matchmaker/protocol in the same checkout at the same time. Checked my part per package instead (shared, web, tools tests; web typecheck; lint; build).
+
